@@ -1,0 +1,20 @@
+import { Platform } from 'react-native';
+import Share from 'react-native-share';
+import { recommendImageBase64 } from '../../../assets/images/recommendImage';
+
+export const onShare = async (title: string, message: string, url: string) => {
+  const shareImage = {
+    title,
+    message,
+    subject: title,
+    url: url !== '' ? url : recommendImageBase64
+  };
+
+  await Share.open(shareImage)
+    .then((res) => {
+      return res;
+    })
+    .catch((err) => {
+      return err;
+    });
+};
