@@ -1,0 +1,8 @@
+export const MODAL_CLOSING_TIMEOUT = 250;
+export const MODAL_SHOW_TIMEOUT = 250;
+export const OTP_CALLBACK_TIMEOUT = 250;
+export const CHOOSE_TOKEN_MODAL_TIMEOUT = 500;
+export const CARD_REFRESH_TIMEOUT = 10000;
+export const SHARE_QR_TIMEOUT = 500;
+export const SPLASH_SCREEN_TIMEOUT = 3000;
+export const REFRESH_CLOSING_TIMEOUT = 500;

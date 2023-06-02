@@ -1,0 +1,84 @@
+import React, { useContext, useState } from 'react';
+import { changePin, savePin } from '../../core/Keychain';
+import { HdWalletContext } from '../../core/util';
+import { t } from 'i18next';
+import { CyDView, CyDText, CyDSafeAreaView, CyDImage, CyDTouchView } from '../../styles/tailwindStyles';
+import OtpInput from '../../components/v2/OTPInput';
+import AppImages from '../../../assets/images/appImages';
+import { screenTitle } from '../../constants';
+import Toast from 'react-native-toast-message';
+
+export default function ConfirmPin ({ route, navigation }) {
+  const { setPinAuthentication = (value) => {}, pin, backButton = false, changePinValue = false } = route.params;
+  const [wrongPin, setWrongPin] = useState(false); // state to show or hide the Wrong Pin text
+  const hdWallet = useContext<any>(HdWalletContext);
+
+  const PINHeader = () => {
+    return (
+      <>
+        {backButton && <CyDTouchView className={'mt-[10px]'} onPress={() => { navigation.navigate(screenTitle.SET_PIN); }}>
+          <CyDImage source={AppImages.BACK} className={' w-[20px] h-[20px] '}/>
+        </CyDTouchView>}
+        <CyDView>
+          <CyDText className={'text-[30px] font-extrabold text-center pt-[40px]'}>{t<string>('CONFIRM_PIN_TITLE')}</CyDText>
+        </CyDView>
+      </>
+    );
+  };
+
+  let savePinValue = async (pinConfirm: string) => {
+    if (pin !== pinConfirm) {
+      setWrongPin(true);
+      return;
+    }
+    setWrongPin(false);
+    await savePin(pin);
+    hdWallet.dispatch({ type: 'SET_PIN_VALUE', value: { pin } });
+    Toast.show({ type: 'success', text1: t('PIN_SET_SUCCESSFUL'), text2: t('PIN_SET_SUCCESSFUL_DESCRIPTION'), position: 'bottom' });
+    navigation.setParams(setPinAuthentication(true));
+  };
+  if (changePinValue) {
+    savePinValue = async (pinConfirm: string) => {
+      if (pin !== pinConfirm) {
+        setWrongPin(true);
+        return;
+      }
+      setWrongPin(false);
+      await changePin(hdWallet.state.pinValue, pin);
+      hdWallet.dispatch({ type: 'SET_PIN_VALUE', value: { pin } });
+      Toast.show({ type: 'success', text1: t('PIN_SET_SUCCESSFUL'), text2: t('PIN_SET_SUCCESSFUL_DESCRIPTION'), position: 'bottom' });
+      navigation.navigate(screenTitle.SECURITY_PRIVACY);
+    };
+  }
+
+  const PIN = () => {
+    return (
+      <CyDView>
+        <CyDView className={'mt-[15%]'}>
+          <OtpInput
+            pinCount={4}
+            getOtp={async (pinConfirm: string) => await savePinValue(pinConfirm)}
+            showButton={true}
+            buttonCTA={t('CONFIRM')}
+            loader={true}
+          />
+        </CyDView>
+
+        {wrongPin &&
+          <CyDText className={'text-[15px] mt-[25px] text-center text-red-500'}>
+            {t<string>('WRONG_PIN')}
+          </CyDText>
+        }
+      </CyDView>
+    );
+  };
+
+  return (
+      <CyDSafeAreaView>
+        <CyDView className={'h-full bg-white px-[20px] pt-[10px]'}>
+          <PINHeader/>
+          <PIN/>
+        </CyDView>
+      </CyDSafeAreaView>
+  );
+}

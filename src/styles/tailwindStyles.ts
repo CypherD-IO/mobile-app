@@ -1,0 +1,40 @@
+import {
+  View,
+  Text,
+  TouchableOpacity,
+  FlatList,
+  SafeAreaView,
+  ImageBackground,
+  Modal,
+  RefreshControl,
+  ScrollView,
+  Switch,
+  TextInput,
+  Image,
+  TouchableWithoutFeedback,
+  TouchableHighlight,
+  KeyboardAvoidingView
+} from 'react-native';
+import { styled } from 'nativewind';
+import FastImage from 'react-native-fast-image';
+import { Dropdown } from 'react-native-element-dropdown';
+import Animated from 'react-native-reanimated';
+
+export const CyDText = styled(Text, 'text-[#434343] font-nunito');
+export const CyDTextInput = styled(TextInput, 'pb-[0px] text-[#434343] ');
+export const CyDView = styled(View);
+export const CyDTouchView = styled(TouchableOpacity);
+export const CyDFlatList = styled(FlatList);
+export const CyDSafeAreaView = styled(SafeAreaView);
+export const CyDImage = styled(Image);
+export const CyDFastImage = styled(FastImage);
+export const CyDImageBackground = styled(ImageBackground);
+export const CyDModal = styled(Modal);
+export const CyDRefreshControl = styled(RefreshControl);
+export const CyDScrollView = styled(ScrollView);
+export const CyDSwitch = styled(Switch);
+export const CyDTouchableWithoutFeedback = styled(TouchableWithoutFeedback);
+export const CyDTouchableHighlight = styled(TouchableHighlight);
+export const CyDKeyboardAvoidingView = styled(KeyboardAvoidingView);
+export const CyDDropDown = styled(Dropdown);
+export const CyDAnimatedView = styled(Animated.View);
