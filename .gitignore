@@ -50,7 +50,7 @@ buck-out/
 /ios/Pods/
 /ios/tmp.xcconfig
 /ios/GoogleService-Info.plist
-/ios/sentry.properties
+ios/sentry.properties
 
 #Internal development notes
 DEVELOPER_GUIDE.md
