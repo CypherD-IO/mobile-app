@@ -4,6 +4,10 @@ TBD: Next step is to prototype the interaction between React Native app back to 
 
 ## <B> Steps to run the project locally </B>
 
+### Configure 
+  1. Sentry in sentry.properties file 
+  2. GoogleService in plist file
+
 [React Native MAC Setup Guide](https://reactnative.dev/docs/environment-setup)
 
 
@@ -82,3 +86,5 @@ M1 Specific instruction
 sudo arch -x86_64 gem install ffi
 arch -x86_64 pod install -- for pod install
 ```
+
+

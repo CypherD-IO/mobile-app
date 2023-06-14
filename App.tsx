@@ -2,6 +2,7 @@
 /* eslint-disable react-native/no-inline-styles */
 import * as React from 'react';
 import { useEffect, useReducer, useState } from 'react';
+import Config from "react-native-config";
 import Toast from 'react-native-toast-message';
 import { useTranslation } from 'react-i18next';
 import { NavigationContainer } from '@react-navigation/native';
@@ -70,28 +71,32 @@ import appsFlyer from 'react-native-appsflyer';
 
 const { DynamicView, CText, DynamicImage } = require('./src/styles');
 
+
 const routingInstrumentation = new Sentry.ReactNavigationInstrumentation();
 Sentry.init({
-  dsn: 'TODO:FILL',
+  dsn: Config.SENTRY_DSN,
   // environment: 'staging',
-  environment: 'TODO:FILL',
+  environment: Config.ENVIROINMENT ?? 'staging',
   integrations: [
     new Sentry.ReactNativeTracing({
       routingInstrumentation,
       tracingOrigins: ['127.0.0.1', 'api.cypherd.io']
     })
   ],
+  enabled: false,
   tracesSampleRate: 1.0
 });
+
+
 
 // AppsFlyer SDK initialization
 const NoOpFunction = () => { };
 appsFlyer.initSdk(
   {
-    devKey: 'TODO:FILL',
+    devKey: Config.AF_DEVKEY ?? '',
     // TODO: make this based on ENV
-    isDebug: false, // 'TODO:FILL'
-    appId: 'TODO:FILL',
+    isDebug: Config.ENVIROINMENT !== 'production',
+    appId: Config.AF_APPID ?? '',
     // to begin we are not recieving any raw data on Cypher side.
     onInstallConversionDataListener: false,
     onDeepLinkListener: false,
