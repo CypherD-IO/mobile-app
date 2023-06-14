@@ -9,6 +9,7 @@
 #import <Cypherd-Swift.h>
 #import <UserNotifications/UserNotifications.h>
 #import <RNCPushNotificationIOS.h>
+#import "RNCConfig.h"
 
 #ifdef FB_SONARKIT_ENABLED
 #import <FlipperKit/FlipperClient.h>
@@ -53,7 +54,7 @@ static void InitializeFlipper(UIApplication *application) {
   UIViewController *rootViewController = [UIViewController new];
   rootViewController.view = rootView;
   self.window.rootViewController = rootViewController;
-  [IntercomModule initialize:@"ios_sdk-ed69019e837fc8edd9a6410207514825594cae2b" withAppId:@"'TODO:FILL'"];
+  [IntercomModule initialize:@"ios_sdk-ed69019e837fc8edd9a6410207514825594cae2b" withAppId:[RNCConfig envFor:@"INTERCOM_APP_KEY"]];
   [self.window makeKeyAndVisible];
 
   Dynamic *t = [Dynamic new];

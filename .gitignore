@@ -42,25 +42,20 @@ buck-out/
 *.keystore
 !debug.keystore
 
-# fastlane
-#
-# It is recommended to not store the screenshots in the git repo. Instead, use fastlane to re-generate the
-# screenshots whenever they are needed.
-# For more information about the recommended setup visit:
-# https://docs.fastlane.tools/best-practices/source-control/
-
-*/fastlane/report.xml
-*/fastlane/Preview.html
-*/fastlane/screenshots
 
 # Bundle artifact
 *.jsbundle
 
 # CocoaPods
 /ios/Pods/
+/ios/tmp.xcconfig
+/ios/GoogleService-Info.plist
+/ios/sentry.properties
 
 #Internal development notes
 DEVELOPER_GUIDE.md
 
 #vscode settings
 /.vscode/
+.env
+
