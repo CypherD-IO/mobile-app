@@ -7,5 +7,8 @@ export const microOsmoToUsd = (amount: string, tokenPrice: string): string => {
 };
 
 export const isOsmosisAddress = (address: string): boolean => {
-  return (address.substring(0, 4) === 'osmo' && address.length === 43);
+  if (address) {
+    return (address.substring(0, 4) === 'osmo' && address.length === 43);
+  }
+  return false;
 };

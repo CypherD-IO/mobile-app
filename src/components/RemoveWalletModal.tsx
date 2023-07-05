@@ -7,15 +7,17 @@ import { Colors } from '../constants/theme';
 import { ButtonWithOutImage } from '../containers/Auth/Share';
 import { DynamicTouchView } from '../styles/viewStyle';
 import { deleteThisWallet } from '../containers/Options/ImportAnotherWallet';
-import { ActivityContext, HdWalletContext, PortfolioContext } from '../core/util';
+import { AUTHORIZE_WALLET_DELETION, ActivityContext, HdWalletContext, PortfolioContext } from '../core/util';
 import axios from '../core/Http';
-import AsyncStorage from '@react-native-async-storage/async-storage';
 import * as Sentry from '@sentry/react-native';
 import analytics from '@react-native-firebase/analytics';
 import { CyDImage, CyDText, CyDTouchView, CyDView } from '../styles/tailwindStyles';
 import CyDModalLayout from './v2/modal';
 import { hostWorker } from '../global';
 import { GlobalContext } from '../core/globalContext';
+import { getReadOnlyWalletData } from '../core/asyncStorage';
+import { DELETE_WALLET_TIMEOUT, MODAL_CLOSING_TIMEOUT } from '../constants/timeOuts';
+import { isPinAuthenticated, loadFromKeyChain } from '../core/Keychain';
 
 const {
   CText,
@@ -24,7 +26,7 @@ const {
 
 export default function RemoveWalletModal (props) {
   const ARCH_HOST: string = hostWorker.getHost('ARCH_HOST');
-  const { isModalVisible, onPress, accoMsg, image, titleMsg, subTitleMsg, removeWallet, seedPharse, onPressSeed, importNewWallet, deleteWallet } = props;
+  const { isModalVisible, onPress, accoMsg, image, titleMsg, subTitleMsg, removeWallet, seedPharse, onPressSeed, importNewWallet, deleteWallet, navigation } = props;
   const { t } = useTranslation();
   const [selectAcc, setSelectAcc] = useState(false);
   const globalContext = useContext<any>(GlobalContext);
@@ -32,9 +34,63 @@ export default function RemoveWalletModal (props) {
   const activityContext = useContext<any>(ActivityContext);
   const portfolioContext = useContext<any>(PortfolioContext);
 
-  const cosmosAddress = hdWalletContext.state.wallet.cosmos.wallets[0].address;
-  const osmosisAddress = hdWalletContext.state.wallet.osmosis.wallets[0].address;
-  const junoAddress = hdWalletContext.state.wallet.juno.wallets[0].address;
+  const cosmosAddress = hdWalletContext.state.wallet.cosmos?.wallets[0]?.address;
+  const osmosisAddress = hdWalletContext.state.wallet.osmosis?.wallets[0]?.address;
+  const junoAddress = hdWalletContext.state.wallet.juno?.wallets[0]?.address;
+
+  const deleteTheWallet = async () => {
+    const { isReadOnlyWallet } = hdWalletContext.state;
+    const { ethereum } = hdWalletContext.state.wallet;
+    if (!isReadOnlyWallet) {
+      const config = {
+        headers: { Authorization: `Bearer ${String(globalContext.globalState.token)}` },
+        data: {
+          cosmosAddress,
+          osmosisAddress,
+          junoAddress
+        }
+      };
+      axios
+        .delete(`${ARCH_HOST}/v1/configuration/device`, config)
+        .catch((error) => {
+          Sentry.captureException(error);
+        });
+    } else {
+      const data = await getReadOnlyWalletData();
+      if (data) {
+        const readOnlyWalletData = JSON.parse(data);
+        axios.delete(`${ARCH_HOST}/v1/configuration/address/${ethereum.address}/observer/${readOnlyWalletData.observerId}`)
+          .catch((error) => {
+            Sentry.captureException(error);
+          });
+      }
+    }
+    onPress();
+    setTimeout(() => {
+      void ResetReducers();
+    }, DELETE_WALLET_TIMEOUT);
+  };
+
+  const onDeleteWallet = async () => {
+    const isPinSet = await isPinAuthenticated();
+    if (!isPinSet) {
+      const authorization = await loadFromKeyChain(AUTHORIZE_WALLET_DELETION);
+      if (authorization) {
+        await deleteTheWallet();
+      }
+    } else {
+      navigation.navigate(C.screenTitle.PIN, { title: `${t<string>('ENTER_PIN_TO_DELETE')}`, callback: deleteTheWallet });
+    }
+  };
+
+  const ResetReducers = async () => {
+    try {
+      await deleteThisWallet(hdWalletContext, activityContext, portfolioContext);
+      analytics().logEvent('delete_wallet');
+    } catch (error) {
+      Sentry.captureException(error);
+    }
+  };
 
   return (
         <CyDModalLayout isModalVisible={isModalVisible} style={styles.modalLayout} animationIn={'slideInUp'} animationOut={'slideOutDown'}
@@ -72,39 +128,23 @@ export default function RemoveWalletModal (props) {
                                             vC={Colors.appColor} mB={20}
                                             text={t('COPY')} isBorder={false} onPress={() => {
                                               onPress();
-                                              onPressSeed();
+                                              setTimeout(() => {
+                                                onPressSeed();
+                                              }, MODAL_CLOSING_TIMEOUT);
                                             }}/>
                     }
 
                     {importNewWallet && <ButtonWithOutImage sentry-label='remove-wallet-remove' disable={!selectAcc} mT={10} bG={Colors.appColor} vC={Colors.appColor}
                                                             text={t('IMPORT_ANOTHER_WALLET')} isBorder={false} onPress={() => {
                                                               onPress();
-                                                              removeWallet();
+                                                              setTimeout(() => {
+                                                                removeWallet();
+                                                              }, MODAL_CLOSING_TIMEOUT);
                                                             }} />
                     }
                     {deleteWallet && <ButtonWithOutImage sentry-label='delete-wallet' disable={!selectAcc} bG={selectAcc ? Colors.redColor : Colors.redOffColor} vC={Colors.redColor} mT={10}
                                                          text={t('DELETE_WALLET')} isBorder={false} fC={'white'} onPress={async () => {
-                                                           onPress();
-                                                           const config = {
-                                                             headers: { Authorization: `Bearer ${String(globalContext.globalState.token)}` },
-                                                             data: {
-                                                               cosmosAddress,
-                                                               osmosisAddress,
-                                                               junoAddress
-                                                             }
-                                                           };
-                                                           axios
-                                                             .delete(`${ARCH_HOST}/v1/configuration/device`, config)
-                                                             .catch((error) => {
-                                                               Sentry.captureException(error);
-                                                             });
-                                                           try {
-                                                             await deleteThisWallet(hdWalletContext, activityContext, portfolioContext);
-                                                             await AsyncStorage.clear();
-                                                             analytics().logEvent('delete_wallet');
-                                                           } catch (error) {
-                                                             Sentry.captureException(error);
-                                                           }
+                                                           onDeleteWallet();
                                                          }} />
                     }
 

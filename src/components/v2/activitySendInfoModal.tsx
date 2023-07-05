@@ -5,7 +5,7 @@ import { CyDImage, CyDText, CyDTouchView, CyDView } from '../../styles/tailwindS
 import AppImages from './../../../assets/images/appImages';
 import Button from './button';
 import moment from 'moment';
-import { getMaskedAddress, getExplorerUrl } from '../../core/util';
+import { getMaskedAddress, getExplorerUrl, copyToClipboard } from '../../core/util';
 import { useTranslation } from 'react-i18next';
 import { captureRef } from 'react-native-view-shot';
 import Share from 'react-native-share';
@@ -13,6 +13,7 @@ import { SHARE_TRANSACTION_TIMEOUT } from '../../core/Http';
 import clsx from 'clsx';
 import * as C from '../../constants';
 import { isAndroid } from '../../misc/checkers';
+import Toast from 'react-native-toast-message';
 
 export default function ActivitySendInfoModal ({
   isModalVisible,
@@ -26,7 +27,7 @@ export default function ActivitySendInfoModal ({
     datetime: Date
     amount: string
     symbol: string
-    chainLogo: number
+    chainLogo: string
     chainName: string
     transactionHash: string
     gasAmount: string
@@ -50,7 +51,7 @@ export default function ActivitySendInfoModal ({
 
     const shareImage = {
       title: t('SHARE_TITLE'),
-      message: params.transactionHash,
+      message: params?.transactionHash,
       subject: t('SHARE_TITLE'),
       url: `data:image/jpeg;base64,${url}`
     };
@@ -77,6 +78,11 @@ export default function ActivitySendInfoModal ({
     }, SHARE_TRANSACTION_TIMEOUT);
   }
 
+  const copyHash = (url: string) => {
+    copyToClipboard(url);
+    Toast.show(t('COPIED_TO_CLIPBOARD'));
+  };
+
   if (params !== null) {
     const { datetime, amount, symbol, toAddress, fromAddress, chainName, chainLogo, transactionHash, gasAmount = 'Not Available', tokenName, tokenLogo } = params;
     return (
@@ -98,7 +104,7 @@ export default function ActivitySendInfoModal ({
             />}
           </CyDTouchView>
           {(!isCapturingDetails) && <CyDView className='flex mt-[5%] justify-center items-center '>
-            <CyDText className='text-center font-nunito text-[20px] font-extrabold font-[##434343]'>{t<string>('SEND')}</CyDText>
+            <CyDText className='text-center font-nunito text-[20px] font-extrabold text-activityFontColor'>{t<string>('SEND')}</CyDText>
             <CyDText className='text-center font-nunito text-[12px] ml-[5px] font-extrabold text-successTextGreen'>{t<string>('SUCCESSFUL')}</CyDText>
           </CyDView>}
           {(isCapturingDetails) && <CyDImage
@@ -114,9 +120,9 @@ export default function ActivitySendInfoModal ({
                         source={{ uri: tokenLogo }}
                         className={'w-[25px] h-[25px]'}
                     />}
-                    {tokenName && <CyDText className='font-nunito text-[16px] ml-[10px] mt-[2px] font-bold font-[##434343]'>{tokenName.toUpperCase()}</CyDText>}
+                    {tokenName && <CyDText className='font-nunito text-[16px] ml-[10px] mt-[2px] font-bold text-activityFontColor'>{tokenName.toUpperCase()}</CyDText>}
                   </CyDView>
-                    {(isCapturingDetails) && <CyDText className='font-nunito text-[16px] mt-[2px] ml-[5px] font-bold font-[##434343] text-successTextGreen'>{t<string>('TRANSACTION_SUCCESS')}</CyDText>}
+                    {(isCapturingDetails) && <CyDText className='font-nunito text-[16px] mt-[2px] ml-[5px] font-bold  text-successTextGreen'>{t<string>('TRANSACTION_SUCCESS')}</CyDText>}
                 </CyDView>
                 <CyDView className={clsx('flex flex-row flex-wrap items-center ', { 'justify-start w-[100%] mt-[15px]': !isCapturingDetails, 'justify-center mt-[10px]': isCapturingDetails })}>
                     <CyDText className='font-nunito text-[12px]'>{t<string>('SENT_ON')}</CyDText>
@@ -129,35 +135,37 @@ export default function ActivitySendInfoModal ({
               </CyDView>
             </CyDView>
             <CyDView className={'flex flex-row mt-[10%] justify-start items-center pb-[12px] border-b-[1px] border-sepratorColor'}>
-              <CyDText className='font-nunito text-[16px] mt-[1px] w-[30%] font-[##434343]'>{t<string>('DATE')}</CyDText>
-              <CyDText className='font-nunito text-[14px] font-bold font-[##434343]'>{moment(datetime).format('MMM DD, h:mm a')}</CyDText>
+              <CyDText className='font-nunito text-[16px] mt-[1px] w-[30%] text-activityFontColor'>{t<string>('DATE')}</CyDText>
+              <CyDText className='font-nunito text-[14px] font-bold text-activityFontColor'>{moment(datetime).format('MMM DD, h:mm a')}</CyDText>
             </CyDView>
             <CyDView className='flex flex-row h-[60px] justify-start items-center border-b-[1px] border-sepratorColor'>
-              <CyDText className='font-nunito text-[16px] w-[30%] font-[##434343]'>{t<string>('VALUE')}</CyDText>
-              <CyDText className='font-nunito text-[14px] font-bold font-[##434343]'>{`${amount} ${symbol}`}</CyDText>
+              <CyDText className='font-nunito text-[16px] w-[30%] text-activityFontColor'>{t<string>('VALUE')}</CyDText>
+              <CyDText numberOfLines={1} className='w-[70%] font-nunito text-[14px] font-bold text-activityFontColor'>{`${amount} ${tokenName}`}</CyDText>
             </CyDView>
-            <CyDTouchView className='flex flex-row h-[60px] justify-start items-center border-b-[1px] border-sepratorColor'
-              onPress={() => {
+            <CyDView className='flex flex-row h-[60px] justify-start items-center border-b-[1px] border-sepratorColor'
+            >
+              <CyDText className='font-nunito text-[16px] w-[30%] text-activityFontColor'>{t<string>('HASH')}</CyDText>
+              <CyDText onPress={() => {
                 setModalVisible(false);
                 navigationRef.navigate(C.screenTitle.TRANS_DETAIL, {
                   url: getExplorerUrl(symbol, chainName, transactionHash)
                 });
-              }}
-            >
-              <CyDText className='font-nunito text-[16px] w-[30%] font-[##434343]'>{t<string>('HASH')}</CyDText>
-              <CyDText className='font-nunito text-[14px] font-bold font-[##434343]'>{getMaskedAddress(transactionHash)}</CyDText>
-            </CyDTouchView>
-            <CyDView className='flex flex-row h-[60px] justify-start items-center border-b-[1px] border-sepratorColor'>
-              <CyDText className='font-nunito text-[16px] w-[30%] font-[##434343]'>{t<string>('SENDER')}</CyDText>
-              <CyDText className='font-nunito text-[16px] font-bold font-[##434343]'>{getMaskedAddress(fromAddress)}</CyDText>
+              }} className='font-nunito text-[14px] w-[65%] text-blue-500 underline font-bold '>{getMaskedAddress(transactionHash)}</CyDText>
+              <CyDTouchView onPress={() => copyHash(String(getExplorerUrl(symbol, chainName, transactionHash)))}>
+                <CyDImage source={AppImages.COPY}/>
+              </CyDTouchView>
             </CyDView>
             <CyDView className='flex flex-row h-[60px] justify-start items-center border-b-[1px] border-sepratorColor'>
-              <CyDText className='font-nunito text-[16px] w-[30%] font-[##434343]'>{t<string>('RECEIVER')}</CyDText>
-              <CyDText className='font-nunito text-[16px] font-bold font-[##434343]'>{getMaskedAddress(toAddress)}</CyDText>
+              <CyDText className='font-nunito text-[16px] w-[30%] text-activityFontColor'>{t<string>('SENDER')}</CyDText>
+              <CyDText className='font-nunito text-[16px] font-bold text-activityFontColor'>{getMaskedAddress(fromAddress)}</CyDText>
+            </CyDView>
+            <CyDView className='flex flex-row h-[60px] justify-start items-center border-b-[1px] border-sepratorColor'>
+              <CyDText className='font-nunito text-[16px] w-[30%] text-activityFontColor'>{t<string>('RECEIVER')}</CyDText>
+              <CyDText className='font-nunito text-[16px] font-bold text-activityFontColor'>{getMaskedAddress(toAddress)}</CyDText>
             </CyDView>
             <CyDView className='flex flex-row h-[50px] justify-start items-center'>
-              <CyDText className='font-nunito text-[16px] mt-[1px] w-[30%] font-[##434343]'>{t<string>('GAS_FEE')}</CyDText>
-              <CyDText className='font-nunito text-[14px] font-bold mt-[3px] font-[##434343]'>{`${gasAmount} ${gasAmount === 'Not Available' ? '' : 'USD'}`}</CyDText>
+              <CyDText className='font-nunito text-[16px] mt-[1px] w-[30%] text-activityFontColor'>{t<string>('GAS_FEE')}</CyDText>
+              <CyDText className='font-nunito text-[14px] font-bold mt-[3px] text-activityFontColor'>{`${gasAmount} ${gasAmount === 'Not Available' ? '' : 'USD'}`}</CyDText>
             </CyDView>
             {(!isCapturingDetails) && <CyDView className='w-[100%] mt-[10%]'>
               <Button onPress={() => {

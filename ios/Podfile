@@ -31,6 +31,8 @@ target 'Cypherd' do
 
   pod 'react-native-appsflyer', :path => '../node_modules/react-native-appsflyer'
 
+  pod 'RNLocalize', :path => '../node_modules/react-native-localize'
+
   target 'CypherdTests' do
     inherit! :complete
     # Pods for testing

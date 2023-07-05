@@ -1,8 +1,18 @@
 export enum TokenFunctionality {
   STAKING = 'STAKING',
   TRANSACTIONS = 'TRANSACTIONS',
-  ABOUT = 'ABOUT'
+  ABOUT = 'ABOUT',
 }
+
+export enum AddressFunctionality {
+  MY_ADDRESS = 'MY ADDRESS',
+  CONTACTS = 'CONTACTS',
+}
+
+export const AddressFunctionalityList = [
+  AddressFunctionality.MY_ADDRESS,
+  AddressFunctionality.CONTACTS
+];
 
 export enum UserCommunicationChannels {
   EMAIL = 'email',
@@ -20,12 +30,13 @@ export enum CardApplicationStatus {
   KYC_SUCCESSFUL = 'kyc-successful',
   COMPLETION_PENDING = 'completion-pending',
   COMPLETED = 'completed',
+  SUBMITTED = 'submitted',
 }
 
 export enum Web3Origin {
   BROWSER = 'browser',
   WALLETCONNECT = 'walletconnect',
-  ONMETA = 'onmeta'
+  ONMETA = 'onmeta',
 }
 
 export enum KYCStatus {
@@ -45,12 +56,14 @@ export enum CardStatus {
 
 export enum OTPType {
   PHONE = 'phone',
-  EMAIL = 'email'
+  EMAIL = 'email',
 }
 
-export enum CardTypes {
+export enum CardProviders {
   SOLID = 'solid',
-  APTO = 'apto'
+  APTO = 'apto',
+  BRIDGE_CARD = 'bc',
+  PAYCADDY = 'pc',
 }
 
 export enum GlobalContextType {
@@ -63,12 +76,12 @@ export enum GlobalContextType {
 export enum TransactionFilterTypes {
   ALL = 'ALL_TRANSACTIONS',
   CREDIT = 'CREDIT',
-  DEBIT = 'DEBIT'
+  DEBIT = 'DEBIT',
 }
 
 export enum TransactionTypes {
-  CREDIT = 'credit',
-  DEBIT = 'debit'
+  CREDIT = 'CREDIT',
+  DEBIT = 'DEBIT',
 }
 
 export enum TransactionFilterByDateTypes {
@@ -86,13 +99,13 @@ export enum BottomSheetPositions {
 export enum PinPresentStates {
   NOTSET = 'notset',
   TRUE = 'true',
-  FALSE = 'false'
+  FALSE = 'false',
 }
 
 export enum IdTypes {
   SSN = 'ssn',
   PASSPORT = 'passport',
-  OTHER = 'otherId'
+  OTHER = 'otherId',
 }
 
 export enum OtherIdTypes {
@@ -105,17 +118,71 @@ export enum OtherIdTypes {
   DRIVING_LICENCE_LABEL = 'Driving License',
   TAX_ID_LABEL = 'Tax Id',
   NATIONAL_ID_LABEL = 'National Id',
-  OTHER_LABEL = 'Other'
+  OTHER_LABEL = 'Other',
 }
 
 export enum TokenOverviewTabs {
   OVERVIEW = 'OVERVIEW',
   TRANSACTIONS = 'TRANSACTIONS',
-  STAKING = 'STAKING'
+  STAKING = 'STAKING',
 }
 
 export enum TokenOverviewTabIndices {
   OVERVIEW = 0,
   TRANSACTIONS = 1,
-  STAKING = 2
+  STAKING = 2,
+}
+
+export enum RPCPreference {
+  DEFAULT = 'default',
+  OVERIDDEN = 'overridden',
+}
+
+export enum ButtonType {
+  PRIMARY = 'primary',
+  SECONDARY = 'secondary',
+  TERNARY = 'ternary',
+  GREY = 'grey',
+  RED = 'red',
+}
+
+export enum ImagePosition {
+  LEFT = 'LEFT',
+  RIGHT = 'RIGHT',
+}
+
+export enum RenderViewType {
+  LIST_VIEW = 'LIST_VIEW',
+  GRID_VIEW = 'GRID_VIEW',
+}
+
+export enum GlobalModalType {
+  STATE = 'state',
+  PROMPT_IMPORT_WALLET = 'promptImportWallet',
+  WALLET_CONNECT_V2_PAIRING = 'walletConnectV2Pairing',
+  WALLET_CONNECT_V2_SIGNING = 'walletConnectV2Signing',
+  WALLET_CONNECT_V2_TYPED_SIGNING = 'walletConnectV2TypedSigning',
+  WALLET_CONNECT_V2_TRANSACTION_SIGNING = 'walletConnectV2TransactionSigning',
+  WALLET_CONNECT_V2_COSMOS_SIGNING = 'walletConnectV2CosmosSigning',
+  CUSTOM_LAYOUT = 'customLayout',
+}
+
+export enum TokenModalType {
+  PORTFOLIO = 'portfolio',
+  SWAP = 'swap',
+}
+
+export enum SeedPhraseType {
+  TWELVE_WORDS = 'TWELVE_WORDS',
+  TWENTY_FOUR_WORDS = 'TWENTY_FOUR_WORDS',
+}
+
+export enum SignMessageValidationType {
+  VALID = 'VALID',
+  NEEDS_UPDATE = 'NEEDS_UPDATE',
+  INVALID = 'INVALID',
+}
+
+export enum MessageType {
+  ETH_SEND_TRANSACTION,
 }

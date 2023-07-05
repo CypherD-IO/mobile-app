@@ -16,7 +16,6 @@ import { useTranslation } from 'react-i18next';
 import { ActivityIndicator, BackHandler, Keyboard, Platform, View } from 'react-native';
 import { URL } from 'react-native-url-polyfill';
 import { WebView, WebViewMessageEvent } from 'react-native-webview';
-import { string } from 'yup';
 import AppImages from '../../../assets/images/appImages';
 import { ChooseChainModal, WHERE_BROWSER } from '../../components/ChooseChainModal';
 import MoreViewModal from '../../components/MoreViewModal';
@@ -34,6 +33,10 @@ import useWeb3 from '../../hooks/useWeb3';
 import { DynamicScrollView } from '../../styles/viewStyle';
 import { BrowserHistoryEntry, PageType, SearchHistoryEntry, WebsiteInfo } from '../../types/Browser';
 import { MODAL_SHOW_TIMEOUT } from '../../constants/timeOuts';
+import CryptoJS from 'crypto-js';
+import useAxios from '../../core/HttpRequest';
+import { screenTitle } from '../../constants/index';
+import { CyDText } from '../../styles/tailwindStyles';
 
 const {
   CText,
@@ -57,7 +60,7 @@ const webviewErrorCodesMapping: Record<string, { error: string, image: any }> = 
   '-1200': { error: BROWSER_ERROR.SSL, image: AppImages.BROWSER_SSL },
   '-1003': { error: BROWSER_ERROR.HOSTNAME, image: AppImages.BROWSER_404 },
   '-1009': { error: BROWSER_ERROR.INTERNET, image: AppImages.BROWSER_NOINTERNET },
-  '-1022': { error: BROWSER_ERROR.HOSTNAME, image: AppImages.BROWSER_404 },
+  '-1022': { error: BROWSER_ERROR.SSL, image: AppImages.BROWSER_SSL },
   default: { error: BROWSER_ERROR.OTHER, image: AppImages.BROWSER_404 }
 };
 
@@ -76,6 +79,7 @@ export default function Browser ({ route, navigation }: any) {
   const { t } = useTranslation();
   const hdWalletContext = useContext<any>(HdWalletContext);
   const [injectedCode, setInjectedCode] = useState('');
+  const { getWithAuth } = useAxios();
 
   const urlMappings: Record<string, string> = {
     home: '',
@@ -263,9 +267,26 @@ export default function Browser ({ route, navigation }: any) {
     }
   }, [hdWalletContext.state.selectedChain, isFocused]);
 
+  const injectWeb3FromCDN = async () => {
+    try {
+      const response = await axios.get(INJECTED_WEB3_CDN);
+      const hash = CryptoJS.SHA256(response.data);
+      const hashForInjectedWeb3 = hash.toString(CryptoJS.enc.Hex);
+      const resp = await getWithAuth('/v1/configuration/checksum/injectedWeb3');
+      if (!resp.isError) {
+        const { data } = resp;
+        const { hash: hashFromServerForInjectedWeb3 } = data;
+        if (hashForInjectedWeb3 === hashFromServerForInjectedWeb3) {
+          setInjectedCode(response.data);
+        }
+      }
+    } catch (e) {
+      Sentry.captureException(e);
+    }
+  };
+
   useEffect(() => {
-    axios.get(INJECTED_WEB3_CDN).then(r => setInjectedCode(r.data))
-      .catch(Sentry.captureException);
+    void injectWeb3FromCDN();
   }, []);
 
   const renderModalBody = (text: string) => {
@@ -283,7 +304,8 @@ export default function Browser ({ route, navigation }: any) {
 
     switch (type) {
       case CommunicationEvents.WEBINFO: {
-        const { host, title, origin, url } = jsonObj.webinfo;
+        const { host, title, origin } = jsonObj.webinfo;
+        const url = currentUrl;
         const info = { host, title, origin, url };
         if (info !== websiteInfo) {
           setWebsiteInfo(info);
@@ -354,7 +376,7 @@ export default function Browser ({ route, navigation }: any) {
   // https://amanhimself.dev/blog/handle-navigation-in-webviews-react-native/
   const handleBackButton = () => {
     if (!canGoBack) {
-      navigation.goBack();
+      navigation.navigate(screenTitle.PORTFOLIO_SCREEN);
     } else if (webviewRef.current) { webviewRef.current.goBack(); setIsSslSecure(true); setInbuiltPage('webview'); }
     return true;
   };
@@ -476,7 +498,8 @@ export default function Browser ({ route, navigation }: any) {
            bO={Platform.OS === 'android' ? 0.9 : 0.6} mL={onFocus ? 10 : 5} width={onFocus ? 80 : 63} bR={8} bGC={onFocus ? '#F5F7FF' : '#EDEDED'}
            aLIT={'center'} jC={'center'} fD={'row'} style={{ borderColor: onFocus ? '#222222' : '#FFFFFF' }}>
            {!onFocus && (inbuildPage === 'webview' || inbuildPage === 'webviewError') && <DynamicTouchView dynamic mL={2} sentry-label='browser-search-erase'>
-             <DynamicImage style={{ tintColor: isSslSecure ? '#32cd32' : '#c04000' }} dynamic dynamicWidthFix height={15} width={15} mL={5} resizemode='contain' source={AppImages.LOCK_BROWSER} />
+             {isSslSecure && <DynamicImage style={{ tintColor: '#32cd32' }} dynamic dynamicWidthFix height={15} width={15} mL={5} resizemode='contain' source={AppImages.LOCK_BROWSER } />}
+             {!isSslSecure && <DynamicImage dynamic dynamicWidthFix height={15} width={15} mL={5} resizemode='contain' source={AppImages.BROWSER_SSL} />}
            </DynamicTouchView>}
            {onFocus && <DynamicTouchView sentry-label='browser-search-erase'>
              <DynamicImage style={{ tintColor: 'black' }} dynamic dynamicWidthFix height={18} width={18} mL={0} resizemode='contain' source={AppImages.SEARCH_BROWSER} />
@@ -694,7 +717,7 @@ export default function Browser ({ route, navigation }: any) {
              </DynamicView>
 
              : <>
-               <CText dynamic dynamicWidth width={58} numberOfLines={1} fF={C.fontsName.FONT_BOLD} tA={'left'} mL={22} mT={10} fS={15} style={{ color: Colors.primaryTextColor }}>{'history'.toLocaleUpperCase()}</CText>
+              <CyDText className='font-nunito text-left ml-[22px] mt-[10px] text-[15px] text-primaryTextColor font-bold' >{'history'.toLocaleUpperCase()}</CyDText>
                {spliceHistoryByTime().map(historybt =>
                  (
                  <View key={historybt.dateString}>

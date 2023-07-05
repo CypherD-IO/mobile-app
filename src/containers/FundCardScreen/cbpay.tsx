@@ -1,14 +1,17 @@
 /* eslint-disable react-native/no-inline-styles */
 import { HdWalletContext } from '../../core/util';
-import React, { useContext, useEffect } from 'react';
+import React, { useContext, useEffect, useState } from 'react';
 import WebView from 'react-native-webview';
 import { ChainBackendNames } from '../../constants/server';
 import * as Sentry from '@sentry/react-native';
 import { useGlobalModalContext } from '../../components/v2/GlobalModal';
 import analytics from '@react-native-firebase/analytics';
+import useAxios from '../../core/HttpRequest';
+import { t } from 'i18next';
 
 import Loading from '../../components/v2/loading';
 import { CyDView } from '../../styles/tailwindStyles';
+import { MODAL_HIDE_TIMEOUT } from '../../core/Http';
 
 export type SupportedBlockchains =
   | 'avalanche-c-chain'
@@ -68,19 +71,21 @@ export const generateOnRampURL = ({
 
 // previous types and interfaces from https://github.com/coinbase/cbpay-js
 
-export default function CoinbasePay({ route }) {
+export default function CoinbasePay ({ route, navigation }) {
   const hdWallet = useContext<any>(HdWalletContext);
   const ethereum = hdWallet.state.wallet.ethereum;
   const cosmos = hdWallet.state.wallet.cosmos;
   const chain = route.params.url;
   const addr = chain === ChainBackendNames.COSMOS ? cosmos.wallets[cosmos.currentIndex].address : ethereum.address;
   const { showModal, hideModal } = useGlobalModalContext();
+  const [onRampURL, setOnRampURL] = useState<string>('');
+  const { getWithAuth } = useAxios();
 
   useEffect(() => {
     void analytics().logEvent('inside_coinbase_pay');
   }, []);
 
-  let blockchain;
+  let blockchain: string[];
   switch (chain) {
     case ChainBackendNames.AVALANCHE: {
       blockchain = ['avalanche-c-chain'];
@@ -109,25 +114,43 @@ export default function CoinbasePay({ route }) {
       break;
     }
   }
-  let onRampURL = 'https://pay.coinbase.com/?destinationWallets=[{"address":"0x3d063c72b5a5b5457cb02076d134c806eca63cff","blockchains":["avalanche-c-chain"],"assets":["USDC"]}]&appId=cd669187-fc12-4276-a667-4682b72b2436';
-  try {
-    onRampURL = generateOnRampURL({
-      appId: 'TODO: FILL',
-      destinationWallets: [
-        {
-          address: addr,
-          blockchains: blockchain
-        }
-      ]
-    });
-  } catch (e) {
-    showModal('state', { type: 'error', title: 'generateOnRampURL error', description: 'Contact Cypher support!', onSuccess: hideModal, onFailure: hideModal });
-    Sentry.captureException('coinbase_pay_generate_url_error');
+
+  function onModalHide (type = '') {
+    hideModal();
+    setTimeout(() => {
+      navigation.goBack();
+    }, MODAL_HIDE_TIMEOUT);
   }
+
+  const getCbCreds = async () => {
+    try {
+      const resp = await getWithAuth('/v1/authentication/creds/cb');
+      if (!resp.error) {
+        const { data } = resp;
+        const rampURL = generateOnRampURL({
+          host: data.host,
+          appId: data.appId,
+          destinationWallets: [
+            {
+              address: addr,
+              blockchains: blockchain
+            }
+          ]
+        });
+        setOnRampURL(rampURL);
+      }
+    } catch (e) {
+      showModal('state', { type: 'error', title: t('COINBASE_LINK_ERROR'), description: t('CONTACT_CYPHERD_SUPPORT'), onSuccess: onModalHide, onFailure: hideModal });
+      Sentry.captureException('coinbase_pay_generate_url_error');
+    }
+  };
+
+  void getCbCreds();
 
   return (
     <CyDView className={'h-full w-full'}>
-      <WebView
+      {onRampURL === '' && <Loading />}
+      {onRampURL !== '' && <WebView
         startInLoadingState={true}
         renderLoading={() => {
           return (<Loading></Loading>);
@@ -135,6 +158,6 @@ export default function CoinbasePay({ route }) {
         source={{ uri: onRampURL }}
         style={{ marginTop: 0 }}
         allowsBackForwardNavigationGestures
-      />
+      />}
     </CyDView>);
 };

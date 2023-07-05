@@ -37,11 +37,14 @@ const parseAllValidators = (validators: any, aprData: any): Map<string, IAllVali
 const parseUserDelegations = (validators: any, allValidators: Map<string, IAllValidators>): [Map<string, IAllValidators>, bigint] => {
   const data = validators.data.delegation_responses;
   let balance = BigInt(0);
-  const val: Map<string, IAllValidators> = new Map<string, IAllValidators>();
+  const val = new Map<string, IAllValidators>();
   data.forEach(item => {
-    if (allValidators.get(item.delegation.validator_address)) { val.set(item.delegation.validator_address, allValidators.get(item.delegation.validator_address)); }
-    if (val.get(item.delegation.validator_address).balance && item.balance.amount) {
-      val.get(item.delegation.validator_address).balance = BigInt(item.balance.amount);
+    const validatorAddressObject = allValidators.get(item.delegation.validator_address);
+    if (validatorAddressObject) { val.set(item.delegation.validator_address, validatorAddressObject); }
+    const newValidatorObject = val.get(item.delegation.validator_address);
+    if (newValidatorObject && item.balance.amount) {
+      newValidatorObject.balance = BigInt(item.balance.amount);
+      val.set(item.delegation.validator_address, newValidatorObject);
       balance += BigInt(item.balance.amount);
     }
   });
@@ -139,6 +142,7 @@ export const getCosmosStakingData = async (cosmosStakingDispatch: Dispatch<any>,
       reward: BigInt(totalReward),
       balance: BigInt(bal),
       allValidators: allVal,
+      allValidatorsListState: COSMOS_STAKING_NOT_EMPTY,
       userValidators: userVal,
       unBoundings: unbound,
       rewardList,

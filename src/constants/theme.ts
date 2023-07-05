@@ -10,10 +10,10 @@ export const Colors: Record<string, string> = {
   switchColor: '#E2E7FD',
   portfolioBorderColor: '#E5E5E5',
   addressBorderColor: '#F4F4F4',
-  sepratorColor: '#DBDBDB',
+  sepratorColor: '#F4F4F4',
   selectedTextColor: '#6451EF',
   chainColor: '#D4F2F1',
-  toastColor: '#58ADAB',
+  toastColor: '#6FCF97',
   red: '#FD1A1A',
   backLight: '#F7F7FF',
   pink: '#DB81AE',
@@ -42,5 +42,6 @@ export const Colors: Record<string, string> = {
   activityNegativeAmount: 'red',
   activityPositiveAmount: 'green',
   transparent: 'transparent',
-  secondaryBackgroundColor: '#F7F8FE'
+  secondaryBackgroundColor: '#F7F8FE',
+  placeHolderColor: '#C5C5C5'
 };

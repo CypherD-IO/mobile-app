@@ -9,7 +9,7 @@ import { useGlobalModalContext } from '../../components/v2/GlobalModal';
 import { screenTitle } from '../../constants';
 
 export default function PinValidation ({ route, navigation }) {
-  const { setPinAuthentication = (value) => {}, lockScreen = false } = route.params;
+  const { title = `${t<string>('ENTER_PIN')}`, setPinAuthentication = (value) => {}, lockScreen = false, callback } = route.params;
   const retryCount = 10;
   const [retries, setRetries] = useState(retryCount);
   const [wrongPin, setWrongPin] = useState(false); // state to show or hide the Wrong Pin text
@@ -20,7 +20,7 @@ export default function PinValidation ({ route, navigation }) {
     return (
       <>
         <CyDView>
-          <CyDText className={'text-[30px] font-extrabold text-center pt-[60px]'}>{t<string>('ENTER_PIN')}</CyDText>
+          <CyDText className={'text-[30px] font-extrabold text-center pt-[60px]'}>{title}</CyDText>
         </CyDView>
       </>
     );
@@ -36,6 +36,7 @@ export default function PinValidation ({ route, navigation }) {
       if (await isBiometricEnabled()) {
         await removePin(hdWallet, pin);
       }
+      callback?.();
       navigation.setParams(setPinAuthentication(true));
     } else {
       if (retries > 1) {

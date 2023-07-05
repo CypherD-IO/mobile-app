@@ -41,13 +41,15 @@ export default function TokenApprovals (props) {
     ETH: [],
     MATIC: [],
     AVAX: [],
-    BNB: []
+    BNB: [],
+    SHM: []
   });
   const [chainExposureBalanceUSD, setChainExposureBalanceUSD] = useState<any>({
     ETH: '0',
     MATIC: '0',
     AVAX: '0',
-    BNB: '0'
+    BNB: '0',
+    SHM: '0'
   });
   const hdWallet = useContext<any>(HdWalletContext);
   const portfolioState = useContext<any>(PortfolioContext);

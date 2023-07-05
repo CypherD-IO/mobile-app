@@ -212,6 +212,7 @@ export default function useWeb3 (origin: Web3Origin) {
         const { privateKey, publicKey, address: bech32Address } = wallet[chainName];
 
         const privateKeyInstance = new PrivKeySecp256k1(hexToUint(privateKey));
+
         const pubKey = hexToUint(publicKey);
 
         if (signer !== bech32Address) {
@@ -387,7 +388,6 @@ export default function useWeb3 (origin: Web3Origin) {
         const callbackData: any = {};
 
         const gasPriceDetail: GasPriceDetail = await getGasPriceFor(selectedChain, web3RPCEndpoint.current);
-
         if (gasPriceFinal) {
           if (gasPriceFinal.startsWith('0x')) {
             gasPriceDetail.gasPrice = parseFloat(Web3.utils.fromWei(Web3.utils.hexToNumberString(gasPriceFinal), 'Gwei'));
@@ -399,10 +399,7 @@ export default function useWeb3 (origin: Web3Origin) {
           gasPriceDetail.gasPrice = parseFloat(gasPriceDetail.gasPrice.toString());
         }
 
-        console.log('GasPrice Detail', JSON.stringify({ gasPriceDetail }, undefined, 4));
-
         const gasPriceInHex = Web3.utils.toHex(Web3.utils.toWei(gasPriceDetail.gasPrice.toFixed(9), 'Gwei'));
-
         const estimated = await web3RPCEndpoint.current.eth.estimateGas({
           to,
           data,
@@ -416,7 +413,6 @@ export default function useWeb3 (origin: Web3Origin) {
 
         const modalParams = await getPayloadParams(payload, gasPriceDetail, selectedChain, gas);
         const acknowledgement = origin !== Web3Origin.WALLETCONNECT ? await SendTransactionModalFunc(modalContext, modalParams) : true;
-
         if (!acknowledgement) {
           return userRejectedRequest();
         }
@@ -600,7 +596,13 @@ export default function useWeb3 (origin: Web3Origin) {
         if (!(personalSignData || ethSignData)) {
           return invalidParams();
         }
-        const messageToSign = method === Web3Method.PERSONAL_SIGN ? personalSignData : method === Web3Method.ETH_SIGN ? ethSignData : personalSignData;
+        let messageToSign = method === Web3Method.PERSONAL_SIGN ? personalSignData : method === Web3Method.ETH_SIGN ? ethSignData : personalSignData;
+
+        try {
+          messageToSign = Web3.utils.hexToUtf8(messageToSign);
+        } catch (e) {
+          Sentry.captureMessage('Nothing to bother. Just a mandatory catch block');
+        };
 
         let acknowledgement;
         try {

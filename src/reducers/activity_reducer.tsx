@@ -15,13 +15,18 @@ export enum ActivityType {
   SEND = 'send',
   BRIDGE = 'bridge',
   SWAP = 'swap',
+  CLAIM = 'claim',
   STAKE = 'stake',
+  UNSTAKE = 'unstake',
   CARD = 'card',
   IBC = 'ibc',
   BROWSER = 'browser',
   WALLETCONNECT = 'walletconnect',
   SARDINEPAY = 'sardinepay',
   ONMETA = 'onmeta',
+  TRACKWALLET = 'trackWallet',
+  BUY = 'buy',
+  SELL = 'sell'
 }
 
 export interface BrowserTransaction {
@@ -70,7 +75,7 @@ export interface SendTransactionActivity {
   reason?: string
 }
 
-export interface BridgeTransaction {
+export interface ExchangeTransaction {
   id: string
   status: ActivityStatus
   type: ActivityType
@@ -158,7 +163,7 @@ export interface IBCTransaction {
   reason?: string
 }
 
-export type ActivityAny = SendTransactionActivity | BridgeTransaction | DebitCardTransaction | IBCTransaction | BrowserTransaction | SardinePayTransaction | OnmetaTransaction;
+export type ActivityAny = SendTransactionActivity | ExchangeTransaction | DebitCardTransaction | IBCTransaction | BrowserTransaction | SardinePayTransaction | OnmetaTransaction;
 
 export interface ActivityState {
   activityObjects: [ActivityAny?]

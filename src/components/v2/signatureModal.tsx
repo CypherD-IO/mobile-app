@@ -7,7 +7,8 @@ export default function SignatureModal ({
   isModalVisible,
   setModalVisible,
   children,
-  onCancel
+  onCancel,
+  avoidKeyboard = false
 }) {
   return (
     <CyDModalLayout
@@ -21,6 +22,7 @@ export default function SignatureModal ({
       }}
       animationIn={'slideInUp'}
       animationOut={'slideOutDown'}
+      avoidKeyboard = {avoidKeyboard}
     >
       <CyDView className={'bg-white rounded-[20px]'}>
         <CyDTouchView

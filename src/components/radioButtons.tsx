@@ -18,18 +18,20 @@ export default function RadioButtons (props: any) {
   return (
     <CyDView className={containerStyle ?? 'justify-around mt-[10px] ml-[20px]'} >
       {radioButtonsData.map((data, index) => (
-        <CyDView key={index}
-          className='flex flex-row mb-[23px]'>
-          <CyDTouchView onPress={(e) => { onPressData(data); }}
+        <CyDTouchView key={index}
+          className='flex flex-row mb-[23px]'
+          onPress={(e) => { onPressData(data); }}
+          >
+          <CyDView
             className={'h-[22px] w-[22px] rounded-[11px] border-[1.5px] border-borderColor flex flex-row justify-center items-center'}>
             {current === data
               ? <CyDView
                 className={'h-[10px] w-[10px] rounded-[5px] bg-appColor'}>
               </CyDView>
               : null}
-          </CyDTouchView>
+          </CyDView>
           <CyDText className={'text-center ml-[10px] text-[16px] font-semibold'}>{data}</CyDText>
-        </CyDView>
+        </CyDTouchView>
       ))}
     </CyDView>
   );

@@ -660,6 +660,10 @@ function getChainLogo (chain) {
       return AppImages.USDC_EVMOS;
     case 'Cosmos':
       return AppImages.COSMOS;
+    case 'Shardeum':
+      return AppImages.SHARDEUM;
+    case 'Shardeum Sphinx':
+      return AppImages.SHARDEUM;
     default:
       return AppImages.AVALANCHE_NEW;
   }

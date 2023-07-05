@@ -1,3 +1,5 @@
+/* eslint-disable @typescript-eslint/restrict-template-expressions */
+/* eslint-disable @typescript-eslint/no-misused-promises */
 /**
  * @format
  * @flow
@@ -18,6 +20,11 @@ import Web3 from 'web3';
 import analytics from '@react-native-firebase/analytics';
 import * as Sentry from '@sentry/react-native';
 import { hostWorker } from '../../global';
+import Intercom from '@intercom/intercom-react-native';
+import RNExitApp from 'react-native-exit-app';
+import Dialog, { DialogFooter, DialogButton, DialogContent } from 'react-native-popup-dialog';
+import { CyDText } from '../../styles/tailwindStyles';
+import { sendFirebaseEvent } from '../utilities/analyticsUtility';
 const {
   SafeAreaView,
   DynamicView,
@@ -35,43 +42,53 @@ export default function LegalAgreementScreen (props) {
   const [calledAgreements, setCalledAgreements] = useState<boolean>(false);
   const [successPart, setSuccessPart] = useState<boolean>(false);
   const [kyc, setKyc] = useState<boolean>(false);
+  const [tamperedSignMessageModal, setTamperedSignMessageModal] = useState<boolean>(false);
 
   const ethereum = hdWallet.state.wallet.ethereum;
 
-  function personal_sign (messageToSign) {
-    const web3 = new Web3();
-    const verifyMessage = `${PORTFOLIO_HOST}/v1/card/mobile/verify_message?address=${ethereum.address}`;
-    const signature = web3.eth.accounts.sign(messageToSign, ethereum.privateKey);
-    axios.post(verifyMessage, {
-      address: ethereum.address,
-      signed_message: signature.signature
-    }).then(res => {
-      if (res.status === 200) {
-        if (res.data.user_has_card) {
-          hdWallet.dispatch({ type: 'CARD_REFRESH', value: { card: { id: res.data.card_id, token: res.data.token } } });
-        } else {
-          hdWallet.dispatch({ type: 'PRE_CARD_TOKEN', value: { pre_card_token: res.data.uuid } });
-        }
-      }
-    }).catch(error => {
-      // TODO (user feedback): Give feedback to user.
-      Sentry.captureException(error);
-    });
-  }
+  const isValidMessage = (messageToBeValidated: string): boolean => {
+    const messageToBeValidatedWith = /^Hi there from CypherD! Sign this message to prove you have access to this account and we'll log you in. This won't cost you any Ether. Unique ID no one can guess: [0-9a-f]{8}-[0-9a-f]{4}-[0-5][0-9a-f]{3}-[089ab][0-9a-f]{3}-[0-9a-f]{12}$/i;
+    return messageToBeValidatedWith.test(messageToBeValidated);
+  };
 
-  function verify_message () {
+  const personalSign = (messageToSign: string) => {
+    if (isValidMessage(messageToSign)) {
+      const web3 = new Web3();
+      const verifyMessage = `${PORTFOLIO_HOST}/v1/card/mobile/verify_message?address=${ethereum.address}`;
+      const signature = web3.eth.accounts.sign(messageToSign, ethereum.privateKey);
+      axios.post(verifyMessage, {
+        address: ethereum.address,
+        signed_message: signature.signature
+      }).then(res => {
+        if (res.status === 200) {
+          if (res.data.user_has_card) {
+            hdWallet.dispatch({ type: 'CARD_REFRESH', value: { card: { id: res.data.card_id, token: res.data.token } } });
+          } else {
+            hdWallet.dispatch({ type: 'PRE_CARD_TOKEN', value: { pre_card_token: res.data.uuid } });
+          }
+        }
+      }).catch(error => {
+      // TODO (user feedback): Give feedback to user.
+        Sentry.captureException(error);
+      });
+    } else {
+      setTamperedSignMessageModal(true);
+    }
+  };
+
+  const verifyMessage = () => {
     if (hdWallet.state.card !== undefined) {
       return;
     }
-    const sign_message = `${PORTFOLIO_HOST}/v1/card/mobile/sign_message?address=${ethereum.address}`;
-    axios.get(sign_message).then(res => {
-      const input_message = res.data.message;
-      personal_sign(input_message);
+    const signMessage = `${PORTFOLIO_HOST}/v1/card/mobile/sign_message?address=${ethereum.address}`;
+    axios.get(signMessage).then(res => {
+      const inputMessage = res.data.message;
+      personalSign(inputMessage);
     }).catch(error => {
       // TODO (user feedback): Give feedback to user.
       Sentry.captureException(error);
     });
-  }
+  };
 
   const acceptAgreements = () => {
     setErrorMessage('');
@@ -82,20 +99,20 @@ export default function LegalAgreementScreen (props) {
               address: ethereum.address
             },
             { headers: { uuid: hdWallet.state.pre_card_token }, timeout: 60000 }
-    ).then(function (response) {
-      if (response && response.data && response.status === 200) {
+    ).then(async (response) => {
+      if (response?.data && response.status === 200) {
         if (response.data.message === 'success') {
-          analytics().logEvent('card_issued', { from: ethereum.address });
+          await analytics().logEvent('card_issued', { from: ethereum.address });
           setSuccessPart(true);
         } else {
-          analytics().logEvent('card_kyc_error', { from: ethereum.address });
+          await analytics().logEvent('card_kyc_error', { from: ethereum.address });
           setKyc(true);
         }
       }
-    }).catch(function (error) {
+    }).catch(async (error) => {
       // TODO (user feedback): Give feedback to user.
       Sentry.captureException(error);
-      analytics().logEvent('card_agreement_error', { from: ethereum.address });
+      await analytics().logEvent('card_agreement_error', { from: ethereum.address });
       setCalledAgreements(false);
       setErrorMessage('Please accept again');
     });
@@ -155,6 +172,35 @@ export default function LegalAgreementScreen (props) {
   // NOTE: LIFE CYCLE METHOD 🍎🍎🍎🍎
   return (
         <SafeAreaView dynamic>
+          <Dialog
+            visible={tamperedSignMessageModal}
+                        footer={
+                          <DialogFooter>
+                            <DialogButton
+                              text={t('CLOSE')}
+                              onPress={() => {
+                                RNExitApp.exitApp();
+                              }}
+                            />
+                            <DialogButton
+                              text={t('CONTACT_TEXT')}
+                              onPress={async () => {
+                                await Intercom.displayMessenger();
+                                sendFirebaseEvent(hdWallet, 'support');
+                              }}
+                      />
+                    </DialogFooter>
+                  }
+                    width={0.8}>
+                    <DialogContent>
+                    <CyDText className={'font-bold text-[16px] text-primaryTextColor mt-[20px] text-center'}>
+                      {t<string>('SOMETHING_WENT_WRONG')}
+                    </CyDText>
+                    <CyDText className={'font-bold text-[13px] text-primaryTextColor mt-[20px] text-center'}>
+                      {t<string>('CONTACT_CYPHERD_SUPPORT')}
+                  </CyDText>
+                </DialogContent>
+            </Dialog>
             <DynamicView dynamic dynamicWidth dynamicHeight height={100} width={100} jC='flex-start' aLIT={'flex-start'}>
                 {!calledAgreements
                   ? <DynamicView dynamic dynamicWidth dynamicHeight height={80} width={100} pH={25} jC='flex-start' aLIT={'flex-start'}>
@@ -187,7 +233,7 @@ export default function LegalAgreementScreen (props) {
                         <ButtonWithOutImage sentry-label='card-confirm-legal' wT={100} bR={10} fE={C.fontsName.FONT_BOLD} hE={45} mT={25} bG={Colors.appColor}
                                 vC={Colors.appColor} text={t('NEXT')}
                                 onPress={() => {
-                                  verify_message();
+                                  verifyMessage();
                                   analytics().logEvent('card_approved_navigate', { from: ethereum.address });
                                   props.navigation.navigate(C.screenTitle.DEBIT_CARD_SCREEN);
                                 }

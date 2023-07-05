@@ -7,6 +7,9 @@ import { Colors } from '../constants/theme';
 import { ButtonWithOutImage } from '../containers/Auth/Share';
 import { DynamicTouchView } from '../styles/viewStyle';
 import { PayModalParams } from '../types/Browser';
+import { CyDView } from '../styles/tailwindStyles';
+import Button from './v2/button';
+import { ButtonType } from '../constants/enum';
 const {
   CText,
   SafeAreaView,
@@ -16,9 +19,9 @@ const {
 } = require('../styles');
 
 export default function BottomConfirm (props: {
-  isModalVisible: boolean,
-  onPayPress: () => void,
-  onCancelPress: () => void,
+  isModalVisible: boolean
+  onPayPress: () => void
+  onCancelPress: () => void
   modalParams: PayModalParams
 }) {
   const { isModalVisible, onPayPress, onCancelPress, modalParams } = props;
@@ -70,20 +73,26 @@ export default function BottomConfirm (props: {
                     <CText dynamic mH={10} fF={C.fontsName.FONT_BOLD} mT={16} fS={12} color={Colors.primaryTextColor}>${modalParams.totalDollar}</CText>
                     </DynamicView>
 
-                    <DynamicView dynamic fD={'row'} >
-                        <ButtonWithOutImage sentry-label='bottom-confirm-cancel-button'
-                            mT={20} wT={45} mH={12} bG={Colors.whiteColor} vC={Colors.appColor} mB={30}
-                            text={t('CANCEL')} isBorder={true} onPress={() => {
-                              onCancelPress();
-                            }}
-                        />
-                        <ButtonWithOutImage sentry-label='bottom-confirm-pay-button'
-                            mT={20} wT={45} bG={Colors.appColor} vC={Colors.appColor} mB={30}
-                            text={t('PAY')} isBorder={false} onPress={() => {
-                              onPayPress();
-                            }}
-                        />
-                    </DynamicView>
+                    <CyDView className='flex flex-row w-full justify-between items-center px-[20px]'>
+                      <Button
+                        title={t('CANCEL')}
+                        onPress={() => {
+                          onCancelPress();
+                        }}
+                        style='h-[55px] px-[45px]'
+                        type={ButtonType.SECONDARY}
+                       />
+
+                      <Button
+                        title={t('PAY')}
+                        onPress={() => {
+                          onPayPress();
+                        }}
+                        style='h-[55px] px-[55px]'
+                        isPrivateKeyDependent={true}
+                       />
+
+                    </CyDView>
 
                     <DynamicView dynamic bGC={Colors.switchColor} mT={10} bR={10}>
                     </DynamicView>

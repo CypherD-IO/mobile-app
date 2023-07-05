@@ -27,12 +27,11 @@ const renderSettingsData = (item: IManageWalletData, navigation: any, hdWalletCo
         }}
       >
         <CyDView className={'flex flex-row items-center'}>
-          <CyDView className={'flex items-center justify-center bg-[#FFDE59] h-[27px] w-[27px] rounded-[7px] mr-[14px]'}>
+          <CyDView className={'flex items-center justify-center h-[27px] w-[27px] rounded-[7px] mr-[14px]'}>
             <CyDImage source={item.logo} className={'w-[15px] h-[15px]'} resizeMode={'contain'} />
           </CyDView>
           <CyDText className={'font-semibold text-[16px] text-[#434343]'}>{item.title}</CyDText>
         </CyDView>
-        <CyDImage source={AppImages.OPTIONS_ARROW} className={'w-[11%] h-[15px]'} resizeMode={'contain'}/>
       </CyDTouchView>
       <CyDView className={'h-[01px] bg-portfolioBorderColor'}/>
     </CyDView>

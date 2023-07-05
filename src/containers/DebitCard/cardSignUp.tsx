@@ -18,7 +18,7 @@ import Loading from '../../components/v2/loading';
 import { GlobalContext } from '../../core/globalContext';
 import axios from '../../core/Http';
 import { useGlobalModalContext } from '../../components/v2/GlobalModal';
-import { getCardProfile } from '../../core/card';
+import { getWalletProfile } from '../../core/card';
 import { GlobalContextType, IdTypes, OtherIdTypes } from '../../constants/enum';
 import { hostWorker } from '../../global';
 import { countryMaster } from '../../../assets/datasets/countryMaster';
@@ -253,7 +253,7 @@ export default function CardSignupScreen ({ navigation, route }) {
     };
     try {
       await axios.post(createApplicationUrl, payload, config);
-      const data = await getCardProfile(globalContext.globalState.token);
+      const data = await getWalletProfile(globalContext.globalState.token);
       globalContext.globalDispatch({ type: GlobalContextType.CARD_PROFILE, cardProfile: data });
       setLoading(false);
     } catch (e) {

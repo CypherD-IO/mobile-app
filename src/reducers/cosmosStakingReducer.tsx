@@ -43,6 +43,7 @@ export interface CosmosStakingDef {
   reward: bigint
   balance: bigint
   allValidators: Map<string, IAllValidators>
+  allValidatorsListState: string
   userValidators: Map<string, IAllValidators>
   unBoundings: Map<string, IUnboundings>
   rewardList: IReward[]
@@ -50,11 +51,12 @@ export interface CosmosStakingDef {
 }
 
 export const cosmosStakingInitialState: CosmosStakingDef = {
-  status: COSMOS_STAKING_EMPTY,
+  status: COSMOS_STAKING_LOADING,
   stakedBalance: BigInt(0),
   reward: BigInt(0),
   balance: BigInt(0),
   allValidators: new Map<string, IAllValidators>(),
+  allValidatorsListState: COSMOS_STAKING_EMPTY,
   userValidators: new Map<string, IAllValidators>(),
   unBoundings: new Map<string, IUnboundings>(),
   rewardList: [],

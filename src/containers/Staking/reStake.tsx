@@ -33,6 +33,9 @@ import { ethers } from 'ethers';
 import { cosmosConfig } from '../../constants/cosmosConfig';
 import { SuccessTransaction } from '../../components/v2/StateModal';
 import { TokenOverviewTabIndices } from '../../constants/enum';
+import { GlobalContext } from '../../core/globalContext';
+import { RESET, STAKING_EMPTY } from '../../reducers/stakingReducer';
+import Loading from '../../components/v2/loading';
 
 const {
   CText,
@@ -48,7 +51,9 @@ export default function ReStake ({ route, navigation }) {
   const stakingValidators = useContext<any>(StakingContext);
   const hdWallet = useContext<any>(HdWalletContext);
   const portfolioState = useContext<any>(PortfolioContext);
+  const globalStateContext = useContext<any>(GlobalContext);
   const [isLoading, setIsLoading] = useState<boolean>(false);
+  const [loading, setLoading] = useState<boolean>(false);
   const [itemData, setItemData] = useState<any>({ description: { name: '' } });
   const [delegateModalVisible, setDelegateModalVisible] = useState<boolean>(false);
   const [finalDelegateGasFee, setFinalDelegateGasFee] = useState<number>(0);
@@ -59,8 +64,20 @@ export default function ReStake ({ route, navigation }) {
   const ethereum = hdWallet.state.wallet.ethereum;
   const gasPrice = 0.000000075;
 
+  const evmosUrls = globalStateContext.globalState.rpcEndpoints.EVMOS.otherUrls;
+  const ACCOUNT_DETAILS = evmosUrls.accountDetails.replace('address', evmos.wallets[evmos.currentIndex].address);
+  const SIMULATION_ENDPOINT = evmosUrls.simulate;
+  const TXN_ENDPOINT = evmosUrls.transact;
   function onTransModalHide () {
     hideModal();
+    setTimeout(() => {
+      // This is to refresh the staking page again on navigating back to Token overview staking page below to dissatisfy isStakingDispatched() condition there
+      stakingValidators.dispatchStaking({
+        value: {
+          allValidatorsListState: STAKING_EMPTY
+        }
+      });
+    }, MODAL_HIDE_TIMEOUT);
     setTimeout(() => {
       navigation.navigate(C.screenTitle.TOKEN_OVERVIEW, {
         tokenData,
@@ -140,13 +157,24 @@ export default function ReStake ({ route, navigation }) {
   const delegateFinalTxn = async () => {
     try {
       void analytics().logEvent('evmos_redelegation_started');
-      const txnResponse = await axios.post('https://lcd-evmos.keplr.app/cosmos/tx/v1beta1/txs', finalDelegateTxnData);
+      const txnResponse = await axios.post(TXN_ENDPOINT, finalDelegateTxnData);
 
       if (txnResponse.data.tx_response.raw_log === '[]') {
         setIsLoading(false);
         setDelegateModalVisible(false);
         void analytics().logEvent('evmos_redelgation_completed');
-        console.log('success');
+        setTimeout(() => {
+          portfolioState.dispatchPortfolio({
+            type: PORTFOLIO_REFRESH,
+            value: {
+              hdWallet,
+              portfolioState
+            }
+          });
+          stakingValidators.dispatchStaking({
+            type: RESET
+          });
+        }, 6000);
         setTimeout(() => {
           showModal('state', {
             type: t('TOAST_TYPE_SUCCESS'),
@@ -156,15 +184,6 @@ export default function ReStake ({ route, navigation }) {
             onFailure: hideModal
           });
         }, MODAL_HIDE_TIMEOUT_250);
-        setTimeout(() => {
-          portfolioState.dispatchPortfolio({
-            type: PORTFOLIO_REFRESH,
-            value: {
-              hdWallet,
-              portfolioState
-            }
-          });
-        }, 6000);
       } else {
         setIsLoading(false);
         setDelegateModalVisible(false);
@@ -186,16 +205,16 @@ export default function ReStake ({ route, navigation }) {
   };
 
   const onDelegate = async () => {
-    setIsLoading(true);
+    setLoading(true);
 
     try {
-      const accountDetailsResponse = await axios.get(`https://lcd-evmos.keplr.app/cosmos/auth/v1beta1/accounts/${evmos.wallets[evmos.currentIndex].address}`, {
+      const accountDetailsResponse = await axios.get(ACCOUNT_DETAILS, {
         timeout: 2000
       });
       const delegateBodyForSimulate = delegateTxnBody(accountDetailsResponse);
       void analytics().logEvent('evmos_redelegation_simulation');
 
-      const simulationResponse = await axios.post('https://lcd-evmos.keplr.app/cosmos/tx/v1beta1/simulate', delegateBodyForSimulate);
+      const simulationResponse = await axios.post(SIMULATION_ENDPOINT, delegateBodyForSimulate);
       const gasWanted = simulationResponse.data.gas_info.gas_used;
       const bodyForTransaction = delegateTxnBody(accountDetailsResponse,
         ethers.utils
@@ -203,10 +222,11 @@ export default function ReStake ({ route, navigation }) {
         Math.floor(gasWanted * 1.3).toString(), 'tnx');
       setFinalDelegateGasFee(parseInt(gasWanted) * gasPrice);
       setFinalDelegateTxnData(bodyForTransaction);
-      setIsLoading(false);
+      setLoading(false);
       setDelegateModalVisible(true);
     } catch (error: any) {
-      setIsLoading(false);
+      setLoading(false);
+      setItemData({ description: { name: '' } });
       Sentry.captureException(error);
       void analytics().logEvent('evmos_staking_error', { from: 'error while delegating in evmos staking/resTake.tsx' });
       showModal('state', { type: 'error', title: 'Transaction failed', description: error.message, onSuccess: hideModal, onFailure: hideModal });
@@ -214,7 +234,9 @@ export default function ReStake ({ route, navigation }) {
   };
 
   useEffect(() => {
-    if (itemData.description.name !== '') { void onDelegate(); }
+    if (itemData.description.name !== '') {
+      void onDelegate();
+    }
   }, [itemData]);
 
   useEffect(() => {
@@ -278,7 +300,7 @@ export default function ReStake ({ route, navigation }) {
         <>
         <CyDModalLayout setModalVisible={setDelegateModalVisible} isModalVisible={delegateModalVisible} style={styles.modalLayout} animationIn={'slideInUp'} animationOut={'slideOutDown'}>
           <CyDView className={'bg-white p-[25px] pb-[30px] rounded-[20px] relative'}>
-            <CyDTouchView onPress={() => { setDelegateModalVisible(false); }} className={'z-[50]'}>
+            <CyDTouchView onPress={() => { setDelegateModalVisible(false); setItemData({ description: { name: '' } }); }} className={'z-[50]'}>
               <CyDImage source={AppImages.CLOSE} className={' w-[22px] h-[22px] z-[50] absolute right-[0px] top-[-10px] '} />
             </CyDTouchView>
             <CyDText className={' mt-[10] font-bold text-[22px] text-center '}>{t('DELEGATE')}</CyDText>
@@ -290,7 +312,7 @@ export default function ReStake ({ route, navigation }) {
             </CyDView>
 
             <CyDView className={'flex flex-row mt-[20px]'}>
-              <CyDImage source={AppImages.GAS_FEES} className={'w-[16px] h-[16px] mt-[3px]'}/>
+              <CyDImage source={AppImages.GAS_FEES} className={'w-[16px] h-[16px] mt-[3px]'} resizeMode='contain'/>
               <CyDView className={' flex flex-row mt-[3px]'}>
                 <CyDText className={' font-medium text-[16px] ml-[10px] text-primaryTextColor'}>{t('GAS_FEE')}</CyDText>
                 <CyDText className={' font-bold ml-[5px] text-[18px] text-center text-secondaryTextColor'}>{finalDelegateGasFee.toFixed(6) + ' EVMOS'}</CyDText>
@@ -301,12 +323,14 @@ export default function ReStake ({ route, navigation }) {
               <Button onPress={ () => {
                 void delegateFinalTxn();
               }} title={t('APPROVE')} style={'py-[5%] min-h-[60px]'} loading={isLoading} loaderStyle={{ height: 30 }}/>
-              <Button onPress={() => { setDelegateModalVisible(false); }} title={t('REJECT')} type={'secondary'} style={'py-[5%] mt-[15px]'}/>
+              <Button onPress={() => { setDelegateModalVisible(false); setItemData({ description: { name: '' } }); }} title={t('REJECT')} type={'secondary'} style={'py-[5%] mt-[15px]'}/>
             </CyDView>
           </CyDView>
         </CyDModalLayout>
 
-            <DynamicView dynamic>
+        {loading && <Loading />}
+
+            {!loading && <DynamicView dynamic>
                 <FlatList
                     removeClippedSubviews
                     nestedScrollEnabled
@@ -317,7 +341,7 @@ export default function ReStake ({ route, navigation }) {
                     ListEmptyComponent={emptyView('empty')}
                     showsVerticalScrollIndicator={true}
                 />
-            </DynamicView>
+            </DynamicView>}
         </>
   );
 }

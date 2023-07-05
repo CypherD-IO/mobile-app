@@ -3,6 +3,7 @@ import { t } from 'i18next';
 import { CyDView, CyDText, CyDSafeAreaView } from '../../styles/tailwindStyles';
 import OtpInput from '../../components/v2/OTPInput';
 import { screenTitle } from '../../constants';
+import { BackHandler } from 'react-native';
 
 export default function SetPin ({ route, navigation }) {
   const { setPinAuthentication = (value) => {}, changePinValue = false } = route.params;
@@ -40,6 +41,18 @@ export default function SetPin ({ route, navigation }) {
       </CyDView>
     );
   };
+
+  const handleBackButton = () => {
+    navigation.goBack();
+    return true;
+  };
+
+  React.useEffect(() => {
+    BackHandler.addEventListener('hardwareBackPress', handleBackButton);
+    return () => {
+      BackHandler.removeEventListener('hardwareBackPress', handleBackButton);
+    };
+  }, []);
 
   return (
       <CyDSafeAreaView>

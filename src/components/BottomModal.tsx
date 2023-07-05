@@ -25,7 +25,7 @@ export default function BottomModal (props: any) {
             style={{ margin: 0 }}
         >
             <DynamicView dynamic dynamicWidth dynamicHeight width={100} height={100} jC={'flex-end'}>
-                <DynamicView dynamic dynamicWidth dynamicHeight width={100} height={40} bGC={'white'} style={{
+                <DynamicView dynamic dynamicWidth dynamicHeight width={100} height={50} bGC={'white'} style={{
                   borderTopLeftRadius: 25,
                   borderTopRightRadius: 25
                 }} >

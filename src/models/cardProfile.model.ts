@@ -9,6 +9,30 @@ export interface CardProfile {
     cardHolderId: string
     status: CardStatus
   }
+  bc?: {
+    personId?: string
+    applicationStatus: CardApplicationStatus
+    cards?: [
+      {
+        last4: string
+        type: string
+        cardId: string
+        status: CardStatus
+      }
+    ]
+  }
+  pc?: {
+    personId?: string
+    applicationStatus: CardApplicationStatus
+    cards?: [
+      {
+        last4: string
+        type: string
+        cardId: string
+        status: CardStatus
+      }
+    ]
+  }
   solid?: {
     applicationStatus: CardApplicationStatus
     cardStatus?: CardStatus

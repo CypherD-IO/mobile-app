@@ -33,21 +33,23 @@ import { MODAL_CLOSING_TIMEOUT } from '../../constants/timeOuts';
 import { SuccessTransaction } from '../../components/v2/StateModal';
 import CyDTokenAmount from '../../components/v2/tokenAmount';
 
-const ACCOUNT_DETAILS_INFO = 'https://lcd-evmos.keplr.app/auth/accounts/';
-const SIMULATION_ENDPOINT = 'https://lcd-evmos.keplr.app/cosmos/tx/v1beta1/simulate';
-const TRANSACTION_ENDPOINT = 'https://lcd-evmos.keplr.app/cosmos/tx/v1beta1/txs';
-
 export default function IBC ({ route, navigation }: { route: any, navigation: any}) {
   const { tokenData } = route.params;
   const { t } = useTranslation();
   const hdWallet = useContext<any>(HdWalletContext);
-  const globalStateContext = useContext<GlobalContextDef>(GlobalContext);
+  const globalStateContext = useContext<any>(GlobalContext);
   const cosmos = hdWallet.state.wallet.cosmos;
   const ethereum = hdWallet.state.wallet.ethereum;
   const osmosis = hdWallet.state.wallet.osmosis;
   const evmos = hdWallet.state.wallet.evmos;
   const juno = hdWallet.state.wallet.juno;
   const stargaze = hdWallet.state.wallet.stargaze;
+  const noble = hdWallet.state.wallet.noble;
+
+  const evmosUrls = globalStateContext.globalState.rpcEndpoints.EVMOS.otherUrls;
+  const ACCOUNT_DETAILS = evmosUrls.accountDetails.replace('address', evmos.wallets[evmos.currentIndex].address);
+  const SIMULATION_ENDPOINT = evmosUrls.simulate;
+  const TXN_ENDPOINT = evmosUrls.transact;
 
   const [chain, setChain] = useState<Chain>([]);
   const [chainData, setChainData] = useState<Chain[]>(IBC_CHAINS);
@@ -108,6 +110,8 @@ export default function IBC ({ route, navigation }: { route: any, navigation: an
         return juno.address;
       case ChainBackendNames.STARGAZE:
         return stargaze.address;
+      case ChainBackendNames.NOBLE:
+        return noble.address;
       default:
         return undefined;
     }
@@ -133,13 +137,13 @@ export default function IBC ({ route, navigation }: { route: any, navigation: an
       cosmosChainId: 'evmos_9001-2'
     };
 
-    const accountData = userAccountData.data.result.base_account;
+    const accountData = userAccountData.data.account.base_account;
 
     const sender = {
       accountAddress: senderEvmosAddress,
       sequence: accountData.sequence,
       accountNumber: accountData.account_number,
-      pubkey: accountData.public_key.value
+      pubkey: accountData.pub_key.key
     };
 
     const fee = {
@@ -224,7 +228,7 @@ export default function IBC ({ route, navigation }: { route: any, navigation: an
     const currentChain: IIBCData = cosmosConfig[tokenData.chainDetails.chainName];
     let isIbcReached = false;
 
-    if ([ChainBackendNames.COSMOS, ChainBackendNames.OSMOSIS, ChainBackendNames.JUNO, ChainBackendNames.STARGAZE].includes(tokenData.chainDetails.backendName)) {
+    if ([ChainBackendNames.COSMOS, ChainBackendNames.OSMOSIS, ChainBackendNames.JUNO, ChainBackendNames.STARGAZE, ChainBackendNames.NOBLE].includes(tokenData.chainDetails.backendName)) {
       try {
         setLoading(true);
         let wallet: OfflineDirectSigner | undefined;
@@ -364,7 +368,7 @@ export default function IBC ({ route, navigation }: { route: any, navigation: an
         const evmosAddress = evmos.wallets[evmos.currentIndex].address;
 
         const accountInfoResponse = await axios.get(
-          `${ACCOUNT_DETAILS_INFO}${evmosAddress}`,
+          ACCOUNT_DETAILS,
           {
             timeout: 2000
           }
@@ -407,7 +411,7 @@ export default function IBC ({ route, navigation }: { route: any, navigation: an
           isIbcReached = true;
 
           const resp: any = await axios.post(
-            TRANSACTION_ENDPOINT,
+            TXN_ENDPOINT,
             ibcTransferBody
           );
 
@@ -455,6 +459,22 @@ export default function IBC ({ route, navigation }: { route: any, navigation: an
         }, MODAL_HIDE_TIMEOUT);
       }
     }
+  };
+
+  const onIBCSubmit = () => {
+    showModal(t<string>('STATE_INIT_CAPS'), {
+      type: 'warning',
+      title: 'Warning',
+      description: t('IBC_WARNING'),
+      onSuccess: () => {
+        if (validateAmount(amount)) {
+          hideModal();
+          setTimeout(async () => await ibcTransfer('simulation'), MODAL_CLOSING_TIMEOUT);
+          setLoading(false);
+        }
+      },
+      onFailure: hideModal
+    });
   };
 
   return (
@@ -505,7 +525,7 @@ export default function IBC ({ route, navigation }: { route: any, navigation: an
         <CyDView className={'px-[40px]'}>
           <CyDText
             className={
-              'text-center font-nunito text-[24px] font-bold font-[##434343] mt-[20px]'
+              'text-center font-nunito text-[24px] font-bold   mt-[20px]'
             }
           >
             {'Transfer tokens '}
@@ -1032,52 +1052,15 @@ export default function IBC ({ route, navigation }: { route: any, navigation: an
         </CyDView>
       </CyDTouchView>
 
-      <CyDView className={'flex flex-row items-center justify-center'}>
-        <CyDTouchView
+      <CyDView className={'flex flex-row items-center justify-center my-[10px]'}>
+        <Button title={t('SUBMIT')} loading={loading} disabled={loading || parseFloat(amount) <= 0 || receiverAddress === '' || parseFloat(amount) > parseFloat(tokenData.actualBalance)}
           onPress={() => {
-            showModal(t<string>('STATE_INIT_CAPS'), {
-              type: 'warning',
-              title: 'Warning',
-              description: t('IBC_WARNING'),
-              onSuccess: () => {
-                if (validateAmount(amount)) {
-                  hideModal();
-                  setTimeout(async () => await ibcTransfer('simulation'), MODAL_CLOSING_TIMEOUT);
-                  setLoading(false);
-                }
-              },
-              onFailure: hideModal
-            });
+            onIBCSubmit();
             // setShowWarningModal(true);
           }}
-          disabled={loading || parseFloat(amount) <= 0 || receiverAddress === '' || parseFloat(amount) > parseFloat(tokenData.actualBalance)}
-          className={clsx(
-            'mt-[30px] rounded-[12px] flex items-center w-3/4 flex flex-row justify-center bg-[#FFDE59]',
-            {
-              'bg-[#dddddd]': parseFloat(amount) <= 0 || receiverAddress === '' || parseFloat(amount) > parseFloat(tokenData.actualBalance)
-            }
-          )}
-        >
-          {loading && (
-            <CyDView className={'mr-[16px]'}>
-              <LottieView
-                source={AppImages.LOADING_SPINNER}
-                autoPlay
-                loop
-                style={{ height: 60, aspectRatio: 200 / 5 }}
-              />
-            </CyDView>
-          )}
-          {!loading && (
-            <CyDText
-              className={
-                'font-nunito text-[15px] text-[#1F1F1F] font-extrabold my-[20px]'
-              }
-            >
-              {'Submit'}
-            </CyDText>
-          )}
-        </CyDTouchView>
+          isPrivateKeyDependent = {true}
+          style={'w-[90%] py-[18px]'}
+        />
       </CyDView>
     </CyDScrollView>
   );

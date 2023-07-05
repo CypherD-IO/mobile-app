@@ -7,7 +7,7 @@ import QRScanner from '../containers/Qrcode/QRScanner';
 import { Colors } from '../constants/theme';
 import * as C from '../constants';
 import CreateSeedPhrase from '../containers/OnBoarding/createSeedPhrase';
-import ConfirmSeedPhrase from '../containers/OnBoarding/confirmSeedPhrase';
+import TrackWallet from '../containers/OnBoarding/trackWallet';
 
 const Stack = createNativeStackNavigator();
 
@@ -57,29 +57,16 @@ function OnBoardingStack (props: any) {
             name={screenTitle.CREATE_SEED_PHRASE}
             component={CreateSeedPhrase}
             options={({ navigation, route }) => ({
-              headerTransparent: false,
-              headerShadowVisible: false,
-              title: 'Seed Phrase',
-              headerTitleAlign: 'center',
-              headerTitleStyle: {
-                fontFamily: C.fontsName.FONT_BLACK,
-                fontSize: 20
-              },
-              navigationOptions: {
-                tabBarVisible: false
-              },
-
-              headerTintColor: Colors.primaryTextColor,
-              headerBackTitleVisible: false
+              headerShown: false
             })}
           />
           <Stack.Screen
-            name={screenTitle.CONFIRM_SEED_PHRASE}
-            component={ConfirmSeedPhrase}
+            name={screenTitle.TRACK_WALLET_SCREEN}
+            component={TrackWallet}
             options={({ navigation, route }) => ({
               headerTransparent: false,
               headerShadowVisible: false,
-              title: 'Confirm Seed Phrase',
+              title: 'Track Any Wallet',
               headerTitleAlign: 'center',
               headerTitleStyle: {
                 fontFamily: C.fontsName.FONT_BLACK,

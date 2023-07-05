@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-misused-promises */
 /**
  * @format
  * @flow
@@ -6,7 +7,7 @@ import React, { useContext, useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import * as C from '../../constants/index';
 import { Colors } from '../../constants/theme';
-import { isValidEmailID, HdWalletContext } from '../../core/util';
+import { HdWalletContext } from '../../core/util';
 import Web3 from 'web3';
 import AppImages from '../../../assets/images/appImages';
 import { DynamicTouchView } from '../../styles/viewStyle';
@@ -16,11 +17,7 @@ import analytics from '@react-native-firebase/analytics';
 import axios, { MODAL_HIDE_TIMEOUT } from '../../core/Http';
 import { FlatList } from 'react-native';
 import * as Sentry from '@sentry/react-native';
-import { CyDImage, CyDText, CyDTextInput, CyDView, CyDScrollView, CyDTouchView } from '../../styles/tailwindStyles';
-import Button from '../../components/v2/button';
-import clsx from 'clsx';
-import { isAndroid } from '../../misc/checkers';
-import AsyncStorage from '@react-native-async-storage/async-storage';
+import { CyDText, CyDView, CyDTouchView } from '../../styles/tailwindStyles';
 import { useIsFocused } from '@react-navigation/native';
 import Loading from '../../components/v2/loading';
 import { screenTitle } from '../../constants/index';
@@ -29,6 +26,10 @@ import { GlobalContext } from '../../core/globalContext';
 import { CardProfile } from '../../models/cardProfile.model';
 import { hostWorker } from '../../global';
 import CardWailtList from './cardWaitList';
+import Intercom from '@intercom/intercom-react-native';
+import RNExitApp from 'react-native-exit-app';
+import Dialog, { DialogButton, DialogContent, DialogFooter } from 'react-native-popup-dialog';
+import { sendFirebaseEvent } from '../utilities/analyticsUtility';
 
 const {
   DynamicView,
@@ -39,7 +40,6 @@ const {
 export default function AptoCardScreen ({ navigation, route }) {
   // NOTE: DEFINE VARIABLE 🍎🍎🍎🍎🍎🍎
   const { params } = route;
-  const ARCH_HOST: string = hostWorker.getHost('ARCH_HOST');
   const PORTFOLIO_HOST: string = hostWorker.getHost('PORTFOLIO_HOST');
   const { t } = useTranslation();
   const isFocused = useIsFocused();
@@ -50,32 +50,44 @@ export default function AptoCardScreen ({ navigation, route }) {
   const globalContext = useContext<any>(GlobalContext);
   const cardProfile: CardProfile = globalContext.globalState.cardProfile;
   const { showModal, hideModal } = useGlobalModalContext();
+  const [tamperedSignMessageModal, setTamperedSignMessageModal] = useState<boolean>(false);
 
   const ethereum = hdWallet.state.wallet.ethereum;
 
-  function personal_sign (messageToSign) {
-    const web3 = new Web3();
-    const verifyMessage = `${PORTFOLIO_HOST}/v1/card/mobile/verify_message?address=${ethereum.address}`;
-    const signature = web3.eth.accounts.sign(messageToSign, ethereum.privateKey);
-    axios.post(verifyMessage, {
-      address: ethereum.address,
-      signed_message: signature.signature
-    }).then(res => {
-      if (res.status === 200) {
-        if (res.data.user_has_card) {
-          hdWallet.dispatch({ type: 'CARD_REFRESH', value: { card: { id: res.data.card_id, token: res.data.token } } });
-          if (params?.toScreen === screenTitle.FUND_CARD_SCREEN) navigation.navigate(C.screenTitle.FUND_CARD_SCREEN);
-        } else {
-          setIsLoading(false);
-          hdWallet.dispatch({ type: 'PRE_CARD_TOKEN', value: { pre_card_token: res.data.uuid } });
+  const isValidMessage = (messageToBeValidated: string): boolean => {
+    const messageToBeValidatedWith = /^Hi there from CypherD! Sign this message to prove you have access to this account and we'll log you in. This won't cost you any Ether. Unique ID no one can guess: [0-9a-f]{8}-[0-9a-f]{4}-[0-5][0-9a-f]{3}-[089ab][0-9a-f]{3}-[0-9a-f]{12}$/i;
+    return messageToBeValidatedWith.test(messageToBeValidated);
+  };
+
+  const personalSign = (messageToSign: string) => {
+    if (isValidMessage(messageToSign)) {
+      const web3 = new Web3();
+      const verifyMessage = `${PORTFOLIO_HOST}/v1/card/mobile/verify_message?address=${ethereum.address}`;
+      const signature = web3.eth.accounts.sign(messageToSign, ethereum.privateKey);
+      axios.post(verifyMessage, {
+        address: ethereum.address,
+        signed_message: signature.signature
+      }).then(res => {
+        if (res.status === 200) {
+          if (res.data.user_has_card) {
+            hdWallet.dispatch({ type: 'CARD_REFRESH', value: { card: { id: res.data.card_id, token: res.data.token } } });
+            if (params?.toScreen === screenTitle.FUND_CARD_SCREEN) navigation.navigate(C.screenTitle.FUND_CARD_SCREEN);
+          } else {
+            setIsLoading(false);
+            hdWallet.dispatch({ type: 'PRE_CARD_TOKEN', value: { pre_card_token: res.data.uuid } });
+          }
         }
-      }
-    }).catch(error => {
+      }).catch(error => {
+        setIsLoading(false);
+        Sentry.captureException(error);
+        showModal('state', { type: 'error', title: t('TEMP_SYSTEM_ERROR'), description: t('UNABLE_TO_LOAD_CARD'), onSuccess: onModalHide, onFailure: onModalHide });
+      });
+    } else {
+      console.log('validation failed');
       setIsLoading(false);
-      Sentry.captureException(error);
-      showModal('state', { type: 'error', title: t('TEMP_SYSTEM_ERROR'), description: t('UNABLE_TO_LOAD_CARD'), onSuccess: onModalHide, onFailure: onModalHide });
-    });
-  }
+      setTamperedSignMessageModal(true);
+    }
+  };
 
   function onModalHide () {
     hideModal();
@@ -92,7 +104,7 @@ export default function AptoCardScreen ({ navigation, route }) {
     const sign_message = `${PORTFOLIO_HOST}/v1/card/mobile/sign_message?address=${ethereum.address}`;
     axios.get(sign_message).then(res => {
       const input_message = res.data.message;
-      personal_sign(input_message);
+      personalSign(input_message);
     }).catch(error => {
       setIsLoading(false);
       Sentry.captureException(error);
@@ -116,9 +128,9 @@ export default function AptoCardScreen ({ navigation, route }) {
         headerShown: true,
         headerLeft: () => <></>,
         headerRight: () => {
-          return cardProfile?.solid
+          return (cardProfile?.bc ?? cardProfile?.pc)
             ? (
-                <CyDTouchView onPress={() => { navigation.navigate(screenTitle.SOLID_CARD_SCREEN); }}>
+                <CyDTouchView onPress={() => { navigation.navigate(screenTitle.DEBIT_CARD_SCREEN); }}>
                   <CyDText className={' underline text-blue-500  text-[12px] font-extrabold'}>
                     {t<string>('GO_TO_NEW_CARD') + ' ->'}
                   </CyDText>
@@ -190,6 +202,35 @@ export default function AptoCardScreen ({ navigation, route }) {
                 )
               : (
                     <CyDView className={'h-full bg-[#fbfbfb]'}>
+                      <Dialog
+                        visible={tamperedSignMessageModal}
+                        footer={
+                          <DialogFooter>
+                            <DialogButton
+                              text={t('CLOSE')}
+                              onPress={() => {
+                                RNExitApp.exitApp();
+                              }}
+                            />
+                            <DialogButton
+                              text={t('CONTACT_TEXT')}
+                              onPress={async () => {
+                                await Intercom.displayMessenger();
+                                sendFirebaseEvent(hdWallet, 'support');
+                              }}
+                            />
+                          </DialogFooter>
+                        }
+                        width={0.8}>
+                        <DialogContent>
+                          <CyDText className={'font-bold text-[16px] text-primaryTextColor mt-[20px] text-center'}>
+                            {t<string>('SOMETHING_WENT_WRONG')}
+                          </CyDText>
+                          <CyDText className={'font-bold text-[13px] text-primaryTextColor mt-[20px] text-center'}>
+                            {t<string>('CONTACT_CYPHERD_SUPPORT')}
+                          </CyDText>
+                        </DialogContent>
+                      </Dialog>
                         {hdWallet.state.card !== undefined
                           ? <DynamicView dynamic dynamicWidth dynamicHeight height={100} width={100} mT={5} jC='flex-start' pH={15} bGC={Colors.whiteColor}>
                                 <DynamicView dynamic dynamicWidth dynamicHeight height={33} width={100} jC='flex-start'>

@@ -1,17 +1,19 @@
 import React, { useContext, useEffect, useState } from 'react';
 import { CyDView, CyDText, CyDTouchView, CyDImage, CyDScrollView } from '../../styles/tailwindStyles';
-import { BackHandler } from 'react-native';
+import { BackHandler, NativeModules } from 'react-native';
 import { useTranslation } from 'react-i18next';
 import { copyToClipboard, HdWalletContext, _NO_CYPHERD_CREDENTIAL_AVAILABLE_ } from '../../core/util';
 import AppImages from '../../../assets/images/appImages';
-import Clipboard from '@react-native-clipboard/clipboard';
 import { QRCode } from 'react-native-custom-qr-codes';
 import { showToast } from '../../containers/utilities/toastUtility';
 import { sendFirebaseEvent } from '../../containers/utilities/analyticsUtility';
+import { isAndroid } from '../../misc/checkers';
+import { useIsFocused } from '@react-navigation/native';
+import { loadRecoveryPhraseFromKeyChain } from '../../core/Keychain';
 
 const renderSeedPhrase = (text: string, index: number) => {
   return (
-    <CyDView className={'flex flex-row items-center h-[50] w-[31%] border-[1px] border-[#CCCCCC] rounded-[3px] px-[10px] mt-[10px]'}>
+    <CyDView key={index} className={'flex flex-row items-center h-[50] w-[31%] border-[1px] border-[#CCCCCC] rounded-[3px] px-[10px] mt-[10px]'}>
       <CyDText className={'text-[17px] text-center text-[#929292] font-nunito'}>{++index}</CyDText>
       <CyDText className={'text-[17px] text-center text-[#434343] font-nunito ml-[5px]'}>{text}</CyDText>
     </CyDView>
@@ -20,11 +22,12 @@ const renderSeedPhrase = (text: string, index: number) => {
 
 export default function SeedPhrase (props) {
   const { t } = useTranslation();
-  const { route } = props;
+  const isFocused = useIsFocused();
 
   const hdWalletContext = useContext<any>(HdWalletContext);
-  const [seedPhrase] = useState<string>(route.params.seedPhrase);
+  const [seedPhrase, setSeedPhrase] = useState<string>('');
   const [showSeedPhrase, setShowSeedPhrase] = useState<boolean>(false);
+  const [isFetchingSeedPhrase, setFetchingSeedPhrase] = useState<boolean>(true);
 
   const onPressSeedPharse = () => {
     copyToClipboard(seedPhrase);
@@ -42,15 +45,40 @@ export default function SeedPhrase (props) {
   };
 
   useEffect(() => {
+    if (seedPhrase !== '') setFetchingSeedPhrase(false);
+  }, [seedPhrase]);
+
+  const loadSeedPhraseInMemory = () => {
+    loadRecoveryPhraseFromKeyChain(false, hdWalletContext.state.pinValue).then((mnenmonic) => {
+      if (mnenmonic && mnenmonic !== _NO_CYPHERD_CREDENTIAL_AVAILABLE_) {
+        setSeedPhrase(mnenmonic);
+      } else {
+        showToast(t('SEED_PHARSE_FETCH_FAILED'));
+        props.navigation.goBack();
+      }
+    }).catch(_err => {
+      showToast(t('SEED_PHARSE_FETCH_FAILED'));
+      props.navigation.goBack();
+    });
+  };
+
+  useEffect(() => {
     BackHandler.addEventListener('hardwareBackPress', handleBackButton);
+    if (isFocused) {
+      loadSeedPhraseInMemory();
+      if (isAndroid()) NativeModules.PreventScreenshotModule.forbid();
+    } else {
+      if (isAndroid()) NativeModules.PreventScreenshotModule.allow();
+    }
     return () => {
+      if (isAndroid()) NativeModules.PreventScreenshotModule.allow();
       BackHandler.removeEventListener('hardwareBackPress', handleBackButton);
     };
-  }, []);
+  }, [isFocused]);
 
   // NOTE: LIFE CYCLE METHOD 🍎🍎🍎🍎
   return (
-    <CyDScrollView className={'bg-white h-full w-full relative '}>
+    !isFetchingSeedPhrase && <CyDScrollView className={'bg-white h-full w-full relative '}>
       <CyDView className={'flex justify-center items-center'}>
         <CyDView className={'bg-[#F8F8F8] rounded-[18px] mt-[20px] mx-[20px] px-[20px] py-[15px]'}>
           <CyDText className={'text-[15px] text-center text-[#434343] font-nunito'}>{t('SEED_PHRASE_SUBTITLE')}</CyDText>

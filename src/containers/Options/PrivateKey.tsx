@@ -9,10 +9,12 @@ import AppImages from '../../../assets/images/appImages';
 import { HdWalletContext, PortfolioContext } from '../../core/util';
 import { showToast } from '../../containers/utilities/toastUtility';
 import Clipboard from '@react-native-clipboard/clipboard';
-import { BackHandler } from 'react-native';
+import { BackHandler, NativeModules } from 'react-native';
 import { QRCode } from 'react-native-custom-qr-codes';
 import { CHAIN_COSMOS, CHAIN_ETH, CHAIN_EVMOS, CHAIN_OSMOSIS, CHAIN_JUNO, FundWalletAddressType } from '../../constants/server';
 import ChooseChainModal from '../../components/v2/chooseChainModal';
+import { useIsFocused } from '@react-navigation/native';
+import { isAndroid } from '../../misc/checkers';
 
 function copyToClipboard (text: string) {
   Clipboard.setString(text);
@@ -29,6 +31,7 @@ export interface UserChain {
 
 export default function PrivateKey (props) {
   const { t } = useTranslation();
+  const isFocused = useIsFocused();
   const hdWalletContext = useContext<any>(HdWalletContext);
   const portfolioState = useContext<any>(PortfolioContext);
   const [showChainModal, setShowChainModal] = useState<boolean>(false);
@@ -69,22 +72,28 @@ export default function PrivateKey (props) {
   };
 
   useEffect(() => {
-    const walletAddressType = portfolioState.statePortfolio.selectedChain.backendName;
-    if (walletAddressType === FundWalletAddressType.EVMOS) {
-      setSelectedChain(data[1]);
-    } else if (walletAddressType === FundWalletAddressType.COSMOS) {
-      setSelectedChain(data[2]);
-    } else if (walletAddressType === FundWalletAddressType.OSMOSIS) {
-      setSelectedChain(data[3]);
-    } else if (walletAddressType === FundWalletAddressType.JUNO) {
-      setSelectedChain(data[4]);
+    if (isFocused) {
+      if (isAndroid()) NativeModules.PreventScreenshotModule.forbid();
+      const walletAddressType = portfolioState.statePortfolio.selectedChain.backendName;
+      if (walletAddressType === FundWalletAddressType.EVMOS) {
+        setSelectedChain(data[1]);
+      } else if (walletAddressType === FundWalletAddressType.COSMOS) {
+        setSelectedChain(data[2]);
+      } else if (walletAddressType === FundWalletAddressType.OSMOSIS) {
+        setSelectedChain(data[3]);
+      } else if (walletAddressType === FundWalletAddressType.JUNO) {
+        setSelectedChain(data[4]);
+      }
+    } else {
+      if (isAndroid()) NativeModules.PreventScreenshotModule.allow();
     }
 
     BackHandler.addEventListener('hardwareBackPress', handleBackButton);
     return () => {
+      if (isAndroid()) NativeModules.PreventScreenshotModule.allow();
       BackHandler.removeEventListener('hardwareBackPress', handleBackButton);
     };
-  }, []);
+  }, [isFocused]);
 
   // NOTE: LIFE CYCLE METHOD 🍎🍎🍎🍎
   return (

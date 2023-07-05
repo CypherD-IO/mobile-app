@@ -1,6 +1,6 @@
 import React, { useContext, useEffect, useState } from 'react';
 import { CyDView, CyDText, CyDImage, CyDTouchView, CyDScrollView } from '../../styles/tailwindStyles';
-import { Switch } from 'react-native';
+import { BackHandler, Switch } from 'react-native';
 import { getIBC, setIBC } from '../../core/asyncStorage';
 import { GlobalContext } from '../../core/globalContext';
 import { GlobalContextType } from '../../constants/enum';
@@ -19,6 +19,18 @@ export default function AdvancedSettings ({ navigation }) {
   const [IBCStatus, setIBCStatus] = useState<boolean>(false);
   const globalContext = useContext<any>(GlobalContext);
   const { t } = useTranslation();
+
+  const handleBackButton = () => {
+    navigation.goBack();
+    return true;
+  };
+
+  React.useEffect(() => {
+    BackHandler.addEventListener('hardwareBackPress', handleBackButton);
+    return () => {
+      BackHandler.removeEventListener('hardwareBackPress', handleBackButton);
+    };
+  }, []);
 
   useEffect(() => {
     const getData = async () => {
@@ -51,7 +63,6 @@ export default function AdvancedSettings ({ navigation }) {
           <CyDText className={'font-bold text-[18px]'}>{t<string>('HOSTS_AND_RPC_INIT_CAPS')}</CyDText>
           <CyDText className={'font-medium text-subTextColor w-9/12'} numberOfLines={3}>Get a glimpse of the nodes being used</CyDText>
         </CyDView>
-        <CyDImage source={AppImages.OPTIONS_ARROW} className={'w-[11%] h-[15px]'} resizeMode={'contain'} />
       </CyDTouchView>
     </CyDScrollView>
   );

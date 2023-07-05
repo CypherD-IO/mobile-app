@@ -35,6 +35,7 @@ const WALLET_CO = require('./wallet_co.png');
 const PORTFOLIO_BG = require('./portfolioBg.png');
 const PORTFOLIO_BLUE_BG = require('./portfolioBlueBg.png');
 const POLYGON = require('./polygon.png');
+const SHARDEUM = require('./shardeum.png');
 const BIANCE = require('./binace.png');
 const AVALANCHE = require('./avalanche.png');
 const FANTOM = require('./fantom.png');
@@ -91,6 +92,7 @@ const GIFT_BOX = require('./giftBox.json');
 const STARS_LEFT = require('./stars_left.png');
 const STARS_RIGHT = require('./star_right.png');
 const INSIGHT_BULB = require('./bulb.json');
+const BULB = require('./bulb.png');
 const COINS = require('./coins.png');
 const NEW = require('./new.json');
 const GAS_STATION = require('./gasStation.png');
@@ -116,7 +118,7 @@ const BOOKMARK_BROWSER = require('./bookmark_browser.png');
 const BOOKMARK_FILLED = require('./bookmark_filled.png');
 const SEARCH_BROWSER = require('./search_browser.png');
 const IBC = require('./ibc.png');
-const SEND = require('./send.png');
+const SEND = require('./transactions_send.png');
 const RECEIVE = require('./receive.png');
 const ADDRESSES = require('./addresses.png');
 const QR_LOGO = require('./qr_logo.png');
@@ -150,7 +152,9 @@ const NO_ACTIVITIES = require('./no_activites.png');
 const JUNO_PNG = require('./juno.png');
 const JUNO_LOGO = require('./juno.png');
 const STARGAZE_LOGO = require('./stars.png');
+const NOBLE_LOGO = require('./noble.png');
 const BRIDGE_SHORTCUT = require('./shortcutsBridge.png');
+const SWAP_SHORTCUT = require('./shortcutsSwap.png');
 const SEND_SHORTCUT = require('./shortcutsSend.png');
 const RECEIVE_SHORTCUT = require('./shortcutsReceive.png');
 const FUND_CARD_SHORTCUT = require('./shortcutsFundCard.png');
@@ -185,8 +189,8 @@ const ON_BOARDING_1 = require('./onBoarding1.png');
 const ON_BOARDING_2 = require('./onBoarding2.png');
 const ON_BOARDING_3 = require('./onBoarding3.png');
 const LOADER_TRANSPARENT = require('./loader_transparent.json');
-const CROSS_PINK = require('./crossPink.png');
-const DEPOSIT = require('./deposit.png');
+const CROSS_PINK = require('./transactions_crossPink.png');
+const DEPOSIT = require('./transactions_deposit.png');
 const PRIVATE_KEY = require('./private_key.png');
 const ADVANCED_SETTINGS = require('./advanced_settings.png');
 const BROWSER_404 = require('./browser404.png');
@@ -198,13 +202,16 @@ const CYPHER_INFO = require('./cypher-info.png');
 const CYPHER_SUCCESS = require('./cypher-success.png');
 const CYPHER_ERROR = require('./cypher-error.png');
 const MONEY_BAG = require('./money-bag.png');
-const GAS_FEES = require('./gas_fees.png');
+const CYPHER_WARNING_RED = require('./CypherWarningRed.png');
+const GAS_FEES = require('./gasFees2.png');
 const INFO_CIRCLE = require('./infoCircle.png');
 const RECOMMEND = require('./recommend.png');
 const CYPHER_ENJOYING = require('./cypher-enjoying.png');
 const CYPHER_LOVE = require('./cypher-love.png');
 const REFER = require('./refer.png');
 const SHARE = require('./share.png');
+const COPY_RECEIVE = require('./receive_copy.png');
+const SHARE_RECEIVE = require('./receive_share.png');
 const REFER_OUTLINE = require('./refer-outline.png');
 const TOGGLE_ICON = require('./toggle_icon.png');
 const COMMISSION_PNG = require('./commission.png');
@@ -222,6 +229,7 @@ const SETUP_PIN = require('./setupPin.png');
 const WIDE_UP_ARROW = require('./wide_up_arrow.png');
 const WIDE_DOWN_ARROW = require('./wide_down_arrow.png');
 const STARGAZE_PNG = require('./stargaze.png');
+const NOBLE_PNG = require('./noble.png');
 const APR_ICON = require('./apr.png');
 const PAYMENT_DETAILS = require('./payment-details.png');
 const MERCHANT_DETAILS = require('./merchant-details.png');
@@ -230,9 +238,46 @@ const CYPHER_SHOW = require('./cypher-show.png');
 const CYPHER_HIDE = require('./cypher-hide.png');
 const VERIFIED_ICON = require('./verifiedIcon.png');
 const BAR_GRAPH_ICON = require('./barGraphIcon.png');
+const CIRCULAR_ARROWS_ICON = require('./circularArrows.png');
+const MARKET_CAP_ICON = require('./marketCap.png');
+const METER_MAX_ICON = require('./meterMax.png');
+const TOTAL_SUPPLY_ICON = require('./totalSupply.png');
 const STAKING_EMPTY_ILLUSTRATION = require('./stakingEmptyIllustration.png');
 const TREND_UP = require('./trend-up.png');
 const TREND_DOWN = require('./trend-down.png');
+const CYPHER_LOCK = require('./lock_secure.png');
+const QR_CODE_SCANNER = require('./QRCodeScanner.png');
+const QR_CODE_SCANNER_BLACK = require('./QRCodeScannerBlack.png');
+const CELEBRATE = require('./celebrate.png');
+const LOCK_SHORTCUT = require('./shortcutsLock.png');
+const CYPHER_LOCKED = require('./cypherLock.png');
+const READ_ONLY_CARD_BACKGROUND = require('./readOnlyCardBackground.png');
+const TRACK = require('./track.png');
+const BLURRED_ADDRESS = require('./blurredAddress.png');
+const INFO_ICON = require('./infoIcon.png');
+const NFT_EMPTY_ILLUSTATION = require('./emptyNFTIllustration.png');
+const DETAILS_ICON = require('./detailsIcon.png');
+const DESCRIPTION_ICON = require('./descriptionicon.png');
+const EXPAND_ICON = require('./expand.png');
+const LIST_ICON = require('./listIcon.png');
+const GRID_ICON = require('./gridIcon.png');
+const DEFAULT_NFT = require('./defaultNftImage.png');
+const COPY_DARK = require('./copyDark.png');
+const CREATE_CONTACT = require('./createContact.png');
+const ADD_TO_EXISTING = require('./addToExisting.png');
+const ADDRESS_PROFILE_1 = require('./addressProfile1.png');
+const ADDRESS_PROFILE_2 = require('./addressProfile2.png');
+const ADDRESS_PROFILE_3 = require('./addressProfile3.png');
+const ADDRESS_PROFILE_4 = require('./addressProfile4.png');
+const EDIT = require('./edit.png');
+const SHARE_WHITE_BG = require('./share_white_bg.png');
+const RADIO_BUTTON_SELECTED = require('./radio_button_selected.png');
+const RADIO_BUTTON_UNSELECTED = require('./radio_button_unselected.png');
+const ADDRESS_BOOK_ICON = require('./address_book_icon.png');
+const UNLOCK_FROM_TRACKWALLET = require('./unlockFromTrackWallet.png');
+const TRANSFI_LOGO = require('./transfiLogo.png');
+const BROWSER_REDIRECT = require('./browserRedirect.png');
+const EMPTY_WALLET_CONNECT_SESSIONS = require('./emptyWalletConnectSessions.png');
 
 const AppImages: any = {
   PLUS,
@@ -276,6 +321,7 @@ const AppImages: any = {
   PORTFOLIO_BLUE_BG,
   CORRECT,
   POLYGON,
+  SHARDEUM,
   BIANCE,
   AVALANCHE,
   FANTOM,
@@ -379,6 +425,7 @@ const AppImages: any = {
   WALLETCONNECT_PENDING,
   WALLETCONNECT_FAILED,
   BRIDGE_SHORTCUT,
+  SWAP_SHORTCUT,
   SEND_SHORTCUT,
   RECEIVE_SHORTCUT,
   FUND_CARD_SHORTCUT,
@@ -394,6 +441,7 @@ const AppImages: any = {
   JUNO_PNG,
   JUNO_LOGO,
   STARGAZE_LOGO,
+  NOBLE_LOGO,
   BROWSERACTIVITY_SUCCESS,
   BROWSERACTIVITY_PENDING,
   BROWSERACTIVITY_ERROR,
@@ -458,6 +506,7 @@ const AppImages: any = {
   WIDE_UP_ARROW,
   WIDE_DOWN_ARROW,
   STARGAZE_PNG,
+  NOBLE_PNG,
   APR_ICON,
   PAYMENT_DETAILS,
   MERCHANT_DETAILS,
@@ -466,8 +515,49 @@ const AppImages: any = {
   CYPHER_HIDE,
   VERIFIED_ICON,
   BAR_GRAPH_ICON,
+  CIRCULAR_ARROWS_ICON,
+  MARKET_CAP_ICON,
+  METER_MAX_ICON,
+  TOTAL_SUPPLY_ICON,
   STAKING_EMPTY_ILLUSTRATION,
   TREND_UP,
-  TREND_DOWN
+  TREND_DOWN,
+  CYPHER_LOCK,
+  QR_CODE_SCANNER,
+  QR_CODE_SCANNER_BLACK,
+  CELEBRATE,
+  LOCK_SHORTCUT,
+  CYPHER_LOCKED,
+  READ_ONLY_CARD_BACKGROUND,
+  TRACK,
+  BLURRED_ADDRESS,
+  INFO_ICON,
+  NFT_EMPTY_ILLUSTATION,
+  DETAILS_ICON,
+  DESCRIPTION_ICON,
+  EXPAND_ICON,
+  LIST_ICON,
+  GRID_ICON,
+  DEFAULT_NFT,
+  COPY_DARK,
+  CREATE_CONTACT,
+  ADD_TO_EXISTING,
+  ADDRESS_PROFILE_1,
+  ADDRESS_PROFILE_2,
+  ADDRESS_PROFILE_3,
+  ADDRESS_PROFILE_4,
+  EDIT,
+  SHARE_WHITE_BG,
+  RADIO_BUTTON_SELECTED,
+  RADIO_BUTTON_UNSELECTED,
+  ADDRESS_BOOK_ICON,
+  UNLOCK_FROM_TRACKWALLET,
+  TRANSFI_LOGO,
+  COPY_RECEIVE,
+  SHARE_RECEIVE,
+  CYPHER_WARNING_RED,
+  BROWSER_REDIRECT,
+  BULB,
+  EMPTY_WALLET_CONNECT_SESSIONS
 };
 export default AppImages;

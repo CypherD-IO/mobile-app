@@ -1,4 +1,4 @@
-import React, { useContext, useEffect, useMemo, useState } from 'react';
+import React, { useContext, useEffect, useMemo, useState, useLayoutEffect } from 'react';
 import { CyDText, CyDView, CyDImage, CyDFlatList, CyDTouchView, CyDTextInput } from '../../styles/tailwindStyles';
 import SwitchView from '../../components/SwitchView';
 import { useTranslation } from 'react-i18next';
@@ -60,30 +60,30 @@ export default function CosmosValidators ({ route, navigation }) {
   };
 
   const Item = ({ item }: {item: IAllValidators}): JSX.Element => {
-    return <CyDView>
-      <CyDView className={'flex flex-row my-[24px] justify-between mx-[20px] items-center'}>
-        <CyDView>
-          <CyDText className={'text-[16px] font-bold text-secondaryTextColor font-nunito'}>{item.name}</CyDText>
-          {item.balance.toString() !== '0' && <CyDView className={'flex flex-row items-center'}>
-            <CyDImage source={AppImages[tokenData.chainDetails.backendName + '_LOGO']} className={'w-[16px] h-[16px]'} />
-            <CyDText className={'ml-[10px] text-[16px] font-medium text-primaryTextColor font-nunito'}>{'Staked'}</CyDText>
-            <CyDText className={'ml-[10px] text-[16px] font-bold text-secondaryTextColor font-nunito'}>{convertFromUnitAmount(item.balance.toString(), tokenData.contractDecimals)}</CyDText>
-          </CyDView>}
-          <CyDView className={'flex flex-row item-center mt-[8px]'}>
-            {item.apr !== '0.00' && <CyDImage source={AppImages.APR_ICON} className={'w-[20px] h-[16px]'} />}
-            {item.apr !== '0.00' && <CyDText className={'ml-[4px] font-nunito text-subTextColor'}>{`APR ${item.apr}`}</CyDText>}
-            <CyDImage source={AppImages.COINS} className={'ml-[10px] w-[20px] h-[16px]'} />
-            <CyDText className={'ml-[4px] font-nunito text-subTextColor'}>{convert(parseFloat(convertFromUnitAmount(item.tokens.toString(), tokenData.contractDecimals)))}</CyDText>
+    return (
+      <CyDView className='w-full flex items-center justify-center '>
+        <CyDView className={' w-[90%] flex flex-row my-[24px] justify-between  items-center'}>
+          <CyDView className='w-[70%]'>
+            <CyDText className={'text-[16px] font-bold text-secondaryTextColor font-nunito'}>{item.name}</CyDText>
+            {item.balance.toString() !== '0' && <CyDView className={'flex flex-row items-center'}>
+              <CyDImage source={AppImages[tokenData.chainDetails.backendName + '_LOGO']} className={'w-[16px] h-[16px]'} />
+              <CyDText className={'ml-[10px] text-[16px] font-medium text-primaryTextColor font-nunito'}>{'Staked'}</CyDText>
+              <CyDText className={'ml-[10px] text-[16px] font-bold text-secondaryTextColor font-nunito'}>{convertFromUnitAmount(item.balance.toString(), tokenData.contractDecimals)}</CyDText>
+            </CyDView>}
+            <CyDView className={'flex flex-row item-center mt-[8px]'}>
+              {item.apr !== '0.00' && <CyDImage source={AppImages.APR_ICON} className={'w-[16px] h-[16px]'} />}
+              {item.apr !== '0.00' && <CyDText className={'ml-[4px] font-nunito text-subTextColor'}>{`APR ${item.apr}%`}</CyDText>}
+              <CyDImage source={AppImages.COINS} className={'ml-[10px] w-[20px] h-[16px]'} />
+              <CyDText className={'ml-[4px] font-nunito text-subTextColor'}>{convert(parseFloat(convertFromUnitAmount(item.tokens.toString(), tokenData.contractDecimals)))}</CyDText>
+            </CyDView>
           </CyDView>
+          <Button onPress={() => {
+            setValidatorData(item);
+            setShowManage(true);
+          }} title={'Manage'} type={'ternary'} style={'max-h-[60px] px-[4%] py-[10px]'}/>
         </CyDView>
-        <Button onPress={() => {
-          setValidatorData(item);
-          setShowManage(true);
-        }} title={'Manage'} type={'ternary'} style={'max-h-[60px] p-[4%]'}/>
-      </CyDView>
-      <CyDView className={'w-full h-[1px] bg-[#F4F4F4] mx-[30px]'}></CyDView>
-
-    </CyDView>;
+        <CyDView className={'w-[90%] h-[1px] bg-[#F4F4F4] '}></CyDView>
+      </CyDView>);
   };
 
   useEffect(() => {
@@ -99,11 +99,33 @@ export default function CosmosValidators ({ route, navigation }) {
     }
   }, [filterText, index]);
 
+
+
+
   const renderItem = ({ item }: { item: any}) => (
     <Item item={item} />
   );
 
+
   const memoizedValue = useMemo(() => renderItem, [filterList, index]);
+
+  useEffect(()=>{
+  navigation.setOptions({
+    headerTitle: () => (
+      <CyDView className={'-mt-[10px]'}>
+      {from === CosmosActionType.STAKE && <SwitchView
+        title1={t('Staked')}
+        title2={t('All Validators')}
+        index={index}
+        setIndexChange={(index:any) => {
+          setIndex(index);
+        }}
+      />}
+    </CyDView>
+    )
+  });
+},[index,navigation])
+
   return (
     <CyDView className={'bg-white h-full w-full'}>
       <CyDModalLayout setModalVisible={setShowManage} isModalVisible={showManage} style={styles.modalLayout} animationIn={'slideInUp'} animationOut={'slideOutDown'}>
@@ -111,21 +133,21 @@ export default function CosmosValidators ({ route, navigation }) {
           <CyDTouchView onPress={() => setShowManage(false)} className={'z-[50]'}>
             <CyDImage source={AppImages.CLOSE} className={' w-[22px] h-[22px] z-[50] absolute right-[0px] '} />
           </CyDTouchView>
-          <CyDText className={'mt-[10] font-bold text-center text-[22px]'}>
+          <CyDText className={'mt-[10] font-extrabold text-center text-[22px]'}>
                 {validatorData.name}
           </CyDText>
 
           <CyDView className={'flex flex-row mt-[40px]'}>
-              {validatorData.apr !== '0.00' && <CyDImage source={AppImages.APR_ICON} className={'h-[20px] w-[20px]'}/>}
+              {validatorData.apr !== '0.00' && <CyDImage source={AppImages.APR_ICON} className={'h-[24px] w-[24px]'}/>}
               <CyDView className={' flex flex-row'}>
-                {validatorData.apr !== '0.00' && <CyDText className={'font-medium text-[16px] ml-[4px] text-primaryTextColor'}>{`APR ${validatorData.apr}`}</CyDText>}
+                {validatorData.apr !== '0.00' && <CyDText className={'font-medium text-[20px] ml-[4px] text-primaryTextColor'}>{`APR ${validatorData.apr}`}</CyDText>}
               </CyDView>
             </CyDView>
 
             <CyDView className={'flex flex-row mt-[20px]'}>
-              <CyDImage source={AppImages[tokenData.chainDetails.backendName + '_LOGO']} className={'w-[16px] h-[16px] mt-[3px]'} />
+              <CyDImage source={AppImages[tokenData.chainDetails.backendName + '_LOGO']} className={'w-[20px] h-[20px] mt-[3px]'} />
               <CyDView className={' flex flex-row'}>
-                <CyDText className={' font-medium text-[16px] ml-[10px] text-primaryTextColor'}>{`Voting Power ${convert(convertFromUnitAmount(validatorData.tokens, tokenData.contractDecimals))}`}</CyDText>
+                <CyDText className={' font-medium text-[20px] ml-[10px] text-primaryTextColor'}>{`Voting Power ${convert(convertFromUnitAmount(validatorData.tokens, tokenData.contractDecimals))} ${tokenData.symbol}`}</CyDText>
               </CyDView>
             </CyDView>
 
@@ -139,10 +161,10 @@ export default function CosmosValidators ({ route, navigation }) {
                 });
               }}
               title={t('REDELEGATE')}
-              style={'py-[5%] mt-[50px]'}
+              style={'py-[5%] mt-[30px]'}
               loaderStyle={{ height: 30 }}
             />}
-            <Button onPress={() => {
+            <Button  onPress={() => {
               setShowManage(false);
               navigation.navigate(screenTitle.COSMOS_ACTION, {
                 tokenData,
@@ -170,23 +192,18 @@ export default function CosmosValidators ({ route, navigation }) {
         </CyDView>
       </CyDModalLayout>
 
-      <CyDView className={'flex flex-row justify-center'}>
-        {from === CosmosActionType.STAKE && <SwitchView
-          title1={t('Staked')}
-          title2={t('All Validators')}
-          index={index}
-          setIndexChange={(index) => {
-            setIndex(index);
-          }}
-        />}
-      </CyDView>
 
-      <CyDTextInput
-        value={filterText}
-        onChangeText={(text) => setFilterText(text)}
-        placeholder={t('SEARCH_VALIDATOR')}
-        className={'rounded-[8px] py-[8] px-[12] text-[16px] border-[1px] border-subTextColor mx-[16px] mt-[16px]'}
-      />
+
+      <CyDView style={styles.SectionStyle} className='drop-shadow-md'>
+        <CyDImage source={AppImages.SEARCH_BROWSER} style={styles.ImageStyle}></CyDImage>
+        <CyDTextInput
+        style={styles.input}
+          value={filterText}
+          onChangeText={(text) => setFilterText(text)}
+          placeholder={t('SEARCH_VALIDATOR')}
+          placeholderTextColor={'grey'}
+        />
+      </CyDView>
 
       <CyDFlatList
         data={filterList}
@@ -202,5 +219,33 @@ const styles = StyleSheet.create({
   modalLayout: {
     margin: 0,
     justifyContent: 'flex-end'
+  },
+  SectionStyle: {
+    flexDirection: 'row',
+    justifyContent: 'space-evenly',
+    alignItems: 'center',
+    backgroundColor: '#fff',
+    borderWidth: 0.5,
+    borderColor: '#7D7F7C',
+    height: 40,
+    borderRadius: 20,
+    margin: 10,
+
+  },
+  ImageStyle: {
+      padding: 10,
+      margin: 5,
+      height: 25,
+      width: 25,
+      resizeMode: 'stretch',
+      alignItems: 'center',
+  },
+  input:{
+    flex: 1,
+    paddingTop: 10,
+    paddingRight: 10,
+    paddingBottom: 10,
+    paddingLeft: 0,
+
   }
 });

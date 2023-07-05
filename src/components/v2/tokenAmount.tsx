@@ -26,7 +26,7 @@ export default function CyDTokenAmount (props?: any) {
   };
 
   return (
-    <CyDText onPress={() => { hideBalance && setOverrideHideBalance(!overrideHideBalance); }} {...props} className={clsx('', { 'pt-[7px]': (hideBalance && !overrideHideBalance) })}>
+    <CyDText onPress={() => { hideBalance && setOverrideHideBalance(!overrideHideBalance); }} {...props} className={clsx('', { 'pt-[0px]': (hideBalance && !overrideHideBalance) })}>
       {(hideBalance && !overrideHideBalance) ? hideWithCharacters : formatTokenAmount()}
     </CyDText>
   );

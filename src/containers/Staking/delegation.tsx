@@ -1,3 +1,4 @@
+/* eslint-disable react-native/no-color-literals */
 import * as React from 'react';
 import { useContext, useEffect, useState } from 'react';
 import { Colors } from '../../constants/theme';
@@ -7,8 +8,8 @@ import {
   StakingContext,
   validateAmount,
   convertToEvmosFromAevmos,
-  getExplorerUrl,
-  convertAmountOfContractDecimal
+  convertAmountOfContractDecimal,
+  PortfolioContext
 } from '../../core/util';
 import * as C from '../../constants';
 import { BackHandler, Keyboard, TextInput, StyleSheet } from 'react-native';
@@ -22,7 +23,7 @@ import {
 } from '@tharsis/transactions';
 import { signTypedData, SignTypedDataVersion, personalSign } from '@metamask/eth-sig-util';
 import { generatePostBodyBroadcast } from '@tharsis/provider';
-import { DELEGATE, RE_DELEGATE, UN_DELEGATE } from '../../reducers/stakingReducer';
+import { DELEGATE, RESET, RE_DELEGATE, UN_DELEGATE } from '../../reducers/stakingReducer';
 import LottieView from 'lottie-react-native';
 import * as Sentry from '@sentry/react-native';
 import analytics from '@react-native-firebase/analytics';
@@ -33,9 +34,11 @@ import Button from '../../components/v2/button';
 import { useTranslation } from 'react-i18next';
 import { CyDImage, CyDText, CyDTouchView, CyDView } from '../../styles/tailwindStyles';
 import CyDModalLayout from '../../components/v2/modal';
-import { SuccessTransaction } from '../../components/v2/StateModal';
+import { SuccessTransaction, BuyOrBridge } from '../../components/v2/StateModal';
 import { cosmosConfig } from '../../constants/cosmosConfig';
 import { TokenOverviewTabIndices } from '../../constants/enum';
+import { gasFeeReservation } from '../../constants/data';
+import { GlobalContext } from '../../core/globalContext';
 
 const {
   CText,
@@ -49,6 +52,7 @@ export default function StakingDelegation ({ route, navigation }) {
   const { itemData, tokenData, reDelegator = '' } = route.params;
   const stakingValidators = useContext<any>(StakingContext);
   const hdWallet = useContext<any>(HdWalletContext);
+  const globalStateContext = useContext<any>(GlobalContext);
   const [amount, setAmount] = useState<string>('');
   const [reDelegatorName, setReDelegatorName] = useState<string>(reDelegator);
   const [loading, setLoading] = useState<boolean>(false);
@@ -65,6 +69,13 @@ export default function StakingDelegation ({ route, navigation }) {
 
   const evmos = hdWallet.state.wallet.evmos;
   const ethereum = hdWallet.state.wallet.ethereum;
+  const portfolioState = useContext<any>(PortfolioContext);
+  const gasReserved = gasFeeReservation[tokenData.chainDetails?.backendName];
+
+  const evmosUrls = globalStateContext.globalState.rpcEndpoints.EVMOS.otherUrls;
+  const ACCOUNT_DETAILS = evmosUrls.accountDetails.replace('address', evmos.wallets[evmos.currentIndex].address);
+  const SIMULATION_ENDPOINT = evmosUrls.simulate;
+  const TXN_ENDPOINT = evmosUrls.transact;
 
   const handleBackButton = () => {
     navigation.goBack();
@@ -180,11 +191,11 @@ export default function StakingDelegation ({ route, navigation }) {
     setLoading(true);
 
     try {
-      const accountDetailsResponse = await axios.get(`https://lcd-evmos.keplr.app/cosmos/auth/v1beta1/accounts/${evmos.wallets[evmos.currentIndex].address}`, { timeout: 2000 });
+      const accountDetailsResponse = await axios.get(ACCOUNT_DETAILS, { timeout: 2000 });
       const bodyForSimulate = generateTransactionBody(accountDetailsResponse);
       void analytics().logEvent(`evmos_simulate_${stakingValidators.stateStaking.typeOfDelegation}`);
 
-      const simulationResponse = await axios.post('https://lcd-evmos.keplr.app/cosmos/tx/v1beta1/simulate', bodyForSimulate);
+      const simulationResponse = await axios.post(SIMULATION_ENDPOINT, bodyForSimulate);
       const gasWanted = simulationResponse.data.gas_info.gas_used;
       const bodyForTransaction = generateTransactionBody(accountDetailsResponse,
         ethers.utils
@@ -222,44 +233,78 @@ export default function StakingDelegation ({ route, navigation }) {
     }, MODAL_HIDE_TIMEOUT);
   }
 
+  const isGasReserved = (cryptoValue: string, balance: number) => {
+    return parseFloat(cryptoValue) <= (balance - finalGasFee);
+  };
+
+  const haveEnoughNativeBalance = (balance: number) => {
+    return balance >= finalGasFee;
+  };
+
   const finalTxn = async () => {
     setLoading(true);
-    try {
-      const txnResponse = await axios.post('https://lcd-evmos.keplr.app/cosmos/tx/v1beta1/txs', finalData);
-      if (txnResponse.data.tx_response.raw_log === '[]') {
-        setLoading(false);
-        setSignModalVisible(false);
-        await analytics().logEvent(`evmos_${stakingValidators.stateStaking.typeOfDelegation}_completed`);
-        setTimeout(() => {
-          showModal('state', {
-            type: 'success',
-            title: t('TRANSACTION_SUCCESS'),
-            description: renderSuccessTransaction(txnResponse.data.tx_response.txhash),
-            onSuccess: onTransModalHide,
-            onFailure: hideModal
-          });
-        }, MODAL_HIDE_TIMEOUT_250);
-      } else {
-        setLoading(false);
-        setSignModalVisible(false);
-        Sentry.captureException(txnResponse);
-        await analytics().logEvent('evmos_staking_error', {
-          from: `error while broadcasting the transaction in evmos staking/delegation.tsx : ${txnResponse.data.tx_response.raw_log}`
+    const balance = convertToEvmosFromAevmos(stakingValidators.stateStaking.unStakedBalance);
+    if ((DELEGATE === stakingValidators.stateStaking.typeOfDelegation && !isGasReserved(amount, balance)) || !haveEnoughNativeBalance(balance)) {
+      setSignModalVisible(false);
+      setTimeout(() => {
+        showModal('state', {
+          type: 'error',
+          title: t('INSUFFICIENT_FUNDS'),
+          description: renderModalBody(`You don't have sufficient ${tokenData.chainDetails.symbol} to pay gas fee. Would you like to buy or bridge?`),
+          onSuccess: hideModal,
+          onFailure: hideModal
         });
+      }, MODAL_HIDE_TIMEOUT_250);
+    } else {
+      try {
+        const txnResponse = await axios.post(TXN_ENDPOINT, finalData);
+        if (txnResponse.data.tx_response.raw_log === '[]') {
+          setLoading(false);
+          setSignModalVisible(false);
+          await analytics().logEvent(`evmos_${stakingValidators.stateStaking.typeOfDelegation}_completed`);
+          setTimeout(() => {
+            stakingValidators.dispatchStaking({
+              type: RESET
+            });
+            showModal('state', {
+              type: 'success',
+              title: t('TRANSACTION_SUCCESS'),
+              description: renderSuccessTransaction(txnResponse.data.tx_response.txhash),
+              onSuccess: onTransModalHide,
+              onFailure: hideModal
+            });
+          }, MODAL_HIDE_TIMEOUT_250);
+        } else {
+          setLoading(false);
+          setSignModalVisible(false);
+          Sentry.captureException(txnResponse);
+          await analytics().logEvent('evmos_staking_error', {
+            from: `error while broadcasting the transaction in evmos staking/delegation.tsx : ${txnResponse.data.tx_response.raw_log}`
+          });
+          setTimeout(() => {
+            showModal('state', { type: 'error', title: t('TRANSACTION_FAILED'), description: txnResponse.data.tx_response.raw_log, onSuccess: hideModal, onFailure: hideModal });
+          }, MODAL_HIDE_TIMEOUT_250);
+        }
+      } catch (error: any) {
+        setLoading(false);
+        setSignModalVisible(false);
+        Sentry.captureException(error);
+        await analytics().logEvent('evmos_staking_error', { from: 'error while broadcasting the transaction in evmos staking/delegation.tsx' });
         setTimeout(() => {
-          showModal('state', { type: 'error', title: t('TRANSACTION_FAILED'), description: txnResponse.data.tx_response.raw_log, onSuccess: hideModal, onFailure: hideModal });
+          showModal('state', { type: 'error', title: t('TRANSACTION_FAILED'), description: error.response.data, onSuccess: hideModal, onFailure: hideModal });
         }, MODAL_HIDE_TIMEOUT_250);
       }
-    } catch (error: any) {
-      setLoading(false);
-      setSignModalVisible(false);
-      Sentry.captureException(error);
-      await analytics().logEvent('evmos_staking_error', { from: 'error while broadcasting the transaction in evmos staking/delegation.tsx' });
-      setTimeout(() => {
-        showModal('state', { type: 'error', title: t('TRANSACTION_FAILED'), description: error.response.data, onSuccess: hideModal, onFailure: hideModal });
-      }, MODAL_HIDE_TIMEOUT_250);
     }
     setLoading(false);
+  };
+
+  const renderModalBody = (text: string) => {
+    return <BuyOrBridge
+      text={text}
+      navigation={navigation}
+      portfolioState={portfolioState}
+      hideModal={hideModal}
+    />;
   };
 
   useEffect(() => {
@@ -267,8 +312,15 @@ export default function StakingDelegation ({ route, navigation }) {
   }, [stakingValidators.stateStaking.reValidator]);
 
   useEffect(() => {
-    if (finalAmount > 0) { void txnSimulation(); } else if (finalAmount < 0) {
-      showModal('state', { type: 'error', title: t('TRANSACTION_FAILED'), description: 'Insufficient balance for gas fee', onSuccess: hideModal, onFailure: hideModal });
+    if (finalAmount > 0) {
+      const balance = convertToEvmosFromAevmos(stakingValidators.stateStaking.unStakedBalance);
+      if (DELEGATE === stakingValidators.stateStaking.typeOfDelegation && parseFloat(amount) > balance) {
+        setTimeout(() => {
+          showModal('state', { type: 'error', title: t('INSUFFICIENT_FUNDS'), description: t('ENTER_AMOUNT_LESS_THAN_BALANCE'), onSuccess: hideModal, onFailure: hideModal });
+        }, MODAL_HIDE_TIMEOUT_250);
+      } else {
+        void txnSimulation();
+      }
     }
   }, [finalAmount, onSubmit]);
 
@@ -278,7 +330,7 @@ export default function StakingDelegation ({ route, navigation }) {
   }
 
   return (
-        <>
+      <>
         <CyDModalLayout setModalVisible={onModalHide} isModalVisible={signModalVisible} style={styles.modalLayout} animationIn={'slideInUp'} animationOut={'slideOutDown'}>
             <CyDView className={'bg-white p-[25px] pb-[30px] rounded-[20px] relative'}>
               <CyDTouchView onPress={() => onModalHide()} className={'z-[50]'}>
@@ -296,7 +348,7 @@ export default function StakingDelegation ({ route, navigation }) {
                 </CyDView>
 
                 <CyDView className={'flex flex-row mt-[20px]'}>
-                  <CyDImage source={AppImages.GAS_FEES} className={'w-[16px] h-[16px] mt-[3px]'} />
+                  <CyDImage source={AppImages.GAS_FEES} className={'w-[16px] h-[16px] mt-[3px]'} resizeMode='contain' />
                   <CyDView className={' flex flex-row'}>
                     <CyDText className={' font-medium text-[16px] ml-[10px] text-primaryTextColor'}>{t('GAS_FEE_LABEL')} {finalGasFee.toFixed(6) + ' EVMOS'}</CyDText>
                   </CyDView>
@@ -342,13 +394,13 @@ export default function StakingDelegation ({ route, navigation }) {
                                     style={{ width: 40, aspectRatio: 80 / 120, top: -3 }}/>
                     </DynamicView>
                     <CText dynamic mL={8} fF={C.fontsName.FONT_SEMI_BOLD} fS={12} tA={'left'} color={Colors.primaryTextColor}>
-                        {'Once you undelegate your staked EVMOS, you will need to wait 14 days for your tokens to be liquid'}
+                        {t('UNDELEGATE_WAIT_DAYS')}
                     </CText>
                 </DynamicView>
 
                  <DynamicView dynamic mB={24} fD={'row'} jC={'space-between'} dynamicWidth width={100}>
                     <CText dynamic mL={8} fF={C.fontsName.FONT_REGULAR} fS={16} tA={'left'} color={Colors.primaryTextColor}>
-                        My delegation
+                        {t('MY_DELEGATION')}
                     </CText>
                     <CText dynamic mL={8} fF={C.fontsName.FONT_BOLD} fS={16} tA={'left'} color={Colors.primaryTextColor}>
                         {convertToEvmosFromAevmos(itemData.balance).toFixed(6) + ' EVMOS'}
@@ -357,7 +409,7 @@ export default function StakingDelegation ({ route, navigation }) {
 
                 {DELEGATE === stakingValidators.stateStaking.typeOfDelegation && <DynamicView dynamic mB={28} fD={'row'} jC={'space-between'} dynamicWidth width={100}>
                     <CText dynamic mL={8} fF={C.fontsName.FONT_REGULAR} fS={16} tA={'left'} color={Colors.primaryTextColor}>
-                        Available balance
+                        {t('AVAILABLE_BALANCE')}
                     </CText>
                     <CText dynamic mL={8} fF={C.fontsName.FONT_BOLD} fS={16} tA={'left'} color={Colors.primaryTextColor}>
                         {convertToEvmosFromAevmos(stakingValidators.stateStaking.unStakedBalance).toFixed(6) + ' EVMOS'}
@@ -366,7 +418,7 @@ export default function StakingDelegation ({ route, navigation }) {
 
                 {RE_DELEGATE === stakingValidators.stateStaking.typeOfDelegation && <DynamicView dynamic mB={10} fD={'row'} jC={'space-between'} dynamicWidth width={100}>
                     <CText dynamic mL={8} fF={C.fontsName.FONT_REGULAR} fS={16} tA={'left'} color={Colors.primaryTextColor}>
-                        Validator to redelegate
+                        {t('VALIDATOR_REDELEGATE')}
                     </CText>
                 </DynamicView>}
 
@@ -387,16 +439,7 @@ export default function StakingDelegation ({ route, navigation }) {
                             value={reDelegatorName}
                             autoCorrect={false}
                             editable={false}
-                            style={{
-                              borderRadius: 8,
-                              fontSize: 18,
-                              backgroundColor: '#F6F6F6',
-                              width: '90%',
-                              color: Colors.secondaryTextColor,
-                              height: 52,
-                              paddingLeft: 20,
-                              paddingRight: 30
-                            }}
+                            style={styles.reDelegatorBox}
                         ></TextInput>
                         <DynamicView style={{ position: 'absolute', right: 10 }} fD={'row'} dynamic >
                             <CText dynamic fF={C.fontsName.FONT_SEMI_BOLD} fS={14} tA={'left'} color={Colors.subTextColor}>
@@ -427,47 +470,45 @@ export default function StakingDelegation ({ route, navigation }) {
                         keyboardType = 'numeric'
                         autoCorrect={false}
                         caretHidden={false}
-                                  style={{
-                                    borderRadius: 8,
-                                    fontSize: 18,
-                                    backgroundColor: '#F6F6F6',
-                                    width: '85%',
-                                    height: 52,
-                                    paddingLeft: 20,
-                                    paddingRight: 100,
-                                    color: '#000000'
-                                  }}
+                        style={styles.valueBox}
                     ></TextInput>
                     <DynamicView style={{ position: 'absolute', right: 10 }} fD={'row'} dynamic>
                         <CText dynamic fF={C.fontsName.FONT_SEMI_BOLD} fS={14} tA={'left'} color={Colors.subTextColor}>
-                            EVMOS
+                          {'EVMOS'}
                         </CText>
                         <DynamicTouchView sentry-label='evmos-staking-input-max-value' dynamic dynamicWidthFix width={60} bR={8} mL={8}
                                           bO={1} bGC={maxEnabled ? '#FFDE59' : '#F6F6F6'} style={{ borderColor: '#FFDE59' }}
                                           onPress={() => {
                                             Keyboard.dismiss();
-                                            stakingValidators.stateStaking.typeOfDelegation === DELEGATE ? setAmount((convertToEvmosFromAevmos(stakingValidators.stateStaking.unStakedBalance) - 0.2).toString()) : setAmount((convertToEvmosFromAevmos(itemData.balance)).toString());
+                                            const maxAmount = stakingValidators.stateStaking.typeOfDelegation === DELEGATE
+                                              ? convertToEvmosFromAevmos(stakingValidators.stateStaking.unStakedBalance) - gasReserved
+                                              : convertToEvmosFromAevmos(itemData.balance);
+                                            const textAmount = maxAmount < 0 ? '0.00' : maxAmount.toString();
+                                            setAmount(textAmount);
                                             setMaxEnabled(true);
                                           }}
                         >
                             <DynamicView dynamic aLIT={'center'} jC={'center'}>
                                 <CText dynamic fF={C.fontsName.FONT_BOLD} fS={14} pV={8}
-                                       color={Colors.primaryTextColor}>Max</CText>
+                                       color={Colors.primaryTextColor}>{t<string>('MAX')}</CText>
                             </DynamicView>
                         </DynamicTouchView>
                     </DynamicView>
                 </DynamicView>
                 {stakingValidators.stateStaking.typeOfDelegation === DELEGATE && <DynamicView>
                       <CText dynamic fF={C.fontsName.FONT_SEMI_BOLD} mT={10} fS={12} tA={'left'} color={Colors.subTextColor}>
-                            {`${t('0.2')} EVMOS${t(' reserved on MAX')}`}
+                            {`${gasReserved} EVMOS${t(' reserved on MAX')}`}
                         </CText>
                     </DynamicView>}
 
                 <DynamicView dynamic dynamicWidth width={100} fD={'column'} jC={'center'} mT={25} mB={32}>
                   <CyDView className={'w-[100%]'}>
-
                     <Button
-                      disabled={parseFloat(amount) <= 0 || amount === ''}
+                      disabled={
+                        parseFloat(amount) <= 0 ||
+                        amount === '' ||
+                        (stakingValidators.stateStaking.typeOfDelegation === RE_DELEGATE && reDelegatorName === '')
+                      }
                         onPress={() => {
                           if (validateAmount(amount)) {
                             if (stakingValidators.stateStaking.typeOfDelegation === DELEGATE && parseFloat(amount) > (convertToEvmosFromAevmos(stakingValidators.stateStaking.unStakedBalance))) {
@@ -484,7 +525,7 @@ export default function StakingDelegation ({ route, navigation }) {
                             }
 
                             setOnSubmit(!onSubmit);
-                            analytics().logEvent(`evmos_${stakingValidators.stateStaking.typeOfDelegation}_initiated`);
+                            void analytics().logEvent(`evmos_${stakingValidators.stateStaking.typeOfDelegation}_initiated`);
                           }
                         }}
                       loading={loading}
@@ -514,5 +555,25 @@ const styles = StyleSheet.create({
   modalLayout: {
     margin: 0,
     justifyContent: 'flex-end'
+  },
+  valueBox: {
+    borderRadius: 8,
+    fontSize: 18,
+    backgroundColor: '#F6F6F6',
+    width: '85%',
+    height: 52,
+    paddingLeft: 20,
+    paddingRight: 100,
+    color: '#000000'
+  },
+  reDelegatorBox: {
+    borderRadius: 8,
+    fontSize: 18,
+    backgroundColor: '#F6F6F6',
+    width: '90%',
+    color: Colors.secondaryTextColor,
+    height: 52,
+    paddingLeft: 20,
+    paddingRight: 30
   }
 });

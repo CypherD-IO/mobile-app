@@ -11,11 +11,7 @@ import { generatePostBodyBroadcast } from '@tharsis/provider';
 import * as Sentry from '@sentry/react-native';
 import { OfflineDirectSigner } from '@cosmjs-rn/proto-signing';
 import {
-  convertAmountOfContractDecimal,
-  TARGET_BRIDGE_COSMOS_WALLET_ADDRESS,
-  TARGET_BRIDGE_JUNO_WALLET_ADDRESS,
-  TARGET_BRIDGE_OSMOSIS_WALEET_ADDRESS,
-  TARGET_BRIDGE_STARGAZE_WALLET_ADDRESS
+  convertAmountOfContractDecimal
 } from './util';
 import { Chain } from '../constants/server';
 
@@ -24,9 +20,9 @@ export enum TypeOfTransaction {
   TRANSACTION = 'transaction',
 }
 
-const ACCOUNT_DETAILS_INFO = 'https://lcd-evmos.keplr.app/auth/accounts/';
-const SIMULATION_ENDPOINT = 'https://lcd-evmos.keplr.app/cosmos/tx/v1beta1/simulate';
-const TRANSACTION_ENDPOINT = 'https://lcd-evmos.keplr.app/cosmos/tx/v1beta1/txs';
+const ACCOUNT_DETAILS_INFO = 'https://api-evmos-ia.cosmosia.notional.ventures/cosmos/auth/v1beta1/accounts/';
+const SIMULATION_ENDPOINT = 'https://api-evmos-ia.cosmosia.notional.ventures/cosmos/tx/v1beta1/simulate';
+const TRANSACTION_ENDPOINT = 'https://api-evmos-ia.cosmosia.notional.ventures/cosmos/tx/v1beta1/txs';
 const getTimeOutTime = () => {
   return Long.fromNumber(
     Math.floor(Date.now() / 1000) + 60
@@ -42,18 +38,18 @@ const evmosToCosmosSignatureContent = (
   amount: string = '14000000000000000',
   gas: string = '450000'
 ) => {
-  const chain = {
+  const chainData = {
     chainId: 9001,
     cosmosChainId: 'evmos_9001-2'
   };
 
-  const accountData = userAccountData.data.result.base_account;
+  const accountData = userAccountData.data.account.base_account;
 
   const sender = {
     accountAddress: senderEvmosAddress,
     sequence: accountData.sequence,
     accountNumber: accountData.account_number,
-    pubkey: accountData.public_key.value
+    pubkey: accountData.pub_key.key
   };
 
   const fee = {
@@ -68,14 +64,12 @@ const evmosToCosmosSignatureContent = (
     amount: ethers.utils.parseUnits(convertAmountOfContractDecimal(inputAmount, 18), 18).toString(),
     sourcePort: 'transfer',
     sourceChannel: cosmosConfig.evmos.channel.osmosis,
-    revisionNumber: 4,
-    revisionHeight: Math.floor(parseFloat(userAccountData.data.height) * 1.2),
+    revisionNumber: Long.fromNumber(456),
+    revisionHeight: Long.fromNumber(123),
     timeoutTimestamp: (1e9 * (Math.floor(Date.now() / 1e3) + 1200)).toString()
   };
 
-  const memo = '';
-
-  const msg = createTxIBCMsgTransfer(chain, sender, fee, memo, params);
+  const msg: any = createTxIBCMsgTransfer(chainData, sender, fee, '', params);
 
   const privateKeyBuffer = Buffer.from(ethereum.privateKey.substring(2), 'hex');
 
@@ -85,7 +79,7 @@ const evmosToCosmosSignatureContent = (
     version: SignTypedDataVersion.V4
   });
 
-  const extension = signatureToWeb3Extension(chain, sender, signature);
+  const extension = signatureToWeb3Extension(chainData, sender, signature);
 
   const rawTx = createTxRawEIP712(
     msg.legacyAmino.body,
@@ -104,19 +98,13 @@ export const sendInCosmosChain = async (rpc: string, inputAmount: string, wallet
   try {
     const signingClient = await SigningStargateClient.connectWithSigner(rpc, signer);
     const amount = ethers.utils.parseUnits(convertAmountOfContractDecimal(inputAmount, cosmosConfig[chainName].contractDecimal), cosmosConfig[chainName].contractDecimal).toString();
-    const chainAddress = {
-      cosmos: TARGET_BRIDGE_COSMOS_WALLET_ADDRESS,
-      osmosis: TARGET_BRIDGE_OSMOSIS_WALEET_ADDRESS,
-      juno: TARGET_BRIDGE_JUNO_WALLET_ADDRESS,
-      stargaze: TARGET_BRIDGE_STARGAZE_WALLET_ADDRESS
-    };
 
     // transaction gas fee calculation
     const sendMsg: MsgSendEncodeObject = {
       typeUrl: '/cosmos.bank.v1beta1.MsgSend',
       value: {
         fromAddress: senderAddress,
-        toAddress: chainAddress[chainName],
+        toAddress: quoteData.step1TargetWallet, // chainAddress[chainName],
         amount: [{
           denom: cosmosConfig[chainName].denom,
           amount
@@ -132,7 +120,7 @@ export const sendInCosmosChain = async (rpc: string, inputAmount: string, wallet
     const gasFee = simulation * cosmosConfig[chainName].gasPrice;
 
     const fee = {
-      gas: Math.floor(simulation * 1.3).toString(),
+      gas: Math.floor(simulation * 1.5).toString(),
       amount: [
         {
           denom: cosmosConfig[chainName].denom,
@@ -143,7 +131,7 @@ export const sendInCosmosChain = async (rpc: string, inputAmount: string, wallet
 
     const result = await signingClient.sendTokens(
       senderAddress,
-      chainAddress[chainName],
+      quoteData.step1TargetWallet,
       [{ denom: cosmosConfig[chainName].denom, amount }],
       fee,
       ''
@@ -325,7 +313,7 @@ export const sendCosmosTokens = async (rpc: string, inputAmount: string, wallets
       const gasFee = simulation * cosmosConfig[chainName].gasPrice;
 
       const fee = {
-        gas: Math.floor(simulation * 1.3).toString(),
+        gas: Math.floor(simulation * 1.5).toString(),
         amount: [
           {
             denom: cosmosConfig[chainName].denom,

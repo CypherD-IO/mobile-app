@@ -232,6 +232,23 @@ export const setRpcEndpoints = async (rpcEndpoints: string) => {
   }
 };
 
+export const getRpcPreference = async () => {
+  try {
+    const preference = await AsyncStorage.getItem('RPC_PREFERENCE');
+    return preference;
+  } catch (error) {
+    Sentry.captureException(error);
+  }
+};
+
+export const setRpcPreference = async (preference: string) => {
+  try {
+    await AsyncStorage.setItem('RPC_PREFERENCE', preference);
+  } catch (error) {
+    Sentry.captureException(error);
+  }
+};
+
 export const clearHost = async (host: string) => {
   try {
     await AsyncStorage.removeItem(host);
@@ -244,27 +261,32 @@ export const clearRpcEndpoints = async () => {
   await AsyncStorage.removeItem('RPC_ENDPOINTS');
 };
 
-export const setCardRevealReuseToken = async (reuseToken: string) => {
+export const setCardRevealReuseToken = async (cardProvider: string, reuseToken: string) => {
   try {
-    await AsyncStorage.setItem('CARD_REVEAL_REUSE_TOKEN', reuseToken);
+    await AsyncStorage.setItem(cardProvider + '_CARD_REVEAL_REUSE_TOKEN', reuseToken);
   } catch (error) {
     Sentry.captureException(error);
   }
 };
 
-export const getCardRevealReuseToken = async () => {
+export const getCardRevealReuseToken = async (cardProvider: string) => {
   try {
-    const cardRevealReuseToken = await AsyncStorage.getItem('CARD_REVEAL_REUSE_TOKEN');
+    const cardRevealReuseToken = await AsyncStorage.getItem(cardProvider + '_CARD_REVEAL_REUSE_TOKEN');
     return cardRevealReuseToken;
   } catch (error) {
     Sentry.captureException(error);
   }
 };
 
-export const clearAllData = async () => {
+export const clearAllData = async (clearContacts = false) => {
   try {
     const allKeys = await AsyncStorage.getAllKeys();
-    await AsyncStorage.multiRemove(allKeys);
+    if (!clearContacts) {
+      const newAsyncStorageKeys = allKeys.filter((obj) => { return !(/^CONTACT_BOOK/i.test(obj)); });
+      await AsyncStorage.multiRemove(newAsyncStorageKeys);
+    } else {
+      await AsyncStorage.multiRemove(allKeys);
+    }
   } catch (error) {
     Sentry.captureException(error);
   }
@@ -282,6 +304,57 @@ export const getHideBalanceStatus = async () => {
   try {
     const hideBalanceStaus = await AsyncStorage.getItem('HIDE_BALANCE_STATUS');
     return hideBalanceStaus;
+  } catch (error) {
+    Sentry.captureException(error);
+  }
+};
+
+export const setReadOnlyWalletData = async (data: any) => {
+  try {
+    await AsyncStorage.setItem('WALLET_DATA', JSON.stringify(data));
+  } catch (error) {
+    Sentry.captureException(error);
+  }
+};
+
+export const getReadOnlyWalletData = async () => {
+  try {
+    const readOnlyWalletData = await AsyncStorage.getItem('WALLET_DATA');
+    return readOnlyWalletData;
+  } catch (error) {
+    Sentry.captureException(error);
+  }
+};
+
+export const setContactBookData = async (data: any) => {
+  try {
+    await AsyncStorage.setItem('CONTACT_BOOK', JSON.stringify(data));
+  } catch (error) {
+    Sentry.captureException(error);
+  }
+};
+
+export const getContactBookData = async () => {
+  try {
+    const contactBookData = await AsyncStorage.getItem('CONTACT_BOOK');
+    return contactBookData;
+  } catch (error) {
+    Sentry.captureException(error);
+  }
+};
+
+export const setSkipSeedConfirmation = async (status: boolean) => {
+  try {
+    await AsyncStorage.setItem('SEED_PHRASE_CONFIRMED', String(status));
+  } catch (error) {
+    Sentry.captureException(error);
+  }
+};
+
+export const getSkipSeedConfirmation = async () => {
+  try {
+    const seedPhraseConfirmed = await AsyncStorage.getItem('SEED_PHRASE_CONFIRMED');
+    return seedPhraseConfirmed;
   } catch (error) {
     Sentry.captureException(error);
   }

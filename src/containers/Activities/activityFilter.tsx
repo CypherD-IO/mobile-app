@@ -7,9 +7,10 @@ import CheckBoxes from '../../components/checkBoxes';
 import RadioButtons from '../../components/radioButtons';
 import * as C from '../../constants/index';
 import { CyDSafeAreaView, CyDText, CyDTouchView, CyDView } from '../../styles/tailwindStyles';
+import { BackHandler } from 'react-native';
 
 export const FILTERS = ['Type', 'Time', 'Status'];
-export const ACTIVITY_TYPES = ['Bridge', 'Debit Card', 'Sent', 'IBC', 'Browser', 'Wallet Connect', 'Sardine Pay', 'Onmeta'];
+export const ACTIVITY_TYPES = ['Bridge', 'Swap', 'Debit Card', 'Sent', 'IBC', 'Browser', 'Wallet Connect', 'Sardine Pay', 'Onmeta'];
 export const TIME_GAPS = ['All', 'Today', 'This Week', 'This Month'];
 export const STATUSES = ['PENDING', 'FAILED', 'SUCCESS', 'IN PROCESS', 'DELAYED'];
 
@@ -19,6 +20,18 @@ export default function ActivitesFilter (props: any) {
   const [selectedTypes, setSelectedTypes] = useState<string[]>([]);
   const [selectedStatuses, setSelectedStatuses] = useState<string[]>([]);
   const [selectedTimeGap, setSelectedTimeGap] = useState<string>(TIME_GAPS[0]);
+
+  const handleBackButton = () => {
+    props.navigation.goBack();
+    return true;
+  };
+
+  React.useEffect(() => {
+    BackHandler.addEventListener('hardwareBackPress', handleBackButton);
+    return () => {
+      BackHandler.removeEventListener('hardwareBackPress', handleBackButton);
+    };
+  }, []);
 
   useLayoutEffect(() => {
     navigation.setOptions({
@@ -38,7 +51,7 @@ export default function ActivitesFilter (props: any) {
     const data = {
       time: selectedTimeGap,
       types: selectedTypes.length === 0 ? ACTIVITY_TYPES : selectedTypes,
-      statuses: selectedStatuses.length === 0 ? STATUSES : selectedStatuses
+      statuses: selectedStatuses.length === 0 ? STATUSES : [selectedStatuses]
     };
 
     selectedTypes.length === 0 && setSelectedTypes(ACTIVITY_TYPES);
@@ -52,13 +65,13 @@ export default function ActivitesFilter (props: any) {
   return (<>
     <CyDSafeAreaView className='h-full'>
       <CyDView className={'bg-white h-[92%] flex flex-row'}>
-        <CyDView className={'border-r border-gray-300 h-full w-[30%]'}>
+        <CyDView className={'border-r border-activityFilterBorderLine h-full w-[30%]'}>
           {FILTERS.map((filter, idx) => (
             <CyDTouchView key={idx}
               onPress={() => setIndex(idx)}
               className={`${index === idx ? 'bg-appColor' : 'bg-whiteflex'} justify-center h-[8.5%]`}>
-              <CyDText className={'text-center text-[16px] font-bold'}>
-                {filter + (idx === 0 || idx === 2 ? ` (${idx === 0 ? selectedTypes.length : selectedStatuses.length})` : '')}
+              <CyDText className={'text-left pl-[12px] text-[16px] font-bold'}>
+                {filter + (idx === 0 ? ` (${selectedTypes.length})` : '')}
               </CyDText>
             </CyDTouchView>
           ))}
@@ -79,7 +92,7 @@ export default function ActivitesFilter (props: any) {
               height='200px'
             />}
           {index === 2 &&
-            <CheckBoxes
+            <RadioButtons
               radioButtonsData={STATUSES}
               onPressRadioButton={setSelectedStatuses}
               initialValues={selectedStatuses}

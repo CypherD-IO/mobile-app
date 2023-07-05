@@ -77,10 +77,10 @@ export const screenTitle = {
   CARD_SIGNUP_COMPLETE_SCREEN: 'CardSignupCompleteScreen',
   CARD_KYC_STATUS_SCREEN: 'CardKYCStatusScreen',
   APTO_CARD_SCREEN: 'AptoCardScreen',
-  SOLID_CARD_SCREEN: 'SolidCardScreen',
-  SOLID_CARD_REVEAL_AUTH_SCREEN: 'SolidCardRevealAuthScreen',
-  SOLID_FUND_CARD_SCREEN: 'SolidFundCardScreen',
-  SOLID_CARD_OPTIONS_SCREEN: 'SolidCardOptionsScreen',
+  BRIDGE_CARD_SCREEN: 'BridgeCardScreen',
+  BRIDGE_CARD_REVEAL_AUTH_SCREEN: 'BridgeCardRevealAuthScreen',
+  BRIDGE_FUND_CARD_SCREEN: 'BridgeFundCardScreen',
+  BRIDGE_CARD_OPTIONS_SCREEN: 'BridgeCardOptionsScreen',
   PIN_VALIDATION: 'PinValidation',
   CONFIRM_PIN: 'ConfirmPin',
   SET_PIN: 'SetPin',
@@ -91,13 +91,20 @@ export const screenTitle = {
   UPDATE_CARD_APPLICATION_SCREEN: 'UpdateCardApplicationScreen',
   HOSTS_AND_RPC_SCREEN: 'HostsAndRPCScreen',
   SOCIAL_MEDIA_SCREEN: 'SocialMediaScreen',
-  SOLID_CARD_TRANSACTION_DETAILS_SCREEN: 'SolidCardTransactionsDetailsScreen'
+  BRIDGE_CARD_TRANSACTION_DETAILS_SCREEN: 'BridgeCardTransactionsDetailsScreen',
+  TRACK_WALLET_SCREEN: 'TrackWalletScreen',
+  NFT_OVERVIEW_SCREEN: 'NFTOverviewScreen',
+  NFT_HOLDINGS_SCREEN: 'NFTHoldingsScreen',
+  MY_ADDRESS: 'MyAddress',
+  SAVED_ADDRESS: 'SavedAddress',
+  CREATE_CONTACT: 'CreateContact',
+  TRANSFI_SCREEN: 'TransFiScreen'
 };
 
 export const fontsName = {
-  FONT_BLACK: 'Nunito-Black',
-  FONT_BOLD: 'Nunito-Bold',
-  FONT_SEMI_BOLD: 'Nunito-SemiBold',
-  FONT_EXTRA_BOLD: 'Nunito-ExtraBold',
-  FONT_REGULAR: 'Nunito-Medium'
+  FONT_BLACK: 'Nunito',
+  FONT_BOLD: 'Nunito',
+  FONT_SEMI_BOLD: 'Nunito',
+  FONT_EXTRA_BOLD: 'Nunito',
+  FONT_REGULAR: 'Nunito'
 };

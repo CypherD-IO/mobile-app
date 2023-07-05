@@ -6,6 +6,7 @@ import AppImages from '../../../assets/images/appImages';
 import { screenTitle } from '../../constants';
 import filter from 'lodash.filter';
 import { BackHandler } from 'react-native';
+import { TokenOverviewTabIndices } from '../../constants/enum';
 
 export default function CosmosSelectReValidator ({ route, navigation }) {
   const { validatorData, tokenData, setReValidator, from } = route.params;
@@ -47,11 +48,18 @@ export default function CosmosSelectReValidator ({ route, navigation }) {
      <>
     {validatorData.name !== item.name && <CyDTouchView onPress={() => {
       setReValidator(item);
-      navigation.navigate(from === screenTitle.TOKEN_OVERVIEW ? screenTitle.TOKEN_OVERVIEW : screenTitle.COSMOS_ACTION, {
-        tokenData,
-        validatorData,
-        from
-      });
+      if (from === screenTitle.TOKEN_OVERVIEW) {
+        navigation.navigate(screenTitle.TOKEN_OVERVIEW, {
+          tokenData,
+          navigateTo: TokenOverviewTabIndices.STAKING
+        });
+      } else {
+        navigation.navigate(screenTitle.COSMOS_ACTION, {
+          tokenData,
+          validatorData,
+          from
+        });
+      }
     }
     }>
       <CyDView className={'my-[24px] mx-[20px]'}>

@@ -200,7 +200,7 @@ export default function CardWailtList ({ navigation }) {
                   <CyDTouchView className={'mt-[20px]'} onPress={() => setShowWaitlist(false)}>
                           <CyDText className={'text-center text-blue-700 underline underline-offset-2'}>{t<string>('BACK')}</CyDText>
                   </CyDTouchView>
-                  <CyDTouchView className={'mt-[20px]'} onPress={() => navigation.navigate(C.screenTitle.CARD_SIGNUP_LANDING_SCREEN, { navigation, selectedCountry })}>
+                  <CyDTouchView className={'mt-[20px]'} onPress={() => navigation.navigate(C.screenTitle.BROWSER, { screen: C.screenTitle.BROWSER_SCREEN, params: { url: 'https://app.cypherwallet.io/#/?cardSignup=true' } })}>
                     <CyDText className={'text-center text-blue-700 underline underline-offset-2 font-semibold'}>{t<string>('I_HAVE_AN_INVITE_CODE')}</CyDText>
                   </CyDTouchView>
                 </CyDView>
