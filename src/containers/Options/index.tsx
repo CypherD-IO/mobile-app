@@ -1,0 +1,385 @@
+/* eslint-disable react-native/no-inline-styles */
+/* eslint-disable react-native/no-raw-text */
+/* eslint-disable @typescript-eslint/no-misused-promises */
+/**
+ * @format
+ * @flow
+*/
+import Intercom from '@intercom/intercom-react-native';
+import analytics from '@react-native-firebase/analytics';
+import { useNavigationState } from '@react-navigation/native';
+import * as Sentry from '@sentry/react-native';
+import axios from 'axios';
+import React, { useContext, useEffect, useState } from 'react';
+import { useTranslation } from 'react-i18next';
+import { BackHandler, ImageBackground, Linking } from 'react-native';
+import appsFlyer from 'react-native-appsflyer';
+import DeviceInfo from 'react-native-device-info';
+import Toast from 'react-native-toast-message';
+import SpInAppUpdates from 'sp-react-native-in-app-updates';
+import AppImages from '../../../assets/images/appImages';
+import { GlobalContextType } from '../../constants/enum';
+import * as C from '../../constants/index';
+import { Colors } from '../../constants/theme';
+import { sendFirebaseEvent } from '../../containers/utilities/analyticsUtility';
+import { showToast } from '../../containers/utilities/toastUtility';
+import { setDeveloperMode } from '../../core/asyncStorage';
+import { getWalletProfile } from '../../core/card';
+import { GlobalContext } from '../../core/globalContext';
+import { ActivityContext, HdWalletContext, PortfolioContext } from '../../core/util';
+import { hostWorker } from '../../global';
+import useEns from '../../hooks/useEns';
+import { isAndroid } from '../../misc/checkers';
+import { ActivityReducerAction } from '../../reducers/activity_reducer';
+import { CyDImage, CyDScrollView, CyDText, CyDTouchView, CyDView } from '../../styles/tailwindStyles';
+import { OptionsContainer } from '../Auth/Share';
+import { onShare } from '../utilities/socialShareUtility';
+import { screenTitle } from '../../constants/index';
+import useAxios from '../../core/HttpRequest';
+
+const {
+  DynamicView,
+  CText,
+  DynamicImage
+} = require('../../styles');
+
+export interface Section {
+  sentryLabel: string
+  title: string
+  logo: string
+}
+
+const SocialMedia = ({ screenTitle, uri, title, imageUri, navigationRef }: { screenTitle: string, uri: string, title: string, imageUri: string, navigationRef: any }) => {
+  return (
+    <CyDTouchView className={'flex items-center justify-center rounded-[7px] mx-[5px]'}
+      onPress={() => {
+        navigationRef.navigate(screenTitle, { uri, title });
+      }}>
+      <CyDImage
+        source={{ uri: imageUri }}
+        className={'w-[32px] h-[32px]'}
+        resizeMode='contain'
+      />
+    </CyDTouchView>
+  );
+};
+
+export default function Options (props: { navigation: { goBack: () => void, popToTop: () => void, navigate: (arg0: string) => void } }) {
+  const { t } = useTranslation();
+
+  const [clickCount, setClickCount] = useState(0);
+  const [title, setTitle] = useState('');
+  const [ens, setEns] = useState(false);
+  const ARCH_HOST: string = hostWorker.getHost('ARCH_HOST');
+  const globalContext = useContext<any>(GlobalContext);
+  const hdWalletContext = useContext<any>(HdWalletContext);
+  const portfolioState = useContext<any>(PortfolioContext);
+  const ethereum = hdWalletContext.state.wallet.ethereum;
+  const { isReadOnlyWallet }: {isReadOnlyWallet: boolean} = hdWalletContext.state;
+  const activityContext = useContext<any>(ActivityContext);
+  const [updateModal, setUpdateModal] = useState<Boolean>(false);
+  const [devMode, setDevMode] = useState<boolean>(portfolioState.statePortfolio.developerMode);
+  const inAppUpdates = new SpInAppUpdates(
+    false // isDebug
+  );
+
+  const resolveDomain = useEns()[1];
+
+  const handleBackButton = () => {
+    props.navigation.navigate(screenTitle.PORTFOLIO);
+    return true;
+  };
+
+  useEffect(() => {
+    void inAppUpdates.checkNeedsUpdate().then((result) => {
+      if (result.shouldUpdate) {
+        setUpdateModal(true);
+      }
+    });
+    BackHandler.addEventListener('hardwareBackPress', handleBackButton);
+    return () => {
+      BackHandler.removeEventListener('hardwareBackPress', handleBackButton);
+    };
+  }, []);
+
+  const latestDate = (activities: any, lastVisited: Date) => {
+    if (activities.length === 0) return false;
+    const sortedAsc = activities.sort(
+      (objA: any, objB: any) => Number(objA.datetime) - Number(objB.datetime)
+    );
+    return sortedAsc[sortedAsc.length - 1].datetime > lastVisited;
+  };
+
+  const deleteSolidCredentials = async () => {
+    const deleteSolidDetailsUrl = `${ARCH_HOST}/v1/cards/application`;
+    const config = {
+      headers: { Authorization: `Bearer ${String(globalContext.globalState.token)}` }
+    };
+    try {
+      await axios.delete(deleteSolidDetailsUrl, config);
+      const data = await getWalletProfile(globalContext.globalState.token);
+      globalContext.globalDispatch({ type: GlobalContextType.CARD_PROFILE, cardProfile: data });
+      Toast.show({ type: t('TOAST_TYPE_SUCCESS'), text1: t('REMOVED_SOLID_CREDENTIALS'), position: 'bottom' });
+    } catch (e) {
+      Sentry.captureException(e);
+      Toast.show({ type: t('TOAST_TYPE_ERROR'), text1: 'Solid Credentials', text2: e.response.data.message, position: 'bottom' });
+    }
+  };
+
+  useEffect(() => {
+    void resolveDomain(ethereum.address).then(ens => {
+      setTitle(ens ?? (isReadOnlyWallet ? t('WALLET') : t('MY_WALLET')));
+      setEns(!!ens);
+    });
+  });
+
+  const referToFriend = () => {
+    onShare(t('RECOMMEND_TITLE'), t('RECOMMEND_MESSAGE'), t('RECOMMEND_URL')).then(() => {}).catch((error) => {
+      void appsFlyer.logEvent('share_invite_failed', error);
+    });
+  };
+
+  // NOTE: LIFE CYCLE METHOD 🍎🍎🍎🍎
+  return (
+    <CyDScrollView className={'bg-white h-full w-full relative '}>
+      <ImageBackground source={AppImages.BG_SETTINGS} resizeMode="cover" imageStyle={{ height: 450, width: '100%' }}>
+        <DynamicView dynamic dynamicWidth dynamicHeight height={100} width={100} jC={'space-between'} mT={25}>
+          <DynamicView dynamic dynamicWidth dynamicHeight height={100} width={100} jC={'flex-start'}>
+            <DynamicImage dynamic dynamicWidth height={100} width={100} resizemode='contain' source={AppImages.CYPHERD_WALLET} mT={20} mL={10} />
+            <CyDView className='flex flex-row justify-center w-[80%] items-center pb-[25px]' >
+              {isReadOnlyWallet && <CyDImage source={AppImages.CYPHER_LOCK} className='h-[18px] w-[18px] mr-[5px]' resizeMode='contain'/>}
+              <CyDText className='text-[18px] font-bold pt-[3px]'>{title}</CyDText>
+              {ens && <CyDText className='text-[10px] secondaryTextColor font-semibold  bg-appColor px-[2px] mt-[3px] ml-[4px]'>ens</CyDText>}
+            </CyDView>
+
+            <OptionsContainer
+              sentryLabel={'address-book'}
+              onPress={() => {
+                props.navigation.navigate(C.screenTitle.MY_ADDRESS, { indexValue: 0 });
+              }}
+              title={t('ADDRESS_BOOK')}
+              iW={75}
+              logo={AppImages.ADDRESS_BOOK_ICON}
+            ></OptionsContainer>
+
+            <DynamicView dynamic dynamicWidth dynamicHeightFix height={1} width={88} bGC={Colors.portfolioBorderColor} />
+
+            <OptionsContainer
+              sentryLabel={'activities'}
+              onPress={() => {
+                props.navigation.navigate(C.screenTitle.ACTIVITIES);
+                activityContext.dispatch({ type: ActivityReducerAction.UPDATEVISITED, value: { lastVisited: new Date() } });
+              }}
+              shouldDot={latestDate(activityContext.state.activityObjects, activityContext.state.lastVisited)}
+              title={'Activities'}
+              logo={AppImages.ACTIVITIES}
+            />
+
+            <DynamicView dynamic dynamicWidth dynamicHeightFix height={1} width={88} bGC={Colors.portfolioBorderColor} />
+
+            {!isReadOnlyWallet && <OptionsContainer
+                sentryLabel={'referrals'}
+                onPress={() => {
+                  !isReadOnlyWallet
+                    ? props.navigation.navigate(C.screenTitle.REFERRAL_REWARDS)
+                    : referToFriend();
+                }}
+                title={ !isReadOnlyWallet ? 'Referral & rewards' : t('MENU_RECOMMEND_FRIEND')}
+                logo={AppImages.REFER_OUTLINE}
+            />}
+
+            {!isReadOnlyWallet && <DynamicView dynamic dynamicWidth dynamicHeightFix height={1} width={88} bGC={Colors.portfolioBorderColor} />}
+
+            {!isReadOnlyWallet && <OptionsContainer
+              sentryLabel={'wallet-connect'}
+              onPress={() => {
+                props.navigation.navigate(C.screenTitle.WALLET_CONNECT);
+              }}
+              title={'Wallet Connect'}
+              logo={AppImages.WALLET_CONNECT_LOGO}
+            ></OptionsContainer>}
+
+            {!isReadOnlyWallet && <DynamicView dynamic dynamicWidth dynamicHeightFix height={1} width={88} bGC={Colors.portfolioBorderColor} />}
+
+            {/* <OptionsContainer
+                            sentryLabel={'debit-card'}
+                            onPress={() => {
+                              analytics().logEvent('shortcut_card', { from: ethereum.address });
+                              props.navigation.navigate(C.screenTitle.DEBIT_CARD_SCREEN, {
+                                params: { url: 'https://app.cypherd.io?source=app&address=' + ethereum.address }
+                              });
+                            }}
+                            title={'Manage Card'}
+                            logo={AppImages.MANAGE_CARD}
+                            iW={90}
+                        ></OptionsContainer>
+
+                        <DynamicView dynamic dynamicWidth dynamicHeightFix height={1} width={88} bGC={Colors.portfolioBorderColor} /> */}
+
+            <OptionsContainer
+              sentryLabel={'security-privacy'}
+              onPress={() => {
+                props.navigation.navigate(C.screenTitle.SECURITY_PRIVACY);
+              }}
+              title={'Security & Privacy'}
+              logo={AppImages.CYPHER_LOCKED}
+            ></OptionsContainer>
+
+            <DynamicView dynamic dynamicWidth dynamicHeightFix height={1} width={88} bGC={Colors.portfolioBorderColor} />
+
+            <OptionsContainer
+              sentryLabel={'manage-wallet'}
+              onPress={() => {
+                props.navigation.navigate(C.screenTitle.MANAGE_WALLET);
+              }}
+              title={'Manage Wallet'}
+              logo={AppImages.WALLET}
+            ></OptionsContainer>
+
+            <DynamicView dynamic dynamicWidth dynamicHeightFix height={1} width={88} bGC={Colors.portfolioBorderColor} />
+
+            <OptionsContainer
+              sentryLabel={'app-settings'}
+              onPress={() => {
+                props.navigation.navigate(C.screenTitle.APP_SETTINGS);
+              }}
+              title={'App Settings'}
+              logo={AppImages.SETTINGS}
+            ></OptionsContainer>
+
+            <DynamicView dynamic dynamicWidth dynamicHeightFix height={1} width={88} bGC={Colors.portfolioBorderColor} />
+
+            <OptionsContainer
+              sentryLabel={'support-button'}
+              onPress={async () => {
+                await Intercom.displayMessenger();
+                sendFirebaseEvent(hdWalletContext, 'support');
+              }}
+              title={'Support'}
+              logo={AppImages.SUPPORT}
+            ></OptionsContainer>
+
+            <DynamicView dynamic dynamicWidth dynamicHeightFix height={1} width={88} bGC={Colors.portfolioBorderColor} />
+
+            <OptionsContainer
+              sentryLabel={'terms-and-conditions-button'}
+              onPress={() => {
+                props.navigation.navigate(C.screenTitle.LEGAL_SCREEN);
+              }}
+              title={t('LEGAL')}
+              logo={AppImages.TERMS_AND_CONDITIONS}
+            ></OptionsContainer>
+
+            {/* <DynamicView dynamic dynamicWidth dynamicHeightFix height={1} width={88} bGC={Colors.portfolioBorderColor} /> */}
+
+            {/* <OptionsContainer */}
+            {/*     sentryLabel={'whats-new'} */}
+            {/*     onPress={() => { */}
+            {/*       Intercom.displayMessenger(); */}
+            {/*       sendFirebaseEvent(hdWalletContext, 'support'); */}
+            {/*     }} */}
+            {/*     title={'Whats new in the app?'} */}
+            {/*     logo={AppImages.WHATS_NEW} */}
+            {/* ></OptionsContainer> */}
+
+            {updateModal && <CyDView className='flex-row justify-between py-[8] w-[80%] items-center border-[1px] border-[#EFEFEF] px-[18px] rounded-[8px] mb-[12px] bg-[#EFEFEF]'>
+              <CyDText className='text-[14px] font-bold '>{t<string>('NEW_VERSION_AVAILABLE')}</CyDText>
+
+              <CyDTouchView className='py-[4px] px-[6px] bg-appColor/[0.6] border-[1px] border-appColor rounded-[4px] '
+                onPress={() => {
+                  if (isAndroid()) {
+                    void Linking.openURL(
+                      'market://details?id=com.cypherd.androidwallet'
+                    );
+                  } else {
+                    const link =
+                      'itms-apps://apps.apple.com/app/cypherd-wallet/id1604120414';
+                    Linking.canOpenURL(link).then(
+                      (supported) => {
+                        supported && Linking.openURL(link);
+                      },
+                      (err) => Sentry.captureException(err)
+                    );
+                  }
+                }}
+              >
+                <CyDText className='text-[16px] font-semibold '>{t<string>('UPDATE')}</CyDText>
+              </CyDTouchView >
+
+            </CyDView>}
+
+            <CyDTouchView className={'flex items-center justify-center h-[50] w-full'}
+              onPress={async () => {
+                setClickCount(clickCount + 1);
+                if (clickCount === 4) {
+                  const developerMode: boolean = portfolioState.statePortfolio.developerMode;
+                  portfolioState.dispatchPortfolio({ value: { developerMode: !developerMode } });
+                  await setDeveloperMode(!developerMode);
+                  developerMode ? showToast('Developer Mode OFF') : showToast('Developer Mode ON');
+                  setDevMode(!developerMode);
+                  setClickCount(0);
+                  await analytics().setAnalyticsCollectionEnabled(!developerMode);
+                }
+              }}>
+              <DynamicImage dynamic dynamicWidth height={25} width={25} resizemode='contain' source={AppImages.CYPHER_TEXT} />
+              <CText dynamic fF={C.fontsName.FONT_REGULAR} fS={10} color={Colors.versionColor}>{t<string>('VERSION')} {DeviceInfo.getVersion()}</CText>
+            </CyDTouchView>
+
+            {devMode &&
+              <>
+                {/* <CyDTouchView onPress={async () => await setQuoteCancelReasons(false)} className={'flex flex-row justify-center items-center my-[10px]'}>
+                  <CyDText className={'underline underline-offset-2 text-blue-700 '}>
+                    {t<string>('ENABLE_FEEDBACK')}
+                  </CyDText>
+                </CyDTouchView> */}
+                <CyDTouchView onPress={async () => await deleteSolidCredentials()} className={'flex flex-row justify-center items-center my-[10px]'}>
+                  <CyDText className={'underline underline-offset-2 text-blue-700 '}>
+                    {t<string>('REMOVE_SOLID_CREDENTIALS')}
+                  </CyDText>
+                </CyDTouchView>
+              </>
+            }
+
+            <CyDView className={'flex flex-row items-center justify-between mt-[10px] mb-[30px]'}>
+              <SocialMedia
+                title={t('DISCORD')}
+                uri={'https://discord.com/invite/S9tDGZ9hgT'}
+                screenTitle={C.screenTitle.SOCIAL_MEDIA_SCREEN}
+                imageUri={'https://public.cypherd.io/icons/discord.png'}
+                navigationRef={props.navigation}
+              />
+              <SocialMedia
+                title={t('TWITTER')}
+                uri={'https://twitter.com/cypherwalletio'}
+                screenTitle={C.screenTitle.SOCIAL_MEDIA_SCREEN}
+                imageUri={'https://public.cypherd.io/icons/twitter.png'}
+                navigationRef={props.navigation}
+              />
+              <SocialMedia
+                title={t('REDDIT')}
+                uri={'https://www.reddit.com/r/CypherWallet/'}
+                screenTitle={C.screenTitle.SOCIAL_MEDIA_SCREEN}
+                imageUri={'https://public.cypherd.io/icons/reddit.png'}
+                navigationRef={props.navigation}
+              />
+              <SocialMedia
+                title={t('MEDIUM')}
+                uri={'https://medium.com/@CypherWallet'}
+                screenTitle={C.screenTitle.SOCIAL_MEDIA_SCREEN}
+                imageUri={'https://public.cypherd.io/icons/medium.png'}
+                navigationRef={props.navigation}
+              />
+              <SocialMedia
+                title={t('YOUTUBE')}
+                uri={'https://youtube.com/@cypherwallet_'}
+                screenTitle={C.screenTitle.SOCIAL_MEDIA_SCREEN}
+                imageUri={'https://public.cypherd.io/icons/youtube.png'}
+                navigationRef={props.navigation}
+              />
+            </CyDView>
+          </DynamicView>
+        </DynamicView>
+      </ImageBackground>
+    </CyDScrollView>
+  );
+}
