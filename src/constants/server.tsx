@@ -5,7 +5,7 @@ export interface Chain {
   symbol: string
   id: number
   logo_url: any
-  backendName: ChainBackendNames | 'ALL'
+  backendName: ChainBackendNames | 'ALL' | string
   chain_id: string
   native_token_address: string
   secondaryAddress?: string
@@ -25,7 +25,10 @@ export enum ChainBackendNames {
   COSMOS = 'COSMOS',
   OSMOSIS = 'OSMOSIS',
   JUNO = 'JUNO',
-  STARGAZE = 'STARGAZE'
+  STARGAZE = 'STARGAZE',
+  NOBLE = 'NOBLE',
+  SHARDEUM = 'SHARDEUM',
+  SHARDEUM_SPHINX = 'SHARDEUM_SPHINX'
 }
 
 export enum CosmosStakingTokens {
@@ -33,7 +36,8 @@ export enum CosmosStakingTokens {
   COSMOS = 'ATOM',
   OSMOSIS = 'Osmosis',
   JUNO = 'Juno',
-  STARGAZE = 'Stargaze'
+  STARGAZE = 'Stargaze',
+  NOBLE = 'Noble'
 }
 
 export enum FundWalletAddressType {
@@ -43,12 +47,15 @@ export enum FundWalletAddressType {
   OSMOSIS = 'OSMOSIS',
   JUNO = 'JUNO',
   STARGAZE = 'STARGAZE',
+  NOBLE = 'NOBLE',
   POLYGON = 'POLYGON',
   AVALANCHE = 'AVALANCHE',
   FANTOM = 'FANTOM',
   ARBITRUM = 'ARBITRUM',
   OPTIMISM = 'OPTIMISM',
   BSC = 'BSC',
+  SHARDEUM = 'SHARDEUM',
+  SHARDEUM_SPHINX = 'SHARDEUM_SPHINX'
 }
 
 export const CHAIN_ETH: Chain = {
@@ -148,6 +155,30 @@ export const CHAIN_ARBITRUM: Chain = {
   chainIdNumber: 42161
 };
 
+export const CHAIN_SHARDEUM: Chain = {
+  chainName: 'ethereum',
+  name: 'Shardeum Sphinx DApp 1.X',
+  symbol: 'SHM',
+  id: 15,
+  logo_url: AppImages.SHARDEUM,
+  backendName: ChainBackendNames.SHARDEUM,
+  chain_id: '0x1f91',
+  native_token_address: '0xeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee',
+  chainIdNumber: 8081
+};
+
+export const CHAIN_SHARDEUM_SPHINX: Chain = {
+  chainName: 'ethereum',
+  name: 'Shardeum Sphinx',
+  symbol: 'SHM',
+  id: 14,
+  logo_url: AppImages.SHARDEUM,
+  backendName: ChainBackendNames.SHARDEUM_SPHINX,
+  chain_id: '0x1f92',
+  native_token_address: '0xeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee',
+  chainIdNumber: 8082
+};
+
 export const OwlracleChainCodes = {
   Ethereum: 'eth',
   Polygon: 'poly',
@@ -222,21 +253,39 @@ export const CHAIN_STARGAZE: Chain = {
   coinGeckoId: 'stargaze'
 };
 
+export const CHAIN_NOBLE: Chain = {
+  chainName: 'noble',
+  name: 'Noble',
+  symbol: 'NOBLE',
+  id: 13,
+  logo_url: AppImages.NOBLE_LOGO,
+  backendName: ChainBackendNames.NOBLE,
+  chain_id: 'noble-1',
+  native_token_address: '0xeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee',
+  chainIdNumber: 0,
+  coinGeckoId: ''
+};
+
 export const EnsCoinTypes: Record<string, string> = {
   [ChainBackendNames.ETH]: '60',
   [ChainBackendNames.AVALANCHE]: '2147526762',
   [ChainBackendNames.FANTOM]: '2147483898',
   [ChainBackendNames.BSC]: '2147483704',
-  [ChainBackendNames.POLYGON]: '2147483785'
+  [ChainBackendNames.POLYGON]: '2147483785',
+  [ChainBackendNames.SHARDEUM]: 'dummy',
+  [ChainBackendNames.SHARDEUM_SPHINX]: 'dummy'
+
 };
 
-export const CHAIN_NAMES = ['ethereum', 'evmos', 'cosmos', 'osmosis', 'juno', 'stargaze'];
-export const COSMOS_CHAINS = ['cosmos', 'evmos', 'osmosis', 'juno', 'stargaze'];
-export const PURE_COSMOS_CHAINS = ['cosmos', 'osmosis', 'juno', 'stargaze'];
+export const SUPPORTED_EVM_CHAINS = [1, 137, 56, 43114, 250, 10, 42161, 9001];
+export const CHAIN_NAMES = ['ethereum', 'evmos', 'cosmos', 'osmosis', 'juno', 'stargaze', 'noble'];
+export const COSMOS_CHAINS = ['cosmos', 'evmos', 'osmosis', 'juno', 'stargaze', 'noble'];
+export const PURE_COSMOS_CHAINS = ['cosmos', 'osmosis', 'juno', 'stargaze', 'noble'];
 export const ALL_CHAINS: Chain[] = [
   CHAIN_ETH,
   CHAIN_POLYGON,
-  CHAIN_BSC,
+  CHAIN_STARGAZE,
+  CHAIN_NOBLE,
   CHAIN_AVALANCHE,
   CHAIN_FTM,
   CHAIN_OPTIMISM,
@@ -245,7 +294,56 @@ export const ALL_CHAINS: Chain[] = [
   CHAIN_COSMOS,
   CHAIN_OSMOSIS,
   CHAIN_JUNO,
-  CHAIN_STARGAZE
+  CHAIN_BSC,
+  CHAIN_SHARDEUM,
+  CHAIN_SHARDEUM_SPHINX
+];
+
+export const EVM_CHAINS: Chain[] = [
+  CHAIN_ETH,
+  CHAIN_POLYGON,
+  CHAIN_BSC,
+  CHAIN_AVALANCHE,
+  CHAIN_FTM,
+  CHAIN_OPTIMISM,
+  CHAIN_ARBITRUM,
+  CHAIN_SHARDEUM,
+  CHAIN_SHARDEUM_SPHINX
+];
+
+export const EVM_CHAINS_FOR_ADDRESS_DIR = [
+  'ethereum',
+  'polygon',
+  'binance',
+  'avalanche',
+  'fantom',
+  'optimism',
+  'arbitrum',
+  'shardeum',
+  'shardeum_sphinx'
+];
+
+export const chainIdNumberMapping: Record<number, Chain> = {
+  1: CHAIN_ETH,
+  137: CHAIN_POLYGON,
+  56: CHAIN_BSC,
+  43114: CHAIN_AVALANCHE,
+  250: CHAIN_FTM,
+  10: CHAIN_OPTIMISM,
+  42161: CHAIN_ARBITRUM,
+  9001: CHAIN_EVMOS
+};
+
+export const EVM_CHAINS_BACKEND_NAMES: ChainBackendNames[] = [
+  ChainBackendNames.POLYGON,
+  ChainBackendNames.BSC,
+  ChainBackendNames.AVALANCHE,
+  ChainBackendNames.FANTOM,
+  ChainBackendNames.OPTIMISM,
+  ChainBackendNames.ARBITRUM,
+  ChainBackendNames.EVMOS,
+  ChainBackendNames.SHARDEUM,
+  ChainBackendNames.SHARDEUM_SPHINX
 ];
 
 export const CARD_CHAINS: Chain[] = [
@@ -259,7 +357,9 @@ export const CARD_CHAINS: Chain[] = [
   CHAIN_EVMOS,
   CHAIN_COSMOS,
   CHAIN_OSMOSIS,
-  CHAIN_JUNO
+  CHAIN_JUNO,
+  CHAIN_SHARDEUM,
+  CHAIN_SHARDEUM_SPHINX
 ];
 
 export const IBC_CHAINS: Chain[] = [
@@ -267,7 +367,8 @@ export const IBC_CHAINS: Chain[] = [
   CHAIN_COSMOS,
   CHAIN_OSMOSIS,
   CHAIN_JUNO,
-  CHAIN_STARGAZE
+  CHAIN_STARGAZE,
+  CHAIN_NOBLE
 ];
 
 export const ALL_CHAINS_WITH_COLLECTION = [
@@ -281,13 +382,23 @@ export enum ChainNames {
   COSMOS = 'cosmos',
   OSMOSIS = 'osmosis',
   JUNO = 'juno',
-  STARGAZE = 'stargaze'
+  STARGAZE = 'stargaze',
+  NOBLE = 'noble',
+  BSC = 'binance',
+  POLYGON = 'polygon',
+  AVALANCHE = 'avalanche',
+  FANTOM = 'fantom',
+  OPTIMISM = 'optimism',
+  ARBITRUM = 'arbitrum',
+  SHARDEUM = 'shardeum',
+  SHARDEUM_SPHINX = 'shardeum_sphinx'
 };
 
 export enum QRScannerScreens {
   SEND = 'SEND',
   WALLET_CONNECT = 'WALLET_CONNECT',
-  IMPORT = 'IMPORT_WALLET'
+  IMPORT = 'IMPORT_WALLET',
+  TRACK_WALLET = 'TRACK_WALLET'
 }
 
 export enum NotificationEvents {
@@ -297,11 +408,13 @@ export enum NotificationEvents {
   OSMOSIS_STAKING = 'OSMOSIS_STAKING',
   JUNO_STAKING = 'JUNO_STAKING',
   STARGAZE_STAKING = 'STARGAZE_STAKING',
+  NOBLE_STAKING = 'NOBLE_STAKING',
   ACTIVITY_UPDATE = 'ACTIVITY_UPDATE',
   ORBITAL_APES = 'ORBITAL_APES',
   ADDRESS_ACTIVITY_WEBHOOK = 'ADDRESS_ACTIVITY_WEBHOOK',
   CARD_APPLICATION_UPDATE = 'CARD_APPLICATION_UPDATE',
-  CARD_TXN_UPDATE = 'CARD_TXN_UPDATE'
+  CARD_TXN_UPDATE = 'CARD_TXN_UPDATE',
+  DAPP_BROWSER_OPEN = 'DAPP_BROWSER_OPEN'
 }
 
 export enum ChainNameMapping {
@@ -316,7 +429,47 @@ export enum ChainNameMapping {
   COSMOS = 'cosmos',
   OSMOSIS = 'osmosis',
   JUNO = 'juno',
-  STARGAZE = 'stargaze'
+  STARGAZE = 'stargaze',
+  NOBLE = 'noble',
+  SHARDEUM = 'shardeum',
+  SHARDEUM_SPHINX = 'shardeum_sphinx'
+};
+
+export const ChainNameToContactsChainNameMapping = {
+  Ethereum: 'ethereum',
+  Polygon: 'polygon',
+  'Binance Smart Chain': 'binance',
+  Avalanche: 'avalanche',
+  Fantom: 'fantom',
+  Evmos: 'evmos',
+  'Arbitrum One': 'arbitrum',
+  'Shardeum Liberty 2.0': 'shardeum',
+  'Shardeum Sphinx': 'shardeum_sphinx',
+  Cosmos: 'cosmos',
+  Osmosis: 'osmosis',
+  Juno: 'juno',
+  Optimism: 'optimism',
+  Stargaze: 'stargaze',
+  Noble: 'noble'
+};
+
+export const ChainConfigMapping = {
+  binance: CHAIN_BSC,
+  eth: CHAIN_ETH,
+  ethereum: CHAIN_ETH,
+  polygon: CHAIN_POLYGON,
+  avalanche: CHAIN_AVALANCHE,
+  evmos: CHAIN_EVMOS,
+  fantom: CHAIN_FTM,
+  optimism: CHAIN_OPTIMISM,
+  arbitrum: CHAIN_ARBITRUM,
+  cosmos: CHAIN_COSMOS,
+  osmosis: CHAIN_OSMOSIS,
+  juno: CHAIN_JUNO,
+  stargaze: CHAIN_STARGAZE,
+  noble: CHAIN_NOBLE,
+  shardeum: CHAIN_SHARDEUM,
+  shardeum_sphinx: CHAIN_SHARDEUM_SPHINX
 };
 
 export enum NativeTokenMapping {

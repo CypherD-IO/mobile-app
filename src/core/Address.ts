@@ -16,7 +16,7 @@ function sendFirebaseEvent (walletaddress: string, trkEvent: string) {
   });
 }
 
-export type AddressChainNames = 'ethereum' | 'evmos' | 'cosmos' | 'osmosis' | 'juno' | 'stargaze';
+export type AddressChainNames = 'ethereum' | 'evmos' | 'cosmos' | 'osmosis' | 'juno' | 'stargaze' | 'noble';
 export interface IAccountDetail {
   address: string
   privateKey: string
@@ -124,7 +124,7 @@ export const generateWalletFromMnemonic = async (mnemonic: string, trackingEvent
 
   const ethereumWallet = await generateEthAddress(mnemonic);
 
-  const cosmosChains: AddressChainNames[] = ['cosmos', 'osmosis', 'juno', 'stargaze'];
+  const cosmosChains: AddressChainNames[] = ['cosmos', 'osmosis', 'juno', 'stargaze', 'noble'];
 
   const cosmosAccounts = await Promise.all(
     cosmosChains.map(async (chain: AddressChainNames) => {
@@ -142,9 +142,10 @@ export const generateWalletFromMnemonic = async (mnemonic: string, trackingEvent
     { address: cosmosAddress },
     { address: osmosisAddress },
     { address: junoAddress },
-    { address: stargazeAddress }
+    { address: stargazeAddress },
+    { address: nobleAddress }
   ] = cosmosAccounts;
-  getToken(ethereumWallet.address, cosmosAddress, osmosisAddress, junoAddress, stargazeAddress);
+  getToken(ethereumWallet.address, cosmosAddress, osmosisAddress, junoAddress, stargazeAddress, nobleAddress);
 
   if (isIOS()) {
     registerForRemoteMessages();

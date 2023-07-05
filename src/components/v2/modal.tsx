@@ -11,10 +11,12 @@ export default function CyDModalLayout ({
   animationOut = '',
   animationInTiming = 200,
   animationOutTiming = 200,
+  avoidKeyboard = false,
   onModalHide = () => {}
 }) {
   return (
     <Modal
+      avoidKeyboard = {avoidKeyboard}
       isVisible={isModalVisible}
       onBackdropPress={() => {
         !disableBackDropPress ? setModalVisible(false) : '';

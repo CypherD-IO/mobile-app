@@ -1,18 +1,22 @@
 import { screenTitle } from '../constants';
-import { Image } from 'react-native';
+import { BackHandler, Image, ToastAndroid } from 'react-native';
 import * as React from 'react';
 import {
   BrowserStackScreen, DebitCardStackScreen,
   OptionsStackScreen,
   PortfolioStackScreen
 } from './auth';
-import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
+import { BottomTabBar, createBottomTabNavigator } from '@react-navigation/bottom-tabs';
 import AppImages from '../../assets/images/appImages';
 import ShortcutsModal from '../containers/Shortcuts';
 import { NavigationContainer, useNavigationContainerRef } from '@react-navigation/native';
 import { useContext, useEffect, useState } from 'react';
 import { ActivityContext, HdWalletContext } from '../core/util';
 import SpInAppUpdates from 'sp-react-native-in-app-updates';
+import { CyDImage, CyDText, CyDView } from '../styles/tailwindStyles';
+import { t } from 'i18next';
+import clsx from 'clsx';
+import { isIOS } from '../misc/checkers';
 
 const Tab = createBottomTabNavigator();
 
@@ -20,11 +24,34 @@ function TabStack () {
   const navigationRef = useNavigationContainerRef();
   const activityContext = useContext<any>(ActivityContext);
   const hdWalletContext = useContext<any>(HdWalletContext);
+  const { isReadOnlyWallet, hideTabBar } = hdWalletContext.state;
   const inAppUpdates = new SpInAppUpdates(
     false // isDebug
   );
 
+  const paddingBottomTabBarStyles = isIOS() ? 15 : 10;
+
   const [tabBarOptions, setTabBarOptions] = useState<any>({});
+
+  let backPressCount = 0;
+  const handleBackButton = () => {
+    if (backPressCount === 0) {
+      backPressCount++;
+      setTimeout(() => { backPressCount = 0; }, 2000);
+      ToastAndroid.show('Press again to exit', ToastAndroid.SHORT);
+    } else if (backPressCount === 1) {
+      backPressCount = 0;
+      BackHandler.exitApp();
+    }
+    return true;
+  };
+
+  useEffect(() => {
+    BackHandler.addEventListener('hardwareBackPress', handleBackButton);
+    return () => {
+      BackHandler.removeEventListener('hardwareBackPress', handleBackButton);
+    };
+  }, []);
 
   const latestDate = (activities: any, lastVisited: Date) => {
     if (activities.length === 0) return false;
@@ -54,9 +81,20 @@ function TabStack () {
     <NavigationContainer independent={true} ref={navigationRef}>
       <Tab.Navigator
         initialRouteName={screenTitle.PORTFOLIO}
+        tabBar={(props) => (
+          <CyDView className={clsx('', { 'h-[0px] pb-[0px] mb-[-50px]': hideTabBar, 'h-[115px]': !hideTabBar && isReadOnlyWallet })}>
+            {isReadOnlyWallet && <CyDView className='flex flex-row justify-center items-center bg-ternaryBackgroundColor py-[5px]'>
+            <CyDImage source={AppImages.EYE_OPEN} className='h-[18px] w-[18px]' resizeMode='contain'/>
+            <CyDText className='font-bold mt-[2px] ml-[5px]'>{t('READ_ONLY_MODE')}</CyDText>
+            </CyDView>}
+            <BottomTabBar
+              {...props}
+            />
+          </CyDView>
+        )}
         screenOptions={({ navigation, route }) => ({
           tabBarHideOnKeyboard: true,
-          tabBarStyle: hdWalletContext.state.hideTabBar ? { height: 0, paddingBottom: 0, marginBottom: -50 } : { height: 80, paddingBottom: 20 },
+          tabBarStyle: hideTabBar ? { height: 0, paddingBottom: 0, marginBottom: -50 } : { height: 70, paddingBottom: paddingBottomTabBarStyles },
           tabBarIcon: ({ focused, color, size }) => {
             let iconName;
 
@@ -78,7 +116,7 @@ function TabStack () {
             return (
               <Image
                 style={{
-                  height: 30,
+                  height: 35,
                   resizeMode: 'contain',
                   marginTop: 5,
                   alignSelf: 'center'
@@ -87,16 +125,19 @@ function TabStack () {
               />
             );
           },
+          tabBarLabelStyle: {
+            fontFamily: 'Nunito',
+          },
           tabBarActiveTintColor: 'black',
           tabBarInactiveTintColor: 'gray',
           headerShown: false
         })}
       >
-        <Tab.Screen name={screenTitle.BROWSER} component={BrowserStackScreen}/>
         <Tab.Screen
           name={screenTitle.PORTFOLIO}
           component={PortfolioStackScreen}
         />
+        <Tab.Screen name={screenTitle.BROWSER} component={BrowserStackScreen}/>
         <Tab.Screen name={screenTitle.SHORTCUTS} component={PortfolioStackScreen}
                     options={() => ({
                       tabBarButton: () => <ShortcutsModal navigationRef={navigationRef}/>

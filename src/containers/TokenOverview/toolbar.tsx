@@ -4,7 +4,7 @@ import AppImages from '../../../assets/images/appImages';
 import { screenTitle } from '../../constants';
 import { ChainBackendNames, ChainNames, CosmosStakingTokens, FundWalletAddressType } from '../../constants/server';
 import { GlobalContext } from '../../core/globalContext';
-import { isBasicCosmosChain, isACosmosStakingToken, StakingContext, convertFromUnitAmount, convertToEvmosFromAevmos, isABasicCosmosStakingToken, isCosmosStakingToken } from '../../core/util';
+import { isBasicCosmosChain, StakingContext, convertFromUnitAmount, convertToEvmosFromAevmos, isABasicCosmosStakingToken, isCosmosStakingToken, isCosmosChain } from '../../core/util';
 import { TokenMeta } from '../../models/tokenMetaData.model';
 import { CosmosStakingContext } from '../../reducers/cosmosStakingReducer';
 import { CyDImage, CyDText, CyDTouchView, CyDView } from '../../styles/tailwindStyles';
@@ -13,8 +13,8 @@ export default function TokenOverviewToolBar ({ tokenData, navigation }: { token
   const globalStateContext = useContext<any>(GlobalContext);
   const cosmosStaking = useContext<any>(CosmosStakingContext);
   const stakingValidators = useContext<any>(StakingContext);
+  const { isBridgeable, isSwapable } = tokenData;
   const canShowIBC = globalStateContext.globalState.ibc && (isBasicCosmosChain(tokenData.chainDetails.backendName) || (tokenData.chainDetails.backendName === ChainBackendNames.EVMOS && (tokenData.name === CosmosStakingTokens.EVMOS || tokenData.name.includes('IBC'))));
-  const canShowBridge = tokenData.isVerified && (ChainNames.ETH === tokenData.chainDetails.chainName || isACosmosStakingToken(tokenData));
 
   const userBalance = () => {
     if (isABasicCosmosStakingToken(tokenData)) {
@@ -29,8 +29,8 @@ export default function TokenOverviewToolBar ({ tokenData, navigation }: { token
   const canShowFundCard = globalStateContext.globalState.cardProfile?.solid?.cards?.length > 0 && userBalance() >= 10;
 
   return (
-    <CyDView className={'flex flex-row w-[97%] justify-around mt-[5px]'}>
-          <CyDView>
+    <CyDView className={'flex flex-row w-[100%] justify-evenly mt-[5px]'}>
+          <CyDView className='flex items-center'>
               <CyDTouchView className={'flex items-center justify-center'} onPress={() => {
                 navigation.navigate(screenTitle.ENTER_AMOUNT, {
                   tokenData
@@ -41,7 +41,7 @@ export default function TokenOverviewToolBar ({ tokenData, navigation }: { token
               <CyDText className={'text-center mt-[3px] text-[14px] font-bold'}>{t<string>('SEND')}</CyDText>
           </CyDView>
 
-          {canShowIBC && <CyDView>
+          {canShowIBC && <CyDView className='flex items-center'>
               <CyDTouchView className={'bg-appColor rounded-full w-[40px] h-[40px] flex items-center justify-center'}
                   onPress={() => {
                     navigation.navigate(screenTitle.IBC_SCREEN, {
@@ -66,11 +66,12 @@ export default function TokenOverviewToolBar ({ tokenData, navigation }: { token
               <CyDText className={'text-center mt-[3px] text-[14px] font-bold'}>{t<string>('FUND_CARD')}</CyDText>
           </CyDView>} */}
 
-          {canShowBridge && <CyDView>
+          {isBridgeable && <CyDView className='flex items-center'>
               <CyDTouchView className={'bg-appColor rounded-full w-[40px] h-[40px] flex items-center justify-center'}
                   onPress={() => {
                     navigation.navigate(screenTitle.BRIDGE_SCREEN, {
-                      fromChainData: tokenData
+                      fromChainData: tokenData,
+                      title: t<string>('BRIDGE')
                     });
                   }}>
                   <CyDImage source={AppImages.BRIDGE_SHORTCUT} className={'w-[40px] h-[40px]'} />
@@ -78,7 +79,20 @@ export default function TokenOverviewToolBar ({ tokenData, navigation }: { token
               <CyDText className={'text-center mt-[3px] text-[14px] font-bold'}>{t<string>('BRIDGE')}</CyDText>
           </CyDView>}
 
-          <CyDView>
+          {isSwapable && <CyDView className='flex items-center'>
+            <CyDTouchView className={'flex items-center justify-center'}
+                          onPress={() => {
+                            navigation.navigate(screenTitle.BRIDGE_SCREEN, {
+                              fromChainData: tokenData,
+                              title: t<string>('SWAP_TITLE')
+                            });
+                          }}>
+              <CyDImage source={AppImages.SWAP_SHORTCUT} className={'w-[40px] h-[40px]'}/>
+            </CyDTouchView>
+            <CyDText className={'text-center mt-[3px] text-[14px] font-bold'}>{t<string>('SWAP_TITLE')}</CyDText>
+          </CyDView>}
+
+          <CyDView className='flex items-center'>
               <CyDTouchView className={' flex items-center justify-center'} onPress={() => {
                 let addressTypeQRCode;
                 if (tokenData.chainDetails.backendName === ChainBackendNames.COSMOS) {
@@ -93,6 +107,8 @@ export default function TokenOverviewToolBar ({ tokenData, navigation }: { token
                   addressTypeQRCode = FundWalletAddressType.JUNO;
                 } else if (tokenData.chainDetails.backendName === ChainBackendNames.STARGAZE) {
                   addressTypeQRCode = FundWalletAddressType.STARGAZE;
+                } else if (tokenData.chainDetails.backendName === ChainBackendNames.NOBLE) {
+                  addressTypeQRCode = FundWalletAddressType.NOBLE;
                 }
                 navigation.navigate(screenTitle.QRCODE, { addressType: addressTypeQRCode });
               }}>

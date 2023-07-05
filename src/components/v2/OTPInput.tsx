@@ -16,54 +16,19 @@ interface InputProps {
 }
 
 function OtpInput ({ pinCount, getOtp, showButton = false, buttonCTA = t('SUBMIT'), showSecuredEntryToggle = false, loader = false }: InputProps) {
-  const [otp, setOTP] = useState<string[]>(Array(pinCount).fill(''));
-  const otpTextInput: string | any[] = [];
-  const inputs: Number[] = Array(pinCount).fill(0);
+  const [otp, setOTP] = useState<string>('');
   const [securedEntry, setSecuredEntry] = useState<boolean>(true);
   const [isLoading, setIsLoading] = useState(false);
 
   useEffect(() => {
-    if (otp.length < pinCount) {
-      otpTextInput[otp.length].focus();
-    }
     if (!showButton) {
-      if (otp.join('').length === pinCount) {
+      if (otp?.length === pinCount) {
         setTimeout(() => {
-          getOtp(otp.join(''));
+          getOtp(otp);
         }, OTP_CALLBACK_TIMEOUT);
       }
     }
   }, [otp]);
-
-  const focusPrevious = (key: string, index: number) => {
-    if (key === 'Backspace' && index !== 0) {
-      const tempOTP = otp.slice(0, index - 1);
-      setOTP([...tempOTP]);
-    }
-  };
-
-  const focusNext = (index: number, value: string) => {
-    if (value.length === 1) {
-      if (index < otpTextInput.length - 1 && value) {
-        otpTextInput[index + 1].focus();
-      }
-      if (index === 0 || index === otpTextInput.length - 1) {
-        otpTextInput[index].blur();
-      }
-      const tempOTP: string[] = otp;
-      tempOTP[index] = value;
-      setOTP([...tempOTP]);
-    } else {
-      if (value.length > pinCount) {
-        value = value.substring(0, pinCount);
-      }
-      const tempOTP: string[] = value.split('');
-      setOTP([...tempOTP]);
-      if (value.length < pinCount) {
-        otpTextInput[value.length].focus();
-      }
-    }
-  };
 
   const toggleSecuredEntry = () => {
     const securedEntryStatus = securedEntry;
@@ -72,32 +37,25 @@ function OtpInput ({ pinCount, getOtp, showButton = false, buttonCTA = t('SUBMIT
 
   return (
         <CyDView>
-          <CyDView className={'flex flex-row flex-wrap justify-center items-center'}>
-            {inputs.map(
-              (i, j) => {
-                return (<CyDView className={'m-[10px]'} key={j}>
-                  <CyDTextInput
-                    className={clsx('h-[45px] w-[45px] border-[1px] text-center rounded-[5px] border-inputBorderColor', { 'pl-[1px] pt-[2px]': isAndroid() })}
-                    keyboardType="numeric"
-                    secureTextEntry={showSecuredEntryToggle && securedEntry}
-                    onChangeText={v => focusNext(j, v)}
-                    value={otp[j]}
-                    onKeyPress={e => focusPrevious(e.nativeEvent.key, j)}
-                    ref={(ref) => { otpTextInput[j] = ref; }}
-                    autoFocus={j === 0}
-                    maxLength={1}
-                  />
-                </CyDView>);
-              })}
-              { showSecuredEntryToggle && <CyDView className={'ml-[5px]'}>
+          <CyDView className={'flex flex-row justify-between items-center rounded-[5px] border-[1px] border-inputBorderColor'}>
+              <CyDTextInput
+                  className={clsx('h-[55px] text-center w-[100%] tracking-[5px]', { 'pl-[1px] pt-[2px]': isAndroid(), 'tracking-[15px]': otp !== '', 'w-[90%] pl-[35px]': showSecuredEntryToggle })}
+                  keyboardType="numeric"
+                  placeholder='Enter PIN'
+                  secureTextEntry={showSecuredEntryToggle && securedEntry}
+                  onChangeText={num => setOTP(num)}
+                  value={otp}
+                  maxLength={pinCount}
+              />
+              { showSecuredEntryToggle && <CyDView className={'items-end'}>
                 { securedEntry && <CyDTouchView onPress={() => { toggleSecuredEntry(); }}><CyDImage source={AppImages.EYE_OPEN} className={'w-[27px] h-[18px] mr-[12px]'} /></CyDTouchView> }
                 { !securedEntry && <CyDTouchView onPress={() => { toggleSecuredEntry(); }}><CyDImage source={AppImages.EYE_CLOSE} className={'w-[27px] h-[20px] mr-[12px]'} /></CyDTouchView> }
               </CyDView> }
           </CyDView>
           {showButton && <CyDView>
             <Button
-              disabled={otp.join('').length !== pinCount}
-              onPress={() => { setIsLoading(loader); getOtp(otp.join('')); }}
+              disabled={otp?.length !== pinCount}
+              onPress={() => { setIsLoading(loader); getOtp(otp); }}
               title={buttonCTA ?? ''}
               loading={isLoading}
               isLottie={false}
@@ -108,5 +66,4 @@ function OtpInput ({ pinCount, getOtp, showButton = false, buttonCTA = t('SUBMIT
         </CyDView>
   );
 }
-
 export default OtpInput;

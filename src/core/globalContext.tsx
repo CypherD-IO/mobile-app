@@ -1,3 +1,4 @@
+/* eslint-disable array-callback-return */
 import React, { type Dispatch } from 'react';
 import Web3 from 'web3';
 import * as Sentry from '@sentry/react-native';
@@ -6,8 +7,11 @@ import {
 } from '../constants/server';
 import axios from './Http';
 import { CardProfile } from '../models/cardProfile.model';
-import { GlobalContextType } from '../constants/enum';
+import { GlobalContextType, RPCPreference, SignMessageValidationType } from '../constants/enum';
 import { hostWorker } from '../global';
+import { getRpcEndpoints, getRpcPreference, setRpcEndpoints } from './asyncStorage';
+import { get } from 'lodash';
+import { isValidUUIDV4 } from './util';
 
 export type RpcResponseDetail = {
   [key in ChainBackendNames]: RPCDetail;
@@ -50,15 +54,14 @@ export const initialGlobalState: GlobalStateDef = {
     },
     EVMOS: {
       otherUrls: {
-        accountDetails: 'https://lcd-evmos.keplr.app/cosmos/auth/v1beta1/accounts/address',
-        allValidators: 'https://lcd-evmos.keplr.app/cosmos/staking/v1beta1/validators?status=BOND_STATUS_BONDED&pagination.limit=1000',
+        accountDetails: 'https://api-evmos-ia.cosmosia.notional.ventures/cosmos/auth/v1beta1/accounts/address',
+        allValidators: 'https://api-evmos-ia.cosmosia.notional.ventures/cosmos/staking/v1beta1/validators?status=BOND_STATUS_BONDED&pagination.limit=1000',
         balance: 'https://rest.bd.evmos.org:1317/cosmos/bank/v1beta1/balances/address',
-        delegatedValidatorInformation: 'https://goapi.evmos.org/ValidatorsByAddress/EVMOS/address',
-        delegationInformation: 'https://lcd-evmos.keplr.app/cosmos/staking/v1beta1/delegations/address',
-        reward: 'https://lcd-evmos.keplr.app/cosmos/distribution/v1beta1/delegators/address/rewards',
-        simulate: 'https://lcd-evmos.keplr.app/cosmos/tx/v1beta1/simulate',
-        transact: 'https://lcd-evmos.keplr.app/cosmos/tx/v1beta1/txs',
-        unboundings: 'https://lcd-evmos.keplr.app/cosmos/staking/v1beta1/delegators/address/unbonding_delegations'
+        delegationInformation: 'https://api-evmos-ia.cosmosia.notional.ventures/cosmos/staking/v1beta1/delegations/address',
+        reward: 'https://api-evmos-ia.cosmosia.notional.ventures/cosmos/distribution/v1beta1/delegators/address/rewards',
+        simulate: 'https://api-evmos-ia.cosmosia.notional.ventures/cosmos/tx/v1beta1/simulate',
+        transact: 'https://api-evmos-ia.cosmosia.notional.ventures/cosmos/tx/v1beta1/txs',
+        unboundings: 'https://api-evmos-ia.cosmosia.notional.ventures/cosmos/staking/v1beta1/delegators/address/unbonding_delegations'
       },
       primary: 'https://evmos-json-rpc.stakely.io'
     },
@@ -91,6 +94,12 @@ export const initialGlobalState: GlobalStateDef = {
     POLYGON: {
       primary: 'https://rpc.ankr.com/polygon'
     },
+    SHARDEUM: {
+      primary: 'https://dapps.shardeum.org/'
+    },
+    SHARDEUM_SPHINX: {
+      primary: 'https://sphinx.shardeum.org/'
+    },
     STARGAZE: {
       otherUrls: {
         balance: 'https://lcd-stargaze.keplr.app/cosmos/bank/v1beta1/balances/address?pagination.limit=1000',
@@ -100,6 +109,16 @@ export const initialGlobalState: GlobalStateDef = {
         validators: 'https://lcd-stargaze.keplr.app/cosmos/staking/v1beta1/validators?pagination.limit=1000&status=BOND_STATUS_BONDED'
       },
       primary: 'https://rpc-stargaze-ia.cosmosia.notional.ventures/'
+    },
+    NOBLE: {
+      otherUrls: {
+        balance: 'https://lcd-noble.cosmostation.io/cosmos/bank/v1beta1/balances/address?pagination.limit=1000',
+        delegations: 'https://lcd-noble.keplr.app/cosmos/staking/v1beta1/delegations/address?pagination.limit=1000',
+        rewards: 'https://lcd-noble.keplr.app/cosmos/distribution/v1beta1/delegators/address/rewards',
+        unBoundings: 'https://lcd-noble.keplr.app/cosmos/staking/v1beta1/delegators/address/unbonding_delegations?pagination.limit=1000',
+        validators: 'https://lcd-noble.keplr.app/cosmos/staking/v1beta1/validators?pagination.limit=1000&status=BOND_STATUS_BONDED'
+      },
+      primary: 'https://rpc-noble.keplr.app'
     }
   }
 };
@@ -136,13 +155,57 @@ export interface GlobalContextDef {
 
 export const GlobalContext = React.createContext<GlobalContextDef | null>(null);
 
-export async function fetchRPCEndpointsFromServer (globalDispatch: Function) {
+const checkAndMaintainUpdatedRPCEndpointsInAsync = async (rpcEndpoints: RpcResponseDetail) => {
   const ARCH_HOST: string = hostWorker.getHost('ARCH_HOST');
   const resultFromEndpoint = await axios.get<RpcResponseDetail>(`${ARCH_HOST}/v1/configuration/rpcEndpoints`);
-  const result = resultFromEndpoint.data;
+  const updatedEndpoints = {};
+  const availableChains = Object.keys(resultFromEndpoint.data);
+  availableChains.map(async (chain) => {
+    if (get(resultFromEndpoint.data, chain) && get(rpcEndpoints, chain)) {
+      Object.assign(updatedEndpoints, { [chain]: get(rpcEndpoints, chain) });
+    } else if (get(resultFromEndpoint.data, chain) && !(get(rpcEndpoints, chain)) && initialGlobalState?.rpcEndpoints && get(initialGlobalState.rpcEndpoints, chain)) {
+      Object.assign(updatedEndpoints, { [chain]: get(initialGlobalState.rpcEndpoints, chain) });
+    };
+    await setRpcEndpoints(JSON.stringify(updatedEndpoints));
+  });
+  return updatedEndpoints;
+};
+
+export async function fetchRPCEndpointsFromServer (globalDispatch: Function) {
+  let rpcPreference: string = RPCPreference.DEFAULT;
+  const rpcPreferenceFromAsync = await getRpcPreference();
+  if (rpcPreferenceFromAsync && rpcPreferenceFromAsync !== '') {
+    rpcPreference = rpcPreferenceFromAsync;
+  }
+  let result;
+  const ARCH_HOST: string = hostWorker.getHost('ARCH_HOST');
+  const RPCFromAsync = await getRpcEndpoints();
+  if (RPCFromAsync && RPCFromAsync !== '' && rpcPreference === RPCPreference.OVERIDDEN) {
+    const updatedRPCFromAsync = await checkAndMaintainUpdatedRPCEndpointsInAsync(JSON.parse(RPCFromAsync));
+    result = updatedRPCFromAsync;
+  } else {
+    const resultFromEndpoint = await axios.get<RpcResponseDetail>(`${ARCH_HOST}/v1/configuration/rpcEndpoints`);
+    result = resultFromEndpoint.data;
+  }
   globalDispatch({ type: GlobalContextType.RPC_UPDATE, rpc: result });
   return result;
 }
+
+const isValidMessage = (address: string, messageToBeValidated: string) => {
+  const messageToBeValidatedWith = /^Cypher Wallet wants you to sign in with your Ethereum account: \nAddress: 0x[a-fA-F0-9]{40} \n\nBy signing this transaction you are allowing Cypher Wallet to see the following: \n\nYour wallet address: 0x[a-fA-F0-9]{40} \nSessionId: [0-9a-f]{8}-[0-9a-f]{4}-[0-5][0-9a-f]{3}-[089ab][0-9a-f]{3}-[0-9a-f]{12} \nVersion: 1.0 \n\nPlease sign this message to authenticate. \nThis is a proof that you own this account. \nThis will not consume any gas.$/i;
+  const currentVersion = '1.0';
+  const versionSubstring = messageToBeValidated.match(/Version: (.*)[^\\n]/g)?.join('');
+  const expectedVersion = versionSubstring?.match(/[^Version: ](.*)[^\\n]/g)?.join('').trim();
+  if (messageToBeValidatedWith.test(messageToBeValidated)) {
+    return { message: SignMessageValidationType.VALID };
+  } else {
+    if (currentVersion !== expectedVersion) {
+      return { message: SignMessageValidationType.NEEDS_UPDATE };
+    } else {
+      return { message: SignMessageValidationType.INVALID };
+    }
+  }
+};
 
 export async function signIn (ethereum: { address: string, privateKey: string }) {
   const web3 = new Web3();
@@ -150,11 +213,15 @@ export async function signIn (ethereum: { address: string, privateKey: string })
   try {
     const { data } = await axios.get(`${ARCH_HOST}/v1/authentication/sign-message/${ethereum.address}`);
     const verifyMessage = data.message;
-    const { signature } = web3.eth.accounts.sign(verifyMessage, ethereum.privateKey);
-    const result = await axios.post(`${ARCH_HOST}/v1/authentication/verify-message/${ethereum.address}`, {
-      signature
-    });
-    return result.data.token;
+    const validationResponse = isValidMessage(ethereum.address, verifyMessage);
+    if (validationResponse.message === SignMessageValidationType.VALID) {
+      const { signature } = web3.eth.accounts.sign(verifyMessage, ethereum.privateKey);
+      const result = await axios.post(`${ARCH_HOST}/v1/authentication/verify-message/${ethereum.address}`, {
+        signature
+      });
+      return { ...validationResponse, token: result.data.token };
+    }
+    return validationResponse;
   } catch (error) {
     Sentry.captureException(error);
   }

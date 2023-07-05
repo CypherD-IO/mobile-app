@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/restrict-template-expressions */
 import { encodeSecp256k1Signature, serializeSignDoc } from '@cosmjs-rn/amino';
 import { Secp256k1, sha256 } from '@cosmjs-rn/crypto';
 import { StdSignDoc } from '@cosmjs/launchpad';
@@ -9,16 +10,17 @@ import { Dispatch } from 'react';
 import Toast from 'react-native-toast-message';
 import Web3 from 'web3';
 import AppImages from '../../../assets/images/appImages';
-import { CHAIN_ARBITRUM, CHAIN_AVALANCHE, CHAIN_BSC, CHAIN_ETH, CHAIN_EVMOS, CHAIN_FTM, CHAIN_OPTIMISM, CHAIN_OSMOSIS, CHAIN_POLYGON } from '../../constants/server';
+import { CHAIN_ARBITRUM, CHAIN_AVALANCHE, CHAIN_BSC, CHAIN_ETH, CHAIN_EVMOS, CHAIN_FTM, CHAIN_OPTIMISM, CHAIN_OSMOSIS, CHAIN_POLYGON, CHAIN_SHARDEUM, CHAIN_SHARDEUM_SPHINX } from '../../constants/server';
 import { EVENTS, OSMOSIS_WALLET_CONNECT_METHODS, WEB3METHODS } from '../../constants/web3';
 import { hexToUint } from '../../core/Address';
 import { getMaskedAddress } from '../../core/util';
-import { ActivityReducerAction, ActivityStatus, ActivityType, WalletConnectTransaction } from '../../reducers/activity_reducer';
+import { ActivityStatus, ActivityType, WalletConnectTransaction } from '../../reducers/activity_reducer';
 import { HDWallet } from '../../reducers/hdwallet_reducer';
 import { IdAppInfo, IWalletConnect, WalletConnectActions } from '../../reducers/wallet_connect_reducer';
 import { WebsiteInfo } from '../../types/Browser';
 import { SendTransactionCosmosFunc } from '../Browser/ConfirmationModalPromises';
 import { genId } from './activityUtilities';
+import { has } from 'lodash';
 
 const SUPPORTED_CHAIN_ID_MAP = {
   1: CHAIN_ETH,
@@ -29,7 +31,9 @@ const SUPPORTED_CHAIN_ID_MAP = {
   9001: CHAIN_EVMOS,
   0: CHAIN_OSMOSIS,
   42161: CHAIN_ARBITRUM,
-  10: CHAIN_OPTIMISM
+  10: CHAIN_OPTIMISM,
+  8081: CHAIN_SHARDEUM,
+  8082: CHAIN_SHARDEUM_SPHINX
 };
 
 const SUPPORTED_CHAIN_ID = [
@@ -41,7 +45,9 @@ const SUPPORTED_CHAIN_ID = [
   CHAIN_EVMOS.chain_id,
   CHAIN_OSMOSIS.chain_id,
   CHAIN_ARBITRUM.chain_id,
-  CHAIN_OPTIMISM.chain_id
+  CHAIN_OPTIMISM.chain_id,
+  CHAIN_SHARDEUM.chain_id,
+  CHAIN_SHARDEUM_SPHINX.chain_id
 ];
 
 const SUPPORTED_CHAIN_ID_NO = [
@@ -54,33 +60,42 @@ const OSMOSIS_METHODS = [
   OSMOSIS_WALLET_CONNECT_METHODS.SIGN_AMINO
 ];
 
+const embedChainIdBasedOnPlatform = (peerMetaName: string) => {
+  switch (peerMetaName) {
+    case CHAIN_OSMOSIS.name:
+      return CHAIN_OSMOSIS.chainIdNumber;
+    default:
+      return CHAIN_ETH.chainIdNumber;
+  }
+};
+
 export const subscribeToEvents = async (connector: WalletConnect | null, setWalletConnectModalVisible: Dispatch<boolean>, setRequest: Dispatch<boolean>, walletConnectDispatch: Dispatch<IWalletConnect>, hdWalletState: HDWallet, modalContext) => {
-  if (!connector.connected) {
-    await connector.createSession();
+  if (!connector?.connected && has(connector, 'version') && connector?.version === 1) {
+    await connector?.createSession();
   }
 
-  if (connector) {
+  if (connector && has(connector, 'version') && connector?.version === 1) {
     connector.on(EVENTS.SESSION_REQUEST, (error, payload) => {
       if (error) {
         throw error;
       }
       const { params: [{ peerMeta, chainId }] } = payload;
-      if (peerMeta.name === CHAIN_OSMOSIS.name && chainId === null) {
+      if (chainId === null) {
         const { params: [object] } = payload;
-        object.chainId = 0;
+        object.chainId = embedChainIdBasedOnPlatform(peerMeta.name);
         const newPayload = payload;
         payload.params = [object];
         setRequest({ payload: newPayload, connector, event: EVENTS.SESSION_REQUEST });
         setWalletConnectModalVisible(true);
       } else if (!SUPPORTED_CHAIN_ID_NO.includes(chainId)) {
         connector.rejectSession();
-        // showModal('state', {type: 'error', title: t('SCAN_FAILURE'), description: t('CHAIN_NOT_SUPPORTED'), onSuccess: hideModal, onFailure: hideModal});
         Toast.show({
           type: t('TOAST_TYPE_ERROR'),
           text1: t('SCAN_FAILURE'),
           text2: t('CHAIN_NOT_SUPPORTED'),
           position: t('BOTTOM')
         });
+        Sentry.captureMessage(`${t('CHAIN_NOT_SUPPORTED')} - Chain ID: ${chainId}`);
       } else {
         setRequest({ payload, connector, event: EVENTS.SESSION_REQUEST });
         setWalletConnectModalVisible(true);
@@ -256,7 +271,7 @@ const signAmino = async (signDoc: StdSignDoc, pubkey: Uint8Array, privKey: Uint8
   };
 };
 
-export const walletConnectApproveRequest = async (handleWeb3, params, globalContext, dispatchActivity) => {
+export const walletConnectApproveRequest = async (handleWeb3, params, dispatchActivity) => {
   const { connector, address, payload, dispatchFn, dAppInfo, HdWalletContext } = params;
   switch (payload.method) {
     case EVENTS.SESSION_REQUEST : {
@@ -269,7 +284,7 @@ export const walletConnectApproveRequest = async (handleWeb3, params, globalCont
       } else {
         let activityData: WalletConnectTransaction | null = null;
 
-        const { params: [{ value, to }] } = payload;
+        const { params: [{ data, value, to }] } = payload;
         const [, , host] = dAppInfo.url.split('/');
         const websiteInfo: WebsiteInfo = {
           title: dAppInfo.name,
@@ -277,6 +292,8 @@ export const walletConnectApproveRequest = async (handleWeb3, params, globalCont
           origin: host,
           url: dAppInfo.url
         };
+        let transactionValue = '';
+        transactionValue = value ?? data;
         if (payload.method === WEB3METHODS.SEND_TRANSACTION) {
           const chainInfo = SUPPORTED_CHAIN_ID_MAP[dAppInfo.chainId];
 
@@ -293,25 +310,30 @@ export const walletConnectApproveRequest = async (handleWeb3, params, globalCont
             chainName: name,
             symbol,
             datetime: new Date(),
-            amount: parseFloat(Web3.utils.fromWei(Web3.utils.hexToNumberString(value))).toString()
+            amount: parseFloat(Web3.utils.fromWei(Web3.utils.hexToNumberString(transactionValue))).toString()
           };
         }
         try {
           const chain = SUPPORTED_CHAIN_ID_MAP[dAppInfo.chainId];
 
-          activityData && dispatchActivity({ type: ActivityReducerAction.POST, value: activityData });
+          // activityData && dispatchActivity({ type: ActivityReducerAction.POST, value: activityData });
 
           const hash = await handleWeb3(payload, websiteInfo, chain);
 
           if (hash.error) {
+            Toast.show({
+              type: t('TOAST_TYPE_ERROR'),
+              text1: t('TRANSACTION_FAILURE'),
+              text2: hash.error?.message,
+              position: t('BOTTOM')
+            });
             connector.rejectRequest({
               id: payload.id,
               ...hash
             });
-          }
+          };
 
-          activityData && dispatchActivity({ type: ActivityReducerAction.PATCH, value: { id: activityData.id, status: ActivityStatus.SUCCESS, transactionHash: hash } });
-
+          // activityData && dispatchActivity({ type: ActivityReducerAction.PATCH, value: { id: activityData.id, status: ActivityStatus.SUCCESS, transactionHash: hash } });
           connector.approveRequest({
             id: payload.id,
             ...hash
@@ -321,7 +343,7 @@ export const walletConnectApproveRequest = async (handleWeb3, params, globalCont
             id: payload.id,
             error: { message: e.message }
           });
-          activityData && dispatchActivity({ type: ActivityReducerAction.PATCH, value: { id: activityData.id, status: ActivityStatus.FAILED, reason: e.message } });
+          // activityData && dispatchActivity({ type: ActivityReducerAction.PATCH, value: { id: activityData.id, status: ActivityStatus.FAILED, reason: e.message } });
 
           Sentry.captureException(e);
         }
@@ -339,7 +361,7 @@ export const getRenderContent = (request, address, walletConnectState) => {
         title: t('WALLET_PERMISSIONS'),
         buttonMessage: t('CONNECT_WALLET'),
         dAppInfo: {
-          name: peerMeta.name.length > 10 ? `${peerMeta.name.substring(0, 10)}..` : peerMeta.name,
+          name: peerMeta.name,
           image: peerMeta.icons[0]
         },
         chainInfo: {

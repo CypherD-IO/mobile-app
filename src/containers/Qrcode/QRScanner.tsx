@@ -1,8 +1,8 @@
 import React, { useState } from 'react';
 import QRCodeScanner from 'react-native-qrcode-scanner';
-import { Dimensions, ImageBackground } from 'react-native';
+import { BackHandler, Dimensions, ImageBackground } from 'react-native';
 import { useTranslation } from 'react-i18next';
-import { CyDView, CyDText, CyDTouchView } from '../../styles/tailwindStyles';
+import { CyDView, CyDText, CyDTouchView, CyDScrollView } from '../../styles/tailwindStyles';
 import { QRScannerScreens } from '../../constants/server';
 import { BarCodeReadEvent } from 'react-native-camera';
 import AppImages from '../../../assets/images/appImages';
@@ -22,30 +22,45 @@ export default function QRScanner (props: { route: { params: { fromPage: string 
         return t('QRSCAN_IMPORT');
       case QRScannerScreens.WALLET_CONNECT:
         return t('QRSCAN_WALLET_CONNECT');
+      case QRScannerScreens.TRACK_WALLET:
+        return t('QR_TRACK_WALLET');
       default:
         return t('QRSCAN_TEXT');
     }
   };
 
+  const handleBackButton = () => {
+    props?.navigation?.goBack();
+    return true;
+  };
+
+  React.useEffect(() => {
+    BackHandler.addEventListener('hardwareBackPress', handleBackButton);
+    return () => {
+      BackHandler.removeEventListener('hardwareBackPress', handleBackButton);
+    };
+  }, []);
+
   return (
-        <QRCodeScanner
+        <CyDScrollView>
+          <QRCodeScanner
             showMarker
             fadeIn={false}
             onRead={(e) => {
-              props.navigation.goBack();
-              props.route.params.onSuccess(e);
+              props?.navigation?.goBack();
+              props?.route?.params?.onSuccess(e);
             }}
-            cameraStyle = {{ height: SCREEN_HEIGHT }}
+            cameraStyle={{ height: SCREEN_HEIGHT }}
             customMarker={
               <ImageBackground
                 source={AppImages.SCANNER_BG} resizeMode="cover"
-                style={{ height: '100%', width: '100%' }}
+                style={{ height: '100%', width: '100%', marginTop: '-30%' }}
                 imageStyle={{ height: '100%', width: '100%' }}
               >
                 <CyDView className={'flex flex-column justify-end items-center h-screen w-screen'}>
                   <CyDView className={'flex items-center justify-center h-1/2 w-10/12 pt-[10px]'} >
-                    <CyDText className = {'font-nunito text-center text-[20px] color-white'}>
-                      { renderText() }
+                    <CyDText className={'font-nunito text-center text-[20px] color-white mt-[24%]'}>
+                      {renderText()}
                     </CyDText>
                     {fromPage === QRScannerScreens.WALLET_CONNECT && <CyDTouchView
                       className={
@@ -59,6 +74,7 @@ export default function QRScanner (props: { route: { params: { fromPage: string 
                 </CyDView>
               </ImageBackground>
             }
-        />
+          />
+        </CyDScrollView>
   );
 }

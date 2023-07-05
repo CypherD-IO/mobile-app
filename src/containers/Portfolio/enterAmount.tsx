@@ -5,7 +5,7 @@
 import clsx from 'clsx';
 import React, { useContext, useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import { BackHandler } from 'react-native';
+import { BackHandler, StyleSheet } from 'react-native';
 import AppImages from '../../../assets/images/appImages';
 import { useGlobalModalContext } from '../../components/v2/GlobalModal';
 import { BuyOrBridge } from '../../components/v2/StateModal';
@@ -15,7 +15,9 @@ import { ChainNameMapping, NativeTokenMapping } from '../../constants/server';
 import { Colors } from '../../constants/theme';
 import { Holding } from '../../core/Portfolio';
 import { getNativeTokenBalance, PortfolioContext, limitDecimalPlaces } from '../../core/util';
-import { CyDImage, CyDScrollView, CyDText, CyDTextInput, CyDTouchView, CyDView } from '../../styles/tailwindStyles';
+import { CyDFastImage, CyDImage, CyDScrollView, CyDText, CyDTextInput, CyDTouchView, CyDView } from '../../styles/tailwindStyles';
+import CyDTokenAmount from '../../components/v2/tokenAmount';
+import CyDTokenValue from '../../components/v2/tokenValue';
 
 const {
   CText,
@@ -28,6 +30,7 @@ export default function EnterAmount (props) {
   const { t } = useTranslation();
   const { route } = props;
   const { tokenData }: { tokenData: Holding } = route.params;
+  const { sendAddress = '' } = route.params;
   const [valueForUsd, setValueForUsd] = useState('0.00'); // native token amount
   const [usdValue, setUsdValue] = useState<string>('0.00');
   const [cryptoValue, setCryptoValue] = useState<string>('0.00');
@@ -89,9 +92,8 @@ export default function EnterAmount (props) {
 
   const _validateValueForUsd = () => {
     const nativeTokenSymbol = NativeTokenMapping[tokenData.chainDetails.symbol] || tokenData.chainDetails.symbol;
-
-    if (parseFloat(cryptoValue) >= parseFloat(tokenData.actualBalance)) {
-      showModal('state', { type: 'error', title: t('INSUFFICIENT_FUNDS'), description: t('ENETER_AMOUNT_LESS_THAN_BALANCE'), onSuccess: hideModal, onFailure: hideModal });
+    if (parseFloat(cryptoValue) > parseFloat(tokenData.actualBalance)) {
+      showModal('state', { type: 'error', title: t('INSUFFICIENT_FUNDS'), description: t('ENTER_AMOUNT_LESS_THAN_BALANCE'), onSuccess: hideModal, onFailure: hideModal });
     } else if (haveEnoughNativeBalance(cryptoValue)) {
       showModal('state', {
         type: 'error',
@@ -113,7 +115,8 @@ export default function EnterAmount (props) {
     } else {
       props.navigation.navigate(C.screenTitle.SEND_TO, {
         valueForUsd: cryptoValue,
-        tokenData
+        tokenData,
+        sendAddress
       });
     }
   };
@@ -121,8 +124,8 @@ export default function EnterAmount (props) {
   // NOTE: LIFE CYCLE METHOD 🍎🍎🍎🍎
   return (
     <CyDScrollView className={'bg-white h-full w-full'}>
-        <CyDView className={'px-[10px]'}>
-          <CyDView className={'flex items-center justify-center pb-[35px] pt-[15px] w-full bg-[#F7F8FE] rounded-[25px]'}>
+        <CyDView>
+          <CyDView className={'flex items-center justify-center pb-[35px] pt-[15px] w-full bg-secondaryBackgroundColor rounded-b-[25px]'}>
             <CyDView className={'flex items-center justify-center w-full relative'}>
               <CyDTouchView
                 onPress={() => {
@@ -142,9 +145,11 @@ export default function EnterAmount (props) {
                 }}
                 className={clsx(
                   'absolute left-[10%] bottom-[60%] bg-white rounded-full h-[40px] w-[40px] flex justify-center items-center p-[4px]'
-                )}
+                )
+              }
+              style={styles.roundButtonContainer}
               >
-                <CyDText className={'font-nunito text-black '}>{t<string>('MAX')}</CyDText>
+              <CyDText className={'font-nunito text-black '} >{t<string>('MAX')}</CyDText>
               </CyDTouchView>
               <CyDTouchView
                 onPress={() => {
@@ -162,10 +167,13 @@ export default function EnterAmount (props) {
                 className={clsx(
                   'absolute right-[10%] bottom-[60%] bg-white rounded-full h-[40px] w-[40px] flex justify-center items-center p-[4px]'
                 )}
+                style={styles.roundButtonContainer}
               >
-                <CyDImage source={AppImages.TOGGLE_ICON} className={'w-[14px] h-[16px]'} />
+              <CyDImage source={AppImages.TOGGLE_ICON} className={'w-[14px] h-[16px]'}/>
               </CyDTouchView>
-              <CText dynamic fF={C.fontsName.FONT_BOLD} fS={15} color={Colors.primaryTextColor}>{enterCryptoAmount ? tokenData.symbol : 'USD'}</CText>
+              <CyDText className='font-nunito text-[15px] font-bold text-primaryTextColor'>
+              {enterCryptoAmount ? tokenData.symbol : 'USD'}
+              </CyDText>
               <CyDView className={'flex-col w-8/12 mx-[6px] items-center'}>
                 <CyDTextInput
                   className={clsx(
@@ -197,40 +205,35 @@ export default function EnterAmount (props) {
               </CyDView>
               <CText dynamic fF={C.fontsName.FONT_BOLD} fS={15} color={Colors.subTextColor}>{enterCryptoAmount ? (!isNaN(parseFloat(usdValue)) ? formatAmount(usdValue) : '0.00') + ' USD' : (!isNaN(parseFloat(cryptoValue)) ? formatAmount(cryptoValue) : '0.00') + ` ${tokenData.name}`}</CText>
 
-              <DynamicView dynamic dynamicWidth jC={'center'} width={90} height={70} pH={10} mT={30} bR={10} bGC={Colors.whiteColor}
-                style={{
-                  shadowColor: '#000',
-                  shadowOffset: { width: 0, height: 1 },
-                  shadowOpacity: 0.8,
-                  elevation: 5,
-                  shadowRadius: 1
-                }}>
-
-                <DynamicView dynamic fD={'row'} pV={8} >
-                  <DynamicView dynamic mL={10} fD={'row'} bR={20}>
-                    <DynamicView dynamic dynamicWidthFix dynamicHeightFix height={25} width={25} aLIT='center'
-                      fD={'row'} jC='center' bGC='#EFEFEF' bR={20}>
-                      <DynamicImage dynamic dynamicWidthFix dynamicHeightFix height={30} width={30} resizemode='contain'
-                        source={{
-                          uri: tokenData.logoUrl
-                        }}
-                      />
-                    </DynamicView>
-                    <DynamicView dynamic mL={5} dynamicHeightFix height={54} dynamicWidthFix width={140} fD={'row'}>
-                      <DynamicView dynamic dynamicHeightFix height={54} aLIT='flex-start' fD={'column'} jC='center' pH={8}>
-                        <CText numberOfLines={2} tA={'left'} dynamicWidth width={100} dynamic fF={C.fontsName.FONT_EXTRA_BOLD} fS={15} color={Colors.primaryTextColor}>{tokenData.name}</CText>
-                        <CText dynamic fF={C.fontsName.FONT_BOLD} fS={14} tA={'left'} color={Colors.subTextColor}>{tokenData.symbol}</CText>
-                      </DynamicView>
-                    </DynamicView>
-                    <DynamicView dynamic dynamicHeightFix height={54} fD={'row'} jC='center'>
-                      <DynamicView dynamic dynamicWidthFix width={120} dynamicHeightFix height={54} aLIT='flex-end' fD={'column'} jC='center' pH={8}>
-                        <CText dynamic fF={C.fontsName.FONT_EXTRA_BOLD} fS={14} color={Colors.primaryTextColor}>{currencyFormatter.format(tokenData.totalValue)}</CText>
-                        <CText dynamic fF={C.fontsName.FONT_BOLD} fS={14} color={Colors.subTextColor}>{new Intl.NumberFormat('en-US', { maximumSignificantDigits: 4 }).format(tokenData.actualBalance)}</CText>
-                      </DynamicView>
-                    </DynamicView>
-                  </DynamicView>
-                </DynamicView>
-              </DynamicView>
+              <CyDView style={styles.tokenContainer} className='flex flex-row mt-[12px] mb-[6px] items-center rounded-[10px] self-center px-[10px] bg-white'>
+                  <CyDView>
+                    <CyDFastImage
+                      className={'h-[35px] w-[35px] rounded-[50px]'}
+                      source={{
+                        uri: tokenData.logoUrl
+                      }}
+                      resizeMode='contain'
+                    />
+                  </CyDView>
+                  <CyDView className={'flex w-[82%]'}>
+                    <CyDView className='flex flex-row w-full justify-between max-h-[90px] py-[10px] items-center'>
+                      <CyDView className='ml-[10px] max-w-[75%]'>
+                        <CyDView className={'flex flex-row align-center'}>
+                          <CyDText className={'font-extrabold text-[16px]'}>{tokenData.name}</CyDText>
+                        </CyDView>
+                        <CyDText className={'text-[14px] text-subTextColor font-bold mt-[2px]'}>{tokenData.symbol}</CyDText>
+                      </CyDView>
+                      <CyDView className='flex self-center items-end'>
+                        <CyDTokenValue className='text-[16px] font-extrabold'>
+                          {tokenData.totalValue}
+                        </CyDTokenValue>
+                        <CyDTokenAmount className='text-[14px] text-subTextColor font-bold'>
+                          {tokenData.actualBalance}
+                        </CyDTokenAmount>
+                      </CyDView>
+                    </CyDView>
+                  </CyDView>
+                </CyDView>
 
               <DynamicView dynamic dynamicWidth fD={'row'} jC={'center'} width={80} mT={20} aLIT={'center'} >
                 <CText dynamic fF={C.fontsName.FONT_BOLD} fS={15} color={Colors.primaryTextColor}>Send on</CText>
@@ -275,3 +278,20 @@ export default function EnterAmount (props) {
     </CyDScrollView>
   );
 }
+
+const styles = StyleSheet.create({
+  tokenContainer: {
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 1 },
+    shadowOpacity: 0.8,
+    elevation: 5,
+    shadowRadius: 1
+  },
+  roundButtonContainer: {
+    shadowColor: '#E2E4F0',
+    shadowOffset: { width: 0, height: 1 },
+    shadowOpacity: 0.8,
+    elevation: 5,
+    shadowRadius: 10,
+  },
+});

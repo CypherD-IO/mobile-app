@@ -1,238 +1,292 @@
 // import { Bech32Address } from "@keplr-wallet/cosmos";
 
-import { ChainInfo } from "@keplr-wallet/types";
+import { ChainInfo } from '@keplr-wallet/types';
 export interface CypherDCosmosChainInfo extends ChainInfo {
-  name: string;
+  name: string
 }
 
 export const EmbedChainInfos: CypherDCosmosChainInfo[] = [
   {
-    name: "cosmos",
-    rpc: "https://rpc-cosmoshub.keplr.app",
-    rest: "https://lcd-cosmoshub.keplr.app",
-    chainId: "cosmoshub-4",
-    chainName: "Cosmos Hub",
+    name: 'cosmos',
+    rpc: 'https://rpc-cosmoshub.keplr.app',
+    rest: 'https://lcd-cosmoshub.keplr.app',
+    chainId: 'cosmoshub-4',
+    chainName: 'Cosmos Hub',
     stakeCurrency: {
-      coinDenom: "ATOM",
-      coinMinimalDenom: "uatom",
+      coinDenom: 'ATOM',
+      coinMinimalDenom: 'uatom',
       coinDecimals: 6,
-      coinGeckoId: "cosmos",
+      coinGeckoId: 'cosmos'
     },
     walletUrl:
-      process.env.NODE_ENV === "production"
-        ? "https://wallet.keplr.app/chains/cosmos-hub"
-        : "http://localhost:8080/chains/cosmos-hub",
+      process.env.NODE_ENV === 'production'
+        ? 'https://wallet.keplr.app/chains/cosmos-hub'
+        : 'http://localhost:8080/chains/cosmos-hub',
     walletUrlForStaking:
-      process.env.NODE_ENV === "production"
-        ? "https://wallet.keplr.app/chains/cosmos-hub"
-        : "http://localhost:8080/chains/cosmos-hub",
+      process.env.NODE_ENV === 'production'
+        ? 'https://wallet.keplr.app/chains/cosmos-hub'
+        : 'http://localhost:8080/chains/cosmos-hub',
     bip44: {
-      coinType: 118,
+      coinType: 118
     },
     bech32Config: {
-      bech32PrefixAccAddr: "cosmos",
-      bech32PrefixAccPub: "cosmospub",
-      bech32PrefixValAddr: "cosmosvaloper",
-      bech32PrefixValPub: "cosmosvaloperpub",
-      bech32PrefixConsAddr: "cosmosvalcons",
-      bech32PrefixConsPub: "cosmosvalconspub",
+      bech32PrefixAccAddr: 'cosmos',
+      bech32PrefixAccPub: 'cosmospub',
+      bech32PrefixValAddr: 'cosmosvaloper',
+      bech32PrefixValPub: 'cosmosvaloperpub',
+      bech32PrefixConsAddr: 'cosmosvalcons',
+      bech32PrefixConsPub: 'cosmosvalconspub'
     },
     currencies: [
       {
-        coinDenom: "ATOM",
-        coinMinimalDenom: "uatom",
+        coinDenom: 'ATOM',
+        coinMinimalDenom: 'uatom',
         coinDecimals: 6,
-        coinGeckoId: "cosmos",
-      },
+        coinGeckoId: 'cosmos'
+      }
     ],
     feeCurrencies: [
       {
-        coinDenom: "ATOM",
-        coinMinimalDenom: "uatom",
+        coinDenom: 'ATOM',
+        coinMinimalDenom: 'uatom',
         coinDecimals: 6,
-        coinGeckoId: "cosmos",
-      },
+        coinGeckoId: 'cosmos'
+      }
     ],
     coinType: 118,
-    features: ["ibc-transfer", "ibc-go"],
+    features: ['ibc-transfer', 'ibc-go']
   },
   {
-    name: "osmosis",
-    rpc: "https://rpc-osmosis.keplr.app",
-    rest: "https://lcd-osmosis.keplr.app",
-    chainId: "osmosis-1",
-    chainName: "Osmosis",
+    name: 'osmosis',
+    rpc: 'https://rpc-osmosis.keplr.app',
+    rest: 'https://lcd-osmosis.keplr.app',
+    chainId: 'osmosis-1',
+    chainName: 'Osmosis',
     stakeCurrency: {
-      coinDenom: "OSMO",
-      coinMinimalDenom: "uosmo",
+      coinDenom: 'OSMO',
+      coinMinimalDenom: 'uosmo',
       coinDecimals: 6,
-      coinGeckoId: "osmosis",
+      coinGeckoId: 'osmosis'
     },
     walletUrl:
-      process.env.NODE_ENV === "production"
-        ? "https://app.osmosis.zone"
-        : "https://app.osmosis.zone",
+      process.env.NODE_ENV === 'production'
+        ? 'https://app.osmosis.zone'
+        : 'https://app.osmosis.zone',
     walletUrlForStaking:
-      process.env.NODE_ENV === "production"
-        ? "https://wallet.keplr.app/chains/osmosis"
-        : "http://localhost:8080/chains/osmosis",
+      process.env.NODE_ENV === 'production'
+        ? 'https://wallet.keplr.app/chains/osmosis'
+        : 'http://localhost:8080/chains/osmosis',
     bip44: { coinType: 118 },
     bech32Config: {
-      bech32PrefixAccAddr: "osmosis",
-      bech32PrefixAccPub: "osmosispub",
-      bech32PrefixValAddr: "osmosisvaloper",
-      bech32PrefixValPub: "osmosisvaloperpub",
-      bech32PrefixConsAddr: "osmosisvalcons",
-      bech32PrefixConsPub: "osmosisvalconspub",
+      bech32PrefixAccAddr: 'osmosis',
+      bech32PrefixAccPub: 'osmosispub',
+      bech32PrefixValAddr: 'osmosisvaloper',
+      bech32PrefixValPub: 'osmosisvaloperpub',
+      bech32PrefixConsAddr: 'osmosisvalcons',
+      bech32PrefixConsPub: 'osmosisvalconspub'
     },
     currencies: [
       {
-        coinDenom: "OSMO",
-        coinMinimalDenom: "uosmo",
+        coinDenom: 'OSMO',
+        coinMinimalDenom: 'uosmo',
         coinDecimals: 6,
-        coinGeckoId: "osmosis",
+        coinGeckoId: 'osmosis'
       },
       {
-        coinDenom: "ION",
-        coinMinimalDenom: "uion",
+        coinDenom: 'ION',
+        coinMinimalDenom: 'uion',
         coinDecimals: 6,
-        coinGeckoId: "ion",
-      },
+        coinGeckoId: 'ion'
+      }
     ],
     feeCurrencies: [
       {
-        coinDenom: "OSMO",
-        coinMinimalDenom: "uosmo",
+        coinDenom: 'OSMO',
+        coinMinimalDenom: 'uosmo',
         coinDecimals: 6,
-        coinGeckoId: "osmosis",
+        coinGeckoId: 'osmosis',
         gasPriceStep: {
           low: 0,
           average: 0.025,
-          high: 0.04,
-        },
-      },
+          high: 0.04
+        }
+      }
     ],
-    features: ["ibc-transfer", "ibc-go", "cosmwasm", "osmosis-txfees"],
+    features: ['ibc-transfer', 'ibc-go', 'cosmwasm', 'osmosis-txfees']
   },
   {
-    name: "juno",
-    rpc: "https://rpc-juno.keplr.app",
-    rest: "https://lcd-juno.keplr.app",
-    chainId: "juno-1",
-    chainName: "Juno",
+    name: 'juno',
+    rpc: 'https://rpc-juno.keplr.app',
+    rest: 'https://lcd-juno.keplr.app',
+    chainId: 'juno-1',
+    chainName: 'Juno',
     stakeCurrency: {
-      coinDenom: "JUNO",
-      coinMinimalDenom: "ujuno",
+      coinDenom: 'JUNO',
+      coinMinimalDenom: 'ujuno',
       coinDecimals: 6,
-      coinGeckoId: "juno-network",
+      coinGeckoId: 'juno-network'
     },
     walletUrl:
-      process.env.NODE_ENV === "production"
-        ? "https://wallet.keplr.app/chains/juno"
-        : "http://localhost:8080/chains/juno",
+      process.env.NODE_ENV === 'production'
+        ? 'https://wallet.keplr.app/chains/juno'
+        : 'http://localhost:8080/chains/juno',
     walletUrlForStaking:
-      process.env.NODE_ENV === "production"
-        ? "https://wallet.keplr.app/chains/juno"
-        : "http://localhost:8080/chains/juno",
+      process.env.NODE_ENV === 'production'
+        ? 'https://wallet.keplr.app/chains/juno'
+        : 'http://localhost:8080/chains/juno',
     bip44: {
-      coinType: 118,
+      coinType: 118
     },
     bech32Config: {
-      bech32PrefixAccAddr: "juno",
-      bech32PrefixAccPub: "junopub",
-      bech32PrefixValAddr: "junovaloper",
-      bech32PrefixValPub: "junovaloperpub",
-      bech32PrefixConsAddr: "junovalcons",
-      bech32PrefixConsPub: "junovalconspub",
+      bech32PrefixAccAddr: 'juno',
+      bech32PrefixAccPub: 'junopub',
+      bech32PrefixValAddr: 'junovaloper',
+      bech32PrefixValPub: 'junovaloperpub',
+      bech32PrefixConsAddr: 'junovalcons',
+      bech32PrefixConsPub: 'junovalconspub'
     },
     currencies: [
       {
-        coinDenom: "JUNO",
-        coinMinimalDenom: "ujuno",
+        coinDenom: 'JUNO',
+        coinMinimalDenom: 'ujuno',
         coinDecimals: 6,
-        coinGeckoId: "juno-network",
-      },
+        coinGeckoId: 'juno-network'
+      }
     ],
     feeCurrencies: [
       {
-        coinDenom: "JUNO",
-        coinMinimalDenom: "ujuno",
+        coinDenom: 'JUNO',
+        coinMinimalDenom: 'ujuno',
         coinDecimals: 6,
-        coinGeckoId: "juno-network",
+        coinGeckoId: 'juno-network',
         gasPriceStep: {
           low: 0.001,
           average: 0.0025,
-          high: 0.004,
-        },
+          high: 0.004
+        }
       },
       {
-        coinDenom: "ATOM",
+        coinDenom: 'ATOM',
         coinMinimalDenom:
-          "ibc/C4CFF46FD6DE35CA4CF4CE031E643C8FDC9BA4B99AE598E9B0ED98FE3A2319F9",
+          'ibc/C4CFF46FD6DE35CA4CF4CE031E643C8FDC9BA4B99AE598E9B0ED98FE3A2319F9',
         coinDecimals: 6,
         gasPriceStep: {
           low: 0.001 * 0.33,
           average: 0.0025 * 0.33,
-          high: 0.004 * 0.33,
-        },
-      },
+          high: 0.004 * 0.33
+        }
+      }
     ],
-    features: ["cosmwasm", "ibc-transfer", "ibc-go", "wasmd_0.24+"],
+    features: ['cosmwasm', 'ibc-transfer', 'ibc-go', 'wasmd_0.24+']
   },
   {
-    name: "stargaze",
-    rpc: "https://rpc-stargaze.keplr.app",
-    rest: "https://lcd-stargaze.keplr.app",
-    chainId: "stargaze-1",
-    chainName: "Stargaze",
+    name: 'stargaze',
+    rpc: 'https://rpc-stargaze.keplr.app',
+    rest: 'https://lcd-stargaze.keplr.app',
+    chainId: 'stargaze-1',
+    chainName: 'Stargaze',
     stakeCurrency: {
-      coinDenom: "STARS",
-      coinMinimalDenom: "ustars",
+      coinDenom: 'STARS',
+      coinMinimalDenom: 'ustars',
       coinDecimals: 6,
-      coinGeckoId: "stargaze",
+      coinGeckoId: 'stargaze'
     },
     walletUrl:
-      process.env.NODE_ENV === "production"
-        ? "https://wallet.keplr.app/chains/stargaze"
-        : "http://localhost:8080/chains/stargaze",
+          process.env.NODE_ENV === 'production'
+            ? 'https://wallet.keplr.app/chains/stargaze'
+            : 'http://localhost:8080/chains/stargaze',
     walletUrlForStaking:
-      process.env.NODE_ENV === "production"
-        ? "https://wallet.keplr.app/chains/stargaze"
-        : "http://localhost:8080/chains/stargaze",
+          process.env.NODE_ENV === 'production'
+            ? 'https://wallet.keplr.app/chains/stargaze'
+            : 'http://localhost:8080/chains/stargaze',
     bip44: {
-      coinType: 118,
+      coinType: 118
     },
     bech32Config: {
-      bech32PrefixAccAddr: "stars",
-      bech32PrefixAccPub: "starspub",
-      bech32PrefixValAddr: "starsvaloper",
-      bech32PrefixValPub: "starsvaloperpub",
-      bech32PrefixConsAddr: "starsvalcons",
-      bech32PrefixConsPub: "starsvalconspub",
+      bech32PrefixAccAddr: 'stars',
+      bech32PrefixAccPub: 'starspub',
+      bech32PrefixValAddr: 'starsvaloper',
+      bech32PrefixValPub: 'starsvaloperpub',
+      bech32PrefixConsAddr: 'starsvalcons',
+      bech32PrefixConsPub: 'starsvalconspub'
     },
     currencies: [
       {
-        coinDenom: "STARS",
-        coinMinimalDenom: "ustars",
+        coinDenom: 'STARS',
+        coinMinimalDenom: 'ustars',
         coinDecimals: 6,
-        coinGeckoId: "stargaze",
-      },
+        coinGeckoId: 'stargaze'
+      }
     ],
     feeCurrencies: [
       {
-        coinDenom: "STARS",
-        coinMinimalDenom: "ustars",
+        coinDenom: 'STARS',
+        coinMinimalDenom: 'ustars',
         coinDecimals: 6,
-        coinGeckoId: "stargaze",
+        coinGeckoId: 'stargaze',
         gasPriceStep: {
           low: 0.01,
           average: 0.025,
-          high: 0.04,
-        },
-      },
+          high: 0.04
+        }
+      }
     ],
-    features: ["ibc-transfer", "ibc-go"],
+    features: ['ibc-transfer', 'ibc-go']
   },
+  {
+    name: 'noble',
+    rpc: 'https://rpc-noble.keplr.app',
+    rest: 'https://lcd-noble.keplr.app',
+    chainId: 'noble-1',
+    chainName: 'Noble',
+    stakeCurrency: {
+      coinDenom: 'ATOM',
+      coinMinimalDenom: 'uatom',
+      coinDecimals: 6,
+      coinGeckoId: ''
+    },
+    walletUrl:
+          process.env.NODE_ENV === 'production'
+            ? 'https://wallet.keplr.app/chains/noble'
+            : 'http://localhost:8080/chains/noble',
+    walletUrlForStaking:
+          process.env.NODE_ENV === 'production'
+            ? 'https://wallet.keplr.app/chains/noble'
+            : 'http://localhost:8080/chains/noble',
+    bip44: {
+      coinType: 118
+    },
+    bech32Config: {
+      bech32PrefixAccAddr: 'noble',
+      bech32PrefixAccPub: 'noblepub',
+      bech32PrefixValAddr: 'noblevaloper',
+      bech32PrefixValPub: 'noblevaloperpub',
+      bech32PrefixConsAddr: 'noblevalcons',
+      bech32PrefixConsPub: 'noblevalconspub'
+    },
+    currencies: [
+      {
+        coinDenom: 'ATOM',
+        coinMinimalDenom: 'uatom',
+        coinDecimals: 6,
+        coinGeckoId: ''
+      }
+    ],
+    feeCurrencies: [
+      {
+        coinDenom: 'ATOM',
+        coinMinimalDenom: 'uatom',
+        coinDecimals: 6,
+        coinGeckoId: '',
+        gasPriceStep: {
+          low: 0.01,
+          average: 0.025,
+          high: 0.04
+        }
+      }
+    ],
+    features: ['ibc-transfer', 'ibc-go']
+  }
 ];
 
 // export const EmbedChainInfos_: ChainInfo[] = [
@@ -2155,7 +2209,7 @@ export const EmbedChainInfos: CypherDCosmosChainInfo[] = [
 // };
 
 export const solidCredentials = {
-  orgId: "4234",
-  testVaultId: "2342",
-  liveVaultId: "42342",
+  orgId: 'ACci3u9aEmutHr7zpAeVY2Zc',
+  testVaultId: 'tntbevlgikb',
+  liveVaultId: 'tntpsikpeyn'
 };

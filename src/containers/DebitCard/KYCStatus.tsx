@@ -14,7 +14,7 @@ import { GlobalContext } from '../../core/globalContext';
 import axios from 'axios';
 import Loading from '../../components/v2/loading';
 import { CardApplicationStatus, GlobalContextType, KYCStatus } from '../../constants/enum';
-import { getCardProfile } from '../../core/card';
+import { getWalletProfile } from '../../core/card';
 import { screenTitle } from '../../constants';
 import Intercom from '@intercom/intercom-react-native';
 import { sendFirebaseEvent } from '../utilities/analyticsUtility';
@@ -72,7 +72,7 @@ export default function CardKYCStatusScreen ({ navigation }) {
   };
 
   const getProfile = async () => {
-    const profileData = await getCardProfile(globalContext.globalState.token);
+    const profileData = await getWalletProfile(globalContext.globalState.token);
     if (profileData.solid.applicationStatus === CardApplicationStatus.COMPLETION_PENDING) {
       setFillIndex(4);
       setError(true);
@@ -116,7 +116,7 @@ export default function CardKYCStatusScreen ({ navigation }) {
       const { data } = await axios.get(KYCUrl, config);
       setKycData(data);
       await fillIndexAccordingToKYCStatus(data.kycStatus);
-      const profileData = await getCardProfile(globalContext.globalState.token);
+      const profileData = await getWalletProfile(globalContext.globalState.token);
       globalContext.globalDispatch({ type: GlobalContextType.CARD_PROFILE, cardProfile: profileData });
       setLoading(false);
     } catch (e) {

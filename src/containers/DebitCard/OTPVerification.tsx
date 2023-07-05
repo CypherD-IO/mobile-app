@@ -17,7 +17,7 @@ import { isAndroid, isIOS } from '../../misc/checkers';
 import { concatErrorMessagesFromArray } from '../../core/util';
 import { OTPType, GlobalContextType } from '../../constants/enum';
 import { useGlobalModalContext } from '../../components/v2/GlobalModal';
-import { getCardProfile } from '../../core/card';
+import { getWalletProfile } from '../../core/card';
 import { hostWorker } from '../../global';
 import { countryMaster } from '../../../assets/datasets/countryMaster';
 
@@ -191,7 +191,7 @@ export default function OTPVerificationScreen ({ navigation }) {
         headers: { Authorization: `Bearer ${String(globalContext.globalState.token)}` }
       };
       await axios.post(triggerKYCUrl, {}, config);
-      const data = await getCardProfile(globalContext.globalState.token);
+      const data = await getWalletProfile(globalContext.globalState.token);
       globalContext.globalDispatch({ type: GlobalContextType.CARD_PROFILE, cardProfile: data });
       navigation.navigate(screenTitle.CARD_SIGNUP_COMPLETE_SCREEN);
     } catch (e) {

@@ -11,14 +11,15 @@ import {
   setInternetCredentials,
   Options
 } from 'react-native-keychain';
-
+import Intercom from '@intercom/intercom-react-native';
 import { Alert } from 'react-native';
 import {
   _NO_CYPHERD_CREDENTIAL_AVAILABLE_,
   CYPHERD_ROOT_DATA,
   CYPHERD_SEED_PHRASE_KEY,
   PIN_AUTH,
-  convertToHexa
+  convertToHexa,
+  AUTHORIZE_WALLET_DELETION
 } from './util';
 import DeviceInfo from 'react-native-device-info';
 import RNExitApp from 'react-native-exit-app';
@@ -26,13 +27,15 @@ import { PORTFOLIO_NEW_LOAD } from '../reducers/portfolio_reducer';
 import * as Sentry from '@sentry/react-native';
 import { AddressChainNames, generateWalletFromMnemonic, IAccountDetail, IAccountDetailWithChain } from './Address';
 import { DirectSecp256k1HdWallet, OfflineDirectSigner } from '@cosmjs-rn/proto-signing';
-import * as CryptoJS from 'crypto-js';
+import CryptoJS from 'crypto-js';
 import { isAndroid, isIOS } from '../misc/checkers';
-import { setSchemaVersion, getSchemaVersion, clearAllData as clearAsyncStorage, clearAllData } from './asyncStorage';
+import { setSchemaVersion, getSchemaVersion, clearAllData as clearAsyncStorage } from './asyncStorage';
 import { isValidMnemonic, sha256 } from 'ethers/lib/utils';
 import { initialHdWalletState } from '../reducers';
+import { t } from 'i18next';
+import { KeychainErrors } from '../constants/KeychainErrors';
 
-const currentSchemaVersion = 4;
+const currentSchemaVersion = 5;
 
 export async function saveCredentialsToKeychain (
   hdWalletContext: any,
@@ -47,6 +50,7 @@ export async function saveCredentialsToKeychain (
   } else {
     await saveToKeychain(CYPHERD_SEED_PHRASE_KEY, wallet.mnemonic);
   }
+  await saveToKeychain(AUTHORIZE_WALLET_DELETION, 'AUTHORIZE_WALLET_DELETION');
   const rootData = constructRootData(wallet.accounts);
   // save root data after wallet creation
   if (isAndroid()) {
@@ -84,18 +88,35 @@ export async function removeCredentialsFromKeychain () {
 }
 
 export async function _setInternetCredentialsOptions (key: string, value: string, acl: boolean) {
-  if (acl) {
-    let options = await getPrivateACLOptions();
-    if (isAndroid() && key === CYPHERD_ROOT_DATA) {
-      options = {
-        ...options,
-        storage: STORAGE_TYPE.FB
-      };
+  try {
+    if (acl) {
+      let options = await getPrivateACLOptions();
+      if (isAndroid() && key === CYPHERD_ROOT_DATA) {
+        options = {
+          ...options,
+          storage: STORAGE_TYPE.AES
+        };
+      }
+      await setInternetCredentials(key, key, value, options);
+    } else {
+      // For storing wallet address, which is public and to access without faceID or passcode
+      await setInternetCredentials(key, key, value);
     }
-    await setInternetCredentials(key, key, value, options);
-  } else {
-    // For storing wallet address, which is public and to access without faceID or passcode
-    await setInternetCredentials(key, key, value);
+  } catch (e) {
+    Sentry.captureException(e);
+    Alert.alert(
+      t('UNABLE_TO_CREATE_WALLET'),
+      t('CONTACT_CYPHERD_SUPPORT'),
+      [
+        {
+          text: 'OK',
+          onPress: () => {
+            void Intercom.displayMessenger();
+          }
+        }
+      ],
+      { cancelable: false }
+    );
   }
 }
 
@@ -116,12 +137,20 @@ export async function saveToKeychain (key: string, value: string, acl = true) {
   }
 }
 
-export async function loadFromKeyChain (key: string, forceCloseOnFailure = false) {
+export async function loadFromKeyChain (key: string, forceCloseOnFailure = false, showModal = () => {}) {
   try {
     // Retrieve the credentials
+    let requestMessage: string = '';
+    switch (key) {
+      case 'AUTHORIZE_WALLET_DELETION':
+        requestMessage = 'Requesting permission to delete the wallet';
+        break;
+      default:
+        requestMessage = 'Requesting access to continue using this app';
+    }
     const credentials = await getInternetCredentials(key, {
       authenticationPrompt: {
-        title: 'Requesting access to continue using this app'
+        title: requestMessage
       }
     });
     if (credentials) {
@@ -132,9 +161,12 @@ export async function loadFromKeyChain (key: string, forceCloseOnFailure = false
     }
   } catch (error) {
     // TODO (user feedback): Give feedback to user.
-    if (error.message === 'code: 11, msg: No fingerprints enrolled.') {
-      await removeCredentialsFromKeychain();
-      await clearAllData();
+    if (error.message === KeychainErrors.CODE_11 || error.message === KeychainErrors.USERNAME_OR_PASSPHRASE_NOT_CORRECT) {
+      showModal();
+    } else if (error.message === KeychainErrors.CODE_1) {
+      if (forceCloseOnFailure) {
+        await fingerprintHardwareAlert();
+      }
     } else {
       Sentry.captureException(error);
       if (forceCloseOnFailure) {
@@ -147,8 +179,27 @@ export async function loadFromKeyChain (key: string, forceCloseOnFailure = false
 async function showReAuthAlert () {
   return await new Promise((resolve) => {
     Alert.alert(
-      'Authentication Cancelled',
-      'Please authenticate to continue using the app.',
+      t('AUTHENTICATION_CANCELLED'),
+      t('AUTHENTICATE_TO_CONTINUE'),
+      [
+        {
+          text: 'OK',
+          onPress: () => {
+            resolve(true);
+            RNExitApp.exitApp();
+          }
+        }
+      ],
+      { cancelable: false }
+    );
+  });
+}
+
+async function fingerprintHardwareAlert () {
+  return await new Promise((resolve) => {
+    Alert.alert(
+      t('FINGERPRINT_HARDWARE_NOT_AVAILABLE'),
+      t('FIX_THIS_ISSUE_TO_CONTINUE'),
       [
         {
           text: 'OK',
@@ -164,9 +215,9 @@ async function showReAuthAlert () {
 }
 
 // Utility methods
-export async function loadRecoveryPhraseFromKeyChain (forceCloseOnFailure = false, pin = '') {
-  let mnemonic = await loadFromKeyChain(CYPHERD_SEED_PHRASE_KEY, forceCloseOnFailure);
-  if (mnemonic && isAndroid() && await isPinAuthenticated()) {
+export async function loadRecoveryPhraseFromKeyChain (forceCloseOnFailure = false, pin = '', showModal = () => {}) {
+  let mnemonic = await loadFromKeyChain(CYPHERD_SEED_PHRASE_KEY, forceCloseOnFailure, showModal);
+  if (mnemonic && await isPinAuthenticated()) {
     mnemonic = decryptMnemonic(mnemonic, pin);
   }
   return mnemonic;
@@ -177,14 +228,16 @@ export async function isAuthenticatedForPrivateKey (forceCloseOnFailure = false)
   return mnemonic && mnemonic !== _NO_CYPHERD_CREDENTIAL_AVAILABLE_;
 }
 
-export async function loadCyRootDataFromKeyChain (hdWallet = initialHdWalletState) {
+export async function loadCyRootDataFromKeyChain (hdWallet = initialHdWalletState, showModal = () => {}) {
   // Update schemaVersion whenever adding a new address generation logic
   let mnemonic: string | undefined;
   // const hdWallet = useContext<any>(HdWalletContext);
+
   if (isAndroid()) {
-    mnemonic = await loadRecoveryPhraseFromKeyChain(true, hdWallet.pinValue);
+    mnemonic = await loadRecoveryPhraseFromKeyChain(true, hdWallet.pinValue, showModal);
   }
 
+  // No authentication needed to fetch CYD_RootData in Android but needed in case of IOS
   const schemaVersion = await getSchemaVersion();
   if (schemaVersion === currentSchemaVersion.toString()) {
     let cyData = await loadFromKeyChain(CYPHERD_ROOT_DATA);
@@ -207,7 +260,7 @@ export async function loadCyRootDataFromKeyChain (hdWallet = initialHdWalletStat
   }
 
   if (isIOS()) {
-    mnemonic = await loadRecoveryPhraseFromKeyChain(true);
+    mnemonic = await loadRecoveryPhraseFromKeyChain(true, hdWallet.pinValue, showModal);
   }
 
   if (mnemonic && mnemonic !== _NO_CYPHERD_CREDENTIAL_AVAILABLE_) {
@@ -319,7 +372,7 @@ export async function getPrivateACLOptions (): Promise<Options> {
 
 export async function getSignerClient (hdWallet: any = initialHdWalletState): Promise<Map<string, OfflineDirectSigner>> {
   const seedPhrase = await loadRecoveryPhraseFromKeyChain(false, hdWallet.state?.pinValue ? hdWallet.state.pinValue : hdWallet.pinValue);
-  const accounts: string[] = ['cosmos', 'osmo', 'juno', 'stars'];
+  const accounts: string[] = ['cosmos', 'osmo', 'juno', 'stars', 'noble'];
   const wallets: Map<string, OfflineDirectSigner> = new Map();
   if (seedPhrase && isValidMnemonic(seedPhrase)) {
     for (const wallet of accounts) {
@@ -348,7 +401,9 @@ export const savePin = async (pin: string) => {
 export const changePin = async (oldPin: string, newPin: string) => {
   await saveToKeychain(PIN_AUTH, sha256('0x' + convertToHexa(newPin)));
   const mnemonic = await loadRecoveryPhraseFromKeyChain(false, oldPin);
-  await saveToKeychain(CYPHERD_SEED_PHRASE_KEY, CryptoJS.AES.encrypt(mnemonic, newPin).toString());
+  if (mnemonic) {
+    await saveToKeychain(CYPHERD_SEED_PHRASE_KEY, CryptoJS.AES.encrypt(mnemonic, newPin).toString());
+  }
 };
 
 export const validatePin = async (pin: string) => {
@@ -360,10 +415,16 @@ export const validatePin = async (pin: string) => {
 };
 
 export const isBiometricEnabled = async () => {
-  if (await getSupportedBiometryType() === null) {
-    return false;
+  let canAuthenticate;
+  if (isIOS()) {
+    canAuthenticate = await canImplyAuthentication({
+      authenticationType: AUTHENTICATION_TYPE.DEVICE_PASSCODE_OR_BIOMETRICS
+    });
+  } else {
+    const hasBiometricsEnabled = await getSupportedBiometryType();
+    canAuthenticate = hasBiometricsEnabled !== null;
   }
-  return true;
+  return canAuthenticate;
 };
 
 export const removePin = async (hdWallet: any, pin = '') => {

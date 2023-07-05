@@ -49,7 +49,7 @@ buck-out/
 # CocoaPods
 /ios/Pods/
 /ios/tmp.xcconfig
-/ios/GoogleService-Info.plist
+ios/GoogleService-Info.plist
 ios/sentry.properties
 
 #Internal development notes
@@ -58,4 +58,8 @@ DEVELOPER_GUIDE.md
 #vscode settings
 /.vscode/
 .env
+
+#android
+android/app/google-services.json
+android/sentry.properties
 

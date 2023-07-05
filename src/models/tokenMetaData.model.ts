@@ -8,11 +8,13 @@ export interface TokenMeta {
     chainIdNumber: number
     chainName: string
     chain_id: string
-    logo_url: number
+    logo_url: any
     name: string
     native_token_address: string
     secondaryAddress: string
     symbol: string
+    id: number
+    coinGeckoId?: string
   }
   coinGeckoId: string
   contractAddress: string
@@ -27,4 +29,9 @@ export interface TokenMeta {
   stakedBalanceTotalValue: string
   symbol: string
   totalValue: string
+  actualUnbondingBalance: number
+  unbondingBalanceTotalValue: number
+  isBridgeable: boolean
+  isSwapable: boolean
+  isStakeable?: boolean
 }

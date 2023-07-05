@@ -7,11 +7,24 @@ import OtpInput from '../../components/v2/OTPInput';
 import AppImages from '../../../assets/images/appImages';
 import { screenTitle } from '../../constants';
 import Toast from 'react-native-toast-message';
+import { BackHandler } from 'react-native';
 
 export default function ConfirmPin ({ route, navigation }) {
   const { setPinAuthentication = (value) => {}, pin, backButton = false, changePinValue = false } = route.params;
   const [wrongPin, setWrongPin] = useState(false); // state to show or hide the Wrong Pin text
   const hdWallet = useContext<any>(HdWalletContext);
+
+  const handleBackButton = () => {
+    navigation.goBack();
+    return true;
+  };
+
+  React.useEffect(() => {
+    BackHandler.addEventListener('hardwareBackPress', handleBackButton);
+    return () => {
+      BackHandler.removeEventListener('hardwareBackPress', handleBackButton);
+    };
+  }, []);
 
   const PINHeader = () => {
     return (

@@ -1,23 +1,11 @@
-import React, { useState } from 'react';
-import Modal from 'react-native-modal';
+import React from 'react';
 import { useTranslation } from 'react-i18next';
 import AppImages from '../../assets/images/appImages';
-import * as C from '../constants/index';
-import { Colors } from '../constants/theme';
-import { ButtonWithOutImage } from '../containers/Auth/Share';
-import { DynamicTouchView, SepraterView } from '../styles/viewStyle';
-import { Platform, StyleSheet } from 'react-native';
-import { isIphoneX } from 'react-native-iphone-x-helper';
+import { SepraterView } from '../styles/viewStyle';
+import { StyleSheet } from 'react-native';
 import Button from './v2/button';
 import { CyDImage, CyDText, CyDTouchView, CyDView } from '../styles/tailwindStyles';
 import CyDModalLayout from './v2/modal';
-const {
-  CText,
-  SafeAreaView,
-  DynamicView,
-  DynamicImage,
-  ModalView
-} = require('../styles');
 
 export default function BottomSendToConfirm (props) {
   const { isModalVisible, onPayPress, onCancelPress, lowBalance, modalParams } = props;
@@ -51,7 +39,7 @@ export default function BottomSendToConfirm (props) {
             <SepraterView className={'w-[100%]'} dynamic/>
             <CyDView className={'flex flex-row mt-[20px] pb-[15px]'}>
               <CyDText className={' font-bold text-[16px] ml-[5px] text-primaryTextColor'}>{t('SEND_TO')}</CyDText>
-              <CyDView className={'flex flex-row justify-between w-[90%]  pl-[18px]'}>
+              <CyDView className={'flex flex-row flex-wrap justify-between w-[80%] pl-[18px]'}>
                   <CyDText className={' font-medium text-[16px] text-primaryTextColor'}>{modalParams?.to_address}</CyDText>
               </CyDView>
             </CyDView>
@@ -66,7 +54,7 @@ export default function BottomSendToConfirm (props) {
             </CyDView>
           </CyDView>
           <CyDView className={'flex flex-col w-[100%]'} >
-            <Button sentry-label='send-bottom-confirm-pay-button'
+            <Button sentry-label='send-bottom-confirm-pay-button' isPrivateKeyDependent={true}
                     title={t('TRANSFER')} style={'py-[5%] mt-[10px]'} onPress={() => {
                       onPayPress();
                     }}

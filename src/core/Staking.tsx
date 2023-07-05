@@ -36,30 +36,32 @@ const getValidatorsInfoFromGet = (resp1, resp2, resp3, resp4, resp5) => {
 
   userStakedValidatorsDetails.forEach((item) => {
     const description: validatorDescription = {
-      details: item.description.details,
-      id: item.description.identity,
-      website: item.description.website,
-      name: item.description.moniker
+      details: item?.description.details,
+      id: item?.description.identity,
+      website: item?.description.website,
+      name: item?.description.moniker
     };
 
     const singleValidator: stakeValidators = {
-      commission: parseFloat(item.commission.commission_rates.rate),
-      tokens: item.tokens,
-      address: item.operator_address,
-      status: item.status,
-      jailed: item.jailed,
+      commission: parseFloat(item?.commission.commission_rates.rate),
+      tokens: item?.tokens,
+      address: item?.operator_address,
+      status: item?.status,
+      jailed: item?.jailed,
       description,
       balance: BigInt(0),
-      apr: (parseFloat(apr) - (parseFloat(apr) * item.commission.commission_rates.rate)).toFixed(2)
+      apr: (parseFloat(apr) - (parseFloat(apr) * item?.commission.commission_rates.rate)).toFixed(2)
     };
-    validators.set(item.operator_address, singleValidator);
+    validators.set(item?.operator_address, singleValidator);
   });
 
   if (userStakedValidatorsBalance.length > 0) {
     userStakedValidatorsBalance.forEach(item => {
-      if (validators.has(item.delegation.validator_address)) {
+      const validatorAddress = validators.get(item.delegation.validator_address);
+      if (validatorAddress) {
         totalStakedBalance += BigInt(item.balance.amount);
-        validators.get(item.delegation.validator_address).balance = BigInt(item.balance.amount);
+        validatorAddress.balance = BigInt(item.balance.amount);
+        validators.set(item.delegation.validator_address, validatorAddress);
       }
     });
   }
@@ -84,69 +86,83 @@ const getValidatorsInfoFromGet = (resp1, resp2, resp3, resp4, resp5) => {
 };
 
 export default async function getValidatorsForUSer (address, stakingValidators, globalStateContext) {
-  const urlRecord = globalStateContext.globalState.rpcEndpoints.EVMOS.otherUrls;
-  const ARCH_HOST: string = hostWorker.getHost('ARCH_HOST');
-  const aprEndpoint = `${ARCH_HOST}/v1/configuration/apr/EVMOS`;
-  const endpoints = [
-    urlRecord.delegatedValidatorInformation.replace('address', address),
-    urlRecord.delegationInformation.replace('address', address),
-    urlRecord.reward.replace('address', address),
-    urlRecord.allValidators.replace('address', address),
-    urlRecord.balance.replace('address', `${address}/by_denom?denom=aevmos`),
-    urlRecord.unboundings.replace('address', address)
-  ];
+  if (address) {
+    const urlRecord = globalStateContext.globalState.rpcEndpoints.EVMOS.otherUrls;
+    const ARCH_HOST: string = hostWorker.getHost('ARCH_HOST');
+    const aprEndpoint = `${ARCH_HOST}/v1/configuration/apr/EVMOS`;
+    const endpoints = [
+      urlRecord.delegationInformation.replace('address', address),
+      urlRecord.reward.replace('address', address),
+      urlRecord.allValidators.replace('address', address),
+      urlRecord.balance.replace('address', `${address}/by_denom?denom=aevmos`),
+      urlRecord.unboundings.replace('address', address)
+    ];
 
-  Promise.all(endpoints.map(async (endpoint) => await axios.get(endpoint)))
-    .then(
-      axios.spread(async (...allData) => {
-        let apr;
-        try {
-          apr = await axios.get(aprEndpoint);
-        } catch (error: any) {
-          apr = { data: { apr: '0' } };
-          Sentry.captureException(`failed to fetch APR ${error.message}`);
-        }
-        const {
-          vList,
-          totalReward,
-          totalStakedBalance,
-          unBoundingTotal,
-          unBoundingsList
-        } = getValidatorsInfoFromGet(allData[0], allData[1], allData[2], allData[5], apr);
-        const allVList = getValidatorsInfoFromGet(allData[3], allData[1], allData[2], {}, apr).vList;
+    Promise.all(endpoints.map(async (endpoint) => await axios.get(endpoint)))
+      .then(
+        axios.spread(async (...allData) => {
+          let apr;
+          try {
+            apr = await axios.get(aprEndpoint);
+          } catch (error: any) {
+            apr = { data: { apr: '0' } };
+            Sentry.captureException(`failed to fetch APR ${error.message}`);
+          }
 
-        const unStakedBalance = BigInt(allData[4].data?.balance?.amount ? allData[4].data.balance.amount : 0);
-
-        if (allVList.size > 0) {
-          stakingValidators.dispatchStaking({
-            value: {
-              allValidatorsListState: STAKING_NOT_EMPTY,
-              allValidators: allVList
-            }
+          const delegatedValidatorsArray: any = [];
+          allData[0].data.delegation_responses.forEach((delegatedValidator) => {
+            const [delegatedValidatorFullObject] = allData[2].data.validators.filter((validator) => validator.operator_address === delegatedValidator.delegation.validator_address);
+            delegatedValidatorsArray.push(delegatedValidatorFullObject);
           });
 
-          stakingValidators.dispatchStaking({ value: { unStakedBalance } });
-          stakingValidators.dispatchStaking({ value: { unBoundingsList } });
-        }
+          const delegatedValidators = {
+            data: {
+              validators: delegatedValidatorsArray
+            }
+          };
 
-        if (vList.size > 0) {
-          stakingValidators.dispatchStaking(
-            {
+          const {
+            vList,
+            totalReward,
+            totalStakedBalance,
+            unBoundingTotal,
+            unBoundingsList
+          } = getValidatorsInfoFromGet(delegatedValidators, allData[0], allData[1], allData[4], apr);
+          const allVList = getValidatorsInfoFromGet(allData[2], allData[0], allData[1], {}, apr).vList;
+
+          const unStakedBalance = BigInt(allData[3].data?.balance?.amount ? allData[3].data.balance.amount : 0);
+
+          if (allVList.size > 0) {
+            stakingValidators.dispatchStaking({
               value: {
-                myValidators: vList,
-                myValidatorsListState: STAKING_NOT_EMPTY,
-                totalReward,
-                totalStakedBalance
+                allValidatorsListState: STAKING_NOT_EMPTY,
+                allValidators: allVList
               }
             });
-        }
 
-        if (unBoundingTotal > BigInt(0)) {
-          stakingValidators.dispatchStaking({ value: { unBoundingTotal } });
-        }
-      }))
-    .catch(error => {
-      Sentry.captureException(error);
-      void analytics().logEvent('portfolio_error', { from: 'getting information for regarding staking' });
-    });
+            stakingValidators.dispatchStaking({ value: { unStakedBalance } });
+            stakingValidators.dispatchStaking({ value: { unBoundingsList } });
+          }
+
+          if (vList.size > 0) {
+            stakingValidators.dispatchStaking(
+              {
+                value: {
+                  myValidators: vList,
+                  myValidatorsListState: STAKING_NOT_EMPTY,
+                  totalReward,
+                  totalStakedBalance
+                }
+              });
+          }
+
+          if (unBoundingTotal > BigInt(0)) {
+            stakingValidators.dispatchStaking({ value: { unBoundingTotal } });
+          }
+        }))
+      .catch(error => {
+        Sentry.captureException(error);
+        void analytics().logEvent('portfolio_error', { from: 'getting information for regarding staking' });
+      });
+  }
 }

@@ -14,7 +14,10 @@ export const gasFeeReservation: Record<ChainBackendNames, number> = {
   ETH: 0.001,
   ARBITRUM: 0.001,
   OPTIMISM: 0.001,
-  STARGAZE: 0.1
+  STARGAZE: 0.1,
+  NOBLE: 0.01,
+  SHARDEUM: 0.01,
+  SHARDEUM_SPHINX: 0.01
 };
 
 export const nativeTokenMapping: Record<ChainBackendNames, string> = {
@@ -29,7 +32,10 @@ export const nativeTokenMapping: Record<ChainBackendNames, string> = {
   COSMOS: 'Atom',
   OSMOSIS: 'Osmo',
   JUNO: 'Juno',
-  STARGAZE: 'Stargaze'
+  STARGAZE: 'Stargaze',
+  NOBLE: 'Noble',
+  SHARDEUM: 'Shm',
+  SHARDEUM_SPHINX: 'Shm'
 };
 
 export const months = [

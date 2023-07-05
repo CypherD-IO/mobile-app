@@ -3,30 +3,21 @@
  * @flow
  */
 import React, { useContext, useEffect, useRef, useState } from 'react';
-import { CyDView, CyDText, CyDTouchView, CyDImage } from '../../styles/tailwindStyles';
+import { CyDView, CyDText, CyDImage, CyDScrollView } from '../../styles/tailwindStyles';
 import { useTranslation } from 'react-i18next';
-import { Colors } from '../../constants/theme';
-import * as C from '../../constants/index';
 import AppImages from '../../../assets/images/appImages';
-import { getMaskedAddress, HdWalletContext } from '../../core/util';
+import { HdWalletContext } from '../../core/util';
 import { showToast } from '../../containers/utilities/toastUtility';
 import Clipboard from '@react-native-clipboard/clipboard';
-import { DynamicScrollView } from '../../styles/viewStyle';
-import { BackHandler, Platform } from 'react-native';
+
+import { BackHandler } from 'react-native';
 import { QRCode } from 'react-native-custom-qr-codes';
-import { CHAIN_COSMOS, CHAIN_ETH, CHAIN_EVMOS, CHAIN_OSMOSIS, CHAIN_JUNO, FundWalletAddressType, CHAIN_POLYGON, CHAIN_AVALANCHE, CHAIN_BSC, CHAIN_FTM, CHAIN_ARBITRUM, CHAIN_OPTIMISM, CHAIN_STARGAZE } from '../../constants/server';
-import ChooseChainModal from '../../components/v2/chooseChainModal';
+import { CHAIN_COSMOS, CHAIN_ETH, CHAIN_EVMOS, CHAIN_OSMOSIS, CHAIN_JUNO, FundWalletAddressType, CHAIN_POLYGON, CHAIN_AVALANCHE, CHAIN_BSC, CHAIN_FTM, CHAIN_ARBITRUM, CHAIN_OPTIMISM, CHAIN_STARGAZE, CHAIN_NOBLE, CHAIN_SHARDEUM, CHAIN_SHARDEUM_SPHINX } from '../../constants/server';
 import { captureRef } from 'react-native-view-shot';
 import Share from 'react-native-share';
 import { SHARE_QR_TIMEOUT } from '../../constants/timeOuts';
 import { isAndroid } from '../../misc/checkers';
-
-const {
-  DynamicView,
-  CText,
-  DynamicButton,
-  DynamicImage
-} = require('../../styles');
+import Button from '../../components/v2/button';
 
 function copyToClipboard (text: string) {
   Clipboard.setString(text);
@@ -55,11 +46,14 @@ export default function QRCodeGenerator (props) {
     { ...CHAIN_FTM, address: hdWalletContext.state.wallet.ethereum.address },
     { ...CHAIN_ARBITRUM, address: hdWalletContext.state.wallet.ethereum.address },
     { ...CHAIN_OPTIMISM, address: hdWalletContext.state.wallet.ethereum.address },
-    { ...CHAIN_EVMOS, address: hdWalletContext.state.wallet.evmos.wallets[0].address },
-    { ...CHAIN_COSMOS, address: hdWalletContext.state.wallet.cosmos.wallets[0].address },
-    { ...CHAIN_OSMOSIS, address: hdWalletContext.state.wallet.osmosis.wallets[0].address },
-    { ...CHAIN_JUNO, address: hdWalletContext.state.wallet.juno.wallets[0].address },
-    { ...CHAIN_STARGAZE, address: hdWalletContext.state.wallet.stargaze.address }
+    { ...CHAIN_EVMOS, address: hdWalletContext.state.wallet.evmos?.wallets[0]?.address },
+    { ...CHAIN_COSMOS, address: hdWalletContext.state.wallet.cosmos?.wallets[0]?.address },
+    { ...CHAIN_OSMOSIS, address: hdWalletContext.state.wallet.osmosis?.wallets[0]?.address },
+    { ...CHAIN_JUNO, address: hdWalletContext.state.wallet.juno?.wallets[0]?.address },
+    { ...CHAIN_STARGAZE, address: hdWalletContext.state.wallet.stargaze?.address },
+    { ...CHAIN_NOBLE, address: hdWalletContext.state.wallet.noble?.wallets[0]?.address },
+    { ...CHAIN_SHARDEUM, address: hdWalletContext.state.wallet.ethereum.address },
+    { ...CHAIN_SHARDEUM_SPHINX, address: hdWalletContext.state.wallet.ethereum.address }
   ];
 
   const [selectedChain, setSelectedChain] = useState<UserChain>(data[0]);
@@ -109,7 +103,7 @@ export default function QRCodeGenerator (props) {
 
   const RenderQRCode = (chain: { item: UserChain}) => {
     return (
-      selectedChain.backendName === chain.item.backendName
+      selectedChain.backendName === chain.item.backendName && chain.item.address
         ? (
         <QRCode
           content={chain.item.address}
@@ -147,6 +141,12 @@ export default function QRCodeGenerator (props) {
         setSelectedChain(data[10]);
       } else if (walletAddressType === FundWalletAddressType.STARGAZE) {
         setSelectedChain(data[11]);
+      } else if (walletAddressType === FundWalletAddressType.NOBLE) {
+        setSelectedChain(data[12]);
+      } else if (walletAddressType === FundWalletAddressType.SHARDEUM) {
+        setSelectedChain(data[13]);
+      } else if (walletAddressType === FundWalletAddressType.SHARDEUM_SPHINX) {
+        setSelectedChain(data[14]);
       }
     }
 
@@ -158,80 +158,63 @@ export default function QRCodeGenerator (props) {
 
   // NOTE: LIFE CYCLE METHOD 🍎🍎🍎🍎
   return (
-        <DynamicView dynamic dynamicHeight dynamicWidth width={100} height={100} bGC={'white'}>
-          <ChooseChainModal
-            isModalVisible={showChainModal}
-            data={data} setModalVisible={setShowChainModal}
-            title={t('CHOOSE_CHAIN')}
-            onPress={({ item }) => {
-              setSelectedChain(item);
-            }}
-            selectedItem={selectedChain.name}
-            customStyle={{ justifyContent: 'flex-end', padding: 0 }}
-            animationIn={'slideInUp'}
-            animationOut={'slideOutDown'}
-            isClosable={true}
-          />
-            <DynamicScrollView dynamic dynamicWidth dynamicHeight height={100} width={100} jC='flex-start' >
+          <CyDView className='bg-white h-full w-full'>
+            <CyDScrollView className='flex flex-start h-full w-full' >
               <CyDView className={'bg-white'} ref={viewRef}>
-                <CyDView className={isCapturingDetails ? 'flex flex-row justify-center mt-[15px]' : 'flex flex-row justify-center' }>
-                  <CyDImage source={selectedChain.logo_url} className={' w-[25px] h-[25px] mr-[10px] mt-[2px]'}/>
+                <CyDView className={isCapturingDetails ? 'flex flex-col justify-center items-center mt-[15px]' : 'flex flex-col items-center justify-center' }>
+                  <CyDImage source={selectedChain.logo_url} className={' w-[40px] h-[40px] mr-[10px] mt-[2px]'}/>
                   <CyDText className={
-                      'text-[22px] text-center font-extrabold font-nunito'
+                      'text-[24px] text-center font-semibold font-nunito pt-[20px]'
                     }>
                     {`${selectedChain.name}`}
                   </CyDText>
                 </CyDView>
-                <CyDView className={'mt-[10] bg-[#F8F8F8] rounded-[18px] mx-[20] px-[20px] py-[15px]'}>
-                  <CyDText className={
-                    'text-[13px] text-center text-[#434343] font-nunito'
-                  }>
-                    {`${t('QRCODE_SUBTITLE')}${selectedChain.chainName === 'ethereum' ? 'chains: Ethereum, Polygon, Binance Smart Chain, Avalanche, Fantom, Optimism, Arbitrum, Evmos' : `chain: ${selectedChain.name}`}`}
-                  </CyDText>
-                </CyDView>
-                <DynamicView dynamic pV={10}>
-                    <DynamicView dynamic dynamicWidth width={90} jC='center' pT={10} pB={24} mT={20} bR={10} bC={Colors.sepratorColor} aLIT={'center'} pH={20} pV={20}>
+                <CyDView className='py-[10px]'>
+                  <CyDView className='flex justify-center items-center pt-[10px] pb-[24px] mt-[10px] px-[20px] py-[20px] w-full rounded-[10px]'>
                         {data.map((item) => <RenderQRCode key={item.id} item={item}/>)}
-                        <DynamicView dynamic dynamicHeight dynamicWidth width={100} height={0.5} bGC={Colors.addressBorderColor} mT={30} />
-                        {!isCapturingDetails && <DynamicView dynamic dynamicWidth width={90} jC='center' mT={10} aLIT={'center'} fD={'row'}>
-                            <DynamicView dynamic dynamicWidth width={65} jC='flex-start' aLIT={'flex-start'}>
-                                <CText dynamic fF={C.fontsName.FONT_BOLD} fS={16} color={Colors.addressColor}>{getMaskedAddress(selectedChain.address)}</CText>
-                            </DynamicView>
-                            <DynamicButton sentry-label='qrcode-address-copy' dynamic dynamicFixWidth width={10} height={45}
-                                onPress={() => {
-                                  copyToClipboard(selectedChain.address);
-                                  showToast(t('ADDRESS_COPY'));
-                                }}>
-                                <DynamicImage dynamic source={AppImages.COPY} width={13} height={13} />
-                            </DynamicButton>
-                            <DynamicButton dynamic dynamicFixWidth width={10} height={45} mH={20}
-                                onPress={() => {
-                                  void shareQR();
-                                }}>
-                                <DynamicImage dynamic source={AppImages.SHARE} width={13} height={13} />
-                            </DynamicButton>
-                        </DynamicView>}
-                        {/* <CText dynamic fF={C.fontsName.FONT_REGULAR} fS={13} color={Colors.addressColor}>{selectedChain.address}</CText> */}
-                        <CyDText className={isCapturingDetails ? 'text-[18px] font-extrabold text-center mt-[10px]' : 'text-[13px]'}>{selectedChain.address}</CyDText>
-                    </DynamicView>
-                  {!isCapturingDetails && <CyDTouchView className={'bg-[#E5FCFB] rounded-[36px] py-[8px] px-[20px] flex flex-row justify-between items-center w-10/12'}
-                  onPress={() => { setShowChainModal(true); }}>
-                    <CyDView className={'flex flex-row items-center'}>
-                      <CyDImage source={selectedChain.logo_url} className={'w-[22px] h-[22px] mr-[10px]'}/>
-                      <CyDText className={'font-semibold font-nunito text-[18px]'}>{`${t('CHAIN')}: `}</CyDText>
-                      <CyDText className={'font-nunito text-[18px]'}>{selectedChain.name}</CyDText>
-                    </CyDView>
-                      <CyDImage source={AppImages.DOWN} className={'w-[10px] h-[9px]'}/>
-                  </CyDTouchView>}
+                        {!isCapturingDetails && !selectedChain.address && <CyDText className='text-[25px] text-center font-extrabold'>{selectedChain.name} {t<string>('ADDRESS_NOT_ACCESSIBLE')}</CyDText>}
+                        <CyDText className={isCapturingDetails ? 'text-[18px] font-extrabold text-center mt-[20px]' : 'mt-[20px] text-[16px] font-bold text-center'}>{selectedChain?.address}</CyDText>
+                  </CyDView>
+                  <CyDView className={'mt-[5] mx-[20] px-[20px] py-[5px]'}>
+                    <CyDText className={
+                      'text-[15px] text-center text-[#434343] font-nunito'
+                    }>
+                      {`${t('QRCODE_SUBTITLE')}${selectedChain.chainName === 'ethereum' ? 'chains: Ethereum, Polygon, Binance Smart Chain, Avalanche, Fantom, Optimism, Arbitrum, Evmos, Shardeum' : `chain: ${selectedChain.name}`}`}
+                    </CyDText>
+                  </CyDView>
+
                   {isCapturingDetails &&
                     <CyDText className={
                         'text-[15px] text-center font-bold font-nunito items-end mb-[15px]'
                       }>
                       {t('SHARE_QR_TEXT')}
                     </CyDText>}
-                </DynamicView>
+                    {!isCapturingDetails && selectedChain.address &&
+                      <CyDView className='mt-[10px] justify-center items-center flex flex-row'>
+                        <Button
+                          image={AppImages.COPY}
+                          onPress={() => {
+                            copyToClipboard(selectedChain.address);
+                            showToast(t('ADDRESS_COPY'));
+                          } }
+                          style="w-[50px] h-[50px] mr-[10px] rounded-[50px]"
+                          imageStyle='self-center  h-[18px] w-[18px]'
+                          type='secondary'
+                        ></Button>
+                        <Button
+                          image={AppImages.SHARE}
+                          onPress={() => {
+                            void shareQR();
+                          }}
+                          style="w-[50px] h-[50px] ml-[10px] rounded-[50px]"
+                          imageStyle='self-center h-[18px] w-[18px]'
+                          type='secondary'
+                        ></Button>
+                      </CyDView>
+                    }
+                </CyDView>
               </CyDView>
-            </DynamicScrollView>
-        </DynamicView>
+            </CyDScrollView>
+          </CyDView>
   );
 }

@@ -36,6 +36,7 @@ import AppImages from '../../../assets/images/appImages';
 import Loading from '../../components/v2/loading';
 import analytics from '@react-native-firebase/analytics';
 import { hostWorker } from '../../global';
+import { Linking } from 'react-native';
 
 let web3RPCEndpoint: Web3;
 
@@ -73,6 +74,7 @@ export default function Onmeta ({ route }) {
     ethereum.address,
     hdWallet.state.selectedChain.chain_id
   );
+  const [clientDetails, setClientDetails] = useState({});
 
   function processPushPermissionUserChoice (permission: any) {
     setPushModal(false);
@@ -164,6 +166,7 @@ export default function Onmeta ({ route }) {
         ).href; // URL prepared from above step
       }
       setUri(constructedUri);
+      setClientDetails({ clientToken, chainId, uri: constructedUri });
     };
 
     void getClientToken();
@@ -178,26 +181,59 @@ export default function Onmeta ({ route }) {
     );
   }
 
-  if (!uri) {
+  if (!clientDetails.clientToken || !clientDetails.uri) {
     return <Loading></Loading>;
   }
+
+  const onRampHTMLCode = `
+  <html>
+    <head>
+      <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+      <script src="https://platform.onmeta.in/onmeta-sdk.js" type="text/javascript"></script>
+    </head>
+    <body>
+      <div id="widget"></div>
+      <script>
+        let createWidget = new onMetaWidget({
+          elementId: "widget",
+          apiKey: "${clientDetails.clientToken}",
+          isAndroid: "enabled",
+          onRamp: "enabled",
+          offRamp: "disabled",
+          walletAddress: "${ethereum.address}",
+          chainId: "${clientDetails.chainId}"
+        })
+        createWidget.init();
+        createWidget.on("ACTION_EVENTS", (data) => {window.ReactNativeWebView.postMessage(JSON.stringify(data))})
+      </script>
+    </body>
+  </html>
+  `;
+
+  const onRampEvent = (event: any) => {
+    const eventData = JSON.parse(event?.nativeEvent?.data);
+    if (eventData?.data?.type === 'UPI_FAST') {
+      void Linking.openURL(eventData.data.link);
+    }
+  };
 
   return (
     <CyDView className={'h-full w-full'}>
       {ometaOperation === 'buy' ? (
         <WebView
-          source={{
-            uri
-          }}
+          originWhitelist={['*']}
+          mixedContentMode="compatibility"
+          source={{ html: onRampHTMLCode }}
           renderLoading={() => {
             return <Loading></Loading>;
           }}
           startInLoadingState={true}
           allowsBackForwardNavigationGestures
+          scalesPageToFit={true}
           javaScriptEnabled={true}
-          options={{ animation: 'none' }}
           mediaPlaybackRequiresUserAction={true}
           domStorageEnabled={true}
+          onMessage={(event) => { onRampEvent(event); }}
         />
       ) : (
         <>
@@ -288,7 +324,7 @@ export default function Onmeta ({ route }) {
           />
           <WebView
             source={{
-              uri
+              uri: clientDetails.uri
             }}
             startInLoadingState
             ref={webviewRef}

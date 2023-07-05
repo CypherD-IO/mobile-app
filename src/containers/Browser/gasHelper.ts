@@ -4,7 +4,7 @@
  */
 import { GasPriceDetail } from '../../core/types';
 import axios from '../../core/Http';
-import { Chain, CHAIN_ETH, CHAIN_BSC, OwlracleChainCodes, CHAIN_OPTIMISM } from '../../constants/server';
+import { Chain, CHAIN_ETH, CHAIN_BSC, CHAIN_OPTIMISM } from '../../constants/server';
 import { removeOutliers } from '../../misc/outliers';
 import Web3 from 'web3';
 import * as Sentry from '@sentry/react-native';
@@ -17,28 +17,6 @@ async function getGasPriceFromBackend ({ backendName }: Chain): Promise<GasPrice
   const ARCH_HOST: string = hostWorker.getHost('ARCH_HOST');
   const result = await axios.get<GasPriceDetail>(`${ARCH_HOST}/v1/prices/gas/${backendName}`);
   return result.data;
-}
-
-async function getGasUsingOwlracle (chain: Chain): Promise<GasPriceDetail> {
-  const OWLRACLE_HOST: string = hostWorker.getHost('OWLRACLE_HOST');
-  const chainCode = OwlracleChainCodes[chain.name];
-  const gasFeeURL = `${OWLRACLE_HOST}/v3/${String(chainCode)}/gas?apikey=834e953e97f249a7a98c3e5ca1ea7c7d&accept=90&percentile=0.8&blocks=5`;
-
-  const result = await axios.get(gasFeeURL, {});
-  const speedArray: any[] = result.data.speeds;
-  const avgGas = result.data.avgGas;
-  const [speed] = speedArray;
-  const gasPrice = speed.gasPrice ? speed.gasPrice : speed.maxFeePerGas;
-
-  // eslint-disable-next-line @typescript-eslint/strict-boolean-expressions
-  if (speed) {
-    // native token price calculation (copied from old code)
-    const gasPriceETH = Number(Web3.utils.fromWei((Web3.utils.toWei(gasPrice.toFixed(9), 'Gwei'))));
-    const ethPrice = Number.parseFloat(((speed.estimatedFee / avgGas) / gasPriceETH).toFixed(2));
-    return { gasPrice, tokenPrice: ethPrice, chainId: chain.backendName };
-  }
-
-  throw new Error(`getGasUsingOwlracle failed for ${chain.backendName}`);
 }
 
 async function getGasPriceLocallyUsingGasHistory ({ backendName }: Chain, web3RPCEndpoint: Web3): Promise<GasPriceDetail> {
@@ -55,7 +33,7 @@ async function getGasPriceLocallyUsingGasHistory ({ backendName }: Chain, web3RP
         Number.parseFloat(Web3.utils.fromWei(percentile, 'gwei') || minimumGasFee)));
     });
     const afterRemovingOutliers = removeOutliers(percentileArr); // will return the sorted array
-    analytics().logEvent('gas_optimisation', {
+    void analytics().logEvent('gas_optimisation', {
       after: afterRemovingOutliers,
       b4: percentileArr,
       chain: backendName
@@ -92,13 +70,6 @@ export async function getGasPriceFor (chain: Chain, web3RPCEndpoint: Web3): Prom
     } catch (e) {
       Sentry.captureException(e);
     }
-  }
-
-  try {
-    gasPrice = await getGasUsingOwlracle(chain);
-    return gasPrice;
-  } catch (e) {
-    Sentry.captureException(e);
   }
 
   return { chainId: chain.backendName, gasPrice: 0, tokenPrice: 0 }; // final fallback case
@@ -178,9 +149,9 @@ export function estimateGas (payload, webviewRef, hdWalletContext, selectedChain
       let finalGasPriceInHex;
       if (finalGasPrice) {
         totalGasFeeInGwei = parseFloat(Web3.utils.fromWei(
-          Web3.utils.toWei((parseInt(finalGasPrice) * gasLimit).toFixed(9), 'gwei')
+          Web3.utils.toWei((parseFloat(String(finalGasPrice)) * gasLimit).toFixed(9), 'gwei')
         ));
-        finalGasPriceInHex = Web3.utils.toHex(Web3.utils.toWei(finalGasPrice.toFixed(9), 'Gwei'));
+        finalGasPriceInHex = Web3.utils.toHex(Web3.utils.toWei(parseFloat(String(finalGasPrice)).toFixed(9), 'Gwei'));
       }
 
       let valueETH = 0;

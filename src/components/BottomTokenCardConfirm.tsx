@@ -1,31 +1,12 @@
 import React, { useEffect, useState } from 'react';
 import { StyleSheet } from 'react-native';
-import Modal from 'react-native-modal';
 import { useTranslation } from 'react-i18next';
 import AppImages from '../../assets/images/appImages';
-import * as C from '../constants/index';
-import { Colors } from '../constants/theme';
-import { ButtonWithOutImage } from '../containers/Auth/Share';
-import { DynamicTouchView } from '../styles/viewStyle';
-import { CyDFastImage, CyDView } from '../styles/tailwindStyles';
-import FastImage from 'react-native-fast-image';
-import LottieView from 'lottie-react-native';
-const {
-  CText,
-  SafeAreaView,
-  DynamicView,
-  DynamicImage,
-  ModalView
-} = require('../styles');
-
-const randomColor = [
-  AppImages.RED_COIN,
-  AppImages.CYAN_COIN,
-  AppImages.GREEN_COIN,
-  AppImages.PINK_COIN,
-  AppImages.BLUE_COIN,
-  AppImages.PURPLE_COIN
-];
+import { SepraterView } from '../styles/viewStyle';
+import { CyDImage, CyDText, CyDTouchView, CyDView } from '../styles/tailwindStyles';
+import CyDModalLayout from './v2/modal';
+import Button from './v2/button';
+import { ButtonType } from '../constants/enum';
 
 export default function BottomCardConfirm (props) {
   const { isModalVisible, onPayPress, onCancelPress, lowBalance, modalParams } = props;
@@ -67,131 +48,85 @@ export default function BottomCardConfirm (props) {
   };
 
   return (
-        <Modal isVisible={isModalVisible}
-            onBackdropPress={() => { hideModal(); }}
-            onRequestClose={() => { hideModal(); }}
-            style={styles.modalContainer}
+    <CyDModalLayout
+      isModalVisible={isModalVisible}
+      style={styles.modalContainer}
+      animationIn={'slideInUp'}
+      animationOut={'slideOutDown'}
+      setModalVisible={(_val: any) => {
+        onCancelPress();
+      }}
+    >
+      <CyDView className={'bg-white pb-[30px] flex items-center rounded-[20px]'}>
+        <CyDTouchView className={'flex flex-row pl-[95%] justify-end z-10'}
+          onPress={onCancelPress}
         >
-            <DynamicView dynamic dynamicWidth dynamicHeight width={100} height={100} jC={'flex-end'}>
-                <DynamicView dynamic dynamicWidth dynamicHeight width={100} height={70} bGC={'white'} style={{
-                  borderTopLeftRadius: 25,
-                  borderTopRightRadius: 25
-                }} aLIT='flex-start'>
-                    <DynamicTouchView sentry-label='card-bottom-confirm-cancel-icon' dynamic dynamicWidth width={95} mT={5} aLIT={'flex-end'} onPress={() => { hideModal(); }}>
-                        <DynamicImage dynamic dynamicWidthFix aLIT={'flex-end'} mT={10} marginHorizontal={6} height={20} width={20} resizemode='contain'
-                        source={AppImages.CLOSE} />
-                    </DynamicTouchView>
-                    <DynamicView dynamic dynamicWidth width={95} fD={'row'} jC={'center'}>
-                        <CText dynamic fF={C.fontsName.FONT_BLACK} fS={20} mL={20} color={Colors.primaryTextColor}>{t('CONFIRM_PAYMENT')}</CText>
-                    </DynamicView>
-
-                    <DynamicView dynamic dynamicWidth width={90} mT={15} mB={20} pV={0} bGC={Colors.backLight} bR={18} jC={'center'} style={{ marginLeft: '5%', marginRight: '5%' }}>
-                            <CText dynamic mL={10} mH={10} fF={C.fontsName.FONT_BLACK} mT={14} fS={10} color={Colors.primaryTextColor}>TOKEN QUANTITY</CText>
-                            {/* <CText dynamic mL={10} mH={10} fF={C.fontsName.FONT_EXTRA_BOLD} fS={18} color={Colors.primaryTextColor}>${modalParams.gasFeeDollar}</CText> */}
-                            <CText dynamic mL={10} mH={10} tA={'left'} fF={C.fontsName.FONT_EXTRA_BOLD} mB={15} fS={18} color={Colors.primaryTextColor}>{modalParams.tokenAmount} {modalParams.tokenSymbol}</CText>
-                            {/* <CText dynamic mL={10} mH={10} tA={'left'} fF={C.fontsName.FONT_EXTRA_BOLD} fS={18} color={Colors.primaryTextColor}>{modalParams.gasFeeETH} {modalParams.networkCurrency}</CText> */}
-                    </DynamicView>
-
-                    <DynamicView dynamic dynamicWidth width={100} jC={'flex-start'} pH={30} fD={'row'}>
-                    <DynamicView dynamic pos={'relative'}>
-                      {modalParams.tokenImage
-                        ? (
-                          <CyDFastImage
-                            className={'h-[30px] w-[30px]'}
-                            source={{ uri: modalParams.tokenImage }}
-                          />
-                          )
-                        : (
-                          <DynamicView
-                            dynamic
-                            dynamicWidthFix
-                            dynamicHeightFix
-                            height={30}
-                            width={30}
-                            aLIT="center"
-                            fD={'row'}
-                            jC="center"
-                            bGC={Colors.appColor}
-                            bR={30}
-                          >
-                            <DynamicImage
-                              dynamic
-                              dynamicWidth
-                              height={30}
-                              width={30}
-                              resizemode="contain"
-                              source={
-                                randomColor[Math.floor(Math.random() * randomColor.length)]
-                              }
-                            />
-                          </DynamicView>
-                          )}
-                      <DynamicView
-                        dynamic
-                        style={{ position: 'absolute', top: 15, right: -5 }}
-                      >
-                        <CyDFastImage
-                          className={'h-[16px] w-[16px] rounded-[50px] border-[1px] border-white bg-white'}
-                          source={modalParams.appImage}
-                          resizeMode={FastImage.resizeMode.contain}
-                        />
-                      </DynamicView>
-                    </DynamicView>
-                    <CText dynamic mL={10} mH={10} fF={C.fontsName.FONT_BLACK} mT={7} fS={14} color={Colors.primaryTextColor}>{modalParams.networkName}</CText>
-                    <CText dynamic mH={10} fF={C.fontsName.FONT_REGULAR} mT={7} fS={12} color={Colors.subTextColor}>{modalParams.networkCurrency}</CText>
-                    </DynamicView>
-
-                    <DynamicView dynamic dynamicWidth dynamicHeightFix mT={20} height={1} mL={20} width={90} bGC={Colors.portfolioBorderColor} />
-
-                    <DynamicView dynamic dynamicWidth width={100} fD={'row'} pH={30} pV={20}>
-                    <CText dynamic mL={10} mH={10} fF={C.fontsName.FONT_BLACK} mT={14} fS={14} color={Colors.primaryTextColor}>Gas Fee</CText>
-                    <CText dynamic mH={10} fF={C.fontsName.FONT_REGULAR} mT={16} fS={12} color={Colors.subTextColor}>{modalParams.gasFeeETH} {modalParams.networkCurrency}</CText>
-                    {/* <CText dynamic mH={10} fF={C.fontsName.FONT_REGULAR} mT={16} fS={12} color={Colors.subTextColor}>{modalParams.tokenAmount} {modalParams.tokenSymbol}</CText> */}
-                    <CText dynamic mH={10} fF={C.fontsName.FONT_BOLD} mT={16} fS={12} color={Colors.primaryTextColor}>${modalParams.gasFeeDollar}</CText>
-                    </DynamicView>
-
-                    <DynamicView dynamic dynamicWidth dynamicHeightFix mT={20} height={1} mL={20} width={90} bGC={Colors.portfolioBorderColor} />
-
-                    <DynamicView dynamic dynamicWidth width={100} fD={'row'} pH={30}>
-                    <CText dynamic mL={10} mH={10} fF={C.fontsName.FONT_BLACK} mT={14} fS={14} color={Colors.primaryTextColor}>Total</CText>
-                    <CText dynamic mH={10} fF={C.fontsName.FONT_REGULAR} mT={16} fS={12} color={Colors.subTextColor}>{modalParams.totalValueTransfer} {modalParams.tokenSymbol}</CText>
-                    <CText dynamic mH={10} fF={C.fontsName.FONT_BOLD} mT={16} fS={12} color={Colors.primaryTextColor}>${modalParams.totalValueDollar}</CText>
-                    </DynamicView>
-
-                    {lowBalance && <DynamicView dynamic dynamicHeightFix fD={'row'} dynamicWidth width={80} jC={'center'} mT={15} mH={30} height={80} bGC={Colors.lightPink} bR={60}>
-                        <DynamicView dynamic dynamicWidth width={50} aLIT={'flex-start'}>
-                            <CText dynamic mL={30} tA={'right'} fF={C.fontsName.FONT_REGULAR} mT={10} fS={12} color={Colors.primaryTextColor}>You need 0.00543 more MATIC to complete this transaction </CText>
-                        </DynamicView>
-                        <DynamicView dynamic dynamicWidth width={40}>
-                        <ButtonWithOutImage sentry-label='card-bottom-confirm-cancel-icon'
-                             wT={70} bR={30} fE={C.fontsName.FONT_REGULAR} hE={35} bG={Colors.lightPink} vC={Colors.appColor} fC={Colors.pink}
-                             text={t('BUY_MORE')} bC={Colors.pink} isBorder={true}
-                             onPress={() => { onPress(); }}
-                        />
-                        </DynamicView>
-                    </DynamicView>}
-                    <DynamicView dynamic fD={'row'} >
-                        <ButtonWithOutImage sentry-label='card-bottom-confirm-cancel-button'
-                            mT={20} wT={45} mH={12} bG={Colors.whiteColor} vC={Colors.appColor} mB={30}
-                            text={t('CANCEL')} isBorder={true} onPress={() => {
-                              hideModal();
-                            }}
-                        />
-                        <ButtonWithOutImage disable={isPayDisabled} sentry-label='card-bottom-confirm-pay-button'
-                            mT={20} wT={45} bG={Colors.appColor} vC={Colors.appColor} mB={30}
-                            text={t('LOAD_ALL_CAPS') + (tokenExpiryTime ? ' (' + tokenExpiryTime + ')' : '')} isBorder={false} onPress={ async () => {
-                              if (!isPayDisabled) {
-                                onLoadPress();
-                              }
-                            }}
-                            indicator={loading}
-                        />
-                    </DynamicView>
-                    <DynamicView dynamic bGC={Colors.switchColor} mT={10} bR={10}>
-                    </DynamicView>
-                </DynamicView>
-            </DynamicView>
-        </Modal>
+          <CyDImage
+            source={AppImages.CLOSE}
+            className={'w-[20px] h-[20px] top-[20px] right-[20px] '}
+          />
+        </CyDTouchView>
+        <CyDText className='text-[20px] font-nunito font-bold'>
+          {t('CONFIRM_PAYMENT')}
+        </CyDText>
+        <CyDView className={'p-[10px] px-[20px]'}>
+          <CyDView className={'flex flex-row mt-[40px] pb-[15px] border-b-[1px] border-sepratorColor'}>
+            <CyDText className={'font-bold text-[16px] ml-[5px] text-primaryTextColor'}>{t('SEND_ON')}</CyDText>
+            <CyDView className={'flex flex-row pl-[25px] max-w-[70%]'}>
+              <CyDImage source={modalParams.appImage} className={'w-[16px] h-[16px] mt-[3px]'} />
+              <CyDText className={' font-medium text-[15px] ml-[5px] text-primaryTextColor'}>{modalParams.networkName}</CyDText>
+            </CyDView>
+          </CyDView>
+          {modalParams.cardNumber && <CyDView className={'flex flex-row w-[95%] py-[25px]'}>
+            <CyDText className={' font-bold text-[16px] ml-[5px] text-primaryTextColor'}>{t('CARD')}</CyDText>
+            <CyDView className={'flex flex-row flex-wrap justify-between w-[90%]  pl-[55px]'}>
+                <CyDText className={' font-medium text-[15px] text-primaryTextColor'}>{modalParams.cardNumber}</CyDText>
+            </CyDView>
+          </CyDView>}
+          <CyDView className={'flex flex-row w-[95%] py-[25px]'}>
+            <CyDText className={' font-bold text-[16px] ml-[5px] text-primaryTextColor'}>{t('VALUE')}</CyDText>
+            <CyDView className={'flex flex-row flex-wrap justify-between w-[90%]  pl-[45px]'}>
+                <CyDText className={' font-medium text-[15px] text-primaryTextColor'}>{parseFloat(modalParams.totalValueTransfer).toFixed(6)} {modalParams.tokenSymbol}</CyDText>
+                <CyDText className={' font-medium text-[15px] text-primaryTextColor mr-[10px]'}>${modalParams.totalValueDollar}</CyDText>
+            </CyDView>
+          </CyDView>
+          <CyDView className={'flex flex-row  w-[95%] py-[25px] border-b-[1px] border-sepratorColor'}>
+            <CyDText className={' font-bold text-[16px] ml-[5px] text-primaryTextColor'}>{t('GAS')}</CyDText>
+            <CyDView className={'flex flex-row flex-wrap justify-between w-[95%] pl-[60px]'}>
+                <CyDText className={' font-medium text-[15px] text-primaryTextColor'}>{modalParams.gasFeeETH} {modalParams.networkCurrency}</CyDText>
+                <CyDText className={' font-medium text-[15px] text-primaryTextColor mr-[10px]'}>$ {modalParams.gasFeeDollar}</CyDText>
+            </CyDView>
+          </CyDView>
+        </CyDView>
+        <CyDView
+            className={
+              'flex flex-row justify-center items-center px-[20px] pb-[10px] mt-[20px]'
+            }
+          >
+            <Button
+              title={t<string>('CANCEL')}
+              disabled={loading}
+              type={ButtonType.SECONDARY}
+              onPress={() => {
+                hideModal();
+              }}
+              style={'h-[60px] w-[166px] mr-[9px]'}
+            />
+            <Button
+              title={t<string>('LOAD') + (tokenExpiryTime ? ' (' + tokenExpiryTime + ')' : '')}
+              loading={loading}
+              disabled={isPayDisabled}
+              onPress={() => {
+                if (!isPayDisabled) {
+                  onLoadPress();
+                }
+              }}
+              isPrivateKeyDependent={true}
+              style={'h-[60px] w-[166px] ml-[9px]'}
+            />
+          </CyDView>
+      </CyDView>
+    </CyDModalLayout>
   );
 }
 

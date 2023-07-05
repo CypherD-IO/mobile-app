@@ -3,6 +3,7 @@ import analytics from '@react-native-firebase/analytics';
 import { CHAIN_ETH, Chain, CHAIN_NAMES } from '../constants/server';
 import { _NO_CYPHERD_CREDENTIAL_AVAILABLE_, isAddressSet } from '../core/util';
 import * as Sentry from '@sentry/react-native';
+import { Dispatch } from 'react';
 
 export interface WalletKey {
   address: string
@@ -45,6 +46,12 @@ export interface HDWallet {
   pinValue: string
   hideTabBar: boolean
   hideBalance: boolean
+  isReadOnlyWallet: boolean
+}
+
+export interface HdWalletContextDef {
+  state: HDWallet
+  dispatch: Dispatch<any>
 }
 
 const wallet: CypherDWallet = {};
@@ -66,7 +73,8 @@ export const initialHdWalletState: HDWallet = {
   reset: false,
   pinValue: '',
   hideTabBar: false,
-  hideBalance: false
+  hideBalance: false,
+  isReadOnlyWallet: false
 };
 
 // reducers
@@ -111,7 +119,7 @@ export function hdWalletStateReducer (state: any, action: any) {
           wallet[chain].currentIndex = 0;
         }
 
-        if (chain === CHAIN_ETH.chainName) {
+        if (chain === CHAIN_ETH.chainName && privateKey !== _NO_CYPHERD_CREDENTIAL_AVAILABLE_) {
           Intercom.registerIdentifiedUser({ userId: address }).catch(error => {
             Sentry.captureException(error);
           });
@@ -162,7 +170,7 @@ export function hdWalletStateReducer (state: any, action: any) {
         publicKey
       });
 
-      return { ...state, wallet };
+      return { ...state, wallet, isReadOnlyWallet: false };
     }
 
     case 'CHOOSE_CHAIN': {
@@ -210,7 +218,9 @@ export function hdWalletStateReducer (state: any, action: any) {
     case 'TOGGLE_BALANCE_VISIBILITY' : {
       return { ...state, ...action.value };
     }
-
+    case 'SET_READ_ONLY_WALLET' : {
+      return { ...state, ...action.value };
+    }
     default:
       return state;
   }

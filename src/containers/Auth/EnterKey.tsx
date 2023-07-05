@@ -4,15 +4,12 @@
  */
 import React, { useContext, useEffect, useState, useLayoutEffect } from 'react';
 import { useTranslation } from 'react-i18next';
-import { CyDText, CyDTouchView, CyDView, CyDImage, CyDTouchableWithoutFeedback } from '../../styles/tailwindStyles';
-import { BackHandler, Keyboard, KeyboardAvoidingView, Platform } from 'react-native';
+import { CyDText, CyDTouchView, CyDView, CyDImage, CyDTouchableWithoutFeedback, CyDSafeAreaView, CyDKeyboardAvoidingView, CyDTextInput } from '../../styles/tailwindStyles';
+import { BackHandler, Keyboard, Platform, NativeModules } from 'react-native';
 import * as C from '../../constants/index';
-import { Colors } from '../../constants/theme';
 import { ActivityContext, HdWalletContext, PortfolioContext } from '../../core/util';
 import { importWallet } from '../../core/HdWallet';
-import { DynamicTouchView } from '../../styles/viewStyle';
-import { PORTFOLIO_LOADING, PORTFOLIO_NEW_LOAD } from '../../reducers/portfolio_reducer';
-import { DynamicImage } from '../../styles/imageStyle';
+import { PORTFOLIO_LOADING } from '../../reducers/portfolio_reducer';
 import AppImages from '../../../assets/images/appImages';
 import Clipboard from '@react-native-clipboard/clipboard';
 import { QRScannerScreens } from '../../constants/server';
@@ -21,15 +18,19 @@ import { ActivityReducerAction } from '../../reducers/activity_reducer';
 import { screenTitle } from '../../constants/index';
 import Loading from '../../components/v2/loading';
 import { isValidMnemonic } from 'ethers/lib/utils';
-const {
-  CText,
-  SafeAreaView,
-  Input
-} = require('../../styles');
+import { getReadOnlyWalletData } from '../../core/asyncStorage';
+import useAxios from '../../core/HttpRequest';
+import clsx from 'clsx';
+import { fetchTokenData } from '../../core/Portfolio';
+import { IMPORT_WALLET_TIMEOUT } from '../../constants/timeOuts';
+import { useIsFocused } from '@react-navigation/native';
+import { isAndroid } from '../../misc/checkers';
+import { Colors } from '../../constants/theme';
 
 export default function Login (props) {
   // NOTE: DEFINE VARIABLE 🍎🍎🍎🍎🍎🍎
   const { t } = useTranslation();
+  const isFocused = useIsFocused();
   const [seedPhraseTextValue, onChangeseedPhraseTextValue] = useState<string>('');
   const [badKeyError, setBadKeyError] = useState<boolean>(false);
   const [loading, setLoading] = useState<boolean>(false);
@@ -39,6 +40,7 @@ export default function Login (props) {
   const hdWalletContext = useContext<any>(HdWalletContext);
   const portfolioState = useContext<any>(PortfolioContext);
   const activityContext = useContext<any>(ActivityContext);
+  const { deleteWithAuth } = useAxios();
 
   const fetchCopiedText = async () => {
     const text = await Clipboard.getString();
@@ -46,7 +48,7 @@ export default function Login (props) {
   };
 
   const handleBackButton = () => {
-    props.navigation.goBack();
+    props?.navigation?.goBack();
     return true;
   };
 
@@ -55,10 +57,19 @@ export default function Login (props) {
     onChangeseedPhraseTextValue(textValue);
   };
 
-  const submitImportWallet = (textValue = seedPhraseTextValue) => {
+  const submitImportWallet = async (textValue = seedPhraseTextValue) => {
     const keyValue = textValue.split(/\s+/);
+    const { isReadOnlyWallet } = hdWalletContext.state;
+    const { ethereum } = hdWalletContext.state.wallet;
     if (keyValue.length >= 12 && isValidMnemonic(textValue)) {
       setLoading(true);
+      if (isReadOnlyWallet) {
+        const data = await getReadOnlyWalletData();
+        if (data) {
+          const readOnlyWalletData = JSON.parse(data);
+          await deleteWithAuth(`/v1/configuration/address/${ethereum.address}/observer/${readOnlyWalletData.observerId}`);
+        }
+      }
       setTimeout(() => {
         importWallet(hdWalletContext, portfolioState, textValue);
         portfolioState.dispatchPortfolio({
@@ -68,10 +79,14 @@ export default function Login (props) {
         activityContext.dispatch({ type: ActivityReducerAction.RESET });
         setLoading(false);
         onChangeseedPhraseTextValue('');
-        const getCurrentRoute = props.navigation.getState().routes[0].name;
-        if (getCurrentRoute === screenTitle.OPTIONS_SCREEN) props.navigation.navigate(C.screenTitle.PORTFOLIO_SCREEN);
-        else setCreateWalletLoading(true);
-      }, 50);
+        if (props && props.navigation) {
+          const getCurrentRoute = props.navigation.getState().routes[0].name;
+          if (getCurrentRoute === screenTitle.OPTIONS_SCREEN) props.navigation.navigate(C.screenTitle.PORTFOLIO_SCREEN);
+          else setCreateWalletLoading(true);
+        } else {
+          void fetchTokenData(hdWalletContext, portfolioState);
+        }
+      }, IMPORT_WALLET_TIMEOUT);
     } else {
       setBadKeyError(true);
     }
@@ -79,50 +94,57 @@ export default function Login (props) {
 
   useEffect(() => {
     BackHandler.addEventListener('hardwareBackPress', handleBackButton);
+    if (isFocused) {
+      if (isAndroid()) NativeModules.PreventScreenshotModule.forbid();
+    } else {
+      if (isAndroid()) NativeModules.PreventScreenshotModule.allow();
+    }
     return () => {
+      if (isAndroid()) NativeModules.PreventScreenshotModule.allow();
       BackHandler.removeEventListener('hardwareBackPress', handleBackButton);
     };
-  }, []);
+  }, [isFocused]);
 
   useLayoutEffect(() => {
-    props.navigation.setOptions({
-      headerRight: () => (
-        <DynamicTouchView dynamic fD={'row'} jC='flex-end' mH={10}
-          onPress={() => {
+    if (props && props.navigation) {
+      props.navigation.setOptions({
+        headerRight: () => (
+          <CyDTouchView onPress={() => {
             props.navigation.navigate(C.screenTitle.QR_CODE_SCANNER, {
               fromPage: QRScannerScreens.IMPORT,
               onSuccess
             });
-          }}
-        >
-          <DynamicImage dynamic height={20} width={20} resizemode="contain" source={AppImages.QR_CODE} />
-        </DynamicTouchView>
-      )
-    });
+          }}>
+            <CyDImage source={AppImages.QR_CODE_SCANNER_BLACK} className='h-[22px] w-[22px]' resizeMode='contain'/>
+          </CyDTouchView>
+        )
+      });
+    }
   }, []);
 
   return (
-    <SafeAreaView dynamic>
+    <CyDSafeAreaView className='flex-1 bg-white'>
       {createWalletLoading && <Loading/>}
       <CyDTouchableWithoutFeedback onPress={Keyboard.dismiss}>
-      <KeyboardAvoidingView behavior={Platform.OS === 'ios' ? 'padding' : 'height'}>
+      <CyDKeyboardAvoidingView behavior={Platform.OS === 'ios' ? 'padding' : 'height'}>
 
           <CyDText className={'text-[#434343] text-[16px] mt-[30] text-center px-[20]'}>{t('IMPORT_WALLET_SUB_MSG')}</CyDText>
-          <CyDView className={'flex items-center justify-center w-full'}>
-              <Input dynamicBorderColor borderColor={badKeyError ? Colors.pink : Colors.inputBorderColor} mT={40}
-                style={{
-                  width: '90%', height: 200, textAlignVertical: 'top', paddingTop: 20, paddingLeft: 30, paddingRight: 30, color: '#1F1F1F', fontSize: 18, lineHeight: 24
-                }}
-                placeholder={t('ENTER_KEY_PLACEHOLDER')} value={seedPhraseTextValue}
+          <CyDView className={'flex flex-row justify-center px-[20px]'}>
+              <CyDTextInput
+                placeholder={t('ENTER_KEY_PLACEHOLDER')}
+                placeholderTextColor={Colors.placeHolderColor}
+                value={seedPhraseTextValue}
                 onChangeText={(text) => {
                   onChangeseedPhraseTextValue(text.toLowerCase());
                   setBadKeyError(false);
                 }}
                 multiline={true}
+                textAlignVertical={'top'}
                 secureTextEntry={true}
+                className = {clsx('border-[1px] border-inputBorderColor p-[10px] mt-[20px] h-[200px] text-[18px] w-[100%]', { 'border-errorRed': badKeyError })}
               />
-            {badKeyError && <CText dynamic fF={C.fontsName.FONT_REGULAR} fS={18} mT={5} color={Colors.pink}>{t('BAD_KEY_PHARSE')}</CText>}
           </CyDView>
+          {badKeyError && <CyDText className='text-[20px] text-errorTextRed text-center'>{t('BAD_KEY_PHARSE')}</CyDText>}
           <CyDView className={'flex flex-row justify-end w-full mt-[20px] pr-[20px]'}>
             <CyDTouchView className={'flex flex-row justify-end'} onPress={async () => await fetchCopiedText()}>
               <CyDImage source={AppImages.COPY} className={'w-[16px] h-[18px] mr-[10px]'} />
@@ -133,7 +155,7 @@ export default function Login (props) {
             className={
               'bg-[#FFDE59] flex flex-row items-center justify-center mt-[40px] h-[60px] w-11/12 rounded-[12px] mb-[50] mx-auto'
             }
-            onPress={() => submitImportWallet()}
+            onPress={async () => await submitImportWallet()}
           >
             {(loading) && <CyDView className={'flex items-center justify-between'}>
               <LottieView
@@ -145,8 +167,8 @@ export default function Login (props) {
             </CyDView>}
             {(!loading) && <CyDText className={'text-[#434343] text-[16px] font-extrabold'}>{t('SUBMIT')}</CyDText>}
         </CyDTouchView>
-        </KeyboardAvoidingView>
+        </CyDKeyboardAvoidingView>
       </CyDTouchableWithoutFeedback>
-    </SafeAreaView>
+    </CyDSafeAreaView>
   );
 }

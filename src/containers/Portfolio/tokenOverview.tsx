@@ -1,7 +1,7 @@
 import { OfflineDirectSigner } from '@cosmjs-rn/proto-signing';
 import * as React from 'react';
 import { useContext, useEffect, useState } from 'react';
-import { BackHandler, Dimensions, RefreshControl, StyleSheet, useWindowDimensions } from 'react-native';
+import { BackHandler, Dimensions, RefreshControl, StyleSheet } from 'react-native';
 import { useIsFocused } from '@react-navigation/native';
 import { useTranslation } from 'react-i18next';
 import TokenSummary from '../../components/v2/tokenSummary';
@@ -113,7 +113,7 @@ function TokenOverview ({ route, navigation }) {
   const [noTransaction, setNoTransaction] = useState<boolean>(false);
   const [loadMoreAbout, setLoadMoreAbout] = useState<boolean>(true);
   const [pageNumber, setPageNumber] = useState<number>(0);
-  const { cosmos, osmosis, juno, stargaze } = hdWallet.state.wallet;
+  const { cosmos, osmosis, juno, stargaze, noble } = hdWallet.state.wallet;
 
   const [index, setIndex] = useState(0);
   const [valueChange, setValueChange] = useState(false);
@@ -126,12 +126,12 @@ function TokenOverview ({ route, navigation }) {
   const [currentlyStaked, setCurrentlyStaked] = useState<string>('');
   const [totalUnboundings, setTotalUnboundings] = useState<string>('');
 
-  const isCOSMOSEcoSystem = [ChainBackendNames.COSMOS, ChainBackendNames.OSMOSIS, ChainBackendNames.JUNO, ChainBackendNames.EVMOS, ChainBackendNames.STARGAZE].includes(tokenData.chainDetails.backendName);
+  const isCOSMOSEcoSystem = [ChainBackendNames.COSMOS, ChainBackendNames.OSMOSIS, ChainBackendNames.JUNO, ChainBackendNames.EVMOS, ChainBackendNames.STARGAZE, ChainBackendNames.NOBLE].includes(tokenData.chainDetails.backendName);
   const currentChain: IIBCData = cosmosConfig[tokenData.chainDetails.chainName];
   const chainAPIURLs = isCOSMOSEcoSystem ? globalStateContext.globalState.rpcEndpoints[tokenData.chainDetails.chainName.toUpperCase()].otherUrls : null;
 
   // Condition checking functions
-  const isBasicCosmosChain = (backendName: string) => [ChainBackendNames.OSMOSIS, ChainBackendNames.COSMOS, ChainBackendNames.JUNO, ChainBackendNames.STARGAZE].includes(backendName);
+  const isBasicCosmosChain = (backendName: string) => [ChainBackendNames.OSMOSIS, ChainBackendNames.COSMOS, ChainBackendNames.JUNO, ChainBackendNames.STARGAZE, ChainBackendNames.NOBLE].includes(backendName);
 
   const isEvmosChain = (backendName: string) => ChainBackendNames.EVMOS === backendName;
 
@@ -141,7 +141,7 @@ function TokenOverview ({ route, navigation }) {
 
   const isACosmosStakingToken = (tokenData: any) => [ChainBackendNames.OSMOSIS, ChainBackendNames.COSMOS, ChainBackendNames.JUNO, ChainBackendNames.EVMOS, ChainBackendNames.STARGAZE].some(chain => isCosmosStakingToken(chain as string, tokenData));
 
-  const isABasicCosmosStakingToken = (tokenData: any) => [ChainBackendNames.OSMOSIS, ChainBackendNames.COSMOS, ChainBackendNames.JUNO, ChainBackendNames.STARGAZE].some(chain => isCosmosStakingToken(chain as string, tokenData));
+  const isABasicCosmosStakingToken = (tokenData: any) => [ChainBackendNames.OSMOSIS, ChainBackendNames.COSMOS, ChainBackendNames.JUNO, ChainBackendNames.STARGAZE, ChainBackendNames.NOBLE].some(chain => isCosmosStakingToken(chain as string, tokenData));
 
   const canShowIBC = globalStateContext.globalState.ibc && (isBasicCosmosChain(tokenData.chainDetails.backendName) || (tokenData.chainDetails.backendName === ChainBackendNames.EVMOS && (tokenData.name === CosmosStakingTokens.EVMOS || tokenData.name.includes('IBC'))));
 
@@ -844,6 +844,18 @@ function TokenOverview ({ route, navigation }) {
             scalesPageToFit={true} />
         </CyDView></>
       );
+    } else if (chain === ChainBackendNames.NOBLE) {
+      return (
+        <><CyDView className={'my-[6px] bg-portfolioBorderColor'} />
+        <CyDView className={'h-[510px] w-[360px] overflow-scroll'}>
+          <WebView
+            nestedScrollEnabled
+            originWhitelist={['*']}
+            source={{ uri: `https://www.mintscan.io/noble/account/${noble.address}` }}
+            startInLoadingState={true}
+            scalesPageToFit={true} />
+        </CyDView></>
+      );
     } else if (chain === ChainBackendNames.OPTIMISM) {
       return (
         <><CyDView className={'my-[6px] bg-portfolioBorderColor'} />
@@ -939,7 +951,7 @@ function TokenOverview ({ route, navigation }) {
             </CyDView>
 
             <CyDView className={'flex flex-row mt-[20px]'}>
-              <CyDImage source={AppImages.GAS_FEES}/>
+              <CyDImage source={AppImages.GAS_FEES} className='h-[16px] w-[16px]' resizeMode='contain'/>
               <CyDView className={' flex flex-row mt-[3px]'}>
                 <CyDText className={' font-medium text-[16px] ml-[10px] text-primaryTextColor'}>{t<string>('GAS_FEE')}</CyDText>
                 <CyDText className={' font-bold ml-[5px] text-[18px] text-center text-secondaryTextColor'}>{`${gasFee.toFixed(6)} ${tokenData.name}`}</CyDText>
@@ -971,7 +983,7 @@ function TokenOverview ({ route, navigation }) {
             </CyDView>
 
             <CyDView className={'flex flex-row mt-[20px]'}>
-              <CyDImage source={AppImages.GAS_FEES} className={'w-[16px] h-[16px] mt-[3px]'}/>
+              <CyDImage source={AppImages.GAS_FEES} className={'w-[16px] h-[16px] mt-[3px]'} resizeMode='contain'/>
               <CyDView className={' flex flex-row mt-[3px]'}>
                 <CyDText className={' font-medium text-[16px] ml-[10px] text-primaryTextColor'}>{t<string>('GAS_FEE')}</CyDText>
                 <CyDText className={' font-bold ml-[5px] text-[18px] text-center text-secondaryTextColor'}>{`${gasFee.toFixed(6)} ${tokenData.name}`}</CyDText>
@@ -1041,6 +1053,8 @@ function TokenOverview ({ route, navigation }) {
               addressTypeQRCode = FundWalletAddressType.JUNO;
             } else if (tokenData.chainDetails.backendName === ChainBackendNames.STARGAZE) {
               addressTypeQRCode = FundWalletAddressType.STARGAZE;
+            } else if (tokenData.chainDetails.backendName === ChainBackendNames.NOBLE) {
+              addressTypeQRCode = FundWalletAddressType.NOBLE;
             }
             navigation.navigate(C.screenTitle.QRCODE, { addressType: addressTypeQRCode });
           } }>

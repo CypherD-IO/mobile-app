@@ -10,7 +10,7 @@ import { StakingContext } from '../../core/util';
 import { stakeValidators } from '../../core/Staking';
 import * as C from '../../constants';
 import { StakeOptionsModal } from '../../components/StakeOptionsModal';
-import { CyDImage, CyDText, CyDTextInput } from '../../styles/tailwindStyles';
+import { CyDImage, CyDTextInput } from '../../styles/tailwindStyles';
 
 const {
   CText,

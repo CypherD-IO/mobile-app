@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-misused-promises */
 /**
  *  IMPORTANT NOTE:
  *  Please read the below article, before using ether.js
@@ -12,19 +13,29 @@ import '@ethersproject/shims';
 import { ethers } from 'ethers';
 import Toast from 'react-native-toast-message';
 import analytics from '@react-native-firebase/analytics';
-import { TARGET_CARD_EVM_WALLET_ADDRESS, TARGET_BRIDGE_EVM_WALLET_ADDRESS, getWeb3Endpoint } from './util';
-import { Chain, CHAIN_OPTIMISM } from '../constants/server';
+import {
+  TARGET_CARD_EVM_WALLET_ADDRESS,
+  TARGET_BRIDGE_EVM_WALLET_ADDRESS,
+  getWeb3Endpoint,
+  convertAmountOfContractDecimal
+} from './util';
+import { Chain, CHAIN_OPTIMISM, CHAIN_SHARDEUM, CHAIN_SHARDEUM_SPHINX } from '../constants/server';
 import * as Sentry from '@sentry/react-native';
 import { GasPriceDetail } from './types';
 import Web3 from 'web3';
-import { microAtomToAtom, microAtomToUsd, isCosmosAddress } from '../containers/utilities/cosmosSendUtility';
+import { microAtomToAtom, microAtomToUsd } from '../containers/utilities/cosmosSendUtility';
 import { OfflineDirectSigner } from '@cosmjs-rn/proto-signing';
 import { getSignerClient } from './Keychain';
 import { MsgSendEncodeObject, SigningStargateClient } from '@cosmjs-rn/stargate';
 import { cosmosConfig } from '../constants/cosmosConfig';
 import { t } from 'i18next';
-import { useGlobalModalContext } from '../components/v2/GlobalModal';
 import { initialHdWalletState } from '../reducers';
+import { createMessageSend, createTxRawEIP712, signatureToWeb3Extension } from '@tharsis/transactions';
+import { personalSign, signTypedData, SignTypedDataVersion } from '@metamask/eth-sig-util';
+import { generatePostBodyBroadcast } from '@tharsis/provider';
+import axios from './Http';
+import { createAlchemyWeb3 } from '@alch/alchemy-web3';
+import { signatureToPubkey } from '@hanchon/signature-to-pubkey';
 
 // const {showModal, hideModal} = useGlobalModalContext()
 // ETH in Optimims chain's contract address
@@ -39,34 +50,45 @@ export function isNativeCurrency (fromChain: Chain, contractAddress: string): bo
   return isNative;
 }
 
-export function sendNativeCoinOrToken (hdWalletContext: any, portfolioState: any, fromChain: Chain, send_token_amount: string, contractAddress: string, numberOfDecimals: number, currentQuoteUUID: string, handleTransactionResult: any, is_bridge: boolean = false, finalGasPrice: any, gasLimit: any, globalContext) {
+export function sendNativeCoinOrToken (hdWalletContext: any, portfolioState: any, fromChain: Chain, send_token_amount: string, contractAddress: string, numberOfDecimals: number, toAddress: string, currentQuoteUUID: string, handleTransactionResult: any, is_bridge: boolean = false, finalGasPrice: any, gasLimit: any, globalContext) {
   const web3 = new Web3(getWeb3Endpoint(fromChain, globalContext));
   if ((contractAddress.toLowerCase() === OP_ETH_ADDRESS && fromChain === CHAIN_OPTIMISM) || isNativeCurrency(fromChain, contractAddress)) {
-    sendNativeCoin(hdWalletContext, portfolioState, web3, send_token_amount, currentQuoteUUID, handleTransactionResult, is_bridge, finalGasPrice, gasLimit);
+    void _sendNativeCoin(hdWalletContext, portfolioState, web3, send_token_amount, currentQuoteUUID, handleTransactionResult, toAddress, finalGasPrice, gasLimit, fromChain);
   } else {
-    sendToken(hdWalletContext, portfolioState, web3, contractAddress, send_token_amount, numberOfDecimals, currentQuoteUUID, handleTransactionResult, is_bridge, finalGasPrice, gasLimit);
+    _sendToken(hdWalletContext, portfolioState, web3, contractAddress, send_token_amount, numberOfDecimals, currentQuoteUUID, handleTransactionResult, toAddress, finalGasPrice, gasLimit);
   }
 }
 
-export function sendNativeCoinOrTokenToAnyAddress (hdWalletContext: any, portfolioState: any, fromChain: any, send_token_amount: string, contractAddress: string, numberOfDecimals: number, currentQuoteUUID: string, handleTransactionResult: any, to_address: string, finalGasPrice: any, gasLimit: any, globalContext) {
+export function sendNativeCoinOrTokenToAnyAddress (hdWalletContext: any, portfolioState: any, fromChain: any, send_token_amount: string, contractAddress: string, numberOfDecimals: number, currentQuoteUUID: string, handleTransactionResult: any, to_address: string, finalGasPrice: any, gasLimit: any, globalContext, tokenSymbol?: string) {
   const web3 = new Web3(getWeb3Endpoint(fromChain, globalContext));
-
-  if ((contractAddress.toLowerCase() === OP_ETH_ADDRESS && fromChain === CHAIN_OPTIMISM) || isNativeCurrency(fromChain, contractAddress)) {
-    _sendNativeCoin(hdWalletContext, portfolioState, web3, send_token_amount, currentQuoteUUID, handleTransactionResult, to_address, finalGasPrice, gasLimit);
+  if ((contractAddress.toLowerCase() === OP_ETH_ADDRESS && fromChain === CHAIN_OPTIMISM) || ((fromChain === CHAIN_SHARDEUM || fromChain === CHAIN_SHARDEUM_SPHINX) && tokenSymbol === 'SHM') || isNativeCurrency(fromChain, contractAddress)) {
+    void _sendNativeCoin(hdWalletContext, portfolioState, web3, send_token_amount, currentQuoteUUID, handleTransactionResult, to_address, finalGasPrice, gasLimit, fromChain);
   } else {
     _sendToken(hdWalletContext, portfolioState, web3, contractAddress, send_token_amount, numberOfDecimals, currentQuoteUUID, handleTransactionResult, to_address, finalGasPrice, gasLimit);
   }
 }
 
-export function sendNativeCoin (hdWalletContext: any, portfolioState: any, web3: any, send_token_amount: string, currentQuoteUUID: string, handleTransactionResult: any, is_bridge: boolean, finalGasPrice: any, gasLimit: any) {
+export function sendNativeCoin (hdWalletContext: any, portfolioState: any, web3: any, send_token_amount: string, currentQuoteUUID: string, handleTransactionResult: any, is_bridge: boolean, finalGasPrice: any, gasLimit: any, fromChain: Chain) {
   const to_address = is_bridge ? TARGET_BRIDGE_EVM_WALLET_ADDRESS : TARGET_CARD_EVM_WALLET_ADDRESS;
-  _sendNativeCoin(hdWalletContext, portfolioState, web3, send_token_amount, currentQuoteUUID, handleTransactionResult, to_address, finalGasPrice, gasLimit);
+  void _sendNativeCoin(hdWalletContext, portfolioState, web3, send_token_amount, currentQuoteUUID, handleTransactionResult, to_address, finalGasPrice, gasLimit, fromChain);
 }
 
-function _sendNativeCoin (hdWalletContext: any, portfolioState: any, web3: any, send_token_amount: string, currentQuoteUUID: string, handleTransactionResult: any, to_address: string, finalGasPrice: any, gasLimit: any) {
+const decideGasLimitBasedOnTypeOfToAddress = (code: string, gasLimit: number): number => {
+  if (gasLimit > 21000) {
+    if (code !== '0x') {
+      return 2 * gasLimit;
+    }
+    return gasLimit;
+  } else {
+    return 21000;
+  }
+};
+
+async function _sendNativeCoin (hdWalletContext: any, portfolioState: any, web3: any, send_token_amount: string, currentQuoteUUID: string, handleTransactionResult: any, to_address: string, finalGasPrice: any, gasLimit: any, fromChain: Chain) {
   const ethereum = hdWalletContext.state.wallet.ethereum;
-  gasLimit = (gasLimit > 21000) ? gasLimit : 21000;
   try {
+    const code = await web3.eth.getCode(to_address);
+    gasLimit = decideGasLimitBasedOnTypeOfToAddress(code, gasLimit);
     const tx = {
       from: ethereum.address,
       to: to_address,
@@ -74,6 +96,7 @@ function _sendNativeCoin (hdWalletContext: any, portfolioState: any, web3: any, 
       value: web3.utils.toWei(send_token_amount, 'ether'),
       gas: web3.utils.toHex(gasLimit)
     };
+
     let txHash: string;
     const signPromise = web3.eth.accounts.signTransaction(
       tx,
@@ -158,11 +181,11 @@ function _sendNativeCoin (hdWalletContext: any, portfolioState: any, web3: any, 
             chain: portfolioState.statePortfolio.selectedChain.name
           });
         });
-    }, (err: { message: string }) => {
+    }, (err: any) => {
       handleTransactionResult(err.message, currentQuoteUUID, ethereum.address, true, true);
       Sentry.captureException(err);
     });
-  } catch (err) {
+  } catch (err: any) {
     handleTransactionResult(err.message, currentQuoteUUID, ethereum.address, true);
     // TODO (user feedback): Give feedback to user.
     Sentry.captureException(err);
@@ -405,7 +428,7 @@ export async function estimateGasForCosmosTransaction (chainSelected: any, signe
     const gasPrice = cosmosConfig[chainSelected.chainName].gasPrice;
     const gasFee = simulation * gasPrice;
     const fee = {
-      gas: Math.floor(simulation * 1.3).toString(),
+      gas: Math.floor(simulation * 1.5).toString(),
       amount: [
         {
           denom: cosmosConfig[chainSelected.chainName].denom,
@@ -438,13 +461,13 @@ export async function estimateGasForCosmosTransaction (chainSelected: any, signe
 };
 
 // Send tokens for cosmos based chains
-export async function cosmosSendTokens (address: string, signingClient: any, fee: any, senderAddress: string, amount: string, memo: string, handleSuccessTransaction: any, handleFailedTransaction: any, chain: string, uuid: string) {
+export async function cosmosSendTokens (address: string, signingClient: any, fee: any, senderAddress: string, amount: string, memo: string, handleSuccessTransaction: any, handleFailedTransaction: any, chain: string, uuid: string, denom?: string) {
   try {
-    const denom = cosmosConfig[chain].denom;
+    const tokenDenom = denom ?? cosmosConfig[chain].denom;
     const result = await signingClient.sendTokens(
       senderAddress,
       address,
-      [{ denom, amount }],
+      [{ denom: tokenDenom, amount }],
       {
         amount: fee.amount,
         gas: fee.gas
@@ -452,7 +475,7 @@ export async function cosmosSendTokens (address: string, signingClient: any, fee
       (memo === '') ? t('SEND_TOKENS_MEMO') : memo
     );
 
-    if (result) {
+    if (result.code === 0) {
       const analyticsData = {
         from: senderAddress,
         to: address,
@@ -479,3 +502,148 @@ export async function cosmosSendTokens (address: string, signingClient: any, fee
     handleFailedTransaction(err, uuid);
   }
 }
+
+const ACCOUNT_DETAILS_INFO = 'https://api-evmos-ia.cosmosia.notional.ventures/cosmos/auth/v1beta1/accounts';
+const SIMULATION_ENDPOINT = 'https://api-evmos-ia.cosmosia.notional.ventures/cosmos/tx/v1beta1/simulate';
+const TRANSACTION_ENDPOINT = 'https://api-evmos-ia.cosmosia.notional.ventures/cosmos/tx/v1beta1/txs';
+
+const evmosSendBody = async (
+  senderAddress: string,
+  destinationAddress: string,
+  ethereum: any,
+  transferAmount: string,
+  gasAmount: string = '14000000000000000',
+  gas: string = '450000') => {
+  const userAccountData = await axios.get(`${ACCOUNT_DETAILS_INFO}/${senderAddress}`);
+  const accountData = userAccountData?.data?.account.base_account;
+
+  const chain = {
+    chainId: 9001,
+    cosmosChainId: 'evmos_9001-2'
+  };
+
+  const getPublicKey = () => {
+    const privateKeyBuffer = Buffer.from(
+      ethereum.privateKey.substring(2),
+      'hex'
+    );
+
+    const sig = personalSign({
+      privateKey: privateKeyBuffer,
+      data: 'generate_pubkey'
+    });
+
+    const publicKey = signatureToPubkey(
+      sig,
+      Buffer.from([
+        50, 215, 18, 245, 169, 63, 252, 16, 225, 169, 71, 95, 254, 165, 146, 216,
+        40, 162, 115, 78, 147, 125, 80, 182, 25, 69, 136, 250, 65, 200, 94, 178
+      ]));
+
+    return publicKey;
+  };
+
+  const sender = {
+    accountAddress: senderAddress,
+    sequence: accountData.sequence,
+    accountNumber: accountData.account_number,
+    pubkey: accountData.pub_key?.key ?? getPublicKey()
+  };
+
+  const fee = {
+    amount: gasAmount,
+    denom: cosmosConfig.evmos.denom,
+    gas
+  };
+
+  const memo = '';
+
+  const params = {
+    destinationAddress,
+    amount: ethers.utils.parseUnits(convertAmountOfContractDecimal(transferAmount, 18), 18).toString(),
+    denom: cosmosConfig.evmos.denom
+  };
+
+  const msg = createMessageSend(chain, sender, fee, memo, params);
+
+  const privateKeyBuffer = Buffer.from(ethereum.privateKey.substring(2), 'hex');
+
+  const signature = signTypedData({
+    privateKey: privateKeyBuffer,
+    data: msg.eipToSign,
+    version: SignTypedDataVersion.V4
+  });
+
+  const extension = signatureToWeb3Extension(chain, sender, signature);
+
+  const rawTx = createTxRawEIP712(
+    msg.legacyAmino.body,
+    msg.legacyAmino.authInfo,
+    extension
+  );
+
+  const body = generatePostBodyBroadcast(rawTx);
+  return body;
+};
+export async function evmosSendSimulation (
+  senderAddress: string,
+  destinationAddress: string,
+  ethereum: any,
+  transferAmount: string
+) {
+  const body = await evmosSendBody(senderAddress, destinationAddress, ethereum, transferAmount);
+  const response = await axios.post(
+    SIMULATION_ENDPOINT,
+    body
+  );
+  const simulatedGasInfo = response.data.gas_info ? response.data.gas_info : 0;
+  const gasWanted = simulatedGasInfo.gas_used ? simulatedGasInfo.gas_used : 0;
+
+  return gasWanted;
+}
+
+export const evmosSendTxn = async (senderAddress: string,
+  destinationAddress: string,
+  ethereum: any,
+  transferAmount: string,
+  gasWanted: number,
+  handleSuccessTransaction: any,
+  handleFailedTransaction: any,
+  uuid: string
+) => {
+  const body = await evmosSendBody(
+    senderAddress,
+    destinationAddress,
+    ethereum,
+    transferAmount,
+    ethers.utils.parseUnits(convertAmountOfContractDecimal((cosmosConfig.evmos.gasPrice * gasWanted).toString(), 18), 18).toString(),
+    Math.floor(gasWanted * 1.3).toString());
+
+  const response = await axios.post(
+    TRANSACTION_ENDPOINT,
+    body
+  );
+
+  if (response.data.tx_response.code === 0) {
+    const analyticsData = {
+      from: senderAddress,
+      to: senderAddress,
+      gasPrice: cosmosConfig.evmos.gasPrice,
+      value: transferAmount,
+      gasWanted,
+      hash: response.data.tx_response.txhash,
+      chain: cosmosConfig.prefix,
+      uuid
+    };
+    Toast.show({
+      type: 'success',
+      text1: 'Transaction hash',
+      text2: response.data.tx_response.txhash,
+      position: 'bottom'
+    });
+
+    handleSuccessTransaction({ transactionHash: response.data.tx_response.txhash }, analyticsData);
+  } else {
+    handleFailedTransaction(null, uuid);
+  }
+};

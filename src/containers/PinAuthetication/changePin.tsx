@@ -4,9 +4,22 @@ import { CyDView, CyDText, CyDSafeAreaView } from '../../styles/tailwindStyles';
 import OtpInput from '../../components/v2/OTPInput';
 import { screenTitle } from '../../constants';
 import { validatePin } from '../../core/Keychain';
+import { BackHandler } from 'react-native';
 
 export default function ChangePin ({ route, navigation }) {
   const [wrongPin, setWrongPin] = useState(false);
+
+  const handleBackButton = () => {
+    navigation.goBack();
+    return true;
+  };
+
+  React.useEffect(() => {
+    BackHandler.addEventListener('hardwareBackPress', handleBackButton);
+    return () => {
+      BackHandler.removeEventListener('hardwareBackPress', handleBackButton);
+    };
+  }, []);
 
   const changePinValue = async (pin: string) => {
     if (await validatePin(pin)) {

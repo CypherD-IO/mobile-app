@@ -1,4 +1,5 @@
 /** @type {import('tailwindcss').Config} */
+const colors = require('tailwindcss/colors');
 module.exports = {
   content: ['./src/**/*.{js,ts,jsx,tsx}'],
   presets: [],
@@ -11,7 +12,7 @@ module.exports = {
       xl: '1280px',
       '2xl': '1536px'
     },
-    colors: ({ colors }) => ({
+    colors: {
       inherit: colors.inherit,
       current: colors.current,
       transparent: colors.transparent,
@@ -52,8 +53,9 @@ module.exports = {
       subTextColor: '#929292',
       switchColor: '#E2E7FD',
       portfolioBorderColor: '#E5E5E5',
-      sepratorColor: '#DBDBDB',
+      sepratorColor: '#F4F4F4',
       selectedTextColor: '#6451EF',
+      warningRedBg: '#FFEDEA',
       chainColor: '#D4F2F1',
       toastColor: '#58ADAB',
       redCyD: '#FD1A1A',
@@ -86,8 +88,32 @@ module.exports = {
       selectedOption: '#FDFAEF',
       fadedGrey: '#F3F3F3',
       secondaryBackgroundColor: '#F7F8FE',
-      lightGreen: '#56bd0a'
-    }),
+      lightGreen: '#56bd0a',
+      ternaryBackgroundColor: '#FFFCF2',
+      ethereum: '#F6F6F9',
+      cosmos: '#eff0f5',
+      osmosis: '#f5edfa',
+      juno: '#ebebeb',
+      stargaze: '#ebebeb',
+      noble: '#ebebeb',
+      evmos: '#fef3f1',
+      polygon: '#f5efff',
+      binance: '#fff7e3',
+      avalanche: '#fff6f5',
+      fantom: '#f4fbff',
+      arbitrum: '#f1f4fa',
+      optimism: '#fff0f0',
+      shardeum: '#fff0f0',
+      infoTextBackground: '#F3FFFB',
+      secondaryButtonBackgroundColor: '#525252',
+      greyButtonBackgroundColor: '#C5C5C5',
+      activityFilterBorderLine: '#F5F5F5',
+      activityFontColor: '#434343',
+      privacyMessageBackgroundColor: '#F1F3FE',
+      inputBackgroundColor: '#F6F6F6',
+      tokenPriceColor: '#929292',
+      fadedDarkBackgroundColor: '#343434'
+    },
     columns: {
       auto: 'auto',
       1: '1',

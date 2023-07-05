@@ -8,23 +8,16 @@ import {
   CyDImage,
   CyDText,
   CyDView,
-  CyDTouchView
+  CyDTouchView,
+  CyDScrollView
 } from '../../styles/tailwindStyles';
 import CyDModalLayout from './modal';
 import { MODAL_HIDE_TIMEOUT } from '../../core/Http';
 import { getExplorerUrl, copyToClipboard } from '../../core/util';
 import { screenTitle } from '../../constants';
+import { State } from '../../models/globalModal.interface';
 
-interface state {
-  type: string
-  title: string
-  description: string | JSX.Element
-  isModalVisible: boolean
-  onSuccess: () => void
-  onFailure: () => void
-}
-
-const StateModal: React.FC<state> = (store: state) => {
+const StateModal: React.FC<State> = (store: State) => {
   const { t } = useTranslation();
 
   enum modalImage {
@@ -38,22 +31,24 @@ const StateModal: React.FC<state> = (store: state) => {
     warning = 'WARNING_TITLE',
     info = 'INFO_TITLE',
     success = 'SUCCESS_TITLE',
-    error = 'ERROR_TITLE'
+    error = 'ERROR_TITLE',
+    prompt = 'PROMPT_TITLE'
   }
 
   enum modalType {
     warning = 'warning',
     info = 'info',
     success = 'success',
-    error = 'error'
+    error = 'error',
+    prompt = 'prompt'
   }
 
   const RenderImage = () => {
     return (
       <CyDImage
-        style={{ resizeMode: 'stretch' }}
+        style={{ resizeMode: 'contain' }}
         className={'h-[22%] w-[40%] mt-[15%]'}
-        source={modalImage[store.type]}
+        source={modalImage[store.type] ? modalImage[store.type] : store.modalImage}
         resizeMode='contain'
       ></CyDImage>
     );
@@ -74,6 +69,24 @@ const StateModal: React.FC<state> = (store: state) => {
       store.onFailure();
     }
   }
+
+  const RenderDescription = () => {
+    const typeOfDesription = typeof store.description;
+    if (typeOfDesription === 'string') {
+      return <CyDView className='max-h-[150px]'>
+              <CyDScrollView className='flex-grow-0'>
+                <CyDText className={'mt-[15] mb-[15] text-center'}>{store.description}</CyDText>
+              </CyDScrollView>
+            </CyDView>;
+    } else if (typeOfDesription === 'object') {
+      if (React.isValidElement(store.description)) {
+        return <CyDView>{store.description}</CyDView>;
+      } else if (store.type === modalType.error) {
+        return <CyDText className={'mt-[15] mb-[15] text-center'}>{t<string>('UNEXCPECTED_ERROR')}</CyDText>;
+      }
+    }
+    return <></>;
+  };
 
   const RenderActions = () => {
     if (store.type === modalType.warning) {
@@ -99,6 +112,34 @@ const StateModal: React.FC<state> = (store: state) => {
             mT={15}
             vC={Colors.appColor}
             text={t('CANCEL')}
+            isBorder={true}
+            onPress={() => {
+              onFailure();
+            }}
+          />
+        </CyDView>
+      );
+    } else if (store.type === modalType.prompt) {
+      return (<CyDView className={'w-[100%]'}>
+          <ButtonWithOutImage
+            sentry-label="alert-on-press"
+            bG={Colors.appColor}
+            mT={10}
+            vC={Colors.appColor}
+            text={t('YES')}
+            isBorder={false}
+            onPress={() => {
+              onSuccess();
+            }}
+          />
+          <ButtonWithOutImage
+            sentry-label="alert-on-press"
+            // bG={Colors.appColor}
+            bC={Colors.sepratorColor}
+            bW={1.5}
+            mT={15}
+            vC={Colors.appColor}
+            text={t('NO')}
             isBorder={true}
             onPress={() => {
               onFailure();
@@ -137,16 +178,12 @@ const StateModal: React.FC<state> = (store: state) => {
       >
         <CyDView
           className={
-            'bg-white w-[100%] px-[40px] flex items-center rounded-t-[50]'
+            'bg-white w-[100%] px-[40px] flex items-center rounded-t-[50px]'
           }
         >
           <RenderImage />
           <CyDText className={'mt-[10] font-bold text-[20px] text-center'}>{store.title ? store.title : `${t(modalTitle[store.type])}`}</CyDText>
-          {
-            typeof store.description === 'string'
-              ? <CyDText className={'mt-[15] mb-[15] text-center'}>{store.description}</CyDText>
-              : store.description
-          }
+          <RenderDescription />
           <RenderActions />
         </CyDView>
       </CyDModalLayout>
@@ -167,9 +204,9 @@ export const SuccessTransaction = (
     copyToClipboard(url);
   };
   return (
-    <CyDView className='px-[12px] mt-[15px]'>
-      <CyDView className='flex flex-row items-center justify-between'>
-        <CyDView className='flex flex-row justify-between items-center mt-[5px]'>
+    <CyDView className='px-[12px] my-[15px]'>
+      <CyDView className='flex flex-row items-center justify-evenly'>
+        <CyDView className='flex flex-row justify-center items-center mt-[5px]'>
           <CyDText className={'text-center text-[14px] font-extrabold'}>{formatHash(hash)}</CyDText>
         </CyDView>
         <CyDTouchView onPress={() => copyHash(String(getExplorerUrl(symbol, name, hash)))}>

@@ -1,10 +1,9 @@
 import React, { useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Colors } from '../constants/theme';
-import * as C from '../constants/index';
+import { CyDText } from '../styles/tailwindStyles';
 const {
   DynamicView,
-  CText,
   DynamicTouchView
 } = require('../styles');
 
@@ -21,16 +20,15 @@ export default function SwitchView (props) {
          bR={30} jC={'center'} onPress={() => {
            setIndexChange(0);
          }}>
-            <CText dynamic mL={10} mH={10} fF={C.fontsName.FONT_BOLD} fS={12} color={Colors.primaryTextColor}>{title1}</CText>
+            <CyDText className='ml-[10px] mx-[10px] font-bold text-[16px] text-primaryTextColor'>{title1}</CyDText>
         </DynamicTouchView>
 
         <DynamicTouchView sentry-label='show-nft' dynamic dynamicHeight height={100} bGC={index == 1 ? Colors.appColor : ''}
          bR={30} jC={'center'} onPress={() => {
            setIndexChange(1);
          }}>
-            <CText dynamic mL={10} mH={10} fF={C.fontsName.FONT_BOLD} fS={12} color={Colors.primaryTextColor}>{title2}</CText>
+            <CyDText className='ml-[10px] mx-[10px] font-bold text-[16px] text-primaryTextColor'>{title2}</CyDText>
         </DynamicTouchView>
-
         </DynamicView>
   );
 }

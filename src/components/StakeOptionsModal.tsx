@@ -34,7 +34,7 @@ export function StakeOptionsModal (props) {
           <CyDView className={'flex flex-row mt-[40px]'}>
               <CyDImage source={AppImages.APR_ICON} className={'h-[20px] w-[20px]'}/>
               <CyDView className={' flex flex-row'}>
-                <CyDText className={' font-medium text-[16px] ml-[4px] text-primaryTextColor'}>{'APR ' + data.apr}</CyDText>
+                <CyDText className={' font-medium text-[16px] ml-[4px] text-primaryTextColor'}>{'APR ' + data.apr + "%"}</CyDText>
               </CyDView>
             </CyDView>
 
@@ -50,7 +50,7 @@ export function StakeOptionsModal (props) {
               onPress();
             }}
               title={t('REDELEGATE')}
-              style={'py-[5%] mt-[50px]'}
+              style={'py-[5%] mt-[15px]'}
               loaderStyle={{ height: 30 }}
             />}
             {typeOfAction !== 'unstake' && <Button onPress={() => {

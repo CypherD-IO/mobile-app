@@ -1,5 +1,5 @@
 /* eslint-disable react-native/no-raw-text */
-import React from 'react';
+import React, { useContext } from 'react';
 import { StyleSheet } from 'react-native';
 import CyDModalLayout from './modal';
 import { CyDImage, CyDScrollView, CyDText, CyDTouchView, CyDView } from '../../styles/tailwindStyles';
@@ -8,10 +8,13 @@ import Button from './button';
 import moment from 'moment';
 import { onShare } from '../../containers/utilities/socialShareUtility';
 import { useTranslation } from 'react-i18next';
-import { copyToClipboard } from '../../core/util';
+import { copyToClipboard, HdWalletContext } from '../../core/util';
 import { showToast } from '../../containers/utilities/toastUtility';
 import { round } from 'lodash';
 import { ActivityStatus } from '../../reducers/activity_reducer';
+import useAxios from '../../core/HttpRequest';
+import appsFlyer from 'react-native-appsflyer';
+import { generateUserInviteLink } from '../../core/appsFlyerUtils';
 
 export default function ActivityInfoModal ({
   isModalVisible,
@@ -26,17 +29,33 @@ export default function ActivityInfoModal ({
     symbol: string
     amountInUsd: string
     gasAmount: string
-    quoteId: string
-    txnHash: string
-    status: ActivityStatus
+    quoteId?: string
+    txnHash?: string
+    status?: ActivityStatus
   } | null
 }) {
   const { t } = useTranslation();
-
+  const { getWithAuth } = useAxios();
+  const hdWalletContext = useContext<any>(HdWalletContext);
+  const { ethereum: { address } } = hdWalletContext.state.wallet;
   async function referFriend () {
-    await onShare(t('RECOMMEND_TITLE'), t('RECOMMEND_MESSAGE'), t('RECOMMEND_URL'));
-    setModalVisible(false);
+    try {
+      const resp = await getWithAuth('/v1/referral/tabDetails');
+      await generateUserInviteLink(resp?.data?.inviteCodeTab.referralCode, address, (referralInviteLink) => {
+        onShare(t('RECOMMEND_TITLE'), t('RECOMMEND_MESSAGE'), referralInviteLink)
+          .then(
+            () => {
+              void appsFlyer.logEvent('referral_invite_shared', {});
+            })
+          .catch((error) => {
+            void appsFlyer.logEvent('share_invite_failed', error);
+          });
+      });
+    } catch (error) {
+      // Ignore if the link generation fails
+    }
   }
+
   if (params !== null) {
     const { datetime, amount, symbol, amountInUsd, gasAmount = 'Not Available', quoteId, txnHash, status } = params;
     return (
@@ -47,7 +66,7 @@ export default function ActivityInfoModal ({
         animationIn={'slideInUp'}
         animationOut={'slideOutDown'}
       >
-        <CyDView className={'bg-white pb-[30px] rounded-[20px]'}>
+        <CyDView className={'bg-white pb-[30px] rounded-[20px] max-h-[90%]'}>
           <CyDTouchView className={'flex flex-row justify-end z-10'}
             onPress={() => { setModalVisible(false); }}
           >
@@ -61,33 +80,33 @@ export default function ActivityInfoModal ({
               className={'w-[21px] h-[21px] right-[9px]'}
             />
             <CyDView className='flex mt-[5%] justify-center items-center '>
-              <CyDText className='text-center font-nunito text-[20px] font-extrabold font-[##434343]'>{t<string>('DEBIT_CARD_TRANSACTION')}</CyDText>
+              <CyDText className='text-center font-nunito text-[20px] font-extrabold  '>{t<string>('DEBIT_CARD_TRANSACTION')}</CyDText>
               <CyDText className='text-center font-nunito text-[12px] font-extrabold text-successTextGreen'>{t<string>('SUCCESSFUL')}</CyDText>
             </CyDView>
           </CyDView>
           <CyDScrollView className='flex flex-col px-[40px]'>
             <CyDView className='flex flex-row mt-[10%] justify-start items-center'>
-              <CyDText className='font-nunito text-[16px] mt-[3px] w-[30%] font-[##434343]'>{t<string>('DATE')}</CyDText>
-              <CyDText className='text-center font-nunito text-[14px] mt-[4.5px] font-bold font-[##434343]'>{moment(datetime).format('MMM DD, h:mm a')}</CyDText>
+              <CyDText className='font-nunito text-[16px] mt-[3px] w-[30%]  '>{t<string>('DATE')}</CyDText>
+              <CyDText className='text-center font-nunito text-[14px] mt-[4.5px] font-bold  '>{moment(datetime).format('MMM DD, h:mm a')}</CyDText>
             </CyDView>
             <CyDView className='flex flex-row mt-[10%] justify-start'>
-              <CyDText className='font-nunito text-[16px] mt-[3px] w-[30%] font-[##434343]'>{t<string>('WITHDRAWN')}</CyDText>
-              <CyDText className='text-center font-nunito text-[14px] mt-[5px] font-bold font-[##434343]'>{`${amount} ${symbol}`}</CyDText>
+              <CyDText className='font-nunito text-[16px] mt-[3px] w-[30%]  '>{t<string>('WITHDRAWN')}</CyDText>
+              <CyDText className='text-center font-nunito text-[14px] mt-[5px] font-bold  '>{`${amount} ${symbol}`}</CyDText>
             </CyDView>
             <CyDView className='flex flex-row mt-[10%] justify-start'>
-              <CyDText className='font-nunito text-[16px] mt-[3px] w-[30%] font-[##434343]'>{t<string>('RECEIVED')}</CyDText>
-              <CyDText className='text-center font-nunito text-[14px] mt-[5px] font-bold mt-[5px] font-[##434343]'>{`$${amountInUsd}`}</CyDText>
+              <CyDText className='font-nunito text-[16px] mt-[3px] w-[30%]  '>{t<string>('RECEIVED')}</CyDText>
+              <CyDText className='text-center font-nunito text-[14px] mt-[5px] font-bold mt-[5px]  '>{`$${amountInUsd}`}</CyDText>
             </CyDView>
             <CyDView className='flex flex-row mt-[10%] justify-start'>
-              <CyDText className='font-nunito text-[16px] mt-[3px] w-[30%] font-[##434343]'>{t<string>('GAS_FEE')}</CyDText>
-              <CyDText className='text-center font-nunito text-[14px] mt-[5px] font-bold mt-[5px] font-[##434343]'>{`${gasAmount} ${gasAmount === 'Not Available' ? '' : 'USD'}`}</CyDText>
+              <CyDText className='font-nunito text-[16px] mt-[3px] w-[30%]  '>{t<string>('GAS_FEE')}</CyDText>
+              <CyDText className='text-center font-nunito text-[14px] mt-[5px] font-bold mt-[5px]  '>{`${gasAmount} ${gasAmount === 'Not Available' ? '' : 'USD'}`}</CyDText>
             </CyDView>
             <CyDTouchView className='flex flex-row mt-[10%] justify-start' onPress={() => {
               copyToClipboard(txnHash);
               showToast(t('SEED_PHARSE_COPY'));
             }}>
-              <CyDText className='font-nunito text-[16px] mt-[3px] w-[30%] font-[##434343]'>{t<string>('TRANSACTION_HASH')}</CyDText>
-              <CyDText className='text-center font-nunito text-[14px] mt-[5px] font-bold mt-[3px] font-[##434343]'>{txnHash ? `${txnHash.substring(0, 8)}...${txnHash.substring(txnHash.length - 6, txnHash.length)}\t` : 'TBD\t'}
+              <CyDText className='font-nunito text-[16px] mt-[3px] w-[30%]  '>{t<string>('TRANSACTION_HASH')}</CyDText>
+              <CyDText className='text-center font-nunito text-[14px] mt-[5px] font-bold mt-[3px]  '>{txnHash ? `${txnHash.substring(0, 8)}...${txnHash.substring(txnHash.length - 6, txnHash.length)}\t` : 'TBD\t'}
               <CyDImage source={AppImages.COPY} className={'relative left-[20] w-[16px] h-[18px]'} />
               </CyDText>
             </CyDTouchView>
@@ -96,16 +115,16 @@ export default function ActivityInfoModal ({
                   copyToClipboard(quoteId);
                   showToast(t('QUOTE_ID_COPY'));
                 }}>
-                  <CyDText className='font-nunito text-[16px] mt-[3px] w-[30%] font-[##434343]'>{t<string>('QUOTE_UUID')}</CyDText>
-                  <CyDText className='text-center font-nunito text-[14px] mt-[5px] font-bold mt-[3px] font-[##434343]'>{`${quoteId.substring(0, 8)}...${quoteId.substring(quoteId.length - 6, quoteId.length)}      `}
+                  <CyDText className='font-nunito text-[16px] mt-[3px] w-[30%]  '>{t<string>('QUOTE_UUID')}</CyDText>
+                  <CyDText className='text-center font-nunito text-[14px] mt-[5px] font-bold mt-[3px]  '>{`${quoteId.substring(0, 8)}...${quoteId.substring(quoteId.length - 6, quoteId.length)}      `}
                   <CyDImage source={AppImages.COPY} className={'relative left-[20] w-[16px] h-[18px]'} />
                   </CyDText>
                 </CyDTouchView>
             }
 
             <CyDView className='flex flex-row mt-[10%] justify-start'>
-              <CyDText className='font-nunito text-[16px] mt-[3px] w-[30%] font-[##434343]'>{t<string>('EXCHANGE_RATE')}</CyDText>
-              <CyDText className='text-center font-nunito text-[14px] mt-[3px] font-bold mt-[5px] font-[##434343]'>{`${String(round((parseFloat(amountInUsd) - parseFloat(gasAmount === 'Not Available' ? '0' : gasAmount)) / parseFloat(amount), 6))} USD`}</CyDText>
+              <CyDText className='font-nunito text-[16px] mt-[3px] w-[30%]  '>{t<string>('EXCHANGE_RATE')}</CyDText>
+              <CyDText className='text-center font-nunito text-[14px] mt-[3px] font-bold mt-[5px]  '>{`${String(round((parseFloat(amountInUsd) - parseFloat(gasAmount === 'Not Available' ? '0' : gasAmount)) / parseFloat(amount), 6))} USD`}</CyDText>
             </CyDView>
 
             <CyDImage source={AppImages.CYPHER_LOVE}

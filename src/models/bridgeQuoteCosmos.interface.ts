@@ -2,6 +2,7 @@ export interface bridgeQuoteCosmosInterface {
   fromAmount: number
   fromAmountUsd: number
   receiverAddress: string
+  step1TargetWallet: string
   toAmount: number
   quoteId: string
   toAmountUsd: number

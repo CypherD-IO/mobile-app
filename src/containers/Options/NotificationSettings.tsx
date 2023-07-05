@@ -10,6 +10,8 @@ import AppImages from '../../../assets/images/appImages';
 import EmptyView from '../../components/EmptyView';
 import { hostWorker } from '../../global';
 import { GlobalContext } from '../../core/globalContext';
+import useAxios from '../../core/HttpRequest';
+import { CyDText } from '../../styles/tailwindStyles';
 
 const { CText, SafeAreaView, DynamicView } = require('../../styles');
 
@@ -129,8 +131,8 @@ export default function NotificationSettings (props) {
 
             <DynamicView dynamic dynamicHeightFix height={40} fD={'row'} bR={20}>
               <DynamicView dynamic dynamicWidthFix width={230} dynamicHeightFix height={40} aLIT='flex-start' fD={'column'} jC='center'>
-                <CText tA={'left'} dynamic fF={C.fontsName.FONT_BOLD} fS={16} color={Colors.primaryTextColor}>{t(item.id)}</CText>
-                <CText tA={'left'} dynamic fF={C.fontsName.FONT_SEMI_BOLD} fS={12} color={Colors.subTextColor}>{item.info}</CText>
+                <CyDText className='text-left font-bold text-[16px] text-primaryTextColor'>{t(item.id)}</CyDText>
+                <CyDText className='text-left font-semibold text-[12px] text-subTextColor'>{item.info}</CyDText>
               </DynamicView>
             </DynamicView>
 
