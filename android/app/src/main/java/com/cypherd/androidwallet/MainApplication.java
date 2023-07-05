@@ -67,7 +67,7 @@ public class MainApplication extends Application implements ReactApplication {
     ReactFontManager.getInstance().addCustomFont(this, "Nunito", R.font.nunito);
     SoLoader.init(this, /* native exopackage */ false);
     initializeFlipper(this, getReactNativeHost().getReactInstanceManager());
-    IntercomModule.initialize(this, "android_sdk-60866bc5b6b0e244ea48a178cb454791b75dff7a", BuildConfig.INTERCOM_APP_KEY)
+    IntercomModule.initialize(this, "android_sdk-60866bc5b6b0e244ea48a178cb454791b75dff7a", BuildConfig.INTERCOM_APP_KEY);
   }
 
   /**
