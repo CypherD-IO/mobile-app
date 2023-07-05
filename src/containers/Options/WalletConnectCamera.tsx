@@ -1,0 +1,403 @@
+/* eslint-disable react/prop-types */
+/* eslint-disable react-native/no-raw-text */
+/* eslint-disable @typescript-eslint/restrict-template-expressions */
+/**
+ * @format
+ * @flow
+ */
+
+import React, { useEffect, useState, useContext, useLayoutEffect } from 'react';
+import WalletConnect from '@walletconnect/client';
+import { useTranslation } from 'react-i18next';
+import { DynamicTouchView, DynamicView } from '../../styles/viewStyle';
+import * as C from '../../constants/index';
+import AppImages from './../../../assets/images/appImages';
+import { storeConnectWalletData } from '../../core/asyncStorage';
+import LoadingStack from '../../routes/loading';
+import analytics from '@react-native-firebase/analytics';
+import { BackHandler, FlatList, StyleSheet } from 'react-native';
+import { HdWalletContext, PortfolioContext } from '../../core/util';
+import { CyDText, CyDSafeAreaView, CyDView, CyDImage, CyDTouchView, CyDFastImage } from '../../styles/tailwindStyles';
+import { WalletConnectContext, walletConnectContextDef, WalletConnectActions } from '../../reducers/wallet_connect_reducer';
+import { DynamicImage } from '../../styles/imageStyle';
+import { QRScannerScreens } from '../../constants/server';
+import { CText } from '../../styles/textStyle';
+import { deleteTopic, web3WalletPair, web3wallet } from '../../core/walletConnectV2Utils';
+import { has } from 'lodash';
+import moment from 'moment';
+import clsx from 'clsx';
+import Button from '../../components/v2/button';
+import { ButtonType } from '../../constants/enum';
+import { useGlobalModalContext } from '../../components/v2/GlobalModal';
+
+export default function WalletConnectCamera (props) {
+  const { walletConnectState, walletConnectDispatch } = useContext<walletConnectContextDef>(WalletConnectContext);
+
+  const hdWalletContext = useContext<any>(HdWalletContext);
+  const portfolioState = useContext<any>(PortfolioContext);
+  const ethereum = hdWalletContext.state.wallet.ethereum;
+  const { t } = useTranslation();
+
+  const [walletConnectURI, setWalletConnectURI] = useState('');
+
+  const [loading, setLoading] = useState(true);
+  const [selectedPairingTopic, setSelectedPairingTopic] = useState<string>('');
+  const [sessionsForAPairing, setSessionsForAPairing] = useState<any>([]);
+  const [totalSessions, setTotalSessions] = useState<any>([]);
+  const [isPairingSessionsModalVisible, setPairingSessionsModalVisible] = useState<boolean>(false);
+  const { showModal, hideModal } = useGlobalModalContext();
+
+  const connectWallet = async (uri: string) => {
+    if (uri.includes('relay-protocol')) {
+      try {
+        await web3WalletPair({ uri });
+      } catch (e) {
+        setLoading(false);
+      }
+    } else {
+      const connector = new WalletConnect({ uri });
+      walletConnectDispatch({ type: WalletConnectActions.ADD_CONNECTOR, value: connector });
+    }
+  };
+
+  const handleBackButton = () => {
+    props?.navigation?.goBack();
+    return true;
+  };
+
+  const endSession = async (key: number) => {
+    const connector = walletConnectState.connectors[key];
+    walletConnectDispatch({ type: WalletConnectActions.DELETE_DAPP_INFO, value: { connector } });
+    if (connector) {
+      await connector?.killSession();
+    }
+  };
+
+  const onSuccess = (e) => {
+    props.navigation.navigate(C.screenTitle.WALLET_CONNECT);
+    const link = e.data;
+    if (link.startsWith('wc')) {
+      setLoading(true);
+      void connectWallet(link);
+      void analytics().logEvent('wallet_connect_url_scan', { fromEthAddress: ethereum.address });
+    }
+  };
+
+  useLayoutEffect(() => {
+    props.navigation.setOptions({
+      headerRight: () => (
+         <DynamicTouchView
+             dynamic
+             style = {{ width: 30 }}
+             onPress = { () => {
+               props.navigation.navigate(C.screenTitle.QR_CODE_SCANNER, { fromPage: QRScannerScreens.WALLET_CONNECT, onSuccess });
+             }}
+             fD={'row'}
+             >
+               <DynamicImage
+                 dynamic
+                 height={20}
+                 width={22}
+                 resizemode="contain"
+                 source={AppImages.QR_CODE}
+               />
+             </DynamicTouchView>
+
+      )
+    });
+  }, [props.navigation]);
+
+  useEffect(() => {
+    BackHandler.addEventListener('hardwareBackPress', handleBackButton);
+    return () => {
+      setWalletConnectURI('');
+      BackHandler.removeEventListener('hardwareBackPress', handleBackButton);
+    };
+  }, []);
+
+  useEffect(() => {
+    const link = portfolioState.statePortfolio.walletConnectURI;
+    if (link.startsWith('wc')) {
+      portfolioState.dispatchPortfolio({ value: { walletConnectURI: '' } });
+      setLoading(true);
+      void connectWallet(link);
+      void analytics().logEvent('wallet_connect_url_scan', { fromEthAddress: ethereum.address });
+    }
+  }, [portfolioState.statePortfolio.walletConnectURI]);
+
+  const buildWalletConnectDataFromAsync = async () => {
+    let data;
+    if (walletConnectState?.dAppInfo?.length === 0) {
+      data = { connectors: [], dAppInfo: [] };
+    } else {
+      data = { connectors: walletConnectState?.connectors?.map((element) => { return element.session ?? element; }), dAppInfo: walletConnectState?.dAppInfo };
+    }
+    await storeConnectWalletData(data, hdWalletContext.state.wallet.ethereum.wallets[0].address);
+    if (web3wallet) getv2Sessions();
+  };
+
+  // This useEffect is to store the session for each update
+  useEffect(() => {
+    if (walletConnectState) {
+      void buildWalletConnectDataFromAsync();
+    }
+  }, [walletConnectState]);
+
+  useEffect(() => {
+    if (loading && walletConnectURI.startsWith('wc')) {
+      void connectWallet(walletConnectURI);
+    }
+  }, [loading, walletConnectURI]);
+
+  const getv2Sessions = () => {
+    const sessions = Object.values(web3wallet?.getActiveSessions());
+    if (sessions) {
+      setTotalSessions(sessions);
+    }
+    return sessions;
+  };
+
+  const getSessionsForAPairing = (pairingTopic: string) => {
+    const tempSessions = totalSessions.filter((session: any) => session.pairingTopic === pairingTopic);
+    return tempSessions;
+  };
+
+  useEffect(() => {
+    if (selectedPairingTopic !== '') {
+      const pairingSessions = getSessionsForAPairing(selectedPairingTopic);
+      setSessionsForAPairing(pairingSessions);
+      setPairingSessionsModalVisible(true);
+    }
+  }, [selectedPairingTopic]);
+
+  useEffect(() => {
+    if (isPairingSessionsModalVisible) {
+      showPairingSessions();
+    } else {
+      setSelectedPairingTopic('');
+      hideModal();
+    }
+  }, [isPairingSessionsModalVisible]);
+
+  useEffect(() => {
+    if (web3wallet) getv2Sessions();
+    if (selectedPairingTopic !== '') getSessionsForAPairing(selectedPairingTopic);
+    if (walletConnectState?.connectors?.length === walletConnectState?.dAppInfo?.length) {
+      setLoading(false);
+    }
+  }, [walletConnectState]);
+
+  if (loading) {
+    return (<LoadingStack />);
+  }
+
+  // const disconnectSession = async (topic: string) => {
+  //   setLoading(true);
+  //   try {
+  //     setPairingSessionsModalVisible(false);
+  //     await deleteTopic(topic);
+  //     getv2Sessions();
+  //     setSessionsForAPairing([]);
+  //     setLoading(false);
+  //   } catch (e) {
+  //     getv2Sessions();
+  //     setSessionsForAPairing([]);
+  //     setLoading(false);
+  //   }
+  // };
+
+  const deletePairing = async (pairingTopic: string, sessionTopic?: string) => {
+    const [connector] = walletConnectState.dAppInfo.filter((connection) => connection.topic === pairingTopic);
+    walletConnectDispatch({ type: WalletConnectActions.DELETE_DAPP_INFO, value: { connector } });
+    setPairingSessionsModalVisible(false);
+    try {
+      if (sessionTopic) await deleteTopic(sessionTopic);
+      await deleteTopic(pairingTopic);
+      getv2Sessions();
+    } catch (e) {
+      getv2Sessions();
+    }
+  };
+
+  const renderSessionItem = (session) => {
+    const { name, icons } = session.item.peer.metadata;
+    const { expiry } = session.item;
+    return (
+      <CyDView>
+        <CyDView className={'flex items-center'}>
+            <CyDView className='mt-[12px] w-11/12 border-[1px] rounded-[8px] border-fadedGrey'>
+              <CyDView className={'flex-row'}>
+                <CyDView className='flex flex-row rounded-r-[20px] self-center px-[10px]'>
+                  <CyDFastImage
+                    className={'h-[40px] w-[40px] rounded-[50px]'}
+                    source={{ uri: icons[0] }}
+                    resizeMode='contain'
+                  />
+                </CyDView>
+                <CyDView className={'flex flex-row'}>
+                  <CyDView className='flex flex-row justify-between items-center rounded-r-[20px] py-[15px] pr-[20px]'>
+                    <CyDView className='ml-[10px]'>
+                      <CyDView className={'flex flex-row items-center align-center'}>
+                        <CyDText className={'font-extrabold text-[16px]'}>{name.length > 25 ? `${name.substring(0, 25)}....` : name}</CyDText>
+                      </CyDView>
+                      <CyDView className={'flex flex-row items-center align-center'}>
+                        <CyDText className={'text-[14px]'}>{t<string>('EXPIRES_AT')}: {moment.unix(expiry).format('LLL')}</CyDText>
+                      </CyDView>
+                    </CyDView>
+                  </CyDView>
+                </CyDView>
+                {/* <CyDView className={'flex-auto flex-row items-center justify-end mr-[10px]'}>
+                  <CyDTouchView onPress ={() => { void disconnectSession(session.item.topic); }}>
+                    <CyDImage source={AppImages.DISCONNECT} />
+                  </CyDTouchView>
+                </CyDView> */}
+              </CyDView>
+              <CyDView className={'flex flex-row justify-center'}>
+                  <Button onPress={() => {
+                    // void disconnectSession(session.item.topic);
+                    void deletePairing(selectedPairingTopic, session.item.topic);
+                  }} style={'w-[80%] p-[10px] mb-[8px]'} type={ButtonType.RED} title={t('DISCONNECT')} titleStyle='text-[14px] text-white'/>
+                </CyDView>
+          </CyDView>
+        </CyDView>
+      </CyDView>
+    );
+  };
+
+  const RenderSessionsForAPairing = () => {
+    return (
+      <CyDView>
+        <CyDView className={'flex flex-row justify-center'}>
+          <CyDText className={'text-[22px] font-extrabold mt-[14px] mb-[10px]'}>{t<string>('MANAGE_CONNECTION')}</CyDText>
+        </CyDView>
+        {/* <CyDTouchView onPress={() => { setPairingSessionsModalVisible(false); }} className={'z-[50]'}>
+          <CyDImage source={AppImages.CLOSE} className={' w-[18px] h-[18px] z-[50] absolute right-[20px] top-[-30px]'} />
+         </CyDTouchView> */}
+        {sessionsForAPairing.length === 0 && <CyDView>
+          <CyDView className={'flex flex-row justify-center'}>
+            <CyDImage
+                    className={'h-[250px] w-[250px]'}
+                    source={AppImages.EMPTY_WALLET_CONNECT_SESSIONS}
+                    resizeMode='contain'
+                  />
+          </CyDView>
+          <CyDView className={'flex flex-row justify-center mb-[10px]'}>
+            <CyDText className={'font-bold text-[18px]'}>No active session available</CyDText>
+          </CyDView>
+          <CyDView className={'flex flex-row justify-center'}>
+          <Button onPress={() => {
+            void deletePairing(selectedPairingTopic);
+          }} style={'w-[80%] p-[20px] my-[18px]'} type={ButtonType.RED} title={t('DELETE_CONNECTION')} titleStyle='text-[14px] text-white'/>
+        </CyDView>
+        </CyDView>}
+        {sessionsForAPairing.length > 0 && <CyDView>
+          <CyDView>
+          <FlatList
+              data={sessionsForAPairing}
+              renderItem={(item) => renderSessionItem(item)}
+              style={{ width: '100%', maxHeight: 300 }}
+              showsVerticalScrollIndicator={true}
+          />
+        </CyDView>
+        </CyDView>}
+        <CyDView className={'flex flex-row justify-center'}>
+          {/* <Button onPress={() => {
+            void deletePairing(selectedPairingTopic);
+          }} style={'w-[80%] p-[20px] my-[18px]'} type={ButtonType.TERNARY} title={t('DELETE_CONNECTION')} titleStyle='text-[14px]'/> */}
+        </CyDView>
+      </CyDView>
+    );
+  };
+
+  const RenderPairingOnlineStatus = ({ pairing }) => {
+    const isOnline = getSessionsForAPairing(pairing.topic).length > 0;
+    return (
+      <CyDView>
+        <CyDView className={clsx('h-[10px] w-[10px] rounded-[60px] ml-[6px] mt-[3px]', { 'bg-green-600': isOnline, 'bg-red-600': !isOnline })}></CyDView>
+      </CyDView>
+    );
+  };
+
+  function showPairingSessions () {
+    showModal('customLayout', {
+      onSuccess: () => { setPairingSessionsModalVisible(false); },
+      onFailure: () => { setPairingSessionsModalVisible(false); },
+      customComponent: <RenderSessionsForAPairing/>
+    });
+  };
+
+  const renderItem = (item) => {
+    const element = item.item;
+    const key = item.index;
+    const isV2 = has(element, 'version') && element?.version === 'v2';
+    return (
+      <CyDTouchView disabled={!isV2} onPress ={() => {
+        setSelectedPairingTopic(element.topic);
+      }}>
+        <CyDView className={'flex items-center'}>
+            <CyDView className='flex flex-row items-center mt-[6px] w-11/12 border-[1px] rounded-[8px] border-fadedGrey'>
+              <CyDView className={'flex-row'}>
+                <CyDView className='flex flex-row rounded-r-[20px] self-center px-[10px]'>
+                  <CyDFastImage
+                    className={'h-[40px] w-[40px] rounded-[50px]'}
+                    source={{ uri: !isV2 ? element.icons[0] : element.icon }}
+                    resizeMode='contain'
+                  />
+                </CyDView>
+                {isV2 && <CyDView className='rounded-[60px] h-[16px] p-[4px] absolute mt-[43px] ml-[22px] bg-appColor'>
+                    <CyDText className={'font-extrabold text-[8px]'}>V2</CyDText>
+                  </CyDView>}
+                <CyDView className={'flex flex-row'}>
+                  <CyDView className='flex flex-row justify-between items-center rounded-r-[20px] py-[15px] pr-[20px]'>
+                    <CyDView className='ml-[10px]'>
+                      <CyDView className={'flex flex-row items-center align-center'}>
+                        <CyDText className={'font-extrabold text-[16px]'}>{element.name.length > 25 ? `${element.name.substring(0, 25)}....` : element.name}</CyDText>
+                        {isV2 && <RenderPairingOnlineStatus pairing={element}/>}
+                      </CyDView>
+                      <CyDView className={'flex flex-row items-center align-center'}>
+                        <CyDText className={'text-[14px]'}>{element.url}</CyDText>
+                      </CyDView>
+                    </CyDView>
+                  </CyDView>
+                </CyDView>
+                <CyDView className={'flex-auto flex-row items-center justify-end mr-[10px]'}>
+                  {!isV2 && <CyDTouchView onPress ={() => { void endSession(key); }}>
+                    <CyDImage source={AppImages.DISCONNECT} />
+                  </CyDTouchView>}
+                  {isV2 && <CyDTouchView onPress ={() => {
+                    setSelectedPairingTopic(element.topic);
+                  }}>
+                    <CyDImage className={'h-[16px] w-[16px]'} source={AppImages.SETTINGS} />
+                  </CyDTouchView>}
+                </CyDView>
+              </CyDView>
+          </CyDView>
+        </CyDView>
+      </CyDTouchView>
+    );
+  };
+
+  return (
+           <CyDSafeAreaView className={'bg-white h-full w-full'}>
+              {walletConnectState.dAppInfo?.length > 0
+                ? <FlatList
+                data={walletConnectState.dAppInfo}
+                renderItem={(item) => renderItem(item)}
+                style={{ width: '100%', height: '100%', marginBottom: 20 }}
+                showsVerticalScrollIndicator={true}
+              />
+                : (<DynamicView dynamic dynamicWidth dynamicHeight height={80} width={100} pH={10} jC='center'>
+                <DynamicImage dynamic dynamicWidth height={110} width={100} resizemode='contain' source={AppImages.WALLET_CONNECT_EMPTY} />
+                <CText style={{ color: 'black', marginTop: 30, fontSize: 20, fontWeight: '600', width: 300, textAlign: 'center', fontFamily: 'Nunito' }}>{t('NO_CONNECTIONS')}</CText>
+                </DynamicView>)
+          }
+          </CyDSafeAreaView>
+  );
+}
+
+const styles = StyleSheet.create({
+  modalLayout: {
+    margin: 0,
+    justifyContent: 'flex-end'
+  }
+});
