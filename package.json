@@ -170,7 +170,7 @@
     "util": "^0.10.4",
     "uuid": "^9.0.0",
     "vm-browserify": "^0.0.4",
-    "web3": "^1.7.1",
+    "web3": "^4.0.2",
     "yup": "^0.32.11"
   },
   "devDependencies": {
