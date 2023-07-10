@@ -33,6 +33,7 @@ export default function CardScreen ({ navigation, hideCardDetails, currentCardPr
   const { showModal, hideModal } = useGlobalModalContext();
   const [currentCardIndex] = useState<number>(0);
   const { postWithAuth } = useAxios();
+  const currentTimestamp = String(new Date().getTime());
 
   useEffect(() => {
     const { last4, type } = cardProfile[currentCardProvider].cards[currentCardIndex];
@@ -183,9 +184,9 @@ export default function CardScreen ({ navigation, hideCardDetails, currentCardPr
 
   const getCardBackgroundLayout = () => {
     if (currentCardProvider === CardProviders.BRIDGE_CARD) {
-      return 'https://public.cypherd.io/icons/cardLayout.png';
+      return 'https://public.cypherd.io/icons/cardLayout.png?t=' + currentTimestamp;
     }
-    return 'https://public.cypherd.io/icons/masterCardLayout.png';
+    return 'https://public.cypherd.io/icons/masterCardLayout.png?t=' + currentTimestamp;
   };
 
   const RenderCVVAndExpiry = () => {

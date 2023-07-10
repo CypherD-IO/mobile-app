@@ -1,6 +1,5 @@
 import { useIsFocused } from '@react-navigation/native';
 import * as Sentry from '@sentry/react-native';
-import axios from 'axios';
 import clsx from 'clsx';
 import { get } from 'lodash';
 import moment from 'moment';
@@ -20,7 +19,6 @@ import { BottomSheetPositions, TransactionFilterTypes, TransactionTypes } from '
 import { Colors } from '../../../constants/theme';
 import { GlobalContext } from '../../../core/globalContext';
 import useAxios from '../../../core/HttpRequest';
-import { hostWorker } from '../../../global';
 import { CardProfile } from '../../../models/cardProfile.model';
 import { CyDView, CyDTouchView, CyDText, CyDFastImage, CyDImage, CyDFlatList } from '../../../styles/tailwindStyles';
 import SpendingSumary from './spendingSummary';

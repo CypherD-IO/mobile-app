@@ -1,5 +1,5 @@
-import React, { useCallback, useEffect, useMemo, useState } from 'react';
-import { Dimensions, StyleSheet, TouchableOpacity, Text } from 'react-native';
+import React, { useEffect, useState } from 'react';
+import { Dimensions, StyleSheet } from 'react-native';
 import {
   PanGestureHandler
 } from 'react-native-gesture-handler';
