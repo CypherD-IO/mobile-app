@@ -331,7 +331,8 @@ function TokenOverview ({ route, navigation }) {
       cosmosStaking.cosmosStakingDispatch,
       globalStateContext.globalState,
       tokenData.chainDetails.backendName,
-      chain.wallets[chain.currentIndex].address
+      chain.wallets[chain.currentIndex].address,
+      tokenData.denom
     );
   };
 

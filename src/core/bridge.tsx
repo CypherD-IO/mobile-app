@@ -91,7 +91,7 @@ const evmosToCosmosSignatureContent = (
   return body;
 };
 
-export const sendInCosmosChain = async (rpc: string, inputAmount: string, wallets: Map<string, OfflineDirectSigner>, chainName: string, handleBridgeTransactionResult: any, quoteData: any): Promise<void> => {
+export const sendInCosmosChain = async (rpc: string, inputAmount: string, wallets: Map<string, OfflineDirectSigner>, chainName: string, handleBridgeTransactionResult: any, quoteData: any, denom: string): Promise<void> => {
   const signer = wallets.get(cosmosConfig[chainName].prefix);
   const [address]: any = await signer.getAccounts();
   const senderAddress = address.address;
@@ -106,7 +106,7 @@ export const sendInCosmosChain = async (rpc: string, inputAmount: string, wallet
         fromAddress: senderAddress,
         toAddress: quoteData.step1TargetWallet, // chainAddress[chainName],
         amount: [{
-          denom: cosmosConfig[chainName].denom,
+          denom,
           amount
         }]
       }
@@ -123,7 +123,7 @@ export const sendInCosmosChain = async (rpc: string, inputAmount: string, wallet
       gas: Math.floor(simulation * 1.5).toString(),
       amount: [
         {
-          denom: cosmosConfig[chainName].denom,
+          denom,
           amount: parseInt(gasFee.toFixed(6).split('.')[1]).toString()
         }
       ]
@@ -132,7 +132,7 @@ export const sendInCosmosChain = async (rpc: string, inputAmount: string, wallet
     const result = await signingClient.sendTokens(
       senderAddress,
       quoteData.step1TargetWallet,
-      [{ denom: cosmosConfig[chainName].denom, amount }],
+      [{ denom, amount }],
       fee,
       ''
     );

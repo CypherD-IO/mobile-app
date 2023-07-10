@@ -972,7 +972,8 @@ export default function Bridge (props: {navigation?: any, route?: any}) {
           wallets,
           ChainNameMapping[fromChain.backendName],
           handleBridgeTransactionResult,
-          quoteData
+          quoteData,
+          fromToken.denom
         );
         setBridgeLoading(false);
       } else {

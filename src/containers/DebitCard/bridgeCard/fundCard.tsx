@@ -35,6 +35,7 @@ import CyDTokenAmount from '../../../components/v2/tokenAmount';
 import useAxios from '../../../core/HttpRequest';
 import { get } from 'lodash';
 import { CardProviders } from '../../../constants/enum';
+import { TokenMeta } from '../../../models/tokenMetaData.model';
 
 export default function BridgeFundCardScreen ({ route }: {route: any}) {
   const { navigation, currentCardProvider, currentCardIndex }: {navigation: any, currentCardProvider: CardProviders, currentCardIndex: number} = route.params;
@@ -82,12 +83,11 @@ export default function BridgeFundCardScreen ({ route }: {route: any}) {
   const [loading, setLoading] = useState<boolean>(false);
   const [lowBalance, setLowBalance] = useState<boolean>(false);
   const minTokenValueLimit = 10;
-  const maxTokenValueLimit = 1000;
   const currencyFormatter = new Intl.NumberFormat('en-US', {
     style: 'currency',
     currency: 'USD'
   });
-  const [selectedToken, setSelectedToken] = useState();
+  const [selectedToken, setSelectedToken] = useState<TokenMeta>();
   const [nativeTokenBalance, setNativeTokenBalance] = useState<number>(0);
   const { t } = useTranslation();
   const { showModal, hideModal } = useGlobalModalContext();
@@ -266,7 +266,8 @@ export default function BridgeFundCardScreen ({ route }: {route: any}) {
             handleSuccessfulTransaction,
             handleFailedTransaction,
             chainName,
-            tokenQuote.quoteUUID
+            tokenQuote.quoteUUID,
+            selectedToken?.denom
           );
           void intercomAnalyticsLog('send_token_for_card', {
             from: get(senderAddress, chainName),
@@ -501,11 +502,6 @@ export default function BridgeFundCardScreen ({ route }: {route: any}) {
           {(!amount || Number(amount) < minTokenValueLimit) && <CyDView className='mb-[10px]'>
             <CyDText className='text-center'>
               {t<string>('CARD_LOAD_MIN_AMOUNT')}
-            </CyDText>
-          </CyDView>}
-          {((Number(amount) > maxTokenValueLimit)) && <CyDView className='mb-[10px]'>
-            <CyDText className='text-center'>
-              {t<string>('CARD_LOAD_MAX_AMOUNT')}
             </CyDText>
           </CyDView>}
           <RenderWarningMessage />

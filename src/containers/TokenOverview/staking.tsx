@@ -187,7 +187,8 @@ export default function TokenStaking ({ tokenData, navigation }: { tokenData: To
       cosmosStaking.cosmosStakingDispatch,
       globalStateContext.globalState,
       tokenData.chainDetails.backendName,
-      chain.wallets[chain.currentIndex].address
+      chain.wallets[chain.currentIndex].address,
+      tokenData.denom
     );
   };
 
