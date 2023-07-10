@@ -19,7 +19,7 @@ import {
   portfolioStateReducer,
   ValidatorsListReducer
 } from './src/reducers';
-import { isBiometricEnabled, isPinAuthenticated, loadCyRootDataFromKeyChain, loadPinFromKeyChain, loadRecoveryPhraseFromKeyChain } from './src/core/Keychain';
+import { isBiometricEnabled, isPinAuthenticated, loadCyRootDataFromKeyChain } from './src/core/Keychain';
 import { Colors } from './src/constants/theme';
 import * as C from './src/constants/index';
 import AppImages from './assets/images/appImages';
@@ -133,6 +133,18 @@ Sentry.init({
       }
     }
     return event;
+  },
+  beforeBreadcrumb: (breadcrumb, hint) => {
+    if (breadcrumb.category === 'xhr') {
+      const requestUrl = JSON.stringify(hint?.xhr.__sentry_xhr__.url);
+      return {
+        ...breadcrumb,
+        data: {
+          requestUrl
+        }
+      };
+    }
+    return breadcrumb;
   }
 });
 
