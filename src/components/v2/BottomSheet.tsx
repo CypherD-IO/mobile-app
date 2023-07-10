@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useCallback, useEffect, useMemo, useState } from 'react';
 import { Dimensions, StyleSheet, TouchableOpacity, Text } from 'react-native';
 import {
   PanGestureHandler
@@ -31,6 +31,7 @@ const NAV_HEIGHT = 48;
 
 const Sheet: React.FC<SheetProps> = (props) => {
   const [dimensions, setDimensions] = useState({ window, screen });
+  const [positionIndicator, setPositionIndicator] = useState(AppImages.WIDE_DOWN_ARROW);
 
   useEffect(() => {
     // Watch for screen size changes and update the dimensions
@@ -63,6 +64,15 @@ const Sheet: React.FC<SheetProps> = (props) => {
   };
 
   const DRAG_BUFFER = 40;
+
+  const onHeightChange = (value) => {
+    props.heightChanged(value);
+    if (value === BottomSheetPositions.MINIMISED) {
+      setPositionIndicator(AppImages.WIDE_DOWN_ARROW);
+    } else {
+      setPositionIndicator(AppImages.WIDE_UP_ARROW);
+    }
+  };
 
   const onGestureEvent = useAnimatedGestureHandler({
     // Set the context value to the sheet's current height value
@@ -119,7 +129,7 @@ const Sheet: React.FC<SheetProps> = (props) => {
           springConfig
         );
       }
-      runOnJS(props.heightChanged)(position.value);
+      runOnJS(onHeightChange)(position.value);
     }
   });
 
@@ -144,7 +154,7 @@ const Sheet: React.FC<SheetProps> = (props) => {
       <PanGestureHandler onGestureEvent={onGestureEvent}>
         <Animated.View style={[sheetHeightAnimatedStyle, styles.sheet]}>
           <CyDView style={styles.handleContainer}>
-            <CyDFastImage source={position.value === BottomSheetPositions.MINIMISED ? AppImages.WIDE_UP_ARROW : AppImages.WIDE_DOWN_ARROW } className={'h-[25px] w-[55px]'} resizeMode={'stretch'}/>
+            <CyDFastImage source={positionIndicator} className={'h-[25px] w-[55px]'} resizeMode={'stretch'}/>
           </CyDView>
           <Animated.View style={sheetContentAnimatedStyle}>
             <CyDSafeAreaView>

@@ -16,7 +16,7 @@ import Loading from '../../../components/v2/loading';
 import CyDModalLayout from '../../../components/v2/modal';
 import { screenTitle } from '../../../constants';
 import { months } from '../../../constants/data';
-import { TransactionFilterTypes, TransactionTypes } from '../../../constants/enum';
+import { BottomSheetPositions, TransactionFilterTypes, TransactionTypes } from '../../../constants/enum';
 import { Colors } from '../../../constants/theme';
 import { GlobalContext } from '../../../core/globalContext';
 import useAxios from '../../../core/HttpRequest';
@@ -34,7 +34,7 @@ interface Transaction {
   iconUrl: string
 }
 
-export default function TransactionsScreen (props: { navigation: any, currentCardProvider: string, currentCardIndex: number }) {
+export default function TransactionsScreen (props: { navigation: any, currentCardProvider: string, currentCardIndex: number, shouldRefreshTransactions: boolean, listHeight: number }) {
   const isFocused = useIsFocused();
   const [transactions, setTransactions] = useState({
     startDate: '',
@@ -52,12 +52,11 @@ export default function TransactionsScreen (props: { navigation: any, currentCar
   const [transactionFilterByDateModal, setTransactionFilterByDateModal] = useState<boolean>(false);
   const [date, setDate] = useState({ year: {}, yearIndex: 0, month: {}, monthIndex: new Date().getMonth() });
   const [loading, setLoading] = useState<boolean>(false);
-  const { height, width } = Dimensions.get('window');
   const [routes] = React.useState([
     { key: 'transactions', title: 'Transactions' },
     { key: 'summary', title: 'Spending Summary' }
   ]);
-  const { navigation, currentCardProvider, currentCardIndex } = props;
+  const { navigation, currentCardProvider, currentCardIndex, shouldRefreshTransactions, listHeight } = props;
   const { getWithAuth } = useAxios();
 
   useEffect(() => {
@@ -73,7 +72,7 @@ export default function TransactionsScreen (props: { navigation: any, currentCar
     } else {
       void getTransactions();
     }
-  }, [props.shouldRefreshTransactions]);
+  }, [shouldRefreshTransactions]);
 
   const getTransactions = async (month: string = '', year: string = '') => {
     const currentCard = get(cardProfile, currentCardProvider).cards[currentCardIndex];
@@ -210,11 +209,12 @@ export default function TransactionsScreen (props: { navigation: any, currentCar
     }
   };
 
-  const TransactionTypeItem = ({ item }) => {
+  const TransactionTypeItem = ({ item }: {item: TransactionFilterTypes}) => {
+    const transactionType = get(TransactionFilterTypes, item);
     return (
-      <CyDTouchView onPress={() => { TransactionTypeSelected(TransactionFilterTypes[item]); }} className={clsx('mx-[20px] py-[20px] border-b-[0.5px] border-sepratorColor align-center', { 'bg-selectedOption border-b-[0px] rounded-[5px]': selectedTransactionType === TransactionFilterTypes[item] })}>
+      <CyDTouchView onPress={() => { TransactionTypeSelected(transactionType); }} className={clsx('mx-[20px] py-[20px] border-b-[0.5px] border-sepratorColor align-center', { 'bg-selectedOption border-b-[0px] rounded-[5px]': selectedTransactionType === transactionType })}>
         <CyDText className={'text-center font-nunito text-[16px]  '}>
-          {t<string>(TransactionFilterTypes[item])}
+          {t<string>(transactionType)}
         </CyDText>
       </CyDTouchView>
     );
@@ -367,7 +367,7 @@ export default function TransactionsScreen (props: { navigation: any, currentCar
             <CyDText className='text-center'>{' ' + t('CARD_TRANSACTIONS_DELAY')}</CyDText>
           </CyDView>
           {transactions.filteredTransactions.length
-            ? <ScrollView style={{ height: props.listHeight }}>
+            ? <ScrollView style={{ height: listHeight - 100 }}>
             {transactions.filteredTransactions.map((item, index) => {
               return (
                 <TransactionItem item={item} key={index}/>

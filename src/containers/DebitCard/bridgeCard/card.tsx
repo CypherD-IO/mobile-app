@@ -38,7 +38,9 @@ export default function CardScreen ({ navigation, hideCardDetails, currentCardPr
     const { last4, type } = cardProfile[currentCardProvider].cards[currentCardIndex];
     if (currentCardProvider !== '') {
       setUserCardDetails({
-        ...userCardDetails,
+        hideCardDetails: true,
+        showCVVAndExpiry: false,
+        isFetchingCardDetails: false,
         cards: cardProfile[currentCardProvider].cards,
         personId: cardProfile[currentCardProvider].personId,
         currentCardRevealedDetails: {
@@ -181,7 +183,7 @@ export default function CardScreen ({ navigation, hideCardDetails, currentCardPr
 
   const getCardBackgroundLayout = () => {
     if (currentCardProvider === CardProviders.BRIDGE_CARD) {
-      return 'https://public.cypherd.io/icons/cardLayout.png?t=' + String(new Date().getTime());
+      return 'https://public.cypherd.io/icons/cardLayout.png';
     }
     return 'https://public.cypherd.io/icons/masterCardLayout.png';
   };
@@ -234,7 +236,7 @@ export default function CardScreen ({ navigation, hideCardDetails, currentCardPr
                 <CyDImage source={{ uri: 'https://public.cypherd.io/icons/copy.png' }} className='h-[20px] w-[20px] ml-[5px]' resizeMode='contain'></CyDImage>
               </CyDTouchView>}
             </CyDView>
-            <CyDView className='flex flex-row justify-start bg-black border-[1px] border-black p-[5px] rounded-l-[50px]'>
+            <CyDView className='flex flex-row justify-start bg-black border-[1px] border-black p-[5px] rounded-l-[50px] mr-[1px]'>
               <CyDTouchView onPress={() => { toggleCardDetails(); }}>
                 <CyDImage source={{ uri: `https://public.cypherd.io/icons/${userCardDetails.hideCardDetails ? 'hide.png' : 'reveal.png'}` }} className='h-[21px] w-[21px] ml-[5px] mr-[15px]' resizeMode='contain'></CyDImage>
               </CyDTouchView>
