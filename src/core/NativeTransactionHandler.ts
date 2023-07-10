@@ -413,7 +413,7 @@ export async function estimateGasForCosmosTransaction (chainSelected: any, signe
         fromAddress: senderAddress,
         toAddress: address,
         amount: [{
-          denom: cosmosConfig[chainSelected.chainName].denom,
+          denom: tokenData.denom,
           amount
         }]
       }
@@ -428,10 +428,10 @@ export async function estimateGasForCosmosTransaction (chainSelected: any, signe
     const gasPrice = cosmosConfig[chainSelected.chainName].gasPrice;
     const gasFee = simulation * gasPrice;
     const fee = {
-      gas: Math.floor(simulation * 1.5).toString(),
+      gas: Math.floor(simulation * 1.8).toString(),
       amount: [
         {
-          denom: cosmosConfig[chainSelected.chainName].denom,
+          denom: tokenData.denom,
           amount: parseInt(gasFee.toFixed(6).split('.')[1]).toString()
         }
       ]

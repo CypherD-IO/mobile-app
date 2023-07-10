@@ -51,8 +51,7 @@ const parseUserDelegations = (validators: any, allValidators: Map<string, IAllVa
   return [val, balance];
 };
 
-const parseBalance = (balance: any, chain: string): string => {
-  const denom = cosmosConfig[chain.toLowerCase()].denom;
+const parseBalance = (balance: any, denom: string): string => {
   const data = balance.data;
   let balanceAmount: string = '0';
   if (data.balances.length > 0) {
@@ -65,8 +64,7 @@ const parseBalance = (balance: any, chain: string): string => {
   return balanceAmount;
 };
 
-const parseReward = (reward: any, chain: string): [string, IReward[]] => {
-  const denom = cosmosConfig[chain.toLowerCase()].denom;
+const parseReward = (reward: any, denom: string): [string, IReward[]] => {
   const rewardList: IReward[] = [];
   reward.data.rewards.forEach((item) => {
     if (item) {
@@ -104,7 +102,7 @@ const parseUnBoundings = (unboundings: any): [Map<string, IUnboundings>, bigint]
   return [unbound, unboundingTotal];
 };
 
-export const getCosmosStakingData = async (cosmosStakingDispatch: Dispatch<any>, globalState: GlobalStateDef, chain: string, address: string): Promise<void> => {
+export const getCosmosStakingData = async (cosmosStakingDispatch: Dispatch<any>, globalState: GlobalStateDef, chain: string, address: string, denom: string): Promise<void> => {
   cosmosStakingDispatch({ status: COSMOS_STAKING_LOADING });
   const rpc = globalState.rpcEndpoints[chain].otherUrls;
   const ARCH_HOST: string = hostWorker.getHost('ARCH_HOST');
@@ -132,8 +130,8 @@ export const getCosmosStakingData = async (cosmosStakingDispatch: Dispatch<any>,
 
     const allVal = parseAllValidators(allValidators, apr);
     const [userVal, stakedBal] = parseUserDelegations(delegations, allVal);
-    const bal = parseBalance(balance, chain);
-    const [totalReward, rewardList] = parseReward(rewards, chain);
+    const bal = parseBalance(balance, denom);
+    const [totalReward, rewardList] = parseReward(rewards, denom);
     const [unbound, unboundingTotal] = parseUnBoundings(unboundings);
 
     cosmosStakingDispatch({
