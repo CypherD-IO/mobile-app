@@ -30,6 +30,7 @@ import { genId } from '../utilities/activityUtilities';
 import { ethers } from 'ethers';
 import { useGlobalModalContext } from '../../components/v2/GlobalModal';
 import { hostWorker } from '../../global';
+import { TokenMeta } from '../../models/tokenMetaData.model';
 
 const {
   SafeAreaView,
@@ -48,7 +49,7 @@ export default function FundCardScreen (props) {
   const [icon, setIcon] = useState<String>('12');
   const [loading, setLoading] = useState<Boolean>(false);
   const [fromToken, setFromToken] = useState([]);
-  const [fromTokenItem, setFromTokenItem] = useState({});
+  const [fromTokenItem, setFromTokenItem] = useState<TokenMeta>({});
   const [fromTokenValue, setFromTokenValue] = useState('');
   const [valueChange, setValueChange] = useState<Boolean>(false);
   const [displayQuote, setDisplayQuote] = useState<Boolean>(false);
@@ -222,7 +223,7 @@ export default function FundCardScreen (props) {
         );
       } else if (COSMOS_CHAINS.includes(chainSelected.chainName)) {
         const amount = (ethers.utils.parseUnits(parseFloat(cosmosPayTokenModalParams.sentTokenAmount.length > 8 ? cosmosPayTokenModalParams.sentTokenAmount.substring(0, 8) : cosmosPayTokenModalParams.sentTokenAmount).toFixed(6), 6)).toString();
-        await cosmosSendTokens(cosmosPayTokenModalParams.to_address, cosmosPayTokenModalParams.signingClient, cosmosPayTokenModalParams.fee, senderAddress[chainSelected.chainName], amount, t('FUND_CARD_MEMO'), handleSuccessfulTransaction, handleFailedTransaction, chainSelected.chainName, tokenQuote.quote_uuid);
+        await cosmosSendTokens(cosmosPayTokenModalParams.to_address, cosmosPayTokenModalParams.signingClient, cosmosPayTokenModalParams.fee, senderAddress[chainSelected.chainName], amount, t('FUND_CARD_MEMO'), handleSuccessfulTransaction, handleFailedTransaction, chainSelected.chainName, tokenQuote.quote_uuid, fromTokenItem?.denom);
       }
     } else {
       showModal('state', { type: 'error', title: 'Please select a blockchain to proceed', description: '', onSuccess: hideModal, onFailure: hideModal });

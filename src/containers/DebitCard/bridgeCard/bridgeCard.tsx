@@ -6,7 +6,7 @@ import SpendingSumary from './spendingSummary';
 import { TabView, SceneMap, TabBar } from 'react-native-tab-view';
 import Button from '../../../components/v2/button';
 import { useTranslation } from 'react-i18next';
-import { Dimensions, StyleSheet } from 'react-native';
+import { Dimensions } from 'react-native';
 import AppImages from '../../../../assets/images/appImages';
 import { GlobalContext } from '../../../core/globalContext';
 import Sheet from '../../../components/v2/BottomSheet';
@@ -20,7 +20,6 @@ import { get, has } from 'lodash';
 import SwitchView from '../../../components/v2/switchView';
 import Loading from '../../../components/v2/loading';
 import { CardProviders } from '../../../constants/enum';
-import AsyncStorage from '@react-native-async-storage/async-storage';
 
 export default function BridgeCardScreen (props: {navigation: {navigate: any, setOptions: any}, route: {params: {hasBothProviders: boolean, cardProvider: CardProviders}}}) {
   const isFocused = useIsFocused();
@@ -35,7 +34,7 @@ export default function BridgeCardScreen (props: {navigation: {navigate: any, se
   const globalContext = useContext<any>(GlobalContext);
   const cardProfile: CardProfile = globalContext.globalState.cardProfile;
   const { height } = Dimensions.get('screen');
-  const [sheetHeight, setSheetHeight] = useState((height - 530) * 0.9);
+  const [sheetHeight, setSheetHeight] = useState(height * 0.42);
   const [shouldRefreshTransactions, setShouldRefreshTransactions] = useState(false);
   const [showTransactionsFilter, setShowTransactionsFilter] = useState(false);
   const [currentCardIndex] = useState<number>(0);
@@ -78,6 +77,7 @@ export default function BridgeCardScreen (props: {navigation: {navigate: any, se
 
   useEffect(() => {
     void fetchCardBalance();
+    setShouldRefreshTransactions(!shouldRefreshTransactions);
     if (timer) {
       clearInterval(timer);
     }
@@ -172,22 +172,32 @@ export default function BridgeCardScreen (props: {navigation: {navigate: any, se
             <CardScreen navigation={navigation} hideCardDetails={isFocused} currentCardProvider={currentCardProvider} setCurrentCardProvider={setCurrentCardProvider}/>
             <FundCard/>
           </CyDView>
-          <CyDView className='h-full'>
-          <Sheet minHeight={height * 0.79} expandedHeight={height * 1.09} heightChanged={(val: string) => { if (val === 'minimised') { setSheetHeight((height - 530) * 0.9); setShowTransactionsFilter(false); } else { setSheetHeight((height - 350) * 1.09); setShowTransactionsFilter(true); } }}>
-          {/* <CyDView className={'h-full bg-white px-[10px] pt-[20px] mt-[5px] rounded-t-[50]'}>
-            <TabView
-              renderTabBar={renderTabBar}
-              navigationState={{ index, routes }}
-              renderScene={renderScene}
-              onIndexChange={setIndex}
-            />
-          </CyDView> */}
-          <TransactionsScreen listHeight = {sheetHeight} navigation={navigation} shouldRefreshTransactions={shouldRefreshTransactions} showTransactionsFilter={showTransactionsFilter} currentCardProvider={currentCardProvider} currentCardIndex={currentCardIndex}/>
-          </Sheet>
+          <CyDView className='flex flex-1'>
+            <Transactions {...{ height, navigation, shouldRefreshTransactions, showTransactionsFilter, currentCardProvider, currentCardIndex }}/>
           </CyDView>
         </CyDImageBackground>
       </CyDSafeAreaView>
     </CyDView>
+  );
+}
+
+export function Transactions (props: any) {
+  const { height, navigation, shouldRefreshTransactions, showTransactionsFilter, currentCardProvider, currentCardIndex } = props;
+  const [sheetHeight, setSheetHeight] = useState(height * 0.42);
+  return (
+    <>
+      <Sheet minHeight={height * 0.42} expandedHeight={height * 0.7} heightChanged={(val: string) => { if (val === 'minimised') { setSheetHeight((height * 0.42)); } else { setSheetHeight((height * 0.7)); } }}>
+        {/* <CyDView className={'h-full bg-white px-[10px] pt-[20px] mt-[5px] rounded-t-[50]'}>
+          <TabView
+            renderTabBar={renderTabBar}
+            navigationState={{ index, routes }}
+            renderScene={renderScene}
+            onIndexChange={setIndex}
+          />
+        </CyDView> */}
+        <TransactionsScreen listHeight = {sheetHeight} navigation={navigation} shouldRefreshTransactions={shouldRefreshTransactions} showTransactionsFilter={showTransactionsFilter} currentCardProvider={currentCardProvider} currentCardIndex={currentCardIndex}/>
+      </Sheet>
+      </>
   );
 }
 
