@@ -261,17 +261,17 @@ export const clearRpcEndpoints = async () => {
   await AsyncStorage.removeItem('RPC_ENDPOINTS');
 };
 
-export const setCardRevealReuseToken = async (cardProvider: string, reuseToken: string) => {
+export const setCardRevealReuseToken = async (cardId: string, reuseToken: string) => {
   try {
-    await AsyncStorage.setItem(cardProvider + '_CARD_REVEAL_REUSE_TOKEN', reuseToken);
+    await AsyncStorage.setItem(cardId + '_CARD_REVEAL_REUSE_TOKEN', reuseToken);
   } catch (error) {
     Sentry.captureException(error);
   }
 };
 
-export const getCardRevealReuseToken = async (cardProvider: string) => {
+export const getCardRevealReuseToken = async (cardId: string) => {
   try {
-    const cardRevealReuseToken = await AsyncStorage.getItem(cardProvider + '_CARD_REVEAL_REUSE_TOKEN');
+    const cardRevealReuseToken = await AsyncStorage.getItem(cardId + '_CARD_REVEAL_REUSE_TOKEN');
     return cardRevealReuseToken;
   } catch (error) {
     Sentry.captureException(error);

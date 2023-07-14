@@ -58,6 +58,8 @@ export default function DebitCardScreen (props: RouteProps) {
         const pcApplicationStatus = get(cardProfile, CardProviders.PAYCADDY)?.applicationStatus === CardApplicationStatus.COMPLETED;
         if (bcApplicationStatus || pcApplicationStatus) {
           props.navigation.navigate(screenTitle.BRIDGE_CARD_SCREEN, { hasBothProviders: bcApplicationStatus && pcApplicationStatus, cardProvider: bcApplicationStatus ? CardProviders.BRIDGE_CARD : CardProviders.PAYCADDY });
+        } else {
+          props.navigation.navigate(screenTitle.APTO_CARD_SCREEN);
         }
       }
     } else {

@@ -88,6 +88,7 @@ export default function BridgeCardScreen (props: {navigation: {navigate: any, se
   }, [currentCardProvider]);
 
   const fetchCardBalance = async () => {
+    setCardBalance('');
     const currentCard = get(cardProfile, currentCardProvider).cards[currentCardIndex];
     const url = `/v1/cards/${currentCardProvider}/card/${String(currentCard?.cardId)}/balance`;
     try {
@@ -173,7 +174,7 @@ export default function BridgeCardScreen (props: {navigation: {navigate: any, se
             <FundCard/>
           </CyDView>
           <CyDView className='flex flex-1'>
-            <Transactions {...{ height, navigation, shouldRefreshTransactions, showTransactionsFilter, currentCardProvider, currentCardIndex }}/>
+            <Transactions {...{ height, navigation, shouldRefreshTransactions, showTransactionsFilter, currentCardProvider, currentCardIndex, hasBothProviders }}/>
           </CyDView>
         </CyDImageBackground>
       </CyDSafeAreaView>
@@ -182,11 +183,13 @@ export default function BridgeCardScreen (props: {navigation: {navigate: any, se
 }
 
 export function Transactions (props: any) {
-  const { height, navigation, shouldRefreshTransactions, showTransactionsFilter, currentCardProvider, currentCardIndex } = props;
-  const [sheetHeight, setSheetHeight] = useState(height * 0.42);
+  const { height, navigation, shouldRefreshTransactions, showTransactionsFilter, currentCardProvider, currentCardIndex, hasBothProviders } = props;
+  const minHeight = height * (hasBothProviders ? 0.42 : 0.47);
+  const maxHeight = height * (hasBothProviders ? 0.7 : 0.75);
+  const [sheetHeight, setSheetHeight] = useState(minHeight);
   return (
     <>
-      <Sheet minHeight={height * 0.42} expandedHeight={height * 0.7} heightChanged={(val: string) => { if (val === 'minimised') { setSheetHeight((height * 0.42)); } else { setSheetHeight((height * 0.7)); } }}>
+      <Sheet minHeight={minHeight} expandedHeight={maxHeight} heightChanged={(val: string) => { if (val === 'minimised') { setSheetHeight(minHeight); } else { setSheetHeight(maxHeight); } }}>
         {/* <CyDView className={'h-full bg-white px-[10px] pt-[20px] mt-[5px] rounded-t-[50]'}>
           <TabView
             renderTabBar={renderTabBar}

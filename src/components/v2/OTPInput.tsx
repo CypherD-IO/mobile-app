@@ -13,9 +13,10 @@ interface InputProps {
   buttonCTA?: string
   showSecuredEntryToggle?: boolean
   loader?: boolean
+  placeholder?: string
 }
 
-function OtpInput ({ pinCount, getOtp, showButton = false, buttonCTA = t('SUBMIT'), showSecuredEntryToggle = false, loader = false }: InputProps) {
+function OtpInput ({ pinCount, getOtp, showButton = false, buttonCTA = t('SUBMIT'), showSecuredEntryToggle = false, loader = false, placeholder = t('ENTER_PIN_PLACEHOLDER') }: InputProps) {
   const [otp, setOTP] = useState<string>('');
   const [securedEntry, setSecuredEntry] = useState<boolean>(true);
   const [isLoading, setIsLoading] = useState(false);
@@ -41,7 +42,8 @@ function OtpInput ({ pinCount, getOtp, showButton = false, buttonCTA = t('SUBMIT
               <CyDTextInput
                   className={clsx('h-[55px] text-center w-[100%] tracking-[5px]', { 'pl-[1px] pt-[2px]': isAndroid(), 'tracking-[15px]': otp !== '', 'w-[90%] pl-[35px]': showSecuredEntryToggle })}
                   keyboardType="numeric"
-                  placeholder='Enter PIN'
+                  placeholder={placeholder}
+                  placeholderTextColor={'#C5C5C5'}
                   secureTextEntry={showSecuredEntryToggle && securedEntry}
                   onChangeText={num => setOTP(num)}
                   value={otp}
