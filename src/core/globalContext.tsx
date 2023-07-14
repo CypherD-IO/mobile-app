@@ -12,6 +12,7 @@ import { hostWorker } from '../global';
 import { getRpcEndpoints, getRpcPreference, setRpcEndpoints } from './asyncStorage';
 import { get } from 'lodash';
 import { isValidUUIDV4 } from './util';
+import jwt_decode, { JwtPayload } from 'jwt-decode';
 
 export type RpcResponseDetail = {
   [key in ChainBackendNames]: RPCDetail;
@@ -207,6 +208,13 @@ const isValidMessage = (address: string, messageToBeValidated: string) => {
   }
 };
 
+export function isTokenValid (token: any) {
+  const jwtInfo = jwt_decode<JwtPayload>(token);
+  if (jwtInfo.exp && Date.now() >= jwtInfo.exp * 1000) {
+    return false;
+  }
+  return true;
+}
 export async function signIn (ethereum: { address: string, privateKey: string }) {
   const web3 = new Web3();
   const ARCH_HOST: string = hostWorker.getHost('ARCH_HOST');
