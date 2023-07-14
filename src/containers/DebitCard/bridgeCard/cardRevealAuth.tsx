@@ -11,13 +11,14 @@ import { StyleSheet } from 'react-native';
 import useAxios from '../../../core/HttpRequest';
 import { CardProviders } from '../../../constants/enum';
 
-export default function CardRevealAuthScreen (props: {navigation: any, route: {params: {onSuccess: (data: any, provider: CardProviders) => {}, currentCardProvider: CardProviders, card: {cardId: string}}}}) {
+export default function CardRevealAuthScreen (props: {navigation: any, route: {params: {onSuccess: (data: any, provider: CardProviders) => {}, currentCardProvider: CardProviders, card: {cardId: string}, triggerOTPParam?: string, verifyOTPPayload?: any}}}) {
   const { t } = useTranslation();
   const { showModal, hideModal } = useGlobalModalContext();
   const [sendingOTP, setSendingOTP] = useState<boolean>(false);
   const [verifyingOTP, setVerifyingOTP] = useState<boolean>(false);
   const { navigation, route } = props;
-  const { currentCardProvider, card } = route.params;
+  const { currentCardProvider, card, verifyOTPPayload } = route.params;
+  const triggerOTPParam = route.params.triggerOTPParam ?? 'show-token';
   const onSuccess = route.params.onSuccess;
   const resendOtpTime = 30;
   const [resendInterval, setResendInterval] = useState(0);
@@ -35,7 +36,7 @@ export default function CardRevealAuthScreen (props: {navigation: any, route: {p
   }, [resendInterval]);
 
   const triggerOTP = async () => {
-    const triggerOTPUrl = `/v1/cards/${currentCardProvider}/card/${card.cardId}/trigger/show-token`;
+    const triggerOTPUrl = `/v1/cards/${currentCardProvider}/card/${card.cardId}/trigger/${triggerOTPParam}`;
     try {
       const response = await postWithAuth(triggerOTPUrl, {});
       return !response.isError;
@@ -62,11 +63,11 @@ export default function CardRevealAuthScreen (props: {navigation: any, route: {p
   };
 
   const verifyOTP = async (num: number) => {
-    const OTPVerificationUrl = `/v1/cards/${currentCardProvider}/card/${card?.cardId}/verify/show-token`;
+    const OTPVerificationUrl = `/v1/cards/${currentCardProvider}/card/${card?.cardId}/${triggerOTPParam}`;
     setVerifyingOTP(true);
     const payload = {
       otp: +(num),
-      isMobile: true
+      ...(verifyOTPPayload || {})
     };
     try {
       const response = await postWithAuth(OTPVerificationUrl, payload);

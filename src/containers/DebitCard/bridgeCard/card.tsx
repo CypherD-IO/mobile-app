@@ -10,6 +10,13 @@ import { CyDImage, CyDImageBackground, CyDText, CyDTouchView, CyDView } from '..
 import useAxios from '../../../core/HttpRequest';
 import { CardProviders } from '../../../constants/enum';
 import { useGlobalModalContext } from '../../../components/v2/GlobalModal';
+import Carousel from 'react-native-snap-carousel';
+import { Dimensions } from 'react-native';
+import AppImages from '../../../../assets/images/appImages';
+import { scale } from 'react-native-size-matters';
+import clsx from 'clsx';
+import { Card } from '../../../models/card.model';
+import { orderBy } from 'lodash';
 
 export default function CardScreen ({ navigation, hideCardDetails, currentCardProvider, setCurrentCardProvider }: {navigation: any, hideCardDetails: boolean, currentCardProvider: string, setCurrentCardProvider: Dispatch<SetStateAction<string>>}) {
   const globalContext = useContext<any>(GlobalContext);
@@ -24,14 +31,15 @@ export default function CardScreen ({ navigation, hideCardDetails, currentCardPr
       type: t('VIRTUAL'),
       cvv: 'XXX',
       expiryMonth: 'XX',
-      expiryYear: 'XX'
+      expiryYear: 'XX',
+      cardId: ''
     },
     hideCardDetails: true,
     showCVVAndExpiry: false,
     isFetchingCardDetails: false
   });
   const { showModal, hideModal } = useGlobalModalContext();
-  const [currentCardIndex] = useState<number>(0);
+  const [currentCardIndex, setCurrentCardIndex] = useState<number>(0);
   const { postWithAuth } = useAxios();
   const currentTimestamp = String(new Date().getTime());
 
@@ -45,11 +53,12 @@ export default function CardScreen ({ navigation, hideCardDetails, currentCardPr
         cards: cardProfile[currentCardProvider].cards,
         personId: cardProfile[currentCardProvider].personId,
         currentCardRevealedDetails: {
-          cardNumber: 'XXXX XXXX XXXX ' + String(last4) ?? 'XXXX',
+          cardNumber: 'XXXX XXXX XXXX ',
           type,
           cvv: 'XXX',
           expiryMonth: 'XX',
-          expiryYear: 'XX'
+          expiryYear: 'XX',
+          cardId: ''
         }
       });
     }
@@ -63,15 +72,17 @@ export default function CardScreen ({ navigation, hideCardDetails, currentCardPr
   // }, [hideCardDetails]);
 
   const verifyWithOTP = () => {
-    navigation.navigate(screenTitle.BRIDGE_CARD_REVEAL_AUTH_SCREEN, { onSuccess: (data: any, cardProvider: CardProviders) => { void sendCardDetails(data, cardProvider); }, currentCardProvider, card: userCardDetails.cards[0] });
+    navigation.navigate(screenTitle.BRIDGE_CARD_REVEAL_AUTH_SCREEN, { onSuccess: (data: any, cardProvider: CardProviders) => { void sendCardDetails(data, cardProvider); }, currentCardProvider, card: userCardDetails.cards[currentCardIndex], triggerOTPParam: 'verify/show-token', verifyOTPPayload: { isMobile: true } });
   };
 
   const validateReuseToken = async () => {
-    setUserCardDetails({ ...userCardDetails, isFetchingCardDetails: true });
-    const cardRevealReuseToken = await getCardRevealReuseToken(currentCardProvider);
+    const { currentCardRevealedDetails } = userCardDetails;
+    const cardId = userCardDetails.cards[currentCardIndex].cardId;
+    setUserCardDetails({ ...userCardDetails, isFetchingCardDetails: true, currentCardRevealedDetails: { ...currentCardRevealedDetails, cardId } });
+    const cardRevealReuseToken = await getCardRevealReuseToken(cardId);
     if (cardRevealReuseToken) {
       // webviewRef.current.postMessage(JSON.stringify({ showLoader: true }), '*');
-      const verifyReuseTokenUrl = `/v1/cards/${currentCardProvider}/card/${String(userCardDetails.cards[currentCardIndex].cardId)}/verify/reuse-token`;
+      const verifyReuseTokenUrl = `/v1/cards/${currentCardProvider}/card/${String(cardId)}/verify/reuse-token`;
       const payload = { reuseToken: cardRevealReuseToken };
       try {
         const response = await postWithAuth(verifyReuseTokenUrl, payload);
@@ -92,7 +103,7 @@ export default function CardScreen ({ navigation, hideCardDetails, currentCardPr
     const { currentCardRevealedDetails } = userCardDetails;
     setCurrentCardProvider(cardProvider);
     if (reuseToken) {
-      await setCardRevealReuseToken(cardProvider, reuseToken);
+      await setCardRevealReuseToken(cardId, reuseToken);
     }
     let response;
     if (cardProvider === CardProviders.BRIDGE_CARD) {
@@ -111,7 +122,8 @@ export default function CardScreen ({ navigation, hideCardDetails, currentCardPr
             cardNumber: card_number.match(/.{1,4}/g).join(' '),
             cvv,
             expiryMonth: expiry_month,
-            expiryYear: expiry_year
+            expiryYear: expiry_year,
+            cardId
           },
           hideCardDetails: false,
           showCVVAndExpiry: false,
@@ -126,7 +138,8 @@ export default function CardScreen ({ navigation, hideCardDetails, currentCardPr
             cardNumber: pan.match(/.{1,4}/g).join(' '),
             cvv,
             expiryMonth: String(expDate).substring(4, 6),
-            expiryYear: String(expDate).substring(0, 4)
+            expiryYear: String(expDate).substring(0, 4),
+            cardId
           },
           hideCardDetails: false,
           showCVVAndExpiry: false,
@@ -167,7 +180,7 @@ export default function CardScreen ({ navigation, hideCardDetails, currentCardPr
     if (userCardDetails.hideCardDetails) {
       void validateReuseToken();
     } else {
-      const { last4, type } = cardProfile[currentCardProvider].cards[currentCardIndex];
+      const { last4, type, cardId } = cardProfile[currentCardProvider].cards[currentCardIndex];
       setUserCardDetails({
         ...userCardDetails,
         currentCardRevealedDetails: {
@@ -175,33 +188,52 @@ export default function CardScreen ({ navigation, hideCardDetails, currentCardPr
           type,
           cvv: 'XXX',
           expiryMonth: 'XX',
-          expiryYear: 'XX'
+          expiryYear: 'XX',
+          cardId
         },
         hideCardDetails: true
       });
     }
   };
 
-  const getCardBackgroundLayout = () => {
+  const getCardBackgroundLayout = (card: Card) => {
     if (currentCardProvider === CardProviders.BRIDGE_CARD) {
       return 'https://public.cypherd.io/icons/cardLayout.png?t=' + currentTimestamp;
+    } else if (currentCardProvider === CardProviders.PAYCADDY && card.type === 'physical') {
+      return 'https://public.cypherd.io/icons/masterCardLayoutPhysical.png?t=' + currentTimestamp;
     }
     return 'https://public.cypherd.io/icons/masterCardLayout.png?t=' + currentTimestamp;
   };
 
-  const RenderCVVAndExpiry = () => {
+  const RenderCVVAndExpiry = ({ card }: {card: Card}) => {
     const { hideCardDetails, showCVVAndExpiry, currentCardRevealedDetails } = userCardDetails;
     const revealCVVAndExpiry = () => {
       setUserCardDetails({
         ...userCardDetails,
         currentCardRevealedDetails: {
           ...currentCardRevealedDetails,
-          cardNumber: 'XXXX XXXX XXXX ' + String(cardProfile[currentCardProvider].cards[currentCardIndex].last4) ?? 'XXXX'
+          cardNumber: 'XXXX XXXX XXXX ' + String(cardProfile[currentCardProvider].cards[currentCardIndex].last4).toUpperCase() ?? 'XXXX'
         },
         showCVVAndExpiry: true
       });
     };
-    if (!hideCardDetails && !showCVVAndExpiry) {
+    const getCVV = () => {
+      if (card.cardId === userCardDetails.currentCardRevealedDetails.cardId && !userCardDetails.hideCardDetails && userCardDetails.showCVVAndExpiry) {
+        return userCardDetails.currentCardRevealedDetails.cvv;
+      } else {
+        return 'XXX';
+      }
+    };
+    const getExpiry = () => {
+      const { currentCardRevealedDetails, hideCardDetails, showCVVAndExpiry } = userCardDetails;
+      const { expiryMonth, expiryYear } = currentCardRevealedDetails;
+      if (card.cardId === currentCardRevealedDetails.cardId && !hideCardDetails && showCVVAndExpiry) {
+        return expiryMonth + ' / ' + expiryYear;
+      } else {
+        return 'XX / XX';
+      }
+    };
+    if (!hideCardDetails && !showCVVAndExpiry && card.cardId === userCardDetails.currentCardRevealedDetails.cardId) {
       return (
         <CyDTouchView className='flex justify-center items-center self-center bg-fadedDarkBackgroundColor p-[10px] rounded-[20px] mb-[15px]' onPress={() => revealCVVAndExpiry()}>
           <CyDText className='text-white text-center font-bold'>{t('SHOW_CVV_EXPIRY')}</CyDText>
@@ -211,45 +243,86 @@ export default function CardScreen ({ navigation, hideCardDetails, currentCardPr
     return (
       <CyDView className='flex flex-row mb-[10px]'>
           <CyDView className='ml-[10px]'>
-            <CyDText className='text-white font-nunito font-bold text-[12px] mx-[10px]'>{t('CVV')}</CyDText>
-            <CyDText className='text-white font-nunito font-bold text-[12px] mx-[10px] mt-[5px]'>{userCardDetails.currentCardRevealedDetails.cvv}</CyDText>
+            <CyDText className={clsx('font-nunito font-bold text-[12px] mx-[10px]', { 'text-white': card.type !== 'physical' })}>{t('CVV')}</CyDText>
+            <CyDText className={clsx('font-nunito font-bold text-[12px] mx-[10px] mt-[5px]', { 'text-white': card.type !== 'physical' })}>{getCVV()}</CyDText>
           </CyDView>
           <CyDView className='flex-1 items-center ml-[-50px]'>
-            <CyDText className='text-white font-nunito font-bold text-[12px] mx-[10px]'>{t('VALID_THRU')}</CyDText>
-            <CyDText className='text-white font-nunito font-bold text-[12px] mx-[10px] mt-[5px]'>{userCardDetails.currentCardRevealedDetails.expiryMonth} / {userCardDetails.currentCardRevealedDetails.expiryYear}</CyDText>
+            <CyDText className={clsx('font-nunito font-bold text-[12px] mx-[10px]', { 'text-white': card.type !== 'physical' })}>{t('VALID_THRU')}</CyDText>
+            <CyDText className={clsx('font-nunito font-bold text-[12px] mx-[10px] mt-[5px]', { 'text-white': card.type !== 'physical' })}>{getExpiry()}</CyDText>
           </CyDView>
       </CyDView>
     );
   };
 
-  return (
-    <CyDView className='flex justify-center items-center mb-[10px]'>
-      <CyDImageBackground source={{ uri: getCardBackgroundLayout() }} className='flex flex-col justify-center h-[200px] w-[85%]' resizeMode='stretch'>
-        {userCardDetails.isFetchingCardDetails && <CyDImage source={{ uri: 'https://public.cypherd.io/icons/details_loading.png' }} className='h-[50px] w-[50px] self-center' resizeMode='contain'></CyDImage>}
-        {!userCardDetails.isFetchingCardDetails && <CyDView className='flex-1 flex-col justify-between'>
+  const getCardNumber = (card: Card) => {
+    if (card.cardId === userCardDetails.currentCardRevealedDetails.cardId && !userCardDetails.hideCardDetails) {
+      return userCardDetails.currentCardRevealedDetails.cardNumber;
+    } else {
+      return 'XXXX XXXX XXXX ' + String(card.last4).toUpperCase();
+    }
+  };
+
+  const renderCard = ({ item }: {item: Card}) => {
+    const card: Card = item;
+    const { isFetchingCardDetails, currentCardRevealedDetails, hideCardDetails } = userCardDetails;
+    if (card.type === 'physical' && card.status === 'pendingActivation') {
+      return (
+        <CyDView className='mb-[10px]'>
+          <CyDImageBackground source={{ uri: getCardBackgroundLayout(card) }} className='flex flex-col justify-center h-[200px] w-[300px] border-[1px] border-inputBorderColor rounded-[12px]' resizeMode='stretch'>
+            <CyDTouchView onPress={() => navigation.navigate(screenTitle.CARD_ACTIAVTION_SCREEN, { onSuccess: (data: any, cardProvider: CardProviders) => { void sendCardDetails(data, cardProvider); }, currentCardProvider, card })} className='flex flex-row justify-center items-center border-[2px] border-inputBorderColor bg-inputBorderColor mx-[30px] p-[5px] rounded-[10px]'>
+              <CyDImage source={AppImages.ACTIVATE_PHYSICAL_CARD} className='h-[30px] w-[30px] mr-[10px]'/>
+              <CyDText className='font-nunito font-extrabold'>{t<string>('ACTIVATE_PYHSICAL_CARD')}</CyDText>
+            </CyDTouchView>
+          </CyDImageBackground>
+        </CyDView>
+      );
+    }
+    return (
+      <CyDView className='mb-[10px]'>
+      <CyDImageBackground source={{ uri: getCardBackgroundLayout(card) }} className={clsx('flex flex-col justify-center h-[200px] w-[300px]', { 'border-[1px] border-inputBorderColor rounded-[12px]': card.type === 'physical' })} resizeMode='stretch'>
+        {(isFetchingCardDetails && card.cardId === currentCardRevealedDetails.cardId)
+          ? <CyDImage source={{ uri: 'https://public.cypherd.io/icons/details_loading.png' }} className='h-[50px] w-[50px] self-center' resizeMode='contain'></CyDImage>
+          : <CyDView className='flex-1 flex-col justify-between'>
           <CyDView>
-            <CyDText className='text-white font-nunito font-bold text-[16px] m-[10px]'>{userCardDetails.currentCardRevealedDetails.type.toUpperCase()}</CyDText>
+            <CyDText className={clsx('font-nunito font-bold text-[16px] m-[10px]', { 'text-white': card.type !== 'physical' })}>{card.type.toUpperCase()}</CyDText>
           </CyDView>
           <CyDView className='flex flex-row justify-between items-center'>
             <CyDView className='flex flex-row items-center'>
-              <CyDText className='text-white font-nunito font-bold text-[16px] m-[10px]'>{userCardDetails.currentCardRevealedDetails.cardNumber}</CyDText>
-              {!userCardDetails.hideCardDetails && <CyDTouchView onPress={() => copyCardNumber()}>
-                <CyDImage source={{ uri: 'https://public.cypherd.io/icons/copy.png' }} className='h-[20px] w-[20px] ml-[5px]' resizeMode='contain'></CyDImage>
+              <CyDText className={clsx('font-nunito font-bold text-[16px] m-[10px]', { 'text-white': card.type !== 'physical' })}>{getCardNumber(card)}</CyDText>
+              {(!hideCardDetails && currentCardRevealedDetails.cardId === card.cardId) && <CyDTouchView onPress={() => copyCardNumber()}>
+                <CyDImage source={{ uri: `https://public.cypherd.io/icons/${card.type === 'physical' ? 'copyBlack.png' : 'copy.png'}` }} className='h-[20px] w-[20px] ml-[5px]' resizeMode='contain'></CyDImage>
               </CyDTouchView>}
             </CyDView>
-            <CyDView className='flex flex-row justify-start bg-black border-[1px] border-black p-[5px] rounded-l-[50px] mr-[1px]'>
+            <CyDView className='flex flex-row justify-start bg-black border-[1px] border-black p-[5px] rounded-l-[50px] mr-[0.7px]'>
               <CyDTouchView onPress={() => { toggleCardDetails(); }}>
-                <CyDImage source={{ uri: `https://public.cypherd.io/icons/${userCardDetails.hideCardDetails ? 'hide.png' : 'reveal.png'}` }} className='h-[21px] w-[21px] ml-[5px] mr-[15px]' resizeMode='contain'></CyDImage>
+                <CyDImage source={{ uri: `https://public.cypherd.io/icons/${(!hideCardDetails && currentCardRevealedDetails.cardId === card.cardId) ? 'reveal.png' : 'hide.png'}` }} className='h-[21px] w-[21px] ml-[5px] mr-[10px]' resizeMode='contain'></CyDImage>
               </CyDTouchView>
-              {/* <CyDTouchView>
-                <CyDImage source={{ uri: 'https://public.cypherd.io/icons/settings_outline.png' }} className='h-[20px] w-[20px] mx-[5px]'></CyDImage>
-              </CyDTouchView> */}
+              {card.type === 'physical' && <CyDTouchView onPress={() => navigation.navigate(screenTitle.CARD_SET_PIN_SCREEN, { onSuccess: (data: any, cardProvider: CardProviders) => { void sendCardDetails(data, cardProvider); }, currentCardProvider, card })}>
+                <CyDImage source={{ uri: 'https://public.cypherd.io/icons/settings_outline.png' }} className='h-[20px] w-[20px] mx-[3px]'></CyDImage>
+              </CyDTouchView>}
             </CyDView>
           </CyDView>
-          <RenderCVVAndExpiry/>
+          <RenderCVVAndExpiry card={card}/>
         </CyDView>}
       </CyDImageBackground>
     </CyDView>
+    );
+  };
+
+  const { width } = Dimensions.get('window');
+  return (
+    <Carousel
+      inactiveSlideOpacity={1}
+      inactiveSlideScale={0.9}
+      data={orderBy(userCardDetails.cards, 'type', 'asc')}
+      renderItem={renderCard}
+      sliderWidth={width}
+      itemWidth={width - 90}
+      sliderHeight={300}
+      itemHeight={width - 50}
+      vertical={false}
+      onSnapToItem={(index) => setCurrentCardIndex(index)}
+    />
   );
 
   // return (
