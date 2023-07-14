@@ -3,19 +3,19 @@ import { ChainBackendNames } from './server';
 export const INJECTED_WEB3_CDN = 'https://public.cypherd.io/js/injected.web3.js';
 
 export const gasFeeReservation: Record<ChainBackendNames, number> = {
-  AVALANCHE: 0.001,
-  BSC: 0.001,
-  COSMOS: 0.1,
-  EVMOS: 0.1,
-  FANTOM: 0.1,
-  JUNO: 0.1,
-  OSMOSIS: 0.1,
-  POLYGON: 0.1,
-  ETH: 0.001,
-  ARBITRUM: 0.001,
-  OPTIMISM: 0.001,
+  ETH: 0.0006,
+  POLYGON: 0.02,
+  BSC: 0.0002,
+  AVALANCHE: 0.002,
+  FANTOM: 0.005,
+  OPTIMISM: 0.00001,
+  ARBITRUM: 0.00001,
+  COSMOS: 0.003,
+  OSMOSIS: 0.008,
+  EVMOS: 0.02,
+  JUNO: 0.007,
   STARGAZE: 0.1,
-  NOBLE: 0.01,
+  NOBLE: 0.1,
   SHARDEUM: 0.01,
   SHARDEUM_SPHINX: 0.01
 };

@@ -294,10 +294,10 @@ export function estimateGasForNativeTransaction (hdWalletContext: any, fromChain
   if (tragetWalletAddress !== '') {
     to_address = tragetWalletAddress;
   }
-  _estimateGasForNativeTransaction(hdWalletContext, fromChain, fromTokenItem, send_token_amount, to_address, gasPrice, sendTransaction, globalContext);
+  void _estimateGasForNativeTransaction(hdWalletContext, fromChain, fromTokenItem, send_token_amount, to_address, gasPrice, sendTransaction, globalContext);
 }
 
-export function _estimateGasForNativeTransaction (hdWalletContext: any, fromChain: any, fromTokenItem: any, send_token_amount: string, to_address: string, gasPriceDetail: GasPriceDetail, sendTransaction: any, globalContext) {
+export async function _estimateGasForNativeTransaction (hdWalletContext: any, fromChain: any, fromTokenItem: any, send_token_amount: string, to_address: string, gasPriceDetail: GasPriceDetail, sendTransaction: any, globalContext) {
   const web3 = new Web3(getWeb3Endpoint(fromChain, globalContext));
   const contractAddress = fromTokenItem.contractAddress;
   const numberOfDecimals = fromTokenItem.contractDecimals;
@@ -328,14 +328,15 @@ export function _estimateGasForNativeTransaction (hdWalletContext: any, fromChai
     }
   ], contractAddress);
   const contract_data = contract.methods.transfer(to_address, numberOfTokens).encodeABI();
-  web3.eth.estimateGas({
-    from: ethereum.address,
-    // For Optimism the ETH token has different contract address
-    to: contractAddress.toLowerCase() === OP_ETH_ADDRESS ? '0xeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee' : contractAddress,
-    value: '0x0',
-    data: contract_data
-  })
-    .then((gasLimit) => {
+  try {
+    const gasLimit = await web3.eth.estimateGas({
+      from: ethereum.address,
+      // For Optimism the ETH token has different contract address
+      to: contractAddress.toLowerCase() === OP_ETH_ADDRESS ? '0xeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee' : contractAddress,
+      value: '0x0',
+      data: contract_data
+    });
+    if (gasLimit) {
       let finalGasPrice;
       if (gasPriceDetail.gasPrice > 0) {
         finalGasPrice = gasPriceDetail.gasPrice;
@@ -380,20 +381,21 @@ export function _estimateGasForNativeTransaction (hdWalletContext: any, fromChai
         tokenAmount: send_token_amount,
         tokenValueDollar: send_token_usd_value.toFixed(2),
         totalValueTransfer,
-        totalValueDollar
+        totalValueDollar,
+        hasSufficientBalance: true
       };
       sendTransaction(_data);
-    })
-    .catch((error) => {
-      // TODO (user feedback): Give feedback to user.
-      Toast.show({
-        type: 'error',
-        text1: 'Transaction Error',
-        text2: error.message,
-        position: 'bottom'
-      });
-      Sentry.captureException(error);
+    }
+  } catch (error) {
+    // TODO (user feedback): Give feedback to user.
+    Toast.show({
+      type: 'error',
+      text1: 'Transaction Error',
+      text2: error.message,
+      position: 'bottom'
     });
+    Sentry.captureException(error);
+  }
 }
 
 export async function getCosmosSignerClient (chainSelected: any, hdWalletContext: any = initialHdWalletState) {
