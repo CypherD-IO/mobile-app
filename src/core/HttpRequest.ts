@@ -1,7 +1,7 @@
 import { hostWorker } from '../global';
 import axios from './Http';
 import { useContext } from 'react';
-import { GlobalContext, signIn } from '../core/globalContext';
+import { GlobalContext, signIn, isTokenValid } from '../core/globalContext';
 import * as Sentry from '@sentry/react-native';
 import { HdWalletContext } from './util';
 import { GlobalContextType, SignMessageValidationType } from '../constants/enum';
@@ -22,43 +22,67 @@ export default function useAxios () {
 
   const response: IHttpResponse = { isError: false };
 
+  const ARCH_HOST: string = hostWorker.getHost('ARCH_HOST');
+  const baseURL: string = ARCH_HOST;
+  const axiosInstance = axios.create({
+    baseURL,
+    headers: {
+      Accept: 'application/json',
+      'Content-Type': 'application/json',
+      Authorization: `Bearer ${String(token)}`
+    }
+  });
+
+  axiosInstance.interceptors.request.use(
+    async (req: any) => {
+      if (!isTokenValid(token)) {
+        try {
+          const signInResponse = await signIn(ethereum);
+          if (signInResponse?.message === SignMessageValidationType.VALID && has(signInResponse, 'token')) {
+            token = signInResponse?.token;
+            globalContext.globalDispatch({ type: GlobalContextType.SIGN_IN, sessionToken: token });
+            req.headers.Authorization = `Bearer ${String(token)}`;
+            return req;
+          }
+        } catch (e: any) {
+          Sentry.captureException(e.message);
+        }
+      } else {
+        req.headers.Authorization = `Bearer ${String(token)}`;
+        return req;
+      }
+    },
+    async function (error) {
+      return await Promise.reject(error);
+    }
+  );
+
   async function request (method: RequestMethod, endpoint: string = '', body = {}): Promise<IHttpResponse> {
     let shouldRetry = 0;
-    const ARCH_HOST: string = hostWorker.getHost('ARCH_HOST');
 
     do {
-      const baseUrl: string = ARCH_HOST;
-
-      const config = {
-        headers: {
-          Accept: 'application/json',
-          'Content-Type': 'application/json',
-          Authorization: `Bearer ${String(token)}`
-        }
-      };
-
-      const url = `${baseUrl}${endpoint}`;
+      const url = `${baseURL}${endpoint}`;
 
       try {
         const reqBody = method !== 'GET' && JSON.stringify(body);
         if (method === 'GET') {
-          const { data, status } = await axios.get(url, config);
+          const { data, status } = await axiosInstance.get(url);
           response.data = data;
           response.status = status;
         } else if (method === 'DELETE') {
-          const { data, status } = await axios.delete(url, config);
+          const { data, status } = await axiosInstance.delete(url);
           response.data = data;
           response.status = status;
         } else if (method === 'POST') {
-          const { data, status } = await axios.post(url, reqBody, config);
+          const { data, status } = await axiosInstance.post(url, reqBody);
           response.data = data;
           response.status = status;
         } else if (method === 'PUT') {
-          const { data, status } = await axios.put(url, reqBody, config);
+          const { data, status } = await axiosInstance.put(url, reqBody);
           response.data = data;
           response.status = status;
         } else if (method === 'PATCH') {
-          const { data, status } = await axios.patch(url, reqBody, config);
+          const { data, status } = await axiosInstance.patch(url, reqBody);
           response.data = data;
           response.status = status;
         }
