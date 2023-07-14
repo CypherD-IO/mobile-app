@@ -83,7 +83,6 @@ export default function AptoCardScreen ({ navigation, route }) {
         showModal('state', { type: 'error', title: t('TEMP_SYSTEM_ERROR'), description: t('UNABLE_TO_LOAD_CARD'), onSuccess: onModalHide, onFailure: onModalHide });
       });
     } else {
-      console.log('validation failed');
       setIsLoading(false);
       setTamperedSignMessageModal(true);
     }

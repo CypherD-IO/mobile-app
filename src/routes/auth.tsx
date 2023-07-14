@@ -79,6 +79,8 @@ import TransFiScreen from '../containers/ramp/transFi';
 import { useEffect, useState } from 'react';
 import { useNavigationState } from '@react-navigation/native';
 import { BackHandler, StyleProp, TextStyle, ToastAndroid } from 'react-native';
+import ActivateCardScreen from '../containers/DebitCard/bridgeCard/activateCard';
+import SetPinScreen from '../containers/DebitCard/bridgeCard/setPin';
 
 const { DynamicImage, DynamicButton } = require('../styles');
 
@@ -945,6 +947,32 @@ export function DebitCardStackScreen ({ navigation }) {
       <FundCardStack.Screen
         name={screenTitle.BRIDGE_CARD_REVEAL_AUTH_SCREEN}
         component={CardRevealAuthScreen}
+        options={{
+          headerTransparent: false,
+          headerShadowVisible: false,
+          title: '',
+          headerTitleAlign: 'center',
+          headerTitleStyle: portfolioStackScreenHeaderTitleStyles,
+          headerTintColor: Colors.primaryTextColor,
+          headerBackTitleVisible: false
+        }} />
+
+      <FundCardStack.Screen
+        name={screenTitle.CARD_ACTIAVTION_SCREEN}
+        component={ActivateCardScreen}
+        options={{
+          headerTransparent: false,
+          headerShadowVisible: false,
+          title: '',
+          headerTitleAlign: 'center',
+          headerTitleStyle: portfolioStackScreenHeaderTitleStyles,
+          headerTintColor: Colors.primaryTextColor,
+          headerBackTitleVisible: false
+        }} />
+
+      <FundCardStack.Screen
+        name={screenTitle.CARD_SET_PIN_SCREEN}
+        component={SetPinScreen}
         options={{
           headerTransparent: false,
           headerShadowVisible: false,

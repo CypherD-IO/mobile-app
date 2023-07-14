@@ -278,6 +278,7 @@ const UNLOCK_FROM_TRACKWALLET = require('./unlockFromTrackWallet.png');
 const TRANSFI_LOGO = require('./transfiLogo.png');
 const BROWSER_REDIRECT = require('./browserRedirect.png');
 const EMPTY_WALLET_CONNECT_SESSIONS = require('./emptyWalletConnectSessions.png');
+const ACTIVATE_PHYSICAL_CARD = require('./activatePhysicalCard.png');
 
 const AppImages: any = {
   PLUS,
@@ -558,6 +559,7 @@ const AppImages: any = {
   CYPHER_WARNING_RED,
   BROWSER_REDIRECT,
   BULB,
-  EMPTY_WALLET_CONNECT_SESSIONS
+  EMPTY_WALLET_CONNECT_SESSIONS,
+  ACTIVATE_PHYSICAL_CARD
 };
 export default AppImages;

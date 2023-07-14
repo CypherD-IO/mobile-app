@@ -363,7 +363,7 @@ const resources = {
       VERIFY_EMAIL_ID_HEADING: 'Verify Email Id',
       SENT_AUTHENTICATION_CODE_TO: 'We have sent authentication code to ',
       THIS_NUMBER: 'this number',
-      RESEND_CODE_INIT_CAPS: 'Resend Code',
+      RESEND_CODE_INIT_CAPS: 'Resend Otp',
       CHANGE_NUMBER_INIT_CAPS: 'Change Number',
       CHANGE_EMAIL_INIT_CAPS: 'Change Email Id',
       UPDATE_INIT_CAPS: 'Update',
@@ -687,7 +687,23 @@ const resources = {
       AUTHENTICATION_CANCELLED: 'Authentication Cancelled',
       AUTHENTICATE_TO_CONTINUE: 'Please authenticate to continue using the app.',
       FINGERPRINT_HARDWARE_NOT_AVAILABLE: 'Fingerprint hardware not available',
-      FIX_THIS_ISSUE_TO_CONTINUE: 'Please fix this issue to continue using the app.'
+      FIX_THIS_ISSUE_TO_CONTINUE: 'Please fix this issue to continue using the app.',
+      CARD_ACTIVATION_HEADER: 'Activate your card',
+      CARD_ACTIVATION_DESCRIPTION: 'Enter last 4 digits of card number and otp to activate your card',
+      ENTER_OTP: 'Enter OTP',
+      ENTER_PIN_PLACEHOLDER: 'Enter PIN',
+      ACTIVATE: 'ACTIVATE',
+      INVALID_DETAILS: 'Please ensure that the details submitted are valid',
+      ACTIVATE_PYHSICAL_CARD: 'Activate your physical card',
+      ACTIVATION_SUCCESSFUL: 'Activation Successful',
+      CARD_ACTIVATION_SUCCESSFUL: 'Your card has been activated successfully',
+      CARD_SET_PIN: 'Set Pin',
+      CARD_CONFIRM_PIN: 'Confirm Pin',
+      CONFIRM: 'CONFIRM',
+      CARD_SET_NEW_PIN: 'Set new pin',
+      CARD_PIN_SET_HEADER: 'Your new pin has been set',
+      CARD_PIN_SET_DESCRIPTION: 'Use your card with the new pin',
+      CARD_SET_PIN_TO_USE_CARD: 'This pin will be used while making transactions with your card'
     }
   }
 };
