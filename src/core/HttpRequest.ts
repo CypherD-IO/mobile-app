@@ -35,7 +35,7 @@ export default function useAxios () {
 
   axiosInstance.interceptors.request.use(
     async (req: any) => {
-      if (isTokenValid(token)) {
+      if (!isTokenValid(token)) {
         try {
           const signInResponse = await signIn(ethereum);
           if (signInResponse?.message === SignMessageValidationType.VALID && has(signInResponse, 'token')) {
