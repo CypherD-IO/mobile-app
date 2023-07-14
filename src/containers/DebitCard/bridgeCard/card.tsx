@@ -10,7 +10,6 @@ import { CyDImage, CyDImageBackground, CyDText, CyDTouchView, CyDView } from '..
 import useAxios from '../../../core/HttpRequest';
 import { CardProviders } from '../../../constants/enum';
 import { useGlobalModalContext } from '../../../components/v2/GlobalModal';
-import SwipeableViewStack from '../../../components/v2/cardStack';
 import Carousel from 'react-native-snap-carousel';
 import { Dimensions } from 'react-native';
 import AppImages from '../../../../assets/images/appImages';
