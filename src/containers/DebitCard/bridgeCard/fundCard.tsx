@@ -10,6 +10,7 @@ import {
   HdWalletContext,
   PortfolioContext,
   getNativeTokenBalance
+  , formatAmount
 } from '../../../core/util';
 import { CyDFastImage, CyDImage, CyDSafeAreaView, CyDText, CyDTextInput, CyDTouchView, CyDView } from '../../../styles/tailwindStyles';
 import { MODAL_HIDE_TIMEOUT_250 } from '../../../core/Http';
@@ -36,6 +37,7 @@ import useAxios from '../../../core/HttpRequest';
 import { get } from 'lodash';
 import { CardProviders } from '../../../constants/enum';
 import { TokenMeta } from '../../../models/tokenMetaData.model';
+import clsx from 'clsx';
 
 export default function BridgeFundCardScreen ({ route }: {route: any}) {
   const { navigation, currentCardProvider, currentCardIndex }: {navigation: any, currentCardProvider: CardProviders, currentCardIndex: number} = route.params;
@@ -130,6 +132,7 @@ export default function BridgeFundCardScreen ({ route }: {route: any}) {
   const payTokenModal = (payTokenModalParamsLocal: any) => {
     payTokenModalParamsLocal.tokenQuoteExpiry = tokenQuoteExpiry;
     payTokenModalParamsLocal.cardNumber = 'xxxx xxxx xxxx ' + last4;
+    setLoading(false);
     setPayTokenModalParams(payTokenModalParamsLocal);
     setPayTokenBottomConfirm(true);
   };
@@ -300,17 +303,39 @@ export default function BridgeFundCardScreen ({ route }: {route: any}) {
           quote.tokenRequired = String(Number((quote.tokenRequired)).toFixed(5));
           const web3RPCEndpoint = new Web3(getWeb3Endpoint(hdWallet.state.selectedChain, globalContext));
           const targetWalletAddress = quote.targetWallet ? quote.targetWallet : '';
-          getGasPriceFor(chainDetails, web3RPCEndpoint)
-            .then((gasFeeResponse) => {
-              gasPrice = gasFeeResponse;
-              setLoading(false);
-              estimateGasForNativeTransaction(hdWallet, chainDetails, selectedToken, quote.tokenRequired, true, gasPrice, payTokenModal, globalContext, targetWalletAddress);
-            })
-            .catch((gasFeeError) => {
+          if (Number(quote.usdValue) < Number(amount)) {
+            getGasPriceFor(chainDetails, web3RPCEndpoint)
+              .then((gasFeeResponse) => {
+                gasPrice = gasFeeResponse;
+                setLoading(false);
+                estimateGasForNativeTransaction(hdWallet, chainDetails, selectedToken, quote.tokenRequired, true, gasPrice, payTokenModal, globalContext, targetWalletAddress);
+              })
+              .catch((gasFeeError) => {
               // TODO (user feedback): Give feedback to user.
-              Sentry.captureException(gasFeeError);
-              estimateGasForNativeTransaction(hdWallet, chainDetails, selectedToken, quote.tokenRequired, true, gasPrice, payTokenModal, globalContext, targetWalletAddress);
-            });
+                Sentry.captureException(gasFeeError);
+                estimateGasForNativeTransaction(hdWallet, chainDetails, selectedToken, quote.tokenRequired, true, gasPrice, payTokenModal, globalContext, targetWalletAddress);
+              });
+          } else {
+            const data = {
+              gasFeeDollar: formatAmount(quote.estimatedGasFee * selectedToken?.price),
+              gasFeeETH: quote.estimatedGasFee.toFixed(6),
+              networkName: chainDetails.name,
+              networkCurrency: chainDetails.symbol,
+              totalDollar: '',
+              appImage: chainDetails.logo_url,
+              tokenImage: selectedToken.logoUrl,
+              finalGasPrice: gasPrice.gasPrice,
+              gasLimit: '',
+              gasPrice,
+              tokenSymbol: selectedToken?.symbol,
+              tokenAmount: quote.tokenRequired,
+              tokenValueDollar: Number(amount).toFixed(2),
+              totalValueTransfer: quote.tokenRequired,
+              totalValueDollar: Number(amount).toFixed(2),
+              hasSufficientBalance: false
+            };
+            payTokenModal(data);
+          }
           // setDisplayQuote(true);
           quote.token_required = String(Number((quote.tokenRequired)).toFixed(5));
           // setQuoteString(quote.token_required + " " + fromTokenItem.symbol);
@@ -386,6 +411,18 @@ export default function BridgeFundCardScreen ({ route }: {route: any}) {
         ].holdings
       )
     );
+  };
+
+  const onMax = () => {
+    const { symbol, backendName } = selectedToken?.chainDetails ?? {};
+    const nativeTokenSymbol = get(NativeTokenMapping, symbol) || symbol;
+    let maxAmount = 0;
+    if (selectedToken?.symbol === nativeTokenSymbol) {
+      maxAmount = selectedToken?.totalValue - ((get(gasFeeReservation, backendName)) * selectedToken?.price);
+    } else {
+      maxAmount = selectedToken?.totalValue;
+    }
+    setAmount(String(Math.floor(maxAmount)));
   };
 
   const RenderSelectedToken = () => {
@@ -482,35 +519,49 @@ export default function BridgeFundCardScreen ({ route }: {route: any}) {
         lowBalance={lowBalance}
       />
       <RenderSelectedToken/>
-      <CyDView className={'pb-[0px] bg-[#F7F8FE]  mx-[40] rounded-[20px]'}>
-        <CyDView className={'pb-[10px] bg-[#F7F8FE]  mx-[20]'}>
-          <CyDText
-            className={'font-extrabold text-[22px] text-center mt-[20px] font-nunito text-black'}>
-            {t<string>('ENTER_AMOUNT')}
-          </CyDText>
-          <CyDView className={'flex flex-row justify-center items-center'}>
-            <CyDText className='text-[50px] font-extrabold'>{String('$')}</CyDText>
-            <CyDTextInput
-              className={'h-[100px] min-w-[70px] font-nunito text-[60px] font-bold'}
-              value={amount}
-              keyboardType={'numeric'}
-              autoCapitalize="none"
-              autoCorrect={false}
-              onChangeText={(val: number) => setAmount(val)}
-            />
-          </CyDView>
-          {(!amount || Number(amount) < minTokenValueLimit) && <CyDView className='mb-[10px]'>
-            <CyDText className='text-center'>
-              {t<string>('CARD_LOAD_MIN_AMOUNT')}
+      <CyDView className={'pb-[0px] px-[10px] bg-[#F7F8FE] mx-[40] rounded-[20px]'}>
+        <CyDView className='flex flex-row items-center relative'>
+          <CyDTouchView
+            onPress={() => {
+              onMax();
+            }}
+            className={clsx(
+              'bg-white rounded-full h-[40px] w-[40px] flex justify-center items-center p-[4px]'
+            )}
+          >
+            <CyDText className={'font-nunito text-black '}>
+              {t<string>('MAX')}
             </CyDText>
-          </CyDView>}
-          <RenderWarningMessage />
-          {selectedToken && <CyDView className='flex flex-column justify-center items-center'>
-            <CyDText>{new Intl.NumberFormat('en-US', {
-              maximumSignificantDigits: 4
-            }).format(Number(amount) / selectedToken.price)} {selectedToken.symbol}</CyDText>
-             <CyDText>{String(`1 ${String(selectedToken.symbol)} = ${currencyFormatter.format(selectedToken.price)}`)}</CyDText>
-          </CyDView>}
+          </CyDTouchView>
+          <CyDView className={'pb-[10px] w-[60%] items-center bg-[#F7F8FE] mx-[20]'}>
+            <CyDText
+              className={'font-extrabold text-[22px] text-center mt-[20px] font-nunito text-black'}>
+              {t<string>('ENTER_AMOUNT')}
+            </CyDText>
+            <CyDView className={'flex flex-row justify-center items-center'}>
+              <CyDText className='text-[50px] font-extrabold'>{String('$')}</CyDText>
+              <CyDTextInput
+                className={'h-[100px] min-w-[70px] font-nunito text-[60px] font-bold'}
+                value={amount}
+                keyboardType={'numeric'}
+                autoCapitalize="none"
+                autoCorrect={false}
+                onChangeText={(val: string) => setAmount(val ? String(+val | 0) : '')}
+              />
+            </CyDView>
+            {(!amount || Number(amount) < minTokenValueLimit) && <CyDView className='mb-[10px]'>
+              <CyDText className='text-center'>
+                {t<string>('CARD_LOAD_MIN_AMOUNT')}
+              </CyDText>
+            </CyDView>}
+            <RenderWarningMessage />
+            {selectedToken && <CyDView className='flex flex-column justify-center items-center'>
+              <CyDText>{new Intl.NumberFormat('en-US', {
+                maximumSignificantDigits: 4
+              }).format(Number(amount) / selectedToken.price)} {selectedToken.symbol}</CyDText>
+              <CyDText>{String(`1 ${String(selectedToken.symbol)} = ${currencyFormatter.format(selectedToken.price)}`)}</CyDText>
+            </CyDView>}
+          </CyDView>
         </CyDView>
         <Button
           onPress={() => { void fundCard(); }}

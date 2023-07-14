@@ -3,7 +3,7 @@ import { StyleSheet } from 'react-native';
 import { useTranslation } from 'react-i18next';
 import AppImages from '../../assets/images/appImages';
 import { SepraterView } from '../styles/viewStyle';
-import { CyDImage, CyDText, CyDTouchView, CyDView } from '../styles/tailwindStyles';
+import { CyDFastImage, CyDImage, CyDText, CyDTouchView, CyDView } from '../styles/tailwindStyles';
 import CyDModalLayout from './v2/modal';
 import Button from './v2/button';
 import { ButtonType } from '../constants/enum';
@@ -14,11 +14,12 @@ export default function BottomCardConfirm (props) {
   const [loading, setLoading] = useState<boolean>(false);
   const [tokenExpiryTime, setTokenExpiryTime] = useState(modalParams?.tokenQuoteExpiry ? modalParams?.tokenQuoteExpiry : 0);
   const [expiryTimer, setExpiryTimer] = useState();
-  const [isPayDisabled, setIsPayDisabled] = useState(false);
+  const [isPayDisabled, setIsPayDisabled] = useState(!modalParams?.hasSufficientBalance);
   const currentTimeStamp = new Date();
 
   useEffect(() => {
-    if (isModalVisible && modalParams?.tokenQuoteExpiry) {
+    console.log(isPayDisabled);
+    if (isModalVisible && modalParams?.tokenQuoteExpiry && !isPayDisabled) {
       let tempTokenExpiryTime = modalParams.tokenQuoteExpiry;
       setIsPayDisabled(false);
       setTokenExpiryTime(tempTokenExpiryTime);
@@ -59,7 +60,7 @@ export default function BottomCardConfirm (props) {
     >
       <CyDView className={'bg-white pb-[30px] flex items-center rounded-[20px]'}>
         <CyDTouchView className={'flex flex-row pl-[95%] justify-end z-10'}
-          onPress={onCancelPress}
+          onPress={hideModal}
         >
           <CyDImage
             source={AppImages.CLOSE}
@@ -98,6 +99,16 @@ export default function BottomCardConfirm (props) {
             </CyDView>
           </CyDView>
         </CyDView>
+        {isPayDisabled && <CyDView className="flex flex-row items-center rounded-[15px] justify-center py-[15px] mt-[20px] mb-[10px] bg-warningRedBg">
+          <CyDFastImage
+            source={AppImages.CYPHER_WARNING_RED}
+            className="h-[20px] w-[20px] ml-[13px] mr-[13px]"
+            resizeMode="contain"
+          />
+          <CyDText className="text-red-500 font-medium text-[12px]  w-[80%] ">
+          {t<string>('INSUFFICIENT_BALANCE_BRIDGE')}
+          </CyDText>
+        </CyDView>}
         <CyDView
             className={
               'flex flex-row justify-center items-center px-[20px] pb-[10px] mt-[20px]'
@@ -113,7 +124,7 @@ export default function BottomCardConfirm (props) {
               style={'h-[60px] w-[166px] mr-[9px]'}
             />
             <Button
-              title={t<string>('LOAD') + (tokenExpiryTime ? ' (' + tokenExpiryTime + ')' : '')}
+              title={t<string>('LOAD') + (!isPayDisabled ? (tokenExpiryTime ? ' (' + String(tokenExpiryTime) + ')' : '') : '')}
               loading={loading}
               disabled={isPayDisabled}
               onPress={() => {
