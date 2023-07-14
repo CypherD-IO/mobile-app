@@ -359,7 +359,12 @@ export default function SendTo (props: { navigation?: any, route?: any }) {
     } else {
       activityRef.current && activityContext.dispatch({ type: ActivityReducerAction.POST, value: { ...activityRef.current, status: ActivityStatus.SUCCESS, transactionHash: message } });
 
-      const willPrompt: boolean = !(ChainNameToContactsChainNameMapping[tokenData.chainDetails?.name] in addressDirectory && addressText in addressDirectory[ChainNameToContactsChainNameMapping[tokenData.chainDetails?.name]]);
+      let willPrompt: boolean;
+      if (EVM_CHAINS_FOR_ADDRESS_DIR.includes(ChainNameToContactsChainNameMapping[chainDetails?.name])) {
+        willPrompt = !(addressText in addressDirectory.evmAddresses);
+      } else {
+        willPrompt = !(addressText in addressDirectory[ChainNameToContactsChainNameMapping[tokenData.chainDetails?.name]]);
+      }
 
       if (willPrompt) {
         showModal('state', {
@@ -482,7 +487,12 @@ export default function SendTo (props: { navigation?: any, route?: any }) {
   const handleSuccessfulTransaction = async (result: any, analyticsData: any) => {
     activityRef.current && activityContext.dispatch({ type: ActivityReducerAction.POST, value: { ...activityRef.current, status: ActivityStatus.SUCCESS, transactionHash: result.transactionHash } });
 
-    const willPrompt: boolean = !(ChainNameToContactsChainNameMapping[tokenData.chainDetails?.name] in addressDirectory && addressText in addressDirectory[ChainNameToContactsChainNameMapping[tokenData.chainDetails?.name]]);
+    let willPrompt: boolean;
+    if (EVM_CHAINS_FOR_ADDRESS_DIR.includes(ChainNameToContactsChainNameMapping[chainDetails?.name])) {
+      willPrompt = !(addressText in addressDirectory.evmAddresses);
+    } else {
+      willPrompt = !(addressText in addressDirectory[ChainNameToContactsChainNameMapping[tokenData.chainDetails?.name]]);
+    }
 
     if (willPrompt) {
       showModal('state', {
