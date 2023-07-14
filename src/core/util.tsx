@@ -491,3 +491,9 @@ export const getChain = (chain: string): Chain => {
 export const generateRandomInt = (min: number, max: number) => {
   return Math.floor(Math.random() * (max - min + 1)) + min;
 };
+
+export const formatAmount = (amount: string | number) => {
+  return new Intl.NumberFormat('en-US', {
+    maximumSignificantDigits: 4
+  }).format(Number(amount));
+};
