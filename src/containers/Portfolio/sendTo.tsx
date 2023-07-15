@@ -203,26 +203,26 @@ export default function SendTo (props: { navigation?: any, route?: any }) {
 
   const buildAddressDirectory = async () => {
     const tempContactBook: Record<string, Contact> = await getContactBookWithMultipleAddress();
+    const tempAddressDirectory: Record<string, Record<string, string[]>> = {
+      evmAddresses: {},
+      ethereum: {},
+      cosmos: {},
+      evmos: {},
+      juno: {},
+      osmosis: {},
+      stargaze: {},
+      noble: {},
+      binance: {},
+      polygon: {},
+      avalanche: {},
+      fantom: {},
+      optimism: {},
+      arbitrum: {},
+      shardeum: {},
+      shardeum_sphinx: {}
+    };
     if (tempContactBook) {
       setContactBook(tempContactBook);
-      const tempAddressDirectory: Record<string, Record<string, string[]>> = {
-        evmAddresses: {},
-        ethereum: {},
-        cosmos: {},
-        evmos: {},
-        juno: {},
-        osmosis: {},
-        stargaze: {},
-        noble: {},
-        binance: {},
-        polygon: {},
-        avalanche: {},
-        fantom: {},
-        optimism: {},
-        arbitrum: {},
-        shardeum: {},
-        shardeum_sphinx: {}
-      };
       for (const contact in tempContactBook) {
         for (const [chainName, listOfAddresses] of Object.entries(tempContactBook[contact].addresses)) {
           for (const address of listOfAddresses) {
@@ -240,9 +240,9 @@ export default function SendTo (props: { navigation?: any, route?: any }) {
             }
           }
         }
-        setAddressDirectory(tempAddressDirectory);
       }
     }
+    setAddressDirectory(tempAddressDirectory);
   };
 
   useEffect(() => {
