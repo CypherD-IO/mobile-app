@@ -76,7 +76,6 @@ export default function BridgeCardScreen (props: {navigation: {navigate: any, se
   }, [isFocused]);
 
   useEffect(() => {
-    setCardBalance(' ');
     void fetchCardBalance();
     setShouldRefreshTransactions(!shouldRefreshTransactions);
     if (timer) {
