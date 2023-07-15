@@ -391,7 +391,6 @@ export default function BridgeFundCardScreen ({ route }: {route: any}) {
   };
 
   const isLoadCardDisabled = () => {
-    return false;
     const { symbol, backendName } = selectedToken?.chainDetails ?? {};
     const nativeTokenSymbol = get(NativeTokenMapping, symbol) || symbol;
     return (Number(amount) < minTokenValueLimit ||
