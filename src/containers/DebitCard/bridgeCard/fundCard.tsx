@@ -303,7 +303,7 @@ export default function BridgeFundCardScreen ({ route }: {route: any}) {
           quote.tokenRequired = String(Number((quote.tokenRequired)).toFixed(5));
           const web3RPCEndpoint = new Web3(getWeb3Endpoint(hdWallet.state.selectedChain, globalContext));
           const targetWalletAddress = quote.targetWallet ? quote.targetWallet : '';
-          if (Number(quote.usdValue) < Number(amount)) {
+          if (Number(quote.usdValue) < Number(selectedToken?.totalValue)) {
             getGasPriceFor(chainDetails, web3RPCEndpoint)
               .then((gasFeeResponse) => {
                 gasPrice = gasFeeResponse;
@@ -391,6 +391,7 @@ export default function BridgeFundCardScreen ({ route }: {route: any}) {
   };
 
   const isLoadCardDisabled = () => {
+    return false;
     const { symbol, backendName } = selectedToken?.chainDetails ?? {};
     const nativeTokenSymbol = get(NativeTokenMapping, symbol) || symbol;
     return (Number(amount) < minTokenValueLimit ||
@@ -519,8 +520,8 @@ export default function BridgeFundCardScreen ({ route }: {route: any}) {
         lowBalance={lowBalance}
       />
       <RenderSelectedToken/>
-      <CyDView className={'pb-[0px] px-[10px] bg-[#F7F8FE] mx-[40] rounded-[20px]'}>
-        <CyDView className='flex flex-row items-center relative'>
+      <CyDView className={'pb-[0px] px-[10px] bg-[#F7F8FE] mx-[40] h-[220px] rounded-[20px]'}>
+        <CyDView className='flex flex-row h-[100%] items-center'>
           <CyDTouchView
             onPress={() => {
               onMax();
@@ -535,11 +536,11 @@ export default function BridgeFundCardScreen ({ route }: {route: any}) {
           </CyDTouchView>
           <CyDView className={'pb-[10px] w-[60%] items-center bg-[#F7F8FE] mx-[20]'}>
             <CyDText
-              className={'font-extrabold text-[22px] text-center mt-[20px] font-nunito text-black'}>
+              className={'font-extrabold text-[22px] text-center font-nunito text-black'}>
               {t<string>('ENTER_AMOUNT')}
             </CyDText>
             <CyDView className={'flex flex-row justify-center items-center'}>
-              <CyDText className='text-[50px] font-extrabold'>{String('$')}</CyDText>
+              <CyDText className='text-[50px] font-extrabold mt-[5px]'>{String('$')}</CyDText>
               <CyDTextInput
                 className={'h-[100px] min-w-[70px] font-nunito text-[60px] font-bold'}
                 value={amount}
@@ -555,19 +556,13 @@ export default function BridgeFundCardScreen ({ route }: {route: any}) {
               </CyDText>
             </CyDView>}
             <RenderWarningMessage />
-            {selectedToken && <CyDView className='flex flex-column justify-center items-center'>
-              <CyDText>{new Intl.NumberFormat('en-US', {
-                maximumSignificantDigits: 4
-              }).format(Number(amount) / selectedToken.price)} {selectedToken.symbol}</CyDText>
-              <CyDText>{String(`1 ${String(selectedToken.symbol)} = ${currencyFormatter.format(selectedToken.price)}`)}</CyDText>
-            </CyDView>}
           </CyDView>
         </CyDView>
         <Button
           onPress={() => { void fundCard(); }}
           disabled={isLoadCardDisabled()}
           title={t('LOAD_CARD')}
-          style={loading ? 'py-[7px] mx-[15px] top-[15px]' : 'py-[15px] mx-[15px] top-[15px]'}
+          style={loading ? 'py-[7px] mx-[15px] -top-[25px]' : 'py-[15px] mx-[15px] -top-[25px]'}
           loading={loading}
         />
       </CyDView>

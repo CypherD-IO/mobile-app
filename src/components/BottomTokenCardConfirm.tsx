@@ -2,24 +2,25 @@ import React, { useEffect, useState } from 'react';
 import { StyleSheet } from 'react-native';
 import { useTranslation } from 'react-i18next';
 import AppImages from '../../assets/images/appImages';
-import { SepraterView } from '../styles/viewStyle';
 import { CyDFastImage, CyDImage, CyDText, CyDTouchView, CyDView } from '../styles/tailwindStyles';
 import CyDModalLayout from './v2/modal';
 import Button from './v2/button';
 import { ButtonType } from '../constants/enum';
+import { formatAmount } from '../core/util';
 
 export default function BottomCardConfirm (props) {
   const { isModalVisible, onPayPress, onCancelPress, lowBalance, modalParams } = props;
   const { t } = useTranslation();
   const [loading, setLoading] = useState<boolean>(false);
   const [tokenExpiryTime, setTokenExpiryTime] = useState(modalParams?.tokenQuoteExpiry ? modalParams?.tokenQuoteExpiry : 0);
-  const [expiryTimer, setExpiryTimer] = useState();
-  const [isPayDisabled, setIsPayDisabled] = useState(!modalParams?.hasSufficientBalance);
-  const currentTimeStamp = new Date();
+  const [expiryTimer, setExpiryTimer] = useState<NodeJS.Timer>();
+  const [isPayDisabled, setIsPayDisabled] = useState<boolean>(modalParams.hasOwnProperty('hasSufficientBalance') ? !(modalParams?.hasSufficientBalance) : false);
 
   useEffect(() => {
-    console.log(isPayDisabled);
-    if (isModalVisible && modalParams?.tokenQuoteExpiry && !isPayDisabled) {
+    let tempIsPayDisabled = false;
+    tempIsPayDisabled = modalParams.hasOwnProperty('hasSufficientBalance') ? !(modalParams?.hasSufficientBalance) : false;
+    setIsPayDisabled(tempIsPayDisabled);
+    if (isModalVisible && modalParams?.tokenQuoteExpiry && !tempIsPayDisabled) {
       let tempTokenExpiryTime = modalParams.tokenQuoteExpiry;
       setIsPayDisabled(false);
       setTokenExpiryTime(tempTokenExpiryTime);
@@ -95,7 +96,7 @@ export default function BottomCardConfirm (props) {
             <CyDText className={' font-bold text-[16px] ml-[5px] text-primaryTextColor'}>{t('GAS')}</CyDText>
             <CyDView className={'flex flex-row flex-wrap justify-between w-[95%] pl-[60px]'}>
                 <CyDText className={' font-medium text-[15px] text-primaryTextColor'}>{modalParams.gasFeeETH} {modalParams.networkCurrency}</CyDText>
-                <CyDText className={' font-medium text-[15px] text-primaryTextColor mr-[10px]'}>$ {modalParams.gasFeeDollar}</CyDText>
+                <CyDText className={' font-medium text-[15px] text-primaryTextColor mr-[10px]'}>$ {formatAmount(modalParams.gasFeeDollar)}</CyDText>
             </CyDView>
           </CyDView>
         </CyDView>
@@ -105,8 +106,8 @@ export default function BottomCardConfirm (props) {
             className="h-[20px] w-[20px] ml-[13px] mr-[13px]"
             resizeMode="contain"
           />
-          <CyDText className="text-red-500 font-medium text-[12px]  w-[80%] ">
-          {t<string>('INSUFFICIENT_BALANCE_BRIDGE')}
+          <CyDText className="text-red-500 font-medium text-[12px] px-[10px]  w-[80%] ">
+          {t<string>('INSUFFICIENT_BALANCE_CARD')}
           </CyDText>
         </CyDView>}
         <CyDView
