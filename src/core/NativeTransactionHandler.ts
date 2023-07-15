@@ -17,7 +17,8 @@ import {
   TARGET_CARD_EVM_WALLET_ADDRESS,
   TARGET_BRIDGE_EVM_WALLET_ADDRESS,
   getWeb3Endpoint,
-  convertAmountOfContractDecimal
+  convertAmountOfContractDecimal,
+  formatAmount
 } from './util';
 import { Chain, CHAIN_OPTIMISM, CHAIN_SHARDEUM, CHAIN_SHARDEUM_SPHINX } from '../constants/server';
 import * as Sentry from '@sentry/react-native';
@@ -356,7 +357,7 @@ export async function _estimateGasForNativeTransaction (hdWalletContext: any, fr
       let totalValueTransfer = 0;
       if (gasPriceDetail.tokenPrice > 0) {
         const ethPrice = gasPriceDetail.tokenPrice;
-        gasFeeDollar = (parseFloat(gasFeeETH) * ethPrice).toFixed(2);
+        gasFeeDollar = formatAmount(parseFloat(gasFeeETH) * ethPrice);
 
         if (isNativeCurrency(fromChain, contractAddress)) {
           totalValueDollar = ((parseFloat(send_token_amount) + parseFloat(gasFeeETH)) * ethPrice).toFixed(2);

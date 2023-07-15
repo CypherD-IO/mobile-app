@@ -36,7 +36,7 @@ export default function CardRevealAuthScreen (props: {navigation: any, route: {p
   }, [resendInterval]);
 
   const triggerOTP = async () => {
-    const triggerOTPUrl = `/v1/cards/${currentCardProvider}/card/${card.cardId}/trigger/${triggerOTPParam}`;
+    const triggerOTPUrl = `/v1/cards/${currentCardProvider}/card/${card.cardId}/trigger/${triggerOTPParam === 'verify/show-token' ? 'show-token' : triggerOTPParam}`;
     try {
       const response = await postWithAuth(triggerOTPUrl, {});
       return !response.isError;
