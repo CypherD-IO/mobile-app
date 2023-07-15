@@ -1,14 +1,14 @@
 /* eslint-disable array-callback-return */
 /* eslint-disable no-void */
 /* eslint-disable react-native/no-color-literals */
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { StyleSheet } from 'react-native';
 import { SignClientTypes } from '@walletconnect/types';
 import { getSdkError } from '@walletconnect/utils';
 import { web3wallet } from '../../../core/walletConnectV2Utils';
 import CyDModalLayout from '../modal';
 import useWeb3 from '../../../hooks/useWeb3';
-import { ButtonType, Web3Origin } from '../../../constants/enum';
+import { ButtonType, DecodedResponseTypes, Web3Origin } from '../../../constants/enum';
 import { Chain, SUPPORTED_EVM_CHAINS, chainIdNumberMapping } from '../../../constants/server';
 import { formatJsonRpcError, formatJsonRpcResult } from '@json-rpc-tools/utils';
 import { CyDFastImage, CyDScrollView, CyDText, CyDView } from '../../../styles/tailwindStyles';
@@ -17,6 +17,13 @@ import Web3 from 'web3';
 import Button from '../button';
 import { EIP155_SIGNING_METHODS } from '../../../constants/EIP155Data';
 import { useGlobalModalContext } from '../GlobalModal';
+import useAxios from '../../../core/HttpRequest';
+import AppImages from '../../../../assets/images/appImages';
+import { getMaskedAddress } from '../../../core/util';
+import { IDecodedTransactionResponse } from '../../../models/txnDecode.interface';
+import EmptyView from '../../EmptyView';
+import * as Sentry from '@sentry/react-native';
+import { intercomAnalyticsLog } from '../../../containers/utilities/analyticsUtility';
 
 interface SessionSigningModalProps {
   requestEvent:
@@ -24,6 +31,10 @@ interface SessionSigningModalProps {
   | undefined
   isModalVisible: boolean
   hideModal: () => void
+}
+
+interface IExtendedDecodedTxnResponse extends IDecodedTransactionResponse {
+  from_addr: string
 }
 
 export default function SigningModal ({
@@ -38,6 +49,8 @@ export default function SigningModal ({
   const { id, topic, params } = requestEvent;
   const { params: requestParams, method } = params.request;
   const requestSession = web3wallet?.engine.signClient.session.get(topic);
+  const { postWithAuth } = useAxios();
+  const [decodedABIData, setDecodedABIData] = useState<IExtendedDecodedTxnResponse | null>(null);
   // if (requestParams[0]?.gasPrice.startsWith('0x')) {
   //   requestParams[0].gasPrice = parseFloat(Web3.utils.fromWei(Web3.utils.hexToNumberString(requestParams[0]?.gasPrice), 'Gwei'));
   // } else {
@@ -48,6 +61,73 @@ export default function SigningModal ({
   const { icons, name, url } = requestSession.peer.metadata;
   const [, chainId] = params.chainId.split(':');
   let chain: Chain;
+
+  interface DecodeTxnRequestBody {
+    chainId: number
+    from: string
+    to: string
+    gas: string
+    value: string
+    data: string
+    nonce: string
+    maxFeePerGas?: string
+    maxPriorityFeePerGas?: string
+  }
+
+  useEffect(() => {
+    console.log(decodedABIData);
+  }, [decodedABIData]);
+
+  useEffect(() => {
+    let decodeTxnRequestBody: DecodeTxnRequestBody;
+    const decodeTxnRequest = async () => {
+      try {
+        const { data, error, isError } = await postWithAuth('/v1/txn/decode', decodeTxnRequestBody);
+        if (!isError) {
+          setDecodedABIData({ ...data, from_addr: decodeTxnRequestBody.from });
+        } else {
+          throw (error);
+        }
+      } catch (e) {
+        const errorObject = {
+          error: e,
+          decodeTxnRequestBody
+        };
+        Sentry.captureException(errorObject);
+      }
+    };
+    if (method === 'eth_sendTransaction') {
+      const { from, to, gas = '0x0', value = '0x0', data, nonce = '0x0', maxFeePerGas = '0x0', maxPriorityFeePerGas = '0x0' } = requestParams[0];
+      decodeTxnRequestBody = {
+        chainId: Number(chainId),
+        from,
+        to,
+        gas,
+        value,
+        data,
+        nonce,
+        maxFeePerGas,
+        maxPriorityFeePerGas
+      };
+      void decodeTxnRequest();
+    } else if (method === 'eth_signTransaction') {
+      const { from, to, gasLimit: gas = '0x0', value = '0x0', data, nonce = '0x0', maxFeePerGas = '0x0', maxPriorityFeePerGas = '0x0' } = requestParams[0];
+      decodeTxnRequestBody = {
+        chainId: Number(chainId),
+        from,
+        to,
+        gas,
+        value,
+        data,
+        nonce,
+        maxFeePerGas,
+        maxPriorityFeePerGas
+      };
+      void decodeTxnRequest();
+    } else {
+      console.log(method, 'decoding not supported.');
+    }
+  }, [requestParams[0].data]);
 
   if (SUPPORTED_EVM_CHAINS.includes(+chainId)) {
     chain = chainIdNumberMapping[+chainId];
@@ -90,7 +170,7 @@ export default function SigningModal ({
 
   const RenderDAPPInfo = () => {
     return (
-      <CyDView className='flex flex-row items-center mt-[12px] border-[1px] rounded-[8px] border-fadedGrey'>
+      <CyDView className='flex flex-row items-center mt-[12px] border-[1px] rounded-[12px] border-fadedGrey'>
         <CyDView className='flex flex-row rounded-r-[20px] self-center px-[10px]'>
           <CyDFastImage
             className={'h-[35px] w-[35px] rounded-[50px]'}
@@ -118,7 +198,7 @@ export default function SigningModal ({
     return (
       <CyDView>
         <CyDView>
-          <CyDText className={'text-[18px] font-bold mb-[6px] ml-[4px]'}>{'Network'}</CyDText>
+          <CyDText className={'text-[18px] font-bold mb-[6px] ml-[4px]'}>{t<string>('NETWORK_INIT_CAPS')}</CyDText>
         </CyDView>
         <CyDView>
           <CyDView className={'flex flex-row items-center'}>
@@ -134,7 +214,7 @@ export default function SigningModal ({
     return (
       <CyDView>
         <CyDView>
-          <CyDText className={'text-[18px] font-bold mb-[6px] ml-[4px]'}>{'Method'}</CyDText>
+          <CyDText className={'text-[18px] font-bold mb-[6px] ml-[4px]'}>{t('METHOD')}</CyDText>
         </CyDView>
         <CyDView>
           <CyDView>
@@ -155,7 +235,7 @@ export default function SigningModal ({
     return (
       <CyDView>
         <CyDView>
-          <CyDText className={'text-[18px] font-bold mb-[6px] ml-[4px]'}>{'Message'}</CyDText>
+          <CyDText className={'text-[18px] font-bold mb-[6px] ml-[4px]'}>{t('MESSAGE')}</CyDText>
         </CyDView>
         <CyDView className={'my-[5px] border-[1px] border-sepratorColor bg-infoTextBackground rounded-[6px]'}>
           <CyDView className={'p-[10px]'}>
@@ -212,8 +292,32 @@ export default function SigningModal ({
   };
 
   const RenderTransactionSignModal = () => {
+    const decodedResponseType = decodedABIData?.type;
+    switch (decodedResponseType) {
+      case DecodedResponseTypes.SEND : {
+        void intercomAnalyticsLog('eth_sendTransaction_SEND');
+        return <RenderSendTransactionSignModal />;
+      }
+      case DecodedResponseTypes.APPROVE : {
+        void intercomAnalyticsLog('eth_sendTransaction_APPROVE');
+        return <RenderApproveTokenModal />;
+      }
+      case DecodedResponseTypes.CALL : {
+        void intercomAnalyticsLog('eth_sendTransaction_CALL');
+        return <RenderSwapTransactionSignModal />;
+      }
+      default : {
+        void intercomAnalyticsLog('eth_sendTransaction_DEFAULT');
+        return <RenderDefaultSignModal />;
+      }
+    }
+  };
+
+  const RenderDefaultSignModal = () => {
     return (
       <CyDView>
+        {decodedABIData
+          ? <>
         <RenderDAPPInfo />
         <Divider />
         <RenderNetwork />
@@ -225,13 +329,297 @@ export default function SigningModal ({
               <CyDText className={'text-[18px] font-bold mb-[6px] ml-[4px]'}>{t<string>('DATA')}</CyDText>
             </CyDView>
             <CyDView>
-              <CyDView>
-                <CyDText className={'text-[16px] ml-[6px]'}>{requestParams[0].data}</CyDText>
+              <CyDView className={'my-[5px] border-[1px] border-sepratorColor bg-infoTextBackground rounded-[6px]'}>
+                <CyDView className='p-[10px]'>
+                  <CyDText className={'text-[16px] ml-[6px]'}>{JSON.stringify(decodedABIData, null, '\t')}</CyDText>
+                </CyDView>
               </CyDView>
             </CyDView>
           </CyDView>
+      </>
+          : <CyDView className='flex justify-center items-center'>
+      <EmptyView
+        text={'Loading...'}
+        image={AppImages.LOADING_IMAGE}
+        buyVisible={false}
+        marginTop={50}
+        isLottie={true}
+      />
+    </CyDView>
+      }
       </CyDView>
     );
+  };
+
+  const RenderSendTransactionSignModal = () => {
+    if (decodedABIData?.gasPrice && decodedABIData.native_token.amount && decodedABIData.type_send) {
+      const gasPriceInWei = decodedABIData?.gasPrice * 10 ** 9;
+      const gasInTokens = (
+        decodedABIData?.gas.gas_limit *
+        gasPriceInWei *
+        10 ** -decodedABIData?.native_token.decimals
+      );
+      const gasWithUSDAppx = `${new Intl.NumberFormat('en-US', { maximumSignificantDigits: 2 }).format(gasInTokens)} ${decodedABIData?.native_token.symbol} ≈ $${new Intl.NumberFormat('en-US', { maximumSignificantDigits: 2 }).format(gasInTokens * decodedABIData?.native_token.price)} USD`;
+      const availableBalance = `${decodedABIData.native_token.amount.toFixed(4)} ${decodedABIData.native_token.symbol}`;
+      return (
+        <CyDView>
+          <RenderDAPPInfo />
+          <CyDView className='my-[10px]'>
+            <CyDView>
+              <CyDView className='flex flex-col items-center'>
+                <CyDView className={'flex flex-row justify-center items-center'}>
+                  <CyDView className='flex flex-row h-full mb-[10px] items-center rounded-r-[20px] self-center pl-[13px] pr-[10px]'>
+                    <CyDFastImage
+                      className={'h-[30px] w-[30px] rounded-[50px]'}
+                      source={{ uri: decodedABIData?.type_send?.token.logo_url }}
+                      resizeMode='contain'
+                      />
+                    <CyDView className='absolute top-[60%] right-[3px]'>
+                      <CyDFastImage
+                        className={'h-[18px] w-[18px] rounded-[50px] border-[1px] border-white bg-white'}
+                        source={chain.logo_url}
+                        resizeMode='contain'
+                        />
+                    </CyDView>
+                  </CyDView>
+                  <CyDView>
+                    <CyDText className='text-[22px] font-bold mb-[10px]'>{decodedABIData.type_send.token.name}</CyDText>
+                  </CyDView>
+                </CyDView>
+                <CyDView>
+                    <CyDText className='text-[48px] font-bold'>{decodedABIData?.type_send?.token_amount.toFixed(4)}</CyDText>
+                </CyDView>
+                <CyDView>
+                    <CyDText className='text-[24px] text-subTextColor font-semibold'>{(decodedABIData?.type_send.token_amount * decodedABIData?.type_send?.token.price).toFixed(4) + ' USD'}</CyDText>
+                </CyDView>
+              </CyDView>
+              <CyDView className='my-[10px]'>
+                <CyDView className={'bg-sepratorColor rounded-[12px] py-[20px] px-[10px]'}>
+                  <CyDView className='flex flex-row justify-between'>
+                    <CyDText className={'text-[16px] ml-[6px] font-bold'}>{t('TO')}</CyDText>
+                    <CyDText className={'text-[16px]'}>{getMaskedAddress(decodedABIData?.type_send?.to_addr, 10)}</CyDText>
+                  </CyDView>
+                  <CyDView className={'h-[1px] bg-gray-200 mt-[14px] mb-[8px]'}></CyDView>
+                  <CyDView className='flex flex-row justify-between'>
+                    <CyDText className={'text-[16px] ml-[6px] font-bold'}>{t('FROM')}</CyDText>
+                    <CyDText className={'text-[16px]'}>{getMaskedAddress(decodedABIData?.from_addr, 10)}</CyDText>
+                  </CyDView>
+                </CyDView>
+              </CyDView>
+              <CyDView className='my-[10px]'>
+                <CyDView className={'bg-infoTextBackground rounded-[12px] py-[20px] px-[10px]'}>
+                  <CyDView className='flex flex-row justify-between'>
+                  <CyDText className={'font-bold text-[16px]'}>{t('GAS')}</CyDText>
+                  <CyDText className={'font-medium text-[16px] text-subTextColor'}>{gasWithUSDAppx}</CyDText>
+                  </CyDView>
+                  <CyDView className={'h-[1px] bg-gray-200 mt-[14px] mb-[8px]'}></CyDView>
+                  <CyDView className='flex flex-row justify-between'>
+                  <CyDText className={'font-bold text-[16px]'}>{t('AVAILABLE_BALANCE')}</CyDText>
+                  <CyDText className={'font-medium text-[16px] text-subTextColor'}>{availableBalance}</CyDText>
+                  </CyDView>
+                </CyDView>
+              </CyDView>
+          </CyDView>
+        </CyDView>
+        </CyDView>
+      );
+    }
+    return <RenderDefaultSignModal />;
+  };
+
+  const RenderSwapTransactionSignModal = () => {
+    if (decodedABIData?.gasPrice) {
+      const { send_token_list: sendTokenList, receive_token_list: receiveTokenList } = decodedABIData.balance_change;
+      if (sendTokenList[0].amount && sendTokenList[0].usd_value && receiveTokenList[0].amount && receiveTokenList[0].usd_value) {
+        const sentAmountInTokens = `${sendTokenList[0]?.amount.toFixed(3)} ${sendTokenList[0].symbol}`;
+        const sentAmountInUSD = `${sendTokenList[0]?.usd_value.toFixed(3)} USD`;
+        const receivedAmountInTokens = `${receiveTokenList[0].amount.toFixed(3)} ${receiveTokenList[0].symbol}`;
+        const receivedAmountInUSD = `${receiveTokenList[0].usd_value.toFixed(3)} USD`;
+        const gasPriceInWei = decodedABIData?.gasPrice * 10 ** 9;
+        const gasInTokens = (
+          decodedABIData?.gas.gas_limit *
+          gasPriceInWei *
+          10 ** -decodedABIData?.native_token.decimals
+        );
+        const gasInTokensAndSymbol = `${new Intl.NumberFormat('en-US', { maximumSignificantDigits: 2 }).format(gasInTokens)} ${decodedABIData?.native_token.symbol}`;
+        const gasInUSD = `${new Intl.NumberFormat('en-US', { maximumSignificantDigits: 2 }).format(gasInTokens * decodedABIData?.native_token.price)} USD`;
+        return (
+          <CyDView>
+            <RenderDAPPInfo />
+            <CyDView className='my-[10px]'>
+                <CyDView className='flex flex-col items-center'>
+                  <CyDView className={'flex flex-row justify-center items-center'}>
+                  <CyDView className={'flex flex-row justify-between items-center w-[100%] my-[20px] bg-[#F7F8FE] rounded-[20px] px-[15px] py-[20px]'}>
+                        <CyDView className={'flex w-[40%] items-center justify-center'}>
+                          <CyDView className="items-center">
+                            <CyDFastImage source={{ uri: sendTokenList[0].logo_url }} className={'w-[44px] h-[44px]'} />
+                              <CyDText className={'my-[6px] mx-[2px] text-black text-[14px] text-center font-semibold flex flex-row justify-center font-nunito'}>
+                                {sendTokenList[0].name}
+                              </CyDText>
+                              <CyDView className={'bg-white rounded-[20px] flex flex-row items-center p-[4px]'}>
+                                <CyDFastImage source={chain.logo_url} className={'w-[14px] h-[14px]'} />
+                                <CyDText className={'ml-[6px] font-nunito font-normal text-black  text-[12px]'}>
+                                  {chain.name}
+                                </CyDText>
+                              </CyDView>
+                          </CyDView>
+                        </CyDView>
+                        <CyDView className={'flex h-[16px] w-[16px] justify-center'}>
+                          <CyDFastImage source={AppImages.SWAP} className='h-full w-full' resizeMode='contain' />
+                        </CyDView>
+                        <CyDView className={'flex w-[40%] items-center self-center align-center justify-center'}>
+                          <CyDView className="items-center">
+                            <CyDFastImage source={{ uri: receiveTokenList[0].logo_url }} className={'w-[44px] h-[44px]'} />
+                            <CyDText className={'my-[6px] mx-[2px] text-black text-[14px] text-center font-semibold flex flex-row justify-center font-nunito'}>
+                              {receiveTokenList[0].name}
+                            </CyDText>
+                            <CyDView className={'bg-white rounded-[20px] flex flex-row items-center p-[4px]'}>
+                              <CyDFastImage source={chain.logo_url} className={'w-[14px] h-[14px]'} />
+                              <CyDText className={'ml-[6px] font-nunito text-black font-normal text-[12px]'}>
+                                {chain.name}
+                              </CyDText>
+                            </CyDView>
+                          </CyDView>
+                        </CyDView>
+                      </CyDView>
+                    </CyDView>
+                  </CyDView>
+                <Divider />
+                <CyDView className='flex flex-row justify-between items-center'>
+                  <CyDText className={'text-[16px] font-semibold'}>
+                    {t<string>('SENT_AMOUNT')}
+                  </CyDText>
+                  <CyDView className={'mr-[10px] flex items-end'}>
+                    <CyDText className='text-[14px] font-bold max-w-[150px]'>
+                      {sentAmountInTokens}
+                    </CyDText>
+                    <CyDText className='text-[12px] text-subTextColor font-bold'>
+                      {sentAmountInUSD}
+                    </CyDText>
+                  </CyDView>
+                </CyDView>
+                <Divider />
+                <CyDView className='flex flex-row justify-between items-center'>
+                  <CyDText className={'text-[16px] font-semibold'}>
+                    {t<string>('TOTAL_RECEIVED')}
+                  </CyDText>
+                  <CyDView className={'mr-[10px] flex items-end'}>
+                    <CyDText className='text-[14px] font-bold max-w-[150px]'>
+                      {receivedAmountInTokens}
+                    </CyDText>
+                    <CyDText className='text-[12px] text-subTextColor font-bold'>
+                      {receivedAmountInUSD}
+                    </CyDText>
+                  </CyDView>
+                </CyDView>
+                <Divider />
+                <CyDView className='flex flex-row justify-between items-center'>
+                  <CyDText className={'text-[16px] font-semibold'}>
+                    {t<string>('GAS_FEE')}
+                  </CyDText>
+                  <CyDView className={'mr-[10px] flex items-end'}>
+                    <CyDText className='text-[12px] font-bold max-w-[150px]'>
+                      {gasInTokensAndSymbol}
+                    </CyDText>
+                    <CyDText className='text-[12px] text-subTextColor font-bold'>
+                      {gasInUSD}
+                    </CyDText>
+                  </CyDView>
+                </CyDView>
+                <Divider />
+              </CyDView>
+          </CyDView>
+        );
+      }
+    }
+    return <RenderDefaultSignModal />;
+  };
+
+  const RenderApproveTokenModal = () => {
+    if (decodedABIData?.type_token_approval && decodedABIData.gasPrice && decodedABIData.native_token.amount) {
+      const approvalToken = decodedABIData?.type_token_approval?.token;
+      const amountInTokens = `${decodedABIData.type_token_approval.token_amount} ${decodedABIData.type_token_approval.token_symbol}`;
+      const amountInUSD = `$${(decodedABIData.type_token_approval.token_amount * approvalToken.price).toLocaleString()}`;
+      const spender = { address: getMaskedAddress(decodedABIData.type_token_approval.spender, 10), protocolLogoUrl: decodedABIData.type_token_approval.spender_protocol_logo_url, protocolName: decodedABIData.type_token_approval.spender_protocol_name };
+      const gasPriceInWei = decodedABIData?.gasPrice * 10 ** 9;
+      const gasInTokens = (
+        decodedABIData?.gas.gas_limit *
+        gasPriceInWei *
+        10 ** -decodedABIData?.native_token.decimals
+      );
+      const gasWithUSDAppx = `${new Intl.NumberFormat('en-US', { maximumSignificantDigits: 2 }).format(gasInTokens)} ${decodedABIData?.native_token.symbol} ≈ $${new Intl.NumberFormat('en-US', { maximumSignificantDigits: 2 }).format(gasInTokens * decodedABIData?.native_token.price)} USD`;
+      const availableBalance = `${decodedABIData.native_token.amount.toFixed(4)} ${decodedABIData.native_token.symbol}`;
+      return (
+        <CyDView>
+          <RenderDAPPInfo />
+          <CyDView className='my-[10px]'>
+          <CyDView className='flex flex-col gap-[10px] items-center rounded-[20px] bg-sepratorColor'>
+                <CyDView className='px-[10px] my-[10px]'>
+                  <CyDText className='font-bold text-[16px]'>
+                      {t('APPROVAL_AMOUNT')}
+                  </CyDText>
+                </CyDView>
+              <CyDView className='flex flex-row gap-[10px]'>
+                <CyDView className={'flex flex-row justify-center items-center my-[10px]'}>
+                  <CyDView className='flex flex-row h-full mb-[10px] items-center rounded-r-[20px] self-center pl-[13px] pr-[10px]'>
+                    <CyDFastImage
+                      className={'h-[24px] w-[24px] rounded-[50px]'}
+                      source={{ uri: approvalToken.logo_url }}
+                      resizeMode='contain'
+                      />
+                    <CyDView className='absolute top-[60%] right-[3px]'>
+                      <CyDFastImage
+                        className={'h-[16px] w-[16px] rounded-[50px] border-[1px] border-white bg-white'}
+                        source={chain.logo_url}
+                        resizeMode='contain'
+                        />
+                    </CyDView>
+                  </CyDView>
+                </CyDView>
+                <CyDText className='font-bold text-[18px] text-left'>
+                    {amountInTokens}
+                </CyDText>
+              </CyDView>
+              <CyDView className='py-[7px]'>
+                <CyDText className='font-semibold text-[16px] text-subTextColor'>
+                    {amountInUSD}
+                </CyDText>
+              </CyDView>
+            </CyDView>
+          <CyDView className='my-[10px]'>
+            <CyDView className={'bg-sepratorColor rounded-[12px] py-[20px] px-[10px]'}>
+              <CyDView className='flex flex-row justify-between'>
+                <CyDText className={'text-[14px] ml-[6px] font-bold'}>{t('SPENDER')}</CyDText>
+                <CyDText className={'text-[14px]'}>{spender.address}</CyDText>
+              </CyDView>
+              <CyDView className={'h-[1px] bg-gray-200 mt-[14px] mb-[8px]'}></CyDView>
+              <CyDView className='flex flex-row justify-between'>
+                <CyDText className={'text-[14px] ml-[6px] font-bold'}>{t('APPROVE_TO')}</CyDText>
+                <CyDView>
+                <CyDFastImage source={{ uri: spender.protocolLogoUrl }} />
+                <CyDText className={'text-[14px]'}>{spender.protocolName}</CyDText>
+                </CyDView>
+              </CyDView>
+            </CyDView>
+          </CyDView>
+          <CyDView className='my-[10px]'>
+            <CyDView className={'bg-infoTextBackground rounded-[12px] py-[20px] px-[10px]'}>
+              <CyDView className='flex flex-row justify-between'>
+                <CyDText className={'font-bold text-[16px]'}>{t('GAS')}</CyDText>
+                <CyDText className={'font-medium text-[16px] text-subTextColor'}>{gasWithUSDAppx}</CyDText>
+              </CyDView>
+              <CyDView className={'h-[1px] bg-gray-200 mt-[14px] mb-[8px]'}></CyDView>
+              <CyDView className='flex flex-row justify-between'>
+                <CyDText className={'font-bold text-[16px]'}>{t('AVAILABLE_BALANCE')}</CyDText>
+                <CyDText className={'font-medium text-[16px] text-subTextColor'}>{availableBalance}</CyDText>
+              </CyDView>
+            </CyDView>
+          </CyDView>
+        </CyDView>
+      </CyDView>
+      );
+    }
+    return <RenderDefaultSignModal />;
   };
 
   const RenderTypedTransactionSignModal = () => {
@@ -255,11 +643,11 @@ export default function SigningModal ({
           <CyDScrollView className='max-h-[70%]'>
             {(method === EIP155_SIGNING_METHODS.PERSONAL_SIGN || method === EIP155_SIGNING_METHODS.ETH_SIGN) && <RenderSignMessageModal />}
             {(method === EIP155_SIGNING_METHODS.ETH_SEND_RAW_TRANSACTION || method === EIP155_SIGNING_METHODS.ETH_SEND_TRANSACTION || method === EIP155_SIGNING_METHODS.ETH_SIGN_TRANSACTION) && <RenderTransactionSignModal />}
-            {(method === EIP155_SIGNING_METHODS.ETH_SIGN_TYPED_DATA || method === EIP155_SIGNING_METHODS.ETH_SIGN_TYPED_DATA_V3 || method === EIP155_SIGNING_METHODS.ETH_SIGN_TYPED_DATA_V4) && < RenderTypedTransactionSignModal/>}
+            {(method === EIP155_SIGNING_METHODS.ETH_SIGN_TYPED_DATA || method === EIP155_SIGNING_METHODS.ETH_SIGN_TYPED_DATA_V3 || method === EIP155_SIGNING_METHODS.ETH_SIGN_TYPED_DATA_V4) && <RenderTypedTransactionSignModal />}
           </CyDScrollView>
           <CyDView className={'w-full'}>
-            <Button loading={acceptingRequest} style={'my-[10px]'} title={renderAcceptTitle()} onPress={() => void handleAccept()}></Button>
-            <Button loading={rejectingRequest} style={'my-[10px]'} type={ButtonType.TERNARY} title='Reject' onPress={() => void handleReject()}></Button>
+            <Button loading={acceptingRequest} style={'my-[10px]'} title={renderAcceptTitle()} onPress={() => { void handleAccept(); void intercomAnalyticsLog('signModal_accept_click'); }}></Button>
+            <Button loading={rejectingRequest} style={'my-[10px]'} type={ButtonType.TERNARY} title='Reject' onPress={() => { void handleReject(); void intercomAnalyticsLog('signModal_reject_click'); }}></Button>
           </CyDView>
         </CyDView>}
         {!chain && showModal('state', { type: 'error', title: t('UNSUPPORTED_CHAIN'), description: t('UNSUPPORTED_CHAIN_DESCRIPTION'), onSuccess: handleReject, onFailure: handleReject })}
