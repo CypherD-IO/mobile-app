@@ -41,16 +41,16 @@ export default function CardScreen ({ navigation, hideCardDetails, currentCardPr
   const { showModal, hideModal } = useGlobalModalContext();
   const [currentCardIndex, setCurrentCardIndex] = useState<number>(0);
   const { postWithAuth } = useAxios();
-  const currentTimestamp = String(new Date().getTime());
+  const currentTimestamp = String(new Date().getDay());
 
   useEffect(() => {
-    const { last4, type } = cardProfile[currentCardProvider].cards[currentCardIndex];
     if (currentCardProvider !== '') {
+      const { last4, type } = cardProfile[currentCardProvider].cards[currentCardIndex];
       setUserCardDetails({
         hideCardDetails: true,
         showCVVAndExpiry: false,
         isFetchingCardDetails: false,
-        cards: cardProfile[currentCardProvider].cards,
+        cards: orderBy(cardProfile[currentCardProvider].cards, 'type', 'asc'),
         personId: cardProfile[currentCardProvider].personId,
         currentCardRevealedDetails: {
           cardNumber: 'XXXX XXXX XXXX ',
@@ -279,7 +279,7 @@ export default function CardScreen ({ navigation, hideCardDetails, currentCardPr
     }
     return (
       <CyDView className='mb-[10px]'>
-      <CyDImageBackground source={{ uri: getCardBackgroundLayout(card) }} className={clsx('flex flex-col justify-center h-[200px] w-[300px]', { 'border-[1px] border-inputBorderColor rounded-[12px]': card.type === 'physical' })} resizeMode='stretch'>
+      <CyDImageBackground source={{ uri: getCardBackgroundLayout(card) }} className={clsx('flex flex-col justify-center h-[200px] w-[8/12]', { 'border-[1px] border-inputBorderColor rounded-[12px]': card.type === 'physical' })} resizeMode='stretch'>
         {(isFetchingCardDetails && card.cardId === currentCardRevealedDetails.cardId)
           ? <CyDImage source={{ uri: 'https://public.cypherd.io/icons/details_loading.png' }} className='h-[50px] w-[50px] self-center' resizeMode='contain'></CyDImage>
           : <CyDView className='flex-1 flex-col justify-between'>
@@ -313,13 +313,11 @@ export default function CardScreen ({ navigation, hideCardDetails, currentCardPr
   return (
     <Carousel
       inactiveSlideOpacity={1}
-      inactiveSlideScale={0.9}
-      data={orderBy(userCardDetails.cards, 'type', 'asc')}
+      inactiveSlideScale={0.88}
+      data={userCardDetails.cards}
       renderItem={renderCard}
       sliderWidth={width}
-      itemWidth={width - 90}
-      sliderHeight={300}
-      itemHeight={width - 50}
+      itemWidth={width - 70}
       vertical={false}
       onSnapToItem={(index) => setCurrentCardIndex(index)}
     />
