@@ -5,7 +5,11 @@ export interface State {
   title: string
   description: string | JSX.Element
   isModalVisible: boolean
-  modalImage: ImageSourcePropType
+  modalImage?: ImageSourcePropType
+  modalButtonText?: {
+    success: string
+    failure: string
+  }
   onSuccess: () => void
   onFailure: () => void
 }
