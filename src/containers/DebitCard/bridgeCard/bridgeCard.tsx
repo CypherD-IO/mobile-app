@@ -20,6 +20,7 @@ import { get, has } from 'lodash';
 import SwitchView from '../../../components/v2/switchView';
 import Loading from '../../../components/v2/loading';
 import { CardProviders } from '../../../constants/enum';
+import { sleepFor } from '../../../core/util';
 
 export default function BridgeCardScreen (props: {navigation: {navigate: any, setOptions: any}, route: {params: {hasBothProviders: boolean, cardProvider: CardProviders}}}) {
   const isFocused = useIsFocused();
@@ -40,7 +41,6 @@ export default function BridgeCardScreen (props: {navigation: {navigate: any, se
   const { navigation, route } = props;
   const { hasBothProviders, cardProvider } = route.params;
   const [currentCardProvider, setCurrentCardProvider] = useState<string>(cardProvider);
-  const [timer, setTimer] = useState<NodeJS.Timer>();
   const { getWithAuth } = useAxios();
   const [minHeight, setMinHeight] = useState<Number>();
 
@@ -76,15 +76,9 @@ export default function BridgeCardScreen (props: {navigation: {navigate: any, se
   }, [isFocused]);
 
   useEffect(() => {
+    setCardBalance('');
     void fetchCardBalance();
     setShouldRefreshTransactions(!shouldRefreshTransactions);
-    if (timer) {
-      clearInterval(timer);
-    }
-    setTimer(setInterval(() => { void fetchCardBalance(); }, CARD_REFRESH_TIMEOUT));
-    return () => {
-      clearInterval(timer);
-    };
   }, [currentCardProvider]);
 
   const fetchCardBalance = async () => {
@@ -93,12 +87,7 @@ export default function BridgeCardScreen (props: {navigation: {navigate: any, se
     try {
       const response = await getWithAuth(url);
       if (!response.isError && response?.data && response.data.balance) {
-        if (cardBalance && cardBalance !== String(response.data.balance)) {
-          setCardBalance(String(response.data.balance));
-          if (cardBalance !== ' ') {
-            setShouldRefreshTransactions(!shouldRefreshTransactions);
-          }
-        }
+        setCardBalance(String(response.data.balance));
       } else {
         setCardBalance('NA');
       }
@@ -192,15 +181,25 @@ export function Transactions (props: any) {
   const [startHeight, setStartHeight] = useState(0);
   const maxHeight = height * (hasBothProviders ? 0.7 : 0.75);
   const [sheetHeight, setSheetHeight] = useState(0);
-  const isFirstUpdate = useRef(true);
+
   useEffect(() => {
-    if (!isFirstUpdate.current) { setStartHeight(minHeight); } else { isFirstUpdate.current = false; }
+    void setHeight(minHeight);
   }, [minHeight]);
+
+  const setHeight = async (minHeight: number) => {
+    if (startHeight) {
+      setStartHeight(0);
+      await sleepFor(100);
+      setStartHeight(minHeight);
+    } else {
+      setStartHeight(minHeight);
+    }
+  };
 
   return (
     <>
       {startHeight
-        ? <Sheet minHeight={startHeight - 325} expandedHeight={maxHeight} heightChanged={(val: string) => { if (val === 'minimised') { setSheetHeight(minHeight); } else { setSheetHeight(maxHeight); } }}>
+        ? <Sheet minHeight={startHeight - (hasBothProviders ? 325 : 273)} expandedHeight={maxHeight} heightChanged={(val: string) => { if (val === 'minimised') { setSheetHeight(minHeight); } else { setSheetHeight(maxHeight); } }}>
         {/* <CyDView className={'h-full bg-white px-[10px] pt-[20px] mt-[5px] rounded-t-[50]'}>
           <TabView
             renderTabBar={renderTabBar}
