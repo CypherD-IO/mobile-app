@@ -212,7 +212,7 @@ export default function CardScreen ({ navigation, hideCardDetails, currentCardPr
         ...userCardDetails,
         currentCardRevealedDetails: {
           ...currentCardRevealedDetails,
-          cardNumber: 'XXXX XXXX XXXX ' + String(cardProfile[currentCardProvider].cards[currentCardIndex].last4).toUpperCase() ?? 'XXXX'
+          cardNumber: 'XXXX XXXX XXXX ' + String(card.last4).toUpperCase() ?? 'XXXX'
         },
         showCVVAndExpiry: true
       });
