@@ -20,6 +20,7 @@ import { get, has } from 'lodash';
 import SwitchView from '../../../components/v2/switchView';
 import Loading from '../../../components/v2/loading';
 import { CardProviders } from '../../../constants/enum';
+import { sleepFor } from '../../../core/util';
 
 export default function BridgeCardScreen (props: {navigation: {navigate: any, setOptions: any}, route: {params: {hasBothProviders: boolean, cardProvider: CardProviders}}}) {
   const isFocused = useIsFocused();
@@ -180,10 +181,20 @@ export function Transactions (props: any) {
   const [startHeight, setStartHeight] = useState(0);
   const maxHeight = height * (hasBothProviders ? 0.7 : 0.75);
   const [sheetHeight, setSheetHeight] = useState(0);
-  const [isFirstUpdate, setIsFirstUpdate] = useState<boolean>(true);
+
   useEffect(() => {
-    if (!isFirstUpdate && !startHeight) { setStartHeight(minHeight); } else { setIsFirstUpdate(false); }
+    void setHeight(minHeight);
   }, [minHeight]);
+
+  const setHeight = async (minHeight: number) => {
+    if (startHeight) {
+      setStartHeight(0);
+      await sleepFor(100);
+      setStartHeight(minHeight);
+    } else {
+      setStartHeight(minHeight);
+    }
+  };
 
   return (
     <>
