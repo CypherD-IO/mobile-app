@@ -120,7 +120,7 @@ export default function Bridge (props: {navigation?: any, route?: any}) {
   const [fromTokenData, setFromTokenData] = useState([]);
   const [fromToken, setFromToken] = useState<TokenMeta>();
   const [toChainData, setToChainData] = useState<Chain>(CHAIN_STARGAZE);
-  const [toChain, setToChain] = useState<Chain>(ALL_CHAINS[0]);
+  const [toChain, setToChain] = useState<Chain>();
   const [toToken, setToToken] = useState<BridgeTokenDataInterface>();
   const [chainListData, setChainListData] = useState(null);
   const [minimumAmount, setMinimumAmount] = useState<number>(0);
@@ -672,7 +672,7 @@ export default function Bridge (props: {navigation?: any, route?: any}) {
           type: 'error',
           title: '',
           description: response.error ?? response.data?.message,
-          onSuccess: onModalHide,
+          onSuccess: hideModal,
           onFailure: hideModal
         });
         Sentry.captureException(response.error ?? response.data?.message);
@@ -688,10 +688,10 @@ export default function Bridge (props: {navigation?: any, route?: any}) {
           fromToken: fromToken?.name,
           toToken: toToken.name
         });
+        startQuoteExpiryTimer();
+        retryQuoteAfterExpiry();
       }
     }
-    startQuoteExpiryTimer();
-    retryQuoteAfterExpiry();
   };
 
   const startQuoteExpiryTimer = () => {
@@ -728,6 +728,11 @@ export default function Bridge (props: {navigation?: any, route?: any}) {
       clearTimeout(retryTimer.current);
       clearInterval(expiryTimer.current);
     }
+
+    return () => {
+      clearTimeout(retryTimer.current);
+      clearInterval(expiryTimer.current);
+    };
   }, [quoteCancelVisible, signModalVisible]);
 
   const computeGasFeeInUsd = (gasUsed: number): string => {
@@ -1038,9 +1043,11 @@ export default function Bridge (props: {navigation?: any, route?: any}) {
           setFromChainFunction(tempData);
         }
         if (
-          swapSupportedChains.includes(fromChainData.chainDetails.chainIdNumber)
+          swapSupportedChains.includes(fromChainData.chainDetails.chainIdNumber) && routeData.title === 'Swap'
         ) {
           setToChain(fromChainData.chainDetails);
+        } else if (routeData.title !== 'Swap') {
+          setToChain(ALL_CHAINS.find((chain) => chain.backendName !== fromChain.backendName));
         }
         setMinimumAmount(10 / fromChainData.price);
         setNativeTokenBalance(
@@ -1055,7 +1062,6 @@ export default function Bridge (props: {navigation?: any, route?: any}) {
           )
         );
       } else {
-        setFromChain(ALL_CHAINS[0]);
         setLoading(true);
         setFromTokenData(
           portfolioState.statePortfolio.tokenPortfolio?.eth.holdings
@@ -1085,7 +1091,7 @@ export default function Bridge (props: {navigation?: any, route?: any}) {
             ].holdings
           )
         );
-        setToChain(ALL_CHAINS[0]);
+        setToChain(ALL_CHAINS[routeData.title === 'Swap' ? 0 : 1]);
       }
       setAmount('0.00');
       setUsdAmount('0.00');
@@ -1129,7 +1135,7 @@ export default function Bridge (props: {navigation?: any, route?: any}) {
           const { fromChainData } = routeData;
           const { chains } = response.data ?? [];
           setSwapSupportedChains(chains);
-          if (routeData?.fromChainData && chains.includes(fromChainData.chainDetails.chainIdNumber)) {
+          if (routeData?.fromChainData && chains.includes(fromChainData.chainDetails.chainIdNumber) && routeData.title === 'Swap') {
             setToChain(fromChainData.chainDetails);
           }
         }
@@ -1154,7 +1160,7 @@ export default function Bridge (props: {navigation?: any, route?: any}) {
       }
     });
     if (
-      toChain.name === fromChain.name &&
+      toChain?.name === fromChain.name &&
       !swapSupportedChains.includes(fromChain.chainIdNumber)
     ) {
       setToChain(tempData);
@@ -1163,10 +1169,10 @@ export default function Bridge (props: {navigation?: any, route?: any}) {
   }, [fromChain, toChain]);
 
   useEffect(() => {
-    if (chainListData && fromChain.backendName !== toChain.backendName) {
+    if (chainListData && fromChain.backendName !== toChain?.backendName) {
       let toTokenFound = false;
       chainListData.forEach((item) => {
-        if (item.backendName === toChain.backendName) {
+        if (item.backendName === toChain?.backendName) {
           setToToken(item);
           toTokenFound = true;
         }
@@ -1178,14 +1184,14 @@ export default function Bridge (props: {navigation?: any, route?: any}) {
           filteredTokenData: []
         });
       }
-    } else if (fromChain.backendName === toChain.backendName) {
+    } else if (fromChain.backendName === toChain?.backendName) {
       void fetchChainSupportedTokens();
     }
   }, [toChain, fromChain, chainListData]);
 
   useEffect(() => {
     if (
-      fromChain.chainIdNumber === toChain.chainIdNumber &&
+      fromChain.chainIdNumber === toChain?.chainIdNumber &&
       fromChain.backendName === toChain.backendName
     ) {
       const filteredTokens = toTokenData.originalTokenData.filter(
