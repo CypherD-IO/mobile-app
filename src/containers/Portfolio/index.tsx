@@ -389,7 +389,6 @@ export default function Portfolio (props: { navigation: any | { navigate: (arg0:
   const onSuccess = (e) => {
     const link = e.data;
     portfolioState.dispatchPortfolio({ value: { walletConnectURI: link } });
-    props.navigation.goBack();
     props.navigation.navigate(C.screenTitle.WALLET_CONNECT);
   };
 
@@ -423,6 +422,7 @@ export default function Portfolio (props: { navigation: any | { navigate: (arg0:
         <CyDTouchView
           onPress={() => {
             props.navigation.navigate(C.screenTitle.QR_CODE_SCANNER, {
+              navigation: props.navigation,
               fromPage: QRScannerScreens.WALLET_CONNECT,
               onSuccess
             });
