@@ -209,11 +209,14 @@ const isValidMessage = (address: string, messageToBeValidated: string) => {
 };
 
 export function isTokenValid (token: any) {
-  const jwtInfo = jwt_decode<JwtPayload>(token);
-  if (jwtInfo.exp && Date.now() >= jwtInfo.exp * 1000) {
-    return false;
+  if (token) {
+    const jwtInfo = jwt_decode<JwtPayload>(token);
+    if (jwtInfo.exp && Date.now() >= jwtInfo.exp * 1000) {
+      return false;
+    }
+    return true;
   }
-  return true;
+  return false;
 }
 export async function signIn (ethereum: { address: string, privateKey: string }) {
   const web3 = new Web3();

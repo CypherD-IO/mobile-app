@@ -1,11 +1,12 @@
 import WalletConnect from '@walletconnect/client';
-import React, { createContext, useContext, useEffect } from 'react';
+import React, { createContext, useCallback, useContext, useEffect, useState } from 'react';
 import { HdWalletContext, PortfolioContext } from '../../core/util';
-import { web3WalletPair } from '../../core/walletConnectV2Utils';
+import { createWeb3Wallet, web3WalletPair } from '../../core/walletConnectV2Utils';
 import useInitialIntentURL from '../../hooks/useInitialIntentURL';
 import useWalletConnectEventsManager from '../../hooks/useWalletConnectV2EventsManager';
-import useWalletConnectV2Initialization from '../../hooks/useWalletConnectV2Initialization';
 import { WalletConnectActions } from '../../reducers/wallet_connect_reducer';
+import * as Sentry from '@sentry/react-native';
+import { Config } from 'react-native-config';
 
 const walletConnectInitialValue = {
   initialized: false
@@ -15,14 +16,40 @@ export const WalletConnectContext = createContext(walletConnectInitialValue);
 
 export const WalletConnectV2Provider: React.FC<any> = ({ children }) => {
   // Step 1 - Initialize wallets and wallet connect client
-  const initialized = useWalletConnectV2Initialization();
   const portfolioState = useContext<any>(PortfolioContext);
   const hdWalletContext = useContext<any>(HdWalletContext);
   const ethereum = hdWalletContext.state.wallet.ethereum;
   const { walletConnectDispatch } = useContext<any>(WalletConnectContext);
 
   // Step 2 - Once initialized, set up wallet connect event manager
-  useWalletConnectEventsManager(initialized);
+
+  const [isWeb3WalletInitialized, setIsWeb3WalletInitialized] = useState<boolean>(false);
+  useWalletConnectEventsManager(isWeb3WalletInitialized);
+  // const prevRelayerURLValue = useRef<string>('')
+
+  // const { relayerRegionURL } = useSnapshot(SettingsStore.state)
+
+  const onInitialize = useCallback(async () => {
+    const projectId = Config.WALLET_CONNECT_PROJECTID;
+    try {
+      if (projectId) {
+        await createWeb3Wallet(projectId);
+        setIsWeb3WalletInitialized(true);
+      }
+    } catch (err: unknown) {
+      Sentry.captureException(err);
+    }
+  }, []);
+
+  useEffect(() => {
+    if (!isWeb3WalletInitialized) {
+      void onInitialize();
+    }
+    // if (prevRelayerURLValue.current !== relayerRegionURL) {
+    //   setInitialized(false);
+    //   onInitialize();
+    // }
+  }, [isWeb3WalletInitialized]);
 
   const { url: initialUrl } = useInitialIntentURL();
 
@@ -48,13 +75,13 @@ export const WalletConnectV2Provider: React.FC<any> = ({ children }) => {
   };
 
   useEffect(() => {
-    if (initialized && ethereum?.wallets[ethereum?.currentIndex]?.address) {
+    if (isWeb3WalletInitialized && ethereum?.wallets[ethereum?.currentIndex]?.address) {
       void initiateWalletConnection();
     }
-  }, [initialUrl, initialized, ethereum.wallets.length]);
+  }, [initialUrl, isWeb3WalletInitialized, ethereum.wallets.length]);
 
   return (
-    <WalletConnectContext.Provider value={{ initialized }}>
+    <WalletConnectContext.Provider value={{ initialized: isWeb3WalletInitialized }}>
         {children}
     </WalletConnectContext.Provider>
   );
