@@ -25,6 +25,15 @@ export const calculateFeeSignAmino = (chainId: string, signDoc: StdSignDoc) => {
     }
   }
 
+  if (signDoc.fee.amount.length === 0) {
+    const averageProp = chainInfo?.feeCurrencies?.[0]?.gasPriceStep?.high;
+    const fee = (averageProp ?? defaultGasPriceStep.high) * parseInt(signDoc.fee.gas);
+    modifiedFeeSignDoc.fee.amount.push({
+      denom: chainInfo?.feeCurrencies?.[0]?.coinMinimalDenom,
+      amount: parseInt(fee.toString()).toString()
+    });
+  }
+
   return modifiedFeeSignDoc as StdSignDoc;
 };
 
