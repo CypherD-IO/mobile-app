@@ -194,3 +194,8 @@ export enum DecodedResponseTypes {
   REVOKE = 'type_cancel_token_approval',
   UNKNOWN = 'Unknown',
 }
+
+export enum SigningModalPayloadFrom {
+  BROWSER = 'BROWSER',
+  WALLETCONNECT = 'WALLETCONNECT'
+}

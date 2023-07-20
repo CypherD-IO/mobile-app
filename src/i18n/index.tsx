@@ -709,7 +709,7 @@ const resources = {
       HOME: 'Home',
       HISTORY: 'History',
       BROWSER: 'Browser',
-      APPROVAL_AMOUNT: 'Approval Amount',
+      APPROVAL_TOKEN: 'Approval Token',
       SPENDER: 'Spender',
       APPROVE_TO: 'Approve to',
       METHOD: 'Method'

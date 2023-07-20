@@ -1,7 +1,7 @@
 import React, { useState, createContext, useContext } from 'react';
 import { Keyboard, StyleSheet } from 'react-native';
 import StateModal from './StateModal';
-import { GlobalModalType } from '../../constants/enum';
+import { GlobalModalType, SigningModalPayloadFrom } from '../../constants/enum';
 import PromptImportWallet from './promptImportWallet';
 import PairingModal from './walletConnectV2Views/PairingModal';
 import SigningModal from './walletConnectV2Views/SigningModal';
@@ -41,7 +41,7 @@ export const GlobalModal: React.FC<any> = ({ children }) => {
       {store?.modalType === GlobalModalType.STATE && <StateModal {...store}/>}
       {store?.modalType === GlobalModalType.PROMPT_IMPORT_WALLET && <PromptImportWallet {...store}/>}
       {store?.modalType === GlobalModalType.WALLET_CONNECT_V2_PAIRING && <PairingModal {...store}/>}
-      {store?.modalType === GlobalModalType.WALLET_CONNECT_V2_SIGNING && <SigningModal {...store}/>}
+      {store?.modalType === GlobalModalType.WALLET_CONNECT_V2_SIGNING && <SigningModal payloadFrom={SigningModalPayloadFrom.WALLETCONNECT} {...store}/>}
       {store?.modalType === GlobalModalType.WALLET_CONNECT_V2_COSMOS_SIGNING && <CosmosSigningModal {...store}/>}
       {store?.modalType === GlobalModalType.CUSTOM_LAYOUT && <CustomModalLayout {...store}/>}
       {children}
