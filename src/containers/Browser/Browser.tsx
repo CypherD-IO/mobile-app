@@ -399,8 +399,6 @@ export default function Browser ({ route, navigation }: any) {
   };
 
   const onHome = () => {
-    setInputText('https://www.cypherwallet.io/');
-    setSearch('https://www.cypherwallet.io/');
   };
 
   const deleteHistory = (item: BrowserHistoryEntry) => {
