@@ -39,7 +39,7 @@ export function AddressBook ({ route, navigation }) {
       <CyDSafeAreaView className={'h-full bg-white pt-[10px]'}>
         <CyDView className={'flex flex-row w-full pl-[10px] items-center mb-[8%]'}>
           <CyDTouchView onPress={() => { navigation.goBack(); }}>
-            <CyDImage source={AppImages.BACK} className={' w-[20px] h-[20px] mt-[10]'}/>
+            <CyDImage source={AppImages.BACK} className={' w-[20px] h-[20px] mt-[10px]'}/>
           </CyDTouchView>
           <CyDView className='flex-1 items-center mr-[20px]'>
             <SwitchView titles={AddressFunctionalityList} index={index} length={81} setIndexChange={(index) => {
