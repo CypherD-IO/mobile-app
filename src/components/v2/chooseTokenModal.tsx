@@ -121,7 +121,7 @@ export default function ChooseTokenModal (props: TokenModal) {
           <CyDView>
             <CyDImage
               source={{ uri: logo }}
-              className={'h-[30px] w-[30px] rounded-[7px] ml-[10px] mr-[4px] my-[10px]'}
+              className={'h-[30px] w-[30px] rounded-[7px] ml-[10px] mr-[4px]'}
             />
           </CyDView>
           <CyDView>
