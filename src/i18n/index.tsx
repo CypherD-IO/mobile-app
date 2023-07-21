@@ -157,7 +157,7 @@ const resources = {
       IBC_ERROR: "Transaction Error !\n Don't worry your funds are safe, it has been transferred to your osmosis chain via IBC, you can transfer it back via IBC. Sorry for the inconvenience",
       SWAP_ERROR: "Transaction Error !\n Don't worry your funds are safe, it has been transferred to your osmosis chain via IBC and is been available as your to token to after swapping you can transfer it back to your to chain chain via IBC. Sorry for the inconvenience",
       IBC: 'IBC',
-      SENT_AMOUNT: 'Sent Amount : ',
+      SENT_AMOUNT: 'Sent Amount ',
       TO_ADDRESS: 'To address : ',
       TOTAL_GAS: 'Total Gas Fee : ',
       GAS_FEE: 'Gas Fee',
@@ -210,7 +210,7 @@ const resources = {
       APPROVE_ALL_CAPS: 'APPROVE',
       VALUE: 'Value',
       NETWORK_FEE: 'Network Fee',
-      TOTAL_RECEIVED: 'Total Estimated \nReceived: ',
+      TOTAL_RECEIVED: 'Total Estimated \nReceived ',
       ESTIMATED_TIME: 'Estimated Time: ',
       UPDATE: 'UPDATE',
       LATER: 'LATER',
@@ -708,7 +708,11 @@ const resources = {
       MAYBE_LATER: 'Maybe later',
       HOME: 'Home',
       HISTORY: 'History',
-      BROWSER: 'Browser'
+      BROWSER: 'Browser',
+      APPROVAL_TOKEN: 'Approval Token',
+      SPENDER: 'Spender',
+      APPROVE_TO: 'Approve to',
+      METHOD: 'Method'
     }
   }
 };

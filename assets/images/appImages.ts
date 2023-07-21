@@ -1,4 +1,6 @@
 /* eslint-disable @typescript-eslint/no-var-requires */
+const S3_BUCKET_URL_ICONS = 'https://public.cypherd.io/icons';
+
 const PLUS = require('./plus.png');
 const ARROW = require('./arrow.png');
 const HOME = require('./home.png');
@@ -52,8 +54,8 @@ const UP_ARROW_TRANSACTION = require('./up_arrow.png');
 const LOADING_IMAGE = require('./loading_animation_lottie.json');
 const LOADING_SPINNER = require('./loadingSpinner.json');
 const BROWS_MORE = require('./browserMore.png');
-const Home_New = require('./home_New.png');
-const Star_Outline = require('./starOutline.png');
+const HOME_NEW = require('./home_New.png');
+const STAR_OUTLINE = require('./starOutline.png');
 const MOVE_FUND_BG = require('./moveFundBG.png');
 const SECURITY_BG = require('./securityBg.png');
 const MOVE_FUNDS = require('./moveFunds.png');
@@ -280,6 +282,9 @@ const BROWSER_REDIRECT = require('./browserRedirect.png');
 const EMPTY_WALLET_CONNECT_SESSIONS = require('./emptyWalletConnectSessions.png');
 const ACTIVATE_PHYSICAL_CARD = require('./activatePhysicalCard.png');
 
+// ICONS FROM S3
+const SWAP = { uri: `${S3_BUCKET_URL_ICONS}/swap.png` };
+
 const AppImages: any = {
   PLUS,
   ARROW,
@@ -294,7 +299,7 @@ const AppImages: any = {
   HISTORY_BROWSER,
   HOME_BROWSER,
   REFRESH_BROWSER,
-  Home_New,
+  HOME_NEW,
   DOWN,
   LOCK_BROWSER,
   DOWNLOAD,
@@ -337,7 +342,7 @@ const AppImages: any = {
   UP_ARROW_TRANSACTION,
   LOADING_IMAGE,
   BROWS_MORE,
-  Star_Outline,
+  STAR_OUTLINE,
   MOVE_FUND_BG,
   MOVE_FUNDS,
   APP_UNSEL,
@@ -560,6 +565,7 @@ const AppImages: any = {
   BROWSER_REDIRECT,
   BULB,
   EMPTY_WALLET_CONNECT_SESSIONS,
-  ACTIVATE_PHYSICAL_CARD
+  ACTIVATE_PHYSICAL_CARD,
+  SWAP
 };
 export default AppImages;
