@@ -98,6 +98,7 @@ export async function getPayloadParams (payload: any, gasDetail: GasPriceDetail,
     totalDollar = parseFloat((totalEth * nativeTokenPrice).toFixed(2));
   }
   const paymodalParams = {
+    chainIdNumber: chain.chainIdNumber,
     gasFeeDollar,
     gasFeeETH: totalGasFeeInGwei.toFixed(6),
     networkName: chain.name,
@@ -173,6 +174,7 @@ export function estimateGas (payload, webviewRef, hdWalletContext, selectedChain
         totalDollar = parseFloat((totalEth * nativeTokenPrice).toFixed(2));
       }
       const paymodalParams = {
+        chainIdNumber: selectedChain.chainIdNumber,
         gasFeeDollar,
         gasFeeETH: totalGasFeeInGwei.toFixed(6),
         networkName: selectedChain.name,

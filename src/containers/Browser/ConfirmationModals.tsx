@@ -1,10 +1,11 @@
 import React, { useContext } from 'react';
-import BottomConfirm from '../../components/BottomConfirm';
 import BottomConfirmCosmos from '../../components/BottomConfirmCosmos';
 import BottomModal from '../../components/BottomModal';
 import { ChooseChainModal } from '../../components/ChooseChainModal';
 import PushModal from '../../components/PushModal';
 import { BrowserModal, ModalContext } from '../../reducers/modalReducer';
+import SigningModal from '../../components/v2/walletConnectV2Views/SigningModal';
+import { SigningModalPayloadFrom } from '../../constants/enum';
 
 export default function ConfirmationModals () {
   const Cxt = useContext(ModalContext);
@@ -46,15 +47,10 @@ export default function ConfirmationModals () {
           pmPayload?.resolve(false);
         }}
       />}
-      {sdtmVisible && <BottomConfirm
+      {sdtmVisible && <SigningModal
+        payloadFrom={SigningModalPayloadFrom.BROWSER}
         isModalVisible={sdtmVisible}
-        modalParams={sdtmPayload?.params}
-        onPayPress={() => {
-          sdtmPayload?.resolve(true);
-        }}
-        onCancelPress={() => {
-          sdtmPayload?.resolve(false);
-        }}
+        modalPayload={sdtmPayload}
       />}
       {stCosmosVisible && <BottomConfirmCosmos
         isModalVisible={true}

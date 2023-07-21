@@ -186,3 +186,16 @@ export enum SignMessageValidationType {
 export enum MessageType {
   ETH_SEND_TRANSACTION,
 }
+
+export enum DecodedResponseTypes {
+  SEND = 'type_send',
+  CALL = 'type_call',
+  APPROVE = 'type_token_approval',
+  REVOKE = 'type_cancel_token_approval',
+  UNKNOWN = 'Unknown',
+}
+
+export enum SigningModalPayloadFrom {
+  BROWSER = 'BROWSER',
+  WALLETCONNECT = 'WALLETCONNECT'
+}

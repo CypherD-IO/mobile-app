@@ -493,7 +493,12 @@ export const generateRandomInt = (min: number, max: number) => {
 };
 
 export const formatAmount = (amount: string | number) => {
-  return new Intl.NumberFormat('en-US', {
-    maximumSignificantDigits: 4
-  }).format(Number(amount));
+  if (Number(amount) < 1) {
+    return new Intl.NumberFormat('en-US', {
+      maximumSignificantDigits: 4
+    }).format(Number(amount));
+  } else {
+    const factor = Math.pow(10, 4);
+    return Math.floor(Number(amount) * factor) / factor;
+  }
 };

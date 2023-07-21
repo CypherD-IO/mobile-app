@@ -74,7 +74,7 @@ export function sendNativeCoin (hdWalletContext: any, portfolioState: any, web3:
   void _sendNativeCoin(hdWalletContext, portfolioState, web3, send_token_amount, currentQuoteUUID, handleTransactionResult, to_address, finalGasPrice, gasLimit, fromChain);
 }
 
-const decideGasLimitBasedOnTypeOfToAddress = (code: string, gasLimit: number): number => {
+export const decideGasLimitBasedOnTypeOfToAddress = (code: string, gasLimit: number): number => {
   if (gasLimit > 21000) {
     if (code !== '0x') {
       return 2 * gasLimit;
