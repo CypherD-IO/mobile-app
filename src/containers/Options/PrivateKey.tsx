@@ -23,7 +23,7 @@ function copyToClipboard (text: string) {
 export interface UserChain {
   id: number
   name: string
-  logo_url: string
+  logo_url: number
   chainName: string
   privateKey: string
   backendName: string
@@ -61,10 +61,10 @@ export default function PrivateKey (props) {
       selectedChain.backendName === chain.item.backendName
         ? (
         <QRCode
-          content={chain.item.privateKey}
-          codeStyle='dot'
-          logo={AppImages.QR_LOGO}
-          logoSize={60}
+        content={chain.item.privateKey}
+        codeStyle='dot'
+        logo={AppImages.QR_LOGO}
+        logoSize={60}
         />
           )
         : null
@@ -110,20 +110,33 @@ export default function PrivateKey (props) {
         animationIn={'slideInUp'}
         animationOut={'slideOutDown'}
         isClosable={true}
-      />
+        />
       <CyDView className={'flex justify-center items-center w-full'}>
         <CyDView className={'mt-[10px] bg-[#F8F8F8] rounded-[18px] mx-[20px] px-[20px] py-[15px]'}>
-          <CyDText className={'text-[15px] text-center text-[#434343] font-nunito'}>{t('PRIVATE_KEY_SUBTITLE')}</CyDText>
+          <CyDText className={'text-[15px] text-center text-[#434343]'}>{t('PRIVATE_KEY_SUBTITLE')}</CyDText>
         </CyDView>
-        <CyDView className={'flex items-center justify-center pt-[20px] w-full'}>
+        <CyDTouchView
+          className={'bg-[#E5FCFB] rounded-[36px] py-[8px] px-[20px] flex flex-row justify-between items-center w-10/12 mt-[20px] mb-[20px]'}
+          onPress={() => { setShowChainModal(true); }}
+          >
+          <CyDView className={'flex flex-row justify-start items-center w-full gap-[10px]'}>
+            <CyDView className={'flex flex-row justify-center items-center'}>
+              <CyDImage source={selectedChain.logo_url} className={'w-[22px] h-[22px] mr-[10px]'}/>
+              <CyDText className={'font-bold text-[18px]'}>{t('CHAIN') + ':'}</CyDText>
+            </CyDView>
+            <CyDText className={'text-[18px]'}>{selectedChain.name}</CyDText>
+          </CyDView>
+          <CyDImage source={AppImages.DOWN} className={'w-[10px] h-[9px]'}/>
+        </CyDTouchView>
+        <CyDView className={'flex items-center justify-center w-full'}>
             {data.map((item) => <RenderQRCode key={item.id} item={item}/>)}
           <CyDView className={'w-[85%] border-[0.5px] border-portfolioBorderColor mt-[20px]'} />
           <CyDTouchView className={'mt-[30px]'}
             onPress={() => togglePrivateKey()}
-          >
+            >
             {showPrivateKey
               ? (
-              <CyDView className={'flex flex-row justify-center items-center'}>
+                <CyDView className={'flex flex-row justify-center items-center'}>
                 <CyDText className={'text-[#1F1F1F] text-[22px] font-semibold'}>
                   {t('HIDE_PRIVATE_KEY')}
                 </CyDText>
@@ -156,17 +169,6 @@ export default function PrivateKey (props) {
         >
           <CyDImage source={AppImages.COPY} className={'absolute left-[20] w-[16px] h-[18px]'} />
           <CyDText className={'text-[#434343] text-[16px] font-extrabold'}>{t('COPY_TO_CLIPBOARD')}</CyDText>
-        </CyDTouchView>
-        <CyDTouchView
-          className={'bg-[#E5FCFB] rounded-[36px] py-[8px] px-[20px] flex flex-row justify-between items-center w-10/12 mt-[20px] mb-[20px]'}
-          onPress={() => { setShowChainModal(true); }}
-        >
-          <CyDView className={'flex flex-row items-center'}>
-            <CyDImage source={selectedChain.logo_url} className={'w-[22px] h-[22px] mr-[10px]'}/>
-            <CyDText className={'font-semibold font-nunito text-[18px]'}>{`${t('CHAIN')}: `}</CyDText>
-            <CyDText className={'font-nunito text-[18px]'}>{selectedChain.name}</CyDText>
-          </CyDView>
-          <CyDImage source={AppImages.DOWN} className={'w-[10px] h-[9px]'}/>
         </CyDTouchView>
       </CyDView>
     </CyDScrollView>
