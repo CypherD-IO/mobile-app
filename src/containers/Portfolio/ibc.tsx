@@ -493,7 +493,7 @@ export default function IBC ({ route, navigation }: { route: any, navigation: an
         type={'chain'}
       />
 
-      <CyDModalLayout setModalVisible={setShowWarningModal} isModalVisible={showWarningModal}>
+      <CyDModalLayout setModalVisible={setShowWarningModal} isModalVisible={showWarningModal} animationIn={'slideInUp'} animationOut={'slideOutDown'}>
         <CyDView className={'relative bg-white rounded-[12px] p-[24px]'}>
           <CyDTouchView onPress={() => setShowWarningModal(false)} className={'z-[50] absolute right-[16px] top-[16px]'}>
             <CyDImage source={AppImages.CLOSE_CIRCLE}/>
