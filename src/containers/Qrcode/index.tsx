@@ -175,7 +175,7 @@ export default function QRCodeGenerator (props) {
                         {!isCapturingDetails && !selectedChain.address && <CyDText className='text-[25px] text-center font-extrabold'>{selectedChain.name} {t<string>('ADDRESS_NOT_ACCESSIBLE')}</CyDText>}
                         <CyDText className={isCapturingDetails ? 'text-[18px] font-extrabold text-center mt-[20px]' : 'mt-[20px] text-[16px] font-bold text-center'}>{selectedChain?.address}</CyDText>
                   </CyDView>
-                  <CyDView className={'mt-[5] mx-[20] px-[20px] py-[5px]'}>
+                  <CyDView className={'mt-[5px] mx-[20px] px-[20px] py-[5px]'}>
                     <CyDText className={
                       'text-[15px] text-center text-[#434343] font-nunito'
                     }>

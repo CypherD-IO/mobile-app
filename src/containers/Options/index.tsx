@@ -282,7 +282,7 @@ export default function Options (props: { navigation: { goBack: () => void, popT
             {/*     logo={AppImages.WHATS_NEW} */}
             {/* ></OptionsContainer> */}
 
-            {updateModal && <CyDView className='flex-row justify-between py-[8] w-[80%] items-center border-[1px] border-[#EFEFEF] px-[18px] rounded-[8px] mb-[12px] bg-[#EFEFEF]'>
+            {updateModal && <CyDView className='flex-row justify-between py-[8px] w-[80%] items-center border-[1px] border-[#EFEFEF] px-[18px] rounded-[8px] mb-[12px] bg-[#EFEFEF]'>
               <CyDText className='text-[14px] font-bold '>{t<string>('NEW_VERSION_AVAILABLE')}</CyDText>
 
               <CyDTouchView className='py-[4px] px-[6px] bg-appColor/[0.6] border-[1px] border-appColor rounded-[4px] '
@@ -308,7 +308,7 @@ export default function Options (props: { navigation: { goBack: () => void, popT
 
             </CyDView>}
 
-            <CyDTouchView className={'flex items-center justify-center h-[50] w-full'}
+            <CyDTouchView className={'flex items-center justify-center h-[50px] w-full'}
               onPress={async () => {
                 setClickCount(clickCount + 1);
                 if (clickCount === 4) {

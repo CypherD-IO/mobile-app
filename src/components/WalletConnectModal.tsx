@@ -152,7 +152,7 @@ export default function WalletConnectModal (props) {
               <CyDTouchView onPress={() => { setChooseChain(false); }} className={'z-[50]'}>
                 <CyDImage source={AppImages.CLOSE} className={' w-[22px] h-[22px] z-[50] absolute right-[0px] '} />
               </CyDTouchView>
-              <CyDText className={' mt-[10] font-bold text-[22px] text-center '}>{t('CHOOSE_CHAIN')}</CyDText>
+              <CyDText className={' mt-[10px] font-bold text-[22px] text-center '}>{t('CHOOSE_CHAIN')}</CyDText>
                 <FlatList
                       data={[...EVM_CHAINS, CHAIN_EVMOS]}
                       renderItem={(item) => renderChainListItem(item)}

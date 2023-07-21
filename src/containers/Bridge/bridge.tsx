@@ -2343,7 +2343,7 @@ export default function Bridge (props: {navigation?: any, route?: any}) {
           {showDropDown && (
             <CyDView className="mt-[20px]">
               <CyDView
-                className="bg-white border-[0.2px] rounded-[20px] border-sepratorColor mx-[20] px-[20] py-[10px] shadow shadow-sepratorColor"
+                className="bg-white border-[0.2px] rounded-[20px] border-sepratorColor mx-[20px] px-[20px] py-[10px] shadow shadow-sepratorColor"
                 style={styles.shadowProp}
               >
                 <CyDText
@@ -2429,7 +2429,7 @@ export default function Bridge (props: {navigation?: any, route?: any}) {
 
               <CyDView
                 className={
-                  'my-[16] bg-white rounded-[20px] border-sepratorColor border-[0.2px] mx-[20] px-[20] pt-[10px] shadow'
+                  'my-[16px] bg-white rounded-[20px] border-sepratorColor border-[0.2px] mx-[20px] px-[20px] pt-[10px] shadow'
                 }
                 style={styles.shadowProp}
               >
@@ -2472,7 +2472,7 @@ export default function Bridge (props: {navigation?: any, route?: any}) {
 
                 <CyDView
                   className={
-                    'bg-secondaryBackgroundColor mb-[16] mt-[5px] border-[1px] border-[#EBEBEB] rounded-[12px]'
+                    'bg-secondaryBackgroundColor mb-[16px] mt-[5px] border-[1px] border-[#EBEBEB] rounded-[12px]'
                   }
                 >
                   <CyDTouchView
@@ -2601,7 +2601,7 @@ export default function Bridge (props: {navigation?: any, route?: any}) {
           )}
 
           <CyDTouchView
-            className={clsx('pb-[45px] bg-[#F7F8FE] rounded-[20px] mx-[20]', {
+            className={clsx('pb-[45px] bg-[#F7F8FE] rounded-[20px] mx-[20px]', {
               'rounded-b-[20px]': showDropDown,
               'rounded-[20px]': !showDropDown
             })}

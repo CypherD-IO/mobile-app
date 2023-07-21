@@ -402,7 +402,7 @@ export default function Portfolio (props: { navigation: any | { navigate: (arg0:
 
   const RenderHeader = () => {
     return (
-      <CyDView className={'flex flex-row h-[50px] w-[100%] px-[20] justify-between items-center'}>
+      <CyDView className={'flex flex-row h-[50px] w-[100%] px-[20px] justify-between items-center'}>
         <CyDTouchView onPress={() => { setChooseChain(true); }} className={'h-[40px] w-[56px] bg-chainColor mt-[10px] px-[8px] py-[4px] rounded-[18px] flex flex-row items-center justify-between'}>
               <CyDFastImage className={'h-[22px] w-[22px]'} source={portfolioState.statePortfolio.selectedChain.logo_url} />
               <CyDFastImage className={'h-[8px] w-[8px]'} source={AppImages.DOWN} />
@@ -594,7 +594,7 @@ export const RenderPortfolioBalance = (props: {verifyCoinChecked: boolean, getAl
     hdWallet.dispatch({ type: 'TOGGLE_BALANCE_VISIBILITY', value: { hideBalance: !hideBalance } });
   };
   return (
-    <CyDImageBackground className='h-[25%] max-h-[170px] px-[20] w-[100%]' source={{ uri: portfolioBackgroundImage + '?' + String(new Date().getDay()) }} resizeMode={'cover'}>
+    <CyDImageBackground className='h-[25%] max-h-[170px] px-[20px] w-[100%]' source={{ uri: portfolioBackgroundImage + '?' + String(new Date().getDay()) }} resizeMode={'cover'}>
       <CyDView className={'mt-[55px] justify-center items-start'}>
         {getCurrentChainHoldings(
           portfolioState.statePortfolio.tokenPortfolio,

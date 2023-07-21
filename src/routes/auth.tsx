@@ -857,7 +857,7 @@ export function DebitCardStackScreen ({ navigation }) {
               }}
             >
               <CyDImage
-                className={'h-[20] w-[20]'}
+                className={'h-[20px] w-[20px]'}
                 resizeMode="cover"
                 source={AppImages.BACK}
               />

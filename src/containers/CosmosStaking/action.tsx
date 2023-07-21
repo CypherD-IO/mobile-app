@@ -206,7 +206,7 @@ export default function CosmosAction ({ route, navigation }) {
           <CyDTouchView onPress={() => setSignModalVisible(false)} className={'z-[50]'}>
             <CyDImage source={AppImages.CLOSE} className={' w-[22px] h-[22px] z-[50] absolute right-[0px] '} />
           </CyDTouchView>
-          <CyDText className={'mt-[10] font-bold text-center text-[22px]'}>
+          <CyDText className={'mt-[10px] font-bold text-center text-[22px]'}>
             {`${from} ${from === CosmosActionType.DELEGATE ? 'to' : 'from'} ${validatorData.name}`}
           </CyDText>
 
@@ -242,7 +242,7 @@ export default function CosmosAction ({ route, navigation }) {
       <CyDView className={'flex flex-row items-center justify-start mt-[12px]'}>
         {/* <CyDImage source={AppImages.COINS} className={'w-[24px] h-[24px]'}/> */}
         <CyDImage source={{
-          uri: tokenData.logoUrl,
+          uri: tokenData.logoUrl
         }} className={'w-[20px] h-[20px]'}/>
 
         <CyDText className={'ml-[12px] text-[14px] font-nunito text-primaryTextColor font-medium text-center'}>{t('Voting Power of ')}</CyDText>
@@ -308,7 +308,6 @@ export default function CosmosAction ({ route, navigation }) {
       {from === CosmosActionType.DELEGATE && <CyDText
         className={'mt-[4px] font-nunito text-[12px] font-medium text-primaryTextColor'}>{`${t('0.2')} ${tokenData.name}${t(' reserved on MAX')}`}</CyDText>
       }
-
 
       <CyDText className={'font-nunito text-[16px] my-[10px] text-primaryTextColor'}>{t('Memo')}</CyDText>
       <CyDView className={'bg-inputBackgroundColor p-[10px] h-[60px] rounded-[8px] flex flex-row items-center'}>

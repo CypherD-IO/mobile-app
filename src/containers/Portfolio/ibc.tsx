@@ -714,7 +714,7 @@ export default function IBC ({ route, navigation }: { route: any, navigation: an
         <CyDView>
           <CyDView
             className={
-              'bg-[#F7F8FE] mx-[20] border-[1px] border-[#EBEBEB] rounded-[16px] mt-[16px]'
+              'bg-[#F7F8FE] mx-[20px] border-[1px] border-[#EBEBEB] rounded-[16px] mt-[16px]'
             }
           >
             <CyDView className={'h-[60px] flex flex-row w-full'}>
@@ -759,7 +759,7 @@ export default function IBC ({ route, navigation }: { route: any, navigation: an
 
           <CyDView
             className={
-              'bg-[#F7F8FE] mx-[20] border-[1px] border-[#EBEBEB] rounded-[16px] mt-[16px]'
+              'bg-[#F7F8FE] mx-[20px] border-[1px] border-[#EBEBEB] rounded-[16px] mt-[16px]'
             }
           >
             <CyDView className={'h-[60px] flex flex-row w-full'}>
@@ -804,7 +804,7 @@ export default function IBC ({ route, navigation }: { route: any, navigation: an
 
           <CyDTouchView
             className={
-              'bg-[#F7F8FE] mx-[20] my-[16px] border-[1px] border-[#EBEBEB] rounded-[16px]'
+              'bg-[#F7F8FE] mx-[20px] my-[16px] border-[1px] border-[#EBEBEB] rounded-[16px]'
             }
             onPress={() => setShowChain(true)}
           >
@@ -849,7 +849,7 @@ export default function IBC ({ route, navigation }: { route: any, navigation: an
             </CyDView>
           </CyDTouchView>
 
-          <CyDView className={'bg-[#F7F8FE] mx-[20] border-[1px] border-[#EBEBEB] rounded-[16px] pl-[16px] pr-[10px] py-[8px] h-[60px] flex flex-row justify-center items-center'}>
+          <CyDView className={'bg-[#F7F8FE] mx-[20px] border-[1px] border-[#EBEBEB] rounded-[16px] pl-[16px] pr-[10px] py-[8px] h-[60px] flex flex-row justify-center items-center'}>
             <CyDTextInput
               className={clsx(
                 'font-medium text-left text-black font-nunito text-[16px] w-[90%] mr-[10px]'
@@ -875,7 +875,7 @@ export default function IBC ({ route, navigation }: { route: any, navigation: an
             <CyDText className={'underline font-normal text-[12px] text-black'}>{'Use My Address'}</CyDText>
           </CyDTouchView>
 
-          <CyDView className={'bg-[#F7F8FE] mx-[20] border-[1px] border-[#EBEBEB] rounded-[16px] pl-[16px] pr-[10px] py-[8px] h-[60px] flex flex-row justify-center items-center'}>
+          <CyDView className={'bg-[#F7F8FE] mx-[20px] border-[1px] border-[#EBEBEB] rounded-[16px] pl-[16px] pr-[10px] py-[8px] h-[60px] flex flex-row justify-center items-center'}>
             <CyDTextInput
               className={clsx(
                 'font-medium text-left text-black font-nunito text-[16px] w-[90%] mr-[10px]'
@@ -977,7 +977,7 @@ export default function IBC ({ route, navigation }: { route: any, navigation: an
       )}
 
       <CyDTouchView
-        className={clsx(' mt-[25px] pb-[30px] bg-[#F7F8FE] mx-[20] rounded-[20px]')}
+        className={clsx(' mt-[25px] pb-[30px] bg-[#F7F8FE] mx-[20px] rounded-[20px]')}
         onPress={() => {
           amount === '0.00' ? setAmount('') : setAmount(amount);
           setShowMerged(true);

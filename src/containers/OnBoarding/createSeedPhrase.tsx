@@ -288,7 +288,7 @@ function CreateSeedPhrase ({ route, navigation }) {
               <CyDTouchView onPress={() => { setTipsVisible(false); }} className={'z-[50]'}>
                 <CyDImage source={AppImages.CLOSE} className={' w-[22px] h-[22px] z-[50] absolute right-[0px] '} />
               </CyDTouchView>
-              <CyDText className={' mt-[10] font-bold text-[22px] text-center '}>{t('HOW_TO_SECURE')}</CyDText>
+              <CyDText className={' mt-[10px] font-bold text-[22px] text-center '}>{t('HOW_TO_SECURE')}</CyDText>
               <CyDView className={'mx-[20px] my-[10px]'}>
                 {
                   waysToSecureSeedPhrase.map(item => {

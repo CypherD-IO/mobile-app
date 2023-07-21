@@ -17,7 +17,7 @@ export default function BottomSendToConfirm (props) {
           <CyDTouchView onPress={() => onCancelPress()} className={'z-[50]'}>
             <CyDImage source={AppImages.CLOSE} className={' w-[22px] h-[22px] z-[50] absolute right-[0px] '} />
           </CyDTouchView>
-          <CyDText className={'mt-[10] font-bold text-center text-[22px]'}>
+          <CyDText className={'mt-[10px] font-bold text-center text-[22px]'}>
                 {t('SEND')}
           </CyDText>
           <CyDView className={'p-[10px]'}>

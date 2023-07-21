@@ -128,7 +128,7 @@ export default function Login (props) {
       <CyDTouchableWithoutFeedback onPress={Keyboard.dismiss}>
       <CyDKeyboardAvoidingView behavior={Platform.OS === 'ios' ? 'padding' : 'height'}>
 
-          <CyDText className={'text-[#434343] text-[16px] mt-[30] text-center px-[20]'}>{t('IMPORT_WALLET_SUB_MSG')}</CyDText>
+          <CyDText className={'text-[#434343] text-[16px] mt-[30px] text-center px-[20px]'}>{t('IMPORT_WALLET_SUB_MSG')}</CyDText>
           <CyDView className={'flex flex-row justify-center px-[20px]'}>
               <CyDTextInput
                 placeholder={t('ENTER_KEY_PLACEHOLDER')}
@@ -153,7 +153,7 @@ export default function Login (props) {
           </CyDView>
           <CyDTouchView sentry-label='import-wallet-button'
             className={
-              'bg-[#FFDE59] flex flex-row items-center justify-center mt-[40px] h-[60px] w-11/12 rounded-[12px] mb-[50] mx-auto'
+              'bg-[#FFDE59] flex flex-row items-center justify-center mt-[40px] h-[60px] w-11/12 rounded-[12px] mb-[50px] mx-auto'
             }
             onPress={async () => await submitImportWallet()}
           >

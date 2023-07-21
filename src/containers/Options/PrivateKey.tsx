@@ -112,12 +112,12 @@ export default function PrivateKey (props) {
         isClosable={true}
       />
       <CyDView className={'flex justify-center items-center w-full'}>
-        <CyDView className={'mt-[10] bg-[#F8F8F8] rounded-[18px] mx-[20] px-[20px] py-[15px]'}>
+        <CyDView className={'mt-[10px] bg-[#F8F8F8] rounded-[18px] mx-[20px] px-[20px] py-[15px]'}>
           <CyDText className={'text-[15px] text-center text-[#434343] font-nunito'}>{t('PRIVATE_KEY_SUBTITLE')}</CyDText>
         </CyDView>
-        <CyDView className={'flex items-center justify-center pt-[20] w-full'}>
+        <CyDView className={'flex items-center justify-center pt-[20px] w-full'}>
             {data.map((item) => <RenderQRCode key={item.id} item={item}/>)}
-          <CyDView className={'w-[85%] border-[0.5px] border-portfolioBorderColor mt-[20]'} />
+          <CyDView className={'w-[85%] border-[0.5px] border-portfolioBorderColor mt-[20px]'} />
           <CyDTouchView className={'mt-[30px]'}
             onPress={() => togglePrivateKey()}
           >

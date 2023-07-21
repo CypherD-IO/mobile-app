@@ -901,7 +901,7 @@ function TokenOverview ({ route, navigation }) {
                 style={{ width: 34 }}
               />
 
-              <CyDText className={'mt-[10] font-bold text-[22px]'}>
+              <CyDText className={'mt-[10px] font-bold text-[22px]'}>
                 {t<string>('HAVE_OPTION_TO_STAKE_REWARDS')}
               </CyDText>
               <CyDView className={'flex flex-row mt-[40px]'}>
@@ -942,7 +942,7 @@ function TokenOverview ({ route, navigation }) {
             <CyDTouchView onPress={() => { setSignModalVisible(false); }} className={'z-[50]'}>
               <CyDImage source={AppImages.CLOSE} className={' w-[22px] h-[22px] z-[50] absolute right-[0px] '} />
             </CyDTouchView>
-            <CyDText className={' mt-[10] font-bold text-[22px] text-center '}>{t<string>('REWARD')}</CyDText>
+            <CyDText className={' mt-[10px] font-bold text-[22px] text-center '}>{t<string>('REWARD')}</CyDText>
             <CyDView className={'flex flex-row mt-[40px]'}>
               <CyDImage source={AppImages.MONEY_BAG}/>
               <CyDView className={' flex flex-row mt-[3px]'}>
@@ -975,7 +975,7 @@ function TokenOverview ({ route, navigation }) {
             <CyDTouchView onPress={() => { setReStakeModalVisible(false); }} className={'z-[50]'}>
               <CyDImage source={AppImages.CLOSE} className={' w-[22px] h-[22px] z-[50] absolute right-[0px] top-[-10px] '} />
             </CyDTouchView>
-            <CyDText className={' mt-[10] font-bold text-[22px] text-center '}>{t<string>('RESTAKE_INIT_CAPS')} to {`${validator.name}`}</CyDText>
+            <CyDText className={' mt-[10px] font-bold text-[22px] text-center '}>{t<string>('RESTAKE_INIT_CAPS')} to {`${validator.name}`}</CyDText>
             <CyDView className={'flex flex-row mt-[40px]'}>
               <CyDImage source={AppImages[tokenData.chainDetails.backendName + '_LOGO']} className={'h-[20px] w-[20px]'}/>
               <CyDView className={' flex flex-row'}>
