@@ -705,7 +705,10 @@ const resources = {
       CARD_PIN_SET_DESCRIPTION: 'Use your card with the new pin',
       CARD_SET_PIN_TO_USE_CARD: 'This pin will be used while making transactions with your card',
       INSUFFICIENT_BALANCE_CARD: 'Amount that your trying to load is higher than your actual balance',
-      MAYBE_LATER: 'Maybe later'
+      MAYBE_LATER: 'Maybe later',
+      HOME: 'Home',
+      HISTORY: 'History',
+      BROWSER: 'Browser'
     }
   }
 };
