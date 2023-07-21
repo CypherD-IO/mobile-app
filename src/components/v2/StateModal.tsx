@@ -126,7 +126,7 @@ const StateModal: React.FC<State> = (store: State) => {
             bG={Colors.appColor}
             mT={10}
             vC={Colors.appColor}
-            text={store.modalButtonText?.success}
+            text={store.modalButtonText?.success ?? t('YES')}
             isBorder={false}
             onPress={() => {
               onSuccess();
@@ -139,7 +139,7 @@ const StateModal: React.FC<State> = (store: State) => {
             bW={1.5}
             mT={15}
             vC={Colors.appColor}
-            text={store.modalButtonText?.failure}
+            text={store.modalButtonText?.failure ?? t('NO')}
             isBorder={true}
             onPress={() => {
               onFailure();
