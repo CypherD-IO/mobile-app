@@ -368,9 +368,10 @@ export default function SendTo (props: { navigation?: any, route?: any }) {
 
       if (willPrompt) {
         showModal('state', {
-          type: 'prompt',
+          type: 'custom',
           title: t('TRANSACTION_SUCCESS'),
           modalImage: AppImages.CYPHER_SUCCESS,
+          modalButtonText: { success: t('YES'), failure: t('MAYBE_LATER').toUpperCase() },
           description: renderSuccessTransaction(message, willPrompt),
           onSuccess: onModalHide,
           onFailure: onModalHideWithNo
@@ -496,9 +497,10 @@ export default function SendTo (props: { navigation?: any, route?: any }) {
 
     if (willPrompt) {
       showModal('state', {
-        type: 'prompt',
+        type: 'custom',
         title: t('TRANSACTION_SUCCESS'),
         modalImage: AppImages.CYPHER_SUCCESS,
+        modalButtonText: { success: t('YES'), failure: t('MAYBE_LATER').toUpperCase() },
         description: renderSuccessTransaction(result.transactionHash, willPrompt),
         onSuccess: onModalHide,
         onFailure: onModalHideWithNo
