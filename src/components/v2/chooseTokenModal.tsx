@@ -82,7 +82,7 @@ export default function ChooseTokenModal (props: TokenModal) {
           <CyDView>
             <CyDImage
               source={{ uri: logoUrl }}
-              className={'h-[38px] w-[38px] rounded-[20px] mr-[10px] mv-[10]'}
+              className={'h-[38px] w-[38px] rounded-[20px] mr-[10px]'}
             />
           </CyDView>
           <CyDView className='flex flex-1 flex-col justify-center'>
@@ -94,7 +94,7 @@ export default function ChooseTokenModal (props: TokenModal) {
               <CyDView className={'flex flex-row items-center align-center mt-[5px]'}>
                 <CyDFastImage
                   source={logo_url }
-                  className={'h-[15px] w-[15px] rounded-[7px] mr-[2px] mv-[10]'}
+                  className={'h-[15px] w-[15px] rounded-[7px] mr-[2px]'}
                 />
                 <CyDText className={'text-[12px]'}>{backendName.toUpperCase()}</CyDText>
               </CyDView>
@@ -121,7 +121,7 @@ export default function ChooseTokenModal (props: TokenModal) {
           <CyDView>
             <CyDImage
               source={{ uri: logo }}
-              className={'h-[30px] w-[30px] rounded-[7px] ml-[10] mr-[4px] mv-[10]'}
+              className={'h-[30px] w-[30px] rounded-[7px] ml-[10px] mr-[4px]'}
             />
           </CyDView>
           <CyDView>

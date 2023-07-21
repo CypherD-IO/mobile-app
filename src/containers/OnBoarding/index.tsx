@@ -163,7 +163,7 @@ export default function OnBoarding ({ navigation }) {
           {/* <CyDTouchView onPress={() => setIsModalVisible(false)} className={'z-[50]'}>
             <CyDImage source={AppImages.CLOSE} className={' w-[22px] h-[22px] z-[50] absolute right-[0px] '} />
           </CyDTouchView> */}
-          <CyDText className={'my-[14] font-black text-center text-[22px]'}>
+          <CyDText className={'my-[14px] font-black text-center text-[22px]'}>
             {t<string>('CREATE_SEED_PHRASE_TYPE_TITLE')}
           </CyDText>
           <CyDView>

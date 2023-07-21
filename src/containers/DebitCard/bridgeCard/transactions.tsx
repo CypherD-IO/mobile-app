@@ -383,7 +383,7 @@ export default function TransactionsScreen (props: { navigation: any, currentCar
 
   return (
 
-    <CyDView className={'h-full bg-white px-[10px] mt-[3px] rounded-t-[50]'}>
+    <CyDView className={'h-full bg-white px-[10px] mt-[3px] rounded-t-[50px]'}>
       <TransactionFilter/>
       {/* <TabView
         renderTabBar={renderTabBar}

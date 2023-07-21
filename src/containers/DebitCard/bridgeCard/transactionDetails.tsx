@@ -78,7 +78,7 @@ export default function TransactionDetails ({ navigation, route }: {navigation: 
           <CyDImage className={'h-[20px] w-[20px] mr-[5px]'} source={item.icon} resizeMode={'contain'}></CyDImage>
           <CyDText className={'text-[18px] font-extrabold'}>{item.title}</CyDText>
         </CyDView>
-        <CyDView className={'mt-[12]'}>
+        <CyDView className={'mt-[12px]'}>
           {item.data.map((detailItem, index) => {
             return (
               <DetailItem item={detailItem} key={index}/>

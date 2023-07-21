@@ -99,32 +99,28 @@ export default function CosmosValidators ({ route, navigation }) {
     }
   }, [filterText, index]);
 
-
-
-
   const renderItem = ({ item }: { item: any}) => (
     <Item item={item} />
   );
 
-
   const memoizedValue = useMemo(() => renderItem, [filterList, index]);
 
-  useEffect(()=>{
-  navigation.setOptions({
-    headerTitle: () => (
+  useEffect(() => {
+    navigation.setOptions({
+      headerTitle: () => (
       <CyDView className={'-mt-[10px]'}>
       {from === CosmosActionType.STAKE && <SwitchView
         title1={t('Staked')}
         title2={t('All Validators')}
         index={index}
-        setIndexChange={(index:any) => {
+        setIndexChange={(index: any) => {
           setIndex(index);
         }}
       />}
     </CyDView>
-    )
-  });
-},[index,navigation])
+      )
+    });
+  }, [index, navigation]);
 
   return (
     <CyDView className={'bg-white h-full w-full'}>
@@ -133,7 +129,7 @@ export default function CosmosValidators ({ route, navigation }) {
           <CyDTouchView onPress={() => setShowManage(false)} className={'z-[50]'}>
             <CyDImage source={AppImages.CLOSE} className={' w-[22px] h-[22px] z-[50] absolute right-[0px] '} />
           </CyDTouchView>
-          <CyDText className={'mt-[10] font-extrabold text-center text-[22px]'}>
+          <CyDText className={'mt-[10px] font-extrabold text-center text-[22px]'}>
                 {validatorData.name}
           </CyDText>
 
@@ -164,7 +160,7 @@ export default function CosmosValidators ({ route, navigation }) {
               style={'py-[5%] mt-[30px]'}
               loaderStyle={{ height: 30 }}
             />}
-            <Button  onPress={() => {
+            <Button onPress={() => {
               setShowManage(false);
               navigation.navigate(screenTitle.COSMOS_ACTION, {
                 tokenData,
@@ -191,8 +187,6 @@ export default function CosmosValidators ({ route, navigation }) {
               />}
         </CyDView>
       </CyDModalLayout>
-
-
 
       <CyDView style={styles.SectionStyle} className='drop-shadow-md'>
         <CyDImage source={AppImages.SEARCH_BROWSER} style={styles.ImageStyle}></CyDImage>
@@ -229,23 +223,23 @@ const styles = StyleSheet.create({
     borderColor: '#7D7F7C',
     height: 40,
     borderRadius: 20,
-    margin: 10,
+    margin: 10
 
   },
   ImageStyle: {
-      padding: 10,
-      margin: 5,
-      height: 25,
-      width: 25,
-      resizeMode: 'stretch',
-      alignItems: 'center',
+    padding: 10,
+    margin: 5,
+    height: 25,
+    width: 25,
+    resizeMode: 'stretch',
+    alignItems: 'center'
   },
-  input:{
+  input: {
     flex: 1,
     paddingTop: 10,
     paddingRight: 10,
     paddingBottom: 10,
-    paddingLeft: 0,
+    paddingLeft: 0
 
   }
 });

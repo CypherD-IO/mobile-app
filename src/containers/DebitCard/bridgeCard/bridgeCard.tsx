@@ -200,7 +200,7 @@ export function Transactions (props: any) {
     <>
       {startHeight
         ? <Sheet minHeight={startHeight - (hasBothProviders ? 325 : 273)} expandedHeight={maxHeight} heightChanged={(val: string) => { if (val === 'minimised') { setSheetHeight(minHeight); } else { setSheetHeight(maxHeight); } }}>
-        {/* <CyDView className={'h-full bg-white px-[10px] pt-[20px] mt-[5px] rounded-t-[50]'}>
+        {/* <CyDView className={'h-full bg-white px-[10px] pt-[20px] mt-[5px] rounded-t-[50px]'}>
           <TabView
             renderTabBar={renderTabBar}
             navigationState={{ index, routes }}
