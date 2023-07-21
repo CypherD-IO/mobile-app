@@ -2,87 +2,90 @@ import React from 'react';
 import { DecodedResponseTypes } from '../../../../constants/enum';
 import { Chain } from '../../../../constants/server';
 import { intercomAnalyticsLog } from '../../../../containers/utilities/analyticsUtility';
-import { IDAppInfo, ISendTxnData, IExtendedDecodedTxnResponse, ISwapTxnData, IApproveTokenData } from '../../../../models/signingModalData.interface';
+import { IDAppInfo, ISendTxnData, IExtendedDecodedTxnResponse, ISwapTxnData, IApproveTokenData, IEvmosTxnMessage } from '../../../../models/signingModalData.interface';
 import { formatAmount, getMaskedAddress } from '../../../../core/util';
 import { CyDFastImage, CyDText, CyDView } from '../../../../styles/tailwindStyles';
 import { Divider, RenderDAPPInfo, RenderMethod, RenderNetwork } from './SigningModalComponents';
 import { t } from 'i18next';
 import AppImages from '../../../../../assets/images/appImages';
 
-export const RenderTransactionSignModal = ({ dAppInfo, chain, method, decodedABIData, nativeSendTxnData }: { dAppInfo: IDAppInfo | undefined, chain: Chain, method: string, decodedABIData: IExtendedDecodedTxnResponse | null, nativeSendTxnData: ISendTxnData | null }) => {
+export const RenderTransactionSignModal = ({ dAppInfo, chain, method, data, nativeSendTxnData }: { dAppInfo: IDAppInfo | undefined, chain: Chain, method: string, data: IExtendedDecodedTxnResponse | IEvmosTxnMessage | null, nativeSendTxnData: ISendTxnData | null }) => {
   if (!nativeSendTxnData) {
-    switch (decodedABIData?.type) {
+    if (data && 'to' in data) { // Render fallback modal given that it is a EvmosTxn
+      return <RenderDefaultSignModal dAppInfo={dAppInfo} chain={chain} method={method} data={data} />;
+    }
+    switch (data?.type) {
       case DecodedResponseTypes.SEND : {
         void intercomAnalyticsLog('eth_sendTransaction_SEND');
-        if (decodedABIData?.gasPrice && decodedABIData.native_token.amount && decodedABIData.type_send) {
-          const gasPriceInWei = decodedABIData?.gasPrice * 10 ** 9;
+        if (data?.gasPrice && data.native_token.amount && data.type_send) {
+          const gasPriceInWei = data?.gasPrice * 10 ** 9;
           const gasInTokens = (
-            decodedABIData?.gas.gas_limit *
+            data?.gas.gas_limit *
             gasPriceInWei *
-            10 ** -decodedABIData?.native_token.decimals
+            10 ** -data?.native_token.decimals
           );
-          const gasAndUSDAppx = `${formatAmount(gasInTokens)} ${decodedABIData?.native_token.symbol} ≈ $${formatAmount(gasInTokens * decodedABIData?.native_token.price)} USD`;
-          const availableBalance = `${formatAmount(decodedABIData.native_token.amount)} ${decodedABIData.native_token.symbol}`;
+          const gasAndUSDAppx = `${formatAmount(gasInTokens)} ${data?.native_token.symbol} ≈ $${formatAmount(gasInTokens * data?.native_token.price)} USD`;
+          const availableBalance = `${formatAmount(data.native_token.amount)} ${data.native_token.symbol}`;
           const sendTxnData = {
             chainLogo: chain.logo_url,
             token: {
-              logo: decodedABIData.type_send.token.logo_url,
-              name: decodedABIData.type_send.token.name,
-              amount: decodedABIData.type_send.token_amount,
-              valueInUSD: decodedABIData.type_send.token_amount * decodedABIData?.type_send?.token.price
+              logo: data.type_send.token.logo_url,
+              name: data.type_send.token.name,
+              amount: data.type_send.token_amount,
+              valueInUSD: data.type_send.token_amount * data?.type_send?.token.price
             },
-            toAddress: decodedABIData.type_send.to_addr,
-            fromAddress: decodedABIData.from_addr,
+            toAddress: data.type_send.to_addr,
+            fromAddress: data.from_addr,
             gasAndUSDAppx,
             availableBalance
           };
           return <RenderSendTransactionSignModal dAppInfo={dAppInfo} sendTxnData={sendTxnData} />;
         } else {
-          return <RenderDefaultSignModal dAppInfo={dAppInfo} chain={chain} method={method} data={decodedABIData} />;
+          return <RenderDefaultSignModal dAppInfo={dAppInfo} chain={chain} method={method} data={data} />;
         }
       }
       case DecodedResponseTypes.APPROVE : {
         void intercomAnalyticsLog('eth_sendTransaction_APPROVE');
-        if (decodedABIData?.type_token_approval && decodedABIData.gasPrice && decodedABIData.native_token.amount) {
-          const approvalToken = decodedABIData?.type_token_approval?.token;
-          const gasPriceInWei = decodedABIData?.gasPrice * 10 ** 9;
+        if (data?.type_token_approval && data.gasPrice && data.native_token.amount) {
+          const approvalToken = data?.type_token_approval?.token;
+          const gasPriceInWei = data?.gasPrice * 10 ** 9;
           const gasInTokens = (
-            decodedABIData?.gas.gas_limit *
+            data?.gas.gas_limit *
             gasPriceInWei *
-            10 ** -decodedABIData?.native_token.decimals
+            10 ** -data?.native_token.decimals
           );
           const approveTokenData: IApproveTokenData = {
             approvalTokenLogo: approvalToken.logo_url,
             chainLogo: chain.logo_url,
             amount: {
-              inTokensWithSymbol: `${decodedABIData.type_token_approval.token_amount} ${decodedABIData.type_token_approval.token_symbol}`,
-              inUSDWithSymbol: `$${(decodedABIData.type_token_approval.token_amount * approvalToken.price).toLocaleString()}`
+              inTokensWithSymbol: `${data.type_token_approval.token_amount} ${data.type_token_approval.token_symbol}`,
+              inUSDWithSymbol: `$${(data.type_token_approval.token_amount * approvalToken.price).toLocaleString()}`
             },
             spender: {
-              address: getMaskedAddress(decodedABIData.type_token_approval.spender, 10),
+              address: getMaskedAddress(data.type_token_approval.spender, 10),
               protocol: {
-                logo: decodedABIData.type_token_approval.spender_protocol_logo_url,
-                name: decodedABIData.type_token_approval.spender_protocol_name
+                logo: data.type_token_approval.spender_protocol_logo_url,
+                name: data.type_token_approval.spender_protocol_name
               }
             },
-            gasWithUSDAppx: `${formatAmount(gasInTokens)} ${decodedABIData?.native_token.symbol} ≈ $${formatAmount(gasInTokens * decodedABIData?.native_token.price)} USD`,
-            availableBalance: `${formatAmount(decodedABIData.native_token.amount)} ${decodedABIData.native_token.symbol}`
+            gasWithUSDAppx: `${formatAmount(gasInTokens)} ${data?.native_token.symbol} ≈ $${formatAmount(gasInTokens * data?.native_token.price)} USD`,
+            availableBalance: `${formatAmount(data.native_token.amount)} ${data.native_token.symbol}`
           };
           return <RenderApproveTokenModal dAppInfo={dAppInfo} approveTokenData={approveTokenData} />;
         } else {
-          return <RenderDefaultSignModal dAppInfo={dAppInfo} chain={chain} method={method} data={decodedABIData} />;
+          return <RenderDefaultSignModal dAppInfo={dAppInfo} chain={chain} method={method} data={data} />;
         }
       }
       case DecodedResponseTypes.CALL : {
         void intercomAnalyticsLog('eth_sendTransaction_CALL');
-        if (decodedABIData?.gasPrice) {
-          const { send_token_list: sendTokenList, receive_token_list: receiveTokenList } = decodedABIData.balance_change;
+        if (data?.gasPrice) {
+          const { send_token_list: sendTokenList, receive_token_list: receiveTokenList } = data.balance_change;
           if (sendTokenList[0]?.amount && sendTokenList[0]?.usd_value && receiveTokenList[0]?.amount && receiveTokenList[0]?.usd_value) {
-            const gasPriceInWei = decodedABIData?.gasPrice * 10 ** 9;
+            const gasPriceInWei = data?.gasPrice * 10 ** 9;
             const gasInTokens = (
-              decodedABIData?.gas.gas_limit *
+              data?.gas.gas_limit *
               gasPriceInWei *
-              10 ** -decodedABIData?.native_token.decimals
+              10 ** -data?.native_token.decimals
             );
             const swapTxnData: ISwapTxnData = {
               sendToken: {
@@ -106,21 +109,21 @@ export const RenderTransactionSignModal = ({ dAppInfo, chain, method, decodedABI
                 inUSDWithSymbol: `${formatAmount(receiveTokenList[0].usd_value)} USD`
               },
               gas: {
-                inTokensWithSymbol: `${formatAmount(gasInTokens)} ${decodedABIData?.native_token.symbol}`,
-                inUSDWithSymbol: `${formatAmount(gasInTokens * decodedABIData?.native_token.price)} USD`
+                inTokensWithSymbol: `${formatAmount(gasInTokens)} ${data?.native_token.symbol}`,
+                inUSDWithSymbol: `${formatAmount(gasInTokens * data?.native_token.price)} USD`
               }
             };
             return <RenderSwapTransactionSignModal dAppInfo={dAppInfo} swapTxnData={swapTxnData} />;
           } else {
-            return <RenderDefaultSignModal dAppInfo={dAppInfo} chain={chain} method={method} data={decodedABIData} />;
+            return <RenderDefaultSignModal dAppInfo={dAppInfo} chain={chain} method={method} data={data} />;
           }
         } else {
-          return <RenderDefaultSignModal dAppInfo={dAppInfo} chain={chain} method={method} data={decodedABIData} />;
+          return <RenderDefaultSignModal dAppInfo={dAppInfo} chain={chain} method={method} data={data} />;
         }
       }
       default : {
         void intercomAnalyticsLog('eth_sendTransaction_DEFAULT');
-        return <RenderDefaultSignModal dAppInfo={dAppInfo} chain={chain} method={method} data={decodedABIData} />;
+        return <RenderDefaultSignModal dAppInfo={dAppInfo} chain={chain} method={method} data={data} />;
       }
     }
   } else { // isNative and no data param = definitely send txn
@@ -128,7 +131,7 @@ export const RenderTransactionSignModal = ({ dAppInfo, chain, method, decodedABI
     if (nativeSendTxnData) {
       return <RenderSendTransactionSignModal dAppInfo={dAppInfo} sendTxnData={nativeSendTxnData} />;
     } else {
-      return <RenderDefaultSignModal dAppInfo={dAppInfo} chain={chain} method={method} data={decodedABIData} />;
+      return <RenderDefaultSignModal dAppInfo={dAppInfo} chain={chain} method={method} data={data} />;
     }
   }
 };

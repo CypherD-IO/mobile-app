@@ -18,7 +18,7 @@ import { formatAmount, getWeb3Endpoint } from '../../../core/util';
 import * as Sentry from '@sentry/react-native';
 import { intercomAnalyticsLog } from '../../../containers/utilities/analyticsUtility';
 import { GlobalContext } from '../../../core/globalContext';
-import { DecodeTxnRequestBody, IDAppInfo, IExtendedDecodedTxnResponse, ISendTxnData, SessionSigningModalProps } from '../../../models/signingModalData.interface';
+import { DecodeTxnRequestBody, IDAppInfo, IEvmosTxnMessage, IExtendedDecodedTxnResponse, ISendTxnData, SessionSigningModalProps } from '../../../models/signingModalData.interface';
 import { Loader, RenderTitle } from './SigningModals/SigningModalComponents';
 import { RenderSignMessageModal } from './SigningModals/SignMessageModal';
 import { RenderTransactionSignModal, RenderTypedTransactionSignModal } from './SigningModals/TxnModals';
@@ -39,7 +39,7 @@ export default function SigningModal ({
   const [rejectingRequest, setRejectingRequest] = useState<boolean>(false);
   const [dataIsReady, setDataIsReady] = useState<boolean>(false); ;
   const [nativeSendTxnData, setNativeSendTxnData] = useState<ISendTxnData | null>(null);
-  const [decodedABIData, setDecodedABIData] = useState<IExtendedDecodedTxnResponse | null>(null);
+  const [decodedABIData, setDecodedABIData] = useState<IExtendedDecodedTxnResponse | IEvmosTxnMessage | null>(null);
 
   const globalContext = useContext<any>(GlobalContext);
 
@@ -85,12 +85,18 @@ export default function SigningModal ({
     let decodeTxnRequestBody: DecodeTxnRequestBody;
     const decodeTxnRequest = async () => {
       try {
-        const { data, error, isError } = await postWithAuth('/v1/txn/decode', decodeTxnRequestBody);
-        if (!isError) {
-          setDecodedABIData({ ...data, from_addr: decodeTxnRequestBody.from });
-          setDataIsReady(true);
+        if (decodeTxnRequestBody.chainId !== 9001) {
+          const { data, error, isError } = await postWithAuth('/v1/txn/decode', decodeTxnRequestBody);
+          if (!isError) {
+            setDecodedABIData({ ...data, from_addr: decodeTxnRequestBody.from });
+            setDataIsReady(true);
+          } else {
+            throw (error);
+          }
         } else {
-          throw (error);
+          // Setting the data as it is for EVMOS
+          setDecodedABIData({ from: decodeTxnRequestBody.from, to: decodeTxnRequestBody.to, data: decodeTxnRequestBody.data, gas: decodeTxnRequestBody.gas });
+          setDataIsReady(true);
         }
       } catch (e) {
         const errorObject = {
@@ -234,7 +240,7 @@ export default function SigningModal ({
               <CyDScrollView className='max-h-[70%]'>
                 {(method === EIP155_SIGNING_METHODS.PERSONAL_SIGN || method === EIP155_SIGNING_METHODS.ETH_SIGN) && <RenderSignMessageModal dAppInfo={dAppInfo} chain={chain} method={method} requestParams={requestParams} />}
                 {((method === EIP155_SIGNING_METHODS.ETH_SEND_RAW_TRANSACTION || method === EIP155_SIGNING_METHODS.ETH_SEND_TRANSACTION || method === EIP155_SIGNING_METHODS.ETH_SIGN_TRANSACTION) && dataIsReady)
-                  ? <RenderTransactionSignModal dAppInfo={dAppInfo} chain={chain} method={method} decodedABIData={decodedABIData} nativeSendTxnData={nativeSendTxnData} />
+                  ? <RenderTransactionSignModal dAppInfo={dAppInfo} chain={chain} method={method} data={decodedABIData} nativeSendTxnData={nativeSendTxnData} />
                   : <Loader />
                 }
                 {(method === EIP155_SIGNING_METHODS.ETH_SIGN_TYPED_DATA || method === EIP155_SIGNING_METHODS.ETH_SIGN_TYPED_DATA_V3 || method === EIP155_SIGNING_METHODS.ETH_SIGN_TYPED_DATA_V4) && <RenderTypedTransactionSignModal dAppInfo={dAppInfo} chain={chain} />}
