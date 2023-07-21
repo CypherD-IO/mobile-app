@@ -32,7 +32,7 @@ const StateModal: React.FC<State> = (store: State) => {
     info = 'INFO_TITLE',
     success = 'SUCCESS_TITLE',
     error = 'ERROR_TITLE',
-    prompt = 'PROMPT_TITLE'
+    custom = 'CUSTOM_TITLE'
   }
 
   enum modalType {
@@ -40,7 +40,7 @@ const StateModal: React.FC<State> = (store: State) => {
     info = 'info',
     success = 'success',
     error = 'error',
-    prompt = 'prompt'
+    custom = 'custom'
   }
 
   const RenderImage = () => {
@@ -119,14 +119,14 @@ const StateModal: React.FC<State> = (store: State) => {
           />
         </CyDView>
       );
-    } else if (store.type === modalType.prompt) {
+    } else if (store.type === modalType.custom) {
       return (<CyDView className={'w-[100%]'}>
           <ButtonWithOutImage
             sentry-label="alert-on-press"
             bG={Colors.appColor}
             mT={10}
             vC={Colors.appColor}
-            text={t('YES')}
+            text={store.modalButtonText?.success ?? t('YES')}
             isBorder={false}
             onPress={() => {
               onSuccess();
@@ -139,7 +139,7 @@ const StateModal: React.FC<State> = (store: State) => {
             bW={1.5}
             mT={15}
             vC={Colors.appColor}
-            text={t('NO')}
+            text={store.modalButtonText?.failure ?? t('NO')}
             isBorder={true}
             onPress={() => {
               onFailure();
