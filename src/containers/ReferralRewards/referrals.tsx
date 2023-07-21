@@ -59,7 +59,6 @@ export default function ReferralRewards (props:
 
   useEffect(() => {
     const getReferralData = async () => {
-
       const resp = await getWithAuth('/v1/referral/tabDetails');
       if (!resp.isError) {
         setReferralData({ ...resp.data });
@@ -95,8 +94,8 @@ export default function ReferralRewards (props:
 
   const TabStaticContent = (props: { tabDetails: { title: string, description: string, actionSteps: string[] } }) => {
     return (
-      <CyDView className={'mb-[10]'}>
-        <CyDText className={'text-[#434343] text-[27px] font-nunito font-extrabold mt-[20]'}>
+      <CyDView className={'mb-[10px]'}>
+        <CyDText className={'text-[#434343] text-[27px] font-nunito font-extrabold mt-[20px]'}>
           {props.tabDetails.title}
         </CyDText>
         <CyDText className={'text-[#1F1F1F] text-[18px] font-normal mt-[12px]'}>
@@ -104,7 +103,7 @@ export default function ReferralRewards (props:
         </CyDText>
         {props.tabDetails.actionSteps.map((item, index) => (
           // eslint-disable-next-line react-native/no-raw-text
-          <CyDText className={'text-[#1F1F1F] text-[16px] font-normal mt-[15px] ml-[15]'} key={index}>
+          <CyDText className={'text-[#1F1F1F] text-[16px] font-normal mt-[15px] ml-[15px]'} key={index}>
             &#8226; {item}
           </CyDText>
         ))
@@ -128,7 +127,7 @@ export default function ReferralRewards (props:
         <TabStaticContent tabDetails={referralData.inviteCodeTab} />
 
         { error &&
-          <CyDText className={'text-[#EE4D30] text-[12px] font-medium mt-[10] ml-[4px]'}>{errorMessage}</CyDText>
+          <CyDText className={'text-[#EE4D30] text-[12px] font-medium mt-[10px] ml-[4px]'}>{errorMessage}</CyDText>
         }
 
         <CyDView className={'flex flex-row mt-[18px]'}>
@@ -141,7 +140,7 @@ export default function ReferralRewards (props:
               .catch((error) => {
                 void appsFlyer.logEvent('share_invite_failed', error);
               });
-          }} title={t<string>('SHARE')} style={'h-[50] w-6/12 mr-[25]'} loading={loading} isLottie={false} />
+          }} title={t<string>('SHARE')} style={'h-[50px] w-6/12 mr-[25px]'} loading={loading} isLottie={false} />
 
           <CyDTouchView
             className={'border-[1px] py-[10px] px-[20px] flex flex-row items-center justify-center border-[#545454] border-solid rounded-[12px] w-5/12'}
@@ -149,7 +148,7 @@ export default function ReferralRewards (props:
               copyToClipboard(referralInviteLink); showToast(t('REFERRAL_CODE_COPY'));
             }}>
             <CyDImage source={AppImages.COPY} />
-            <CyDText className={"ml-[10px] text-[16px] font-bold"}>COPY</CyDText>
+            <CyDText className={'ml-[10px] text-[16px] font-bold'}>COPY</CyDText>
           </CyDTouchView>
         </CyDView>
 
@@ -178,11 +177,11 @@ export default function ReferralRewards (props:
             <CyDFastImage source={AppImages.BACK} className={'h-[20px] w-[20px] mx-[20px] mt-[60px]'}/>
           </CyDTouchView>
           <CyDFastImage source={{ uri: 'https://public.cypherd.io/icons/referralRewards.png' }}
-                        className={'h-full  -top-[50] -z-50'}
+                        className={'h-full  -top-[50px] -z-50'}
                         resizeMode={FastImage.resizeMode.contain}
           />
         </CyDView>
-        <CyDScrollView className={'px-[20] mt-[35px]'}>
+        <CyDScrollView className={'px-[20px] mt-[35px]'}>
           {switchTitle.length > 1 && <CyDView className='flex flex-row'>
             <SwitchView
               index={index}

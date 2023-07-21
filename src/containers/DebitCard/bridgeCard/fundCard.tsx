@@ -428,7 +428,7 @@ export default function BridgeFundCardScreen ({ route }: {route: any}) {
   const RenderSelectedToken = () => {
     return (
       <CyDTouchView
-        className={'bg-[#F7F8FE] mx-[40] my-[16] border-[1px] border-[#EBEBEB] rounded-[16px]'} onPress={() => setIsChooseTokenVisible(true)}>
+        className={'bg-[#F7F8FE] mx-[40px] my-[16px] border-[1px] border-[#EBEBEB] rounded-[16px]'} onPress={() => setIsChooseTokenVisible(true)}>
         <CyDView className={'p-[18px] flex flex-row flex-wrap justify-between items-center'}>
           {selectedToken && <CyDView className={'flex flex-row w-[50%] items-center'}>
             <CyDImage
@@ -519,7 +519,7 @@ export default function BridgeFundCardScreen ({ route }: {route: any}) {
         lowBalance={lowBalance}
       />
       <RenderSelectedToken/>
-      <CyDView className={'pb-[0px] px-[10px] bg-[#F7F8FE] mx-[40] h-[220px] rounded-[20px]'}>
+      <CyDView className={'pb-[0px] px-[10px] bg-[#F7F8FE] mx-[40px] h-[220px] rounded-[20px]'}>
         <CyDView className='flex flex-row h-[100%] items-center'>
           <CyDTouchView
             onPress={() => {
@@ -533,7 +533,7 @@ export default function BridgeFundCardScreen ({ route }: {route: any}) {
               {t<string>('MAX')}
             </CyDText>
           </CyDTouchView>
-          <CyDView className={'pb-[10px] w-[60%] items-center bg-[#F7F8FE] mx-[20]'}>
+          <CyDView className={'pb-[10px] w-[60%] items-center bg-[#F7F8FE] mx-[20px]'}>
             <CyDText
               className={'font-extrabold text-[22px] text-center font-nunito text-black'}>
               {t<string>('ENTER_AMOUNT')}

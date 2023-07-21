@@ -107,7 +107,7 @@ export default function ActivityInfoModal ({
             }}>
               <CyDText className='font-nunito text-[16px] mt-[3px] w-[30%]  '>{t<string>('TRANSACTION_HASH')}</CyDText>
               <CyDText className='text-center font-nunito text-[14px] mt-[5px] font-bold mt-[3px]  '>{txnHash ? `${txnHash.substring(0, 8)}...${txnHash.substring(txnHash.length - 6, txnHash.length)}\t` : 'TBD\t'}
-              <CyDImage source={AppImages.COPY} className={'relative left-[20] w-[16px] h-[18px]'} />
+              <CyDImage source={AppImages.COPY} className={'relative left-[20px] w-[16px] h-[18px]'} />
               </CyDText>
             </CyDTouchView>
             { status === ActivityStatus.INPROCESS &&
@@ -117,7 +117,7 @@ export default function ActivityInfoModal ({
                 }}>
                   <CyDText className='font-nunito text-[16px] mt-[3px] w-[30%]  '>{t<string>('QUOTE_UUID')}</CyDText>
                   <CyDText className='text-center font-nunito text-[14px] mt-[5px] font-bold mt-[3px]  '>{`${quoteId.substring(0, 8)}...${quoteId.substring(quoteId.length - 6, quoteId.length)}      `}
-                  <CyDImage source={AppImages.COPY} className={'relative left-[20] w-[16px] h-[18px]'} />
+                  <CyDImage source={AppImages.COPY} className={'relative left-[20px] w-[16px] h-[18px]'} />
                   </CyDText>
                 </CyDTouchView>
             }

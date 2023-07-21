@@ -336,7 +336,7 @@ export default function StakingDelegation ({ route, navigation }) {
               <CyDTouchView onPress={() => onModalHide()} className={'z-[50]'}>
                 <CyDImage source={AppImages.CLOSE} className={' w-[22px] h-[22px] z-[50] top-[-10px] absolute right-[0px] '} />
               </CyDTouchView>
-              <CyDText className={'mt-[10] font-bold text-center text-[22px]'}>
+              <CyDText className={'mt-[10px] font-bold text-center text-[22px]'}>
                 {stakingValidators.stateStaking.typeOfDelegation} {UN_DELEGATE === stakingValidators.stateStaking.typeOfDelegation ? 'from ' : 'to '} {RE_DELEGATE === stakingValidators.stateStaking.typeOfDelegation ? reDelegatorName : itemData.description.name}
               </CyDText>
 

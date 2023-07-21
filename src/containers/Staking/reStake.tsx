@@ -303,7 +303,7 @@ export default function ReStake ({ route, navigation }) {
             <CyDTouchView onPress={() => { setDelegateModalVisible(false); setItemData({ description: { name: '' } }); }} className={'z-[50]'}>
               <CyDImage source={AppImages.CLOSE} className={' w-[22px] h-[22px] z-[50] absolute right-[0px] top-[-10px] '} />
             </CyDTouchView>
-            <CyDText className={' mt-[10] font-bold text-[22px] text-center '}>{t('DELEGATE')}</CyDText>
+            <CyDText className={' mt-[10px] font-bold text-[22px] text-center '}>{t('DELEGATE')}</CyDText>
             <CyDView className={'flex flex-row mt-[40px]'}>
               <CyDImage source={AppImages[tokenData.chainDetails.backendName + '_LOGO']} className={'h-[20px] w-[20px]'}/>
               <CyDView className={' flex flex-row'}>
