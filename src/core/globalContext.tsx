@@ -11,7 +11,6 @@ import { GlobalContextType, RPCPreference, SignMessageValidationType } from '../
 import { hostWorker } from '../global';
 import { getRpcEndpoints, getRpcPreference, setRpcEndpoints } from './asyncStorage';
 import { get } from 'lodash';
-import { isValidUUIDV4 } from './util';
 import jwt_decode, { JwtPayload } from 'jwt-decode';
 
 export type RpcResponseDetail = {
