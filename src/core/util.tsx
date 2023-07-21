@@ -498,6 +498,7 @@ export const formatAmount = (amount: string | number) => {
       maximumSignificantDigits: 4
     }).format(Number(amount));
   } else {
-    return Number(amount).toFixed(4);
+    const factor = Math.pow(10, 4);
+    return Math.floor(Number(amount) * factor) / factor;
   }
 };
