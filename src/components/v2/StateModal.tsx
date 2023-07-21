@@ -75,14 +75,14 @@ const StateModal: React.FC<State> = (store: State) => {
     if (typeOfDesription === 'string') {
       return <CyDView className='max-h-[150px]'>
               <CyDScrollView className='flex-grow-0'>
-                <CyDText className={'mt-[15] mb-[15] text-center'}>{store.description}</CyDText>
+                <CyDText className={'mt-[15px] mb-[15px] text-center'}>{store.description}</CyDText>
               </CyDScrollView>
             </CyDView>;
     } else if (typeOfDesription === 'object') {
       if (React.isValidElement(store.description)) {
         return <CyDView>{store.description}</CyDView>;
       } else if (store.type === modalType.error) {
-        return <CyDText className={'mt-[15] mb-[15] text-center'}>{t<string>('UNEXCPECTED_ERROR')}</CyDText>;
+        return <CyDText className={'mt-[15px] mb-[15px] text-center'}>{t<string>('UNEXCPECTED_ERROR')}</CyDText>;
       }
     }
     return <></>;
@@ -182,7 +182,7 @@ const StateModal: React.FC<State> = (store: State) => {
           }
         >
           <RenderImage />
-          <CyDText className={'mt-[10] font-bold text-[20px] text-center'}>{store.title ? store.title : `${t(modalTitle[store.type])}`}</CyDText>
+          <CyDText className={'mt-[10px] font-bold text-[20px] text-center'}>{store.title ? store.title : `${t(modalTitle[store.type])}`}</CyDText>
           <RenderDescription />
           <RenderActions />
         </CyDView>
@@ -237,9 +237,9 @@ export const BuyOrBridge = (
     <CyDView className='px-[12px]'>
       <CyDView className='flex flex-column items-center justify-between'>
         <CyDView className='flex flex-row justify-between items-center'>
-          <CyDText className={'mt-[15] text-center'}>{text}</CyDText>
+          <CyDText className={'mt-[15px] text-center'}>{text}</CyDText>
         </CyDView>
-        <CyDView className='flex flex-row justify-between items-center w-[140] mt-[10px]'>
+        <CyDView className='flex flex-row justify-between items-center w-[140px] mt-[10px]'>
           <CyDTouchView onPress={() => {
             hideModal();
             portfolioState.dispatchPortfolio({ value: { buyButtonClicked: true } });

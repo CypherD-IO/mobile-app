@@ -100,7 +100,7 @@ export default function RemoveWalletModal (props) {
               <CyDTouchView onPress={() => onPress()} className={'z-[50]'}>
                 <CyDImage source={AppImages.CLOSE} className={' w-[22px] h-[22px] z-[50] absolute right-[0px] '} />
               </CyDTouchView>
-              <CyDText className={'mt-[10] font-black text-center text-[22px]'}>
+              <CyDText className={'mt-[10px] font-black text-center text-[22px]'}>
                 {titleMsg}
               </CyDText>
                 <CyDView>

@@ -13,7 +13,7 @@ import { loadRecoveryPhraseFromKeyChain } from '../../core/Keychain';
 
 const renderSeedPhrase = (text: string, index: number) => {
   return (
-    <CyDView key={index} className={'flex flex-row items-center h-[50] w-[31%] border-[1px] border-[#CCCCCC] rounded-[3px] px-[10px] mt-[10px]'}>
+    <CyDView key={index} className={'flex flex-row items-center h-[50px] w-[31%] border-[1px] border-[#CCCCCC] rounded-[3px] px-[10px] mt-[10px]'}>
       <CyDText className={'text-[17px] text-center text-[#929292] font-nunito'}>{++index}</CyDText>
       <CyDText className={'text-[17px] text-center text-[#434343] font-nunito ml-[5px]'}>{text}</CyDText>
     </CyDView>
@@ -120,7 +120,7 @@ export default function SeedPhrase (props) {
         }
         <CyDTouchView
           className={
-            'flex flex-row items-center justify-center mt-[40px] h-[60px] w-3/4 border-[1px] border-[#8E8E8E] rounded-[12px] mb-[50]'
+            'flex flex-row items-center justify-center mt-[40px] h-[60px] w-3/4 border-[1px] border-[#8E8E8E] rounded-[12px] mb-[50px]'
           }
           onPress={() => onPressSeedPharse()}
         >

@@ -183,7 +183,7 @@ function StakingValidators ({ route, navigation }) {
           value={filterText}
           onChangeText={(text) => setFilterText(text)}
           placeholder={'search'}
-          className={'rounded-[8px] w-[90%] py-[8] px-[12] text-[16px] border-[1px] border-subTextColor mt-[16px]'}
+          className={'rounded-[8px] w-[90%] py-[8px] px-[12px] text-[16px] border-[1px] border-subTextColor mt-[16px]'}
         />
 
         <FlatList
