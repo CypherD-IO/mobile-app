@@ -237,11 +237,13 @@ export default function SigningModal ({
         {(chain && method)
           ? <CyDView className='flex flex-col justify-between'>
               <RenderTitle method={method} />
-              <CyDScrollView className='max-h-[70%]'>
+              <CyDScrollView className='h-[70%]'>
                 {(method === EIP155_SIGNING_METHODS.PERSONAL_SIGN || method === EIP155_SIGNING_METHODS.ETH_SIGN) && <RenderSignMessageModal dAppInfo={dAppInfo} chain={chain} method={method} requestParams={requestParams} />}
-                {((method === EIP155_SIGNING_METHODS.ETH_SEND_RAW_TRANSACTION || method === EIP155_SIGNING_METHODS.ETH_SEND_TRANSACTION || method === EIP155_SIGNING_METHODS.ETH_SIGN_TRANSACTION) && dataIsReady)
-                  ? <RenderTransactionSignModal dAppInfo={dAppInfo} chain={chain} method={method} data={decodedABIData} nativeSendTxnData={nativeSendTxnData} />
-                  : <Loader />
+                {(method === EIP155_SIGNING_METHODS.ETH_SEND_RAW_TRANSACTION || method === EIP155_SIGNING_METHODS.ETH_SEND_TRANSACTION || method === EIP155_SIGNING_METHODS.ETH_SIGN_TRANSACTION) &&
+                  (dataIsReady
+                    ? <RenderTransactionSignModal dAppInfo={dAppInfo} chain={chain} method={method} data={decodedABIData} nativeSendTxnData={nativeSendTxnData} />
+                    : <Loader />
+                  )
                 }
                 {(method === EIP155_SIGNING_METHODS.ETH_SIGN_TYPED_DATA || method === EIP155_SIGNING_METHODS.ETH_SIGN_TYPED_DATA_V3 || method === EIP155_SIGNING_METHODS.ETH_SIGN_TYPED_DATA_V4) && <RenderTypedTransactionSignModal dAppInfo={dAppInfo} chain={chain} />}
               </CyDScrollView>
