@@ -14,12 +14,12 @@ import Button from '../button';
 import { EIP155_SIGNING_METHODS } from '../../../constants/EIP155Data';
 import { useGlobalModalContext } from '../GlobalModal';
 import useAxios from '../../../core/HttpRequest';
-import { getWeb3Endpoint } from '../../../core/util';
+import { formatAmount, getWeb3Endpoint } from '../../../core/util';
 import * as Sentry from '@sentry/react-native';
 import { intercomAnalyticsLog } from '../../../containers/utilities/analyticsUtility';
 import { GlobalContext } from '../../../core/globalContext';
 import { DecodeTxnRequestBody, IDAppInfo, IExtendedDecodedTxnResponse, ISendTxnData, SessionSigningModalProps } from '../../../models/signingModalData.interface';
-import { Loader, RenderTitle } from './SigningModals/parts';
+import { Loader, RenderTitle } from './SigningModals/SigningModalComponents';
 import { RenderSignMessageModal } from './SigningModals/SignMessageModal';
 import { RenderTransactionSignModal, RenderTypedTransactionSignModal } from './SigningModals/TxnModals';
 import { getGasPriceFor } from '../../../containers/Browser/gasHelper';
@@ -123,8 +123,8 @@ export default function SigningModal ({
             },
             toAddress: paramsForDecoding.to,
             fromAddress: paramsForDecoding.from,
-            gasAndUSDAppx: `${new Intl.NumberFormat('en-US', { maximumSignificantDigits: 2 }).format(gasNative)} ${chain.symbol} ≈ $${new Intl.NumberFormat('en-US', { maximumSignificantDigits: 2 }).format(gasNative * tokenPrice)} USD`,
-            availableBalance: `${new Intl.NumberFormat('en-US', { maximumSignificantDigits: 4 }).format(adjustedTokenBalance)} ${chain.symbol}`
+            gasAndUSDAppx: `${formatAmount(gasNative)} ${chain.symbol} ≈ $${formatAmount(gasNative * tokenPrice)} USD`,
+            availableBalance: `${formatAmount(adjustedTokenBalance)} ${chain.symbol}`
           };
           setNativeSendTxnData(sendTxnData);
           setDataIsReady(true);

@@ -3,9 +3,9 @@ import { DecodedResponseTypes } from '../../../../constants/enum';
 import { Chain } from '../../../../constants/server';
 import { intercomAnalyticsLog } from '../../../../containers/utilities/analyticsUtility';
 import { IDAppInfo, ISendTxnData, IExtendedDecodedTxnResponse, ISwapTxnData, IApproveTokenData } from '../../../../models/signingModalData.interface';
-import { getMaskedAddress } from '../../../../core/util';
+import { formatAmount, getMaskedAddress } from '../../../../core/util';
 import { CyDFastImage, CyDText, CyDView } from '../../../../styles/tailwindStyles';
-import { Divider, RenderDAPPInfo, RenderMethod, RenderNetwork } from './parts';
+import { Divider, RenderDAPPInfo, RenderMethod, RenderNetwork } from './SigningModalComponents';
 import { t } from 'i18next';
 import AppImages from '../../../../../assets/images/appImages';
 
@@ -21,8 +21,8 @@ export const RenderTransactionSignModal = ({ dAppInfo, chain, method, decodedABI
             gasPriceInWei *
             10 ** -decodedABIData?.native_token.decimals
           );
-          const gasAndUSDAppx = `${new Intl.NumberFormat('en-US', { maximumSignificantDigits: 2 }).format(gasInTokens)} ${decodedABIData?.native_token.symbol} ≈ $${new Intl.NumberFormat('en-US', { maximumSignificantDigits: 2 }).format(gasInTokens * decodedABIData?.native_token.price)} USD`;
-          const availableBalance = `${decodedABIData.native_token.amount.toFixed(4)} ${decodedABIData.native_token.symbol}`;
+          const gasAndUSDAppx = `${formatAmount(gasInTokens)} ${decodedABIData?.native_token.symbol} ≈ $${formatAmount(gasInTokens * decodedABIData?.native_token.price)} USD`;
+          const availableBalance = `${formatAmount(decodedABIData.native_token.amount)} ${decodedABIData.native_token.symbol}`;
           const sendTxnData = {
             chainLogo: chain.logo_url,
             token: {
@@ -65,8 +65,8 @@ export const RenderTransactionSignModal = ({ dAppInfo, chain, method, decodedABI
                 name: decodedABIData.type_token_approval.spender_protocol_name
               }
             },
-            gasWithUSDAppx: `${new Intl.NumberFormat('en-US', { maximumSignificantDigits: 2 }).format(gasInTokens)} ${decodedABIData?.native_token.symbol} ≈ $${new Intl.NumberFormat('en-US', { maximumSignificantDigits: 2 }).format(gasInTokens * decodedABIData?.native_token.price)} USD`,
-            availableBalance: `${decodedABIData.native_token.amount.toFixed(4)} ${decodedABIData.native_token.symbol}`
+            gasWithUSDAppx: `${formatAmount(gasInTokens)} ${decodedABIData?.native_token.symbol} ≈ $${formatAmount(gasInTokens * decodedABIData?.native_token.price)} USD`,
+            availableBalance: `${formatAmount(decodedABIData.native_token.amount)} ${decodedABIData.native_token.symbol}`
           };
           return <RenderApproveTokenModal dAppInfo={dAppInfo} approveTokenData={approveTokenData} />;
         } else {
@@ -98,16 +98,16 @@ export const RenderTransactionSignModal = ({ dAppInfo, chain, method, decodedABI
                 logo: chain.logo_url
               },
               sentAmount: {
-                inTokensWithSymbol: `${sendTokenList[0]?.amount.toFixed(3)} ${sendTokenList[0].symbol}`,
-                inUSDWithSymbol: `${sendTokenList[0]?.usd_value.toFixed(3)} USD`
+                inTokensWithSymbol: `${formatAmount(sendTokenList[0]?.amount)} ${sendTokenList[0].symbol}`,
+                inUSDWithSymbol: `${formatAmount(sendTokenList[0]?.usd_value)} USD`
               },
               receivedAmount: {
-                inTokensWithSymbol: `${receiveTokenList[0].amount.toFixed(3)} ${receiveTokenList[0].symbol}`,
-                inUSDWithSymbol: `${receiveTokenList[0].usd_value.toFixed(3)} USD`
+                inTokensWithSymbol: `${formatAmount(receiveTokenList[0].amount)} ${receiveTokenList[0].symbol}`,
+                inUSDWithSymbol: `${formatAmount(receiveTokenList[0].usd_value)} USD`
               },
               gas: {
-                inTokensWithSymbol: `${new Intl.NumberFormat('en-US', { maximumSignificantDigits: 2 }).format(gasInTokens)} ${decodedABIData?.native_token.symbol}`,
-                inUSDWithSymbol: `${new Intl.NumberFormat('en-US', { maximumSignificantDigits: 2 }).format(gasInTokens * decodedABIData?.native_token.price)} USD`
+                inTokensWithSymbol: `${formatAmount(gasInTokens)} ${decodedABIData?.native_token.symbol}`,
+                inUSDWithSymbol: `${formatAmount(gasInTokens * decodedABIData?.native_token.price)} USD`
               }
             };
             return <RenderSwapTransactionSignModal dAppInfo={dAppInfo} swapTxnData={swapTxnData} />;
@@ -194,10 +194,10 @@ const RenderSendTransactionSignModal = ({ dAppInfo, sendTxnData }: {dAppInfo: ID
                 </CyDView>
               </CyDView>
               <CyDView>
-                  <CyDText className='text-[48px] font-bold'>{token.amount.toFixed(4)}</CyDText>
+                  <CyDText className='text-[48px] font-bold'>{formatAmount(token.amount)}</CyDText>
               </CyDView>
               <CyDView>
-                  <CyDText className='text-[24px] text-subTextColor font-semibold'>{token.valueInUSD.toFixed(4) + ' USD'}</CyDText>
+                  <CyDText className='text-[24px] text-subTextColor font-semibold'>{formatAmount(token.valueInUSD) + ' USD'}</CyDText>
               </CyDView>
             </CyDView>
             <CyDView className='my-[10px]'>

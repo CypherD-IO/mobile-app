@@ -1,6 +1,6 @@
 import React from 'react';
 import { CyDView } from '../../../../styles/tailwindStyles';
-import { Divider, RenderDAPPInfo, RenderMessage, RenderMethod, RenderNetwork } from './parts';
+import { Divider, RenderDAPPInfo, RenderMessage, RenderMethod, RenderNetwork } from './SigningModalComponents';
 import { IDAppInfo } from '../../../../models/signingModalData.interface';
 import { Chain } from '../../../../constants/server';
 
