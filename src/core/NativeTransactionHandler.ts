@@ -183,7 +183,7 @@ async function _sendNativeCoin (hdWalletContext: any, portfolioState: any, web3:
           });
         });
     }, (err: any) => {
-      handleTransactionResult(err.message, currentQuoteUUID, ethereum.address, true, true);
+      handleTransactionResult(err.message, currentQuoteUUID, ethereum.address, true);
       Sentry.captureException(err);
     });
   } catch (err: any) {
@@ -280,7 +280,7 @@ function _sendToken (hdWalletContext: any, portfolioState: any, web3: any, contr
           }).catch(Sentry.captureException);
         });
     }, (err) => {
-      handleTransactionResult(err.message, currentQuoteUUID, ethereum.address, true, true);
+      handleTransactionResult(err.message, currentQuoteUUID, ethereum.address, true);
       Sentry.captureException(err);
     });
   } catch (err) {

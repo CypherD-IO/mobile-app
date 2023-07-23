@@ -232,12 +232,12 @@ export default function SigningModal ({
 
   return (
     <CyDModalLayout setModalVisible={() => {}} isModalVisible={isModalVisible} style={styles.modalLayout} animationIn={'slideInUp'} animationOut={'slideOutDown'}>
-      <CyDView style={styles.modalContentContainer}>
+      <CyDView className='flex justify-center rounded-t-[50px] bg-white'>
       <CyDView>
         {(chain && method)
           ? <CyDView className='flex flex-col justify-between'>
               <RenderTitle method={method} />
-              <CyDScrollView className='max-h-[75%]'>
+              <CyDScrollView className='max-h-[75%] px-[25px]'>
                 {(method === EIP155_SIGNING_METHODS.PERSONAL_SIGN || method === EIP155_SIGNING_METHODS.ETH_SIGN) && <RenderSignMessageModal dAppInfo={dAppInfo} chain={chain} method={method} requestParams={requestParams} />}
                 {(method === EIP155_SIGNING_METHODS.ETH_SEND_RAW_TRANSACTION || method === EIP155_SIGNING_METHODS.ETH_SEND_TRANSACTION || method === EIP155_SIGNING_METHODS.ETH_SIGN_TRANSACTION) &&
                   (dataIsReady
@@ -247,9 +247,9 @@ export default function SigningModal ({
                 }
                 {(method === EIP155_SIGNING_METHODS.ETH_SIGN_TYPED_DATA || method === EIP155_SIGNING_METHODS.ETH_SIGN_TYPED_DATA_V3 || method === EIP155_SIGNING_METHODS.ETH_SIGN_TYPED_DATA_V4) && <RenderTypedTransactionSignModal dAppInfo={dAppInfo} chain={chain} />}
               </CyDScrollView>
-              <CyDView className={'w-full'}>
-                <Button loading={acceptingRequest} style={'my-[10px]'} title={renderAcceptTitle(method)} onPress={() => { void handleAccept(); void intercomAnalyticsLog('signModal_accept_click'); }}></Button>
-                <Button loading={rejectingRequest} style={'my-[10px]'} type={ButtonType.TERNARY} title='Reject' onPress={() => { void handleReject(); void intercomAnalyticsLog('signModal_reject_click'); }}></Button>
+              <CyDView className={'w-full px-[25px]'}>
+                <Button loading={acceptingRequest} style={acceptingRequest ? 'mb-[10px] py-[7px]' : 'mb-[10px] py-[15px]'} title={renderAcceptTitle(method)} onPress={() => { void handleAccept(); void intercomAnalyticsLog('signModal_accept_click'); }}></Button>
+                <Button loading={rejectingRequest} style={rejectingRequest ? 'mb-[10px] py-[7px]' : 'mb-[10px] py-[15px]'} type={ButtonType.TERNARY} title='Reject' onPress={() => { void handleReject(); void intercomAnalyticsLog('signModal_reject_click'); }}></Button>
               </CyDView>
             </CyDView>
           : <Loader />
@@ -265,17 +265,5 @@ const styles = StyleSheet.create({
   modalLayout: {
     margin: 0,
     justifyContent: 'flex-end'
-  },
-  // eslint-disable-next-line react-native/no-color-literals
-  modalContentContainer: {
-    display: 'flex',
-    justifyContent: 'center',
-    borderTopRightRadius: 34,
-    borderTopLeftRadius: 34,
-    borderWidth: 1,
-    color: 'red',
-    backgroundColor: 'white',
-    bottom: 0,
-    paddingHorizontal: 20
   }
 });

@@ -192,8 +192,8 @@ export default function PairingModal ({
 
   return (
     <CyDModalLayout setModalVisible={() => {}} isModalVisible={isModalVisible} style={styles.modalLayout} animationIn={'slideInUp'} animationOut={'slideOutDown'}>
-      <CyDView style={styles.modalContentContainer}>
-        <CyDView className={'flex flex-row justify-center'}>
+      <CyDView className='flex flex-col min-h-[45%] bg-white rounded-t-[50px] px-[40px]'>
+      <CyDView className={'flex flex-row justify-center'}>
           <CyDText className={'text-[24px] font-extrabold mt-[14px] mb-[4px]'}>{t<string>('WALLET_PERMISSIONS')}</CyDText>
         </CyDView>
         <CyDView>
@@ -202,9 +202,9 @@ export default function PairingModal ({
           <RenderMessage />
           <Divider />
         </CyDView>
-        <CyDView className={'w-full'}>
-          <Button loading={acceptingRequest} style={'mb-[10px]'} title='Accept' onPress={() => void handleAccept()}></Button>
-          <Button loading={rejectingRequest} style={'mb-[10px]'} type={ButtonType.TERNARY} title='Reject' onPress={() => void handleReject()}></Button>
+        <CyDView className={'w-full flex flex-1 justify-end pb-[20px]'}>
+          <Button loading={acceptingRequest} style={acceptingRequest ? 'mb-[10px] py-[7px]' : 'mb-[10px] py-[15px]'} title='Accept' onPress={() => void handleAccept()}></Button>
+          <Button loading={rejectingRequest} style={rejectingRequest ? 'mb-[10px] py-[7px]' : 'mb-[10px] py-[15px]'} type={ButtonType.TERNARY} title='Reject' onPress={() => void handleReject()}></Button>
         </CyDView>
       </CyDView>
     </CyDModalLayout>
@@ -215,17 +215,5 @@ const styles = StyleSheet.create({
   modalLayout: {
     margin: 0,
     justifyContent: 'flex-end'
-  },
-  modalContentContainer: {
-    display: 'flex',
-    justifyContent: 'center',
-    alignItems: 'center',
-    borderTopLeftRadius: 34,
-    borderTopRightRadius: 34,
-    borderWidth: 1,
-    color: 'red',
-    backgroundColor: 'white',
-    bottom: 0,
-    paddingHorizontal: 45
   }
 });

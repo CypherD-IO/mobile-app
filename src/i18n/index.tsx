@@ -712,7 +712,9 @@ const resources = {
       APPROVAL_TOKEN: 'Approval Token',
       SPENDER: 'Spender',
       APPROVE_TO: 'Approve to',
-      METHOD: 'Method'
+      METHOD: 'Method',
+      WALLET_CONNECT_PROPOSAL_EXPIRED: 'Connection request expired',
+      WC_PROPOSAL_EXPIRED_DESCRIPTION: 'This connection request has expired. Please try again by scanning a new QR or by refreshing the dApp that you are trying to connect to.'
     }
   }
 };
