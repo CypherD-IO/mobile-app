@@ -6,7 +6,7 @@
  * @flow
  */
 
-import React, { useEffect, useState, useContext, useLayoutEffect } from 'react';
+import React, { useEffect, useState, useContext, useLayoutEffect, useRef } from 'react';
 import WalletConnect from '@walletconnect/client';
 import { useTranslation } from 'react-i18next';
 import { DynamicTouchView, DynamicView } from '../../styles/viewStyle';
@@ -29,6 +29,7 @@ import clsx from 'clsx';
 import Button from '../../components/v2/button';
 import { ButtonType } from '../../constants/enum';
 import { useGlobalModalContext } from '../../components/v2/GlobalModal';
+import { WALLET_CONNECT_PROPOSAL_LISTENER } from '../../constants/timeOuts';
 
 export default function WalletConnectCamera (props) {
   const { walletConnectState, walletConnectDispatch } = useContext<walletConnectContextDef>(WalletConnectContext);
@@ -40,19 +41,56 @@ export default function WalletConnectCamera (props) {
 
   const [walletConnectURI, setWalletConnectURI] = useState('');
 
-  const [loading, setLoading] = useState(true);
   const [selectedPairingTopic, setSelectedPairingTopic] = useState<string>('');
   const [sessionsForAPairing, setSessionsForAPairing] = useState<any>([]);
   const [totalSessions, setTotalSessions] = useState<any>([]);
   const [isPairingSessionsModalVisible, setPairingSessionsModalVisible] = useState<boolean>(false);
   const { showModal, hideModal } = useGlobalModalContext();
+  const loading = useRef(true);
+  const sessionProposalListener = useRef<NodeJS.Timeout>();
+  const [isLoadingConnections, setIsLoadingConnections] = useState(true);
 
   const connectWallet = async (uri: string) => {
     if (uri.includes('relay-protocol')) {
       try {
-        await web3WalletPair({ uri });
+        const pairPromise = await web3WalletPair({ uri });
+        const currentTimestampInSeconds = Math.floor(Date.now() / 1000);
+        if (pairPromise?.expiry <= currentTimestampInSeconds) {
+          loading.current = false;
+          showModal('state', {
+            type: 'error',
+            title: t('WALLET_CONNECT_PROPOSAL_EXPIRED'),
+            description: t('WC_PROPOSAL_EXPIRED_DESCRIPTION'),
+            onSuccess: hideModal,
+            onFailure: hideModal
+          });
+        } else {
+          sessionProposalListener.current = setTimeout(() => {
+            if (loading.current) {
+              loading.current = false;
+              showModal('state', {
+                type: 'error',
+                title: t('WALLET_CONNECT_PROPOSAL_EXPIRED'),
+                description: t('WC_PROPOSAL_EXPIRED_DESCRIPTION'),
+                onSuccess: hideModal,
+                onFailure: hideModal
+              });
+            }
+          }, WALLET_CONNECT_PROPOSAL_LISTENER);
+          web3wallet?.on('session_proposal', () => {
+            loading.current = false;
+            clearTimeout(sessionProposalListener.current);
+          });
+        }
       } catch (e) {
-        setLoading(false);
+        loading.current = false;
+        showModal('state', {
+          type: 'error',
+          title: t('WALLET_CONNECT_PROPOSAL_EXPIRED'),
+          description: t('WC_PROPOSAL_EXPIRED_DESCRIPTION'),
+          onSuccess: hideModal,
+          onFailure: hideModal
+        });
       }
     } else {
       const connector = new WalletConnect({ uri });
@@ -77,7 +115,7 @@ export default function WalletConnectCamera (props) {
     props.navigation.navigate(C.screenTitle.WALLET_CONNECT);
     const link = e.data;
     if (link.startsWith('wc')) {
-      setLoading(true);
+      loading.current = true;
       void connectWallet(link);
       void analytics().logEvent('wallet_connect_url_scan', { fromEthAddress: ethereum.address });
     }
@@ -86,23 +124,11 @@ export default function WalletConnectCamera (props) {
   useLayoutEffect(() => {
     props.navigation.setOptions({
       headerRight: () => (
-         <DynamicTouchView
-             dynamic
-             style = {{ width: 30 }}
-             onPress = { () => {
-               props.navigation.navigate(C.screenTitle.QR_CODE_SCANNER, { fromPage: QRScannerScreens.WALLET_CONNECT, onSuccess });
-             }}
-             fD={'row'}
-             >
-               <DynamicImage
-                 dynamic
-                 height={20}
-                 width={22}
-                 resizemode="contain"
-                 source={AppImages.QR_CODE}
-               />
-             </DynamicTouchView>
-
+        <CyDTouchView onPress={() => {
+          props.navigation.navigate(C.screenTitle.QR_CODE_SCANNER, { fromPage: QRScannerScreens.WALLET_CONNECT, onSuccess });
+        }}>
+          <CyDFastImage source={AppImages.QR_CODE_SCANNER_BLACK} className='h-[25px] w-[25px]' resizeMode='contain'/>
+        </CyDTouchView>
       )
     });
   }, [props.navigation]);
@@ -119,7 +145,7 @@ export default function WalletConnectCamera (props) {
     const link = portfolioState.statePortfolio.walletConnectURI;
     if (link.startsWith('wc')) {
       portfolioState.dispatchPortfolio({ value: { walletConnectURI: '' } });
-      setLoading(true);
+      loading.current = true;
       void connectWallet(link);
       void analytics().logEvent('wallet_connect_url_scan', { fromEthAddress: ethereum.address });
     }
@@ -144,17 +170,21 @@ export default function WalletConnectCamera (props) {
   }, [walletConnectState]);
 
   useEffect(() => {
-    if (loading && walletConnectURI.startsWith('wc')) {
+    if (loading.current !== isLoadingConnections) {
+      setIsLoadingConnections(loading.current);
+    }
+    if (loading.current && walletConnectURI.startsWith('wc')) {
       void connectWallet(walletConnectURI);
     }
-  }, [loading, walletConnectURI]);
+  }, [loading.current, walletConnectURI]);
 
   const getv2Sessions = () => {
-    const sessions = Object.values(web3wallet?.getActiveSessions());
-    if (sessions) {
-      setTotalSessions(sessions);
+    if (web3wallet?.getActiveSessions()) {
+      const sessions = Object.values(web3wallet.getActiveSessions());
+      if (sessions) {
+        setTotalSessions(sessions);
+      }
     }
-    return sessions;
   };
 
   const getSessionsForAPairing = (pairingTopic: string) => {
@@ -183,11 +213,11 @@ export default function WalletConnectCamera (props) {
     if (web3wallet) getv2Sessions();
     if (selectedPairingTopic !== '') getSessionsForAPairing(selectedPairingTopic);
     if (walletConnectState?.connectors?.length === walletConnectState?.dAppInfo?.length) {
-      setLoading(false);
+      loading.current = false;
     }
   }, [walletConnectState]);
 
-  if (loading) {
+  if (isLoadingConnections) {
     return (<LoadingStack />);
   }
 
@@ -256,7 +286,7 @@ export default function WalletConnectCamera (props) {
                   <Button onPress={() => {
                     // void disconnectSession(session.item.topic);
                     void deletePairing(selectedPairingTopic, session.item.topic);
-                  }} style={'w-[80%] p-[10px] mb-[8px]'} type={ButtonType.RED} title={t('DISCONNECT')} titleStyle='text-[14px] text-white'/>
+                  }} style={'w-[80%] py-[10px] mb-[8px]'} type={ButtonType.RED} title={t('DISCONNECT')} titleStyle='text-[14px] text-white'/>
                 </CyDView>
           </CyDView>
         </CyDView>
@@ -290,15 +320,13 @@ export default function WalletConnectCamera (props) {
           }} style={'w-[80%] p-[20px] my-[18px]'} type={ButtonType.RED} title={t('DELETE_CONNECTION')} titleStyle='text-[14px] text-white'/>
         </CyDView>
         </CyDView>}
-        {sessionsForAPairing.length > 0 && <CyDView>
-          <CyDView>
+        {sessionsForAPairing.length > 0 && <CyDView className='mt-[20px]'>
           <FlatList
               data={sessionsForAPairing}
               renderItem={(item) => renderSessionItem(item)}
               style={{ width: '100%', maxHeight: 300 }}
               showsVerticalScrollIndicator={true}
           />
-        </CyDView>
         </CyDView>}
         <CyDView className={'flex flex-row justify-center'}>
           {/* <Button onPress={() => {
