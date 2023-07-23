@@ -211,9 +211,11 @@ export default function Onmeta ({ route }) {
   `;
 
   const onRampEvent = (event: any) => {
-    const eventData = JSON.parse(event?.nativeEvent?.data);
-    if (eventData?.data?.type === 'UPI_FAST') {
-      void Linking.openURL(eventData.data.link);
+    if (event?.nativeEvent?.data) {
+      const eventData = JSON.parse(event.nativeEvent.data);
+      if (eventData?.data?.type === 'UPI_FAST') {
+        void Linking.openURL(eventData.data.link);
+      }
     }
   };
 
