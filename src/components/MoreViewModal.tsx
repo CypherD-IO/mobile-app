@@ -28,7 +28,7 @@ export default function MoreViewModal (props: any) {
               </CyDTouchView>
               <CyDTouchView sentry-label='more-view-bookmark-icon' className='flex flex-row justify-start items-center gap-[16px] my-[1px]' onPress={() => { onBookmark(); onPress(); }}>
                 <CyDFastImage source={AppImages.BOOKMARK_BROWSER} className='h-[22px] w-[22px]' resizeMode='contain' />
-                <CyDText className='text-[16px] font-medium text-secondaryTextColor'>{t('BROWSER')}</CyDText>
+                <CyDText className='text-[16px] font-medium text-secondaryTextColor'>{t('BOOKMARKS')}</CyDText>
               </CyDTouchView>
           </CyDView>
       </CyDView>

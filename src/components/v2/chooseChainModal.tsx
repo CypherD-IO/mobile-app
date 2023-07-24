@@ -95,7 +95,7 @@ export default function ChooseChainModal ({
     >
       <CyDView
         className={
-          'bg-white border-1 rounded-[36px] border-[#E6E6E6] p-[12px] h-[60%] max-h-[400px] relative'
+          'bg-white border-1 rounded-t-[36px] border-[#E6E6E6] p-[12px] h-[60%] max-h-[400px] relative'
         }
       >
         <CyDTouchView onPress={() => { setModalVisible(false); }} className={'absolute z-[50] top-[20px] right-[24px]'}>

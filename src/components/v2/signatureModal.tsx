@@ -24,7 +24,7 @@ export default function SignatureModal ({
       animationOut={'slideOutDown'}
       avoidKeyboard = {avoidKeyboard}
     >
-      <CyDView className={'bg-white rounded-[20px]'}>
+      <CyDView className={'bg-white rounded-t-[20px]'}>
         <CyDTouchView
           onPress={() => {
             setModalVisible(false);

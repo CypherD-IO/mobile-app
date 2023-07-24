@@ -148,7 +148,7 @@ export default function WalletConnectModal (props) {
         <DynamicView>
           <SignatureModal isModalVisible={walletConnectModalVisible} setModalVisible = {setWalletConnectModalVisible} onCancel = {() => { walletConnectRejectRequest({ connector: request.connector, payload: request.payload, method: (request.payload.method === 'session_request') ? 'reject_session' : 'reject_request', dispatch: walletConnectDispatch }); }}>
           <CyDModalLayout setModalVisible={setChooseChain} isModalVisible={chooseChain} style={stylesheet.modalLayout} animationIn={'slideInUp'} animationOut={'slideOutDown'}>
-            <CyDView className={'bg-white p-[25px] pb-[30px] rounded-[20px] relative'}>
+            <CyDView className={'bg-white p-[25px] pb-[30px] rounded-t-[20px] relative'}>
               <CyDTouchView onPress={() => { setChooseChain(false); }} className={'z-[50]'}>
                 <CyDImage source={AppImages.CLOSE} className={' w-[22px] h-[22px] z-[50] absolute right-[0px] '} />
               </CyDTouchView>
