@@ -82,7 +82,7 @@ function TabStack () {
       <Tab.Navigator
         initialRouteName={screenTitle.PORTFOLIO}
         tabBar={(props) => (
-          <CyDView className={clsx('', { 'h-[0px] pb-[0px] mb-[-50px]': hideTabBar, 'h-[115px]': !hideTabBar && isReadOnlyWallet })}>
+          <CyDView className={clsx('w-full', { 'h-[0px] pb-[0px] mb-[-50px]': hideTabBar, 'h-[115px] absolute bottom-0': !hideTabBar && isReadOnlyWallet })}>
             {isReadOnlyWallet && <CyDView className='flex flex-row justify-center items-center bg-ternaryBackgroundColor py-[5px]'>
             <CyDImage source={AppImages.EYE_OPEN} className='h-[18px] w-[18px]' resizeMode='contain'/>
             <CyDText className='font-bold mt-[2px] ml-[5px]'>{t('READ_ONLY_MODE')}</CyDText>
@@ -94,7 +94,7 @@ function TabStack () {
         )}
         screenOptions={({ navigation, route }) => ({
           tabBarHideOnKeyboard: true,
-          tabBarStyle: hideTabBar ? { height: 0, paddingBottom: 0, marginBottom: -50 } : { height: 70, paddingBottom: paddingBottomTabBarStyles },
+          tabBarStyle: hideTabBar ? { height: 0, paddingBottom: 0, marginBottom: -50 } : { height: 70, paddingBottom: paddingBottomTabBarStyles, borderTopLeftRadius: 14, borderTopRightRadius: 14, borderLeftWidth: 0.5, borderRightWidth: 0.5, borderLeftColor: '#d8d8d8', borderRightColor: '#d8d8d8' },
           tabBarIcon: ({ focused, color, size }) => {
             let iconName;
 
