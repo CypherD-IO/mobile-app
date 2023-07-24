@@ -1306,7 +1306,7 @@ export default function Bridge (props: {navigation?: any, route?: any}) {
       ? swapParams?.gasFeeETH
       : gasFeeReservation[fromToken?.chainDetails?.backendName];
     if (parseFloat(cryptoAmount) > parseFloat(fromToken?.actualBalance)) {
-      return renderWarningPopupMessage(`${t<string>('INSUFFICIENT_BALANCE_BRIDGE')}`);
+      return renderWarningPopupMessage(fromChain !== toChain ? t<string>('INSUFFICIENT_BALANCE_BRIDGE') : t<string>('INSUFFICIENT_BALANCE_SWAP'));
     } else if (nativeTokenBalance <= gas) {
       return renderWarningPopupMessage(`Insufficient ${nativeTokenSymbol} for gas fee`);
     } else if (
@@ -2079,14 +2079,14 @@ export default function Bridge (props: {navigation?: any, route?: any}) {
                 <CyDView className={'px-[20px]'}>
                   <CyDText
                     className={
-                      'text-center font-nunito text-[24px] font-bold font-[#434343] mt-[20px]'
+                      'text-center text-[24px] font-bold mt-[20px]'
                     }
                   >
                     {t<string>(isSwap() ? 'SWAP_TOKENS' : 'TRANSFER_TOKENS')}
                   </CyDText>
                   <CyDView
                     className={
-                      'flex flex-row justify-between w-[100%] my-[20px] bg-[#F7F8FE] rounded-[20px] px-[15px] py-[20px] '
+                      'flex flex-row justify-between items-center w-[100%] my-[20px] bg-[#F7F8FE] rounded-[20px] px-[15px] py-[20px] '
                     }
                   >
                     <CyDView
@@ -2124,8 +2124,12 @@ export default function Bridge (props: {navigation?: any, route?: any}) {
                       </CyDView>
                     </CyDView>
 
-                    <CyDView className={'flex justify-center'}>
-                      <CyDImage source={AppImages.APP_SEL} />
+                    <CyDView className={'flex justify-center h-[30px] w-[30px]'}>
+                    {
+                      fromChain === toChain
+                        ? <CyDFastImage source={AppImages.SWAP} className='h-[22px] w-[22px]' resizeMode='contain' />
+                        : <CyDFastImage source={AppImages.APP_SEL} className='h-full w-full' resizeMode='contain' />
+                    }
                     </CyDView>
 
                     <CyDView
@@ -2529,7 +2533,7 @@ export default function Bridge (props: {navigation?: any, route?: any}) {
                 setShowDropDown(true);
               }}
               className={
-                'flex flex-row justify-between my-[30px] bg-[#F7F8FE] rounded-[20px] mx-[20px] px-[15px] py-[20px] shadow shadow-sepratorColor'
+                'flex flex-row justify-between items-center my-[30px] bg-[#F7F8FE] rounded-[20px] mx-[20px] px-[15px] py-[20px] shadow shadow-sepratorColor'
               }
             >
               <CyDView className={'flex w-[40%] items-center justify-center'}>
@@ -2563,9 +2567,13 @@ export default function Bridge (props: {navigation?: any, route?: any}) {
                 </CyDView>
               </CyDView>
 
-              <CyDView className={'flex justify-center'}>
-                <CyDImage source={AppImages.APP_SEL} />
-              </CyDView>
+              <CyDView className={'flex justify-center h-[30px] w-[30px]'}>
+                {
+                  fromChain === toChain
+                    ? <CyDFastImage source={AppImages.SWAP} className='h-[22px] w-[22px]' resizeMode='contain' />
+                    : <CyDFastImage source={AppImages.APP_SEL} className='h-full w-full' resizeMode='contain' />
+                }
+                </CyDView>
 
               <CyDView className={'flex w-[40%] items-center justify-center '}>
                 <CyDImage
