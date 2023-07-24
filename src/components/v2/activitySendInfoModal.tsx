@@ -93,7 +93,7 @@ export default function ActivitySendInfoModal ({
         animationIn={'slideInUp'}
         animationOut={'slideOutDown'}
       >
-        <CyDView className={'bg-white pb-[30px] rounded-[20px]'} ref={viewRef}>
+        <CyDView className={'bg-white pb-[30px] rounded-t-[20px]'} ref={viewRef}>
           <CyDTouchView className={'flex flex-row justify-end z-10'}
             onPress={() => { setModalVisible(false); }}
           >

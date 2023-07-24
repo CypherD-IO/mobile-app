@@ -35,7 +35,7 @@ export default function BottomConfirmCosmos (props: {
         onCancelPress();
       }}
     >
-      <CyDView className={'bg-white pb-[30px] flex items-center rounded-[20px]'}>
+      <CyDView className={'bg-white pb-[30px] flex items-center rounded-t-[20px]'}>
         <CyDTouchView className={'flex flex-row pl-[95%] justify-end z-10'}
           onPress={onCancelPress}
         >
@@ -45,10 +45,10 @@ export default function BottomConfirmCosmos (props: {
           />
         </CyDTouchView>
 
-        <CyDText className='text-center font-nunito text-[19px] font-bold  '>Confirm Sign</CyDText>
+        <CyDText className='text-center font-nunito text-[19px] font-bold'>Confirm Sign</CyDText>
         <CyDText className='text-center font-nunito text-[19px] mt-[10px] font-bold  '>{chain.charAt(0).toUpperCase() + chain.slice(1)}</CyDText>
 
-        <CyDText className='text-left font-nunito pr-[73%] mt-[20px] text-[16px] mb-[10px] font-bold  '>Payload</CyDText>
+        <CyDText className='text-left font-nunito pr-[73%] mt-[20px] text-[16px] mb-[10px] font-bold'>Payload</CyDText>
 
         <CyDScrollView className={'bg-backLight border-2 border-portfolioBorderColor h-[35%] w-[90%] py-[10px] px-[10px] rounded-[10px]'} >
           <CyDText className='text-left front-nunito text-[13px] font-regular  '>{JSON.stringify(payload, undefined, 8)}</CyDText>

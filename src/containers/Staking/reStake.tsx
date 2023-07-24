@@ -299,7 +299,7 @@ export default function ReStake ({ route, navigation }) {
   return (
         <>
         <CyDModalLayout setModalVisible={setDelegateModalVisible} isModalVisible={delegateModalVisible} style={styles.modalLayout} animationIn={'slideInUp'} animationOut={'slideOutDown'}>
-          <CyDView className={'bg-white p-[25px] pb-[30px] rounded-[20px] relative'}>
+          <CyDView className={'bg-white p-[25px] pb-[30px] rounded-t-[20px] relative'}>
             <CyDTouchView onPress={() => { setDelegateModalVisible(false); setItemData({ description: { name: '' } }); }} className={'z-[50]'}>
               <CyDImage source={AppImages.CLOSE} className={' w-[22px] h-[22px] z-[50] absolute right-[0px] top-[-10px] '} />
             </CyDTouchView>

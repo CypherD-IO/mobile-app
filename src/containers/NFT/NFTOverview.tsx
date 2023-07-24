@@ -42,7 +42,7 @@ export default function NFTOverviewScreen ({ route, navigation }: RouteProps) {
         <CyDView className={'h-full bg-whiteColor'}>
 
             <CyDModalLayout setModalVisible={setImageZoomIn} isModalVisible={imageZoomIn} style={styles.modalLayout} animationIn={'zoomIn'} animationInTiming={10} animationOut={'zoomOut'} animationOutTiming={10}>
-                <CyDView className={'rounded-[20px] relative'}>
+                <CyDView className={'rounded-t-[20px] relative'}>
                     <CyDTouchView onPress={() => setImageZoomIn(false)} className={'z-[50] bg-white'}>
                         <CyDImage source={AppImages.CLOSE} className={' w-[22px] h-[22px] z-[50] absolute mt-[10px] right-[10px] '} />
                     </CyDTouchView>

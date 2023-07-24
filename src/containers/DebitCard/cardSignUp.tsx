@@ -620,7 +620,7 @@ export default function CardSignupScreen ({ navigation, route }) {
         animationIn={'slideInUp'}
         animationOut={'slideOutDown'}
       >
-        <CyDView className={'bg-white h-[50%] rounded-[20px]'}>
+        <CyDView className={'bg-white h-[50%] rounded-t-[20px]'}>
           <CyDView className={'flex flex-row mt-[20px] justify-end mr-[22px]'}>
             <CyDTouchView onPress={() => { setSSNModalVisible(false); }} className={'ml-[18px]'}>
               <CyDImage source={AppImages.CLOSE} className={' w-[22px] h-[22px] z-[50] right-[0px] '} />
@@ -644,7 +644,7 @@ export default function CardSignupScreen ({ navigation, route }) {
         animationIn={'slideInUp'}
         animationOut={'slideOutDown'}
       >
-        <CyDView className={'bg-white h-[30%] rounded-[20px]'}>
+        <CyDView className={'bg-white h-[30%] rounded-t-[20px]'}>
           <CyDView className={'flex flex-row mt-[20px] justify-end mr-[22px] z-50'}>
             <CyDTouchView onPress={() => { setChangeNumberModalVisible(false); }} className={'ml-[18px]'}>
               <CyDImage source={AppImages.CLOSE} className={' w-[22px] h-[22px] z-[50] right-[0px] '} />
@@ -691,7 +691,7 @@ export default function CardSignupScreen ({ navigation, route }) {
         animationIn={'slideInUp'}
         animationOut={'slideOutDown'}
       >
-        <CyDView className={'bg-white h-[30%] rounded-[20px]'}>
+        <CyDView className={'bg-white h-[30%] rounded-t-[20px]'}>
           <CyDView className={'flex flex-row mt-[20px] justify-end mr-[22px] z-50'}>
             <CyDTouchView onPress={() => { setChangeEmailModalVisible(false); }} className={'ml-[18px]'}>
               <CyDImage source={AppImages.CLOSE} className={' w-[22px] h-[22px] z-[50] right-[0px] '} />
