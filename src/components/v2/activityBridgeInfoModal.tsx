@@ -64,7 +64,7 @@ export default function ActivityBridgeInfoModal ({
         animationIn={'slideInUp'}
         animationOut={'slideOutDown'}
       >
-        <CyDView className={'bg-white pb-[30px] rounded-[20px]'}>
+        <CyDView className={'bg-white pb-[30px] rounded-t-[20px]'}>
           <CyDTouchView className={'flex flex-row justify-end z-10'}
             onPress={() => { setModalVisible(false); }}
           >

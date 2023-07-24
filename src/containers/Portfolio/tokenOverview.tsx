@@ -889,7 +889,7 @@ function TokenOverview ({ route, navigation }) {
     <><CyDScrollView className={'w-full h-full bg-white'} refreshControl={<RefreshControl refreshing={refreshing} onRefresh={onRefresh} />}>
 
         <CyDModalLayout setModalVisible={setClaimModal} isModalVisible={claimModal} style={styles.modalLayout} animationIn={'slideInUp'} animationOut={'slideOutDown'}>
-          <CyDView className={'bg-white p-[25px] pb-[30px] rounded-[20px] relative'}>
+          <CyDView className={'bg-white p-[25px] pb-[30px] rounded-t-[20px] relative'}>
             <CyDTouchView onPress={() => setClaimModal(false)} className={'z-[50]'}>
               <CyDImage source={AppImages.CLOSE} className={' w-[22px] h-[22px] z-[50] absolute right-[0px] '} />
             </CyDTouchView>
@@ -938,7 +938,7 @@ function TokenOverview ({ route, navigation }) {
         </CyDModalLayout>
 
         <CyDModalLayout setModalVisible={setSignModalVisible} isModalVisible={signModalVisible} style={styles.modalLayout} animationIn={'slideInUp'} animationOut={'slideOutDown'}>
-          <CyDView className={'bg-white p-[25px] pb-[30px] rounded-[20px] relative'}>
+          <CyDView className={'bg-white p-[25px] pb-[30px] rounded-t-[20px] relative'}>
             <CyDTouchView onPress={() => { setSignModalVisible(false); }} className={'z-[50]'}>
               <CyDImage source={AppImages.CLOSE} className={' w-[22px] h-[22px] z-[50] absolute right-[0px] '} />
             </CyDTouchView>
@@ -971,7 +971,7 @@ function TokenOverview ({ route, navigation }) {
         </CyDModalLayout>
 
         <CyDModalLayout setModalVisible={setReStakeModalVisible} isModalVisible={reStakeModalVisible} style={styles.modalLayout} animationIn={'slideInUp'} animationOut={'slideOutDown'}>
-          <CyDView className={'bg-white p-[25px] pb-[30px] rounded-[20px] relative'}>
+          <CyDView className={'bg-white p-[25px] pb-[30px] rounded-t-[20px] relative'}>
             <CyDTouchView onPress={() => { setReStakeModalVisible(false); }} className={'z-[50]'}>
               <CyDImage source={AppImages.CLOSE} className={' w-[22px] h-[22px] z-[50] absolute right-[0px] top-[-10px] '} />
             </CyDTouchView>

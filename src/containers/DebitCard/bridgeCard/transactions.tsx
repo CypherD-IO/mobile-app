@@ -229,7 +229,7 @@ export default function TransactionsScreen (props: { navigation: any, currentCar
         isModalVisible={transactionFilterByTypeModal}
         style={styles.modalContainer}
       >
-        <CyDView className={'bg-white pb-[30px] w-[100%] rounded-[20px]'}>
+        <CyDView className={'bg-white pb-[30px] w-[100%] rounded-t-[20px]'}>
           <CyDTouchView className={'flex flex-row justify-end z-10'}
             onPress={() => { setTransactionFilterByTypeModal(false); }}
           >
@@ -279,7 +279,7 @@ export default function TransactionsScreen (props: { navigation: any, currentCar
         isModalVisible={transactionFilterByDateModal}
         style={styles.modalContainer}
       >
-        <CyDView className={'bg-white pb-[30px] w-[100%] rounded-[20px]'}>
+        <CyDView className={'bg-white pb-[30px] w-[100%] rounded-t-[20px]'}>
           <CyDTouchView className={'flex flex-row justify-end z-10 px-[10px]'}
             onPress={() => { onDateChange({ year, yearIndex, month, monthIndex }); }}
           >
