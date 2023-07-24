@@ -109,7 +109,10 @@ function BridgeItem (props: any) {
   const fromChainlogo = ALL_CHAINS.find(chain => chain.name === activity.fromChain)?.logo_url;
   const toChainlogo = ALL_CHAINS.find(chain => chain.name === activity.toChain)?.logo_url;
   const statusColor = activity.status === ActivityStatus.FAILED ? Colors.activityFailed : (activity.status === ActivityStatus.PENDING || activity.status === ActivityStatus.DELAYED) ? Colors.activityPending : Colors.activitySuccess;
-  const icon = activity.status === ActivityStatus.FAILED ? AppImages.BRIDGE_ERROR : (activity.status === ActivityStatus.PENDING || activity.status === ActivityStatus.DELAYED) ? AppImages.BRIDGE_PENDING : AppImages.BRIDGE_SUCCESS;
+  const icon = {
+    forBridge: activity.status === ActivityStatus.FAILED ? AppImages.BRIDGE_ERROR : (activity.status === ActivityStatus.PENDING || activity.status === ActivityStatus.DELAYED) ? AppImages.BRIDGE_PENDING : AppImages.BRIDGE_SUCCESS,
+    forSwap: activity.status === ActivityStatus.FAILED ? AppImages.SWAP_ERROR : (activity.status === ActivityStatus.PENDING || activity.status === ActivityStatus.DELAYED) ? AppImages.SWAP_PENDING : AppImages.SWAP_SUCCESS
+  };
   const fromNow = moment(activity.datetime).fromNow();
   const formatDate = fromNow.includes('day') ? moment(activity.datetime).format('MMM DD, h:mm a') : fromNow;
   const formatFromAmount = `- ${activity.fromTokenAmount} ${activity.fromSymbol}`;
@@ -137,7 +140,11 @@ function BridgeItem (props: any) {
     <CyDTouchView className='mb-[20px] mt-[10px]' onPress={onPressBridgeItem}>
       <CyDView className='flex flex-row items-center'>
         <CyDView>
-          <CyDFastImage className='h-[25px] w-[25px]' resizeMode='contain' source={icon} />
+          {
+            activity.fromChain === activity.toChain
+              ? <CyDFastImage className='h-[25px] w-[25px]' resizeMode='contain' source={icon.forSwap} />
+              : <CyDFastImage className='h-[25px] w-[25px]' resizeMode='contain' source={icon.forBridge} />
+          }
         </CyDView>
         <CyDView className='flex flex-1 flex-row justify-between items-center'>
           <CyDView className='flex flex-row items-center px-[10px]'>
@@ -159,14 +166,14 @@ function BridgeItem (props: any) {
                 source={{
                   uri: activity.fromTokenLogoUrl
                 }}
-              />
+                />
               <CyDView className='absolute top-[20px] right-[-7px]'
                 >
                   <CyDFastImage
                     className={'h-[18px] w-[18px] rounded-[50px] border-[1px] border-white bg-white'}
                     source={fromChainlogo}
                     resizeMode={FastImage.resizeMode.contain}
-                  />
+                    />
                 </CyDView>
             </CyDView>
             <CyDView className='px-[15px]'>
@@ -176,8 +183,11 @@ function BridgeItem (props: any) {
           </CyDView>
         </CyDView>
         <CyDView className='flex justify-center items-center mt-[10px]'>
-          <CyDFastImage className='h-[25px] w-[25px]' resizeMode='contain'
-            source={AppImages.BRIDGE_GRAY}/>
+          {
+            activity.fromChain === activity.toChain
+              ? <CyDFastImage className='h-[25px] w-[25px]' resizeMode='contain' source={AppImages.SWAP_GRAY} />
+              : <CyDFastImage className='h-[25px] w-[25px]' resizeMode='contain' source={AppImages.BRIDGE_GRAY} />
+          }
         </CyDView>
         <CyDView className='flex flex-column justify-center items-center px-[10px]'>
           <CyDView className='flex flex-1 justify-start'>
@@ -190,14 +200,14 @@ function BridgeItem (props: any) {
                 source={{
                   uri: activity.toTokenLogoUrl
                 }}
-              />
+                />
               <CyDView className='absolute top-[20px] right-[-7px]'
                 >
                   <CyDFastImage
                     className={'h-[18px] w-[18px] rounded-[50px] border-[1px] border-white bg-white'}
                     source={toChainlogo}
                     resizeMode={FastImage.resizeMode.contain}
-                  />
+                    />
                 </CyDView>
             </CyDView>
             <CyDView className='px-[15px]'>
