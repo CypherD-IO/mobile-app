@@ -58,7 +58,7 @@ const CustomModalLayout = (store: CustomModalLayoutDef) => {
       animationOut={'slideOutDown'}
       setModalVisible={ () => { store.onSuccess(); }}
     >
-      <CyDView className={'bg-white rounded-t-[50px] min-h-[45%] pb-[15px]'}>
+      <CyDView className={'bg-white rounded-t-[50px] min-h-[30%] pb-[15px]'}>
         {store.customComponent}
       </CyDView>
     </CyDModalLayout>
