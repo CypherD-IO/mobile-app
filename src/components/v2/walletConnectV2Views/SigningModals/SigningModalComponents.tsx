@@ -7,6 +7,7 @@ import { t } from 'i18next';
 import { IDAppInfo } from '../../../../models/signingModalData.interface';
 import EmptyView from '../../../EmptyView';
 import AppImages from '../../../../../assets/images/appImages';
+import { DecodedResponseTypes } from '../../../../constants/enum';
 const RenderDAPPInfo = ({ dAppInfo }: { dAppInfo: IDAppInfo}) => {
   return (
     <CyDView className='flex flex-row items-center mt-[12px] border-[1px] rounded-[12px] border-fadedGrey'>
@@ -108,12 +109,24 @@ const Loader = () => {
   );
 };
 
-const RenderTitle = ({ method }: {method: string}) => {
+const RenderTitle = ({ method, sendType }: {method: string, sendType: string}) => {
   let title = method;
   if (method === EIP155_SIGNING_METHODS.PERSONAL_SIGN || method === EIP155_SIGNING_METHODS.ETH_SIGN) {
     title = t<string>('SIGN_MESSAGE');
   } else if (method === EIP155_SIGNING_METHODS.ETH_SEND_RAW_TRANSACTION || method === EIP155_SIGNING_METHODS.ETH_SEND_TRANSACTION || method === EIP155_SIGNING_METHODS.ETH_SIGN_TRANSACTION) {
-    title = t<string>('APPROVE_TRANSACTION');
+    switch (sendType) {
+      case DecodedResponseTypes.SEND:
+        title = t<string>('SEND_TOKENS');
+        break;
+      case DecodedResponseTypes.CALL:
+        title = t<string>('SWAP_TOKENS');
+        break;
+      case DecodedResponseTypes.APPROVE:
+        title = t<string>('APPROVE_TOKEN');
+        break;
+      default:
+        title = t<string>('...');
+    }
   } else if (method.includes(EIP155_SIGNING_METHODS.ETH_SIGN_TYPED_DATA)) {
     title = t<string>('APPROVE_TYPED_TRANSACTION');
   }
