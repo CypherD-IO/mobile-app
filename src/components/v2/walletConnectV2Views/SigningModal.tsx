@@ -232,12 +232,11 @@ export default function SigningModal ({
 
   return (
     <CyDModalLayout setModalVisible={() => {}} isModalVisible={isModalVisible} style={styles.modalLayout} animationIn={'slideInUp'} animationOut={'slideOutDown'}>
-      <CyDView className='flex justify-center rounded-t-[50px] bg-white'>
-      <CyDView>
+      <CyDView className='rounded-t-[50px] bg-white max-h-[80%]'>
         {(chain && method)
           ? <CyDView className='flex flex-col justify-between'>
               <RenderTitle method={method} />
-              <CyDScrollView className='max-h-[75%] px-[25px]'>
+              <CyDScrollView className='px-[25px] max-h-[72%]'>
                 {(method === EIP155_SIGNING_METHODS.PERSONAL_SIGN || method === EIP155_SIGNING_METHODS.ETH_SIGN) && <RenderSignMessageModal dAppInfo={dAppInfo} chain={chain} method={method} requestParams={requestParams} />}
                 {(method === EIP155_SIGNING_METHODS.ETH_SEND_RAW_TRANSACTION || method === EIP155_SIGNING_METHODS.ETH_SEND_TRANSACTION || method === EIP155_SIGNING_METHODS.ETH_SIGN_TRANSACTION) &&
                   (dataIsReady
@@ -255,7 +254,6 @@ export default function SigningModal ({
           : <Loader />
           }
         {!chain && showModal('state', { type: 'error', title: t('UNSUPPORTED_CHAIN'), description: t('UNSUPPORTED_CHAIN_DESCRIPTION'), onSuccess: handleReject, onFailure: handleReject })}
-      </CyDView>
       </CyDView>
     </CyDModalLayout>
   );

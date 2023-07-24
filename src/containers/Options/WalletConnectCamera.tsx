@@ -118,6 +118,14 @@ export default function WalletConnectCamera (props) {
       loading.current = true;
       void connectWallet(link);
       void analytics().logEvent('wallet_connect_url_scan', { fromEthAddress: ethereum.address });
+    } else {
+      showModal('state', {
+        type: 'error',
+        title: t('INVALID_CONNECTION_REQUEST'),
+        description: t('INVALID_CONNECTION_REQUEST_DESCRIPTION'),
+        onSuccess: hideModal,
+        onFailure: hideModal
+      });
     }
   };
 
@@ -183,6 +191,19 @@ export default function WalletConnectCamera (props) {
       const sessions = Object.values(web3wallet.getActiveSessions());
       if (sessions) {
         setTotalSessions(sessions);
+        const activeSessionTopics = sessions.map(session => session.pairingTopic);
+        const staleConnectors: number[] = [];
+        const connectors = walletConnectState?.connectors.filter((connector, index) => {
+          if (activeSessionTopics.includes(connector?.topic)) {
+            return true;
+          }
+          staleConnectors.push(index);
+          return false;
+        });
+        const dAppInfo = walletConnectState?.dAppInfo.filter((dApp, index) => !staleConnectors.includes(index));
+        if (staleConnectors.length) {
+          walletConnectDispatch({ type: WalletConnectActions.RESTORE_SESSION, value: { connectors, dAppInfo } });
+        }
       }
     }
   };
@@ -298,7 +319,7 @@ export default function WalletConnectCamera (props) {
     return (
       <CyDView>
         <CyDView className={'flex flex-row justify-center'}>
-          <CyDText className={'text-[22px] font-extrabold mt-[14px] mb-[10px]'}>{t<string>('MANAGE_CONNECTION')}</CyDText>
+          <CyDText className={'text-[22px] font-extrabold mt-[15px] mb-[10px]'}>{t<string>('MANAGE_CONNECTION')}</CyDText>
         </CyDView>
         {/* <CyDTouchView onPress={() => { setPairingSessionsModalVisible(false); }} className={'z-[50]'}>
           <CyDImage source={AppImages.CLOSE} className={' w-[18px] h-[18px] z-[50] absolute right-[20px] top-[-30px]'} />
@@ -312,7 +333,7 @@ export default function WalletConnectCamera (props) {
                   />
           </CyDView>
           <CyDView className={'flex flex-row justify-center mb-[10px]'}>
-            <CyDText className={'font-bold text-[18px]'}>No active session available</CyDText>
+            <CyDText className={'font-bold text-[18px]'}>No active sessions available</CyDText>
           </CyDView>
           <CyDView className={'flex flex-row justify-center'}>
           <Button onPress={() => {
@@ -320,7 +341,7 @@ export default function WalletConnectCamera (props) {
           }} style={'w-[80%] p-[20px] my-[18px]'} type={ButtonType.RED} title={t('DELETE_CONNECTION')} titleStyle='text-[14px] text-white'/>
         </CyDView>
         </CyDView>}
-        {sessionsForAPairing.length > 0 && <CyDView className='mt-[20px]'>
+        {sessionsForAPairing.length > 0 && <CyDView className='mt-[10px]'>
           <FlatList
               data={sessionsForAPairing}
               renderItem={(item) => renderSessionItem(item)}
