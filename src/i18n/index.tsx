@@ -655,6 +655,8 @@ const resources = {
       REVIEW_PERMISSION: 'Review Permission',
       SIGN_MESSAGE: 'Sign Message',
       APPROVE_TRANSACTION: 'Approve Transaction',
+      SEND_TOKENS: 'Send Tokens',
+      APPROVE_TOKEN: 'Approve Token',
       APPROVE_TYPED_TRANSACTION: 'Approve Typed Transaction',
       MANAGE_CONNECTION: 'Manage Connection',
       DELETE_CONNECTION: 'DELETE CONNECTION',

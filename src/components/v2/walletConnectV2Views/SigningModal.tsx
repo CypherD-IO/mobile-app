@@ -235,7 +235,7 @@ export default function SigningModal ({
       <CyDView className='rounded-t-[50px] bg-white max-h-[80%]'>
         {(chain && method)
           ? <CyDView className='flex flex-col justify-between'>
-              <RenderTitle method={method} />
+              <RenderTitle method={method} sendType={(decodedABIData as IExtendedDecodedTxnResponse)?.type} />
               <CyDScrollView className='px-[25px] max-h-[72%]'>
                 {(method === EIP155_SIGNING_METHODS.PERSONAL_SIGN || method === EIP155_SIGNING_METHODS.ETH_SIGN) && <RenderSignMessageModal dAppInfo={dAppInfo} chain={chain} method={method} requestParams={requestParams} />}
                 {(method === EIP155_SIGNING_METHODS.ETH_SEND_RAW_TRANSACTION || method === EIP155_SIGNING_METHODS.ETH_SEND_TRANSACTION || method === EIP155_SIGNING_METHODS.ETH_SIGN_TRANSACTION) &&
