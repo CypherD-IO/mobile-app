@@ -17,7 +17,7 @@ export default function MoreViewModal (props: any) {
       animationOut={'fadeOut'}
     >
       <CyDView className='pointer-events-none w-fit h-full relative'>
-          <CyDView className='bg-secondaryBackgroundColor rounded-[10px] p-[15px] absolute top-[60px] right-[0px]'>
+          <CyDView className='bg-secondaryBackgroundColor rounded-t-[10px] p-[15px] absolute top-[60px] right-[0px]'>
               <CyDTouchView sentry-label='more-view-home-icon' className='flex flex-row justify-start items-center gap-[16px] my-[1px]' onPress={() => { onHome(); onPress(); }}>
                 <CyDFastImage source={AppImages.HOME_BROWSER} className='h-[22px] w-[22px]' resizeMode='contain' />
                 <CyDText className='text-[16px] font-medium text-secondaryTextColor'>{t('HOME')}</CyDText>
