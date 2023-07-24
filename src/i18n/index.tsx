@@ -708,7 +708,7 @@ const resources = {
       MAYBE_LATER: 'Maybe later',
       HOME: 'Home',
       HISTORY: 'History',
-      BROWSER: 'Browser',
+      BOOKMARKS: 'Bookmarks',
       APPROVAL_TOKEN: 'Approval Token',
       SPENDER: 'Spender',
       APPROVE_TO: 'Approve to',
