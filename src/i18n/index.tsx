@@ -714,7 +714,9 @@ const resources = {
       APPROVE_TO: 'Approve to',
       METHOD: 'Method',
       WALLET_CONNECT_PROPOSAL_EXPIRED: 'Connection request expired',
-      WC_PROPOSAL_EXPIRED_DESCRIPTION: 'This connection request has expired. Please try again by scanning a new QR or by refreshing the dApp that you are trying to connect to.'
+      WC_PROPOSAL_EXPIRED_DESCRIPTION: 'This connection request has expired. Please try again by scanning a new QR or by refreshing the dApp that you are trying to connect to.',
+      INVALID_CONNECTION_REQUEST: 'Invalid connection request',
+      INVALID_CONNECTION_REQUEST_DESCRIPTION: 'If you are trying to connect to a dApp, select Cypher wallet or WalletConnect and then scan the QR code again.'
     }
   }
 };
