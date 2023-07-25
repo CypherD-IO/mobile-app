@@ -1,5 +1,5 @@
 import { screenTitle } from '../constants';
-import { BackHandler, Image, StyleProp, ToastAndroid, ViewStyle } from 'react-native';
+import { BackHandler, ToastAndroid } from 'react-native';
 import * as React from 'react';
 import {
   BrowserStackScreen, DebitCardStackScreen,
@@ -9,14 +9,15 @@ import {
 import { BottomTabBar, createBottomTabNavigator } from '@react-navigation/bottom-tabs';
 import AppImages from '../../assets/images/appImages';
 import ShortcutsModal from '../containers/Shortcuts';
-import { NavigationContainer, useNavigationContainerRef, getFocusedRouteNameFromRoute, RouteProp, ParamListBase } from '@react-navigation/native';
+import { NavigationContainer, useNavigationContainerRef } from '@react-navigation/native';
 import { useContext, useEffect, useState } from 'react';
 import { ActivityContext, HdWalletContext } from '../core/util';
 import SpInAppUpdates from 'sp-react-native-in-app-updates';
-import { CyDImage, CyDText, CyDView } from '../styles/tailwindStyles';
+import { CyDAnimatedView, CyDImage, CyDText, CyDView } from '../styles/tailwindStyles';
 import { t } from 'i18next';
 import clsx from 'clsx';
 import { isIOS } from '../misc/checkers';
+import { Layout, SlideInUp, SlideOutDown } from 'react-native-reanimated';
 
 const Tab = createBottomTabNavigator();
 
@@ -24,36 +25,19 @@ function TabStack () {
   const navigationRef = useNavigationContainerRef();
   const activityContext = useContext<any>(ActivityContext);
   const hdWalletContext = useContext<any>(HdWalletContext);
-  const { isReadOnlyWallet, hideTabBar } = hdWalletContext.state;
+  const { isReadOnlyWallet } = hdWalletContext.state;
   const inAppUpdates = new SpInAppUpdates(
     false // isDebug
   );
-  const screensToHaveNavBar = [screenTitle.PORTFOLIO_SCREEN, screenTitle.OPTIONS_SCREEN, screenTitle.APTO_CARD_SCREEN, screenTitle.CARD_SIGNUP_LANDING_SCREEN, screenTitle.CARD_SIGNUP_SCREEN, screenTitle.BRIDGE_CARD_SCREEN];
-
-  const getTabBarOptions: (route: RouteProp<ParamListBase>) => StyleProp<ViewStyle> = (route: RouteProp<ParamListBase>) => {
-    const routeName = getFocusedRouteNameFromRoute(route) ?? '';
-    if (routeName !== '' && !screensToHaveNavBar.includes(routeName)) {
-      return { display: 'none' }; // TODO: SLIDE OUT OR SOME ANIMATION
-    }
-    // TODO: SLIDE IN OR SOME ANIMATION
-    return {
-      height: 70,
-      elevation: 1,
-      paddingBottom: paddingBottomTabBarStyles,
-      borderTopLeftRadius: 24,
-      borderTopRightRadius: 24,
-      borderTopWidth: 0,
-      borderLeftColor: '#d8d8d8',
-      borderRightColor: '#d8d8d8',
-      shadowColor: '#aaa',
-      shadowOffset: {
-        width: -1,
-        height: -3
-      },
-      shadowOpacity: 0.1,
-      shadowRadius: 3
-    };
-  };
+  const screensToHaveNavBar = [
+    screenTitle.PORTFOLIO_SCREEN,
+    screenTitle.BROWSER_SCREEN,
+    screenTitle.OPTIONS_SCREEN,
+    screenTitle.CARD_SIGNUP_LANDING_SCREEN,
+    screenTitle.CARD_SIGNUP_SCREEN,
+    screenTitle.APTO_CARD_SCREEN,
+    screenTitle.BRIDGE_CARD_SCREEN
+  ];
 
   const [badgedTabBarOptions, setBadgedTabBarOptions] = useState<any>({});
 
@@ -107,8 +91,11 @@ function TabStack () {
     <NavigationContainer independent={true} ref={navigationRef}>
       <Tab.Navigator
         initialRouteName={screenTitle.PORTFOLIO}
-        tabBar={(props) => (
-          <CyDView className={clsx('w-full', { 'h-[0px] pb-[0px] mb-[-50px]': hideTabBar, 'h-[115px] absolute bottom-0': !hideTabBar && isReadOnlyWallet })}>
+        tabBar={(props) => {
+          const currentRouteStack = props.state.routes[props.state.index].state?.routes.map(item => item.name);
+          const showTabBar = (currentRouteStack === undefined) || screensToHaveNavBar.includes(currentRouteStack[currentRouteStack?.length - 1]);
+          return (
+          <CyDAnimatedView entering={SlideInUp} exiting={SlideOutDown} layout={Layout.duration(200)} className={clsx('w-full', { 'mb-[-70px]': !showTabBar, 'h-[115px] absolute bottom-0': showTabBar && isReadOnlyWallet })}>
             {isReadOnlyWallet && <CyDView className='flex flex-row justify-center items-center bg-ternaryBackgroundColor py-[5px]'>
             <CyDImage source={AppImages.EYE_OPEN} className='h-[18px] w-[18px]' resizeMode='contain'/>
             <CyDText className='font-bold mt-[2px] ml-[5px]'>{t('READ_ONLY_MODE')}</CyDText>
@@ -116,11 +103,28 @@ function TabStack () {
             <BottomTabBar
               {...props}
             />
-          </CyDView>
-        )}
+          </CyDAnimatedView>
+          );
+        }}
         screenOptions={({ navigation, route }) => ({
           tabBarHideOnKeyboard: true,
-          tabBarStyle: getTabBarOptions(route),
+          tabBarStyle: {
+            height: 70,
+            elevation: 1,
+            paddingBottom: paddingBottomTabBarStyles,
+            borderTopLeftRadius: 24,
+            borderTopRightRadius: 24,
+            borderTopWidth: 0,
+            borderLeftColor: '#d8d8d8',
+            borderRightColor: '#d8d8d8',
+            shadowColor: '#aaa',
+            shadowOffset: {
+              width: -1,
+              height: -3
+            },
+            shadowOpacity: 0.2,
+            shadowRadius: 3
+          },
           tabBarIcon: ({ focused, color, size }) => {
             let iconName;
 
@@ -140,14 +144,10 @@ function TabStack () {
 
             // You can return any component that you like here!
             return (
-              <Image
-                style={{
-                  height: 35,
-                  resizeMode: 'contain',
-                  marginTop: 5,
-                  alignSelf: 'center'
-                }}
+              <CyDImage
                 source={iconName}
+                className='h-[35px] mt-[5px] self-center'
+                resizeMode='contain'
               />
             );
           },
