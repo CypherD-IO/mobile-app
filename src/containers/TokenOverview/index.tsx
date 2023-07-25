@@ -44,7 +44,6 @@ export default function TokenOverviewV2 ({ route, navigation }: RouteProps) {
       } else {
         setIndex(+route.params.navigateTo);
       }
-      hdWallet.dispatch({ type: 'HIDE_TAB_BAR', value: { tabBarHidden: true } });
       BackHandler.addEventListener('hardwareBackPress', handleBackButton);
       navigation.setOptions({
         title: tokenData.name
@@ -54,15 +53,10 @@ export default function TokenOverviewV2 ({ route, navigation }: RouteProps) {
       }
       setLoading(false);
     }
-
-    return () => {
-      hdWallet.dispatch({ type: 'HIDE_TAB_BAR', value: { tabBarHidden: false } });
-    };
   }, [isFocused]);
 
   const handleBackButton = () => {
     navigation.goBack();
-    hdWallet.dispatch({ type: 'HIDE_TAB_BAR', value: { tabBarHidden: false } });
     return true;
   };
 
@@ -70,7 +64,7 @@ export default function TokenOverviewV2 ({ route, navigation }: RouteProps) {
     loading
       ? <Loading />
       : <CyDView className={'bg-white h-full'}>
-        <CyDView className={'mb-[130px]'}>
+        <CyDView>
           <CyDView className={'flex flex-row justify-center'}>
             <SwitchView titles={tokenTabs} index={index} setIndexChange={(index: number) => {
               setIndex(index);
@@ -80,7 +74,7 @@ export default function TokenOverviewV2 ({ route, navigation }: RouteProps) {
           {index === 1 && <TokenTransactions tokenData={tokenData} navigation={navigation} />}
           {index === 2 && <TokenStaking tokenData={tokenData} navigation={navigation} />}
         </CyDView>
-      <CyDView className={'bg-white border-t-sepratorColor border-t-[0.5px] absolute bottom-0 h-[130px]'}>
+      <CyDView className={'bg-white border-t-sepratorColor border-t-[0.5px] absolute bottom-0'}>
         <TokenOverviewToolBar tokenData={tokenData} navigation={navigation} />
       </CyDView>
     </CyDView>

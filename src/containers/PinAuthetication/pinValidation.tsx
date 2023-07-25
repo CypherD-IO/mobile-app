@@ -55,7 +55,6 @@ export default function PinValidation ({ route, navigation }) {
       if (await validatePin(pin)) {
         setWrongPin(false);
         // hdWallet.dispatch({ type: 'SET_PIN_VALUE', value: { pin } });
-        hdWallet.dispatch({ type: 'HIDE_TAB_BAR', value: { tabBarHidden: false } });
         navigation.goBack();
       } else {
         if (retries > 1) {

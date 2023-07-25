@@ -1,5 +1,5 @@
 import { screenTitle } from '../constants';
-import { BackHandler, Image, ToastAndroid } from 'react-native';
+import { BackHandler, Image, StyleProp, ToastAndroid, ViewStyle } from 'react-native';
 import * as React from 'react';
 import {
   BrowserStackScreen, DebitCardStackScreen,
@@ -9,7 +9,7 @@ import {
 import { BottomTabBar, createBottomTabNavigator } from '@react-navigation/bottom-tabs';
 import AppImages from '../../assets/images/appImages';
 import ShortcutsModal from '../containers/Shortcuts';
-import { NavigationContainer, useNavigationContainerRef } from '@react-navigation/native';
+import { NavigationContainer, useNavigationContainerRef, getFocusedRouteNameFromRoute, RouteProp, ParamListBase } from '@react-navigation/native';
 import { useContext, useEffect, useState } from 'react';
 import { ActivityContext, HdWalletContext } from '../core/util';
 import SpInAppUpdates from 'sp-react-native-in-app-updates';
@@ -28,10 +28,36 @@ function TabStack () {
   const inAppUpdates = new SpInAppUpdates(
     false // isDebug
   );
+  const screensToHaveNavBar = [screenTitle.PORTFOLIO_SCREEN, screenTitle.OPTIONS_SCREEN, screenTitle.APTO_CARD_SCREEN, screenTitle.CARD_SIGNUP_LANDING_SCREEN, screenTitle.CARD_SIGNUP_SCREEN, screenTitle.BRIDGE_CARD_SCREEN];
+
+  const getTabBarOptions: (route: RouteProp<ParamListBase>) => StyleProp<ViewStyle> = (route: RouteProp<ParamListBase>) => {
+    const routeName = getFocusedRouteNameFromRoute(route) ?? '';
+    if (routeName !== '' && !screensToHaveNavBar.includes(routeName)) {
+      return { display: 'none' }; // TODO: SLIDE OUT OR SOME ANIMATION
+    }
+    // TODO: SLIDE IN OR SOME ANIMATION
+    return {
+      height: 70,
+      elevation: 1,
+      paddingBottom: paddingBottomTabBarStyles,
+      borderTopLeftRadius: 24,
+      borderTopRightRadius: 24,
+      borderTopWidth: 0,
+      borderLeftColor: '#d8d8d8',
+      borderRightColor: '#d8d8d8',
+      shadowColor: '#aaa',
+      shadowOffset: {
+        width: -1,
+        height: -3
+      },
+      shadowOpacity: 0.1,
+      shadowRadius: 3
+    };
+  };
+
+  const [badgedTabBarOptions, setBadgedTabBarOptions] = useState<any>({});
 
   const paddingBottomTabBarStyles = isIOS() ? 15 : 10;
-
-  const [tabBarOptions, setTabBarOptions] = useState<any>({});
 
   let backPressCount = 0;
   const handleBackButton = () => {
@@ -67,11 +93,11 @@ function TabStack () {
       const updateResp = await inAppUpdates.checkNeedsUpdate();
       showBadge = updateResp.shouldUpdate || latestDate(activityContext.state.activityObjects, activityContext.state.lastVisited);
       if (showBadge) {
-        setTabBarOptions({
+        setBadgedTabBarOptions({
           tabBarBadge: '',
           tabBarBadgeStyle: { fontSize: 0, paddingHorizontal: 0, lineHeight: 0, height: 10, width: 10, minWidth: 0, borderRadius: 6, top: 12, left: 4 }
         });
-      } else setTabBarOptions({});
+      } else setBadgedTabBarOptions({});
     };
 
     void isBadgeAvailable();
@@ -94,7 +120,7 @@ function TabStack () {
         )}
         screenOptions={({ navigation, route }) => ({
           tabBarHideOnKeyboard: true,
-          tabBarStyle: hideTabBar ? { height: 0, paddingBottom: 0, marginBottom: -50 } : { height: 70, paddingBottom: paddingBottomTabBarStyles, borderTopLeftRadius: 14, borderTopRightRadius: 14, borderLeftWidth: 0.5, borderRightWidth: 0.5, borderLeftColor: '#d8d8d8', borderRightColor: '#d8d8d8' },
+          tabBarStyle: getTabBarOptions(route),
           tabBarIcon: ({ focused, color, size }) => {
             let iconName;
 
@@ -137,14 +163,27 @@ function TabStack () {
           name={screenTitle.PORTFOLIO}
           component={PortfolioStackScreen}
         />
-        <Tab.Screen name={screenTitle.BROWSER} component={BrowserStackScreen}/>
-        <Tab.Screen name={screenTitle.SHORTCUTS} component={PortfolioStackScreen}
-                    options={() => ({
-                      tabBarButton: () => <ShortcutsModal navigationRef={navigationRef}/>
-                    })}
+        <Tab.Screen
+          name={screenTitle.BROWSER}
+          component={BrowserStackScreen}
         />
-        <Tab.Screen name={screenTitle.DEBIT_CARD} component={DebitCardStackScreen} />
-        <Tab.Screen name={screenTitle.OPTIONS} component={OptionsStackScreen} options={tabBarOptions}/>
+        <Tab.Screen
+          name={screenTitle.SHORTCUTS} component={PortfolioStackScreen}
+          options={({ route }) => ({
+            tabBarButton: () => <ShortcutsModal navigationRef={navigationRef}/>
+          })}
+        />
+        <Tab.Screen
+          name={screenTitle.DEBIT_CARD}
+          component={DebitCardStackScreen}
+        />
+        <Tab.Screen
+          name={screenTitle.OPTIONS}
+          component={OptionsStackScreen}
+          options={({ route }) => ({
+            ...badgedTabBarOptions
+          })}
+        />
       </Tab.Navigator>
     </NavigationContainer>
   );
