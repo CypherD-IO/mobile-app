@@ -74,7 +74,16 @@ export default function TokenOverviewV2 ({ route, navigation }: RouteProps) {
           {index === 1 && <TokenTransactions tokenData={tokenData} navigation={navigation} />}
           {index === 2 && <TokenStaking tokenData={tokenData} navigation={navigation} />}
         </CyDView>
-      <CyDView className={'bg-white border-t-sepratorColor border-t-[0.5px] absolute bottom-0'}>
+      <CyDView className={'bg-white rounded-t-[24px] absolute bottom-0'} style={{
+        elevation: 1,
+        shadowColor: '#aaa',
+        shadowOffset: {
+          width: -1,
+          height: -3
+        },
+        shadowOpacity: 0.2,
+        shadowRadius: 3
+      }}>
         <TokenOverviewToolBar tokenData={tokenData} navigation={navigation} />
       </CyDView>
     </CyDView>
