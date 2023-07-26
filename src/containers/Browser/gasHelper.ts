@@ -158,7 +158,6 @@ export function estimateGas (payload, webviewRef, hdWalletContext, selectedChain
       let valueETH = 0;
       if (value !== undefined) {
         valueETH = parseFloat(Web3.utils.fromWei(Web3.utils.hexToNumberString(value)));
-        console.log('🚀 ~ file: Browser.tsx ~ line 355 ~ .then ~ valueETH', valueETH);
       }
 
       let gasFeeDollar;
@@ -167,7 +166,6 @@ export function estimateGas (payload, webviewRef, hdWalletContext, selectedChain
       let totalEth = 0;
       if (gasDetail.tokenPrice > 0) {
         const nativeTokenPrice = gasDetail.tokenPrice;
-        console.log('🚀 ~ file: Browser.tsx ~ line 364 ~ .then ~ nativeTokenPrice', nativeTokenPrice);
         gasFeeDollar = (totalGasFeeInGwei * nativeTokenPrice).toFixed(2);
         valueDollar = parseFloat((valueETH * nativeTokenPrice).toFixed(2));
         totalEth = valueETH + totalGasFeeInGwei;
@@ -189,7 +187,6 @@ export function estimateGas (payload, webviewRef, hdWalletContext, selectedChain
         gasPrice: gasDetail,
         payload
       };
-      console.log('🚀 ~ file: Browser.tsx ~ line 386 ~ .then ~ paymodalParams', paymodalParams);
 
       payModal(paymodalParams, to);
     })
