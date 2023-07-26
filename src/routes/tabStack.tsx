@@ -95,14 +95,12 @@ function TabStack () {
           const currentRouteStack = props.state.routes[props.state.index].state?.routes.map(item => item.name);
           const showTabBar = (currentRouteStack === undefined) || screensToHaveNavBar.includes(currentRouteStack[currentRouteStack.length - 1]);
           return (
-            <CyDAnimatedView entering={SlideInUp} exiting={SlideOutDown} layout={Layout.duration(200)} className={clsx('w-full bg-transparent absolute bottom-0', { 'mb-[-70px]': !showTabBar, 'shadow shadow-gray-300': showTabBar && !isReadOnlyWallet })}>
-            {isReadOnlyWallet && <CyDView className='flex flex-row justify-center items-center bg-ternaryBackgroundColor py-[5px] mb-[-15px] pb-[20px] rounded-t-[24px] shadow shadow-gray-300'>
+            <CyDAnimatedView entering={SlideInUp} exiting={SlideOutDown} layout={Layout.duration(200)} className={clsx('w-full bg-transparent', { 'mb-[-70px]': !showTabBar, 'shadow shadow-gray-400': showTabBar && !isReadOnlyWallet })}>
+            {isReadOnlyWallet && <CyDView className='flex flex-row justify-center items-center bg-ternaryBackgroundColor py-[5px] mb-[-15px] pb-[20px] rounded-t-[24px] shadow shadow-gray-400'>
             <CyDImage source={AppImages.EYE_OPEN} className='h-[18px] w-[18px]' resizeMode='contain'/>
             <CyDText className='font-bold mt-[2px] ml-[5px]'>{t('READ_ONLY_MODE')}</CyDText>
             </CyDView>}
-            <BottomTabBar
-              {...props}
-            />
+            <BottomTabBar {...props}/>
           </CyDAnimatedView>
           );
         }}
@@ -160,7 +158,7 @@ function TabStack () {
         <Tab.Screen
           name={screenTitle.SHORTCUTS} component={PortfolioStackScreen}
           options={({ route }) => ({
-            tabBarButton: () => <ShortcutsModal navigationRef={navigationRef}/>
+            tabBarButton: () => <CyDView className='mt-[-12px]'><ShortcutsModal navigationRef={navigationRef}/></CyDView>
           })}
         />
         <Tab.Screen
