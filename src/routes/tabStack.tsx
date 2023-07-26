@@ -158,7 +158,7 @@ function TabStack () {
         <Tab.Screen
           name={screenTitle.SHORTCUTS} component={PortfolioStackScreen}
           options={({ route }) => ({
-            tabBarButton: () => <CyDView className='mt-[-12px]'><ShortcutsModal navigationRef={navigationRef}/></CyDView>
+            tabBarButton: () => <CyDView className={clsx('mt-[-12px]', { 'mt-[7px]': isReadOnlyWallet })}><ShortcutsModal navigationRef={navigationRef}/></CyDView>
           })}
         />
         <Tab.Screen
