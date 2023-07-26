@@ -232,11 +232,11 @@ export default function SigningModal ({
 
   return (
     <CyDModalLayout setModalVisible={() => {}} isModalVisible={isModalVisible} style={styles.modalLayout} animationIn={'slideInUp'} animationOut={'slideOutDown'}>
-      <CyDView className='rounded-t-[50px] bg-white max-h-[80%]'>
+      <CyDView className='rounded-t-[50px] bg-white max-h-[90%]'>
         {(chain && method)
           ? <CyDView className='flex flex-col justify-between'>
               <RenderTitle method={method} sendType={(decodedABIData as IExtendedDecodedTxnResponse)?.type} />
-              <CyDScrollView className='px-[25px] max-h-[72%]'>
+              <CyDScrollView className='px-[25px] pb-[5px] max-h-[70%]'>
                 {(method === EIP155_SIGNING_METHODS.PERSONAL_SIGN || method === EIP155_SIGNING_METHODS.ETH_SIGN) && <RenderSignMessageModal dAppInfo={dAppInfo} chain={chain} method={method} requestParams={requestParams} />}
                 {(method === EIP155_SIGNING_METHODS.ETH_SEND_RAW_TRANSACTION || method === EIP155_SIGNING_METHODS.ETH_SEND_TRANSACTION || method === EIP155_SIGNING_METHODS.ETH_SIGN_TRANSACTION) &&
                   (dataIsReady
