@@ -7,7 +7,8 @@ import { GlobalContext } from '../../core/globalContext';
 import { isBasicCosmosChain, StakingContext, convertFromUnitAmount, convertToEvmosFromAevmos, isABasicCosmosStakingToken, isCosmosStakingToken, isCosmosChain } from '../../core/util';
 import { TokenMeta } from '../../models/tokenMetaData.model';
 import { CosmosStakingContext } from '../../reducers/cosmosStakingReducer';
-import { CyDImage, CyDText, CyDTouchView, CyDView } from '../../styles/tailwindStyles';
+import { CyDAnimatedView, CyDImage, CyDText, CyDTouchView, CyDView } from '../../styles/tailwindStyles';
+import { Layout, SlideInUp, SlideOutDown } from 'react-native-reanimated';
 
 export default function TokenOverviewToolBar ({ tokenData, navigation }: { tokenData: TokenMeta, navigation: { navigate: (screen: string, {}: any) => void } }) {
   const globalStateContext = useContext<any>(GlobalContext);
@@ -29,7 +30,7 @@ export default function TokenOverviewToolBar ({ tokenData, navigation }: { token
   const canShowFundCard = globalStateContext.globalState.cardProfile?.solid?.cards?.length > 0 && userBalance() >= 10;
 
   return (
-    <CyDView className={'flex flex-row w-[100%] justify-evenly my-[10px]'}>
+    <CyDAnimatedView entering={SlideInUp} exiting={SlideOutDown} layout={Layout.duration(200)} className={'flex flex-row w-[100%] justify-evenly my-[10px]'}>
           <CyDView className='flex items-center'>
               <CyDTouchView className={'flex items-center justify-center'} onPress={() => {
                 navigation.navigate(screenTitle.ENTER_AMOUNT, {
@@ -116,6 +117,6 @@ export default function TokenOverviewToolBar ({ tokenData, navigation }: { token
               </CyDTouchView>
               <CyDText className={'text-center mt-[3px]  text-[14px] font-bold'}>{t<string>('RECEIVE')}</CyDText>
           </CyDView>
-    </CyDView>
+    </CyDAnimatedView>
   );
 };

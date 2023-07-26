@@ -4,9 +4,8 @@ import { CyDView } from '../../styles/tailwindStyles';
 import SwitchView from '../../components/v2/switchView';
 import Overview from './overview';
 import { TokenOverviewTabIndices, TokenOverviewTabs } from '../../constants/enum';
-import { useContext, useEffect, useState } from 'react';
+import { useEffect, useState } from 'react';
 import { useIsFocused } from '@react-navigation/native';
-import { HdWalletContext } from '../../core/util';
 import Loading from '../../components/v2/loading';
 import { TokenTransactions } from './transactions';
 import { BackHandler } from 'react-native';
@@ -30,7 +29,6 @@ interface RouteProps {
 
 export default function TokenOverviewV2 ({ route, navigation }: RouteProps) {
   const isFocused = useIsFocused();
-  const hdWallet = useContext<any>(HdWalletContext);
   const { tokenData } = route.params;
   const [tokenTabs, setTokenTabs] = useState([TokenOverviewTabs.OVERVIEW, TokenOverviewTabs.TRANSACTIONS]);
   const [index, setIndex] = useState<number>();
@@ -74,16 +72,7 @@ export default function TokenOverviewV2 ({ route, navigation }: RouteProps) {
           {index === 1 && <TokenTransactions tokenData={tokenData} navigation={navigation} />}
           {index === 2 && <TokenStaking tokenData={tokenData} navigation={navigation} />}
         </CyDView>
-      <CyDView className={'bg-white rounded-t-[24px] absolute bottom-0'} style={{
-        elevation: 1,
-        shadowColor: '#aaa',
-        shadowOffset: {
-          width: -1,
-          height: -3
-        },
-        shadowOpacity: 0.2,
-        shadowRadius: 3
-      }}>
+      <CyDView className={'bg-white rounded-t-[24px] absolute bottom-0 shadow shadow-gray-400'}>
         <TokenOverviewToolBar tokenData={tokenData} navigation={navigation} />
       </CyDView>
     </CyDView>

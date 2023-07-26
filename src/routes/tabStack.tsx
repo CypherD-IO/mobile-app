@@ -95,8 +95,8 @@ function TabStack () {
           const currentRouteStack = props.state.routes[props.state.index].state?.routes.map(item => item.name);
           const showTabBar = (currentRouteStack === undefined) || screensToHaveNavBar.includes(currentRouteStack[currentRouteStack.length - 1]);
           return (
-          <CyDAnimatedView entering={SlideInUp} exiting={SlideOutDown} layout={Layout.duration(200)} className={clsx('w-full', { 'mb-[-70px]': !showTabBar, 'h-[115px] absolute bottom-0': showTabBar && isReadOnlyWallet })}>
-            {isReadOnlyWallet && <CyDView className='flex flex-row justify-center items-center bg-ternaryBackgroundColor py-[5px]'>
+            <CyDAnimatedView entering={SlideInUp} exiting={SlideOutDown} layout={Layout.duration(200)} className={clsx('w-full bg-transparent absolute bottom-0', { 'mb-[-70px]': !showTabBar, 'shadow shadow-gray-300': showTabBar && !isReadOnlyWallet })}>
+            {isReadOnlyWallet && <CyDView className='flex flex-row justify-center items-center bg-ternaryBackgroundColor py-[5px] mb-[-15px] pb-[20px] rounded-t-[24px] shadow shadow-gray-300'>
             <CyDImage source={AppImages.EYE_OPEN} className='h-[18px] w-[18px]' resizeMode='contain'/>
             <CyDText className='font-bold mt-[2px] ml-[5px]'>{t('READ_ONLY_MODE')}</CyDText>
             </CyDView>}
@@ -110,20 +110,10 @@ function TabStack () {
           tabBarHideOnKeyboard: true,
           tabBarStyle: {
             height: 70,
-            elevation: 1,
             paddingBottom: paddingBottomTabBarStyles,
-            borderTopLeftRadius: 24,
-            borderTopRightRadius: 24,
             borderTopWidth: 0,
-            borderLeftColor: '#d8d8d8',
-            borderRightColor: '#d8d8d8',
-            shadowColor: '#aaa',
-            shadowOffset: {
-              width: -1,
-              height: -3
-            },
-            shadowOpacity: 0.2,
-            shadowRadius: 3
+            borderTopLeftRadius: 24,
+            borderTopRightRadius: 24
           },
           tabBarIcon: ({ focused, color, size }) => {
             let iconName;
