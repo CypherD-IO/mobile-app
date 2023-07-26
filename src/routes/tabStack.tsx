@@ -6,7 +6,7 @@ import {
   OptionsStackScreen,
   PortfolioStackScreen
 } from './auth';
-import { BottomTabBar, createBottomTabNavigator } from '@react-navigation/bottom-tabs';
+import { BottomTabBar, BottomTabBarProps, createBottomTabNavigator } from '@react-navigation/bottom-tabs';
 import AppImages from '../../assets/images/appImages';
 import ShortcutsModal from '../containers/Shortcuts';
 import { NavigationContainer, useNavigationContainerRef } from '@react-navigation/native';
@@ -91,9 +91,9 @@ function TabStack () {
     <NavigationContainer independent={true} ref={navigationRef}>
       <Tab.Navigator
         initialRouteName={screenTitle.PORTFOLIO}
-        tabBar={(props) => {
+        tabBar={(props: BottomTabBarProps) => {
           const currentRouteStack = props.state.routes[props.state.index].state?.routes.map(item => item.name);
-          const showTabBar = (currentRouteStack === undefined) || screensToHaveNavBar.includes(currentRouteStack[currentRouteStack?.length - 1]);
+          const showTabBar = (currentRouteStack === undefined) || screensToHaveNavBar.includes(currentRouteStack[currentRouteStack.length - 1]);
           return (
           <CyDAnimatedView entering={SlideInUp} exiting={SlideOutDown} layout={Layout.duration(200)} className={clsx('w-full', { 'mb-[-70px]': !showTabBar, 'h-[115px] absolute bottom-0': showTabBar && isReadOnlyWallet })}>
             {isReadOnlyWallet && <CyDView className='flex flex-row justify-center items-center bg-ternaryBackgroundColor py-[5px]'>

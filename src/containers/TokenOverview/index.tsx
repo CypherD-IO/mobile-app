@@ -64,7 +64,7 @@ export default function TokenOverviewV2 ({ route, navigation }: RouteProps) {
     loading
       ? <Loading />
       : <CyDView className={'bg-white h-full'}>
-        <CyDView>
+        <CyDView className='pb-[95px]'>
           <CyDView className={'flex flex-row justify-center'}>
             <SwitchView titles={tokenTabs} index={index} setIndexChange={(index: number) => {
               setIndex(index);
