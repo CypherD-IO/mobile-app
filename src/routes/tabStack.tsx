@@ -95,8 +95,8 @@ function TabStack () {
           const currentRouteStack = props.state.routes[props.state.index].state?.routes.map(item => item.name);
           const showTabBar = (currentRouteStack === undefined) || screensToHaveNavBar.includes(currentRouteStack[currentRouteStack.length - 1]);
           return (
-            <CyDAnimatedView entering={SlideInUp} exiting={SlideOutDown} layout={Layout.duration(200)} className={clsx('w-full bg-transparent', { 'mb-[-70px]': !showTabBar, 'mb-[-90px]': !showTabBar && !isReadOnlyWallet, 'shadow shadow-gray-400': showTabBar && !isReadOnlyWallet })}>
-            {isReadOnlyWallet && <CyDView className='flex flex-row justify-center items-center bg-ternaryBackgroundColor py-[5px] mb-[-15px] pb-[20px] rounded-t-[24px] shadow shadow-gray-400'>
+            <CyDAnimatedView entering={SlideInUp} exiting={SlideOutDown} layout={Layout.duration(200)} className={clsx('w-full bg-transparent', { 'mb-[-70px]': !showTabBar, 'shadow shadow-gray-400': showTabBar && !isReadOnlyWallet })}>
+            {isReadOnlyWallet && <CyDView className={clsx('flex flex-row justify-center items-center bg-ternaryBackgroundColor py-[5px] mb-[-15px] pb-[20px] rounded-t-[24px] shadow shadow-gray-400', { hidden: !showTabBar })}>
             <CyDImage source={AppImages.EYE_OPEN} className='h-[18px] w-[18px]' resizeMode='contain'/>
             <CyDText className='font-bold mt-[2px] ml-[5px]'>{t('READ_ONLY_MODE')}</CyDText>
             </CyDView>}
@@ -158,7 +158,7 @@ function TabStack () {
         <Tab.Screen
           name={screenTitle.SHORTCUTS} component={PortfolioStackScreen}
           options={({ route }) => ({
-            tabBarButton: () => <CyDView className={clsx('mt-[-10px] scale-125 shadow shadow-yellow-200', { 'mt-[7px]': isReadOnlyWallet })}><ShortcutsModal navigationRef={navigationRef}/></CyDView>
+            tabBarButton: () => <CyDView className={clsx('mt-[5px] scale-110 shadow shadow-yellow-200')}><ShortcutsModal navigationRef={navigationRef}/></CyDView>
           })}
         />
         <Tab.Screen

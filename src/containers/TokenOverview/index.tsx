@@ -33,8 +33,6 @@ interface RouteProps {
 export default function TokenOverviewV2 ({ route, navigation }: RouteProps) {
   const isFocused = useIsFocused();
   const { tokenData } = route.params;
-  const hdWalletContext = useContext<any>(HdWalletContext);
-  const { isReadOnlyWallet } = hdWalletContext.state;
   const [tokenTabs, setTokenTabs] = useState([TokenOverviewTabs.OVERVIEW, TokenOverviewTabs.TRANSACTIONS]);
   const [index, setIndex] = useState<number>();
   const [loading, setLoading] = useState<boolean>(true);
@@ -77,7 +75,7 @@ export default function TokenOverviewV2 ({ route, navigation }: RouteProps) {
           {index === 1 && <TokenTransactions tokenData={tokenData} navigation={navigation} />}
           {index === 2 && <TokenStaking tokenData={tokenData} navigation={navigation} />}
         </CyDView>
-      <CyDView className={clsx('bg-white rounded-t-[24px] absolute bottom-0 shadow shadow-gray-400', { 'pb-[15px]': isIOS() && !isReadOnlyWallet, 'pb-[10px]': !isIOS && !isReadOnlyWallet })}>
+      <CyDView className={clsx('bg-white rounded-t-[24px] absolute bottom-0 shadow shadow-gray-400')}>
         <TokenOverviewToolBar tokenData={tokenData} navigation={navigation} />
       </CyDView>
     </CyDView>
