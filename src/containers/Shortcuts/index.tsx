@@ -539,7 +539,7 @@ export default function ShortcutsModal ({ navigationRef }) {
       await analytics().logEvent('shortcuts_button_click');
     }}
       disabled={portfolioState.statePortfolio.portfolioState === PORTFOLIO_NEW_LOAD}
-      className={'scale-125'}>
+    >
       {/* shortcuts modal */}
       <CyDModalLayout
         isModalVisible={shortcutsModalVisible}

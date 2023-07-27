@@ -4,7 +4,7 @@ import { CyDView } from '../../styles/tailwindStyles';
 import SwitchView from '../../components/v2/switchView';
 import Overview from './overview';
 import { TokenOverviewTabIndices, TokenOverviewTabs } from '../../constants/enum';
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useContext } from 'react';
 import { useIsFocused } from '@react-navigation/native';
 import Loading from '../../components/v2/loading';
 import { TokenTransactions } from './transactions';
@@ -12,6 +12,9 @@ import { BackHandler } from 'react-native';
 import TokenOverviewToolBar from './toolbar';
 import TokenStaking from './staking';
 import analytics from '@react-native-firebase/analytics';
+import clsx from 'clsx';
+import { isIOS } from '../../misc/checkers';
+import { HdWalletContext } from '../../core/util';
 
 interface RouteProps {
   route: {
@@ -30,6 +33,8 @@ interface RouteProps {
 export default function TokenOverviewV2 ({ route, navigation }: RouteProps) {
   const isFocused = useIsFocused();
   const { tokenData } = route.params;
+  const hdWalletContext = useContext<any>(HdWalletContext);
+  const { isReadOnlyWallet } = hdWalletContext.state;
   const [tokenTabs, setTokenTabs] = useState([TokenOverviewTabs.OVERVIEW, TokenOverviewTabs.TRANSACTIONS]);
   const [index, setIndex] = useState<number>();
   const [loading, setLoading] = useState<boolean>(true);
@@ -72,7 +77,7 @@ export default function TokenOverviewV2 ({ route, navigation }: RouteProps) {
           {index === 1 && <TokenTransactions tokenData={tokenData} navigation={navigation} />}
           {index === 2 && <TokenStaking tokenData={tokenData} navigation={navigation} />}
         </CyDView>
-      <CyDView className={'bg-white rounded-t-[24px] absolute bottom-0 shadow shadow-gray-400'}>
+      <CyDView className={clsx('bg-white rounded-t-[24px] absolute bottom-0 shadow shadow-gray-400', { 'pb-[15px]': isIOS() && !isReadOnlyWallet, 'pb-[10px]': !isIOS && !isReadOnlyWallet })}>
         <TokenOverviewToolBar tokenData={tokenData} navigation={navigation} />
       </CyDView>
     </CyDView>
