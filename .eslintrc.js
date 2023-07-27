@@ -6,6 +6,7 @@ module.exports = {
     'react-native/react-native': true
   },
   extends: [
+    '@react-native',
     'plugin:react/recommended',
     'standard-with-typescript'
   ],
