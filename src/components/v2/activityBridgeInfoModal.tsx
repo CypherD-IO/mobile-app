@@ -1,7 +1,7 @@
 import React, { useContext } from 'react';
 import { StyleSheet } from 'react-native';
 import CyDModalLayout from './modal';
-import { CyDImage, CyDText, CyDTouchView, CyDView } from '../../styles/tailwindStyles';
+import { CyDFastImage, CyDImage, CyDText, CyDTouchView, CyDView } from '../../styles/tailwindStyles';
 import AppImages from './../../../assets/images/appImages';
 import Button from './button';
 import moment from 'moment';
@@ -74,9 +74,13 @@ export default function ActivityBridgeInfoModal ({
             />
           </CyDTouchView>
           <CyDView className='flex mt-[5%] flex-row justify-center items-center '>
-            <CyDImage source={status === ActivityStatus.SUCCESS || status === ActivityStatus.INPROCESS ? AppImages.BRIDGE_SUCCESS : AppImages.BRIDGE_PENDING}
-                className={'w-[21px] h-[21px] right-[9px]'}
+            { type === ActivityType.BRIDGE
+              ? <CyDFastImage source={status === ActivityStatus.SUCCESS || status === ActivityStatus.INPROCESS ? AppImages.BRIDGE_SUCCESS : AppImages.BRIDGE_PENDING}
+                className={'w-[22px] h-[22px] right-[9px]'}
             />
+              : <CyDFastImage source={status === ActivityStatus.SUCCESS || status === ActivityStatus.INPROCESS ? AppImages.SWAP_SUCCESS : AppImages.SWAP_PENDING}
+              className='w-[22px] h-[22px] right-[9px]'
+            />}
             <CyDView className='flex mt-[5%] justify-center items-center '>
               <CyDText className='text-center font-nunito text-[20px] font-extrabold font-primaryTextColor'>{t<string>(type === ActivityType.BRIDGE ? 'BRIDGE_TRANSACTION' : 'SWAP_TRANSACTION')}</CyDText>
               <CyDText className={clsx('text-center font-nunito text-[12px] font-extrabold ', {

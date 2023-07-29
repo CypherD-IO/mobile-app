@@ -2,12 +2,14 @@ import { t } from 'i18next';
 import React, { useContext } from 'react';
 import AppImages from '../../../assets/images/appImages';
 import { screenTitle } from '../../constants';
-import { ChainBackendNames, ChainNames, CosmosStakingTokens, FundWalletAddressType } from '../../constants/server';
+import { ChainBackendNames, CosmosStakingTokens, FundWalletAddressType } from '../../constants/server';
 import { GlobalContext } from '../../core/globalContext';
-import { isBasicCosmosChain, StakingContext, convertFromUnitAmount, convertToEvmosFromAevmos, isABasicCosmosStakingToken, isCosmosStakingToken, isCosmosChain } from '../../core/util';
+import { isBasicCosmosChain, StakingContext, convertFromUnitAmount, convertToEvmosFromAevmos, isABasicCosmosStakingToken, isCosmosStakingToken } from '../../core/util';
 import { TokenMeta } from '../../models/tokenMetaData.model';
 import { CosmosStakingContext } from '../../reducers/cosmosStakingReducer';
-import { CyDImage, CyDText, CyDTouchView, CyDView } from '../../styles/tailwindStyles';
+import { CyDAnimatedView, CyDImage, CyDText, CyDTouchView, CyDView } from '../../styles/tailwindStyles';
+import { Layout, SlideInUp, SlideOutDown } from 'react-native-reanimated';
+import { isIOS } from '../../misc/checkers';
 
 export default function TokenOverviewToolBar ({ tokenData, navigation }: { tokenData: TokenMeta, navigation: { navigate: (screen: string, {}: any) => void } }) {
   const globalStateContext = useContext<any>(GlobalContext);
@@ -26,23 +28,23 @@ export default function TokenOverviewToolBar ({ tokenData, navigation }: { token
     }
   };
 
-  const canShowFundCard = globalStateContext.globalState.cardProfile?.solid?.cards?.length > 0 && userBalance() >= 10;
+  const canShowFundCard = globalStateContext.globalState.cardProfile?.solid?.cards?.length > 0 && Number(userBalance()) >= 10;
 
   return (
-    <CyDView className={'flex flex-row w-[100%] justify-evenly mt-[5px]'}>
+    <CyDView className={`flex flex-row w-[100%] justify-evenly mt-[7px] pb-[${isIOS() ? 15 : 10}px]`}>
           <CyDView className='flex items-center'>
               <CyDTouchView className={'flex items-center justify-center'} onPress={() => {
                 navigation.navigate(screenTitle.ENTER_AMOUNT, {
                   tokenData
                 });
               }}>
-                  <CyDImage source={AppImages.SEND_SHORTCUT} className={'w-[40px] h-[40px]'} />
+                  <CyDImage source={AppImages.SEND_SHORTCUT} className={'w-[35px] h-[35px]'} />
               </CyDTouchView>
-              <CyDText className={'text-center mt-[3px] text-[14px] font-bold'}>{t<string>('SEND')}</CyDText>
+              <CyDText className={'text-center mt-[3px] text-[12px] font-semibold'}>{t<string>('SEND')}</CyDText>
           </CyDView>
 
           {canShowIBC && <CyDView className='flex items-center'>
-              <CyDTouchView className={'bg-appColor rounded-full w-[40px] h-[40px] flex items-center justify-center'}
+              <CyDTouchView className={'bg-appColor rounded-full w-[35px] h-[35px] flex items-center justify-center'}
                   onPress={() => {
                     navigation.navigate(screenTitle.IBC_SCREEN, {
                       tokenData
@@ -50,7 +52,7 @@ export default function TokenOverviewToolBar ({ tokenData, navigation }: { token
                   }}>
                   <CyDImage source={AppImages.IBC} className={'w-[20px] h-[16px]'} />
               </CyDTouchView>
-              <CyDText className={'text-center mt-[3px] text-[14px] font-bold'}>{t<string>('IBC')}</CyDText>
+              <CyDText className={'text-center mt-[3px] text-[12px] font-semibold'}>{t<string>('IBC')}</CyDText>
           </CyDView>}
 
           {/* {canShowFundCard && <CyDView>
@@ -61,22 +63,22 @@ export default function TokenOverviewToolBar ({ tokenData, navigation }: { token
                   });
                 }}
                >
-                  <CyDImage source={AppImages.FUND_CARD_SHORTCUT} className={'w-[40px] h-[40px]'} />
+                  <CyDImage source={AppImages.FUND_CARD_SHORTCUT} className={'w-[35px] h-[35px]'} />
               </CyDTouchView>
-              <CyDText className={'text-center mt-[3px] text-[14px] font-bold'}>{t<string>('FUND_CARD')}</CyDText>
+              <CyDText className={'text-center mt-[3px] text-[12px] font-semibold'}>{t<string>('FUND_CARD')}</CyDText>
           </CyDView>} */}
 
           {isBridgeable && <CyDView className='flex items-center'>
-              <CyDTouchView className={'bg-appColor rounded-full w-[40px] h-[40px] flex items-center justify-center'}
+              <CyDTouchView className={'bg-appColor rounded-full w-[35px] h-[35px] flex items-center justify-center'}
                   onPress={() => {
                     navigation.navigate(screenTitle.BRIDGE_SCREEN, {
                       fromChainData: tokenData,
                       title: t<string>('BRIDGE')
                     });
                   }}>
-                  <CyDImage source={AppImages.BRIDGE_SHORTCUT} className={'w-[40px] h-[40px]'} />
+                  <CyDImage source={AppImages.BRIDGE_SHORTCUT} className={'w-[35px] h-[35px]'} />
               </CyDTouchView>
-              <CyDText className={'text-center mt-[3px] text-[14px] font-bold'}>{t<string>('BRIDGE')}</CyDText>
+              <CyDText className={'text-center mt-[3px] text-[12px] font-semibold'}>{t<string>('BRIDGE')}</CyDText>
           </CyDView>}
 
           {isSwapable && <CyDView className='flex items-center'>
@@ -87,9 +89,9 @@ export default function TokenOverviewToolBar ({ tokenData, navigation }: { token
                               title: t<string>('SWAP_TITLE')
                             });
                           }}>
-              <CyDImage source={AppImages.SWAP_SHORTCUT} className={'w-[40px] h-[40px]'}/>
+              <CyDImage source={AppImages.SWAP_SHORTCUT} className={'w-[35px] h-[35px]'}/>
             </CyDTouchView>
-            <CyDText className={'text-center mt-[3px] text-[14px] font-bold'}>{t<string>('SWAP_TITLE')}</CyDText>
+            <CyDText className={'text-center mt-[3px] text-[12px] font-semibold'}>{t<string>('SWAP_TITLE')}</CyDText>
           </CyDView>}
 
           <CyDView className='flex items-center'>
@@ -112,9 +114,9 @@ export default function TokenOverviewToolBar ({ tokenData, navigation }: { token
                 }
                 navigation.navigate(screenTitle.QRCODE, { addressType: addressTypeQRCode });
               }}>
-                  <CyDImage source={AppImages.RECEIVE_SHORTCUT} className={'w-[40px] h-[40px]'} />
+                  <CyDImage source={AppImages.RECEIVE_SHORTCUT} className={'w-[35px] h-[35px]'} />
               </CyDTouchView>
-              <CyDText className={'text-center mt-[3px]  text-[14px] font-bold'}>{t<string>('RECEIVE')}</CyDText>
+              <CyDText className={'text-center mt-[3px]  text-[12px] font-semibold'}>{t<string>('RECEIVE')}</CyDText>
           </CyDView>
     </CyDView>
   );

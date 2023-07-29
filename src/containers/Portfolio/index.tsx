@@ -99,7 +99,6 @@ export default function Portfolio (props: { navigation: any | { navigate: (arg0:
     const isBackground = appState === 'background';
     if (isBackground) {
       props.navigation.navigate(C.screenTitle.PIN, { lockScreen: true });
-      hdWallet.dispatch({ type: 'HIDE_TAB_BAR', value: { tabBarHidden: true } });
     }
   }, [appState]);
 

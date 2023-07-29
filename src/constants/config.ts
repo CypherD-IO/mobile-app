@@ -160,9 +160,9 @@ export const EmbedChainInfos: CypherDCosmosChainInfo[] = [
         coinDecimals: 6,
         coinGeckoId: 'juno-network',
         gasPriceStep: {
-          low: 0.001,
-          average: 0.0025,
-          high: 0.004
+          low: 0.075,
+          average: 0.1,
+          high: 0.125
         }
       },
       {

@@ -1,18 +1,20 @@
 import * as React from 'react';
 import { TokenMeta } from '../../models/tokenMetaData.model';
-import { CyDView } from '../../styles/tailwindStyles';
+import { CyDSafeAreaView, CyDView } from '../../styles/tailwindStyles';
 import SwitchView from '../../components/v2/switchView';
 import Overview from './overview';
 import { TokenOverviewTabIndices, TokenOverviewTabs } from '../../constants/enum';
-import { useContext, useEffect, useState } from 'react';
+import { useEffect, useState, useContext } from 'react';
 import { useIsFocused } from '@react-navigation/native';
-import { HdWalletContext } from '../../core/util';
 import Loading from '../../components/v2/loading';
 import { TokenTransactions } from './transactions';
 import { BackHandler } from 'react-native';
 import TokenOverviewToolBar from './toolbar';
 import TokenStaking from './staking';
 import analytics from '@react-native-firebase/analytics';
+import clsx from 'clsx';
+import { isIOS } from '../../misc/checkers';
+import { HdWalletContext } from '../../core/util';
 
 interface RouteProps {
   route: {
@@ -30,7 +32,6 @@ interface RouteProps {
 
 export default function TokenOverviewV2 ({ route, navigation }: RouteProps) {
   const isFocused = useIsFocused();
-  const hdWallet = useContext<any>(HdWalletContext);
   const { tokenData } = route.params;
   const [tokenTabs, setTokenTabs] = useState([TokenOverviewTabs.OVERVIEW, TokenOverviewTabs.TRANSACTIONS]);
   const [index, setIndex] = useState<number>();
@@ -44,7 +45,6 @@ export default function TokenOverviewV2 ({ route, navigation }: RouteProps) {
       } else {
         setIndex(+route.params.navigateTo);
       }
-      hdWallet.dispatch({ type: 'HIDE_TAB_BAR', value: { tabBarHidden: true } });
       BackHandler.addEventListener('hardwareBackPress', handleBackButton);
       navigation.setOptions({
         title: tokenData.name
@@ -54,23 +54,18 @@ export default function TokenOverviewV2 ({ route, navigation }: RouteProps) {
       }
       setLoading(false);
     }
-
-    return () => {
-      hdWallet.dispatch({ type: 'HIDE_TAB_BAR', value: { tabBarHidden: false } });
-    };
   }, [isFocused]);
 
   const handleBackButton = () => {
     navigation.goBack();
-    hdWallet.dispatch({ type: 'HIDE_TAB_BAR', value: { tabBarHidden: false } });
     return true;
   };
 
   return (
     loading
       ? <Loading />
-      : <CyDView className={'bg-white h-full'}>
-        <CyDView className={'mb-[130px]'}>
+      : <CyDSafeAreaView className={'bg-white h-full'}>
+        <CyDView className='pb-[95px]'>
           <CyDView className={'flex flex-row justify-center'}>
             <SwitchView titles={tokenTabs} index={index} setIndexChange={(index: number) => {
               setIndex(index);
@@ -80,9 +75,9 @@ export default function TokenOverviewV2 ({ route, navigation }: RouteProps) {
           {index === 1 && <TokenTransactions tokenData={tokenData} navigation={navigation} />}
           {index === 2 && <TokenStaking tokenData={tokenData} navigation={navigation} />}
         </CyDView>
-      <CyDView className={'bg-white border-t-sepratorColor border-t-[0.5px] absolute bottom-0 h-[130px]'}>
+      <CyDView className={clsx('bg-white rounded-t-[24px] absolute bottom-0 shadow shadow-gray-400')}>
         <TokenOverviewToolBar tokenData={tokenData} navigation={navigation} />
       </CyDView>
-    </CyDView>
+    </CyDSafeAreaView>
   );
 }
