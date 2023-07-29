@@ -720,7 +720,8 @@ export default function SendTo (props: { navigation?: any, route?: any }) {
 
   // NOTE: LIFE CYCLE METHOD 🍎🍎🍎🍎
   return (
-        <CyDSafeAreaView className=' bg-white'>
+        <CyDSafeAreaView className='flex-1 bg-white'>
+          <CyDView>
             <BottomSendToConfirm
                 isModalVisible={payTokenBottomConfirm}
                 modalParams={payTokenModalParams}
@@ -801,6 +802,7 @@ export default function SendTo (props: { navigation?: any, route?: any }) {
                       void (async () => await submitSendTransaction())();
                     }} type={ButtonType.PRIMARY} loading={loading} style=' h-[60px] w-[90%]'/>
                 </CyDView>
+            </CyDView>
             </CyDView>
         </CyDSafeAreaView>
   );

@@ -6,9 +6,9 @@ import 'fast-text-encoding';
 import { useEffect, useReducer, useState } from 'react';
 import Toast from 'react-native-toast-message';
 import { useTranslation } from 'react-i18next';
-import { NavigationContainer } from '@react-navigation/native';
+import { NavigationContainer, useNavigation } from '@react-navigation/native';
 import './src/i18n';
-import { AppState, Linking, Platform, StatusBar } from 'react-native';
+import { AppState, BackHandler, Keyboard, KeyboardAvoidingView, Linking, Platform, StatusBar } from 'react-native';
 import LoadingStack from './src/routes/loading';
 import { _NO_CYPHERD_CREDENTIAL_AVAILABLE_, HdWalletContext, PortfolioContext, StakingContext, ActivityContext } from './src/core/util';
 import {
@@ -75,6 +75,7 @@ import { ethToEvmos } from '@tharsis/address-converter';
 import { WalletConnectV2Provider } from './src/components/walletConnectV2Provider';
 import DefaultAuthRemoveModal from './src/components/v2/defaultAuthRemoveModal';
 import { Config } from 'react-native-config';
+// import KeyboardAvoidingView from './src/components/v2/customKeyboardAvoidingView';
 
 const { DynamicView, CText, DynamicImage } = require('./src/styles');
 
@@ -557,8 +558,19 @@ function App () {
     void getData();
   }, [ethereum.address]);
 
+  const handleBackButton = () => {
+    console.log('hardware back presses');
+  };
+
+  useEffect(() => {
+    BackHandler.addEventListener('hardwareBackPress', handleBackButton);
+    return () => {
+      BackHandler.removeEventListener('hardwareBackPress', handleBackButton);
+    };
+  }, []);
+
   return (
-    <>
+    <KeyboardAvoidingView style={{ flex: 1, backgroundColor: 'white' }} behavior={Platform.OS === 'ios' ? 'padding' : 'height'} keyboardVerticalOffset={0}>
     <GestureHandlerRootView style={{ flex: 1 }}>
         <Sentry.TouchEventBoundary>
           <WalletConnectContext.Provider value={{ walletConnectState, walletConnectDispatch }}>
@@ -681,6 +693,7 @@ function App () {
                               const currentRouteName =
                                 navigationRef.current?.getCurrentRoute()?.name;
                               if (previousRouteName !== currentRouteName) {
+                                // Keyboard.dismiss();
                                 // eslint-disable-next-line @typescript-eslint/no-unused-expressions
                                 async () =>
                                   await analytics().logScreenView({
@@ -747,7 +760,7 @@ function App () {
           </WalletConnectContext.Provider>
         </Sentry.TouchEventBoundary>
     </GestureHandlerRootView>
-    </>
+    </KeyboardAvoidingView>
   );
 }
 

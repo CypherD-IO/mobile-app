@@ -172,11 +172,11 @@ const checkAndMaintainUpdatedRPCEndpointsInAsync = async (rpcEndpoints: RpcRespo
 };
 
 export async function fetchRPCEndpointsFromServer (globalDispatch: Function) {
-  let rpcPreference: string = RPCPreference.DEFAULT;
-  const rpcPreferenceFromAsync = await getRpcPreference();
-  if (rpcPreferenceFromAsync && rpcPreferenceFromAsync !== '') {
-    rpcPreference = rpcPreferenceFromAsync;
-  }
+  const rpcPreference: string = RPCPreference.DEFAULT;
+  // const rpcPreferenceFromAsync = await getRpcPreference();
+  // if (rpcPreferenceFromAsync && rpcPreferenceFromAsync !== '') {
+  //   rpcPreference = rpcPreferenceFromAsync;
+  // }
   let result;
   const ARCH_HOST: string = hostWorker.getHost('ARCH_HOST');
   const RPCFromAsync = await getRpcEndpoints();

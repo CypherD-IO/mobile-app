@@ -18,7 +18,7 @@ import * as Sentry from '@sentry/react-native';
 import clsx from 'clsx';
 import { screenTitle } from '../../constants';
 import { REFRESH_CLOSING_TIMEOUT } from '../../constants/timeOuts';
-import { RefreshControl } from 'react-native';
+import { Dimensions, RefreshControl } from 'react-native';
 import { TokenTransaction } from '../../models/transaction.model';
 import analytics from '@react-native-firebase/analytics';
 
@@ -92,8 +92,9 @@ export function TokenTransactions ({ tokenData, navigation }: { tokenData: Token
       });
   };
 
-  const browserView = (chain: string) => {
+  const BrowserView = ({ chain }: {chain: string}) => {
     let uri = '';
+    const { height } = Dimensions.get('window');
     switch (chain) {
       case ChainBackendNames.COSMOS:
         uri = `https://www.mintscan.io/cosmos/account/${cosmos.wallets[cosmos.currentIndex].address}`;
@@ -124,15 +125,14 @@ export function TokenTransactions ({ tokenData, navigation }: { tokenData: Token
         break;
     }
     return (
-                <><CyDView className={'my-[6px] bg-portfolioBorderColor'} />
-                    <CyDView className={'h-[93%] w-[100%] overflow-scroll'}>
-                        <WebView
-                            nestedScrollEnabled
-                            originWhitelist={['*']}
-                            source={{ uri }}
-                            startInLoadingState={true}
-                            scalesPageToFit={true} />
-                    </CyDView></>
+      <CyDView className={'w-[100%]'} style={{ height: height - 230 }}>
+          <WebView
+              nestedScrollEnabled
+              originWhitelist={['*']}
+              source={{ uri }}
+              startInLoadingState={true}
+              scalesPageToFit={true} />
+      </CyDView>
     );
   };
 
@@ -203,15 +203,15 @@ export function TokenTransactions ({ tokenData, navigation }: { tokenData: Token
   };
 
   return (
-    <CyDView className={'h-full bg-whiteColor'}>
-          <CyDView className={'px-[15px] mt-[6px]'}>
+    <CyDView className={'bg-whiteColor h-full'}>
+          <CyDView className={'flex-1 px-[15px] mt-[6px]'}>
               {
                   (isCosmosChain(tokenData.chainDetails.backendName) || (tokenData.chainDetails.backendName === ChainBackendNames.OPTIMISM && tokenData.name.includes('IBC')) || tokenData.chainDetails.backendName === ChainBackendNames.SHARDEUM)
-                    ? browserView(tokenData.chainDetails.backendName)
+                    ? <BrowserView chain = {tokenData.chainDetails.backendName}/>
                     : (loading
                         ? <Loading></Loading>
                         : !noTransaction
-                            ? <CyDScrollView className={'mt-[10px] mb-[60px]'} refreshControl={<RefreshControl refreshing={refreshing} onRefresh={onRefresh} />}>
+                            ? <CyDView className={'mt-[10px] mb-[60px]'} refreshControl={<RefreshControl refreshing={refreshing} onRefresh={onRefresh} />}>
                                   {transactionList.map((transaction, index) => {
                                     return <CyDView key={`data-${index}`}>
                                           {renderItem(transaction)}
@@ -222,7 +222,7 @@ export function TokenTransactions ({ tokenData, navigation }: { tokenData: Token
                                           <CyDText className={'font-bold text-[16px] mb-[20px] text-toastColor text-center underline'}>{t<string>('VIEW_MORE')}</CyDText>
                                       </CyDTouchView>
                                   </CyDView>}
-                              </CyDScrollView>
+                              </CyDView>
                             : emptyView())
               }
           </CyDView>
