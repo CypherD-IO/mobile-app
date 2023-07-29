@@ -5,7 +5,7 @@ import Button from '../../components/v2/button';
 import { useGlobalModalContext } from '../../components/v2/GlobalModal';
 import axios from '../../core/Http';
 import { isAndroid } from '../../misc/checkers';
-import { CyDImage, CyDKeyboardAvoidingView, CyDScrollView, CyDText, CyDTextInput, CyDTouchView, CyDView } from '../../styles/tailwindStyles';
+import { CyDImage, CyDScrollView, CyDText, CyDTextInput, CyDTouchView, CyDView } from '../../styles/tailwindStyles';
 import { hostWorker } from '../../global';
 import { isValidEmailID, HdWalletContext } from '../../core/util';
 import * as Sentry from '@sentry/react-native';
@@ -13,7 +13,6 @@ import { useTranslation } from 'react-i18next';
 import * as C from '../../constants/index';
 import clsx from 'clsx';
 import CyDModalLayout from '../../components/v2/modal';
-import { string } from 'yup';
 import { CountryCodesWithFlags } from '../../models/CountryCodesWithFlags.model';
 import Loading from '../../components/v2/loading';
 import { countryMaster } from '../../../assets/datasets/countryMaster';
@@ -123,7 +122,7 @@ export default function CardWailtList ({ navigation }) {
       >
         {isCountriesDataLoading
           ? <Loading/>
-          : <CyDKeyboardAvoidingView behavior={isAndroid() ? 'height' : 'padding'} className='flex flex-col justify-end h-full'>
+          : <CyDView className='flex flex-col justify-end h-full'>
           <CyDView className={'bg-white h-[50%] rounded-t-[20px]'}>
             <CyDView className={'flex flex-row mt-[20px] justify-center items-center'}>
               <CyDTextInput className={'border-[1px] border-inputBorderColor rounded-[50px] p-[10px] text-[14px] w-[80%] font-nunito text-primaryTextColor'}
@@ -165,7 +164,7 @@ export default function CardWailtList ({ navigation }) {
               </CyDView>
             </CyDScrollView>
           </CyDView>
-        </CyDKeyboardAvoidingView>}
+        </CyDView>}
       </CyDModalLayout>
       <CyDView className={'w-screen'}>
         <CyDText className={'text-center font-bold text-[22px] mt-[20px] mb-[10px]'}>{t<string>('SIGNUP_CARD_WAITLIST_TITLE')}</CyDText>
