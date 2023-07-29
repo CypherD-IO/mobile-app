@@ -78,6 +78,6 @@ export default function DebitCardScreen (props: RouteProps) {
             </CyDText>
           </CyDImageBackground>
         </CyDView>
-        : <></>
+        : <Loading/>
   );
 }

@@ -1,6 +1,6 @@
 /* eslint-disable @typescript-eslint/no-misused-promises */
 import React, { useContext, useEffect, useState } from 'react';
-import { CyDView, CyDText, CyDScrollView, CyDTextInput, CyDTouchView, CyDImage, CyDKeyboardAvoidingView } from '../../styles/tailwindStyles';
+import { CyDView, CyDText, CyDScrollView, CyDTextInput, CyDTouchView, CyDImage } from '../../styles/tailwindStyles';
 import { copyToClipboard, PortfolioContext } from '../../core/util';
 import { GlobalContext } from '../../core/globalContext';
 import clsx from 'clsx';
@@ -15,7 +15,7 @@ import AppImages from '../../../assets/images/appImages';
 import { showToast } from '../utilities/toastUtility';
 import { RPCPreference } from '../../constants/enum';
 import { isIOS } from '../../misc/checkers';
-import { BackHandler } from 'react-native';
+import { BackHandler, Keyboard } from 'react-native';
 
 export default function HostsAndRPCScreen ({ navigation }) {
   const portfolioState = useContext<any>(PortfolioContext);
@@ -51,6 +51,8 @@ export default function HostsAndRPCScreen ({ navigation }) {
   });
 
   const handleBackButton = () => {
+    console.log('navigate');
+    Keyboard.dismiss();
     navigation.goBack();
     return true;
   };
@@ -147,8 +149,7 @@ export default function HostsAndRPCScreen ({ navigation }) {
   return (
     loading
       ? <Loading></Loading>
-      : <CyDKeyboardAvoidingView className={'bg-white'} behavior={isIOS() ? 'padding' : undefined} keyboardVerticalOffset={isIOS() ? 80 : 0}>
-        <CyDScrollView className={'bg-white h-full px-[24px] pt-[20px]'}>
+      : <CyDScrollView className={'bg-white h-full px-[24px] pt-[20px]'}>
           {devMode && <CyDView>
             <CyDView className={'mt-[18px]'}>
               <CyDText className={'text-[16px] font-black'}>{t<string>('JWT')}</CyDText>
@@ -392,6 +393,5 @@ export default function HostsAndRPCScreen ({ navigation }) {
             </CyDTouchView>}
           </CyDView>
         </CyDScrollView>
-        </CyDKeyboardAvoidingView>
   );
 };

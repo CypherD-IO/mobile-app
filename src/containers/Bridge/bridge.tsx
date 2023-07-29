@@ -3,7 +3,6 @@ import {
   CyDAnimatedView,
   CyDFastImage,
   CyDImage,
-  CyDKeyboardAwareScrollView,
   CyDSafeAreaView,
   CyDScrollView,
   CyDText,
@@ -1988,8 +1987,6 @@ export default function Bridge (props: {navigation?: any, route?: any}) {
 
   return (
     <CyDSafeAreaView>
-      {/* <CyDKeyboardAvoidingView behavior={isAndroid() ? 'height' : 'padding'} enabled className={'h-full flex grow-1'}> */}
-      <CyDKeyboardAwareScrollView className={'bg-white h-full flex grow-1'}>
         <CyDScrollView className={'w-full pb-[40px]'}>
           <ChooseTokenModal
             isChooseTokenModalVisible={fromTokenModalVisible}
@@ -2803,7 +2800,6 @@ export default function Bridge (props: {navigation?: any, route?: any}) {
             ></Button>
           </CyDView>
         </CyDScrollView>
-      </CyDKeyboardAwareScrollView>
     </CyDSafeAreaView>
   );
 }

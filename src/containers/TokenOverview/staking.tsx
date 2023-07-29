@@ -764,7 +764,7 @@ export default function TokenStaking ({ tokenData, navigation }: { tokenData: To
 
           {pageLoading
             ? <Loading />
-            : <CyDScrollView className={'h-[90%]'} refreshControl={<RefreshControl refreshing={refreshing} onRefresh={onRefresh} /> }>
+            : <CyDScrollView refreshControl={<RefreshControl refreshing={refreshing} onRefresh={onRefresh} /> }>
               {tokenData.chainDetails.backendName === ChainBackendNames.EVMOS && tokenData.name === CosmosStakingTokens.EVMOS && stakingValidators.stateStaking.myValidatorsListState === STAKING_NOT_EMPTY &&
                 <CyDView className={'flex flex-row justify-center items-center w-screen bg-babyPink mt-[10px] py-[10px]'}>
                     <LottieView source={AppImages.GIFT_BOX} autoPlay loop resizeMode="cover" style={isIOS() ? styles.IOSStyle : styles.androidStyle} />

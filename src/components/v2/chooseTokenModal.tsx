@@ -2,7 +2,7 @@ import clsx from 'clsx';
 import Fuse from 'fuse.js';
 import React, { useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import { Dimensions, StyleSheet } from 'react-native';
+import { Dimensions, Keyboard, StyleSheet } from 'react-native';
 import AppImages from '../../../assets/images/appImages';
 import { TokenModalType } from '../../constants/enum';
 import { CyDFastImage, CyDFlatList, CyDImage, CyDText, CyDTextInput, CyDTouchView, CyDView } from '../../styles/tailwindStyles';
@@ -151,7 +151,7 @@ export default function ChooseTokenModal (props: TokenModal) {
       >
         <CyDView className={'bg-white pt-[10px] mt-[50px] w-[100%] rounded-t-[20px]'} style={{ height: height - 50 }}>
           <CyDTouchView className={'flex flex-row justify-end z-10'}
-            onPress={() => { clearSearch(); onCancel(); }}
+            onPress={() => { Keyboard.dismiss(); clearSearch(); onCancel(); }}
           >
             <CyDImage
               source={ AppImages.CLOSE }

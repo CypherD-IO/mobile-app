@@ -4,8 +4,8 @@
  */
 import React, { useContext, useEffect, useState, useLayoutEffect } from 'react';
 import { useTranslation } from 'react-i18next';
-import { CyDText, CyDTouchView, CyDView, CyDImage, CyDTouchableWithoutFeedback, CyDSafeAreaView, CyDKeyboardAvoidingView, CyDTextInput } from '../../styles/tailwindStyles';
-import { BackHandler, Keyboard, Platform, NativeModules } from 'react-native';
+import { CyDText, CyDTouchView, CyDView, CyDImage, CyDTouchableWithoutFeedback, CyDSafeAreaView, CyDTextInput } from '../../styles/tailwindStyles';
+import { BackHandler, Keyboard, NativeModules } from 'react-native';
 import * as C from '../../constants/index';
 import { ActivityContext, HdWalletContext, PortfolioContext } from '../../core/util';
 import { importWallet } from '../../core/HdWallet';
@@ -126,8 +126,7 @@ export default function Login (props) {
     <CyDSafeAreaView className='flex-1 bg-white'>
       {createWalletLoading && <Loading/>}
       <CyDTouchableWithoutFeedback onPress={Keyboard.dismiss}>
-      <CyDKeyboardAvoidingView behavior={Platform.OS === 'ios' ? 'padding' : 'height'}>
-
+      <CyDView>
           <CyDText className={'text-[#434343] text-[16px] mt-[30px] text-center px-[20px]'}>{t('IMPORT_WALLET_SUB_MSG')}</CyDText>
           <CyDView className={'flex flex-row justify-center px-[20px]'}>
               <CyDTextInput
@@ -167,7 +166,7 @@ export default function Login (props) {
             </CyDView>}
             {(!loading) && <CyDText className={'text-[#434343] text-[16px] font-extrabold'}>{t('SUBMIT')}</CyDText>}
         </CyDTouchView>
-        </CyDKeyboardAvoidingView>
+        </CyDView>
       </CyDTouchableWithoutFeedback>
     </CyDSafeAreaView>
   );

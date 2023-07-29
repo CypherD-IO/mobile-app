@@ -1,6 +1,6 @@
 import * as React from 'react';
 import { TokenMeta } from '../../models/tokenMetaData.model';
-import { CyDSafeAreaView, CyDView } from '../../styles/tailwindStyles';
+import { CyDScrollView, CyDView } from '../../styles/tailwindStyles';
 import SwitchView from '../../components/v2/switchView';
 import Overview from './overview';
 import { TokenOverviewTabIndices, TokenOverviewTabs } from '../../constants/enum';
@@ -64,20 +64,20 @@ export default function TokenOverviewV2 ({ route, navigation }: RouteProps) {
   return (
     loading
       ? <Loading />
-      : <CyDSafeAreaView className={'bg-white h-full'}>
-        <CyDView className='pb-[95px]'>
+      : <CyDView className={'bg-white flex-1 flex-col justify-between'}>
           <CyDView className={'flex flex-row justify-center'}>
-            <SwitchView titles={tokenTabs} index={index} setIndexChange={(index: number) => {
-              setIndex(index);
-            }}></SwitchView>
+              <SwitchView titles={tokenTabs} index={index} setIndexChange={(index: number) => {
+                setIndex(index);
+              }}></SwitchView>
           </CyDView>
-          {index === 0 && <Overview tokenData={tokenData} navigation={navigation} />}
-          {index === 1 && <TokenTransactions tokenData={tokenData} navigation={navigation} />}
-          {index === 2 && <TokenStaking tokenData={tokenData} navigation={navigation} />}
-        </CyDView>
-      <CyDView className={clsx('bg-white rounded-t-[24px] absolute bottom-0 shadow shadow-gray-400')}>
-        <TokenOverviewToolBar tokenData={tokenData} navigation={navigation} />
-      </CyDView>
-    </CyDSafeAreaView>
+          <CyDScrollView>
+            {index === 0 && <Overview tokenData={tokenData} navigation={navigation} />}
+            {index === 1 && <TokenTransactions tokenData={tokenData} navigation={navigation} />}
+            {index === 2 && <TokenStaking tokenData={tokenData} navigation={navigation} />}
+          </CyDScrollView>
+          <CyDView className={clsx('bg-white rounded-t-[24px] shadow shadow-gray-400')}>
+            <TokenOverviewToolBar tokenData={tokenData} navigation={navigation} />
+          </CyDView>
+    </CyDView>
   );
 }

@@ -107,7 +107,7 @@ function TabStack () {
           );
         }}
         screenOptions={({ navigation, route }) => ({
-          tabBarHideOnKeyboard: true,
+          tabBarHideOnKeyboard: false,
           tabBarStyle: {
             height: 70,
             paddingBottom: paddingBottomTabBarStyles,

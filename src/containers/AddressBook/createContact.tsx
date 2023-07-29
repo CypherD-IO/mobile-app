@@ -4,7 +4,7 @@ import { useTranslation } from 'react-i18next';
 import Button from '../../components/v2/button';
 import { ALL_CHAINS, ChainNameMapping, ChainNames, CHAIN_ETH, QRScannerScreens } from '../../constants/server';
 import { generateRandomInt, isEthereumAddress } from '../../core/util';
-import { CyDView, CyDText, CyDScrollView, CyDTextInput, CyDTouchView, CyDImage, CyDKeyboardAvoidingView, CyDFastImage } from '../../styles/tailwindStyles';
+import { CyDView, CyDText, CyDScrollView, CyDTextInput, CyDTouchView, CyDImage, CyDFastImage } from '../../styles/tailwindStyles';
 import AppImages from '../../../assets/images/appImages';
 import { Formik } from 'formik';
 import * as yup from 'yup';
@@ -19,7 +19,6 @@ import { isNobleAddress } from '../utilities/nobleSendUtility';
 import { useGlobalModalContext } from '../../components/v2/GlobalModal';
 import { ContactInfo } from '../../models/contactInfo.interface';
 import { screenTitle } from '../../constants';
-import { KeyboardAwareScrollView } from 'react-native-keyboard-aware-scroll-view';
 import ChooseChainModal from '../../components/v2/chooseChainModal';
 import { BackHandler } from 'react-native';
 import ChooseContactModal from '../../components/v2/chooseContactModal';
@@ -304,7 +303,6 @@ export const CreateContact = ({ route, navigation }: RouteProps) => {
 
   return (
     <CyDView className={'bg-white w-full h-full'}>
-      <KeyboardAwareScrollView extraScrollHeight={50}>
         <ChooseChainModal
           setModalVisible={setChooseChainModalVisible}
           isModalVisible={chooseChainModalVisible}
@@ -417,7 +415,6 @@ export const CreateContact = ({ route, navigation }: RouteProps) => {
               </CyDView>
             )}
           </Formik>
-        </KeyboardAwareScrollView>
       </CyDView>
   );
 };

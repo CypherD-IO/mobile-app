@@ -1,25 +1,20 @@
 import React, { useContext, useEffect, useState } from 'react';
 import { HdWalletContext } from '../../core/util';
 import analytics from '@react-native-firebase/analytics';
-import { CyDFastImage, CyDImage, CyDKeyboardAvoidingView, CyDScrollView, CyDText, CyDTextInput, CyDTouchView, CyDView } from '../../styles/tailwindStyles';
-import * as Sentry from '@sentry/react-native';
+import { CyDFastImage, CyDImage, CyDScrollView, CyDText, CyDTouchView, CyDView } from '../../styles/tailwindStyles';
 import Button from '../../components/v2/button';
 import { useGlobalModalContext } from '../../components/v2/GlobalModal';
 import { useTranslation } from 'react-i18next';
 import useAxios from '../../core/HttpRequest';
-import clsx from 'clsx';
-import { screenTitle } from '../../constants';
 import FastImage from 'react-native-fast-image';
 import AppImages from '../../../assets/images/appImages';
 import SwitchView from '../../components/SwitchView';
 import Clipboard from '@react-native-clipboard/clipboard';
 import { showToast } from '../utilities/toastUtility';
 import Loading from '../../components/v2/loading';
-import { isAndroid } from '../../misc/checkers';
 import appsFlyer from 'react-native-appsflyer';
 import { onShare } from '../utilities/socialShareUtility';
 import { generateUserInviteLink } from '../../core/appsFlyerUtils';
-import { NavigationContainer, useNavigation, useNavigationState } from '@react-navigation/native';
 import { BackHandler } from 'react-native';
 
 export default function ReferralRewards (props:
@@ -170,7 +165,6 @@ export default function ReferralRewards (props:
     );
   };
   return (
-    <CyDKeyboardAvoidingView behavior={isAndroid() ? 'height' : 'padding'} enabled className={'h-full flex grow-1'}>
       <CyDView className={'w-full h-full bg-white relative'}>
         <CyDView className={'bg-[#F3FFFB] h-[260px] mt-[-10px]'} >
           <CyDTouchView onPress={() => { navigation.goBack(); }}>
@@ -195,6 +189,5 @@ export default function ReferralRewards (props:
           <RenderTabContent/>
         </CyDScrollView>
       </CyDView>
-    </CyDKeyboardAvoidingView>
   );
 }
