@@ -1,5 +1,5 @@
 import { screenTitle } from '../constants';
-import { BackHandler, ToastAndroid } from 'react-native';
+import { BackHandler, Platform, ToastAndroid } from 'react-native';
 import * as React from 'react';
 import {
   BrowserStackScreen, DebitCardStackScreen,
@@ -18,6 +18,7 @@ import { t } from 'i18next';
 import clsx from 'clsx';
 import { isIOS } from '../misc/checkers';
 import { Layout, SlideInUp, SlideOutDown } from 'react-native-reanimated';
+import * as Animatable from 'react-native-animatable';
 
 const Tab = createBottomTabNavigator();
 
@@ -95,13 +96,14 @@ function TabStack () {
           const currentRouteStack = props.state.routes[props.state.index].state?.routes.map(item => item.name);
           const showTabBar = (currentRouteStack === undefined) || screensToHaveNavBar.includes(currentRouteStack[currentRouteStack.length - 1]);
           return (
-            <CyDAnimatedView entering={SlideInUp} exiting={SlideOutDown} layout={Layout.duration(200)} className={clsx('w-full bg-transparent', { 'mb-[-70px]': !showTabBar, 'shadow shadow-gray-400': showTabBar && !isReadOnlyWallet })}>
+            <Animatable.View animation={showTabBar ? 'slideInUp' : 'slideOutDown'}
+            duration={isIOS() ? 200 : 0} className={clsx('w-full', { 'mb-[-70px]': !showTabBar, '': showTabBar && !isReadOnlyWallet, 'bg-white': !isIOS() })}>
             {isReadOnlyWallet && <CyDView className={clsx('flex flex-row justify-center items-center bg-ternaryBackgroundColor py-[5px] mb-[-15px] pb-[20px] rounded-t-[24px] shadow shadow-gray-400', { hidden: !showTabBar })}>
             <CyDImage source={AppImages.EYE_OPEN} className='h-[18px] w-[18px]' resizeMode='contain'/>
             <CyDText className='font-bold mt-[2px] ml-[5px]'>{t('READ_ONLY_MODE')}</CyDText>
             </CyDView>}
             <BottomTabBar {...props}/>
-          </CyDAnimatedView>
+          </Animatable.View>
           );
         }}
         screenOptions={({ navigation, route }) => ({
@@ -109,9 +111,21 @@ function TabStack () {
           tabBarStyle: {
             height: 70,
             paddingBottom: paddingBottomTabBarStyles,
-            borderTopWidth: 0,
             borderTopLeftRadius: 24,
-            borderTopRightRadius: 24
+            borderTopWidth: 0,
+            borderTopRightRadius: 24,
+            ...Platform.select({
+              ios: {
+                shadowColor: '#000',
+                shadowOffset: { width: 0, height: -3 },
+                shadowOpacity: 0.3,
+                shadowRadius: 4
+              },
+              android: {
+                // borderWidth: 1,
+                // borderColor: '#000'
+              }
+            })
           },
           tabBarIcon: ({ focused, color, size }) => {
             let iconName;

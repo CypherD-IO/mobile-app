@@ -1,6 +1,6 @@
 import * as React from 'react';
 import { TokenMeta } from '../../models/tokenMetaData.model';
-import { CyDView } from '../../styles/tailwindStyles';
+import { CyDSafeAreaView, CyDView } from '../../styles/tailwindStyles';
 import SwitchView from '../../components/v2/switchView';
 import Overview from './overview';
 import { TokenOverviewTabIndices, TokenOverviewTabs } from '../../constants/enum';
@@ -64,7 +64,7 @@ export default function TokenOverviewV2 ({ route, navigation }: RouteProps) {
   return (
     loading
       ? <Loading />
-      : <CyDView className={'bg-white h-full'}>
+      : <CyDSafeAreaView className={'bg-white h-full'}>
         <CyDView className='pb-[95px]'>
           <CyDView className={'flex flex-row justify-center'}>
             <SwitchView titles={tokenTabs} index={index} setIndexChange={(index: number) => {
@@ -78,6 +78,6 @@ export default function TokenOverviewV2 ({ route, navigation }: RouteProps) {
       <CyDView className={clsx('bg-white rounded-t-[24px] absolute bottom-0 shadow shadow-gray-400')}>
         <TokenOverviewToolBar tokenData={tokenData} navigation={navigation} />
       </CyDView>
-    </CyDView>
+    </CyDSafeAreaView>
   );
 }
