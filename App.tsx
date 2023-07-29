@@ -559,7 +559,7 @@ function App () {
   }, [ethereum.address]);
 
   const handleBackButton = () => {
-    console.log('hardware back presses');
+    Keyboard.dismiss();
   };
 
   useEffect(() => {
