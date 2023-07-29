@@ -273,6 +273,7 @@ export default function CardScreen ({ navigation, hideCardDetails, currentCardPr
               <CyDImage source={AppImages.ACTIVATE_PHYSICAL_CARD} className='h-[30px] w-[30px] mr-[10px]'/>
               <CyDText className='font-nunito font-extrabold'>{t<string>('ACTIVATE_PYHSICAL_CARD')}</CyDText>
             </CyDTouchView>
+            <CyDText className='text-center pt-[6px] font-bold'>{'XXXX XXXX XXXX ' + card.last4}</CyDText>
           </CyDImageBackground>
         </CyDView>
       );

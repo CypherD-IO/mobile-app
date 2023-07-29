@@ -3,7 +3,7 @@ import { CyDText, CyDView, CyDTouchView, CyDImage } from '../../styles/tailwindS
 import clsx from 'clsx';
 import LottieView from 'lottie-react-native';
 import AppImages from '../../../assets/images/appImages';
-import { AppState } from 'react-native';
+import { AppState, Keyboard } from 'react-native';
 import { ButtonType, ImagePosition } from '../../constants/enum';
 import { HdWalletContext } from '../../core/util';
 
@@ -59,7 +59,12 @@ export default function Button ({
   }, [appState]);
 
   return (
-    <CyDTouchView onPress={onPress} disabled={disabled || loading}
+    <CyDTouchView onPress={() => {
+      Keyboard.dismiss();
+      setTimeout(() => {
+        onPress();
+      }, 100);
+    }} disabled={disabled || loading}
     className={clsx(`rounded-[12px] py-[15px] flex flex-row items-center justify-center ${style}`, {
       'bg-[#FFDE59]': ButtonType.PRIMARY === type,
       'bg-white border-[1px] py-[15px] border-secondaryButtonBackgroundColor': ButtonType.SECONDARY === type,

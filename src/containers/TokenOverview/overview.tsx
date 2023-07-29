@@ -536,7 +536,7 @@ export default function Overview ({ tokenData, navigation }: { tokenData: TokenM
   return (
     loading
       ? <Loading />
-      : <CyDScrollView className={'h-full bg-white'} refreshControl={<RefreshControl refreshing={refreshing} onRefresh={onRefresh} />}>
+      : <CyDScrollView className={'bg-white'} refreshControl={<RefreshControl refreshing={refreshing} onRefresh={onRefresh} />}>
         <ChartPathProvider data={data}>
           <TokenSummary />
           {chartloading && <CyDView style={styles.chartLoadingContainer}>
