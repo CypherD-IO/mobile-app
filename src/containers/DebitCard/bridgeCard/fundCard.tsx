@@ -499,7 +499,7 @@ export default function BridgeFundCardScreen ({ route }: {route: any}) {
         tokenList = {portfolioState.statePortfolio.tokenPortfolio.totalHoldings}
         minTokenValueLimit = {minTokenValueLimit}
         onSelectingToken = {(token) => { setIsChooseTokenVisible(false); onSelectingToken(token); }}
-        onCancel={() => { setIsChooseTokenVisible(false); hdWallet.dispatch({ type: 'HIDE_TAB_BAR', value: { tabBarHidden: false } }); navigation.goBack(); }}
+        onCancel={() => { setIsChooseTokenVisible(false); navigation.goBack(); }}
         noTokensAvailableMessage={t<string>('CARD_INSUFFICIENT_FUNDS')}
         renderPage={'fundCardPage'}
       />

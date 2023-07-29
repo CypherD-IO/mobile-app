@@ -164,7 +164,6 @@ const AddressProfile = (props) => {
   };
 
   const setSections = (sections) => {
-    console.log(sections);
     setActiveSections(sections.includes(undefined) ? [] : sections);
     if (sections.length) handleAnimation(1);
     else handleAnimation(0);
