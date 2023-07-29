@@ -209,12 +209,6 @@ export function hdWalletStateReducer (state: any, action: any) {
       return { ...state, pinValue };
     }
 
-    case 'HIDE_TAB_BAR' : {
-      const { tabBarHidden } = action.value;
-      let hideTabBar = state.hideTabBar;
-      hideTabBar = tabBarHidden;
-      return { ...state, hideTabBar };
-    }
     case 'TOGGLE_BALANCE_VISIBILITY' : {
       return { ...state, ...action.value };
     }

@@ -365,7 +365,7 @@ export default function ShortcutsModal ({ navigationRef }) {
           </CyDView>
           <CyDView className={'w-full h-[1px] bg-sepratorColor my-[16px]'}></CyDView>
           {item.title !== BuyOptions.COINBASE && item.title !== BuyOptions.TRANSFI && <CyDView className='pl-[2px]'>
-            <CyDText className={'text-subTextColor'}>{t('MODES_INIT_CAPS')}: <CyDText className={'font-black text-subTextColor'}>{item.supportedPaymentModes}</CyDText></CyDText>
+            <CyDText className={'text-subTextColor'}>{t('MODES_INIT_CAPS')} : <CyDText className={'font-black text-subTextColor'}>{item.supportedPaymentModes}</CyDText></CyDText>
           </CyDView>}
         </CyDView>
       </CyDTouchView>
@@ -539,7 +539,7 @@ export default function ShortcutsModal ({ navigationRef }) {
       await analytics().logEvent('shortcuts_button_click');
     }}
       disabled={portfolioState.statePortfolio.portfolioState === PORTFOLIO_NEW_LOAD}
-      className={'mt-[6px]'}>
+    >
       {/* shortcuts modal */}
       <CyDModalLayout
         isModalVisible={shortcutsModalVisible}
