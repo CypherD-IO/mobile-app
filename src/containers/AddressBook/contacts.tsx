@@ -99,7 +99,7 @@ export function Contacts ({ route, navigation }) {
       <CyDScrollView className={'flex flex-col w-[100%]'}>
         <CyDView className={'flex flex-row justify-around mx-[15px]'}>
           <CyDTextInput
-            className={clsx(' w-[80%] border-[1px] border-inputBorderColor rounded-[15px] p-[12px] pr-[38px] text-[16px] font-nunito text-primaryTextColor', { 'border-redOffColor': false })}
+            className={clsx(' w-[80%] border-[1px] border-inputBorderColor rounded-[8px] p-[12px] pr-[38px] text-[16px] font-nunito text-primaryTextColor', { 'border-redOffColor': false })}
             value={name}
             autoCapitalize="none"
             autoCorrect={false}

@@ -181,15 +181,18 @@ export default function ChooseTokenModal (props: TokenModal) {
           <CyDView className={'mt-[20px] mb-[100px]'}>
           <CyDView
               className={clsx(
-                'flex flex-row justify-between items-center self-center border-[1px]',
-                hasText ? 'border-[#434343]' : 'border-sepratorColor',
-                'w-[353px] h-[60px] rounded-[30px] px-[20px]'
+                'flex flex-row justify-between items-center self-center border-[0.5px] w-[353px] h-[60px] rounded-[8px] px-[20px] border-sepratorColor',
+                {
+                  'border-[#434343]': hasText
+                }
               )}
             >
               <CyDTextInput
                 className={clsx(
-                  'self-center py-[15px] w-[95%]',
-                  hasText ? 'text-[#434343]' : 'text-[#C5C5C5]'
+                  'self-center py-[15px] w-[95%] text-searchTextBackground',
+                  {
+                    'text-filledTextBackground': hasText
+                  }
                 )}
                 value={searchText}
                 autoCapitalize="none"

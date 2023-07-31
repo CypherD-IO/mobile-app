@@ -166,12 +166,12 @@ export default function ReferralRewards (props:
   };
   return (
     <CyDView className={'w-full h-full bg-white relative'}>
-      <CyDView className={'bg-[#F3FFFB] h-[260px] mt-[-10px]'} >
+      <CyDView className={'bg-infoTextBackground h-[260px] mt-[-10px]'} >
         <CyDTouchView onPress={() => { navigation.goBack(); }}>
           <CyDFastImage source={AppImages.BACK} className={'h-[20px] w-[20px] mx-[20px] mt-[60px]'}/>
         </CyDTouchView>
         <CyDFastImage
-          source={{ uri: 'https://public.cypherd.io/icons/referralRewards.png' }}
+          source={{ uri: AppImages.ReferralRewards }}
           className={'h-full  -top-[50px] -z-50'}
           resizeMode={FastImage.resizeMode.contain}
         />

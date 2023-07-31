@@ -281,6 +281,7 @@ const TRANSFI_LOGO = require('./transfiLogo.png');
 const BROWSER_REDIRECT = require('./browserRedirect.png');
 const EMPTY_WALLET_CONNECT_SESSIONS = require('./emptyWalletConnectSessions.png');
 const ACTIVATE_PHYSICAL_CARD = require('./activatePhysicalCard.png');
+const REFERRAL_REWARDS = require('./referralRewards.png');
 
 // ICONS FROM S3
 const SWAP = { uri: `${S3_BUCKET_URL_ICONS}/swap.png` };
@@ -288,7 +289,6 @@ const SWAP_GRAY = { uri: `${S3_BUCKET_URL_ICONS}/swap_gray.png` };
 const SWAP_SUCCESS = { uri: `${S3_BUCKET_URL_ICONS}/swap_success.png` };
 const SWAP_PENDING = { uri: `${S3_BUCKET_URL_ICONS}/swap_pending.png` };
 const SWAP_ERROR = { uri: `${S3_BUCKET_URL_ICONS}/swap_error.png` };
-
 const AppImages: any = {
   PLUS,
   ARROW,
@@ -574,6 +574,7 @@ const AppImages: any = {
   SWAP_GRAY,
   SWAP_SUCCESS,
   SWAP_PENDING,
-  SWAP_ERROR
+  SWAP_ERROR,
+  REFERRAL_REWARDS
 };
 export default AppImages;
