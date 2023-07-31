@@ -165,29 +165,31 @@ export default function ReferralRewards (props:
     );
   };
   return (
-      <CyDView className={'w-full h-full bg-white relative'}>
-        <CyDView className={'bg-[#F3FFFB] h-[260px] mt-[-10px]'} >
-          <CyDTouchView onPress={() => { navigation.goBack(); }}>
-            <CyDFastImage source={AppImages.BACK} className={'h-[20px] w-[20px] mx-[20px] mt-[60px]'}/>
-          </CyDTouchView>
-          <CyDFastImage source={{ uri: 'https://public.cypherd.io/icons/referralRewards.png' }}
-                        className={'h-full  -top-[50px] -z-50'}
-                        resizeMode={FastImage.resizeMode.contain}
-          />
-        </CyDView>
-        <CyDScrollView className={'px-[20px] mt-[35px]'}>
-          {switchTitle.length > 1 && <CyDView className='flex flex-row'>
+    <CyDView className={'w-full h-full bg-white relative'}>
+      <CyDView className={'bg-[#F3FFFB] h-[260px] mt-[-10px]'} >
+        <CyDTouchView onPress={() => { navigation.goBack(); }}>
+          <CyDFastImage source={AppImages.BACK} className={'h-[20px] w-[20px] mx-[20px] mt-[60px]'}/>
+        </CyDTouchView>
+        <CyDFastImage
+          source={{ uri: 'https://public.cypherd.io/icons/referralRewards.png' }}
+          className={'h-full  -top-[50px] -z-50'}
+          resizeMode={FastImage.resizeMode.contain}
+        />
+      </CyDView>
+      <CyDScrollView className={'px-[20px] mt-[35px]'}>
+        {switchTitle.length > 1 && (
+          <CyDView className='flex flex-row'>
             <SwitchView
+              titles={switchTitle} // Pass the titles as an array
               index={index}
               setIndexChange={(index: number) => {
                 setIndex(index);
               }}
-              title1={switchTitle[0]}
-              title2={switchTitle[1]}
             />
-          </CyDView>}
-          <RenderTabContent/>
-        </CyDScrollView>
-      </CyDView>
+          </CyDView>
+        )}
+        <RenderTabContent/>
+      </CyDScrollView>
+    </CyDView>
   );
 }

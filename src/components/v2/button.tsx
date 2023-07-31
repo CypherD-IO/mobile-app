@@ -65,11 +65,11 @@ export default function Button ({
         onPress();
       }, 100);
     }} disabled={disabled || loading}
-    className={clsx(`rounded-[12px] py-[15px] flex flex-row items-center justify-center ${style}`, {
-      'bg-[#FFDE59]': ButtonType.PRIMARY === type,
-      'bg-white border-[1px] py-[15px] border-secondaryButtonBackgroundColor': ButtonType.SECONDARY === type,
+    className={clsx(`rounded-[8px] py-[15px] flex flex-row items-center justify-center ${style}`, {
+      'bg-[#F7C645]': ButtonType.PRIMARY === type,
+      'bg-white border-[1px] py-[15px] border-[secondaryButtonBackgroundColor]': ButtonType.SECONDARY === type,
       'bg-white border-[1px] border-appColor': ButtonType.TERNARY === type,
-      'bg-[#dddd]': disabled,
+      'bg-[#CFCFCF]': disabled,
       'bg-white border-[1px] border-greyButtonBackgroundColor': ButtonType.GREY === type,
       'bg-red-600': ButtonType.RED === type
     })}>
