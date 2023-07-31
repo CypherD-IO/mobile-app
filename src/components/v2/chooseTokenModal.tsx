@@ -138,6 +138,21 @@ export default function ChooseTokenModal (props: TokenModal) {
     searchTokens('');
   };
 
+  const [hasText, setHasText] = useState(false);
+
+
+  const handleClearSearch = () => {
+    setSearchText('');
+    searchTokens('');
+    setHasText(false);
+  };
+
+  const handleSearchTextChange = (text: string) => {
+    setSearchText(text);
+    searchTokens(text);
+    setHasText(text.trim().length > 0);
+  };
+
   return (
     <CyDModalLayout
         setModalVisible={ () => { }}
@@ -164,21 +179,35 @@ export default function ChooseTokenModal (props: TokenModal) {
             </CyDText>
           </CyDView>
           <CyDView className={'mt-[20px] mb-[100px]'}>
-            <CyDView className={'flex flex-row justify-between items-center self-center border-[1px] border-sepratorColor w-[353px] h-[60px] rounded-[30px] px-[20px]'}>
+          <CyDView
+              className={clsx(
+                'flex flex-row justify-between items-center self-center border-[1px]',
+                hasText ? 'border-[#434343]' : 'border-sepratorColor',
+                'w-[353px] h-[60px] rounded-[30px] px-[20px]'
+              )}
+            >
               <CyDTextInput
-                className={'self-center py-[15px] w-[95%]'}
+                className={clsx(
+                  'self-center py-[15px] w-[95%]',
+                  hasText ? 'text-[#434343]' : 'text-[#C5C5C5]'
+                )}
                 value={searchText}
                 autoCapitalize="none"
                 autoCorrect={false}
-                onChangeText={(text: string) => { setSearchText(text); searchTokens(text); }}
-                placeholderTextColor={'#C5C5C5'}
-                placeholder='Search Token' />
-                {searchText !== ''
-                  ? <CyDTouchView onPress={() => { clearSearch(); }}>
-                  <CyDImage className={''} source={AppImages.CLOSE_CIRCLE}/>
+                onChangeText={handleSearchTextChange}
+                onFocus={() => setHasText(searchText.trim().length > 0)} // Update hasText on focus
+                onBlur={() => setHasText(false)} // Reset hasText on blur
+                placeholderTextColor={hasText ? '#434343' : '#C5C5C5'}
+                placeholder="Search Token"
+              />
+              {hasText ? (
+                <CyDTouchView onPress={handleClearSearch}>
+                  <CyDImage className={''} source={AppImages.CLOSE_CIRCLE} />
                 </CyDTouchView>
-                  : <></>}
-            </CyDView>
+              ) : (
+                <></>
+              )}
+          </CyDView>
             {renderPage === 'fundCardPage'
               ? <CyDView className={'mt-[10px]'}>
               <CyDText className='text-center font-nunito text-[12px] font-semibold text-redColor'>
