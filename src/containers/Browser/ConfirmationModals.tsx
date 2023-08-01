@@ -1,6 +1,5 @@
 import React, { useContext } from 'react';
 import BottomConfirmCosmos from '../../components/BottomConfirmCosmos';
-import BottomModal from '../../components/BottomModal';
 import { ChooseChainModal } from '../../components/ChooseChainModal';
 import PushModal from '../../components/PushModal';
 import { BrowserModal, ModalContext } from '../../reducers/modalReducer';
@@ -26,16 +25,10 @@ export default function ConfirmationModals () {
         }}
         where={'BROWSER'}
       />}
-      {stmVisible && <BottomModal
+      {stmVisible && <SigningModal
+        payloadFrom={SigningModalPayloadFrom.BROWSER}
         isModalVisible={stmVisible}
-        signMessage={stmPayload?.params?.signMessage}
-        signMessageTitle={stmPayload?.params?.signMessageTitle}
-        onSignPress={() => {
-          stmPayload?.resolve(true);
-        }}
-        onCancelPress={() => {
-          stmPayload?.resolve(false);
-        }}
+        modalPayload={stmPayload}
       />}
       {pmVisble && <PushModal
         isModalVisible={pmVisble}
