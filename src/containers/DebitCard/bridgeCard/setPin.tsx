@@ -132,6 +132,7 @@ export default function SetPin (props: {
               onChangeText={(num: string) => setConfirmPin(num)}
               value={confirmPin}
               maxLength={4}
+              autoFocus={true}
               secureTextEntry={true}
             />
             <CyDText className="text-redCyD mt-[5px]">

@@ -199,6 +199,7 @@ export default function EnterAmount (props) {
                       }
                     }}
                     value={valueForUsd}
+                    autoFocus={true}
                     onFocus={() => {
                       if (valueForUsd === '0.00') setValueForUsd('');
                     }}
