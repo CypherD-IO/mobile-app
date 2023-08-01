@@ -609,6 +609,7 @@ export default function useWeb3 (origin: Web3Origin) {
           acknowledgement = origin !== Web3Origin.WALLETCONNECT
             ? await SignTransactionModalFunc(modalContext, {
               signMessage: messageToSign,
+              chainIdNumber: Number(messageToSign.match(/Chain ID: (\d+)/)[1]),
               payload,
               signMessageTitle: 'Message'
             })
