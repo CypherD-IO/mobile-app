@@ -17,8 +17,7 @@ import { CyDAnimatedView, CyDImage, CyDText, CyDView } from '../styles/tailwindS
 import { t } from 'i18next';
 import clsx from 'clsx';
 import { isIOS } from '../misc/checkers';
-import { Layout, SlideInUp, SlideOutDown } from 'react-native-reanimated';
-import * as Animatable from 'react-native-animatable';
+import { Layout } from 'react-native-reanimated';
 
 const Tab = createBottomTabNavigator();
 
@@ -42,7 +41,7 @@ function TabStack () {
 
   const [badgedTabBarOptions, setBadgedTabBarOptions] = useState<any>({});
 
-  const paddingBottomTabBarStyles = isIOS() ? 15 : 10;
+  const paddingBottomTabBarStyles = isIOS() ? 35 : 30;
 
   let backPressCount = 0;
   const handleBackButton = () => {
@@ -96,36 +95,39 @@ function TabStack () {
           const currentRouteStack = props.state.routes[props.state.index].state?.routes.map(item => item.name);
           const showTabBar = (currentRouteStack === undefined) || screensToHaveNavBar.includes(currentRouteStack[currentRouteStack.length - 1]);
           return (
-            <Animatable.View animation={showTabBar ? 'slideInUp' : 'slideOutDown'}
-            duration={isIOS() ? 200 : 0} className={clsx('w-full', { 'mb-[-70px]': !showTabBar, '': showTabBar && !isReadOnlyWallet, 'bg-white': !isIOS() })}>
+            <CyDAnimatedView layout={Layout.springify()} className={clsx('w-full mb-[-20px]', { 'mb-[-90px]': !showTabBar, 'shadow shadow-gray-400': showTabBar && !isReadOnlyWallet, 'bg-white': !isIOS() })}>
             {isReadOnlyWallet && <CyDView className={clsx('flex flex-row justify-center items-center bg-ternaryBackgroundColor py-[5px] mb-[-15px] pb-[20px] rounded-t-[24px] shadow shadow-gray-400', { hidden: !showTabBar })}>
             <CyDImage source={AppImages.EYE_OPEN} className='h-[18px] w-[18px]' resizeMode='contain'/>
             <CyDText className='font-bold mt-[2px] ml-[5px]'>{t('READ_ONLY_MODE')}</CyDText>
             </CyDView>}
             <BottomTabBar {...props}/>
-          </Animatable.View>
+          </CyDAnimatedView>
           );
         }}
         screenOptions={({ navigation, route }) => ({
           tabBarHideOnKeyboard: false,
           tabBarStyle: {
-            height: 70,
+            height: 90,
             paddingBottom: paddingBottomTabBarStyles,
             borderTopLeftRadius: 24,
             borderTopWidth: 0,
-            borderTopRightRadius: 24,
-            ...Platform.select({
-              ios: {
-                shadowColor: '#000',
-                shadowOffset: { width: 0, height: -3 },
-                shadowOpacity: 0.3,
-                shadowRadius: 4
-              },
-              android: {
-                // borderWidth: 1,
-                // borderColor: '#000'
-              }
-            })
+            borderTopRightRadius: 24
+            /*
+            * If it makes no difference on android,
+            * will style the shadow with tailwind classes for now.
+            */
+            // ...Platform.select({
+            //   ios: {
+            //     shadowColor: '#000',
+            //     shadowOffset: { width: 0, height: -3 },
+            //     shadowOpacity: 0.2,
+            //     shadowRadius: 4
+            //   },
+            //   android: {
+            //     // borderWidth: 1,
+            //     // borderColor: '#000'
+            //   }
+            // })
           },
           tabBarIcon: ({ focused, color, size }) => {
             let iconName;

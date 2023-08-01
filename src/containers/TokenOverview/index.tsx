@@ -1,6 +1,6 @@
 import * as React from 'react';
 import { TokenMeta } from '../../models/tokenMetaData.model';
-import { CyDScrollView, CyDView } from '../../styles/tailwindStyles';
+import { CyDAnimatedView, CyDScrollView, CyDView } from '../../styles/tailwindStyles';
 import SwitchView from '../../components/v2/switchView';
 import Overview from './overview';
 import { TokenOverviewTabIndices, TokenOverviewTabs } from '../../constants/enum';
@@ -15,6 +15,7 @@ import analytics from '@react-native-firebase/analytics';
 import clsx from 'clsx';
 import { isIOS } from '../../misc/checkers';
 import { HdWalletContext } from '../../core/util';
+import { Layout } from 'react-native-reanimated';
 
 interface RouteProps {
   route: {
@@ -75,9 +76,9 @@ export default function TokenOverviewV2 ({ route, navigation }: RouteProps) {
             {index === 1 && <TokenTransactions tokenData={tokenData} navigation={navigation} />}
             {index === 2 && <TokenStaking tokenData={tokenData} navigation={navigation} />}
           </CyDScrollView>
-          <CyDView className={clsx('bg-white rounded-t-[24px] shadow shadow-gray-400')}>
+          <CyDAnimatedView layout={Layout.springify()} className={clsx('bg-white pb-[20px] mb-[-20px] rounded-t-[24px] shadow shadow-gray-400')}>
             <TokenOverviewToolBar tokenData={tokenData} navigation={navigation} />
-          </CyDView>
+          </CyDAnimatedView>
     </CyDView>
   );
 }
