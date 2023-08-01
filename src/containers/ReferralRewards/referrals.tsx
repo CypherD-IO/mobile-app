@@ -171,7 +171,7 @@ export default function ReferralRewards (props:
           <CyDFastImage source={AppImages.BACK} className={'h-[20px] w-[20px] mx-[20px] mt-[60px]'}/>
         </CyDTouchView>
         <CyDFastImage
-          source={{ uri: AppImages.REFERRAL_REWARDS }}
+          source={AppImages.REFERRAL_REWARDS}
           className={'h-full  -top-[50px] -z-50'}
           resizeMode={FastImage.resizeMode.contain}
         />
