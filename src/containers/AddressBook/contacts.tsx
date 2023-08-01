@@ -107,7 +107,7 @@ export function Contacts ({ route, navigation }) {
             placeholderTextColor={Colors.placeHolderColor}
             placeholder={t('Search Name')}
           />
-          <Button style={'rounded-[10px] w-[55px] h-[55px]'} type={'grey'} image={AppImages.CREATE_CONTACT} onPress={() => { navigation.navigate(screenTitle.CREATE_CONTACT, { contactBook }); } } title={t('')} titleStyle={'text-[12px]'} imageStyle={'h-[18px] w-[18px]'}/>
+          <Button style={'rounded-[8px] w-[55px] h-[60px]'} type={'grey'} image={AppImages.CREATE_CONTACT} onPress={() => { navigation.navigate(screenTitle.CREATE_CONTACT, { contactBook }); } } title={t('')} titleStyle={'text-[12px]'} imageStyle={'h-[18px] w-[18px]'}/>
         </CyDView>
 
         <CyDView className='items-center mx-[20px] mt-[-28px]'>

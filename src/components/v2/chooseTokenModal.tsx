@@ -139,8 +139,6 @@ export default function ChooseTokenModal (props: TokenModal) {
   };
 
   const [hasText, setHasText] = useState(false);
-
-
   const handleClearSearch = () => {
     setSearchText('');
     searchTokens('');
