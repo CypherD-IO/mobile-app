@@ -1987,7 +1987,7 @@ export default function Bridge (props: {navigation?: any, route?: any}) {
 
   return (
     <CyDSafeAreaView>
-        <CyDScrollView className={'w-full pb-[40px]'}>
+        <CyDScrollView className={'w-full pb-[40px] bg-white'}>
           <ChooseTokenModal
             isChooseTokenModalVisible={fromTokenModalVisible}
             // tokenList = {totalHoldings.length ? totalHoldings : []}
