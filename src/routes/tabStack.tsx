@@ -1,5 +1,5 @@
 import { screenTitle } from '../constants';
-import { BackHandler, Platform, ToastAndroid } from 'react-native';
+import { BackHandler, ToastAndroid } from 'react-native';
 import * as React from 'react';
 import {
   BrowserStackScreen, DebitCardStackScreen,
