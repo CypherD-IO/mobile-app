@@ -187,9 +187,9 @@ export default function ChooseTokenModal (props: TokenModal) {
             >
               <CyDTextInput
                 className={clsx(
-                  'self-center py-[15px] w-[95%] text-searchTextBackground',
+                  'self-center py-[15px] w-[95%] text-textInputBackground',
                   {
-                    'text-filledTextBackground': hasText
+                    'text-textInputFocussedBackground': hasText
                   }
                 )}
                 value={searchText}

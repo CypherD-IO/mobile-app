@@ -114,8 +114,8 @@ module.exports = {
       tokenPriceColor: '#929292',
       fadedDarkBackgroundColor: '#343434',
       buttonColor: '#F7C645',
-      searchTextBackground: '#C5C5C5',
-      filledTextBackground: '#434343'
+      textInputBackground: '#C5C5C5',
+      textInputFocussedBackground: '#434343'
     },
     columns: {
       auto: 'auto',
