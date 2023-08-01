@@ -251,39 +251,12 @@ export default function EnterAmount (props) {
           </CyDView>
         </CyDScrollView>
       </CyDView>
-      <CyDView className={'absolute w-full items-center bottom-[0px]'}>
-          {/* <CyDTouchView
-            onPress={() => {
-              if (valueForUsd.length > 0) {
-                _validateValueForUsd();
-              }
-            }}
-            disabled={
-              parseFloat(valueForUsd) <= 0
-            }
-            className={clsx(
-              'rounded-[12px] flex items-center w-3/4 flex flex-row justify-center',
-              {
-                'bg-[#FFDE59]': parseFloat(valueForUsd) > 0,
-                'bg-[#dddddd]': parseFloat(valueForUsd) <= 0 || valueForUsd === ''
-              }
-            )}
-          >
-            {
-              <CyDText
-                className={
-                  'font-nunito text-[15px] text-[#1F1F1F] font-extrabold my-[20px]'
-                }
-              >
-                {t<string>('CONTINUE')}
-              </CyDText>
-            }
-          </CyDTouchView> */}
-          <Button title={t('CONTINUE')} disabled={parseFloat(valueForUsd) <= 0 || valueForUsd === ''} onPress={() => {
-            if (valueForUsd.length > 0) {
-              _validateValueForUsd();
-            }
-          }} type={ButtonType.PRIMARY} style=' h-[60px] w-[90%]'/>
+       <CyDView className={'w-full items-center top-[-30px]'}>
+         <Button title={t('CONTINUE')} disabled={parseFloat(valueForUsd) <= 0 || valueForUsd === ''} onPress={() => {
+           if (valueForUsd.length > 0) {
+             _validateValueForUsd();
+           }
+         }} type={ButtonType.PRIMARY} style='h-[60px] w-3/4'/>
         </CyDView>
     </CyDSafeAreaView>
   );
