@@ -81,14 +81,14 @@ export default function Overview ({ tokenData, navigation }: { tokenData: TokenM
   const [refreshing, setRefreshing] = useState<boolean>(false);
   const [data, setData] = useState({
     points: [],
-    smoothingFactor: 0,
-    smoothingStrategy: 'none'
+    smoothingFactor: 0.45,
+    smoothingStrategy: 'bezier'
   });
   const [dataSource, setDataSource] = useState(0);
   const simplifying = false;
 
-  const numberOfPointsInterpolated = 80;
-  const smoothingStrategy = 'none';
+  const numberOfPointsInterpolated = 200;
+  const smoothingStrategy = 'bezier';
   const pickRange = 10;
   const includeExtremes = true;
 
@@ -217,7 +217,7 @@ export default function Overview ({ tokenData, navigation }: { tokenData: TokenM
       })();
       const data = {
         points: intepolatedData,
-        smoothingFactor: 0,
+        smoothingFactor: 0.45,
         smoothingStrategy
       };
       setData(data);
@@ -225,10 +225,7 @@ export default function Overview ({ tokenData, navigation }: { tokenData: TokenM
     }
   }, [
     dataSource,
-    chartData,
-    numberOfPointsInterpolated,
-    simplifying,
-    smoothingStrategy
+    chartData
   ]);
 
   type GraphIndex = 0 | 1 | 2 | 3 | 4;
@@ -534,10 +531,10 @@ export default function Overview ({ tokenData, navigation }: { tokenData: TokenM
   };
 
   return (
-    loading
+    (loading && data.points.length === 0)
       ? <Loading />
       : <CyDScrollView className={'bg-white'} refreshControl={<RefreshControl refreshing={refreshing} onRefresh={onRefresh} />}>
-        <ChartPathProvider data={data}>
+        <ChartPathProvider data={data} >
           <TokenSummary />
           {chartloading && <CyDView style={styles.chartLoadingContainer}>
             <ActivityIndicator size="small" color={Colors.appColor} />
@@ -547,7 +544,7 @@ export default function Overview ({ tokenData, navigation }: { tokenData: TokenM
               <ChartXLabel style={styles.chartXLabel} format={formatTimestamp} />
             </CyDView>
             <CyDView>
-              <ChartPath height={SIZE / 3} stroke="black" strokeWidth={3} selectedStrokeWidth={4} width={SIZE} gestureEnabled={true} backgroundColor="black" />
+              <ChartPath height={SIZE / 3} stroke="black" strokeWidth={1.7} selectedStrokeWidth={1.7} width={SIZE} gestureEnabled={true} gradientEnabled={true} backgroundGradientFrom={selectedTrend > 0 ? 'rgb(169, 229, 61)' : 'rgb(255, 99, 71)'} backgroundGradientTo={'#FFFFFF'}/>
               <ChartDot size={12} style={styles.chartDot} />
             </CyDView>
             <CyDView style={styles.selection}>
