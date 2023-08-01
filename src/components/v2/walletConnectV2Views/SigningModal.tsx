@@ -40,7 +40,6 @@ export default function SigningModal ({
   const [dataIsReady, setDataIsReady] = useState<boolean>(false); ;
   const [nativeSendTxnData, setNativeSendTxnData] = useState<ISendTxnData | null>(null);
   const [decodedABIData, setDecodedABIData] = useState<IExtendedDecodedTxnResponse | IEvmosTxnMessage | null>(null);
-
   const globalContext = useContext<any>(GlobalContext);
 
   let id: number, topic: string, params: { request: { method: string | undefined, params: DecodeTxnRequestBody[] | undefined }, chainId: { split: (arg0: string) => [any, any] } }, method: string | undefined, requestParams: DecodeTxnRequestBody[] | undefined, paramsFromPayload: DecodeTxnRequestBody[] | undefined, requestSession, dAppInfo: IDAppInfo | undefined, chain: Chain | undefined, web3RPCEndpoint: Web3;
@@ -225,6 +224,8 @@ export default function SigningModal ({
   const renderAcceptTitle = (method: string) => {
     if (method.toLowerCase().includes('typeddata')) {
       return 'Review Request';
+    } else if (method.toLowerCase().includes(EIP155_SIGNING_METHODS.PERSONAL_SIGN)) {
+      return 'Sign';
     } else {
       return 'Accept';
     }
@@ -232,12 +233,12 @@ export default function SigningModal ({
 
   return (
     <CyDModalLayout setModalVisible={() => {}} isModalVisible={isModalVisible} style={styles.modalLayout} animationIn={'slideInUp'} animationOut={'slideOutDown'}>
-      <CyDView className='rounded-t-[50px] bg-white max-h-[90%]'>
+      <CyDView className='rounded-t-[24px] bg-white max-h-[90%]'>
         {(chain && method)
           ? <CyDView className='flex flex-col justify-between'>
               <RenderTitle method={method} sendType={(decodedABIData as IExtendedDecodedTxnResponse)?.type} />
               <CyDScrollView className='px-[25px] pb-[5px] max-h-[70%]'>
-                {(method === EIP155_SIGNING_METHODS.PERSONAL_SIGN || method === EIP155_SIGNING_METHODS.ETH_SIGN) && <RenderSignMessageModal dAppInfo={dAppInfo} chain={chain} method={method} requestParams={requestParams} />}
+                {(method === EIP155_SIGNING_METHODS.PERSONAL_SIGN || method === EIP155_SIGNING_METHODS.ETH_SIGN) && (payloadFrom === SigningModalPayloadFrom.WALLETCONNECT ? <RenderSignMessageModal dAppInfo={dAppInfo} chain={chain} method={method} messageParams={requestParams} /> : <RenderSignMessageModal dAppInfo={dAppInfo} chain={chain} method={method} messageParams={paramsFromPayload} />)}
                 {(method === EIP155_SIGNING_METHODS.ETH_SEND_RAW_TRANSACTION || method === EIP155_SIGNING_METHODS.ETH_SEND_TRANSACTION || method === EIP155_SIGNING_METHODS.ETH_SIGN_TRANSACTION) &&
                   (dataIsReady
                     ? <RenderTransactionSignModal dAppInfo={dAppInfo} chain={chain} method={method} data={decodedABIData} nativeSendTxnData={nativeSendTxnData} />

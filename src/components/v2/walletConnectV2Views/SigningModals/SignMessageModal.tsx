@@ -4,7 +4,7 @@ import { Divider, RenderDAPPInfo, RenderMessage, RenderMethod, RenderNetwork } f
 import { IDAppInfo } from '../../../../models/signingModalData.interface';
 import { Chain } from '../../../../constants/server';
 
-export const RenderSignMessageModal = ({ dAppInfo, chain, method, requestParams }: {dAppInfo: IDAppInfo | undefined, chain: Chain | undefined, method: string, requestParams: any}) => {
+export const RenderSignMessageModal = ({ dAppInfo, chain, method, messageParams }: {dAppInfo: IDAppInfo | undefined, chain: Chain | undefined, method: string, messageParams: any}) => {
   return (
       <CyDView>
         {dAppInfo
@@ -17,7 +17,7 @@ export const RenderSignMessageModal = ({ dAppInfo, chain, method, requestParams 
         <Divider />
         <RenderMethod method={method} />
         <Divider />
-        <RenderMessage messageParams={requestParams} method={method} />
+        <RenderMessage messageParams={messageParams} method={method} />
       </CyDView>
   );
 };
