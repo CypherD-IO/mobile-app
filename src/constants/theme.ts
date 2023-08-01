@@ -2,7 +2,7 @@ export const Colors: Record<string, string> = {
   primaryTextColor: '#434343',
   secondaryTextColor: '#000000',
   whiteColor: '#FFFFFF',
-  redColor: '#FD1A1A',
+  redColor: '#EE4D30',
   appColor: '#FFDE59',
   borderColor: '#8E8E8E',
   inputBorderColor: '#C5C5C5',

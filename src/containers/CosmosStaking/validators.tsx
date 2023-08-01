@@ -1,6 +1,6 @@
 import React, { useContext, useEffect, useMemo, useState, useLayoutEffect } from 'react';
 import { CyDText, CyDView, CyDImage, CyDFlatList, CyDTouchView, CyDTextInput } from '../../styles/tailwindStyles';
-import SwitchView from '../../components/SwitchView';
+import SwitchView from '../../components/v2/switchView';
 import { useTranslation } from 'react-i18next';
 import {
   CosmosActionType,
@@ -108,19 +108,21 @@ export default function CosmosValidators ({ route, navigation }) {
   useEffect(() => {
     navigation.setOptions({
       headerTitle: () => (
-      <CyDView className={'-mt-[10px]'}>
-      {from === CosmosActionType.STAKE && <SwitchView
-        title1={t('Staked')}
-        title2={t('All Validators')}
-        index={index}
-        setIndexChange={(index: any) => {
-          setIndex(index);
-        }}
-      />}
-    </CyDView>
+        <CyDView className={'-mt-[10px]'}>
+          {from === CosmosActionType.STAKE && (
+            <SwitchView
+              titles={[t('Staked'), t('All Validators')]} // Pass the titles as an array
+              index={index}
+              setIndexChange={(index: any) => {
+                setIndex(index);
+              }}
+            />
+          )}
+        </CyDView>
       )
     });
   }, [index, navigation]);
+
 
   return (
     <CyDView className={'bg-white h-full w-full'}>

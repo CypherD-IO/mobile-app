@@ -1987,7 +1987,7 @@ export default function Bridge (props: {navigation?: any, route?: any}) {
 
   return (
     <CyDSafeAreaView>
-        <CyDScrollView className={'w-full pb-[40px]'}>
+        <CyDScrollView className={'w-full pb-[40px] bg-white'}>
           <ChooseTokenModal
             isChooseTokenModalVisible={fromTokenModalVisible}
             // tokenList = {totalHoldings.length ? totalHoldings : []}
@@ -2344,7 +2344,7 @@ export default function Bridge (props: {navigation?: any, route?: any}) {
           {showDropDown && (
             <CyDView className="mt-[20px]">
               <CyDView
-                className="bg-white border-[0.2px] rounded-[20px] border-sepratorColor mx-[20px] px-[20px] py-[10px] shadow shadow-sepratorColor"
+                className="bg-white border-[0.2px] rounded-[8px] border-sepratorColor mx-[20px] px-[20px] py-[10px] shadow shadow-sepratorColor"
                 style={styles.shadowProp}
               >
                 <CyDText
@@ -2357,7 +2357,7 @@ export default function Bridge (props: {navigation?: any, route?: any}) {
 
                 <CyDTouchView
                   className={
-                    'bg-secondaryBackgroundColor my-[5px] border-[1px] border-[#EBEBEB] rounded-[12px]'
+                    'bg-secondaryBackgroundColor my-[5px] border-[1px] border-[#EBEBEB] rounded-[8px]'
                   }
                   onPress={() => setFromChainModalVisible(true)}
                 >
@@ -2386,14 +2386,14 @@ export default function Bridge (props: {navigation?: any, route?: any}) {
 
                 <CyDTouchView
                   className={
-                    'bg-[#F7F8FE] my-[5px] border-[1px] border-[#EBEBEB] rounded-[12px]'
+                    'bg-[#F7F8FE] my-[5px] border-[1px] border-[#EBEBEB] rounded-[8px]'
                   }
                   onPress={() => setFromTokenModalVisible(true)}
                 >
                   <CyDView className={'h-[50px] flex flex-row w-full'}>
                     <CyDView
                       className={
-                        'w-4/12 border-r-[1px] border-[#EBEBEB] bg-white px-[18px] rounded-l-[16px] flex justify-center items-center'
+                        'w-4/12 border-r-[1px] border-[#EBEBEB] bg-white px-[18px] rounded-l-[8px] flex justify-center items-center'
                       }
                     >
                       <CyDText
@@ -2430,7 +2430,7 @@ export default function Bridge (props: {navigation?: any, route?: any}) {
 
               <CyDView
                 className={
-                  'my-[16px] bg-white rounded-[20px] border-sepratorColor border-[0.2px] mx-[20px] px-[20px] pt-[10px] shadow'
+                  'my-[16px] bg-white rounded-[8px] border-sepratorColor border-[0.2px] mx-[20px] px-[20px] pt-[10px] shadow'
                 }
                 style={styles.shadowProp}
               >
@@ -2444,7 +2444,7 @@ export default function Bridge (props: {navigation?: any, route?: any}) {
 
                 <CyDTouchView
                   className={
-                    'bg-secondaryBackgroundColor my-[5px] border-[1px] border-[#EBEBEB] rounded-[12px]'
+                    'bg-secondaryBackgroundColor my-[5px] border-[1px] border-[#EBEBEB] rounded-[8px]'
                   }
                   onPress={() => setToChainModalVisible(true)}
                 >
@@ -2473,7 +2473,7 @@ export default function Bridge (props: {navigation?: any, route?: any}) {
 
                 <CyDView
                   className={
-                    'bg-secondaryBackgroundColor mb-[16px] mt-[5px] border-[1px] border-[#EBEBEB] rounded-[12px]'
+                    'bg-secondaryBackgroundColor mb-[16px] mt-[5px] border-[1px] border-[#EBEBEB] rounded-[8px]'
                   }
                 >
                   <CyDTouchView
@@ -2485,7 +2485,7 @@ export default function Bridge (props: {navigation?: any, route?: any}) {
                   >
                     <CyDView
                       className={
-                        'w-4/12 border-r-[1px] border-[#EBEBEB] bg-white px-[18px] rounded-l-[16px] flex justify-center items-center'
+                        'w-4/12 border-r-[1px] border-[#EBEBEB] bg-white px-[18px] rounded-l-[8px] flex justify-center items-center'
                       }
                     >
                       <CyDText
@@ -2530,7 +2530,7 @@ export default function Bridge (props: {navigation?: any, route?: any}) {
                 setShowDropDown(true);
               }}
               className={
-                'flex flex-row justify-between items-center my-[30px] bg-[#F7F8FE] rounded-[20px] mx-[20px] px-[15px] py-[20px] shadow shadow-sepratorColor'
+                'flex flex-row justify-between items-center my-[30px] bg-[#F7F8FE] rounded-[8px] mx-[20px] px-[15px] py-[20px] shadow shadow-sepratorColor'
               }
             >
               <CyDView className={'flex w-[40%] items-center justify-center'}>
@@ -2547,7 +2547,7 @@ export default function Bridge (props: {navigation?: any, route?: any}) {
                 </CyDText>
                 <CyDView
                   className={
-                    'bg-white rounded-[20px] flex flex-row items-center p-[4px]'
+                    'bg-white rounded-[8px] flex flex-row items-center p-[4px]'
                   }
                 >
                   <CyDImage
@@ -2586,7 +2586,7 @@ export default function Bridge (props: {navigation?: any, route?: any}) {
                 </CyDText>
                 <CyDView
                   className={
-                    'bg-white rounded-[20px] flex flex-row items-center p-[4px]'
+                    'bg-white rounded-[8px] flex flex-row items-center p-[4px]'
                   }
                 >
                   <CyDImage
@@ -2606,9 +2606,9 @@ export default function Bridge (props: {navigation?: any, route?: any}) {
           )}
 
           <CyDTouchView
-            className={clsx('pb-[45px] bg-[#F7F8FE] rounded-[20px] mx-[20px]', {
-              'rounded-b-[20px]': showDropDown,
-              'rounded-[20px]': !showDropDown
+            className={clsx('pb-[45px] bg-[#F7F8FE] rounded-[8px] mx-[20px]', {
+              'rounded-b-[8px]': showDropDown,
+              'rounded-[8px]': !showDropDown
             })}
             onPress={() => {
               amount === '0.00' ? setAmount('') : setAmount(amount);

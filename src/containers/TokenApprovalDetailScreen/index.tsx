@@ -6,7 +6,6 @@ import React, { useContext, useEffect, useRef, useState } from 'react';
 import { FlatList, Animated, View, Platform } from 'react-native';
 import { useTranslation } from 'react-i18next';
 import { showToast } from '../../containers/utilities/toastUtility';
-import SwitchView from '../../components/SwitchView';
 import * as C from '../../constants/index';
 import { Colors } from '../../constants/theme';
 import AppImages from '../../../assets/images/appImages';
