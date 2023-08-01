@@ -99,7 +99,7 @@ export function Contacts ({ route, navigation }) {
       <CyDScrollView className={'flex flex-col w-[100%]'}>
         <CyDView className={'flex flex-row justify-around mx-[15px]'}>
           <CyDTextInput
-            className={clsx(' w-[80%] border-[1px] border-inputBorderColor rounded-[15px] p-[12px] pr-[38px] text-[16px] font-nunito text-primaryTextColor', { 'border-redOffColor': false })}
+            className={clsx(' w-[80%] border-[1px] border-inputBorderColor rounded-[8px] p-[12px] pr-[38px] text-[16px] font-nunito text-primaryTextColor', { 'border-redOffColor': false })}
             value={name}
             autoCapitalize="none"
             autoCorrect={false}
@@ -107,7 +107,7 @@ export function Contacts ({ route, navigation }) {
             placeholderTextColor={Colors.placeHolderColor}
             placeholder={t('Search Name')}
           />
-          <Button style={'rounded-[10px] w-[55px] h-[55px]'} type={'grey'} image={AppImages.CREATE_CONTACT} onPress={() => { navigation.navigate(screenTitle.CREATE_CONTACT, { contactBook }); } } title={t('')} titleStyle={'text-[12px]'} imageStyle={'h-[18px] w-[18px]'}/>
+          <Button style={'rounded-[8px] w-[55px] h-[60px]'} type={'grey'} image={AppImages.CREATE_CONTACT} onPress={() => { navigation.navigate(screenTitle.CREATE_CONTACT, { contactBook }); } } title={t('')} titleStyle={'text-[12px]'} imageStyle={'h-[18px] w-[18px]'}/>
         </CyDView>
 
         <CyDView className='items-center mx-[20px] mt-[-28px]'>

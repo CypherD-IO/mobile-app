@@ -168,15 +168,17 @@ function StakingValidators ({ route, navigation }) {
                 typeOfAction={typeOfAction}
             />
 
-            {typeOfAction === 'stake' && <SwitchView
-                title1={t('Staked')}
-                title2={t('All Validators')}
+            {typeOfAction === 'stake' && (
+              <SwitchView
+                titles={[t('Staked'), t('All Validators')]} // Pass the titles as an array
                 index={index}
                 setIndexChange={(index) => {
                   setIndex(index);
                 }}
                 style={{ marginBottom: 10 }}
-            />}
+              />
+            )}
+
         </DynamicView>
 
         <CyDTextInput
