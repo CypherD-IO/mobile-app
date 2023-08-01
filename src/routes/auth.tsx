@@ -94,7 +94,6 @@ const defaultHeaderLeft = (navigation) => (
   <CyDTouchView
     className='w-[60px]'
     onPress={() => {
-      console.log('keyboard Dismiss');
       Keyboard.dismiss();
       // setTimeout(() => {
       navigation.goBack();
