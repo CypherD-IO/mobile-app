@@ -1,6 +1,6 @@
 import React, { useContext, useEffect, useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import { Keyboard } from 'react-native';
+import { Keyboard, TextInput } from 'react-native';
 import AppImages from '../../../../assets/images/appImages';
 import Button from '../../../components/v2/button';
 import { ChainNames, COSMOS_CHAINS, ChainNameMapping, NativeTokenMapping } from '../../../constants/server';
@@ -38,6 +38,7 @@ import { get } from 'lodash';
 import { CardProviders } from '../../../constants/enum';
 import { TokenMeta } from '../../../models/tokenMetaData.model';
 import clsx from 'clsx';
+import { isIOS } from '../../../misc/checkers';
 
 export default function BridgeFundCardScreen ({ route }: {route: any}) {
   const { navigation, currentCardProvider, currentCardIndex }: {navigation: any, currentCardProvider: CardProviders, currentCardIndex: number} = route.params;
@@ -51,6 +52,7 @@ export default function BridgeFundCardScreen ({ route }: {route: any}) {
   const cardProfile = globalContext.globalState.cardProfile;
   const { cardId, last4 }: {cardId: string, last4: string} = get(cardProfile, currentCardProvider)?.cards[currentCardIndex];
   const activityRef = useRef<DebitCardTransaction | null>(null);
+  const inputRef = useRef<TextInput | null>(null);
   const ARCH_HOST: string = hostWorker.getHost('ARCH_HOST');
   const { getWithAuth, postWithAuth } = useAxios();
 
@@ -498,7 +500,13 @@ export default function BridgeFundCardScreen ({ route }: {route: any}) {
         isChooseTokenModalVisible = {isChooseTokenVisible}
         tokenList = {portfolioState.statePortfolio.tokenPortfolio.totalHoldings}
         minTokenValueLimit = {minTokenValueLimit}
-        onSelectingToken = {(token) => { setIsChooseTokenVisible(false); onSelectingToken(token); }}
+        onSelectingToken = {(token) => {
+          setIsChooseTokenVisible(false);
+          setTimeout(() => {
+            onSelectingToken(token);
+            inputRef.current?.focus();
+          }, (isIOS() ? MODAL_HIDE_TIMEOUT_250 : 600));
+        }}
         onCancel={() => { setIsChooseTokenVisible(false); navigation.goBack(); }}
         noTokensAvailableMessage={t<string>('CARD_INSUFFICIENT_FUNDS')}
         renderPage={'fundCardPage'}
@@ -541,6 +549,7 @@ export default function BridgeFundCardScreen ({ route }: {route: any}) {
             <CyDView className={'flex flex-row justify-center items-center'}>
               <CyDText className='text-[50px] font-extrabold mt-[5px]'>{String('$')}</CyDText>
               <CyDTextInput
+                ref={inputRef}
                 className={'h-[100px] min-w-[70px] font-nunito text-[60px] font-bold'}
                 value={amount}
                 keyboardType={'numeric'}
