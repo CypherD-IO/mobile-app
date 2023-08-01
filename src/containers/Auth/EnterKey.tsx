@@ -137,6 +137,7 @@ export default function Login (props) {
                   onChangeseedPhraseTextValue(text.toLowerCase());
                   setBadKeyError(false);
                 }}
+                autoFocus={true}
                 multiline={true}
                 textAlignVertical={'top'}
                 secureTextEntry={true}
