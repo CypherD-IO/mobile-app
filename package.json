@@ -21,7 +21,7 @@
     "@cosmjs-rn/proto-signing": "^0.27.1",
     "@cosmjs-rn/stargate": "^0.27.1",
     "@cosmjs/launchpad": "^0.27.1",
-    "@cypherd-io/animated-charts": "^2.0.0",
+    "@cypherd-io/animated-charts": "^2.1.0",
     "@cypherd-io/osmojs": "^0.10.19",
     "@ethersproject/bignumber": "^5.6.2",
     "@ethersproject/shims": "^5.6.0",
