@@ -83,7 +83,7 @@ export default function SetPin (props: {
   return (
     <CyDSafeAreaView className="h-full bg-white px-[20px]">
       <ActivateCardHeader />
-      <CyDView className={' px-[20px] pt-[10px] mt-[14px]'}>
+      <CyDView className={' px-[24px] pt-[10px] mt-[14px]'}>
         <CyDView>
           <CyDText className={'text-[18px] font-extrabold'}>
             {t<string>('CARD_SET_PIN')}
@@ -132,6 +132,7 @@ export default function SetPin (props: {
               onChangeText={(num: string) => setConfirmPin(num)}
               value={confirmPin}
               maxLength={4}
+              autoFocus={true}
               secureTextEntry={true}
             />
             <CyDText className="text-redCyD mt-[5px]">
@@ -142,7 +143,7 @@ export default function SetPin (props: {
           </CyDView>
         </CyDView>
       </CyDView>
-      <CyDView className="w-full absolute bottom-0 mb-[10px] items-center">
+      <CyDView className="w-full absolute bottom-0 mb-[20px] px-[24px] items-center">
         <Button
           title={t('CONFIRM')}
           disabled={
@@ -157,7 +158,7 @@ export default function SetPin (props: {
           }}
           type={ButtonType.PRIMARY}
           loading={loading}
-          style=" h-[60px] w-[90%]"
+          style="h-[60px] w-[90%]"
         />
       </CyDView>
     </CyDSafeAreaView>

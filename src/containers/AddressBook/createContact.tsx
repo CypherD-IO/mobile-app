@@ -409,8 +409,8 @@ export const CreateContact = ({ route, navigation }: RouteProps) => {
                     <CyDText className={'text-blue-700 font-bold py-[17px]'} onPress={() => { setChooseChainModalVisible(!chooseChainModalVisible); } }>{t('PLUS_ADD_ADDRESS')}</CyDText>
                   </CyDView>
                 </CyDScrollView>
-                <CyDView className='py-[8px] w-[87%] self-center border-t-[1px] border-t-[#F4F4F4]'>
-                  <Button style='h-[50px] w-[100%]' title={t('SAVE')} loading={loading} onPress={() => { formProps.handleSubmit(); void intercomAnalyticsLog('save_or_edit_contact'); }}/>
+                <CyDView className='w-full px-[24px] items-center mb-[20px]'>
+                  <Button style='h-[60px] w-[90%]' title={t('SAVE')} loading={loading} onPress={() => { formProps.handleSubmit(); void intercomAnalyticsLog('save_or_edit_contact'); }}/>
                 </CyDView>
               </CyDView>
             )}
