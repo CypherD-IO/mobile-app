@@ -112,7 +112,10 @@ module.exports = {
       privacyMessageBackgroundColor: '#F1F3FE',
       inputBackgroundColor: '#F6F6F6',
       tokenPriceColor: '#929292',
-      fadedDarkBackgroundColor: '#343434'
+      fadedDarkBackgroundColor: '#343434',
+      buttonColor: '#F7C645',
+      textInputBackground: '#C5C5C5',
+      textInputFocussedBackground: '#434343'
     },
     columns: {
       auto: 'auto',
