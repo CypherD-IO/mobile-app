@@ -36,6 +36,7 @@ import { TokenOverviewTabIndices } from '../../constants/enum';
 import { GlobalContext } from '../../core/globalContext';
 import { RESET, STAKING_EMPTY } from '../../reducers/stakingReducer';
 import Loading from '../../components/v2/loading';
+import Toast from 'react-native-toast-message';
 
 const {
   CText,
@@ -94,11 +95,10 @@ export default function ReStake ({ route, navigation }) {
 
     const sender = {
       accountAddress: evmos.wallets[evmos.currentIndex].address,
-      sequence: response.data.account.base_account.sequence,
-      accountNumber: response.data.account.base_account.account_number,
-      pubkey: response.data.account.base_account.pub_key.key
+      sequence: response.sequence,
+      accountNumber: response.account_number,
+      pubkey: response.pub_key.key
     };
-
     const fee = {
       amount: gasFee,
       denom: 'aevmos',
@@ -128,7 +128,6 @@ export default function ReStake ({ route, navigation }) {
     const rawTx = createTxRawEIP712(msg.legacyAmino.body, msg.legacyAmino.authInfo, extension);
 
     const body = generatePostBodyBroadcast(rawTx);
-
     return body;
   };
 
@@ -156,13 +155,14 @@ export default function ReStake ({ route, navigation }) {
 
   const delegateFinalTxn = async () => {
     try {
+      setIsLoading(true);
       void analytics().logEvent('evmos_redelegation_started');
       const txnResponse = await axios.post(TXN_ENDPOINT, finalDelegateTxnData);
-
       if (txnResponse.data.tx_response.raw_log === '[]') {
         setIsLoading(false);
         setDelegateModalVisible(false);
         void analytics().logEvent('evmos_redelgation_completed');
+        Toast.show({ type: 'success', text1: 'Transaction', text2: 'Transaction Receipt Received', position: 'bottom' });
         setTimeout(() => {
           portfolioState.dispatchPortfolio({
             type: PORTFOLIO_REFRESH,
@@ -174,7 +174,7 @@ export default function ReStake ({ route, navigation }) {
           stakingValidators.dispatchStaking({
             type: RESET
           });
-        }, 6000);
+        }, 3000);
         setTimeout(() => {
           showModal('state', {
             type: t('TOAST_TYPE_SUCCESS'),
@@ -211,12 +211,19 @@ export default function ReStake ({ route, navigation }) {
       const accountDetailsResponse = await axios.get(ACCOUNT_DETAILS, {
         timeout: 2000
       });
-      const delegateBodyForSimulate = delegateTxnBody(accountDetailsResponse);
+      let sequence = accountDetailsResponse.data.account.base_account.sequence;
       void analytics().logEvent('evmos_redelegation_simulation');
-
-      const simulationResponse = await axios.post(SIMULATION_ENDPOINT, delegateBodyForSimulate);
+      let simulationResponse;
+      try {
+        const delegateBodyForSimulate = delegateTxnBody(accountDetailsResponse.data.account.base_account);
+        simulationResponse = await axios.post(SIMULATION_ENDPOINT, delegateBodyForSimulate);
+      } catch (e) {
+        sequence = Number(sequence) + 1;
+        const delegateBodyForSimulate = delegateTxnBody({ ...accountDetailsResponse.data.account.base_account, sequence: Number(sequence) + 1 });
+        simulationResponse = await axios.post(SIMULATION_ENDPOINT, delegateBodyForSimulate);
+      }
       const gasWanted = simulationResponse.data.gas_info.gas_used;
-      const bodyForTransaction = delegateTxnBody(accountDetailsResponse,
+      const bodyForTransaction = delegateTxnBody({ ...accountDetailsResponse.data.account.base_account, sequence },
         ethers.utils
           .parseUnits(convertAmountOfContractDecimal((cosmosConfig.evmos.gasPrice * gasWanted).toString(), 18), 18).toString(),
         Math.floor(gasWanted * 1.3).toString(), 'tnx');
@@ -226,6 +233,7 @@ export default function ReStake ({ route, navigation }) {
       setDelegateModalVisible(true);
     } catch (error: any) {
       setLoading(false);
+      setDelegateModalVisible(false);
       setItemData({ description: { name: '' } });
       Sentry.captureException(error);
       void analytics().logEvent('evmos_staking_error', { from: 'error while delegating in evmos staking/resTake.tsx' });
