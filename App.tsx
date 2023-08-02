@@ -318,7 +318,7 @@ const checkUpdateNeeded = async () => {
   try {
     if (JailMonkey.isJailBroken()) {
       // Alternative behaviour for jail-broken/rooted devices.
-      // RNExitApp.exitApp();
+      RNExitApp.exitApp();
     }
   } catch (error) {
     Sentry.captureException(error);
