@@ -31,7 +31,7 @@ export default function TokenOverviewToolBar ({ tokenData, navigation }: { token
   const canShowFundCard = globalStateContext.globalState.cardProfile?.solid?.cards?.length > 0 && Number(userBalance()) >= 10;
 
   return (
-    <CyDView className={`flex flex-row w-[100%] justify-evenly mt-[7px] pb-[${isIOS() ? 15 : 10}px]`}>
+    <CyDView className={`flex flex-row w-[100%] justify-evenly items-center mt-[7px] pb-[${isIOS() ? 15 : 0}px]`}>
           <CyDView className='flex items-center'>
               <CyDTouchView className={'flex items-center justify-center'} onPress={() => {
                 navigation.navigate(screenTitle.ENTER_AMOUNT, {
