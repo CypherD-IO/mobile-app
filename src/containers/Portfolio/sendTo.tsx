@@ -66,6 +66,7 @@ import clsx from 'clsx';
 import Button from '../../components/v2/button';
 import { Contact, getContactBookWithMultipleAddress } from '../utilities/contactBookUtility';
 import { intercomAnalyticsLog } from '../utilities/analyticsUtility';
+import { useKeyboard } from '../../hooks/useKeyboard';
 
 export default function SendTo (props: { navigation?: any, route?: any }) {
   const { t } = useTranslation();
@@ -96,6 +97,7 @@ export default function SendTo (props: { navigation?: any, route?: any }) {
   const { isReadOnlyWallet } = hdWalletContext.state;
   const [isSignableTransaction] = useIsSignable();
   const chainDetails = tokenData?.chainDetails;
+  const { keyboardHeight } = useKeyboard();
 
   const searchOptions = {
     isCaseSensitive: false,
@@ -749,7 +751,6 @@ export default function SendTo (props: { navigation?: any, route?: any }) {
                     blurOnSubmit={true}
                     multiline={true}
                     textAlignVertical={'top'}
-                    onBlur={() => { console.log('Send'); }}
                     placeholderTextColor={Colors.placeHolderColor}
                     placeholder={getSendAddressFieldPlaceholder(chainDetails?.chainName ?? '', chainDetails?.backendName ?? '')}
                   />
@@ -797,7 +798,7 @@ export default function SendTo (props: { navigation?: any, route?: any }) {
                     <AddressProfile content={filteredContactBook} chainChoosen={chainDetails?.backendName} setAddressText={setAddressText} setIsDropDown={setIsDropDown}/>
                   </CyDView>
                 }
-                <CyDView className='w-full absolute bottom-0 mb-[5px] items-center'>
+                <CyDView className='w-full absolute mb-[4px] items-center' style={keyboardHeight ? { top: keyboardHeight - 60 } : { bottom: 8 }}>
                     <Button title={t('SEND')} onPress={() => {
                       void (async () => await submitSendTransaction())();
                     }} type={ButtonType.PRIMARY} loading={loading} style=' h-[60px] w-[90%]'/>

@@ -1,5 +1,5 @@
 import { screenTitle } from '../constants';
-import { BackHandler, ToastAndroid } from 'react-native';
+import { BackHandler, ToastAndroid, StyleSheet } from 'react-native';
 import * as React from 'react';
 import {
   BrowserStackScreen, DebitCardStackScreen,
@@ -13,11 +13,12 @@ import { NavigationContainer, useNavigationContainerRef } from '@react-navigatio
 import { useContext, useEffect, useState } from 'react';
 import { ActivityContext, HdWalletContext } from '../core/util';
 import SpInAppUpdates from 'sp-react-native-in-app-updates';
-import { CyDAnimatedView, CyDImage, CyDText, CyDView } from '../styles/tailwindStyles';
+import { CyDAnimatedView, CyDFastImage, CyDImage, CyDText, CyDTouchView, CyDView } from '../styles/tailwindStyles';
 import { t } from 'i18next';
 import clsx from 'clsx';
 import { isIOS } from '../misc/checkers';
-import { Layout } from 'react-native-reanimated';
+import { Easing, Layout, SlideInUp, SlideOutDown } from 'react-native-reanimated';
+import { Colors } from '../constants/theme';
 
 const Tab = createBottomTabNavigator();
 
@@ -40,8 +41,6 @@ function TabStack () {
   ];
 
   const [badgedTabBarOptions, setBadgedTabBarOptions] = useState<any>({});
-
-  const paddingBottomTabBarStyles = isIOS() ? 35 : 30;
 
   let backPressCount = 0;
   const handleBackButton = () => {
@@ -87,6 +86,65 @@ function TabStack () {
     void isBadgeAvailable();
   }, [activityContext.state]);
 
+  function MyTabBar ({ state, descriptors, navigation }) {
+    return (
+      <CyDView className='flex flex-row justify-start items-center px-[10px]'>
+        {state.routes.map((route, index) => {
+          const { options } = descriptors[route.key];
+          const label =
+            options.tabBarLabel !== undefined
+              ? options.tabBarLabel
+              : options.title !== undefined
+                ? options.title
+                : route.name;
+
+          const isFocused = state.index === index;
+          const TabBarIcon = options.tabBarIcon;
+          const TabBarButton = options.tabBarButton;
+          const onPress = () => {
+            const event = navigation.emit({
+              type: 'tabPress',
+              target: route.key,
+              canPreventDefault: true
+            });
+
+            if (!isFocused && !event.defaultPrevented) {
+              // The `merge: true` option makes sure that the params inside the tab screen are preserved
+              navigation.navigate({ name: route.name, merge: true });
+            }
+          };
+
+          const onLongPress = () => {
+            navigation.emit({
+              type: 'tabLongPress',
+              target: route.key
+            });
+          };
+
+          return (
+            <CyDTouchView
+              key={index}
+              accessibilityRole="button"
+              accessibilityState={isFocused ? { selected: true } : {}}
+              accessibilityLabel={options.tabBarAccessibilityLabel}
+              testID={options.tabBarTestID}
+              onPress={onPress}
+              onLongPress={onLongPress}
+              className='flex flex-1 flex-row items-center'
+            >
+              <CyDView className={clsx('flex flex-1 flex-col items-center bg-transparent', { 'mt-[10px] bg-transparent': route.name === screenTitle.SHORTCUTS })}>
+              {route.name === screenTitle.SHORTCUTS ? <TabBarButton/> : <TabBarIcon focused={isFocused} color='' size=''/>}
+                <CyDText className={clsx('text-[12px]', { 'font-bold': isFocused })}>
+                {route.name !== screenTitle.SHORTCUTS && label}
+                </CyDText>
+              </CyDView>
+            </CyDTouchView>
+          );
+        })}
+      </CyDView>
+    );
+  }
+
   return (
     <NavigationContainer independent={true} ref={navigationRef}>
       <Tab.Navigator
@@ -95,39 +153,23 @@ function TabStack () {
           const currentRouteStack = props.state.routes[props.state.index].state?.routes.map(item => item.name);
           const showTabBar = (currentRouteStack === undefined) || screensToHaveNavBar.includes(currentRouteStack[currentRouteStack.length - 1]);
           return (
-            <CyDAnimatedView layout={Layout.springify()} className={clsx('w-full mb-[-20px]', { 'mb-[-90px]': !showTabBar, 'shadow shadow-gray-400': showTabBar && !isReadOnlyWallet, 'bg-white': !isIOS() })}>
+            <CyDAnimatedView entering={SlideInUp} exiting={SlideOutDown} layout={Layout.easing(Easing.ease).delay(200)} className={clsx('rounded-t-[24px] shadow shadow-gray-400', { 'mb-[-90px]': !showTabBar, 'shadow shadow-gray-400': showTabBar && !isReadOnlyWallet, 'bg-white': !isIOS() })} style={styles.elevatedBackground}>
             {isReadOnlyWallet && <CyDView className={clsx('flex flex-row justify-center items-center bg-ternaryBackgroundColor py-[5px] mb-[-15px] pb-[20px] rounded-t-[24px] shadow shadow-gray-400', { hidden: !showTabBar })}>
             <CyDImage source={AppImages.EYE_OPEN} className='h-[18px] w-[18px]' resizeMode='contain'/>
             <CyDText className='font-bold mt-[2px] ml-[5px]'>{t('READ_ONLY_MODE')}</CyDText>
             </CyDView>}
-            <BottomTabBar {...props}/>
-          </CyDAnimatedView>
+            <MyTabBar {...props}/>
+            </CyDAnimatedView>
           );
         }}
         screenOptions={({ navigation, route }) => ({
           tabBarHideOnKeyboard: false,
           tabBarStyle: {
-            height: 90,
-            paddingBottom: paddingBottomTabBarStyles,
-            borderTopLeftRadius: 24,
+            display: 'flex',
+            flexDirection: 'row',
+            backgroundColor: 'transparent',
             borderTopWidth: 0,
-            borderTopRightRadius: 24
-            /*
-            * If it makes no difference on android,
-            * will style the shadow with tailwind classes for now.
-            */
-            // ...Platform.select({
-            //   ios: {
-            //     shadowColor: '#000',
-            //     shadowOffset: { width: 0, height: -3 },
-            //     shadowOpacity: 0.2,
-            //     shadowRadius: 4
-            //   },
-            //   android: {
-            //     // borderWidth: 1,
-            //     // borderColor: '#000'
-            //   }
-            // })
+            height: 90
           },
           tabBarIcon: ({ focused, color, size }) => {
             let iconName;
@@ -148,11 +190,7 @@ function TabStack () {
 
             // You can return any component that you like here!
             return (
-              <CyDImage
-                source={iconName}
-                className='h-[35px] mt-[5px] self-center'
-                resizeMode='contain'
-              />
+              <CyDFastImage source={iconName} className='h-[30px] w-[30px] self-center' resizeMode='contain'/>
             );
           },
           tabBarLabelStyle: {
@@ -194,3 +232,10 @@ function TabStack () {
 }
 
 export default TabStack;
+
+const styles = StyleSheet.create({
+  elevatedBackground: {
+    elevation: 3,
+    backgroundColor: isIOS() ? Colors.white : Colors.transparent
+  }
+});

@@ -75,7 +75,6 @@ import { ethToEvmos } from '@tharsis/address-converter';
 import { WalletConnectV2Provider } from './src/components/walletConnectV2Provider';
 import DefaultAuthRemoveModal from './src/components/v2/defaultAuthRemoveModal';
 import { Config } from 'react-native-config';
-// import KeyboardAvoidingView from './src/components/v2/customKeyboardAvoidingView';
 
 const { DynamicView, CText, DynamicImage } = require('./src/styles');
 
@@ -570,7 +569,7 @@ function App () {
   }, []);
 
   return (
-    <KeyboardAvoidingView style={{ flex: 1, backgroundColor: 'white' }} behavior={Platform.OS === 'ios' ? 'padding' : 'height'} keyboardVerticalOffset={0}>
+    <KeyboardAvoidingView style={{ flex: 1, backgroundColor: 'white' }} enabled behavior={Platform.OS === 'ios' ? 'padding' : 'height'} keyboardVerticalOffset={0}>
     <GestureHandlerRootView style={{ flex: 1 }}>
         <Sentry.TouchEventBoundary>
           <WalletConnectContext.Provider value={{ walletConnectState, walletConnectDispatch }}>
