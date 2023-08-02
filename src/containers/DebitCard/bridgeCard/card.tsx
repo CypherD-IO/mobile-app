@@ -13,7 +13,6 @@ import { useGlobalModalContext } from '../../../components/v2/GlobalModal';
 import Carousel from 'react-native-snap-carousel';
 import { Dimensions } from 'react-native';
 import AppImages from '../../../../assets/images/appImages';
-import { scale } from 'react-native-size-matters';
 import clsx from 'clsx';
 import { Card } from '../../../models/card.model';
 import { orderBy } from 'lodash';

@@ -51,7 +51,6 @@ export default function HostsAndRPCScreen ({ navigation }) {
   });
 
   const handleBackButton = () => {
-    console.log('navigate');
     Keyboard.dismiss();
     navigation.goBack();
     return true;

@@ -109,17 +109,6 @@ const defaultHeaderLeft = (navigation) => (
 );
 
 export function PortfolioStackScreen ({ navigation, route }) {
-  // const { t } = useTranslation();
-  // useEffect(() => {
-  //   navigation?.addListener('beforeRemove', (e) => {
-  //     // Prevent default behavior of the event
-  //     // e.preventDefault();
-  //     console.log(e);
-  //     Keyboard.dismiss();
-  //     // Show the custom confirmation dialog
-  //   });
-  // }, [navigation]);
-
   let backPressCount = 0;
   const handleBackButton = () => {
     if (backPressCount === 0) {
