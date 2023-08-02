@@ -1,5 +1,5 @@
 import { screenTitle } from '../constants';
-import { BackHandler, ToastAndroid } from 'react-native';
+import { BackHandler, ToastAndroid, StyleSheet } from 'react-native';
 import * as React from 'react';
 import {
   BrowserStackScreen, DebitCardStackScreen,
@@ -17,7 +17,8 @@ import { CyDAnimatedView, CyDFastImage, CyDImage, CyDText, CyDTouchView, CyDView
 import { t } from 'i18next';
 import clsx from 'clsx';
 import { isIOS } from '../misc/checkers';
-import { BaseAnimationBuilder, Easing, Keyframe, Layout, SlideInDown, SlideInUp, SlideOutDown } from 'react-native-reanimated';
+import { Easing, Layout, SlideInUp, SlideOutDown } from 'react-native-reanimated';
+import { Colors } from '../constants/theme';
 
 const Tab = createBottomTabNavigator();
 
@@ -40,8 +41,6 @@ function TabStack () {
   ];
 
   const [badgedTabBarOptions, setBadgedTabBarOptions] = useState<any>({});
-
-  const paddingBottomTabBarStyles = isIOS() ? 35 : 30;
 
   let backPressCount = 0;
   const handleBackButton = () => {
@@ -154,7 +153,7 @@ function TabStack () {
           const currentRouteStack = props.state.routes[props.state.index].state?.routes.map(item => item.name);
           const showTabBar = (currentRouteStack === undefined) || screensToHaveNavBar.includes(currentRouteStack[currentRouteStack.length - 1]);
           return (
-            <CyDAnimatedView entering={SlideInUp} exiting={SlideOutDown} layout={Layout.easing(Easing.ease).delay(200)} className={clsx('rounded-t-[24px] shadow shadow-gray-400', { 'mb-[-90px]': !showTabBar, 'shadow shadow-gray-400': showTabBar && !isReadOnlyWallet, 'bg-white': !isIOS() })} style={{ elevation: 3, backgroundColor: isIOS() ? 'white' : 'transparent' }}>
+            <CyDAnimatedView entering={SlideInUp} exiting={SlideOutDown} layout={Layout.easing(Easing.ease).delay(200)} className={clsx('rounded-t-[24px] shadow shadow-gray-400', { 'mb-[-90px]': !showTabBar, 'shadow shadow-gray-400': showTabBar && !isReadOnlyWallet, 'bg-white': !isIOS() })} style={styles.elevatedBackground}>
             {isReadOnlyWallet && <CyDView className={clsx('flex flex-row justify-center items-center bg-ternaryBackgroundColor py-[5px] mb-[-15px] pb-[20px] rounded-t-[24px] shadow shadow-gray-400', { hidden: !showTabBar })}>
             <CyDImage source={AppImages.EYE_OPEN} className='h-[18px] w-[18px]' resizeMode='contain'/>
             <CyDText className='font-bold mt-[2px] ml-[5px]'>{t('READ_ONLY_MODE')}</CyDText>
@@ -233,3 +232,10 @@ function TabStack () {
 }
 
 export default TabStack;
+
+const styles = StyleSheet.create({
+  elevatedBackground: {
+    elevation: 3,
+    backgroundColor: isIOS() ? Colors.white : Colors.transparent
+  }
+});

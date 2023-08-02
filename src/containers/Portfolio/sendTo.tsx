@@ -15,7 +15,7 @@ import { ethers } from 'ethers';
 import { get } from 'lodash';
 import React, { useContext, useEffect, useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import { BackHandler, Dimensions } from 'react-native';
+import { BackHandler } from 'react-native';
 import { BarCodeReadEvent } from 'react-native-camera';
 import { v4 as uuidv4 } from 'uuid';
 import Web3 from 'web3';
@@ -98,8 +98,6 @@ export default function SendTo (props: { navigation?: any, route?: any }) {
   const [isSignableTransaction] = useIsSignable();
   const chainDetails = tokenData?.chainDetails;
   const { keyboardHeight } = useKeyboard();
-
-  console.log(Dimensions.get('window'));
 
   const searchOptions = {
     isCaseSensitive: false,
@@ -753,7 +751,6 @@ export default function SendTo (props: { navigation?: any, route?: any }) {
                     blurOnSubmit={true}
                     multiline={true}
                     textAlignVertical={'top'}
-                    onBlur={() => { console.log('Send'); }}
                     placeholderTextColor={Colors.placeHolderColor}
                     placeholder={getSendAddressFieldPlaceholder(chainDetails?.chainName ?? '', chainDetails?.backendName ?? '')}
                   />

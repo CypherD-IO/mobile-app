@@ -99,7 +99,6 @@ export default function ReStake ({ route, navigation }) {
       accountNumber: response.account_number,
       pubkey: response.pub_key.key
     };
-    console.log('sender:', sender);
     const fee = {
       amount: gasFee,
       denom: 'aevmos',
@@ -129,7 +128,6 @@ export default function ReStake ({ route, navigation }) {
     const rawTx = createTxRawEIP712(msg.legacyAmino.body, msg.legacyAmino.authInfo, extension);
 
     const body = generatePostBodyBroadcast(rawTx);
-    console.log('body:', body);
     return body;
   };
 
@@ -160,11 +158,9 @@ export default function ReStake ({ route, navigation }) {
       setIsLoading(true);
       void analytics().logEvent('evmos_redelegation_started');
       const txnResponse = await axios.post(TXN_ENDPOINT, finalDelegateTxnData);
-      console.log('txnResponse:', txnResponse.data);
       if (txnResponse.data.tx_response.raw_log === '[]') {
         setIsLoading(false);
         setDelegateModalVisible(false);
-        console.log('success');
         void analytics().logEvent('evmos_redelgation_completed');
         Toast.show({ type: 'success', text1: 'Transaction', text2: 'Transaction Receipt Received', position: 'bottom' });
         setTimeout(() => {
@@ -222,19 +218,15 @@ export default function ReStake ({ route, navigation }) {
         const delegateBodyForSimulate = delegateTxnBody(accountDetailsResponse.data.account.base_account);
         simulationResponse = await axios.post(SIMULATION_ENDPOINT, delegateBodyForSimulate);
       } catch (e) {
-        console.log('error:', e);
         sequence = Number(sequence) + 1;
         const delegateBodyForSimulate = delegateTxnBody({ ...accountDetailsResponse.data.account.base_account, sequence: Number(sequence) + 1 });
         simulationResponse = await axios.post(SIMULATION_ENDPOINT, delegateBodyForSimulate);
       }
-      console.log('simulationResponse:', simulationResponse.data);
-
       const gasWanted = simulationResponse.data.gas_info.gas_used;
       const bodyForTransaction = delegateTxnBody({ ...accountDetailsResponse.data.account.base_account, sequence },
         ethers.utils
           .parseUnits(convertAmountOfContractDecimal((cosmosConfig.evmos.gasPrice * gasWanted).toString(), 18), 18).toString(),
         Math.floor(gasWanted * 1.3).toString(), 'tnx');
-      console.log('bodyForTransaction:', bodyForTransaction);
       setFinalDelegateGasFee(parseInt(gasWanted) * gasPrice);
       setFinalDelegateTxnData(bodyForTransaction);
       setLoading(false);
@@ -338,7 +330,7 @@ export default function ReStake ({ route, navigation }) {
             <CyDView className={'flex flex-col mt-[30px] w-[100%]'}>
               <Button onPress={ () => {
                 void delegateFinalTxn();
-              }} title={t('APPROVE')} style={'py-[5%] min-h-[60px]'} loaderStyle={{ height: 30 }}/>
+              }} title={t('APPROVE')} style={'py-[5%] min-h-[60px]'} loading={isLoading} loaderStyle={{ height: 30 }}/>
               <Button onPress={() => { setDelegateModalVisible(false); setItemData({ description: { name: '' } }); }} title={t('REJECT')} type={'secondary'} style={'py-[5%] mt-[15px]'}/>
             </CyDView>
           </CyDView>

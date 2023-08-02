@@ -1,21 +1,21 @@
 import * as React from 'react';
+import { StyleSheet, BackHandler } from 'react-native';
 import { TokenMeta } from '../../models/tokenMetaData.model';
 import { CyDAnimatedView, CyDScrollView, CyDView } from '../../styles/tailwindStyles';
 import SwitchView from '../../components/v2/switchView';
 import Overview from './overview';
 import { TokenOverviewTabIndices, TokenOverviewTabs } from '../../constants/enum';
-import { useEffect, useState, useContext } from 'react';
+import { useEffect, useState } from 'react';
 import { useIsFocused } from '@react-navigation/native';
 import Loading from '../../components/v2/loading';
 import { TokenTransactions } from './transactions';
-import { BackHandler } from 'react-native';
 import TokenOverviewToolBar from './toolbar';
 import TokenStaking from './staking';
 import analytics from '@react-native-firebase/analytics';
 import clsx from 'clsx';
 import { isAndroid, isIOS } from '../../misc/checkers';
-import { HdWalletContext } from '../../core/util';
 import { Layout } from 'react-native-reanimated';
+import { Colors } from '../../constants/theme';
 
 interface RouteProps {
   route: {
@@ -76,9 +76,16 @@ export default function TokenOverviewV2 ({ route, navigation }: RouteProps) {
             {index === 1 && <TokenTransactions tokenData={tokenData} navigation={navigation} />}
             {index === 2 && <TokenStaking tokenData={tokenData} navigation={navigation} />}
           </CyDScrollView>
-          <CyDAnimatedView layout={Layout.springify()} className={clsx('h-[90px] bg-white pb-[20px] pt-[2px] rounded-t-[24px] shadow shadow-gray-400', { 'pt-[16px]': isAndroid() })} style={{ elevation: 3, backgroundColor: isIOS() ? 'white' : 'transparent' }}>
+          <CyDAnimatedView layout={Layout.springify()} className={clsx('h-[90px] bg-white pb-[20px] pt-[2px] rounded-t-[24px] shadow shadow-gray-400', { 'pt-[16px]': isAndroid() })} style={styles.elevatedBackground}>
             <TokenOverviewToolBar tokenData={tokenData} navigation={navigation} />
           </CyDAnimatedView>
     </CyDView>
   );
 }
+
+const styles = StyleSheet.create({
+  elevatedBackground: {
+    elevation: 3,
+    backgroundColor: isIOS() ? Colors.white : Colors.transparent
+  }
+});

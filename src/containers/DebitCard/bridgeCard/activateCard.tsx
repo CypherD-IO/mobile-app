@@ -16,17 +16,14 @@ import { MODAL_HIDE_TIMEOUT } from '../../../core/Http';
 import { getWalletProfile } from '../../../core/card';
 import { GlobalContext } from '../../../core/globalContext';
 import { screenTitle } from '../../../constants';
-import { useNavigation } from '@react-navigation/native';
 import { useKeyboard } from '../../../hooks/useKeyboard';
 
 export default function ActivateCard (props: {navigation: any, route: {params: {onSuccess: (data: any, provider: CardProviders) => {}, currentCardProvider: CardProviders, card: {cardId: string}}}}) {
   const { t } = useTranslation();
   const { showModal, hideModal } = useGlobalModalContext();
   const [sendingOTP, setSendingOTP] = useState<boolean>(false);
-  const [verifyingOTP, setVerifyingOTP] = useState<boolean>(false);
   const { navigation, route } = props;
   const { currentCardProvider, card } = route.params;
-  const onSuccess = route.params.onSuccess;
   const resendOtpTime = 30;
   const [resendInterval, setResendInterval] = useState(0);
   const [timer, setTimer] = useState<NodeJS.Timer>();
@@ -115,9 +112,21 @@ export default function ActivateCard (props: {navigation: any, route: {params: {
     );
   };
 
+  const styles = StyleSheet.create({
+    lottie: {
+      height: 25
+    },
+    contentContainerStyle: {
+      display: 'flex',
+      flexDirection: 'column',
+      justifyContent: 'space-between',
+      ...(!keyboardHeight && { flex: 1 })
+    }
+  });
+
   return (
     <CyDSafeAreaView style={{ height: keyboardHeight || '100%' }} >
-        <CyDScrollView className=' bg-white pb-[12px]' contentContainerStyle={{ display: 'flex', flexDirection: 'column', justifyContent: 'space-between', ...(!keyboardHeight && { flex: 1 }) }}>
+        <CyDScrollView className=' bg-white pb-[12px]' contentContainerStyle={styles.contentContainerStyle}>
           <CyDView>
             <ActivateCardHeader />
             <CyDView className={' px-[24px] pt-[10px] mt-[14px]'}>
@@ -164,9 +173,3 @@ export default function ActivateCard (props: {navigation: any, route: {params: {
       </CyDSafeAreaView>
   );
 }
-
-const styles = StyleSheet.create({
-  lottie: {
-    height: 25
-  }
-});

@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import { StyleSheet } from 'react-native';
 import {
   CyDSafeAreaView,
   CyDScrollView,
@@ -18,8 +19,6 @@ import Button from '../../../components/v2/button';
 import { MODAL_HIDE_TIMEOUT } from '../../../core/Http';
 import { screenTitle } from '../../../constants';
 import { useKeyboard } from '../../../hooks/useKeyboard';
-import { KeyboardAwareScrollView } from 'react-native-keyboard-aware-scroll-view';
-import { KeyboardAvoidingView } from 'react-native';
 
 export default function SetPin (props: {
   navigation: any
@@ -85,9 +84,18 @@ export default function SetPin (props: {
     );
   };
 
+  const styles = StyleSheet.create({
+    contentContainerStyle: {
+      display: 'flex',
+      flexDirection: 'column',
+      justifyContent: 'space-between',
+      ...(!keyboardHeight && { flex: 1 })
+    }
+  });
+
   return (
     <CyDSafeAreaView style={{ height: keyboardHeight || '100%' }} >
-        <CyDScrollView className=' bg-white pb-[12px]' contentContainerStyle={{ display: 'flex', flexDirection: 'column', justifyContent: 'space-between', ...(!keyboardHeight && { flex: 1 }) }}>
+        <CyDScrollView className=' bg-white pb-[12px]' contentContainerStyle={styles.contentContainerStyle}>
             <CyDView>
               <ActivateCardHeader />
               <CyDView className={' px-[24px] pt-[10px] mt-[14px]'}>
