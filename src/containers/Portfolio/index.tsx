@@ -58,6 +58,8 @@ interface INotification {
   data: { title: string, url?: string }
 }
 
+interface HeaderProps {navigation: any, setChooseChain: Function, onWCSuccess: Function, indexState: [number, React.Dispatch<React.SetStateAction<number>>] }
+
 export default function Portfolio (props: { navigation: any | { navigate: (arg0: string, arg1: { params?: { url: string }, screen?: string, tokenData?: any, url?: string } | undefined) => void } }) {
   const { t } = useTranslation();
 
@@ -385,7 +387,7 @@ export default function Portfolio (props: { navigation: any | { navigate: (arg0:
 
   const holdingsData = useMemo(() => extractHoldingsData(portfolioState), [portfolioState.statePortfolio.tokenPortfolio, portfolioState.statePortfolio.selectedChain]);
 
-  const onSuccess = (e) => {
+  const onWCSuccess = (e) => {
     const link = e.data;
     portfolioState.dispatchPortfolio({ value: { walletConnectURI: link } });
     props.navigation.navigate(C.screenTitle.WALLET_CONNECT);
@@ -397,40 +399,6 @@ export default function Portfolio (props: { navigation: any | { navigate: (arg0:
 
   const isPortfolioError = () => {
     return portfolioState.statePortfolio.portfolioState === PORTFOLIO_ERROR;
-  };
-
-  const RenderHeader = () => {
-    return (
-      <CyDView className={'flex flex-row h-[50px] w-[100%] px-[20px] justify-between items-center'}>
-        <CyDTouchView onPress={() => { setChooseChain(true); }} className={'h-[40px] w-[56px] bg-chainColor mt-[10px] px-[8px] py-[4px] rounded-[18px] flex flex-row items-center justify-between'}>
-              <CyDFastImage className={'h-[22px] w-[22px]'} source={portfolioState.statePortfolio.selectedChain.logo_url} />
-              <CyDFastImage className={'h-[8px] w-[8px]'} source={AppImages.DOWN} />
-        </CyDTouchView>
-        <SwitchView
-            index={indexTab}
-            setIndexChange={(index: React.SetStateAction<number>) => {
-              setIndexTab(index);
-              void analytics().logEvent('clicks', {
-                item: index ? 'nft' : 'wallet',
-                where: 'token button'
-              });
-            }}
-            title1={t('COINS')}
-            title2={t('NFTS')}
-          />
-        <CyDTouchView
-          onPress={() => {
-            props.navigation.navigate(C.screenTitle.QR_CODE_SCANNER, {
-              navigation: props.navigation,
-              fromPage: QRScannerScreens.WALLET_CONNECT,
-              onSuccess
-            });
-          }}
-        >
-          <CyDFastImage source={AppImages.QR_CODE_SCANNER_BLACK} className={'h-[25px] w-[25px] mt-[10px]'} resizeMode='contain'/>
-        </CyDTouchView>
-      </CyDView>
-    );
   };
 
   const renderAssets = useMemo(() => {
@@ -447,7 +415,7 @@ export default function Portfolio (props: { navigation: any | { navigate: (arg0:
               buyVisible={false}
               marginTop={0}
               isLottie={true}
-            />
+              />
           </CyDView>
       }
 
@@ -465,34 +433,50 @@ export default function Portfolio (props: { navigation: any | { navigate: (arg0:
           setChooseChain(false);
         }}
         where={WHERE_PORTFOLIO}
-      />
+        />
       <CopytoKeyModal
         isModalVisible={copyToClipBoard}
         onClipClick={() => setCopyToClipBoard(false)}
         onPress={() => setCopyToClipBoard(false)}
-      />
+        />
       <RenderBanner navigation={props.navigation} ethAddress={ethereum.address}/>
-      <RenderHeader/>
-      {indexTab === 0 && <RenderPortfolioBalance verifyCoinChecked={verifyCoinChecked} getAllChainBalance={getAllChainBalance}/>}
-      {indexTab === 0 && <RenderTimer isRefreshing={refreshData.isRefreshing} verifyCoinChecked={verifyCoinChecked} setVerifyCoinChecked = {setVerifyCoinChecked}/>}
-      {indexTab === 0 && getAllChainBalance(portfolioState) > 0
-        ? (
-            renderAssets
-          )
-        : indexTab === 0 && portfolioState.statePortfolio.portfolioState === PORTFOLIO_EMPTY &&
-                  <CyDView className={'flex justify-center items-center mt-[5px]'}>
-                    <LottieView source={AppImages.PORTFOLIO_EMPTY} autoPlay loop style={{ width: '60%' }} />
-                    <Button title={t('FUND_WALLET')} onPress={() => { props.navigation.navigate(C.screenTitle.QRCODE); }} style='mt-[-40px] px-[20px] h-[40px] py-[0px]' titleStyle='text-[14px]' image={AppImages.RECEIVE} imageStyle='h-[12px] w-[12px] mr-[15px]'/>
-                    <CyDTouchView className='mt-[20px]' onPress={() => {
-                      void (async () => await onRefresh())();
-                    }}>
-                      <CyDText className='text-center text-blue-500 underline'>{t<string>('CLICK_TO_REFRESH')}</CyDText>
-                    </CyDTouchView>
-                  </CyDView>
-            }
+      {indexTab === 0 && <RenderHeaderAndPortfolioBalance verifyCoinChecked={verifyCoinChecked} getAllChainBalance={getAllChainBalance} headerProps={{ navigation: props.navigation, setChooseChain, onWCSuccess, indexState: [indexTab, setIndexTab] }}/>}
+      {/* {indexTab === 0 && <SwitchView
+            index={indexTab}
+            setIndexChange={(index: React.SetStateAction<number>) => {
+              setIndexTab(index);
+              void analytics().logEvent('clicks', {
+                item: index ? 'nft' : 'wallet',
+                where: 'token button'
+              });
+            }}
+            title1={t('COINS')}
+            title2={t('NFTS')}
+          />} */}
+      <CyDView className='mx-[10px] border border-sepratorColor rounded-t-[24px]'>
+        {indexTab === 0 && <RenderTimer isRefreshing={refreshData.isRefreshing} verifyCoinChecked={verifyCoinChecked} setVerifyCoinChecked = {setVerifyCoinChecked}/>}
+        {indexTab === 0 && getAllChainBalance(portfolioState) > 0
+          ? (
+              renderAssets
+            )
+          : indexTab === 0 && portfolioState.statePortfolio.portfolioState === PORTFOLIO_EMPTY &&
+            <CyDView className={'flex justify-center items-center mt-[5px]'}>
+              <LottieView source={AppImages.PORTFOLIO_EMPTY} autoPlay loop style={{ width: '60%' }} />
+              <Button title={t('FUND_WALLET')} onPress={() => { props.navigation.navigate(C.screenTitle.QRCODE); }} style='mt-[-40px] px-[20px] h-[40px] py-[0px]' titleStyle='text-[14px]' image={AppImages.RECEIVE} imageStyle='h-[12px] w-[12px] mr-[15px]'/>
+              <CyDTouchView className='mt-[20px]' onPress={() => {
+                void (async () => await onRefresh())();
+              }}>
+                <CyDText className='text-center text-blue-500 underline'>{t<string>('CLICK_TO_REFRESH')}</CyDText>
+              </CyDTouchView>
+            </CyDView>
+          }
+        </CyDView>
         {indexTab === 1 &&
-        <CyDView className={'mt-[10px]'}>
-          <NFTScreen selectedChain={portfolioState.statePortfolio.selectedChain.symbol} navigation={props.navigation}></NFTScreen>
+        <CyDView>
+          <RenderHeader navigation={props.navigation} setChooseChain={setChooseChain} onWCSuccess={onWCSuccess} indexState={[indexTab, setIndexTab]} />
+          <CyDView className='mt-[10px]'>
+            <NFTScreen selectedChain={portfolioState.statePortfolio.selectedChain.symbol} navigation={props.navigation}></NFTScreen>
+          </CyDView>
         </CyDView>}
     </CyDSafeAreaView>
   );
@@ -521,19 +505,19 @@ export const RenderPortfolioAssets = ({ holdingsData, verifyCoinChecked, navigat
         {view === 'empty'
           ? (
             <EmptyView
-              text={t('NO_CURRENT_HOLDINGS')}
-              image={AppImages.EMPTY}
-              buyVisible={false}
-              marginTop={30}
+            text={t('NO_CURRENT_HOLDINGS')}
+            image={AppImages.EMPTY}
+            buyVisible={false}
+            marginTop={30}
             />
             )
           : (
-            <EmptyView
+              <EmptyView
               text={t('LOADING...')}
               image={AppImages.EMPTY}
               buyVisible={false}
               marginTop={30}
-            />
+              />
             )}
         </CyDView>
     );
@@ -546,7 +530,7 @@ export const RenderPortfolioAssets = ({ holdingsData, verifyCoinChecked, navigat
   };
 
   return (
-    <FlatList
+      <FlatList
       nestedScrollEnabled
       data={holdingsData}
       initialNumToRender={50}
@@ -560,11 +544,49 @@ export const RenderPortfolioAssets = ({ holdingsData, verifyCoinChecked, navigat
       keyExtractor={(item) => item.id}
       ListEmptyComponent={emptyView('empty')}
       showsVerticalScrollIndicator={false}
-    />
+      />
   );
 };
 
-export const RenderPortfolioBalance = (props: {verifyCoinChecked: boolean, getAllChainBalance: Function}) => {
+const RenderHeader = ({ navigation, setChooseChain, onWCSuccess, indexState }: HeaderProps) => {
+  const { t } = useTranslation();
+  const [indexTab, setIndexTab] = indexState;
+  const portfolioState = useContext<any>(PortfolioContext);
+  const onSuccess = onWCSuccess;
+  return (
+      <CyDView className={'flex flex-row h-[50px] mx-[20px] justify-between items-center'}>
+        <CyDTouchView onPress={() => { setChooseChain(true); }} className={'h-[40px] w-[54px] bg-chainColor mt-[10px] px-[8px] py-[4px] rounded-[18px] flex flex-row items-center justify-between border border-sepratorColor'}>
+              <CyDFastImage className={'h-[22px] w-[22px]'} source={portfolioState.statePortfolio.selectedChain.logo_url} />
+              <CyDFastImage className={'h-[8px] w-[8px]'} source={AppImages.DOWN} />
+        </CyDTouchView>
+        {/* <SwitchView
+            index={indexTab}
+            setIndexChange={(index: React.SetStateAction<number>) => {
+              setIndexTab(index);
+              void analytics().logEvent('clicks', {
+                item: index ? 'nft' : 'wallet',
+                where: 'token button'
+              });
+            }}
+            title1={t('COINS')}
+            title2={t('NFTS')}
+          /> */}
+        <CyDTouchView
+          onPress={() => {
+            navigation.navigate(C.screenTitle.QR_CODE_SCANNER, {
+              navigation,
+              fromPage: QRScannerScreens.WALLET_CONNECT,
+              onSuccess
+            });
+          }}
+        >
+          <CyDFastImage source={AppImages.QR_CODE_SCANNER_BLACK} className={'h-[23px] w-[23px] mt-[10px]'} resizeMode='contain'/>
+        </CyDTouchView>
+      </CyDView>
+  );
+};
+
+export const RenderHeaderAndPortfolioBalance = (props: { verifyCoinChecked: boolean, getAllChainBalance: Function, headerProps: HeaderProps}) => {
   const portfolioState = useContext<any>(PortfolioContext);
   const hdWallet = useContext<any>(HdWalletContext);
   const { hideBalance } = hdWallet.state;
@@ -593,30 +615,38 @@ export const RenderPortfolioBalance = (props: {verifyCoinChecked: boolean, getAl
     hdWallet.dispatch({ type: 'TOGGLE_BALANCE_VISIBILITY', value: { hideBalance: !hideBalance } });
   };
   return (
-    <CyDImageBackground className='h-[25%] max-h-[170px] px-[20px] w-[100%]' source={{ uri: portfolioBackgroundImage + '?' + String(new Date().getDay()) }} resizeMode={'cover'}>
-      <CyDView className={'mt-[55px] justify-center items-start'}>
-        {getCurrentChainHoldings(
-          portfolioState.statePortfolio.tokenPortfolio,
-          portfolioState.statePortfolio.selectedChain
-        ) && (
+      <CyDImageBackground className='h-[25%] max-h-[170px] w-[100%] rounded-[24px] mb-[10px]' source={{ uri: portfolioBackgroundImage + '?' + String(new Date().getDay()) }} resizeMode='cover'>
+        <RenderHeader {...props.headerProps}/>
+        <CyDView className={'mt-[20px] mx-[24px] justify-center items-start'}>
+          {getCurrentChainHoldings(
+            portfolioState.statePortfolio.tokenPortfolio,
+            portfolioState.statePortfolio.selectedChain
+          ) && (
             <CyDView>
-              <CyDView className='flex flex-row items-center'>
-                <CyDTokenValue className='text-[32px] font-extrabold text-primaryTextColor'>
-                  {checkAll(portfolioState)}
-                </CyDTokenValue>
-                <CyDTouchView onPress={async () => await hideBalances()}>
-                  <CyDImage source={hideBalance ? AppImages.CYPHER_HIDE : AppImages.CYPHER_SHOW} className='h-[22px] w-[20px] ml-[15px]' resizeMode='contain' />
-                </CyDTouchView>
+                <CyDView>
+                  <CyDText>{t('TOTAL_BALANCE')}</CyDText>
+                  <CyDView className='flex flex-row items-center py-[3px]'>
+                    <CyDTokenValue className='text-[32px] font-extrabold text-primaryTextColor'>
+                      {checkAll(portfolioState)}
+                    </CyDTokenValue>
+                    <CyDTouchView onPress={() => {
+                      void hideBalances();
+                    }}
+                    className='h-[32px] flex flex-row items-end pl-[10px] gap-[5px]'>
+                      <CyDImage source={hideBalance ? AppImages.CYPHER_HIDE : AppImages.CYPHER_SHOW} className='h-[16px] w-[16px] ml-[15px]' resizeMode='contain' />
+                      <CyDText className='text-[12px]'>{hideBalance ? t('SHOW') : t('HIDE')}</CyDText>
+                    </CyDTouchView>
+                  </CyDView>
+                </CyDView>
+                {hideBalance
+                  ? <CyDView className='flex flex-row items-center bg-privacyMessageBackgroundColor rounded-[8px] px-[10px] py-[5px]'>
+                  <CyDText className='text-[12px]' >{t('ALL_BALANCES_HIDDEN')}</CyDText>
+                </CyDView>
+                  : <CyDView></CyDView>}
               </CyDView>
-              {hideBalance
-                ? <CyDView className='flex flex-row items-center bg-privacyMessageBackgroundColor rounded-[50px] px-[10px] py-[5px]'>
-                <CyDText className='text-[12px]' >All balances inside your wallets have been hidden</CyDText>
-              </CyDView>
-                : <CyDView></CyDView>}
-            </CyDView>
-        )}
-      </CyDView>
-    </CyDImageBackground>
+          )}
+        </CyDView>
+      </CyDImageBackground>
   );
 };
 
@@ -670,7 +700,7 @@ export const RenderTimer = (props: {isRefreshing: boolean, verifyCoinChecked: bo
   }, [portfolioState.statePortfolio.rtimestamp, portfolioState.statePortfolio.selectedChain, isRefreshing]);
 
   return (
-    <CyDView className='flex flex-row justify-between border-y-[1px] border-sepratorColor py-[10px] px-[15px]'>
+    <CyDView className='flex flex-row justify-between border-b border-sepratorColor py-[10px] px-[15px]'>
       <CyDView className='flex flex-row items-center'>
         <CyDImage source={AppImages.CLOCK} className='h-[16px] w-[16px]' resizeMode='contain'/>
         <CyDText className='ml-[10px]'>{time}</CyDText>
@@ -851,3 +881,15 @@ export const RenderBanner = (props) => {
       : <CyDView></CyDView>
   );
 };
+
+const styles = StyleSheet.create({
+  portfolioImageBackground: {
+    shadowOffset: {
+      height: 4,
+      width: 0
+    },
+    shadowRadius: 2,
+    shadowColor: 'black',
+    shadowOpacity: 0.2
+  }
+});

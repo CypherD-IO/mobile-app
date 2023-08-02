@@ -724,7 +724,10 @@ const resources = {
       CARD_BLOCKED: 'Card Blocked',
       CHANGE_CARD_STATUS_SUCCESS: 'Card status update success',
       CHANGE_CARD_STATUS_FAIL: 'Card status update failed',
-      CARD_STATUS_UPDATE: 'Card status update'
+      CARD_STATUS_UPDATE: 'Card status update',
+      ALL_BALANCES_HIDDEN: 'All balances inside your wallets have been hidden',
+      HIDE: 'Hide',
+      SHOW: 'Show'
     }
   }
 };
