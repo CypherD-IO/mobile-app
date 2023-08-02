@@ -26,6 +26,7 @@ import clsx from 'clsx';
 import useIsSignable from '../../hooks/useIsSignable';
 import { ActivityType } from '../../reducers/activity_reducer';
 import { isIOS } from '../../misc/checkers';
+import { MODAL_HIDE_TIMEOUT_250 } from '../../core/Http';
 
 interface IShortcutsData {
   index: number
@@ -496,12 +497,14 @@ export default function ShortcutsModal ({ navigationRef }) {
       setSelectedChain(item);
       const tokenHoldingData = portfolioState.statePortfolio.tokenPortfolio[item.backendName.toLowerCase()].holdings;
       setTokenData(tokenHoldingData);
-      setTimeout(() => setChooseTokenModal(true), 250);
+      setTimeout(() => setChooseTokenModal(true), MODAL_HIDE_TIMEOUT_250);
     }
   };
 
   const onChooseToken = (item: any) => {
-    navigationRef.navigate(navigationPath, { tokenData: item });
+    setTimeout(() => {
+      navigationRef.navigate(navigationPath, { tokenData: item });
+    }, (isIOS() ? MODAL_HIDE_TIMEOUT_250 : 600));
   };
 
   const handleAppStateChange = (nextAppState: String) => {
