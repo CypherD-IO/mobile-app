@@ -163,7 +163,7 @@ function TabStack () {
           );
         }}
         screenOptions={({ navigation, route }) => ({
-          tabBarHideOnKeyboard: false,
+          tabBarHideOnKeyboard: true,
           tabBarStyle: {
             display: 'flex',
             flexDirection: 'row',

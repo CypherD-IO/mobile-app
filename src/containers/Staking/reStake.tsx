@@ -69,6 +69,7 @@ export default function ReStake ({ route, navigation }) {
   const ACCOUNT_DETAILS = evmosUrls.accountDetails.replace('address', evmos.wallets[evmos.currentIndex].address);
   const SIMULATION_ENDPOINT = evmosUrls.simulate;
   const TXN_ENDPOINT = evmosUrls.transact;
+  let reStakeTryCount = 0;
   function onTransModalHide () {
     hideModal();
     setTimeout(() => {
@@ -105,7 +106,6 @@ export default function ReStake ({ route, navigation }) {
       gas: gasLimit
     };
     const memo = '';
-
     const params = {
       validatorAddress: itemData.address,
       amount: typeOfTxn === 'simulate' ? '14000000000000000' : (convertToEvmosFromAevmos(stakingValidators.stateStaking.unStakedBalance) < 0.01 ? (parseInt(reward.toString()) - (finalDelegateGasFee * (10 ** 18))) : reward).toString(),
@@ -153,11 +153,11 @@ export default function ReStake ({ route, navigation }) {
     />;
   };
 
-  const delegateFinalTxn = async () => {
+  const delegateFinalTxn = async (txnData = finalDelegateTxnData) => {
     try {
       setIsLoading(true);
       void analytics().logEvent('evmos_redelegation_started');
-      const txnResponse = await axios.post(TXN_ENDPOINT, finalDelegateTxnData);
+      const txnResponse = await axios.post(TXN_ENDPOINT, txnData);
       if (txnResponse.data.tx_response.raw_log === '[]') {
         setIsLoading(false);
         setDelegateModalVisible(false);
@@ -185,13 +185,18 @@ export default function ReStake ({ route, navigation }) {
           });
         }, MODAL_HIDE_TIMEOUT_250);
       } else {
-        setIsLoading(false);
-        setDelegateModalVisible(false);
-        Sentry.captureException(txnResponse);
-        void analytics().logEvent('evmos_staking_error', {
-          from: `error while broadcasting the transaction in evmos staking/delegation.tsx : ${txnResponse.data.tx_response.raw_log}`
-        });
-        setTimeout(() => { showModal('state', { type: 'error', title: 'Transaction Failed', description: txnResponse.data.tx_response.raw_log, onSuccess: hideModal, onFailure: hideModal }); }, MODAL_HIDE_TIMEOUT_250);
+        if (reStakeTryCount === 0) {
+          reStakeTryCount += 1;
+          void onDelegate();
+        } else {
+          setIsLoading(false);
+          setDelegateModalVisible(false);
+          Sentry.captureException(txnResponse);
+          void analytics().logEvent('evmos_staking_error', {
+            from: `error while broadcasting the transaction in evmos staking/delegation.tsx : ${txnResponse.data.tx_response.raw_log}`
+          });
+          setTimeout(() => { showModal('state', { type: 'error', title: 'Transaction Failed', description: txnResponse.data.tx_response.raw_log, onSuccess: hideModal, onFailure: hideModal }); }, MODAL_HIDE_TIMEOUT_250);
+        }
       }
     } catch (error: any) {
       setIsLoading(false);
@@ -205,21 +210,24 @@ export default function ReStake ({ route, navigation }) {
   };
 
   const onDelegate = async () => {
-    setLoading(true);
-
+    if (!reStakeTryCount) setLoading(true);
     try {
       const accountDetailsResponse = await axios.get(ACCOUNT_DETAILS, {
         timeout: 2000
       });
-      let sequence = accountDetailsResponse.data.account.base_account.sequence;
+      let sequence = Number(accountDetailsResponse.data.account.base_account.sequence) + reStakeTryCount;
       void analytics().logEvent('evmos_redelegation_simulation');
       let simulationResponse;
+      let delegateBodyForSimulate;
       try {
-        const delegateBodyForSimulate = delegateTxnBody(accountDetailsResponse.data.account.base_account);
+        delegateBodyForSimulate = delegateTxnBody(accountDetailsResponse.data.account.base_account);
         simulationResponse = await axios.post(SIMULATION_ENDPOINT, delegateBodyForSimulate);
+        if (!simulationResponse.data.gas_info.gas_used) {
+          throw new Error('sequence doesnt match');
+        }
       } catch (e) {
-        sequence = Number(sequence) + 1;
-        const delegateBodyForSimulate = delegateTxnBody({ ...accountDetailsResponse.data.account.base_account, sequence: Number(sequence) + 1 });
+        sequence += 1;
+        delegateBodyForSimulate = delegateTxnBody({ ...accountDetailsResponse.data.account.base_account, sequence });
         simulationResponse = await axios.post(SIMULATION_ENDPOINT, delegateBodyForSimulate);
       }
       const gasWanted = simulationResponse.data.gas_info.gas_used;
@@ -229,8 +237,12 @@ export default function ReStake ({ route, navigation }) {
         Math.floor(gasWanted * 1.3).toString(), 'tnx');
       setFinalDelegateGasFee(parseInt(gasWanted) * gasPrice);
       setFinalDelegateTxnData(bodyForTransaction);
-      setLoading(false);
-      setDelegateModalVisible(true);
+      if (reStakeTryCount) {
+        void delegateFinalTxn(bodyForTransaction);
+      } else {
+        setLoading(false);
+        setDelegateModalVisible(true);
+      }
     } catch (error: any) {
       setLoading(false);
       setDelegateModalVisible(false);
