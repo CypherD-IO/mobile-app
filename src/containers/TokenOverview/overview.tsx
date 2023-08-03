@@ -544,7 +544,7 @@ export default function Overview ({ tokenData, navigation }: { tokenData: TokenM
               <ChartXLabel style={styles.chartXLabel} format={formatTimestamp} />
             </CyDView>
             <CyDView>
-              <ChartPath height={SIZE / 3} stroke="black" strokeWidth={1.7} selectedStrokeWidth={1.7} width={SIZE} gestureEnabled={true} gradientEnabled={true} backgroundGradientFrom={selectedTrend > 0 ? 'rgb(169, 229, 61)' : 'rgb(255, 99, 71)'} backgroundGradientTo={'#FFFFFF'}/>
+              <ChartPath height={SIZE / 3} stroke={Colors.buttonColor} strokeWidth={2} selectedStrokeWidth={3.2} width={SIZE} gestureEnabled={true} gradientEnabled={true} backgroundGradientFrom={Colors.buttonColor} backgroundGradientTo={Colors.white}/>
               <ChartDot size={12} style={styles.chartDot} />
             </CyDView>
             <CyDView style={styles.selection}>
@@ -589,10 +589,16 @@ export default function Overview ({ tokenData, navigation }: { tokenData: TokenM
 
 const styles = StyleSheet.create({
   chartDot: {
-    backgroundColor: Colors.secondaryTextColor
+    backgroundColor: Colors.transparent,
+    borderWidth: 2,
+    height: 18,
+    width: 18,
+    borderRadius: 14,
+    marginBottom: 1,
+    borderColor: Colors.buttonColor
   },
   backgroundSelection: {
-    backgroundColor: Colors.appColor,
+    backgroundColor: Colors.buttonColor,
     ...StyleSheet.absoluteFillObject,
     width: BUTTON_WIDTH,
     borderRadius: 8

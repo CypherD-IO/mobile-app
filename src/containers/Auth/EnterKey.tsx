@@ -4,7 +4,7 @@
  */
 import React, { useContext, useEffect, useState, useLayoutEffect } from 'react';
 import { useTranslation } from 'react-i18next';
-import { CyDText, CyDTouchView, CyDView, CyDImage, CyDTouchableWithoutFeedback, CyDSafeAreaView, CyDTextInput } from '../../styles/tailwindStyles';
+import { CyDText, CyDTouchView, CyDView, CyDImage, CyDTouchableWithoutFeedback, CyDSafeAreaView, CyDTextInput, CyDScrollView } from '../../styles/tailwindStyles';
 import { BackHandler, Keyboard, NativeModules } from 'react-native';
 import * as C from '../../constants/index';
 import { ActivityContext, HdWalletContext, PortfolioContext } from '../../core/util';
@@ -124,51 +124,52 @@ export default function Login (props) {
 
   return (
     <CyDSafeAreaView className='flex-1 bg-white'>
-      {createWalletLoading && <Loading/>}
-      <CyDTouchableWithoutFeedback onPress={Keyboard.dismiss}>
-      <CyDView>
-          <CyDText className={'text-[#434343] text-[16px] mt-[30px] text-center px-[20px]'}>{t('IMPORT_WALLET_SUB_MSG')}</CyDText>
-          <CyDView className={'flex flex-row justify-center px-[20px]'}>
-              <CyDTextInput
-                placeholder={t('ENTER_KEY_PLACEHOLDER')}
-                placeholderTextColor={Colors.placeHolderColor}
-                value={seedPhraseTextValue}
-                onChangeText={(text) => {
-                  onChangeseedPhraseTextValue(text.toLowerCase());
-                  setBadKeyError(false);
-                }}
-                autoFocus={true}
-                multiline={true}
-                textAlignVertical={'top'}
-                secureTextEntry={true}
-                className = {clsx('border-[1px] border-inputBorderColor p-[10px] mt-[20px] h-[200px] text-[18px] w-[100%]', { 'border-errorRed': badKeyError })}
-              />
+      <CyDScrollView className='flex-1'>
+        {createWalletLoading && <Loading/>}
+        <CyDTouchableWithoutFeedback onPress={Keyboard.dismiss}>
+        <CyDView>
+            <CyDText className={'text-[#434343] text-[16px] mt-[30px] text-center px-[20px]'}>{t('IMPORT_WALLET_SUB_MSG')}</CyDText>
+            <CyDView className={'flex flex-row justify-center px-[20px]'}>
+                <CyDTextInput
+                  placeholder={t('ENTER_KEY_PLACEHOLDER')}
+                  placeholderTextColor={Colors.placeHolderColor}
+                  value={seedPhraseTextValue}
+                  onChangeText={(text) => {
+                    onChangeseedPhraseTextValue(text.toLowerCase());
+                    setBadKeyError(false);
+                  }}
+                  multiline={true}
+                  textAlignVertical={'top'}
+                  secureTextEntry={true}
+                  className = {clsx('border-[1px] border-inputBorderColor p-[10px] mt-[20px] h-[200px] text-[18px] w-[100%]', { 'border-errorRed': badKeyError })}
+                />
+            </CyDView>
+            {badKeyError && <CyDText className='text-[20px] text-errorTextRed text-center'>{t('BAD_KEY_PHARSE')}</CyDText>}
+            <CyDView className={'flex flex-row justify-end w-full mt-[20px] pr-[20px]'}>
+              <CyDTouchView className={'flex flex-row justify-end'} onPress={async () => await fetchCopiedText()}>
+                <CyDImage source={AppImages.COPY} className={'w-[16px] h-[18px] mr-[10px]'} />
+                <CyDText className={'text-[#434343] text-[14px] font-extrabold'}>{t('PASTE_CLIPBOARD')}</CyDText>
+              </CyDTouchView>
+            </CyDView>
+            <CyDTouchView sentry-label='import-wallet-button'
+              className={
+                'bg-buttonColor flex flex-row items-center justify-center mt-[40px] h-[60px] w-11/12 rounded-[8px] mx-auto'
+              }
+              onPress={async () => await submitImportWallet()}
+            >
+              {(loading) && <CyDView className={'flex items-center justify-between'}>
+                <LottieView
+                  source={AppImages.LOADING_SPINNER}
+                  autoPlay
+                  loop
+                  style={{ height: 40 }}
+                />
+              </CyDView>}
+              {(!loading) && <CyDText className={'text-[#434343] text-[16px] font-extrabold'}>{t('SUBMIT')}</CyDText>}
+          </CyDTouchView>
           </CyDView>
-          {badKeyError && <CyDText className='text-[20px] text-errorTextRed text-center'>{t('BAD_KEY_PHARSE')}</CyDText>}
-          <CyDView className={'flex flex-row justify-end w-full mt-[20px] pr-[20px]'}>
-            <CyDTouchView className={'flex flex-row justify-end'} onPress={async () => await fetchCopiedText()}>
-              <CyDImage source={AppImages.COPY} className={'w-[16px] h-[18px] mr-[10px]'} />
-              <CyDText className={'text-[#434343] text-[14px] font-extrabold'}>{t('PASTE_CLIPBOARD')}</CyDText>
-            </CyDTouchView>
-          </CyDView>
-          <CyDTouchView sentry-label='import-wallet-button'
-            className={
-              'bg-[#FFDE59] flex flex-row items-center justify-center mt-[40px] h-[60px] w-11/12 rounded-[12px] mb-[50px] mx-auto'
-            }
-            onPress={async () => await submitImportWallet()}
-          >
-            {(loading) && <CyDView className={'flex items-center justify-between'}>
-              <LottieView
-                source={AppImages.LOADING_SPINNER}
-                autoPlay
-                loop
-                style={{ height: 40 }}
-              />
-            </CyDView>}
-            {(!loading) && <CyDText className={'text-[#434343] text-[16px] font-extrabold'}>{t('SUBMIT')}</CyDText>}
-        </CyDTouchView>
-        </CyDView>
-      </CyDTouchableWithoutFeedback>
+        </CyDTouchableWithoutFeedback>
+      </CyDScrollView>
     </CyDSafeAreaView>
   );
 }
