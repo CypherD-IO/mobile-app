@@ -59,7 +59,7 @@ export default function OnBoarding ({ navigation }) {
 
           <CyDView>
             <CyDTouchView onPress={() => { setIsModalVisible(true); }}
-                          className={clsx('bg-appColor py-[18px] items-center rounded-[12px] mt-[20px] flex-row justify-around w-[80%] mx-auto', {
+                          className={clsx('bg-buttonColor py-[14px] items-center rounded-[8px] mt-[20px] flex-row justify-around w-[80%] mx-auto', {
                             'py-[30px]': loading
                           })}>
               {!loading && <CyDText className={'text-[16px] font-extrabold '}>{t('CREATE_WALLET').toString()}</CyDText>}
@@ -70,7 +70,7 @@ export default function OnBoarding ({ navigation }) {
             <CyDTouchView onPress={() => {
               navigation.navigate(screenTitle.ENTER_KEY);
             }}
-                          className={'bg-transparent border-[1px] border-[#525252] py-[18px] mt-[20px] items-center rounded-[12px] flex-row justify-around w-[80%] mx-auto'}>
+                          className={'bg-transparent border-[1px] border-[#525252] py-[14px] mt-[20px] items-center rounded-[8px] flex-row justify-around w-[80%] mx-auto'}>
               <CyDText className={'text-[16px] font-extrabold '}>{t('IMPORT_WALLET').toString()}</CyDText>
               <CyDImage source={AppImages.RIGHT_ARROW} resizeMode={'contain'} className={'w-[9px] h-[17px]'}
                         style={{ tintColor: '#434343' }}/>

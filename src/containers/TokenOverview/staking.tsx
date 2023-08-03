@@ -385,7 +385,6 @@ export default function TokenStaking ({ tokenData, navigation }: { tokenData: To
           Toast.show({
             type: t('TOAST_TYPE_ERROR'),
             text1: t('TRANSACTION_FAILED'),
-            text2: txnResponse.data.tx_response.raw_log,
             position: 'bottom'
           });
           setPageLoading(false);
