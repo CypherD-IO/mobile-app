@@ -44,5 +44,6 @@ export const Colors: Record<string, string> = {
   activityPositiveAmount: 'green',
   transparent: 'transparent',
   secondaryBackgroundColor: '#F7F8FE',
-  placeHolderColor: '#C5C5C5'
+  placeHolderColor: '#C5C5C5',
+  buttonColor: '#F7C645'
 };
