@@ -11,7 +11,7 @@ export default function SwitchView (props) {
             {
                 titles.map((item, itemIndex) => (
                      <CyDTouchView onPress={() => { setIndexChange(itemIndex); }} className={clsx({
-                       'bg-appColor': index === itemIndex,
+                       'bg-buttonColor': index === itemIndex,
                        'rounded-[8px]': index === itemIndex,
                        'px-[8px]': index === itemIndex,
                        'z-[10]': index === itemIndex
