@@ -1,5 +1,5 @@
 import * as React from 'react';
-import SwitchView from '../../components/SwitchView';
+import SwitchView from '../../components/v2/switchView';
 import { useTranslation } from 'react-i18next';
 import { useContext, useEffect, useMemo, useState } from 'react';
 import { Colors } from '../../constants/theme';

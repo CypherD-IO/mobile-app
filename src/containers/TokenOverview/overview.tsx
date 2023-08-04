@@ -589,10 +589,10 @@ export default function Overview ({ tokenData, navigation }: { tokenData: TokenM
 
 const styles = StyleSheet.create({
   chartDot: {
-    backgroundColor: Colors.transparent,
+    backgroundColor: Colors.white,
     borderWidth: 2,
-    height: 18,
-    width: 18,
+    height: 14,
+    width: 14,
     borderRadius: 14,
     marginBottom: 1,
     borderColor: Colors.buttonColor
