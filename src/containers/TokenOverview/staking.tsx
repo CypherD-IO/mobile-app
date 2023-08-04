@@ -12,7 +12,7 @@ import { ChainBackendNames, CosmosStakingTokens } from '../../constants/server';
 import { convertFromUnitAmount, isBigIntZero, convertToEvmosFromAevmos, StakingContext, getTimeForDate, isBasicCosmosChain, HdWalletContext, PortfolioContext, convertAmountOfContractDecimal, isABasicCosmosStakingToken, isCosmosStakingToken } from '../../core/util';
 import { TokenMeta } from '../../models/tokenMetaData.model';
 import { CosmosActionType, CosmosStakingContext, COSMOS_STAKING_EMPTY } from '../../reducers/cosmosStakingReducer';
-import { CyDImage, CyDScrollView, CyDText, CyDTouchView, CyDView } from '../../styles/tailwindStyles';
+import { CyDImage, CyDSafeAreaView, CyDScrollView, CyDText, CyDTouchView, CyDView } from '../../styles/tailwindStyles';
 import LottieView from 'lottie-react-native';
 import { GlobalContext } from '../../core/globalContext';
 import { SigningStargateClient } from '@cosmjs-rn/stargate';
@@ -76,6 +76,7 @@ export default function TokenStaking ({ tokenData, navigation }: { tokenData: To
   const [unboundingPeriodInDays, setUnboundingPeriodInDays] = useState<number>(14);
   const chain = hdWalletContext.state.wallet[tokenData.chainDetails.chainName];
   const [pageLoading, setPageLoading] = useState<boolean>(true);
+  let claimTryCount = 0;
 
   const { showModal, hideModal } = useGlobalModalContext();
 
@@ -211,6 +212,7 @@ export default function TokenStaking ({ tokenData, navigation }: { tokenData: To
   };
 
   const onRefresh = () => {
+    console.log('onRefresh');
     setRefreshing(true);
     void getStakingMetaData();
   };
@@ -227,9 +229,9 @@ export default function TokenStaking ({ tokenData, navigation }: { tokenData: To
 
     const sender = {
       accountAddress: evmos.wallets[evmos.currentIndex].address,
-      sequence: response.data.account.base_account.sequence,
-      accountNumber: response.data.account.base_account.account_number,
-      pubkey: response.data.account.base_account.pub_key.key
+      sequence: response.sequence,
+      accountNumber: response.account_number,
+      pubkey: response.pub_key.key
     };
 
     const fee = {
@@ -286,15 +288,27 @@ export default function TokenStaking ({ tokenData, navigation }: { tokenData: To
     try {
       const walletURL = chainAPIURLs.accountDetails.replace('address', evmos?.wallets[evmos.currentIndex]?.address);
       const accountDetailsResponse = await axios.get(walletURL, { timeout: TIMEOUT });
-      const bodyForSimulate = generateTransactionBodyForEVMOSSimulation(accountDetailsResponse);
-
-      const simulationResponse = await axios.post(chainAPIURLs.simulate, bodyForSimulate);
+      let sequence = Number(accountDetailsResponse.data.account.base_account.sequence) + claimTryCount;
+      let bodyForSimulate;
+      let simulationResponse;
       await analytics().logEvent('evmos_claim_simulation');
+
+      try {
+        bodyForSimulate = generateTransactionBodyForEVMOSSimulation(accountDetailsResponse.data.account.base_account);
+        simulationResponse = await axios.post(chainAPIURLs.simulate, bodyForSimulate);
+        if (!simulationResponse.data.gas_info.gas_used) {
+          throw new Error('sequence doesnt match');
+        }
+      } catch (e) {
+        sequence += 1;
+        bodyForSimulate = generateTransactionBodyForEVMOSSimulation({ ...accountDetailsResponse.data.account.base_account, sequence });
+        simulationResponse = await axios.post(chainAPIURLs.simulate, bodyForSimulate);
+      }
 
       const gasWanted = simulationResponse.data.gas_info.gas_used;
 
       const bodyForTxn = generateTransactionBodyForEVMOSSimulation(
-        accountDetailsResponse,
+        { ...accountDetailsResponse.data.account.base_account, sequence },
         ethers.utils
           .parseUnits(convertAmountOfContractDecimal((cosmosConfig.evmos.gasPrice * gasWanted).toString(), 18), 18).toString(),
         Math.floor(gasWanted * 1.3).toString()
@@ -303,8 +317,12 @@ export default function TokenStaking ({ tokenData, navigation }: { tokenData: To
       setLoading(false);
       setGasFee(parseInt(gasWanted) * currentChain.gasPrice);
       setFinalData(bodyForTxn);
-      setClaimModal(false);
-      setTimeout(() => setSignModalVisible(true), MODAL_HIDE_TIMEOUT_250);
+      if (claimTryCount) {
+        void finalTxn(bodyForTxn);
+      } else {
+        setClaimModal(false);
+        setTimeout(() => setSignModalVisible(true), MODAL_HIDE_TIMEOUT_250);
+      }
     } catch (error: any) {
       setLoading(false);
       Toast.show({
@@ -342,14 +360,14 @@ export default function TokenStaking ({ tokenData, navigation }: { tokenData: To
     }, MODAL_HIDE_TIMEOUT_250);
   };
 
-  const finalTxn = async () => {
+  const finalTxn = async (txnData = finalData) => {
     setSignModalVisible(false);
     if (parseFloat(gasFee.toFixed(6)) > parseFloat(stakingVariables.availableToStake)) {
       showNoGasFeeModal();
     } else {
       try {
         setPageLoading(true);
-        const txnResponse = await axios.post(chainAPIURLs.transact, finalData);
+        const txnResponse = await axios.post(chainAPIURLs.transact, txnData);
 
         if (txnResponse.data.tx_response.raw_log === '[]') {
           void analytics().logEvent('evmos_reward_claim_success');
@@ -382,16 +400,21 @@ export default function TokenStaking ({ tokenData, navigation }: { tokenData: To
             });
           }
         } else {
-          Toast.show({
-            type: t('TOAST_TYPE_ERROR'),
-            text1: t('TRANSACTION_FAILED'),
-            position: 'bottom'
-          });
-          setPageLoading(false);
-          Sentry.captureException(txnResponse);
-          void analytics().logEvent('evmos_staking_error', {
-            from: `error while broadcasting the transaction in evmos staking/index.tsx ${txnResponse.data.tx_response.raw_log}`
-          });
+          if (claimTryCount === 0) {
+            claimTryCount += 1;
+            void txnSimulation(method);
+          } else {
+            Toast.show({
+              type: t('TOAST_TYPE_ERROR'),
+              text1: t('TRANSACTION_FAILED'),
+              position: 'bottom'
+            });
+            setPageLoading(false);
+            Sentry.captureException(txnResponse);
+            void analytics().logEvent('evmos_staking_error', {
+              from: `error while broadcasting the transaction in evmos staking/index.tsx ${txnResponse.data.tx_response.raw_log}`
+            });
+          }
         }
         setPageLoading(false);
       } catch (error: any) {
@@ -647,7 +670,7 @@ export default function TokenStaking ({ tokenData, navigation }: { tokenData: To
   };
 
   return (
-    <CyDView>
+    <CyDSafeAreaView>
           <CyDModalLayout setModalVisible={setClaimModal} isModalVisible={claimModal} style={styles.modalLayout} animationIn={'slideInUp'} animationOut={'slideOutDown'}>
               <CyDView className={'bg-white p-[25px] pb-[30px] rounded-t-[20px] relative'}>
                   <CyDTouchView onPress={() => setClaimModal(false)} className={'z-[50]'}>
@@ -763,7 +786,7 @@ export default function TokenStaking ({ tokenData, navigation }: { tokenData: To
 
           {pageLoading
             ? <Loading />
-            : <CyDScrollView refreshControl={<RefreshControl refreshing={refreshing} onRefresh={onRefresh} /> }>
+            : <CyDScrollView refreshControl={<RefreshControl enabled={true} refreshing={refreshing} onRefresh={onRefresh} /> }>
               {tokenData.chainDetails.backendName === ChainBackendNames.EVMOS && tokenData.name === CosmosStakingTokens.EVMOS && stakingValidators.stateStaking.myValidatorsListState === STAKING_NOT_EMPTY &&
                 <CyDView className={'flex flex-row justify-center items-center w-screen bg-babyPink mt-[10px] py-[10px]'}>
                     <LottieView source={AppImages.GIFT_BOX} autoPlay loop resizeMode="cover" style={isIOS() ? styles.IOSStyle : styles.androidStyle} />
@@ -920,7 +943,7 @@ export default function TokenStaking ({ tokenData, navigation }: { tokenData: To
               }
           {!pageLoading && isStakingDataEmpty() && <EmptyView />}
           </CyDScrollView>}
-    </CyDView>
+    </CyDSafeAreaView>
   );
 }
 
