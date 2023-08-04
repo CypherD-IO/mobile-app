@@ -230,18 +230,22 @@ export default function ReStake ({ route, navigation }) {
         delegateBodyForSimulate = delegateTxnBody({ ...accountDetailsResponse.data.account.base_account, sequence });
         simulationResponse = await axios.post(SIMULATION_ENDPOINT, delegateBodyForSimulate);
       }
-      const gasWanted = simulationResponse.data.gas_info.gas_used;
-      const bodyForTransaction = delegateTxnBody({ ...accountDetailsResponse.data.account.base_account, sequence },
-        ethers.utils
-          .parseUnits(convertAmountOfContractDecimal((cosmosConfig.evmos.gasPrice * gasWanted).toString(), 18), 18).toString(),
-        Math.floor(gasWanted * 1.3).toString(), 'tnx');
-      setFinalDelegateGasFee(parseInt(gasWanted) * gasPrice);
-      setFinalDelegateTxnData(bodyForTransaction);
-      if (reStakeTryCount) {
-        void delegateFinalTxn(bodyForTransaction);
+      if (simulationResponse.data.gas_info.gas_used) {
+        const gasWanted = simulationResponse.data.gas_info.gas_used;
+        const bodyForTransaction = delegateTxnBody({ ...accountDetailsResponse.data.account.base_account, sequence },
+          ethers.utils
+            .parseUnits(convertAmountOfContractDecimal((cosmosConfig.evmos.gasPrice * gasWanted).toString(), 18), 18).toString(),
+          Math.floor(gasWanted * 1.3).toString(), 'tnx');
+        setFinalDelegateGasFee(parseInt(gasWanted) * gasPrice);
+        setFinalDelegateTxnData(bodyForTransaction);
+        if (reStakeTryCount) {
+          void delegateFinalTxn(bodyForTransaction);
+        } else {
+          setLoading(false);
+          setDelegateModalVisible(true);
+        }
       } else {
-        setLoading(false);
-        setDelegateModalVisible(true);
+        throw new Error('Please try again later');
       }
     } catch (error: any) {
       setLoading(false);
@@ -249,7 +253,9 @@ export default function ReStake ({ route, navigation }) {
       setItemData({ description: { name: '' } });
       Sentry.captureException(error);
       void analytics().logEvent('evmos_staking_error', { from: 'error while delegating in evmos staking/resTake.tsx' });
-      showModal('state', { type: 'error', title: 'Transaction failed', description: error.message, onSuccess: hideModal, onFailure: hideModal });
+      setTimeout(() => {
+        showModal('state', { type: 'error', title: 'Transaction failed', description: error.message, onSuccess: hideModal, onFailure: hideModal });
+      }, MODAL_HIDE_TIMEOUT_250);
     }
   };
 
