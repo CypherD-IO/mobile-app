@@ -71,12 +71,13 @@ export default function TokenOverviewV2 ({ route, navigation }: RouteProps) {
                 setIndex(index);
               }}></SwitchView>
           </CyDView>
-          <CyDScrollView>
+          {(index === 0 || index === 1)
+            ? <CyDScrollView>
             {index === 0 && <Overview tokenData={tokenData} navigation={navigation} />}
             {index === 1 && <TokenTransactions tokenData={tokenData} navigation={navigation} />}
-            {index === 2 && <TokenStaking tokenData={tokenData} navigation={navigation} />}
           </CyDScrollView>
-          <CyDAnimatedView layout={Layout.springify()} className={clsx('h-[90px] bg-white pb-[20px] pt-[2px] rounded-t-[24px] shadow shadow-gray-400', { 'pt-[16px]': isAndroid() })} style={styles.elevatedBackground}>
+            : <CyDView className='flex-1'>{index === 2 && <TokenStaking tokenData={tokenData} navigation={navigation} />}</CyDView>}
+          <CyDAnimatedView layout={Layout.springify()} className={clsx('h-[90px] self-end bg-white pb-[20px] pt-[2px] rounded-t-[24px] shadow shadow-gray-400', { 'pt-[16px]': isAndroid() })} style={styles.elevatedBackground}>
             <TokenOverviewToolBar tokenData={tokenData} navigation={navigation} />
           </CyDAnimatedView>
     </CyDView>
