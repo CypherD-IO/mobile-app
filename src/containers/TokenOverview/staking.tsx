@@ -212,7 +212,6 @@ export default function TokenStaking ({ tokenData, navigation }: { tokenData: To
   };
 
   const onRefresh = () => {
-    console.log('onRefresh');
     setRefreshing(true);
     void getStakingMetaData();
   };
