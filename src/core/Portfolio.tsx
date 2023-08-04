@@ -762,3 +762,30 @@ export async function fetchTokenData (hdWalletState: { state: { wallet: any } },
     }
   }
 }
+
+export async function fetchRequiredTokenData (chain: string, address: string, symbol?: string) {
+  const ARCH_HOST: string = hostWorker.getHost('ARCH_HOST');
+  const portfolioUrl = `${ARCH_HOST}/v1/portfolio/balances?`;
+  const params = {
+    'chains[]': [chain],
+    'address[]': [address]
+  };
+  const response = await axios.get(portfolioUrl, {
+    params,
+    timeout: 25000,
+    paramsSerializer: function (params) {
+      return qs.stringify(params, { arrayFormat: 'repeat' });
+    }
+  });
+  if (response.data) {
+    if (symbol) {
+      const tokenHoldings = response.data.chain_portfolios[0].token_holdings;
+      const tokenData = tokenHoldings?.find(token => token.symbol === symbol);
+      return tokenData;
+    } else {
+      return response.data;
+    }
+  } else {
+    return false;
+  }
+}
