@@ -3,6 +3,10 @@ import { STAKING_NOT_EMPTY } from '../reducers/stakingReducer';
 import * as Sentry from '@sentry/react-native';
 import analytics from '@react-native-firebase/analytics';
 import { hostWorker } from '../global';
+import { fetchRequiredTokenData } from './Portfolio';
+import { ChainBackendNames } from '../constants/server';
+import { evmosToEth } from '@tharsis/address-converter';
+import { isEmpty } from 'lodash';
 
 export interface validatorDescription {
   details: string
@@ -143,16 +147,27 @@ export default async function getValidatorsForUSer (address, stakingValidators, 
             stakingValidators.dispatchStaking({ value: { unStakedBalance } });
             stakingValidators.dispatchStaking({ value: { unBoundingsList } });
           }
-
-          if (vList.size > 0) {
+          let stakingData = {};
+          const tokenData = await fetchRequiredTokenData(ChainBackendNames.EVMOS, evmosToEth(address), 'EVMOS');
+          if (tokenData?.stakedBalance && tokenData?.totalRewards && vList.size > 0) {
+            stakingData = {
+              myValidators: vList,
+              myValidatorsListState: STAKING_NOT_EMPTY,
+              totalReward: tokenData?.totalRewards,
+              totalStakedBalance: tokenData?.stakedBalance
+            };
+          } else if (vList.size > 0) {
+            stakingData = {
+              myValidators: vList,
+              myValidatorsListState: STAKING_NOT_EMPTY,
+              totalReward,
+              totalStakedBalance
+            };
+          }
+          if (!isEmpty(stakingData)) {
             stakingValidators.dispatchStaking(
               {
-                value: {
-                  myValidators: vList,
-                  myValidatorsListState: STAKING_NOT_EMPTY,
-                  totalReward,
-                  totalStakedBalance
-                }
+                value: stakingData
               });
           }
 
