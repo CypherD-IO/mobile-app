@@ -240,7 +240,7 @@ export default function NFTScreen ({ selectedChain, navigation }: RouteProps) {
                     {holdingsSections.map((section, index) => {
                       const [firstNFTInSection] = section.content;
                       return (
-                            <CyDView className={'my-[8px] bg-[#f2f2f2] p-[8px]'} key={index}>
+                            <CyDView className={'my-[8px] bg-privacyMessageBackgroundColor p-[8px]'} key={index}>
                                 <CyDTouchView onPress={() => navigation.navigate(screenTitle.NFT_HOLDINGS_SCREEN, { nftHoldings: section.content }) }>
                                     <CyDFastImage defaultSource={AppImages.DEFAULT_NFT} source={{ uri: firstNFTInSection?.imageUrl }} className={'h-[140px] w-[140px] rounded-[12px] border-[1px] border-sepratorColor'} />
                                     <CyDFastImage className={'absolute w-[30px] h-[30px] right-[8px] bottom-[8px] bg-white rounded-[50px]'} source={renderChainImage(firstNFTInSection?.blockchain)} />
@@ -265,7 +265,7 @@ export default function NFTScreen ({ selectedChain, navigation }: RouteProps) {
             {!isEmpty(NFTHoldings) && <CyDView>
                 <CyDView className={'flex flex-row my-[12px] justify-between items-center mx-[20px] w-[90%]'}>
                     <CyDView>
-                        <CyDText className={'text-[24px] font-extrabold'}>My Collections</CyDText>
+                        <CyDText className={'text-[24px] font-extrabold'}>{t('MY_COLLECTIONS')}</CyDText>
                     </CyDView>
                     <CyDView className={'flex flex-row'}>
                         <CyDTouchView className={clsx('p-[10px]', { 'border-[1px] border-gray-500 rounded-[6px]': viewType === RenderViewType.GRID_VIEW })} onPress={() => setViewType(RenderViewType.GRID_VIEW)}><CyDFastImage className={'h-[15px] w-[15px]'} source={AppImages.GRID_ICON} /></CyDTouchView>

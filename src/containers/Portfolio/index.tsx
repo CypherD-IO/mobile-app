@@ -2,12 +2,11 @@
  * @format
  * @flow
  */
-import React, { Dispatch, SetStateAction, useCallback, useContext, useEffect, useMemo, useRef, useState } from 'react';
-import { AppState, BackHandler, FlatList, Platform, StyleSheet, ToastAndroid } from 'react-native';
+import React, { Dispatch, SetStateAction, useCallback, useContext, useEffect, useMemo, useState } from 'react';
+import { AppState, BackHandler, FlatList, Platform, StyleSheet, useWindowDimensions } from 'react-native';
 import analytics from '@react-native-firebase/analytics';
 import * as C from '../../constants/index';
 import { useTranslation } from 'react-i18next';
-import SwitchView from '../../components/SwitchView';
 import { Colors } from '../../constants/theme';
 import AppImages from '../../../assets/images/appImages';
 import { ChooseChainModal, WHERE_PORTFOLIO } from '../../components/ChooseChainModal';
@@ -51,7 +50,7 @@ import moment from 'moment';
 import clsx from 'clsx';
 import useAxios from '../../core/HttpRequest';
 import PortfolioTokenItem from '../../components/v2/portfolioTokenItem';
-import { screenTitle } from '../../constants/index';
+import { SceneMap, TabView } from 'react-native-tab-view';
 
 interface INotification {
   notification: { title: string, body: string }
@@ -365,7 +364,7 @@ export default function Portfolio (props: { navigation: any | { navigate: (arg0:
     }
   }, [isFocused]);
 
-  const getAllChainBalance = (portfolioState: { statePortfolio: { selectedChain: Chain, tokenPortfolio: WalletHoldings } }): Number => {
+  const getAllChainBalance = (portfolioState: { statePortfolio: { selectedChain: Chain, tokenPortfolio: WalletHoldings } }): number => {
     const { totalBalance, totalStakedBalance, totalUnverifiedBalance, totalUnbondingBalance } = portfolioState?.statePortfolio?.tokenPortfolio ?? {};
     if (verifyCoinChecked) {
       return Number(totalBalance) + Number(totalStakedBalance) + Number(totalUnbondingBalance);
@@ -405,6 +404,80 @@ export default function Portfolio (props: { navigation: any | { navigate: (arg0:
     return <RenderPortfolioAssets holdingsData={holdingsData} verifyCoinChecked={verifyCoinChecked} navigation={props.navigation} onRefresh={onRefresh} isRefreshing={refreshData.shouldRefreshAssets}/>;
   }, [holdingsData, verifyCoinChecked, refreshData.shouldRefreshAssets]);
 
+  const RenderTokensTab = () => {
+    return (
+      <CyDView className='mx-[10px] border border-sepratorColor rounded-t-[24px]'>
+        <RenderTimer isRefreshing={refreshData.isRefreshing} verifyCoinChecked={verifyCoinChecked} setVerifyCoinChecked = {setVerifyCoinChecked}/>
+        { getAllChainBalance(portfolioState) > 0
+          ? (
+              renderAssets
+            )
+          : indexTab === 0 && portfolioState.statePortfolio.portfolioState === PORTFOLIO_EMPTY &&
+          <CyDView className={'flex justify-center items-center mt-[5px]'}>
+            <LottieView source={AppImages.PORTFOLIO_EMPTY} autoPlay loop style={{ width: '60%' }} />
+            <Button title={t('FUND_WALLET')} onPress={() => { props.navigation.navigate(C.screenTitle.QRCODE); }} style='mt-[-40px] px-[20px] h-[40px] py-[0px]' titleStyle='text-[14px]' image={AppImages.RECEIVE} imageStyle='h-[12px] w-[12px] mr-[15px]'/>
+            <CyDTouchView className='mt-[20px]' onPress={() => {
+              void (async () => await onRefresh())();
+            }}>
+              <CyDText className='text-center text-blue-500 underline'>{t<string>('CLICK_TO_REFRESH')}</CyDText>
+            </CyDTouchView>
+          </CyDView>
+        }
+      </CyDView>
+    );
+  };
+
+  const RenderNFTTab = () => {
+    return <CyDView className='mx-[10px] border border-sepratorColor rounded-t-[24px]'>
+              <CyDView className='mt-[10px]'>
+                <NFTScreen selectedChain={portfolioState.statePortfolio.selectedChain.symbol} navigation={props.navigation}></NFTScreen>
+              </CyDView>
+          </CyDView>;
+  };
+
+  const renderScene = SceneMap({
+    token: RenderTokensTab,
+    nft: RenderNFTTab
+  });
+
+  const RenderTabView = () => {
+    const layout = useWindowDimensions();
+
+    const [index, setIndex] = useState(0);
+    const [routes] = useState([
+      { key: 'token', title: t('TOKENS') },
+      { key: 'nft', title: t('NFTS') }
+    ]);
+
+    const RenderTabViewTabBar = () => {
+      return (
+        <CyDView className='flex flex-row mx-[20px] py-[10px]'>
+          {routes.map((route, i) => {
+            return (
+              <CyDTouchView
+                key={i}
+                className={clsx('rounded-[8px] px-[14px] py-[5px]', { 'bg-privacyMessageBackgroundColor': i === index })}
+                onPress={() => setIndex(i)}>
+                <CyDText>{route.title}</CyDText>
+              </CyDTouchView>
+            );
+          })}
+        </CyDView>
+      );
+    };
+
+    return (
+      <TabView
+        lazy
+        navigationState={{ index, routes }}
+        renderTabBar={RenderTabViewTabBar}
+        renderScene={renderScene}
+        onIndexChange={setIndex}
+        initialLayout={{ width: layout.width }}
+      />
+    );
+  };
+
   return (
     <CyDSafeAreaView className='flex h-full bg-white'>
       { isPortfolioLoading() &&
@@ -440,44 +513,8 @@ export default function Portfolio (props: { navigation: any | { navigate: (arg0:
         onPress={() => setCopyToClipBoard(false)}
         />
       <RenderBanner navigation={props.navigation} ethAddress={ethereum.address}/>
-      {indexTab === 0 && <RenderHeaderAndPortfolioBalance verifyCoinChecked={verifyCoinChecked} getAllChainBalance={getAllChainBalance} headerProps={{ navigation: props.navigation, setChooseChain, onWCSuccess, indexState: [indexTab, setIndexTab] }}/>}
-      {/* {indexTab === 0 && <SwitchView
-            index={indexTab}
-            setIndexChange={(index: React.SetStateAction<number>) => {
-              setIndexTab(index);
-              void analytics().logEvent('clicks', {
-                item: index ? 'nft' : 'wallet',
-                where: 'token button'
-              });
-            }}
-            title1={t('COINS')}
-            title2={t('NFTS')}
-          />} */}
-      <CyDView className='mx-[10px] border border-sepratorColor rounded-t-[24px]'>
-        {indexTab === 0 && <RenderTimer isRefreshing={refreshData.isRefreshing} verifyCoinChecked={verifyCoinChecked} setVerifyCoinChecked = {setVerifyCoinChecked}/>}
-        {indexTab === 0 && getAllChainBalance(portfolioState) > 0
-          ? (
-              renderAssets
-            )
-          : indexTab === 0 && portfolioState.statePortfolio.portfolioState === PORTFOLIO_EMPTY &&
-            <CyDView className={'flex justify-center items-center mt-[5px]'}>
-              <LottieView source={AppImages.PORTFOLIO_EMPTY} autoPlay loop style={{ width: '60%' }} />
-              <Button title={t('FUND_WALLET')} onPress={() => { props.navigation.navigate(C.screenTitle.QRCODE); }} style='mt-[-40px] px-[20px] h-[40px] py-[0px]' titleStyle='text-[14px]' image={AppImages.RECEIVE} imageStyle='h-[12px] w-[12px] mr-[15px]'/>
-              <CyDTouchView className='mt-[20px]' onPress={() => {
-                void (async () => await onRefresh())();
-              }}>
-                <CyDText className='text-center text-blue-500 underline'>{t<string>('CLICK_TO_REFRESH')}</CyDText>
-              </CyDTouchView>
-            </CyDView>
-          }
-        </CyDView>
-        {indexTab === 1 &&
-        <CyDView>
-          <RenderHeader navigation={props.navigation} setChooseChain={setChooseChain} onWCSuccess={onWCSuccess} indexState={[indexTab, setIndexTab]} />
-          <CyDView className='mt-[10px]'>
-            <NFTScreen selectedChain={portfolioState.statePortfolio.selectedChain.symbol} navigation={props.navigation}></NFTScreen>
-          </CyDView>
-        </CyDView>}
+      <RenderHeaderAndPortfolioBalance verifyCoinChecked={verifyCoinChecked} getAllChainBalance={getAllChainBalance} headerProps={{ navigation: props.navigation, setChooseChain, onWCSuccess, indexState: [indexTab, setIndexTab] }}/>
+      <RenderTabView />
     </CyDSafeAreaView>
   );
 }
@@ -615,7 +652,7 @@ export const RenderHeaderAndPortfolioBalance = (props: { verifyCoinChecked: bool
     hdWallet.dispatch({ type: 'TOGGLE_BALANCE_VISIBILITY', value: { hideBalance: !hideBalance } });
   };
   return (
-      <CyDImageBackground className='h-[25%] max-h-[170px] w-[100%] rounded-[24px] mb-[10px]' source={{ uri: portfolioBackgroundImage + '?' + String(new Date().getDay()) }} resizeMode='cover'>
+      <CyDImageBackground className='h-[25%] max-h-[170px] w-[100%] rounded-[24px]' source={{ uri: portfolioBackgroundImage + '?' + String(new Date().getDay()) }} resizeMode='cover'>
         <RenderHeader {...props.headerProps}/>
         <CyDView className={'mt-[20px] mx-[24px] justify-center items-start'}>
           {getCurrentChainHoldings(
@@ -881,15 +918,3 @@ export const RenderBanner = (props) => {
       : <CyDView></CyDView>
   );
 };
-
-const styles = StyleSheet.create({
-  portfolioImageBackground: {
-    shadowOffset: {
-      height: 4,
-      width: 0
-    },
-    shadowRadius: 2,
-    shadowColor: 'black',
-    shadowOpacity: 0.2
-  }
-});
