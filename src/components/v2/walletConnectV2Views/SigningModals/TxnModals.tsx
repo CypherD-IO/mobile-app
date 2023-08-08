@@ -154,7 +154,7 @@ const RenderDefaultSignModal = ({ dAppInfo, chain, method, data }: {dAppInfo: ID
             <CyDText className={'text-[18px] font-bold mb-[6px] ml-[4px]'}>{t<string>('DATA')}</CyDText>
           </CyDView>
           <CyDView>
-            <CyDView className={'my-[5px] border-[1px] border-sepratorColor bg-infoTextBackground rounded-[6px]'}>
+            <CyDView className={'my-[5px] border-[1px] border-sepratorColor bg-infoTextBackground rounded-[8px]'}>
               <CyDView className='p-[10px]'>
                 <CyDText className={'text-[16px] ml-[6px]'}>{JSON.stringify(data, null, '\t')}</CyDText>
               </CyDView>
@@ -178,7 +178,7 @@ const RenderSendTransactionSignModal = ({ dAppInfo, sendTxnData }: {dAppInfo: ID
           <CyDView>
             <CyDView className='flex flex-col items-center'>
               <CyDView className={'flex flex-row justify-center items-center'}>
-                <CyDView className='flex flex-row h-full mb-[10px] items-center rounded-r-[20px] self-center pl-[13px] pr-[10px]'>
+                <CyDView className='flex flex-row h-full mb-[10px] items-center self-center pl-[13px] pr-[10px]'>
                   <CyDFastImage
                     className={'h-[30px] w-[30px] rounded-[50px]'}
                     source={{ uri: token.logo }}
@@ -204,7 +204,7 @@ const RenderSendTransactionSignModal = ({ dAppInfo, sendTxnData }: {dAppInfo: ID
               </CyDView>
             </CyDView>
             <CyDView className='my-[10px]'>
-              <CyDView className={'bg-sepratorColor rounded-[12px] py-[20px] px-[10px]'}>
+              <CyDView className={'bg-sepratorColor rounded-[8px] py-[20px] px-[10px]'}>
                 <CyDView className='flex flex-row justify-between'>
                   <CyDText className={'text-[16px] ml-[6px] font-bold'}>{t('TO')}</CyDText>
                   <CyDText className={'text-[16px]'}>{getMaskedAddress(toAddress, 10)}</CyDText>
@@ -217,7 +217,7 @@ const RenderSendTransactionSignModal = ({ dAppInfo, sendTxnData }: {dAppInfo: ID
               </CyDView>
             </CyDView>
             <CyDView className='my-[10px]'>
-              <CyDView className={'bg-infoTextBackground rounded-[12px] py-[20px] px-[10px]'}>
+              <CyDView className={'bg-infoTextBackground rounded-[8px] py-[20px] px-[10px]'}>
                 <CyDView className='flex flex-row justify-between'>
                 <CyDText className={'font-bold text-[16px]'}>{t('GAS')}</CyDText>
                 <CyDText className={'font-medium text-[16px] text-subTextColor'}>{gasAndUSDAppx}</CyDText>
@@ -247,14 +247,14 @@ const RenderSwapTransactionSignModal = ({ dAppInfo, swapTxnData }: {dAppInfo: ID
           <CyDView className='my-[10px]'>
               <CyDView className='flex flex-col items-center'>
                 <CyDView className={'flex flex-row justify-center items-center'}>
-                <CyDView className={'flex flex-row justify-between items-center w-[100%] my-[20px] bg-[#F7F8FE] rounded-[20px] px-[15px] py-[20px]'}>
+                <CyDView className={'flex flex-row justify-between items-center w-[100%] my-[20px] bg-[#F7F8FE] rounded-[8px] px-[15px] py-[20px]'}>
                       <CyDView className={'flex w-[40%] items-center justify-center'}>
                         <CyDView className="items-center">
-                          <CyDFastImage source={{ uri: sendToken.logo }} className={'w-[44px] h-[44px]'} />
+                          <CyDFastImage source={{ uri: sendToken.logo }} className={'w-[44px] h-[44px] rounded-[8px]'} />
                             <CyDText className={'my-[6px] mx-[2px] text-black text-[14px] text-center font-semibold flex flex-row justify-center font-nunito'}>
                               {sendToken.name}
                             </CyDText>
-                            <CyDView className={'bg-white rounded-[20px] flex flex-row items-center p-[4px]'}>
+                            <CyDView className={'bg-white rounded-[8px] flex flex-row items-center p-[4px]'}>
                               <CyDFastImage source={chain.logo} className={'w-[14px] h-[14px]'} />
                               <CyDText className={'ml-[6px] font-nunito font-normal text-black  text-[12px]'}>
                                 {chain.name}
@@ -267,11 +267,11 @@ const RenderSwapTransactionSignModal = ({ dAppInfo, swapTxnData }: {dAppInfo: ID
                       </CyDView>
                       <CyDView className={'flex w-[40%] items-center self-center align-center justify-center'}>
                         <CyDView className="items-center">
-                          <CyDFastImage source={{ uri: receiveToken.logo }} className={'w-[44px] h-[44px]'} />
+                          <CyDFastImage source={{ uri: receiveToken.logo }} className={'w-[44px] h-[44px] rounded-[8px]'} />
                           <CyDText className={'my-[6px] mx-[2px] text-black text-[14px] text-center font-semibold flex flex-row justify-center font-nunito'}>
                             {receiveToken.name}
                           </CyDText>
-                          <CyDView className={'bg-white rounded-[20px] flex flex-row items-center p-[4px]'}>
+                          <CyDView className={'bg-white rounded-[8px] flex flex-row items-center p-[4px]'}>
                             <CyDFastImage source={chain.logo} className={'w-[14px] h-[14px]'} />
                             <CyDText className={'ml-[6px] font-nunito text-black font-normal text-[12px]'}>
                               {chain.name}
@@ -340,15 +340,14 @@ const RenderApproveTokenModal = ({ dAppInfo, approveTokenData }: {dAppInfo: IDAp
          </>
           : null}
         <CyDView className='my-[10px]'>
-        <CyDView className='flex flex-col gap-[10px] items-center rounded-[20px] bg-sepratorColor'>
+        <CyDView className='flex flex-col items-center rounded-[8px] bg-sepratorColor'>
               <CyDView className='px-[10px] my-[10px]'>
                 <CyDText className='font-bold text-[16px]'>
                     {t('APPROVAL_TOKEN')}
                 </CyDText>
               </CyDView>
-
               <CyDView className={'flex flex-row justify-center items-center my-[10px]'}>
-                <CyDView className='flex flex-row h-full mb-[10px] items-center rounded-r-[20px] self-center pr-[10px]'>
+                <CyDView className='flex flex-row h-full mb-[10px] items-center self-center pr-[10px]'>
                   <CyDFastImage
                     className={'h-[60px] w-[60px] rounded-[50px]'}
                     source={{ uri: approvalTokenLogo }}
@@ -365,7 +364,7 @@ const RenderApproveTokenModal = ({ dAppInfo, approveTokenData }: {dAppInfo: IDAp
               </CyDView>
         </CyDView>
         <CyDView className='my-[10px]'>
-          <CyDView className={'bg-sepratorColor rounded-[12px] py-[20px] px-[10px]'}>
+          <CyDView className={'bg-sepratorColor rounded-[8px] py-[20px] px-[10px]'}>
             <CyDView className='flex flex-row justify-between'>
               <CyDText className={'text-[14px] ml-[6px] font-bold'}>{t('SPENDER')}</CyDText>
               <CyDText className={'text-[14px]'}>{spender.address}</CyDText>
@@ -381,7 +380,7 @@ const RenderApproveTokenModal = ({ dAppInfo, approveTokenData }: {dAppInfo: IDAp
           </CyDView>
         </CyDView>
         <CyDView className='my-[10px]'>
-          <CyDView className={'bg-infoTextBackground rounded-[12px] py-[20px] px-[10px]'}>
+          <CyDView className={'bg-infoTextBackground rounded-[8px] py-[20px] px-[10px]'}>
             <CyDView className='flex flex-row justify-between'>
               <CyDText className={'font-bold text-[16px]'}>{t('GAS')}</CyDText>
               <CyDText className={'font-medium text-[16px] text-subTextColor'}>{gasWithUSDAppx}</CyDText>
