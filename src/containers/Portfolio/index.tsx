@@ -11,7 +11,7 @@ import { Colors } from '../../constants/theme';
 import AppImages from '../../../assets/images/appImages';
 import { ChooseChainModal, WHERE_PORTFOLIO } from '../../components/ChooseChainModal';
 import EmptyView from '../../components/EmptyView';
-import { CyDFastImage, CyDImage, CyDTouchView, CyDView, CyDText, CyDImageBackground, CyDSafeAreaView } from '../../styles/tailwindStyles';
+import { CyDFastImage, CyDImage, CyDTouchView, CyDView, CyDText, CyDImageBackground, CyDSafeAreaView, CyDAnimatedView } from '../../styles/tailwindStyles';
 import { Chain, QRScannerScreens, NotificationEvents } from '../../constants/server';
 import CopytoKeyModal from '../../components/ShowPharseModal';
 import { fetchTokenData, getCurrentChainHoldings, WalletHoldings } from '../../core/Portfolio';
@@ -57,7 +57,7 @@ interface INotification {
   data: { title: string, url?: string }
 }
 
-interface HeaderProps {navigation: any, setChooseChain: Function, onWCSuccess: Function, indexState: [number, React.Dispatch<React.SetStateAction<number>>] }
+interface HeaderProps {navigation: any, setChooseChain: Function, onWCSuccess: Function }
 
 export default function Portfolio (props: { navigation: any | { navigate: (arg0: string, arg1: { params?: { url: string }, screen?: string, tokenData?: any, url?: string } | undefined) => void } }) {
   const { t } = useTranslation();
@@ -513,7 +513,8 @@ export default function Portfolio (props: { navigation: any | { navigate: (arg0:
         onPress={() => setCopyToClipBoard(false)}
         />
       <RenderBanner navigation={props.navigation} ethAddress={ethereum.address}/>
-      <RenderHeaderAndPortfolioBalance verifyCoinChecked={verifyCoinChecked} getAllChainBalance={getAllChainBalance} headerProps={{ navigation: props.navigation, setChooseChain, onWCSuccess, indexState: [indexTab, setIndexTab] }}/>
+      <RenderHeaderBar navigation={props.navigation} setChooseChain={setChooseChain} onWCSuccess={onWCSuccess} />
+      <RenderPortfolioBalance verifyCoinChecked={verifyCoinChecked} getAllChainBalance={getAllChainBalance} />
       <RenderTabView />
     </CyDSafeAreaView>
   );
@@ -585,9 +586,7 @@ export const RenderPortfolioAssets = ({ holdingsData, verifyCoinChecked, navigat
   );
 };
 
-const RenderHeader = ({ navigation, setChooseChain, onWCSuccess, indexState }: HeaderProps) => {
-  const { t } = useTranslation();
-  const [indexTab, setIndexTab] = indexState;
+const RenderHeaderBar = ({ navigation, setChooseChain, onWCSuccess }: HeaderProps) => {
   const portfolioState = useContext<any>(PortfolioContext);
   const onSuccess = onWCSuccess;
   return (
@@ -596,18 +595,6 @@ const RenderHeader = ({ navigation, setChooseChain, onWCSuccess, indexState }: H
               <CyDFastImage className={'h-[22px] w-[22px]'} source={portfolioState.statePortfolio.selectedChain.logo_url} />
               <CyDFastImage className={'h-[8px] w-[8px]'} source={AppImages.DOWN} />
         </CyDTouchView>
-        {/* <SwitchView
-            index={indexTab}
-            setIndexChange={(index: React.SetStateAction<number>) => {
-              setIndexTab(index);
-              void analytics().logEvent('clicks', {
-                item: index ? 'nft' : 'wallet',
-                where: 'token button'
-              });
-            }}
-            title1={t('COINS')}
-            title2={t('NFTS')}
-          /> */}
         <CyDTouchView
           onPress={() => {
             navigation.navigate(C.screenTitle.QR_CODE_SCANNER, {
@@ -623,7 +610,7 @@ const RenderHeader = ({ navigation, setChooseChain, onWCSuccess, indexState }: H
   );
 };
 
-export const RenderHeaderAndPortfolioBalance = (props: { verifyCoinChecked: boolean, getAllChainBalance: Function, headerProps: HeaderProps}) => {
+export const RenderPortfolioBalance = (props: { verifyCoinChecked: boolean, getAllChainBalance: Function}) => {
   const portfolioState = useContext<any>(PortfolioContext);
   const hdWallet = useContext<any>(HdWalletContext);
   const { hideBalance } = hdWallet.state;
@@ -652,8 +639,8 @@ export const RenderHeaderAndPortfolioBalance = (props: { verifyCoinChecked: bool
     hdWallet.dispatch({ type: 'TOGGLE_BALANCE_VISIBILITY', value: { hideBalance: !hideBalance } });
   };
   return (
-      <CyDImageBackground className='h-[25%] max-h-[170px] w-[100%] rounded-[24px]' source={{ uri: portfolioBackgroundImage + '?' + String(new Date().getDay()) }} resizeMode='cover'>
-        <RenderHeader {...props.headerProps}/>
+    <CyDAnimatedView className='h-[20%]'>
+      <CyDImageBackground className='h-full rounded-[24px]' source={{ uri: portfolioBackgroundImage + '?' + String(new Date().getDay()) }} resizeMode='cover'>
         <CyDView className={'mt-[20px] mx-[24px] justify-center items-start'}>
           {getCurrentChainHoldings(
             portfolioState.statePortfolio.tokenPortfolio,
@@ -684,6 +671,7 @@ export const RenderHeaderAndPortfolioBalance = (props: { verifyCoinChecked: bool
           )}
         </CyDView>
       </CyDImageBackground>
+    </CyDAnimatedView>
   );
 };
 
