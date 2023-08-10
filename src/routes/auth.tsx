@@ -939,7 +939,19 @@ export function DebitCardStackScreen ({ navigation }) {
           headerBackTitleVisible: false
         }}
       />
-
+      <FundCardStack.Screen
+        name={screenTitle.CARD_SETTINGS_SCREEN}
+        component={BridgeCardOptionsScreen}
+        options={{
+          headerTransparent: false,
+          headerShadowVisible: false,
+          headerShown: true,
+          title: 'Card Options',
+          headerTitleAlign: 'center',
+          headerTitleStyle: portfolioStackScreenHeaderTitleStyles,
+          headerTintColor: Colors.primaryTextColor,
+          headerBackTitleVisible: false
+        }} />
     </FundCardStack.Navigator>
 
   );

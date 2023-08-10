@@ -50,7 +50,7 @@ export enum KYCStatus {
 export enum CardStatus {
   NA = 'not-available',
   ACTIVE = 'active',
-  IN_ACTIVE = 'in-active',
+  IN_ACTIVE = 'inactive',
   BLOCKED = 'blocked',
 }
 
