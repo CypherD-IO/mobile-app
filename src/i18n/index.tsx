@@ -729,7 +729,24 @@ const resources = {
       CARD_STATUS_UPDATE: 'Card status update',
       ALL_BALANCES_HIDDEN: 'All balances inside your wallets have been hidden',
       HIDE: 'Hide',
-      SHOW: 'Show'
+      SHOW: 'Show',
+      ONLY_VERIFIED_COINS: 'Only verified coins',
+      RETRIEVING: 'Retrieving',
+      TIMER_BAR_future: 'in %s',
+      TIMER_BAR_past: '%s',
+      TIMER_BAR_s: 'Just now',
+      TIMER_BAR_ss: '%d seconds ago',
+      TIMER_BAR_m: '1 minute ago',
+      TIMER_BAR_mm: '%d minutes ago',
+      TIMER_BAR_h: 'an hour ago',
+      TIMER_BAR_hh: '%d hours ago',
+      TIMER_BAR_d: 'a day ago',
+      TIMER_BAR_dd: '%d days ago',
+      TIMER_BAR_M: 'a month ago',
+      TIMER_BAR_MM: '%d months ago',
+      TIMER_BAR_y: 'a year ago',
+      TIMER_BAR_yy: '%d years ago',
+      STAKE: 'stake'
     }
   }
 };
