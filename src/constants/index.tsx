@@ -100,7 +100,8 @@ export const screenTitle = {
   MY_ADDRESS: 'MyAddress',
   SAVED_ADDRESS: 'SavedAddress',
   CREATE_CONTACT: 'CreateContact',
-  TRANSFI_SCREEN: 'TransFiScreen'
+  TRANSFI_SCREEN: 'TransFiScreen',
+  CARD_SETTINGS_SCREEN: 'CardSettingsScreen'
 };
 
 export const fontsName = {
