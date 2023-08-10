@@ -723,7 +723,8 @@ const resources = {
       SET_NEW_PIN: 'Set New Pin',
       CARD_BLOCKED: 'Card Blocked',
       CHANGE_CARD_STATUS_SUCCESS: 'Card status update success',
-      CHANGE_CARD_STATUS_FAIL: 'Card status update failed'
+      CHANGE_CARD_STATUS_FAIL: 'Card status update failed',
+      CARD_STATUS_UPDATE: 'Card status update'
     }
   }
 };

@@ -7,7 +7,7 @@ import LottieView from 'lottie-react-native';
 import AppImages from '../../../../assets/images/appImages';
 import { useGlobalModalContext } from '../../../components/v2/GlobalModal';
 import { getWalletProfile } from '../../../core/card';
-import { CardProviders, GlobalContextType } from '../../../constants/enum';
+import { CardProviders, CardStatus, GlobalContextType } from '../../../constants/enum';
 import * as Sentry from '@sentry/react-native';
 import useAxios from '../../../core/HttpRequest';
 import { screenTitle } from '../../../constants';
@@ -30,9 +30,10 @@ export default function BridgeCardOptionsScreen (props: {
   const [isStatusLoading, setIsStatusLoading] = useState(false);
   const { showModal, hideModal } = useGlobalModalContext();
   const { patchWithAuth } = useAxios();
+  const [cardUpdateToStatus, setCardUpdateToStatus] = useState(card.status === CardStatus.ACTIVE ? 'block' : 'unblock');
 
   const onCardStatusChange = async (blockCard: boolean) => {
-    setIsStatusLoading(true);
+    hideModal();
     const url = `/v1/cards/${currentCardProvider}/card/${cardId}/status`;
     const payload = {
       status: blockCard ? 'inactive' : 'active'
@@ -42,9 +43,10 @@ export default function BridgeCardOptionsScreen (props: {
       const response = await patchWithAuth(url, payload);
       if (!response.isError) {
         setIsStatusLoading(false);
-        setIsCardBlocked(blockCard);
         void refreshProfile();
         showModal('state', { type: 'success', title: t('CHANGE_CARD_STATUS_SUCCESS'), description: `Successfully ${blockCard ? 'blocked' : 'unblocked'} your card!`, onSuccess: hideModal, onFailure: hideModal });
+        setIsCardBlocked(blockCard);
+        setCardUpdateToStatus(blockCard ? 'unblock' : 'block');
       } else {
         showModal('state', { type: 'error', title: t('CHANGE_CARD_STATUS_FAIL'), description: t('UNABLE_TO_CHANGE_CARD_STATUE'), onSuccess: hideModal, onFailure: hideModal });
       }
@@ -60,6 +62,11 @@ export default function BridgeCardOptionsScreen (props: {
     globalContext.globalDispatch({ type: GlobalContextType.CARD_PROFILE, cardProfile: data });
   };
 
+  const updateCardStatus = (status: string, blockCard: boolean) => {
+    setIsStatusLoading(true);
+    showModal('state', { type: 'warning', title: `${t('CARD_STATUS_UPDATE')}`, description: `Are you sure you want to ${status} your card?`, onSuccess: () => { void onCardStatusChange(blockCard); }, onFailure: () => { hideModal(); setIsStatusLoading(false); } });
+  };
+
   return (
     <CyDView className='h-full bg-white pt-[30px]'>
       <CyDView className='flex flex-row justify-between align-center mx-[20px] pb-[15px] border-b-[1px] border-sepratorColor'>
@@ -72,7 +79,7 @@ export default function BridgeCardOptionsScreen (props: {
           isStatusLoading
             ? <LottieView style={styles.loader} autoPlay loop source={AppImages.LOADER_TRANSPARENT}/>
             : <CyDSwitch
-                onValueChange={ () => { void onCardStatusChange(!isCardBlocked); }}
+                onValueChange={ () => { void updateCardStatus(cardUpdateToStatus, !isCardBlocked); }}
                 value={!isCardBlocked}
               />
         }
