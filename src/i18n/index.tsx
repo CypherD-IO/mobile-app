@@ -746,7 +746,10 @@ const resources = {
       TIMER_BAR_MM: '%d months ago',
       TIMER_BAR_y: 'a year ago',
       TIMER_BAR_yy: '%d years ago',
-      STAKE: 'stake'
+      STAKE: 'stake',
+      RECEIVED_ON: 'RECEIVED ON',
+      APPLICATION: 'Application',
+      STATUS: 'Status'
     }
   }
 };

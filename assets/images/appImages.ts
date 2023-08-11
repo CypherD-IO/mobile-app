@@ -281,7 +281,21 @@ const TRANSFI_LOGO = require('./transfiLogo.png');
 const BROWSER_REDIRECT = require('./browserRedirect.png');
 const EMPTY_WALLET_CONNECT_SESSIONS = require('./emptyWalletConnectSessions.png');
 const ACTIVATE_PHYSICAL_CARD = require('./activatePhysicalCard.png');
-
+const TXN_SEND_SUCCESS = require('./txn_send_success.png');
+const TXN_SEND_ERROR = require('./txn_send_error.png');
+const TXN_RECEIVE_SUCCESS = require('./txn_receive_success.png');
+const TXN_RECEIVE_ERROR = require('./txn_receive_error.png');
+const TXN_SWAP_SUCCESS = require('./txn_swap_success.png');
+const TXN_SWAP_ERROR = require('./txn_swap_error.png');
+const TXN_DEFAULT_SUCCESS = require('./txn_default_success.png');
+const TXN_DEFAULT_ERROR = require('./txn_default_error.png');
+const TXN_MENU_ICON = require('./txn_menu.png');
+const UNKNOWN_TXN_TOKEN = require('./unknownToken.png');
+const TXN_SELF_SUCCESS = require('./txn_self_success.png');
+const TXN_SELF_ERROR = require('./txn_self_error.png');
+const ZKSYNC_ERA_LOGO = require('./zksync_era.png');
+const BASE_LOGO = require('./base.png');
+const POLYGON_ZKEVM_LOGO = require('./polygon_zkevm.png');
 // ICONS FROM S3
 const SWAP = { uri: `${S3_BUCKET_URL_ICONS}/swap.png` };
 const SWAP_GRAY = { uri: `${S3_BUCKET_URL_ICONS}/swap_gray.png` };
@@ -291,11 +305,9 @@ const SWAP_ERROR = { uri: `${S3_BUCKET_URL_ICONS}/swap_error.png` };
 const REFERRAL_REWARDS = { uri: `${S3_BUCKET_URL_ICONS}/referralRewards.png` };
 const CARD_BLOCKED = { uri: `${S3_BUCKET_URL_ICONS}/card-blocked.png` };
 const PORTFOLIO_BG_S3 = { uri: `${S3_BUCKET_URL_ICONS}/portfolio-bg.png?${String(new Date().getDay())}` };
-const ZKSYNC_ERA_LOGO = require('./zksync_era.png');
-const BASE_LOGO = require('./base.png');
-const POLYGON_ZKEVM_LOGO = require('./polygon_zkevm.png');
+const NO_TRANSACTIONS = { uri: `${S3_BUCKET_URL_ICONS}/noTransactions.png` };
 
-const AppImages: any = {
+const AppImages = {
   PLUS,
   ARROW,
   HOME,
@@ -587,5 +599,18 @@ const AppImages: any = {
   ZKSYNC_ERA_LOGO,
   BASE_LOGO,
   POLYGON_ZKEVM_LOGO,
+  NO_TRANSACTIONS,
+  TXN_SEND_SUCCESS,
+  TXN_SEND_ERROR,
+  TXN_RECEIVE_SUCCESS,
+  TXN_RECEIVE_ERROR,
+  TXN_SWAP_ERROR,
+  TXN_SWAP_SUCCESS,
+  TXN_DEFAULT_SUCCESS,
+  TXN_DEFAULT_ERROR,
+  TXN_MENU_ICON,
+  UNKNOWN_TXN_TOKEN,
+  TXN_SELF_SUCCESS,
+  TXN_SELF_ERROR
 };
 export default AppImages;

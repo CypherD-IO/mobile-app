@@ -85,6 +85,8 @@ import {
 import ActivateCardScreen from '../containers/DebitCard/bridgeCard/activateCard';
 import SetPinScreen from '../containers/DebitCard/bridgeCard/setPin';
 import { useKeyboard } from '../hooks/useKeyboard';
+import TransactionScreen from '../containers/Transactions/transactions';
+import TransactionFilter from '../containers/Transactions/transactionFilter';
 
 const { DynamicImage, DynamicButton } = require('../styles');
 
@@ -197,7 +199,6 @@ export function PortfolioStackScreen({ navigation, route }) {
           headerLeft: (props) => defaultHeaderLeft(navigation),
         })}
       />
-
       <PortfolioStack.Screen
         name={screenTitle.TRANSFI_SCREEN}
         component={TransFiScreen}
@@ -690,6 +691,26 @@ export function PortfolioStackScreen({ navigation, route }) {
           headerBackTitleVisible: false,
         })}
       />
+
+<PortfolioStack.Screen
+        name={screenTitle.TRANSACTIONS_SCREEN}
+        component={TransactionScreen}
+        options={({ navigation, route }) => ({
+          headerTransparent: false,
+          headerShadowVisible: false,
+          title: '',
+          headerTitleAlign: 'center',
+          headerTitleStyle: portfolioStackScreenHeaderTitleStyles,
+          navigationOptions: {
+            tabBarVisible: false
+          },
+
+          headerTintColor: Colors.primaryTextColor,
+          headerBackTitleVisible: false,
+          headerLeft: (props) => defaultHeaderLeft(navigation)
+        })}
+      />
+
       <PortfolioStack.Screen
         name={screenTitle.WALLET_CONNECT}
         component={WalletConnectCamera}
@@ -1145,6 +1166,23 @@ export function OptionsStackScreen({ navigation, route }) {
           headerBackTitleVisible: false,
         })}
       />
+
+      <OptionsStack.Screen
+        name={screenTitle.TRANSACTIONS_SCREEN}
+        component={TransactionScreen}
+        options={({ navigation, route }) => ({
+          headerTransparent: false,
+          headerShadowVisible: false,
+          headerTitleAlign: 'center',
+          headerTitleStyle: optionsStackScreenHeaderTitleStyles,
+          navigationOptions: {
+            tabBarVisible: false
+          },
+          headerTintColor: Colors.primaryTextColor,
+          headerBackTitleVisible: false
+        })}
+      />
+
       <OptionsStack.Screen
         name={screenTitle.REFERRAL_REWARDS}
         component={ReferralRewards}
@@ -1200,6 +1238,24 @@ export function OptionsStackScreen({ navigation, route }) {
           headerBackTitleVisible: false,
         })}
       />
+
+    <OptionsStack.Screen
+        name={screenTitle.TRANSACTION_FILTER}
+        component={TransactionFilter}
+        options={({ navigation, route }) => ({
+          headerTransparent: false,
+          headerShadowVisible: false,
+          headerTitleAlign: 'center',
+          title: 'Transactions Filter',
+          headerTitleStyle: optionsStackScreenHeaderTitleStyles,
+          navigationOptions: {
+            tabBarVisible: false
+          },
+          headerTintColor: Colors.primaryTextColor,
+          headerBackTitleVisible: false
+        })}
+      />
+
       <OptionsStack.Screen
         name={screenTitle.MANAGE_WALLET}
         component={ManageWallet}
@@ -1217,6 +1273,7 @@ export function OptionsStackScreen({ navigation, route }) {
           headerBackTitleVisible: false,
         })}
       />
+
       <OptionsStack.Screen
         name={screenTitle.SECURITY_PRIVACY}
         component={SecurityPrivacy}
