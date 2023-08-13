@@ -36,11 +36,12 @@ export const TabBar = ({
     });
   }, [navigationState.index, navigationState.routes, setIndex]);
 
-  return <><CyDView className='flex flex-row mx-[20px] py-[10px] w-full'>
-            {tabs}
+  return <CyDView className='w-full'>
+            <CyDView className='flex flex-row mx-[20px] py-[10px]'>
+              {tabs}
             </CyDView>
             <CyDView>{renderTabBarFooter(navigationState.routes[navigationState.index].key)}</CyDView>
-          </>;
+          </CyDView>;
 };
 
 interface TabBarButtonProps {

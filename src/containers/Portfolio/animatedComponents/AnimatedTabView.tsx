@@ -2,7 +2,7 @@ import React, { memo, ReactElement } from 'react';
 import { FlatListProps, ListRenderItem, Platform, ScrollViewProps, ViewProps } from 'react-native';
 import Animated, { SharedValue, useAnimatedScrollHandler } from 'react-native-reanimated';
 import { isIOS } from '../../../misc/checkers';
-import { H_BALANCE_BANNER, H_GUTTER, H_TAB_BAR } from '../constants';
+import { H_BALANCE_BANNER, H_GUTTER } from '../constants';
 
 // we provide this bc ios allows overscrolling but android doesn't
 // so on ios because of pull to refresh / rubberbaanding we set scroll pos to negative banner position
@@ -51,7 +51,6 @@ const AnimatedTabViewWithoutMemo = ({
   });
 
   const commonProps = {
-    className: `w-full -z-50 mb-[${H_TAB_BAR}]`,
     refreshControl,
     onMomentumScrollBegin,
     onMomentumScrollEnd,

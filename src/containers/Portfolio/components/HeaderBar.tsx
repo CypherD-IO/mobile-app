@@ -29,7 +29,7 @@ export const HeaderBar = ({ navigation, setChooseChain, scrollY, onWCSuccess, re
 
   const onSuccess = onWCSuccess;
   return (
-      <CyDView className={'flex flex-row mx-[20px] justify-between items-center bg-white'}>
+      <CyDView className={'z-20 flex flex-row mx-[20px] justify-between items-center bg-white'}>
         <CyDTouchView onPress={() => { setChooseChain(true); }} className={'h-[40px] w-[54px] bg-chainColor px-[8px] py-[4px] rounded-[18px] flex flex-row items-center justify-between border border-sepratorColor'}>
           <CyDFastImage className={'h-[22px] w-[22px]'} source={portfolioState.statePortfolio.selectedChain.logo_url} />
           <CyDFastImage className={'h-[8px] w-[8px]'} source={AppImages.DOWN} />
