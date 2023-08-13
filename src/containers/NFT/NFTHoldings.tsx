@@ -1,11 +1,11 @@
 /* eslint-disable react-native/no-raw-text */
 import React, { useEffect } from 'react';
-import AppImages from '../../../../assets/images/appImages';
-import { NFTHolding } from '../../../models/NFTHolding.interface';
-import { CyDFastImage, CyDScrollView, CyDText, CyDTouchView, CyDView } from '../../../styles/tailwindStyles';
-import { Chain } from '../../../constants/server';
-import { screenTitle } from '../../../constants';
-import { getChain } from '../../../core/util';
+import AppImages from '../../../assets/images/appImages';
+import { NFTHolding } from '../../models/NFTHolding.interface';
+import { CyDFastImage, CyDScrollView, CyDText, CyDTouchView, CyDView } from '../../styles/tailwindStyles';
+import { Chain } from '../../constants/server';
+import { screenTitle } from '../../constants';
+import { getChain } from '../../core/util';
 import analytics from '@react-native-firebase/analytics';
 
 interface RouteProps {
@@ -21,7 +21,7 @@ interface RouteProps {
   }
 }
 
-export default function NFTHoldingsScreen ({ route, navigation }: RouteProps) {
+export function NFTHoldingsScreen ({ route, navigation }: RouteProps) {
   const { nftHoldings } = route.params;
 
   useEffect(() => {

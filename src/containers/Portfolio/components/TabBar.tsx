@@ -1,4 +1,4 @@
-import React, { useCallback, useMemo, useRef } from 'react';
+import React, { ReactNode, useCallback, useMemo, useRef } from 'react';
 import {
   findNodeHandle,
   ScrollView,
@@ -12,29 +12,35 @@ import { TabRoute } from './TabView';
 export interface TabBarProps extends SceneRendererProps {
   navigationState: NavigationState<TabRoute>
   setIndex: (index: number) => void
+  renderTabBarFooter: (tabkey: string) => ReactNode
 }
 
 export const TabBar = ({
   navigationState,
-  setIndex
+  setIndex,
+  renderTabBarFooter
 }: TabBarProps) => {
   const scrollRef = useRef<ScrollView>(null);
   const tabs = useMemo(() => {
     return navigationState.routes.map((route: any, index: number) => {
       return (
-        <TabBarButton
-          key={index}
-          index={index}
-          onPress={setIndex}
-          title={route.title}
-          active={navigationState.index === index}
-          scrollViewRef={scrollRef.current}
-        />
+            <TabBarButton
+              key={index}
+              index={index}
+              onPress={setIndex}
+              title={route.title}
+              active={navigationState.index === index}
+              scrollViewRef={scrollRef.current}
+            />
       );
     });
   }, [navigationState.index, navigationState.routes, setIndex]);
 
-  return <CyDView className='flex flex-row mx-[20px] py-[10px] w-full'>{tabs}</CyDView>;
+  return <><CyDView className='flex flex-row mx-[20px] py-[10px] w-full'>
+            {tabs}
+            </CyDView>
+            <CyDView>{renderTabBarFooter(navigationState.routes[navigationState.index].key)}</CyDView>
+          </>;
 };
 
 interface TabBarButtonProps {

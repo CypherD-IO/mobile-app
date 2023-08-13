@@ -51,7 +51,8 @@ const AnimatedTabViewWithoutMemo = ({
   });
 
   const commonProps = {
-    className: `w-full mb-[${H_TAB_BAR}]`,
+    className: `w-full -z-50 mb-[${H_TAB_BAR}]`,
+    refreshControl,
     onMomentumScrollBegin,
     onMomentumScrollEnd,
     onScroll: handleScroll,
@@ -95,7 +96,6 @@ const AnimatedTabViewWithoutMemo = ({
         ref={onRef as (scrollableChild: Animated.FlatList<any> | null) => void}
         data={data}
         renderItem={renderItem}
-        refreshControl={refreshControl}
         ListEmptyComponent={ListEmptyComponent}
         initialNumToRender={initialNumToRender}
         maxToRenderPerBatch={maxToRenderPerBatch}

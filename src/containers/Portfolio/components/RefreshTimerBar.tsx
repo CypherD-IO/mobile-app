@@ -1,4 +1,4 @@
-import React, { Dispatch, SetStateAction, useContext, useEffect, useState } from 'react';
+import React, { useContext, useEffect, useState } from 'react';
 import { PortfolioContext } from '../../../core/util';
 import moment from 'moment';
 import { CyDFastImage, CyDText, CyDTouchView, CyDView } from '../../../styles/tailwindStyles';

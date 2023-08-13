@@ -34,11 +34,11 @@ export const useScrollManager = (routes: Array<{ key: string, title: string, scr
   return useMemo(() => {
     const syncScrollOffset = () => {
       const curRouteKey = routes[index].key;
-      const curRouteScrollableType = routes[index].scrollableType;
       const scrollValue = tabkeyToScrollPosition[curRouteKey].value;
 
-      Object.keys(tabkeyToScrollableChildRef).forEach((key) => {
+      Object.keys(tabkeyToScrollableChildRef).forEach((key, innerIndex) => {
         const scrollRef = tabkeyToScrollableChildRef[key];
+        const curRouteScrollableType = routes[innerIndex].scrollableType;
         if (!scrollRef) {
           return;
         }

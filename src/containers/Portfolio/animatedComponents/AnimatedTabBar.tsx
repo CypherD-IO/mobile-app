@@ -33,7 +33,7 @@ export const AnimatedTabBar = ({ scrollY, children, ...otherProps }: AnimatedTab
   });
   return (
     <CyDAnimatedView
-      className={'z-10 w-full bg-white'}
+      className={'z-10 w-full'}
       style={animatedTranslateY}
       {...otherProps}
     >

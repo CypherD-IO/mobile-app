@@ -2,18 +2,18 @@
  * @format
  * @flow
  */
-import React, { useCallback, useContext, useEffect, useRef, useState } from 'react';
-import { AppState, BackHandler, useWindowDimensions, FlatList } from 'react-native';
+import React, { useCallback, useContext, useEffect, useState } from 'react';
+import { AppState, BackHandler, useWindowDimensions } from 'react-native';
 import analytics from '@react-native-firebase/analytics';
 import * as C from '../../constants/index';
 import { useTranslation } from 'react-i18next';
 import AppImages from '../../../assets/images/appImages';
 import { ChooseChainModal, WHERE_PORTFOLIO } from '../../components/ChooseChainModal';
 import EmptyView from '../../components/EmptyView';
-import { CyDImage, CyDTouchView, CyDView, CyDText, CyDSafeAreaView, CyDAnimatedView } from '../../styles/tailwindStyles';
+import { CyDImage, CyDView, CyDSafeAreaView } from '../../styles/tailwindStyles';
 import { Chain, NotificationEvents } from '../../constants/server';
 import CopytoKeyModal from '../../components/ShowPharseModal';
-import { fetchTokenData, WalletHoldings } from '../../core/Portfolio';
+import { ChainHoldings, fetchTokenData, getCurrentChainHoldings, WalletHoldings } from '../../core/Portfolio';
 import messaging, { FirebaseMessagingTypes } from '@react-native-firebase/messaging';
 import { PORTFOLIO_ERROR, PORTFOLIO_NEW_LOAD, PORTFOLIO_LOADING, PortfolioState } from '../../reducers/portfolio_reducer';
 import * as Sentry from '@sentry/react-native';
@@ -25,23 +25,14 @@ import { useGlobalModalContext } from '../../components/v2/GlobalModal';
 import { GlobalContextType, ScrollableType, TokenOverviewTabIndices } from '../../constants/enum';
 import appsFlyer from 'react-native-appsflyer';
 import { TokenMeta } from '../../models/tokenMetaData.model';
-import NFTScreen from './NFT';
 import Button from '../../components/v2/button';
-import clsx from 'clsx';
-import { TabView } from 'react-native-tab-view';
-import { Tokens } from './Tokens';
-import { MessageBanner } from './components/MessageBanner';
-import { HeaderBar } from './components/HeaderBar';
-import { BalanceBanner } from './components/BBWA';
+import { MessageBanner, HeaderBar, Banner, PortfolioTabView, TabBar, TabRoute, RefreshTimerBar } from './components';
 import { HdWalletContextDef } from '../../reducers/hdwallet_reducer';
 import { BarCodeReadEvent } from 'react-native-camera';
-import { Extrapolate, interpolate, useAnimatedReaction, useAnimatedStyle } from 'react-native-reanimated';
-import { H_BALANCE_BANNER, H_TAB_BAR, OFFSET_TABVIEW } from './constants';
-import { RefreshTimerBar } from './Tokens/RefreshTimerBar';
 import { AnimatedBanner, AnimatedTabBar } from './animatedComponents';
-import { PortfolioTabView, TabBar, TabRoute } from './components';
 import { useScrollManager } from '../../hooks/useScrollManager';
-import { Scene } from './components/Scene';
+import { NFTScene, TokenScene } from './scenes';
+import CyDTokenValue from '../../components/v2/tokenValue';
 
 export default function Portfolio (props: { navigation: any | { navigate: (arg0: string, arg1: { params?: { url: string }, screen?: string, tokenData?: any, url?: string } | undefined) => void } }) {
   const { t } = useTranslation();
@@ -69,7 +60,7 @@ export default function Portfolio (props: { navigation: any | { navigate: (arg0:
   // not mentioning the scrollableType correctly will result in errors.
   const tabsWithScrollableType = [
     { key: 'token', title: t('TOKENS'), scrollableType: ScrollableType.FLATLIST },
-    { key: 'nft', title: t('NFTS'), scrollableType: ScrollableType.FLATLIST }
+    { key: 'nft', title: t('NFTS'), scrollableType: ScrollableType.SCROLLVIEW }
   ];
 
   const {
@@ -373,6 +364,25 @@ export default function Portfolio (props: { navigation: any | { navigate: (arg0:
     }
   };
 
+  const checkAll = (portfolioState: { statePortfolio: { selectedChain: Chain, tokenPortfolio: WalletHoldings } }) => {
+    if (portfolioState.statePortfolio.selectedChain.backendName !== 'ALL') {
+      const currentChainHoldings = getCurrentChainHoldings(
+        portfolioState.statePortfolio.tokenPortfolio,
+        portfolioState.statePortfolio.selectedChain
+      );
+      if (currentChainHoldings) {
+        const { chainTotalBalance, chainStakedBalance, chainUnbondingBalance, chainUnVerifiedBalance } = currentChainHoldings as ChainHoldings; // Type-assertion (currentChainHoldings can only be of type ChainHoldings if selectedChain.backendName !== 'ALL')
+        return isVerifyCoinChecked
+          ? Number(chainTotalBalance) + Number(chainStakedBalance) + Number(chainUnbondingBalance)
+          : Number(chainTotalBalance) + Number(chainUnVerifiedBalance) + Number(chainStakedBalance) + Number(chainUnbondingBalance);
+      } else {
+        return '...';
+      }
+    } else {
+      return getAllChainBalance(portfolioState);
+    }
+  };
+
   const onWCSuccess = (e: BarCodeReadEvent) => {
     const link = e.data;
     portfolioState.dispatchPortfolio({ value: { walletConnectURI: link } });
@@ -387,142 +397,52 @@ export default function Portfolio (props: { navigation: any | { navigate: (arg0:
     return portfolioState.statePortfolio.portfolioState === PORTFOLIO_ERROR;
   };
 
-  const RenderNFTTab = () => {
-    return <CyDView className='mx-[10px] mt-[10px] border border-sepratorColor rounded-t-[24px]'>
-              <NFTScreen selectedChain={portfolioState.statePortfolio.selectedChain.symbol} navigation={props.navigation}></NFTScreen>
-          </CyDView>;
-  };
-
-  const RenderTabView = () => {
-    const layout = useWindowDimensions();
-
-    const [index, setIndex] = useState(0);
-    const [routes] = useState([
-      { key: 'token', title: t('TOKENS') },
-      { key: 'nft', title: t('NFTS') }
-    ]);
-
-    const tabkeyToScrollableChildRef = useRef<{[key: string]: FlatList}>({}).current;
-    const tabkeyToScrollPosition = useRef<{[key: string]: number}>({}).current;
-
-    const trackRef = (key: string, ref: FlatList) => {
-      tabkeyToScrollableChildRef[key] = ref;
-    };
-
-    const syncScrollOffset = () => {
-      const activeTabKey = routes[index].key;
-      const scrollValue = tabkeyToScrollPosition[activeTabKey];
-
-      Object.keys(tabkeyToScrollableChildRef).forEach((key) => {
-        const scrollRef = tabkeyToScrollableChildRef[key];
-        if (!scrollRef || key === activeTabKey) {
-          return;
-        }
-
-        if (scrollValue <= OFFSET_TABVIEW + H_BALANCE_BANNER) {
-          /* header visible */
-          scrollRef.scrollToOffset({
-            offset: Math.max(
-              Math.min(scrollValue, OFFSET_TABVIEW + H_BALANCE_BANNER),
-              OFFSET_TABVIEW
-            ),
-            animated: false
-          });
-          tabkeyToScrollPosition[key] = scrollValue;
-        } else if (
-          tabkeyToScrollPosition[key] < OFFSET_TABVIEW + H_BALANCE_BANNER ||
-          tabkeyToScrollPosition[key] == null
-        ) {
-          /* header hidden */
-          scrollRef.scrollToOffset({
-            offset: OFFSET_TABVIEW + H_BALANCE_BANNER,
-            animated: false
-          });
-          tabkeyToScrollPosition[key] =
-            OFFSET_TABVIEW + H_BALANCE_BANNER;
-        }
-      });
-    };
-
-    useAnimatedReaction(
-      () => { return scrollY.value; },
-      (value) => { const activeTab = routes[index].key; tabkeyToScrollPosition[activeTab] = value; },
-      [index, scrollY, routes, tabkeyToScrollPosition]
-    );
-
-    useEffect(() => {
-      if (isFocused && !portfolioState.statePortfolio.developerMode && index === 1) {
-        setIndex(0);
-      }
-    }, [portfolioState.statePortfolio.developerMode]);
-
-    const RenderTabViewTabBar = () => {
-      const animatedTranslateY = useAnimatedStyle(() => {
-        const translateY = interpolate(scrollY.value, [OFFSET_TABVIEW, OFFSET_TABVIEW + H_BALANCE_BANNER], [H_BALANCE_BANNER, 0], Extrapolate.CLAMP);
-        return {
-          transform: [{ translateY }]
-        };
-      });
-      const animatedOpacity = useAnimatedStyle(() => {
-        const opacity = interpolate(scrollY.value, [OFFSET_TABVIEW + H_BALANCE_BANNER, OFFSET_TABVIEW + H_BALANCE_BANNER + H_TAB_BAR], [0, 1], Extrapolate.CLAMP);
-        return {
-          opacity
-        };
-      });
-      return (
-        <CyDView>
-          <CyDAnimatedView className={'z-10 w-full bg-white'} style={animatedTranslateY}>
-            <CyDAnimatedView className='flex flex-row mx-[20px] py-[10px]'>
-              {routes.map((route, i) => {
-                return (
-                  <CyDTouchView
-                    key={i}
-                    className={clsx('rounded-[8px] px-[14px] py-[5px]', { 'bg-privacyMessageBackgroundColor': i === index })}
-                    onPress={() => setIndex(i)}>
-                    <CyDText>{route.title}</CyDText>
-                  </CyDTouchView>
-                );
-              })}
-            </CyDAnimatedView>
-              <CyDAnimatedView className={'bg-sepratorColor h-[1px]'} style={animatedOpacity} />
-            <RefreshTimerBar isRefreshing={false} isVerifiedCoinCheckedState={[isVerifyCoinChecked, setIsVerifyCoinChecked]} />
-          </CyDAnimatedView>
-        </CyDView>
-      );
-    };
-
-    return (
-      <TabView
-        lazy
-        navigationState={{ index, routes }}
-        renderTabBar={RenderTabViewTabBar}
-        renderScene={({ route }) => {
-          switch (route.key) {
-            case 'token':
-              return <Tokens navigation={props.navigation} getAllChainBalance={getAllChainBalance} scrollY={scrollY} trackRef={trackRef} syncScrollOffset={syncScrollOffset} refreshState={[refreshData, setRefreshData]} isVerifiedCoinCheckedState={[isVerifyCoinChecked, setIsVerifyCoinChecked]} />;
-            case 'nft':
-              return <RenderNFTTab />;
-            default:
-              return null;
-          }
-        }}
-        onIndexChange={setIndex}
-        initialLayout={{ width: layout.width }}
-      />
-    );
-  };
-
   const renderScene = useCallback(
-    ({ route: tab }: { route: TabRoute }) => (
-      <Scene
-        {...sceneProps}
-        isActive={tabsWithScrollableType[index].key === tab.key}
-        routeKey={tab.key}
-        routeScrollableType={tabsWithScrollableType[index].scrollableType}
-        scrollY={scrollY}
-      />
-    ),
+    ({ route: tab }: { route: TabRoute }) => {
+      switch (tab.key) {
+        case 'token':
+          return (
+            <TokenScene
+              {...sceneProps}
+              routeKey={tab.key}
+              scrollY={scrollY}
+              navigation={props.navigation}
+              isVerifyCoinChecked={isVerifyCoinChecked}
+              getAllChainBalance={getAllChainBalance}
+              refreshState={[refreshData, setRefreshData]}
+            />
+          );
+        case 'nft':
+          return (
+            <NFTScene
+              {...sceneProps}
+              routeKey={tab.key}
+              scrollY={scrollY}
+              navigation={props.navigation}
+              selectedChain={portfolioState.statePortfolio.selectedChain.symbol}
+            />
+          );
+        default:
+          return null;
+      }
+    },
     [getRefForKey, index, tabs, scrollY]
+  );
+
+  const renderTabBarFooter = useCallback(
+    (tabKey: string) => {
+      switch (tabKey) {
+        case 'token':
+          return (
+              <RefreshTimerBar isRefreshing={refreshData.isRefreshing} isVerifiedCoinCheckedState={[isVerifyCoinChecked, setIsVerifyCoinChecked]} />
+          );
+        case 'nft':
+          return null;
+        default:
+          return null;
+      }
+    }
+    , [getRefForKey, index, tabs, scrollY]
   );
 
   return (
@@ -564,9 +484,19 @@ export default function Portfolio (props: { navigation: any | { navigate: (arg0:
           ? <MessageBanner navigation={props.navigation} ethAddress={ethereum.address} isFocused={isFocused}/>
           : null
       }
-      <HeaderBar navigation={props.navigation} setChooseChain={setChooseChain} scrollY={scrollY} onWCSuccess={onWCSuccess} />
+      <HeaderBar
+        navigation={props.navigation}
+        renderTitleComponent={
+          <CyDTokenValue className='text-[22px] font-bold text-primaryTextColor'>
+            {checkAll(portfolioState)}
+          </CyDTokenValue>
+        }
+        setChooseChain={setChooseChain}
+        scrollY={scrollY}
+        onWCSuccess={onWCSuccess}
+      />
       <AnimatedBanner scrollY={scrollY}>
-        <BalanceBanner isVerifyCoinChecked={isVerifyCoinChecked} getAllChainBalance={getAllChainBalance} />
+        <Banner checkAllBalance={checkAll(portfolioState)} />
       </AnimatedBanner>
       <PortfolioTabView
         index={index}
@@ -575,7 +505,7 @@ export default function Portfolio (props: { navigation: any | { navigate: (arg0:
         width={useWindowDimensions().width}
         renderTabBar={(p) => (
           <AnimatedTabBar scrollY={scrollY}>
-            <TabBar {...p} />
+            <TabBar {...p} renderTabBarFooter={renderTabBarFooter} />
           </AnimatedTabBar>
         )}
         renderScene={renderScene}

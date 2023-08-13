@@ -18,7 +18,7 @@ export const AnimatedBanner = ({ scrollY, children, ...otherProps }: AnimatedBan
     };
   });
   return (
-    <CyDSafeAreaView className='-z-10'>
+    <CyDSafeAreaView className='z-10'>
       <CyDAnimatedView
       className={`h-[${H_BALANCE_BANNER}px] absolute top-0 w-full justify-center`}
       style={animatedStyles}

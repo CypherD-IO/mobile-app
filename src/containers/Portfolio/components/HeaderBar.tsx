@@ -1,5 +1,5 @@
-import React, { useContext } from 'react';
-import { CyDAnimatedView, CyDFastImage, CyDText, CyDTouchView, CyDView } from '../../../styles/tailwindStyles';
+import React, { ReactNode, useContext } from 'react';
+import { CyDAnimatedView, CyDFastImage, CyDTouchView, CyDView } from '../../../styles/tailwindStyles';
 import { PortfolioContext } from '../../../core/util';
 import { QRScannerScreens } from '../../../constants/server';
 import AppImages from '../../../../assets/images/appImages';
@@ -13,9 +13,10 @@ interface HeaderBarProps {
   setChooseChain: Function
   scrollY: SharedValue<number>
   onWCSuccess: (e: BarCodeReadEvent) => void
+  renderTitleComponent?: ReactNode
 }
 
-export const HeaderBar = ({ navigation, setChooseChain, scrollY, onWCSuccess }: HeaderBarProps) => {
+export const HeaderBar = ({ navigation, setChooseChain, scrollY, onWCSuccess, renderTitleComponent }: HeaderBarProps) => {
   const portfolioState = useContext<any>(PortfolioContext);
 
   const opacity = useAnimatedStyle(() => {
@@ -34,7 +35,7 @@ export const HeaderBar = ({ navigation, setChooseChain, scrollY, onWCSuccess }: 
           <CyDFastImage className={'h-[8px] w-[8px]'} source={AppImages.DOWN} />
         </CyDTouchView>
         <CyDAnimatedView style={opacity}>
-          <CyDText className='text-[20px] font-bold'>sup bro</CyDText>
+          {renderTitleComponent}
         </CyDAnimatedView>
         <CyDTouchView
         className={'pl-[8px] rounded-[18px]'}
