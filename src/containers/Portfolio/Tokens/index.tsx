@@ -1,17 +1,18 @@
 import React, { useCallback, useContext, useMemo } from 'react';
 import LottieView from 'lottie-react-native';
 import { RefreshTimerBar } from './RefreshTimerBar';
-import { CyDText, CyDTouchView, CyDView } from '../../styles/tailwindStyles';
-import Button from '../../components/v2/button';
+import { CyDText, CyDTouchView, CyDView } from '../../../styles/tailwindStyles';
+import Button from '../../../components/v2/button';
 import { useTranslation } from 'react-i18next';
-import AppImages from '../../../assets/images/appImages';
-import { StyleSheet } from 'react-native';
-import { Chain } from '../../constants/server';
-import { WalletHoldings, fetchTokenData, getCurrentChainHoldings } from '../../core/Portfolio';
-import { HdWalletContext, PortfolioContext } from '../../core/util';
-import { screenTitle } from '../../constants';
-import { PORTFOLIO_EMPTY } from '../../reducers/portfolio_reducer';
+import AppImages from '../../../../assets/images/appImages';
+import { FlatList, StyleSheet } from 'react-native';
+import { Chain } from '../../../constants/server';
+import { WalletHoldings, fetchTokenData, getCurrentChainHoldings } from '../../../core/Portfolio';
+import { HdWalletContext, PortfolioContext } from '../../../core/util';
+import { screenTitle } from '../../../constants';
+import { PORTFOLIO_EMPTY } from '../../../reducers/portfolio_reducer';
 import PortfolioAssets from './PortfolioAssets';
+import { SharedValue } from 'react-native-reanimated';
 
 // HAVE TO REWRITE WITH PROPER TYPES FOR NAVIGATION
 interface TokensProps {
@@ -27,6 +28,9 @@ interface TokensProps {
       tokenPortfolio: WalletHoldings
     }
   }) => number
+  scrollY: SharedValue<number>
+  trackRef: (key: string, ref: FlatList) => void
+  syncScrollOffset: () => void
   refreshState: [{
     isRefreshing: boolean
     shouldRefreshAssets: boolean
@@ -37,11 +41,10 @@ interface TokensProps {
   isVerifiedCoinCheckedState: [boolean, React.Dispatch<React.SetStateAction<boolean>>]
 }
 
-export const Tokens = ({ navigation, getAllChainBalance, refreshState, isVerifiedCoinCheckedState }: TokensProps) => {
+export const Tokens = ({ navigation, getAllChainBalance, scrollY, trackRef, syncScrollOffset, refreshState, isVerifiedCoinCheckedState }: TokensProps) => {
   const { t } = useTranslation();
   const hdWallet = useContext<any>(HdWalletContext);
   const portfolioState = useContext<any>(PortfolioContext);
-  const [isVerifyCoinChecked, setIsVerifyCoinChecked] = isVerifiedCoinCheckedState;
   const [refreshData, setRefreshData] = refreshState;
 
   const onRefresh = useCallback((pullToRefresh: boolean = true) => {
@@ -63,11 +66,10 @@ export const Tokens = ({ navigation, getAllChainBalance, refreshState, isVerifie
   }, [portfolioState.statePortfolio.tokenPortfolio, portfolioState.statePortfolio.selectedChain]);
 
   return (
-    <CyDView className='mx-[10px] border border-sepratorColor rounded-t-[24px]'>
-      <RefreshTimerBar isRefreshing={refreshData.isRefreshing} isVerifyCoinChecked={isVerifyCoinChecked} setIsVerifyCoinChecked = {setIsVerifyCoinChecked}/>
+    <CyDView className='mx-[10px]'>
       { getAllChainBalance(portfolioState) > 0
         ? (
-            <PortfolioAssets holdingsData={holdingsData} isVerifyCoinChecked={isVerifyCoinChecked} navigation={navigation} onRefresh={onRefresh} isRefreshing={refreshData.shouldRefreshAssets} />
+            <PortfolioAssets holdingsData={holdingsData} isVerifiedCoinCheckedState={isVerifiedCoinCheckedState} navigation={navigation} scrollY={scrollY} trackRef={trackRef} syncScrollOffset={syncScrollOffset} onRefresh={onRefresh} isRefreshing={refreshData.shouldRefreshAssets} />
           )
         : portfolioState.statePortfolio.portfolioState === PORTFOLIO_EMPTY &&
         <CyDView className={'flex justify-center items-center mt-[5px]'}>

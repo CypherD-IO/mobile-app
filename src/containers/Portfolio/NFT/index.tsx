@@ -3,23 +3,23 @@
 /* eslint-disable @typescript-eslint/restrict-template-expressions */
 /* eslint-disable array-callback-return */
 import React, { useContext, useEffect, useState } from 'react';
-import { CyDFastImage, CyDImage, CyDScrollView, CyDText, CyDTouchView, CyDView } from '../../styles/tailwindStyles';
+import { CyDFastImage, CyDImage, CyDScrollView, CyDText, CyDTouchView, CyDView } from '../../../styles/tailwindStyles';
 import { Animated, BackHandler, RefreshControl } from 'react-native';
-import { AllNFTHoldings } from '../../models/allNFTHoldings.interface';
+import { AllNFTHoldings } from '../../../models/allNFTHoldings.interface';
 import { groupBy, isEmpty, has } from 'lodash';
-import { ALL_CHAINS_TYPE } from '../../constants/type';
-import AppImages from '../../../assets/images/appImages';
-import { NFTHolding } from '../../models/NFTHolding.interface';
-import Loading from '../../components/v2/loading';
+import { ALL_CHAINS_TYPE } from '../../../constants/type';
+import AppImages from '../../../../assets/images/appImages';
+import { NFTHolding } from '../../../models/NFTHolding.interface';
+import Loading from '../../../components/v2/loading';
 import Accordion from 'react-native-collapsible/Accordion';
 import { verticalScale } from 'react-native-size-matters';
 import clsx from 'clsx';
-import { screenTitle } from '../../constants';
-import useAxios from '../../core/HttpRequest';
-import { getChain, HdWalletContext } from '../../core/util';
+import { screenTitle } from '../../../constants';
+import useAxios from '../../../core/HttpRequest';
+import { getChain, HdWalletContext } from '../../../core/util';
 import { t } from 'i18next';
-import { RenderViewType } from '../../constants/enum';
-import { Chain } from '../../constants/server';
+import { RenderViewType } from '../../../constants/enum';
+import { Chain } from '../../../constants/server';
 import analytics from '@react-native-firebase/analytics';
 
 interface RouteProps {

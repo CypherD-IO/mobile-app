@@ -2,13 +2,13 @@
 import { t } from 'i18next';
 import React, { useEffect, useState } from 'react';
 import Tooltip from 'react-native-walkthrough-tooltip';
-import AppImages from '../../../assets/images/appImages';
-import CyDModalLayout from '../../components/v2/modal';
-import { NFTHolding } from '../../models/NFTHolding.interface';
+import AppImages from '../../../../assets/images/appImages';
+import CyDModalLayout from '../../../components/v2/modal';
+import { NFTHolding } from '../../../models/NFTHolding.interface';
 import { StyleSheet } from 'react-native';
-import { CyDFastImage, CyDImage, CyDScrollView, CyDText, CyDTouchView, CyDView } from '../../styles/tailwindStyles';
+import { CyDFastImage, CyDImage, CyDScrollView, CyDText, CyDTouchView, CyDView } from '../../../styles/tailwindStyles';
 import clsx from 'clsx';
-import { getChain } from '../../core/util';
+import { getChain } from '../../../core/util';
 import analytics from '@react-native-firebase/analytics';
 
 interface RouteProps {

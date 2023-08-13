@@ -1,15 +1,16 @@
 import React, { Dispatch, SetStateAction, useContext, useEffect, useState } from 'react';
-import { PortfolioContext } from '../../core/util';
+import { PortfolioContext } from '../../../core/util';
 import moment from 'moment';
-import { CyDFastImage, CyDText, CyDTouchView, CyDView } from '../../styles/tailwindStyles';
-import AppImages from '../../../assets/images/appImages';
+import { CyDFastImage, CyDText, CyDTouchView, CyDView } from '../../../styles/tailwindStyles';
+import AppImages from '../../../../assets/images/appImages';
 import clsx from 'clsx';
 import { useTranslation } from 'react-i18next';
 
 const TIME_UPDATE_RUNNER_INTERVAL = 1000;
 
-export const RefreshTimerBar = (props: {isRefreshing: boolean, isVerifyCoinChecked: boolean, setIsVerifyCoinChecked: Dispatch<SetStateAction<boolean>>}) => {
-  const { isRefreshing, isVerifyCoinChecked, setIsVerifyCoinChecked } = props;
+export const RefreshTimerBar = (props: {isRefreshing: boolean, isVerifiedCoinCheckedState: [boolean, React.Dispatch<React.SetStateAction<boolean>>]}) => {
+  const { isRefreshing, isVerifiedCoinCheckedState } = props;
+  const [isVerifyCoinChecked, setIsVerifyCoinChecked] = isVerifiedCoinCheckedState;
   const portfolioState = useContext<any>(PortfolioContext);
   const { t } = useTranslation();
   const [time, setTime] = useState(`${t('RETRIEVING')}...`);

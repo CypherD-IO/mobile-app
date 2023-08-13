@@ -2,14 +2,14 @@ import React, { useEffect, useMemo, useState } from 'react';
 import { StyleSheet } from 'react-native';
 import DeviceInfo from 'react-native-device-info';
 import HTML from 'react-native-render-html';
-import useAxios from '../../core/HttpRequest';
-import { screenTitle } from '../../constants';
-import { isAndroid, isIOS } from '../../misc/checkers';
-import { getBannerId, setBannerId } from '../../core/asyncStorage';
-import { logAnalytics } from '../../core/analytics';
+import useAxios from '../../../core/HttpRequest';
+import { screenTitle } from '../../../constants';
+import { isAndroid, isIOS } from '../../../misc/checkers';
+import { getBannerId, setBannerId } from '../../../core/asyncStorage';
+import { logAnalytics } from '../../../core/analytics';
 import * as Sentry from '@sentry/react-native';
-import { CyDFastImage, CyDTouchView, CyDView } from '../../styles/tailwindStyles';
-import AppImages from '../../../assets/images/appImages';
+import { CyDFastImage, CyDTouchView, CyDView } from '../../../styles/tailwindStyles';
+import AppImages from '../../../../assets/images/appImages';
 import clsx from 'clsx';
 
 interface MessageBannerProps {

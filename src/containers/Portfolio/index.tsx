@@ -2,15 +2,15 @@
  * @format
  * @flow
  */
-import React, { useCallback, useContext, useEffect, useState } from 'react';
-import { AppState, BackHandler, useWindowDimensions } from 'react-native';
+import React, { useCallback, useContext, useEffect, useRef, useState } from 'react';
+import { AppState, BackHandler, useWindowDimensions, FlatList } from 'react-native';
 import analytics from '@react-native-firebase/analytics';
 import * as C from '../../constants/index';
 import { useTranslation } from 'react-i18next';
 import AppImages from '../../../assets/images/appImages';
 import { ChooseChainModal, WHERE_PORTFOLIO } from '../../components/ChooseChainModal';
 import EmptyView from '../../components/EmptyView';
-import { CyDImage, CyDTouchView, CyDView, CyDText, CyDSafeAreaView } from '../../styles/tailwindStyles';
+import { CyDImage, CyDTouchView, CyDView, CyDText, CyDSafeAreaView, CyDAnimatedView } from '../../styles/tailwindStyles';
 import { Chain, NotificationEvents } from '../../constants/server';
 import CopytoKeyModal from '../../components/ShowPharseModal';
 import { fetchTokenData, WalletHoldings } from '../../core/Portfolio';
@@ -22,19 +22,26 @@ import { useIsFocused } from '@react-navigation/native';
 import { GlobalContext, GlobalContextDef } from '../../core/globalContext';
 import { HdWalletContext, PortfolioContext } from '../../core/util';
 import { useGlobalModalContext } from '../../components/v2/GlobalModal';
-import { GlobalContextType, TokenOverviewTabIndices } from '../../constants/enum';
+import { GlobalContextType, ScrollableType, TokenOverviewTabIndices } from '../../constants/enum';
 import appsFlyer from 'react-native-appsflyer';
 import { TokenMeta } from '../../models/tokenMetaData.model';
-import NFTScreen from '../NFT';
+import NFTScreen from './NFT';
 import Button from '../../components/v2/button';
 import clsx from 'clsx';
 import { TabView } from 'react-native-tab-view';
-import { Tokens } from '../Tokens';
-import { MessageBanner } from './MessageBanner';
-import { HeaderBar } from './HeaderBar';
-import { BalanceBanner } from './BalanceBanner';
+import { Tokens } from './Tokens';
+import { MessageBanner } from './components/MessageBanner';
+import { HeaderBar } from './components/HeaderBar';
+import { BalanceBanner } from './components/BBWA';
 import { HdWalletContextDef } from '../../reducers/hdwallet_reducer';
 import { BarCodeReadEvent } from 'react-native-camera';
+import { Extrapolate, interpolate, useAnimatedReaction, useAnimatedStyle } from 'react-native-reanimated';
+import { H_BALANCE_BANNER, H_TAB_BAR, OFFSET_TABVIEW } from './constants';
+import { RefreshTimerBar } from './Tokens/RefreshTimerBar';
+import { AnimatedBanner, AnimatedTabBar } from './animatedComponents';
+import { PortfolioTabView, TabBar, TabRoute } from './components';
+import { useScrollManager } from '../../hooks/useScrollManager';
+import { Scene } from './components/Scene';
 
 export default function Portfolio (props: { navigation: any | { navigate: (arg0: string, arg1: { params?: { url: string }, screen?: string, tokenData?: any, url?: string } | undefined) => void } }) {
   const { t } = useTranslation();
@@ -53,6 +60,25 @@ export default function Portfolio (props: { navigation: any | { navigate: (arg0:
     isRefreshing: false,
     shouldRefreshAssets: false
   });
+
+  const tabs = [
+    { key: 'token', title: t('TOKENS') },
+    { key: 'nft', title: t('NFTS') }
+  ];
+
+  // not mentioning the scrollableType correctly will result in errors.
+  const tabsWithScrollableType = [
+    { key: 'token', title: t('TOKENS'), scrollableType: ScrollableType.FLATLIST },
+    { key: 'nft', title: t('NFTS'), scrollableType: ScrollableType.FLATLIST }
+  ];
+
+  const {
+    scrollY,
+    index,
+    setIndex,
+    getRefForKey,
+    ...sceneProps
+  } = useScrollManager(tabsWithScrollableType);
 
   const ethereum = hdWallet?.state.wallet.ethereum;
 
@@ -376,6 +402,54 @@ export default function Portfolio (props: { navigation: any | { navigate: (arg0:
       { key: 'nft', title: t('NFTS') }
     ]);
 
+    const tabkeyToScrollableChildRef = useRef<{[key: string]: FlatList}>({}).current;
+    const tabkeyToScrollPosition = useRef<{[key: string]: number}>({}).current;
+
+    const trackRef = (key: string, ref: FlatList) => {
+      tabkeyToScrollableChildRef[key] = ref;
+    };
+
+    const syncScrollOffset = () => {
+      const activeTabKey = routes[index].key;
+      const scrollValue = tabkeyToScrollPosition[activeTabKey];
+
+      Object.keys(tabkeyToScrollableChildRef).forEach((key) => {
+        const scrollRef = tabkeyToScrollableChildRef[key];
+        if (!scrollRef || key === activeTabKey) {
+          return;
+        }
+
+        if (scrollValue <= OFFSET_TABVIEW + H_BALANCE_BANNER) {
+          /* header visible */
+          scrollRef.scrollToOffset({
+            offset: Math.max(
+              Math.min(scrollValue, OFFSET_TABVIEW + H_BALANCE_BANNER),
+              OFFSET_TABVIEW
+            ),
+            animated: false
+          });
+          tabkeyToScrollPosition[key] = scrollValue;
+        } else if (
+          tabkeyToScrollPosition[key] < OFFSET_TABVIEW + H_BALANCE_BANNER ||
+          tabkeyToScrollPosition[key] == null
+        ) {
+          /* header hidden */
+          scrollRef.scrollToOffset({
+            offset: OFFSET_TABVIEW + H_BALANCE_BANNER,
+            animated: false
+          });
+          tabkeyToScrollPosition[key] =
+            OFFSET_TABVIEW + H_BALANCE_BANNER;
+        }
+      });
+    };
+
+    useAnimatedReaction(
+      () => { return scrollY.value; },
+      (value) => { const activeTab = routes[index].key; tabkeyToScrollPosition[activeTab] = value; },
+      [index, scrollY, routes, tabkeyToScrollPosition]
+    );
+
     useEffect(() => {
       if (isFocused && !portfolioState.statePortfolio.developerMode && index === 1) {
         setIndex(0);
@@ -383,23 +457,39 @@ export default function Portfolio (props: { navigation: any | { navigate: (arg0:
     }, [portfolioState.statePortfolio.developerMode]);
 
     const RenderTabViewTabBar = () => {
+      const animatedTranslateY = useAnimatedStyle(() => {
+        const translateY = interpolate(scrollY.value, [OFFSET_TABVIEW, OFFSET_TABVIEW + H_BALANCE_BANNER], [H_BALANCE_BANNER, 0], Extrapolate.CLAMP);
+        return {
+          transform: [{ translateY }]
+        };
+      });
+      const animatedOpacity = useAnimatedStyle(() => {
+        const opacity = interpolate(scrollY.value, [OFFSET_TABVIEW + H_BALANCE_BANNER, OFFSET_TABVIEW + H_BALANCE_BANNER + H_TAB_BAR], [0, 1], Extrapolate.CLAMP);
+        return {
+          opacity
+        };
+      });
       return (
-        <CyDView className='flex flex-row mx-[20px] py-[10px]'>
-          {routes.map((route, i) => {
-            return (
-              <CyDTouchView
-                key={i}
-                className={clsx('rounded-[8px] px-[14px] py-[5px]', { 'bg-privacyMessageBackgroundColor': i === index })}
-                onPress={() => setIndex(i)}>
-                <CyDText>{route.title}</CyDText>
-              </CyDTouchView>
-            );
-          })}
+        <CyDView>
+          <CyDAnimatedView className={'z-10 w-full bg-white'} style={animatedTranslateY}>
+            <CyDAnimatedView className='flex flex-row mx-[20px] py-[10px]'>
+              {routes.map((route, i) => {
+                return (
+                  <CyDTouchView
+                    key={i}
+                    className={clsx('rounded-[8px] px-[14px] py-[5px]', { 'bg-privacyMessageBackgroundColor': i === index })}
+                    onPress={() => setIndex(i)}>
+                    <CyDText>{route.title}</CyDText>
+                  </CyDTouchView>
+                );
+              })}
+            </CyDAnimatedView>
+              <CyDAnimatedView className={'bg-sepratorColor h-[1px]'} style={animatedOpacity} />
+            <RefreshTimerBar isRefreshing={false} isVerifiedCoinCheckedState={[isVerifyCoinChecked, setIsVerifyCoinChecked]} />
+          </CyDAnimatedView>
         </CyDView>
       );
     };
-
-    console.log('re rendered');
 
     return (
       <TabView
@@ -409,7 +499,7 @@ export default function Portfolio (props: { navigation: any | { navigate: (arg0:
         renderScene={({ route }) => {
           switch (route.key) {
             case 'token':
-              return <Tokens navigation={props.navigation} getAllChainBalance={getAllChainBalance} refreshState={[refreshData, setRefreshData]} isVerifiedCoinCheckedState={[isVerifyCoinChecked, setIsVerifyCoinChecked]} />;
+              return <Tokens navigation={props.navigation} getAllChainBalance={getAllChainBalance} scrollY={scrollY} trackRef={trackRef} syncScrollOffset={syncScrollOffset} refreshState={[refreshData, setRefreshData]} isVerifiedCoinCheckedState={[isVerifyCoinChecked, setIsVerifyCoinChecked]} />;
             case 'nft':
               return <RenderNFTTab />;
             default:
@@ -422,8 +512,21 @@ export default function Portfolio (props: { navigation: any | { navigate: (arg0:
     );
   };
 
+  const renderScene = useCallback(
+    ({ route: tab }: { route: TabRoute }) => (
+      <Scene
+        {...sceneProps}
+        isActive={tabsWithScrollableType[index].key === tab.key}
+        routeKey={tab.key}
+        routeScrollableType={tabsWithScrollableType[index].scrollableType}
+        scrollY={scrollY}
+      />
+    ),
+    [getRefForKey, index, tabs, scrollY]
+  );
+
   return (
-    <CyDSafeAreaView className='flex h-full bg-white'>
+    <CyDSafeAreaView className='flex-1 bg-white'>
       { isPortfolioLoading() &&
           <CyDView className='justify-center items-center'>
             <EmptyView
@@ -461,9 +564,22 @@ export default function Portfolio (props: { navigation: any | { navigate: (arg0:
           ? <MessageBanner navigation={props.navigation} ethAddress={ethereum.address} isFocused={isFocused}/>
           : null
       }
-      <HeaderBar navigation={props.navigation} setChooseChain={setChooseChain} onWCSuccess={onWCSuccess} />
-      <BalanceBanner isVerifyCoinChecked={isVerifyCoinChecked} getAllChainBalance={getAllChainBalance} />
-      <RenderTabView />
+      <HeaderBar navigation={props.navigation} setChooseChain={setChooseChain} scrollY={scrollY} onWCSuccess={onWCSuccess} />
+      <AnimatedBanner scrollY={scrollY}>
+        <BalanceBanner isVerifyCoinChecked={isVerifyCoinChecked} getAllChainBalance={getAllChainBalance} />
+      </AnimatedBanner>
+      <PortfolioTabView
+        index={index}
+        setIndex={setIndex}
+        routes={tabs}
+        width={useWindowDimensions().width}
+        renderTabBar={(p) => (
+          <AnimatedTabBar scrollY={scrollY}>
+            <TabBar {...p} />
+          </AnimatedTabBar>
+        )}
+        renderScene={renderScene}
+      />
     </CyDSafeAreaView>
   );
 }
