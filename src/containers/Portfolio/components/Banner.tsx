@@ -7,6 +7,7 @@ import { setHideBalanceStatus } from '../../../core/asyncStorage';
 import { CyDFastImage, CyDImageBackground, CyDText, CyDTouchView, CyDView } from '../../../styles/tailwindStyles';
 import CyDTokenValue from '../../../components/v2/tokenValue';
 import AppImages from '../../../../assets/images/appImages';
+import { H_BALANCE_BANNER } from '../constants';
 
 interface BannerProps {
   checkAllBalance: number | string
@@ -23,9 +24,10 @@ export const Banner = ({ checkAllBalance }: BannerProps) => {
     await setHideBalanceStatus(!hideBalance);
     hdWallet.dispatch({ type: 'TOGGLE_BALANCE_VISIBILITY', value: { hideBalance: !hideBalance } });
   };
+  /* ? HEIGHT should be less then the H_BALANCE_BANNER */
   return (
-    <CyDImageBackground className='h-full rounded-[24px]' source={AppImages.PORTFOLIO_BG_S3} resizeMode='cover'>
-      <CyDView className={'mt-[20px] mx-[24px] justify-center items-start'}>
+    <CyDImageBackground className={`w-full h-[${H_BALANCE_BANNER - 1}px] rounded-[24px]`} source={AppImages.PORTFOLIO_BG_S3} resizeMode='cover'>
+      <CyDView className={'mt-[40px] mx-[24px] justify-center items-start'}>
         {getCurrentChainHoldings(
           portfolioState.statePortfolio.tokenPortfolio,
           portfolioState.statePortfolio.selectedChain

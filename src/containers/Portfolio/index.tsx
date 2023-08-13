@@ -34,7 +34,11 @@ import { useScrollManager } from '../../hooks/useScrollManager';
 import { NFTScene, TokenScene } from './scenes';
 import CyDTokenValue from '../../components/v2/tokenValue';
 
-export default function Portfolio (props: { navigation: any | { navigate: (arg0: string, arg1: { params?: { url: string }, screen?: string, tokenData?: any, url?: string } | undefined) => void } }) {
+export interface PortfolioProps {
+  navigation: any
+}
+
+export default function Portfolio ({ navigation }: PortfolioProps) {
   const { t } = useTranslation();
   const isFocused = useIsFocused();
 
@@ -74,7 +78,7 @@ export default function Portfolio (props: { navigation: any | { navigate: (arg0:
   const ethereum = hdWallet?.state.wallet.ethereum;
 
   const handleBackButton = () => {
-    props.navigation.popToTop();
+    navigation.popToTop();
     return true;
   };
 
@@ -94,7 +98,7 @@ export default function Portfolio (props: { navigation: any | { navigate: (arg0:
   useEffect(() => {
     const isBackground = appState === 'background';
     if (isBackground) {
-      props.navigation.navigate(C.screenTitle.PIN, { lockScreen: true });
+      navigation.navigate(C.screenTitle.PIN, { lockScreen: true });
     }
   }, [appState]);
 
@@ -194,7 +198,7 @@ export default function Portfolio (props: { navigation: any | { navigate: (arg0:
             void analytics().logEvent(`DAPP_${remoteMessage.data.title}`, {
               from: ethereum.address
             });
-            props.navigation.navigate(C.screenTitle.BROWSER, {
+            navigation.navigate(C.screenTitle.BROWSER, {
               params: { url: remoteMessage.data.url ?? '' },
               screen: C.screenTitle.BROWSER_SCREEN
             });
@@ -204,7 +208,7 @@ export default function Portfolio (props: { navigation: any | { navigate: (arg0:
             void analytics().logEvent('beefy_cta', {
               from: ethereum.address
             });
-            props.navigation.navigate(C.screenTitle.BROWSER, {
+            navigation.navigate(C.screenTitle.BROWSER, {
               params: { url: remoteMessage.data.url ?? 'https://app.beefy.com/' },
               screen: C.screenTitle.BROWSER_SCREEN
             });
@@ -216,7 +220,7 @@ export default function Portfolio (props: { navigation: any | { navigate: (arg0:
               chain: 'EVMOS'
             });
             const tknData = constructTokenMeta(localPortfolio, NotificationEvents.EVMOS_STAKING);
-            props.navigation.navigate(C.screenTitle.TOKEN_OVERVIEW, {
+            navigation.navigate(C.screenTitle.TOKEN_OVERVIEW, {
               tokenData: tknData,
               navigateTo: TokenOverviewTabIndices.STAKING
             });
@@ -228,7 +232,7 @@ export default function Portfolio (props: { navigation: any | { navigate: (arg0:
               chain: 'COSMOS'
             });
             const tknData = constructTokenMeta(localPortfolio, NotificationEvents.COSMOS_STAKING);
-            props.navigation.navigate(C.screenTitle.TOKEN_OVERVIEW, {
+            navigation.navigate(C.screenTitle.TOKEN_OVERVIEW, {
               tokenData: tknData,
               navigateTo: TokenOverviewTabIndices.STAKING
             });
@@ -240,7 +244,7 @@ export default function Portfolio (props: { navigation: any | { navigate: (arg0:
               chain: 'OSMOSIS'
             });
             const tknData = constructTokenMeta(localPortfolio, NotificationEvents.OSMOSIS_STAKING);
-            props.navigation.navigate(C.screenTitle.TOKEN_OVERVIEW, {
+            navigation.navigate(C.screenTitle.TOKEN_OVERVIEW, {
               tokenData: tknData,
               navigateTo: TokenOverviewTabIndices.STAKING
             });
@@ -253,7 +257,7 @@ export default function Portfolio (props: { navigation: any | { navigate: (arg0:
             });
             const tknData = constructTokenMeta(localPortfolio, NotificationEvents.JUNO_STAKING);
 
-            props.navigation.navigate(C.screenTitle.TOKEN_OVERVIEW, {
+            navigation.navigate(C.screenTitle.TOKEN_OVERVIEW, {
               tokenData: tknData,
               navigateTo: TokenOverviewTabIndices.STAKING
             });
@@ -265,7 +269,7 @@ export default function Portfolio (props: { navigation: any | { navigate: (arg0:
               chain: 'STARGAZE'
             });
             const tknData = constructTokenMeta(localPortfolio, NotificationEvents.STARGAZE_STAKING);
-            props.navigation.navigate(C.screenTitle.TOKEN_OVERVIEW, {
+            navigation.navigate(C.screenTitle.TOKEN_OVERVIEW, {
               tokenData: tknData,
               navigateTo: TokenOverviewTabIndices.STAKING
             });
@@ -277,7 +281,7 @@ export default function Portfolio (props: { navigation: any | { navigate: (arg0:
               chain: 'NOBLE'
             });
             const tknData = constructTokenMeta(localPortfolio, NotificationEvents.NOBLE_STAKING);
-            props.navigation.navigate(C.screenTitle.TOKEN_OVERVIEW, {
+            navigation.navigate(C.screenTitle.TOKEN_OVERVIEW, {
               tokenData: tknData,
               navigateTo: TokenOverviewTabIndices.STAKING
             });
@@ -287,7 +291,7 @@ export default function Portfolio (props: { navigation: any | { navigate: (arg0:
             void analytics().logEvent('activity_cta', {
               from: ethereum.address
             });
-            props.navigation.navigate(C.screenTitle.ACTIVITIES);
+            navigation.navigate(C.screenTitle.ACTIVITIES);
             break;
           }
           case NotificationEvents.ORBITAL_APES: {
@@ -295,7 +299,7 @@ export default function Portfolio (props: { navigation: any | { navigate: (arg0:
               from: ethereum.address
             });
             if (remoteMessage.data.url) {
-              props.navigation.navigate(C.screenTitle.BROWSER, {
+              navigation.navigate(C.screenTitle.BROWSER, {
                 params: { url: remoteMessage.data.url },
                 screen: C.screenTitle.BROWSER_SCREEN
               });
@@ -308,7 +312,7 @@ export default function Portfolio (props: { navigation: any | { navigate: (arg0:
             });
             const url = remoteMessage.data.url;
             if (url) {
-              props.navigation.navigate(C.screenTitle.TRANS_DETAIL, { url });
+              navigation.navigate(C.screenTitle.TRANS_DETAIL, { url });
             }
             break;
           }
@@ -318,7 +322,7 @@ export default function Portfolio (props: { navigation: any | { navigate: (arg0:
             });
             const url = remoteMessage.data.url;
             if (url) {
-              props.navigation.navigate(C.screenTitle.DEBIT_CARD_SCREEN, { url });
+              navigation.navigate(C.screenTitle.DEBIT_CARD_SCREEN, { url });
             }
             break;
           }
@@ -328,7 +332,7 @@ export default function Portfolio (props: { navigation: any | { navigate: (arg0:
             });
             const url = remoteMessage.data.url;
             if (url) {
-              props.navigation.navigate(C.screenTitle.DEBIT_CARD_SCREEN, { url });
+              navigation.navigate(C.screenTitle.DEBIT_CARD_SCREEN, { url });
             }
             break;
           }
@@ -386,7 +390,7 @@ export default function Portfolio (props: { navigation: any | { navigate: (arg0:
   const onWCSuccess = (e: BarCodeReadEvent) => {
     const link = e.data;
     portfolioState.dispatchPortfolio({ value: { walletConnectURI: link } });
-    props.navigation.navigate(C.screenTitle.WALLET_CONNECT);
+    navigation.navigate(C.screenTitle.WALLET_CONNECT);
   };
 
   const isPortfolioLoading = () => {
@@ -406,7 +410,7 @@ export default function Portfolio (props: { navigation: any | { navigate: (arg0:
               {...sceneProps}
               routeKey={tab.key}
               scrollY={scrollY}
-              navigation={props.navigation}
+              navigation={navigation}
               isVerifyCoinChecked={isVerifyCoinChecked}
               getAllChainBalance={getAllChainBalance}
               refreshState={[refreshData, setRefreshData]}
@@ -418,7 +422,7 @@ export default function Portfolio (props: { navigation: any | { navigate: (arg0:
               {...sceneProps}
               routeKey={tab.key}
               scrollY={scrollY}
-              navigation={props.navigation}
+              navigation={navigation}
               selectedChain={portfolioState.statePortfolio.selectedChain.symbol}
             />
           );
@@ -481,11 +485,11 @@ export default function Portfolio (props: { navigation: any | { navigate: (arg0:
         />
       {
         ethereum?.address
-          ? <MessageBanner navigation={props.navigation} ethAddress={ethereum.address} isFocused={isFocused}/>
+          ? <MessageBanner navigation={navigation} ethAddress={ethereum.address} isFocused={isFocused}/>
           : null
       }
       <HeaderBar
-        navigation={props.navigation}
+        navigation={navigation}
         renderTitleComponent={
           <CyDTokenValue className='text-[22px] font-bold text-primaryTextColor'>
             {checkAll(portfolioState)}
