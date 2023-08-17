@@ -36,7 +36,7 @@ export const TabBar = ({
     });
   }, [navigationState.index, navigationState.routes, setIndex]);
 
-  return <CyDView className='w-full'>
+  return <CyDView className='w-full bg-white'>
             <CyDView className='flex flex-row mx-[20px] py-[10px]'>
               {tabs}
             </CyDView>

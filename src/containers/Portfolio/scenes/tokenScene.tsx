@@ -102,7 +102,7 @@ export const TokenScene = ({ // This is not yet complete.
 
   return (
 
-    <CyDView className='mx-[10px]'>
+    <CyDView className='mx-[10px] border-r border-l border-sepratorColor'>
       { getAllChainBalance(portfolioState) > 0
         ? (
           <CyDView className='flex-1'>

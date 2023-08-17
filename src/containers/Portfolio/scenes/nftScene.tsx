@@ -297,7 +297,7 @@ export const NFTScene = ({
   };
 
   return (
-    <CyDView className='flex-1'>
+    <CyDView className='flex-1 mx-[10px]'>
       <AnimatedTabView
         scrollY={scrollY}
         onMomentumScrollBegin={onMomentumScrollBegin}
@@ -310,7 +310,7 @@ export const NFTScene = ({
         >
         {loading
           ? <Loading />
-          : <>
+          : <CyDView className='border border-sepratorColor rounded-t-[24px]'>
         {isEmpty(NFTHoldings) &&
           <CyDView className={'mt-[50%] flex items-center'}>
             <CyDImage className={'h-[120px] w-[240px]'} source={AppImages.NFT_EMPTY_ILLUSTATION} />
@@ -332,7 +332,7 @@ export const NFTScene = ({
                 <RenderNFTHoldings />
             </CyDView>
         </CyDView>}
-        </>}
+        </CyDView>}
       </AnimatedTabView>
     </CyDView>
   );

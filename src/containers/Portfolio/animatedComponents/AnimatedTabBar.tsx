@@ -39,7 +39,7 @@ export const AnimatedTabBar = ({ scrollY, children, ...otherProps }: AnimatedTab
     >
         {children}
       <CyDAnimatedView
-        className={'bg-sepratorColor h-[1px]'}
+        className={'bg-sepratorColor mx-[10px] h-[1px]'}
         style={animatedOpacity}
       />
     </CyDAnimatedView>
