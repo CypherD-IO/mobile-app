@@ -362,7 +362,7 @@ export const EVM_CHAINS_BACKEND_NAMES: ChainBackendNames[] = [
   ChainBackendNames.SHARDEUM_SPHINX
 ];
 
-export const PORTFOLIO_EVM_CHAINS_BACKEND_NAMES = [
+export const PORTFOLIO_CHAINS_BACKEND_NAMES = [
   ChainBackendNames.ETH,
   ChainBackendNames.POLYGON,
   ChainBackendNames.BSC,
@@ -372,7 +372,13 @@ export const PORTFOLIO_EVM_CHAINS_BACKEND_NAMES = [
   ChainBackendNames.ARBITRUM,
   ChainBackendNames.EVMOS,
   ChainBackendNames.SHARDEUM,
-  ChainBackendNames.SHARDEUM_SPHINX
+  ChainBackendNames.SHARDEUM_SPHINX,
+  ChainBackendNames.EVMOS,
+  ChainBackendNames.COSMOS,
+  ChainBackendNames.JUNO,
+  ChainBackendNames.NOBLE,
+  ChainBackendNames.OSMOSIS,
+  ChainBackendNames.STARGAZE
 ];
 
 export const CARD_CHAINS: Chain[] = [
