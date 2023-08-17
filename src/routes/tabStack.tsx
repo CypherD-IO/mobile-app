@@ -153,11 +153,15 @@ function TabStack () {
           const currentRouteStack = props.state.routes[props.state.index].state?.routes.map(item => item.name);
           const showTabBar = (currentRouteStack === undefined) || screensToHaveNavBar.includes(currentRouteStack[currentRouteStack.length - 1]);
           return (
-            <CyDAnimatedView entering={SlideInUp} exiting={SlideOutDown} layout={Layout.easing(Easing.ease).delay(200)} className={clsx('rounded-t-[24px] shadow shadow-gray-400', { 'mb-[-90px]': !showTabBar, 'shadow shadow-gray-400': showTabBar && !isReadOnlyWallet, 'bg-white': !isIOS() })} style={styles.elevatedBackground}>
-            {isReadOnlyWallet && <CyDView className={clsx('flex flex-row justify-center items-center bg-ternaryBackgroundColor py-[5px] mb-[-15px] pb-[20px] rounded-t-[24px] shadow shadow-gray-400', { hidden: !showTabBar })}>
-            <CyDImage source={AppImages.EYE_OPEN} className='h-[18px] w-[18px]' resizeMode='contain'/>
-            <CyDText className='font-bold mt-[2px] ml-[5px]'>{t('READ_ONLY_MODE')}</CyDText>
-            </CyDView>}
+            <CyDAnimatedView entering={SlideInUp} exiting={SlideOutDown} layout={Layout.easing(Easing.ease).delay(200)} className={clsx('rounded-t-[24px] shadow', { 'mb-[-90px]': !showTabBar, 'bg-white': !isIOS(), 'shadow-gray-400': (!isReadOnlyWallet && !isIOS()) || isIOS() })} style={styles.elevatedBackground}>
+            {isReadOnlyWallet &&
+            <CyDView className={clsx('rounded-t-[24px]', { 'h-[20px]': showTabBar })} style={styles.elevatedBackground}>
+              <CyDView className={clsx('flex flex-row justify-center items-center bg-ternaryBackgroundColor py-[5px] top-[2px] rounded-t-[24px]', { hidden: !showTabBar, 'top-[6px]': !isIOS() })}>
+                <CyDImage source={AppImages.EYE_OPEN} className='h-[18px] w-[18px]' resizeMode='contain'/>
+                <CyDText className='font-bold mt-[2px] ml-[5px]'>{t('READ_ONLY_MODE')}</CyDText>
+              </CyDView>
+            </CyDView>
+            }
             <MyTabBar {...props}/>
             </CyDAnimatedView>
           );
