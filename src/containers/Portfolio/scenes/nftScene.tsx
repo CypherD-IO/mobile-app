@@ -26,6 +26,7 @@ import { screenTitle } from '../../../constants';
 import { Chain } from '../../../constants/server';
 import { intercomAnalyticsLog } from '../../utilities/analyticsUtility';
 import { ALL_CHAINS_TYPE } from '../../../constants/type';
+import { H_BALANCE_BANNER } from '../constants';
 
 type ScrollEvent = NativeSyntheticEvent<NativeScrollEvent>;
 
@@ -305,7 +306,7 @@ export const NFTScene = ({
         onRef={(ref: any) => {
           trackRef(routeKey, ref);
         }}
-        refreshControl={<RefreshControl refreshing={refreshing} onRefresh={onRefresh} /> }
+        refreshControl={<RefreshControl refreshing={refreshing} onRefresh={onRefresh} progressViewOffset={H_BALANCE_BANNER} /> }
         >
         {loading
           ? <Loading />

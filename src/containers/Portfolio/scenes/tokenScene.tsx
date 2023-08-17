@@ -22,6 +22,7 @@ import { PORTFOLIO_EMPTY } from '../../../reducers/portfolio_reducer';
 import Button from '../../../components/v2/button';
 import { screenTitle } from '../../../constants';
 import { Chain } from '../../../constants/server';
+import { H_BALANCE_BANNER } from '../constants';
 
 type ScrollEvent = NativeSyntheticEvent<NativeScrollEvent>;
 
@@ -109,7 +110,7 @@ export const TokenScene = ({ // This is not yet complete.
               data={holdingsData}
               initialNumToRender={15}
               refreshControl={
-                <RefreshControl refreshing={refreshData.isRefreshing} onRefresh={onRefresh} />
+                <RefreshControl refreshing={refreshData.isRefreshing} onRefresh={onRefresh} progressViewOffset={H_BALANCE_BANNER} />
               }
               renderItem={({ item, index }) => <PortfolioTokenItem item={item} key={index} index={index} isVerifyCoinChecked={isVerifyCoinChecked} navigation={navigation} onSwipe={onSwipe} setSwipeableRefs={setSwipeableRefs} />}
               onRef={(ref: any) => {
