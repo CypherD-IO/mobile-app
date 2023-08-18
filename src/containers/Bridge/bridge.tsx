@@ -80,7 +80,7 @@ import { hostWorker } from '../../global';
 import { intercomAnalyticsLog } from '../utilities/analyticsUtility';
 import { get } from 'lodash';
 import CyDTokenAmount from '../../components/v2/tokenAmount';
-import { FadeIn, SlideOutDown } from 'react-native-reanimated';
+import { FadeIn } from 'react-native-reanimated';
 import { BRIDGE_COIN_LIST_TIMEOUT, MODAL_CLOSING_TIMEOUT } from '../../constants/timeOuts';
 import useAxios from '../../core/HttpRequest';
 import Button from '../../components/v2/button';
