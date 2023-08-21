@@ -128,7 +128,7 @@ export interface NftHoldings {
 export function getCurrentChainHoldings (
   portfolio: WalletHoldings,
   chain: Chain
-): any {
+) {
   if (!portfolio) {
     return undefined;
   }

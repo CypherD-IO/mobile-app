@@ -5,15 +5,31 @@ import FastImage from 'react-native-fast-image';
 import { Swipeable } from 'react-native-gesture-handler';
 import AppImages from '../../../assets/images/appImages';
 import { screenTitle } from '../../constants';
-import { ChainBackendNames, ChainNames, CosmosStakingTokens, FundWalletAddressType } from '../../constants/server';
+import { ChainBackendNames, CosmosStakingTokens, FundWalletAddressType } from '../../constants/server';
 import { GlobalContext, GlobalContextDef } from '../../core/globalContext';
 import { isBasicCosmosChain } from '../../core/util';
 import { CyDFastImage, CyDImage, CyDText, CyDTouchView, CyDView } from '../../styles/tailwindStyles';
 import CyDTokenAmount from './tokenAmount';
 import CyDTokenValue from './tokenValue';
+import { Holding } from '../../core/Portfolio';
+import { StyleSheet } from 'react-native';
 
-const PortfolioTokenItem = ({ item, index, verifyCoinChecked, navigation, onSwipe, setSwipeableRefs }) => {
-  const globalStateContext = useContext<GlobalContextDef>(GlobalContext);
+interface PortfolioTokenItemProps {
+  item: Holding
+  index: number
+  isVerifyCoinChecked: boolean
+  navigation: {
+    goBack: () => void
+    navigate: (screen: string, params?: {}) => void
+    push: (screen: string, params?: {}) => void
+    popToTop: () => void
+  }
+  onSwipe: (key: number) => void
+  setSwipeableRefs: (index: number, ref: Swipeable | null) => void
+}
+
+const PortfolioTokenItem = ({ item, index, isVerifyCoinChecked, navigation, onSwipe, setSwipeableRefs }: PortfolioTokenItemProps) => {
+  const globalStateContext = useContext<GlobalContextDef | null>(GlobalContext);
   const randomColor = [
     AppImages.RED_COIN,
     AppImages.CYAN_COIN,
@@ -26,13 +42,13 @@ const PortfolioTokenItem = ({ item, index, verifyCoinChecked, navigation, onSwip
   const { t } = useTranslation();
 
   const canShowIBC = (tokenData: any) => {
-    return globalStateContext.globalState.ibc && (isBasicCosmosChain(tokenData.chainDetails.backendName) || (tokenData.chainDetails.backendName === ChainBackendNames.EVMOS && (tokenData.name === CosmosStakingTokens.EVMOS || tokenData.name.includes('IBC'))));
+    return globalStateContext?.globalState.ibc && (isBasicCosmosChain(tokenData.chainDetails.backendName) || (tokenData.chainDetails.backendName === ChainBackendNames.EVMOS && (tokenData.name === CosmosStakingTokens.EVMOS || tokenData.name.includes('IBC'))));
   };
 
   const RenderRightActions = (tokenData: any) => {
     const { isBridgeable, isSwapable } = tokenData;
     return (
-      <CyDView className={'flex flex-row justify-evenly items-center bg-secondaryBackgroundColor px-[2px]'}>
+      <CyDView className={'flex flex-row justify-evenly items-center bg-secondaryBackgroundColor px-[15px]'}>
         <CyDView>
           <CyDTouchView className={'flex items-center justify-center mx-[15px]'} onPress={() => {
             navigation.navigate(screenTitle.ENTER_AMOUNT, {
@@ -96,7 +112,7 @@ const PortfolioTokenItem = ({ item, index, verifyCoinChecked, navigation, onSwip
         </CyDView>}
 
         <CyDView>
-          <CyDTouchView className={' flex items-center justify-center mx-[15px]'} onPress={() => {
+          <CyDTouchView className={'flex items-center justify-center mx-[15px]'} onPress={() => {
             let addressTypeQRCode;
             if (tokenData.chainDetails.backendName === ChainBackendNames.COSMOS) {
               addressTypeQRCode = FundWalletAddressType.COSMOS;
@@ -127,7 +143,7 @@ const PortfolioTokenItem = ({ item, index, verifyCoinChecked, navigation, onSwip
     );
   };
 
-  return (verifyCoinChecked && item.isVerified) || !verifyCoinChecked
+  return (isVerifyCoinChecked && item.isVerified) || !isVerifyCoinChecked
     ? <CyDTouchView
             className='flex flex-row items-center border-b-[0.5px] border-sepratorColor'
             onPress={() => {
@@ -161,7 +177,7 @@ const PortfolioTokenItem = ({ item, index, verifyCoinChecked, navigation, onSwip
                 rightThreshold={0}
                 renderRightActions={() => RenderRightActions(item)}
                 onSwipeableWillOpen={() => { onSwipe(index); }}
-                containerStyle={{ display: 'flex', width: '85%' }}
+                containerStyle={styles.swipeable}
                 ref={ref => { setSwipeableRefs(index, ref); }}
               >
                 <CyDView className='flex flex-row w-full justify-between rounded-r-[20px] py-[17px] pr-[18px] bg-white'>
@@ -170,9 +186,7 @@ const PortfolioTokenItem = ({ item, index, verifyCoinChecked, navigation, onSwip
                       <CyDText className={'font-extrabold text-[16px]'}>{item.name}</CyDText>
                       {item.isStakeable &&
                         <CyDView className={' bg-appColor px-[5px] ml-[10px] text-[12px] rounded-[4px]'}>
-                          <CyDText className='font-bold'>
-                          stake
-                          </CyDText>
+                          <CyDText className='font-bold'>{t('STAKE')}</CyDText>
                         </CyDView>
                       }
                     </CyDView>
@@ -180,10 +194,10 @@ const PortfolioTokenItem = ({ item, index, verifyCoinChecked, navigation, onSwip
                   </CyDView>
                   <CyDView className='flex self-center items-end pr-[8px]'>
                     <CyDTokenValue className='text-[18px] font-bold'>
-                      {item.totalValue + item.actualStakedBalance + item.actualUnbondingBalance}
+                      {item.actualUnbondingBalance !== undefined ? item.totalValue + item.actualStakedBalance + item.actualUnbondingBalance : '...'}
                     </CyDTokenValue>
                     <CyDTokenAmount className='text-[14px]'>
-                      {item.actualBalance + item.stakedBalanceTotalValue + item.unbondingBalanceTotalValue}
+                      {(item.stakedBalanceTotalValue !== undefined && item.unbondingBalanceTotalValue !== undefined) ? item.actualBalance + item.stakedBalanceTotalValue + item.unbondingBalanceTotalValue : '...'}
                     </CyDTokenAmount>
                   </CyDView>
                 </CyDView>
@@ -194,3 +208,10 @@ const PortfolioTokenItem = ({ item, index, verifyCoinChecked, navigation, onSwip
 };
 
 export default React.memo(PortfolioTokenItem);
+
+const styles = StyleSheet.create({
+  swipeable: {
+    display: 'flex',
+    width: '85%'
+  }
+});
