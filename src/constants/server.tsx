@@ -1,17 +1,17 @@
 import AppImages from '../../assets/images/appImages';
 export interface Chain {
-  chainName: string
-  name: string
-  symbol: string
-  id: number
-  logo_url: any
-  backendName: ChainBackendNames | 'ALL' | string
-  chain_id: string
-  native_token_address: string
-  secondaryAddress?: string
-  chainIdNumber: number
-  coinGeckoId?: string
-  nativeTokenLogoUrl?: string
+  chainName: string;
+  name: string;
+  symbol: string;
+  id: number;
+  logo_url: any;
+  backendName: ChainBackendNames | 'ALL' | string;
+  chain_id: string;
+  native_token_address: string;
+  secondaryAddress?: string;
+  chainIdNumber: number;
+  coinGeckoId?: string;
+  nativeTokenLogoUrl?: string;
 }
 
 export enum ChainBackendNames {
@@ -29,7 +29,7 @@ export enum ChainBackendNames {
   STARGAZE = 'STARGAZE',
   NOBLE = 'NOBLE',
   SHARDEUM = 'SHARDEUM',
-  SHARDEUM_SPHINX = 'SHARDEUM_SPHINX'
+  SHARDEUM_SPHINX = 'SHARDEUM_SPHINX',
 }
 
 export enum CosmosStakingTokens {
@@ -38,7 +38,7 @@ export enum CosmosStakingTokens {
   OSMOSIS = 'Osmosis',
   JUNO = 'Juno',
   STARGAZE = 'Stargaze',
-  NOBLE = 'Noble'
+  NOBLE = 'Noble',
 }
 
 export enum FundWalletAddressType {
@@ -56,7 +56,7 @@ export enum FundWalletAddressType {
   OPTIMISM = 'OPTIMISM',
   BSC = 'BSC',
   SHARDEUM = 'SHARDEUM',
-  SHARDEUM_SPHINX = 'SHARDEUM_SPHINX'
+  SHARDEUM_SPHINX = 'SHARDEUM_SPHINX',
 }
 
 export const CHAIN_ETH: Chain = {
@@ -68,8 +68,9 @@ export const CHAIN_ETH: Chain = {
   backendName: ChainBackendNames.ETH,
   chain_id: '0x1',
   native_token_address: '0xeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee',
-  nativeTokenLogoUrl: 'https://www.covalenthq.com/static/images/icons/display-icons/ethereum-eth-logo.png',
-  chainIdNumber: 1
+  nativeTokenLogoUrl:
+    'https://www.covalenthq.com/static/images/icons/display-icons/ethereum-eth-logo.png',
+  chainIdNumber: 1,
 };
 
 export const CHAIN_POLYGON: Chain = {
@@ -81,8 +82,9 @@ export const CHAIN_POLYGON: Chain = {
   backendName: ChainBackendNames.POLYGON,
   chain_id: '0x89',
   native_token_address: '0x0000000000000000000000000000000000001010',
-  nativeTokenLogoUrl: 'https://assets.coingecko.com/coins/images/4713/large/matic-token-icon.png?1624446912',
-  chainIdNumber: 137
+  nativeTokenLogoUrl:
+    'https://assets.coingecko.com/coins/images/4713/large/matic-token-icon.png?1624446912',
+  chainIdNumber: 137,
 };
 
 export const CHAIN_BSC: Chain = {
@@ -94,8 +96,9 @@ export const CHAIN_BSC: Chain = {
   backendName: ChainBackendNames.BSC,
   chain_id: '0x38',
   native_token_address: '0xeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee',
-  nativeTokenLogoUrl: 'https://www.covalenthq.com/static/images/icons/display-icons/binance-coin-bnb-logo.png',
-  chainIdNumber: 56
+  nativeTokenLogoUrl:
+    'https://www.covalenthq.com/static/images/icons/display-icons/binance-coin-bnb-logo.png',
+  chainIdNumber: 56,
 };
 
 export const CHAIN_AVALANCHE: Chain = {
@@ -107,8 +110,9 @@ export const CHAIN_AVALANCHE: Chain = {
   backendName: ChainBackendNames.AVALANCHE,
   chain_id: '0xa86a',
   native_token_address: '0xeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee',
-  nativeTokenLogoUrl: 'https://www.covalenthq.com/static/images/icons/display-icons/avalanche-avax-logo.png',
-  chainIdNumber: 43114
+  nativeTokenLogoUrl:
+    'https://www.covalenthq.com/static/images/icons/display-icons/avalanche-avax-logo.png',
+  chainIdNumber: 43114,
 };
 
 export const CHAIN_COLLECTION: Chain = {
@@ -120,7 +124,7 @@ export const CHAIN_COLLECTION: Chain = {
   backendName: 'ALL',
   chain_id: '',
   native_token_address: '',
-  chainIdNumber: 0
+  chainIdNumber: 0,
 };
 
 export const CHAIN_FTM: Chain = {
@@ -132,8 +136,9 @@ export const CHAIN_FTM: Chain = {
   backendName: ChainBackendNames.FANTOM,
   chain_id: '0xfa',
   native_token_address: '0xeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee',
-  nativeTokenLogoUrl: 'https://www.covalenthq.com/static/images/icons/display-icons/fantom-ftm-logo.png',
-  chainIdNumber: 250
+  nativeTokenLogoUrl:
+    'https://www.covalenthq.com/static/images/icons/display-icons/fantom-ftm-logo.png',
+  chainIdNumber: 250,
 };
 
 export const CHAIN_EVMOS: Chain = {
@@ -146,8 +151,9 @@ export const CHAIN_EVMOS: Chain = {
   chain_id: '0x2329',
   native_token_address: '0xeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee',
   secondaryAddress: '0x93581991f68dbae1ea105233b67f7fa0d6bdee7b',
-  nativeTokenLogoUrl: 'https://public.cypherd.io/assets/blockchains/evmos/info/logo.png',
-  chainIdNumber: 9001
+  nativeTokenLogoUrl:
+    'https://public.cypherd.io/assets/blockchains/evmos/info/logo.png',
+  chainIdNumber: 9001,
 };
 
 export const CHAIN_ARBITRUM: Chain = {
@@ -159,8 +165,9 @@ export const CHAIN_ARBITRUM: Chain = {
   backendName: ChainBackendNames.ARBITRUM,
   chain_id: '0xa4b1',
   native_token_address: '0xeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee',
-  nativeTokenLogoUrl: 'https://public.cypherd.io/assets/blockchains/arbitrum/info/logo.png',
-  chainIdNumber: 42161
+  nativeTokenLogoUrl:
+    'https://public.cypherd.io/assets/blockchains/arbitrum/info/logo.png',
+  chainIdNumber: 42161,
 };
 
 export const CHAIN_SHARDEUM: Chain = {
@@ -172,8 +179,9 @@ export const CHAIN_SHARDEUM: Chain = {
   backendName: ChainBackendNames.SHARDEUM,
   chain_id: '0x1f91',
   native_token_address: '0xeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee',
-  nativeTokenLogoUrl: 'https://img.api.cryptorank.io/coins/shardeum1665056595732.png', // TODO : Add shardeum resources.
-  chainIdNumber: 8081
+  nativeTokenLogoUrl:
+    'https://img.api.cryptorank.io/coins/shardeum1665056595732.png', // TODO : Add shardeum resources.
+  chainIdNumber: 8081,
 };
 
 export const CHAIN_SHARDEUM_SPHINX: Chain = {
@@ -185,8 +193,9 @@ export const CHAIN_SHARDEUM_SPHINX: Chain = {
   backendName: ChainBackendNames.SHARDEUM_SPHINX,
   chain_id: '0x1f92',
   native_token_address: '0xeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee',
-  nativeTokenLogoUrl: 'https://img.api.cryptorank.io/coins/shardeum1665056595732.png', // TODO: Add shardeum resources.
-  chainIdNumber: 8082
+  nativeTokenLogoUrl:
+    'https://img.api.cryptorank.io/coins/shardeum1665056595732.png', // TODO: Add shardeum resources.
+  chainIdNumber: 8082,
 };
 
 export const OwlracleChainCodes = {
@@ -196,7 +205,7 @@ export const OwlracleChainCodes = {
   Avalanche: 'avax',
   Fantom: 'ftm',
   Arbitrum: 'arb',
-  Optimism: 'opt'
+  Optimism: 'opt',
 };
 
 export const CHAIN_COSMOS: Chain = {
@@ -208,9 +217,10 @@ export const CHAIN_COSMOS: Chain = {
   backendName: ChainBackendNames.COSMOS,
   chain_id: '0x0',
   native_token_address: '0xeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee',
-  nativeTokenLogoUrl: 'https://public.cypherd.io/assets/blockchains/cosmos/info/logo.png',
+  nativeTokenLogoUrl:
+    'https://public.cypherd.io/assets/blockchains/cosmos/info/logo.png',
   chainIdNumber: 0,
-  coinGeckoId: 'cosmos'
+  coinGeckoId: 'cosmos',
 };
 
 export const CHAIN_OSMOSIS: Chain = {
@@ -222,9 +232,10 @@ export const CHAIN_OSMOSIS: Chain = {
   backendName: ChainBackendNames.OSMOSIS,
   chain_id: '0x1',
   native_token_address: '0xeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee',
-  nativeTokenLogoUrl: 'https://public.cypherd.io/assets/blockchains/osmosis/info/logo.png',
+  nativeTokenLogoUrl:
+    'https://public.cypherd.io/assets/blockchains/osmosis/info/logo.png',
   chainIdNumber: 0,
-  coinGeckoId: 'osmosis'
+  coinGeckoId: 'osmosis',
 };
 
 export const CHAIN_JUNO: Chain = {
@@ -236,9 +247,10 @@ export const CHAIN_JUNO: Chain = {
   backendName: ChainBackendNames.JUNO,
   chain_id: 'juno-1',
   native_token_address: '0xeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee',
-  nativeTokenLogoUrl: 'https://public.cypherd.io/assets/blockchains/juno/info/logo.png',
+  nativeTokenLogoUrl:
+    'https://public.cypherd.io/assets/blockchains/juno/info/logo.png',
   chainIdNumber: 0,
-  coinGeckoId: 'juno-network'
+  coinGeckoId: 'juno-network',
 };
 
 export const CHAIN_OPTIMISM: Chain = {
@@ -250,8 +262,9 @@ export const CHAIN_OPTIMISM: Chain = {
   backendName: ChainBackendNames.OPTIMISM,
   chain_id: '0xa',
   native_token_address: '0xeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee',
-  nativeTokenLogoUrl: 'https://public.cypherd.io/assets/blockchains/optimism/info/logo.png',
-  chainIdNumber: 10
+  nativeTokenLogoUrl:
+    'https://public.cypherd.io/assets/blockchains/optimism/info/logo.png',
+  chainIdNumber: 10,
 };
 
 export const CHAIN_STARGAZE: Chain = {
@@ -263,9 +276,10 @@ export const CHAIN_STARGAZE: Chain = {
   backendName: ChainBackendNames.STARGAZE,
   chain_id: 'stargaze-1',
   native_token_address: '0xeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee',
-  nativeTokenLogoUrl: 'https://public.cypherd.io/assets/blockchains/stargaze/info/logo.png',
+  nativeTokenLogoUrl:
+    'https://public.cypherd.io/assets/blockchains/stargaze/info/logo.png',
   chainIdNumber: 0,
-  coinGeckoId: 'stargaze'
+  coinGeckoId: 'stargaze',
 };
 
 export const CHAIN_NOBLE: Chain = {
@@ -277,9 +291,10 @@ export const CHAIN_NOBLE: Chain = {
   backendName: ChainBackendNames.NOBLE,
   chain_id: 'noble-1',
   native_token_address: '0xeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee',
-  nativeTokenLogoUrl: 'https://public.cypherd.io/assets/blockchains/noble/info/logo.png',
+  nativeTokenLogoUrl:
+    'https://public.cypherd.io/assets/blockchains/noble/info/logo.png',
   chainIdNumber: 0,
-  coinGeckoId: ''
+  coinGeckoId: '',
 };
 
 export const EnsCoinTypes: Record<string, string> = {
@@ -289,14 +304,34 @@ export const EnsCoinTypes: Record<string, string> = {
   [ChainBackendNames.BSC]: '2147483704',
   [ChainBackendNames.POLYGON]: '2147483785',
   [ChainBackendNames.SHARDEUM]: 'dummy',
-  [ChainBackendNames.SHARDEUM_SPHINX]: 'dummy'
-
+  [ChainBackendNames.SHARDEUM_SPHINX]: 'dummy',
 };
 
 export const SUPPORTED_EVM_CHAINS = [1, 137, 56, 43114, 250, 10, 42161, 9001];
-export const CHAIN_NAMES = ['ethereum', 'evmos', 'cosmos', 'osmosis', 'juno', 'stargaze', 'noble'];
-export const COSMOS_CHAINS = ['cosmos', 'evmos', 'osmosis', 'juno', 'stargaze', 'noble'];
-export const PURE_COSMOS_CHAINS = ['cosmos', 'osmosis', 'juno', 'stargaze', 'noble'];
+export const CHAIN_NAMES = [
+  'ethereum',
+  'evmos',
+  'cosmos',
+  'osmosis',
+  'juno',
+  'stargaze',
+  'noble',
+];
+export const COSMOS_CHAINS = [
+  'cosmos',
+  'evmos',
+  'osmosis',
+  'juno',
+  'stargaze',
+  'noble',
+];
+export const PURE_COSMOS_CHAINS = [
+  'cosmos',
+  'osmosis',
+  'juno',
+  'stargaze',
+  'noble',
+];
 export const ALL_CHAINS: Chain[] = [
   CHAIN_ETH,
   CHAIN_POLYGON,
@@ -312,7 +347,7 @@ export const ALL_CHAINS: Chain[] = [
   CHAIN_JUNO,
   CHAIN_BSC,
   CHAIN_SHARDEUM,
-  CHAIN_SHARDEUM_SPHINX
+  CHAIN_SHARDEUM_SPHINX,
 ];
 
 export const EVM_CHAINS: Chain[] = [
@@ -324,7 +359,7 @@ export const EVM_CHAINS: Chain[] = [
   CHAIN_OPTIMISM,
   CHAIN_ARBITRUM,
   CHAIN_SHARDEUM,
-  CHAIN_SHARDEUM_SPHINX
+  CHAIN_SHARDEUM_SPHINX,
 ];
 
 export const EVM_CHAINS_FOR_ADDRESS_DIR = [
@@ -336,7 +371,7 @@ export const EVM_CHAINS_FOR_ADDRESS_DIR = [
   'optimism',
   'arbitrum',
   'shardeum',
-  'shardeum_sphinx'
+  'shardeum_sphinx',
 ];
 
 export const chainIdNumberMapping: Record<number, Chain> = {
@@ -347,7 +382,7 @@ export const chainIdNumberMapping: Record<number, Chain> = {
   250: CHAIN_FTM,
   10: CHAIN_OPTIMISM,
   42161: CHAIN_ARBITRUM,
-  9001: CHAIN_EVMOS
+  9001: CHAIN_EVMOS,
 };
 
 export const EVM_CHAINS_BACKEND_NAMES: ChainBackendNames[] = [
@@ -359,7 +394,7 @@ export const EVM_CHAINS_BACKEND_NAMES: ChainBackendNames[] = [
   ChainBackendNames.ARBITRUM,
   ChainBackendNames.EVMOS,
   ChainBackendNames.SHARDEUM,
-  ChainBackendNames.SHARDEUM_SPHINX
+  ChainBackendNames.SHARDEUM_SPHINX,
 ];
 
 export const PORTFOLIO_CHAINS_BACKEND_NAMES = [
@@ -378,7 +413,7 @@ export const PORTFOLIO_CHAINS_BACKEND_NAMES = [
   ChainBackendNames.JUNO,
   ChainBackendNames.NOBLE,
   ChainBackendNames.OSMOSIS,
-  ChainBackendNames.STARGAZE
+  ChainBackendNames.STARGAZE,
 ];
 
 export const CARD_CHAINS: Chain[] = [
@@ -394,7 +429,7 @@ export const CARD_CHAINS: Chain[] = [
   CHAIN_OSMOSIS,
   CHAIN_JUNO,
   CHAIN_SHARDEUM,
-  CHAIN_SHARDEUM_SPHINX
+  CHAIN_SHARDEUM_SPHINX,
 ];
 
 export const IBC_CHAINS: Chain[] = [
@@ -403,13 +438,10 @@ export const IBC_CHAINS: Chain[] = [
   CHAIN_OSMOSIS,
   CHAIN_JUNO,
   CHAIN_STARGAZE,
-  CHAIN_NOBLE
+  CHAIN_NOBLE,
 ];
 
-export const ALL_CHAINS_WITH_COLLECTION = [
-  CHAIN_COLLECTION,
-  ...ALL_CHAINS
-];
+export const ALL_CHAINS_WITH_COLLECTION = [CHAIN_COLLECTION, ...ALL_CHAINS];
 
 export enum ChainNames {
   ETH = 'ethereum',
@@ -426,14 +458,14 @@ export enum ChainNames {
   OPTIMISM = 'optimism',
   ARBITRUM = 'arbitrum',
   SHARDEUM = 'shardeum',
-  SHARDEUM_SPHINX = 'shardeum_sphinx'
-};
+  SHARDEUM_SPHINX = 'shardeum_sphinx',
+}
 
 export enum QRScannerScreens {
   SEND = 'SEND',
   WALLET_CONNECT = 'WALLET_CONNECT',
   IMPORT = 'IMPORT_WALLET',
-  TRACK_WALLET = 'TRACK_WALLET'
+  TRACK_WALLET = 'TRACK_WALLET',
 }
 
 export enum NotificationEvents {
@@ -449,7 +481,7 @@ export enum NotificationEvents {
   ADDRESS_ACTIVITY_WEBHOOK = 'ADDRESS_ACTIVITY_WEBHOOK',
   CARD_APPLICATION_UPDATE = 'CARD_APPLICATION_UPDATE',
   CARD_TXN_UPDATE = 'CARD_TXN_UPDATE',
-  DAPP_BROWSER_OPEN = 'DAPP_BROWSER_OPEN'
+  DAPP_BROWSER_OPEN = 'DAPP_BROWSER_OPEN',
 }
 
 export enum ChainNameMapping {
@@ -467,8 +499,8 @@ export enum ChainNameMapping {
   STARGAZE = 'stargaze',
   NOBLE = 'noble',
   SHARDEUM = 'shardeum',
-  SHARDEUM_SPHINX = 'shardeum_sphinx'
-};
+  SHARDEUM_SPHINX = 'shardeum_sphinx',
+}
 
 export const ChainNameToContactsChainNameMapping = {
   Ethereum: 'ethereum',
@@ -485,7 +517,7 @@ export const ChainNameToContactsChainNameMapping = {
   Juno: 'juno',
   Optimism: 'optimism',
   Stargaze: 'stargaze',
-  Noble: 'noble'
+  Noble: 'noble',
 };
 
 export const ChainConfigMapping = {
@@ -504,9 +536,9 @@ export const ChainConfigMapping = {
   stargaze: CHAIN_STARGAZE,
   noble: CHAIN_NOBLE,
   shardeum: CHAIN_SHARDEUM,
-  shardeum_sphinx: CHAIN_SHARDEUM_SPHINX
+  shardeum_sphinx: CHAIN_SHARDEUM_SPHINX,
 };
 
 export enum NativeTokenMapping {
   COSMOS = 'ATOM',
-};
+}

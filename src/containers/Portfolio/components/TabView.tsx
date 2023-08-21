@@ -1,24 +1,29 @@
 import React, { ReactNode } from 'react';
-import { NavigationState, SceneRendererProps, TabView, TabViewProps } from 'react-native-tab-view';
+import {
+  NavigationState,
+  SceneRendererProps,
+  TabView,
+  TabViewProps,
+} from 'react-native-tab-view';
 
 export interface TabRoute {
-  key: string
-  title: string
+  key: string;
+  title: string;
 }
 
 export interface PortfolioTabViewProps
   extends Pick<TabViewProps<TabRoute>, 'renderScene'> {
-  routes: TabRoute[]
-  width: number
-  index: number
-  setIndex: (i: number) => void
+  routes: TabRoute[];
+  width: number;
+  index: number;
+  setIndex: (i: number) => void;
   renderTabBar: (
     props: SceneRendererProps & {
-      navigationState: NavigationState<TabRoute>
-      setIndex: (i: number) => void
+      navigationState: NavigationState<TabRoute>;
+      setIndex: (i: number) => void;
     }
-  ) => ReactNode
-  swipeEnabled?: boolean
+  ) => ReactNode;
+  swipeEnabled?: boolean;
 }
 
 export const PortfolioTabView = ({
@@ -28,7 +33,7 @@ export const PortfolioTabView = ({
   index,
   setIndex,
   renderScene,
-  swipeEnabled = true
+  swipeEnabled = true,
 }: PortfolioTabViewProps) => {
   return (
     <TabView
@@ -38,7 +43,7 @@ export const PortfolioTabView = ({
       renderTabBar={(p) =>
         renderTabBar({
           ...p,
-          setIndex
+          setIndex,
         })
       }
       onIndexChange={setIndex}
