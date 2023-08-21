@@ -17,7 +17,8 @@ import {
   CHAIN_STARGAZE,
   CHAIN_NOBLE,
   CHAIN_SHARDEUM,
-  CHAIN_SHARDEUM_SPHINX
+  CHAIN_SHARDEUM_SPHINX,
+  PORTFOLIO_CHAINS_BACKEND_NAMES
 } from '../constants/server';
 import { PORTFOLIO_EMPTY, PORTFOLIO_ERROR, PORTFOLIO_NOT_EMPTY } from '../reducers/portfolio_reducer';
 import Toast from 'react-native-toast-message';
@@ -685,12 +686,14 @@ export async function fetchTokenData (hdWalletState: { state: { wallet: any } },
       }
     }
     let params = {
+      'chains[]': PORTFOLIO_CHAINS_BACKEND_NAMES,
       allowTestnet: true,
       'address[]': [cosmos?.wallets[cosmos?.currentIndex]?.address, osmosis?.wallets[osmosis?.currentIndex]?.address, juno?.wallets[juno?.currentIndex]?.address, stargaze?.address, noble?.address, ethereum.address]
     };
     if (isReadOnlyWallet) {
       params = {
         allowTestnet: true,
+        'chains[]': PORTFOLIO_CHAINS_BACKEND_NAMES,
         'address[]': [ethereum.address]
       };
     }
