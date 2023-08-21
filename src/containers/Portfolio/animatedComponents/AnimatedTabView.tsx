@@ -101,7 +101,6 @@ const AnimatedTabViewWithoutMemo = ({
 
   const onViewRef = React.useRef(
     ({ viewableItems: vItems }: { viewableItems: ViewToken[] }) => {
-      console.log('updated', vItems.length);
       if (vItems.length) {
         viewableItems.value = vItems;
       }

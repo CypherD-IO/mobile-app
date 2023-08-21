@@ -7,7 +7,6 @@ import {
   ScrollView,
   StyleSheet,
   ViewToken,
-  ListRenderItemInfo,
 } from 'react-native';
 import { AnimatedTabView } from '../animatedComponents';
 import Animated, {
@@ -126,7 +125,7 @@ export const TokenScene = ({
   return (
     <CyDView className='mx-[10px] border-r border-l border-sepratorColor'>
       {getAllChainBalance(portfolioState) > 0 ? (
-        <CyDView className='flex-1'>
+        <CyDView className='flex-1 h-full'>
           <AnimatedTabView
             data={holdingsData}
             initialNumToRender={15}
