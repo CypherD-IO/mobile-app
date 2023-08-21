@@ -1,30 +1,29 @@
-
 module.exports = {
   env: {
     browser: true,
     es2021: true,
-    'react-native/react-native': true
+    'react-native/react-native': true,
   },
   extends: [
     'plugin:react/recommended',
-    'standard-with-typescript'
+    'standard-with-typescript',
+    'eslint:recommended',
+    'plugin:@typescript-eslint/eslint-recommended',
+    'plugin:@typescript-eslint/recommended',
+    'prettier',
   ],
-  overrides: [
-  ],
+  overrides: [],
   parserOptions: {
     ecmaVersion: 12,
     sourceType: 'module',
     project: ['./tsconfig.json'],
-    jsx: true
+    jsx: true,
   },
-  plugins: [
-    'react',
-    'react-native'
-  ],
+  plugins: ['react', 'react-native', '@typescript-eslint', 'prettier'],
   settings: {
     react: {
-      version: 'detect'
-    }
+      version: 'detect',
+    },
   },
   rules: {
     '@typescript-eslint/explicit-function-return-type': 'off',
@@ -36,6 +35,6 @@ module.exports = {
     'react-native/no-color-literals': 'off',
     'react-native/no-raw-text': 2,
     'react-native/no-single-element-style-arrays': 2,
-    '@typescript-eslint/strict-boolean-expressions': 'off'
-  }
+    '@typescript-eslint/strict-boolean-expressions': 'off',
+  },
 };
