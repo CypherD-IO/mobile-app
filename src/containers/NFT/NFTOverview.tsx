@@ -24,7 +24,7 @@ interface RouteProps {
   }
 }
 
-export default function NFTOverviewScreen ({ route, navigation }: RouteProps) {
+export function NFTOverviewScreen ({ route, navigation }: RouteProps) {
   const { nftHolding } = route.params;
   const [showContractAddressTooltip, setContractAddressTooltip] = useState<boolean>(false);
   const [imageZoomIn, setImageZoomIn] = useState<boolean>(false);
