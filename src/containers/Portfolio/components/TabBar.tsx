@@ -1,55 +1,55 @@
 import React, { ReactNode, useCallback, useMemo, useRef } from 'react';
-import {
-  findNodeHandle,
-  ScrollView,
-  View
-} from 'react-native';
+import { findNodeHandle, ScrollView, View } from 'react-native';
 import { NavigationState, SceneRendererProps } from 'react-native-tab-view';
 import { CyDText, CyDTouchView, CyDView } from '../../../styles/tailwindStyles';
 import clsx from 'clsx';
 import { TabRoute } from './TabView';
 
 export interface TabBarProps extends SceneRendererProps {
-  navigationState: NavigationState<TabRoute>
-  setIndex: (index: number) => void
-  renderTabBarFooter: (tabkey: string) => ReactNode
+  navigationState: NavigationState<TabRoute>;
+  setIndex: (index: number) => void;
+  renderTabBarFooter: (tabkey: string) => ReactNode;
 }
 
 export const TabBar = ({
   navigationState,
   setIndex,
-  renderTabBarFooter
+  renderTabBarFooter,
 }: TabBarProps) => {
   const scrollRef = useRef<ScrollView>(null);
   const tabs = useMemo(() => {
     return navigationState.routes.map((route: any, index: number) => {
       return (
-            <TabBarButton
-              key={index}
-              index={index}
-              onPress={setIndex}
-              title={route.title}
-              active={navigationState.index === index}
-              scrollViewRef={scrollRef.current}
-            />
+        <TabBarButton
+          key={index}
+          index={index}
+          onPress={setIndex}
+          title={route.title}
+          active={navigationState.index === index}
+          scrollViewRef={scrollRef.current}
+        />
       );
     });
   }, [navigationState.index, navigationState.routes, setIndex]);
 
-  return <CyDView className='w-full bg-white'>
-            <CyDView className='flex flex-row mx-[20px] py-[10px]'>
-              {tabs}
-            </CyDView>
-            <CyDView>{renderTabBarFooter(navigationState.routes[navigationState.index].key)}</CyDView>
-          </CyDView>;
+  return (
+    <CyDView className='w-full bg-white'>
+      <CyDView className='flex flex-row mx-[20px] py-[8px] pt-[12px]'>
+        {tabs}
+      </CyDView>
+      <CyDView>
+        {renderTabBarFooter(navigationState.routes[navigationState.index].key)}
+      </CyDView>
+    </CyDView>
+  );
 };
 
 interface TabBarButtonProps {
-  active: boolean
-  index: number
-  onPress: (index: number) => void
-  title: string
-  scrollViewRef: ScrollView | null
+  active: boolean;
+  index: number;
+  onPress: (index: number) => void;
+  title: string;
+  scrollViewRef: ScrollView | null;
 }
 
 const TabBarButton = ({
@@ -57,7 +57,7 @@ const TabBarButton = ({
   index,
   onPress,
   title,
-  scrollViewRef
+  scrollViewRef,
 }: TabBarButtonProps) => {
   const xPosition = useRef<number | null>(null);
 
@@ -82,18 +82,18 @@ const TabBarButton = ({
       scrollViewRef?.scrollTo({
         x: index === 0 ? 0 : xPosition.current,
         y: 0,
-        animated: true
+        animated: true,
       });
     }
     return onPress(index);
   }, [index, onPress, scrollViewRef]);
 
   return (
-    <CyDTouchView
-      onPress={wrappedOnPress}
-    >
+    <CyDTouchView onPress={wrappedOnPress}>
       <CyDView
-        className={clsx('px-[14px] py-[5px] rounded-[8px]', { 'bg-privacyMessageBackgroundColor': active })}
+        className={clsx('px-[14px] py-[5px] rounded-[8px]', {
+          'bg-privacyMessageBackgroundColor': active,
+        })}
         ref={handleRef}
       >
         <CyDText>{title}</CyDText>

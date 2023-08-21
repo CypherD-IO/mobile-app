@@ -1,6 +1,17 @@
-import React, { memo, ReactElement } from 'react';
-import { FlatListProps, ListRenderItem, Platform, ScrollViewProps, ViewProps } from 'react-native';
-import Animated, { SharedValue, useAnimatedScrollHandler } from 'react-native-reanimated';
+import React, { memo, ReactElement, useCallback } from 'react';
+import {
+  FlatListProps,
+  ListRenderItem,
+  Platform,
+  ScrollViewProps,
+  ViewProps,
+  ViewToken,
+} from 'react-native';
+import Animated, {
+  SharedValue,
+  useAnimatedScrollHandler,
+  useSharedValue,
+} from 'react-native-reanimated';
 import { isIOS } from '../../../misc/checkers';
 import { H_BALANCE_BANNER, H_GUTTER } from '../constants';
 
@@ -11,24 +22,31 @@ export const OFFSET_TABVIEW = isIOS() ? -H_BALANCE_BANNER : 0;
 
 export interface AnimatedTabViewProps
   extends ViewProps,
-  Pick<FlatListProps<any> & ScrollViewProps,
-  | 'initialNumToRender'
-  | 'maxToRenderPerBatch'
-  | 'onContentSizeChange'
-  | 'onMomentumScrollBegin'
-  | 'onMomentumScrollEnd'
-  | 'onScrollEndDrag'
-  | 'keyExtractor'
-  | 'updateCellsBatchingPeriod'
-  | 'windowSize'
-  | 'ListEmptyComponent'
-  > {
-  data?: any[]
-  renderItem?: ListRenderItem<any> | Animated.Node<ListRenderItem<any> | null | undefined> | null | undefined
-  onRef: ((scrollableChild: Animated.FlatList<any> | null) => void) | ((scrollableChild: Animated.ScrollView | null) => void)
-  scrollY: SharedValue<number>
-  refreshControl?: ReactElement
-  children?: React.ReactNode
+    Pick<
+      FlatListProps<any> & ScrollViewProps,
+      | 'initialNumToRender'
+      | 'maxToRenderPerBatch'
+      | 'onContentSizeChange'
+      | 'onMomentumScrollBegin'
+      | 'onMomentumScrollEnd'
+      | 'onScrollEndDrag'
+      | 'keyExtractor'
+      | 'updateCellsBatchingPeriod'
+      | 'windowSize'
+      | 'ListEmptyComponent'
+    > {
+  data?: any[];
+  renderItem?:
+    | ListRenderItem<any>
+    | Animated.Node<ListRenderItem<any> | null | undefined>
+    | null
+    | undefined;
+  onRef:
+    | ((scrollableChild: Animated.FlatList<any> | null) => void)
+    | ((scrollableChild: Animated.ScrollView | null) => void);
+  scrollY: SharedValue<number>;
+  refreshControl?: ReactElement;
+  children?: React.ReactNode;
 }
 
 const AnimatedTabViewWithoutMemo = ({
@@ -44,7 +62,7 @@ const AnimatedTabViewWithoutMemo = ({
   scrollY,
   refreshControl,
   ListEmptyComponent,
-  children
+  children,
 }: AnimatedTabViewProps) => {
   const handleScroll = useAnimatedScrollHandler((event) => {
     scrollY.value = event.contentOffset.y;
@@ -62,22 +80,44 @@ const AnimatedTabViewWithoutMemo = ({
     contentOffset: Platform.select({
       ios: {
         x: 0,
-        y: -H_BALANCE_BANNER
-      }
+        y: -H_BALANCE_BANNER,
+      },
     }),
     contentContainerStyle: Platform.select({
       ios: {
         flexGrow: 1,
-        paddingBottom: H_GUTTER
+        paddingBottom: H_GUTTER,
       },
       android: {
         flexGrow: 1,
         paddingTop: H_BALANCE_BANNER,
-        paddingBottom: H_GUTTER
-      }
+        paddingBottom: H_GUTTER,
+      },
     }),
-    showsVerticalScrollIndicator: false
+    showsVerticalScrollIndicator: false,
   };
+
+  const viewableItems = useSharedValue<ViewToken[]>([]);
+
+  const onViewRef = React.useRef(
+    ({ viewableItems: vItems }: { viewableItems: ViewToken[] }) => {
+      console.log('updated', vItems.length);
+      if (vItems.length) {
+        viewableItems.value = vItems;
+      }
+    }
+  );
+  const viewConfigRef = React.useRef({
+    waitForInteraction: false,
+    itemVisiblePercentThreshold: 75,
+  });
+
+  const RenderItem = useCallback(
+    ({ item, index }) => {
+      return renderItem({ item, index, viewableItems });
+    },
+    [viewableItems.value]
+  );
 
   if (children) {
     return (
@@ -94,7 +134,11 @@ const AnimatedTabViewWithoutMemo = ({
         {...commonProps}
         ref={onRef as (scrollableChild: Animated.FlatList<any> | null) => void}
         data={data}
-        renderItem={renderItem}
+        onViewableItemsChanged={onViewRef.current}
+        viewabilityConfig={viewConfigRef.current}
+        renderItem={({ item, index }) => {
+          return <RenderItem item={item} index={index} />;
+        }}
         ListEmptyComponent={ListEmptyComponent}
         initialNumToRender={initialNumToRender}
         maxToRenderPerBatch={maxToRenderPerBatch}

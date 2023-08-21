@@ -3,7 +3,7 @@ import { isIOS } from '../../misc/checkers';
 export type TabKeys = 'token' | 'nft';
 export const tabs = [
   { key: 'token' as TabKeys, title: 'Tokens' },
-  { key: 'nft' as TabKeys, title: 'NFTs' }
+  { key: 'nft' as TabKeys, title: 'NFTs' },
 ];
 
 export const H_BALANCE_BANNER = 160;
