@@ -142,6 +142,7 @@ export const TokenScene = ({
               return (
                 <AnimatedPortfolioToken
                   item={item}
+                  index={index}
                   viewableItems={viewableItems}
                 >
                   <PortfolioTokenItem
@@ -216,15 +217,22 @@ export const TokenScene = ({
 export const AnimatedPortfolioToken = (props: {
   viewableItems: { value: ViewToken[] };
   item: TokenMeta;
+  index: number;
   children: JSX.Element;
 }) => {
-  const { viewableItems, item } = props;
+  const { viewableItems, item, index } = props;
   const rStyle = useAnimatedStyle(() => {
     let isVisible = true;
     if (viewableItems?.value.length) {
       isVisible = !!viewableItems?.value
         .filter((item) => item.isViewable)
         .find((viewableItems) => viewableItems.item.id === item?.id);
+    }
+    if (!isVisible) {
+      const latViewableIndex = Number(
+        viewableItems.value[viewableItems.value.length - 1].index
+      );
+      isVisible = latViewableIndex < 5 && latViewableIndex + 1 === index;
     }
     return {
       opacity: withTiming(isVisible ? 1 : 0),
