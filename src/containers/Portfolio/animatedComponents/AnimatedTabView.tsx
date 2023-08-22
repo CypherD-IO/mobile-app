@@ -5,7 +5,6 @@ import {
   Platform,
   ScrollViewProps,
   StyleSheet,
-  ViewProps,
   ViewToken,
 } from 'react-native';
 import Animated, {
@@ -22,26 +21,25 @@ import { H_BALANCE_BANNER, H_GUTTER } from '../constants';
 export const OFFSET_TABVIEW = isIOS() ? -H_BALANCE_BANNER : 0;
 
 export interface AnimatedTabViewProps
-  extends ViewProps,
-    Pick<
-      FlatListProps<any> & ScrollViewProps,
-      | 'initialNumToRender'
-      | 'maxToRenderPerBatch'
-      | 'onContentSizeChange'
-      | 'onMomentumScrollBegin'
-      | 'onMomentumScrollEnd'
-      | 'onScrollEndDrag'
-      | 'keyExtractor'
-      | 'updateCellsBatchingPeriod'
-      | 'windowSize'
-      | 'ListEmptyComponent'
-    > {
+  extends Pick<
+    FlatListProps<any> & ScrollViewProps,
+    | 'initialNumToRender'
+    | 'maxToRenderPerBatch'
+    | 'onContentSizeChange'
+    | 'onMomentumScrollBegin'
+    | 'onMomentumScrollEnd'
+    | 'onScrollEndDrag'
+    | 'keyExtractor'
+    | 'updateCellsBatchingPeriod'
+    | 'windowSize'
+    | 'ListEmptyComponent'
+  > {
   data?: any[];
   renderItem?:
-    | ListRenderItem<any>
-    | Animated.Node<ListRenderItem<any> | null | undefined>
-    | null
-    | undefined;
+  | ListRenderItem<any>
+  | Animated.Node<ListRenderItem<any> | null | undefined>
+  | null
+  | undefined;
   onRef: Animated.FlatList<any> | Animated.ScrollView | null;
   scrollY: SharedValue<number>;
   refreshControl?: ReactElement;
