@@ -545,25 +545,37 @@ export default function Portfolio({ navigation }: PortfolioProps) {
       switch (tab.key) {
         case 'token':
           return (
-            <TokenScene
-              {...sceneProps}
-              routeKey={tab.key}
-              scrollY={scrollY}
-              navigation={navigation}
-              isVerifyCoinChecked={isVerifyCoinChecked}
-              getAllChainBalance={getAllChainBalance}
-              refreshState={[refreshData, setRefreshData]}
-            />
+            <CyDView className='flex-1 h-full'>
+              <AnimatedTabBar scrollY={scrollY}>
+                {renderTabBarFooter(tab.key)}
+              </AnimatedTabBar>
+              <TokenScene
+                {...sceneProps}
+                routeKey={tab.key}
+                scrollY={scrollY}
+                navigation={navigation}
+                isVerifyCoinChecked={isVerifyCoinChecked}
+                getAllChainBalance={getAllChainBalance}
+                refreshState={[refreshData, setRefreshData]}
+              />
+            </CyDView>
           );
         case 'nft':
           return (
-            <NFTScene
-              {...sceneProps}
-              routeKey={tab.key}
-              scrollY={scrollY}
-              navigation={navigation}
-              selectedChain={portfolioState.statePortfolio.selectedChain.symbol}
-            />
+            <CyDView className='flex-1 h-full'>
+              <AnimatedTabBar scrollY={scrollY}>
+                {renderTabBarFooter(tab.key)}
+              </AnimatedTabBar>
+              <NFTScene
+                {...sceneProps}
+                routeKey={tab.key}
+                scrollY={scrollY}
+                navigation={navigation}
+                selectedChain={
+                  portfolioState.statePortfolio.selectedChain.symbol
+                }
+              />
+            </CyDView>
           );
         default:
           return null;
@@ -591,7 +603,7 @@ export default function Portfolio({ navigation }: PortfolioProps) {
           return null;
       }
     },
-    [getRefForKey, index, tabs, scrollY]
+    [getRefForKey, tabs]
   );
 
   return (
@@ -664,7 +676,7 @@ export default function Portfolio({ navigation }: PortfolioProps) {
         width={useWindowDimensions().width}
         renderTabBar={(p) => (
           <AnimatedTabBar scrollY={scrollY}>
-            <TabBar {...p} renderTabBarFooter={renderTabBarFooter} />
+            <TabBar {...p} />
           </AnimatedTabBar>
         )}
         renderScene={renderScene}

@@ -8,14 +8,9 @@ import { TabRoute } from './TabView';
 export interface TabBarProps extends SceneRendererProps {
   navigationState: NavigationState<TabRoute>;
   setIndex: (index: number) => void;
-  renderTabBarFooter: (tabkey: string) => ReactNode;
 }
 
-export const TabBar = ({
-  navigationState,
-  setIndex,
-  renderTabBarFooter,
-}: TabBarProps) => {
+export const TabBar = ({ navigationState, setIndex }: TabBarProps) => {
   const scrollRef = useRef<ScrollView>(null);
   const tabs = useMemo(() => {
     return navigationState.routes.map((route: any, index: number) => {
@@ -36,9 +31,6 @@ export const TabBar = ({
     <CyDView className='w-full bg-white'>
       <CyDView className='flex flex-row mx-[20px] py-[8px] pt-[12px]'>
         {tabs}
-      </CyDView>
-      <CyDView>
-        {renderTabBarFooter(navigationState.routes[navigationState.index].key)}
       </CyDView>
     </CyDView>
   );
