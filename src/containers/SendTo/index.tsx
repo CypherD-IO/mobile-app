@@ -72,7 +72,7 @@ export default function SendTo (props: { navigation?: any, route?: any }) {
   const { t } = useTranslation();
   const { route } = props;
   const { valueForUsd, tokenData, sendAddress = '' }: { valueForUsd: string, tokenData: Holding, sendAddress: string} = route.params;
-  const [Data, setData] = useState<string[]>(['0:asd', '1:dfg', '2:ghj', '3:jkl', '0:asd', '1:dfg', '2:ghj', '3:jkl', '0:asd', '1:dfg', '2:ghj', '3:jkl' ]);
+  const [Data, setData] = useState<string[]>([]);
   const [addressText, setAddressText] = useState<string>(sendAddress);
   const addressRef = useRef('');
   const ensRef = useRef<string | null>(null);
