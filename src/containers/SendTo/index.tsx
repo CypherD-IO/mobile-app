@@ -304,6 +304,7 @@ export default function SendTo (props: { navigation?: any, route?: any }) {
     void intercomAnalyticsLog('save_as_a_contact_yes');
     setTimeout(() => {
       props.navigation.navigate(C.screenTitle.OPTIONS, { screen: C.screenTitle.CREATE_CONTACT, params: { additionalAddress: { chain: ChainNameToContactsChainNameMapping[tokenData.chainDetails?.name], toAddress: addressText } } });
+      props.navigation.popToTop();
     }, MODAL_HIDE_TIMEOUT_250);
   }
 
