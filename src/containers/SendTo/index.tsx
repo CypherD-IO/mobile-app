@@ -72,7 +72,7 @@ export default function SendTo (props: { navigation?: any, route?: any }) {
   const { t } = useTranslation();
   const { route } = props;
   const { valueForUsd, tokenData, sendAddress = '' }: { valueForUsd: string, tokenData: Holding, sendAddress: string} = route.params;
-  const [Data, setData] = useState<string[]>([]);
+  const [Data, setData] = useState<string[]>(['0:asd', '1:dfg', '2:ghj', '3:jkl', '0:asd', '1:dfg', '2:ghj', '3:jkl', '0:asd', '1:dfg', '2:ghj', '3:jkl' ]);
   const [addressText, setAddressText] = useState<string>(sendAddress);
   const addressRef = useRef('');
   const ensRef = useRef<string | null>(null);
@@ -784,21 +784,23 @@ export default function SendTo (props: { navigation?: any, route?: any }) {
                       </CyDTouchView>}
                     </CyDView>
                     </CyDView>}
-                  <CyDText className='text-[16px] w-full text-left mt-[20px] font-semibold'>{t<string>('RECENT_ADDRESS')}:</CyDText>
-                  <CyDFlatList
-                    data={Data}
-                    renderItem={renderItem}
-                    ListEmptyComponent={emptyView}
-                    style={{ marginBottom: 60, flexGrow: 0 }}
-                    showsVerticalScrollIndicator={false}
-                  />
+                    <CyDView className='h-full w-full pb-[80px]'>
+                      <CyDText className='text-[16px] w-full text-left mt-[20px] font-semibold'>{t<string>('RECENT_ADDRESS')}:</CyDText>
+                      <CyDFlatList
+                        data={Data}
+                        renderItem={renderItem}
+                        ListEmptyComponent={emptyView}
+                        style={{ marginBottom: 60, flexGrow: 0 }}
+                        showsVerticalScrollIndicator={false}
+                      />
+                    </CyDView>
                 </CyDView>}
                 {isDropDown &&
                   <CyDView className='items-center mt-[-10px] mb-[150px]'>
                     <AddressProfile content={filteredContactBook} chainChoosen={chainDetails?.backendName} setAddressText={setAddressText} setIsDropDown={setIsDropDown}/>
                   </CyDView>
                 }
-                <CyDView className='w-full absolute mb-[4px] items-center' style={keyboardHeight ? { top: keyboardHeight - 60 } : { bottom: 8 }}>
+                <CyDView className='h-[80px] pb-[10px] w-full absolute justify-center items-center bg-white' style={keyboardHeight ? { top: keyboardHeight - 60 } : { bottom: 8 }}>
                     <Button title={t('SEND')} onPress={() => {
                       void (async () => await submitSendTransaction())();
                     }} type={ButtonType.PRIMARY} loading={loading} style=' h-[60px] w-[90%]'/>
