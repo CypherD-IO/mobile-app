@@ -1,4 +1,4 @@
-import React, { useCallback, useContext, useMemo } from 'react';
+import React, { memo, useCallback, useContext, useMemo } from 'react';
 import {
   RefreshControl,
   NativeSyntheticEvent,
@@ -65,7 +65,7 @@ interface TokenSceneProps {
   ];
 }
 
-export const TokenScene = ({
+const TokenScene = ({
   // This is not yet complete.
   routeKey,
   scrollY,
@@ -123,7 +123,7 @@ export const TokenScene = ({
   };
 
   return (
-    <CyDView className='mx-[10px] border-r border-l border-sepratorColor'>
+    <CyDView className='mx-[10px]'>
       {getAllChainBalance(portfolioState) > 0 ? (
         <CyDView className='flex-1 h-full'>
           <AnimatedTabView
@@ -140,21 +140,23 @@ export const TokenScene = ({
             }
             renderItem={({ item, index, viewableItems }) => {
               return (
-                <AnimatedPortfolioToken
+                <CyDView className='border-x border-sepratorColor overflow-hidden'>
+                  <AnimatedPortfolioToken
                   item={item}
                   index={index}
                   viewableItems={viewableItems}
-                >
+                  >
                   <PortfolioTokenItem
-                    item={item}
-                    key={index}
-                    index={index}
-                    isVerifyCoinChecked={isVerifyCoinChecked}
-                    navigation={navigation}
-                    onSwipe={onSwipe}
-                    setSwipeableRefs={setSwipeableRefs}
-                  />
-                </AnimatedPortfolioToken>
+                      item={item}
+                      key={index}
+                      index={index}
+                      isVerifyCoinChecked={isVerifyCoinChecked}
+                      navigation={navigation}
+                      onSwipe={onSwipe}
+                      setSwipeableRefs={setSwipeableRefs}
+                      />
+                  </AnimatedPortfolioToken>
+                </CyDView>
               );
             }}
             onRef={(ref: any) => {
@@ -251,3 +253,5 @@ const styles = StyleSheet.create({
     width: '60%',
   },
 });
+
+export default memo(TokenScene);
