@@ -140,7 +140,6 @@ const TokenScene = ({
             }
             renderItem={({ item, index, viewableItems }) => {
               return (
-                <CyDView className='border-x border-sepratorColor overflow-hidden'>
                   <AnimatedPortfolioToken
                   item={item}
                   index={index}
@@ -156,7 +155,6 @@ const TokenScene = ({
                       setSwipeableRefs={setSwipeableRefs}
                       />
                   </AnimatedPortfolioToken>
-                </CyDView>
               );
             }}
             onRef={(ref: any) => {

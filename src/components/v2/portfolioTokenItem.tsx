@@ -145,7 +145,7 @@ const PortfolioTokenItem = ({ item, index, isVerifyCoinChecked, navigation, onSw
 
   return (isVerifyCoinChecked && item.isVerified) || !isVerifyCoinChecked
     ? <CyDTouchView
-            className='flex flex-row items-center border-b-[0.5px] border-sepratorColor'
+            className='flex flex-row items-center border-b-[0.5px] border-x border-sepratorColor overflow-hidden'
             onPress={() => {
               navigation.navigate(screenTitle.TOKEN_OVERVIEW, {
                 tokenData: item
