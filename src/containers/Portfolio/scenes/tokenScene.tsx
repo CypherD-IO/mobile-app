@@ -140,21 +140,21 @@ const TokenScene = ({
             }
             renderItem={({ item, index, viewableItems }) => {
               return (
-                  <AnimatedPortfolioToken
+                <AnimatedPortfolioToken
                   item={item}
                   index={index}
                   viewableItems={viewableItems}
-                  >
+                >
                   <PortfolioTokenItem
-                      item={item}
-                      key={index}
-                      index={index}
-                      isVerifyCoinChecked={isVerifyCoinChecked}
-                      navigation={navigation}
-                      onSwipe={onSwipe}
-                      setSwipeableRefs={setSwipeableRefs}
-                      />
-                  </AnimatedPortfolioToken>
+                    item={item}
+                    key={index}
+                    index={index}
+                    isVerifyCoinChecked={isVerifyCoinChecked}
+                    navigation={navigation}
+                    onSwipe={onSwipe}
+                    setSwipeableRefs={setSwipeableRefs}
+                  />
+                </AnimatedPortfolioToken>
               );
             }}
             onRef={(ref: any) => {
@@ -235,7 +235,7 @@ export const AnimatedPortfolioToken = (props: {
       isVisible = latViewableIndex < 5 && latViewableIndex + 1 === index;
     }
     return {
-      opacity: withTiming(isVisible ? 1 : 0),
+      opacity: withTiming(isVisible ? 1 : 0.3),
       transform: [
         {
           scale: withTiming(isVisible ? 1 : 0.9),

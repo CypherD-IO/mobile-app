@@ -6,7 +6,12 @@ import {
   useSharedValue,
   withTiming,
 } from 'react-native-reanimated';
-import { CyDAnimatedView, CyDText, CyDTouchView, CyDView } from '../../../styles/tailwindStyles';
+import {
+  CyDAnimatedView,
+  CyDText,
+  CyDTouchView,
+  CyDView,
+} from '../../../styles/tailwindStyles';
 import { TabRoute } from './TabView';
 
 export interface TabBarProps extends SceneRendererProps {
@@ -21,7 +26,7 @@ export const TabBar = ({ navigationState, setIndex }: TabBarProps) => {
 
   useMemo(() => {
     translateValue.value = withTiming(navigationState.index * tabWidth, {
-      duration: 700
+      duration: 300,
     });
   }, [navigationState.index]);
 
@@ -49,10 +54,15 @@ export const TabBar = ({ navigationState, setIndex }: TabBarProps) => {
   return (
     <CyDView className='w-full bg-white'>
       <CyDView className='flex flex-row mx-[20px] pb-[8px] pt-[12px]'>
-        <CyDAnimatedView className={'absolute top-[10px] bg-privacyMessageBackgroundColor h-full rounded-[8px]'} style={[animatedStyle, { width: tabWidth }]} />
+        <CyDAnimatedView
+          className={
+            'absolute top-[10px] bg-privacyMessageBackgroundColor h-full rounded-[8px]'
+          }
+          style={[animatedStyle, { width: tabWidth }]}
+        />
         {tabs}
       </CyDView>
-  </CyDView>
+    </CyDView>
   );
 };
 
