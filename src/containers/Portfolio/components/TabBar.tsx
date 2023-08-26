@@ -1,8 +1,17 @@
-import React, { ReactNode, useCallback, useMemo, useRef } from 'react';
+import React, { useCallback, useMemo, useRef } from 'react';
 import { findNodeHandle, ScrollView, View } from 'react-native';
 import { NavigationState, SceneRendererProps } from 'react-native-tab-view';
-import { CyDText, CyDTouchView, CyDView } from '../../../styles/tailwindStyles';
-import clsx from 'clsx';
+import {
+  useAnimatedStyle,
+  useSharedValue,
+  withTiming,
+} from 'react-native-reanimated';
+import {
+  CyDAnimatedView,
+  CyDText,
+  CyDTouchView,
+  CyDView,
+} from '../../../styles/tailwindStyles';
 import { TabRoute } from './TabView';
 
 export interface TabBarProps extends SceneRendererProps {
@@ -12,6 +21,15 @@ export interface TabBarProps extends SceneRendererProps {
 
 export const TabBar = ({ navigationState, setIndex }: TabBarProps) => {
   const scrollRef = useRef<ScrollView>(null);
+  const translateValue = useSharedValue(0);
+  const tabWidth = 70; // Set this to the width of your tabs
+
+  useMemo(() => {
+    translateValue.value = withTiming(navigationState.index * tabWidth, {
+      duration: 300,
+    });
+  }, [navigationState.index]);
+
   const tabs = useMemo(() => {
     return navigationState.routes.map((route: any, index: number) => {
       return (
@@ -25,11 +43,23 @@ export const TabBar = ({ navigationState, setIndex }: TabBarProps) => {
         />
       );
     });
-  }, [navigationState.index, navigationState.routes, setIndex]);
+  }, [navigationState.index, navigationState.routes]);
+
+  const animatedStyle = useAnimatedStyle(() => {
+    return {
+      transform: [{ translateX: translateValue.value }],
+    };
+  });
 
   return (
     <CyDView className='w-full bg-white'>
-      <CyDView className='flex flex-row mx-[20px] py-[8px] pt-[12px]'>
+      <CyDView className='flex flex-row mx-[20px] pb-[8px] pt-[12px]'>
+        <CyDAnimatedView
+          className={
+            'absolute top-[10px] bg-privacyMessageBackgroundColor h-full rounded-[8px]'
+          }
+          style={[animatedStyle, { width: tabWidth }]}
+        />
         {tabs}
       </CyDView>
     </CyDView>
@@ -83,9 +113,7 @@ const TabBarButton = ({
   return (
     <CyDTouchView onPress={wrappedOnPress}>
       <CyDView
-        className={clsx('px-[14px] py-[5px] rounded-[8px]', {
-          'bg-privacyMessageBackgroundColor': active,
-        })}
+        className={'px-[10px] py-[5px] rounded-[8px] w-[80px]'}
         ref={handleRef}
       >
         <CyDText>{title}</CyDText>

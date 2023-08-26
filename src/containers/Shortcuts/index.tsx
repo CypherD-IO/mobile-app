@@ -254,7 +254,7 @@ export default function ShortcutsModal ({ navigationRef }) {
   const [navigationPath, setNavigationPath] = useState<string>('');
   const [selectedChain, setSelectedChain] = useState<Chain>(CHAIN_ETH);
   const [selectedOption, setSelectedOption] = useState<ShortcutsTitle>(ShortcutsTitle.RECEIVE);
-  const [appState, setAppState] = useState<String>('');
+  const [appState, setAppState] = useState<string>('');
   const [animation, setAnimation] = useState<any>();
   const [totalHoldings, setTotalHoldings] = useState([]);
 
@@ -507,7 +507,7 @@ export default function ShortcutsModal ({ navigationRef }) {
     }, (isIOS() ? MODAL_HIDE_TIMEOUT_250 : 600));
   };
 
-  const handleAppStateChange = (nextAppState: String) => {
+  const handleAppStateChange = (nextAppState: string) => {
     if ((appState === 'inactive' || appState === 'background') && nextAppState === 'active') {
       if (animation) {
         animation.play();
@@ -520,7 +520,11 @@ export default function ShortcutsModal ({ navigationRef }) {
     let data = portfolioState.statePortfolio.portfolioState === PORTFOLIO_EMPTY ? emptyWalletShortcutsData : shortcutsData;
     data = sortJSONArrayByKey(data, 'index');
     setSortedShortcutsData(data);
-    AppState.addEventListener('change', handleAppStateChange);
+    const appStateChangeListener = AppState.addEventListener('change', handleAppStateChange);
+
+    return () => {
+      appStateChangeListener.remove();
+    };
   }, [appState]);
 
   useEffect(() => {

@@ -31,7 +31,7 @@ interface RouteProps {
   }
 }
 
-export default function TokenOverviewV2 ({ route, navigation }: RouteProps) {
+function TokenOverviewV2 ({ route, navigation }: RouteProps) {
   const isFocused = useIsFocused();
   const { tokenData } = route.params;
   const [tokenTabs, setTokenTabs] = useState([TokenOverviewTabs.OVERVIEW, TokenOverviewTabs.TRANSACTIONS]);
@@ -90,3 +90,5 @@ const styles = StyleSheet.create({
     backgroundColor: isIOS() ? Colors.white : Colors.transparent
   }
 });
+
+export default React.memo(TokenOverviewV2);
