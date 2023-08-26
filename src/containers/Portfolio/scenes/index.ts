@@ -1,2 +1,4 @@
-export * from './tokenScene';
-export * from './nftScene';
+import TokenScene from "./tokenScene";
+import NFTScene from "./nftScene";
+
+export {TokenScene, NFTScene};

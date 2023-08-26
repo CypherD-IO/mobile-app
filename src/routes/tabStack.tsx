@@ -94,7 +94,7 @@ function TabStack() {
 
   useEffect(() => {
     const isBadgeAvailable = async () => {
-      let showBadge: boolean = false;
+      let showBadge = false;
       const updateResp = await inAppUpdates.checkNeedsUpdate();
       showBadge =
         updateResp.shouldUpdate ||
@@ -211,9 +211,10 @@ function TabStack() {
             );
           return (
             <CyDAnimatedView
-              entering={SlideInUp}
-              exiting={SlideOutDown}
-              layout={Layout.easing(Easing.ease).delay(200)}
+              // TO REDO : TABBAR ANIMATION
+              // entering={SlideInUp}
+              // exiting={SlideOutDown}
+              // layout={Layout.easing(Easing.ease).delay(200)}
               className={clsx('rounded-t-[24px] shadow', {
                 'mb-[-90px]': !showTabBar,
                 'bg-white': !isIOS(),

@@ -74,8 +74,6 @@ import { AnimatedBanner, AnimatedTabBar } from './animatedComponents';
 import { useScrollManager } from '../../hooks/useScrollManager';
 import { NFTScene, TokenScene } from './scenes';
 import CyDTokenValue from '../../components/v2/tokenValue';
-import { PanGestureHandler } from 'react-native-gesture-handler';
-import { event } from 'react-native-reanimated';
 
 export interface PortfolioProps {
   navigation: any;
@@ -98,7 +96,6 @@ export default function Portfolio({ navigation }: PortfolioProps) {
     isRefreshing: false,
     shouldRefreshAssets: false,
   });
-  const [offset, setOffset] = useState();
 
   const tabs = [
     { key: 'token', title: t('TOKENS') },

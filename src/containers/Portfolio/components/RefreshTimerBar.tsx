@@ -60,7 +60,7 @@ export const RefreshTimerBar = (props: {isRefreshing: boolean, isVerifiedCoinChe
   }, [portfolioState.statePortfolio.rtimestamp, portfolioState.statePortfolio.selectedChain, isRefreshing]);
 
   return (
-    <CyDView className='flex flex-row justify-between rounded-t-[24px] border border-sepratorColor py-[10px] px-[10px] mx-[10px]'>
+    <CyDView className='bg-white flex flex-row justify-between rounded-t-[24px] border border-sepratorColor py-[10px] px-[10px] mx-[10px]'>
       <CyDView className='flex flex-row items-center'>
         <CyDFastImage source={AppImages.CLOCK} className='h-[16px] w-[16px]' resizeMode='contain'/>
         <CyDText className='ml-[10px]'>{time}</CyDText>

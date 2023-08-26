@@ -98,9 +98,9 @@ const defaultHeaderLeft = (navigation) => (
     className='w-[60px]'
     onPress={() => {
       Keyboard.dismiss();
-      // setTimeout(() => {
+      setTimeout(() => {
       navigation.goBack();
-      // }, 3000);
+      }, 100);
     }}
   >
     <CyDImage
