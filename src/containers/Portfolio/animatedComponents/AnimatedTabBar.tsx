@@ -1,7 +1,7 @@
 import React from 'react';
 import { Extrapolate, SharedValue, interpolate, useAnimatedStyle } from 'react-native-reanimated';
 import { CyDAnimatedView } from '../../../styles/tailwindStyles';
-import { OFFSET_TABVIEW, H_BALANCE_BANNER, H_TAB_BAR } from '../constants';
+import { OFFSET_TABVIEW, H_BALANCE_BANNER } from '../constants';
 import { ViewProps } from 'react-native';
 
 export interface AnimatedTabBarProps extends Omit<ViewProps, 'style'> {
@@ -20,17 +20,6 @@ export const AnimatedTabBar = ({ scrollY, children, ...otherProps }: AnimatedTab
       transform: [{ translateY }]
     };
   });
-  const animatedOpacity = useAnimatedStyle(() => {
-    const opacity = interpolate(
-      scrollY.value,
-      [OFFSET_TABVIEW + H_BALANCE_BANNER, OFFSET_TABVIEW + H_BALANCE_BANNER + H_TAB_BAR],
-      [0, 1],
-      Extrapolate.CLAMP
-    );
-    return {
-      opacity
-    };
-  });
   return (
     <CyDAnimatedView
       className={'z-10 w-full'}
@@ -38,10 +27,6 @@ export const AnimatedTabBar = ({ scrollY, children, ...otherProps }: AnimatedTab
       {...otherProps}
     >
         {children}
-      <CyDAnimatedView
-        className={'bg-sepratorColor mx-[10px] h-[1px]'}
-        style={animatedOpacity}
-      />
     </CyDAnimatedView>
   );
 };

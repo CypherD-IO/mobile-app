@@ -1,4 +1,4 @@
-import React, { useContext, useEffect, useState } from 'react';
+import React, { memo, useContext, useEffect, useState } from 'react';
 import {
   NativeSyntheticEvent,
   NativeScrollEvent,
@@ -45,7 +45,7 @@ interface NFTSceneProps {
   }
 }
 
-export const NFTScene = ({
+const NFTScene = ({
   routeKey,
   scrollY,
   trackRef,
@@ -279,9 +279,9 @@ export const NFTScene = ({
                     {holdingsSections.map((section, index) => {
                       const [firstNFTInSection] = section.content;
                       return (
-                            <CyDView className={'my-[8px] bg-privacyMessageBackgroundColor p-[8px]'} key={index}>
+                            <CyDView className={'my-[8px] bg-privacyMessageBackgroundColor rounded-[8px] p-[8px]'} key={index}>
                                 <CyDTouchView onPress={() => navigation.navigate(screenTitle.NFT_HOLDINGS_SCREEN, { nftHoldings: section.content }) }>
-                                    <CyDFastImage defaultSource={AppImages.DEFAULT_NFT} source={{ uri: firstNFTInSection?.imageUrl }} className={'h-[140px] w-[140px] rounded-[12px] border-[1px] border-sepratorColor'} />
+                                    <CyDFastImage defaultSource={AppImages.DEFAULT_NFT} source={{ uri: firstNFTInSection?.imageUrl }} className={'h-[140px] w-[140px] rounded-[8px] border-[1px] border-sepratorColor'} />
                                     <CyDFastImage className={'absolute w-[30px] h-[30px] right-[8px] bottom-[8px] bg-white rounded-[50px]'} source={renderChainImage(firstNFTInSection?.blockchain)} />
                                 </CyDTouchView>
                               <CyDView>
@@ -337,3 +337,5 @@ export const NFTScene = ({
     </CyDView>
   );
 };
+
+export default memo(NFTScene);

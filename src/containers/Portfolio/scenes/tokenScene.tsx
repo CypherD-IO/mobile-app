@@ -1,4 +1,4 @@
-import React, { useCallback, useContext, useMemo } from 'react';
+import React, { memo, useCallback, useContext, useMemo } from 'react';
 import {
   RefreshControl,
   NativeSyntheticEvent,
@@ -65,7 +65,7 @@ interface TokenSceneProps {
   ];
 }
 
-export const TokenScene = ({
+const TokenScene = ({
   // This is not yet complete.
   routeKey,
   scrollY,
@@ -123,7 +123,7 @@ export const TokenScene = ({
   };
 
   return (
-    <CyDView className='mx-[10px] border-r border-l border-sepratorColor'>
+    <CyDView className='mx-[10px]'>
       {getAllChainBalance(portfolioState) > 0 ? (
         <CyDView className='flex-1 h-full'>
           <AnimatedTabView
@@ -235,7 +235,7 @@ export const AnimatedPortfolioToken = (props: {
       isVisible = latViewableIndex < 5 && latViewableIndex + 1 === index;
     }
     return {
-      opacity: withTiming(isVisible ? 1 : 0),
+      opacity: withTiming(isVisible ? 1 : 0.3),
       transform: [
         {
           scale: withTiming(isVisible ? 1 : 0.9),
@@ -251,3 +251,5 @@ const styles = StyleSheet.create({
     width: '60%',
   },
 });
+
+export default memo(TokenScene);
