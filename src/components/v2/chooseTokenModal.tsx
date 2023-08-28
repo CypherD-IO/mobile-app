@@ -69,7 +69,10 @@ export default function ChooseTokenModal (props: TokenModal) {
     if (renderPage === 'fundCardPage') {
       return totalValue < minTokenValueLimit || !isBridgeable;
     }
-    return totalValue < minTokenValueLimit;
+    else if(renderPage === 'bridgePage'){
+      return !isBridgeable;
+    }
+    return totalValue  < minTokenValueLimit;
   };
 
   const TokenItem = ({ item }: { item: {totalValue: string | number, logoUrl: string, name: string, chainDetails: any, actualBalance: string | number, symbol: string, isBridgeable: boolean} }) => {
