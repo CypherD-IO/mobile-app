@@ -22,7 +22,7 @@ export interface TabBarProps extends SceneRendererProps {
 export const TabBar = ({ navigationState, setIndex }: TabBarProps) => {
   const scrollRef = useRef<ScrollView>(null);
   const translateValue = useSharedValue(0);
-  const tabWidth = 70; // Set this to the width of your tabs
+  const tabWidth = 65; // Set this to the width of your tabs
 
   useMemo(() => {
     translateValue.value = withTiming(navigationState.index * tabWidth, {
@@ -56,7 +56,7 @@ export const TabBar = ({ navigationState, setIndex }: TabBarProps) => {
       <CyDView className='flex flex-row mx-[20px] pb-[8px] pt-[12px]'>
         <CyDAnimatedView
           className={
-            'absolute top-[10px] bg-privacyMessageBackgroundColor h-full rounded-[8px]'
+            'absolute top-[12px] bg-privacyMessageBackgroundColor h-full rounded-[8px]'
           }
           style={[animatedStyle, { width: tabWidth }]}
         />
@@ -113,7 +113,7 @@ const TabBarButton = ({
   return (
     <CyDTouchView onPress={wrappedOnPress}>
       <CyDView
-        className={'px-[10px] py-[5px] rounded-[8px] w-[80px]'}
+        className={'px-[10px] py-[5px] rounded-[8px] w-[70px]'}
         ref={handleRef}
       >
         <CyDText>{title}</CyDText>
