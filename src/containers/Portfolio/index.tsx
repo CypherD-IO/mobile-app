@@ -2,7 +2,13 @@
  * @format
  * @flow
  */
-import React, { useCallback, useContext, useEffect, useState } from 'react';
+import React, {
+  useCallback,
+  useContext,
+  useEffect,
+  useMemo,
+  useState,
+} from 'react';
 import {
   AppState,
   BackHandler,
@@ -450,6 +456,7 @@ export default function Portfolio({ navigation }: PortfolioProps) {
         isRefreshing: true,
         shouldRefreshAssets: pullToRefresh,
       });
+      console.log('portfolio mian refresh');
       await fetchTokenData(hdWallet, portfolioState);
       setRefreshData({ isRefreshing: false, shouldRefreshAssets: false });
     }
@@ -460,7 +467,9 @@ export default function Portfolio({ navigation }: PortfolioProps) {
       isFocused &&
       portfolioState.statePortfolio.portfolioState !== PORTFOLIO_LOADING
     ) {
-      void onRefresh(false);
+      setTimeout(() => {
+        void onRefresh(false);
+      }, 250);
     }
   }, [isFocused]);
 
@@ -537,6 +546,23 @@ export default function Portfolio({ navigation }: PortfolioProps) {
     return portfolioState.statePortfolio.portfolioState === PORTFOLIO_ERROR;
   };
 
+  // const RenderTokenScene = useCallback(
+  //   ({ tabKey }) => {
+  //     return (
+  //       <TokenScene
+  //         {...sceneProps}
+  //         routeKey={'token'}
+  //         scrollY={scrollY}
+  //         navigation={navigation}
+  //         isVerifyCoinChecked={isVerifyCoinChecked}
+  //         getAllChainBalance={getAllChainBalance}
+  //         setRefreshData={setRefreshData}
+  //       />
+  //     );
+  //   },
+  //   [getRefForKey, isVerifyCoinChecked, scrollY]
+  // );
+
   const renderScene = useCallback(
     ({ route: tab }: { route: TabRoute }) => {
       switch (tab.key) {
@@ -548,12 +574,12 @@ export default function Portfolio({ navigation }: PortfolioProps) {
               </AnimatedTabBar>
               <TokenScene
                 {...sceneProps}
-                routeKey={tab.key}
+                routeKey={'token'}
                 scrollY={scrollY}
                 navigation={navigation}
                 isVerifyCoinChecked={isVerifyCoinChecked}
                 getAllChainBalance={getAllChainBalance}
-                refreshState={[refreshData, setRefreshData]}
+                setRefreshData={setRefreshData}
               />
             </CyDView>
           );
@@ -578,7 +604,7 @@ export default function Portfolio({ navigation }: PortfolioProps) {
           return null;
       }
     },
-    [getRefForKey, index, tabs, scrollY]
+    [getRefForKey, isVerifyCoinChecked, scrollY]
   );
 
   const renderTabBarFooter = useCallback(
@@ -600,7 +626,7 @@ export default function Portfolio({ navigation }: PortfolioProps) {
           return null;
       }
     },
-    [getRefForKey, tabs]
+    [getRefForKey, tabs, refreshData.isRefreshing]
   );
 
   return (
@@ -645,7 +671,7 @@ export default function Portfolio({ navigation }: PortfolioProps) {
         onClipClick={() => setCopyToClipBoard(false)}
         onPress={() => setCopyToClipBoard(false)}
       />
-      {ethereum?.address ? (
+      {ethereum?.address && globalStateContext?.globalState?.token ? (
         <MessageBanner
           navigation={navigation}
           ethAddress={ethereum.address}

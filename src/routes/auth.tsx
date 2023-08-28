@@ -84,6 +84,7 @@ import {
 } from 'react-native';
 import ActivateCardScreen from '../containers/DebitCard/bridgeCard/activateCard';
 import SetPinScreen from '../containers/DebitCard/bridgeCard/setPin';
+import { useKeyboard } from '../hooks/useKeyboard';
 
 const { DynamicImage, DynamicButton } = require('../styles');
 
@@ -93,23 +94,31 @@ const FundCardStack = createNativeStackNavigator();
 const OptionsStack = createNativeStackNavigator();
 // const ActivityStack = createNativeStackNavigator();
 
-const defaultHeaderLeft = (navigation) => (
-  <CyDTouchView
-    className='w-[60px]'
-    onPress={() => {
-      Keyboard.dismiss();
-      setTimeout(() => {
-      navigation.goBack();
-      }, 100);
-    }}
-  >
-    <CyDImage
-      className={'h-[20px] w-[20px]'}
-      resizeMode='cover'
-      source={AppImages.BACK}
-    />
-  </CyDTouchView>
-);
+const defaultHeaderLeft = (navigation) => {
+  const { keyboardHeight } = useKeyboard();
+  return (
+    <CyDTouchView
+      className='w-[60px]'
+      onPress={() => {
+        console.log(keyboardHeight);
+        if (keyboardHeight) {
+          Keyboard.dismiss();
+          setTimeout(() => {
+            navigation.goBack();
+          }, 100);
+        } else {
+          navigation.goBack();
+        }
+      }}
+    >
+      <CyDImage
+        className={'h-[20px] w-[20px]'}
+        resizeMode='cover'
+        source={AppImages.BACK}
+      />
+    </CyDTouchView>
+  );
+};
 
 export function PortfolioStackScreen({ navigation, route }) {
   let backPressCount = 0;

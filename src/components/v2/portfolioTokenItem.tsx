@@ -68,6 +68,8 @@ const PortfolioTokenItem = ({
     );
   };
 
+  console.log('token', item.name, item.chainDetails?.backendName);
+
   const RenderRightActions = (tokenData: any) => {
     const { isBridgeable, isSwapable } = tokenData;
     return (
@@ -239,7 +241,7 @@ const PortfolioTokenItem = ({
     );
   };
 
-  return (isVerifyCoinChecked && item.isVerified) || !isVerifyCoinChecked ? (
+  return (isVerifyCoinChecked && item?.isVerified) || !isVerifyCoinChecked ? (
     <CyDTouchView
       className='flex flex-row items-center border-b-[0.5px] border-x border-sepratorColor'
       onPress={() => {
@@ -304,7 +306,7 @@ const PortfolioTokenItem = ({
             </CyDView>
             <CyDText className={'text-[12px]'}>{item.symbol}</CyDText>
           </CyDView>
-          <CyDView className='flex self-center items-end'>
+          <CyDView className='flex self-center items-end max-w-[40%]'>
             <CyDTokenValue className='text-[18px] font-bold'>
               {item.actualUnbondingBalance !== undefined
                 ? item.totalValue +

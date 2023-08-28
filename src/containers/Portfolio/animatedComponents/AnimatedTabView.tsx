@@ -102,7 +102,9 @@ const AnimatedTabViewWithoutMemo = ({
   const onViewRef = React.useRef(
     ({ viewableItems: vItems }: { viewableItems: ViewToken[] }) => {
       if (vItems.length) {
-        viewableItems.value = vItems;
+        viewableItems.value = vItems.map((vItem) =>
+          vItem.isViewable ? vItem.item : null
+        );
       }
     }
   );

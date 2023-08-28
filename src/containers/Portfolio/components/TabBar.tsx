@@ -39,7 +39,7 @@ export const TabBar = ({ navigationState, setIndex }: TabBarProps) => {
           onPress={setIndex}
           title={route.title}
           active={navigationState.index === index}
-          scrollViewRef={scrollRef.current}
+          scrollViewRef={scrollRef?.current}
         />
       );
     });
