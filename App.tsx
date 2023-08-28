@@ -650,7 +650,7 @@ function App() {
     if (changeType === 'active' && globalState.token) {
       const resp = await getWalletProfile(globalState.token);
       if (resp?.response?.status === 401 || forcedUpdate) {
-        void getAuthTokenData();
+        // void getAuthTokenData();
       }
     }
   };
@@ -662,6 +662,7 @@ function App() {
           ethereum?.address &&
           ethereum?.privateKey !== _NO_CYPHERD_CREDENTIAL_AVAILABLE_
         ) {
+          console.log('getAuthTokenData');
           void getAuthTokenData();
         }
       });

@@ -3,12 +3,7 @@
  * @flow
  */
 import React, { useCallback, useContext, useEffect, useState } from 'react';
-import {
-  AppState,
-  BackHandler,
-  PanResponder,
-  useWindowDimensions,
-} from 'react-native';
+import { AppState, BackHandler, useWindowDimensions } from 'react-native';
 import analytics from '@react-native-firebase/analytics';
 import * as C from '../../constants/index';
 import { useTranslation } from 'react-i18next';
@@ -548,12 +543,12 @@ export default function Portfolio({ navigation }: PortfolioProps) {
               </AnimatedTabBar>
               <TokenScene
                 {...sceneProps}
-                routeKey={tab.key}
+                routeKey={'token'}
                 scrollY={scrollY}
                 navigation={navigation}
                 isVerifyCoinChecked={isVerifyCoinChecked}
                 getAllChainBalance={getAllChainBalance}
-                refreshState={[refreshData, setRefreshData]}
+                setRefreshData={setRefreshData}
               />
             </CyDView>
           );
@@ -578,7 +573,7 @@ export default function Portfolio({ navigation }: PortfolioProps) {
           return null;
       }
     },
-    [getRefForKey, index, tabs, scrollY]
+    [getRefForKey, isVerifyCoinChecked, scrollY]
   );
 
   const renderTabBarFooter = useCallback(
@@ -600,7 +595,7 @@ export default function Portfolio({ navigation }: PortfolioProps) {
           return null;
       }
     },
-    [getRefForKey, tabs]
+    [getRefForKey, tabs, refreshData.isRefreshing]
   );
 
   return (
@@ -645,7 +640,7 @@ export default function Portfolio({ navigation }: PortfolioProps) {
         onClipClick={() => setCopyToClipBoard(false)}
         onPress={() => setCopyToClipBoard(false)}
       />
-      {ethereum?.address ? (
+      {ethereum?.address && globalStateContext?.globalState?.token ? (
         <MessageBanner
           navigation={navigation}
           ethAddress={ethereum.address}
@@ -666,6 +661,7 @@ export default function Portfolio({ navigation }: PortfolioProps) {
       <AnimatedBanner scrollY={scrollY}>
         <Banner checkAllBalance={checkAll(portfolioState)} />
       </AnimatedBanner>
+
       <PortfolioTabView
         index={index}
         setIndex={setIndex}

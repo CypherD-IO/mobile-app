@@ -8,24 +8,29 @@ import { isAndroid, isIOS } from '../../../misc/checkers';
 import { getBannerId, setBannerId } from '../../../core/asyncStorage';
 import { logAnalytics } from '../../../core/analytics';
 import * as Sentry from '@sentry/react-native';
-import { CyDFastImage, CyDTouchView, CyDView } from '../../../styles/tailwindStyles';
+import {
+  CyDFastImage,
+  CyDTouchView,
+  CyDView,
+} from '../../../styles/tailwindStyles';
 import AppImages from '../../../../assets/images/appImages';
 import clsx from 'clsx';
+import { intercomAnalyticsLog } from '../../utilities/analyticsUtility';
 
 interface MessageBannerProps {
   navigation: {
-    goBack: () => void
-    navigate: (screen: string, params?: {}) => void
-    push: (screen: string, params?: {}) => void
-    popToTop: () => void
-  }
-  ethAddress: string
-  isFocused: boolean
+    goBack: () => void;
+    navigate: (screen: string, params?: {}) => void;
+    push: (screen: string, params?: {}) => void;
+    popToTop: () => void;
+  };
+  ethAddress: string;
+  isFocused: boolean;
 }
 
 interface platformData {
-  version: string
-  condition: string
+  version: string;
+  condition: string;
 }
 
 enum BannerType {
@@ -35,17 +40,21 @@ enum BannerType {
   Success = 'success',
 }
 interface IBannerData {
-  isClosable: boolean
-  startDate?: Date
-  endDate?: Date
-  type: BannerType
-  message: string
-  id: string
-  ios?: platformData
-  andriod?: platformData
+  isClosable: boolean;
+  startDate?: Date;
+  endDate?: Date;
+  type: BannerType;
+  message: string;
+  id: string;
+  ios?: platformData;
+  andriod?: platformData;
 }
 
-export const MessageBanner = ({ navigation, ethAddress, isFocused }: MessageBannerProps) => {
+export const MessageBanner = ({
+  navigation,
+  ethAddress,
+  isFocused,
+}: MessageBannerProps) => {
   const [bannerData, setBannerData] = useState<IBannerData | null>(null);
   const [bannerVisible, setBannerVisible] = useState<boolean>(false);
   const { getWithAuth } = useAxios();
@@ -54,31 +63,34 @@ export const MessageBanner = ({ navigation, ethAddress, isFocused }: MessageBann
     error: '#FCDBE3',
     warning: '#FDF2DF',
     success: '#D9F7ED',
-    info: '#E7F0F9'
+    info: '#E7F0F9',
   };
 
   const getBannerTextColor = {
     error: '#BC0835',
     warning: '#F25500',
     success: '#00A06A',
-    info: '#0E477B'
+    info: '#0E477B',
   };
 
   const renderersProps = useMemo(() => {
-    return ({
+    return {
       a: {
         onPress: (event: any, href: string) => {
           navigation.navigate(screenTitle.GEN_WEBVIEW, {
-            url: href
+            url: href,
           });
-        }
-      }
-    });
+        },
+      },
+    };
   }, []);
 
   useEffect(() => {
     if (isFocused) {
-      const isBannerLive = (fromBannerDate: string | number | Date, toBannerDate: string | number | Date) => {
+      const isBannerLive = (
+        fromBannerDate: string | number | Date,
+        toBannerDate: string | number | Date
+      ) => {
         if (!fromBannerDate && !toBannerDate) {
           return true;
         } else if (fromBannerDate && !toBannerDate) {
@@ -93,7 +105,11 @@ export const MessageBanner = ({ navigation, ethAddress, isFocused }: MessageBann
         }
       };
 
-      const checkAppVersion = (currentVersion: number, versionFromData: number, condition: string) => {
+      const checkAppVersion = (
+        currentVersion: number,
+        versionFromData: number,
+        condition: string
+      ) => {
         if (condition === '>') {
           return currentVersion > versionFromData;
         } else if (condition === '>=') {
@@ -108,7 +124,7 @@ export const MessageBanner = ({ navigation, ethAddress, isFocused }: MessageBann
           const errorObject = {
             checkAppVersionCondition: condition,
             currentVersion,
-            versionFromData
+            versionFromData,
           };
           Sentry.captureException(errorObject);
           return false;
@@ -149,8 +165,11 @@ export const MessageBanner = ({ navigation, ethAddress, isFocused }: MessageBann
               if (data.isClosable) {
                 getBannerId()
                   .then((bannerID) => {
-                    setBannerVisible(bannerID !== data.id && getDeviceInfoForBanner(data) &&
-                    isBannerLive(data?.startDate, data?.endDate));
+                    setBannerVisible(
+                      bannerID !== data.id &&
+                        getDeviceInfoForBanner(data) &&
+                        isBannerLive(data?.startDate, data?.endDate)
+                    );
                   })
                   .catch((error) => {
                     Sentry.captureException(error);
@@ -168,8 +187,11 @@ export const MessageBanner = ({ navigation, ethAddress, isFocused }: MessageBann
               setBannerVisible(false);
             }
           } else {
-            void logAnalytics('banner_data_fetch_failed', JSON.stringify(response));
-            Sentry.captureException(response.error);
+            void intercomAnalyticsLog(
+              'fetch_banner_info_failed',
+              response?.error
+            );
+            Sentry.captureException(response?.error);
           }
         })
         .catch((error) => {
@@ -178,44 +200,55 @@ export const MessageBanner = ({ navigation, ethAddress, isFocused }: MessageBann
     }
   }, [isFocused]);
 
-  const styles = StyleSheet.create(
-    {
-      bannerBackground: {
-        backgroundColor: bannerData?.type ? getBannerColor[bannerData?.type] : 'black'
-      },
-      bannerHTMLBase: {
-        fontSize: 14,
-        fontWeight: '400',
-        color: bannerData?.type ? getBannerTextColor[bannerData.type] : 'black'
-      }
-    }
-  );
+  const styles = StyleSheet.create({
+    bannerBackground: {
+      backgroundColor: bannerData?.type
+        ? getBannerColor[bannerData?.type]
+        : 'black',
+    },
+    bannerHTMLBase: {
+      fontSize: 14,
+      fontWeight: '400',
+      color: bannerData?.type ? getBannerTextColor[bannerData.type] : 'black',
+    },
+  });
 
-  return (
-    bannerVisible
-      ? <CyDView className={'flex flex-row px-[15px] py-[10px]'} style={styles.bannerBackground}>
-          <CyDView className={clsx({ 'w-[95%]': bannerData?.isClosable, 'w-[100%]': !bannerData?.isClosable })}>
-            <HTML
-              contentWidth={bannerData?.isClosable ? 93 : 100}
-              baseStyle={styles.bannerHTMLBase}
-              renderersProps={renderersProps}
-              source={{ html: bannerData ? bannerData.message : '...' }}
-            />
-          </CyDView>
-          {bannerData?.isClosable &&
-            <CyDTouchView
-            onPress={() => {
-              setBannerVisible(false);
-              if (bannerData.isClosable) {
-                void setBannerId(bannerData.id);
-              }
-            }}
-              >
-              <CyDFastImage source={AppImages.CLOSE_CIRCLE} className='h-[25px] w-[25px]' resizeMode='contain'/>
-
-            </CyDTouchView>
-          }
-        </CyDView>
-      : <CyDView></CyDView>
+  return bannerVisible ? (
+    <CyDView
+      className={'flex flex-row px-[15px] py-[10px]'}
+      style={styles.bannerBackground}
+    >
+      <CyDView
+        className={clsx({
+          'w-[95%]': bannerData?.isClosable,
+          'w-[100%]': !bannerData?.isClosable,
+        })}
+      >
+        <HTML
+          contentWidth={bannerData?.isClosable ? 93 : 100}
+          baseStyle={styles.bannerHTMLBase}
+          renderersProps={renderersProps}
+          source={{ html: bannerData ? bannerData.message : '...' }}
+        />
+      </CyDView>
+      {bannerData?.isClosable && (
+        <CyDTouchView
+          onPress={() => {
+            setBannerVisible(false);
+            if (bannerData.isClosable) {
+              void setBannerId(bannerData.id);
+            }
+          }}
+        >
+          <CyDFastImage
+            source={AppImages.CLOSE_CIRCLE}
+            className='h-[25px] w-[25px]'
+            resizeMode='contain'
+          />
+        </CyDTouchView>
+      )}
+    </CyDView>
+  ) : (
+    <CyDView></CyDView>
   );
 };

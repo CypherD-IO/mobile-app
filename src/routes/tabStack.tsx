@@ -35,10 +35,11 @@ import { isIOS } from '../misc/checkers';
 import {
   Easing,
   Layout,
-  SlideInUp,
   SlideOutDown,
+  SlideInDown,
 } from 'react-native-reanimated';
 import { Colors } from '../constants/theme';
+import { useKeyboard } from '../hooks/useKeyboardVisibily';
 
 const Tab = createBottomTabNavigator();
 
@@ -61,6 +62,8 @@ function TabStack() {
   ];
 
   const [badgedTabBarOptions, setBadgedTabBarOptions] = useState<any>({});
+
+  const { keyboardHeight } = useKeyboard();
 
   let backPressCount = 0;
   const handleBackButton = () => {
@@ -212,11 +215,12 @@ function TabStack() {
           return (
             <CyDAnimatedView
               // TO REDO : TABBAR ANIMATION
-              // entering={SlideInUp}
-              // exiting={SlideOutDown}
-              // layout={Layout.easing(Easing.ease).delay(200)}
+              entering={SlideInDown}
+              exiting={SlideOutDown}
+              layout={Layout.easing(Easing.ease).delay(50)}
               className={clsx('rounded-t-[24px] shadow', {
                 'mb-[-90px]': !showTabBar,
+                'absolute bottom-[-350px]': keyboardHeight,
                 'bg-white': !isIOS(),
                 'shadow-gray-400': (!isReadOnlyWallet && !isIOS()) || isIOS(),
               })}
