@@ -239,94 +239,96 @@ const PortfolioTokenItem = ({
     );
   };
 
-  return (isVerifyCoinChecked && item.isVerified) || !isVerifyCoinChecked ? (
-    <CyDTouchView
-      className='flex flex-row items-center border-b-[0.5px] border-x border-sepratorColor'
-      onPress={() => {
-        navigation.navigate(screenTitle.TOKEN_OVERVIEW, {
-          tokenData: item,
-        });
-      }}
-    >
-      <CyDView className='flex flex-row h-full mb-[10px] items-center rounded-r-[20px] self-center pl-[8px] pr-[10px]'>
-        <CyDFastImage
-          className={'h-[45px] w-[45px] rounded-[50px]'}
-          source={
-            item?.logoUrl
-              ? {
-                  uri: item.logoUrl,
-                }
-              : randomColor[Math.floor(Math.random() * randomColor.length)]
-          }
-          resizeMode='contain'
-        />
-        <CyDView className='absolute top-[54%] right-[5px]'>
-          <CyDFastImage
-            className={
-              'h-[20px] w-[20px] rounded-[50px] border-[1px] border-white bg-white'
-            }
-            source={
-              item?.chainDetails?.logo_url ??
-              'https://raw.githubusercontent.com/cosmostation/cosmostation_token_resource/master/assets/images/common/unknown.png'
-            }
-            resizeMode={FastImage.resizeMode.contain}
-          />
-        </CyDView>
-      </CyDView>
-      <Swipeable
-        key={index}
-        friction={1}
-        rightThreshold={0}
-        renderRightActions={() => RenderRightActions(item)}
-        onSwipeableWillOpen={() => {
-          onSwipe(index);
-        }}
-        containerStyle={styles.swipeable}
-        ref={(ref) => {
-          setSwipeableRefs(index, ref);
+  // return (isVerifyCoinChecked && item?.isVerified) || !isVerifyCoinChecked ? (
+  if ((isVerifyCoinChecked && item?.isVerified) || !isVerifyCoinChecked) {
+    return (
+      <CyDTouchView
+        className='flex flex-row items-center border-b-[0.5px] border-x border-sepratorColor'
+        onPress={() => {
+          navigation.navigate(screenTitle.TOKEN_OVERVIEW, {
+            tokenData: item,
+          });
         }}
       >
-        <CyDView className='flex flex-row w-full justify-between rounded-r-[20px] py-[17px] pr-[12px] bg-white'>
-          <CyDView className='ml-[10px] max-w-[75%]'>
-            <CyDView className={'flex flex-row items-center align-center'}>
-              <CyDText className={'font-extrabold text-[16px]'}>
-                {item.name}
-              </CyDText>
-              {item.isStakeable && (
-                <CyDView
-                  className={
-                    ' bg-appColor px-[5px] ml-[10px] text-[12px] rounded-[4px]'
+        <CyDView className='flex flex-row h-full mb-[10px] items-center rounded-r-[20px] self-center pl-[8px] pr-[10px]'>
+          <CyDFastImage
+            className={'h-[45px] w-[45px] rounded-[50px]'}
+            source={
+              item?.logoUrl
+                ? {
+                    uri: item.logoUrl,
                   }
-                >
-                  <CyDText className='font-bold'>{t('STAKE')}</CyDText>
-                </CyDView>
-              )}
-            </CyDView>
-            <CyDText className={'text-[12px]'}>{item.symbol}</CyDText>
-          </CyDView>
-          <CyDView className='flex self-center items-end'>
-            <CyDTokenValue className='text-[18px] font-bold'>
-              {item.actualUnbondingBalance !== undefined
-                ? item.totalValue +
-                  item.actualStakedBalance +
-                  item.actualUnbondingBalance
-                : '...'}
-            </CyDTokenValue>
-            <CyDTokenAmount className='text-[14px]'>
-              {item.stakedBalanceTotalValue !== undefined &&
-              item.unbondingBalanceTotalValue !== undefined
-                ? item.actualBalance +
-                  item.stakedBalanceTotalValue +
-                  item.unbondingBalanceTotalValue
-                : '...'}
-            </CyDTokenAmount>
+                : randomColor[Math.floor(Math.random() * randomColor.length)]
+            }
+            resizeMode='contain'
+          />
+          <CyDView className='absolute top-[54%] right-[5px]'>
+            <CyDFastImage
+              className={
+                'h-[20px] w-[20px] rounded-[50px] border-[1px] border-white bg-white'
+              }
+              source={
+                item?.chainDetails?.logo_url ??
+                'https://raw.githubusercontent.com/cosmostation/cosmostation_token_resource/master/assets/images/common/unknown.png'
+              }
+              resizeMode={FastImage.resizeMode.contain}
+            />
           </CyDView>
         </CyDView>
-      </Swipeable>
-    </CyDTouchView>
-  ) : (
-    <CyDView></CyDView>
-  );
+        <Swipeable
+          key={index}
+          friction={1}
+          rightThreshold={0}
+          renderRightActions={() => RenderRightActions(item)}
+          onSwipeableWillOpen={() => {
+            onSwipe(index);
+          }}
+          containerStyle={styles.swipeable}
+          ref={(ref) => {
+            setSwipeableRefs(index, ref);
+          }}
+        >
+          <CyDView className='flex flex-row w-full justify-between rounded-r-[20px] py-[17px] pr-[12px] bg-white'>
+            <CyDView className='ml-[10px] max-w-[75%]'>
+              <CyDView className={'flex flex-row items-center align-center'}>
+                <CyDText className={'font-extrabold text-[16px]'}>
+                  {item.name}
+                </CyDText>
+                {item.isStakeable && (
+                  <CyDView
+                    className={
+                      ' bg-appColor px-[5px] ml-[10px] text-[12px] rounded-[4px]'
+                    }
+                  >
+                    <CyDText className='font-bold'>{t('STAKE')}</CyDText>
+                  </CyDView>
+                )}
+              </CyDView>
+              <CyDText className={'text-[12px]'}>{item.symbol}</CyDText>
+            </CyDView>
+            <CyDView className='flex self-center items-end max-w-[40%]'>
+              <CyDTokenValue className='text-[18px] font-bold'>
+                {item.actualUnbondingBalance !== undefined
+                  ? item.totalValue +
+                    item.actualStakedBalance +
+                    item.actualUnbondingBalance
+                  : '...'}
+              </CyDTokenValue>
+              <CyDTokenAmount className='text-[14px]'>
+                {item.stakedBalanceTotalValue !== undefined &&
+                item.unbondingBalanceTotalValue !== undefined
+                  ? item.actualBalance +
+                    item.stakedBalanceTotalValue +
+                    item.unbondingBalanceTotalValue
+                  : '...'}
+              </CyDTokenAmount>
+            </CyDView>
+          </CyDView>
+        </Swipeable>
+      </CyDTouchView>
+    );
+  }
+  return <CyDView></CyDView>;
 };
 
 export default React.memo(PortfolioTokenItem);

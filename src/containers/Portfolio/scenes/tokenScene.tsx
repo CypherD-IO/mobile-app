@@ -1,4 +1,11 @@
-import React, { memo, useCallback, useContext, useMemo } from 'react';
+import React, {
+  memo,
+  useCallback,
+  useContext,
+  useEffect,
+  useMemo,
+  useState,
+} from 'react';
 import {
   RefreshControl,
   NativeSyntheticEvent,
@@ -19,6 +26,7 @@ import { CyDText, CyDTouchView, CyDView } from '../../../styles/tailwindStyles';
 import { useTranslation } from 'react-i18next';
 import { HdWalletContext, PortfolioContext } from '../../../core/util';
 import {
+  Holding,
   WalletHoldings,
   fetchTokenData,
   getCurrentChainHoldings,
@@ -30,9 +38,11 @@ import PortfolioTokenItem from '../../../components/v2/portfolioTokenItem';
 import { PORTFOLIO_EMPTY } from '../../../reducers/portfolio_reducer';
 import Button from '../../../components/v2/button';
 import { screenTitle } from '../../../constants';
-import { Chain } from '../../../constants/server';
+import { CHAIN_COLLECTION, Chain } from '../../../constants/server';
 import { H_BALANCE_BANNER } from '../constants';
 import { TokenMeta } from '../../../models/tokenMetaData.model';
+import { render } from 'react-dom';
+import { isEqual, sortBy } from 'lodash';
 
 type ScrollEvent = NativeSyntheticEvent<NativeScrollEvent>;
 
@@ -51,18 +61,12 @@ interface TokenSceneProps {
       tokenPortfolio: WalletHoldings;
     };
   }) => number;
-  refreshState: [
-    {
+  setRefreshData: React.Dispatch<
+    React.SetStateAction<{
       isRefreshing: boolean;
       shouldRefreshAssets: boolean;
-    },
-    React.Dispatch<
-      React.SetStateAction<{
-        isRefreshing: boolean;
-        shouldRefreshAssets: boolean;
-      }>
-    >
-  ];
+    }>
+  >;
 }
 
 const TokenScene = ({
@@ -76,28 +80,76 @@ const TokenScene = ({
   navigation,
   isVerifyCoinChecked,
   getAllChainBalance,
-  refreshState,
+  setRefreshData,
 }: TokenSceneProps) => {
   const { t } = useTranslation();
   const hdWallet = useContext<any>(HdWalletContext);
   const portfolioState = useContext<any>(PortfolioContext);
-  const [refreshData, setRefreshData] = refreshState;
+  const [isPortfolioRefreshing, setIsPortfolioRefreshing] = useState({
+    isRefreshing: false,
+    shouldRefreshAssets: false,
+  });
+  const [holdingsByCoinGeckoId, setHoldingsByCoinGeckoId] = useState<string[]>(
+    []
+  );
 
-  const onRefresh = useCallback(async (pullToRefresh = true) => {
+  const onRefresh = async (pullToRefresh = true) => {
     setRefreshData({ isRefreshing: true, shouldRefreshAssets: pullToRefresh });
+    setIsPortfolioRefreshing({
+      isRefreshing: true,
+      shouldRefreshAssets: pullToRefresh,
+    });
     await fetchTokenData(hdWallet, portfolioState);
     setRefreshData({ isRefreshing: false, shouldRefreshAssets: false });
-  }, []);
+    setIsPortfolioRefreshing({
+      isRefreshing: false,
+      shouldRefreshAssets: false,
+    });
+  };
+
+  const getIndexedData = (data: any) => {
+    if (data) {
+      let holdings = [];
+      if ('holdings' in data) {
+        holdings = data.holdings;
+      } else {
+        holdings = data;
+      }
+      let tempHoldingsData = {};
+      holdings.forEach(
+        (holding: Holding) =>
+          (tempHoldingsData = {
+            ...tempHoldingsData,
+            [holding.coinGeckoId +
+            ':' +
+            String(holding.chainDetails?.chainIdNumber)]: holding,
+          })
+      );
+      return tempHoldingsData;
+    } else {
+      return {};
+    }
+  };
 
   const holdingsData = useMemo(() => {
     const data = getCurrentChainHoldings(
       portfolioState.statePortfolio.tokenPortfolio,
+      CHAIN_COLLECTION
+    );
+    return getIndexedData(data);
+  }, [portfolioState.statePortfolio.tokenPortfolio]);
+
+  useEffect(() => {
+    const data = getCurrentChainHoldings(
+      portfolioState.statePortfolio.tokenPortfolio,
       portfolioState.statePortfolio.selectedChain
     );
-    if (data) {
-      return 'holdings' in data ? data.holdings : data;
-    } else {
-      return [];
+    const newHoldingsByCoingeckoId = Object.keys(getIndexedData(data));
+    if (
+      holdingsByCoinGeckoId.length !== newHoldingsByCoingeckoId.length ||
+      !isEqual(sortBy(holdingsByCoinGeckoId), sortBy(newHoldingsByCoingeckoId))
+    ) {
+      setHoldingsByCoinGeckoId(newHoldingsByCoingeckoId);
     }
   }, [
     portfolioState.statePortfolio.tokenPortfolio,
@@ -122,41 +174,46 @@ const TokenScene = ({
     ref?.close();
   };
 
+  const renderItem = ({ item, index, viewableItems }) => {
+    if (holdingsData?.[item]) {
+      return (
+        <AnimatedPortfolioToken
+          item={item}
+          index={index}
+          viewableItems={viewableItems}
+        >
+          <PortfolioTokenItem
+            item={holdingsData[item]}
+            key={index}
+            index={index}
+            isVerifyCoinChecked={isVerifyCoinChecked}
+            navigation={navigation}
+            onSwipe={onSwipe}
+            setSwipeableRefs={setSwipeableRefs}
+          />
+        </AnimatedPortfolioToken>
+      );
+    }
+    return <></>;
+  };
+
   return (
     <CyDView className='mx-[10px]'>
       {getAllChainBalance(portfolioState) > 0 ? (
         <CyDView className='flex-1 h-full'>
           <AnimatedTabView
-            data={holdingsData}
-            initialNumToRender={15}
+            data={holdingsByCoinGeckoId}
+            keyExtractor={(item) => item}
             refreshControl={
               <RefreshControl
-                refreshing={refreshData.shouldRefreshAssets}
+                refreshing={isPortfolioRefreshing.shouldRefreshAssets}
                 onRefresh={() => {
                   void onRefresh();
                 }}
                 progressViewOffset={H_BALANCE_BANNER}
               />
             }
-            renderItem={({ item, index, viewableItems }) => {
-              return (
-                <AnimatedPortfolioToken
-                  item={item}
-                  index={index}
-                  viewableItems={viewableItems}
-                >
-                  <PortfolioTokenItem
-                    item={item}
-                    key={index}
-                    index={index}
-                    isVerifyCoinChecked={isVerifyCoinChecked}
-                    navigation={navigation}
-                    onSwipe={onSwipe}
-                    setSwipeableRefs={setSwipeableRefs}
-                  />
-                </AnimatedPortfolioToken>
-              );
-            }}
+            renderItem={renderItem}
             onRef={(ref: any) => {
               trackRef(routeKey, ref);
             }}
@@ -223,16 +280,14 @@ export const AnimatedPortfolioToken = (props: {
   const { viewableItems, item, index } = props;
   const rStyle = useAnimatedStyle(() => {
     let isVisible = true;
-    if (viewableItems?.value.length) {
-      isVisible = !!viewableItems?.value
-        .filter((item) => item.isViewable)
-        .find((viewableItems) => viewableItems.item.id === item?.id);
-    }
-    if (!isVisible) {
-      const latViewableIndex = Number(
-        viewableItems.value[viewableItems.value.length - 1].index
-      );
-      isVisible = latViewableIndex < 5 && latViewableIndex + 1 === index;
+    if (viewableItems?.value.length > 3) {
+      isVisible = viewableItems.value.includes(item);
+      if (!isVisible) {
+        const latViewableIndex = Number(
+          viewableItems.value[viewableItems.value.length - 1].index
+        );
+        isVisible = latViewableIndex < 5 && latViewableIndex + 1 === index;
+      }
     }
     return {
       opacity: withTiming(isVisible ? 1 : 0.3),
@@ -242,7 +297,7 @@ export const AnimatedPortfolioToken = (props: {
         },
       ],
     };
-  }, []);
+  }, [viewableItems.value]);
   return <Animated.View style={rStyle}>{props.children}</Animated.View>;
 };
 
