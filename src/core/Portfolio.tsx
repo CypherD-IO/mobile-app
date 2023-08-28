@@ -18,9 +18,13 @@ import {
   CHAIN_NOBLE,
   CHAIN_SHARDEUM,
   CHAIN_SHARDEUM_SPHINX,
-  PORTFOLIO_CHAINS_BACKEND_NAMES
+  PORTFOLIO_CHAINS_BACKEND_NAMES,
 } from '../constants/server';
-import { PORTFOLIO_EMPTY, PORTFOLIO_ERROR, PORTFOLIO_NOT_EMPTY } from '../reducers/portfolio_reducer';
+import {
+  PORTFOLIO_EMPTY,
+  PORTFOLIO_ERROR,
+  PORTFOLIO_NOT_EMPTY,
+} from '../reducers/portfolio_reducer';
 import Toast from 'react-native-toast-message';
 import { getPortfolioData, storePortfolioData } from './asyncStorage';
 import axios from '../core/Http';
@@ -30,102 +34,102 @@ import { hostWorker } from '../global';
 import { get, has } from 'lodash';
 
 export interface Holding {
-  name: string
-  displayName?: string // used in card
-  symbol: string
-  logoUrl: string
-  price: string
-  contractAddress: string
-  balance: string
-  contractDecimals: number
-  totalValue: number
-  actualBalance: number
-  isVerified: boolean
-  coinGeckoId: string
-  about: string
-  id: number
-  chainDetails?: Chain
-  denom?: string
-  stakedBalance?: string
-  actualStakedBalance: number
-  stakedBalanceTotalValue?: number
-  price24h?: number
-  unbondingBalanceTotalValue?: number
-  actualUnbondingBalance?: number
-  isMainnet?: boolean
-  isBridgeable: boolean
-  isSwapable: boolean
-  isStakeable?: boolean
+  name: string;
+  displayName?: string; // used in card
+  symbol: string;
+  logoUrl: string;
+  price: string;
+  contractAddress: string;
+  balance: string;
+  contractDecimals: number;
+  totalValue: number;
+  actualBalance: number;
+  isVerified: boolean;
+  coinGeckoId: string;
+  about: string;
+  id: number;
+  chainDetails?: Chain;
+  denom?: string;
+  stakedBalance?: string;
+  actualStakedBalance: number;
+  stakedBalanceTotalValue?: number;
+  price24h?: number;
+  unbondingBalanceTotalValue?: number;
+  actualUnbondingBalance?: number;
+  isMainnet?: boolean;
+  isBridgeable: boolean;
+  isSwapable: boolean;
+  isStakeable?: boolean;
 }
 
 export interface ChainHoldings {
-  chainTotalBalance: number
-  chainUnVerifiedBalance: number
-  chainStakedBalance: number
-  chainUnbondingBalance: number
-  holdings: Holding[]
-  timestamp: string
+  chainTotalBalance: number;
+  chainUnVerifiedBalance: number;
+  chainStakedBalance: number;
+  chainUnbondingBalance: number;
+  holdings: Holding[];
+  timestamp: string;
 }
 
 export interface WalletHoldings {
-  totalBalance: number
-  totalUnverifiedBalance: number
-  totalStakedBalance: number
-  totalUnbondingBalance: number
-  eth: ChainHoldings | undefined
-  polygon: ChainHoldings | undefined
-  bsc: ChainHoldings | undefined
-  avalanche: ChainHoldings | undefined
-  fantom: ChainHoldings | undefined
-  arbitrum: ChainHoldings | undefined
-  optimism: ChainHoldings | undefined
-  evmos: ChainHoldings | undefined
-  cosmos: ChainHoldings | undefined
-  osmosis: ChainHoldings | undefined
-  juno: ChainHoldings | undefined
-  stargaze: ChainHoldings | undefined
-  noble: ChainHoldings | undefined
-  shardeum: ChainHoldings | undefined
-  shardeum_sphinx: ChainHoldings | undefined
-  totalHoldings: Holding[]
+  totalBalance: number;
+  totalUnverifiedBalance: number;
+  totalStakedBalance: number;
+  totalUnbondingBalance: number;
+  eth: ChainHoldings | undefined;
+  polygon: ChainHoldings | undefined;
+  bsc: ChainHoldings | undefined;
+  avalanche: ChainHoldings | undefined;
+  fantom: ChainHoldings | undefined;
+  arbitrum: ChainHoldings | undefined;
+  optimism: ChainHoldings | undefined;
+  evmos: ChainHoldings | undefined;
+  cosmos: ChainHoldings | undefined;
+  osmosis: ChainHoldings | undefined;
+  juno: ChainHoldings | undefined;
+  stargaze: ChainHoldings | undefined;
+  noble: ChainHoldings | undefined;
+  shardeum: ChainHoldings | undefined;
+  shardeum_sphinx: ChainHoldings | undefined;
+  totalHoldings: Holding[];
 }
 
 export interface NftHolding {
-  symbol: string
-  address: string
-  id: number
-  image: string
-  tokenId: number
+  symbol: string;
+  address: string;
+  id: number;
+  image: string;
+  tokenId: number;
 }
 
 export interface ChainNftHoldings {
-  count: number
-  description: string
-  id: number
-  name: string
-  collections: NftHolding[]
-  timestamp: string
+  count: number;
+  description: string;
+  id: number;
+  name: string;
+  collections: NftHolding[];
+  timestamp: string;
 }
 
 export interface NftHoldings {
-  ETH: ChainNftHoldings[] | undefined
-  MATIC: ChainNftHoldings[] | undefined
-  BNB: ChainNftHoldings[] | undefined
-  AVAX: ChainNftHoldings[] | undefined
-  FTM: ChainNftHoldings[] | undefined
-  ARBITRUM: ChainNftHoldings[] | undefined
-  EVMOS: ChainNftHoldings[] | undefined
-  OPTIMISM: ChainNftHoldings[] | undefined
-  COSMOS: ChainNftHoldings[] | undefined
-  OSMO: ChainNftHoldings[] | undefined
-  JUNO: ChainNftHoldings[] | undefined
-  STARS: ChainNftHoldings[] | undefined
-  NOBLE: ChainNftHoldings[] | undefined
-  SHM: ChainNftHoldings[] | undefined
-  'ALL CHAINS': ChainNftHoldings[]
-};
+  ETH: ChainNftHoldings[] | undefined;
+  MATIC: ChainNftHoldings[] | undefined;
+  BNB: ChainNftHoldings[] | undefined;
+  AVAX: ChainNftHoldings[] | undefined;
+  FTM: ChainNftHoldings[] | undefined;
+  ARBITRUM: ChainNftHoldings[] | undefined;
+  EVMOS: ChainNftHoldings[] | undefined;
+  OPTIMISM: ChainNftHoldings[] | undefined;
+  COSMOS: ChainNftHoldings[] | undefined;
+  OSMO: ChainNftHoldings[] | undefined;
+  JUNO: ChainNftHoldings[] | undefined;
+  STARS: ChainNftHoldings[] | undefined;
+  NOBLE: ChainNftHoldings[] | undefined;
+  SHM: ChainNftHoldings[] | undefined;
+  'ALL CHAINS': ChainNftHoldings[];
+}
 
-export function getCurrentChainHoldings (
+export function getCurrentChainHoldings(
   portfolio: WalletHoldings,
   chain: Chain
 ) {
@@ -168,7 +172,11 @@ export function getCurrentChainHoldings (
   }
 }
 
-export async function fetchNftDatav2 (portfolioState: any, ethereum: any, stargaze: any) {
+export async function fetchNftDatav2(
+  portfolioState: any,
+  ethereum: any,
+  stargaze: any
+) {
   const allChainNftHoldings: NftHoldings = {
     ETH: [],
     MATIC: [],
@@ -184,7 +192,7 @@ export async function fetchNftDatav2 (portfolioState: any, ethereum: any, starga
     STARS: [],
     NOBLE: [],
     SHM: [],
-    'ALL CHAINS': []
+    'ALL CHAINS': [],
   };
   const cursor: string = '';
   const PORTFOLIO_HOST: string = hostWorker.getHost('PORTFOLIO_HOST');
@@ -192,28 +200,27 @@ export async function fetchNftDatav2 (portfolioState: any, ethereum: any, starga
   const getNfturl = `${PORTFOLIO_HOST}/v1/userholdings/nfts`;
   const getNftStargazeURL = `${ARCH_HOST}/v1/portfolio/stargaze/nft`;
   const promiseArray: Array<Promise<any>> = [];
-  for (const chains in ChainBackendNames) { // build promiseArray for all chains
+  for (const chains in ChainBackendNames) {
+    // build promiseArray for all chains
     if (['COSMOS', 'OSMOSIS', 'JUNO', 'NOBLE'].includes(chains)) {
       continue;
     }
     let temp;
     if (chains !== ChainBackendNames.STARGAZE) {
-      temp = axios.get(getNfturl,
-        {
-          params: {
-            address: ethereum.address,
-            chain: chains,
-            cursor,
-            is_cursor_pagination: true
-          }
-        });
+      temp = axios.get(getNfturl, {
+        params: {
+          address: ethereum.address,
+          chain: chains,
+          cursor,
+          is_cursor_pagination: true,
+        },
+      });
     } else {
-      temp = axios.get(getNftStargazeURL,
-        {
-          params: {
-            address: stargaze.address
-          }
-        });
+      temp = axios.get(getNftStargazeURL, {
+        params: {
+          address: stargaze.address,
+        },
+      });
     }
     promiseArray.push(temp);
   }
@@ -226,7 +233,7 @@ export async function fetchNftDatav2 (portfolioState: any, ethereum: any, starga
       type: 'error',
       text1: 'Network Timeout Error',
       text2: 'NFT portfolio has not loaded yet try refreshing in a while!',
-      position: 'bottom'
+      position: 'bottom',
     });
     Sentry.captureException('nft_portfolio_network_error');
     return null;
@@ -237,7 +244,9 @@ export async function fetchNftDatav2 (portfolioState: any, ethereum: any, starga
     if (['COSMOS', 'OSMOSIS', 'JUNO'].includes(chains)) {
       continue;
     }
-    const chainData = allChainNftBackend ? allChainNftBackend[index++].data.holdings : '';
+    const chainData = allChainNftBackend
+      ? allChainNftBackend[index++].data.holdings
+      : '';
     const tempCollections: Map<string, any> = new Map();
     for (const holding of chainData) {
       if (tempCollections.has(holding.token_address)) {
@@ -248,7 +257,7 @@ export async function fetchNftDatav2 (portfolioState: any, ethereum: any, starga
             id: data.count,
             address: holding.token_address,
             tokenId: holding.token_id,
-            symbol: data.collections[0].symbol
+            symbol: data.collections[0].symbol,
           });
         }
         tempCollections.set(holding.token_address, {
@@ -257,7 +266,7 @@ export async function fetchNftDatav2 (portfolioState: any, ethereum: any, starga
           count: Number(data.count) + 1,
           collections: data.collections,
           description: holding.description,
-          timestamp: new Date().toISOString()
+          timestamp: new Date().toISOString(),
         });
       } else {
         tempCollections.set(holding.token_address, {
@@ -270,11 +279,11 @@ export async function fetchNftDatav2 (portfolioState: any, ethereum: any, starga
               id: 0,
               address: holding.token_address,
               tokenId: holding.token_id,
-              symbol: chains
-            }
+              symbol: chains,
+            },
           ],
           description: holding.description,
-          timestamp: new Date().toISOString()
+          timestamp: new Date().toISOString(),
         });
         collectionId++;
       }
@@ -285,8 +294,11 @@ export async function fetchNftDatav2 (portfolioState: any, ethereum: any, starga
       chainNftData.push(value);
     });
     if (allChainNftHoldings['ALL CHAINS'] && chainNftData) {
-      allChainNftHoldings['ALL CHAINS'] = allChainNftHoldings['ALL CHAINS'].concat(chainNftData);
-    } else allChainNftHoldings['ALL CHAINS'] = allChainNftHoldings['ALL CHAINS'] || chainNftData;
+      allChainNftHoldings['ALL CHAINS'] =
+        allChainNftHoldings['ALL CHAINS'].concat(chainNftData);
+    } else
+      allChainNftHoldings['ALL CHAINS'] =
+        allChainNftHoldings['ALL CHAINS'] || chainNftData;
 
     switch (chains) {
       case CHAIN_ETH.backendName:
@@ -324,22 +336,35 @@ export async function fetchNftDatav2 (portfolioState: any, ethereum: any, starga
         break;
     }
   }
-  await storePortfolioData(allChainNftHoldings, ethereum, portfolioState, 'ALL_NFT');
+  await storePortfolioData(
+    allChainNftHoldings,
+    ethereum,
+    portfolioState,
+    'ALL_NFT'
+  );
   return allChainNftHoldings;
 }
 
-export function sortDesc (a: any, b: any) {
-  const first = parseFloat(get(a, 'totalValue', 0)) + parseFloat(get(a, 'actualStakedBalance', 0));
-  const second = parseFloat(get(b, 'totalValue', 0)) + parseFloat(get(b, 'actualStakedBalance', 0));
+export function sortDesc(a: any, b: any) {
+  const first =
+    parseFloat(get(a, 'totalValue', 0)) +
+    parseFloat(get(a, 'actualStakedBalance', 0));
+  const second =
+    parseFloat(get(b, 'totalValue', 0)) +
+    parseFloat(get(b, 'actualStakedBalance', 0));
   if (first < second) {
     return 1;
   } else if (first > second) {
     return -1;
   }
   return 0;
-};
+}
 
-export async function getPortfolioModel (ethereum: any, portfolioState: any, archCall: any): Promise<WalletHoldings> {
+export async function getPortfolioModel(
+  ethereum: any,
+  portfolioState: any,
+  archCall: any
+): Promise<WalletHoldings> {
   let id = 1;
   let totalUnverifiedBalance = 0;
   let totalBalance = 0;
@@ -361,7 +386,8 @@ export async function getPortfolioModel (ethereum: any, portfolioState: any, arc
   let ftmHoldings;
   let arbitrumHoldings;
   let optimismHoldings;
-  const allChains = new Set([CHAIN_AVALANCHE.backendName,
+  const allChains = new Set([
+    CHAIN_AVALANCHE.backendName,
     CHAIN_BSC.backendName,
     CHAIN_COSMOS.backendName,
     CHAIN_ETH.backendName,
@@ -374,7 +400,8 @@ export async function getPortfolioModel (ethereum: any, portfolioState: any, arc
     CHAIN_OPTIMISM.backendName,
     CHAIN_NOBLE.backendName,
     CHAIN_SHARDEUM.backendName,
-    CHAIN_SHARDEUM_SPHINX.backendName]);
+    CHAIN_SHARDEUM_SPHINX.backendName,
+  ]);
 
   const fetchedChains = new Set<ChainBackendNames | 'ALL'>();
 
@@ -406,14 +433,24 @@ export async function getPortfolioModel (ethereum: any, portfolioState: any, arc
         about: holding.about,
         id: id++,
         price24h: holding.price24h,
-        stakedBalance: holding.stakedBalance ? holding.stakedBalance : undefined,
-        actualStakedBalance: holding.actualStakedBalance ? holding.actualStakedBalance : 0,
-        stakedBalanceTotalValue: holding.stakedBalanceTotalValue ? holding.stakedBalanceTotalValue : 0,
-        actualUnbondingBalance: holding.actualUnbondingBalance ? holding.actualUnbondingBalance : 0,
-        unbondingBalanceTotalValue: holding.unbondingBalanceTotalValue ? holding.unbondingBalanceTotalValue : 0,
+        stakedBalance: holding.stakedBalance
+          ? holding.stakedBalance
+          : undefined,
+        actualStakedBalance: holding.actualStakedBalance
+          ? holding.actualStakedBalance
+          : 0,
+        stakedBalanceTotalValue: holding.stakedBalanceTotalValue
+          ? holding.stakedBalanceTotalValue
+          : 0,
+        actualUnbondingBalance: holding.actualUnbondingBalance
+          ? holding.actualUnbondingBalance
+          : 0,
+        unbondingBalanceTotalValue: holding.unbondingBalanceTotalValue
+          ? holding.unbondingBalanceTotalValue
+          : 0,
         isBridgeable: holding.isBridgeable,
         isSwapable: holding.isSwapable,
-        isStakeable: holding.isStakeable ?? false
+        isStakeable: holding.isStakeable ?? false,
       };
       if (has(holding, 'isMainnet')) {
         tokenHolding.isMainnet = holding.isMainnet;
@@ -476,11 +513,10 @@ export async function getPortfolioModel (ethereum: any, portfolioState: any, arc
       chainUnbondingBalance += Number(tokenHolding.actualUnbondingBalance);
     }
 
-    const chainTotalBalance = (allholdings[i]?.total_value)
+    const chainTotalBalance = allholdings[i]?.total_value
       ? parseFloat(allholdings[i]?.total_value)
       : 0;
-    const chainUnVerifiedBalance = (allholdings[i]
-      ?.unverfied_total_value)
+    const chainUnVerifiedBalance = allholdings[i]?.unverfied_total_value
       ? parseFloat(allholdings[i]?.unverfied_total_value)
       : 0;
     const chainHoldings: ChainHoldings = {
@@ -489,7 +525,7 @@ export async function getPortfolioModel (ethereum: any, portfolioState: any, arc
       chainStakedBalance,
       chainUnbondingBalance,
       holdings: tokenHoldings,
-      timestamp: new Date().toISOString()
+      timestamp: new Date().toISOString(),
     };
     totalBalance += chainTotalBalance;
     totalUnverifiedBalance += chainUnVerifiedBalance;
@@ -497,7 +533,12 @@ export async function getPortfolioModel (ethereum: any, portfolioState: any, arc
     totalUnbondingBalance += chainUnbondingBalance;
 
     fetchedChains.add(allholdings[i]?.chain_id);
-    await storePortfolioData(chainHoldings, ethereum, portfolioState, allholdings[i]?.chain_id);
+    await storePortfolioData(
+      chainHoldings,
+      ethereum,
+      portfolioState,
+      allholdings[i]?.chain_id
+    );
 
     chainHoldings.holdings.sort(sortDesc);
 
@@ -549,7 +590,9 @@ export async function getPortfolioModel (ethereum: any, portfolioState: any, arc
         break;
     }
   }
-  const remainingChains = new Set([...allChains].filter(x => !fetchedChains.has(x)));
+  const remainingChains = new Set(
+    [...allChains].filter((x) => !fetchedChains.has(x))
+  );
 
   if (remainingChains.size > 0 && portfolioState.statePortfolio.developerMode) {
     // showModal('state', {type: 'info', title: `Not refreshed : ${[...remainingChains].join(' ')}`, description: 'Try refreshing in a while!', onSuccess: hideModal, onFailure: hideModal});
@@ -557,7 +600,7 @@ export async function getPortfolioModel (ethereum: any, portfolioState: any, arc
       type: 'info',
       text1: `Not refreshed : ${[...remainingChains].join(' ')}`,
       text2: 'Try refreshing in a while!',
-      position: 'bottom'
+      position: 'bottom',
     });
   }
 
@@ -573,7 +616,9 @@ export async function getPortfolioModel (ethereum: any, portfolioState: any, arc
       } else totalHoldings = totalHoldings || chainHoldings.holdings;
 
       totalBalance += parseFloat(chainHoldings.chainTotalBalance);
-      totalUnverifiedBalance += parseFloat(chainHoldings.chainUnVerifiedBalance);
+      totalUnverifiedBalance += parseFloat(
+        chainHoldings.chainUnVerifiedBalance
+      );
 
       chainHoldings.holdings.sort(sortDesc);
       switch (chain) {
@@ -648,63 +693,91 @@ export async function getPortfolioModel (ethereum: any, portfolioState: any, arc
     arbitrum: arbitrumHoldings,
     shardeum: shardeumHoldings,
     shardeum_sphinx: shardeumSphinxHoldings,
-    totalHoldings
+    totalHoldings,
   };
   await storePortfolioData(portfolio, ethereum, portfolioState);
   return portfolio;
 }
 
-export async function fetchTokenData (hdWalletState: { state: { wallet: any } }, portfolioState: any) {
+export async function fetchTokenData(
+  hdWalletState: { state: { wallet: any } },
+  portfolioState: any
+) {
+  console.log('fetchTokenData');
+  console.log(portfolioState.statePortfolio);
   const ARCH_HOST: string = hostWorker.getHost('ARCH_HOST');
   const fromAnkr: boolean = portfolioState.statePortfolio.developerMode;
-  const cosmosPortfolioUrl = `${ARCH_HOST}/v1/portfolio/balances?ankr=${fromAnkr as unknown as string}`;
+  const cosmosPortfolioUrl = `${ARCH_HOST}/v1/portfolio/balances?ankr=${
+    fromAnkr as unknown as string
+  }`;
   const { isReadOnlyWallet } = hdWalletState.state;
-  const { cosmos, osmosis, juno, stargaze, noble, ethereum } = hdWalletState.state.wallet;
+  const { cosmos, osmosis, juno, stargaze, noble, ethereum } =
+    hdWalletState.state.wallet;
   if (ethereum.address !== 'null') {
     const localPortfolio = await getPortfolioData(ethereum, portfolioState);
-    const portfolio: WalletHoldings | null = (localPortfolio) ? (localPortfolio.data as unknown as WalletHoldings) : null;
+    const portfolio: WalletHoldings | null = localPortfolio
+      ? (localPortfolio.data as unknown as WalletHoldings)
+      : null;
 
-    const updatedTime = (localPortfolio !== null) ? localPortfolio.timestamp : new Date().toISOString();
+    const updatedTime =
+      localPortfolio !== null
+        ? localPortfolio.timestamp
+        : new Date().toISOString();
 
-    if (portfolio && portfolioState.statePortfolio.tokenPortfolio === undefined) {
-      if (portfolio?.totalUnverifiedBalance + portfolio?.totalBalance + portfolio?.totalStakedBalance > 0) {
+    if (
+      portfolio &&
+      portfolioState.statePortfolio.tokenPortfolio === undefined
+    ) {
+      if (
+        portfolio?.totalUnverifiedBalance +
+          portfolio?.totalBalance +
+          portfolio?.totalStakedBalance >
+        0
+      ) {
+        console.log('not empty dispatch');
         portfolioState.dispatchPortfolio({
           value: {
             tokenPortfolio: portfolio,
             portfolioState: PORTFOLIO_NOT_EMPTY,
-            rtimestamp: updatedTime
-          }
+            rtimestamp: updatedTime,
+          },
         });
       } else {
         portfolioState.dispatchPortfolio({
           value: {
             tokenPortfolio: portfolio,
             portfolioState: PORTFOLIO_EMPTY,
-            rtimestamp: updatedTime
-          }
+            rtimestamp: updatedTime,
+          },
         });
       }
     }
     let params = {
       'chains[]': PORTFOLIO_CHAINS_BACKEND_NAMES,
       allowTestnet: true,
-      'address[]': [cosmos?.wallets[cosmos?.currentIndex]?.address, osmosis?.wallets[osmosis?.currentIndex]?.address, juno?.wallets[juno?.currentIndex]?.address, stargaze?.address, noble?.address, ethereum.address]
+      'address[]': [
+        cosmos?.wallets[cosmos?.currentIndex]?.address,
+        osmosis?.wallets[osmosis?.currentIndex]?.address,
+        juno?.wallets[juno?.currentIndex]?.address,
+        stargaze?.address,
+        noble?.address,
+        ethereum.address,
+      ],
     };
     if (isReadOnlyWallet) {
       params = {
         allowTestnet: true,
         'chains[]': PORTFOLIO_CHAINS_BACKEND_NAMES,
-        'address[]': [ethereum.address]
+        'address[]': [ethereum.address],
       };
     }
-    const archCall = axios
-      .get(cosmosPortfolioUrl, {
-        params,
-        timeout: 25000,
-        paramsSerializer: function (params) {
-          return qs.stringify(params, { arrayFormat: 'repeat' });
-        }
-      });
+    const archCall = axios.get(cosmosPortfolioUrl, {
+      params,
+      timeout: 25000,
+      paramsSerializer: function (params) {
+        return qs.stringify(params, { arrayFormat: 'repeat' });
+      },
+    });
 
     const promiseArray: Array<Promise<any>> = [archCall];
     let result, archBackend;
@@ -716,31 +789,42 @@ export async function fetchTokenData (hdWalletState: { state: { wallet: any } },
         type: 'error',
         text1: 'Network Timeout Error',
         text2: 'Try refreshing in a while!',
-        position: 'bottom'
+        position: 'bottom',
       });
     }
 
-    if (archBackend && (archBackend?.status === 200)) {
+    if (archBackend && archBackend?.status === 200) {
       let newPortfolio = portfolio;
       if (archBackend.data.chain_portfolios.length > 0) {
-        newPortfolio = await getPortfolioModel(ethereum, portfolioState, archBackend);
+        newPortfolio = await getPortfolioModel(
+          ethereum,
+          portfolioState,
+          archBackend
+        );
       }
 
-      if (newPortfolio && newPortfolio?.totalUnverifiedBalance + newPortfolio?.totalBalance + newPortfolio?.totalStakedBalance > 0) {
+      if (
+        newPortfolio &&
+        newPortfolio?.totalUnverifiedBalance +
+          newPortfolio?.totalBalance +
+          newPortfolio?.totalStakedBalance >
+          0
+      ) {
+        console.log('newPortfolio dispatch');
         portfolioState.dispatchPortfolio({
           value: {
             tokenPortfolio: newPortfolio,
             portfolioState: PORTFOLIO_NOT_EMPTY,
-            rtimestamp: new Date().toISOString()
-          }
+            rtimestamp: new Date().toISOString(),
+          },
         });
       } else {
         portfolioState.dispatchPortfolio({
           value: {
             tokenPortfolio: newPortfolio,
             portfolioState: PORTFOLIO_EMPTY,
-            rtimestamp: new Date().toISOString()
-          }
+            rtimestamp: new Date().toISOString(),
+          },
         });
         // portfolioState.dispatchPortfolio({ value: { portfolioState: PORTFOLIO_EMPTY } });
       }
@@ -750,40 +834,46 @@ export async function fetchTokenData (hdWalletState: { state: { wallet: any } },
         type: 'error',
         text1: 'Network Timeout Error',
         text2: 'Try refreshing in a while!',
-        position: 'bottom'
+        position: 'bottom',
       });
     } else {
-      portfolioState.dispatchPortfolio({ value: { portfolioState: PORTFOLIO_ERROR } });
+      portfolioState.dispatchPortfolio({
+        value: { portfolioState: PORTFOLIO_ERROR },
+      });
       // showModal('state', {type: 'error', title: 'Portfolio not loaded', description: 'Try restarting the app! Check network status', onSuccess: hideModal, onFailure: hideModal});
       Toast.show({
         type: 'error',
         text1: 'Portfolio not loaded',
         text2: 'Try restarting the app! Check network status.',
-        position: 'bottom'
+        position: 'bottom',
       });
       Sentry.captureException('portfolio_not_load_edgecase');
     }
   }
 }
 
-export async function fetchRequiredTokenData (chain: string, address: string, symbol?: string) {
+export async function fetchRequiredTokenData(
+  chain: string,
+  address: string,
+  symbol?: string
+) {
   const ARCH_HOST: string = hostWorker.getHost('ARCH_HOST');
   const portfolioUrl = `${ARCH_HOST}/v1/portfolio/balances?`;
   const params = {
     'chains[]': [chain],
-    'address[]': [address]
+    'address[]': [address],
   };
   const response = await axios.get(portfolioUrl, {
     params,
     timeout: 25000,
     paramsSerializer: function (params) {
       return qs.stringify(params, { arrayFormat: 'repeat' });
-    }
+    },
   });
   if (response.data) {
     if (symbol) {
       const tokenHoldings = response.data.chain_portfolios[0].token_holdings;
-      const tokenData = tokenHoldings?.find(token => token.symbol === symbol);
+      const tokenData = tokenHoldings?.find((token) => token.symbol === symbol);
       return tokenData;
     } else {
       return response.data;
