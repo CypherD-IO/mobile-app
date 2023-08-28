@@ -646,14 +646,6 @@ function App() {
         });
     }
   };
-  const appHandler = async (changeType: any) => {
-    if (changeType === 'active' && globalState.token) {
-      const resp = await getWalletProfile(globalState.token);
-      if (resp?.response?.status === 401 || forcedUpdate) {
-        // void getAuthTokenData();
-      }
-    }
-  };
 
   useEffect(() => {
     const getHosts = async () => {
@@ -662,18 +654,12 @@ function App() {
           ethereum?.address &&
           ethereum?.privateKey !== _NO_CYPHERD_CREDENTIAL_AVAILABLE_
         ) {
-          console.log('getAuthTokenData');
           void getAuthTokenData();
         }
       });
     };
     void getHosts();
   }, [ethereum.address]);
-
-  useEffect(() => {
-    const subscription = AppState.addEventListener('change', appHandler);
-    return () => subscription.remove();
-  }, []);
 
   useEffect(() => {
     if (walletConnectState?.itemsAdded) {
