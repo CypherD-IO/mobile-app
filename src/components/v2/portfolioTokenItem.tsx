@@ -68,8 +68,6 @@ const PortfolioTokenItem = ({
     );
   };
 
-  console.log('token', item.name, item.chainDetails?.backendName);
-
   const RenderRightActions = (tokenData: any) => {
     const { isBridgeable, isSwapable } = tokenData;
     return (

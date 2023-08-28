@@ -233,7 +233,6 @@ export function PortfolioStackScreen({ navigation, route }) {
 
           headerTintColor: Colors.primaryTextColor,
           headerBackTitleVisible: false,
-          headerLeft: (props) => defaultHeaderLeft(navigation),
         })}
       />
 

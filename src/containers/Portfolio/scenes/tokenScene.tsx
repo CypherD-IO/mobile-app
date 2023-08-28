@@ -93,8 +93,6 @@ const TokenScene = ({
     []
   );
 
-  console.log('tokenScene');
-
   const onRefresh = async (pullToRefresh = true) => {
     setRefreshData({ isRefreshing: true, shouldRefreshAssets: pullToRefresh });
     setIsPortfolioRefreshing({
@@ -110,7 +108,6 @@ const TokenScene = ({
   };
 
   const holdingsData = useMemo(() => {
-    console.log('holdingsData');
     const data = getCurrentChainHoldings(
       portfolioState.statePortfolio.tokenPortfolio,
       portfolioState.statePortfolio.selectedChain
@@ -147,8 +144,6 @@ const TokenScene = ({
       holdingsByCoinGeckoId.length !== newHoldingsByCoingeckoId.length ||
       !isEqual(sortBy(holdingsByCoinGeckoId), sortBy(newHoldingsByCoingeckoId))
     ) {
-      console.log('setData');
-      console.log(newHoldingsByCoingeckoId);
       setHoldingsByCoinGeckoId(newHoldingsByCoingeckoId);
     }
   }, [holdingsData]);

@@ -2,19 +2,8 @@
  * @format
  * @flow
  */
-import React, {
-  useCallback,
-  useContext,
-  useEffect,
-  useMemo,
-  useState,
-} from 'react';
-import {
-  AppState,
-  BackHandler,
-  PanResponder,
-  useWindowDimensions,
-} from 'react-native';
+import React, { useCallback, useContext, useEffect, useState } from 'react';
+import { AppState, BackHandler, useWindowDimensions } from 'react-native';
 import analytics from '@react-native-firebase/analytics';
 import * as C from '../../constants/index';
 import { useTranslation } from 'react-i18next';
@@ -456,7 +445,6 @@ export default function Portfolio({ navigation }: PortfolioProps) {
         isRefreshing: true,
         shouldRefreshAssets: pullToRefresh,
       });
-      console.log('portfolio mian refresh');
       await fetchTokenData(hdWallet, portfolioState);
       setRefreshData({ isRefreshing: false, shouldRefreshAssets: false });
     }
@@ -467,9 +455,7 @@ export default function Portfolio({ navigation }: PortfolioProps) {
       isFocused &&
       portfolioState.statePortfolio.portfolioState !== PORTFOLIO_LOADING
     ) {
-      setTimeout(() => {
-        void onRefresh(false);
-      }, 250);
+      void onRefresh(false);
     }
   }, [isFocused]);
 
@@ -545,23 +531,6 @@ export default function Portfolio({ navigation }: PortfolioProps) {
   const isPortfolioError = () => {
     return portfolioState.statePortfolio.portfolioState === PORTFOLIO_ERROR;
   };
-
-  // const RenderTokenScene = useCallback(
-  //   ({ tabKey }) => {
-  //     return (
-  //       <TokenScene
-  //         {...sceneProps}
-  //         routeKey={'token'}
-  //         scrollY={scrollY}
-  //         navigation={navigation}
-  //         isVerifyCoinChecked={isVerifyCoinChecked}
-  //         getAllChainBalance={getAllChainBalance}
-  //         setRefreshData={setRefreshData}
-  //       />
-  //     );
-  //   },
-  //   [getRefForKey, isVerifyCoinChecked, scrollY]
-  // );
 
   const renderScene = useCallback(
     ({ route: tab }: { route: TabRoute }) => {
@@ -692,6 +661,7 @@ export default function Portfolio({ navigation }: PortfolioProps) {
       <AnimatedBanner scrollY={scrollY}>
         <Banner checkAllBalance={checkAll(portfolioState)} />
       </AnimatedBanner>
+
       <PortfolioTabView
         index={index}
         setIndex={setIndex}
