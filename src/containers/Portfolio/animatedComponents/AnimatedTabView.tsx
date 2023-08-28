@@ -63,6 +63,7 @@ const AnimatedTabViewWithoutMemo = ({
   refreshControl,
   ListEmptyComponent,
   children,
+  keyExtractor,
 }: AnimatedTabViewProps) => {
   const handleScroll = useAnimatedScrollHandler((event) => {
     scrollY.value = event.contentOffset.y;
@@ -135,6 +136,7 @@ const AnimatedTabViewWithoutMemo = ({
         {...commonProps}
         ref={onRef as (scrollableChild: Animated.FlatList<any> | null) => void}
         data={data}
+        keyExtractor={keyExtractor}
         onViewableItemsChanged={onViewRef.current}
         viewabilityConfig={viewConfigRef.current}
         renderItem={({ item, index }) => {

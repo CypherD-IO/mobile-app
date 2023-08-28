@@ -38,7 +38,7 @@ import PortfolioTokenItem from '../../../components/v2/portfolioTokenItem';
 import { PORTFOLIO_EMPTY } from '../../../reducers/portfolio_reducer';
 import Button from '../../../components/v2/button';
 import { screenTitle } from '../../../constants';
-import { Chain } from '../../../constants/server';
+import { CHAIN_COLLECTION, Chain } from '../../../constants/server';
 import { H_BALANCE_BANNER } from '../constants';
 import { TokenMeta } from '../../../models/tokenMetaData.model';
 import { render } from 'react-dom';
@@ -107,11 +107,7 @@ const TokenScene = ({
     });
   };
 
-  const holdingsData = useMemo(() => {
-    const data = getCurrentChainHoldings(
-      portfolioState.statePortfolio.tokenPortfolio,
-      portfolioState.statePortfolio.selectedChain
-    );
+  const getIndexedData = (data: any) => {
     if (data) {
       let holdings = [];
       if ('holdings' in data) {
@@ -133,20 +129,32 @@ const TokenScene = ({
     } else {
       return {};
     }
-  }, [
-    portfolioState.statePortfolio.tokenPortfolio,
-    portfolioState.statePortfolio.selectedChain,
-  ]);
+  };
+
+  const holdingsData = useMemo(() => {
+    const data = getCurrentChainHoldings(
+      portfolioState.statePortfolio.tokenPortfolio,
+      CHAIN_COLLECTION
+    );
+    return getIndexedData(data);
+  }, [portfolioState.statePortfolio.tokenPortfolio]);
 
   useEffect(() => {
-    const newHoldingsByCoingeckoId = Object.keys(holdingsData);
+    const data = getCurrentChainHoldings(
+      portfolioState.statePortfolio.tokenPortfolio,
+      portfolioState.statePortfolio.selectedChain
+    );
+    const newHoldingsByCoingeckoId = Object.keys(getIndexedData(data));
     if (
       holdingsByCoinGeckoId.length !== newHoldingsByCoingeckoId.length ||
       !isEqual(sortBy(holdingsByCoinGeckoId), sortBy(newHoldingsByCoingeckoId))
     ) {
       setHoldingsByCoinGeckoId(newHoldingsByCoingeckoId);
     }
-  }, [holdingsData]);
+  }, [
+    portfolioState.statePortfolio.tokenPortfolio,
+    portfolioState.statePortfolio.selectedChain,
+  ]);
 
   const swipeableRefs: Array<Swipeable | null> = [];
   let previousOpenedSwipeableRef: Swipeable | null;
@@ -272,7 +280,7 @@ export const AnimatedPortfolioToken = (props: {
   const { viewableItems, item, index } = props;
   const rStyle = useAnimatedStyle(() => {
     let isVisible = true;
-    if (viewableItems?.value.length > 5) {
+    if (viewableItems?.value.length > 3) {
       isVisible = viewableItems.value.includes(item);
       if (!isVisible) {
         const latViewableIndex = Number(
