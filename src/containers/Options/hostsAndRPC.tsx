@@ -384,43 +384,43 @@ export default function HostsAndRPCScreen ({ navigation }) {
               placeholder='' />
           </CyDView>
             : <CyDView></CyDView>}
-            {rpcEndpoints.shardeum_sphinx
+            {rpcEndpoints.zksync_era
             ? <CyDView className={'mb-[30px]'}>
             <CyDText className={'text-[16px] font-black'}>{ChainBackendNames.ZKSYNC_ERA}</CyDText>
             <CyDTextInput className={clsx('mt-[10px] border-[1px] border-inputBorderColor rounded-[5px] p-[12px] text-[18px] font-nunito text-primaryTextColor')}
               value={maskString(rpcEndpoints.zksync_era)}
               editable={devMode}
               autoCapitalize="none"
-              key="shardeum_sphinx"
-              onChangeText={(value) => { setRPCEndpoints({ ...rpcEndpoints, shardeum_sphinx: value }); }}
+              key="zksync_era"
+              onChangeText={(value) => { setRPCEndpoints({ ...rpcEndpoints, zksync_era: value }); }}
               autoCorrect={false}
               placeholderTextColor={'#C5C5C5'}
               placeholder='' />
           </CyDView>
             : <CyDView></CyDView>}
-            {rpcEndpoints.shardeum_sphinx
+            {rpcEndpoints.base
             ? <CyDView className={'mb-[30px]'}>
             <CyDText className={'text-[16px] font-black'}>{ChainBackendNames.BASE}</CyDText>
             <CyDTextInput className={clsx('mt-[10px] border-[1px] border-inputBorderColor rounded-[5px] p-[12px] text-[18px] font-nunito text-primaryTextColor')}
               value={maskString(rpcEndpoints.base)}
               editable={devMode}
               autoCapitalize="none"
-              key="shardeum_sphinx"
-              onChangeText={(value) => { setRPCEndpoints({ ...rpcEndpoints, shardeum_sphinx: value }); }}
+              key="base"
+              onChangeText={(value) => { setRPCEndpoints({ ...rpcEndpoints, base: value }); }}
               autoCorrect={false}
               placeholderTextColor={'#C5C5C5'}
               placeholder='' />
           </CyDView>
             : <CyDView></CyDView>}
-            {rpcEndpoints.shardeum_sphinx
+            {rpcEndpoints.polygon_zkevm
             ? <CyDView className={'mb-[30px]'}>
             <CyDText className={'text-[16px] font-black'}>{ChainBackendNames.POLYGON_ZKEVM}</CyDText>
             <CyDTextInput className={clsx('mt-[10px] border-[1px] border-inputBorderColor rounded-[5px] p-[12px] text-[18px] font-nunito text-primaryTextColor')}
               value={maskString(rpcEndpoints.polygon_zkevm)}
               editable={devMode}
               autoCapitalize="none"
-              key="shardeum_sphinx"
-              onChangeText={(value) => { setRPCEndpoints({ ...rpcEndpoints, shardeum_sphinx: value }); }}
+              key="polygon_zkevm"
+              onChangeText={(value) => { setRPCEndpoints({ ...rpcEndpoints, polygon_zkevm: value }); }}
               autoCorrect={false}
               placeholderTextColor={'#C5C5C5'}
               placeholder='' />
