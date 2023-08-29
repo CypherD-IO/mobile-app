@@ -4,6 +4,7 @@ import {
   ListRenderItem,
   Platform,
   ScrollViewProps,
+  StyleSheet,
   ViewProps,
   ViewToken,
 } from 'react-native';
@@ -12,7 +13,7 @@ import Animated, {
   useAnimatedScrollHandler,
   useSharedValue,
 } from 'react-native-reanimated';
-import { isIOS } from '../../../misc/checkers';
+import { isAndroid, isIOS } from '../../../misc/checkers';
 import { H_BALANCE_BANNER, H_GUTTER } from '../constants';
 
 // we provide this bc ios allows overscrolling but android doesn't
@@ -22,32 +23,30 @@ export const OFFSET_TABVIEW = isIOS() ? -H_BALANCE_BANNER : 0;
 
 export interface AnimatedTabViewProps
   extends ViewProps,
-  Pick<
-    FlatListProps<any> & ScrollViewProps,
-    | 'initialNumToRender'
-    | 'maxToRenderPerBatch'
-    | 'onContentSizeChange'
-    | 'onMomentumScrollBegin'
-    | 'onMomentumScrollEnd'
-    | 'onScrollEndDrag'
-    | 'keyExtractor'
-    | 'updateCellsBatchingPeriod'
-    | 'windowSize'
-    | 'ListEmptyComponent'
-  > {
+    Pick<
+      FlatListProps<any> & ScrollViewProps,
+      | 'initialNumToRender'
+      | 'maxToRenderPerBatch'
+      | 'onContentSizeChange'
+      | 'onMomentumScrollBegin'
+      | 'onMomentumScrollEnd'
+      | 'onScrollEndDrag'
+      | 'keyExtractor'
+      | 'updateCellsBatchingPeriod'
+      | 'windowSize'
+      | 'ListEmptyComponent'
+    > {
   data?: any[];
   renderItem?:
-  | ListRenderItem<any>
-  | Animated.Node<ListRenderItem<any> | null | undefined>
-  | null
-  | undefined;
-  onRef:
-  | Animated.FlatList<any>
-  | Animated.ScrollView | null
+    | ListRenderItem<any>
+    | Animated.Node<ListRenderItem<any> | null | undefined>
+    | null
+    | undefined;
+  onRef: Animated.FlatList<any> | Animated.ScrollView | null;
   scrollY: SharedValue<number>;
   refreshControl?: ReactElement;
   children?: React.ReactNode;
-  extraData?: any
+  extraData?: any;
 }
 
 const AnimatedTabViewWithoutMemo = ({
@@ -65,7 +64,7 @@ const AnimatedTabViewWithoutMemo = ({
   ListEmptyComponent,
   children,
   keyExtractor,
-  extraData
+  extraData,
 }: AnimatedTabViewProps) => {
   const handleScroll = useAnimatedScrollHandler((event) => {
     scrollY.value = event.contentOffset.y;
@@ -127,6 +126,11 @@ const AnimatedTabViewWithoutMemo = ({
     return (
       <Animated.ScrollView
         {...commonProps}
+        contentContainerStyle={
+          isAndroid()
+            ? styles.scrollViewContentContainer
+            : commonProps.contentContainerStyle
+        }
         ref={onRef as Animated.ScrollView}
       >
         {children}
@@ -156,3 +160,12 @@ const AnimatedTabViewWithoutMemo = ({
 export const AnimatedTabView = memo(
   AnimatedTabViewWithoutMemo
 ) as typeof AnimatedTabViewWithoutMemo;
+
+const styles = StyleSheet.create({
+  scrollViewContentContainer: {
+    // height: '100%',
+    flexGrow: 1,
+    // paddingTop: H_BALANCE_BANNER,
+    paddingBottom: H_GUTTER,
+  },
+});
