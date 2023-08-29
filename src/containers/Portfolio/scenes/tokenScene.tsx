@@ -4,6 +4,7 @@ import React, {
   useContext,
   useEffect,
   useMemo,
+  useRef,
   useState,
 } from 'react';
 import {
@@ -93,6 +94,15 @@ const TokenScene = ({
     []
   );
 
+  const flatListRef = useRef<FlatList<any>>(null);
+
+  useEffect(() => {
+    if (flatListRef.current) {
+      flatListRef.current.scrollToOffset({ offset: scrollY.value });
+      trackRef(routeKey, flatListRef.current);
+    }
+  }, [flatListRef.current]);
+
   const onRefresh = async (pullToRefresh = true) => {
     setRefreshData({ isRefreshing: true, shouldRefreshAssets: pullToRefresh });
     setIsPortfolioRefreshing({
@@ -118,12 +128,12 @@ const TokenScene = ({
       let tempHoldingsData = {};
       holdings.forEach(
         (holding: Holding) =>
-          (tempHoldingsData = {
-            ...tempHoldingsData,
-            [holding.coinGeckoId +
+        (tempHoldingsData = {
+          ...tempHoldingsData,
+          [holding.coinGeckoId +
             ':' +
             String(holding.chainDetails?.chainIdNumber)]: holding,
-          })
+        })
       );
       return tempHoldingsData;
     } else {
@@ -203,6 +213,7 @@ const TokenScene = ({
         <CyDView className='flex-1 h-full'>
           <AnimatedTabView
             data={holdingsByCoinGeckoId}
+            extraData={isVerifyCoinChecked}
             keyExtractor={(item) => item}
             refreshControl={
               <RefreshControl
@@ -214,9 +225,7 @@ const TokenScene = ({
               />
             }
             renderItem={renderItem}
-            onRef={(ref: any) => {
-              trackRef(routeKey, ref);
-            }}
+            onRef={flatListRef}
             scrollY={scrollY}
             onScrollEndDrag={onScrollEndDrag}
             onMomentumScrollBegin={onMomentumScrollBegin}

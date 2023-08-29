@@ -703,13 +703,10 @@ export async function fetchTokenData(
   hdWalletState: { state: { wallet: any } },
   portfolioState: any
 ) {
-  console.log('fetchTokenData');
-  console.log(portfolioState.statePortfolio);
   const ARCH_HOST: string = hostWorker.getHost('ARCH_HOST');
   const fromAnkr: boolean = portfolioState.statePortfolio.developerMode;
-  const cosmosPortfolioUrl = `${ARCH_HOST}/v1/portfolio/balances?ankr=${
-    fromAnkr as unknown as string
-  }`;
+  const cosmosPortfolioUrl = `${ARCH_HOST}/v1/portfolio/balances?ankr=${fromAnkr as unknown as string
+    }`;
   const { isReadOnlyWallet } = hdWalletState.state;
   const { cosmos, osmosis, juno, stargaze, noble, ethereum } =
     hdWalletState.state.wallet;
@@ -730,11 +727,10 @@ export async function fetchTokenData(
     ) {
       if (
         portfolio?.totalUnverifiedBalance +
-          portfolio?.totalBalance +
-          portfolio?.totalStakedBalance >
+        portfolio?.totalBalance +
+        portfolio?.totalStakedBalance >
         0
       ) {
-        console.log('not empty dispatch');
         portfolioState.dispatchPortfolio({
           value: {
             tokenPortfolio: portfolio,
@@ -806,11 +802,10 @@ export async function fetchTokenData(
       if (
         newPortfolio &&
         newPortfolio?.totalUnverifiedBalance +
-          newPortfolio?.totalBalance +
-          newPortfolio?.totalStakedBalance >
-          0
+        newPortfolio?.totalBalance +
+        newPortfolio?.totalStakedBalance >
+        0
       ) {
-        console.log('newPortfolio dispatch');
         portfolioState.dispatchPortfolio({
           value: {
             tokenPortfolio: newPortfolio,

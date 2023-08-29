@@ -4,6 +4,7 @@ import {
   ListRenderItem,
   Platform,
   ScrollViewProps,
+  StyleSheet,
   ViewProps,
   ViewToken,
 } from 'react-native';
@@ -12,7 +13,7 @@ import Animated, {
   useAnimatedScrollHandler,
   useSharedValue,
 } from 'react-native-reanimated';
-import { isIOS } from '../../../misc/checkers';
+import { isAndroid, isIOS } from '../../../misc/checkers';
 import { H_BALANCE_BANNER, H_GUTTER } from '../constants';
 
 // we provide this bc ios allows overscrolling but android doesn't
@@ -41,12 +42,11 @@ export interface AnimatedTabViewProps
     | Animated.Node<ListRenderItem<any> | null | undefined>
     | null
     | undefined;
-  onRef:
-    | ((scrollableChild: Animated.FlatList<any> | null) => void)
-    | ((scrollableChild: Animated.ScrollView | null) => void);
+  onRef: Animated.FlatList<any> | Animated.ScrollView | null;
   scrollY: SharedValue<number>;
   refreshControl?: ReactElement;
   children?: React.ReactNode;
+  extraData?: any;
 }
 
 const AnimatedTabViewWithoutMemo = ({
@@ -64,6 +64,7 @@ const AnimatedTabViewWithoutMemo = ({
   ListEmptyComponent,
   children,
   keyExtractor,
+  extraData,
 }: AnimatedTabViewProps) => {
   const handleScroll = useAnimatedScrollHandler((event) => {
     scrollY.value = event.contentOffset.y;
@@ -100,32 +101,37 @@ const AnimatedTabViewWithoutMemo = ({
 
   const viewableItems = useSharedValue<ViewToken[]>([]);
 
-  const onViewRef = React.useRef(
-    ({ viewableItems: vItems }: { viewableItems: ViewToken[] }) => {
-      if (vItems.length) {
-        viewableItems.value = vItems.map((vItem) =>
-          vItem.isViewable ? vItem.item : null
-        );
-      }
-    }
-  );
-  const viewConfigRef = React.useRef({
-    waitForInteraction: false,
-    itemVisiblePercentThreshold: 75,
-  });
+  // const onViewRef = React.useRef(
+  //   ({ viewableItems: vItems }: { viewableItems: ViewToken[] }) => {
+  //     if (vItems.length) {
+  //       viewableItems.value = vItems.map((vItem) =>
+  //         vItem.isViewable ? vItem.item : null
+  //       );
+  //     }
+  //   }
+  // );
+  // const viewConfigRef = React.useRef({
+  //   waitForInteraction: false,
+  //   itemVisiblePercentThreshold: 75,
+  // });
 
-  const RenderItem = useCallback(
+  const renderFlatlistItem = useCallback(
     ({ item, index }) => {
       return renderItem({ item, index, viewableItems });
     },
-    [viewableItems.value]
+    [viewableItems.value, extraData]
   );
 
   if (children) {
     return (
       <Animated.ScrollView
         {...commonProps}
-        ref={onRef as (scrollableChild: Animated.ScrollView | null) => void}
+        contentContainerStyle={
+          isAndroid()
+            ? styles.scrollViewContentContainer
+            : commonProps.contentContainerStyle
+        }
+        ref={onRef as Animated.ScrollView}
       >
         {children}
       </Animated.ScrollView>
@@ -134,18 +140,18 @@ const AnimatedTabViewWithoutMemo = ({
     return (
       <Animated.FlatList
         {...commonProps}
-        ref={onRef as (scrollableChild: Animated.FlatList<any> | null) => void}
+        ref={onRef as Animated.FlatList<any>}
         data={data}
         keyExtractor={keyExtractor}
-        onViewableItemsChanged={onViewRef.current}
-        viewabilityConfig={viewConfigRef.current}
-        renderItem={({ item, index }) => {
-          return <RenderItem item={item} index={index} />;
-        }}
+        // TO REDO
+        // onViewableItemsChanged={onViewRef.current}
+        // viewabilityConfig={viewConfigRef.current}
+        renderItem={renderFlatlistItem}
         ListEmptyComponent={ListEmptyComponent}
         initialNumToRender={initialNumToRender}
         maxToRenderPerBatch={maxToRenderPerBatch}
         onContentSizeChange={onContentSizeChange}
+        extraData={extraData}
       />
     );
   }
@@ -154,3 +160,12 @@ const AnimatedTabViewWithoutMemo = ({
 export const AnimatedTabView = memo(
   AnimatedTabViewWithoutMemo
 ) as typeof AnimatedTabViewWithoutMemo;
+
+const styles = StyleSheet.create({
+  scrollViewContentContainer: {
+    // height: '100%',
+    flexGrow: 1,
+    // paddingTop: H_BALANCE_BANNER,
+    paddingBottom: H_GUTTER,
+  },
+});
