@@ -8,7 +8,7 @@ import { useTranslation } from 'react-i18next';
 
 const TIME_UPDATE_RUNNER_INTERVAL = 1000;
 
-export const RefreshTimerBar = (props: {isRefreshing: boolean, isVerifiedCoinCheckedState: [boolean, React.Dispatch<React.SetStateAction<boolean>>]}) => {
+export const RefreshTimerBar = (props: { isRefreshing: boolean, isVerifiedCoinCheckedState: [boolean, React.Dispatch<React.SetStateAction<boolean>>] }) => {
   const { isRefreshing, isVerifiedCoinCheckedState } = props;
   const [isVerifyCoinChecked, setIsVerifyCoinChecked] = isVerifiedCoinCheckedState;
   const portfolioState = useContext<any>(PortfolioContext);
@@ -38,7 +38,7 @@ export const RefreshTimerBar = (props: {isRefreshing: boolean, isVerifiedCoinChe
   };
 
   useEffect(() => {
-    const timeUpdateRunner = setInterval(function time () {
+    const timeUpdateRunner = setInterval(function time() {
       if (!isRefreshing) {
         const chainName = (portfolioState.statePortfolio.selectedChain.backendName).toLowerCase();
         const currTimestamp = portfolioState.statePortfolio.selectedChain.backendName !== 'ALL'
@@ -54,7 +54,7 @@ export const RefreshTimerBar = (props: {isRefreshing: boolean, isVerifiedCoinChe
       clearInterval(timeUpdateRunner);
     };
 
-    function getCurrentChainRefreshTime (chainName: any) {
+    function getCurrentChainRefreshTime(chainName: any) {
       return portfolioState?.statePortfolio?.tokenPortfolio[chainName]?.timestamp || new Date().toISOString();
     }
   }, [portfolioState.statePortfolio.rtimestamp, portfolioState.statePortfolio.selectedChain, isRefreshing]);
@@ -62,7 +62,7 @@ export const RefreshTimerBar = (props: {isRefreshing: boolean, isVerifiedCoinChe
   return (
     <CyDView className='bg-white flex flex-row justify-between rounded-t-[24px] border border-sepratorColor py-[10px] px-[10px] mx-[10px]'>
       <CyDView className='flex flex-row items-center'>
-        <CyDFastImage source={AppImages.CLOCK} className='h-[16px] w-[16px]' resizeMode='contain'/>
+        <CyDFastImage source={AppImages.CLOCK} className='h-[16px] w-[16px]' resizeMode='contain' />
         <CyDText className='ml-[10px]'>{time}</CyDText>
       </CyDView>
       <CyDTouchView className='flex flex-row items-center' onPress={() => {
@@ -71,7 +71,7 @@ export const RefreshTimerBar = (props: {isRefreshing: boolean, isVerifiedCoinChe
         <CyDView
           className={clsx('h-[15px] w-[15px] justify-center items-center rounded-[4px] border-[1px] border-black', { 'bg-black': isVerifyCoinChecked, 'bg-transparent': !isVerifyCoinChecked })}
         >
-          {isVerifyCoinChecked && <CyDFastImage source={AppImages.CORRECT} className='h-[14px] w-[10px]' resizeMode='contain'/>}
+          {isVerifyCoinChecked && <CyDFastImage source={AppImages.CORRECT} className='h-[14px] w-[10px]' resizeMode='contain' />}
         </CyDView>
         <CyDText className='ml-[5px]'>{t('ONLY_VERIFIED_COINS')}</CyDText>
       </CyDTouchView>
