@@ -213,6 +213,7 @@ const TokenScene = ({
         <CyDView className='flex-1 h-full'>
           <AnimatedTabView
             data={holdingsByCoinGeckoId}
+            extraData={isVerifyCoinChecked}
             keyExtractor={(item) => item}
             refreshControl={
               <RefreshControl

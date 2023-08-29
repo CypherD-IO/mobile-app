@@ -47,6 +47,7 @@ export interface AnimatedTabViewProps
   scrollY: SharedValue<number>;
   refreshControl?: ReactElement;
   children?: React.ReactNode;
+  extraData?: any
 }
 
 const AnimatedTabViewWithoutMemo = ({
@@ -64,6 +65,7 @@ const AnimatedTabViewWithoutMemo = ({
   ListEmptyComponent,
   children,
   keyExtractor,
+  extraData
 }: AnimatedTabViewProps) => {
   const handleScroll = useAnimatedScrollHandler((event) => {
     scrollY.value = event.contentOffset.y;
@@ -100,25 +102,25 @@ const AnimatedTabViewWithoutMemo = ({
 
   const viewableItems = useSharedValue<ViewToken[]>([]);
 
-  const onViewRef = React.useRef(
-    ({ viewableItems: vItems }: { viewableItems: ViewToken[] }) => {
-      if (vItems.length) {
-        viewableItems.value = vItems.map((vItem) =>
-          vItem.isViewable ? vItem.item : null
-        );
-      }
-    }
-  );
-  const viewConfigRef = React.useRef({
-    waitForInteraction: false,
-    itemVisiblePercentThreshold: 75,
-  });
+  // const onViewRef = React.useRef(
+  //   ({ viewableItems: vItems }: { viewableItems: ViewToken[] }) => {
+  //     if (vItems.length) {
+  //       viewableItems.value = vItems.map((vItem) =>
+  //         vItem.isViewable ? vItem.item : null
+  //       );
+  //     }
+  //   }
+  // );
+  // const viewConfigRef = React.useRef({
+  //   waitForInteraction: false,
+  //   itemVisiblePercentThreshold: 75,
+  // });
 
   const renderFlatlistItem = useCallback(
     ({ item, index }) => {
       return renderItem({ item, index, viewableItems });
     },
-    [viewableItems.value]
+    [viewableItems.value, extraData]
   );
 
   if (children) {
@@ -137,6 +139,7 @@ const AnimatedTabViewWithoutMemo = ({
         ref={onRef as Animated.FlatList<any>}
         data={data}
         keyExtractor={keyExtractor}
+        // TO REDO
         // onViewableItemsChanged={onViewRef.current}
         // viewabilityConfig={viewConfigRef.current}
         renderItem={renderFlatlistItem}
@@ -144,6 +147,7 @@ const AnimatedTabViewWithoutMemo = ({
         initialNumToRender={initialNumToRender}
         maxToRenderPerBatch={maxToRenderPerBatch}
         onContentSizeChange={onContentSizeChange}
+        extraData={extraData}
       />
     );
   }
