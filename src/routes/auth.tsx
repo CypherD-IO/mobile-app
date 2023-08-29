@@ -66,7 +66,7 @@ import SetPin from '../containers/PinAuthetication/setPin';
 import PinValidation from '../containers/PinAuthetication/pinValidation';
 import UpdateCardApplicationScreen from '../containers/DebitCard/updateCardApplication';
 import HostsAndRPCScreen from '../containers/Options/hostsAndRPC';
-import { CyDImage, CyDTouchView } from '../styles/tailwindStyles';
+import { CyDFastImage, CyDTouchView } from '../styles/tailwindStyles';
 import TransactionDetails from '../containers/DebitCard/bridgeCard/transactionDetails';
 import ReferralRewards from '../containers/ReferralRewards/referrals';
 import TokenOverviewV2 from '../containers/TokenOverview';
@@ -98,7 +98,7 @@ const defaultHeaderLeft = (navigation) => {
   const { keyboardHeight } = useKeyboard();
   return (
     <CyDTouchView
-      className='w-[60px]'
+      className='w-[60px] py-[10px] pl-[5px] pr-[20px]'
       onPress={() => {
         console.log(keyboardHeight);
         if (keyboardHeight) {
@@ -111,7 +111,7 @@ const defaultHeaderLeft = (navigation) => {
         }
       }}
     >
-      <CyDImage
+      <CyDFastImage
         className={'h-[20px] w-[20px]'}
         resizeMode='cover'
         source={AppImages.BACK}
@@ -230,9 +230,9 @@ export function PortfolioStackScreen({ navigation, route }) {
           navigationOptions: {
             tabBarVisible: false,
           },
-
           headerTintColor: Colors.primaryTextColor,
           headerBackTitleVisible: false,
+          headerLeft: (props) => defaultHeaderLeft(navigation),
         })}
       />
 

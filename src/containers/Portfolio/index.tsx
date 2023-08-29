@@ -69,6 +69,7 @@ import { AnimatedBanner, AnimatedTabBar } from './animatedComponents';
 import { useScrollManager } from '../../hooks/useScrollManager';
 import { NFTScene, TokenScene } from './scenes';
 import CyDTokenValue from '../../components/v2/tokenValue';
+import moment from 'moment';
 
 export interface PortfolioProps {
   navigation: any;
@@ -451,9 +452,16 @@ export default function Portfolio({ navigation }: PortfolioProps) {
   }, []);
 
   useEffect(() => {
+    const currTimestamp = portfolioState.statePortfolio.selectedChain.backendName !== 'ALL'
+      ? portfolioState?.statePortfolio?.tokenPortfolio[(portfolioState.statePortfolio.selectedChain.backendName).toLowerCase()]?.timestamp || new Date().toISOString() // use the time for individual chain
+      : portfolioState.statePortfolio.rtimestamp;
+
+    const oneMinuteHasPassed = moment().diff(moment(currTimestamp), 'minutes') >= 1;
+    console.log(oneMinuteHasPassed);
     if (
       isFocused &&
-      portfolioState.statePortfolio.portfolioState !== PORTFOLIO_LOADING
+      (portfolioState?.statePortfolio?.tokenPortfolio === undefined ||
+        oneMinuteHasPassed)
     ) {
       void onRefresh(false);
     }
@@ -501,12 +509,12 @@ export default function Portfolio({ navigation }: PortfolioProps) {
         } = currentChainHoldings as ChainHoldings; // Type-assertion (currentChainHoldings can only be of type ChainHoldings if selectedChain.backendName !== 'ALL')
         return isVerifyCoinChecked
           ? Number(chainTotalBalance) +
-              Number(chainStakedBalance) +
-              Number(chainUnbondingBalance)
+          Number(chainStakedBalance) +
+          Number(chainUnbondingBalance)
           : Number(chainTotalBalance) +
-              Number(chainUnVerifiedBalance) +
-              Number(chainStakedBalance) +
-              Number(chainUnbondingBalance);
+          Number(chainUnVerifiedBalance) +
+          Number(chainStakedBalance) +
+          Number(chainUnbondingBalance);
       } else {
         return '...';
       }
