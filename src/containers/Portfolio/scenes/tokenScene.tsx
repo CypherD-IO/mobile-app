@@ -43,7 +43,8 @@ import { CHAIN_COLLECTION, Chain } from '../../../constants/server';
 import { H_BALANCE_BANNER } from '../constants';
 import { TokenMeta } from '../../../models/tokenMetaData.model';
 import { render } from 'react-dom';
-import { isEqual, sortBy } from 'lodash';
+import { get, isEmpty, isEqual, sortBy } from 'lodash';
+import Loading from '../../../components/v2/loading';
 
 type ScrollEvent = NativeSyntheticEvent<NativeScrollEvent>;
 
@@ -128,12 +129,12 @@ const TokenScene = ({
       let tempHoldingsData = {};
       holdings.forEach(
         (holding: Holding) =>
-        (tempHoldingsData = {
-          ...tempHoldingsData,
-          [holding.coinGeckoId +
+          (tempHoldingsData = {
+            ...tempHoldingsData,
+            [holding.coinGeckoId +
             ':' +
             String(holding.chainDetails?.chainIdNumber)]: holding,
-        })
+          })
       );
       return tempHoldingsData;
     } else {
@@ -184,16 +185,19 @@ const TokenScene = ({
     ref?.close();
   };
 
-  const renderItem = ({ item, index, viewableItems }) => {
-    if (holdingsData?.[item]) {
-      return (
-        <AnimatedPortfolioToken
-          item={item}
-          index={index}
-          viewableItems={viewableItems}
-        >
+  const renderItem = useCallback(
+    ({ item, index, viewableItems }) => {
+      if (item) {
+        return (
+          // To Do animation
+
+          // <AnimatedPortfolioToken
+          //   item={item}
+          //   index={index}
+          //   viewableItems={viewableItems}
+          // >
           <PortfolioTokenItem
-            item={holdingsData[item]}
+            item={item}
             key={index}
             index={index}
             isVerifyCoinChecked={isVerifyCoinChecked}
@@ -201,46 +205,58 @@ const TokenScene = ({
             onSwipe={onSwipe}
             setSwipeableRefs={setSwipeableRefs}
           />
-        </AnimatedPortfolioToken>
-      );
-    }
-    return <></>;
-  };
+          // </AnimatedPortfolioToken>
+        );
+      }
+      return <></>;
+    },
+    [isVerifyCoinChecked]
+  );
 
   return (
     <CyDView className='mx-[10px]'>
       {getAllChainBalance(portfolioState) > 0 ? (
         <CyDView className='flex-1 h-full'>
-          <AnimatedTabView
-            data={holdingsByCoinGeckoId}
-            extraData={isVerifyCoinChecked}
-            keyExtractor={(item) => item}
-            refreshControl={
-              <RefreshControl
-                refreshing={isPortfolioRefreshing.shouldRefreshAssets}
-                onRefresh={() => {
-                  void onRefresh();
-                }}
-                progressViewOffset={H_BALANCE_BANNER}
-              />
-            }
-            renderItem={renderItem}
-            onRef={flatListRef}
-            scrollY={scrollY}
-            onScrollEndDrag={onScrollEndDrag}
-            onMomentumScrollBegin={onMomentumScrollBegin}
-            onMomentumScrollEnd={onMomentumScrollEnd}
-            ListEmptyComponent={
-              <CyDView className='flex flex-col justify-center items-center'>
-                <EmptyView
-                  text={t('NO_CURRENT_HOLDINGS')}
-                  image={AppImages.EMPTY}
-                  buyVisible={false}
-                  marginTop={30}
+          {!isEmpty(holdingsData) ? (
+            <AnimatedTabView
+              data={holdingsByCoinGeckoId}
+              extraData={{ isVerifyCoinChecked, holdingsData }}
+              keyExtractor={(item) => item}
+              refreshControl={
+                <RefreshControl
+                  refreshing={isPortfolioRefreshing.shouldRefreshAssets}
+                  onRefresh={() => {
+                    void onRefresh();
+                  }}
+                  progressViewOffset={H_BALANCE_BANNER}
                 />
-              </CyDView>
-            }
-          />
+              }
+              renderItem={({ item, index, viewableItems }) =>
+                renderItem({
+                  item: get(holdingsData, item),
+                  index,
+                  viewableItems,
+                })
+              }
+              onRef={flatListRef}
+              scrollY={scrollY}
+              onScrollEndDrag={onScrollEndDrag}
+              onMomentumScrollBegin={onMomentumScrollBegin}
+              onMomentumScrollEnd={onMomentumScrollEnd}
+              ListEmptyComponent={
+                <CyDView className='flex flex-col justify-center items-center'>
+                  <EmptyView
+                    text={t('NO_CURRENT_HOLDINGS')}
+                    image={AppImages.EMPTY}
+                    buyVisible={false}
+                    marginTop={30}
+                  />
+                </CyDView>
+              }
+            />
+          ) : (
+            <Loading />
+          )}
         </CyDView>
       ) : (
         portfolioState.statePortfolio.portfolioState === PORTFOLIO_EMPTY && (

@@ -306,7 +306,7 @@ const PortfolioTokenItem = ({
               </CyDView>
               <CyDText className={'text-[12px]'}>{item.symbol}</CyDText>
             </CyDView>
-            <CyDView className='flex self-center items-end max-w-[40%]'>
+            <CyDView className='flex self-center items-end max-w-[35%]'>
               <CyDTokenValue className='text-[18px] font-bold'>
                 {item.actualUnbondingBalance !== undefined
                   ? item.totalValue +
