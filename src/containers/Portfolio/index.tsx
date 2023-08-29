@@ -69,6 +69,8 @@ import { AnimatedBanner, AnimatedTabBar } from './animatedComponents';
 import { useScrollManager } from '../../hooks/useScrollManager';
 import { NFTScene, TokenScene } from './scenes';
 import CyDTokenValue from '../../components/v2/tokenValue';
+import moment from 'moment';
+import { isAndroid, isIOS } from '../../misc/checkers';
 
 export interface PortfolioProps {
   navigation: any;
@@ -451,9 +453,19 @@ export default function Portfolio({ navigation }: PortfolioProps) {
   }, []);
 
   useEffect(() => {
+    const currTimestamp =
+      portfolioState.statePortfolio.selectedChain.backendName !== 'ALL'
+        ? portfolioState?.statePortfolio?.tokenPortfolio[
+            portfolioState.statePortfolio.selectedChain.backendName.toLowerCase()
+          ]?.timestamp || new Date().toISOString() // use the time for individual chain
+        : portfolioState.statePortfolio.rtimestamp;
+
+    const oneMinuteHasPassed =
+      moment().diff(moment(currTimestamp), 'minutes') >= 1;
     if (
       isFocused &&
-      portfolioState.statePortfolio.portfolioState !== PORTFOLIO_LOADING
+      (portfolioState?.statePortfolio?.tokenPortfolio === undefined ||
+        oneMinuteHasPassed)
     ) {
       void onRefresh(false);
     }
@@ -557,16 +569,29 @@ export default function Portfolio({ navigation }: PortfolioProps) {
             <CyDView className='flex-1 h-full'>
               <AnimatedTabBar scrollY={scrollY}>
                 {renderTabBarFooter(tab.key)}
+                {isAndroid() && (
+                  <NFTScene
+                    {...sceneProps}
+                    routeKey={tab.key}
+                    scrollY={scrollY}
+                    navigation={navigation}
+                    selectedChain={
+                      portfolioState.statePortfolio.selectedChain.symbol
+                    }
+                  />
+                )}
               </AnimatedTabBar>
-              <NFTScene
-                {...sceneProps}
-                routeKey={tab.key}
-                scrollY={scrollY}
-                navigation={navigation}
-                selectedChain={
-                  portfolioState.statePortfolio.selectedChain.symbol
-                }
-              />
+              {isIOS() && (
+                <NFTScene
+                  {...sceneProps}
+                  routeKey={tab.key}
+                  scrollY={scrollY}
+                  navigation={navigation}
+                  selectedChain={
+                    portfolioState.statePortfolio.selectedChain.symbol
+                  }
+                />
+              )}
             </CyDView>
           );
         default:
