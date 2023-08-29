@@ -42,8 +42,8 @@ export interface AnimatedTabViewProps
   | null
   | undefined;
   onRef:
-  | ((scrollableChild: Animated.FlatList<any> | null) => void)
-  | ((scrollableChild: Animated.ScrollView | null) => void);
+  | Animated.FlatList<any>
+  | Animated.ScrollView | null
   scrollY: SharedValue<number>;
   refreshControl?: ReactElement;
   children?: React.ReactNode;
@@ -125,7 +125,7 @@ const AnimatedTabViewWithoutMemo = ({
     return (
       <Animated.ScrollView
         {...commonProps}
-        ref={onRef as (scrollableChild: Animated.ScrollView | null) => void}
+        ref={onRef as Animated.ScrollView}
       >
         {children}
       </Animated.ScrollView>
@@ -134,7 +134,7 @@ const AnimatedTabViewWithoutMemo = ({
     return (
       <Animated.FlatList
         {...commonProps}
-        ref={onRef as (scrollableChild: Animated.FlatList<any> | null) => void}
+        ref={onRef as Animated.FlatList<any>}
         data={data}
         keyExtractor={keyExtractor}
         // onViewableItemsChanged={onViewRef.current}

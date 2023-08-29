@@ -100,7 +100,6 @@ const defaultHeaderLeft = (navigation) => {
     <CyDTouchView
       className='w-[60px] py-[10px] pl-[5px] pr-[20px]'
       onPress={() => {
-        console.log(keyboardHeight);
         if (keyboardHeight) {
           Keyboard.dismiss();
           setTimeout(() => {

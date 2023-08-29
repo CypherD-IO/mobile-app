@@ -457,7 +457,6 @@ export default function Portfolio({ navigation }: PortfolioProps) {
       : portfolioState.statePortfolio.rtimestamp;
 
     const oneMinuteHasPassed = moment().diff(moment(currTimestamp), 'minutes') >= 1;
-    console.log(oneMinuteHasPassed);
     if (
       isFocused &&
       (portfolioState?.statePortfolio?.tokenPortfolio === undefined ||
