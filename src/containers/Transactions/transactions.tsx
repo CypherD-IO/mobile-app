@@ -2,7 +2,7 @@ import { CyDView, CyDText, CyDImage, CyDFastImage, CyDTouchView, CyDScrollView }
 import React, { useContext, useEffect, useLayoutEffect, useState } from 'react';
 import axios from '../../core/Http';
 import { hostWorker } from '../../global';
-import { HdWalletContext, getMaskedAddress, limitDecimalPlaces } from '../../core/util';
+import { HdWalletContext, formatAmount, getMaskedAddress, limitDecimalPlaces } from '../../core/util';
 import * as C from '../../constants/index';
 import Loading from '../../components/v2/loading';
 import AppImages from '../../../assets/images/appImages';
@@ -57,33 +57,33 @@ const RenderTransactionItemDetails = ({ type, from, to }: {type: string, from: s
 };
 
 const getTransactionItemAmountDetails = (type: string, value: string, token: string | null, fromTokenValue: string, fromToken: string) => {
-  let formatAmount;
+  let formattedAmount;
   let amountColor;
   switch (type) {
     case TransactionType.SWAP:
-      formatAmount = fromToken !== '' ? `- ${limitDecimalPlaces(fromTokenValue, 4)} ${fromToken}` : `- ${limitDecimalPlaces(fromTokenValue, 6)} Unknown`;
+      formattedAmount = fromToken !== '' ? `- ${formatAmount(fromTokenValue)} ${fromToken}` : `- ${formatAmount(fromTokenValue)} Unknown`;
       amountColor = 'text-red-500';
       break;
     case TransactionType.SELF:
     case TransactionType.SEND:
-      formatAmount = token ? `- ${limitDecimalPlaces(value, 4)} ${token}` : `- ${limitDecimalPlaces(value, 6)} Unknown`;
+      formattedAmount = token ? `- ${formatAmount(value)} ${token}` : `- ${formatAmount(value)} Unknown`;
       amountColor = 'text-red-500';
       break;
     case TransactionType.RECEIVE:
-      formatAmount = token ? `+ ${limitDecimalPlaces(value, 4)} ${token}` : `+ ${limitDecimalPlaces(value, 6)} Unknown`;
+      formattedAmount = token ? `+ ${formatAmount(value)} ${token}` : `+ ${formatAmount(value)} Unknown`;
       amountColor = 'text-[#048A81]';
       break;
     case TransactionType.REVOKE:
     case TransactionType.APPROVE:
-      formatAmount = token ? `${token}` : 'Unknown';
+      formattedAmount = token ? `${token}` : 'Unknown';
       amountColor = 'text-[#048A81]';
       break;
     default:
-      formatAmount = token ? `${limitDecimalPlaces(value, 4)} ${token}` : `${limitDecimalPlaces(value, 6)}`;
+      formattedAmount = token ? `${formatAmount(value)} ${token}` : `${formatAmount(value)}`;
       amountColor = 'text-[#048A81]';
   }
 
-  return [formatAmount, amountColor];
+  return [formattedAmount, amountColor];
 };
 
 function TransactionItem (props: any) {
@@ -96,7 +96,7 @@ function TransactionItem (props: any) {
     transactionAddress = getMaskedAddress(transactionAddress);
   }
   const formatDate = moment.unix(activity.timestamp).format('MMM DD, h:mm a');
-  const [formatAmount, amountColour] = getTransactionItemAmountDetails(activity.type, activity.value, activity.token, activity.additionalData?.fromTokenValue ?? '', activity.additionalData?.fromToken ?? '');
+  const [formattedAmount, amountColour] = getTransactionItemAmountDetails(activity.type, activity.value, activity.token, activity.additionalData?.fromTokenValue ?? '', activity.additionalData?.fromToken ?? '');
   const transactionIcon = getTransactionItemIcon(activity.type, activity.status);
   const title = activity.type ? activity?.type.charAt(0).toUpperCase() + activity.type.slice(1) : 'Unknown';
   return (
@@ -114,7 +114,7 @@ function TransactionItem (props: any) {
       </CyDView>
       <CyDView className='flex flex-1 items-end self-end'>
         <CyDText>{formatDate}</CyDText>
-        <CyDText numberOfLines={1} className={`${amountColour} mt-[3px]`}>{formatAmount}</CyDText>
+        <CyDText numberOfLines={1} className={`${amountColour} mt-[3px]`}>{formattedAmount}</CyDText>
       </CyDView>
     </CyDTouchView>
   );

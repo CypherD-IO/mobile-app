@@ -8,6 +8,7 @@ import RadioButtons from '../../components/radioButtons';
 import * as C from '../../constants/index';
 import { CyDSafeAreaView, CyDText, CyDTouchView, CyDView } from '../../styles/tailwindStyles';
 import { BackHandler } from 'react-native';
+import Button from '../../components/v2/button';
 
 export const FILTERS = ['Type', 'Status'];
 export const TRANSACTION_TYPES = ['send', 'receive', 'swap', 'others'];
@@ -89,10 +90,14 @@ export default function TransactionFilter (props: any) {
             />}
         </CyDView>
       </CyDView>
-      <CyDTouchView onPress={onApply}
-        className='bg-white bg-appColor h-[8%] flex justify-center items-center'>
-        <CyDText className={'text-[19px] font-bold'}>Apply</CyDText>
-      </CyDTouchView>
+      <Button
+        onPress={onApply}
+        title="Apply"
+        style="bg-white bg-appColor h-[8%] flex justify-center items-center"
+        titleStyle="text-[19px] font-bold"
+        type="primary"
+      />
+
     </CyDSafeAreaView>
   </>);
 }
