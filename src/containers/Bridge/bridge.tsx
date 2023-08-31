@@ -460,7 +460,7 @@ export default function Bridge (props: {navigation?: any, route?: any}) {
     quoteUUID: string,
     fromAddress: string,
     isError: boolean,
-    isHashGenerated: boolean = false
+    isHashGenerated = false
   ) => {
     if (isError) {
       if (message === t('INSUFFICIENT_GAS_ERROR')) {
@@ -600,7 +600,7 @@ export default function Bridge (props: {navigation?: any, route?: any}) {
         showModal('state', {
           type: 'error',
           title: 'Transaction failed',
-          description: response.error,
+          description:  response.error.response.data.errors[0]?.message ?? t('UNABLE_TO_TRANSFER'),
           onSuccess: hideModal,
           onFailure: hideModal
         });
@@ -670,7 +670,7 @@ export default function Bridge (props: {navigation?: any, route?: any}) {
         showModal('state', {
           type: 'error',
           title: '',
-          description: response.error ?? response.data?.message,
+          description: response.error.response.data.errors[0]?.message ?? `${fromToken?.name ?? ''} quote failed`,
           onSuccess: hideModal,
           onFailure: hideModal
         });
@@ -1680,7 +1680,7 @@ export default function Bridge (props: {navigation?: any, route?: any}) {
         showModal('state', {
           type: 'error',
           title: '',
-          description: t('UNEXCPECTED_ERROR'),
+          description: response.error.response.data.errors[0]?.message ?? t('UNEXCPECTED_ERROR'),
           onSuccess: hideModal,
           onFailure: hideModal
         });
