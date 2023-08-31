@@ -12,6 +12,7 @@ import moment from 'moment';
 import TransactionInfoModal from '../../components/v2/transactionInfoModal';
 import { APPLICATION_ADDRESS_NAME_MAP } from '../../constants/data';
 import { TransactionObj, TransactionType } from '../../constants/transactions';
+import { FlatList } from 'react-native';
 
 const ARCH_HOST: string = hostWorker.getHost('ARCH_HOST');
 
@@ -281,18 +282,32 @@ export default function Transaction (props: { navigation: any, route?: { params:
     return <Loading />;
   } else {
     return (
-      <CyDScrollView className='bg-white' contentContainerStyle={{ flexGrow: 1}}>
-        {/* Render the transaction now that isLoading is false */}
-        <CyDView>
-          <TransactionInfoModal
-            setModalVisible={setShowTransactionInfo}
-            isModalVisible={showTransactionInfo}
-            params={transactionInfoParams}
-            navigationRef={navigation}
-          />
-          <RenderActivities />
-        </CyDView>
-      </CyDScrollView>
+      <CyDView>
+        <TransactionInfoModal
+          setModalVisible={setShowTransactionInfo}
+          isModalVisible={showTransactionInfo}
+          params={transactionInfoParams}
+          navigationRef={navigation}
+        />
+        <FlatList
+          className='bg-white'
+          data={transaction}
+          keyExtractor={(item, index) => index.toString()} // Provide a unique key extractor
+          contentContainerStyle={{ flexGrow: 1 }}
+          renderItem={({ item }) => (
+            <CyDView className='mx-[10px] bg-white'>
+              {item.entry.map((activity: TransactionObj, index: number) => (
+                <TransactionItem
+                  key={index}
+                  activity={activity}
+                  setTransactionInfoParams={showTransactionDetails}
+                />
+              ))}
+            </CyDView>
+          )}
+        />
+      </CyDView>
     );
+
   }
 }
