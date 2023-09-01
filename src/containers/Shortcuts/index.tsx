@@ -168,17 +168,17 @@ export default function ShortcutsModal ({ navigationRef }) {
   ];
 
   const buyOptionsData: IBuyOptionsData[] = [
-    {
-      index: 0,
-      title: BuyOptions.SARDINE,
-      displayTitle: t('SARDINE_DISPLAY_TITLE'),
-      logo: AppImages.SARDINE,
-      supportedChains: [CHAIN_ETH, CHAIN_AVALANCHE, CHAIN_POLYGON],
-      currencyType: CurrencyTypes.USD,
-      screenTitle: screenTitle.SARD_PAY,
-      supportedPaymentModes: 'Instant Bank Transfer',
-      isVisibileInUI: true
-    },
+    // {
+    //   index: 0,
+    //   title: BuyOptions.SARDINE,
+    //   displayTitle: t('SARDINE_DISPLAY_TITLE'),
+    //   logo: AppImages.SARDINE,
+    //   supportedChains: [CHAIN_ETH, CHAIN_AVALANCHE, CHAIN_POLYGON],
+    //   currencyType: CurrencyTypes.USD,
+    //   screenTitle: screenTitle.SARD_PAY,
+    //   supportedPaymentModes: 'Instant Bank Transfer',
+    //   isVisibileInUI: true
+    // },
     // {
     //   index: 3,
     //   title: BuyOptions.TRANSFI,
