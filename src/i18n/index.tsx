@@ -749,7 +749,8 @@ const resources = {
       STAKE: 'stake',
       RECEIVED_ON: 'RECEIVED ON',
       APPLICATION: 'Application',
-      STATUS: 'Status'
+      STATUS: 'Status',
+      RESET_ALL: 'Reset all'
     }
   }
 };
