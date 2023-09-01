@@ -7,9 +7,9 @@ import { getMaskedAddress, copyToClipboard, formatAmount } from '../../core/util
 import { useTranslation } from 'react-i18next';
 import clsx from 'clsx';
 import * as C from '../../constants';
-import Toast from 'react-native-toast-message';
 import { TransactionType } from '../../constants/transactions';
 import { APPLICATION_ADDRESS_NAME_MAP } from '../../constants/data';
+import { showToast } from '../../containers/utilities/toastUtility';
 
 export const chainExplorerMapping: Record<string, string> = {
   ETH: 'https://etherscan.io/tx/',
@@ -52,7 +52,7 @@ const getTransactionDestinationDetails = (type: string, from: string, to: string
   return [destination, transactionAddress];
 };
 
-export default function TransactionInfoModal ({
+export default function TransactionInfoModal({
   isModalVisible,
   setModalVisible,
   params,
@@ -85,7 +85,7 @@ export default function TransactionInfoModal ({
 
   const copyHash = (url: string) => {
     copyToClipboard(url);
-    Toast.show(t('COPIED_TO_CLIPBOARD'));
+    showToast(t('COPIED_TO_CLIPBOARD'));
   };
 
   if (params !== null) {
@@ -102,7 +102,7 @@ export default function TransactionInfoModal ({
             {displayTitle}
           </CyDText>
           <CyDText className='text-center text-[12px] ml-[5px] text-primarsubTextColor'>
-            {`${timestamp}`}
+            {timestamp}
           </CyDText>
         </CyDView>
       );
@@ -111,19 +111,19 @@ export default function TransactionInfoModal ({
     const RenderTransactionInfo = () => {
       if (type === TransactionType.SWAP) {
         return (
-        <CyDView className='flex flex-row justify-evenly items-center w-full '>
+          <CyDView className='flex flex-row justify-evenly items-center w-full '>
             <CyDView className='flex flex-row items-center '>
-                {fromTokenIcon
-                  ? <CyDImage
-                    source={{ uri: fromTokenIcon }}
-                    className={'w-[25px] h-[25px]'}
+              {fromTokenIcon
+                ? <CyDImage
+                  source={{ uri: fromTokenIcon }}
+                  className={'w-[25px] h-[25px]'}
                 />
-                  : <CyDImage
-                source= {AppImages.UNKNOWN_TXN_TOKEN}
-                className={'w-[25px] h-[25px]'}
-            />}
-                {fromToken
-                  ? (
+                : <CyDImage
+                  source={AppImages.UNKNOWN_TXN_TOKEN}
+                  className={'w-[25px] h-[25px]'}
+                />}
+              {fromToken
+                ? (
                   <CyDView className='flex flex-col item-start'>
                     <CyDText className='text-[16px] ml-[10px] mt-[2px] font-bold text-activityFontColor'>{fromToken}</CyDText>
                     {blockchain && (
@@ -132,32 +132,32 @@ export default function TransactionInfoModal ({
                       </CyDText>
                     )}
                   </CyDView>
-                    )
-                  : <CyDView className='flex flex-col item-start'>
-                <CyDText className='text-[16px] ml-[10px] mt-[2px] font-bold text-activityFontColor'>{'Unknown'}</CyDText>
-                {blockchain && (
-                  <CyDText className='text-[12px] ml-[10px] mt-[2px]'>
-                    {chain}
-                  </CyDText>
-                )}
-              </CyDView> }
+                )
+                : <CyDView className='flex flex-col item-start'>
+                  <CyDText className='text-[16px] ml-[10px] mt-[2px] font-bold text-activityFontColor'>{t('UNKNOWN')}</CyDText>
+                  {blockchain && (
+                    <CyDText className='text-[12px] ml-[10px] mt-[2px]'>
+                      {chain}
+                    </CyDText>
+                  )}
+                </CyDView>}
             </CyDView>
             <CyDImage
-                  source={ AppImages.SWAP_SUCCESS}
-                  className={'w-[24px] h-[24px]'}
+              source={AppImages.SWAP_SUCCESS}
+              className={'w-[24px] h-[24px]'}
             />
             <CyDView className='flex flex-row items-center '>
-                {toTokenIcon
-                  ? <CyDImage
-                    source={{ uri: toTokenIcon }}
-                    className={'w-[25px] h-[25px]'}
+              {toTokenIcon
+                ? <CyDImage
+                  source={{ uri: toTokenIcon }}
+                  className={'w-[25px] h-[25px]'}
                 />
-                  : <CyDImage
-                source= {AppImages.UNKNOWN_TXN_TOKEN}
-                className={'w-[25px] h-[25px]'}
-            />}
-                {toToken
-                  ? (
+                : <CyDImage
+                  source={AppImages.UNKNOWN_TXN_TOKEN}
+                  className={'w-[25px] h-[25px]'}
+                />}
+              {toToken
+                ? (
                   <CyDView className='flex flex-col item-start'>
                     <CyDText className='text-[16px] ml-[10px] mt-[2px] font-bold text-activityFontColor'>{toToken}</CyDText>
                     {blockchain && (
@@ -166,70 +166,70 @@ export default function TransactionInfoModal ({
                       </CyDText>
                     )}
                   </CyDView>
-                    )
-                  : <CyDView className='flex flex-col item-start'>
-                <CyDText className='text-[16px] ml-[10px] mt-[2px] font-bold text-activityFontColor'>{'Unknown'}</CyDText>
-                {blockchain && (
-                  <CyDText className='text-[12px] ml-[10px] mt-[2px]'>
-                    {chain}
-                  </CyDText>
-                )}
-              </CyDView> }
+                )
+                : <CyDView className='flex flex-col item-start'>
+                  <CyDText className='text-[16px] ml-[10px] mt-[2px] font-bold text-activityFontColor'>{t('UNKNOWN')}</CyDText>
+                  {blockchain && (
+                    <CyDText className='text-[12px] ml-[10px] mt-[2px]'>
+                      {chain}
+                    </CyDText>
+                  )}
+                </CyDView>}
             </CyDView>
-        </CyDView>
+          </CyDView>
         );
       } else if (type === TransactionType.APPROVE || type === TransactionType.REVOKE) {
         return (
           <CyDView className={clsx('flex flex-row flex-wrap w-[100%] my-[3%] item-center justify-center')}>
-              <CyDView className='flex flex-row items-center'>
-                {tokenIcon && <CyDImage
-                    source={{ uri: tokenIcon }}
-                    className={'w-[25px] h-[25px]'}
-                />}
-                {token
-                  ? (
+            <CyDView className='flex flex-row items-center'>
+              {tokenIcon && <CyDImage
+                source={{ uri: tokenIcon }}
+                className={'w-[25px] h-[25px]'}
+              />}
+              {token
+                ? (
                   <CyDView className='flex flex-col'>
                     <CyDText className='text-[16px] ml-[10px] mt-[2px] font-bold text-activityFontColor'>{token}</CyDText>
                     {blockchain && <CyDText className=' text-[12px] ml-[10px] mt-[2px]'>{chain}</CyDText>}
                   </CyDView>
-                    )
-                  : (
+                )
+                : (
                   <CyDView className='flex flex-col'>
-                    <CyDText className='text-[16px] ml-[10px] mt-[2px] font-bold text-activityFontColor'>{'Unknown'}</CyDText>
+                    <CyDText className='text-[16px] ml-[10px] mt-[2px] font-bold text-activityFontColor'>{t('UNKNOWN')}</CyDText>
                     {blockchain && <CyDText className=' text-[12px] ml-[10px] mt-[2px]'>{chain}</CyDText>}
                   </CyDView>
-                    )}
-              </CyDView>
+                )}
+            </CyDView>
           </CyDView>
         );
       } else {
         return (
           <CyDView className={clsx('flex flex-row flex-wrap w-[100%] my-[3%] item-center justify-between')}>
-              <CyDView className='flex flex-row items-center ml-[20px]'>
-                {tokenIcon
-                  ? <CyDImage
-                    source={{ uri: tokenIcon }}
-                    className={'w-[25px] h-[25px]'}
+            <CyDView className='flex flex-row items-center ml-[20px]'>
+              {tokenIcon
+                ? <CyDImage
+                  source={{ uri: tokenIcon }}
+                  className={'w-[25px] h-[25px]'}
                 />
-                  : <CyDImage
-                source= {AppImages.UNKNOWN_TXN_TOKEN}
-                className={'w-[25px] h-[25px]'}
-            />}
-                {token
-                  ? (
+                : <CyDImage
+                  source={AppImages.UNKNOWN_TXN_TOKEN}
+                  className={'w-[25px] h-[25px]'}
+                />}
+              {token
+                ? (
                   <CyDView className='flex flex-col'>
                     <CyDText className=' text-[16px] ml-[10px] mt-[2px] font-bold text-activityFontColor'>{token}</CyDText>
                     {blockchain && <CyDText className=' text-[12px] ml-[10px] mt-[2px]'>{chain}</CyDText>}
                   </CyDView>
-                    )
-                  : <CyDView className='flex flex-col'>
-                <CyDText className='text-[16px] ml-[10px] mt-[2px] font-bold text-activityFontColor'>{'Unknown'}</CyDText>
-                {blockchain && <CyDText className=' text-[12px] ml-[10px] mt-[2px]'>{chain}</CyDText>}
-              </CyDView> }
-              </CyDView>
-              <CyDView className='w-[40%] flex justify-center items-end pr-[18px]'>
-                  <CyDText numberOfLines={1} className='text-[14px] font-bold text-activityFontColor'>{`${formatAmount(value)}`}</CyDText>
-              </CyDView>
+                )
+                : <CyDView className='flex flex-col'>
+                  <CyDText className='text-[16px] ml-[10px] mt-[2px] font-bold text-activityFontColor'>{t('UNKNOWN')}</CyDText>
+                  {blockchain && <CyDText className=' text-[12px] ml-[10px] mt-[2px]'>{chain}</CyDText>}
+                </CyDView>}
+            </CyDView>
+            <CyDView className='w-[40%] flex justify-center items-end pr-[18px]'>
+              <CyDText numberOfLines={1} className='text-[14px] font-bold text-activityFontColor'>{formatAmount(value)}</CyDText>
+            </CyDView>
           </CyDView>
         );
       }
@@ -239,7 +239,7 @@ export default function TransactionInfoModal ({
       <CyDModalLayout
         setModalVisible={setModalVisible}
         isModalVisible={isModalVisible}
-        style = {styles.modalLayout}
+        style={styles.modalLayout}
         animationIn={'slideInUp'}
         animationOut={'slideOutDown'}
       >
@@ -249,74 +249,74 @@ export default function TransactionInfoModal ({
           >
 
             <CyDImage
-              source={ AppImages.CLOSE }
+              source={AppImages.CLOSE}
               className={'w-[16px] h-[16px] top-[20px] right-[20px] '}
             />
           </CyDTouchView>
           <CyDView className='flex mt-[5%] justify-center items-center '>
-              <RenderTransactionHeader/>
+            <RenderTransactionHeader />
           </CyDView>
           <CyDView className='flex flex-col px-[40px]' >
             <CyDView className='flex flex-row justify-start align-center'>
               <CyDView className='w-[100%] justify-between items-center bg-secondaryBackgroundColor rounded-[8px] my-[8px] py-[8px]'>
-                  <RenderTransactionInfo/>
+                <RenderTransactionInfo />
               </CyDView>
             </CyDView>
-              <CyDView className = 'flex flex-col bg-secondaryBackgroundColor rounded-[8px] mt-[5px]'>
-                  <CyDView className='flex flex-row h-[60px] justify-start items-center border-b-[1px] border-sepratorColor ml-[20px]'>
-                        <CyDText className='text-[16px] w-[40%] text-activityFontColor'>
-                          {destination}
-                        </CyDText>
-                        <CyDText className='text-[16px] font-bold  text-activityFontColor'>
-                        {transactionAddress }
-                        </CyDText>
-                  </CyDView>
-                  <CyDView>
-                        {type === 'swap' && <CyDView className='flex flex-row h-[60px] justify-start items-center border-b-[1px] border-sepratorColor ml-[20px]'>
-                              <CyDText className='text-[16px] w-[40%] text-activityFontColor'>
-                                {'Value'}
-                              </CyDText>
-                              <CyDText className='text-[16px] font-bold  text-activityFontColor'>
-                              {fromTokenValue ? formatAmount(fromTokenValue) : 'unknown'}{fromToken}
-                              </CyDText>
-                        </CyDView>}
-                  </CyDView>
-                  <CyDView className='flex flex-row h-[60px] justify-start items-center border-b-[1px] border-sepratorColor ml-[20px]'>
-                        <CyDText className='text-[16px] w-[40%] text-activityFontColor'>
-                        {t<string>('GAS')}
-                        </CyDText>
-                        <CyDText className='text-[16px] font-bold text-activityFontColor'>
-                          {formatAmount(gas)}
-                        </CyDText>
-                  </CyDView>
-
-                  <CyDView className='flex flex-row h-[60px] justify-start items-center border-b-[1px] border-sepratorColor ml-[20px]'
-                    >
-                      <CyDText className='text-[16px] w-[40%] text-activityFontColor'>{t<string>('HASH')}</CyDText>
-                      <CyDView className='flex flex-row'>
-                          <CyDText onPress={() => {
-                            setModalVisible(false);
-                            navigationRef.navigate(C.screenTitle.TRANS_DETAIL, {
-                              url: `${chainExplorerMapping[blockchain]}${hash}`
-                            });
-                          }} className='text-[14px] w-[65%] text-blue-500 underline font-bold'>{getMaskedAddress(hash)}</CyDText>
-                          <CyDTouchView onPress={() => copyHash(String(`${chainExplorerMapping[blockchain]}${hash}`))}>
-                            <CyDImage source={AppImages.COPY}/>
-                          </CyDTouchView>
-                      </CyDView>
-
-                    </CyDView>
-
-                  <CyDView className='flex flex-row h-[60px] justify-start items-center border-b-[1px] border-sepratorColor ml-[20px]'>
-                        <CyDText className='text-[16px] w-[40%] text-activityFontColor'>
-                          {t<string>('STATUS')}
-                        </CyDText>
-                        <CyDText className='text-[16px] font-bold text-[#048A81]'>
-                          {status}
-                        </CyDText>
-                  </CyDView>
+            <CyDView className='flex flex-col bg-secondaryBackgroundColor rounded-[8px] mt-[5px]'>
+              <CyDView className='flex flex-row h-[60px] justify-start items-center border-b-[1px] border-sepratorColor ml-[20px]'>
+                <CyDText className='text-[16px] w-[40%] text-activityFontColor'>
+                  {destination}
+                </CyDText>
+                <CyDText className='text-[16px] font-bold  text-activityFontColor'>
+                  {transactionAddress}
+                </CyDText>
               </CyDView>
-         </CyDView>
+              <CyDView>
+                {type === 'swap' && <CyDView className='flex flex-row h-[60px] justify-start items-center border-b-[1px] border-sepratorColor ml-[20px]'>
+                  <CyDText className='text-[16px] w-[40%] text-activityFontColor'>
+                    {t('VALUE')}
+                  </CyDText>
+                  <CyDText className='text-[16px] font-bold  text-activityFontColor'>
+                    {fromTokenValue ? formatAmount(fromTokenValue) : t('UNKNOWN')}{fromToken}
+                  </CyDText>
+                </CyDView>}
+              </CyDView>
+              <CyDView className='flex flex-row h-[60px] justify-start items-center border-b-[1px] border-sepratorColor ml-[20px]'>
+                <CyDText className='text-[16px] w-[40%] text-activityFontColor'>
+                  {t<string>('GAS')}
+                </CyDText>
+                <CyDText className='text-[16px] font-bold text-activityFontColor'>
+                  {formatAmount(gas)}
+                </CyDText>
+              </CyDView>
+
+              <CyDView className='flex flex-row h-[60px] justify-start items-center border-b-[1px] border-sepratorColor ml-[20px]'
+              >
+                <CyDText className='text-[16px] w-[40%] text-activityFontColor'>{t<string>('HASH')}</CyDText>
+                <CyDView className='flex flex-row'>
+                  <CyDText onPress={() => {
+                    setModalVisible(false);
+                    navigationRef.navigate(C.screenTitle.TRANS_DETAIL, {
+                      url: `${chainExplorerMapping[blockchain]}${hash}`
+                    });
+                  }} className='text-[14px] w-[65%] text-blue-500 underline font-bold'>{getMaskedAddress(hash)}</CyDText>
+                  <CyDTouchView onPress={() => copyHash(String(`${chainExplorerMapping[blockchain]}${hash}`))}>
+                    <CyDImage source={AppImages.COPY} />
+                  </CyDTouchView>
+                </CyDView>
+
+              </CyDView>
+
+              <CyDView className='flex flex-row h-[60px] justify-start items-center border-b-[1px] border-sepratorColor ml-[20px]'>
+                <CyDText className='text-[16px] w-[40%] text-activityFontColor'>
+                  {t<string>('STATUS')}
+                </CyDText>
+                <CyDText className='text-[16px] font-bold text-[#048A81]'>
+                  {status}
+                </CyDText>
+              </CyDView>
+            </CyDView>
+          </CyDView>
         </CyDView>
       </CyDModalLayout>
     );

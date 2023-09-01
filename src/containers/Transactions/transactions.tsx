@@ -1,8 +1,8 @@
-import { CyDView, CyDText, CyDImage, CyDFastImage, CyDTouchView, CyDScrollView } from '../../styles/tailwindStyles';
+import { CyDView, CyDText, CyDImage, CyDFastImage, CyDTouchView } from '../../styles/tailwindStyles';
 import React, { useContext, useEffect, useLayoutEffect, useState } from 'react';
 import axios from '../../core/Http';
 import { hostWorker } from '../../global';
-import { HdWalletContext, formatAmount, getMaskedAddress, limitDecimalPlaces } from '../../core/util';
+import { HdWalletContext, formatAmount, getMaskedAddress } from '../../core/util';
 import * as C from '../../constants/index';
 import Loading from '../../components/v2/loading';
 import AppImages from '../../../assets/images/appImages';
@@ -13,6 +13,7 @@ import TransactionInfoModal from '../../components/v2/transactionInfoModal';
 import { APPLICATION_ADDRESS_NAME_MAP } from '../../constants/data';
 import { TransactionObj, TransactionType } from '../../constants/transactions';
 import { FlatList } from 'react-native';
+import { useTranslation } from 'react-i18next';
 
 const ARCH_HOST: string = hostWorker.getHost('ARCH_HOST');
 
@@ -31,18 +32,19 @@ const getTransactionItemIcon = (type: string, status: string) => {
   }
 };
 
-const RenderTransactionItemDetails = ({ type, from, to }: {type: string, from: string, to: string}) => {
+const RenderTransactionItemDetails = ({ type, from, to }: { type: string, from: string, to: string }) => {
   let transactionDetail;
   let transactionAddress;
+  const { t } = useTranslation();
   switch (type) {
     case TransactionType.SELF:
-      transactionDetail = `To: ${getMaskedAddress(to)}`;
+      transactionDetail = `${t<string>('TO')}: ${getMaskedAddress(to)}`;
       break;
     case TransactionType.SEND:
-      transactionDetail = `To: ${getMaskedAddress(to)}`;
+      transactionDetail = `${t<string>('TO')}: ${getMaskedAddress(to)}`;
       break;
     case TransactionType.RECEIVE:
-      transactionDetail = `From: ${getMaskedAddress(from)}`;
+      transactionDetail = `${t<string>('FROM')}: ${getMaskedAddress(from)}`;
       break;
     default:
       transactionAddress = to;
@@ -51,7 +53,7 @@ const RenderTransactionItemDetails = ({ type, from, to }: {type: string, from: s
       } else {
         transactionAddress = getMaskedAddress(transactionAddress);
       }
-      transactionDetail = `Application: ${transactionAddress}`;
+      transactionDetail = `${t('APPLICATION')}: ${transactionAddress}`;
   }
 
   return (<CyDText className='mt-[3px]'>{transactionDetail}</CyDText>);
@@ -87,7 +89,7 @@ const getTransactionItemAmountDetails = (type: string, value: string, token: str
   return [formattedAmount, amountColor];
 };
 
-function TransactionItem (props: any) {
+function TransactionItem(props: any) {
   const activity: TransactionObj = props.activity;
   const { setTransactionInfoParams } = props;
   let transactionAddress = activity.to;
@@ -102,16 +104,16 @@ function TransactionItem (props: any) {
   const title = activity.type ? activity?.type.charAt(0).toUpperCase() + activity.type.slice(1) : 'Unknown';
   return (
     <CyDTouchView className='flex flex-1 flex-row items-center mb-[20px]'
-    onPress={() => {
-      setTransactionInfoParams(activity);
-    }}
-      >
+      onPress={() => {
+        setTransactionInfoParams(activity);
+      }}
+    >
       <CyDFastImage className='h-[25px] w-[25px]' resizeMode='contain' source={transactionIcon} />
       <CyDView className='px-[10px] items-start justify-start'>
         <CyDView className='flex flex-row justify-center items-center'>
-        <CyDText className='font-bold text-[16px]'>{title}</CyDText>
+          <CyDText className='font-bold text-[16px]'>{title}</CyDText>
         </CyDView>
-        <RenderTransactionItemDetails type={activity.type} from={activity.from} to={activity.to}/>
+        <RenderTransactionItemDetails type={activity.type} from={activity.from} to={activity.to} />
       </CyDView>
       <CyDView className='flex flex-1 items-end self-end'>
         <CyDText>{formatDate}</CyDText>
@@ -121,7 +123,7 @@ function TransactionItem (props: any) {
   );
 }
 
-export default function Transaction (props: { navigation: any, route?: { params: { filter: { types: string[], statuses: string[] } } } }) {
+export default function Transaction(props: { navigation: any, route?: { params: { filter: { types: string[], statuses: string[] } } } }) {
   const { navigation, route } = props;
   const filter = route?.params?.filter ?? { types: TRANSACTION_TYPES, statuses: STATUSES };
   const [showTransactionInfo, setShowTransactionInfo] = useState(false);
@@ -144,16 +146,17 @@ export default function Transaction (props: { navigation: any, route?: { params:
     status: string
   } | null>(null);
   const [transaction, setTransaction] = useState<any>([]);
+  const { t } = useTranslation();
   const isFocused = useIsFocused();
 
   const hdWalletContext = useContext<any>(HdWalletContext);
-  const { ethereum } = hdWalletContext.state.wallet;
+  const { address: ethereumAddress }: { address: string } = hdWalletContext.state.wallet.ethereum;
   const [transactions, setTransactions] = useState([]);
   const [isLoading, setIsLoading] = useState(true); // Add isLoading state
-  const getTransactionsUrl = `${ARCH_HOST}/v1/txn/transactions/${ethereum.address}?descOrder=true&blockchain=`;
+  const getTransactionsUrl = `${ARCH_HOST}/v1/txn/transactions/${ethereumAddress}?descOrder=true&blockchain=`;
 
   useEffect(() => {
-    async function fetchTransactions () {
+    async function fetchTransactions() {
       try {
         const response = await axios.get(getTransactionsUrl);
         setTransactions(response.data.transactions);
@@ -165,7 +168,7 @@ export default function Transaction (props: { navigation: any, route?: { params:
 
     if (isFocused) {
       setIsLoading(true); // Start loading when the component is focused
-      fetchTransactions();
+      void fetchTransactions();
     }
   }, [isFocused]); // Call the effect only when the component is focused
 
@@ -204,7 +207,7 @@ export default function Transaction (props: { navigation: any, route?: { params:
       const isIncludedStatus = filter.statuses.length === 0 || filter.statuses.includes(activity.status);
 
       return (isIncludedType || (isOtherType && filter.types.includes(TransactionType.OTHERS))) &&
-             isIncludedStatus;
+        isIncludedStatus;
     });
 
     filteredActivities.sort(function (a, b) {
@@ -255,27 +258,15 @@ export default function Transaction (props: { navigation: any, route?: { params:
     });
   };
 
-  const RenderActivities = () => {
-    if (transaction.length === 0) {
-      return (
-        <CyDView className='flex-1 items-center justify-center'>
-          <CyDView className='flex flex-col items-center justify-center' style={{ minHeight: '100%' }}>
-            <CyDImage className='h-[100px] w-[100px]' source={AppImages.NO_TRANSACTIONS} resizeMode='contain'/>
-            <CyDText className='mt-2 text-primaryTextColor'>No transactions found</CyDText>
-          </CyDView>
+  const NoTxnsFound = () => {
+    return (
+      <CyDView className='flex-1 items-center justify-center'>
+        <CyDView className='h-full flex flex-col items-center justify-center'>
+          <CyDImage className='h-[100px] w-[100px]' source={AppImages.NO_TRANSACTIONS} resizeMode='contain' />
+          <CyDText className='mt-2 text-primaryTextColor'>{ }</CyDText>
         </CyDView>
-      );
-    }
-
-    return transaction.map((day: any, index: number) => {
-      return (
-        <CyDView className='mx-[10px]' key={index}>
-          {day.entry.map((activity: TransactionObj, index: number) => {
-            return (<TransactionItem activity={activity} setTransactionInfoParams={showTransactionDetails} />);
-          })}
-        </CyDView>
-      );
-    });
+      </CyDView>
+    );
   };
 
   if (isLoading) {
@@ -292,10 +283,9 @@ export default function Transaction (props: { navigation: any, route?: { params:
         <FlatList
           className='bg-white'
           data={transaction}
-          keyExtractor={(item, index) => index.toString()} // Provide a unique key extractor
-          contentContainerStyle={{ flexGrow: 1 }}
+          keyExtractor={(item, index) => index.toString()}
           renderItem={({ item }) => (
-            <CyDView className='mx-[10px] bg-white'>
+            <CyDView className='mx-[10px]'>
               {item.entry.map((activity: TransactionObj, index: number) => (
                 <TransactionItem
                   key={index}
@@ -305,6 +295,7 @@ export default function Transaction (props: { navigation: any, route?: { params:
               ))}
             </CyDView>
           )}
+          ListEmptyComponent={<NoTxnsFound />}
         />
       </CyDView>
     );

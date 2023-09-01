@@ -94,7 +94,7 @@ export default function TransactionFilter(props: any) {
         <CyDView className='w-full absolute bottom-0'>
           <Button
             onPress={onApply}
-            title="Apply"
+            title={t('APPLY')}
             style="h-[70px] w-full rounded-[0px]"
             titleStyle="text-[18px] font-bold"
             type="primary"
