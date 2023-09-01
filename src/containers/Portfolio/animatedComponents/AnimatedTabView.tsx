@@ -1,19 +1,16 @@
-import React, { memo, ReactElement, useCallback } from 'react';
+import React, { LegacyRef, memo, ReactElement } from 'react';
 import {
   FlatListProps,
   ListRenderItem,
   Platform,
   ScrollViewProps,
-  StyleSheet,
   ViewProps,
-  ViewToken,
 } from 'react-native';
 import Animated, {
   SharedValue,
   useAnimatedScrollHandler,
-  useSharedValue,
 } from 'react-native-reanimated';
-import { isAndroid, isIOS } from '../../../misc/checkers';
+import { isIOS } from '../../../misc/checkers';
 import { H_BALANCE_BANNER, H_GUTTER } from '../constants';
 
 // we provide this bc ios allows overscrolling but android doesn't
@@ -23,25 +20,25 @@ export const OFFSET_TABVIEW = isIOS() ? -H_BALANCE_BANNER : 0;
 
 export interface AnimatedTabViewProps
   extends ViewProps,
-    Pick<
-      FlatListProps<any> & ScrollViewProps,
-      | 'initialNumToRender'
-      | 'maxToRenderPerBatch'
-      | 'onContentSizeChange'
-      | 'onMomentumScrollBegin'
-      | 'onMomentumScrollEnd'
-      | 'onScrollEndDrag'
-      | 'keyExtractor'
-      | 'updateCellsBatchingPeriod'
-      | 'windowSize'
-      | 'ListEmptyComponent'
-    > {
+  Pick<
+    FlatListProps<any> & ScrollViewProps,
+    | 'initialNumToRender'
+    | 'maxToRenderPerBatch'
+    | 'onContentSizeChange'
+    | 'onMomentumScrollBegin'
+    | 'onMomentumScrollEnd'
+    | 'onScrollEndDrag'
+    | 'keyExtractor'
+    | 'updateCellsBatchingPeriod'
+    | 'windowSize'
+    | 'ListEmptyComponent'
+  > {
   data?: any[];
   renderItem?:
-    | ListRenderItem<any>
-    | Animated.Node<ListRenderItem<any> | null | undefined>
-    | null
-    | undefined;
+  | ListRenderItem<any>
+  | Animated.Node<ListRenderItem<any> | null | undefined>
+  | null
+  | undefined;
   onRef: Animated.FlatList<any> | Animated.ScrollView | null;
   scrollY: SharedValue<number>;
   refreshControl?: ReactElement;
@@ -99,8 +96,9 @@ const AnimatedTabViewWithoutMemo = ({
     showsVerticalScrollIndicator: false,
   };
 
-  const viewableItems = useSharedValue<ViewToken[]>([]);
+  // TODO : FlatList scrolling animation
 
+  // const viewableItems = useSharedValue<ViewToken[]>([]);
   // const onViewRef = React.useRef(
   //   ({ viewableItems: vItems }: { viewableItems: ViewToken[] }) => {
   //     if (vItems.length) {
@@ -114,24 +112,18 @@ const AnimatedTabViewWithoutMemo = ({
   //   waitForInteraction: false,
   //   itemVisiblePercentThreshold: 75,
   // });
-
-  const renderFlatlistItem = useCallback(
-    ({ item, index }) => {
-      return renderItem({ item, index, viewableItems });
-    },
-    [viewableItems.value, extraData]
-  );
+  // const renderFlatlistItem = useCallback(
+  //   ({ item, index }) => {
+  //     return renderItem({ item, index, viewableItems });
+  //   },
+  //   [viewableItems.value, extraData]
+  // );
 
   if (children) {
     return (
       <Animated.ScrollView
         {...commonProps}
-        contentContainerStyle={
-          isAndroid()
-            ? styles.scrollViewContentContainer
-            : commonProps.contentContainerStyle
-        }
-        ref={onRef as Animated.ScrollView}
+        ref={onRef as LegacyRef<Animated.ScrollView>}
       >
         {children}
       </Animated.ScrollView>
@@ -140,13 +132,13 @@ const AnimatedTabViewWithoutMemo = ({
     return (
       <Animated.FlatList
         {...commonProps}
-        ref={onRef as Animated.FlatList<any>}
+        ref={onRef as LegacyRef<Animated.FlatList<any>>}
         data={data}
         keyExtractor={keyExtractor}
-        // TO REDO
+        // TODO : FlatList scrolling animation
         // onViewableItemsChanged={onViewRef.current}
         // viewabilityConfig={viewConfigRef.current}
-        renderItem={renderFlatlistItem}
+        renderItem={renderItem}
         ListEmptyComponent={ListEmptyComponent}
         initialNumToRender={initialNumToRender}
         maxToRenderPerBatch={maxToRenderPerBatch}
@@ -160,12 +152,3 @@ const AnimatedTabViewWithoutMemo = ({
 export const AnimatedTabView = memo(
   AnimatedTabViewWithoutMemo
 ) as typeof AnimatedTabViewWithoutMemo;
-
-const styles = StyleSheet.create({
-  scrollViewContentContainer: {
-    // height: '100%',
-    flexGrow: 1,
-    // paddingTop: H_BALANCE_BANNER,
-    paddingBottom: H_GUTTER,
-  },
-});
