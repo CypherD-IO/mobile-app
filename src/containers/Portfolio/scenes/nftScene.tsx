@@ -26,7 +26,7 @@ import { screenTitle } from '../../../constants';
 import { Chain } from '../../../constants/server';
 import { intercomAnalyticsLog } from '../../utilities/analyticsUtility';
 import { ALL_CHAINS_TYPE } from '../../../constants/type';
-import { H_BALANCE_BANNER } from '../constants';
+import { H_BALANCE_BANNER, OFFSET_TABVIEW } from '../constants';
 
 type ScrollEvent = NativeSyntheticEvent<NativeScrollEvent>;
 
@@ -87,10 +87,23 @@ const NFTScene = ({
 
   useEffect(() => {
     if (scrollViewRef.current) {
-      scrollViewRef.current.scrollTo({ y: scrollY.value });
+      if (scrollY.value <= OFFSET_TABVIEW + H_BALANCE_BANNER) {
+        scrollViewRef.current.scrollTo({
+          y: Math.max(
+            Math.min(scrollY.value, OFFSET_TABVIEW + H_BALANCE_BANNER),
+            OFFSET_TABVIEW
+          ),
+          animated: false,
+        });
+      } else {
+        scrollViewRef.current.scrollTo({
+          y: OFFSET_TABVIEW + H_BALANCE_BANNER,
+          animated: false,
+        });
+      }
       trackRef(routeKey, scrollViewRef.current);
     }
-  }, [scrollViewRef.current]);
+  }, [scrollViewRef.current, loading]);
 
   const getNFTHoldings = async () => {
     setLoading(true);
