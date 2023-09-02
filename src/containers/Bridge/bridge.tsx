@@ -600,7 +600,7 @@ export default function Bridge (props: {navigation?: any, route?: any}) {
         showModal('state', {
           type: 'error',
           title: 'Transaction failed',
-          description:  response.error.response.data.errors[0]?.message ?? t('UNABLE_TO_TRANSFER'),
+          description:  response.error.message ?? t('UNABLE_TO_TRANSFER'),
           onSuccess: hideModal,
           onFailure: hideModal
         });
@@ -670,7 +670,7 @@ export default function Bridge (props: {navigation?: any, route?: any}) {
         showModal('state', {
           type: 'error',
           title: '',
-          description: response.error.response.data.errors[0]?.message ?? `${fromToken?.name ?? ''} quote failed`,
+          description: response.error.message ?? `${fromToken?.name ?? ''} quote failed`,
           onSuccess: hideModal,
           onFailure: hideModal
         });
@@ -1680,7 +1680,7 @@ export default function Bridge (props: {navigation?: any, route?: any}) {
         showModal('state', {
           type: 'error',
           title: '',
-          description: response.error.response.data.errors[0]?.message ?? t('UNEXCPECTED_ERROR'),
+          description: response.error.message ?? t('UNEXCPECTED_ERROR'),
           onSuccess: hideModal,
           onFailure: hideModal
         });

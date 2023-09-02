@@ -48,7 +48,7 @@ export default function BridgeCardOptionsScreen (props: {
         setIsCardBlocked(blockCard);
         setCardUpdateToStatus(blockCard ? 'unblock' : 'block');
       } else {
-        showModal('state', { type: 'error', title: t('CHANGE_CARD_STATUS_FAIL'), description: response.error.response.data.errors[0]?.message ?? t('UNABLE_TO_CHANGE_CARD_STATUE'), onSuccess: hideModal, onFailure: hideModal });
+        showModal('state', { type: 'error', title: t('CHANGE_CARD_STATUS_FAIL'), description: response.error.message ?? t('UNABLE_TO_CHANGE_CARD_STATUE'), onSuccess: hideModal, onFailure: hideModal });
       }
     } catch (error) {
       Sentry.captureException(error);
