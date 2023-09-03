@@ -9,6 +9,7 @@ import {
   SignMessageValidationType,
 } from '../constants/enum';
 import { has } from 'lodash';
+import { t } from 'i18next';
 type RequestMethod = 'GET' | 'POST' | 'PUT' | 'PATCH' | 'DELETE';
 
 interface IHttpResponse {
@@ -68,7 +69,7 @@ export default function useAxios() {
 
   async function request(
     method: RequestMethod,
-    endpoint: string = '',
+    endpoint = '',
     body = {}
   ): Promise<IHttpResponse> {
     let shouldRetry = 0;
@@ -121,7 +122,7 @@ export default function useAxios() {
         } else {
           shouldRetry = 2;
           Sentry.captureException(error);
-          return { isError: true, error };
+          return { isError: true, error: error?.response?.data.errors[0] ?? null , status:error?.response?.status  };
         }
       }
     } while (shouldRetry < 2);
