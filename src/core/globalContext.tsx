@@ -130,6 +130,15 @@ export const initialGlobalState: GlobalStateDef = {
     SHARDEUM_SPHINX: {
       primary: 'https://sphinx.shardeum.org/',
     },
+    ZKSYNC_ERA:{
+      primary: 'https://mainnet.era.zksync.io'
+    },
+    BASE:{
+      primary: 'https://1rpc.io/base'
+    },
+    POLYGON_ZKEVM:{
+      primary: 'https://rpc.ankr.com/polygon_zkevm'
+    },
     STARGAZE: {
       otherUrls: {
         balance:
@@ -254,6 +263,7 @@ export async function fetchRPCEndpointsFromServer(globalDispatch: Function) {
     );
     result = resultFromEndpoint.data;
   }
+
   globalDispatch({ type: GlobalContextType.RPC_UPDATE, rpc: result });
   return result;
 }

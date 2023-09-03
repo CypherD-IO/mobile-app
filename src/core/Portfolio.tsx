@@ -18,6 +18,9 @@ import {
   CHAIN_NOBLE,
   CHAIN_SHARDEUM,
   CHAIN_SHARDEUM_SPHINX,
+  CHAIN_ZKSYNC_ERA,
+  CHAIN_BASE,
+  CHAIN_POLYGON_ZKEVM,
   PORTFOLIO_CHAINS_BACKEND_NAMES,
 } from '../constants/server';
 import {
@@ -91,6 +94,9 @@ export interface WalletHoldings {
   noble: ChainHoldings | undefined;
   shardeum: ChainHoldings | undefined;
   shardeum_sphinx: ChainHoldings | undefined;
+  zksync_era: ChainHoldings | undefined;
+  base: ChainHoldings | undefined;
+  polygon_zkevm: ChainHoldings | undefined;
   totalHoldings: Holding[];
 }
 
@@ -169,6 +175,12 @@ export function getCurrentChainHoldings(
       return portfolio.shardeum;
     case CHAIN_SHARDEUM_SPHINX.backendName:
       return portfolio.shardeum_sphinx;
+    case CHAIN_ZKSYNC_ERA.backendName:
+      return portfolio.zksync_era;
+    case CHAIN_BASE.backendName:
+      return portfolio.base;
+    case CHAIN_POLYGON_ZKEVM.backendName:
+      return portfolio.polygon_zkevm;
   }
 }
 
@@ -386,6 +398,9 @@ export async function getPortfolioModel(
   let ftmHoldings;
   let arbitrumHoldings;
   let optimismHoldings;
+  let zksyncEraHoldings;
+  let baseHoldings;
+  let polygonZkevmHoldings;
   const allChains = new Set([
     CHAIN_AVALANCHE.backendName,
     CHAIN_BSC.backendName,
@@ -401,6 +416,9 @@ export async function getPortfolioModel(
     CHAIN_NOBLE.backendName,
     CHAIN_SHARDEUM.backendName,
     CHAIN_SHARDEUM_SPHINX.backendName,
+    CHAIN_ZKSYNC_ERA.backendName,
+    CHAIN_BASE.backendName,
+    CHAIN_POLYGON_ZKEVM.backendName,
   ]);
 
   const fetchedChains = new Set<ChainBackendNames | 'ALL'>();
@@ -504,6 +522,15 @@ export async function getPortfolioModel(
         case CHAIN_SHARDEUM_SPHINX.backendName:
           tokenHolding.chainDetails = CHAIN_SHARDEUM_SPHINX;
           break;
+        case CHAIN_POLYGON_ZKEVM.backendName:
+          tokenHolding.chainDetails = CHAIN_POLYGON_ZKEVM;
+          break;
+        case CHAIN_ZKSYNC_ERA.backendName:
+          tokenHolding.chainDetails = CHAIN_ZKSYNC_ERA;
+          break;
+        case CHAIN_BASE.backendName:
+          tokenHolding.chainDetails = CHAIN_BASE;
+          break;
       }
       if (has(tokenHolding, 'chainDetails')) {
         tokenHoldings.push(tokenHolding);
@@ -588,10 +615,21 @@ export async function getPortfolioModel(
       case CHAIN_SHARDEUM_SPHINX.backendName:
         shardeumSphinxHoldings = chainHoldings;
         break;
+      case CHAIN_POLYGON_ZKEVM.backendName:
+        polygonZkevmHoldings = chainHoldings;
+        break;
+      case CHAIN_ZKSYNC_ERA.backendName:
+        zksyncEraHoldings = chainHoldings;
+        break;
+      case CHAIN_BASE.backendName:
+        baseHoldings = chainHoldings;
+        break;
     }
   }
   const remainingChains = new Set(
-    [...allChains].filter((x) => !fetchedChains.has(x))
+    [...allChains].filter(
+      (x) => !fetchedChains.has(x as ChainBackendNames | 'ALL')
+    )
   );
 
   if (remainingChains.size > 0 && portfolioState.statePortfolio.developerMode) {
@@ -667,6 +705,15 @@ export async function getPortfolioModel(
         case CHAIN_SHARDEUM_SPHINX.backendName:
           shardeumSphinxHoldings = chainHoldings;
           break;
+        case CHAIN_POLYGON_ZKEVM.backendName:
+          polygonZkevmHoldings = chainHoldings;
+          break;
+        case CHAIN_ZKSYNC_ERA.backendName:
+          zksyncEraHoldings = chainHoldings;
+          break;
+        case CHAIN_BASE.backendName:
+          baseHoldings = chainHoldings;
+          break;
       }
     }
   }
@@ -693,6 +740,9 @@ export async function getPortfolioModel(
     arbitrum: arbitrumHoldings,
     shardeum: shardeumHoldings,
     shardeum_sphinx: shardeumSphinxHoldings,
+    zksync_era: zksyncEraHoldings,
+    base: baseHoldings,
+    polygon_zkevm: polygonZkevmHoldings,
     totalHoldings,
   };
   await storePortfolioData(portfolio, ethereum, portfolioState);
@@ -705,8 +755,9 @@ export async function fetchTokenData(
 ) {
   const ARCH_HOST: string = hostWorker.getHost('ARCH_HOST');
   const fromAnkr: boolean = portfolioState.statePortfolio.developerMode;
-  const cosmosPortfolioUrl = `${ARCH_HOST}/v1/portfolio/balances?ankr=${fromAnkr as unknown as string
-    }`;
+  const cosmosPortfolioUrl = `${ARCH_HOST}/v1/portfolio/balances?ankr=${
+    fromAnkr as unknown as string
+  }`;
   const { isReadOnlyWallet } = hdWalletState.state;
   const { cosmos, osmosis, juno, stargaze, noble, ethereum } =
     hdWalletState.state.wallet;
@@ -727,8 +778,8 @@ export async function fetchTokenData(
     ) {
       if (
         portfolio?.totalUnverifiedBalance +
-        portfolio?.totalBalance +
-        portfolio?.totalStakedBalance >
+          portfolio?.totalBalance +
+          portfolio?.totalStakedBalance >
         0
       ) {
         portfolioState.dispatchPortfolio({
@@ -802,9 +853,9 @@ export async function fetchTokenData(
       if (
         newPortfolio &&
         newPortfolio?.totalUnverifiedBalance +
-        newPortfolio?.totalBalance +
-        newPortfolio?.totalStakedBalance >
-        0
+          newPortfolio?.totalBalance +
+          newPortfolio?.totalStakedBalance >
+          0
       ) {
         portfolioState.dispatchPortfolio({
           value: {

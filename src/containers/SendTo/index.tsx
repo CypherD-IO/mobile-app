@@ -205,6 +205,7 @@ export default function SendTo (props: { navigation?: any, route?: any }) {
 
   const buildAddressDirectory = async () => {
     const tempContactBook: Record<string, Contact> = await getContactBookWithMultipleAddress();
+
     const tempAddressDirectory: Record<string, Record<string, string[]>> = {
       evmAddresses: {},
       ethereum: {},
@@ -221,7 +222,10 @@ export default function SendTo (props: { navigation?: any, route?: any }) {
       optimism: {},
       arbitrum: {},
       shardeum: {},
-      shardeum_sphinx: {}
+      shardeum_sphinx: {},
+      zksync_era: {},
+      base: {},
+      polygon_zkevm: {}
     };
     if (tempContactBook) {
       setContactBook(tempContactBook);
