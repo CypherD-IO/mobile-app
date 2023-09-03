@@ -95,7 +95,7 @@ export default function ActivateCard (props: {navigation: any, route: {params: {
         globalContext.globalDispatch({ type: GlobalContextType.CARD_PROFILE, cardProfile: data });
         showModal('state', { type: 'success', title: t('ACTIVATION_SUCCESSFUL'), description: t('CARD_ACTIVATION_SUCCESSFUL'), onSuccess: () => onModalHide('success'), onFailure: () => onModalHide() });
       } else {
-        showModal('state', { type: 'error', title: t('VERIFICATION_FAILED'), description: t('INVALID_DETAILS'), onSuccess: () => onModalHide(), onFailure: () => onModalHide() });
+        showModal('state', { type: 'error', title: t('VERIFICATION_FAILED'), description: response.error.message ?? t('INVALID_DETAILS'), onSuccess: () => onModalHide(), onFailure: () => onModalHide() });
       }
     } catch (e: any) {
       showModal('state', { type: 'error', title: t('VERIFICATION_FAILED'), description: t('INVALID_DETAILS'), onSuccess: () => onModalHide(), onFailure: () => onModalHide() });

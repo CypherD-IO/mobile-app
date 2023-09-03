@@ -345,7 +345,7 @@ export default function BridgeFundCardScreen ({ route }: {route: any}) {
         }
       } else {
         Sentry.captureException(response.error);
-        showModal('state', { type: 'error', title: '', description: t('UNABLE_TO_TRANSFER'), onSuccess: hideModal, onFailure: hideModal });
+        showModal('state', { type: 'error', title: '', description: response.error.message ?? t('UNABLE_TO_TRANSFER'), onSuccess: hideModal, onFailure: hideModal });
         setLoading(false);
       }
     } else if (COSMOS_CHAINS.includes(chainName)) {
@@ -381,7 +381,7 @@ export default function BridgeFundCardScreen ({ route }: {route: any}) {
             setTokenQuote(response.data);
           }
         } else {
-          showModal('state', { type: 'error', title: '', description: t('UNABLE_TO_TRANSFER'), onSuccess: hideModal, onFailure: hideModal });
+          showModal('state', { type: 'error', title: '', description: response.error.message ?? t('UNABLE_TO_TRANSFER'), onSuccess: hideModal, onFailure: hideModal });
           setLoading(false);
         }
       } catch (error) {
