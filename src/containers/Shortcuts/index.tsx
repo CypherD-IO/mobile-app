@@ -299,12 +299,15 @@ export default function ShortcutsModal ({ navigationRef }) {
         break;
       case ShortcutsTitle.BRIDGE:
         navigationRef.navigate(screenTitle.BRIDGE_SCREEN, {
-          title: t('BRIDGE')
+          title: t('BRIDGE'),
+          renderPage: 'bridgePage'
         });
         break;
       case ShortcutsTitle.SWAP:
         navigationRef.navigate(screenTitle.BRIDGE_SCREEN, {
-          title: t('SWAP_TITLE')
+          title: t('SWAP_TITLE'),
+          renderPage: 'swapPage'
+
         });
         break;
       default:

@@ -291,6 +291,9 @@ const SWAP_ERROR = { uri: `${S3_BUCKET_URL_ICONS}/swap_error.png` };
 const REFERRAL_REWARDS = { uri: `${S3_BUCKET_URL_ICONS}/referralRewards.png` };
 const CARD_BLOCKED = { uri: `${S3_BUCKET_URL_ICONS}/card-blocked.png` };
 const PORTFOLIO_BG_S3 = { uri: `${S3_BUCKET_URL_ICONS}/portfolio-bg.png?${String(new Date().getDay())}` };
+const ZKSYNC_ERA_LOGO = require('./zksync_era.png');
+const BASE_LOGO = require('./base.png');
+const POLYGON_ZKEVM_LOGO = require('./polygon_zkevm.png');
 
 const AppImages: any = {
   PLUS,
@@ -580,6 +583,9 @@ const AppImages: any = {
   SWAP_PENDING,
   SWAP_ERROR,
   REFERRAL_REWARDS,
-  CARD_BLOCKED
+  CARD_BLOCKED,
+  ZKSYNC_ERA_LOGO,
+  BASE_LOGO,
+  POLYGON_ZKEVM_LOGO,
 };
 export default AppImages;
