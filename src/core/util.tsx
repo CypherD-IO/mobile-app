@@ -1,7 +1,7 @@
 /* eslint-disable @typescript-eslint/restrict-plus-operands */
 import * as React from 'react';
 import { Platform } from 'react-native';
-import { CHAIN_ETH, CHAIN_AVALANCHE, CHAIN_POLYGON, CHAIN_BSC, CHAIN_FTM, CHAIN_EVMOS, CHAIN_OPTIMISM, Chain, CHAIN_ARBITRUM, CHAIN_COSMOS, CHAIN_OSMOSIS, CHAIN_JUNO, CHAIN_STARGAZE, CHAIN_NOBLE, CHAIN_SHARDEUM, ChainBackendNames, EnsCoinTypes, CosmosStakingTokens, NativeTokenMapping, CHAIN_SHARDEUM_SPHINX } from '../constants/server';
+import { CHAIN_ETH, CHAIN_AVALANCHE, CHAIN_POLYGON, CHAIN_BSC, CHAIN_FTM, CHAIN_EVMOS, CHAIN_OPTIMISM, Chain, CHAIN_ARBITRUM, CHAIN_COSMOS, CHAIN_OSMOSIS, CHAIN_JUNO, CHAIN_STARGAZE, CHAIN_NOBLE, CHAIN_SHARDEUM, ChainBackendNames, EnsCoinTypes, CosmosStakingTokens, NativeTokenMapping, CHAIN_SHARDEUM_SPHINX, CHAIN_ZKSYNC_ERA, CHAIN_BASE, CHAIN_POLYGON_ZKEVM } from '../constants/server';
 import { GlobalStateDef, GlobalContextDef, initialGlobalState } from './globalContext';
 import * as Sentry from '@sentry/react-native';
 import Toast from 'react-native-toast-message';
@@ -53,6 +53,14 @@ export function getExplorerUrl (chainSymbol: string, chainName: string, hash: st
         return `https://arbiscan.io/tx/${hash}`;
       } else if (chainName === CHAIN_OPTIMISM.name) {
         return `https://optimistic.etherscan.io/tx/${hash}`;
+      }else if( chainName === CHAIN_ZKSYNC_ERA.name ){
+        return `https://explorer.zksync.io/tx/${hash}`;
+      }
+      else if( chainName === CHAIN_BASE.name){
+        return `https://base.dex.guru/tx/${hash}`;
+       }
+      else if( chainName === CHAIN_POLYGON_ZKEVM.name){
+        return `https://zkevm.polygonscan.com/tx/${hash}`;
       }
       return `https://etherscan.io/tx/${hash}`;
     case CHAIN_AVALANCHE.symbol:
@@ -157,7 +165,7 @@ export const validateAmount = (amount: string): boolean => {
   }
 };
 
-export const convertFromUnitAmount = (amount: string, decimal: number, decimalPlaces: number = 3) => {
+export const convertFromUnitAmount = (amount: string, decimal: number, decimalPlaces = 3) => {
   return (parseFloat(amount) * (10 ** -decimal)).toFixed(decimalPlaces);
 };
 
@@ -170,7 +178,7 @@ export const convertNumberToShortHandNotation = n => {
 };
 
 // removes the extra decimal places and only returns the amount with the tokens contract decimals
-export const convertAmountOfContractDecimal = (amount: string, decimal: number = 18): string => {
+export const convertAmountOfContractDecimal = (amount: string, decimal = 18): string => {
   return [amount.split('.')[0], amount.split('.')[1]?.slice(0, decimal) ? amount.split('.')[1].slice(0, decimal) : '0'].join('.');
 };
 
@@ -215,7 +223,7 @@ export const convertToEvmosFromAevmos = (aevmos) => {
   return parseFloat(aevmos) * 10 ** -18;
 };
 
-export const isBigIntZero = (num: BigInt): Boolean => {
+export const isBigIntZero = (num: bigint): boolean => {
   return num === BigInt(0);
 };
 
@@ -321,7 +329,7 @@ export function isValidEns (domain: string) {
   return ensReg.test(domain);
 }
 
-export function getMaskedAddress (address: string, maskLength: number = 6) {
+export function getMaskedAddress (address: string, maskLength = 6) {
   let prefixLength = 2;
   const len = address?.length;
   if (Web3.utils.isAddress(address)) {

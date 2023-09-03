@@ -101,6 +101,7 @@ export default function Bridge (props: {navigation?: any, route?: any}) {
   const isFocused = useIsFocused();
   const { t } = useTranslation();
   const routeData = props.route.params;
+  const{ renderPage } = routeData;
   const { postWithAuth } = useAxios();
   const portfolioState = useContext<any>(PortfolioContext);
   const hdWallet = useContext<any>(HdWalletContext);
@@ -158,7 +159,7 @@ export default function Bridge (props: {navigation?: any, route?: any}) {
   });
   const [swapParams, setSwapParams] = useState({});
   const [swapSupportedChains, setSwapSupportedChains] = useState([
-    1, 137, 10, 43114, 42161, 56, 250
+    1, 137, 10, 43114, 42161, 56, 250, 324, 8453, 1101
   ]);
   const slippage = 0.4;
 
@@ -2000,6 +2001,7 @@ export default function Bridge (props: {navigation?: any, route?: any}) {
             onCancel={() => {
               setFromTokenModalVisible(false);
             }}
+            renderPage={renderPage}
           />
 
           <ChooseTokenModal
