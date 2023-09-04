@@ -11,6 +11,7 @@ import {
   BottomTabBar,
   BottomTabBarProps,
   createBottomTabNavigator,
+  useBottomTabBarHeight,
 } from '@react-navigation/bottom-tabs';
 import AppImages from '../../assets/images/appImages';
 import ShortcutsModal from '../containers/Shortcuts';
@@ -33,10 +34,7 @@ import { t } from 'i18next';
 import clsx from 'clsx';
 import { isIOS } from '../misc/checkers';
 import {
-  Easing,
   Layout,
-  SlideOutDown,
-  SlideInDown,
 } from 'react-native-reanimated';
 import { Colors } from '../constants/theme';
 import { useKeyboard } from '../hooks/useKeyboardVisibily';
@@ -135,8 +133,8 @@ function TabStack() {
             options.tabBarLabel !== undefined
               ? options.tabBarLabel
               : options.title !== undefined
-              ? options.title
-              : route.name;
+                ? options.title
+                : route.name;
 
           const isFocused = state.index === index;
           const TabBarIcon = options.tabBarIcon;
@@ -215,13 +213,10 @@ function TabStack() {
           return (
             <CyDAnimatedView
               // TO REDO : TABBAR ANIMATION
-              entering={SlideInDown}
-              exiting={SlideOutDown}
-              layout={Layout.easing(Easing.ease).delay(50)}
-              className={clsx('rounded-t-[24px] shadow', {
-                'mb-[-90px]': !showTabBar,
-                'absolute bottom-[-350px]': keyboardHeight,
-                'bg-white': !isIOS(),
+              layout={Layout.springify()}
+              className={clsx('rounded-t-[24px] pb-[20px] shadow absolute bottom-[-20px] w-full', {
+                'bottom-[-110px]': !showTabBar,
+                'bottom-[-350px]': keyboardHeight,
                 'shadow-gray-400': (!isReadOnlyWallet && !isIOS()) || isIOS(),
               })}
               style={styles.elevatedBackground}

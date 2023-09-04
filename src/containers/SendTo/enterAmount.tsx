@@ -27,7 +27,7 @@ const {
   DynamicImage
 } = require('../../styles');
 
-export default function EnterAmount (props) {
+export default function EnterAmount(props) {
   // NOTE: DEFINE VARIABLE 🍎🍎🍎🍎🍎🍎
   const { t } = useTranslation();
   const { route } = props;
@@ -126,139 +126,137 @@ export default function EnterAmount (props) {
   // NOTE: LIFE CYCLE METHOD 🍎🍎🍎🍎
   return (
     <CyDSafeAreaView className='flex-1 bg-white'>
-      <CyDView>
-        <CyDScrollView className={'flex-1 bg-white w-full'}>
-          <CyDView>
-            <CyDView className={'flex items-center justify-center pb-[35px] pt-[15px] w-full bg-secondaryBackgroundColor rounded-b-[25px]'}>
-              <CyDView className={'flex items-center justify-center w-full relative'}>
-                <CyDTouchView
-                  onPress={() => {
-                    const gasReserved = (NativeTokenMapping[tokenData?.chainDetails?.symbol] || tokenData?.chainDetails?.symbol) === tokenData?.symbol ? gasFeeReservation[tokenData.chainDetails.backendName] : 0;
+      <CyDView className={'bg-white w-full'}>
+        <CyDView>
+          <CyDView className={'flex items-center justify-center pb-[35px] pt-[15px] w-full bg-secondaryBackgroundColor rounded-b-[25px]'}>
+            <CyDView className={'flex items-center justify-center w-full relative'}>
+              <CyDTouchView
+                onPress={() => {
+                  const gasReserved = (NativeTokenMapping[tokenData?.chainDetails?.symbol] || tokenData?.chainDetails?.symbol) === tokenData?.symbol ? gasFeeReservation[tokenData.chainDetails.backendName] : 0;
 
-                    const maxAmount = parseFloat(tokenData?.actualBalance) - gasReserved;
-                    const textAmount = maxAmount < 0 ? '0.00' : limitDecimalPlaces(maxAmount.toString(), 6);
-                    setValueForUsd(textAmount);
+                  const maxAmount = parseFloat(tokenData?.actualBalance) - gasReserved;
+                  const textAmount = maxAmount < 0 ? '0.00' : limitDecimalPlaces(maxAmount.toString(), 6);
+                  setValueForUsd(textAmount);
 
-                    if (enterCryptoAmount) {
-                      setCryptoValue(textAmount);
-                      setUsdValue((parseFloat(textAmount) * tokenData.price).toString());
-                    } else {
-                      setCryptoValue((parseFloat(textAmount) / tokenData.price).toString());
-                      setUsdValue(textAmount);
-                    }
-                  }}
-                  className={clsx(
-                    'absolute left-[10%] bottom-[60%] bg-white rounded-full h-[40px] w-[40px] flex justify-center items-center p-[4px]'
-                  )
+                  if (enterCryptoAmount) {
+                    setCryptoValue(textAmount);
+                    setUsdValue((parseFloat(textAmount) * tokenData.price).toString());
+                  } else {
+                    setCryptoValue((parseFloat(textAmount) / tokenData.price).toString());
+                    setUsdValue(textAmount);
+                  }
+                }}
+                className={clsx(
+                  'absolute left-[10%] bottom-[60%] bg-white rounded-full h-[40px] w-[40px] flex justify-center items-center p-[4px]'
+                )
                 }
                 style={styles.roundButtonContainer}
-                >
+              >
                 <CyDText className={'font-nunito text-black '} >{t<string>('MAX')}</CyDText>
-                </CyDTouchView>
-                <CyDTouchView
-                  onPress={() => {
-                    if (enterCryptoAmount) setValueForUsd(limitDecimalPlaces(usdValue, 6));
-                    else setValueForUsd(limitDecimalPlaces(cryptoValue, 6));
-                    setEnterCryptoAmount(!enterCryptoAmount);
-                    // if (!enterCryptoAmount) {
-                    //   setCryptoValue(val);
-                    //   setUsdValue((parseFloat(val) * tokenData.price).toString());
-                    // } else {
-                    //   setCryptoValue((parseFloat(val) / tokenData.price).toString());
-                    //   setUsdValue(val);
-                    // }
-                  }}
-                  className={clsx(
-                    'absolute right-[10%] bottom-[60%] bg-white rounded-full h-[40px] w-[40px] flex justify-center items-center p-[4px]'
-                  )}
-                  style={styles.roundButtonContainer}
-                >
-                <CyDImage source={AppImages.TOGGLE_ICON} className={'w-[14px] h-[16px]'}/>
-                </CyDTouchView>
-                <CyDText className='font-nunito text-[15px] font-bold text-primaryTextColor'>
+              </CyDTouchView>
+              <CyDTouchView
+                onPress={() => {
+                  if (enterCryptoAmount) setValueForUsd(limitDecimalPlaces(usdValue, 6));
+                  else setValueForUsd(limitDecimalPlaces(cryptoValue, 6));
+                  setEnterCryptoAmount(!enterCryptoAmount);
+                  // if (!enterCryptoAmount) {
+                  //   setCryptoValue(val);
+                  //   setUsdValue((parseFloat(val) * tokenData.price).toString());
+                  // } else {
+                  //   setCryptoValue((parseFloat(val) / tokenData.price).toString());
+                  //   setUsdValue(val);
+                  // }
+                }}
+                className={clsx(
+                  'absolute right-[10%] bottom-[60%] bg-white rounded-full h-[40px] w-[40px] flex justify-center items-center p-[4px]'
+                )}
+                style={styles.roundButtonContainer}
+              >
+                <CyDImage source={AppImages.TOGGLE_ICON} className={'w-[14px] h-[16px]'} />
+              </CyDTouchView>
+              <CyDText className='font-nunito text-[15px] font-bold text-primaryTextColor'>
                 {enterCryptoAmount ? tokenData.symbol : 'USD'}
-                </CyDText>
-                <CyDView className={'flex-col w-8/12 mx-[6px] items-center'}>
-                  <CyDTextInput
-                    className={clsx(
-                      'font-bold text-center text-black h-[85px] font-nunito',
-                      {
-                        'text-[70px]': valueForUsd.length <= 5,
-                        'text-[40px]': valueForUsd.length > 5
-                      }
-                    )}
-                    keyboardType="numeric"
-                    onChangeText={(text) => {
-                      setValueForUsd(text);
-                      if (enterCryptoAmount) {
-                        setCryptoValue(text);
-                        setUsdValue((parseFloat(text) * tokenData.price).toString());
-                      } else {
-                        setCryptoValue((parseFloat(text) / tokenData.price).toString());
-                        setUsdValue(text);
-                      }
+              </CyDText>
+              <CyDView className={'flex-col w-8/12 mx-[6px] items-center'}>
+                <CyDTextInput
+                  className={clsx(
+                    'font-bold text-center text-black h-[85px] font-nunito',
+                    {
+                      'text-[70px]': valueForUsd.length <= 5,
+                      'text-[40px]': valueForUsd.length > 5
+                    }
+                  )}
+                  keyboardType="numeric"
+                  onChangeText={(text) => {
+                    setValueForUsd(text);
+                    if (enterCryptoAmount) {
+                      setCryptoValue(text);
+                      setUsdValue((parseFloat(text) * tokenData.price).toString());
+                    } else {
+                      setCryptoValue((parseFloat(text) / tokenData.price).toString());
+                      setUsdValue(text);
+                    }
+                  }}
+                  value={valueForUsd}
+                  autoFocus={true}
+                  onFocus={() => {
+                    if (valueForUsd === '0.00') setValueForUsd('');
+                  }}
+                  onBlur={() => {
+                    if (valueForUsd === '') setValueForUsd('0.00');
+                  }}
+                />
+              </CyDView>
+              <CText dynamic fF={C.fontsName.FONT_BOLD} fS={15} color={Colors.subTextColor}>{enterCryptoAmount ? (!isNaN(parseFloat(usdValue)) ? formatAmount(usdValue) : '0.00') + ' USD' : (!isNaN(parseFloat(cryptoValue)) ? formatAmount(cryptoValue) : '0.00') + ` ${tokenData.name}`}</CText>
+
+              <CyDView style={styles.tokenContainer} className='flex flex-row mt-[12px] mb-[6px] items-center rounded-[10px] self-center px-[10px] bg-white'>
+                <CyDView>
+                  <CyDFastImage
+                    className={'h-[35px] w-[35px] rounded-[50px]'}
+                    source={{
+                      uri: tokenData.logoUrl
                     }}
-                    value={valueForUsd}
-                    autoFocus={true}
-                    onFocus={() => {
-                      if (valueForUsd === '0.00') setValueForUsd('');
-                    }}
-                    onBlur={() => {
-                      if (valueForUsd === '') setValueForUsd('0.00');
-                    }}
+                    resizeMode='contain'
                   />
                 </CyDView>
-                <CText dynamic fF={C.fontsName.FONT_BOLD} fS={15} color={Colors.subTextColor}>{enterCryptoAmount ? (!isNaN(parseFloat(usdValue)) ? formatAmount(usdValue) : '0.00') + ' USD' : (!isNaN(parseFloat(cryptoValue)) ? formatAmount(cryptoValue) : '0.00') + ` ${tokenData.name}`}</CText>
-
-                <CyDView style={styles.tokenContainer} className='flex flex-row mt-[12px] mb-[6px] items-center rounded-[10px] self-center px-[10px] bg-white'>
-                    <CyDView>
-                      <CyDFastImage
-                        className={'h-[35px] w-[35px] rounded-[50px]'}
-                        source={{
-                          uri: tokenData.logoUrl
-                        }}
-                        resizeMode='contain'
-                      />
-                    </CyDView>
-                    <CyDView className={'flex w-[82%]'}>
-                      <CyDView className='flex flex-row w-full justify-between max-h-[90px] py-[10px] items-center'>
-                        <CyDView className='ml-[10px] max-w-[75%]'>
-                          <CyDView className={'flex flex-row align-center'}>
-                            <CyDText className={'font-extrabold text-[16px]'}>{tokenData.name}</CyDText>
-                          </CyDView>
-                          <CyDText className={'text-[14px] text-subTextColor font-bold mt-[2px]'}>{tokenData.symbol}</CyDText>
-                        </CyDView>
-                        <CyDView className='flex self-center items-end'>
-                          <CyDTokenValue className='text-[16px] font-extrabold'>
-                            {tokenData.totalValue}
-                          </CyDTokenValue>
-                          <CyDTokenAmount className='text-[14px] text-subTextColor font-bold'>
-                            {tokenData.actualBalance}
-                          </CyDTokenAmount>
-                        </CyDView>
+                <CyDView className={'flex w-[82%]'}>
+                  <CyDView className='flex flex-row w-full justify-between max-h-[90px] py-[10px] items-center'>
+                    <CyDView className='ml-[10px] max-w-[75%]'>
+                      <CyDView className={'flex flex-row align-center'}>
+                        <CyDText className={'font-extrabold text-[16px]'}>{tokenData.name}</CyDText>
                       </CyDView>
+                      <CyDText className={'text-[14px] text-subTextColor font-bold mt-[2px]'}>{tokenData.symbol}</CyDText>
+                    </CyDView>
+                    <CyDView className='flex self-center items-end'>
+                      <CyDTokenValue className='text-[16px] font-extrabold'>
+                        {tokenData.totalValue}
+                      </CyDTokenValue>
+                      <CyDTokenAmount className='text-[14px] text-subTextColor font-bold'>
+                        {tokenData.actualBalance}
+                      </CyDTokenAmount>
                     </CyDView>
                   </CyDView>
-
-                <DynamicView dynamic dynamicWidth fD={'row'} jC={'center'} width={80} mT={20} aLIT={'center'} >
-                  <CText dynamic fF={C.fontsName.FONT_BOLD} fS={15} color={Colors.primaryTextColor}>Send on</CText>
-                  <DynamicImage dynamic dynamicWidthFix dynamicHeightFix height={15} width={15} mL={5} mT={2} resizemode='contain'
-                    source={tokenData.chainDetails.logo_url} />
-                  <CText dynamic fF={C.fontsName.FONT_BOLD} fS={15} mL={5} color={Colors.primaryTextColor}>{tokenData.chainDetails.name}</CText>
-                </DynamicView>
-
+                </CyDView>
               </CyDView>
+
+              <DynamicView dynamic dynamicWidth fD={'row'} jC={'center'} width={80} mT={20} aLIT={'center'} >
+                <CText dynamic fF={C.fontsName.FONT_BOLD} fS={15} color={Colors.primaryTextColor}>Send on</CText>
+                <DynamicImage dynamic dynamicWidthFix dynamicHeightFix height={15} width={15} mL={5} mT={2} resizemode='contain'
+                  source={tokenData.chainDetails.logo_url} />
+                <CText dynamic fF={C.fontsName.FONT_BOLD} fS={15} mL={5} color={Colors.primaryTextColor}>{tokenData.chainDetails.name}</CText>
+              </DynamicView>
+
             </CyDView>
           </CyDView>
-        </CyDScrollView>
-      </CyDView>
-       <CyDView className={'w-full items-center top-[-30px]'}>
-         <Button title={t('CONTINUE')} disabled={parseFloat(valueForUsd) <= 0 || valueForUsd === ''} onPress={() => {
-           if (valueForUsd.length > 0) {
-             _validateValueForUsd();
-           }
-         }} type={ButtonType.PRIMARY} style='h-[60px] w-3/4'/>
         </CyDView>
+      </CyDView>
+      <CyDView className={'w-full items-center top-[-30px]'}>
+        <Button title={t('CONTINUE')} disabled={parseFloat(valueForUsd) <= 0 || valueForUsd === ''} onPress={() => {
+          if (valueForUsd.length > 0) {
+            _validateValueForUsd();
+          }
+        }} type={ButtonType.PRIMARY} style='h-[60px] w-3/4' />
+      </CyDView>
     </CyDSafeAreaView>
   );
 }
