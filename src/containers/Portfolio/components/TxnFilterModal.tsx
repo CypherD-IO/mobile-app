@@ -1,12 +1,13 @@
 import React, { memo, useLayoutEffect, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { BackHandler, StyleSheet } from "react-native";
-import { CyDSafeAreaView, CyDText, CyDTouchView, CyDView } from "../../../styles/tailwindStyles";
+import { CyDFastImage, CyDSafeAreaView, CyDText, CyDTouchView, CyDView } from "../../../styles/tailwindStyles";
 import CheckBoxes from "../../../components/checkBoxes";
 import RadioButtons from "../../../components/radioButtons";
 import Button from "../../../components/v2/button";
 import CyDModalLayout from "../../../components/v2/modal";
 import { ButtonType } from "../../../constants/enum";
+import AppImages from "../../../../assets/images/appImages";
 
 export const FILTERS = ['Type', 'Status'];
 export const TRANSACTION_TYPES = ['send', 'receive', 'swap', 'others'];
@@ -70,11 +71,10 @@ const TxnFilterModal = ({ navigation, modalVisibilityState, filterState }: TxnFi
     setModalVisible(false);
   }
 
-  const resetAndApply = () => {
+  const onReset = () => {
     setSelectedTypes([]);
     setSelectedStatuses([]);
     setFilter({ types: TRANSACTION_TYPES, statuses: STATUSES });
-    setModalVisible(false);
   };
 
   return (
@@ -86,6 +86,17 @@ const TxnFilterModal = ({ navigation, modalVisibilityState, filterState }: TxnFi
       animationOut="slideOutDown"
     >
       <CyDSafeAreaView className='bg-white flex-1'>
+        <CyDView className="flex flex-row justify-between items-center px-[20px] py-[10px]">
+          <CyDTouchView onPress={() => {
+            setModalVisible(false);
+          }}>
+            <CyDFastImage className="h-[22px] w-[22px]" source={AppImages.CLOSE} resizeMode="cover" />
+          </CyDTouchView>
+          <CyDText className="text-[24px] font-bold">{t('TRANSACTIONS_FILTER')}</CyDText>
+          <CyDTouchView onPress={onReset}>
+            <CyDText className='color-[#048A81] font-bold text-[16px]'>{t('RESET_ALL')}</CyDText>
+          </CyDTouchView>
+        </CyDView>
         <CyDView className={'h-full flex flex-row'}>
           <CyDView className={'border-r border-activityFilterBorderLine w-[30%]'}>
             {FILTERS.map((filter, idx) => (
@@ -114,13 +125,6 @@ const TxnFilterModal = ({ navigation, modalVisibilityState, filterState }: TxnFi
           </CyDView>
         </CyDView>
         <CyDView className='w-full absolute bottom-0'>
-          <Button
-            onPress={resetAndApply}
-            title={t('RESET_AND_APPLY')}
-            style="h-[60px] w-full rounded-[0px]"
-            titleStyle="text-[18px] font-bold"
-            type={ButtonType.TERNARY}
-          />
           <Button
             onPress={onApply}
             title={t('APPLY')}

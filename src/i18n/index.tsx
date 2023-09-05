@@ -751,7 +751,7 @@ const resources = {
       APPLICATION: 'Application',
       STATUS: 'Status',
       RESET_ALL: 'Reset all',
-      RESET_AND_APPLY: 'RESET AND APPLY'
+      TRANSACTIONS_FILTER: 'Transactions Filter'
     }
   }
 };
