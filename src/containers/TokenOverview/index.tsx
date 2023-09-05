@@ -21,7 +21,7 @@ import TokenStaking from './staking';
 import analytics from '@react-native-firebase/analytics';
 import clsx from 'clsx';
 import { isAndroid, isIOS } from '../../misc/checkers';
-import { Easing, Layout } from 'react-native-reanimated';
+import { Layout } from 'react-native-reanimated';
 import { Colors } from '../../constants/theme';
 
 interface RouteProps {
@@ -113,7 +113,7 @@ function TokenOverviewV2({ route, navigation }: RouteProps) {
         </CyDView>
       )}
       <CyDAnimatedView
-        layout={Layout.easing(Easing.ease).delay(50)}
+        layout={Layout.springify()}
         className={clsx(
           'h-[110px] self-end bg-white pb-[20px] bottom-[-30px] pt-[2px] rounded-t-[24px] shadow shadow-gray-400',
           { 'pt-[16px]': isAndroid() }
