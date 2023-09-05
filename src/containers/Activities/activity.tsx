@@ -27,8 +27,7 @@ import { ActivityAny, ActivityReducerAction, ActivityStatus, ActivityType, Excha
 import { CyDFastImage, CyDImage, CyDScrollView, CyDText, CyDTouchView, CyDView } from '../../styles/tailwindStyles';
 import { genId } from '../utilities/activityUtilities';
 import { ACTIVITY_TYPES, STATUSES, TIME_GAPS } from './activityFilter';
-import { screenTitle } from '../../constants/index';
-import { useIsFocused, useNavigationState } from '@react-navigation/native';
+import { useIsFocused } from '@react-navigation/native';
 
 const IN_PROGRESS = 'IN_PROGRESS';
 const PENDING = 'PENDING';
