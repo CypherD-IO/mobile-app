@@ -67,11 +67,12 @@ import { HdWalletContextDef } from '../../reducers/hdwallet_reducer';
 import { BarCodeReadEvent } from 'react-native-camera';
 import { AnimatedBanner, AnimatedTabBar } from './animatedComponents';
 import { useScrollManager } from '../../hooks/useScrollManager';
-import { NFTScene, TokenScene } from './scenes';
+import { NFTScene, TokenScene, TXNScene } from './scenes';
 import CyDTokenValue from '../../components/v2/tokenValue';
 import moment from 'moment';
 import clsx from 'clsx';
 import { isIOS } from '../../misc/checkers';
+import FilterBar from './components/FilterBar';
 
 export interface PortfolioProps {
   navigation: any;
@@ -94,10 +95,12 @@ export default function Portfolio({ navigation }: PortfolioProps) {
     isRefreshing: false,
     shouldRefreshAssets: false,
   });
+  const [filterModalVisible, setFilterModalVisible] = useState(false);
 
   const tabs = [
     { key: 'token', title: t('TOKENS') },
     { key: 'nft', title: t('NFTS') },
+    { key: 'txn', title: t('TXNS') },
   ];
 
   // not mentioning the scrollableType correctly will result in errors.
@@ -108,6 +111,7 @@ export default function Portfolio({ navigation }: PortfolioProps) {
       scrollableType: ScrollableType.FLATLIST,
     },
     { key: 'nft', title: t('NFTS'), scrollableType: ScrollableType.SCROLLVIEW },
+    { key: 'txn', title: t('TXNS'), scrollableType: ScrollableType.FLATLIST },
   ];
 
   const { scrollY, index, setIndex, getRefForKey, ...sceneProps } =
@@ -582,6 +586,21 @@ export default function Portfolio({ navigation }: PortfolioProps) {
               />
             </CyDView>
           );
+        case 'txn':
+          return (
+            <CyDView className='flex-1 h-full mx-[10px]'>
+              <AnimatedTabBar scrollY={scrollY}>
+                {renderTabBarFooter(tab.key)}
+              </AnimatedTabBar>
+              <TXNScene
+                {...sceneProps}
+                routeKey={tab.key}
+                scrollY={scrollY}
+                navigation={navigation}
+                filterModalVisibilityState={[filterModalVisible, setFilterModalVisible]}
+              />
+            </CyDView>
+          );
         default:
           return null;
       }
@@ -604,6 +623,12 @@ export default function Portfolio({ navigation }: PortfolioProps) {
           );
         case 'nft':
           return null;
+        case 'txn':
+          return (
+            <FilterBar
+              setFilterModalVisible={setFilterModalVisible}
+            />
+          );
         default:
           return null;
       }

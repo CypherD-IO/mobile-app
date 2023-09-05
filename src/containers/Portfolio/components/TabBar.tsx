@@ -13,6 +13,7 @@ import {
   CyDView,
 } from '../../../styles/tailwindStyles';
 import { TabRoute } from './TabView';
+import clsx from 'clsx';
 
 export interface TabBarProps extends SceneRendererProps {
   navigationState: NavigationState<TabRoute>;
@@ -22,7 +23,7 @@ export interface TabBarProps extends SceneRendererProps {
 export const TabBar = ({ navigationState, setIndex }: TabBarProps) => {
   const scrollRef = useRef<ScrollView>(null);
   const translateValue = useSharedValue(0);
-  const tabWidth = 65; // Set this to the width of your tabs
+  const tabWidth = 70; // Set this to the width of your tabs
 
   useMemo(() => {
     translateValue.value = withTiming(navigationState.index * tabWidth, {
@@ -92,7 +93,7 @@ const TabBarButton = ({
           (offsetX) => {
             xPosition.current = offsetX;
           },
-          () => {}
+          () => { }
         );
       }
     },
@@ -113,10 +114,10 @@ const TabBarButton = ({
   return (
     <CyDTouchView onPress={wrappedOnPress}>
       <CyDView
-        className={'px-[10px] py-[5px] rounded-[8px] w-[70px]'}
+        className={'px-[5px] py-[5px] rounded-[8px] w-[70px]'}
         ref={handleRef}
       >
-        <CyDText>{title}</CyDText>
+        <CyDText className={clsx('text-[14px]w-full text-center', { 'font-bold': active })}>{title}</CyDText>
       </CyDView>
     </CyDTouchView>
   );
