@@ -21,7 +21,7 @@ interface RouteProps {
   }
 }
 
-export default function NFTHoldingsScreen ({ route, navigation }: RouteProps) {
+export function NFTHoldingsScreen ({ route, navigation }: RouteProps) {
   const { nftHoldings } = route.params;
 
   useEffect(() => {

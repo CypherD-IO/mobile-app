@@ -76,7 +76,6 @@ export const screenTitle = {
   CARD_SIGNUP_OTP_VERIFICATION_SCREEN: 'OTPVerificationScreen',
   CARD_SIGNUP_COMPLETE_SCREEN: 'CardSignupCompleteScreen',
   CARD_KYC_STATUS_SCREEN: 'CardKYCStatusScreen',
-  APTO_CARD_SCREEN: 'AptoCardScreen',
   BRIDGE_CARD_SCREEN: 'BridgeCardScreen',
   BRIDGE_CARD_REVEAL_AUTH_SCREEN: 'BridgeCardRevealAuthScreen',
   CARD_ACTIAVTION_SCREEN: 'CardActivationScreen',
@@ -101,7 +100,7 @@ export const screenTitle = {
   SAVED_ADDRESS: 'SavedAddress',
   CREATE_CONTACT: 'CreateContact',
   TRANSFI_SCREEN: 'TransFiScreen',
-  CARD_SETTINGS_SCREEN: 'CardSettingsScreen'
+  CARD_SETTINGS_SCREEN: 'CardSettingsScreen',
 };
 
 export const fontsName = {
@@ -109,5 +108,5 @@ export const fontsName = {
   FONT_BOLD: 'Nunito',
   FONT_SEMI_BOLD: 'Nunito',
   FONT_EXTRA_BOLD: 'Nunito',
-  FONT_REGULAR: 'Nunito'
+  FONT_REGULAR: 'Nunito',
 };

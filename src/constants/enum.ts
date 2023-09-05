@@ -199,3 +199,8 @@ export enum SigningModalPayloadFrom {
   BROWSER = 'BROWSER',
   WALLETCONNECT = 'WALLETCONNECT'
 }
+
+export enum ScrollableType {
+  SCROLLVIEW = 'ScrollView',
+  FLATLIST = 'FlatList'
+}
