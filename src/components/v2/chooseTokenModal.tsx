@@ -9,6 +9,7 @@ import { CyDFastImage, CyDFlatList, CyDImage, CyDText, CyDTextInput, CyDTouchVie
 import CyDModalLayout from './modal';
 import CyDTokenAmount from './tokenAmount';
 import CyDTokenValue from './tokenValue';
+import { get } from 'lodash';
 
 interface TokenModal {
   tokenList: any[]
@@ -44,7 +45,7 @@ export default function ChooseTokenModal (props: TokenModal) {
   useEffect(() => {
     if (tokenList?.length && type === TokenModalType.PORTFOLIO) {
       const valuedTokens = tokenList.filter((token) => token.isVerified);
-      valuedTokens.sort((tokenA, tokenB) => tokenA.totalValue < tokenB.totalValue ? 1 : -1);
+      valuedTokens.sort(sortDescTokenData);
       setTotalHoldings({
         originalHoldings: valuedTokens,
         filteredHoldings: valuedTokens
@@ -56,6 +57,24 @@ export default function ChooseTokenModal (props: TokenModal) {
       });
     }
   }, [tokenList]);
+
+  const sortDescTokenData = (tokenA: any, tokenB: any) => {
+    const totalValueA = get(tokenA,'totalValue');
+    const totalValueB = get(tokenB,'totalValue');
+    const isBridgeableA = get(tokenA,'isBridgeable');
+    const isBridgeableB = get(tokenB,'isBridgeable');
+    if(isBridgeableA && !isBridgeableB){
+      return -1;
+    }else if(isBridgeableB && !isBridgeableA){
+      return 1;
+    }else if(!isBridgeableA && !isBridgeableB){
+      return 0;
+    }else if(totalValueA < totalValueB){
+      return 1;
+    }else{
+      return -1;
+    }
+  };
 
   const searchTokens = (tokenName: string) => {
     if (tokenName !== '') {
@@ -69,7 +88,10 @@ export default function ChooseTokenModal (props: TokenModal) {
     if (renderPage === 'fundCardPage') {
       return totalValue < minTokenValueLimit || !isBridgeable;
     }
-    return totalValue < minTokenValueLimit;
+    else if(renderPage === 'bridgePage'){
+      return !isBridgeable;
+    }
+    return totalValue  < minTokenValueLimit;
   };
 
   const TokenItem = ({ item }: { item: {totalValue: string | number, logoUrl: string, name: string, chainDetails: any, actualBalance: string | number, symbol: string, isBridgeable: boolean} }) => {

@@ -4,17 +4,21 @@ import { useContext } from 'react';
 import { GlobalContext, signIn, isTokenValid } from '../core/globalContext';
 import * as Sentry from '@sentry/react-native';
 import { HdWalletContext } from './util';
-import { GlobalContextType, SignMessageValidationType } from '../constants/enum';
+import {
+  GlobalContextType,
+  SignMessageValidationType,
+} from '../constants/enum';
 import { has } from 'lodash';
+import { t } from 'i18next';
 type RequestMethod = 'GET' | 'POST' | 'PUT' | 'PATCH' | 'DELETE';
 
 interface IHttpResponse {
-  isError: boolean
-  data?: any
-  status?: number
-  error?: any
+  isError: boolean;
+  data?: any;
+  status?: number;
+  error?: any;
 }
-export default function useAxios () {
+export default function useAxios() {
   const globalContext = useContext<any>(GlobalContext);
   const hdWalletContext = useContext<any>(HdWalletContext);
   const ethereum = hdWalletContext.state.wallet.ethereum;
@@ -29,8 +33,8 @@ export default function useAxios () {
     headers: {
       Accept: 'application/json',
       'Content-Type': 'application/json',
-      Authorization: `Bearer ${String(token)}`
-    }
+      Authorization: `Bearer ${String(token)}`,
+    },
   });
 
   axiosInstance.interceptors.request.use(
@@ -38,9 +42,15 @@ export default function useAxios () {
       if (!isTokenValid(token)) {
         try {
           const signInResponse = await signIn(ethereum);
-          if (signInResponse?.message === SignMessageValidationType.VALID && has(signInResponse, 'token')) {
+          if (
+            signInResponse?.message === SignMessageValidationType.VALID &&
+            has(signInResponse, 'token')
+          ) {
             token = signInResponse?.token;
-            globalContext.globalDispatch({ type: GlobalContextType.SIGN_IN, sessionToken: token });
+            globalContext.globalDispatch({
+              type: GlobalContextType.SIGN_IN,
+              sessionToken: token,
+            });
             req.headers.Authorization = `Bearer ${String(token)}`;
             return req;
           }
@@ -57,7 +67,11 @@ export default function useAxios () {
     }
   );
 
-  async function request (method: RequestMethod, endpoint: string = '', body = {}): Promise<IHttpResponse> {
+  async function request(
+    method: RequestMethod,
+    endpoint = '',
+    body = {}
+  ): Promise<IHttpResponse> {
     let shouldRetry = 0;
 
     do {
@@ -91,9 +105,15 @@ export default function useAxios () {
         if (error?.response?.status === 401) {
           try {
             const signInResponse = await signIn(ethereum);
-            if (signInResponse?.message === SignMessageValidationType.VALID && has(signInResponse, 'token')) {
+            if (
+              signInResponse?.message === SignMessageValidationType.VALID &&
+              has(signInResponse, 'token')
+            ) {
               token = signInResponse?.token;
-              globalContext.globalDispatch({ type: GlobalContextType.SIGN_IN, sessionToken: token });
+              globalContext.globalDispatch({
+                type: GlobalContextType.SIGN_IN,
+                sessionToken: token,
+              });
             }
           } catch (e: any) {
             Sentry.captureException(e.message);
@@ -102,7 +122,7 @@ export default function useAxios () {
         } else {
           shouldRetry = 2;
           Sentry.captureException(error);
-          return { isError: true, error };
+          return { isError: true, error: error?.response?.data.errors[0] ?? null , status:error?.response?.status  };
         }
       }
     } while (shouldRetry < 2);
@@ -110,10 +130,10 @@ export default function useAxios () {
     return { isError: true };
   }
 
-  async function getWithAuth (url: string) {
+  async function getWithAuth(url: string) {
     return await request('GET', url);
   }
-  async function postWithAuth (url: string, data: any) {
+  async function postWithAuth(url: string, data: any) {
     return await request('POST', url, data);
   }
   const putWithAuth = async (url: string, data: any) => {
@@ -126,5 +146,11 @@ export default function useAxios () {
     return await request('DELETE', url);
   };
 
-  return { getWithAuth, postWithAuth, putWithAuth, patchWithAuth, deleteWithAuth };
+  return {
+    getWithAuth,
+    postWithAuth,
+    putWithAuth,
+    patchWithAuth,
+    deleteWithAuth,
+  };
 }

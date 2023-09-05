@@ -18,8 +18,8 @@ import EnterKeyScreen from '../containers/Auth/EnterKey';
 import QRCode from '../containers/Qrcode/index';
 import Backup from '../containers/Auth/Backup';
 import BridgeTokenScreen from '../containers/Bridge/bridgeToken';
-import EnterAmount from '../containers/Portfolio/enterAmount';
-import SendTo from '../containers/Portfolio/sendTo';
+import EnterAmount from '../containers/SendTo/enterAmount';
+import SendTo from '../containers/SendTo';
 import StakingValidators from '../containers/Staking/stakingValidators';
 import StakingDelegation from '../containers/Staking/delegation';
 import StakingReDelegate from '../containers/Staking/reDelegate';
@@ -32,7 +32,7 @@ import ManageWallet from '../containers/Options/ManageWallet';
 import SecurityPrivacy from '../containers/Options/SecurityPrivacy';
 import SeedPhrase from '../containers/Options/SeedPhrase';
 import Bridge from '../containers/Bridge/bridge';
-import IBC from '../containers/Portfolio/ibc';
+import IBC from '../containers/IBC';
 import OpenLegalScreen from '../containers/InfoScreen/openLegalDoc';
 import SocialMediaScreen from '../containers/SocialMedia/socialMedia';
 import CosmosUnboundings from '../containers/CosmosStaking/unboundings';
@@ -57,7 +57,6 @@ import CardSignupCompleteScreen from '../containers/DebitCard/signUpComplete';
 import CardKYCStatusScreen from '../containers/DebitCard/KYCStatus';
 import BridgeCardScreen from '../containers/DebitCard/bridgeCard/bridgeCard';
 import CardRevealAuthScreen from '../containers/DebitCard/bridgeCard/cardRevealAuth';
-import AptoCardScreen from '../containers/DebitCard/aptoCard';
 import CardSignupLandingScreen from '../containers/DebitCard/cardSignupLanding';
 import BridgeFundCardScreen from '../containers/DebitCard/bridgeCard/fundCard';
 import BridgeCardOptionsScreen from '../containers/DebitCard/bridgeCard/cardOptions';
@@ -67,20 +66,25 @@ import SetPin from '../containers/PinAuthetication/setPin';
 import PinValidation from '../containers/PinAuthetication/pinValidation';
 import UpdateCardApplicationScreen from '../containers/DebitCard/updateCardApplication';
 import HostsAndRPCScreen from '../containers/Options/hostsAndRPC';
-import { CyDImage, CyDTouchView } from '../styles/tailwindStyles';
+import { CyDFastImage, CyDTouchView } from '../styles/tailwindStyles';
 import TransactionDetails from '../containers/DebitCard/bridgeCard/transactionDetails';
 import ReferralRewards from '../containers/ReferralRewards/referrals';
 import TokenOverviewV2 from '../containers/TokenOverview';
-import NFTOverviewScreen from '../containers/NFT/NFTOverview';
-import NFTHoldingsScreen from '../containers/NFT/NFTHoldings';
+import { NFTOverviewScreen, NFTHoldingsScreen } from '../containers/NFT';
 import { AddressBook } from '../containers/AddressBook/myAddress';
 import { CreateContact } from '../containers/AddressBook/createContact';
 import TransFiScreen from '../containers/ramp/transFi';
-import { useEffect, useState } from 'react';
-import { useNavigationState } from '@react-navigation/native';
-import { BackHandler, Keyboard, StyleProp, TextStyle, ToastAndroid } from 'react-native';
+import { useEffect } from 'react';
+import {
+  BackHandler,
+  Keyboard,
+  StyleProp,
+  TextStyle,
+  ToastAndroid,
+} from 'react-native';
 import ActivateCardScreen from '../containers/DebitCard/bridgeCard/activateCard';
 import SetPinScreen from '../containers/DebitCard/bridgeCard/setPin';
+import { useKeyboard } from '../hooks/useKeyboard';
 
 const { DynamicImage, DynamicButton } = require('../styles');
 
@@ -90,29 +94,38 @@ const FundCardStack = createNativeStackNavigator();
 const OptionsStack = createNativeStackNavigator();
 // const ActivityStack = createNativeStackNavigator();
 
-const defaultHeaderLeft = (navigation) => (
-  <CyDTouchView
-    className='w-[60px]'
-    onPress={() => {
-      Keyboard.dismiss();
-      // setTimeout(() => {
-      navigation.goBack();
-      // }, 3000);
-    }}
-  >
-    <CyDImage
-      className={'h-[20px] w-[20px]'}
-      resizeMode="cover"
-      source={AppImages.BACK}
-    />
-  </CyDTouchView>
-);
+const defaultHeaderLeft = (navigation) => {
+  const { keyboardHeight } = useKeyboard();
+  return (
+    <CyDTouchView
+      className='w-[60px] py-[10px] pl-[5px] pr-[20px]'
+      onPress={() => {
+        if (keyboardHeight) {
+          Keyboard.dismiss();
+          setTimeout(() => {
+            navigation.goBack();
+          }, 100);
+        } else {
+          navigation.goBack();
+        }
+      }}
+    >
+      <CyDFastImage
+        className={'h-[20px] w-[20px]'}
+        resizeMode='cover'
+        source={AppImages.BACK}
+      />
+    </CyDTouchView>
+  );
+};
 
-export function PortfolioStackScreen ({ navigation, route }) {
+export function PortfolioStackScreen({ navigation, route }) {
   let backPressCount = 0;
   const handleBackButton = () => {
     if (backPressCount === 0) {
-      setTimeout(() => { backPressCount = 0; }, 2000);
+      setTimeout(() => {
+        backPressCount = 0;
+      }, 2000);
       ToastAndroid.show('Press again to exit', ToastAndroid.SHORT);
     } else if (backPressCount === 2) {
       backPressCount = 0;
@@ -122,10 +135,14 @@ export function PortfolioStackScreen ({ navigation, route }) {
     return true;
   };
 
-  const portfolioStackScreenHeaderTitleStyles: StyleProp<Pick<TextStyle, 'fontFamily' | 'fontSize' | 'fontWeight'> & { color?: string | undefined }> = {
+  const portfolioStackScreenHeaderTitleStyles: StyleProp<
+    Pick<TextStyle, 'fontFamily' | 'fontSize' | 'fontWeight'> & {
+      color?: string | undefined;
+    }
+  > = {
     fontFamily: C.fontsName.FONT_BLACK,
     fontSize: 20,
-    fontWeight: '800'
+    fontWeight: '800',
   };
 
   useEffect(() => {
@@ -153,12 +170,12 @@ export function PortfolioStackScreen ({ navigation, route }) {
           headerTitleAlign: 'center',
           headerTitleStyle: portfolioStackScreenHeaderTitleStyles,
           navigationOptions: {
-            tabBarVisible: false
+            tabBarVisible: false,
           },
 
           headerTintColor: Colors.primaryTextColor,
           headerBackTitleVisible: false,
-          headerLeft: (props) => defaultHeaderLeft(navigation)
+          headerLeft: (props) => defaultHeaderLeft(navigation),
         })}
       />
 
@@ -172,12 +189,12 @@ export function PortfolioStackScreen ({ navigation, route }) {
           headerTitleAlign: 'center',
           headerTitleStyle: portfolioStackScreenHeaderTitleStyles,
           navigationOptions: {
-            tabBarVisible: false
+            tabBarVisible: false,
           },
 
           headerTintColor: Colors.primaryTextColor,
           headerBackTitleVisible: false,
-          headerLeft: (props) => defaultHeaderLeft(navigation)
+          headerLeft: (props) => defaultHeaderLeft(navigation),
         })}
       />
 
@@ -191,12 +208,12 @@ export function PortfolioStackScreen ({ navigation, route }) {
           headerTitleAlign: 'center',
           headerTitleStyle: portfolioStackScreenHeaderTitleStyles,
           navigationOptions: {
-            tabBarVisible: false
+            tabBarVisible: false,
           },
 
           headerTintColor: Colors.primaryTextColor,
           headerBackTitleVisible: false,
-          headerLeft: (props) => defaultHeaderLeft(navigation)
+          headerLeft: (props) => defaultHeaderLeft(navigation),
         })}
       />
 
@@ -210,12 +227,11 @@ export function PortfolioStackScreen ({ navigation, route }) {
           headerTitleAlign: 'center',
           headerTitleStyle: portfolioStackScreenHeaderTitleStyles,
           navigationOptions: {
-            tabBarVisible: false
+            tabBarVisible: false,
           },
-
           headerTintColor: Colors.primaryTextColor,
           headerBackTitleVisible: false,
-          headerLeft: (props) => defaultHeaderLeft(navigation)
+          headerLeft: (props) => defaultHeaderLeft(navigation),
         })}
       />
 
@@ -229,12 +245,12 @@ export function PortfolioStackScreen ({ navigation, route }) {
           headerTitleAlign: 'center',
           headerTitleStyle: portfolioStackScreenHeaderTitleStyles,
           navigationOptions: {
-            tabBarVisible: false
+            tabBarVisible: false,
           },
 
           headerTintColor: Colors.primaryTextColor,
           headerBackTitleVisible: false,
-          headerLeft: (props) => defaultHeaderLeft(navigation)
+          headerLeft: (props) => defaultHeaderLeft(navigation),
         })}
       />
 
@@ -248,12 +264,12 @@ export function PortfolioStackScreen ({ navigation, route }) {
           headerTitleAlign: 'center',
           headerTitleStyle: portfolioStackScreenHeaderTitleStyles,
           navigationOptions: {
-            tabBarVisible: false
+            tabBarVisible: false,
           },
 
           headerTintColor: Colors.primaryTextColor,
           headerBackTitleVisible: false,
-          headerLeft: (props) => defaultHeaderLeft(navigation)
+          headerLeft: (props) => defaultHeaderLeft(navigation),
         })}
       />
 
@@ -267,12 +283,12 @@ export function PortfolioStackScreen ({ navigation, route }) {
           headerTitleAlign: 'center',
           headerTitleStyle: portfolioStackScreenHeaderTitleStyles,
           navigationOptions: {
-            tabBarVisible: false
+            tabBarVisible: false,
           },
 
           headerTintColor: Colors.primaryTextColor,
           headerBackTitleVisible: false,
-          headerLeft: (props) => defaultHeaderLeft(navigation)
+          headerLeft: (props) => defaultHeaderLeft(navigation),
         })}
       />
 
@@ -286,12 +302,12 @@ export function PortfolioStackScreen ({ navigation, route }) {
           headerTitleAlign: 'center',
           headerTitleStyle: portfolioStackScreenHeaderTitleStyles,
           navigationOptions: {
-            tabBarVisible: false
+            tabBarVisible: false,
           },
 
           headerTintColor: Colors.primaryTextColor,
           headerBackTitleVisible: false,
-          headerLeft: (props) => defaultHeaderLeft(navigation)
+          headerLeft: (props) => defaultHeaderLeft(navigation),
         })}
       />
 
@@ -305,12 +321,12 @@ export function PortfolioStackScreen ({ navigation, route }) {
           headerTitleAlign: 'center',
           headerTitleStyle: portfolioStackScreenHeaderTitleStyles,
           navigationOptions: {
-            tabBarVisible: false
+            tabBarVisible: false,
           },
 
           headerTintColor: Colors.primaryTextColor,
           headerBackTitleVisible: false,
-          headerLeft: (props) => defaultHeaderLeft(navigation)
+          headerLeft: (props) => defaultHeaderLeft(navigation),
         })}
       />
 
@@ -324,12 +340,12 @@ export function PortfolioStackScreen ({ navigation, route }) {
           title: '',
           headerTitleStyle: portfolioStackScreenHeaderTitleStyles,
           navigationOptions: {
-            tabBarVisible: false
+            tabBarVisible: false,
           },
 
           headerTintColor: Colors.primaryTextColor,
           headerBackTitleVisible: false,
-          headerLeft: (props) => defaultHeaderLeft(navigation)
+          headerLeft: (props) => defaultHeaderLeft(navigation),
         })}
       />
 
@@ -343,12 +359,12 @@ export function PortfolioStackScreen ({ navigation, route }) {
           title: '',
           headerTitleStyle: portfolioStackScreenHeaderTitleStyles,
           navigationOptions: {
-            tabBarVisible: false
+            tabBarVisible: false,
           },
 
           headerTintColor: Colors.primaryTextColor,
           headerBackTitleVisible: false,
-          headerLeft: (props) => defaultHeaderLeft(navigation)
+          headerLeft: (props) => defaultHeaderLeft(navigation),
         })}
       />
 
@@ -362,12 +378,12 @@ export function PortfolioStackScreen ({ navigation, route }) {
           title: '',
           headerTitleStyle: portfolioStackScreenHeaderTitleStyles,
           navigationOptions: {
-            tabBarVisible: false
+            tabBarVisible: false,
           },
 
           headerTintColor: Colors.primaryTextColor,
           headerBackTitleVisible: false,
-          headerLeft: (props) => defaultHeaderLeft(navigation)
+          headerLeft: (props) => defaultHeaderLeft(navigation),
         })}
       />
 
@@ -381,12 +397,12 @@ export function PortfolioStackScreen ({ navigation, route }) {
           title: 'Re-Validate to',
           headerTitleStyle: portfolioStackScreenHeaderTitleStyles,
           navigationOptions: {
-            tabBarVisible: false
+            tabBarVisible: false,
           },
 
           headerTintColor: Colors.primaryTextColor,
           headerBackTitleVisible: false,
-          headerLeft: (props) => defaultHeaderLeft(navigation)
+          headerLeft: (props) => defaultHeaderLeft(navigation),
         })}
       />
 
@@ -398,14 +414,14 @@ export function PortfolioStackScreen ({ navigation, route }) {
           headerShadowVisible: false,
           title: t('TRAN_DETAIL'),
           navigationOptions: {
-            tabBarVisible: false
+            tabBarVisible: false,
           },
           headerTitleAlign: 'center',
           headerTitleStyle: portfolioStackScreenHeaderTitleStyles,
 
           headerTintColor: Colors.primaryTextColor,
           headerBackTitleVisible: false,
-          headerLeft: (props) => defaultHeaderLeft(navigation)
+          headerLeft: (props) => defaultHeaderLeft(navigation),
         })}
       />
       <PortfolioStack.Screen
@@ -416,14 +432,14 @@ export function PortfolioStackScreen ({ navigation, route }) {
           headerShadowVisible: false,
           title: t('NFT_DETAIL'),
           navigationOptions: {
-            tabBarVisible: false
+            tabBarVisible: false,
           },
           headerTitleAlign: 'center',
           headerTitleStyle: portfolioStackScreenHeaderTitleStyles,
 
           headerTintColor: Colors.primaryTextColor,
           headerBackTitleVisible: false,
-          headerLeft: (props) => defaultHeaderLeft(navigation)
+          headerLeft: (props) => defaultHeaderLeft(navigation),
         })}
       />
       <PortfolioStack.Screen
@@ -434,14 +450,14 @@ export function PortfolioStackScreen ({ navigation, route }) {
           headerShadowVisible: false,
           title: t('GEN_WEBVIEW'),
           navigationOptions: {
-            tabBarVisible: false
+            tabBarVisible: false,
           },
           headerTitleAlign: 'center',
           headerTitleStyle: portfolioStackScreenHeaderTitleStyles,
 
           headerTintColor: Colors.primaryTextColor,
           headerBackTitleVisible: false,
-          headerLeft: (props) => defaultHeaderLeft(navigation)
+          headerLeft: (props) => defaultHeaderLeft(navigation),
         })}
       />
       <PortfolioStack.Screen
@@ -452,51 +468,51 @@ export function PortfolioStackScreen ({ navigation, route }) {
           headerShadowVisible: false,
           title: t('CB_PAY'),
           navigationOptions: {
-            tabBarVisible: false
+            tabBarVisible: false,
           },
           headerTitleAlign: 'center',
           headerTitleStyle: portfolioStackScreenHeaderTitleStyles,
-          headerLeft: (props) => defaultHeaderLeft(navigation)
+          headerLeft: (props) => defaultHeaderLeft(navigation),
         })}
       />
       <PortfolioStack.Screen
-      name={screenTitle.ON_META}
-      component={Onmeta}
-      options={({ navigation, route }) => ({
-        headerTransparent: false,
-        headerShadowVisible: true,
-        title: t('ON_META'),
-        navigationOptions: {
-          tabBarVisible: false
-        },
-        headerTitleAlign: 'center',
-        headerTitleStyle: {
-          fontFamily: C.fontsName.FONT_BLACK,
-          fontSize: 20,
-          fontWeight: '800'
-        },
-        headerLeft: (props) => defaultHeaderLeft(navigation)
-      })}
-    />
+        name={screenTitle.ON_META}
+        component={Onmeta}
+        options={({ navigation, route }) => ({
+          headerTransparent: false,
+          headerShadowVisible: true,
+          title: t('ON_META'),
+          navigationOptions: {
+            tabBarVisible: false,
+          },
+          headerTitleAlign: 'center',
+          headerTitleStyle: {
+            fontFamily: C.fontsName.FONT_BLACK,
+            fontSize: 20,
+            fontWeight: '800',
+          },
+          headerLeft: (props) => defaultHeaderLeft(navigation),
+        })}
+      />
       <PortfolioStack.Screen
-      name={screenTitle.SARD_PAY}
-      component={SardinePay}
-      options={({ navigation, route }) => ({
-        headerTransparent: false,
-        headerShadowVisible: false,
-        title: t('SARD_PAY'),
-        navigationOptions: {
-          tabBarVisible: false
-        },
-        headerTitleAlign: 'center',
-        headerTitleStyle: {
-          fontFamily: C.fontsName.FONT_BLACK,
-          fontSize: 20,
-          fontWeight: '800'
-        },
-        headerLeft: (props) => defaultHeaderLeft(navigation)
-      })}
-    />
+        name={screenTitle.SARD_PAY}
+        component={SardinePay}
+        options={({ navigation, route }) => ({
+          headerTransparent: false,
+          headerShadowVisible: false,
+          title: t('SARD_PAY'),
+          navigationOptions: {
+            tabBarVisible: false,
+          },
+          headerTitleAlign: 'center',
+          headerTitleStyle: {
+            fontFamily: C.fontsName.FONT_BLACK,
+            fontSize: 20,
+            fontWeight: '800',
+          },
+          headerLeft: (props) => defaultHeaderLeft(navigation),
+        })}
+      />
       <PortfolioStack.Screen
         name={screenTitle.ENTER_AMOUNT}
         component={EnterAmount}
@@ -505,17 +521,17 @@ export function PortfolioStackScreen ({ navigation, route }) {
           headerShadowVisible: false,
           title: t('ENTER_AMOUNT'),
           navigationOptions: {
-            tabBarVisible: false
+            tabBarVisible: false,
           },
           headerStyle: {
-            backgroundColor: Colors.secondaryBackgroundColor
+            backgroundColor: Colors.secondaryBackgroundColor,
           },
           headerTitleAlign: 'center',
           headerTitleStyle: portfolioStackScreenHeaderTitleStyles,
 
           headerTintColor: Colors.primaryTextColor,
           headerBackTitleVisible: false,
-          headerLeft: (props) => defaultHeaderLeft(navigation)
+          headerLeft: (props) => defaultHeaderLeft(navigation),
         })}
       />
       <PortfolioStack.Screen
@@ -526,16 +542,16 @@ export function PortfolioStackScreen ({ navigation, route }) {
           headerShadowVisible: false,
           title: t('SEND_TO'),
           navigationOptions: {
-            tabBarVisible: false
+            tabBarVisible: false,
           },
           headerTitleAlign: 'center',
           headerTitleStyle: {
             fontFamily: C.fontsName.FONT_BLACK,
             fontSize: 20,
             fontWeight: '700',
-            color: Colors.primaryTextColor
+            color: Colors.primaryTextColor,
           },
-          headerLeft: (props) => defaultHeaderLeft(navigation)
+          headerLeft: (props) => defaultHeaderLeft(navigation),
         })}
       />
       <PortfolioStack.Screen
@@ -550,14 +566,14 @@ export function PortfolioStackScreen ({ navigation, route }) {
             fontFamily: C.fontsName.FONT_BLACK,
             fontWeight: '800',
             fontSize: 22,
-            color: Colors.whiteColor
+            color: Colors.whiteColor,
           },
           navigationOptions: {
-            tabBarVisible: false
+            tabBarVisible: false,
           },
 
           headerTintColor: Colors.primaryTextColor,
-          headerBackTitleVisible: false
+          headerBackTitleVisible: false,
         })}
       />
       <PortfolioStack.Screen
@@ -568,11 +584,11 @@ export function PortfolioStackScreen ({ navigation, route }) {
           headerShadowVisible: false,
           title: t('IBC'),
           navigationOptions: {
-            tabBarVisible: false
+            tabBarVisible: false,
           },
           headerTitleAlign: 'center',
           headerTitleStyle: portfolioStackScreenHeaderTitleStyles,
-          headerLeft: (props) => defaultHeaderLeft(navigation)
+          headerLeft: (props) => defaultHeaderLeft(navigation),
         })}
       />
 
@@ -584,11 +600,11 @@ export function PortfolioStackScreen ({ navigation, route }) {
           headerShadowVisible: false,
           title: t('IMPORT_WALLET'),
           navigationOptions: {
-            tabBarVisible: false
+            tabBarVisible: false,
           },
           headerTitleAlign: 'center',
           headerTitleStyle: portfolioStackScreenHeaderTitleStyles,
-          headerLeft: (props) => defaultHeaderLeft(navigation)
+          headerLeft: (props) => defaultHeaderLeft(navigation),
         })}
       />
       <PortfolioStack.Screen
@@ -602,7 +618,7 @@ export function PortfolioStackScreen ({ navigation, route }) {
           headerTitleStyle: portfolioStackScreenHeaderTitleStyles,
 
           headerTintColor: Colors.primaryTextColor,
-          headerBackTitleVisible: false
+          headerBackTitleVisible: false,
         })}
       />
       <PortfolioStack.Screen
@@ -615,11 +631,11 @@ export function PortfolioStackScreen ({ navigation, route }) {
           headerTitleAlign: 'center',
           headerTitleStyle: portfolioStackScreenHeaderTitleStyles,
           headerStyle: {
-            elevation: 0
+            elevation: 0,
           },
 
           headerTintColor: Colors.primaryTextColor,
-          headerBackTitleVisible: false
+          headerBackTitleVisible: false,
         })}
       />
 
@@ -634,12 +650,12 @@ export function PortfolioStackScreen ({ navigation, route }) {
           headerTitleStyle: {
             fontFamily: C.fontsName.FONT_BLACK,
             fontSize: 18,
-            fontWeight: '800'
+            fontWeight: '800',
           },
 
           headerTintColor: Colors.primaryTextColor,
           headerBackTitleVisible: false,
-          headerLeft: (props) => defaultHeaderLeft(navigation)
+          headerLeft: (props) => defaultHeaderLeft(navigation),
         }}
       />
 
@@ -654,7 +670,7 @@ export function PortfolioStackScreen ({ navigation, route }) {
           headerTitleStyle: portfolioStackScreenHeaderTitleStyles,
 
           headerTintColor: Colors.primaryTextColor,
-          headerBackTitleVisible: false
+          headerBackTitleVisible: false,
         }}
       />
 
@@ -668,10 +684,10 @@ export function PortfolioStackScreen ({ navigation, route }) {
           title: 'Activities',
           headerTitleStyle: portfolioStackScreenHeaderTitleStyles,
           navigationOptions: {
-            tabBarVisible: false
+            tabBarVisible: false,
           },
           headerTintColor: Colors.primaryTextColor,
-          headerBackTitleVisible: false
+          headerBackTitleVisible: false,
         })}
       />
       <PortfolioStack.Screen
@@ -684,25 +700,25 @@ export function PortfolioStackScreen ({ navigation, route }) {
           headerTitleAlign: 'center',
           headerTitleStyle: portfolioStackScreenHeaderTitleStyles,
           navigationOptions: {
-            tabBarVisible: false
+            tabBarVisible: false,
           },
 
           headerTintColor: Colors.primaryTextColor,
-          headerBackTitleVisible: false
+          headerBackTitleVisible: false,
         })}
       />
       <PortfolioStack.Screen
         name={screenTitle.PIN}
         component={PinValidation}
         options={({ navigation, route }) => ({
-          headerShown: false
+          headerShown: false,
         })}
       />
       <PortfolioStack.Screen
         name={screenTitle.SET_PIN}
         component={SetPin}
         options={({ navigation, route }) => ({
-          headerShown: false
+          headerShown: false,
         })}
       />
       <PortfolioStack.Screen
@@ -715,23 +731,27 @@ export function PortfolioStackScreen ({ navigation, route }) {
           headerTitleAlign: 'center',
           headerTitleStyle: portfolioStackScreenHeaderTitleStyles,
           navigationOptions: {
-            tabBarVisible: false
+            tabBarVisible: false,
           },
 
           headerTintColor: Colors.primaryTextColor,
           headerBackTitleVisible: false,
-          headerLeft: (props) => defaultHeaderLeft(navigation)
+          headerLeft: (props) => defaultHeaderLeft(navigation),
         })}
       />
     </PortfolioStack.Navigator>
   );
 }
 
-export function DebitCardStackScreen ({ navigation }) {
-  const portfolioStackScreenHeaderTitleStyles: StyleProp<Pick<TextStyle, 'fontFamily' | 'fontSize' | 'fontWeight'> & { color?: string | undefined }> = {
+export function DebitCardStackScreen({ navigation }) {
+  const portfolioStackScreenHeaderTitleStyles: StyleProp<
+    Pick<TextStyle, 'fontFamily' | 'fontSize' | 'fontWeight'> & {
+      color?: string | undefined;
+    }
+  > = {
     fontFamily: C.fontsName.FONT_BLACK,
     fontSize: 20,
-    fontWeight: '800'
+    fontWeight: '800',
   };
   return (
     <FundCardStack.Navigator initialRouteName={screenTitle.DEBIT_CARD_SCREEN}>
@@ -743,11 +763,11 @@ export function DebitCardStackScreen ({ navigation }) {
           headerShadowVisible: false,
           title: '',
           navigationOptions: {
-            tabBarVisible: false
+            tabBarVisible: false,
           },
           headerTitleAlign: 'center',
           headerTitleStyle: portfolioStackScreenHeaderTitleStyles,
-          headerBackVisible: false
+          headerBackVisible: false,
         })}
       />
 
@@ -760,55 +780,47 @@ export function DebitCardStackScreen ({ navigation }) {
           headerShadowVisible: false,
           title: 'Cypher Card Signup',
           headerStyle: {
-            backgroundColor: Colors.appColor
+            backgroundColor: Colors.appColor,
           },
           navigationOptions: {
-            tabBarVisible: false
+            tabBarVisible: false,
           },
           headerTitleAlign: 'center',
           headerTitleStyle: portfolioStackScreenHeaderTitleStyles,
           headerBackVisible: false,
-          headerLeft: (props) => defaultHeaderLeft(navigation)
-        })} />
+          headerLeft: (props) => defaultHeaderLeft(navigation),
+        })}
+      />
 
       <FundCardStack.Screen
         name={screenTitle.CARD_SIGNUP_SCREEN}
         component={CardSignupScreen}
-        options={({ navigation, route }) => ({ headerShown: false })} />
+        options={({ navigation, route }) => ({ headerShown: false })}
+      />
 
       <FundCardStack.Screen
         name={screenTitle.CARD_SIGNUP_COMPLETE_SCREEN}
         component={CardSignupCompleteScreen}
-        options={({ navigation }) => ({ headerShown: false })} />
+        options={({ navigation }) => ({ headerShown: false })}
+      />
 
       <FundCardStack.Screen
         name={screenTitle.CARD_KYC_STATUS_SCREEN}
         component={CardKYCStatusScreen}
-        options={({ navigation }) => ({ headerShown: false })} />
+        options={({ navigation }) => ({ headerShown: false })}
+      />
 
       <FundCardStack.Screen
         name={screenTitle.CARD_SIGNUP_OTP_VERIFICATION_SCREEN}
         component={OTPVerificationScreen}
-        options={({ navigation }) => ({ headerShown: false })} />
-
-      <FundCardStack.Screen
-        name={screenTitle.APTO_CARD_SCREEN}
-        component={AptoCardScreen}
-        options={({ navigation, route }) => ({
-          headerTransparent: false,
-          headerShadowVisible: false,
-          title: 'Cypher Card',
-          headerTitleAlign: 'center',
-          headerTitleStyle: portfolioStackScreenHeaderTitleStyles,
-          headerLeft: () => { return <></>; },
-          headerTintColor: Colors.primaryTextColor,
-          headerBackTitleVisible: false
-        })} />
+        options={({ navigation }) => ({ headerShown: false })}
+      />
 
       <FundCardStack.Screen
         name={screenTitle.UPDATE_CARD_APPLICATION_SCREEN}
         component={UpdateCardApplicationScreen}
-        options={({ navigation, route }) => ({ headerShown: false })} />
+        options={({ navigation, route }) => ({ headerShown: false })}
+      />
 
       <FundCardStack.Screen
         name={screenTitle.BRIDGE_CARD_SCREEN}
@@ -819,10 +831,13 @@ export function DebitCardStackScreen ({ navigation }) {
           title: 'Cypher Card',
           headerTitleAlign: 'center',
           headerTitleStyle: portfolioStackScreenHeaderTitleStyles,
-          headerLeft: () => { return <></>; },
+          headerLeft: () => {
+            return <></>;
+          },
           headerTintColor: Colors.primaryTextColor,
-          headerBackTitleVisible: false
-        }} />
+          headerBackTitleVisible: false,
+        }}
+      />
 
       <FundCardStack.Screen
         name={screenTitle.BRIDGE_CARD_TRANSACTION_DETAILS_SCREEN}
@@ -834,8 +849,9 @@ export function DebitCardStackScreen ({ navigation }) {
           headerTitleAlign: 'center',
           headerTitleStyle: portfolioStackScreenHeaderTitleStyles,
           headerTintColor: Colors.primaryTextColor,
-          headerBackTitleVisible: false
-        }} />
+          headerBackTitleVisible: false,
+        }}
+      />
 
       <FundCardStack.Screen
         name={screenTitle.BRIDGE_FUND_CARD_SCREEN}
@@ -848,8 +864,9 @@ export function DebitCardStackScreen ({ navigation }) {
           headerTitleStyle: portfolioStackScreenHeaderTitleStyles,
           headerTintColor: Colors.primaryTextColor,
           headerBackTitleVisible: false,
-          headerLeft: (props) => defaultHeaderLeft(navigation)
-        })} />
+          headerLeft: (props) => defaultHeaderLeft(navigation),
+        })}
+      />
 
       <FundCardStack.Screen
         name={screenTitle.BRIDGE_CARD_REVEAL_AUTH_SCREEN}
@@ -862,8 +879,9 @@ export function DebitCardStackScreen ({ navigation }) {
           headerTitleStyle: portfolioStackScreenHeaderTitleStyles,
           headerTintColor: Colors.primaryTextColor,
           headerBackTitleVisible: false,
-          headerLeft: (props) => defaultHeaderLeft(navigation)
-        })} />
+          headerLeft: (props) => defaultHeaderLeft(navigation),
+        })}
+      />
 
       <FundCardStack.Screen
         name={screenTitle.CARD_ACTIAVTION_SCREEN}
@@ -876,8 +894,9 @@ export function DebitCardStackScreen ({ navigation }) {
           headerTitleStyle: portfolioStackScreenHeaderTitleStyles,
           headerTintColor: Colors.primaryTextColor,
           headerBackTitleVisible: false,
-          headerLeft: (props) => defaultHeaderLeft(navigation)
-        })} />
+          headerLeft: (props) => defaultHeaderLeft(navigation),
+        })}
+      />
 
       <FundCardStack.Screen
         name={screenTitle.CARD_SET_PIN_SCREEN}
@@ -890,8 +909,9 @@ export function DebitCardStackScreen ({ navigation }) {
           headerTitleStyle: portfolioStackScreenHeaderTitleStyles,
           headerTintColor: Colors.primaryTextColor,
           headerBackTitleVisible: false,
-          headerLeft: (props) => defaultHeaderLeft(navigation)
-        })} />
+          headerLeft: (props) => defaultHeaderLeft(navigation),
+        })}
+      />
 
       <FundCardStack.Screen
         name={screenTitle.BRIDGE_CARD_OPTIONS_SCREEN}
@@ -904,8 +924,9 @@ export function DebitCardStackScreen ({ navigation }) {
           headerTitleAlign: 'center',
           headerTitleStyle: portfolioStackScreenHeaderTitleStyles,
           headerTintColor: Colors.primaryTextColor,
-          headerBackTitleVisible: false
-        }} />
+          headerBackTitleVisible: false,
+        }}
+      />
 
       <FundCardStack.Screen
         name={screenTitle.LEGAL_SCREEN}
@@ -918,13 +939,15 @@ export function DebitCardStackScreen ({ navigation }) {
           headerTitleStyle: portfolioStackScreenHeaderTitleStyles,
 
           headerTintColor: Colors.primaryTextColor,
-          headerBackTitleVisible: false
-        }} />
+          headerBackTitleVisible: false,
+        }}
+      />
 
       <FundCardStack.Screen
         name={screenTitle.OPEN_LEGAL_SCREEN}
         component={OpenLegalScreen}
-        options={{ headerShown: false }} />
+        options={{ headerShown: false }}
+      />
 
       <FundCardStack.Screen
         name={screenTitle.FUND_CARD_SCREEN}
@@ -936,7 +959,7 @@ export function DebitCardStackScreen ({ navigation }) {
           headerTitleAlign: 'center',
           headerTitleStyle: portfolioStackScreenHeaderTitleStyles,
           headerTintColor: Colors.primaryTextColor,
-          headerBackTitleVisible: false
+          headerBackTitleVisible: false,
         }}
       />
       <FundCardStack.Screen
@@ -950,21 +973,23 @@ export function DebitCardStackScreen ({ navigation }) {
           headerTitleAlign: 'center',
           headerTitleStyle: portfolioStackScreenHeaderTitleStyles,
           headerTintColor: Colors.primaryTextColor,
-          headerBackTitleVisible: false
-        }} />
+          headerBackTitleVisible: false,
+        }}
+      />
     </FundCardStack.Navigator>
-
   );
 }
 
-export function BrowserStackScreen ({ navigation, route }) {
+export function BrowserStackScreen({ navigation, route }) {
   const { t } = useTranslation();
 
   let backPressCount = 0;
   const handleBackButton = () => {
     navigation.navigate(screenTitle.PORTFOLIO);
     if (backPressCount === 1) {
-      setTimeout(() => { backPressCount = 0; }, 2000);
+      setTimeout(() => {
+        backPressCount = 0;
+      }, 2000);
       ToastAndroid.show('Press again to exit', ToastAndroid.SHORT);
     } else if (backPressCount === 2) {
       backPressCount = 0;
@@ -1001,7 +1026,7 @@ export function BrowserStackScreen ({ navigation, route }) {
           headerShadowVisible: false,
           title: 'Cross-Chain Token Bridge',
           headerStyle: {
-            elevation: 0
+            elevation: 0,
           },
           headerLeft: () => (
             <DynamicButton
@@ -1013,11 +1038,11 @@ export function BrowserStackScreen ({ navigation, route }) {
                 dynamic
                 height={20}
                 width={14}
-                resizemode="cover"
+                resizemode='cover'
                 source={AppImages.BACK}
               />
             </DynamicButton>
-          )
+          ),
         })}
       />
 
@@ -1029,7 +1054,7 @@ export function BrowserStackScreen ({ navigation, route }) {
           headerShadowVisible: false,
           title: '',
           navigationOptions: {
-            tabBarVisible: false
+            tabBarVisible: false,
           },
           headerLeft: () => (
             <DynamicTouchView
@@ -1043,7 +1068,7 @@ export function BrowserStackScreen ({ navigation, route }) {
                 dynamic
                 height={18}
                 width={14}
-                resizemode="cover"
+                resizemode='cover'
                 source={AppImages.BACK}
               />
               <CText
@@ -1056,20 +1081,22 @@ export function BrowserStackScreen ({ navigation, route }) {
                 {t('TRAN_DETAIL')}
               </CText>
             </DynamicTouchView>
-          )
+          ),
         })}
       />
     </BrowserStack.Navigator>
   );
 }
 
-export function OptionsStackScreen ({ navigation, route }) {
+export function OptionsStackScreen({ navigation, route }) {
   const { t } = useTranslation();
   let backPressCount = 0;
   const handleBackButton = () => {
     navigation.navigate(screenTitle.PORTFOLIO);
     if (backPressCount === 1) {
-      setTimeout(() => { backPressCount = 0; }, 2000);
+      setTimeout(() => {
+        backPressCount = 0;
+      }, 2000);
       ToastAndroid.show('Press again to exit', ToastAndroid.SHORT);
     } else if (backPressCount === 2) {
       backPressCount = 0;
@@ -1079,10 +1106,14 @@ export function OptionsStackScreen ({ navigation, route }) {
     return true;
   };
 
-  const optionsStackScreenHeaderTitleStyles: StyleProp<Pick<TextStyle, 'fontFamily' | 'fontSize' | 'fontWeight'> & { color?: string | undefined }> = {
+  const optionsStackScreenHeaderTitleStyles: StyleProp<
+    Pick<TextStyle, 'fontFamily' | 'fontSize' | 'fontWeight'> & {
+      color?: string | undefined;
+    }
+  > = {
     fontFamily: C.fontsName.FONT_BLACK,
     fontSize: 22,
-    fontWeight: '800'
+    fontWeight: '800',
   };
 
   useEffect(() => {
@@ -1094,7 +1125,6 @@ export function OptionsStackScreen ({ navigation, route }) {
 
   return (
     <OptionsStack.Navigator initialRouteName={screenTitle.OPTIONS_SCREEN}>
-
       <OptionsStack.Screen
         name={screenTitle.OPTIONS_SCREEN}
         component={OptionsScreen}
@@ -1109,31 +1139,31 @@ export function OptionsStackScreen ({ navigation, route }) {
           headerTitleAlign: 'center',
           headerTitleStyle: optionsStackScreenHeaderTitleStyles,
           navigationOptions: {
-            tabBarVisible: false
+            tabBarVisible: false,
           },
           headerTintColor: Colors.primaryTextColor,
-          headerBackTitleVisible: false
+          headerBackTitleVisible: false,
         })}
       />
       <OptionsStack.Screen
         name={screenTitle.REFERRAL_REWARDS}
         component={ReferralRewards}
         options={({ navigation, route }) => ({
-          headerShown: false
+          headerShown: false,
         })}
       />
       <OptionsStack.Screen
         name={screenTitle.PIN}
         component={PinValidation}
         options={({ navigation, route }) => ({
-          headerShown: false
+          headerShown: false,
         })}
       />
       <PortfolioStack.Screen
         name={screenTitle.SET_PIN}
         component={SetPin}
         options={({ navigation, route }) => ({
-          headerShown: false
+          headerShown: false,
         })}
       />
       <PortfolioStack.Screen
@@ -1146,12 +1176,12 @@ export function OptionsStackScreen ({ navigation, route }) {
           headerTitleAlign: 'center',
           headerTitleStyle: optionsStackScreenHeaderTitleStyles,
           navigationOptions: {
-            tabBarVisible: false
+            tabBarVisible: false,
           },
 
           headerTintColor: Colors.primaryTextColor,
           headerBackTitleVisible: false,
-          headerLeft: (props) => defaultHeaderLeft(navigation)
+          headerLeft: (props) => defaultHeaderLeft(navigation),
         })}
       />
       <OptionsStack.Screen
@@ -1164,10 +1194,10 @@ export function OptionsStackScreen ({ navigation, route }) {
           title: 'Activity Filter',
           headerTitleStyle: optionsStackScreenHeaderTitleStyles,
           navigationOptions: {
-            tabBarVisible: false
+            tabBarVisible: false,
           },
           headerTintColor: Colors.primaryTextColor,
-          headerBackTitleVisible: false
+          headerBackTitleVisible: false,
         })}
       />
       <OptionsStack.Screen
@@ -1180,11 +1210,11 @@ export function OptionsStackScreen ({ navigation, route }) {
           headerTitleAlign: 'center',
           headerTitleStyle: optionsStackScreenHeaderTitleStyles,
           navigationOptions: {
-            tabBarVisible: false
+            tabBarVisible: false,
           },
 
           headerTintColor: Colors.primaryTextColor,
-          headerBackTitleVisible: false
+          headerBackTitleVisible: false,
         })}
       />
       <OptionsStack.Screen
@@ -1197,11 +1227,11 @@ export function OptionsStackScreen ({ navigation, route }) {
           headerTitleAlign: 'center',
           headerTitleStyle: optionsStackScreenHeaderTitleStyles,
           navigationOptions: {
-            tabBarVisible: false
+            tabBarVisible: false,
           },
 
           headerTintColor: Colors.primaryTextColor,
-          headerBackTitleVisible: false
+          headerBackTitleVisible: false,
         })}
       />
       <OptionsStack.Screen
@@ -1214,9 +1244,9 @@ export function OptionsStackScreen ({ navigation, route }) {
           headerTitleAlign: 'center',
           headerTitleStyle: optionsStackScreenHeaderTitleStyles,
           navigationOptions: {
-            tabBarVisible: false
+            tabBarVisible: false,
           },
-          headerLeft: (props) => defaultHeaderLeft(navigation)
+          headerLeft: (props) => defaultHeaderLeft(navigation),
         })}
       />
       <OptionsStack.Screen
@@ -1229,9 +1259,9 @@ export function OptionsStackScreen ({ navigation, route }) {
           headerTitleAlign: 'center',
           headerTitleStyle: optionsStackScreenHeaderTitleStyles,
           navigationOptions: {
-            tabBarVisible: false
+            tabBarVisible: false,
           },
-          headerLeft: (props) => defaultHeaderLeft(navigation)
+          headerLeft: (props) => defaultHeaderLeft(navigation),
         })}
       />
       <OptionsStack.Screen
@@ -1244,11 +1274,11 @@ export function OptionsStackScreen ({ navigation, route }) {
           headerTitleAlign: 'center',
           headerTitleStyle: optionsStackScreenHeaderTitleStyles,
           navigationOptions: {
-            tabBarVisible: false
+            tabBarVisible: false,
           },
 
           headerTintColor: Colors.primaryTextColor,
-          headerBackTitleVisible: false
+          headerBackTitleVisible: false,
         })}
       />
       <OptionsStack.Screen
@@ -1261,11 +1291,11 @@ export function OptionsStackScreen ({ navigation, route }) {
           headerTitleAlign: 'center',
           headerTitleStyle: optionsStackScreenHeaderTitleStyles,
           navigationOptions: {
-            tabBarVisible: false
+            tabBarVisible: false,
           },
 
           headerTintColor: Colors.primaryTextColor,
-          headerBackTitleVisible: false
+          headerBackTitleVisible: false,
         })}
       />
       <OptionsStack.Screen
@@ -1278,11 +1308,11 @@ export function OptionsStackScreen ({ navigation, route }) {
           headerTitleAlign: 'center',
           headerTitleStyle: optionsStackScreenHeaderTitleStyles,
           navigationOptions: {
-            tabBarVisible: false
+            tabBarVisible: false,
           },
           headerTintColor: Colors.primaryTextColor,
           headerBackTitleVisible: false,
-          headerLeft: (props) => defaultHeaderLeft(navigation)
+          headerLeft: (props) => defaultHeaderLeft(navigation),
         })}
       />
       <OptionsStack.Screen
@@ -1295,11 +1325,11 @@ export function OptionsStackScreen ({ navigation, route }) {
           headerTitleAlign: 'center',
           headerTitleStyle: optionsStackScreenHeaderTitleStyles,
           navigationOptions: {
-            tabBarVisible: false
+            tabBarVisible: false,
           },
           headerTintColor: Colors.primaryTextColor,
           headerBackTitleVisible: false,
-          headerLeft: (props) => defaultHeaderLeft(navigation)
+          headerLeft: (props) => defaultHeaderLeft(navigation),
         })}
       />
       <OptionsStack.Screen
@@ -1312,11 +1342,11 @@ export function OptionsStackScreen ({ navigation, route }) {
           headerTitleAlign: 'center',
           headerTitleStyle: optionsStackScreenHeaderTitleStyles,
           navigationOptions: {
-            tabBarVisible: false
+            tabBarVisible: false,
           },
           headerTintColor: Colors.primaryTextColor,
           headerBackTitleVisible: false,
-          headerLeft: (props) => defaultHeaderLeft(navigation)
+          headerLeft: (props) => defaultHeaderLeft(navigation),
         })}
       />
       <OptionsStack.Screen
@@ -1334,12 +1364,12 @@ export function OptionsStackScreen ({ navigation, route }) {
           headerTitleAlign: 'center',
           headerTitleStyle: optionsStackScreenHeaderTitleStyles,
           navigationOptions: {
-            tabBarVisible: false
+            tabBarVisible: false,
           },
 
           headerTintColor: Colors.primaryTextColor,
           headerBackTitleVisible: false,
-          headerLeft: (props) => defaultHeaderLeft(navigation)
+          headerLeft: (props) => defaultHeaderLeft(navigation),
         })}
       />
       <OptionsStack.Screen
@@ -1352,12 +1382,12 @@ export function OptionsStackScreen ({ navigation, route }) {
           headerTitleAlign: 'center',
           headerTitleStyle: optionsStackScreenHeaderTitleStyles,
           navigationOptions: {
-            tabBarVisible: false
+            tabBarVisible: false,
           },
 
           headerTintColor: Colors.primaryTextColor,
           headerBackTitleVisible: false,
-          headerLeft: (props) => defaultHeaderLeft(navigation)
+          headerLeft: (props) => defaultHeaderLeft(navigation),
         })}
       />
       <OptionsStack.Screen
@@ -1370,11 +1400,11 @@ export function OptionsStackScreen ({ navigation, route }) {
           headerTitleAlign: 'center',
           headerTitleStyle: optionsStackScreenHeaderTitleStyles,
           headerStyle: {
-            elevation: 0
+            elevation: 0,
           },
 
           headerTintColor: Colors.primaryTextColor,
-          headerBackTitleVisible: false
+          headerBackTitleVisible: false,
         })}
       />
       <OptionsStack.Screen
@@ -1387,11 +1417,11 @@ export function OptionsStackScreen ({ navigation, route }) {
           headerTitleAlign: 'center',
           headerTitleStyle: optionsStackScreenHeaderTitleStyles,
           navigationOptions: {
-            tabBarVisible: false
+            tabBarVisible: false,
           },
 
           headerTintColor: Colors.primaryTextColor,
-          headerBackTitleVisible: false
+          headerBackTitleVisible: false,
         })}
       />
       <OptionsStack.Screen
@@ -1410,8 +1440,9 @@ export function OptionsStackScreen ({ navigation, route }) {
           headerTitleStyle: optionsStackScreenHeaderTitleStyles,
 
           headerTintColor: Colors.primaryTextColor,
-          headerBackTitleVisible: false
-        }} />
+          headerBackTitleVisible: false,
+        }}
+      />
       <OptionsStack.Screen
         name={screenTitle.QR_CODE_SCANNER}
         component={QRScanner}
@@ -1422,14 +1453,14 @@ export function OptionsStackScreen ({ navigation, route }) {
           headerTitleAlign: 'center',
           headerTitleStyle: {
             ...optionsStackScreenHeaderTitleStyles,
-            color: Colors.whiteColor
+            color: Colors.whiteColor,
           },
           navigationOptions: {
-            tabBarVisible: false
+            tabBarVisible: false,
           },
 
           headerTintColor: Colors.primaryTextColor,
-          headerBackTitleVisible: false
+          headerBackTitleVisible: false,
         })}
       />
       <OptionsStack.Screen
@@ -1442,11 +1473,11 @@ export function OptionsStackScreen ({ navigation, route }) {
           headerTitleAlign: 'center',
           headerTitleStyle: optionsStackScreenHeaderTitleStyles,
           headerStyle: {
-            elevation: 0
+            elevation: 0,
           },
           headerTintColor: Colors.primaryTextColor,
           headerBackTitleVisible: false,
-          headerLeft: (props) => defaultHeaderLeft(navigation)
+          headerLeft: (props) => defaultHeaderLeft(navigation),
         })}
       />
       <OptionsStack.Screen
@@ -1459,11 +1490,11 @@ export function OptionsStackScreen ({ navigation, route }) {
           headerTitleAlign: 'center',
           headerTitleStyle: optionsStackScreenHeaderTitleStyles,
           navigationOptions: {
-            tabBarVisible: false
+            tabBarVisible: false,
           },
 
           headerTintColor: Colors.primaryTextColor,
-          headerBackTitleVisible: false
+          headerBackTitleVisible: false,
         })}
       />
       <OptionsStack.Screen
@@ -1474,19 +1505,20 @@ export function OptionsStackScreen ({ navigation, route }) {
           headerShadowVisible: false,
           title: 'Cypher Card',
           navigationOptions: {
-            tabBarVisible: false
+            tabBarVisible: false,
           },
           headerTitleAlign: 'center',
           headerTitleStyle: optionsStackScreenHeaderTitleStyles,
 
           headerTintColor: Colors.primaryTextColor,
-          headerBackTitleVisible: false
+          headerBackTitleVisible: false,
         })}
       />
       <OptionsStack.Screen
         name={screenTitle.OPEN_LEGAL_SCREEN}
         component={OpenLegalScreen}
-        options={{ headerShown: false }} />
+        options={{ headerShown: false }}
+      />
       <OptionsStack.Screen
         name={screenTitle.SOCIAL_MEDIA_SCREEN}
         component={SocialMediaScreen}
@@ -1497,7 +1529,7 @@ export function OptionsStackScreen ({ navigation, route }) {
           headerTitleStyle: optionsStackScreenHeaderTitleStyles,
 
           headerTintColor: Colors.primaryTextColor,
-          headerBackTitleVisible: false
+          headerBackTitleVisible: false,
         }}
       />
     </OptionsStack.Navigator>

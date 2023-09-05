@@ -73,7 +73,8 @@ export default function TokenOverviewToolBar ({ tokenData, navigation }: { token
                   onPress={() => {
                     navigation.navigate(screenTitle.BRIDGE_SCREEN, {
                       fromChainData: tokenData,
-                      title: t<string>('BRIDGE')
+                      title: t<string>('BRIDGE'),
+                      renderPage: 'bridgePage',
                     });
                   }}>
                   <CyDImage source={AppImages.BRIDGE_SHORTCUT} className={'w-[35px] h-[35px]'} />
@@ -86,7 +87,8 @@ export default function TokenOverviewToolBar ({ tokenData, navigation }: { token
                           onPress={() => {
                             navigation.navigate(screenTitle.BRIDGE_SCREEN, {
                               fromChainData: tokenData,
-                              title: t<string>('SWAP_TITLE')
+                              title: t<string>('SWAP_TITLE'),
+                              renderPage: 'swapPage',
                             });
                           }}>
               <CyDImage source={AppImages.SWAP_SHORTCUT} className={'w-[35px] h-[35px]'}/>

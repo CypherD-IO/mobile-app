@@ -205,6 +205,7 @@ export default function SendTo (props: { navigation?: any, route?: any }) {
 
   const buildAddressDirectory = async () => {
     const tempContactBook: Record<string, Contact> = await getContactBookWithMultipleAddress();
+
     const tempAddressDirectory: Record<string, Record<string, string[]>> = {
       evmAddresses: {},
       ethereum: {},
@@ -221,7 +222,10 @@ export default function SendTo (props: { navigation?: any, route?: any }) {
       optimism: {},
       arbitrum: {},
       shardeum: {},
-      shardeum_sphinx: {}
+      shardeum_sphinx: {},
+      zksync_era: {},
+      base: {},
+      polygon_zkevm: {}
     };
     if (tempContactBook) {
       setContactBook(tempContactBook);
@@ -302,6 +306,7 @@ export default function SendTo (props: { navigation?: any, route?: any }) {
   function onModalHide () {
     hideModal();
     void intercomAnalyticsLog('save_as_a_contact_yes');
+    props.navigation.navigate(C.screenTitle.OPTIONS);
     setTimeout(() => {
       props.navigation.navigate(C.screenTitle.OPTIONS, { screen: C.screenTitle.CREATE_CONTACT, params: { additionalAddress: { chain: ChainNameToContactsChainNameMapping[tokenData.chainDetails?.name], toAddress: addressText } } });
     }, MODAL_HIDE_TIMEOUT_250);
@@ -784,21 +789,23 @@ export default function SendTo (props: { navigation?: any, route?: any }) {
                       </CyDTouchView>}
                     </CyDView>
                     </CyDView>}
-                  <CyDText className='text-[16px] w-full text-left mt-[20px] font-semibold'>{t<string>('RECENT_ADDRESS')}:</CyDText>
-                  <CyDFlatList
-                    data={Data}
-                    renderItem={renderItem}
-                    ListEmptyComponent={emptyView}
-                    style={{ marginBottom: 60, flexGrow: 0 }}
-                    showsVerticalScrollIndicator={false}
-                  />
+                    <CyDView className='h-full w-full pb-[80px]'>
+                      <CyDText className='text-[16px] w-full text-left mt-[20px] font-semibold'>{t<string>('RECENT_ADDRESS')}:</CyDText>
+                      <CyDFlatList
+                        data={Data}
+                        renderItem={renderItem}
+                        ListEmptyComponent={emptyView}
+                        style={{ marginBottom: 60, flexGrow: 0 }}
+                        showsVerticalScrollIndicator={false}
+                      />
+                    </CyDView>
                 </CyDView>}
                 {isDropDown &&
                   <CyDView className='items-center mt-[-10px] mb-[150px]'>
                     <AddressProfile content={filteredContactBook} chainChoosen={chainDetails?.backendName} setAddressText={setAddressText} setIsDropDown={setIsDropDown}/>
                   </CyDView>
                 }
-                <CyDView className='w-full absolute mb-[4px] items-center' style={keyboardHeight ? { top: keyboardHeight - 60 } : { bottom: 8 }}>
+                <CyDView className='h-[80px] pb-[10px] w-full absolute justify-center items-center bg-white' style={keyboardHeight ? { top: keyboardHeight - 60 } : { bottom: 8 }}>
                     <Button title={t('SEND')} onPress={() => {
                       void (async () => await submitSendTransaction())();
                     }} type={ButtonType.PRIMARY} loading={loading} style=' h-[60px] w-[90%]'/>
