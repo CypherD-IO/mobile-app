@@ -22,7 +22,7 @@ import Loading from '../../../components/v2/loading';
 import { CardProviders } from '../../../constants/enum';
 import { sleepFor } from '../../../core/util';
 
-export default function BridgeCardScreen (props: {navigation: {navigate: any, setOptions: any}, route: {params: {hasBothProviders: boolean, cardProvider: CardProviders}}}) {
+export default function BridgeCardScreen(props: { navigation: { navigate: any, setOptions: any }, route: { params: { hasBothProviders: boolean, cardProvider: CardProviders } } }) {
   const isFocused = useIsFocused();
   // const [index, setIndex] = React.useState(0);
   // const [routes] = React.useState([
@@ -51,12 +51,12 @@ export default function BridgeCardScreen (props: {navigation: {navigate: any, se
         headerRight: () => {
           return cardProfile?.apto
             ? (
-                <CyDTouchView onPress={() => { navigation.navigate(screenTitle.APTO_CARD_SCREEN); }}>
-                  <CyDText className={' underline text-blue-500  text-[12px] font-extrabold'}>
-                    {t<string>('GO_TO_DEPRECATED_CARD') + ' ->'}
-                  </CyDText>
-                </CyDTouchView>
-              )
+              <CyDTouchView onPress={() => { navigation.navigate(screenTitle.APTO_CARD_SCREEN); }}>
+                <CyDText className={' underline text-blue-500  text-[12px] font-extrabold'}>
+                  {t<string>('GO_TO_DEPRECATED_CARD') + ' ->'}
+                </CyDText>
+              </CyDTouchView>
+            )
             : null;
         }
       });
@@ -148,34 +148,34 @@ export default function BridgeCardScreen (props: {navigation: {navigate: any, se
 
   return (
     currentCardProvider === ''
-      ? <Loading/>
-      : <CyDView>
-      <CyDSafeAreaView className='flex h-full bg-white'
-        onLayout = {(event) => {
-          const layout = event.nativeEvent.layout;
-          setMinHeight(layout.height);
-        }}
-      >
-        <CyDImageBackground className='flex h-full' source={AppImages.DEBIT_CARD_BACKGROUND}>
-          {hasBothProviders && <CyDView className='flex items-center mt-[-10px] mb-[10px]'>
-            <SwitchView titles={['Card1', 'Card2']} index={currentCardProvider === CardProviders.BRIDGE_CARD ? 0 : 1} setIndexChange={(index: number) => {
-              onSwitchProviders(index);
-            }}></SwitchView>
-          </CyDView>}
-          <CyDView>
-            <CardScreen navigation={navigation} hideCardDetails={isFocused} currentCardProvider={currentCardProvider} setCurrentCardProvider={setCurrentCardProvider}/>
-            <FundCard/>
-          </CyDView>
-          <CyDView className='flex flex-1'>
-            {minHeight && <Transactions {...{ height, navigation, shouldRefreshTransactions, showTransactionsFilter, currentCardProvider, currentCardIndex, hasBothProviders, minHeight }}/>}
-          </CyDView>
-        </CyDImageBackground>
-      </CyDSafeAreaView>
-    </CyDView>
+      ? <Loading />
+      : <CyDView className='bg-white'>
+        <CyDView className='flex h-full bg-white mb-[75px]'
+          onLayout={(event) => {
+            const layout = event.nativeEvent.layout;
+            setMinHeight(layout.height);
+          }}
+        >
+          <CyDImageBackground className='flex h-full mb-[75px]' source={AppImages.DEBIT_CARD_BACKGROUND}>
+            {hasBothProviders && <CyDView className='flex items-center mt-[-10px] mb-[10px]'>
+              <SwitchView titles={['Card1', 'Card2']} index={currentCardProvider === CardProviders.BRIDGE_CARD ? 0 : 1} setIndexChange={(index: number) => {
+                onSwitchProviders(index);
+              }}></SwitchView>
+            </CyDView>}
+            <CyDView>
+              <CardScreen navigation={navigation} hideCardDetails={isFocused} currentCardProvider={currentCardProvider} setCurrentCardProvider={setCurrentCardProvider} />
+              <FundCard />
+            </CyDView>
+            <CyDView className='flex flex-1'>
+              {minHeight && <Transactions {...{ height, navigation, shouldRefreshTransactions, showTransactionsFilter, currentCardProvider, currentCardIndex, hasBothProviders, minHeight }} />}
+            </CyDView>
+          </CyDImageBackground>
+        </CyDView>
+      </CyDView>
   );
 }
 
-export function Transactions (props: any) {
+export function Transactions(props: any) {
   const { height } = Dimensions.get('window');
   const { navigation, shouldRefreshTransactions, showTransactionsFilter, currentCardProvider, currentCardIndex, hasBothProviders, minHeight } = props;
   const [startHeight, setStartHeight] = useState(0);
@@ -200,7 +200,7 @@ export function Transactions (props: any) {
     <>
       {startHeight
         ? <Sheet minHeight={startHeight - (hasBothProviders ? 325 : 273)} expandedHeight={maxHeight} heightChanged={(val: string) => { if (val === 'minimised') { setSheetHeight(minHeight); } else { setSheetHeight(maxHeight); } }}>
-        {/* <CyDView className={'h-full bg-white px-[10px] pt-[20px] mt-[5px] rounded-t-[50px]'}>
+          {/* <CyDView className={'h-full bg-white px-[10px] pt-[20px] mt-[5px] rounded-t-[50px]'}>
           <TabView
             renderTabBar={renderTabBar}
             navigationState={{ index, routes }}
@@ -208,10 +208,10 @@ export function Transactions (props: any) {
             onIndexChange={setIndex}
           />
         </CyDView> */}
-        <TransactionsScreen listHeight = {sheetHeight} navigation={navigation} shouldRefreshTransactions={shouldRefreshTransactions} showTransactionsFilter={showTransactionsFilter} currentCardProvider={currentCardProvider} currentCardIndex={currentCardIndex}/>
-      </Sheet>
+          <TransactionsScreen listHeight={sheetHeight} navigation={navigation} shouldRefreshTransactions={shouldRefreshTransactions} showTransactionsFilter={showTransactionsFilter} currentCardProvider={currentCardProvider} currentCardIndex={currentCardIndex} />
+        </Sheet>
         : <></>}
-      </>
+    </>
   );
 }
 
