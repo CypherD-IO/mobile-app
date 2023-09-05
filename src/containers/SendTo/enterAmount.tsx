@@ -238,14 +238,11 @@ export default function EnterAmount(props) {
                   </CyDView>
                 </CyDView>
               </CyDView>
-
-              <DynamicView dynamic dynamicWidth fD={'row'} jC={'center'} width={80} mT={20} aLIT={'center'} >
-                <CText dynamic fF={C.fontsName.FONT_BOLD} fS={15} color={Colors.primaryTextColor}>Send on</CText>
-                <DynamicImage dynamic dynamicWidthFix dynamicHeightFix height={15} width={15} mL={5} mT={2} resizemode='contain'
-                  source={tokenData.chainDetails.logo_url} />
-                <CText dynamic fF={C.fontsName.FONT_BOLD} fS={15} mL={5} color={Colors.primaryTextColor}>{tokenData.chainDetails.name}</CText>
-              </DynamicView>
-
+              <CyDView className='flex flex-row justify-center items-center mt-[20px] w-[80px]'>
+                <CyDText className='text-[15px]'>{t('SEND_ON')}</CyDText>
+                <CyDFastImage className='h-[15px] w-[15px] mt-[2px] ml-[5px]' source={tokenData.chainDetails?.logo_url} resizeMode='contain' />
+                <CyDText className='text-[15px] ml-[5px]'>{tokenData.chainDetails?.name}</CyDText>
+              </CyDView>
             </CyDView>
           </CyDView>
         </CyDView>

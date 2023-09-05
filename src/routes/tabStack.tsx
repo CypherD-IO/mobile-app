@@ -34,6 +34,7 @@ import { t } from 'i18next';
 import clsx from 'clsx';
 import { isIOS } from '../misc/checkers';
 import {
+  Easing,
   Layout,
 } from 'react-native-reanimated';
 import { Colors } from '../constants/theme';
@@ -213,7 +214,7 @@ function TabStack() {
           return (
             <CyDAnimatedView
               // TO REDO : TABBAR ANIMATION
-              layout={Layout.springify()}
+              layout={Layout.easing(Easing.ease).delay(50)}
               className={clsx('rounded-t-[24px] pb-[20px] shadow absolute bottom-[-20px] w-full', {
                 'bottom-[-110px]': !showTabBar,
                 'bottom-[-350px]': keyboardHeight,
