@@ -8,7 +8,7 @@ import Loading from '../../components/v2/loading';
 import { ChainBackendNames, ChainNames } from '../../constants/server';
 import { calculateTime, getExplorerUrl, HdWalletContext, isCosmosChain } from '../../core/util';
 import { TokenMeta } from '../../models/tokenMetaData.model';
-import { CyDFastImage, CyDScrollView, CyDText, CyDTouchView, CyDView } from '../../styles/tailwindStyles';
+import { CyDFastImage, CyDText, CyDTouchView, CyDView } from '../../styles/tailwindStyles';
 import AppImages from '../../../assets/images/appImages';
 import axios from 'axios';
 import { hostWorker } from '../../global';

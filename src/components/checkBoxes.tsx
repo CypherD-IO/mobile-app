@@ -1,8 +1,8 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import AppImages from '../../assets/images/appImages';
 import { CyDText, CyDTouchView, CyDView } from '../styles/tailwindStyles';
 
-export default function CheckBoxes (props: any) {
+export default function CheckBoxes(props: any) {
   const { radioButtonsData, onPressRadioButton, initialValues = [] }: {
     radioButtonsData: string[]
     onPressRadioButton: any
@@ -16,12 +16,16 @@ export default function CheckBoxes (props: any) {
     setCurrent(state);
   };
 
+  useEffect(() => {
+    setCurrent(initialValues);
+  }, [initialValues]);
+
   return (
     <CyDView className={'justify-around mt-[10px] ml-[20px]'} >
       {radioButtonsData.map((data, id) => (
         <CyDTouchView key={id + data} onPress={(e) => { onPressData(data); }}
           className='flex flex-row mb-[23px]'
-          >
+        >
           <CyDView
             className={`h-[21px] w-[21px] ${current.includes(data) ? 'bg-appColor' : ''} rounded-[4px] border-[1.5px] border-borderColor flex flex-row justify-center items-center`}
           />

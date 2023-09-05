@@ -204,3 +204,46 @@ export enum ScrollableType {
   SCROLLVIEW = 'ScrollView',
   FLATLIST = 'FlatList'
 }
+
+export enum TransactionType {
+  SEND = 'send',
+  SWAP = 'swap',
+  RECEIVE = 'receive',
+  APPROVE = 'approve',
+  REVOKE = 'revoke',
+  OTHERS = 'others',
+  SELF = 'self'
+}
+
+export enum ApplicationName {
+  SQUID = 'Squid',
+  ODOS = 'Odos',
+  SUSHISWAP = 'SushiSwap',
+  UNISWAP = 'UniSwap',
+  GMX = 'GMX',
+  AAVE = 'Aave',
+  POOL_TOGETHER = 'PoolTogether',
+  PARA_SWAP = 'ParaSwap',
+  OPEN_SEA = 'OpenSea',
+  ENS = 'ENS',
+  PANCAKE_SWAP = 'PancakeSwap',
+  POLYGON_BRIDGE = 'Polygon Bridge',
+  METAMASK = 'METAMASK',
+  SYNAPSE = 'Synapse',
+  _1_INCH = '1inch',
+  SPOOKY_SWAP = 'SpookySwap',
+  _0X_EXCHANGE = '0x Exchange',
+  QUICK_SWAP = 'QuickSwap',
+  LIFI = 'Lifi',
+  WRAPPED_EVMOS = 'Wrapped Evmos',
+  WRAPPED_MATIC = 'Wrapped Matic',
+  SPIRIT_SWAP = 'SpiritSwap',
+  DIFFUSION = 'Diffusion',
+  TRADER_JOE = 'Trader Joe',
+  SOCKET = 'Socket',
+  APE_SWAP = 'ApeSwap',
+  ARB_SWAP = 'ArbSwap',
+  CBRIDGE = 'cBridge',
+  HOP = 'Hop',
+  WORM_HOLE = 'WormHole',
+}

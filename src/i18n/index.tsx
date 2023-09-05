@@ -43,6 +43,7 @@ const resources = {
       COINS: 'COINS',
       TOKENS: 'Tokens',
       NFTS: 'NFTs',
+      TXNS: 'TXNs',
       MY_COLLECTIONS: 'My collections',
       ETH: 'ETH',
       BROWSER_TRA_DETAIL: 'Browser Transaction History',
@@ -112,7 +113,6 @@ const resources = {
       APPLY_CARD: 'Apply for card',
       FROM: 'From',
       TO: 'To',
-      TOKENS: 'Tokens',
       BRIDGE_TEXT: 'Cross-Chain Token Bridge',
       GET_STARTED: 'Get Started',
       INFO_TEXT: 'To ensure the security of your account, please enter your phone number below and we will send you a unique code to authenticate you.',
@@ -746,7 +746,12 @@ const resources = {
       TIMER_BAR_MM: '%d months ago',
       TIMER_BAR_y: 'a year ago',
       TIMER_BAR_yy: '%d years ago',
-      STAKE: 'stake'
+      STAKE: 'stake',
+      RECEIVED_ON: 'RECEIVED ON',
+      APPLICATION: 'Application',
+      STATUS: 'Status',
+      RESET_ALL: 'Reset all',
+      TRANSACTIONS_FILTER: 'Transactions Filter'
     }
   }
 };

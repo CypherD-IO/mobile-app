@@ -101,6 +101,8 @@ export const screenTitle = {
   CREATE_CONTACT: 'CreateContact',
   TRANSFI_SCREEN: 'TransFiScreen',
   CARD_SETTINGS_SCREEN: 'CardSettingsScreen',
+  TRANSACTIONS_SCREEN: 'Transactions',
+  TRANSACTION_FILTER: 'TransactionFilter'
 };
 
 export const fontsName = {

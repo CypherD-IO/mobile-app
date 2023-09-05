@@ -197,7 +197,6 @@ export function PortfolioStackScreen({ navigation, route }) {
           headerLeft: (props) => defaultHeaderLeft(navigation),
         })}
       />
-
       <PortfolioStack.Screen
         name={screenTitle.TRANSFI_SCREEN}
         component={TransFiScreen}
@@ -690,6 +689,7 @@ export function PortfolioStackScreen({ navigation, route }) {
           headerBackTitleVisible: false,
         })}
       />
+
       <PortfolioStack.Screen
         name={screenTitle.WALLET_CONNECT}
         component={WalletConnectCamera}
@@ -1145,6 +1145,7 @@ export function OptionsStackScreen({ navigation, route }) {
           headerBackTitleVisible: false,
         })}
       />
+
       <OptionsStack.Screen
         name={screenTitle.REFERRAL_REWARDS}
         component={ReferralRewards}
@@ -1200,6 +1201,7 @@ export function OptionsStackScreen({ navigation, route }) {
           headerBackTitleVisible: false,
         })}
       />
+
       <OptionsStack.Screen
         name={screenTitle.MANAGE_WALLET}
         component={ManageWallet}
@@ -1217,6 +1219,7 @@ export function OptionsStackScreen({ navigation, route }) {
           headerBackTitleVisible: false,
         })}
       />
+
       <OptionsStack.Screen
         name={screenTitle.SECURITY_PRIVACY}
         component={SecurityPrivacy}
