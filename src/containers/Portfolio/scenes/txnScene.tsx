@@ -1,7 +1,6 @@
 import React, { memo, useContext, useEffect, useRef, useState } from "react";
 import { CyDFastImage, CyDText, CyDTouchView, CyDView } from "../../../styles/tailwindStyles";
 import AppImages from "../../../../assets/images/appImages";
-import { TransactionObj, TransactionType } from "../../../constants/transactions";
 import { useTranslation } from "react-i18next";
 import { HdWalletContext, formatAmount, getMaskedAddress } from "../../../core/util";
 import { APPLICATION_ADDRESS_NAME_MAP } from "../../../constants/data";
@@ -16,6 +15,8 @@ import { AnimatedTabView, OFFSET_TABVIEW } from "../animatedComponents";
 import { SharedValue } from "react-native-reanimated";
 import { H_BALANCE_BANNER } from "../constants";
 import TxnFilterModal, { STATUSES, TRANSACTION_TYPES } from "../components/TxnFilterModal";
+import { TransactionType } from "../../../constants/enum";
+import { TransactionObj } from "../../../models/transaction.model";
 
 interface TxnItemProps {
   activity: TransactionObj

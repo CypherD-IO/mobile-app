@@ -1,6 +1,5 @@
+import { ApplicationName } from './enum';
 import { ChainBackendNames } from './server';
-import { ApplicationName } from './transactions';
-
 export const INJECTED_WEB3_CDN = 'https://public.cypherd.io/js/injected.web3.js';
 
 export const gasFeeReservation: Record<ChainBackendNames, number> = {
