@@ -4,7 +4,8 @@ import {
   ListRenderItem,
   Platform,
   ScrollViewProps,
-  ViewProps,
+  StyleSheet,
+  ViewToken,
 } from 'react-native';
 import Animated, {
   SharedValue,
@@ -19,8 +20,7 @@ import { H_BALANCE_BANNER, H_GUTTER } from '../constants';
 export const OFFSET_TABVIEW = isIOS() ? -H_BALANCE_BANNER : 0;
 
 export interface AnimatedTabViewProps
-  extends ViewProps,
-  Pick<
+  extends Pick<
     FlatListProps<any> & ScrollViewProps,
     | 'initialNumToRender'
     | 'maxToRenderPerBatch'

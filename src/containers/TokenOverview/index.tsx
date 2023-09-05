@@ -115,7 +115,7 @@ function TokenOverviewV2({ route, navigation }: RouteProps) {
       <CyDAnimatedView
         layout={Layout.springify()}
         className={clsx(
-          'h-[90px] self-end bg-white pb-[20px] pt-[2px] rounded-t-[24px] shadow shadow-gray-400',
+          'h-[110px] self-end bg-white pb-[20px] bottom-[-30px] pt-[2px] rounded-t-[24px] shadow shadow-gray-400',
           { 'pt-[16px]': isAndroid() }
         )}
         style={styles.elevatedBackground}

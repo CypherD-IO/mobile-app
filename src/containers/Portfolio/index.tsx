@@ -70,6 +70,8 @@ import { useScrollManager } from '../../hooks/useScrollManager';
 import { NFTScene, TokenScene } from './scenes';
 import CyDTokenValue from '../../components/v2/tokenValue';
 import moment from 'moment';
+import clsx from 'clsx';
+import { isIOS } from '../../misc/checkers';
 
 export interface PortfolioProps {
   navigation: any;
@@ -673,18 +675,20 @@ export default function Portfolio({ navigation }: PortfolioProps) {
         <Banner checkAllBalance={checkAll(portfolioState)} />
       </AnimatedBanner>
 
-      <PortfolioTabView
-        index={index}
-        setIndex={setIndex}
-        routes={tabs}
-        width={useWindowDimensions().width}
-        renderTabBar={(p) => (
-          <AnimatedTabBar scrollY={scrollY}>
-            <TabBar {...p} />
-          </AnimatedTabBar>
-        )}
-        renderScene={renderScene}
-      />
+      <CyDView className={clsx('flex-1 pb-[40px]', { 'pb-[75px]': !isIOS() })}>
+        <PortfolioTabView
+          index={index}
+          setIndex={setIndex}
+          routes={tabs}
+          width={useWindowDimensions().width}
+          renderTabBar={(p) => (
+            <AnimatedTabBar scrollY={scrollY}>
+              <TabBar {...p} />
+            </AnimatedTabBar>
+          )}
+          renderScene={renderScene}
+        />
+      </CyDView>
     </CyDSafeAreaView>
   );
 }

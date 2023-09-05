@@ -13,6 +13,7 @@ import { screenTitle } from '../../constants';
 import { HdWalletContext } from '../../core/util';
 import {
   CyDImageBackground,
+  CyDSafeAreaView,
   CyDText,
   CyDView,
 } from '../../styles/tailwindStyles';
@@ -78,20 +79,21 @@ export default function DebitCardScreen(props: RouteProps) {
     }
   }, [isFocused, globalContext.globalState.cardProfile]);
 
-  return loading && !isReadOnlyWallet ? (
-    <Loading />
-  ) : isReadOnlyWallet ? (
-    <CyDView className='flex-1'>
-      <CyDImageBackground
-        source={AppImages.READ_ONLY_CARD_BACKGROUND}
-        className='flex-1 items-center justify-center px-[10px]'
-      >
-        <CyDText className='text-[20px] text-center font-bold mt-[30%]'>
-          {t<string>('TRACK_WALLET_CYPHER_CARD')}
-        </CyDText>
-      </CyDImageBackground>
-    </CyDView>
-  ) : (
-    <CardWailtList navigation={props.navigation} />
-  );
+  if (loading) {
+    return <Loading />;
+  }
+
+  return <CyDView className='flex-1 bg-white'>
+    {isReadOnlyWallet ? <CyDImageBackground
+      source={AppImages.READ_ONLY_CARD_BACKGROUND}
+      className='items-center justify-center mx-[10px]'
+    >
+      <CyDText className='text-[20px] text-center font-bold mt-[30%]'>
+        {t<string>('TRACK_WALLET_CYPHER_CARD')}
+      </CyDText>
+    </CyDImageBackground>
+      :
+      <CardWailtList navigation={props.navigation} />
+    }
+  </CyDView>
 }

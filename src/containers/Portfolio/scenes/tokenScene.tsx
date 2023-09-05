@@ -129,12 +129,12 @@ const TokenScene = ({
       let tempHoldingsData = {};
       holdings.forEach(
         (holding: Holding) =>
-          (tempHoldingsData = {
-            ...tempHoldingsData,
-            [holding.coinGeckoId +
+        (tempHoldingsData = {
+          ...tempHoldingsData,
+          [holding.coinGeckoId +
             ':' +
             String(holding.chainDetails?.chainIdNumber)]: holding,
-          })
+        })
       );
       return tempHoldingsData;
     } else {
@@ -214,9 +214,9 @@ const TokenScene = ({
   );
 
   return (
-    <CyDView className='mx-[10px]'>
+    <>
       {getAllChainBalance(portfolioState) > 0 ? (
-        <CyDView className='flex-1 h-full'>
+        <CyDView className='flex-1 h-full mx-[10px]'>
           {!isEmpty(holdingsData) ? (
             <AnimatedTabView
               data={holdingsByCoinGeckoId}
@@ -292,7 +292,7 @@ const TokenScene = ({
           </CyDView>
         )
       )}
-    </CyDView>
+    </>
   );
 };
 

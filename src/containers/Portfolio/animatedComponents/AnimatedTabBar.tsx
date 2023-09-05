@@ -1,14 +1,23 @@
 import React from 'react';
-import { Extrapolate, SharedValue, interpolate, useAnimatedStyle } from 'react-native-reanimated';
+import {
+  Extrapolate,
+  SharedValue,
+  interpolate,
+  useAnimatedStyle,
+} from 'react-native-reanimated';
 import { CyDAnimatedView } from '../../../styles/tailwindStyles';
 import { OFFSET_TABVIEW, H_BALANCE_BANNER } from '../constants';
-import { ViewProps } from 'react-native';
 
-export interface AnimatedTabBarProps extends Omit<ViewProps, 'style'> {
-  scrollY: SharedValue<number>
+export interface AnimatedTabBarProps {
+  scrollY: SharedValue<number>;
+  children: JSX.Element;
 }
 
-export const AnimatedTabBar = ({ scrollY, children, ...otherProps }: AnimatedTabBarProps) => {
+export const AnimatedTabBar = ({
+  scrollY,
+  children,
+  ...otherProps
+}: AnimatedTabBarProps) => {
   const animatedTranslateY = useAnimatedStyle(() => {
     const translateY = interpolate(
       scrollY.value,
@@ -17,7 +26,7 @@ export const AnimatedTabBar = ({ scrollY, children, ...otherProps }: AnimatedTab
       Extrapolate.CLAMP
     );
     return {
-      transform: [{ translateY }]
+      transform: [{ translateY }],
     };
   });
   return (
@@ -26,7 +35,7 @@ export const AnimatedTabBar = ({ scrollY, children, ...otherProps }: AnimatedTab
       style={animatedTranslateY}
       {...otherProps}
     >
-        {children}
-    </CyDAnimatedView>
+      {children}
+    </CyDAnimatedView >
   );
 };

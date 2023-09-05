@@ -36,7 +36,9 @@ import { MODAL_SHOW_TIMEOUT } from '../../constants/timeOuts';
 import CryptoJS from 'crypto-js';
 import useAxios from '../../core/HttpRequest';
 import { screenTitle } from '../../constants/index';
-import { CyDText } from '../../styles/tailwindStyles';
+import { CyDSafeAreaView, CyDText, CyDView } from '../../styles/tailwindStyles';
+import clsx from 'clsx';
+import { isIOS } from '../../misc/checkers';
 
 const {
   CText,
@@ -64,7 +66,7 @@ const webviewErrorCodesMapping: Record<string, { error: string, image: any }> = 
   default: { error: BROWSER_ERROR.OTHER, image: AppImages.BROWSER_404 }
 };
 
-export default function Browser ({ route, navigation }: any) {
+export default function Browser({ route, navigation }: any) {
   // NOTE: DEFINE VARIABLE 🍎🍎🍎🍎🍎🍎
   const { params } = route;
   const [chooseChain, setChooseChain] = useState<boolean>(false);
@@ -298,7 +300,7 @@ export default function Browser ({ route, navigation }: any) {
     />;
   };
 
-  async function onWebviewMessage (event: WebViewMessageEvent) {
+  async function onWebviewMessage(event: WebViewMessageEvent) {
     const jsonObj = JSON.parse(event.nativeEvent.data);
     const { type } = jsonObj;
 
@@ -347,7 +349,7 @@ export default function Browser ({ route, navigation }: any) {
     }
   }
 
-  function upgradeURL (uri: string) {
+  function upgradeURL(uri: string) {
     const isURL = uri.split(' ').length === 1 && uri.includes('.');
     if (isURL) {
       let final = uri;
@@ -361,7 +363,7 @@ export default function Browser ({ route, navigation }: any) {
     return `https://www.google.com/search?q=${encodedURI}`;
   }
 
-  function handleTextInput (e: any) {
+  function handleTextInput(e: any) {
     setFocus(false);
     if (e?.nativeEvent?.text.startsWith('cypherd://')) { return; }
     const upgradedURL = upgradeURL(e?.nativeEvent?.text === undefined ? e : e.nativeEvent.text);
@@ -454,360 +456,362 @@ export default function Browser ({ route, navigation }: any) {
   };
 
   return (
-     <SafeAreaView dynamic>
-       <ChooseChainModal
-         isModalVisible={chooseChain}
-         onPress={() => { setChooseChain(false); }}
-         where={WHERE_BROWSER}
-       />
-       <MoreViewModal
-         isModalVisible={moreView}
-         onPress={() => { setMoreview(false); }}
-         onHome={() => { onHome(); setInbuiltPage('home'); }}
-         onHistory={() => {
-           setInbuiltPage('history');
-         }}
-         onBookmark={() => {
-           setInbuiltPage('bookmarks');
-         }}
-       />
-       <DynamicView dynamic dynamicHeightFix dynamicWidth width={94} jC={'center'} aLIT={'center'} height={45} bGC='white' fD={'row'} mH={10} mT={Platform.OS === 'android' ? 5 : 0}>
-         {!onFocus && <DynamicTouchView sentry-label='browser-back-button' dynamic dynamicWidth dynamicHeightFix mL={30} height={10} width={8} jC={'center'} onPress={() => {
-           handleBackButton();
-         }}>
-           <DynamicImage dynamic dynamicWidth height={28} width={28} resizemode='contain'
-             source={AppImages.BACK} style={{ tintColor: canGoBack ? 'black' : 'gray' }} />
-         </DynamicTouchView>}
-         {!onFocus && <DynamicTouchView sentry-label='browser-forward-button' dynamic dynamicWidth dynamicHeightFix height={10} width={8} jC={'center'} onPress={() => {
-           handleForwardButton();
-         }}>
-           <DynamicImage dynamic dynamicWidth height={28} width={28} resizemode='contain'
-             source={AppImages.BACK} style={{ tintColor: canGoForward ? 'black' : 'gray', transform: [{ rotate: '180deg' }] }} />
-         </DynamicTouchView>}
+    <CyDSafeAreaView className='bg-white flex-1'>
+      <ChooseChainModal
+        isModalVisible={chooseChain}
+        onPress={() => { setChooseChain(false); }}
+        where={WHERE_BROWSER}
+      />
+      <MoreViewModal
+        isModalVisible={moreView}
+        onPress={() => { setMoreview(false); }}
+        onHome={() => { onHome(); setInbuiltPage('home'); }}
+        onHistory={() => {
+          setInbuiltPage('history');
+        }}
+        onBookmark={() => {
+          setInbuiltPage('bookmarks');
+        }}
+      />
+      <DynamicView dynamic dynamicHeightFix dynamicWidth width={94} jC={'center'} aLIT={'center'} height={45} bGC='white' fD={'row'} mH={10} mT={Platform.OS === 'android' ? 5 : 0}>
+        {!onFocus && <DynamicTouchView sentry-label='browser-back-button' dynamic dynamicWidth dynamicHeightFix mL={30} height={10} width={8} jC={'center'} onPress={() => {
+          handleBackButton();
+        }}>
+          <DynamicImage dynamic dynamicWidth height={28} width={28} resizemode='contain'
+            source={AppImages.BACK} style={{ tintColor: canGoBack ? 'black' : 'gray' }} />
+        </DynamicTouchView>}
+        {!onFocus && <DynamicTouchView sentry-label='browser-forward-button' dynamic dynamicWidth dynamicHeightFix height={10} width={8} jC={'center'} onPress={() => {
+          handleForwardButton();
+        }}>
+          <DynamicImage dynamic dynamicWidth height={28} width={28} resizemode='contain'
+            source={AppImages.BACK} style={{ tintColor: canGoForward ? 'black' : 'gray', transform: [{ rotate: '180deg' }] }} />
+        </DynamicTouchView>}
 
-         {!onFocus && <DynamicTouchView sentry-label='browser-forward-button' dynamic dynamicWidth dynamicHeightFix height={10} mL={-5} width={8} jC={'center'} onPress={() => {
-           handleReload();
-         }}>
-           <DynamicImage dynamic dynamicWidth height={100} width={100} resizemode='contain'
-             source={AppImages.REFRESH_BROWSER} style={{ tintColor: '#555' }} />
-         </DynamicTouchView>}
+        {!onFocus && <DynamicTouchView sentry-label='browser-forward-button' dynamic dynamicWidth dynamicHeightFix height={10} mL={-5} width={8} jC={'center'} onPress={() => {
+          handleReload();
+        }}>
+          <DynamicImage dynamic dynamicWidth height={100} width={100} resizemode='contain'
+            source={AppImages.REFRESH_BROWSER} style={{ tintColor: '#555' }} />
+        </DynamicTouchView>}
 
-         <DynamicView dynamic dynamicWidth dynamicHeightFix height={30}
-           bO={Platform.OS === 'android' ? 0.9 : 0.6} mL={onFocus ? 10 : 5} width={onFocus ? 80 : 63} bR={8} bGC={onFocus ? '#F5F7FF' : '#EDEDED'}
-           aLIT={'center'} jC={'center'} fD={'row'} style={{ borderColor: onFocus ? '#222222' : '#FFFFFF' }}>
-           {!onFocus && (inbuildPage === 'webview' || inbuildPage === 'webviewError') && <DynamicTouchView dynamic mL={2} sentry-label='browser-search-erase'>
-             {isSslSecure && <DynamicImage style={{ tintColor: '#32cd32' }} dynamic dynamicWidthFix height={15} width={15} mL={5} resizemode='contain' source={AppImages.LOCK_BROWSER } />}
-             {!isSslSecure && <DynamicImage dynamic dynamicWidthFix height={15} width={15} mL={5} resizemode='contain' source={AppImages.BROWSER_SSL} />}
-           </DynamicTouchView>}
-           {onFocus && <DynamicTouchView sentry-label='browser-search-erase'>
-             <DynamicImage style={{ tintColor: 'black' }} dynamic dynamicWidthFix height={18} width={18} mL={0} resizemode='contain' source={AppImages.SEARCH_BROWSER} />
-           </DynamicTouchView>}
-           <WebsiteInput
-             returnKeyType="go"
-             autoCapitalize="none"
-             onSubmitEditing={(e: any) => {
-               Keyboard.dismiss();
-               handleTextInput(e);
-             }}
-             onChangeText={(text: string) => {
-               setInputText(text);
-               setCurrentUrl(text);
-               setInbuiltPage('webview');
-               if (PURE_COSMOS_CHAINS.includes(hdWalletContext.state.selectedChain.chainName)) {
-                 hdWalletContext.dispatch({ type: 'CHOOSE_CHAIN', value: { selectedChain: CHAIN_ETH } });
-               }
-             }}
-             onFocus={() => {
-               setFocus(true);
-             }}
-             placeholder="Search or enter address"
-             placeholderTextColor="#777777"
-             onBlur={() => setFocus(false)}
-             value={getValueForWebsiteInput()}
-             autoCorrect={false}
-             style={{ width: onFocus || isKeyboardVisible ? '83%' : '90%', textAlign: onFocus ? 'left' : 'center', color: onFocus ? '#000000' : '#555555' }}
-             selectTextOnFocus={true}
-           ></WebsiteInput>
-           <DynamicTouchView sentry-label='browser-search-erase' onPress={() => { setCurrentUrl(''); setInputText(''); }}>
-             {onFocus && <DynamicImage style={{ tintColor: 'gray' }} dynamic dynamicWidthFix height={12} width={12} resizemode='contain' source={AppImages.CANCEL} />}
-           </DynamicTouchView>
+        <DynamicView dynamic dynamicWidth dynamicHeightFix height={30}
+          bO={Platform.OS === 'android' ? 0.9 : 0.6} mL={onFocus ? 10 : 5} width={onFocus ? 80 : 63} bR={8} bGC={onFocus ? '#F5F7FF' : '#EDEDED'}
+          aLIT={'center'} jC={'center'} fD={'row'} style={{ borderColor: onFocus ? '#222222' : '#FFFFFF' }}>
+          {!onFocus && (inbuildPage === 'webview' || inbuildPage === 'webviewError') && <DynamicTouchView dynamic mL={2} sentry-label='browser-search-erase'>
+            {isSslSecure && <DynamicImage style={{ tintColor: '#32cd32' }} dynamic dynamicWidthFix height={15} width={15} mL={5} resizemode='contain' source={AppImages.LOCK_BROWSER} />}
+            {!isSslSecure && <DynamicImage dynamic dynamicWidthFix height={15} width={15} mL={5} resizemode='contain' source={AppImages.BROWSER_SSL} />}
+          </DynamicTouchView>}
+          {onFocus && <DynamicTouchView sentry-label='browser-search-erase'>
+            <DynamicImage style={{ tintColor: 'black' }} dynamic dynamicWidthFix height={18} width={18} mL={0} resizemode='contain' source={AppImages.SEARCH_BROWSER} />
+          </DynamicTouchView>}
+          <WebsiteInput
+            returnKeyType="go"
+            autoCapitalize="none"
+            onSubmitEditing={(e: any) => {
+              Keyboard.dismiss();
+              handleTextInput(e);
+            }}
+            onChangeText={(text: string) => {
+              setInputText(text);
+              setCurrentUrl(text);
+              setInbuiltPage('webview');
+              if (PURE_COSMOS_CHAINS.includes(hdWalletContext.state.selectedChain.chainName)) {
+                hdWalletContext.dispatch({ type: 'CHOOSE_CHAIN', value: { selectedChain: CHAIN_ETH } });
+              }
+            }}
+            onFocus={() => {
+              setFocus(true);
+            }}
+            placeholder="Search or enter address"
+            placeholderTextColor="#777777"
+            onBlur={() => setFocus(false)}
+            value={getValueForWebsiteInput()}
+            autoCorrect={false}
+            style={{ width: onFocus || isKeyboardVisible ? '83%' : '90%', textAlign: onFocus ? 'left' : 'center', color: onFocus ? '#000000' : '#555555' }}
+            selectTextOnFocus={true}
+          ></WebsiteInput>
+          <DynamicTouchView sentry-label='browser-search-erase' onPress={() => { setCurrentUrl(''); setInputText(''); }}>
+            {onFocus && <DynamicImage style={{ tintColor: 'gray' }} dynamic dynamicWidthFix height={12} width={12} resizemode='contain' source={AppImages.CANCEL} />}
+          </DynamicTouchView>
 
-         </DynamicView>
+        </DynamicView>
 
-         {onFocus && <DynamicTouchView sentry-label='browser-search-cancel' dynamic mL={10} onPress={() => {
-           Keyboard.dismiss();
-           setFocus(false);
-         }}>
-           <CText dynamic fF={C.fontsName.FONT_REGULAR} fS={16} color={Colors.primaryTextColor}>Cancel</CText>
-         </DynamicTouchView>}
+        {onFocus && <DynamicTouchView sentry-label='browser-search-cancel' dynamic mL={10} onPress={() => {
+          Keyboard.dismiss();
+          setFocus(false);
+        }}>
+          <CText dynamic fF={C.fontsName.FONT_REGULAR} fS={16} color={Colors.primaryTextColor}>Cancel</CText>
+        </DynamicTouchView>}
 
-         {!onFocus && <DynamicTouchView sentry-label='browser-chain-choose' dynamic dynamicTintColor tC={'#767BA1'} dynamicWidth dynamicHeightFix height={30} width={10}
-           bR={15} pH={5} mL={5} pV={5} fD={'row'} onPress={() => {
-             setChooseChain(true);
-           }}>
-           <DynamicImage dynamic dynamicWidth height={95} width={95} resizemode='contain'
-             source={hdWalletContext.state.selectedChain.logo_url} />
-         </DynamicTouchView>}
-         {!onFocus && <DynamicTouchView sentry-label='browser-more-button' dynamic dynamicTintColor tC={'#767BA1'} dynamicWidth width={10}
-           bR={15} pH={4} pV={0} fD={'row'} onPress={() => {
-             setMoreview(true);
-           }}>
-           <DynamicImage dynamic dynamicWidth marginHorizontal={0} height={60} width={60} resizemode='contain'
-             source={AppImages.MORE} />
-         </DynamicTouchView>}
-       </DynamicView>
-       {onFocus && !websiteInfo.origin.includes('cypherd.io') && websiteInfo.origin !== '' &&
-         (<DynamicTouchView dynamic sentry-label='browser-current-url-bookmark' fD={'row'} heigth={100} width={100} aLIT={'center'} jC={'flex-start'} mT={10}>
-           <DynamicImage dynamic dynamicWidth height={18} width={18} resizemode='contain' source={{ uri: `https://www.google.com/s2/favicons?domain=${websiteInfo.host}&sz=32` }} />
-           <DynamicView dynamic dynamicWidth width={60}>
-             <CText dynamic dynamicWidth width={100} numberOfLines={1} fF={C.fontsName.FONT_REGULAR} tA={'left'} mL={-15} fS={14} style={{ color: Colors.primaryTextColor }}>{websiteInfo.title}</CText>
-             <CText dynamic dynamicWidth width={100} numberOfLines={1} fF={C.fontsName.FONT_REGULAR} tA={'left'} mL={-15} fS={10} style={{ color: Colors.primaryTextColor }}>{websiteInfo.origin}</CText>
+        {!onFocus && <DynamicTouchView sentry-label='browser-chain-choose' dynamic dynamicTintColor tC={'#767BA1'} dynamicWidth dynamicHeightFix height={30} width={10}
+          bR={15} pH={5} mL={5} pV={5} fD={'row'} onPress={() => {
+            setChooseChain(true);
+          }}>
+          <DynamicImage dynamic dynamicWidth height={95} width={95} resizemode='contain'
+            source={hdWalletContext.state.selectedChain.logo_url} />
+        </DynamicTouchView>}
+        {!onFocus && <DynamicTouchView sentry-label='browser-more-button' dynamic dynamicTintColor tC={'#767BA1'} dynamicWidth width={10}
+          bR={15} pH={4} pV={0} fD={'row'} onPress={() => {
+            setMoreview(true);
+          }}>
+          <DynamicImage dynamic dynamicWidth marginHorizontal={0} height={60} width={60} resizemode='contain'
+            source={AppImages.MORE} />
+        </DynamicTouchView>}
+      </DynamicView>
+      {onFocus && !websiteInfo.origin.includes('cypherd.io') && websiteInfo.origin !== '' &&
+        (<DynamicTouchView dynamic sentry-label='browser-current-url-bookmark' fD={'row'} heigth={100} width={100} aLIT={'center'} jC={'flex-start'} mT={10}>
+          <DynamicImage dynamic dynamicWidth height={18} width={18} resizemode='contain' source={{ uri: `https://www.google.com/s2/favicons?domain=${websiteInfo.host}&sz=32` }} />
+          <DynamicView dynamic dynamicWidth width={60}>
+            <CText dynamic dynamicWidth width={100} numberOfLines={1} fF={C.fontsName.FONT_REGULAR} tA={'left'} mL={-15} fS={14} style={{ color: Colors.primaryTextColor }}>{websiteInfo.title}</CText>
+            <CText dynamic dynamicWidth width={100} numberOfLines={1} fF={C.fontsName.FONT_REGULAR} tA={'left'} mL={-15} fS={10} style={{ color: Colors.primaryTextColor }}>{websiteInfo.origin}</CText>
 
-           </DynamicView>
-           <DynamicTouchView dynamic dynamicWidth width={12} onPress={onBookMark} fD="row" jC='flex-end'>
-             <DynamicImage dynamic dynamicWidth height={20} width={50} mL={-10} mT={-5} resizemode='contain'
-               source={isBookmarkedAlready(websiteInfo.url) ? AppImages.BOOKMARK_FILLED : AppImages.BOOKMARK_BROWSER} style={{ tintColor: '#333333' }} />
-           </DynamicTouchView>
+          </DynamicView>
+          <DynamicTouchView dynamic dynamicWidth width={12} onPress={onBookMark} fD="row" jC='flex-end'>
+            <DynamicImage dynamic dynamicWidth height={20} width={50} mL={-10} mT={-5} resizemode='contain'
+              source={isBookmarkedAlready(websiteInfo.url) ? AppImages.BOOKMARK_FILLED : AppImages.BOOKMARK_BROWSER} style={{ tintColor: '#333333' }} />
+          </DynamicTouchView>
 
-         </DynamicTouchView>)
-       }
-       {onFocus && searchData.length > 0 &&
-         <CText dynamic dynamicWidthFix width={170} numberOfLines={1} fF={C.fontsName.FONT_REGULAR} tA={'left'} mT={10} mL={20} fS={13} style={{ color: Colors.primaryTextColor }}>Recent Searches</CText>
-       }
-       {onFocus && (<DynamicView dynamic dynamicHeight height={100} jC='flex-start'>
-         {searchData.map(item =>
-           (<DynamicTouchView key={item.url} dynamic sentry-label='browser-recent-search-url' fD={'row'} heigth={100} width={100} aLIT={'center'} jC={'flex-start'} mT={10}
-           onPress={() => {
-             setInputText(item.url);
-             setCurrentUrl(item.url);
-             handleTextInput(item.url);
-             setInbuiltPage('webview');
-             setFocus(false);
-             Keyboard.dismiss();
-             analytics().logEvent('browser_recent_url_click', {
-               url: item.url,
-               from: 'browser'
-             }).catch(Sentry.captureException);
-           }}>
-           <DynamicImage dynamic dynamicWidth height={18} width={18} resizemode='contain' source={{ uri: item.image }} />
-           <DynamicView dynamic dynamicWidth width={80}>
-             <CText dynamic dynamicWidth width={100} numberOfLines={1} fF={C.fontsName.FONT_REGULAR} tA={'left'} mL={-15} fS={14} style={{ color: Colors.primaryTextColor }}>{item.name}</CText>
-             <CText dynamic dynamicWidth width={100} numberOfLines={1} fF={C.fontsName.FONT_REGULAR} tA={'left'} mL={-15} fS={10} style={{ color: Colors.primaryTextColor }}>{item.origin}</CText>
-           </DynamicView>
-         </DynamicTouchView>)
-         )}
-       </DynamicView>)}
+        </DynamicTouchView>)
+      }
+      {onFocus && searchData.length > 0 &&
+        <CText dynamic dynamicWidthFix width={170} numberOfLines={1} fF={C.fontsName.FONT_REGULAR} tA={'left'} mT={10} mL={20} fS={13} style={{ color: Colors.primaryTextColor }}>Recent Searches</CText>
+      }
+      {onFocus && (<DynamicView dynamic dynamicHeight height={100} jC='flex-start'>
+        {searchData.map(item =>
+        (<DynamicTouchView key={item.url} dynamic sentry-label='browser-recent-search-url' fD={'row'} heigth={100} width={100} aLIT={'center'} jC={'flex-start'} mT={10}
+          onPress={() => {
+            setInputText(item.url);
+            setCurrentUrl(item.url);
+            handleTextInput(item.url);
+            setInbuiltPage('webview');
+            setFocus(false);
+            Keyboard.dismiss();
+            analytics().logEvent('browser_recent_url_click', {
+              url: item.url,
+              from: 'browser'
+            }).catch(Sentry.captureException);
+          }}>
+          <DynamicImage dynamic dynamicWidth height={18} width={18} resizemode='contain' source={{ uri: item.image }} />
+          <DynamicView dynamic dynamicWidth width={80}>
+            <CText dynamic dynamicWidth width={100} numberOfLines={1} fF={C.fontsName.FONT_REGULAR} tA={'left'} mL={-15} fS={14} style={{ color: Colors.primaryTextColor }}>{item.name}</CText>
+            <CText dynamic dynamicWidth width={100} numberOfLines={1} fF={C.fontsName.FONT_REGULAR} tA={'left'} mL={-15} fS={10} style={{ color: Colors.primaryTextColor }}>{item.origin}</CText>
+          </DynamicView>
+        </DynamicTouchView>)
+        )}
+      </DynamicView>)}
 
-       {inbuildPage === 'history' && !onFocus
-         ? <DynamicScrollView dynamic dynamicHeight height={100} style={{ innerHeight: '100%', outerHeight: '100%' }}>
-           <DynamicTouchView onPress={() => {
-             clearHistory();
-             analytics().logEvent('browser_clear_history', {
-               from: 'browser'
-             }).catch(Sentry.captureException);
-           }} >
-             <CText dynamic dynamicWidth width={90} numberOfLines={1} fF={C.fontsName.FONT_REGULAR} tA={'left'} mL={20} mT={10} fS={12} style={{ color: Colors.primaryTextColor }}>Clear browsing history</CText>
-           </DynamicTouchView>
+      {inbuildPage === 'history' && !onFocus
+        ? <DynamicScrollView dynamic dynamicHeight height={100} style={{ innerHeight: '100%', outerHeight: '100%' }}>
+          <DynamicTouchView onPress={() => {
+            clearHistory();
+            analytics().logEvent('browser_clear_history', {
+              from: 'browser'
+            }).catch(Sentry.captureException);
+          }} >
+            <CText dynamic dynamicWidth width={90} numberOfLines={1} fF={C.fontsName.FONT_REGULAR} tA={'left'} mL={20} mT={10} fS={12} style={{ color: Colors.primaryTextColor }}>Clear browsing history</CText>
+          </DynamicTouchView>
 
-           <View
-             // eslint-disable-next-line react-native/no-inline-styles, react-native/no-color-literals
-             style={{ borderBottomColor: '#d1d1e0', borderBottomWidth: 1, marginBottom: 5, marginTop: 10 }}
-           />
-           {browserHistory.length === 0
-             ? <DynamicView dynamic dynamicWidth dynamicHeight height={100} width={100} alIT={'center'} jC={'center'}>
-               <CText dynamic dynamicWidth width={90} numberOfLines={1} fF={C.fontsName.FONT_REGULAR} tA={'center'} mT={200} fS={12} style={{ color: Colors.primaryTextColor }}>Start using the browser to view history here</CText>
-             </DynamicView>
-             : spliceHistoryByTime().map(historybt =>
-               (<View key={historybt.dateString}>
-               <CText dynamic dynamicWidth width={90} numberOfLines={1} fF={C.fontsName.FONT_REGULAR} tA={'left'} mT={10} mL={20} fS={12} style={{ color: Colors.primaryTextColor }}>{historybt.dateString}</CText>
-               {historybt.entry.map(item =>
-                 (<DynamicTouchView key={item.url} sentry-label='browser-history-url' dynamic fD={'row'} width={100} aLIT={'center'} jC={'flex-start'} mT={10}
-                 onPress={() => {
-                   setInputText(item.url);
-                   setCurrentUrl(item.url);
-                   handleTextInput(item.url);
-                   setFocus(false);
-                   setInbuiltPage('webview');
-                   analytics().logEvent('browser_history_url_click', {
-                     url: item.url,
-                     from: 'browser'
-                   }).catch(e => Sentry.captureException(e));
-                 }}>
-                 <DynamicImage dynamic dynamicWidth height={18} width={18} resizemode='contain' source={{ uri: item.image }} />
-                 <DynamicView dynamic dynamicWidth width={80}>
-                   <CText dynamic dynamicWidth width={100} numberOfLines={1} fF={C.fontsName.FONT_REGULAR} tA={'left'} mL={-15} fS={14} style={{ color: Colors.primaryTextColor }}>{item.name}</CText>
-                   <CText dynamic dynamicWidth width={100} numberOfLines={1} fF={C.fontsName.FONT_REGULAR} tA={'left'} mL={-15} fS={10} style={{ color: Colors.primaryTextColor }}>{item.origin}</CText>
-                 </DynamicView>
-                 <DynamicTouchView sentry-label='browser_history_url_clear' onPress={() => {
-                   deleteHistory(item);
-                   analytics().logEvent('browser_history_url_clear', {
-                     url: item.url,
-                     from: 'browser'
-                   }).catch(e => Sentry.captureException(e));
-                 }}>
-                   <DynamicImage style={{ tintColor: 'gray' }} dynamic dynamicWidthFix height={15} width={15} resizemode='contain' mL={-20} source={AppImages.CANCEL} />
-                 </DynamicTouchView>
+          <View
+            // eslint-disable-next-line react-native/no-inline-styles, react-native/no-color-literals
+            style={{ borderBottomColor: '#d1d1e0', borderBottomWidth: 1, marginBottom: 5, marginTop: 10 }}
+          />
+          {browserHistory.length === 0
+            ? <DynamicView dynamic dynamicWidth dynamicHeight height={100} width={100} alIT={'center'} jC={'center'}>
+              <CText dynamic dynamicWidth width={90} numberOfLines={1} fF={C.fontsName.FONT_REGULAR} tA={'center'} mT={200} fS={12} style={{ color: Colors.primaryTextColor }}>Start using the browser to view history here</CText>
+            </DynamicView>
+            : spliceHistoryByTime().map(historybt =>
+            (<View key={historybt.dateString}>
+              <CText dynamic dynamicWidth width={90} numberOfLines={1} fF={C.fontsName.FONT_REGULAR} tA={'left'} mT={10} mL={20} fS={12} style={{ color: Colors.primaryTextColor }}>{historybt.dateString}</CText>
+              {historybt.entry.map(item =>
+              (<DynamicTouchView key={item.url} sentry-label='browser-history-url' dynamic fD={'row'} width={100} aLIT={'center'} jC={'flex-start'} mT={10}
+                onPress={() => {
+                  setInputText(item.url);
+                  setCurrentUrl(item.url);
+                  handleTextInput(item.url);
+                  setFocus(false);
+                  setInbuiltPage('webview');
+                  analytics().logEvent('browser_history_url_click', {
+                    url: item.url,
+                    from: 'browser'
+                  }).catch(e => Sentry.captureException(e));
+                }}>
+                <DynamicImage dynamic dynamicWidth height={18} width={18} resizemode='contain' source={{ uri: item.image }} />
+                <DynamicView dynamic dynamicWidth width={80}>
+                  <CText dynamic dynamicWidth width={100} numberOfLines={1} fF={C.fontsName.FONT_REGULAR} tA={'left'} mL={-15} fS={14} style={{ color: Colors.primaryTextColor }}>{item.name}</CText>
+                  <CText dynamic dynamicWidth width={100} numberOfLines={1} fF={C.fontsName.FONT_REGULAR} tA={'left'} mL={-15} fS={10} style={{ color: Colors.primaryTextColor }}>{item.origin}</CText>
+                </DynamicView>
+                <DynamicTouchView sentry-label='browser_history_url_clear' onPress={() => {
+                  deleteHistory(item);
+                  analytics().logEvent('browser_history_url_clear', {
+                    url: item.url,
+                    from: 'browser'
+                  }).catch(e => Sentry.captureException(e));
+                }}>
+                  <DynamicImage style={{ tintColor: 'gray' }} dynamic dynamicWidthFix height={15} width={15} resizemode='contain' mL={-20} source={AppImages.CANCEL} />
+                </DynamicTouchView>
 
-               </DynamicTouchView>)
-               )}
-             </View>)
-             )}
+              </DynamicTouchView>)
+              )}
+            </View>)
+            )}
 
-         </DynamicScrollView>
-         : null
-       }
-       {inbuildPage === 'webviewError' && <DynamicView dynamic dynamicWidth dynamicHeight height={100} width={100} aLIT={'center'} jC={'flex-start'} >
-         <DynamicImage dynamic dynamicWidthFix dynamicHeightFix height={160} width={160} mT={150} resizemode='contain' source={webviewErrorCodesMapping[browserErrorCode].image} />
-         <CText dynamic dynamicWidth width={80} numberOfLines={2} fF={C.fontsName.FONT_REGULAR} tA={'center'} fS={12} style={{ color: Colors.primaryTextColor }}>{`Error: ${browserError}`}</CText>
-       </DynamicView>}
+        </DynamicScrollView>
+        : null
+      }
+      {inbuildPage === 'webviewError' && <DynamicView dynamic dynamicWidth dynamicHeight height={100} width={100} aLIT={'center'} jC={'flex-start'} >
+        <DynamicImage dynamic dynamicWidthFix dynamicHeightFix height={160} width={160} mT={150} resizemode='contain' source={webviewErrorCodesMapping[browserErrorCode].image} />
+        <CText dynamic dynamicWidth width={80} numberOfLines={2} fF={C.fontsName.FONT_REGULAR} tA={'center'} fS={12} style={{ color: Colors.primaryTextColor }}>{`Error: ${browserError}`}</CText>
+      </DynamicView>}
 
-       {inbuildPage === 'bookmarks' &&
-         <DynamicScrollView dynamic dynamicHeight height={100} onTouchEnd={(e: any) => {
-           if (e.target === e.currentTarget) { setRemoveBookmarkMode(false); setInbuiltPage('webview'); }
-         }}>
-           <DynamicView >
-             <CText dynamic dynamicWidth width={58} numberOfLines={1} fF={C.fontsName.FONT_BOLD} tA={'left'} mL={22} mT={10} fS={15} style={{ color: Colors.primaryTextColor }}>{'bookmarks'.toLocaleUpperCase()}</CText>
-             {browserFavourites.length === 0 && <CText dynamic dynamicWidth width={100} numberOfLines={1} tA={'center'} mL={0} mT={10} fS={12} style={{ color: Colors.primaryTextColor }}>Your bookmarks will be shown here</CText>}
-             <DynamicView dynamic fD={'row'} dynamicWidth width={90} aLIT={'center'} jC={'flex-start'} mL={10} style={{ flexWrap: 'wrap', marginBotton: '30px' }}>
-               {browserFavourites.map(favourite =>
-                 (<DynamicView key={favourite.url} dynamic style={{ flexBasis: '20%' }} >
-                 <DynamicTouchView dynamic dynamicWidthFix dynamicHeightFix height={48} width={48} alIT={'center'} jC={'center'} mL={10} mT={10} bGC={Colors.browserBookmarkBackground}
-                   style={{ color: Colors.primaryTextColor, borderWidth: 1, borderColor: 'gray', borderRadius: 22 }}
+      {inbuildPage === 'bookmarks' &&
+        <DynamicScrollView dynamic dynamicHeight height={100} onTouchEnd={(e: any) => {
+          if (e.target === e.currentTarget) { setRemoveBookmarkMode(false); setInbuiltPage('webview'); }
+        }}>
+          <DynamicView >
+            <CText dynamic dynamicWidth width={58} numberOfLines={1} fF={C.fontsName.FONT_BOLD} tA={'left'} mL={22} mT={10} fS={15} style={{ color: Colors.primaryTextColor }}>{'bookmarks'.toLocaleUpperCase()}</CText>
+            {browserFavourites.length === 0 && <CText dynamic dynamicWidth width={100} numberOfLines={1} tA={'center'} mL={0} mT={10} fS={12} style={{ color: Colors.primaryTextColor }}>Your bookmarks will be shown here</CText>}
+            <DynamicView dynamic fD={'row'} dynamicWidth width={90} aLIT={'center'} jC={'flex-start'} mL={10} style={{ flexWrap: 'wrap', marginBotton: '30px' }}>
+              {browserFavourites.map(favourite =>
+              (<DynamicView key={favourite.url} dynamic style={{ flexBasis: '20%' }} >
+                <DynamicTouchView dynamic dynamicWidthFix dynamicHeightFix height={48} width={48} alIT={'center'} jC={'center'} mL={10} mT={10} bGC={Colors.browserBookmarkBackground}
+                  style={{ color: Colors.primaryTextColor, borderWidth: 1, borderColor: 'gray', borderRadius: 22 }}
 
-                   onPress={(e: any) => {
-                     setInputText(favourite.url);
-                     setCurrentUrl(favourite.url);
-                     handleTextInput(favourite.url);
-                     setFocus(false);
-                     setInbuiltPage('webview');
-                     // Change
-                     analytics().logEvent('browser_favourite_url_click', {
-                       url: favourite.url,
-                       from: 'browser'
-                     }).catch(Sentry.captureException);
-                   }}
-                   onLongPress={() => {
-                     setRemoveBookmarkMode(true);
-                   }}>
-                   <DynamicView>
-                     <DynamicImage dynamic dynamicWidthFix dynamicHeightFix height={38} width={38} resizemode='contain' source={{ uri: favourite.image }} />
-                   </DynamicView>
-                 </DynamicTouchView>
+                  onPress={(e: any) => {
+                    setInputText(favourite.url);
+                    setCurrentUrl(favourite.url);
+                    handleTextInput(favourite.url);
+                    setFocus(false);
+                    setInbuiltPage('webview');
+                    // Change
+                    analytics().logEvent('browser_favourite_url_click', {
+                      url: favourite.url,
+                      from: 'browser'
+                    }).catch(Sentry.captureException);
+                  }}
+                  onLongPress={() => {
+                    setRemoveBookmarkMode(true);
+                  }}>
+                  <DynamicView>
+                    <DynamicImage dynamic dynamicWidthFix dynamicHeightFix height={38} width={38} resizemode='contain' source={{ uri: favourite.image }} />
+                  </DynamicView>
+                </DynamicTouchView>
 
-                 {removeBookmarkMode && <DynamicTouchView sentry-label='browser-search-erase'
-                   style={{ position: 'absolute', tintColor: '#444444', left: 52, top: 5, backgroundColor: 'white', borderRadius: 50 }}
-                   onPress={() => { deleteBookmark(favourite); }}>
-                   <DynamicImage dynamic dynamicWidthFix height={14} width={14} resizemode='contain' source={AppImages.CANCEL} style={{ tintColor: '#444444' }} />
-                 </DynamicTouchView>}
+                {removeBookmarkMode && <DynamicTouchView sentry-label='browser-search-erase'
+                  style={{ position: 'absolute', tintColor: '#444444', left: 52, top: 5, backgroundColor: 'white', borderRadius: 50 }}
+                  onPress={() => { deleteBookmark(favourite); }}>
+                  <DynamicImage dynamic dynamicWidthFix height={14} width={14} resizemode='contain' source={AppImages.CANCEL} style={{ tintColor: '#444444' }} />
+                </DynamicTouchView>}
 
-                 <CText dynamic dynamicWidthFix width={58} numberOfLines={1} fF={C.fontsName.FONT_REGULAR} mL={11} mT={3} fS={12} style={{ color: Colors.primaryTextColor }}>{favourite.name}</CText>
-               </DynamicView>)
-               )}
-             </DynamicView>
-           </DynamicView>
-         </DynamicScrollView>}
+                <CText dynamic dynamicWidthFix width={58} numberOfLines={1} fF={C.fontsName.FONT_REGULAR} mL={11} mT={3} fS={12} style={{ color: Colors.primaryTextColor }}>{favourite.name}</CText>
+              </DynamicView>)
+              )}
+            </DynamicView>
+          </DynamicView>
+        </DynamicScrollView>}
 
-       {!onFocus && inbuildPage === 'home' &&
-         (<DynamicScrollView dynamic dynamicHeight height={100}>
-           {browserHistory.length === 0
-             ? <DynamicView dynamic dynamicWidth dynamicHeight height={100} width={100} alIT={'center'} jC={'center'}>
-               <CText dynamic dynamicWidth width={90} numberOfLines={1} fF={C.fontsName.FONT_REGULAR} tA={'center'} mT={200} fS={12} style={{ color: Colors.primaryTextColor }}>Start using the browser to view history here</CText>
-             </DynamicView>
+      {!onFocus && inbuildPage === 'home' &&
+        (<DynamicScrollView dynamic dynamicHeight height={100}>
+          {browserHistory.length === 0
+            ? <DynamicView dynamic dynamicWidth dynamicHeight height={100} width={100} alIT={'center'} jC={'center'}>
+              <CText dynamic dynamicWidth width={90} numberOfLines={1} fF={C.fontsName.FONT_REGULAR} tA={'center'} mT={200} fS={12} style={{ color: Colors.primaryTextColor }}>Start using the browser to view history here</CText>
+            </DynamicView>
 
-             : <>
+            : <>
               <CyDText className='font-nunito text-left ml-[22px] mt-[10px] text-[15px] text-primaryTextColor font-bold' >{'history'.toLocaleUpperCase()}</CyDText>
-               {spliceHistoryByTime().map(historybt =>
-                 (
-                 <View key={historybt.dateString}>
-                   <CText dynamic dynamicWidth width={90} numberOfLines={1} fF={C.fontsName.FONT_REGULAR} tA={'left'} mT={10} mL={20} fS={12} style={{ color: Colors.primaryTextColor }}>{historybt.dateString}</CText>
-                   {historybt.entry.map(item =>
-                     (<DynamicTouchView key={item.url} sentry-label='browser-history-url' dynamic fD={'row'} width={100} aLIT={'center'} jC={'flex-start'} mT={10}
-                     onPress={() => {
-                       setInputText(item.url);
-                       setCurrentUrl(item.url);
-                       handleTextInput(item.url);
-                       setFocus(false);
-                       setInbuiltPage('webview');
-                       analytics().logEvent('browser_history_url_click', {
-                         url: item.url,
-                         from: 'browser'
-                       }).catch(e => {
-                         Sentry.captureException(e);
-                       });
-                     }}>
-                     <DynamicImage dynamic dynamicWidth height={18} width={18} resizemode='contain' source={{ uri: item.image }} />
-                     <DynamicView dynamic dynamicWidth width={80}>
-                       <CText dynamic dynamicWidth width={100} numberOfLines={1} fF={C.fontsName.FONT_REGULAR} tA={'left'} mL={-15} fS={14} style={{ color: Colors.primaryTextColor }}>{item.name}</CText>
-                       <CText dynamic dynamicWidth width={100} numberOfLines={1} fF={C.fontsName.FONT_REGULAR} tA={'left'} mL={-15} fS={10} style={{ color: Colors.primaryTextColor }}>{item.origin}</CText>
-                     </DynamicView>
-                     <DynamicTouchView sentry-label='browser_history_url_clear' onPress={() => {
-                       deleteHistory(item);
-                       analytics().logEvent('browser_history_url_clear', {
-                         url: item.url,
-                         from: 'browser'
-                       }).catch(e => {
-                         Sentry.captureException(e);
-                       });
-                     }}>
-                       <DynamicImage style={{ tintColor: 'gray' }} dynamic dynamicWidthFix height={15} width={15} resizemode='contain' mL={-20} source={AppImages.CANCEL} />
-                     </DynamicTouchView>
+              {spliceHistoryByTime().map(historybt =>
+              (
+                <View key={historybt.dateString}>
+                  <CText dynamic dynamicWidth width={90} numberOfLines={1} fF={C.fontsName.FONT_REGULAR} tA={'left'} mT={10} mL={20} fS={12} style={{ color: Colors.primaryTextColor }}>{historybt.dateString}</CText>
+                  {historybt.entry.map(item =>
+                  (<DynamicTouchView key={item.url} sentry-label='browser-history-url' dynamic fD={'row'} width={100} aLIT={'center'} jC={'flex-start'} mT={10}
+                    onPress={() => {
+                      setInputText(item.url);
+                      setCurrentUrl(item.url);
+                      handleTextInput(item.url);
+                      setFocus(false);
+                      setInbuiltPage('webview');
+                      analytics().logEvent('browser_history_url_click', {
+                        url: item.url,
+                        from: 'browser'
+                      }).catch(e => {
+                        Sentry.captureException(e);
+                      });
+                    }}>
+                    <DynamicImage dynamic dynamicWidth height={18} width={18} resizemode='contain' source={{ uri: item.image }} />
+                    <DynamicView dynamic dynamicWidth width={80}>
+                      <CText dynamic dynamicWidth width={100} numberOfLines={1} fF={C.fontsName.FONT_REGULAR} tA={'left'} mL={-15} fS={14} style={{ color: Colors.primaryTextColor }}>{item.name}</CText>
+                      <CText dynamic dynamicWidth width={100} numberOfLines={1} fF={C.fontsName.FONT_REGULAR} tA={'left'} mL={-15} fS={10} style={{ color: Colors.primaryTextColor }}>{item.origin}</CText>
+                    </DynamicView>
+                    <DynamicTouchView sentry-label='browser_history_url_clear' onPress={() => {
+                      deleteHistory(item);
+                      analytics().logEvent('browser_history_url_clear', {
+                        url: item.url,
+                        from: 'browser'
+                      }).catch(e => {
+                        Sentry.captureException(e);
+                      });
+                    }}>
+                      <DynamicImage style={{ tintColor: 'gray' }} dynamic dynamicWidthFix height={15} width={15} resizemode='contain' mL={-20} source={AppImages.CANCEL} />
+                    </DynamicTouchView>
 
-                   </DynamicTouchView>)
-                   )}
-                 </View>)
-               )}
-             </>}
-         </DynamicScrollView>
-         )}
-       {loader && inbuildPage === 'webview' && <DynamicView dynamic dynamicWidth dynamicHeight height={95} width={100} jC='center'>
-         <ActivityIndicator size="large" color={Colors.black} />
-       </DynamicView>}
-       {<WebView
-         key={webviewKey}
-         source={{ uri: search }}
-         ref={webviewRef}
-         startInLoadingState
-         onLoadStart={() => setLoader(true)}
-         onLoadEnd={() => setLoader(false)}
-         injectedJavaScriptBeforeContentLoaded={injectedCode}
-         mediaPlaybackRequiresUserAction={true}
-         javaScriptEnabled={true}
-         domStorageEnabled={true}
-         // eslint-disable-next-line react-native/no-inline-styles
-         style={{ marginTop: 0 }}
-         onNavigationStateChange={navState => {
-           setCanGoBack(navState.canGoBack);
-           setCanGoForward(navState.canGoForward);
-           setCurrentUrl(navState.url);
-         }}
-         onLoad={(syntheticEvent) => {
-           const { nativeEvent } = syntheticEvent;
-           const finalTitle = nativeEvent.title.replace('- Google Search', '');
-           setIsSslSecure(true);
-           if (nativeEvent.url !== null) {
-             const url = new URL(nativeEvent.url);
-             setInputText(url.hostname);
-             setCurrentUrl(nativeEvent.url);
-           } else {
-             setInputText(finalTitle);
-             setCurrentUrl(nativeEvent.url);
-           }
-         }}
-         onError={syntheticEvent => {
-           setInbuiltPage('webviewError');
-           const { code, description } = syntheticEvent.nativeEvent;
-           setBrowserError(description);
-           setBrowserErrorCode(webviewErrorCodes.includes(`${code}`) ? `${code}` : 'default');
-           if (code) {
-             const mapping = webviewErrorCodesMapping[Object.keys(webviewErrorCodesMapping).includes(code.toString()) ? code.toString() : 'default'];
+                  </DynamicTouchView>)
+                  )}
+                </View>)
+              )}
+            </>}
+        </DynamicScrollView>
+        )}
+      {loader && inbuildPage === 'webview' && <DynamicView dynamic dynamicWidth dynamicHeight height={95} width={100} jC='center'>
+        <ActivityIndicator size="large" color={Colors.black} />
+      </DynamicView>}
+      <CyDView className={clsx('flex-1 pb-[50px]', { 'pb-[75px]': !isIOS() })}>
+        <WebView
+          key={webviewKey}
+          source={{ uri: search }}
+          ref={webviewRef}
+          startInLoadingState
+          onLoadStart={() => setLoader(true)}
+          onLoadEnd={() => setLoader(false)}
+          injectedJavaScriptBeforeContentLoaded={injectedCode}
+          mediaPlaybackRequiresUserAction={true}
+          javaScriptEnabled={true}
+          domStorageEnabled={true}
+          // eslint-disable-next-line react-native/no-inline-styles
+          style={{ marginTop: 0 }}
+          onNavigationStateChange={navState => {
+            setCanGoBack(navState.canGoBack);
+            setCanGoForward(navState.canGoForward);
+            setCurrentUrl(navState.url);
+          }}
+          onLoad={(syntheticEvent) => {
+            const { nativeEvent } = syntheticEvent;
+            const finalTitle = nativeEvent.title.replace('- Google Search', '');
+            setIsSslSecure(true);
+            if (nativeEvent.url !== null) {
+              const url = new URL(nativeEvent.url);
+              setInputText(url.hostname);
+              setCurrentUrl(nativeEvent.url);
+            } else {
+              setInputText(finalTitle);
+              setCurrentUrl(nativeEvent.url);
+            }
+          }}
+          onError={syntheticEvent => {
+            setInbuiltPage('webviewError');
+            const { code, description } = syntheticEvent.nativeEvent;
+            setBrowserError(description);
+            setBrowserErrorCode(webviewErrorCodes.includes(`${code}`) ? `${code}` : 'default');
+            if (code) {
+              const mapping = webviewErrorCodesMapping[Object.keys(webviewErrorCodesMapping).includes(code.toString()) ? code.toString() : 'default'];
 
-             const isSSLError = mapping.error === BROWSER_ERROR.SSL;
-             setIsSslSecure(!isSSLError);
-           }
-         }}
-         onHttpError={Sentry.captureException}
-         onMessage={onWebviewMessage}
-       />}
-     </SafeAreaView>
+              const isSSLError = mapping.error === BROWSER_ERROR.SSL;
+              setIsSslSecure(!isSSLError);
+            }
+          }}
+          onHttpError={Sentry.captureException}
+          onMessage={onWebviewMessage}
+        />
+      </CyDView>
+    </CyDSafeAreaView>
   );
 }

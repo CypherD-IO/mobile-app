@@ -1,10 +1,12 @@
 module.exports = {
+  root: true,
   env: {
     browser: true,
     es2021: true,
     'react-native/react-native': true,
   },
   extends: [
+    '@react-native',
     'plugin:react/recommended',
     'standard-with-typescript',
     'eslint:recommended',

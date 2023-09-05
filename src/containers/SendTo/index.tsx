@@ -68,10 +68,10 @@ import { Contact, getContactBookWithMultipleAddress } from '../utilities/contact
 import { intercomAnalyticsLog } from '../utilities/analyticsUtility';
 import { useKeyboard } from '../../hooks/useKeyboard';
 
-export default function SendTo (props: { navigation?: any, route?: any }) {
+export default function SendTo(props: { navigation?: any, route?: any }) {
   const { t } = useTranslation();
   const { route } = props;
-  const { valueForUsd, tokenData, sendAddress = '' }: { valueForUsd: string, tokenData: Holding, sendAddress: string} = route.params;
+  const { valueForUsd, tokenData, sendAddress = '' }: { valueForUsd: string, tokenData: Holding, sendAddress: string } = route.params;
   const [Data, setData] = useState<string[]>([]);
   const [addressText, setAddressText] = useState<string>(sendAddress);
   const addressRef = useRef('');
@@ -90,7 +90,7 @@ export default function SendTo (props: { navigation?: any, route?: any }) {
   const [resolveAddress] = useEns();
   const [isDropDown, setIsDropDown] = useState(false);
   const [contactBook, setContactBook] = useState({});
-  const [addressDirectory, setAddressDirectory] = useState <Record<string, Record<string, string[]>>>({});
+  const [addressDirectory, setAddressDirectory] = useState<Record<string, Record<string, string[]>>>({});
   const isFocused = useIsFocused();
   const [filteredContactBook, setFilteredContactBook] = useState({});
   const { showModal, hideModal } = useGlobalModalContext();
@@ -260,13 +260,15 @@ export default function SendTo (props: { navigation?: any, route?: any }) {
 
   const emptyView = () => {
     return (
-      <EmptyView
-        text={t('NO_SEND_HISTORY')}
-        image={AppImages.SENDTO_EMPTY}
-        buyVisible={false}
-        marginTop={10}
-        width={200}
-      />
+      <CyDView className='h-full w-full justify-center items-center'>
+        <EmptyView
+          text={t('NO_SEND_HISTORY')}
+          image={AppImages.SENDTO_EMPTY}
+          buyVisible={false}
+          marginTop={10}
+          width={200}
+        />
+      </CyDView>
     );
   };
 
@@ -290,7 +292,7 @@ export default function SendTo (props: { navigation?: any, route?: any }) {
         }}>
           <CyDView className='flex flex-row flex-wrap justify-start items-center w-[100%]'>
             <CyDView className={`p-[5px] rounded-[30px] bg-${chainDetails?.chainName}`}>
-              <CyDImage source={chainDetails?.logo_url} className='h-[20px] w-[20px]' resizeMode='contain'/>
+              <CyDImage source={chainDetails?.logo_url} className='h-[20px] w-[20px]' resizeMode='contain' />
             </CyDView>
             <CyDText className='ml-[10px] font-bold text-[11px]'>{chainDetails?.backendName}</CyDText>
             <CyDText className='ml-[5px] text-[11px]'>{formatted}</CyDText>
@@ -303,7 +305,7 @@ export default function SendTo (props: { navigation?: any, route?: any }) {
     );
   };
 
-  function onModalHide () {
+  function onModalHide() {
     hideModal();
     void intercomAnalyticsLog('save_as_a_contact_yes');
     props.navigation.navigate(C.screenTitle.OPTIONS);
@@ -320,15 +322,15 @@ export default function SendTo (props: { navigation?: any, route?: any }) {
       navigation={props.navigation}
       hideModal={hideModal}
     />
-    { willPrompt
-      ? <CyDText className='font-bold text-[14px] text-center'>
-      {t('SAVE_AS_A_CONTACT_PROMPT')}
-    </CyDText>
-      : <></>}
+      {willPrompt
+        ? <CyDText className='font-bold text-[14px] text-center'>
+          {t('SAVE_AS_A_CONTACT_PROMPT')}
+        </CyDText>
+        : <></>}
     </>;
   };
 
-  function onModalHideWithNo () {
+  function onModalHideWithNo() {
     hideModal();
     void intercomAnalyticsLog('save_as_a_contact_no');
     setTimeout(() => {
@@ -727,91 +729,91 @@ export default function SendTo (props: { navigation?: any, route?: any }) {
 
   // NOTE: LIFE CYCLE METHOD 🍎🍎🍎🍎
   return (
-        <CyDSafeAreaView className='flex-1 bg-white'>
-          <CyDView>
-            <BottomSendToConfirm
-                isModalVisible={payTokenBottomConfirm}
-                modalParams={payTokenModalParams}
-                onPayPress={() => {
-                  setPayTokenBottomConfirm(false);
-                  isSignableTransaction(ActivityType.SEND, isReadOnlyWallet ? submitSendTransaction : onPayPress);
-                }}
-                onCancelPress={() => {
-                  setPayTokenBottomConfirm(false);
-                  setLoading(false);
-                }}
-                lowBalance={lowBalance}
-            />
+    <CyDSafeAreaView className='flex-1 bg-white'>
+      <CyDView>
+        <BottomSendToConfirm
+          isModalVisible={payTokenBottomConfirm}
+          modalParams={payTokenModalParams}
+          onPayPress={() => {
+            setPayTokenBottomConfirm(false);
+            isSignableTransaction(ActivityType.SEND, isReadOnlyWallet ? submitSendTransaction : onPayPress);
+          }}
+          onCancelPress={() => {
+            setPayTokenBottomConfirm(false);
+            setLoading(false);
+          }}
+          lowBalance={lowBalance}
+        />
 
-            <CyDView className='h-full mx-[20px] pt-[10px]'>
-                <CyDText className='text-[16px] font-semibold'>{t<string>('ADDRESS')}</CyDText>
-                <CyDView className={clsx('flex flex-row justify-between items-center mt-[7px] border-[0.5px] border-greyButtonBackgroundColor rounded-[5px] pl-[15px] pr-[10px] py-[5px]', { 'border-errorTextRed': !isAddressValid, 'border-greyButtonBackgroundColor': addressText === '' })}>
+        <CyDView className='h-full mx-[20px] pt-[10px]'>
+          <CyDText className='text-[16px] font-semibold'>{t<string>('ADDRESS')}</CyDText>
+          <CyDView className={clsx('flex flex-row justify-between items-center mt-[7px] border-[0.5px] border-greyButtonBackgroundColor rounded-[5px] pl-[15px] pr-[10px] py-[5px]', { 'border-errorTextRed': !isAddressValid, 'border-greyButtonBackgroundColor': addressText === '' })}>
+            <CyDTextInput
+              className={'max-w-[90%] pr-[0px]'}
+              value={addressText}
+              autoCapitalize="none"
+              autoCorrect={false}
+              onChangeText={(text) => { setAddressText(text); handleSearch(text); }}
+              returnKeyType='done'
+              blurOnSubmit={true}
+              multiline={true}
+              textAlignVertical={'top'}
+              placeholderTextColor={Colors.placeHolderColor}
+              placeholder={getSendAddressFieldPlaceholder(chainDetails?.chainName ?? '', chainDetails?.backendName ?? '')}
+            />
+            <CyDTouchView className='w-[5%]' onPress={() => { addressText === '' ? props.navigation.navigate(C.screenTitle.QR_CODE_SCANNER, { fromPage: QRScannerScreens.SEND, onSuccess }) : setAddressText(''); }}>
+              <CyDImage className={'h-[22px] w-[22px]'} source={addressText === '' ? AppImages.QR_CODE_SCANNER : AppImages.CLOSE_CIRCLE} />
+            </CyDTouchView>
+          </CyDView>
+          {!isDropDown &&
+            <CyDView className='flex-1 flex-col items-center'>
+              <CyDView className={'flex flex-row w-[100%] justify-end mt-[15px]'}>
+                <CyDTouchView className={'flex flex-row justify-end items-start'} onPress={() => { void (async () => await fetchCopiedText())(); }}>
+                  <CyDImage source={AppImages.COPY} className={'w-[14px] h-[16px] mr-[7px]'} />
+                  <CyDText className={'text-[#434343] text-[12px] font-bold'}>{t<string>('PASTE_CLIPBOARD')}</CyDText>
+                </CyDTouchView>
+              </CyDView>
+              {isMemoNeeded() && <CyDView className='w-full mt-[25px]'>
+                <CyDText className='text-[16px] font-semibold'>{t<string>('MEMO')}</CyDText>
+                <CyDView className={'flex flex-row justify-between items-center mt-[7px] bg-secondaryBackgroundColor border-[0.5px] border-black rounded-[9px] pl-[15px] pr-[10px] py-[1px]'}>
                   <CyDTextInput
-                    className={'max-w-[90%] pr-[0px]'}
-                    value={addressText}
+                    className={'self-center py-[12px] w-[90%] pr-[10px]'}
+                    value={memo}
                     autoCapitalize="none"
                     autoCorrect={false}
-                    onChangeText={(text) => { setAddressText(text); handleSearch(text); }}
-                    returnKeyType='done'
-                    blurOnSubmit={true}
+                    onChangeText={(text) => { setMemo(text); }}
+                    placeholderTextColor={Colors.placeholderTextColor}
+                    placeholder={t('MEMO')}
                     multiline={true}
-                    textAlignVertical={'top'}
-                    placeholderTextColor={Colors.placeHolderColor}
-                    placeholder={getSendAddressFieldPlaceholder(chainDetails?.chainName ?? '', chainDetails?.backendName ?? '')}
                   />
-                    <CyDTouchView className='w-[5%]' onPress={() => { addressText === '' ? props.navigation.navigate(C.screenTitle.QR_CODE_SCANNER, { fromPage: QRScannerScreens.SEND, onSuccess }) : setAddressText(''); }}>
-                      <CyDImage className={'h-[22px] w-[22px]'} source={addressText === '' ? AppImages.QR_CODE_SCANNER : AppImages.CLOSE_CIRCLE}/>
-                    </CyDTouchView>
+                  {memo !== '' && <CyDTouchView onPress={() => { setMemo(''); }}>
+                    <CyDImage className={'h-[22px] w-[22px]'} source={AppImages.CLOSE_CIRCLE} resizeMode='contain' />
+                  </CyDTouchView>}
                 </CyDView>
-                {!isDropDown &&
-                <CyDView className='flex-1 flex-col items-center'>
-                  <CyDView className={'flex flex-row w-[100%] justify-end mt-[15px]'}>
-                    <CyDTouchView className={'flex flex-row justify-end items-start'} onPress={() => { void (async () => await fetchCopiedText())(); }}>
-                      <CyDImage source={AppImages.COPY} className={'w-[14px] h-[16px] mr-[7px]'} />
-                      <CyDText className={'text-[#434343] text-[12px] font-bold'}>{t<string>('PASTE_CLIPBOARD')}</CyDText>
-                    </CyDTouchView>
-                  </CyDView>
-                  {isMemoNeeded() && <CyDView className='w-full mt-[25px]'>
-                    <CyDText className='text-[16px] font-semibold'>{t<string>('MEMO')}</CyDText>
-                    <CyDView className={'flex flex-row justify-between items-center mt-[7px] bg-secondaryBackgroundColor border-[0.5px] border-black rounded-[9px] pl-[15px] pr-[10px] py-[1px]'}>
-                      <CyDTextInput
-                        className={'self-center py-[12px] w-[90%] pr-[10px]'}
-                        value={memo}
-                        autoCapitalize="none"
-                        autoCorrect={false}
-                        onChangeText={(text) => { setMemo(text); }}
-                        placeholderTextColor={Colors.placeholderTextColor}
-                        placeholder={t('MEMO')}
-                        multiline={true}
-                      />
-                      {memo !== '' && <CyDTouchView onPress={() => { setMemo(''); }}>
-                        <CyDImage className={'h-[22px] w-[22px]'} source={ AppImages.CLOSE_CIRCLE} resizeMode='contain'/>
-                      </CyDTouchView>}
-                    </CyDView>
-                    </CyDView>}
-                    <CyDView className='h-full w-full pb-[80px]'>
-                      <CyDText className='text-[16px] w-full text-left mt-[20px] font-semibold'>{t<string>('RECENT_ADDRESS')}:</CyDText>
-                      <CyDFlatList
-                        data={Data}
-                        renderItem={renderItem}
-                        ListEmptyComponent={emptyView}
-                        style={{ marginBottom: 60, flexGrow: 0 }}
-                        showsVerticalScrollIndicator={false}
-                      />
-                    </CyDView>
-                </CyDView>}
-                {isDropDown &&
-                  <CyDView className='items-center mt-[-10px] mb-[150px]'>
-                    <AddressProfile content={filteredContactBook} chainChoosen={chainDetails?.backendName} setAddressText={setAddressText} setIsDropDown={setIsDropDown}/>
-                  </CyDView>
-                }
-                <CyDView className='h-[80px] pb-[10px] w-full absolute justify-center items-center bg-white' style={keyboardHeight ? { top: keyboardHeight - 60 } : { bottom: 8 }}>
-                    <Button title={t('SEND')} onPress={() => {
-                      void (async () => await submitSendTransaction())();
-                    }} type={ButtonType.PRIMARY} loading={loading} style=' h-[60px] w-[90%]'/>
-                </CyDView>
+              </CyDView>}
+              <CyDView className='h-full w-full pb-[80px]'>
+                <CyDText className='text-[16px] w-full text-left mt-[20px] font-semibold'>{t<string>('RECENT_ADDRESS')}:</CyDText>
+                <CyDFlatList
+                  data={Data}
+                  renderItem={renderItem}
+                  ListEmptyComponent={emptyView}
+                  style={{ marginBottom: 60, flexGrow: 0 }}
+                  showsVerticalScrollIndicator={false}
+                />
+              </CyDView>
+            </CyDView>}
+          {isDropDown &&
+            <CyDView className='items-center mt-[-10px] mb-[150px]'>
+              <AddressProfile content={filteredContactBook} chainChoosen={chainDetails?.backendName} setAddressText={setAddressText} setIsDropDown={setIsDropDown} />
             </CyDView>
-            </CyDView>
-        </CyDSafeAreaView>
+          }
+          <CyDView className='h-[80px] pb-[10px] w-full absolute justify-center items-center bg-white' style={keyboardHeight ? { top: keyboardHeight - 60 } : { bottom: 8 }}>
+            <Button title={t('SEND')} onPress={() => {
+              void (async () => await submitSendTransaction())();
+            }} type={ButtonType.PRIMARY} loading={loading} style=' h-[60px] w-[90%]' />
+          </CyDView>
+        </CyDView>
+      </CyDView>
+    </CyDSafeAreaView>
   );
 }
