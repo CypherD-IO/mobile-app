@@ -45,9 +45,10 @@ export const useScrollManager = (
       const curRouteKey = routes[index].key;
       const scrollValue = tabkeyToScrollPosition[curRouteKey].value;
 
-      Object.keys(tabkeyToScrollableChildRef).forEach((key, innerIndex) => {
+      Object.keys(tabkeyToScrollableChildRef).forEach(key => {
         const scrollRef = tabkeyToScrollableChildRef[key];
-        const curRouteScrollableType = routes[innerIndex].scrollableType;
+        const curRouteScrollableType = routes[routes.findIndex(route => route.key === key)].scrollableType;
+
         if (!scrollRef) {
           return;
         }

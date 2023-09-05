@@ -179,27 +179,31 @@ export default function Options(props: { navigation: { goBack: () => void, popTo
 
               <DynamicView dynamic dynamicWidth dynamicHeightFix height={1} width={88} bGC={Colors.portfolioBorderColor} />
 
-              {!isReadOnlyWallet && <OptionsContainer
-                sentryLabel={'referrals'}
-                onPress={() => {
-                  !isReadOnlyWallet
-                    ? props.navigation.navigate(C.screenTitle.REFERRAL_REWARDS)
-                    : referToFriend();
-                }}
-                title={!isReadOnlyWallet ? 'Referral & rewards' : t('MENU_RECOMMEND_FRIEND')}
-                logo={AppImages.REFER_OUTLINE}
-              />}
+              {
+                !isReadOnlyWallet && <OptionsContainer
+                  sentryLabel={'referrals'}
+                  onPress={() => {
+                    !isReadOnlyWallet
+                      ? props.navigation.navigate(C.screenTitle.REFERRAL_REWARDS)
+                      : referToFriend();
+                  }}
+                  title={!isReadOnlyWallet ? 'Referral & rewards' : t('MENU_RECOMMEND_FRIEND')}
+                  logo={AppImages.REFER_OUTLINE}
+                />
+              }
 
               {!isReadOnlyWallet && <DynamicView dynamic dynamicWidth dynamicHeightFix height={1} width={88} bGC={Colors.portfolioBorderColor} />}
 
-              {!isReadOnlyWallet && <OptionsContainer
-                sentryLabel={'wallet-connect'}
-                onPress={() => {
-                  props.navigation.navigate(C.screenTitle.WALLET_CONNECT);
-                }}
-                title={'Wallet Connect'}
-                logo={AppImages.WALLET_CONNECT_LOGO}
-              ></OptionsContainer>}
+              {
+                !isReadOnlyWallet && <OptionsContainer
+                  sentryLabel={'wallet-connect'}
+                  onPress={() => {
+                    props.navigation.navigate(C.screenTitle.WALLET_CONNECT);
+                  }}
+                  title={'Wallet Connect'}
+                  logo={AppImages.WALLET_CONNECT_LOGO}
+                ></OptionsContainer>
+              }
 
               {!isReadOnlyWallet && <DynamicView dynamic dynamicWidth dynamicHeightFix height={1} width={88} bGC={Colors.portfolioBorderColor} />}
 
@@ -284,31 +288,33 @@ export default function Options(props: { navigation: { goBack: () => void, popTo
               {/*     logo={AppImages.WHATS_NEW} */}
               {/* ></OptionsContainer> */}
 
-              {updateModal && <CyDView className='flex-row justify-between py-[8px] w-[80%] items-center border-[1px] border-[#EFEFEF] px-[18px] rounded-[8px] mb-[12px] bg-[#EFEFEF]'>
-                <CyDText className='text-[14px] font-bold '>{t<string>('NEW_VERSION_AVAILABLE')}</CyDText>
+              {
+                updateModal && <CyDView className='flex-row justify-between py-[8px] w-[80%] items-center border-[1px] border-[#EFEFEF] px-[18px] rounded-[8px] mb-[12px] bg-[#EFEFEF]'>
+                  <CyDText className='text-[14px] font-bold '>{t<string>('NEW_VERSION_AVAILABLE')}</CyDText>
 
-                <CyDTouchView className='py-[4px] px-[6px] bg-appColor/[0.6] border-[1px] border-appColor rounded-[4px] '
-                  onPress={() => {
-                    if (isAndroid()) {
-                      void Linking.openURL(
-                        'market://details?id=com.cypherd.androidwallet'
-                      );
-                    } else {
-                      const link =
-                        'itms-apps://apps.apple.com/app/cypherd-wallet/id1604120414';
-                      Linking.canOpenURL(link).then(
-                        (supported) => {
-                          supported && Linking.openURL(link);
-                        },
-                        (err) => Sentry.captureException(err)
-                      );
-                    }
-                  }}
-                >
-                  <CyDText className='text-[16px] font-semibold '>{t<string>('UPDATE')}</CyDText>
-                </CyDTouchView >
+                  <CyDTouchView className='py-[4px] px-[6px] bg-appColor/[0.6] border-[1px] border-appColor rounded-[4px] '
+                    onPress={() => {
+                      if (isAndroid()) {
+                        void Linking.openURL(
+                          'market://details?id=com.cypherd.androidwallet'
+                        );
+                      } else {
+                        const link =
+                          'itms-apps://apps.apple.com/app/cypherd-wallet/id1604120414';
+                        Linking.canOpenURL(link).then(
+                          (supported) => {
+                            supported && Linking.openURL(link);
+                          },
+                          (err) => Sentry.captureException(err)
+                        );
+                      }
+                    }}
+                  >
+                    <CyDText className='text-[16px] font-semibold '>{t<string>('UPDATE')}</CyDText>
+                  </CyDTouchView >
 
-              </CyDView>}
+                </CyDView>
+              }
 
               <CyDTouchView className={'flex items-center justify-center h-[50px] w-full'}
                 onPress={async () => {
@@ -327,7 +333,8 @@ export default function Options(props: { navigation: { goBack: () => void, popTo
                 <CText dynamic fF={C.fontsName.FONT_REGULAR} fS={10} color={Colors.versionColor}>{t<string>('VERSION')} {DeviceInfo.getVersion()}</CText>
               </CyDTouchView>
 
-              {devMode &&
+              {
+                devMode &&
                 <>
                   {/* <CyDTouchView onPress={async () => await setQuoteCancelReasons(false)} className={'flex flex-row justify-center items-center my-[10px]'}>
                   <CyDText className={'underline underline-offset-2 text-blue-700 '}>
@@ -379,10 +386,10 @@ export default function Options(props: { navigation: { goBack: () => void, popTo
                   navigationRef={props.navigation}
                 />
               </CyDView>
-            </DynamicView>
-          </DynamicView>
-        </ImageBackground>
-      </CyDScrollView>
-    </CyDView>
+            </DynamicView >
+          </DynamicView >
+        </ImageBackground >
+      </CyDScrollView >
+    </CyDView >
   );
 }

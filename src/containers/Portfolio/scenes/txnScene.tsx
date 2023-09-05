@@ -1,21 +1,41 @@
-import { CyDView, CyDText, CyDImage, CyDFastImage, CyDTouchView } from '../../styles/tailwindStyles';
-import React, { useContext, useEffect, useLayoutEffect, useState } from 'react';
-import axios from '../../core/Http';
-import { hostWorker } from '../../global';
-import { HdWalletContext, formatAmount, getMaskedAddress } from '../../core/util';
-import * as C from '../../constants/index';
-import Loading from '../../components/v2/loading';
-import AppImages from '../../../assets/images/appImages';
-import { STATUSES, TRANSACTION_TYPES } from './transactionFilter';
-import { useIsFocused } from '@react-navigation/native';
-import moment from 'moment';
-import TransactionInfoModal from '../../components/v2/transactionInfoModal';
-import { APPLICATION_ADDRESS_NAME_MAP } from '../../constants/data';
-import { TransactionObj, TransactionType } from '../../constants/transactions';
-import { FlatList } from 'react-native';
-import { useTranslation } from 'react-i18next';
+import React, { memo, useContext, useEffect, useRef, useState } from "react";
+import { CyDFastImage, CyDText, CyDTouchView, CyDView } from "../../../styles/tailwindStyles";
+import AppImages from "../../../../assets/images/appImages";
+import { TransactionObj, TransactionType } from "../../../constants/transactions";
+import { useTranslation } from "react-i18next";
+import { HdWalletContext, formatAmount, getMaskedAddress } from "../../../core/util";
+import { APPLICATION_ADDRESS_NAME_MAP } from "../../../constants/data";
+import moment from "moment";
+import { useIsFocused } from "@react-navigation/native";
+import Loading from "../../../components/v2/loading";
+import TransactionInfoModal from "../components/transactionInfoModal";
+import { FlatList, NativeScrollEvent, NativeSyntheticEvent, RefreshControl, ScrollView } from "react-native";
+import axios from "../../../core/Http";
+import { hostWorker } from "../../../global";
+import { AnimatedTabView, OFFSET_TABVIEW } from "../animatedComponents";
+import { SharedValue } from "react-native-reanimated";
+import { H_BALANCE_BANNER } from "../constants";
+import TxnFilterModal, { STATUSES, TRANSACTION_TYPES } from "../components/TxnFilterModal";
 
-const ARCH_HOST: string = hostWorker.getHost('ARCH_HOST');
+interface TxnItemProps {
+  activity: TransactionObj
+  setTransactionInfoParams: (activity: TransactionObj) => void
+}
+
+type ScrollEvent = NativeSyntheticEvent<NativeScrollEvent>;
+
+interface TxnSceneProps {
+  routeKey: string;
+  scrollY: SharedValue<number>;
+  trackRef: (key: string, ref: FlatList<any> | ScrollView) => void;
+  onMomentumScrollBegin: (e: ScrollEvent) => void;
+  onMomentumScrollEnd: (e: ScrollEvent) => void;
+  onScrollEndDrag: (e: ScrollEvent) => void;
+  navigation: any,
+  filterModalVisibilityState: [boolean, React.Dispatch<React.SetStateAction<boolean>>]
+}
+
+const ARCH_HOST = hostWorker.getHost('ARCH_HOST');
 
 const getTransactionItemIcon = (type: string, status: string) => {
   switch (type) {
@@ -89,9 +109,7 @@ const getTransactionItemAmountDetails = (type: string, value: string, token: str
   return [formattedAmount, amountColor];
 };
 
-function TransactionItem(props: any) {
-  const activity: TransactionObj = props.activity;
-  const { setTransactionInfoParams } = props;
+function TransactionItem({ activity, setTransactionInfoParams }: TxnItemProps) {
   let transactionAddress = activity.to;
   if (APPLICATION_ADDRESS_NAME_MAP.has(transactionAddress)) {
     transactionAddress = APPLICATION_ADDRESS_NAME_MAP.get(transactionAddress) as string;
@@ -103,29 +121,45 @@ function TransactionItem(props: any) {
   const transactionIcon = getTransactionItemIcon(activity.type, activity.status);
   const title = activity.type ? activity?.type.charAt(0).toUpperCase() + activity.type.slice(1) : 'Unknown';
   return (
-    <CyDTouchView className='flex flex-1 flex-row items-center mb-[20px]'
+    <CyDTouchView className='flex flex-row items-center py-[10px] border-y-[0.5px] border-x border-sepratorColor pl-[10px] pr-[30px]'
       onPress={() => {
         setTransactionInfoParams(activity);
       }}
     >
       <CyDFastImage className='h-[25px] w-[25px]' resizeMode='contain' source={transactionIcon} />
-      <CyDView className='px-[10px] items-start justify-start'>
-        <CyDView className='flex flex-row justify-center items-center'>
-          <CyDText className='font-bold text-[16px]'>{title}</CyDText>
+      <CyDView className="flex flex-row justify-between">
+        <CyDView className='px-[10px] items-start justify-start'>
+          <CyDView className='flex flex-row justify-center items-center'>
+            <CyDText className='font-bold text-[16px]'>{title}</CyDText>
+          </CyDView>
+          <RenderTransactionItemDetails type={activity.type} from={activity.from} to={activity.to} />
         </CyDView>
-        <RenderTransactionItemDetails type={activity.type} from={activity.from} to={activity.to} />
-      </CyDView>
-      <CyDView className='flex flex-1 items-end self-end'>
-        <CyDText>{formatDate}</CyDText>
-        <CyDText numberOfLines={1} className={`${amountColour} mt-[3px]`}>{formattedAmount}</CyDText>
+        <CyDView className='flex flex-1 items-end self-end'>
+          <CyDText>{formatDate}</CyDText>
+          <CyDText numberOfLines={1} className={`${amountColour} mt-[3px]`}>{formattedAmount}</CyDText>
+        </CyDView>
       </CyDView>
     </CyDTouchView>
   );
 }
 
-export default function Transaction(props: { navigation: any, route?: { params: { filter: { types: string[], statuses: string[] } } } }) {
-  const { navigation, route } = props;
-  const filter = route?.params?.filter ?? { types: TRANSACTION_TYPES, statuses: STATUSES };
+const TxnScene = ({
+  routeKey,
+  scrollY,
+  trackRef,
+  onMomentumScrollBegin,
+  onMomentumScrollEnd,
+  onScrollEndDrag,
+  navigation,
+  filterModalVisibilityState,
+}: TxnSceneProps) => {
+  const isFocused = useIsFocused();
+  const hdWalletContext = useContext<any>(HdWalletContext);
+  const { address: ethereumAddress }: { address: string } = hdWalletContext.state.wallet.ethereum;
+  const getTransactionsUrl = `${ARCH_HOST}/v1/txn/transactions/${ethereumAddress}?descOrder=true&blockchain=`;
+
+  const [filter, setFilter] = useState({ types: TRANSACTION_TYPES, statuses: STATUSES });
+  const [transactions, setTransactions] = useState([]);
   const [showTransactionInfo, setShowTransactionInfo] = useState(false);
   const [transactionInfoParams, setTransactionInfoParams] = useState<{
     timestamp: string
@@ -146,29 +180,51 @@ export default function Transaction(props: { navigation: any, route?: { params: 
     status: string
   } | null>(null);
   const [transaction, setTransaction] = useState<any>([]);
-  const { t } = useTranslation();
-  const isFocused = useIsFocused();
-
-  const hdWalletContext = useContext<any>(HdWalletContext);
-  const { address: ethereumAddress }: { address: string } = hdWalletContext.state.wallet.ethereum;
-  const [transactions, setTransactions] = useState([]);
   const [isLoading, setIsLoading] = useState(true); // Add isLoading state
-  const getTransactionsUrl = `${ARCH_HOST}/v1/txn/transactions/${ethereumAddress}?descOrder=true&blockchain=`;
+  const [isRefreshing, setIsRefreshing] = useState(false);
+  const flatListRef = useRef<FlatList<any>>(null);
+
+
+  const fetchTxn = async () => {
+    try {
+      const response = await axios.get(getTransactionsUrl);
+      setTransactions(response.data.transactions);
+    } catch (error) {
+      console.error('Error fetching transactions:', error);
+    }
+    setIsLoading(false);
+  };
+
+  const onRefresh = async () => {
+    setIsRefreshing(true);
+    await fetchTxn();
+    setIsRefreshing(false);
+  };
 
   useEffect(() => {
-    async function fetchTransactions() {
-      try {
-        const response = await axios.get(getTransactionsUrl);
-        setTransactions(response.data.transactions);
-      } catch (error) {
-        console.error('Error fetching transactions:', error);
+    if (flatListRef.current) {
+      if (scrollY.value <= OFFSET_TABVIEW + H_BALANCE_BANNER) {
+        flatListRef.current.scrollToOffset({
+          offset: Math.max(
+            Math.min(scrollY.value, OFFSET_TABVIEW + H_BALANCE_BANNER),
+            OFFSET_TABVIEW
+          ),
+          animated: false,
+        });
+      } else {
+        flatListRef.current.scrollToOffset({
+          offset: OFFSET_TABVIEW + H_BALANCE_BANNER,
+          animated: false,
+        });
       }
-      setIsLoading(false); // Set isLoading to false after the data is fetched or in case of an error
+      trackRef(routeKey, flatListRef.current);
     }
+  }, [flatListRef.current, isLoading]);
 
+  useEffect(() => {
     if (isFocused) {
       setIsLoading(true); // Start loading when the component is focused
-      void fetchTransactions();
+      void fetchTxn(); // Set isLoading to false after the data is fetched or in case of an error
     }
   }, [isFocused]); // Call the effect only when the component is focused
 
@@ -182,19 +238,9 @@ export default function Transaction(props: { navigation: any, route?: { params: 
     if (!isLoading) {
       spliceTransactions(); // Process transaction when isLoading is false
     }
-  }, [isLoading]);
+  }, [isLoading, filter]);
 
-  useLayoutEffect(() => {
-    navigation.setOptions({
-      headerRight: () => (
-        <CyDTouchView onPress={() => navigation.navigate(C.screenTitle.TRANSACTION_FILTER)}>
-          <CyDImage className='w-[78px] h-[25px]' source={AppImages.ACTIVITY_FILTER} />
-        </CyDTouchView>
-      )
-    });
-  }, []);
-
-  const spliceTransactions = (): any => {
+  const spliceTransactions = () => {
     if (transactions.length === 0) {
       return [];
     }
@@ -222,15 +268,13 @@ export default function Transaction(props: { navigation: any, route?: { params: 
     }, {});
 
     const now = new Date();
-    const today = moment(now).format('MMM DD, YYYY');
     now.setDate(now.getDate() - 1);
-
-    const yesterday = moment(new Date(now)).format('MMM DD, YYYY');
 
     const tActivities = [];
     for (const date in activityByDate) {
-      const tDate = (date === today ? 'Today - ' : date === yesterday ? 'Yesterday - ' : '') + date;
-      tActivities.push({ dateString: tDate, entry: activityByDate[date] });
+      for (const activity of activityByDate[date]) {
+        tActivities.push(activity);
+      }
     }
     setTransaction(tActivities);
   };
@@ -258,47 +302,66 @@ export default function Transaction(props: { navigation: any, route?: { params: 
     });
   };
 
-  const NoTxnsFound = () => {
-    return (
-      <CyDView className='flex-1 items-center justify-center'>
-        <CyDView className='h-full flex flex-col items-center justify-center'>
-          <CyDImage className='h-[100px] w-[100px]' source={AppImages.NO_TRANSACTIONS} resizeMode='contain' />
-          <CyDText className='mt-2 text-primaryTextColor'>{ }</CyDText>
-        </CyDView>
-      </CyDView>
-    );
-  };
-
   if (isLoading) {
     return <Loading />;
   } else {
     return (
-      <CyDView>
+      <CyDView className="bg-white flex-1">
         <TransactionInfoModal
           setModalVisible={setShowTransactionInfo}
           isModalVisible={showTransactionInfo}
           params={transactionInfoParams}
           navigationRef={navigation}
         />
-        <FlatList
-          className='bg-white'
+        <TxnFilterModal
+          navigation={navigation}
+          modalVisibilityState={filterModalVisibilityState}
+          filterState={[filter, setFilter]}
+        />
+        <AnimatedTabView
+          onRef={flatListRef}
           data={transaction}
+          refreshControl={
+            <RefreshControl
+              refreshing={isRefreshing}
+              onRefresh={() => {
+                void onRefresh();
+              }}
+              progressViewOffset={H_BALANCE_BANNER}
+            />
+          }
           keyExtractor={(item, index) => index.toString()}
-          renderItem={({ item }) => (
-            <CyDView className='mx-[10px]'>
-              {item.entry.map((activity: TransactionObj, index: number) => (
-                <TransactionItem
-                  key={index}
-                  activity={activity}
-                  setTransactionInfoParams={showTransactionDetails}
-                />
-              ))}
-            </CyDView>
-          )}
+          renderItem={({ item, index }) => {
+            return (
+              <TransactionItem
+                key={index}
+                activity={item}
+                setTransactionInfoParams={showTransactionDetails}
+              />
+            );
+          }}
           ListEmptyComponent={<NoTxnsFound />}
+          scrollY={scrollY}
+          onScrollEndDrag={onScrollEndDrag}
+          onMomentumScrollBegin={onMomentumScrollBegin}
+          onMomentumScrollEnd={onMomentumScrollEnd}
         />
       </CyDView>
     );
-
   }
-}
+};
+
+
+const NoTxnsFound = () => {
+  const { t } = useTranslation();
+  return (
+    <CyDView className='flex-1 items-center justify-center'>
+      <CyDView className='h-full flex flex-col items-center justify-center'>
+        <CyDFastImage className='h-[100px] w-[100px]' source={AppImages.NO_TRANSACTIONS} resizeMode='contain' />
+        <CyDText className='mt-2 text-primaryTextColor'>{t('EMPTY_TRANSCATION_DETAIL_MSG')}</CyDText>
+      </CyDView>
+    </CyDView>
+  );
+};
+
+export default memo(TxnScene);

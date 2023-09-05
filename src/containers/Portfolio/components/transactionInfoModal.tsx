@@ -1,15 +1,15 @@
 import React, { useRef } from 'react';
 import { StyleSheet } from 'react-native';
-import CyDModalLayout from './modal';
-import { CyDImage, CyDText, CyDTouchView, CyDView } from '../../styles/tailwindStyles';
-import AppImages from './../../../assets/images/appImages';
-import { getMaskedAddress, copyToClipboard, formatAmount } from '../../core/util';
+import CyDModalLayout from '../../../components/v2/modal';
+import { CyDImage, CyDText, CyDTouchView, CyDView } from '../../../styles/tailwindStyles';
+import AppImages from '../../../../assets/images/appImages';
+import { getMaskedAddress, copyToClipboard, formatAmount } from '../../../core/util';
 import { useTranslation } from 'react-i18next';
 import clsx from 'clsx';
-import * as C from '../../constants';
-import { TransactionType } from '../../constants/transactions';
-import { APPLICATION_ADDRESS_NAME_MAP } from '../../constants/data';
-import { showToast } from '../../containers/utilities/toastUtility';
+import * as C from '../../../constants';
+import { TransactionType } from '../../../constants/transactions';
+import { APPLICATION_ADDRESS_NAME_MAP } from '../../../constants/data';
+import { showToast } from '../../utilities/toastUtility';
 
 export const chainExplorerMapping: Record<string, string> = {
   ETH: 'https://etherscan.io/tx/',
