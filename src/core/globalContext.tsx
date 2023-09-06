@@ -130,14 +130,14 @@ export const initialGlobalState: GlobalStateDef = {
     SHARDEUM_SPHINX: {
       primary: 'https://sphinx.shardeum.org/',
     },
-    ZKSYNC_ERA:{
-      primary: 'https://mainnet.era.zksync.io'
+    ZKSYNC_ERA: {
+      primary: 'https://mainnet.era.zksync.io',
     },
-    BASE:{
-      primary: 'https://1rpc.io/base'
+    BASE: {
+      primary: 'https://1rpc.io/base',
     },
-    POLYGON_ZKEVM:{
-      primary: 'https://rpc.ankr.com/polygon_zkevm'
+    POLYGON_ZKEVM: {
+      primary: 'https://rpc.ankr.com/polygon_zkevm',
     },
     STARGAZE: {
       otherUrls: {
@@ -307,6 +307,7 @@ export async function signIn(ethereum: {
   const web3 = new Web3();
   const ARCH_HOST: string = hostWorker.getHost('ARCH_HOST');
   try {
+    console.log('signIn');
     const { data } = await axios.get(
       `${ARCH_HOST}/v1/authentication/sign-message/${ethereum.address}`
     );
