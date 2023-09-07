@@ -25,7 +25,7 @@ import { RenderTransactionSignModal, RenderTypedTransactionSignModal } from './S
 import { getGasPriceFor } from '../../../containers/Browser/gasHelper';
 import { decideGasLimitBasedOnTypeOfToAddress } from '../../../core/NativeTransactionHandler';
 
-export default function SigningModal ({
+export default function SigningModal({
   payloadFrom,
   modalPayload,
   requestEvent,
@@ -35,9 +35,9 @@ export default function SigningModal ({
   const [handleWeb3] = useWeb3(Web3Origin.WALLETCONNECT);
   const { postWithAuth } = useAxios();
   const { showModal } = useGlobalModalContext();
-  const [acceptingRequest, setAcceptingRequest] = useState<boolean>(false);
-  const [rejectingRequest, setRejectingRequest] = useState<boolean>(false);
-  const [dataIsReady, setDataIsReady] = useState<boolean>(false); ;
+  const [acceptingRequest, setAcceptingRequest] = useState(false);
+  const [rejectingRequest, setRejectingRequest] = useState(false);
+  const [dataIsReady, setDataIsReady] = useState(false);
   const [nativeSendTxnData, setNativeSendTxnData] = useState<ISendTxnData | null>(null);
   const [decodedABIData, setDecodedABIData] = useState<IExtendedDecodedTxnResponse | IEvmosTxnMessage | null>(null);
   const globalContext = useContext<any>(GlobalContext);
@@ -90,7 +90,14 @@ export default function SigningModal ({
             setDecodedABIData({ ...data, from_addr: decodeTxnRequestBody.from });
             setDataIsReady(true);
           } else {
-            throw (error);
+            const errorObject = {
+              message: 'Decoding response isError is true. Showing raw data.',
+              error,
+              decodeTxnRequestBody
+            };
+            Sentry.captureException(errorObject);
+            setDecodedABIData({ from: decodeTxnRequestBody.from, to: decodeTxnRequestBody.to, data: decodeTxnRequestBody.data, gas: decodeTxnRequestBody.gas });
+            setDataIsReady(true);
           }
         } else {
           // Setting the data as it is for EVMOS
@@ -99,10 +106,13 @@ export default function SigningModal ({
         }
       } catch (e) {
         const errorObject = {
+          message: 'Decoding response caused an exception. Showing raw data.',
           error: e,
           decodeTxnRequestBody
         };
         Sentry.captureException(errorObject);
+        setDecodedABIData({ from: decodeTxnRequestBody.from, to: decodeTxnRequestBody.to, data: decodeTxnRequestBody.data, gas: decodeTxnRequestBody.gas });
+        setDataIsReady(true);
       }
     };
     const getDataForNativeTxn = async () => {
@@ -140,6 +150,8 @@ export default function SigningModal ({
           decodeTxnRequestBody
         };
         Sentry.captureException(errorObject);
+        setDecodedABIData({ from: decodeTxnRequestBody.from, to: decodeTxnRequestBody.to, data: decodeTxnRequestBody.data, gas: decodeTxnRequestBody.gas });
+        setDataIsReady(true);
       }
     };
     let paramsForDecoding: DecodeTxnRequestBody;
@@ -232,28 +244,28 @@ export default function SigningModal ({
   };
 
   return (
-    <CyDModalLayout setModalVisible={() => {}} isModalVisible={isModalVisible} style={styles.modalLayout} animationIn={'slideInUp'} animationOut={'slideOutDown'}>
+    <CyDModalLayout setModalVisible={() => { }} isModalVisible={isModalVisible} style={styles.modalLayout} animationIn={'slideInUp'} animationOut={'slideOutDown'}>
       <CyDView className='rounded-t-[24px] bg-white max-h-[90%]'>
         {(chain && method)
           ? <CyDView className='flex flex-col justify-between'>
-              <RenderTitle method={method} sendType={(decodedABIData as IExtendedDecodedTxnResponse)?.type} />
-              <CyDScrollView className='px-[25px] pb-[5px] max-h-[70%]'>
-                {(method === EIP155_SIGNING_METHODS.PERSONAL_SIGN || method === EIP155_SIGNING_METHODS.ETH_SIGN) && (payloadFrom === SigningModalPayloadFrom.WALLETCONNECT ? <RenderSignMessageModal dAppInfo={dAppInfo} chain={chain} method={method} messageParams={requestParams} /> : <RenderSignMessageModal dAppInfo={dAppInfo} chain={chain} method={method} messageParams={paramsFromPayload} />)}
-                {(method === EIP155_SIGNING_METHODS.ETH_SEND_RAW_TRANSACTION || method === EIP155_SIGNING_METHODS.ETH_SEND_TRANSACTION || method === EIP155_SIGNING_METHODS.ETH_SIGN_TRANSACTION) &&
-                  (dataIsReady
-                    ? <RenderTransactionSignModal dAppInfo={dAppInfo} chain={chain} method={method} data={decodedABIData} nativeSendTxnData={nativeSendTxnData} />
-                    : <Loader />
-                  )
-                }
-                {(method === EIP155_SIGNING_METHODS.ETH_SIGN_TYPED_DATA || method === EIP155_SIGNING_METHODS.ETH_SIGN_TYPED_DATA_V3 || method === EIP155_SIGNING_METHODS.ETH_SIGN_TYPED_DATA_V4) && <RenderTypedTransactionSignModal dAppInfo={dAppInfo} chain={chain} />}
-              </CyDScrollView>
-              <CyDView className={'w-full px-[25px]'}>
-                <Button loading={acceptingRequest} style={acceptingRequest ? 'mb-[10px] py-[7px]' : 'mb-[10px] py-[15px]'} title={renderAcceptTitle(method)} onPress={() => { void handleAccept(); void intercomAnalyticsLog('signModal_accept_click'); }}></Button>
-                <Button loading={rejectingRequest} style={rejectingRequest ? 'mb-[10px] py-[7px]' : 'mb-[10px] py-[15px]'} type={ButtonType.TERNARY} title='Reject' onPress={() => { void handleReject(); void intercomAnalyticsLog('signModal_reject_click'); }}></Button>
-              </CyDView>
+            <RenderTitle method={method} sendType={(decodedABIData as IExtendedDecodedTxnResponse)?.type} />
+            <CyDScrollView className='px-[25px] pb-[5px] max-h-[70%]'>
+              {(method === EIP155_SIGNING_METHODS.PERSONAL_SIGN || method === EIP155_SIGNING_METHODS.ETH_SIGN) && (payloadFrom === SigningModalPayloadFrom.WALLETCONNECT ? <RenderSignMessageModal dAppInfo={dAppInfo} chain={chain} method={method} messageParams={requestParams} /> : <RenderSignMessageModal dAppInfo={dAppInfo} chain={chain} method={method} messageParams={paramsFromPayload} />)}
+              {(method === EIP155_SIGNING_METHODS.ETH_SEND_RAW_TRANSACTION || method === EIP155_SIGNING_METHODS.ETH_SEND_TRANSACTION || method === EIP155_SIGNING_METHODS.ETH_SIGN_TRANSACTION) &&
+                (dataIsReady
+                  ? <RenderTransactionSignModal dAppInfo={dAppInfo} chain={chain} method={method} data={decodedABIData} nativeSendTxnData={nativeSendTxnData} />
+                  : <Loader />
+                )
+              }
+              {(method === EIP155_SIGNING_METHODS.ETH_SIGN_TYPED_DATA || method === EIP155_SIGNING_METHODS.ETH_SIGN_TYPED_DATA_V3 || method === EIP155_SIGNING_METHODS.ETH_SIGN_TYPED_DATA_V4) && <RenderTypedTransactionSignModal dAppInfo={dAppInfo} chain={chain} />}
+            </CyDScrollView>
+            <CyDView className={'w-full px-[25px]'}>
+              <Button loading={acceptingRequest} style={acceptingRequest ? 'mb-[10px] py-[7px]' : 'mb-[10px] py-[15px]'} title={renderAcceptTitle(method)} onPress={() => { void handleAccept(); void intercomAnalyticsLog('signModal_accept_click'); }}></Button>
+              <Button loading={rejectingRequest} style={rejectingRequest ? 'mb-[10px] py-[7px]' : 'mb-[10px] py-[15px]'} type={ButtonType.TERNARY} title='Reject' onPress={() => { void handleReject(); void intercomAnalyticsLog('signModal_reject_click'); }}></Button>
             </CyDView>
+          </CyDView>
           : <Loader />
-          }
+        }
         {!chain && showModal('state', { type: 'error', title: t('UNSUPPORTED_CHAIN'), description: t('UNSUPPORTED_CHAIN_DESCRIPTION'), onSuccess: handleReject, onFailure: handleReject })}
       </CyDView>
     </CyDModalLayout>
