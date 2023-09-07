@@ -839,7 +839,7 @@ export default function TokenStaking ({ tokenData, navigation }: { tokenData: To
                           </CyDView>
                           <Button onPress={() => {
                             isSignableTransaction(ActivityType.STAKE, onStake);
-                          }} title={t<string>('STAKE')} isPrivateKeyDependent = {true} style={'w-4/12 p-[4%]'} />
+                          }} title={t<string>('STAKE_TITLE')} isPrivateKeyDependent = {true} style={'w-4/12 p-[4%]'} />
                       </CyDView>
                       <CyDView className={'w-10/12 h-[1px] bg-[#F4F4F4] mx-[30px]'}></CyDView>
                   </CyDView>}
