@@ -354,7 +354,14 @@ export default function useWeb3 (origin: Web3Origin) {
         payload
       });
 
-      Sentry.captureException(e);
+      const errorObject = {
+        e,
+        origin,
+        websiteInfo,
+        payload: JSON.stringify(payload)
+      }
+
+      Sentry.captureException(errorObject);
       return internalError(e);
     }
   }
