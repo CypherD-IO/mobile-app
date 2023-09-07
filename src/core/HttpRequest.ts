@@ -122,7 +122,11 @@ export default function useAxios() {
         } else {
           shouldRetry = 2;
           Sentry.captureException(error);
-          return { isError: true, error: error?.response?.data.errors[0] ?? null , status:error?.response?.status  };
+          return {
+            isError: true,
+            error: error?.response?.data.errors[0] ?? null,
+            status: error?.response?.status,
+          };
         }
       }
     } while (shouldRetry < 2);

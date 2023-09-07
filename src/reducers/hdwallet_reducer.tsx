@@ -192,6 +192,7 @@ export function hdWalletStateReducer (state: any, action: any) {
     case 'RESET_WALLET' : {
       const resetWallet = initialHdWalletState;
       resetWallet.pinValue = state.pinValue;
+      resetWallet.wallet = wallet;
       return { ...resetWallet };
     }
 

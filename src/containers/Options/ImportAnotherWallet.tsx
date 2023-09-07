@@ -16,11 +16,14 @@ const {
 } = require('../../styles');
 
 export async function deleteThisWallet (hdWalletContext, activityContext, portfolioContext) {
-  await removeCredentialsFromKeychain();
-  await clearAllData();
-  hdWalletContext.dispatch({ type: 'FORGET_WALLET' });
-  activityContext.dispatch({ type: ActivityReducerAction.RESET });
-  portfolioContext.dispatchPortfolio({ type: 'RESET' });
+  return new Promise(async (resolve)=>{
+    await removeCredentialsFromKeychain();
+    await clearAllData();
+    hdWalletContext.dispatch({ type: 'FORGET_WALLET' });
+    activityContext.dispatch({ type: ActivityReducerAction.RESET });
+    portfolioContext.dispatchPortfolio({ type: 'RESET' });
+    resolve(true);
+  })
 };
 
 export default function ImportAnotherWallet (props) {

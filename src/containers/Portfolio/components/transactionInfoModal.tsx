@@ -7,9 +7,9 @@ import { getMaskedAddress, copyToClipboard, formatAmount } from '../../../core/u
 import { useTranslation } from 'react-i18next';
 import clsx from 'clsx';
 import * as C from '../../../constants';
-import { TransactionType } from '../../../constants/transactions';
-import { APPLICATION_ADDRESS_NAME_MAP } from '../../../constants/data';
 import { showToast } from '../../utilities/toastUtility';
+import { TransactionType } from '../../../constants/enum';
+import { APPLICATION_ADDRESS_NAME_MAP } from '../../../constants/data';
 
 export const chainExplorerMapping: Record<string, string> = {
   ETH: 'https://etherscan.io/tx/',
