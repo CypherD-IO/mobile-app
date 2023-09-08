@@ -204,8 +204,8 @@ export default function TransactionInfoModal({
         );
       } else {
         return (
-          <CyDView className={clsx('flex flex-row flex-wrap w-[100%] my-[3%] item-center justify-between')}>
-            <CyDView className='flex flex-row items-center ml-[20px]'>
+          <CyDView className={clsx('flex flex-row w-[100%] my-[3%] item-center justify-between')}>
+            <CyDView className='flex flex-row items-center ml-[20px] max-w-[65%]'>
               {tokenIcon
                 ? <CyDImage
                   source={{ uri: tokenIcon }}
@@ -215,20 +215,13 @@ export default function TransactionInfoModal({
                   source={AppImages.UNKNOWN_TXN_TOKEN}
                   className={'w-[25px] h-[25px]'}
                 />}
-              {token
-                ? (
-                  <CyDView className='flex flex-col'>
-                    <CyDText className=' text-[16px] ml-[10px] mt-[2px] font-bold text-activityFontColor'>{token}</CyDText>
-                    {blockchain && <CyDText className=' text-[12px] ml-[10px] mt-[2px]'>{chain}</CyDText>}
-                  </CyDView>
-                )
-                : <CyDView className='flex flex-col'>
-                  <CyDText className='text-[16px] ml-[10px] mt-[2px] font-bold text-activityFontColor'>{t('UNKNOWN')}</CyDText>
+                <CyDView className='flex flex-col'>
+                  <CyDText className='text-[16px] ml-[10px] mt-[2px] font-bold text-activityFontColor'>{token ? token : t('UNKNOWN')}</CyDText>
                   {blockchain && <CyDText className=' text-[12px] ml-[10px] mt-[2px]'>{chain}</CyDText>}
-                </CyDView>}
+                </CyDView>
             </CyDView>
-            <CyDView className='w-[40%] flex justify-center items-end pr-[18px]'>
-              <CyDText numberOfLines={1} className='text-[14px] font-bold text-activityFontColor'>{formatAmount(value)}</CyDText>
+            <CyDView className='max-w-[30%] flex justify-center items-end pr-[18px]'>
+              <CyDText className='text-[14px] font-bold text-activityFontColor'>{formatAmount(value)}</CyDText>
             </CyDView>
           </CyDView>
         );
@@ -256,7 +249,7 @@ export default function TransactionInfoModal({
           <CyDView className='flex mt-[5%] justify-center items-center '>
             <RenderTransactionHeader />
           </CyDView>
-          <CyDView className='flex flex-col px-[40px]' >
+          <CyDView className='flex flex-col px-[20px]' >
             <CyDView className='flex flex-row justify-start align-center'>
               <CyDView className='w-[100%] justify-between items-center bg-secondaryBackgroundColor rounded-[8px] my-[8px] py-[8px]'>
                 <RenderTransactionInfo />
