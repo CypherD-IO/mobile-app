@@ -9,7 +9,7 @@ import { web3wallet } from '../../../core/walletConnectV2Utils';
 import { getSdkError } from '@walletconnect/utils';
 import { t } from 'i18next';
 import { ButtonType } from '../../../constants/enum';
-import { CyDFastImage, CyDText, CyDView } from '../../../styles/tailwindStyles';
+import { CyDFastImage, CyDScrollView, CyDText, CyDView } from '../../../styles/tailwindStyles';
 import Button from '../button';
 import { WalletConnectActions, WalletConnectContext } from '../../../reducers/wallet_connect_reducer';
 import { HdWalletContext } from '../../../core/util';
@@ -25,7 +25,7 @@ interface PairingModalProps {
   hideModal: () => void
 }
 
-export default function PairingModal ({
+export default function PairingModal({
   currentProposal,
   currentETHAddress,
   isModalVisible,
@@ -184,25 +184,25 @@ export default function PairingModal ({
 
   const RenderMessage = () => {
     return (
-      <CyDView>
+      <CyDScrollView>
         <CyDText className={'text-[16px] ml-[6px]'}>{message}</CyDText>
-      </CyDView>
+      </CyDScrollView>
     );
   };
 
   return (
-    <CyDModalLayout setModalVisible={() => {}} isModalVisible={isModalVisible} style={styles.modalLayout} animationIn={'slideInUp'} animationOut={'slideOutDown'}>
-      <CyDView className='flex flex-col min-h-[45%] bg-white rounded-t-[50px] px-[40px]'>
-      <CyDView className={'flex flex-row justify-center'}>
+    <CyDModalLayout setModalVisible={() => { }} isModalVisible={isModalVisible} style={styles.modalLayout} animationIn={'slideInUp'} animationOut={'slideOutDown'}>
+      <CyDView className='flex flex-col max-h-[70%] bg-white rounded-t-[24px] px-[20px] '>
+        <CyDView className={'flex flex-row justify-center'}>
           <CyDText className={'text-[24px] font-extrabold mt-[14px] mb-[4px]'}>{t<string>('WALLET_PERMISSIONS')}</CyDText>
         </CyDView>
-        <CyDView>
+        <CyDView className='h-[50%]'>
           <RenderDAPPInfo />
           <Divider />
           <RenderMessage />
           <Divider />
         </CyDView>
-        <CyDView className={'w-full flex flex-1 justify-end pb-[20px]'}>
+        <CyDView className={'w-full flex justify-end'}>
           <Button loading={acceptingRequest} style={acceptingRequest ? 'mb-[10px] py-[7px]' : 'mb-[10px] py-[15px]'} title='Accept' onPress={() => void handleAccept()}></Button>
           <Button loading={rejectingRequest} style={rejectingRequest ? 'mb-[10px] py-[7px]' : 'mb-[10px] py-[15px]'} type={ButtonType.TERNARY} title='Reject' onPress={() => void handleReject()}></Button>
         </CyDView>

@@ -8,7 +8,6 @@ import AppImages from '../../../assets/images/appImages';
 import { HdWalletContext } from '../../core/util';
 import { showToast } from '../../containers/utilities/toastUtility';
 import { sendFirebaseEvent } from '../../containers/utilities/analyticsUtility';
-import { upperCase } from 'lodash';
 import {
   CyDImage,
   CyDText,
@@ -150,119 +149,6 @@ export const ButtonWithOutImage = ({
   );
 };
 
-export const AddressContainer = ({
-  chain,
-  wallet = { address: '' },
-  logo,
-  bGC,
-  mT = 6,
-  updateSections = (arg) => {},
-  comingSoon = false
-}) => {
-  const { t } = useTranslation();
-  const hdWalletContext = useContext<any>(HdWalletContext);
-
-  return (
-    <DynamicTouchView
-      dynamic
-      dynamicWidth
-      fD={'row'}
-      aLIT={'center'}
-      height={35}
-      width={80}
-      mT={mT}
-      mB={10}
-      disabled={comingSoon || wallet?.address === ''}
-      onPress={() => {
-        if (!comingSoon && wallet?.address !== '') {
-          copyToClipboard(wallet.address);
-          showToast(`${chain} ${t('ADDRESS_COPY_ALL_SMALL')}`);
-          sendFirebaseEvent(hdWalletContext, 'copy_address');
-        }
-        updateSections([]);
-      }}
-    >
-      <DynamicView dynamic dynamicHeightFix height={35} fD={'row'}>
-        <DynamicView
-          dynamic
-          dynamicHeightFix
-          dynamicWidthFix
-          width={30}
-          height={30}
-          aLIT="flex-start"
-          fD={'column'}
-          jC="center"
-          bGC={bGC}
-          bR={50}
-        >
-          <DynamicView
-            dynamic
-            dynamicWidthFix
-            width={30}
-            fD={'row'}
-            jC={'center'}
-          >
-            <DynamicImage dynamic source={logo} width={17} height={17} />
-          </DynamicView>
-        </DynamicView>
-        <DynamicView
-          dynamic
-          dynamicWidthFix
-          width={200}
-          dynamicHeightFix
-          height={35}
-          aLIT="flex-start"
-          fD={'column'}
-          jC="center"
-          pH={20}
-        >
-          <DynamicView
-            dynamic
-            dynamicWidthFix
-            width={160}
-            fD={'row'}
-            jC={'flex-start'}
-          >
-            {wallet?.address !== ''
-              ? (
-              <CText
-                dynamic
-                fF={C.fontsName.FONT_REGULAR}
-                fS={13}
-                color={Colors.primaryTextColor}
-              >
-                {comingSoon
-                  ? t('STARGAZE_COMING_SOON')
-                  : wallet === undefined
-                    ? 'Importing...'
-                    : wallet.address.substring(0, 8) +
-                    '...' +
-                    wallet.address.substring(wallet.address.length - 8)}
-              </CText>
-                )
-              : (
-              <CyDImage
-                source={AppImages.BLURRED_ADDRESS}
-                className="h-[45px] w-[145px]"
-                resizeMode="contain"
-              />
-                )}
-          </DynamicView>
-        </DynamicView>
-      </DynamicView>
-      {!comingSoon && wallet.address !== '' && (
-        <DynamicImage
-          dynamic
-          dynamicWidth
-          height={17}
-          width={17}
-          source={AppImages.ADDRESS_COPY}
-        />
-      )}
-    </DynamicTouchView>
-  );
-};
-
 export const AddressBookContainer = ({
   chain,
   wallet = { address: '' },
@@ -270,7 +156,7 @@ export const AddressBookContainer = ({
   logo,
   navigation,
   addressTypeQRCode
-}) => {
+}: {chain: string, wallet: {address: string}, bGC: string, logo: string, navigation: any, addressTypeQRCode: string}) => {
   const { t } = useTranslation();
   const hdWalletContext = useContext<any>(HdWalletContext);
 
@@ -288,7 +174,7 @@ export const AddressBookContainer = ({
           />
         </CyDView>
         <CyDView className="flex-wrap w-[90%]">
-          <CyDText className="font-bold">{upperCase(chain)}</CyDText>
+          <CyDText className="font-bold">{chain.toUpperCase()}</CyDText>
           {wallet?.address !== ''
             ? (
             <CyDText>

@@ -132,33 +132,51 @@ const PortfolioTokenItem = ({
             <CyDText className={'text-center mt-[5px] text-[12px] font-bold'}>{t<string>('FUND_CARD')}</CyDText>
         </CyDView>} */}
 
-        {isBridgeable && <CyDView>
-          <CyDTouchView className={'flex items-center justify-center mx-[15px]'}
-                        onPress={() => {
-                          navigation.navigate(screenTitle.BRIDGE_SCREEN, {
-                            fromChainData: tokenData,
-                            title: t('BRIDGE'),
-                            renderPage: 'bridgePage'
-                          });
-                        }}>
-            <CyDImage source={AppImages.BRIDGE_SHORTCUT} className={'w-[30px] h-[30px]'}/>
-          </CyDTouchView>
-          <CyDText className={'text-center mt-[5px] text-[12px] font-bold'}>{t<string>('BRIDGE')}</CyDText>
-        </CyDView>}
+        {isBridgeable && (
+          <CyDView>
+            <CyDTouchView
+              className={'flex items-center justify-center mx-[15px]'}
+              onPress={() => {
+                navigation.navigate(screenTitle.BRIDGE_SCREEN, {
+                  fromChainData: tokenData,
+                  title: t('BRIDGE'),
+                  renderPage: 'bridgePage',
+                });
+              }}
+            >
+              <CyDImage
+                source={AppImages.BRIDGE_SHORTCUT}
+                className={'w-[30px] h-[30px]'}
+              />
+            </CyDTouchView>
+            <CyDText className={'text-center mt-[5px] text-[12px] font-bold'}>
+              {t<string>('BRIDGE')}
+            </CyDText>
+          </CyDView>
+        )}
 
-        {isSwapable && <CyDView>
-          <CyDTouchView className={'flex items-center justify-center mx-[15px]'}
-                        onPress={() => {
-                          navigation.navigate(screenTitle.BRIDGE_SCREEN, {
-                            fromChainData: tokenData,
-                            title: t('SWAP_TITLE'),
-                            renderPage: 'swapPage',
-                          });
-                        }}>
-            <CyDImage source={AppImages.SWAP_SHORTCUT} className={'w-[30px] h-[30px]'}/>
-          </CyDTouchView>
-          <CyDText className={'text-center mt-[5px] text-[12px] font-bold'}>{t<string>('SWAP_TITLE')}</CyDText>
-        </CyDView>}
+        {isSwapable && (
+          <CyDView>
+            <CyDTouchView
+              className={'flex items-center justify-center mx-[15px]'}
+              onPress={() => {
+                navigation.navigate(screenTitle.BRIDGE_SCREEN, {
+                  fromChainData: tokenData,
+                  title: t('SWAP_TITLE'),
+                  renderPage: 'swapPage',
+                });
+              }}
+            >
+              <CyDImage
+                source={AppImages.SWAP_SHORTCUT}
+                className={'w-[30px] h-[30px]'}
+              />
+            </CyDTouchView>
+            <CyDText className={'text-center mt-[5px] text-[12px] font-bold'}>
+              {t<string>('SWAP_TITLE')}
+            </CyDText>
+          </CyDView>
+        )}
 
         <CyDView>
           <CyDTouchView
@@ -234,9 +252,9 @@ const PortfolioTokenItem = ({
           });
         }}
       >
-        <CyDView className='flex flex-row h-full mb-[10px] items-center rounded-r-[20px] self-center pl-[8px] pr-[10px]'>
+        <CyDView className='flex flex-row h-full mb-[10px] items-center rounded-r-[20px] self-center pl-[10px] pr-[10px]'>
           <CyDFastImage
-            className={'h-[45px] w-[45px] rounded-[50px]'}
+            className={'h-[36px] w-[36px] rounded-[50px]'}
             source={
               item?.logoUrl
                 ? {

@@ -14,7 +14,7 @@ import Button from '../button';
 import { EIP155_SIGNING_METHODS } from '../../../constants/EIP155Data';
 import { useGlobalModalContext } from '../GlobalModal';
 import useAxios from '../../../core/HttpRequest';
-import { formatAmount, getWeb3Endpoint } from '../../../core/util';
+import { HdWalletContext, formatAmount, getWeb3Endpoint } from '../../../core/util';
 import * as Sentry from '@sentry/react-native';
 import { intercomAnalyticsLog } from '../../../containers/utilities/analyticsUtility';
 import { GlobalContext } from '../../../core/globalContext';
@@ -39,6 +39,7 @@ export default function SigningModal({
   const [rejectingRequest, setRejectingRequest] = useState(false);
   const [dataIsReady, setDataIsReady] = useState(false);
   const [nativeSendTxnData, setNativeSendTxnData] = useState<ISendTxnData | null>(null);
+  const hdWalletContext = useContext<any>(HdWalletContext);;
   const [decodedABIData, setDecodedABIData] = useState<IExtendedDecodedTxnResponse | IEvmosTxnMessage | null>(null);
   const globalContext = useContext<any>(GlobalContext);
 
@@ -58,14 +59,20 @@ export default function SigningModal({
     chain = SUPPORTED_EVM_CHAINS.includes(+chainId) ? chainIdNumberMapping[+chainId] : undefined;
     if (chain) {
       web3RPCEndpoint = new Web3(getWeb3Endpoint(chain, globalContext));
+    }else{
+      showModal('state', { type: 'error', title: t('UNSUPPORTED_CHAIN'), description: t('UNSUPPORTED_CHAIN_DESCRIPTION'), onSuccess: handleReject, onFailure: handleReject })
     }
   } else { // The payload is from 'BROWSER'
     if (modalPayload) {
       ({ method, params: paramsFromPayload } = modalPayload.params.payload);
-      const chainIdNumber = modalPayload.params.chainIdNumber;
+      const chainIdNumber = hdWalletContext?.state.selectedChain.chainIdNumber;// modalPayload.params.chainIdNumber;
+      console.log('chainId', hdWalletContext?.state.selectedChain)
+      console.log('chainId', modalPayload.params);
       chain = SUPPORTED_EVM_CHAINS.includes(chainIdNumber) ? chainIdNumberMapping[chainIdNumber] : undefined;
       if (chain) {
         web3RPCEndpoint = new Web3(getWeb3Endpoint(chain, globalContext));
+      }else{
+        showModal('state', { type: 'error', title: t('UNSUPPORTED_CHAIN'), description: t('UNSUPPORTED_CHAIN_DESCRIPTION'), onSuccess: handleReject, onFailure: handleReject })
       }
     }
     // TODO: get the dAppInfo here as well.
@@ -147,10 +154,10 @@ export default function SigningModal({
       } catch (e) {
         const errorObject = {
           error: e,
-          decodeTxnRequestBody
+          paramsForDecoding
         };
         Sentry.captureException(errorObject);
-        setDecodedABIData({ from: decodeTxnRequestBody.from, to: decodeTxnRequestBody.to, data: decodeTxnRequestBody.data, gas: decodeTxnRequestBody.gas });
+        setDecodedABIData(paramsForDecoding);
         setDataIsReady(true);
       }
     };
@@ -191,7 +198,7 @@ export default function SigningModal({
     }
   }, [requestParams, paramsFromPayload]);
 
-  const handleAccept = async () => {
+  async function handleAccept(){
     if (payloadFrom === SigningModalPayloadFrom.WALLETCONNECT) {
       try {
         setAcceptingRequest(true);
@@ -210,7 +217,7 @@ export default function SigningModal({
     }
   };
 
-  const handleReject = async () => {
+  async function handleReject(){
     if (payloadFrom === SigningModalPayloadFrom.WALLETCONNECT) {
       const { id } = requestEvent;
       if (id) {
@@ -266,7 +273,6 @@ export default function SigningModal({
           </CyDView>
           : <Loader />
         }
-        {!chain && showModal('state', { type: 'error', title: t('UNSUPPORTED_CHAIN'), description: t('UNSUPPORTED_CHAIN_DESCRIPTION'), onSuccess: handleReject, onFailure: handleReject })}
       </CyDView>
     </CyDModalLayout>
   );
