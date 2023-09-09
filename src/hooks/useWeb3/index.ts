@@ -353,7 +353,6 @@ export default function useWeb3 (origin: Web3Origin) {
         websiteInfo,
         payload
       });
-
       const errorObject = {
         e,
         origin,
@@ -362,7 +361,7 @@ export default function useWeb3 (origin: Web3Origin) {
       }
 
       Sentry.captureException(errorObject);
-      return internalError(e);
+      throw(e);
     }
   }
 
