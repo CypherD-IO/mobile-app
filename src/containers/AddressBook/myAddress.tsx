@@ -3,7 +3,7 @@ import { useContext, useState } from 'react';
 import AppImages from '../../../assets/images/appImages';
 import SwitchView from '../../components/v2/switchView';
 import { AddressFunctionalityList } from '../../constants/enum';
-import { CHAIN_ARBITRUM, CHAIN_AVALANCHE, CHAIN_BSC, CHAIN_COSMOS, CHAIN_ETH, CHAIN_EVMOS, CHAIN_FTM, CHAIN_JUNO, CHAIN_OPTIMISM, CHAIN_OSMOSIS, CHAIN_POLYGON, CHAIN_SHARDEUM, CHAIN_STARGAZE, CHAIN_NOBLE, FundWalletAddressType, CHAIN_SHARDEUM_SPHINX } from '../../constants/server';
+import { CHAIN_ARBITRUM, CHAIN_AVALANCHE, CHAIN_BSC, CHAIN_COSMOS, CHAIN_ETH, CHAIN_EVMOS, CHAIN_FTM, CHAIN_JUNO, CHAIN_OPTIMISM, CHAIN_OSMOSIS, CHAIN_POLYGON, CHAIN_SHARDEUM, CHAIN_STARGAZE, CHAIN_NOBLE, FundWalletAddressType, CHAIN_SHARDEUM_SPHINX, CHAIN_ZKSYNC_ERA, CHAIN_BASE, CHAIN_POLYGON_ZKEVM } from '../../constants/server';
 import { HdWalletContext } from '../../core/util';
 import { CyDImage, CyDSafeAreaView, CyDScrollView, CyDTouchView, CyDView } from '../../styles/tailwindStyles';
 import { AddressBookContainer } from '../Auth/Share';
@@ -176,12 +176,30 @@ export function AddressBook ({ route, navigation }) {
           ></AddressBookContainer>
 
           <AddressBookContainer
-            chain={CHAIN_SHARDEUM.name}
+            chain={CHAIN_ZKSYNC_ERA.name}
             wallet={ethereum}
-            logo={AppImages.SHARDEUM}
-            bGC={'#fff0f0'}
+            logo={AppImages.ZKSYNC_ERA_LOGO}
+            bGC={'#f6f6f9'}
             navigation={navigation}
-            addressTypeQRCode={FundWalletAddressType.SHARDEUM}
+            addressTypeQRCode={FundWalletAddressType.ZKSYNC_ERA}
+          ></AddressBookContainer>
+
+          <AddressBookContainer
+            chain={CHAIN_BASE.name}
+            wallet={ethereum}
+            logo={AppImages.BASE_LOGO}
+            bGC={'#f1f4fa'}
+            navigation={navigation}
+            addressTypeQRCode={FundWalletAddressType.BASE}
+          ></AddressBookContainer>
+
+          <AddressBookContainer
+            chain={CHAIN_POLYGON_ZKEVM.name}
+            wallet={ethereum}
+            logo={AppImages.POLYGON_ZKEVM_LOGO}
+            bGC={'#f5efff'}
+            navigation={navigation}
+            addressTypeQRCode={FundWalletAddressType.POLYGON_ZKEVM}
           ></AddressBookContainer>
 
           <AddressBookContainer
