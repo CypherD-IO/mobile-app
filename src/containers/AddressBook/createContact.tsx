@@ -145,7 +145,22 @@ export const CreateContact = ({ route, navigation }: RouteProps) => {
       label: t(`${ChainNames.SHARDEUM_SPHINX.toUpperCase()} ADDRESS`),
       placeHolder: t('ETHEREUM_ADDRESS_PLACEHOLDER'),
       logo: AppImages.SHARDEUM
-    }
+    },
+    zksync_era: {
+      label: t(`${ChainNames.ZKSYNC_ERA.toUpperCase()} ADDRESS`),
+      placeHolder: t('ETHEREUM_ADDRESS_PLACEHOLDER'),
+      logo: AppImages.ZKSYNC_ERA_LOGO
+    },
+    polygon_zkevm: {
+      label: t(`${ChainNames.POLYGON_ZKEVM.toUpperCase()} ADDRESS`),
+      placeHolder: t('ETHEREUM_ADDRESS_PLACEHOLDER'),
+      logo: AppImages.POLYGON_ZKEVM_LOGO
+    },
+    base:{
+      label: t(`${ChainNames.BASE.toUpperCase()} ADDRESS`),
+      placeHolder: t('ETHEREUM_ADDRESS_PLACEHOLDER'),
+      logo: AppImages.BASE_LOGO
+    },
   };
 
   const validateAddress = (address: string | undefined, validator: (addr: string) => boolean) => {
@@ -183,7 +198,10 @@ export const CreateContact = ({ route, navigation }: RouteProps) => {
     fantom: yup.array().of(yup.string().test('isValidAddress', t('INVALID_ADDRESS'), (cosmos) => validateAddress(cosmos, isEthereumAddress))).test('isDuplicate', t('DUPLICATE_FOUND'), (addressList) => checkForDuplicates(addressList)),
     optimism: yup.array().of(yup.string().test('isValidAddress', t('INVALID_ADDRESS'), (cosmos) => validateAddress(cosmos, isEthereumAddress))).test('isDuplicate', t('DUPLICATE_FOUND'), (addressList) => checkForDuplicates(addressList)),
     arbitrum: yup.array().of(yup.string().test('isValidAddress', t('INVALID_ADDRESS'), (cosmos) => validateAddress(cosmos, isEthereumAddress))).test('isDuplicate', t('DUPLICATE_FOUND'), (addressList) => checkForDuplicates(addressList)),
-    shardeum: yup.array().of(yup.string().test('isValidAddress', t('INVALID_ADDRESS'), (cosmos) => validateAddress(cosmos, isEthereumAddress))).test('isDuplicate', t('DUPLICATE_FOUND'), (addressList) => checkForDuplicates(addressList))
+    shardeum: yup.array().of(yup.string().test('isValidAddress', t('INVALID_ADDRESS'), (cosmos) => validateAddress(cosmos, isEthereumAddress))).test('isDuplicate', t('DUPLICATE_FOUND'), (addressList) => checkForDuplicates(addressList)),
+    zksync_era: yup.array().of(yup.string().test('isValidAddress', t('INVALID_ADDRESS'), (cosmos) => validateAddress(cosmos, isEthereumAddress))).test('isDuplicate', t('DUPLICATE_FOUND'), (addressList) => checkForDuplicates(addressList)),
+    polygon_zkevm: yup.array().of(yup.string().test('isValidAddress', t('INVALID_ADDRESS'), (cosmos) => validateAddress(cosmos, isEthereumAddress))).test('isDuplicate', t('DUPLICATE_FOUND'), (addressList) => checkForDuplicates(addressList)),
+    base: yup.array().of(yup.string().test('isValidAddress', t('INVALID_ADDRESS'), (cosmos) => validateAddress(cosmos, isEthereumAddress))).test('isDuplicate', t('DUPLICATE_FOUND'), (addressList) => checkForDuplicates(addressList)),
   });
 
   const handleBackButton = () => {

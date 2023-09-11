@@ -15,4 +15,7 @@ export interface ContactInfo {
   noble?: string[]
   shardeum?: string[]
   shardeum_sphinx?: string[]
+  polygon_zkevm?:[]
+  zksync_era?:[]
+  base?:[]
 }
