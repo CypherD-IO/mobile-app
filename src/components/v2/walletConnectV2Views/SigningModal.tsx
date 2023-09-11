@@ -162,7 +162,7 @@ export default function SigningModal({
     };
     let paramsForDecoding: DecodeTxnRequestBody;
     if (payloadFrom === SigningModalPayloadFrom.WALLETCONNECT && requestParams) { paramsForDecoding = requestParams[0]; } else { paramsForDecoding = (paramsFromPayload as DecodeTxnRequestBody[])[0]; };
-    if (paramsForDecoding?.data && chain) {
+    if (paramsForDecoding?.data!== '0x' && chain) {
       if (method === EIP155_SIGNING_METHODS.ETH_SEND_TRANSACTION) {
         const { from, to, gas = '0x0', value = '0x0', data, nonce = '0x0', maxFeePerGas = '0x0', maxPriorityFeePerGas = '0x0' } = paramsForDecoding;
         decodeTxnRequestBody = {
