@@ -10,7 +10,7 @@ import { Dispatch } from 'react';
 import Toast from 'react-native-toast-message';
 import Web3 from 'web3';
 import AppImages from '../../../assets/images/appImages';
-import { CHAIN_ARBITRUM, CHAIN_AVALANCHE, CHAIN_BSC, CHAIN_ETH, CHAIN_EVMOS, CHAIN_FTM, CHAIN_OPTIMISM, CHAIN_OSMOSIS, CHAIN_POLYGON, CHAIN_SHARDEUM, CHAIN_SHARDEUM_SPHINX } from '../../constants/server';
+import { CHAIN_ARBITRUM, CHAIN_AVALANCHE, CHAIN_BASE, CHAIN_BSC, CHAIN_ETH, CHAIN_EVMOS, CHAIN_FTM, CHAIN_OPTIMISM, CHAIN_OSMOSIS, CHAIN_POLYGON, CHAIN_POLYGON_ZKEVM, CHAIN_SHARDEUM, CHAIN_SHARDEUM_SPHINX, CHAIN_ZKSYNC_ERA } from '../../constants/server';
 import { EVENTS, OSMOSIS_WALLET_CONNECT_METHODS, WEB3METHODS } from '../../constants/web3';
 import { hexToUint } from '../../core/Address';
 import { getMaskedAddress } from '../../core/util';
@@ -33,7 +33,11 @@ const SUPPORTED_CHAIN_ID_MAP = {
   42161: CHAIN_ARBITRUM,
   10: CHAIN_OPTIMISM,
   8081: CHAIN_SHARDEUM,
-  8082: CHAIN_SHARDEUM_SPHINX
+  8082: CHAIN_SHARDEUM_SPHINX,
+  8453: CHAIN_BASE,
+  1101: CHAIN_POLYGON_ZKEVM,
+  324: CHAIN_ZKSYNC_ERA
+
 };
 
 const SUPPORTED_CHAIN_ID = [
@@ -47,7 +51,10 @@ const SUPPORTED_CHAIN_ID = [
   CHAIN_ARBITRUM.chain_id,
   CHAIN_OPTIMISM.chain_id,
   CHAIN_SHARDEUM.chain_id,
-  CHAIN_SHARDEUM_SPHINX.chain_id
+  CHAIN_SHARDEUM_SPHINX.chain_id,
+  CHAIN_POLYGON_ZKEVM.chain_id,
+  CHAIN_ZKSYNC_ERA.chain_id,
+  CHAIN_BASE.chain_id
 ];
 
 const SUPPORTED_CHAIN_ID_NO = [
