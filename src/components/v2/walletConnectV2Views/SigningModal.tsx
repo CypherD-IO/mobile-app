@@ -44,6 +44,7 @@ export default function SigningModal({
   const globalContext = useContext<any>(GlobalContext);
 
   let id: number, topic: string, params: { request: { method: string | undefined, params: DecodeTxnRequestBody[] | undefined }, chainId: { split: (arg0: string) => [any, any] } }, method: string | undefined, requestParams: DecodeTxnRequestBody[] | undefined, paramsFromPayload: DecodeTxnRequestBody[] | undefined, requestSession, dAppInfo: IDAppInfo | undefined, chain: Chain | undefined, web3RPCEndpoint: Web3;
+  const isMessageModalForSigningTypedData = modalPayload?.params && 'signMessageTitle' in modalPayload.params;
 
   if (payloadFrom === SigningModalPayloadFrom.WALLETCONNECT) {
     ({ id, topic, params } = requestEvent);
@@ -59,19 +60,17 @@ export default function SigningModal({
     chain = SUPPORTED_EVM_CHAINS.includes(+chainId) ? chainIdNumberMapping[+chainId] : undefined;
     if (chain) {
       web3RPCEndpoint = new Web3(getWeb3Endpoint(chain, globalContext));
-    }else{
+    } else {
       showModal('state', { type: 'error', title: t('UNSUPPORTED_CHAIN'), description: t('UNSUPPORTED_CHAIN_DESCRIPTION'), onSuccess: handleReject, onFailure: handleReject })
     }
   } else { // The payload is from 'BROWSER'
     if (modalPayload) {
       ({ method, params: paramsFromPayload } = modalPayload.params.payload);
       const chainIdNumber = hdWalletContext?.state.selectedChain.chainIdNumber;// modalPayload.params.chainIdNumber;
-      console.log('chainId', hdWalletContext?.state.selectedChain)
-      console.log('chainId', modalPayload.params);
       chain = SUPPORTED_EVM_CHAINS.includes(chainIdNumber) ? chainIdNumberMapping[chainIdNumber] : undefined;
       if (chain) {
         web3RPCEndpoint = new Web3(getWeb3Endpoint(chain, globalContext));
-      }else{
+      } else {
         showModal('state', { type: 'error', title: t('UNSUPPORTED_CHAIN'), description: t('UNSUPPORTED_CHAIN_DESCRIPTION'), onSuccess: handleReject, onFailure: handleReject })
       }
     }
@@ -198,16 +197,20 @@ export default function SigningModal({
     }
   }, [requestParams, paramsFromPayload]);
 
-  async function handleAccept(){
+  async function handleAccept() {
     if (payloadFrom === SigningModalPayloadFrom.WALLETCONNECT) {
       try {
         setAcceptingRequest(true);
-        const response = await handleWeb3(params.request, { title: '', host: '', origin: '', url: '' }, chain);
-        const formattedRPCResponse = formatJsonRpcResult(id, response.result);
-        await web3wallet?.respondSessionRequest({
-          topic,
-          response: formattedRPCResponse
-        });
+        if (isMessageModalForSigningTypedData) {
+          modalPayload?.resolve(true);
+        } else {
+          const response = await handleWeb3(params.request, { title: '', host: '', origin: '', url: '' }, chain);
+          const formattedRPCResponse = formatJsonRpcResult(id, response.result);
+          await web3wallet?.respondSessionRequest({
+            topic,
+            response: formattedRPCResponse
+          });
+        }
         (hideModal as () => void)(); // Type asserting that hideModal cannot be undefined here.
       } catch (e) {
         (hideModal as () => void)(); // Type asserting that hideModal cannot be undefined here.
@@ -217,17 +220,21 @@ export default function SigningModal({
     }
   };
 
-  async function handleReject(){
+  async function handleReject() {
     if (payloadFrom === SigningModalPayloadFrom.WALLETCONNECT) {
       const { id } = requestEvent;
       if (id) {
         try {
           setRejectingRequest(true);
-          const rejectionResponse = formatJsonRpcError(id, getSdkError('USER_REJECTED_METHODS').message);
-          await web3wallet?.respondSessionRequest({
-            topic,
-            response: rejectionResponse
-          });
+          if (isMessageModalForSigningTypedData) {
+            modalPayload?.resolve(false);
+          } else {
+            const rejectionResponse = formatJsonRpcError(id, getSdkError('USER_REJECTED_METHODS').message);
+            await web3wallet?.respondSessionRequest({
+              topic,
+              response: rejectionResponse
+            });
+          }
           (hideModal as () => void)(); // Type asserting that hideModal cannot be undefined here.
         } catch (e) {
           (hideModal as () => void)(); // Type asserting that hideModal cannot be undefined here.
@@ -242,6 +249,9 @@ export default function SigningModal({
 
   const renderAcceptTitle = (method: string) => {
     if (method.toLowerCase().includes('typeddata')) {
+      if (isMessageModalForSigningTypedData) {
+        return 'Approve';
+      }
       return 'Review Request';
     } else if (method.toLowerCase().includes(EIP155_SIGNING_METHODS.PERSONAL_SIGN)) {
       return 'Sign';
@@ -264,7 +274,7 @@ export default function SigningModal({
                   : <Loader />
                 )
               }
-              {(method === EIP155_SIGNING_METHODS.ETH_SIGN_TYPED_DATA || method === EIP155_SIGNING_METHODS.ETH_SIGN_TYPED_DATA_V3 || method === EIP155_SIGNING_METHODS.ETH_SIGN_TYPED_DATA_V4) && <RenderTypedTransactionSignModal dAppInfo={dAppInfo} chain={chain} />}
+              {(method === EIP155_SIGNING_METHODS.ETH_SIGN_TYPED_DATA || method === EIP155_SIGNING_METHODS.ETH_SIGN_TYPED_DATA_V3 || method === EIP155_SIGNING_METHODS.ETH_SIGN_TYPED_DATA_V4) && (payloadFrom === SigningModalPayloadFrom.WALLETCONNECT ? <RenderTypedTransactionSignModal dAppInfo={dAppInfo} chain={chain} method={method} messageParams={requestParams} /> : <RenderTypedTransactionSignModal dAppInfo={dAppInfo} chain={chain} method={method} messageParams={paramsFromPayload} />)}
             </CyDScrollView>
             <CyDView className={'w-full px-[25px]'}>
               <Button loading={acceptingRequest} style={acceptingRequest ? 'mb-[10px] py-[7px]' : 'mb-[10px] py-[15px]'} title={renderAcceptTitle(method)} onPress={() => { void handleAccept(); void intercomAnalyticsLog('signModal_accept_click'); }}></Button>
