@@ -1,5 +1,5 @@
 import React from 'react';
-import { CyDFastImage, CyDText, CyDView } from '../../../../styles/tailwindStyles';
+import { CyDFastImage, CyDScrollView, CyDText, CyDView } from '../../../../styles/tailwindStyles';
 import { Chain } from '../../../../constants/server';
 import { EIP155_SIGNING_METHODS } from '../../../../constants/EIP155Data';
 import Web3 from 'web3';
@@ -8,7 +8,7 @@ import { IDAppInfo } from '../../../../models/signingModalData.interface';
 import EmptyView from '../../../EmptyView';
 import AppImages from '../../../../../assets/images/appImages';
 import { DecodedResponseTypes } from '../../../../constants/enum';
-const RenderDAPPInfo = ({ dAppInfo }: { dAppInfo: IDAppInfo}) => {
+const RenderDAPPInfo = ({ dAppInfo }: { dAppInfo: IDAppInfo }) => {
   return (
     <CyDView className='flex flex-row items-center mt-[12px] border-[1px] rounded-[12px] border-fadedGrey'>
       <CyDView className='flex flex-row rounded-r-[20px] self-center px-[10px]'>
@@ -34,7 +34,7 @@ const RenderDAPPInfo = ({ dAppInfo }: { dAppInfo: IDAppInfo}) => {
   );
 };
 
-const RenderNetwork = ({ chain }: {chain: Chain | undefined}) => {
+const RenderNetwork = ({ chain }: { chain: Chain | undefined }) => {
   if (!chain) {
     return <></>;
   }
@@ -53,7 +53,7 @@ const RenderNetwork = ({ chain }: {chain: Chain | undefined}) => {
   );
 };
 
-const RenderMethod = ({ method }: {method: string}) => {
+const RenderMethod = ({ method }: { method: string }) => {
   return (
     <CyDView>
       <CyDView>
@@ -68,23 +68,25 @@ const RenderMethod = ({ method }: {method: string}) => {
   );
 };
 
-const RenderMessage = ({ method, messageParams }: {method: string, messageParams: string}) => {
+const RenderMessage = ({ method, messageParams }: { method: string, messageParams: string }) => {
   let message = '';
   if (method === EIP155_SIGNING_METHODS.PERSONAL_SIGN) {
     message = Web3.utils.hexToUtf8(messageParams[0]);
   } else if (method === EIP155_SIGNING_METHODS.ETH_SIGN) {
     message = Web3.utils.hexToUtf8(messageParams[1]);
+  } else if (method === EIP155_SIGNING_METHODS.ETH_SIGN_TYPED_DATA || method === EIP155_SIGNING_METHODS.ETH_SIGN_TYPED_DATA_V3 || method === EIP155_SIGNING_METHODS.ETH_SIGN_TYPED_DATA_V4) {
+    message = JSON.stringify(JSON.parse(messageParams[1]), null, 2);
   }
   return (
     <CyDView>
       <CyDView>
         <CyDText className={'text-[18px] font-bold mb-[6px] ml-[4px]'}>{t('MESSAGE')}</CyDText>
       </CyDView>
-      <CyDView className={'my-[5px] border-[1px] border-sepratorColor bg-infoTextBackground rounded-[6px]'}>
+      <CyDScrollView className={'my-[5px] border-[1px] border-sepratorColor bg-infoTextBackground rounded-[6px]'}>
         <CyDView className={'p-[10px]'}>
           <CyDText className={'text-[15px] ml-[6px]'}>{message}</CyDText>
         </CyDView>
-      </CyDView>
+      </CyDScrollView>
     </CyDView>
   );
 };
@@ -109,7 +111,7 @@ const Loader = () => {
   );
 };
 
-const RenderTitle = ({ method, sendType }: {method: string, sendType: string}) => {
+const RenderTitle = ({ method, sendType }: { method: string, sendType: string }) => {
   let title = method;
   if (method === EIP155_SIGNING_METHODS.PERSONAL_SIGN || method === EIP155_SIGNING_METHODS.ETH_SIGN) {
     title = t<string>('SIGN_MESSAGE');
@@ -137,8 +139,8 @@ const RenderTitle = ({ method, sendType }: {method: string, sendType: string}) =
 
   return (
     <CyDView className={'flex flex-row justify-center'}>
-        <CyDText className={'text-[22px] font-extrabold mt-[14px] mb-[10px]'}>{title}</CyDText>
-      </CyDView>
+      <CyDText className={'text-[22px] font-extrabold mt-[14px] mb-[10px]'}>{title}</CyDText>
+    </CyDView>
   );
 };
 
