@@ -14,6 +14,7 @@ import {
 import CyDTokenValue from '../../../components/v2/tokenValue';
 import AppImages from '../../../../assets/images/appImages';
 import clsx from 'clsx';
+import { StyleSheet } from 'react-native';
 
 interface BannerProps {
   checkAllBalance: number | string;
@@ -38,15 +39,11 @@ export const Banner = ({ checkAllBalance }: BannerProps) => {
   return (
     <CyDImageBackground
       className={
-        'w-full border mt-[4px] pt-[30px] rounded-[24px] border-sepratorColor overflow-hidden'
+        'w-full border my-[4px] pt-[30px] rounded-[24px] border-sepratorColor overflow-hidden'
       }
       source={AppImages.PORTFOLIO_BG_S3}
       resizeMode='cover'
-      imageStyle={
-        {
-          top: -70
-        }
-      }
+      imageStyle={styles.imageBGStyle}
     >
       <CyDView
         className={'h-[50%] mx-[14px] justify-center items-start'}
@@ -100,3 +97,9 @@ export const Banner = ({ checkAllBalance }: BannerProps) => {
     </CyDImageBackground>
   );
 };
+
+const styles = StyleSheet.create({
+  imageBGStyle: {
+    top: -70
+  },
+});

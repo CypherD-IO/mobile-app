@@ -1,15 +1,15 @@
 import { Extrapolation, SharedValue, interpolate, useAnimatedStyle } from "react-native-reanimated";
-import { CyDAnimatedView, CyDText } from "../../../../styles/tailwindStyles";
-import React, { memo } from "react";
+import { CyDAnimatedView } from "../../../../styles/tailwindStyles";
+import React, { ReactNode, memo } from "react";
 
 interface CardCarouselItemProps {
-    item: any
     index: number
     boxWidth: number
     halfBoxDistance: number
     panX: SharedValue<number>
+    children: ReactNode
 }
-const CardCarouselItem = ({ item, index, boxWidth, halfBoxDistance, panX }: CardCarouselItemProps) => {
+const CardCarouselItem = ({ index, boxWidth, halfBoxDistance, panX, children }: CardCarouselItemProps) => {
     const animatedStyle = useAnimatedStyle(() => {
         const scale = interpolate(
             panX.value,
@@ -26,9 +26,9 @@ const CardCarouselItem = ({ item, index, boxWidth, halfBoxDistance, panX }: Card
         };
     });
     return (
-        <CyDAnimatedView className={'flex justify-center bg-privacyMessageBackgroundColor items-center border border-sepratorColor rounded-[8px]'}
+        <CyDAnimatedView className={'flex justify-center items-center'}
             style={[animatedStyle, { width: boxWidth }]}>
-            <CyDText>{item}</CyDText>
+            {children}
         </CyDAnimatedView>
     );
 };

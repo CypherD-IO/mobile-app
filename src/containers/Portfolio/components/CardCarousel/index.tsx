@@ -1,23 +1,29 @@
-import React, { memo } from 'react';
+import React, { ReactNode, memo, useState } from 'react';
 import { FlatList, StyleSheet } from 'react-native';
 import { useSharedValue } from 'react-native-reanimated';
 import CarouselItem from './CarouselItem';
 
-const CardCarousel = () => {
-    const [scrollViewWidth, setScrollViewWidth] = React.useState(0);
-    const boxWidth = scrollViewWidth * 0.8;
-    const boxDistance = scrollViewWidth / 1.25 - boxWidth;
+interface CardCarouselItemProps {
+    cards: ReactNode[]
+}
+
+const CardCarousel = ({ cards }: CardCarouselItemProps) => {
+    const [scrollViewWidth, setScrollViewWidth] = useState(0);
+    const boxWidth = scrollViewWidth * 0.85;
+    const boxDistance = scrollViewWidth / 1.15 - boxWidth;
     const halfBoxDistance = boxDistance / 2;
     const panX = useSharedValue(0);
 
-    const renderItem = ({ item, index }: { item: string | number, index: number }) => {
-        return <CarouselItem item={item} index={index} boxWidth={boxWidth} halfBoxDistance={halfBoxDistance} panX={panX} />;
+    const renderItem = ({ item, index }: { item: ReactNode, index: number }) => {
+        return <CarouselItem index={index} boxWidth={boxWidth} halfBoxDistance={halfBoxDistance} panX={panX}>
+            {item}
+        </CarouselItem>;
     };
 
     return (
         <FlatList
             horizontal
-            data={[1, 2, 3]}
+            data={cards}
             contentContainerStyle={styles.contentContainerStyle}
             contentInsetAdjustmentBehavior='never'
             snapToAlignment='center'
@@ -38,7 +44,7 @@ const CardCarousel = () => {
             onScroll={(e) => {
                 panX.value = e.nativeEvent.contentOffset.x;
             }}
-            keyExtractor={(item, index) => `${index}-${item}`}
+            keyExtractor={(item, index) => index.toString()}
             renderItem={renderItem}
         />
     );

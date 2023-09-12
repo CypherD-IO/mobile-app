@@ -2,7 +2,7 @@
  * @format
  * @flow
  */
-import React, { useCallback, useContext, useEffect, useState } from 'react';
+import React, { ReactNode, useCallback, useContext, useEffect, useState } from 'react';
 import { AppState, BackHandler, useWindowDimensions } from 'react-native';
 import analytics from '@react-native-firebase/analytics';
 import * as C from '../../constants/index';
@@ -48,6 +48,7 @@ import { HdWalletContext, PortfolioContext } from '../../core/util';
 import { useGlobalModalContext } from '../../components/v2/GlobalModal';
 import {
   GlobalContextType,
+  PendingActivityType,
   ScrollableType,
   TokenOverviewTabIndices,
 } from '../../constants/enum';
@@ -74,6 +75,7 @@ import clsx from 'clsx';
 import { isIOS } from '../../misc/checkers';
 import FilterBar from './components/FilterBar';
 import CardCarousel from './components/CardCarousel';
+import PendingActivityCard from './components/CardCarousel/PendingActivityCard';
 
 export interface PortfolioProps {
   navigation: any;
@@ -97,6 +99,8 @@ export default function Portfolio({ navigation }: PortfolioProps) {
     shouldRefreshAssets: false,
   });
   const [filterModalVisible, setFilterModalVisible] = useState(false);
+  const cards: ReactNode[] = [<PendingActivityCard pendingActivityType={PendingActivityType.BRIDGE} />,
+  <PendingActivityCard pendingActivityType={PendingActivityType.CARD} />];
 
   const tabs = [
     { key: 'token', title: t('TOKENS') },
@@ -699,7 +703,7 @@ export default function Portfolio({ navigation }: PortfolioProps) {
       />
       <AnimatedBanner scrollY={scrollY}>
         <Banner checkAllBalance={checkAll(portfolioState)} />
-        <CardCarousel />
+        <CardCarousel cards={cards} />
       </AnimatedBanner>
 
       <CyDView className={clsx('flex-1 pb-[40px]', { 'pb-[75px]': !isIOS() })}>
