@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { ReactNode } from 'react';
 import { CyDAnimatedView } from '../../../styles/tailwindStyles';
 import { H_BALANCE_BANNER, H_TAB_BAR, OFFSET_TABVIEW } from '../constants';
 import {
@@ -10,7 +10,7 @@ import {
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 export interface AnimatedBannerProps {
   scrollY: SharedValue<number>;
-  children: JSX.Element;
+  children: ReactNode;
 }
 
 export const AnimatedBanner = ({
