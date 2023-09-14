@@ -1,5 +1,5 @@
 import React, { memo, useContext, useEffect, useRef, useState } from "react";
-import { CyDFastImage, CyDText, CyDTouchView, CyDView } from "../../../styles/tailwindStyles";
+import { CyDFastImage, CyDText, CyDTextInput, CyDTouchView, CyDView } from "../../../styles/tailwindStyles";
 import AppImages from "../../../../assets/images/appImages";
 import { useTranslation } from "react-i18next";
 import { HdWalletContext, formatAmount, getMaskedAddress } from "../../../core/util";
@@ -19,6 +19,7 @@ import { TransactionType } from "../../../constants/enum";
 import { TransactionObj } from "../../../models/transaction.model";
 import { act } from "react-test-renderer";
 import { ChainConfigMapping } from "../../../constants/server";
+import clsx from "clsx";
 
 interface TxnItemProps {
   activity: TransactionObj
@@ -26,6 +27,8 @@ interface TxnItemProps {
 }
 
 type ScrollEvent = NativeSyntheticEvent<NativeScrollEvent>;
+
+let dateCheck: string;
 
 interface TxnSceneProps {
   routeKey: string;
@@ -133,44 +136,6 @@ const getTransactionItemAmountDetails = (type: string, value: string, token: str
 
   return [formattedAmount, amountColor];
 };
-
-function TransactionItem({ activity, setTransactionInfoParams }: TxnItemProps) {
-  let transactionAddress = activity.to;
-  const chain = activity.blockchain.toLowerCase();
-  const chainImg = ChainConfigMapping[chain].logo_url;
-  if (APPLICATION_ADDRESS_NAME_MAP.has(transactionAddress)) {
-    transactionAddress = APPLICATION_ADDRESS_NAME_MAP.get(transactionAddress) as string;
-  } else {
-    transactionAddress = getMaskedAddress(transactionAddress);
-  }
-  const formatDate = moment.unix(activity.timestamp).format('MMM DD, h:mm a');
-  const [formattedAmount, amountColour] = getTransactionItemAmountDetails(activity.type, activity.value, activity.token, activity.additionalData?.fromTokenValue ?? '', activity.additionalData?.fromToken ?? '');
-  const title = activity.type ? activity?.type.charAt(0).toUpperCase() + activity.type.slice(1) : 'Unknown';
-  return (
-    <CyDTouchView className='flex flex-row items-center py-[10px] border-y-[0.5px] border-x border-sepratorColor pl-[10px] pr-[30px]'
-      onPress={() => {
-        setTransactionInfoParams(activity);
-      }}
-    >
-      <GetTransactionItemIcon type={activity.type} status={activity.status} tokenIcon={activity.tokenIcon} fromTokenIcon={activity.additionalData?.fromTokenIcon} toTokenIcon={activity.additionalData?.toTokenIcon} />
-      <CyDView className="flex flex-row justify-between">
-        <CyDView className='px-[10px] items-start justify-start'>
-          <CyDView className='flex flex-row justify-center items-center'>
-            <CyDText className='font-bold text-[16px]'>{title}</CyDText>
-          </CyDView>
-          <CyDView className='flex flex-row justify-center items-center'>
-            <CyDFastImage className='h-[10px] w-[10px] mr-[5px]' resizeMode='contain' source={chainImg} />
-            <RenderTransactionItemDetails type={activity.type} from={activity.from} to={activity.to} />
-          </CyDView>
-        </CyDView>
-        <CyDView className='flex flex-1 items-end self-end'>
-          <CyDText>{formatDate}</CyDText>
-          <CyDText numberOfLines={1} className={`${amountColour} mt-[3px]`}>{formattedAmount}</CyDText>
-        </CyDView>
-      </CyDView>
-    </CyDTouchView>
-  );
-}
 
 const TxnScene = ({
   routeKey,
@@ -331,6 +296,55 @@ const TxnScene = ({
     });
   };
 
+  function TransactionItem({ activity, setTransactionInfoParams, index }: TxnItemProps) {
+    let transactionAddress = activity.to;
+    const chain = activity.blockchain.toLowerCase();
+    const chainImg = ChainConfigMapping[chain].logo_url;
+    if (APPLICATION_ADDRESS_NAME_MAP.has(transactionAddress)) {
+      transactionAddress = APPLICATION_ADDRESS_NAME_MAP.get(transactionAddress) as string;
+    } else {
+      transactionAddress = getMaskedAddress(transactionAddress);
+    }
+    const formatDate = moment.unix(activity.timestamp).format('h:mm a');
+    const formatedDay = moment.unix(activity.timestamp).format('MMM DD, YYYY');
+    const previousTransactionFormatedDay = index > 0 ? moment.unix(transaction[index-1].timestamp).format('MMM DD, YYYY'): '';
+    let shouldRenderDate= false;
+    if(formatedDay !== previousTransactionFormatedDay){
+       dateCheck = moment.unix(activity.timestamp).format('MMM DD, YYYY')
+       shouldRenderDate = true;
+    }
+    const [formattedAmount, amountColour] = getTransactionItemAmountDetails(activity.type, activity.value, activity.token, activity.additionalData?.fromTokenValue ?? '', activity.additionalData?.fromToken ?? '');
+    const title = activity.type ? activity?.type.charAt(0).toUpperCase() + activity.type.slice(1) : 'Unknown';
+    return (
+      <CyDView>
+      {shouldRenderDate && <CyDView className={clsx('border-b-[0.5px] border-sepratorColor pl-[10px] pr-[30px] py-[10px] justify-center', {'mt-[32px]': index!==0})}>
+        <CyDText className='font-bold text-[16px]'>{formatedDay}</CyDText>
+      </CyDView>}   
+      <CyDTouchView className='flex flex-row items-center py-[10px] border-b-[0.5px] border-x border-sepratorColor pl-[10px] pr-[30px]'
+      onPress={() => {
+        setTransactionInfoParams(activity);
+      }}
+    >
+      <GetTransactionItemIcon type={activity.type} status={activity.status} tokenIcon={activity.tokenIcon} fromTokenIcon={activity.additionalData?.fromTokenIcon} toTokenIcon={activity.additionalData?.toTokenIcon} />
+      <CyDView className="flex flex-row justify-between">
+        <CyDView className='px-[10px] items-start justify-start'>
+          <CyDView className='flex flex-row justify-center items-center'>
+            <CyDText className='font-bold text-[16px]'>{title}</CyDText>
+          </CyDView>
+          <CyDView className='flex flex-row justify-center items-center'>
+            <CyDFastImage className='h-[10px] w-[10px] mr-[5px]' resizeMode='contain' source={chainImg} />
+            <RenderTransactionItemDetails type={activity.type} from={activity.from} to={activity.to} />
+          </CyDView>
+        </CyDView>
+        <CyDView className='flex flex-1 items-end self-end'>
+          <CyDText>{formatDate}</CyDText>
+          <CyDText numberOfLines={1} className={`${amountColour} mt-[3px]`}>{formattedAmount}</CyDText>
+        </CyDView>
+      </CyDView>
+    </CyDTouchView></CyDView>
+    );
+  }
+
   if (isLoading) {
     return <Loading />;
   } else {
@@ -364,6 +378,7 @@ const TxnScene = ({
             return (
               <TransactionItem
                 key={index}
+                index={index}
                 activity={item}
                 setTransactionInfoParams={showTransactionDetails}
               />
