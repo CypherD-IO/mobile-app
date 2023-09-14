@@ -18,6 +18,7 @@ import {
   CosmosStakingTokens,
   ChainNameMapping,
   NativeTokenMapping,
+  CHAIN_ETH,
 } from '../../constants/server';
 import {
   ActivityContext,
@@ -71,7 +72,11 @@ import {
 } from '../../core/asyncStorage';
 import { genId } from '../utilities/activityUtilities';
 import { useGlobalModalContext } from '../../components/v2/GlobalModal';
-import { gasFeeReservation, nativeTokenMapping } from '../../constants/data';
+import {
+  MINIMUM_TRANSFER_AMOUNT_ETH,
+  gasFeeReservation,
+  nativeTokenMapping,
+} from '../../constants/data';
 import { bridgeQuoteCosmosInterface } from '../../models/bridgeQuoteCosmos.interface';
 import { BridgeDataCosmosInterface } from '../../models/bridgeDataCosmos.interface';
 import { BridgeTokenDataInterface } from '../../models/bridgeTokenData.interface';
@@ -127,8 +132,8 @@ export default function Bridge(props: { navigation?: any; route?: any }) {
   const [toChain, setToChain] = useState<Chain>();
   const [toToken, setToToken] = useState<BridgeTokenDataInterface>();
   const [chainListData, setChainListData] = useState(null);
+  let minAmountUSD = 10;
   const [minimumAmount, setMinimumAmount] = useState<number>(0);
-
   const [fromChainModalVisible, setFromChainModalVisible] =
     useState<boolean>(false);
   const [toChainModalVisible, setToChainModalVisible] =
@@ -290,6 +295,7 @@ export default function Bridge(props: { navigation?: any; route?: any }) {
         ChainBackendNames.NOBLE,
       ].includes(item.backendName)
     ) {
+      minAmountUSD = 10;
       const tempData: Chain[] = [];
       portfolioState.statePortfolio.tokenPortfolio[
         ChainNameMapping[item.backendName as ChainBackendNames]
@@ -302,18 +308,21 @@ export default function Bridge(props: { navigation?: any; route?: any }) {
         }
       });
       if (tempData.length) {
-        setMinimumAmount(10 / tempData[0].price);
+        setMinimumAmount(minAmountUSD / tempData[0].price);
         setFromTokenData(tempData);
-        if (!routeData?.fromChainData) {
-          setFromToken(tempData[0]);
-        }
+        setFromToken(tempData[0]);
       } else {
         setFromToken(undefined);
         setFromTokenData([]);
       }
     } else {
+      if (item.backendName === CHAIN_ETH.backendName) {
+        minAmountUSD = MINIMUM_TRANSFER_AMOUNT_ETH;
+      } else {
+        minAmountUSD = 10;
+      }
       setMinimumAmount(
-        10 /
+        minAmountUSD /
           portfolioState.statePortfolio.tokenPortfolio[
             ChainNameMapping[item.backendName]
           ]?.holdings[0].price
@@ -328,7 +337,7 @@ export default function Bridge(props: { navigation?: any; route?: any }) {
           holdingsToShow.push(holding);
         }
       }
-      if (holdingsToShow.length && !routeData?.fromChainData) {
+      if (holdingsToShow.length) {
         setFromToken(holdingsToShow[0]);
       } else if (!holdingsToShow.length) {
         setFromToken(undefined);
@@ -1045,10 +1054,13 @@ export default function Bridge(props: { navigation?: any; route?: any }) {
       if (routeData?.fromChainData) {
         const { fromChainData } = routeData;
         const tempData = { item: fromChainData.chainDetails };
+        if (fromChainData.chainDetails.backendName === CHAIN_ETH.backendName) {
+          minAmountUSD = MINIMUM_TRANSFER_AMOUNT_ETH;
+        }
         setFromChain(fromChainData.chainDetails);
         if (fromChainData.isMainnet) {
-          setFromToken(fromChainData);
           setFromChainFunction(tempData);
+          setFromToken(fromChainData);
         }
         if (
           swapSupportedChains.includes(
@@ -1064,7 +1076,7 @@ export default function Bridge(props: { navigation?: any; route?: any }) {
             )
           );
         }
-        setMinimumAmount(10 / fromChainData.price);
+        setMinimumAmount(minAmountUSD / fromChainData.price);
         setNativeTokenBalance(
           getNativeTokenBalance(
             (
@@ -1078,6 +1090,7 @@ export default function Bridge(props: { navigation?: any; route?: any }) {
         );
       } else {
         setLoading(true);
+        minAmountUSD = MINIMUM_TRANSFER_AMOUNT_ETH; // Change this to 10 if default chain is changed to any chain other than ETH
         setFromTokenData(
           portfolioState.statePortfolio.tokenPortfolio?.eth.holdings
         );
@@ -1085,7 +1098,7 @@ export default function Bridge(props: { navigation?: any; route?: any }) {
           portfolioState.statePortfolio.tokenPortfolio?.eth.holdings[0]
         );
         setMinimumAmount(
-          10 /
+          minAmountUSD /
             portfolioState.statePortfolio.tokenPortfolio?.eth.holdings[0].price
         );
         setNativeTokenBalance(
