@@ -709,7 +709,7 @@ const resources = {
       CARD_PIN_SET_HEADER: 'Your new pin has been set',
       CARD_PIN_SET_DESCRIPTION: 'Use your card with the new pin',
       CARD_SET_PIN_TO_USE_CARD: 'This pin will be used while making transactions with your card',
-      INSUFFICIENT_BALANCE_CARD: 'Amount that your trying to load is higher than your actual balance',
+      INSUFFICIENT_BALANCE_CARD: 'Amount that you are trying to load is higher than your actual balance',
       MAYBE_LATER: 'Maybe later',
       HOME: 'Home',
       HISTORY: 'History',
@@ -752,7 +752,8 @@ const resources = {
       APPLICATION: 'Application',
       STATUS: 'Status',
       RESET_ALL: 'Reset all',
-      TRANSACTIONS_FILTER: 'Transactions Filter'
+      TRANSACTIONS_FILTER: 'Transactions Filter',
+      MINIMUM_AMOUNT_ETH: 'Minimum amount to transfer in ethereum chain is $50'
     }
   }
 };
