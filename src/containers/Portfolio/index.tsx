@@ -33,7 +33,6 @@ import {
   PORTFOLIO_ERROR,
   PORTFOLIO_NEW_LOAD,
   PORTFOLIO_LOADING,
-  PortfolioState,
 } from '../../reducers/portfolio_reducer';
 import * as Sentry from '@sentry/react-native';
 import {
@@ -43,12 +42,11 @@ import {
   getHideBalanceStatus,
 } from '../../core/asyncStorage';
 import { useIsFocused } from '@react-navigation/native';
-import { GlobalContext, GlobalContextDef } from '../../core/globalContext';
-import { HdWalletContext, PortfolioContext } from '../../core/util';
+import { GlobalContext } from '../../core/globalContext';
+import { ActivityContext, HdWalletContext, PortfolioContext } from '../../core/util';
 import { useGlobalModalContext } from '../../components/v2/GlobalModal';
 import {
   GlobalContextType,
-  PendingActivityType,
   ScrollableType,
   TokenOverviewTabIndices,
 } from '../../constants/enum';
@@ -64,7 +62,6 @@ import {
   TabRoute,
   RefreshTimerBar,
 } from './components';
-import { HdWalletContextDef } from '../../reducers/hdwallet_reducer';
 import { BarCodeReadEvent } from 'react-native-camera';
 import { AnimatedBanner, AnimatedTabBar } from './animatedComponents';
 import { useScrollManager } from '../../hooks/useScrollManager';
@@ -76,19 +73,43 @@ import { isIOS } from '../../misc/checkers';
 import FilterBar from './components/FilterBar';
 import CardCarousel from './components/CardCarousel';
 import PendingActivityCard from './components/CardCarousel/PendingActivityCard';
+import { ActivityAny, ActivityReducerAction, ActivityStatus, ActivityType, DebitCardTransaction, ExchangeTransaction } from '../../reducers/activity_reducer';
+import { ACTIVITIES_REFRESH_TIMEOUT } from '../../constants/timeOuts';
+import { hostWorker } from '../../global';
+import axios from 'axios';
+import { showToast } from '../utilities/toastUtility';
 
 export interface PortfolioProps {
   navigation: any;
 }
 
+const ARCH_HOST = hostWorker.getHost('ARCH_HOST');
+
 export default function Portfolio({ navigation }: PortfolioProps) {
   const { t } = useTranslation();
   const isFocused = useIsFocused();
 
-  const globalStateContext = useContext<GlobalContextDef | null>(GlobalContext);
-  const hdWallet = useContext<HdWalletContextDef | null>(HdWalletContext);
-  const portfolioState = useContext<PortfolioState | any>(PortfolioContext);
+  const globalStateContext = useContext(GlobalContext);
+  const hdWallet = useContext(HdWalletContext);
+  const portfolioState = useContext(PortfolioContext);
+  const activityContext = useContext(ActivityContext);
   const { showModal, hideModal } = useGlobalModalContext();
+
+  const getPendingActivities = () => {
+    const allActivities = activityContext?.state.activityObjects;
+    if (allActivities?.length === 0) {
+      return [];
+    }
+    const pendingCardsAndBridges: ActivityAny[] = [];
+    allActivities?.forEach(activity => {
+      if (activity?.type && [ActivityType.BRIDGE, ActivityType.CARD].includes(activity.type)) {
+        if ([ActivityStatus.DELAYED, ActivityStatus.INPROCESS, ActivityStatus.PENDING].includes(activity.status)) {
+          pendingCardsAndBridges.push(activity);
+        }
+      }
+    });
+    return pendingCardsAndBridges;
+  };
 
   const [chooseChain, setChooseChain] = useState<boolean>(false);
   const [isVerifyCoinChecked, setIsVerifyCoinChecked] = useState<boolean>(true);
@@ -99,8 +120,7 @@ export default function Portfolio({ navigation }: PortfolioProps) {
     shouldRefreshAssets: false,
   });
   const [filterModalVisible, setFilterModalVisible] = useState(false);
-  const cards: ReactNode[] = [<PendingActivityCard pendingActivityType={PendingActivityType.BRIDGE} />,
-  <PendingActivityCard pendingActivityType={PendingActivityType.CARD} />];
+  const [cards, setCards] = useState<ReactNode[]>([]);
 
   const tabs = [
     { key: 'token', title: t('TOKENS') },
@@ -136,6 +156,121 @@ export default function Portfolio({ navigation }: PortfolioProps) {
       }
     }
   };
+
+  const getUpdatedActivityStatus = (status: string) => {
+    switch (status) {
+      case 'COMPLETED':
+        return ActivityStatus.SUCCESS;
+      case 'DELAYED':
+        return ActivityStatus.DELAYED;
+      case 'IN_PROGRESS':
+        return ActivityStatus.INPROCESS;
+      case 'PENDING':
+        return ActivityStatus.PENDING;
+      case 'FAILED':
+        return ActivityStatus.FAILED;
+      default:
+        return ActivityStatus.SUCCESS;
+    }
+  };
+
+  const updateStatusForCardOrBridge = async (activity: ActivityAny) => {
+    const currentActivityStatus = activity.status;
+    const activityQuoteId = (activity as ExchangeTransaction | DebitCardTransaction).quoteId;
+    if (currentActivityStatus === ActivityStatus.INPROCESS || currentActivityStatus === ActivityStatus.DELAYED || currentActivityStatus === ActivityStatus.PENDING && activityQuoteId) {
+      const uri = `${ARCH_HOST}/v1/activities/status/${activity.type}/${activityQuoteId}`;
+      try {
+        const res = await axios.get(uri, { timeout: 3000 });
+        const { data: { activityStatus: { status, quoteId } } }: { data: { activityStatus: { status: string, quoteId: string } } } = res;
+        if (quoteId === activityQuoteId) {
+          const updatedStatus = getUpdatedActivityStatus(status);
+          if (currentActivityStatus !== updatedStatus) {
+            if (updatedStatus === ActivityStatus.SUCCESS) {
+              activityContext?.dispatch({
+                type: ActivityReducerAction.PATCH,
+                value: {
+                  id: activity.id,
+                  status: updatedStatus,
+                }
+              });
+            }
+          }
+          const returnActivity = activity;
+          returnActivity.status = updatedStatus;
+          return returnActivity;
+        } else {
+          throw new Error(`Mismatch in quoteIds: ${activityQuoteId} and ${quoteId} or status: ${status}.`);
+        }
+      } catch (e) {
+        const errorObject = {
+          e,
+          activity,
+          message: 'Error when updating status for Card or Bridge in Portfolio.'
+        };
+        Sentry.captureException(errorObject);
+      }
+    }
+    return activity;
+  };
+
+  useEffect(() => {
+    const checkActivities = async () => {
+      const pendingActivities = getPendingActivities();
+      const cardsToSet: ReactNode[] = [];
+      if (pendingActivities.length === 0) {
+        clearInterval(refreshActivityInterval);
+        void refresh();
+        // To show completion and flush the cards in a while.
+        setTimeout(() => {
+          setCards([]);
+        }, 5000);
+      } else {
+        for (const pa of pendingActivities) {
+          const updatedActivity = await updateStatusForCardOrBridge(pa);
+          if (pa.status !== updatedActivity.status) {
+            if (updatedActivity.status === ActivityStatus.SUCCESS) {
+              showToast(`${pa.type} activity complete.`);
+            }
+          }
+          if (pa.type === ActivityType.BRIDGE) {
+            const { fromChain, fromSymbol, fromTokenAmount, toChain, toSymbol, toTokenAmount } = updatedActivity as ExchangeTransaction;
+            cardsToSet.push(<PendingActivityCard
+              type={updatedActivity.type}
+              status={updatedActivity.status}
+              bridgePayload={{
+                fromChain,
+                fromSymbol,
+                fromTokenAmount,
+                toChain,
+                toSymbol,
+                toTokenAmount,
+              }}
+            />);
+          } else if (pa.type === ActivityType.CARD) {
+            const { amount, amountInUsd, tokenSymbol } = updatedActivity as DebitCardTransaction;
+            cardsToSet.push(<PendingActivityCard
+              type={updatedActivity.type}
+              status={updatedActivity.status}
+              cardPayload={{
+                amount,
+                amountInUsd,
+                tokenSymbol,
+              }}
+            />);
+          }
+        }
+        setCards(cardsToSet);
+      }
+    };
+    const refreshActivityInterval = setInterval(() => {
+      void checkActivities();
+    }, ACTIVITIES_REFRESH_TIMEOUT);
+
+    return () => {
+      clearInterval(refreshActivityInterval);
+    };
+  }, [activityContext?.state.activityObjects, isFocused]);
+
 
   useEffect(() => {
     const subscription = AppState.addEventListener('change', appHandler);

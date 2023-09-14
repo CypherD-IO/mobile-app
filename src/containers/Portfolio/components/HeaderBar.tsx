@@ -29,26 +29,26 @@ export const HeaderBar = ({ navigation, setChooseChain, scrollY, onWCSuccess, re
 
   const onSuccess = onWCSuccess;
   return (
-      <CyDView className={'z-20 flex flex-row mx-[20px] justify-between items-center bg-white'}>
-        <CyDTouchView onPress={() => { setChooseChain(true); }} className={'h-[40px] w-[54px] bg-chainColor px-[8px] py-[4px] rounded-[18px] flex flex-row items-center justify-between border border-sepratorColor'}>
-          <CyDFastImage className={'h-[22px] w-[22px]'} source={portfolioState.statePortfolio.selectedChain.logo_url} />
-          <CyDFastImage className={'h-[8px] w-[8px]'} source={AppImages.DOWN} />
-        </CyDTouchView>
-        <CyDAnimatedView style={opacity}>
-          {renderTitleComponent}
-        </CyDAnimatedView>
-        <CyDTouchView
+    <CyDView className={'z-20 flex flex-row mx-[20px] justify-between items-center bg-white'}>
+      <CyDTouchView onPress={() => { setChooseChain(true); }} className={'h-[40px] w-[54px] bg-chainColor px-[8px] py-[4px] rounded-[18px] flex flex-row items-center justify-between border border-sepratorColor'}>
+        <CyDFastImage className={'h-[22px] w-[22px]'} source={portfolioState.statePortfolio.selectedChain.logo_url} />
+        <CyDFastImage className={'h-[8px] w-[8px]'} source={AppImages.DOWN} />
+      </CyDTouchView>
+      <CyDAnimatedView style={opacity}>
+        {renderTitleComponent}
+      </CyDAnimatedView>
+      <CyDTouchView
         className={'pl-[8px] rounded-[18px]'}
-          onPress={() => {
-            navigation.navigate(screenTitle.QR_CODE_SCANNER, {
-              navigation,
-              fromPage: QRScannerScreens.WALLET_CONNECT,
-              onSuccess
-            });
-          }}
-        >
-          <CyDFastImage source={AppImages.QR_CODE_SCANNER_BLACK} className={'h-[23px] w-[23px] mt-[5px]'} resizeMode='contain'/>
-        </CyDTouchView>
-      </CyDView>
+        onPress={() => {
+          navigation.navigate(screenTitle.QR_CODE_SCANNER, {
+            navigation,
+            fromPage: QRScannerScreens.WALLET_CONNECT,
+            onSuccess
+          });
+        }}
+      >
+        <CyDFastImage source={AppImages.QR_CODE_SCANNER_BLACK} className={'h-[23px] w-[23px] mt-[5px]'} resizeMode='contain' />
+      </CyDTouchView>
+    </CyDView>
   );
 };

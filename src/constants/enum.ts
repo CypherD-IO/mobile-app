@@ -247,8 +247,3 @@ export enum ApplicationName {
   HOP = 'Hop',
   WORM_HOLE = 'WormHole',
 }
-
-export enum PendingActivityType {
-  BRIDGE = 'bridge',
-  CARD = 'card'
-}

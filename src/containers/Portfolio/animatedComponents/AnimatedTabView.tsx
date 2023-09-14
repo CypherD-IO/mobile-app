@@ -4,8 +4,6 @@ import {
   ListRenderItem,
   Platform,
   ScrollViewProps,
-  StyleSheet,
-  ViewToken,
 } from 'react-native';
 import Animated, {
   SharedValue,

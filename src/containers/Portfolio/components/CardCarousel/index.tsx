@@ -10,7 +10,7 @@ interface CardCarouselItemProps {
 const CardCarousel = ({ cards }: CardCarouselItemProps) => {
     const [scrollViewWidth, setScrollViewWidth] = useState(0);
     const boxWidth = scrollViewWidth * 0.85;
-    const boxDistance = scrollViewWidth / 1.15 - boxWidth;
+    const boxDistance = scrollViewWidth / 1.175 - boxWidth;
     const halfBoxDistance = boxDistance / 2;
     const panX = useSharedValue(0);
 
