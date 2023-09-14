@@ -337,8 +337,8 @@ const TxnScene = ({
           </CyDView>
         </CyDView>
         <CyDView className='flex flex-1 items-end self-end'>
-          <CyDText>{formatDate}</CyDText>
           <CyDText numberOfLines={1} className={`${amountColour} mt-[3px]`}>{formattedAmount}</CyDText>
+          <CyDText>{formatDate}</CyDText>
         </CyDView>
       </CyDView>
     </CyDTouchView></CyDView>
