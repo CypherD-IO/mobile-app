@@ -45,10 +45,10 @@ const GetTransactionItemIcon = ({type,status,tokenIcon,fromTokenIcon,toTokenIcon
   switch (type) {
     case TransactionType.SEND:
       transactionIcon =  status === 'completed' ? (tokenIcon ? { uri: tokenIcon } : AppImages.UNKNOWN_TXN_TOKEN) : AppImages.TXN_SEND_ERROR;
-      return (<CyDFastImage className='h-[25px] w-[25px]' resizeMode='contain' source={transactionIcon} />)
+      return (<CyDFastImage className='h-[25px] w-[25px] rounded-[8px]' resizeMode='contain' source={transactionIcon} />)
     case TransactionType.RECEIVE:
       transactionIcon =  status === 'completed' ? (tokenIcon ? { uri: tokenIcon } :AppImages.UNKNOWN_TXN_TOKEN) : AppImages.TXN_RECEIVE_ERROR;
-      return (<CyDFastImage className='h-[25px] w-[25px]' resizeMode='contain' source={transactionIcon} />)
+      return (<CyDFastImage className='h-[25px] w-[25px] rounded-[8px]' resizeMode='contain' source={transactionIcon} />)
     case TransactionType.SWAP:
       const fromTokenImg = fromTokenIcon ? { uri: fromTokenIcon } : AppImages.UNKNOWN_TXN_TOKEN;
       const toTokenImg = toTokenIcon ? { uri: toTokenIcon } : AppImages.UNKNOWN_TXN_TOKEN;
@@ -70,10 +70,10 @@ const GetTransactionItemIcon = ({type,status,tokenIcon,fromTokenIcon,toTokenIcon
       
     case TransactionType.SELF:
       transactionIcon =  status === 'completed' ? AppImages.TXN_SELF_SUCCESS : AppImages.TXN_SELF_ERROR;
-      return (<CyDFastImage className='h-[25px] w-[25px]' resizeMode='contain' source={transactionIcon} />)
+      return (<CyDFastImage className='h-[25px] w-[25px] rounded-[8px]' resizeMode='contain' source={transactionIcon} />)
     default:
       transactionIcon = status === 'completed' ? AppImages.TXN_DEFAULT_SUCCESS : AppImages.TXN_DEFAULT_ERROR;
-      return (<CyDFastImage className='h-[25px] w-[25px]' resizeMode='contain' source={transactionIcon} />)
+      return (<CyDFastImage className='h-[25px] w-[25px] rounded-[8px]' resizeMode='contain' source={transactionIcon} />)
   }
 };
 
