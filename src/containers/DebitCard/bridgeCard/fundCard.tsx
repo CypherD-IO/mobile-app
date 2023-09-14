@@ -345,7 +345,7 @@ export default function BridgeFundCardScreen ({ route }: {route: any}) {
         }
       } else {
         Sentry.captureException(response.error);
-        showModal('state', { type: 'error', title: response.error.message.includes('minimum amount') ? t('INSUFFICIENT_FUNDS') :'', description: response.error.message ?? t('UNABLE_TO_TRANSFER'), onSuccess: hideModal, onFailure: hideModal });
+        showModal('state', { type: 'error', title: response?.error?.message?.includes('minimum amount') ? t('INSUFFICIENT_FUNDS') :'', description: response.error.message ?? t('UNABLE_TO_TRANSFER'), onSuccess: hideModal, onFailure: hideModal });
         setLoading(false);
       }
     } else if (COSMOS_CHAINS.includes(chainName)) {
