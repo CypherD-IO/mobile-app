@@ -222,11 +222,6 @@ const TxnScene = ({
     }
   }, [isFocused]); // Call the effect only when the component is focused
 
-  useEffect(() => {
-    if (transactionInfoParams !== null) {
-      setShowTransactionInfo(true);
-    }
-  }, [transactionInfoParams]);
 
   useEffect(() => {
     if (!isLoading) {
@@ -294,6 +289,8 @@ const TxnScene = ({
       toTokenIcon: activity.additionalData?.toTokenIcon ?? null,
       status: activity.status
     });
+
+    setShowTransactionInfo(true);
   };
 
   function TransactionItem({ activity, setTransactionInfoParams, index }: TxnItemProps) {
@@ -308,6 +305,8 @@ const TxnScene = ({
     const formatDate = moment.unix(activity.timestamp).format('h:mm a');
     const formatedDay = moment.unix(activity.timestamp).format('MMM DD, YYYY');
     const previousTransactionFormatedDay = index > 0 ? moment.unix(transaction[index-1].timestamp).format('MMM DD, YYYY'): '';
+    const nextTransactionFormatedDay = transaction[index+1]  ? moment.unix(transaction[index+1].timestamp).format('MMM DD, YYYY'): '';
+
     let shouldRenderDate= false;
     if(formatedDay !== previousTransactionFormatedDay){
        dateCheck = moment.unix(activity.timestamp).format('MMM DD, YYYY')
@@ -317,10 +316,10 @@ const TxnScene = ({
     const title = activity.type ? activity?.type.charAt(0).toUpperCase() + activity.type.slice(1) : 'Unknown';
     return (
       <CyDView>
-      {shouldRenderDate && <CyDView className={clsx('border-b-[0.5px] border-sepratorColor pl-[10px] pr-[30px] py-[10px] justify-center', {'mt-[32px]': index!==0})}>
+      {shouldRenderDate && <CyDView className={clsx(' border-sepratorColor pl-[10px] pr-[30px] py-[10px] justify-center', {'mt-[28px]': index!==0 } )}>
         <CyDText className='font-bold text-[16px]'>{formatedDay}</CyDText>
       </CyDView>}   
-      <CyDTouchView className='flex flex-row items-center py-[10px] border-b-[0.5px] border-x border-sepratorColor pl-[10px] pr-[30px]'
+      <CyDTouchView className={clsx('flex flex-row items-center py-[10px] border-b-[0.5px] border-x border-sepratorColor pl-[10px] pr-[30px]', {'rounded-t-[24px] border-t-[0.5px]' : shouldRenderDate , 'rounded-b-[24px]' : (nextTransactionFormatedDay!==formatedDay)})}
       onPress={() => {
         setTransactionInfoParams(activity);
       }}
@@ -343,6 +342,7 @@ const TxnScene = ({
       </CyDView>
     </CyDTouchView></CyDView>
     );
+
   }
 
   if (isLoading) {
