@@ -307,7 +307,6 @@ export async function signIn(ethereum: {
   const web3 = new Web3();
   const ARCH_HOST: string = hostWorker.getHost('ARCH_HOST');
   try {
-    console.log('signIn');
     const { data } = await axios.get(
       `${ARCH_HOST}/v1/authentication/sign-message/${ethereum.address}`
     );

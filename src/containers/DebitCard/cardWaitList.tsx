@@ -177,8 +177,8 @@ export default function CardWailtList({ navigation }) {
   };
 
   return (
-    <CyDView className='flex-1 bg-white mt-[20px] mb-[75px]'>
-      <CyDScrollView className='bg-white'>
+    <CyDView className='flex-1 bg-white mt-[32px]'>
+      <CyDScrollView className='bg-white py-[12px]'>
         <CyDModalLayout
           setModalVisible={setModalVisible}
           isModalVisible={isModalVisible}

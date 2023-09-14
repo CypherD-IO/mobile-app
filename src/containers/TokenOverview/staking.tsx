@@ -491,7 +491,7 @@ export default function TokenStaking ({ tokenData, navigation }: { tokenData: To
 
         if (CosmosActionType.TRANSACTION === type || CosmosActionType.RESTAKE === type) {
           const fee = {
-            gas: Math.floor(simulation * 1.3).toString(),
+            gas: Math.floor(simulation * 1.8).toString(),
             amount: [
               {
                 denom: currentChain.denom,
@@ -587,7 +587,7 @@ export default function TokenStaking ({ tokenData, navigation }: { tokenData: To
 
         if (CosmosActionType.TRANSACTION === type) {
           const fee = {
-            gas: Math.floor(simulation * 1.3).toString(),
+            gas: Math.floor(simulation * 1.8).toString(),
             amount: [
               {
                 denom: currentChain.denom,

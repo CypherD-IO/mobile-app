@@ -45,6 +45,8 @@ export const nativeTokenMapping: Record<ChainBackendNames, string> = {
   POLYGON_ZKEVM: 'Ethereum',
 };
 
+export const MINIMUM_TRANSFER_AMOUNT_ETH = 50;
+
 export const months = [
   {
     value: 'Jan',
