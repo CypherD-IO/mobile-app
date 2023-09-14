@@ -84,6 +84,7 @@ export function TokenTransactions ({ tokenData, navigation }: { tokenData: Token
         }
 
         setLoading(false);
+        
       })
       .catch(error => {
         setLoading(false);
