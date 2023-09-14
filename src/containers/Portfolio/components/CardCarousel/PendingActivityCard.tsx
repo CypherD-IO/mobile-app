@@ -1,11 +1,14 @@
 import React, { memo, useMemo } from "react";
-import { CyDFastImage, CyDText, CyDView } from "../../../../styles/tailwindStyles";
+import { CyDFastImage, CyDText, CyDTouchView, CyDView } from "../../../../styles/tailwindStyles";
 import { useTranslation } from "react-i18next";
 import AppImages from "../../../../../assets/images/appImages";
 import { ActivityStatus, ActivityType } from "../../../../reducers/activity_reducer";
 import { formatAmount } from "../../../../core/util";
 import clsx from "clsx";
 import { ALL_CHAINS } from "../../../../constants/server";
+import CyDTokenValue from "../../../../components/v2/tokenValue";
+import { useNavigation } from "@react-navigation/native";
+import { screenTitle } from "../../../../constants";
 
 interface PendingActivityCardProps {
     type: ActivityType
@@ -27,6 +30,7 @@ interface PendingActivityCardProps {
 
 const PendingActivityCard = ({ type, status, bridgePayload, cardPayload }: PendingActivityCardProps) => {
     const { t } = useTranslation();
+    const navigation = useNavigation();
     const CardBody = useMemo(() => {
         if (type === ActivityType.BRIDGE && bridgePayload) {
             const { fromChain, fromSymbol, fromTokenAmount, toChain, toSymbol, toTokenAmount } = bridgePayload;
@@ -63,12 +67,13 @@ const PendingActivityCard = ({ type, status, bridgePayload, cardPayload }: Pendi
                 <CyDFastImage className={'h-full w-[150px]'} source={AppImages.CARD} resizeMode="cover" />
                 <CyDView>
                     <CyDView className='flex flex-row justify-center items-end gap-[3px]'>
-                        <CyDText className='font-bold text-[20px]'>{formatAmount(amountInUsd, 2)}</CyDText>
-                        <CyDText className='font-medium text-[14px] mb-[2px]'>{`USD`}</CyDText>
+                        <CyDTokenValue className='text-[24px] font-extrabold text-primaryTextColor'>
+                            {amountInUsd}
+                        </CyDTokenValue>
                     </CyDView>
                     <CyDView className='flex flex-row justify-center items-end gap-[3px]'>
-                        <CyDText className='font-bold text-[20px]'>{formatAmount(amount, 2)}</CyDText>
-                        <CyDText className='font-medium text-[14px] mb-[2px]'>{tokenSymbol}</CyDText>
+                        <CyDText className='font-bold text-[16px]'>{formatAmount(amount, 2)}</CyDText>
+                        <CyDText className='font-medium text-[12px] mb-[2px]'>{tokenSymbol}</CyDText>
                     </CyDView>
                 </CyDView>
             </>;
@@ -78,14 +83,16 @@ const PendingActivityCard = ({ type, status, bridgePayload, cardPayload }: Pendi
     }, [type, bridgePayload, cardPayload]);
 
     return (
-        <CyDView className='flex w-full border border-sepratorColor overflow-hidden rounded-[25px]'>
+        <CyDTouchView onPress={() => {
+            navigation.navigate(screenTitle.ACTIVITIES);
+        }} className='flex w-full border border-sepratorColor overflow-hidden rounded-[25px]'>
             <CyDView className='h-[75%] w-full flex flex-row justify-evenly items-center '>
                 {CardBody}
             </CyDView>
-            <CyDView className={clsx('h-[25%] w-full bg-privacyMessageBackgroundColor justify-center px-[30px]', { 'bg-toastColor': status === ActivityStatus.SUCCESS })}>
+            <CyDView className={clsx('h-[25%] w-full bg-privacyMessageBackgroundColor justify-center px-[30px]', { 'bg-toastColor': status === ActivityStatus.SUCCESS, 'bg-redColor': status === ActivityStatus.FAILED })}>
                 <CyDText className='font-bold text-[12px]'>{t(`${type.toUpperCase()}_ACTIVITY`)}</CyDText>
             </CyDView>
-        </CyDView>
+        </CyDTouchView>
     );
 };
 
