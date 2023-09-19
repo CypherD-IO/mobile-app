@@ -10,7 +10,9 @@ import { StakingContext } from '../../core/util';
 import { stakeValidators } from '../../core/Staking';
 import * as C from '../../constants';
 import { StakeOptionsModal } from '../../components/StakeOptionsModal';
-import { CyDImage, CyDTextInput } from '../../styles/tailwindStyles';
+import { CyDImage, CyDText, CyDTextInput, CyDView } from '../../styles/tailwindStyles';
+import Button from '../../components/v2/button';
+import { ButtonType } from '../../constants/enum';
 
 const {
   CText,
@@ -70,6 +72,27 @@ function StakingValidators ({ route, navigation }) {
     }
   }, [filterText, index]);
 
+  useEffect(() => {
+    navigation.setOptions({
+      headerLeft: ()=>{},
+      headerTitle: () => (
+        <CyDView className={'-mt-[10px]'}>
+          {typeOfAction === 'stake' && (
+              <SwitchView
+                titles={[t('Staked'), t('All Validators')]} // Pass the titles as an array
+                index={index}
+                setIndexChange={(index) => {
+                  setIndex(index);
+                }}
+                style={{ marginBottom: 10 }}
+              />
+            )}
+        </CyDView>
+      )
+    });
+  }, [index, navigation]);
+
+
   const emptyView = (view: any) => {
     return (
             <DynamicView dynamic dynamicWidth dynamicHeight height={80} width={100} mT={0} bGC={Colors.whiteColor} aLIT={'center'}>
@@ -93,53 +116,42 @@ function StakingValidators ({ route, navigation }) {
     if (n >= 1e12) return +(n / 1e12).toFixed(1) + 'T';
   };
 
-  const Item = ({ item }) => (
-            <DynamicView dynamic fD={'row'} dynamicWidth width={100} pT={32} pH={16} >
+  const Item = ({item}) => {
+    return(
+      <CyDView className='flex flex-row justify-between items-center mx-[16px] border-b-[0.5px] border-sepratorColor py-[12px]'>
+        <CyDView className='flex flex-col items-start justify-start max-w-[72%]'>
+          <CyDText className='font-semibold text-secondaryTextColor'>{item.description.name}</CyDText>
+          {item.balance!==BigInt(0) && 
+            <CyDView className='flex flex-row items-center mt-[2px]'>
+              <CyDImage source={AppImages.EVMOS_LOGO} className='h-[12px] w-[12px]' resizeMode='contain'/>
+              <CyDText className='font-semibold text-primaryTextColor ml-[10px]'>{'Staked ' + (parseFloat(item.balance) * (10 ** -18)).toFixed(2)}</CyDText>
+            </CyDView>
+            }
+            <CyDView className='flex flex-row justify-between items-center mt-[2px]'>
+              {item.apr !== '0.00' && <CyDImage source={AppImages.APR_ICON} className={'w-[20px] h-[16px]'} />}
+              {item.apr !== '0.00' && <CyDText>{`APR ${item.apr}`}</CyDText>}
+              <CyDImage source={AppImages.COINS} className={'w-[20px] h-[16px] ml-[10px]'} />
+              <CyDText>{convert(parseFloat(item.tokens) * (10 ** -18))}</CyDText>
+            </CyDView>
 
-                <DynamicView dynamic jC={'flex-start'} aLIT={'flex-start'} >
-                    <CText dynamic fF={C.fontsName.FONT_SEMI_BOLD} fS={14} pV={4} tA={'left'}
-                           color={Colors.secondaryTextColor}>{item.description.name}</CText>
-                    {item.balance !== BigInt(0) && <DynamicView fD={'row'} dynamic mB={4}>
-                        <DynamicImage dynamic mR={4} source={AppImages.EVMOS_LOGO} width={14} height={14}/>
-                        <CText dynamic fF={C.fontsName.FONT_SEMI_BOLD} fS={14} tA={'left'}
-                            color={Colors.primaryTextColor}>{'Staked ' + (parseFloat(item.balance) * (10 ** -18)).toFixed(2)}</CText>
-                    </DynamicView>
-                    }
-                    <DynamicView dynamic fD={'row'} aLIT={'center'} jC={'center'}>
-                      {item.apr !== '0.00' && <CyDImage source={AppImages.APR_ICON} className={'w-[20px] h-[16px]'} />}
-                      {item.apr !== '0.00' && <CText dynamic mL={4} fF={C.fontsName.FONT_SEMI_BOLD} fS={12} tA={'left'}
-                                                     color={Colors.subTextColor}>{`APR ${item.apr}`}</CText>}
-                        <DynamicImage dynamic mL={10} source={AppImages.COINS} width={16} height={16}/>
-                        <CText dynamic mL={4} fF={C.fontsName.FONT_SEMI_BOLD} fS={12} tA={'left'} color={Colors.subTextColor}>{convert(parseFloat(item.tokens) * (10 ** -18))}</CText>
-                    </DynamicView>
-
-                    {item.jailed &&
-                        <DynamicView dynamic fD={'row'} aLIT={'center'} jC={'center'}>
-                            <DynamicImage dynamic source={AppImages.CLOSE_CIRCLE} dynamicTintColor tC={'red'} width={16} height={16}/>
-                            <CText dynamic fF={C.fontsName.FONT_SEMI_BOLD} fS={14} pV={4} tA={'left'} mL={8}
-                                   color={Colors.redOffColor}>Jailed</CText>
-                        </DynamicView>
-                    }
-                </DynamicView>
-
-                <DynamicView dynamic>
-                    <DynamicTouchView sentry-label='evmos-portfolio-stake' dynamic dynamicWidthFix width={94}
-                                      bR={30}
-                                      bO={1} style={{ borderColor: '#FFDE59' }}
-                                      bGC={Colors.whiteColor}
-                                      onPress={() => {
-                                        setData({ ...item, logo: tokenData.chainDetails.backendName });
-                                        setShowDelegationModal(true);
-                                      }}>
-                        <DynamicView dynamic aLIT={'center'} jC={'center'}>
-                            <CText dynamic fF={C.fontsName.FONT_BOLD} fS={14} pV={12}
-                                   color={Colors.primaryTextColor}>Manage</CText>
-                        </DynamicView>
-                    </DynamicTouchView>
-                </DynamicView>
-
-            </DynamicView>
-  );
+            {item.jailed && 
+              <CyDView className='flex flex-row justify-center items-center'>
+                <CyDImage source={AppImages.CLOSE_CIRCLE} className={'w-[20px] h-[16px]'} />
+                <CyDText>Jailed</CyDText>
+              </CyDView>
+            }
+        </CyDView>
+        <CyDView className='max-w-[35%]'>
+            <Button type={ButtonType.TERNARY} style={'py-[10px] px-[10px]'} titleStyle='font-bold' title='Manage' 
+              onPress={() => {
+              setData({ ...item, logo: tokenData.chainDetails.backendName });
+              setShowDelegationModal(true);
+              }}
+            />
+        </CyDView>
+      </CyDView>
+    )
+  }
 
   const renderItem = ({ item }) => (
         <Item item={item} />
@@ -167,17 +179,6 @@ function StakingValidators ({ route, navigation }) {
                 data={data}
                 typeOfAction={typeOfAction}
             />
-
-            {typeOfAction === 'stake' && (
-              <SwitchView
-                titles={[t('Staked'), t('All Validators')]} // Pass the titles as an array
-                index={index}
-                setIndexChange={(index) => {
-                  setIndex(index);
-                }}
-                style={{ marginBottom: 10 }}
-              />
-            )}
 
         </DynamicView>
 
