@@ -129,12 +129,15 @@ const TokenScene = ({
       let tempHoldingsData = {};
       holdings.forEach(
         (holding: Holding) =>
-        (tempHoldingsData = {
-          ...tempHoldingsData,
-          [holding.coinGeckoId +
+          (tempHoldingsData = {
+            ...tempHoldingsData,
+            [holding.coinGeckoId +
             ':' +
-            String(holding.chainDetails?.chainIdNumber)]: holding,
-        })
+            String(holding.chainDetails?.chainIdNumber) +
+            holding.chainDetails?.backendName +
+            holding.name +
+            holding.symbol]: holding,
+          })
       );
       return tempHoldingsData;
     } else {
