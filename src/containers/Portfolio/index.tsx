@@ -139,7 +139,7 @@ export default function Portfolio({ navigation }: PortfolioProps) {
     { key: 'txn', title: t('TXNS'), scrollableType: ScrollableType.FLATLIST },
   ];
 
-  const { scrollY, index, setIndex, getRefForKey, ...sceneProps } =
+  const { scrollY, index, setIndex, bannerHeight, setBannerHeight, getRefForKey, ...sceneProps } =
     useScrollManager(tabsWithScrollableType);
 
   const ethereum = hdWallet?.state.wallet.ethereum;
@@ -223,8 +223,12 @@ export default function Portfolio({ navigation }: PortfolioProps) {
         // To show completion and flush the cards in a while.
         setTimeout(() => {
           setCards([]);
+          setBannerHeight(160);
         }, 5000);
       } else {
+        if (bannerHeight !== 260) {
+          setBannerHeight(260);
+        }
         for (const pa of pendingActivities) {
           const updatedActivity = await updateStatusForCardOrBridge(pa);
           if (pa.status !== updatedActivity.status) {
@@ -695,7 +699,7 @@ export default function Portfolio({ navigation }: PortfolioProps) {
         case 'token':
           return (
             <CyDView className='flex-1 h-full'>
-              <AnimatedTabBar scrollY={scrollY}>
+              <AnimatedTabBar scrollY={scrollY} bannerHeight={bannerHeight}>
                 {renderTabBarFooter(tab.key)}
               </AnimatedTabBar>
               <TokenScene
@@ -703,6 +707,7 @@ export default function Portfolio({ navigation }: PortfolioProps) {
                 routeKey={'token'}
                 scrollY={scrollY}
                 navigation={navigation}
+                bannerHeight={bannerHeight}
                 isVerifyCoinChecked={isVerifyCoinChecked}
                 getAllChainBalance={getAllChainBalance}
                 setRefreshData={setRefreshData}
@@ -712,7 +717,7 @@ export default function Portfolio({ navigation }: PortfolioProps) {
         case 'nft':
           return (
             <CyDView className='flex-1 h-full'>
-              <AnimatedTabBar scrollY={scrollY}>
+              <AnimatedTabBar scrollY={scrollY} bannerHeight={bannerHeight}>
                 {renderTabBarFooter(tab.key)}
               </AnimatedTabBar>
               <NFTScene
@@ -720,6 +725,7 @@ export default function Portfolio({ navigation }: PortfolioProps) {
                 routeKey={tab.key}
                 scrollY={scrollY}
                 navigation={navigation}
+                bannerHeight={bannerHeight}
                 selectedChain={
                   portfolioState.statePortfolio.selectedChain.symbol
                 }
@@ -729,7 +735,7 @@ export default function Portfolio({ navigation }: PortfolioProps) {
         case 'txn':
           return (
             <CyDView className='flex-1 h-full mx-[10px]'>
-              <AnimatedTabBar scrollY={scrollY}>
+              <AnimatedTabBar scrollY={scrollY} bannerHeight={bannerHeight}>
                 {renderTabBarFooter(tab.key)}
               </AnimatedTabBar>
               <TXNScene
@@ -737,6 +743,7 @@ export default function Portfolio({ navigation }: PortfolioProps) {
                 routeKey={tab.key}
                 scrollY={scrollY}
                 navigation={navigation}
+                bannerHeight={bannerHeight}
                 filterModalVisibilityState={[filterModalVisible, setFilterModalVisible]}
               />
             </CyDView>
@@ -834,10 +841,13 @@ export default function Portfolio({ navigation }: PortfolioProps) {
         }
         setChooseChain={setChooseChain}
         scrollY={scrollY}
+        bannerHeight={bannerHeight}
         onWCSuccess={onWCSuccess}
       />
-      <AnimatedBanner scrollY={scrollY}>
-        <Banner checkAllBalance={checkAll(portfolioState)} />
+      <AnimatedBanner
+        scrollY={scrollY}
+        bannerHeight={bannerHeight}>
+        <Banner bannerHeight={bannerHeight} checkAllBalance={checkAll(portfolioState)} />
         <CardCarousel cards={cards} />
       </AnimatedBanner>
 
@@ -848,7 +858,7 @@ export default function Portfolio({ navigation }: PortfolioProps) {
           routes={tabs}
           width={useWindowDimensions().width}
           renderTabBar={(p) => (
-            <AnimatedTabBar scrollY={scrollY}>
+            <AnimatedTabBar bannerHeight={bannerHeight} scrollY={scrollY}>
               <TabBar {...p} />
             </AnimatedTabBar>
           )}

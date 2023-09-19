@@ -40,9 +40,7 @@ import { PORTFOLIO_EMPTY } from '../../../reducers/portfolio_reducer';
 import Button from '../../../components/v2/button';
 import { screenTitle } from '../../../constants';
 import { CHAIN_COLLECTION, Chain } from '../../../constants/server';
-import { H_BALANCE_BANNER } from '../constants';
 import { TokenMeta } from '../../../models/tokenMetaData.model';
-import { render } from 'react-dom';
 import { get, isEmpty, isEqual, sortBy } from 'lodash';
 import Loading from '../../../components/v2/loading';
 
@@ -56,6 +54,7 @@ interface TokenSceneProps {
   onMomentumScrollEnd: (e: ScrollEvent) => void;
   onScrollEndDrag: (e: ScrollEvent) => void;
   navigation: any;
+  bannerHeight: 160 | 260;
   isVerifyCoinChecked: boolean;
   getAllChainBalance: (portfolioState: {
     statePortfolio: {
@@ -80,6 +79,7 @@ const TokenScene = ({
   onMomentumScrollEnd,
   onScrollEndDrag,
   navigation,
+  bannerHeight,
   isVerifyCoinChecked,
   getAllChainBalance,
   setRefreshData,
@@ -222,6 +222,7 @@ const TokenScene = ({
         <CyDView className='flex-1 h-full mx-[10px]'>
           {!isEmpty(holdingsData) ? (
             <AnimatedTabView
+              bannerHeight={bannerHeight}
               data={holdingsByCoinGeckoId}
               extraData={{ isVerifyCoinChecked, holdingsData }}
               keyExtractor={(item) => item}
@@ -231,7 +232,7 @@ const TokenScene = ({
                   onRefresh={() => {
                     void onRefresh();
                   }}
-                  progressViewOffset={H_BALANCE_BANNER}
+                  progressViewOffset={bannerHeight}
                 />
               }
               renderItem={({ item, index, viewableItems }) =>

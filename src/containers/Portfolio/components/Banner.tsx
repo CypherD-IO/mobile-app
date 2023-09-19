@@ -17,10 +17,11 @@ import clsx from 'clsx';
 import { StyleSheet } from 'react-native';
 
 interface BannerProps {
+  bannerHeight: 160 | 260
   checkAllBalance: number | string;
 }
 
-export const Banner = ({ checkAllBalance }: BannerProps) => {
+export const Banner = ({ bannerHeight, checkAllBalance }: BannerProps) => {
   const { t } = useTranslation();
   const portfolioState = useContext<any>(PortfolioContext);
   const hdWallet = useContext<any>(HdWalletContext);
@@ -39,14 +40,14 @@ export const Banner = ({ checkAllBalance }: BannerProps) => {
   return (
     <CyDImageBackground
       className={
-        'w-full border my-[4px] pt-[30px] rounded-[24px] border-sepratorColor overflow-hidden'
+        'w-full border my-[4px] pt-[50px] rounded-[24px] border-sepratorColor overflow-hidden'
       }
       source={AppImages.PORTFOLIO_BG_S3}
       resizeMode='cover'
       imageStyle={styles.imageBGStyle}
     >
       <CyDView
-        className={'h-[50%] mx-[14px] justify-center items-start'}
+        className={clsx('mx-[14px] justify-center items-start', { 'h-[50%]': bannerHeight === 260 })}
       >
         {getCurrentChainHoldings(
           portfolioState.statePortfolio.tokenPortfolio,
@@ -82,15 +83,12 @@ export const Banner = ({ checkAllBalance }: BannerProps) => {
                   </CyDTouchView>
                 </CyDView>
               </CyDView>
-              {hideBalance ? (
-                <CyDView className='flex flex-row justify-center items-center bg-privacyMessageBackgroundColor rounded-[8px] px-[10px] py-[5px] my-[5px]'>
-                  <CyDText className='text-[12px]'>
-                    {t('ALL_BALANCES_HIDDEN')}
-                  </CyDText>
-                </CyDView>
-              ) : (
-                null
-              )}
+              <CyDView className={clsx('flex flex-row justify-center items-center bg-privacyMessageBackgroundColor rounded-[8px] px-[10px] py-[5px] my-[5px]',
+                { 'opacity-0': !hideBalance })}>
+                <CyDText className='text-[12px]'>
+                  {t('ALL_BALANCES_HIDDEN')}
+                </CyDText>
+              </CyDView>
             </CyDView>
           )}
       </CyDView>

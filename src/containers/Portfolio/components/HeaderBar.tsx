@@ -6,22 +6,23 @@ import AppImages from '../../../../assets/images/appImages';
 import { screenTitle } from '../../../constants';
 import { BarCodeReadEvent } from 'react-native-camera';
 import { SharedValue, useAnimatedStyle, withTiming } from 'react-native-reanimated';
-import { H_BALANCE_BANNER, OFFSET_TABVIEW } from '../constants';
+import { isIOS } from '../../../misc/checkers';
 
 interface HeaderBarProps {
   navigation: any
   setChooseChain: Function
+  bannerHeight: 160 | 260
   scrollY: SharedValue<number>
   onWCSuccess: (e: BarCodeReadEvent) => void
   renderTitleComponent?: ReactNode
 }
 
-export const HeaderBar = ({ navigation, setChooseChain, scrollY, onWCSuccess, renderTitleComponent }: HeaderBarProps) => {
+export const HeaderBar = ({ navigation, setChooseChain, bannerHeight, scrollY, onWCSuccess, renderTitleComponent }: HeaderBarProps) => {
   const portfolioState = useContext<any>(PortfolioContext);
-
+  const OFFSET_TABVIEW = isIOS() ? -bannerHeight : 0;
   const opacity = useAnimatedStyle(() => {
     return {
-      opacity: withTiming(scrollY.value > OFFSET_TABVIEW + 0.6 * H_BALANCE_BANNER ? 1 : 0, {
+      opacity: withTiming(scrollY.value > OFFSET_TABVIEW + 0.6 * bannerHeight ? 1 : 0, {
         duration: 300
       })
     };

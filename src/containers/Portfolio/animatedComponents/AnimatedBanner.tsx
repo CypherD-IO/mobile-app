@@ -1,6 +1,6 @@
 import React, { ReactNode } from 'react';
 import { CyDAnimatedView } from '../../../styles/tailwindStyles';
-import { H_BALANCE_BANNER, H_TAB_BAR, OFFSET_TABVIEW } from '../constants';
+import { H_TAB_BAR } from '../constants';
 import {
   Extrapolate,
   SharedValue,
@@ -8,27 +8,31 @@ import {
   useAnimatedStyle,
 } from 'react-native-reanimated';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
+import { isIOS } from '../../../misc/checkers';
 export interface AnimatedBannerProps {
   scrollY: SharedValue<number>;
+  bannerHeight: 160 | 260,
   children: ReactNode;
 }
 
 export const AnimatedBanner = ({
   scrollY,
+  bannerHeight,
   children,
   ...otherProps
 }: AnimatedBannerProps) => {
+  const OFFSET_TABVIEW = isIOS() ? -bannerHeight : 0;
   const topInset = useSafeAreaInsets().top + H_TAB_BAR;
   const animatedStyles = useAnimatedStyle(() => {
     const translateY = interpolate(
       scrollY.value,
-      [OFFSET_TABVIEW, OFFSET_TABVIEW + H_BALANCE_BANNER],
-      [0, -H_BALANCE_BANNER],
+      [OFFSET_TABVIEW, OFFSET_TABVIEW + bannerHeight],
+      [0, -bannerHeight],
       Extrapolate.CLAMP,
     );
     const opacity = interpolate(
       scrollY.value,
-      [OFFSET_TABVIEW, OFFSET_TABVIEW + 0.6 * H_BALANCE_BANNER],
+      [OFFSET_TABVIEW, OFFSET_TABVIEW + 0.6 * bannerHeight],
       [1, 0],
       Extrapolate.CLAMP,
     );
@@ -39,7 +43,7 @@ export const AnimatedBanner = ({
   });
   return (
     <CyDAnimatedView
-      className={`absolute top-[${topInset}px] h-[${H_BALANCE_BANNER}px] z-10 px-[10px] w-full bg-white`}
+      className={`absolute top-[${topInset}px] h-[${bannerHeight}px] z-10 px-[10px] w-full bg-white`}
       style={animatedStyles}
       {...otherProps}
     >
