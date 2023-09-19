@@ -107,6 +107,7 @@ export default function CosmosValidators ({ route, navigation }) {
 
   useEffect(() => {
     navigation.setOptions({
+      headerLeft: ()=>{},
       headerTitle: () => (
         <CyDView className={'-mt-[10px]'}>
           {from === CosmosActionType.STAKE && (

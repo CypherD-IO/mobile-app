@@ -76,6 +76,7 @@ export default function StakingDelegation ({ route, navigation }) {
   const ACCOUNT_DETAILS = evmosUrls.accountDetails.replace('address', evmos.wallets[evmos.currentIndex].address);
   const SIMULATION_ENDPOINT = evmosUrls.simulate;
   const TXN_ENDPOINT = evmosUrls.transact;
+  let delegateTryCount = 0;
 
   const handleBackButton = () => {
     navigation.goBack();
@@ -127,9 +128,9 @@ export default function StakingDelegation ({ route, navigation }) {
     };
     const sender = {
       accountAddress: evmos.wallets[evmos.currentIndex].address,
-      sequence: response.data.account.base_account.sequence ? response.data.account.base_account.sequence : 0,
-      accountNumber: response.data.account.base_account.account_number,
-      pubkey: response.data.account.base_account.pub_key ? response.data.account.base_account.pub_key.key : generatePublicKey()
+      sequence: response.sequence ? response.sequence  : 0,
+      accountNumber: response.account_number,
+      pubkey: response.pub_key ? response.pub_key.key : generatePublicKey()
     };
     const fee = {
       amount: gasFee,
@@ -192,24 +193,43 @@ export default function StakingDelegation ({ route, navigation }) {
 
     try {
       const accountDetailsResponse = await axios.get(ACCOUNT_DETAILS, { timeout: 2000 });
-      const bodyForSimulate = generateTransactionBody(accountDetailsResponse);
+      let sequence = Number(accountDetailsResponse.data.account.base_account.sequence) + delegateTryCount;
+      let simulationResponse;
+      let bodyForSimulate;
       void analytics().logEvent(`evmos_simulate_${stakingValidators.stateStaking.typeOfDelegation}`);
-
-      const simulationResponse = await axios.post(SIMULATION_ENDPOINT, bodyForSimulate);
-      const gasWanted = simulationResponse.data.gas_info.gas_used;
-      const bodyForTransaction = generateTransactionBody(accountDetailsResponse,
-        ethers.utils
-          .parseUnits(convertAmountOfContractDecimal((cosmosConfig.evmos.gasPrice * gasWanted).toString(), 18), 18).toString(),
-        Math.floor(gasWanted * 1.3).toString());
-      setFinalGasFee(parseInt(simulationResponse.data.gas_info.gas_used) * gasPrice);
-      setFinalData(bodyForTransaction);
-      setLoading(false);
-      setSignModalVisible(true);
+      try{
+        bodyForSimulate = generateTransactionBody(accountDetailsResponse.data.account.base_account);
+        simulationResponse = await axios.post(SIMULATION_ENDPOINT, bodyForSimulate);
+        if (!simulationResponse.data.gas_info.gas_used) {
+          throw new Error('sequence doesnt match');
+        }
+      }catch(e){
+        sequence += 1;
+        bodyForSimulate = generateTransactionBody({ ...accountDetailsResponse.data.account.base_account, sequence });
+        simulationResponse = await axios.post(SIMULATION_ENDPOINT, bodyForSimulate);
+      }
+      if (simulationResponse.data.gas_info.gas_used) {
+        const gasWanted = simulationResponse.data.gas_info.gas_used;
+        const bodyForTransaction = generateTransactionBody({ ...accountDetailsResponse.data.account.base_account, sequence },
+          ethers.utils
+            .parseUnits(convertAmountOfContractDecimal((cosmosConfig.evmos.gasPrice * gasWanted).toString(), 18), 18).toString(),
+          Math.floor(gasWanted * 1.3).toString());
+        setFinalGasFee(parseInt(simulationResponse.data.gas_info.gas_used) * gasPrice);
+        setFinalData(bodyForTransaction);
+        if (delegateTryCount) {
+          void finalTxn(bodyForTransaction);
+        } else {
+          setLoading(false);
+          setSignModalVisible(true);
+        }
+      }else{
+        throw new Error('Please try again later');
+      }
     } catch (error: any) {
       setLoading(false);
       Sentry.captureException(error);
       await analytics().logEvent('evmos_staking_error', { from: 'error while simulating the transaction in evmos staking/delegation.tsx' });
-      showModal('state', { type: 'error', title: t('TRANSACTION_FAILED'), description: error.response.data.message, onSuccess: hideModal, onFailure: hideModal });
+      showModal('state', { type: 'error', title: t('TRANSACTION_FAILED'), description: error?.response?.data?.message, onSuccess: hideModal, onFailure: hideModal });
     }
   };
 
@@ -241,7 +261,7 @@ export default function StakingDelegation ({ route, navigation }) {
     return balance >= finalGasFee;
   };
 
-  const finalTxn = async () => {
+  const finalTxn = async (finalTxnData = finalData) => {
     setLoading(true);
     const balance = convertToEvmosFromAevmos(stakingValidators.stateStaking.unStakedBalance);
     if ((DELEGATE === stakingValidators.stateStaking.typeOfDelegation && !isGasReserved(amount, balance)) || !haveEnoughNativeBalance(balance)) {
@@ -257,7 +277,7 @@ export default function StakingDelegation ({ route, navigation }) {
       }, MODAL_HIDE_TIMEOUT_250);
     } else {
       try {
-        const txnResponse = await axios.post(TXN_ENDPOINT, finalData);
+        const txnResponse = await axios.post(TXN_ENDPOINT, finalTxnData);
         if (txnResponse.data.tx_response.raw_log === '[]') {
           setLoading(false);
           setSignModalVisible(false);
@@ -275,15 +295,20 @@ export default function StakingDelegation ({ route, navigation }) {
             });
           }, MODAL_HIDE_TIMEOUT_250);
         } else {
-          setLoading(false);
-          setSignModalVisible(false);
-          Sentry.captureException(txnResponse);
-          await analytics().logEvent('evmos_staking_error', {
-            from: `error while broadcasting the transaction in evmos staking/delegation.tsx : ${txnResponse.data.tx_response.raw_log}`
-          });
-          setTimeout(() => {
-            showModal('state', { type: 'error', title: t('TRANSACTION_FAILED'), description: txnResponse.data.tx_response.raw_log, onSuccess: hideModal, onFailure: hideModal });
-          }, MODAL_HIDE_TIMEOUT_250);
+          if(delegateTryCount === 0){
+            delegateTryCount += 1;
+            void txnSimulation();
+          }else{
+            setLoading(false);
+            setSignModalVisible(false);
+            Sentry.captureException(txnResponse);
+            await analytics().logEvent('evmos_staking_error', {
+              from: `error while broadcasting the transaction in evmos staking/delegation.tsx : ${txnResponse.data.tx_response.raw_log}`
+            });
+            setTimeout(() => {
+              showModal('state', { type: 'error', title: t('TRANSACTION_FAILED'), description: txnResponse.data.tx_response.raw_log, onSuccess: hideModal, onFailure: hideModal });
+            }, MODAL_HIDE_TIMEOUT_250);
+          }
         }
       } catch (error: any) {
         setLoading(false);
