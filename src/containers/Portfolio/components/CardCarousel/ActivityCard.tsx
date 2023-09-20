@@ -90,16 +90,14 @@ const ActivityCard = ({ dacSetter, id, dateTime, type, status, bridgePayload, ca
     const addNewDismissedCard = async () => {
         const dismissedActivityCardsFromAS = await getDismissedActivityCardIDs();
         const parsedAC = dismissedActivityCardsFromAS ? JSON.parse(dismissedActivityCardsFromAS) : [];
-        console.log("🚀 ~ file: ActivityCard.tsx:93 ~ addNewDismissedCard ~ parsedAC:", parsedAC);
         const newDismissedAC = !parsedAC.includes(`${id}|${dateTime.toISOString()}`) ? [...parsedAC, `${id}|${dateTime.toISOString()}`] : parsedAC;
         await setDismissedActivityCardIDs(newDismissedAC);
-        console.log("🚀 ~ file: ActivityCard.tsx:96 ~ addNewDismissedCard ~ newDismissedAC:", newDismissedAC);
         dacSetter(newDismissedAC.map((nDA: string) => nDA.split('|')[0]));
     };
 
     return (
         <CyDView className='flex flex-row h-full w-full'>
-            <CyDTouchView className='h-full border border-sepratorColor overflow-hidden rounded-[8px]' onPress={() => {
+            <CyDTouchView className='h-full border border-sepratorColor overflow-hidden rounded-[16px]' onPress={() => {
                 navigation.navigate(screenTitle.ACTIVITIES);
             }}>
                 <CyDView className='h-[75%] w-full flex flex-row justify-evenly items-center '>

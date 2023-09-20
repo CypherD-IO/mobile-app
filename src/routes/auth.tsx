@@ -739,6 +739,19 @@ export function PortfolioStackScreen({ navigation, route }) {
           headerLeft: (props) => defaultHeaderLeft(navigation),
         })}
       />
+      <PortfolioStack.Screen
+        name={screenTitle.SOCIAL_MEDIA_SCREEN}
+        component={SocialMediaScreen}
+        options={{
+          headerTransparent: false,
+          headerShadowVisible: false,
+          headerTitleAlign: 'center',
+          headerTitleStyle: portfolioStackScreenHeaderTitleStyles,
+
+          headerTintColor: Colors.primaryTextColor,
+          headerBackTitleVisible: false,
+        }}
+      />
     </PortfolioStack.Navigator>
   );
 }

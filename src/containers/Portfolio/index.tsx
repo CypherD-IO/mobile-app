@@ -42,6 +42,8 @@ import {
   getHideBalanceStatus,
   getDismissedActivityCardIDs,
   setDismissedActivityCardIDs,
+  getDismissedStaticCardIDs,
+  setDismissedStaticCardIDs,
 } from '../../core/asyncStorage';
 import { useIsFocused } from '@react-navigation/native';
 import { GlobalContext } from '../../core/globalContext';
@@ -80,6 +82,8 @@ import { ACTIVITIES_REFRESH_TIMEOUT } from '../../constants/timeOuts';
 import { hostWorker } from '../../global';
 import axios from 'axios';
 import { showToast } from '../utilities/toastUtility';
+import { BannerRecord } from '../../models/bannerRecord.interface';
+import useAxios from '../../core/HttpRequest';
 
 export interface PortfolioProps {
   navigation: any;
@@ -90,6 +94,7 @@ const ARCH_HOST = hostWorker.getHost('ARCH_HOST');
 export default function Portfolio({ navigation }: PortfolioProps) {
   const { t } = useTranslation();
   const isFocused = useIsFocused();
+  const { getWithAuth } = useAxios();
 
   const globalStateContext = useContext(GlobalContext);
   const hdWallet = useContext(HdWalletContext);
@@ -133,8 +138,9 @@ export default function Portfolio({ navigation }: PortfolioProps) {
   });
   const [filterModalVisible, setFilterModalVisible] = useState(false);
   const [dismissedActivityCards, setDismissedActivityCards] = useState<string[]>([]);
+  const [dismissedStaticCards, setDismissedStaticCards] = useState<string[]>([]);
   const [activityCards, setActivityCards] = useState<ReactNode[]>([]);
-  const [staticCards, setStaticCards] = useState<ReactNode[]>([]);
+  const [staticCards, setStaticCards] = useState<BannerRecord[]>([]);
 
   const tabs = [
     { key: 'token', title: t('TOKENS') },
@@ -170,6 +176,45 @@ export default function Portfolio({ navigation }: PortfolioProps) {
       }
     }
   };
+
+  const getStaticCards = async () => {
+    const uri = `/v1/configuration/device/banner-info/${ethereum?.address}`;
+    try {
+      const res = await getWithAuth(uri);
+      return [
+        { pk: '1', sk: 1, id: 'banner1', title: 'Banner 1', description: 'Description 1', priority: 'LOW', redirectURI: 'https://example.com', isClosable: true, endDate: '2023-09-21T10:16:15.460Z' },
+        { pk: '2', sk: 2, id: 'banner2', title: 'Banner 2', description: 'Description 2', priority: 'HIGH', redirectURI: 'https://google.com', isClosable: true, endDate: '2023-09-21T10:16:15.460Z' },
+        { pk: '3', sk: 3, id: 'banner3', title: 'Banner 3', description: 'Description 3', priority: 'MEDIUM', redirectURI: 'https://youtube.com', isClosable: true, endDate: '2023-09-21T10:16:15.460Z' },
+        { pk: '4', sk: 4, id: 'banner4', title: 'Banner 4', description: 'Description 4', priority: 'HIGHEST', redirectURI: 'https://cypherwallet.io', isClosable: false, endDate: '2023-09-21T10:16:15.460Z' },
+      ] as BannerRecord[];
+    } catch (e) {
+      const errorObject = {
+        e,
+        message: 'Error occured during the new banner call.',
+      };
+      Sentry.captureException(errorObject);
+    }
+    return [];
+  };
+
+  useEffect(() => {
+    const checkStaticCards = async () => {
+      const availableStaticCards = await getStaticCards();
+      const filteredStaticCards = availableStaticCards.filter(sc => !dismissedStaticCards.includes(sc.id));
+      if (filteredStaticCards) {
+        if (filteredStaticCards.length === 0) {
+          setStaticCards([]);
+        } else {
+          const sortedBannerRecords = filteredStaticCards.sort((a, b) => {
+            const priorityOrder = ['HIGHEST', 'HIGH', 'MEDIUM', 'LOW'];
+            return priorityOrder.indexOf(b.priority) - priorityOrder.indexOf(a.priority);
+          });
+          setStaticCards(sortedBannerRecords);
+        }
+      }
+    };
+    void checkStaticCards();
+  }, [isFocused, dismissedStaticCards]);
 
   const getUpdatedActivityStatus = (status: string) => {
     switch (status) {
@@ -242,6 +287,19 @@ export default function Portfolio({ navigation }: PortfolioProps) {
         }
         setDismissedActivityCards(newDismissedActivities.map(nDA => nDA.split('|')[0]));
         await setDismissedActivityCardIDs(newDismissedActivities);
+      }
+      const dismissedStatics = await getDismissedStaticCardIDs();
+      if (dismissedStatics) {
+        const newDismissedStatics = [];
+        const parsedStatics: string[] = JSON.parse(dismissedStatics);
+        for (const ps of parsedStatics) {
+          // if the endDate is after the current moment, push.
+          if (moment(new Date(ps.split('|')[1])).isAfter(moment())) {
+            newDismissedStatics.push(ps);
+          }
+        }
+        setDismissedStaticCards(newDismissedStatics.map(nDS => nDS.split('|')[0]));
+        await setDismissedStaticCardIDs(newDismissedStatics);
       }
     };
     void loadDismissedIDsAndRefreshStore();
@@ -332,12 +390,12 @@ export default function Portfolio({ navigation }: PortfolioProps) {
 
   // To update the height of the banner when the no. of cards change.
   useEffect(() => {
-    if (activityCards.length) {
+    if (activityCards.length + staticCards.length) {
       setBannerHeight(260);
     } else {
       setBannerHeight(160);
     }
-  }, [activityCards.length, setBannerHeight]);
+  }, [activityCards.length, staticCards.length, setBannerHeight]);
 
   useEffect(() => {
     if (isFocused) {
@@ -892,7 +950,7 @@ export default function Portfolio({ navigation }: PortfolioProps) {
         scrollY={scrollY}
         bannerHeight={bannerHeight}>
         <Banner bannerHeight={bannerHeight} checkAllBalance={checkAll(portfolioState)} />
-        <CardCarousel cards={activityCards} />
+        <CardCarousel activityCards={activityCards} staticCardData={staticCards} dscSetter={setDismissedStaticCards} />
       </AnimatedBanner>
 
       <CyDView className={clsx('flex-1 pb-[40px]', { 'pb-[75px]': !isIOS() })}>

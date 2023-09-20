@@ -378,3 +378,20 @@ export const setDismissedActivityCardIDs = async (newDismissedCardIDs: string[])
     Sentry.captureException(error);
   }
 };
+
+export const getDismissedStaticCardIDs = async () => {
+  try {
+    const dismissedCardIDs = await AsyncStorage.getItem('DISMISSED_STATIC_CARD_IDS') ?? '[]';
+    return dismissedCardIDs;
+  } catch (error) {
+    Sentry.captureException(error);
+  }
+};
+
+export const setDismissedStaticCardIDs = async (newDismissedCardIDs: string[]) => {
+  try {
+    await AsyncStorage.setItem('DISMISSED_STATIC_CARD_IDS', JSON.stringify(newDismissedCardIDs));
+  } catch (error) {
+    Sentry.captureException(error);
+  }
+};
