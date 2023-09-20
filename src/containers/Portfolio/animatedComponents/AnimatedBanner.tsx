@@ -23,7 +23,6 @@ export const AnimatedBanner = ({
 }: AnimatedBannerProps) => {
   const OFFSET_TABVIEW = isIOS() ? -bannerHeight : 0;
   const topInset = useSafeAreaInsets().top + H_TAB_BAR;
-  console.log("🚀 ~ file: AnimatedBanner.tsx:26 ~ topInset:", topInset)
   const animatedStyles = useAnimatedStyle(() => {
     const translateY = interpolate(
       scrollY.value,

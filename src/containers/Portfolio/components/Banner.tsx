@@ -40,7 +40,7 @@ export const Banner = ({ bannerHeight, checkAllBalance }: BannerProps) => {
   return (
     <CyDImageBackground
       className={
-        'w-full border my-[4px] pt-[50px] rounded-[24px] border-sepratorColor overflow-hidden'
+        'w-full border my-[4px] pt-[46px] rounded-[24px] border-sepratorColor overflow-hidden'
       }
       source={AppImages.PORTFOLIO_BG_S3}
       resizeMode='cover'
