@@ -22,7 +22,7 @@ export const AnimatedBanner = ({
   ...otherProps
 }: AnimatedBannerProps) => {
   const OFFSET_TABVIEW = isIOS() ? -bannerHeight : 0;
-  const topInset = useSafeAreaInsets().top + H_TAB_BAR;
+  const topInset = useSafeAreaInsets().top + H_TAB_BAR + (isIOS() ? 0 : 8);
   const animatedStyles = useAnimatedStyle(() => {
     const translateY = interpolate(
       scrollY.value,
@@ -43,8 +43,8 @@ export const AnimatedBanner = ({
   });
   return (
     <CyDAnimatedView
-      className={`absolute top-[${topInset}px] h-[${bannerHeight}px] z-10 px-[10px] w-full bg-white`}
-      style={animatedStyles}
+      className={`absolute h-[${bannerHeight}px] z-10 px-[10px] w-full`}
+      style={[animatedStyles, { top: topInset }]}
       {...otherProps}
     >
       {children}
