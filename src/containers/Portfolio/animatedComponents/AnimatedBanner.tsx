@@ -44,7 +44,7 @@ export const AnimatedBanner = ({
   });
   return (
     <CyDAnimatedView
-      className={`absolute top-[98px] h-[${bannerHeight}px] z-10 px-[10px] w-full bg-white`}
+      className={`absolute top-[${topInset}px] h-[${bannerHeight}px] z-10 px-[10px] w-full bg-white`}
       style={animatedStyles}
       {...otherProps}
     >
