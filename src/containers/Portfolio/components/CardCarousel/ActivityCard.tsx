@@ -9,8 +9,12 @@ import { ALL_CHAINS } from "../../../../constants/server";
 import CyDTokenValue from "../../../../components/v2/tokenValue";
 import { useNavigation } from "@react-navigation/native";
 import { screenTitle } from "../../../../constants";
+import { getDismissedActivityCardIDs, setDismissedActivityCardIDs } from "../../../../core/asyncStorage";
 
-interface PendingActivityCardProps {
+interface ActivityCardProps {
+    dacSetter: React.Dispatch<React.SetStateAction<string[]>>
+    id: string
+    dateTime: Date
     type: ActivityType
     status: ActivityStatus
     bridgePayload?: {
@@ -28,7 +32,7 @@ interface PendingActivityCardProps {
     }
 }
 
-const PendingActivityCard = ({ type, status, bridgePayload, cardPayload }: PendingActivityCardProps) => {
+const ActivityCard = ({ dacSetter, id, dateTime, type, status, bridgePayload, cardPayload }: ActivityCardProps) => {
     const { t } = useTranslation();
     const navigation = useNavigation();
     const CardBody = useMemo(() => {
@@ -82,18 +86,36 @@ const PendingActivityCard = ({ type, status, bridgePayload, cardPayload }: Pendi
         }
     }, [type, bridgePayload, cardPayload]);
 
+
+    const addNewDismissedCard = async () => {
+        const dismissedActivityCardsFromAS = await getDismissedActivityCardIDs();
+        const parsedAC = dismissedActivityCardsFromAS ? JSON.parse(dismissedActivityCardsFromAS) : [];
+        console.log("🚀 ~ file: ActivityCard.tsx:93 ~ addNewDismissedCard ~ parsedAC:", parsedAC);
+        const newDismissedAC = !parsedAC.includes(`${id}|${dateTime.toISOString()}`) ? [...parsedAC, `${id}|${dateTime.toISOString()}`] : parsedAC;
+        await setDismissedActivityCardIDs(newDismissedAC);
+        console.log("🚀 ~ file: ActivityCard.tsx:96 ~ addNewDismissedCard ~ newDismissedAC:", newDismissedAC);
+        dacSetter(newDismissedAC.map((nDA: string) => nDA.split('|')[0]));
+    };
+
     return (
-        <CyDTouchView onPress={() => {
-            navigation.navigate(screenTitle.ACTIVITIES);
-        }} className='flex w-full border border-sepratorColor overflow-hidden rounded-[25px]'>
-            <CyDView className='h-[75%] w-full flex flex-row justify-evenly items-center '>
-                {CardBody}
-            </CyDView>
-            <CyDView className={clsx('h-[25%] w-full bg-privacyMessageBackgroundColor justify-center px-[30px]', { 'bg-toastColor': status === ActivityStatus.SUCCESS, 'bg-redColor': status === ActivityStatus.FAILED })}>
-                <CyDText className='font-bold text-[12px]'>{t(`${type.toUpperCase()}_ACTIVITY`)}</CyDText>
-            </CyDView>
-        </CyDTouchView>
+        <CyDView className='flex flex-row h-full w-full'>
+            <CyDTouchView className='h-full border border-sepratorColor overflow-hidden rounded-[8px]' onPress={() => {
+                navigation.navigate(screenTitle.ACTIVITIES);
+            }}>
+                <CyDView className='h-[75%] w-full flex flex-row justify-evenly items-center '>
+                    {CardBody}
+                </CyDView>
+                <CyDView className={clsx('h-[25%] w-full bg-privacyMessageBackgroundColor justify-center px-[30px]', { 'bg-toastColor': status === ActivityStatus.SUCCESS, 'bg-redColor': status === ActivityStatus.FAILED })}>
+                    <CyDText className='font-bold text-[12px]'>{t(`${type.toUpperCase()}_ACTIVITY`)}</CyDText>
+                </CyDView>
+            </CyDTouchView>
+            <CyDTouchView onPress={() => {
+                void addNewDismissedCard();
+            }} className='absolute top-[-4px] right-[-4px] h-[20px] w-[20px] justify-center items-center bg-white border border-sepratorColor rounded-full overflow-hidden p-[3px]'>
+                <CyDFastImage source={AppImages.CLOSE} className="h-[8px] w-[8px]" resizeMode="contain" />
+            </CyDTouchView>
+        </CyDView>
     );
 };
 
-export default memo(PendingActivityCard);
+export default memo(ActivityCard);
