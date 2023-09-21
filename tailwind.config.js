@@ -57,7 +57,7 @@ module.exports = {
       selectedTextColor: '#6451EF',
       warningRedBg: '#FFEDEA',
       chainColor: '#D4F2F1',
-      toastColor: '#58ADAB',
+      toastColor: '#6FCF97',
       redCyD: '#FD1A1A',
       backLight: '#F7F7FF',
       pinkCyD: '#DB81AE',

@@ -323,9 +323,9 @@ export default function Bridge(props: { navigation?: any; route?: any }) {
       }
       setMinimumAmount(
         minAmountUSD /
-          portfolioState.statePortfolio.tokenPortfolio[
-            ChainNameMapping[item.backendName]
-          ]?.holdings[0].price
+        portfolioState.statePortfolio.tokenPortfolio[
+          ChainNameMapping[item.backendName]
+        ]?.holdings[0].price
       );
       const holdings =
         portfolioState.statePortfolio.tokenPortfolio[
@@ -357,15 +357,7 @@ export default function Bridge(props: { navigation?: any; route?: any }) {
   function onModalHide(type = '') {
     hideModal();
     setTimeout(() => {
-      if (type === 'success') {
-        props.navigation.navigate(C.screenTitle.OPTIONS, {
-          screen: C.screenTitle.ACTIVITIES,
-          initial: false,
-        });
-        props.navigation.popToTop();
-      } else {
-        props.navigation.navigate(C.screenTitle.PORTFOLIO_SCREEN);
-      }
+      props.navigation.navigate(C.screenTitle.PORTFOLIO_SCREEN);
     }, MODAL_HIDE_TIMEOUT);
   }
 
@@ -483,13 +475,13 @@ export default function Bridge(props: { navigation?: any; route?: any }) {
       if (message === t('INSUFFICIENT_GAS_ERROR')) {
         message = !isHashGenerated
           ? `You need ${String(
-              get(
-                nativeTokenMapping,
-                String(get(fromToken, 'chainDetails.backendName'))
-              )
-            )} ( ${String(get(fromToken, 'chainDetails.symbol'))} ) ${t(
-              'INSUFFICIENT_GAS'
-            )}`
+            get(
+              nativeTokenMapping,
+              String(get(fromToken, 'chainDetails.backendName'))
+            )
+          )} ( ${String(get(fromToken, 'chainDetails.symbol'))} ) ${t(
+            'INSUFFICIENT_GAS'
+          )}`
           : `${message}. Please contact customer support with the quote_id: ${quoteUUID}`;
       }
       if (isHashGenerated) {
@@ -663,7 +655,7 @@ export default function Bridge(props: { navigation?: any; route?: any }) {
         toChain: toChain.backendName,
         fromTokenAddress:
           fromChain.backendName === ChainBackendNames.EVMOS &&
-          fromToken?.chainDetails.backendName === ChainBackendNames.EVMOS
+            fromToken?.chainDetails.backendName === ChainBackendNames.EVMOS
             ? '0xeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee'
             : fromToken?.contractAddress,
         toTokenAddress: toToken.contractAddress.toLowerCase(),
@@ -1099,22 +1091,22 @@ export default function Bridge(props: { navigation?: any; route?: any }) {
         );
         setMinimumAmount(
           minAmountUSD /
-            portfolioState.statePortfolio.tokenPortfolio?.eth.holdings[0].price
+          portfolioState.statePortfolio.tokenPortfolio?.eth.holdings[0].price
         );
         setNativeTokenBalance(
           getNativeTokenBalance(
             (
               NativeTokenMapping[
-                portfolioState.statePortfolio.tokenPortfolio?.eth.holdings[0]
-                  .chainDetails.symbol
+              portfolioState.statePortfolio.tokenPortfolio?.eth.holdings[0]
+                .chainDetails.symbol
               ] ||
               portfolioState.statePortfolio.tokenPortfolio?.eth.holdings[0]
                 .chainDetails.symbol
             ).toUpperCase(),
             portfolioState.statePortfolio.tokenPortfolio[
               ChainNameMapping[
-                portfolioState.statePortfolio.tokenPortfolio?.eth.holdings[0]
-                  .chainDetails.backendName
+              portfolioState.statePortfolio.tokenPortfolio?.eth.holdings[0]
+                .chainDetails.backendName
               ]
             ].holdings
           )
@@ -1311,7 +1303,7 @@ export default function Bridge(props: { navigation?: any; route?: any }) {
       nativeTokenBalance <= gas ||
       (fromToken?.symbol === nativeTokenSymbol &&
         parseFloat(cryptoAmount) >
-          parseFloat((parseFloat(fromToken?.actualBalance) - gas).toFixed(6)))
+        parseFloat((parseFloat(fromToken?.actualBalance) - gas).toFixed(6)))
     );
   };
 
@@ -1350,7 +1342,7 @@ export default function Bridge(props: { navigation?: any; route?: any }) {
     } else if (
       fromToken?.symbol === nativeTokenSymbol &&
       parseFloat(cryptoAmount) >
-        parseFloat((parseFloat(fromToken?.actualBalance) - gas).toFixed(6))
+      parseFloat((parseFloat(fromToken?.actualBalance) - gas).toFixed(6))
     ) {
       return renderWarningPopupMessage(`${t<string>('INSUFFICIENT_GAS_FEE')}`);
     }
@@ -1384,9 +1376,8 @@ export default function Bridge(props: { navigation?: any; route?: any }) {
             onPress={(e) => {
               onPressData(reason);
             }}
-            className={`h-[20px] w-[20px] ${
-              selectedReasons.includes(reason) ? 'bg-appColor' : ''
-            } rounded-[4px] border-[1.5px] border-borderColor flex flex-row justify-center items-center`}
+            className={`h-[20px] w-[20px] ${selectedReasons.includes(reason) ? 'bg-appColor' : ''
+              } rounded-[4px] border-[1.5px] border-borderColor flex flex-row justify-center items-center`}
           >
             {selectedReasons.includes(reason) ? (
               <CyDImage
@@ -1409,15 +1400,15 @@ export default function Bridge(props: { navigation?: any; route?: any }) {
       if (
         parseFloat(cryptoAmount) > parseFloat(fromToken?.actualBalance) ||
         nativeTokenBalance <=
-          gasFeeReservation[fromToken?.chainDetails?.backendName] ||
+        gasFeeReservation[fromToken?.chainDetails?.backendName] ||
         (fromToken?.symbol === nativeTokenSymbol &&
           parseFloat(cryptoAmount) >
-            parseFloat(
-              (
-                parseFloat(fromToken?.actualBalance) -
-                gasFeeReservation[fromToken?.chainDetails.backendName]
-              ).toFixed(6)
-            ))
+          parseFloat(
+            (
+              parseFloat(fromToken?.actualBalance) -
+              gasFeeReservation[fromToken?.chainDetails.backendName]
+            ).toFixed(6)
+          ))
       ) {
         quoteData.reasons.push('Insufficient Funds');
       }
@@ -1520,9 +1511,8 @@ export default function Bridge(props: { navigation?: any; route?: any }) {
               onPress={(e) => {
                 setDontAskAgain(!dontAskAgain);
               }}
-              className={`h-[18px] w-[18px] ${
-                dontAskAgain ? 'bg-appColor' : ''
-              } rounded-[4px] border-[1.5px] border-borderColor flex flex-row justify-center items-center ml-[5px]`}
+              className={`h-[18px] w-[18px] ${dontAskAgain ? 'bg-appColor' : ''
+                } rounded-[4px] border-[1.5px] border-borderColor flex flex-row justify-center items-center ml-[5px]`}
             >
               {dontAskAgain ? (
                 <CyDImage
@@ -1755,9 +1745,9 @@ export default function Bridge(props: { navigation?: any; route?: any }) {
           to: routerAddress,
           value: isNative
             ? web3.utils.toWei(
-                limitDecimalPlaces(cryptoAmount, fromToken?.contractDecimals),
-                'ether'
-              )
+              limitDecimalPlaces(cryptoAmount, fromToken?.contractDecimals),
+              'ether'
+            )
             : '0x0',
           data: isAllowance ? quoteData.data.data : '',
         });
@@ -1879,8 +1869,8 @@ export default function Bridge(props: { navigation?: any; route?: any }) {
           to: routerAddress,
           value: isNative
             ? web3.utils.toWei(
-                limitDecimalPlaces(cryptoAmount, fromToken?.contractDecimals)
-              )
+              limitDecimalPlaces(cryptoAmount, fromToken?.contractDecimals)
+            )
             : '0x0',
           data: quoteData.data.data,
         });
@@ -2226,22 +2216,20 @@ export default function Bridge(props: { navigation?: any; route?: any }) {
                       }
                       numberOfLines={1}
                     >
-                      {`${
-                        isSwap()
-                          ? Number(swapParams?.amount).toFixed(4)
-                          : quoteData.fromAmount.toFixed(4)
-                      } ${fromToken?.name}`}
+                      {`${isSwap()
+                        ? Number(swapParams?.amount).toFixed(4)
+                        : quoteData.fromAmount.toFixed(4)
+                        } ${fromToken?.name}`}
                     </CyDText>
                     <CyDText
                       className={
                         'font-nunito font-[12px] text-[#929292] font-bold'
                       }
                     >
-                      {`${
-                        isSwap()
-                          ? (swapParams.amount * fromToken?.price).toFixed(4)
-                          : quoteData.fromAmountUsd.toFixed(4)
-                      } USD`}
+                      {`${isSwap()
+                        ? (swapParams.amount * fromToken?.price).toFixed(4)
+                        : quoteData.fromAmountUsd.toFixed(4)
+                        } USD`}
                     </CyDText>
                   </CyDView>
                 </CyDView>
@@ -2265,24 +2253,22 @@ export default function Bridge(props: { navigation?: any; route?: any }) {
                       }
                       numberOfLines={1}
                     >
-                      {`${
-                        isSwap()
-                          ? Number(
-                              swapParams?.quoteData?.toToken?.amount
-                            ).toFixed(4)
-                          : quoteData.toAmount.toFixed(4)
-                      } ${toToken?.name}`}
+                      {`${isSwap()
+                        ? Number(
+                          swapParams?.quoteData?.toToken?.amount
+                        ).toFixed(4)
+                        : quoteData.toAmount.toFixed(4)
+                        } ${toToken?.name}`}
                     </CyDText>
                     <CyDText
                       className={
                         'font-nunito font-[12px] text-[#929292] font-bold'
                       }
                     >
-                      {`${
-                        isSwap()
-                          ? Number(swapParams?.quoteData?.value).toFixed(4)
-                          : quoteData.toAmountUsd.toFixed(4)
-                      } USD`}
+                      {`${isSwap()
+                        ? Number(swapParams?.quoteData?.value).toFixed(4)
+                        : quoteData.toAmountUsd.toFixed(4)
+                        } USD`}
                     </CyDText>
                   </CyDView>
                 </CyDView>
@@ -2319,12 +2305,12 @@ export default function Bridge(props: { navigation?: any; route?: any }) {
                           ChainBackendNames.JUNO,
                           ChainBackendNames.EVMOS,
                         ].includes(fromChain.backendName) &&
-                        [
-                          ChainBackendNames.COSMOS,
-                          ChainBackendNames.OSMOSIS,
-                          ChainBackendNames.JUNO,
-                          ChainBackendNames.EVMOS,
-                        ].includes(toChain.backendName)
+                          [
+                            ChainBackendNames.COSMOS,
+                            ChainBackendNames.OSMOSIS,
+                            ChainBackendNames.JUNO,
+                            ChainBackendNames.EVMOS,
+                          ].includes(toChain.backendName)
                           ? '~ 7 mins'
                           : '~ 15 mins'}
                       </CyDText>
@@ -2371,7 +2357,7 @@ export default function Bridge(props: { navigation?: any; route?: any }) {
                     isSwap()
                       ? t('SWAP')
                       : t<string>('BRIDGE_ALL_CAPS') +
-                        (quoteExpiryTime ? ' (' + quoteExpiryTime + ')' : '')
+                      (quoteExpiryTime ? ' (' + quoteExpiryTime + ')' : '')
                   }
                   loading={bridgeLoading}
                   disabled={isExchangeDisabled()}
@@ -2707,8 +2693,8 @@ export default function Bridge(props: { navigation?: any; route?: any }) {
                       (NativeTokenMapping[fromToken?.chainDetails?.symbol] ||
                         fromToken?.chainDetails?.symbol) === fromToken?.symbol
                         ? gasFeeReservation[
-                            fromToken?.chainDetails?.backendName
-                          ]
+                        fromToken?.chainDetails?.backendName
+                        ]
                         : 0;
 
                     const maxAmount =
@@ -2776,11 +2762,11 @@ export default function Bridge(props: { navigation?: any; route?: any }) {
                   >
                     {enterCryptoAmount
                       ? (!isNaN(parseFloat(usdAmount))
-                          ? formatAmount(usdAmount)
-                          : '0.00') + ' USD'
+                        ? formatAmount(usdAmount)
+                        : '0.00') + ' USD'
                       : (!isNaN(parseFloat(cryptoAmount))
-                          ? formatAmount(cryptoAmount)
-                          : '0.00') + ` ${fromToken?.name}`}
+                        ? formatAmount(cryptoAmount)
+                        : '0.00') + ` ${fromToken?.name}`}
                   </CyDText>
                 </CyDView>
                 <CyDTouchView
@@ -2847,13 +2833,13 @@ export default function Bridge(props: { navigation?: any; route?: any }) {
             onPress={() => {
               isSwap()
                 ? (() => {
-                    void swap({ showQuote: true });
-                  })()
+                  void swap({ showQuote: true });
+                })()
                 : onPressQuote();
             }}
             isPrivateKeyDependent={isInterCosomosBridge()}
             disabled={isGetQuoteDisabled()}
-          ></Button>
+          />
         </CyDView>
       </CyDScrollView>
     </CyDSafeAreaView>
