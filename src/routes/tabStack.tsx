@@ -32,11 +32,8 @@ import {
 } from '../styles/tailwindStyles';
 import { t } from 'i18next';
 import clsx from 'clsx';
-import { isIOS } from '../misc/checkers';
-import {
-  Easing,
-  Layout,
-} from 'react-native-reanimated';
+import { isAndroid, isIOS } from '../misc/checkers';
+import { Easing, Layout } from 'react-native-reanimated';
 import { Colors } from '../constants/theme';
 import { useKeyboard } from '../hooks/useKeyboardVisibily';
 
@@ -48,7 +45,7 @@ function TabStack() {
   const hdWalletContext = useContext<any>(HdWalletContext);
   const { isReadOnlyWallet } = hdWalletContext.state;
   const inAppUpdates = new SpInAppUpdates(
-    false // isDebug
+    false, // isDebug
   );
   const screensToHaveNavBar = [
     screenTitle.PORTFOLIO_SCREEN,
@@ -89,7 +86,7 @@ function TabStack() {
   const latestDate = (activities: any, lastVisited: Date) => {
     if (activities.length === 0) return false;
     const sortedAsc = activities.sort(
-      (objA: any, objB: any) => Number(objA.datetime) - Number(objB.datetime)
+      (objA: any, objB: any) => Number(objA.datetime) - Number(objB.datetime),
     );
     return sortedAsc[sortedAsc.length - 1].datetime > lastVisited;
   };
@@ -102,7 +99,7 @@ function TabStack() {
         updateResp.shouldUpdate ||
         latestDate(
           activityContext.state.activityObjects,
-          activityContext.state.lastVisited
+          activityContext.state.lastVisited,
         );
       if (showBadge) {
         setBadgedTabBarOptions({
@@ -134,8 +131,8 @@ function TabStack() {
             options.tabBarLabel !== undefined
               ? options.tabBarLabel
               : options.title !== undefined
-                ? options.title
-                : route.name;
+              ? options.title
+              : route.name;
 
           const isFocused = state.index === index;
           const TabBarIcon = options.tabBarIcon;
@@ -177,7 +174,7 @@ function TabStack() {
                   {
                     'mt-[10px] bg-transparent':
                       route.name === screenTitle.SHORTCUTS,
-                  }
+                  },
                 )}
               >
                 {route.name === screenTitle.SHORTCUTS ? (
@@ -209,17 +206,24 @@ function TabStack() {
           const showTabBar =
             currentRouteStack === undefined ||
             screensToHaveNavBar.includes(
-              currentRouteStack[currentRouteStack.length - 1]
+              currentRouteStack[currentRouteStack.length - 1],
             );
           return (
             <CyDAnimatedView
               // TO REDO : TABBAR ANIMATION
               layout={Layout.easing(Easing.ease).delay(50)}
-              className={clsx('rounded-t-[24px] pb-[20px] shadow absolute bottom-[-20px] w-full', {
-                'bottom-[-110px]': !showTabBar,
-                'bottom-[-350px]': keyboardHeight,
-                'shadow-gray-400': (!isReadOnlyWallet && !isIOS()) || isIOS(),
-              })}
+              className={clsx(
+                'rounded-t-[24px] pb-[20px] shadow absolute bottom-[-20px] w-full',
+                {
+                  'bottom-[-110px]': !showTabBar,
+                  relative:
+                    currentRouteStack &&
+                    currentRouteStack[currentRouteStack?.length - 1] ===
+                      screenTitle.BRIDGE_CARD_SCREEN,
+                  'bottom-[-350px]': keyboardHeight,
+                  'shadow-gray-400': (!isReadOnlyWallet && !isIOS()) || isIOS(),
+                },
+              )}
               style={styles.elevatedBackground}
             >
               {isReadOnlyWallet && (
@@ -232,7 +236,7 @@ function TabStack() {
                   <CyDView
                     className={clsx(
                       'flex flex-row justify-center items-center bg-ternaryBackgroundColor py-[5px] top-[2px] rounded-t-[24px]',
-                      { hidden: !showTabBar, 'top-[6px]': !isIOS() }
+                      { hidden: !showTabBar, 'top-[6px]': !isIOS() },
                     )}
                   >
                     <CyDImage
