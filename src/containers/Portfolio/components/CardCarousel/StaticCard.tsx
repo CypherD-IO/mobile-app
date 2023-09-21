@@ -30,7 +30,7 @@ const StaticCard = ({ dscSetter, id, title = '', description = '', bgImageURI, r
             );
         } else {
             return (
-                <CyDView className='h-full flex flex-col justify-center items-center'>
+                <CyDView className='h-full flex flex-col justify-center items-center bg-privacyMessageBackgroundColor'>
                     <CyDText className='text-[14px] font-bold'>{title}</CyDText>
                     <CyDText className='text-[14px] text-subTextColor font-medium'>{description}</CyDText>
                 </CyDView>

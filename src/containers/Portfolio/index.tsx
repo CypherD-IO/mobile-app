@@ -181,12 +181,8 @@ export default function Portfolio({ navigation }: PortfolioProps) {
     const uri = `/v1/configuration/device/banner-info/${ethereum?.address}`;
     try {
       const res = await getWithAuth(uri);
-      return [
-        { pk: '1', sk: 1, id: 'banner1', title: 'Banner 1', description: 'Description 1', priority: 'LOW', redirectURI: 'https://example.com', isClosable: true, endDate: '2023-09-21T10:16:15.460Z' },
-        { pk: '2', sk: 2, id: 'banner2', title: 'Banner 2', description: 'Description 2', priority: 'HIGH', redirectURI: 'https://google.com', isClosable: true, endDate: '2023-09-21T10:16:15.460Z' },
-        { pk: '3', sk: 3, id: 'banner3', title: 'Banner 3', description: 'Description 3', priority: 'MEDIUM', redirectURI: 'https://youtube.com', isClosable: true, endDate: '2023-09-21T10:16:15.460Z' },
-        { pk: '4', sk: 4, id: 'banner4', title: 'Banner 4', description: 'Description 4', priority: 'HIGHEST', redirectURI: 'https://cypherwallet.io', isClosable: false, endDate: '2023-09-21T10:16:15.460Z' },
-      ] as BannerRecord[];
+      const { data: { data: arrayOfBanners } } = res;
+      return arrayOfBanners as BannerRecord[];
     } catch (e) {
       const errorObject = {
         e,
@@ -927,13 +923,13 @@ export default function Portfolio({ navigation }: PortfolioProps) {
         onClipClick={() => setCopyToClipBoard(false)}
         onPress={() => setCopyToClipBoard(false)}
       />
-      {ethereum?.address && globalStateContext?.globalState?.token ? (
+      {/* {ethereum?.address && globalStateContext?.globalState?.token ? (
         <MessageBanner
           navigation={navigation}
           ethAddress={ethereum.address}
           isFocused={isFocused}
         />
-      ) : null}
+      ) : null} */}
       <HeaderBar
         navigation={navigation}
         renderTitleComponent={
