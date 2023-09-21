@@ -40,7 +40,6 @@ import CosmosValidators from '../containers/CosmosStaking/validators';
 import CosmosAction from '../containers/CosmosStaking/action';
 import CosmosSelectReValidator from '../containers/CosmosStaking/reValidator';
 import CoinbasePay from '../containers/FundCardScreen/cbpay';
-import SardinePay from '../containers/FundCardScreen/sardinePay';
 import QRScanner from '../containers/Qrcode/QRScanner';
 import FundCardScreen from '../containers/FundCardScreen';
 import AppSettings from '../containers/Options/appSettings';
@@ -481,25 +480,6 @@ export function PortfolioStackScreen({ navigation, route }) {
           headerTransparent: false,
           headerShadowVisible: true,
           title: t('ON_META'),
-          navigationOptions: {
-            tabBarVisible: false,
-          },
-          headerTitleAlign: 'center',
-          headerTitleStyle: {
-            fontFamily: C.fontsName.FONT_BLACK,
-            fontSize: 20,
-            fontWeight: '800',
-          },
-          headerLeft: (props) => defaultHeaderLeft(navigation),
-        })}
-      />
-      <PortfolioStack.Screen
-        name={screenTitle.SARD_PAY}
-        component={SardinePay}
-        options={({ navigation, route }) => ({
-          headerTransparent: false,
-          headerShadowVisible: false,
-          title: t('SARD_PAY'),
           navigationOptions: {
             tabBarVisible: false,
           },
