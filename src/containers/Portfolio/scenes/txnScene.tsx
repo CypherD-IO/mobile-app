@@ -1,5 +1,5 @@
 import React, { memo, useContext, useEffect, useRef, useState } from "react";
-import { CyDFastImage, CyDText, CyDTextInput, CyDTouchView, CyDView } from "../../../styles/tailwindStyles";
+import { CyDFastImage, CyDText, CyDTouchView, CyDView } from "../../../styles/tailwindStyles";
 import AppImages from "../../../../assets/images/appImages";
 import { useTranslation } from "react-i18next";
 import { HdWalletContext, formatAmount, getMaskedAddress } from "../../../core/util";
@@ -11,15 +11,14 @@ import TransactionInfoModal from "../components/transactionInfoModal";
 import { FlatList, NativeScrollEvent, NativeSyntheticEvent, RefreshControl, ScrollView } from "react-native";
 import axios from "../../../core/Http";
 import { hostWorker } from "../../../global";
-import { AnimatedTabView, OFFSET_TABVIEW } from "../animatedComponents";
+import { AnimatedTabView } from "../animatedComponents";
 import { SharedValue } from "react-native-reanimated";
-import { H_BALANCE_BANNER } from "../constants";
 import TxnFilterModal, { STATUSES, TRANSACTION_TYPES } from "../components/TxnFilterModal";
 import { TransactionType } from "../../../constants/enum";
 import { TransactionObj } from "../../../models/transaction.model";
-import { act } from "react-test-renderer";
 import { ChainConfigMapping } from "../../../constants/server";
 import clsx from "clsx";
+import { isIOS } from "../../../misc/checkers";
 
 interface TxnItemProps {
   activity: TransactionObj
@@ -37,42 +36,43 @@ interface TxnSceneProps {
   onMomentumScrollBegin: (e: ScrollEvent) => void;
   onMomentumScrollEnd: (e: ScrollEvent) => void;
   onScrollEndDrag: (e: ScrollEvent) => void;
-  navigation: any,
+  navigation: any;
+  bannerHeight: 160 | 260;
   filterModalVisibilityState: [boolean, React.Dispatch<React.SetStateAction<boolean>>]
 }
 
 const ARCH_HOST = hostWorker.getHost('ARCH_HOST');
 
-const GetTransactionItemIcon = ({type,status,tokenIcon,fromTokenIcon,toTokenIcon}: {type: string, status: string,tokenIcon:string | null, fromTokenIcon: string| undefined , toTokenIcon: string| undefined}) => {
+const GetTransactionItemIcon = ({ type, status, tokenIcon, fromTokenIcon, toTokenIcon }: { type: string, status: string, tokenIcon: string | null, fromTokenIcon: string | undefined, toTokenIcon: string | undefined }) => {
   let transactionIcon;
   switch (type) {
     case TransactionType.SEND:
-      transactionIcon =  status === 'completed' ? (tokenIcon ? { uri: tokenIcon } : AppImages.UNKNOWN_TXN_TOKEN) : AppImages.TXN_SEND_ERROR;
+      transactionIcon = status === 'completed' ? (tokenIcon ? { uri: tokenIcon } : AppImages.UNKNOWN_TXN_TOKEN) : AppImages.TXN_SEND_ERROR;
       return (<CyDFastImage className='h-[25px] w-[25px] rounded-[8px]' resizeMode='contain' source={transactionIcon} />)
     case TransactionType.RECEIVE:
-      transactionIcon =  status === 'completed' ? (tokenIcon ? { uri: tokenIcon } :AppImages.UNKNOWN_TXN_TOKEN) : AppImages.TXN_RECEIVE_ERROR;
+      transactionIcon = status === 'completed' ? (tokenIcon ? { uri: tokenIcon } : AppImages.UNKNOWN_TXN_TOKEN) : AppImages.TXN_RECEIVE_ERROR;
       return (<CyDFastImage className='h-[25px] w-[25px] rounded-[8px]' resizeMode='contain' source={transactionIcon} />)
     case TransactionType.SWAP:
       const fromTokenImg = fromTokenIcon ? { uri: fromTokenIcon } : AppImages.UNKNOWN_TXN_TOKEN;
       const toTokenImg = toTokenIcon ? { uri: toTokenIcon } : AppImages.UNKNOWN_TXN_TOKEN;
-      
+
       return (
         <CyDView className='h-[25px] w-[25px] justify-center items-center' style={{ position: 'relative', backgroundColor: 'transparent' }}>
           <CyDFastImage
             className='h-[18px] w-[18px] absolute right-[8px] rounded-[8px]'
             resizeMode='contain'
             source={fromTokenImg}
-            />
+          />
           <CyDFastImage
-              className='h-[18px] w-[18px] absolute top-[10px] left-[8px] rounded-[8px]'
-              resizeMode='contain'
-              source={toTokenImg}
-            />
+            className='h-[18px] w-[18px] absolute top-[10px] left-[8px] rounded-[8px]'
+            resizeMode='contain'
+            source={toTokenImg}
+          />
         </CyDView>
       );
-      
+
     case TransactionType.SELF:
-      transactionIcon =  status === 'completed' ? AppImages.TXN_SELF_SUCCESS : AppImages.TXN_SELF_ERROR;
+      transactionIcon = status === 'completed' ? AppImages.TXN_SELF_SUCCESS : AppImages.TXN_SELF_ERROR;
       return (<CyDFastImage className='h-[25px] w-[25px] rounded-[8px]' resizeMode='contain' source={transactionIcon} />)
     default:
       transactionIcon = status === 'completed' ? AppImages.TXN_DEFAULT_SUCCESS : AppImages.TXN_DEFAULT_ERROR;
@@ -145,8 +145,11 @@ const TxnScene = ({
   onMomentumScrollEnd,
   onScrollEndDrag,
   navigation,
+  bannerHeight,
   filterModalVisibilityState,
 }: TxnSceneProps) => {
+  const OFFSET_TABVIEW = isIOS() ? -bannerHeight : 0;
+
   const isFocused = useIsFocused();
   const hdWalletContext = useContext<any>(HdWalletContext);
   const { address: ethereumAddress }: { address: string } = hdWalletContext.state.wallet.ethereum;
@@ -179,6 +182,7 @@ const TxnScene = ({
   const flatListRef = useRef<FlatList<any>>(null);
 
 
+
   const fetchTxn = async () => {
     try {
       const response = await axios.get(getTransactionsUrl);
@@ -197,17 +201,17 @@ const TxnScene = ({
 
   useEffect(() => {
     if (flatListRef.current) {
-      if (scrollY.value <= OFFSET_TABVIEW + H_BALANCE_BANNER) {
+      if (scrollY.value <= OFFSET_TABVIEW + bannerHeight) {
         flatListRef.current.scrollToOffset({
           offset: Math.max(
-            Math.min(scrollY.value, OFFSET_TABVIEW + H_BALANCE_BANNER),
+            Math.min(scrollY.value, OFFSET_TABVIEW + bannerHeight),
             OFFSET_TABVIEW
           ),
           animated: false,
         });
       } else {
         flatListRef.current.scrollToOffset({
-          offset: OFFSET_TABVIEW + H_BALANCE_BANNER,
+          offset: OFFSET_TABVIEW + bannerHeight,
           animated: false,
         });
       }
@@ -304,43 +308,43 @@ const TxnScene = ({
     }
     const formatDate = moment.unix(activity.timestamp).format('h:mm a');
     const formatedDay = moment.unix(activity.timestamp).format('MMM DD, YYYY');
-    const previousTransactionFormatedDay = index > 0 ? moment.unix(transaction[index-1].timestamp).format('MMM DD, YYYY'): '';
-    const nextTransactionFormatedDay = transaction[index+1]  ? moment.unix(transaction[index+1].timestamp).format('MMM DD, YYYY'): '';
+    const previousTransactionFormatedDay = index > 0 ? moment.unix(transaction[index - 1].timestamp).format('MMM DD, YYYY') : '';
+    const nextTransactionFormatedDay = transaction[index + 1] ? moment.unix(transaction[index + 1].timestamp).format('MMM DD, YYYY') : '';
 
-    let shouldRenderDate= false;
-    if(formatedDay !== previousTransactionFormatedDay){
-       dateCheck = moment.unix(activity.timestamp).format('MMM DD, YYYY')
-       shouldRenderDate = true;
+    let shouldRenderDate = false;
+    if (formatedDay !== previousTransactionFormatedDay) {
+      dateCheck = moment.unix(activity.timestamp).format('MMM DD, YYYY')
+      shouldRenderDate = true;
     }
     const [formattedAmount, amountColour] = getTransactionItemAmountDetails(activity.type, activity.value, activity.token, activity.additionalData?.fromTokenValue ?? '', activity.additionalData?.fromToken ?? '');
     const title = activity.type ? activity?.type.charAt(0).toUpperCase() + activity.type.slice(1) : 'Unknown';
     return (
       <CyDView>
-      {shouldRenderDate && <CyDView className={clsx(' border-sepratorColor pl-[10px] pr-[30px] py-[10px] justify-center', {'mt-[28px]': index!==0 } )}>
-        <CyDText className='font-bold text-[16px]'>{formatedDay}</CyDText>
-      </CyDView>}   
-      <CyDTouchView className={clsx('flex flex-row items-center py-[10px] border-b-[0.5px] border-x border-sepratorColor pl-[10px] pr-[30px]', {'rounded-t-[24px] border-t-[0.5px]' : shouldRenderDate , 'rounded-b-[24px]' : (nextTransactionFormatedDay!==formatedDay)})}
-      onPress={() => {
-        setTransactionInfoParams(activity);
-      }}
-    >
-      <GetTransactionItemIcon type={activity.type} status={activity.status} tokenIcon={activity.tokenIcon} fromTokenIcon={activity.additionalData?.fromTokenIcon} toTokenIcon={activity.additionalData?.toTokenIcon} />
-      <CyDView className="flex flex-row justify-between">
-        <CyDView className='px-[10px] items-start justify-start'>
-          <CyDView className='flex flex-row justify-center items-center'>
-            <CyDText className='font-bold text-[16px]'>{title}</CyDText>
+        {shouldRenderDate && <CyDView className={clsx(' border-sepratorColor pl-[10px] pr-[30px] py-[10px] justify-center', { 'mt-[28px]': index !== 0 })}>
+          <CyDText className='font-bold text-[16px]'>{formatedDay}</CyDText>
+        </CyDView>}
+        <CyDTouchView className={clsx('flex flex-row items-center py-[10px] border-b-[0.5px] border-x border-sepratorColor pl-[10px] pr-[30px]', { 'rounded-t-[24px] border-t-[0.5px]': shouldRenderDate, 'rounded-b-[24px]': (nextTransactionFormatedDay !== formatedDay) })}
+          onPress={() => {
+            setTransactionInfoParams(activity);
+          }}
+        >
+          <GetTransactionItemIcon type={activity.type} status={activity.status} tokenIcon={activity.tokenIcon} fromTokenIcon={activity.additionalData?.fromTokenIcon} toTokenIcon={activity.additionalData?.toTokenIcon} />
+          <CyDView className="flex flex-row justify-between">
+            <CyDView className='px-[10px] items-start justify-start'>
+              <CyDView className='flex flex-row justify-center items-center'>
+                <CyDText className='font-bold text-[16px]'>{title}</CyDText>
+              </CyDView>
+              <CyDView className='flex flex-row justify-center items-center'>
+                <CyDFastImage className='h-[10px] w-[10px] mr-[5px]' resizeMode='contain' source={chainImg} />
+                <RenderTransactionItemDetails type={activity.type} from={activity.from} to={activity.to} />
+              </CyDView>
+            </CyDView>
+            <CyDView className='flex flex-1 items-end self-end'>
+              <CyDText numberOfLines={1} className={`${amountColour} mt-[3px]`}>{formattedAmount}</CyDText>
+              <CyDText>{formatDate}</CyDText>
+            </CyDView>
           </CyDView>
-          <CyDView className='flex flex-row justify-center items-center'>
-            <CyDFastImage className='h-[10px] w-[10px] mr-[5px]' resizeMode='contain' source={chainImg} />
-            <RenderTransactionItemDetails type={activity.type} from={activity.from} to={activity.to} />
-          </CyDView>
-        </CyDView>
-        <CyDView className='flex flex-1 items-end self-end'>
-          <CyDText numberOfLines={1} className={`${amountColour} mt-[3px]`}>{formattedAmount}</CyDText>
-          <CyDText>{formatDate}</CyDText>
-        </CyDView>
-      </CyDView>
-    </CyDTouchView></CyDView>
+        </CyDTouchView></CyDView>
     );
 
   }
@@ -370,7 +374,7 @@ const TxnScene = ({
               onRefresh={() => {
                 void onRefresh();
               }}
-              progressViewOffset={H_BALANCE_BANNER}
+              progressViewOffset={bannerHeight}
             />
           }
           keyExtractor={(item, index) => index.toString()}
@@ -385,6 +389,7 @@ const TxnScene = ({
             );
           }}
           ListEmptyComponent={<NoTxnsFound />}
+          bannerHeight={bannerHeight}
           scrollY={scrollY}
           onScrollEndDrag={onScrollEndDrag}
           onMomentumScrollBegin={onMomentumScrollBegin}

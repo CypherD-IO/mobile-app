@@ -46,20 +46,20 @@ export const getPlatformVersion = () => {
   return Platform.Version;
 };
 
-export function getExplorerUrl (chainSymbol: string, chainName: string, hash: string) {
+export function getExplorerUrl(chainSymbol: string, chainName: string, hash: string) {
   switch (chainSymbol) {
     case CHAIN_ETH.symbol:
       if (chainName === CHAIN_ARBITRUM.name) {
         return `https://arbiscan.io/tx/${hash}`;
       } else if (chainName === CHAIN_OPTIMISM.name) {
         return `https://optimistic.etherscan.io/tx/${hash}`;
-      }else if( chainName === CHAIN_ZKSYNC_ERA.name ){
+      } else if (chainName === CHAIN_ZKSYNC_ERA.name) {
         return `https://explorer.zksync.io/tx/${hash}`;
       }
-      else if( chainName === CHAIN_BASE.name){
+      else if (chainName === CHAIN_BASE.name) {
         return `https://base.dex.guru/tx/${hash}`;
-       }
-      else if( chainName === CHAIN_POLYGON_ZKEVM.name){
+      }
+      else if (chainName === CHAIN_POLYGON_ZKEVM.name) {
         return `https://zkevm.polygonscan.com/tx/${hash}`;
       }
       return `https://etherscan.io/tx/${hash}`;
@@ -90,7 +90,7 @@ export function getExplorerUrl (chainSymbol: string, chainName: string, hash: st
       return `https://explorer-sphinx.shardeum.org/transaction/${hash}`;
   }
 }
-export function getNftExplorerUrl (chain_symbol: string, contractAddress: string, id: string) {
+export function getNftExplorerUrl(chain_symbol: string, contractAddress: string, id: string) {
   switch (chain_symbol) {
     case CHAIN_ETH.backendName:
       return `https://opensea.io/assets/ethereum/${contractAddress}/${id}`;
@@ -138,7 +138,7 @@ export const TARGET_BRIDGE_JUNO_WALLET_ADDRESS = 'juno1e6khhgeyut7y0qxw2glrdl4al
 export const TARGET_BRIDGE_STARGAZE_WALLET_ADDRESS = 'stars1e6khhgeyut7y0qxw2glrdl4al3acavdf38nuq5';
 export const TARGET_BRIDGE_NOBLE_WALLET_ADDRESS = 'noble1e6khhgeyut7y0qxw2glrdl4al3acavdf38nuq5';
 
-export function getWeb3Endpoint (selectedChain: Chain, context): string {
+export function getWeb3Endpoint(selectedChain: Chain, context): string {
   try {
     if (context) {
       const globalStateCasted: GlobalStateDef = (context as unknown as GlobalContextDef).globalState;
@@ -227,7 +227,7 @@ export const isBigIntZero = (num: bigint): boolean => {
   return num === BigInt(0);
 };
 
-export const getTimeForDate = (d: Date): {hours: string, minutes: string, seconds: string} => {
+export const getTimeForDate = (d: Date): { hours: string, minutes: string, seconds: string } => {
   const hours: number | string = 18 - d.getUTCHours() >= 0 ? 18 - d.getUTCHours() : 23 - (d.getUTCHours() - 19);
   const min: number | string = 60 - d.getUTCMinutes() - 1;
   const sec: number | string = 60 - d.getUTCSeconds();
@@ -298,7 +298,7 @@ export const isAddressSet = (address: string) => {
   return address !== undefined && address !== _NO_CYPHERD_CREDENTIAL_AVAILABLE_ && address !== IMPORTING;
 };
 
-export function copyToClipboard (text: string) {
+export function copyToClipboard(text: string) {
   Clipboard.setString(text);
 }
 
@@ -308,7 +308,7 @@ export const getNativeTokenBalance = (tokenSymbol: string, chainHoldings: any) =
   return balance;
 };
 
-export function getSendAddressFieldPlaceholder (chainName: string, backendName: string) {
+export function getSendAddressFieldPlaceholder(chainName: string, backendName: string) {
   if (chainName === 'ethereum') {
     return Object.keys(EnsCoinTypes).includes(backendName) ? t('SEND_ETHEREUM_PLACEHOLDER_WITH_ENS') : t('SEND_ETHEREUM_PLACEHOLDER');
   } else if (chainName === 'evmos') {
@@ -318,18 +318,18 @@ export function getSendAddressFieldPlaceholder (chainName: string, backendName: 
   }
 }
 
-export async function sleepFor (milliseconds: number) {
+export async function sleepFor(milliseconds: number) {
   return await new Promise<void>((resolve, reject) => {
     setTimeout(() => resolve(), milliseconds);
   });
 }
 
-export function isValidEns (domain: string) {
+export function isValidEns(domain: string) {
   const ensReg = /^[-a-zA-Z0-9@:%._+~#=]{1,256}\.[a-zA-Z0-9()]{1,6}\b([-a-zA-Z0-9()@:%_+.~#?&//=]*)?$/ig;
   return ensReg.test(domain);
 }
 
-export function getMaskedAddress (address: string, maskLength = 6) {
+export function getMaskedAddress(address: string, maskLength = 6) {
   let prefixLength = 2;
   const len = address?.length;
   if (Web3.utils.isAddress(address)) {
@@ -346,7 +346,7 @@ export function getMaskedAddress (address: string, maskLength = 6) {
   return `${address?.slice(0, prefixLength + maskLength)}...${address?.slice(len - maskLength, len)}`;
 }
 
-export function SendToAddressValidator (chainName: string | undefined, backendName: string | undefined, address: string | undefined) {
+export function SendToAddressValidator(chainName: string | undefined, backendName: string | undefined, address: string | undefined) {
   if (chainName && backendName && address) {
     switch (chainName) {
       case CHAIN_ETH.chainName:
@@ -370,7 +370,7 @@ export function SendToAddressValidator (chainName: string | undefined, backendNa
   return false;
 }
 
-export function findChainOfAddress (address: string) {
+export function findChainOfAddress(address: string) {
   if (address) {
     if (isEvmosAddress(address)) return 'evmos';
     if (isCosmosAddress(address)) return 'cosmos';
@@ -383,11 +383,11 @@ export function findChainOfAddress (address: string) {
   return false;
 }
 
-export function isEthereumAddress (address: string) {
+export function isEthereumAddress(address: string) {
   return (Object.keys(EnsCoinTypes).includes(ChainBackendNames.ETH) ? (Web3.utils.isAddress(address) || isValidEns(address)) : Web3.utils.isAddress(address));
 }
 
-export function limitDecimalPlaces (num: string | number, decimalPlaces: number) {
+export function limitDecimalPlaces(num: string | number, decimalPlaces: number) {
   num = String(num);
   return num.includes('.') ? num.slice(0, num.indexOf('.') + (decimalPlaces + 1)) : num;
 }
@@ -404,7 +404,7 @@ export const isACosmosStakingToken = (tokenData: any) => [ChainBackendNames.OSMO
 
 export const isABasicCosmosStakingToken = (tokenData: any) => [ChainBackendNames.OSMOSIS, ChainBackendNames.COSMOS, ChainBackendNames.JUNO, ChainBackendNames.STARGAZE].some(chain => isCosmosStakingToken(chain as string, tokenData));
 
-export const calculateTime = function time (ttime: string) {
+export const calculateTime = function time(ttime: string) {
   const ms = Date.parse(String(new Date())) - Date.parse(ttime);
   const seconds: number = Number.parseInt((ms / 1000).toFixed(0));
   const minutes: number = Number.parseInt((ms / (1000 * 60)).toFixed(0));
@@ -500,13 +500,13 @@ export const generateRandomInt = (min: number, max: number) => {
   return Math.floor(Math.random() * (max - min + 1)) + min;
 };
 
-export const formatAmount = (amount: string | number) => {
+export const formatAmount = (amount: string | number, precision = 4) => {
   if (Number(amount) < 1) {
     return new Intl.NumberFormat('en-US', {
-      maximumSignificantDigits: 4
+      maximumSignificantDigits: precision
     }).format(Number(amount));
   } else {
-    const factor = Math.pow(10, 4);
+    const factor = Math.pow(10, precision);
     return Math.floor(Number(amount) * factor) / factor;
   }
 };

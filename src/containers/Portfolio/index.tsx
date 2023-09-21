@@ -33,7 +33,6 @@ import {
   PORTFOLIO_ERROR,
   PORTFOLIO_NEW_LOAD,
   PORTFOLIO_LOADING,
-  PortfolioState,
 } from '../../reducers/portfolio_reducer';
 import * as Sentry from '@sentry/react-native';
 import {
@@ -43,7 +42,7 @@ import {
   getHideBalanceStatus,
 } from '../../core/asyncStorage';
 import { useIsFocused } from '@react-navigation/native';
-import { GlobalContext, GlobalContextDef } from '../../core/globalContext';
+import { GlobalContext } from '../../core/globalContext';
 import { HdWalletContext, PortfolioContext } from '../../core/util';
 import { useGlobalModalContext } from '../../components/v2/GlobalModal';
 import {
@@ -55,7 +54,6 @@ import appsFlyer from 'react-native-appsflyer';
 import { TokenMeta } from '../../models/tokenMetaData.model';
 import Button from '../../components/v2/button';
 import {
-  MessageBanner,
   HeaderBar,
   Banner,
   PortfolioTabView,
@@ -63,7 +61,6 @@ import {
   TabRoute,
   RefreshTimerBar,
 } from './components';
-import { HdWalletContextDef } from '../../reducers/hdwallet_reducer';
 import { BarCodeReadEvent } from 'react-native-camera';
 import { AnimatedBanner, AnimatedTabBar } from './animatedComponents';
 import { useScrollManager } from '../../hooks/useScrollManager';
@@ -73,6 +70,7 @@ import moment from 'moment';
 import clsx from 'clsx';
 import { isIOS } from '../../misc/checkers';
 import FilterBar from './components/FilterBar';
+import CardCarousel from './components/CardCarousel';
 
 export interface PortfolioProps {
   navigation: any;
@@ -81,10 +79,9 @@ export interface PortfolioProps {
 export default function Portfolio({ navigation }: PortfolioProps) {
   const { t } = useTranslation();
   const isFocused = useIsFocused();
-
-  const globalStateContext = useContext<GlobalContextDef | null>(GlobalContext);
-  const hdWallet = useContext<HdWalletContextDef | null>(HdWalletContext);
-  const portfolioState = useContext<PortfolioState | any>(PortfolioContext);
+  const globalStateContext = useContext(GlobalContext);
+  const hdWallet = useContext(HdWalletContext);
+  const portfolioState = useContext(PortfolioContext);
   const { showModal, hideModal } = useGlobalModalContext();
 
   const [chooseChain, setChooseChain] = useState<boolean>(false);
@@ -114,7 +111,7 @@ export default function Portfolio({ navigation }: PortfolioProps) {
     { key: 'txn', title: t('TXNS'), scrollableType: ScrollableType.FLATLIST },
   ];
 
-  const { scrollY, index, setIndex, getRefForKey, ...sceneProps } =
+  const { scrollY, index, setIndex, bannerHeight, setBannerHeight, getRefForKey, ...sceneProps } =
     useScrollManager(tabsWithScrollableType);
 
   const ethereum = hdWallet?.state.wallet.ethereum;
@@ -555,7 +552,7 @@ export default function Portfolio({ navigation }: PortfolioProps) {
         case 'token':
           return (
             <CyDView className='flex-1 h-full'>
-              <AnimatedTabBar scrollY={scrollY}>
+              <AnimatedTabBar scrollY={scrollY} bannerHeight={bannerHeight}>
                 {renderTabBarFooter(tab.key)}
               </AnimatedTabBar>
               <TokenScene
@@ -563,6 +560,7 @@ export default function Portfolio({ navigation }: PortfolioProps) {
                 routeKey={'token'}
                 scrollY={scrollY}
                 navigation={navigation}
+                bannerHeight={bannerHeight}
                 isVerifyCoinChecked={isVerifyCoinChecked}
                 getAllChainBalance={getAllChainBalance}
                 setRefreshData={setRefreshData}
@@ -572,7 +570,7 @@ export default function Portfolio({ navigation }: PortfolioProps) {
         case 'nft':
           return (
             <CyDView className='flex-1 h-full'>
-              <AnimatedTabBar scrollY={scrollY}>
+              <AnimatedTabBar scrollY={scrollY} bannerHeight={bannerHeight}>
                 {renderTabBarFooter(tab.key)}
               </AnimatedTabBar>
               <NFTScene
@@ -580,6 +578,7 @@ export default function Portfolio({ navigation }: PortfolioProps) {
                 routeKey={tab.key}
                 scrollY={scrollY}
                 navigation={navigation}
+                bannerHeight={bannerHeight}
                 selectedChain={
                   portfolioState.statePortfolio.selectedChain.symbol
                 }
@@ -589,7 +588,7 @@ export default function Portfolio({ navigation }: PortfolioProps) {
         case 'txn':
           return (
             <CyDView className='flex-1 h-full mx-[10px]'>
-              <AnimatedTabBar scrollY={scrollY}>
+              <AnimatedTabBar scrollY={scrollY} bannerHeight={bannerHeight}>
                 {renderTabBarFooter(tab.key)}
               </AnimatedTabBar>
               <TXNScene
@@ -597,6 +596,7 @@ export default function Portfolio({ navigation }: PortfolioProps) {
                 routeKey={tab.key}
                 scrollY={scrollY}
                 navigation={navigation}
+                bannerHeight={bannerHeight}
                 filterModalVisibilityState={[filterModalVisible, setFilterModalVisible]}
               />
             </CyDView>
@@ -678,13 +678,6 @@ export default function Portfolio({ navigation }: PortfolioProps) {
         onClipClick={() => setCopyToClipBoard(false)}
         onPress={() => setCopyToClipBoard(false)}
       />
-      {ethereum?.address && globalStateContext?.globalState?.token ? (
-        <MessageBanner
-          navigation={navigation}
-          ethAddress={ethereum.address}
-          isFocused={isFocused}
-        />
-      ) : null}
       <HeaderBar
         navigation={navigation}
         renderTitleComponent={
@@ -694,10 +687,14 @@ export default function Portfolio({ navigation }: PortfolioProps) {
         }
         setChooseChain={setChooseChain}
         scrollY={scrollY}
+        bannerHeight={bannerHeight}
         onWCSuccess={onWCSuccess}
       />
-      <AnimatedBanner scrollY={scrollY}>
-        <Banner checkAllBalance={checkAll(portfolioState)} />
+      <AnimatedBanner
+        scrollY={scrollY}
+        bannerHeight={bannerHeight}>
+        <Banner bannerHeight={bannerHeight} checkAllBalance={checkAll(portfolioState)} />
+        <CardCarousel setBannerHeight={setBannerHeight} />
       </AnimatedBanner>
 
       <CyDView className={clsx('flex-1 pb-[40px]', { 'pb-[75px]': !isIOS() })}>
@@ -707,7 +704,7 @@ export default function Portfolio({ navigation }: PortfolioProps) {
           routes={tabs}
           width={useWindowDimensions().width}
           renderTabBar={(p) => (
-            <AnimatedTabBar scrollY={scrollY}>
+            <AnimatedTabBar bannerHeight={bannerHeight} scrollY={scrollY}>
               <TabBar {...p} />
             </AnimatedTabBar>
           )}
