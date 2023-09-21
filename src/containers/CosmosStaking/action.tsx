@@ -163,7 +163,7 @@ export default function CosmosAction ({ route, navigation }) {
 
       const simulation = await client.simulate(senderAddress, [msg], memo);
 
-      const gasFee = simulation * currentChain.gasPrice;
+      const gasFee = simulation * currentChain.gasPrice * 1.3;
       setGasFee(gasFee);
       if (CosmosActionType.SIMULATION === type) {
         analytics().logEvent(`${from}_simulated`);
@@ -202,9 +202,9 @@ export default function CosmosAction ({ route, navigation }) {
   return (
     <CyDScrollView className={'bg-white h-full w-full px-[20px]'}>
       <CyDModalLayout setModalVisible={setSignModalVisible} isModalVisible={signModalVisible} style={styles.modalLayout} animationIn={'slideInUp'} animationOut={'slideOutDown'}>
-        <CyDView className={'bg-white p-[25px] pb-[30px] rounded-t-[20px] relative'}>
-          <CyDTouchView onPress={() => setSignModalVisible(false)} className={'z-[50]'}>
-            <CyDImage source={AppImages.CLOSE} className={' w-[22px] h-[22px] z-[50] absolute right-[0px] '} />
+        <CyDView className={'bg-white  px-[25px] pb-[30px] rounded-t-[20px] relative'}>
+          <CyDTouchView onPress={() => setSignModalVisible(false)} className={'w-full flex-1 flex-row py-[20px] justify-end z-[50]'}>
+            <CyDImage source={AppImages.CLOSE} className={' w-[18px] h-[18px]'} />
           </CyDTouchView>
           <CyDText className={'mt-[10px] font-bold text-center text-[22px]'}>
             {`${from} ${from === CosmosActionType.DELEGATE ? 'to' : 'from'} ${validatorData.name}`}
@@ -302,7 +302,7 @@ export default function CosmosAction ({ route, navigation }) {
           if (CosmosActionType.DELEGATE === from && ((parseFloat(cosmosStaking.cosmosStakingState.balance) * (10 ** -tokenData.contractDecimals)) - 0.2) > 0) setAmount(((parseFloat(cosmosStaking.cosmosStakingState.balance) * (10 ** -tokenData.contractDecimals)) - 0.2).toFixed(6));
           else if (CosmosActionType.UNDELEGATE === from) setAmount((parseFloat(validatorData.balance) * (10 ** -tokenData.contractDecimals)).toFixed(6));
           else if (CosmosActionType.REDELEGATE === from) setAmount((parseFloat(validatorData.balance) * (10 ** -tokenData.contractDecimals)).toFixed(6));
-        } } title={t('MAX')} type={'primary'} style={'ml-[8px] p-[3%] text-[12px] bg-inputBorderColor'} titleStyle={'text-[14px]'}/>
+        } } title={t('MAX')} type={'primary'} style={'p-[3%] mr-[2px] text-[12px] bg-inputBorderColor'} titleStyle={'text-[14px]'}/>
       </CyDView>
 
       {from === CosmosActionType.DELEGATE && <CyDText

@@ -43,6 +43,7 @@ const resources = {
       COINS: 'COINS',
       TOKENS: 'Tokens',
       NFTS: 'NFTs',
+      TXNS: 'History',
       MY_COLLECTIONS: 'My collections',
       ETH: 'ETH',
       BROWSER_TRA_DETAIL: 'Browser Transaction History',
@@ -112,7 +113,6 @@ const resources = {
       APPLY_CARD: 'Apply for card',
       FROM: 'From',
       TO: 'To',
-      TOKENS: 'Tokens',
       BRIDGE_TEXT: 'Cross-Chain Token Bridge',
       GET_STARTED: 'Get Started',
       INFO_TEXT: 'To ensure the security of your account, please enter your phone number below and we will send you a unique code to authenticate you.',
@@ -709,7 +709,7 @@ const resources = {
       CARD_PIN_SET_HEADER: 'Your new pin has been set',
       CARD_PIN_SET_DESCRIPTION: 'Use your card with the new pin',
       CARD_SET_PIN_TO_USE_CARD: 'This pin will be used while making transactions with your card',
-      INSUFFICIENT_BALANCE_CARD: 'Amount that your trying to load is higher than your actual balance',
+      INSUFFICIENT_BALANCE_CARD: 'Amount that you are trying to load is higher than your actual balance',
       MAYBE_LATER: 'Maybe later',
       HOME: 'Home',
       HISTORY: 'History',
@@ -746,7 +746,14 @@ const resources = {
       TIMER_BAR_MM: '%d months ago',
       TIMER_BAR_y: 'a year ago',
       TIMER_BAR_yy: '%d years ago',
-      STAKE: 'stake'
+      STAKE: 'stake',
+      STAKE_TITLE: 'STAKE',
+      RECEIVED_ON: 'RECEIVED ON',
+      APPLICATION: 'Application',
+      STATUS: 'Status',
+      RESET_ALL: 'Reset all',
+      TRANSACTIONS_FILTER: 'Transactions Filter',
+      MINIMUM_AMOUNT_ETH: 'Minimum amount to transfer in ethereum chain is $50'
     }
   }
 };

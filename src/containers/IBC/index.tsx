@@ -293,7 +293,7 @@ export default function IBC ({ route, navigation }: { route: any, navigation: an
         }
         if (type === 'txn') {
           const fee = {
-            gas: Math.floor(simulation * 1.3).toString(),
+            gas: Math.floor(simulation * 1.8).toString(),
             amount: [
               {
                 denom: currentChain.denom,

@@ -392,11 +392,11 @@ export const ALL_CHAINS: Chain[] = [
   CHAIN_OSMOSIS,
   CHAIN_JUNO,
   CHAIN_BSC,
-  CHAIN_SHARDEUM,
-  CHAIN_SHARDEUM_SPHINX,
   CHAIN_ZKSYNC_ERA,
   CHAIN_BASE,
   CHAIN_POLYGON_ZKEVM,
+  CHAIN_SHARDEUM,
+  CHAIN_SHARDEUM_SPHINX
 ];
 
 export const EVM_CHAINS: Chain[] = [
@@ -532,6 +532,50 @@ export enum ChainNames {
   POLYGON_ZKEVM = 'polygon_zkevm',
 }
 
+export enum ChainNameMapping {
+  BSC = 'bsc',
+  ETH = 'eth',
+  POLYGON = 'polygon',
+  AVALANCHE = 'avalanche',
+  EVMOS = 'evmos',
+  FANTOM = 'fantom',
+  OPTIMISM = 'optimism',
+  ARBITRUM = 'arbitrum',
+  COSMOS = 'cosmos',
+  OSMOSIS = 'osmosis',
+  JUNO = 'juno',
+  STARGAZE = 'stargaze',
+  NOBLE = 'noble',
+  SHARDEUM = 'shardeum',
+  SHARDEUM_SPHINX = 'shardeum_sphinx',
+  ZKSYNC_ERA = 'zksync_era',
+  BASE = 'base',
+  POLYGON_ZKEVM = 'polygon_zkevm',
+}
+
+export const ChainConfigMapping = {
+  bsc: CHAIN_BSC,
+  binance: CHAIN_BSC,
+  eth: CHAIN_ETH,
+  ethereum: CHAIN_ETH,
+  polygon: CHAIN_POLYGON,
+  avalanche: CHAIN_AVALANCHE,
+  evmos: CHAIN_EVMOS,
+  fantom: CHAIN_FTM,
+  optimism: CHAIN_OPTIMISM,
+  arbitrum: CHAIN_ARBITRUM,
+  cosmos: CHAIN_COSMOS,
+  osmosis: CHAIN_OSMOSIS,
+  juno: CHAIN_JUNO,
+  stargaze: CHAIN_STARGAZE,
+  noble: CHAIN_NOBLE,
+  shardeum: CHAIN_SHARDEUM,
+  shardeum_sphinx: CHAIN_SHARDEUM_SPHINX,
+  zksync_era: CHAIN_ZKSYNC_ERA,
+  base: CHAIN_BASE,
+  polygon_zkevm: CHAIN_POLYGON_ZKEVM,
+};
+
 export enum QRScannerScreens {
   SEND = 'SEND',
   WALLET_CONNECT = 'WALLET_CONNECT',
@@ -555,27 +599,6 @@ export enum NotificationEvents {
   DAPP_BROWSER_OPEN = 'DAPP_BROWSER_OPEN',
 }
 
-export enum ChainNameMapping {
-  BSC = 'bsc',
-  ETH = 'eth',
-  POLYGON = 'polygon',
-  AVALANCHE = 'avalanche',
-  EVMOS = 'evmos',
-  FANTOM = 'fantom',
-  OPTIMISM = 'optimism',
-  ARBITRUM = 'arbitrum',
-  COSMOS = 'cosmos',
-  OSMOSIS = 'osmosis',
-  JUNO = 'juno',
-  STARGAZE = 'stargaze',
-  NOBLE = 'noble',
-  SHARDEUM = 'shardeum',
-  SHARDEUM_SPHINX = 'shardeum_sphinx',
-  ZKSYNC_ERA = 'zksync_era',
-  BASE = 'base',
-  POLYGON_ZKEVM = 'polygon_zkevm',
-}
-
 export const ChainNameToContactsChainNameMapping = {
   Ethereum: 'ethereum',
   Polygon: 'polygon',
@@ -597,27 +620,7 @@ export const ChainNameToContactsChainNameMapping = {
   'Polygon zkEVM': 'polygon_zkevm',
 };
 
-export const ChainConfigMapping = {
-  binance: CHAIN_BSC,
-  eth: CHAIN_ETH,
-  ethereum: CHAIN_ETH,
-  polygon: CHAIN_POLYGON,
-  avalanche: CHAIN_AVALANCHE,
-  evmos: CHAIN_EVMOS,
-  fantom: CHAIN_FTM,
-  optimism: CHAIN_OPTIMISM,
-  arbitrum: CHAIN_ARBITRUM,
-  cosmos: CHAIN_COSMOS,
-  osmosis: CHAIN_OSMOSIS,
-  juno: CHAIN_JUNO,
-  stargaze: CHAIN_STARGAZE,
-  noble: CHAIN_NOBLE,
-  shardeum: CHAIN_SHARDEUM,
-  shardeum_sphinx: CHAIN_SHARDEUM_SPHINX,
-  zksync_era: CHAIN_ZKSYNC_ERA,
-  base: CHAIN_BASE,
-  polygon_zkevm: CHAIN_POLYGON_ZKEVM,
-};
+
 
 export enum NativeTokenMapping {
   COSMOS = 'ATOM',
