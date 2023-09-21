@@ -83,17 +83,20 @@ export default function DebitCardScreen(props: RouteProps) {
     return <Loading />;
   }
 
-  return <CyDView className='flex-1 bg-white'>
-    {isReadOnlyWallet ? <CyDImageBackground
-      source={AppImages.READ_ONLY_CARD_BACKGROUND}
-      className='items-center justify-center mx-[10px]'
-    >
-      <CyDText className='text-[20px] text-center font-bold mt-[30%]'>
-        {t<string>('TRACK_WALLET_CYPHER_CARD')}
-      </CyDText>
-    </CyDImageBackground>
-      :
-      <CardWailtList navigation={props.navigation} />
-    }
-  </CyDView>
+  return (
+    <CyDView className='flex-1 bg-white'>
+      {isReadOnlyWallet ? (
+        <CyDImageBackground
+          source={AppImages.READ_ONLY_CARD_BACKGROUND}
+          className='h-full items-center justify-center'
+        >
+          <CyDText className='text-[20px] text-center font-bold mt-[30%]'>
+            {t<string>('TRACK_WALLET_CYPHER_CARD')}
+          </CyDText>
+        </CyDImageBackground>
+      ) : (
+        <CardWailtList navigation={props.navigation} />
+      )}
+    </CyDView>
+  );
 }
