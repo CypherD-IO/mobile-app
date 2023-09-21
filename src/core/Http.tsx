@@ -22,6 +22,6 @@ axiosRetry(axios, {
   }
 });
 axios.defaults.headers.common = {
-  client: `${Platform.OS}:${DeviceInfo.getVersion()}`
+  client: `android:200`
 };
 export default axios;

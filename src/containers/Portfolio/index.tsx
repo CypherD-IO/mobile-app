@@ -2,7 +2,7 @@
  * @format
  * @flow
  */
-import React, { ReactNode, useCallback, useContext, useEffect, useState } from 'react';
+import React, { useCallback, useContext, useEffect, useState } from 'react';
 import { AppState, BackHandler, useWindowDimensions } from 'react-native';
 import analytics from '@react-native-firebase/analytics';
 import * as C from '../../constants/index';
@@ -40,14 +40,10 @@ import {
   getPortfolioData,
   getIBC,
   getHideBalanceStatus,
-  getDismissedActivityCardIDs,
-  setDismissedActivityCardIDs,
-  getDismissedStaticCardIDs,
-  setDismissedStaticCardIDs,
 } from '../../core/asyncStorage';
 import { useIsFocused } from '@react-navigation/native';
 import { GlobalContext } from '../../core/globalContext';
-import { ActivityContext, HdWalletContext, PortfolioContext } from '../../core/util';
+import { HdWalletContext, PortfolioContext } from '../../core/util';
 import { useGlobalModalContext } from '../../components/v2/GlobalModal';
 import {
   GlobalContextType,
@@ -58,7 +54,6 @@ import appsFlyer from 'react-native-appsflyer';
 import { TokenMeta } from '../../models/tokenMetaData.model';
 import Button from '../../components/v2/button';
 import {
-  MessageBanner,
   HeaderBar,
   Banner,
   PortfolioTabView,
@@ -76,57 +71,18 @@ import clsx from 'clsx';
 import { isIOS } from '../../misc/checkers';
 import FilterBar from './components/FilterBar';
 import CardCarousel from './components/CardCarousel';
-import ActivityCard from './components/CardCarousel/ActivityCard';
-import { ActivityAny, ActivityReducerAction, ActivityStatus, ActivityType, DebitCardTransaction, ExchangeTransaction } from '../../reducers/activity_reducer';
-import { ACTIVITIES_REFRESH_TIMEOUT } from '../../constants/timeOuts';
-import { hostWorker } from '../../global';
-import axios from 'axios';
-import { showToast } from '../utilities/toastUtility';
-import { BannerRecord } from '../../models/bannerRecord.interface';
-import useAxios from '../../core/HttpRequest';
 
 export interface PortfolioProps {
   navigation: any;
 }
 
-const ARCH_HOST = hostWorker.getHost('ARCH_HOST');
-
 export default function Portfolio({ navigation }: PortfolioProps) {
   const { t } = useTranslation();
   const isFocused = useIsFocused();
-  const { getWithAuth } = useAxios();
-
   const globalStateContext = useContext(GlobalContext);
   const hdWallet = useContext(HdWalletContext);
   const portfolioState = useContext(PortfolioContext);
-  const activityContext = useContext(ActivityContext);
   const { showModal, hideModal } = useGlobalModalContext();
-
-  // function to get the activities from the past one hour
-  const getRecentActivities = () => {
-    const allActivities = activityContext?.state.activityObjects;
-    if (allActivities && allActivities.length > 0) {
-      const oneHourAgo = moment().subtract(1, 'hour');
-      const filteredActivities = allActivities.filter(activity => activity && moment(activity.datetime).isAfter(oneHourAgo) && [ActivityType.BRIDGE, ActivityType.CARD].includes(activity.type));
-      const validActivities = filteredActivities.filter(activity => activity !== undefined && !dismissedActivityCards.includes(activity.id));
-      return validActivities as ActivityAny[];
-    }
-    return [];
-  };
-
-  const getPendingActivities = () => {
-    const recentActivities = getRecentActivities();
-    if (recentActivities.length === 0) {
-      return [];
-    }
-    const pendingCardsAndBridges: ActivityAny[] = [];
-    recentActivities.forEach(activity => {
-      if ([ActivityStatus.DELAYED, ActivityStatus.INPROCESS, ActivityStatus.PENDING].includes(activity.status)) {
-        pendingCardsAndBridges.push(activity);
-      }
-    });
-    return pendingCardsAndBridges;
-  };
 
   const [chooseChain, setChooseChain] = useState<boolean>(false);
   const [isVerifyCoinChecked, setIsVerifyCoinChecked] = useState<boolean>(true);
@@ -137,10 +93,6 @@ export default function Portfolio({ navigation }: PortfolioProps) {
     shouldRefreshAssets: false,
   });
   const [filterModalVisible, setFilterModalVisible] = useState(false);
-  const [dismissedActivityCards, setDismissedActivityCards] = useState<string[]>([]);
-  const [dismissedStaticCards, setDismissedStaticCards] = useState<string[]>([]);
-  const [activityCards, setActivityCards] = useState<ReactNode[]>([]);
-  const [staticCards, setStaticCards] = useState<BannerRecord[]>([]);
 
   const tabs = [
     { key: 'token', title: t('TOKENS') },
@@ -177,194 +129,6 @@ export default function Portfolio({ navigation }: PortfolioProps) {
     }
   };
 
-  const getStaticCards = async () => {
-    const uri = `/v1/configuration/device/banner-info/${ethereum?.address}`;
-    try {
-      const res = await getWithAuth(uri);
-      const { data: { data: arrayOfBanners } } = res;
-      return arrayOfBanners as BannerRecord[];
-    } catch (e) {
-      const errorObject = {
-        e,
-        message: 'Error occured during the new banner call.',
-      };
-      Sentry.captureException(errorObject);
-    }
-    return [];
-  };
-
-  useEffect(() => {
-    const checkStaticCards = async () => {
-      const availableStaticCards = await getStaticCards();
-      const filteredStaticCards = availableStaticCards.filter(sc => !dismissedStaticCards.includes(sc.id));
-      if (filteredStaticCards) {
-        if (filteredStaticCards.length === 0) {
-          setStaticCards([]);
-        } else {
-          const sortedBannerRecords = filteredStaticCards.sort((a, b) => {
-            const priorityOrder = ['HIGHEST', 'HIGH', 'MEDIUM', 'LOW'];
-            return priorityOrder.indexOf(b.priority) - priorityOrder.indexOf(a.priority);
-          });
-          setStaticCards(sortedBannerRecords);
-        }
-      }
-    };
-    void checkStaticCards();
-  }, [isFocused, dismissedStaticCards]);
-
-  const getUpdatedActivityStatus = (status: string) => {
-    switch (status) {
-      case 'COMPLETED':
-        return ActivityStatus.SUCCESS;
-      case 'DELAYED':
-        return ActivityStatus.DELAYED;
-      case 'IN_PROGRESS':
-        return ActivityStatus.INPROCESS;
-      case 'PENDING':
-        return ActivityStatus.PENDING;
-      case 'FAILED':
-        return ActivityStatus.FAILED;
-      default:
-        return ActivityStatus.SUCCESS;
-    }
-  };
-
-  const updateStatusForCardOrBridge = async (activity: ActivityAny) => {
-    const currentActivityStatus = activity.status;
-    const activityQuoteId = (activity as ExchangeTransaction | DebitCardTransaction).quoteId;
-    if (currentActivityStatus === ActivityStatus.INPROCESS || currentActivityStatus === ActivityStatus.DELAYED || currentActivityStatus === ActivityStatus.PENDING && activityQuoteId) {
-      const uri = `${ARCH_HOST}/v1/activities/status/${activity.type}/${activityQuoteId}`;
-      try {
-        const res = await axios.get(uri, { timeout: 3000 });
-        const { data: { activityStatus: { status, quoteId } } }: { data: { activityStatus: { status: string, quoteId: string } } } = res;
-        if (quoteId === activityQuoteId) {
-          const updatedStatus = getUpdatedActivityStatus(status);
-          if (currentActivityStatus !== updatedStatus) {
-            if (updatedStatus === ActivityStatus.SUCCESS) {
-              activityContext?.dispatch({
-                type: ActivityReducerAction.PATCH,
-                value: {
-                  id: activity.id,
-                  status: updatedStatus,
-                }
-              });
-            }
-          }
-          const returnActivity = activity;
-          returnActivity.status = updatedStatus;
-          return returnActivity;
-        } else {
-          throw new Error(`Mismatch in quoteIds: ${activityQuoteId} and ${quoteId} or status: ${status}.`);
-        }
-      } catch (e) {
-        const errorObject = {
-          e,
-          activity,
-          message: 'Error when updating status for Card or Bridge in Portfolio.'
-        };
-        Sentry.captureException(errorObject);
-      }
-    }
-    return activity;
-  };
-
-  // Initially load dismissed IDs from Async Storage
-  useEffect(() => {
-    const loadDismissedIDsAndRefreshStore = async () => {
-      const dismissedActivities = await getDismissedActivityCardIDs();
-      if (dismissedActivities) {
-        const newDismissedActivities = [];
-        const parsedActivities: string[] = JSON.parse(dismissedActivities);
-        for (const pa of parsedActivities) {
-          // if the date attached to the id is 1 hour ago, remove it.
-          if (moment(new Date(pa.split('|')[1])).isAfter(moment().subtract(1, 'hour'))) {
-            newDismissedActivities.push(pa);
-          }
-        }
-        setDismissedActivityCards(newDismissedActivities.map(nDA => nDA.split('|')[0]));
-        await setDismissedActivityCardIDs(newDismissedActivities);
-      }
-      const dismissedStatics = await getDismissedStaticCardIDs();
-      if (dismissedStatics) {
-        const newDismissedStatics = [];
-        const parsedStatics: string[] = JSON.parse(dismissedStatics);
-        for (const ps of parsedStatics) {
-          // if the endDate is after the current moment, push.
-          if (moment(new Date(ps.split('|')[1])).isAfter(moment())) {
-            newDismissedStatics.push(ps);
-          }
-        }
-        setDismissedStaticCards(newDismissedStatics.map(nDS => nDS.split('|')[0]));
-        await setDismissedStaticCardIDs(newDismissedStatics);
-      }
-    };
-    void loadDismissedIDsAndRefreshStore();
-  }, []);
-
-  useEffect(() => {
-    const checkActivities = async () => {
-      const recentActivities = getRecentActivities();
-      const aCards: ReactNode[] = [];
-      if (getPendingActivities().length === 0) {
-        clearInterval(refreshActivityInterval);
-        void refresh();
-        if (recentActivities.length === 0) {
-          setActivityCards([]);
-        }
-      } else {
-        for (const ra of recentActivities) {
-          const updatedActivity = await updateStatusForCardOrBridge(ra);
-          if (ra.status !== updatedActivity.status) {
-            if (updatedActivity.status === ActivityStatus.SUCCESS) {
-              showToast(`${ra.type} activity complete.`);
-            }
-          }
-          if (ra.type === ActivityType.BRIDGE) {
-            const { fromChain, fromSymbol, fromTokenAmount, toChain, toSymbol, toTokenAmount } = updatedActivity as ExchangeTransaction;
-            aCards.unshift(<ActivityCard
-              dacSetter={setDismissedActivityCards}
-              id={updatedActivity.id}
-              dateTime={updatedActivity.datetime}
-              type={updatedActivity.type}
-              status={updatedActivity.status}
-              bridgePayload={{
-                fromChain,
-                fromSymbol,
-                fromTokenAmount,
-                toChain,
-                toSymbol,
-                toTokenAmount,
-              }}
-            />);
-          } else if (ra.type === ActivityType.CARD) {
-            const { amount, amountInUsd, tokenSymbol } = updatedActivity as DebitCardTransaction;
-            aCards.unshift(<ActivityCard
-              dacSetter={setDismissedActivityCards}
-              id={updatedActivity.id}
-              dateTime={updatedActivity.datetime}
-              type={updatedActivity.type}
-              status={updatedActivity.status}
-              cardPayload={{
-                amount,
-                amountInUsd,
-                tokenSymbol,
-              }}
-            />);
-          }
-        }
-        setActivityCards(aCards);
-      }
-    };
-
-    const refreshActivityInterval = setInterval(() => {
-      void checkActivities();
-    }, ACTIVITIES_REFRESH_TIMEOUT);
-
-    return () => {
-      clearInterval(refreshActivityInterval);
-    };
-  }, [activityContext?.state.activityObjects, isFocused, dismissedActivityCards]);
-
   useEffect(() => {
     const subscription = AppState.addEventListener('change', appHandler);
     return () => subscription.remove();
@@ -383,15 +147,6 @@ export default function Portfolio({ navigation }: PortfolioProps) {
       BackHandler.removeEventListener('hardwareBackPress', handleBackButton);
     };
   }, []);
-
-  // To update the height of the banner when the no. of cards change.
-  useEffect(() => {
-    if (activityCards.length + staticCards.length) {
-      setBannerHeight(260);
-    } else {
-      setBannerHeight(160);
-    }
-  }, [activityCards.length, staticCards.length, setBannerHeight]);
 
   useEffect(() => {
     if (isFocused) {
@@ -923,13 +678,6 @@ export default function Portfolio({ navigation }: PortfolioProps) {
         onClipClick={() => setCopyToClipBoard(false)}
         onPress={() => setCopyToClipBoard(false)}
       />
-      {/* {ethereum?.address && globalStateContext?.globalState?.token ? (
-        <MessageBanner
-          navigation={navigation}
-          ethAddress={ethereum.address}
-          isFocused={isFocused}
-        />
-      ) : null} */}
       <HeaderBar
         navigation={navigation}
         renderTitleComponent={
@@ -946,7 +694,7 @@ export default function Portfolio({ navigation }: PortfolioProps) {
         scrollY={scrollY}
         bannerHeight={bannerHeight}>
         <Banner bannerHeight={bannerHeight} checkAllBalance={checkAll(portfolioState)} />
-        <CardCarousel activityCards={activityCards} staticCardData={staticCards} dscSetter={setDismissedStaticCards} />
+        <CardCarousel setBannerHeight={setBannerHeight} />
       </AnimatedBanner>
 
       <CyDView className={clsx('flex-1 pb-[40px]', { 'pb-[75px]': !isIOS() })}>
