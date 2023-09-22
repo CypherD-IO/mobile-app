@@ -45,9 +45,10 @@ const CardCarouselItem = ({ item, index, boxWidth, halfBoxDistance, panX, setDis
 
     const onActivityCardDismissal = async () => {
         const { id, datetime } = item as BridgeOrCardActivity;
+        const dateISOString = new Date(datetime).toISOString();
         const dismissedIDs = await getDismissedActivityCardIDs();
         const parsedIDs = dismissedIDs ? JSON.parse(dismissedIDs) : [];
-        const updatedDismissedIDs = !parsedIDs.includes(`${id}|${datetime.toISOString()}`) ? [...parsedIDs, `${id}|${datetime.toISOString()}`] : parsedIDs;
+        const updatedDismissedIDs = !parsedIDs.includes(`${id}|${dateISOString}`) ? [...parsedIDs, `${id}|${dateISOString}`] : parsedIDs;
         await setDismissedActivityCardIDs(updatedDismissedIDs);
         setDismissedActivityCards(updatedDismissedIDs.map((dismissedID: string) => dismissedID.split('|')[0]));
     };

@@ -41,9 +41,9 @@ const CardCarousel = ({ setBannerHeight }: CardCarouselProps) => {
   const activityContext = useContext(ActivityContext);
   const hdWallet = useContext(HdWalletContext);
   const [scrollViewWidth, setScrollViewWidth] = useState(0);
-  const [dismissedActivityCards, setDismissedActivityCards] = useState<
-    string[]
-  >([]);
+  const [dismissedActivityCards, setDismissedActivityCards] = useState<string[]>(
+    []
+  );
   const [dismissedStaticCards, setDismissedStaticCards] = useState<string[]>(
     [],
   );
@@ -55,7 +55,8 @@ const CardCarousel = ({ setBannerHeight }: CardCarouselProps) => {
   const ethereumAddress = hdWallet?.state.wallet.ethereum.address;
 
   const boxWidth = scrollViewWidth * 0.85;
-  const boxDistance = scrollViewWidth / 1.175 - boxWidth;
+  const boxOffset = activityCards.length + staticCards.length === 1 ? 1 : 1.175;
+  const boxDistance = scrollViewWidth / boxOffset - boxWidth;
   const halfBoxDistance = boxDistance / 2;
   const panX = useSharedValue(0);
 
@@ -270,26 +271,22 @@ const CardCarousel = ({ setBannerHeight }: CardCarouselProps) => {
   useEffect(() => {
     const checkActivities = async () => {
       const recentActivities = getRecentActivities();
-      const aCards = [];
+      const activityCardsToSet = [];
       if (getPendingActivities().length === 0) {
         clearInterval(refreshActivityInterval);
         // void refresh();
-        if (recentActivities.length === 0) {
-          setActivityCards([]);
-        }
-      } else {
-        for (const recentActivity of recentActivities) {
-          const updatedActivity =
-            await updateStatusForCardOrBridge(recentActivity);
-          if (recentActivity.status !== updatedActivity.status) {
-            if (updatedActivity.status === ActivityStatus.SUCCESS) {
-              showToast(`${recentActivity.type} activity complete.`);
-            }
-          }
-          aCards.unshift(updatedActivity);
-        }
-        setActivityCards(aCards);
       }
+      for (const recentActivity of recentActivities) {
+        const updatedActivity =
+          await updateStatusForCardOrBridge(recentActivity);
+        if (recentActivity.status !== updatedActivity.status) {
+          if (updatedActivity.status === ActivityStatus.SUCCESS) {
+            showToast(`${recentActivity.type} activity complete.`);
+          }
+        }
+        activityCardsToSet.unshift(updatedActivity);
+      }
+      setActivityCards(activityCardsToSet);
     };
 
     const refreshActivityInterval = setInterval(() => {
