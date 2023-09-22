@@ -73,7 +73,7 @@ const PortfolioTokenItem = ({
     return (
       <CyDView
         className={
-          'flex flex-row justify-evenly items-center bg-secondaryBackgroundColor px-[15px]'
+          'flex flex-row justify-evenly items-center bg-secondaryBackgroundColor'
         }
       >
         <CyDView>
@@ -258,8 +258,8 @@ const PortfolioTokenItem = ({
             source={
               item?.logoUrl
                 ? {
-                    uri: item.logoUrl,
-                  }
+                  uri: item.logoUrl,
+                }
                 : randomColor[Math.floor(Math.random() * randomColor.length)]
             }
             resizeMode='contain'
@@ -312,16 +312,16 @@ const PortfolioTokenItem = ({
               <CyDTokenValue className='text-[18px] font-bold'>
                 {item.actualUnbondingBalance !== undefined
                   ? item.totalValue +
-                    item.actualStakedBalance +
-                    item.actualUnbondingBalance
+                  item.actualStakedBalance +
+                  item.actualUnbondingBalance
                   : '...'}
               </CyDTokenValue>
               <CyDTokenAmount className='text-[14px]'>
                 {item.stakedBalanceTotalValue !== undefined &&
-                item.unbondingBalanceTotalValue !== undefined
+                  item.unbondingBalanceTotalValue !== undefined
                   ? item.actualBalance +
-                    item.stakedBalanceTotalValue +
-                    item.unbondingBalanceTotalValue
+                  item.stakedBalanceTotalValue +
+                  item.unbondingBalanceTotalValue
                   : '...'}
               </CyDTokenAmount>
             </CyDView>
