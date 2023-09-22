@@ -31,7 +31,7 @@ import { hostWorker } from '../../global';
 import useEns from '../../hooks/useEns';
 import { isAndroid } from '../../misc/checkers';
 import { ActivityReducerAction } from '../../reducers/activity_reducer';
-import { CyDImage, CyDSafeAreaView, CyDScrollView, CyDText, CyDTouchView, CyDView } from '../../styles/tailwindStyles';
+import { CyDFastImage, CyDImage, CyDSafeAreaView, CyDScrollView, CyDText, CyDTouchView, CyDView } from '../../styles/tailwindStyles';
 import { OptionsContainer } from '../Auth/Share';
 import { onShare } from '../utilities/socialShareUtility';
 import { screenTitle } from '../../constants/index';
@@ -147,7 +147,8 @@ export default function Options(props: { navigation: { goBack: () => void, popTo
         <ImageBackground source={AppImages.BG_SETTINGS} resizeMode="cover" imageStyle={{ height: 450, width: '100%' }}>
           <DynamicView dynamic dynamicWidth dynamicHeight height={100} width={100} jC={'space-between'} mT={25}>
             <DynamicView dynamic dynamicWidth dynamicHeight height={100} width={100} jC={'flex-start'}>
-              <DynamicImage dynamic dynamicWidth height={100} width={100} resizemode='contain' source={AppImages.CYPHERD_WALLET} mL={10} mT={20} />
+              <CyDFastImage className='h-[100px] w-[100px]' source={AppImages.CYPHERD_WALLET} resizeMode='cover' />
+              {/* <DynamicImage dynamic dynamicWidth height={100} width={100} resizemode='contain' source={AppImages.CYPHERD_WALLET} mL={10} mT={20} /> */}
               <CyDView className='flex flex-row justify-center w-[80%] items-center pb-[25px]' >
                 {isReadOnlyWallet && <CyDImage source={AppImages.CYPHER_LOCK} className='h-[18px] w-[18px] mr-[5px]' resizeMode='contain' />}
                 <CyDText className='text-[18px] font-bold pt-[3px]'>{title}</CyDText>
