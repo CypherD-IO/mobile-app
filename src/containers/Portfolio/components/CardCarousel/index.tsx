@@ -55,7 +55,8 @@ const CardCarousel = ({ setBannerHeight }: CardCarouselProps) => {
   const ethereumAddress = hdWallet?.state.wallet.ethereum.address;
 
   const boxWidth = scrollViewWidth * 0.85;
-  const boxDistance = scrollViewWidth / 1.175 - boxWidth;
+  const boxOffset = activityCards.length + staticCards.length === 1 ? 1 : 1.175;
+  const boxDistance = scrollViewWidth / boxOffset - boxWidth;
   const halfBoxDistance = boxDistance / 2;
   const panX = useSharedValue(0);
 
