@@ -2,6 +2,26 @@ import React, { memo, useCallback, useRef, useState } from 'react';
 import { FlatList, StyleSheet, ViewToken } from 'react-native';
 import { SharedValue, useSharedValue } from 'react-native-reanimated';
 
+/* 
+It is looks nice to have some sort of scaling animation in the carousel items, like such:
+
+const animatedStyle = useAnimatedStyle(() => {
+    const scale = interpolate(
+        panX.value,
+        [
+            (index - 1) * boxWidth - halfBoxDistance,
+            index * boxWidth - halfBoxDistance,
+            (index + 1) * boxWidth - halfBoxDistance, // adjust positioning
+        ],
+        [0.85, 1, 0.85], // scale down when out of scope
+        Extrapolation.CLAMP,
+    );
+    return {
+        transform: [{ scale }]
+    };
+});
+
+*/
 interface CardCarouselProps {
     cardsData: any[]
     boxWidthMultiplier?: number // multiplier to scale the width of the box
