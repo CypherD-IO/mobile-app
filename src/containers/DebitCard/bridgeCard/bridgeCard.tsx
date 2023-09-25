@@ -27,6 +27,8 @@ import SwitchView from '../../../components/v2/switchView';
 import Loading from '../../../components/v2/loading';
 import { CardProviders } from '../../../constants/enum';
 import { sleepFor } from '../../../core/util';
+import clsx from 'clsx';
+import { isAndroid } from '../../../misc/checkers';
 
 export default function BridgeCardScreen(props: {
   navigation: { navigate: any; setOptions: any };
@@ -53,7 +55,7 @@ export default function BridgeCardScreen(props: {
   const [currentCardProvider, setCurrentCardProvider] =
     useState<string>(cardProvider);
   const { getWithAuth } = useAxios();
-  const [minHeight, setMinHeight] = useState<Number>();
+  const [minHeight, setMinHeight] = useState<number>();
 
   useEffect(() => {
     if (isFocused) {
@@ -150,7 +152,7 @@ export default function BridgeCardScreen(props: {
           style={'pr-[7%] pl-[5%] py-[2%] items-center align-center'}
           title={t('LOAD_CARD_CAPS')}
           titleStyle={'text-[14px]'}
-        ></Button>
+        />
       </CyDView>
     );
   };
@@ -209,10 +211,10 @@ export default function BridgeCardScreen(props: {
                 setIndexChange={(index: number) => {
                   onSwitchProviders(index);
                 }}
-              ></SwitchView>
+              />
             </CyDView>
           )}
-          <CyDView>
+          <CyDView className={clsx({ 'px-[10px]': isAndroid() })}>
             <CardScreen
               navigation={navigation}
               hideCardDetails={isFocused}

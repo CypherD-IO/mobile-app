@@ -16,6 +16,7 @@ import {
 } from '../../../core/asyncStorage';
 import axios from '../../../core/Http';
 import {
+  CyDAnimatedView,
   CyDImage,
   CyDImageBackground,
   CyDText,
@@ -25,8 +26,6 @@ import {
 import useAxios from '../../../core/HttpRequest';
 import { CardProviders, CardStatus } from '../../../constants/enum';
 import { useGlobalModalContext } from '../../../components/v2/GlobalModal';
-import Carousel from 'react-native-snap-carousel';
-import { Dimensions } from 'react-native';
 import AppImages from '../../../../assets/images/appImages';
 import clsx from 'clsx';
 import { Card } from '../../../models/card.model';
@@ -34,6 +33,8 @@ import { orderBy } from 'lodash';
 import { UserCardDetails } from '../../../models/userCardDetails.interface';
 import { useIsFocused } from '@react-navigation/native';
 import PropTypes from 'prop-types';
+import CardCarousel from '../../../components/v2/CardCarousel';
+import { Extrapolation, SharedValue, interpolate, useAnimatedStyle } from 'react-native-reanimated';
 
 export default function CardScreen({
   navigation,
@@ -359,16 +360,36 @@ export default function CardScreen({
     }
   };
 
-  const renderCard = ({ item }: { item: Card }) => {
+  const renderItem = ({ item, index, boxWidth, halfBoxDistance, panX }: { item: Card, index: number, boxWidth: number, halfBoxDistance: number, panX: SharedValue<number> }) => {
+    return <RenderCard item={item} index={index} boxWidth={boxWidth} halfBoxDistance={halfBoxDistance} panX={panX} />;
+  };
+
+  const RenderCard = ({ item, index, boxWidth, halfBoxDistance, panX }: { item: Card, index: number, boxWidth: number, halfBoxDistance: number, panX: SharedValue<number> }) => {
     const card: Card = item;
     const {
       isFetchingCardDetails,
       currentCardRevealedDetails,
       hideCardDetails,
     } = userCardDetails;
+
+    const animatedStyle = useAnimatedStyle(() => {
+      const scale = interpolate(
+        panX.value,
+        [
+          (index - 1) * boxWidth - halfBoxDistance,
+          index * boxWidth - halfBoxDistance,
+          (index + 1) * boxWidth - halfBoxDistance, // adjust positioning
+        ],
+        [0.88, 1, 0.88], // scale down when out of scope
+        Extrapolation.CLAMP,
+      );
+      return {
+        transform: [{ scale }]
+      };
+    });
     if (card.type === 'physical' && card.status === 'pendingActivation') {
       return (
-        <CyDView className='mb-[10px]'>
+        <CyDAnimatedView className='mb-[10px]' style={animatedStyle}>
           <CyDImageBackground
             source={{ uri: getCardBackgroundLayout(card) }}
             className='flex flex-col justify-center h-[200px] w-[300px] border-[1px] border-inputBorderColor rounded-[12px]'
@@ -398,12 +419,12 @@ export default function CardScreen({
               {'XXXX XXXX XXXX ' + card.last4}
             </CyDText>
           </CyDImageBackground>
-        </CyDView>
+        </CyDAnimatedView>
       );
     }
 
     return (
-      <CyDView className='mb-[10px]'>
+      <CyDAnimatedView className='mb-[10px] w-[300px]' style={animatedStyle}>
         <CyDImageBackground
           blurRadius={card.status === CardStatus.IN_ACTIVE ? 3 : 0}
           source={{ uri: getCardBackgroundLayout(card) }}
@@ -415,7 +436,7 @@ export default function CardScreen({
           resizeMode='stretch'
         >
           {isFetchingCardDetails &&
-          card.cardId === currentCardRevealedDetails.cardId ? (
+            card.cardId === currentCardRevealedDetails.cardId ? (
             <CyDImage
               source={{
                 uri: 'https://public.cypherd.io/icons/details_loading.png',
@@ -450,11 +471,10 @@ export default function CardScreen({
                       <CyDTouchView onPress={() => copyCardNumber()}>
                         <CyDImage
                           source={{
-                            uri: `https://public.cypherd.io/icons/${
-                              card.type === 'physical'
-                                ? 'copyBlack.png'
-                                : 'copy.png'
-                            }`,
+                            uri: `https://public.cypherd.io/icons/${card.type === 'physical'
+                              ? 'copyBlack.png'
+                              : 'copy.png'
+                              }`,
                           }}
                           className='h-[20px] w-[20px] ml-[5px]'
                           resizeMode='contain'
@@ -470,12 +490,11 @@ export default function CardScreen({
                   >
                     <CyDImage
                       source={{
-                        uri: `https://public.cypherd.io/icons/${
-                          !hideCardDetails &&
+                        uri: `https://public.cypherd.io/icons/${!hideCardDetails &&
                           currentCardRevealedDetails.cardId === card.cardId
-                            ? 'reveal.png'
-                            : 'hide.png'
-                        }`,
+                          ? 'reveal.png'
+                          : 'hide.png'
+                          }`,
                       }}
                       className='h-[21px] w-[21px] ml-[5px] mr-[10px]'
                       resizeMode='contain'
@@ -558,21 +577,20 @@ export default function CardScreen({
             </CyDView>
           )}
         </CyDImageBackground>
-      </CyDView>
+      </CyDAnimatedView>
     );
   };
 
-  const { width } = Dimensions.get('window');
+  const onCardChange = (index: number) => {
+    setCurrentCardIndex(index);
+  };
+
   return (
-    <Carousel
-      inactiveSlideOpacity={1}
-      inactiveSlideScale={0.88}
-      data={userCardDetails.cards}
-      renderItem={renderCard}
-      sliderWidth={width}
-      itemWidth={width - 70}
-      vertical={false}
-      onSnapToItem={(index) => setCurrentCardIndex(index)}
+    <CardCarousel
+      boxWidthMultiplier={0.8}
+      cardsData={userCardDetails.cards}
+      renderItem={renderItem}
+      onCardChange={onCardChange}
     />
   );
 }

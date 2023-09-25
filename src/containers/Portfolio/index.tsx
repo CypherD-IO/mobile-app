@@ -70,7 +70,7 @@ import moment from 'moment';
 import clsx from 'clsx';
 import { isIOS } from '../../misc/checkers';
 import FilterBar from './components/FilterBar';
-import CardCarousel from './components/CardCarousel';
+import BannerCarousel from './components/BannerCarousel';
 
 export interface PortfolioProps {
   navigation: any;
@@ -694,7 +694,7 @@ export default function Portfolio({ navigation }: PortfolioProps) {
         scrollY={scrollY}
         bannerHeight={bannerHeight}>
         <Banner bannerHeight={bannerHeight} checkAllBalance={checkAll(portfolioState)} />
-        <CardCarousel setBannerHeight={setBannerHeight} />
+        <BannerCarousel setBannerHeight={setBannerHeight} />
       </AnimatedBanner>
 
       <CyDView className={clsx('flex-1 pb-[40px]', { 'pb-[75px]': !isIOS() })}>

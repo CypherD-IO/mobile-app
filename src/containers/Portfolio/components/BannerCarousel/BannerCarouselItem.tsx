@@ -14,7 +14,7 @@ import { screenTitle } from "../../../../constants";
 import clsx from "clsx";
 import { getDismissedActivityCardIDs, getDismissedStaticCardIDs, setDismissedActivityCardIDs, setDismissedStaticCardIDs } from "../../../../core/asyncStorage";
 
-interface CardCarouselItemProps {
+interface BannerCarouselItemProps {
     item: BannerRecord | BridgeOrCardActivity
     index: number
     boxWidth: number
@@ -23,7 +23,7 @@ interface CardCarouselItemProps {
     setDismissedActivityCards: React.Dispatch<React.SetStateAction<string[]>>
     setDismissedStaticCards: React.Dispatch<React.SetStateAction<string[]>>
 }
-const CardCarouselItem = ({ item, index, boxWidth, halfBoxDistance, panX, setDismissedActivityCards, setDismissedStaticCards }: CardCarouselItemProps) => {
+const BannerCarouselItem = ({ item, index, boxWidth, halfBoxDistance, panX, setDismissedActivityCards, setDismissedStaticCards }: BannerCarouselItemProps) => {
     const isActivity = 'transactionHash' in item;
     const { t } = useTranslation();
     const navigation = useNavigation();
@@ -181,4 +181,4 @@ const CardCarouselItem = ({ item, index, boxWidth, halfBoxDistance, panX, setDis
     );
 };
 
-export default memo(CardCarouselItem);
+export default memo(BannerCarouselItem);
