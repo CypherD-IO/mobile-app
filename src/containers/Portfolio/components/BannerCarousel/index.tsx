@@ -1,7 +1,5 @@
 import React, { memo, useContext, useEffect, useState } from 'react';
-import { FlatList, StyleSheet } from 'react-native';
-import { useSharedValue } from 'react-native-reanimated';
-import CarouselItem from './CarouselItem';
+import CarouselItem from './BannerCarouselItem';
 import { BannerRecord } from '../../../../models/bannerRecord.interface';
 import { ActivityContext, HdWalletContext } from '../../../../core/util';
 import moment from 'moment';
@@ -27,38 +25,29 @@ import {
 import { showToast } from '../../../utilities/toastUtility';
 import { ACTIVITIES_REFRESH_TIMEOUT } from '../../../../constants/timeOuts';
 import { CyDView } from '../../../../styles/tailwindStyles';
+import CardCarousel from '../../../../components/v2/CardCarousel';
+import { SharedValue } from 'react-native-reanimated';
 
 const ARCH_HOST = hostWorker.getHost('ARCH_HOST');
 
 export type BridgeOrCardActivity = ExchangeTransaction | DebitCardTransaction;
-interface CardCarouselProps {
+interface BannerCarouselProps {
   setBannerHeight: React.Dispatch<React.SetStateAction<160 | 260>>;
 }
 
-const CardCarousel = ({ setBannerHeight }: CardCarouselProps) => {
+const BannerCarousel = ({ setBannerHeight }: BannerCarouselProps) => {
   const { getWithAuth } = useAxios();
   const isFocused = useIsFocused();
+
   const activityContext = useContext(ActivityContext);
   const hdWallet = useContext(HdWalletContext);
-  const [scrollViewWidth, setScrollViewWidth] = useState(0);
-  const [dismissedActivityCards, setDismissedActivityCards] = useState<string[]>(
-    []
-  );
-  const [dismissedStaticCards, setDismissedStaticCards] = useState<string[]>(
-    [],
-  );
-  const [activityCards, setActivityCards] = useState<BridgeOrCardActivity[]>(
-    [],
-  );
+
+  const [dismissedActivityCards, setDismissedActivityCards] = useState<string[]>([]);
+  const [dismissedStaticCards, setDismissedStaticCards] = useState<string[]>([]);
+  const [activityCards, setActivityCards] = useState<BridgeOrCardActivity[]>([]);
   const [staticCards, setStaticCards] = useState<BannerRecord[]>([]);
 
   const ethereumAddress = hdWallet?.state.wallet.ethereum.address;
-
-  const boxWidth = scrollViewWidth * 0.85;
-  const boxOffset = activityCards.length + staticCards.length === 1 ? 1 : 1.175;
-  const boxDistance = scrollViewWidth / boxOffset - boxWidth;
-  const halfBoxDistance = boxDistance / 2;
-  const panX = useSharedValue(0);
 
   // function to get the activities from the past one hour
   const getRecentActivities = () => {
@@ -81,6 +70,7 @@ const CardCarousel = ({ setBannerHeight }: CardCarouselProps) => {
     return [];
   };
 
+  // function to get the pending activities out of the recent activities
   const getPendingActivities = () => {
     const recentActivities = getRecentActivities();
     if (recentActivities.length === 0) {
@@ -101,6 +91,7 @@ const CardCarousel = ({ setBannerHeight }: CardCarouselProps) => {
     return pendingCardsAndBridges;
   };
 
+  // function to get the new banner data from the API
   const getStaticCards = async () => {
     if (ethereumAddress) {
       const uri = `/v1/configuration/device/banner-info/${ethereumAddress}`;
@@ -124,7 +115,7 @@ const CardCarousel = ({ setBannerHeight }: CardCarouselProps) => {
     return [];
   };
 
-  // To update the height of the banner when the no. of cards change.
+  // useEffect to update the height of the banner when the no. of cards change.
   useEffect(() => {
     if (activityCards.length + staticCards.length) {
       setBannerHeight(260);
@@ -133,6 +124,7 @@ const CardCarousel = ({ setBannerHeight }: CardCarouselProps) => {
     }
   }, [activityCards.length, staticCards.length, setBannerHeight]);
 
+  // useEffect to check for static cards
   useEffect(() => {
     const checkStaticCards = async () => {
       const availableStaticCards = await getStaticCards();
@@ -157,7 +149,8 @@ const CardCarousel = ({ setBannerHeight }: CardCarouselProps) => {
     void checkStaticCards();
   }, [isFocused, dismissedStaticCards]);
 
-  const getUpdatedActivityStatus = (status: string) => {
+  // util to get respective ActivityStatus
+  const _getUpdatedActivityStatus = (status: string) => {
     switch (status) {
       case 'COMPLETED':
         return ActivityStatus.SUCCESS;
@@ -174,6 +167,7 @@ const CardCarousel = ({ setBannerHeight }: CardCarouselProps) => {
     }
   };
 
+  // function to update the status for an Activity
   const updateStatusForCardOrBridge = async (
     activity: BridgeOrCardActivity,
   ) => {
@@ -194,7 +188,7 @@ const CardCarousel = ({ setBannerHeight }: CardCarouselProps) => {
         }: { data: { activityStatus: { status: string; quoteId: string } } } =
           res;
         if (quoteId === activityQuoteId) {
-          const updatedStatus = getUpdatedActivityStatus(status);
+          const updatedStatus = _getUpdatedActivityStatus(status);
           if (currentActivityStatus !== updatedStatus) {
             if (updatedStatus === ActivityStatus.SUCCESS) {
               activityContext?.dispatch({
@@ -268,13 +262,14 @@ const CardCarousel = ({ setBannerHeight }: CardCarouselProps) => {
     void loadDismissedIDsAndRefreshStore();
   }, []);
 
+  // useEffect to check for Activities
   useEffect(() => {
     const checkActivities = async () => {
       const recentActivities = getRecentActivities();
       const activityCardsToSet = [];
       if (getPendingActivities().length === 0) {
         clearInterval(refreshActivityInterval);
-        // void refresh();
+        // void refresh(); // TODO: Try to refresh.
       }
       for (const recentActivity of recentActivities) {
         const updatedActivity =
@@ -305,9 +300,15 @@ const CardCarousel = ({ setBannerHeight }: CardCarouselProps) => {
   const renderItem = ({
     item,
     index,
+    boxWidth,
+    halfBoxDistance,
+    panX
   }: {
-    item: BannerRecord | BridgeOrCardActivity;
-    index: number;
+    item: BannerRecord | BridgeOrCardActivity
+    index: number
+    boxWidth: number
+    halfBoxDistance: number
+    panX: SharedValue<number>
   }) => {
     return (
       <CyDView className='mt-[6px]'>
@@ -324,6 +325,8 @@ const CardCarousel = ({ setBannerHeight }: CardCarouselProps) => {
     );
   };
 
+  // Sorts and makes the cardsData to be passed to the CardsCarousel.
+  // Here the priority order : HIGHEST -> ACTIVITY -> HIGH -> MEDIUM -> LOW, is followed.
   const makeCards = () => {
     const sortedBannerRecords = staticCards.sort((a, b) => {
       const priorityOrder = ['HIGHEST', 'HIGH', 'MEDIUM', 'LOW'];
@@ -337,46 +340,18 @@ const CardCarousel = ({ setBannerHeight }: CardCarouselProps) => {
     const otherCards = sortedBannerRecords?.filter(
       (staticCard) => staticCard.priority !== 'HIGHEST',
     );
-
     return [...highestPriorityCards, ...activityCards, ...otherCards];
   };
 
   const cards = makeCards();
 
   return (
-    <FlatList
-      horizontal
-      data={cards}
-      contentContainerStyle={styles.contentContainerStyle}
-      contentInsetAdjustmentBehavior='never'
-      snapToAlignment='center'
-      decelerationRate='fast'
-      automaticallyAdjustContentInsets={false}
-      showsHorizontalScrollIndicator={false}
-      showsVerticalScrollIndicator={false}
-      scrollEventThrottle={1}
-      snapToInterval={boxWidth}
-      contentInset={{
-        left: halfBoxDistance,
-        right: halfBoxDistance,
-      }}
-      contentOffset={{ x: halfBoxDistance * -1, y: 0 }}
-      onLayout={(e) => {
-        setScrollViewWidth(e.nativeEvent.layout.width);
-      }}
-      onScroll={(e) => {
-        panX.value = e.nativeEvent.contentOffset.x;
-      }}
-      keyExtractor={(_, index) => index.toString()}
+    <CardCarousel
+      cardsData={cards}
+      moreThanOneCardOffset={1.175}
       renderItem={renderItem}
     />
   );
 };
 
-export default memo(CardCarousel);
-
-const styles = StyleSheet.create({
-  contentContainerStyle: {
-    paddingVertical: 4,
-  },
-});
+export default memo(BannerCarousel);
