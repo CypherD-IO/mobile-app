@@ -1,21 +1,11 @@
+import { Chain } from "../constants/server";
+
 export interface TokenMeta {
   about: string;
   actualBalance: number;
   actualStakedBalance: number;
   balance: number;
-  chainDetails: {
-    backendName: string;
-    chainIdNumber: number;
-    chainName: string;
-    chain_id: string;
-    logo_url: any;
-    name: string;
-    native_token_address: string;
-    secondaryAddress: string;
-    symbol: string;
-    id: number;
-    coinGeckoId?: string;
-  };
+  chainDetails: Chain
   coinGeckoId: string;
   contractAddress: string;
   contractDecimals: number;
