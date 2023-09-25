@@ -34,7 +34,7 @@ export default function TransactionDetails({ navigation, route }: { navigation: 
       title: t('CURRENCY_CONVERSION_DETAILS'),
       data: [
         { label: t('AMOUNT_SPENT'), value: '$ ' + String(transaction.amount) },
-        { label: t('CONVERSION_RATE') + `\n(USD to ${String(fxCurrencySymbol)})`, value: formatAmount(fxConversionPrice) },
+        { label: t('CONVERSION_RATE') + '\n' + `(USD to ${String(fxCurrencySymbol)})`, value: formatAmount(fxConversionPrice) },
         { label: t('DOMESTIC_CURRENCY_SPENT'), value: String(fxCurrencyValue) + ' ' + String(fxCurrencySymbol) }
       ]
     }
@@ -46,12 +46,12 @@ export default function TransactionDetails({ navigation, route }: { navigation: 
 
   const DetailItem = ({ item }) => {
     return (
-      <CyDView className={'flex flex-row justify-center items-center px-[8px] ml-[25px] mb-[20px]'}>
-        <CyDView className={'w-[50%]'}>
-          <CyDText className={'text-[16px] w-[95%]'}>{item.label}</CyDText>
+      <CyDView className={'flex flex-row justify-center items-center px-[8px] mb-[20px]'}>
+        <CyDView className={'w-[50%] pr-[20px] justify-center items-end'}>
+          <CyDText className={'text-[16px] text-right'}>{item.label}</CyDText>
         </CyDView>
-        <CyDView className={'w-[50%] '}>
-          <CyDText className={'font-bold'}>{item.value}</CyDText>
+        <CyDView className={'w-[50%] pl-[20px] justify-center items-start'}>
+          <CyDText className={'font-bold text-left'}>{item.value}</CyDText>
         </CyDView>
       </CyDView>
     );
@@ -61,7 +61,7 @@ export default function TransactionDetails({ navigation, route }: { navigation: 
     return (
       <CyDView className='pb-[5px] rounded-[7px] mt-[25px] bg-lightGrey'>
         <CyDView className='flex flex-row items-center px-[8px] pt-[15px] pb-[7px] border-b-[1px] border-sepratorColor'>
-          <CyDFastImage className={'h-[20px] w-[20px] mr-[5px]'} source={item.icon} resizeMode={'contain'} />
+          <CyDFastImage className={'h-[20px] w-[20px] mr-[10px]'} source={item.icon} resizeMode={'contain'} />
           <CyDText className={'text-[18px] font-extrabold'}>{item.title}</CyDText>
         </CyDView>
         <CyDView className={'mt-[12px]'}>
