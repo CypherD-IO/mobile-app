@@ -3,7 +3,7 @@ import { useTranslation } from 'react-i18next';
 import { Keyboard, TextInput } from 'react-native';
 import AppImages from '../../../../assets/images/appImages';
 import Button from '../../../components/v2/button';
-import { ChainNames, COSMOS_CHAINS, ChainNameMapping, NativeTokenMapping, CHAIN_ETH } from '../../../constants/server';
+import { ChainNames, COSMOS_CHAINS, ChainNameMapping, NativeTokenMapping, CHAIN_ETH, Chain } from '../../../constants/server';
 import {
   ActivityContext,
   getWeb3Endpoint,
@@ -40,8 +40,8 @@ import { TokenMeta } from '../../../models/tokenMetaData.model';
 import clsx from 'clsx';
 import { isIOS } from '../../../misc/checkers';
 
-export default function BridgeFundCardScreen ({ route }: {route: any}) {
-  const { navigation, currentCardProvider, currentCardIndex }: {navigation: any, currentCardProvider: CardProviders, currentCardIndex: number} = route.params;
+export default function BridgeFundCardScreen({ route }: { route: any }) {
+  const { navigation, currentCardProvider, currentCardIndex }: { navigation: any, currentCardProvider: CardProviders, currentCardIndex: number } = route.params;
   const portfolioState = useContext<any>(PortfolioContext);
   const hdWallet = useContext<any>(HdWalletContext);
   const globalContext = useContext<any>(GlobalContext);
@@ -50,7 +50,7 @@ export default function BridgeFundCardScreen ({ route }: {route: any}) {
   const globalStateContext = useContext<any>(GlobalContext);
   const activityContext = useContext<any>(ActivityContext);
   const cardProfile = globalContext.globalState.cardProfile;
-  const { cardId, last4 }: {cardId: string, last4: string} = get(cardProfile, currentCardProvider)?.cards[currentCardIndex];
+  const { cardId, last4 }: { cardId: string, last4: string } = get(cardProfile, currentCardProvider)?.cards[currentCardIndex];
   const activityRef = useRef<DebitCardTransaction | null>(null);
   const inputRef = useRef<TextInput | null>(null);
   const ARCH_HOST: string = hostWorker.getHost('ARCH_HOST');
@@ -291,7 +291,7 @@ export default function BridgeFundCardScreen ({ route }: {route: any}) {
   };
 
   const fundCard = async () => {
-    const { chainName, backendName }: {chainName: string, backendName: string} = selectedToken.chainDetails;
+    const { chainName, backendName } = selectedToken.chainDetails;
     const { contractAddress, coinGeckoId, contractDecimals, chainDetails }: { contractAddress: string, coinGeckoId: string | number, contractDecimals: string | number, chainDetails: any } = selectedToken;
     setLoading(true);
     Keyboard.dismiss();
@@ -313,7 +313,7 @@ export default function BridgeFundCardScreen ({ route }: {route: any}) {
                 estimateGasForNativeTransaction(hdWallet, chainDetails, selectedToken, quote.tokenRequired, true, gasPrice, payTokenModal, globalContext, targetWalletAddress);
               })
               .catch((gasFeeError) => {
-              // TODO (user feedback): Give feedback to user.
+                // TODO (user feedback): Give feedback to user.
                 Sentry.captureException(gasFeeError);
                 estimateGasForNativeTransaction(hdWallet, chainDetails, selectedToken, quote.tokenRequired, true, gasPrice, payTokenModal, globalContext, targetWalletAddress);
               });
@@ -345,7 +345,7 @@ export default function BridgeFundCardScreen ({ route }: {route: any}) {
         }
       } else {
         Sentry.captureException(response.error);
-        showModal('state', { type: 'error', title: response?.error?.message?.includes('minimum amount') ? t('INSUFFICIENT_FUNDS') :'', description: response.error.message ?? t('UNABLE_TO_TRANSFER'), onSuccess: hideModal, onFailure: hideModal });
+        showModal('state', { type: 'error', title: response?.error?.message?.includes('minimum amount') ? t('INSUFFICIENT_FUNDS') : '', description: response.error.message ?? t('UNABLE_TO_TRANSFER'), onSuccess: hideModal, onFailure: hideModal });
         setLoading(false);
       }
     } else if (COSMOS_CHAINS.includes(chainName)) {
@@ -396,19 +396,19 @@ export default function BridgeFundCardScreen ({ route }: {route: any}) {
     const { symbol, backendName } = selectedToken?.chainDetails ?? {};
     const nativeTokenSymbol = get(NativeTokenMapping, symbol) || symbol;
     return (Number(amount) < minTokenValueLimit ||
-    !selectedToken ||
-    nativeTokenBalance <= get(gasFeeReservation, backendName) ||
-    Number(amount) > Number(selectedToken?.totalValue) ||
-    (selectedToken?.symbol === nativeTokenSymbol && Number(amount) / selectedToken?.price > Number((nativeTokenBalance - get(gasFeeReservation, backendName)).toFixed(6)))) ||
-    (backendName === CHAIN_ETH.backendName && Number(amount) < MINIMUM_TRANSFER_AMOUNT_ETH)
+      !selectedToken ||
+      nativeTokenBalance <= get(gasFeeReservation, backendName) ||
+      Number(amount) > Number(selectedToken?.totalValue) ||
+      (selectedToken?.symbol === nativeTokenSymbol && Number(amount) / selectedToken?.price > Number((nativeTokenBalance - get(gasFeeReservation, backendName)).toFixed(6)))) ||
+      (backendName === CHAIN_ETH.backendName && Number(amount) < MINIMUM_TRANSFER_AMOUNT_ETH);
   };
 
-  const onSelectingToken = (item: {symbol: string, chainDetails: {backendName: string}}) => {
+  const onSelectingToken = (item: { symbol: string, chainDetails: Chain }) => {
     setSelectedToken(item);
     setIsChooseTokenVisible(false);
     setNativeTokenBalance(
       getNativeTokenBalance(
-        get(NativeTokenMapping, item.symbol) || item.symbol,
+        get(NativeTokenMapping, item.chainDetails.symbol) || item.chainDetails.symbol,
         portfolioState.statePortfolio.tokenPortfolio[
           get(ChainNameMapping, item.chainDetails.backendName)
         ].holdings
@@ -444,18 +444,18 @@ export default function BridgeFundCardScreen ({ route }: {route: any}) {
             </CyDText>
           </CyDView>}
           {!selectedToken && <CyDView>
-              <CyDText>{t<string>('CHOOSE_TOKEN')}</CyDText>
+            <CyDText>{t<string>('CHOOSE_TOKEN')}</CyDText>
           </CyDView>}
 
           <CyDView className='flex flex-row items-center'>
             {selectedToken && <><CyDTokenAmount className={'font-extrabold mr-[3px]'}>{selectedToken.actualBalance}
             </CyDTokenAmount>
-            <CyDText className={'font-extrabold mr-[5px]'}>
-              {selectedToken.symbol}
-            </CyDText>
+              <CyDText className={'font-extrabold mr-[5px]'}>
+                {selectedToken.symbol}
+              </CyDText>
             </>
             }
-            <CyDFastImage source={AppImages.DOWN_ARROW} className='h-[15px] w-[15px]' resizeMode='contain'/>
+            <CyDFastImage source={AppImages.DOWN_ARROW} className='h-[15px] w-[15px]' resizeMode='contain' />
           </CyDView>
         </CyDView>
       </CyDTouchView>
@@ -463,24 +463,24 @@ export default function BridgeFundCardScreen ({ route }: {route: any}) {
   };
 
   const RenderWarningMessage = () => {
-    const { symbol, backendName }: {symbol?: string, backendName?: string} = selectedToken?.chainDetails ?? {};
+    const { symbol, backendName }: { symbol?: string, backendName?: string } = selectedToken?.chainDetails ?? {};
     if (selectedToken && symbol && backendName) {
       const nativeTokenSymbol = get(NativeTokenMapping, symbol) || symbol;
       let errorMessage = '';
       if (Number(amount) > Number(selectedToken?.totalValue)) {
-            errorMessage = t('INSUFFICIENT_FUNDS');
+        errorMessage = t('INSUFFICIENT_FUNDS');
 
       } else if (nativeTokenBalance <= get(gasFeeReservation, backendName)) {
         errorMessage = String(`Insufficient ${String(nativeTokenSymbol)} to pay gas fee`);
       } else if (selectedToken?.symbol === nativeTokenSymbol && (Number(amount) / selectedToken?.price) > Number((nativeTokenBalance - get(gasFeeReservation, backendName)).toFixed(6))) {
         errorMessage = t('INSUFFICIENT_GAS_FEE');
-      } else if(amount && backendName === CHAIN_ETH.backendName && Number(amount) < MINIMUM_TRANSFER_AMOUNT_ETH){
+      } else if (amount && backendName === CHAIN_ETH.backendName && Number(amount) < MINIMUM_TRANSFER_AMOUNT_ETH) {
         errorMessage = t('MINIMUM_AMOUNT_ETH');
       }
 
       return (
         <CyDView className='mb-[10px]'>
-          <CyDText className='text-center'>
+          <CyDText className='text-center text-redColor font-medium'>
             {errorMessage}
           </CyDText>
         </CyDView>
@@ -492,10 +492,10 @@ export default function BridgeFundCardScreen ({ route }: {route: any}) {
   return (
     <CyDSafeAreaView className='h-full bg-white'>
       <ChooseTokenModal
-        isChooseTokenModalVisible = {isChooseTokenVisible}
-        tokenList = {portfolioState.statePortfolio.tokenPortfolio.totalHoldings}
-        minTokenValueLimit = {minTokenValueLimit}
-        onSelectingToken = {(token) => {
+        isChooseTokenModalVisible={isChooseTokenVisible}
+        tokenList={portfolioState.statePortfolio.tokenPortfolio.totalHoldings}
+        minTokenValueLimit={minTokenValueLimit}
+        onSelectingToken={(token) => {
           setIsChooseTokenVisible(false);
           setTimeout(() => {
             onSelectingToken(token);
@@ -509,7 +509,7 @@ export default function BridgeFundCardScreen ({ route }: {route: any}) {
       <BottomTokenCardConfirm
         modalParams={payTokenModalParams}
         isModalVisible={payTokenBottomConfirm}
-        onPayPress={ async () => {
+        onPayPress={async () => {
           setLowBalance(false);
           await sendTransaction(payTokenModalParams);
         }}
@@ -521,7 +521,7 @@ export default function BridgeFundCardScreen ({ route }: {route: any}) {
         }}
         lowBalance={lowBalance}
       />
-      <RenderSelectedToken/>
+      <RenderSelectedToken />
       <CyDView className={'pb-[0px] px-[10px] bg-[#F7F8FE] mx-[40px] h-[250px] rounded-[20px]'}>
         <CyDView className='flex flex-row h-[100%] items-center'>
           <CyDTouchView
@@ -554,7 +554,7 @@ export default function BridgeFundCardScreen ({ route }: {route: any}) {
               />
             </CyDView>
             {(!amount || Number(amount) < minTokenValueLimit) && <CyDView className='mb-[10px]'>
-              <CyDText className='text-center'>
+              <CyDText className='text-center font-medium'>
                 {t<string>('CARD_LOAD_MIN_AMOUNT')}
               </CyDText>
             </CyDView>}
