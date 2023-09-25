@@ -82,6 +82,7 @@ export enum TransactionFilterTypes {
 export enum TransactionTypes {
   CREDIT = 'CREDIT',
   DEBIT = 'DEBIT',
+  REFUND = 'REFUND'
 }
 
 export enum TransactionFilterByDateTypes {
