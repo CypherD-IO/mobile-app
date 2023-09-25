@@ -104,7 +104,7 @@ export default function TransactionsScreen(props: {
     }
   }, [shouldRefreshTransactions]);
 
-  const getTransactions = async (month: string = '', year: string = '') => {
+  const getTransactions = async (month = '', year = '') => {
     const currentCard = get(cardProfile, currentCardProvider).cards[
       currentCardIndex
     ];
@@ -173,6 +173,8 @@ export default function TransactionsScreen(props: {
         return AppImages.ICON_DOWN;
       case TransactionFilterTypes.DEBIT:
         return AppImages.ICON_UP;
+      case TransactionTypes.REFUND:
+        return AppImages.ICON_DOWN;
       default:
         return AppImages.MOVE_FUNDS;
     }
@@ -187,7 +189,9 @@ export default function TransactionsScreen(props: {
       case TransactionFilterTypes.CREDIT:
         return '+';
       case TransactionFilterTypes.DEBIT:
-        return '';
+        return '-';
+      case TransactionTypes.REFUND:
+        return '+';
       default:
         return '..';
     }
@@ -237,7 +241,7 @@ export default function TransactionsScreen(props: {
     const { iconUrl, type, date, title, amount } = transaction;
     return (
       <CyDTouchView
-        disabled={true || transaction.type === TransactionTypes.CREDIT}
+        disabled={transaction.type === TransactionTypes.CREDIT || transaction.type === TransactionTypes.REFUND}
         key={item.id}
         className={
           'flex flex-row justify-between aling-center mt-[20px] mx-[10px] pb-[20px] border-b-[1px] border-sepratorColor'
@@ -262,7 +266,7 @@ export default function TransactionsScreen(props: {
             }
             className={'h-[30px] w-[30px]'}
             resizeMode={'contain'}
-          ></CyDFastImage>
+          />
           <CyDView className={'ml-[10px]'}>
             <CyDText
               className={clsx('font-bold flex-wrap', {
@@ -279,6 +283,7 @@ export default function TransactionsScreen(props: {
             className={clsx('font-bold text-[16px] mr-[5px]', {
               'text-redCyD': type === TransactionTypes.DEBIT,
               'text-successTextGreen': type === TransactionTypes.CREDIT,
+              'text-darkYellow': type === TransactionTypes.REFUND
             })}
           >
             {getTransactionSign(type)}
@@ -510,7 +515,7 @@ export default function TransactionsScreen(props: {
                 <CyDImage
                   source={AppImages.NO_TRANSACTIONS_YET}
                   className={'mt-[15%] h-[150px] w-[150px]'}
-                ></CyDImage>
+                />
               </CyDView>
             )}
           </CyDView>
