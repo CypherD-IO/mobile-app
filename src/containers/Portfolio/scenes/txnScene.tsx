@@ -46,10 +46,10 @@ const GetTransactionItemIcon = ({ type, status, tokenIcon, fromTokenIcon, toToke
   switch (type) {
     case TransactionType.SEND:
       transactionIcon = status === 'completed' ? (tokenIcon ? { uri: tokenIcon } : AppImages.UNKNOWN_TXN_TOKEN) : AppImages.TXN_SEND_ERROR;
-      return (<CyDFastImage className='h-[36px] w-[36px] rounded-[50px]' resizeMode='contain' source={transactionIcon} />)
+      return (<CyDFastImage className='h-[36px] w-[36px] rounded-[50px]' resizeMode='contain' source={transactionIcon} />);
     case TransactionType.RECEIVE:
       transactionIcon = status === 'completed' ? (tokenIcon ? { uri: tokenIcon } : AppImages.UNKNOWN_TXN_TOKEN) : AppImages.TXN_RECEIVE_ERROR;
-      return (<CyDFastImage className='h-[36px] w-[36px] rounded-[50px]' resizeMode='contain' source={transactionIcon} />)
+      return (<CyDFastImage className='h-[36px] w-[36px] rounded-[50px]' resizeMode='contain' source={transactionIcon} />);
     case TransactionType.SWAP:
       const fromTokenImg = fromTokenIcon ? { uri: fromTokenIcon } : AppImages.UNKNOWN_TXN_TOKEN;
       const toTokenImg = toTokenIcon ? { uri: toTokenIcon } : AppImages.UNKNOWN_TXN_TOKEN;
@@ -71,10 +71,10 @@ const GetTransactionItemIcon = ({ type, status, tokenIcon, fromTokenIcon, toToke
 
     case TransactionType.SELF:
       transactionIcon = status === 'completed' ? AppImages.TXN_SELF_SUCCESS : AppImages.TXN_SELF_ERROR;
-      return (<CyDFastImage className='h-[36px] w-[36px] rounded-[50px]' resizeMode='contain' source={transactionIcon} />)
+      return (<CyDFastImage className='h-[36px] w-[36px] rounded-[50px]' resizeMode='contain' source={transactionIcon} />);
     default:
       transactionIcon = status === 'completed' ? AppImages.TXN_DEFAULT_SUCCESS : AppImages.TXN_DEFAULT_ERROR;
-      return (<CyDFastImage className='h-[36px] w-[36px] rounded-[50px]' resizeMode='contain' source={transactionIcon} />)
+      return (<CyDFastImage className='h-[36px] w-[36px] rounded-[50px]' resizeMode='contain' source={transactionIcon} />);
   }
 };
 
@@ -314,14 +314,14 @@ const TxnScene = ({
 
     let shouldRenderDate = false;
     if (formatedDay !== previousTransactionFormatedDay) {
-      dateCheck = moment.unix(activity.timestamp).format('MMM DD, YYYY')
+      dateCheck = moment.unix(activity.timestamp).format('MMM DD, YYYY');
       shouldRenderDate = true;
     }
     const [formattedAmount, amountColour] = getTransactionItemAmountDetails(activity.type, activity.value, activity.token, activity.additionalData?.fromTokenValue ?? '', activity.additionalData?.fromToken ?? '');
     const title = activity.type ? activity?.type.charAt(0).toUpperCase() + activity.type.slice(1) : 'Unknown';
     return (
       <CyDView className="border-x border-sepratorColor">
-        {shouldRenderDate && <CyDView className={clsx(' border-sepratorColor bg-privacyMessageBackgroundColor p-[5px] justify-center')}>
+        {shouldRenderDate && <CyDView className={clsx(' border-sepratorColor p-[5px] justify-center')}>
           <CyDText className='font-bold text-[14px]'>{formatedDay}</CyDText>
         </CyDView>}
         <CyDTouchView className={clsx('flex flex-row items-center py-[10px] border-b-[0.5px] border-sepratorColor px-[10px]', { 'rounded-t-[24px] border-t-[0.5px]': shouldRenderDate, 'rounded-b-[24px]': (nextTransactionFormatedDay !== formatedDay) })}
@@ -336,7 +336,7 @@ const TxnScene = ({
                 <CyDText className='font-extrabold text-[14px]'>{title}</CyDText>
               </CyDView>
               <CyDView className='flex flex-row w-full justify-start items-center'>
-                <CyDFastImage className='h-[20px] w-[20px] mr-[5px] rounded-full' resizeMode='contain' source={chainImg} />
+                <CyDFastImage className='h-[18px] w-[18px] mr-[5px] rounded-full' resizeMode='contain' source={chainImg} />
                 <RenderTransactionItemDetails type={activity.type} from={activity.from} to={activity.to} />
               </CyDView>
             </CyDView>
