@@ -12,14 +12,14 @@ import Clipboard from '@react-native-clipboard/clipboard';
 
 import { BackHandler } from 'react-native';
 import { QRCode } from 'react-native-custom-qr-codes';
-import { CHAIN_COSMOS, CHAIN_ETH, CHAIN_EVMOS, CHAIN_OSMOSIS, CHAIN_JUNO, FundWalletAddressType, CHAIN_POLYGON, CHAIN_AVALANCHE, CHAIN_BSC, CHAIN_FTM, CHAIN_ARBITRUM, CHAIN_OPTIMISM, CHAIN_STARGAZE, CHAIN_NOBLE, CHAIN_SHARDEUM, CHAIN_SHARDEUM_SPHINX } from '../../constants/server';
+import { CHAIN_COSMOS, CHAIN_ETH, CHAIN_EVMOS, CHAIN_OSMOSIS, CHAIN_JUNO, FundWalletAddressType, CHAIN_POLYGON, CHAIN_AVALANCHE, CHAIN_BSC, CHAIN_FTM, CHAIN_ARBITRUM, CHAIN_OPTIMISM, CHAIN_STARGAZE, CHAIN_NOBLE, CHAIN_ZKSYNC_ERA, CHAIN_BASE, CHAIN_POLYGON_ZKEVM, CHAIN_SHARDEUM, CHAIN_SHARDEUM_SPHINX } from '../../constants/server';
 import { captureRef } from 'react-native-view-shot';
 import Share from 'react-native-share';
 import { SHARE_QR_TIMEOUT } from '../../constants/timeOuts';
 import { isAndroid } from '../../misc/checkers';
 import Button from '../../components/v2/button';
 
-function copyToClipboard (text: string) {
+function copyToClipboard(text: string) {
   Clipboard.setString(text);
 };
 
@@ -32,7 +32,7 @@ export interface UserChain {
   backendName: string
 }
 
-export default function QRCodeGenerator (props) {
+export default function QRCodeGenerator(props) {
   const { t } = useTranslation();
   const routeParams = props.route.params;
   const hdWalletContext = useContext<any>(HdWalletContext);
@@ -52,6 +52,9 @@ export default function QRCodeGenerator (props) {
     { ...CHAIN_JUNO, address: hdWalletContext.state.wallet.juno?.wallets[0]?.address },
     { ...CHAIN_STARGAZE, address: hdWalletContext.state.wallet.stargaze?.address },
     { ...CHAIN_NOBLE, address: hdWalletContext.state.wallet.noble?.wallets[0]?.address },
+    { ...CHAIN_ZKSYNC_ERA, address: hdWalletContext.state.wallet.ethereum.address },
+    { ...CHAIN_BASE, address: hdWalletContext.state.wallet.ethereum.address },
+    { ...CHAIN_POLYGON_ZKEVM, address: hdWalletContext.state.wallet.ethereum.address },
     { ...CHAIN_SHARDEUM, address: hdWalletContext.state.wallet.ethereum.address },
     { ...CHAIN_SHARDEUM_SPHINX, address: hdWalletContext.state.wallet.ethereum.address }
   ];
@@ -66,7 +69,7 @@ export default function QRCodeGenerator (props) {
 
   const viewRef = useRef();
 
-  async function shareQRImage () {
+  async function shareQRImage() {
     const url = await captureRef(viewRef, {
       format: 'png',
       quality: 0.7,
@@ -94,24 +97,24 @@ export default function QRCodeGenerator (props) {
     setIsCapturingDetails(false);
   }
 
-  async function shareQR () {
+  async function shareQR() {
     setIsCapturingDetails(true);
     setTimeout(() => {
       void shareQRImage();
     }, SHARE_QR_TIMEOUT);
   }
 
-  const RenderQRCode = (chain: { item: UserChain}) => {
+  const RenderQRCode = (chain: { item: UserChain }) => {
     return (
       selectedChain.backendName === chain.item.backendName && chain.item.address
         ? (
-        <QRCode
-          content={chain.item.address}
-          codeStyle='dot'
-          logo={AppImages.QR_LOGO}
-          logoSize={60}
-        />
-          )
+          <QRCode
+            content={chain.item.address}
+            codeStyle='dot'
+            logo={AppImages.QR_LOGO}
+            logoSize={60}
+          />
+        )
         : null
     );
   };
@@ -143,10 +146,16 @@ export default function QRCodeGenerator (props) {
         setSelectedChain(data[11]);
       } else if (walletAddressType === FundWalletAddressType.NOBLE) {
         setSelectedChain(data[12]);
-      } else if (walletAddressType === FundWalletAddressType.SHARDEUM) {
+      } else if (walletAddressType === FundWalletAddressType.ZKSYNC_ERA) {
         setSelectedChain(data[13]);
-      } else if (walletAddressType === FundWalletAddressType.SHARDEUM_SPHINX) {
+      } else if (walletAddressType === FundWalletAddressType.BASE) {
         setSelectedChain(data[14]);
+      } else if (walletAddressType === FundWalletAddressType.POLYGON_ZKEVM) {
+        setSelectedChain(data[15]);
+      } else if (walletAddressType === FundWalletAddressType.SHARDEUM) {
+        setSelectedChain(data[16]);
+      } else if (walletAddressType === FundWalletAddressType.SHARDEUM_SPHINX) {
+        setSelectedChain(data[17]);
       }
     }
 
@@ -158,63 +167,68 @@ export default function QRCodeGenerator (props) {
 
   // NOTE: LIFE CYCLE METHOD 🍎🍎🍎🍎
   return (
-          <CyDView className='bg-white h-full w-full'>
-            <CyDScrollView className='flex flex-start h-full w-full' >
-              <CyDView className={'bg-white'} ref={viewRef}>
-                <CyDView className={isCapturingDetails ? 'flex flex-col justify-center items-center mt-[15px]' : 'flex flex-col items-center justify-center' }>
-                  <CyDImage source={selectedChain.logo_url} className={' w-[40px] h-[40px] mr-[10px] mt-[2px]'}/>
-                  <CyDText className={
-                      'text-[24px] text-center font-semibold font-nunito pt-[20px]'
-                    }>
-                    {`${selectedChain.name}`}
-                  </CyDText>
-                </CyDView>
-                <CyDView className='py-[10px]'>
-                  <CyDView className='flex justify-center items-center pt-[10px] pb-[24px] mt-[10px] px-[20px] py-[20px] w-full rounded-[10px]'>
-                        {data.map((item) => <RenderQRCode key={item.id} item={item}/>)}
-                        {!isCapturingDetails && !selectedChain.address && <CyDText className='text-[25px] text-center font-extrabold'>{selectedChain.name} {t<string>('ADDRESS_NOT_ACCESSIBLE')}</CyDText>}
-                        <CyDText className={isCapturingDetails ? 'text-[18px] font-extrabold text-center mt-[20px]' : 'mt-[20px] text-[16px] font-bold text-center'}>{selectedChain?.address}</CyDText>
-                  </CyDView>
-                  <CyDView className={'mt-[5px] mx-[20px] px-[20px] py-[5px]'}>
-                    <CyDText className={
-                      'text-[15px] text-center text-[#434343] font-nunito'
-                    }>
-                      {`${t('QRCODE_SUBTITLE')}${selectedChain.chainName === 'ethereum' ? 'chains: Ethereum, Polygon, Binance Smart Chain, Avalanche, Fantom, Optimism, Arbitrum, Evmos, Shardeum' : `chain: ${selectedChain.name}`}`}
-                    </CyDText>
-                  </CyDView>
-
-                  {isCapturingDetails &&
-                    <CyDText className={
-                        'text-[15px] text-center font-bold font-nunito items-end mb-[15px]'
-                      }>
-                      {t('SHARE_QR_TEXT')}
-                    </CyDText>}
-                    {!isCapturingDetails && selectedChain.address &&
-                      <CyDView className='mt-[10px] justify-center items-center flex flex-row'>
-                        <Button
-                          image={AppImages.COPY}
-                          onPress={() => {
-                            copyToClipboard(selectedChain.address);
-                            showToast(t('ADDRESS_COPY'));
-                          } }
-                          style="w-[50px] h-[50px] mr-[10px] rounded-[50px]"
-                          imageStyle='self-center  h-[18px] w-[18px]'
-                          type='secondary'
-                        ></Button>
-                        <Button
-                          image={AppImages.SHARE}
-                          onPress={() => {
-                            void shareQR();
-                          }}
-                          style="w-[50px] h-[50px] ml-[10px] rounded-[50px]"
-                          imageStyle='self-center h-[18px] w-[18px]'
-                          type='secondary'
-                        ></Button>
-                      </CyDView>
-                    }
-                </CyDView>
-              </CyDView>
-            </CyDScrollView>
+    <CyDView className='bg-white h-full w-full'>
+      <CyDScrollView className='flex flex-start h-full w-full' >
+        <CyDView className={'bg-white'} ref={viewRef}>
+          <CyDView className={isCapturingDetails ? 'flex flex-col justify-center items-center mt-[15px]' : 'flex flex-col items-center justify-center'}>
+            <CyDImage source={selectedChain.logo_url} className={' w-[40px] h-[40px] mr-[10px] mt-[2px]'} />
+            <CyDText className={
+              'text-[24px] text-center font-semibold font-nunito pt-[20px]'
+            }>
+              {`${selectedChain.name}`}
+            </CyDText>
           </CyDView>
+          <CyDView className='py-[10px]'>
+            <CyDView className='flex justify-center items-center pt-[10px] pb-[24px] mt-[10px] px-[20px] py-[20px] w-full rounded-[10px]'>
+              {data.map((item) => <RenderQRCode key={item.id} item={item} />)}
+              {!isCapturingDetails && !selectedChain.address && <CyDText className='text-[25px] text-center font-extrabold'>{selectedChain.name} {t<string>('ADDRESS_NOT_ACCESSIBLE')}</CyDText>}
+              <CyDText className={isCapturingDetails ? 'text-[18px] font-extrabold text-center mt-[20px]' : 'mt-[20px] text-[16px] font-extrabold text-center'}>{selectedChain?.address}</CyDText>
+            </CyDView>
+            <CyDView className={'mt-[5px] mx-[20px] px-[20px] py-[5px]'}>
+              <CyDText className={
+                'text-[15px] text-center'
+              }>
+                {`${t('QRCODE_SUBTITLE')}`}
+              </CyDText>
+              <CyDText className={
+                'text-[15px] text-center font-bold'
+              }>
+                {`${selectedChain.chainName === 'ethereum' ? 'Ethereum, Polygon, Binance Smart Chain, zkSync Era, Base, Polygon zkEVM, Avalanche, Fantom, Optimism, Arbitrum, Evmos, Shardeum' : `${selectedChain.name}`}`}
+              </CyDText>
+            </CyDView>
+
+            {isCapturingDetails &&
+              <CyDText className={
+                'text-[15px] text-center font-bold font-nunito items-end mb-[15px]'
+              }>
+                {t('SHARE_QR_TEXT')}
+              </CyDText>}
+            {!isCapturingDetails && selectedChain.address &&
+              <CyDView className='mt-[10px] justify-center items-center flex flex-row'>
+                <Button
+                  image={AppImages.COPY}
+                  onPress={() => {
+                    copyToClipboard(selectedChain.address);
+                    showToast(t('ADDRESS_COPY'));
+                  }}
+                  style="w-[50px] h-[50px] mr-[10px] rounded-[50px]"
+                  imageStyle='self-center  h-[18px] w-[18px]'
+                  type='secondary'
+                ></Button>
+                <Button
+                  image={AppImages.SHARE}
+                  onPress={() => {
+                    void shareQR();
+                  }}
+                  style="w-[50px] h-[50px] ml-[10px] rounded-[50px]"
+                  imageStyle='self-center h-[18px] w-[18px]'
+                  type='secondary'
+                ></Button>
+              </CyDView>
+            }
+          </CyDView>
+        </CyDView>
+      </CyDScrollView>
+    </CyDView>
   );
 }

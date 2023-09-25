@@ -106,7 +106,7 @@ const resources = {
       LOADING_DATA: 'Loading',
       PAY: 'PAY',
       CONNECT_TO_DESKTOP: 'Connect to Dapp on Desktop',
-      QRCODE_SUBTITLE: 'Use this address to send tokens from an exchange or a wallet to Cypher Wallet and this address works on the following ',
+      QRCODE_SUBTITLE: 'Use this address to send tokens from an exchange or a wallet to Cypher Wallet and this address works on the following chain(s)',
       FUND_TRANSFER: 'Your wallet is currently empty. Transfer tokens to this wallet or import another wallet',
       LOAD_WALLET: 'FUND WALLET',
       FUND_CARD: 'Fund Card',

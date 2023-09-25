@@ -29,7 +29,7 @@ import { Colors } from '../../constants/theme';
 const cardBenefits = [
   'Instantly swap crypto to USD',
   'Receive free lifetime access',
-  'Spend crypto from 11 different chains - more coming soon!',
+  'Spend crypto from 17 different chains - more coming soon!',
   'Use your card anywhere in the world',
 ];
 
