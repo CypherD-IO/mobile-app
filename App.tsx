@@ -24,6 +24,8 @@ import {
   PortfolioContext,
   StakingContext,
   ActivityContext,
+  getPlatform,
+  getPlatformVersion,
 } from './src/core/util';
 import {
   hdWalletStateReducer,
@@ -96,7 +98,7 @@ import {
   getRenderContent,
 } from './src/containers/utilities/walletConnectUtilities';
 import SplashScreen from 'react-native-lottie-splash-screen';
-import DeviceInfo from 'react-native-device-info';
+import DeviceInfo, { getVersion } from 'react-native-device-info';
 import WalletConnect from '@walletconnect/client';
 import WalletConnectModal from './src/components/WalletConnectModal';
 import { GlobalModal } from './src/components/v2/GlobalModal';
@@ -207,7 +209,7 @@ Sentry.init({
 });
 
 // AppsFlyer SDK initialization
-const NoOpFunction = () => {};
+const NoOpFunction = () => { };
 appsFlyer.initSdk(
   {
     devKey: Config.AF_DEVKEY ?? '',
@@ -505,10 +507,10 @@ function App() {
         connector: request.connector,
         dAppInfo:
           walletConnectState?.connectors?.length ===
-          walletConnectState?.dAppInfo?.length
+            walletConnectState?.dAppInfo?.length
             ? walletConnectState?.dAppInfo[
-                walletConnectState.connectors.indexOf(request.connector)
-              ]
+            walletConnectState.connectors.indexOf(request.connector)
+            ]
             : {},
         address: ethereum?.wallets[0]?.address,
         payload: request.payload,
@@ -539,14 +541,25 @@ function App() {
     fetchRPCEndpointsFromServer(globalDispatch).catch((e) => {
       Sentry.captureException(e.message);
     });
-    inAppUpdates
-      .checkNeedsUpdate()
-      .then((result) => {
-        if (result.shouldUpdate) {
+
+    const checkForUpdatesAndShowModal = async () => {
+      try {
+        const res = await inAppUpdates.checkNeedsUpdate();
+        if (res.shouldUpdate) {
           setUpdateModal(true);
         }
-      })
-      .catch(Sentry.captureException);
+      } catch (e) {
+        const errorObject = {
+          e,
+          platform: getPlatform(),
+          platformVersion: getPlatformVersion(),
+          appVersion: getVersion(),
+        };
+        Sentry.captureException(errorObject);
+      }
+    };
+
+    void checkForUpdatesAndShowModal();
 
     AsyncStorage.getItem('activities', (_err, data) => {
       data &&
@@ -914,7 +927,7 @@ function App() {
                               <WalletConnectV2Provider>
                                 {ethereum.address === undefined ? (
                                   pinAuthentication ||
-                                  pinPresent === PinPresentStates.NOTSET ? (
+                                    pinPresent === PinPresentStates.NOTSET ? (
                                     <LoadingStack />
                                   ) : pinPresent === PinPresentStates.TRUE ? (
                                     <PinAuthRoute
