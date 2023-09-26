@@ -419,6 +419,7 @@ const resources = {
       ALL_TRANSACTIONS: 'All Transactions',
       CREDIT: 'Credit',
       DEBIT: 'Debit',
+      REFUND: 'Refund',
       FILTER_BY_DATE: 'Filter By Date',
       ALL: 'All',
       MONTHLY: 'Monthly',
@@ -524,6 +525,7 @@ const resources = {
       CTA_JOIN_WAITLIST: 'JOIN WAITLIST',
       TRANSACTION_DETAILS: 'Transaction Details',
       MERCHANT_DETAILS: 'Merchant Details',
+      LOADING_DETAILS: 'Loading Details',
       CURRENCY_CONVERSION_DETAILS: 'Currency Conversion Details',
       TRANSACTION_ID: 'Transaction ID',
       PAYMENT_MODE: 'Payment Mode',
@@ -755,8 +757,8 @@ const resources = {
       TRANSACTIONS_FILTER: 'Transactions Filter',
       MINIMUM_AMOUNT_ETH: 'Minimum amount to transfer in ethereum chain is $50',
       BRIDGE_ACTIVITY: 'Bridge Activity',
-      CARD_ACTIVITY: 'Card Funding',
-      FUNDED_AMOUNT: 'Funded Amount',
+      CARD_ACTIVITY: 'Card Loading',
+      LOADED_AMOUNT: 'Loaded Amount',
     }
   }
 };
