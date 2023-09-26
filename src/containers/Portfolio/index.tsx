@@ -114,6 +114,7 @@ export default function Portfolio({ navigation }: PortfolioProps) {
   const { scrollY, index, setIndex, bannerHeight, setBannerHeight, getRefForKey, ...sceneProps } =
     useScrollManager(tabsWithScrollableType);
 
+  const jwtToken = globalStateContext?.globalState.token;
   const ethereum = hdWallet?.state.wallet.ethereum;
 
   const handleBackButton = () => {
@@ -694,7 +695,11 @@ export default function Portfolio({ navigation }: PortfolioProps) {
         scrollY={scrollY}
         bannerHeight={bannerHeight}>
         <Banner bannerHeight={bannerHeight} checkAllBalance={checkAll(portfolioState)} />
-        <BannerCarousel setBannerHeight={setBannerHeight} />
+        {
+          jwtToken !== undefined ?
+            <BannerCarousel setBannerHeight={setBannerHeight} />
+            : null
+        }
       </AnimatedBanner>
 
       <CyDView className={clsx('flex-1 pb-[40px]', { 'pb-[75px]': !isIOS() })}>
