@@ -1,4 +1,4 @@
-/* eslint-disable @typescript-eslint/restrict-plus-operands */
+
 import React, { useContext } from 'react';
 import { useTranslation } from 'react-i18next';
 import FastImage from 'react-native-fast-image';
@@ -330,7 +330,7 @@ const PortfolioTokenItem = ({
       </CyDTouchView>
     );
   }
-  return <CyDView></CyDView>;
+  return <CyDView />;
 };
 
 export default React.memo(PortfolioTokenItem);
@@ -338,6 +338,6 @@ export default React.memo(PortfolioTokenItem);
 const styles = StyleSheet.create({
   swipeable: {
     display: 'flex',
-    width: '83%',
+    width: '85%',
   },
 });
