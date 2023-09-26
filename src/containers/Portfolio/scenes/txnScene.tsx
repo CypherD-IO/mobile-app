@@ -2,7 +2,7 @@ import React, { memo, useContext, useEffect, useRef, useState } from "react";
 import { CyDFastImage, CyDText, CyDTouchView, CyDView } from "../../../styles/tailwindStyles";
 import AppImages from "../../../../assets/images/appImages";
 import { useTranslation } from "react-i18next";
-import { HdWalletContext, formatAmount, getMaskedAddress } from "../../../core/util";
+import { HdWalletContext, PortfolioContext, formatAmount, getMaskedAddress } from "../../../core/util";
 import { APPLICATION_ADDRESS_NAME_MAP } from "../../../constants/data";
 import moment from "moment";
 import { useIsFocused } from "@react-navigation/native";
@@ -16,7 +16,7 @@ import { SharedValue } from "react-native-reanimated";
 import TxnFilterModal, { STATUSES, TRANSACTION_TYPES } from "../components/TxnFilterModal";
 import { TransactionType } from "../../../constants/enum";
 import { TransactionObj } from "../../../models/transaction.model";
-import { ChainConfigMapping } from "../../../constants/server";
+import { CHAIN_COLLECTION, ChainConfigMapping } from "../../../constants/server";
 import clsx from "clsx";
 import { isIOS } from "../../../misc/checkers";
 
@@ -26,8 +26,6 @@ interface TxnItemProps {
 }
 
 type ScrollEvent = NativeSyntheticEvent<NativeScrollEvent>;
-
-let dateCheck: string;
 
 interface TxnSceneProps {
   routeKey: string;
@@ -48,10 +46,10 @@ const GetTransactionItemIcon = ({ type, status, tokenIcon, fromTokenIcon, toToke
   switch (type) {
     case TransactionType.SEND:
       transactionIcon = status === 'completed' ? (tokenIcon ? { uri: tokenIcon } : AppImages.UNKNOWN_TXN_TOKEN) : AppImages.TXN_SEND_ERROR;
-      return (<CyDFastImage className='h-[25px] w-[25px] rounded-[8px]' resizeMode='contain' source={transactionIcon} />)
+      return (<CyDFastImage className='h-[25px] w-[25px] rounded-full' resizeMode='contain' source={transactionIcon} />);
     case TransactionType.RECEIVE:
       transactionIcon = status === 'completed' ? (tokenIcon ? { uri: tokenIcon } : AppImages.UNKNOWN_TXN_TOKEN) : AppImages.TXN_RECEIVE_ERROR;
-      return (<CyDFastImage className='h-[25px] w-[25px] rounded-[8px]' resizeMode='contain' source={transactionIcon} />)
+      return (<CyDFastImage className='h-[25px] w-[25px] rounded-full' resizeMode='contain' source={transactionIcon} />);
     case TransactionType.SWAP:
       const fromTokenImg = fromTokenIcon ? { uri: fromTokenIcon } : AppImages.UNKNOWN_TXN_TOKEN;
       const toTokenImg = toTokenIcon ? { uri: toTokenIcon } : AppImages.UNKNOWN_TXN_TOKEN;
@@ -59,12 +57,12 @@ const GetTransactionItemIcon = ({ type, status, tokenIcon, fromTokenIcon, toToke
       return (
         <CyDView className='h-[25px] w-[25px] justify-center items-center' style={{ position: 'relative', backgroundColor: 'transparent' }}>
           <CyDFastImage
-            className='h-[18px] w-[18px] absolute right-[8px] rounded-[8px]'
+            className='h-[25px] w-[25px] absolute right-[8px] rounded-full'
             resizeMode='contain'
             source={fromTokenImg}
           />
           <CyDFastImage
-            className='h-[18px] w-[18px] absolute top-[10px] left-[8px] rounded-[8px]'
+            className='h-[25px] w-[25px] absolute top-[10px] left-[8px] rounded-full'
             resizeMode='contain'
             source={toTokenImg}
           />
@@ -73,10 +71,10 @@ const GetTransactionItemIcon = ({ type, status, tokenIcon, fromTokenIcon, toToke
 
     case TransactionType.SELF:
       transactionIcon = status === 'completed' ? AppImages.TXN_SELF_SUCCESS : AppImages.TXN_SELF_ERROR;
-      return (<CyDFastImage className='h-[25px] w-[25px] rounded-[8px]' resizeMode='contain' source={transactionIcon} />)
+      return (<CyDFastImage className='h-[25px] w-[25px] rounded-full' resizeMode='contain' source={transactionIcon} />);
     default:
       transactionIcon = status === 'completed' ? AppImages.TXN_DEFAULT_SUCCESS : AppImages.TXN_DEFAULT_ERROR;
-      return (<CyDFastImage className='h-[25px] w-[25px] rounded-[8px]' resizeMode='contain' source={transactionIcon} />)
+      return (<CyDFastImage className='h-[25px] w-[25px] rounded-full' resizeMode='contain' source={transactionIcon} />);
   }
 };
 
@@ -152,6 +150,7 @@ const TxnScene = ({
 
   const isFocused = useIsFocused();
   const hdWalletContext = useContext<any>(HdWalletContext);
+  const portfolioContext = useContext(PortfolioContext);
   const { address: ethereumAddress }: { address: string } = hdWalletContext.state.wallet.ethereum;
   const getTransactionsUrl = `${ARCH_HOST}/v1/txn/transactions/${ethereumAddress}?descOrder=true&blockchain=`;
 
@@ -231,7 +230,7 @@ const TxnScene = ({
     if (!isLoading) {
       spliceTransactions(); // Process transaction when isLoading is false
     }
-  }, [isLoading, filter]);
+  }, [isLoading, filter, portfolioContext.statePortfolio.selectedChain]);
 
   const spliceTransactions = () => {
     if (transactions.length === 0) {
@@ -241,12 +240,14 @@ const TxnScene = ({
     const transaction: TransactionObj[] = [...transactions];
 
     const filteredActivities = transaction.filter(activity => {
+      const chain = activity.blockchain.toLowerCase();
+      const isChainSelected = portfolioContext.statePortfolio.selectedChain === CHAIN_COLLECTION || portfolioContext.statePortfolio.selectedChain === ChainConfigMapping[chain];
       const isIncludedType = filter.types.includes(activity.type);
       const isOtherType = !TRANSACTION_TYPES.includes(activity.type);
       const isIncludedStatus = filter.statuses.length === 0 || filter.statuses.includes(activity.status);
 
       return (isIncludedType || (isOtherType && filter.types.includes(TransactionType.OTHERS))) &&
-        isIncludedStatus;
+        isIncludedStatus && isChainSelected;
     });
 
     filteredActivities.sort(function (a, b) {
@@ -313,7 +314,7 @@ const TxnScene = ({
 
     let shouldRenderDate = false;
     if (formatedDay !== previousTransactionFormatedDay) {
-      dateCheck = moment.unix(activity.timestamp).format('MMM DD, YYYY')
+      dateCheck = moment.unix(activity.timestamp).format('MMM DD, YYYY');
       shouldRenderDate = true;
     }
     const [formattedAmount, amountColour] = getTransactionItemAmountDetails(activity.type, activity.value, activity.token, activity.additionalData?.fromTokenValue ?? '', activity.additionalData?.fromToken ?? '');
