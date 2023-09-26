@@ -9,7 +9,7 @@ interface FilterBarProps {
 const FilterBar = ({ setFilterModalVisible }: FilterBarProps) => {
 
   return (
-    <CyDView className="w-full items-end px-[10px] py-[5px] border-sepratorColor rounded-t-[24px] border">
+    <CyDView className="w-full items-end px-[10px] py-[5px] border-sepratorColor border-t-[0.5px]">
       <CyDTouchView onPress={() => {
         setFilterModalVisible(true);
       }}>

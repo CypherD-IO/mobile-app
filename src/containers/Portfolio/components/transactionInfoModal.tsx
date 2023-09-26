@@ -118,11 +118,11 @@ export default function TransactionInfoModal({
               {fromTokenIcon
                 ? <CyDImage
                   source={{ uri: fromTokenIcon }}
-                  className={'w-[36px] h-[36px] rounded-full'}
+                  className={'w-[25px] h-[25px] rounded-full'}
                 />
                 : <CyDImage
                   source={AppImages.UNKNOWN_TXN_TOKEN}
-                  className={'w-[36px] h-[36px] rounded-full'}
+                  className={'w-[25px] h-[25px] rounded-full'}
                 />}
               {fromToken
                 ? (
@@ -130,7 +130,7 @@ export default function TransactionInfoModal({
                     <CyDText className='text-[16px] mt-[2px] font-bold text-activityFontColor'>{fromToken}</CyDText>
                     {blockchain && (
                       <CyDView className='flex flex-row justify-center items-center'>
-                        <CyDFastImage className='h-[18px] w-[18px] mr-[5px]' resizeMode='contain' source={chainImg} />
+                        <CyDFastImage className='h-[10px] w-[10px] mr-[5px]' resizeMode='contain' source={chainImg} />
                         <CyDText className='text-[12px] mt-[2px]'>
                           {chain}
                         </CyDText>
@@ -142,7 +142,7 @@ export default function TransactionInfoModal({
                   <CyDText className='text-[16px] mt-[2px] font-bold text-activityFontColor'>{t('UNKNOWN')}</CyDText>
                   {blockchain && (
                     <CyDView className='flex flex-row justify-center items-center'>
-                      <CyDFastImage className='h-[18px] w-[18px] mr-[5px]' resizeMode='contain' source={chainImg} />
+                      <CyDFastImage className='h-[10px] w-[10px] mr-[5px]' resizeMode='contain' source={chainImg} />
                       <CyDText className='text-[12px] mt-[2px]'>
                         {chain}
                       </CyDText>
@@ -158,11 +158,11 @@ export default function TransactionInfoModal({
               {toTokenIcon
                 ? <CyDImage
                   source={{ uri: toTokenIcon }}
-                  className={'w-[36px] h-[36px] rounded-full'}
+                  className={'w-[25px] h-[25px] rounded-full'}
                 />
                 : <CyDImage
                   source={AppImages.UNKNOWN_TXN_TOKEN}
-                  className={'w-[36px] h-[36px] rounded-full'}
+                  className={'w-[25px] h-[25px] rounded-full'}
                 />}
               {toToken
                 ? (
@@ -170,7 +170,7 @@ export default function TransactionInfoModal({
                     <CyDText className='text-[16px] mt-[2px] font-bold text-activityFontColor'>{toToken}</CyDText>
                     {blockchain && (
                       <CyDView className='flex flex-row justify-center items-center'>
-                        <CyDFastImage className='h-[18px] w-[18px] mr-[5px]' resizeMode='contain' source={chainImg} />
+                        <CyDFastImage className='h-[10px] w-[10px] mr-[5px]' resizeMode='contain' source={chainImg} />
                         <CyDText className='text-[12px] mt-[2px]'>
                           {chain}
                         </CyDText>
@@ -182,7 +182,7 @@ export default function TransactionInfoModal({
                   <CyDText className='text-[16px] mt-[2px] font-bold text-activityFontColor'>{t('UNKNOWN')}</CyDText>
                   {blockchain && (
                     <CyDView className='flex flex-row justify-center items-center'>
-                      <CyDFastImage className='h-[18px] w-[18px] mr-[5px]' resizeMode='contain' source={chainImg} />
+                      <CyDFastImage className='h-[10px] w-[10px] mr-[5px]' resizeMode='contain' source={chainImg} />
                       <CyDText className='text-[12px] mt-[2px]'>
                         {chain}
                       </CyDText>
@@ -198,7 +198,7 @@ export default function TransactionInfoModal({
             <CyDView className='flex flex-row items-center'>
               {tokenIcon && <CyDImage
                 source={{ uri: tokenIcon }}
-                className={'w-[36px] h-[36px]'}
+                className={'w-[25px] h-[25px]'}
               />}
               {token
                 ? (
@@ -206,7 +206,7 @@ export default function TransactionInfoModal({
                     <CyDText className='text-[16px] ml-[10px] mt-[2px] font-bold text-activityFontColor'>{token}</CyDText>
                     {blockchain && (
                       <CyDView className='flex flex-row justify-center items-center'>
-                        <CyDFastImage className='h-[18px] w-[18px] mr-[5px] rounded-full' resizeMode='contain' source={chainImg} />
+                        <CyDFastImage className='h-[10px] w-[10px] mr-[5px] rounded-full' resizeMode='contain' source={chainImg} />
                         <CyDText className='text-[12px] mt-[2px]'>
                           {chain}
                         </CyDText>
@@ -219,7 +219,7 @@ export default function TransactionInfoModal({
                     <CyDText className='text-[16px] ml-[10px] mt-[2px] font-bold text-activityFontColor'>{t('UNKNOWN')}</CyDText>
                     {blockchain && (
                       <CyDView className='flex flex-row justify-center items-center'>
-                        <CyDFastImage className='h-[18px] w-[18px] mr-[5px] rounded-full' resizeMode='contain' source={chainImg} />
+                        <CyDFastImage className='h-[10px] w-[10px] mr-[5px] rounded-full' resizeMode='contain' source={chainImg} />
                         <CyDText className='text-[12px] mt-[2px]'>
                           {chain}
                         </CyDText>
@@ -237,17 +237,17 @@ export default function TransactionInfoModal({
               {tokenIcon
                 ? <CyDImage
                   source={{ uri: tokenIcon }}
-                  className={'w-[36px] h-[36px] rounded-full'}
+                  className={'w-[25px] h-[25px] rounded-full'}
                 />
                 : <CyDImage
                   source={AppImages.UNKNOWN_TXN_TOKEN}
-                  className={'w-[36px] h-[36px] rounded-full'}
+                  className={'w-[25px] h-[25px] rounded-full'}
                 />}
               <CyDView className='flex flex-col ml-[5px] items-start'>
                 <CyDText className='text-[16px] mt-[2px] font-bold text-activityFontColor'>{token || t('UNKNOWN')}</CyDText>
                 {blockchain && (
                   <CyDView className='flex flex-row justify-center items-center '>
-                    <CyDFastImage className='h-[18px] w-[18px] mr-[5px] rounded-full' resizeMode='contain' source={chainImg} />
+                    <CyDFastImage className='h-[10px] w-[10px] mr-[5px] rounded-full' resizeMode='contain' source={chainImg} />
                     <CyDText className='text-[12px] mt-[2px]'>
                       {chain}
                     </CyDText>
