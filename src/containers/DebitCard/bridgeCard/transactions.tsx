@@ -5,10 +5,9 @@ import { get } from 'lodash';
 import moment from 'moment';
 import React, { useContext, useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import { Dimensions, StyleSheet } from 'react-native';
+import { StyleSheet } from 'react-native';
 import DynamicallySelectedPicker from 'react-native-dynamically-selected-picker';
 import { ScrollView } from 'react-native-gesture-handler';
-import { TabBar } from 'react-native-tab-view';
 import AppImages from '../../../../assets/images/appImages';
 import { useGlobalModalContext } from '../../../components/v2/GlobalModal';
 import Loading from '../../../components/v2/loading';
@@ -16,7 +15,6 @@ import CyDModalLayout from '../../../components/v2/modal';
 import { screenTitle } from '../../../constants';
 import { months } from '../../../constants/data';
 import {
-  BottomSheetPositions,
   TransactionFilterTypes,
   TransactionTypes,
 } from '../../../constants/enum';
@@ -32,7 +30,6 @@ import {
   CyDImage,
   CyDFlatList,
 } from '../../../styles/tailwindStyles';
-import SpendingSumary from './spendingSummary';
 
 interface Transaction {
   id: string;
@@ -41,6 +38,15 @@ interface Transaction {
   date: Date;
   amount: number;
   iconUrl: string;
+  tokenData?: {
+    id: number,
+    chain: string,
+    hash: string,
+    symbol: string,
+    coinId: string,
+    tokenNos: number,
+    tokenAddress: string
+  }
 }
 
 export default function TransactionsScreen(props: {
@@ -241,7 +247,6 @@ export default function TransactionsScreen(props: {
     const { iconUrl, type, date, title, amount } = transaction;
     return (
       <CyDTouchView
-        disabled={transaction.type === TransactionTypes.CREDIT || transaction.type === TransactionTypes.REFUND}
         key={item.id}
         className={
           'flex flex-row justify-between aling-center mt-[20px] mx-[10px] pb-[20px] border-b-[1px] border-sepratorColor'
