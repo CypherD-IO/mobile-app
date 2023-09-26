@@ -62,12 +62,12 @@ export default function TransactionDetails({ navigation, route }: { navigation: 
     const creditDetails = [
       {
         icon: AppImages.CARD_SEL,
-        title: t('FUNDING_DETAILS'),
+        title: t('LOADING_DETAILS'),
         data: [
           { label: t('TRANSACTION_ID'), value: id },
           { label: t('CHAIN'), value: chain },
+          { label: t('LOADED_AMOUNT'), value: `${String(tokenNos)} ${String(symbol.toUpperCase())}` },
           { label: t('HASH'), value: hash },
-          { label: t('FUNDED_AMOUNT'), value: `${String(tokenNos)} ${String(symbol)}` }
         ]
       },
     ];
@@ -84,11 +84,11 @@ export default function TransactionDetails({ navigation, route }: { navigation: 
   const DetailItem = ({ item }) => {
     return (
       <CyDView className={'flex flex-row justify-center items-center px-[8px] mb-[20px]'}>
-        <CyDView className={'w-[35%] pr-[20px] justify-center items-end'}>
-          <CyDText className={'text-[16px] text-right'}>{item.label}</CyDText>
+        <CyDView className={'w-[40%] justify-center items-start'}>
+          <CyDText className={'text-[16px]'}>{item.label}</CyDText>
         </CyDView>
-        <CyDView className={'w-[65%] pl-[20px] justify-center items-start'}>
-          <CyDText className={'font-bold text-left'}>{item.value}</CyDText>
+        <CyDView className={'w-[60%] pl-[10px] justify-center items-start'}>
+          <CyDText className={'font-bold'}>{item.value}</CyDText>
         </CyDView>
       </CyDView>
     );
