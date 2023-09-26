@@ -65,7 +65,7 @@ export const Banner = ({ bannerHeight, checkAllBalance }: BannerProps) => {
                       void hideBalances();
                     }}
                     className={clsx(
-                      'h-[32px] flex flex-row items-end pl-[10px] gap-[5px]'
+                      'h-[32px] flex flex-row items-center pl-[10px] gap-[5px]'
                     )}
                   >
                     <CyDFastImage
