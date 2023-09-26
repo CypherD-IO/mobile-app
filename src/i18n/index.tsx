@@ -756,6 +756,7 @@ const resources = {
       MINIMUM_AMOUNT_ETH: 'Minimum amount to transfer in ethereum chain is $50',
       BRIDGE_ACTIVITY: 'Bridge Activity',
       CARD_ACTIVITY: 'Card Funding',
+      FUNDED_AMOUNT: 'Funded Amount',
     }
   }
 };
