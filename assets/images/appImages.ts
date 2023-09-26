@@ -165,7 +165,6 @@ const IBC_SHORTCUT = require('./shortcutsIBC.png');
 const SELL_SHORTCUT = require('./shortcutsSell.png');
 const ONMETA = require('./onmeta.png');
 const COINBASE = require('./coinbase.png');
-const SARDINE = require('./sardine.png');
 const SHORTCUTS = require('./shortcuts.json');
 const CARD_SEL = require('./card_selected.png');
 const CARD_UNSEL = require('./card_unselected.png');
@@ -304,7 +303,9 @@ const SWAP_PENDING = { uri: `${S3_BUCKET_URL_ICONS}/swap_pending.png` };
 const SWAP_ERROR = { uri: `${S3_BUCKET_URL_ICONS}/swap_error.png` };
 const REFERRAL_REWARDS = { uri: `${S3_BUCKET_URL_ICONS}/referralRewards.png` };
 const CARD_BLOCKED = { uri: `${S3_BUCKET_URL_ICONS}/card-blocked.png` };
-const PORTFOLIO_BG_S3 = { uri: `${S3_BUCKET_URL_ICONS}/portfolio-bg.png?${String(new Date().getDay())}` };
+const PORTFOLIO_BG_S3 = {
+  uri: `${S3_BUCKET_URL_ICONS}/portfolio-bg.png?${String(new Date().getDay())}`,
+};
 const NO_TRANSACTIONS = { uri: `${S3_BUCKET_URL_ICONS}/noTransactions.png` };
 
 const AppImages = {
@@ -462,7 +463,6 @@ const AppImages = {
   IBC_SHORTCUT,
   SELL_SHORTCUT,
   COINBASE,
-  SARDINE,
   ONMETA,
   SHORTCUTS,
   CARD_UNSEL,
@@ -611,6 +611,6 @@ const AppImages = {
   TXN_MENU_ICON,
   UNKNOWN_TXN_TOKEN,
   TXN_SELF_SUCCESS,
-  TXN_SELF_ERROR
+  TXN_SELF_ERROR,
 };
 export default AppImages;

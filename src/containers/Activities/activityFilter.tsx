@@ -12,7 +12,7 @@ import Button from '../../components/v2/button';
 import { useTranslation } from 'react-i18next';
 
 export const FILTERS = ['Type', 'Time', 'Status'];
-export const ACTIVITY_TYPES = ['Bridge', 'Swap', 'Debit Card', 'Sent', 'IBC', 'Browser', 'Wallet Connect', 'Sardine Pay', 'Onmeta'];
+export const ACTIVITY_TYPES = ['Bridge', 'Swap', 'Debit Card', 'Sent', 'IBC', 'Browser', 'Wallet Connect', 'Onmeta'];
 export const TIME_GAPS = ['All', 'Today', 'This Week', 'This Month'];
 export const STATUSES = ['PENDING', 'FAILED', 'SUCCESS', 'IN PROCESS', 'DELAYED'];
 

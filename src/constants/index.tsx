@@ -60,7 +60,6 @@ export const screenTitle = {
   COSMOS_ACTION: 'CosmosActionScreen',
   COSMOS_REVALIDATOR: 'CosmosReValidatorScreen',
   CB_PAY: 'CoinbasePay',
-  SARD_PAY: 'sardinePay',
   ON_META: 'OnMeta',
   QR_CODE_SCANNER: 'QRCodeScanner',
   DEBIT_CARD: 'Card',
