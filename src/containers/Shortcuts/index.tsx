@@ -82,7 +82,6 @@ enum ShortcutsTitle {
 
 enum BuyOptions {
   ONMETA = 'ONMETA',
-  SARDINE = 'SARDINE',
   COINBASE = 'COINBASE',
   TRANSFI = 'TRANSFI'
 }
@@ -93,7 +92,7 @@ enum SellOptions {
   TRANSFI = 'TRANSFI'
 }
 
-export default function ShortcutsModal ({ navigationRef }) {
+export default function ShortcutsModal({ navigationRef }) {
   const { t } = useTranslation();
   const hdWallet = useContext<any>(HdWalletContext);
   const { isReadOnlyWallet } = hdWallet.state;
@@ -121,35 +120,35 @@ export default function ShortcutsModal ({ navigationRef }) {
   ];
 
   const shortcutsData: IShortcutsData[] = [...emptyWalletShortcutsData,
-    {
-      index: 1,
-      title: ShortcutsTitle.BRIDGE,
-      logo: AppImages.BRIDGE_SHORTCUT,
-      subTitle: t('EXCHANGE_SHORTCUTS_SUBTITLE'),
-      screenTitle: screenTitle.BRIDGE_SCREEN
-    },
-    {
-      index: 2,
-      title: ShortcutsTitle.SWAP,
-      logo: AppImages.SWAP_SHORTCUT,
-      subTitle: t('SWAP_SHORTCUTS_SUBTITLE'),
-      screenTitle: screenTitle.BRIDGE_SCREEN
-    },
-    {
-      index: 3,
-      title: ShortcutsTitle.SEND,
-      logo: AppImages.SEND_SHORTCUT,
-      subTitle: t('SEND_SHORTCUTS_SUBTITLE'),
-      screenTitle: screenTitle.ENTER_AMOUNT
-    },
-    {
-      index: 5,
-      title: ShortcutsTitle.SELL,
-      logo: AppImages.SELL_SHORTCUT,
-      subTitle: t('SELL_SHORTCUTS_SUBTITLE'),
-      screenTitle: '',
-      isPrivateKeyDependent: true
-    }
+  {
+    index: 1,
+    title: ShortcutsTitle.BRIDGE,
+    logo: AppImages.BRIDGE_SHORTCUT,
+    subTitle: t('EXCHANGE_SHORTCUTS_SUBTITLE'),
+    screenTitle: screenTitle.BRIDGE_SCREEN
+  },
+  {
+    index: 2,
+    title: ShortcutsTitle.SWAP,
+    logo: AppImages.SWAP_SHORTCUT,
+    subTitle: t('SWAP_SHORTCUTS_SUBTITLE'),
+    screenTitle: screenTitle.BRIDGE_SCREEN
+  },
+  {
+    index: 3,
+    title: ShortcutsTitle.SEND,
+    logo: AppImages.SEND_SHORTCUT,
+    subTitle: t('SEND_SHORTCUTS_SUBTITLE'),
+    screenTitle: screenTitle.ENTER_AMOUNT
+  },
+  {
+    index: 5,
+    title: ShortcutsTitle.SELL,
+    logo: AppImages.SELL_SHORTCUT,
+    subTitle: t('SELL_SHORTCUTS_SUBTITLE'),
+    screenTitle: '',
+    isPrivateKeyDependent: true
+  }
     // {
     //   index: 4,
     //   title: ShortcutsTitle.FUND_CARD,
@@ -169,17 +168,6 @@ export default function ShortcutsModal ({ navigationRef }) {
 
   const buyOptionsData: IBuyOptionsData[] = [
     // {
-    //   index: 0,
-    //   title: BuyOptions.SARDINE,
-    //   displayTitle: t('SARDINE_DISPLAY_TITLE'),
-    //   logo: AppImages.SARDINE,
-    //   supportedChains: [CHAIN_ETH, CHAIN_AVALANCHE, CHAIN_POLYGON],
-    //   currencyType: CurrencyTypes.USD,
-    //   screenTitle: screenTitle.SARD_PAY,
-    //   supportedPaymentModes: 'Instant Bank Transfer',
-    //   isVisibileInUI: true
-    // },
-    // {
     //   index: 3,
     //   title: BuyOptions.TRANSFI,
     //   displayTitle: t('TRANSFI_BUY'),
@@ -191,7 +179,7 @@ export default function ShortcutsModal ({ navigationRef }) {
     //   isVisibileInUI: true
     // },
     {
-      index: 1,
+      index: 0,
       title: BuyOptions.ONMETA,
       displayTitle: t('ONMETA_BUY_DISPLAY_TITLE'),
       logo: AppImages.ONMETA,
@@ -202,7 +190,7 @@ export default function ShortcutsModal ({ navigationRef }) {
       isVisibileInUI: true
     },
     {
-      index: 2,
+      index: 1,
       title: BuyOptions.COINBASE,
       displayTitle: t('COINBASE_DISPLAY_TITLE'),
       logo: AppImages.COINBASE,
@@ -419,8 +407,8 @@ export default function ShortcutsModal ({ navigationRef }) {
       }}>
         <CyDView className={'flex flex-row items-center justify-between'}>
           <CyDView className='flex flex-row items-center'>
-          <CyDImage source={item.logo_url} className={'w-[18px] h-[18px] mr-[10px]'} />
-          <CyDText className={'font-medium text-[17px] text-versionColor'}>{item.name.toUpperCase()}</CyDText>
+            <CyDImage source={item.logo_url} className={'w-[18px] h-[18px] mr-[10px]'} />
+            <CyDText className={'font-medium text-[17px] text-versionColor'}>{item.name.toUpperCase()}</CyDText>
           </CyDView>
           <CyDImage source={AppImages.BROWSER_REDIRECT} className={'w-[18px] h-[18px] ml-[10px]'} />
         </CyDView>
@@ -436,11 +424,11 @@ export default function ShortcutsModal ({ navigationRef }) {
       }}>
         <CyDView className={'flex flex-row items-center justify-between'}>
           <CyDView className='flex flex-row items-center'>
-          <CyDImage source={item.logo_url} className={'w-[18px] h-[18px] mr-[10px]'} />
-          <CyDText className={'font-medium text-[17px] text-versionColor'}>{item.name.toUpperCase()}</CyDText>
+            <CyDImage source={item.logo_url} className={'w-[18px] h-[18px] mr-[10px]'} />
+            <CyDText className={'font-medium text-[17px] text-versionColor'}>{item.name.toUpperCase()}</CyDText>
           </CyDView>
           <CyDImage source={AppImages.BROWSER_REDIRECT} className={'w-[18px] h-[18px] ml-[10px]'} />
-          </CyDView>
+        </CyDView>
       </CyDTouchView>
     );
   };
@@ -694,7 +682,7 @@ export default function ShortcutsModal ({ navigationRef }) {
         onCancel={() => { setChooseTokenModal(false); }}
       />
 
-      <CyDView className={ isIOS() ? 'mx-[12px]' : 'mx-[12px] mt-[4px]' }>
+      <CyDView className={isIOS() ? 'mx-[12px]' : 'mx-[12px] mt-[4px]'}>
         <LottieView source={AppImages.SHORTCUTS} ref={(ref) => setAnimation(ref)} autoPlay loop resizeMode={'contain'} style={{ width: 50, height: 50 }} />
       </CyDView>
 

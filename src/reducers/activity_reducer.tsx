@@ -22,7 +22,6 @@ export enum ActivityType {
   IBC = 'ibc',
   BROWSER = 'browser',
   WALLETCONNECT = 'walletconnect',
-  SARDINEPAY = 'sardinepay',
   ONMETA = 'onmeta',
   TRACKWALLET = 'trackWallet',
   BUY = 'buy',
@@ -113,23 +112,6 @@ export interface DebitCardTransaction {
   reason?: string
 }
 
-export interface SardinePayTransaction {
-  id: string
-  status: ActivityStatus
-  type: ActivityType
-  orderId?: string
-  quoteId?: string
-  tradeId?: string
-  chainName: string
-  tokenSymbol: any
-  tokenName: any
-  amount: any
-  amountInUsd: any
-  datetime: Date
-  gasAmount?: any
-  reason?: string
-}
-
 export interface OnmetaTransaction {
   id: string
   status: ActivityStatus
@@ -163,7 +145,7 @@ export interface IBCTransaction {
   reason?: string
 }
 
-export type ActivityAny = SendTransactionActivity | ExchangeTransaction | DebitCardTransaction | IBCTransaction | BrowserTransaction | SardinePayTransaction | OnmetaTransaction;
+export type ActivityAny = SendTransactionActivity | ExchangeTransaction | DebitCardTransaction | IBCTransaction | BrowserTransaction | OnmetaTransaction;
 
 export interface ActivityState {
   activityObjects: [ActivityAny?]
@@ -180,7 +162,7 @@ export const initialActivityState: ActivityState = {
   lastVisited: new Date()
 };
 
-function synchronizeStorage (state: ActivityState) {
+function synchronizeStorage(state: ActivityState) {
   AsyncStorage.setItem('activities', JSON.stringify(state))
     .catch(e => Sentry.captureException(e));
 }
@@ -195,38 +177,38 @@ export enum ActivityReducerAction {
 }
 
 // reducers
-export function ActivityStateReducer (state: any, action: any): any {
+export function ActivityStateReducer(state: any, action: any): any {
   switch (action.type) {
-    case ActivityReducerAction.LOAD : {
+    case ActivityReducerAction.LOAD: {
       const re = action.value;
       synchronizeStorage(re);
       return re;
     }
-    case ActivityReducerAction.POST : {
+    case ActivityReducerAction.POST: {
       const re = { ...state, activityObjects: [...state.activityObjects, action.value] };
       synchronizeStorage(re);
       return re;
     }
-    case ActivityReducerAction.PATCH : {
+    case ActivityReducerAction.PATCH: {
       const { id, status, quoteId, transactionHash, gasAmount, reason, delayDuration, quoteData } = action.value;
       const re = {
         ...state,
         activityObjects: state.activityObjects.map((activity: ActivityAny) => activity.id === id
           ? {
-              ...activity,
-              status: status ?? activity.status,
-              quoteId: quoteId ?? activity.quoteId,
-              transactionHash: transactionHash ?? activity.transactionHash,
-              gasAmount: gasAmount ?? activity.gasAmount,
-              reason: reason ?? activity.reason,
-              delayDuration: delayDuration ?? activity.delayDuration,
-              quoteData: quoteData
-                ? { ...quoteData }
-                : {
-                    ...activity
-                      .quoteData
-                  }
-            }
+            ...activity,
+            status: status ?? activity.status,
+            quoteId: quoteId ?? activity.quoteId,
+            transactionHash: transactionHash ?? activity.transactionHash,
+            gasAmount: gasAmount ?? activity.gasAmount,
+            reason: reason ?? activity.reason,
+            delayDuration: delayDuration ?? activity.delayDuration,
+            quoteData: quoteData
+              ? { ...quoteData }
+              : {
+                ...activity
+                  .quoteData
+              }
+          }
           : activity
         )
       };
