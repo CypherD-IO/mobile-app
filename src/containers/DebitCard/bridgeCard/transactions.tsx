@@ -326,6 +326,19 @@ export default function TransactionsScreen(props: {
           ),
         });
         break;
+      case TransactionFilterTypes.REFUND:
+        setTransactions({
+          ...transactions,
+          filteredTransactions: transactions.originalTransactions.filter(
+            (transaction) => transaction.type === TransactionTypes.REFUND,
+          ),
+        });
+        break;
+      default:
+        setTransactions({
+          ...transactions,
+          filteredTransactions: transactions.originalTransactions,
+        });
     }
   };
 
