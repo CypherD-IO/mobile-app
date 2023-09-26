@@ -114,7 +114,7 @@ export default function Portfolio({ navigation }: PortfolioProps) {
   const { scrollY, index, setIndex, bannerHeight, setBannerHeight, getRefForKey, ...sceneProps } =
     useScrollManager(tabsWithScrollableType);
 
-  const TOKEN = globalStateContext?.globalState.token;
+  const jwtToken = globalStateContext?.globalState.token;
   const ethereum = hdWallet?.state.wallet.ethereum;
 
   const handleBackButton = () => {
@@ -696,7 +696,7 @@ export default function Portfolio({ navigation }: PortfolioProps) {
         bannerHeight={bannerHeight}>
         <Banner bannerHeight={bannerHeight} checkAllBalance={checkAll(portfolioState)} />
         {
-          TOKEN !== undefined ?
+          jwtToken !== undefined ?
             <BannerCarousel setBannerHeight={setBannerHeight} />
             : null
         }
