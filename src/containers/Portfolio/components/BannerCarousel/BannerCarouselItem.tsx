@@ -175,7 +175,7 @@ const BannerCarouselItem = ({ item, index, boxWidth, halfBoxDistance, panX, setD
                     {
                         isActivity ?
                             <CyDView className={clsx('h-[25%] flex flex-row w-full bg-privacyMessageBackgroundColor justify-start items-center px-[30px]', { 'bg-toastColor': item.status === ActivityStatus.SUCCESS, 'bg-redColor': item.status === ActivityStatus.FAILED, 'bg-darkYellow': item.status === ActivityStatus.DELAYED })}>
-                                <CyDText className='font-bold text-[12px] pr-[2px]'>{t(item.type).toUpperCase()}</CyDText>
+                                <CyDText className='font-bold text-[12px] pr-[2px]'>{t(`${item.type.toUpperCase()}_ACTIVITY`)}</CyDText>
                                 <CyDText className='font-bold text-[12px] pl-[2px]'>{t(_getActivityStatusString(item.status))}</CyDText>
                             </CyDView>
                             : null
