@@ -43,6 +43,23 @@ const BannerCarouselItem = ({ item, index, boxWidth, halfBoxDistance, panX, setD
         };
     });
 
+    const _getActivityStatusString = (status: ActivityStatus) => {
+        switch (status) {
+            case ActivityStatus.SUCCESS:
+                return 'COMPLETED';
+            case ActivityStatus.DELAYED:
+                return 'DELAYED';
+            case ActivityStatus.INPROCESS:
+                return 'INPROCESS';
+            case ActivityStatus.PENDING:
+                return 'PENDING';
+            case ActivityStatus.FAILED:
+                return 'FAILED';
+            default:
+                return '';
+        }
+    };
+
     const onActivityCardDismissal = async () => {
         const { id, datetime } = item as BridgeOrCardActivity;
         const dateISOString = new Date(datetime).toISOString();
@@ -157,8 +174,9 @@ const BannerCarouselItem = ({ item, index, boxWidth, halfBoxDistance, panX, setD
                     </CyDView>
                     {
                         isActivity ?
-                            <CyDView className={clsx('h-[25%] w-full bg-privacyMessageBackgroundColor justify-center px-[30px]', { 'bg-toastColor': item.status === ActivityStatus.SUCCESS, 'bg-redColor': item.status === ActivityStatus.FAILED })}>
-                                <CyDText className='font-bold text-[12px]'>{t(`${item.type.toUpperCase()}_ACTIVITY`)}</CyDText>
+                            <CyDView className={clsx('h-[25%] flex flex-row w-full bg-privacyMessageBackgroundColor justify-start items-center px-[30px]', { 'bg-toastColor': item.status === ActivityStatus.SUCCESS, 'bg-redColor': item.status === ActivityStatus.FAILED, 'bg-darkYellow': item.status === ActivityStatus.DELAYED })}>
+                                <CyDText className='font-bold text-[12px] pr-[2px]'>{t(`${item.type.toUpperCase()}_ACTIVITY`)}</CyDText>
+                                <CyDText className='font-bold text-[12px] pl-[2px]'>{t(_getActivityStatusString(item.status))}</CyDText>
                             </CyDView>
                             : null
                     }

@@ -756,6 +756,8 @@ const resources = {
       RESET_ALL: 'Reset all',
       TRANSACTIONS_FILTER: 'Transactions Filter',
       MINIMUM_AMOUNT_ETH: 'Minimum amount to transfer in ethereum chain is $50',
+      BRIDGE_ACTIVITY: 'Bridge',
+      CARD_ACTIVITY: 'Card Loading',
       LOADED_AMOUNT: 'Loaded Amount',
     }
   }
