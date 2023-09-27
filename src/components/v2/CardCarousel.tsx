@@ -1,5 +1,5 @@
 import React, { memo, useCallback, useRef, useState } from 'react';
-import { FlatList, StyleSheet, ViewToken } from 'react-native';
+import { FlatList, Platform, StyleSheet, ViewToken } from 'react-native';
 import { SharedValue, useSharedValue } from 'react-native-reanimated';
 
 /* 
@@ -56,7 +56,7 @@ const CardCarousel = ({ cardsData, boxWidthMultiplier = 0.85, moreThanOneCardOff
             viewabilityConfig={{
                 itemVisiblePercentThreshold: 100 // Item is considered visible if 100% of it is visible
             }}
-            contentContainerStyle={styles.contentContainerStyle}
+            contentContainerStyle={[styles.contentContainerStyle, Platform.select({ android: { paddingHorizontal: halfBoxDistance } })]}
             contentInsetAdjustmentBehavior='never'
             snapToAlignment='center'
             decelerationRate='fast'
@@ -65,10 +65,12 @@ const CardCarousel = ({ cardsData, boxWidthMultiplier = 0.85, moreThanOneCardOff
             showsVerticalScrollIndicator={false}
             scrollEventThrottle={1}
             snapToInterval={boxWidth}
-            contentInset={{
-                left: halfBoxDistance,
-                right: halfBoxDistance,
-            }}
+            contentInset={Platform.select({
+                ios: {
+                    left: halfBoxDistance,
+                    right: halfBoxDistance,
+                }
+            })}
             contentOffset={{ x: halfBoxDistance * -1, y: 0 }}
             onLayout={(e) => {
                 setScrollViewWidth(e.nativeEvent.layout.width);

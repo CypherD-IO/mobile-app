@@ -30,6 +30,7 @@ import {
   CyDImage,
   CyDFlatList,
 } from '../../../styles/tailwindStyles';
+import { intercomAnalyticsLog } from '../../utilities/analyticsUtility';
 
 interface Transaction {
   id: string;
@@ -252,6 +253,7 @@ export default function TransactionsScreen(props: {
           'flex flex-row justify-between aling-center mt-[20px] mx-[10px] pb-[20px] border-b-[1px] border-sepratorColor'
         }
         onPress={() => {
+          void intercomAnalyticsLog('card_transaction_info_clicked');
           navigation.navigate(
             screenTitle.BRIDGE_CARD_TRANSACTION_DETAILS_SCREEN,
             { transaction: item },
