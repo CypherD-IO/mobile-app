@@ -17,7 +17,7 @@ import {
 import axios from '../../../core/Http';
 import {
   CyDAnimatedView,
-  CyDImage,
+  CyDFastImage,
   CyDImageBackground,
   CyDText,
   CyDTouchView,
@@ -407,7 +407,7 @@ export default function CardScreen({
               }
               className='flex flex-row justify-center items-center border-[2px] border-inputBorderColor bg-inputBorderColor mx-[30px] p-[5px] rounded-[10px]'
             >
-              <CyDImage
+              <CyDFastImage
                 source={AppImages.ACTIVATE_PHYSICAL_CARD}
                 className='h-[30px] w-[30px] mr-[10px]'
               />
@@ -424,159 +424,159 @@ export default function CardScreen({
     }
 
     return (
-      <CyDAnimatedView className='mb-[10px] w-[300px]' style={animatedStyle}>
-        <CyDImageBackground
-          blurRadius={card.status === CardStatus.IN_ACTIVE ? 3 : 0}
-          source={{ uri: getCardBackgroundLayout(card) }}
-          imageStyle={{ borderRadius: 12 }}
+      <CyDAnimatedView
+        className={clsx('flex flex-col justify-center h-[200px] rounded-[8px] mb-[10px] w-[300px]', {
+          'border border-inputBorderColor': card.type === 'physical'
+        })}
+        style={animatedStyle}>
+        <CyDFastImage
           className={clsx(
-            'flex flex-col justify-center h-[200px] w-[8/12] rounded-[12px]',
-            { 'border-[1px] border-inputBorderColor': card.type === 'physical' }
+            'absolute w-full h-full',
           )}
+          source={{ uri: getCardBackgroundLayout(card) }}
           resizeMode='stretch'
-        >
-          {isFetchingCardDetails &&
-            card.cardId === currentCardRevealedDetails.cardId ? (
-            <CyDImage
-              source={{
-                uri: 'https://public.cypherd.io/icons/details_loading.png',
-              }}
-              className='h-[50px] w-[50px] self-center'
-              resizeMode='contain'
-            ></CyDImage>
-          ) : card.status === CardStatus.ACTIVE ? (
-            <CyDView className='flex-1 flex-col justify-between'>
-              <CyDView>
+        />
+        {isFetchingCardDetails &&
+          card.cardId === currentCardRevealedDetails.cardId ? (
+          <CyDFastImage
+            source={{
+              uri: 'https://public.cypherd.io/icons/details_loading.png',
+            }}
+            className='h-[50px] w-[50px] self-center'
+            resizeMode='contain'
+          />
+        ) : card.status === CardStatus.ACTIVE ? (
+          <CyDView className='flex-1 flex-col justify-between'>
+            <CyDView>
+              <CyDText
+                className={clsx(
+                  'font-nunito font-bold text-[16px] m-[10px]',
+                  { 'text-white': card.type !== 'physical' }
+                )}
+              >
+                {card.type.toUpperCase()}
+              </CyDText>
+            </CyDView>
+            <CyDView className='flex flex-row justify-between items-center'>
+              <CyDView className='flex flex-row items-center'>
                 <CyDText
                   className={clsx(
                     'font-nunito font-bold text-[16px] m-[10px]',
                     { 'text-white': card.type !== 'physical' }
                   )}
                 >
-                  {card.type.toUpperCase()}
+                  {getCardNumber(card)}
                 </CyDText>
-              </CyDView>
-              <CyDView className='flex flex-row justify-between items-center'>
-                <CyDView className='flex flex-row items-center'>
-                  <CyDText
-                    className={clsx(
-                      'font-nunito font-bold text-[16px] m-[10px]',
-                      { 'text-white': card.type !== 'physical' }
-                    )}
-                  >
-                    {getCardNumber(card)}
-                  </CyDText>
-                  {!hideCardDetails &&
-                    currentCardRevealedDetails.cardId === card.cardId && (
-                      <CyDTouchView onPress={() => copyCardNumber()}>
-                        <CyDImage
-                          source={{
-                            uri: `https://public.cypherd.io/icons/${card.type === 'physical'
-                              ? 'copyBlack.png'
-                              : 'copy.png'
-                              }`,
-                          }}
-                          className='h-[20px] w-[20px] ml-[5px]'
-                          resizeMode='contain'
-                        ></CyDImage>
-                      </CyDTouchView>
-                    )}
-                </CyDView>
-                <CyDView className='flex flex-row justify-start bg-black border-[1px] border-black p-[5px] rounded-l-[50px] mr-[0.7px]'>
-                  <CyDTouchView
-                    onPress={() => {
-                      toggleCardDetails();
-                    }}
-                  >
-                    <CyDImage
-                      source={{
-                        uri: `https://public.cypherd.io/icons/${!hideCardDetails &&
-                          currentCardRevealedDetails.cardId === card.cardId
-                          ? 'reveal.png'
-                          : 'hide.png'
-                          }`,
-                      }}
-                      className='h-[21px] w-[21px] ml-[5px] mr-[10px]'
-                      resizeMode='contain'
-                    ></CyDImage>
-                  </CyDTouchView>
-                  {['physical', 'virtual'].includes(card.type) && (
-                    <CyDTouchView
-                      onPress={() =>
-                        navigation.navigate(screenTitle.CARD_SETTINGS_SCREEN, {
-                          onSuccess: (
-                            data: any,
-                            cardProvider: CardProviders
-                          ) => {
-                            void sendCardDetails(data, cardProvider);
-                          },
-                          currentCardProvider,
-                          card,
-                        })
-                      }
-                    >
-                      <CyDImage
+                {!hideCardDetails &&
+                  currentCardRevealedDetails.cardId === card.cardId && (
+                    <CyDTouchView onPress={() => copyCardNumber()}>
+                      <CyDFastImage
                         source={{
-                          uri: 'https://public.cypherd.io/icons/settings_outline.png',
+                          uri: `https://public.cypherd.io/icons/${card.type === 'physical'
+                            ? 'copyBlack.png'
+                            : 'copy.png'
+                            }`,
                         }}
-                        className='h-[20px] w-[20px] mx-[3px]'
-                      ></CyDImage>
+                        className='h-[20px] w-[20px] ml-[5px]'
+                        resizeMode='contain'
+                      />
                     </CyDTouchView>
                   )}
-                </CyDView>
               </CyDView>
-              <RenderCVVAndExpiry card={card} />
-            </CyDView>
-          ) : (
-            <CyDView className='w-full h-full'>
-              <CyDView>
-                <CyDText
-                  className={clsx(
-                    'font-nunito font-bold text-[16px] m-[10px]',
-                    { 'text-white': card.type !== 'physical' }
-                  )}
-                >
-                  {card.type.toUpperCase()}
-                </CyDText>
-              </CyDView>
-
-              <CyDView className='pt-[15px]'>
-                <CyDImage
-                  source={AppImages.CARD_BLOCKED}
-                  className='h-[50px] w-[50px] mx-auto'
-                ></CyDImage>
-                <CyDText
-                  className={clsx(
-                    'font-nunito font-bold text-[16px] m-[10px] blur-md text-center',
-                    { 'text-white': card.type !== 'physical' }
-                  )}
-                >
-                  {t<string>('CARD_BLOCKED')}
-                </CyDText>
-              </CyDView>
-              <CyDView className=' bg-black border-[1px] border-black p-[5px] rounded-l-[50px] mr-[0.7px] w-[45px] absolute right-0 top-[41%]'>
+              <CyDView className='flex flex-row justify-start bg-black border-[1px] border-black p-[5px] rounded-l-[50px] mr-[0.7px]'>
                 <CyDTouchView
-                  onPress={() =>
-                    navigation.navigate(screenTitle.CARD_SETTINGS_SCREEN, {
-                      onSuccess: (data: any, cardProvider: CardProviders) => {
-                        void sendCardDetails(data, cardProvider);
-                      },
-                      currentCardProvider,
-                      card,
-                    })
-                  }
+                  onPress={() => {
+                    toggleCardDetails();
+                  }}
                 >
-                  <CyDImage
+                  <CyDFastImage
                     source={{
-                      uri: 'https://public.cypherd.io/icons/settings_outline.png',
+                      uri: `https://public.cypherd.io/icons/${!hideCardDetails &&
+                        currentCardRevealedDetails.cardId === card.cardId
+                        ? 'reveal.png'
+                        : 'hide.png'
+                        }`,
                     }}
-                    className='h-[20px] w-[20px] mx-[3px]'
-                  ></CyDImage>
+                    className='h-[21px] w-[21px] ml-[5px] mr-[10px]'
+                    resizeMode='contain'
+                  />
                 </CyDTouchView>
+                {['physical', 'virtual'].includes(card.type) && (
+                  <CyDTouchView
+                    onPress={() =>
+                      navigation.navigate(screenTitle.CARD_SETTINGS_SCREEN, {
+                        onSuccess: (
+                          data: any,
+                          cardProvider: CardProviders
+                        ) => {
+                          void sendCardDetails(data, cardProvider);
+                        },
+                        currentCardProvider,
+                        card,
+                      })
+                    }
+                  >
+                    <CyDFastImage
+                      source={{
+                        uri: 'https://public.cypherd.io/icons/settings_outline.png',
+                      }}
+                      className='h-[20px] w-[20px] mx-[3px]'
+                    />
+                  </CyDTouchView>
+                )}
               </CyDView>
             </CyDView>
-          )}
-        </CyDImageBackground>
+            <RenderCVVAndExpiry card={card} />
+          </CyDView>
+        ) : (
+          <CyDView className='w-full h-full'>
+            <CyDView>
+              <CyDText
+                className={clsx(
+                  'font-nunito font-bold text-[16px] m-[10px]',
+                  { 'text-white': card.type !== 'physical' }
+                )}
+              >
+                {card.type.toUpperCase()}
+              </CyDText>
+            </CyDView>
+
+            <CyDView className='pt-[15px]'>
+              <CyDFastImage
+                source={AppImages.CARD_BLOCKED}
+                className='h-[50px] w-[50px] mx-auto'
+              />
+              <CyDText
+                className={clsx(
+                  'font-nunito font-bold text-[16px] m-[10px] blur-md text-center',
+                  { 'text-white': card.type !== 'physical' }
+                )}
+              >
+                {t<string>('CARD_BLOCKED')}
+              </CyDText>
+            </CyDView>
+            <CyDView className=' bg-black border-[1px] border-black p-[5px] rounded-l-[50px] mr-[0.7px] w-[45px] absolute right-0 top-[41%]'>
+              <CyDTouchView
+                onPress={() =>
+                  navigation.navigate(screenTitle.CARD_SETTINGS_SCREEN, {
+                    onSuccess: (data: any, cardProvider: CardProviders) => {
+                      void sendCardDetails(data, cardProvider);
+                    },
+                    currentCardProvider,
+                    card,
+                  })
+                }
+              >
+                <CyDFastImage
+                  source={{
+                    uri: 'https://public.cypherd.io/icons/settings_outline.png',
+                  }}
+                  className='h-[20px] w-[20px] mx-[3px]'
+                />
+              </CyDTouchView>
+            </CyDView>
+          </CyDView>
+        )}
       </CyDAnimatedView>
     );
   };
