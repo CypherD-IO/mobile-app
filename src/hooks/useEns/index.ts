@@ -1,5 +1,6 @@
 import axios from 'axios';
-import { ethers } from 'ethers';
+import Web3 from 'web3';
+import { AbiItem }from 'web3-utils';
 import { namehash } from 'ethers/lib/utils';
 import { useContext } from 'react';
 import { ensAbi } from '../../constants/data';
@@ -13,17 +14,17 @@ const ENS_GRAPHQL_API = 'https://api.thegraph.com/subgraphs/name/ensdomains/ens'
 export default function useEns () {
   const globalContext = useContext(GlobalContext);
   const ethRpcUrl = getWeb3Endpoint(CHAIN_ETH, globalContext);
-  const provider = new ethers.providers.JsonRpcProvider(ethRpcUrl);
+  const web3 = new Web3(ethRpcUrl);
+  const ensContract = new web3.eth.Contract(ensAbi as AbiItem[], ENS_RESOLVER_CONTRACT_ADDRESS);
 
   const resolveAddress = async (domain: string, backendName: string): Promise<string | null> => {
     if (!EnsCoinTypes[backendName]) {
       return null;
     }
 
-    const ensContract = new ethers.Contract(ENS_RESOLVER_CONTRACT_ADDRESS, ensAbi, provider);
     const node = namehash(domain);
-    const [address] = await ensContract.functions['addr(bytes32,uint256)'](node, EnsCoinTypes[backendName]);
-    return address.length > 2 ? address : null;
+    const address = await ensContract.methods['addr(bytes32,uint256)'](node, EnsCoinTypes[backendName]).call();
+    return address && address.length > 2 ? address : null;
   };
 
   const resolveDomain = async (address: string): Promise<string | null> => {
