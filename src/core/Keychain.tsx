@@ -37,7 +37,7 @@ import { KeychainErrors } from '../constants/KeychainErrors';
 
 const currentSchemaVersion = 5;
 
-export async function saveCredentialsToKeychain (
+export async function saveCredentialsToKeychain(
   hdWalletContext: any,
   portfolioState: any,
   wallet: any
@@ -80,14 +80,14 @@ export async function saveCredentialsToKeychain (
   });
 }
 
-export async function removeCredentialsFromKeychain () {
+export async function removeCredentialsFromKeychain() {
   // Reset Seed Phrase (master private key is not stored)
   await removeFromKeyChain(CYPHERD_SEED_PHRASE_KEY);
   // Remove cypherD root data
   await removeFromKeyChain(CYPHERD_ROOT_DATA);
 }
 
-export async function _setInternetCredentialsOptions (key: string, value: string, acl: boolean) {
+export async function _setInternetCredentialsOptions(key: string, value: string, acl: boolean) {
   try {
     if (acl) {
       let options = await getPrivateACLOptions();
@@ -120,7 +120,7 @@ export async function _setInternetCredentialsOptions (key: string, value: string
   }
 }
 
-export async function saveToKeychain (key: string, value: string, acl = true) {
+export async function saveToKeychain(key: string, value: string, acl = true) {
   try {
     await _setInternetCredentialsOptions(key, value, acl);
   } catch (e) {
@@ -137,10 +137,10 @@ export async function saveToKeychain (key: string, value: string, acl = true) {
   }
 }
 
-export async function loadFromKeyChain (key: string, forceCloseOnFailure = false, showModal = () => {}) {
+export async function loadFromKeyChain(key: string, forceCloseOnFailure = false, showModal = () => { }) {
   try {
     // Retrieve the credentials
-    let requestMessage: string = '';
+    let requestMessage = '';
     switch (key) {
       case 'AUTHORIZE_WALLET_DELETION':
         requestMessage = 'Requesting permission to delete the wallet';
@@ -176,7 +176,7 @@ export async function loadFromKeyChain (key: string, forceCloseOnFailure = false
   }
 }
 
-async function showReAuthAlert () {
+async function showReAuthAlert() {
   return await new Promise((resolve) => {
     Alert.alert(
       t('AUTHENTICATION_CANCELLED'),
@@ -195,7 +195,7 @@ async function showReAuthAlert () {
   });
 }
 
-async function fingerprintHardwareAlert () {
+async function fingerprintHardwareAlert() {
   return await new Promise((resolve) => {
     Alert.alert(
       t('FINGERPRINT_HARDWARE_NOT_AVAILABLE'),
@@ -215,7 +215,7 @@ async function fingerprintHardwareAlert () {
 }
 
 // Utility methods
-export async function loadRecoveryPhraseFromKeyChain (forceCloseOnFailure = false, pin = '', showModal = () => {}) {
+export async function loadRecoveryPhraseFromKeyChain(forceCloseOnFailure = false, pin = '', showModal = () => { }) {
   let mnemonic = await loadFromKeyChain(CYPHERD_SEED_PHRASE_KEY, forceCloseOnFailure, showModal);
   if (mnemonic && await isPinAuthenticated()) {
     mnemonic = decryptMnemonic(mnemonic, pin);
@@ -223,12 +223,12 @@ export async function loadRecoveryPhraseFromKeyChain (forceCloseOnFailure = fals
   return mnemonic;
 }
 
-export async function isAuthenticatedForPrivateKey (forceCloseOnFailure = false) {
+export async function isAuthenticatedForPrivateKey(forceCloseOnFailure = false) {
   const mnemonic = await loadFromKeyChain(CYPHERD_SEED_PHRASE_KEY, forceCloseOnFailure);
   return mnemonic && mnemonic !== _NO_CYPHERD_CREDENTIAL_AVAILABLE_;
 }
 
-export async function loadCyRootDataFromKeyChain (hdWallet = initialHdWalletState, showModal = () => {}) {
+export async function loadCyRootDataFromKeyChain(hdWallet = initialHdWalletState, showModal = () => { }) {
   // Update schemaVersion whenever adding a new address generation logic
   let mnemonic: string | undefined;
   // const hdWallet = useContext<any>(HdWalletContext);
@@ -256,6 +256,9 @@ export async function loadCyRootDataFromKeyChain (hdWallet = initialHdWalletStat
       if (parsedData.accounts && parsedData.schemaVersion === currentSchemaVersion) {
         return parsedData;
       }
+    } else {
+      // on cyData being undefined, auth has been cancelled.
+      await showReAuthAlert();
     }
   }
 
@@ -291,8 +294,8 @@ export async function loadCyRootDataFromKeyChain (hdWallet = initialHdWalletStat
   return defaultData;
 }
 
-function constructRootData (accounts: IAccountDetailWithChain[]) {
-  const accountDetails: {[key in AddressChainNames]?: IAccountDetail[]} = {};
+function constructRootData(accounts: IAccountDetailWithChain[]) {
+  const accountDetails: { [key in AddressChainNames]?: IAccountDetail[] } = {};
   accounts.forEach((account) => {
     const { address, privateKey, algo, publicKey, rawAddress } = account;
     accountDetails[account.name] = [
@@ -311,7 +314,7 @@ function constructRootData (accounts: IAccountDetailWithChain[]) {
   };
 }
 
-async function saveCyRootDataToKeyChain (result: any) {
+async function saveCyRootDataToKeyChain(result: any) {
   let password: string;
   if (isAndroid()) {
     password = result;
@@ -323,7 +326,7 @@ async function saveCyRootDataToKeyChain (result: any) {
 
 // End of load utility methods
 
-export async function removeFromKeyChain (key: string) {
+export async function removeFromKeyChain(key: string) {
   try {
     await resetInternetCredentials(key);
   } catch (err) {
@@ -332,12 +335,12 @@ export async function removeFromKeyChain (key: string) {
   }
 }
 
-export async function doesKeyExistInKeyChain (key: string) {
+export async function doesKeyExistInKeyChain(key: string) {
   const exists = await hasInternetCredentials(key);
   return exists;
 }
 
-export async function getPrivateACLOptions (): Promise<Options> {
+export async function getPrivateACLOptions(): Promise<Options> {
   let res = {};
   try {
     let canAuthenticate;
@@ -370,7 +373,7 @@ export async function getPrivateACLOptions (): Promise<Options> {
   return res;
 }
 
-export async function getSignerClient (hdWallet: any = initialHdWalletState): Promise<Map<string, OfflineDirectSigner>> {
+export async function getSignerClient(hdWallet: any = initialHdWalletState): Promise<Map<string, OfflineDirectSigner>> {
   const seedPhrase = await loadRecoveryPhraseFromKeyChain(false, hdWallet.state?.pinValue ? hdWallet.state.pinValue : hdWallet.pinValue);
   const accounts: string[] = ['cosmos', 'osmo', 'juno', 'stars', 'noble'];
   const wallets: Map<string, OfflineDirectSigner> = new Map();
@@ -438,7 +441,7 @@ export const removePin = async (hdWallet: any, pin = '') => {
   hdWallet.dispatch({ type: 'SET_PIN_VALUE', value: { pin: '' } });
 };
 
-export async function isPinAuthenticated () {
+export async function isPinAuthenticated() {
   const pinValue = await loadFromKeyChain(PIN_AUTH);
   if (pinValue === _NO_CYPHERD_CREDENTIAL_AVAILABLE_) {
     return false;
@@ -446,12 +449,12 @@ export async function isPinAuthenticated () {
   return true;
 }
 
-export async function loadPinFromKeyChain () {
+export async function loadPinFromKeyChain() {
   const pinValue = await loadFromKeyChain(PIN_AUTH);
   return pinValue;
 }
 
-export function decryptMnemonic (encryptedMnemonic: string, pin: string) {
+export function decryptMnemonic(encryptedMnemonic: string, pin: string) {
   const mnemonic = CryptoJS.AES.decrypt(encryptedMnemonic, pin).toString(CryptoJS.enc.Utf8);
   return mnemonic;
 }
