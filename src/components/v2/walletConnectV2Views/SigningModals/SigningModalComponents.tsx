@@ -93,7 +93,7 @@ const RenderMessage = ({ method, messageParams }: { method: string, messageParam
 
 const Divider = () => {
   return (
-    <CyDView className={'h-[1px] bg-sepratorColor mt-[14px] mb-[8px]'}></CyDView>
+    <CyDView className={'h-[1px] bg-sepratorColor mt-[14px] mb-[8px]'} />
   );
 };
 
@@ -131,7 +131,7 @@ const RenderTitle = ({ method, sendType }: { method: string, sendType: string })
           title = t<string>('APPROVE_TRANSACTION');
       }
     } else {
-      title = t<string>('...'); // When the decoding hasn't happened yet.
+      title = ''; // When the decoding hasn't happened yet.
     }
   } else if (method.includes(EIP155_SIGNING_METHODS.ETH_SIGN_TYPED_DATA)) {
     title = t<string>('APPROVE_TYPED_TRANSACTION');
