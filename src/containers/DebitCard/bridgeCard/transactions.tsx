@@ -5,9 +5,8 @@ import { get } from 'lodash';
 import moment from 'moment';
 import React, { useContext, useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import { StyleSheet } from 'react-native';
+import { StyleSheet, FlatList } from 'react-native';
 import DynamicallySelectedPicker from 'react-native-dynamically-selected-picker';
-import { ScrollView } from 'react-native-gesture-handler';
 import AppImages from '../../../../assets/images/appImages';
 import { useGlobalModalContext } from '../../../components/v2/GlobalModal';
 import Loading from '../../../components/v2/loading';
@@ -525,11 +524,13 @@ export default function TransactionsScreen(props: {
               </CyDText>
             </CyDView>
             {transactions.filteredTransactions.length ? (
-              <ScrollView style={{ height: listHeight - 100 }}>
-                {transactions.filteredTransactions.map((item, index) => {
-                  return <TransactionItem item={item} key={index} />;
-                })}
-              </ScrollView>
+              <FlatList
+                style={{ height: listHeight - 100 }}
+                data={transactions.filteredTransactions}
+                renderItem={({ item, index }) => (
+                  <TransactionItem item={item} key={index} />
+                )}
+              />
             ) : (
               <CyDView className={'flex justify-center items-center'}>
                 <CyDImage
