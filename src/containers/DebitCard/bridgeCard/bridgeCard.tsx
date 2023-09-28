@@ -214,7 +214,7 @@ export default function BridgeCardScreen(props: {
               />
             </CyDView>
           )}
-          <CyDView className={clsx({ 'px-[10px]': isAndroid() })}>
+          <CyDView>
             <CardScreen
               navigation={navigation}
               hideCardDetails={isFocused}
