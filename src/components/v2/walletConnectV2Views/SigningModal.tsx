@@ -61,7 +61,7 @@ export default function SigningModal({
     if (chain) {
       web3RPCEndpoint = new Web3(getWeb3Endpoint(chain, globalContext));
     } else {
-      showModal('state', { type: 'error', title: t('UNSUPPORTED_CHAIN'), description: t('UNSUPPORTED_CHAIN_DESCRIPTION'), onSuccess: handleReject, onFailure: handleReject })
+      showModal('state', { type: 'error', title: t('UNSUPPORTED_CHAIN'), description: t('UNSUPPORTED_CHAIN_DESCRIPTION'), onSuccess: handleReject, onFailure: handleReject });
     }
   } else { // The payload is from 'BROWSER'
     if (modalPayload) {
@@ -71,7 +71,7 @@ export default function SigningModal({
       if (chain) {
         web3RPCEndpoint = new Web3(getWeb3Endpoint(chain, globalContext));
       } else {
-        showModal('state', { type: 'error', title: t('UNSUPPORTED_CHAIN'), description: t('UNSUPPORTED_CHAIN_DESCRIPTION'), onSuccess: handleReject, onFailure: handleReject })
+        showModal('state', { type: 'error', title: t('UNSUPPORTED_CHAIN'), description: t('UNSUPPORTED_CHAIN_DESCRIPTION'), onSuccess: handleReject, onFailure: handleReject });
       }
     }
     // TODO: get the dAppInfo here as well.
@@ -93,8 +93,19 @@ export default function SigningModal({
         if (decodeTxnRequestBody.chainId !== 9001) {
           const { data, error, isError } = await postWithAuth('/v1/txn/decode', decodeTxnRequestBody);
           if (!isError) {
-            setDecodedABIData({ ...data, from_addr: decodeTxnRequestBody.from });
-            setDataIsReady(true);
+            if (data.isDecoded) {
+              setDecodedABIData({ ...data, from_addr: decodeTxnRequestBody.from });
+              setDataIsReady(true);
+            } else {
+              const errorObject = {
+                message: 'isDecoded was false when decoding. Showing raw data.',
+                error,
+                decodeTxnRequestBody
+              };
+              Sentry.captureException(errorObject);
+              setDecodedABIData({ from: decodeTxnRequestBody.from, to: decodeTxnRequestBody.to, data: decodeTxnRequestBody.data, gas: decodeTxnRequestBody.gas });
+              setDataIsReady(true);
+            }
           } else {
             const errorObject = {
               message: 'Decoding response isError is true. Showing raw data.',
@@ -162,7 +173,7 @@ export default function SigningModal({
     };
     let paramsForDecoding: DecodeTxnRequestBody;
     if (payloadFrom === SigningModalPayloadFrom.WALLETCONNECT && requestParams) { paramsForDecoding = requestParams[0]; } else { paramsForDecoding = (paramsFromPayload as DecodeTxnRequestBody[])[0]; };
-    if (paramsForDecoding?.data!== '0x' && chain) {
+    if (paramsForDecoding?.data !== '0x' && chain) {
       if (method === EIP155_SIGNING_METHODS.ETH_SEND_TRANSACTION) {
         const { from, to, gas = '0x0', value = '0x0', data, nonce = '0x0', maxFeePerGas = '0x0', maxPriorityFeePerGas = '0x0' } = paramsForDecoding;
         decodeTxnRequestBody = {
@@ -277,8 +288,8 @@ export default function SigningModal({
               {(method === EIP155_SIGNING_METHODS.ETH_SIGN_TYPED_DATA || method === EIP155_SIGNING_METHODS.ETH_SIGN_TYPED_DATA_V3 || method === EIP155_SIGNING_METHODS.ETH_SIGN_TYPED_DATA_V4) && (payloadFrom === SigningModalPayloadFrom.WALLETCONNECT ? <RenderTypedTransactionSignModal dAppInfo={dAppInfo} chain={chain} method={method} messageParams={requestParams} /> : <RenderTypedTransactionSignModal dAppInfo={dAppInfo} chain={chain} method={method} messageParams={paramsFromPayload} />)}
             </CyDScrollView>
             <CyDView className={'w-full px-[25px]'}>
-              <Button loading={acceptingRequest} style={acceptingRequest ? 'mb-[10px] py-[7px]' : 'mb-[10px] py-[15px]'} title={renderAcceptTitle(method)} onPress={() => { void handleAccept(); void intercomAnalyticsLog('signModal_accept_click'); }}></Button>
-              <Button loading={rejectingRequest} style={rejectingRequest ? 'mb-[10px] py-[7px]' : 'mb-[10px] py-[15px]'} type={ButtonType.TERNARY} title='Reject' onPress={() => { void handleReject(); void intercomAnalyticsLog('signModal_reject_click'); }}></Button>
+              <Button loading={acceptingRequest} style={acceptingRequest ? 'mb-[10px] py-[7px]' : 'mb-[10px] py-[15px]'} title={renderAcceptTitle(method)} onPress={() => { void handleAccept(); void intercomAnalyticsLog('signModal_accept_click'); }} />
+              <Button loading={rejectingRequest} style={rejectingRequest ? 'mb-[10px] py-[7px]' : 'mb-[10px] py-[15px]'} type={ButtonType.TERNARY} title='Reject' onPress={() => { void handleReject(); void intercomAnalyticsLog('signModal_reject_click'); }} />
             </CyDView>
           </CyDView>
           : <Loader />
