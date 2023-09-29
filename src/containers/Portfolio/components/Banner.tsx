@@ -15,9 +15,10 @@ import CyDTokenValue from '../../../components/v2/tokenValue';
 import AppImages from '../../../../assets/images/appImages';
 import clsx from 'clsx';
 import { StyleSheet } from 'react-native';
+import { PortfolioBannerHeights } from '../../../hooks/useScrollManager';
 
 interface BannerProps {
-  bannerHeight: 160 | 300
+  bannerHeight: PortfolioBannerHeights
   checkAllBalance: number | string;
 }
 

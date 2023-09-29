@@ -27,12 +27,13 @@ import { ACTIVITIES_REFRESH_TIMEOUT } from '../../../../constants/timeOuts';
 import { CyDView } from '../../../../styles/tailwindStyles';
 import CardCarousel from '../../../../components/v2/CardCarousel';
 import { SharedValue } from 'react-native-reanimated';
+import { PortfolioBannerHeights } from '../../../../hooks/useScrollManager';
 
 const ARCH_HOST = hostWorker.getHost('ARCH_HOST');
 
 export type BridgeOrCardActivity = ExchangeTransaction | DebitCardTransaction;
 interface BannerCarouselProps {
-  setBannerHeight: React.Dispatch<React.SetStateAction<160 | 300>>;
+  setBannerHeight: React.Dispatch<React.SetStateAction<PortfolioBannerHeights>>;
 }
 
 const BannerCarousel = ({ setBannerHeight }: BannerCarouselProps) => {

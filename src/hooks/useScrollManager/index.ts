@@ -8,10 +8,12 @@ import {
 import { ScrollableType } from '../../constants/enum';
 import { isIOS } from '../../misc/checkers';
 
+export type PortfolioBannerHeights = 160 | 300
+
 export const useScrollManager = (
   routes: Array<{ key: string; title: string; scrollableType: ScrollableType }>
 ) => {
-  const [bannerHeight, setBannerHeight] = useState<160 | 300>(160);
+  const [bannerHeight, setBannerHeight] = useState<PortfolioBannerHeights>(160);
   const OFFSET_TABVIEW = isIOS() ? -bannerHeight : 0;
   const scrollY = useSharedValue(-bannerHeight);
   const [index, setIndex] = useState(0);

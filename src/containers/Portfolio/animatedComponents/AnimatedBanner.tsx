@@ -9,9 +9,10 @@ import {
 } from 'react-native-reanimated';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { isIOS } from '../../../misc/checkers';
+import { PortfolioBannerHeights } from '../../../hooks/useScrollManager';
 export interface AnimatedBannerProps {
   scrollY: SharedValue<number>;
-  bannerHeight: 160 | 300,
+  bannerHeight: PortfolioBannerHeights,
   children: ReactNode;
 }
 
