@@ -11,7 +11,7 @@ import { isIOS } from '../../misc/checkers';
 export const useScrollManager = (
   routes: Array<{ key: string; title: string; scrollableType: ScrollableType }>
 ) => {
-  const [bannerHeight, setBannerHeight] = useState<160 | 260>(160);
+  const [bannerHeight, setBannerHeight] = useState<160 | 300>(160);
   const OFFSET_TABVIEW = isIOS() ? -bannerHeight : 0;
   const scrollY = useSharedValue(-bannerHeight);
   const [index, setIndex] = useState(0);

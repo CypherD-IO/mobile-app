@@ -11,7 +11,7 @@ import { isIOS } from '../../../misc/checkers';
 interface HeaderBarProps {
   navigation: any
   setChooseChain: Function
-  bannerHeight: 160 | 260
+  bannerHeight: 160 | 300
   scrollY: SharedValue<number>
   onWCSuccess: (e: BarCodeReadEvent) => void
   renderTitleComponent?: ReactNode

@@ -43,7 +43,7 @@ interface NFTSceneProps {
     setOptions: ({ title }: { title: string }) => void
     navigate: (screen: string, params?: {}) => void
   }
-  bannerHeight: 160 | 260;
+  bannerHeight: 160 | 300;
 }
 
 const NFTScene = ({

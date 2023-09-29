@@ -54,7 +54,7 @@ interface TokenSceneProps {
   onMomentumScrollEnd: (e: ScrollEvent) => void;
   onScrollEndDrag: (e: ScrollEvent) => void;
   navigation: any;
-  bannerHeight: 160 | 260;
+  bannerHeight: 160 | 300;
   isVerifyCoinChecked: boolean;
   getAllChainBalance: (portfolioState: {
     statePortfolio: {

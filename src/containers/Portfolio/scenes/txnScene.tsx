@@ -35,7 +35,7 @@ interface TxnSceneProps {
   onMomentumScrollEnd: (e: ScrollEvent) => void;
   onScrollEndDrag: (e: ScrollEvent) => void;
   navigation: any;
-  bannerHeight: 160 | 260;
+  bannerHeight: 160 | 300;
   filterModalVisibilityState: [boolean, React.Dispatch<React.SetStateAction<boolean>>]
 }
 

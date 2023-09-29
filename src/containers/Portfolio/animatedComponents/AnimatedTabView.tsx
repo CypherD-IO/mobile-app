@@ -25,7 +25,7 @@ export interface AnimatedTabViewProps
     | 'windowSize'
     | 'ListEmptyComponent'
   > {
-  bannerHeight: 160 | 260;
+  bannerHeight: 160 | 300;
   data?: any[];
   renderItem?:
   | ListRenderItem<any>

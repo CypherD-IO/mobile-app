@@ -10,7 +10,7 @@ import { isIOS } from '../../../misc/checkers';
 
 export interface AnimatedTabBarProps {
   scrollY: SharedValue<number>;
-  bannerHeight: 160 | 260;
+  bannerHeight: 160 | 300;
   children: JSX.Element;
 }
 
