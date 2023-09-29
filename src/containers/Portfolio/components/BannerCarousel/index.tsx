@@ -138,8 +138,8 @@ const BannerCarousel = ({ setBannerHeight }: BannerCarouselProps) => {
           const sortedBannerRecords = filteredStaticCards.sort((a, b) => {
             const priorityOrder = ['HIGHEST', 'HIGH', 'MEDIUM', 'LOW'];
             return (
-              priorityOrder.indexOf(b.priority) -
-              priorityOrder.indexOf(a.priority)
+              priorityOrder.indexOf(a.priority) -
+              priorityOrder.indexOf(b.priority)
             );
           });
           setStaticCards(sortedBannerRecords);
@@ -328,16 +328,10 @@ const BannerCarousel = ({ setBannerHeight }: BannerCarouselProps) => {
   // Sorts and makes the cardsData to be passed to the CardsCarousel.
   // Here the priority order : HIGHEST -> ACTIVITY -> HIGH -> MEDIUM -> LOW, is followed.
   const makeCards = () => {
-    const sortedBannerRecords = staticCards.sort((a, b) => {
-      const priorityOrder = ['HIGHEST', 'HIGH', 'MEDIUM', 'LOW'];
-      return (
-        priorityOrder.indexOf(b.priority) - priorityOrder.indexOf(a.priority)
-      );
-    });
-    const highestPriorityCards = sortedBannerRecords?.filter(
+    const highestPriorityCards = staticCards.filter(
       (staticCard) => staticCard.priority === 'HIGHEST',
     );
-    const otherCards = sortedBannerRecords?.filter(
+    const otherCards = staticCards.filter(
       (staticCard) => staticCard.priority !== 'HIGHEST',
     );
     return [...highestPriorityCards, ...activityCards, ...otherCards];
