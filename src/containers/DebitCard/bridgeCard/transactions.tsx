@@ -523,22 +523,19 @@ export default function TransactionsScreen(props: {
                 {' ' + t('CARD_TRANSACTIONS_DELAY')}
               </CyDText>
             </CyDView>
-            {transactions.filteredTransactions.length ? (
-              <FlatList
-                style={{ height: listHeight - 100 }}
-                data={transactions.filteredTransactions}
-                renderItem={({ item, index }) => (
-                  <TransactionItem item={item} key={index} />
-                )}
-              />
-            ) : (
-              <CyDView className={'flex justify-center items-center'}>
+            <FlatList
+              style={{ height: listHeight - 100 }}
+              data={transactions.filteredTransactions}
+              renderItem={({ item, index }) => (
+                <TransactionItem item={item} key={index} />
+              )}
+              ListEmptyComponent={<CyDView className={'flex justify-center items-center'}>
                 <CyDImage
                   source={AppImages.NO_TRANSACTIONS_YET}
                   className={'mt-[15%] h-[150px] w-[150px]'}
                 />
-              </CyDView>
-            )}
+              </CyDView>}
+            />
           </CyDView>
         )}
         {loading && (
