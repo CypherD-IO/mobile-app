@@ -401,7 +401,7 @@ export default function WalletConnectCamera(props) {
                       {isV2 && <RenderPairingOnlineStatus pairing={element} />}
                     </CyDView>
                     <CyDView className={'flex flex-row items-center align-center'}>
-                      <CyDText numberOfLines={1} ellipsizeMode='tail' className={'text-[14px] w-[200px] text-ellipsis overflow-hidden'}>{element.url}</CyDText>
+                      <CyDText numberOfLines={1} ellipsizeMode='tail' className={'text-[14px] w-[200px]'}>{element.url}</CyDText>
                     </CyDView>
                   </CyDView>
                 </CyDView>
