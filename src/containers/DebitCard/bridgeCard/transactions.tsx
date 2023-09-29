@@ -3,7 +3,7 @@ import * as Sentry from '@sentry/react-native';
 import clsx from 'clsx';
 import { get } from 'lodash';
 import moment from 'moment';
-import React, { useContext, useEffect, useState } from 'react';
+import React, { memo, useContext, useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { StyleSheet, FlatList } from 'react-native';
 import DynamicallySelectedPicker from 'react-native-dynamically-selected-picker';
@@ -49,14 +49,13 @@ interface Transaction {
   }
 }
 
-export default function TransactionsScreen(props: {
+function TransactionsScreen(props: {
   navigation: any;
   currentCardProvider: string;
   currentCardIndex: number;
   shouldRefreshTransactions: boolean;
   listHeight: number;
 }) {
-  const isFocused = useIsFocused();
   const [transactions, setTransactions] = useState({
     startDate: '',
     endDate: '',
@@ -94,12 +93,6 @@ export default function TransactionsScreen(props: {
     listHeight,
   } = props;
   const { getWithAuth } = useAxios();
-
-  useEffect(() => {
-    if (isFocused) {
-      void getTransactions();
-    }
-  }, [isFocused]);
 
   useEffect(() => {
     const { year, month, monthIndex } = date;
@@ -516,13 +509,6 @@ export default function TransactionsScreen(props: {
         {!loading && (
           <CyDView>
             <TransactionsFilterByTypeModal />
-            <TransactionsFilterByDateModal />
-            <CyDView className='flex flex-row justify-center items-center rounded-[30px] p-[5px] bg-ternaryBackgroundColor'>
-              <CyDText className='font-bold'>{t('NOTE')}</CyDText>
-              <CyDText className='text-center'>
-                {' ' + t('CARD_TRANSACTIONS_DELAY')}
-              </CyDText>
-            </CyDView>
             <FlatList
               style={{ height: listHeight - 100 }}
               data={transactions.filteredTransactions}
@@ -576,3 +562,5 @@ const styles = StyleSheet.create({
   // },
   // indicatorStyle: { backgroundColor: Colors.appColor }
 });
+
+export default memo(TransactionsScreen);

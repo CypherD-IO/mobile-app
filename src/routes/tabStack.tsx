@@ -53,8 +53,8 @@ function TabStack() {
     screenTitle.OPTIONS_SCREEN,
     screenTitle.CARD_SIGNUP_LANDING_SCREEN,
     screenTitle.CARD_SIGNUP_SCREEN,
-    screenTitle.APTO_CARD_SCREEN,
     screenTitle.BRIDGE_CARD_SCREEN,
+    screenTitle.BRIDGE_CARD_TRANSACTION_DETAILS_SCREEN // This is added to stop the excessive reloading of the card transactions. Will have to redo this Card Transactions page.
   ];
 
   const [badgedTabBarOptions, setBadgedTabBarOptions] = useState<any>({});
@@ -131,8 +131,8 @@ function TabStack() {
             options.tabBarLabel !== undefined
               ? options.tabBarLabel
               : options.title !== undefined
-              ? options.title
-              : route.name;
+                ? options.title
+                : route.name;
 
           const isFocused = state.index === index;
           const TabBarIcon = options.tabBarIcon;
@@ -203,6 +203,8 @@ function TabStack() {
           const currentRouteStack = props.state.routes[
             props.state.index
           ].state?.routes.map((item) => item.name);
+          // This screenOnTop is a temp. patch to excessive reloading of card transactions. Will have to reimplement this.
+          const screenOnTop = currentRouteStack ? currentRouteStack[currentRouteStack.length - 1] : '';
           const showTabBar =
             currentRouteStack === undefined ||
             screensToHaveNavBar.includes(
@@ -217,9 +219,7 @@ function TabStack() {
                 {
                   'bottom-[-110px]': !showTabBar,
                   relative:
-                    currentRouteStack &&
-                    currentRouteStack[currentRouteStack?.length - 1] ===
-                      screenTitle.BRIDGE_CARD_SCREEN,
+                    [screenTitle.BRIDGE_CARD_SCREEN, screenTitle.BRIDGE_CARD_TRANSACTION_DETAILS_SCREEN].includes(screenOnTop),
                   'bottom-[-350px]': keyboardHeight,
                   'shadow-gray-400': (!isReadOnlyWallet && !isIOS()) || isIOS(),
                 },
