@@ -9,19 +9,16 @@
 import React, { useEffect, useState, useContext, useLayoutEffect, useRef } from 'react';
 import WalletConnect from '@walletconnect/client';
 import { useTranslation } from 'react-i18next';
-import { DynamicTouchView, DynamicView } from '../../styles/viewStyle';
 import * as C from '../../constants/index';
 import AppImages from './../../../assets/images/appImages';
 import { storeConnectWalletData } from '../../core/asyncStorage';
 import LoadingStack from '../../routes/loading';
 import analytics from '@react-native-firebase/analytics';
-import { BackHandler, FlatList, StyleSheet } from 'react-native';
+import { BackHandler, FlatList } from 'react-native';
 import { HdWalletContext, PortfolioContext } from '../../core/util';
 import { CyDText, CyDSafeAreaView, CyDView, CyDImage, CyDTouchView, CyDFastImage } from '../../styles/tailwindStyles';
 import { WalletConnectContext, walletConnectContextDef, WalletConnectActions } from '../../reducers/wallet_connect_reducer';
-import { DynamicImage } from '../../styles/imageStyle';
 import { QRScannerScreens } from '../../constants/server';
-import { CText } from '../../styles/textStyle';
 import { deleteTopic, web3WalletPair, web3wallet } from '../../core/walletConnectV2Utils';
 import { has } from 'lodash';
 import moment from 'moment';
@@ -31,7 +28,7 @@ import { ButtonType } from '../../constants/enum';
 import { useGlobalModalContext } from '../../components/v2/GlobalModal';
 import { WALLET_CONNECT_PROPOSAL_LISTENER } from '../../constants/timeOuts';
 
-export default function WalletConnectCamera (props) {
+export default function WalletConnectCamera(props) {
   const { walletConnectState, walletConnectDispatch } = useContext<walletConnectContextDef>(WalletConnectContext);
 
   const hdWalletContext = useContext<any>(HdWalletContext);
@@ -135,7 +132,7 @@ export default function WalletConnectCamera (props) {
         <CyDTouchView onPress={() => {
           props.navigation.navigate(C.screenTitle.QR_CODE_SCANNER, { fromPage: QRScannerScreens.WALLET_CONNECT, onSuccess });
         }}>
-          <CyDFastImage source={AppImages.QR_CODE_SCANNER_BLACK} className='h-[25px] w-[25px]' resizeMode='contain'/>
+          <CyDFastImage source={AppImages.QR_CODE_SCANNER_BLACK} className='h-[25px] w-[25px]' resizeMode='contain' />
         </CyDTouchView>
       )
     });
@@ -276,39 +273,39 @@ export default function WalletConnectCamera (props) {
     return (
       <CyDView>
         <CyDView className={'flex items-center'}>
-            <CyDView className='mt-[12px] w-11/12 border-[1px] rounded-[8px] border-fadedGrey'>
-              <CyDView className={'flex-row'}>
-                <CyDView className='flex flex-row rounded-r-[20px] self-center px-[10px]'>
-                  <CyDFastImage
-                    className={'h-[40px] w-[40px] rounded-[50px]'}
-                    source={{ uri: icons[0] }}
-                    resizeMode='contain'
-                  />
-                </CyDView>
-                <CyDView className={'flex flex-row'}>
-                  <CyDView className='flex flex-row justify-between items-center rounded-r-[20px] py-[15px] pr-[20px]'>
-                    <CyDView className='ml-[10px]'>
-                      <CyDView className={'flex flex-row items-center align-center'}>
-                        <CyDText className={'font-extrabold text-[16px]'}>{name.length > 25 ? `${name.substring(0, 25)}....` : name}</CyDText>
-                      </CyDView>
-                      <CyDView className={'flex flex-row items-center align-center'}>
-                        <CyDText className={'text-[14px]'}>{t<string>('EXPIRES_AT')}: {moment.unix(expiry).format('LLL')}</CyDText>
-                      </CyDView>
+          <CyDView className='mt-[12px] w-11/12 border-[1px] rounded-[8px] border-fadedGrey'>
+            <CyDView className={'flex-row'}>
+              <CyDView className='flex flex-row rounded-r-[20px] self-center px-[10px]'>
+                <CyDFastImage
+                  className={'h-[40px] w-[40px] rounded-[50px]'}
+                  source={{ uri: icons[0] }}
+                  resizeMode='contain'
+                />
+              </CyDView>
+              <CyDView className={'flex flex-row'}>
+                <CyDView className='flex flex-row justify-between items-center rounded-r-[20px] py-[15px] pr-[20px]'>
+                  <CyDView className='ml-[10px]'>
+                    <CyDView className={'flex flex-row items-center align-center'}>
+                      <CyDText className={'font-extrabold text-[16px]'}>{name.length > 25 ? `${name.substring(0, 25)}....` : name}</CyDText>
+                    </CyDView>
+                    <CyDView className={'flex flex-row items-center align-center'}>
+                      <CyDText className={'text-[14px]'}>{t<string>('EXPIRES_AT')}: {moment.unix(expiry).format('LLL')}</CyDText>
                     </CyDView>
                   </CyDView>
                 </CyDView>
-                {/* <CyDView className={'flex-auto flex-row items-center justify-end mr-[10px]'}>
+              </CyDView>
+              {/* <CyDView className={'flex-auto flex-row items-center justify-end mr-[10px]'}>
                   <CyDTouchView onPress ={() => { void disconnectSession(session.item.topic); }}>
                     <CyDImage source={AppImages.DISCONNECT} />
                   </CyDTouchView>
                 </CyDView> */}
-              </CyDView>
-              <CyDView className={'flex flex-row justify-center'}>
-                  <Button onPress={() => {
-                    // void disconnectSession(session.item.topic);
-                    void deletePairing(selectedPairingTopic, session.item.topic);
-                  }} style={'w-[80%] py-[10px] mb-[8px]'} type={ButtonType.RED} title={t('DISCONNECT')} titleStyle='text-[14px] text-white'/>
-                </CyDView>
+            </CyDView>
+            <CyDView className={'flex flex-row justify-center'}>
+              <Button onPress={() => {
+                // void disconnectSession(session.item.topic);
+                void deletePairing(selectedPairingTopic, session.item.topic);
+              }} style={'w-[80%] py-[10px] mb-[8px]'} type={ButtonType.RED} title={t('DISCONNECT')} titleStyle='text-[14px] text-white' />
+            </CyDView>
           </CyDView>
         </CyDView>
       </CyDView>
@@ -327,26 +324,26 @@ export default function WalletConnectCamera (props) {
         {sessionsForAPairing.length === 0 && <CyDView>
           <CyDView className={'flex flex-row justify-center'}>
             <CyDImage
-                    className={'h-[250px] w-[250px]'}
-                    source={AppImages.EMPTY_WALLET_CONNECT_SESSIONS}
-                    resizeMode='contain'
-                  />
+              className={'h-[250px] w-[250px]'}
+              source={AppImages.EMPTY_WALLET_CONNECT_SESSIONS}
+              resizeMode='contain'
+            />
           </CyDView>
           <CyDView className={'flex flex-row justify-center mb-[10px]'}>
             <CyDText className={'font-bold text-[18px]'}>No active sessions available</CyDText>
           </CyDView>
           <CyDView className={'flex flex-row justify-center'}>
-          <Button onPress={() => {
-            void deletePairing(selectedPairingTopic);
-          }} style={'w-[80%] p-[20px] my-[18px]'} type={ButtonType.RED} title={t('DELETE_CONNECTION')} titleStyle='text-[14px] text-white'/>
-        </CyDView>
+            <Button onPress={() => {
+              void deletePairing(selectedPairingTopic);
+            }} style={'w-[80%] p-[20px] my-[18px]'} type={ButtonType.RED} title={t('DELETE_CONNECTION')} titleStyle='text-[14px] text-white' />
+          </CyDView>
         </CyDView>}
         {sessionsForAPairing.length > 0 && <CyDView className='mt-[10px]'>
           <FlatList
-              data={sessionsForAPairing}
-              renderItem={(item) => renderSessionItem(item)}
-              style={{ width: '100%', maxHeight: 300 }}
-              showsVerticalScrollIndicator={true}
+            data={sessionsForAPairing}
+            renderItem={(item) => renderSessionItem(item)}
+            style={{ width: '100%', maxHeight: 300 }}
+            showsVerticalScrollIndicator={true}
           />
         </CyDView>}
         <CyDView className={'flex flex-row justify-center'}>
@@ -362,16 +359,16 @@ export default function WalletConnectCamera (props) {
     const isOnline = getSessionsForAPairing(pairing.topic).length > 0;
     return (
       <CyDView>
-        <CyDView className={clsx('h-[10px] w-[10px] rounded-[60px] ml-[6px] mt-[3px]', { 'bg-green-600': isOnline, 'bg-red-600': !isOnline })}></CyDView>
+        <CyDView className={clsx('h-[10px] w-[10px] rounded-[60px] ml-[6px] mt-[3px]', { 'bg-green-600': isOnline, 'bg-red-600': !isOnline })} />
       </CyDView>
     );
   };
 
-  function showPairingSessions () {
+  function showPairingSessions() {
     showModal('customLayout', {
       onSuccess: () => { setPairingSessionsModalVisible(false); },
       onFailure: () => { setPairingSessionsModalVisible(false); },
-      customComponent: <RenderSessionsForAPairing/>
+      customComponent: <RenderSessionsForAPairing />
     });
   };
 
@@ -380,46 +377,46 @@ export default function WalletConnectCamera (props) {
     const key = item.index;
     const isV2 = has(element, 'version') && element?.version === 'v2';
     return (
-      <CyDTouchView disabled={!isV2} onPress ={() => {
+      <CyDTouchView disabled={!isV2} onPress={() => {
         setSelectedPairingTopic(element.topic);
       }}>
         <CyDView className={'flex items-center'}>
-            <CyDView className='flex flex-row items-center mt-[6px] w-11/12 border-[1px] rounded-[8px] border-fadedGrey'>
-              <CyDView className={'flex-row'}>
-                <CyDView className='flex flex-row rounded-r-[20px] self-center px-[10px]'>
-                  <CyDFastImage
-                    className={'h-[40px] w-[40px] rounded-[50px]'}
-                    source={{ uri: !isV2 ? element.icons[0] : element.icon }}
-                    resizeMode='contain'
-                  />
-                </CyDView>
-                {isV2 && <CyDView className='rounded-[60px] h-[16px] p-[4px] absolute mt-[43px] ml-[22px] bg-appColor'>
-                    <CyDText className={'font-extrabold text-[8px]'}>V2</CyDText>
-                  </CyDView>}
-                <CyDView className={'flex flex-row'}>
-                  <CyDView className='flex flex-row justify-between items-center rounded-r-[20px] py-[15px] pr-[20px]'>
-                    <CyDView className='ml-[10px]'>
-                      <CyDView className={'flex flex-row items-center align-center'}>
-                        <CyDText className={'font-extrabold text-[16px]'}>{element.name.length > 25 ? `${element.name.substring(0, 25)}....` : element.name}</CyDText>
-                        {isV2 && <RenderPairingOnlineStatus pairing={element}/>}
-                      </CyDView>
-                      <CyDView className={'flex flex-row items-center align-center'}>
-                        <CyDText className={'text-[14px]'}>{element.url}</CyDText>
-                      </CyDView>
+          <CyDView className='flex flex-row items-center mt-[6px] w-11/12 border-[1px] rounded-[8px] border-fadedGrey'>
+            <CyDView className={'flex-row'}>
+              <CyDView className='flex flex-row rounded-r-[20px] self-center px-[10px]'>
+                <CyDFastImage
+                  className={'h-[40px] w-[40px] rounded-[50px]'}
+                  source={{ uri: !isV2 ? element.icons[0] : element.icon }}
+                  resizeMode='contain'
+                />
+              </CyDView>
+              {isV2 && <CyDView className='rounded-[60px] h-[16px] p-[4px] absolute mt-[43px] ml-[22px] bg-appColor'>
+                <CyDText className={'font-extrabold text-[8px]'}>V2</CyDText>
+              </CyDView>}
+              <CyDView className={'flex flex-row'}>
+                <CyDView className='flex flex-row justify-between items-center rounded-r-[20px] py-[15px] pr-[20px]'>
+                  <CyDView className='ml-[10px]'>
+                    <CyDView className={'flex flex-row items-center align-center'}>
+                      <CyDText className={'font-extrabold text-[16px]'}>{element.name.length > 25 ? `${element.name.substring(0, 25)}....` : element.name}</CyDText>
+                      {isV2 && <RenderPairingOnlineStatus pairing={element} />}
+                    </CyDView>
+                    <CyDView className={'flex flex-row items-center align-center'}>
+                      <CyDText numberOfLines={1} ellipsizeMode='tail' className={'text-[14px] w-[200px]'}>{element.url}</CyDText>
                     </CyDView>
                   </CyDView>
                 </CyDView>
-                <CyDView className={'flex-auto flex-row items-center justify-end mr-[10px]'}>
-                  {!isV2 && <CyDTouchView onPress ={() => { void endSession(key); }}>
-                    <CyDImage source={AppImages.DISCONNECT} />
-                  </CyDTouchView>}
-                  {isV2 && <CyDTouchView onPress ={() => {
-                    setSelectedPairingTopic(element.topic);
-                  }}>
-                    <CyDImage className={'h-[16px] w-[16px]'} source={AppImages.SETTINGS} />
-                  </CyDTouchView>}
-                </CyDView>
               </CyDView>
+              <CyDView className={'flex-auto flex-row items-center justify-end mr-[10px]'}>
+                {!isV2 && <CyDTouchView onPress={() => { void endSession(key); }}>
+                  <CyDImage source={AppImages.DISCONNECT} />
+                </CyDTouchView>}
+                {isV2 && <CyDTouchView onPress={() => {
+                  setSelectedPairingTopic(element.topic);
+                }}>
+                  <CyDImage className={'h-[16px] w-[16px]'} source={AppImages.SETTINGS} />
+                </CyDTouchView>}
+              </CyDView>
+            </CyDView>
           </CyDView>
         </CyDView>
       </CyDTouchView>
@@ -427,26 +424,19 @@ export default function WalletConnectCamera (props) {
   };
 
   return (
-           <CyDSafeAreaView className={'bg-white h-full w-full'}>
-              {walletConnectState.dAppInfo?.length > 0
-                ? <FlatList
-                data={walletConnectState.dAppInfo}
-                renderItem={(item) => renderItem(item)}
-                style={{ width: '100%', height: '100%', marginBottom: 20 }}
-                showsVerticalScrollIndicator={true}
-              />
-                : (<DynamicView dynamic dynamicWidth dynamicHeight height={80} width={100} pH={10} jC='center'>
-                <DynamicImage dynamic dynamicWidth height={110} width={100} resizemode='contain' source={AppImages.WALLET_CONNECT_EMPTY} />
-                <CText style={{ color: 'black', marginTop: 30, fontSize: 20, fontWeight: '600', width: 300, textAlign: 'center', fontFamily: 'Nunito' }}>{t('NO_CONNECTIONS')}</CText>
-                </DynamicView>)
-          }
-          </CyDSafeAreaView>
+    <CyDSafeAreaView className={'bg-white h-full w-full'}>
+      <FlatList
+        className='mb-[20px]'
+        data={walletConnectState.dAppInfo}
+        renderItem={renderItem}
+        showsVerticalScrollIndicator={true}
+        ListEmptyComponent={
+          <CyDView className='h-full w-full justify-center items-center'>
+            <CyDFastImage className='h-[250px] w-[250px]' source={AppImages.WALLET_CONNECT_EMPTY} resizeMode='contain' />
+            <CyDText className='mt-[30px] text-[20px] font-semibold w-[300px] text-center'>{t('NO_CONNECTIONS')}</CyDText>
+          </CyDView>
+        }
+      />
+    </CyDSafeAreaView>
   );
 }
-
-const styles = StyleSheet.create({
-  modalLayout: {
-    margin: 0,
-    justifyContent: 'flex-end'
-  }
-});
