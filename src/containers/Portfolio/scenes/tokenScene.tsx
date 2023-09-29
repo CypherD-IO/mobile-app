@@ -43,6 +43,7 @@ import { CHAIN_COLLECTION, Chain } from '../../../constants/server';
 import { TokenMeta } from '../../../models/tokenMetaData.model';
 import { get, isEmpty, isEqual, sortBy } from 'lodash';
 import Loading from '../../../components/v2/loading';
+import { PortfolioBannerHeights } from '../../../hooks/useScrollManager';
 
 type ScrollEvent = NativeSyntheticEvent<NativeScrollEvent>;
 
@@ -54,7 +55,7 @@ interface TokenSceneProps {
   onMomentumScrollEnd: (e: ScrollEvent) => void;
   onScrollEndDrag: (e: ScrollEvent) => void;
   navigation: any;
-  bannerHeight: 160 | 260;
+  bannerHeight: PortfolioBannerHeights;
   isVerifyCoinChecked: boolean;
   getAllChainBalance: (portfolioState: {
     statePortfolio: {

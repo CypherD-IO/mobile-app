@@ -9,9 +9,10 @@ import {
 } from 'react-native-reanimated';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { isIOS } from '../../../misc/checkers';
+import { PortfolioBannerHeights } from '../../../hooks/useScrollManager';
 export interface AnimatedBannerProps {
   scrollY: SharedValue<number>;
-  bannerHeight: 160 | 260,
+  bannerHeight: PortfolioBannerHeights,
   children: ReactNode;
 }
 
@@ -43,8 +44,8 @@ export const AnimatedBanner = ({
   });
   return (
     <CyDAnimatedView
-      className={`absolute h-[${bannerHeight}px] z-10 px-[10px] w-full`}
-      style={[animatedStyles, { top: topInset }]}
+      className={`absolute z-10 w-full`}
+      style={[animatedStyles, { height: bannerHeight, top: topInset }]}
       {...otherProps}
     >
       {children}

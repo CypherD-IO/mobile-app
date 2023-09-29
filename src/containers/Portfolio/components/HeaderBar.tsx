@@ -7,11 +7,12 @@ import { screenTitle } from '../../../constants';
 import { BarCodeReadEvent } from 'react-native-camera';
 import { SharedValue, useAnimatedStyle, withTiming } from 'react-native-reanimated';
 import { isIOS } from '../../../misc/checkers';
+import { PortfolioBannerHeights } from '../../../hooks/useScrollManager';
 
 interface HeaderBarProps {
   navigation: any
   setChooseChain: Function
-  bannerHeight: 160 | 260
+  bannerHeight: PortfolioBannerHeights
   scrollY: SharedValue<number>
   onWCSuccess: (e: BarCodeReadEvent) => void
   renderTitleComponent?: ReactNode

@@ -27,12 +27,13 @@ import { ACTIVITIES_REFRESH_TIMEOUT } from '../../../../constants/timeOuts';
 import { CyDView } from '../../../../styles/tailwindStyles';
 import CardCarousel from '../../../../components/v2/CardCarousel';
 import { SharedValue } from 'react-native-reanimated';
+import { PortfolioBannerHeights } from '../../../../hooks/useScrollManager';
 
 const ARCH_HOST = hostWorker.getHost('ARCH_HOST');
 
 export type BridgeOrCardActivity = ExchangeTransaction | DebitCardTransaction;
 interface BannerCarouselProps {
-  setBannerHeight: React.Dispatch<React.SetStateAction<160 | 260>>;
+  setBannerHeight: React.Dispatch<React.SetStateAction<PortfolioBannerHeights>>;
 }
 
 const BannerCarousel = ({ setBannerHeight }: BannerCarouselProps) => {
@@ -118,7 +119,7 @@ const BannerCarousel = ({ setBannerHeight }: BannerCarouselProps) => {
   // useEffect to update the height of the banner when the no. of cards change.
   useEffect(() => {
     if (activityCards.length + staticCards.length) {
-      setBannerHeight(260);
+      setBannerHeight(300);
     } else {
       setBannerHeight(160);
     }
@@ -342,7 +343,7 @@ const BannerCarousel = ({ setBannerHeight }: BannerCarouselProps) => {
   return (
     <CardCarousel
       cardsData={cards}
-      moreThanOneCardOffset={1.175}
+      moreThanOneCardOffset={1.1}
       renderItem={renderItem}
     />
   );
