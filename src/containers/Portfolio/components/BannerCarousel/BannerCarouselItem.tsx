@@ -35,7 +35,7 @@ const BannerCarouselItem = ({ item, index, boxWidth, halfBoxDistance, panX, setD
                 index * boxWidth - halfBoxDistance,
                 (index + 1) * boxWidth - halfBoxDistance, // adjust positioning
             ],
-            [0.85, 1, 0.85], // scale down when out of scope
+            [0.88, 1, 0.88], // scale down when out of scope
             Extrapolation.CLAMP,
         );
         return {

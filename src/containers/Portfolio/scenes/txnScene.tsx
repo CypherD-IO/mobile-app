@@ -19,6 +19,7 @@ import { TransactionObj } from "../../../models/transaction.model";
 import { CHAIN_COLLECTION, ChainConfigMapping } from "../../../constants/server";
 import clsx from "clsx";
 import { isIOS } from "../../../misc/checkers";
+import { PortfolioBannerHeights } from "../../../hooks/useScrollManager";
 
 interface TxnItemProps {
   activity: TransactionObj
@@ -35,7 +36,7 @@ interface TxnSceneProps {
   onMomentumScrollEnd: (e: ScrollEvent) => void;
   onScrollEndDrag: (e: ScrollEvent) => void;
   navigation: any;
-  bannerHeight: 160 | 260;
+  bannerHeight: PortfolioBannerHeights;
   filterModalVisibilityState: [boolean, React.Dispatch<React.SetStateAction<boolean>>]
 }
 

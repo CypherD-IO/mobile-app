@@ -10,6 +10,7 @@ import Animated, {
   useAnimatedScrollHandler,
 } from 'react-native-reanimated';
 import { H_GUTTER } from '../constants';
+import { PortfolioBannerHeights } from '../../../hooks/useScrollManager';
 
 export interface AnimatedTabViewProps
   extends Pick<
@@ -25,7 +26,7 @@ export interface AnimatedTabViewProps
     | 'windowSize'
     | 'ListEmptyComponent'
   > {
-  bannerHeight: 160 | 260;
+  bannerHeight: PortfolioBannerHeights;
   data?: any[];
   renderItem?:
   | ListRenderItem<any>
