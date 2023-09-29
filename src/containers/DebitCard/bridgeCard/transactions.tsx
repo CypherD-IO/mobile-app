@@ -1,11 +1,10 @@
-import { useIsFocused } from '@react-navigation/native';
 import * as Sentry from '@sentry/react-native';
 import clsx from 'clsx';
 import { get } from 'lodash';
 import moment from 'moment';
 import React, { memo, useContext, useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import { StyleSheet, FlatList } from 'react-native';
+import { StyleSheet, FlatList, RefreshControl } from 'react-native';
 import DynamicallySelectedPicker from 'react-native-dynamically-selected-picker';
 import AppImages from '../../../../assets/images/appImages';
 import { useGlobalModalContext } from '../../../components/v2/GlobalModal';
@@ -85,6 +84,7 @@ function TransactionsScreen(props: {
     { key: 'transactions', title: 'Transactions' },
     { key: 'summary', title: 'Spending Summary' },
   ]);
+  const [refreshing, setRefreshing] = useState(false);
   const {
     navigation,
     currentCardProvider,
@@ -103,6 +103,10 @@ function TransactionsScreen(props: {
     }
   }, [shouldRefreshTransactions]);
 
+  const onRefresh = () => {
+    void getTransactions();
+  };
+
   const getTransactions = async (month = '', year = '') => {
     const currentCard = get(cardProfile, currentCardProvider).cards[
       currentCardIndex
@@ -112,7 +116,7 @@ function TransactionsScreen(props: {
     //   transactionsURL += '?month=' + month + '&year=' + year;
     // }
     try {
-      setLoading(true);
+      setRefreshing(true);
       const response = await getWithAuth(transactionsURL);
       if (!response.isError && response?.data && response.data.transactions) {
         let startDate;
@@ -151,11 +155,11 @@ function TransactionsScreen(props: {
         //   setTransactionYears(years);
         // }
         setSelectedTransactionType(TransactionFilterTypes.ALL);
-        setLoading(false);
+        setRefreshing(false);
       }
     } catch (error) {
       Sentry.captureException(error);
-      setLoading(false);
+      setRefreshing(false);
       showModal('state', {
         type: 'error',
         title: '',
@@ -511,6 +515,7 @@ function TransactionsScreen(props: {
             <TransactionsFilterByTypeModal />
             <FlatList
               style={{ height: listHeight - 100 }}
+              refreshControl={<RefreshControl refreshing={refreshing} onRefresh={onRefresh} />}
               data={transactions.filteredTransactions}
               renderItem={({ item, index }) => (
                 <TransactionItem item={item} key={index} />
@@ -518,7 +523,7 @@ function TransactionsScreen(props: {
               ListEmptyComponent={<CyDView className={'flex justify-center items-center'}>
                 <CyDImage
                   source={AppImages.NO_TRANSACTIONS_YET}
-                  className={'mt-[15%] h-[150px] w-[150px]'}
+                  className={'h-[150px] w-[150px]'}
                 />
               </CyDView>}
             />

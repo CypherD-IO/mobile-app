@@ -1,18 +1,14 @@
-import React, { useContext, useEffect, useRef, useState } from 'react';
+import React, { useContext, useEffect, useState } from 'react';
 import {
   CyDImageBackground,
-  CyDSafeAreaView,
   CyDText,
-  CyDTouchView,
   CyDView,
 } from '../../../styles/tailwindStyles';
 import CardScreen from './card';
 import TransactionsScreen from './transactions';
-import SpendingSumary from './spendingSummary';
-import { TabView, SceneMap, TabBar } from 'react-native-tab-view';
 import Button from '../../../components/v2/button';
 import { useTranslation } from 'react-i18next';
-import ReactNative, { Dimensions, StatusBar } from 'react-native';
+import { Dimensions } from 'react-native';
 import AppImages from '../../../../assets/images/appImages';
 import { GlobalContext } from '../../../core/globalContext';
 import Sheet from '../../../components/v2/BottomSheet';
@@ -20,15 +16,12 @@ import { screenTitle } from '../../../constants';
 import { useIsFocused } from '@react-navigation/native';
 import { CardProfile } from '../../../models/cardProfile.model';
 import * as Sentry from '@sentry/react-native';
-import { CARD_REFRESH_TIMEOUT } from '../../../constants/timeOuts';
 import useAxios from '../../../core/HttpRequest';
 import { get, has } from 'lodash';
 import SwitchView from '../../../components/v2/switchView';
 import Loading from '../../../components/v2/loading';
 import { CardProviders } from '../../../constants/enum';
 import { sleepFor } from '../../../core/util';
-import clsx from 'clsx';
-import { isAndroid } from '../../../misc/checkers';
 
 export default function BridgeCardScreen(props: {
   navigation: { navigate: any; setOptions: any };
@@ -56,31 +49,6 @@ export default function BridgeCardScreen(props: {
     useState<string>(cardProvider);
   const { getWithAuth } = useAxios();
   const [minHeight, setMinHeight] = useState<number>();
-
-  useEffect(() => {
-    if (isFocused) {
-      navigation.setOptions({
-        title: 'Cypher Card',
-        headerRight: () => {
-          return cardProfile?.apto ? (
-            <CyDTouchView
-              onPress={() => {
-                navigation.navigate(screenTitle.APTO_CARD_SCREEN);
-              }}
-            >
-              <CyDText
-                className={
-                  ' underline text-blue-500  text-[12px] font-extrabold'
-                }
-              >
-                {t<string>('GO_TO_DEPRECATED_CARD') + ' ->'}
-              </CyDText>
-            </CyDTouchView>
-          ) : null;
-        },
-      });
-    }
-  }, [isFocused]);
 
   useEffect(() => {
     if (isFocused && cardProfile && !currentCardProvider) {
