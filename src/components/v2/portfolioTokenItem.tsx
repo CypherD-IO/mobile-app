@@ -1,4 +1,3 @@
-
 import React, { useContext } from 'react';
 import { useTranslation } from 'react-i18next';
 import FastImage from 'react-native-fast-image';
@@ -109,7 +108,7 @@ const PortfolioTokenItem = ({
             >
               <CyDImage
                 source={AppImages.IBC}
-                className={'w-[8px] h-[8px]'}
+                className={'w-[12px] h-[12px]'}
                 resizeMode='contain'
               />
             </CyDTouchView>
@@ -258,8 +257,8 @@ const PortfolioTokenItem = ({
             source={
               item?.logoUrl
                 ? {
-                  uri: item.logoUrl,
-                }
+                    uri: item.logoUrl,
+                  }
                 : randomColor[Math.floor(Math.random() * randomColor.length)]
             }
             resizeMode='contain'
@@ -312,16 +311,16 @@ const PortfolioTokenItem = ({
               <CyDTokenValue className='text-[18px] font-bold'>
                 {item.actualUnbondingBalance !== undefined
                   ? item.totalValue +
-                  item.actualStakedBalance +
-                  item.actualUnbondingBalance
+                    item.actualStakedBalance +
+                    item.actualUnbondingBalance
                   : '...'}
               </CyDTokenValue>
               <CyDTokenAmount className='text-[14px]'>
                 {item.stakedBalanceTotalValue !== undefined &&
-                  item.unbondingBalanceTotalValue !== undefined
+                item.unbondingBalanceTotalValue !== undefined
                   ? item.actualBalance +
-                  item.stakedBalanceTotalValue +
-                  item.unbondingBalanceTotalValue
+                    item.stakedBalanceTotalValue +
+                    item.unbondingBalanceTotalValue
                   : '...'}
               </CyDTokenAmount>
             </CyDView>

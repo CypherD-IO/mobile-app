@@ -167,7 +167,7 @@ export const initialGlobalState: GlobalStateDef = {
         validators:
           'https://lcd-noble.keplr.app/cosmos/staking/v1beta1/validators?pagination.limit=1000&status=BOND_STATUS_BONDED',
       },
-      primary: 'https://rpc-noble.keplr.app',
+      primary: 'https://noble-rpc.polkachu.com',
     },
   },
 };
@@ -186,7 +186,7 @@ interface GlobalReducerInput {
 
 export const gloabalContextReducer = (
   state: GlobalStateDef,
-  input: GlobalReducerInput
+  input: GlobalReducerInput,
 ): GlobalStateDef => {
   if (input) {
     const { type, rpc, sessionToken, cardProfile, ibc } = input;
@@ -212,11 +212,11 @@ export interface GlobalContextDef {
 export const GlobalContext = React.createContext<GlobalContextDef | null>(null);
 
 const checkAndMaintainUpdatedRPCEndpointsInAsync = async (
-  rpcEndpoints: RpcResponseDetail
+  rpcEndpoints: RpcResponseDetail,
 ) => {
   const ARCH_HOST: string = hostWorker.getHost('ARCH_HOST');
   const resultFromEndpoint = await axios.get<RpcResponseDetail>(
-    `${ARCH_HOST}/v1/configuration/rpcEndpoints`
+    `${ARCH_HOST}/v1/configuration/rpcEndpoints`,
   );
   const updatedEndpoints = {};
   const availableChains = Object.keys(resultFromEndpoint.data);
@@ -254,12 +254,12 @@ export async function fetchRPCEndpointsFromServer(globalDispatch: Function) {
   ) {
     const updatedRPCFromAsync =
       await checkAndMaintainUpdatedRPCEndpointsInAsync(
-        JSON.parse(RPCFromAsync)
+        JSON.parse(RPCFromAsync),
       );
     result = updatedRPCFromAsync;
   } else {
     const resultFromEndpoint = await axios.get<RpcResponseDetail>(
-      `${ARCH_HOST}/v1/configuration/rpcEndpoints`
+      `${ARCH_HOST}/v1/configuration/rpcEndpoints`,
     );
     result = resultFromEndpoint.data;
   }
@@ -308,20 +308,20 @@ export async function signIn(ethereum: {
   const ARCH_HOST: string = hostWorker.getHost('ARCH_HOST');
   try {
     const { data } = await axios.get(
-      `${ARCH_HOST}/v1/authentication/sign-message/${ethereum.address}`
+      `${ARCH_HOST}/v1/authentication/sign-message/${ethereum.address}`,
     );
     const verifyMessage = data.message;
     const validationResponse = isValidMessage(ethereum.address, verifyMessage);
     if (validationResponse.message === SignMessageValidationType.VALID) {
       const { signature } = web3.eth.accounts.sign(
         verifyMessage,
-        ethereum.privateKey
+        ethereum.privateKey,
       );
       const result = await axios.post(
         `${ARCH_HOST}/v1/authentication/verify-message/${ethereum.address}`,
         {
           signature,
-        }
+        },
       );
       return { ...validationResponse, token: result.data.token };
     }
