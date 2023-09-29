@@ -63,7 +63,6 @@ export enum FundWalletAddressType {
   ZKSYNC_ERA = 'ZKSYNC_ERA',
   BASE = 'BASE',
   POLYGON_ZKEVM = 'POLYGON_ZKEVM',
-
 }
 
 export const CHAIN_ETH: Chain = {
@@ -313,7 +312,8 @@ export const CHAIN_ZKSYNC_ERA: Chain = {
   backendName: ChainBackendNames.ZKSYNC_ERA,
   chain_id: '0x144',
   native_token_address: '0xeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee',
-  nativeTokenLogoUrl: 'https://www.covalenthq.com/static/images/icons/display-icons/ethereum-eth-logo.png',
+  nativeTokenLogoUrl:
+    'https://www.covalenthq.com/static/images/icons/display-icons/ethereum-eth-logo.png',
   chainIdNumber: 324,
 };
 
@@ -326,7 +326,8 @@ export const CHAIN_BASE: Chain = {
   backendName: ChainBackendNames.BASE,
   chain_id: '0x2105',
   native_token_address: '0xeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee',
-  nativeTokenLogoUrl: 'https://www.covalenthq.com/static/images/icons/display-icons/ethereum-eth-logo.png',
+  nativeTokenLogoUrl:
+    'https://www.covalenthq.com/static/images/icons/display-icons/ethereum-eth-logo.png',
   chainIdNumber: 8453,
 };
 
@@ -339,7 +340,8 @@ export const CHAIN_POLYGON_ZKEVM: Chain = {
   backendName: ChainBackendNames.POLYGON_ZKEVM,
   chain_id: '0x44d',
   native_token_address: '0xeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee',
-  nativeTokenLogoUrl: 'https://www.covalenthq.com/static/images/icons/display-icons/ethereum-eth-logo.png',
+  nativeTokenLogoUrl:
+    'https://www.covalenthq.com/static/images/icons/display-icons/ethereum-eth-logo.png',
   chainIdNumber: 1101,
 };
 
@@ -353,7 +355,9 @@ export const EnsCoinTypes: Record<string, string> = {
   [ChainBackendNames.SHARDEUM_SPHINX]: 'dummy',
 };
 
-export const SUPPORTED_EVM_CHAINS = [1, 137, 56, 43114, 250, 10, 42161, 9001, 324, 8453, 1101];
+export const SUPPORTED_EVM_CHAINS = [
+  1, 137, 56, 43114, 250, 10, 42161, 9001, 324, 8453, 1101,
+];
 export const CHAIN_NAMES = [
   'ethereum',
   'evmos',
@@ -396,7 +400,7 @@ export const ALL_CHAINS: Chain[] = [
   CHAIN_BASE,
   CHAIN_POLYGON_ZKEVM,
   CHAIN_SHARDEUM,
-  CHAIN_SHARDEUM_SPHINX
+  CHAIN_SHARDEUM_SPHINX,
 ];
 
 export const EVM_CHAINS: Chain[] = [
@@ -620,8 +624,8 @@ export const ChainNameToContactsChainNameMapping = {
   'Polygon zkEVM': 'polygon_zkevm',
 };
 
-
-
 export enum NativeTokenMapping {
   COSMOS = 'ATOM',
 }
+
+export const GASLESS_CHAINS = [ChainBackendNames.NOBLE];
