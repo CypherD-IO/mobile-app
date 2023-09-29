@@ -1,13 +1,11 @@
-import { useIsFocused } from '@react-navigation/native';
 import * as Sentry from '@sentry/react-native';
 import clsx from 'clsx';
 import { get } from 'lodash';
 import moment from 'moment';
-import React, { useContext, useEffect, useState } from 'react';
+import React, { memo, useContext, useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import { StyleSheet } from 'react-native';
+import { StyleSheet, FlatList, RefreshControl } from 'react-native';
 import DynamicallySelectedPicker from 'react-native-dynamically-selected-picker';
-import { ScrollView } from 'react-native-gesture-handler';
 import AppImages from '../../../../assets/images/appImages';
 import { useGlobalModalContext } from '../../../components/v2/GlobalModal';
 import Loading from '../../../components/v2/loading';
@@ -50,14 +48,13 @@ interface Transaction {
   }
 }
 
-export default function TransactionsScreen(props: {
+function TransactionsScreen(props: {
   navigation: any;
   currentCardProvider: string;
   currentCardIndex: number;
   shouldRefreshTransactions: boolean;
   listHeight: number;
 }) {
-  const isFocused = useIsFocused();
   const [transactions, setTransactions] = useState({
     startDate: '',
     endDate: '',
@@ -87,6 +84,7 @@ export default function TransactionsScreen(props: {
     { key: 'transactions', title: 'Transactions' },
     { key: 'summary', title: 'Spending Summary' },
   ]);
+  const [refreshing, setRefreshing] = useState(false);
   const {
     navigation,
     currentCardProvider,
@@ -97,12 +95,6 @@ export default function TransactionsScreen(props: {
   const { getWithAuth } = useAxios();
 
   useEffect(() => {
-    if (isFocused) {
-      void getTransactions();
-    }
-  }, [isFocused]);
-
-  useEffect(() => {
     const { year, month, monthIndex } = date;
     if (year.value && month.value) {
       void getTransactions(String(Number(monthIndex) + 1), year.value);
@@ -110,6 +102,10 @@ export default function TransactionsScreen(props: {
       void getTransactions();
     }
   }, [shouldRefreshTransactions]);
+
+  const onRefresh = () => {
+    void getTransactions();
+  };
 
   const getTransactions = async (month = '', year = '') => {
     const currentCard = get(cardProfile, currentCardProvider).cards[
@@ -120,7 +116,7 @@ export default function TransactionsScreen(props: {
     //   transactionsURL += '?month=' + month + '&year=' + year;
     // }
     try {
-      setLoading(true);
+      setRefreshing(true);
       const response = await getWithAuth(transactionsURL);
       if (!response.isError && response?.data && response.data.transactions) {
         let startDate;
@@ -159,11 +155,11 @@ export default function TransactionsScreen(props: {
         //   setTransactionYears(years);
         // }
         setSelectedTransactionType(TransactionFilterTypes.ALL);
-        setLoading(false);
+        setRefreshing(false);
       }
     } catch (error) {
       Sentry.captureException(error);
-      setLoading(false);
+      setRefreshing(false);
       showModal('state', {
         type: 'error',
         title: '',
@@ -517,27 +513,20 @@ export default function TransactionsScreen(props: {
         {!loading && (
           <CyDView>
             <TransactionsFilterByTypeModal />
-            <TransactionsFilterByDateModal />
-            <CyDView className='flex flex-row justify-center items-center rounded-[30px] p-[5px] bg-ternaryBackgroundColor'>
-              <CyDText className='font-bold'>{t('NOTE')}</CyDText>
-              <CyDText className='text-center'>
-                {' ' + t('CARD_TRANSACTIONS_DELAY')}
-              </CyDText>
-            </CyDView>
-            {transactions.filteredTransactions.length ? (
-              <ScrollView style={{ height: listHeight - 100 }}>
-                {transactions.filteredTransactions.map((item, index) => {
-                  return <TransactionItem item={item} key={index} />;
-                })}
-              </ScrollView>
-            ) : (
-              <CyDView className={'flex justify-center items-center'}>
+            <FlatList
+              style={{ height: listHeight - 100 }}
+              refreshControl={<RefreshControl refreshing={refreshing} onRefresh={onRefresh} />}
+              data={transactions.filteredTransactions}
+              renderItem={({ item, index }) => (
+                <TransactionItem item={item} key={index} />
+              )}
+              ListEmptyComponent={<CyDView className={'flex justify-center items-center'}>
                 <CyDImage
                   source={AppImages.NO_TRANSACTIONS_YET}
-                  className={'mt-[15%] h-[150px] w-[150px]'}
+                  className={'h-[150px] w-[150px]'}
                 />
-              </CyDView>
-            )}
+              </CyDView>}
+            />
           </CyDView>
         )}
         {loading && (
@@ -578,3 +567,5 @@ const styles = StyleSheet.create({
   // },
   // indicatorStyle: { backgroundColor: Colors.appColor }
 });
+
+export default memo(TransactionsScreen);

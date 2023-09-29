@@ -821,7 +821,7 @@ export function DebitCardStackScreen({ navigation }) {
         options={{
           headerTransparent: false,
           headerShadowVisible: false,
-          title: 'Cypher Card',
+          headerTitle: 'Cypher Card',
           headerTitleAlign: 'center',
           headerTitleStyle: portfolioStackScreenHeaderTitleStyles,
           headerLeft: () => {
