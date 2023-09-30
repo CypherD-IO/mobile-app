@@ -37,10 +37,7 @@ import {
 } from '../containers/utilities/cosmosSendUtility';
 import { OfflineDirectSigner } from '@cosmjs-rn/proto-signing';
 import { getSignerClient } from './Keychain';
-import {
-  MsgSendEncodeObject,
-  SigningStargateClient,
-} from '@cosmjs-rn/stargate';
+import { MsgSendEncodeObject, SigningStargateClient } from '@cosmjs/stargate';
 import { cosmosConfig } from '../constants/cosmosConfig';
 import { t } from 'i18next';
 import { initialHdWalletState } from '../reducers';
