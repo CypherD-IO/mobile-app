@@ -979,6 +979,19 @@ export function DebitCardStackScreen({ navigation }) {
           headerBackTitleVisible: false,
         }}
       />
+      <FundCardStack.Screen
+        name={screenTitle.TRANS_DETAIL}
+        component={TransDetail}
+        options={({ navigation, route }) => ({
+          headerTransparent: false,
+          headerShadowVisible: false,
+          headerTitle: 'Explorer',
+          headerTitleAlign: 'center',
+          headerTitleStyle: portfolioStackScreenHeaderTitleStyles,
+          headerTintColor: Colors.primaryTextColor,
+          headerBackTitleVisible: false,
+        })}
+      />
     </FundCardStack.Navigator>
   );
 }

@@ -8,26 +8,10 @@ import clsx from "clsx";
 import AppImages from "../../../assets/images/appImages";
 import moment from "moment";
 import { useNavigation } from "@react-navigation/native";
+import { CardTransaction } from "../../models/card.model";
 
-interface Transaction {
-    id: string;
-    type: string;
-    title: string;
-    date: Date;
-    amount: number;
-    iconUrl: string;
-    tokenData?: {
-        id: number,
-        chain: string,
-        hash: string,
-        symbol: string,
-        coinId: string,
-        tokenNos: number,
-        tokenAddress: string
-    }
-}
 interface CardTransactionItemProps {
-    item: Transaction
+    item: CardTransaction
 }
 
 const getTransactionIndicator = (type: string) => {
@@ -68,7 +52,7 @@ const CardTransactionItem = ({ item }: CardTransactionItemProps) => {
         <CyDTouchView
             key={item.id}
             className={
-                'h-[80px] flex flex-row justify-between items-center bg-white px-[10px] border-b-[1px] border-sepratorColor'
+                'h-[70px] flex flex-row justify-between items-center bg-white px-[10px] border-b border-x border-sepratorColor'
             }
             onPress={() => {
                 void intercomAnalyticsLog('card_transaction_info_clicked');
@@ -94,7 +78,7 @@ const CardTransactionItem = ({ item }: CardTransactionItemProps) => {
                 />
                 <CyDView className={'ml-[10px]'}>
                     <CyDText
-                        className={clsx('font-bold flex-wrap w-[230px]', {
+                        className={clsx('font-bold flex-wrap w-[200px]', {
                             'text-redCyD': type === 'failed',
                         })}
                         ellipsizeMode="tail"

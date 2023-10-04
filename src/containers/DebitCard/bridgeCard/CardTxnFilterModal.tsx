@@ -16,9 +16,9 @@ interface CardTxnFilterModalProps {
     navigation: any
     modalVisibilityState: [boolean, React.Dispatch<React.SetStateAction<boolean>>]
     filterState: [{
-        types: string[];
+        types: TransactionTypes[];
     }, React.Dispatch<React.SetStateAction<{
-        types: string[];
+        types: TransactionTypes[];
     }>>]
 }
 
@@ -26,7 +26,7 @@ const CardTxnFilterModal = ({ navigation, modalVisibilityState, filterState }: C
     const { t } = useTranslation();
     const [index, setIndex] = useState<number>(0);
     const [filter, setFilter] = filterState;
-    const [selectedTypes, setSelectedTypes] = useState<string[]>(filter.types === TRANSACTION_TYPES ? [] : filter.types);
+    const [selectedTypes, setSelectedTypes] = useState<TransactionTypes[]>(filter.types === TRANSACTION_TYPES ? [] : filter.types);
     const [isModalVisible, setModalVisible] = modalVisibilityState;
 
     useEffect(() => {

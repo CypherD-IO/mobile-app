@@ -1,10 +1,9 @@
 import React, { memo, useContext, useEffect, useState } from "react";
-import { CyDImageBackground, CyDSafeAreaView, CyDText, CyDView } from "../../../styles/tailwindStyles";
+import { CyDFastImage, CyDImageBackground, CyDSafeAreaView, CyDText, CyDTouchView, CyDView } from "../../../styles/tailwindStyles";
 import AppImages from "../../../../assets/images/appImages";
-import { CardProviders } from "../../../constants/enum";
+import { CardProviders, TransactionTypes } from "../../../constants/enum";
 import AnimatedCardSection from "./AnimatedCardSection";
 import { useSharedValue } from "react-native-reanimated";
-import { H_CARD_SECTION } from "./constants";
 import { AnimatedTxnList } from "./AnimatedTxnList";
 import CardScreen from "../bridgeCard/card";
 import { useIsFocused } from "@react-navigation/native";
@@ -18,7 +17,12 @@ import useAxios from "../../../core/HttpRequest";
 import * as Sentry from '@sentry/react-native';
 import SwitchView from "../../../components/v2/switchView";
 import CardTransactionItem from "../../../components/v2/CardTransactionItem";
+import { AnimatedToolBar } from "./AnimatedToolBar";
+import CardTxnFilterModal from "../bridgeCard/CardTxnFilterModal";
+import { CardTransaction } from "../../../models/card.model";
+import { RefreshControl } from "react-native";
 
+export type CardSectionHeights = 270 | 320
 interface CypherCardScreenProps {
     navigation: any
     route: { params: { hasBothProviders: boolean; cardProvider: CardProviders } };
@@ -34,13 +38,28 @@ const CypherCardScreen = ({ navigation, route }: CypherCardScreenProps) => {
     const globalContext = useContext<any>(GlobalContext);
     const cardProfile: CardProfile = globalContext.globalState.cardProfile;
 
-    const [cardBalance, setCardBalance] = useState('');
-    const [currentCardIndex, setCurrentCardIndex] = useState(0);
-    const [currentCardProvider, setCurrentCardProvider] = useState<string>(cardProvider);
-    const [recentTransactions, setRecentTransactions] = useState([]);
-    const [loadingRecentTxns, setLoadingRecentTxns] = useState(false);
-    const scrollY = useSharedValue(-H_CARD_SECTION);
+    const cardSectionHeight: CardSectionHeights = hasBothProviders ? 320 : 270;
 
+    const [cardBalance, setCardBalance] = useState('');
+    const [currentCardIndex] = useState(0); // Not setting anywhere.
+    const [currentCardProvider, setCurrentCardProvider] = useState<string>(cardProvider);
+    const [transactions, setTransactions] = useState<CardTransaction[]>([]);
+    const [filteredTransactions, setFilteredTransactions] = useState<CardTransaction[]>([]);
+    const [refreshing, setRefreshing] = useState(false);
+    const [filterModalVisible, setFilterModalVisible] = useState(false);
+    const [filter, setFilter] = useState<{
+        types: TransactionTypes[]
+    }>({
+        types: []
+    });
+
+    const scrollY = useSharedValue(-cardSectionHeight);
+
+    const onRefresh = () => {
+        setCardBalance('');
+        void fetchCardBalance();
+        void retrieveRecentTxns();
+    };
 
     useEffect(() => {
         if (isFocused && cardProfile && !currentCardProvider) {
@@ -52,13 +71,15 @@ const CypherCardScreen = ({ navigation, route }: CypherCardScreenProps) => {
             }
             setCurrentCardProvider(tempCurrentCardProvider);
         }
-    }, [isFocused]);
+    }, [cardProfile, currentCardProvider, isFocused]);
 
     useEffect(() => {
-        setCardBalance('');
-        void fetchCardBalance();
-        void retrieveRecentTxns();
+        onRefresh();
     }, [currentCardProvider]);
+
+    useEffect(() => {
+        spliceTransactions();
+    }, [filter]);
 
     const fetchCardBalance = async () => {
         const currentCard = get(cardProfile, currentCardProvider).cards[
@@ -86,19 +107,18 @@ const CypherCardScreen = ({ navigation, route }: CypherCardScreenProps) => {
         ];
         const txnURL = `/v1/cards/${currentCardProvider}/card/${String(currentCard?.cardId)}/transactions`;
         try {
-            setLoadingRecentTxns(true);
+            setRefreshing(true);
             const res = await getWithAuth(txnURL);
             if (!res.isError) {
-                const { transactions } = res.data;
-                transactions.sort((a, b) => {
+                const { transactions: txnsToSet } = res.data;
+                txnsToSet.sort((a: CardTransaction, b: CardTransaction) => {
                     return a.date < b.date ? 1 : -1;
                 });
-                // const txnsToBeSet = transactions.length >= 4 ? transactions.slice(0, 4) : transactions;
-                // setRecentTransactions(txnsToBeSet);
-                setRecentTransactions(transactions);
-                setLoadingRecentTxns(false);
+                setTransactions(txnsToSet);
+                setFilteredTransactions(txnsToSet);
+                setRefreshing(false);
             } else {
-                setLoadingRecentTxns(false);
+                setRefreshing(false);
                 const errorObject = {
                     res: JSON.stringify(res),
                     location: 'isError=true when trying to fetch recent card txns.',
@@ -106,7 +126,7 @@ const CypherCardScreen = ({ navigation, route }: CypherCardScreenProps) => {
                 Sentry.captureException(errorObject);
             }
         } catch (e) {
-            setLoadingRecentTxns(false);
+            setRefreshing(false);
             const errorObject = {
                 e,
                 location: 'Error when trying to fetch recent card txns.',
@@ -115,10 +135,32 @@ const CypherCardScreen = ({ navigation, route }: CypherCardScreenProps) => {
         }
     };
 
+    const spliceTransactions = () => {
+        if (transactions.length === 0) {
+            return [];
+        }
+
+        const filteredTxns = transactions.filter(txn => {
+            const isIncludedType = filter.types.includes(txn.type); // FILTERING THE TYPE
+            return (
+                isIncludedType
+            );
+        });
+
+        setFilteredTransactions(filteredTxns);
+    };
+
     return (
         <CyDSafeAreaView className="flex-1 bg-white">
-            <CyDImageBackground className="flex-1" source={AppImages.DEBIT_CARD_BACKGROUND} resizeMode="contain">
-                <AnimatedCardSection scrollY={scrollY}>
+            {/* TXN FILTER MODAL */}
+            <CardTxnFilterModal
+                navigation={navigation}
+                modalVisibilityState={[filterModalVisible, setFilterModalVisible]}
+                filterState={[filter, setFilter]}
+            />
+            {/* TXN FILTER MODAL */}
+            <CyDImageBackground className='h-full w-full mb-[10px]' source={AppImages.DEBIT_CARD_BACKGROUND} resizeMode="cover">
+                <AnimatedCardSection scrollY={scrollY} cardSectionHeight={cardSectionHeight}>
                     {/* SWITCH PROVIDER */}
                     {hasBothProviders && (
                         <CyDView className='flex items-center mt-[-10px] mb-[10px]'>
@@ -173,17 +215,33 @@ const CypherCardScreen = ({ navigation, route }: CypherCardScreenProps) => {
                     </CyDView>
                     {/* FUND CARD */}
                 </AnimatedCardSection>
-                <CyDView className="h-full mb-[75px] mt-[10px]">
+                <CyDView className="h-full mb-[75px] px-[10px]">
+                    {/* TOOLBAR */}
+                    <AnimatedToolBar scrollY={scrollY} cardSectionHeight={cardSectionHeight}>
+                        <CyDView className="h-[40px] flex flex-row justify-between items-center py-[5px] px-[10px] bg-white border border-sepratorColor mt-[10px] rounded-t-[24px]">
+                            <CyDText className="text-[16px] font-bold px-[10px]">{t('TRANS')}</CyDText>
+                            <CyDTouchView onPress={() => {
+                                setFilterModalVisible(true);
+                            }}>
+                                <CyDFastImage className='w-[78px] h-[25px]' source={AppImages.ACTIVITY_FILTER} />
+                            </CyDTouchView>
+                        </CyDView>
+                    </AnimatedToolBar>
+                    {/* TOOLBAR */}
+                    {/* TXN LIST */}
                     <AnimatedTxnList
                         scrollY={scrollY}
-                        data={recentTransactions}
-                        renderItem={({ item, index }: { item: any, index: number }) => {
+                        cardSectionHeight={cardSectionHeight}
+                        refreshControl={<RefreshControl refreshing={refreshing} onRefresh={onRefresh} />}
+                        data={filteredTransactions}
+                        renderItem={({ item, index }: { item: CardTransaction, index: number }) => {
                             return <CardTransactionItem key={index} item={item} />;
                         }}
                         ListEmptyComponent={<CyDView className="h-[50%] w-full justify-center items-center">
-                            <CyDText>{'No transactions yet.'}</CyDText>
+                            <CyDFastImage source={AppImages.NO_TRANSACTIONS_YET} className="h-[150px] w-[150px]" resizeMode="contain" />
                         </CyDView>}
                     />
+                    {/* TXN LIST */}
                 </CyDView>
             </CyDImageBackground>
         </CyDSafeAreaView>

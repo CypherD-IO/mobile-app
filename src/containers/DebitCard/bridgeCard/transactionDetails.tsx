@@ -3,10 +3,90 @@ import moment from 'moment';
 import React, { useContext } from 'react';
 import { useTranslation } from 'react-i18next';
 import AppImages from '../../../../assets/images/appImages';
-import { HdWalletContext, formatAmount } from '../../../core/util';
+import { HdWalletContext, formatAmount, getExplorerUrlFromBackendNames } from '../../../core/util';
 import { CyDFastImage, CyDSafeAreaView, CyDScrollView, CyDText, CyDTouchView, CyDView } from '../../../styles/tailwindStyles';
 import { sendFirebaseEvent } from '../../utilities/analyticsUtility';
-import { TransactionTypes } from '../../../constants/enum';
+import { TransactionFilterTypes, TransactionTypes } from '../../../constants/enum';
+import clsx from 'clsx';
+import { screenTitle } from '../../../constants';
+import { useNavigation } from '@react-navigation/native';
+
+const formatDate = (date: Date) => {
+  return moment(date).format('MMM DD YYYY, h:mm a');
+};
+
+const formatHash = (hash: string) => {
+  return hash === 'N/A' ? 'N/A' : hash.substring(0, 8) + '...' + hash.substring(hash.length - 8);
+};
+
+const getTransactionSign = (type: string) => {
+  switch (type.toUpperCase()) {
+    case TransactionFilterTypes.CREDIT:
+      return '+';
+    case TransactionFilterTypes.DEBIT:
+      return '-';
+    case TransactionFilterTypes.REFUND:
+      return '+';
+    default:
+      return '..';
+  }
+};
+
+const DetailItem = ({ item }: {
+  item: {
+    label: string;
+    value: any;
+  }
+}) => {
+  const { t } = useTranslation();
+  const navigation = useNavigation();
+  const isHash = item.label === t('HASH');
+  const hashIsValid = item.value.hash !== 'N/A';
+  const value = isHash ? (hashIsValid ? formatHash(item.value.hash) : item.value.hash) : item.value;
+  return (
+    <CyDView className={'flex flex-row justify-center items-center px-[8px] mb-[20px]'}>
+      <CyDView className={'w-[40%] justify-center items-start'}>
+        <CyDText className={'text-[16px]'}>{item.label}</CyDText>
+      </CyDView>
+      <CyDTouchView disabled={!(isHash && hashIsValid)} onPress={() => {
+        const chainString = item.value.chain;
+        navigation.navigate(screenTitle.TRANS_DETAIL, {
+          url: getExplorerUrlFromBackendNames(chainString, item.value.hash)
+        });
+      }} className='w-[60%] pl-[10px] justify-center items-start'>
+        <CyDText className={clsx('font-bold', { 'text-blue-500 underline': isHash && hashIsValid })}>{value}</CyDText>
+      </CyDTouchView>
+    </CyDView>
+  );
+};
+
+const TransactionDetail = ({ item }: {
+  item: {
+    icon: any;
+    title: string;
+    data: Array<{
+      label: string;
+      value: any;
+    }>;
+  }
+}) => {
+  return (
+    <CyDView className='pb-[5px] rounded-[7px] mt-[25px] bg-lightGrey'>
+      <CyDView className='flex flex-row items-center px-[8px] pt-[15px] pb-[7px] border-b-[1px] border-sepratorColor'>
+        <CyDFastImage className={'h-[20px] w-[20px] mr-[10px]'} source={item.icon} resizeMode={'contain'} />
+        <CyDText className={'text-[18px] font-extrabold'}>{item.title}</CyDText>
+      </CyDView>
+      <CyDView className={'mt-[12px]'}>
+        {item.data.map((detailItem, index) => {
+          return (
+            <DetailItem item={detailItem} key={index} />
+          );
+        })}
+      </CyDView>
+    </CyDView>
+  );
+};
+
 
 export default function TransactionDetails({ navigation, route }: { navigation: any, route: { params: any } }) {
   const { t } = useTranslation();
@@ -28,7 +108,8 @@ export default function TransactionDetails({ navigation, route }: { navigation: 
         icon: AppImages.PAYMENT_DETAILS,
         title: t('TRANSACTION_DETAILS'),
         data: [
-          { label: t('TRANSACTION_ID'), value: transaction.id }
+          { label: t('TRANSACTION_ID'), value: transaction.id },
+          { label: t('TYPE'), value: transaction.type }
         ]
       },
       {
@@ -54,6 +135,7 @@ export default function TransactionDetails({ navigation, route }: { navigation: 
     });
   } else if (transaction.type === TransactionTypes.CREDIT) {
     const dataIsAvailable = transaction.tokenData !== undefined;
+    const type = transaction.type;
     const id = dataIsAvailable ? transaction.id : 'N/A';
     const chain = dataIsAvailable ? transaction.tokenData.chain : 'N/A';
     const hash = dataIsAvailable ? transaction.tokenData.hash : 'N/A';
@@ -61,13 +143,20 @@ export default function TransactionDetails({ navigation, route }: { navigation: 
     const symbol = dataIsAvailable ? transaction.tokenData.symbol : '';
     const creditDetails = [
       {
+        icon: AppImages.PAYMENT_DETAILS,
+        title: t('TRANSACTION_DETAILS'),
+        data: [
+          { label: t('TRANSACTION_ID'), value: id },
+          { label: t('TYPE'), value: type }
+        ]
+      },
+      {
         icon: AppImages.CARD_SEL,
         title: t('LOADING_DETAILS'),
         data: [
-          { label: t('TRANSACTION_ID'), value: id },
           { label: t('CHAIN'), value: chain },
           { label: t('LOADED_AMOUNT'), value: `${String(tokenNos)} ${String(symbol.toUpperCase())}` },
-          { label: t('HASH'), value: hash },
+          { label: t('HASH'), value: { hash, chain } },
         ]
       },
     ];
@@ -77,53 +166,18 @@ export default function TransactionDetails({ navigation, route }: { navigation: 
   }
 
 
-  const formatDate = (date: Date) => {
-    return moment(date).format('MMM DD YYYY, h:mm a');
-  };
-
-  const DetailItem = ({ item }) => {
-    return (
-      <CyDView className={'flex flex-row justify-center items-center px-[8px] mb-[20px]'}>
-        <CyDView className={'w-[40%] justify-center items-start'}>
-          <CyDText className={'text-[16px]'}>{item.label}</CyDText>
-        </CyDView>
-        <CyDView className={'w-[60%] pl-[10px] justify-center items-start'}>
-          <CyDText className={'font-bold'}>{item.value}</CyDText>
-        </CyDView>
-      </CyDView>
-    );
-  };
-
-  const TransactionDetail = ({ item }) => {
-    return (
-      <CyDView className='pb-[5px] rounded-[7px] mt-[25px] bg-lightGrey'>
-        <CyDView className='flex flex-row items-center px-[8px] pt-[15px] pb-[7px] border-b-[1px] border-sepratorColor'>
-          <CyDFastImage className={'h-[20px] w-[20px] mr-[10px]'} source={item.icon} resizeMode={'contain'} />
-          <CyDText className={'text-[18px] font-extrabold'}>{item.title}</CyDText>
-        </CyDView>
-        <CyDView className={'mt-[12px]'}>
-          {item.data.map((detailItem, index) => {
-            return (
-              <DetailItem item={detailItem} key={index} />
-            );
-          })}
-        </CyDView>
-      </CyDView>
-    );
-  };
-
   return (
-    <CyDSafeAreaView>
+    <CyDSafeAreaView className='flex-1'>
       <CyDScrollView className='h-full bg-white px-[25px]'>
         <CyDView className={'flex flex-col justify-center items-center'}>
           <CyDFastImage source={{ uri: transaction.iconUrl }} className={'h-[50px] w-[50px]'} resizeMode={'contain'} />
-          <CyDText className='font-extrabold text-[45px] mt-[5px]'>{'$' + Number(transaction.amount)}</CyDText>
+          <CyDText className='font-extrabold text-[45px] mt-[5px]'>{getTransactionSign(transaction.type) + '$' + String(transaction.amount)}</CyDText>
           <CyDText>{formatDate(transaction.date)}</CyDText>
         </CyDView>
-        {transactionDetails.map((transaction, index) => {
+        {transactionDetails.map((item, index) => {
           if (!(fxCurrencySymbol === 'USD' && index === 2)) {
             return (
-              <TransactionDetail item={transaction} key={index} />
+              <TransactionDetail item={item} key={index} />
             );
           }
         })}

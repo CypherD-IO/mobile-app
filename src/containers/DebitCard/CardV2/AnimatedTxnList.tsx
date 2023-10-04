@@ -1,4 +1,4 @@
-import React, { LegacyRef, memo, ReactElement } from 'react';
+import React, { memo, ReactElement } from 'react';
 import {
     FlatListProps,
     ListRenderItem,
@@ -9,7 +9,7 @@ import Animated, {
     SharedValue,
     useAnimatedScrollHandler,
 } from 'react-native-reanimated';
-import { H_CARD_GUTTER, H_CARD_SECTION } from './constants';
+import { CardSectionHeights } from '.';
 
 export interface AnimatedTxnListProps
     extends Pick<
@@ -31,13 +31,14 @@ export interface AnimatedTxnListProps
     | Animated.Node<ListRenderItem<any> | null | undefined>
     | null
     | undefined;
-    onRef: Animated.FlatList<any> | Animated.ScrollView | null;
     scrollY: SharedValue<number>;
     refreshControl?: ReactElement;
     extraData?: any;
+    cardSectionHeight: CardSectionHeights
 }
 
 const AnimatedTxnListWithoutMemo = ({
+    cardSectionHeight,
     data,
     renderItem,
     onContentSizeChange,
@@ -46,7 +47,6 @@ const AnimatedTxnListWithoutMemo = ({
     onMomentumScrollBegin,
     onMomentumScrollEnd,
     onScrollEndDrag,
-    onRef,
     scrollY,
     refreshControl,
     ListEmptyComponent,
@@ -65,22 +65,22 @@ const AnimatedTxnListWithoutMemo = ({
         onScrollEndDrag,
         scrollEventThrottle: 1,
         // ios has over scrolling and other things which make this look and feel nicer
-        contentInset: Platform.select({ ios: { top: H_CARD_SECTION } }),
+        contentInset: Platform.select({ ios: { top: cardSectionHeight } }),
         contentOffset: Platform.select({
             ios: {
                 x: 0,
-                y: -H_CARD_SECTION,
+                y: -cardSectionHeight,
             },
         }),
         contentContainerStyle: Platform.select({
             ios: {
                 flexGrow: 1,
-                paddingBottom: H_CARD_GUTTER,
+                paddingBottom: 60,
             },
             android: {
                 flexGrow: 1,
-                paddingTop: H_CARD_SECTION,
-                paddingBottom: H_CARD_GUTTER,
+                paddingTop: cardSectionHeight,
+                paddingBottom: 60,
             },
         }),
         showsVerticalScrollIndicator: false,
@@ -112,7 +112,6 @@ const AnimatedTxnListWithoutMemo = ({
     return (
         <Animated.FlatList
             {...commonProps}
-            ref={onRef as LegacyRef<Animated.FlatList<any>>}
             data={data}
             keyExtractor={keyExtractor}
             // TODO : FlatList scrolling animation
