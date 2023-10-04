@@ -303,6 +303,22 @@ const SWAP_PENDING = { uri: `${S3_BUCKET_URL_ICONS}/swap_pending.png` };
 const SWAP_ERROR = { uri: `${S3_BUCKET_URL_ICONS}/swap_error.png` };
 const REFERRAL_REWARDS = { uri: `${S3_BUCKET_URL_ICONS}/referralRewards.png` };
 const CARD_BLOCKED = { uri: `${S3_BUCKET_URL_ICONS}/card-blocked.png` };
+const DEFI_AIRDROP = { uri: `${S3_BUCKET_URL_ICONS}/defi_airdrop.png` };
+const DEFI_DEPOSIT =  { uri: `${S3_BUCKET_URL_ICONS}/defi_deposit.png` };
+const DEFI_FARMING =  { uri: `${S3_BUCKET_URL_ICONS}/defi_farming.png` };
+const DEFI_LENDING =  { uri: `${S3_BUCKET_URL_ICONS}/defi_lending.png` };
+const DEFI_LEVERAGED_FARMING =  { uri: `${S3_BUCKET_URL_ICONS}/defi_leveragedFarming.png` };
+const DEFI_LIQUIDITY =  { uri: `${S3_BUCKET_URL_ICONS}/defi_liquidity.png` };
+const DEFI_LOCKED =  { uri: `${S3_BUCKET_URL_ICONS}/defi_locked.png` };
+const DEFI_NFT_STAKING =  { uri: `${S3_BUCKET_URL_ICONS}/defi_nftStaking.png` };
+const DEFI_OTHERS =  { uri: `${S3_BUCKET_URL_ICONS}/defi_others.png` };
+const DEFI_REWARDS =  { uri: `${S3_BUCKET_URL_ICONS}/defi_rewards.png` };
+const DEFI_STAKING =  { uri: `${S3_BUCKET_URL_ICONS}/defi_staking.png` };
+const DEFI_VESTING =  { uri: `${S3_BUCKET_URL_ICONS}/defi_vesting.png` };
+const DEFI_YEILD =  { uri: `${S3_BUCKET_URL_ICONS}/defi_yeild.png` };
+const DEFI_SUPPLY =  { uri: `${S3_BUCKET_URL_ICONS}/defi_supply.png` };
+const DEFI_DEBT =  { uri: `${S3_BUCKET_URL_ICONS}/defi_debt.png` };
+const DEFI_VALUE =  { uri: `${S3_BUCKET_URL_ICONS}/defi_value.png` };
 const PORTFOLIO_BG_S3 = {
   uri: `${S3_BUCKET_URL_ICONS}/portfolio-bg.png?${String(new Date().getDay())}`,
 };
@@ -612,5 +628,21 @@ const AppImages = {
   UNKNOWN_TXN_TOKEN,
   TXN_SELF_SUCCESS,
   TXN_SELF_ERROR,
+  DEFI_AIRDROP,
+  DEFI_DEPOSIT,
+  DEFI_FARMING,
+  DEFI_LENDING,
+  DEFI_LEVERAGED_FARMING,
+  DEFI_LIQUIDITY,
+  DEFI_LOCKED,
+  DEFI_NFT_STAKING,
+  DEFI_OTHERS,
+  DEFI_REWARDS,
+  DEFI_STAKING,
+  DEFI_VESTING,
+  DEFI_YEILD,
+  DEFI_SUPPLY,
+  DEFI_DEBT,
+  DEFI_VALUE,
 };
 export default AppImages;

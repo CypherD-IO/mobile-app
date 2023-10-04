@@ -474,10 +474,10 @@ function App() {
   const inAppUpdates = new SpInAppUpdates(
     false // isDebug
   );
-  const [updateModal, setUpdateModal] = useState<Boolean>(false);
-  const [forcedUpdate, setForcedUpdate] = useState<Boolean>(false);
+  const [updateModal, setUpdateModal] = useState<boolean>(false);
+  const [forcedUpdate, setForcedUpdate] = useState<boolean>(false);
   const [tamperedSignMessageModal, setTamperedSignMessageModal] =
-    useState<Boolean>(false);
+    useState<boolean>(false);
   const [walletConnectModalVisible, setWalletConnectModalVisible] =
     useState<boolean>(false);
   const [walletConnectModalData, setWalletConnectModalData] = useState({
@@ -805,7 +805,7 @@ function App() {
                         />
                         <DialogButton
                           text={t('LATER')}
-                          disabled={forcedUpdate !== false}
+                          disabled={forcedUpdate}
                           onPress={() => {
                             setUpdateModal(false);
                             void analytics().logEvent('update_later', {});
@@ -906,7 +906,7 @@ function App() {
                                 navigationRef
                               );
                             }}
-                            // eslint-disable-next-line @typescript-eslint/no-misused-promises
+                             
                             onStateChange={async () => {
                               const previousRouteName = routeNameRef.current;
                               const currentRouteName =

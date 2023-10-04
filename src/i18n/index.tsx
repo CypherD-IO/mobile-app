@@ -44,6 +44,7 @@ const resources = {
       TOKENS: 'Tokens',
       NFTS: 'NFTs',
       TXNS: 'History',
+      DEFI: 'DeFi',
       MY_COLLECTIONS: 'My collections',
       ETH: 'ETH',
       BROWSER_TRA_DETAIL: 'Browser Transaction History',
@@ -757,6 +758,18 @@ const resources = {
       BRIDGE_ACTIVITY: 'Bridge',
       CARD_ACTIVITY: 'Card Loading',
       LOADED_AMOUNT: 'Loaded Amount',
+      DEFI_POSITIONS: 'DeFi Positions',
+      ONLY_ACTIVE_POSITIONS: 'Only active positions',
+      PLUS:'+',
+      TOTAL_DEBT:'Total Debt',
+      TOTAL_SUPPLY: 'Total Supply',
+      TOTAL_VALUE:'Total Value',
+      TOTAL:'Total',
+      VIEWMORE:'View More',
+      DEFI_DEPOSIT:'Deposit',
+      DEFI_BORROW:'Borrow',
+      DEFI_REWARD:'Reward',
+      INACTIVE:'Inactive',
     }
   }
 };

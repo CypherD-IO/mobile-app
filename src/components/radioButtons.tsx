@@ -15,6 +15,7 @@ export default function RadioButtons (props: any) {
     setCurrent(value);
   };
 
+  
   return (
     <CyDView className={containerStyle ?? 'justify-around mt-[10px] ml-[20px]'} >
       {radioButtonsData.map((data, index) => (
@@ -26,8 +27,7 @@ export default function RadioButtons (props: any) {
             className={'h-[22px] w-[22px] rounded-[11px] border-[1.5px] border-borderColor flex flex-row justify-center items-center'}>
             {current === data
               ? <CyDView
-                className={'h-[10px] w-[10px] rounded-[5px] bg-appColor'}>
-              </CyDView>
+                className={'h-[10px] w-[10px] rounded-[5px] bg-appColor'} />
               : null}
           </CyDView>
           <CyDText className={'text-center ml-[10px] text-[16px] font-semibold'}>{data}</CyDText>

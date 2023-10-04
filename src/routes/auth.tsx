@@ -84,6 +84,7 @@ import {
 import ActivateCardScreen from '../containers/DebitCard/bridgeCard/activateCard';
 import SetPinScreen from '../containers/DebitCard/bridgeCard/setPin';
 import { useKeyboard } from '../hooks/useKeyboard';
+import { DEFIOverviewScreen } from '../containers/DeFi/DEFIOverview';
 
 const { DynamicImage, DynamicButton } = require('../styles');
 
@@ -158,7 +159,25 @@ export function PortfolioStackScreen({ navigation, route }) {
         component={PortfolioScreen}
         options={{ headerShown: false }}
       />
+      <PortfolioStack.Screen
+      name={screenTitle.DEFI_PROTOCOL_OVERVIEW_SCREEN}
+      component={DEFIOverviewScreen}
+      options={({ navigation, route }) => ({
+        headerTransparent: false,
+        headerShadowVisible: false,
+        title: '',
+        headerTitleAlign: 'center',
+        headerTitleStyle: portfolioStackScreenHeaderTitleStyles,
+        navigationOptions: {
+          tabBarVisible: false,
+        },
 
+        headerTintColor: Colors.primaryTextColor,
+        headerBackTitleVisible: false,
+        headerLeft: (props) => defaultHeaderLeft(navigation),
+      })}
+      />
+      
       <PortfolioStack.Screen
         name={screenTitle.NFT_OVERVIEW_SCREEN}
         component={NFTOverviewScreen}

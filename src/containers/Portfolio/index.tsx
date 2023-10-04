@@ -18,7 +18,7 @@ import {
   CyDView,
   CyDSafeAreaView,
 } from '../../styles/tailwindStyles';
-import { Chain, NotificationEvents } from '../../constants/server';
+import { Chain, ChainBackendNames, NotificationEvents } from '../../constants/server';
 import CopytoKeyModal from '../../components/ShowPharseModal';
 import {
   ChainHoldings,
@@ -64,13 +64,15 @@ import {
 import { BarCodeReadEvent } from 'react-native-camera';
 import { AnimatedBanner, AnimatedTabBar } from './animatedComponents';
 import { useScrollManager } from '../../hooks/useScrollManager';
-import { NFTScene, TokenScene, TXNScene } from './scenes';
+import { DeFiScene, NFTScene, TokenScene, TXNScene } from './scenes';
 import CyDTokenValue from '../../components/v2/tokenValue';
 import moment from 'moment';
 import clsx from 'clsx';
 import { isIOS } from '../../misc/checkers';
 import FilterBar from './components/FilterBar';
 import BannerCarousel from './components/BannerCarousel';
+import { DeFiFilterRefreshBar } from '../../components/deFiRefreshFilterBar';
+import { DeFiFilter, protocolOptionType } from '../../models/defi.interface';
 
 export interface PortfolioProps {
   navigation: any;
@@ -93,9 +95,18 @@ export default function Portfolio({ navigation }: PortfolioProps) {
     shouldRefreshAssets: false,
   });
   const [filterModalVisible, setFilterModalVisible] = useState(false);
-
+  const [deFiRefreshActivity, setDeFiRefreshActivity] = useState<{isRefreshing: boolean; lastRefresh: string}>({isRefreshing: false,lastRefresh:"Retrieving..."});
+  const [deFiFilters, setDeFiFilters] = useState<DeFiFilter>({
+    chain: ChainBackendNames.ALL,
+    positionTypes: [],
+    protocols: [],
+    activePositionsOnly: 'No',
+  });
+  const [deFiFilterVisible, setDeFiFilterVisible] = useState<boolean>(false);
+  const [userProtocols, setUserProtocls] = useState<protocolOptionType[]>([]);
   const tabs = [
     { key: 'token', title: t('TOKENS') },
+    { key: 'defi', title: t('DEFI') },
     { key: 'nft', title: t('NFTS') },
     { key: 'txn', title: t('TXNS') },
   ];
@@ -107,6 +118,7 @@ export default function Portfolio({ navigation }: PortfolioProps) {
       title: t('TOKENS'),
       scrollableType: ScrollableType.FLATLIST,
     },
+    { key: 'defi', title: t('DEFI'), scrollableType: ScrollableType.FLATLIST },
     { key: 'nft', title: t('NFTS'), scrollableType: ScrollableType.SCROLLVIEW },
     { key: 'txn', title: t('TXNS'), scrollableType: ScrollableType.FLATLIST },
   ];
@@ -221,6 +233,12 @@ export default function Portfolio({ navigation }: PortfolioProps) {
     }
   }, [isFocused]);
 
+  useEffect(()=>{
+    if(portfolioState){
+    const selectedChain = portfolioState?.statePortfolio.selectedChain.backendName;
+    if(deFiFilters.chain !== selectedChain) setDeFiFilters(prev =>({...prev, chain: selectedChain}));
+  }
+  },[portfolioState.statePortfolio.selectedChain.symbol]);
   const constructTokenMeta = (localPortfolio: any, event: string) => {
     switch (event) {
       case NotificationEvents.EVMOS_STAKING: {
@@ -568,6 +586,29 @@ export default function Portfolio({ navigation }: PortfolioProps) {
               />
             </CyDView>
           );
+        case 'defi':
+          return (
+            <CyDView className='flex-1 h-full'>
+              <AnimatedTabBar scrollY={scrollY} bannerHeight={bannerHeight}>
+                {renderTabBarFooter(tab.key)}
+              </AnimatedTabBar>
+              <DeFiScene
+                {...sceneProps}
+                routeKey={tab.key}
+                scrollY={scrollY}
+                navigation={navigation}
+                bannerHeight={bannerHeight}
+                setRefreshActivity={setDeFiRefreshActivity}
+                refreshActivity={deFiRefreshActivity}
+                filters={deFiFilters} 
+                setFilters={setDeFiFilters} 
+                userProtocols={userProtocols}
+                setUserProtocols={setUserProtocls}
+                filterVisible={deFiFilterVisible}
+                setFilterVisible={setDeFiFilterVisible}
+              />
+            </CyDView>
+          );
         case 'nft':
           return (
             <CyDView className='flex-1 h-full'>
@@ -609,6 +650,7 @@ export default function Portfolio({ navigation }: PortfolioProps) {
     [getRefForKey, isVerifyCoinChecked, scrollY]
   );
 
+  
   const renderTabBarFooter = useCallback(
     (tabKey: string) => {
       switch (tabKey) {
@@ -620,6 +662,18 @@ export default function Portfolio({ navigation }: PortfolioProps) {
                 isVerifyCoinChecked,
                 setIsVerifyCoinChecked,
               ]}
+            />
+          );
+        case 'defi':
+          return (
+            <DeFiFilterRefreshBar 
+              isRefreshing={deFiRefreshActivity.isRefreshing}  
+              lastRefreshed={deFiRefreshActivity.lastRefresh} 
+              filters={deFiFilters} 
+              setFilters={setDeFiFilters} 
+              isFilterVisible={deFiFilterVisible} 
+              setFilterVisible={setDeFiFilterVisible}
+              userProtocols={userProtocols}
             />
           );
         case 'nft':

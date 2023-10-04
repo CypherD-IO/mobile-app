@@ -3,6 +3,7 @@ import AsyncStorage from '@react-native-async-storage/async-storage';
 import { PORTFOLIO_EMPTY } from '../reducers/portfolio_reducer';
 import * as Sentry from '@sentry/react-native';
 import { advancedSettingsInitialState, IAdvancedSettingsData } from '../containers/Options/advancedSettings';
+import { DefiAllocation, DefiData, DefiResponse } from '../models/defi.interface';
 
 export const storePortfolioData = async (value: any, ethereum: { address: any }, portfolioState: { dispatchPortfolio: (arg0: { value: { portfolioState: string } }) => void }, key = '') => {
   try {
@@ -24,6 +25,27 @@ export const getPortfolioData = async (ethereum: { address: any }, portfolioStat
   }
 };
 
+export const storeDeFiData = async (data: {
+  iat: string;
+  rawData: DefiResponse;
+  filteredData: DefiData;
+},key='') =>{
+  try {
+    const jsonValue = JSON.stringify(data);
+    await AsyncStorage.setItem(`deFiData${key}`, jsonValue);
+  } catch (error) {
+    Sentry.captureException(error);
+  }
+};
+
+export const getDeFiData = async (key='')=>{
+  try {
+    const jsonValue = await AsyncStorage.getItem(`deFiData${key}`);
+    return (jsonValue != null) ? JSON.parse(jsonValue) : null;
+  } catch (error) {
+    Sentry.captureException(error);
+  }
+};
 export const storeConnectWalletData = async (value: any, address: string) => {
   try {
     const jsonValue = JSON.stringify({ data: value });
