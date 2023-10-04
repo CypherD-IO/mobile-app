@@ -46,6 +46,49 @@ export const getPlatformVersion = () => {
   return Platform.Version;
 };
 
+export function getExplorerUrlFromBackendNames(chain: string, hash: string) {
+  switch (chain) {
+    case ChainBackendNames.ETH:
+      return `https://etherscan.io/tx/${hash}`;
+    case ChainBackendNames.AVALANCHE:
+      return `https://snowtrace.io/tx/${hash}`;
+    case ChainBackendNames.BSC:
+      return `https://bscscan.com/tx/${hash}`;
+    case ChainBackendNames.POLYGON:
+      return `https://polygonscan.com/tx/${hash}`;
+    case ChainBackendNames.SHARDEUM:
+      return `https://explorer-dapps.shardeum.org/transaction/${hash}`;
+    case ChainBackendNames.SHARDEUM_SPHINX:
+      return `https://explorer-sphinx.shardeum.org/transaction/${hash}`;
+    case ChainBackendNames.ARBITRUM:
+      return `https://arbiscan.io/tx/${hash}`;
+    case ChainBackendNames.OPTIMISM:
+      return `https://optimistic.etherscan.io/tx/${hash}`;
+    case ChainBackendNames.BASE:
+      return `https://basescan.org/tx/${hash}`;
+    case ChainBackendNames.POLYGON_ZKEVM:
+      return `https://zkevm.polygonscan.com/tx/${hash}`;
+    case ChainBackendNames.ZKSYNC_ERA:
+      return `https://www.oklink.com/zksync/tx/${hash}`;
+    case ChainBackendNames.FANTOM:
+      return `https://ftmscan.com/tx/${hash}`;
+    case ChainBackendNames.EVMOS:
+      return `https://escan.live/tx/${hash}`;
+    case ChainBackendNames.COSMOS:
+      return `https://www.mintscan.io/cosmos/txs/${hash}`;
+    case ChainBackendNames.OSMOSIS:
+      return `https://www.mintscan.io/osmosis/txs/${hash}`;
+    case ChainBackendNames.JUNO:
+      return `https://www.mintscan.io/juno/txs/${hash}`;
+    case ChainBackendNames.STARGAZE:
+      return `https://www.mintscan.io/stargaze/txs/${hash}`;
+    case ChainBackendNames.NOBLE:
+      return `https://www.mintscan.io/noble/txs/${hash}`;
+    default:
+      return '';
+  }
+}
+
 export function getExplorerUrl(chainSymbol: string, chainName: string, hash: string) {
   switch (chainSymbol) {
     case CHAIN_ETH.symbol:

@@ -594,12 +594,3 @@ export default function CardScreen({
     />
   );
 }
-
-CardScreen.propTypes = {
-  card: PropTypes.shape({
-    cardId: PropTypes.number.isRequired,
-    last4: PropTypes.string.isRequired,
-    type: PropTypes.string.isRequired,
-    status: PropTypes.string.isRequired,
-  }).isRequired,
-};

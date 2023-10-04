@@ -1,5 +1,4 @@
 import React, { useEffect, useState } from 'react';
-import AppImages from '../../assets/images/appImages';
 import { CyDText, CyDTouchView, CyDView } from '../styles/tailwindStyles';
 
 export default function CheckBoxes(props: any) {
