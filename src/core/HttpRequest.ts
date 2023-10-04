@@ -40,7 +40,6 @@ export default function useAxios() {
       Accept: 'application/json',
       'Content-Type': 'application/json',
       Authorization: `Bearer ${String(token)}`,
-      environment: 'development',
     },
   });
 
