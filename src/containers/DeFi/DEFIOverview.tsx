@@ -80,7 +80,7 @@ const RenderType = ({type}:{type:PositionTypeData}) =>{
             });
           });
           return (
-            <CyDView className="px-[8px] mt-[12px]">
+            <CyDView className="px-[8px] mt-[12px]" key={`${holding.type}-${holding.chain}-${index}`}>
               <CyDView className="flex flex-row justify-start items-center mb-[4px]">
                 <CyDFastImage
                 source={holding.chainLogo}

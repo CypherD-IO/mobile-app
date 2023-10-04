@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import AppImages from '../../assets/images/appImages';
 import { CyDFastImage, CyDScrollView, CyDText, CyDTouchView, CyDView } from '../styles/tailwindStyles';
+import clsx from 'clsx';
 
 export default function DeFiCheckBox(props: any) {
   const { radioButtonsData, onPressRadioButton, initialValues = [] }: {
@@ -31,7 +32,9 @@ export default function DeFiCheckBox(props: any) {
           className='flex flex-row mb-[23px]'
           >
           <CyDView
-            className={`h-[21px] w-[21px] ${current.includes(data.value) ? 'bg-appColor' : ''} rounded-[4px] border-[1.5px] border-borderColor flex flex-row justify-center items-center`}
+            className={clsx('h-[21px] w-[21px]  rounded-[4px] border-[1.5px] border-borderColor flex flex-row justify-center items-center',{
+              'bg-appColor':current.includes(data.value)
+            })}
           />
             <CyDFastImage
             source={data.logo}
