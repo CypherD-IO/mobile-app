@@ -1,6 +1,7 @@
 import { ApplicationName } from './enum';
 import { ChainBackendNames } from './server';
-export const INJECTED_WEB3_CDN = 'https://public.cypherd.io/js/injected.web3.js';
+export const INJECTED_WEB3_CDN =
+  'https://public.cypherd.io/js/injected.web3.js';
 
 export const gasFeeReservation: Record<ChainBackendNames, number> = {
   ETH: 0.0006,
@@ -15,13 +16,12 @@ export const gasFeeReservation: Record<ChainBackendNames, number> = {
   EVMOS: 0.02,
   JUNO: 0.007,
   STARGAZE: 0.1,
-  NOBLE: 0.1,
+  NOBLE: 0,
   SHARDEUM: 0.01,
   SHARDEUM_SPHINX: 0.01,
   ZKSYNC_ERA: 0.0006, // TODO
   BASE: 0.0006, // TODO
   POLYGON_ZKEVM: 0.0006, // TODO
-
 };
 
 export const nativeTokenMapping: Record<ChainBackendNames, string> = {
@@ -50,55 +50,514 @@ export const MINIMUM_TRANSFER_AMOUNT_ETH = 50;
 export const months = [
   {
     value: 'Jan',
-    label: 'January'
+    label: 'January',
   },
   {
     value: 'Feb',
-    label: 'February'
+    label: 'February',
   },
   {
     value: 'Mar',
-    label: 'March'
+    label: 'March',
   },
   {
     value: 'Apr',
-    label: 'April'
+    label: 'April',
   },
   {
     value: 'May',
-    label: 'May'
+    label: 'May',
   },
   {
     value: 'Jun',
-    label: 'June'
+    label: 'June',
   },
   {
     value: 'Jul',
-    label: 'July'
+    label: 'July',
   },
   {
     value: 'Aug',
-    label: 'August'
+    label: 'August',
   },
   {
     value: 'Sep',
-    label: 'September'
+    label: 'September',
   },
   {
     value: 'Oct',
-    label: 'October'
+    label: 'October',
   },
   {
     value: 'Nov',
-    label: 'November'
+    label: 'November',
   },
   {
     value: 'Dec',
-    label: 'December'
-  }
+    label: 'December',
+  },
 ];
 
-export const ensAbi = [{ inputs: [{ internalType: 'contract ENS', name: '_ens', type: 'address' }], payable: false, stateMutability: 'nonpayable', type: 'constructor' }, { anonymous: false, inputs: [{ indexed: true, internalType: 'bytes32', name: 'node', type: 'bytes32' }, { indexed: true, internalType: 'uint256', name: 'contentType', type: 'uint256' }], name: 'ABIChanged', type: 'event' }, { anonymous: false, inputs: [{ indexed: true, internalType: 'bytes32', name: 'node', type: 'bytes32' }, { indexed: false, internalType: 'address', name: 'a', type: 'address' }], name: 'AddrChanged', type: 'event' }, { anonymous: false, inputs: [{ indexed: true, internalType: 'bytes32', name: 'node', type: 'bytes32' }, { indexed: false, internalType: 'uint256', name: 'coinType', type: 'uint256' }, { indexed: false, internalType: 'bytes', name: 'newAddress', type: 'bytes' }], name: 'AddressChanged', type: 'event' }, { anonymous: false, inputs: [{ indexed: true, internalType: 'bytes32', name: 'node', type: 'bytes32' }, { indexed: true, internalType: 'address', name: 'owner', type: 'address' }, { indexed: true, internalType: 'address', name: 'target', type: 'address' }, { indexed: false, internalType: 'bool', name: 'isAuthorised', type: 'bool' }], name: 'AuthorisationChanged', type: 'event' }, { anonymous: false, inputs: [{ indexed: true, internalType: 'bytes32', name: 'node', type: 'bytes32' }, { indexed: false, internalType: 'bytes', name: 'hash', type: 'bytes' }], name: 'ContenthashChanged', type: 'event' }, { anonymous: false, inputs: [{ indexed: true, internalType: 'bytes32', name: 'node', type: 'bytes32' }, { indexed: false, internalType: 'bytes', name: 'name', type: 'bytes' }, { indexed: false, internalType: 'uint16', name: 'resource', type: 'uint16' }, { indexed: false, internalType: 'bytes', name: 'record', type: 'bytes' }], name: 'DNSRecordChanged', type: 'event' }, { anonymous: false, inputs: [{ indexed: true, internalType: 'bytes32', name: 'node', type: 'bytes32' }, { indexed: false, internalType: 'bytes', name: 'name', type: 'bytes' }, { indexed: false, internalType: 'uint16', name: 'resource', type: 'uint16' }], name: 'DNSRecordDeleted', type: 'event' }, { anonymous: false, inputs: [{ indexed: true, internalType: 'bytes32', name: 'node', type: 'bytes32' }], name: 'DNSZoneCleared', type: 'event' }, { anonymous: false, inputs: [{ indexed: true, internalType: 'bytes32', name: 'node', type: 'bytes32' }, { indexed: true, internalType: 'bytes4', name: 'interfaceID', type: 'bytes4' }, { indexed: false, internalType: 'address', name: 'implementer', type: 'address' }], name: 'InterfaceChanged', type: 'event' }, { anonymous: false, inputs: [{ indexed: true, internalType: 'bytes32', name: 'node', type: 'bytes32' }, { indexed: false, internalType: 'string', name: 'name', type: 'string' }], name: 'NameChanged', type: 'event' }, { anonymous: false, inputs: [{ indexed: true, internalType: 'bytes32', name: 'node', type: 'bytes32' }, { indexed: false, internalType: 'bytes32', name: 'x', type: 'bytes32' }, { indexed: false, internalType: 'bytes32', name: 'y', type: 'bytes32' }], name: 'PubkeyChanged', type: 'event' }, { anonymous: false, inputs: [{ indexed: true, internalType: 'bytes32', name: 'node', type: 'bytes32' }, { indexed: true, internalType: 'string', name: 'indexedKey', type: 'string' }, { indexed: false, internalType: 'string', name: 'key', type: 'string' }], name: 'TextChanged', type: 'event' }, { constant: true, inputs: [{ internalType: 'bytes32', name: 'node', type: 'bytes32' }, { internalType: 'uint256', name: 'contentTypes', type: 'uint256' }], name: 'ABI', outputs: [{ internalType: 'uint256', name: '', type: 'uint256' }, { internalType: 'bytes', name: '', type: 'bytes' }], payable: false, stateMutability: 'view', type: 'function' }, { constant: true, inputs: [{ internalType: 'bytes32', name: 'node', type: 'bytes32' }], name: 'addr', outputs: [{ internalType: 'address payable', name: '', type: 'address' }], payable: false, stateMutability: 'view', type: 'function' }, { constant: true, inputs: [{ internalType: 'bytes32', name: 'node', type: 'bytes32' }, { internalType: 'uint256', name: 'coinType', type: 'uint256' }], name: 'addr', outputs: [{ internalType: 'bytes', name: '', type: 'bytes' }], payable: false, stateMutability: 'view', type: 'function' }, { constant: true, inputs: [{ internalType: 'bytes32', name: '', type: 'bytes32' }, { internalType: 'address', name: '', type: 'address' }, { internalType: 'address', name: '', type: 'address' }], name: 'authorisations', outputs: [{ internalType: 'bool', name: '', type: 'bool' }], payable: false, stateMutability: 'view', type: 'function' }, { constant: false, inputs: [{ internalType: 'bytes32', name: 'node', type: 'bytes32' }], name: 'clearDNSZone', outputs: [], payable: false, stateMutability: 'nonpayable', type: 'function' }, { constant: true, inputs: [{ internalType: 'bytes32', name: 'node', type: 'bytes32' }], name: 'contenthash', outputs: [{ internalType: 'bytes', name: '', type: 'bytes' }], payable: false, stateMutability: 'view', type: 'function' }, { constant: true, inputs: [{ internalType: 'bytes32', name: 'node', type: 'bytes32' }, { internalType: 'bytes32', name: 'name', type: 'bytes32' }, { internalType: 'uint16', name: 'resource', type: 'uint16' }], name: 'dnsRecord', outputs: [{ internalType: 'bytes', name: '', type: 'bytes' }], payable: false, stateMutability: 'view', type: 'function' }, { constant: true, inputs: [{ internalType: 'bytes32', name: 'node', type: 'bytes32' }, { internalType: 'bytes32', name: 'name', type: 'bytes32' }], name: 'hasDNSRecords', outputs: [{ internalType: 'bool', name: '', type: 'bool' }], payable: false, stateMutability: 'view', type: 'function' }, { constant: true, inputs: [{ internalType: 'bytes32', name: 'node', type: 'bytes32' }, { internalType: 'bytes4', name: 'interfaceID', type: 'bytes4' }], name: 'interfaceImplementer', outputs: [{ internalType: 'address', name: '', type: 'address' }], payable: false, stateMutability: 'view', type: 'function' }, { constant: false, inputs: [{ internalType: 'bytes[]', name: 'data', type: 'bytes[]' }], name: 'multicall', outputs: [{ internalType: 'bytes[]', name: 'results', type: 'bytes[]' }], payable: false, stateMutability: 'nonpayable', type: 'function' }, { constant: true, inputs: [{ internalType: 'bytes32', name: 'node', type: 'bytes32' }], name: 'name', outputs: [{ internalType: 'string', name: '', type: 'string' }], payable: false, stateMutability: 'view', type: 'function' }, { constant: true, inputs: [{ internalType: 'bytes32', name: 'node', type: 'bytes32' }], name: 'pubkey', outputs: [{ internalType: 'bytes32', name: 'x', type: 'bytes32' }, { internalType: 'bytes32', name: 'y', type: 'bytes32' }], payable: false, stateMutability: 'view', type: 'function' }, { constant: false, inputs: [{ internalType: 'bytes32', name: 'node', type: 'bytes32' }, { internalType: 'uint256', name: 'contentType', type: 'uint256' }, { internalType: 'bytes', name: 'data', type: 'bytes' }], name: 'setABI', outputs: [], payable: false, stateMutability: 'nonpayable', type: 'function' }, { constant: false, inputs: [{ internalType: 'bytes32', name: 'node', type: 'bytes32' }, { internalType: 'uint256', name: 'coinType', type: 'uint256' }, { internalType: 'bytes', name: 'a', type: 'bytes' }], name: 'setAddr', outputs: [], payable: false, stateMutability: 'nonpayable', type: 'function' }, { constant: false, inputs: [{ internalType: 'bytes32', name: 'node', type: 'bytes32' }, { internalType: 'address', name: 'a', type: 'address' }], name: 'setAddr', outputs: [], payable: false, stateMutability: 'nonpayable', type: 'function' }, { constant: false, inputs: [{ internalType: 'bytes32', name: 'node', type: 'bytes32' }, { internalType: 'address', name: 'target', type: 'address' }, { internalType: 'bool', name: 'isAuthorised', type: 'bool' }], name: 'setAuthorisation', outputs: [], payable: false, stateMutability: 'nonpayable', type: 'function' }, { constant: false, inputs: [{ internalType: 'bytes32', name: 'node', type: 'bytes32' }, { internalType: 'bytes', name: 'hash', type: 'bytes' }], name: 'setContenthash', outputs: [], payable: false, stateMutability: 'nonpayable', type: 'function' }, { constant: false, inputs: [{ internalType: 'bytes32', name: 'node', type: 'bytes32' }, { internalType: 'bytes', name: 'data', type: 'bytes' }], name: 'setDNSRecords', outputs: [], payable: false, stateMutability: 'nonpayable', type: 'function' }, { constant: false, inputs: [{ internalType: 'bytes32', name: 'node', type: 'bytes32' }, { internalType: 'bytes4', name: 'interfaceID', type: 'bytes4' }, { internalType: 'address', name: 'implementer', type: 'address' }], name: 'setInterface', outputs: [], payable: false, stateMutability: 'nonpayable', type: 'function' }, { constant: false, inputs: [{ internalType: 'bytes32', name: 'node', type: 'bytes32' }, { internalType: 'string', name: 'name', type: 'string' }], name: 'setName', outputs: [], payable: false, stateMutability: 'nonpayable', type: 'function' }, { constant: false, inputs: [{ internalType: 'bytes32', name: 'node', type: 'bytes32' }, { internalType: 'bytes32', name: 'x', type: 'bytes32' }, { internalType: 'bytes32', name: 'y', type: 'bytes32' }], name: 'setPubkey', outputs: [], payable: false, stateMutability: 'nonpayable', type: 'function' }, { constant: false, inputs: [{ internalType: 'bytes32', name: 'node', type: 'bytes32' }, { internalType: 'string', name: 'key', type: 'string' }, { internalType: 'string', name: 'value', type: 'string' }], name: 'setText', outputs: [], payable: false, stateMutability: 'nonpayable', type: 'function' }, { constant: true, inputs: [{ internalType: 'bytes4', name: 'interfaceID', type: 'bytes4' }], name: 'supportsInterface', outputs: [{ internalType: 'bool', name: '', type: 'bool' }], payable: false, stateMutability: 'pure', type: 'function' }, { constant: true, inputs: [{ internalType: 'bytes32', name: 'node', type: 'bytes32' }, { internalType: 'string', name: 'key', type: 'string' }], name: 'text', outputs: [{ internalType: 'string', name: '', type: 'string' }], payable: false, stateMutability: 'view', type: 'function' }];
+export const ensAbi = [
+  {
+    inputs: [{ internalType: 'contract ENS', name: '_ens', type: 'address' }],
+    payable: false,
+    stateMutability: 'nonpayable',
+    type: 'constructor',
+  },
+  {
+    anonymous: false,
+    inputs: [
+      { indexed: true, internalType: 'bytes32', name: 'node', type: 'bytes32' },
+      {
+        indexed: true,
+        internalType: 'uint256',
+        name: 'contentType',
+        type: 'uint256',
+      },
+    ],
+    name: 'ABIChanged',
+    type: 'event',
+  },
+  {
+    anonymous: false,
+    inputs: [
+      { indexed: true, internalType: 'bytes32', name: 'node', type: 'bytes32' },
+      { indexed: false, internalType: 'address', name: 'a', type: 'address' },
+    ],
+    name: 'AddrChanged',
+    type: 'event',
+  },
+  {
+    anonymous: false,
+    inputs: [
+      { indexed: true, internalType: 'bytes32', name: 'node', type: 'bytes32' },
+      {
+        indexed: false,
+        internalType: 'uint256',
+        name: 'coinType',
+        type: 'uint256',
+      },
+      {
+        indexed: false,
+        internalType: 'bytes',
+        name: 'newAddress',
+        type: 'bytes',
+      },
+    ],
+    name: 'AddressChanged',
+    type: 'event',
+  },
+  {
+    anonymous: false,
+    inputs: [
+      { indexed: true, internalType: 'bytes32', name: 'node', type: 'bytes32' },
+      {
+        indexed: true,
+        internalType: 'address',
+        name: 'owner',
+        type: 'address',
+      },
+      {
+        indexed: true,
+        internalType: 'address',
+        name: 'target',
+        type: 'address',
+      },
+      {
+        indexed: false,
+        internalType: 'bool',
+        name: 'isAuthorised',
+        type: 'bool',
+      },
+    ],
+    name: 'AuthorisationChanged',
+    type: 'event',
+  },
+  {
+    anonymous: false,
+    inputs: [
+      { indexed: true, internalType: 'bytes32', name: 'node', type: 'bytes32' },
+      { indexed: false, internalType: 'bytes', name: 'hash', type: 'bytes' },
+    ],
+    name: 'ContenthashChanged',
+    type: 'event',
+  },
+  {
+    anonymous: false,
+    inputs: [
+      { indexed: true, internalType: 'bytes32', name: 'node', type: 'bytes32' },
+      { indexed: false, internalType: 'bytes', name: 'name', type: 'bytes' },
+      {
+        indexed: false,
+        internalType: 'uint16',
+        name: 'resource',
+        type: 'uint16',
+      },
+      { indexed: false, internalType: 'bytes', name: 'record', type: 'bytes' },
+    ],
+    name: 'DNSRecordChanged',
+    type: 'event',
+  },
+  {
+    anonymous: false,
+    inputs: [
+      { indexed: true, internalType: 'bytes32', name: 'node', type: 'bytes32' },
+      { indexed: false, internalType: 'bytes', name: 'name', type: 'bytes' },
+      {
+        indexed: false,
+        internalType: 'uint16',
+        name: 'resource',
+        type: 'uint16',
+      },
+    ],
+    name: 'DNSRecordDeleted',
+    type: 'event',
+  },
+  {
+    anonymous: false,
+    inputs: [
+      { indexed: true, internalType: 'bytes32', name: 'node', type: 'bytes32' },
+    ],
+    name: 'DNSZoneCleared',
+    type: 'event',
+  },
+  {
+    anonymous: false,
+    inputs: [
+      { indexed: true, internalType: 'bytes32', name: 'node', type: 'bytes32' },
+      {
+        indexed: true,
+        internalType: 'bytes4',
+        name: 'interfaceID',
+        type: 'bytes4',
+      },
+      {
+        indexed: false,
+        internalType: 'address',
+        name: 'implementer',
+        type: 'address',
+      },
+    ],
+    name: 'InterfaceChanged',
+    type: 'event',
+  },
+  {
+    anonymous: false,
+    inputs: [
+      { indexed: true, internalType: 'bytes32', name: 'node', type: 'bytes32' },
+      { indexed: false, internalType: 'string', name: 'name', type: 'string' },
+    ],
+    name: 'NameChanged',
+    type: 'event',
+  },
+  {
+    anonymous: false,
+    inputs: [
+      { indexed: true, internalType: 'bytes32', name: 'node', type: 'bytes32' },
+      { indexed: false, internalType: 'bytes32', name: 'x', type: 'bytes32' },
+      { indexed: false, internalType: 'bytes32', name: 'y', type: 'bytes32' },
+    ],
+    name: 'PubkeyChanged',
+    type: 'event',
+  },
+  {
+    anonymous: false,
+    inputs: [
+      { indexed: true, internalType: 'bytes32', name: 'node', type: 'bytes32' },
+      {
+        indexed: true,
+        internalType: 'string',
+        name: 'indexedKey',
+        type: 'string',
+      },
+      { indexed: false, internalType: 'string', name: 'key', type: 'string' },
+    ],
+    name: 'TextChanged',
+    type: 'event',
+  },
+  {
+    constant: true,
+    inputs: [
+      { internalType: 'bytes32', name: 'node', type: 'bytes32' },
+      { internalType: 'uint256', name: 'contentTypes', type: 'uint256' },
+    ],
+    name: 'ABI',
+    outputs: [
+      { internalType: 'uint256', name: '', type: 'uint256' },
+      { internalType: 'bytes', name: '', type: 'bytes' },
+    ],
+    payable: false,
+    stateMutability: 'view',
+    type: 'function',
+  },
+  {
+    constant: true,
+    inputs: [{ internalType: 'bytes32', name: 'node', type: 'bytes32' }],
+    name: 'addr',
+    outputs: [{ internalType: 'address payable', name: '', type: 'address' }],
+    payable: false,
+    stateMutability: 'view',
+    type: 'function',
+  },
+  {
+    constant: true,
+    inputs: [
+      { internalType: 'bytes32', name: 'node', type: 'bytes32' },
+      { internalType: 'uint256', name: 'coinType', type: 'uint256' },
+    ],
+    name: 'addr',
+    outputs: [{ internalType: 'bytes', name: '', type: 'bytes' }],
+    payable: false,
+    stateMutability: 'view',
+    type: 'function',
+  },
+  {
+    constant: true,
+    inputs: [
+      { internalType: 'bytes32', name: '', type: 'bytes32' },
+      { internalType: 'address', name: '', type: 'address' },
+      { internalType: 'address', name: '', type: 'address' },
+    ],
+    name: 'authorisations',
+    outputs: [{ internalType: 'bool', name: '', type: 'bool' }],
+    payable: false,
+    stateMutability: 'view',
+    type: 'function',
+  },
+  {
+    constant: false,
+    inputs: [{ internalType: 'bytes32', name: 'node', type: 'bytes32' }],
+    name: 'clearDNSZone',
+    outputs: [],
+    payable: false,
+    stateMutability: 'nonpayable',
+    type: 'function',
+  },
+  {
+    constant: true,
+    inputs: [{ internalType: 'bytes32', name: 'node', type: 'bytes32' }],
+    name: 'contenthash',
+    outputs: [{ internalType: 'bytes', name: '', type: 'bytes' }],
+    payable: false,
+    stateMutability: 'view',
+    type: 'function',
+  },
+  {
+    constant: true,
+    inputs: [
+      { internalType: 'bytes32', name: 'node', type: 'bytes32' },
+      { internalType: 'bytes32', name: 'name', type: 'bytes32' },
+      { internalType: 'uint16', name: 'resource', type: 'uint16' },
+    ],
+    name: 'dnsRecord',
+    outputs: [{ internalType: 'bytes', name: '', type: 'bytes' }],
+    payable: false,
+    stateMutability: 'view',
+    type: 'function',
+  },
+  {
+    constant: true,
+    inputs: [
+      { internalType: 'bytes32', name: 'node', type: 'bytes32' },
+      { internalType: 'bytes32', name: 'name', type: 'bytes32' },
+    ],
+    name: 'hasDNSRecords',
+    outputs: [{ internalType: 'bool', name: '', type: 'bool' }],
+    payable: false,
+    stateMutability: 'view',
+    type: 'function',
+  },
+  {
+    constant: true,
+    inputs: [
+      { internalType: 'bytes32', name: 'node', type: 'bytes32' },
+      { internalType: 'bytes4', name: 'interfaceID', type: 'bytes4' },
+    ],
+    name: 'interfaceImplementer',
+    outputs: [{ internalType: 'address', name: '', type: 'address' }],
+    payable: false,
+    stateMutability: 'view',
+    type: 'function',
+  },
+  {
+    constant: false,
+    inputs: [{ internalType: 'bytes[]', name: 'data', type: 'bytes[]' }],
+    name: 'multicall',
+    outputs: [{ internalType: 'bytes[]', name: 'results', type: 'bytes[]' }],
+    payable: false,
+    stateMutability: 'nonpayable',
+    type: 'function',
+  },
+  {
+    constant: true,
+    inputs: [{ internalType: 'bytes32', name: 'node', type: 'bytes32' }],
+    name: 'name',
+    outputs: [{ internalType: 'string', name: '', type: 'string' }],
+    payable: false,
+    stateMutability: 'view',
+    type: 'function',
+  },
+  {
+    constant: true,
+    inputs: [{ internalType: 'bytes32', name: 'node', type: 'bytes32' }],
+    name: 'pubkey',
+    outputs: [
+      { internalType: 'bytes32', name: 'x', type: 'bytes32' },
+      { internalType: 'bytes32', name: 'y', type: 'bytes32' },
+    ],
+    payable: false,
+    stateMutability: 'view',
+    type: 'function',
+  },
+  {
+    constant: false,
+    inputs: [
+      { internalType: 'bytes32', name: 'node', type: 'bytes32' },
+      { internalType: 'uint256', name: 'contentType', type: 'uint256' },
+      { internalType: 'bytes', name: 'data', type: 'bytes' },
+    ],
+    name: 'setABI',
+    outputs: [],
+    payable: false,
+    stateMutability: 'nonpayable',
+    type: 'function',
+  },
+  {
+    constant: false,
+    inputs: [
+      { internalType: 'bytes32', name: 'node', type: 'bytes32' },
+      { internalType: 'uint256', name: 'coinType', type: 'uint256' },
+      { internalType: 'bytes', name: 'a', type: 'bytes' },
+    ],
+    name: 'setAddr',
+    outputs: [],
+    payable: false,
+    stateMutability: 'nonpayable',
+    type: 'function',
+  },
+  {
+    constant: false,
+    inputs: [
+      { internalType: 'bytes32', name: 'node', type: 'bytes32' },
+      { internalType: 'address', name: 'a', type: 'address' },
+    ],
+    name: 'setAddr',
+    outputs: [],
+    payable: false,
+    stateMutability: 'nonpayable',
+    type: 'function',
+  },
+  {
+    constant: false,
+    inputs: [
+      { internalType: 'bytes32', name: 'node', type: 'bytes32' },
+      { internalType: 'address', name: 'target', type: 'address' },
+      { internalType: 'bool', name: 'isAuthorised', type: 'bool' },
+    ],
+    name: 'setAuthorisation',
+    outputs: [],
+    payable: false,
+    stateMutability: 'nonpayable',
+    type: 'function',
+  },
+  {
+    constant: false,
+    inputs: [
+      { internalType: 'bytes32', name: 'node', type: 'bytes32' },
+      { internalType: 'bytes', name: 'hash', type: 'bytes' },
+    ],
+    name: 'setContenthash',
+    outputs: [],
+    payable: false,
+    stateMutability: 'nonpayable',
+    type: 'function',
+  },
+  {
+    constant: false,
+    inputs: [
+      { internalType: 'bytes32', name: 'node', type: 'bytes32' },
+      { internalType: 'bytes', name: 'data', type: 'bytes' },
+    ],
+    name: 'setDNSRecords',
+    outputs: [],
+    payable: false,
+    stateMutability: 'nonpayable',
+    type: 'function',
+  },
+  {
+    constant: false,
+    inputs: [
+      { internalType: 'bytes32', name: 'node', type: 'bytes32' },
+      { internalType: 'bytes4', name: 'interfaceID', type: 'bytes4' },
+      { internalType: 'address', name: 'implementer', type: 'address' },
+    ],
+    name: 'setInterface',
+    outputs: [],
+    payable: false,
+    stateMutability: 'nonpayable',
+    type: 'function',
+  },
+  {
+    constant: false,
+    inputs: [
+      { internalType: 'bytes32', name: 'node', type: 'bytes32' },
+      { internalType: 'string', name: 'name', type: 'string' },
+    ],
+    name: 'setName',
+    outputs: [],
+    payable: false,
+    stateMutability: 'nonpayable',
+    type: 'function',
+  },
+  {
+    constant: false,
+    inputs: [
+      { internalType: 'bytes32', name: 'node', type: 'bytes32' },
+      { internalType: 'bytes32', name: 'x', type: 'bytes32' },
+      { internalType: 'bytes32', name: 'y', type: 'bytes32' },
+    ],
+    name: 'setPubkey',
+    outputs: [],
+    payable: false,
+    stateMutability: 'nonpayable',
+    type: 'function',
+  },
+  {
+    constant: false,
+    inputs: [
+      { internalType: 'bytes32', name: 'node', type: 'bytes32' },
+      { internalType: 'string', name: 'key', type: 'string' },
+      { internalType: 'string', name: 'value', type: 'string' },
+    ],
+    name: 'setText',
+    outputs: [],
+    payable: false,
+    stateMutability: 'nonpayable',
+    type: 'function',
+  },
+  {
+    constant: true,
+    inputs: [{ internalType: 'bytes4', name: 'interfaceID', type: 'bytes4' }],
+    name: 'supportsInterface',
+    outputs: [{ internalType: 'bool', name: '', type: 'bool' }],
+    payable: false,
+    stateMutability: 'pure',
+    type: 'function',
+  },
+  {
+    constant: true,
+    inputs: [
+      { internalType: 'bytes32', name: 'node', type: 'bytes32' },
+      { internalType: 'string', name: 'key', type: 'string' },
+    ],
+    name: 'text',
+    outputs: [{ internalType: 'string', name: '', type: 'string' }],
+    payable: false,
+    stateMutability: 'view',
+    type: 'function',
+  },
+];
 
 export const APPLICATION_ADDRESS_NAME_MAP: Map<string, string> = new Map([
   ['0xce16f69375520ab01377ce7b88f5ba8c48f8d666', ApplicationName.SQUID],
@@ -133,7 +592,10 @@ export const APPLICATION_ADDRESS_NAME_MAP: Map<string, string> = new Map([
   ['0x13f4ea83d0bd40e75c8222255bc855a974568dd4', ApplicationName.PANCAKE_SWAP],
   ['0xa5f8c5dbd5f286960b9d90548680ae5ebff07652', ApplicationName.PANCAKE_SWAP],
   ['0x4ec3432d9443f05022e2ff4e54fc7514be2359e0', ApplicationName.PANCAKE_SWAP],
-  ['0xa0c68c638235ee32657e8f720a23cec1bfc77c77', ApplicationName.POLYGON_BRIDGE],
+  [
+    '0xa0c68c638235ee32657e8f720a23cec1bfc77c77',
+    ApplicationName.POLYGON_BRIDGE,
+  ],
   ['0x1a1ec25dc08e98e5e93f1104b5e5cdd298707d31', ApplicationName.METAMASK],
   ['0xb003e75f7e0b5365e814302192e99b4ee08c0ded', ApplicationName.SYNAPSE],
   ['0x6571d6be3d8460cf5f7d6711cd9961860029d85f', ApplicationName.SYNAPSE],
@@ -158,37 +620,124 @@ export const APPLICATION_ADDRESS_NAME_MAP: Map<string, string> = new Map([
   ['0x1619de6b6b20ed217a58d00f37b9d47c7663feca', ApplicationName.CBRIDGE],
   ['0x76b22b8c1079a44f1211d867d68b1eda76a635a7', ApplicationName.HOP],
   ['0x3666f603cc164936c1b87e207f36beba4ac5f18a', ApplicationName.HOP],
-  ['0x3ee18b2214aff97000d974cf647e7c347e8fa585', ApplicationName.WORM_HOLE]
+  ['0x3ee18b2214aff97000d974cf647e7c347e8fa585', ApplicationName.WORM_HOLE],
 ]);
 
 export const APPLICATION_LOGO_MAP: Map<string, string> = new Map([
-  [ApplicationName.SQUID, 'https://public.cypherd.io/assets/blockchains/token-icons/squid.png'],
-  [ApplicationName.ODOS, 'https://public.cypherd.io/assets/blockchains/token-icons/odos.jpeg'],
-  [ApplicationName.SUSHISWAP, 'https://public.cypherd.io/assets/blockchains/token-icons/sushi-exchange.png'],
-  [ApplicationName.UNISWAP, 'https://public.cypherd.io/assets/blockchains/token-icons/uniswap_protocol.png'],
-  [ApplicationName.GMX, 'https://public.cypherd.io/assets/blockchains/token-icons/gmx.jpeg'],
-  [ApplicationName.AAVE, 'https://public.cypherd.io/assets/blockchains/token-icons/aave.png'],
-  [ApplicationName.POOL_TOGETHER, 'https://public.cypherd.io/assets/blockchains/token-icons/pooltogether.png'],
-  [ApplicationName.PARA_SWAP, 'https://public.cypherd.io/assets/blockchains/token-icons/paraswap.png'],
-  [ApplicationName.OPEN_SEA, 'https://public.cypherd.io/assets/blockchains/token-icons/opensea.png'],
-  [ApplicationName.ENS, 'https://public.cypherd.io/assets/blockchains/token-icons/ens.jpeg'],
-  [ApplicationName.PANCAKE_SWAP, 'https://public.cypherd.io/assets/blockchains/token-icons/pancake.jpeg'],
-  [ApplicationName.POLYGON_BRIDGE, 'https://public.cypherd.io/assets/blockchains/token-icons/polygon-bridge.png'],
-  [ApplicationName.METAMASK, 'https://public.cypherd.io/assets/blockchains/token-icons/metamask.jpeg'],
-  [ApplicationName.SYNAPSE, 'https://public.cypherd.io/assets/blockchains/token-icons/synapse.png'],
-  [ApplicationName._1_INCH, 'https://public.cypherd.io/assets/blockchains/token-icons/1inch.png'],
-  [ApplicationName.SPOOKY_SWAP, 'https://public.cypherd.io/assets/blockchains/token-icons/spookyswap.jpeg'],
-  [ApplicationName._0X_EXCHANGE, 'https://public.cypherd.io/assets/blockchains/token-icons/0x-exchange.png'],
-  [ApplicationName.QUICK_SWAP, 'https://public.cypherd.io/assets/blockchains/token-icons/quickswap.png'],
-  [ApplicationName.LIFI, 'https://public.cypherd.io/assets/blockchains/token-icons/lifi.png'],
-  [ApplicationName.SPIRIT_SWAP, 'https://public.cypherd.io/assets/blockchains/token-icons/spirit.png'],
-  [ApplicationName.DIFFUSION, 'https://public.cypherd.io/assets/blockchains/token-icons/diffusion.png'],
-  [ApplicationName.TRADER_JOE, 'https://public.cypherd.io/assets/blockchains/token-icons/trader_joe.png'],
-  [ApplicationName.WRAPPED_MATIC, 'https://public.cypherd.io/assets/blockchains/token-icons/wrapped_matic.png'],
-  [ApplicationName.SOCKET, 'https://public.cypherd.io/assets/blockchains/token-icons/socket.png'],
-  [ApplicationName.APE_SWAP, 'https://public.cypherd.io/assets/blockchains/token-icons/ape.png'],
-  [ApplicationName.ARB_SWAP, 'https://public.cypherd.io/assets/blockchains/token-icons/arbswap.jpeg'],
-  [ApplicationName.CBRIDGE, 'https://public.cypherd.io/assets/blockchains/token-icons/cbridge.png'],
-  [ApplicationName.HOP, 'https://public.cypherd.io/assets/blockchains/token-icons/hop.png'],
-  [ApplicationName.WORM_HOLE, 'https://public.cypherd.io/assets/blockchains/token-icons/wormhole.png'],
+  [
+    ApplicationName.SQUID,
+    'https://public.cypherd.io/assets/blockchains/token-icons/squid.png',
+  ],
+  [
+    ApplicationName.ODOS,
+    'https://public.cypherd.io/assets/blockchains/token-icons/odos.jpeg',
+  ],
+  [
+    ApplicationName.SUSHISWAP,
+    'https://public.cypherd.io/assets/blockchains/token-icons/sushi-exchange.png',
+  ],
+  [
+    ApplicationName.UNISWAP,
+    'https://public.cypherd.io/assets/blockchains/token-icons/uniswap_protocol.png',
+  ],
+  [
+    ApplicationName.GMX,
+    'https://public.cypherd.io/assets/blockchains/token-icons/gmx.jpeg',
+  ],
+  [
+    ApplicationName.AAVE,
+    'https://public.cypherd.io/assets/blockchains/token-icons/aave.png',
+  ],
+  [
+    ApplicationName.POOL_TOGETHER,
+    'https://public.cypherd.io/assets/blockchains/token-icons/pooltogether.png',
+  ],
+  [
+    ApplicationName.PARA_SWAP,
+    'https://public.cypherd.io/assets/blockchains/token-icons/paraswap.png',
+  ],
+  [
+    ApplicationName.OPEN_SEA,
+    'https://public.cypherd.io/assets/blockchains/token-icons/opensea.png',
+  ],
+  [
+    ApplicationName.ENS,
+    'https://public.cypherd.io/assets/blockchains/token-icons/ens.jpeg',
+  ],
+  [
+    ApplicationName.PANCAKE_SWAP,
+    'https://public.cypherd.io/assets/blockchains/token-icons/pancake.jpeg',
+  ],
+  [
+    ApplicationName.POLYGON_BRIDGE,
+    'https://public.cypherd.io/assets/blockchains/token-icons/polygon-bridge.png',
+  ],
+  [
+    ApplicationName.METAMASK,
+    'https://public.cypherd.io/assets/blockchains/token-icons/metamask.jpeg',
+  ],
+  [
+    ApplicationName.SYNAPSE,
+    'https://public.cypherd.io/assets/blockchains/token-icons/synapse.png',
+  ],
+  [
+    ApplicationName._1_INCH,
+    'https://public.cypherd.io/assets/blockchains/token-icons/1inch.png',
+  ],
+  [
+    ApplicationName.SPOOKY_SWAP,
+    'https://public.cypherd.io/assets/blockchains/token-icons/spookyswap.jpeg',
+  ],
+  [
+    ApplicationName._0X_EXCHANGE,
+    'https://public.cypherd.io/assets/blockchains/token-icons/0x-exchange.png',
+  ],
+  [
+    ApplicationName.QUICK_SWAP,
+    'https://public.cypherd.io/assets/blockchains/token-icons/quickswap.png',
+  ],
+  [
+    ApplicationName.LIFI,
+    'https://public.cypherd.io/assets/blockchains/token-icons/lifi.png',
+  ],
+  [
+    ApplicationName.SPIRIT_SWAP,
+    'https://public.cypherd.io/assets/blockchains/token-icons/spirit.png',
+  ],
+  [
+    ApplicationName.DIFFUSION,
+    'https://public.cypherd.io/assets/blockchains/token-icons/diffusion.png',
+  ],
+  [
+    ApplicationName.TRADER_JOE,
+    'https://public.cypherd.io/assets/blockchains/token-icons/trader_joe.png',
+  ],
+  [
+    ApplicationName.WRAPPED_MATIC,
+    'https://public.cypherd.io/assets/blockchains/token-icons/wrapped_matic.png',
+  ],
+  [
+    ApplicationName.SOCKET,
+    'https://public.cypherd.io/assets/blockchains/token-icons/socket.png',
+  ],
+  [
+    ApplicationName.APE_SWAP,
+    'https://public.cypherd.io/assets/blockchains/token-icons/ape.png',
+  ],
+  [
+    ApplicationName.ARB_SWAP,
+    'https://public.cypherd.io/assets/blockchains/token-icons/arbswap.jpeg',
+  ],
+  [
+    ApplicationName.CBRIDGE,
+    'https://public.cypherd.io/assets/blockchains/token-icons/cbridge.png',
+  ],
+  [
+    ApplicationName.HOP,
+    'https://public.cypherd.io/assets/blockchains/token-icons/hop.png',
+  ],
+  [
+    ApplicationName.WORM_HOLE,
+    'https://public.cypherd.io/assets/blockchains/token-icons/wormhole.png',
+  ],
 ]);
