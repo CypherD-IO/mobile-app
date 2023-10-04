@@ -156,19 +156,22 @@ const BannerCarouselItem = ({ item, index, boxWidth, halfBoxDistance, panX, setD
         <CyDAnimatedView className={'flex justify-center items-center'}
             style={[animatedStyle, { width: boxWidth }]}>
             <CyDView className='flex flex-row h-full w-full'>
-                <CyDTouchView className='h-full border border-sepratorColor overflow-hidden rounded-[16px]' onPress={() => {
-                    if (isActivity) {
-                        navigation.navigate(screenTitle.ACTIVITIES);
-                    } else {
-                        const { redirectURI, title } = item;
-                        if (redirectURI) {
-                            navigation.navigate(screenTitle.SOCIAL_MEDIA_SCREEN, {
-                                title,
-                                uri: redirectURI
-                            });
+                <CyDTouchView
+                    className='h-full border border-sepratorColor overflow-hidden rounded-[16px]'
+                    disabled={!isActivity && item.redirectURI === undefined}
+                    onPress={() => {
+                        if (isActivity) {
+                            navigation.navigate(screenTitle.ACTIVITIES);
+                        } else {
+                            const { redirectURI, title } = item;
+                            if (redirectURI) {
+                                navigation.navigate(screenTitle.SOCIAL_MEDIA_SCREEN, {
+                                    title,
+                                    uri: redirectURI
+                                });
+                            }
                         }
-                    }
-                }}>
+                    }}>
                     <CyDView className={clsx('h-full w-full flex flex-row justify-evenly items-center', { 'h-[75%]': isActivity, })}>
                         {ItemBody}
                     </CyDView>
