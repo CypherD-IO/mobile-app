@@ -70,7 +70,8 @@ export default function useAxios() {
   async function request(
     method: RequestMethod,
     endpoint = '',
-    body = {}
+    timeout:number,
+    body = {},
   ): Promise<IHttpResponse> {
     let shouldRetry = 0;
 
@@ -84,7 +85,7 @@ export default function useAxios() {
           response.data = data;
           response.status = status;
         }else if (method === 'GET_WITHOUT_AUTH') {
-          const { data, status } = await axios.get(url, { params: body });
+          const { data, status } = await axios.get(url, { params: body,timeout });
           response.data = data;
           response.status = status;
         } else if (method === 'DELETE') {
@@ -138,23 +139,23 @@ export default function useAxios() {
     return { isError: true };
   }
 
-  async function getWithAuth(url: string) {
-    return await request('GET', url);
+  async function getWithAuth(url: string,timeout=20000) {
+    return await request('GET', url,timeout);
   }
-  async function getWithoutAuth(url: string, data?: any) {
-    return await request('GET_WITHOUT_AUTH', url, data);
+  async function getWithoutAuth(url: string, data?: any,timeout=20000) {
+    return await request('GET_WITHOUT_AUTH', url,timeout, data);
   }
-  async function postWithAuth(url: string, data: any) {
-    return await request('POST', url, data);
+  async function postWithAuth(url: string, data: any,timeout=20000) {
+    return await request('POST', url,timeout, data);
   }
-  const putWithAuth = async (url: string, data: any) => {
-    return await request('PUT', url, data);
+  const putWithAuth = async (url: string, data: any,timeout=20000) => {
+    return await request('PUT', url,timeout, data);
   };
-  const patchWithAuth = async (url: string, data: any) => {
-    return await request('PATCH', url, data);
+  const patchWithAuth = async (url: string, data: any,timeout=20000) => {
+    return await request('PATCH', url,timeout, data);
   };
-  const deleteWithAuth = async (url: string) => {
-    return await request('DELETE', url);
+  const deleteWithAuth = async (url: string,timeout=20000) => {
+    return await request('DELETE', url,timeout);
   };
 
   return {

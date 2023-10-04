@@ -30,7 +30,6 @@ import { HdWalletContext } from '../../../core/util';
 import { DeFiFilter, DefiAllocation, DefiData, DefiResponse, Protocol, defiProtocolData, protocolOptionType } from '../../../models/defi.interface';
 import _, { last } from 'lodash';
 import { getChainLogo, parseDefiData, sortDefiProtocolDesc } from '../../../core/defi';
-import { formatDistanceToNow } from 'date-fns';
 import moment from 'moment';
 import AppImages from '../../../../assets/images/appImages';
 import clsx from 'clsx';
@@ -263,7 +262,7 @@ const DeFiScene = ({
 
   const fetchDefiData = async (address: string, forceRefresh=false)=>{
     const url = forceRefresh? `${DEFI_URL}/${address}?forceRefresh=true` : `${DEFI_URL}/${address}`;
-    const { isError, data: rawDeFiData } = await getWithoutAuth(url);
+    const { isError, data: rawDeFiData } = await getWithoutAuth(url,{},40000);
     if (!_.isEmpty(rawDeFiData?.protocols)) {
       const protocols = rawDeFiData?.protocols;
       const { defiData, defiOptionsData  } = parseDefiData(
@@ -366,7 +365,6 @@ const DeFiScene = ({
               text={t('NO_CURRENT_HOLDINGS')}
               image={AppImages.EMPTY}
               buyVisible={false}
-              marginTop={30}
             />
           </CyDView>
         } 
