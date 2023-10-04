@@ -183,9 +183,10 @@ const TxnScene = ({
 
 
 
-  const fetchTxn = async () => {
+  const fetchTxn = async (forceRefresh=false) => {
     try {
-      const response = await axios.get(getTransactionsUrl);
+      const txnURL = forceRefresh? `${getTransactionsUrl}?forceRefresh=true`:getTransactionsUrl;
+      const response = await axios.get(txnURL);
       setTransactions(response.data.transactions);
     } catch (error) {
       console.error('Error fetching transactions:', error);
@@ -195,7 +196,7 @@ const TxnScene = ({
 
   const onRefresh = async () => {
     setIsRefreshing(true);
-    await fetchTxn();
+    await fetchTxn(true);
     setIsRefreshing(false);
   };
 
