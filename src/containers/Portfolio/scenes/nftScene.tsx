@@ -27,7 +27,6 @@ import { Chain } from '../../../constants/server';
 import { intercomAnalyticsLog } from '../../utilities/analyticsUtility';
 import { ALL_CHAINS_TYPE } from '../../../constants/type';
 import { isIOS } from '../../../misc/checkers';
-import { PortfolioBannerHeights } from '../../../hooks/useScrollManager';
 
 type ScrollEvent = NativeSyntheticEvent<NativeScrollEvent>;
 
@@ -44,7 +43,7 @@ interface NFTSceneProps {
     setOptions: ({ title }: { title: string }) => void
     navigate: (screen: string, params?: {}) => void
   }
-  bannerHeight: PortfolioBannerHeights;
+  bannerHeight: 160 | 260;
 }
 
 const NFTScene = ({
