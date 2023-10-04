@@ -54,7 +54,7 @@ import { t } from 'i18next';
 import OTPVerificationScreen from '../containers/DebitCard/OTPVerification';
 import CardSignupCompleteScreen from '../containers/DebitCard/signUpComplete';
 import CardKYCStatusScreen from '../containers/DebitCard/KYCStatus';
-import BridgeCardScreen from '../containers/DebitCard/bridgeCard/bridgeCard';
+import CypherCardScreen from '../containers/DebitCard/CardV2';
 import CardRevealAuthScreen from '../containers/DebitCard/bridgeCard/cardRevealAuth';
 import CardSignupLandingScreen from '../containers/DebitCard/cardSignupLanding';
 import BridgeFundCardScreen from '../containers/DebitCard/bridgeCard/fundCard';
@@ -836,18 +836,9 @@ export function DebitCardStackScreen({ navigation }) {
 
       <FundCardStack.Screen
         name={screenTitle.BRIDGE_CARD_SCREEN}
-        component={BridgeCardScreen}
+        component={CypherCardScreen}
         options={{
-          headerTransparent: false,
-          headerShadowVisible: false,
-          headerTitle: 'Cypher Card',
-          headerTitleAlign: 'center',
-          headerTitleStyle: portfolioStackScreenHeaderTitleStyles,
-          headerLeft: () => {
-            return <></>;
-          },
-          headerTintColor: Colors.primaryTextColor,
-          headerBackTitleVisible: false,
+          headerShown: false
         }}
       />
 
