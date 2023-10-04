@@ -215,6 +215,7 @@ const DeFiScene = ({
                 {protocol.chains.slice(0, moreChainsCount === 1 ? 4 : 3).map((chain, index) =>{
                   return (
                     <CyDFastImage
+                      key={`${protocol.protocolName}-${chain}-${index}`}
                       source={getChainLogo(chain)}
                       className="h-[16px] w-[16px] rounded-full"
                       resizeMode="contain"
@@ -238,7 +239,7 @@ const DeFiScene = ({
       <CyDView className='relative border border-sepratorColor rounded-[10px]  p-[8px] mt-[15px] flex'>
         {Object.values(protocol.types).slice(0, 3).map(type =>{
           return (
-          <CyDView className='flex flex-row justify-center items-center w-full my-[5px]'>
+          <CyDView className='flex flex-row justify-center items-center w-full my-[5px]' key={`${type.type}-${protocol.protocolName}`}>
             <CyDView className='flex-1 flex-row justify-start items-center gap-x-[4px]'>
               <CyDFastImage
               source={type.typeLogo}
@@ -263,22 +264,22 @@ const DeFiScene = ({
   const fetchDefiData = async (address: string, forceRefresh=false)=>{
     const url = forceRefresh? `${DEFI_URL}/${address}?forceRefresh=true` : `${DEFI_URL}/${address}`;
     const { isError, data: rawDeFiData } = await getWithoutAuth(url);
-      if (!_.isEmpty(rawDeFiData?.protocols)) {
-        const protocols = rawDeFiData?.protocols;
-        const { defiData, defiOptionsData  } = parseDefiData(
-          protocols as Protocol[],
-          filters,
-          );
-        if (userProtocols.length === 0) setUserProtocols(defiOptionsData);
-        const data ={
-          iat: rawDeFiData?.iat,
-          rawData: rawDeFiData,
-          filteredData: defiData,
-        };
-        setDeFiData(data);
-        setRefreshActivity({isRefreshing:false, lastRefresh: rawDeFiData.iat});
-        await storeDeFiData(data);
-      }
+    if (!_.isEmpty(rawDeFiData?.protocols)) {
+      const protocols = rawDeFiData?.protocols;
+      const { defiData, defiOptionsData  } = parseDefiData(
+        protocols as Protocol[],
+        filters,
+        );
+      if (userProtocols.length === 0) setUserProtocols(defiOptionsData);
+      const data ={
+        iat: rawDeFiData?.iat,
+        rawData: rawDeFiData,
+        filteredData: defiData,
+      };
+      setDeFiData(data);
+      await storeDeFiData(data);
+    }
+    setRefreshActivity({isRefreshing:false, lastRefresh: rawDeFiData.iat});
   };
   const getDeFiHoldings = async (forceRefresh = false ) => {
     if(!forceRefresh)setLoading(true);
@@ -288,7 +289,6 @@ const DeFiScene = ({
       if (ethereum?.wallets[0].address) {
         await fetchDefiData(ethereum?.wallets[0].address,true);
       }
-      setRefreshActivity(prev =>({...prev, isRefreshing:false}));
     }else{
       const data = await getDeFiData();
       if(data !== null ){
@@ -335,7 +335,7 @@ const DeFiScene = ({
       />
       {!loading ?
       <AnimatedTabView
-        data={Object.values(deFiData.filteredData.protocols).sort(sortDefiProtocolDesc)}
+        data={!_.isEmpty(deFiData.filteredData) ? Object.values(deFiData.filteredData.protocols).sort(sortDefiProtocolDesc): []}
         renderItem={({item,index})=><RenderProtocolRow protocol={item} index={index}/>}
         keyExtractor={(item:defiProtocolData) => item.protocolName}
         bannerHeight={bannerHeight}
@@ -355,9 +355,9 @@ const DeFiScene = ({
         }
         ListHeaderComponent={
           <DeFiTotal 
-            value={deFiData.filteredData.total.value} 
-            debt={deFiData.filteredData.total.debt} 
-            supply={deFiData.filteredData.total.supply}
+            value={!_.isEmpty(deFiData.filteredData) ? deFiData.filteredData.total.value:0} 
+            debt={!_.isEmpty(deFiData.filteredData) ? deFiData.filteredData.total.debt:0} 
+            supply={!_.isEmpty(deFiData.filteredData) ? deFiData.filteredData.total.supply:0}
           />
         }
         ListEmptyComponent={
