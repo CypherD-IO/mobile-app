@@ -20,7 +20,9 @@ import CardTransactionItem from "../../../components/v2/CardTransactionItem";
 import { AnimatedToolBar } from "./AnimatedToolBar";
 import CardTxnFilterModal from "../bridgeCard/CardTxnFilterModal";
 import { CardTransaction } from "../../../models/card.model";
-import { RefreshControl } from "react-native";
+import { RefreshControl, StyleSheet } from "react-native";
+import clsx from "clsx";
+import { isAndroid } from "../../../misc/checkers";
 
 export type CardSectionHeights = 270 | 320
 interface CypherCardScreenProps {
@@ -159,7 +161,7 @@ const CypherCardScreen = ({ navigation, route }: CypherCardScreenProps) => {
                 filterState={[filter, setFilter]}
             />
             {/* TXN FILTER MODAL */}
-            <CyDImageBackground className='h-full w-full mb-[10px]' source={AppImages.DEBIT_CARD_BACKGROUND} resizeMode="cover">
+            <CyDImageBackground className='h-full w-full' source={AppImages.DEBIT_CARD_BACKGROUND} resizeMode="cover" imageStyle={styles.imageBackgroundImageStyles}>
                 <AnimatedCardSection scrollY={scrollY} cardSectionHeight={cardSectionHeight}>
                     {/* SWITCH PROVIDER */}
                     {hasBothProviders && (
@@ -215,7 +217,7 @@ const CypherCardScreen = ({ navigation, route }: CypherCardScreenProps) => {
                     </CyDView>
                     {/* FUND CARD */}
                 </AnimatedCardSection>
-                <CyDView className="h-full mb-[75px] px-[10px]">
+                <CyDView className={clsx('h-full px-[10px] pb-[40px]', { 'pb-[75px]': isAndroid() })}>
                     {/* TOOLBAR */}
                     <AnimatedToolBar scrollY={scrollY} cardSectionHeight={cardSectionHeight}>
                         <CyDView className="h-[40px] flex flex-row justify-between items-center py-[5px] px-[10px] bg-white border border-sepratorColor mt-[10px] rounded-t-[24px]">
@@ -232,7 +234,7 @@ const CypherCardScreen = ({ navigation, route }: CypherCardScreenProps) => {
                     <AnimatedTxnList
                         scrollY={scrollY}
                         cardSectionHeight={cardSectionHeight}
-                        refreshControl={<RefreshControl refreshing={refreshing} onRefresh={onRefresh} />}
+                        refreshControl={<RefreshControl refreshing={refreshing} onRefresh={onRefresh} progressViewOffset={cardSectionHeight} />}
                         data={filteredTransactions}
                         renderItem={({ item, index }: { item: CardTransaction, index: number }) => {
                             return <CardTransactionItem key={index} item={item} />;
@@ -248,3 +250,9 @@ const CypherCardScreen = ({ navigation, route }: CypherCardScreenProps) => {
     );
 };
 export default memo(CypherCardScreen);
+
+const styles = StyleSheet.create({
+    imageBackgroundImageStyles: {
+        top: -50
+    }
+});

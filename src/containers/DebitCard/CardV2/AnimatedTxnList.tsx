@@ -75,12 +75,10 @@ const AnimatedTxnListWithoutMemo = ({
         contentContainerStyle: Platform.select({
             ios: {
                 flexGrow: 1,
-                paddingBottom: 60,
             },
             android: {
                 flexGrow: 1,
                 paddingTop: cardSectionHeight,
-                paddingBottom: 60,
             },
         }),
         showsVerticalScrollIndicator: false,
