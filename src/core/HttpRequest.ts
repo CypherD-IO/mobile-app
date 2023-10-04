@@ -1,5 +1,5 @@
 import { hostWorker } from '../global';
-import axios from './Http';
+import axios, { DEFAULT_AXIOS_TIMEOUT } from './Http';
 import { useContext } from 'react';
 import { GlobalContext, signIn, isTokenValid } from '../core/globalContext';
 import * as Sentry from '@sentry/react-native';
@@ -139,22 +139,22 @@ export default function useAxios() {
     return { isError: true };
   }
 
-  async function getWithAuth(url: string,timeout=20000) {
+  async function getWithAuth(url: string,timeout=DEFAULT_AXIOS_TIMEOUT) {
     return await request('GET', url,timeout);
   }
-  async function getWithoutAuth(url: string, data?: any,timeout=20000) {
+  async function getWithoutAuth(url: string, data?: any,timeout=DEFAULT_AXIOS_TIMEOUT) {
     return await request('GET_WITHOUT_AUTH', url,timeout, data);
   }
-  async function postWithAuth(url: string, data: any,timeout=20000) {
+  async function postWithAuth(url: string, data: any,timeout=DEFAULT_AXIOS_TIMEOUT) {
     return await request('POST', url,timeout, data);
   }
-  const putWithAuth = async (url: string, data: any,timeout=20000) => {
+  const putWithAuth = async (url: string, data: any,timeout=DEFAULT_AXIOS_TIMEOUT) => {
     return await request('PUT', url,timeout, data);
   };
-  const patchWithAuth = async (url: string, data: any,timeout=20000) => {
+  const patchWithAuth = async (url: string, data: any,timeout=DEFAULT_AXIOS_TIMEOUT) => {
     return await request('PATCH', url,timeout, data);
   };
-  const deleteWithAuth = async (url: string,timeout=20000) => {
+  const deleteWithAuth = async (url: string,timeout=DEFAULT_AXIOS_TIMEOUT) => {
     return await request('DELETE', url,timeout);
   };
 
