@@ -1,8 +1,36 @@
 /* eslint-disable @typescript-eslint/restrict-plus-operands */
 import * as React from 'react';
 import { Platform } from 'react-native';
-import { CHAIN_ETH, CHAIN_AVALANCHE, CHAIN_POLYGON, CHAIN_BSC, CHAIN_FTM, CHAIN_EVMOS, CHAIN_OPTIMISM, Chain, CHAIN_ARBITRUM, CHAIN_COSMOS, CHAIN_OSMOSIS, CHAIN_JUNO, CHAIN_STARGAZE, CHAIN_NOBLE, CHAIN_SHARDEUM, ChainBackendNames, EnsCoinTypes, CosmosStakingTokens, NativeTokenMapping, CHAIN_SHARDEUM_SPHINX, CHAIN_ZKSYNC_ERA, CHAIN_BASE, CHAIN_POLYGON_ZKEVM } from '../constants/server';
-import { GlobalStateDef, GlobalContextDef, initialGlobalState } from './globalContext';
+import {
+  CHAIN_ETH,
+  CHAIN_AVALANCHE,
+  CHAIN_POLYGON,
+  CHAIN_BSC,
+  CHAIN_FTM,
+  CHAIN_EVMOS,
+  CHAIN_OPTIMISM,
+  Chain,
+  CHAIN_ARBITRUM,
+  CHAIN_COSMOS,
+  CHAIN_OSMOSIS,
+  CHAIN_JUNO,
+  CHAIN_STARGAZE,
+  CHAIN_NOBLE,
+  CHAIN_SHARDEUM,
+  ChainBackendNames,
+  EnsCoinTypes,
+  CosmosStakingTokens,
+  NativeTokenMapping,
+  CHAIN_SHARDEUM_SPHINX,
+  CHAIN_ZKSYNC_ERA,
+  CHAIN_BASE,
+  CHAIN_POLYGON_ZKEVM,
+} from '../constants/server';
+import {
+  GlobalStateDef,
+  GlobalContextDef,
+  initialGlobalState,
+} from './globalContext';
 import * as Sentry from '@sentry/react-native';
 import Toast from 'react-native-toast-message';
 import { isIOS } from '../misc/checkers';
@@ -23,17 +51,22 @@ import { t } from 'i18next';
 
 // const {showModal, hideModal} = useGlobalModalContext()
 
-export const HdWalletContext = React.createContext<HdWalletContextDef | null>(null);
+export const HdWalletContext = React.createContext<HdWalletContextDef | null>(
+  null,
+);
 export const PortfolioContext = React.createContext(null);
 export const StakingContext = React.createContext(null);
-export const ActivityContext = React.createContext<ActivityContextDef | null>(null);
+export const ActivityContext = React.createContext<ActivityContextDef | null>(
+  null,
+);
 
 export const IOS = 'ios';
 export const ANDROID = 'android';
 export const CYPHERD_SEED_PHRASE_KEY = 'CypherD_SPK';
 export const CYPHERD_ROOT_DATA = 'CypherD_Root';
 export const IMPORTING = 'IMPORTING';
-export const _NO_CYPHERD_CREDENTIAL_AVAILABLE_ = '_NO_CYPHERD_CREDENTIAL_AVAILABLE_';
+export const _NO_CYPHERD_CREDENTIAL_AVAILABLE_ =
+  '_NO_CYPHERD_CREDENTIAL_AVAILABLE_';
 export const AUTHORIZE_WALLET_DELETION = 'AUTHORIZE_WALLET_DELETION';
 
 export const PIN_AUTH = 'pin_auth';
@@ -89,7 +122,11 @@ export function getExplorerUrlFromBackendNames(chain: string, hash: string) {
   }
 }
 
-export function getExplorerUrl(chainSymbol: string, chainName: string, hash: string) {
+export function getExplorerUrl(
+  chainSymbol: string,
+  chainName: string,
+  hash: string,
+) {
   switch (chainSymbol) {
     case CHAIN_ETH.symbol:
       if (chainName === CHAIN_ARBITRUM.name) {
@@ -98,11 +135,9 @@ export function getExplorerUrl(chainSymbol: string, chainName: string, hash: str
         return `https://optimistic.etherscan.io/tx/${hash}`;
       } else if (chainName === CHAIN_ZKSYNC_ERA.name) {
         return `https://explorer.zksync.io/tx/${hash}`;
-      }
-      else if (chainName === CHAIN_BASE.name) {
+      } else if (chainName === CHAIN_BASE.name) {
         return `https://base.dex.guru/tx/${hash}`;
-      }
-      else if (chainName === CHAIN_POLYGON_ZKEVM.name) {
+      } else if (chainName === CHAIN_POLYGON_ZKEVM.name) {
         return `https://zkevm.polygonscan.com/tx/${hash}`;
       }
       return `https://etherscan.io/tx/${hash}`;
@@ -133,7 +168,11 @@ export function getExplorerUrl(chainSymbol: string, chainName: string, hash: str
       return `https://explorer-sphinx.shardeum.org/transaction/${hash}`;
   }
 }
-export function getNftExplorerUrl(chain_symbol: string, contractAddress: string, id: string) {
+export function getNftExplorerUrl(
+  chain_symbol: string,
+  contractAddress: string,
+  id: string,
+) {
   switch (chain_symbol) {
     case CHAIN_ETH.backendName:
       return `https://opensea.io/assets/ethereum/${contractAddress}/${id}`;
@@ -164,27 +203,44 @@ export function getNftExplorerUrl(chain_symbol: string, contractAddress: string,
   }
 }
 
-export const TARGET_CARD_EVM_WALLET_ADDRESS = '0x43ea3262A6a208470AA686254bE9673F97CbCeD9';
-export const TARGET_CARD_COSMOS_WALLET_ADDRESS = 'cosmos15fm4ycvl6skw4h5v76tqt2zg36nzxl4mklkr8j';
-export const TARGET_CARD_EVMOS_WALLET_ADDRESS = 'evmos10kzxayr90fn8t569rj6ancp2nwdgn70g02kxq0';
-export const TARGET_CARD_EVMOS_WALLET_CORRESPONDING_EVM_ADDRESS = '0x7D846e90657A6675d3451cB5d9E02A9b9A89F9e8';
-export const TARGET_CARD_OSMOSIS_WALLET_ADDRESS = 'osmo15fm4ycvl6skw4h5v76tqt2zg36nzxl4m7y9n3q';
-export const TARGET_CARD_JUNO_WALLET_ADDRESS = 'juno15fm4ycvl6skw4h5v76tqt2zg36nzxl4mqd4cqw';
-export const TARGET_CARD_STARGAZE_WALLET_ADDRESS = 'stars15fm4ycvl6skw4h5v76tqt2zg36nzxl4mzrp7vr';
-export const TARGET_CARD_NOBLE_WALLET_ADDRESS = 'noble15fm4ycvl6skw4h5v76tqt2zg36nzxl4mzrp7vr';
+export const TARGET_CARD_EVM_WALLET_ADDRESS =
+  '0x43ea3262A6a208470AA686254bE9673F97CbCeD9';
+export const TARGET_CARD_COSMOS_WALLET_ADDRESS =
+  'cosmos15fm4ycvl6skw4h5v76tqt2zg36nzxl4mklkr8j';
+export const TARGET_CARD_EVMOS_WALLET_ADDRESS =
+  'evmos10kzxayr90fn8t569rj6ancp2nwdgn70g02kxq0';
+export const TARGET_CARD_EVMOS_WALLET_CORRESPONDING_EVM_ADDRESS =
+  '0x7D846e90657A6675d3451cB5d9E02A9b9A89F9e8';
+export const TARGET_CARD_OSMOSIS_WALLET_ADDRESS =
+  'osmo15fm4ycvl6skw4h5v76tqt2zg36nzxl4m7y9n3q';
+export const TARGET_CARD_JUNO_WALLET_ADDRESS =
+  'juno15fm4ycvl6skw4h5v76tqt2zg36nzxl4mqd4cqw';
+export const TARGET_CARD_STARGAZE_WALLET_ADDRESS =
+  'stars15fm4ycvl6skw4h5v76tqt2zg36nzxl4mzrp7vr';
+export const TARGET_CARD_NOBLE_WALLET_ADDRESS =
+  'noble15fm4ycvl6skw4h5v76tqt2zg36nzxl4mzrp7vr';
 
-export const TARGET_BRIDGE_EVM_WALLET_ADDRESS = '0xa2a048426dd38b4925283230bfa9ebce2ab4c037';
-export const TARGET_BRIDGE_COSMOS_WALLET_ADDRESS = 'cosmos1e6khhgeyut7y0qxw2glrdl4al3acavdf9mypt9';
-export const TARGET_BRIDGE_OSMOSIS_WALEET_ADDRESS = 'osmo1e6khhgeyut7y0qxw2glrdl4al3acavdfdqh3ah';
-export const TARGET_BRIDGE_EVMOS_WALLET_ADDRESS = 'evmos152syssnd6w95jffgxgctl20tec4tfsphxv4quv';
-export const TARGET_BRIDGE_JUNO_WALLET_ADDRESS = 'juno1e6khhgeyut7y0qxw2glrdl4al3acavdfnf86ve';
-export const TARGET_BRIDGE_STARGAZE_WALLET_ADDRESS = 'stars1e6khhgeyut7y0qxw2glrdl4al3acavdf38nuq5';
-export const TARGET_BRIDGE_NOBLE_WALLET_ADDRESS = 'noble1e6khhgeyut7y0qxw2glrdl4al3acavdf38nuq5';
+export const TARGET_BRIDGE_EVM_WALLET_ADDRESS =
+  '0xa2a048426dd38b4925283230bfa9ebce2ab4c037';
+export const TARGET_BRIDGE_COSMOS_WALLET_ADDRESS =
+  'cosmos1e6khhgeyut7y0qxw2glrdl4al3acavdf9mypt9';
+export const TARGET_BRIDGE_OSMOSIS_WALEET_ADDRESS =
+  'osmo1e6khhgeyut7y0qxw2glrdl4al3acavdfdqh3ah';
+export const TARGET_BRIDGE_EVMOS_WALLET_ADDRESS =
+  'evmos152syssnd6w95jffgxgctl20tec4tfsphxv4quv';
+export const TARGET_BRIDGE_JUNO_WALLET_ADDRESS =
+  'juno1e6khhgeyut7y0qxw2glrdl4al3acavdfnf86ve';
+export const TARGET_BRIDGE_STARGAZE_WALLET_ADDRESS =
+  'stars1e6khhgeyut7y0qxw2glrdl4al3acavdf38nuq5';
+export const TARGET_BRIDGE_NOBLE_WALLET_ADDRESS =
+  'noble1e6khhgeyut7y0qxw2glrdl4al3acavdf38nuq5';
 
 export function getWeb3Endpoint(selectedChain: Chain, context): string {
   try {
     if (context) {
-      const globalStateCasted: GlobalStateDef = (context as unknown as GlobalContextDef).globalState;
+      const globalStateCasted: GlobalStateDef = (
+        context as unknown as GlobalContextDef
+      ).globalState;
       return globalStateCasted.rpcEndpoints[selectedChain.backendName].primary;
     }
   } catch (e) {
@@ -202,17 +258,21 @@ export const validateAmount = (amount: string): boolean => {
       type: 'error',
       text1: 'Invalid input',
       text2: 'Enter a valid input',
-      position: 'bottom'
+      position: 'bottom',
     });
     return false;
   }
 };
 
-export const convertFromUnitAmount = (amount: string, decimal: number, decimalPlaces = 3) => {
-  return (parseFloat(amount) * (10 ** -decimal)).toFixed(decimalPlaces);
+export const convertFromUnitAmount = (
+  amount: string,
+  decimal: number,
+  decimalPlaces = 3,
+) => {
+  return (parseFloat(amount) * 10 ** -decimal).toFixed(decimalPlaces);
 };
 
-export const convertNumberToShortHandNotation = n => {
+export const convertNumberToShortHandNotation = (n) => {
   if (n < 1e3) return n;
   if (n >= 1e3 && n < 1e6) return +(n / 1e3).toFixed(1) + 'K';
   if (n >= 1e6 && n < 1e9) return +(n / 1e6).toFixed(1) + 'M';
@@ -221,17 +281,27 @@ export const convertNumberToShortHandNotation = n => {
 };
 
 // removes the extra decimal places and only returns the amount with the tokens contract decimals
-export const convertAmountOfContractDecimal = (amount: string, decimal = 18): string => {
-  return [amount.split('.')[0], amount.split('.')[1]?.slice(0, decimal) ? amount.split('.')[1].slice(0, decimal) : '0'].join('.');
+export const convertAmountOfContractDecimal = (
+  amount: string,
+  decimal = 18,
+): string => {
+  return [
+    amount.split('.')[0],
+    amount.split('.')[1]?.slice(0, decimal)
+      ? amount.split('.')[1].slice(0, decimal)
+      : '0',
+  ].join('.');
 };
 
 export const isValidUUIDV4 = (uuid: string) => {
-  const pattern = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-5][0-9a-f]{3}-[089ab][0-9a-f]{3}-[0-9a-f]{12}$/i;
+  const pattern =
+    /^[0-9a-f]{8}-[0-9a-f]{4}-[0-5][0-9a-f]{3}-[089ab][0-9a-f]{3}-[0-9a-f]{12}$/i;
   return pattern.test(uuid);
 };
 
 export const isValidEmailID = (email: string): boolean => {
-  const pattern = /^(([^<>()[\]\\.,;:\s@"]+(\.[^<>()[\]\\.,;:\s@"]+)*)|(".+"))@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\])|(([a-zA-Z\-0-9]+\.)+[a-zA-Z]{2,}))$/;
+  const pattern =
+    /^(([^<>()[\]\\.,;:\s@"]+(\.[^<>()[\]\\.,;:\s@"]+)*)|(".+"))@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\])|(([a-zA-Z\-0-9]+\.)+[a-zA-Z]{2,}))$/;
   return pattern.test(String(email).toLowerCase());
 };
 
@@ -239,7 +309,8 @@ export const isValidSSN = (ssn: string): boolean => {
   const SSN_BLACKLIST = ['078051120', '219099999', '457555462'];
   const SSN_WHITELIST = ['999999999'];
 
-  const SSN_REGEX = /^(?!666|000|9\d{2})\d{3}[- ]{0,1}(?!00)\d{2}[- ]{0,1}(?!0{4})\d{4}$/;
+  const SSN_REGEX =
+    /^(?!666|000|9\d{2})\d{3}[- ]{0,1}(?!00)\d{2}[- ]{0,1}(?!0{4})\d{4}$/;
   const SSN_REGEX_LAST_FOUR = /^(?!0000)[0-9]{4}$/;
 
   ssn = ssn.trim();
@@ -270,11 +341,20 @@ export const isBigIntZero = (num: bigint): boolean => {
   return num === BigInt(0);
 };
 
-export const getTimeForDate = (d: Date): { hours: string, minutes: string, seconds: string } => {
-  const hours: number | string = 18 - d.getUTCHours() >= 0 ? 18 - d.getUTCHours() : 23 - (d.getUTCHours() - 19);
+export const getTimeForDate = (
+  d: Date,
+): { hours: string; minutes: string; seconds: string } => {
+  const hours: number | string =
+    18 - d.getUTCHours() >= 0
+      ? 18 - d.getUTCHours()
+      : 23 - (d.getUTCHours() - 19);
   const min: number | string = 60 - d.getUTCMinutes() - 1;
   const sec: number | string = 60 - d.getUTCSeconds();
-  return { hours: hours < 10 ? '0' + hours.toString() : hours.toString(), minutes: min < 10 ? '0' + min.toString() : min.toString(), seconds: sec < 10 ? '0' + sec.toString() : sec.toString() };
+  return {
+    hours: hours < 10 ? '0' + hours.toString() : hours.toString(),
+    minutes: min < 10 ? '0' + min.toString() : min.toString(),
+    seconds: sec < 10 ? '0' + sec.toString() : sec.toString(),
+  };
 };
 
 export const shuffleSeedPhrase = (array: string[]): string[] => {
@@ -289,7 +369,9 @@ export const shuffleSeedPhrase = (array: string[]): string[] => {
 
     // And swap it with the current element.
     [array[currentIndex], array[randomIndex]] = [
-      array[randomIndex], array[currentIndex]];
+      array[randomIndex],
+      array[currentIndex],
+    ];
   }
 
   return array;
@@ -299,7 +381,7 @@ export const sortJSONArrayByKey = (array, key): [] => {
   return array.sort((a, b) => {
     const x = a[key];
     const y = b[key];
-    return ((x < y) ? -1 : ((x > y) ? 1 : 0));
+    return x < y ? -1 : x > y ? 1 : 0;
   });
 };
 
@@ -313,7 +395,7 @@ export const concatErrorMessagesFromArrayOneByOne = (array: []) => {
 
 export const isAutoFillSupported = (): boolean => {
   const majorVersionIOS = parseInt(String(Platform.Version), 10);
-  return (isIOS() && majorVersionIOS >= 12);
+  return isIOS() && majorVersionIOS >= 12;
 };
 
 export const codeToArray = (code?: string): string[] => {
@@ -326,38 +408,88 @@ export const convertToHexa = (str = '') => {
   for (let n = 0, l = len; n < l; n++) {
     const hex = Number(str.charCodeAt(n)).toString(16);
     res.push(hex);
-  };
+  }
   return res.join('');
 };
 
 export const removeSolidProhibitedCountriesFromCountryMaster = () => {
-  const prohibitedCountries = ['Albania', 'Bosnia', 'Belarus', 'Burundi', 'Africa', 'Croatia', 'Cuba', 'Cyprus', 'Korea', 'Congo', 'Iran', 'Iraq', 'Lebanon', 'Libya', 'Macedonia', 'Montenegro', 'Nigeria', 'Pakistan', 'Russia', 'Serbia', 'Slovenia', 'Somalia', 'Sudan', 'Syria', 'Turkey', 'Ukraine', 'Venezuela', 'Yemen', 'Zimbabwe'];
-  const allowedCountries = countryMaster.filter(country =>
-    prohibitedCountries.every(prohibitedCountry => !country.name.toLowerCase().includes(prohibitedCountry.toLowerCase())));
+  const prohibitedCountries = [
+    'Albania',
+    'Bosnia',
+    'Belarus',
+    'Burundi',
+    'Africa',
+    'Croatia',
+    'Cuba',
+    'Cyprus',
+    'Korea',
+    'Congo',
+    'Iran',
+    'Iraq',
+    'Lebanon',
+    'Libya',
+    'Macedonia',
+    'Montenegro',
+    'Nigeria',
+    'Pakistan',
+    'Russia',
+    'Serbia',
+    'Slovenia',
+    'Somalia',
+    'Sudan',
+    'Syria',
+    'Turkey',
+    'Ukraine',
+    'Venezuela',
+    'Yemen',
+    'Zimbabwe',
+  ];
+  const allowedCountries = countryMaster.filter((country) =>
+    prohibitedCountries.every(
+      (prohibitedCountry) =>
+        !country.name.toLowerCase().includes(prohibitedCountry.toLowerCase()),
+    ),
+  );
   return allowedCountries;
 };
 
 export const isAddressSet = (address: string) => {
-  return address !== undefined && address !== _NO_CYPHERD_CREDENTIAL_AVAILABLE_ && address !== IMPORTING;
+  return (
+    address !== undefined &&
+    address !== _NO_CYPHERD_CREDENTIAL_AVAILABLE_ &&
+    address !== IMPORTING
+  );
 };
 
 export function copyToClipboard(text: string) {
   Clipboard.setString(text);
 }
 
-export const getNativeTokenBalance = (tokenSymbol: string, chainHoldings: any) => {
+export const getNativeTokenBalance = (
+  tokenSymbol: string,
+  chainHoldings: any,
+) => {
   const nativeToken = find(chainHoldings, { symbol: tokenSymbol });
   const balance = nativeToken ? nativeToken.actualBalance : 0;
   return balance;
 };
 
-export function getSendAddressFieldPlaceholder(chainName: string, backendName: string) {
+export function getSendAddressFieldPlaceholder(
+  chainName: string,
+  backendName: string,
+) {
   if (chainName === 'ethereum') {
-    return Object.keys(EnsCoinTypes).includes(backendName) ? t('SEND_ETHEREUM_PLACEHOLDER_WITH_ENS') : t('SEND_ETHEREUM_PLACEHOLDER');
+    return Object.keys(EnsCoinTypes).includes(backendName)
+      ? t('SEND_ETHEREUM_PLACEHOLDER_WITH_ENS')
+      : t('SEND_ETHEREUM_PLACEHOLDER');
   } else if (chainName === 'evmos') {
-    return Object.keys(EnsCoinTypes).includes(ChainBackendNames.ETH) ? t('SEND_EVMOS_PLACEHOLDER_WITH_ENS') : t('SEND_EVMOS_PLACEHOLDER');
+    return Object.keys(EnsCoinTypes).includes(ChainBackendNames.ETH)
+      ? t('SEND_EVMOS_PLACEHOLDER_WITH_ENS')
+      : t('SEND_EVMOS_PLACEHOLDER');
   } else {
-    return `${t('ENTER_CONTACT_NAME')} / ${chainName} ${t('ADDRESS_ALL_SMALL')}`;
+    return `${t('ENTER_CONTACT_NAME')} / ${chainName} ${t(
+      'ADDRESS_ALL_SMALL',
+    )}`;
   }
 }
 
@@ -368,7 +500,8 @@ export async function sleepFor(milliseconds: number) {
 }
 
 export function isValidEns(domain: string) {
-  const ensReg = /^[-a-zA-Z0-9@:%._+~#=]{1,256}\.[a-zA-Z0-9()]{1,6}\b([-a-zA-Z0-9()@:%_+.~#?&//=]*)?$/ig;
+  const ensReg =
+    /^[-a-zA-Z0-9@:%._+~#=]{1,256}\.[a-zA-Z0-9()]{1,6}\b([-a-zA-Z0-9()@:%_+.~#?&//=]*)?$/gi;
   return ensReg.test(domain);
 }
 
@@ -386,16 +519,30 @@ export function getMaskedAddress(address: string, maskLength = 6) {
   } else {
     prefixLength = 0;
   }
-  return `${address?.slice(0, prefixLength + maskLength)}...${address?.slice(len - maskLength, len)}`;
+  return `${address?.slice(0, prefixLength + maskLength)}...${address?.slice(
+    len - maskLength,
+    len,
+  )}`;
 }
 
-export function SendToAddressValidator(chainName: string | undefined, backendName: string | undefined, address: string | undefined) {
+export function SendToAddressValidator(
+  chainName: string | undefined,
+  backendName: string | undefined,
+  address: string | undefined,
+) {
   if (chainName && backendName && address) {
     switch (chainName) {
       case CHAIN_ETH.chainName:
-        return Object.keys(EnsCoinTypes).includes(backendName) ? (Web3.utils.isAddress(address) || isValidEns(address)) : Web3.utils.isAddress(address);
+        return Object.keys(EnsCoinTypes).includes(backendName)
+          ? Web3.utils.isAddress(address) || isValidEns(address)
+          : Web3.utils.isAddress(address);
       case CHAIN_EVMOS.chainName:
-        return isEvmosAddress(address) || (Object.keys(EnsCoinTypes).includes(ChainBackendNames.ETH) ? (Web3.utils.isAddress(address) || isValidEns(address)) : Web3.utils.isAddress(address));
+        return (
+          isEvmosAddress(address) ||
+          (Object.keys(EnsCoinTypes).includes(ChainBackendNames.ETH)
+            ? Web3.utils.isAddress(address) || isValidEns(address)
+            : Web3.utils.isAddress(address))
+        );
       case CHAIN_COSMOS.chainName:
         return isCosmosAddress(address);
       case CHAIN_OSMOSIS.chainName:
@@ -421,31 +568,65 @@ export function findChainOfAddress(address: string) {
     if (isJunoAddress(address)) return 'juno';
     if (isStargazeAddress(address)) return 'stargaze';
     if (isNobleAddress(address)) return 'noble';
-    if (Object.keys(EnsCoinTypes).includes(ChainBackendNames.ETH) ? (Web3.utils.isAddress(address) || isValidEns(address)) : Web3.utils.isAddress(address)) return 'ethereum';
+    if (
+      Object.keys(EnsCoinTypes).includes(ChainBackendNames.ETH)
+        ? Web3.utils.isAddress(address) || isValidEns(address)
+        : Web3.utils.isAddress(address)
+    )
+      return 'ethereum';
   }
   return false;
 }
 
 export function isEthereumAddress(address: string) {
-  return (Object.keys(EnsCoinTypes).includes(ChainBackendNames.ETH) ? (Web3.utils.isAddress(address) || isValidEns(address)) : Web3.utils.isAddress(address));
+  return Object.keys(EnsCoinTypes).includes(ChainBackendNames.ETH)
+    ? Web3.utils.isAddress(address) || isValidEns(address)
+    : Web3.utils.isAddress(address);
 }
 
-export function limitDecimalPlaces(num: string | number, decimalPlaces: number) {
+export function limitDecimalPlaces(num: string | number, decimalPlaces = 18) {
   num = String(num);
-  return num.includes('.') ? num.slice(0, num.indexOf('.') + (decimalPlaces + 1)) : num;
+  return num.includes('.')
+    ? num.slice(0, num.indexOf('.') + (decimalPlaces + 1))
+    : num;
 }
 
-export const isBasicCosmosChain = (backendName: string) => [ChainBackendNames.OSMOSIS, ChainBackendNames.COSMOS, ChainBackendNames.JUNO, ChainBackendNames.STARGAZE, ChainBackendNames.NOBLE].includes(backendName);
+export const isBasicCosmosChain = (backendName: string) =>
+  [
+    ChainBackendNames.OSMOSIS,
+    ChainBackendNames.COSMOS,
+    ChainBackendNames.JUNO,
+    ChainBackendNames.STARGAZE,
+    ChainBackendNames.NOBLE,
+  ].includes(backendName);
 
-export const isEvmosChain = (backendName: string) => ChainBackendNames.EVMOS === backendName;
+export const isEvmosChain = (backendName: string) =>
+  ChainBackendNames.EVMOS === backendName;
 
-export const isCosmosChain = (backendName: string) => isBasicCosmosChain(backendName) || isEvmosChain(backendName);
+export const isCosmosChain = (backendName: string) =>
+  isBasicCosmosChain(backendName) || isEvmosChain(backendName);
 
-export const isCosmosStakingToken = (chain: string, tokenData: any) => tokenData.chainDetails.backendName === ChainBackendNames[chain as ChainBackendNames] && tokenData.name === CosmosStakingTokens[chain as CosmosStakingTokens];
+export const isCosmosStakingToken = (chain: string, tokenData: any) =>
+  tokenData.chainDetails.backendName ===
+    ChainBackendNames[chain as ChainBackendNames] &&
+  tokenData.name === CosmosStakingTokens[chain as CosmosStakingTokens];
 
-export const isACosmosStakingToken = (tokenData: any) => [ChainBackendNames.OSMOSIS, ChainBackendNames.COSMOS, ChainBackendNames.JUNO, ChainBackendNames.EVMOS, ChainBackendNames.STARGAZE].some(chain => isCosmosStakingToken(chain as string, tokenData));
+export const isACosmosStakingToken = (tokenData: any) =>
+  [
+    ChainBackendNames.OSMOSIS,
+    ChainBackendNames.COSMOS,
+    ChainBackendNames.JUNO,
+    ChainBackendNames.EVMOS,
+    ChainBackendNames.STARGAZE,
+  ].some((chain) => isCosmosStakingToken(chain as string, tokenData));
 
-export const isABasicCosmosStakingToken = (tokenData: any) => [ChainBackendNames.OSMOSIS, ChainBackendNames.COSMOS, ChainBackendNames.JUNO, ChainBackendNames.STARGAZE].some(chain => isCosmosStakingToken(chain as string, tokenData));
+export const isABasicCosmosStakingToken = (tokenData: any) =>
+  [
+    ChainBackendNames.OSMOSIS,
+    ChainBackendNames.COSMOS,
+    ChainBackendNames.JUNO,
+    ChainBackendNames.STARGAZE,
+  ].some((chain) => isCosmosStakingToken(chain as string, tokenData));
 
 export const calculateTime = function time(ttime: string) {
   const ms = Date.parse(String(new Date())) - Date.parse(ttime);
@@ -488,7 +669,7 @@ export const getChain = (chain: string): Chain => {
     backendName: 'ALL',
     chain_id: '',
     native_token_address: '',
-    chainIdNumber: 0
+    chainIdNumber: 0,
   };
   switch (chain.toLowerCase()) {
     case 'eth':
@@ -546,7 +727,7 @@ export const generateRandomInt = (min: number, max: number) => {
 export const formatAmount = (amount: string | number, precision = 4) => {
   if (Number(amount) < 1) {
     return new Intl.NumberFormat('en-US', {
-      maximumSignificantDigits: precision
+      maximumSignificantDigits: precision,
     }).format(Number(amount));
   } else {
     const factor = Math.pow(10, precision);

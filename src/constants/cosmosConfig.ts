@@ -11,6 +11,7 @@ export enum Denom {
 
 export interface IIBCData {
   prefix: string;
+  backendName: string;
   denom: Denom;
   contractDecimal: number;
   coinType: number;
@@ -23,6 +24,7 @@ export interface IIBCData {
 export const cosmosConfig: Record<string, IIBCData> = {
   cosmos: {
     prefix: 'cosmos',
+    backendName: 'COSMOS',
     denom: Denom.ATOM,
     contractDecimal: 6,
     coinType: 118,
@@ -49,6 +51,7 @@ export const cosmosConfig: Record<string, IIBCData> = {
   },
   osmosis: {
     prefix: 'osmo',
+    backendName: 'OSMOSIS',
     denom: Denom.OSMOSIS,
     contractDecimal: 6,
     coinType: 118,
@@ -81,6 +84,7 @@ export const cosmosConfig: Record<string, IIBCData> = {
   },
   evmos: {
     prefix: 'evmos',
+    backendName: 'EVMOS',
     denom: Denom.EVMOS,
     contractDecimal: 18,
     coinType: 60,
@@ -105,6 +109,7 @@ export const cosmosConfig: Record<string, IIBCData> = {
   },
   juno: {
     prefix: 'juno',
+    backendName: 'JUNO',
     denom: Denom.JUNO,
     contractDecimal: 6,
     coinType: 118,
@@ -131,6 +136,7 @@ export const cosmosConfig: Record<string, IIBCData> = {
   },
   stargaze: {
     prefix: 'stars',
+    backendName: 'STARGAZE',
     denom: Denom.STARGAZE,
     contractDecimal: 6,
     coinType: 118,
@@ -156,6 +162,7 @@ export const cosmosConfig: Record<string, IIBCData> = {
   },
   noble: {
     prefix: 'noble',
+    backendName: 'NOBLE',
     denom: Denom.NOBLE,
     contractDecimal: 6,
     coinType: 118,
