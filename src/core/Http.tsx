@@ -9,7 +9,7 @@ export const PORTFOLIO_TIMEOUT = 20000;
 export const MODAL_HIDE_TIMEOUT = 100;
 export const MODAL_HIDE_TIMEOUT_250 = 250;
 export const SHARE_TRANSACTION_TIMEOUT = 250;
-
+export const DEFAULT_AXIOS_TIMEOUT = 20000;
 axiosRetry(axios, {
   retries: 5, // number of retries
   retryDelay: () => {

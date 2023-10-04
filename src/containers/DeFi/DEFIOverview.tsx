@@ -29,7 +29,7 @@ const RenderDetail = ({detail,type}:{detail:PositionDetail[];type:string;}) =>{
     <CyDView>
       {detail.map((token,index)=>{
         return (
-          <CyDView className="flex flex-row justify-between my-[8px]">
+          <CyDView className="flex flex-row justify-between my-[8px]" key={`${token.tokenAddress}-${index}`}>
             <CyDView className="flex-1 flex-row justify-start items-center max-w-[50%]">
               <CyDFastImage
               source={{uri:token.logo}}
@@ -166,6 +166,7 @@ export function DEFIOverviewScreen ({route,navigation}:RouteProps){
                   {protocol.chains.slice(0, moreChainsCount === 1 ? 4 : 3).map((chain, index) =>{
                     return (
                       <CyDFastImage
+                      key={`${chain}-${index}`}
                         source={getChainLogo(chain)}
                         className="h-[16px] w-[16px] rounded-full"
                         resizeMode="contain"
@@ -186,9 +187,9 @@ export function DEFIOverviewScreen ({route,navigation}:RouteProps){
             { protocol.total.debt>0 && <CyDTokenValue className={'text-center font-semibold text-[16px] text-warningTextYellow'}>{protocol.total.debt}</CyDTokenValue>}
           </CyDView>
         </CyDView>
-          {Object.values(protocol.types).map(type =>{
+          {Object.values(protocol.types).map((type,index) =>{
             return (
-              <RenderType type={type}/>
+              <RenderType type={type} key={`${type.type}-${index}`}/>
             );
           })}
     </CyDScrollView>
