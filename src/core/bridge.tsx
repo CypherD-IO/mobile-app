@@ -2,31 +2,40 @@ import { Coin } from '@cosmjs-rn/amino';
 import { cosmosConfig } from '../constants/cosmosConfig';
 import axios from './Http';
 import { ethers } from 'ethers';
-import { MsgSendEncodeObject, MsgTransferEncodeObject, SigningStargateClient } from '@cosmjs-rn/stargate';
+import {
+  MsgSendEncodeObject,
+  MsgTransferEncodeObject,
+  SigningStargateClient,
+} from '@cosmjs-rn/stargate';
 import { MsgTransfer } from 'cosmjs-types/ibc/applications/transfer/v1/tx';
 import Long from 'long';
-import { createTxIBCMsgTransfer, createTxRawEIP712, signatureToWeb3Extension } from '@tharsis/transactions';
+import {
+  createTxIBCMsgTransfer,
+  createTxRawEIP712,
+  signatureToWeb3Extension,
+} from '@tharsis/transactions';
 import { signTypedData, SignTypedDataVersion } from '@metamask/eth-sig-util';
 import { generatePostBodyBroadcast } from '@tharsis/provider';
 import * as Sentry from '@sentry/react-native';
 import { OfflineDirectSigner } from '@cosmjs-rn/proto-signing';
-import {
-  convertAmountOfContractDecimal
-} from './util';
-import { Chain } from '../constants/server';
+import { convertAmountOfContractDecimal } from './util';
+import { Chain, ChainBackendNames, GASLESS_CHAINS } from '../constants/server';
 
 export enum TypeOfTransaction {
   SIMULATION = 'simulation',
   TRANSACTION = 'transaction',
 }
 
-const ACCOUNT_DETAILS_INFO = 'https://api-evmos-ia.cosmosia.notional.ventures/cosmos/auth/v1beta1/accounts/';
-const SIMULATION_ENDPOINT = 'https://api-evmos-ia.cosmosia.notional.ventures/cosmos/tx/v1beta1/simulate';
-const TRANSACTION_ENDPOINT = 'https://api-evmos-ia.cosmosia.notional.ventures/cosmos/tx/v1beta1/txs';
+const ACCOUNT_DETAILS_INFO =
+  'https://api-evmos-ia.cosmosia.notional.ventures/cosmos/auth/v1beta1/accounts/';
+const SIMULATION_ENDPOINT =
+  'https://api-evmos-ia.cosmosia.notional.ventures/cosmos/tx/v1beta1/simulate';
+const TRANSACTION_ENDPOINT =
+  'https://api-evmos-ia.cosmosia.notional.ventures/cosmos/tx/v1beta1/txs';
 const getTimeOutTime = () => {
-  return Long.fromNumber(
-    Math.floor(Date.now() / 1000) + 60
-  ).multiply(1000000000);
+  return Long.fromNumber(Math.floor(Date.now() / 1000) + 60).multiply(
+    1000000000,
+  );
 };
 
 const evmosToCosmosSignatureContent = (
@@ -36,11 +45,11 @@ const evmosToCosmosSignatureContent = (
   userAccountData: any,
   ethereum: any,
   amount: string = '14000000000000000',
-  gas: string = '450000'
+  gas: string = '450000',
 ) => {
   const chainData = {
     chainId: 9001,
-    cosmosChainId: 'evmos_9001-2'
+    cosmosChainId: 'evmos_9001-2',
   };
 
   const accountData = userAccountData.data.account.base_account;
@@ -49,24 +58,26 @@ const evmosToCosmosSignatureContent = (
     accountAddress: senderEvmosAddress,
     sequence: accountData.sequence,
     accountNumber: accountData.account_number,
-    pubkey: accountData.pub_key.key
+    pubkey: accountData.pub_key.key,
   };
 
   const fee = {
     amount,
     denom: cosmosConfig.evmos.denom,
-    gas
+    gas,
   };
 
   const params = {
     receiver: receiverAddress,
     denom: cosmosConfig.evmos.denom,
-    amount: ethers.utils.parseUnits(convertAmountOfContractDecimal(inputAmount, 18), 18).toString(),
+    amount: ethers.utils
+      .parseUnits(convertAmountOfContractDecimal(inputAmount, 18), 18)
+      .toString(),
     sourcePort: 'transfer',
     sourceChannel: cosmosConfig.evmos.channel.osmosis,
     revisionNumber: Long.fromNumber(456),
     revisionHeight: Long.fromNumber(123),
-    timeoutTimestamp: (1e9 * (Math.floor(Date.now() / 1e3) + 1200)).toString()
+    timeoutTimestamp: (1e9 * (Math.floor(Date.now() / 1e3) + 1200)).toString(),
   };
 
   const msg: any = createTxIBCMsgTransfer(chainData, sender, fee, '', params);
@@ -76,7 +87,7 @@ const evmosToCosmosSignatureContent = (
   const signature = signTypedData({
     privateKey: privateKeyBuffer,
     data: msg.eipToSign,
-    version: SignTypedDataVersion.V4
+    version: SignTypedDataVersion.V4,
   });
 
   const extension = signatureToWeb3Extension(chainData, sender, signature);
@@ -84,20 +95,39 @@ const evmosToCosmosSignatureContent = (
   const rawTx = createTxRawEIP712(
     msg.legacyAmino.body,
     msg.legacyAmino.authInfo,
-    extension
+    extension,
   );
 
   const body = generatePostBodyBroadcast(rawTx);
   return body;
 };
 
-export const sendInCosmosChain = async (rpc: string, inputAmount: string, wallets: Map<string, OfflineDirectSigner>, chainName: string, handleBridgeTransactionResult: any, quoteData: any, denom: string): Promise<void> => {
+export const sendInCosmosChain = async (
+  rpc: string,
+  inputAmount: string,
+  wallets: Map<string, OfflineDirectSigner>,
+  chainName: string,
+  handleBridgeTransactionResult: any,
+  quoteData: any,
+  denom: string,
+): Promise<void> => {
   const signer = wallets.get(cosmosConfig[chainName].prefix);
   const [address]: any = await signer.getAccounts();
   const senderAddress = address.address;
   try {
-    const signingClient = await SigningStargateClient.connectWithSigner(rpc, signer);
-    const amount = ethers.utils.parseUnits(convertAmountOfContractDecimal(inputAmount, cosmosConfig[chainName].contractDecimal), cosmosConfig[chainName].contractDecimal).toString();
+    const signingClient = await SigningStargateClient.connectWithSigner(
+      rpc,
+      signer,
+    );
+    const amount = ethers.utils
+      .parseUnits(
+        convertAmountOfContractDecimal(
+          inputAmount,
+          cosmosConfig[chainName].contractDecimal,
+        ),
+        cosmosConfig[chainName].contractDecimal,
+      )
+      .toString();
 
     // transaction gas fee calculation
     const sendMsg: MsgSendEncodeObject = {
@@ -105,16 +135,18 @@ export const sendInCosmosChain = async (rpc: string, inputAmount: string, wallet
       value: {
         fromAddress: senderAddress,
         toAddress: quoteData.step1TargetWallet, // chainAddress[chainName],
-        amount: [{
-          denom,
-          amount
-        }]
-      }
+        amount: [
+          {
+            denom,
+            amount,
+          },
+        ],
+      },
     };
     const simulation = await signingClient.simulate(
       senderAddress,
       [sendMsg],
-      ''
+      '',
     );
 
     const gasFee = simulation * cosmosConfig[chainName].gasPrice;
@@ -124,9 +156,13 @@ export const sendInCosmosChain = async (rpc: string, inputAmount: string, wallet
       amount: [
         {
           denom,
-          amount: parseInt(gasFee.toFixed(6).split('.')[1]).toString()
-        }
-      ]
+          amount: GASLESS_CHAINS.includes(
+            cosmosConfig[chainName].backendName as ChainBackendNames,
+          )
+            ? '0'
+            : parseInt(gasFee.toFixed(6).split('.')[1]).toString(),
+        },
+      ],
     };
 
     const result = await signingClient.sendTokens(
@@ -134,12 +170,22 @@ export const sendInCosmosChain = async (rpc: string, inputAmount: string, wallet
       quoteData.step1TargetWallet,
       [{ denom, amount }],
       fee,
-      ''
+      '',
     );
-    handleBridgeTransactionResult(result.transactionHash, quoteData.quoteId, senderAddress, false);
+    handleBridgeTransactionResult(
+      result.transactionHash,
+      quoteData.quoteId,
+      senderAddress,
+      false,
+    );
   } catch (e) {
     Sentry.captureException(e);
-    handleBridgeTransactionResult(e.message, quoteData.quoteId, senderAddress, true);
+    handleBridgeTransactionResult(
+      e.message,
+      quoteData.quoteId,
+      senderAddress,
+      true,
+    );
   }
 };
 
@@ -148,15 +194,16 @@ export const interCosmosIbc = async (
   fromChain: Chain,
   fromChainRpc: string,
   inputAmount: string,
-  recipientAddress: string
-
+  recipientAddress: string,
 ) => {
   try {
-    const senderChainWallet: OfflineDirectSigner | undefined = wallets.get(cosmosConfig[fromChain.chainName].prefix);
+    const senderChainWallet: OfflineDirectSigner | undefined = wallets.get(
+      cosmosConfig[fromChain.chainName].prefix,
+    );
     if (senderChainWallet) {
       const senderChainClient = await SigningStargateClient.connectWithSigner(
         fromChainRpc,
-        senderChainWallet
+        senderChainWallet,
       );
 
       let senderChainAddress: any = await senderChainWallet.getAccounts();
@@ -164,11 +211,14 @@ export const interCosmosIbc = async (
 
       const transferAmount: Coin = {
         denom: cosmosConfig[fromChain.chainName].denom,
-        amount: ethers.utils.parseUnits(convertAmountOfContractDecimal(inputAmount, 6), 6).toString()
+        amount: ethers.utils
+          .parseUnits(convertAmountOfContractDecimal(inputAmount, 6), 6)
+          .toString(),
       };
 
       const sourcePort: string = 'transfer';
-      const sourceChannel: string = cosmosConfig[fromChain.chainName].channel.osmosis;
+      const sourceChannel: string =
+        cosmosConfig[fromChain.chainName].channel.osmosis;
       const timeOut: Long = getTimeOutTime();
       const memo = '';
       const transferMsg: MsgTransferEncodeObject = {
@@ -181,28 +231,34 @@ export const interCosmosIbc = async (
           token: transferAmount,
           timeoutHeight: {
             revisionHeight: Long.fromNumber(123),
-            revisionNumber: Long.fromNumber(456)
+            revisionNumber: Long.fromNumber(456),
           },
-          timeoutTimestamp: timeOut
-        })
+          timeoutTimestamp: timeOut,
+        }),
       };
 
       const simulation = await senderChainClient.simulate(
         senderChainAddress,
         [transferMsg],
-        memo
+        memo,
       );
 
-      const gasFee: number = simulation * cosmosConfig[fromChain.chainName].gasPrice;
+      const gasFee: number =
+        simulation * cosmosConfig[fromChain.chainName].gasPrice;
 
       const fee = {
         gas: Math.floor(simulation * 1.3).toString(),
         amount: [
           {
             denom: cosmosConfig[fromChain.chainName].denom,
-            amount: ethers.utils.parseUnits(convertAmountOfContractDecimal(gasFee.toString(), 6), 6).toString()
-          }
-        ]
+            amount: ethers.utils
+              .parseUnits(
+                convertAmountOfContractDecimal(gasFee.toString(), 6),
+                6,
+              )
+              .toString(),
+          },
+        ],
       };
 
       const ibcRepsonse = await senderChainClient.sendIbcTokens(
@@ -213,11 +269,11 @@ export const interCosmosIbc = async (
         sourceChannel,
         {
           revisionHeight: Long.fromNumber(123),
-          revisionNumber: Long.fromNumber(456)
+          revisionNumber: Long.fromNumber(456),
         },
         timeOut,
         fee,
-        memo
+        memo,
       );
 
       return ibcRepsonse;
@@ -231,14 +287,14 @@ export const evmosIbc = async (
   evmosAddress: string,
   ethereum: any,
   receiverAddress: string,
-  transferAmount: string
+  transferAmount: string,
 ) => {
   try {
     const accountInfoResponse = await axios.get(
       `${ACCOUNT_DETAILS_INFO}${evmosAddress}`,
       {
-        timeout: 2000
-      }
+        timeout: 2000,
+      },
     );
 
     let ibcTransferBody = evmosToCosmosSignatureContent(
@@ -246,15 +302,14 @@ export const evmosIbc = async (
       receiverAddress,
       transferAmount,
       accountInfoResponse,
-      ethereum
+      ethereum,
     );
 
-    const response = await axios.post(
-      SIMULATION_ENDPOINT,
-      ibcTransferBody
-    );
+    const response = await axios.post(SIMULATION_ENDPOINT, ibcTransferBody);
 
-    const simulatedGasInfo = response.data.gas_info ? response.data.gas_info : 0;
+    const simulatedGasInfo = response.data.gas_info
+      ? response.data.gas_info
+      : 0;
     const gasWanted = simulatedGasInfo.gas_used ? simulatedGasInfo.gas_used : 0;
 
     ibcTransferBody = evmosToCosmosSignatureContent(
@@ -266,49 +321,64 @@ export const evmosIbc = async (
       ethers.utils
         .parseUnits((cosmosConfig.evmos.gasPrice * gasWanted).toString(), '18')
         .toString(),
-      Math.floor(gasWanted * 1.3).toString()
+      Math.floor(gasWanted * 1.3).toString(),
     );
 
-    const resp: any = await axios.post(
-      TRANSACTION_ENDPOINT,
-      ibcTransferBody
-    );
+    const resp: any = await axios.post(TRANSACTION_ENDPOINT, ibcTransferBody);
     return {
-      transactionHash: resp
-        .data.tx_response.txhash,
-      gasFee: gasWanted
+      transactionHash: resp.data.tx_response.txhash,
+      gasFee: gasWanted,
     };
   } catch (e) {
     Sentry.captureException(e);
   }
 };
 
-export const sendCosmosTokens = async (rpc: string, inputAmount: string, wallets: Map<string, OfflineDirectSigner>, chainName: string, receiverAddress: string) => {
+export const sendCosmosTokens = async (
+  rpc: string,
+  inputAmount: string,
+  wallets: Map<string, OfflineDirectSigner>,
+  chainName: string,
+  receiverAddress: string,
+) => {
   try {
     const signer = wallets.get(cosmosConfig[chainName].prefix);
     if (signer) {
       const [address]: any = await signer.getAccounts();
       const senderAddress = address.address;
 
-      const signingClient = await SigningStargateClient.connectWithSigner(rpc, signer);
-      const amount = ethers.utils.parseUnits(convertAmountOfContractDecimal(inputAmount, cosmosConfig[chainName].contractDecimal), cosmosConfig[chainName].contractDecimal).toString();
+      const signingClient = await SigningStargateClient.connectWithSigner(
+        rpc,
+        signer,
+      );
+      const amount = ethers.utils
+        .parseUnits(
+          convertAmountOfContractDecimal(
+            inputAmount,
+            cosmosConfig[chainName].contractDecimal,
+          ),
+          cosmosConfig[chainName].contractDecimal,
+        )
+        .toString();
 
       const sendMsg: MsgSendEncodeObject = {
         typeUrl: '/cosmos.bank.v1beta1.MsgSend',
         value: {
           fromAddress: senderAddress,
           toAddress: receiverAddress,
-          amount: [{
-            denom: cosmosConfig[chainName].denom,
-            amount
-          }]
-        }
+          amount: [
+            {
+              denom: cosmosConfig[chainName].denom,
+              amount,
+            },
+          ],
+        },
       };
 
       const simulation = await signingClient.simulate(
         senderAddress,
         [sendMsg],
-        ''
+        '',
       );
       const gasFee = simulation * cosmosConfig[chainName].gasPrice;
 
@@ -317,25 +387,25 @@ export const sendCosmosTokens = async (rpc: string, inputAmount: string, wallets
         amount: [
           {
             denom: cosmosConfig[chainName].denom,
-            amount: parseInt(gasFee.toFixed(6).split('.')[1]).toString()
-          }
-        ]
+            amount: parseInt(gasFee.toFixed(6).split('.')[1]).toString(),
+          },
+        ],
       };
 
       const result = await signingClient.sendTokens(
         senderAddress,
         receiverAddress,
-        [{
-          denom: cosmosConfig[chainName].denom,
-          amount
-        }],
+        [
+          {
+            denom: cosmosConfig[chainName].denom,
+            amount,
+          },
+        ],
         fee,
-        ''
+        '',
       );
 
       return result;
     }
-  } catch (e) {
-
-  }
+  } catch (e) {}
 };

@@ -19,6 +19,7 @@ import {
   ChainNameMapping,
   NativeTokenMapping,
   CHAIN_ETH,
+  GASLESS_CHAINS,
 } from '../../constants/server';
 import {
   ActivityContext,
@@ -100,6 +101,8 @@ import { checkAllowance, getApproval, swapTokens } from '../../core/swap';
 import { TokenMeta } from '../../models/tokenMetaData.model';
 import { Colors } from '../../constants/theme';
 import { ethers } from 'ethers';
+import { AllowanceParams } from '../../models/swapMetaData';
+import { Holding } from '../../core/Portfolio';
 
 const QUOTE_RETRY = 3;
 const QUOTE_EXPIRY_SEC = 60;
@@ -124,7 +127,7 @@ export default function Bridge(props: { navigation?: any; route?: any }) {
   const [bridgeLoading, setBridgeLoading] = useState(false);
 
   const [fromChain, setFromChain] = useState<Chain>(
-    routeData?.fromChainData?.chainDetails ?? ALL_CHAINS[0]
+    routeData?.fromChainData?.chainDetails ?? ALL_CHAINS[0],
   );
   const [fromTokenData, setFromTokenData] = useState([]);
   const [fromToken, setFromToken] = useState<TokenMeta>();
@@ -163,7 +166,7 @@ export default function Bridge(props: { navigation?: any; route?: any }) {
     filteredTokenData: [],
   });
   const globalContext = useContext<any>(GlobalContext);
-  const [allowanceParams, setAllowanceParams] = useState({
+  const [allowanceParams, setAllowanceParams] = useState<AllowanceParams>({
     isApprovalModalVisible: false,
   });
   const [swapParams, setSwapParams] = useState({});
@@ -296,10 +299,10 @@ export default function Bridge(props: { navigation?: any; route?: any }) {
       ].includes(item.backendName)
     ) {
       minAmountUSD = 10;
-      const tempData: Chain[] = [];
+      const tempData: Holding[] = [];
       portfolioState.statePortfolio.tokenPortfolio[
         ChainNameMapping[item.backendName as ChainBackendNames]
-      ]?.holdings.forEach((data) => {
+      ]?.holdings.forEach((data: Holding) => {
         if (
           data.name ===
           CosmosStakingTokens[item.backendName as CosmosStakingTokens]
@@ -308,7 +311,7 @@ export default function Bridge(props: { navigation?: any; route?: any }) {
         }
       });
       if (tempData.length) {
-        setMinimumAmount(minAmountUSD / tempData[0].price);
+        setMinimumAmount(minAmountUSD / Number(tempData[0].price));
         setFromTokenData(tempData);
         setFromToken(tempData[0]);
       } else {
@@ -323,13 +326,13 @@ export default function Bridge(props: { navigation?: any; route?: any }) {
       }
       setMinimumAmount(
         minAmountUSD /
-        portfolioState.statePortfolio.tokenPortfolio[
-          ChainNameMapping[item.backendName]
-        ]?.holdings[0].price
+          portfolioState.statePortfolio.tokenPortfolio[
+            ChainNameMapping[item.backendName as ChainBackendNames]
+          ]?.holdings[0].price,
       );
       const holdings =
         portfolioState.statePortfolio.tokenPortfolio[
-          ChainNameMapping[item.backendName]
+          ChainNameMapping[item.backendName as ChainBackendNames]
         ]?.holdings;
       const holdingsToShow: any = [];
       for (const holding of holdings) {
@@ -346,11 +349,14 @@ export default function Bridge(props: { navigation?: any; route?: any }) {
     }
     setNativeTokenBalance(
       getNativeTokenBalance(
-        (NativeTokenMapping[item.symbol] || item.symbol).toUpperCase(),
+        (
+          get(NativeTokenMapping, item.symbol as ChainBackendNames) ||
+          item.symbol
+        ).toUpperCase(),
         portfolioState.statePortfolio.tokenPortfolio[
-          ChainNameMapping[item.backendName]
-        ]?.holdings
-      )
+          ChainNameMapping[item.backendName as ChainBackendNames]
+        ]?.holdings,
+      ),
     );
   };
 
@@ -364,7 +370,7 @@ export default function Bridge(props: { navigation?: any; route?: any }) {
   function transferSentQuote(
     address: string,
     quoteUUID: string,
-    txnHash: string
+    txnHash: string,
   ) {
     postWithAuth('/v1/bridge/deposit', {
       address,
@@ -386,9 +392,9 @@ export default function Bridge(props: { navigation?: any; route?: any }) {
           void intercomAnalyticsLog('evm_bridge_success', bridgeEventDetails);
           void intercomAnalyticsLog(
             `evm_bridge_${String(
-              get(fromToken, 'symbol', '').toLowerCase()
+              get(fromToken, 'symbol', '').toLowerCase(),
             )}_${String(get(toToken, 'symbol', '').toLowerCase())}_success`,
-            bridgeEventDetails
+            bridgeEventDetails,
           );
 
           activityContext.dispatch({
@@ -415,7 +421,7 @@ export default function Bridge(props: { navigation?: any; route?: any }) {
         } else {
           void intercomAnalyticsLog(
             'bridge_email_send_failed',
-            bridgeEventDetails
+            bridgeEventDetails,
           );
           activityContext.dispatch({
             type: ActivityReducerAction.PATCH,
@@ -469,19 +475,19 @@ export default function Bridge(props: { navigation?: any; route?: any }) {
     quoteUUID: string,
     fromAddress: string,
     isError: boolean,
-    isHashGenerated = false
+    isHashGenerated = false,
   ) => {
     if (isError) {
       if (message === t('INSUFFICIENT_GAS_ERROR')) {
         message = !isHashGenerated
           ? `You need ${String(
-            get(
-              nativeTokenMapping,
-              String(get(fromToken, 'chainDetails.backendName'))
-            )
-          )} ( ${String(get(fromToken, 'chainDetails.symbol'))} ) ${t(
-            'INSUFFICIENT_GAS'
-          )}`
+              get(
+                nativeTokenMapping,
+                String(get(fromToken, 'chainDetails.backendName')),
+              ),
+            )} ( ${String(get(fromToken, 'chainDetails.symbol'))} ) ${t(
+              'INSUFFICIENT_GAS',
+            )}`
           : `${message}. Please contact customer support with the quote_id: ${quoteUUID}`;
       }
       if (isHashGenerated) {
@@ -530,7 +536,7 @@ export default function Bridge(props: { navigation?: any; route?: any }) {
       true,
       payTokenModalParamsLocal.finalGasPrice,
       payTokenModalParamsLocal.gasLimit,
-      globalStateContext
+      globalStateContext,
     );
   };
 
@@ -655,7 +661,7 @@ export default function Bridge(props: { navigation?: any; route?: any }) {
         toChain: toChain.backendName,
         fromTokenAddress:
           fromChain.backendName === ChainBackendNames.EVMOS &&
-            fromToken?.chainDetails.backendName === ChainBackendNames.EVMOS
+          fromToken?.chainDetails.backendName === ChainBackendNames.EVMOS
             ? '0xeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee'
             : fromToken?.contractAddress,
         toTokenAddress: toToken.contractAddress.toLowerCase(),
@@ -819,7 +825,7 @@ export default function Bridge(props: { navigation?: any; route?: any }) {
             cryptoAmount,
             wallets,
             ChainNameMapping[fromChain.backendName],
-            quoteData.receiverAddress
+            quoteData.receiverAddress,
           );
           if (response) {
             transactionHash = response.transactionHash;
@@ -830,7 +836,7 @@ export default function Bridge(props: { navigation?: any; route?: any }) {
             fromChain,
             fromChainRpc,
             cryptoAmount,
-            quoteData.receiverAddress
+            quoteData.receiverAddress,
           );
           if (response) {
             transactionHash = response.transactionHash;
@@ -911,7 +917,7 @@ export default function Bridge(props: { navigation?: any; route?: any }) {
           evmosAddress,
           ethereum,
           quoteData.receiverAddress,
-          cryptoAmount
+          cryptoAmount,
         );
         if (transactionHash && gasFee) {
           const data = {
@@ -987,7 +993,7 @@ export default function Bridge(props: { navigation?: any; route?: any }) {
           ChainNameMapping[fromChain.backendName],
           handleBridgeTransactionResult,
           quoteData,
-          fromToken.denom
+          fromToken.denom,
         );
         setBridgeLoading(false);
       } else {
@@ -997,12 +1003,12 @@ export default function Bridge(props: { navigation?: any; route?: any }) {
           tokenPrice: 0,
         };
         const web3RPCEndpoint = new Web3(
-          getWeb3Endpoint(hdWallet.state.selectedChain, globalStateContext)
+          getWeb3Endpoint(hdWallet.state.selectedChain, globalStateContext),
         );
         try {
           const gasFeeResponse = await getGasPriceFor(
             fromChain,
-            web3RPCEndpoint
+            web3RPCEndpoint,
           );
           gasPrice = gasFeeResponse;
           estimateGasForNativeTransaction(
@@ -1011,13 +1017,13 @@ export default function Bridge(props: { navigation?: any; route?: any }) {
             fromToken,
             convertAmountOfContractDecimal(
               cryptoAmount,
-              fromToken?.contractDecimals
+              fromToken?.contractDecimals,
             ),
             true,
             gasPrice,
             sendTransaction,
             globalStateContext,
-            quoteData.step1TargetWallet
+            quoteData.step1TargetWallet,
           );
         } catch (gasFeeError) {
           activityContext.dispatch({
@@ -1056,7 +1062,7 @@ export default function Bridge(props: { navigation?: any; route?: any }) {
         }
         if (
           swapSupportedChains.includes(
-            fromChainData.chainDetails.chainIdNumber
+            fromChainData.chainDetails.chainIdNumber,
           ) &&
           routeData.title === 'Swap'
         ) {
@@ -1064,8 +1070,8 @@ export default function Bridge(props: { navigation?: any; route?: any }) {
         } else if (routeData.title !== 'Swap') {
           setToChain(
             ALL_CHAINS.find(
-              (chain) => chain.backendName !== fromChain.backendName
-            )
+              (chain) => chain.backendName !== fromChain.backendName,
+            ),
           );
         }
         setMinimumAmount(minAmountUSD / fromChainData.price);
@@ -1077,39 +1083,39 @@ export default function Bridge(props: { navigation?: any; route?: any }) {
             ).toUpperCase(),
             portfolioState.statePortfolio.tokenPortfolio[
               ChainNameMapping[fromChainData.chainDetails.backendName]
-            ].holdings
-          )
+            ].holdings,
+          ),
         );
       } else {
         setLoading(true);
         minAmountUSD = MINIMUM_TRANSFER_AMOUNT_ETH; // Change this to 10 if default chain is changed to any chain other than ETH
         setFromTokenData(
-          portfolioState.statePortfolio.tokenPortfolio?.eth.holdings
+          portfolioState.statePortfolio.tokenPortfolio?.eth.holdings,
         );
         setFromToken(
-          portfolioState.statePortfolio.tokenPortfolio?.eth.holdings[0]
+          portfolioState.statePortfolio.tokenPortfolio?.eth.holdings[0],
         );
         setMinimumAmount(
           minAmountUSD /
-          portfolioState.statePortfolio.tokenPortfolio?.eth.holdings[0].price
+            portfolioState.statePortfolio.tokenPortfolio?.eth.holdings[0].price,
         );
         setNativeTokenBalance(
           getNativeTokenBalance(
             (
               NativeTokenMapping[
-              portfolioState.statePortfolio.tokenPortfolio?.eth.holdings[0]
-                .chainDetails.symbol
+                portfolioState.statePortfolio.tokenPortfolio?.eth.holdings[0]
+                  .chainDetails.symbol
               ] ||
               portfolioState.statePortfolio.tokenPortfolio?.eth.holdings[0]
                 .chainDetails.symbol
             ).toUpperCase(),
             portfolioState.statePortfolio.tokenPortfolio[
               ChainNameMapping[
-              portfolioState.statePortfolio.tokenPortfolio?.eth.holdings[0]
-                .chainDetails.backendName
+                portfolioState.statePortfolio.tokenPortfolio?.eth.holdings[0]
+                  .chainDetails.backendName
               ]
-            ].holdings
-          )
+            ].holdings,
+          ),
         );
         setToChain(ALL_CHAINS[routeData.title === 'Swap' ? 0 : 1]);
       }
@@ -1219,7 +1225,7 @@ export default function Bridge(props: { navigation?: any; route?: any }) {
       fromChain.backendName === toChain.backendName
     ) {
       const filteredTokens = toTokenData.originalTokenData.filter(
-        (token) => token.symbol !== fromToken?.symbol
+        (token) => token.symbol !== fromToken?.symbol,
       );
       setToTokenData({
         ...toTokenData,
@@ -1231,12 +1237,12 @@ export default function Bridge(props: { navigation?: any; route?: any }) {
 
   const fetchChainSupportedTokens = async () => {
     const response = await getWithAuth(
-      `/v1/swap/evm/chains/${toChain.chainIdNumber}/tokens`
+      `/v1/swap/evm/chains/${toChain.chainIdNumber}/tokens`,
     );
     if (!response.isError) {
       if (response?.data?.tokens) {
         const filteredTokens = response.data.tokens.filter(
-          (token) => token.symbol !== fromToken?.symbol
+          (token) => token.symbol !== fromToken?.symbol,
         );
         setToTokenData({
           originalTokenData: response.data.tokens,
@@ -1284,27 +1290,35 @@ export default function Bridge(props: { navigation?: any; route?: any }) {
     if (amount.includes('.')) {
       return amount.slice(
         0,
-        amount.indexOf('.') + (fromToken?.name === 'Ether' ? 7 : 3)
+        amount.indexOf('.') + (fromToken?.name === 'Ether' ? 7 : 3),
       );
     } else if (amount === '0') return '0.00';
     return amount;
   };
 
   const isExchangeDisabled = () => {
-    const nativeTokenSymbol =
-      NativeTokenMapping[fromToken?.chainDetails.symbol] ||
-      fromToken?.chainDetails.symbol;
-    const gas = isSwap()
-      ? swapParams?.gasFeeETH
-      : gasFeeReservation[fromToken?.chainDetails?.backendName];
-    return (
-      nativeTokenBalance === 0 ||
-      parseFloat(cryptoAmount) > parseFloat(fromToken?.actualBalance) ||
-      nativeTokenBalance <= gas ||
-      (fromToken?.symbol === nativeTokenSymbol &&
-        parseFloat(cryptoAmount) >
-        parseFloat((parseFloat(fromToken?.actualBalance) - gas).toFixed(6)))
-    );
+    if (fromToken) {
+      const { actualBalance, chainDetails } = fromToken;
+      const { symbol, backendName } = chainDetails ?? {};
+      const nativeTokenSymbol = get(NativeTokenMapping, symbol) || symbol;
+      const gas = isSwap()
+        ? swapParams?.gasFeeETH
+        : gasFeeReservation[backendName as ChainBackendNames];
+      const isGaslessChain = GASLESS_CHAINS.includes(
+        backendName as ChainBackendNames,
+      );
+      const hasInSufficientGas =
+        (!isGaslessChain && nativeTokenBalance <= gas) ||
+        (fromToken?.symbol === nativeTokenSymbol &&
+          parseFloat(cryptoAmount) >
+            parseFloat((parseFloat(String(actualBalance)) - gas).toFixed(6)));
+      return (
+        (!isGaslessChain && nativeTokenBalance === 0) ||
+        parseFloat(cryptoAmount) > parseFloat(String(actualBalance)) ||
+        hasInSufficientGas
+      );
+    }
+    return true;
   };
 
   const renderWarningPopupMessage = (message: string) => {
@@ -1323,29 +1337,38 @@ export default function Bridge(props: { navigation?: any; route?: any }) {
   };
 
   const RenderWarningMessage = () => {
-    const nativeTokenSymbol =
-      NativeTokenMapping[fromToken?.chainDetails.symbol] ||
-      fromToken?.chainDetails.symbol;
-    const gas = isSwap()
-      ? swapParams?.gasFeeETH
-      : gasFeeReservation[fromToken?.chainDetails?.backendName];
-    if (parseFloat(cryptoAmount) > parseFloat(fromToken?.actualBalance)) {
-      return renderWarningPopupMessage(
-        fromChain !== toChain
-          ? t<string>('INSUFFICIENT_BALANCE_BRIDGE')
-          : t<string>('INSUFFICIENT_BALANCE_SWAP')
-      );
-    } else if (nativeTokenBalance <= gas) {
-      return renderWarningPopupMessage(
-        `Insufficient ${nativeTokenSymbol} for gas fee`
-      );
-    } else if (
-      fromToken?.symbol === nativeTokenSymbol &&
-      parseFloat(cryptoAmount) >
-      parseFloat((parseFloat(fromToken?.actualBalance) - gas).toFixed(6))
-    ) {
-      return renderWarningPopupMessage(`${t<string>('INSUFFICIENT_GAS_FEE')}`);
+    if (fromToken) {
+      const { actualBalance, chainDetails } = fromToken;
+      const { symbol, backendName } = chainDetails ?? {};
+      const nativeTokenSymbol: string =
+        get(NativeTokenMapping, symbol) || symbol;
+      const gas = isSwap()
+        ? swapParams?.gasFeeETH
+        : gasFeeReservation[backendName as ChainBackendNames];
+      if (parseFloat(cryptoAmount) > parseFloat(String(actualBalance))) {
+        return renderWarningPopupMessage(
+          fromChain !== toChain
+            ? t<string>('INSUFFICIENT_BALANCE_BRIDGE')
+            : t<string>('INSUFFICIENT_BALANCE_SWAP'),
+        );
+      } else if (
+        !GASLESS_CHAINS.includes(backendName as ChainBackendNames) &&
+        nativeTokenBalance <= gas
+      ) {
+        return renderWarningPopupMessage(
+          `Insufficient ${nativeTokenSymbol} for gas fee`,
+        );
+      } else if (
+        fromToken?.symbol === nativeTokenSymbol &&
+        parseFloat(cryptoAmount) >
+          parseFloat((parseFloat(String(actualBalance)) - gas).toFixed(6))
+      ) {
+        return renderWarningPopupMessage(
+          `${t<string>('INSUFFICIENT_GAS_FEE')}`,
+        );
+      }
     }
+
     return null;
   };
 
@@ -1359,7 +1382,7 @@ export default function Bridge(props: { navigation?: any; route?: any }) {
   const renderReasons = (
     reason: string,
     index: number,
-    { length }: { length: number }
+    { length }: { length: number },
   ) => {
     return (
       <CyDView
@@ -1376,8 +1399,9 @@ export default function Bridge(props: { navigation?: any; route?: any }) {
             onPress={(e) => {
               onPressData(reason);
             }}
-            className={`h-[20px] w-[20px] ${selectedReasons.includes(reason) ? 'bg-appColor' : ''
-              } rounded-[4px] border-[1.5px] border-borderColor flex flex-row justify-center items-center`}
+            className={`h-[20px] w-[20px] ${
+              selectedReasons.includes(reason) ? 'bg-appColor' : ''
+            } rounded-[4px] border-[1.5px] border-borderColor flex flex-row justify-center items-center`}
           >
             {selectedReasons.includes(reason) ? (
               <CyDImage
@@ -1393,22 +1417,21 @@ export default function Bridge(props: { navigation?: any; route?: any }) {
 
   const onSignModalCancel = async () => {
     const dontAsk = await getQuoteCancelReasons();
-    if (!dontAsk) {
-      const nativeTokenSymbol =
-        NativeTokenMapping[fromToken?.chainDetails.symbol] ||
-        fromToken?.chainDetails.symbol;
+    if (!dontAsk && fromToken) {
+      const { actualBalance, chainDetails } = fromToken;
+      const { symbol, backendName } = chainDetails ?? {};
+      const nativeTokenSymbol = get(NativeTokenMapping, symbol) || symbol;
       if (
-        parseFloat(cryptoAmount) > parseFloat(fromToken?.actualBalance) ||
+        parseFloat(cryptoAmount) > parseFloat(String(actualBalance)) ||
         nativeTokenBalance <=
-        gasFeeReservation[fromToken?.chainDetails?.backendName] ||
+          gasFeeReservation[backendName as ChainBackendNames] ||
         (fromToken?.symbol === nativeTokenSymbol &&
           parseFloat(cryptoAmount) >
-          parseFloat(
-            (
-              parseFloat(fromToken?.actualBalance) -
-              gasFeeReservation[fromToken?.chainDetails.backendName]
-            ).toFixed(6)
-          ))
+            parseFloat(
+              (
+                parseFloat(String()) - get(gasFeeReservation, backendName)
+              ).toFixed(6),
+            ))
       ) {
         quoteData.reasons.push('Insufficient Funds');
       }
@@ -1418,7 +1441,7 @@ export default function Bridge(props: { navigation?: any; route?: any }) {
       if (
         isReadOnlyWallet ||
         isSwap() ||
-        parseFloat(cryptoAmount) > parseFloat(fromToken?.actualBalance)
+        parseFloat(cryptoAmount) > parseFloat(String(actualBalance))
       ) {
         setSignModalVisible(false);
       } else {
@@ -1442,8 +1465,8 @@ export default function Bridge(props: { navigation?: any; route?: any }) {
         feedback: {
           ...quoteData,
           reasons: selectedReasons,
-          chain: `${fromChain.name} -> ${toChain.name}`,
-          token: `${fromToken?.name} -> ${toToken?.name}`,
+          chain: `${fromChain.name} -> ${String(toChain?.name)}`,
+          token: `${String(fromToken?.name)} -> ${String(toToken?.name)}`,
         },
       };
       await postWithAuth('/v1/notification/slack/user-feedback', data);
@@ -1511,8 +1534,9 @@ export default function Bridge(props: { navigation?: any; route?: any }) {
               onPress={(e) => {
                 setDontAskAgain(!dontAskAgain);
               }}
-              className={`h-[18px] w-[18px] ${dontAskAgain ? 'bg-appColor' : ''
-                } rounded-[4px] border-[1.5px] border-borderColor flex flex-row justify-center items-center ml-[5px]`}
+              className={`h-[18px] w-[18px] ${
+                dontAskAgain ? 'bg-appColor' : ''
+              } rounded-[4px] border-[1.5px] border-borderColor flex flex-row justify-center items-center ml-[5px]`}
             >
               {dontAskAgain ? (
                 <CyDImage
@@ -1600,13 +1624,13 @@ export default function Bridge(props: { navigation?: any; route?: any }) {
       };
       const response = await postWithAuth(
         `/v1/swap/evm/chains/${fromChain.chainIdNumber}/quote`,
-        payload
+        payload,
       );
       if (!response.isError) {
         const quoteData = response.data;
         const routerAddress = quoteData.router;
         const web3 = new Web3(
-          getWeb3Endpoint(fromToken?.chainDetails, globalContext)
+          getWeb3Endpoint(fromToken?.chainDetails, globalContext),
         );
         if (!isNative) {
           const allowanceResponse = await checkAllowance({
@@ -1630,11 +1654,11 @@ export default function Bridge(props: { navigation?: any; route?: any }) {
               gasFeeETH = web3.utils.fromWei(
                 web3.utils.toWei(
                   (parseInt(finalGasPrice) * gasLimit).toFixed(9),
-                  'gwei'
-                )
+                  'gwei',
+                ),
               );
               finalGasPrice = web3.utils.toHex(
-                web3.utils.toWei(finalGasPrice.toFixed(9), 'gwei')
+                web3.utils.toWei(finalGasPrice.toFixed(9), 'gwei'),
               );
             }
 
@@ -1738,16 +1762,18 @@ export default function Bridge(props: { navigation?: any; route?: any }) {
     try {
       let gasFeeETH = '';
       let gasFeeDollar = '';
-      if (parseFloat(cryptoAmount) < parseFloat(fromToken?.actualBalance)) {
+      if (
+        parseFloat(cryptoAmount) < parseFloat(String(fromToken?.actualBalance))
+      ) {
         const gasLimit = await web3.eth.estimateGas({
           from: ethereum.address,
           // For Optimism the ETH token has different contract address
           to: routerAddress,
           value: isNative
             ? web3.utils.toWei(
-              limitDecimalPlaces(cryptoAmount, fromToken?.contractDecimals),
-              'ether'
-            )
+                limitDecimalPlaces(cryptoAmount, fromToken?.contractDecimals),
+                'ether',
+              )
             : '0x0',
           data: isAllowance ? quoteData.data.data : '',
         });
@@ -1760,11 +1786,11 @@ export default function Bridge(props: { navigation?: any; route?: any }) {
           gasFeeETH = web3.utils.fromWei(
             web3.utils.toWei(
               (parseInt(finalGasPrice) * gasLimit).toFixed(9),
-              'gwei'
-            )
+              'gwei',
+            ),
           );
           finalGasPrice = web3.utils.toHex(
-            web3.utils.toWei(finalGasPrice.toFixed(9), 'gwei')
+            web3.utils.toWei(finalGasPrice.toFixed(9), 'gwei'),
           );
         }
         if (gasFeeResponse.tokenPrice > 0) {
@@ -1833,90 +1859,94 @@ export default function Bridge(props: { navigation?: any; route?: any }) {
 
   const onConfirmSwap = async (confirmSwapParams) => {
     try {
-      setSignModalVisible(false);
-      const { web3, routerAddress, isNative, quoteData, isAllowance } =
-        confirmSwapParams;
-      if (isAllowance) {
-        setBridgeLoading(true);
-        const id = genId();
-        const activityData: ExchangeTransaction = {
-          id,
-          status: ActivityStatus.PENDING,
-          type: isSwap() ? ActivityType.SWAP : ActivityType.BRIDGE,
-          quoteId: quoteData?.quoteId,
-          fromChain: fromChain.name,
-          toChain: toChain.name,
-          fromToken: fromToken?.name,
-          toToken: toToken?.name,
-          fromSymbol: fromToken?.symbol,
-          toSymbol: toToken?.symbol,
-          fromTokenLogoUrl: fromToken?.logoUrl,
-          toTokenLogoUrl: toToken?.logo,
-          fromTokenAmount: parseFloat(cryptoAmount).toFixed(3),
-          toTokenAmount: quoteData?.toToken?.amount.toString(),
-          datetime: new Date(),
-          transactionHash: '',
-          quoteData: {
-            fromAmountUsd: Number(cryptoAmount) * fromToken?.price,
-            toAmountUsd: quoteData?.value,
-            gasFee: swapParams.gasFeeDollar,
-          },
-        };
-        activityId.current = id;
-        const gasLimit = await web3.eth.estimateGas({
-          from: ethereum.address,
-          // For Optimism the ETH token has different contract address
-          to: routerAddress,
-          value: isNative
-            ? web3.utils.toWei(
-              limitDecimalPlaces(cryptoAmount, fromToken?.contractDecimals)
-            )
-            : '0x0',
-          data: quoteData.data.data,
-        });
-        const gasFeeResponse = quoteData.gasInfo;
-        const response = await swapTokens({
-          ...confirmSwapParams,
-          gasLimit,
-          gasFeeResponse,
-        });
-        if (!response.isError) {
-          setBridgeLoading(false);
-          activityData.status = ActivityStatus.SUCCESS;
-          activityContext.dispatch({
-            type: ActivityReducerAction.POST,
-            value: activityData,
+      if (fromChain && toChain && fromToken && toToken) {
+        setSignModalVisible(false);
+        const { web3, routerAddress, isNative, quoteData, isAllowance } =
+          confirmSwapParams;
+        if (isAllowance) {
+          setBridgeLoading(true);
+          const id = genId();
+          const activityData: ExchangeTransaction = {
+            id,
+            status: ActivityStatus.PENDING,
+            type: isSwap() ? ActivityType.SWAP : ActivityType.BRIDGE,
+            quoteId: quoteData?.quoteId,
+            fromChain: fromChain.name,
+            toChain: toChain.name,
+            fromToken: fromToken?.name,
+            toToken: toToken?.name,
+            fromSymbol: fromToken?.symbol,
+            toSymbol: toToken?.symbol,
+            fromTokenLogoUrl: fromToken?.logoUrl,
+            toTokenLogoUrl: toToken?.logo,
+            fromTokenAmount: parseFloat(cryptoAmount).toFixed(3),
+            toTokenAmount: quoteData?.toToken?.amount.toString(),
+            datetime: new Date(),
+            transactionHash: '',
+            quoteData: {
+              fromAmountUsd: Number(cryptoAmount) * Number(fromToken?.price),
+              toAmountUsd: quoteData?.value,
+              gasFee: swapParams.gasFeeDollar,
+            },
+          };
+          activityId.current = id;
+          const gasLimit = await web3.eth.estimateGas({
+            from: ethereum.address,
+            // For Optimism the ETH token has different contract address
+            to: routerAddress,
+            value: isNative
+              ? web3.utils.toWei(
+                  limitDecimalPlaces(cryptoAmount, fromToken?.contractDecimals),
+                )
+              : '0x0',
+            data: quoteData.data.data,
           });
-          showModal('state', {
-            type: 'success',
-            title: t('SWAP_SUCCESS'),
-            description: t('SWAP_SUCCESS_DESCRIPTION'),
-            onSuccess: () => onModalHide('success'),
-            onFailure: hideModal,
+          const gasFeeResponse = quoteData.gasInfo;
+          const response = await swapTokens({
+            ...confirmSwapParams,
+            gasLimit,
+            gasFeeResponse,
           });
+          if (!response.isError) {
+            setBridgeLoading(false);
+            activityData.status = ActivityStatus.SUCCESS;
+            activityContext.dispatch({
+              type: ActivityReducerAction.POST,
+              value: activityData,
+            });
+            showModal('state', {
+              type: 'success',
+              title: t('SWAP_SUCCESS'),
+              description: t('SWAP_SUCCESS_DESCRIPTION'),
+              onSuccess: () => onModalHide('success'),
+              onFailure: hideModal,
+            });
+          } else {
+            setBridgeLoading(false);
+            activityData.status = ActivityStatus.FAILED;
+            activityContext.dispatch({
+              type: ActivityReducerAction.POST,
+              value: activityData,
+            });
+            showModal('state', {
+              type: 'error',
+              title: '',
+              description:
+                response?.error?.message ?? t('SWAP_ERROR_DESCRIPTION'),
+              onSuccess: hideModal,
+              onFailure: hideModal,
+            });
+          }
         } else {
-          setBridgeLoading(false);
-          activityData.status = ActivityStatus.FAILED;
-          activityContext.dispatch({
-            type: ActivityReducerAction.POST,
-            value: activityData,
-          });
-          showModal('state', {
-            type: 'error',
-            title: '',
-            description:
-              response?.error?.message ?? t('SWAP_ERROR_DESCRIPTION'),
-            onSuccess: hideModal,
-            onFailure: hideModal,
-          });
+          setTimeout(() => {
+            setAllowanceParams({
+              ...allowanceParams,
+              isApprovalModalVisible: true,
+            });
+          }, MODAL_HIDE_TIMEOUT_250);
         }
       } else {
-        setTimeout(() => {
-          setAllowanceParams({
-            ...allowanceParams,
-            isApprovalModalVisible: true,
-          });
-        }, MODAL_HIDE_TIMEOUT_250);
+        throw 'Insufficient parameters';
       }
     } catch (error) {
       setBridgeLoading(false);
@@ -1997,7 +2027,7 @@ export default function Bridge(props: { navigation?: any; route?: any }) {
       setSignModalVisible(false);
       isSignableTransaction(
         isSwap() ? ActivityType.SWAP : ActivityType.BRIDGE,
-        isReadOnlyWallet ? onGetQuote : onPressBridge
+        isReadOnlyWallet ? onGetQuote : onPressBridge,
       );
     }
   };
@@ -2013,6 +2043,31 @@ export default function Bridge(props: { navigation?: any; route?: any }) {
       return true;
     else if (!isSwap()) return parseFloat(cryptoAmount) < minimumAmount;
     return false;
+  };
+
+  const setMaxAmount = () => {
+    if (fromToken) {
+      const { actualBalance, chainDetails, price } = fromToken;
+      const { symbol, backendName } = chainDetails ?? {};
+      const gasReserved =
+        (get(NativeTokenMapping, symbol as ChainBackendNames) || symbol) ===
+        fromToken?.symbol
+          ? gasFeeReservation[backendName as ChainBackendNames]
+          : 0;
+
+      const maxAmount = parseFloat(String(actualBalance)) - gasReserved;
+      const textAmount =
+        maxAmount < 0 ? '0.00' : limitDecimalPlaces(maxAmount.toString(), 6);
+      setAmount(textAmount);
+
+      if (enterCryptoAmount) {
+        setCryptoAmount(textAmount);
+        setUsdAmount((parseFloat(textAmount) * Number(price)).toString());
+      } else {
+        setCryptoAmount((parseFloat(textAmount) / Number(price)).toString());
+        setUsdAmount(textAmount);
+      }
+    }
   };
 
   return (
@@ -2065,7 +2120,7 @@ export default function Bridge(props: { navigation?: any; route?: any }) {
           isModalVisible={toChainModalVisible}
           data={toChainData}
           title={'Choose Chain'}
-          selectedItem={toChain.name}
+          selectedItem={toChain?.name}
           onPress={(item) => {
             setToChain(item.item);
           }}
@@ -2216,20 +2271,22 @@ export default function Bridge(props: { navigation?: any; route?: any }) {
                       }
                       numberOfLines={1}
                     >
-                      {`${isSwap()
+                      {isSwap()
                         ? Number(swapParams?.amount).toFixed(4)
-                        : quoteData.fromAmount.toFixed(4)
-                        } ${fromToken?.name}`}
+                        : quoteData.fromAmount.toFixed(4) +
+                          ' ' +
+                          String(fromToken?.name)}
                     </CyDText>
                     <CyDText
                       className={
                         'font-nunito font-[12px] text-[#929292] font-bold'
                       }
                     >
-                      {`${isSwap()
-                        ? (swapParams.amount * fromToken?.price).toFixed(4)
-                        : quoteData.fromAmountUsd.toFixed(4)
-                        } USD`}
+                      {isSwap()
+                        ? (
+                            Number(swapParams.amount) * Number(fromToken?.price)
+                          ).toFixed(4)
+                        : quoteData.fromAmountUsd.toFixed(4) + ' USD'}
                     </CyDText>
                   </CyDView>
                 </CyDView>
@@ -2253,22 +2310,22 @@ export default function Bridge(props: { navigation?: any; route?: any }) {
                       }
                       numberOfLines={1}
                     >
-                      {`${isSwap()
+                      {isSwap()
                         ? Number(
-                          swapParams?.quoteData?.toToken?.amount
-                        ).toFixed(4)
-                        : quoteData.toAmount.toFixed(4)
-                        } ${toToken?.name}`}
+                            swapParams?.quoteData?.toToken?.amount,
+                          ).toFixed(4)
+                        : quoteData.toAmount.toFixed(4) +
+                          ' ' +
+                          String(toToken?.name)}
                     </CyDText>
                     <CyDText
                       className={
                         'font-nunito font-[12px] text-[#929292] font-bold'
                       }
                     >
-                      {`${isSwap()
+                      {isSwap()
                         ? Number(swapParams?.quoteData?.value).toFixed(4)
-                        : quoteData.toAmountUsd.toFixed(4)
-                        } USD`}
+                        : quoteData.toAmountUsd.toFixed(4) + ' USD'}
                     </CyDText>
                   </CyDView>
                 </CyDView>
@@ -2279,9 +2336,9 @@ export default function Bridge(props: { navigation?: any; route?: any }) {
                       'mr-[10px] flex flex-row justify-between mt-[20px]',
                       {
                         'mb-[30px]':
-                          parseFloat(fromToken?.actualBalance) >
+                          parseFloat(String(fromToken?.actualBalance)) >
                           parseFloat(cryptoAmount),
-                      }
+                      },
                     )}
                   >
                     <LottieView
@@ -2304,13 +2361,15 @@ export default function Bridge(props: { navigation?: any; route?: any }) {
                           ChainBackendNames.OSMOSIS,
                           ChainBackendNames.JUNO,
                           ChainBackendNames.EVMOS,
-                        ].includes(fromChain.backendName) &&
-                          [
-                            ChainBackendNames.COSMOS,
-                            ChainBackendNames.OSMOSIS,
-                            ChainBackendNames.JUNO,
-                            ChainBackendNames.EVMOS,
-                          ].includes(toChain.backendName)
+                        ].includes(
+                          fromChain.backendName as ChainBackendNames,
+                        ) &&
+                        [
+                          ChainBackendNames.COSMOS,
+                          ChainBackendNames.OSMOSIS,
+                          ChainBackendNames.JUNO,
+                          ChainBackendNames.EVMOS,
+                        ].includes(toChain?.backendName as ChainBackendNames)
                           ? '~ 7 mins'
                           : '~ 15 mins'}
                       </CyDText>
@@ -2321,16 +2380,16 @@ export default function Bridge(props: { navigation?: any; route?: any }) {
                   <CyDView className='flex flex-row justify-between items-center mt-[20px] mr-[10px]'>
                     <CyDView className='flex flex-row'>
                       <CyDText className=' py-[10px] w-[60%] font-semibold'>
-                        {t<string>('GAS_FEE')} :
+                        {t<string>('GAS_FEE') + ' :'}
                       </CyDText>
                     </CyDView>
                     <CyDView className='items-end'>
                       <CyDText className='font-bold'>
-                        {Number(swapParams?.gasFeeETH).toFixed(6)}{' '}
-                        {fromToken?.chainDetails.symbol}
+                        {Number(swapParams?.gasFeeETH).toFixed(6)}
+                        {' ' + String(fromToken?.chainDetails.symbol)}
                       </CyDText>
                       <CyDText className='font-bold text-subTextColor'>
-                        {swapParams?.gasFeeDollar} USD
+                        {String(swapParams?.gasFeeDollar) + ' USD'}
                       </CyDText>
                     </CyDView>
                   </CyDView>
@@ -2357,7 +2416,9 @@ export default function Bridge(props: { navigation?: any; route?: any }) {
                     isSwap()
                       ? t('SWAP')
                       : t<string>('BRIDGE_ALL_CAPS') +
-                      (quoteExpiryTime ? ' (' + quoteExpiryTime + ')' : '')
+                        (quoteExpiryTime
+                          ? ' (' + String(quoteExpiryTime) + ')'
+                          : '')
                   }
                   loading={bridgeLoading}
                   disabled={isExchangeDisabled()}
@@ -2486,7 +2547,7 @@ export default function Bridge(props: { navigation?: any; route?: any }) {
                 >
                   <CyDView className={'flex flex-row items-center'}>
                     <CyDImage
-                      source={toChain.logo_url}
+                      source={toChain?.logo_url}
                       className={'w-[30px] h-[30px]'}
                     />
                     <CyDText
@@ -2494,7 +2555,7 @@ export default function Bridge(props: { navigation?: any; route?: any }) {
                         'text-center text-black font-nunito text-[16px] ml-[8px]'
                       }
                     >
-                      {toChain.name}
+                      {toChain?.name}
                     </CyDText>
                   </CyDView>
 
@@ -2534,7 +2595,7 @@ export default function Bridge(props: { navigation?: any; route?: any }) {
                     <CyDView className={'flex flex-row items-center'}>
                       <CyDImage
                         source={{
-                          uri: (toToken?.logoUrl || toToken?.logo) ?? '',
+                          uri: toToken?.logoUrl ?? toToken?.logo ?? '',
                         }}
                         className={'w-[30px] h-[30px]'}
                       />
@@ -2677,7 +2738,7 @@ export default function Bridge(props: { navigation?: any; route?: any }) {
                   'font-bold text-[70px] h-[80px] text-justify font-nunito mt-[10px] text-primaryTextColor',
                   {
                     'text-[50px]': fromToken?.name === 'Ether',
-                  }
+                  },
                 )}
               >
                 {fromToken?.name === 'Ether'
@@ -2689,36 +2750,10 @@ export default function Bridge(props: { navigation?: any; route?: any }) {
               <CyDView className={'flex flex-row items-center relative'}>
                 <CyDTouchView
                   onPress={() => {
-                    const gasReserved =
-                      (NativeTokenMapping[fromToken?.chainDetails?.symbol] ||
-                        fromToken?.chainDetails?.symbol) === fromToken?.symbol
-                        ? gasFeeReservation[
-                        fromToken?.chainDetails?.backendName
-                        ]
-                        : 0;
-
-                    const maxAmount =
-                      parseFloat(fromToken?.actualBalance) - gasReserved;
-                    const textAmount =
-                      maxAmount < 0
-                        ? '0.00'
-                        : limitDecimalPlaces(maxAmount.toString(), 6);
-                    setAmount(textAmount);
-
-                    if (enterCryptoAmount) {
-                      setCryptoAmount(textAmount);
-                      setUsdAmount(
-                        (parseFloat(textAmount) * fromToken?.price).toString()
-                      );
-                    } else {
-                      setCryptoAmount(
-                        (parseFloat(textAmount) / fromToken?.price).toString()
-                      );
-                      setUsdAmount(textAmount);
-                    }
+                    setMaxAmount();
                   }}
                   className={clsx(
-                    'bg-white rounded-full h-[40px] w-[40px] flex justify-center items-center p-[4px]'
+                    'bg-white rounded-full h-[40px] w-[40px] flex justify-center items-center p-[4px]',
                   )}
                 >
                   <CyDText className={'font-nunito text-black '}>
@@ -2732,7 +2767,7 @@ export default function Bridge(props: { navigation?: any; route?: any }) {
                       {
                         'text-[70px]': amount.length <= 5,
                         'text-[40px]': amount.length > 5,
-                      }
+                      },
                     )}
                     keyboardType='numeric'
                     onChangeText={(text) => {
@@ -2740,11 +2775,15 @@ export default function Bridge(props: { navigation?: any; route?: any }) {
                       if (enterCryptoAmount) {
                         setCryptoAmount(text);
                         setUsdAmount(
-                          (parseFloat(text) * fromToken?.price).toString()
+                          (
+                            parseFloat(text) * Number(fromToken?.price)
+                          ).toString(),
                         );
                       } else {
                         setCryptoAmount(
-                          (parseFloat(text) / fromToken?.price).toString()
+                          (
+                            parseFloat(text) / Number(fromToken?.price)
+                          ).toString(),
                         );
                         setUsdAmount(text);
                       }
@@ -2757,16 +2796,18 @@ export default function Bridge(props: { navigation?: any; route?: any }) {
                   />
                   <CyDText
                     className={clsx(
-                      'flex items-center justify-center text-primaryTextColor font-bol h-[50px] text-[24px]'
+                      'flex items-center justify-center text-primaryTextColor font-bol h-[50px] text-[24px]',
                     )}
                   >
                     {enterCryptoAmount
                       ? (!isNaN(parseFloat(usdAmount))
-                        ? formatAmount(usdAmount)
-                        : '0.00') + ' USD'
+                          ? formatAmount(usdAmount)
+                          : '0.00') + ' USD'
                       : (!isNaN(parseFloat(cryptoAmount))
-                        ? formatAmount(cryptoAmount)
-                        : '0.00') + ` ${fromToken?.name}`}
+                          ? formatAmount(cryptoAmount)
+                          : '0.00') +
+                        ' ' +
+                        String(fromToken?.name)}
                   </CyDText>
                 </CyDView>
                 <CyDTouchView
@@ -2775,18 +2816,22 @@ export default function Bridge(props: { navigation?: any; route?: any }) {
                     if (!enterCryptoAmount) {
                       setCryptoAmount(amount);
                       setUsdAmount(
-                        (parseFloat(amount) * fromToken?.price).toString()
+                        (
+                          parseFloat(amount) * Number(fromToken?.price)
+                        ).toString(),
                       );
                     } else {
                       setCryptoAmount(
-                        (parseFloat(amount) / fromToken?.price).toString()
+                        (
+                          parseFloat(amount) / Number(fromToken?.price)
+                        ).toString(),
                       );
                       setUsdAmount(amount);
                     }
                     enterAmountRef?.focus();
                   }}
                   className={clsx(
-                    'bg-white rounded-full h-[40px] w-[40px] flex justify-center items-center p-[4px]'
+                    'bg-white rounded-full h-[40px] w-[40px] flex justify-center items-center p-[4px]',
                   )}
                 >
                   <CyDImage
@@ -2803,9 +2848,11 @@ export default function Bridge(props: { navigation?: any; route?: any }) {
                   'font-semibold text-[14px] text-center text-primaryTextColor font-nunito'
                 }
               >
-                {`${t<string>('ENTER_AMOUNT_GREATER')} ${minimumAmount.toFixed(
-                  3
-                )}  ${fromToken?.name}`}
+                {t<string>('ENTER_AMOUNT_GREATER') +
+                  '' +
+                  minimumAmount.toFixed(3) +
+                  ' ' +
+                  String(fromToken?.name)}
               </CyDText>
             )}
 
@@ -2814,12 +2861,12 @@ export default function Bridge(props: { navigation?: any; route?: any }) {
                 'font-semibold text-[14px] text-center text-primaryTextColor font-nunito mt-[8px]'
               }
             >
-              {`${fromToken?.name} ${t<string>('BALANCE')} `}
+              {String(fromToken?.name) + ' ' + t<string>('BALANCE')}
               <CyDTokenAmount
                 className='text-primaryTextColor'
                 decimalPlaces={6}
               >
-                {parseFloat(fromToken?.actualBalance)}
+                {parseFloat(String(fromToken?.actualBalance))}
               </CyDTokenAmount>
             </CyDText>
           </CyDView>
@@ -2833,8 +2880,8 @@ export default function Bridge(props: { navigation?: any; route?: any }) {
             onPress={() => {
               isSwap()
                 ? (() => {
-                  void swap({ showQuote: true });
-                })()
+                    void swap({ showQuote: true });
+                  })()
                 : onPressQuote();
             }}
             isPrivateKeyDependent={isInterCosomosBridge()}
