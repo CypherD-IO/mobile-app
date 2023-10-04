@@ -755,7 +755,7 @@ const resources = {
       TRANSACTIONS_FILTER: 'Transactions Filter',
       MINIMUM_AMOUNT_ETH: 'Minimum amount to transfer in ethereum chain is $50',
       BRIDGE_ACTIVITY: 'BRIDGE',
-      CARD_ACTIVITY: 'CARD LOADING',
+      CARD_ACTIVITY: 'CARD LOAD',
       LOADED_AMOUNT: 'Loaded Amount',
     }
   }
