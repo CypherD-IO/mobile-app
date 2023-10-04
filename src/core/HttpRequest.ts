@@ -10,7 +10,7 @@ import {
 } from '../constants/enum';
 import { has } from 'lodash';
 import { t } from 'i18next';
-type RequestMethod = 'GET' | 'POST' | 'PUT' | 'PATCH' | 'DELETE';
+type RequestMethod = 'GET' | 'GET_WITHOUT_AUTH' | 'POST' | 'PUT' | 'PATCH' | 'DELETE';
 
 interface IHttpResponse {
   isError: boolean;
@@ -83,6 +83,10 @@ export default function useAxios() {
           const { data, status } = await axiosInstance.get(url);
           response.data = data;
           response.status = status;
+        }else if (method === 'GET_WITHOUT_AUTH') {
+          const { data, status } = await axios.get(url, { params: body });
+          response.data = data;
+          response.status = status;
         } else if (method === 'DELETE') {
           const { data, status } = await axiosInstance.delete(url);
           response.data = data;
@@ -137,6 +141,9 @@ export default function useAxios() {
   async function getWithAuth(url: string) {
     return await request('GET', url);
   }
+  async function getWithoutAuth(url: string, data?: any) {
+    return await request('GET_WITHOUT_AUTH', url, data);
+  }
   async function postWithAuth(url: string, data: any) {
     return await request('POST', url, data);
   }
@@ -156,5 +163,6 @@ export default function useAxios() {
     putWithAuth,
     patchWithAuth,
     deleteWithAuth,
+    getWithoutAuth
   };
 }

@@ -25,6 +25,7 @@ export interface AnimatedTabViewProps
     | 'updateCellsBatchingPeriod'
     | 'windowSize'
     | 'ListEmptyComponent'
+    | 'ListHeaderComponent'
   > {
   bannerHeight: PortfolioBannerHeights;
   data?: any[];
@@ -57,6 +58,7 @@ const AnimatedTabViewWithoutMemo = ({
   children,
   keyExtractor,
   extraData,
+  ListHeaderComponent,
 }: AnimatedTabViewProps) => {
   const handleScroll = useAnimatedScrollHandler((event) => {
     scrollY.value = event.contentOffset.y;
@@ -139,6 +141,7 @@ const AnimatedTabViewWithoutMemo = ({
         maxToRenderPerBatch={maxToRenderPerBatch}
         onContentSizeChange={onContentSizeChange}
         extraData={extraData}
+        ListHeaderComponent={ListHeaderComponent}
       />
     );
   }

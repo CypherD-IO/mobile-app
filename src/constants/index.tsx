@@ -101,7 +101,8 @@ export const screenTitle = {
   TRANSFI_SCREEN: 'TransFiScreen',
   CARD_SETTINGS_SCREEN: 'CardSettingsScreen',
   TRANSACTIONS_SCREEN: 'Transactions',
-  TRANSACTION_FILTER: 'TransactionFilter'
+  TRANSACTION_FILTER: 'TransactionFilter',
+  DEFI_PROTOCOL_OVERVIEW_SCREEN: 'Protocol Overview',
 };
 
 export const fontsName = {
