@@ -1,7 +1,7 @@
 import React, { memo, useContext, useEffect, useState } from "react";
 import { CyDFastImage, CyDImageBackground, CyDSafeAreaView, CyDText, CyDTouchView, CyDView } from "../../../styles/tailwindStyles";
 import AppImages from "../../../../assets/images/appImages";
-import { CardProviders, TransactionTypes } from "../../../constants/enum";
+import { CardProviders, CardTransactionStatuses, CardTransactionTypes } from "../../../constants/enum";
 import AnimatedCardSection from "./AnimatedCardSection";
 import { useSharedValue } from "react-native-reanimated";
 import { AnimatedTxnList } from "./AnimatedTxnList";
@@ -18,17 +18,28 @@ import * as Sentry from '@sentry/react-native';
 import SwitchView from "../../../components/v2/switchView";
 import CardTransactionItem from "../../../components/v2/CardTransactionItem";
 import { AnimatedToolBar } from "./AnimatedToolBar";
-import CardTxnFilterModal from "../bridgeCard/CardTxnFilterModal";
+import CardTxnFilterModal, { STATUSES, TYPES } from "../bridgeCard/CardTxnFilterModal";
 import { CardTransaction } from "../../../models/card.model";
 import { RefreshControl, StyleSheet } from "react-native";
 import clsx from "clsx";
 import { isAndroid } from "../../../misc/checkers";
+import moment from "moment";
+import { useGlobalModalContext } from "../../../components/v2/GlobalModal";
 
-export type CardSectionHeights = 270 | 320
+export type CardSectionHeights = 270 | 320;
+export interface DateRange {
+    fromDate: Date
+    toDate: Date
+}
 interface CypherCardScreenProps {
     navigation: any
     route: { params: { hasBothProviders: boolean; cardProvider: CardProviders } };
 }
+
+export const initialCardTxnDateRange = {
+    fromDate: moment().subtract(60, 'days').toDate(), // inital from is 60 days ago.
+    toDate: new Date()
+};
 
 const CypherCardScreen = ({ navigation, route }: CypherCardScreenProps) => {
     const { hasBothProviders, cardProvider } = route.params;
@@ -36,6 +47,7 @@ const CypherCardScreen = ({ navigation, route }: CypherCardScreenProps) => {
     const isFocused = useIsFocused();
     const { t } = useTranslation();
     const { getWithAuth } = useAxios();
+    const { showModal, hideModal } = useGlobalModalContext();
 
     const globalContext = useContext<any>(GlobalContext);
     const cardProfile: CardProfile = globalContext.globalState.cardProfile;
@@ -50,9 +62,13 @@ const CypherCardScreen = ({ navigation, route }: CypherCardScreenProps) => {
     const [refreshing, setRefreshing] = useState(false);
     const [filterModalVisible, setFilterModalVisible] = useState(false);
     const [filter, setFilter] = useState<{
-        types: TransactionTypes[]
+        types: CardTransactionTypes[];
+        dateRange: DateRange,
+        statuses: CardTransactionStatuses[]
     }>({
-        types: []
+        types: TYPES,
+        dateRange: initialCardTxnDateRange,
+        statuses: STATUSES
     });
 
     const scrollY = useSharedValue(-cardSectionHeight);
@@ -60,7 +76,7 @@ const CypherCardScreen = ({ navigation, route }: CypherCardScreenProps) => {
     const onRefresh = () => {
         setCardBalance('');
         void fetchCardBalance();
-        void retrieveRecentTxns();
+        void retrieveTxns();
     };
 
     useEffect(() => {
@@ -80,8 +96,12 @@ const CypherCardScreen = ({ navigation, route }: CypherCardScreenProps) => {
     }, [currentCardProvider]);
 
     useEffect(() => {
-        spliceTransactions();
-    }, [filter]);
+        spliceTransactions(transactions);
+    }, [filter.statuses, filter.types]);
+
+    useEffect(() => {
+        void retrieveTxns();
+    }, [filter.dateRange]);
 
     const fetchCardBalance = async () => {
         const currentCard = get(cardProfile, currentCardProvider).cards[
@@ -103,11 +123,15 @@ const CypherCardScreen = ({ navigation, route }: CypherCardScreenProps) => {
         }
     };
 
-    const retrieveRecentTxns = async () => {
+    const retrieveTxns = async () => {
         const currentCard = get(cardProfile, currentCardProvider).cards[
             currentCardIndex
         ];
-        const txnURL = `/v1/cards/${currentCardProvider}/card/${String(currentCard?.cardId)}/transactions`;
+        let txnURL = `/v1/cards/${currentCardProvider}/card/${String(currentCard?.cardId)}/transactions`;
+        if (filter.dateRange !== initialCardTxnDateRange) {
+            const { fromDate, toDate } = filter.dateRange;
+            txnURL += `?startDate=${moment(fromDate).startOf('day').toISOString()}&endDate=${moment(toDate).endOf('day').toISOString()}`;
+        }
         try {
             setRefreshing(true);
             const res = await getWithAuth(txnURL);
@@ -117,7 +141,7 @@ const CypherCardScreen = ({ navigation, route }: CypherCardScreenProps) => {
                     return a.date < b.date ? 1 : -1;
                 });
                 setTransactions(txnsToSet);
-                setFilteredTransactions(txnsToSet);
+                spliceTransactions(txnsToSet);
                 setRefreshing(false);
             } else {
                 setRefreshing(false);
@@ -126,6 +150,7 @@ const CypherCardScreen = ({ navigation, route }: CypherCardScreenProps) => {
                     location: 'isError=true when trying to fetch recent card txns.',
                 };
                 Sentry.captureException(errorObject);
+                showModal('state', { type: 'error', title: t('FAILED_TO_UPDATE_TXNS'), description: res.error, onSuccess: hideModal, onFailure: hideModal });
             }
         } catch (e) {
             setRefreshing(false);
@@ -134,18 +159,21 @@ const CypherCardScreen = ({ navigation, route }: CypherCardScreenProps) => {
                 location: 'Error when trying to fetch recent card txns.',
             };
             Sentry.captureException(errorObject);
+            showModal('state', { type: 'error', title: t('FAILED_TO_UPDATE_TXNS'), description: e, onSuccess: hideModal, onFailure: hideModal });
         }
     };
 
-    const spliceTransactions = () => {
-        if (transactions.length === 0) {
+    const spliceTransactions = (txnsToSplice: CardTransaction[]) => {
+        if (txnsToSplice.length === 0) {
             return [];
         }
 
-        const filteredTxns = transactions.filter(txn => {
+        const filteredTxns = txnsToSplice.filter(txn => {
             const isIncludedType = filter.types.includes(txn.type); // FILTERING THE TYPE
+            const statusString = txn.isSettled ? CardTransactionStatuses.SETTLED : CardTransactionStatuses.PENDING;
+            const isIncludedStatus = filter.statuses.includes(statusString); // FILTERING THE STATUS
             return (
-                isIncludedType
+                isIncludedType && isIncludedStatus
             );
         });
 
@@ -217,11 +245,14 @@ const CypherCardScreen = ({ navigation, route }: CypherCardScreenProps) => {
                     </CyDView>
                     {/* FUND CARD */}
                 </AnimatedCardSection>
-                <CyDView className={clsx('h-full px-[10px] pb-[40px]', { 'pb-[75px]': isAndroid() })}>
+                <CyDView className={clsx('h-full px-[10px] bg-white pb-[40px]', { 'pb-[75px]': isAndroid() })}>
                     {/* TOOLBAR */}
                     <AnimatedToolBar scrollY={scrollY} cardSectionHeight={cardSectionHeight}>
                         <CyDView className="h-[40px] flex flex-row justify-between items-center py-[5px] px-[10px] bg-white border border-sepratorColor mt-[10px] rounded-t-[24px]">
-                            <CyDText className="text-[16px] font-bold px-[10px]">{t('TRANS')}</CyDText>
+                            <CyDView className='flex justify-center items-start px-[10px]'>
+                                <CyDText className="text-[16px] font-bold">{t('TRANS')}</CyDText>
+                                <CyDText className="text-[10px] text-subTextColor">{`from ${moment(filter.dateRange.fromDate).format('DD MMM, \'YY')} to ${moment(filter.dateRange.toDate).format('DD MMM, \'YY')}`}</CyDText>
+                            </CyDView>
                             <CyDTouchView onPress={() => {
                                 setFilterModalVisible(true);
                             }}>

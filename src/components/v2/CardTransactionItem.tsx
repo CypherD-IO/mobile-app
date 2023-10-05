@@ -3,7 +3,7 @@ import { CyDFastImage, CyDText, CyDTouchView, CyDView } from "../../styles/tailw
 import { intercomAnalyticsLog } from "../../containers/utilities/analyticsUtility";
 import { screenTitle } from "../../constants";
 import { useTranslation } from "react-i18next";
-import { TransactionFilterTypes, TransactionTypes } from "../../constants/enum";
+import { TransactionFilterTypes, CardTransactionTypes } from "../../constants/enum";
 import clsx from "clsx";
 import AppImages from "../../../assets/images/appImages";
 import moment from "moment";
@@ -20,7 +20,7 @@ const getTransactionIndicator = (type: string) => {
             return AppImages.ICON_DOWN;
         case TransactionFilterTypes.DEBIT:
             return AppImages.ICON_UP;
-        case TransactionTypes.REFUND:
+        case TransactionFilterTypes.REFUND:
             return AppImages.ICON_DOWN;
         default:
             return AppImages.MOVE_FUNDS;
@@ -37,7 +37,7 @@ const getTransactionSign = (type: string) => {
             return '+';
         case TransactionFilterTypes.DEBIT:
             return '-';
-        case TransactionTypes.REFUND:
+        case TransactionFilterTypes.REFUND:
             return '+';
         default:
             return '..';
@@ -47,12 +47,12 @@ const getTransactionSign = (type: string) => {
 const CardTransactionItem = ({ item }: CardTransactionItemProps) => {
     const { t } = useTranslation();
     const navigation = useNavigation();
-    const { iconUrl, type, date, title, amount } = item;
+    const { iconUrl, type, date, title, amount, isSettled } = item;
     return (
         <CyDTouchView
             key={item.id}
             className={
-                'h-[70px] flex flex-row justify-between items-center bg-white px-[10px] border-b border-x border-sepratorColor'
+                clsx('h-[70px] flex flex-row justify-between items-center bg-white px-[10px] border-b border-x border-sepratorColor', { 'bg-orange-50': !isSettled })
             }
             onPress={() => {
                 void intercomAnalyticsLog('card_transaction_info_clicked');
@@ -73,14 +73,12 @@ const CardTransactionItem = ({ item }: CardTransactionItemProps) => {
                             ? { uri: iconUrl }
                             : getTransactionIndicator(type)
                     }
-                    className={'h-[30px] w-[30px]'}
+                    className={clsx('h-[30px] w-[30px]', { 'rounded-full border border-orange-400': !isSettled })}
                     resizeMode={'contain'}
                 />
                 <CyDView className={'ml-[10px]'}>
                     <CyDText
-                        className={clsx('font-bold flex-wrap w-[200px]', {
-                            'text-redCyD': type === 'failed',
-                        })}
+                        className='font-bold flex-wrap w-[200px]'
                         ellipsizeMode="tail"
                         numberOfLines={1}
                     >
@@ -89,17 +87,26 @@ const CardTransactionItem = ({ item }: CardTransactionItemProps) => {
                     <CyDText>{formatDate(String(date))}</CyDText>
                 </CyDView>
             </CyDView>
-            <CyDView className='flex flex-row self-center items-center'>
+            <CyDView className='flex justify-center items-end'>
                 <CyDText
                     className={clsx('font-bold text-[16px] mr-[5px]', {
-                        'text-redCyD': type === TransactionTypes.DEBIT,
-                        'text-successTextGreen': type === TransactionTypes.CREDIT,
-                        'text-darkYellow': type === TransactionTypes.REFUND
+                        'text-redCyD': type === CardTransactionTypes.DEBIT,
+                        'text-successTextGreen': type === CardTransactionTypes.CREDIT,
+                        'text-darkYellow': type === CardTransactionTypes.REFUND,
+                        'text-orange-400': !isSettled,
                     })}
                 >
                     {getTransactionSign(type)}
                     {amount} {t<string>('USD')}
                 </CyDText>
+                {
+                    !isSettled ?
+                        <CyDText
+                            className='font-bold text-[10px] mr-[5px] text-orange-400 uppercase'
+                        >
+                            {t('PENDING')}
+                        </CyDText> : null
+                }
             </CyDView>
         </CyDTouchView>
     );
