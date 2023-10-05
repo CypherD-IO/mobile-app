@@ -80,10 +80,15 @@ export enum TransactionFilterTypes {
   REFUND = 'REFUND'
 }
 
-export enum TransactionTypes {
+export enum CardTransactionTypes {
   CREDIT = 'CREDIT',
   DEBIT = 'DEBIT',
   REFUND = 'REFUND'
+}
+
+export enum CardTransactionStatuses {
+  SETTLED = 'Settled',
+  PENDING = 'Pending'
 }
 
 export enum TransactionFilterByDateTypes {

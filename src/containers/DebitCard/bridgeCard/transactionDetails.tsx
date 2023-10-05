@@ -6,7 +6,7 @@ import AppImages from '../../../../assets/images/appImages';
 import { HdWalletContext, formatAmount, getExplorerUrlFromBackendNames } from '../../../core/util';
 import { CyDFastImage, CyDSafeAreaView, CyDScrollView, CyDText, CyDTouchView, CyDView } from '../../../styles/tailwindStyles';
 import { sendFirebaseEvent } from '../../utilities/analyticsUtility';
-import { TransactionFilterTypes, TransactionTypes } from '../../../constants/enum';
+import { TransactionFilterTypes, CardTransactionTypes } from '../../../constants/enum';
 import clsx from 'clsx';
 import { screenTitle } from '../../../constants';
 import { useNavigation } from '@react-navigation/native';
@@ -78,9 +78,12 @@ const TransactionDetail = ({ item }: {
       </CyDView>
       <CyDView className={'mt-[12px]'}>
         {item.data.map((detailItem, index) => {
-          return (
-            <DetailItem item={detailItem} key={index} />
-          );
+          // Check to remove default as a item value.
+          if (!(detailItem.value === 'default')) {
+            return (
+              <DetailItem item={detailItem} key={index} />
+            );
+          }
         })}
       </CyDView>
     </CyDView>
@@ -102,14 +105,15 @@ export default function TransactionDetails({ navigation, route }: { navigation: 
       value: any;
     }>;
   }> = [];
-  if (transaction.type === TransactionTypes.DEBIT || transaction.type === TransactionTypes.REFUND) {
+  if (transaction.type === CardTransactionTypes.DEBIT || transaction.type === CardTransactionTypes.REFUND) {
     const debitOrRefundDetails = [
       {
         icon: AppImages.PAYMENT_DETAILS,
         title: t('TRANSACTION_DETAILS'),
         data: [
           { label: t('TRANSACTION_ID'), value: transaction.id },
-          { label: t('TYPE'), value: transaction.type }
+          { label: t('TYPE'), value: transaction.type },
+          { label: t('STATUS'), value: transaction.isSettled ? t('SETTLED') : t('PENDING') }
         ]
       },
       {
@@ -133,7 +137,7 @@ export default function TransactionDetails({ navigation, route }: { navigation: 
     debitOrRefundDetails.forEach(detail => {
       transactionDetails.push(detail);
     });
-  } else if (transaction.type === TransactionTypes.CREDIT) {
+  } else if (transaction.type === CardTransactionTypes.CREDIT) {
     const dataIsAvailable = transaction.tokenData !== undefined;
     const type = transaction.type;
     const id = dataIsAvailable ? transaction.id : 'N/A';
@@ -147,7 +151,8 @@ export default function TransactionDetails({ navigation, route }: { navigation: 
         title: t('TRANSACTION_DETAILS'),
         data: [
           { label: t('TRANSACTION_ID'), value: id },
-          { label: t('TYPE'), value: type }
+          { label: t('TYPE'), value: type },
+          { label: t('STATUS'), value: transaction.isSettled ? t('SETTLED') : t('PENDING') }
         ]
       },
       {
@@ -167,7 +172,7 @@ export default function TransactionDetails({ navigation, route }: { navigation: 
 
 
   return (
-    <CyDSafeAreaView className='flex-1'>
+    <CyDSafeAreaView className='flex-1 bg-white'>
       <CyDScrollView className='h-full bg-white px-[25px]'>
         <CyDView className={'flex flex-col justify-center items-center'}>
           <CyDFastImage source={{ uri: transaction.iconUrl }} className={'h-[50px] w-[50px]'} resizeMode={'contain'} />
@@ -175,7 +180,7 @@ export default function TransactionDetails({ navigation, route }: { navigation: 
           <CyDText>{formatDate(transaction.date)}</CyDText>
         </CyDView>
         {transactionDetails.map((item, index) => {
-          if (!(fxCurrencySymbol === 'USD' && index === 2)) {
+          if (!(fxCurrencySymbol === 'USD' && index === 2) && !(transaction.type === CardTransactionTypes.REFUND && index === 2)) {
             return (
               <TransactionDetail item={item} key={index} />
             );
