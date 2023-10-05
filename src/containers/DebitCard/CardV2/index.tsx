@@ -22,7 +22,7 @@ import CardTxnFilterModal, { STATUSES, TYPES } from "../bridgeCard/CardTxnFilter
 import { CardTransaction } from "../../../models/card.model";
 import { RefreshControl, StyleSheet } from "react-native";
 import clsx from "clsx";
-import { isAndroid } from "../../../misc/checkers";
+import { isAndroid, isIOS } from "../../../misc/checkers";
 import moment from "moment";
 import { useGlobalModalContext } from "../../../components/v2/GlobalModal";
 
@@ -265,13 +265,13 @@ const CypherCardScreen = ({ navigation, route }: CypherCardScreenProps) => {
                     <AnimatedTxnList
                         scrollY={scrollY}
                         cardSectionHeight={cardSectionHeight}
-                        refreshControl={<RefreshControl className='bg-white' refreshing={refreshing} onRefresh={onRefresh} progressViewOffset={cardSectionHeight} />}
+                        refreshControl={<RefreshControl className={clsx({ 'bg-white': isIOS() })} refreshing={refreshing} onRefresh={onRefresh} progressViewOffset={cardSectionHeight} />}
                         data={filteredTransactions}
                         keyExtractor={(_, index) => index.toString()}
                         renderItem={({ item }: { item: CardTransaction }) => {
                             return <CardTransactionItem item={item} />;
                         }}
-                        ListEmptyComponent={<CyDView className="h-[50%] w-full justify-center items-center">
+                        ListEmptyComponent={<CyDView className="h-full bg-white border-x border-sepratorColor w-full justify-start items-center py-[30%]">
                             <CyDFastImage source={AppImages.NO_TRANSACTIONS_YET} className="h-[150px] w-[150px]" resizeMode="contain" />
                         </CyDView>}
                     />
