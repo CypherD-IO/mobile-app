@@ -50,7 +50,7 @@ const CardTransactionItem = ({ item }: CardTransactionItemProps) => {
     const { iconUrl, type, date, title, amount, isSettled } = item;
     return (
         <>
-            <CyDView className='absolute bottom-[-1000px] h-[1000px] w-full bg-white border-x border-sepratorColor' />
+            <CyDView className='absolute bottom-[-930px] h-[1000px] w-full bg-white border-x border-sepratorColor' />
             <CyDTouchView
                 key={item.id}
                 className={
