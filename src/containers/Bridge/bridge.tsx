@@ -30,6 +30,7 @@ import {
   validateAmount,
   getNativeTokenBalance,
   limitDecimalPlaces,
+  formatAmount,
 } from '../../core/util';
 import AppImages from './../../../assets/images/appImages';
 import ChooseChainModal from '../../components/v2/chooseChainModal';
@@ -1286,7 +1287,7 @@ export default function Bridge(props: { navigation?: any; route?: any }) {
     );
   }
 
-  const formatAmount = (amount: string) => {
+  const formatBridgeAmount = (amount: string) => {
     if (amount.includes('.')) {
       return amount.slice(
         0,
@@ -1785,7 +1786,7 @@ export default function Bridge(props: { navigation?: any; route?: any }) {
         if (finalGasPrice) {
           gasFeeETH = web3.utils.fromWei(
             web3.utils.toWei(
-              (parseInt(finalGasPrice) * gasLimit).toFixed(9),
+              (parseFloat(finalGasPrice) * gasLimit).toFixed(9),
               'gwei',
             ),
           );
@@ -2272,7 +2273,7 @@ export default function Bridge(props: { navigation?: any; route?: any }) {
                       numberOfLines={1}
                     >
                       {isSwap()
-                        ? Number(swapParams?.amount).toFixed(4)
+                        ? formatAmount(swapParams?.amount)
                         : quoteData.fromAmount.toFixed(4) +
                           ' ' +
                           String(fromToken?.name)}
@@ -2311,9 +2312,7 @@ export default function Bridge(props: { navigation?: any; route?: any }) {
                       numberOfLines={1}
                     >
                       {isSwap()
-                        ? Number(
-                            swapParams?.quoteData?.toToken?.amount,
-                          ).toFixed(4)
+                        ? formatAmount(swapParams?.quoteData?.toToken?.amount)
                         : quoteData.toAmount.toFixed(4) +
                           ' ' +
                           String(toToken?.name)}
@@ -2385,11 +2384,12 @@ export default function Bridge(props: { navigation?: any; route?: any }) {
                     </CyDView>
                     <CyDView className='items-end'>
                       <CyDText className='font-bold'>
-                        {Number(swapParams?.gasFeeETH).toFixed(6)}
+                        {formatAmount(swapParams?.gasFeeETH)}
                         {' ' + String(fromToken?.chainDetails.symbol)}
                       </CyDText>
                       <CyDText className='font-bold text-subTextColor'>
-                        {String(swapParams?.gasFeeDollar) + ' USD'}
+                        {String(formatAmount(swapParams?.gasFeeDollar)) +
+                          ' USD'}
                       </CyDText>
                     </CyDView>
                   </CyDView>
@@ -2801,10 +2801,10 @@ export default function Bridge(props: { navigation?: any; route?: any }) {
                   >
                     {enterCryptoAmount
                       ? (!isNaN(parseFloat(usdAmount))
-                          ? formatAmount(usdAmount)
+                          ? formatBridgeAmount(usdAmount)
                           : '0.00') + ' USD'
                       : (!isNaN(parseFloat(cryptoAmount))
-                          ? formatAmount(cryptoAmount)
+                          ? formatBridgeAmount(cryptoAmount)
                           : '0.00') +
                         ' ' +
                         String(fromToken?.name)}
