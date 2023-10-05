@@ -11,17 +11,19 @@ import { DeFiFilter, protocolOptionType } from '../models/defi.interface';
 
 const TIME_UPDATE_RUNNER_INTERVAL = 1000;
 
-interface DeFiFilterRefreshBarInterface {
-  isRefreshing: boolean;
-  lastRefreshed: string;
-  filters: DeFiFilter;
-  setFilters: Dispatch<SetStateAction<DeFiFilter>>;
-  isFilterVisible: boolean;
-  setFilterVisible: Dispatch<SetStateAction<boolean>>;
-  userProtocols: protocolOptionType[];
+interface DeFiFilterRefreshBarInterface{
+    isRefreshing: boolean; 
+    lastRefreshed: string;
+    filters: DeFiFilter;
+    setFilters:Dispatch<SetStateAction<DeFiFilter>>;
+    isFilterVisible: boolean;
+    setFilterVisible: Dispatch<SetStateAction<boolean>>;
+    userProtocols: protocolOptionType[];
+    isLoading: boolean;
+    setLoading: Dispatch<SetStateAction<boolean>>;
 }
 export const DeFiFilterRefreshBar = (props: DeFiFilterRefreshBarInterface) => {
-  const { isRefreshing } = props;
+  const { isRefreshing, isLoading } = props;
   const { t } = useTranslation();
   const [time, setTime] = useState(`${t('RETRIEVING')}...`);
   moment.updateLocale('en', {
@@ -49,8 +51,8 @@ export const DeFiFilterRefreshBar = (props: DeFiFilterRefreshBarInterface) => {
 
   useEffect(() => {
     const timeUpdateRunner = setInterval(function time() {
-      if (!isRefreshing) {
-        setTime(calculateTimeDiff(props.lastRefreshed));
+      if (!isRefreshing && !isLoading) {
+          setTime(calculateTimeDiff(props.lastRefreshed));
       } else {
         setTime(`${t('RETRIEVING')}...`);
       }
@@ -59,7 +61,7 @@ export const DeFiFilterRefreshBar = (props: DeFiFilterRefreshBarInterface) => {
     return () => {
       clearInterval(timeUpdateRunner);
     };
-  }, [props.lastRefreshed, isRefreshing, t]);
+  }, [props.lastRefreshed, isRefreshing,isLoading]);
 
   return (
     <CyDView className='flex flex-row justify-between px-[20px] py-[5px] border-sepratorColor border-t-[0.5px]'>

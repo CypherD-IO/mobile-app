@@ -771,6 +771,7 @@ const resources = {
       DEFI_REWARD: 'Reward',
       INACTIVE: 'Inactive',
       TYPE: 'Type',
+      DEFI_FILTER: 'DeFi Filter',
     }
   }
 };
