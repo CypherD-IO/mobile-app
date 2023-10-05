@@ -1,5 +1,5 @@
 import moment from "moment";
-import { CardTransactionStatuses, CardTransactionTypes } from "../../../constants/enum";
+import { CardTransactionStatuses, CardTransactionTypes } from "./enum";
 
 export const CARD_TXN_FILTERS = ['Type', 'Date', 'Status'];
 export const TYPES = [CardTransactionTypes.CREDIT, CardTransactionTypes.DEBIT, CardTransactionTypes.REFUND];

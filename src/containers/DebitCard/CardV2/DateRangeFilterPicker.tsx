@@ -6,7 +6,7 @@ import { isAndroid } from "../../../misc/checkers";
 import Button from "../../../components/v2/button";
 import moment from "moment";
 import { ButtonType } from "../../../constants/enum";
-import { DateRange } from "./constants";
+import { DateRange } from "../../../constants/cardsv2";
 
 interface DateRangeFilterPickerProps {
     minimumDate: Date
