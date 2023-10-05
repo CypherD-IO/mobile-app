@@ -7,12 +7,8 @@ import Button from "../../../components/v2/button";
 import CyDModalLayout from "../../../components/v2/modal";
 import { ButtonType, CardTransactionStatuses, CardTransactionTypes } from "../../../constants/enum";
 import AppImages from "../../../../assets/images/appImages";
-import DateRangeFilterPicker from "../CardV2/DateRangeFilterPicker";
-import { DateRange, initialCardTxnDateRange } from "../CardV2";
-
-export const ALL_FILTERS = ['Type', 'Date', 'Status'];
-export const TYPES = [CardTransactionTypes.CREDIT, CardTransactionTypes.DEBIT, CardTransactionTypes.REFUND];
-export const STATUSES = [CardTransactionStatuses.PENDING, CardTransactionStatuses.SETTLED];
+import DateRangeFilterPicker from "./DateRangeFilterPicker";
+import { CARD_TXN_FILTERS, DateRange, STATUSES, TYPES, initialCardTxnDateRange } from "../../../constants/cardsv2";
 
 interface CardTxnFilterModalProps {
     navigation: any
@@ -93,7 +89,7 @@ const CardTxnFilterModal = ({ navigation, modalVisibilityState, filterState }: C
                 </CyDView>
                 <CyDView className={'h-full flex flex-row'}>
                     <CyDView className={'border-r border-activityFilterBorderLine w-[30%]'}>
-                        {ALL_FILTERS.map((filterItem, idx) => (
+                        {CARD_TXN_FILTERS.map((filterItem, idx) => (
                             <CyDTouchView key={idx}
                                 onPress={() => setIndex(idx)}
                                 className={`${index === idx ? 'bg-appColor' : 'bg-whiteflex'} justify-center py-[20px]`}>
