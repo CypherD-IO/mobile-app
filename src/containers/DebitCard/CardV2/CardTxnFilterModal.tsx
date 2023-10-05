@@ -7,8 +7,8 @@ import Button from "../../../components/v2/button";
 import CyDModalLayout from "../../../components/v2/modal";
 import { ButtonType, CardTransactionStatuses, CardTransactionTypes } from "../../../constants/enum";
 import AppImages from "../../../../assets/images/appImages";
-import DateRangeFilterPicker from "../CardV2/DateRangeFilterPicker";
-import { DateRange, initialCardTxnDateRange } from "../CardV2";
+import DateRangeFilterPicker from "./DateRangeFilterPicker";
+import { DateRange, initialCardTxnDateRange } from ".";
 
 export const ALL_FILTERS = ['Type', 'Date', 'Status'];
 export const TYPES = [CardTransactionTypes.CREDIT, CardTransactionTypes.DEBIT, CardTransactionTypes.REFUND];

@@ -18,7 +18,7 @@ import * as Sentry from '@sentry/react-native';
 import SwitchView from "../../../components/v2/switchView";
 import CardTransactionItem from "../../../components/v2/CardTransactionItem";
 import { AnimatedToolBar } from "./AnimatedToolBar";
-import CardTxnFilterModal, { STATUSES, TYPES } from "../bridgeCard/CardTxnFilterModal";
+import CardTxnFilterModal, { STATUSES, TYPES } from "./CardTxnFilterModal";
 import { CardTransaction } from "../../../models/card.model";
 import { RefreshControl, StyleSheet } from "react-native";
 import clsx from "clsx";
