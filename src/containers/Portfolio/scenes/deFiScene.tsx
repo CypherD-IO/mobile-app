@@ -204,7 +204,12 @@ const DeFiScene = ({
               <CyDTouchView
                 className='flex-1 flex-row gap-[4px] justify-start items-center'
                 onPress={()=>{
-                  void Linking.openURL(protocol.protocolURL);
+                  navigation.navigate(screenTitle.BROWSER, {
+                    screen: screenTitle.BROWSER_SCREEN,
+                    params: {
+                      url: protocol.protocolURL,
+                    },
+                  });
                 }}
               >
                 <CyDText className='underline font-bold text-[20px]'>{protocol.protocolName}</CyDText>
