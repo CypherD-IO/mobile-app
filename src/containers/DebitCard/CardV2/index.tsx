@@ -248,7 +248,7 @@ const CypherCardScreen = ({ navigation, route }: CypherCardScreenProps) => {
                 <CyDView className={clsx('h-full px-[10px] pb-[40px]', { 'pb-[75px]': isAndroid() })}>
                     {/* TOOLBAR */}
                     <AnimatedToolBar scrollY={scrollY} cardSectionHeight={cardSectionHeight}>
-                        <CyDView className="h-[40px] flex flex-row justify-between items-center py-[5px] px-[10px] bg-white border border-sepratorColor mt-[10px] rounded-t-[24px]">
+                        <CyDView className="h-[50px] flex flex-row justify-between items-center py-[10px] px-[10px] bg-white border border-sepratorColor mt-[10px] rounded-t-[24px]">
                             <CyDView className='flex justify-center items-start px-[10px]'>
                                 <CyDText className="text-[16px] font-bold">{t('TRANS')}</CyDText>
                                 <CyDText className="text-[10px] text-subTextColor">{`from ${moment(filter.dateRange.fromDate).format('DD MMM, \'YY')} to ${moment(filter.dateRange.toDate).format('DD MMM, \'YY')}`}</CyDText>
