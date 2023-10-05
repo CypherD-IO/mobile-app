@@ -157,7 +157,7 @@ const CypherCardScreen = ({ navigation, route }: CypherCardScreenProps) => {
 
     const spliceTransactions = (txnsToSplice: CardTransaction[]) => {
         if (txnsToSplice.length === 0) {
-            return [];
+            setFilteredTransactions([]);
         }
 
         const filteredTxns = txnsToSplice.filter(txn => {
