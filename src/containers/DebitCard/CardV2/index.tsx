@@ -18,28 +18,20 @@ import * as Sentry from '@sentry/react-native';
 import SwitchView from "../../../components/v2/switchView";
 import CardTransactionItem from "../../../components/v2/CardTransactionItem";
 import { AnimatedToolBar } from "./AnimatedToolBar";
-import CardTxnFilterModal, { STATUSES, TYPES } from "../bridgeCard/CardTxnFilterModal";
+import CardTxnFilterModal from "./CardTxnFilterModal";
 import { CardTransaction } from "../../../models/card.model";
 import { RefreshControl, StyleSheet } from "react-native";
 import clsx from "clsx";
 import { isAndroid, isIOS } from "../../../misc/checkers";
 import moment from "moment";
 import { useGlobalModalContext } from "../../../components/v2/GlobalModal";
+import { CardSectionHeights, DateRange, STATUSES, TYPES, initialCardTxnDateRange } from "../../../constants/cardsv2";
 
-export type CardSectionHeights = 270 | 320;
-export interface DateRange {
-    fromDate: Date
-    toDate: Date
-}
 interface CypherCardScreenProps {
     navigation: any
     route: { params: { hasBothProviders: boolean; cardProvider: CardProviders } };
 }
 
-export const initialCardTxnDateRange = {
-    fromDate: moment().subtract(60, 'days').toDate(), // inital from is 60 days ago.
-    toDate: new Date()
-};
 
 const CypherCardScreen = ({ navigation, route }: CypherCardScreenProps) => {
     const { hasBothProviders, cardProvider } = route.params;
@@ -165,7 +157,7 @@ const CypherCardScreen = ({ navigation, route }: CypherCardScreenProps) => {
 
     const spliceTransactions = (txnsToSplice: CardTransaction[]) => {
         if (txnsToSplice.length === 0) {
-            return [];
+            setFilteredTransactions([]);
         }
 
         const filteredTxns = txnsToSplice.filter(txn => {
