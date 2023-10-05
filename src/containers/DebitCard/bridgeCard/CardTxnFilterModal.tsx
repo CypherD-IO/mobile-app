@@ -10,7 +10,7 @@ import AppImages from "../../../../assets/images/appImages";
 import DateRangeFilterPicker from "../CardV2/DateRangeFilterPicker";
 import { DateRange, initialCardTxnDateRange } from "../CardV2";
 
-export const ALL_FILTERS = ['Type', 'Date range', 'Status'];
+export const ALL_FILTERS = ['Type', 'Date', 'Status'];
 export const TYPES = [CardTransactionTypes.CREDIT, CardTransactionTypes.DEBIT, CardTransactionTypes.REFUND];
 export const STATUSES = [CardTransactionStatuses.PENDING, CardTransactionStatuses.SETTLED];
 
