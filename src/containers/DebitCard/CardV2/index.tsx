@@ -271,7 +271,7 @@ const CypherCardScreen = ({ navigation, route }: CypherCardScreenProps) => {
                         renderItem={({ item }: { item: CardTransaction }) => {
                             return <CardTransactionItem item={item} />;
                         }}
-                        ListEmptyComponent={<CyDView className="h-[50%] w-full justify-center items-center">
+                        ListEmptyComponent={<CyDView className="h-full bg-white border-x border-sepratorColor w-full justify-start items-center py-[30%]">
                             <CyDFastImage source={AppImages.NO_TRANSACTIONS_YET} className="h-[150px] w-[150px]" resizeMode="contain" />
                         </CyDView>}
                     />

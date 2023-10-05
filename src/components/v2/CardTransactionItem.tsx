@@ -49,66 +49,69 @@ const CardTransactionItem = ({ item }: CardTransactionItemProps) => {
     const navigation = useNavigation();
     const { iconUrl, type, date, title, amount, isSettled } = item;
     return (
-        <CyDTouchView
-            key={item.id}
-            className={
-                clsx('h-[70px] flex flex-row justify-between items-center bg-white px-[10px] border-b border-x border-sepratorColor', { 'bg-orange-50': !isSettled })
-            }
-            onPress={() => {
-                void intercomAnalyticsLog('card_transaction_info_clicked');
-                navigation.navigate(
-                    screenTitle.BRIDGE_CARD_TRANSACTION_DETAILS_SCREEN,
-                    { transaction: item },
-                );
-            }}
-        >
-            <CyDView
+        <>
+            <CyDView className='absolute bottom-[-1000px] h-[1000px] w-full bg-white border-x border-sepratorColor' />
+            <CyDTouchView
+                key={item.id}
                 className={
-                    'flex flex-row justify-start align-center items-center w-[65%]'
+                    clsx('h-[70px] flex flex-row justify-between items-center bg-white px-[10px] border-b border-x border-sepratorColor', { 'bg-orange-50': !isSettled })
                 }
+                onPress={() => {
+                    void intercomAnalyticsLog('card_transaction_info_clicked');
+                    navigation.navigate(
+                        screenTitle.BRIDGE_CARD_TRANSACTION_DETAILS_SCREEN,
+                        { transaction: item },
+                    );
+                }}
             >
-                <CyDFastImage
-                    source={
-                        iconUrl && iconUrl !== ''
-                            ? { uri: iconUrl }
-                            : getTransactionIndicator(type)
+                <CyDView
+                    className={
+                        'flex flex-row justify-start align-center items-center w-[65%]'
                     }
-                    className={clsx('h-[30px] w-[30px]', { 'rounded-full border border-orange-400': !isSettled })}
-                    resizeMode={'contain'}
-                />
-                <CyDView className={'ml-[10px]'}>
-                    <CyDText
-                        className='font-bold flex-wrap w-[200px]'
-                        ellipsizeMode="tail"
-                        numberOfLines={1}
-                    >
-                        {title.replace(/\s+/g, ' ')}
-                    </CyDText>
-                    <CyDText>{formatDate(String(date))}</CyDText>
-                </CyDView>
-            </CyDView>
-            <CyDView className='flex justify-center items-end'>
-                <CyDText
-                    className={clsx('font-bold text-[16px] mr-[5px]', {
-                        'text-redCyD': type === CardTransactionTypes.DEBIT,
-                        'text-successTextGreen': type === CardTransactionTypes.CREDIT,
-                        'text-darkYellow': type === CardTransactionTypes.REFUND,
-                        'text-orange-400': !isSettled,
-                    })}
                 >
-                    {getTransactionSign(type)}
-                    {amount} {t<string>('USD')}
-                </CyDText>
-                {
-                    !isSettled ?
+                    <CyDFastImage
+                        source={
+                            iconUrl && iconUrl !== ''
+                                ? { uri: iconUrl }
+                                : getTransactionIndicator(type)
+                        }
+                        className={clsx('h-[30px] w-[30px]', { 'rounded-full border border-orange-400': !isSettled })}
+                        resizeMode={'contain'}
+                    />
+                    <CyDView className={'ml-[10px]'}>
                         <CyDText
-                            className='font-bold text-[10px] mr-[5px] text-orange-400 uppercase'
+                            className='font-bold flex-wrap w-[200px]'
+                            ellipsizeMode="tail"
+                            numberOfLines={1}
                         >
-                            {t('PENDING')}
-                        </CyDText> : null
-                }
-            </CyDView>
-        </CyDTouchView>
+                            {title.replace(/\s+/g, ' ')}
+                        </CyDText>
+                        <CyDText>{formatDate(String(date))}</CyDText>
+                    </CyDView>
+                </CyDView>
+                <CyDView className='flex justify-center items-end'>
+                    <CyDText
+                        className={clsx('font-bold text-[16px] mr-[5px]', {
+                            'text-redCyD': type === CardTransactionTypes.DEBIT,
+                            'text-successTextGreen': type === CardTransactionTypes.CREDIT,
+                            'text-darkYellow': type === CardTransactionTypes.REFUND,
+                            'text-orange-400': !isSettled,
+                        })}
+                    >
+                        {getTransactionSign(type)}
+                        {amount} {t<string>('USD')}
+                    </CyDText>
+                    {
+                        !isSettled ?
+                            <CyDText
+                                className='font-bold text-[10px] mr-[5px] text-orange-400 uppercase'
+                            >
+                                {t('PENDING')}
+                            </CyDText> : null
+                    }
+                </CyDView>
+            </CyDTouchView>
+        </>
     );
 };
 
