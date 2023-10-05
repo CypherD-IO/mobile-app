@@ -245,7 +245,7 @@ const CypherCardScreen = ({ navigation, route }: CypherCardScreenProps) => {
                     </CyDView>
                     {/* FUND CARD */}
                 </AnimatedCardSection>
-                <CyDView className={clsx('h-full px-[10px] bg-white pb-[40px]', { 'pb-[75px]': isAndroid() })}>
+                <CyDView className={clsx('h-full px-[10px] pb-[40px]', { 'pb-[75px]': isAndroid() })}>
                     {/* TOOLBAR */}
                     <AnimatedToolBar scrollY={scrollY} cardSectionHeight={cardSectionHeight}>
                         <CyDView className="h-[40px] flex flex-row justify-between items-center py-[5px] px-[10px] bg-white border border-sepratorColor mt-[10px] rounded-t-[24px]">
@@ -265,10 +265,11 @@ const CypherCardScreen = ({ navigation, route }: CypherCardScreenProps) => {
                     <AnimatedTxnList
                         scrollY={scrollY}
                         cardSectionHeight={cardSectionHeight}
-                        refreshControl={<RefreshControl refreshing={refreshing} onRefresh={onRefresh} progressViewOffset={cardSectionHeight} />}
+                        refreshControl={<RefreshControl className='bg-white' refreshing={refreshing} onRefresh={onRefresh} progressViewOffset={cardSectionHeight} />}
                         data={filteredTransactions}
-                        renderItem={({ item, index }: { item: CardTransaction, index: number }) => {
-                            return <CardTransactionItem key={index} item={item} />;
+                        keyExtractor={(_, index) => index.toString()}
+                        renderItem={({ item }: { item: CardTransaction }) => {
+                            return <CardTransactionItem item={item} />;
                         }}
                         ListEmptyComponent={<CyDView className="h-[50%] w-full justify-center items-center">
                             <CyDFastImage source={AppImages.NO_TRANSACTIONS_YET} className="h-[150px] w-[150px]" resizeMode="contain" />
