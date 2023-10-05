@@ -9,6 +9,7 @@ import { getChainLogo, sortDefiPositionDesc } from "../../core/defi";
 import { t } from "i18next";
 import CyDTokenValue from "../../components/v2/tokenValue";
 import CyDTokenAmount from "../../components/v2/tokenAmount";
+import { screenTitle } from "../../constants";
 
 interface RouteProps {
   route:{
@@ -153,7 +154,12 @@ export function DEFIOverviewScreen ({route,navigation}:RouteProps){
                 <CyDTouchView
                   className='flex-1 flex-row gap-[4px] justify-start items-center'
                   onPress={()=>{
-                    void Linking.openURL(protocol.protocolURL);
+                    navigation.navigate(screenTitle.BROWSER, {
+                      screen: screenTitle.BROWSER_SCREEN,
+                      params: {
+                        url: protocol.protocolURL,
+                      },
+                    });
                   }}
                 >
                   <CyDText className='underline font-bold text-[22px]'>{protocol.protocolName}</CyDText>
