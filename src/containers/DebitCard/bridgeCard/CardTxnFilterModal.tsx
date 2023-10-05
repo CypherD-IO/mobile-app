@@ -1,24 +1,30 @@
-import React, { memo, useEffect, useLayoutEffect, useState } from "react";
+import React, { memo, useEffect, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { BackHandler, StyleSheet } from "react-native";
 import { CyDFastImage, CyDSafeAreaView, CyDText, CyDTouchView, CyDView } from "../../../styles/tailwindStyles";
 import CheckBoxes from "../../../components/checkBoxes";
 import Button from "../../../components/v2/button";
 import CyDModalLayout from "../../../components/v2/modal";
-import { ButtonType, TransactionTypes } from "../../../constants/enum";
+import { ButtonType, CardTransactionStatuses, CardTransactionTypes } from "../../../constants/enum";
 import AppImages from "../../../../assets/images/appImages";
+import DateRangeFilterPicker from "../CardV2/DateRangeFilterPicker";
+import { DateRange, initialCardTxnDateRange } from "../CardV2";
 
-export const FILTERS = ['Type'];
-export const TRANSACTION_TYPES = [TransactionTypes.CREDIT, TransactionTypes.DEBIT, TransactionTypes.REFUND];
-// export const STATUSES = ['completed', 'error'];
+export const ALL_FILTERS = ['Type', 'Date range', 'Status'];
+export const TYPES = [CardTransactionTypes.CREDIT, CardTransactionTypes.DEBIT, CardTransactionTypes.REFUND];
+export const STATUSES = [CardTransactionStatuses.PENDING, CardTransactionStatuses.SETTLED];
 
 interface CardTxnFilterModalProps {
     navigation: any
     modalVisibilityState: [boolean, React.Dispatch<React.SetStateAction<boolean>>]
     filterState: [{
-        types: TransactionTypes[];
+        types: CardTransactionTypes[];
+        dateRange: DateRange
+        statuses: CardTransactionStatuses[]
     }, React.Dispatch<React.SetStateAction<{
-        types: TransactionTypes[];
+        types: CardTransactionTypes[];
+        dateRange: DateRange
+        statuses: CardTransactionStatuses[]
     }>>]
 }
 
@@ -26,7 +32,9 @@ const CardTxnFilterModal = ({ navigation, modalVisibilityState, filterState }: C
     const { t } = useTranslation();
     const [index, setIndex] = useState<number>(0);
     const [filter, setFilter] = filterState;
-    const [selectedTypes, setSelectedTypes] = useState<TransactionTypes[]>(filter.types === TRANSACTION_TYPES ? [] : filter.types);
+    const [selectedTypes, setSelectedTypes] = useState<CardTransactionTypes[]>(filter.types === TYPES ? [] : filter.types);
+    const [selectedDateRange, setSelectedDateRange] = useState<DateRange>(filter.dateRange);
+    const [selectedStatuses, setSelectedStatuses] = useState<CardTransactionStatuses[]>(filter.statuses === STATUSES ? [] : filter.statuses);
     const [isModalVisible, setModalVisible] = modalVisibilityState;
 
     useEffect(() => {
@@ -42,24 +50,15 @@ const CardTxnFilterModal = ({ navigation, modalVisibilityState, filterState }: C
         };
     }, [navigation]);
 
-    useLayoutEffect(() => {
-        navigation.setOptions({
-            headerRight: () => (
-                <CyDTouchView onPress={() => {
-                    setSelectedTypes(TRANSACTION_TYPES);
-                }}>
-                    <CyDText className='color-[#048A81] font-bold text-[16px]'>{t('RESET_ALL')}</CyDText>
-                </CyDTouchView>
-            )
-        });
-    }, [navigation, t]);
-
     function onApply() {
         const data = {
-            types: selectedTypes.length === 0 ? TRANSACTION_TYPES : selectedTypes,
+            types: selectedTypes.length === 0 ? TYPES : selectedTypes,
+            dateRange: selectedDateRange,
+            statuses: selectedStatuses.length === 0 ? STATUSES : selectedStatuses,
         };
 
         selectedTypes.length === 0 && setSelectedTypes([]);
+        selectedStatuses.length === 0 && setSelectedStatuses([]);
 
         setFilter(data);
         setModalVisible(false);
@@ -67,7 +66,9 @@ const CardTxnFilterModal = ({ navigation, modalVisibilityState, filterState }: C
 
     const onReset = () => {
         setSelectedTypes([]);
-        setFilter({ types: TRANSACTION_TYPES });
+        setSelectedDateRange(initialCardTxnDateRange);
+        setSelectedStatuses([]);
+        setFilter({ types: TYPES, dateRange: initialCardTxnDateRange, statuses: STATUSES });
     };
 
     return (
@@ -92,23 +93,56 @@ const CardTxnFilterModal = ({ navigation, modalVisibilityState, filterState }: C
                 </CyDView>
                 <CyDView className={'h-full flex flex-row'}>
                     <CyDView className={'border-r border-activityFilterBorderLine w-[30%]'}>
-                        {FILTERS.map((filter, idx) => (
+                        {ALL_FILTERS.map((filterItem, idx) => (
                             <CyDTouchView key={idx}
                                 onPress={() => setIndex(idx)}
                                 className={`${index === idx ? 'bg-appColor' : 'bg-whiteflex'} justify-center py-[20px]`}>
-                                <CyDText className={'text-left pl-[12px] text-[16px] font-bold'}>
-                                    {filter + (idx === 0 ? ` (${selectedTypes.length})` : '')}
-                                </CyDText>
+                                {
+                                    idx === 0 ?
+                                        <CyDText className={'text-left pl-[12px] text-[16px] font-bold'}>
+                                            {filterItem + ' (' + selectedTypes.length.toString() + ')'}
+                                        </CyDText> : null
+                                }
+                                {
+                                    idx === 1 ?
+                                        <CyDText className={'text-left pl-[12px] text-[16px] font-bold'}>
+                                            {filterItem}
+                                        </CyDText> : null
+                                }
+                                {
+                                    idx === 2 ?
+                                        <CyDText className={'text-left pl-[12px] text-[16px] font-bold'}>
+                                            {filterItem + ' (' + selectedStatuses.length.toString() + ')'}
+                                        </CyDText> : null
+                                }
                             </CyDTouchView>
                         ))}
                     </CyDView>
                     <CyDView className={'bg-white w-[70%]'}>
-                        {index === 0 &&
+                        {
+                            index === 0 &&
                             <CheckBoxes
-                                radioButtonsData={TRANSACTION_TYPES}
+                                radioButtonsData={TYPES}
                                 onPressRadioButton={setSelectedTypes}
                                 initialValues={selectedTypes}
-                            />}
+                            />
+                        }
+                        {
+                            index === 1 &&
+                            <DateRangeFilterPicker
+                                minimumDate={new Date(2023, 6, 1)}
+                                maximumDate={new Date()}
+                                dateRangeState={[selectedDateRange, setSelectedDateRange]}
+                            />
+                        }
+                        {
+                            index === 2 &&
+                            <CheckBoxes
+                                radioButtonsData={STATUSES}
+                                onPressRadioButton={setSelectedStatuses}
+                                initialValues={selectedStatuses}
+                            />
+                        }
                     </CyDView>
                 </CyDView>
                 <CyDView className='w-full absolute bottom-0'>

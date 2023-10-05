@@ -14,7 +14,7 @@ import { screenTitle } from '../../../constants';
 import { months } from '../../../constants/data';
 import {
   TransactionFilterTypes,
-  TransactionTypes,
+  CardTransactionTypes,
 } from '../../../constants/enum';
 import { Colors } from '../../../constants/theme';
 import { GlobalContext } from '../../../core/globalContext';
@@ -172,11 +172,11 @@ function TransactionsScreen(props: {
 
   const getTransactionIndicator = (type: string) => {
     switch (type.toUpperCase()) {
-      case TransactionFilterTypes.CREDIT:
+      case CardTransactionTypes.CREDIT:
         return AppImages.ICON_DOWN;
-      case TransactionFilterTypes.DEBIT:
+      case CardTransactionTypes.DEBIT:
         return AppImages.ICON_UP;
-      case TransactionTypes.REFUND:
+      case CardTransactionTypes.REFUND:
         return AppImages.ICON_DOWN;
       default:
         return AppImages.MOVE_FUNDS;
@@ -189,11 +189,11 @@ function TransactionsScreen(props: {
 
   const getTransactionSign = (type: string) => {
     switch (type.toUpperCase()) {
-      case TransactionFilterTypes.CREDIT:
+      case CardTransactionTypes.CREDIT:
         return '+';
-      case TransactionFilterTypes.DEBIT:
+      case CardTransactionTypes.DEBIT:
         return '-';
-      case TransactionTypes.REFUND:
+      case CardTransactionTypes.REFUND:
         return '+';
       default:
         return '..';
@@ -284,9 +284,9 @@ function TransactionsScreen(props: {
         <CyDView className='flex flex-row self-center items-center'>
           <CyDText
             className={clsx('font-bold text-[16px] mr-[5px]', {
-              'text-redCyD': type === TransactionTypes.DEBIT,
-              'text-successTextGreen': type === TransactionTypes.CREDIT,
-              'text-darkYellow': type === TransactionTypes.REFUND
+              'text-redCyD': type === CardTransactionTypes.DEBIT,
+              'text-successTextGreen': type === CardTransactionTypes.CREDIT,
+              'text-darkYellow': type === CardTransactionTypes.REFUND
             })}
           >
             {getTransactionSign(type)}
@@ -312,7 +312,7 @@ function TransactionsScreen(props: {
         setTransactions({
           ...transactions,
           filteredTransactions: transactions.originalTransactions.filter(
-            (transaction) => transaction.type === TransactionTypes.CREDIT,
+            (transaction) => transaction.type === CardTransactionTypes.CREDIT,
           ),
         });
         break;
@@ -320,7 +320,7 @@ function TransactionsScreen(props: {
         setTransactions({
           ...transactions,
           filteredTransactions: transactions.originalTransactions.filter(
-            (transaction) => transaction.type === TransactionTypes.DEBIT,
+            (transaction) => transaction.type === CardTransactionTypes.DEBIT,
           ),
         });
         break;
@@ -328,7 +328,7 @@ function TransactionsScreen(props: {
         setTransactions({
           ...transactions,
           filteredTransactions: transactions.originalTransactions.filter(
-            (transaction) => transaction.type === TransactionTypes.REFUND,
+            (transaction) => transaction.type === CardTransactionTypes.REFUND,
           ),
         });
         break;

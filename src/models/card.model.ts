@@ -1,4 +1,4 @@
-import { TransactionTypes } from "../constants/enum";
+import { CardTransactionTypes } from "../constants/enum";
 
 export interface Card {
   bin: string
@@ -11,11 +11,12 @@ export interface Card {
 
 export interface CardTransaction {
   id: string;
-  type: TransactionTypes;
+  type: CardTransactionTypes;
   title: string;
   date: Date;
   amount: number;
   iconUrl: string;
+  isSettled: boolean;
   tokenData?: {
       id: number,
       chain: string,

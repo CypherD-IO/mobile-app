@@ -772,6 +772,11 @@ const resources = {
       INACTIVE: 'Inactive',
       TYPE: 'Type',
       DEFI_FILTER: 'DeFi Filter',
+      FAILED_TO_UPDATE_TXNS: 'Error occured when trying to update transactions',
+      SETTLED: 'Settled',
+      PENDING: 'Pending',
+      YES: 'Yes',
+      NO: 'No',
     }
   }
 };
