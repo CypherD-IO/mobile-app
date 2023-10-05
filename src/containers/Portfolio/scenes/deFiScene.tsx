@@ -59,6 +59,8 @@ interface DeFiSceneProps {
   setUserProtocols: Dispatch<SetStateAction<protocolOptionType[]>>;
   filterVisible: boolean;
   setFilterVisible: Dispatch<SetStateAction<boolean>>;
+  loading: boolean;
+  setLoading: Dispatch<SetStateAction<boolean>>;
 }
 
 const DeFiTotal = ({value,debt,supply}:{value:number;debt:number;supply:number})=>{
@@ -129,9 +131,10 @@ const DeFiScene = ({
   setUserProtocols,
   filterVisible,
   setFilterVisible,
+  loading,
+  setLoading,
 }: DeFiSceneProps) => {
   const flatListRef = useRef<FlatList<any>>(null);
-  const [loading, setLoading] = useState<boolean>(true);
   const OFFSET_TABVIEW = isIOS() ? -bannerHeight : 0;
   const rotateAnimation = useSharedValue(0);
   const { getWithoutAuth } = useAxios();
@@ -263,22 +266,26 @@ const DeFiScene = ({
   const fetchDefiData = async (address: string, forceRefresh=false)=>{
     const url = forceRefresh? `${DEFI_URL}/${address}?forceRefresh=true` : `${DEFI_URL}/${address}`;
     const { isError, data: rawDeFiData } = await getWithoutAuth(url,{},40000);
-    if (!_.isEmpty(rawDeFiData?.protocols)) {
-      const protocols = rawDeFiData?.protocols;
-      const { defiData, defiOptionsData  } = parseDefiData(
-        protocols as Protocol[],
-        filters,
-        );
-      if (userProtocols.length === 0) setUserProtocols(defiOptionsData);
-      const data ={
-        iat: rawDeFiData?.iat,
-        rawData: rawDeFiData,
-        filteredData: defiData,
-      };
-      setDeFiData(data);
-      await storeDeFiData(data);
+    if(!isError){
+      if (!_.isEmpty(rawDeFiData?.protocols)) {
+        const protocols = rawDeFiData?.protocols;
+        const { defiData, defiOptionsData  } = parseDefiData(
+          protocols as Protocol[],
+          filters,
+          );
+        if (userProtocols.length === 0) setUserProtocols(defiOptionsData);
+        const data ={
+          iat: rawDeFiData?.iat,
+          rawData: rawDeFiData,
+          filteredData: defiData,
+        };
+        setDeFiData(data);
+        await storeDeFiData(data);
+      }
+      setRefreshActivity({isRefreshing:false, lastRefresh: rawDeFiData.iat});
+    }else{
+      setRefreshActivity({isRefreshing:false, lastRefresh: new Date().toLocaleString()});
     }
-    setRefreshActivity({isRefreshing:false, lastRefresh: rawDeFiData.iat});
   };
   const getDeFiHoldings = async (forceRefresh = false ) => {
     if(!forceRefresh)setLoading(true);

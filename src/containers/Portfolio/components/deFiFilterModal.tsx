@@ -53,7 +53,7 @@ const DeFiFilterModal = (props: DeFiFilterModalInterface) => {
         }} className="p-[5px]">
           <CyDFastImage className="h-[16px] w-[16px]" source={AppImages.CLOSE} resizeMode="cover" />
         </CyDTouchView>
-        <CyDText className="text-[20px] font-bold">{t('TRANSACTIONS_FILTER')}</CyDText>
+        <CyDText className="text-[20px] font-bold">{t('DEFI_FILTER')}</CyDText>
         <CyDTouchView onPress={onReset}>
           <CyDText className='color-[#048A81] font-bold text-[16px]'>{t('RESET_ALL')}</CyDText>
         </CyDTouchView>

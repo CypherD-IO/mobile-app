@@ -102,6 +102,7 @@ export default function Portfolio({ navigation }: PortfolioProps) {
     protocols: [],
     activePositionsOnly: 'No',
   });
+  const [deFiLoading, setDeFiLoading] = useState<boolean>(true);
   const [deFiFilterVisible, setDeFiFilterVisible] = useState<boolean>(false);
   const [userProtocols, setUserProtocls] = useState<protocolOptionType[]>([]);
   const tabs = [
@@ -606,6 +607,8 @@ export default function Portfolio({ navigation }: PortfolioProps) {
                 setUserProtocols={setUserProtocls}
                 filterVisible={deFiFilterVisible}
                 setFilterVisible={setDeFiFilterVisible}
+                loading={deFiLoading}
+                setLoading={setDeFiLoading}
               />
             </CyDView>
           );
@@ -674,6 +677,8 @@ export default function Portfolio({ navigation }: PortfolioProps) {
               isFilterVisible={deFiFilterVisible} 
               setFilterVisible={setDeFiFilterVisible}
               userProtocols={userProtocols}
+              isLoading={deFiLoading}
+              setLoading={setDeFiLoading}
             />
           );
         case 'nft':
