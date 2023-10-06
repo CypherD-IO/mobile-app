@@ -583,7 +583,7 @@ export default function Activites(props:
     navigation.setOptions({
       headerRight: () => (
         <CyDTouchView onPress={() => navigation.navigate(C.screenTitle.ACTIVITYFILTER)}>
-          <CyDImage className='w-[78px] h-[25px]' source={AppImages.ACTIVITY_FILTER} />
+          <CyDFastImage className='w-[48px] h-[26px]' source={AppImages.FILTER} resizeMode='contain' />
         </CyDTouchView>
       )
     });
@@ -743,7 +743,7 @@ export default function Activites(props:
       case ActivityType.WALLETCONNECT:
         return (<WalletConnectItem key={id + genId() + 'browser'} activity={activity} />);
       default:
-        return <CyDView></CyDView>;
+        return <CyDView />;
     }
   };
 
