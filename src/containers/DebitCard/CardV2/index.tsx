@@ -241,15 +241,22 @@ const CypherCardScreen = ({ navigation, route }: CypherCardScreenProps) => {
                     {/* TOOLBAR */}
                     <AnimatedToolBar scrollY={scrollY} cardSectionHeight={cardSectionHeight}>
                         <CyDView className="h-[50px] flex flex-row justify-between items-center py-[10px] px-[10px] bg-white border border-sepratorColor mt-[10px] rounded-t-[24px]">
-                            <CyDView className='flex justify-center items-start px-[10px]'>
+                            <CyDView className='flex justify-center items-start px-[5px]'>
                                 <CyDText className="text-[16px] font-bold">{t('TRANS')}</CyDText>
                                 <CyDText className="text-[10px] text-subTextColor">{`from ${moment(filter.dateRange.fromDate).format('DD MMM, \'YY')} to ${moment(filter.dateRange.toDate).format('DD MMM, \'YY')}`}</CyDText>
                             </CyDView>
-                            <CyDTouchView onPress={() => {
-                                setFilterModalVisible(true);
-                            }}>
-                                <CyDFastImage className='w-[48px] h-[26px]' source={AppImages.FILTER} resizeMode='contain' />
-                            </CyDTouchView>
+                            <CyDView className='flex flex-row justify-end items-center px-[5px]'>
+                                <CyDTouchView onPress={() => {
+                                    setFilterModalVisible(true);
+                                }}>
+                                    <CyDFastImage className='w-[48px] h-[26px]' source={AppImages.FILTER} resizeMode='contain' />
+                                </CyDTouchView>
+                                <CyDTouchView onPress={() => {
+                                    console.log('TODO: EXPORT ACTION');
+                                }}>
+                                    <CyDFastImage className='w-[48px] h-[26px]' source={AppImages.EXPORT} resizeMode='contain' />
+                                </CyDTouchView>
+                            </CyDView>
                         </CyDView>
                     </AnimatedToolBar>
                     {/* TOOLBAR */}
