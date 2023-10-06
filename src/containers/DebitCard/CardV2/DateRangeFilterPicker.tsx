@@ -24,7 +24,6 @@ interface DateRangeFilterPickerProps {
 const DatePresetButton = ({ presetOffset, setDateRange, isActive }: DatePresetButtonProps) => {
     const fromDate = moment().subtract(presetOffset, 'days').toDate();
     const toDate = moment().toDate();
-    console.log(isActive);
     return (
         <CyDTouchView
             className={clsx('px-[10px] mx-[3px] py-[5px] my-[5px] rounded-[8px] border border-greyButtonBackgroundColor', { 'bg-buttonColor': isActive })}
