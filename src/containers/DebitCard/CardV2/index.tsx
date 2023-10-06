@@ -163,7 +163,6 @@ const CypherCardScreen = ({ navigation, route }: CypherCardScreenProps) => {
             setIsExporting(true);
             const res = await postWithAuth(exportEndpoint, {});
             if (!res.isError) {
-                console.log(res);
                 showModal('state', { type: 'success', title: t('TXNS_EXPORTED'), description: t('CARD_TXNS_EXPORTED_TEXT'), onSuccess: hideModal, onFailure: hideModal });
             } else {
                 const errorObject = {
