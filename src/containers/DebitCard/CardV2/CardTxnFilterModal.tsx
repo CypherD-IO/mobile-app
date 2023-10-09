@@ -8,7 +8,7 @@ import CyDModalLayout from "../../../components/v2/modal";
 import { ButtonType, CardTransactionStatuses, CardTransactionTypes } from "../../../constants/enum";
 import AppImages from "../../../../assets/images/appImages";
 import DateRangeFilterPicker from "./DateRangeFilterPicker";
-import { CARD_TXN_FILTERS, DateRange, STATUSES, TYPES, initialCardTxnDateRange } from "../../../constants/cardsv2";
+import { CARD_TXN_FILTERS, DateRange, STATUSES, TYPES, initialCardTxnDateRange } from "../../../constants/cardPageV2";
 
 interface CardTxnFilterModalProps {
     navigation: any

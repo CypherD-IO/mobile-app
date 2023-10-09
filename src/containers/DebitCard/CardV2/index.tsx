@@ -25,7 +25,7 @@ import clsx from "clsx";
 import { isAndroid, isIOS } from "../../../misc/checkers";
 import moment from "moment";
 import { useGlobalModalContext } from "../../../components/v2/GlobalModal";
-import { CardSectionHeights, DateRange, STATUSES, TYPES, initialCardTxnDateRange } from "../../../constants/cardsv2";
+import { CardSectionHeights, DateRange, STATUSES, TYPES, initialCardTxnDateRange } from "../../../constants/cardPageV2";
 
 interface CypherCardScreenProps {
     navigation: any

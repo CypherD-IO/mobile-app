@@ -14,3 +14,5 @@ export const initialCardTxnDateRange = {
     fromDate: moment().subtract(60, 'days').toDate(), // inital from is 60 days ago.
     toDate: new Date()
 };
+
+export const PRESET_OFFSET_DAYS = [7, 30, 60];
