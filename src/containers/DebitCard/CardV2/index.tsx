@@ -38,7 +38,7 @@ const CypherCardScreen = ({ navigation, route }: CypherCardScreenProps) => {
 
     const isFocused = useIsFocused();
     const { t } = useTranslation();
-    const { getWithAuth } = useAxios();
+    const { getWithAuth, postWithAuth } = useAxios();
     const { showModal, hideModal } = useGlobalModalContext();
 
     const globalContext = useContext<any>(GlobalContext);
@@ -52,6 +52,7 @@ const CypherCardScreen = ({ navigation, route }: CypherCardScreenProps) => {
     const [transactions, setTransactions] = useState<CardTransaction[]>([]);
     const [filteredTransactions, setFilteredTransactions] = useState<CardTransaction[]>([]);
     const [refreshing, setRefreshing] = useState(false);
+    const [isExporting, setIsExporting] = useState(false);
     const [filterModalVisible, setFilterModalVisible] = useState(false);
     const [filter, setFilter] = useState<{
         types: CardTransactionTypes[];
@@ -139,7 +140,7 @@ const CypherCardScreen = ({ navigation, route }: CypherCardScreenProps) => {
                 setRefreshing(false);
                 const errorObject = {
                     res: JSON.stringify(res),
-                    location: 'isError=true when trying to fetch recent card txns.',
+                    location: 'isError=true when trying to fetch card txns.',
                 };
                 Sentry.captureException(errorObject);
                 showModal('state', { type: 'error', title: t('FAILED_TO_UPDATE_TXNS'), description: res.error, onSuccess: hideModal, onFailure: hideModal });
@@ -148,10 +149,38 @@ const CypherCardScreen = ({ navigation, route }: CypherCardScreenProps) => {
             setRefreshing(false);
             const errorObject = {
                 e,
-                location: 'Error when trying to fetch recent card txns.',
+                location: 'Error when trying to fetch card txns.',
             };
             Sentry.captureException(errorObject);
             showModal('state', { type: 'error', title: t('FAILED_TO_UPDATE_TXNS'), description: e, onSuccess: hideModal, onFailure: hideModal });
+        }
+    };
+
+    const exportCardTransactions = async () => {
+        const currentCard = get(cardProfile, currentCardProvider).cards[currentCardIndex];
+        const exportEndpoint = `/v1/cards/${currentCardProvider}/card/${String(currentCard?.cardId)}/transactions/export`;
+        try {
+            setIsExporting(true);
+            const res = await postWithAuth(exportEndpoint, {});
+            if (!res.isError) {
+                showModal('state', { type: 'success', title: t('TXNS_EXPORTED'), description: t('CARD_TXNS_EXPORTED_TEXT'), onSuccess: hideModal, onFailure: hideModal });
+            } else {
+                const errorObject = {
+                    res: JSON.stringify(res),
+                    location: 'isError=true when trying to export card txns.',
+                };
+                Sentry.captureException(errorObject);
+                showModal('state', { type: 'error', title: t('FAILED_TO_EXPORT_TXNS'), description: res.error, onSuccess: hideModal, onFailure: hideModal });
+            }
+            setIsExporting(false);
+        } catch (e) {
+            const errorObject = {
+                e,
+                location: 'Error when trying to fetch card txns.',
+            };
+            Sentry.captureException(errorObject);
+            showModal('state', { type: 'error', title: t('FAILED_TO_EXPORT_TXNS'), description: e, onSuccess: hideModal, onFailure: hideModal });
+            setIsExporting(false);
         }
     };
 
@@ -241,15 +270,22 @@ const CypherCardScreen = ({ navigation, route }: CypherCardScreenProps) => {
                     {/* TOOLBAR */}
                     <AnimatedToolBar scrollY={scrollY} cardSectionHeight={cardSectionHeight}>
                         <CyDView className="h-[50px] flex flex-row justify-between items-center py-[10px] px-[10px] bg-white border border-sepratorColor mt-[10px] rounded-t-[24px]">
-                            <CyDView className='flex justify-center items-start px-[10px]'>
+                            <CyDView className='flex justify-center items-start px-[5px]'>
                                 <CyDText className="text-[16px] font-bold">{t('TRANS')}</CyDText>
                                 <CyDText className="text-[10px] text-subTextColor">{`from ${moment(filter.dateRange.fromDate).format('DD MMM, \'YY')} to ${moment(filter.dateRange.toDate).format('DD MMM, \'YY')}`}</CyDText>
                             </CyDView>
-                            <CyDTouchView onPress={() => {
-                                setFilterModalVisible(true);
-                            }}>
-                                <CyDFastImage className='w-[78px] h-[25px]' source={AppImages.ACTIVITY_FILTER} />
-                            </CyDTouchView>
+                            <CyDView className='flex flex-row justify-end items-center px-[5px]'>
+                                <CyDTouchView onPress={() => {
+                                    setFilterModalVisible(true);
+                                }}>
+                                    <CyDFastImage className='w-[48px] h-[26px]' source={AppImages.FILTER} resizeMode='contain' />
+                                </CyDTouchView>
+                                <CyDTouchView disabled={isExporting} className={clsx({ 'opacity-40': isExporting })} onPress={() => {
+                                    void exportCardTransactions();
+                                }}>
+                                    <CyDFastImage className='w-[48px] h-[26px]' source={AppImages.EXPORT} resizeMode='contain' />
+                                </CyDTouchView>
+                            </CyDView>
                         </CyDView>
                     </AnimatedToolBar>
                     {/* TOOLBAR */}

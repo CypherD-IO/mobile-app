@@ -186,6 +186,8 @@ const PORTFOLIO_EMPTY = require('./portfolioEmpty.json');
 const WALLET_CONNECT_LOGO = require('./wallet_connect.png');
 const IMPORT_WALLET_ICON = require('./import_wallet_icon.png');
 const ACTIVITY_FILTER = require('./activity_filter.png');
+const FILTER = require('./filter.png');
+const EXPORT = require('./export.png');
 const ON_BOARDING_1 = require('./onBoarding1.png');
 const ON_BOARDING_2 = require('./onBoarding2.png');
 const ON_BOARDING_3 = require('./onBoarding3.png');
@@ -512,6 +514,8 @@ const AppImages = {
   ON_BOARDING_3,
   LOADER_TRANSPARENT,
   ACTIVITY_FILTER,
+  FILTER,
+  EXPORT,
   CROSS_PINK,
   DEPOSIT,
   PRIVATE_KEY,
