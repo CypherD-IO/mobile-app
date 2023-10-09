@@ -45,6 +45,7 @@ const BannerCarousel = ({ setBannerHeight }: BannerCarouselProps) => {
 
   const [dismissedActivityCards, setDismissedActivityCards] = useState<string[]>([]);
   const [dismissedStaticCards, setDismissedStaticCards] = useState<string[]>([]);
+  const [dismissedStaticIDsReady, setDismissedStaticIDsReady] = useState(false);
   const [activityCards, setActivityCards] = useState<BridgeOrCardActivity[]>([]);
   const [staticCards, setStaticCards] = useState<BannerRecord[]>([]);
 
@@ -147,8 +148,10 @@ const BannerCarousel = ({ setBannerHeight }: BannerCarouselProps) => {
         }
       }
     };
-    void checkStaticCards();
-  }, [isFocused, dismissedStaticCards]);
+    if (dismissedStaticIDsReady) {
+      void checkStaticCards();
+    }
+  }, [dismissedStaticIDsReady, dismissedStaticCards]);
 
   // util to get respective ActivityStatus
   const _getUpdatedActivityStatus = (status: string) => {
@@ -257,8 +260,9 @@ const BannerCarousel = ({ setBannerHeight }: BannerCarouselProps) => {
         setDismissedStaticCards(
           newDismissedStatics.map((nDS) => nDS.split('|')[0]),
         );
-        await setDismissedStaticCardIDs(newDismissedStatics);
+        void setDismissedStaticCardIDs(newDismissedStatics);
       }
+      setDismissedStaticIDsReady(true);
     };
     void loadDismissedIDsAndRefreshStore();
   }, []);
