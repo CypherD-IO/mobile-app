@@ -779,7 +779,7 @@ const resources = {
       NO: 'No',
       TXNS_EXPORTED: 'Transactions exported',
       FAILED_TO_EXPORT_TXNS: 'Failed to export transactions',
-      CARD_TXNS_EXPORTED_TEXT: 'Your transactions will be exported as a CSV (.csv) file and sent to your registered email shortly.'
+      CARD_TXNS_EXPORTED_TEXT: 'Your transactions will be exported as a CSV (.csv) file and sent to your registered email shortly.',
     }
   }
 };
