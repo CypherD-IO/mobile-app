@@ -1,4 +1,4 @@
-import React, { memo, useState } from "react";
+import React, { memo, useMemo, useState } from "react";
 import { CyDText, CyDTouchView, CyDView } from "../../../styles/tailwindStyles";
 import RNDateTimePicker from "@react-native-community/datetimepicker";
 import { isAndroid } from "../../../misc/checkers";
@@ -40,6 +40,17 @@ const DateRangeFilterPicker = ({ minimumDate, maximumDate, dateRangeState }: Dat
         fromPicker: !isAndroid(),
         toPicker: !isAndroid(),
     });
+
+
+    const Presets = useMemo(() => {
+        return PRESET_OFFSET_DAYS.map((offset, index) => {
+            const formatText = 'DD/MMM/YYYY';
+            const fromDateIsEqual = moment().subtract(offset, 'days').format(formatText) === moment(dateRange.fromDate).format(formatText);
+            const toDateIsEqual = moment().format(formatText) === moment(dateRange.toDate).format(formatText);
+            return <DatePresetButton key={index} presetOffset={offset} setDateRange={setDateRange} isActive={fromDateIsEqual && toDateIsEqual} />;
+        });
+    }, [dateRange.fromDate, dateRange.toDate, setDateRange]);
+
     return (
         <>
             <CyDView className="h-[30%] w-full gap-[10px]">
@@ -110,15 +121,10 @@ const DateRangeFilterPicker = ({ minimumDate, maximumDate, dateRangeState }: Dat
                     }
                 </CyDView>
                 <CyDView className='w-full border-y border-sepratorColor p-[10px]'>
-                    <CyDText className='text-[18px] font-semibold'>{t('PRESETS')}</CyDText>
                     <CyDView className='flex flex-row flex-wrap'>
-                        {PRESET_OFFSET_DAYS.map((offset, index) => {
-                            const formatText = 'DD/MMM/YYYY';
-                            const fromDateIsEqual = moment().subtract(offset, 'days').format(formatText) === moment(dateRange.fromDate).format(formatText);
-                            const toDateIsEqual = moment().format(formatText) === moment(dateRange.toDate).format(formatText);
-                            return <DatePresetButton key={index} presetOffset={offset} setDateRange={setDateRange} isActive={fromDateIsEqual && toDateIsEqual} />;
+                        {
+                            Presets
                         }
-                        )}
                     </CyDView>
                 </CyDView>
             </CyDView>
