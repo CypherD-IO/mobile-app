@@ -191,15 +191,13 @@ const BannerCarousel = ({ setBannerHeight }: BannerCarouselProps) => {
         if (quoteId === activityQuoteId) {
           const updatedStatus = _getUpdatedActivityStatus(status);
           if (currentActivityStatus !== updatedStatus) {
-            if (updatedStatus === ActivityStatus.SUCCESS) {
-              activityContext?.dispatch({
-                type: ActivityReducerAction.PATCH,
-                value: {
-                  id: activity.id,
-                  status: updatedStatus,
-                },
-              });
-            }
+            activityContext?.dispatch({
+              type: ActivityReducerAction.PATCH,
+              value: {
+                id: activity.id,
+                status: updatedStatus,
+              },
+            });
           }
           const returnActivity = activity;
           returnActivity.status = updatedStatus;
