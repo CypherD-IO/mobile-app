@@ -15,6 +15,7 @@ import {
   HdWalletContext,
   validateAmount,
   limitDecimalPlaces,
+  logAnalytics,
 } from '../../core/util';
 import clsx from 'clsx';
 import {
@@ -62,6 +63,7 @@ import { useGlobalModalContext } from '../../components/v2/GlobalModal';
 import { MODAL_CLOSING_TIMEOUT } from '../../constants/timeOuts';
 import { SuccessTransaction } from '../../components/v2/StateModal';
 import CyDTokenAmount from '../../components/v2/tokenAmount';
+import { AnalyticsType } from '../../constants/enum';
 
 export default function IBC({
   route,
@@ -178,8 +180,8 @@ export default function IBC({
     inputAmount: string,
     userAccountData: any,
     ethereum: any,
-    amount: string = '14000000000000000',
-    gas: string = '450000',
+    amount = '14000000000000000',
+    gas = '450000',
   ) => {
     const chainData = {
       chainId: 9001,
@@ -278,7 +280,7 @@ export default function IBC({
     );
   };
 
-  const ibcTransfer = async (type: string = 'simulation'): Promise<void> => {
+  const ibcTransfer = async (type = 'simulation'): Promise<void> => {
     const activityData: IBCTransaction = {
       id: genId(),
       status: ActivityStatus.PENDING,
@@ -448,6 +450,12 @@ export default function IBC({
               }),
             MODAL_HIDE_TIMEOUT_250,
           );
+          // monitoring api
+          void logAnalytics({
+          type: AnalyticsType.SUCCESS,
+          txnHash: resp.transactionHash,
+          chain: tokenData.chainDetails?.chainName ?? '',
+          });
         }
         setLoading(false);
       } catch (error) {
@@ -471,6 +479,13 @@ export default function IBC({
               });
           }
         }
+        // monitoring api
+        void logAnalytics({
+          type: AnalyticsType.ERROR,
+          chain: tokenData.chainDetails?.chainName ?? '',
+          message: JSON.stringify(error),
+          screen: route.name,
+        });
         Sentry.captureException(error);
         setSignModalVisible(false);
         setTimeout(
@@ -559,6 +574,12 @@ export default function IBC({
                 onFailure: onModalHide,
               });
             }, MODAL_HIDE_TIMEOUT_250);
+            // monitoring api
+            void logAnalytics({
+              type: AnalyticsType.SUCCESS,
+              txnHash: resp.data.tx_response.txhash,
+              chain: tokenData.chainDetails?.chainName ?? '',
+            });
           } else if (resp.data.tx_response.code === 5) {
             activityRef.current &&
               activityContext.dispatch({
@@ -568,6 +589,13 @@ export default function IBC({
                   status: ActivityStatus.FAILED,
                 },
               });
+            // monitoring api
+            void logAnalytics({
+              type: AnalyticsType.ERROR,
+              chain: tokenData.chainDetails?.chainName ?? '',
+              message: JSON.stringify(resp.data.tx_response.raw_log),
+              screen: route.name,
+            });
             Sentry.captureException(resp.data.tx_response.raw_log);
             setTimeout(() => {
               showModal('state', {
@@ -601,6 +629,13 @@ export default function IBC({
               });
           }
         }
+        // monitoring api
+        void logAnalytics({
+          type: AnalyticsType.ERROR,
+          chain: tokenData.chainDetails?.chainName ?? '',
+          message: JSON.stringify(error),
+          screen: route.name,
+        });
         Sentry.captureException(error);
         setTimeout(() => {
           showModal('state', {

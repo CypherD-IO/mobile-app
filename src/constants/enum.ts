@@ -254,3 +254,8 @@ export enum ApplicationName {
   HOP = 'Hop',
   WORM_HOLE = 'WormHole',
 }
+
+export enum AnalyticsType {
+  SUCCESS = 'SUCCESS',
+  ERROR = 'ERROR',
+}

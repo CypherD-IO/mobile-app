@@ -19,6 +19,7 @@ import {
   getWeb3Endpoint,
   convertAmountOfContractDecimal,
   formatAmount,
+  logAnalytics,
 } from './util';
 import {
   Chain,
@@ -57,6 +58,8 @@ import { createAlchemyWeb3 } from '@alch/alchemy-web3';
 import { signatureToPubkey } from '@hanchon/signature-to-pubkey';
 import { get } from 'lodash';
 import { estimateGas } from '../containers/Browser/gasHelper';
+import { useState } from 'react';
+import { AnalyticsType } from '../constants/enum';
 
 // const {showModal, hideModal} = useGlobalModalContext()
 // ETH in Optimims chain's contract address
@@ -87,7 +90,7 @@ export function sendNativeCoinOrToken(
   toAddress: string,
   currentQuoteUUID: string,
   handleTransactionResult: any,
-  is_bridge: boolean = false,
+  is_bridge = false,
   finalGasPrice: any,
   gasLimit: any,
   globalContext,
@@ -872,14 +875,13 @@ export async function cosmosSendTokens(
         text2: result.transactionHash,
         position: 'bottom',
       });
-
       handleSuccessTransaction(result, analyticsData);
     } else {
-      handleFailedTransaction(null, uuid);
+      handleFailedTransaction(null, uuid, chain);
     }
   } catch (err) {
     Sentry.captureException(err);
-    handleFailedTransaction(err, uuid);
+    handleFailedTransaction(err, uuid, chain);
   }
 }
 
@@ -895,8 +897,8 @@ const evmosSendBody = async (
   destinationAddress: string,
   ethereum: any,
   transferAmount: string,
-  gasAmount: string = '14000000000000000',
-  gas: string = '450000',
+  gasAmount = '14000000000000000',
+  gas = '450000',
 ) => {
   const userAccountData = await axios.get(
     `${ACCOUNT_DETAILS_INFO}/${senderAddress}`,
@@ -1046,6 +1048,6 @@ export const evmosSendTxn = async (
       analyticsData,
     );
   } else {
-    handleFailedTransaction(null, uuid);
+    handleFailedTransaction(null, uuid, cosmosConfig.prefix);
   }
 };
