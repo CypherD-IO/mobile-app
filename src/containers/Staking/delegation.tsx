@@ -1,4 +1,4 @@
-/* eslint-disable react-native/no-color-literals */
+ 
 import * as React from 'react';
 import { useContext, useEffect, useState } from 'react';
 import { Colors } from '../../constants/theme';
@@ -9,7 +9,8 @@ import {
   validateAmount,
   convertToEvmosFromAevmos,
   convertAmountOfContractDecimal,
-  PortfolioContext
+  PortfolioContext,
+  logAnalytics
 } from '../../core/util';
 import * as C from '../../constants';
 import { BackHandler, Keyboard, TextInput, StyleSheet } from 'react-native';
@@ -36,9 +37,10 @@ import { CyDImage, CyDText, CyDTouchView, CyDView } from '../../styles/tailwindS
 import CyDModalLayout from '../../components/v2/modal';
 import { SuccessTransaction, BuyOrBridge } from '../../components/v2/StateModal';
 import { cosmosConfig } from '../../constants/cosmosConfig';
-import { TokenOverviewTabIndices } from '../../constants/enum';
+import { AnalyticsType, TokenOverviewTabIndices } from '../../constants/enum';
 import { gasFeeReservation } from '../../constants/data';
 import { GlobalContext } from '../../core/globalContext';
+import { useRoute } from '@react-navigation/native';
 
 const {
   CText,
@@ -76,6 +78,7 @@ export default function StakingDelegation ({ route, navigation }) {
   const ACCOUNT_DETAILS = evmosUrls.accountDetails.replace('address', evmos.wallets[evmos.currentIndex].address);
   const SIMULATION_ENDPOINT = evmosUrls.simulate;
   const TXN_ENDPOINT = evmosUrls.transact;
+  const useroute = useRoute();
   let delegateTryCount = 0;
 
   const handleBackButton = () => {
@@ -227,6 +230,13 @@ export default function StakingDelegation ({ route, navigation }) {
       }
     } catch (error: any) {
       setLoading(false);
+      // monitoring api
+      void logAnalytics({
+        type: AnalyticsType.ERROR,
+        chain:tokenData?.chainDetails?.chainName ?? '',
+        message: 'error while simulating the transaction in evmos staking/delegation.tsx',
+        screen: useroute.name,
+      });
       Sentry.captureException(error);
       await analytics().logEvent('evmos_staking_error', { from: 'error while simulating the transaction in evmos staking/delegation.tsx' });
       showModal('state', { type: 'error', title: t('TRANSACTION_FAILED'), description: error?.response?.data?.message, onSuccess: hideModal, onFailure: hideModal });
@@ -286,6 +296,12 @@ export default function StakingDelegation ({ route, navigation }) {
             stakingValidators.dispatchStaking({
               type: RESET
             });
+            // monitoring api
+            void logAnalytics({
+              type: AnalyticsType.SUCCESS,
+              txnHash: txnResponse.data.tx_response.txhash,
+              chain: tokenData?.chainDetails?.chainName ?? '',
+            });
             showModal('state', {
               type: 'success',
               title: t('TRANSACTION_SUCCESS'),
@@ -301,6 +317,13 @@ export default function StakingDelegation ({ route, navigation }) {
           }else{
             setLoading(false);
             setSignModalVisible(false);
+            // monitoring api
+            void logAnalytics({
+              type: AnalyticsType.ERROR,
+              chain:tokenData.chainDetails.chainName,
+              message: JSON.stringify(`error while broadcasting the transaction in evmos staking/delegation.tsx : ${txnResponse.data.tx_response.raw_log}`),
+              screen: useroute.name,
+            });
             Sentry.captureException(txnResponse);
             await analytics().logEvent('evmos_staking_error', {
               from: `error while broadcasting the transaction in evmos staking/delegation.tsx : ${txnResponse.data.tx_response.raw_log}`
@@ -313,6 +336,13 @@ export default function StakingDelegation ({ route, navigation }) {
       } catch (error: any) {
         setLoading(false);
         setSignModalVisible(false);
+        // monitoring api
+        void logAnalytics({
+          type: AnalyticsType.ERROR,
+          chain: tokenData?.chainDetails?.chainName ?? '',
+          message: JSON.stringify(error),
+          screen: useroute.name,
+        });
         Sentry.captureException(error);
         await analytics().logEvent('evmos_staking_error', { from: 'error while broadcasting the transaction in evmos staking/delegation.tsx' });
         setTimeout(() => {
@@ -465,7 +495,7 @@ export default function StakingDelegation ({ route, navigation }) {
                             autoCorrect={false}
                             editable={false}
                             style={styles.reDelegatorBox}
-                        ></TextInput>
+                         />
                         <DynamicView style={{ position: 'absolute', right: 10 }} fD={'row'} dynamic >
                             <CText dynamic fF={C.fontsName.FONT_SEMI_BOLD} fS={14} tA={'left'} color={Colors.subTextColor}>
                                 <DynamicImage dynamic source={AppImages.RIGHT_ARROW} width={12} height={16}/>
@@ -496,7 +526,7 @@ export default function StakingDelegation ({ route, navigation }) {
                         autoCorrect={false}
                         caretHidden={false}
                         style={styles.valueBox}
-                    ></TextInput>
+                     />
                     <DynamicView style={{ position: 'absolute', right: 10 }} fD={'row'} dynamic>
                         <CText dynamic fF={C.fontsName.FONT_SEMI_BOLD} fS={14} tA={'left'} color={Colors.subTextColor}>
                           {'EVMOS'}

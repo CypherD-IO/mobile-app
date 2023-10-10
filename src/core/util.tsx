@@ -48,6 +48,14 @@ import { ActivityContextDef } from '../reducers/activity_reducer';
 import { HdWalletContextDef } from '../reducers/hdwallet_reducer';
 import { isEvmosAddress } from '../containers/utilities/evmosSendUtility';
 import { t } from 'i18next';
+import { AnalyticsType } from '../constants/enum';
+import {
+  ErrorAnalytics,
+  SuccessAnalytics,
+} from '../models/analytics.interface';
+import { ANALYTICS_ERROR_URL, ANALYTICS_SUCCESS_URL } from '../constants/data';
+import DeviceInfo from 'react-native-device-info';
+import axios from './Http';
 
 // const {showModal, hideModal} = useGlobalModalContext()
 
@@ -734,3 +742,29 @@ export const formatAmount = (amount: string | number, precision = 4) => {
     return Math.floor(Number(amount) * factor) / factor;
   }
 };
+
+export function logAnalytics(params: SuccessAnalytics | ErrorAnalytics): void {
+  const { type } = params;
+  switch (type) {
+    case AnalyticsType.SUCCESS: {
+      const { chain, txnHash } = params as SuccessAnalytics;
+      const data = {
+        chain,
+        txnHash,
+      };
+      void axios.post(ANALYTICS_SUCCESS_URL, data);
+      break;
+    }
+    case AnalyticsType.ERROR: {
+      const { chain, message, screen } = params as ErrorAnalytics;
+      const data = {
+        chain,
+        message,
+        client: `${Platform.OS}:${DeviceInfo.getVersion()}`,
+        screen,
+      };
+      void axios.post(ANALYTICS_ERROR_URL, data);
+      break;
+    }
+  }
+}
