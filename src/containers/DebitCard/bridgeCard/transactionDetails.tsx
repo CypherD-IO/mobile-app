@@ -10,6 +10,8 @@ import { TransactionFilterTypes, CardTransactionTypes } from '../../../constants
 import clsx from 'clsx';
 import { screenTitle } from '../../../constants';
 import { useNavigation } from '@react-navigation/native';
+import { GlobalContext } from '../../../core/globalContext';
+import { ICardTransaction } from '../../../models/card.model';
 
 const formatDate = (date: Date) => {
   return moment(date).format('MMM DD YYYY, h:mm a');
@@ -93,10 +95,10 @@ const TransactionDetail = ({ item }: {
 
 export default function TransactionDetails({ navigation, route }: { navigation: any, route: { params: any } }) {
   const { t } = useTranslation();
-  const { transaction } = route.params;
+  const { transaction }: { transaction: ICardTransaction } = route.params;
   const { fxCurrencySymbol, fxCurrencyValue, fxConversionPrice, title: merchantName } = transaction;
   const hdWalletContext = useContext<any>(HdWalletContext);
-
+  const globalContext = useContext(GlobalContext);
   const transactionDetails: Array<{
     icon: any;
     title: string;
@@ -106,6 +108,13 @@ export default function TransactionDetails({ navigation, route }: { navigation: 
     }>;
   }> = [];
   if (transaction.type === CardTransactionTypes.DEBIT || transaction.type === CardTransactionTypes.REFUND) {
+    const last4 = globalContext?.globalState.cardProfile?.pc?.cards?.reduce((_, curVal) => {
+      if (curVal?.cardId === transaction.cardId) {
+        return curVal?.last4;
+      } else {
+        return 'XXXX';
+      }
+    }, 'XXXX') ?? 'XXXX';
     const debitOrRefundDetails = [
       {
         icon: AppImages.PAYMENT_DETAILS,
@@ -113,7 +122,8 @@ export default function TransactionDetails({ navigation, route }: { navigation: 
         data: [
           { label: t('TRANSACTION_ID'), value: transaction.id },
           { label: t('TYPE'), value: transaction.type },
-          { label: t('STATUS'), value: transaction.isSettled ? t('SETTLED') : t('PENDING') }
+          { label: t('STATUS'), value: transaction.isSettled ? t('SETTLED') : t('PENDING') },
+          { label: t('CARD'), value: 'XXXX XXXX XXXX ' + last4 },
         ]
       },
       {

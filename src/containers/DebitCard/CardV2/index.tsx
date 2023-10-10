@@ -19,7 +19,7 @@ import SwitchView from "../../../components/v2/switchView";
 import CardTransactionItem from "../../../components/v2/CardTransactionItem";
 import { AnimatedToolBar } from "./AnimatedToolBar";
 import CardTxnFilterModal from "./CardTxnFilterModal";
-import { CardTransaction } from "../../../models/card.model";
+import { ICardTransaction } from "../../../models/card.model";
 import { RefreshControl, StyleSheet } from "react-native";
 import clsx from "clsx";
 import { isAndroid, isIOS } from "../../../misc/checkers";
@@ -49,8 +49,8 @@ const CypherCardScreen = ({ navigation, route }: CypherCardScreenProps) => {
     const [cardBalance, setCardBalance] = useState('');
     const [currentCardIndex] = useState(0); // Not setting anywhere.
     const [currentCardProvider, setCurrentCardProvider] = useState<string>(cardProvider);
-    const [transactions, setTransactions] = useState<CardTransaction[]>([]);
-    const [filteredTransactions, setFilteredTransactions] = useState<CardTransaction[]>([]);
+    const [transactions, setTransactions] = useState<ICardTransaction[]>([]);
+    const [filteredTransactions, setFilteredTransactions] = useState<ICardTransaction[]>([]);
     const [refreshing, setRefreshing] = useState(false);
     const [isExporting, setIsExporting] = useState(false);
     const [filterModalVisible, setFilterModalVisible] = useState(false);
@@ -130,7 +130,7 @@ const CypherCardScreen = ({ navigation, route }: CypherCardScreenProps) => {
             const res = await getWithAuth(txnURL);
             if (!res.isError) {
                 const { transactions: txnsToSet } = res.data;
-                txnsToSet.sort((a: CardTransaction, b: CardTransaction) => {
+                txnsToSet.sort((a: ICardTransaction, b: ICardTransaction) => {
                     return a.date < b.date ? 1 : -1;
                 });
                 setTransactions(txnsToSet);
@@ -184,7 +184,7 @@ const CypherCardScreen = ({ navigation, route }: CypherCardScreenProps) => {
         }
     };
 
-    const spliceTransactions = (txnsToSplice: CardTransaction[]) => {
+    const spliceTransactions = (txnsToSplice: ICardTransaction[]) => {
         if (txnsToSplice.length === 0) {
             setFilteredTransactions([]);
         }
@@ -296,7 +296,7 @@ const CypherCardScreen = ({ navigation, route }: CypherCardScreenProps) => {
                         refreshControl={<RefreshControl className={clsx({ 'bg-white': isIOS() })} refreshing={refreshing} onRefresh={onRefresh} progressViewOffset={cardSectionHeight} />}
                         data={filteredTransactions}
                         keyExtractor={(_, index) => index.toString()}
-                        renderItem={({ item }: { item: CardTransaction }) => {
+                        renderItem={({ item }: { item: ICardTransaction }) => {
                             return <CardTransactionItem item={item} />;
                         }}
                         ListEmptyComponent={<CyDView className="h-full bg-white border-x border-sepratorColor w-full justify-start items-center py-[30%]">

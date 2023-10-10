@@ -10,25 +10,6 @@ export interface Card {
   type: string
 }
 
-export interface CardTransaction {
-  id: string;
-  type: CardTransactionTypes;
-  title: string;
-  date: Date;
-  amount: number;
-  iconUrl: string;
-  isSettled: boolean;
-  tokenData?: {
-      id: number,
-      chain: string,
-      hash: string,
-      symbol: string,
-      coinId: string,
-      tokenNos: number,
-      tokenAddress: string
-  }
-}
-
 export interface ICardSubObjectMerchant {
   merchantName: string;
   merchantCity: string;
@@ -59,7 +40,7 @@ export interface ITokenData {
   tokenAddress: string;
 }
 
-export interface ICardTransactions {
+export interface ICardTransaction {
   id: string;
   type: CardTransactionTypes;
   category?: string;
