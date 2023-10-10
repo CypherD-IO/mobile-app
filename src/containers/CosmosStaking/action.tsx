@@ -6,7 +6,8 @@ import {
   convertAmountOfContractDecimal,
   convertFromUnitAmount,
   convertNumberToShortHandNotation,
-  HdWalletContext
+  HdWalletContext,
+  logAnalytics
 } from '../../core/util';
 import LottieView from 'lottie-react-native';
 import { CosmosActionType, CosmosStakingContext, COSMOS_STAKING_EMPTY } from '../../reducers/cosmosStakingReducer';
@@ -26,7 +27,8 @@ import { useTranslation } from 'react-i18next';
 import { useGlobalModalContext } from '../../components/v2/GlobalModal';
 import { MODAL_HIDE_TIMEOUT } from '../../core/Http';
 import { SuccessTransaction } from '../../components/v2/StateModal';
-import { TokenOverviewTabIndices } from '../../constants/enum';
+import { AnalyticsType, TokenOverviewTabIndices } from '../../constants/enum';
+import { useRoute } from '@react-navigation/native';
 
 export default function CosmosAction ({ route, navigation }) {
   const { t } = useTranslation();
@@ -41,7 +43,7 @@ export default function CosmosAction ({ route, navigation }) {
   const [signModalVisible, setSignModalVisible] = useState<boolean>(false);
   const [gasFee, setGasFee] = useState<number>(0);
   const [reValidator, setReValidator] = useState({ name: '' });
-
+  const useroute = useRoute();
   const { showModal, hideModal } = useGlobalModalContext();
 
   const handleBackButton = () => {
@@ -189,11 +191,24 @@ export default function CosmosAction ({ route, navigation }) {
           onSuccess: onModalHide,
           onFailure: hideModal
         });
+        // monitoring api
+        void logAnalytics({
+          type: AnalyticsType.SUCCESS,
+          txnHash: resp.transactionHash,
+          chain: tokenData?.chainDetails?.chainName ?? '',
+        });
         analytics().logEvent(`${from}_transaction_success`);
       }
       setLoading(false);
     } catch (error) {
       setLoading(false);
+      // monitoring api
+      void logAnalytics({
+        type: AnalyticsType.ERROR,
+        chain: tokenData?.chainDetails?.chainName ?? '',
+        message: JSON.stringify(error),
+        screen: useroute.name,
+      });
       showModal('state', { type: 'error', title: t('TRANSACTION_FAILED'), description: error.message, onSuccess: hideModal, onFailure: hideModal });
       Sentry.captureException(error);
       analytics().logEvent(`${from}_failed`);

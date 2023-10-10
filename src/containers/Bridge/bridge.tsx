@@ -31,6 +31,7 @@ import {
   getNativeTokenBalance,
   limitDecimalPlaces,
   formatAmount,
+  logAnalytics,
 } from '../../core/util';
 import AppImages from './../../../assets/images/appImages';
 import ChooseChainModal from '../../components/v2/chooseChainModal';
@@ -59,7 +60,7 @@ import {
 import * as C from '../../constants';
 import { screenTitle } from '../../constants';
 import { GlobalContext, GlobalContextDef } from '../../core/globalContext';
-import { useIsFocused } from '@react-navigation/native';
+import { useIsFocused, useRoute } from '@react-navigation/native';
 import { getSignerClient } from '../../core/Keychain';
 import { useTranslation } from 'react-i18next';
 import {
@@ -94,7 +95,11 @@ import {
 } from '../../constants/timeOuts';
 import useAxios from '../../core/HttpRequest';
 import Button from '../../components/v2/button';
-import { ButtonType, TokenModalType } from '../../constants/enum';
+import {
+  AnalyticsType,
+  ButtonType,
+  TokenModalType,
+} from '../../constants/enum';
 import { PORTFOLIO_EMPTY } from '../../reducers/portfolio_reducer';
 import useIsSignable from '../../hooks/useIsSignable';
 import ChooseTokenModal from '../../components/v2/chooseTokenModal';
@@ -123,7 +128,7 @@ export default function Bridge(props: { navigation?: any; route?: any }) {
   const evmos = hdWallet.state.wallet.evmos;
   const { isReadOnlyWallet } = hdWallet.state;
   const globalStateContext = useContext<GlobalContextDef>(GlobalContext);
-
+  const route = useRoute();
   const [loading, setLoading] = useState(true);
   const [bridgeLoading, setBridgeLoading] = useState(false);
 
@@ -479,6 +484,13 @@ export default function Bridge(props: { navigation?: any; route?: any }) {
     isHashGenerated = false,
   ) => {
     if (isError) {
+      // monitoring api
+      void logAnalytics({
+        type: AnalyticsType.ERROR,
+        chain: fromChain.chainName,
+        message: message,
+        screen: route.name,
+      });
       if (message === t('INSUFFICIENT_GAS_ERROR')) {
         message = !isHashGenerated
           ? `You need ${String(
@@ -519,6 +531,12 @@ export default function Bridge(props: { navigation?: any; route?: any }) {
         });
       }, 500);
     } else {
+      // monitoring api
+      void logAnalytics({
+        type: AnalyticsType.SUCCESS,
+        txnHash: message,
+        chain: fromChain.chainName,
+      });
       transferSentQuote(fromAddress, quoteUUID, message);
     }
   };
@@ -856,6 +874,7 @@ export default function Bridge(props: { navigation?: any; route?: any }) {
           sequenceNumber,
           cypherdBridgeFee: quoteData.cypherdBridgeFee,
         };
+
         await postWithAuth('/v1/bridge/txn/cosmos', data);
 
         const gasFeeUsd = computeGasFeeInUsd(response.gasUsed);
@@ -866,6 +885,12 @@ export default function Bridge(props: { navigation?: any; route?: any }) {
             status: ActivityStatus.INPROCESS,
             quoteData: { ...quoteData, gasFee: gasFeeUsd },
           },
+        });
+        // monitoring api
+        void logAnalytics({
+          type: AnalyticsType.SUCCESS,
+          txnHash: transactionHash,
+          chain: fromChain.chainName,
         });
         setBridgeLoading(false);
 
@@ -887,6 +912,13 @@ export default function Bridge(props: { navigation?: any; route?: any }) {
             status: ActivityStatus.FAILED,
             reason: error.message,
           },
+        });
+        // monitoring api
+        void logAnalytics({
+          type: AnalyticsType.ERROR,
+          chain: fromChain.chainName,
+          message: JSON.stringify(error),
+          screen: route.name,
         });
         Sentry.captureException(error);
         activityContext.dispatch({
@@ -943,6 +975,12 @@ export default function Bridge(props: { navigation?: any; route?: any }) {
               },
             },
           });
+          // monitoring api
+          void logAnalytics({
+            type: AnalyticsType.SUCCESS,
+            txnHash: transactionHash,
+            chain: fromChain.chainName,
+          });
           props.navigation.navigate(C.screenTitle.BRIDGE_STATUS, {
             fromChain,
             fromToken,
@@ -953,6 +991,13 @@ export default function Bridge(props: { navigation?: any; route?: any }) {
             quoteId: quoteData.quoteId,
           });
         } else {
+          // monitoring api
+          void logAnalytics({
+            type: AnalyticsType.ERROR,
+            chain: fromChain.chainName,
+            message: 'IBC failed',
+            screen: route.name,
+          });
           activityContext.dispatch({
             type: ActivityReducerAction.PATCH,
             value: {
@@ -963,6 +1008,13 @@ export default function Bridge(props: { navigation?: any; route?: any }) {
           });
         }
       } catch (e) {
+        // monitoring api
+        void logAnalytics({
+          type: AnalyticsType.ERROR,
+          chain: fromChain.chainName,
+          message: e.message,
+          screen: route.name,
+        });
         activityContext.dispatch({
           type: ActivityReducerAction.PATCH,
           value: {
@@ -1027,6 +1079,13 @@ export default function Bridge(props: { navigation?: any; route?: any }) {
             quoteData.step1TargetWallet,
           );
         } catch (gasFeeError) {
+          // monitoring api
+          void logAnalytics({
+            type: AnalyticsType.ERROR,
+            chain: fromChain.chainName,
+            message: JSON.stringify(gasFeeError),
+            screen: route.name,
+          });
           activityContext.dispatch({
             type: ActivityReducerAction.PATCH,
             value: {
@@ -1922,6 +1981,11 @@ export default function Bridge(props: { navigation?: any; route?: any }) {
               onSuccess: () => onModalHide('success'),
               onFailure: hideModal,
             });
+            void logAnalytics({
+              type: AnalyticsType.SUCCESS,
+              txnHash: JSON.stringify(response.receipt),
+              chain: fromChain.chainName,
+            });
           } else {
             setBridgeLoading(false);
             activityData.status = ActivityStatus.FAILED;
@@ -1937,6 +2001,13 @@ export default function Bridge(props: { navigation?: any; route?: any }) {
               onSuccess: hideModal,
               onFailure: hideModal,
             });
+            // monitoring api
+            void logAnalytics({
+              type: AnalyticsType.ERROR,
+              chain: fromChain.chainName,
+              message: JSON.stringify(response.error),
+              screen: route.name,
+            });
           }
         } else {
           setTimeout(() => {
@@ -1951,6 +2022,13 @@ export default function Bridge(props: { navigation?: any; route?: any }) {
       }
     } catch (error) {
       setBridgeLoading(false);
+      // monitoring api
+      void logAnalytics({
+        type: AnalyticsType.ERROR,
+        chain: fromChain.chainName,
+        message: JSON.stringify(error),
+        screen: route.name,
+      });
       showModal('state', {
         type: 'error',
         title: t('QUOTE_EXPIRED'),

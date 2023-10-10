@@ -10,7 +10,8 @@ import {
   PortfolioContext,
   StakingContext,
   convertToEvmosFromAevmos,
-  convertAmountOfContractDecimal
+  convertAmountOfContractDecimal,
+  logAnalytics
 } from '../../core/util';
 import { stakeValidators } from '../../core/Staking';
 import * as C from '../../constants';
@@ -32,11 +33,12 @@ import Button from '../../components/v2/button';
 import { ethers } from 'ethers';
 import { cosmosConfig } from '../../constants/cosmosConfig';
 import { SuccessTransaction } from '../../components/v2/StateModal';
-import { TokenOverviewTabIndices } from '../../constants/enum';
+import { AnalyticsType, TokenOverviewTabIndices } from '../../constants/enum';
 import { GlobalContext } from '../../core/globalContext';
 import { RESET, STAKING_EMPTY } from '../../reducers/stakingReducer';
 import Loading from '../../components/v2/loading';
 import Toast from 'react-native-toast-message';
+import { useRoute } from '@react-navigation/native';
 
 const {
   CText,
@@ -69,6 +71,7 @@ export default function ReStake ({ route, navigation }) {
   const ACCOUNT_DETAILS = evmosUrls.accountDetails.replace('address', evmos.wallets[evmos.currentIndex].address);
   const SIMULATION_ENDPOINT = evmosUrls.simulate;
   const TXN_ENDPOINT = evmosUrls.transact;
+  const useroute = useRoute();
   let reStakeTryCount = 0;
   function onTransModalHide () {
     hideModal();
@@ -161,6 +164,12 @@ export default function ReStake ({ route, navigation }) {
       if (txnResponse.data.tx_response.raw_log === '[]') {
         setIsLoading(false);
         setDelegateModalVisible(false);
+        // monitoring api
+        void logAnalytics({
+          type: AnalyticsType.SUCCESS,
+          txnHash: txnResponse.data.tx_response.txhash,
+          chain: tokenData.chainDetails.name ?? '',
+        });
         void analytics().logEvent('evmos_redelgation_completed');
         Toast.show({ type: 'success', text1: 'Transaction', text2: 'Transaction Receipt Received', position: 'bottom' });
         setTimeout(() => {
@@ -191,6 +200,13 @@ export default function ReStake ({ route, navigation }) {
         } else {
           setIsLoading(false);
           setDelegateModalVisible(false);
+          // monitoring api
+          void logAnalytics({
+            type: AnalyticsType.ERROR,
+            chain: tokenData.chainDetails.name ?? '',
+            message: JSON.stringify(`error while broadcasting the transaction in evmos staking/delegation.tsx : ${txnResponse.data.tx_response.raw_log}`),
+            screen: useroute.name,
+          });
           Sentry.captureException(txnResponse);
           void analytics().logEvent('evmos_staking_error', {
             from: `error while broadcasting the transaction in evmos staking/delegation.tsx : ${txnResponse.data.tx_response.raw_log}`
@@ -201,6 +217,13 @@ export default function ReStake ({ route, navigation }) {
     } catch (error: any) {
       setIsLoading(false);
       setDelegateModalVisible(false);
+      // monitoring api
+      void logAnalytics({
+        type: AnalyticsType.ERROR,
+        chain: tokenData.chainDetails.name ?? '',
+        message: JSON.stringify(`error while ${stakingValidators.stateStaking.typeOfDelegation} in evmos staking/restake.tsx`),
+        screen: useroute.name,
+      });
       Sentry.captureException(error);
       void analytics().logEvent('evmos_staking_error', { from: `error while ${stakingValidators.stateStaking.typeOfDelegation} in evmos staking/restake.tsx` });
       setTimeout(() => { showModal('state', { type: 'error', title: 'Transaction failed', description: error.message, onSuccess: hideModal, onFailure: hideModal }); }, MODAL_HIDE_TIMEOUT_250);

@@ -2,7 +2,10 @@ import { ApplicationName } from './enum';
 import { ChainBackendNames } from './server';
 export const INJECTED_WEB3_CDN =
   'https://public.cypherd.io/js/injected.web3.js';
-
+export const ANALYTICS_SUCCESS_URL =
+  'https://arch.cypherd.io/v1/monitoring/transaction';
+export const ANALYTICS_ERROR_URL =
+  'https://arch.cypherd.io/v1/monitoring/error';
 export const gasFeeReservation: Record<ChainBackendNames, number> = {
   ETH: 0.0006,
   POLYGON: 0.02,

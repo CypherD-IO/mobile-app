@@ -20,6 +20,7 @@ import {
   PortfolioContext,
   getNativeTokenBalance,
   formatAmount,
+  logAnalytics,
 } from '../../../core/util';
 import {
   CyDFastImage,
@@ -66,7 +67,7 @@ import ChooseTokenModal from '../../../components/v2/chooseTokenModal';
 import CyDTokenAmount from '../../../components/v2/tokenAmount';
 import useAxios from '../../../core/HttpRequest';
 import { get } from 'lodash';
-import { CardProviders } from '../../../constants/enum';
+import { AnalyticsType, CardProviders } from '../../../constants/enum';
 import { TokenMeta } from '../../../models/tokenMetaData.model';
 import clsx from 'clsx';
 import { isIOS } from '../../../misc/checkers';
@@ -316,6 +317,13 @@ export default function BridgeFundCardScreen({ route }: { route: any }) {
     isError: boolean,
   ) => {
     if (isError) {
+      // monitoring api
+      void logAnalytics({
+        type: AnalyticsType.ERROR,
+        chain: selectedToken?.chainDetails?.chainName ?? '',
+        message,
+        screen: route.name,
+      });
       activityRef.current &&
         activityContext.dispatch({
           type: ActivityReducerAction.PATCH,
@@ -335,6 +343,12 @@ export default function BridgeFundCardScreen({ route }: { route: any }) {
         onFailure: hideModal,
       });
     } else {
+      // monitoring api
+      void logAnalytics({
+        type: AnalyticsType.SUCCESS,
+        txnHash: message,
+        chain: selectedToken?.chainDetails?.chainName ?? '',
+      });
       void transferSentQuote(fromAddress, quoteUUID, message);
     }
   };
@@ -344,6 +358,12 @@ export default function BridgeFundCardScreen({ route }: { route: any }) {
     analyticsData: any,
   ) => {
     try {
+      // monitoring api
+      void logAnalytics({
+        type: AnalyticsType.SUCCESS,
+        txnHash: analyticsData.hash,
+        chain: analyticsData.chain,
+      });
       await intercomAnalyticsLog('transaction_submit', analyticsData);
     } catch (error) {
       Sentry.captureException(error);
@@ -355,7 +375,17 @@ export default function BridgeFundCardScreen({ route }: { route: any }) {
     );
   };
 
-  const handleFailedTransaction = async (_err: any, uuid: string) => {
+  const handleFailedTransaction = async (
+    _err: any,
+    uuid: string,
+    chain: string,
+  ) => {
+    void logAnalytics({
+      type: AnalyticsType.ERROR,
+      chain,
+      message: JSON.stringify(_err),
+      screen: route.name,
+    });
     // Sentry.captureException(err);
     activityRef.current &&
       activityContext.dispatch({

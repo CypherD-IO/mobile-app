@@ -1,8 +1,7 @@
-/* eslint-disable react-native/no-color-literals */
 /* eslint-disable react-native/no-inline-styles */
-/* eslint-disable @typescript-eslint/no-var-requires */
+
 /* eslint-disable react-native/no-raw-text */
-/* eslint-disable react/prop-types */
+
 /**
  * @format
  * @flow
@@ -59,6 +58,7 @@ import {
   getWeb3Endpoint,
   HdWalletContext,
   isValidEns,
+  logAnalytics,
   PortfolioContext,
   SendToAddressValidator,
 } from '../../core/util';
@@ -87,10 +87,10 @@ import { isOsmosisAddress } from '../utilities/osmosisSendUtility';
 import { isStargazeAddress } from '../utilities/stargazeSendUtility';
 import { isNobleAddress } from '../utilities/nobleSendUtility';
 import { cosmosConfig } from '../../constants/cosmosConfig';
-import { useIsFocused } from '@react-navigation/native';
+import { useIsFocused, useRoute } from '@react-navigation/native';
 import Fuse from 'fuse.js';
 import AddressProfile from '../AddressBook/addressProfile';
-import { ButtonType } from '../../constants/enum';
+import { AnalyticsType, ButtonType } from '../../constants/enum';
 import useIsSignable from '../../hooks/useIsSignable';
 import clsx from 'clsx';
 import Button from '../../components/v2/button';
@@ -142,7 +142,7 @@ export default function SendTo(props: { navigation?: any; route?: any }) {
   const [isSignableTransaction] = useIsSignable();
   const chainDetails = tokenData?.chainDetails;
   const { keyboardHeight } = useKeyboard();
-
+  // const route = useRoute();
   const searchOptions = {
     isCaseSensitive: false,
     includeScore: true,
@@ -410,7 +410,7 @@ export default function SendTo(props: { navigation?: any; route?: any }) {
             </CyDText>
             <CyDText className='ml-[5px] text-[11px]'>{formatted}</CyDText>
           </CyDView>
-          <CyDView className='flex flex-row justify-between items-center'></CyDView>
+          <CyDView className='flex flex-row justify-between items-center' />
         </CyDTouchView>
         <CyDView
           style={{ width: '100%', height: 1, backgroundColor: '#C5C5C5' }}
@@ -482,6 +482,13 @@ export default function SendTo(props: { navigation?: any; route?: any }) {
     if (isError) {
       const backendName = get(tokenData, 'chainDetails.backendName');
       const symbol: string = get(tokenData, 'chainDetails.symbol');
+      // monitoring api
+      void logAnalytics({
+        type: AnalyticsType.ERROR,
+        chain: tokenData.chainDetails?.chainName ?? '',
+        message,
+        screen: route.name,
+      });
       if (message === t('INSUFFICIENT_GAS_ERROR')) {
         message = `You need ${
           nativeTokenMapping[backendName as ChainBackendNames]
@@ -510,6 +517,12 @@ export default function SendTo(props: { navigation?: any; route?: any }) {
         onFailure: hideModal,
       });
     } else {
+      // monitoring api
+      void logAnalytics({
+        type: AnalyticsType.SUCCESS,
+        txnHash: message,
+        chain: tokenData.chainDetails?.chainName ?? '',
+      });
       activityRef.current &&
         activityContext.dispatch({
           type: ActivityReducerAction.POST,
@@ -765,6 +778,12 @@ export default function SendTo(props: { navigation?: any; route?: any }) {
     result: any,
     analyticsData: any,
   ) => {
+    // monitoring api
+    void logAnalytics({
+      type: AnalyticsType.SUCCESS,
+      txnHash: analyticsData.hash,
+      chain: analyticsData.chain,
+    });
     activityRef.current &&
       activityContext.dispatch({
         type: ActivityReducerAction.POST,
@@ -823,7 +842,18 @@ export default function SendTo(props: { navigation?: any; route?: any }) {
     await analytics().logEvent('transaction_submit', analyticsData);
   };
 
-  const handleFailedTransaction = async (err: any, uuid: string) => {
+  const handleFailedTransaction = async (
+    err: any,
+    uuid: string,
+    chain: string,
+  ) => {
+    // monitoring api
+    void logAnalytics({
+      type: AnalyticsType.ERROR,
+      chain,
+      message: JSON.stringify(err),
+      screen: route.name,
+    });
     activityRef.current &&
       activityContext.dispatch({
         type: ActivityReducerAction.POST,
