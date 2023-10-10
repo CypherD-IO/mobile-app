@@ -148,7 +148,7 @@ function scrubData(key: string, value: any): any {
   }
 }
 Sentry.init({
-  dsn: '',
+  dsn: Config.SENTRY_DSN,
   // environment: 'staging',
   environment: Config.ENVIROINMENT ?? 'staging',
   integrations: [
