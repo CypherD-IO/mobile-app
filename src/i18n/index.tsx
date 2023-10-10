@@ -764,6 +764,7 @@ const resources = {
       TOTAL_DEBT: 'Total Debt',
       TOTAL_SUPPLY: 'Total Supply',
       TOTAL_VALUE: 'Total Value',
+      TOTAL_REWARDS: 'Total Rewards',
       TOTAL: 'Total',
       VIEWMORE: 'View More',
       DEFI_DEPOSIT: 'Deposit',
