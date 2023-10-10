@@ -123,7 +123,7 @@ const CypherCardScreen = ({ navigation, route }: CypherCardScreenProps) => {
         let txnURL = `/v1/cards/${currentCardProvider}/card/${String(currentCard?.cardId)}/transactions`;
         if (filter.dateRange !== initialCardTxnDateRange) {
             const { fromDate, toDate } = filter.dateRange;
-            txnURL += `?startDate=${moment(fromDate).startOf('day').toISOString()}&endDate=${moment(toDate).endOf('day').toISOString()}`;
+            txnURL += `?startDate=${moment.utc(fromDate).startOf('day').toISOString()}&endDate=${moment.utc(toDate).endOf('day').toISOString()}`;
         }
         try {
             setRefreshing(true);
