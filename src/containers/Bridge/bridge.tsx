@@ -28,7 +28,7 @@ import {
   HdWalletContext,
   PortfolioContext,
   validateAmount,
-  getNativeTokenBalance,
+  getNativeToken,
   limitDecimalPlaces,
   formatAmount,
   logAnalytics,
@@ -354,7 +354,7 @@ export default function Bridge(props: { navigation?: any; route?: any }) {
       setFromTokenData(holdingsToShow);
     }
     setNativeTokenBalance(
-      getNativeTokenBalance(
+      getNativeToken(
         (
           get(NativeTokenMapping, item.symbol as ChainBackendNames) ||
           item.symbol
@@ -362,7 +362,7 @@ export default function Bridge(props: { navigation?: any; route?: any }) {
         portfolioState.statePortfolio.tokenPortfolio[
           ChainNameMapping[item.backendName as ChainBackendNames]
         ]?.holdings,
-      ),
+      )?.actualBalance ?? 0,
     );
   };
 
@@ -1136,7 +1136,7 @@ export default function Bridge(props: { navigation?: any; route?: any }) {
         }
         setMinimumAmount(minAmountUSD / fromChainData.price);
         setNativeTokenBalance(
-          getNativeTokenBalance(
+          getNativeToken(
             (
               NativeTokenMapping[fromChainData.chainDetails.symbol] ||
               fromChainData.chainDetails.symbol
@@ -1144,7 +1144,7 @@ export default function Bridge(props: { navigation?: any; route?: any }) {
             portfolioState.statePortfolio.tokenPortfolio[
               ChainNameMapping[fromChainData.chainDetails.backendName]
             ].holdings,
-          ),
+          )?.actualBalance ?? 0,
         );
       } else {
         setLoading(true);
@@ -1160,7 +1160,7 @@ export default function Bridge(props: { navigation?: any; route?: any }) {
           portfolioState.statePortfolio.tokenPortfolio?.eth.holdings[0].price,
         );
         setNativeTokenBalance(
-          getNativeTokenBalance(
+          getNativeToken(
             (
               NativeTokenMapping[
               portfolioState.statePortfolio.tokenPortfolio?.eth.holdings[0]
@@ -1175,7 +1175,7 @@ export default function Bridge(props: { navigation?: any; route?: any }) {
                 .chainDetails.backendName
               ]
             ].holdings,
-          ),
+          )?.actualBalance ?? 0,
         );
         setToChain(ALL_CHAINS[routeData.title === 'Swap' ? 0 : 1]);
       }

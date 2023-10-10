@@ -18,7 +18,7 @@ import {
   getWeb3Endpoint,
   HdWalletContext,
   PortfolioContext,
-  getNativeTokenBalance,
+  getNativeToken,
   formatAmount,
   logAnalytics,
   validateAmount,
@@ -574,7 +574,13 @@ export default function BridgeFundCardScreen({ route }: { route: any }) {
           } else {
             const data = {
               gasFeeDollar: formatAmount(
-                quote.estimatedGasFee * selectedToken?.price,
+                quote.estimatedGasFee * Number(getNativeToken(
+                  get(NativeTokenMapping, selectedToken?.chainDetails.symbol) ||
+                  selectedToken?.chainDetails.symbol,
+                  portfolioState.statePortfolio.tokenPortfolio[
+                    get(ChainNameMapping, selectedToken?.chainDetails.backendName)
+                  ].holdings,
+                )?.price ?? 0)
               ),
               gasFeeETH: quote.estimatedGasFee.toFixed(6),
               networkName: chainDetails.name,
@@ -736,13 +742,13 @@ export default function BridgeFundCardScreen({ route }: { route: any }) {
     setSelectedToken(item);
     setIsChooseTokenVisible(false);
     setNativeTokenBalance(
-      getNativeTokenBalance(
+      getNativeToken(
         get(NativeTokenMapping, item.chainDetails.symbol) ||
         item.chainDetails.symbol,
         portfolioState.statePortfolio.tokenPortfolio[
           get(ChainNameMapping, item.chainDetails.backendName)
         ].holdings,
-      ),
+      )?.actualBalance ?? 0,
     );
   };
 

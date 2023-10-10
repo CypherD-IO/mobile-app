@@ -19,7 +19,7 @@ import {
 import { Colors } from '../../constants/theme';
 import { Holding } from '../../core/Portfolio';
 import {
-  getNativeTokenBalance,
+  getNativeToken,
   PortfolioContext,
   limitDecimalPlaces,
 } from '../../core/util';
@@ -114,12 +114,12 @@ export default function EnterAmount(props) {
     }
     const nativeBackendName = backendName;
     const nativeTokenSymbol = NativeTokenMapping[symbol] || symbol;
-    const nativeTokenBalance = getNativeTokenBalance(
+    const nativeTokenBalance = getNativeToken(
       nativeTokenSymbol,
       portfolioState.statePortfolio.tokenPortfolio[
         ChainNameMapping[nativeBackendName]
       ].holdings,
-    );
+    )?.actualBalance ?? 0;
     const gasReserved = gasFeeReservation[backendName];
 
     return nativeTokenBalance <= gasReserved;
@@ -154,8 +154,8 @@ export default function EnterAmount(props) {
       const reqAmount = enterCryptoAmount
         ? `${cryVal.toFixed(6)} ${tokenData.symbol}`
         : `${parseFloat(
-            (cryVal * parseFloat(tokenData.price)).toFixed(6),
-          )} USD`;
+          (cryVal * parseFloat(tokenData.price)).toFixed(6),
+        )} USD`;
       showModal('state', {
         type: 'error',
         title: t('INSUFFICIENT_GAS_FEE'),
@@ -291,11 +291,11 @@ export default function EnterAmount(props) {
               >
                 {enterCryptoAmount
                   ? (!isNaN(parseFloat(usdValue))
-                      ? formatAmount(usdValue)
-                      : '0.00') + ' USD'
+                    ? formatAmount(usdValue)
+                    : '0.00') + ' USD'
                   : (!isNaN(parseFloat(cryptoValue))
-                      ? formatAmount(cryptoValue)
-                      : '0.00') + ` ${tokenData.name}`}
+                    ? formatAmount(cryptoValue)
+                    : '0.00') + ` ${tokenData.name}`}
               </CText>
 
               <CyDView
