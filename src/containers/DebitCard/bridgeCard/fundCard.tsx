@@ -21,6 +21,7 @@ import {
   getNativeTokenBalance,
   formatAmount,
   logAnalytics,
+  validateAmount,
 } from '../../../core/util';
 import {
   CyDFastImage,
@@ -130,6 +131,9 @@ export default function BridgeFundCardScreen({ route }: { route: any }) {
     useState<any>({});
   const [tokenQuote, setTokenQuote] = useState<any>({});
   const [amount, setAmount] = useState('');
+  const [isCrpytoInput, setIsCryptoInput] = useState(false);
+  const [usdAmount, setUsdAmount] = useState('');
+  const [cryptoAmount, setCryptoAmount] = useState('');
   const [loading, setLoading] = useState<boolean>(false);
   const [lowBalance, setLowBalance] = useState<boolean>(false);
   const minTokenValueLimit = 10;
@@ -516,7 +520,7 @@ export default function BridgeFundCardScreen({ route }: { route: any }) {
     setLoading(true);
     Keyboard.dismiss();
     if (chainName === ChainNames.ETH || chainName === ChainNames.EVMOS) {
-      const getQuoteUrl = `/v1/cards/${currentCardProvider}/card/${cardId}/quote/evm?chain=${backendName}&tokenAddress=${contractAddress}&amount=${amount}&address=${String(
+      const getQuoteUrl = `/v1/cards/${currentCardProvider}/card/${cardId}/quote/evm?chain=${backendName}&tokenAddress=${contractAddress}&amount=${usdAmount}&address=${String(
         ethereum.address,
       )}&contractDecimals=${contractDecimals}`;
       const response = await getWithAuth(getQuoteUrl);
@@ -583,9 +587,9 @@ export default function BridgeFundCardScreen({ route }: { route: any }) {
               gasPrice,
               tokenSymbol: selectedToken?.symbol,
               tokenAmount: quote.tokenRequired,
-              tokenValueDollar: Number(amount).toFixed(2),
+              tokenValueDollar: Number(usdAmount).toFixed(2),
               totalValueTransfer: quote.tokenRequired,
-              totalValueDollar: Number(amount).toFixed(2),
+              totalValueDollar: Number(usdAmount).toFixed(2),
               hasSufficientBalance: false,
             };
             payTokenModal(data);
@@ -614,7 +618,7 @@ export default function BridgeFundCardScreen({ route }: { route: any }) {
           wallet[chainName].address,
         )}&primaryAddress=${String(
           ethereum.address,
-        )}&amount=${amount}&coinId=${coinGeckoId}&contractDecimals=${contractDecimals}`;
+        )}&amount=${usdAmount}&coinId=${coinGeckoId}&contractDecimals=${contractDecimals}`;
         const response = await getWithAuth(quoteUrl);
         if (
           response?.data &&
@@ -712,19 +716,19 @@ export default function BridgeFundCardScreen({ route }: { route: any }) {
       (!isGaslessChain &&
         nativeTokenBalance <= get(gasFeeReservation, backendName)) ||
       (selectedToken?.symbol === nativeTokenSymbol &&
-        Number(amount) / selectedToken?.price >
-          Number(
-            (nativeTokenBalance - get(gasFeeReservation, backendName)).toFixed(
-              6,
-            ),
-          ));
+        Number(usdAmount) / selectedToken?.price >
+        Number(
+          (nativeTokenBalance - get(gasFeeReservation, backendName)).toFixed(
+            6,
+          ),
+        ));
     return (
-      Number(amount) < minTokenValueLimit ||
+      Number(usdAmount) < minTokenValueLimit ||
       !selectedToken ||
-      Number(amount) > Number(selectedToken?.totalValue) ||
+      Number(usdAmount) > Number(selectedToken?.totalValue) ||
       hasInSufficientGas ||
       (backendName === CHAIN_ETH.backendName &&
-        Number(amount) < MINIMUM_TRANSFER_AMOUNT_ETH)
+        Number(usdAmount) < MINIMUM_TRANSFER_AMOUNT_ETH)
     );
   };
 
@@ -734,7 +738,7 @@ export default function BridgeFundCardScreen({ route }: { route: any }) {
     setNativeTokenBalance(
       getNativeTokenBalance(
         get(NativeTokenMapping, item.chainDetails.symbol) ||
-          item.chainDetails.symbol,
+        item.chainDetails.symbol,
         portfolioState.statePortfolio.tokenPortfolio[
           get(ChainNameMapping, item.chainDetails.backendName)
         ].holdings,
@@ -747,20 +751,28 @@ export default function BridgeFundCardScreen({ route }: { route: any }) {
     const nativeTokenSymbol = get(NativeTokenMapping, symbol) || symbol;
     let maxAmount = 0;
     if (selectedToken?.symbol === nativeTokenSymbol) {
-      maxAmount =
+      const tempAmount =
         selectedToken?.totalValue -
         get(gasFeeReservation, backendName) * selectedToken?.price;
+      maxAmount = isCrpytoInput ? tempAmount / selectedToken?.price : tempAmount;
     } else {
-      maxAmount = selectedToken?.totalValue;
+      maxAmount = isCrpytoInput ? selectedToken?.totalValue / selectedToken?.price : selectedToken?.totalValue;
     }
-    setAmount(String(Math.floor(maxAmount)));
+    setAmount(maxAmount.toString());
+    if (isCrpytoInput) {
+      setCryptoAmount(maxAmount.toString());
+      setUsdAmount((parseFloat(maxAmount.toString()) * Number(selectedToken?.price)).toString());
+    } else {
+      setCryptoAmount((parseFloat(maxAmount.toString()) / Number(selectedToken?.price)).toString());
+      setUsdAmount(maxAmount.toString());
+    }
   };
 
   const RenderSelectedToken = () => {
     return (
       <CyDTouchView
         className={
-          'bg-[#F7F8FE] mx-[40px] my-[16px] border-[1px] border-[#EBEBEB] rounded-[16px]'
+          'bg-[#F7F8FE] mx-[40px] my-[16px] border-[1px] border-[#EBEBEB] rounded-[8px]'
         }
         onPress={() => setIsChooseTokenVisible(true)}
       >
@@ -818,7 +830,7 @@ export default function BridgeFundCardScreen({ route }: { route: any }) {
     if (selectedToken && symbol && backendName) {
       const nativeTokenSymbol = get(NativeTokenMapping, symbol) || symbol;
       let errorMessage = '';
-      if (Number(amount) > Number(selectedToken?.totalValue)) {
+      if (Number(usdAmount) > Number(selectedToken?.totalValue)) {
         errorMessage = t('INSUFFICIENT_FUNDS');
       } else if (
         !GASLESS_CHAINS.includes(backendName as ChainBackendNames) &&
@@ -829,21 +841,21 @@ export default function BridgeFundCardScreen({ route }: { route: any }) {
         );
       } else if (
         selectedToken?.symbol === nativeTokenSymbol &&
-        Number(amount) / selectedToken?.price >
-          Number(
-            (nativeTokenBalance - get(gasFeeReservation, backendName)).toFixed(
-              6,
-            ),
-          )
+        Number(usdAmount) / selectedToken?.price >
+        Number(
+          (nativeTokenBalance - get(gasFeeReservation, backendName)).toFixed(
+            6,
+          ),
+        )
       ) {
         errorMessage = t('INSUFFICIENT_GAS_FEE');
       } else if (
-        amount &&
+        usdAmount &&
         backendName === CHAIN_ETH.backendName &&
-        Number(amount) < MINIMUM_TRANSFER_AMOUNT_ETH
+        Number(usdAmount) < MINIMUM_TRANSFER_AMOUNT_ETH
       ) {
         errorMessage = t('MINIMUM_AMOUNT_ETH');
-      }
+      } 1;
 
       return (
         <CyDView className='mb-[10px]'>
@@ -903,7 +915,7 @@ export default function BridgeFundCardScreen({ route }: { route: any }) {
       <RenderSelectedToken />
       <CyDView
         className={
-          'pb-[0px] px-[10px] bg-[#F7F8FE] mx-[40px] h-[250px] rounded-[20px]'
+          'pb-[0px] px-[10px] bg-[#F7F8FE] mx-[40px] h-[300px] rounded-[8px]'
         }
       >
         <CyDView className='flex flex-row h-[100%] items-center'>
@@ -929,37 +941,105 @@ export default function BridgeFundCardScreen({ route }: { route: any }) {
             >
               {t<string>('ENTER_AMOUNT')}
             </CyDText>
-            <CyDView className={'flex flex-row justify-center items-center'}>
-              <CyDText className='text-[50px] font-extrabold mt-[5px]'>
-                {String('$')}
+            <CyDView className={'flex justify-center items-center'}>
+              <CyDText className='text-[20px] font-semibold mt-[5px]'>
+                {isCrpytoInput ? selectedToken?.name : 'USD'}
               </CyDText>
               <CyDTextInput
                 ref={inputRef}
-                className={
-                  'h-[100px] min-w-[70px] font-nunito text-[60px] font-bold'
-                }
+                className={clsx(
+                  'font-bold text-center text-primaryTextColor h-[85px] font-nunito',
+                  {
+                    'text-[70px]': amount.length <= 5,
+                    'text-[40px]': amount.length > 5,
+                  },
+                )}
                 value={amount}
-                keyboardType={'numeric'}
+                keyboardType='numeric'
                 autoCapitalize='none'
                 autoCorrect={false}
-                onChangeText={(val: string) =>
-                  setAmount(val ? String(+val | 0) : '')
-                }
+                onChangeText={(text) => {
+                  setAmount(text);
+                  if (isCrpytoInput) {
+                    const usdText = parseFloat(text) * Number(selectedToken?.price);
+                    setCryptoAmount(text);
+                    setUsdAmount(
+                      (
+                        isNaN(usdText) ? '0.00' : usdText
+                      ).toString(),
+                    );
+                  } else {
+                    const cryptoText = parseFloat(text) / Number(selectedToken?.price);
+                    setCryptoAmount(
+                      (
+                        isNaN(cryptoText) ? '0.00' : cryptoText
+                      ).toString(),
+                    );
+                    setUsdAmount(text);
+                  }
+                }}
               />
+              <CyDText
+                className={clsx(
+                  'text-center text-primaryTextColor h-[50px] text-[16px]',
+                )}
+              >
+                {
+                  isCrpytoInput
+                    ? (!isNaN(parseFloat(usdAmount))
+                      ? formatAmount(usdAmount).toString()
+                      : '0.00') + ' USD'
+                    : (!isNaN(parseFloat(cryptoAmount))
+                      ? formatAmount(cryptoAmount).toString()
+                      : '0.00') +
+                    ' ' +
+                    String(selectedToken?.symbol)
+                }
+              </CyDText>
             </CyDView>
-            {(!amount || Number(amount) < minTokenValueLimit) && (
+            {(!usdAmount || Number(usdAmount) < minTokenValueLimit) && (
               <CyDView className='mb-[10px]'>
-                <CyDText className='text-center font-medium'>
+                <CyDText className='text-center font-semibold'>
                   {t<string>('CARD_LOAD_MIN_AMOUNT')}
                 </CyDText>
               </CyDView>
             )}
             <RenderWarningMessage />
           </CyDView>
+          <CyDTouchView
+            onPress={() => {
+              setIsCryptoInput(!isCrpytoInput);
+              if (!isCrpytoInput) {
+                const usdAmt = parseFloat(amount) * Number(selectedToken?.price);
+                setCryptoAmount(amount);
+                setUsdAmount(
+                  (
+                    isNaN(usdAmt) ? '0.00' : usdAmt
+                  ).toString(),
+                );
+              } else {
+                const cryptoAmt = parseFloat(amount) / Number(selectedToken?.price);
+                setCryptoAmount(
+                  (
+                    isNaN(cryptoAmt) ? '0.00' : cryptoAmt
+                  ).toString(),
+                );
+                setUsdAmount(amount);
+              }
+              inputRef.current?.focus();
+            }}
+            className={clsx(
+              'bg-white rounded-full h-[40px] w-[40px] flex justify-center items-center p-[4px]',
+            )}
+          >
+            <CyDFastImage className='h-[16px] w-[16px]' source={AppImages.TOGGLE_ICON} resizeMode='contain' />
+          </CyDTouchView>
         </CyDView>
         <Button
           onPress={() => {
-            void fundCard();
+            if (validateAmount(amount)) {
+              void fundCard();
+            }
           }}
           disabled={isLoadCardDisabled()}
           title={t('LOAD_CARD')}
