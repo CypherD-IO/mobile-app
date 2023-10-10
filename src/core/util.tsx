@@ -56,6 +56,7 @@ import {
 import { ANALYTICS_ERROR_URL, ANALYTICS_SUCCESS_URL } from '../constants/data';
 import DeviceInfo from 'react-native-device-info';
 import axios from './Http';
+import { Holding } from './Portfolio';
 
 // const {showModal, hideModal} = useGlobalModalContext()
 
@@ -473,13 +474,11 @@ export function copyToClipboard(text: string) {
   Clipboard.setString(text);
 }
 
-export const getNativeTokenBalance = (
+export const getNativeToken = (
   tokenSymbol: string,
-  chainHoldings: any,
+  chainHoldings: Holding[],
 ) => {
-  const nativeToken = find(chainHoldings, { symbol: tokenSymbol });
-  const balance = nativeToken ? nativeToken.actualBalance : 0;
-  return balance;
+  return find(chainHoldings, { symbol: tokenSymbol });
 };
 
 export function getSendAddressFieldPlaceholder(
@@ -616,7 +615,7 @@ export const isCosmosChain = (backendName: string) =>
 
 export const isCosmosStakingToken = (chain: string, tokenData: any) =>
   tokenData.chainDetails.backendName ===
-    ChainBackendNames[chain as ChainBackendNames] &&
+  ChainBackendNames[chain as ChainBackendNames] &&
   tokenData.name === CosmosStakingTokens[chain as CosmosStakingTokens];
 
 export const isACosmosStakingToken = (tokenData: any) =>
