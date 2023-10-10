@@ -50,11 +50,11 @@ const StateModal: React.FC<State> = (store: State) => {
         className={'h-[22%] w-[40%] mt-[15%]'}
         source={modalImage[store.type] ? modalImage[store.type] : store.modalImage}
         resizeMode='contain'
-      ></CyDImage>
+      />
     );
   };
 
-  function onSuccess () {
+  function onSuccess() {
     if (typeof store.onSuccess === 'undefined') {
       store.isModalVisible = false;
     } else {
@@ -62,7 +62,7 @@ const StateModal: React.FC<State> = (store: State) => {
     }
   }
 
-  function onFailure () {
+  function onFailure() {
     if (typeof store.onFailure === 'undefined') {
       store.isModalVisible = false;
     } else {
@@ -74,10 +74,10 @@ const StateModal: React.FC<State> = (store: State) => {
     const typeOfDesription = typeof store.description;
     if (typeOfDesription === 'string') {
       return <CyDView className='max-h-[150px]'>
-              <CyDScrollView className='flex-grow-0'>
-                <CyDText className={'mt-[15px] mb-[15px] text-center'}>{store.description}</CyDText>
-              </CyDScrollView>
-            </CyDView>;
+        <CyDScrollView className='flex-grow-0'>
+          <CyDText className={'mt-[15px] mb-[15px] text-center'}>{store.description}</CyDText>
+        </CyDScrollView>
+      </CyDView>;
     } else if (typeOfDesription === 'object') {
       if (React.isValidElement(store.description)) {
         return <CyDView>{store.description}</CyDView>;
@@ -121,31 +121,31 @@ const StateModal: React.FC<State> = (store: State) => {
       );
     } else if (store.type === modalType.custom) {
       return (<CyDView className={'w-[100%]'}>
-          <ButtonWithOutImage
-            sentry-label="alert-on-press"
-            bG={Colors.appColor}
-            mT={10}
-            vC={Colors.appColor}
-            text={store.modalButtonText?.success ?? t('YES')}
-            isBorder={false}
-            onPress={() => {
-              onSuccess();
-            }}
-          />
-          <ButtonWithOutImage
-            sentry-label="alert-on-press"
-            // bG={Colors.appColor}
-            bC={Colors.sepratorColor}
-            bW={1.5}
-            mT={15}
-            vC={Colors.appColor}
-            text={store.modalButtonText?.failure ?? t('NO')}
-            isBorder={true}
-            onPress={() => {
-              onFailure();
-            }}
-          />
-        </CyDView>
+        <ButtonWithOutImage
+          sentry-label="alert-on-press"
+          bG={Colors.appColor}
+          mT={10}
+          vC={Colors.appColor}
+          text={store.modalButtonText?.success ?? t('YES')}
+          isBorder={false}
+          onPress={() => {
+            onSuccess();
+          }}
+        />
+        <ButtonWithOutImage
+          sentry-label="alert-on-press"
+          // bG={Colors.appColor}
+          bC={Colors.sepratorColor}
+          bW={1.5}
+          mT={15}
+          vC={Colors.appColor}
+          text={store.modalButtonText?.failure ?? t('NO')}
+          isBorder={true}
+          onPress={() => {
+            onFailure();
+          }}
+        />
+      </CyDView>
       );
     }
     return (
@@ -166,33 +166,33 @@ const StateModal: React.FC<State> = (store: State) => {
   };
 
   return (
-      <CyDModalLayout
-        setModalVisible={ () => { onSuccess(); }}
-        disableBackDropPress={ store.type === 'warning' }
-        animationIn={'slideInUp'}
-        animationOut={'slideOutDown'}
-        animationInTiming = {300}
-        animationOutTiming = {300}
-        isModalVisible={store.hasOwnProperty('isModalVisible') ? store.isModalVisible : false}
-        style={styles.modalContainer}
+    <CyDModalLayout
+      setModalVisible={() => { onSuccess(); }}
+      disableBackDropPress={store.type === 'warning'}
+      animationIn={'slideInUp'}
+      animationOut={'slideOutDown'}
+      animationInTiming={300}
+      animationOutTiming={300}
+      isModalVisible={store.hasOwnProperty('isModalVisible') ? store.isModalVisible : false}
+      style={styles.modalContainer}
+    >
+      <CyDView
+        className={
+          'bg-white w-[100%] px-[40px] flex items-center rounded-t-[24px]'
+        }
       >
-        <CyDView
-          className={
-            'bg-white w-[100%] px-[40px] flex items-center rounded-t-[50px]'
-          }
-        >
-          <RenderImage />
-          <CyDText className={'mt-[10px] font-bold text-[20px] text-center'}>{store.title ? store.title : `${t(modalTitle[store.type])}`}</CyDText>
-          <RenderDescription />
-          <RenderActions />
-        </CyDView>
-      </CyDModalLayout>
+        <RenderImage />
+        <CyDText className={'mt-[10px] font-bold text-[20px] text-center'}>{store.title ? store.title : `${t(modalTitle[store.type])}`}</CyDText>
+        <RenderDescription />
+        <RenderActions />
+      </CyDView>
+    </CyDModalLayout>
   );
 };
 
 export const SuccessTransaction = (
   { hash, symbol, name, navigation, hideModal }:
-  { hash: string, symbol: string, name: string, navigation: any, hideModal: () => void }
+    { hash: string, symbol: string, name: string, navigation: any, hideModal: () => void }
 ) => {
   const { t } = useTranslation();
 
@@ -210,7 +210,7 @@ export const SuccessTransaction = (
           <CyDText className={'text-center text-[14px] font-extrabold'}>{formatHash(hash)}</CyDText>
         </CyDView>
         <CyDTouchView onPress={() => copyHash(String(getExplorerUrl(symbol, name, hash)))}>
-          <CyDImage source={AppImages.COPY} className='h-[20px] w-[20px]' resizeMode='contain'/>
+          <CyDImage source={AppImages.COPY} className='h-[20px] w-[20px]' resizeMode='contain' />
         </CyDTouchView>
       </CyDView>
       <CyDTouchView className='flex flex-row items-center justify-center mt-[15px]' onPress={() => {
@@ -230,7 +230,7 @@ export const SuccessTransaction = (
 
 export const BuyOrBridge = (
   { text, navigation, portfolioState, hideModal }:
-  {text: string, navigation: any, portfolioState: any, hideModal: () => void}
+    { text: string, navigation: any, portfolioState: any, hideModal: () => void }
 ) => {
   const { t } = useTranslation();
   return (
@@ -245,7 +245,7 @@ export const BuyOrBridge = (
             portfolioState.dispatchPortfolio({ value: { buyButtonClicked: true } });
           }}>
             <CyDView className={'flex flex-column justify-center items-center pt-[15px]'}>
-              <CyDImage source={AppImages.BUY_SHORTCUT} className={'w-[46px] h-[46px]'}/>
+              <CyDImage source={AppImages.BUY_SHORTCUT} className={'w-[46px] h-[46px]'} />
               <CyDText className={'font-bold text-[15px] pt-[5px]'}>{t('BUY').toString()}</CyDText>
             </CyDView>
           </CyDTouchView>
@@ -256,7 +256,7 @@ export const BuyOrBridge = (
             }, MODAL_HIDE_TIMEOUT);
           }}>
             <CyDView className={'flex flex-column justify-center items-center pt-[15px]'}>
-              <CyDImage source={AppImages.BRIDGE_SHORTCUT} className={'w-[46px] h-[46px]'}/>
+              <CyDImage source={AppImages.BRIDGE_SHORTCUT} className={'w-[46px] h-[46px]'} />
               <CyDText className={'font-bold text-[15px] pt-[5px]'}>{t('BRIDGE').toString()}</CyDText>
             </CyDView>
           </CyDTouchView>
