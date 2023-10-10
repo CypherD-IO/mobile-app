@@ -1,6 +1,6 @@
 /* eslint-disable react-native/no-raw-text */
 /* eslint-disable react-native/no-inline-styles */
-/* eslint-disable react-native/no-color-literals */
+
 /**
  * @format
  * @flow
@@ -28,7 +28,7 @@ import { ChainNameMapping, CHAIN_ETH, PURE_COSMOS_CHAINS } from '../../constants
 import { Colors } from '../../constants/theme';
 import { CommunicationEvents } from '../../constants/web3';
 import { showToast } from '../../containers/utilities/toastUtility';
-import { getNativeTokenBalance, HdWalletContext, PortfolioContext } from '../../core/util';
+import { getNativeToken, HdWalletContext, PortfolioContext } from '../../core/util';
 import useWeb3 from '../../hooks/useWeb3';
 import { DynamicScrollView } from '../../styles/viewStyle';
 import { BrowserHistoryEntry, PageType, SearchHistoryEntry, WebsiteInfo } from '../../types/Browser';
@@ -248,7 +248,7 @@ export default function Browser({ route, navigation }: any) {
       if (isFocused) {
         const chain = portfolioState.statePortfolio.tokenPortfolio[ChainNameMapping[selectedChain.backendName]];
         const nativeTokenSymbol: string = chain?.holdings[0]?.symbol;
-        if (!getNativeTokenBalance(nativeTokenSymbol, chain.holdings) && websiteInfo.url !== '') {
+        if (!getNativeToken(nativeTokenSymbol, chain.holdings)?.actualBalance && websiteInfo.url !== '') {
           setTimeout(() => {
             showModal('state', {
               type: 'error',
@@ -529,7 +529,7 @@ export default function Browser({ route, navigation }: any) {
             autoCorrect={false}
             style={{ width: onFocus || isKeyboardVisible ? '83%' : '90%', textAlign: onFocus ? 'left' : 'center', color: onFocus ? '#000000' : '#555555' }}
             selectTextOnFocus={true}
-          ></WebsiteInput>
+          />
           <DynamicTouchView sentry-label='browser-search-erase' onPress={() => { setCurrentUrl(''); setInputText(''); }}>
             {onFocus && <DynamicImage style={{ tintColor: 'gray' }} dynamic dynamicWidthFix height={12} width={12} resizemode='contain' source={AppImages.CANCEL} />}
           </DynamicTouchView>
@@ -612,7 +612,6 @@ export default function Browser({ route, navigation }: any) {
           </DynamicTouchView>
 
           <View
-            // eslint-disable-next-line react-native/no-inline-styles, react-native/no-color-literals
             style={{ borderBottomColor: '#d1d1e0', borderBottomWidth: 1, marginBottom: 5, marginTop: 10 }}
           />
           {browserHistory.length === 0
@@ -776,7 +775,6 @@ export default function Browser({ route, navigation }: any) {
           mediaPlaybackRequiresUserAction={true}
           javaScriptEnabled={true}
           domStorageEnabled={true}
-          // eslint-disable-next-line react-native/no-inline-styles
           style={{ marginTop: 0 }}
           onNavigationStateChange={navState => {
             setCanGoBack(navState.canGoBack);
