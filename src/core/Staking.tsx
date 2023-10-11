@@ -33,9 +33,9 @@ const getValidatorsInfoFromGet = (resp1, resp2, resp3, resp4, resp5) => {
   const { apr } = resp5.data;
 
   const validators: Map<string, stakeValidators> = new Map();
-  let totalReward: bigint = BigInt(0);
-  let totalStakedBalance: bigint = BigInt(0);
-  let unBoundingTotal: bigint = BigInt(0);
+  let totalReward = BigInt(0);
+  let totalStakedBalance = BigInt(0);
+  let unBoundingTotal = BigInt(0);
   const unBoundingsList: any[] = [];
 
   userStakedValidatorsDetails.forEach((item) => {
@@ -89,7 +89,7 @@ const getValidatorsInfoFromGet = (resp1, resp2, resp3, resp4, resp5) => {
   return { vList: validators, totalReward, totalStakedBalance, unBoundingTotal, unBoundingsList };
 };
 
-export default async function getValidatorsForUSer (address, stakingValidators, globalStateContext) {
+export default async function getValidatorsForUSer(address, stakingValidators, globalStateContext) {
   if (address) {
     const urlRecord = globalStateContext.globalState.rpcEndpoints.EVMOS.otherUrls;
     const ARCH_HOST: string = hostWorker.getHost('ARCH_HOST');

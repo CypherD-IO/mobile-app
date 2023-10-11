@@ -94,7 +94,7 @@ function TokenOverviewV2({ route, navigation }: RouteProps) {
           setIndexChange={(index: number) => {
             setIndex(index);
           }}
-        ></SwitchView>
+        />
       </CyDView>
       {index === 0 || index === 1 ? (
         <CyDScrollView>

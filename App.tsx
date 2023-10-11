@@ -6,10 +6,9 @@ import 'fast-text-encoding';
 import { useEffect, useReducer, useState } from 'react';
 import Toast from 'react-native-toast-message';
 import { useTranslation } from 'react-i18next';
-import { NavigationContainer, useNavigation } from '@react-navigation/native';
+import { NavigationContainer } from '@react-navigation/native';
 import './src/i18n';
 import {
-  AppState,
   BackHandler,
   Keyboard,
   KeyboardAvoidingView,
@@ -110,7 +109,6 @@ import {
 } from './src/constants/enum';
 import {
   GestureHandlerRootView,
-  PanGestureHandler,
 } from 'react-native-gesture-handler';
 import { getWalletProfile } from './src/core/card';
 import ConfirmationModals from './src/containers/Browser/ConfirmationModals';
@@ -906,7 +904,6 @@ function App() {
                                 navigationRef
                               );
                             }}
-                             
                             onStateChange={async () => {
                               const previousRouteName = routeNameRef.current;
                               const currentRouteName =

@@ -1,4 +1,3 @@
-/* eslint-disable array-callback-return */
 import React, { type Dispatch } from 'react';
 import Web3 from 'web3';
 import * as Sentry from '@sentry/react-native';
@@ -70,7 +69,7 @@ export const initialGlobalState: GlobalStateDef = {
         allValidators:
           'https://api-evmos-ia.cosmosia.notional.ventures/cosmos/staking/v1beta1/validators?status=BOND_STATUS_BONDED&pagination.limit=1000',
         balance:
-          'https://rest.bd.evmos.org:1317/cosmos/bank/v1beta1/balances/address',
+          'https://lcd-evmos.whispernode.com:443/cosmos/bank/v1beta1/balances/address',
         delegationInformation:
           'https://api-evmos-ia.cosmosia.notional.ventures/cosmos/staking/v1beta1/delegations/address',
         reward:
@@ -174,10 +173,10 @@ export const initialGlobalState: GlobalStateDef = {
 
 interface GlobalReducerInput {
   type:
-    | GlobalContextType.RPC_UPDATE
-    | GlobalContextType.SIGN_IN
-    | GlobalContextType.CARD_PROFILE
-    | GlobalContextType.IBC;
+  | GlobalContextType.RPC_UPDATE
+  | GlobalContextType.SIGN_IN
+  | GlobalContextType.CARD_PROFILE
+  | GlobalContextType.IBC;
   rpc?: RpcResponseDetail;
   sessionToken?: string;
   cardProfile?: CardProfile;
