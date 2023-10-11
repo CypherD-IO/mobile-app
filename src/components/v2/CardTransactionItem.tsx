@@ -8,10 +8,10 @@ import clsx from "clsx";
 import AppImages from "../../../assets/images/appImages";
 import moment from "moment";
 import { useNavigation } from "@react-navigation/native";
-import { CardTransaction } from "../../models/card.model";
+import { ICardTransaction } from "../../models/card.model";
 
 interface CardTransactionItemProps {
-    item: CardTransaction
+    item: ICardTransaction
 }
 
 const getTransactionIndicator = (type: string) => {
