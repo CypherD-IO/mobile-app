@@ -669,6 +669,13 @@ export default function SendTo(props: { navigation?: any; route?: any }) {
       })
       .catch((gasFeeError) => {
         setLoading(false);
+        // monitoring api
+        void logAnalytics({
+          type: AnalyticsType.ERROR,
+          chain: tokenData?.chainDetails?.chainName ?? CHAIN_ETH.chainName,
+          message: `${gasFeeError}`,
+          screen: route.name,
+        });
         Sentry.captureException(gasFeeError);
         _estimateGasForNativeTransaction(
           hdWalletContext,
@@ -710,6 +717,13 @@ export default function SendTo(props: { navigation?: any; route?: any }) {
         valueForUsd,
       );
     } catch (err) {
+      // monitoring api
+      void logAnalytics({
+        type: AnalyticsType.ERROR,
+        chain: chainName,
+        message: `${err}`,
+        screen: route.name,
+      });
       Sentry.captureException(err);
       showModal('state', {
         type: 'error',
@@ -763,6 +777,13 @@ export default function SendTo(props: { navigation?: any; route?: any }) {
         uuidv4(),
       );
     } catch (e) {
+      // monitoring api
+      void logAnalytics({
+        type: AnalyticsType.ERROR,
+        chain: CHAIN_EVMOS.chainName,
+        message: `${e}`,
+        screen: route.name,
+      });
       Sentry.captureException(e);
       showModal('state', {
         type: 'error',
@@ -851,7 +872,7 @@ export default function SendTo(props: { navigation?: any; route?: any }) {
     void logAnalytics({
       type: AnalyticsType.ERROR,
       chain,
-      message: JSON.stringify(err),
+      message: `${err}`,
       screen: route.name,
     });
     activityRef.current &&
@@ -912,6 +933,13 @@ export default function SendTo(props: { navigation?: any; route?: any }) {
           gasLimit: gasWanted,
         });
     } catch (e) {
+      // monitoring api
+      void logAnalytics({
+        type: AnalyticsType.ERROR,
+        chain: CHAIN_EVMOS.chainName,
+        message: `${e}`,
+        screen: route.name,
+      });
       Sentry.captureException(e);
       showModal('state', {
         type: 'error',
@@ -1030,6 +1058,13 @@ export default function SendTo(props: { navigation?: any; route?: any }) {
       }
     } catch (e) {
       error = true;
+      // monitoring api
+      void logAnalytics({
+        type: AnalyticsType.ERROR,
+        chain: chainDetails?.chainName ?? '',
+        message: `${e}`,
+        screen: route.name,
+      });
       Sentry.captureException(e);
     }
 

@@ -458,7 +458,7 @@ export default function TokenStaking({
       void logAnalytics({
         type: AnalyticsType.ERROR,
         chain,
-        message: JSON.stringify(error),
+        message: `${error}`,
         screen: route.name,
       });
       Toast.show({
@@ -570,7 +570,7 @@ export default function TokenStaking({
         void logAnalytics({
           type: AnalyticsType.ERROR,
           chain: tokenData?.chainDetails?.chainName ?? '',
-          message: JSON.stringify(error),
+          message: `${error}`,
           screen: route.name,
         });
         Toast.show({
@@ -713,7 +713,7 @@ export default function TokenStaking({
         void logAnalytics({
           type: AnalyticsType.ERROR,
           chain: tokenData?.chainDetails?.chainName ?? '',
-          message: JSON.stringify(error),
+          message: `${error}`,
           screen: route.name,
         });
         Sentry.captureException(error);
@@ -827,7 +827,7 @@ export default function TokenStaking({
         void logAnalytics({
           type: AnalyticsType.ERROR,
           chain: tokenData?.chainDetails?.chainName ?? '',
-          message: JSON.stringify(error),
+          message: `${error}`,
           screen: route.name,
         });
         Sentry.captureException(error);

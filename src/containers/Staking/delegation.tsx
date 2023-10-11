@@ -321,7 +321,7 @@ export default function StakingDelegation ({ route, navigation }) {
             void logAnalytics({
               type: AnalyticsType.ERROR,
               chain:tokenData.chainDetails.chainName,
-              message: JSON.stringify(`error while broadcasting the transaction in evmos staking/delegation.tsx : ${txnResponse.data.tx_response.raw_log}`),
+              message: `error while broadcasting the transaction in evmos staking/delegation.tsx : ${txnResponse.data.tx_response.raw_log}`,
               screen: useroute.name,
             });
             Sentry.captureException(txnResponse);
@@ -340,7 +340,7 @@ export default function StakingDelegation ({ route, navigation }) {
         void logAnalytics({
           type: AnalyticsType.ERROR,
           chain: tokenData?.chainDetails?.chainName ?? '',
-          message: JSON.stringify(error),
+          message: `${error}`,
           screen: useroute.name,
         });
         Sentry.captureException(error);
