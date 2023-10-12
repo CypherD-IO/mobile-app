@@ -452,9 +452,9 @@ export default function IBC({
           );
           // monitoring api
           void logAnalytics({
-          type: AnalyticsType.SUCCESS,
-          txnHash: resp.transactionHash,
-          chain: tokenData.chainDetails?.chainName ?? '',
+            type: AnalyticsType.SUCCESS,
+            txnHash: resp.transactionHash,
+            chain: tokenData.chainDetails?.chainName ?? '',
           });
         }
         setLoading(false);
@@ -483,7 +483,7 @@ export default function IBC({
         void logAnalytics({
           type: AnalyticsType.ERROR,
           chain: tokenData.chainDetails?.chainName ?? '',
-          message: JSON.stringify(error),
+          message: `${error}`,
           screen: route.name,
         });
         Sentry.captureException(error);
@@ -593,7 +593,7 @@ export default function IBC({
             void logAnalytics({
               type: AnalyticsType.ERROR,
               chain: tokenData.chainDetails?.chainName ?? '',
-              message: JSON.stringify(resp.data.tx_response.raw_log),
+              message: `${resp.data.tx_response.raw_log}`,
               screen: route.name,
             });
             Sentry.captureException(resp.data.tx_response.raw_log);
@@ -633,7 +633,7 @@ export default function IBC({
         void logAnalytics({
           type: AnalyticsType.ERROR,
           chain: tokenData.chainDetails?.chainName ?? '',
-          message: JSON.stringify(error),
+          message: `${error}`,
           screen: route.name,
         });
         Sentry.captureException(error);

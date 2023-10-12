@@ -387,7 +387,7 @@ export default function BridgeFundCardScreen({ route }: { route: any }) {
     void logAnalytics({
       type: AnalyticsType.ERROR,
       chain,
-      message: JSON.stringify(_err),
+      message: `${_err}`,
       screen: route.name,
     });
     // Sentry.captureException(err);
@@ -574,13 +574,21 @@ export default function BridgeFundCardScreen({ route }: { route: any }) {
           } else {
             const data = {
               gasFeeDollar: formatAmount(
-                quote.estimatedGasFee * Number(getNativeToken(
-                  get(NativeTokenMapping, selectedToken?.chainDetails.symbol) ||
-                  selectedToken?.chainDetails.symbol,
-                  portfolioState.statePortfolio.tokenPortfolio[
-                    get(ChainNameMapping, selectedToken?.chainDetails.backendName)
-                  ].holdings,
-                )?.price ?? 0)
+                quote.estimatedGasFee *
+                  Number(
+                    getNativeToken(
+                      get(
+                        NativeTokenMapping,
+                        selectedToken?.chainDetails.symbol,
+                      ) || selectedToken?.chainDetails.symbol,
+                      portfolioState.statePortfolio.tokenPortfolio[
+                        get(
+                          ChainNameMapping,
+                          selectedToken?.chainDetails.backendName,
+                        )
+                      ].holdings,
+                    )?.price ?? 0,
+                  ),
               ),
               gasFeeETH: quote.estimatedGasFee.toFixed(6),
               networkName: chainDetails.name,
@@ -723,11 +731,11 @@ export default function BridgeFundCardScreen({ route }: { route: any }) {
         nativeTokenBalance <= get(gasFeeReservation, backendName)) ||
       (selectedToken?.symbol === nativeTokenSymbol &&
         Number(usdAmount) / selectedToken?.price >
-        Number(
-          (nativeTokenBalance - get(gasFeeReservation, backendName)).toFixed(
-            6,
-          ),
-        ));
+          Number(
+            (nativeTokenBalance - get(gasFeeReservation, backendName)).toFixed(
+              6,
+            ),
+          ));
     return (
       Number(usdAmount) < minTokenValueLimit ||
       !selectedToken ||
@@ -744,7 +752,7 @@ export default function BridgeFundCardScreen({ route }: { route: any }) {
     setNativeTokenBalance(
       getNativeToken(
         get(NativeTokenMapping, item.chainDetails.symbol) ||
-        item.chainDetails.symbol,
+          item.chainDetails.symbol,
         portfolioState.statePortfolio.tokenPortfolio[
           get(ChainNameMapping, item.chainDetails.backendName)
         ].holdings,
@@ -760,16 +768,28 @@ export default function BridgeFundCardScreen({ route }: { route: any }) {
       const tempAmount =
         selectedToken?.totalValue -
         get(gasFeeReservation, backendName) * selectedToken?.price;
-      maxAmount = isCrpytoInput ? tempAmount / selectedToken?.price : tempAmount;
+      maxAmount = isCrpytoInput
+        ? tempAmount / selectedToken?.price
+        : tempAmount;
     } else {
-      maxAmount = isCrpytoInput ? selectedToken?.totalValue / selectedToken?.price : selectedToken?.totalValue;
+      maxAmount = isCrpytoInput
+        ? selectedToken?.totalValue / selectedToken?.price
+        : selectedToken?.totalValue;
     }
     setAmount(maxAmount.toString());
     if (isCrpytoInput) {
       setCryptoAmount(maxAmount.toString());
-      setUsdAmount((parseFloat(maxAmount.toString()) * Number(selectedToken?.price)).toString());
+      setUsdAmount(
+        (
+          parseFloat(maxAmount.toString()) * Number(selectedToken?.price)
+        ).toString(),
+      );
     } else {
-      setCryptoAmount((parseFloat(maxAmount.toString()) / Number(selectedToken?.price)).toString());
+      setCryptoAmount(
+        (
+          parseFloat(maxAmount.toString()) / Number(selectedToken?.price)
+        ).toString(),
+      );
       setUsdAmount(maxAmount.toString());
     }
   };
@@ -848,11 +868,11 @@ export default function BridgeFundCardScreen({ route }: { route: any }) {
       } else if (
         selectedToken?.symbol === nativeTokenSymbol &&
         Number(usdAmount) / selectedToken?.price >
-        Number(
-          (nativeTokenBalance - get(gasFeeReservation, backendName)).toFixed(
-            6,
-          ),
-        )
+          Number(
+            (nativeTokenBalance - get(gasFeeReservation, backendName)).toFixed(
+              6,
+            ),
+          )
       ) {
         errorMessage = t('INSUFFICIENT_GAS_FEE');
       } else if (
@@ -861,7 +881,8 @@ export default function BridgeFundCardScreen({ route }: { route: any }) {
         Number(usdAmount) < MINIMUM_TRANSFER_AMOUNT_ETH
       ) {
         errorMessage = t('MINIMUM_AMOUNT_ETH');
-      } 1;
+      }
+      1;
 
       return (
         <CyDView className='mb-[10px]'>
@@ -967,19 +988,17 @@ export default function BridgeFundCardScreen({ route }: { route: any }) {
                 onChangeText={(text) => {
                   setAmount(text);
                   if (isCrpytoInput) {
-                    const usdText = parseFloat(text) * Number(selectedToken?.price);
+                    const usdText =
+                      parseFloat(text) * Number(selectedToken?.price);
                     setCryptoAmount(text);
                     setUsdAmount(
-                      (
-                        isNaN(usdText) ? '0.00' : usdText
-                      ).toString(),
+                      (isNaN(usdText) ? '0.00' : usdText).toString(),
                     );
                   } else {
-                    const cryptoText = parseFloat(text) / Number(selectedToken?.price);
+                    const cryptoText =
+                      parseFloat(text) / Number(selectedToken?.price);
                     setCryptoAmount(
-                      (
-                        isNaN(cryptoText) ? '0.00' : cryptoText
-                      ).toString(),
+                      (isNaN(cryptoText) ? '0.00' : cryptoText).toString(),
                     );
                     setUsdAmount(text);
                   }
@@ -990,17 +1009,15 @@ export default function BridgeFundCardScreen({ route }: { route: any }) {
                   'text-center text-primaryTextColor h-[50px] text-[16px]',
                 )}
               >
-                {
-                  isCrpytoInput
-                    ? (!isNaN(parseFloat(usdAmount))
+                {isCrpytoInput
+                  ? (!isNaN(parseFloat(usdAmount))
                       ? formatAmount(usdAmount).toString()
                       : '0.00') + ' USD'
-                    : (!isNaN(parseFloat(cryptoAmount))
+                  : (!isNaN(parseFloat(cryptoAmount))
                       ? formatAmount(cryptoAmount).toString()
                       : '0.00') +
                     ' ' +
-                    String(selectedToken?.symbol)
-                }
+                    String(selectedToken?.symbol)}
               </CyDText>
             </CyDView>
             {(!usdAmount || Number(usdAmount) < minTokenValueLimit) && (
@@ -1016,19 +1033,15 @@ export default function BridgeFundCardScreen({ route }: { route: any }) {
             onPress={() => {
               setIsCryptoInput(!isCrpytoInput);
               if (!isCrpytoInput) {
-                const usdAmt = parseFloat(amount) * Number(selectedToken?.price);
+                const usdAmt =
+                  parseFloat(amount) * Number(selectedToken?.price);
                 setCryptoAmount(amount);
-                setUsdAmount(
-                  (
-                    isNaN(usdAmt) ? '0.00' : usdAmt
-                  ).toString(),
-                );
+                setUsdAmount((isNaN(usdAmt) ? '0.00' : usdAmt).toString());
               } else {
-                const cryptoAmt = parseFloat(amount) / Number(selectedToken?.price);
+                const cryptoAmt =
+                  parseFloat(amount) / Number(selectedToken?.price);
                 setCryptoAmount(
-                  (
-                    isNaN(cryptoAmt) ? '0.00' : cryptoAmt
-                  ).toString(),
+                  (isNaN(cryptoAmt) ? '0.00' : cryptoAmt).toString(),
                 );
                 setUsdAmount(amount);
               }
@@ -1038,7 +1051,11 @@ export default function BridgeFundCardScreen({ route }: { route: any }) {
               'bg-white rounded-full h-[40px] w-[40px] flex justify-center items-center p-[4px]',
             )}
           >
-            <CyDFastImage className='h-[16px] w-[16px]' source={AppImages.TOGGLE_ICON} resizeMode='contain' />
+            <CyDFastImage
+              className='h-[16px] w-[16px]'
+              source={AppImages.TOGGLE_ICON}
+              resizeMode='contain'
+            />
           </CyDTouchView>
         </CyDView>
         <Button
