@@ -290,7 +290,7 @@ export default function FundCardScreen(props) {
       void logAnalytics({
         type: AnalyticsType.ERROR,
         chain: chainSelected?.chainName ?? '',
-        message: JSON.stringify(message),
+        message: `${message}`,
         screen: route.name,
       });
       activityRef.current &&
@@ -353,7 +353,7 @@ export default function FundCardScreen(props) {
     void logAnalytics({
       type: AnalyticsType.ERROR,
       chain,
-      message: JSON.stringify(_err),
+      message: `${_err}`,
       screen: route.name,
     });
     // Sentry.captureException(err);

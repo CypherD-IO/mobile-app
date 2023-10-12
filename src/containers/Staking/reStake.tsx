@@ -204,7 +204,7 @@ export default function ReStake ({ route, navigation }) {
           void logAnalytics({
             type: AnalyticsType.ERROR,
             chain: tokenData.chainDetails.name ?? '',
-            message: JSON.stringify(`error while broadcasting the transaction in evmos staking/delegation.tsx : ${txnResponse.data.tx_response.raw_log}`),
+            message: `error while broadcasting the transaction in evmos staking/delegation.tsx : ${txnResponse.data.tx_response.raw_log}`,
             screen: useroute.name,
           });
           Sentry.captureException(txnResponse);
@@ -221,7 +221,7 @@ export default function ReStake ({ route, navigation }) {
       void logAnalytics({
         type: AnalyticsType.ERROR,
         chain: tokenData.chainDetails.name ?? '',
-        message: JSON.stringify(`error while ${stakingValidators.stateStaking.typeOfDelegation} in evmos staking/restake.tsx`),
+        message: `error while ${stakingValidators.stateStaking.typeOfDelegation} in evmos staking/restake.tsx`,
         screen: useroute.name,
       });
       Sentry.captureException(error);
