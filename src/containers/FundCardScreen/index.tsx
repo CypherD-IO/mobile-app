@@ -20,6 +20,7 @@ import {
   TARGET_CARD_OSMOSIS_WALLET_ADDRESS,
   TARGET_CARD_JUNO_WALLET_ADDRESS,
   logAnalytics,
+  parseErrorMessage,
 } from '../../core/util';
 import {
   Chain,
@@ -290,7 +291,7 @@ export default function FundCardScreen(props) {
       void logAnalytics({
         type: AnalyticsType.ERROR,
         chain: chainSelected?.chainName ?? '',
-        message: `${message}`,
+        message: parseErrorMessage(message),
         screen: route.name,
       });
       activityRef.current &&
@@ -353,7 +354,7 @@ export default function FundCardScreen(props) {
     void logAnalytics({
       type: AnalyticsType.ERROR,
       chain,
-      message: `${_err}`,
+      message: parseErrorMessage(_err),
       screen: route.name,
     });
     // Sentry.captureException(err);

@@ -22,6 +22,7 @@ import {
   formatAmount,
   logAnalytics,
   validateAmount,
+  parseErrorMessage,
 } from '../../../core/util';
 import {
   CyDFastImage,
@@ -325,7 +326,7 @@ export default function BridgeFundCardScreen({ route }: { route: any }) {
       void logAnalytics({
         type: AnalyticsType.ERROR,
         chain: selectedToken?.chainDetails?.chainName ?? '',
-        message,
+        message: parseErrorMessage(message),
         screen: route.name,
       });
       activityRef.current &&
@@ -387,7 +388,7 @@ export default function BridgeFundCardScreen({ route }: { route: any }) {
     void logAnalytics({
       type: AnalyticsType.ERROR,
       chain,
-      message: `${_err}`,
+      message: parseErrorMessage(_err),
       screen: route.name,
     });
     // Sentry.captureException(err);
