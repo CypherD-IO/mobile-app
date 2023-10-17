@@ -297,6 +297,8 @@ const TXN_SELF_ERROR = require('./txn_self_error.png');
 const ZKSYNC_ERA_LOGO = require('./zksync_era.png');
 const BASE_LOGO = require('./base.png');
 const POLYGON_ZKEVM_LOGO = require('./polygon_zkevm.png');
+const UPGRADE_TO_PHYSICAL_CARD_ARROW = require('./upgradeToPhysicalCardArrow.png');
+
 // ICONS FROM S3
 const SWAP = { uri: `${S3_BUCKET_URL_ICONS}/swap.png` };
 const SWAP_GRAY = { uri: `${S3_BUCKET_URL_ICONS}/swap_gray.png` };
@@ -648,5 +650,6 @@ const AppImages = {
   DEFI_SUPPLY,
   DEFI_DEBT,
   DEFI_VALUE,
+  UPGRADE_TO_PHYSICAL_CARD_ARROW,
 };
 export default AppImages;

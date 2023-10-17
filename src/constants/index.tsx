@@ -103,6 +103,7 @@ export const screenTitle = {
   TRANSACTIONS_SCREEN: 'Transactions',
   TRANSACTION_FILTER: 'TransactionFilter',
   DEFI_PROTOCOL_OVERVIEW_SCREEN: 'Protocol Overview',
+  UPGRADE_TO_PHYSICAL_CARD_SCREEN: 'UpgradeToPhysicalCardScreen',
 };
 
 export const fontsName = {
