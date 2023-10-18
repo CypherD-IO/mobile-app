@@ -767,3 +767,22 @@ export function logAnalytics(params: SuccessAnalytics | ErrorAnalytics): void {
     }
   }
 }
+export function parseErrorMessage(error: any): string {
+  if (error instanceof Error) {
+    return error.message;
+  } else if (`${error}` !== '[object Object]') {
+    return `${error}`;
+  } else {
+    const errorString = JSON.stringify(error, (k, v) => {
+      if (typeof v === 'function' || typeof v === 'undefined') {
+        return 'Non-enumerable type';
+      }
+      return v;
+    });
+    if (errorString !== '{}') {
+      return errorString;
+    } else {
+      return 'Unknown Error';
+    }
+  }
+}

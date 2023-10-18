@@ -15,6 +15,7 @@ import {
   convertNumberToShortHandNotation,
   HdWalletContext,
   logAnalytics,
+  parseErrorMessage,
 } from '../../core/util';
 import LottieView from 'lottie-react-native';
 import {
@@ -255,7 +256,7 @@ export default function CosmosAction({ route, navigation }) {
       void logAnalytics({
         type: AnalyticsType.ERROR,
         chain: tokenData?.chainDetails?.chainName ?? '',
-        message: `${error}`,
+        message: parseErrorMessage(error),
         screen: useroute.name,
       });
       showModal('state', {

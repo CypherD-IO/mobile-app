@@ -59,6 +59,7 @@ import {
   HdWalletContext,
   isValidEns,
   logAnalytics,
+  parseErrorMessage,
   PortfolioContext,
   SendToAddressValidator,
 } from '../../core/util';
@@ -486,7 +487,7 @@ export default function SendTo(props: { navigation?: any; route?: any }) {
       void logAnalytics({
         type: AnalyticsType.ERROR,
         chain: tokenData.chainDetails?.chainName ?? '',
-        message,
+        message: parseErrorMessage(message),
         screen: route.name,
       });
       if (message === t('INSUFFICIENT_GAS_ERROR')) {
@@ -673,7 +674,7 @@ export default function SendTo(props: { navigation?: any; route?: any }) {
         void logAnalytics({
           type: AnalyticsType.ERROR,
           chain: tokenData?.chainDetails?.chainName ?? CHAIN_ETH.chainName,
-          message: `${gasFeeError}`,
+          message: parseErrorMessage(gasFeeError),
           screen: route.name,
         });
         Sentry.captureException(gasFeeError);
@@ -721,7 +722,7 @@ export default function SendTo(props: { navigation?: any; route?: any }) {
       void logAnalytics({
         type: AnalyticsType.ERROR,
         chain: chainName,
-        message: `${err}`,
+        message: parseErrorMessage(err),
         screen: route.name,
       });
       Sentry.captureException(err);
@@ -781,7 +782,7 @@ export default function SendTo(props: { navigation?: any; route?: any }) {
       void logAnalytics({
         type: AnalyticsType.ERROR,
         chain: CHAIN_EVMOS.chainName,
-        message: `${e}`,
+        message: parseErrorMessage(e),
         screen: route.name,
       });
       Sentry.captureException(e);
@@ -872,7 +873,7 @@ export default function SendTo(props: { navigation?: any; route?: any }) {
     void logAnalytics({
       type: AnalyticsType.ERROR,
       chain,
-      message: `${err}`,
+      message: parseErrorMessage(err),
       screen: route.name,
     });
     activityRef.current &&
@@ -937,7 +938,7 @@ export default function SendTo(props: { navigation?: any; route?: any }) {
       void logAnalytics({
         type: AnalyticsType.ERROR,
         chain: CHAIN_EVMOS.chainName,
-        message: `${e}`,
+        message: parseErrorMessage(e),
         screen: route.name,
       });
       Sentry.captureException(e);
@@ -1062,7 +1063,7 @@ export default function SendTo(props: { navigation?: any; route?: any }) {
       void logAnalytics({
         type: AnalyticsType.ERROR,
         chain: chainDetails?.chainName ?? '',
-        message: `${e}`,
+        message: parseErrorMessage(e),
         screen: route.name,
       });
       Sentry.captureException(e);

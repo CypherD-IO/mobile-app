@@ -631,22 +631,69 @@ export enum NativeTokenMapping {
 
 export const GASLESS_CHAINS = [ChainBackendNames.NOBLE];
 
-
 // DeFi Data
 export const DEFI_URL = '/v1/portfolio/evm/defi';
 
 export const deFiPositionTypes = [
-  { logo: AppImages.DEFI_LIQUIDITY, value: DefiPositonTypes.LIQUIDITY, label: 'Liquidity' },
-  { logo: AppImages.DEFI_STAKING, value: DefiPositonTypes.STAKING, label: 'Staking' },
-  { logo: AppImages.DEFI_LENDING, value: DefiPositonTypes.LENDING, label: 'Lending' },
-  { logo: AppImages.DEFI_FARMING, value: DefiPositonTypes.FARMING, label: 'Farming' },
-  { logo: AppImages.DEFI_LEVERAGED_FARMING, value: DefiPositonTypes.LEVRAGED_FARMING, label: 'Levraged farming' },
-  { logo: AppImages.DEFI_YEILD, value: DefiPositonTypes.YEILD, label: 'Yelid' },
-  { logo: AppImages.DEFI_REWARDS, value: DefiPositonTypes.REWARDS, label: 'Rewards' },
-  { logo: AppImages.DEFI_DEPOSIT, value: DefiPositonTypes.DEPOSIT, label: 'Deposit' },
-  { logo: AppImages.DEFI_VESTING, value: DefiPositonTypes.VESTING, label: 'Vesting' },
-  { logo: AppImages.DEFI_LOCKED, value: DefiPositonTypes.LOCKED, label: 'Locked' },
-  { logo: AppImages.DEFI_OTHERS, value: DefiPositonTypes.OTHERS, label: 'Others' },
-  { logo: AppImages.DEFI_NFT_STAKING, value: DefiPositonTypes.NFT_STAKING, label: 'NFT staking' },
-  { logo: AppImages.DEFI_AIRDROP, value: DefiPositonTypes.AIRDROP, label: 'Airdrop' },
+  {
+    logo: AppImages.DEFI_LIQUIDITY,
+    value: DefiPositonTypes.LIQUIDITY,
+    label: 'Liquidity',
+  },
+  {
+    logo: AppImages.DEFI_STAKING,
+    value: DefiPositonTypes.STAKING,
+    label: 'Staking',
+  },
+  {
+    logo: AppImages.DEFI_LENDING,
+    value: DefiPositonTypes.LENDING,
+    label: 'Lending',
+  },
+  {
+    logo: AppImages.DEFI_FARMING,
+    value: DefiPositonTypes.FARMING,
+    label: 'Farming',
+  },
+  {
+    logo: AppImages.DEFI_LEVERAGED_FARMING,
+    value: DefiPositonTypes.LEVRAGED_FARMING,
+    label: 'Leveraged farming',
+  },
+  { logo: AppImages.DEFI_YEILD, value: DefiPositonTypes.YEILD, label: 'Yield' },
+  {
+    logo: AppImages.DEFI_REWARDS,
+    value: DefiPositonTypes.REWARDS,
+    label: 'Rewards',
+  },
+  {
+    logo: AppImages.DEFI_DEPOSIT,
+    value: DefiPositonTypes.DEPOSIT,
+    label: 'Deposit',
+  },
+  {
+    logo: AppImages.DEFI_VESTING,
+    value: DefiPositonTypes.VESTING,
+    label: 'Vesting',
+  },
+  {
+    logo: AppImages.DEFI_LOCKED,
+    value: DefiPositonTypes.LOCKED,
+    label: 'Locked',
+  },
+  {
+    logo: AppImages.DEFI_OTHERS,
+    value: DefiPositonTypes.OTHERS,
+    label: 'Others',
+  },
+  {
+    logo: AppImages.DEFI_NFT_STAKING,
+    value: DefiPositonTypes.NFT_STAKING,
+    label: 'NFT staking',
+  },
+  {
+    logo: AppImages.DEFI_AIRDROP,
+    value: DefiPositonTypes.AIRDROP,
+    label: 'Airdrop',
+  },
 ];

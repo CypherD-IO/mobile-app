@@ -16,6 +16,7 @@ import {
   validateAmount,
   limitDecimalPlaces,
   logAnalytics,
+  parseErrorMessage,
 } from '../../core/util';
 import clsx from 'clsx';
 import {
@@ -483,7 +484,7 @@ export default function IBC({
         void logAnalytics({
           type: AnalyticsType.ERROR,
           chain: tokenData.chainDetails?.chainName ?? '',
-          message: `${error}`,
+          message: parseErrorMessage(error),
           screen: route.name,
         });
         Sentry.captureException(error);
@@ -593,7 +594,7 @@ export default function IBC({
             void logAnalytics({
               type: AnalyticsType.ERROR,
               chain: tokenData.chainDetails?.chainName ?? '',
-              message: `${resp.data.tx_response.raw_log}`,
+              message: parseErrorMessage(resp.data.tx_response.raw_log),
               screen: route.name,
             });
             Sentry.captureException(resp.data.tx_response.raw_log);
@@ -633,7 +634,7 @@ export default function IBC({
         void logAnalytics({
           type: AnalyticsType.ERROR,
           chain: tokenData.chainDetails?.chainName ?? '',
-          message: `${error}`,
+          message: parseErrorMessage(error),
           screen: route.name,
         });
         Sentry.captureException(error);

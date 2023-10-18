@@ -32,6 +32,7 @@ import {
   limitDecimalPlaces,
   formatAmount,
   logAnalytics,
+  parseErrorMessage,
 } from '../../core/util';
 import AppImages from './../../../assets/images/appImages';
 import ChooseChainModal from '../../components/v2/chooseChainModal';
@@ -488,7 +489,7 @@ export default function Bridge(props: { navigation?: any; route?: any }) {
       void logAnalytics({
         type: AnalyticsType.ERROR,
         chain: fromChain.chainName,
-        message: `${message}`,
+        message: parseErrorMessage(message),
         screen: route.name,
       });
       if (message === t('INSUFFICIENT_GAS_ERROR')) {
@@ -917,7 +918,7 @@ export default function Bridge(props: { navigation?: any; route?: any }) {
         void logAnalytics({
           type: AnalyticsType.ERROR,
           chain: fromChain.chainName,
-          message: `${error}`,
+          message: parseErrorMessage(error),
           screen: route.name,
         });
         Sentry.captureException(error);
@@ -1012,7 +1013,7 @@ export default function Bridge(props: { navigation?: any; route?: any }) {
         void logAnalytics({
           type: AnalyticsType.ERROR,
           chain: fromChain.chainName,
-          message: `${e}`,
+          message: parseErrorMessage(e),
           screen: route.name,
         });
         activityContext.dispatch({
@@ -1083,7 +1084,7 @@ export default function Bridge(props: { navigation?: any; route?: any }) {
           void logAnalytics({
             type: AnalyticsType.ERROR,
             chain: fromChain.chainName,
-            message: `${gasFeeError}`,
+            message: parseErrorMessage(gasFeeError),
             screen: route.name,
           });
           activityContext.dispatch({
@@ -1995,7 +1996,7 @@ export default function Bridge(props: { navigation?: any; route?: any }) {
             void logAnalytics({
               type: AnalyticsType.ERROR,
               chain: fromChain.chainName,
-              message: `${response.error}`,
+              message: parseErrorMessage(response.error),
               screen: route.name,
             });
           }
@@ -2016,7 +2017,7 @@ export default function Bridge(props: { navigation?: any; route?: any }) {
       void logAnalytics({
         type: AnalyticsType.ERROR,
         chain: fromChain.chainName,
-        message: `${error}`,
+        message: parseErrorMessage(error),
         screen: route.name,
       });
       showModal('state', {
