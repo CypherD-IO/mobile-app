@@ -158,7 +158,6 @@ const UpgradeToPhysicalCardScreen = ({ route }: Props) => {
         try {
             const response = await postWithAuth(`/v1/cards/${currentCardProvider}/generate/physical`, data);
             if (!response.isError) {
-                console.log(response);
                 showModal(
                     'state',
                     {
@@ -186,7 +185,7 @@ const UpgradeToPhysicalCardScreen = ({ route }: Props) => {
                         onFailure: hideModal,
                     }
                 );
-                console.log(errorObject);
+                Sentry.captureException(errorObject);
             }
             setIsSubmitting(false);
         } catch (e) {
@@ -206,7 +205,7 @@ const UpgradeToPhysicalCardScreen = ({ route }: Props) => {
                     onFailure: hideModal,
                 }
             );
-            console.log(errorObject);
+            Sentry.captureException(errorObject);
             setIsSubmitting(false);
         }
     };
