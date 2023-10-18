@@ -1,27 +1,24 @@
-import React, { Dispatch, SetStateAction, useContext, useEffect, useState } from 'react';
-
+import React, { Dispatch, SetStateAction, useEffect, useState } from 'react';
 import moment from 'moment';
 import { CyDFastImage, CyDText, CyDTouchView, CyDView } from '../styles/tailwindStyles';
-
-import clsx from 'clsx';
 import { useTranslation } from 'react-i18next';
 import AppImages from '../../assets/images/appImages';
-import { getDeFiData } from '../core/asyncStorage';
 import { DeFiFilter, protocolOptionType } from '../models/defi.interface';
 
 const TIME_UPDATE_RUNNER_INTERVAL = 1000;
 
-interface DeFiFilterRefreshBarInterface{
-    isRefreshing: boolean; 
-    lastRefreshed: string;
-    filters: DeFiFilter;
-    setFilters:Dispatch<SetStateAction<DeFiFilter>>;
-    isFilterVisible: boolean;
-    setFilterVisible: Dispatch<SetStateAction<boolean>>;
-    userProtocols: protocolOptionType[];
-    isLoading: boolean;
-    setLoading: Dispatch<SetStateAction<boolean>>;
+interface DeFiFilterRefreshBarInterface {
+  isRefreshing: boolean;
+  lastRefreshed: string;
+  filters: DeFiFilter;
+  setFilters: Dispatch<SetStateAction<DeFiFilter>>;
+  isFilterVisible: boolean;
+  setFilterVisible: Dispatch<SetStateAction<boolean>>;
+  userProtocols: protocolOptionType[];
+  isLoading: boolean;
+  setLoading: Dispatch<SetStateAction<boolean>>;
 }
+
 export const DeFiFilterRefreshBar = (props: DeFiFilterRefreshBarInterface) => {
   const { isRefreshing, isLoading } = props;
   const { t } = useTranslation();
@@ -50,9 +47,9 @@ export const DeFiFilterRefreshBar = (props: DeFiFilterRefreshBarInterface) => {
   };
 
   useEffect(() => {
-    const timeUpdateRunner = setInterval(function time() {
+    const timeUpdateRunner = setInterval(() => {
       if (!isRefreshing && !isLoading) {
-          setTime(calculateTimeDiff(props.lastRefreshed));
+        setTime(calculateTimeDiff(props.lastRefreshed));
       } else {
         setTime(`${t('RETRIEVING')}...`);
       }
@@ -61,7 +58,7 @@ export const DeFiFilterRefreshBar = (props: DeFiFilterRefreshBarInterface) => {
     return () => {
       clearInterval(timeUpdateRunner);
     };
-  }, [props.lastRefreshed, isRefreshing,isLoading]);
+  }, [props.lastRefreshed, isRefreshing, isLoading, t]);
 
   return (
     <CyDView className='flex flex-row justify-between  mx-[15px] py-[10px] border-sepratorColor border-t-[0.5px] border-b-[0.5px]'>
@@ -72,7 +69,7 @@ export const DeFiFilterRefreshBar = (props: DeFiFilterRefreshBarInterface) => {
       <CyDTouchView onPress={() => {
         props.setFilterVisible(true);
       }}>
-        <CyDFastImage className='w-[78px] h-[25px]' source={AppImages.ACTIVITY_FILTER} />
+        <CyDFastImage className='w-[48px] h-[26px]' source={AppImages.FILTER} resizeMode='contain' />
       </CyDTouchView>
     </CyDView>
   );
