@@ -775,7 +775,7 @@ export function parseErrorMessage(error: any): string {
   } else {
     const errorString = JSON.stringify(error, (k, v) => {
       if (typeof v === 'function' || typeof v === 'undefined') {
-        return 'Replaced Value';
+        return 'Non-enumerable type';
       }
       return v;
     });
