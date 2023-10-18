@@ -334,7 +334,10 @@ const NFTScene = ({
         refreshControl={<RefreshControl refreshing={refreshing} onRefresh={onRefresh} progressViewOffset={bannerHeight} />}
       >
         {loading
-          ? <Loading />
+          ?
+          <CyDView className='w-full absolute top-[50px]'>
+            <Loading />
+          </CyDView>
           : <CyDView className='border border-sepratorColor rounded-t-[24px]'>
             {isEmpty(NFTHoldings) &&
               <CyDView className={'mt-[50%] flex items-center'}>
