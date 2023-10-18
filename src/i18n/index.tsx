@@ -783,7 +783,7 @@ const resources = {
       TXNS_EXPORTED: 'Transactions exported',
       FAILED_TO_EXPORT_TXNS: 'Failed to export transactions',
       CARD_TXNS_EXPORTED_TEXT: 'Your transactions will be exported as a CSV (.csv) file and sent shortly to \n',
-      UPGRADE_TO_PHYSICAL_CARD: 'Upgrade to\nPhysical Card',
+      UPGRADE_TO_PHYSICAL_CARD: 'Upgrade to physical card',
       ADD_SHIPPING_DETAILS_SUBTEXT: 'Cypher card will be shipped to this address. Note that the shipping address cannot be a PO Box.',
       SEND_OTP_TEXT: 'On clicking the below button, an OTP will be sent to your registered mobile number and email address. Enter it below.',
       PHYSICAL_CARD_UPGRADE_SUBMISSION_SUCCESS_TEXT: 'The submission of the upgrade was a success. You have been queued for a physical card',

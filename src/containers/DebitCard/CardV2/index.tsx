@@ -45,7 +45,6 @@ const CypherCardScreen = ({ navigation, route }: CypherCardScreenProps) => {
     const cardProfile: CardProfile = globalContext.globalState.cardProfile;
 
     const cardSectionHeight: CardSectionHeights = hasBothProviders ? 320 : 270;
-    const upgradeToPhysicalAvailable = cardProfile.pc?.isPhysicalCardEligible;
 
     const [cardBalance, setCardBalance] = useState('');
     const [currentCardIndex] = useState(0); // Not setting anywhere.
@@ -249,17 +248,14 @@ const CypherCardScreen = ({ navigation, route }: CypherCardScreenProps) => {
                             'h-[50px] flex flex-row justify-between py-[5px] px-[10px] bg-white border-[1px] mx-[20px] rounded-[8px] border-sepratorColor'
                         }
                     >
-                        {upgradeToPhysicalAvailable ? <CyDTouchView onPress={handlePhysicalCardUpgrade} className="w-[60%] flex flex-row items-center gap-[8px]">
-                            <CyDFastImage className="h-[30px] w-[30px]" source={AppImages.UPGRADE_TO_PHYSICAL_CARD_ARROW} resizeMode='contain' />
-                            <CyDText className="font-bold text-[12px]">{t('UPGRADE_TO_PHYSICAL_CARD')}</CyDText>
-                        </CyDTouchView> : <CyDView>
+                        <CyDView>
                             <CyDText className={'font-bold text-[10px]'}>
                                 {t<string>('TOTAL_BALANCE')}
                             </CyDText>
                             <CyDText className={'font-bold text-[18px]'}>
                                 {(cardBalance !== 'NA' ? '$ ' : '') + cardBalance}
                             </CyDText>
-                        </CyDView>}
+                        </CyDView>
                         <Button
                             image={AppImages.LOAD_CARD_LOTTIE}
                             isLottie={true}
@@ -271,7 +267,7 @@ const CypherCardScreen = ({ navigation, route }: CypherCardScreenProps) => {
                                 });
                             }}
                             style={'pr-[7%] pl-[5%] py-[2%] w-[40%]  items-center align-center rounded-[8px]'}
-                            title={upgradeToPhysicalAvailable ? (cardBalance !== 'NA' ? '$ ' : '') + cardBalance : t('LOAD_CARD_CAPS')}
+                            title={t('LOAD_CARD_CAPS')}
                             titleStyle={'text-[14px]'}
                         />
                     </CyDView>
