@@ -9,14 +9,12 @@ import clsx from "clsx";
 import { ICountry, IState } from "../../../models/cardApplication.model";
 import ChooseCountryModal from "../../../components/v2/ChooseCountryModal";
 import Button from "../../../components/v2/button";
-import useAxios from "../../../core/HttpRequest";
-import { useGlobalModalContext } from "../../../components/v2/GlobalModal";
 import { useTranslation } from "react-i18next";
-import { ButtonType } from "../../../constants/enum";
 import { stateMaster } from "../../../../assets/datasets/stateMaster";
 import ChooseStateFromCountryModal from "../../../components/v2/ChooseStateFromCountryModal";
 import axios from "../../../core/Http";
 import Loading from "../../../components/v2/loading";
+import { screenTitle } from "../../../constants";
 
 const ShippingDetailsValidationSchema = yup.object().shape({
     phoneNumber: yup.string(),
@@ -24,7 +22,6 @@ const ShippingDetailsValidationSchema = yup.object().shape({
     line2: yup.string(),
     city: yup.string().required('City is required'),
     postalCode: yup.string().required('Postal code is required'),
-    otp: yup.string().required('OTP is required'),
 });
 
 const initialValues = {
@@ -33,26 +30,22 @@ const initialValues = {
     line2: '',
     city: '',
     postalCode: '',
-    otp: '',
 };
 
 interface Props {
+    navigation: any
     route: {
         params: {
             currentCardProvider: string
         }
     }
 }
-const UpgradeToPhysicalCardScreen = ({ route }: Props) => {
+const UpgradeToPhysicalCardScreen = ({ navigation, route }: Props) => {
     const { currentCardProvider } = route.params;
 
-    const { postWithAuth } = useAxios();
     const { t } = useTranslation();
-    const { showModal, hideModal } = useGlobalModalContext();
 
-    const [isSubmitting, setIsSubmitting] = useState(false);
     const [loading, setLoading] = useState(true);
-    const [otpHasBeenSent, setOtpHasBeenSent] = useState(false);
     const [selectCountryModalVisible, setSelectCountryModalVisible] = useState<boolean>(false);
     const [selectStateModalVisible, setSelectStateModalVisible] = useState<boolean>(false);
     const [selectCountryModalForDialCodeVisible, setSelectCountryModalForDialCodeVisible] = useState<boolean>(false);
@@ -116,30 +109,9 @@ const UpgradeToPhysicalCardScreen = ({ route }: Props) => {
         }
     };
 
-    const sendOtp = async () => {
-        const path = `/v1/cards/${currentCardProvider}/generate/physical/otp`;
-
-        const response = await postWithAuth(path, {});
-        if (response.isError) {
-            showModal(
-                'state',
-                {
-                    type: 'error',
-                    title: t('OTP_TRIGGER_FAILED'),
-                    description: t('OTP_TRIGGER_FAILED_TEXT'),
-                    onSuccess: hideModal,
-                    onFailure: hideModal,
-                }
-            );
-        } else {
-            setOtpHasBeenSent(true);
-        }
-    };
-
     const onSubmit = async (values: typeof initialValues) => {
-        setIsSubmitting(true);
         const phoneNumber = selectedCountryForDialCode.dialCode + values.phoneNumber;
-        const data: Record<string, string | number> = {
+        const shippingDetails: Record<string, string | number> = {
             country: selectedCountry.Iso2,
             line1: values.line1,
             line2: values.line2,
@@ -149,66 +121,15 @@ const UpgradeToPhysicalCardScreen = ({ route }: Props) => {
         };
 
         if (values.phoneNumber) {
-            data.phoneNumber = phoneNumber;
-        }
-        if (values.otp.length === 4) {
-            data.otp = Number(values.otp);
+            shippingDetails.phoneNumber = phoneNumber;
         }
 
-        try {
-            const response = await postWithAuth(`/v1/cards/${currentCardProvider}/generate/physical`, data);
-            if (!response.isError) {
-                showModal(
-                    'state',
-                    {
-                        type: 'success',
-                        title: t('SUCCESS'),
-                        description: t('PHYSICAL_CARD_UPGRADE_SUBMISSION_SUCCESS_TEXT'),
-                        onSuccess: hideModal,
-                        onFailure: hideModal,
-                    }
-                );
-            } else {
-                const errorObject = {
-                    response,
-                    currentCardProvider,
-                    data,
-                    message: 'isError=true when trying to submit physical card upgrade infomation.'
-                };
-                showModal(
-                    'state',
-                    {
-                        type: 'error',
-                        title: t('FAILURE'),
-                        description: t('PHYSICAL_CARD_UPGRADE_SUBMISSION_FAILURE_TEXT'),
-                        onSuccess: hideModal,
-                        onFailure: hideModal,
-                    }
-                );
-                Sentry.captureException(errorObject);
-            }
-            setIsSubmitting(false);
-        } catch (e) {
-            const errorObject = {
-                e,
-                currentCardProvider,
-                data,
-                message: 'Error when trying to submit physical card upgrade infomation.'
-            };
-            showModal(
-                'state',
-                {
-                    type: 'error',
-                    title: t('FAILURE'),
-                    description: t('PHYSICAL_CARD_UPGRADE_SUBMISSION_FAILURE_TEXT'),
-                    onSuccess: hideModal,
-                    onFailure: hideModal,
-                }
-            );
-            Sentry.captureException(errorObject);
-            setIsSubmitting(false);
-        }
+        navigation.navigate(screenTitle.SHIPPING_DETAILS_OTP_SCREEN, {
+            currentCardProvider,
+            shippingDetails,
+        });
     };
+
     return (
         <CyDSafeAreaView className="bg-white flex-1">
             <ChooseCountryModal
@@ -412,33 +333,9 @@ const UpgradeToPhysicalCardScreen = ({ route }: Props) => {
                                     </CyDView>
                                 </CyDView>
                                 <CyDText className='font-bold mx-[20px] my-[10px]'>{t('SEND_OTP_TEXT')}</CyDText>
-                                <Button style='w-[30%] p-[0px] h-[30px] mx-[20px]' onPress={() => {
-                                    void sendOtp();
-                                }} type={ButtonType.PRIMARY} title={t('SEND_OTP')} titleStyle='text-[12px]' />
-                                <CyDView className="mx-[20px] mt-[20px] flex flex-row items-center">
-                                    <CyDText className='font-bold pr-[4px]'>{t('ENTER_OTP')}</CyDText>
-                                    <CyDText className='font-medium pl-[4px] text-[12px] text-redCyD'>{errors.otp ?? ''}</CyDText>
+                                <CyDView className="h-[60px] w-full flex justify-center items-center my-[10px] px-[10px] py-[5px]">
+                                    <Button onPress={handleSubmit} style='h-[60px] w-[85%]' title={t('ENTER_OTP')} />
                                 </CyDView>
-                                <CyDView
-                                    className={
-                                        clsx('bg-white h-[50px] border border-inputBorderColor py-[5px] px-[10px] mx-[20px] rounded-[8px] flex flex-row justify-between items-center', { 'opacity-40 bg-slate-200': !otpHasBeenSent })
-                                    }
-                                >
-                                    <CyDView
-                                        className='flex flex-row justify-between items-center'
-                                    >
-                                        <CyDTextInput
-                                            className='h-full w-[100%] text-[16px]'
-                                            editable={otpHasBeenSent}
-                                            inputMode='numeric'
-                                            placeholder="0000"
-                                            onChangeText={handleChange('otp')}
-                                            onBlur={handleBlur('otp')}
-                                            value={values.otp}
-                                        />
-                                    </CyDView>
-                                </CyDView>
-                                <Button loading={isSubmitting} onPress={handleSubmit} style='h-[60px] w-full rounded-[0px] mt-[20px]' title='Submit' />
                             </CyDScrollView>
                         }
                     </CyDImageBackground>

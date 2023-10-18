@@ -86,6 +86,7 @@ import ActivateCardScreen from '../containers/DebitCard/bridgeCard/activateCard'
 import SetPinScreen from '../containers/DebitCard/bridgeCard/setPin';
 import { useKeyboard } from '../hooks/useKeyboard';
 import { DEFIOverviewScreen } from '../containers/DeFi/DEFIOverview';
+import ShippingDetailsOTPScreen from '../containers/DebitCard/CardV2/ShippingDetailsOTPScreen';
 
 const { DynamicImage, DynamicButton } = require('../styles');
 
@@ -1001,6 +1002,19 @@ export function DebitCardStackScreen({ navigation }) {
           headerShadowVisible: false,
           headerTitleShown: false,
           title: 'Add Shipping details',
+          headerTitleStyle: portfolioStackScreenHeaderTitleStyles,
+          headerTintColor: Colors.primaryTextColor,
+          headerBackTitleVisible: false,
+        })}
+      />
+      <FundCardStack.Screen
+        name={screenTitle.SHIPPING_DETAILS_OTP_SCREEN}
+        component={ShippingDetailsOTPScreen}
+        options={({ navigation, route }) => ({
+          headerTransparent: false,
+          headerShadowVisible: false,
+          headerTitleShown: false,
+          title: '',
           headerTitleStyle: portfolioStackScreenHeaderTitleStyles,
           headerTintColor: Colors.primaryTextColor,
           headerBackTitleVisible: false,
