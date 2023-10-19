@@ -390,10 +390,15 @@ export default function CardScreen({
     if (card.type === 'physical' && card.status === 'pendingActivation') {
       return (
         <CyDAnimatedView className='mb-[10px]' style={animatedStyle}>
-          <CyDImageBackground
+          <CyDFastImage
+            className={clsx(
+              'absolute w-full h-full',
+            )}
             source={{ uri: getCardBackgroundLayout(card) }}
-            className='flex flex-col justify-center h-[200px] w-[300px] border-[1px] border-inputBorderColor rounded-[12px]'
             resizeMode='stretch'
+          />
+          <CyDView
+            className='flex flex-col justify-center h-[200px] w-[300px] border-[1px] border-inputBorderColor rounded-[12px]'
           >
             <CyDTouchView
               onPress={() =>
@@ -418,7 +423,7 @@ export default function CardScreen({
             <CyDText className='text-center pt-[6px] font-bold'>
               {'XXXX XXXX XXXX ' + card.last4}
             </CyDText>
-          </CyDImageBackground>
+          </CyDView>
         </CyDAnimatedView>
       );
     }
@@ -426,10 +431,15 @@ export default function CardScreen({
     if (card.type === 'physical' && card.status === 'upgradeAvailable') {
       return (
         <CyDAnimatedView className='mb-[10px]' style={animatedStyle}>
-          <CyDImageBackground
+          <CyDFastImage
+            className={clsx(
+              'absolute w-full h-full',
+            )}
             source={{ uri: getCardBackgroundLayout(card) }}
-            className='flex flex-col justify-center h-[200px] w-[300px] border-[1px] border-inputBorderColor rounded-[12px]'
             resizeMode='stretch'
+          />
+          <CyDView
+            className='flex flex-col justify-center h-[200px] w-[300px] border-[1px] border-inputBorderColor rounded-[12px]'
           >
             <CyDTouchView
               onPress={() =>
@@ -447,7 +457,7 @@ export default function CardScreen({
                 {t<string>('UPGRADE_TO_PHYSICAL_CARD')}
               </CyDText>
             </CyDTouchView>
-          </CyDImageBackground>
+          </CyDView>
         </CyDAnimatedView>
       );
     }
@@ -616,12 +626,12 @@ export default function CardScreen({
 
   const cardsWithUpgrade = useMemo(() => {
     const actualCards = userCardDetails.cards.map(card => card);
-    if (upgradeToPhysicalAvailable) {
+    if (upgradeToPhysicalAvailable && currentCardProvider === CardProviders.PAYCADDY) {
       actualCards.unshift({
         cardId: '',
         bin: '',
         last4: '',
-        network: '',
+        network: 'pc',
         status: 'upgradeAvailable',
         type: 'physical'
       });

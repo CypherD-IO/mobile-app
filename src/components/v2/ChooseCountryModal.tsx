@@ -2,7 +2,7 @@ import React, { memo, useEffect, useState } from "react";
 import * as Sentry from '@sentry/react-native';
 import CyDModalLayout from "./modal";
 import Loading from "./loading";
-import { CyDFastImage, CyDScrollView, CyDText, CyDTextInput, CyDTouchView, CyDView } from "../../styles/tailwindStyles";
+import { CyDFastImage, CyDKeyboardAvoidingView, CyDScrollView, CyDText, CyDTextInput, CyDTouchView, CyDView } from "../../styles/tailwindStyles";
 import AppImages from "../../../assets/images/appImages";
 import axios from "../../core/Http";
 import { CountryCodesWithFlags } from "../../models/CountryCodesWithFlags.model";
@@ -11,6 +11,7 @@ import { Colors } from "../../constants/theme";
 import { ICountry } from "../../models/cardApplication.model";
 import clsx from "clsx";
 import { StyleSheet } from "react-native";
+import { isAndroid } from "../../misc/checkers";
 
 interface Props {
     isModalVisible: boolean
@@ -81,8 +82,8 @@ const ChooseCountryModal = ({ isModalVisible, setModalVisible, selectedCountrySt
             {isCountriesDataLoading ? (
                 <Loading />
             ) : (
-                <CyDView className='flex flex-col justify-end h-full'>
-                    <CyDView className={'bg-white h-[50%] rounded-t-[20px]'}>
+                <CyDKeyboardAvoidingView behavior={isAndroid() ? 'height' : 'padding'} className='flex flex-col justify-end h-full'>
+                    <CyDView className={'bg-white h-[70%] rounded-t-[24px]'}>
                         <CyDView
                             className={
                                 'flex flex-row mt-[20px] justify-center items-center'
@@ -120,11 +121,11 @@ const ChooseCountryModal = ({ isModalVisible, setModalVisible, selectedCountrySt
                                                 setSelectedCountry({
                                                     ...selectedCountry,
                                                     name: country.name,
-                                                    dialCode: country.dial_code,
+                                                    dialCode: country.dial_code ?? '',
                                                     flag: country.unicode_flag,
-                                                    Iso2: country.Iso2,
-                                                    Iso3: country.Iso3,
-                                                    currency: country.currency,
+                                                    Iso2: country.Iso2 ?? '',
+                                                    Iso3: country.Iso3 ?? '',
+                                                    currency: country.currency ?? '',
                                                 });
                                                 setModalVisible(false);
                                             }}
@@ -162,7 +163,7 @@ const ChooseCountryModal = ({ isModalVisible, setModalVisible, selectedCountrySt
                             </CyDView>
                         </CyDScrollView>
                     </CyDView>
-                </CyDView>
+                </CyDKeyboardAvoidingView>
             )}
         </CyDModalLayout>
     );

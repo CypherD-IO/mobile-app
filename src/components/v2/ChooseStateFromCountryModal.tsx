@@ -1,11 +1,12 @@
 import React, { memo, useEffect, useState } from "react";
 import CyDModalLayout from "./modal";
-import { CyDFastImage, CyDScrollView, CyDText, CyDTextInput, CyDTouchView, CyDView } from "../../styles/tailwindStyles";
+import { CyDFastImage, CyDKeyboardAvoidingView, CyDScrollView, CyDText, CyDTextInput, CyDTouchView, CyDView } from "../../styles/tailwindStyles";
 import AppImages from "../../../assets/images/appImages";
 import { Colors } from "../../constants/theme";
 import { ICountry, IState } from "../../models/cardApplication.model";
 import clsx from "clsx";
 import { StyleSheet } from "react-native";
+import { isAndroid } from "../../misc/checkers";
 
 interface Props {
     isModalVisible: boolean
@@ -22,6 +23,7 @@ const ChooseStateFromCountryModal = ({ isModalVisible, setModalVisible, selected
     const [states, setStates] = useState<
         IState[]
     >([]);
+    const [filteredStates, setFilteredStates] = useState<IState[]>([]);
 
     useEffect(() => {
         setStates(selectedCountryStates);
@@ -29,17 +31,15 @@ const ChooseStateFromCountryModal = ({ isModalVisible, setModalVisible, selected
 
     useEffect(() => {
         if (stateFilterText === '') {
-            setStates(states);
+            setFilteredStates(states);
         } else {
-            const filteredCountries = states.filter(
+            const tempStates = states.filter(
                 state =>
                     state.name.toLowerCase().includes(stateFilterText.toLowerCase())
             );
-            setStates(filteredCountries);
+            setFilteredStates(tempStates);
         }
     }, [states, stateFilterText]);
-
-
 
     return (
         <CyDModalLayout
@@ -49,8 +49,8 @@ const ChooseStateFromCountryModal = ({ isModalVisible, setModalVisible, selected
             animationIn={'slideInUp'}
             animationOut={'slideOutDown'}
         >
-            <CyDView className='flex flex-col justify-end h-full'>
-                <CyDView className={'bg-white h-[50%] rounded-t-[20px]'}>
+            <CyDKeyboardAvoidingView behavior={isAndroid() ? 'height' : 'padding'} className='flex flex-col justify-end h-full'>
+                <CyDView className={'bg-white h-[70%] rounded-t-[24px]'}>
                     <CyDView
                         className={
                             'flex flex-row mt-[20px] justify-center items-center'
@@ -81,7 +81,7 @@ const ChooseStateFromCountryModal = ({ isModalVisible, setModalVisible, selected
                     </CyDView>
                     <CyDScrollView className={'mt-[12px]'}>
                         <CyDView className='mb-[100px]'>
-                            {states.map((state) => {
+                            {filteredStates.map((state) => {
                                 return (
                                     <CyDTouchView
                                         onPress={() => {
@@ -113,7 +113,7 @@ const ChooseStateFromCountryModal = ({ isModalVisible, setModalVisible, selected
                         </CyDView>
                     </CyDScrollView>
                 </CyDView>
-            </CyDView>
+            </CyDKeyboardAvoidingView>
         </CyDModalLayout>
     );
 };
