@@ -1,4 +1,4 @@
-import React, { memo, useEffect, useState } from "react";
+import React, { memo, useContext, useEffect, useState } from "react";
 import { CyDImageBackground, CyDSafeAreaView, CyDText, CyDTouchView, CyDView } from "../../../styles/tailwindStyles";
 import * as Sentry from '@sentry/react-native';
 import AppImages from "../../../../assets/images/appImages";
@@ -11,6 +11,10 @@ import Loading from "../../../components/v2/loading";
 import LottieView from 'lottie-react-native';
 import { MODAL_HIDE_TIMEOUT_250 } from "../../../core/Http";
 import { screenTitle } from "../../../constants";
+import { getWalletProfile } from "../../../core/card";
+import { GlobalContext } from "../../../core/globalContext";
+import { GlobalContextType } from "../../../constants/enum";
+import { CardProfile } from "../../../models/cardProfile.model";
 
 interface Props {
     navigation: any
@@ -39,6 +43,8 @@ const ShippingDetailsOTPScreen = ({ navigation, route }: Props) => {
     const { postWithAuth } = useAxios();
     const { t } = useTranslation();
     const { showModal, hideModal } = useGlobalModalContext();
+
+    const globalContext = useContext(GlobalContext);
 
     const [isSubmitting, setIsSubmitting] = useState(false);
     const [sendingOTP, setSendingOTP] = useState(false);
@@ -133,6 +139,15 @@ const ShippingDetailsOTPScreen = ({ navigation, route }: Props) => {
         try {
             const response = await postWithAuth(`/v1/cards/${currentCardProvider}/generate/physical`, data);
             if (!response.isError) {
+                if (globalContext?.globalState.token) {
+                    const cardProfile: CardProfile = await getWalletProfile(globalContext.globalState.token);
+                    globalContext.globalDispatch({ type: GlobalContextType.CARD_PROFILE, cardProfile });
+                } else {
+                    const errorObject = {
+                        response,
+                    };
+                    Sentry.captureException(errorObject);
+                }
                 showModal(
                     'state',
                     {

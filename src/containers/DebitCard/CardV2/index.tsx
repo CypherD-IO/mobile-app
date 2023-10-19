@@ -201,13 +201,6 @@ const CypherCardScreen = ({ navigation, route }: CypherCardScreenProps) => {
         setFilteredTransactions(filteredTxns);
     };
 
-    const handlePhysicalCardUpgrade = () => {
-        navigation.navigate(screenTitle.UPGRADE_TO_PHYSICAL_CARD_SCREEN,
-            {
-                currentCardProvider
-            });
-    };
-
     return (
         <CyDSafeAreaView className="flex-1 bg-white">
             {/* TXN FILTER MODAL */}
