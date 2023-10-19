@@ -34,7 +34,7 @@ const ChooseCountryModal = ({ isModalVisible, setModalVisible, selectedCountrySt
 
     const getCountryData = async () => {
         try {
-            const response = await axios.get('https://public.cypherd.io/js/countryMaster.js');
+            const response = await axios.get(`https://public.cypherd.io/js/countryMaster.js?${String(new Date())}`);
             if (response?.data) {
                 const countryData = response.data;
                 setCopyCountriesWithFlagAndDialcodes(countryData);

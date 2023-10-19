@@ -1,5 +1,4 @@
-import React, { useContext, useEffect, useState } from 'react';
-import { StyleSheet } from 'react-native';
+import React, { useContext, useState } from 'react';
 import AppImages from '../../../assets/images/appImages';
 import Button from '../../components/v2/button';
 import { useGlobalModalContext } from '../../components/v2/GlobalModal';
@@ -19,11 +18,8 @@ import * as Sentry from '@sentry/react-native';
 import { useTranslation } from 'react-i18next';
 import * as C from '../../constants/index';
 import clsx from 'clsx';
-import CyDModalLayout from '../../components/v2/modal';
-import { CountryCodesWithFlags } from '../../models/CountryCodesWithFlags.model';
-import Loading from '../../components/v2/loading';
-import { countryMaster } from '../../../assets/datasets/countryMaster';
-import { Colors } from '../../constants/theme';
+import ChooseCountryModal from '../../components/v2/ChooseCountryModal';
+import { ICountry } from '../../models/cardApplication.model';
 
 const cardBenefits = [
   'Instantly swap crypto to USD',
@@ -32,22 +28,24 @@ const cardBenefits = [
   'Use your card anywhere in the world',
 ];
 
-export default function CardWailtList({ navigation }) {
+interface Props {
+  navigation: any
+}
+
+export default function CardWailtList({ navigation }: Props) {
   const ARCH_HOST: string = hostWorker.getHost('ARCH_HOST');
+
+  const { showModal, hideModal } = useGlobalModalContext();
+  const { t } = useTranslation();
+
+  const hdWallet = useContext<any>(HdWalletContext);
+  const ethereum = hdWallet.state.wallet.ethereum;
+
   const [joiningWaitlist, setJoiningWaitlist] = useState<boolean>(false);
   const [userEmail, setUserEmail] = useState<string>('');
-  const hdWallet = useContext<any>(HdWalletContext);
   const [isValidUserEmail, setIsValidUserEmail] = useState<boolean>(false);
   const [isModalVisible, setModalVisible] = useState<boolean>(false);
-  const [countryFilterText, setCountryFilter] = useState<string>('');
-  const [selectedCountry, setSelectedCountry] = useState<{
-    name?: string;
-    dialCode?: string;
-    flag?: string;
-    Iso2?: string;
-    Iso3?: string;
-    currency?: string;
-  }>({
+  const [selectedCountry, setSelectedCountry] = useState<ICountry>({
     name: 'United States',
     dialCode: '+1',
     flag: '🇺🇸',
@@ -55,57 +53,6 @@ export default function CardWailtList({ navigation }) {
     Iso3: 'USA',
     currency: 'USD',
   });
-  const [
-    copyCountriesWithFlagAndDialcodes,
-    setCopyCountriesWithFlagAndDialcodes,
-  ] = useState<CountryCodesWithFlags[]>([]);
-  const [isCountriesDataLoading, setIsCountriesDataLoading] = useState(true);
-  const [origCountriesWithFlagAndDialcodes, setOrigCountryList] = useState<
-    CountryCodesWithFlags[]
-  >([]);
-  const { showModal, hideModal } = useGlobalModalContext();
-  const { t } = useTranslation();
-
-  const ethereum = hdWallet.state.wallet.ethereum;
-
-  useEffect(() => {
-    if (countryFilterText === '') {
-      setOrigCountryList(copyCountriesWithFlagAndDialcodes);
-    } else {
-      const filteredCountries = copyCountriesWithFlagAndDialcodes.filter(
-        (country) =>
-          country.name.toLowerCase().includes(countryFilterText.toLowerCase())
-      );
-      setOrigCountryList(filteredCountries);
-    }
-  }, [countryFilterText]);
-
-  useEffect(() => {
-    void getCountryData();
-  }, []);
-
-  const getCountryData = async () => {
-    try {
-      const response = await axios.get(
-        'https://public.cypherd.io/js/countryMaster.js'
-      );
-      if (response?.data) {
-        const countryData = response.data;
-        setCopyCountriesWithFlagAndDialcodes(countryData);
-        setOrigCountryList(countryData);
-        setIsCountriesDataLoading(false);
-      } else {
-        setCopyCountriesWithFlagAndDialcodes(countryMaster);
-        setOrigCountryList(countryMaster);
-        setIsCountriesDataLoading(false);
-      }
-    } catch (error) {
-      setCopyCountriesWithFlagAndDialcodes(countryMaster);
-      setOrigCountryList(countryMaster);
-      setIsCountriesDataLoading(false);
-      Sentry.captureException(error);
-    }
-  };
 
   async function joinWaitlist() {
     if (userEmail && userEmail !== '') {
@@ -168,100 +115,7 @@ export default function CardWailtList({ navigation }) {
   return (
     <CyDView className='flex-1 bg-white mt-[32px]'>
       <CyDScrollView className='bg-white py-[12px]'>
-        <CyDModalLayout
-          setModalVisible={setModalVisible}
-          isModalVisible={isModalVisible}
-          style={styles.modalLayout}
-          animationIn={'slideInUp'}
-          animationOut={'slideOutDown'}
-        >
-          {isCountriesDataLoading ? (
-            <Loading />
-          ) : (
-            <CyDView className='flex flex-col justify-end h-full'>
-              <CyDView className={'bg-white h-[50%] rounded-t-[20px]'}>
-                <CyDView
-                  className={
-                    'flex flex-row mt-[20px] justify-center items-center'
-                  }
-                >
-                  <CyDTextInput
-                    className={
-                      'border-[1px] border-inputBorderColor rounded-[50px] p-[10px] text-[14px] w-[80%] font-nunito text-primaryTextColor'
-                    }
-                    value={countryFilterText}
-                    autoCapitalize='none'
-                    autoCorrect={false}
-                    onChangeText={(text) => setCountryFilter(text)}
-                    placeholder='Search Country'
-                    placeholderTextColor={Colors.subTextColor}
-                  />
-                  <CyDTouchView
-                    onPress={() => {
-                      setModalVisible(false);
-                    }}
-                    className={'ml-[18px]'}
-                  >
-                    <CyDImage
-                      source={AppImages.CLOSE}
-                      className={' w-[22px] h-[22px] z-[50] right-[0px] '}
-                    />
-                  </CyDTouchView>
-                </CyDView>
-                <CyDScrollView className={'mt-[12px]'}>
-                  <CyDView className='mb-[100px]'>
-                    {origCountriesWithFlagAndDialcodes.map((country) => {
-                      return (
-                        <CyDTouchView
-                          onPress={() => {
-                            setSelectedCountry({
-                              ...selectedCountry,
-                              name: country.name,
-                              dialCode: country.dial_code,
-                              flag: country.unicode_flag,
-                              Iso2: country.Iso2,
-                              Iso3: country.Iso3,
-                              currency: country.currency,
-                            });
-                            setModalVisible(false);
-                          }}
-                          className={clsx(
-                            'flex flex-row items-center justify-between px-[16px] py-[6px] mx-[12px] rounded-[26px]',
-                            {
-                              'bg-paleBlue':
-                                country.name === selectedCountry.name,
-                            }
-                          )}
-                          key={country.name}
-                        >
-                          <CyDView className={'flex flex-row items-center'}>
-                            <CyDText className={'text-[36px]'}>
-                              {country.unicode_flag}
-                            </CyDText>
-                            <CyDText
-                              className={'ml-[10px] font-semibold text-[16px]'}
-                            >
-                              {country.name}
-                            </CyDText>
-                          </CyDView>
-                          <CyDView className={'flex flex-row justify-end'}>
-                            <CyDText
-                              className={
-                                'text-[14px] font-extrabold text-subTextColor'
-                              }
-                            >
-                              {country.dial_code}
-                            </CyDText>
-                          </CyDView>
-                        </CyDTouchView>
-                      );
-                    })}
-                  </CyDView>
-                </CyDScrollView>
-              </CyDView>
-            </CyDView>
-          )}
-        </CyDModalLayout>
+        <ChooseCountryModal isModalVisible={isModalVisible} setModalVisible={setModalVisible} selectedCountryState={[selectedCountry, setSelectedCountry]} />
         <CyDView className={'w-screen'}>
           <CyDText
             className={'text-center font-bold text-[22px] mt-[20px] mb-[10px]'}
@@ -284,6 +138,29 @@ export default function CardWailtList({ navigation }) {
                 }
               >
                 <CyDView>
+                  <CyDTouchView
+                    className={
+                      'mt-[5px] mb-[5px] border-[1px] border-inputBorderColor py-[12px] px-[10px] rounded-[8px] flex w-[100%]'
+                    }
+                    onPress={() => setModalVisible(true)}
+                  >
+                    <CyDView
+                      className={clsx(
+                        'flex flex-row justify-between items-center',
+                        { 'border-redOffColor': !selectedCountry }
+                      )}
+                    >
+                      <CyDView className={'flex flex-row items-center'}>
+                        <CyDText className='text-center text-[18px] ml-[8px]'>
+                          {selectedCountry.flag}
+                        </CyDText>
+                        <CyDText className='text-center text-[18px] ml-[8px]'>
+                          {selectedCountry.name}
+                        </CyDText>
+                      </CyDView>
+                      <CyDImage source={AppImages.DOWN_ARROW} />
+                    </CyDView>
+                  </CyDTouchView>
                   <CyDTextInput
                     value={userEmail}
                     textContentType='emailAddress'
@@ -306,7 +183,7 @@ export default function CardWailtList({ navigation }) {
                   />
                   <Button
                     disabled={!isValidUserEmail && userEmail !== ''}
-                    onPress={async () => await joinWaitlist()}
+                    onPress={() => { void joinWaitlist(); }}
                     loading={joiningWaitlist}
                     style={'rounded-[8px] h-[50px] mt-[20px]'}
                     title={t<string>('CTA_JOIN_WAITLIST')}
@@ -370,10 +247,3 @@ export default function CardWailtList({ navigation }) {
     </CyDView>
   );
 }
-
-const styles = StyleSheet.create({
-  modalLayout: {
-    margin: 0,
-    justifyContent: 'flex-end',
-  },
-});
