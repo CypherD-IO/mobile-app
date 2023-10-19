@@ -201,6 +201,13 @@ const CypherCardScreen = ({ navigation, route }: CypherCardScreenProps) => {
         setFilteredTransactions(filteredTxns);
     };
 
+    const handlePhysicalCardUpgrade = () => {
+        navigation.navigate(screenTitle.UPGRADE_TO_PHYSICAL_CARD_SCREEN,
+            {
+                currentCardProvider
+            });
+    };
+
     return (
         <CyDSafeAreaView className="flex-1 bg-white">
             {/* TXN FILTER MODAL */}
@@ -238,14 +245,14 @@ const CypherCardScreen = ({ navigation, route }: CypherCardScreenProps) => {
                     {/* FUND CARD */}
                     <CyDView
                         className={
-                            'flex flex-row justify-between px-[2%] py-[1.2%] bg-white border-[1px] mx-[20px] rounded-[8px] border-sepratorColor'
+                            'h-[50px] flex flex-row justify-between py-[5px] px-[10px] bg-white border-[1px] mx-[20px] rounded-[8px] border-sepratorColor'
                         }
                     >
                         <CyDView>
-                            <CyDText className={'font-bold text-[12px]'}>
+                            <CyDText className={'font-bold text-[10px]'}>
                                 {t<string>('TOTAL_BALANCE')}
                             </CyDText>
-                            <CyDText className={'font-bold text-[20px]'}>
+                            <CyDText className={'font-bold text-[18px]'}>
                                 {(cardBalance !== 'NA' ? '$ ' : '') + cardBalance}
                             </CyDText>
                         </CyDView>
@@ -259,7 +266,7 @@ const CypherCardScreen = ({ navigation, route }: CypherCardScreenProps) => {
                                     currentCardIndex,
                                 });
                             }}
-                            style={'pr-[7%] pl-[5%] py-[2%] items-center align-center rounded-[8px]'}
+                            style={'pr-[7%] pl-[5%] py-[2%] w-[40%]  items-center align-center rounded-[8px]'}
                             title={t('LOAD_CARD_CAPS')}
                             titleStyle={'text-[14px]'}
                         />

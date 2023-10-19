@@ -34,6 +34,7 @@ const resources = {
       PRIVATE_KEY_SUB_MSG: 'Store it somewhere secure. You will loose access to your wallet if you loose your private key.',
       TXN_SUBMITTED: 'Transaction Submitted. \nKindly wait few minutes for confirmation.',
       SUCCESS: 'Success',
+      FAILURE: 'Failure',
       TOAST_TYPE_SUCCESS: 'success',
       TOAST_TYPE_ERROR: 'error',
       OKAY: 'OKAY',
@@ -366,6 +367,7 @@ const resources = {
       SENT_AUTHENTICATION_CODE_TO: 'We have sent authentication code to ',
       THIS_NUMBER: 'this number',
       RESEND_CODE_INIT_CAPS: 'Resend Otp',
+      SEND_OTP: 'Send OTP',
       CHANGE_NUMBER_INIT_CAPS: 'Change Number',
       CHANGE_EMAIL_INIT_CAPS: 'Change Email Id',
       UPDATE_INIT_CAPS: 'Update',
@@ -781,6 +783,12 @@ const resources = {
       TXNS_EXPORTED: 'Transactions exported',
       FAILED_TO_EXPORT_TXNS: 'Failed to export transactions',
       CARD_TXNS_EXPORTED_TEXT: 'Your transactions will be exported as a CSV (.csv) file and sent shortly to \n',
+      UPGRADE_TO_PHYSICAL_CARD: 'Upgrade to physical card',
+      ADD_SHIPPING_DETAILS_SUBTEXT: 'Cypher card will be shipped to this address. Note that the shipping address cannot be a PO Box.',
+      SEND_OTP_TEXT: 'On clicking the below button, an OTP will be sent to your registered mobile number and email address. Enter it in the following screen to send the shipping details.',
+      PHYSICAL_CARD_UPGRADE_SUBMISSION_SUCCESS_TEXT: 'The submission of the upgrade was a success. You have been queued for a physical card',
+      PHYSICAL_CARD_UPGRADE_SUBMISSION_FAILURE_TEXT: 'The submission of the upgrade failed. Try again later or contact Cypher Support.',
+      OTP_TRIGGER_FAILED_TEXT: 'Failed to send OTP. Please contact Cypher Support.'
     }
   }
 };

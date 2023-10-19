@@ -73,6 +73,7 @@ import { NFTOverviewScreen, NFTHoldingsScreen } from '../containers/NFT';
 import { AddressBook } from '../containers/AddressBook/myAddress';
 import { CreateContact } from '../containers/AddressBook/createContact';
 import TransFiScreen from '../containers/ramp/transFi';
+import UpgradeToPhysicalCardScreen from '../containers/DebitCard/CardV2/UpgradeToPhysicalCardScreen';
 import { useEffect } from 'react';
 import {
   BackHandler,
@@ -85,6 +86,7 @@ import ActivateCardScreen from '../containers/DebitCard/bridgeCard/activateCard'
 import SetPinScreen from '../containers/DebitCard/bridgeCard/setPin';
 import { useKeyboard } from '../hooks/useKeyboard';
 import { DEFIOverviewScreen } from '../containers/DeFi/DEFIOverview';
+import ShippingDetailsOTPScreen from '../containers/DebitCard/CardV2/ShippingDetailsOTPScreen';
 
 const { DynamicImage, DynamicButton } = require('../styles');
 
@@ -160,24 +162,24 @@ export function PortfolioStackScreen({ navigation, route }) {
         options={{ headerShown: false }}
       />
       <PortfolioStack.Screen
-      name={screenTitle.DEFI_PROTOCOL_OVERVIEW_SCREEN}
-      component={DEFIOverviewScreen}
-      options={({ navigation, route }) => ({
-        headerTransparent: false,
-        headerShadowVisible: false,
-        title: '',
-        headerTitleAlign: 'center',
-        headerTitleStyle: portfolioStackScreenHeaderTitleStyles,
-        navigationOptions: {
-          tabBarVisible: false,
-        },
+        name={screenTitle.DEFI_PROTOCOL_OVERVIEW_SCREEN}
+        component={DEFIOverviewScreen}
+        options={({ navigation, route }) => ({
+          headerTransparent: false,
+          headerShadowVisible: false,
+          title: '',
+          headerTitleAlign: 'center',
+          headerTitleStyle: portfolioStackScreenHeaderTitleStyles,
+          navigationOptions: {
+            tabBarVisible: false,
+          },
 
-        headerTintColor: Colors.primaryTextColor,
-        headerBackTitleVisible: false,
-        headerLeft: (props) => defaultHeaderLeft(navigation),
-      })}
+          headerTintColor: Colors.primaryTextColor,
+          headerBackTitleVisible: false,
+          headerLeft: (props) => defaultHeaderLeft(navigation),
+        })}
       />
-      
+
       <PortfolioStack.Screen
         name={screenTitle.NFT_OVERVIEW_SCREEN}
         component={NFTOverviewScreen}
@@ -987,6 +989,32 @@ export function DebitCardStackScreen({ navigation }) {
           headerShadowVisible: false,
           headerTitle: 'Explorer',
           headerTitleAlign: 'center',
+          headerTitleStyle: portfolioStackScreenHeaderTitleStyles,
+          headerTintColor: Colors.primaryTextColor,
+          headerBackTitleVisible: false,
+        })}
+      />
+      <FundCardStack.Screen
+        name={screenTitle.UPGRADE_TO_PHYSICAL_CARD_SCREEN}
+        component={UpgradeToPhysicalCardScreen}
+        options={({ navigation, route }) => ({
+          headerTransparent: false,
+          headerShadowVisible: false,
+          headerTitleShown: false,
+          title: 'Add Shipping details',
+          headerTitleStyle: portfolioStackScreenHeaderTitleStyles,
+          headerTintColor: Colors.primaryTextColor,
+          headerBackTitleVisible: false,
+        })}
+      />
+      <FundCardStack.Screen
+        name={screenTitle.SHIPPING_DETAILS_OTP_SCREEN}
+        component={ShippingDetailsOTPScreen}
+        options={({ navigation, route }) => ({
+          headerTransparent: false,
+          headerShadowVisible: false,
+          headerTitleShown: false,
+          title: '',
           headerTitleStyle: portfolioStackScreenHeaderTitleStyles,
           headerTintColor: Colors.primaryTextColor,
           headerBackTitleVisible: false,

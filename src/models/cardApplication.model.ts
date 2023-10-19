@@ -14,3 +14,24 @@ export interface CardApplication {
   dateOfBirth: string
   idNumber: string
 }
+
+export interface ICountry {
+  name: string;
+  dialCode: string;
+  flag: string;
+  Iso2: string;
+  Iso3: string;
+  currency: string;
+}
+
+export interface IState {
+  id: number;
+  name: string;
+  country_id: number;
+  country_code: string;
+  country_name: string;
+  state_code: string;
+  type: string | null;
+  latitude: string | null;
+  longitude: string | null;
+}

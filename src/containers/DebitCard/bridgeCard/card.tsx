@@ -3,6 +3,7 @@ import React, {
   SetStateAction,
   useContext,
   useEffect,
+  useMemo,
   useState,
 } from 'react';
 import { GlobalContext } from '../../../core/globalContext';
@@ -32,23 +33,22 @@ import { Card } from '../../../models/card.model';
 import { orderBy } from 'lodash';
 import { UserCardDetails } from '../../../models/userCardDetails.interface';
 import { useIsFocused } from '@react-navigation/native';
-import PropTypes from 'prop-types';
 import CardCarousel from '../../../components/v2/CardCarousel';
 import { Extrapolation, SharedValue, interpolate, useAnimatedStyle } from 'react-native-reanimated';
 
 export default function CardScreen({
   navigation,
-  hideCardDetails,
   currentCardProvider,
   setCurrentCardProvider,
 }: {
   navigation: any;
-  hideCardDetails: boolean;
   currentCardProvider: string;
   setCurrentCardProvider: Dispatch<SetStateAction<string>>;
 }) {
   const globalContext = useContext<any>(GlobalContext);
   const cardProfile = globalContext.globalState.cardProfile;
+  const upgradeToPhysicalAvailable = cardProfile.pc?.isPhysicalCardEligible;
+
   const { t } = useTranslation();
   const isFocused = useIsFocused();
   const [userCardDetails, setUserCardDetails] = useState<UserCardDetails>({
@@ -365,7 +365,7 @@ export default function CardScreen({
   };
 
   const RenderCard = ({ item, index, boxWidth, halfBoxDistance, panX }: { item: Card, index: number, boxWidth: number, halfBoxDistance: number, panX: SharedValue<number> }) => {
-    const card: Card = item;
+    const card = item;
     const {
       isFetchingCardDetails,
       currentCardRevealedDetails,
@@ -418,6 +418,35 @@ export default function CardScreen({
             <CyDText className='text-center pt-[6px] font-bold'>
               {'XXXX XXXX XXXX ' + card.last4}
             </CyDText>
+          </CyDImageBackground>
+        </CyDAnimatedView>
+      );
+    }
+
+    if (card.type === 'physical' && card.status === 'upgradeAvailable') {
+      return (
+        <CyDAnimatedView className='mb-[10px]' style={animatedStyle}>
+          <CyDImageBackground
+            source={{ uri: getCardBackgroundLayout(card) }}
+            className='flex flex-col justify-center h-[200px] w-[300px] border-[1px] border-inputBorderColor rounded-[12px]'
+            resizeMode='stretch'
+          >
+            <CyDTouchView
+              onPress={() =>
+                navigation.navigate(screenTitle.UPGRADE_TO_PHYSICAL_CARD_SCREEN, {
+                  currentCardProvider,
+                })
+              }
+              className='flex flex-row justify-center items-center border border-inputBorderColor bg-white mx-[30px] p-[5px] rounded-[10px]'
+            >
+              <CyDFastImage
+                source={AppImages.UPGRADE_TO_PHYSICAL_CARD_ARROW}
+                className='h-[30px] w-[30px] mr-[10px]'
+              />
+              <CyDText className='font-nunito font-extrabold'>
+                {t<string>('UPGRADE_TO_PHYSICAL_CARD')}
+              </CyDText>
+            </CyDTouchView>
           </CyDImageBackground>
         </CyDAnimatedView>
       );
@@ -585,10 +614,25 @@ export default function CardScreen({
     setCurrentCardIndex(index);
   };
 
+  const cardsWithUpgrade = useMemo(() => {
+    const actualCards = userCardDetails.cards.map(card => card);
+    if (upgradeToPhysicalAvailable) {
+      actualCards.unshift({
+        cardId: '',
+        bin: '',
+        last4: '',
+        network: '',
+        status: 'upgradeAvailable',
+        type: 'physical'
+      });
+    }
+    return actualCards;
+  }, [upgradeToPhysicalAvailable, userCardDetails.cards]);
+
   return (
     <CardCarousel
       boxWidthMultiplier={0.8}
-      cardsData={userCardDetails.cards}
+      cardsData={cardsWithUpgrade}
       renderItem={renderItem}
       onCardChange={onCardChange}
     />
