@@ -788,7 +788,8 @@ const resources = {
       SEND_OTP_TEXT: 'On clicking the below button, an OTP will be sent to your registered mobile number and email address. Enter it in the following screen to send the shipping details.',
       PHYSICAL_CARD_UPGRADE_SUBMISSION_SUCCESS_TEXT: 'The submission of the upgrade was a success. You have been queued for a physical card',
       PHYSICAL_CARD_UPGRADE_SUBMISSION_FAILURE_TEXT: 'The submission of the upgrade failed. Try again later or contact Cypher Support.',
-      OTP_TRIGGER_FAILED_TEXT: 'Failed to send OTP. Please contact Cypher Support.'
+      OTP_TRIGGER_FAILED_TEXT: 'Failed to send OTP. Please contact Cypher Support.',
+      LOADING_BANNERS: 'Getting the latest news...'
     }
   }
 };

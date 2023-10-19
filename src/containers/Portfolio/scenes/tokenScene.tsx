@@ -218,87 +218,101 @@ const TokenScene = ({
   );
 
   return (
-    <>
-      {getAllChainBalance(portfolioState) > 0 ? (
-        <CyDView className='flex-1 h-full mx-[10px]'>
-          {!isEmpty(holdingsData) ? (
-            <AnimatedTabView
-              bannerHeight={bannerHeight}
-              data={holdingsByCoinGeckoId}
-              extraData={{ isVerifyCoinChecked, holdingsData }}
-              keyExtractor={(item) => item}
-              refreshControl={
-                <RefreshControl
-                  refreshing={isPortfolioRefreshing.shouldRefreshAssets}
-                  onRefresh={() => {
-                    void onRefresh();
-                  }}
-                  progressViewOffset={bannerHeight}
-                />
-              }
-              renderItem={({ item, index, viewableItems }) =>
-                renderItem({
-                  item: get(holdingsData, item),
-                  index,
-                  viewableItems,
-                })
-              }
-              onRef={flatListRef}
-              scrollY={scrollY}
-              onScrollEndDrag={onScrollEndDrag}
-              onMomentumScrollBegin={onMomentumScrollBegin}
-              onMomentumScrollEnd={onMomentumScrollEnd}
-              ListEmptyComponent={
-                <CyDView className='flex flex-col justify-center items-center'>
-                  <EmptyView
-                    text={t('NO_CURRENT_HOLDINGS')}
-                    image={AppImages.EMPTY}
-                    buyVisible={false}
-                    marginTop={30}
-                  />
-                </CyDView>
-              }
-            />
-          ) : (
-            <Loading />
-          )}
-        </CyDView>
-      ) : (
-        portfolioState.statePortfolio.portfolioState === PORTFOLIO_EMPTY && (
-          <CyDView
-            className={'flex h-full justify-center items-center mt-[5px]'}
-          >
-            <LottieView
-              source={AppImages.PORTFOLIO_EMPTY}
-              autoPlay
-              loop
-              style={styles.lottieView}
-            />
-            <Button
-              title={t('FUND_WALLET')}
-              onPress={() => {
-                navigation.navigate(screenTitle.QRCODE);
-              }}
-              style='mt-[-40px] px-[20px] h-[40px] py-[0px]'
-              titleStyle='text-[14px]'
-              image={AppImages.RECEIVE}
-              imageStyle='h-[12px] w-[12px] mr-[15px]'
-            />
-            <CyDTouchView
-              className='mt-[20px]'
-              onPress={() => {
+    <CyDView className='flex-1 h-full mx-[10px]'>
+      {!isEmpty(holdingsData) ? (
+        <AnimatedTabView
+          bannerHeight={bannerHeight}
+          data={getAllChainBalance(portfolioState) > 0 ? holdingsByCoinGeckoId : []}
+          extraData={{ isVerifyCoinChecked, holdingsData }}
+          keyExtractor={(item) => item}
+          refreshControl={
+            <RefreshControl
+              refreshing={isPortfolioRefreshing.shouldRefreshAssets}
+              onRefresh={() => {
                 void onRefresh();
               }}
-            >
-              <CyDText className='text-center text-blue-500 underline'>
-                {t<string>('CLICK_TO_REFRESH')}
-              </CyDText>
-            </CyDTouchView>
-          </CyDView>
-        )
+              progressViewOffset={bannerHeight}
+            />
+          }
+          renderItem={({ item, index, viewableItems }) =>
+            renderItem({
+              item: get(holdingsData, item),
+              index,
+              viewableItems,
+            })
+          }
+          onRef={flatListRef}
+          scrollY={scrollY}
+          onScrollEndDrag={onScrollEndDrag}
+          onMomentumScrollBegin={onMomentumScrollBegin}
+          onMomentumScrollEnd={onMomentumScrollEnd}
+          ListEmptyComponent={
+            <TokenListEmptyComponent
+              navigation={navigation}
+              isPortfolioEmpty={portfolioState.statePortfolio.portfolioState === PORTFOLIO_EMPTY}
+              onRefresh={onRefresh}
+            />
+          }
+        />
+      ) : (
+        <CyDView className='w-full absolute bottom-[100px]'>
+          <Loading />
+        </CyDView>
       )}
-    </>
+    </CyDView>
+
   );
+};
+
+interface TokenListEmptyComponentProps {
+  navigation: any
+  isPortfolioEmpty: boolean
+  onRefresh: (pullToRefresh?: boolean) => Promise<void>
+}
+
+const TokenListEmptyComponent = ({ navigation, isPortfolioEmpty, onRefresh }: TokenListEmptyComponentProps) => {
+  const { t } = useTranslation();
+  if (isPortfolioEmpty) {
+    return <CyDView
+      className={'flex h-full justify-start items-center mt-[5px]'}
+    >
+      <LottieView
+        source={AppImages.PORTFOLIO_EMPTY}
+        autoPlay
+        loop
+        style={styles.lottieView}
+      />
+      <Button
+        title={t('FUND_WALLET')}
+        onPress={() => {
+          navigation.navigate(screenTitle.QRCODE);
+        }}
+        style='mt-[-40px] px-[20px] h-[40px] py-[0px]'
+        titleStyle='text-[14px]'
+        image={AppImages.RECEIVE}
+        imageStyle='h-[12px] w-[12px] mr-[15px]'
+      />
+      <CyDTouchView
+        className='mt-[20px]'
+        onPress={() => {
+          void onRefresh();
+        }}
+      >
+        <CyDText className='text-center text-blue-500 underline'>
+          {t<string>('CLICK_TO_REFRESH')}
+        </CyDText>
+      </CyDTouchView>
+    </CyDView>;
+  } else {
+    return <CyDView className='flex flex-col justify-start items-center'>
+      <EmptyView
+        text={t('NO_CURRENT_HOLDINGS')}
+        image={AppImages.EMPTY}
+        buyVisible={false}
+        marginTop={30}
+      />
+    </CyDView>;
+  }
 };
 
 export const AnimatedPortfolioToken = (props: {

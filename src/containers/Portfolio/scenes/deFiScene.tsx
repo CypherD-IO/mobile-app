@@ -466,8 +466,8 @@ const DeFiScene = ({
           data={
             !_.isEmpty(deFiData.filteredData)
               ? Object.values(deFiData.filteredData.protocols).sort(
-                  sortDefiProtocolDesc,
-                )
+                sortDefiProtocolDesc,
+              )
               : []
           }
           renderItem={({ item, index }) => (
@@ -514,7 +514,7 @@ const DeFiScene = ({
             />
           }
           ListEmptyComponent={
-            <CyDView className='flex flex-col justify-center items-center'>
+            <CyDView className='flex flex-col justify-start items-center'>
               <EmptyView
                 text={t('NO_CURRENT_HOLDINGS')}
                 image={AppImages.EMPTY}
@@ -524,7 +524,9 @@ const DeFiScene = ({
           }
         />
       ) : (
-        <Loading />
+        <CyDView className='w-full absolute bottom-[100px]'>
+          <Loading />
+        </CyDView>
       )}
     </CyDView>
   );

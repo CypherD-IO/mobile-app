@@ -24,10 +24,11 @@ import {
 } from '../../../../core/asyncStorage';
 import { showToast } from '../../../utilities/toastUtility';
 import { ACTIVITIES_REFRESH_TIMEOUT } from '../../../../constants/timeOuts';
-import { CyDView } from '../../../../styles/tailwindStyles';
+import { CyDText, CyDView } from '../../../../styles/tailwindStyles';
 import CardCarousel from '../../../../components/v2/CardCarousel';
 import { SharedValue } from 'react-native-reanimated';
 import { PortfolioBannerHeights } from '../../../../hooks/useScrollManager';
+import { useTranslation } from 'react-i18next';
 
 const ARCH_HOST = hostWorker.getHost('ARCH_HOST');
 
@@ -39,10 +40,12 @@ interface BannerCarouselProps {
 const BannerCarousel = ({ setBannerHeight }: BannerCarouselProps) => {
   const { getWithAuth } = useAxios();
   const isFocused = useIsFocused();
+  const { t } = useTranslation();
 
   const activityContext = useContext(ActivityContext);
   const hdWallet = useContext(HdWalletContext);
 
+  const [loading, setLoading] = useState(false);
   const [dismissedActivityCards, setDismissedActivityCards] = useState<string[]>([]);
   const [dismissedStaticCards, setDismissedStaticCards] = useState<string[]>([]);
   const [dismissedStaticIDsReady, setDismissedStaticIDsReady] = useState(false);
@@ -98,15 +101,18 @@ const BannerCarousel = ({ setBannerHeight }: BannerCarouselProps) => {
     if (ethereumAddress) {
       const uri = `/v1/configuration/device/banner-info/${ethereumAddress}`;
       try {
+        setLoading(true);
         const res = await getWithAuth(uri);
         const {
           data: { data: arrayOfBanners },
         } = res;
+        setLoading(false);
         if (arrayOfBanners?.length) {
           return arrayOfBanners as BannerRecord[];
         }
         return [];
       } catch (e) {
+        setLoading(false);
         const errorObject = {
           e,
           message: 'Error occured during the new banner call.',
@@ -119,12 +125,12 @@ const BannerCarousel = ({ setBannerHeight }: BannerCarouselProps) => {
 
   // useEffect to update the height of the banner when the no. of cards change.
   useEffect(() => {
-    if (activityCards.length + staticCards.length) {
+    if ((activityCards.length + staticCards.length > 0) || loading) {
       setBannerHeight(300);
     } else {
       setBannerHeight(160);
     }
-  }, [activityCards.length, staticCards.length, setBannerHeight]);
+  }, [activityCards.length, staticCards.length, setBannerHeight, loading]);
 
   // useEffect to check for static cards
   useEffect(() => {
@@ -342,13 +348,21 @@ const BannerCarousel = ({ setBannerHeight }: BannerCarouselProps) => {
 
   const cards = makeCards();
 
-  return (
-    <CardCarousel
-      cardsData={cards}
-      moreThanOneCardOffset={1.1}
-      renderItem={renderItem}
-    />
-  );
+  if (loading) {
+    return <CyDView className='h-full w-full flex justify-start py-[50px] items-center'>
+      <CyDText className='text-[16px] font-bold'>
+        {t('LOADING_BANNERS')}
+      </CyDText>
+    </CyDView>;
+  } else {
+    return (
+      <CardCarousel
+        cardsData={cards}
+        moreThanOneCardOffset={1.1}
+        renderItem={renderItem}
+      />
+    );
+  }
 };
 
 export default memo(BannerCarousel);
