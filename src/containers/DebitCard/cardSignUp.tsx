@@ -25,7 +25,7 @@ import { countryMaster } from '../../../assets/datasets/countryMaster';
 import CyDDropDown from '../../components/v2/dropdown';
 import { Colors } from '../../constants/theme';
 
-export default function CardSignupScreen ({ navigation, route }) {
+export default function CardSignupScreen({ navigation, route }) {
   const ARCH_HOST: string = hostWorker.getHost('ARCH_HOST');
   const globalContext = useContext<any>(GlobalContext);
   const inviteCode = route?.params?.inviteCode;
@@ -204,7 +204,7 @@ export default function CardSignupScreen ({ navigation, route }) {
 
   const getCountryData = async () => {
     try {
-      const response = await axios.get('https://public.cypherd.io/js/countryMaster.js');
+      const response = await axios.get(`https://public.cypherd.io/js/countryMaster.js?${String(new Date().getDay())}`);
       if (response?.data) {
         setCopyCountriesWithFlagAndDialcodes(response.data);
         setOrigCountryList(response.data);
@@ -305,95 +305,95 @@ export default function CardSignupScreen ({ navigation, route }) {
 
   const GetToKnowTheUserBetter = () => {
     return (
-    <CyDScrollView>
-      <CyDView>
-        <CyDText className={'text-[30px] font-bold mx-[34px] mt-[26px] leading-[40px]'}>
-          {t<string>('CARD_SIGNUP_PAGE1_TITLE')}
-        </CyDText>
-      </CyDView>
-      <Formik
-        enableReinitialize={true}
-        initialValues={userBasicDetails}
-        validationSchema={userBasicDetailsValidationSchema}
-        onSubmit={(values) => proceedToNextScreen('USER_BASIC_DETAILS', values)}
-      >
-        {(formProps) => (
-          <><CyDTouchView disabled={true} className={'ml-[30px] mt-[20px] border-[1px] border-inputBorderColor rounded-[5px] w-[85%]'} onPress={() => setModalVisible(true)}>
-            <CyDView className={clsx('h-[50px] pl-[8px] pr-[12px] flex flex-row justify-between items-center', { 'border-redOffColor': formProps.touched.country && formProps.errors.country })}>
-              <CyDView className={'flex flex-row items-center'}>
-                <CyDText className={'text-center text-black font-nunito text-[18px] ml-[8px]'}>
-                  {formProps.values.country}
-                </CyDText>
-              </CyDView>
-            </CyDView>
-          </CyDTouchView>
-          {formProps.touched.country && formProps.errors.country && <CyDView className={'ml-[33px] mt-[6px] mb-[-11px]'}><CyDText className={'text-redOffColor font-semibold'}>{formProps.errors.country}</CyDText></CyDView>}
-          <CyDView className={'mt-[20px] flex flex-row justify-center'}>
-              <CyDTextInput className={clsx('ml-[4px] border-[1px] border-inputBorderColor rounded-[5px] p-[12px] text-[18px] w-[85%] font-nunito text-primaryTextColor', { 'border-redOffColor': formProps.touched.firstName && formProps.errors.firstName })}
-              value={formProps.values.firstName}
-              autoCapitalize="none"
-              key="firstName"
-              autoCorrect={false}
-              onChangeText={formProps.handleChange('firstName')}
-              placeholderTextColor={'#C5C5C5'}
-              placeholder='First name' />
-          </CyDView>
-          {formProps.touched.firstName && formProps.errors.firstName && <CyDView className={'ml-[33px] mt-[6px] mb-[-11px]'}><CyDText className={'text-redOffColor font-semibold'}>{formProps.errors.firstName}</CyDText></CyDView>}
-          <CyDView className={'mt-[20px] flex flex-row justify-center'}>
-                <CyDTextInput className={clsx('ml-[4px] border-[1px] border-inputBorderColor rounded-[5px] p-[12px] text-[18px] w-[85%] font-nunito text-primaryTextColor', { 'border-redOffColor': formProps.touched.lastName && formProps.errors.lastName })}
-              value={formProps.values.lastName}
-              autoCapitalize="none"
-              autoCorrect={false}
-              onChangeText={formProps.handleChange('lastName')}
-              placeholderTextColor={'#C5C5C5'}
-              placeholder='Last name' />
-          </CyDView>
-          {formProps.touched.lastName && formProps.errors.lastName && <CyDView className={'ml-[33px] mt-[6px] mb-[-11px]'}><CyDText className={'text-redOffColor font-semibold'}>{formProps.errors.lastName}</CyDText></CyDView>}
-          <CyDView className={'mt-[20px] flex flex-row justify-center'}>
-                <CyDTextInput className={clsx('ml-[4px] border-[1px] border-inputBorderColor rounded-[5px] p-[12px] text-[18px] w-[85%] font-nunito text-primaryTextColor', { 'border-redOffColor': formProps.touched.email && formProps.errors.email })}
-              value={formProps.values.email}
-              key="email"
-              textContentType='emailAddress'
-              keyboardType='email-address'
-              autoCapitalize="none"
-              autoCorrect={false}
-              onChangeText={formProps.handleChange('email')}
-              placeholderTextColor={'#C5C5C5'}
-              placeholder='Email' />
-          </CyDView>
-         {formProps.touched.email && formProps.errors.email && <CyDView className={'ml-[33px] mt-[6px] mb-[-11px]'}><CyDText className={'text-redOffColor font-semibold'}>{formProps.errors.email}</CyDText></CyDView>}
-            <CyDView className={clsx('h-[50px] ml-[30px] mt-[20px] border-[1px] border-inputBorderColor rounded-[5px] w-[85%] flex flex-row', { 'border-redOffColor': formProps.touched.phoneNumber && formProps.errors.phoneNumber })}>
-              <CyDTouchView onPress={() => onDialCodeModalOpen(formProps.values)} className={ 'w-4/12 border-r-[1px] border-[#EBEBEB] bg-white py-[13px] rounded-l-[16px] flex items-center'}>
-              <CyDView className={'mt-[-4px] ml-[-55px]'}>
-                  <CyDText className={'text-[33px] mt-[-6px]'}>{formProps.values.flag}</CyDText>
-              </CyDView>
-              <CyDView className={'mt-[-20px] ml-[45px]'}>
-                  <CyDText className={'text-[13px] font-extrabold text-center'}>{formProps.values.dialCode}</CyDText>
+      <CyDScrollView>
+        <CyDView>
+          <CyDText className={'text-[30px] font-bold mx-[34px] mt-[26px] leading-[40px]'}>
+            {t<string>('CARD_SIGNUP_PAGE1_TITLE')}
+          </CyDText>
+        </CyDView>
+        <Formik
+          enableReinitialize={true}
+          initialValues={userBasicDetails}
+          validationSchema={userBasicDetailsValidationSchema}
+          onSubmit={(values) => proceedToNextScreen('USER_BASIC_DETAILS', values)}
+        >
+          {(formProps) => (
+            <><CyDTouchView disabled={true} className={'ml-[30px] mt-[20px] border-[1px] border-inputBorderColor rounded-[5px] w-[85%]'} onPress={() => setModalVisible(true)}>
+              <CyDView className={clsx('h-[50px] pl-[8px] pr-[12px] flex flex-row justify-between items-center', { 'border-redOffColor': formProps.touched.country && formProps.errors.country })}>
+                <CyDView className={'flex flex-row items-center'}>
+                  <CyDText className={'text-center text-black font-nunito text-[18px] ml-[8px]'}>
+                    {formProps.values.country}
+                  </CyDText>
+                </CyDView>
               </CyDView>
             </CyDTouchView>
-            <CyDView className={ 'flex flex-row items-center w-8/12' }>
-              <CyDView className={'flex flex-row items-center'}>
-                    <CyDTextInput className={clsx('text-black font-nunito text-[16px] ml-[8px] w-[100%]', { 'mt-[-8px]': isAndroid() }) }
-                    value={formProps.values.phoneNumber}
-                    autoCapitalize="none"
-                    keyboardType={'numeric'}
-                    maxLength={15}
-                    key="phoneNumber"
-                    autoCorrect={false}
-                    placeholderTextColor={'#C5C5C5'}
-                    onChangeText={formProps.handleChange('phoneNumber')}
-                    placeholder='Phone Number' />
+              {formProps.touched.country && formProps.errors.country && <CyDView className={'ml-[33px] mt-[6px] mb-[-11px]'}><CyDText className={'text-redOffColor font-semibold'}>{formProps.errors.country}</CyDText></CyDView>}
+              <CyDView className={'mt-[20px] flex flex-row justify-center'}>
+                <CyDTextInput className={clsx('ml-[4px] border-[1px] border-inputBorderColor rounded-[5px] p-[12px] text-[18px] w-[85%] font-nunito text-primaryTextColor', { 'border-redOffColor': formProps.touched.firstName && formProps.errors.firstName })}
+                  value={formProps.values.firstName}
+                  autoCapitalize="none"
+                  key="firstName"
+                  autoCorrect={false}
+                  onChangeText={formProps.handleChange('firstName')}
+                  placeholderTextColor={'#C5C5C5'}
+                  placeholder='First name' />
               </CyDView>
-            </CyDView>
-          </CyDView>
-            {formProps.touched.phoneNumber && formProps.errors.phoneNumber && <CyDView className={'ml-[33px] mt-[6px] mb-[-11px]'}><CyDText className={'text-redOffColor font-semibold'}>{formProps.errors.phoneNumber}</CyDText></CyDView>}
-          <CyDTouchView onPress={() => formProps.handleSubmit()}
-              className={'bg-appColor py-[20px] flex flex-row justify-center items-center rounded-[12px] justify-around w-[86%] mx-auto mt-[25px]'}>
-              <CyDText className={'text-center font-semibold'}>{t<string>('NEXT')}</CyDText>
-            </CyDTouchView></>
-        )}
-      </Formik>
-    </CyDScrollView>);
+              {formProps.touched.firstName && formProps.errors.firstName && <CyDView className={'ml-[33px] mt-[6px] mb-[-11px]'}><CyDText className={'text-redOffColor font-semibold'}>{formProps.errors.firstName}</CyDText></CyDView>}
+              <CyDView className={'mt-[20px] flex flex-row justify-center'}>
+                <CyDTextInput className={clsx('ml-[4px] border-[1px] border-inputBorderColor rounded-[5px] p-[12px] text-[18px] w-[85%] font-nunito text-primaryTextColor', { 'border-redOffColor': formProps.touched.lastName && formProps.errors.lastName })}
+                  value={formProps.values.lastName}
+                  autoCapitalize="none"
+                  autoCorrect={false}
+                  onChangeText={formProps.handleChange('lastName')}
+                  placeholderTextColor={'#C5C5C5'}
+                  placeholder='Last name' />
+              </CyDView>
+              {formProps.touched.lastName && formProps.errors.lastName && <CyDView className={'ml-[33px] mt-[6px] mb-[-11px]'}><CyDText className={'text-redOffColor font-semibold'}>{formProps.errors.lastName}</CyDText></CyDView>}
+              <CyDView className={'mt-[20px] flex flex-row justify-center'}>
+                <CyDTextInput className={clsx('ml-[4px] border-[1px] border-inputBorderColor rounded-[5px] p-[12px] text-[18px] w-[85%] font-nunito text-primaryTextColor', { 'border-redOffColor': formProps.touched.email && formProps.errors.email })}
+                  value={formProps.values.email}
+                  key="email"
+                  textContentType='emailAddress'
+                  keyboardType='email-address'
+                  autoCapitalize="none"
+                  autoCorrect={false}
+                  onChangeText={formProps.handleChange('email')}
+                  placeholderTextColor={'#C5C5C5'}
+                  placeholder='Email' />
+              </CyDView>
+              {formProps.touched.email && formProps.errors.email && <CyDView className={'ml-[33px] mt-[6px] mb-[-11px]'}><CyDText className={'text-redOffColor font-semibold'}>{formProps.errors.email}</CyDText></CyDView>}
+              <CyDView className={clsx('h-[50px] ml-[30px] mt-[20px] border-[1px] border-inputBorderColor rounded-[5px] w-[85%] flex flex-row', { 'border-redOffColor': formProps.touched.phoneNumber && formProps.errors.phoneNumber })}>
+                <CyDTouchView onPress={() => onDialCodeModalOpen(formProps.values)} className={'w-4/12 border-r-[1px] border-[#EBEBEB] bg-white py-[13px] rounded-l-[16px] flex items-center'}>
+                  <CyDView className={'mt-[-4px] ml-[-55px]'}>
+                    <CyDText className={'text-[33px] mt-[-6px]'}>{formProps.values.flag}</CyDText>
+                  </CyDView>
+                  <CyDView className={'mt-[-20px] ml-[45px]'}>
+                    <CyDText className={'text-[13px] font-extrabold text-center'}>{formProps.values.dialCode}</CyDText>
+                  </CyDView>
+                </CyDTouchView>
+                <CyDView className={'flex flex-row items-center w-8/12'}>
+                  <CyDView className={'flex flex-row items-center'}>
+                    <CyDTextInput className={clsx('text-black font-nunito text-[16px] ml-[8px] w-[100%]', { 'mt-[-8px]': isAndroid() })}
+                      value={formProps.values.phoneNumber}
+                      autoCapitalize="none"
+                      keyboardType={'numeric'}
+                      maxLength={15}
+                      key="phoneNumber"
+                      autoCorrect={false}
+                      placeholderTextColor={'#C5C5C5'}
+                      onChangeText={formProps.handleChange('phoneNumber')}
+                      placeholder='Phone Number' />
+                  </CyDView>
+                </CyDView>
+              </CyDView>
+              {formProps.touched.phoneNumber && formProps.errors.phoneNumber && <CyDView className={'ml-[33px] mt-[6px] mb-[-11px]'}><CyDText className={'text-redOffColor font-semibold'}>{formProps.errors.phoneNumber}</CyDText></CyDView>}
+              <CyDTouchView onPress={() => formProps.handleSubmit()}
+                className={'bg-appColor py-[20px] flex flex-row justify-center items-center rounded-[12px] justify-around w-[86%] mx-auto mt-[25px]'}>
+                <CyDText className={'text-center font-semibold'}>{t<string>('NEXT')}</CyDText>
+              </CyDTouchView></>
+          )}
+        </Formik>
+      </CyDScrollView>);
   };
 
   const UserBillingAddress = () => {
@@ -524,7 +524,7 @@ export default function CardSignupScreen ({ navigation, route }) {
               <CyDTextInput className={clsx('ml-[4px] border-[1px] border-inputBorderColor rounded-[5px] p-[12px] text-[18px] w-[85%] font-nunito text-primaryTextColor', { 'border-redOffColor': formProps.touched.idNumber && formProps.errors.idNumber })}
                 value={formProps.values.idNumber}
                 autoCapitalize="none"
-                keyboardType={ userBasicDetails.country === 'United States' ? 'numeric' : 'default' }
+                keyboardType={userBasicDetails.country === 'United States' ? 'numeric' : 'default'}
                 autoCorrect={false}
                 placeholderTextColor={'#C5C5C5'}
                 onChangeText={formProps.handleChange('idNumber')}
@@ -562,8 +562,8 @@ export default function CardSignupScreen ({ navigation, route }) {
   ];
 
   return (
-      <CyDSafeAreaView className={'h-full bg-white'}>
-        <CyDModalLayout
+    <CyDSafeAreaView className={'h-full bg-white'}>
+      <CyDModalLayout
         setModalVisible={setModalVisible}
         isModalVisible={isModalVisible}
         style={styles.modalLayout}
@@ -571,47 +571,47 @@ export default function CardSignupScreen ({ navigation, route }) {
         animationOut={'slideOutDown'}
       >
         {isCountriesDataLoading
-          ? <Loading/>
+          ? <Loading />
           : <CyDKeyboardAvoidingView behavior={isAndroid() ? 'height' : 'padding'} className='flex flex-col justify-end h-full'>
-          <CyDView className={'bg-white h-[50%] rounded-t-[20px]'}>
-            <CyDView className={'flex flex-row mt-[20px] justify-center items-center'}>
-              <CyDTextInput className={'border-[1px] border-inputBorderColor rounded-[50px] p-[10px] text-[14px] w-[80%] font-nunito text-primaryTextColor'}
-                value={countryFilterText}
-                autoCapitalize="none"
-                autoCorrect={false}
-                onChangeText={(text) => setCountryFilter(text)}
-                placeholderTextColor={Colors.subTextColor}
-                placeholder='Search Country' />
-              <CyDTouchView onPress={() => { setModalVisible(false); }} className={'ml-[18px]'}>
-                <CyDImage source={AppImages.CLOSE} className={' w-[22px] h-[22px] z-[50] right-[0px] '} />
-              </CyDTouchView>
-            </CyDView>
-            <CyDScrollView className={'mt-[12px]'}>
-              <CyDView className='mb-[100px]'>
-                {origCountriesWithFlagAndDialcodes.map((country) => {
-                  return (
-                    <CyDTouchView onPress={() => {
-                      setUserBasicDetails({
-                        ...userBasicDetails,
-                        dialCode: country.dial_code,
-                        flag: country.unicode_flag
-                      });
-                      setModalVisible(false);
-                    }} className={clsx('flex flex-row items-center justify-between px-[16px] py-[6px] mx-[12px] rounded-[26px]', { 'bg-paleBlue': country.name === selectedCountry.name })} key={country.name}>
-                      <CyDView className={'flex flex-row items-center'}>
-                        <CyDText className={'text-[36px]'}>{country.unicode_flag}</CyDText>
-                        <CyDText className={'ml-[10px] font-semibold text-[16px]'}>{country.name}</CyDText>
-                      </CyDView>
-                      <CyDView className={'flex flex-row justify-end'}>
-                        <CyDText className={'text-[14px] font-extrabold text-subTextColor'}>{country.dial_code}</CyDText>
-                      </CyDView>
-                    </CyDTouchView>
-                  );
-                })}
+            <CyDView className={'bg-white h-[50%] rounded-t-[20px]'}>
+              <CyDView className={'flex flex-row mt-[20px] justify-center items-center'}>
+                <CyDTextInput className={'border-[1px] border-inputBorderColor rounded-[50px] p-[10px] text-[14px] w-[80%] font-nunito text-primaryTextColor'}
+                  value={countryFilterText}
+                  autoCapitalize="none"
+                  autoCorrect={false}
+                  onChangeText={(text) => setCountryFilter(text)}
+                  placeholderTextColor={Colors.subTextColor}
+                  placeholder='Search Country' />
+                <CyDTouchView onPress={() => { setModalVisible(false); }} className={'ml-[18px]'}>
+                  <CyDImage source={AppImages.CLOSE} className={' w-[22px] h-[22px] z-[50] right-[0px] '} />
+                </CyDTouchView>
               </CyDView>
-            </CyDScrollView>
-          </CyDView>
-        </CyDKeyboardAvoidingView>}
+              <CyDScrollView className={'mt-[12px]'}>
+                <CyDView className='mb-[100px]'>
+                  {origCountriesWithFlagAndDialcodes.map((country) => {
+                    return (
+                      <CyDTouchView onPress={() => {
+                        setUserBasicDetails({
+                          ...userBasicDetails,
+                          dialCode: country.dial_code,
+                          flag: country.unicode_flag
+                        });
+                        setModalVisible(false);
+                      }} className={clsx('flex flex-row items-center justify-between px-[16px] py-[6px] mx-[12px] rounded-[26px]', { 'bg-paleBlue': country.name === selectedCountry.name })} key={country.name}>
+                        <CyDView className={'flex flex-row items-center'}>
+                          <CyDText className={'text-[36px]'}>{country.unicode_flag}</CyDText>
+                          <CyDText className={'ml-[10px] font-semibold text-[16px]'}>{country.name}</CyDText>
+                        </CyDView>
+                        <CyDView className={'flex flex-row justify-end'}>
+                          <CyDText className={'text-[14px] font-extrabold text-subTextColor'}>{country.dial_code}</CyDText>
+                        </CyDView>
+                      </CyDTouchView>
+                    );
+                  })}
+                </CyDView>
+              </CyDScrollView>
+            </CyDView>
+          </CyDKeyboardAvoidingView>}
       </CyDModalLayout>
       <CyDModalLayout
         setModalVisible={setSSNModalVisible}
@@ -676,7 +676,7 @@ export default function CardSignupScreen ({ navigation, route }) {
                   placeholder='Phone Number' />
               </CyDView>
             </CyDView>
-        </CyDView>
+          </CyDView>
           <CyDTouchView onPress={() => updatePhoneNumber()}
             className={'bg-appColor py-[20px] flex flex-row justify-center items-center rounded-[12px] justify-around w-[86%] mx-auto mt-[25px]'}>
             <CyDText className={'text-[16px] text-center font-bold'}>{t<string>('UPDATE_INIT_CAPS')}</CyDText>
@@ -716,26 +716,26 @@ export default function CardSignupScreen ({ navigation, route }) {
         </CyDView>
       </CyDModalLayout>
 
-      { loading
+      {loading
         ? <Loading />
         : <><CyDView className={'flex flex-row items-center justify-center mt-[20px] h-[20px]'}>
-        {<CyDTouchView onPress={() => { screenIndex === 0 ? navigation.goBack() : goToPreviousScreen(); } }>
-          <CyDImage source={AppImages.LEFT_ARROW} />
-        </CyDTouchView>}
-        <CyDView className={'flex flex-row justify-center'}>
-          {screens.map((screen, index) => {
-            return (
-              <CyDView key={index} className={clsx('h-[3px] ml-[6px] w-[20%]', { 'bg-paleGrey': index !== screenIndex, 'bg-appColor': index === screenIndex })}></CyDView>
-            );
-          })}
+          {<CyDTouchView onPress={() => { screenIndex === 0 ? navigation.goBack() : goToPreviousScreen(); }}>
+            <CyDImage source={AppImages.LEFT_ARROW} />
+          </CyDTouchView>}
+          <CyDView className={'flex flex-row justify-center'}>
+            {screens.map((screen, index) => {
+              return (
+                <CyDView key={index} className={clsx('h-[3px] ml-[6px] w-[20%]', { 'bg-paleGrey': index !== screenIndex, 'bg-appColor': index === screenIndex })} />
+              );
+            })}
+          </CyDView>
         </CyDView>
-      </CyDView>
-        <CyDKeyboardAvoidingView behavior={isAndroid() ? 'height' : 'padding'} enabled className={'h-full flex grow-1'}>
+          <CyDKeyboardAvoidingView behavior={isAndroid() ? 'height' : 'padding'} enabled className={'h-full flex grow-1'}>
             <CyDScrollView className='mb-[45px]'>
-                {screens[screenIndex].component}
+              {screens[screenIndex].component}
             </CyDScrollView>
-        </CyDKeyboardAvoidingView></>}
-      </CyDSafeAreaView>
+          </CyDKeyboardAvoidingView></>}
+    </CyDSafeAreaView>
   );
 }
 

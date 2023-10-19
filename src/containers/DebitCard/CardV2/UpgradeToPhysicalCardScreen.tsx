@@ -85,7 +85,7 @@ const UpgradeToPhysicalCardScreen = ({ navigation, route }: Props) => {
     const getStateMaster = async () => {
         try {
             setLoading(true);
-            const response = await axios.get('https://public.cypherd.io/js/stateMaster.js');
+            const response = await axios.get(`https://public.cypherd.io/js/stateMaster.js?${String(new Date().getDay())}`);
             if (response?.data) {
                 const stateData = response.data;
                 setStateMasterData(stateData);
