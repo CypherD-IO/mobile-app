@@ -204,7 +204,7 @@ export default function CardSignupScreen({ navigation, route }) {
 
   const getCountryData = async () => {
     try {
-      const response = await axios.get(`https://public.cypherd.io/js/countryMaster.js?${String(new Date().getDay())}`);
+      const response = await axios.get(`https://public.cypherd.io/js/countryMaster.js?${String(new Date())}`);
       if (response?.data) {
         setCopyCountriesWithFlagAndDialcodes(response.data);
         setOrigCountryList(response.data);
