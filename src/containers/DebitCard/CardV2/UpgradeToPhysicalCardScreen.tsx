@@ -17,7 +17,7 @@ import Loading from "../../../components/v2/loading";
 import { screenTitle } from "../../../constants";
 
 const ShippingDetailsValidationSchema = yup.object().shape({
-    phoneNumber: yup.string(),
+    phoneNumber: yup.string().required('Phone number is required'),
     line1: yup.string().required('Address line 1 is required'),
     line2: yup.string(),
     city: yup.string().required('City is required'),
@@ -77,6 +77,10 @@ const UpgradeToPhysicalCardScreen = ({ navigation, route }: Props) => {
     useEffect(() => {
         void getStateMaster();
     }, []);
+
+    useEffect(() => {
+        setSelectedCountryForDialCode(selectedCountry);
+    }, [selectedCountry]);
 
     useEffect(() => {
         setSelectedState(selectedCountryStates[0]);
@@ -184,7 +188,10 @@ const UpgradeToPhysicalCardScreen = ({ navigation, route }: Props) => {
                                     </CyDView>
                                     <CyDFastImage className='h-[12px] w-[12px]' source={AppImages.DOWN_ARROW} resizeMode='contain' />
                                 </CyDTouchView>
-                                <CyDText className='font-bold mx-[20px] mt-[20px]'>{t('PHONE_NUMBER_INIT_CAPS')}</CyDText>
+                                <CyDView className="mx-[20px] mt-[20px] flex flex-row items-center">
+                                    <CyDText className='font-bold pr-[4px]'>{t('PHONE_NUMBER_INIT_CAPS')}</CyDText>
+                                    <CyDText className='font-medium pl-[4px] text-[12px] text-redCyD'>{errors.phoneNumber ?? ''}</CyDText>
+                                </CyDView>
                                 <CyDView
                                     className={
                                         'bg-white h-[50px] border border-inputBorderColor py-[5px] px-[10px] mx-[20px] rounded-[8px] flex flex-row justify-between items-center'
@@ -212,6 +219,7 @@ const UpgradeToPhysicalCardScreen = ({ navigation, route }: Props) => {
                                         <CyDTextInput
                                             className="h-full w-[80%] text-[16px] border-l px-[20px] border-inputBorderColor"
                                             inputMode='tel'
+                                            placeholderTextColor={'#ccc'}
                                             onChangeText={handleChange('phoneNumber')}
                                             onBlur={handleBlur('phoneNumber')}
                                             value={values.phoneNumber}
@@ -235,6 +243,7 @@ const UpgradeToPhysicalCardScreen = ({ navigation, route }: Props) => {
                                             className="h-full w-[100%] text-[16px]"
                                             inputMode='text'
                                             placeholder="Line #1"
+                                            placeholderTextColor={'#ccc'}
                                             onChangeText={handleChange('line1')}
                                             onBlur={handleBlur('line1')}
                                             value={values.line1}
@@ -255,6 +264,7 @@ const UpgradeToPhysicalCardScreen = ({ navigation, route }: Props) => {
                                             className="h-full w-[100%] text-[16px]"
                                             inputMode='text'
                                             placeholder="Line #2"
+                                            placeholderTextColor={'#ccc'}
                                             onChangeText={handleChange('line2')}
                                             onBlur={handleBlur('line2')}
                                             value={values.line2}
@@ -278,6 +288,7 @@ const UpgradeToPhysicalCardScreen = ({ navigation, route }: Props) => {
                                             className="h-full w-[100%] text-[16px]"
                                             inputMode='text'
                                             placeholder="City"
+                                            placeholderTextColor={'#ccc'}
                                             onChangeText={handleChange('city')}
                                             onBlur={handleBlur('city')}
                                             value={values.city}
@@ -326,6 +337,7 @@ const UpgradeToPhysicalCardScreen = ({ navigation, route }: Props) => {
                                             className="h-full w-[100%] text-[16px]"
                                             inputMode='text'
                                             placeholder="000000"
+                                            placeholderTextColor={'#ccc'}
                                             onChangeText={handleChange('postalCode')}
                                             onBlur={handleBlur('postalCode')}
                                             value={values.postalCode}
