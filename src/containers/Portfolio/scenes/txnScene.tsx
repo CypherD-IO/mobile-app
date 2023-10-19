@@ -183,9 +183,9 @@ const TxnScene = ({
 
 
 
-  const fetchTxn = async (forceRefresh=false) => {
+  const fetchTxn = async (forceRefresh = false) => {
     try {
-      const txnURL = forceRefresh? `${getTransactionsUrl}?forceRefresh=true`:getTransactionsUrl;
+      const txnURL = forceRefresh ? `${getTransactionsUrl}?forceRefresh=true` : getTransactionsUrl;
       const response = await axios.get(txnURL);
       setTransactions(response.data.transactions);
     } catch (error) {
@@ -353,7 +353,9 @@ const TxnScene = ({
   }
 
   if (isLoading) {
-    return <Loading />;
+    return <CyDView className='w-full absolute bottom-[100px]'>
+      <Loading />
+    </CyDView>;
   } else {
     return (
       <CyDView className="bg-white flex-1">
@@ -408,7 +410,7 @@ const NoTxnsFound = () => {
   const { t } = useTranslation();
   return (
     <CyDView className='flex-1 items-center justify-center'>
-      <CyDView className='h-full flex flex-col items-center justify-center'>
+      <CyDView className='h-full flex flex-col items-center justify-start'>
         <CyDFastImage className='h-[100px] w-[100px]' source={AppImages.NO_TRANSACTIONS} resizeMode='contain' />
         <CyDText className='mt-2 text-primaryTextColor'>{t('EMPTY_TRANSCATION_DETAIL_MSG')}</CyDText>
       </CyDView>

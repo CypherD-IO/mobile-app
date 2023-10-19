@@ -13,7 +13,7 @@ export type PortfolioBannerHeights = 160 | 300
 export const useScrollManager = (
   routes: Array<{ key: string; title: string; scrollableType: ScrollableType }>
 ) => {
-  const [bannerHeight, setBannerHeight] = useState<PortfolioBannerHeights>(160);
+  const [bannerHeight, setBannerHeight] = useState<PortfolioBannerHeights>(300);
   const OFFSET_TABVIEW = isIOS() ? -bannerHeight : 0;
   const scrollY = useSharedValue(-bannerHeight);
   const [index, setIndex] = useState(0);
