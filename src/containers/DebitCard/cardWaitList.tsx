@@ -284,6 +284,29 @@ export default function CardWailtList({ navigation }) {
                 }
               >
                 <CyDView>
+                  <CyDTouchView
+                    className={
+                      'mt-[5px] mb-[5px] border-[1px] border-inputBorderColor py-[12px] px-[10px] rounded-[8px] flex w-[100%]'
+                    }
+                    onPress={() => setModalVisible(true)}
+                  >
+                    <CyDView
+                      className={clsx(
+                        'flex flex-row justify-between items-center',
+                        { 'border-redOffColor': !selectedCountry }
+                      )}
+                    >
+                      <CyDView className={'flex flex-row items-center'}>
+                        <CyDText className='text-center text-[18px] ml-[8px]'>
+                          {selectedCountry.flag}
+                        </CyDText>
+                        <CyDText className='text-center text-[18px] ml-[8px]'>
+                          {selectedCountry.name}
+                        </CyDText>
+                      </CyDView>
+                      <CyDImage source={AppImages.DOWN_ARROW} />
+                    </CyDView>
+                  </CyDTouchView>
                   <CyDTextInput
                     value={userEmail}
                     textContentType='emailAddress'
