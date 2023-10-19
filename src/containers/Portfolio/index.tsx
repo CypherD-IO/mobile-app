@@ -18,7 +18,7 @@ import {
   CyDView,
   CyDSafeAreaView,
 } from '../../styles/tailwindStyles';
-import { Chain, ChainBackendNames, NotificationEvents } from '../../constants/server';
+import { CHAIN_COLLECTION, Chain, ChainBackendNames, NotificationEvents } from '../../constants/server';
 import CopytoKeyModal from '../../components/ShowPharseModal';
 import {
   ChainHoldings,
@@ -73,6 +73,7 @@ import FilterBar from './components/FilterBar';
 import BannerCarousel from './components/BannerCarousel';
 import { DeFiFilterRefreshBar } from '../../components/deFiRefreshFilterBar';
 import { DeFiFilter, protocolOptionType } from '../../models/defi.interface';
+import { isEmpty } from 'lodash';
 
 export interface PortfolioProps {
   navigation: any;
@@ -95,7 +96,8 @@ export default function Portfolio({ navigation }: PortfolioProps) {
     shouldRefreshAssets: false,
   });
   const [filterModalVisible, setFilterModalVisible] = useState(false);
-  const [deFiRefreshActivity, setDeFiRefreshActivity] = useState<{isRefreshing: boolean; lastRefresh: string}>({isRefreshing: false,lastRefresh:"Retrieving..."});
+  const [holdingsEmpty, setHoldingsEmpty] = useState(true);
+  const [deFiRefreshActivity, setDeFiRefreshActivity] = useState<{ isRefreshing: boolean; lastRefresh: string }>({ isRefreshing: false, lastRefresh: "Retrieving..." });
   const [deFiFilters, setDeFiFilters] = useState<DeFiFilter>({
     chain: ChainBackendNames.ALL,
     positionTypes: [],
@@ -129,6 +131,7 @@ export default function Portfolio({ navigation }: PortfolioProps) {
 
   const jwtToken = globalStateContext?.globalState.token;
   const ethereum = hdWallet?.state.wallet.ethereum;
+  const windowWidth = useWindowDimensions().width;
 
   const handleBackButton = () => {
     navigation.popToTop();
@@ -161,6 +164,16 @@ export default function Portfolio({ navigation }: PortfolioProps) {
       BackHandler.removeEventListener('hardwareBackPress', handleBackButton);
     };
   }, []);
+
+  useEffect(() => {
+    const data = getCurrentChainHoldings(
+      portfolioState.statePortfolio.tokenPortfolio,
+      CHAIN_COLLECTION
+    );
+    if (!isEmpty(data)) {
+      setHoldingsEmpty(false);
+    }
+  }, [portfolioState.statePortfolio.tokenPortfolio]);
 
   useEffect(() => {
     if (isFocused) {
@@ -234,12 +247,12 @@ export default function Portfolio({ navigation }: PortfolioProps) {
     }
   }, [isFocused]);
 
-  useEffect(()=>{
-    if(portfolioState){
-    const selectedChain = portfolioState?.statePortfolio.selectedChain.backendName;
-    if(deFiFilters.chain !== selectedChain) setDeFiFilters(prev =>({...prev, chain: selectedChain}));
-  }
-  },[portfolioState.statePortfolio.selectedChain.symbol]);
+  useEffect(() => {
+    if (portfolioState) {
+      const selectedChain = portfolioState?.statePortfolio.selectedChain.backendName;
+      if (deFiFilters.chain !== selectedChain) setDeFiFilters(prev => ({ ...prev, chain: selectedChain }));
+    }
+  }, [portfolioState.statePortfolio.selectedChain.symbol]);
   const constructTokenMeta = (localPortfolio: any, event: string) => {
     switch (event) {
       case NotificationEvents.EVMOS_STAKING: {
@@ -601,8 +614,8 @@ export default function Portfolio({ navigation }: PortfolioProps) {
                 bannerHeight={bannerHeight}
                 setRefreshActivity={setDeFiRefreshActivity}
                 refreshActivity={deFiRefreshActivity}
-                filters={deFiFilters} 
-                setFilters={setDeFiFilters} 
+                filters={deFiFilters}
+                setFilters={setDeFiFilters}
                 userProtocols={userProtocols}
                 setUserProtocols={setUserProtocls}
                 filterVisible={deFiFilterVisible}
@@ -653,7 +666,6 @@ export default function Portfolio({ navigation }: PortfolioProps) {
     [getRefForKey, isVerifyCoinChecked, scrollY]
   );
 
-  
   const renderTabBarFooter = useCallback(
     (tabKey: string) => {
       switch (tabKey) {
@@ -669,12 +681,12 @@ export default function Portfolio({ navigation }: PortfolioProps) {
           );
         case 'defi':
           return (
-            <DeFiFilterRefreshBar 
-              isRefreshing={deFiRefreshActivity.isRefreshing}  
-              lastRefreshed={deFiRefreshActivity.lastRefresh} 
-              filters={deFiFilters} 
-              setFilters={setDeFiFilters} 
-              isFilterVisible={deFiFilterVisible} 
+            <DeFiFilterRefreshBar
+              isRefreshing={deFiRefreshActivity.isRefreshing}
+              lastRefreshed={deFiRefreshActivity.lastRefresh}
+              filters={deFiFilters}
+              setFilters={setDeFiFilters}
+              isFilterVisible={deFiFilterVisible}
               setFilterVisible={setDeFiFilterVisible}
               userProtocols={userProtocols}
               isLoading={deFiLoading}
@@ -726,55 +738,59 @@ export default function Portfolio({ navigation }: PortfolioProps) {
           />
         </CyDView>
       )}
-      <ChooseChainModal
-        isModalVisible={chooseChain}
-        onPress={() => {
-          setChooseChain(false);
-        }}
-        where={WHERE_PORTFOLIO}
-      />
-      <CopytoKeyModal
-        isModalVisible={copyToClipBoard}
-        onClipClick={() => setCopyToClipBoard(false)}
-        onPress={() => setCopyToClipBoard(false)}
-      />
-      <HeaderBar
-        navigation={navigation}
-        renderTitleComponent={
-          <CyDTokenValue className='text-[24px] font-extrabold text-primaryTextColor'>
-            {checkAll(portfolioState)}
-          </CyDTokenValue>
-        }
-        setChooseChain={setChooseChain}
-        scrollY={scrollY}
-        bannerHeight={bannerHeight}
-        onWCSuccess={onWCSuccess}
-      />
-      <AnimatedBanner
-        scrollY={scrollY}
-        bannerHeight={bannerHeight}>
-        <Banner bannerHeight={bannerHeight} checkAllBalance={checkAll(portfolioState)} />
-        {
-          jwtToken !== undefined ?
-            <BannerCarousel setBannerHeight={setBannerHeight} />
-            : null
-        }
-      </AnimatedBanner>
-
-      <CyDView className={clsx('flex-1 pb-[40px]', { 'pb-[75px]': !isIOS() })}>
-        <PortfolioTabView
-          index={index}
-          setIndex={setIndex}
-          routes={tabs}
-          width={useWindowDimensions().width}
-          renderTabBar={(p) => (
-            <AnimatedTabBar bannerHeight={bannerHeight} scrollY={scrollY}>
-              <TabBar {...p} />
-            </AnimatedTabBar>
-          )}
-          renderScene={renderScene}
-        />
-      </CyDView>
+      {
+        !holdingsEmpty ? <>
+          <ChooseChainModal
+            isModalVisible={chooseChain}
+            onPress={() => {
+              setChooseChain(false);
+            }}
+            where={WHERE_PORTFOLIO}
+          />
+          <CopytoKeyModal
+            isModalVisible={copyToClipBoard}
+            onClipClick={() => setCopyToClipBoard(false)}
+            onPress={() => setCopyToClipBoard(false)}
+          />
+          <HeaderBar
+            navigation={navigation}
+            renderTitleComponent={
+              <CyDTokenValue className='text-[24px] font-extrabold text-primaryTextColor'>
+                {checkAll(portfolioState)}
+              </CyDTokenValue>
+            }
+            setChooseChain={setChooseChain}
+            scrollY={scrollY}
+            bannerHeight={bannerHeight}
+            onWCSuccess={onWCSuccess}
+          />
+          <AnimatedBanner
+            scrollY={scrollY}
+            bannerHeight={bannerHeight}>
+            <Banner bannerHeight={bannerHeight} checkAllBalance={checkAll(portfolioState)} />
+            {
+              jwtToken !== undefined ?
+                <BannerCarousel setBannerHeight={setBannerHeight} />
+                : null
+            }
+          </AnimatedBanner>
+          <CyDView className={clsx('flex-1 pb-[40px]', { 'pb-[75px]': !isIOS() })}>
+            <PortfolioTabView
+              index={index}
+              setIndex={setIndex}
+              routes={tabs}
+              width={windowWidth}
+              renderTabBar={(p) => (
+                <AnimatedTabBar bannerHeight={bannerHeight} scrollY={scrollY}>
+                  <TabBar {...p} />
+                </AnimatedTabBar>
+              )}
+              renderScene={renderScene}
+            />
+          </CyDView>
+        </>
+          : null
+      }
     </CyDSafeAreaView>
   );
 }
