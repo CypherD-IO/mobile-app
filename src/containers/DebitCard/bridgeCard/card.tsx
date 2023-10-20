@@ -19,7 +19,6 @@ import axios from '../../../core/Http';
 import {
   CyDAnimatedView,
   CyDFastImage,
-  CyDImageBackground,
   CyDText,
   CyDTouchView,
   CyDView,
@@ -67,7 +66,12 @@ export default function CardScreen({
     isFetchingCardDetails: false,
   });
   const { showModal, hideModal } = useGlobalModalContext();
-  const [currentCardIndex, setCurrentCardIndex] = useState<number>(0);
+  const [currentCardIndex, setCurrentCardIndex] = useState<number>(upgradeToPhysicalAvailable ? 1 : 0);
+  const setUpgradeCorrectedCardIndex = (index: number) => {
+    // is upgradeToPhysicalAvailable is true, the prompting card will be at index -1.
+    const newIndex = upgradeToPhysicalAvailable ? index - 1 : index;
+    setCurrentCardIndex(newIndex);
+  };
   const { postWithAuth } = useAxios();
   const currentTimestamp = String(new Date().getDay());
 
@@ -620,9 +624,6 @@ export default function CardScreen({
     );
   };
 
-  const onCardChange = (index: number) => {
-    setCurrentCardIndex(index);
-  };
 
   const cardsWithUpgrade = useMemo(() => {
     const actualCards = userCardDetails.cards.map(card => card);
@@ -637,14 +638,14 @@ export default function CardScreen({
       });
     }
     return actualCards;
-  }, [upgradeToPhysicalAvailable, userCardDetails.cards]);
+  }, [currentCardProvider, upgradeToPhysicalAvailable, userCardDetails.cards]);
 
   return (
     <CardCarousel
       boxWidthMultiplier={0.8}
       cardsData={cardsWithUpgrade}
       renderItem={renderItem}
-      onCardChange={onCardChange}
+      onCardChange={setUpgradeCorrectedCardIndex}
     />
   );
 }

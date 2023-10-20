@@ -84,7 +84,7 @@ const ShippingDetailsOTPScreen = ({ navigation, route }: Props) => {
 
         try {
             const response = await postWithAuth(path, {});
-            if (response.isError) {
+            if (!response.isError) {
                 return !response.isError;
             } else {
                 const errorObject = {
