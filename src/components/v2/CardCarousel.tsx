@@ -26,11 +26,12 @@ interface CardCarouselProps {
     cardsData: any[]
     boxWidthMultiplier?: number // multiplier to scale the width of the box
     moreThanOneCardOffset?: number // value to offset the card from the center position when there's more than one card.
+    inverted?: boolean
     renderItem: ({ item, index, boxWidth, halfBoxDistance, panX }: { item: any, index: number, boxWidth: number, halfBoxDistance: number, panX: SharedValue<number> }) => JSX.Element;
     onCardChange?: (index: number) => void
 }
 
-const CardCarousel = ({ cardsData, boxWidthMultiplier = 0.85, moreThanOneCardOffset = 1, renderItem, onCardChange }: CardCarouselProps) => {
+const CardCarousel = ({ cardsData, boxWidthMultiplier = 0.85, moreThanOneCardOffset = 1, inverted = false, renderItem, onCardChange }: CardCarouselProps) => {
     const [scrollViewWidth, setScrollViewWidth] = useState(0);
     const boxWidth = scrollViewWidth * boxWidthMultiplier;
     const boxOffset = cardsData.length === 1 ? 1 : moreThanOneCardOffset;
@@ -51,6 +52,7 @@ const CardCarousel = ({ cardsData, boxWidthMultiplier = 0.85, moreThanOneCardOff
     return (
         <FlatList
             horizontal
+            inverted={inverted}
             data={cardsData}
             onViewableItemsChanged={handleViewableItemsChanged.current}
             viewabilityConfig={{
