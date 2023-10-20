@@ -19,7 +19,6 @@ import axios from '../../../core/Http';
 import {
   CyDAnimatedView,
   CyDFastImage,
-  CyDImageBackground,
   CyDText,
   CyDTouchView,
   CyDView,
@@ -627,7 +626,7 @@ export default function CardScreen({
   const cardsWithUpgrade = useMemo(() => {
     const actualCards = userCardDetails.cards.map(card => card);
     if (upgradeToPhysicalAvailable && currentCardProvider === CardProviders.PAYCADDY) {
-      actualCards.unshift({
+      actualCards.push({
         cardId: '',
         bin: '',
         last4: '',
@@ -637,10 +636,11 @@ export default function CardScreen({
       });
     }
     return actualCards;
-  }, [upgradeToPhysicalAvailable, userCardDetails.cards]);
+  }, [currentCardProvider, upgradeToPhysicalAvailable, userCardDetails.cards]);
 
   return (
     <CardCarousel
+      inverted={upgradeToPhysicalAvailable}
       boxWidthMultiplier={0.8}
       cardsData={cardsWithUpgrade}
       renderItem={renderItem}
