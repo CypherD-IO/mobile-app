@@ -3,7 +3,7 @@ import { FlatList, StyleSheet } from 'react-native';
 import { useTranslation } from 'react-i18next';
 import AppImages from '../../assets/images/appImages';
 import { HdWalletContext, PortfolioContext } from '../core/util';
-import { ALL_CHAINS, ALL_CHAINS_WITH_COLLECTION, CHAIN_COLLECTION, EVM_CHAINS } from '../constants/server';
+import { ALL_CHAINS, ALL_CHAINS_WITH_COLLECTION, CHAIN_COLLECTION, CHAIN_EVMOS, EVM_CHAINS } from '../constants/server';
 import { Colors } from '../constants/theme';
 import { DynamicTouchView } from '../styles/viewStyle';
 import { CyDImage, CyDText, CyDTouchView, CyDView } from '../styles/tailwindStyles';
@@ -23,7 +23,7 @@ export function ChooseChainModal(props) {
   const portfolioState = useContext<any>(PortfolioContext);
 
   const isReadOnlyWallet = hdWallet?.state.isReadOnlyWallet;
-  const EVM_CHAINS_WITH_COLLECTION = [CHAIN_COLLECTION, ...EVM_CHAINS];
+  const EVM_CHAINS_WITH_COLLECTION = [CHAIN_COLLECTION, ...EVM_CHAINS, CHAIN_EVMOS];
 
   const renderItem = (item) => {
     return (
