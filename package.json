@@ -74,7 +74,7 @@
     "console-browserify": "^1.2.0",
     "constants-browserify": "^1.0.0",
     "cosmjs-types": "^0.8.0",
-    "crypto-js": "^4.1.1",
+    "crypto-js": "^4.2.0",
     "deprecated-react-native-prop-types": "^2.2.0",
     "dns.js": "^1.0.1",
     "domain-browser": "^1.2.0",
