@@ -6,7 +6,7 @@
   "bracketSameLine": true,
   "singleQuote": true,
   "jsxSingleQuote": true,
-  "trailingComma": "es5",
+  "trailingComma": "all",
   "semi": true,
   "endOfLine": "lf",
   "overrides": [
