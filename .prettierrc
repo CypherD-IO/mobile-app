@@ -1,6 +1,18 @@
 {
   "tabWidth": 2,
   "useTabs": false,
+  "arrowParens": "avoid",
+  "bracketSameLine": true,
   "singleQuote": true,
-  "jsxSingleQuote": true
+  "jsxSingleQuote": true,
+  "trailingComma": "all",
+  "endOfLine": "lf",
+  "overrides": [
+    {
+      "files": ["*.js", "*.js.flow"],
+      "options": {
+        "parser": "hermes"
+      }
+    }
+  ]
 }

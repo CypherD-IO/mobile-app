@@ -29,8 +29,6 @@ module.exports = {
   },
   rules: {
     '@typescript-eslint/explicit-function-return-type': 'off',
-    semi: ['error', 'always'],
-    '@typescript-eslint/semi': 'off',
     'react-native/no-unused-styles': 2,
     'react-native/split-platform-components': 2,
     'react-native/no-inline-styles': 2,
@@ -38,7 +36,5 @@ module.exports = {
     'react-native/no-raw-text': 2,
     'react-native/no-single-element-style-arrays': 2,
     '@typescript-eslint/strict-boolean-expressions': 'off',
-    'prettier/prettier': 0,
-    'react/jsx-key': 0,
   },
 };
