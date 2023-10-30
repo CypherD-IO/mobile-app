@@ -28,19 +28,21 @@ interface RouteProps {
   route: {
     params: {
       tokenData: TokenMeta;
+      otherChainsWithToken: any[];
       navigateTo?: string;
     };
   };
   navigation: {
     goBack: () => void;
     setOptions: ({ title }: { title: string }) => void;
+    setParams: (arg0: { tokenData: any; otherChainsWithToken: any[] }) => void;
     navigate: (screen: string, params?: {}) => void;
   };
 }
 
 function TokenOverviewV2({ route, navigation }: RouteProps) {
   const isFocused = useIsFocused();
-  const { tokenData } = route.params;
+  const { tokenData, otherChainsWithToken } = route.params;
   const [tokenTabs, setTokenTabs] = useState([
     TokenOverviewTabs.OVERVIEW,
     TokenOverviewTabs.TRANSACTIONS,
@@ -96,17 +98,21 @@ function TokenOverviewV2({ route, navigation }: RouteProps) {
           }}
         />
       </CyDView>
-      {index === 0 || index === 1 ? (
+      {index === 1 ? (
         <CyDScrollView>
-          {index === 0 && (
-            <Overview tokenData={tokenData} navigation={navigation} />
-          )}
           {index === 1 && (
             <TokenTransactions tokenData={tokenData} navigation={navigation} />
           )}
         </CyDScrollView>
       ) : (
         <CyDView className='flex-1'>
+          {index === 0 && (
+            <Overview
+              tokenData={tokenData}
+              otherChainsWithToken={otherChainsWithToken}
+              navigation={navigation}
+            />
+          )}
           {index === 2 && (
             <TokenStaking tokenData={tokenData} navigation={navigation} />
           )}
@@ -116,7 +122,7 @@ function TokenOverviewV2({ route, navigation }: RouteProps) {
         layout={Layout.springify()}
         className={clsx(
           'h-[110px] self-end bg-white pb-[20px] bottom-[-30px] pt-[2px] rounded-t-[24px] shadow shadow-gray-400',
-          { 'pt-[16px]': isAndroid() }
+          { 'pt-[16px]': isAndroid() },
         )}
         style={styles.elevatedBackground}
       >

@@ -1,16 +1,13 @@
-import React, { useContext } from 'react';
-import { useTranslation } from 'react-i18next';
-import FastImage from 'react-native-fast-image';
+import React from 'react';
+import { StyleSheet } from 'react-native';
+import { t } from 'i18next';
 import { Swipeable } from 'react-native-gesture-handler';
 import AppImages from '../../../assets/images/appImages';
 import { screenTitle } from '../../constants';
 import {
   ChainBackendNames,
-  CosmosStakingTokens,
   FundWalletAddressType,
 } from '../../constants/server';
-import { GlobalContext, GlobalContextDef } from '../../core/globalContext';
-import { isBasicCosmosChain } from '../../core/util';
 import {
   CyDFastImage,
   CyDImage,
@@ -21,11 +18,11 @@ import {
 import CyDTokenAmount from './tokenAmount';
 import CyDTokenValue from './tokenValue';
 import { Holding } from '../../core/Portfolio';
-import { StyleSheet } from 'react-native';
 
 interface PortfolioTokenItemProps {
   item: Holding;
   index: number;
+  otherChainsWithToken: any[];
   isVerifyCoinChecked: boolean;
   navigation: {
     goBack: () => void;
@@ -37,64 +34,34 @@ interface PortfolioTokenItemProps {
   setSwipeableRefs: (index: number, ref: Swipeable | null) => void;
 }
 
-const PortfolioTokenItem = ({
-  item,
-  index,
-  isVerifyCoinChecked,
-  navigation,
-  onSwipe,
-  setSwipeableRefs,
-}: PortfolioTokenItemProps) => {
-  const globalStateContext = useContext<GlobalContextDef | null>(GlobalContext);
-  const randomColor = [
-    AppImages.RED_COIN,
-    AppImages.CYAN_COIN,
-    AppImages.GREEN_COIN,
-    AppImages.PINK_COIN,
-    AppImages.BLUE_COIN,
-    AppImages.PURPLE_COIN,
-  ];
+const RenderRightActions = (navigation: any, tokenData: any) => {
+  const { isBridgeable, isSwapable } = tokenData;
+  return (
+    <CyDView
+      className={
+        'flex flex-row justify-evenly items-center bg-secondaryBackgroundColor'
+      }
+    >
+      <CyDView>
+        <CyDTouchView
+          className={'flex items-center justify-center mx-[15px]'}
+          onPress={() => {
+            navigation.navigate(screenTitle.ENTER_AMOUNT, {
+              tokenData,
+            });
+          }}
+        >
+          <CyDImage
+            source={AppImages.SEND_SHORTCUT}
+            className={'w-[30px] h-[30px]'}
+          />
+        </CyDTouchView>
+        <CyDText className={'text-center mt-[5px] text-[12px] font-bold'}>
+          {t<string>('SEND')}
+        </CyDText>
+      </CyDView>
 
-  const { t } = useTranslation();
-
-  const canShowIBC = (tokenData: any) => {
-    return (
-      globalStateContext?.globalState.ibc &&
-      (isBasicCosmosChain(tokenData.chainDetails.backendName) ||
-        (tokenData.chainDetails.backendName === ChainBackendNames.EVMOS &&
-          (tokenData.name === CosmosStakingTokens.EVMOS ||
-            tokenData.name.includes('IBC'))))
-    );
-  };
-
-  const RenderRightActions = (tokenData: any) => {
-    const { isBridgeable, isSwapable } = tokenData;
-    return (
-      <CyDView
-        className={
-          'flex flex-row justify-evenly items-center bg-secondaryBackgroundColor'
-        }
-      >
-        <CyDView>
-          <CyDTouchView
-            className={'flex items-center justify-center mx-[15px]'}
-            onPress={() => {
-              navigation.navigate(screenTitle.ENTER_AMOUNT, {
-                tokenData,
-              });
-            }}
-          >
-            <CyDImage
-              source={AppImages.SEND_SHORTCUT}
-              className={'w-[30px] h-[30px]'}
-            />
-          </CyDTouchView>
-          <CyDText className={'text-center mt-[5px] text-[12px] font-bold'}>
-            {t<string>('SEND')}
-          </CyDText>
-        </CyDView>
-
-        {canShowIBC(tokenData) && (
+      {/* {canShowIBC(tokenData) && (
           <CyDView>
             <CyDTouchView
               className={
@@ -116,129 +83,145 @@ const PortfolioTokenItem = ({
               {t<string>('IBC')}
             </CyDText>
           </CyDView>
-        )}
+        )} */}
 
-        {/* {canShowFundCard(tokenData) && <CyDView>
-            <CyDTouchView className={'flex items-center justify-center'}
-              onPress={() => {
-                props.navigation.navigate(screenTitle.DEBIT_CARD, {
-                  screen: screenTitle.SOLID_FUND_CARD_SCREEN, params: { tokenData, navigation: props.navigation }, initial: false
-                });
-              }}
-            >
-                <CyDImage source={AppImages.FUND_CARD_SHORTCUT} className={'w-[35px] h-[35px]'} />
-            </CyDTouchView>
-            <CyDText className={'text-center mt-[5px] text-[12px] font-bold'}>{t<string>('FUND_CARD')}</CyDText>
-        </CyDView>} */}
+      {/* {canShowFundCard(tokenData) && <CyDView>
+          <CyDTouchView className={'flex items-center justify-center'}
+            onPress={() => {
+              props.navigation.navigate(screenTitle.DEBIT_CARD, {
+                screen: screenTitle.SOLID_FUND_CARD_SCREEN, params: { tokenData, navigation: props.navigation }, initial: false
+              });
+            }}
+          >
+              <CyDImage source={AppImages.FUND_CARD_SHORTCUT} className={'w-[35px] h-[35px]'} />
+          </CyDTouchView>
+          <CyDText className={'text-center mt-[5px] text-[12px] font-bold'}>{t<string>('FUND_CARD')}</CyDText>
+      </CyDView>} */}
 
-        {isBridgeable && (
-          <CyDView>
-            <CyDTouchView
-              className={'flex items-center justify-center mx-[15px]'}
-              onPress={() => {
-                navigation.navigate(screenTitle.BRIDGE_SCREEN, {
-                  fromChainData: tokenData,
-                  title: t('BRIDGE'),
-                  renderPage: 'bridgePage',
-                });
-              }}
-            >
-              <CyDImage
-                source={AppImages.BRIDGE_SHORTCUT}
-                className={'w-[30px] h-[30px]'}
-              />
-            </CyDTouchView>
-            <CyDText className={'text-center mt-[5px] text-[12px] font-bold'}>
-              {t<string>('BRIDGE')}
-            </CyDText>
-          </CyDView>
-        )}
-
-        {isSwapable && (
-          <CyDView>
-            <CyDTouchView
-              className={'flex items-center justify-center mx-[15px]'}
-              onPress={() => {
-                navigation.navigate(screenTitle.BRIDGE_SCREEN, {
-                  fromChainData: tokenData,
-                  title: t('SWAP_TITLE'),
-                  renderPage: 'swapPage',
-                });
-              }}
-            >
-              <CyDImage
-                source={AppImages.SWAP_SHORTCUT}
-                className={'w-[30px] h-[30px]'}
-              />
-            </CyDTouchView>
-            <CyDText className={'text-center mt-[5px] text-[12px] font-bold'}>
-              {t<string>('SWAP_TITLE')}
-            </CyDText>
-          </CyDView>
-        )}
-
+      {isBridgeable && (
         <CyDView>
           <CyDTouchView
             className={'flex items-center justify-center mx-[15px]'}
             onPress={() => {
-              let addressTypeQRCode;
-              if (
-                tokenData.chainDetails.backendName === ChainBackendNames.COSMOS
-              ) {
-                addressTypeQRCode = FundWalletAddressType.COSMOS;
-              } else if (
-                tokenData.chainDetails.backendName === ChainBackendNames.OSMOSIS
-              ) {
-                addressTypeQRCode = FundWalletAddressType.OSMOSIS;
-              } else if (
-                tokenData.chainDetails.backendName === ChainBackendNames.EVMOS
-              ) {
-                addressTypeQRCode = FundWalletAddressType.EVMOS;
-              } else if (
-                tokenData.chainDetails.backendName === ChainBackendNames.ETH
-              ) {
-                addressTypeQRCode = FundWalletAddressType.EVM;
-              } else if (
-                tokenData.chainDetails.backendName === ChainBackendNames.JUNO
-              ) {
-                addressTypeQRCode = FundWalletAddressType.JUNO;
-              } else if (
-                tokenData.chainDetails.backendName ===
-                ChainBackendNames.STARGAZE
-              ) {
-                addressTypeQRCode = FundWalletAddressType.STARGAZE;
-              } else if (
-                tokenData.chainDetails.backendName === ChainBackendNames.NOBLE
-              ) {
-                addressTypeQRCode = FundWalletAddressType.NOBLE;
-              } else if (
-                tokenData.chainDetails.backendName ===
-                ChainBackendNames.SHARDEUM
-              ) {
-                addressTypeQRCode = FundWalletAddressType.SHARDEUM;
-              } else if (
-                tokenData.chainDetails.backendName ===
-                ChainBackendNames.SHARDEUM_SPHINX
-              ) {
-                addressTypeQRCode = FundWalletAddressType.SHARDEUM_SPHINX;
-              }
-              navigation.navigate(screenTitle.QRCODE, {
-                addressType: addressTypeQRCode,
+              navigation.navigate(screenTitle.BRIDGE_SCREEN, {
+                fromChainData: tokenData,
+                title: t('BRIDGE'),
+                renderPage: 'bridgePage',
               });
             }}
           >
             <CyDImage
-              source={AppImages.RECEIVE_SHORTCUT}
+              source={AppImages.BRIDGE_SHORTCUT}
               className={'w-[30px] h-[30px]'}
             />
           </CyDTouchView>
-          <CyDText className={'text-center mt-[5px]  text-[12px] font-bold'}>
-            {t<string>('RECEIVE')}
+          <CyDText className={'text-center mt-[5px] text-[12px] font-bold'}>
+            {t<string>('BRIDGE')}
           </CyDText>
         </CyDView>
+      )}
+
+      {isSwapable && (
+        <CyDView>
+          <CyDTouchView
+            className={'flex items-center justify-center mx-[15px]'}
+            onPress={() => {
+              navigation.navigate(screenTitle.BRIDGE_SCREEN, {
+                fromChainData: tokenData,
+                title: t('SWAP_TITLE'),
+                renderPage: 'swapPage',
+              });
+            }}
+          >
+            <CyDImage
+              source={AppImages.SWAP_SHORTCUT}
+              className={'w-[30px] h-[30px]'}
+            />
+          </CyDTouchView>
+          <CyDText className={'text-center mt-[5px] text-[12px] font-bold'}>
+            {t<string>('SWAP_TITLE')}
+          </CyDText>
+        </CyDView>
+      )}
+
+      <CyDView>
+        <CyDTouchView
+          className={'flex items-center justify-center mx-[15px]'}
+          onPress={() => {
+            let addressTypeQRCode;
+            if (
+              tokenData.chainDetails.backendName === ChainBackendNames.COSMOS
+            ) {
+              addressTypeQRCode = FundWalletAddressType.COSMOS;
+            } else if (
+              tokenData.chainDetails.backendName === ChainBackendNames.OSMOSIS
+            ) {
+              addressTypeQRCode = FundWalletAddressType.OSMOSIS;
+            } else if (
+              tokenData.chainDetails.backendName === ChainBackendNames.EVMOS
+            ) {
+              addressTypeQRCode = FundWalletAddressType.EVMOS;
+            } else if (
+              tokenData.chainDetails.backendName === ChainBackendNames.ETH
+            ) {
+              addressTypeQRCode = FundWalletAddressType.EVM;
+            } else if (
+              tokenData.chainDetails.backendName === ChainBackendNames.JUNO
+            ) {
+              addressTypeQRCode = FundWalletAddressType.JUNO;
+            } else if (
+              tokenData.chainDetails.backendName === ChainBackendNames.STARGAZE
+            ) {
+              addressTypeQRCode = FundWalletAddressType.STARGAZE;
+            } else if (
+              tokenData.chainDetails.backendName === ChainBackendNames.NOBLE
+            ) {
+              addressTypeQRCode = FundWalletAddressType.NOBLE;
+            } else if (
+              tokenData.chainDetails.backendName === ChainBackendNames.SHARDEUM
+            ) {
+              addressTypeQRCode = FundWalletAddressType.SHARDEUM;
+            } else if (
+              tokenData.chainDetails.backendName ===
+              ChainBackendNames.SHARDEUM_SPHINX
+            ) {
+              addressTypeQRCode = FundWalletAddressType.SHARDEUM_SPHINX;
+            }
+            navigation.navigate(screenTitle.QRCODE, {
+              addressType: addressTypeQRCode,
+            });
+          }}
+        >
+          <CyDImage
+            source={AppImages.RECEIVE_SHORTCUT}
+            className={'w-[30px] h-[30px]'}
+          />
+        </CyDTouchView>
+        <CyDText className={'text-center mt-[5px]  text-[12px] font-bold'}>
+          {t<string>('RECEIVE')}
+        </CyDText>
       </CyDView>
-    );
-  };
+    </CyDView>
+  );
+};
+
+const PortfolioTokenItem = ({
+  item,
+  index,
+  otherChainsWithToken,
+  isVerifyCoinChecked,
+  navigation,
+  onSwipe,
+  setSwipeableRefs,
+}: PortfolioTokenItemProps) => {
+  const randomColor = [
+    AppImages.RED_COIN,
+    AppImages.CYAN_COIN,
+    AppImages.GREEN_COIN,
+    AppImages.PINK_COIN,
+    AppImages.BLUE_COIN,
+    AppImages.PURPLE_COIN,
+  ];
 
   // return (isVerifyCoinChecked && item?.isVerified) || !isVerifyCoinChecked ? (
   if ((isVerifyCoinChecked && item?.isVerified) || !isVerifyCoinChecked) {
@@ -248,6 +231,7 @@ const PortfolioTokenItem = ({
         onPress={() => {
           navigation.navigate(screenTitle.TOKEN_OVERVIEW, {
             tokenData: item,
+            otherChainsWithToken,
           });
         }}
       >
@@ -272,7 +256,7 @@ const PortfolioTokenItem = ({
                 item?.chainDetails?.logo_url ??
                 'https://raw.githubusercontent.com/cosmostation/cosmostation_token_resource/master/assets/images/common/unknown.png'
               }
-              resizeMode={FastImage.resizeMode.contain}
+              resizeMode='contain'
             />
           </CyDView>
         </CyDView>
@@ -280,7 +264,7 @@ const PortfolioTokenItem = ({
           key={index}
           friction={1}
           rightThreshold={0}
-          renderRightActions={() => RenderRightActions(item)}
+          renderRightActions={() => RenderRightActions(navigation, item)}
           onSwipeableWillOpen={() => {
             onSwipe(index);
           }}
