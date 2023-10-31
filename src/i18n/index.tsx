@@ -11,15 +11,18 @@ const resources = {
     translation: {
       english: 'English',
       LETS_CONNECT_MSG: 'Let’s connect to Cypher wallet',
-      LETS_CONNECT_SUB_MSG: 'Create or import wallet to keep your crypto securely',
+      LETS_CONNECT_SUB_MSG:
+        'Create or import wallet to keep your crypto securely',
       CREATE_WALLET: 'CREATE NEW WALLET',
       IMPORT_WALLET: 'IMPORT EXISTING WALLET',
       BACK_UP_MYSELF: 'Back up myself',
-      BACK_UP_SUB_MSG: 'You will loose access to your wallet if you loose your private key. ',
+      BACK_UP_SUB_MSG:
+        'You will loose access to your wallet if you loose your private key. ',
       BACK_UP_MANUALLY: 'BACK UP MANUALLY',
       BACK_UP_ON_ICLOUD: 'BACK UP ON ICLOUD',
       IMPORT_WALLET_MSG: 'Import Wallet',
-      IMPORT_WALLET_SUB_MSG: 'Enter your 12 or 24 word seed phrase to import your wallet to Cypher.',
+      IMPORT_WALLET_SUB_MSG:
+        'Enter your 12 or 24 word seed phrase to import your wallet to Cypher.',
       ENTER_KEY_MANUALLY: 'ENTER KEY MANUALLY',
       IMPORT_KEY_FROM_ICLOUD: 'IMPORT KEY FROM ICLOUD',
       ENTER_SEED_PHRASE: 'Enter Seed Phrase',
@@ -31,8 +34,10 @@ const resources = {
       COPY_TO_CLIPBOARD: 'COPY TO CLIPBOARD',
       COPY: 'COPY',
       PRIVATE_KEY_MSG: 'Private key has been copied to the clipboard.',
-      PRIVATE_KEY_SUB_MSG: 'Store it somewhere secure. You will loose access to your wallet if you loose your private key.',
-      TXN_SUBMITTED: 'Transaction Submitted. \nKindly wait few minutes for confirmation.',
+      PRIVATE_KEY_SUB_MSG:
+        'Store it somewhere secure. You will loose access to your wallet if you loose your private key.',
+      TXN_SUBMITTED:
+        'Transaction Submitted. \nKindly wait few minutes for confirmation.',
       SUCCESS: 'Success',
       FAILURE: 'Failure',
       TOAST_TYPE_SUCCESS: 'success',
@@ -100,15 +105,21 @@ const resources = {
       IMPORT_ANOTHER_WALLET_TITLE: 'Import Another Wallet',
       DELTE_WALLET: 'Delete Wallet',
       SEED_PHARSE_TITLE: 'Copy Seed phrase',
-      IMPORT_ANOTHER_WALLET_SUB: 'This action will delete your current wallet to replace with another wallet. Make sure you backed up the seed phrase of the wallet in use currently.',
-      DELETE_WALLET_SUB: 'This action will delete your current wallet. Make sure you backed up the seed phrase of the wallet in use currently.',
-      SEED_PHARSE_SUB: 'You are copying seed phrase. Please be careful in storing the phrase in a secure location. If someone else gets access to this then they will have access to your wallet.',
-      REMOVE_WALL_ACC: 'I acknowledge that I have backed up my seed phrase and understand the wallet will be deleted from my device.',
+      IMPORT_ANOTHER_WALLET_SUB:
+        'This action will delete your current wallet to replace with another wallet. Make sure you backed up the seed phrase of the wallet in use currently.',
+      DELETE_WALLET_SUB:
+        'This action will delete your current wallet. Make sure you backed up the seed phrase of the wallet in use currently.',
+      SEED_PHARSE_SUB:
+        'You are copying seed phrase. Please be careful in storing the phrase in a secure location. If someone else gets access to this then they will have access to your wallet.',
+      REMOVE_WALL_ACC:
+        'I acknowledge that I have backed up my seed phrase and understand the wallet will be deleted from my device.',
       LOADING_DATA: 'Loading',
       PAY: 'PAY',
       CONNECT_TO_DESKTOP: 'Connect to Dapp on Desktop',
-      QRCODE_SUBTITLE: 'Use this address to send tokens from an exchange or a wallet to Cypher Wallet and this address works on the following chain(s)',
-      FUND_TRANSFER: 'Your wallet is currently empty. Transfer tokens to this wallet or import another wallet',
+      QRCODE_SUBTITLE:
+        'Use this address to send tokens from an exchange or a wallet to Cypher Wallet and this address works on the following chain(s)',
+      FUND_TRANSFER:
+        'Your wallet is currently empty. Transfer tokens to this wallet or import another wallet',
       LOAD_WALLET: 'FUND WALLET',
       FUND_CARD: 'Fund Card',
       APPLY_CARD: 'Apply for card',
@@ -116,12 +127,15 @@ const resources = {
       TO: 'To',
       BRIDGE_TEXT: 'Cross-Chain Token Bridge',
       GET_STARTED: 'Get Started',
-      INFO_TEXT: 'To ensure the security of your account, please enter your phone number below and we will send you a unique code to authenticate you.',
+      INFO_TEXT:
+        'To ensure the security of your account, please enter your phone number below and we will send you a unique code to authenticate you.',
       PHONE_ERROR: 'Please enter proper number',
       SSN_ERROR: 'Please enter proper SSN',
-      PNONE_DUPLICATE_ERROR: 'This phone number already has a card issued. You are not logging in with the same wallet you signed up with. If you do not have access to that original wallet please reachout to support via chat',
+      PNONE_DUPLICATE_ERROR:
+        'This phone number already has a card issued. You are not logging in with the same wallet you signed up with. If you do not have access to that original wallet please reachout to support via chat',
       VERIFY_ACC: 'Verify your account',
-      VERIFY_TEXT: 'Enter the six-digit verification code below. It may take up to a few minutes.',
+      VERIFY_TEXT:
+        'Enter the six-digit verification code below. It may take up to a few minutes.',
       OTP_ERROR: 'Please enter proper OTP',
       PERSONAL_DETAIL: 'Enter Personal Detail',
       HOME_ADDRESS: 'Enter Your Home Address',
@@ -157,8 +171,10 @@ const resources = {
       ORBITAL_APES: 'Orbital Apes',
       EVMOS_STAKING: 'Evmos Staking',
       TRANSFER_ACTIVITY: 'Transfer Activity',
-      IBC_ERROR: "Transaction Error !\n Don't worry your funds are safe, it has been transferred to your osmosis chain via IBC, you can transfer it back via IBC. Sorry for the inconvenience",
-      SWAP_ERROR: "Transaction Error !\n Don't worry your funds are safe, it has been transferred to your osmosis chain via IBC and is been available as your to token to after swapping you can transfer it back to your to chain chain via IBC. Sorry for the inconvenience",
+      IBC_ERROR:
+        "Transaction Error !\n Don't worry your funds are safe, it has been transferred to your osmosis chain via IBC, you can transfer it back via IBC. Sorry for the inconvenience",
+      SWAP_ERROR:
+        "Transaction Error !\n Don't worry your funds are safe, it has been transferred to your osmosis chain via IBC and is been available as your to token to after swapping you can transfer it back to your to chain chain via IBC. Sorry for the inconvenience",
       IBC: 'IBC',
       SENT_AMOUNT: 'Sent Amount ',
       TO_ADDRESS: 'To address : ',
@@ -172,11 +188,13 @@ const resources = {
       MEMO: 'Memo',
       SEND_TOKENS_MEMO: 'By Cypher Wallet',
       FUND_CARD_MEMO: 'By Cypher Wallet Card',
-      IBC_WARNING: 'Your are transferring your asset to another chain via IBC. It stays as the same token in the chain your transferring to.',
+      IBC_WARNING:
+        'Your are transferring your asset to another chain via IBC. It stays as the same token in the chain your transferring to.',
       APP_SETTINGS: 'App Settings',
       ADVANCED_SETTINGS: 'Advanced Settings',
       SEED_PHRASE: 'Seed Phrase',
-      SEED_PHRASE_SUBTITLE: 'The Seed Phrase gives full access to your wallet, funds and accounts. Cypher is a non-custodial wallet. You are the owner of your Seed Phrase.',
+      SEED_PHRASE_SUBTITLE:
+        'The Seed Phrase gives full access to your wallet, funds and accounts. Cypher is a non-custodial wallet. You are the owner of your Seed Phrase.',
       PASTE_CLIPBOARD: 'PASTE FROM CLIPBOARD',
       HIDE_SEED_PHRASE: 'Hide Seed Phrase',
       HIDE_PRIVATE_KEY: 'Hide Private Key',
@@ -186,12 +204,14 @@ const resources = {
       QRSCAN_TEXT: 'Send crypto and connect to dApps by scanning a QR code',
       QRSCAN_SEND: 'Send crypto by scanning a QR code',
       QRSCAN_IMPORT: 'Import wallet by scanning a QR code',
-      QRSCAN_WALLET_CONNECT: 'Connect to dApps by scanning a QR code using Wallet Connect',
+      QRSCAN_WALLET_CONNECT:
+        'Connect to dApps by scanning a QR code using Wallet Connect',
       SIGNUP_CARD_WAITLIST_TITLE: 'Signup for Cypher Card',
       CTA_GET_INVITE_CODE: 'GET INVITE CODE',
       BENEFITS: 'Benefits',
       JOINING_WAITLIST_ERROR: 'Error while joining the waitlist',
-      JOIN_WAITLIST_SUCCESS_TOAST: 'Your request for the cypher card is successful',
+      JOIN_WAITLIST_SUCCESS_TOAST:
+        'Your request for the cypher card is successful',
       EMPTY_EMAIL_ERROR: 'Please provide an email ID to continue',
       VALID_EMAIL_ERROR: 'Please provide a valid email ID',
       TRANSACTION_APPROVED: 'Transaction Approved',
@@ -219,16 +239,21 @@ const resources = {
       LATER: 'LATER',
       NO_CONNECTIONS: 'No Active Connections',
       NEW_UPDATE: 'New Update Available',
-      NEW_UPDATE_MSG: 'Cypher recommends that you update to the latest version. You can keep using this app while downloading the update.',
-      NEW_MUST_UPDATE_MSG: 'Please update to latest version to continue using the app.',
+      NEW_UPDATE_MSG:
+        'Cypher recommends that you update to the latest version. You can keep using this app while downloading the update.',
+      NEW_MUST_UPDATE_MSG:
+        'Please update to latest version to continue using the app.',
       SCAN_FAILURE: 'Scan Failure',
-      CHAIN_NOT_SUPPORTED: 'This chain is not supported currently. Try connecting other chains',
+      CHAIN_NOT_SUPPORTED:
+        'This chain is not supported currently. Try connecting other chains',
       TOKEN_IN_AMOUNT: 'TokenIn Amount',
       TOKEN_IN_DENOM: 'TokenIn Denom',
       FUND_WALLET: 'FUND WALLET',
-      ON_BOARDING_PAGE_1_CONTENT: 'Non-Custodial wallet for all your Multi-Chain and DeFi needs!',
+      ON_BOARDING_PAGE_1_CONTENT:
+        'Non-Custodial wallet for all your Multi-Chain and DeFi needs!',
       ON_BOARDING_PAGE_2_CONTENT: 'Seamless access to different blockchains',
-      ON_BOARDING_PAGE_3_CONTENT: 'Get the world’s first non-custodial cypher card',
+      ON_BOARDING_PAGE_3_CONTENT:
+        'Get the world’s first non-custodial cypher card',
       ON_BOARDING_PAGE_3_SUB_CONTENT: 'Explore all of Web3 in one place',
       INCLUDING_STAKED_TOKENS: 'Including staked tokens',
       STAKING_REWARDS_DISTRIBUTED_AT: 'Rewards distributed daily at',
@@ -244,10 +269,12 @@ const resources = {
       AVAILABLE_TO_STAKE: 'Available to stake',
       VALIDATOR_REDELEGATE: 'Validator to redelegate',
       MY_DELEGATION: 'My delegation',
-      UNDELEGATE_WAIT_DAYS: 'Once you undelegate your staked EVMOS, you will need to wait 14 days for your tokens to be liquid',
+      UNDELEGATE_WAIT_DAYS:
+        'Once you undelegate your staked EVMOS, you will need to wait 14 days for your tokens to be liquid',
       CURRENTLY_STAKED: 'Currently staked',
       TOTAL_UNBOUNDINGS: 'Total Unboundings',
-      HAVE_OPTION_TO_STAKE_REWARDS: 'We also have an option for you to restake your rewards!',
+      HAVE_OPTION_TO_STAKE_REWARDS:
+        'We also have an option for you to restake your rewards!',
       CLAIM: 'CLAIM',
       RESTAKE: 'RESTAKE',
       RESTAKE_INIT_CAPS: 'Restake',
@@ -258,7 +285,8 @@ const resources = {
       STAKE_YOUR_TEXT: 'Stake your',
       WITH_US_TEXT: '& earn juicy rewards',
       PRIVATE_KEY: 'Private Key',
-      PRIVATE_KEY_SUBTITLE: 'The Private Key gives full access to your wallet, funds and accounts. Cypher is a non-custodial wallet. You are the owner of your Private Key.',
+      PRIVATE_KEY_SUBTITLE:
+        'The Private Key gives full access to your wallet, funds and accounts. Cypher is a non-custodial wallet. You are the owner of your Private Key.',
       BOOKMARK_SUCCESSFUL: 'Bookmarked successfully',
       CANNOT_BOOKMARK: 'Cannot bookmark current page',
       WARNING_TITLE: 'Something went wrong',
@@ -273,9 +301,11 @@ const resources = {
       SEND_ON: 'Send On',
       GAS: 'Gas',
       TEMP_SYSTEM_ERROR: 'Temp System Error',
-      UNABLE_TO_LOAD_CARD: 'Unable to load your card. Please try after some time.',
+      UNABLE_TO_LOAD_CARD:
+        'Unable to load your card. Please try after some time.',
       NETWORK_ERROR: 'Network Error',
-      UNABLE_TO_LOAD_WALLET: 'We are unable to load your wallet. Please check your internet connection. Please click OK to reload the app.',
+      UNABLE_TO_LOAD_WALLET:
+        'We are unable to load your wallet. Please check your internet connection. Please click OK to reload the app.',
       NEW_VERSION_AVAILABLE: 'New Version Available',
       BRIDGE: 'Bridge',
       EXCHANGE_SHORTCUTS_SUBTITLE: 'Bridge token between different chains',
@@ -284,8 +314,10 @@ const resources = {
       RECEIVE_SHORTCUTS_SUBTITLE: 'Deposit assets into this wallet',
       FUND_CARD_SHORTCUTS_SUBTITLE: 'Load money into Cypher card',
       BUY_SHORTCUTS_SUBTITLE: 'Buy crypto with bank account / card',
-      CREATE_SEED_PHRASE_INFO: 'Your Seed Phrase makes it easy to back up and restore your account',
-      CREATE_SEED_PHRASE_WARNING: 'WARNING: Never disclose your Secret Recovery Phrase. Anyone with this phrase can take your assets forever',
+      CREATE_SEED_PHRASE_INFO:
+        'Your Seed Phrase makes it easy to back up and restore your account',
+      CREATE_SEED_PHRASE_WARNING:
+        'WARNING: Never disclose your Secret Recovery Phrase. Anyone with this phrase can take your assets forever',
       HOW_TO_SECURE: 'How to secure?',
       HOW_TO_SECURE_SEED_PHRASE: 'How to secure your seed phrase?',
       CONFIRM_SEED_PHRASE_INFO: 'Select the words in the indicated order',
@@ -293,16 +325,18 @@ const resources = {
       CONFIRM_SEED_PHRASE_ALL_CAPS: 'CONFIRM SEED PHRASE',
       SEED_PHRASE_INDEX_MISMATCH: 'Incorrect word for the current position',
       ATTEMPTS_LEFT: 'Attempts Left',
-      SEED_PHRASE_MATCH: 'You\'re all set. Creating your wallet...',
+      SEED_PHRASE_MATCH: "You're all set. Creating your wallet...",
       MODE_DEBIT_AND_ACH: 'Debit card and Instant ACH',
       COINBASE_DISPLAY_TITLE: 'Link Coinbase Account',
       COINBASE_LINK_ERROR: 'Failed to connect coinbase',
       ONMETA_BUY_DISPLAY_TITLE: 'Buy with INR',
       ONMETA_SELL_DISPLAY_TITLE: 'Sell to INR',
-      WRITE_DOWN_SEED_PHRASE: 'Write down your seed phrase and keep it somewhere safe',
+      WRITE_DOWN_SEED_PHRASE:
+        'Write down your seed phrase and keep it somewhere safe',
       USE_STEEL_BACKUPS: 'Use steel backups as an additional layer of security',
       USE_PASSWORD_MANAGER: 'Use a password manager',
-      NEVER_STORE_ON_INTERNET_DEVICES: 'Never store your seed phrase on any device that is connected to the internet',
+      NEVER_STORE_ON_INTERNET_DEVICES:
+        'Never store your seed phrase on any device that is connected to the internet',
       NOT_VALID_ADDRESS: 'Not a valid address format',
       NOT_VALID_EVMOS_ADDRESS: 'Not a valid Evmos address',
       NOT_VALID_COSMOS_ADDRESS: 'Not a valid Cosmos address',
@@ -311,8 +345,9 @@ const resources = {
       NOT_VALID_STARGAZE_ADDRESS: 'Not a valid Stargaze address',
       NOT_VALID_NOBLE_ADDRESS: 'Not a valid Noble address',
       NOT_VALID_ENS: 'Not a registered ens domain',
-      CHECK_RECEIVER_ADDRESS: 'Please check your receiver\'s address',
-      CUSTOMER_SUPPORT_QUOTE_UUID: 'Please contact customer support with the quote uuid',
+      CHECK_RECEIVER_ADDRESS: "Please check your receiver's address",
+      CUSTOMER_SUPPORT_QUOTE_UUID:
+        'Please contact customer support with the quote uuid',
       DATE: 'Date',
       SENDER: 'Sender',
       RECEIVER: 'Receiver',
@@ -321,10 +356,12 @@ const resources = {
       SUCCESSFUL: 'SUCCESSFUL',
       RECOMMEND_FRIEND: 'RECOMMEND TO A FRIEND',
       RECOMMEND_TITLE: 'Cypher Wallet',
-      RECOMMEND_MESSAGE: 'Hey there! Checkout Cypher Wallet. It\'s my favourite Cosmos and Ethereum wallet with a crypto card.',
+      RECOMMEND_MESSAGE:
+        "Hey there! Checkout Cypher Wallet. It's my favourite Cosmos and Ethereum wallet with a crypto card.",
       RECOMMEND_URL: 'https://cypherwallet.io/cypher-app',
       SHARE_TITLE: 'Cypher Wallet',
-      SHARE_MESSAGE: 'Congratulations! Your transaction is confirmed and complete. Here is the transaction detail for your reference.\n\nDownload Cypher Wallet for a fast, secure and seamless crypto wallet experience.\n https://cypherwallet.io/cypher-app',
+      SHARE_MESSAGE:
+        'Congratulations! Your transaction is confirmed and complete. Here is the transaction detail for your reference.\n\nDownload Cypher Wallet for a fast, secure and seamless crypto wallet experience.\n https://cypherwallet.io/cypher-app',
       TRANSFER_TOKENS: 'Transfer Tokens',
       LOVE_CYPHERD_APP: 'Love Cypher App?',
       SHARE_WITH_FRIENDS: 'Share With Your Friends',
@@ -332,24 +369,32 @@ const resources = {
       DEBIT_CARD_TRANSACTION: 'Cypher Card Transaction',
       WITHDRAWN: 'Withdrawn',
       HASH: 'Hash',
-      INSUFFICIENT_GAS_ERROR: 'Returned error: insufficient funds for gas * price + value',
+      INSUFFICIENT_GAS_ERROR:
+        'Returned error: insufficient funds for gas * price + value',
       INSUFFICIENT_GAS: 'token to pay gas fee.',
       SENT_ON: 'SENT ON',
       MENU_RECOMMEND_FRIEND: 'Recommend To A Friend',
-      TRANSACTION_FAILED_REASON_NA: 'Failed reason not available for this transaction',
+      TRANSACTION_FAILED_REASON_NA:
+        'Failed reason not available for this transaction',
       FUND_WALLET_ACCESS_BRIDGE: 'Fund your wallet to access bridge',
       ENTER_AMOUNT_GREATER: 'Enter Amount >',
       BALANCE: 'balance',
       FORM: 'from',
-      INSUFFICIENT_BALANCE_BRIDGE: 'Amount that you\'re trying to bridge is higher than your actual balance',
-      INSUFFICIENT_BALANCE_SWAP: 'Amount that you\'re trying to swap is higher than your actual balance',
-      INSUFFICIENT_GAS_FEE_BRIDGE: 'Insufficient funds to pay gas fee for this bridge',
+      INSUFFICIENT_BALANCE_BRIDGE:
+        "Amount that you're trying to bridge is higher than your actual balance",
+      INSUFFICIENT_BALANCE_SWAP:
+        "Amount that you're trying to swap is higher than your actual balance",
+      INSUFFICIENT_GAS_FEE_BRIDGE:
+        'Insufficient funds to pay gas fee for this bridge',
       DELAYED: 'DELAYED',
-      CARD_WAITLIST_PAGE_CAPTION: 'Access your Crypto anytime and anywhere with one swipe!',
+      CARD_WAITLIST_PAGE_CAPTION:
+        'Access your Crypto anytime and anywhere with one swipe!',
       CARD_SIGNUP_WELCOME_TEXT: 'Let’s begin your journey to Cypher Card',
-      CARD_SIGNUP_CONSENT_TEXT: 'I confirm that I have read, understood and agree to CypherD’s',
+      CARD_SIGNUP_CONSENT_TEXT:
+        'I confirm that I have read, understood and agree to CypherD’s',
       CARD_SIGNUP_PAGE1_TITLE: 'Let’s get to know you better',
-      CARD_SIGNUP_COMPLETE_TEXT: 'Your card application is in process. We will notify you when there is a status update.',
+      CARD_SIGNUP_COMPLETE_TEXT:
+        'Your card application is in process. We will notify you when there is a status update.',
       CONGRATULATIONS_INIT_CAPS: 'Congratulations',
       BILLING_ADDRESS: 'Add Your Billing Address',
       CONFIRM_USER_IDENTITY: 'Confirm Your Identity',
@@ -358,10 +403,13 @@ const resources = {
       VIEW_CARD_STATUS: 'Click to see your card status',
       LEGAL: 'Legal',
       WHY_DOB_AND_SSN: 'Why we ask for your DOB and SSN?',
-      WHY_DOB_AND_PASSPORT_NUMBER: 'Why we ask for your DOB and passport number?',
-      WHY_DOB_AND_SSN_CONTENT: 'To help the government fight the funding of terrorism and money laundering activities, federal law requires all financial institutions to obtain, verify, and record information that identifies each person who opens an Account.',
+      WHY_DOB_AND_PASSPORT_NUMBER:
+        'Why we ask for your DOB and passport number?',
+      WHY_DOB_AND_SSN_CONTENT:
+        'To help the government fight the funding of terrorism and money laundering activities, federal law requires all financial institutions to obtain, verify, and record information that identifies each person who opens an Account.',
       WHAT_THIS_MEANS_FOR_USER_HEADING: 'What this means for you?',
-      WHAT_THIS_MEANS_FOR_USER_CONTENT: 'When you open an Account, we will ask for your name, address, date of birth, and other information that will allow us to identify you. We may also ask to see a copy of your driver\'s license or other identifying documents.',
+      WHAT_THIS_MEANS_FOR_USER_CONTENT:
+        "When you open an Account, we will ask for your name, address, date of birth, and other information that will allow us to identify you. We may also ask to see a copy of your driver's license or other identifying documents.",
       VERIFY_PHONE_NO_HEADING: 'Verify Phone No',
       VERIFY_EMAIL_ID_HEADING: 'Verify Email Id',
       SENT_AUTHENTICATION_CODE_TO: 'We have sent authentication code to ',
@@ -376,7 +424,8 @@ const resources = {
       INVALID_ADDRESS: 'Invalid Address',
       DUPLICATE_FOUND: 'Duplicate found',
       UNRECOGNIZED_QR_CODE: 'Unrecognized QR Code',
-      UNRECOGNIZED_QR_CODE_DESCRIPTION: 'Sorry, this QR code is not associated with an account address or a contract address',
+      UNRECOGNIZED_QR_CODE_DESCRIPTION:
+        'Sorry, this QR code is not associated with an account address or a contract address',
       FIRST_NAME_REQUIRED: 'First Name is required',
       LAST_NAME_REQUIRED: 'Last Name is required',
       EMAIL_REQUIRED: 'Email is required',
@@ -403,9 +452,11 @@ const resources = {
       KYC_COMPLETED: 'KYC completed',
       CARD_ISSUED: 'Card issued',
       IDV_PROMPT: 'Please complete the IDV process',
-      CARD_SIGNUP_INVITE_VERIFICATION_TEXT: 'Enter your 6 digit invite code that you received',
+      CARD_SIGNUP_INVITE_VERIFICATION_TEXT:
+        'Enter your 6 digit invite code that you received',
       INITIATE_KYC_ALL_CAPS: 'INITIATE KYC',
-      INITIATE_KYC_ERROR_MESSAGE: 'Failed to initiate KYC. Please contact Cypher Support',
+      INITIATE_KYC_ERROR_MESSAGE:
+        'Failed to initiate KYC. Please contact Cypher Support',
       CODE_VERFIED: 'Code verified',
       INVALID_CODE: 'Invalid code',
       INVALID_COUNTRY_FOR_INVITE_CODE: 'The invite code is not valid in ',
@@ -426,14 +477,16 @@ const resources = {
       MONTHLY: 'Monthly',
       YEARLY: 'Yearly',
       ENTER_AUTHENTICATION_CODE: 'Enter Authentication Code',
-      CARD_SENT_OTP: 'We have sent an authentication code to mobile number and email registered with this card.',
+      CARD_SENT_OTP:
+        'We have sent an authentication code to mobile number and email registered with this card.',
       MONTH: 'Month',
       TRANSACTIONS_NOT_FOUND: 'No Transactions Yet!!',
       USD: 'USD',
       CHOOSE_TOKEN: 'Choose Token',
       CHOOSE_CONTACT: 'Choose Contact',
       QUOTE_EXPIRED: 'Quote Expired',
-      QUOTE_EXPIRED_DESCRIPTION: 'Your quote has been expired. Please retry initiating your transaction',
+      QUOTE_EXPIRED_DESCRIPTION:
+        'Your quote has been expired. Please retry initiating your transaction',
       QUOTE_EXPIRES_IN: 'Quote expires in',
       DEBIT_CARD: 'Debit Card',
       LOAD_CARD: 'Load Card',
@@ -442,7 +495,8 @@ const resources = {
       GO_TO_NEW_CARD: 'New Card',
       BRIDGE_ALL_CAPS: 'BRIDGE',
       LOAD_ALL_CAPS: 'LOAD',
-      CARD_INSUFFICIENT_FUNDS: 'You don\'t seem to have any tokens worth over $10 to load your card!',
+      CARD_INSUFFICIENT_FUNDS:
+        "You don't seem to have any tokens worth over $10 to load your card!",
       AGE_SHOULD_GT_18: 'Age should be greater than 18',
       CARD_LOAD_MIN_AMOUNT: 'Min Amount $10',
       INSUFFICIENT_FUNDS: 'Insufficient Funds',
@@ -450,7 +504,8 @@ const resources = {
       ACTIVATE_CARD: 'Activate Card',
       BLOCK_CARD: 'Block Card',
       CARD_STATUS: 'Card Status',
-      UNABLE_TO_CHANGE_CARD_STATUE: 'Unable to change card status. Please try again later!',
+      UNABLE_TO_CHANGE_CARD_STATUE:
+        'Unable to change card status. Please try again later!',
       ENTER_PIN: 'Enter PIN to Login',
       ENTER_PIN_TO_DELETE: 'Enter PIN to delete wallet',
       RETRIES_LEFT: 'Retries left : ',
@@ -460,7 +515,8 @@ const resources = {
       WRONG_PIN: 'The PIN entered does not match',
       SET_PIN: 'SET PIN',
       RESETTING_PIN: 'RESETTING PIN',
-      RESET_PIN_DESCRIPTION: 'After resetting the PIN, you will be prompted to re-enter your Recovery Phrase ( 12 words ) to confirm your identity.',
+      RESET_PIN_DESCRIPTION:
+        'After resetting the PIN, you will be prompted to re-enter your Recovery Phrase ( 12 words ) to confirm your identity.',
       CHANGE_PIN: 'CHANGE PIN',
       CHANGE_PIN_TITLE: 'Enter your Old PIN',
       PIN_SET_SUCCESSFUL: 'PIN SUCCESSFULLY SET',
@@ -472,7 +528,8 @@ const resources = {
       UPDATE_CARD_APPLICATION: 'Update your application',
       EDIT_ALL_CAPS: 'EDIT',
       CLICK_TO_EDIT_YOUR_APPLICATION: 'Click here to edit your application',
-      UPDATE_INFO_ERROR_MESSAGE: 'Failed to update your information. Please contact Cypher Support',
+      UPDATE_INFO_ERROR_MESSAGE:
+        'Failed to update your information. Please contact Cypher Support',
       COUNTRY_INIT_CAPS: 'Country',
       FIRST_NAME_INIT_CAPS: 'First Name',
       LAST_NAME_INIT_CAPS: 'Last Name',
@@ -487,7 +544,8 @@ const resources = {
       SSN_ALL_CAPS: 'SSN',
       PASSPORT_NO_INIT_CAPS: 'Passport Number',
       INVALID_USER_INPUT: 'Invalid User Input',
-      PROMPT_FOR_VALID_CREDS_FOR_CARD: 'Please validate your Date Of Birth, Address and ID Number',
+      PROMPT_FOR_VALID_CREDS_FOR_CARD:
+        'Please validate your Date Of Birth, Address and ID Number',
       CONTACT_US_FOR_ASSISTANCE: 'Contact us for assistance',
       HOSTS_AND_RPC_INIT_CAPS: 'Hosts & RPC',
       HOSTS_ALL_CAPS: 'HOSTS',
@@ -499,11 +557,14 @@ const resources = {
       RESTORE_DEFAULTS: 'RESTORE DEFAULTS',
       RESTORE_DEFAULT_HOSTS_RPC_TITLE: 'Restore Default Hosts & RPC',
       UPDATE_HOSTS_RPC_TITLE: 'Update Hosts & RPC',
-      RESTORE_DEFAULT_HOSTS_RPC_DESCRIPTION: 'Restoring defaults will close the app. Are you sure want to reset?',
-      UPDATE_HOSTS_RPC_DESCRIPTION: 'Updating the info will close the app. Are you sure want to update?',
+      RESTORE_DEFAULT_HOSTS_RPC_DESCRIPTION:
+        'Restoring defaults will close the app. Are you sure want to reset?',
+      UPDATE_HOSTS_RPC_DESCRIPTION:
+        'Updating the info will close the app. Are you sure want to update?',
       BRIDGE_TRANSACTION: 'Bridge Transaction',
       CARD_LOAD_MAX_AMOUNT: 'Max Amount $1000',
-      UNABLE_TO_FETCH_TRANSACTIONS: 'Unable to fetch your transactions. Please try again later.',
+      UNABLE_TO_FETCH_TRANSACTIONS:
+        'Unable to fetch your transactions. Please try again later.',
       DISCORD: 'Discord',
       TWITTER: 'Twitter',
       REDDIT: 'Reddit',
@@ -512,7 +573,8 @@ const resources = {
       VERSION: 'version',
       CARD_NUMBER_COPY: 'Card number copied to clipboard',
       CYPHERD_CARD: 'Cypher Card',
-      UNABLE_TO_TRANSFER: 'Unable to transfer at this point. Please try again later',
+      UNABLE_TO_TRANSFER:
+        'Unable to transfer at this point. Please try again later',
       SHARE_QR_TEXT: 'Generated on Cypher Wallet',
       CONTINUE_ALL_CAPS: 'CONTINUE',
       INVITE_CODE: 'Invite Code',
@@ -542,7 +604,8 @@ const resources = {
       JWT_COPY: 'JWT copied to clipboard',
       COPIED_TO_CLIPBOARD: 'Copied to clipboard',
       CLICK_HERE_TO_VIEW_TRANSACTION: 'Click here to view transaction',
-      ENTER_AMOUNT_LESS_THAN_BALANCE: 'Please enter an amount less than or equal to your balance',
+      ENTER_AMOUNT_LESS_THAN_BALANCE:
+        'Please enter an amount less than or equal to your balance',
       REFERRAL_VERIFIED: 'Referral Code Verified',
       INVALID_REFERRAL: 'Invalid Referral Code',
       YOUR_BALANCE_PASCAL_CASE: 'Your Balance',
@@ -556,19 +619,21 @@ const resources = {
       PRIVACY_MODE_OFF: 'Privacy Mode Off',
       HELP_US_UNDERSTAND: 'Help us understand',
       REASONS_CANCEL_BRIDGE: 'Reasons for cancelling this bridge',
-      DONT_ASK_AGAIN: 'Don\'t ask me again',
+      DONT_ASK_AGAIN: "Don't ask me again",
       ENABLE_FEEDBACK: 'Enable Feedback',
       ADDITIONAL_COMMENTS: 'Additional Comments',
       THANKS_FOR_FEEDBACK: 'Thank you for your feedback',
       NEED_SOMETHING_ELSE: 'Need more info? Please let us know',
-      MARK_TOKEN_VERIFIED: 'Want to see this token as verified? \nPlease let us know',
+      MARK_TOKEN_VERIFIED:
+        'Want to see this token as verified? \nPlease let us know',
       DEFAULT_INIT_CAPS: 'Default',
       UPDATED_INIT_CAPS: 'Updated',
       TRACK_ANY_WALLET: 'TRACK ANY WALLET',
       TRACK: 'TRACK',
       QR_TRACK_WALLET: 'Scan QR code to track the wallet',
       TRY_TRACK_WALLET: 'Try our new track wallet feature',
-      TRACK_WALLET_CYPHER_CARD: 'Cypher Card is not accessible when you are tracking a wallet',
+      TRACK_WALLET_CYPHER_CARD:
+        'Cypher Card is not accessible when you are tracking a wallet',
       UNABLE_TO_TRACK: 'Unable to track this address. Please try again later.',
       ENTER_OR_SCAN_ETHEREUM_ADDRESS: 'Enter ethereum address or ens domain',
       ONLY_ETHEREUM_SUPPORTED: 'Only ethereum address is supported',
@@ -584,13 +649,18 @@ const resources = {
       NOBLE_ADDRESS_PLACEHOLDER: 'noble1f...',
       ADDRESS_NOT_ACCESSIBLE: 'address is not accessible',
       MARKET_CAP_FORMULA: 'Market Cap = Current Price x Circulating Supply',
-      MARKET_CAP_TOOLTIP: 'Refers to the total market value of a cryptocurrency’s circulating supply. It is similar to the stock market’s measurement of multiplying price per share by shares readily available in the market (not held & locked by insiders, governments)',
-      VOLUME_TOOLTIP: 'A measure of how much of a cryptocurrency was traded in the last 24 hours',
-      CIRCULATING_SUPPLY_TOOLTIP: 'The amount of coins that are circulating in the market and are tradeable by the public. It is comparable to looking at shares readily available in the market (not held & locked by insiders, governments)',
+      MARKET_CAP_TOOLTIP:
+        'Refers to the total market value of a cryptocurrency’s circulating supply. It is similar to the stock market’s measurement of multiplying price per share by shares readily available in the market (not held & locked by insiders, governments)',
+      VOLUME_TOOLTIP:
+        'A measure of how much of a cryptocurrency was traded in the last 24 hours',
+      CIRCULATING_SUPPLY_TOOLTIP:
+        'The amount of coins that are circulating in the market and are tradeable by the public. It is comparable to looking at shares readily available in the market (not held & locked by insiders, governments)',
       TOTAL_SUPPLY_FORMULA: 'Total Supply = Onchain supply - burned tokens',
-      TOTAL_SUPPLY_TOOLTIP: 'The amount of coins that have already been created, minus any coins that have been burned (removed from circulation). It is comparable to outstanding shares in the stock market',
+      TOTAL_SUPPLY_TOOLTIP:
+        'The amount of coins that have already been created, minus any coins that have been burned (removed from circulation). It is comparable to outstanding shares in the stock market',
       MAX_SUPPLY_FORMULA: 'Max Supply = Theoretical maximum as coded',
-      MAX_SUPPLY_TOOLTIP: 'The maximum number of coins coded to exist in the lifetime of the cryptocurrency. It is comparable to the maximum number of issuable shares in the stock market',
+      MAX_SUPPLY_TOOLTIP:
+        'The maximum number of coins coded to exist in the lifetime of the cryptocurrency. It is comparable to the maximum number of issuable shares in the stock market',
       DETAILS_INIT_CAPS: 'Details',
       COLLECTION_NAME_PASCAL_CASE: 'Collection Name',
       TOKEN_ID: 'Token ID',
@@ -610,21 +680,26 @@ const resources = {
       ADD_ATLEAST_ONE_ADDRESS: 'Add atleast on address to save this contact',
       NAME_ALREADY_EXISTS: 'Contact with this name already exists',
       ADD_NAME: 'Add Name',
-      SEND_ETHEREUM_PLACEHOLDER: 'Enter contact name / ethereum address (0x...)',
-      SEND_ETHEREUM_PLACEHOLDER_WITH_ENS: 'Enter contact name / ethereum address (0x...) / ens domain',
-      SEND_EVMOS_PLACEHOLDER: 'Enter contact name / evmos address (evmos...) / ethereum address (0x...)',
-      SEND_EVMOS_PLACEHOLDER_WITH_ENS: 'Enter contact name / evmos address (evmos...) / ethereum address (0x...) / ens domain',
+      SEND_ETHEREUM_PLACEHOLDER:
+        'Enter contact name / ethereum address (0x...)',
+      SEND_ETHEREUM_PLACEHOLDER_WITH_ENS:
+        'Enter contact name / ethereum address (0x...) / ens domain',
+      SEND_EVMOS_PLACEHOLDER:
+        'Enter contact name / evmos address (evmos...) / ethereum address (0x...)',
+      SEND_EVMOS_PLACEHOLDER_WITH_ENS:
+        'Enter contact name / evmos address (evmos...) / ethereum address (0x...) / ens domain',
       ENTER_CONTACT_NAME: 'Enter contact name',
       ADDRESS_ALL_SMALL: 'address',
       ADDRESS_BOOK: 'Address Book',
       BRIDGE_QUOTE_EXPIRED: 'Bridge Quote Expired',
-      BRIDGE_QUOTE_EXPIRED_DESC: 'Your bridge quote is expired, please retry by clicking on \'Get Quote\'',
+      BRIDGE_QUOTE_EXPIRED_DESC:
+        "Your bridge quote is expired, please retry by clicking on 'Get Quote'",
       PLUS_ADD_ADDRESS: '+ Add address',
       PLUS_ADD_TO_EXISTING_CONTACT: 'Existing contacts',
       RECENT_ADDRESS: 'Recent Address',
       SKIP: 'SKIP',
       ACTION_REQUIRED: 'Action Required',
-      READ_ONLY_MODE: 'You\'re in read-only mode',
+      READ_ONLY_MODE: "You're in read-only mode",
       CREATE_SEEDPHRASE_TITLE: 'Create Seed Phrase',
       CONFIRM_SEEDPHRASE_TITLE: 'Confirm Seed Phrase',
       TRACK_WALLET_INFO: JSON.stringify([
@@ -632,8 +707,8 @@ const resources = {
         'Quickly check balances & receive notifications.',
         'Avoid any accidental transactions.',
         'Only Ethereum based tokens can be tracked.',
-        'Activities like Send, Bridge, Buy, Sell etc.. can\'t be performed without the seed phrase.',
-        'Import your wallet anytime for making transactions.'
+        "Activities like Send, Bridge, Buy, Sell etc.. can't be performed without the seed phrase.",
+        'Import your wallet anytime for making transactions.',
       ]),
       SWAP_TOKENS: 'Swap Tokens',
       SWAP: 'SWAP',
@@ -645,8 +720,10 @@ const resources = {
       EXCHANGE: 'Exchange',
       EXCHNAGE_TRANSACTION: 'Exchange Transaction',
       SWAP_TRANSACTION: 'Swap Transaction',
-      SWAP_APPROVAL_DISCLAIMER: 'A small amount of network fees is associated with this request',
-      SWAP_QUOTE_EXPIRED: 'Swap quote expired! Please try again by clicking on \'Get Quote\'',
+      SWAP_APPROVAL_DISCLAIMER:
+        'A small amount of network fees is associated with this request',
+      SWAP_QUOTE_EXPIRED:
+        "Swap quote expired! Please try again by clicking on 'Get Quote'",
       SKIP_FOR_NOW: 'SKIP FOR NOW',
       CREATE_SEED_PHRASE_TYPE_TITLE: 'I would like to generate a',
       TWELVE_WORD_SEEDPHRASE: '12 Word Seedphrase',
@@ -656,7 +733,8 @@ const resources = {
       TRANSFI: 'TransFi',
       STAKE_NOW: 'STAKE NOW',
       NOTE: 'Note:',
-      CARD_TRANSACTIONS_DELAY: 'Transactions might take few hours to get reflected',
+      CARD_TRANSACTIONS_DELAY:
+        'Transactions might take few hours to get reflected',
       REVIEW_PERMISSION: 'Review Permission',
       SIGN_MESSAGE: 'Sign Message',
       APPROVE_TRANSACTION: 'Approve Transaction',
@@ -669,7 +747,8 @@ const resources = {
       ACTIVE_SESSION: 'Active session',
       EXPIRES_AT: 'Expires at',
       DATA: 'Data',
-      ERROR_CONNECTING_WITH_WALLET_CONNECT: 'Error while connecting with wallet connect. Please contact cypher support.',
+      ERROR_CONNECTING_WITH_WALLET_CONNECT:
+        'Error while connecting with wallet connect. Please contact cypher support.',
       VIRTUAL: 'Virtual',
       CVV: 'CVV',
       VALID_THRU: 'VALID THRU',
@@ -677,27 +756,36 @@ const resources = {
       CARD: 'Card',
       SESSIONS: 'Sessions',
       UNSUPPORTED_METHOD: 'Unsupported Method',
-      UNSUPPORTED_METHOD_DESCRIPTION: 'The requested method is currently not supported. Please contact cypher support.',
+      UNSUPPORTED_METHOD_DESCRIPTION:
+        'The requested method is currently not supported. Please contact cypher support.',
       UNSUPPORTED_CHAIN: 'Unsupported Chain',
-      UNSUPPORTED_CHAIN_DESCRIPTION: 'The requested chain is currently not supported. Please contact cypher support.',
+      UNSUPPORTED_CHAIN_DESCRIPTION:
+        'The requested chain is currently not supported. Please contact cypher support.',
       APPROVE_REQUEST: 'Approve Request',
-      DEFAULT_AUTH_REMOVE: 'To recover your existing wallet, please set up authentication or you can continue without authentication by creating a new wallet / importing an existing wallet. Do you want to continue without authentication ?',
+      DEFAULT_AUTH_REMOVE:
+        'To recover your existing wallet, please set up authentication or you can continue without authentication by creating a new wallet / importing an existing wallet. Do you want to continue without authentication ?',
       PROCEED: 'PROCEED',
       DEFAULT_AUTH_REMOVE_TITLE: 'Authentication Removed',
-      NO_CONTACTS_TEXT: 'You don\'t have any addresses saved as contacts. Save some contacts to access them here.',
+      NO_CONTACTS_TEXT:
+        "You don't have any addresses saved as contacts. Save some contacts to access them here.",
       SAVE_CONTACT_MODAL_TITLE: 'Save as a contact',
       CANNOT_GETCODE: 'Cannot get code',
       CANNOT_GETCODE_DESCRIPTION: 'Unable to validate the below address(es): ',
-      BLUE_CIRCLE_CONTRACT_ADDRESS_INFO: 'A blue circle surrounding the address icon indicates a contract address',
-      SAVE_AS_A_CONTACT_PROMPT: 'Would you like to add this recipient\'s address to your contacts ?',
+      BLUE_CIRCLE_CONTRACT_ADDRESS_INFO:
+        'A blue circle surrounding the address icon indicates a contract address',
+      SAVE_AS_A_CONTACT_PROMPT:
+        "Would you like to add this recipient's address to your contacts ?",
       UNABLE_TO_CREATE_WALLET: 'Unable to create wallet',
       SUPPORTED_TOKENS_TEXT: 'The minimum amount to load card is $10',
       AUTHENTICATION_CANCELLED: 'Authentication Cancelled',
-      AUTHENTICATE_TO_CONTINUE: 'Please authenticate to continue using the app.',
+      AUTHENTICATE_TO_CONTINUE:
+        'Please authenticate to continue using the app.',
       FINGERPRINT_HARDWARE_NOT_AVAILABLE: 'Fingerprint hardware not available',
-      FIX_THIS_ISSUE_TO_CONTINUE: 'Please fix this issue to continue using the app.',
+      FIX_THIS_ISSUE_TO_CONTINUE:
+        'Please fix this issue to continue using the app.',
       CARD_ACTIVATION_HEADER: 'Activate your card',
-      CARD_ACTIVATION_DESCRIPTION: 'Enter last 4 digits of card number and otp to activate your card',
+      CARD_ACTIVATION_DESCRIPTION:
+        'Enter last 4 digits of card number and otp to activate your card',
       ENTER_OTP: 'Enter OTP',
       ENTER_PIN_PLACEHOLDER: 'Enter PIN',
       ACTIVATE: 'ACTIVATE',
@@ -711,8 +799,10 @@ const resources = {
       CARD_SET_NEW_PIN: 'Set new pin',
       CARD_PIN_SET_HEADER: 'Your new pin has been set',
       CARD_PIN_SET_DESCRIPTION: 'Use your card with the new pin',
-      CARD_SET_PIN_TO_USE_CARD: 'This pin will be used while making transactions with your card',
-      INSUFFICIENT_BALANCE_CARD: 'Amount that you are trying to load is higher than your actual balance',
+      CARD_SET_PIN_TO_USE_CARD:
+        'This pin will be used while making transactions with your card',
+      INSUFFICIENT_BALANCE_CARD:
+        'Amount that you are trying to load is higher than your actual balance',
       MAYBE_LATER: 'Maybe later',
       HOME: 'Home',
       HISTORY: 'History',
@@ -722,9 +812,11 @@ const resources = {
       APPROVE_TO: 'Approve to',
       METHOD: 'Method',
       WALLET_CONNECT_PROPOSAL_EXPIRED: 'Connection request expired',
-      WC_PROPOSAL_EXPIRED_DESCRIPTION: 'This connection request has expired. Please try again by scanning a new QR or by refreshing the dApp that you are trying to connect to.',
+      WC_PROPOSAL_EXPIRED_DESCRIPTION:
+        'This connection request has expired. Please try again by scanning a new QR or by refreshing the dApp that you are trying to connect to.',
       INVALID_CONNECTION_REQUEST: 'Invalid connection request',
-      INVALID_CONNECTION_REQUEST_DESCRIPTION: 'If you are trying to connect to a dApp, select Cypher wallet or WalletConnect and then scan the QR code again.',
+      INVALID_CONNECTION_REQUEST_DESCRIPTION:
+        'If you are trying to connect to a dApp, select Cypher wallet or WalletConnect and then scan the QR code again.',
       SET_NEW_PIN: 'Set New Pin',
       CARD_BLOCKED: 'Card Blocked',
       CHANGE_CARD_STATUS_SUCCESS: 'Card status update success',
@@ -782,16 +874,22 @@ const resources = {
       NO: 'No',
       TXNS_EXPORTED: 'Transactions exported',
       FAILED_TO_EXPORT_TXNS: 'Failed to export transactions',
-      CARD_TXNS_EXPORTED_TEXT: 'Your transactions will be exported as a CSV (.csv) file and sent shortly to \n',
+      CARD_TXNS_EXPORTED_TEXT:
+        'Your transactions will be exported as a CSV (.csv) file and sent shortly to \n',
       UPGRADE_TO_PHYSICAL_CARD: 'Upgrade to physical card',
-      ADD_SHIPPING_DETAILS_SUBTEXT: 'Cypher card will be shipped to this address. Note that the shipping address cannot be a PO Box.',
-      SEND_OTP_TEXT: 'On clicking the below button, an OTP will be sent to your registered mobile number and email address.',
-      PHYSICAL_CARD_UPGRADE_SUBMISSION_SUCCESS_TEXT: 'The submission of the upgrade was a success. You have been queued for a physical card',
-      PHYSICAL_CARD_UPGRADE_SUBMISSION_FAILURE_TEXT: 'The submission of the upgrade failed. Try again later or contact Cypher Support.',
-      OTP_TRIGGER_FAILED_TEXT: 'Failed to send OTP. Please contact Cypher Support.',
-      LOADING_BANNERS: 'Getting the latest news...'
-    }
-  }
+      ADD_SHIPPING_DETAILS_SUBTEXT:
+        'Cypher card will be shipped to this address. Note that the shipping address cannot be a PO Box.',
+      SEND_OTP_TEXT:
+        'On clicking the below button, an OTP will be sent to your registered mobile number and email address.',
+      PHYSICAL_CARD_UPGRADE_SUBMISSION_SUCCESS_TEXT:
+        'The submission of the upgrade was a success. You have been queued for a physical card',
+      PHYSICAL_CARD_UPGRADE_SUBMISSION_FAILURE_TEXT:
+        'The submission of the upgrade failed. Try again later or contact Cypher Support.',
+      OTP_TRIGGER_FAILED_TEXT:
+        'Failed to send OTP. Please contact Cypher Support.',
+      TOKEN_IN_OTHER_CHAIN_HOLDINGS: 'Token across chains',
+    },
+  },
 };
 
 void i18n
@@ -803,8 +901,8 @@ void i18n
     fallbackLng: 'en',
     keySeparator: false,
     interpolation: {
-      escapeValue: false
-    }
+      escapeValue: false,
+    },
   });
 
 export default i18n;
