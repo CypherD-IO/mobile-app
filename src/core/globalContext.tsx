@@ -57,7 +57,7 @@ export const initialGlobalState: GlobalStateDef = {
         validators:
           'https://lcd-cosmoshub.keplr.app/cosmos/staking/v1beta1/validators?pagination.limit=1000&status=BOND_STATUS_BONDED',
       },
-      primary: 'https://rpc-cosmoshub-ia.cosmosia.notional.ventures/',
+      primary: 'https://cosmos-rpc.polkachu.com/',
     },
     ETH: {
       primary: 'https://rpc.ankr.com/eth',
@@ -219,7 +219,7 @@ const checkAndMaintainUpdatedRPCEndpointsInAsync = async (
   );
   const updatedEndpoints = {};
   const availableChains = Object.keys(resultFromEndpoint.data);
-  availableChains.map(async (chain) => {
+  availableChains.map(async chain => {
     if (get(resultFromEndpoint.data, chain) && get(rpcEndpoints, chain)) {
       Object.assign(updatedEndpoints, { [chain]: get(rpcEndpoints, chain) });
     } else if (
