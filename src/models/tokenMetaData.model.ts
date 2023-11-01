@@ -1,11 +1,11 @@
-import { Chain } from "../constants/server";
+import { Chain } from '../constants/server';
 
 export interface TokenMeta {
   about: string;
   actualBalance: number;
   actualStakedBalance: number;
   balance: number;
-  chainDetails: Chain
+  chainDetails: Chain;
   coinGeckoId: string;
   contractAddress: string;
   contractDecimals: number;
@@ -24,5 +24,6 @@ export interface TokenMeta {
   isBridgeable: boolean;
   isSwapable: boolean;
   isStakeable?: boolean;
+  isZeroFeeCardFunding?: boolean;
   id?: number | string;
 }

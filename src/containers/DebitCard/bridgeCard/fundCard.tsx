@@ -782,13 +782,19 @@ export default function BridgeFundCardScreen({ route }: { route: any }) {
       setCryptoAmount(maxAmount.toString());
       setUsdAmount(
         (
-          parseFloat(maxAmount.toString()) * Number(selectedToken?.price)
+          parseFloat(maxAmount.toString()) *
+          (selectedToken?.isZeroFeeCardFunding
+            ? 1
+            : Number(selectedToken?.price))
         ).toString(),
       );
     } else {
       setCryptoAmount(
         (
-          parseFloat(maxAmount.toString()) / Number(selectedToken?.price)
+          parseFloat(maxAmount.toString()) /
+          (selectedToken?.isZeroFeeCardFunding
+            ? 1
+            : Number(selectedToken?.price))
         ).toString(),
       );
       setUsdAmount(maxAmount.toString());
@@ -812,12 +818,24 @@ export default function BridgeFundCardScreen({ route }: { route: any }) {
                 source={{ uri: selectedToken.logoUrl }}
                 className={'w-[25px] h-[25px] rounded-[20px]'}
               />
-              <CyDText
-                className={
-                  'text-center text-black font-nunito font-bold text-[16px] ml-[8px]'
-                }>
-                {selectedToken.name}
-              </CyDText>
+              <CyDView className='flex flex-col justify-center items-start'>
+                <CyDText
+                  className={clsx(
+                    'text-center text-black font-nunito font-bold text-[16px] ml-[8px]',
+                    {
+                      'text-[14px]': selectedToken.isZeroFeeCardFunding,
+                    },
+                  )}>
+                  {selectedToken.name}
+                </CyDText>
+                {selectedToken.isZeroFeeCardFunding ? (
+                  <CyDView className='h-[20px] bg-white rounded-[8px] mx-[4px] px-[8px] flex justify-center items-center'>
+                    <CyDText className={'font-black text-[10px]'}>
+                      {'ZERO FEE ✨'}
+                    </CyDText>
+                  </CyDView>
+                ) : null}
+              </CyDView>
             </CyDView>
           )}
           {!selectedToken && (
@@ -984,14 +1002,20 @@ export default function BridgeFundCardScreen({ route }: { route: any }) {
                   setAmount(text);
                   if (isCrpytoInput) {
                     const usdText =
-                      parseFloat(text) * Number(selectedToken?.price);
+                      parseFloat(text) *
+                      (selectedToken?.isZeroFeeCardFunding
+                        ? 1
+                        : Number(selectedToken?.price));
                     setCryptoAmount(text);
                     setUsdAmount(
                       (isNaN(usdText) ? '0.00' : usdText).toString(),
                     );
                   } else {
                     const cryptoText =
-                      parseFloat(text) / Number(selectedToken?.price);
+                      parseFloat(text) /
+                      (selectedToken?.isZeroFeeCardFunding
+                        ? 1
+                        : Number(selectedToken?.price));
                     setCryptoAmount(
                       (isNaN(cryptoText) ? '0.00' : cryptoText).toString(),
                     );
@@ -1028,12 +1052,18 @@ export default function BridgeFundCardScreen({ route }: { route: any }) {
               setIsCryptoInput(!isCrpytoInput);
               if (!isCrpytoInput) {
                 const usdAmt =
-                  parseFloat(amount) * Number(selectedToken?.price);
+                  parseFloat(amount) *
+                  (selectedToken?.isZeroFeeCardFunding
+                    ? 1
+                    : Number(selectedToken?.price));
                 setCryptoAmount(amount);
                 setUsdAmount((isNaN(usdAmt) ? '0.00' : usdAmt).toString());
               } else {
                 const cryptoAmt =
-                  parseFloat(amount) / Number(selectedToken?.price);
+                  parseFloat(amount) /
+                  (selectedToken?.isZeroFeeCardFunding
+                    ? 1
+                    : Number(selectedToken?.price));
                 setCryptoAmount(
                   (isNaN(cryptoAmt) ? '0.00' : cryptoAmt).toString(),
                 );
