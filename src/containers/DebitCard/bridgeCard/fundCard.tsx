@@ -542,7 +542,7 @@ export default function BridgeFundCardScreen({ route }: { route: any }) {
             : '';
           if (Number(quote.usdValue) <= Number(selectedToken?.totalValue)) {
             getGasPriceFor(chainDetails, web3RPCEndpoint)
-              .then((gasFeeResponse) => {
+              .then(gasFeeResponse => {
                 gasPrice = gasFeeResponse;
                 setLoading(false);
                 estimateGasForNativeTransaction(
@@ -557,7 +557,7 @@ export default function BridgeFundCardScreen({ route }: { route: any }) {
                   targetWalletAddress,
                 );
               })
-              .catch((gasFeeError) => {
+              .catch(gasFeeError => {
                 // TODO (user feedback): Give feedback to user.
                 Sentry.captureException(gasFeeError);
                 estimateGasForNativeTransaction(
@@ -782,13 +782,19 @@ export default function BridgeFundCardScreen({ route }: { route: any }) {
       setCryptoAmount(maxAmount.toString());
       setUsdAmount(
         (
-          parseFloat(maxAmount.toString()) * Number(selectedToken?.price)
+          parseFloat(maxAmount.toString()) *
+          (selectedToken?.isZeroFeeCardFunding
+            ? 1
+            : Number(selectedToken?.price))
         ).toString(),
       );
     } else {
       setCryptoAmount(
         (
-          parseFloat(maxAmount.toString()) / Number(selectedToken?.price)
+          parseFloat(maxAmount.toString()) /
+          (selectedToken?.isZeroFeeCardFunding
+            ? 1
+            : Number(selectedToken?.price))
         ).toString(),
       );
       setUsdAmount(maxAmount.toString());
@@ -801,26 +807,35 @@ export default function BridgeFundCardScreen({ route }: { route: any }) {
         className={
           'bg-[#F7F8FE] mx-[40px] my-[16px] border-[1px] border-[#EBEBEB] rounded-[8px]'
         }
-        onPress={() => setIsChooseTokenVisible(true)}
-      >
+        onPress={() => setIsChooseTokenVisible(true)}>
         <CyDView
           className={
             'p-[18px] flex flex-row flex-wrap justify-between items-center'
-          }
-        >
+          }>
           {selectedToken && (
             <CyDView className={'flex flex-row w-[50%] items-center'}>
               <CyDImage
                 source={{ uri: selectedToken.logoUrl }}
                 className={'w-[25px] h-[25px] rounded-[20px]'}
               />
-              <CyDText
-                className={
-                  'text-center text-black font-nunito font-bold text-[16px] ml-[8px]'
-                }
-              >
-                {selectedToken.name}
-              </CyDText>
+              <CyDView className='flex flex-col justify-center items-start'>
+                <CyDText
+                  className={clsx(
+                    'text-center text-black font-nunito font-bold text-[16px] ml-[8px]',
+                    {
+                      'text-[14px]': selectedToken.isZeroFeeCardFunding,
+                    },
+                  )}>
+                  {selectedToken.name}
+                </CyDText>
+                {selectedToken.isZeroFeeCardFunding ? (
+                  <CyDView className='h-[20px] bg-white rounded-[8px] mx-[4px] px-[8px] flex justify-center items-center'>
+                    <CyDText className={'font-black text-[10px]'}>
+                      {'ZERO FEE ✨'}
+                    </CyDText>
+                  </CyDView>
+                ) : null}
+              </CyDView>
             </CyDView>
           )}
           {!selectedToken && (
@@ -902,7 +917,7 @@ export default function BridgeFundCardScreen({ route }: { route: any }) {
         isChooseTokenModalVisible={isChooseTokenVisible}
         tokenList={portfolioState.statePortfolio.tokenPortfolio.totalHoldings}
         minTokenValueLimit={minTokenValueLimit}
-        onSelectingToken={(token) => {
+        onSelectingToken={token => {
           setIsChooseTokenVisible(false);
           setTimeout(
             () => {
@@ -944,8 +959,7 @@ export default function BridgeFundCardScreen({ route }: { route: any }) {
       <CyDView
         className={
           'pb-[0px] px-[10px] bg-[#F7F8FE] mx-[40px] h-[300px] rounded-[8px]'
-        }
-      >
+        }>
         <CyDView className='flex flex-row h-[100%] items-center'>
           <CyDTouchView
             onPress={() => {
@@ -953,20 +967,17 @@ export default function BridgeFundCardScreen({ route }: { route: any }) {
             }}
             className={clsx(
               'bg-white rounded-full h-[40px] w-[40px] flex justify-center items-center p-[4px]',
-            )}
-          >
+            )}>
             <CyDText className={'font-nunito text-black '}>
               {t<string>('MAX')}
             </CyDText>
           </CyDTouchView>
           <CyDView
-            className={'pb-[10px] w-[60%] items-center bg-[#F7F8FE] mx-[20px]'}
-          >
+            className={'pb-[10px] w-[60%] items-center bg-[#F7F8FE] mx-[20px]'}>
             <CyDText
               className={
                 'font-extrabold text-[22px] text-center font-nunito text-black'
-              }
-            >
+              }>
               {t<string>('ENTER_AMOUNT')}
             </CyDText>
             <CyDView className={'flex justify-center items-center'}>
@@ -976,28 +987,35 @@ export default function BridgeFundCardScreen({ route }: { route: any }) {
               <CyDTextInput
                 ref={inputRef}
                 className={clsx(
-                  'font-bold text-center text-primaryTextColor h-[85px] font-nunito',
+                  'font-extrabold text-center text-primaryTextColor h-[85px] font-nunito',
                   {
-                    'text-[70px]': amount.length <= 5,
-                    'text-[40px]': amount.length > 5,
+                    'text-[20px]': amount.length <= 15,
+                    'text-[40px]': amount.length <= 10,
+                    'text-[60px]': amount.length <= 5,
                   },
                 )}
                 value={amount}
                 keyboardType='numeric'
                 autoCapitalize='none'
                 autoCorrect={false}
-                onChangeText={(text) => {
+                onChangeText={text => {
                   setAmount(text);
                   if (isCrpytoInput) {
                     const usdText =
-                      parseFloat(text) * Number(selectedToken?.price);
+                      parseFloat(text) *
+                      (selectedToken?.isZeroFeeCardFunding
+                        ? 1
+                        : Number(selectedToken?.price));
                     setCryptoAmount(text);
                     setUsdAmount(
                       (isNaN(usdText) ? '0.00' : usdText).toString(),
                     );
                   } else {
                     const cryptoText =
-                      parseFloat(text) / Number(selectedToken?.price);
+                      parseFloat(text) /
+                      (selectedToken?.isZeroFeeCardFunding
+                        ? 1
+                        : Number(selectedToken?.price));
                     setCryptoAmount(
                       (isNaN(cryptoText) ? '0.00' : cryptoText).toString(),
                     );
@@ -1008,8 +1026,7 @@ export default function BridgeFundCardScreen({ route }: { route: any }) {
               <CyDText
                 className={clsx(
                   'text-center text-primaryTextColor h-[50px] text-[16px]',
-                )}
-              >
+                )}>
                 {isCrpytoInput
                   ? (!isNaN(parseFloat(usdAmount))
                       ? formatAmount(usdAmount).toString()
@@ -1035,12 +1052,18 @@ export default function BridgeFundCardScreen({ route }: { route: any }) {
               setIsCryptoInput(!isCrpytoInput);
               if (!isCrpytoInput) {
                 const usdAmt =
-                  parseFloat(amount) * Number(selectedToken?.price);
+                  parseFloat(amount) *
+                  (selectedToken?.isZeroFeeCardFunding
+                    ? 1
+                    : Number(selectedToken?.price));
                 setCryptoAmount(amount);
                 setUsdAmount((isNaN(usdAmt) ? '0.00' : usdAmt).toString());
               } else {
                 const cryptoAmt =
-                  parseFloat(amount) / Number(selectedToken?.price);
+                  parseFloat(amount) /
+                  (selectedToken?.isZeroFeeCardFunding
+                    ? 1
+                    : Number(selectedToken?.price));
                 setCryptoAmount(
                   (isNaN(cryptoAmt) ? '0.00' : cryptoAmt).toString(),
                 );
@@ -1050,8 +1073,7 @@ export default function BridgeFundCardScreen({ route }: { route: any }) {
             }}
             className={clsx(
               'bg-white rounded-full h-[40px] w-[40px] flex justify-center items-center p-[4px]',
-            )}
-          >
+            )}>
             <CyDFastImage
               className='h-[16px] w-[16px]'
               source={AppImages.TOGGLE_ICON}
