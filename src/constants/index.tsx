@@ -1,5 +1,5 @@
 // NOTE: SCREEN TITLE 🍎🍎🍎🍎
-export const screenTitle = {
+export const screenTitle: Record<string, string> = {
   ACTIVITYFILTER: 'ACTIVITYFILTER',
   ACTIVITIES: 'Activities',
   REFERRAL_REWARDS: 'ReferralRewards',

@@ -43,10 +43,16 @@ const BannerCarousel = ({ setBannerHeight }: BannerCarouselProps) => {
   const activityContext = useContext(ActivityContext);
   const hdWallet = useContext(HdWalletContext);
 
-  const [dismissedActivityCards, setDismissedActivityCards] = useState<string[]>([]);
-  const [dismissedStaticCards, setDismissedStaticCards] = useState<string[]>([]);
+  const [dismissedActivityCards, setDismissedActivityCards] = useState<
+    string[]
+  >([]);
+  const [dismissedStaticCards, setDismissedStaticCards] = useState<string[]>(
+    [],
+  );
   const [dismissedStaticIDsReady, setDismissedStaticIDsReady] = useState(false);
-  const [activityCards, setActivityCards] = useState<BridgeOrCardActivity[]>([]);
+  const [activityCards, setActivityCards] = useState<BridgeOrCardActivity[]>(
+    [],
+  );
   const [staticCards, setStaticCards] = useState<BannerRecord[]>([]);
 
   const ethereumAddress = hdWallet?.state.wallet.ethereum.address;
@@ -57,13 +63,13 @@ const BannerCarousel = ({ setBannerHeight }: BannerCarouselProps) => {
     if (allActivities && allActivities.length > 0) {
       const oneHourAgo = moment().subtract(1, 'hour');
       const filteredActivities = allActivities?.filter(
-        (activity) =>
+        activity =>
           activity &&
           moment(activity.datetime).isAfter(oneHourAgo) &&
           [ActivityType.BRIDGE, ActivityType.CARD].includes(activity.type),
       );
       const validActivities = filteredActivities?.filter(
-        (activity) =>
+        activity =>
           activity !== undefined &&
           !dismissedActivityCards.includes(activity.id),
       );
@@ -79,7 +85,7 @@ const BannerCarousel = ({ setBannerHeight }: BannerCarouselProps) => {
       return [];
     }
     const pendingCardsAndBridges: ActivityAny[] = [];
-    recentActivities.forEach((activity) => {
+    recentActivities.forEach(activity => {
       if (
         [
           ActivityStatus.DELAYED,
@@ -99,6 +105,7 @@ const BannerCarousel = ({ setBannerHeight }: BannerCarouselProps) => {
       const uri = `/v1/configuration/device/banner-info/${ethereumAddress}`;
       try {
         const res = await getWithAuth(uri);
+        console.log(res);
         const {
           data: { data: arrayOfBanners },
         } = res;
@@ -131,7 +138,7 @@ const BannerCarousel = ({ setBannerHeight }: BannerCarouselProps) => {
     const checkStaticCards = async () => {
       const availableStaticCards = await getStaticCards();
       const filteredStaticCards = availableStaticCards?.filter(
-        (sc) => !dismissedStaticCards.includes(sc.id),
+        sc => !dismissedStaticCards.includes(sc.id),
       );
       if (filteredStaticCards) {
         if (filteredStaticCards.length === 0) {
@@ -241,7 +248,7 @@ const BannerCarousel = ({ setBannerHeight }: BannerCarouselProps) => {
           }
         }
         setDismissedActivityCards(
-          newDismissedActivities.map((nDA) => nDA.split('|')[0]),
+          newDismissedActivities.map(nDA => nDA.split('|')[0]),
         );
         await setDismissedActivityCardIDs(newDismissedActivities);
       }
@@ -256,7 +263,7 @@ const BannerCarousel = ({ setBannerHeight }: BannerCarouselProps) => {
           }
         }
         setDismissedStaticCards(
-          newDismissedStatics.map((nDS) => nDS.split('|')[0]),
+          newDismissedStatics.map(nDS => nDS.split('|')[0]),
         );
         void setDismissedStaticCardIDs(newDismissedStatics);
       }
@@ -305,13 +312,13 @@ const BannerCarousel = ({ setBannerHeight }: BannerCarouselProps) => {
     index,
     boxWidth,
     halfBoxDistance,
-    panX
+    panX,
   }: {
-    item: BannerRecord | BridgeOrCardActivity
-    index: number
-    boxWidth: number
-    halfBoxDistance: number
-    panX: SharedValue<number>
+    item: BannerRecord | BridgeOrCardActivity;
+    index: number;
+    boxWidth: number;
+    halfBoxDistance: number;
+    panX: SharedValue<number>;
   }) => {
     return (
       <CyDView className='mt-[6px]'>
@@ -332,10 +339,10 @@ const BannerCarousel = ({ setBannerHeight }: BannerCarouselProps) => {
   // Here the priority order : HIGHEST -> ACTIVITY -> HIGH -> MEDIUM -> LOW, is followed.
   const makeCards = () => {
     const highestPriorityCards = staticCards.filter(
-      (staticCard) => staticCard.priority === 'HIGHEST',
+      staticCard => staticCard.priority === 'HIGHEST',
     );
     const otherCards = staticCards.filter(
-      (staticCard) => staticCard.priority !== 'HIGHEST',
+      staticCard => staticCard.priority !== 'HIGHEST',
     );
     return [...highestPriorityCards, ...activityCards, ...otherCards];
   };

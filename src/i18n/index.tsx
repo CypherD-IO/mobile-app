@@ -888,6 +888,7 @@ const resources = {
       OTP_TRIGGER_FAILED_TEXT:
         'Failed to send OTP. Please contact Cypher Support.',
       TOKEN_IN_OTHER_CHAIN_HOLDINGS: 'Token across chains',
+      DATE_OF_BIRTH: 'Date Of Birth',
     },
   },
 };
