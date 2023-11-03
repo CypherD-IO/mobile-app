@@ -107,9 +107,7 @@ import {
   PinPresentStates,
   SignMessageValidationType,
 } from './src/constants/enum';
-import {
-  GestureHandlerRootView,
-} from 'react-native-gesture-handler';
+import { GestureHandlerRootView } from 'react-native-gesture-handler';
 import { getWalletProfile } from './src/core/card';
 import ConfirmationModals from './src/containers/Browser/ConfirmationModals';
 import {
@@ -207,7 +205,7 @@ Sentry.init({
 });
 
 // AppsFlyer SDK initialization
-const NoOpFunction = () => { };
+const NoOpFunction = () => {};
 appsFlyer.initSdk(
   {
     devKey: Config.AF_DEVKEY ?? '',
@@ -227,13 +225,13 @@ appsFlyer.initSdk(
       () => {
         appsFlyer.setAppInviteOneLinkID(
           AppsFlyerConfiguration.oneLinkId,
-          NoOpFunction
+          NoOpFunction,
         );
       },
-      NoOpFunction
+      NoOpFunction,
     );
   },
-  NoOpFunction
+  NoOpFunction,
 );
 
 async function registerIntercomUser(walletAddresses: {
@@ -246,7 +244,7 @@ async function registerIntercomUser(walletAddresses: {
   ) {
     Intercom.registerIdentifiedUser({
       userId: walletAddresses.ethereumAddress,
-    }).catch((error) => {
+    }).catch(error => {
       Sentry.captureException(error);
     });
     Intercom.updateUser({
@@ -255,7 +253,7 @@ async function registerIntercomUser(walletAddresses: {
         ...walletAddresses,
         version: DeviceInfo.getVersion(),
       },
-    }).catch((error) => {
+    }).catch(error => {
       Sentry.captureException(error);
     });
   }
@@ -277,10 +275,10 @@ function _loadExistingWallet(
       };
     }): void;
   },
-  state = initialHdWalletState
+  state = initialHdWalletState,
 ) {
   loadCyRootDataFromKeyChain(state)
-    .then((cyRootData) => {
+    .then(cyRootData => {
       const { accounts } = cyRootData;
       if (!accounts) {
         void Sentry.captureMessage('app load error for load existing wallet');
@@ -312,7 +310,7 @@ function _loadExistingWallet(
                 },
               });
               set(attributes, `${chainName}Address`, addressDetail.address);
-            }
+            },
           );
         });
         getToken(
@@ -321,11 +319,11 @@ function _loadExistingWallet(
           get(attributes, 'osmosisAddress'),
           get(attributes, 'junoAddress'),
           get(attributes, 'stargazeAddress'),
-          get(attributes, 'nobleAddress')
+          get(attributes, 'nobleAddress'),
         );
         void registerIntercomUser(attributes);
       } else {
-        void getReadOnlyWalletData().then((data) => {
+        void getReadOnlyWalletData().then(data => {
           if (data) {
             const ethereum = JSON.parse(data);
             dispatch({
@@ -358,7 +356,7 @@ function _loadExistingWallet(
             });
             Intercom.registerIdentifiedUser({
               userId: ethereum.observerId,
-            }).catch((error) => {
+            }).catch(error => {
               Sentry.captureException(error);
             });
           } else {
@@ -393,8 +391,7 @@ const toastConfig = {
       jC={'center'}
       bGC={Colors.toastColor}
       fD={'row'}
-      style={{ opacity: 0.9 }}
-    >
+      style={{ opacity: 0.9 }}>
       {props.image && (
         <DynamicImage
           dynamic
@@ -411,8 +408,7 @@ const toastConfig = {
         fF={C.fontsName.FONT_REGULAR}
         mL={10}
         fS={15}
-        color={Colors.secondaryTextColor}
-      >
+        color={Colors.secondaryTextColor}>
         {props.text}
       </CText>
     </DynamicView>
@@ -436,41 +432,41 @@ function App() {
   const navigationRef = React.useRef();
   const [globalState, globalDispatch] = React.useReducer(
     gloabalContextReducer,
-    initialGlobalState
+    initialGlobalState,
   );
   const [state, dispatch] = useReducer(
     hdWalletStateReducer,
-    initialHdWalletState
+    initialHdWalletState,
   );
   const [statePortfolio, dispatchPortfolio] = useReducer(
     portfolioStateReducer,
-    initialPortfolioState
+    initialPortfolioState,
   );
   const [stateStaking, dispatchStaking] = useReducer(
     ValidatorsListReducer,
-    initialValidatorState
+    initialValidatorState,
   );
   const [stateActivity, dispatchActivity] = useReducer(
     ActivityStateReducer,
-    initialActivityState
+    initialActivityState,
   );
   const [cosmosStakingState, cosmosStakingDispatch] = useReducer(
     cosmosStakingReducer,
-    cosmosStakingInitialState
+    cosmosStakingInitialState,
   );
   const [walletConnectState, walletConnectDispatch] = useReducer(
     walletConnectReducer,
-    walletConnectInitialState
+    walletConnectInitialState,
   );
 
   const [modalState, modalDispatch] = useReducer(
     modalReducer,
-    modalContextInitialState
+    modalContextInitialState,
   );
 
   const ethereum = state.wallet.ethereum;
   const inAppUpdates = new SpInAppUpdates(
-    false // isDebug
+    false, // isDebug
   );
   const [updateModal, setUpdateModal] = useState<boolean>(false);
   const [forcedUpdate, setForcedUpdate] = useState<boolean>(false);
@@ -505,10 +501,10 @@ function App() {
         connector: request.connector,
         dAppInfo:
           walletConnectState?.connectors?.length ===
-            walletConnectState?.dAppInfo?.length
+          walletConnectState?.dAppInfo?.length
             ? walletConnectState?.dAppInfo[
-            walletConnectState.connectors.indexOf(request.connector)
-            ]
+                walletConnectState.connectors.indexOf(request.connector)
+              ]
             : {},
         address: ethereum?.wallets[0]?.address,
         payload: request.payload,
@@ -518,7 +514,7 @@ function App() {
       renderContent = getRenderContent(
         request,
         state.wallet?.ethereum?.wallets[0]?.address,
-        walletConnectState
+        walletConnectState,
       );
       setWalletConnectModalData({
         params,
@@ -536,7 +532,7 @@ function App() {
   // Don't change, its meant for one time operation
   useEffect(() => {
     void checkUpdateNeeded();
-    fetchRPCEndpointsFromServer(globalDispatch).catch((e) => {
+    fetchRPCEndpointsFromServer(globalDispatch).catch(e => {
       Sentry.captureException(e.message);
     });
 
@@ -584,7 +580,7 @@ function App() {
       // if (isAndroid()) {
       const isBiometricPasscodeEnabled = await isBiometricEnabled();
       setPinAuthentication(
-        isBiometricPasscodeEnabled && !(await isPinAuthenticated())
+        isBiometricPasscodeEnabled && !(await isPinAuthenticated()),
       ); //  for android devices with biometreics enabled the pinAuthentication will be set true
       // }
     };
@@ -603,7 +599,7 @@ function App() {
           setPinPresent(PinPresentStates.TRUE);
         } else {
           await loadCyRootDataFromKeyChain(state, () =>
-            setShowDefaultAuthRemoveModal(true)
+            setShowDefaultAuthRemoveModal(true),
           );
           setPinPresent(PinPresentStates.FALSE);
         }
@@ -628,7 +624,7 @@ function App() {
       ethereum?.privateKey !== _NO_CYPHERD_CREDENTIAL_AVAILABLE_
     ) {
       signIn(ethereum)
-        .then((signInResponse) => {
+        .then(signInResponse => {
           if (
             signInResponse?.message === SignMessageValidationType.VALID &&
             has(signInResponse, 'token')
@@ -652,7 +648,7 @@ function App() {
             setForcedUpdate(true);
           }
         })
-        .catch((e) => {
+        .catch(e => {
           Sentry.captureException(e.message);
         });
     }
@@ -660,7 +656,7 @@ function App() {
 
   useEffect(() => {
     const getHosts = async () => {
-      await initializeHostsFromAsync().then((resp) => {
+      await initializeHostsFromAsync().then(resp => {
         if (
           ethereum?.address &&
           ethereum?.privateKey !== _NO_CYPHERD_CREDENTIAL_AVAILABLE_
@@ -680,7 +676,7 @@ function App() {
         setRequest,
         walletConnectDispatch,
         state,
-        { state: modalState, dispatch: modalDispatch }
+        { state: modalState, dispatch: modalDispatch },
       );
     }
   }, [walletConnectState?.connectors]);
@@ -713,7 +709,7 @@ function App() {
                 setRequest,
                 walletConnectDispatch,
                 state,
-                { state: modalState, dispatch: modalDispatch }
+                { state: modalState, dispatch: modalDispatch },
               );
             } else {
               connector = connectionObject;
@@ -755,18 +751,15 @@ function App() {
       style={{ flex: 1, backgroundColor: 'white' }}
       enabled
       behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
-      keyboardVerticalOffset={0}
-    >
+      keyboardVerticalOffset={0}>
       <GestureHandlerRootView style={{ flex: 1 }}>
         <Sentry.TouchEventBoundary>
           <WalletConnectContext.Provider
-            value={{ walletConnectState, walletConnectDispatch }}
-          >
+            value={{ walletConnectState, walletConnectDispatch }}>
             <GlobalContext.Provider value={{ globalState, globalDispatch }}>
               <HdWalletContext.Provider value={{ state, dispatch }}>
                 <PortfolioContext.Provider
-                  value={{ statePortfolio, dispatchPortfolio }}
-                >
+                  value={{ statePortfolio, dispatchPortfolio }}>
                   {Platform.OS == 'android' && (
                     <StatusBar
                       backgroundColor='white'
@@ -786,19 +779,18 @@ function App() {
                             setUpdateModal(false);
                             if (Platform.OS === 'android') {
                               void Linking.openURL(
-                                'market://details?id=com.cypherd.androidwallet'
+                                'market://details?id=com.cypherd.androidwallet',
                               );
                             } else {
                               const link =
                                 'itms-apps://apps.apple.com/app/cypherd-wallet/id1604120414';
                               Linking.canOpenURL(link).then(
-                                (supported) => {
+                                supported => {
                                   supported && Linking.openURL(link);
                                 },
-                                (err) => Sentry.captureException(err)
+                                err => Sentry.captureException(err),
                               );
                             }
-                            RNExitApp.exitApp();
                           }}
                         />
                         <DialogButton
@@ -814,21 +806,18 @@ function App() {
                     width={0.8}
                     onTouchOutside={() => {
                       !forcedUpdate && setUpdateModal(false);
-                    }}
-                  >
+                    }}>
                     <DialogContent>
                       <CyDText
                         className={
                           'font-bold text-[16px] text-primaryTextColor mt-[20px] text-center'
-                        }
-                      >
+                        }>
                         {t<string>('NEW_UPDATE')}
                       </CyDText>
                       <CyDText
                         className={
                           'font-bold text-[13px] text-primaryTextColor mt-[20px] text-center'
-                        }
-                      >
+                        }>
                         {!forcedUpdate
                           ? t('NEW_UPDATE_MSG')
                           : t('NEW_MUST_UPDATE_MSG')}
@@ -855,21 +844,18 @@ function App() {
                         />
                       </DialogFooter>
                     }
-                    width={0.8}
-                  >
+                    width={0.8}>
                     <DialogContent>
                       <CyDText
                         className={
                           'font-bold text-[16px] text-primaryTextColor mt-[20px] text-center'
-                        }
-                      >
+                        }>
                         {t<string>('SOMETHING_WENT_WRONG')}
                       </CyDText>
                       <CyDText
                         className={
                           'font-bold text-[13px] text-primaryTextColor mt-[20px] text-center'
-                        }
-                      >
+                        }>
                         {t<string>('CONTACT_CYPHERD_SUPPORT')}
                       </CyDText>
                     </DialogContent>
@@ -880,20 +866,19 @@ function App() {
                   />
 
                   <StakingContext.Provider
-                    value={{ stateStaking, dispatchStaking }}
-                  >
+                    value={{ stateStaking, dispatchStaking }}>
                     <CosmosStakingContext.Provider
-                      value={{ cosmosStakingState, cosmosStakingDispatch }}
-                    >
+                      value={{ cosmosStakingState, cosmosStakingDispatch }}>
                       <ActivityContext.Provider
                         value={{
                           state: stateActivity,
                           dispatch: dispatchActivity,
-                        }}
-                      >
+                        }}>
                         <ModalContext.Provider
-                          value={{ state: modalState, dispatch: modalDispatch }}
-                        >
+                          value={{
+                            state: modalState,
+                            dispatch: modalDispatch,
+                          }}>
                           <NavigationContainer /* theme={scheme === 'dark' ? darkTheme : lightTheme} */
                             ref={navigationRef}
                             linking={linking}
@@ -901,7 +886,7 @@ function App() {
                               routeNameRef.current =
                                 navigationRef?.current?.getCurrentRoute()?.name;
                               routingInstrumentation.registerNavigationContainer(
-                                navigationRef
+                                navigationRef,
                               );
                             }}
                             onStateChange={async () => {
@@ -918,13 +903,12 @@ function App() {
                                   });
                               }
                               routeNameRef.current = currentRouteName;
-                            }}
-                          >
+                            }}>
                             <GlobalModal>
                               <WalletConnectV2Provider>
                                 {ethereum.address === undefined ? (
                                   pinAuthentication ||
-                                    pinPresent === PinPresentStates.NOTSET ? (
+                                  pinPresent === PinPresentStates.NOTSET ? (
                                     <LoadingStack />
                                   ) : pinPresent === PinPresentStates.TRUE ? (
                                     <PinAuthRoute
