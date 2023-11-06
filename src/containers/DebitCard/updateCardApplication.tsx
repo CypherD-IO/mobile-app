@@ -14,15 +14,12 @@ import {
   CyDImage,
   CyDTextInput,
   CyDScrollView,
-  CyDKeyboardAvoidingView,
-  CyDDropDown,
 } from '../../styles/tailwindStyles';
 import { GlobalContext } from '../../core/globalContext';
 import { useIsFocused } from '@react-navigation/native';
 import {
   concatErrorMessagesFromArrayOneByOne,
-  isValidPassportNumber,
-  isValidSSN,
+  isEnglish,
 } from '../../core/util';
 import { CardApplication, IState } from '../../models/cardApplication.model';
 import { isAndroid } from '../../misc/checkers';
@@ -96,8 +93,42 @@ export default function UpdateCardApplicationScreen({ navigation }) {
   ];
 
   const userInfoValidationSchema = yup.object({
-    firstName: yup.string().required(t('FIRST_NAME_REQUIRED')),
-    lastName: yup.string().required(t('LAST_NAME_REQUIRED')),
+    firstName: yup
+      .string()
+      .required(t('FIRST_NAME_REQUIRED'))
+      .test(
+        'Name length test',
+        'First name + last name should not exceed 22 characters in length.',
+        (value, ctx) => {
+          if (value && ctx.parent.lastName) {
+            return value.length + Number(ctx.parent.lastName.length) <= 22;
+          }
+          return true;
+        },
+      )
+      .test(
+        'First name must be in english',
+        'Unrecognized characters found. Please enter your first name in english',
+        fName => isEnglish(fName ?? ''),
+      ),
+    lastName: yup
+      .string()
+      .required(t('LAST_NAME_REQUIRED'))
+      .test(
+        'Name length test',
+        'First name + last name should not exceed 22 characters in length.',
+        (value, ctx) => {
+          if (value && ctx.parent.firstName) {
+            return value.length + Number(ctx.parent.firstName.length) <= 22;
+          }
+          return true;
+        },
+      )
+      .test(
+        'First name must be in english',
+        'Unrecognized characters found. Please enter your first name in english',
+        lName => isEnglish(lName ?? ''),
+      ),
     line1: yup.string().required(t('LINE1_REQUIRED')),
     city: yup.string().required(t('CITY_REQUIRED')),
     postalCode: yup.string().required(t('POSTAL_CODE_REQUIRED')),
@@ -304,10 +335,7 @@ export default function UpdateCardApplicationScreen({ navigation }) {
             selectedStateState={[selectedState, setSelectedState]}
           />
           <CyDView className={'h-full bg-white'}>
-            <CyDKeyboardAvoidingView
-              behavior={isAndroid() ? 'height' : 'padding'}
-              enabled
-              className={'h-full flex grow-1'}>
+            <CyDView className={'h-full flex grow-1'}>
               <CyDScrollView className='my-[24px]'>
                 <Formik
                   enableReinitialize={true}
@@ -707,7 +735,7 @@ export default function UpdateCardApplicationScreen({ navigation }) {
                   )}
                 </Formik>
               </CyDScrollView>
-            </CyDKeyboardAvoidingView>
+            </CyDView>
           </CyDView>
         </>
       )}

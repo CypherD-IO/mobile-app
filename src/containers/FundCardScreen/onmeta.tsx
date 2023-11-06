@@ -251,7 +251,7 @@ export default function Onmeta({ route }) {
 
   return (
     <CyDView className={'h-full w-full bg-black pb-[75px]'}>
-      {ometaOperation !== 'buy' ? (
+      {ometaOperation === 'buy' ? (
         <MetaWidget
           queryParams={{
             apiKey: clientDetails.clientToken,
@@ -352,7 +352,7 @@ export default function Onmeta({ route }) {
               webviewRef.current.reload();
             }}
           />
-          <MetaWidget
+          {/* <MetaWidget
             queryParams={{
               apiKey: clientDetails.clientToken,
               environment: 'PRODUCTION',
@@ -427,8 +427,8 @@ export default function Onmeta({ route }) {
                 globalContext,
               );
             }}
-          />
-          {/* <WebView
+          /> */}
+          <WebView
             source={{
               uri: clientDetails.uri,
             }}
@@ -503,7 +503,7 @@ export default function Onmeta({ route }) {
                 globalContext,
               );
             }}
-          /> */}
+          />
         </>
       )}
     </CyDView>

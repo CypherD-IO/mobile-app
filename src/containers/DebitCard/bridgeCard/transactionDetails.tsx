@@ -188,7 +188,9 @@ export default function TransactionDetails({
           { label: t('CATEGORY'), value: transaction.category },
         ],
       },
-      {
+    ];
+    if (fxCurrencySymbol && fxCurrencySymbol !== 'USD') {
+      debitOrRefundDetails.push({
         icon: AppImages.CURRENCY_DETAILS,
         title: t('CURRENCY_CONVERSION_DETAILS'),
         data: [
@@ -208,8 +210,8 @@ export default function TransactionDetails({
             value: String(fxCurrencyValue) + ' ' + String(fxCurrencySymbol),
           },
         ],
-      },
-    ];
+      });
+    }
     debitOrRefundDetails.forEach(detail => {
       transactionDetails.push(detail);
     });
