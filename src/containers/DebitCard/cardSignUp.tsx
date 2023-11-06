@@ -1,4 +1,10 @@
-import React, { useCallback, useContext, useEffect, useState } from 'react';
+import React, {
+  useCallback,
+  useContext,
+  useEffect,
+  useMemo,
+  useState,
+} from 'react';
 import { StyleSheet } from 'react-native';
 import AppImages from '../../../assets/images/appImages';
 import { RouteProp, useIsFocused } from '@react-navigation/native';
@@ -44,19 +50,20 @@ import { Colors } from '../../constants/theme';
 import useAxios from '../../core/HttpRequest';
 import Button from '../../components/v2/button';
 import { screenTitle } from '../../constants';
+import { ICountry, IState } from '../../models/cardApplication.model';
+import { stateMaster as backupStateMaster } from '../../../assets/datasets/stateMaster';
+import ChooseStateFromCountryModal from '../../components/v2/ChooseStateFromCountryModal';
 
 export default function CardSignupScreen({ navigation, route }) {
   const globalContext = useContext<any>(GlobalContext);
   const inviteCode = route?.params?.inviteCode;
-  const selectedCountry = route?.params?.selectedCountry ?? {
-    country: 'United States',
-    dialCode: '+1',
-    firstName: '',
-    lastName: '',
-    phoneNumber: '',
-    email: '',
-    flag: '🇺🇸',
-  };
+  const [selectedCountry, setSelectedCountry] = useState(
+    route?.params?.selectedCountry ?? {
+      country: 'United States',
+      dialCode: '+1',
+      flag: '🇺🇸',
+    },
+  );
   const { showModal, hideModal } = useGlobalModalContext();
   const isFocused = useIsFocused();
   const [screenIndex, setScreenIndex] = useState<number>(0);
@@ -71,6 +78,7 @@ export default function CardSignupScreen({ navigation, route }) {
   const [updatedPhoneNumber, setUpdatedPhoneNumber] = useState<string>('');
   const [updatedEmail, setUpdatedEmail] = useState<string>('');
   const [countryFilterText, setCountryFilter] = useState<string>('');
+  const [stateMaster, setStateMaster] = useState<IState[]>(backupStateMaster);
   const [
     copyCountriesWithFlagAndDialcodes,
     setCopyCountriesWithFlagAndDialcodes,
@@ -79,6 +87,9 @@ export default function CardSignupScreen({ navigation, route }) {
   const [origCountriesWithFlagAndDialcodes, setOrigCountryList] = useState<
     CountryCodesWithFlags[]
   >([]);
+  const [selectStateModalVisible, setSelectStateModalVisible] =
+    useState<boolean>(false);
+
   const [userBasicDetails, setUserBasicDetails] = useState({
     country: 'United States',
     dialCode: '+1',
@@ -90,6 +101,16 @@ export default function CardSignupScreen({ navigation, route }) {
     flag: '🇺🇸',
     Iso2: 'US',
   });
+
+  const selectedCountryStates = useMemo(() => {
+    return stateMaster.filter(
+      state => state.country_code === userBasicDetails.Iso2,
+    );
+  }, [userBasicDetails.Iso2, stateMaster, selectedCountry]);
+
+  const [selectedState, setSelectedState] = useState<IState>(
+    selectedCountryStates[0],
+  );
 
   const [billingAddress, setBillingAddress] = useState({
     line1: '',
@@ -104,35 +125,11 @@ export default function CardSignupScreen({ navigation, route }) {
     idNumber: '',
   });
 
-  const [selectedIdType, setSelectedIdType] = useState('passport');
   const { postWithAuth } = useAxios();
-  const idTypeData = [
-    { label: OtherIdTypes.PASSPORT_LABEL, value: OtherIdTypes.PASSPORT },
-    {
-      label: OtherIdTypes.DRIVING_LICENCE_LABEL,
-      value: OtherIdTypes.DRIVING_LICENCE,
-    },
-    { label: OtherIdTypes.TAX_ID_LABEL, value: OtherIdTypes.TAX_ID },
-    { label: OtherIdTypes.NATIONAL_ID_LABEL, value: OtherIdTypes.NATIONAL_ID },
-  ];
 
   const userBasicDetailsValidationSchema = yup.object({
     firstName: yup.string().required(t('FIRST_NAME_REQUIRED')),
-    country: yup
-      .string()
-      .test(
-        'isValidCountryForInviteCode',
-        `${t('INVALID_COUNTRY_FOR_INVITE_CODE')}${selectedCountry.name}`,
-        country => {
-          if (inviteCode && inviteCode !== '') {
-            if (inviteCode === 'USM6G5PC') {
-              return true;
-            }
-          } else {
-            return true;
-          }
-        },
-      ),
+    country: yup.string().required(),
     dateOfBirth: yup
       .string()
       .required(t('DOB_REQUIRED'))
@@ -165,50 +162,7 @@ export default function CardSignupScreen({ navigation, route }) {
   const userBillingAddressValidationSchema = yup.object({
     line1: yup.string().required(t('LINE1_REQUIRED')),
     city: yup.string().required(t('CITY_REQUIRED')),
-    state: yup.string().required(t('STATE_REQUIRED')),
     postalCode: yup.string().required(t('POSTAL_CODE_REQUIRED')),
-  });
-
-  const userIdentityValidationSchema = yup.object({
-    dateOfBirth: yup
-      .string()
-      .required(t('DOB_REQUIRED'))
-      .test('isValidAge', t('AGE_SHOULD_GT_18'), dateOfBirth => {
-        if (dateOfBirth) {
-          const endDate = new Date().getTime();
-          const startDate = new Date(dateOfBirth).getTime();
-          const diff = new Date(endDate - startDate);
-          if (diff.getUTCFullYear() - 1970 >= 18) {
-            return true;
-          } else {
-            return false;
-          }
-        }
-      }),
-    idNumber: yup
-      .string()
-      .required(
-        userBasicDetails.country === 'United States'
-          ? t('SSN_REQUIRED')
-          : t('PASSPORT_NUMBER_REQUIRED'),
-      )
-      .test(
-        'isValidIDNumber',
-        userBasicDetails.country === 'United States'
-          ? t('INVALID_SSN')
-          : t('INVALID_ID_NUMBER'),
-        idNumber => {
-          if (idNumber) {
-            if (userBasicDetails.country === 'United States') {
-              return isValidSSN(idNumber);
-            } else {
-              return isValidPassportNumber(idNumber);
-            }
-          } else {
-            return true;
-          }
-        },
-      ),
   });
 
   const getIDBasedOnCountry = (): string => {
@@ -267,6 +221,10 @@ export default function CardSignupScreen({ navigation, route }) {
   }, [userBasicDetails]);
 
   useEffect(() => {
+    setSelectedState(selectedCountryStates?.[0]);
+  }, [selectedCountry]);
+
+  useEffect(() => {
     if (billingAddress.postalCode !== '' && billingAddress.city !== '') {
       void createApplication();
     }
@@ -286,6 +244,7 @@ export default function CardSignupScreen({ navigation, route }) {
 
   useEffect(() => {
     void getCountryData();
+    void getStateMaster();
   }, []);
 
   const getCountryData = async () => {
@@ -310,8 +269,32 @@ export default function CardSignupScreen({ navigation, route }) {
     }
   };
 
+  const getStateMaster = async () => {
+    try {
+      const response = await axios.get(
+        `https://public.cypherd.io/js/stateMaster.js?${String(new Date())}`,
+      );
+      if (response?.data) {
+        const stateData = response.data;
+        setStateMaster(stateData);
+      } else {
+        const errorObject = {
+          response,
+          message:
+            'Response data was not undefined when trying to fetch stateMaster',
+        };
+        Sentry.captureException(errorObject);
+      }
+    } catch (e) {
+      const errorObject = {
+        e,
+        message: 'Error when trying to fetch stateMaster',
+      };
+      Sentry.captureException(errorObject);
+    }
+  };
+
   const confirmDate = (date: string) => {
-    console.log(userBasicDetails);
     setUserBasicDetails({
       ...userBasicDetails,
       dateOfBirth: moment(date).format('YYYY-MM-DD'),
@@ -321,8 +304,6 @@ export default function CardSignupScreen({ navigation, route }) {
 
   const createApplication = async () => {
     setLoading(true);
-    console.log(userBasicDetails);
-    console.log(billingAddress);
     const payload = {
       dateOfBirth: userBasicDetails.dateOfBirth,
       firstName: userBasicDetails.firstName,
@@ -334,7 +315,6 @@ export default function CardSignupScreen({ navigation, route }) {
       inviteCode,
     };
     try {
-      console.log(payload);
       const response = await postWithAuth(
         `/v1/cards/${CardProviders.PAYCADDY}/application`,
         payload,
@@ -353,12 +333,8 @@ export default function CardSignupScreen({ navigation, route }) {
     } catch (e) {
       showModal('state', {
         type: 'error',
-        title: e.response.data.code.includes('400')
-          ? t('INVALID_USER_DETAILS')
-          : t('SOMETHING_WENT_WRONG'),
-        description: e.response.data.code.includes('400')
-          ? concatFieldErrorMessages(e.response.data.errors)
-          : e.response.data.message,
+        title: t('INVALID_USER_DETAILS'),
+        description: e.message ?? '',
         onSuccess: hideModal,
         onFailure: hideModal,
       });
@@ -368,12 +344,14 @@ export default function CardSignupScreen({ navigation, route }) {
   };
 
   const proceedToNextScreen = (screen, values) => {
-    console.log('screen: ', screen, values);
     if (screen === 'USER_BASIC_DETAILS') {
       setUserBasicDetails({ ...userBasicDetails, ...values });
     } else if (screen === 'BILLING_ADDRESS') {
-      console.log(userBasicDetails);
-      setBillingAddress({ ...billingAddress, ...values });
+      setBillingAddress({
+        ...billingAddress,
+        ...values,
+        state: selectedState.name,
+      });
     }
     if (screenIndex < screens.length - 1) setScreenIndex(screenIndex + 1);
   };
@@ -567,7 +545,7 @@ export default function CardSignupScreen({ navigation, route }) {
                   autoCorrect={false}
                   onChangeText={formProps.handleChange('lastName')}
                   placeholderTextColor={'#C5C5C5'}
-                  placeholder='Last name'
+                  placeholder='Last name / First surname'
                 />
               </CyDView>
               {formProps.touched.lastName && formProps.errors.lastName && (
@@ -587,7 +565,6 @@ export default function CardSignupScreen({ navigation, route }) {
                   },
                 )}
                 onPress={() => {
-                  console.log(formProps.values);
                   setUserBasicDetails({
                     ...userBasicDetails,
                     ...formProps.values,
@@ -759,24 +736,25 @@ export default function CardSignupScreen({ navigation, route }) {
                   </CyDText>
                 </CyDView>
               )}
-              <CyDView className={'mt-[20px] flex flex-row justify-center'}>
-                <CyDTextInput
+              <CyDTouchView
+                className={'mt-[20px] flex flex-row justify-center'}
+                onPress={() => {
+                  setBillingAddress({ ...billingAddress, ...formProps.values });
+                  setSelectStateModalVisible(true);
+                }}>
+                <CyDView
                   className={clsx(
                     'ml-[4px] border-[1px] border-inputBorderColor rounded-[5px] p-[12px] text-[18px] w-[85%] font-nunito text-primaryTextColor',
                     {
                       'border-redOffColor':
                         formProps.touched.state && formProps.errors.state,
                     },
-                  )}
-                  value={formProps.values.state}
-                  key='state'
-                  autoCapitalize='none'
-                  autoCorrect={false}
-                  placeholderTextColor={'#C5C5C5'}
-                  onChangeText={formProps.handleChange('state')}
-                  placeholder='State'
-                />
-              </CyDView>
+                  )}>
+                  <CyDText className='font-nunito text-[18px]'>
+                    {selectedState.name}
+                  </CyDText>
+                </CyDView>
+              </CyDTouchView>
               {formProps.touched.state && formProps.errors.state && (
                 <CyDView className={'ml-[33px] mt-[6px] mb-[-11px]'}>
                   <CyDText className={'text-redOffColor font-semibold'}>
@@ -823,159 +801,13 @@ export default function CardSignupScreen({ navigation, route }) {
         </Formik>
       </CyDScrollView>
     );
-  }, [userBasicDetails, billingAddress]);
-
-  const ConfirmUserIdentity = useCallback(() => {
-    return (
-      <CyDScrollView>
-        <DatePickerModal
-          isVisible={isDOBModalVisible}
-          mode='date'
-          date={new Date()}
-          onConfirm={confirmDate}
-          onCancel={() => setDOBModalVisible(false)}
-        />
-        <CyDView>
-          <CyDText
-            className={
-              'text-[30px] font-bold mx-[34px] mt-[26px] leading-[40px]'
-            }>
-            {t<string>('CONFIRM_USER_IDENTITY')}
-          </CyDText>
-        </CyDView>
-        <Formik
-          initialValues={userIdentity}
-          validationSchema={userIdentityValidationSchema}
-          onSubmit={values => proceedToNextScreen('USER_IDENTITY', values)}>
-          {formProps => (
-            <>
-              <CyDTouchView
-                className={clsx(
-                  'ml-[30px] mt-[20px] border-[1px] border-inputBorderColor rounded-[5px] w-[85%]',
-                  {
-                    'border-redOffColor':
-                      formProps.touched.dateOfBirth &&
-                      formProps.errors.dateOfBirth,
-                  },
-                )}
-                onPress={() => setDOBModalVisible(true)}>
-                <CyDView
-                  className={
-                    'h-[50px] pl-[8px] pr-[12px] flex flex-row justify-between items-center'
-                  }>
-                  <CyDView className={'flex flex-row items-center'}>
-                    <CyDText
-                      className={
-                        'text-center text-black font-nunito text-[18px] ml-[8px]'
-                      }>
-                      {formatDOB(formProps.values.dateOfBirth)}
-                    </CyDText>
-                    {!formProps.values.dateOfBirth && (
-                      <CyDText
-                        className={
-                          'font-nunito text-[18px] text-inputBorderColor'
-                        }>
-                        {t('DATE_OF_BIRTH')}
-                      </CyDText>
-                    )}
-                  </CyDView>
-
-                  <CyDImage source={AppImages.CALENDAR} />
-                </CyDView>
-              </CyDTouchView>
-              {formProps.touched.dateOfBirth &&
-                formProps.errors.dateOfBirth && (
-                  <CyDView className={'ml-[33px] mt-[6px] mb-[-11px]'}>
-                    <CyDText className={'text-redOffColor font-semibold'}>
-                      {formProps.errors.dateOfBirth}
-                    </CyDText>
-                  </CyDView>
-                )}
-              {/* {selectedCountry.Iso2 !== 'US' && (
-                <CyDDropDown
-                  data={idTypeData}
-                  maxHeight={300}
-                  labelField='label'
-                  valueField='value'
-                  placeholder={'Select Id type'}
-                  searchPlaceholder='Search...'
-                  value={selectedIdType}
-                  onChange={item => {
-                    setSelectedIdType(item.value);
-                  }}
-                  className={
-                    'ml-[30px] mt-[20px] border-[1px] border-inputBorderColor rounded-[5px] p-[7px] text-[18px] w-[85%] font-nunito text-secondaryTextColor'
-                  }
-                />
-              )}
-              <CyDView className={'mt-[20px] flex flex-row justify-center'}>
-                <CyDTextInput
-                  className={clsx(
-                    'ml-[4px] border-[1px] border-inputBorderColor rounded-[5px] p-[12px] text-[18px] w-[85%] font-nunito text-primaryTextColor',
-                    {
-                      'border-redOffColor':
-                        formProps.touched.idNumber && formProps.errors.idNumber,
-                    },
-                  )}
-                  value={formProps.values.idNumber}
-                  autoCapitalize='none'
-                  keyboardType={
-                    userBasicDetails.country === 'United States'
-                      ? 'numeric'
-                      : 'default'
-                  }
-                  autoCorrect={false}
-                  placeholderTextColor={'#C5C5C5'}
-                  onChangeText={formProps.handleChange('idNumber')}
-                  placeholder={
-                    userBasicDetails.country === 'United States'
-                      ? 'Last 4 or 9 digits of your SSN'
-                      : 'Id number'
-                  }
-                />
-              </CyDView>
-              {formProps.touched.idNumber && formProps.errors.idNumber && (
-                <CyDView className={'ml-[33px] mt-[6px] mb-[-11px]'}>
-                  <CyDText className={'text-redOffColor font-semibold'}>
-                    {formProps.errors.idNumber}
-                  </CyDText>
-                </CyDView>
-              )}
-              <CyDTouchView
-                onPress={() => {
-                  setSSNModalVisible(true);
-                }}
-                className={'flex flex-row mt-[28px] px-[30px] justify-start'}>
-                <CyDView className={'mt-[2px] h-[20px] w-[20px]'}>
-                  <CyDImage
-                    className={'w-[20px] h-[20px] mt-[3px] ml-[3px]'}
-                    source={AppImages.INFO_CIRCLE}
-                  />
-                </CyDView>
-                <CyDView className={'mt-[3px] ml-[10px]'}>
-                  <CyDText className={'text-[20px] font-bold'}>
-                    {' '}
-                    {userBasicDetails.country === 'United States'
-                      ? t('WHY_DOB_AND_SSN')
-                      : t('WHY_DOB_AND_PASSPORT_NUMBER')}
-                  </CyDText>
-                </CyDView>
-              </CyDTouchView> */}
-              <CyDTouchView
-                onPress={() => formProps.handleSubmit()}
-                className={
-                  'bg-appColor py-[20px] flex flex-row items-center rounded-[12px] justify-around w-[86%] mx-auto mt-[25px]'
-                }>
-                <CyDText className={'text-center font-semibold'}>
-                  {t<string>('SUBMIT')}
-                </CyDText>
-              </CyDTouchView>
-            </>
-          )}
-        </Formik>
-      </CyDScrollView>
-    );
-  }, []);
+  }, [
+    userBasicDetails,
+    billingAddress,
+    selectedState,
+    selectStateModalVisible,
+    selectedCountryStates,
+  ]);
 
   const screens = [
     {
@@ -1042,6 +874,7 @@ export default function CardSignupScreen({ navigation, route }) {
                             flag: country.unicode_flag,
                             Iso2: country.Iso2,
                           });
+                          setSelectedCountry(country);
                           setModalVisible(false);
                         }}
                         className={clsx(
@@ -1245,13 +1078,21 @@ export default function CardSignupScreen({ navigation, route }) {
         </CyDView>
       </CyDModalLayout>
 
+      <ChooseStateFromCountryModal
+        isModalVisible={selectStateModalVisible}
+        setModalVisible={setSelectStateModalVisible}
+        selectedCountry={{ ...selectedCountry, flag: userBasicDetails.flag }}
+        selectedCountryStates={selectedCountryStates}
+        selectedStateState={[selectedState, setSelectedState]}
+      />
+
       {loading ? (
         <Loading />
       ) : (
         <>
           <CyDView
             className={
-              'flex flex-row items-center justify-center mt-[20px] h-[20px]'
+              'flex flex-row items-center justify-start w-full mt-[20px]'
             }>
             {
               <CyDTouchView
@@ -1259,11 +1100,16 @@ export default function CardSignupScreen({ navigation, route }) {
                   screenIndex === 0
                     ? navigation.goBack()
                     : goToPreviousScreen();
-                }}>
-                <CyDImage source={AppImages.LEFT_ARROW} />
+                }}
+                className='w-[30px] pl-[12px]'>
+                <CyDImage
+                  source={AppImages.LEFT_ARROW}
+                  className='h-[20px] w-[20px]'
+                />
               </CyDTouchView>
             }
-            <CyDView className={'flex flex-row justify-center'}>
+            <CyDView
+              className={'flex flex-1 flex-row justify-center ml-[-30px]'}>
               {screens.map((screen, index) => {
                 return (
                   <CyDView

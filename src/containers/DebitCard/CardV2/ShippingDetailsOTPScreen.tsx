@@ -211,8 +211,7 @@ const ShippingDetailsOTPScreen = ({ navigation, route }: Props) => {
       <CyDImageBackground
         source={AppImages.CARD_KYC_BACKGROUND}
         imageStyle={styles.imageBackground}
-        className={'h-full bg-white px-[20px] pt-[10px]'}
-      >
+        className={'h-full bg-white px-[20px] pt-[10px]'}>
         <CyDText className={'text-[25px] font-extrabold'}>
           {t<string>('ENTER_AUTHENTICATION_CODE')}
         </CyDText>
@@ -224,7 +223,7 @@ const ShippingDetailsOTPScreen = ({ navigation, route }: Props) => {
             <CyDView className={'mt-[15%]'}>
               <OtpInput
                 pinCount={4}
-                getOtp={(otp) => {
+                getOtp={otp => {
                   void onOTPEntry(otp);
                 }}
                 placeholder={t('ENTER_OTP')}
@@ -234,13 +233,11 @@ const ShippingDetailsOTPScreen = ({ navigation, route }: Props) => {
                 disabled={sendingOTP || resendInterval !== 0}
                 onPress={() => {
                   void resendOTP();
-                }}
-              >
+                }}>
                 <CyDText
                   className={
                     'font-bold underline decoration-solid underline-offset-4'
-                  }
-                >
+                  }>
                   {t<string>('RESEND_CODE_INIT_CAPS')}
                 </CyDText>
                 {sendingOTP && (

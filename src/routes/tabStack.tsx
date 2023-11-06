@@ -53,6 +53,8 @@ function TabStack() {
     screenTitle.OPTIONS_SCREEN,
     screenTitle.CARD_SIGNUP_LANDING_SCREEN,
     screenTitle.CARD_SIGNUP_SCREEN,
+    screenTitle.CARD_KYC_STATUS_SCREEN,
+    screenTitle.DEBIT_CARD_SCREEN,
     screenTitle.BRIDGE_CARD_SCREEN,
   ];
 
@@ -130,8 +132,8 @@ function TabStack() {
             options.tabBarLabel !== undefined
               ? options.tabBarLabel
               : options.title !== undefined
-                ? options.title
-                : route.name;
+              ? options.title
+              : route.name;
 
           const isFocused = state.index === index;
           const TabBarIcon = options.tabBarIcon;
@@ -165,8 +167,7 @@ function TabStack() {
               testID={options.tabBarTestID}
               onPress={onPress}
               onLongPress={onLongPress}
-              className='flex flex-1 flex-row items-center'
-            >
+              className='flex flex-1 flex-row items-center'>
               <CyDView
                 className={clsx(
                   'flex flex-1 flex-col items-center bg-transparent',
@@ -174,16 +175,14 @@ function TabStack() {
                     'mt-[10px] bg-transparent':
                       route.name === screenTitle.SHORTCUTS,
                   },
-                )}
-              >
+                )}>
                 {route.name === screenTitle.SHORTCUTS ? (
                   <TabBarButton />
                 ) : (
                   <TabBarIcon focused={isFocused} color='' size='' />
                 )}
                 <CyDText
-                  className={clsx('text-[12px]', { 'font-bold': isFocused })}
-                >
+                  className={clsx('text-[12px]', { 'font-bold': isFocused })}>
                   {route.name !== screenTitle.SHORTCUTS && label}
                 </CyDText>
               </CyDView>
@@ -201,7 +200,7 @@ function TabStack() {
         tabBar={(props: BottomTabBarProps) => {
           const currentRouteStack = props.state.routes[
             props.state.index
-          ].state?.routes.map((item) => item.name);
+          ].state?.routes.map(item => item.name);
           const showTabBar =
             currentRouteStack === undefined ||
             screensToHaveNavBar.includes(
@@ -219,21 +218,18 @@ function TabStack() {
                   'shadow-gray-400': (!isReadOnlyWallet && !isIOS()) || isIOS(),
                 },
               )}
-              style={styles.elevatedBackground}
-            >
+              style={styles.elevatedBackground}>
               {isReadOnlyWallet && (
                 <CyDView
                   className={clsx('rounded-t-[24px]', {
                     'h-[20px]': showTabBar,
                   })}
-                  style={styles.elevatedBackground}
-                >
+                  style={styles.elevatedBackground}>
                   <CyDView
                     className={clsx(
                       'flex flex-row justify-center items-center bg-ternaryBackgroundColor py-[5px] top-[2px] rounded-t-[24px]',
                       { hidden: !showTabBar, 'top-[6px]': !isIOS() },
-                    )}
-                  >
+                    )}>
                     <CyDImage
                       source={AppImages.EYE_OPEN}
                       className='h-[18px] w-[18px]'
@@ -292,8 +288,7 @@ function TabStack() {
           tabBarActiveTintColor: 'black',
           tabBarInactiveTintColor: 'gray',
           headerShown: false,
-        })}
-      >
+        })}>
         <Tab.Screen
           name={screenTitle.PORTFOLIO}
           component={PortfolioStackScreen}
@@ -305,8 +300,7 @@ function TabStack() {
           options={({ route }) => ({
             tabBarButton: () => (
               <CyDView
-                className={clsx('mt-[5px] scale-110 shadow shadow-yellow-200')}
-              >
+                className={clsx('mt-[5px] scale-110 shadow shadow-yellow-200')}>
                 <ShortcutsModal navigationRef={navigationRef} />
               </CyDView>
             ),

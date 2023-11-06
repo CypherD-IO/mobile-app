@@ -96,30 +96,35 @@ export default function CardSignupLandingScreen(props: {
         behavior={isAndroid() ? 'height' : 'padding'}
         enabled
         className={'h-full flex grow-1'}>
-        <CyDScrollView className='mb-[40px]'>
+        <CyDScrollView className='mb-[75px]'>
           <CyDImageBackground
-            className={'h-[40%] pt-[30px]'}
+            className={'h-[60%] pt-[10px]'}
             source={AppImages.CARD_SIGNUP_BACKGROUND}
             resizeMode={'cover'}>
-            <CyDView className={'flex flex-row justify-center mt-[20px]'}>
-              <CyDImage source={AppImages.VIRTUAL_SAMPLE_CARD}></CyDImage>
+            <CyDView className={'flex flex-row justify-center'}>
+              <CyDImage
+                className='h-[250px] w-[90%]'
+                source={AppImages.VIRTUAL_SAMPLE_CARD}
+                resizeMode='contain'
+              />
             </CyDView>
-            <CyDView
-              className={'mt-[20px] flex flex-row justify-center px-[20px]'}>
-              <CyDText className={'text-[22px] font-extrabold leading-[32px]'}>
+            <CyDView className={' flex flex-row justify-center px-[20px]'}>
+              <CyDText className={'text-[22px] text-center font-extrabold'}>
                 {t<string>('CARD_SIGNUP_WELCOME_TEXT')}
               </CyDText>
             </CyDView>
-            <CyDView
+            {/* <CyDView
               className={
-                'mt-[20px] flex flex-row justify-center px-[10%] mb-[10px]'
+                'flex mt-[20px] flex-row justify-center px-[10%] mb-[10px]'
               }>
               <CyDText className={'text-[16px] font-semibold text-center'}>
                 {t<string>('CARD_SIGNUP_INVITE_VERIFICATION_TEXT')}
               </CyDText>
-            </CyDView>
+            </CyDView> */}
             <CyDView
-              className={'h-[55px] flex flex-row justify-center items-center'}>
+              className={
+                'h-[55px] mt-[20px] flex flex-row justify-center items-center'
+              }>
               <CyDView
                 className={
                   'bg-white w-[75%] mt-[2px] border rounded-[5px] py-[10px]'
@@ -128,6 +133,12 @@ export default function CardSignupLandingScreen(props: {
                   !loadersAndValidators.inviteCodeVerified && (
                     <CyDTextInput
                       onChangeText={async value => {
+                        if (loadersAndValidators.isInvalidInviteCode) {
+                          setLoadersAndValidators({
+                            ...loadersAndValidators,
+                            isInvalidInviteCode: false,
+                          });
+                        }
                         setInviteCode(value);
                       }}
                       placeholder={
@@ -207,7 +218,7 @@ export default function CardSignupLandingScreen(props: {
                 void verifyInviteCode(inviteCode);
               }}
               className={clsx(
-                'py-[16px] mt-[22px] flex flex-row items-center rounded-[12px] justify-around w-[80%] mx-auto mb-[25px] text-white',
+                'py-[16px] mt-[25px] flex flex-row items-center rounded-[12px] justify-around w-[80%] mx-auto mb-[25px] text-white',
                 {
                   'bg-[#FFE370]': !isButtonEnabled(),
                   'bg-black': isButtonEnabled(),

@@ -84,6 +84,8 @@ export default function DebitCardScreen(props: RouteProps) {
               },
             ],
           });
+        } else {
+          props.navigation.navigate(screenTitle.CARD_KYC_STATUS_SCREEN);
         }
       }
     } else {

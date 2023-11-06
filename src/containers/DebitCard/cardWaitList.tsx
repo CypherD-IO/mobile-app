@@ -132,7 +132,7 @@ export default function CardWailtList({ navigation }: Props) {
             </CyDView>
             <CyDView
               className={
-                'flex justify-center items-center text-center relative mt-[-130px]'
+                'flex justify-center items-center text-center relative mt-[-80px]'
               }>
               <CyDView
                 className={
