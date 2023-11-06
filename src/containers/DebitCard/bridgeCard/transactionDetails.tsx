@@ -69,8 +69,9 @@ const DetailItem = ({
     : item.value;
   return (
     <CyDView
-      className={'flex flex-row justify-center items-center px-[8px] mb-[20px]'}
-    >
+      className={
+        'flex flex-row justify-center items-center px-[8px] mb-[20px]'
+      }>
       <CyDView className={'w-[40%] justify-center items-start'}>
         <CyDText className={'text-[16px]'}>{item.label}</CyDText>
       </CyDView>
@@ -82,13 +83,11 @@ const DetailItem = ({
             url: getExplorerUrlFromBackendNames(chainString, item.value.hash),
           });
         }}
-        className='w-[60%] pl-[10px] justify-center items-start'
-      >
+        className='w-[60%] pl-[10px] justify-center items-start'>
         <CyDText
           className={clsx('font-bold', {
             'text-blue-500 underline': isHash && hashIsValid,
-          })}
-        >
+          })}>
           {value}
         </CyDText>
       </CyDTouchView>
@@ -211,7 +210,7 @@ export default function TransactionDetails({
         ],
       },
     ];
-    debitOrRefundDetails.forEach((detail) => {
+    debitOrRefundDetails.forEach(detail => {
       transactionDetails.push(detail);
     });
   } else if (transaction.type === CardTransactionTypes.CREDIT) {
@@ -246,7 +245,7 @@ export default function TransactionDetails({
         ],
       },
     ];
-    creditDetails.forEach((detail) => {
+    creditDetails.forEach(detail => {
       transactionDetails.push(detail);
     });
   }
@@ -282,8 +281,7 @@ export default function TransactionDetails({
           }}
           className={
             'flex flex-row justify-center py-[7px] my-[20px] border-[1px] rounded-[7px] border-sepratorColor'
-          }
-        >
+          }>
           <CyDText className='font-extrabold'>{t<string>('NEED_HELP')}</CyDText>
         </CyDTouchView>
       </CyDScrollView>

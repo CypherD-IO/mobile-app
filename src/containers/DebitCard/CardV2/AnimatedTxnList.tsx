@@ -1,130 +1,130 @@
 import React, { memo, ReactElement } from 'react';
 import {
-    FlatListProps,
-    ListRenderItem,
-    Platform,
-    ScrollViewProps,
+  FlatListProps,
+  ListRenderItem,
+  Platform,
+  ScrollViewProps,
 } from 'react-native';
 import Animated, {
-    SharedValue,
-    useAnimatedScrollHandler,
+  SharedValue,
+  useAnimatedScrollHandler,
 } from 'react-native-reanimated';
 import { CardSectionHeights } from '.';
 
 export interface AnimatedTxnListProps
-    extends Pick<
-        FlatListProps<any> & ScrollViewProps,
-        | 'initialNumToRender'
-        | 'maxToRenderPerBatch'
-        | 'onContentSizeChange'
-        | 'onMomentumScrollBegin'
-        | 'onMomentumScrollEnd'
-        | 'onScrollEndDrag'
-        | 'keyExtractor'
-        | 'updateCellsBatchingPeriod'
-        | 'windowSize'
-        | 'ListEmptyComponent'
-    > {
-    data?: any[];
-    renderItem?:
+  extends Pick<
+    FlatListProps<any> & ScrollViewProps,
+    | 'initialNumToRender'
+    | 'maxToRenderPerBatch'
+    | 'onContentSizeChange'
+    | 'onMomentumScrollBegin'
+    | 'onMomentumScrollEnd'
+    | 'onScrollEndDrag'
+    | 'keyExtractor'
+    | 'updateCellsBatchingPeriod'
+    | 'windowSize'
+    | 'ListEmptyComponent'
+  > {
+  data?: any[];
+  renderItem?:
     | ListRenderItem<any>
     | Animated.Node<ListRenderItem<any> | null | undefined>
     | null
     | undefined;
-    scrollY: SharedValue<number>;
-    refreshControl?: ReactElement;
-    extraData?: any;
-    cardSectionHeight: CardSectionHeights
+  scrollY: SharedValue<number>;
+  refreshControl?: ReactElement;
+  extraData?: any;
+  cardSectionHeight: CardSectionHeights;
 }
 
 const AnimatedTxnListWithoutMemo = ({
-    cardSectionHeight,
-    data,
-    renderItem,
-    onContentSizeChange,
-    initialNumToRender,
-    maxToRenderPerBatch,
+  cardSectionHeight,
+  data,
+  renderItem,
+  onContentSizeChange,
+  initialNumToRender,
+  maxToRenderPerBatch,
+  onMomentumScrollBegin,
+  onMomentumScrollEnd,
+  onScrollEndDrag,
+  scrollY,
+  refreshControl,
+  ListEmptyComponent,
+  keyExtractor,
+  extraData,
+}: AnimatedTxnListProps) => {
+  const handleScroll = useAnimatedScrollHandler(event => {
+    scrollY.value = event.contentOffset.y;
+  });
+
+  const commonProps = {
+    refreshControl,
     onMomentumScrollBegin,
     onMomentumScrollEnd,
+    onScroll: handleScroll,
     onScrollEndDrag,
-    scrollY,
-    refreshControl,
-    ListEmptyComponent,
-    keyExtractor,
-    extraData,
-}: AnimatedTxnListProps) => {
-    const handleScroll = useAnimatedScrollHandler((event) => {
-        scrollY.value = event.contentOffset.y;
-    });
+    scrollEventThrottle: 1,
+    // ios has over scrolling and other things which make this look and feel nicer
+    contentInset: Platform.select({ ios: { top: cardSectionHeight } }),
+    contentOffset: Platform.select({
+      ios: {
+        x: 0,
+        y: -cardSectionHeight,
+      },
+    }),
+    contentContainerStyle: Platform.select({
+      ios: {
+        flexGrow: 1,
+      },
+      android: {
+        flexGrow: 1,
+        paddingTop: cardSectionHeight,
+      },
+    }),
+    showsVerticalScrollIndicator: false,
+  };
 
-    const commonProps = {
-        refreshControl,
-        onMomentumScrollBegin,
-        onMomentumScrollEnd,
-        onScroll: handleScroll,
-        onScrollEndDrag,
-        scrollEventThrottle: 1,
-        // ios has over scrolling and other things which make this look and feel nicer
-        contentInset: Platform.select({ ios: { top: cardSectionHeight } }),
-        contentOffset: Platform.select({
-            ios: {
-                x: 0,
-                y: -cardSectionHeight,
-            },
-        }),
-        contentContainerStyle: Platform.select({
-            ios: {
-                flexGrow: 1,
-            },
-            android: {
-                flexGrow: 1,
-                paddingTop: cardSectionHeight,
-            },
-        }),
-        showsVerticalScrollIndicator: false,
-    };
+  // TODO : FlatList scrolling animation
 
-    // TODO : FlatList scrolling animation
+  // const viewableItems = useSharedValue<ViewToken[]>([]);
+  // const onViewRef = React.useRef(
+  //   ({ viewableItems: vItems }: { viewableItems: ViewToken[] }) => {
+  //     if (vItems.length) {
+  //       viewableItems.value = vItems.map((vItem) =>
+  //         vItem.isViewable ? vItem.item : null
+  //       );
+  //     }
+  //   }
+  // );
+  // const viewConfigRef = React.useRef({
+  //   waitForInteraction: false,
+  //   itemVisiblePercentThreshold: 75,
+  // });
+  // const renderFlatlistItem = useCallback(
+  //   ({ item, index }) => {
+  //     return renderItem({ item, index, viewableItems });
+  //   },
+  //   [viewableItems.value, extraData]
+  // );
 
-    // const viewableItems = useSharedValue<ViewToken[]>([]);
-    // const onViewRef = React.useRef(
-    //   ({ viewableItems: vItems }: { viewableItems: ViewToken[] }) => {
-    //     if (vItems.length) {
-    //       viewableItems.value = vItems.map((vItem) =>
-    //         vItem.isViewable ? vItem.item : null
-    //       );
-    //     }
-    //   }
-    // );
-    // const viewConfigRef = React.useRef({
-    //   waitForInteraction: false,
-    //   itemVisiblePercentThreshold: 75,
-    // });
-    // const renderFlatlistItem = useCallback(
-    //   ({ item, index }) => {
-    //     return renderItem({ item, index, viewableItems });
-    //   },
-    //   [viewableItems.value, extraData]
-    // );
-
-    return (
-        <Animated.FlatList
-            {...commonProps}
-            data={data}
-            keyExtractor={keyExtractor}
-            // TODO : FlatList scrolling animation
-            // onViewableItemsChanged={onViewRef.current}
-            // viewabilityConfig={viewConfigRef.current}
-            renderItem={renderItem}
-            ListEmptyComponent={ListEmptyComponent}
-            initialNumToRender={initialNumToRender}
-            maxToRenderPerBatch={maxToRenderPerBatch}
-            onContentSizeChange={onContentSizeChange}
-            extraData={extraData}
-        />
-    );
+  return (
+    <Animated.FlatList
+      {...commonProps}
+      data={data}
+      keyExtractor={keyExtractor}
+      // TODO : FlatList scrolling animation
+      // onViewableItemsChanged={onViewRef.current}
+      // viewabilityConfig={viewConfigRef.current}
+      renderItem={renderItem}
+      ListEmptyComponent={ListEmptyComponent}
+      initialNumToRender={initialNumToRender}
+      maxToRenderPerBatch={maxToRenderPerBatch}
+      onContentSizeChange={onContentSizeChange}
+      extraData={extraData}
+    />
+  );
 };
 
 export const AnimatedTxnList = memo(
-    AnimatedTxnListWithoutMemo
+  AnimatedTxnListWithoutMemo,
 ) as typeof AnimatedTxnListWithoutMemo;
