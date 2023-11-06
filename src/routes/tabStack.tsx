@@ -56,6 +56,7 @@ function TabStack() {
     screenTitle.CARD_KYC_STATUS_SCREEN,
     screenTitle.DEBIT_CARD_SCREEN,
     screenTitle.BRIDGE_CARD_SCREEN,
+    screenTitle.ON_META,
   ];
 
   const [badgedTabBarOptions, setBadgedTabBarOptions] = useState<any>({});
