@@ -21,6 +21,9 @@ import {
   CHAIN_BASE,
   CHAIN_POLYGON_ZKEVM,
   PORTFOLIO_CHAINS_BACKEND_NAMES,
+  CHAIN_AURORA,
+  CHAIN_MOONBEAM,
+  CHAIN_MOONRIVER,
 } from '../constants/server';
 import {
   PORTFOLIO_EMPTY,
@@ -97,6 +100,9 @@ export interface WalletHoldings {
   zksync_era: ChainHoldings | undefined;
   base: ChainHoldings | undefined;
   polygon_zkevm: ChainHoldings | undefined;
+  aurora: ChainHoldings | undefined;
+  moonbeam: ChainHoldings | undefined;
+  moonriver: ChainHoldings | undefined;
   totalHoldings: Holding[];
 }
 
@@ -181,6 +187,12 @@ export function getCurrentChainHoldings(
       return portfolio.base;
     case CHAIN_POLYGON_ZKEVM.backendName:
       return portfolio.polygon_zkevm;
+    case CHAIN_AURORA.backendName:
+      return portfolio.aurora;
+    case CHAIN_MOONBEAM.backendName:
+      return portfolio.moonbeam;
+    case CHAIN_MOONRIVER.backendName:
+      return portfolio.moonriver;
   }
 }
 
@@ -401,6 +413,9 @@ export async function getPortfolioModel(
   let zksyncEraHoldings;
   let baseHoldings;
   let polygonZkevmHoldings;
+  let auroraHoldings;
+  let moonbeamHoldings;
+  let moonriverHoldings;
   const allChains = new Set([
     CHAIN_AVALANCHE.backendName,
     CHAIN_BSC.backendName,
@@ -419,6 +434,9 @@ export async function getPortfolioModel(
     CHAIN_ZKSYNC_ERA.backendName,
     CHAIN_BASE.backendName,
     CHAIN_POLYGON_ZKEVM.backendName,
+    CHAIN_AURORA.backendName,
+    CHAIN_MOONBEAM.backendName,
+    CHAIN_MOONRIVER.backendName,
   ]);
 
   const fetchedChains = new Set<ChainBackendNames | 'ALL'>();
@@ -532,6 +550,15 @@ export async function getPortfolioModel(
         case CHAIN_BASE.backendName:
           tokenHolding.chainDetails = CHAIN_BASE;
           break;
+        case CHAIN_AURORA.backendName:
+          tokenHolding.chainDetails = CHAIN_AURORA;
+          break;
+        case CHAIN_MOONBEAM.backendName:
+          tokenHolding.chainDetails = CHAIN_MOONBEAM;
+          break;
+        case CHAIN_MOONRIVER.backendName:
+          tokenHolding.chainDetails = CHAIN_MOONRIVER;
+          break;
       }
       if (has(tokenHolding, 'chainDetails')) {
         tokenHoldings.push(tokenHolding);
@@ -625,6 +652,15 @@ export async function getPortfolioModel(
       case CHAIN_BASE.backendName:
         baseHoldings = chainHoldings;
         break;
+      case CHAIN_AURORA.backendName:
+        auroraHoldings = chainHoldings;
+        break;
+      case CHAIN_MOONBEAM.backendName:
+        moonbeamHoldings = chainHoldings;
+        break;
+      case CHAIN_MOONRIVER.backendName:
+        moonriverHoldings = chainHoldings;
+        break;
     }
   }
   const remainingChains = new Set(
@@ -715,6 +751,15 @@ export async function getPortfolioModel(
         case CHAIN_BASE.backendName:
           baseHoldings = chainHoldings;
           break;
+        case CHAIN_AURORA.backendName:
+          auroraHoldings = chainHoldings;
+          break;
+        case CHAIN_MOONBEAM.backendName:
+          moonbeamHoldings = chainHoldings;
+          break;
+        case CHAIN_MOONRIVER.backendName:
+          moonriverHoldings = chainHoldings;
+          break;
       }
     }
   }
@@ -744,6 +789,9 @@ export async function getPortfolioModel(
     zksync_era: zksyncEraHoldings,
     base: baseHoldings,
     polygon_zkevm: polygonZkevmHoldings,
+    aurora: auroraHoldings,
+    moonbeam: moonbeamHoldings,
+    moonriver: moonriverHoldings,
     totalHoldings,
   };
   await storePortfolioData(portfolio, ethereum, portfolioState);

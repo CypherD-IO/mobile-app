@@ -35,6 +35,9 @@ export enum ChainBackendNames {
   ZKSYNC_ERA = 'ZKSYNC_ERA',
   BASE = 'BASE',
   POLYGON_ZKEVM = 'POLYGON_ZKEVM',
+  AURORA = 'AURORA',
+  MOONBEAM = 'MOONBEAM',
+  MOONRIVER = 'MOONRIVER',
 }
 
 export enum CosmosStakingTokens {
@@ -65,6 +68,9 @@ export enum FundWalletAddressType {
   ZKSYNC_ERA = 'ZKSYNC_ERA',
   BASE = 'BASE',
   POLYGON_ZKEVM = 'POLYGON_ZKEVM',
+  AURORA = 'AURORA',
+  MOONBEAM = 'MOONBEAM',
+  MOONRIVER = 'MOONRIVER',
 }
 
 export const CHAIN_ETH: Chain = {
@@ -347,6 +353,48 @@ export const CHAIN_POLYGON_ZKEVM: Chain = {
   chainIdNumber: 1101,
 };
 
+export const CHAIN_AURORA: Chain = {
+  chainName: 'ethereum',
+  name: 'Aurora',
+  symbol: 'ETH',
+  id: 19,
+  logo_url: AppImages.AURORA_LOGO,
+  backendName: ChainBackendNames.AURORA,
+  chain_id: '0x4e454152',
+  native_token_address: '0xeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee',
+  secondaryAddress: '',
+  nativeTokenLogoUrl:
+    'https://www.covalenthq.com/static/images/icons/display-icons/ethereum-eth-logo.png',
+  chainIdNumber: 1313161554,
+};
+
+export const CHAIN_MOONBEAM: Chain = {
+  chainName: 'ethereum',
+  name: 'Moonbeam',
+  symbol: 'GLMR',
+  id: 20,
+  logo_url: AppImages.MOONBEAM_LOGO,
+  backendName: ChainBackendNames.MOONBEAM,
+  chain_id: '0x504',
+  native_token_address: '0xeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee',
+  secondaryAddress: '',
+  nativeTokenLogoUrl: AppImages.MOONBEAM_LOGO,
+  chainIdNumber: 1284,
+};
+export const CHAIN_MOONRIVER: Chain = {
+  chainName: 'ethereum',
+  name: 'Moonriver',
+  symbol: 'MOVR',
+  id: 21,
+  logo_url: AppImages.MOONRIVER_LOGO,
+  backendName: ChainBackendNames.MOONRIVER,
+  chain_id: '0x505',
+  native_token_address: '0xeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee',
+  secondaryAddress: '',
+  nativeTokenLogoUrl: AppImages.MOONRIVER_LOGO,
+  chainIdNumber: 1285,
+};
+
 export const EnsCoinTypes: Record<string, string> = {
   [ChainBackendNames.ETH]: '60',
   [ChainBackendNames.AVALANCHE]: '2147526762',
@@ -358,7 +406,8 @@ export const EnsCoinTypes: Record<string, string> = {
 };
 
 export const SUPPORTED_EVM_CHAINS = [
-  1, 137, 56, 43114, 250, 10, 42161, 9001, 324, 8453, 1101,
+  1, 137, 56, 43114, 250, 10, 42161, 9001, 324, 8453, 1101, 1313161554, 1284,
+  1285,
 ];
 export const CHAIN_NAMES = [
   'ethereum',
@@ -401,6 +450,9 @@ export const ALL_CHAINS: Chain[] = [
   CHAIN_ZKSYNC_ERA,
   CHAIN_BASE,
   CHAIN_POLYGON_ZKEVM,
+  CHAIN_AURORA,
+  CHAIN_MOONBEAM,
+  CHAIN_MOONRIVER,
   CHAIN_SHARDEUM,
   CHAIN_SHARDEUM_SPHINX,
 ];
@@ -418,6 +470,9 @@ export const EVM_CHAINS: Chain[] = [
   CHAIN_ZKSYNC_ERA,
   CHAIN_BASE,
   CHAIN_POLYGON_ZKEVM,
+  CHAIN_AURORA,
+  CHAIN_MOONBEAM,
+  CHAIN_MOONRIVER,
 ];
 
 export const EVM_CHAINS_FOR_ADDRESS_DIR = [
@@ -433,6 +488,9 @@ export const EVM_CHAINS_FOR_ADDRESS_DIR = [
   'zksync_era',
   'base',
   'polygon_zkevm',
+  'aurora',
+  'moonbeam',
+  'moonriver',
 ];
 
 export const chainIdNumberMapping: Record<number, Chain> = {
@@ -447,6 +505,9 @@ export const chainIdNumberMapping: Record<number, Chain> = {
   324: CHAIN_ZKSYNC_ERA,
   8453: CHAIN_BASE,
   1101: CHAIN_POLYGON_ZKEVM,
+  1313161554: CHAIN_AURORA,
+  1284: CHAIN_MOONBEAM,
+  1285: CHAIN_MOONRIVER,
 };
 
 export const EVM_CHAINS_BACKEND_NAMES: ChainBackendNames[] = [
@@ -462,6 +523,9 @@ export const EVM_CHAINS_BACKEND_NAMES: ChainBackendNames[] = [
   ChainBackendNames.ZKSYNC_ERA,
   ChainBackendNames.BASE,
   ChainBackendNames.POLYGON_ZKEVM,
+  ChainBackendNames.AURORA,
+  ChainBackendNames.MOONBEAM,
+  ChainBackendNames.MOONRIVER,
 ];
 
 export const PORTFOLIO_CHAINS_BACKEND_NAMES = [
@@ -484,6 +548,9 @@ export const PORTFOLIO_CHAINS_BACKEND_NAMES = [
   ChainBackendNames.ZKSYNC_ERA,
   ChainBackendNames.BASE,
   ChainBackendNames.POLYGON_ZKEVM,
+  ChainBackendNames.AURORA,
+  ChainBackendNames.MOONBEAM,
+  ChainBackendNames.MOONRIVER,
 ];
 
 export const CARD_CHAINS: Chain[] = [
@@ -503,6 +570,9 @@ export const CARD_CHAINS: Chain[] = [
   CHAIN_ZKSYNC_ERA,
   CHAIN_BASE,
   CHAIN_POLYGON_ZKEVM,
+  CHAIN_AURORA,
+  CHAIN_MOONBEAM,
+  CHAIN_MOONRIVER,
 ];
 
 export const IBC_CHAINS: Chain[] = [
@@ -535,6 +605,9 @@ export enum ChainNames {
   ZKSYNC_ERA = 'zksync_era',
   BASE = 'base',
   POLYGON_ZKEVM = 'polygon_zkevm',
+  AURORA = 'aurora',
+  MOONBEAM = 'moonbeam',
+  MOONRIVER = 'moonriver',
 }
 
 export enum ChainNameMapping {
@@ -556,6 +629,9 @@ export enum ChainNameMapping {
   ZKSYNC_ERA = 'zksync_era',
   BASE = 'base',
   POLYGON_ZKEVM = 'polygon_zkevm',
+  AURORA = 'aurora',
+  MOONBEAM = 'moonbeam',
+  MOONRIVER = 'moonriver',
 }
 
 export const ChainConfigMapping = {
@@ -579,6 +655,9 @@ export const ChainConfigMapping = {
   zksync_era: CHAIN_ZKSYNC_ERA,
   base: CHAIN_BASE,
   polygon_zkevm: CHAIN_POLYGON_ZKEVM,
+  aurora: CHAIN_AURORA,
+  moonbeam: CHAIN_MOONBEAM,
+  moonriver: CHAIN_MOONRIVER,
 };
 
 export enum QRScannerScreens {
@@ -623,6 +702,9 @@ export const ChainNameToContactsChainNameMapping = {
   'zkSync Era': 'zksync_era',
   Base: 'base',
   'Polygon zkEVM': 'polygon_zkevm',
+  Aurora: 'aurora',
+  Moonbeam: 'moonbeam',
+  Moonriver: 'moonriver',
 };
 
 export enum NativeTokenMapping {
