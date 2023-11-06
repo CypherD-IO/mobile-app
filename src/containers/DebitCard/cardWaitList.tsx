@@ -29,7 +29,7 @@ const cardBenefits = [
 ];
 
 interface Props {
-  navigation: any
+  navigation: any;
 }
 
 export default function CardWailtList({ navigation }: Props) {
@@ -67,7 +67,7 @@ export default function CardWailtList({ navigation }: Props) {
           };
           const response = await axios.post(
             `${ARCH_HOST}/v1/cards/waitlist`,
-            payload
+            payload,
           );
           if (
             response.status === 201 &&
@@ -115,11 +115,14 @@ export default function CardWailtList({ navigation }: Props) {
   return (
     <CyDView className='flex-1 bg-white mt-[32px]'>
       <CyDScrollView className='bg-white py-[12px]'>
-        <ChooseCountryModal isModalVisible={isModalVisible} setModalVisible={setModalVisible} selectedCountryState={[selectedCountry, setSelectedCountry]} />
+        <ChooseCountryModal
+          isModalVisible={isModalVisible}
+          setModalVisible={setModalVisible}
+          selectedCountryState={[selectedCountry, setSelectedCountry]}
+        />
         <CyDView className={'w-screen'}>
           <CyDText
-            className={'text-center font-bold text-[22px] mt-[20px] mb-[10px]'}
-          >
+            className={'text-center font-bold text-[22px] mt-[20px] mb-[10px]'}>
             {t<string>('SIGNUP_CARD_WAITLIST_TITLE')}
           </CyDText>
           {/* <CyDText className={'text-center font-bold text-[14px] mt-[-6px] mb-[6px]'}>{`(${t('AVAILABLE_ONLY_IN_USA')})`}</CyDText> */}
@@ -129,27 +132,23 @@ export default function CardWailtList({ navigation }: Props) {
             </CyDView>
             <CyDView
               className={
-                'flex justify-center items-center text-center relative mt-[-130px]'
-              }
-            >
+                'flex justify-center items-center text-center relative mt-[-80px]'
+              }>
               <CyDView
                 className={
                   'w-[85%] bg-white px-[50px] pt-[100px] pb-[30px] rounded-[18px] shadow-lg'
-                }
-              >
+                }>
                 <CyDView>
                   <CyDTouchView
                     className={
                       'mt-[5px] mb-[5px] border-[1px] border-inputBorderColor py-[12px] px-[10px] rounded-[8px] flex w-[100%]'
                     }
-                    onPress={() => setModalVisible(true)}
-                  >
+                    onPress={() => setModalVisible(true)}>
                     <CyDView
                       className={clsx(
                         'flex flex-row justify-between items-center',
-                        { 'border-redOffColor': !selectedCountry }
-                      )}
-                    >
+                        { 'border-redOffColor': !selectedCountry },
+                      )}>
                       <CyDView className={'flex flex-row items-center'}>
                         <CyDText className='text-center text-[18px] ml-[8px]'>
                           {selectedCountry.flag}
@@ -177,13 +176,15 @@ export default function CardWailtList({ navigation }: Props) {
                       'border-[1px] border-[#C5C5C5] h-[50px] rounded-[8px] text-center text-black',
                       {
                         'pb-[10px]': isAndroid(),
-                      }
+                      },
                     )}
                     placeholder='Enter your email'
                   />
                   <Button
                     disabled={!isValidUserEmail && userEmail !== ''}
-                    onPress={() => { void joinWaitlist(); }}
+                    onPress={() => {
+                      void joinWaitlist();
+                    }}
                     loading={joiningWaitlist}
                     style={'rounded-[8px] h-[50px] mt-[20px]'}
                     title={t<string>('CTA_JOIN_WAITLIST')}
@@ -196,20 +197,23 @@ export default function CardWailtList({ navigation }: Props) {
                   <CyDView className={'flex flex-row justify-center'}>
                     <CyDTouchView
                       className={'mt-[20px]'}
+                      // onPress={() =>
+                      //   navigation.navigate(C.screenTitle.BROWSER, {
+                      //     screen: C.screenTitle.BROWSER_SCREEN,
+                      //     params: {
+                      //       url: 'https://app.cypherwallet.io/#/?cardSignup=true',
+                      //     },
+                      //   })
+                      // }
                       onPress={() =>
-                        navigation.navigate(C.screenTitle.BROWSER, {
-                          screen: C.screenTitle.BROWSER_SCREEN,
-                          params: {
-                            url: 'https://app.cypherwallet.io/#/?cardSignup=true',
-                          },
-                        })
-                      }
-                    >
+                        navigation.navigate(
+                          C.screenTitle.CARD_SIGNUP_LANDING_SCREEN,
+                        )
+                      }>
                       <CyDText
                         className={
                           'text-center text-blue-700 underline underline-offset-2 font-semibold'
-                        }
-                      >
+                        }>
                         {t<string>('I_HAVE_AN_INVITE_CODE')}
                       </CyDText>
                     </CyDTouchView>
@@ -225,7 +229,7 @@ export default function CardWailtList({ navigation }: Props) {
           </CyDText>
         </CyDView>
         <CyDView className={'mx-[40px] my-[10px]'}>
-          {cardBenefits.map((item) => {
+          {cardBenefits.map(item => {
             return (
               <CyDView className={'flex flex-row my-[4px]'} key={item}>
                 <CyDImage

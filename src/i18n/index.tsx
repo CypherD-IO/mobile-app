@@ -452,8 +452,7 @@ const resources = {
       KYC_COMPLETED: 'KYC completed',
       CARD_ISSUED: 'Card issued',
       IDV_PROMPT: 'Please complete the IDV process',
-      CARD_SIGNUP_INVITE_VERIFICATION_TEXT:
-        'Enter your 6 digit invite code that you received',
+      CARD_SIGNUP_INVITE_VERIFICATION_TEXT: 'Enter your invite code',
       INITIATE_KYC_ALL_CAPS: 'INITIATE KYC',
       INITIATE_KYC_ERROR_MESSAGE:
         'Failed to initiate KYC. Please contact Cypher Support',
@@ -888,6 +887,10 @@ const resources = {
       OTP_TRIGGER_FAILED_TEXT:
         'Failed to send OTP. Please contact Cypher Support.',
       TOKEN_IN_OTHER_CHAIN_HOLDINGS: 'Token across chains',
+      DATE_OF_BIRTH: 'Date Of Birth',
+      REINITIATE_KYC: 'Reinitiate KYC',
+      KYC_FAILED: 'Kyc Failed',
+      UPDATED_SUCCESSFULLY: 'Updated Successfully',
     },
   },
 };
