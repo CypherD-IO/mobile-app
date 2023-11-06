@@ -281,7 +281,7 @@ export const convertFromUnitAmount = (
   return (parseFloat(amount) * 10 ** -decimal).toFixed(decimalPlaces);
 };
 
-export const convertNumberToShortHandNotation = (n) => {
+export const convertNumberToShortHandNotation = n => {
   if (n < 1e3) return n;
   if (n >= 1e3 && n < 1e6) return +(n / 1e3).toFixed(1) + 'K';
   if (n >= 1e6 && n < 1e9) return +(n / 1e6).toFixed(1) + 'M';
@@ -342,7 +342,7 @@ export const isValidPassportNumber = (ppn: string): boolean => {
   return PP_REGEX.test(ppn);
 };
 
-export const convertToEvmosFromAevmos = (aevmos) => {
+export const convertToEvmosFromAevmos = aevmos => {
   return parseFloat(aevmos) * 10 ** -18;
 };
 
@@ -395,11 +395,11 @@ export const sortJSONArrayByKey = (array, key): [] => {
 };
 
 export const concatErrorMessagesFromArray = (array: []): string => {
-  return array.map((messageObject) => messageObject.message).join('.');
+  return array.map(messageObject => messageObject.message).join('.');
 };
 
 export const concatErrorMessagesFromArrayOneByOne = (array: []) => {
-  return array.map((messageObject) => messageObject.message).join('\n');
+  return array.map(messageObject => messageObject.message).join('\n');
 };
 
 export const isAutoFillSupported = (): boolean => {
@@ -453,9 +453,9 @@ export const removeSolidProhibitedCountriesFromCountryMaster = () => {
     'Yemen',
     'Zimbabwe',
   ];
-  const allowedCountries = countryMaster.filter((country) =>
+  const allowedCountries = countryMaster.filter(country =>
     prohibitedCountries.every(
-      (prohibitedCountry) =>
+      prohibitedCountry =>
         !country.name.toLowerCase().includes(prohibitedCountry.toLowerCase()),
     ),
   );
@@ -625,7 +625,7 @@ export const isACosmosStakingToken = (tokenData: any) =>
     ChainBackendNames.JUNO,
     ChainBackendNames.EVMOS,
     ChainBackendNames.STARGAZE,
-  ].some((chain) => isCosmosStakingToken(chain as string, tokenData));
+  ].some(chain => isCosmosStakingToken(chain as string, tokenData));
 
 export const isABasicCosmosStakingToken = (tokenData: any) =>
   [
@@ -633,7 +633,7 @@ export const isABasicCosmosStakingToken = (tokenData: any) =>
     ChainBackendNames.COSMOS,
     ChainBackendNames.JUNO,
     ChainBackendNames.STARGAZE,
-  ].some((chain) => isCosmosStakingToken(chain as string, tokenData));
+  ].some(chain => isCosmosStakingToken(chain as string, tokenData));
 
 export const calculateTime = function time(ttime: string) {
   const ms = Date.parse(String(new Date())) - Date.parse(ttime);
@@ -786,3 +786,13 @@ export function parseErrorMessage(error: any): string {
     }
   }
 }
+
+export const isEnglish = (value: string) => {
+  const validatedLName = value
+    .toLowerCase()
+    .replace(/[-_]+/g, ' ')
+    .replace(/[^\w\s]/g, '')
+    .replace(/\s+(.)(\w*)/g, (_$1, $2, $3) => ` ${$2.toUpperCase() + $3}`)
+    .replace(/\w/, s => s.toUpperCase());
+  return validatedLName !== '';
+};

@@ -5,7 +5,7 @@ import React, {
   useMemo,
   useState,
 } from 'react';
-import { StyleSheet } from 'react-native';
+import { Keyboard, StyleSheet } from 'react-native';
 import AppImages from '../../../assets/images/appImages';
 import { RouteProp, useIsFocused } from '@react-navigation/native';
 import {
@@ -25,6 +25,7 @@ import { t } from 'i18next';
 import CyDModalLayout from '../../components/v2/modal';
 import { CountryCodesWithFlags } from '../../models/CountryCodesWithFlags.model';
 import {
+  isEnglish,
   isValidEmailID,
   isValidPassportNumber,
   isValidSSN,
@@ -128,7 +129,24 @@ export default function CardSignupScreen({ navigation, route }) {
   const { postWithAuth } = useAxios();
 
   const userBasicDetailsValidationSchema = yup.object({
-    firstName: yup.string().required(t('FIRST_NAME_REQUIRED')),
+    firstName: yup
+      .string()
+      .required(t('FIRST_NAME_REQUIRED'))
+      .test(
+        'Name length test',
+        'First name + last name should not exceed 22 characters in length.',
+        (value, ctx) => {
+          if (value && ctx.parent.lastName) {
+            return value.length + Number(ctx.parent.lastName.length) <= 22;
+          }
+          return true;
+        },
+      )
+      .test(
+        'First name must be in english',
+        'Unrecognized characters found. Please enter your first name in english',
+        fName => isEnglish(fName ?? ''),
+      ),
     country: yup.string().required(),
     dateOfBirth: yup
       .string()
@@ -155,7 +173,24 @@ export default function CardSignupScreen({ navigation, route }) {
           return true;
         }
       }),
-    lastName: yup.string().required(t('LAST_NAME_REQUIRED')),
+    lastName: yup
+      .string()
+      .required(t('LAST_NAME_REQUIRED'))
+      .test(
+        'Name length test',
+        'First name + last name should not exceed 22 characters in length.',
+        (value, ctx) => {
+          if (value && ctx.parent.firstName) {
+            return value.length + Number(ctx.parent.firstName.length) <= 22;
+          }
+          return true;
+        },
+      )
+      .test(
+        'First name must be in english',
+        'Unrecognized characters found. Please enter your first name in english',
+        lName => isEnglish(lName ?? ''),
+      ),
     phoneNumber: yup.string().required(t('PHONE_NUMBER_REQUIRED')),
   });
 
@@ -820,6 +855,17 @@ export default function CardSignupScreen({ navigation, route }) {
     },
   ];
 
+  const onPressBack = () => {
+    if (screenIndex === 0) {
+      Keyboard.dismiss();
+      setTimeout(() => {
+        navigation.goBack();
+      }, 100);
+    } else {
+      goToPreviousScreen();
+    }
+  };
+
   return (
     <CyDSafeAreaView className={'h-full bg-white'}>
       <CyDModalLayout
@@ -1097,9 +1143,7 @@ export default function CardSignupScreen({ navigation, route }) {
             {
               <CyDTouchView
                 onPress={() => {
-                  screenIndex === 0
-                    ? navigation.goBack()
-                    : goToPreviousScreen();
+                  onPressBack();
                 }}
                 className='w-[30px] pl-[12px]'>
                 <CyDImage
@@ -1123,14 +1167,11 @@ export default function CardSignupScreen({ navigation, route }) {
               })}
             </CyDView>
           </CyDView>
-          <CyDKeyboardAvoidingView
-            behavior={isAndroid() ? 'height' : 'padding'}
-            enabled
-            className={'h-full flex grow-1'}>
+          <CyDView className={'h-full flex grow-1'}>
             <CyDScrollView className='mb-[45px]'>
               {screens[screenIndex].component}
             </CyDScrollView>
-          </CyDKeyboardAvoidingView>
+          </CyDView>
         </>
       )}
     </CyDSafeAreaView>
