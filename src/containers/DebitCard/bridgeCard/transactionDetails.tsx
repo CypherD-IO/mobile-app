@@ -177,7 +177,6 @@ export default function TransactionDetails({
             label: t('STATUS'),
             value: transaction.isSettled ? t('SETTLED') : t('PENDING'),
           },
-          { label: t('CARD'), value: 'XXXX XXXX XXXX ' + last4 },
         ],
       },
       {
@@ -210,6 +209,12 @@ export default function TransactionDetails({
             value: String(fxCurrencyValue) + ' ' + String(fxCurrencySymbol),
           },
         ],
+      });
+    }
+    if (last4 !== 'XXXX') {
+      debitOrRefundDetails[0].data.push({
+        label: t('CARD'),
+        value: 'XXXX XXXX XXXX ' + last4,
       });
     }
     debitOrRefundDetails.forEach(detail => {
