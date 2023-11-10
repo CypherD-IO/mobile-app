@@ -127,7 +127,7 @@ const TokenScene = ({
       } else {
         holdings = data;
       }
-      let tempHoldingsData = {};
+      let tempHoldingsData: { [key: string]: Holding } = {};
       holdings.forEach(
         (holding: Holding) =>
           (tempHoldingsData = {
@@ -154,22 +154,28 @@ const TokenScene = ({
     return getIndexedData(data);
   }, [portfolioState.statePortfolio.tokenPortfolio]);
 
-  useEffect(() => {
+  const sortedHoldingsByCoinGeckoId = useMemo(() => {
     const data = getCurrentChainHoldings(
       portfolioState.statePortfolio.tokenPortfolio,
       portfolioState.statePortfolio.selectedChain,
     );
     const newHoldingsByCoingeckoId = Object.keys(getIndexedData(data));
-    if (
-      holdingsByCoinGeckoId.length !== newHoldingsByCoingeckoId.length ||
-      !isEqual(sortBy(holdingsByCoinGeckoId), sortBy(newHoldingsByCoingeckoId))
-    ) {
-      setHoldingsByCoinGeckoId(newHoldingsByCoingeckoId);
-    }
+    return [...newHoldingsByCoingeckoId].sort(
+      (a, b) => holdingsData[b].totalValue - holdingsData[a].totalValue,
+    );
   }, [
     portfolioState.statePortfolio.tokenPortfolio,
     portfolioState.statePortfolio.selectedChain,
   ]);
+
+  useEffect(() => {
+    if (
+      holdingsByCoinGeckoId.length !== sortedHoldingsByCoinGeckoId.length ||
+      !isEqual(holdingsByCoinGeckoId, sortedHoldingsByCoinGeckoId)
+    ) {
+      setHoldingsByCoinGeckoId(sortedHoldingsByCoinGeckoId);
+    }
+  }, [sortedHoldingsByCoinGeckoId]);
 
   const swipeableRefs: Array<Swipeable | null> = [];
   let previousOpenedSwipeableRef: Swipeable | null;
@@ -221,7 +227,7 @@ const TokenScene = ({
   const tokensGroupedByCoinGeckoId = useMemo(() => {
     return groupBy(
       holdingsByCoinGeckoId,
-      (currentKey) => currentKey.split(':')[0],
+      currentKey => currentKey.split(':')[0],
     );
   }, [holdingsByCoinGeckoId]);
 
@@ -234,7 +240,7 @@ const TokenScene = ({
             getAllChainBalance(portfolioState) > 0 ? holdingsByCoinGeckoId : []
           }
           extraData={{ isVerifyCoinChecked, holdingsData }}
-          keyExtractor={(item) => item}
+          keyExtractor={item => item}
           refreshControl={
             <RefreshControl
               refreshing={isPortfolioRefreshing.shouldRefreshAssets}
@@ -251,7 +257,7 @@ const TokenScene = ({
               otherChainsWithToken: get(
                 tokensGroupedByCoinGeckoId,
                 item.split(':')[0],
-              ).map((otherChain) => get(holdingsData, otherChain)),
+              ).map(otherChain => get(holdingsData, otherChain)),
               viewableItems,
             })
           }
@@ -314,8 +320,7 @@ const TokenListEmptyComponent = ({
           className='mt-[20px]'
           onPress={() => {
             void onRefresh();
-          }}
-        >
+          }}>
           <CyDText className='text-center text-blue-500 underline'>
             {t<string>('CLICK_TO_REFRESH')}
           </CyDText>
