@@ -275,7 +275,7 @@ export default function Bridge(props: { navigation?: any; route?: any }) {
   const parseCoinListData = (data: any) => {
     delete data.CYPHERD_TARGET_WALLET_ADDRESS;
     const response: BridgeTokenDataInterface[] = [];
-    Object.entries(data).forEach((item) => {
+    Object.entries(data).forEach(item => {
       const itemBackEndName = item[0];
       const itemDetails = item[1];
       const singleData = {
@@ -384,7 +384,7 @@ export default function Bridge(props: { navigation?: any; route?: any }) {
       quoteUUID,
       txnHash,
     })
-      .then((response) => {
+      .then(response => {
         const bridgeEventDetails = {
           from_token: fromToken,
           from_chain: fromChain,
@@ -452,7 +452,7 @@ export default function Bridge(props: { navigation?: any; route?: any }) {
           setBridgeLoading(false);
         }
       })
-      .catch((error) => {
+      .catch(error => {
         void intercomAnalyticsLog('bridge_email_send_failed', {
           from_token: fromToken,
           from_chain: fromChain,
@@ -560,7 +560,7 @@ export default function Bridge(props: { navigation?: any; route?: any }) {
     );
   };
 
-  const parseBridgeQuoteData = (data) => {
+  const parseBridgeQuoteData = data => {
     const quoteData = {
       fromAmount: parseFloat(cryptoAmount),
       fromAmountUsd: parseFloat(cryptoAmount) * fromToken?.price,
@@ -1131,7 +1131,7 @@ export default function Bridge(props: { navigation?: any; route?: any }) {
         } else if (routeData.title !== 'Swap') {
           setToChain(
             ALL_CHAINS.find(
-              (chain) => chain.backendName !== fromChain.backendName,
+              chain => chain.backendName !== fromChain.backendName,
             ),
           );
         }
@@ -1212,7 +1212,7 @@ export default function Bridge(props: { navigation?: any; route?: any }) {
         }
       };
 
-      getInfo().catch((error) => {
+      getInfo().catch(error => {
         Sentry.captureException(error);
       });
 
@@ -1232,7 +1232,7 @@ export default function Bridge(props: { navigation?: any; route?: any }) {
         }
       };
 
-      getSwapSupportedChains().catch((error) => {
+      getSwapSupportedChains().catch(error => {
         Sentry.captureException(error);
       });
     }
@@ -1241,7 +1241,7 @@ export default function Bridge(props: { navigation?: any; route?: any }) {
   useEffect(() => {
     const chainData: Chain[] = [];
     let tempData: Chain;
-    ALL_CHAINS.forEach((item) => {
+    ALL_CHAINS.forEach(item => {
       if (
         swapSupportedChains.includes(fromChain.chainIdNumber) ||
         item.name !== fromChain.name
@@ -1262,7 +1262,7 @@ export default function Bridge(props: { navigation?: any; route?: any }) {
   useEffect(() => {
     if (chainListData && fromChain.backendName !== toChain?.backendName) {
       let toTokenFound = false;
-      chainListData.forEach((item) => {
+      chainListData.forEach(item => {
         if (item.backendName === toChain?.backendName) {
           setToToken(item);
           toTokenFound = true;
@@ -1286,7 +1286,7 @@ export default function Bridge(props: { navigation?: any; route?: any }) {
       fromChain.backendName === toChain.backendName
     ) {
       const filteredTokens = toTokenData.originalTokenData.filter(
-        (token) => token.symbol !== fromToken?.symbol,
+        token => token.symbol !== fromToken?.symbol,
       );
       setToTokenData({
         ...toTokenData,
@@ -1303,7 +1303,7 @@ export default function Bridge(props: { navigation?: any; route?: any }) {
     if (!response.isError) {
       if (response?.data?.tokens) {
         const filteredTokens = response.data.tokens.filter(
-          (token) => token.symbol !== fromToken?.symbol,
+          token => token.symbol !== fromToken?.symbol,
         );
         setToTokenData({
           originalTokenData: response.data.tokens,
@@ -1317,8 +1317,7 @@ export default function Bridge(props: { navigation?: any; route?: any }) {
   if (loading) {
     return (
       <CyDView
-        className={'flex justify-center items-center bg-white h-full w-full'}
-      >
+        className={'flex justify-center items-center bg-white h-full w-full'}>
         <LottieView
           source={AppImages.LOADING_IMAGE}
           autoPlay
@@ -1332,15 +1331,15 @@ export default function Bridge(props: { navigation?: any; route?: any }) {
   if (portfolioState.statePortfolio.portfolioState === PORTFOLIO_EMPTY) {
     return (
       <CyDView
-        className={'flex justify-center items-center bg-white h-full w-full'}
-      >
+        className={'flex justify-center items-center bg-white h-full w-full'}>
         <CyDImage
           source={AppImages.MOVE_FUND_BG}
           className={'w-[80%] h-[70%]'}
         />
         <CyDText
-          className={'mt-[20px] font-normal font-nunito text-black text-[20px]'}
-        >
+          className={
+            'mt-[20px] font-normal font-nunito text-black text-[20px]'
+          }>
           {t<string>('FUND_WALLET_ACCESS_BRIDGE').toString()}
         </CyDText>
       </CyDView>
@@ -1425,7 +1424,7 @@ export default function Bridge(props: { navigation?: any; route?: any }) {
 
   const onPressData = (value: string) => {
     const state = selectedReasons.includes(value)
-      ? selectedReasons.filter((val) => val !== value)
+      ? selectedReasons.filter(val => val !== value)
       : [...selectedReasons, value];
     setSelectedReasons(state);
   };
@@ -1440,20 +1439,18 @@ export default function Bridge(props: { navigation?: any; route?: any }) {
         key={index}
         className={clsx('flex flex-row justify-between p-[13px] mx-[10px]', {
           'border-b-[1px] border-b-sepratorColor': length - 1 !== index,
-        })}
-      >
+        })}>
         <CyDView className={'flex flex-row justify-start items-center'}>
           <CyDText className={'font-extrabold text-[14px]'}>{reason}</CyDText>
         </CyDView>
         <CyDView className={'flex flex-wrap justify-end'}>
           <CyDTouchView
-            onPress={(e) => {
+            onPress={e => {
               onPressData(reason);
             }}
             className={`h-[20px] w-[20px] ${
               selectedReasons.includes(reason) ? 'bg-appColor' : ''
-            } rounded-[4px] border-[1.5px] border-borderColor flex flex-row justify-center items-center`}
-          >
+            } rounded-[4px] border-[1.5px] border-borderColor flex flex-row justify-center items-center`}>
             {selectedReasons.includes(reason) ? (
               <CyDImage
                 style={{ tintColor: 'black' }}
@@ -1549,8 +1546,7 @@ export default function Bridge(props: { navigation?: any; route?: any }) {
           <CyDText
             className={
               'text-center font-nunito text-[24px] font-bold font-[#434343] mt-[20px]'
-            }
-          >
+            }>
             {t<string>('HELP_US_UNDERSTAND')}
           </CyDText>
           <CyDView className={'mt-[20px]'}>
@@ -1560,8 +1556,7 @@ export default function Bridge(props: { navigation?: any; route?: any }) {
             <CyDText
               className={
                 'font-nunito text-[14px] font-semibold font-[#434343] ml-[10px] mb-[5px]'
-              }
-            >
+              }>
               {t<string>('ADDITIONAL_COMMENTS')}
             </CyDText>
             <CyDTextInput
@@ -1571,24 +1566,22 @@ export default function Bridge(props: { navigation?: any; route?: any }) {
                 'h-[70px] border-[1px] pl-[5px] rounded-[5px] border-inputBorderColor'
               }
               multiline={true}
-              onChangeText={(text) => {
+              onChangeText={text => {
                 commentsRef.current = text;
               }}
               secureTextEntry={true}
             />
           </CyDView>
           <CyDView
-            className={'flex flex-row justify-center items-center mt-[10px]'}
-          >
+            className={'flex flex-row justify-center items-center mt-[10px]'}>
             <CyDText>{t<string>('DONT_ASK_AGAIN')}</CyDText>
             <CyDTouchView
-              onPress={(e) => {
+              onPress={e => {
                 setDontAskAgain(!dontAskAgain);
               }}
               className={`h-[18px] w-[18px] ${
                 dontAskAgain ? 'bg-appColor' : ''
-              } rounded-[4px] border-[1.5px] border-borderColor flex flex-row justify-center items-center ml-[5px]`}
-            >
+              } rounded-[4px] border-[1.5px] border-borderColor flex flex-row justify-center items-center ml-[5px]`}>
               {dontAskAgain ? (
                 <CyDImage
                   style={{ tintColor: 'black' }}
@@ -1604,8 +1597,7 @@ export default function Bridge(props: { navigation?: any; route?: any }) {
         <CyDView
           className={
             'flex flex-row w-full justify-between items-center px-[30px] pt-[20px] pb-[30px]'
-          }
-        >
+          }>
           <Button
             onPress={() => {
               setSignModalVisible(false);
@@ -1814,7 +1806,7 @@ export default function Bridge(props: { navigation?: any; route?: any }) {
       let gasFeeETH = '';
       let gasFeeDollar = '';
       if (
-        parseFloat(cryptoAmount) < parseFloat(String(fromToken?.actualBalance))
+        parseFloat(cryptoAmount) <= parseFloat(String(fromToken?.actualBalance))
       ) {
         const gasLimit = await web3.eth.estimateGas({
           from: ethereum.address,
@@ -1908,7 +1900,7 @@ export default function Bridge(props: { navigation?: any; route?: any }) {
     }
   };
 
-  const onConfirmSwap = async (confirmSwapParams) => {
+  const onConfirmSwap = async confirmSwapParams => {
     try {
       if (fromChain && toChain && fromToken && toToken) {
         setSignModalVisible(false);
@@ -2148,7 +2140,7 @@ export default function Bridge(props: { navigation?: any; route?: any }) {
           // tokenList = {totalHoldings.length ? totalHoldings : []}
           tokenList={fromTokenData?.length ? fromTokenData : []}
           // onSelectingToken = {(token) => { setFromTokenModalVisible(false); setFromToken(token); setFromChainFunction({ item: token.chainDetails }); }}
-          onSelectingToken={(token) => {
+          onSelectingToken={token => {
             setFromTokenModalVisible(false);
             setFromToken(token);
           }}
@@ -2165,7 +2157,7 @@ export default function Bridge(props: { navigation?: any; route?: any }) {
               ? toTokenData.filteredTokenData
               : []
           }
-          onSelectingToken={(token) => {
+          onSelectingToken={token => {
             setToTokenModalVisible(false);
             setToToken(token);
           }}
@@ -2191,7 +2183,7 @@ export default function Bridge(props: { navigation?: any; route?: any }) {
           data={toChainData}
           title={'Choose Chain'}
           selectedItem={toChain?.name}
-          onPress={(item) => {
+          onPress={item => {
             setToChain(item.item);
           }}
           type={'chain'}
@@ -2199,7 +2191,7 @@ export default function Bridge(props: { navigation?: any; route?: any }) {
 
         <SignatureModal
           isModalVisible={allowanceParams.isApprovalModalVisible}
-          setModalVisible={(resp) =>
+          setModalVisible={resp =>
             setAllowanceParams({
               ...allowanceParams,
               isApprovalModalVisible: resp,
@@ -2210,8 +2202,7 @@ export default function Bridge(props: { navigation?: any; route?: any }) {
               ...allowanceParams,
               isApprovalModalVisible: false,
             });
-          }}
-        >
+          }}>
           <ApprovalModal />
         </SignatureModal>
 
@@ -2221,26 +2212,22 @@ export default function Bridge(props: { navigation?: any; route?: any }) {
           onCancel={() => {
             void setQuoteCancelReasons(dontAskAgain);
           }}
-          avoidKeyboard={true}
-        >
+          avoidKeyboard={true}>
           {quoteCancelVisible ? (
             <QuoteCancelReasons />
           ) : (
             <CyDView>
               <CyDView className={'px-[20px]'}>
                 <CyDText
-                  className={'text-center text-[24px] font-bold mt-[20px]'}
-                >
+                  className={'text-center text-[24px] font-bold mt-[20px]'}>
                   {t<string>(isSwap() ? 'SWAP_TOKENS' : 'TRANSFER_TOKENS')}
                 </CyDText>
                 <CyDView
                   className={
                     'flex flex-row justify-between items-center w-[100%] my-[20px] bg-[#F7F8FE] rounded-[20px] px-[15px] py-[20px] '
-                  }
-                >
+                  }>
                   <CyDView
-                    className={'flex w-[40%] items-center justify-center'}
-                  >
+                    className={'flex w-[40%] items-center justify-center'}>
                     <CyDView className='items-center'>
                       <CyDImage
                         source={{ uri: fromToken?.logoUrl }}
@@ -2249,15 +2236,13 @@ export default function Bridge(props: { navigation?: any; route?: any }) {
                       <CyDText
                         className={
                           'my-[6px] mx-[2px] text-black text-[14px] text-center font-semibold flex flex-row justify-center font-nunito'
-                        }
-                      >
+                        }>
                         {fromToken?.name}
                       </CyDText>
                       <CyDView
                         className={
                           'bg-white rounded-[20px] flex flex-row items-center p-[4px]'
-                        }
-                      >
+                        }>
                         <CyDImage
                           source={fromChain.logo_url}
                           className={'w-[14px] h-[14px]'}
@@ -2265,8 +2250,7 @@ export default function Bridge(props: { navigation?: any; route?: any }) {
                         <CyDText
                           className={
                             'ml-[6px] font-nunito font-normal text-black  text-[12px]'
-                          }
-                        >
+                          }>
                           {fromChain.name}
                         </CyDText>
                       </CyDView>
@@ -2292,8 +2276,7 @@ export default function Bridge(props: { navigation?: any; route?: any }) {
                   <CyDView
                     className={
                       'flex w-[40%] items-center self-center align-center justify-center '
-                    }
-                  >
+                    }>
                     <CyDView className='items-center'>
                       <CyDImage
                         source={{ uri: toToken?.logoUrl || toToken?.logo }}
@@ -2302,15 +2285,13 @@ export default function Bridge(props: { navigation?: any; route?: any }) {
                       <CyDText
                         className={
                           'my-[6px] mx-[2px] text-black text-[14px] text-center font-semibold flex flex-row justify-center font-nunito'
-                        }
-                      >
+                        }>
                         {toToken?.name}
                       </CyDText>
                       <CyDView
                         className={
                           'bg-white rounded-[20px] flex flex-row items-center p-[4px]'
-                        }
-                      >
+                        }>
                         <CyDImage
                           source={toChain.logo_url}
                           className={'w-[14px] h-[14px]'}
@@ -2318,8 +2299,7 @@ export default function Bridge(props: { navigation?: any; route?: any }) {
                         <CyDText
                           className={
                             'ml-[6px] font-nunito text-black font-normal text-[12px]'
-                          }
-                        >
+                          }>
                           {toChain.name}
                         </CyDText>
                       </CyDView>
@@ -2330,8 +2310,7 @@ export default function Bridge(props: { navigation?: any; route?: any }) {
                   <CyDText
                     className={
                       'font-[#434343] font-nunito text-black font-[16px] text-medium'
-                    }
-                  >
+                    }>
                     {t<string>('SENT_AMOUNT')}
                   </CyDText>
                   <CyDView className={'mr-[10px] flex flex-col items-end'}>
@@ -2339,8 +2318,7 @@ export default function Bridge(props: { navigation?: any; route?: any }) {
                       className={
                         'font-nunito font-[16px] text-black font-bold max-w-[150px]'
                       }
-                      numberOfLines={1}
-                    >
+                      numberOfLines={1}>
                       {isSwap()
                         ? formatAmount(swapParams?.amount)
                         : quoteData.fromAmount.toFixed(4) +
@@ -2350,8 +2328,7 @@ export default function Bridge(props: { navigation?: any; route?: any }) {
                     <CyDText
                       className={
                         'font-nunito font-[12px] text-[#929292] font-bold'
-                      }
-                    >
+                      }>
                       {isSwap()
                         ? (
                             Number(swapParams.amount) * Number(fromToken?.price)
@@ -2364,13 +2341,11 @@ export default function Bridge(props: { navigation?: any; route?: any }) {
                 <CyDView
                   className={
                     'mr-[10px] flex flex-row justify-between mt-[20px]'
-                  }
-                >
+                  }>
                   <CyDText
                     className={
                       'text-[#434343] font-nunito font-[16px] text-medium'
-                    }
-                  >
+                    }>
                     {t<string>('TOTAL_RECEIVED')}
                   </CyDText>
                   <CyDView className={'flex flex-col items-end'}>
@@ -2378,8 +2353,7 @@ export default function Bridge(props: { navigation?: any; route?: any }) {
                       className={
                         'font-nunito font-[16px] text-black font-bold max-w-[150px]'
                       }
-                      numberOfLines={1}
-                    >
+                      numberOfLines={1}>
                       {isSwap()
                         ? formatAmount(swapParams?.quoteData?.toToken?.amount)
                         : quoteData.toAmount.toFixed(4) +
@@ -2389,8 +2363,7 @@ export default function Bridge(props: { navigation?: any; route?: any }) {
                     <CyDText
                       className={
                         'font-nunito font-[12px] text-[#929292] font-bold'
-                      }
-                    >
+                      }>
                       {isSwap()
                         ? Number(swapParams?.quoteData?.value).toFixed(4)
                         : quoteData.toAmountUsd.toFixed(4) + ' USD'}
@@ -2407,8 +2380,7 @@ export default function Bridge(props: { navigation?: any; route?: any }) {
                           parseFloat(String(fromToken?.actualBalance)) >
                           parseFloat(cryptoAmount),
                       },
-                    )}
-                  >
+                    )}>
                     <LottieView
                       source={AppImages.ESTIMATED_TIME}
                       resizeMode={'contain'}
@@ -2417,13 +2389,11 @@ export default function Bridge(props: { navigation?: any; route?: any }) {
                       style={{ width: 20 }}
                     />
                     <CyDView
-                      className={'flex flex-row justify-between items-center'}
-                    >
+                      className={'flex flex-row justify-between items-center'}>
                       <CyDText
                         className={
                           'font-nunito font-[16px] text-black font-bold ml-[12px]'
-                        }
-                      >
+                        }>
                         {[
                           ChainBackendNames.COSMOS,
                           ChainBackendNames.OSMOSIS,
@@ -2469,8 +2439,7 @@ export default function Bridge(props: { navigation?: any; route?: any }) {
               <CyDView
                 className={
                   'flex flex-row justify-center items-center px-[20px] pb-[50px] mt-[10px]'
-                }
-              >
+                }>
                 <Button
                   title={t<string>('CANCEL')}
                   disabled={bridgeLoading}
@@ -2506,13 +2475,11 @@ export default function Bridge(props: { navigation?: any; route?: any }) {
           <CyDView className='mt-[20px]'>
             <CyDView
               className='bg-white border-[0.2px] rounded-[8px] border-sepratorColor mx-[20px] px-[20px] py-[10px] shadow shadow-sepratorColor'
-              style={styles.shadowProp}
-            >
+              style={styles.shadowProp}>
               <CyDText
                 className={
                   'font-extrabold text-[16px] mt-[1px] ml-[3px] font-nunito text-black '
-                }
-              >
+                }>
                 {t<string>('FROM')}
               </CyDText>
 
@@ -2520,13 +2487,11 @@ export default function Bridge(props: { navigation?: any; route?: any }) {
                 className={
                   'bg-secondaryBackgroundColor my-[5px] border-[1px] border-[#EBEBEB] rounded-[8px]'
                 }
-                onPress={() => setFromChainModalVisible(true)}
-              >
+                onPress={() => setFromChainModalVisible(true)}>
                 <CyDView
                   className={
                     'px-[18px] h-[50px] flex flex-row justify-between items-center'
-                  }
-                >
+                  }>
                   <CyDView className={'flex flex-row items-center'}>
                     <CyDImage
                       source={fromChain.logo_url}
@@ -2535,8 +2500,7 @@ export default function Bridge(props: { navigation?: any; route?: any }) {
                     <CyDText
                       className={
                         'text-center text-black font-nunito text-[16px] ml-[8px]'
-                      }
-                    >
+                      }>
                       {fromChain.name}
                     </CyDText>
                   </CyDView>
@@ -2549,17 +2513,14 @@ export default function Bridge(props: { navigation?: any; route?: any }) {
                 className={
                   'bg-[#F7F8FE] my-[5px] border-[1px] border-[#EBEBEB] rounded-[8px]'
                 }
-                onPress={() => setFromTokenModalVisible(true)}
-              >
+                onPress={() => setFromTokenModalVisible(true)}>
                 <CyDView className={'h-[50px] flex flex-row w-full'}>
                   <CyDView
                     className={
                       'w-4/12 border-r-[1px] border-[#EBEBEB] bg-white px-[18px] rounded-l-[8px] flex justify-center items-center'
-                    }
-                  >
+                    }>
                     <CyDText
-                      className={'text-[#434343] text-[16px] font-extrabold'}
-                    >
+                      className={'text-[#434343] text-[16px] font-extrabold'}>
                       {'Token'}
                     </CyDText>
                   </CyDView>
@@ -2567,8 +2528,7 @@ export default function Bridge(props: { navigation?: any; route?: any }) {
                   <CyDView
                     className={
                       'flex flex-row items-center justify-between w-8/12 px-[18px]'
-                    }
-                  >
+                    }>
                     <CyDView className={'flex flex-row items-center'}>
                       <CyDImage
                         source={{ uri: fromToken?.logoUrl ?? '' }}
@@ -2578,8 +2538,7 @@ export default function Bridge(props: { navigation?: any; route?: any }) {
                         className={
                           'text-center text-black font-nunito text-[16px] ml-[8px] max-w-[70%]'
                         }
-                        numberOfLines={1}
-                      >
+                        numberOfLines={1}>
                         {fromToken?.name}
                       </CyDText>
                     </CyDView>
@@ -2593,13 +2552,11 @@ export default function Bridge(props: { navigation?: any; route?: any }) {
               className={
                 'my-[16px] bg-white rounded-[8px] border-sepratorColor border-[0.2px] mx-[20px] px-[20px] pt-[10px] shadow'
               }
-              style={styles.shadowProp}
-            >
+              style={styles.shadowProp}>
               <CyDText
                 className={
                   'font-extrabold text-[16px] mt-[1px] ml-[3px] font-nunito text-black '
-                }
-              >
+                }>
                 {t<string>('TO')}
               </CyDText>
 
@@ -2607,13 +2564,11 @@ export default function Bridge(props: { navigation?: any; route?: any }) {
                 className={
                   'bg-secondaryBackgroundColor my-[5px] border-[1px] border-[#EBEBEB] rounded-[8px]'
                 }
-                onPress={() => setToChainModalVisible(true)}
-              >
+                onPress={() => setToChainModalVisible(true)}>
                 <CyDView
                   className={
                     'h-[50px] px-[18px] flex flex-row justify-between items-center'
-                  }
-                >
+                  }>
                   <CyDView className={'flex flex-row items-center'}>
                     <CyDImage
                       source={toChain?.logo_url}
@@ -2622,8 +2577,7 @@ export default function Bridge(props: { navigation?: any; route?: any }) {
                     <CyDText
                       className={
                         'text-center text-black font-nunito text-[16px] ml-[8px]'
-                      }
-                    >
+                      }>
                       {toChain?.name}
                     </CyDText>
                   </CyDView>
@@ -2635,23 +2589,19 @@ export default function Bridge(props: { navigation?: any; route?: any }) {
               <CyDView
                 className={
                   'bg-secondaryBackgroundColor mb-[16px] mt-[5px] border-[1px] border-[#EBEBEB] rounded-[8px]'
-                }
-              >
+                }>
                 <CyDTouchView
                   disabled={!isSwap()}
                   onPress={() => {
                     setToTokenModalVisible(true);
                   }}
-                  className={'h-[50px] flex flex-row w-full'}
-                >
+                  className={'h-[50px] flex flex-row w-full'}>
                   <CyDView
                     className={
                       'w-4/12 border-r-[1px] border-[#EBEBEB] bg-white px-[18px] rounded-l-[8px] flex justify-center items-center'
-                    }
-                  >
+                    }>
                     <CyDText
-                      className={'text-[#434343] text-[16px] font-extrabold'}
-                    >
+                      className={'text-[#434343] text-[16px] font-extrabold'}>
                       {'Token'}
                     </CyDText>
                   </CyDView>
@@ -2659,8 +2609,7 @@ export default function Bridge(props: { navigation?: any; route?: any }) {
                   <CyDView
                     className={
                       'flex flex-row items-center justify-between w-8/12 px-[18px]'
-                    }
-                  >
+                    }>
                     <CyDView className={'flex flex-row items-center'}>
                       <CyDImage
                         source={{
@@ -2672,8 +2621,7 @@ export default function Bridge(props: { navigation?: any; route?: any }) {
                         className={
                           'text-center text-black font-nunito text-[16px] ml-[8px] max-w-[70%]'
                         }
-                        numberOfLines={1}
-                      >
+                        numberOfLines={1}>
                         {toToken?.name}
                       </CyDText>
                     </CyDView>
@@ -2692,8 +2640,7 @@ export default function Bridge(props: { navigation?: any; route?: any }) {
             }}
             className={
               'flex flex-row justify-between items-center my-[30px] bg-[#F7F8FE] rounded-[8px] mx-[20px] px-[15px] py-[20px] shadow shadow-sepratorColor'
-            }
-          >
+            }>
             <CyDView className={'flex w-[40%] items-center justify-center'}>
               <CyDImage
                 source={{ uri: fromToken?.logoUrl }}
@@ -2702,15 +2649,13 @@ export default function Bridge(props: { navigation?: any; route?: any }) {
               <CyDText
                 className={
                   'my-[6px] mx-[2px] text-black text-center text-[14px] font-semibold flex flex-row justify-center font-nunito'
-                }
-              >
+                }>
                 {fromToken?.name}
               </CyDText>
               <CyDView
                 className={
                   'bg-white rounded-[8px] flex flex-row items-center p-[4px]'
-                }
-              >
+                }>
                 <CyDImage
                   source={fromChain.logo_url}
                   className={'w-[14px] h-[14px]'}
@@ -2718,8 +2663,7 @@ export default function Bridge(props: { navigation?: any; route?: any }) {
                 <CyDText
                   className={
                     'ml-[6px] font-nunito text-black font-normal text-[12px]'
-                  }
-                >
+                  }>
                   {fromChain.name}
                 </CyDText>
               </CyDView>
@@ -2749,15 +2693,13 @@ export default function Bridge(props: { navigation?: any; route?: any }) {
               <CyDText
                 className={
                   'my-[6px] mx-[2px] text-black text-center text-[14px] font-semibold flex flex-row justify-center font-nunito'
-                }
-              >
+                }>
                 {toToken?.name}
               </CyDText>
               <CyDView
                 className={
                   'bg-white rounded-[8px] flex flex-row items-center p-[4px]'
-                }
-              >
+                }>
                 <CyDImage
                   source={toChain.logo_url}
                   className={'w-[14px] h-[14px]'}
@@ -2765,8 +2707,7 @@ export default function Bridge(props: { navigation?: any; route?: any }) {
                 <CyDText
                   className={
                     'ml-[6px] font-nunito text-black font-normal text-[12px]'
-                  }
-                >
+                  }>
                   {toChain.name}
                 </CyDText>
               </CyDView>
@@ -2782,21 +2723,18 @@ export default function Bridge(props: { navigation?: any; route?: any }) {
           onPress={() => {
             amount === '0.00' ? setAmount('') : setAmount(amount);
             setShowDropDown(false);
-          }}
-        >
+          }}>
           <CyDText
             className={
               'font-extrabold text-[22px] text-center mt-[20px] font-nunito text-primaryTextColor'
-            }
-          >
+            }>
             {t<string>('ENTER_AMOUNT')}
           </CyDText>
 
           <CyDText
             className={
               'font-extrabold text-[20px] text-center mt-[10px] font-nunito bottom-0 text-primaryTextColor'
-            }
-          >
+            }>
             {enterCryptoAmount ? fromToken?.name : 'USD'}
           </CyDText>
 
@@ -2808,8 +2746,7 @@ export default function Bridge(props: { navigation?: any; route?: any }) {
                   {
                     'text-[50px]': fromToken?.name === 'Ether',
                   },
-                )}
-              >
+                )}>
                 {fromToken?.name === 'Ether'
                   ? parseFloat(amount).toFixed(6)
                   : parseFloat(amount).toFixed(2)}
@@ -2823,8 +2760,7 @@ export default function Bridge(props: { navigation?: any; route?: any }) {
                   }}
                   className={clsx(
                     'bg-white rounded-full h-[40px] w-[40px] flex justify-center items-center p-[4px]',
-                  )}
-                >
+                  )}>
                   <CyDText className={'font-nunito text-black '}>
                     {t<string>('MAX')}
                   </CyDText>
@@ -2839,7 +2775,7 @@ export default function Bridge(props: { navigation?: any; route?: any }) {
                       },
                     )}
                     keyboardType='numeric'
-                    onChangeText={(text) => {
+                    onChangeText={text => {
                       setAmount(text);
                       if (enterCryptoAmount) {
                         setCryptoAmount(text);
@@ -2859,15 +2795,14 @@ export default function Bridge(props: { navigation?: any; route?: any }) {
                     }}
                     value={amount}
                     autoFocus={true}
-                    ref={(input) => {
+                    ref={input => {
                       enterAmountRef = input;
                     }}
                   />
                   <CyDText
                     className={clsx(
                       'flex items-center justify-center text-primaryTextColor font-bol h-[50px] text-[24px]',
-                    )}
-                  >
+                    )}>
                     {enterCryptoAmount
                       ? (!isNaN(parseFloat(usdAmount))
                           ? formatAmount(usdAmount)
@@ -2901,8 +2836,7 @@ export default function Bridge(props: { navigation?: any; route?: any }) {
                   }}
                   className={clsx(
                     'bg-white rounded-full h-[40px] w-[40px] flex justify-center items-center p-[4px]',
-                  )}
-                >
+                  )}>
                   <CyDImage
                     source={AppImages.TOGGLE_ICON}
                     className={'w-[14px] h-[16px]'}
@@ -2915,8 +2849,7 @@ export default function Bridge(props: { navigation?: any; route?: any }) {
               <CyDText
                 className={
                   'font-semibold text-[14px] text-center text-primaryTextColor font-nunito'
-                }
-              >
+                }>
                 {t<string>('ENTER_AMOUNT_GREATER') +
                   '' +
                   minimumAmount.toFixed(3) +
@@ -2928,13 +2861,11 @@ export default function Bridge(props: { navigation?: any; route?: any }) {
             <CyDText
               className={
                 'font-semibold text-[14px] text-center text-primaryTextColor font-nunito mt-[8px]'
-              }
-            >
+              }>
               {String(fromToken?.name) + ' ' + t<string>('BALANCE')}
               <CyDTokenAmount
                 className='text-primaryTextColor'
-                decimalPlaces={6}
-              >
+                decimalPlaces={6}>
                 {parseFloat(String(fromToken?.actualBalance))}
               </CyDTokenAmount>
             </CyDText>
