@@ -6,7 +6,7 @@ import {
   MsgSendEncodeObject,
   MsgTransferEncodeObject,
   SigningStargateClient,
-} from '@cosmjs-rn/stargate';
+} from '@cosmjs/stargate';
 import { MsgTransfer } from 'cosmjs-types/ibc/applications/transfer/v1/tx';
 import Long from 'long';
 import {
@@ -17,7 +17,7 @@ import {
 import { signTypedData, SignTypedDataVersion } from '@metamask/eth-sig-util';
 import { generatePostBodyBroadcast } from '@tharsis/provider';
 import * as Sentry from '@sentry/react-native';
-import { OfflineDirectSigner } from '@cosmjs-rn/proto-signing';
+import { OfflineDirectSigner } from '@cosmjs/proto-signing';
 import { convertAmountOfContractDecimal } from './util';
 import { Chain, ChainBackendNames, GASLESS_CHAINS } from '../constants/server';
 

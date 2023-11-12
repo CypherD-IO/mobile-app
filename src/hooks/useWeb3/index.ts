@@ -1,4 +1,4 @@
-import { makeSignBytes } from '@cosmjs-rn/proto-signing';
+import { makeSignBytes } from '@cosmjs/proto-signing';
 import {
   encodeSecp256k1Signature,
   serializeSignDoc,
@@ -834,7 +834,7 @@ export default function useWeb3(origin: Web3Origin) {
       case Web3Method.SWITCH_ETHEREUM_CHAIN: {
         let [{ chainId: ethereumChainId }] = params;
         const supportedChain = ALL_CHAINS.find(
-          (chain) => chain.chain_id === ethereumChainId,
+          chain => chain.chain_id === ethereumChainId,
         );
         ethereumChainId = supportedChain ? ethereumChainId : CHAIN_ETH.chain_id;
         if (supportedChain) {

@@ -26,11 +26,9 @@ export default function BottomSendToConfirm(props) {
       isModalVisible={isModalVisible}
       style={styles.modalLayout}
       animationIn={'slideInUp'}
-      animationOut={'slideOutDown'}
-    >
+      animationOut={'slideOutDown'}>
       <CyDView
-        className={'bg-white p-[25px] pb-[30px] rounded-t-[20px] relative'}
-      >
+        className={'bg-white p-[25px] pb-[30px] rounded-t-[20px] relative'}>
         <CyDTouchView onPress={() => onCancelPress()} className={'z-[50]'}>
           <CyDImage
             source={AppImages.CLOSE}
@@ -43,8 +41,9 @@ export default function BottomSendToConfirm(props) {
         <CyDView className={'p-[10px]'}>
           <CyDView className={'flex flex-row mt-[40px] pb-[15px]'}>
             <CyDText
-              className={'font-bold text-[16px] ml-[5px] text-primaryTextColor'}
-            >
+              className={
+                'font-bold text-[16px] ml-[5px] text-primaryTextColor'
+              }>
               {t('SEND_ON')}
             </CyDText>
             <CyDView className={'flex flex-row pl-[15px]'}>
@@ -55,8 +54,7 @@ export default function BottomSendToConfirm(props) {
               <CyDText
                 className={
                   ' font-medium text-[15px] ml-[5px] text-primaryTextColor'
-                }
-              >
+                }>
                 {modalParams.chain}
               </CyDText>
             </CyDView>
@@ -66,24 +64,20 @@ export default function BottomSendToConfirm(props) {
             <CyDText
               className={
                 ' font-bold text-[16px] ml-[5px] text-primaryTextColor'
-              }
-            >
+              }>
               {t('VALUE')}
             </CyDText>
             <CyDView
               className={
                 'flex flex-row flex-wrap justify-between w-[90%]  pl-[35px]'
-              }
-            >
+              }>
               <CyDText
-                className={' font-medium text-[15px] text-primaryTextColor'}
-              >
+                className={' font-medium text-[15px] text-primaryTextColor'}>
                 {parseFloat(modalParams.sentTokenAmount).toFixed(6)}{' '}
                 {modalParams.sentTokenSymbol}
               </CyDText>
               <CyDText
-                className={' font-medium text-[14px] text-primaryTextColor'}
-              >
+                className={' font-medium text-[14px] text-primaryTextColor'}>
                 ${modalParams.sentValueUSD}
               </CyDText>
             </CyDView>
@@ -93,18 +87,15 @@ export default function BottomSendToConfirm(props) {
             <CyDText
               className={
                 ' font-bold text-[16px] ml-[5px] text-primaryTextColor'
-              }
-            >
+              }>
               {t('SEND_TO')}
             </CyDText>
             <CyDView
               className={
                 'flex flex-row flex-wrap justify-between w-[80%] pl-[18px]'
-              }
-            >
+              }>
               <CyDText
-                className={' font-medium text-[16px] text-primaryTextColor'}
-              >
+                className={' font-medium text-[16px] text-primaryTextColor'}>
                 {modalParams?.to_address}
               </CyDText>
             </CyDView>
@@ -115,23 +106,19 @@ export default function BottomSendToConfirm(props) {
             <CyDText
               className={
                 ' font-bold text-[16px] ml-[5px] text-primaryTextColor'
-              }
-            >
+              }>
               {t('GAS')}
             </CyDText>
             <CyDView
               className={
                 'flex flex-row flex-wrap justify-between w-[95%] pl-[50px]'
-              }
-            >
+              }>
               <CyDText
-                className={' font-medium text-[15px] text-primaryTextColor'}
-              >
+                className={' font-medium text-[15px] text-primaryTextColor'}>
                 {modalParams.gasFeeNative} {modalParams.fromNativeTokenSymbol}
               </CyDText>
               <CyDText
-                className={' font-medium text-[14px] text-primaryTextColor'}
-              >
+                className={' font-medium text-[14px] text-primaryTextColor'}>
                 ${formatAmount(modalParams.gasFeeDollar)}
               </CyDText>
             </CyDView>

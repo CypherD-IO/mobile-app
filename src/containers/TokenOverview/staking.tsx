@@ -1,7 +1,7 @@
 /* eslint-disable react-native/no-raw-text */
 /* eslint-disable @typescript-eslint/no-misused-promises */
 import { useIsFocused, useRoute } from '@react-navigation/native';
-import { OfflineDirectSigner } from '@cosmjs-rn/proto-signing';
+import { OfflineDirectSigner } from '@cosmjs/proto-signing';
 import { t } from 'i18next';
 import React, { useContext, useEffect, useState } from 'react';
 import { RefreshControl, StyleSheet } from 'react-native';
@@ -40,7 +40,7 @@ import {
 } from '../../styles/tailwindStyles';
 import LottieView from 'lottie-react-native';
 import { GlobalContext } from '../../core/globalContext';
-import { SigningStargateClient } from '@cosmjs-rn/stargate';
+import { SigningStargateClient } from '@cosmjs/stargate';
 import Toast from 'react-native-toast-message';
 import { screenTitle } from '../../constants';
 import axios, { MODAL_HIDE_TIMEOUT_250, TIMEOUT } from '../../core/Http';
@@ -348,7 +348,7 @@ export default function TokenStaking({
     const memo = '';
 
     const address: string[] = [];
-    stakingValidators.stateStaking.myValidators.forEach((val) => {
+    stakingValidators.stateStaking.myValidators.forEach(val => {
       address.push(val.address);
     });
 
@@ -638,7 +638,7 @@ export default function TokenStaking({
         }> = [];
         let rewardAmount = BigInt(0);
 
-        cosmosStaking.cosmosStakingState.rewardList.forEach((item) => {
+        cosmosStaking.cosmosStakingState.rewardList.forEach(item => {
           const [amountToBeAddedToRewards] = item.amount.split('.');
           rewardAmount += BigInt(amountToBeAddedToRewards);
           const msg = {
@@ -862,8 +862,7 @@ export default function TokenStaking({
             resizeMode='contain'
           />
           <CyDText
-            className={'text-center text-[24px] font-semibold mt-[20px]'}
-          >
+            className={'text-center text-[24px] font-semibold mt-[20px]'}>
             No holdings yet
           </CyDText>
         </CyDView>
@@ -910,15 +909,12 @@ export default function TokenStaking({
         isModalVisible={claimModal}
         style={styles.modalLayout}
         animationIn={'slideInUp'}
-        animationOut={'slideOutDown'}
-      >
+        animationOut={'slideOutDown'}>
         <CyDView
-          className={'bg-white p-[25px] pb-[30px] rounded-t-[20px] relative'}
-        >
+          className={'bg-white p-[25px] pb-[30px] rounded-t-[20px] relative'}>
           <CyDTouchView
             onPress={() => setClaimModal(false)}
-            className={'z-[50]'}
-          >
+            className={'z-[50]'}>
             <CyDImage
               source={AppImages.CLOSE}
               className={' w-[22px] h-[22px] z-[50] absolute right-[0px] '}
@@ -1007,17 +1003,14 @@ export default function TokenStaking({
         isModalVisible={signModalVisible}
         style={styles.modalLayout}
         animationIn={'slideInUp'}
-        animationOut={'slideOutDown'}
-      >
+        animationOut={'slideOutDown'}>
         <CyDView
-          className={'bg-white p-[25px] pb-[30px] rounded-t-[20px] relative'}
-        >
+          className={'bg-white p-[25px] pb-[30px] rounded-t-[20px] relative'}>
           <CyDTouchView
             onPress={() => {
               setSignModalVisible(false);
             }}
-            className={'z-[50]'}
-          >
+            className={'z-[50]'}>
             <CyDImage
               source={AppImages.CLOSE}
               className={' w-[22px] h-[22px] z-[50] absolute right-[0px] '}
@@ -1032,15 +1025,13 @@ export default function TokenStaking({
               <CyDText
                 className={
                   ' font-medium text-[16px] ml-[5px] text-primaryTextColor'
-                }
-              >
+                }>
                 {t<string>('CLAIMABLE_REWARD')}
               </CyDText>
               <CyDText
                 className={
                   ' font-bold ml-[5px] text-[18px] text-center text-secondaryTextColor'
-                }
-              >
+                }>
                 {stakingVariables.totalClaimableRewards}
               </CyDText>
             </CyDView>
@@ -1056,15 +1047,13 @@ export default function TokenStaking({
               <CyDText
                 className={
                   ' font-medium text-[16px] ml-[10px] text-primaryTextColor'
-                }
-              >
+                }>
                 {t<string>('GAS_FEE')}
               </CyDText>
               <CyDText
                 className={
                   ' font-bold ml-[5px] text-[18px] text-center text-secondaryTextColor'
-                }
-              >{`${gasFee.toFixed(6)} ${tokenData.name}`}</CyDText>
+                }>{`${gasFee.toFixed(6)} ${tokenData.name}`}</CyDText>
             </CyDView>
           </CyDView>
 
@@ -1097,17 +1086,14 @@ export default function TokenStaking({
         isModalVisible={reStakeModalVisible}
         style={styles.modalLayout}
         animationIn={'slideInUp'}
-        animationOut={'slideOutDown'}
-      >
+        animationOut={'slideOutDown'}>
         <CyDView
-          className={'bg-white p-[25px] pb-[30px] rounded-t-[20px] relative'}
-        >
+          className={'bg-white p-[25px] pb-[30px] rounded-t-[20px] relative'}>
           <CyDTouchView
             onPress={() => {
               setReStakeModalVisible(false);
             }}
-            className={'z-[50]'}
-          >
+            className={'z-[50]'}>
             <CyDImage
               source={AppImages.CLOSE}
               className={
@@ -1127,8 +1113,7 @@ export default function TokenStaking({
               <CyDText
                 className={
                   ' font-bold ml-[5px] text-[18px] text-center text-secondaryTextColor'
-                }
-              >{`${stakingVariables.totalClaimableRewards}`}</CyDText>
+                }>{`${stakingVariables.totalClaimableRewards}`}</CyDText>
             </CyDView>
           </CyDView>
 
@@ -1142,15 +1127,13 @@ export default function TokenStaking({
               <CyDText
                 className={
                   ' font-medium text-[16px] ml-[10px] text-primaryTextColor'
-                }
-              >
+                }>
                 {t<string>('GAS_FEE')}
               </CyDText>
               <CyDText
                 className={
                   ' font-bold ml-[5px] text-[18px] text-center text-secondaryTextColor'
-                }
-              >{`${gasFee.toFixed(6)} ${tokenData.name}`}</CyDText>
+                }>{`${gasFee.toFixed(6)} ${tokenData.name}`}</CyDText>
             </CyDView>
           </CyDView>
 
@@ -1187,8 +1170,7 @@ export default function TokenStaking({
               refreshing={refreshing}
               onRefresh={onRefresh}
             />
-          }
-        >
+          }>
           {tokenData.chainDetails.backendName === ChainBackendNames.EVMOS &&
             tokenData.name === CosmosStakingTokens.EVMOS &&
             stakingValidators.stateStaking.myValidatorsListState ===
@@ -1196,8 +1178,7 @@ export default function TokenStaking({
               <CyDView
                 className={
                   'flex flex-row justify-center items-center w-screen bg-babyPink mt-[10px] py-[10px]'
-                }
-              >
+                }>
                 <LottieView
                   source={AppImages.GIFT_BOX}
                   autoPlay
@@ -1218,26 +1199,22 @@ export default function TokenStaking({
               <CyDView
                 className={
                   'my-[25px] mx-[30px] flex flex-row items-center justify-between'
-                }
-              >
+                }>
                 <CyDView>
                   <CyDText
-                    className={'text-subTextColor font-medium text-[15.5px]'}
-                  >
+                    className={'text-subTextColor font-medium text-[15.5px]'}>
                     {t<string>('TOTAL_CLAIMABLE_REWARDS')}
                   </CyDText>
                   <CyDView className='flex flex-row flex-wrap items-center'>
                     <CyDTokenAmount
                       className={'text-primaryTextColor font-bold text-[18px]'}
-                      decimalPlaces={5}
-                    >
+                      decimalPlaces={5}>
                       {stakingVariables.totalClaimableRewards}
                     </CyDTokenAmount>
                     <CyDText
                       className={
                         'text-primaryTextColor font-bold text-[18px] ml-[5px]'
-                      }
-                    >
+                      }>
                       {tokenData.name}
                     </CyDText>
                   </CyDView>
@@ -1272,12 +1249,12 @@ export default function TokenStaking({
                 <CyDView
                   className={
                     'my-[25px] mx-[30px] flex flex-row items-center justify-between'
-                  }
-                >
+                  }>
                   <CyDView>
                     <CyDText
-                      className={'text-subTextColor  font-medium text-[15.5px]'}
-                    >
+                      className={
+                        'text-subTextColor  font-medium text-[15.5px]'
+                      }>
                       {t<string>('AVAILABLE_TO_STAKE')}
                     </CyDText>
                     <CyDView className='flex flex-row flex-wrap items-center'>
@@ -1285,15 +1262,13 @@ export default function TokenStaking({
                         className={
                           'text-primaryTextColor font-bold text-[18px]'
                         }
-                        decimalPlaces={5}
-                      >
+                        decimalPlaces={5}>
                         {stakingVariables.availableToStake}
                       </CyDTokenAmount>
                       <CyDText
                         className={
                           'text-primaryTextColor font-bold text-[18px] ml-[5px]'
-                        }
-                      >
+                        }>
                         {tokenData.name}
                       </CyDText>
                     </CyDView>
@@ -1316,26 +1291,22 @@ export default function TokenStaking({
               <CyDView
                 className={
                   'my-[25px] mx-[30px] flex flex-row items-center justify-between'
-                }
-              >
+                }>
                 <CyDView>
                   <CyDText
-                    className={'text-subTextColor  font-medium text-[15.5px]'}
-                  >
+                    className={'text-subTextColor  font-medium text-[15.5px]'}>
                     {t<string>('CURRENTLY_STAKED')}
                   </CyDText>
                   <CyDView className='flex flex-row flex-wrap items-center'>
                     <CyDTokenAmount
                       className={'text-primaryTextColor font-bold text-[18px]'}
-                      decimalPlaces={5}
-                    >
+                      decimalPlaces={5}>
                       {stakingVariables.currentlyStaked}
                     </CyDTokenAmount>
                     <CyDText
                       className={
                         'text-primaryTextColor font-bold text-[18px] ml-[5px]'
-                      }
-                    >
+                      }>
                       {tokenData.name}
                     </CyDText>
                   </CyDView>
@@ -1359,26 +1330,22 @@ export default function TokenStaking({
               <CyDView
                 className={
                   'my-[25px] mx-[30px] flex flex-row items-center justify-between'
-                }
-              >
+                }>
                 <CyDView>
                   <CyDText
-                    className={'text-subTextColor  font-medium text-[15.5px]'}
-                  >
+                    className={'text-subTextColor  font-medium text-[15.5px]'}>
                     {t<string>('TOTAL_UNBOUNDINGS')}
                   </CyDText>
                   <CyDView className='flex flex-row flex-wrap items-center'>
                     <CyDTokenAmount
                       className={'text-primaryTextColor font-bold text-[18px]'}
-                      decimalPlaces={5}
-                    >
+                      decimalPlaces={5}>
                       {stakingVariables.totalUnboundings}
                     </CyDTokenAmount>
                     <CyDText
                       className={
                         'text-primaryTextColor font-bold text-[18px] ml-[5px]'
-                      }
-                    >
+                      }>
                       {tokenData.name}
                     </CyDText>
                   </CyDView>
@@ -1419,8 +1386,7 @@ export default function TokenStaking({
                 <CyDText
                   className={
                     'text-center w-3/4  text-[20px] font-semibold text-secondaryTextColor'
-                  }
-                >{`${t<string>(
+                  }>{`${t<string>(
                   'STAKE_YOUR_TEXT',
                 )} ${tokenData.name.toLowerCase()} ${t<string>(
                   'WITH_US_TEXT',
@@ -1436,21 +1402,20 @@ export default function TokenStaking({
                 <CyDView>
                   <CyDView className='flex flex-row'>
                     <CyDText
-                      className={'text-subTextColor  font-medium text-[15.5px]'}
-                    >{`${t<string>('AVAILABLE_TO_STAKE')}: `}</CyDText>
+                      className={
+                        'text-subTextColor  font-medium text-[15.5px]'
+                      }>{`${t<string>('AVAILABLE_TO_STAKE')}: `}</CyDText>
                     <CyDTokenAmount
                       className={
                         'text-primaryTextColor font-bold text-[15.5px] ml-[2px]'
                       }
-                      decimalPlaces={5}
-                    >
+                      decimalPlaces={5}>
                       {stakingVariables.availableToStake}
                     </CyDTokenAmount>
                     <CyDText
                       className={
                         'text-primaryTextColor font-bold text-[15.5px] ml-[5px]'
-                      }
-                    >
+                      }>
                       {tokenData.name}
                     </CyDText>
                   </CyDView>
@@ -1464,8 +1429,7 @@ export default function TokenStaking({
             <CyDView
               className={
                 'bg-[#F6F7FF] rounded-[8px] px-[46px] py-[16px] mx-[16px] my-[18px] flex flex-col items-center'
-              }
-            >
+              }>
               <CyDView className={'flex flex-row items-center justify-center'}>
                 <CyDImage
                   source={AppImages.STARS_LEFT}
@@ -1474,8 +1438,7 @@ export default function TokenStaking({
                 <CyDText
                   className={
                     'text-center w-3/4  text-[14px] font-bold text-secondaryTextColor'
-                  }
-                >{`${t<string>(
+                  }>{`${t<string>(
                   'STAKE_YOUR_TEXT',
                 )} ${tokenData.name.toLowerCase()} ${t<string>(
                   'WITH_US_TEXT',
@@ -1492,13 +1455,11 @@ export default function TokenStaking({
                   <CyDText
                     className={
                       'mr-[6px] font-[14px] text-subTextColor font-semibold '
-                    }
-                  >
+                    }>
                     {t<string>('STAKING_REWARDS_DISTRIBUTED_AT')}
                   </CyDText>
                   <CyDText
-                    className={'font-[16px] text-primaryTextColor font-bold '}
-                  >
+                    className={'font-[16px] text-primaryTextColor font-bold '}>
                     19:00 UTC
                   </CyDText>
                 </CyDView>
@@ -1508,13 +1469,11 @@ export default function TokenStaking({
                 <CyDText
                   className={
                     'mr-[6px] font-[14px] text-subTextColor font-semibold '
-                  }
-                >
+                  }>
                   {t<string>('UNBOUNDING_PERIOD_IS')}
                 </CyDText>
                 <CyDText
-                  className={'font-[16px] text-primaryTextColor font-bold '}
-                >
+                  className={'font-[16px] text-primaryTextColor font-bold '}>
                   {unboundingPeriodInDays} {t('DAYS')}
                 </CyDText>
               </CyDView>

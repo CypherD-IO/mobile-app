@@ -57,6 +57,7 @@ import { ANALYTICS_ERROR_URL, ANALYTICS_SUCCESS_URL } from '../constants/data';
 import DeviceInfo from 'react-native-device-info';
 import axios from './Http';
 import { Holding } from './Portfolio';
+import { TokenMeta } from '../models/tokenMetaData.model';
 
 // const {showModal, hideModal} = useGlobalModalContext()
 
@@ -477,8 +478,9 @@ export function copyToClipboard(text: string) {
 export const getNativeToken = (
   tokenSymbol: string,
   chainHoldings: Holding[],
-) => {
-  return find(chainHoldings, { symbol: tokenSymbol });
+): Holding => {
+  const nativeToken = find(chainHoldings, { symbol: tokenSymbol });
+  return nativeToken;
 };
 
 export function getSendAddressFieldPlaceholder(
