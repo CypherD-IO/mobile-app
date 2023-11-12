@@ -262,7 +262,6 @@ export async function fetchRPCEndpointsFromServer(globalDispatch: Function) {
     );
     result = resultFromEndpoint.data;
   }
-
   globalDispatch({ type: GlobalContextType.RPC_UPDATE, rpc: result });
   return result;
 }

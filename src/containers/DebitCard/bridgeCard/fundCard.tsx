@@ -675,6 +675,8 @@ export default function BridgeFundCardScreen({ route }: { route: any }) {
                   get(rpc, chainName),
                   cosmosPayTokenModal,
                   valueForUsd.toString(),
+                  portfolioState,
+                  globalStateContext.globalState.rpcEndpoints,
                 );
               } catch (err) {
                 if (retryCount < 3) {

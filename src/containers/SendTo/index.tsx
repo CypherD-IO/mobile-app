@@ -176,8 +176,8 @@ export default function SendTo(props: { navigation?: any; route?: any }) {
     if (text !== '') {
       const filteredContactNames = fuseByNames
         .search(text)
-        .map((contact) => contact.item)
-        .filter((contact) => {
+        .map(contact => contact.item)
+        .filter(contact => {
           let chains: string[];
           if (contact) {
             chains = Object.keys(contactBook[contact].addresses);
@@ -200,8 +200,8 @@ export default function SendTo(props: { navigation?: any; route?: any }) {
       const filteredContactNamesByAddresses: string[] = [];
       fuseByAddresses
         .search(text)
-        .map((address) => address.item)
-        .map((address) => {
+        .map(address => address.item)
+        .map(address => {
           if (
             EVM_CHAINS_FOR_ADDRESS_DIR.includes(
               ChainNameToContactsChainNameMapping[tokenData.chainDetails?.name],
@@ -213,7 +213,7 @@ export default function SendTo(props: { navigation?: any; route?: any }) {
             ChainNameToContactsChainNameMapping[tokenData.chainDetails.name]
           ][address];
         })
-        .forEach((nameList) => {
+        .forEach(nameList => {
           if (nameList) {
             for (const nameInList of nameList) {
               filteredContactNamesByAddresses.push(nameInList);
@@ -375,7 +375,7 @@ export default function SendTo(props: { navigation?: any; route?: any }) {
   useEffect(() => {
     chainDetails?.chainName &&
       AsyncStorage.getItem(`address_book_${chainDetails?.chainName}`)
-        .then((myArray) => {
+        .then(myArray => {
           myArray !== null && setData(JSON.parse(myArray));
         })
         .catch(Sentry.captureException);
@@ -394,12 +394,10 @@ export default function SendTo(props: { navigation?: any; route?: any }) {
           onPress={() => {
             addressRef.current = item;
             setAddressText(address[0]);
-          }}
-        >
+          }}>
           <CyDView className='flex flex-row flex-wrap justify-start items-center w-[100%]'>
             <CyDView
-              className={`p-[5px] rounded-[30px] bg-${chainDetails?.chainName}`}
-            >
+              className={`p-[5px] rounded-[30px] bg-${chainDetails?.chainName}`}>
               <CyDImage
                 source={chainDetails?.logo_url}
                 className='h-[20px] w-[20px]'
@@ -654,7 +652,7 @@ export default function SendTo(props: { navigation?: any; route?: any }) {
       getWeb3Endpoint(hdWalletContext.state.selectedChain, globalContext),
     );
     getGasPriceFor(tokenData?.chainDetails ?? CHAIN_ETH, web3RPCEndpoint)
-      .then((gasFeeResponse) => {
+      .then(gasFeeResponse => {
         setLoading(false);
         gasPrice = gasFeeResponse;
         _estimateGasForNativeTransaction(
@@ -668,7 +666,7 @@ export default function SendTo(props: { navigation?: any; route?: any }) {
           globalContext,
         );
       })
-      .catch((gasFeeError) => {
+      .catch(gasFeeError => {
         setLoading(false);
         // monitoring api
         void logAnalytics({
@@ -716,6 +714,8 @@ export default function SendTo(props: { navigation?: any; route?: any }) {
         rpc[chainName] ?? '',
         payTokenModal,
         valueForUsd,
+        portfolioState,
+        globalStateContext.globalState.rpcEndpoints,
       );
     } catch (err) {
       // monitoring api
@@ -1305,8 +1305,7 @@ export default function SendTo(props: { navigation?: any; route?: any }) {
                 'border-errorTextRed': !isAddressValid,
                 'border-greyButtonBackgroundColor': addressText === '',
               },
-            )}
-          >
+            )}>
             <CyDTextInput
               className={clsx('max-w-[90%] pr-[0px]', {
                 'py-[12px]': ![ChainNames.ETH, ChainNames.EVMOS].includes(
@@ -1316,7 +1315,7 @@ export default function SendTo(props: { navigation?: any; route?: any }) {
               value={addressText}
               autoCapitalize='none'
               autoCorrect={false}
-              onChangeText={(text) => {
+              onChangeText={text => {
                 setAddressText(text);
                 handleSearch(text);
               }}
@@ -1339,8 +1338,7 @@ export default function SendTo(props: { navigation?: any; route?: any }) {
                       onSuccess,
                     })
                   : setAddressText('');
-              }}
-            >
+              }}>
               <CyDImage
                 className={'h-[22px] w-[22px]'}
                 source={
@@ -1354,14 +1352,12 @@ export default function SendTo(props: { navigation?: any; route?: any }) {
           {!isDropDown && (
             <CyDView className='flex-1 flex-col items-center'>
               <CyDView
-                className={'flex flex-row w-[100%] justify-end mt-[15px]'}
-              >
+                className={'flex flex-row w-[100%] justify-end mt-[15px]'}>
                 <CyDTouchView
                   className={'flex flex-row justify-end items-start'}
                   onPress={() => {
                     void (async () => await fetchCopiedText())();
-                  }}
-                >
+                  }}>
                   <CyDImage
                     source={AppImages.COPY}
                     className={'w-[14px] h-[16px] mr-[7px]'}
@@ -1379,14 +1375,13 @@ export default function SendTo(props: { navigation?: any; route?: any }) {
                   <CyDView
                     className={
                       'flex flex-row justify-between items-center mt-[7px] bg-secondaryBackgroundColor border-[0.5px] border-black rounded-[9px] pl-[15px] pr-[10px] py-[1px]'
-                    }
-                  >
+                    }>
                     <CyDTextInput
                       className={'self-center py-[12px] w-[90%] pr-[10px]'}
                       value={memo}
                       autoCapitalize='none'
                       autoCorrect={false}
-                      onChangeText={(text) => {
+                      onChangeText={text => {
                         setMemo(text);
                       }}
                       placeholderTextColor={Colors.placeholderTextColor}
@@ -1397,8 +1392,7 @@ export default function SendTo(props: { navigation?: any; route?: any }) {
                       <CyDTouchView
                         onPress={() => {
                           setMemo('');
-                        }}
-                      >
+                        }}>
                         <CyDImage
                           className={'h-[22px] w-[22px]'}
                           source={AppImages.CLOSE_CIRCLE}
@@ -1437,8 +1431,7 @@ export default function SendTo(props: { navigation?: any; route?: any }) {
             className='h-[80px] pb-[10px] w-full absolute justify-center items-center bg-white'
             style={
               keyboardHeight ? { top: keyboardHeight - 60 } : { bottom: 8 }
-            }
-          >
+            }>
             <Button
               title={t('SEND')}
               onPress={() => {
