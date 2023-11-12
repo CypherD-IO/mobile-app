@@ -283,9 +283,10 @@ export default function CardKYCStatusScreen({ navigation }) {
           </CyDView>
         );
       } else if (
-        index === 3 &&
-        fillIndex === 3 &&
-        applicationStatus === CardApplicationStatus.KYC_FAILED
+        (index === 3 &&
+          fillIndex === 3 &&
+          applicationStatus === CardApplicationStatus.KYC_FAILED) ||
+        (index === 2 && fillIndex === 2)
       ) {
         return (
           <CyDView className={'ml-[30px]'}>
