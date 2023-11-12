@@ -20,6 +20,7 @@ import {
   convertAmountOfContractDecimal,
   formatAmount,
   logAnalytics,
+  getNativeToken,
 } from './util';
 import {
   Chain,
@@ -27,7 +28,9 @@ import {
   CHAIN_SHARDEUM,
   CHAIN_SHARDEUM_SPHINX,
   ChainConfigMapping,
+  ChainNameMapping,
   GASLESS_CHAINS,
+  NativeTokenMapping,
 } from '../constants/server';
 import * as Sentry from '@sentry/react-native';
 import { GasPriceDetail } from './types';
@@ -36,7 +39,7 @@ import {
   microAtomToAtom,
   microAtomToUsd,
 } from '../containers/utilities/cosmosSendUtility';
-import { OfflineDirectSigner } from '@cosmjs-rn/proto-signing';
+import { OfflineDirectSigner } from '@cosmjs/proto-signing';
 import { getSignerClient } from './Keychain';
 import { MsgSendEncodeObject, SigningStargateClient } from '@cosmjs/stargate';
 import { cosmosConfig } from '../constants/cosmosConfig';
@@ -255,7 +258,7 @@ async function _sendNativeCoin(
       ethereum.privateKey,
     );
     signPromise.then(
-      (signedTx) => {
+      signedTx => {
         web3.eth
           .sendSignedTransaction(signedTx.rawTransaction)
           .once('transactionHash', async function (hash: string) {
@@ -487,7 +490,7 @@ function _sendToken(
       ethereum.privateKey,
     );
     signPromise.then(
-      (signedTx) => {
+      signedTx => {
         web3.eth
           .sendSignedTransaction(signedTx.rawTransaction)
           .once('transactionHash', function (hash) {
@@ -553,7 +556,7 @@ function _sendToken(
               .catch(Sentry.captureException);
           });
       },
-      (err) => {
+      err => {
         handleTransactionResult(
           err.message,
           currentQuoteUUID,
@@ -761,9 +764,11 @@ export async function estimateGasForCosmosTransaction(
   rpc: string,
   handleTransactionResult: any,
   valueForUsd: string,
+  portfolioState: any,
+  rpcContext?: any,
 ) {
   if (signer) {
-    const signingClient = await SigningStargateClient.connectWithSigner(
+    let signingClient = await SigningStargateClient.connectWithSigner(
       rpc,
       signer,
     );
@@ -789,19 +794,36 @@ export async function estimateGasForCosmosTransaction(
       '',
     );
 
+    const nativeToken = getNativeToken(
+      get(NativeTokenMapping, chainSelected.symbol) || chainSelected.symbol,
+      portfolioState.statePortfolio.tokenPortfolio[
+        get(ChainNameMapping, chainSelected.backendName)
+      ].holdings,
+    );
+
     const gasPrice = cosmosConfig[chainSelected.chainName].gasPrice;
     const gasFee = simulation * gasPrice;
     const fee = {
       gas: Math.floor(simulation * 1.8).toString(),
       amount: [
         {
-          denom: tokenData.denom,
+          denom: nativeToken?.denom ?? tokenData.denom,
           amount: GASLESS_CHAINS.includes(chainSelected.backendName)
             ? '0'
             : parseInt(gasFee.toFixed(6).split('.')[1]).toString(),
         },
       ],
     };
+
+    if (
+      rpcContext &&
+      rpcContext[chainSelected.chainName.toUpperCase()]?.secondaryList !== ''
+    ) {
+      signingClient = await SigningStargateClient.connectWithSigner(
+        rpcContext[chainSelected.chainName.toUpperCase()]?.secondaryList,
+        signer,
+      );
+    }
 
     const _data = {
       chain: chainSelected.chainName.toUpperCase(),
@@ -813,10 +835,16 @@ export async function estimateGasForCosmosTransaction(
         parseFloat(valueForUsd) * parseFloat(tokenData.price)
       ).toFixed(6),
       to_address: address,
-      fromNativeTokenSymbol: tokenData.symbol,
+      fromNativeTokenSymbol: nativeToken?.symbol ?? tokenData.symbol,
       gasFeeNative: microAtomToAtom(fee.amount[0].amount),
-      gasFeeDollar: microAtomToUsd(fee.amount[0].amount, tokenData.price),
-      finalGasPrice: microAtomToUsd(fee.amount[0].amount, tokenData.price),
+      gasFeeDollar: microAtomToUsd(
+        fee.amount[0].amount,
+        nativeToken?.price ?? tokenData?.price,
+      ),
+      finalGasPrice: microAtomToUsd(
+        fee.amount[0].amount,
+        nativeToken?.price ?? tokenData?.price,
+      ),
       gasLimit: fee.gas,
       signingClient,
       fee,

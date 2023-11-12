@@ -502,7 +502,7 @@ export default function FundCardScreen(props) {
                 getWeb3Endpoint(hdWallet.state.selectedChain, globalContext),
               );
               getGasPriceFor(chainSelected, web3RPCEndpoint)
-                .then((gasFeeResponse) => {
+                .then(gasFeeResponse => {
                   gasPrice = gasFeeResponse;
                   setLoading(false);
                   estimateGasForNativeTransaction(
@@ -516,7 +516,7 @@ export default function FundCardScreen(props) {
                     globalContext,
                   );
                 })
-                .catch((gasFeeError) => {
+                .catch(gasFeeError => {
                   // TODO (user feedback): Give feedback to user.
                   Sentry.captureException(gasFeeError);
                   setLoading(false);
@@ -601,6 +601,7 @@ export default function FundCardScreen(props) {
                     rpc[chainSelected.chainName],
                     cosmosPayTokenModal,
                     valueForUsd.toString(),
+                    globalStateContext.globalState.rpcEndpoints,
                   );
                 } catch (err) {
                   if (retryCount < 3) {
@@ -686,8 +687,7 @@ export default function FundCardScreen(props) {
           setIcon(item.logo_url);
           ref2.current.close();
           fetchFromData(item);
-        }}
-      >
+        }}>
         <DynamicImage dynamic source={item.logo_url} width={25} height={25} />
         <DynamicView dynamic dynamicWidth width={70} aLIT={'flex-start'}>
           <CText
@@ -695,8 +695,7 @@ export default function FundCardScreen(props) {
             fF={C.fontsName.FONT_BOLD}
             mL={8}
             fS={16}
-            color={Colors.secondaryTextColor}
-          >
+            color={Colors.secondaryTextColor}>
             {item.name}
           </CText>
           <CText
@@ -704,8 +703,7 @@ export default function FundCardScreen(props) {
             fF={C.fontsName.FONT_BOLD}
             mL={8}
             fS={12}
-            color={Colors.subTextColor}
-          >
+            color={Colors.subTextColor}>
             {item.symbol}
           </CText>
         </DynamicView>
@@ -717,7 +715,7 @@ export default function FundCardScreen(props) {
     fetchFromData(CHAIN_ETH);
   }, []);
 
-  const renderCoin = (item) => {
+  const renderCoin = item => {
     return (
       <DynamicTouchView
         sentry-label='fund-card-chain-item'
@@ -737,8 +735,7 @@ export default function FundCardScreen(props) {
           setDisplayQuote(false);
           setDisplayError(false);
           ref1.current.close();
-        }}
-      >
+        }}>
         <DynamicImage
           dynamic
           source={{ uri: item.logo_url }}
@@ -751,8 +748,7 @@ export default function FundCardScreen(props) {
             fF={C.fontsName.FONT_BOLD}
             mL={8}
             fS={16}
-            color={Colors.secondaryTextColor}
-          >
+            color={Colors.secondaryTextColor}>
             {item.name} - {item.actualBalance} (${item.totalValue})
           </CText>
           <CText
@@ -760,8 +756,7 @@ export default function FundCardScreen(props) {
             fF={C.fontsName.FONT_BOLD}
             mL={8}
             fS={12}
-            color={Colors.subTextColor}
-          >
+            color={Colors.subTextColor}>
             {item.symbol}
           </CText>
         </DynamicView>
@@ -803,16 +798,14 @@ export default function FundCardScreen(props) {
               height={100}
               width={100}
               jC='flex-start'
-              aLIT={'flex-start'}
-            >
+              aLIT={'flex-start'}>
               <CText
                 dynamic
                 fF={C.fontsName.FONT_BOLD}
                 fS={28}
                 mL={25}
                 mT={10}
-                color={Colors.primaryTextColor}
-              >
+                color={Colors.primaryTextColor}>
                 {t('FUND_YOUR_CARD')}
               </CText>
               <DynamicView
@@ -824,8 +817,7 @@ export default function FundCardScreen(props) {
                 mT={10}
                 pH={10}
                 jC='flex-start'
-                aLIT={'flex-start'}
-              >
+                aLIT={'flex-start'}>
                 <Dropdown
                   ref={ref2}
                   style={styles.dropdown}
@@ -838,7 +830,7 @@ export default function FundCardScreen(props) {
                   valueField='backendName'
                   labelField='name'
                   placeholder={chainSelected?.name}
-                  onChange={(item) => {
+                  onChange={item => {
                     setChainSelected(item);
                   }}
                   renderItem={renderItem}
@@ -865,7 +857,7 @@ export default function FundCardScreen(props) {
                   valueField='displayName'
                   labelField='displayName'
                   placeholder=''
-                  onChange={(item) => {}}
+                  onChange={item => {}}
                   renderItem={renderCoin}
                   renderLeftIcon={() => (
                     <DynamicImage
@@ -884,8 +876,7 @@ export default function FundCardScreen(props) {
                   mL={10}
                   tA={'left'}
                   mT={40}
-                  color={Colors.primaryTextColor}
-                >
+                  color={Colors.primaryTextColor}>
                   {t('HOW_MANY_DOLLAR')}
                 </CText>
                 <WebsiteInput
@@ -893,7 +884,7 @@ export default function FundCardScreen(props) {
                   placeholderTextColor={'#949494'}
                   returnKeyType='done'
                   autoCapitalize='none'
-                  onChangeText={(text) => {
+                  onChangeText={text => {
                     setDollar(text);
                     setDisplayQuote(false);
                     setDisplayError(false);
@@ -938,15 +929,13 @@ export default function FundCardScreen(props) {
                     mT={10}
                     aLIT={'flex-start'}
                     pH={10}
-                    pV={10}
-                  >
+                    pV={10}>
                     <CText
                       dynamic
                       tA={'left'}
                       fF={C.fontsName.FONT_BOLD}
                       fS={15}
-                      color={Colors.secondaryTextColor}
-                    >
+                      color={Colors.secondaryTextColor}>
                       {' '}
                       {errorString}{' '}
                     </CText>
@@ -964,8 +953,7 @@ export default function FundCardScreen(props) {
                   height={15}
                   width={100}
                   jC='center'
-                  aLIT={'center'}
-                >
+                  aLIT={'center'}>
                   <ButtonWithOutImage
                     sentry-label='card-get-quote'
                     wT={100}

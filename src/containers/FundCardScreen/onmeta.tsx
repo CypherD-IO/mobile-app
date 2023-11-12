@@ -258,6 +258,7 @@ export default function Onmeta({ route }) {
             environment: 'PRODUCTION',
             onRamp: 'enabled',
             offRamp: 'disabled',
+            walletAddress: ethereum.address,
           }}
           onEventHandler={eventHandler}
         />
