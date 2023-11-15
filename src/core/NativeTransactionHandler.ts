@@ -676,10 +676,7 @@ export async function _estimateGasForNativeTransaction(
       let gasFeeETH = '';
       if (finalGasPrice) {
         gasFeeETH = web3.utils.fromWei(
-          web3.utils.toWei(
-            (parseInt(finalGasPrice) * gasLimit).toFixed(9),
-            'gwei',
-          ),
+          web3.utils.toWei((finalGasPrice * gasLimit).toFixed(9), 'gwei'),
         );
         finalGasPrice = web3.utils.toHex(
           web3.utils.toWei(finalGasPrice.toFixed(9), 'gwei'),
@@ -692,7 +689,9 @@ export async function _estimateGasForNativeTransaction(
       let totalValueTransfer = 0;
       if (gasPriceDetail.tokenPrice > 0) {
         const ethPrice = gasPriceDetail.tokenPrice;
-        gasFeeDollar = formatAmount(parseFloat(gasFeeETH) * ethPrice);
+        gasFeeDollar = formatAmount(
+          parseFloat(gasFeeETH) * ethPrice,
+        ).toString();
 
         if (isNativeCurrency(fromChain, contractAddress)) {
           totalValueDollar = (
