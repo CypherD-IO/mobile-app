@@ -301,7 +301,7 @@ function TabStack() {
           options={({ route }) => ({
             tabBarButton: () => (
               <CyDView
-                className={clsx('mt-[5px] scale-110 shadow shadow-yellow-200')}>
+                className={clsx('my-[5px] scale-110 shadow shadow-yellow-200')}>
                 <ShortcutsModal navigationRef={navigationRef} />
               </CyDView>
             ),
