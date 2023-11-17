@@ -18,8 +18,11 @@ import {
   isCosmosStakingToken,
   StakingContext,
 } from '../../core/util';
-import { CosmosStakingContext } from '../../reducers/cosmosStakingReducer';
-import React, { useContext, useEffect, useState, useRef } from 'react';
+import {
+  COSMOS_STAKING_LOADING,
+  CosmosStakingContext,
+} from '../../reducers/cosmosStakingReducer';
+import React, { useContext, useEffect, useState, useRef, useMemo } from 'react';
 import { useIsFocused } from '@react-navigation/native';
 import {
   Dimensions,
@@ -62,6 +65,9 @@ import Loading from '../../components/v2/loading';
 import { has } from 'lodash';
 import Tooltip from 'react-native-walkthrough-tooltip';
 import { getDateFormatBasedOnLocaleForTimestamp } from '../../core/locale';
+import getValidatorsForUSer from '../../core/Staking';
+import { getCosmosStakingData } from '../../core/cosmosStaking';
+import { GlobalContext } from '../../core/globalContext';
 
 const { width } = Dimensions.get('window');
 
@@ -113,8 +119,12 @@ export default function Overview({
   const isFocused = useIsFocused();
   const { getWithAuth } = useAxios();
   const cosmosStaking = useContext<any>(CosmosStakingContext);
+  const cosmosStakingContextStatus = cosmosStaking.cosmosStakingState.status;
   const stakingValidators = useContext<any>(StakingContext);
   const hdWalletContext = useContext<any>(HdWalletContext);
+  const globalStateContext = useContext<any>(GlobalContext);
+  const evmos = hdWalletContext.state.wallet.evmos;
+  const chain = hdWalletContext.state.wallet[tokenData.chainDetails.chainName];
   const { width: SIZE } = Dimensions.get('window');
   const [loadMoreAbout, setLoadMoreAbout] = useState<boolean>(true);
   const [refreshing, setRefreshing] = useState<boolean>(false);
@@ -315,16 +325,40 @@ export default function Overview({
     }
   };
 
+  const getStakingMetaData = async () => {
+    if (isABasicCosmosStakingToken(tokenData)) {
+      await getStakingData();
+    } else if (isCosmosStakingToken('EVMOS', tokenData)) {
+      await getValidatorsForUSer(
+        evmos?.wallets[evmos.currentIndex]?.address,
+        stakingValidators,
+        globalStateContext,
+      );
+    }
+  };
+
+  const getStakingData = async () => {
+    await getCosmosStakingData(
+      cosmosStaking.cosmosStakingDispatch,
+      globalStateContext.globalState,
+      tokenData.chainDetails.backendName,
+      chain.wallets[chain.currentIndex].address,
+      tokenData.denom,
+    );
+  };
+
   const onRefresh = () => {
     setRefreshing(true);
-    // void getStakingMetaData();
+    void getStakingMetaData();
     getTotalTokens();
     getTotalValue();
     setRefreshing(false);
   };
 
   useEffect(() => {
-    onRefresh();
+    if (cosmosStakingContextStatus !== COSMOS_STAKING_LOADING) {
+      onRefresh();
+    }
   }, [tokenData]);
 
   const getTotalTokens = () => {
@@ -403,8 +437,7 @@ export default function Overview({
           navigation.navigate(screenTitle.TOKEN_OVERVIEW, {
             tokenData,
           });
-        }}
-      >
+        }}>
         <CyDView className='flex flex-row h-full mb-[10px] items-center rounded-r-[20px] self-center px-[10px]'>
           <CyDFastImage
             className={'h-[35px] w-[35px] rounded-[50px]'}
@@ -455,8 +488,7 @@ export default function Overview({
                 <CyDView
                   className={clsx('flex flex-row justify-end items-center', {
                     'mt-[-12px]': isAndroid(),
-                  })}
-                >
+                  })}>
                   <CyDImage
                     source={
                       selectedTrend > 0
@@ -470,8 +502,7 @@ export default function Overview({
                     className={clsx('text-[14px] font-bold ml-[3px]', {
                       'text-lightGreen': selectedTrend > 0,
                       'text-redColor': selectedTrend < 0,
-                    })}
-                  >
+                    })}>
                     {Math.abs(selectedTrend).toFixed(2)}%
                   </CyDText>
                 </CyDView>
@@ -483,7 +514,7 @@ export default function Overview({
     );
   };
 
-  const UserBalance = () => {
+  const UserBalance = useMemo(() => {
     return (
       <CyDView className={'m-[12px] border rounded-[8px] border-fadedGrey'}>
         {/* {balanceloading && <CyDView style={styles.balanceLoadingContainer}>
@@ -493,8 +524,7 @@ export default function Overview({
           <CyDView
             className={
               'flex flex-row justify-between items-center px-[10px] py-[14px] w-[100%]'
-            }
-          >
+            }>
             <CyDView className={'w-[75%]'}>
               <CyDText className={'text-[12px] font-bold mb-[2px]'}>
                 {t<string>('YOUR_BALANCE_PASCAL_CASE')}
@@ -503,8 +533,7 @@ export default function Overview({
                 {/* <CyDTokenAmount className={'text-[18px] font-semibold'} decimalPlaces={5}>{getTotalTokens()}</CyDTokenAmount> */}
                 <CyDTokenAmount
                   className={'text-[18px] font-extrabold'}
-                  decimalPlaces={5}
-                >
+                  decimalPlaces={5}>
                   {totalValue}
                 </CyDTokenAmount>
               </CyDView>
@@ -514,8 +543,7 @@ export default function Overview({
               <CyDTokenValue
                 className={
                   'text-center text-[18px] font-extrabold text-primaryTextColor'
-                }
-              >
+                }>
                 {totalValueInAmount}
               </CyDTokenValue>
             </CyDView>
@@ -523,7 +551,7 @@ export default function Overview({
         }
       </CyDView>
     );
-  };
+  }, [totalValue, totalValueInAmount]);
 
   const AboutTheToken = () => {
     return (
@@ -554,13 +582,11 @@ export default function Overview({
               className={'justify-start mt-[6px]'}
               onPress={() => {
                 setLoadMoreAbout(false);
-              }}
-            >
+              }}>
               <CyDText
                 className={
                   'font-bold text-[14px] text-toastColor text-center underline'
-                }
-              >
+                }>
                 {t<string>('VIEW_MORE')}
               </CyDText>
             </CyDTouchView>
@@ -600,8 +626,7 @@ export default function Overview({
                   });
                   scrollViewRef.current?.scrollTo({ y: 0, animated: true });
                 }}
-                className='rounded-[8px] flex flex-row justify-center items-center bg-privacyMessageBackgroundColor mr-[10px] p-[5px]'
-              >
+                className='rounded-[8px] flex flex-row justify-center items-center bg-privacyMessageBackgroundColor mr-[10px] p-[5px]'>
                 <CyDFastImage
                   className='h-[30px] w-[30px] mx-[10px]'
                   source={item.chainDetails.logo_url}
@@ -653,8 +678,7 @@ export default function Overview({
                   </CyDView>
                 }
                 onClose={() => setMarketCapTip(false)}
-                placement='top'
-              >
+                placement='top'>
                 <CyDTouchView onPress={() => setMarketCapTip(true)}>
                   <CyDImage
                     source={AppImages.INFO_ICON}
@@ -695,8 +719,7 @@ export default function Overview({
                   </CyDView>
                 }
                 onClose={() => setVolumeTip(false)}
-                placement='top'
-              >
+                placement='top'>
                 <CyDTouchView onPress={() => setVolumeTip(true)}>
                   <CyDImage
                     source={AppImages.INFO_ICON}
@@ -738,8 +761,7 @@ export default function Overview({
                   </CyDView>
                 }
                 onClose={() => setCirculatingSupplyTip(false)}
-                placement='top'
-              >
+                placement='top'>
                 <CyDTouchView onPress={() => setCirculatingSupplyTip(true)}>
                   <CyDImage
                     source={AppImages.INFO_ICON}
@@ -784,8 +806,7 @@ export default function Overview({
                   </CyDView>
                 }
                 onClose={() => setTotalSupplyTip(false)}
-                placement='top'
-              >
+                placement='top'>
                 <CyDTouchView onPress={() => setTotalSupplyTip(true)}>
                   <CyDImage
                     source={AppImages.INFO_ICON}
@@ -830,8 +851,7 @@ export default function Overview({
                   </CyDView>
                 }
                 onClose={() => setMaxSupplyTip(false)}
-                placement='top'
-              >
+                placement='top'>
                 <CyDTouchView onPress={() => setMaxSupplyTip(true)}>
                   <CyDImage
                     source={AppImages.INFO_ICON}
@@ -860,13 +880,11 @@ export default function Overview({
           onPress={() => {
             void Intercom.displayMessenger();
             sendFirebaseEvent(hdWalletContext, 'support');
-          }}
-        >
+          }}>
           <CyDText
             className={
               'text-blue-700 font-bold underline underline-offset-2 text-center'
-            }
-          >
+            }>
             {t<string>(
               tokenData?.isVerified
                 ? 'NEED_SOMETHING_ELSE'
@@ -886,8 +904,7 @@ export default function Overview({
       className={'bg-white'}
       refreshControl={
         <RefreshControl refreshing={refreshing} onRefresh={onRefresh} />
-      }
-    >
+      }>
       <ChartPathProvider data={data}>
         <TokenSummary />
         {chartloading && (
@@ -932,8 +949,7 @@ export default function Overview({
                         transition.value = 0;
                         current.value = index as GraphIndex;
                         transition.value = withTiming(1);
-                      }}
-                    >
+                      }}>
                       <Animated.View style={styles.labelContainer}>
                         <CyDText style={styles.label}>{graph.label}</CyDText>
                       </Animated.View>
@@ -944,7 +960,7 @@ export default function Overview({
             </CyDView>
           </CyDView>
         )}
-        <UserBalance />
+        {UserBalance}
         {showTokenInOtherChains ? <OtherChainsWithToken /> : <></>}
         {tokenData.about !== ' ' && <AboutTheToken />}
         {!marketDistributionLoading && marketDistribution && (
