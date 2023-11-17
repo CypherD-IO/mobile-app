@@ -891,6 +891,8 @@ const resources = {
       REINITIATE_KYC: 'Reinitiate KYC',
       KYC_FAILED: 'Kyc Failed',
       UPDATED_SUCCESSFULLY: 'Updated Successfully',
+      CARD_SIGNUP_CONFIRMATION_CAPTION:
+        'During signup make sure you follow these:',
     },
   },
 };

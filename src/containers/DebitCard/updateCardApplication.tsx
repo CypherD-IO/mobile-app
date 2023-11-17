@@ -283,23 +283,21 @@ export default function UpdateCardApplicationScreen({ navigation }) {
           onFailure: onModalHide,
         });
       } else {
+        showModal('state', {
+          type: 'error',
+          title:
+            response.status === 400
+              ? t('INVALID_USER_INPUT')
+              : t('SOMETHING_WENT_WRONG'),
+          description:
+            response.error?.message ?? t('UPDATE_INFO_ERROR_MESSAGE'),
+          onSuccess: hideModal,
+          onFailure: hideModal,
+        });
         throw new Error(response.error);
       }
     } catch (e) {
       setUpdating(false);
-      showModal('state', {
-        type: 'error',
-        title:
-          e.response.status === 400
-            ? t('INVALID_USER_INPUT')
-            : t('SOMETHING_WENT_WRONG'),
-        description:
-          e.response.status === 400
-            ? concatErrorMessagesFromArrayOneByOne(e.response.data.errors)
-            : t('UPDATE_INFO_ERROR_MESSAGE'),
-        onSuccess: hideModal,
-        onFailure: hideModal,
-      });
       Sentry.captureException(e);
     }
   };

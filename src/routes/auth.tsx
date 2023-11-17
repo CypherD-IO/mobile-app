@@ -87,6 +87,7 @@ import SetPinScreen from '../containers/DebitCard/bridgeCard/setPin';
 import { useKeyboard } from '../hooks/useKeyboard';
 import { DEFIOverviewScreen } from '../containers/DeFi/DEFIOverview';
 import ShippingDetailsOTPScreen from '../containers/DebitCard/CardV2/ShippingDetailsOTPScreen';
+import CardSignupConfirmation from '../containers/DebitCard/cardSignupConfirmation';
 
 const { DynamicImage, DynamicButton } = require('../styles');
 
@@ -803,6 +804,12 @@ export function DebitCardStackScreen({ navigation }) {
           headerBackVisible: false,
           headerLeft: props => defaultHeaderLeft(navigation),
         })}
+      />
+
+      <FundCardStack.Screen
+        name={screenTitle.CARD_SIGN_UP_CONFIRMATION}
+        component={CardSignupConfirmation}
+        options={({ navigation, route }) => ({ headerShown: false })}
       />
 
       <FundCardStack.Screen

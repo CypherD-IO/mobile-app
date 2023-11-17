@@ -363,17 +363,18 @@ export default function CardSignupScreen({ navigation, route }) {
         navigation.navigate(screenTitle.CARD_SIGNUP_OTP_VERIFICATION_SCREEN);
         setLoading(false);
       } else {
+        showModal('state', {
+          type: 'error',
+          title: t('INVALID_USER_DETAILS'),
+          description: response.error?.message ?? '',
+          onSuccess: hideModal,
+          onFailure: hideModal,
+        });
+        setLoading(false);
         throw new Error(response.error);
       }
     } catch (e) {
-      showModal('state', {
-        type: 'error',
-        title: t('INVALID_USER_DETAILS'),
-        description: e.message ?? '',
-        onSuccess: hideModal,
-        onFailure: hideModal,
-      });
-      setLoading(false);
+      console.log(e.error, JSON.stringify(e));
       Sentry.captureException(e);
     }
   };
