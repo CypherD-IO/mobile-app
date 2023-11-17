@@ -817,7 +817,7 @@ const resources = {
       INVALID_CONNECTION_REQUEST_DESCRIPTION:
         'If you are trying to connect to a dApp, select Cypher wallet or WalletConnect and then scan the QR code again.',
       SET_NEW_PIN: 'Set New Pin',
-      CARD_BLOCKED: 'Card Blocked',
+      CARD_LOCKED: 'Card Locked',
       CHANGE_CARD_STATUS_SUCCESS: 'Card status update success',
       CHANGE_CARD_STATUS_FAIL: 'Card status update failed',
       CARD_STATUS_UPDATE: 'Card status update',
