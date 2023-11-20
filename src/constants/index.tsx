@@ -105,7 +105,7 @@ export const screenTitle: Record<string, string> = {
   DEFI_PROTOCOL_OVERVIEW_SCREEN: 'Protocol Overview',
   UPGRADE_TO_PHYSICAL_CARD_SCREEN: 'UpgradeToPhysicalCardScreen',
   SHIPPING_DETAILS_OTP_SCREEN: 'ShippingDetailsOTPScreen',
-  CARD_SIGN_UP_CONFIRMATION: 'CardSignupConfirmation',
+  CARD_SIGNUP_CONFIRMATION: 'CardSignupConfirmation',
 };
 
 export const fontsName = {

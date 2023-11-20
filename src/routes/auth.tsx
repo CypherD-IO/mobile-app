@@ -808,7 +808,7 @@ export function DebitCardStackScreen({ navigation }) {
       />
 
       <FundCardStack.Screen
-        name={screenTitle.CARD_SIGN_UP_CONFIRMATION}
+        name={screenTitle.CARD_SIGNUP_CONFIRMATION}
         component={CardSignupConfirmation}
         options={({ navigation }) => ({
           headerShown: true,

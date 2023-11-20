@@ -52,6 +52,7 @@ function TabStack() {
     screenTitle.BROWSER_SCREEN,
     screenTitle.OPTIONS_SCREEN,
     screenTitle.CARD_SIGNUP_LANDING_SCREEN,
+    screenTitle.CARD_SIGNUP_CONFIRMATION,
     screenTitle.CARD_SIGNUP_SCREEN,
     screenTitle.CARD_KYC_STATUS_SCREEN,
     screenTitle.DEBIT_CARD_SCREEN,

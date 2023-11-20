@@ -62,12 +62,12 @@ export default function CardSignupLandingScreen(props: {
           isInvalidInviteCode: false,
         });
         if (isInviteCodeOptional && !loadersAndValidators.inviteCodeVerified) {
-          navigation.navigate(screenTitle.CARD_SIGN_UP_CONFIRMATION, {
+          navigation.navigate(screenTitle.CARD_SIGNUP_CONFIRMATION, {
             inviteCode,
             selectedCountry,
           });
         } else {
-          navigation.navigate(screenTitle.CARD_SIGN_UP_CONFIRMATION, {
+          navigation.navigate(screenTitle.CARD_SIGNUP_CONFIRMATION, {
             inviteCode,
             selectedCountry,
           });
