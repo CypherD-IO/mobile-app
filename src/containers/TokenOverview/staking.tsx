@@ -1,5 +1,5 @@
 /* eslint-disable react-native/no-raw-text */
-/* eslint-disable @typescript-eslint/no-misused-promises */
+
 import { useIsFocused, useRoute } from '@react-navigation/native';
 import { OfflineDirectSigner } from '@cosmjs/proto-signing';
 import { t } from 'i18next';
@@ -7,7 +7,6 @@ import React, { useContext, useEffect, useState } from 'react';
 import { RefreshControl, StyleSheet } from 'react-native';
 import Button from '../../components/v2/button';
 import AppImages from '../../../assets/images/appImages';
-import CyDModalLayout from '../../components/v2/modal';
 import { ChainBackendNames, CosmosStakingTokens } from '../../constants/server';
 import {
   convertFromUnitAmount,
@@ -35,7 +34,6 @@ import {
   CyDSafeAreaView,
   CyDScrollView,
   CyDText,
-  CyDTouchView,
   CyDView,
 } from '../../styles/tailwindStyles';
 import LottieView from 'lottie-react-native';
@@ -71,56 +69,64 @@ import { getCosmosStakingData } from '../../core/cosmosStaking';
 import Loading from '../../components/v2/loading';
 import useIsSignable from '../../hooks/useIsSignable';
 import { ActivityType } from '../../reducers/activity_reducer';
+import { initialStakeVariables } from '../Staking/constants';
+import {
+  ClaimApproveModal,
+  ClaimModal,
+  RestakeApproveModal,
+} from '../Staking/Modals';
+import NoCurrentHoldings from '../Staking/Components/NoCurrentHoldings';
 
+interface TokenStakingProps {
+  tokenData: TokenMeta;
+  navigation: { navigate: (screen: string, params?: any) => void };
+}
 export default function TokenStaking({
   tokenData,
   navigation,
-}: {
-  tokenData: TokenMeta;
-  navigation: { navigate: (screen: string, {}: any) => void };
-}) {
+}: TokenStakingProps) {
+  const route = useRoute();
+  const isFocused = useIsFocused();
+  const [isSignableTransaction] = useIsSignable();
+
   const globalStateContext = useContext<any>(GlobalContext);
   const hdWalletContext = useContext<any>(HdWalletContext);
   const portfolioState = useContext<any>(PortfolioContext);
-  const isFocused = useIsFocused();
+  const cosmosStaking = useContext<any>(CosmosStakingContext);
+  const stakingValidators = useContext<any>(StakingContext);
+  const { showModal, hideModal } = useGlobalModalContext();
+
+  const evmos = hdWalletContext.state.wallet.evmos;
+  const ethereum = hdWalletContext.state.wallet.ethereum;
+  const chain = hdWalletContext.state.wallet[tokenData.chainDetails.chainName];
+
   const [loading, setLoading] = useState<boolean>(false);
   const [claimModal, setClaimModal] = useState<boolean>(false);
   const [signModalVisible, setSignModalVisible] = useState<boolean>(false);
   const [refreshing, setRefreshing] = useState<boolean>(false);
-  const [wallets, setWallets] = useState<Map<string, OfflineDirectSigner>>(
-    new Map(),
-  );
   const [gasFee, setGasFee] = useState<number>(0);
   const [reward, setReward] = useState<bigint>(BigInt(0));
   const [validator, setValidator] = useState({ name: '' });
   const [reStakeModalVisible, setReStakeModalVisible] = useState(false);
-  const [actionType, setActionType] = useState<CosmosActionType>(
-    CosmosActionType.CLAIM,
-  );
-  const cosmosStaking = useContext<any>(CosmosStakingContext);
-  const evmos = hdWalletContext.state.wallet.evmos;
-  const ethereum = hdWalletContext.state.wallet.ethereum;
-  const stakingValidators = useContext<any>(StakingContext);
   const [time, setTime] = useState({ hours: '0', min: '0', sec: '0' });
   const [finalData, setFinalData] = useState({});
   const [method, setMethod] = useState<string>('');
-  const initialStakeVariables = {
-    totalClaimableRewards: '0',
-    availableToStake: '0',
-    currentlyStaked: '0',
-    totalUnboundings: '0',
-  };
+  const [pageLoading, setPageLoading] = useState<boolean>(true);
+  const [actionType, setActionType] = useState<CosmosActionType>(
+    CosmosActionType.CLAIM,
+  );
+  const [wallets, setWallets] = useState<Map<string, OfflineDirectSigner>>(
+    new Map(),
+  );
+  const [unboundingPeriodInDays, setUnboundingPeriodInDays] =
+    useState<number>(14);
   const [stakingVariables, setStakingVariables] = useState({
     ...initialStakeVariables,
   });
-  const [unboundingPeriodInDays, setUnboundingPeriodInDays] =
-    useState<number>(14);
-  const chain = hdWalletContext.state.wallet[tokenData.chainDetails.chainName];
-  const [pageLoading, setPageLoading] = useState<boolean>(true);
-  let claimTryCount = 0;
 
-  const { showModal, hideModal } = useGlobalModalContext();
-  const route = useRoute();
+  let claimTryCount = 0;
+  let evmosRewardTimer: ReturnType<typeof setInterval>;
+  const currentChain: IIBCData = cosmosConfig[tokenData.chainDetails.chainName];
   const isCOSMOSEcoSystem = [
     ChainBackendNames.COSMOS,
     ChainBackendNames.OSMOSIS,
@@ -128,15 +134,12 @@ export default function TokenStaking({
     ChainBackendNames.EVMOS,
     ChainBackendNames.STARGAZE,
     ChainBackendNames.NOBLE,
-  ].includes(tokenData.chainDetails.backendName);
-  const currentChain: IIBCData = cosmosConfig[tokenData.chainDetails.chainName];
+  ].includes(tokenData.chainDetails.backendName as ChainBackendNames);
   const chainAPIURLs = isCOSMOSEcoSystem
     ? globalStateContext.globalState.rpcEndpoints[
         tokenData.chainDetails.chainName.toUpperCase()
       ].otherUrls
     : null;
-  let evmosRewardTimer: ReturnType<typeof setInterval>;
-  const [isSignableTransaction] = useIsSignable();
 
   const isStakingDataEmpty = () => {
     return (
@@ -147,7 +150,6 @@ export default function TokenStaking({
       stakingVariables.totalUnboundings === '0'
     );
   };
-
   const isStakingContextDispatched = (): boolean => {
     return (
       (tokenData.chainDetails.backendName !== ChainBackendNames.EVMOS &&
@@ -256,7 +258,7 @@ export default function TokenStaking({
   useEffect(() => {
     if (isFocused) {
       if (!isStakingDataEmpty()) {
-        evmosRewardTimer = setInterval(function time() {
+        evmosRewardTimer = setInterval(() => {
           const d = new Date();
           const timeForDate = getTimeForDate(d);
           const hours = timeForDate.hours;
@@ -324,10 +326,10 @@ export default function TokenStaking({
 
   const generateTransactionBodyForEVMOSSimulation = (
     response,
-    gasFee = '14000000000000000',
+    gasFeeAmount = '14000000000000000',
     gasLimit = '700000',
   ) => {
-    const chain = {
+    const evmosChain = {
       chainId: 9001,
       cosmosChainId: 'evmos_9001-2',
     };
@@ -340,7 +342,7 @@ export default function TokenStaking({
     };
 
     const fee = {
-      amount: gasFee,
+      amount: gasFeeAmount,
       denom: 'aevmos',
       gas: gasLimit,
     };
@@ -355,7 +357,7 @@ export default function TokenStaking({
     const params = { validatorAddresses: address };
 
     const msg = createTxMsgMultipleWithdrawDelegatorReward(
-      chain,
+      evmosChain,
       sender,
       fee,
       memo,
@@ -385,9 +387,9 @@ export default function TokenStaking({
     return body;
   };
 
-  const txnSimulation = async (method: string) => {
+  const txnSimulation = async (simulationMethod: string) => {
     setLoading(true);
-    setMethod(method);
+    setMethod(simulationMethod);
     setReward(stakingValidators.stateStaking.totalReward);
 
     try {
@@ -445,7 +447,7 @@ export default function TokenStaking({
       );
 
       setLoading(false);
-      setGasFee(parseInt(gasWanted) * currentChain.gasPrice);
+      setGasFee(parseInt(gasWanted, 10) * currentChain.gasPrice);
       setFinalData(bodyForTxn);
       if (claimTryCount) {
         void finalTxn(bodyForTxn);
@@ -453,7 +455,7 @@ export default function TokenStaking({
         setClaimModal(false);
         setTimeout(() => setSignModalVisible(true), MODAL_HIDE_TIMEOUT_250);
       }
-    } catch (error: any) {
+    } catch (error) {
       setLoading(false);
       // monitoring api
       void logAnalytics({
@@ -572,7 +574,7 @@ export default function TokenStaking({
           }
         }
         setPageLoading(false);
-      } catch (error: any) {
+      } catch (error) {
         setPageLoading(false);
         // monitoring api
         void logAnalytics({
@@ -609,10 +611,10 @@ export default function TokenStaking({
       try {
         let wallet: OfflineDirectSigner | undefined;
         if (type === CosmosActionType.SIMULATION) {
-          const wallets: Map<string, OfflineDirectSigner> =
+          const walletsToSet: Map<string, OfflineDirectSigner> =
             await getSignerClient(hdWalletContext);
-          wallet = wallets.get(currentChain.prefix);
-          setWallets(wallets);
+          wallet = walletsToSet.get(currentChain.prefix);
+          setWallets(walletsToSet);
         } else {
           wallet = wallets.get(currentChain.prefix);
         }
@@ -621,7 +623,7 @@ export default function TokenStaking({
             tokenData.chainDetails.chainName.toUpperCase()
           ].primary;
 
-        let senderAddress: any = await wallet?.getAccounts();
+        let senderAddress = await wallet?.getAccounts();
         senderAddress = senderAddress[0].address;
 
         const client = await SigningStargateClient.connectWithSigner(
@@ -672,7 +674,10 @@ export default function TokenStaking({
             amount: [
               {
                 denom: currentChain.denom,
-                amount: parseInt(gasFee.toFixed(6).split('.')[1]).toString(),
+                amount: parseInt(
+                  gasFee.toFixed(6).split('.')[1],
+                  10,
+                ).toString(),
               },
             ],
           };
@@ -748,10 +753,10 @@ export default function TokenStaking({
       showNoGasFeeModal();
     } else {
       try {
-        const currentChain: IIBCData =
+        const currentChainForRestake: IIBCData =
           cosmosConfig[tokenData.chainDetails.chainName];
         const wallet: OfflineDirectSigner | undefined = wallets.get(
-          currentChain.prefix,
+          currentChainForRestake.prefix,
         );
 
         const rpc =
@@ -759,14 +764,14 @@ export default function TokenStaking({
             tokenData.chainDetails.chainName.toUpperCase()
           ].primary;
 
-        let senderAddress: any = await wallet.getAccounts();
+        let senderAddress = await wallet?.getAccounts();
         senderAddress = senderAddress[0].address;
 
         const client = await SigningStargateClient.connectWithSigner(
           rpc,
           wallet,
           {
-            prefix: currentChain.prefix,
+            prefix: currentChainForRestake.prefix,
           },
         );
 
@@ -776,7 +781,7 @@ export default function TokenStaking({
             delegatorAddress: senderAddress,
             validatorAddress: validator.address,
             amount: {
-              denom: currentChain.denom,
+              denom: currentChainForRestake.denom,
               amount: reward.toString(),
             },
           },
@@ -784,7 +789,7 @@ export default function TokenStaking({
 
         const simulation = await client.simulate(senderAddress, [msg], '');
 
-        const gasFee = simulation * currentChain.gasPrice;
+        const gasFee = simulation * currentChainForRestake.gasPrice;
         setGasFee(gasFee);
 
         if (CosmosActionType.SIMULATION === type) {
@@ -798,8 +803,11 @@ export default function TokenStaking({
             gas: Math.floor(simulation * 1.8).toString(),
             amount: [
               {
-                denom: currentChain.denom,
-                amount: parseInt(gasFee.toFixed(6).split('.')[1]).toString(),
+                denom: currentChainForRestake.denom,
+                amount: parseInt(
+                  gasFee.toFixed(6).split('.')[1],
+                  10,
+                ).toString(),
               },
             ],
           };
@@ -829,7 +837,7 @@ export default function TokenStaking({
           reloadPage();
         }
         setLoading(false);
-      } catch (error: any) {
+      } catch (error) {
         setLoading(false);
         // monitoring api
         void logAnalytics({
@@ -850,24 +858,6 @@ export default function TokenStaking({
         });
       }
     }
-  };
-
-  const EmptyView = () => {
-    return (
-      <CyDView className={'flex flex-row justify-center'}>
-        <CyDView className={'mt-[15%]'}>
-          <CyDImage
-            source={AppImages.STAKING_EMPTY_ILLUSTRATION}
-            className='h-[250px] w-[350px]'
-            resizeMode='contain'
-          />
-          <CyDText
-            className={'text-center text-[24px] font-semibold mt-[20px]'}>
-            No holdings yet
-          </CyDText>
-        </CyDView>
-      </CyDView>
-    );
   };
 
   const onClaim = () => {
@@ -904,266 +894,48 @@ export default function TokenStaking({
 
   return (
     <CyDSafeAreaView>
-      <CyDModalLayout
-        setModalVisible={setClaimModal}
-        isModalVisible={claimModal}
-        style={styles.modalLayout}
-        animationIn={'slideInUp'}
-        animationOut={'slideOutDown'}>
-        <CyDView
-          className={'bg-white p-[25px] pb-[30px] rounded-t-[20px] relative'}>
-          <CyDTouchView
-            onPress={() => setClaimModal(false)}
-            className={'z-[50]'}>
-            <CyDImage
-              source={AppImages.CLOSE}
-              className={' w-[22px] h-[22px] z-[50] absolute right-[0px] '}
-            />
-          </CyDTouchView>
-          <CyDView>
-            <LottieView
-              source={AppImages.NEW}
-              autoPlay
-              loop
-              style={styles.lottieViewWidth}
-            />
+      <ClaimModal
+        modalVisibilityState={[claimModal, setClaimModal]}
+        actionTypeState={[actionType, setActionType]}
+        stakingVariables={stakingVariables}
+        chainBackendName={
+          tokenData.chainDetails.backendName as ChainBackendNames
+        }
+        buttonLoading={loading}
+        onPressClaim={onPressClaim}
+        txnSimulation={txnSimulation}
+      />
 
-            <CyDText className={'mt-[10px] font-bold text-[22px]'}>
-              {t<string>('HAVE_OPTION_TO_STAKE_REWARDS')}
-            </CyDText>
-            <CyDView className={'flex flex-row mt-[40px]'}>
-              <CyDImage source={AppImages.MONEY_BAG} />
-              <CyDView className={' flex flex-row mt-[3px]'}>
-                <CyDText className={'text-[16px] font-medium'}>
-                  {t<string>('TOTAL_CLAIMABLE_REWARDS')}
-                </CyDText>
-                <CyDText className={'ml-[10px] text-[18px] font-bold'}>
-                  {stakingVariables.totalClaimableRewards}
-                </CyDText>
-              </CyDView>
-            </CyDView>
+      <ClaimApproveModal
+        modalVisibilityState={[signModalVisible, setSignModalVisible]}
+        stakingVariables={stakingVariables}
+        chainBackendName={
+          tokenData.chainDetails.backendName as ChainBackendNames
+        }
+        buttonLoading={loading}
+        onPressClaim={onPressClaim}
+        finalTxn={finalTxn}
+        gasFeeAmount={gasFee.toFixed(6)}
+        gasFeeTokenName={tokenData.name}
+      />
 
-            {isBasicCosmosChain(tokenData.chainDetails.backendName) && (
-              <CyDView className={'flex flex-col mt-[40px] w-[100%]'}>
-                <Button
-                  onPress={async () => {
-                    setActionType(CosmosActionType.RESTAKE);
-                    await onPressClaim(CosmosActionType.SIMULATION);
-                  }}
-                  loading={actionType === CosmosActionType.RESTAKE && loading}
-                  loaderStyle={styles.loaderStyle}
-                  title={t<string>('RESTAKE')}
-                  style={'py-[5%]'}
-                />
-                <Button
-                  onPress={async () => {
-                    setActionType(CosmosActionType.CLAIM);
-                    await onPressClaim(CosmosActionType.SIMULATION);
-                  }}
-                  title={t<string>('CLAIM')}
-                  type={'secondary'}
-                  style={'py-[5%] mt-[15px]'}
-                  loading={actionType === CosmosActionType.CLAIM && loading}
-                  loaderStyle={styles.loaderStyle}
-                />
-              </CyDView>
-            )}
-            {tokenData.chainDetails.backendName === ChainBackendNames.EVMOS && (
-              <CyDView className={'flex flex-col mt-[24px] w-[100%]'}>
-                <Button
-                  onPress={async () => {
-                    setActionType(CosmosActionType.RESTAKE);
-                    await txnSimulation(CosmosActionType.RESTAKE);
-                  }}
-                  title={t<string>('RESTAKE')}
-                  style={'py-[5%]'}
-                  loading={actionType === CosmosActionType.RESTAKE && loading}
-                  loaderStyle={styles.loaderStyle}
-                />
-                <Button
-                  onPress={async () => {
-                    // setClaimModal(false);
-                    setActionType(CosmosActionType.CLAIM);
-                    await txnSimulation(CosmosActionType.CLAIM);
-                  }}
-                  title={t<string>('CLAIM')}
-                  type={'secondary'}
-                  style={'py-[5%] mt-[15px]'}
-                  loading={actionType === CosmosActionType.CLAIM && loading}
-                  loaderStyle={styles.loaderStyle}
-                />
-              </CyDView>
-            )}
-          </CyDView>
-        </CyDView>
-      </CyDModalLayout>
-
-      <CyDModalLayout
-        setModalVisible={setSignModalVisible}
-        isModalVisible={signModalVisible}
-        style={styles.modalLayout}
-        animationIn={'slideInUp'}
-        animationOut={'slideOutDown'}>
-        <CyDView
-          className={'bg-white p-[25px] pb-[30px] rounded-t-[20px] relative'}>
-          <CyDTouchView
-            onPress={() => {
-              setSignModalVisible(false);
-            }}
-            className={'z-[50]'}>
-            <CyDImage
-              source={AppImages.CLOSE}
-              className={' w-[22px] h-[22px] z-[50] absolute right-[0px] '}
-            />
-          </CyDTouchView>
-          <CyDText className={' mt-[10px] font-bold text-[22px] text-center '}>
-            {t<string>('REWARD')}
-          </CyDText>
-          <CyDView className={'flex flex-row mt-[40px]'}>
-            <CyDImage source={AppImages.MONEY_BAG} />
-            <CyDView className={' flex flex-row mt-[3px]'}>
-              <CyDText
-                className={
-                  ' font-medium text-[16px] ml-[5px] text-primaryTextColor'
-                }>
-                {t<string>('CLAIMABLE_REWARD')}
-              </CyDText>
-              <CyDText
-                className={
-                  ' font-bold ml-[5px] text-[18px] text-center text-secondaryTextColor'
-                }>
-                {stakingVariables.totalClaimableRewards}
-              </CyDText>
-            </CyDView>
-          </CyDView>
-
-          <CyDView className={'flex flex-row mt-[20px]'}>
-            <CyDImage
-              source={AppImages.GAS_FEES}
-              className='h-[16px] w-[16px]'
-              resizeMode='contain'
-            />
-            <CyDView className={' flex flex-row mt-[3px]'}>
-              <CyDText
-                className={
-                  ' font-medium text-[16px] ml-[10px] text-primaryTextColor'
-                }>
-                {t<string>('GAS_FEE')}
-              </CyDText>
-              <CyDText
-                className={
-                  ' font-bold ml-[5px] text-[18px] text-center text-secondaryTextColor'
-                }>{`${gasFee.toFixed(6)} ${tokenData.name}`}</CyDText>
-            </CyDView>
-          </CyDView>
-
-          <CyDView className={'flex flex-col mt-[30px] w-[100%]'}>
-            <Button
-              onPress={async () => {
-                isBasicCosmosChain(tokenData.chainDetails.backendName)
-                  ? await onPressClaim(CosmosActionType.TRANSACTION)
-                  : await finalTxn();
-              }}
-              title={t<string>('APPROVE')}
-              style={'py-[5%]'}
-              loading={loading}
-              loaderStyle={styles.loaderHeight30}
-            />
-            <Button
-              onPress={() => {
-                setSignModalVisible(false);
-              }}
-              title={t<string>('REJECT')}
-              type={'secondary'}
-              style={'py-[5%] mt-[15px]'}
-            />
-          </CyDView>
-        </CyDView>
-      </CyDModalLayout>
-
-      <CyDModalLayout
-        setModalVisible={setReStakeModalVisible}
-        isModalVisible={reStakeModalVisible}
-        style={styles.modalLayout}
-        animationIn={'slideInUp'}
-        animationOut={'slideOutDown'}>
-        <CyDView
-          className={'bg-white p-[25px] pb-[30px] rounded-t-[20px] relative'}>
-          <CyDTouchView
-            onPress={() => {
-              setReStakeModalVisible(false);
-            }}
-            className={'z-[50]'}>
-            <CyDImage
-              source={AppImages.CLOSE}
-              className={
-                ' w-[22px] h-[22px] z-[50] absolute right-[0px] top-[-10px] '
-              }
-            />
-          </CyDTouchView>
-          <CyDText className={' mt-[10px] font-bold text-[22px] text-center '}>
-            {t<string>('RESTAKE_INIT_CAPS')} to {`${validator.name}`}
-          </CyDText>
-          <CyDView className={'flex flex-row mt-[40px]'}>
-            <CyDImage
-              source={AppImages[tokenData.chainDetails.backendName + '_LOGO']}
-              className={'h-[20px] w-[20px]'}
-            />
-            <CyDView className={' flex flex-row'}>
-              <CyDText
-                className={
-                  ' font-bold ml-[5px] text-[18px] text-center text-secondaryTextColor'
-                }>{`${stakingVariables.totalClaimableRewards}`}</CyDText>
-            </CyDView>
-          </CyDView>
-
-          <CyDView className={'flex flex-row mt-[20px]'}>
-            <CyDImage
-              source={AppImages.GAS_FEES}
-              className={'w-[16px] h-[16px] mt-[3px]'}
-              resizeMode='contain'
-            />
-            <CyDView className={' flex flex-row mt-[3px]'}>
-              <CyDText
-                className={
-                  ' font-medium text-[16px] ml-[10px] text-primaryTextColor'
-                }>
-                {t<string>('GAS_FEE')}
-              </CyDText>
-              <CyDText
-                className={
-                  ' font-bold ml-[5px] text-[18px] text-center text-secondaryTextColor'
-                }>{`${gasFee.toFixed(6)} ${tokenData.name}`}</CyDText>
-            </CyDView>
-          </CyDView>
-
-          <CyDView className={'flex flex-col mt-[30px] w-[100%]'}>
-            <Button
-              onPress={() => {
-                setSignModalVisible(false);
-                void onReStake(CosmosActionType.TRANSACTION);
-              }}
-              title={t<string>('APPROVE')}
-              style={'py-[5%] min-h-[60px]'}
-              loading={loading}
-              loaderStyle={styles.loaderHeight30}
-            />
-            <Button
-              onPress={() => {
-                setReStakeModalVisible(false);
-              }}
-              title={t<string>('CANCEL')}
-              type={'secondary'}
-              style={'py-[5%] mt-[15px]'}
-            />
-          </CyDView>
-        </CyDView>
-      </CyDModalLayout>
+      <RestakeApproveModal
+        modalVisibilityState={[reStakeModalVisible, setReStakeModalVisible]}
+        stakingVariables={stakingVariables}
+        buttonLoading={loading}
+        onRestake={onReStake}
+        setSignModalVisible={setSignModalVisible}
+        gasFeeAmount={gasFee.toFixed(6)}
+        gasFeeTokenName={tokenData.name}
+        restakeValidatorName={validator.name}
+        tokenLogoUrl={tokenData.chainDetails.logo_url}
+      />
 
       {pageLoading ? (
         <Loading />
       ) : (
         <CyDScrollView
+          className='h-full'
           refreshControl={
             <RefreshControl
               enabled={true}
@@ -1171,6 +943,7 @@ export default function TokenStaking({
               onRefresh={onRefresh}
             />
           }>
+          {/* NEXT REWARD DISTRIBUTION */}
           {tokenData.chainDetails.backendName === ChainBackendNames.EVMOS &&
             tokenData.name === CosmosStakingTokens.EVMOS &&
             stakingValidators.stateStaking.myValidatorsListState ===
@@ -1187,242 +960,15 @@ export default function TokenStaking({
                   style={isIOS() ? styles.IOSStyle : styles.androidStyle}
                 />
                 <CyDText>
-                  {t<string>('NEXT_REWARD_DISTRIBUTION_AT')}
+                  {t<string>('NEXT_REWARD_DISTRIBUTION_IN')}
                   <CyDText className={'text-maroon font-black'}>
                     {'  ' + time.hours + ':' + time.min + ':' + time.sec}
                   </CyDText>
                 </CyDText>
               </CyDView>
             )}
-          {stakingVariables.totalClaimableRewards !== '0' && (
-            <CyDView>
-              <CyDView
-                className={
-                  'my-[25px] mx-[30px] flex flex-row items-center justify-between'
-                }>
-                <CyDView>
-                  <CyDText
-                    className={'text-subTextColor font-medium text-[15.5px]'}>
-                    {t<string>('TOTAL_CLAIMABLE_REWARDS')}
-                  </CyDText>
-                  <CyDView className='flex flex-row flex-wrap items-center'>
-                    <CyDTokenAmount
-                      className={'text-primaryTextColor font-bold text-[18px]'}
-                      decimalPlaces={5}>
-                      {stakingVariables.totalClaimableRewards}
-                    </CyDTokenAmount>
-                    <CyDText
-                      className={
-                        'text-primaryTextColor font-bold text-[18px] ml-[5px]'
-                      }>
-                      {tokenData.name}
-                    </CyDText>
-                  </CyDView>
-                </CyDView>
-                <Button
-                  onPress={() => {
-                    isSignableTransaction(ActivityType.CLAIM, onClaim);
-                  }}
-                  disabled={
-                    tokenData.chainDetails.backendName ===
-                    ChainBackendNames.EVMOS
-                      ? convertToEvmosFromAevmos(
-                          stakingValidators.stateStaking.totalReward,
-                        ) < 0.0001
-                      : cosmosStaking.cosmosStakingState.reward.toString() ===
-                        '0'
-                  }
-                  title={'CLAIM'}
-                  isPrivateKeyDependent={true}
-                  style={'w-4/12 p-[4%]'}
-                />
-              </CyDView>
-              <CyDView className={'w-10/12 h-[1px] bg-[#F4F4F4] mx-[30px]'} />
-            </CyDView>
-          )}
-
-          {stakingVariables.availableToStake !== '0' &&
-            (stakingVariables.currentlyStaked !== '0' ||
-              stakingVariables.totalClaimableRewards !== '0' ||
-              stakingVariables.totalUnboundings !== '0') && (
-              <CyDView>
-                <CyDView
-                  className={
-                    'my-[25px] mx-[30px] flex flex-row items-center justify-between'
-                  }>
-                  <CyDView>
-                    <CyDText
-                      className={
-                        'text-subTextColor  font-medium text-[15.5px]'
-                      }>
-                      {t<string>('AVAILABLE_TO_STAKE')}
-                    </CyDText>
-                    <CyDView className='flex flex-row flex-wrap items-center'>
-                      <CyDTokenAmount
-                        className={
-                          'text-primaryTextColor font-bold text-[18px]'
-                        }
-                        decimalPlaces={5}>
-                        {stakingVariables.availableToStake}
-                      </CyDTokenAmount>
-                      <CyDText
-                        className={
-                          'text-primaryTextColor font-bold text-[18px] ml-[5px]'
-                        }>
-                        {tokenData.name}
-                      </CyDText>
-                    </CyDView>
-                  </CyDView>
-                  <Button
-                    onPress={() => {
-                      isSignableTransaction(ActivityType.STAKE, onStake);
-                    }}
-                    title={t<string>('STAKE_TITLE')}
-                    isPrivateKeyDependent={true}
-                    style={'w-4/12 p-[4%]'}
-                  />
-                </CyDView>
-                <CyDView className={'w-10/12 h-[1px] bg-[#F4F4F4] mx-[30px]'} />
-              </CyDView>
-            )}
-
-          {stakingVariables.currentlyStaked !== '0' && (
-            <CyDView>
-              <CyDView
-                className={
-                  'my-[25px] mx-[30px] flex flex-row items-center justify-between'
-                }>
-                <CyDView>
-                  <CyDText
-                    className={'text-subTextColor  font-medium text-[15.5px]'}>
-                    {t<string>('CURRENTLY_STAKED')}
-                  </CyDText>
-                  <CyDView className='flex flex-row flex-wrap items-center'>
-                    <CyDTokenAmount
-                      className={'text-primaryTextColor font-bold text-[18px]'}
-                      decimalPlaces={5}>
-                      {stakingVariables.currentlyStaked}
-                    </CyDTokenAmount>
-                    <CyDText
-                      className={
-                        'text-primaryTextColor font-bold text-[18px] ml-[5px]'
-                      }>
-                      {tokenData.name}
-                    </CyDText>
-                  </CyDView>
-                </CyDView>
-                <Button
-                  onPress={() => {
-                    isSignableTransaction(ActivityType.UNSTAKE, onUnstake);
-                  }}
-                  title={t<string>('UNSTAKE')}
-                  isPrivateKeyDependent={true}
-                  style={'w-4/11 p-[4%]'}
-                  type={'ternary'}
-                />
-              </CyDView>
-              <CyDView className={'w-10/12 h-[1px] bg-[#F4F4F4] mx-[30px]'} />
-            </CyDView>
-          )}
-
-          {stakingVariables.totalUnboundings !== '0' && (
-            <CyDView>
-              <CyDView
-                className={
-                  'my-[25px] mx-[30px] flex flex-row items-center justify-between'
-                }>
-                <CyDView>
-                  <CyDText
-                    className={'text-subTextColor  font-medium text-[15.5px]'}>
-                    {t<string>('TOTAL_UNBOUNDINGS')}
-                  </CyDText>
-                  <CyDView className='flex flex-row flex-wrap items-center'>
-                    <CyDTokenAmount
-                      className={'text-primaryTextColor font-bold text-[18px]'}
-                      decimalPlaces={5}>
-                      {stakingVariables.totalUnboundings}
-                    </CyDTokenAmount>
-                    <CyDText
-                      className={
-                        'text-primaryTextColor font-bold text-[18px] ml-[5px]'
-                      }>
-                      {tokenData.name}
-                    </CyDText>
-                  </CyDView>
-                </CyDView>
-                <Button
-                  onPress={() => {
-                    if (
-                      isBasicCosmosChain(tokenData.chainDetails.backendName)
-                    ) {
-                      navigation.navigate(screenTitle.COSMOS_UNBOUNDINGS, {
-                        tokenData,
-                      });
-                    } else if (
-                      tokenData.chainDetails.backendName ===
-                      ChainBackendNames.EVMOS
-                    ) {
-                      navigation.navigate(screenTitle.UNBOUNDING);
-                    }
-                  }}
-                  title={t<string>('VIEW')}
-                  style={'w-4/12 p-[4%]'}
-                />
-              </CyDView>
-              <CyDView className={'w-full h-[1px] bg-[#F4F4F4] mx-[30px]'} />
-            </CyDView>
-          )}
-
-          {stakingVariables.availableToStake !== '0' &&
-            stakingVariables.currentlyStaked === '0' &&
-            stakingVariables.totalClaimableRewards === '0' &&
-            stakingVariables.totalUnboundings === '0' && (
-              <CyDView className={'flex justify-center items-center mt-[80px]'}>
-                <CyDImage
-                  source={AppImages.STAKING_EMPTY_ILLUSTRATION}
-                  className='h-[250px] w-[350px]'
-                  resizeMode='contain'
-                />
-                <CyDText
-                  className={
-                    'text-center w-3/4  text-[20px] font-semibold text-secondaryTextColor'
-                  }>{`${t<string>(
-                  'STAKE_YOUR_TEXT',
-                )} ${tokenData.name.toLowerCase()} ${t<string>(
-                  'WITH_US_TEXT',
-                )}`}</CyDText>
-                <Button
-                  onPress={() => {
-                    isSignableTransaction(ActivityType.STAKE, onStake);
-                  }}
-                  title={t<string>('STAKE_NOW')}
-                  isPrivateKeyDependent={true}
-                  style={'w-1/2 mt-[20px] mb-[30px] p-[4%]'}
-                />
-                <CyDView>
-                  <CyDView className='flex flex-row'>
-                    <CyDText
-                      className={
-                        'text-subTextColor  font-medium text-[15.5px]'
-                      }>{`${t<string>('AVAILABLE_TO_STAKE')}: `}</CyDText>
-                    <CyDTokenAmount
-                      className={
-                        'text-primaryTextColor font-bold text-[15.5px] ml-[2px]'
-                      }
-                      decimalPlaces={5}>
-                      {stakingVariables.availableToStake}
-                    </CyDTokenAmount>
-                    <CyDText
-                      className={
-                        'text-primaryTextColor font-bold text-[15.5px] ml-[5px]'
-                      }>
-                      {tokenData.name}
-                    </CyDText>
-                  </CyDView>
-                </CyDView>
-              </CyDView>
-            )}
-
+          {/* NEXT REWARD DISTRIBUTION */}
+          {/* CTA */}
           {(stakingVariables.totalClaimableRewards !== '0' ||
             stakingVariables.currentlyStaked !== '0' ||
             stakingVariables.totalUnboundings !== '0') && (
@@ -1479,8 +1025,243 @@ export default function TokenStaking({
               </CyDView>
             </CyDView>
           )}
-
-          {!pageLoading && isStakingDataEmpty() && <EmptyView />}
+          {/* CTA */}
+          {/* CLAIM */}
+          {stakingVariables.totalClaimableRewards !== '0' && (
+            <CyDView>
+              <CyDView
+                className={
+                  'mb-[16px] mx-[30px] flex flex-row items-center justify-between'
+                }>
+                <CyDView>
+                  <CyDText
+                    className={'text-subTextColor font-medium text-[14px]'}>
+                    {t<string>('TOTAL_CLAIMABLE_REWARDS')}
+                  </CyDText>
+                  <CyDView className='flex flex-row flex-wrap items-center'>
+                    <CyDTokenAmount
+                      className={'text-primaryTextColor font-bold text-[16px]'}
+                      decimalPlaces={5}>
+                      {stakingVariables.totalClaimableRewards}
+                    </CyDTokenAmount>
+                    <CyDText
+                      className={
+                        'text-primaryTextColor font-bold text-[16px] ml-[5px]'
+                      }>
+                      {tokenData.name}
+                    </CyDText>
+                  </CyDView>
+                </CyDView>
+                <Button
+                  onPress={() => {
+                    isSignableTransaction(ActivityType.CLAIM, onClaim);
+                  }}
+                  disabled={
+                    tokenData.chainDetails.backendName ===
+                    ChainBackendNames.EVMOS
+                      ? convertToEvmosFromAevmos(
+                          stakingValidators.stateStaking.totalReward,
+                        ) < 0.0001
+                      : cosmosStaking.cosmosStakingState.reward.toString() ===
+                        '0'
+                  }
+                  title={'CLAIM'}
+                  titleStyle='text-[14px]'
+                  isPrivateKeyDependent={true}
+                  style={'w-4/12 p-[4%]'}
+                />
+              </CyDView>
+              <CyDView className={'w-10/12 h-[1px] bg-[#F4F4F4] mx-[30px]'} />
+            </CyDView>
+          )}
+          {/* CLAIM */}
+          {/* AVAILABLE TO STAKE */}
+          {stakingVariables.availableToStake !== '0' &&
+            (stakingVariables.currentlyStaked !== '0' ||
+              stakingVariables.totalClaimableRewards !== '0' ||
+              stakingVariables.totalUnboundings !== '0') && (
+              <CyDView>
+                <CyDView
+                  className={
+                    'my-[16px] mx-[30px] flex flex-row items-center justify-between'
+                  }>
+                  <CyDView>
+                    <CyDText
+                      className={'text-subTextColor  font-medium text-[14px]'}>
+                      {t<string>('AVAILABLE_TO_STAKE')}
+                    </CyDText>
+                    <CyDView className='flex flex-row flex-wrap items-center'>
+                      <CyDTokenAmount
+                        className={
+                          'text-primaryTextColor font-bold text-[16px]'
+                        }
+                        decimalPlaces={5}>
+                        {stakingVariables.availableToStake}
+                      </CyDTokenAmount>
+                      <CyDText
+                        className={
+                          'text-primaryTextColor font-bold text-[16px] ml-[5px]'
+                        }>
+                        {tokenData.name}
+                      </CyDText>
+                    </CyDView>
+                  </CyDView>
+                  <Button
+                    onPress={() => {
+                      isSignableTransaction(ActivityType.STAKE, onStake);
+                    }}
+                    title={t<string>('STAKE_TITLE')}
+                    titleStyle='text-[14px]'
+                    isPrivateKeyDependent={true}
+                    style={'w-4/12 p-[4%]'}
+                  />
+                </CyDView>
+                <CyDView className={'w-10/12 h-[1px] bg-[#F4F4F4] mx-[30px]'} />
+              </CyDView>
+            )}
+          {/* AVAILABLE TO STAKE */}
+          {/* UNSTAKE */}
+          {stakingVariables.currentlyStaked !== '0' && (
+            <CyDView>
+              <CyDView
+                className={
+                  'my-[16px] mx-[30px] flex flex-row items-center justify-between'
+                }>
+                <CyDView>
+                  <CyDText
+                    className={'text-subTextColor  font-medium text-[14px]'}>
+                    {t<string>('CURRENTLY_STAKED')}
+                  </CyDText>
+                  <CyDView className='flex flex-row flex-wrap items-center'>
+                    <CyDTokenAmount
+                      className={'text-primaryTextColor font-bold text-[16px]'}
+                      decimalPlaces={5}>
+                      {stakingVariables.currentlyStaked}
+                    </CyDTokenAmount>
+                    <CyDText
+                      className={
+                        'text-primaryTextColor font-bold text-[16px] ml-[5px]'
+                      }>
+                      {tokenData.name}
+                    </CyDText>
+                  </CyDView>
+                </CyDView>
+                <Button
+                  onPress={() => {
+                    isSignableTransaction(ActivityType.UNSTAKE, onUnstake);
+                  }}
+                  title={t<string>('UNSTAKE')}
+                  titleStyle='text-[14px]'
+                  isPrivateKeyDependent={true}
+                  style={'w-4/12 p-[4%]'}
+                  type={'ternary'}
+                />
+              </CyDView>
+              <CyDView className={'w-10/12 h-[1px] bg-[#F4F4F4] mx-[30px]'} />
+            </CyDView>
+          )}
+          {/* UNSTAKE */}
+          {/* UNBOUNDINGS */}
+          {stakingVariables.totalUnboundings !== '0' && (
+            <CyDView>
+              <CyDView
+                className={
+                  'my-[16px] mx-[30px] flex flex-row items-center justify-between'
+                }>
+                <CyDView>
+                  <CyDText
+                    className={'text-subTextColor  font-medium text-[14px]'}>
+                    {t<string>('TOTAL_UNBOUNDINGS')}
+                  </CyDText>
+                  <CyDView className='flex flex-row flex-wrap items-center'>
+                    <CyDTokenAmount
+                      className={'text-primaryTextColor font-bold text-[16px]'}
+                      decimalPlaces={5}>
+                      {stakingVariables.totalUnboundings}
+                    </CyDTokenAmount>
+                    <CyDText
+                      className={
+                        'text-primaryTextColor font-bold text-[16px] ml-[5px]'
+                      }>
+                      {tokenData.name}
+                    </CyDText>
+                  </CyDView>
+                </CyDView>
+                <Button
+                  onPress={() => {
+                    if (
+                      isBasicCosmosChain(tokenData.chainDetails.backendName)
+                    ) {
+                      navigation.navigate(screenTitle.COSMOS_UNBOUNDINGS, {
+                        tokenData,
+                      });
+                    } else if (
+                      tokenData.chainDetails.backendName ===
+                      ChainBackendNames.EVMOS
+                    ) {
+                      navigation.navigate(screenTitle.UNBOUNDING);
+                    }
+                  }}
+                  title={t<string>('VIEW')}
+                  style={'w-4/12 p-[4%]'}
+                />
+              </CyDView>
+              <CyDView className={'w-full h-[1px] bg-[#F4F4F4] mx-[30px]'} />
+            </CyDView>
+          )}
+          {/* UNBOUNDINGS */}
+          {/* EMPTY STAKING ILLUSTRATION */}
+          {stakingVariables.availableToStake !== '0' &&
+            stakingVariables.currentlyStaked === '0' &&
+            stakingVariables.totalClaimableRewards === '0' &&
+            stakingVariables.totalUnboundings === '0' && (
+              <CyDView className={'flex justify-center items-center mt-[80px]'}>
+                <CyDImage
+                  source={AppImages.STAKING_EMPTY_ILLUSTRATION}
+                  className='h-[250px] w-[350px]'
+                  resizeMode='contain'
+                />
+                <CyDText
+                  className={
+                    'text-center w-3/4  text-[20px] font-semibold text-secondaryTextColor'
+                  }>{`${t<string>(
+                  'STAKE_YOUR_TEXT',
+                )} ${tokenData.name.toLowerCase()} ${t<string>(
+                  'WITH_US_TEXT',
+                )}`}</CyDText>
+                <Button
+                  onPress={() => {
+                    isSignableTransaction(ActivityType.STAKE, onStake);
+                  }}
+                  title={t<string>('STAKE_NOW')}
+                  isPrivateKeyDependent={true}
+                  style={'w-1/2 mt-[20px] mb-[30px] p-[4%]'}
+                />
+                <CyDView>
+                  <CyDView className='flex flex-row'>
+                    <CyDText
+                      className={
+                        'text-subTextColor  font-medium text-[14px]'
+                      }>{`${t<string>('AVAILABLE_TO_STAKE')}: `}</CyDText>
+                    <CyDTokenAmount
+                      className={
+                        'text-primaryTextColor font-bold text-[14px] ml-[2px]'
+                      }
+                      decimalPlaces={5}>
+                      {stakingVariables.availableToStake}
+                    </CyDTokenAmount>
+                    <CyDText
+                      className={
+                        'text-primaryTextColor font-bold text-[14px] ml-[5px]'
+                      }>
+                      {tokenData.name}
+                    </CyDText>
+                  </CyDView>
+                </CyDView>
+              </CyDView>
+            )}
+          {/* EMPTY STAKING ILLUSTRATION */}
+          {!pageLoading && isStakingDataEmpty() && <NoCurrentHoldings />}
         </CyDScrollView>
       )}
     </CyDSafeAreaView>
@@ -1488,34 +1269,16 @@ export default function TokenStaking({
 }
 
 const styles = StyleSheet.create({
-  modalLayout: {
-    margin: 0,
-    justifyContent: 'flex-end',
-  },
-
-  lottieViewWidth: {
-    width: 34,
-  },
-
   IOSStyle: {
     width: 30,
     height: 45,
     left: -9,
     top: -7,
   },
-
   androidStyle: {
     width: 30,
     height: 45,
     left: -14,
     top: -10,
-  },
-
-  loaderStyle: {
-    height: 22,
-  },
-
-  loaderHeight30: {
-    height: 30,
   },
 });

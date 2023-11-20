@@ -297,7 +297,7 @@ const resources = {
       DELEGATE: 'DELEGATE',
       UNDELEGATE: 'UNDELEGATE',
       GAS_FEE_LABEL: 'Gas fees',
-      NEXT_REWARD_DISTRIBUTION_AT: 'Next reward distribution at',
+      NEXT_REWARD_DISTRIBUTION_IN: 'Next reward distribution in',
       SEND_ON: 'Send On',
       GAS: 'Gas',
       TEMP_SYSTEM_ERROR: 'Temp System Error',
