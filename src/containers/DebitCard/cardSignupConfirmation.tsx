@@ -40,7 +40,7 @@ export default function CardSignupConfirmation(props: {
         <CyDScrollView className='py-[12px]'>
           <CyDView
             className={
-              'mx-[16px] p-[10px] my-[10px] bg-ternaryBackgroundColor'
+              'mx-[16px] p-[12px] my-[10px] bg-ternaryBackgroundColor'
             }>
             <CyDView className={'flex flex-row my-[4px]'}>
               <CyDImage

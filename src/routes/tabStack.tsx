@@ -130,7 +130,11 @@ function TabStack() {
       <CyDView
         className='flex flex-row justify-start items-center bg-red-500 rounded-t-[24px]'
         style={styles.elevatedBackground}>
-        <CyDView className='flex flex-row justify-start mt-[6px] items-center bg-white rounded-t-[24px]'>
+        <CyDView
+          className={clsx(
+            'flex flex-row justify-start items-center bg-white rounded-t-[24px]',
+            { 'mt-[4px]': isAndroid() },
+          )}>
           {state.routes.map((route, index) => {
             const { options } = descriptors[route.key];
             const label =
@@ -179,6 +183,7 @@ function TabStack() {
                     {
                       'mt-[10px] bg-transparent':
                         route.name === screenTitle.SHORTCUTS,
+                      'mt-[-1px]': isAndroid(),
                     },
                   )}>
                   {route.name === screenTitle.SHORTCUTS ? (
@@ -217,10 +222,11 @@ function TabStack() {
               // TO REDO : TABBAR ANIMATION
               layout={Layout.easing(Easing.ease).delay(50)}
               className={clsx(
-                'rounded-t-[24px] pb-[20px] shadow absolute bottom-[-20px] w-full',
+                'rounded-t-[24px] pb-[8px] shadow absolute bottom-[-20px] w-full',
                 {
                   'bottom-[-110px]': !showTabBar,
                   'bottom-[-350px]': keyboardHeight,
+                  'pb-[20px]': isIOS(),
                   'shadow-gray-400': (!isReadOnlyWallet && !isIOS()) || isIOS(),
                 },
               )}>
@@ -333,11 +339,5 @@ const styles = StyleSheet.create({
   elevatedBackground: {
     elevation: 3,
     backgroundColor: isIOS() ? Colors.white : Colors.transparent,
-    // shadowOffset: { width: 10, height: 10 },
-    // shadowColor: 'black',
-    // shadowOpacity: 1,
-    // elevation: 3,
-    // background color must be set
-    // backgroundColor: Colors.black, // invisible color
   },
 });
