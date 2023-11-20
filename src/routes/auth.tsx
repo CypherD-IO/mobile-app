@@ -768,7 +768,8 @@ export function DebitCardStackScreen({ navigation }) {
     fontWeight: '800',
   };
   return (
-    <FundCardStack.Navigator initialRouteName={screenTitle.DEBIT_CARD_SCREEN}>
+    <FundCardStack.Navigator
+      initialRouteName={screenTitle.CARD_SIGNUP_LANDING_SCREEN}>
       <FundCardStack.Screen
         name={screenTitle.DEBIT_CARD_SCREEN}
         component={DebitCardScreen}
@@ -809,7 +810,19 @@ export function DebitCardStackScreen({ navigation }) {
       <FundCardStack.Screen
         name={screenTitle.CARD_SIGN_UP_CONFIRMATION}
         component={CardSignupConfirmation}
-        options={({ navigation, route }) => ({ headerShown: false })}
+        options={({ navigation }) => ({
+          headerShown: true,
+          headerTransparent: false,
+          headerShadowVisible: false,
+          title: 'Cypher Card Signup',
+          navigationOptions: {
+            tabBarVisible: false,
+          },
+          headerTitleAlign: 'center',
+          headerTitleStyle: portfolioStackScreenHeaderTitleStyles,
+          headerBackVisible: false,
+          headerLeft: props => defaultHeaderLeft(navigation),
+        })}
       />
 
       <FundCardStack.Screen

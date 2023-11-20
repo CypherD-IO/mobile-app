@@ -18,13 +18,16 @@ import LottieView from 'lottie-react-native';
 import { isAndroid } from '../../misc/checkers';
 import { Colors } from '../../constants/theme';
 import useAxios from '../../core/HttpRequest';
+import { StatusBar } from 'react-native';
+import Button from '../../components/v2/button';
+import { ButtonType } from '../../constants/enum';
+import { ICountry } from '../../models/cardApplication.model';
 
 export default function CardSignupLandingScreen(props: {
   navigation: any;
-  route: { params?: { selectedCountry?: {} } };
+  route: { params?: { selectedCountry?: ICountry } };
 }) {
   const { t } = useTranslation();
-  const [acknowledgement, setAcknowledgment] = useState<boolean>(false);
   const [inviteCode, setInviteCode] = useState<string>('');
   const { navigation, route } = props;
   const { postWithAuth } = useAxios();
@@ -59,11 +62,12 @@ export default function CardSignupLandingScreen(props: {
           isInvalidInviteCode: false,
         });
         if (isInviteCodeOptional && !loadersAndValidators.inviteCodeVerified) {
-          navigation.navigate(screenTitle.CARD_SIGNUP_SCREEN, {
+          navigation.navigate(screenTitle.CARD_SIGN_UP_CONFIRMATION, {
+            inviteCode,
             selectedCountry,
           });
         } else {
-          navigation.navigate(screenTitle.CARD_SIGNUP_SCREEN, {
+          navigation.navigate(screenTitle.CARD_SIGN_UP_CONFIRMATION, {
             inviteCode,
             selectedCountry,
           });
@@ -86,145 +90,93 @@ export default function CardSignupLandingScreen(props: {
   };
 
   const isButtonEnabled = () => {
-    return acknowledgement && (isInviteCodeOptional || inviteCode.length >= 6);
+    return isInviteCodeOptional || inviteCode.length >= 6;
   };
 
   return (
-    <CyDSafeAreaView className='h-full bg-appColor'>
+    <CyDView className='flex-1 bg-appColor'>
+      {/* <StatusBar backgroundColor={Colors.appColor} barStyle='light-content' /> */}
       <CyDScrollView>
         <CyDImageBackground
-          className={'h-[60%] pt-[10px]'}
+          className={'h-[70%] pt-[10px]'}
           source={AppImages.CARD_SIGNUP_BACKGROUND}
           resizeMode={'cover'}>
           <CyDView className={'flex flex-row justify-center'}>
             <CyDImage
-              className='h-[250px] w-[90%]'
+              className='h-[180px] w-[90%]'
               source={AppImages.VIRTUAL_SAMPLE_CARD}
               resizeMode='contain'
             />
           </CyDView>
-          <CyDView className={' flex flex-row justify-center px-[20px]'}>
-            <CyDText className={'text-[22px] text-center font-extrabold'}>
+          <CyDView className={' flex flex-row justify-center mt-[45px]'}>
+            <CyDText
+              className={'text-[22px] text-center px-[32px] font-extrabold'}>
               {t<string>('CARD_SIGNUP_WELCOME_TEXT')}
             </CyDText>
           </CyDView>
-          {/* <CyDView
-              className={
-                'flex mt-[20px] flex-row justify-center px-[10%] mb-[10px]'
-              }>
-              <CyDText className={'text-[16px] font-semibold text-center'}>
-                {t<string>('CARD_SIGNUP_INVITE_VERIFICATION_TEXT')}
-              </CyDText>
-            </CyDView> */}
-          <CyDView
-            className={
-              'h-[55px] mt-[20px] flex flex-row justify-center items-center'
-            }>
-            <CyDView
-              className={
-                'bg-white w-[75%] mt-[2px] border rounded-[5px] py-[10px]'
-              }>
-              {!loadersAndValidators.isInviteCodeVerifying &&
-                !loadersAndValidators.inviteCodeVerified && (
-                  <CyDTextInput
-                    onChangeText={async value => {
-                      if (loadersAndValidators.isInvalidInviteCode) {
-                        setLoadersAndValidators({
-                          ...loadersAndValidators,
-                          isInvalidInviteCode: false,
-                        });
-                      }
-                      setInviteCode(value);
-                    }}
-                    placeholder={
-                      isInviteCodeOptional ? t('OPTIONAL') : t('INVITE_CODE')
+          <CyDView className='bg-white w-[75%] mt-[16px] self-center border rounded-[6px] h-[55px] justify-center items-center'>
+            {!loadersAndValidators.isInviteCodeVerifying &&
+              !loadersAndValidators.inviteCodeVerified && (
+                <CyDTextInput
+                  onChangeText={async value => {
+                    if (loadersAndValidators.isInvalidInviteCode) {
+                      setLoadersAndValidators({
+                        ...loadersAndValidators,
+                        isInvalidInviteCode: false,
+                      });
                     }
-                    placeholderTextColor={Colors.subTextColor}
-                    className={'text-[18px] text-center'}
-                  />
-                )}
-              {loadersAndValidators.isInviteCodeVerifying && (
-                <CyDView className={'flex items-center justify-between'}>
-                  <LottieView
-                    source={AppImages.LOADER_TRANSPARENT}
-                    autoPlay
-                    loop
-                    style={{ height: 25 }}
+                    setInviteCode(value);
+                  }}
+                  value={inviteCode}
+                  placeholder={
+                    isInviteCodeOptional ? t('OPTIONAL') : t('INVITE_CODE')
+                  }
+                  placeholderTextColor={Colors.subTextColor}
+                  className={'text-[18px] text-center p-[0px]'}
+                />
+              )}
+            {loadersAndValidators.isInviteCodeVerifying && (
+              <CyDView className={'flex items-center justify-between'}>
+                <LottieView
+                  source={AppImages.LOADER_TRANSPARENT}
+                  autoPlay
+                  loop
+                  style={{ height: 25 }}
+                />
+              </CyDView>
+            )}
+            {loadersAndValidators.inviteCodeVerified && (
+              <>
+                <CyDView
+                  className={'flex flex-row items-center justify-center'}>
+                  <CyDText className={'text-[18px] font-extrabold'}>
+                    {t<string>('CODE_VERFIED')}
+                  </CyDText>
+                  <CyDImage
+                    className={'h-[22px] w-[22px] ml-[10px]'}
+                    source={AppImages.DARK_GREEN_BACKGROUND_TICK}
                   />
                 </CyDView>
-              )}
-              {loadersAndValidators.inviteCodeVerified && (
-                <>
-                  <CyDView
-                    className={'flex flex-row items-center justify-center'}>
-                    <CyDText className={'text-[18px] font-extrabold'}>
-                      {t<string>('CODE_VERFIED')}
-                    </CyDText>
-                    <CyDImage
-                      className={'h-[22px] w-[22px] ml-[10px]'}
-                      source={AppImages.DARK_GREEN_BACKGROUND_TICK}
-                    />
-                  </CyDView>
-                </>
-              )}
-            </CyDView>
+              </>
+            )}
           </CyDView>
           {loadersAndValidators.isInvalidInviteCode && (
             <CyDText className={'text-center text-red-600 font-bold'}>
               {t<string>('INVALID_CODE')}
             </CyDText>
           )}
-          <CyDView
-            className={'flex flex-row mt-[20px] px-[38px] justify-start'}>
-            <CyDTouchView
-              className={clsx('rounded-[4px] mt-[2px] h-[18px] w-[18px]', {
-                'bg-black': acknowledgement,
-                'bg-white': !acknowledgement,
-              })}
-              onPress={() => {
-                setAcknowledgment(!acknowledgement);
-              }}>
-              {acknowledgement && (
-                <CyDImage
-                  className={'w-[10px] h-[10px] mt-[3px] ml-[3px]'}
-                  source={AppImages.CORRECT}
-                />
-              )}
-            </CyDTouchView>
-            <CyDView className={'flex flex-row flex-wrap'}>
-              <CyDText
-                className={'ml-[8px] text-[12px] font-semibold leading-[18px]'}>
-                {t<string>('CARD_SIGNUP_CONSENT_TEXT')}{' '}
-                <CyDText
-                  className={'font-extrabold underline'}
-                  onPress={() => navigation.navigate(screenTitle.LEGAL_SCREEN)}>
-                  {t<string>('TERMS_AND_CONDITIONS')}
-                </CyDText>
-              </CyDText>
-            </CyDView>
-          </CyDView>
-          <CyDTouchView
+          <Button
+            title={t<string>('NEXT')}
+            style='mt-[24px] w-[72%] self-center border-[1px]'
+            titleStyle={isButtonEnabled() ? 'text-white' : ''}
+            type={ButtonType.DARK}
             disabled={!isButtonEnabled()}
             onPress={() => {
               void verifyInviteCode(inviteCode);
             }}
-            className={clsx(
-              'py-[16px] mt-[25px] flex flex-row items-center rounded-[12px] justify-around w-[80%] mx-auto mb-[25px] text-white',
-              {
-                'bg-[#FFE370]': !isButtonEnabled(),
-                'bg-black': isButtonEnabled(),
-              },
-            )}>
-            <CyDText
-              className={clsx('text-center font-black', {
-                'text-darkYellow': !isButtonEnabled(),
-                'text-white': isButtonEnabled(),
-              })}>
-              {t<string>('YES_GET_STARTED')}
-            </CyDText>
-          </CyDTouchView>
+          />
         </CyDImageBackground>
       </CyDScrollView>
-    </CyDSafeAreaView>
+    </CyDView>
   );
 }

@@ -126,70 +126,74 @@ function TabStack() {
 
   function MyTabBar({ state, descriptors, navigation }) {
     return (
-      <CyDView className='flex flex-row justify-start items-center px-[10px]'>
-        {state.routes.map((route, index) => {
-          const { options } = descriptors[route.key];
-          const label =
-            options.tabBarLabel !== undefined
-              ? options.tabBarLabel
-              : options.title !== undefined
-              ? options.title
-              : route.name;
+      <CyDView
+        className='flex flex-row justify-start items-center bg-red-500 rounded-t-[24px]'
+        style={styles.elevatedBackground}>
+        <CyDView className='flex flex-row justify-start mt-[6px] items-center bg-white rounded-t-[24px]'>
+          {state.routes.map((route, index) => {
+            const { options } = descriptors[route.key];
+            const label =
+              options.tabBarLabel !== undefined
+                ? options.tabBarLabel
+                : options.title !== undefined
+                ? options.title
+                : route.name;
 
-          const isFocused = state.index === index;
-          const TabBarIcon = options.tabBarIcon;
-          const TabBarButton = options.tabBarButton;
-          const onPress = () => {
-            const event = navigation.emit({
-              type: 'tabPress',
-              target: route.key,
-              canPreventDefault: true,
-            });
+            const isFocused = state.index === index;
+            const TabBarIcon = options.tabBarIcon;
+            const TabBarButton = options.tabBarButton;
+            const onPress = () => {
+              const event = navigation.emit({
+                type: 'tabPress',
+                target: route.key,
+                canPreventDefault: true,
+              });
 
-            if (!isFocused && !event.defaultPrevented) {
-              // The `merge: true` option makes sure that the params inside the tab screen are preserved
-              navigation.navigate({ name: route.name, merge: true });
-            }
-          };
+              if (!isFocused && !event.defaultPrevented) {
+                // The `merge: true` option makes sure that the params inside the tab screen are preserved
+                navigation.navigate({ name: route.name, merge: true });
+              }
+            };
 
-          const onLongPress = () => {
-            navigation.emit({
-              type: 'tabLongPress',
-              target: route.key,
-            });
-          };
+            const onLongPress = () => {
+              navigation.emit({
+                type: 'tabLongPress',
+                target: route.key,
+              });
+            };
 
-          return (
-            <CyDTouchView
-              key={index}
-              accessibilityRole='button'
-              accessibilityState={isFocused ? { selected: true } : {}}
-              accessibilityLabel={options.tabBarAccessibilityLabel}
-              testID={options.tabBarTestID}
-              onPress={onPress}
-              onLongPress={onLongPress}
-              className='flex flex-1 flex-row items-center'>
-              <CyDView
-                className={clsx(
-                  'flex flex-1 flex-col items-center bg-transparent',
-                  {
-                    'mt-[10px] bg-transparent':
-                      route.name === screenTitle.SHORTCUTS,
-                  },
-                )}>
-                {route.name === screenTitle.SHORTCUTS ? (
-                  <TabBarButton />
-                ) : (
-                  <TabBarIcon focused={isFocused} color='' size='' />
-                )}
-                <CyDText
-                  className={clsx('text-[12px]', { 'font-bold': isFocused })}>
-                  {route.name !== screenTitle.SHORTCUTS && label}
-                </CyDText>
-              </CyDView>
-            </CyDTouchView>
-          );
-        })}
+            return (
+              <CyDTouchView
+                key={index}
+                accessibilityRole='button'
+                accessibilityState={isFocused ? { selected: true } : {}}
+                accessibilityLabel={options.tabBarAccessibilityLabel}
+                testID={options.tabBarTestID}
+                onPress={onPress}
+                onLongPress={onLongPress}
+                className='flex flex-1 flex-row items-center'>
+                <CyDView
+                  className={clsx(
+                    'flex flex-1 flex-col items-center bg-transparent',
+                    {
+                      'mt-[10px] bg-transparent':
+                        route.name === screenTitle.SHORTCUTS,
+                    },
+                  )}>
+                  {route.name === screenTitle.SHORTCUTS ? (
+                    <TabBarButton />
+                  ) : (
+                    <TabBarIcon focused={isFocused} color='' size='' />
+                  )}
+                  <CyDText
+                    className={clsx('text-[12px]', { 'font-bold': isFocused })}>
+                    {route.name !== screenTitle.SHORTCUTS && label}
+                  </CyDText>
+                </CyDView>
+              </CyDTouchView>
+            );
+          })}
+        </CyDView>
       </CyDView>
     );
   }
@@ -218,8 +222,7 @@ function TabStack() {
                   'bottom-[-350px]': keyboardHeight,
                   'shadow-gray-400': (!isReadOnlyWallet && !isIOS()) || isIOS(),
                 },
-              )}
-              style={styles.elevatedBackground}>
+              )}>
               {isReadOnlyWallet && (
                 <CyDView
                   className={clsx('rounded-t-[24px]', {
@@ -329,5 +332,11 @@ const styles = StyleSheet.create({
   elevatedBackground: {
     elevation: 3,
     backgroundColor: isIOS() ? Colors.white : Colors.transparent,
+    // shadowOffset: { width: 10, height: 10 },
+    // shadowColor: 'black',
+    // shadowOpacity: 1,
+    // elevation: 3,
+    // background color must be set
+    // backgroundColor: Colors.black, // invisible color
   },
 });

@@ -892,7 +892,7 @@ const resources = {
       KYC_FAILED: 'Kyc Failed',
       UPDATED_SUCCESSFULLY: 'Updated Successfully',
       CARD_SIGNUP_CONFIRMATION_CAPTION:
-        'During signup make sure you follow these:',
+        'During signup make sure you follow these guidelines:',
     },
   },
 };

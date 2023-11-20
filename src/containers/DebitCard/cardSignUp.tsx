@@ -374,7 +374,6 @@ export default function CardSignupScreen({ navigation, route }) {
         throw new Error(response.error);
       }
     } catch (e) {
-      console.log(e.error, JSON.stringify(e));
       Sentry.captureException(e);
     }
   };
