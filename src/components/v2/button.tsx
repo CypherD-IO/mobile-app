@@ -1,5 +1,10 @@
 import React, { useContext, useEffect, useState } from 'react';
-import { CyDText, CyDView, CyDTouchView, CyDImage } from '../../styles/tailwindStyles';
+import {
+  CyDText,
+  CyDView,
+  CyDTouchView,
+  CyDImage,
+} from '../../styles/tailwindStyles';
 import clsx from 'clsx';
 import LottieView from 'lottie-react-native';
 import AppImages from '../../../assets/images/appImages';
@@ -8,21 +13,21 @@ import { ButtonType, ImagePosition } from '../../constants/enum';
 import { HdWalletContext } from '../../core/util';
 
 interface IButton {
-  onPress: () => void
-  loading?: boolean
-  type?: string
-  disabled?: boolean
-  title: string
-  style?: string
-  titleStyle?: string
-  loaderStyle?: any
-  isLottie?: boolean
-  image?: any
-  imageStyle?: any
-  imagePosition?: string
-  isPrivateKeyDependent?: boolean
+  onPress: () => void;
+  loading?: boolean;
+  type?: string;
+  disabled?: boolean;
+  title: string;
+  style?: string;
+  titleStyle?: string;
+  loaderStyle?: any;
+  isLottie?: boolean;
+  image?: any;
+  imageStyle?: any;
+  imagePosition?: string;
+  isPrivateKeyDependent?: boolean;
 }
-export default function Button ({
+export default function Button({
   onPress,
   loading = false,
   type = 'primary',
@@ -35,16 +40,19 @@ export default function Button ({
   isLottie = false,
   imageStyle = 'h-[20px] w-[20px] mt-[1px] mr-[10px]',
   imagePosition = ImagePosition.LEFT,
-  isPrivateKeyDependent = false
+  isPrivateKeyDependent = false,
 }: IButton) {
-  const [appState, setAppState] = useState<String>('');
+  const [appState, setAppState] = useState<string>('');
   const [animation, setAnimation] = useState();
   const hdWallet = useContext<any>(HdWalletContext);
   const isReadOnlyWallet = hdWallet?.state?.isReadOnlyWallet;
   const isLocked = isPrivateKeyDependent && isReadOnlyWallet;
 
-  const handleAppStateChange = (nextAppState: String) => {
-    if ((appState === 'inactive' || appState === 'background') && nextAppState === 'active') {
+  const handleAppStateChange = (nextAppState: string) => {
+    if (
+      (appState === 'inactive' || appState === 'background') &&
+      nextAppState === 'active'
+    ) {
       if (animation) {
         animation.play();
       }
@@ -59,34 +67,78 @@ export default function Button ({
   }, [appState]);
 
   return (
-    <CyDTouchView onPress={() => {
-      Keyboard.dismiss();
-      setTimeout(() => {
-        onPress();
-      }, 100);
-    }} disabled={disabled || loading}
-    className={clsx(`rounded-[8px] py-[15px] flex flex-row items-center justify-center ${style}`, {
-      'bg-buttonColor': ButtonType.PRIMARY === type,
-      'bg-white border-[1px] py-[15px] border-[secondaryButtonBackgroundColor]': ButtonType.SECONDARY === type,
-      'bg-white border-[1px] border-buttonColor': ButtonType.TERNARY === type,
-      'bg-[#CFCFCF]': disabled,
-      'bg-white border-[1px] border-greyButtonBackgroundColor': ButtonType.GREY === type,
-      'bg-red-600': ButtonType.RED === type
-    })}>
-
-      {(loading) && <CyDView className={'flex items-center justify-between'}>
+    <CyDTouchView
+      onPress={() => {
+        Keyboard.dismiss();
+        setTimeout(() => {
+          onPress();
+        }, 100);
+      }}
+      disabled={disabled || loading}
+      className={clsx(
+        `rounded-[8px] py-[15px] flex flex-row items-center justify-center ${style}`,
+        {
+          'bg-buttonColor': ButtonType.PRIMARY === type,
+          'bg-white border-[1px] py-[15px] border-[secondaryButtonBackgroundColor]':
+            ButtonType.SECONDARY === type,
+          'bg-white border-[1px] border-buttonColor':
+            ButtonType.TERNARY === type,
+          'bg-white border-[1px] border-greyButtonBackgroundColor':
+            ButtonType.GREY === type,
+          'bg-red-600': ButtonType.RED === type,
+          'bg-black': ButtonType.DARK === type,
+          'bg-[#CFCFCF]': disabled,
+        },
+      )}>
+      {loading && (
+        <CyDView className={'flex items-center justify-between'}>
+          <LottieView
+            source={AppImages.LOADER_TRANSPARENT}
+            autoPlay
+            loop
+            style={loaderStyle}
+          />
+        </CyDView>
+      )}
+      {!loading &&
+        image &&
+        !isLottie &&
+        imagePosition === ImagePosition.LEFT && (
+          <CyDImage
+            source={image}
+            className={`${imageStyle}`}
+            resizeMode='contain'
+          />
+        )}
+      {!loading && image && isLottie && (
         <LottieView
-          source={AppImages.LOADER_TRANSPARENT}
+          source={image}
+          ref={ref => setAnimation(ref)}
+          resizeMode={'contain'}
           autoPlay
           loop
-          style={loaderStyle}
+          style={{ width: 18, marginRight: 5 }}
         />
-      </CyDView>}
-      {(!loading && image && !isLottie && imagePosition === ImagePosition.LEFT) && <CyDImage source={image} className={`${imageStyle}`} resizeMode='contain'/>}
-      {(!loading && image && isLottie) && <LottieView source={image} ref={(ref) => setAnimation(ref)} resizeMode={'contain'} autoPlay loop style={{ width: 18, marginRight: 5 }}/>}
-      {(!loading) && <CyDText className={clsx(`text-[#525252] font-nunito font-extrabold text-center ${titleStyle}`, { 'ml-[5px]': isLocked })}>{title}</CyDText>}
-      {(!loading && image && !isLottie && imagePosition === ImagePosition.RIGHT) && <CyDImage source={image} className={`${imageStyle}`} resizeMode='contain'/>}
-
+      )}
+      {!loading && (
+        <CyDText
+          className={clsx(
+            `text-[#525252] font-nunito font-extrabold text-center ${titleStyle}`,
+            { 'ml-[5px]': isLocked },
+          )}>
+          {title}
+        </CyDText>
+      )}
+      {!loading &&
+        image &&
+        !isLottie &&
+        imagePosition === ImagePosition.RIGHT && (
+          <CyDImage
+            source={image}
+            className={`${imageStyle}`}
+            resizeMode='contain'
+          />
+        )}
     </CyDTouchView>
   );
 }

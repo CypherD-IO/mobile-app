@@ -35,7 +35,7 @@ export const cosmosConfig: Record<string, IIBCData> = {
       stargaze: 'channel-285',
       noble: 'channel-536',
     },
-    gasPrice: 0.000000012898297,
+    gasPrice: 0.000000035998075,
     ibcDenoms: {
       cosmos: 'uatom',
       osmosis:

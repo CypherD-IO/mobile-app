@@ -153,6 +153,7 @@ export enum ButtonType {
   TERNARY = 'ternary',
   GREY = 'grey',
   RED = 'red',
+  DARK = 'dark',
 }
 
 export enum ImagePosition {

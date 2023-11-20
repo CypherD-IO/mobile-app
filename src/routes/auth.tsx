@@ -87,6 +87,7 @@ import SetPinScreen from '../containers/DebitCard/bridgeCard/setPin';
 import { useKeyboard } from '../hooks/useKeyboard';
 import { DEFIOverviewScreen } from '../containers/DeFi/DEFIOverview';
 import ShippingDetailsOTPScreen from '../containers/DebitCard/CardV2/ShippingDetailsOTPScreen';
+import CardSignupConfirmation from '../containers/DebitCard/cardSignupConfirmation';
 
 const { DynamicImage, DynamicButton } = require('../styles');
 
@@ -767,7 +768,8 @@ export function DebitCardStackScreen({ navigation }) {
     fontWeight: '800',
   };
   return (
-    <FundCardStack.Navigator initialRouteName={screenTitle.DEBIT_CARD_SCREEN}>
+    <FundCardStack.Navigator
+      initialRouteName={screenTitle.CARD_SIGNUP_LANDING_SCREEN}>
       <FundCardStack.Screen
         name={screenTitle.DEBIT_CARD_SCREEN}
         component={DebitCardScreen}
@@ -795,6 +797,24 @@ export function DebitCardStackScreen({ navigation }) {
           headerStyle: {
             backgroundColor: Colors.appColor,
           },
+          navigationOptions: {
+            tabBarVisible: false,
+          },
+          headerTitleAlign: 'center',
+          headerTitleStyle: portfolioStackScreenHeaderTitleStyles,
+          headerBackVisible: false,
+          headerLeft: props => defaultHeaderLeft(navigation),
+        })}
+      />
+
+      <FundCardStack.Screen
+        name={screenTitle.CARD_SIGNUP_CONFIRMATION}
+        component={CardSignupConfirmation}
+        options={({ navigation }) => ({
+          headerShown: true,
+          headerTransparent: false,
+          headerShadowVisible: false,
+          title: 'Cypher Card Signup',
           navigationOptions: {
             tabBarVisible: false,
           },
