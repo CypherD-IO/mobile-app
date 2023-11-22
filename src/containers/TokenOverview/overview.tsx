@@ -534,9 +534,7 @@ export default function Overview({
               </CyDText>
               <CyDView className='flex flex-row items-center flex-wrap'>
                 {/* <CyDTokenAmount className={'text-[18px] font-semibold'} decimalPlaces={5}>{getTotalTokens()}</CyDTokenAmount> */}
-                <CyDTokenAmount
-                  className={'text-[18px] font-extrabold'}
-                  decimalPlaces={5}>
+                <CyDTokenAmount className={'text-[18px] font-extrabold'}>
                   {totalValue}
                 </CyDTokenAmount>
               </CyDView>
