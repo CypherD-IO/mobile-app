@@ -150,7 +150,6 @@ export default function Overview({
   const [chartloading, setChartLoading] = useState(true);
   const [selectedTrend, setSelectedTrend] = useState(0);
   const scrollViewRef = useRef<ScrollView>();
-  const showTokenInOtherChains = otherChainsWithToken[0].coinGeckoId;
 
   const [marketDistribution, setMarketDistribution] = useState();
   const [marketDistributionLoading, setMarketDistributionLoading] =
@@ -567,7 +566,7 @@ export default function Overview({
           <HTML
             systemFonts={['Nunito']}
             baseStyle={{
-              fontSize: '13px',
+              fontSize: '14px',
               fontFamily: 'Nunito',
               color: Colors.primaryTextColor,
               lineHeight: 22,
@@ -606,57 +605,63 @@ export default function Overview({
         <CyDText className='text-[16px] font-bold mb-[8px]'>
           {t('TOKEN_IN_OTHER_CHAIN_HOLDINGS')}
         </CyDText>
-        <FlatList
-          horizontal
-          showsHorizontalScrollIndicator={false}
-          data={otherChainsWithToken}
-          renderItem={({ item }) => {
-            const tokenVal = `${
-              +item.totalValue +
-              +item.actualStakedBalance +
-              +item.actualUnbondingBalance
-            }`;
-            const tokenAmt = `${
-              +item.actualBalance +
-              +item.stakedBalanceTotalValue +
-              +item.unbondingBalanceTotalValue
-            }`;
-            return (
-              <CyDTouchView
-                onPress={() => {
-                  navigation.reset({
-                    index: 0,
-                    routes: [
-                      { name: screenTitle.PORTFOLIO_SCREEN },
-                      {
-                        name: screenTitle.TOKEN_OVERVIEW,
-                        params: {
-                          tokenData: item,
-                          otherChainsWithToken,
+        {otherChainsWithToken.length ? (
+          <FlatList
+            horizontal
+            showsHorizontalScrollIndicator={false}
+            data={otherChainsWithToken}
+            renderItem={({ item }) => {
+              const tokenVal = `${
+                +item.totalValue +
+                +item.actualStakedBalance +
+                +item.actualUnbondingBalance
+              }`;
+              const tokenAmt = `${
+                +item.actualBalance +
+                +item.stakedBalanceTotalValue +
+                +item.unbondingBalanceTotalValue
+              }`;
+              return (
+                <CyDTouchView
+                  onPress={() => {
+                    navigation.reset({
+                      index: 0,
+                      routes: [
+                        { name: screenTitle.PORTFOLIO_SCREEN },
+                        {
+                          name: screenTitle.TOKEN_OVERVIEW,
+                          params: {
+                            tokenData: item,
+                            otherChainsWithToken,
+                          },
                         },
-                      },
-                    ],
-                  });
-                  scrollViewRef.current?.scrollTo({ y: 0, animated: true });
-                }}
-                className='rounded-[8px] flex flex-row justify-center items-center bg-privacyMessageBackgroundColor mr-[10px] p-[5px]'>
-                <CyDFastImage
-                  className='h-[30px] w-[30px] mx-[10px]'
-                  source={item.chainDetails.logo_url}
-                  resizeMode='contain'
-                />
-                <CyDView className='flex flex-col mx-[10px] justify-center items-end'>
-                  <CyDTokenValue className='text-[16px] font-extrabold'>
-                    {tokenVal}
-                  </CyDTokenValue>
-                  <CyDTokenAmount className='text-[12px]'>
-                    {tokenAmt}
-                  </CyDTokenAmount>
-                </CyDView>
-              </CyDTouchView>
-            );
-          }}
-        />
+                      ],
+                    });
+                    scrollViewRef.current?.scrollTo({ y: 0, animated: true });
+                  }}
+                  className='rounded-[8px] flex flex-row justify-center items-center bg-privacyMessageBackgroundColor mr-[10px] p-[5px]'>
+                  <CyDFastImage
+                    className='h-[30px] w-[30px] mx-[10px]'
+                    source={item.chainDetails.logo_url}
+                    resizeMode='contain'
+                  />
+                  <CyDView className='flex flex-col mx-[10px] justify-center items-end'>
+                    <CyDTokenValue className='text-[16px] font-extrabold'>
+                      {tokenVal}
+                    </CyDTokenValue>
+                    <CyDTokenAmount className='text-[12px]'>
+                      {tokenAmt}
+                    </CyDTokenAmount>
+                  </CyDView>
+                </CyDTouchView>
+              );
+            }}
+          />
+        ) : (
+          <CyDText className='text-[14px] mb-[8px]'>
+            {t('TOKEN_NOT_HELD_IN_ANYOTHER_SUPPORTED_CHAIN')}
+          </CyDText>
+        )}
       </CyDView>
     );
   };
@@ -974,7 +979,7 @@ export default function Overview({
           </CyDView>
         )}
         {UserBalance}
-        {showTokenInOtherChains ? <OtherChainsWithToken /> : <></>}
+        <OtherChainsWithToken />
         {tokenData.about !== ' ' && <AboutTheToken />}
         {!marketDistributionLoading && marketDistribution && (
           <MarketDistribution />
