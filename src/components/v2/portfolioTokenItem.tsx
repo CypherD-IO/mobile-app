@@ -26,9 +26,13 @@ interface PortfolioTokenItemProps {
   isVerifyCoinChecked: boolean;
   navigation: {
     goBack: () => void;
-    navigate: (screen: string, params?: {}) => void;
-    push: (screen: string, params?: {}) => void;
+    navigate: (screen: string, params?: object) => void;
+    push: (screen: string, params?: object) => void;
     popToTop: () => void;
+    reset: (arg0: {
+      index: number;
+      routes: Array<{ name: string; params?: object }>;
+    }) => void;
   };
   onSwipe: (key: number) => void;
   setSwipeableRefs: (index: number, ref: Swipeable | null) => void;
@@ -40,8 +44,7 @@ const RenderRightActions = (navigation: any, tokenData: any) => {
     <CyDView
       className={
         'flex flex-row justify-evenly items-center bg-secondaryBackgroundColor'
-      }
-    >
+      }>
       <CyDView>
         <CyDTouchView
           className={'flex items-center justify-center mx-[15px]'}
@@ -49,8 +52,7 @@ const RenderRightActions = (navigation: any, tokenData: any) => {
             navigation.navigate(screenTitle.ENTER_AMOUNT, {
               tokenData,
             });
-          }}
-        >
+          }}>
           <CyDImage
             source={AppImages.SEND_SHORTCUT}
             className={'w-[30px] h-[30px]'}
@@ -108,8 +110,7 @@ const RenderRightActions = (navigation: any, tokenData: any) => {
                 title: t('BRIDGE'),
                 renderPage: 'bridgePage',
               });
-            }}
-          >
+            }}>
             <CyDImage
               source={AppImages.BRIDGE_SHORTCUT}
               className={'w-[30px] h-[30px]'}
@@ -131,8 +132,7 @@ const RenderRightActions = (navigation: any, tokenData: any) => {
                 title: t('SWAP_TITLE'),
                 renderPage: 'swapPage',
               });
-            }}
-          >
+            }}>
             <CyDImage
               source={AppImages.SWAP_SHORTCUT}
               className={'w-[30px] h-[30px]'}
@@ -190,8 +190,7 @@ const RenderRightActions = (navigation: any, tokenData: any) => {
             navigation.navigate(screenTitle.QRCODE, {
               addressType: addressTypeQRCode,
             });
-          }}
-        >
+          }}>
           <CyDImage
             source={AppImages.RECEIVE_SHORTCUT}
             className={'w-[30px] h-[30px]'}
@@ -233,8 +232,7 @@ const PortfolioTokenItem = ({
             tokenData: item,
             otherChainsWithToken,
           });
-        }}
-      >
+        }}>
         <CyDView className='flex flex-row h-full mb-[10px] items-center rounded-r-[20px] self-center pl-[10px] pr-[10px]'>
           <CyDFastImage
             className={'h-[36px] w-[36px] rounded-[50px]'}
@@ -269,10 +267,9 @@ const PortfolioTokenItem = ({
             onSwipe(index);
           }}
           containerStyle={styles.swipeable}
-          ref={(ref) => {
+          ref={ref => {
             setSwipeableRefs(index, ref);
-          }}
-        >
+          }}>
           <CyDView className='flex flex-row w-full justify-between rounded-r-[20px] py-[17px] pr-[12px] bg-white'>
             <CyDView className='ml-[10px] max-w-[75%]'>
               <CyDView className={'flex flex-row items-center align-center'}>
@@ -283,8 +280,7 @@ const PortfolioTokenItem = ({
                   <CyDView
                     className={
                       ' bg-appColor px-[5px] ml-[10px] text-[12px] rounded-[4px]'
-                    }
-                  >
+                    }>
                     <CyDText className='font-bold'>{t('STAKE')}</CyDText>
                   </CyDView>
                 )}

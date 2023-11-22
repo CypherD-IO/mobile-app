@@ -113,7 +113,11 @@ export default function Overview({
     goBack: () => void;
     setOptions: ({ title }: { title: string }) => void;
     setParams: (arg0: { tokenData: any; otherChainsWithToken: any[] }) => void;
-    navigate: (screen: string, params?: {}) => void;
+    navigate: (screen: string, params?: object) => void;
+    reset: (arg0: {
+      index: number;
+      routes: Array<{ name: string; params?: object }>;
+    }) => void;
   };
 }) {
   const isFocused = useIsFocused();
@@ -620,9 +624,18 @@ export default function Overview({
             return (
               <CyDTouchView
                 onPress={() => {
-                  navigation.setParams({
-                    tokenData: item,
-                    otherChainsWithToken,
+                  navigation.reset({
+                    index: 0,
+                    routes: [
+                      { name: screenTitle.PORTFOLIO_SCREEN },
+                      {
+                        name: screenTitle.TOKEN_OVERVIEW,
+                        params: {
+                          tokenData: item,
+                          otherChainsWithToken,
+                        },
+                      },
+                    ],
                   });
                   scrollViewRef.current?.scrollTo({ y: 0, animated: true });
                 }}
