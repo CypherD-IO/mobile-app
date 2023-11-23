@@ -893,6 +893,8 @@ const resources = {
       UPDATED_SUCCESSFULLY: 'Updated Successfully',
       CARD_SIGNUP_CONFIRMATION_CAPTION:
         'During signup make sure you follow these guidelines:',
+      UNABLE_TO_DECODE_TRANSACTION:
+        'Unable to decode this transaction. Proceed with caution and ensure understanding before action. Your vigilance is appreciated.',
     },
   },
 };
