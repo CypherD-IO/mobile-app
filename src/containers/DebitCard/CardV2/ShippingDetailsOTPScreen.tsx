@@ -111,6 +111,7 @@ const ShippingDetailsOTPScreen = ({ navigation, route }: Props) => {
           onSuccess: hideModal,
           onFailure: hideModal,
         });
+        return false;
       }
     } catch (e) {
       const errorObject = {
@@ -128,6 +129,7 @@ const ShippingDetailsOTPScreen = ({ navigation, route }: Props) => {
         onSuccess: hideModal,
         onFailure: hideModal,
       });
+      return false;
     }
   };
 

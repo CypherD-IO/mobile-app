@@ -63,11 +63,7 @@ export default function OTPVerificationScreen({ navigation }) {
   });
 
   useEffect(() => {
-    setLoading(true);
-    if (formData.phoneNumber === '' || formData.email === '') {
-      void getProfile();
-    }
-    setLoading(false);
+    void getProfile();
   }, []);
 
   useEffect(() => {
@@ -77,6 +73,7 @@ export default function OTPVerificationScreen({ navigation }) {
   }, [resendInterval]);
 
   const getProfile = async () => {
+    setLoading(true);
     try {
       const response = await getWithAuth(
         `/v1/cards/${CardProviders.PAYCADDY}/application`,
@@ -106,7 +103,9 @@ export default function OTPVerificationScreen({ navigation }) {
         setPhoneOTPVerified(data.phoneVerified);
         setEmailOTPVerified(data.emailVerfied);
       }
+      setLoading(false);
     } catch (e) {
+      setLoading(false);
       Sentry.captureException(e);
     }
   };
@@ -136,17 +135,16 @@ export default function OTPVerificationScreen({ navigation }) {
           setEmailOTPVerified(true);
         }
       } else {
-        throw new Error(response.error);
+        showModal('state', {
+          type: 'error',
+          title: t('VERIFICATION_FAILED'),
+          description: response.error.message ?? '',
+          onSuccess: () => onModalHide(),
+          onFailure: () => onModalHide(),
+        });
       }
       setVerifyingOTP(false);
     } catch (e: any) {
-      showModal('state', {
-        type: 'error',
-        title: t('VERIFICATION_FAILED'),
-        description: concatErrorMessagesFromArray(e.response.data.errors),
-        onSuccess: () => onModalHide(),
-        onFailure: () => onModalHide(),
-      });
       Sentry.captureException(e);
     }
   };
@@ -156,16 +154,15 @@ export default function OTPVerificationScreen({ navigation }) {
       const path = `/v1/cards/${CardProviders.PAYCADDY}/application/trigger/${type}`;
       const response = await postWithAuth(path, {});
       if (response.isError) {
-        throw new Error(response.error);
+        showModal('state', {
+          type: 'error',
+          title: t('OTP_TRIGGER_FAILED'),
+          description: response.error.message ?? '',
+          onSuccess: hideModal,
+          onFailure: hideModal,
+        });
       }
     } catch (e) {
-      showModal('state', {
-        type: 'error',
-        title: t('OTP_TRIGGER_FAILED'),
-        description: concatErrorMessagesFromArray(e.response.data.errors),
-        onSuccess: hideModal,
-        onFailure: hideModal,
-      });
       Sentry.captureException(e);
     }
   };

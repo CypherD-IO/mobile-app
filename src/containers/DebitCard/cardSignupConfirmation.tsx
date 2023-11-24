@@ -42,6 +42,24 @@ export default function CardSignupConfirmation(props: {
             className={
               'mx-[16px] p-[12px] my-[10px] bg-ternaryBackgroundColor'
             }>
+            <CyDView>
+              <CyDView className={'flex flex-row my-[4px]'}>
+                <CyDImage
+                  className={'mt-[6px]'}
+                  source={AppImages.RIGHT_ARROW_BULLET}
+                />
+                <CyDText className={'ml-[10px] font-bold leading-[25px]'}>
+                  Name must match the one on the id proof that you will be
+                  submitting for KYC
+                </CyDText>
+              </CyDView>
+              <CyDText className={'ml-[35px] leading-[25px]'}>
+                Name on Id: André Alexander Harrington
+              </CyDText>
+              <CyDText className={'ml-[35px] leading-[25px]'}>
+                Acceptable: Andre Alexander Harringt
+              </CyDText>
+            </CyDView>
             <CyDView className={'flex flex-row my-[4px]'}>
               <CyDImage
                 className={'mt-[6px]'}
@@ -84,24 +102,6 @@ export default function CardSignupConfirmation(props: {
               </CyDText>
               <CyDText className={'ml-[35px] leading-[25px]'}>
                 Acceptable: Andre Levesque
-              </CyDText>
-            </CyDView>
-            <CyDView>
-              <CyDView className={'flex flex-row my-[4px]'}>
-                <CyDImage
-                  className={'mt-[6px]'}
-                  source={AppImages.RIGHT_ARROW_BULLET}
-                />
-                <CyDText className={'ml-[10px] font-bold leading-[25px]'}>
-                  Name must match the one on the id proof that you will be
-                  submitting for KYC
-                </CyDText>
-              </CyDView>
-              <CyDText className={'ml-[35px] leading-[25px]'}>
-                Name on Id: André Alexander Harrington
-              </CyDText>
-              <CyDText className={'ml-[35px] leading-[25px]'}>
-                Acceptable: Andre Alexander Harringt
               </CyDText>
             </CyDView>
           </CyDView>
