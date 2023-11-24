@@ -9,31 +9,40 @@ import { web3wallet } from '../../../core/walletConnectV2Utils';
 import { getSdkError } from '@walletconnect/utils';
 import { t } from 'i18next';
 import { ButtonType } from '../../../constants/enum';
-import { CyDFastImage, CyDScrollView, CyDText, CyDView } from '../../../styles/tailwindStyles';
+import {
+  CyDFastImage,
+  CyDScrollView,
+  CyDText,
+  CyDView,
+} from '../../../styles/tailwindStyles';
 import Button from '../button';
-import { WalletConnectActions, WalletConnectContext } from '../../../reducers/wallet_connect_reducer';
+import {
+  WalletConnectActions,
+  WalletConnectContext,
+} from '../../../reducers/wallet_connect_reducer';
 import { HdWalletContext } from '../../../core/util';
 import { EIP155_CHAIN_IDS } from '../../../constants/EIP155Data';
 import { has } from 'lodash';
 
 interface PairingModalProps {
   currentProposal:
-  | SignClientTypes.EventArguments['session_proposal']
-  | undefined
-  currentETHAddress: string
-  isModalVisible: boolean
-  hideModal: () => void
+    | SignClientTypes.EventArguments['session_proposal']
+    | undefined;
+  currentETHAddress: string;
+  isModalVisible: boolean;
+  hideModal: () => void;
 }
 
 export default function PairingModal({
   currentProposal,
   currentETHAddress,
   isModalVisible,
-  hideModal
+  hideModal,
 }: PairingModalProps) {
   const [acceptingRequest, setAcceptingRequest] = useState<boolean>(false);
   const [rejectingRequest, setRejectingRequest] = useState<boolean>(false);
-  const { walletConnectState, walletConnectDispatch } = useContext<any>(WalletConnectContext);
+  const { walletConnectState, walletConnectDispatch } =
+    useContext<any>(WalletConnectContext);
   const hdWalletContext = useContext<any>(HdWalletContext);
   const { wallet } = hdWalletContext.state;
   const { address: cosmosAddress } = wallet?.cosmos;
@@ -44,12 +53,16 @@ export default function PairingModal({
   const { name, url, icons } = metadata;
   const { methods } = eip155;
   const icon = icons[0];
-  const message = 'Requesting permission to view addresses of your accounts and approval for transactions';
+  const message =
+    'Requesting permission to view addresses of your accounts and approval for transactions';
 
   const checkAndAddPairingToConnectionsList = () => {
     let isPairingAlreadyAvailable = false;
     for (const connection of walletConnectState.dAppInfo) {
-      if (connection?.version === 'v2' && connection.topic === currentProposal?.params.pairingTopic) {
+      if (
+        connection?.version === 'v2' &&
+        connection.topic === currentProposal?.params.pairingTopic
+      ) {
         isPairingAlreadyAvailable = true;
         break;
       }
@@ -58,7 +71,10 @@ export default function PairingModal({
     if (web3wallet) {
       const sessions = Object.values(web3wallet?.getActiveSessions());
       if (sessions) {
-        const [session] = sessions.filter((sessionObj) => sessionObj.pairingTopic === currentProposal?.params.pairingTopic);
+        const [session] = sessions.filter(
+          sessionObj =>
+            sessionObj.pairingTopic === currentProposal?.params.pairingTopic,
+        );
         sessionTopic = session?.topic;
       }
     }
@@ -70,12 +86,20 @@ export default function PairingModal({
         methods,
         icon,
         version: 'v2',
-        sessionTopic
+        sessionTopic,
       };
-      walletConnectDispatch({ type: WalletConnectActions.ADD_CONNECTOR, value: connector });
-      walletConnectDispatch({ type: WalletConnectActions.ADD_DAPP_INFO, value: connector });
+      walletConnectDispatch({
+        type: WalletConnectActions.ADD_CONNECTOR,
+        value: connector,
+      });
+      walletConnectDispatch({
+        type: WalletConnectActions.ADD_DAPP_INFO,
+        value: connector,
+      });
     } else {
-      walletConnectDispatch({ type: WalletConnectActions.WALLET_CONNECT_TRIGGER_REFRESH });
+      walletConnectDispatch({
+        type: WalletConnectActions.WALLET_CONNECT_TRIGGER_REFRESH,
+      });
     }
   };
 
@@ -86,22 +110,24 @@ export default function PairingModal({
       const { requiredNamespaces, relays } = params;
       if (currentProposal) {
         const namespaces: SessionTypes.Namespaces = {};
-        Object.keys(requiredNamespaces).forEach((key) => {
+        Object.keys(requiredNamespaces).forEach(key => {
           const accounts: string[] = [];
           requiredNamespaces[key].chains.map((chain: string) => {
             if (key === 'eip155') {
-              [currentETHAddress].map((acc) => accounts.push(`${chain}:${acc}`));
+              [currentETHAddress].map(acc => accounts.push(`${chain}:${acc}`));
             } else if (key === 'cosmos' && cosmosAddress) {
-              [cosmosAddress].map((acc) => accounts.push(`${chain}:${acc}`));
+              [cosmosAddress].map(acc => accounts.push(`${chain}:${acc}`));
             }
           });
 
           if (optionalNamespaces && has(optionalNamespaces, key)) {
             optionalNamespaces[key].chains.map((chain: string) => {
               if (key === 'eip155') {
-                [currentETHAddress].map((acc) => accounts.push(`${chain}:${acc}`));
+                [currentETHAddress].map(acc =>
+                  accounts.push(`${chain}:${acc}`),
+                );
               } else if (key === 'cosmos' && cosmosAddress) {
-                [cosmosAddress].map((acc) => accounts.push(`${chain}:${acc}`));
+                [cosmosAddress].map(acc => accounts.push(`${chain}:${acc}`));
               }
             });
           }
@@ -109,22 +135,34 @@ export default function PairingModal({
           namespaces[key] = {
             chains: EIP155_CHAIN_IDS,
             accounts,
-            methods: [...requiredNamespaces[key].methods, ...(has(optionalNamespaces, key) ? optionalNamespaces[key]?.methods : [])],
-            events: [...requiredNamespaces[key].events, ...(has(optionalNamespaces, key) ? optionalNamespaces[key]?.events : [])]
+            methods: [
+              ...requiredNamespaces[key].methods,
+              ...(has(optionalNamespaces, key)
+                ? optionalNamespaces[key]?.methods
+                : []),
+            ],
+            events: [
+              ...requiredNamespaces[key].events,
+              ...(has(optionalNamespaces, key)
+                ? optionalNamespaces[key]?.events
+                : []),
+            ],
           };
         });
 
         await web3wallet?.approveSession({
           id,
           relayProtocol: relays[0].protocol,
-          namespaces
+          namespaces,
         });
         setAcceptingRequest(false);
         checkAndAddPairingToConnectionsList();
         hideModal();
       }
     } catch (e) {
-      walletConnectDispatch({ type: WalletConnectActions.WALLET_CONNECT_TRIGGER_REFRESH });
+      walletConnectDispatch({
+        type: WalletConnectActions.WALLET_CONNECT_TRIGGER_REFRESH,
+      });
       hideModal();
       setAcceptingRequest(false);
     }
@@ -137,14 +175,18 @@ export default function PairingModal({
         const { id } = currentProposal;
         await web3wallet?.rejectSession({
           id,
-          reason: getSdkError('USER_REJECTED_METHODS')
+          reason: getSdkError('USER_REJECTED_METHODS'),
         });
         setRejectingRequest(false);
-        walletConnectDispatch({ type: WalletConnectActions.WALLET_CONNECT_TRIGGER_REFRESH });
+        walletConnectDispatch({
+          type: WalletConnectActions.WALLET_CONNECT_TRIGGER_REFRESH,
+        });
         hideModal();
       }
     } catch (e) {
-      walletConnectDispatch({ type: WalletConnectActions.WALLET_CONNECT_TRIGGER_REFRESH });
+      walletConnectDispatch({
+        type: WalletConnectActions.WALLET_CONNECT_TRIGGER_REFRESH,
+      });
       setRejectingRequest(false);
       hideModal();
     }
@@ -164,7 +206,9 @@ export default function PairingModal({
           <CyDView className='flex flex-row w-full justify-between items-center rounded-r-[20px] py-[15px] pr-[20px]'>
             <CyDView className='ml-[10px]'>
               <CyDView className={'flex flex-row items-center align-center'}>
-                <CyDText className={'font-extrabold text-[16px]'}>{name}</CyDText>
+                <CyDText className={'font-extrabold text-[16px]'}>
+                  {name}
+                </CyDText>
               </CyDView>
               <CyDView className={'flex flex-row items-center align-center'}>
                 <CyDText className={'text-[14px] w-[200px]'}>{url}</CyDText>
@@ -184,27 +228,51 @@ export default function PairingModal({
 
   const RenderMessage = () => {
     return (
-      <CyDScrollView>
-        <CyDText className={'text-[16px] ml-[6px]'}>{message}</CyDText>
+      <CyDScrollView className='my-[5px] border-[1px] border-sepratorColor bg-infoTextBackground rounded-[6px]'>
+        <CyDView className={'p-[10px]'}>
+          <CyDText className={'text-[14px] ml-[6px]'}>{message}</CyDText>
+        </CyDView>
       </CyDScrollView>
     );
   };
 
   return (
-    <CyDModalLayout setModalVisible={() => { }} isModalVisible={isModalVisible} style={styles.modalLayout} animationIn={'slideInUp'} animationOut={'slideOutDown'}>
+    <CyDModalLayout
+      setModalVisible={() => {}}
+      isModalVisible={isModalVisible}
+      style={styles.modalLayout}
+      animationIn={'slideInUp'}
+      animationOut={'slideOutDown'}>
       <CyDView className='flex flex-col max-h-[70%] bg-white rounded-t-[24px] px-[20px] '>
         <CyDView className={'flex flex-row justify-center'}>
-          <CyDText className={'text-[24px] font-extrabold mt-[14px] mb-[4px]'}>{t<string>('WALLET_PERMISSIONS')}</CyDText>
+          <CyDText className={'text-[24px] font-extrabold mt-[14px] mb-[4px]'}>
+            {t<string>('WALLET_PERMISSIONS')}
+          </CyDText>
         </CyDView>
-        <CyDView className='h-[50%]'>
+        <CyDView className='max-h-[70%]'>
           <RenderDAPPInfo />
           <Divider />
           <RenderMessage />
           <Divider />
         </CyDView>
         <CyDView className={'w-full flex justify-end'}>
-          <Button loading={acceptingRequest} style={acceptingRequest ? 'mb-[10px] py-[7px]' : 'mb-[10px] py-[15px]'} title='Accept' onPress={() => void handleAccept()} />
-          <Button loading={rejectingRequest} style={rejectingRequest ? 'mb-[10px] py-[7px]' : 'mb-[10px] py-[15px]'} type={ButtonType.TERNARY} title='Reject' onPress={() => void handleReject()} />
+          <Button
+            loading={acceptingRequest}
+            style={
+              acceptingRequest ? 'mb-[10px] py-[7px]' : 'mb-[10px] py-[15px]'
+            }
+            title='Accept'
+            onPress={() => void handleAccept()}
+          />
+          <Button
+            loading={rejectingRequest}
+            style={
+              rejectingRequest ? 'mb-[10px] py-[7px]' : 'mb-[10px] py-[15px]'
+            }
+            type={ButtonType.TERNARY}
+            title='Reject'
+            onPress={() => void handleReject()}
+          />
         </CyDView>
       </CyDView>
     </CyDModalLayout>
@@ -214,6 +282,6 @@ export default function PairingModal({
 const styles = StyleSheet.create({
   modalLayout: {
     margin: 0,
-    justifyContent: 'flex-end'
-  }
+    justifyContent: 'flex-end',
+  },
 });
