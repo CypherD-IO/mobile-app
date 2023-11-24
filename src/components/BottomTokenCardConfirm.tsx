@@ -13,27 +13,34 @@ import CyDModalLayout from './v2/modal';
 import Button from './v2/button';
 import { ButtonType } from '../constants/enum';
 import { formatAmount } from '../core/util';
+import { PayTokenModalParams } from '../models/card.model';
 
-export default function BottomCardConfirm(props) {
-  const { isModalVisible, onPayPress, onCancelPress, lowBalance, modalParams } =
-    props;
+interface BottomCardConfirmProps {
+  isModalVisible: boolean;
+  onPayPress: () => void;
+  onCancelPress: () => void;
+  modalParams: PayTokenModalParams;
+}
+
+export default function BottomCardConfirm({
+  isModalVisible,
+  onPayPress,
+  onCancelPress,
+  modalParams,
+}: BottomCardConfirmProps) {
   const { t } = useTranslation();
   const [loading, setLoading] = useState<boolean>(false);
   const [tokenExpiryTime, setTokenExpiryTime] = useState(
-    modalParams?.tokenQuoteExpiry ? modalParams?.tokenQuoteExpiry : 0,
+    modalParams.tokenQuoteExpiry,
   );
   const [expiryTimer, setExpiryTimer] = useState<NodeJS.Timer>();
   const [isPayDisabled, setIsPayDisabled] = useState<boolean>(
-    modalParams.hasOwnProperty('hasSufficientBalance')
-      ? !modalParams?.hasSufficientBalance
-      : false,
+    !modalParams.hasSufficientBalanceAndGasFee,
   );
 
   useEffect(() => {
     let tempIsPayDisabled = false;
-    tempIsPayDisabled = modalParams.hasOwnProperty('hasSufficientBalance')
-      ? !modalParams?.hasSufficientBalance
-      : false;
+    tempIsPayDisabled = !modalParams?.hasSufficientBalanceAndGasFee;
     setIsPayDisabled(tempIsPayDisabled);
     if (isModalVisible && modalParams?.tokenQuoteExpiry && !tempIsPayDisabled) {
       let tempTokenExpiryTime = modalParams.tokenQuoteExpiry;
@@ -59,14 +66,18 @@ export default function BottomCardConfirm(props) {
     if (modalParams.tokenQuoteExpiry && tokenExpiryTime !== 0) {
       clearInterval(expiryTimer);
     }
+    setLoading(true);
     onCancelPress();
+    setLoading(false);
   };
 
   const onLoadPress = () => {
     if (expiryTimer) {
       clearInterval(expiryTimer);
     }
+    setLoading(true);
     onPayPress();
+    setLoading(false);
   };
 
   return (
@@ -147,17 +158,18 @@ export default function BottomCardConfirm(props) {
               }>
               <CyDText
                 className={' font-medium text-[15px] text-primaryTextColor'}>
-                {parseFloat(modalParams.totalValueTransfer).toFixed(6)}{' '}
-                {modalParams.tokenSymbol}
+                {parseFloat(modalParams.tokenAmount)} {modalParams.tokenSymbol}
               </CyDText>
               <CyDText
                 className={
                   ' font-medium text-[15px] text-primaryTextColor mr-[10px]'
                 }>
-                ${modalParams.totalValueDollar}
+                {'$'}
+                {modalParams.totalValueDollar}
               </CyDText>
             </CyDView>
           </CyDView>
+
           <CyDView
             className={
               'flex flex-row  w-[95%] py-[25px] border-b-[1px] border-sepratorColor'
@@ -185,18 +197,18 @@ export default function BottomCardConfirm(props) {
             </CyDView>
           </CyDView>
         </CyDView>
-        {isPayDisabled && (
-          <CyDView className='flex flex-row items-center rounded-[15px] justify-center py-[15px] mt-[20px] mb-[10px] bg-warningRedBg'>
+        {!modalParams?.hasSufficientBalanceAndGasFee ? (
+          <CyDView className='flex flex-row items-center rounded-[8px] justify-center py-[15px] mt-[20px] mb-[10px] bg-warningRedBg'>
             <CyDFastImage
               source={AppImages.CYPHER_WARNING_RED}
               className='h-[20px] w-[20px] ml-[13px] mr-[13px]'
               resizeMode='contain'
             />
-            <CyDText className='text-red-500 font-medium text-[12px] px-[10px]  w-[80%] '>
+            <CyDText className='text-red-500 font-medium text-[14px] px-[10px] w-[80%]'>
               {t<string>('INSUFFICIENT_BALANCE_CARD')}
             </CyDText>
           </CyDView>
-        )}
+        ) : null}
         <CyDView
           className={
             'flex flex-row justify-center items-center px-[20px] pb-[10px] mt-[20px]'
@@ -212,7 +224,7 @@ export default function BottomCardConfirm(props) {
           />
           <Button
             title={
-              t<string>('LOAD') +
+              t<string>('LOAD_ALL_CAPS') +
               (!isPayDisabled
                 ? tokenExpiryTime
                   ? ' (' + String(tokenExpiryTime) + ')'

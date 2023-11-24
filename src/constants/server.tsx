@@ -6,7 +6,7 @@ export interface Chain {
   symbol: string;
   id: number;
   logo_url: any;
-  backendName: ChainBackendNames | 'ALL' | string;
+  backendName: ChainBackendNames;
   chain_id: string;
   native_token_address: string;
   secondaryAddress?: string;
