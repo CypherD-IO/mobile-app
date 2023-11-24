@@ -262,3 +262,8 @@ export enum AnalyticsType {
   SUCCESS = 'SUCCESS',
   ERROR = 'ERROR',
 }
+
+export enum CardDetails {
+  PHONE = 'phone',
+  EMAIL = 'email',
+}

@@ -105,7 +105,6 @@ const BannerCarousel = ({ setBannerHeight }: BannerCarouselProps) => {
       const uri = `/v1/configuration/device/banner-info/${ethereumAddress}`;
       try {
         const res = await getWithAuth(uri);
-        console.log(res);
         const {
           data: { data: arrayOfBanners },
         } = res;

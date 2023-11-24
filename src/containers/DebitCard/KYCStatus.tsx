@@ -103,7 +103,7 @@ export default function CardKYCStatusScreen({ navigation }) {
   }, []);
 
   const refreshProfile = async () => {
-    const response = await getWithAuth('v1/authentication/profile');
+    const response = await getWithAuth('/v1/authentication/profile');
     if (!response.isError) {
       globalContext.globalDispatch({
         type: GlobalContextType.CARD_PROFILE,
@@ -155,13 +155,42 @@ export default function CardKYCStatusScreen({ navigation }) {
     try {
       const response = await getWithAuth('/v1/authentication/profile');
       if (!response.isError) {
-        let applicationStatus = get(
+        const tempApplicationStatus = get(
           response,
           ['data', provider!, 'applicationStatus'],
           '',
         );
-        setApplicationStatus(applicationStatus);
-        await fillIndexAccordingToKYCStatus(applicationStatus);
+        const cardProfile = response.data;
+        if (tempApplicationStatus !== applicationStatus) {
+          globalContext.globalDispatch({
+            type: GlobalContextType.CARD_PROFILE,
+            cardProfile: response.data,
+          });
+        }
+        const bcApplicationStatus =
+          get(cardProfile, CardProviders.BRIDGE_CARD)?.applicationStatus ===
+          CardApplicationStatus.COMPLETED;
+        const pcApplicationStatus =
+          get(cardProfile, CardProviders.PAYCADDY)?.applicationStatus ===
+          CardApplicationStatus.COMPLETED;
+        if (bcApplicationStatus || pcApplicationStatus) {
+          navigation.reset({
+            index: 0,
+            routes: [
+              {
+                name: screenTitle.BRIDGE_CARD_SCREEN,
+                params: {
+                  hasBothProviders: bcApplicationStatus && pcApplicationStatus,
+                  cardProvider: bcApplicationStatus
+                    ? CardProviders.BRIDGE_CARD
+                    : CardProviders.PAYCADDY,
+                },
+              },
+            ],
+          });
+        }
+        setApplicationStatus(tempApplicationStatus);
+        await fillIndexAccordingToKYCStatus(tempApplicationStatus);
       }
     } catch (e) {
       Sentry.captureException(e);
