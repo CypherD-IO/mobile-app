@@ -888,7 +888,7 @@ const resources = {
         'Failed to send OTP. Please contact Cypher Support.',
       TOKEN_IN_OTHER_CHAIN_HOLDINGS: 'Token across chains',
       TOKEN_NOT_HELD_IN_ANYOTHER_SUPPORTED_CHAIN:
-        'Token not held in anyother supported chain',
+        'Token not held in any other supported chain',
       DATE_OF_BIRTH: 'Date Of Birth',
       REINITIATE_KYC: 'Reinitiate KYC',
       KYC_FAILED: 'Kyc Failed',
