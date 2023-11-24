@@ -13,10 +13,9 @@ import {
   CyDText,
   CyDFastImage,
   CyDTouchView,
-  CyDFlatList,
 } from '../../../styles/tailwindStyles';
 import { t } from 'i18next';
-import Animated, {
+import {
   Extrapolate,
   SharedValue,
   interpolate,
@@ -27,7 +26,6 @@ import Animated, {
 import {
   BackHandler,
   FlatList,
-  Linking,
   NativeScrollEvent,
   NativeSyntheticEvent,
   RefreshControl,
@@ -39,27 +37,24 @@ import Loading from '../../../components/v2/loading';
 import { AnimatedTabView } from '../animatedComponents';
 import { PortfolioBannerHeights } from '../../../hooks/useScrollManager';
 import useAxios from '../../../core/HttpRequest';
-import { ChainBackendNames, DEFI_URL } from '../../../constants/server';
+import { DEFI_URL } from '../../../constants/server';
 import { HdWalletContextDef } from '../../../reducers/hdwallet_reducer';
 import { HdWalletContext } from '../../../core/util';
 import {
   DeFiFilter,
-  DefiAllocation,
   DefiData,
   DefiResponse,
   Protocol,
   defiProtocolData,
   protocolOptionType,
 } from '../../../models/defi.interface';
-import _, { last } from 'lodash';
+import _ from 'lodash';
 import {
   getChainLogo,
   parseDefiData,
   sortDefiProtocolDesc,
 } from '../../../core/defi';
-import moment from 'moment';
 import AppImages from '../../../../assets/images/appImages';
-import clsx from 'clsx';
 import { getDeFiData, storeDeFiData } from '../../../core/asyncStorage';
 import DeFiFilterModal from '../components/deFiFilterModal';
 import CyDTokenValue from '../../../components/v2/tokenValue';
@@ -110,8 +105,7 @@ const DeFiTotal = ({
           <CyDView className='w-[48%] h-[85px] rounded-[10px] border border-sepratorColor mr-[3px] mb-[2px] p-[2%]'>
             <CyDView className='w-full h-full  flex-1 flex-col justify-center items-start'>
               <CyDTokenValue
-                className={'text-center font-extrabold text-[18px]'}
-              >
+                className={'text-center font-extrabold text-[18px]'}>
                 {value}
               </CyDTokenValue>
 
@@ -130,8 +124,7 @@ const DeFiTotal = ({
           <CyDView className='w-[48%] h-[85px] rounded-[10px] border border-sepratorColor ml-[3px] mb-[2px] p-[2%]'>
             <CyDView className='w-full h-full  flex-1 flex-col justify-center items-start'>
               <CyDTokenValue
-                className={'text-center font-extrabold text-[18px]'}
-              >
+                className={'text-center font-extrabold text-[18px]'}>
                 {debt}
               </CyDTokenValue>
 
@@ -152,8 +145,7 @@ const DeFiTotal = ({
           <CyDView className='w-[48%] h-[85px] rounded-[10px] border border-sepratorColor mt-[6px] mr-[2px] p-[2%]'>
             <CyDView className='w-full h-full  flex-1 flex-col justify-center items-start'>
               <CyDTokenValue
-                className={'text-center font-extrabold text-[18px]'}
-              >
+                className={'text-center font-extrabold text-[18px]'}>
                 {supply}
               </CyDTokenValue>
 
@@ -172,8 +164,7 @@ const DeFiTotal = ({
           <CyDView className='w-[48%] h-[85px] rounded-[10px] border border-sepratorColor mt-[6px] ml-[2px] p-[2%]'>
             <CyDView className='w-full h-full  flex-1 flex-col justify-center items-start'>
               <CyDTokenValue
-                className={'text-center font-extrabold text-[18px]'}
-              >
+                className={'text-center font-extrabold text-[18px]'}>
                 {claimable}
               </CyDTokenValue>
 
@@ -234,10 +225,23 @@ const DeFiScene = ({
 
   useEffect(() => {
     if (flatListRef.current) {
-      flatListRef.current.scrollToOffset({ offset: scrollY.value });
+      if (scrollY.value <= OFFSET_TABVIEW + bannerHeight) {
+        flatListRef.current.scrollToOffset({
+          offset: Math.max(
+            Math.min(scrollY.value, OFFSET_TABVIEW + bannerHeight),
+            OFFSET_TABVIEW,
+          ),
+          animated: false,
+        });
+      } else {
+        flatListRef.current.scrollToOffset({
+          offset: OFFSET_TABVIEW + bannerHeight,
+          animated: false,
+        });
+      }
       trackRef(routeKey, flatListRef.current);
     }
-  }, [flatListRef.current]);
+  }, [flatListRef.current, loading]);
 
   useEffect(() => {
     if (!_.isEmpty(deFiData.rawData)) {
@@ -245,7 +249,7 @@ const DeFiScene = ({
       const { defiData, defiOptionsData } = parseDefiData(protocols, filters);
       if (userProtocols.length === 0) setUserProtocols(defiOptionsData);
 
-      setDeFiData((prev) => ({ ...prev, filteredData: defiData }));
+      setDeFiData(prev => ({ ...prev, filteredData: defiData }));
     }
   }, [filters, deFiData.rawData]);
 
@@ -270,8 +274,7 @@ const DeFiScene = ({
             navigation.navigate(screenTitle.DEFI_PROTOCOL_OVERVIEW_SCREEN, {
               protocol,
             });
-          }}
-        >
+          }}>
           <CyDFastImage
             source={protocol.protocolLogo}
             className='absolute -top-[21px] right-[50%] h-[42px] w-[42px] rounded-full bg-white border border-sepratorColor'
@@ -289,8 +292,7 @@ const DeFiScene = ({
                         url: protocol.protocolURL,
                       },
                     });
-                  }}
-                >
+                  }}>
                   <CyDText className='underline font-bold text-[20px]'>
                     {protocol.protocolName}
                   </CyDText>
@@ -332,8 +334,7 @@ const DeFiScene = ({
                 <CyDTokenValue
                   className={
                     'text-center font-semibold text-[14px] text-warningTextYellow'
-                  }
-                >
+                  }>
                   {protocol.total.debt}
                 </CyDTokenValue>
               )}
@@ -342,12 +343,11 @@ const DeFiScene = ({
           <CyDView className='relative border border-sepratorColor rounded-[10px]  p-[8px] mt-[15px] flex'>
             {Object.values(protocol.types)
               .slice(0, 3)
-              .map((type) => {
+              .map(type => {
                 return (
                   <CyDView
                     className='flex flex-row justify-center items-center w-full my-[5px]'
-                    key={`${type.type}-${protocol.protocolName}`}
-                  >
+                    key={`${type.type}-${protocol.protocolName}`}>
                     <CyDView className='flex-1 flex-row justify-start items-center gap-x-[4px]'>
                       <CyDFastImage
                         source={type.typeLogo}
@@ -360,8 +360,7 @@ const DeFiScene = ({
                     </CyDView>
                     <CyDView className='flex-2 flex-row justify-end items-center'>
                       <CyDTokenValue
-                        className={'text-center font-semibold text-[18px]'}
-                      >
+                        className={'text-center font-semibold text-[18px]'}>
                         {type.total.value}
                       </CyDTokenValue>
                     </CyDView>
@@ -413,7 +412,7 @@ const DeFiScene = ({
     if (!forceRefresh) setLoading(true);
 
     if (forceRefresh) {
-      setRefreshActivity((prev) => ({ ...prev, isRefreshing: true }));
+      setRefreshActivity(prev => ({ ...prev, isRefreshing: true }));
       if (ethereum?.wallets[0].address) {
         await fetchDefiData(ethereum?.wallets[0].address, true);
       }
@@ -466,8 +465,8 @@ const DeFiScene = ({
           data={
             !_.isEmpty(deFiData.filteredData)
               ? Object.values(deFiData.filteredData.protocols).sort(
-                sortDefiProtocolDesc,
-              )
+                  sortDefiProtocolDesc,
+                )
               : []
           }
           renderItem={({ item, index }) => (

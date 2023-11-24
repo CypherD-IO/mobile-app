@@ -4,10 +4,9 @@
 /**
  * @format
  * @flow
-*/
+ */
 import Intercom from '@intercom/intercom-react-native';
 import analytics from '@react-native-firebase/analytics';
-import { useNavigationState } from '@react-navigation/native';
 import * as Sentry from '@sentry/react-native';
 import axios from 'axios';
 import React, { useContext, useEffect, useState } from 'react';
@@ -26,33 +25,51 @@ import { showToast } from '../../containers/utilities/toastUtility';
 import { setDeveloperMode } from '../../core/asyncStorage';
 import { getWalletProfile } from '../../core/card';
 import { GlobalContext } from '../../core/globalContext';
-import { ActivityContext, HdWalletContext, PortfolioContext } from '../../core/util';
+import {
+  ActivityContext,
+  HdWalletContext,
+  PortfolioContext,
+} from '../../core/util';
 import { hostWorker } from '../../global';
 import useEns from '../../hooks/useEns';
 import { isAndroid } from '../../misc/checkers';
 import { ActivityReducerAction } from '../../reducers/activity_reducer';
-import { CyDFastImage, CyDImage, CyDSafeAreaView, CyDScrollView, CyDText, CyDTouchView, CyDView } from '../../styles/tailwindStyles';
+import {
+  CyDFastImage,
+  CyDImage,
+  CyDScrollView,
+  CyDText,
+  CyDTouchView,
+  CyDView,
+} from '../../styles/tailwindStyles';
 import { OptionsContainer } from '../Auth/Share';
 import { onShare } from '../utilities/socialShareUtility';
 import { screenTitle } from '../../constants/index';
-import useAxios from '../../core/HttpRequest';
-import { useBottomTabBarHeight } from '@react-navigation/bottom-tabs';
 
-const {
-  DynamicView,
-  CText,
-  DynamicImage
-} = require('../../styles');
+const { DynamicView, CText, DynamicImage } = require('../../styles');
 
 export interface Section {
-  sentryLabel: string
-  title: string
-  logo: string
+  sentryLabel: string;
+  title: string;
+  logo: string;
 }
 
-const SocialMedia = ({ screenTitle, uri, title, imageUri, navigationRef }: { screenTitle: string, uri: string, title: string, imageUri: string, navigationRef: any }) => {
+const SocialMedia = ({
+  screenTitle,
+  uri,
+  title,
+  imageUri,
+  navigationRef,
+}: {
+  screenTitle: string;
+  uri: string;
+  title: string;
+  imageUri: string;
+  navigationRef: any;
+}) => {
   return (
-    <CyDTouchView className={'flex items-center justify-center rounded-[7px] mx-[5px]'}
+    <CyDTouchView
+      className={'flex items-center justify-center rounded-[7px] mx-[5px]'}
       onPress={() => {
         navigationRef.navigate(screenTitle, { uri, title });
       }}>
@@ -65,7 +82,13 @@ const SocialMedia = ({ screenTitle, uri, title, imageUri, navigationRef }: { scr
   );
 };
 
-export default function Options(props: { navigation: { goBack: () => void, popToTop: () => void, navigate: (arg0: string) => void } }) {
+export default function Options(props: {
+  navigation: {
+    goBack: () => void;
+    popToTop: () => void;
+    navigate: (arg0: string) => void;
+  };
+}) {
   const { t } = useTranslation();
 
   const [clickCount, setClickCount] = useState(0);
@@ -76,12 +99,15 @@ export default function Options(props: { navigation: { goBack: () => void, popTo
   const hdWalletContext = useContext<any>(HdWalletContext);
   const portfolioState = useContext<any>(PortfolioContext);
   const ethereum = hdWalletContext.state.wallet.ethereum;
-  const { isReadOnlyWallet }: { isReadOnlyWallet: boolean } = hdWalletContext.state;
+  const { isReadOnlyWallet }: { isReadOnlyWallet: boolean } =
+    hdWalletContext.state;
   const activityContext = useContext<any>(ActivityContext);
   const [updateModal, setUpdateModal] = useState<boolean>(false);
-  const [devMode, setDevMode] = useState<boolean>(portfolioState.statePortfolio.developerMode);
+  const [devMode, setDevMode] = useState<boolean>(
+    portfolioState.statePortfolio.developerMode,
+  );
   const inAppUpdates = new SpInAppUpdates(
-    false // isDebug
+    false, // isDebug
   );
 
   const resolveDomain = useEns()[1];
@@ -92,7 +118,7 @@ export default function Options(props: { navigation: { goBack: () => void, popTo
   };
 
   useEffect(() => {
-    void inAppUpdates.checkNeedsUpdate().then((result) => {
+    void inAppUpdates.checkNeedsUpdate().then(result => {
       if (result.shouldUpdate) {
         setUpdateModal(true);
       }
@@ -106,7 +132,7 @@ export default function Options(props: { navigation: { goBack: () => void, popTo
   const latestDate = (activities: any, lastVisited: Date) => {
     if (activities.length === 0) return false;
     const sortedAsc = activities.sort(
-      (objA: any, objB: any) => Number(objA.datetime) - Number(objB.datetime)
+      (objA: any, objB: any) => Number(objA.datetime) - Number(objB.datetime),
     );
     return sortedAsc[sortedAsc.length - 1].datetime > lastVisited;
   };
@@ -114,16 +140,30 @@ export default function Options(props: { navigation: { goBack: () => void, popTo
   const deleteSolidCredentials = async () => {
     const deleteSolidDetailsUrl = `${ARCH_HOST}/v1/cards/application`;
     const config = {
-      headers: { Authorization: `Bearer ${String(globalContext.globalState.token)}` }
+      headers: {
+        Authorization: `Bearer ${String(globalContext.globalState.token)}`,
+      },
     };
     try {
       await axios.delete(deleteSolidDetailsUrl, config);
       const data = await getWalletProfile(globalContext.globalState.token);
-      globalContext.globalDispatch({ type: GlobalContextType.CARD_PROFILE, cardProfile: data });
-      Toast.show({ type: t('TOAST_TYPE_SUCCESS'), text1: t('REMOVED_SOLID_CREDENTIALS'), position: 'bottom' });
+      globalContext.globalDispatch({
+        type: GlobalContextType.CARD_PROFILE,
+        cardProfile: data,
+      });
+      Toast.show({
+        type: t('TOAST_TYPE_SUCCESS'),
+        text1: t('REMOVED_SOLID_CREDENTIALS'),
+        position: 'bottom',
+      });
     } catch (e) {
       Sentry.captureException(e);
-      Toast.show({ type: t('TOAST_TYPE_ERROR'), text1: 'Solid Credentials', text2: e.response.data.message, position: 'bottom' });
+      Toast.show({
+        type: t('TOAST_TYPE_ERROR'),
+        text1: 'Solid Credentials',
+        text2: e.response.data.message,
+        position: 'bottom',
+      });
     }
   };
 
@@ -135,67 +175,136 @@ export default function Options(props: { navigation: { goBack: () => void, popTo
   });
 
   const referToFriend = () => {
-    onShare(t('RECOMMEND_TITLE'), t('RECOMMEND_MESSAGE'), t('RECOMMEND_URL')).then(() => { }).catch((error) => {
-      void appsFlyer.logEvent('share_invite_failed', error);
-    });
+    onShare(t('RECOMMEND_TITLE'), t('RECOMMEND_MESSAGE'), t('RECOMMEND_URL'))
+      .then(() => {})
+      .catch(error => {
+        void appsFlyer.logEvent('share_invite_failed', error);
+      });
   };
 
   // NOTE: LIFE CYCLE METHOD 🍎🍎🍎🍎
   return (
     <CyDView className='flex-1 bg-white'>
       <CyDScrollView className={'bg-white w-full relative mb-[75px]'}>
-        <ImageBackground source={AppImages.BG_SETTINGS} resizeMode="cover" imageStyle={{ height: 450, width: '100%' }}>
-          <DynamicView dynamic dynamicWidth dynamicHeight height={100} width={100} jC={'space-between'} mT={25}>
-            <DynamicView dynamic dynamicWidth dynamicHeight height={100} width={100} jC={'flex-start'}>
-              <CyDFastImage className='h-[100px] w-[100px] m-[15px]' source={AppImages.CYPHERD_WALLET} resizeMode='cover' />
-              <CyDView className='flex flex-row justify-center w-[80%] items-center pb-[25px]' >
-                {isReadOnlyWallet && <CyDImage source={AppImages.CYPHER_LOCK} className='h-[18px] w-[18px] mr-[5px]' resizeMode='contain' />}
+        <ImageBackground
+          source={AppImages.BG_SETTINGS}
+          resizeMode='cover'
+          imageStyle={{ height: 450, width: '100%' }}>
+          <DynamicView
+            dynamic
+            dynamicWidth
+            dynamicHeight
+            height={100}
+            width={100}
+            jC={'space-between'}
+            mT={25}>
+            <DynamicView
+              dynamic
+              dynamicWidth
+              dynamicHeight
+              height={100}
+              width={100}
+              jC={'flex-start'}>
+              <CyDFastImage
+                className='h-[100px] w-[100px] m-[15px]'
+                source={AppImages.CYPHERD_WALLET}
+                resizeMode='cover'
+              />
+              <CyDView className='flex flex-row justify-center w-[80%] items-center pb-[25px]'>
+                {isReadOnlyWallet && (
+                  <CyDImage
+                    source={AppImages.CYPHER_LOCK}
+                    className='h-[18px] w-[18px] mr-[5px]'
+                    resizeMode='contain'
+                  />
+                )}
                 <CyDText className='text-[18px] font-bold'>{title}</CyDText>
-                {ens && <CyDText className='text-[10px] secondaryTextColor font-semibold  bg-appColor px-[2px] mt-[3px] ml-[4px]'>ens</CyDText>}
+                {ens && (
+                  <CyDText className='text-[10px] secondaryTextColor font-semibold  bg-appColor px-[2px] mt-[3px] ml-[4px]'>
+                    ens
+                  </CyDText>
+                )}
               </CyDView>
 
               <OptionsContainer
                 sentryLabel={'address-book'}
                 onPress={() => {
-                  props.navigation.navigate(C.screenTitle.MY_ADDRESS, { indexValue: 0 });
+                  props.navigation.navigate(C.screenTitle.MY_ADDRESS, {
+                    indexValue: 0,
+                  });
                 }}
                 title={t('ADDRESS_BOOK')}
                 iW={75}
                 logo={AppImages.ADDRESS_BOOK_ICON}
               />
 
-              <DynamicView dynamic dynamicWidth dynamicHeightFix height={1} width={88} bGC={Colors.portfolioBorderColor} />
+              <DynamicView
+                dynamic
+                dynamicWidth
+                dynamicHeightFix
+                height={1}
+                width={88}
+                bGC={Colors.portfolioBorderColor}
+              />
 
               <OptionsContainer
                 sentryLabel={'activities'}
                 onPress={() => {
                   props.navigation.navigate(C.screenTitle.ACTIVITIES);
-                  activityContext.dispatch({ type: ActivityReducerAction.UPDATEVISITED, value: { lastVisited: new Date() } });
+                  activityContext.dispatch({
+                    type: ActivityReducerAction.UPDATEVISITED,
+                    value: { lastVisited: new Date() },
+                  });
                 }}
-                shouldDot={latestDate(activityContext.state.activityObjects, activityContext.state.lastVisited)}
+                shouldDot={latestDate(
+                  activityContext.state.activityObjects,
+                  activityContext.state.lastVisited,
+                )}
                 title={'Activities'}
                 logo={AppImages.ACTIVITIES}
               />
 
-              <DynamicView dynamic dynamicWidth dynamicHeightFix height={1} width={88} bGC={Colors.portfolioBorderColor} />
+              <DynamicView
+                dynamic
+                dynamicWidth
+                dynamicHeightFix
+                height={1}
+                width={88}
+                bGC={Colors.portfolioBorderColor}
+              />
 
-              {
-                !isReadOnlyWallet && <OptionsContainer
+              {!isReadOnlyWallet && (
+                <OptionsContainer
                   sentryLabel={'referrals'}
                   onPress={() => {
                     !isReadOnlyWallet
-                      ? props.navigation.navigate(C.screenTitle.REFERRAL_REWARDS)
+                      ? props.navigation.navigate(
+                          C.screenTitle.REFERRAL_REWARDS,
+                        )
                       : referToFriend();
                   }}
-                  title={!isReadOnlyWallet ? 'Referral & rewards' : t('MENU_RECOMMEND_FRIEND')}
+                  title={
+                    !isReadOnlyWallet
+                      ? 'Referral & rewards'
+                      : t('MENU_RECOMMEND_FRIEND')
+                  }
                   logo={AppImages.REFER_OUTLINE}
                 />
-              }
+              )}
 
-              {!isReadOnlyWallet && <DynamicView dynamic dynamicWidth dynamicHeightFix height={1} width={88} bGC={Colors.portfolioBorderColor} />}
+              {!isReadOnlyWallet && (
+                <DynamicView
+                  dynamic
+                  dynamicWidth
+                  dynamicHeightFix
+                  height={1}
+                  width={88}
+                  bGC={Colors.portfolioBorderColor}
+                />
+              )}
 
-              {
-                !isReadOnlyWallet && <OptionsContainer
+              {!isReadOnlyWallet && (
+                <OptionsContainer
                   sentryLabel={'wallet-connect'}
                   onPress={() => {
                     props.navigation.navigate(C.screenTitle.WALLET_CONNECT);
@@ -203,9 +312,18 @@ export default function Options(props: { navigation: { goBack: () => void, popTo
                   title={'Wallet Connect'}
                   logo={AppImages.WALLET_CONNECT_LOGO}
                 />
-              }
+              )}
 
-              {!isReadOnlyWallet && <DynamicView dynamic dynamicWidth dynamicHeightFix height={1} width={88} bGC={Colors.portfolioBorderColor} />}
+              {!isReadOnlyWallet && (
+                <DynamicView
+                  dynamic
+                  dynamicWidth
+                  dynamicHeightFix
+                  height={1}
+                  width={88}
+                  bGC={Colors.portfolioBorderColor}
+                />
+              )}
 
               {/* <OptionsContainer
                             sentryLabel={'debit-card'}
@@ -231,7 +349,14 @@ export default function Options(props: { navigation: { goBack: () => void, popTo
                 logo={AppImages.CYPHER_LOCKED}
               />
 
-              <DynamicView dynamic dynamicWidth dynamicHeightFix height={1} width={88} bGC={Colors.portfolioBorderColor} />
+              <DynamicView
+                dynamic
+                dynamicWidth
+                dynamicHeightFix
+                height={1}
+                width={88}
+                bGC={Colors.portfolioBorderColor}
+              />
 
               <OptionsContainer
                 sentryLabel={'manage-wallet'}
@@ -242,7 +367,14 @@ export default function Options(props: { navigation: { goBack: () => void, popTo
                 logo={AppImages.WALLET}
               />
 
-              <DynamicView dynamic dynamicWidth dynamicHeightFix height={1} width={88} bGC={Colors.portfolioBorderColor} />
+              <DynamicView
+                dynamic
+                dynamicWidth
+                dynamicHeightFix
+                height={1}
+                width={88}
+                bGC={Colors.portfolioBorderColor}
+              />
 
               <OptionsContainer
                 sentryLabel={'app-settings'}
@@ -253,7 +385,14 @@ export default function Options(props: { navigation: { goBack: () => void, popTo
                 logo={AppImages.SETTINGS}
               />
 
-              <DynamicView dynamic dynamicWidth dynamicHeightFix height={1} width={88} bGC={Colors.portfolioBorderColor} />
+              <DynamicView
+                dynamic
+                dynamicWidth
+                dynamicHeightFix
+                height={1}
+                width={88}
+                bGC={Colors.portfolioBorderColor}
+              />
 
               <OptionsContainer
                 sentryLabel={'support-button'}
@@ -265,7 +404,14 @@ export default function Options(props: { navigation: { goBack: () => void, popTo
                 logo={AppImages.SUPPORT}
               />
 
-              <DynamicView dynamic dynamicWidth dynamicHeightFix height={1} width={88} bGC={Colors.portfolioBorderColor} />
+              <DynamicView
+                dynamic
+                dynamicWidth
+                dynamicHeightFix
+                height={1}
+                width={88}
+                bGC={Colors.portfolioBorderColor}
+              />
 
               <OptionsContainer
                 sentryLabel={'terms-and-conditions-button'}
@@ -288,68 +434,99 @@ export default function Options(props: { navigation: { goBack: () => void, popTo
               {/*     logo={AppImages.WHATS_NEW} */}
               {/* ></OptionsContainer> */}
 
-              {
-                updateModal && <CyDView className='flex-row justify-between py-[8px] w-[80%] items-center border-[1px] border-[#EFEFEF] px-[18px] rounded-[8px] mb-[12px] bg-[#EFEFEF]'>
-                  <CyDText className='text-[14px] font-bold '>{t<string>('NEW_VERSION_AVAILABLE')}</CyDText>
+              {updateModal && (
+                <CyDView className='flex-row justify-between py-[8px] w-[80%] items-center border-[1px] border-[#EFEFEF] px-[18px] rounded-[8px] mb-[12px] bg-[#EFEFEF]'>
+                  <CyDText className='text-[14px] font-bold '>
+                    {t<string>('NEW_VERSION_AVAILABLE')}
+                  </CyDText>
 
-                  <CyDTouchView className='py-[4px] px-[6px] bg-appColor/[0.6] border-[1px] border-appColor rounded-[4px] '
+                  <CyDTouchView
+                    className='py-[4px] px-[6px] bg-appColor/[0.6] border-[1px] border-appColor rounded-[4px] '
                     onPress={() => {
                       if (isAndroid()) {
                         void Linking.openURL(
-                          'market://details?id=com.cypherd.androidwallet'
+                          'market://details?id=com.cypherd.androidwallet',
                         );
                       } else {
                         const link =
                           'itms-apps://apps.apple.com/app/cypherd-wallet/id1604120414';
                         Linking.canOpenURL(link).then(
-                          (supported) => {
+                          supported => {
                             supported && Linking.openURL(link);
                           },
-                          (err) => Sentry.captureException(err)
+                          err => Sentry.captureException(err),
                         );
                       }
-                    }}
-                  >
-                    <CyDText className='text-[16px] font-semibold '>{t<string>('UPDATE')}</CyDText>
-                  </CyDTouchView >
-
+                    }}>
+                    <CyDText className='text-[16px] font-semibold '>
+                      {t<string>('UPDATE')}
+                    </CyDText>
+                  </CyDTouchView>
                 </CyDView>
-              }
+              )}
 
-              <CyDTouchView className={'flex items-center justify-center h-[50px] w-full'}
+              <CyDTouchView
+                className={'flex items-center justify-center h-[50px] w-full'}
                 onPress={async () => {
                   setClickCount(clickCount + 1);
                   if (clickCount === 4) {
-                    const developerMode: boolean = portfolioState.statePortfolio.developerMode;
-                    portfolioState.dispatchPortfolio({ value: { developerMode: !developerMode } });
+                    const developerMode: boolean =
+                      portfolioState.statePortfolio.developerMode;
+                    portfolioState.dispatchPortfolio({
+                      value: { developerMode: !developerMode },
+                    });
                     await setDeveloperMode(!developerMode);
-                    developerMode ? showToast('Developer Mode OFF') : showToast('Developer Mode ON');
+                    developerMode
+                      ? showToast('Developer Mode OFF')
+                      : showToast('Developer Mode ON');
                     setDevMode(!developerMode);
                     setClickCount(0);
-                    await analytics().setAnalyticsCollectionEnabled(!developerMode);
+                    await analytics().setAnalyticsCollectionEnabled(
+                      !developerMode,
+                    );
                   }
                 }}>
-                <DynamicImage dynamic dynamicWidth height={25} width={25} resizemode='contain' source={AppImages.CYPHER_TEXT} />
-                <CText dynamic fF={C.fontsName.FONT_REGULAR} fS={10} color={Colors.versionColor}>{t<string>('VERSION')} {DeviceInfo.getVersion()}</CText>
+                <DynamicImage
+                  dynamic
+                  dynamicWidth
+                  height={25}
+                  width={25}
+                  resizemode='contain'
+                  source={AppImages.CYPHER_TEXT}
+                />
+                <CText
+                  dynamic
+                  fF={C.fontsName.FONT_REGULAR}
+                  fS={10}
+                  color={Colors.versionColor}>
+                  {t<string>('VERSION')} {DeviceInfo.getVersion()}
+                </CText>
               </CyDTouchView>
 
-              {
-                devMode &&
+              {devMode && (
                 <>
                   {/* <CyDTouchView onPress={async () => await setQuoteCancelReasons(false)} className={'flex flex-row justify-center items-center my-[10px]'}>
                   <CyDText className={'underline underline-offset-2 text-blue-700 '}>
                   {t<string>('ENABLE_FEEDBACK')}
                   </CyDText>
                 </CyDTouchView> */}
-                  <CyDTouchView onPress={async () => await deleteSolidCredentials()} className={'flex flex-row justify-center items-center my-[10px]'}>
-                    <CyDText className={'underline underline-offset-2 text-blue-700 '}>
+                  <CyDTouchView
+                    onPress={async () => await deleteSolidCredentials()}
+                    className={
+                      'flex flex-row justify-center items-center my-[10px]'
+                    }>
+                    <CyDText
+                      className={'underline underline-offset-2 text-blue-700 '}>
                       {t<string>('REMOVE_SOLID_CREDENTIALS')}
                     </CyDText>
                   </CyDTouchView>
                 </>
-              }
+              )}
 
-              <CyDView className={'flex flex-row items-center justify-between mt-[10px] mb-[30px]'}>
+              <CyDView
+                className={
+                  'flex flex-row items-center justify-between mt-[10px] mb-[30px]'
+                }>
                 <SocialMedia
                   title={t('DISCORD')}
                   uri={'https://discord.com/invite/S9tDGZ9hgT'}
@@ -386,10 +563,10 @@ export default function Options(props: { navigation: { goBack: () => void, popTo
                   navigationRef={props.navigation}
                 />
               </CyDView>
-            </DynamicView >
-          </DynamicView >
-        </ImageBackground >
-      </CyDScrollView >
-    </CyDView >
+            </DynamicView>
+          </DynamicView>
+        </ImageBackground>
+      </CyDScrollView>
+    </CyDView>
   );
 }

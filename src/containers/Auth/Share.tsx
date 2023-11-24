@@ -12,17 +12,17 @@ import {
   CyDImage,
   CyDText,
   CyDTouchView,
-  CyDView
+  CyDView,
 } from '../../styles/tailwindStyles';
 const {
   CText,
   DynamicView,
   DynamicImage,
   DynamicButton,
-  DynamicTouchView
+  DynamicTouchView,
 } = require('../../styles');
 
-function copyToClipboard (text) {
+function copyToClipboard(text) {
   Clipboard.setString(text);
 }
 
@@ -36,7 +36,7 @@ export const ButtonWithImage = ({
   isBorder,
   onPress,
   indicator,
-  wT
+  wT,
 }) => {
   return (
     <DynamicButton
@@ -52,8 +52,7 @@ export const ButtonWithImage = ({
       bC={Colors.borderColor}
       onPress={() => {
         onPress();
-      }}
-    >
+      }}>
       <DynamicView
         dynamic
         dynamicWidthFix
@@ -70,15 +69,14 @@ export const ButtonWithImage = ({
             shadowColor: 'gray',
             shadowOffset: { width: 0, height: 1 },
             shadowOpacity: 0.7,
-            elevation: 3
-          }
-        ]}
-      >
+            elevation: 3,
+          },
+        ]}>
         <DynamicImage dynamic source={imageName} width={13} height={13} />
       </DynamicView>
       {indicator && (
         <ActivityIndicator
-          size="large"
+          size='large'
           color={Colors.toastColor}
           style={{ flex: 1, position: 'absolute', alignItems: 'center' }}
         />
@@ -88,8 +86,7 @@ export const ButtonWithImage = ({
         mL={mL || 20}
         fF={C.fontsName.FONT_EXTRA_BOLD}
         fS={13}
-        color={Colors.primaryTextColor}
-      >
+        color={Colors.primaryTextColor}>
         {text}
       </CText>
     </DynamicButton>
@@ -114,7 +111,7 @@ export const ButtonWithOutImage = ({
   isBorder = false,
   onPress,
   disable = false,
-  indicator = false
+  indicator = false,
 }) => {
   return (
     <DynamicButton
@@ -133,11 +130,10 @@ export const ButtonWithOutImage = ({
       mB={mB}
       onPress={() => {
         onPress && onPress();
-      }}
-    >
+      }}>
       {indicator && (
         <ActivityIndicator
-          size="large"
+          size='large'
           color={Colors.toastColor}
           style={{ flex: 1, position: 'absolute', alignItems: 'center' }}
         />
@@ -155,28 +151,33 @@ export const AddressBookContainer = ({
   bGC,
   logo,
   navigation,
-  addressTypeQRCode
-}: {chain: string, wallet: {address: string}, bGC: string, logo: string, navigation: any, addressTypeQRCode: string}) => {
+  addressTypeQRCode,
+}: {
+  chain: string;
+  wallet: { address: string };
+  bGC: string;
+  logo: string;
+  navigation: any;
+  addressTypeQRCode: string;
+}) => {
   const { t } = useTranslation();
   const hdWalletContext = useContext<any>(HdWalletContext);
 
   return (
-    <CyDView className="flex flex-row justify-between h-[65px] mx-[20px] border-b-[0.5px] border-sepratorColor">
-      <CyDView className="flex flex-row w-[80%] items-center">
+    <CyDView className='flex flex-row justify-between h-[65px] mx-[20px] border-b-[0.5px] border-sepratorColor'>
+      <CyDView className='flex flex-row w-[80%] items-center'>
         <CyDView
           className={'flex p-[5px] rounded-[50px] mr-[10px]'}
-          style={{ backgroundColor: bGC }}
-        >
+          style={{ backgroundColor: bGC }}>
           <CyDImage
             source={logo}
-            className="h-[25px] w-[25px]"
-            resizeMode="contain"
+            className='h-[25px] w-[25px]'
+            resizeMode='contain'
           />
         </CyDView>
-        <CyDView className="flex-wrap w-[90%]">
-          <CyDText className="font-bold">{chain.toUpperCase()}</CyDText>
-          {wallet?.address !== ''
-            ? (
+        <CyDView className='flex-wrap w-[90%]'>
+          <CyDText className='font-bold'>{chain.toUpperCase()}</CyDText>
+          {wallet?.address !== '' ? (
             <CyDText>
               {wallet === undefined
                 ? 'Importing...'
@@ -184,29 +185,27 @@ export const AddressBookContainer = ({
                   '...' +
                   wallet.address.substring(wallet.address.length - 8)}
             </CyDText>
-              )
-            : (
+          ) : (
             <CyDImage
               source={AppImages.BLURRED_ADDRESS}
-              className="h-[30px] w-[145px]"
-              resizeMode="contain"
+              className='h-[30px] w-[145px]'
+              resizeMode='contain'
             />
-              )}
+          )}
         </CyDView>
       </CyDView>
-      <CyDView className="flex flex-row justify-between items-center w-[16%]">
+      <CyDView className='flex flex-row justify-between items-center w-[16%]'>
         {wallet?.address !== '' && (
           <CyDTouchView
             onPress={() => {
               navigation.navigate(C.screenTitle.QRCODE, {
-                addressType: addressTypeQRCode
+                addressType: addressTypeQRCode,
               });
-            }}
-          >
+            }}>
             <CyDImage
               source={AppImages.QR_CODE}
-              className="h-[20px] w-[20px]"
-              resizeMode="contain"
+              className='h-[20px] w-[20px]'
+              resizeMode='contain'
             />
           </CyDTouchView>
         )}
@@ -217,12 +216,11 @@ export const AddressBookContainer = ({
               copyToClipboard(wallet.address);
               showToast(`${chain} ${t('ADDRESS_COPY_ALL_SMALL')}`);
               sendFirebaseEvent(hdWalletContext, 'copy_address');
-            }}
-          >
+            }}>
             <CyDImage
               source={AppImages.COPY}
-              className="h-[18px] w-[18px]"
-              resizeMode="contain"
+              className='h-[18px] w-[18px]'
+              resizeMode='contain'
             />
           </CyDTouchView>
         )}
@@ -239,7 +237,7 @@ export const OptionsContainer = ({
   shouldDot = false,
   mT = 0,
   bH = 60,
-  iW = 100
+  iW = 100,
 }) => {
   return (
     <DynamicTouchView
@@ -251,8 +249,7 @@ export const OptionsContainer = ({
       mT={mT}
       onPress={() => {
         onPress();
-      }}
-    >
+      }}>
       <DynamicView dynamic dynamicHeightFix height={bH} fD={'row'} pH={15}>
         <DynamicView
           dynamic
@@ -260,17 +257,15 @@ export const OptionsContainer = ({
           height={bH}
           width={30}
           dynamicHeightFix
-          aLIT="flex-start"
+          aLIT='flex-start'
           fD={'column'}
-          jC="center"
-        >
+          jC='center'>
           <DynamicView
             dynamic
             dynamicWidthFix
             width={17}
             fD={'row'}
-            jC={'flex-start'}
-          >
+            jC={'flex-start'}>
             <DynamicImage
               dynamic
               dynamicWidth
@@ -286,23 +281,20 @@ export const OptionsContainer = ({
           width={200}
           dynamicHeightFix
           height={bH}
-          aLIT="flex-start"
+          aLIT='flex-start'
           fD={'column'}
-          jC="center"
-        >
+          jC='center'>
           <DynamicView
             dynamic
             dynamicWidthFix
             width={200}
             fD={'row'}
-            jC={'flex-start'}
-          >
+            jC={'flex-start'}>
             <CText
               dynamic
               fF={C.fontsName.FONT_REGULAR}
               fS={14}
-              color={Colors.primaryTextColor}
-            >
+              color={Colors.primaryTextColor}>
               {title}
             </CText>
             {sentryLabel === 'activities' && shouldDot && (
@@ -310,9 +302,9 @@ export const OptionsContainer = ({
                 dynamic
                 fF={C.fontsName.FONT_REGULAR}
                 fS={42}
-                color={Colors.activityFailed}
-              >
-                {'·݀'}
+                mT={-16}
+                color={Colors.activityFailed}>
+                {'·'}
               </CText>
             )}
           </DynamicView>
@@ -323,7 +315,7 @@ export const OptionsContainer = ({
         dynamicWidth
         height={11}
         width={11}
-        resizemode="contain"
+        resizemode='contain'
         source={AppImages.OPTIONS_ARROW}
       />
     </DynamicTouchView>
@@ -337,7 +329,7 @@ export const AppButton = ({
   text,
   onPress,
   indicator,
-  disable = false
+  disable = false,
 }) => {
   return (
     <DynamicButton
@@ -353,11 +345,10 @@ export const AppButton = ({
       mB={mB}
       onPress={() => {
         onPress();
-      }}
-    >
+      }}>
       {indicator && (
         <ActivityIndicator
-          size="large"
+          size='large'
           color={Colors.toastColor}
           style={{ flex: 1, position: 'absolute', alignItems: 'center' }}
         />
@@ -366,8 +357,7 @@ export const AppButton = ({
         dynamic
         fF={C.fontsName.FONT_EXTRA_BOLD}
         fS={13}
-        color={Colors.primaryTextColor}
-      >
+        color={Colors.primaryTextColor}>
         {text}
       </CText>
     </DynamicButton>

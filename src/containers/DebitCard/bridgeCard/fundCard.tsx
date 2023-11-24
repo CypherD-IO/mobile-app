@@ -33,7 +33,10 @@ import {
   CyDTouchView,
   CyDView,
 } from '../../../styles/tailwindStyles';
-import { MODAL_HIDE_TIMEOUT_250 } from '../../../core/Http';
+import {
+  MODAL_HIDE_TIMEOUT_250,
+  MODAL_HIDE_TIMEOUT_600,
+} from '../../../core/Http';
 import { getGasPriceFor } from '../../Browser/gasHelper';
 import { GasPriceDetail } from '../../../core/types';
 import * as Sentry from '@sentry/react-native';
@@ -58,7 +61,6 @@ import BottomTokenCardConfirm from '../../../components/BottomTokenCardConfirm';
 import { genId } from '../../utilities/activityUtilities';
 import { intercomAnalyticsLog } from '../../utilities/analyticsUtility';
 import { CHOOSE_TOKEN_MODAL_TIMEOUT } from '../../../constants/timeOuts';
-import { hostWorker } from '../../../global';
 import { screenTitle } from '../../../constants';
 import { useIsFocused } from '@react-navigation/native';
 import {
@@ -72,7 +74,6 @@ import { get } from 'lodash';
 import { AnalyticsType, CardProviders } from '../../../constants/enum';
 import { TokenMeta } from '../../../models/tokenMetaData.model';
 import clsx from 'clsx';
-import { isIOS } from '../../../misc/checkers';
 
 export default function BridgeFundCardScreen({ route }: { route: any }) {
   const {
@@ -98,7 +99,6 @@ export default function BridgeFundCardScreen({ route }: { route: any }) {
   )?.cards[currentCardIndex];
   const activityRef = useRef<DebitCardTransaction | null>(null);
   const inputRef = useRef<TextInput | null>(null);
-  const ARCH_HOST: string = hostWorker.getHost('ARCH_HOST');
   const { getWithAuth, postWithAuth } = useAxios();
 
   const cosmos = hdWallet.state.wallet.cosmos;
@@ -138,10 +138,6 @@ export default function BridgeFundCardScreen({ route }: { route: any }) {
   const [loading, setLoading] = useState<boolean>(false);
   const [lowBalance, setLowBalance] = useState<boolean>(false);
   const minTokenValueLimit = 10;
-  const currencyFormatter = new Intl.NumberFormat('en-US', {
-    style: 'currency',
-    currency: 'USD',
-  });
   const [selectedToken, setSelectedToken] = useState<TokenMeta>();
   const [nativeTokenBalance, setNativeTokenBalance] = useState<number>(0);
   const hdWalletContext = useContext<any>(HdWalletContext);
@@ -921,13 +917,10 @@ export default function BridgeFundCardScreen({ route }: { route: any }) {
         minTokenValueLimit={minTokenValueLimit}
         onSelectingToken={token => {
           setIsChooseTokenVisible(false);
-          setTimeout(
-            () => {
-              onSelectingToken(token);
-              inputRef.current?.focus();
-            },
-            isIOS() ? MODAL_HIDE_TIMEOUT_250 : 600,
-          );
+          setTimeout(() => {
+            onSelectingToken(token);
+            inputRef.current?.focus();
+          }, MODAL_HIDE_TIMEOUT_600);
         }}
         onCancel={() => {
           setIsChooseTokenVisible(false);
