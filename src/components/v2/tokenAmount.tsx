@@ -31,6 +31,7 @@ export default function CyDTokenAmount(props?: any) {
       onPress={() => {
         hideBalance && setOverrideHideBalance(!overrideHideBalance);
       }}
+      disabled={!hideBalance}
       {...props}
       className={clsx('', { 'pt-[0px]': hideBalance && !overrideHideBalance })}>
       {hideBalance && !overrideHideBalance

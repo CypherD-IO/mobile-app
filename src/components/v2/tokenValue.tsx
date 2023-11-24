@@ -26,6 +26,7 @@ export default function CyDTokenValue(props?: any) {
       onPress={() => {
         hideBalance && setOverrideHideBalance(!overrideHideBalance);
       }}
+      disabled={!hideBalance}
       {...props}>
       {hideBalance && !overrideHideBalance
         ? hideWithCharacters
