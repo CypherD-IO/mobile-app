@@ -8,6 +8,7 @@ export const TIMEOUT = 5000;
 export const PORTFOLIO_TIMEOUT = 20000;
 export const MODAL_HIDE_TIMEOUT = 100;
 export const MODAL_HIDE_TIMEOUT_250 = 250;
+export const MODAL_HIDE_TIMEOUT_600 = 600;
 export const SHARE_TRANSACTION_TIMEOUT = 250;
 export const DEFAULT_AXIOS_TIMEOUT = 20000;
 axiosRetry(axios, {
@@ -15,13 +16,13 @@ axiosRetry(axios, {
   retryDelay: () => {
     return 100;
   },
-  retryCondition: (error) => {
+  retryCondition: error => {
     // if retry condition is not specified, by default idempotent requests are retried
     const statusCode = error.response?.status;
     return statusCode && (statusCode === 403 || statusCode >= 500);
-  }
+  },
 });
 axios.defaults.headers.common = {
-  client: `${Platform.OS}:${DeviceInfo.getVersion()}`
+  client: `${Platform.OS}:${DeviceInfo.getVersion()}`,
 };
 export default axios;

@@ -1,6 +1,5 @@
-import clsx from 'clsx';
 import React, { useContext, useEffect, useState } from 'react';
-import { HdWalletContext, limitDecimalPlaces } from '../../core/util';
+import { HdWalletContext } from '../../core/util';
 import { CyDText } from '../../styles/tailwindStyles';
 
 export default function CyDTokenValue(props?: any) {
