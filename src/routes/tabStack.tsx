@@ -132,7 +132,7 @@ function TabStack() {
         style={styles.elevatedBackground}>
         <CyDView
           className={clsx(
-            'flex flex-row justify-start items-center bg-white rounded-t-[24px]',
+            'flex flex-row justify-start items-center bg-white rounded-t-[24px] px-[10px]',
             { 'mt-[4px]': isAndroid() },
           )}>
           {state.routes.map((route, index) => {
@@ -311,7 +311,9 @@ function TabStack() {
           options={({ route }) => ({
             tabBarButton: () => (
               <CyDView
-                className={clsx('my-[5px] scale-110 shadow shadow-yellow-200')}>
+                className={clsx('mt-[5px] scale-110 shadow shadow-yellow-200', {
+                  'my-[5px]': isIOS(),
+                })}>
                 <ShortcutsModal navigationRef={navigationRef} />
               </CyDView>
             ),
