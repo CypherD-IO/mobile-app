@@ -493,6 +493,8 @@ const resources = {
       GO_TO_DEPRECATED_CARD: 'Deprecated Card',
       GO_TO_NEW_CARD: 'New Card',
       BRIDGE_ALL_CAPS: 'BRIDGE',
+      LOAD: 'Load',
+      LOAD_MAX: 'Load Max',
       LOAD_ALL_CAPS: 'LOAD',
       CARD_INSUFFICIENT_FUNDS:
         "You don't seem to have any tokens worth over $10 to load your card!",
@@ -801,7 +803,7 @@ const resources = {
       CARD_SET_PIN_TO_USE_CARD:
         'This pin will be used while making transactions with your card',
       INSUFFICIENT_BALANCE_CARD:
-        'Amount that you are trying to load is higher than your actual balance',
+        'Amount that you are trying to load is higher than your actual balance or you might not have sufficient gas for it',
       MAYBE_LATER: 'Maybe later',
       HOME: 'Home',
       HISTORY: 'History',
@@ -905,6 +907,12 @@ const resources = {
       CONTACT_DETAILS_UPDATION_FAILURE: 'Unable to update contact details',
       UNABLE_TO_DECODE_TRANSACTION:
         'Unable to decode this transaction. Proceed with caution and ensure understanding before action. Your vigilance is appreciated.',
+      MISSING_QUOTE: 'Missing Quote',
+      MISSING_QUOTE_DESCRIPTION:
+        'You have not quoted yet. If you think this is a mistake, try to quote again, or contact support.',
+      GAS_ESTIMATION_FAILED: 'Gas Estimation Failed',
+      GAS_ESTIMATION_FAILED_DESCRIPTION:
+        'Could not estimate gas fee for the transaction, try again or contact support.',
     },
   },
 };
