@@ -4,20 +4,13 @@ import {
   ListRenderItem,
   Platform,
   ScrollViewProps,
-  StyleSheet,
-  ViewToken,
 } from 'react-native';
 import Animated, {
   SharedValue,
   useAnimatedScrollHandler,
 } from 'react-native-reanimated';
-import { isIOS } from '../../../misc/checkers';
-import { H_BALANCE_BANNER, H_GUTTER } from '../constants';
-
-// we provide this bc ios allows overscrolling but android doesn't
-// so on ios because of pull to refresh / rubberbaanding we set scroll pos to negative banner position
-// on android we set to 0 and makeup banner height diff with contentinset padding
-export const OFFSET_TABVIEW = isIOS() ? -H_BALANCE_BANNER : 0;
+import { H_GUTTER } from '../constants';
+import { PortfolioBannerHeights } from '../../../hooks/useScrollManager';
 
 export interface AnimatedTabViewProps
   extends Pick<
@@ -32,7 +25,9 @@ export interface AnimatedTabViewProps
     | 'updateCellsBatchingPeriod'
     | 'windowSize'
     | 'ListEmptyComponent'
+    | 'ListHeaderComponent'
   > {
+  bannerHeight: PortfolioBannerHeights;
   data?: any[];
   renderItem?:
   | ListRenderItem<any>
@@ -47,6 +42,7 @@ export interface AnimatedTabViewProps
 }
 
 const AnimatedTabViewWithoutMemo = ({
+  bannerHeight,
   data,
   renderItem,
   onContentSizeChange,
@@ -62,6 +58,7 @@ const AnimatedTabViewWithoutMemo = ({
   children,
   keyExtractor,
   extraData,
+  ListHeaderComponent,
 }: AnimatedTabViewProps) => {
   const handleScroll = useAnimatedScrollHandler((event) => {
     scrollY.value = event.contentOffset.y;
@@ -75,11 +72,11 @@ const AnimatedTabViewWithoutMemo = ({
     onScrollEndDrag,
     scrollEventThrottle: 1,
     // ios has over scrolling and other things which make this look and feel nicer
-    contentInset: Platform.select({ ios: { top: H_BALANCE_BANNER } }),
+    contentInset: Platform.select({ ios: { top: bannerHeight } }),
     contentOffset: Platform.select({
       ios: {
         x: 0,
-        y: -H_BALANCE_BANNER,
+        y: -bannerHeight,
       },
     }),
     contentContainerStyle: Platform.select({
@@ -89,7 +86,7 @@ const AnimatedTabViewWithoutMemo = ({
       },
       android: {
         flexGrow: 1,
-        paddingTop: H_BALANCE_BANNER,
+        paddingTop: bannerHeight,
         paddingBottom: H_GUTTER,
       },
     }),
@@ -144,6 +141,7 @@ const AnimatedTabViewWithoutMemo = ({
         maxToRenderPerBatch={maxToRenderPerBatch}
         onContentSizeChange={onContentSizeChange}
         extraData={extraData}
+        ListHeaderComponent={ListHeaderComponent}
       />
     );
   }

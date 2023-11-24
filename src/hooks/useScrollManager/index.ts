@@ -1,18 +1,21 @@
 import { useMemo, useRef, useState } from 'react';
 import { FlatList, ScrollView } from 'react-native';
-import { OFFSET_TABVIEW } from '../../containers/Portfolio/animatedComponents';
-import { H_BALANCE_BANNER } from '../../containers/Portfolio/constants';
 import {
   SharedValue,
   useAnimatedReaction,
   useSharedValue,
 } from 'react-native-reanimated';
 import { ScrollableType } from '../../constants/enum';
+import { isIOS } from '../../misc/checkers';
+
+export type PortfolioBannerHeights = 160 | 300
 
 export const useScrollManager = (
   routes: Array<{ key: string; title: string; scrollableType: ScrollableType }>
 ) => {
-  const scrollY = useSharedValue(-H_BALANCE_BANNER);
+  const [bannerHeight, setBannerHeight] = useState<PortfolioBannerHeights>(160);
+  const OFFSET_TABVIEW = isIOS() ? -bannerHeight : 0;
+  const scrollY = useSharedValue(-bannerHeight);
   const [index, setIndex] = useState(0);
   const isListGliding = useRef(false);
 
@@ -22,7 +25,7 @@ export const useScrollManager = (
   const tabkeyToScrollPosition: { [key: string]: SharedValue<number> } = {};
   for (const route of routes) {
     if (!(route.key in tabkeyToScrollPosition)) {
-      tabkeyToScrollPosition[route.key] = useSharedValue(-H_BALANCE_BANNER);
+      tabkeyToScrollPosition[route.key] = useSharedValue(-bannerHeight);
     }
   }
   const tabkeyToScrollableChildRef = useRef<{
@@ -54,11 +57,11 @@ export const useScrollManager = (
         }
 
         if (/* header visible */ key !== curRouteKey) {
-          if (scrollValue <= OFFSET_TABVIEW + H_BALANCE_BANNER) {
+          if (scrollValue <= OFFSET_TABVIEW + bannerHeight) {
             if (curRouteScrollableType === ScrollableType.SCROLLVIEW) {
               (scrollRef as ScrollView).scrollTo({
                 y: Math.max(
-                  Math.min(scrollValue, OFFSET_TABVIEW + H_BALANCE_BANNER),
+                  Math.min(scrollValue, OFFSET_TABVIEW + bannerHeight),
                   OFFSET_TABVIEW
                 ),
                 animated: false,
@@ -66,7 +69,7 @@ export const useScrollManager = (
             } else {
               (scrollRef as FlatList).scrollToOffset({
                 offset: Math.max(
-                  Math.min(scrollValue, OFFSET_TABVIEW + H_BALANCE_BANNER),
+                  Math.min(scrollValue, OFFSET_TABVIEW + bannerHeight),
                   OFFSET_TABVIEW
                 ),
                 animated: false,
@@ -76,22 +79,22 @@ export const useScrollManager = (
           } else if (
             /* header hidden */
             tabkeyToScrollPosition[key].value <
-              OFFSET_TABVIEW + H_BALANCE_BANNER ||
+              OFFSET_TABVIEW + bannerHeight ||
             tabkeyToScrollPosition[key].value == null
           ) {
             if (curRouteScrollableType === ScrollableType.SCROLLVIEW) {
               (scrollRef as ScrollView).scrollTo({
-                y: OFFSET_TABVIEW + H_BALANCE_BANNER,
+                y: OFFSET_TABVIEW + bannerHeight,
                 animated: false,
               });
             } else {
               (scrollRef as FlatList).scrollToOffset({
-                offset: OFFSET_TABVIEW + H_BALANCE_BANNER,
+                offset: OFFSET_TABVIEW + bannerHeight,
                 animated: false,
               });
             }
             tabkeyToScrollPosition[key].value =
-              OFFSET_TABVIEW + H_BALANCE_BANNER;
+              OFFSET_TABVIEW + bannerHeight;
           }
         }
       });
@@ -124,10 +127,14 @@ export const useScrollManager = (
       trackRef,
       index,
       setIndex,
+      bannerHeight,
+      setBannerHeight,
       getRefForKey,
     };
   }, [
     index,
+    bannerHeight,
+    OFFSET_TABVIEW,
     routes,
     scrollY,
     tabkeyToScrollPosition,

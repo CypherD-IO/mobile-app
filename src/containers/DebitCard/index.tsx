@@ -1,4 +1,3 @@
-/* eslint-disable no-prototype-builtins */
 /**
  * @format
  * @flow
@@ -13,7 +12,6 @@ import { screenTitle } from '../../constants';
 import { HdWalletContext } from '../../core/util';
 import {
   CyDImageBackground,
-  CyDSafeAreaView,
   CyDText,
   CyDView,
 } from '../../styles/tailwindStyles';
@@ -25,17 +23,23 @@ import CardWailtList from './cardWaitList';
 export interface RouteProps {
   navigation: {
     navigate: (screen: string, params?: any) => void;
+    reset: (options: {
+      index: number;
+      routes: Array<{ name: string; params?: any }>;
+    }) => void;
   };
 }
 
 export default function DebitCardScreen(props: RouteProps) {
+  const { t } = useTranslation();
+  const isFocused = useIsFocused();
+
   const globalContext = useContext<any>(GlobalContext);
   const hdWalletContext = useContext<any>(HdWalletContext);
   const { isReadOnlyWallet } = hdWalletContext.state;
-  const isFocused = useIsFocused();
   const cardProfile: CardProfile = globalContext.globalState.cardProfile;
+
   const [loading, setLoading] = useState<boolean>(true);
-  const { t } = useTranslation();
 
   const handleBackButton = () => {
     props.navigation.navigate(screenTitle.PORTFOLIO_SCREEN);
@@ -66,12 +70,22 @@ export default function DebitCardScreen(props: RouteProps) {
           get(cardProfile, CardProviders.PAYCADDY)?.applicationStatus ===
           CardApplicationStatus.COMPLETED;
         if (bcApplicationStatus || pcApplicationStatus) {
-          props.navigation.navigate(screenTitle.BRIDGE_CARD_SCREEN, {
-            hasBothProviders: bcApplicationStatus && pcApplicationStatus,
-            cardProvider: bcApplicationStatus
-              ? CardProviders.BRIDGE_CARD
-              : CardProviders.PAYCADDY,
+          props.navigation.reset({
+            index: 0,
+            routes: [
+              {
+                name: screenTitle.BRIDGE_CARD_SCREEN,
+                params: {
+                  hasBothProviders: bcApplicationStatus && pcApplicationStatus,
+                  cardProvider: bcApplicationStatus
+                    ? CardProviders.BRIDGE_CARD
+                    : CardProviders.PAYCADDY,
+                },
+              },
+            ],
           });
+        } else {
+          props.navigation.navigate(screenTitle.CARD_KYC_STATUS_SCREEN);
         }
       }
     } else {
@@ -88,8 +102,7 @@ export default function DebitCardScreen(props: RouteProps) {
       {isReadOnlyWallet ? (
         <CyDImageBackground
           source={AppImages.READ_ONLY_CARD_BACKGROUND}
-          className='h-full items-center justify-center'
-        >
+          className='h-full items-center justify-center'>
           <CyDText className='text-[20px] text-center font-bold mt-[30%]'>
             {t<string>('TRACK_WALLET_CYPHER_CARD')}
           </CyDText>

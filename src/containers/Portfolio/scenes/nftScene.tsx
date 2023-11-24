@@ -26,7 +26,8 @@ import { screenTitle } from '../../../constants';
 import { Chain } from '../../../constants/server';
 import { intercomAnalyticsLog } from '../../utilities/analyticsUtility';
 import { ALL_CHAINS_TYPE } from '../../../constants/type';
-import { H_BALANCE_BANNER, OFFSET_TABVIEW } from '../constants';
+import { isIOS } from '../../../misc/checkers';
+import { PortfolioBannerHeights } from '../../../hooks/useScrollManager';
 
 type ScrollEvent = NativeSyntheticEvent<NativeScrollEvent>;
 
@@ -43,6 +44,7 @@ interface NFTSceneProps {
     setOptions: ({ title }: { title: string }) => void
     navigate: (screen: string, params?: {}) => void
   }
+  bannerHeight: PortfolioBannerHeights;
 }
 
 const NFTScene = ({
@@ -53,6 +55,7 @@ const NFTScene = ({
   onMomentumScrollEnd,
   onScrollEndDrag,
   navigation,
+  bannerHeight,
   selectedChain
 }: NFTSceneProps) => {
   const { t } = useTranslation();
@@ -61,6 +64,8 @@ const NFTScene = ({
   const hdWalletContext = useContext<HdWalletContextDef | null>(HdWalletContext);
   const ethereum = hdWalletContext?.state.wallet?.ethereum;
   const stargaze = hdWalletContext?.state.wallet?.stargaze;
+
+  const OFFSET_TABVIEW = isIOS() ? -bannerHeight : 0;
 
   const [loading, setLoading] = useState<boolean>(true);
   const [viewType, setViewType] = useState<string>(RenderViewType.GRID_VIEW);
@@ -87,17 +92,17 @@ const NFTScene = ({
 
   useEffect(() => {
     if (scrollViewRef.current) {
-      if (scrollY.value <= OFFSET_TABVIEW + H_BALANCE_BANNER) {
+      if (scrollY.value <= OFFSET_TABVIEW + bannerHeight) {
         scrollViewRef.current.scrollTo({
           y: Math.max(
-            Math.min(scrollY.value, OFFSET_TABVIEW + H_BALANCE_BANNER),
+            Math.min(scrollY.value, OFFSET_TABVIEW + bannerHeight),
             OFFSET_TABVIEW
           ),
           animated: false,
         });
       } else {
         scrollViewRef.current.scrollTo({
-          y: OFFSET_TABVIEW + H_BALANCE_BANNER,
+          y: OFFSET_TABVIEW + bannerHeight,
           animated: false,
         });
       }
@@ -320,15 +325,19 @@ const NFTScene = ({
   return (
     <CyDView className='flex-1 mx-[10px]'>
       <AnimatedTabView
+        bannerHeight={bannerHeight}
         scrollY={scrollY}
         onMomentumScrollBegin={onMomentumScrollBegin}
         onMomentumScrollEnd={onMomentumScrollEnd}
         onScrollEndDrag={onScrollEndDrag}
         onRef={scrollViewRef}
-        refreshControl={<RefreshControl refreshing={refreshing} onRefresh={onRefresh} progressViewOffset={H_BALANCE_BANNER} />}
+        refreshControl={<RefreshControl refreshing={refreshing} onRefresh={onRefresh} progressViewOffset={bannerHeight} />}
       >
         {loading
-          ? <Loading />
+          ?
+          <CyDView className='w-full absolute top-[50px]'>
+            <Loading />
+          </CyDView>
           : <CyDView className='border border-sepratorColor rounded-t-[24px]'>
             {isEmpty(NFTHoldings) &&
               <CyDView className={'mt-[50%] flex items-center'}>

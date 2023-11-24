@@ -32,11 +32,8 @@ import {
 } from '../styles/tailwindStyles';
 import { t } from 'i18next';
 import clsx from 'clsx';
-import { isIOS } from '../misc/checkers';
-import {
-  Easing,
-  Layout,
-} from 'react-native-reanimated';
+import { isAndroid, isIOS } from '../misc/checkers';
+import { Easing, Layout } from 'react-native-reanimated';
 import { Colors } from '../constants/theme';
 import { useKeyboard } from '../hooks/useKeyboardVisibily';
 
@@ -48,16 +45,19 @@ function TabStack() {
   const hdWalletContext = useContext<any>(HdWalletContext);
   const { isReadOnlyWallet } = hdWalletContext.state;
   const inAppUpdates = new SpInAppUpdates(
-    false // isDebug
+    false, // isDebug
   );
   const screensToHaveNavBar = [
     screenTitle.PORTFOLIO_SCREEN,
     screenTitle.BROWSER_SCREEN,
     screenTitle.OPTIONS_SCREEN,
     screenTitle.CARD_SIGNUP_LANDING_SCREEN,
+    screenTitle.CARD_SIGNUP_CONFIRMATION,
     screenTitle.CARD_SIGNUP_SCREEN,
-    screenTitle.APTO_CARD_SCREEN,
+    screenTitle.CARD_KYC_STATUS_SCREEN,
+    screenTitle.DEBIT_CARD_SCREEN,
     screenTitle.BRIDGE_CARD_SCREEN,
+    screenTitle.ON_META,
   ];
 
   const [badgedTabBarOptions, setBadgedTabBarOptions] = useState<any>({});
@@ -89,7 +89,7 @@ function TabStack() {
   const latestDate = (activities: any, lastVisited: Date) => {
     if (activities.length === 0) return false;
     const sortedAsc = activities.sort(
-      (objA: any, objB: any) => Number(objA.datetime) - Number(objB.datetime)
+      (objA: any, objB: any) => Number(objA.datetime) - Number(objB.datetime),
     );
     return sortedAsc[sortedAsc.length - 1].datetime > lastVisited;
   };
@@ -102,7 +102,7 @@ function TabStack() {
         updateResp.shouldUpdate ||
         latestDate(
           activityContext.state.activityObjects,
-          activityContext.state.lastVisited
+          activityContext.state.lastVisited,
         );
       if (showBadge) {
         setBadgedTabBarOptions({
@@ -127,73 +127,79 @@ function TabStack() {
 
   function MyTabBar({ state, descriptors, navigation }) {
     return (
-      <CyDView className='flex flex-row justify-start items-center px-[10px]'>
-        {state.routes.map((route, index) => {
-          const { options } = descriptors[route.key];
-          const label =
-            options.tabBarLabel !== undefined
-              ? options.tabBarLabel
-              : options.title !== undefined
+      <CyDView
+        className='flex flex-row justify-start items-center bg-red-500 rounded-t-[24px]'
+        style={styles.elevatedBackground}>
+        <CyDView
+          className={clsx(
+            'flex flex-row justify-start items-center bg-white rounded-t-[24px]',
+            { 'mt-[4px]': isAndroid() },
+          )}>
+          {state.routes.map((route, index) => {
+            const { options } = descriptors[route.key];
+            const label =
+              options.tabBarLabel !== undefined
+                ? options.tabBarLabel
+                : options.title !== undefined
                 ? options.title
                 : route.name;
 
-          const isFocused = state.index === index;
-          const TabBarIcon = options.tabBarIcon;
-          const TabBarButton = options.tabBarButton;
-          const onPress = () => {
-            const event = navigation.emit({
-              type: 'tabPress',
-              target: route.key,
-              canPreventDefault: true,
-            });
+            const isFocused = state.index === index;
+            const TabBarIcon = options.tabBarIcon;
+            const TabBarButton = options.tabBarButton;
+            const onPress = () => {
+              const event = navigation.emit({
+                type: 'tabPress',
+                target: route.key,
+                canPreventDefault: true,
+              });
 
-            if (!isFocused && !event.defaultPrevented) {
-              // The `merge: true` option makes sure that the params inside the tab screen are preserved
-              navigation.navigate({ name: route.name, merge: true });
-            }
-          };
+              if (!isFocused && !event.defaultPrevented) {
+                // The `merge: true` option makes sure that the params inside the tab screen are preserved
+                navigation.navigate({ name: route.name, merge: true });
+              }
+            };
 
-          const onLongPress = () => {
-            navigation.emit({
-              type: 'tabLongPress',
-              target: route.key,
-            });
-          };
+            const onLongPress = () => {
+              navigation.emit({
+                type: 'tabLongPress',
+                target: route.key,
+              });
+            };
 
-          return (
-            <CyDTouchView
-              key={index}
-              accessibilityRole='button'
-              accessibilityState={isFocused ? { selected: true } : {}}
-              accessibilityLabel={options.tabBarAccessibilityLabel}
-              testID={options.tabBarTestID}
-              onPress={onPress}
-              onLongPress={onLongPress}
-              className='flex flex-1 flex-row items-center'
-            >
-              <CyDView
-                className={clsx(
-                  'flex flex-1 flex-col items-center bg-transparent',
-                  {
-                    'mt-[10px] bg-transparent':
-                      route.name === screenTitle.SHORTCUTS,
-                  }
-                )}
-              >
-                {route.name === screenTitle.SHORTCUTS ? (
-                  <TabBarButton />
-                ) : (
-                  <TabBarIcon focused={isFocused} color='' size='' />
-                )}
-                <CyDText
-                  className={clsx('text-[12px]', { 'font-bold': isFocused })}
-                >
-                  {route.name !== screenTitle.SHORTCUTS && label}
-                </CyDText>
-              </CyDView>
-            </CyDTouchView>
-          );
-        })}
+            return (
+              <CyDTouchView
+                key={index}
+                accessibilityRole='button'
+                accessibilityState={isFocused ? { selected: true } : {}}
+                accessibilityLabel={options.tabBarAccessibilityLabel}
+                testID={options.tabBarTestID}
+                onPress={onPress}
+                onLongPress={onLongPress}
+                className='flex flex-1 flex-row items-center'>
+                <CyDView
+                  className={clsx(
+                    'flex flex-1 flex-col items-center bg-transparent',
+                    {
+                      'mt-[10px] bg-transparent':
+                        route.name === screenTitle.SHORTCUTS,
+                      'mt-[-1px]': isAndroid(),
+                    },
+                  )}>
+                  {route.name === screenTitle.SHORTCUTS ? (
+                    <TabBarButton />
+                  ) : (
+                    <TabBarIcon focused={isFocused} color='' size='' />
+                  )}
+                  <CyDText
+                    className={clsx('text-[12px]', { 'font-bold': isFocused })}>
+                    {route.name !== screenTitle.SHORTCUTS && label}
+                  </CyDText>
+                </CyDView>
+              </CyDTouchView>
+            );
+          })}
+        </CyDView>
       </CyDView>
     );
   }
@@ -205,36 +211,36 @@ function TabStack() {
         tabBar={(props: BottomTabBarProps) => {
           const currentRouteStack = props.state.routes[
             props.state.index
-          ].state?.routes.map((item) => item.name);
+          ].state?.routes.map(item => item.name);
           const showTabBar =
             currentRouteStack === undefined ||
             screensToHaveNavBar.includes(
-              currentRouteStack[currentRouteStack.length - 1]
+              currentRouteStack[currentRouteStack.length - 1],
             );
           return (
             <CyDAnimatedView
               // TO REDO : TABBAR ANIMATION
               layout={Layout.easing(Easing.ease).delay(50)}
-              className={clsx('rounded-t-[24px] pb-[20px] shadow absolute bottom-[-20px] w-full', {
-                'bottom-[-110px]': !showTabBar,
-                'bottom-[-350px]': keyboardHeight,
-                'shadow-gray-400': (!isReadOnlyWallet && !isIOS()) || isIOS(),
-              })}
-              style={styles.elevatedBackground}
-            >
+              className={clsx(
+                'rounded-t-[24px] pb-[8px] shadow absolute bottom-[-20px] w-full',
+                {
+                  'bottom-[-110px]': !showTabBar,
+                  'bottom-[-350px]': keyboardHeight,
+                  'pb-[20px]': isIOS(),
+                  'shadow-gray-400': (!isReadOnlyWallet && !isIOS()) || isIOS(),
+                },
+              )}>
               {isReadOnlyWallet && (
                 <CyDView
                   className={clsx('rounded-t-[24px]', {
                     'h-[20px]': showTabBar,
                   })}
-                  style={styles.elevatedBackground}
-                >
+                  style={styles.elevatedBackground}>
                   <CyDView
                     className={clsx(
                       'flex flex-row justify-center items-center bg-ternaryBackgroundColor py-[5px] top-[2px] rounded-t-[24px]',
-                      { hidden: !showTabBar, 'top-[6px]': !isIOS() }
-                    )}
-                  >
+                      { hidden: !showTabBar, 'top-[6px]': !isIOS() },
+                    )}>
                     <CyDImage
                       source={AppImages.EYE_OPEN}
                       className='h-[18px] w-[18px]'
@@ -293,8 +299,7 @@ function TabStack() {
           tabBarActiveTintColor: 'black',
           tabBarInactiveTintColor: 'gray',
           headerShown: false,
-        })}
-      >
+        })}>
         <Tab.Screen
           name={screenTitle.PORTFOLIO}
           component={PortfolioStackScreen}
@@ -306,8 +311,7 @@ function TabStack() {
           options={({ route }) => ({
             tabBarButton: () => (
               <CyDView
-                className={clsx('mt-[5px] scale-110 shadow shadow-yellow-200')}
-              >
+                className={clsx('my-[5px] scale-110 shadow shadow-yellow-200')}>
                 <ShortcutsModal navigationRef={navigationRef} />
               </CyDView>
             ),

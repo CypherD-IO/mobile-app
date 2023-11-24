@@ -23,7 +23,7 @@ import { ACTIVITIES_REFRESH_TIMEOUT } from '../../constants/timeOuts';
 import axios from '../../core/Http';
 import { ActivityContext, getMaskedAddress, HdWalletContext, limitDecimalPlaces } from '../../core/util';
 import { hostWorker } from '../../global';
-import { ActivityAny, ActivityReducerAction, ActivityStatus, ActivityType, ExchangeTransaction, BrowserTransaction, DebitCardTransaction, IBCTransaction, OnmetaTransaction, SardinePayTransaction, SendTransactionActivity, WalletConnectTransaction } from '../../reducers/activity_reducer';
+import { ActivityAny, ActivityReducerAction, ActivityStatus, ActivityType, ExchangeTransaction, BrowserTransaction, DebitCardTransaction, IBCTransaction, OnmetaTransaction, SendTransactionActivity, WalletConnectTransaction } from '../../reducers/activity_reducer';
 import { CyDFastImage, CyDImage, CyDScrollView, CyDText, CyDTouchView, CyDView } from '../../styles/tailwindStyles';
 import { genId } from '../utilities/activityUtilities';
 import { ACTIVITY_TYPES, STATUSES, TIME_GAPS } from './activityFilter';
@@ -43,7 +43,7 @@ const statuses: Record<string, string> = {
   [ActivityStatus.DELAYED]: 'DELAYED'
 };
 
-function SentItem (props: any) {
+function SentItem(props: any) {
   const activity: SendTransactionActivity = props.activity;
   const { t } = useTranslation();
 
@@ -79,8 +79,8 @@ function SentItem (props: any) {
   };
   return (
     <CyDTouchView className='flex flex-1 flex-row items-center mb-[20px]'
-        onPress={() => showSendDetails()}
-      >
+      onPress={() => showSendDetails()}
+    >
       <CyDFastImage className='h-[25px] w-[25px]' resizeMode='contain' source={icon} />
       <CyDView className='px-[10px] items-start justify-start'>
         <CyDView className='flex flex-row justify-center items-center'>
@@ -97,7 +97,7 @@ function SentItem (props: any) {
   );
 }
 
-function BridgeItem (props: any) {
+function BridgeItem(props: any) {
   const activity: ExchangeTransaction = props.activity;
 
   const { showModal, hideModal } = useGlobalModalContext();
@@ -165,15 +165,15 @@ function BridgeItem (props: any) {
                 source={{
                   uri: activity.fromTokenLogoUrl
                 }}
-                />
+              />
               <CyDView className='absolute top-[20px] right-[-7px]'
-                >
-                  <CyDFastImage
-                    className={'h-[18px] w-[18px] rounded-[50px] border-[1px] border-white bg-white'}
-                    source={fromChainlogo}
-                    resizeMode={FastImage.resizeMode.contain}
-                    />
-                </CyDView>
+              >
+                <CyDFastImage
+                  className={'h-[18px] w-[18px] rounded-[50px] border-[1px] border-white bg-white'}
+                  source={fromChainlogo}
+                  resizeMode={FastImage.resizeMode.contain}
+                />
+              </CyDView>
             </CyDView>
             <CyDView className='px-[15px]'>
               <CyDText className='text-[14px] font-bold'>{activity.fromSymbol}</CyDText>
@@ -199,15 +199,15 @@ function BridgeItem (props: any) {
                 source={{
                   uri: activity.toTokenLogoUrl
                 }}
-                />
+              />
               <CyDView className='absolute top-[20px] right-[-7px]'
-                >
-                  <CyDFastImage
-                    className={'h-[18px] w-[18px] rounded-[50px] border-[1px] border-white bg-white'}
-                    source={toChainlogo}
-                    resizeMode={FastImage.resizeMode.contain}
-                    />
-                </CyDView>
+              >
+                <CyDFastImage
+                  className={'h-[18px] w-[18px] rounded-[50px] border-[1px] border-white bg-white'}
+                  source={toChainlogo}
+                  resizeMode={FastImage.resizeMode.contain}
+                />
+              </CyDView>
             </CyDView>
             <CyDView className='px-[15px]'>
               <CyDText className='text-[14px] font-bold'>{activity.toSymbol}</CyDText>
@@ -220,7 +220,7 @@ function BridgeItem (props: any) {
   );
 }
 
-function IBCItem (props: any) {
+function IBCItem(props: any) {
   const activity: IBCTransaction = props.activity;
 
   const fromChainlogo = ALL_CHAINS.find(chain => chain.name === activity.fromChain)?.logo_url;
@@ -260,13 +260,13 @@ function IBCItem (props: any) {
                 }}
               />
               <CyDView className='absolute top-[20px] right-[-7px]'
-                >
-                  <CyDFastImage
-                    className={'h-[18px] w-[18px] rounded-[50px] border-[1px] border-white bg-white'}
-                    source={fromChainlogo}
-                    resizeMode={FastImage.resizeMode.contain}
-                  />
-                </CyDView>
+              >
+                <CyDFastImage
+                  className={'h-[18px] w-[18px] rounded-[50px] border-[1px] border-white bg-white'}
+                  source={fromChainlogo}
+                  resizeMode={FastImage.resizeMode.contain}
+                />
+              </CyDView>
             </CyDView>
             <CyDView className='px-[15px]'>
               <CyDText className='text-[14px] font-bold'>{activity.token}</CyDText>
@@ -276,7 +276,7 @@ function IBCItem (props: any) {
         </CyDView>
         <CyDView className='flex justify-center items-center mt-[10px]'>
           <CyDFastImage className='h-[22px] w-[22px]' resizeMode='contain'
-            source={AppImages.IBC_GRAY}/>
+            source={AppImages.IBC_GRAY} />
         </CyDView>
         <CyDView className='flex flex-column justify-center items-center px-[10px]'>
           <CyDView className='flex flex-1 justify-start'>
@@ -291,13 +291,13 @@ function IBCItem (props: any) {
                 }}
               />
               <CyDView className='absolute top-[20px] right-[-7px]'
-                >
-                  <CyDFastImage
-                    className={'h-[18px] w-[18px] rounded-[50px] border-[1px] border-white bg-white'}
-                    source={toChainlogo}
-                    resizeMode={FastImage.resizeMode.contain}
-                  />
-                </CyDView>
+              >
+                <CyDFastImage
+                  className={'h-[18px] w-[18px] rounded-[50px] border-[1px] border-white bg-white'}
+                  source={toChainlogo}
+                  resizeMode={FastImage.resizeMode.contain}
+                />
+              </CyDView>
             </CyDView>
             <CyDView className='px-[15px]'>
               <CyDText className='text-[14px] font-bold'>{activity.token}</CyDText>
@@ -310,7 +310,7 @@ function IBCItem (props: any) {
   );
 }
 
-function WalletConnectItem (props: any) {
+function WalletConnectItem(props: any) {
   const activity: WalletConnectTransaction = props.activity;
 
   const { showModal, hideModal } = useGlobalModalContext();
@@ -350,7 +350,7 @@ function WalletConnectItem (props: any) {
   );
 }
 
-function BrowserItem (props: any) {
+function BrowserItem(props: any) {
   const activity: BrowserTransaction = props.activity;
 
   const { showModal, hideModal } = useGlobalModalContext();
@@ -391,7 +391,7 @@ function BrowserItem (props: any) {
   );
 }
 
-function CardItem (props: any) {
+function CardItem(props: any) {
   const activity: DebitCardTransaction = props.activity;
 
   const { setCardInfoParams } = props;
@@ -436,36 +436,7 @@ function CardItem (props: any) {
     </CyDTouchView>);
 }
 
-function SardinePayItem (props: any) {
-  const activity: DebitCardTransaction = props.activity;
-
-  const statusColor = activity.status === ActivityStatus.FAILED ? Colors.activityFailed : activity.status === ActivityStatus.PENDING ? Colors.activityPending : Colors.activitySuccess;
-  const icon = activity.status === ActivityStatus.FAILED ? AppImages.CARD_ERROR : activity.status === ActivityStatus.PENDING ? AppImages.CARD_PENDING : AppImages.CARD_SUCCESS;
-  const fromNow = moment(activity.datetime).fromNow();
-  const formatDate = fromNow.includes('day') ? moment(activity.datetime).format('MMM DD, h:mm a') : fromNow;
-  const formatAmount = `+ ${activity.amount} ${activity.tokenSymbol}`;
-  const formatAmountUsd = activity.status === ActivityStatus.SUCCESS ? `- $${activity.amountInUsd}` : '';
-
-  return (
-    <CyDTouchView className='flex flex-1 flex-row justify-start items-center mb-[20px] mt-[10px]'
-    >
-      <CyDFastImage className='h-[25px] w-[25px]' resizeMode='contain' source={AppImages.SARDINE} />
-      <CyDView className='ml-[10px]'>
-        <CyDView className='flex flex-row justify-start items-center'>
-          <CyDText className='text-[16px] font-bold'>{'Sardine Pay'}</CyDText>
-          <CyDText className={'text-[10px] font-bold ml-[10px] mt-[3px]'} style={{ color: statusColor }}>{statuses[activity.status]}</CyDText>
-        </CyDView>
-        <CyDText className='text-red-500 font-extrabold mt-[3px]'>{formatAmount}</CyDText>
-      </CyDView>
-      <CyDView className='flex-1 items-end self-end'>
-        <CyDText>{formatDate}</CyDText>
-        <CyDText className='text-successTextGreen font-extrabold mt-[3px]'>{formatAmountUsd}</CyDText>
-      </CyDView>
-    </CyDTouchView>
-  );
-}
-
-function OnmetaPayItem (props: any) {
+function OnmetaPayItem(props: any) {
   const activity: OnmetaTransaction = props.activity;
 
   const statusColor = activity.status === ActivityStatus.FAILED ? Colors.activityFailed : activity.status === ActivityStatus.PENDING ? Colors.activityPending : Colors.activitySuccess;
@@ -493,13 +464,15 @@ function OnmetaPayItem (props: any) {
   );
 }
 
-export default function Activites (props:
-{ navigation: any
-  route:
-  { params:
-  { filter: { types: string[], time: string, statuses: string[] } }
-  }
-}) {
+export default function Activites(props:
+  {
+    navigation: any
+    route:
+    {
+      params:
+      { filter: { types: string[], time: string, statuses: string[] } }
+    }
+  }) {
   const ARCH_HOST: string = hostWorker.getHost('ARCH_HOST');
   const { navigation, route } = props;
   const filter = route?.params?.filter ?? { time: TIME_GAPS[0], types: ACTIVITY_TYPES, statuses: STATUSES };
@@ -588,7 +561,6 @@ export default function Activites (props:
     IBC: ActivityType.IBC,
     Browser: ActivityType.BROWSER,
     'Wallet Connect': ActivityType.WALLETCONNECT,
-    'Sardine Pay': ActivityType.SARDINEPAY,
     Onmeta: ActivityType.ONMETA
   };
 
@@ -611,7 +583,7 @@ export default function Activites (props:
     navigation.setOptions({
       headerRight: () => (
         <CyDTouchView onPress={() => navigation.navigate(C.screenTitle.ACTIVITYFILTER)}>
-          <CyDImage className='w-[78px] h-[25px]' source={AppImages.ACTIVITY_FILTER} />
+          <CyDFastImage className='w-[48px] h-[26px]' source={AppImages.FILTER} resizeMode='contain' />
         </CyDTouchView>
       )
     });
@@ -651,7 +623,7 @@ export default function Activites (props:
     });
 
     activities.forEach((activity, index) => {
-      if ([ActivityType.BRIDGE, ActivityType.SWAP, ActivityType.CARD, ActivityType.SARDINEPAY].includes(activity.type)) {
+      if ([ActivityType.BRIDGE, ActivityType.SWAP, ActivityType.CARD].includes(activity.type)) {
         if ([ActivityStatus.DELAYED, ActivityStatus.INPROCESS, ActivityStatus.PENDING].includes(activity.status)) {
           pendingActivities.push(activity);
         }
@@ -754,14 +726,14 @@ export default function Activites (props:
     </CyDView>);
   }
 
-  const RenderActivity = ({ activity }: {activity: ActivityAny}) => {
+  const RenderActivity = ({ activity }: { activity: ActivityAny }) => {
     const { id, type } = activity;
     switch (type) {
       case ActivityType.SEND:
         return (<SentItem key={id + 'sent'} activity={activity} setSendInfoParams={setSendInfoParams} />);
       case ActivityType.BRIDGE:
       case ActivityType.SWAP:
-        return (<BridgeItem key={id + 'bridge'} activity={activity} setBridgeInfoParams={setBridgeInfoParams}/>);
+        return (<BridgeItem key={id + 'bridge'} activity={activity} setBridgeInfoParams={setBridgeInfoParams} />);
       case ActivityType.CARD:
         return (<CardItem key={id + 'card'} activity={activity as DebitCardTransaction} setCardInfoParams={setCardInfoParams} />);
       case ActivityType.IBC:
@@ -770,10 +742,8 @@ export default function Activites (props:
         return (<BrowserItem key={id + genId() + 'browser'} activity={activity} />);
       case ActivityType.WALLETCONNECT:
         return (<WalletConnectItem key={id + genId() + 'browser'} activity={activity} />);
-      case ActivityType.SARDINEPAY:
-        return (<SardinePayItem key={id + 'sardinepay'} activity={activity} />);
       default:
-        return <CyDView></CyDView>;
+        return <CyDView />;
     }
   };
 
@@ -783,7 +753,7 @@ export default function Activites (props:
         <CyDView className='mx-[10px]' key={index}>
           <CyDText numberOfLines={1} className="mb-[5px]">{day.dateString}</CyDText>
           {day.entry.map((activity: ActivityAny, index: number) => {
-            return <RenderActivity key={index} activity={activity}/>;
+            return <RenderActivity key={index} activity={activity} />;
           })}
         </CyDView>
       );
@@ -791,24 +761,24 @@ export default function Activites (props:
   };
 
   return (<CyDScrollView className='bg-white'>
-      <CyDView>
-          <ActivityInfoModal
-            setModalVisible={setShowCardInfo}
-            isModalVisible={showCardInfo}
-            params={cardInfoParams}
-          />
-          <ActivityBridgeInfoModal
-            setModalVisible={setShowBridgeInfo}
-            isModalVisible={showBridgeInfo}
-            params={bridgeInfoParams}
-          />
-          <ActivitySendInfoModal
-            setModalVisible={setShowSendInfo}
-            isModalVisible={showSendInfo}
-            params={sendInfoParams}
-            navigationRef={navigation}
-          />
-          <RenderActivities/>
-        </CyDView>
-    </CyDScrollView>);
+    <CyDView>
+      <ActivityInfoModal
+        setModalVisible={setShowCardInfo}
+        isModalVisible={showCardInfo}
+        params={cardInfoParams}
+      />
+      <ActivityBridgeInfoModal
+        setModalVisible={setShowBridgeInfo}
+        isModalVisible={showBridgeInfo}
+        params={bridgeInfoParams}
+      />
+      <ActivitySendInfoModal
+        setModalVisible={setShowSendInfo}
+        isModalVisible={showSendInfo}
+        params={sendInfoParams}
+        navigationRef={navigation}
+      />
+      <RenderActivities />
+    </CyDView>
+  </CyDScrollView>);
 }

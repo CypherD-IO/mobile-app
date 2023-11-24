@@ -14,12 +14,15 @@ import {
 import CyDTokenValue from '../../../components/v2/tokenValue';
 import AppImages from '../../../../assets/images/appImages';
 import clsx from 'clsx';
+import { StyleSheet } from 'react-native';
+import { PortfolioBannerHeights } from '../../../hooks/useScrollManager';
 
 interface BannerProps {
+  bannerHeight: PortfolioBannerHeights
   checkAllBalance: number | string;
 }
 
-export const Banner = ({ checkAllBalance }: BannerProps) => {
+export const Banner = ({ bannerHeight, checkAllBalance }: BannerProps) => {
   const { t } = useTranslation();
   const portfolioState = useContext<any>(PortfolioContext);
   const hdWallet = useContext<any>(HdWalletContext);
@@ -35,65 +38,69 @@ export const Banner = ({ checkAllBalance }: BannerProps) => {
       value: { hideBalance: !hideBalance },
     });
   };
-  /* ? HEIGHT should be less then the H_BALANCE_BANNER */
   return (
-    <CyDImageBackground
-      className={
-        'h-full w-full border-[1px] mt-[4px] rounded-[24px] border-sepratorColor overflow-hidden'
-      }
-      source={AppImages.PORTFOLIO_BG_S3}
-      resizeMode='cover'
-    >
-      <CyDView
-        className={'mt-[30px] h-[125px] mx-[14px] justify-center items-start'}
+    <CyDView className={clsx('px-[10px]', { 'h-[55%]': bannerHeight === 300 })}>
+      <CyDImageBackground
+        className={
+          'w-full border mt-[4px] pt-[46px] rounded-[24px] border-sepratorColor overflow-hidden'
+        }
+        source={AppImages.PORTFOLIO_BG_S3}
+        resizeMode='cover'
+        imageStyle={styles.imageBGStyle}
       >
-        {getCurrentChainHoldings(
-          portfolioState.statePortfolio.tokenPortfolio,
-          portfolioState.statePortfolio.selectedChain
-        ) && (
-          <CyDView>
-            <CyDView>
-              <CyDText>{t('TOTAL_BALANCE')}</CyDText>
-              <CyDView className='flex flex-row items-center py-[3px]'>
-                <CyDTokenValue className='text-[32px] font-extrabold text-primaryTextColor'>
-                  {checkAllBalance}
-                </CyDTokenValue>
-                <CyDTouchView
-                  onPress={() => {
-                    void hideBalances();
-                  }}
-                  className={clsx(
-                    'h-[32px] flex flex-row items-end pl-[10px] gap-[5px]',
-                    { 'mb-[22px]': hideBalance }
-                  )}
-                >
-                  <CyDFastImage
-                    source={
-                      hideBalance
-                        ? AppImages.CYPHER_HIDE
-                        : AppImages.CYPHER_SHOW
-                    }
-                    className='h-[16px] w-[16px] ml-[15px]'
-                    resizeMode='contain'
-                  />
+        <CyDView
+          className='mx-[14px] justify-center items-start'
+        >
+          {getCurrentChainHoldings(
+            portfolioState.statePortfolio.tokenPortfolio,
+            portfolioState.statePortfolio.selectedChain
+          ) && (
+              <CyDView className='h-full'>
+                <CyDView>
+                  <CyDText>{t('TOTAL_BALANCE')}</CyDText>
+                  <CyDView className='flex flex-row items-center py-[3px]'>
+                    <CyDTokenValue className='text-[32px] font-extrabold text-primaryTextColor'>
+                      {checkAllBalance}
+                    </CyDTokenValue>
+                    <CyDTouchView
+                      onPress={() => {
+                        void hideBalances();
+                      }}
+                      className={clsx(
+                        'h-[32px] flex flex-row items-center pl-[10px] gap-[5px]'
+                      )}
+                    >
+                      <CyDFastImage
+                        source={
+                          hideBalance
+                            ? AppImages.CYPHER_HIDE
+                            : AppImages.CYPHER_SHOW
+                        }
+                        className='h-[16px] w-[16px] ml-[15px]'
+                        resizeMode='contain'
+                      />
+                      <CyDText className='text-[12px]'>
+                        {hideBalance ? t('SHOW') : t('HIDE')}
+                      </CyDText>
+                    </CyDTouchView>
+                  </CyDView>
+                </CyDView>
+                <CyDView className={clsx('flex flex-row justify-center items-center bg-privacyMessageBackgroundColor rounded-[8px] px-[10px] py-[5px] my-[5px]',
+                  { 'opacity-0': !hideBalance })}>
                   <CyDText className='text-[12px]'>
-                    {hideBalance ? t('SHOW') : t('HIDE')}
+                    {t('ALL_BALANCES_HIDDEN')}
                   </CyDText>
-                </CyDTouchView>
+                </CyDView>
               </CyDView>
-            </CyDView>
-            {hideBalance ? (
-              <CyDView className='flex flex-row items-center bg-privacyMessageBackgroundColor rounded-[8px] px-[10px] py-[5px]'>
-                <CyDText className='text-[12px]'>
-                  {t('ALL_BALANCES_HIDDEN')}
-                </CyDText>
-              </CyDView>
-            ) : (
-              <CyDView></CyDView>
             )}
-          </CyDView>
-        )}
-      </CyDView>
-    </CyDImageBackground>
+        </CyDView>
+      </CyDImageBackground>
+    </CyDView>
   );
 };
+
+const styles = StyleSheet.create({
+  imageBGStyle: {
+    top: -70
+  },
+});

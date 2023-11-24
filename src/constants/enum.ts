@@ -11,7 +11,7 @@ export enum AddressFunctionality {
 
 export const AddressFunctionalityList = [
   AddressFunctionality.MY_ADDRESS,
-  AddressFunctionality.CONTACTS
+  AddressFunctionality.CONTACTS,
 ];
 
 export enum UserCommunicationChannels {
@@ -27,10 +27,12 @@ export enum CardApplicationStatus {
   KYC_INITIATED = 'kyc-initiated',
   KYC_PENDING = 'kyc-pending',
   KYC_FAILED = 'kyc-failed',
+  KYC_EXPIRED = 'kyc-expired',
   KYC_SUCCESSFUL = 'kyc-successful',
+  SUBMITTED = 'submitted',
   COMPLETION_PENDING = 'completion-pending',
   COMPLETED = 'completed',
-  SUBMITTED = 'submitted',
+  DECLINED = 'declined', // permanant decline state
 }
 
 export enum Web3Origin {
@@ -77,11 +79,18 @@ export enum TransactionFilterTypes {
   ALL = 'ALL_TRANSACTIONS',
   CREDIT = 'CREDIT',
   DEBIT = 'DEBIT',
+  REFUND = 'REFUND',
 }
 
-export enum TransactionTypes {
+export enum CardTransactionTypes {
   CREDIT = 'CREDIT',
   DEBIT = 'DEBIT',
+  REFUND = 'REFUND',
+}
+
+export enum CardTransactionStatuses {
+  SETTLED = 'Settled',
+  PENDING = 'Pending',
 }
 
 export enum TransactionFilterByDateTypes {
@@ -144,6 +153,7 @@ export enum ButtonType {
   TERNARY = 'ternary',
   GREY = 'grey',
   RED = 'red',
+  DARK = 'dark',
 }
 
 export enum ImagePosition {
@@ -197,12 +207,12 @@ export enum DecodedResponseTypes {
 
 export enum SigningModalPayloadFrom {
   BROWSER = 'BROWSER',
-  WALLETCONNECT = 'WALLETCONNECT'
+  WALLETCONNECT = 'WALLETCONNECT',
 }
 
 export enum ScrollableType {
   SCROLLVIEW = 'ScrollView',
-  FLATLIST = 'FlatList'
+  FLATLIST = 'FlatList',
 }
 
 export enum TransactionType {
@@ -212,7 +222,7 @@ export enum TransactionType {
   APPROVE = 'approve',
   REVOKE = 'revoke',
   OTHERS = 'others',
-  SELF = 'self'
+  SELF = 'self',
 }
 
 export enum ApplicationName {
@@ -246,4 +256,9 @@ export enum ApplicationName {
   CBRIDGE = 'cBridge',
   HOP = 'Hop',
   WORM_HOLE = 'WormHole',
+}
+
+export enum AnalyticsType {
+  SUCCESS = 'SUCCESS',
+  ERROR = 'ERROR',
 }

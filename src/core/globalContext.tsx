@@ -1,4 +1,3 @@
-/* eslint-disable array-callback-return */
 import React, { type Dispatch } from 'react';
 import Web3 from 'web3';
 import * as Sentry from '@sentry/react-native';
@@ -58,7 +57,7 @@ export const initialGlobalState: GlobalStateDef = {
         validators:
           'https://lcd-cosmoshub.keplr.app/cosmos/staking/v1beta1/validators?pagination.limit=1000&status=BOND_STATUS_BONDED',
       },
-      primary: 'https://rpc-cosmoshub-ia.cosmosia.notional.ventures/',
+      primary: 'https://cosmos-rpc.polkachu.com/',
     },
     ETH: {
       primary: 'https://rpc.ankr.com/eth',
@@ -70,7 +69,7 @@ export const initialGlobalState: GlobalStateDef = {
         allValidators:
           'https://api-evmos-ia.cosmosia.notional.ventures/cosmos/staking/v1beta1/validators?status=BOND_STATUS_BONDED&pagination.limit=1000',
         balance:
-          'https://rest.bd.evmos.org:1317/cosmos/bank/v1beta1/balances/address',
+          'https://evmos-api.lavenderfive.com:443/cosmos/bank/v1beta1/balances/address',
         delegationInformation:
           'https://api-evmos-ia.cosmosia.notional.ventures/cosmos/staking/v1beta1/delegations/address',
         reward:
@@ -167,7 +166,7 @@ export const initialGlobalState: GlobalStateDef = {
         validators:
           'https://lcd-noble.keplr.app/cosmos/staking/v1beta1/validators?pagination.limit=1000&status=BOND_STATUS_BONDED',
       },
-      primary: 'https://rpc-noble.keplr.app',
+      primary: 'https://noble-rpc.polkachu.com',
     },
   },
 };
@@ -186,7 +185,7 @@ interface GlobalReducerInput {
 
 export const gloabalContextReducer = (
   state: GlobalStateDef,
-  input: GlobalReducerInput
+  input: GlobalReducerInput,
 ): GlobalStateDef => {
   if (input) {
     const { type, rpc, sessionToken, cardProfile, ibc } = input;
@@ -212,15 +211,15 @@ export interface GlobalContextDef {
 export const GlobalContext = React.createContext<GlobalContextDef | null>(null);
 
 const checkAndMaintainUpdatedRPCEndpointsInAsync = async (
-  rpcEndpoints: RpcResponseDetail
+  rpcEndpoints: RpcResponseDetail,
 ) => {
   const ARCH_HOST: string = hostWorker.getHost('ARCH_HOST');
   const resultFromEndpoint = await axios.get<RpcResponseDetail>(
-    `${ARCH_HOST}/v1/configuration/rpcEndpoints`
+    `${ARCH_HOST}/v1/configuration/rpcEndpoints`,
   );
   const updatedEndpoints = {};
   const availableChains = Object.keys(resultFromEndpoint.data);
-  availableChains.map(async (chain) => {
+  availableChains.map(async chain => {
     if (get(resultFromEndpoint.data, chain) && get(rpcEndpoints, chain)) {
       Object.assign(updatedEndpoints, { [chain]: get(rpcEndpoints, chain) });
     } else if (
@@ -254,16 +253,15 @@ export async function fetchRPCEndpointsFromServer(globalDispatch: Function) {
   ) {
     const updatedRPCFromAsync =
       await checkAndMaintainUpdatedRPCEndpointsInAsync(
-        JSON.parse(RPCFromAsync)
+        JSON.parse(RPCFromAsync),
       );
     result = updatedRPCFromAsync;
   } else {
     const resultFromEndpoint = await axios.get<RpcResponseDetail>(
-      `${ARCH_HOST}/v1/configuration/rpcEndpoints`
+      `${ARCH_HOST}/v1/configuration/rpcEndpoints`,
     );
     result = resultFromEndpoint.data;
   }
-
   globalDispatch({ type: GlobalContextType.RPC_UPDATE, rpc: result });
   return result;
 }
@@ -308,20 +306,20 @@ export async function signIn(ethereum: {
   const ARCH_HOST: string = hostWorker.getHost('ARCH_HOST');
   try {
     const { data } = await axios.get(
-      `${ARCH_HOST}/v1/authentication/sign-message/${ethereum.address}`
+      `${ARCH_HOST}/v1/authentication/sign-message/${ethereum.address}`,
     );
     const verifyMessage = data.message;
     const validationResponse = isValidMessage(ethereum.address, verifyMessage);
     if (validationResponse.message === SignMessageValidationType.VALID) {
       const { signature } = web3.eth.accounts.sign(
         verifyMessage,
-        ethereum.privateKey
+        ethereum.privateKey,
       );
       const result = await axios.post(
         `${ARCH_HOST}/v1/authentication/verify-message/${ethereum.address}`,
         {
           signature,
-        }
+        },
       );
       return { ...validationResponse, token: result.data.token };
     }

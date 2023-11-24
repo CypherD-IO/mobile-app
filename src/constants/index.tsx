@@ -1,5 +1,5 @@
 // NOTE: SCREEN TITLE 🍎🍎🍎🍎
-export const screenTitle = {
+export const screenTitle: Record<string, string> = {
   ACTIVITYFILTER: 'ACTIVITYFILTER',
   ACTIVITIES: 'Activities',
   REFERRAL_REWARDS: 'ReferralRewards',
@@ -60,7 +60,6 @@ export const screenTitle = {
   COSMOS_ACTION: 'CosmosActionScreen',
   COSMOS_REVALIDATOR: 'CosmosReValidatorScreen',
   CB_PAY: 'CoinbasePay',
-  SARD_PAY: 'sardinePay',
   ON_META: 'OnMeta',
   QR_CODE_SCANNER: 'QRCodeScanner',
   DEBIT_CARD: 'Card',
@@ -102,7 +101,11 @@ export const screenTitle = {
   TRANSFI_SCREEN: 'TransFiScreen',
   CARD_SETTINGS_SCREEN: 'CardSettingsScreen',
   TRANSACTIONS_SCREEN: 'Transactions',
-  TRANSACTION_FILTER: 'TransactionFilter'
+  TRANSACTION_FILTER: 'TransactionFilter',
+  DEFI_PROTOCOL_OVERVIEW_SCREEN: 'Protocol Overview',
+  UPGRADE_TO_PHYSICAL_CARD_SCREEN: 'UpgradeToPhysicalCardScreen',
+  SHIPPING_DETAILS_OTP_SCREEN: 'ShippingDetailsOTPScreen',
+  CARD_SIGNUP_CONFIRMATION: 'CardSignupConfirmation',
 };
 
 export const fontsName = {

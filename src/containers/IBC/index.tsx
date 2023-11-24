@@ -1,40 +1,93 @@
 import React, { useContext, useEffect, useRef, useState } from 'react';
-import { CyDImage, CyDScrollView, CyDText, CyDTextInput, CyDTouchView, CyDView } from '../../styles/tailwindStyles';
+import {
+  CyDImage,
+  CyDScrollView,
+  CyDText,
+  CyDTextInput,
+  CyDTouchView,
+  CyDView,
+} from '../../styles/tailwindStyles';
 import ChooseChainModal from '../../components/v2/chooseChainModal';
 import AppImages from '../../../assets/images/appImages';
-import { ActivityContext, convertAmountOfContractDecimal, HdWalletContext, validateAmount, limitDecimalPlaces } from '../../core/util';
+import {
+  ActivityContext,
+  convertAmountOfContractDecimal,
+  HdWalletContext,
+  validateAmount,
+  limitDecimalPlaces,
+  logAnalytics,
+  parseErrorMessage,
+  getNativeToken,
+  PortfolioContext,
+  formatAmount,
+} from '../../core/util';
 import clsx from 'clsx';
-import { Chain, ChainBackendNames, IBC_CHAINS } from '../../constants/server';
+import {
+  Chain,
+  ChainBackendNames,
+  ChainNameMapping,
+  GASLESS_CHAINS,
+  IBC_CHAINS,
+  NativeTokenMapping,
+} from '../../constants/server';
 import { gasFeeReservation } from '../../constants/data';
 import LottieView from 'lottie-react-native';
 import { cosmosConfig, IIBCData } from '../../constants/cosmosConfig';
-import { MsgTransferEncodeObject, SigningStargateClient } from '@cosmjs-rn/stargate';
+import {
+  MsgTransferEncodeObject,
+  SigningStargateClient,
+} from '@cosmjs/stargate';
 import Long from 'long';
 import { MsgTransfer } from 'cosmjs-types/ibc/applications/transfer/v1/tx';
-import { OfflineDirectSigner } from '@cosmjs-rn/proto-signing';
+import { OfflineDirectSigner } from '@cosmjs/proto-signing';
 import { getSignerClient } from '../../core/Keychain';
 import { ethers } from 'ethers';
 import { GlobalContext, GlobalContextDef } from '../../core/globalContext';
 import * as Sentry from '@sentry/react-native';
 import SignatureModal from '../../components/v2/signatureModal';
 import { screenTitle } from '../../constants';
-import axios, { MODAL_HIDE_TIMEOUT } from '../../core/Http';
-import { createTxIBCMsgTransfer, createTxRawEIP712, signatureToWeb3Extension } from '@tharsis/transactions';
+import axios, { MODAL_HIDE_TIMEOUT_250 } from '../../core/Http';
+import {
+  createTxIBCMsgTransfer,
+  createTxRawEIP712,
+  signatureToWeb3Extension,
+} from '@tharsis/transactions';
 import { signTypedData, SignTypedDataVersion } from '@metamask/eth-sig-util';
 import { generatePostBodyBroadcast } from '@tharsis/provider';
 import { useTranslation } from 'react-i18next';
 import { BackHandler } from 'react-native';
 import CyDModalLayout from '../../components/v2/modal';
 import Button from '../../components/v2/button';
-import { ActivityReducerAction, ActivityStatus, ActivityType, IBCTransaction } from '../../reducers/activity_reducer';
+import {
+  ActivityReducerAction,
+  ActivityStatus,
+  ActivityType,
+  IBCTransaction,
+} from '../../reducers/activity_reducer';
 import { genId } from '../utilities/activityUtilities';
 import { useGlobalModalContext } from '../../components/v2/GlobalModal';
 import { MODAL_CLOSING_TIMEOUT } from '../../constants/timeOuts';
 import { SuccessTransaction } from '../../components/v2/StateModal';
 import CyDTokenAmount from '../../components/v2/tokenAmount';
+import { AnalyticsType } from '../../constants/enum';
+import { get } from 'lodash';
 
-export default function IBC ({ route, navigation }: { route: any, navigation: any}) {
+export default function IBC({
+  route,
+  navigation,
+}: {
+  route: any;
+  navigation: any;
+}) {
   const { tokenData } = route.params;
+  const portfolioState = useContext<any>(PortfolioContext);
+  const nativeToken = getNativeToken(
+    get(NativeTokenMapping, tokenData?.chainDetails.symbol) ||
+      tokenData?.chainDetails.symbol,
+    portfolioState.statePortfolio.tokenPortfolio[
+      get(ChainNameMapping, tokenData?.chainDetails.backendName)
+    ].holdings,
+  );
   const { t } = useTranslation();
   const hdWallet = useContext<any>(HdWalletContext);
   const globalStateContext = useContext<any>(GlobalContext);
@@ -47,7 +100,10 @@ export default function IBC ({ route, navigation }: { route: any, navigation: an
   const noble = hdWallet.state.wallet.noble;
 
   const evmosUrls = globalStateContext.globalState.rpcEndpoints.EVMOS.otherUrls;
-  const ACCOUNT_DETAILS = evmosUrls.accountDetails.replace('address', evmos.wallets[evmos.currentIndex].address);
+  const ACCOUNT_DETAILS = evmosUrls.accountDetails.replace(
+    'address',
+    evmos.wallets[evmos.currentIndex].address,
+  );
   const SIMULATION_ENDPOINT = evmosUrls.simulate;
   const TXN_ENDPOINT = evmosUrls.transact;
 
@@ -82,9 +138,13 @@ export default function IBC ({ route, navigation }: { route: any, navigation: an
 
   useEffect(() => {
     const temp: Chain[] = [];
-    IBC_CHAINS.forEach((item) => {
-      if ((tokenData.chainDetails.backendName === ChainBackendNames.STARGAZE && item.backendName === ChainBackendNames.COSMOS) ||
-      (tokenData.chainDetails.backendName === ChainBackendNames.COSMOS && item.backendName === ChainBackendNames.STARGAZE)) {
+    IBC_CHAINS.forEach(item => {
+      if (
+        (tokenData.chainDetails.backendName === ChainBackendNames.STARGAZE &&
+          item.backendName === ChainBackendNames.COSMOS) ||
+        (tokenData.chainDetails.backendName === ChainBackendNames.COSMOS &&
+          item.backendName === ChainBackendNames.STARGAZE)
+      ) {
         return;
       }
       if (tokenData.chainDetails.backendName !== item.backendName) {
@@ -95,7 +155,11 @@ export default function IBC ({ route, navigation }: { route: any, navigation: an
     setChainData(temp);
     setChain(temp[0]);
 
-    setRpc(globalStateContext.globalState.rpcEndpoints[tokenData.chainDetails.chainName.toUpperCase()].primary);
+    setRpc(
+      globalStateContext.globalState.rpcEndpoints[
+        tokenData.chainDetails.chainName.toUpperCase()
+      ].primary,
+    );
   }, []);
 
   const getAddress = () => {
@@ -120,7 +184,9 @@ export default function IBC ({ route, navigation }: { route: any, navigation: an
   useEffect(() => {
     const address = getAddress();
     setSenderAddress(address);
-    if (receiverAddress === senderAddress && senderAddress !== '') { setReceiverAddress(address); } else setReceiverAddress('');
+    if (receiverAddress === senderAddress && senderAddress !== '') {
+      setReceiverAddress(address);
+    } else setReceiverAddress('');
   }, [chain]);
 
   const evmosToOtherChainIbcMsg = (
@@ -129,12 +195,12 @@ export default function IBC ({ route, navigation }: { route: any, navigation: an
     inputAmount: string,
     userAccountData: any,
     ethereum: any,
-    amount: string = '14000000000000000',
-    gas: string = '450000'
+    amount = '14000000000000000',
+    gas = '450000',
   ) => {
     const chainData = {
       chainId: 9001,
-      cosmosChainId: 'evmos_9001-2'
+      cosmosChainId: 'evmos_9001-2',
     };
 
     const accountData = userAccountData.data.account.base_account;
@@ -143,36 +209,59 @@ export default function IBC ({ route, navigation }: { route: any, navigation: an
       accountAddress: senderEvmosAddress,
       sequence: accountData.sequence,
       accountNumber: accountData.account_number,
-      pubkey: accountData.pub_key.key
+      pubkey: accountData.pub_key.key,
     };
 
     const fee = {
       amount,
       denom: cosmosConfig.evmos.denom,
-      gas
+      gas,
     };
 
     const params = {
       receiver: receiverAddress,
       denom: tokenData.denom,
-      amount: ethers.utils.parseUnits(convertAmountOfContractDecimal(inputAmount, tokenData.contractDecimals), tokenData.contractDecimals).toString(),
+      amount: ethers.utils
+        .parseUnits(
+          convertAmountOfContractDecimal(
+            inputAmount,
+            tokenData.contractDecimals,
+          ),
+          tokenData.contractDecimals,
+        )
+        .toString(),
       sourcePort: 'transfer',
-      sourceChannel: cosmosConfig[tokenData.chainDetails.chainName].channel[chain.name.toLowerCase()],
+      sourceChannel:
+        cosmosConfig[tokenData.chainDetails.chainName].channel[
+          chain.name.toLowerCase()
+        ],
       revisionNumber: Long.fromNumber(456),
       revisionHeight: Long.fromNumber(123),
-      timeoutTimestamp: (1e9 * (Math.floor(Date.now() / 1e3) + 1200)).toString()
+      timeoutTimestamp: (
+        1e9 *
+        (Math.floor(Date.now() / 1e3) + 1200)
+      ).toString(),
     };
 
     const memo = '';
 
-    const msg: any = createTxIBCMsgTransfer(chainData, sender, fee, memo, params);
+    const msg: any = createTxIBCMsgTransfer(
+      chainData,
+      sender,
+      fee,
+      memo,
+      params,
+    );
 
-    const privateKeyBuffer = Buffer.from(ethereum.privateKey.substring(2), 'hex');
+    const privateKeyBuffer = Buffer.from(
+      ethereum.privateKey.substring(2),
+      'hex',
+    );
 
     const signature = signTypedData({
       privateKey: privateKeyBuffer,
       data: msg.eipToSign,
-      version: SignTypedDataVersion.V4
+      version: SignTypedDataVersion.V4,
     });
 
     const extension = signatureToWeb3Extension(chainData, sender, signature);
@@ -180,31 +269,33 @@ export default function IBC ({ route, navigation }: { route: any, navigation: an
     const rawTx = createTxRawEIP712(
       msg.legacyAmino.body,
       msg.legacyAmino.authInfo,
-      extension
+      extension,
     );
 
     const body = generatePostBodyBroadcast(rawTx);
     return body;
   };
 
-  function onModalHide () {
+  function onModalHide() {
     hideModal();
     setTimeout(() => {
       navigation.navigate(screenTitle.PORTFOLIO_SCREEN);
-    }, MODAL_HIDE_TIMEOUT);
+    }, MODAL_HIDE_TIMEOUT_250);
   }
 
   const renderSuccessTransaction = (hash: string) => {
-    return <SuccessTransaction
-      hash={hash}
-      symbol={tokenData.chainDetails.symbol}
-      name={tokenData.chainDetails.name}
-      navigation={navigation}
-      hideModal={hideModal}
-    />;
+    return (
+      <SuccessTransaction
+        hash={hash}
+        symbol={tokenData.chainDetails.symbol}
+        name={tokenData.chainDetails.name}
+        navigation={navigation}
+        hideModal={hideModal}
+      />
+    );
   };
 
-  const ibcTransfer = async (type: string = 'simulation'): Promise<void> => {
+  const ibcTransfer = async (type = 'simulation'): Promise<void> => {
     const activityData: IBCTransaction = {
       id: genId(),
       status: ActivityStatus.PENDING,
@@ -217,24 +308,37 @@ export default function IBC ({ route, navigation }: { route: any, navigation: an
       tokenLogoUrl: tokenData.logoUrl,
       amount: parseFloat(amount).toFixed(3),
       datetime: new Date(),
-      receiverAddress
+      receiverAddress,
     };
 
     if (type === 'txn') {
       activityRef.current = activityData;
-      activityContext.dispatch({ type: ActivityReducerAction.POST, value: activityRef.current });
+      activityContext.dispatch({
+        type: ActivityReducerAction.POST,
+        value: activityRef.current,
+      });
     }
 
-    const currentChain: IIBCData = cosmosConfig[tokenData.chainDetails.chainName];
+    const currentChain: IIBCData =
+      cosmosConfig[tokenData.chainDetails.chainName];
     let isIbcReached = false;
 
-    if ([ChainBackendNames.COSMOS, ChainBackendNames.OSMOSIS, ChainBackendNames.JUNO, ChainBackendNames.STARGAZE, ChainBackendNames.NOBLE].includes(tokenData.chainDetails.backendName)) {
+    if (
+      [
+        ChainBackendNames.COSMOS,
+        ChainBackendNames.OSMOSIS,
+        ChainBackendNames.JUNO,
+        ChainBackendNames.STARGAZE,
+        ChainBackendNames.NOBLE,
+      ].includes(tokenData.chainDetails.backendName)
+    ) {
       try {
         setLoading(true);
         let wallet: OfflineDirectSigner | undefined;
 
         if (type === 'simulation') {
-          const wallets: Map<string, OfflineDirectSigner> = await getSignerClient(hdWallet);
+          const wallets: Map<string, OfflineDirectSigner> =
+            await getSignerClient(hdWallet);
           setWallets(wallets);
           wallet = wallets.get(currentChain.prefix);
         } else if (type === 'txn') {
@@ -243,24 +347,34 @@ export default function IBC ({ route, navigation }: { route: any, navigation: an
 
         let senderAddress: any = await wallet.getAccounts();
         senderAddress = senderAddress[0].address;
-
         const client = await SigningStargateClient.connectWithSigner(
           rpc,
           wallet,
           {
-            prefix: currentChain.prefix
-          }
+            prefix: currentChain.prefix,
+          },
         );
 
         const transferAmount = {
           denom: tokenData.denom,
-          amount: ethers.utils.parseUnits(convertAmountOfContractDecimal(amount, tokenData.contractDecimals), tokenData.contractDecimals).toString()
+          amount: ethers.utils
+            .parseUnits(
+              convertAmountOfContractDecimal(
+                amount,
+                tokenData.contractDecimals,
+              ),
+              tokenData.contractDecimals,
+            )
+            .toString(),
         };
         const sourcePort = 'transfer';
-        const sourceChannel = cosmosConfig[tokenData.chainDetails.chainName].channel[chain.name.toLowerCase()];
+        const sourceChannel =
+          cosmosConfig[tokenData.chainDetails.chainName].channel[
+            chain.name.toLowerCase()
+          ];
 
         let timeOut = Long.fromNumber(
-          Math.floor(Date.now() / 1000) + 60
+          Math.floor(Date.now() / 1000) + 60,
         ).multiply(1000000000);
 
         const transferMsg: MsgTransferEncodeObject = {
@@ -273,37 +387,47 @@ export default function IBC ({ route, navigation }: { route: any, navigation: an
             token: transferAmount,
             timeoutHeight: {
               revisionHeight: Long.fromNumber(123),
-              revisionNumber: Long.fromNumber(456)
+              revisionNumber: Long.fromNumber(456),
             },
-            timeoutTimestamp: timeOut
-          })
+            timeoutTimestamp: timeOut,
+          }),
         };
 
         const simulation = await client.simulate(
           senderAddress,
           [transferMsg],
-          ''
+          '',
         );
 
-        setGasFee(simulation * currentChain.gasPrice);
+        const tempGasFee = simulation * currentChain.gasPrice;
+        setGasFee(tempGasFee);
 
         if (type === 'simulation') {
+          if (GASLESS_CHAINS.includes(tokenData.chainDetails.backendName)) {
+            setGasFee(0);
+          }
           setLoading(false);
           setSignModalVisible(true);
         }
         if (type === 'txn') {
           const fee = {
-            gas: Math.floor(simulation * 1.8).toString(),
+            gas: Math.floor(simulation * 1.2).toString(),
             amount: [
               {
                 denom: currentChain.denom,
-                amount: parseInt(gasFee.toFixed(6).split('.')[1]).toString()
-              }
-            ]
+                amount: GASLESS_CHAINS.includes(
+                  tokenData.chainDetails.backendName,
+                )
+                  ? '0'
+                  : parseInt(
+                      (tempGasFee * 1.2).toFixed(6).split('.')[1],
+                    ).toString(),
+              },
+            ],
           };
 
           timeOut = Long.fromNumber(
-            Math.floor(Date.now() / 1000) + 60
+            Math.floor(Date.now() / 1000) + 60,
           ).multiply(1000000000);
 
           isIbcReached = true;
@@ -316,29 +440,40 @@ export default function IBC ({ route, navigation }: { route: any, navigation: an
             sourceChannel,
             {
               revisionHeight: Long.fromNumber(123),
-              revisionNumber: Long.fromNumber(456)
+              revisionNumber: Long.fromNumber(456),
             },
             timeOut,
             fee,
-            memo
+            memo,
           );
 
-          activityRef.current && activityContext.dispatch({
-            type: ActivityReducerAction.PATCH,
-            value: {
-              id: activityRef.current.id,
-              status: ActivityStatus.SUCCESS,
-              transactionHash: resp.transactionHash
-            }
-          });
+          activityRef.current &&
+            activityContext.dispatch({
+              type: ActivityReducerAction.PATCH,
+              value: {
+                id: activityRef.current.id,
+                status: ActivityStatus.SUCCESS,
+                transactionHash: resp.transactionHash,
+              },
+            });
           setSignModalVisible(false);
-          setTimeout(() => showModal(t<string>('STATE_INIT_CAPS'), {
-            type: t<string>('TOAST_TYPE_SUCCESS'),
-            title: t<string>('IBC_SUCCESS'),
-            description: renderSuccessTransaction(resp.transactionHash),
-            onSuccess: onModalHide,
-            onFailure: onModalHide
-          }), MODAL_HIDE_TIMEOUT);
+          setTimeout(
+            () =>
+              showModal('state', {
+                type: t<string>('TOAST_TYPE_SUCCESS'),
+                title: t<string>('IBC_SUCCESS'),
+                description: renderSuccessTransaction(resp.transactionHash),
+                onSuccess: onModalHide,
+                onFailure: onModalHide,
+              }),
+            MODAL_HIDE_TIMEOUT_250,
+          );
+          // monitoring api
+          void logAnalytics({
+            type: AnalyticsType.SUCCESS,
+            txnHash: resp.transactionHash,
+            chain: tokenData.chainDetails?.chainName ?? '',
+          });
         }
         setLoading(false);
       } catch (error) {
@@ -346,49 +481,68 @@ export default function IBC ({ route, navigation }: { route: any, navigation: an
         if (type === 'txn') {
           // Save as failed if the error comes from sendIbc function call
           if (isIbcReached) {
-            activityRef.current && activityContext.dispatch({
-              type: ActivityReducerAction.PATCH,
-              value: {
-                id: activityRef.current.id,
-                status: ActivityStatus.FAILED
-              }
-            });
+            activityRef.current &&
+              activityContext.dispatch({
+                type: ActivityReducerAction.PATCH,
+                value: {
+                  id: activityRef.current.id,
+                  status: ActivityStatus.FAILED,
+                },
+              });
           } else {
-            activityRef.current && activityContext.dispatch({ type: ActivityReducerAction.DELETE, value: { id: activityRef.current.id } });
+            activityRef.current &&
+              activityContext.dispatch({
+                type: ActivityReducerAction.DELETE,
+                value: { id: activityRef.current.id },
+              });
           }
         }
-
+        // monitoring api
+        void logAnalytics({
+          type: AnalyticsType.ERROR,
+          chain: tokenData.chainDetails?.chainName ?? '',
+          message: parseErrorMessage(error),
+          screen: route.name,
+        });
         Sentry.captureException(error);
         setSignModalVisible(false);
-        setTimeout(() => showModal(t<string>('STATE_INIT_CAPS'), { type: t<string>('TOAST_TYPE_ERROR'), title: 'Transaction failed', description: error.message, onSuccess: hideModal, onFailure: hideModal }), MODAL_HIDE_TIMEOUT);
+        setTimeout(
+          () =>
+            showModal('state', {
+              type: t<string>('TOAST_TYPE_ERROR'),
+              title: 'Transaction failed',
+              description: parseErrorMessage(error) ?? '',
+              onSuccess: hideModal,
+              onFailure: hideModal,
+            }),
+          MODAL_HIDE_TIMEOUT_250,
+        );
       }
     } else {
       try {
         setLoading(true);
         const evmosAddress = evmos.wallets[evmos.currentIndex].address;
 
-        const accountInfoResponse = await axios.get(
-          ACCOUNT_DETAILS,
-          {
-            timeout: 2000
-          }
-        );
+        const accountInfoResponse = await axios.get(ACCOUNT_DETAILS, {
+          timeout: 2000,
+        });
 
         let ibcTransferBody = evmosToOtherChainIbcMsg(
           evmosAddress,
           receiverAddress,
           amount,
           accountInfoResponse,
-          ethereum
+          ethereum,
         );
 
-        const response = await axios.post(
-          SIMULATION_ENDPOINT,
-          ibcTransferBody
-        );
+        const response = await axios.post(SIMULATION_ENDPOINT, ibcTransferBody);
 
-        const simulatedGasInfo = response.data.gas_info ? response.data.gas_info : 0;
-        const gasWanted = simulatedGasInfo.gas_used ? simulatedGasInfo.gas_used : 0;
+        const simulatedGasInfo = response.data.gas_info
+          ? response.data.gas_info
+          : 0;
+        const gasWanted = simulatedGasInfo.gas_used
+          ? simulatedGasInfo.gas_used
+          : 0;
         setGasFee(parseFloat(gasWanted) * currentChain.gasPrice);
 
         if (type === 'simulation') {
@@ -403,44 +557,73 @@ export default function IBC ({ route, navigation }: { route: any, navigation: an
             accountInfoResponse,
             ethereum,
             ethers.utils
-              .parseUnits((cosmosConfig.evmos.gasPrice * gasWanted).toString(), '18')
+              .parseUnits(
+                (cosmosConfig.evmos.gasPrice * gasWanted).toString(),
+                '18',
+              )
               .toString(),
-            Math.floor(gasWanted * 1.3).toString()
+            Math.floor(gasWanted * 1.3).toString(),
           );
 
           isIbcReached = true;
 
-          const resp: any = await axios.post(
-            TXN_ENDPOINT,
-            ibcTransferBody
-          );
+          const resp: any = await axios.post(TXN_ENDPOINT, ibcTransferBody);
 
           setSignModalVisible(false);
           setLoading(false);
           if (resp.data.tx_response.code === 0) {
-            activityRef.current && activityContext.dispatch({
-              type: ActivityReducerAction.PATCH,
-              value: {
-                id: activityRef.current.id,
-                status: ActivityStatus.SUCCESS,
-                transactionHash: resp.data.tx_response.txhash
-              }
-            });
+            activityRef.current &&
+              activityContext.dispatch({
+                type: ActivityReducerAction.PATCH,
+                value: {
+                  id: activityRef.current.id,
+                  status: ActivityStatus.SUCCESS,
+                  transactionHash: resp.data.tx_response.txhash,
+                },
+              });
             setTimeout(() => {
-              showModal(t<string>('STATE_INIT_CAPS'), {
+              showModal('state', {
                 type: t<string>('TOAST_TYPE_SUCCESS'),
                 title: t<string>('IBC_SUCCESS'),
-                description: renderSuccessTransaction(resp.data.tx_response.txhash),
+                description: renderSuccessTransaction(
+                  resp.data.tx_response.txhash,
+                ),
                 onSuccess: onModalHide,
-                onFailure: onModalHide
+                onFailure: onModalHide,
               });
-            }, MODAL_HIDE_TIMEOUT);
+            }, MODAL_HIDE_TIMEOUT_250);
+            // monitoring api
+            void logAnalytics({
+              type: AnalyticsType.SUCCESS,
+              txnHash: resp.data.tx_response.txhash,
+              chain: tokenData.chainDetails?.chainName ?? '',
+            });
           } else if (resp.data.tx_response.code === 5) {
-            activityRef.current && activityContext.dispatch({ type: ActivityReducerAction.PATCH, value: { id: activityRef.current.id, status: ActivityStatus.FAILED } });
+            activityRef.current &&
+              activityContext.dispatch({
+                type: ActivityReducerAction.PATCH,
+                value: {
+                  id: activityRef.current.id,
+                  status: ActivityStatus.FAILED,
+                },
+              });
+            // monitoring api
+            void logAnalytics({
+              type: AnalyticsType.ERROR,
+              chain: tokenData.chainDetails?.chainName ?? '',
+              message: parseErrorMessage(resp.data.tx_response.raw_log),
+              screen: route.name,
+            });
             Sentry.captureException(resp.data.tx_response.raw_log);
             setTimeout(() => {
-              showModal(t<string>('STATE_INIT_CAPS'), { type: t<string>('TOAST_TYPE_ERROR'), title: 'Transaction failed', description: error.message.toString(), onSuccess: hideModal, onFailure: onModalHide });
-            }, MODAL_HIDE_TIMEOUT);
+              showModal('state', {
+                type: t<string>('TOAST_TYPE_ERROR'),
+                title: 'Transaction failed',
+                description: '',
+                onSuccess: hideModal,
+                onFailure: onModalHide,
+              });
+            }, MODAL_HIDE_TIMEOUT_250);
           }
         }
       } catch (error) {
@@ -448,32 +631,59 @@ export default function IBC ({ route, navigation }: { route: any, navigation: an
         setSignModalVisible(false);
         if (type === 'txn') {
           if (isIbcReached) {
-            activityRef.current && activityContext.dispatch({ type: ActivityReducerAction.PATCH, value: { id: activityRef.current.id, status: ActivityStatus.FAILED } });
+            activityRef.current &&
+              activityContext.dispatch({
+                type: ActivityReducerAction.PATCH,
+                value: {
+                  id: activityRef.current.id,
+                  status: ActivityStatus.FAILED,
+                },
+              });
           } else {
-            activityRef.current && activityContext.dispatch({ type: ActivityReducerAction.DELETE, value: { id: activityRef.current.id } });
+            activityRef.current &&
+              activityContext.dispatch({
+                type: ActivityReducerAction.DELETE,
+                value: { id: activityRef.current.id },
+              });
           }
         }
+        // monitoring api
+        void logAnalytics({
+          type: AnalyticsType.ERROR,
+          chain: tokenData.chainDetails?.chainName ?? '',
+          message: parseErrorMessage(error),
+          screen: route.name,
+        });
         Sentry.captureException(error);
         setTimeout(() => {
-          showModal(t<string>('STATE_INIT_CAPS'), { type: t<string>('TOAST_TYPE_ERROR'), title: 'Transaction failed', description: error.message.toString(), onSuccess: hideModal, onFailure: onModalHide });
-        }, MODAL_HIDE_TIMEOUT);
+          showModal('state', {
+            type: t<string>('TOAST_TYPE_ERROR'),
+            title: 'Transaction failed',
+            description: error.message.toString(),
+            onSuccess: hideModal,
+            onFailure: onModalHide,
+          });
+        }, MODAL_HIDE_TIMEOUT_250);
       }
     }
   };
 
   const onIBCSubmit = () => {
-    showModal(t<string>('STATE_INIT_CAPS'), {
+    showModal('state', {
       type: 'warning',
       title: 'Warning',
       description: t('IBC_WARNING'),
       onSuccess: () => {
         if (validateAmount(amount)) {
           hideModal();
-          setTimeout(async () => await ibcTransfer('simulation'), MODAL_CLOSING_TIMEOUT);
+          setTimeout(
+            async () => await ibcTransfer('simulation'),
+            MODAL_CLOSING_TIMEOUT,
+          );
           setLoading(false);
         }
       },
-      onFailure: hideModal
+      onFailure: hideModal,
     });
   };
 
@@ -485,34 +695,61 @@ export default function IBC ({ route, navigation }: { route: any, navigation: an
         data={chainData}
         title={'Choose Chain'}
         selectedItem={chain?.name}
-        onPress={({ item }: {
-          item: Chain
-        }) => {
+        onPress={({ item }: { item: Chain }) => {
           setChain(item);
         }}
         type={'chain'}
       />
 
-      <CyDModalLayout setModalVisible={setShowWarningModal} isModalVisible={showWarningModal} animationIn={'slideInUp'} animationOut={'slideOutDown'}>
+      <CyDModalLayout
+        setModalVisible={setShowWarningModal}
+        isModalVisible={showWarningModal}
+        animationIn={'slideInUp'}
+        animationOut={'slideOutDown'}>
         <CyDView className={'relative bg-white rounded-t-[12px] p-[24px]'}>
-          <CyDTouchView onPress={() => setShowWarningModal(false)} className={'z-[50] absolute right-[16px] top-[16px]'}>
-            <CyDImage source={AppImages.CLOSE_CIRCLE}/>
+          <CyDTouchView
+            onPress={() => setShowWarningModal(false)}
+            className={'z-[50] absolute right-[16px] top-[16px]'}>
+            <CyDImage source={AppImages.CLOSE_CIRCLE} />
           </CyDTouchView>
           <CyDView className={'flex items-center'}>
-            <CyDImage source={AppImages.WARNING} className={'w-[110px] h-[100px]'}/>
-            <CyDText className={'text-orange-400 text-[16px] mt-[6px] font-bold'}>{'WARNING'}</CyDText>
-            <CyDText className={'text-primaryTextColor text-[16px] mt-[6px] font-bold text-center'}>{t('IBC_WARNING')}</CyDText>
+            <CyDImage
+              source={AppImages.WARNING}
+              className={'w-[110px] h-[100px]'}
+            />
+            <CyDText
+              className={'text-orange-400 text-[16px] mt-[6px] font-bold'}>
+              {'WARNING'}
+            </CyDText>
+            <CyDText
+              className={
+                'text-primaryTextColor text-[16px] mt-[6px] font-bold text-center'
+              }>
+              {t('IBC_WARNING')}
+            </CyDText>
             <CyDView className={'flex flex-row item-center '}>
-              <Button onPress={() => {
-                setShowWarningModal(false);
-              }} title={'CANCEL'} style={'mt-[20px] p-[5%] mr-[24px]'} type={'secondary'}/>
-              <Button onPress={ () => {
-                setShowWarningModal(false);
-                if (validateAmount(amount)) {
-                  setTimeout(async () => await ibcTransfer('simulation'), MODAL_CLOSING_TIMEOUT);
-                  setLoading(false);
-                }
-              }} title={'PROCEED'} style={'mt-[20px] p-[5%]'}/>
+              <Button
+                onPress={() => {
+                  setShowWarningModal(false);
+                }}
+                title={'CANCEL'}
+                style={'mt-[20px] p-[5%] mr-[24px]'}
+                type={'secondary'}
+              />
+              <Button
+                onPress={() => {
+                  setShowWarningModal(false);
+                  if (validateAmount(amount)) {
+                    setTimeout(
+                      async () => await ibcTransfer('simulation'),
+                      MODAL_CLOSING_TIMEOUT,
+                    );
+                    setLoading(false);
+                  }
+                }}
+                title={'PROCEED'}
+                style={'mt-[20px] p-[5%]'}
+              />
             </CyDView>
           </CyDView>
         </CyDView>
@@ -520,21 +757,18 @@ export default function IBC ({ route, navigation }: { route: any, navigation: an
 
       <SignatureModal
         isModalVisible={signModalVisible}
-        setModalVisible={setSignModalVisible}
-      >
+        setModalVisible={setSignModalVisible}>
         <CyDView className={'px-[40px]'}>
           <CyDText
             className={
               'text-center font-nunito text-[24px] font-bold   mt-[20px]'
-            }
-          >
+            }>
             {'Transfer tokens '}
           </CyDText>
           <CyDView
             className={
               'flex flex-row justify-around my-[20px] bg-[#F7F8FE] rounded-[20px] px-[15px] py-[20px] '
-            }
-          >
+            }>
             <CyDView className={'flex items-center justify-center'}>
               <CyDImage
                 source={{ uri: tokenData.logoUrl }}
@@ -543,29 +777,28 @@ export default function IBC ({ route, navigation }: { route: any, navigation: an
               <CyDText
                 className={
                   'my-[6px] mx-[2px] text-black text-[14px] font-semibold flex flex-row justify-center font-nunito'
-                }
-              >
+                }>
                 {tokenData.name}
               </CyDText>
               <CyDView
                 className={
                   'bg-white rounded-[20px] flex flex-row items-center p-[4px]'
-                }
-              >
+                }>
                 <CyDImage
                   source={tokenData.chainDetails.logo_url}
                   className={'w-[14px] h-[14px]'}
                 />
                 <CyDText
-                  className={'ml-[6px] font-nunito font-normal text-black  text-[12px]'}
-                >
+                  className={
+                    'ml-[6px] font-nunito font-normal text-black  text-[12px]'
+                  }>
                   {tokenData.chainDetails.name}
                 </CyDText>
               </CyDView>
             </CyDView>
 
             <CyDView className={'flex justify-center'}>
-              <CyDImage source={AppImages.RIGHT_ARROW_LONG}/>
+              <CyDImage source={AppImages.RIGHT_ARROW_LONG} />
             </CyDView>
 
             <CyDView className={'flex items-center justify-center '}>
@@ -576,22 +809,21 @@ export default function IBC ({ route, navigation }: { route: any, navigation: an
               <CyDText
                 className={
                   'my-[6px] mx-[2px] text-black text-[14px] font-semibold flex flex-row justify-center font-nunito'
-                }
-              >
+                }>
                 {tokenData.name}
               </CyDText>
               <CyDView
                 className={
                   'bg-white rounded-[20px] flex flex-row items-center p-[4px]'
-                }
-              >
+                }>
                 <CyDImage
                   source={chain.logo_url}
                   className={'w-[14px] h-[14px]'}
                 />
                 <CyDText
-                  className={'ml-[6px] font-nunito text-black font-normal text-[12px]'}
-                >
+                  className={
+                    'ml-[6px] font-nunito text-black font-normal text-[12px]'
+                  }>
                   {chain.name}
                 </CyDText>
               </CyDView>
@@ -600,33 +832,33 @@ export default function IBC ({ route, navigation }: { route: any, navigation: an
 
           <CyDView className={'flex flex-row justify-between mb-[14px]'}>
             <CyDText
-              className={'font-[#434343] font-nunito font-[16px] text-medium'}
-            >
+              className={'font-[#434343] font-nunito font-[16px] text-medium'}>
               {t('TO_ADDRESS')}
             </CyDText>
             <CyDView className={'mr-[6%] flex flex-col items-end'}>
               <CyDText
-                className={'font-nunito font-[16px] text-black font-bold underline'}
-              >
-                {receiverAddress.substring(0, 8) + '...' + receiverAddress.substring(receiverAddress.length - 8)}
+                className={
+                  'font-nunito font-[16px] text-black font-bold underline'
+                }>
+                {receiverAddress.substring(0, 8) +
+                  '...' +
+                  receiverAddress.substring(receiverAddress.length - 8)}
               </CyDText>
             </CyDView>
           </CyDView>
 
           <CyDView className={'flex flex-row justify-between mb-[14px]'}>
             <CyDText
-              className={'font-[#434343] font-nunito font-[16px] text-medium'}
-            >{t('SENT_AMOUNT')}
+              className={'font-[#434343] font-nunito font-[16px] text-medium'}>
+              {t('SENT_AMOUNT')}
             </CyDText>
             <CyDView className={'mr-[6%] flex flex-col items-end'}>
               <CyDText
-                className={'font-nunito font-[16px] text-black font-bold'}
-              >
+                className={'font-nunito font-[16px] text-black font-bold'}>
                 {`${parseFloat(amount).toFixed(3)} ${tokenData.name}`}
               </CyDText>
               <CyDText
-                className={'font-nunito font-[12px] text-[#929292] font-bold'}
-              >
+                className={'font-nunito font-[12px] text-[#929292] font-bold'}>
                 {(tokenData.price * parseFloat(amount)).toFixed(3) + ' USD'}
               </CyDText>
             </CyDView>
@@ -634,31 +866,26 @@ export default function IBC ({ route, navigation }: { route: any, navigation: an
 
           <CyDView className={'flex flex-row justify-between mb-[14px]'}>
             <CyDText
-              className={'font-[#434343] font-nunito font-[16px] text-medium'}
-            >
+              className={'font-[#434343] font-nunito font-[16px] text-medium'}>
               {t('TOTAL_GAS')}
             </CyDText>
             <CyDView className={'mr-[6%] flex flex-col items-end'}>
               <CyDText
-                className={'font-nunito font-[16px] text-black font-bold'}
-              >
-                {`${gasFee.toFixed(3)} ${tokenData.chainDetails.name.toUpperCase()}` }
+                className={'font-nunito font-[16px] text-black font-bold'}>
+                {String(formatAmount(gasFee)) + String(nativeToken?.symbol)}
               </CyDText>
               <CyDText
-                className={'font-nunito font-[12px] text-[#929292] font-bold'}
-              >
-                {(tokenData.price * gasFee).toFixed(3) + ' USD'}
+                className={'font-nunito font-[12px] text-[#929292] font-bold'}>
+                {String(formatAmount(nativeToken.price * gasFee)) + ' USD'}
               </CyDText>
             </CyDView>
           </CyDView>
-
         </CyDView>
 
         <CyDView
           className={
             'flex flex-row w-full justify-center items-center space-x-[16px] px-[30px] pb-[50px]'
-          }
-        >
+          }>
           <CyDTouchView
             disabled={loading}
             onPress={() => {
@@ -666,26 +893,23 @@ export default function IBC ({ route, navigation }: { route: any, navigation: an
             }}
             className={
               'border-[1px] border-[#525252] rounded-[12px] px-[20px] py-[20px] w-1/2 flex items-center'
-            }
-          >
+            }>
             <CyDText
               className={
                 'text-[#525252] text-[16px] font-extrabold font-nunito'
-              }
-            >
+              }>
               {'Cancel'}
             </CyDText>
           </CyDTouchView>
 
           <CyDTouchView
-            disabled={
-              loading
-            }
-            onPress={async () => { await ibcTransfer('txn'); }}
+            disabled={loading}
+            onPress={async () => {
+              await ibcTransfer('txn');
+            }}
             className={clsx(
-              'rounded-[12px] bg-[#FFDE59] px-[20px]  w-1/2 items-center'
-            )}
-          >
+              'rounded-[12px] bg-[#FFDE59] px-[20px]  w-1/2 items-center',
+            )}>
             {loading && (
               <CyDView className={'mr-[16px]'}>
                 <LottieView
@@ -700,14 +924,12 @@ export default function IBC ({ route, navigation }: { route: any, navigation: an
               <CyDText
                 className={
                   'text-[#525252] text-[16px] font-extrabold font-nunito my-[20px]'
-                }
-              >
+                }>
                 {'IBC'}
               </CyDText>
             )}
           </CyDTouchView>
         </CyDView>
-
       </SignatureModal>
 
       {!showMerged && (
@@ -715,22 +937,18 @@ export default function IBC ({ route, navigation }: { route: any, navigation: an
           <CyDView
             className={
               'bg-[#F7F8FE] mx-[20px] border-[1px] border-[#EBEBEB] rounded-[16px] mt-[16px]'
-            }
-          >
+            }>
             <CyDView className={'h-[60px] flex flex-row w-full'}>
               <CyDView
                 className={
                   'w-3/12 border-r-[1px] border-[#EBEBEB] bg-white px-[18px] rounded-l-[16px] flex items-center justify-center'
-                }
-              >
+                }>
                 <CyDText
-                  className={'text-[#434343] text-[16px] font-extrabold'}
-                >
+                  className={'text-[#434343] text-[16px] font-extrabold'}>
                   {'From'}
                 </CyDText>
                 <CyDText
-                  className={'text-[#434343] text-[16px] font-extrabold'}
-                >
+                  className={'text-[#434343] text-[16px] font-extrabold'}>
                   {'Chain'}
                 </CyDText>
               </CyDView>
@@ -738,8 +956,7 @@ export default function IBC ({ route, navigation }: { route: any, navigation: an
               <CyDView
                 className={
                   'flex flex-row items-center justify-between w-9/12 p-[18px]'
-                }
-              >
+                }>
                 <CyDView className={'flex flex-row items-center'}>
                   <CyDImage
                     source={tokenData.chainDetails.logo_url}
@@ -748,8 +965,7 @@ export default function IBC ({ route, navigation }: { route: any, navigation: an
                   <CyDText
                     className={
                       'text-center text-black font-nunito text-[16px] ml-[20px]'
-                    }
-                  >
+                    }>
                     {tokenData.chainDetails.name}
                   </CyDText>
                 </CyDView>
@@ -760,22 +976,18 @@ export default function IBC ({ route, navigation }: { route: any, navigation: an
           <CyDView
             className={
               'bg-[#F7F8FE] mx-[20px] border-[1px] border-[#EBEBEB] rounded-[16px] mt-[16px]'
-            }
-          >
+            }>
             <CyDView className={'h-[60px] flex flex-row w-full'}>
               <CyDView
                 className={
                   'w-3/12 border-r-[1px] border-[#EBEBEB] bg-white px-[18px] rounded-l-[16px] flex items-center justify-center'
-                }
-              >
+                }>
                 <CyDText
-                  className={'text-[#434343] text-[16px] font-extrabold'}
-                >
+                  className={'text-[#434343] text-[16px] font-extrabold'}>
                   {'From'}
                 </CyDText>
                 <CyDText
-                  className={'text-[#434343] text-[16px] font-extrabold'}
-                >
+                  className={'text-[#434343] text-[16px] font-extrabold'}>
                   {'Token'}
                 </CyDText>
               </CyDView>
@@ -783,8 +995,7 @@ export default function IBC ({ route, navigation }: { route: any, navigation: an
               <CyDView
                 className={
                   'flex flex-row items-center justify-between w-9/12 p-[18px]'
-                }
-              >
+                }>
                 <CyDView className={'flex flex-row items-center'}>
                   <CyDImage
                     source={{ uri: tokenData.logoUrl }}
@@ -793,8 +1004,7 @@ export default function IBC ({ route, navigation }: { route: any, navigation: an
                   <CyDText
                     className={
                       'text-center text-black font-nunito text-[16px] ml-[20px]'
-                    }
-                  >
+                    }>
                     {tokenData.name}
                   </CyDText>
                 </CyDView>
@@ -806,22 +1016,18 @@ export default function IBC ({ route, navigation }: { route: any, navigation: an
             className={
               'bg-[#F7F8FE] mx-[20px] my-[16px] border-[1px] border-[#EBEBEB] rounded-[16px]'
             }
-            onPress={() => setShowChain(true)}
-          >
+            onPress={() => setShowChain(true)}>
             <CyDView className={'h-[60px] flex flex-row w-full'}>
               <CyDView
                 className={
                   'w-3/12 border-r-[1px] border-[#EBEBEB] bg-white px-[18px] rounded-l-[16px] flex items-center justify-center'
-                }
-              >
+                }>
                 <CyDText
-                  className={'text-[#434343] text-[16px] font-extrabold'}
-                >
+                  className={'text-[#434343] text-[16px] font-extrabold'}>
                   {'To'}
                 </CyDText>
                 <CyDText
-                  className={'text-[#434343] text-[16px] font-extrabold'}
-                >
+                  className={'text-[#434343] text-[16px] font-extrabold'}>
                   {'Chain'}
                 </CyDText>
               </CyDView>
@@ -829,8 +1035,7 @@ export default function IBC ({ route, navigation }: { route: any, navigation: an
               <CyDView
                 className={
                   'flex flex-row items-center justify-between w-9/12 p-[18px]'
-                }
-              >
+                }>
                 <CyDView className={'flex flex-row items-center'}>
                   <CyDImage
                     source={chain?.logo_url}
@@ -839,8 +1044,7 @@ export default function IBC ({ route, navigation }: { route: any, navigation: an
                   <CyDText
                     className={
                       'text-center text-black font-nunito text-[16px] ml-[8px] ml-[20px]'
-                    }
-                  >
+                    }>
                     {chain?.name}
                   </CyDText>
                 </CyDView>
@@ -849,12 +1053,15 @@ export default function IBC ({ route, navigation }: { route: any, navigation: an
             </CyDView>
           </CyDTouchView>
 
-          <CyDView className={'bg-[#F7F8FE] mx-[20px] border-[1px] border-[#EBEBEB] rounded-[16px] pl-[16px] pr-[10px] py-[8px] h-[60px] flex flex-row justify-center items-center'}>
+          <CyDView
+            className={
+              'bg-[#F7F8FE] mx-[20px] border-[1px] border-[#EBEBEB] rounded-[16px] pl-[16px] pr-[10px] py-[8px] h-[60px] flex flex-row justify-center items-center'
+            }>
             <CyDTextInput
               className={clsx(
-                'font-medium text-left text-black font-nunito text-[16px] w-[90%] mr-[10px]'
+                'font-medium text-left text-black font-nunito text-[16px] w-[90%] mr-[10px]',
               )}
-              onChangeText={(text) => {
+              onChangeText={text => {
                 setReceiverAddress(text);
               }}
               placeholder={'Receiver Address'}
@@ -862,25 +1069,35 @@ export default function IBC ({ route, navigation }: { route: any, navigation: an
               value={receiverAddress}
               autoFocus={false}
             />
-            <CyDTouchView className={''} onPress={() => { setReceiverAddress(''); }}>
+            <CyDTouchView
+              className={''}
+              onPress={() => {
+                setReceiverAddress('');
+              }}>
               <CyDImage source={AppImages.CLOSE_CIRCLE} />
             </CyDTouchView>
           </CyDView>
 
-          <CyDTouchView className={'flex flex-row justify-end mx-[30px] mb-[16px] mt-[4px]'} onPress={() => {
-            const address = getAddress();
-            setReceiverAddress(address);
-          }
-          }>
-            <CyDText className={'underline font-normal text-[12px] text-black'}>{'Use My Address'}</CyDText>
+          <CyDTouchView
+            className={'flex flex-row justify-end mx-[30px] mb-[16px] mt-[4px]'}
+            onPress={() => {
+              const address = getAddress();
+              setReceiverAddress(address);
+            }}>
+            <CyDText className={'underline font-normal text-[12px] text-black'}>
+              {'Use My Address'}
+            </CyDText>
           </CyDTouchView>
 
-          <CyDView className={'bg-[#F7F8FE] mx-[20px] border-[1px] border-[#EBEBEB] rounded-[16px] pl-[16px] pr-[10px] py-[8px] h-[60px] flex flex-row justify-center items-center'}>
+          <CyDView
+            className={
+              'bg-[#F7F8FE] mx-[20px] border-[1px] border-[#EBEBEB] rounded-[16px] pl-[16px] pr-[10px] py-[8px] h-[60px] flex flex-row justify-center items-center'
+            }>
             <CyDTextInput
               className={clsx(
-                'font-medium text-left text-black font-nunito text-[16px] w-[90%] mr-[10px]'
+                'font-medium text-left text-black font-nunito text-[16px] w-[90%] mr-[10px]',
               )}
-              onChangeText={(text) => {
+              onChangeText={text => {
                 setMemo(text);
               }}
               placeholder={'Memo (optional)'}
@@ -888,7 +1105,11 @@ export default function IBC ({ route, navigation }: { route: any, navigation: an
               value={memo}
               autoFocus={false}
             />
-            <CyDTouchView className={''} onPress={() => { setMemo(''); }}>
+            <CyDTouchView
+              className={''}
+              onPress={() => {
+                setMemo('');
+              }}>
               <CyDImage source={AppImages.CLOSE_CIRCLE} />
             </CyDTouchView>
           </CyDView>
@@ -902,8 +1123,7 @@ export default function IBC ({ route, navigation }: { route: any, navigation: an
           }}
           className={
             'flex flex-row justify-between my-[16px] bg-[#F7F8FE] rounded-[20px] mx-[20px] px-[15px] py-[20px] '
-          }
-        >
+          }>
           <CyDView className={'flex items-center justify-center'}>
             <CyDImage
               source={{ uri: tokenData.logoUrl }}
@@ -912,15 +1132,13 @@ export default function IBC ({ route, navigation }: { route: any, navigation: an
             <CyDText
               className={
                 'my-[6px] mx-[2px] text-black text-[14px] font-semibold flex flex-row justify-center font-nunito'
-              }
-            >
+              }>
               {tokenData.name}
             </CyDText>
             <CyDView
               className={
                 'bg-white rounded-[20px] flex flex-row items-center p-[4px]'
-              }
-            >
+              }>
               <CyDImage
                 source={tokenData.chainDetails.logo_url}
                 className={'w-[14px] h-[14px]'}
@@ -928,8 +1146,7 @@ export default function IBC ({ route, navigation }: { route: any, navigation: an
               <CyDText
                 className={
                   'ml-[6px] font-nunito text-black font-normal text-[12px]'
-                }
-              >
+                }>
                 {tokenData.chainDetails.name}
               </CyDText>
             </CyDView>
@@ -951,15 +1168,13 @@ export default function IBC ({ route, navigation }: { route: any, navigation: an
             <CyDText
               className={
                 'my-[6px] mx-[2px] text-black text-[14px] font-semibold flex flex-row justify-center font-nunito'
-              }
-            >
+              }>
               {tokenData.name}
             </CyDText>
             <CyDView
               className={
                 'bg-white rounded-[20px] flex flex-row items-center p-[4px]'
-              }
-            >
+              }>
               <CyDImage
                 source={chain.logo_url}
                 className={'w-[14px] h-[14px]'}
@@ -967,8 +1182,7 @@ export default function IBC ({ route, navigation }: { route: any, navigation: an
               <CyDText
                 className={
                   'ml-[6px] font-nunito text-black font-normal text-[12px]'
-                }
-              >
+                }>
                 {chain?.name}
               </CyDText>
             </CyDView>
@@ -977,25 +1191,24 @@ export default function IBC ({ route, navigation }: { route: any, navigation: an
       )}
 
       <CyDTouchView
-        className={clsx(' mt-[25px] pb-[30px] bg-[#F7F8FE] mx-[20px] rounded-[20px]')}
+        className={clsx(
+          ' mt-[25px] pb-[30px] bg-[#F7F8FE] mx-[20px] rounded-[20px]',
+        )}
         onPress={() => {
           amount === '0.00' ? setAmount('') : setAmount(amount);
           setShowMerged(true);
-        }}
-      >
+        }}>
         <CyDText
           className={
             'font-extrabold text-[22px] text-center mt-[20px] font-nunito text-black'
-          }
-        >
+          }>
           {'Enter Amount'}
         </CyDText>
 
         <CyDText
           className={
             'font-extrabold text-[20px] text-center mt-[10px] font-nunito bottom-0 text-black '
-          }
-        >
+          }>
           {tokenData.name}
         </CyDText>
 
@@ -1003,27 +1216,33 @@ export default function IBC ({ route, navigation }: { route: any, navigation: an
           {!showMerged && (
             <CyDText
               className={clsx(
-                'font-bold text-[70px] h-[80px] text-justify font-nunito text-black '
-              )}
-            >
+                'font-bold text-[70px] h-[80px] text-justify font-nunito text-black ',
+              )}>
               {parseFloat(amount).toFixed(2)}
             </CyDText>
           )}
           {showMerged && (
-            <CyDView className={'flex flex-row items-center justify-center relative'}>
+            <CyDView
+              className={'flex flex-row items-center justify-center relative'}>
               <CyDTouchView
                 onPress={() => {
-                  const gasReserved = tokenData?.chainDetails?.symbol === tokenData?.symbol ? gasFeeReservation[tokenData.chainDetails.backendName] : 0;
+                  const gasReserved =
+                    tokenData?.chainDetails?.symbol === tokenData?.symbol
+                      ? gasFeeReservation[tokenData.chainDetails.backendName]
+                      : 0;
 
-                  const maxAmount = parseFloat(tokenData?.actualBalance) - gasReserved;
-                  const textAmount = maxAmount < 0 ? '0.00' : limitDecimalPlaces(maxAmount.toString(), 6);
+                  const maxAmount =
+                    parseFloat(tokenData?.actualBalance) - gasReserved;
+                  const textAmount =
+                    maxAmount < 0
+                      ? '0.00'
+                      : limitDecimalPlaces(maxAmount.toString(), 6);
                   setAmount(textAmount);
                 }}
                 className={clsx(
                   'absolute bg-white rounded-full h-[40px] w-[40px] flex justify-center items-center ' +
-                  'p-[4px] left-[-14%]'
-                )}
-              >
+                    'p-[4px] left-[-14%]',
+                )}>
                 <CyDText className={'font-nunito text-black '}>{'MAX'}</CyDText>
               </CyDTouchView>
               <CyDTextInput
@@ -1031,10 +1250,10 @@ export default function IBC ({ route, navigation }: { route: any, navigation: an
                   'font-bold text-center text-black h-[80px] font-nunito w-8/12 pt-[16px]',
                   {
                     'text-[70px]': amount.length <= 5,
-                    'text-[40px]': amount.length > 5
-                  }
+                    'text-[40px]': amount.length > 5,
+                  },
                 )}
-                keyboardType="numeric"
+                keyboardType='numeric'
                 onChangeText={(text: string) => {
                   setAmount(text);
                 }}
@@ -1045,20 +1264,32 @@ export default function IBC ({ route, navigation }: { route: any, navigation: an
           )}
         </CyDView>
         <CyDView className='flex flex-row flex-wrap justify-center items-center'>
-          <CyDText className={'font-semibold text-[14px] text-center text-[#929292] font-nunito mt-[8px]'}>{`${tokenData.name} balance`}</CyDText>
+          <CyDText
+            className={
+              'font-semibold text-[14px] text-center text-[#929292] font-nunito mt-[8px]'
+            }>{`${tokenData.name} balance`}</CyDText>
           <CyDTokenAmount className='ml-[10px]' decimalPlaces={6}>
             {tokenData.actualBalance}
           </CyDTokenAmount>
         </CyDView>
       </CyDTouchView>
 
-      <CyDView className={'flex flex-row items-center justify-center my-[10px]'}>
-        <Button title={t('SUBMIT')} loading={loading} disabled={loading || parseFloat(amount) <= 0 || receiverAddress === '' || parseFloat(amount) > parseFloat(tokenData.actualBalance)}
+      <CyDView
+        className={'flex flex-row items-center justify-center my-[10px]'}>
+        <Button
+          title={t('SUBMIT')}
+          loading={loading}
+          disabled={
+            loading ||
+            parseFloat(amount) <= 0 ||
+            receiverAddress === '' ||
+            parseFloat(amount) > parseFloat(tokenData.actualBalance)
+          }
           onPress={() => {
             onIBCSubmit();
             // setShowWarningModal(true);
           }}
-          isPrivateKeyDependent = {true}
+          isPrivateKeyDependent={true}
           style={'w-[90%] py-[18px]'}
         />
       </CyDView>

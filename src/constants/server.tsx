@@ -1,4 +1,5 @@
 import AppImages from '../../assets/images/appImages';
+import { DefiPositonTypes } from '../models/defi.interface';
 export interface Chain {
   chainName: string;
   name: string;
@@ -15,6 +16,7 @@ export interface Chain {
 }
 
 export enum ChainBackendNames {
+  ALL = 'ALL',
   ETH = 'ETH',
   POLYGON = 'POLYGON',
   AVALANCHE = 'AVALANCHE',
@@ -63,7 +65,6 @@ export enum FundWalletAddressType {
   ZKSYNC_ERA = 'ZKSYNC_ERA',
   BASE = 'BASE',
   POLYGON_ZKEVM = 'POLYGON_ZKEVM',
-
 }
 
 export const CHAIN_ETH: Chain = {
@@ -313,7 +314,8 @@ export const CHAIN_ZKSYNC_ERA: Chain = {
   backendName: ChainBackendNames.ZKSYNC_ERA,
   chain_id: '0x144',
   native_token_address: '0xeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee',
-  nativeTokenLogoUrl: 'https://www.covalenthq.com/static/images/icons/display-icons/ethereum-eth-logo.png',
+  nativeTokenLogoUrl:
+    'https://www.covalenthq.com/static/images/icons/display-icons/ethereum-eth-logo.png',
   chainIdNumber: 324,
 };
 
@@ -326,7 +328,8 @@ export const CHAIN_BASE: Chain = {
   backendName: ChainBackendNames.BASE,
   chain_id: '0x2105',
   native_token_address: '0xeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee',
-  nativeTokenLogoUrl: 'https://www.covalenthq.com/static/images/icons/display-icons/ethereum-eth-logo.png',
+  nativeTokenLogoUrl:
+    'https://www.covalenthq.com/static/images/icons/display-icons/ethereum-eth-logo.png',
   chainIdNumber: 8453,
 };
 
@@ -339,7 +342,8 @@ export const CHAIN_POLYGON_ZKEVM: Chain = {
   backendName: ChainBackendNames.POLYGON_ZKEVM,
   chain_id: '0x44d',
   native_token_address: '0xeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee',
-  nativeTokenLogoUrl: 'https://www.covalenthq.com/static/images/icons/display-icons/ethereum-eth-logo.png',
+  nativeTokenLogoUrl:
+    'https://www.covalenthq.com/static/images/icons/display-icons/ethereum-eth-logo.png',
   chainIdNumber: 1101,
 };
 
@@ -353,7 +357,9 @@ export const EnsCoinTypes: Record<string, string> = {
   [ChainBackendNames.SHARDEUM_SPHINX]: 'dummy',
 };
 
-export const SUPPORTED_EVM_CHAINS = [1, 137, 56, 43114, 250, 10, 42161, 9001, 324, 8453, 1101];
+export const SUPPORTED_EVM_CHAINS = [
+  1, 137, 56, 43114, 250, 10, 42161, 9001, 324, 8453, 1101,
+];
 export const CHAIN_NAMES = [
   'ethereum',
   'evmos',
@@ -396,7 +402,7 @@ export const ALL_CHAINS: Chain[] = [
   CHAIN_BASE,
   CHAIN_POLYGON_ZKEVM,
   CHAIN_SHARDEUM,
-  CHAIN_SHARDEUM_SPHINX
+  CHAIN_SHARDEUM_SPHINX,
 ];
 
 export const EVM_CHAINS: Chain[] = [
@@ -408,7 +414,6 @@ export const EVM_CHAINS: Chain[] = [
   CHAIN_OPTIMISM,
   CHAIN_ARBITRUM,
   CHAIN_SHARDEUM,
-  CHAIN_SHARDEUM_SPHINX,
   CHAIN_SHARDEUM_SPHINX,
   CHAIN_ZKSYNC_ERA,
   CHAIN_BASE,
@@ -620,8 +625,75 @@ export const ChainNameToContactsChainNameMapping = {
   'Polygon zkEVM': 'polygon_zkevm',
 };
 
-
-
 export enum NativeTokenMapping {
   COSMOS = 'ATOM',
 }
+
+export const GASLESS_CHAINS = [ChainBackendNames.NOBLE];
+
+// DeFi Data
+export const DEFI_URL = '/v1/portfolio/evm/defi';
+
+export const deFiPositionTypes = [
+  {
+    logo: AppImages.DEFI_LIQUIDITY,
+    value: DefiPositonTypes.LIQUIDITY,
+    label: 'Liquidity',
+  },
+  {
+    logo: AppImages.DEFI_STAKING,
+    value: DefiPositonTypes.STAKING,
+    label: 'Staking',
+  },
+  {
+    logo: AppImages.DEFI_LENDING,
+    value: DefiPositonTypes.LENDING,
+    label: 'Lending',
+  },
+  {
+    logo: AppImages.DEFI_FARMING,
+    value: DefiPositonTypes.FARMING,
+    label: 'Farming',
+  },
+  {
+    logo: AppImages.DEFI_LEVERAGED_FARMING,
+    value: DefiPositonTypes.LEVRAGED_FARMING,
+    label: 'Leveraged farming',
+  },
+  { logo: AppImages.DEFI_YEILD, value: DefiPositonTypes.YEILD, label: 'Yield' },
+  {
+    logo: AppImages.DEFI_REWARDS,
+    value: DefiPositonTypes.REWARDS,
+    label: 'Rewards',
+  },
+  {
+    logo: AppImages.DEFI_DEPOSIT,
+    value: DefiPositonTypes.DEPOSIT,
+    label: 'Deposit',
+  },
+  {
+    logo: AppImages.DEFI_VESTING,
+    value: DefiPositonTypes.VESTING,
+    label: 'Vesting',
+  },
+  {
+    logo: AppImages.DEFI_LOCKED,
+    value: DefiPositonTypes.LOCKED,
+    label: 'Locked',
+  },
+  {
+    logo: AppImages.DEFI_OTHERS,
+    value: DefiPositonTypes.OTHERS,
+    label: 'Others',
+  },
+  {
+    logo: AppImages.DEFI_NFT_STAKING,
+    value: DefiPositonTypes.NFT_STAKING,
+    label: 'NFT staking',
+  },
+  {
+    logo: AppImages.DEFI_AIRDROP,
+    value: DefiPositonTypes.AIRDROP,
+    label: 'Airdrop',
+  },
+];

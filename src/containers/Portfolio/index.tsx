@@ -18,7 +18,12 @@ import {
   CyDView,
   CyDSafeAreaView,
 } from '../../styles/tailwindStyles';
-import { Chain, NotificationEvents } from '../../constants/server';
+import {
+  CHAIN_COLLECTION,
+  Chain,
+  ChainBackendNames,
+  NotificationEvents,
+} from '../../constants/server';
 import CopytoKeyModal from '../../components/ShowPharseModal';
 import {
   ChainHoldings,
@@ -33,7 +38,6 @@ import {
   PORTFOLIO_ERROR,
   PORTFOLIO_NEW_LOAD,
   PORTFOLIO_LOADING,
-  PortfolioState,
 } from '../../reducers/portfolio_reducer';
 import * as Sentry from '@sentry/react-native';
 import {
@@ -43,7 +47,7 @@ import {
   getHideBalanceStatus,
 } from '../../core/asyncStorage';
 import { useIsFocused } from '@react-navigation/native';
-import { GlobalContext, GlobalContextDef } from '../../core/globalContext';
+import { GlobalContext } from '../../core/globalContext';
 import { HdWalletContext, PortfolioContext } from '../../core/util';
 import { useGlobalModalContext } from '../../components/v2/GlobalModal';
 import {
@@ -55,7 +59,6 @@ import appsFlyer from 'react-native-appsflyer';
 import { TokenMeta } from '../../models/tokenMetaData.model';
 import Button from '../../components/v2/button';
 import {
-  MessageBanner,
   HeaderBar,
   Banner,
   PortfolioTabView,
@@ -63,16 +66,19 @@ import {
   TabRoute,
   RefreshTimerBar,
 } from './components';
-import { HdWalletContextDef } from '../../reducers/hdwallet_reducer';
 import { BarCodeReadEvent } from 'react-native-camera';
 import { AnimatedBanner, AnimatedTabBar } from './animatedComponents';
 import { useScrollManager } from '../../hooks/useScrollManager';
-import { NFTScene, TokenScene, TXNScene } from './scenes';
+import { DeFiScene, NFTScene, TokenScene, TXNScene } from './scenes';
 import CyDTokenValue from '../../components/v2/tokenValue';
 import moment from 'moment';
 import clsx from 'clsx';
 import { isIOS } from '../../misc/checkers';
 import FilterBar from './components/FilterBar';
+import BannerCarousel from './components/BannerCarousel';
+import { DeFiFilterRefreshBar } from '../../components/deFiRefreshFilterBar';
+import { DeFiFilter, protocolOptionType } from '../../models/defi.interface';
+import { isEmpty } from 'lodash';
 
 export interface PortfolioProps {
   navigation: any;
@@ -81,10 +87,9 @@ export interface PortfolioProps {
 export default function Portfolio({ navigation }: PortfolioProps) {
   const { t } = useTranslation();
   const isFocused = useIsFocused();
-
-  const globalStateContext = useContext<GlobalContextDef | null>(GlobalContext);
-  const hdWallet = useContext<HdWalletContextDef | null>(HdWalletContext);
-  const portfolioState = useContext<PortfolioState | any>(PortfolioContext);
+  const globalStateContext = useContext(GlobalContext);
+  const hdWallet = useContext(HdWalletContext);
+  const portfolioState = useContext(PortfolioContext);
   const { showModal, hideModal } = useGlobalModalContext();
 
   const [chooseChain, setChooseChain] = useState<boolean>(false);
@@ -96,9 +101,23 @@ export default function Portfolio({ navigation }: PortfolioProps) {
     shouldRefreshAssets: false,
   });
   const [filterModalVisible, setFilterModalVisible] = useState(false);
-
+  const [holdingsEmpty, setHoldingsEmpty] = useState(true);
+  const [deFiRefreshActivity, setDeFiRefreshActivity] = useState<{
+    isRefreshing: boolean;
+    lastRefresh: string;
+  }>({ isRefreshing: false, lastRefresh: 'Retrieving...' });
+  const [deFiFilters, setDeFiFilters] = useState<DeFiFilter>({
+    chain: ChainBackendNames.ALL,
+    positionTypes: [],
+    protocols: [],
+    activePositionsOnly: 'No',
+  });
+  const [deFiLoading, setDeFiLoading] = useState<boolean>(true);
+  const [deFiFilterVisible, setDeFiFilterVisible] = useState<boolean>(false);
+  const [userProtocols, setUserProtocls] = useState<protocolOptionType[]>([]);
   const tabs = [
     { key: 'token', title: t('TOKENS') },
+    { key: 'defi', title: t('DEFI') },
     { key: 'nft', title: t('NFTS') },
     { key: 'txn', title: t('TXNS') },
   ];
@@ -110,14 +129,24 @@ export default function Portfolio({ navigation }: PortfolioProps) {
       title: t('TOKENS'),
       scrollableType: ScrollableType.FLATLIST,
     },
+    { key: 'defi', title: t('DEFI'), scrollableType: ScrollableType.FLATLIST },
     { key: 'nft', title: t('NFTS'), scrollableType: ScrollableType.SCROLLVIEW },
     { key: 'txn', title: t('TXNS'), scrollableType: ScrollableType.FLATLIST },
   ];
 
-  const { scrollY, index, setIndex, getRefForKey, ...sceneProps } =
-    useScrollManager(tabsWithScrollableType);
+  const {
+    scrollY,
+    index,
+    setIndex,
+    bannerHeight,
+    setBannerHeight,
+    getRefForKey,
+    ...sceneProps
+  } = useScrollManager(tabsWithScrollableType);
 
+  const jwtToken = globalStateContext?.globalState.token;
   const ethereum = hdWallet?.state.wallet.ethereum;
+  const windowWidth = useWindowDimensions().width;
 
   const handleBackButton = () => {
     navigation.popToTop();
@@ -150,6 +179,16 @@ export default function Portfolio({ navigation }: PortfolioProps) {
       BackHandler.removeEventListener('hardwareBackPress', handleBackButton);
     };
   }, []);
+
+  useEffect(() => {
+    const data = getCurrentChainHoldings(
+      portfolioState.statePortfolio.tokenPortfolio,
+      CHAIN_COLLECTION,
+    );
+    if (!isEmpty(data)) {
+      setHoldingsEmpty(false);
+    }
+  }, [portfolioState.statePortfolio.tokenPortfolio]);
 
   useEffect(() => {
     if (isFocused) {
@@ -223,41 +262,49 @@ export default function Portfolio({ navigation }: PortfolioProps) {
     }
   }, [isFocused]);
 
+  useEffect(() => {
+    if (portfolioState) {
+      const selectedChain =
+        portfolioState?.statePortfolio.selectedChain.backendName;
+      if (deFiFilters.chain !== selectedChain)
+        setDeFiFilters((prev) => ({ ...prev, chain: selectedChain }));
+    }
+  }, [portfolioState.statePortfolio.selectedChain.symbol]);
   const constructTokenMeta = (localPortfolio: any, event: string) => {
     switch (event) {
       case NotificationEvents.EVMOS_STAKING: {
         const [tokenData] = localPortfolio.data.evmos.holdings.filter(
-          (holding: TokenMeta) => holding.name === 'Evmos'
+          (holding: TokenMeta) => holding.name === 'Evmos',
         );
         return tokenData;
       }
       case NotificationEvents.COSMOS_STAKING: {
         const [tokenData] = localPortfolio.data.cosmos.holdings.filter(
-          (holding: TokenMeta) => holding.name === 'ATOM'
+          (holding: TokenMeta) => holding.name === 'ATOM',
         );
         return tokenData;
       }
       case NotificationEvents.OSMOSIS_STAKING: {
         const [tokenData] = localPortfolio.data.osmosis.holdings.filter(
-          (holding: TokenMeta) => holding.name === 'Osmosis'
+          (holding: TokenMeta) => holding.name === 'Osmosis',
         );
         return tokenData;
       }
       case NotificationEvents.JUNO_STAKING: {
         const [tokenData] = localPortfolio.data.juno.holdings.filter(
-          (holding: TokenMeta) => holding.name === 'Juno'
+          (holding: TokenMeta) => holding.name === 'Juno',
         );
         return tokenData;
       }
       case NotificationEvents.STARGAZE_STAKING: {
         const [tokenData] = localPortfolio.data.stargaze.holdings.filter(
-          (holding: TokenMeta) => holding.name === 'Stargaze'
+          (holding: TokenMeta) => holding.name === 'Stargaze',
         );
         return tokenData;
       }
       case NotificationEvents.NOBLE_STAKING: {
         const [tokenData] = localPortfolio.data.noble.holdings.filter(
-          (holding: TokenMeta) => holding.name === 'Noble'
+          (holding: TokenMeta) => holding.name === 'Noble',
         );
         return tokenData;
       }
@@ -265,7 +312,7 @@ export default function Portfolio({ navigation }: PortfolioProps) {
   };
 
   async function handlePushNotification(
-    remoteMessage: FirebaseMessagingTypes.RemoteMessage | null
+    remoteMessage: FirebaseMessagingTypes.RemoteMessage | null,
   ) {
     //   'Notification caused app to open from background state:',
     if (ethereum) {
@@ -302,7 +349,7 @@ export default function Portfolio({ navigation }: PortfolioProps) {
             });
             const tknData = constructTokenMeta(
               localPortfolio,
-              NotificationEvents.EVMOS_STAKING
+              NotificationEvents.EVMOS_STAKING,
             );
             navigation.navigate(C.screenTitle.TOKEN_OVERVIEW, {
               tokenData: tknData,
@@ -317,7 +364,7 @@ export default function Portfolio({ navigation }: PortfolioProps) {
             });
             const tknData = constructTokenMeta(
               localPortfolio,
-              NotificationEvents.COSMOS_STAKING
+              NotificationEvents.COSMOS_STAKING,
             );
             navigation.navigate(C.screenTitle.TOKEN_OVERVIEW, {
               tokenData: tknData,
@@ -332,7 +379,7 @@ export default function Portfolio({ navigation }: PortfolioProps) {
             });
             const tknData = constructTokenMeta(
               localPortfolio,
-              NotificationEvents.OSMOSIS_STAKING
+              NotificationEvents.OSMOSIS_STAKING,
             );
             navigation.navigate(C.screenTitle.TOKEN_OVERVIEW, {
               tokenData: tknData,
@@ -347,7 +394,7 @@ export default function Portfolio({ navigation }: PortfolioProps) {
             });
             const tknData = constructTokenMeta(
               localPortfolio,
-              NotificationEvents.JUNO_STAKING
+              NotificationEvents.JUNO_STAKING,
             );
 
             navigation.navigate(C.screenTitle.TOKEN_OVERVIEW, {
@@ -363,7 +410,7 @@ export default function Portfolio({ navigation }: PortfolioProps) {
             });
             const tknData = constructTokenMeta(
               localPortfolio,
-              NotificationEvents.STARGAZE_STAKING
+              NotificationEvents.STARGAZE_STAKING,
             );
             navigation.navigate(C.screenTitle.TOKEN_OVERVIEW, {
               tokenData: tknData,
@@ -378,7 +425,7 @@ export default function Portfolio({ navigation }: PortfolioProps) {
             });
             const tknData = constructTokenMeta(
               localPortfolio,
-              NotificationEvents.NOBLE_STAKING
+              NotificationEvents.NOBLE_STAKING,
             );
             navigation.navigate(C.screenTitle.TOKEN_OVERVIEW, {
               tokenData: tknData,
@@ -461,8 +508,8 @@ export default function Portfolio({ navigation }: PortfolioProps) {
     const currTimestamp =
       portfolioState.statePortfolio.selectedChain.backendName !== 'ALL'
         ? portfolioState?.statePortfolio?.tokenPortfolio[
-          portfolioState.statePortfolio.selectedChain.backendName.toLowerCase()
-        ]?.timestamp || new Date().toISOString() // use the time for individual chain
+            portfolioState.statePortfolio.selectedChain.backendName.toLowerCase()
+          ]?.timestamp || new Date().toISOString() // use the time for individual chain
         : portfolioState.statePortfolio.rtimestamp;
 
     const oneMinuteHasPassed =
@@ -507,7 +554,7 @@ export default function Portfolio({ navigation }: PortfolioProps) {
     if (portfolioState.statePortfolio.selectedChain.backendName !== 'ALL') {
       const currentChainHoldings = getCurrentChainHoldings(
         portfolioState.statePortfolio.tokenPortfolio,
-        portfolioState.statePortfolio.selectedChain
+        portfolioState.statePortfolio.selectedChain,
       );
       if (currentChainHoldings) {
         const {
@@ -518,12 +565,12 @@ export default function Portfolio({ navigation }: PortfolioProps) {
         } = currentChainHoldings as ChainHoldings; // Type-assertion (currentChainHoldings can only be of type ChainHoldings if selectedChain.backendName !== 'ALL')
         return isVerifyCoinChecked
           ? Number(chainTotalBalance) +
-          Number(chainStakedBalance) +
-          Number(chainUnbondingBalance)
+              Number(chainStakedBalance) +
+              Number(chainUnbondingBalance)
           : Number(chainTotalBalance) +
-          Number(chainUnVerifiedBalance) +
-          Number(chainStakedBalance) +
-          Number(chainUnbondingBalance);
+              Number(chainUnVerifiedBalance) +
+              Number(chainStakedBalance) +
+              Number(chainUnbondingBalance);
       } else {
         return '...';
       }
@@ -555,7 +602,7 @@ export default function Portfolio({ navigation }: PortfolioProps) {
         case 'token':
           return (
             <CyDView className='flex-1 h-full'>
-              <AnimatedTabBar scrollY={scrollY}>
+              <AnimatedTabBar scrollY={scrollY} bannerHeight={bannerHeight}>
                 {renderTabBarFooter(tab.key)}
               </AnimatedTabBar>
               <TokenScene
@@ -563,16 +610,42 @@ export default function Portfolio({ navigation }: PortfolioProps) {
                 routeKey={'token'}
                 scrollY={scrollY}
                 navigation={navigation}
+                bannerHeight={bannerHeight}
                 isVerifyCoinChecked={isVerifyCoinChecked}
                 getAllChainBalance={getAllChainBalance}
                 setRefreshData={setRefreshData}
               />
             </CyDView>
           );
+        case 'defi':
+          return (
+            <CyDView className='flex-1 h-full'>
+              <AnimatedTabBar scrollY={scrollY} bannerHeight={bannerHeight}>
+                {renderTabBarFooter(tab.key)}
+              </AnimatedTabBar>
+              <DeFiScene
+                {...sceneProps}
+                routeKey={tab.key}
+                scrollY={scrollY}
+                navigation={navigation}
+                bannerHeight={bannerHeight}
+                setRefreshActivity={setDeFiRefreshActivity}
+                refreshActivity={deFiRefreshActivity}
+                filters={deFiFilters}
+                setFilters={setDeFiFilters}
+                userProtocols={userProtocols}
+                setUserProtocols={setUserProtocls}
+                filterVisible={deFiFilterVisible}
+                setFilterVisible={setDeFiFilterVisible}
+                loading={deFiLoading}
+                setLoading={setDeFiLoading}
+              />
+            </CyDView>
+          );
         case 'nft':
           return (
             <CyDView className='flex-1 h-full'>
-              <AnimatedTabBar scrollY={scrollY}>
+              <AnimatedTabBar scrollY={scrollY} bannerHeight={bannerHeight}>
                 {renderTabBarFooter(tab.key)}
               </AnimatedTabBar>
               <NFTScene
@@ -580,6 +653,7 @@ export default function Portfolio({ navigation }: PortfolioProps) {
                 routeKey={tab.key}
                 scrollY={scrollY}
                 navigation={navigation}
+                bannerHeight={bannerHeight}
                 selectedChain={
                   portfolioState.statePortfolio.selectedChain.symbol
                 }
@@ -589,7 +663,7 @@ export default function Portfolio({ navigation }: PortfolioProps) {
         case 'txn':
           return (
             <CyDView className='flex-1 h-full mx-[10px]'>
-              <AnimatedTabBar scrollY={scrollY}>
+              <AnimatedTabBar scrollY={scrollY} bannerHeight={bannerHeight}>
                 {renderTabBarFooter(tab.key)}
               </AnimatedTabBar>
               <TXNScene
@@ -597,7 +671,11 @@ export default function Portfolio({ navigation }: PortfolioProps) {
                 routeKey={tab.key}
                 scrollY={scrollY}
                 navigation={navigation}
-                filterModalVisibilityState={[filterModalVisible, setFilterModalVisible]}
+                bannerHeight={bannerHeight}
+                filterModalVisibilityState={[
+                  filterModalVisible,
+                  setFilterModalVisible,
+                ]}
               />
             </CyDView>
           );
@@ -605,7 +683,7 @@ export default function Portfolio({ navigation }: PortfolioProps) {
           return null;
       }
     },
-    [getRefForKey, isVerifyCoinChecked, scrollY]
+    [getRefForKey, isVerifyCoinChecked, scrollY],
   );
 
   const renderTabBarFooter = useCallback(
@@ -621,19 +699,29 @@ export default function Portfolio({ navigation }: PortfolioProps) {
               ]}
             />
           );
+        case 'defi':
+          return (
+            <DeFiFilterRefreshBar
+              isRefreshing={deFiRefreshActivity.isRefreshing}
+              lastRefreshed={deFiRefreshActivity.lastRefresh}
+              filters={deFiFilters}
+              setFilters={setDeFiFilters}
+              isFilterVisible={deFiFilterVisible}
+              setFilterVisible={setDeFiFilterVisible}
+              userProtocols={userProtocols}
+              isLoading={deFiLoading}
+              setLoading={setDeFiLoading}
+            />
+          );
         case 'nft':
           return null;
         case 'txn':
-          return (
-            <FilterBar
-              setFilterModalVisible={setFilterModalVisible}
-            />
-          );
+          return <FilterBar setFilterModalVisible={setFilterModalVisible} />;
         default:
           return null;
       }
     },
-    [getRefForKey, tabs, refreshData.isRefreshing]
+    [getRefForKey, tabs, refreshData.isRefreshing],
   );
 
   return (
@@ -666,54 +754,59 @@ export default function Portfolio({ navigation }: PortfolioProps) {
           />
         </CyDView>
       )}
-      <ChooseChainModal
-        isModalVisible={chooseChain}
-        onPress={() => {
-          setChooseChain(false);
-        }}
-        where={WHERE_PORTFOLIO}
-      />
-      <CopytoKeyModal
-        isModalVisible={copyToClipBoard}
-        onClipClick={() => setCopyToClipBoard(false)}
-        onPress={() => setCopyToClipBoard(false)}
-      />
-      {ethereum?.address && globalStateContext?.globalState?.token ? (
-        <MessageBanner
-          navigation={navigation}
-          ethAddress={ethereum.address}
-          isFocused={isFocused}
-        />
+      {!holdingsEmpty ? (
+        <>
+          <ChooseChainModal
+            isModalVisible={chooseChain}
+            onPress={() => {
+              setChooseChain(false);
+            }}
+            where={WHERE_PORTFOLIO}
+          />
+          <CopytoKeyModal
+            isModalVisible={copyToClipBoard}
+            onClipClick={() => setCopyToClipBoard(false)}
+            onPress={() => setCopyToClipBoard(false)}
+          />
+          <HeaderBar
+            navigation={navigation}
+            renderTitleComponent={
+              <CyDTokenValue className='text-[24px] font-extrabold text-primaryTextColor'>
+                {checkAll(portfolioState)}
+              </CyDTokenValue>
+            }
+            setChooseChain={setChooseChain}
+            scrollY={scrollY}
+            bannerHeight={bannerHeight}
+            onWCSuccess={onWCSuccess}
+          />
+          <AnimatedBanner scrollY={scrollY} bannerHeight={bannerHeight}>
+            <Banner
+              bannerHeight={bannerHeight}
+              checkAllBalance={checkAll(portfolioState)}
+            />
+            {jwtToken !== undefined ? (
+              <BannerCarousel setBannerHeight={setBannerHeight} />
+            ) : null}
+          </AnimatedBanner>
+          <CyDView
+            className={clsx('flex-1 pb-[40px]', { 'pb-[75px]': !isIOS() })}
+          >
+            <PortfolioTabView
+              index={index}
+              setIndex={setIndex}
+              routes={tabs}
+              width={windowWidth}
+              renderTabBar={(p) => (
+                <AnimatedTabBar bannerHeight={bannerHeight} scrollY={scrollY}>
+                  <TabBar {...p} />
+                </AnimatedTabBar>
+              )}
+              renderScene={renderScene}
+            />
+          </CyDView>
+        </>
       ) : null}
-      <HeaderBar
-        navigation={navigation}
-        renderTitleComponent={
-          <CyDTokenValue className='text-[24px] font-extrabold text-primaryTextColor'>
-            {checkAll(portfolioState)}
-          </CyDTokenValue>
-        }
-        setChooseChain={setChooseChain}
-        scrollY={scrollY}
-        onWCSuccess={onWCSuccess}
-      />
-      <AnimatedBanner scrollY={scrollY}>
-        <Banner checkAllBalance={checkAll(portfolioState)} />
-      </AnimatedBanner>
-
-      <CyDView className={clsx('flex-1 pb-[40px]', { 'pb-[75px]': !isIOS() })}>
-        <PortfolioTabView
-          index={index}
-          setIndex={setIndex}
-          routes={tabs}
-          width={useWindowDimensions().width}
-          renderTabBar={(p) => (
-            <AnimatedTabBar scrollY={scrollY}>
-              <TabBar {...p} />
-            </AnimatedTabBar>
-          )}
-          renderScene={renderScene}
-        />
-      </CyDView>
     </CyDSafeAreaView>
   );
 }

@@ -2,7 +2,7 @@
 import {
   ActivityContext,
   getWeb3Endpoint,
-  HdWalletContext
+  HdWalletContext,
 } from '../../core/util';
 import React, { useContext, useEffect, useRef, useState } from 'react';
 import WebView from 'react-native-webview';
@@ -14,12 +14,9 @@ import {
   parseWebviewPayload,
   personal_sign,
   sendTransaction,
-  signTypedDataCypherD
+  signTypedDataCypherD,
 } from '../Browser/transaction';
-import {
-  Chain,
-  ChainBackendNames
-} from '../../constants/server';
+import { Chain, ChainBackendNames } from '../../constants/server';
 import { getInjectedJavascript } from '../Browser/injectedJs';
 import BottomModal from '../../components/BottomModal';
 import PushModal from '../../components/PushModal';
@@ -28,7 +25,7 @@ import { WEB3METHODS } from '../../constants/web3';
 import { SignTypedDataVersion } from '@metamask/eth-sig-util';
 import {
   ActivityReducerAction,
-  OnmetaTransaction
+  OnmetaTransaction,
 } from '../../reducers/activity_reducer';
 import * as Sentry from '@sentry/react-native';
 import axios from '../../core/Http';
@@ -37,19 +34,38 @@ import Loading from '../../components/v2/loading';
 import analytics from '@react-native-firebase/analytics';
 import { hostWorker } from '../../global';
 import { Linking } from 'react-native';
+import MetaWidget from '@onmeta/react-native-sdk';
 
 let web3RPCEndpoint: Web3;
 
-function parseRequest (payload: any, webviewRef: React.MutableRefObject<any>, hdWalletContext: any, selectedChain: Chain,
-  updateSelectedChain: (chain: any) => void, payModal: (payModalParamsLocal: PayModalParams, to: string) => void, signModal: (signMessage: any, payload: any, signMessageTitle: any) => void, pushModal: (pushModalParamsLocal: any) => void, globalContext: any) {
+function parseRequest(
+  payload: any,
+  webviewRef: React.MutableRefObject<any>,
+  hdWalletContext: any,
+  selectedChain: Chain,
+  updateSelectedChain: (chain: any) => void,
+  payModal: (payModalParamsLocal: PayModalParams, to: string) => void,
+  signModal: (signMessage: any, payload: any, signMessageTitle: any) => void,
+  pushModal: (pushModalParamsLocal: any) => void,
+  globalContext: any,
+) {
   const rpc = getWeb3Endpoint(selectedChain, globalContext);
   // const rpc = 'https://rpc-mumbai.maticvigil.com/'; // onmeta staging hack
   web3RPCEndpoint = new Web3(rpc);
-  parseWebviewPayload(payload, webviewRef, hdWalletContext, selectedChain,
-    updateSelectedChain, payModal, signModal, pushModal, web3RPCEndpoint);
+  parseWebviewPayload(
+    payload,
+    webviewRef,
+    hdWalletContext,
+    selectedChain,
+    updateSelectedChain,
+    payModal,
+    signModal,
+    pushModal,
+    web3RPCEndpoint,
+  );
 }
 
-export default function Onmeta ({ route }) {
+export default function Onmeta({ route }) {
   const hdWallet = useContext<any>(HdWalletContext);
   const globalContext = useContext<any>(GlobalContext);
   const ARCH_HOST: string = hostWorker.getHost('ARCH_HOST');
@@ -72,11 +88,11 @@ export default function Onmeta ({ route }) {
   const pushPermissionURL = `${PORTFOLIO_HOST}/v1/push/permissions`;
   const INJECTED_JAVASCRIPT = getInjectedJavascript(
     ethereum.address,
-    hdWallet.state.selectedChain.chain_id
+    hdWallet.state.selectedChain.chain_id,
   );
   const [clientDetails, setClientDetails] = useState({});
 
-  function processPushPermissionUserChoice (permission: any) {
+  function processPushPermissionUserChoice(permission: any) {
     setPushModal(false);
     axios
       .post(pushPermissionURL, {
@@ -85,14 +101,14 @@ export default function Onmeta ({ route }) {
         app_name: pushModalParams.app_name,
         reason_message: pushModalParams.reasonMessage,
         app_image: pushModalParams.appImage,
-        permission
+        permission,
       })
-      .then((res) => {
+      .then(res => {
         webviewRef.current.injectJavaScript(
-          `window.ethereum.sendResponse(${pushModalParams.payload_id}, "${permission}")`
+          `window.ethereum.sendResponse(${pushModalParams.payload_id}, "${permission}")`,
         );
       })
-      .catch((er) => {
+      .catch(er => {
         Sentry.captureException(er);
       });
   }
@@ -132,14 +148,14 @@ export default function Onmeta ({ route }) {
     const getClientToken = async () => {
       const token = globalContext.globalState.token;
       const config = {
-        headers: { Authorization: `Bearer ${String(token)}` }
+        headers: { Authorization: `Bearer ${String(token)}` },
       };
       let clientToken;
       let userUrl;
       try {
         const { data } = await axios.get(
           `${ARCH_HOST}/v1/authentication/onmeta-auth/`,
-          config
+          config,
         );
         clientToken = data.clientToken;
         userUrl = data.userUrl;
@@ -151,18 +167,18 @@ export default function Onmeta ({ route }) {
       if (ometaOperation === 'buy') {
         constructedUri = new URL(
           `/?apiKey=${String(
-            clientToken
+            clientToken,
           )}&offRamp=disabled&onRamp=enabled&walletAddress=${String(
-            ethereum.address
+            ethereum.address,
           )}&chainId=${chainId}`,
-          userUrl
+          userUrl,
         ).href; // URL prepared from above step
       } else {
         constructedUri = new URL(
           `/?apiKey=${String(
-            clientToken
+            clientToken,
           )}&offRamp=enabled&onRamp=disabled&chainId=${chainId}`,
-          userUrl
+          userUrl,
         ).href; // URL prepared from above step
       }
       setUri(constructedUri);
@@ -219,23 +235,32 @@ export default function Onmeta ({ route }) {
     }
   };
 
+  const eventHandler = async (event, data) => {
+    switch (event) {
+      // example to open the upi apps
+      case 'upi-intent': {
+        const Linkdata = await JSON.parse(data);
+        void Linking.openURL(Linkdata.link);
+        break;
+      }
+      default: {
+        // Default code
+      }
+    }
+  };
+
   return (
-    <CyDView className={'h-full w-full'}>
+    <CyDView className={'h-full w-full bg-black pb-[75px]'}>
       {ometaOperation === 'buy' ? (
-        <WebView
-          originWhitelist={['*']}
-          mixedContentMode="compatibility"
-          source={{ html: onRampHTMLCode }}
-          renderLoading={() => {
-            return <Loading></Loading>;
+        <MetaWidget
+          queryParams={{
+            apiKey: clientDetails.clientToken,
+            environment: 'PRODUCTION',
+            onRamp: 'enabled',
+            offRamp: 'disabled',
+            walletAddress: ethereum.address,
           }}
-          startInLoadingState={true}
-          allowsBackForwardNavigationGestures
-          scalesPageToFit={true}
-          javaScriptEnabled={true}
-          mediaPlaybackRequiresUserAction={true}
-          domStorageEnabled={true}
-          onMessage={(event) => { onRampEvent(event); }}
+          onEventHandler={eventHandler}
         />
       ) : (
         <>
@@ -253,7 +278,7 @@ export default function Onmeta ({ route }) {
                   hdWallet,
                   signModalParams.payload,
                   webviewRef,
-                  web3RPCEndpoint
+                  web3RPCEndpoint,
                 );
               } else if (
                 signModalParams.payload.method === WEB3METHODS.SIGN_TYPED_DATA
@@ -262,7 +287,7 @@ export default function Onmeta ({ route }) {
                   hdWallet,
                   signModalParams.payload,
                   webviewRef,
-                  SignTypedDataVersion.V1
+                  SignTypedDataVersion.V1,
                 );
               } else if (
                 signModalParams.payload.method ===
@@ -272,7 +297,7 @@ export default function Onmeta ({ route }) {
                   hdWallet,
                   signModalParams.payload,
                   webviewRef,
-                  SignTypedDataVersion.V3
+                  SignTypedDataVersion.V3,
                 );
               } else if (
                 signModalParams.payload.method ===
@@ -282,7 +307,7 @@ export default function Onmeta ({ route }) {
                   hdWallet,
                   signModalParams.payload,
                   webviewRef,
-                  SignTypedDataVersion.V4
+                  SignTypedDataVersion.V4,
                 );
               }
             }}
@@ -315,41 +340,45 @@ export default function Onmeta ({ route }) {
                   webviewRef,
                   web3RPCEndpoint,
                   activityRef,
-                  activityContext
+                  activityContext,
                 );
             }}
             onCancelPress={() => {
-              activityRef.current && activityContext.dispatch({ type: ActivityReducerAction.DELETE, value: { id: activityRef.current.id } });
+              activityRef.current &&
+                activityContext.dispatch({
+                  type: ActivityReducerAction.DELETE,
+                  value: { id: activityRef.current.id },
+                });
               setPayBottomConfirm(false);
               webviewRef.current.reload();
             }}
           />
-          <WebView
-            source={{
-              uri: clientDetails.uri
+          {/* <MetaWidget
+            queryParams={{
+              apiKey: clientDetails.clientToken,
+              environment: 'PRODUCTION',
+              onRamp: 'disabled',
+              offRamp: 'enabled',
+              renderLoading: () => {
+                return <Loading></Loading>;
+              },
+              injectedJavaScriptBeforeContentLoaded: INJECTED_JAVASCRIPT,
+              mediaPlaybackRequiresUserAction: true,
+              javaScriptEnabled: true,
+              domStorageEnabled: true,
             }}
-            startInLoadingState
-            ref={webviewRef}
-            renderLoading={() => {
-              return <Loading></Loading>;
-            }}
-            injectedJavaScriptBeforeContentLoaded={INJECTED_JAVASCRIPT}
-            mediaPlaybackRequiresUserAction={true}
-            javaScriptEnabled={true}
-            domStorageEnabled={true}
-            style={{ marginTop: 0 }}
-            onMessage={(event) => {
+            onEventHandler={event => {
               const jsonObj = JSON.parse(event.nativeEvent.data);
 
-              function updateSelectedChain (chain: any) {
+              function updateSelectedChain(chain: any) {
                 hdWallet.dispatch({
                   type: 'CHOOSE_CHAIN',
-                  value: { selectedChain: chain }
+                  value: { selectedChain: chain },
                 });
               }
-              function payModal (
+              function payModal(
                 payModalParamsLocal: PayModalParams,
-                to: string
+                to: string,
               ) {
                 setPayBottomConfirm(true);
                 setPayModalParams(payModalParamsLocal);
@@ -371,19 +400,19 @@ export default function Onmeta ({ route }) {
 
                 // activityContext.dispatch({ type: ActivityReducerAction.POST, value: activityData });
               }
-              function signModal (
+              function signModal(
                 signMessage: any,
                 payload: any,
-                signMessageTitle: any
+                signMessageTitle: any,
               ) {
                 setPayBottom(true);
                 setSignModalParams({
                   signMessage,
                   payload,
-                  signMessageTitle
+                  signMessageTitle,
                 });
               }
-              function pushModal (pushModalParamsLocal: any) {
+              function pushModal(pushModalParamsLocal: any) {
                 setPushModal(true);
                 setPushModalParams(pushModalParamsLocal);
               }
@@ -396,7 +425,83 @@ export default function Onmeta ({ route }) {
                 payModal,
                 signModal,
                 pushModal,
-                globalContext
+                globalContext,
+              );
+            }}
+          /> */}
+          <WebView
+            source={{
+              uri: clientDetails.uri,
+            }}
+            startInLoadingState
+            ref={webviewRef}
+            renderLoading={() => {
+              return <Loading></Loading>;
+            }}
+            injectedJavaScriptBeforeContentLoaded={INJECTED_JAVASCRIPT}
+            mediaPlaybackRequiresUserAction={true}
+            javaScriptEnabled={true}
+            domStorageEnabled={true}
+            style={{ marginTop: 0 }}
+            onMessage={event => {
+              const jsonObj = JSON.parse(event.nativeEvent.data);
+
+              function updateSelectedChain(chain: any) {
+                hdWallet.dispatch({
+                  type: 'CHOOSE_CHAIN',
+                  value: { selectedChain: chain },
+                });
+              }
+              function payModal(
+                payModalParamsLocal: PayModalParams,
+                to: string,
+              ) {
+                setPayBottomConfirm(true);
+                setPayModalParams(payModalParamsLocal);
+                // const activityData: OnmetaTransaction = {
+                //   id: genId(),
+                //   status: ActivityStatus.PENDING,
+                //   type: ActivityType.ONMETA,
+                //   transactionHash: '',
+                //   fromAddress: ethereum.address,
+                //   toAddress: to,
+                //   onmetaType: 'sell',
+                //   chainName: hdWallet.state.selectedChain.name,
+                //   symbol: payModalParamsLocal.networkCurrency,
+                //   datetime: new Date(),
+                //   amount: String(payModalParamsLocal.totalETH)
+                // };
+
+                // activityRef.current = activityData;
+
+                // activityContext.dispatch({ type: ActivityReducerAction.POST, value: activityData });
+              }
+              function signModal(
+                signMessage: any,
+                payload: any,
+                signMessageTitle: any,
+              ) {
+                setPayBottom(true);
+                setSignModalParams({
+                  signMessage,
+                  payload,
+                  signMessageTitle,
+                });
+              }
+              function pushModal(pushModalParamsLocal: any) {
+                setPushModal(true);
+                setPushModalParams(pushModalParamsLocal);
+              }
+              parseRequest(
+                jsonObj,
+                webviewRef,
+                hdWallet,
+                hdWallet.state.selectedChain,
+                updateSelectedChain,
+                payModal,
+                signModal,
+                pushModal,
+                globalContext,
               );
             }}
           />

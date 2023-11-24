@@ -69,7 +69,6 @@ ios/sentry.properties
 DEVELOPER_GUIDE.md
 
 #vscode settings
-/.vscode/
 .env
 
 #android

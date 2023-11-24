@@ -1,6 +1,12 @@
 /* eslint-disable @typescript-eslint/no-misused-promises */
 import { useContext, useEffect, useState } from 'react';
-import { CyDImage, CyDText, CyDTouchView, CyDView, CyDFlatList } from '../../styles/tailwindStyles';
+import {
+  CyDImage,
+  CyDText,
+  CyDTouchView,
+  CyDView,
+  CyDFlatList,
+} from '../../styles/tailwindStyles';
 import CyDModalLayout from '../../components/v2/modal';
 import * as React from 'react';
 import AppImages from '../../../assets/images/appImages';
@@ -12,11 +18,23 @@ import {
   CHAIN_AVALANCHE,
   FundWalletAddressType,
   ChainBackendNames,
-  ALL_CHAINS, CHAIN_POLYGON, CHAIN_ARBITRUM, CHAIN_FTM, CHAIN_BSC, CHAIN_OPTIMISM
+  ALL_CHAINS,
+  CHAIN_POLYGON,
+  CHAIN_ARBITRUM,
+  CHAIN_FTM,
+  CHAIN_BSC,
+  CHAIN_OPTIMISM,
 } from '../../constants/server';
 import ChooseChainModal from '../../components/v2/chooseChainModal';
-import { HdWalletContext, PortfolioContext, sortJSONArrayByKey } from '../../core/util';
-import { PORTFOLIO_EMPTY, PORTFOLIO_NEW_LOAD } from '../../reducers/portfolio_reducer';
+import {
+  HdWalletContext,
+  PortfolioContext,
+  sortJSONArrayByKey,
+} from '../../core/util';
+import {
+  PORTFOLIO_EMPTY,
+  PORTFOLIO_NEW_LOAD,
+} from '../../reducers/portfolio_reducer';
 import LottieView from 'lottie-react-native';
 import analytics from '@react-native-firebase/analytics';
 import { useTranslation } from 'react-i18next';
@@ -29,43 +47,43 @@ import { isIOS } from '../../misc/checkers';
 import { MODAL_HIDE_TIMEOUT_250 } from '../../core/Http';
 
 interface IShortcutsData {
-  index: number
-  title: string
-  subTitle: string
-  logo: any
-  screenTitle: string
-  navigationProps?: any
-  isPrivateKeyDependent?: boolean
+  index: number;
+  title: string;
+  subTitle: string;
+  logo: any;
+  screenTitle: string;
+  navigationProps?: any;
+  isPrivateKeyDependent?: boolean;
 }
 
 interface IBuyOptionsData {
-  index: number
-  title: string
-  displayTitle: string
-  logo: any
-  supportedChains: Chain[]
-  currencyType: CurrencyTypes
-  screenTitle: string
-  supportedPaymentModes: string
-  isVisibileInUI: boolean
+  index: number;
+  title: string;
+  displayTitle: string;
+  logo: any;
+  supportedChains: Chain[];
+  currencyType: CurrencyTypes;
+  screenTitle: string;
+  supportedPaymentModes: string;
+  isVisibileInUI: boolean;
 }
 
 interface ISellOptionsData {
-  index: number
-  title: string
-  displayTitle: string
-  logo: any
-  supportedChains: Chain[]
-  currencyType: CurrencyTypes
-  screenTitle: string
-  supportedPaymentModes: string
-  isVisibileInUI: boolean
+  index: number;
+  title: string;
+  displayTitle: string;
+  logo: any;
+  supportedChains: Chain[];
+  currencyType: CurrencyTypes;
+  screenTitle: string;
+  supportedPaymentModes: string;
+  isVisibileInUI: boolean;
 }
 
 enum CurrencyTypes {
   USD = 'USD',
   INR = 'INR',
-  FIAT = 'FIAT'
+  FIAT = 'FIAT',
 }
 
 enum ShortcutsTitle {
@@ -77,27 +95,28 @@ enum ShortcutsTitle {
   IBC = 'IBC',
   SELL = 'Sell',
   EXCHANGE = 'EXCHANGE',
-  SWAP = 'SWAP_TITLE'
+  SWAP = 'SWAP_TITLE',
 }
 
 enum BuyOptions {
   ONMETA = 'ONMETA',
-  SARDINE = 'SARDINE',
   COINBASE = 'COINBASE',
-  TRANSFI = 'TRANSFI'
+  TRANSFI = 'TRANSFI',
 }
 
 enum SellOptions {
   ONMETA = 'ONMETA',
   COINBASE = 'COINBASE',
-  TRANSFI = 'TRANSFI'
+  TRANSFI = 'TRANSFI',
 }
 
-export default function ShortcutsModal ({ navigationRef }) {
+export default function ShortcutsModal({ navigationRef }) {
   const { t } = useTranslation();
   const hdWallet = useContext<any>(HdWalletContext);
   const { isReadOnlyWallet } = hdWallet.state;
-  const [sortedShortcutsData, setSortedShortcutsData] = useState<IShortcutsData[]>([]);
+  const [sortedShortcutsData, setSortedShortcutsData] = useState<
+    IShortcutsData[]
+  >([]);
   const [isSignableTransaction] = useIsSignable();
   const portfolioState = useContext<any>(PortfolioContext);
   const developerMode: boolean = portfolioState.statePortfolio.developerMode;
@@ -109,38 +128,39 @@ export default function ShortcutsModal ({ navigationRef }) {
       subTitle: t('BUY_SHORTCUTS_SUBTITLE'),
       logo: AppImages.BUY_SHORTCUT,
       screenTitle: '',
-      isPrivateKeyDependent: true
+      isPrivateKeyDependent: true,
     },
     {
       index: 4,
       title: ShortcutsTitle.RECEIVE,
       subTitle: t('RECEIVE_SHORTCUTS_SUBTITLE'),
       logo: AppImages.RECEIVE_SHORTCUT,
-      screenTitle: screenTitle.QRCODE
-    }
+      screenTitle: screenTitle.QRCODE,
+    },
   ];
 
-  const shortcutsData: IShortcutsData[] = [...emptyWalletShortcutsData,
+  const shortcutsData: IShortcutsData[] = [
+    ...emptyWalletShortcutsData,
     {
       index: 1,
       title: ShortcutsTitle.BRIDGE,
       logo: AppImages.BRIDGE_SHORTCUT,
       subTitle: t('EXCHANGE_SHORTCUTS_SUBTITLE'),
-      screenTitle: screenTitle.BRIDGE_SCREEN
+      screenTitle: screenTitle.BRIDGE_SCREEN,
     },
     {
       index: 2,
       title: ShortcutsTitle.SWAP,
       logo: AppImages.SWAP_SHORTCUT,
       subTitle: t('SWAP_SHORTCUTS_SUBTITLE'),
-      screenTitle: screenTitle.BRIDGE_SCREEN
+      screenTitle: screenTitle.BRIDGE_SCREEN,
     },
     {
       index: 3,
       title: ShortcutsTitle.SEND,
       logo: AppImages.SEND_SHORTCUT,
       subTitle: t('SEND_SHORTCUTS_SUBTITLE'),
-      screenTitle: screenTitle.ENTER_AMOUNT
+      screenTitle: screenTitle.ENTER_AMOUNT,
     },
     {
       index: 5,
@@ -148,8 +168,8 @@ export default function ShortcutsModal ({ navigationRef }) {
       logo: AppImages.SELL_SHORTCUT,
       subTitle: t('SELL_SHORTCUTS_SUBTITLE'),
       screenTitle: '',
-      isPrivateKeyDependent: true
-    }
+      isPrivateKeyDependent: true,
+    },
     // {
     //   index: 4,
     //   title: ShortcutsTitle.FUND_CARD,
@@ -164,21 +184,9 @@ export default function ShortcutsModal ({ navigationRef }) {
     //   logo: AppImages.IBC_SHORTCUT,
     //   screenTitle: screenTitle.IBC_SCREEN
     // }
-
   ];
 
   const buyOptionsData: IBuyOptionsData[] = [
-    // {
-    //   index: 0,
-    //   title: BuyOptions.SARDINE,
-    //   displayTitle: t('SARDINE_DISPLAY_TITLE'),
-    //   logo: AppImages.SARDINE,
-    //   supportedChains: [CHAIN_ETH, CHAIN_AVALANCHE, CHAIN_POLYGON],
-    //   currencyType: CurrencyTypes.USD,
-    //   screenTitle: screenTitle.SARD_PAY,
-    //   supportedPaymentModes: 'Instant Bank Transfer',
-    //   isVisibileInUI: true
-    // },
     // {
     //   index: 3,
     //   title: BuyOptions.TRANSFI,
@@ -191,27 +199,39 @@ export default function ShortcutsModal ({ navigationRef }) {
     //   isVisibileInUI: true
     // },
     {
-      index: 1,
+      index: 0,
       title: BuyOptions.ONMETA,
       displayTitle: t('ONMETA_BUY_DISPLAY_TITLE'),
       logo: AppImages.ONMETA,
-      supportedChains: [CHAIN_ETH, CHAIN_AVALANCHE, CHAIN_POLYGON, CHAIN_ARBITRUM, CHAIN_FTM, CHAIN_BSC],
+      supportedChains: [
+        CHAIN_ETH,
+        CHAIN_AVALANCHE,
+        CHAIN_POLYGON,
+        CHAIN_ARBITRUM,
+        CHAIN_FTM,
+        CHAIN_BSC,
+      ],
       currencyType: CurrencyTypes.INR,
       screenTitle: screenTitle.ON_META,
       supportedPaymentModes: 'UPI',
-      isVisibileInUI: true
+      isVisibileInUI: true,
     },
     {
-      index: 2,
+      index: 1,
       title: BuyOptions.COINBASE,
       displayTitle: t('COINBASE_DISPLAY_TITLE'),
       logo: AppImages.COINBASE,
-      supportedChains: [CHAIN_ETH, CHAIN_COSMOS, CHAIN_AVALANCHE, CHAIN_POLYGON],
+      supportedChains: [
+        CHAIN_ETH,
+        CHAIN_COSMOS,
+        CHAIN_AVALANCHE,
+        CHAIN_POLYGON,
+      ],
       currencyType: CurrencyTypes.USD,
       screenTitle: screenTitle.CB_PAY,
       supportedPaymentModes: '',
-      isVisibileInUI: true
-    }
+      isVisibileInUI: true,
+    },
   ];
 
   const sellOptionsData: ISellOptionsData[] = [
@@ -220,12 +240,19 @@ export default function ShortcutsModal ({ navigationRef }) {
       title: SellOptions.ONMETA,
       displayTitle: t('ONMETA_SELL_DISPLAY_TITLE'),
       logo: AppImages.ONMETA,
-      supportedChains: [CHAIN_ETH, CHAIN_AVALANCHE, CHAIN_POLYGON, CHAIN_ARBITRUM, CHAIN_FTM, CHAIN_BSC],
+      supportedChains: [
+        CHAIN_ETH,
+        CHAIN_AVALANCHE,
+        CHAIN_POLYGON,
+        CHAIN_ARBITRUM,
+        CHAIN_FTM,
+        CHAIN_BSC,
+      ],
       currencyType: CurrencyTypes.FIAT,
       screenTitle: screenTitle.ON_META,
       supportedPaymentModes: 'Instant Bank Deposit using IMPS',
-      isVisibileInUI: true
-    }
+      isVisibileInUI: true,
+    },
     // {
     //   index: 1,
     //   title: SellOptions.TRANSFI,
@@ -240,20 +267,27 @@ export default function ShortcutsModal ({ navigationRef }) {
   ];
   // hdWallet.state.card
 
-  const [shortcutsModalVisible, setShortcutsModalVisible] = useState<boolean>(false);
+  const [shortcutsModalVisible, setShortcutsModalVisible] =
+    useState<boolean>(false);
   const [buyModalVisible, setBuyModalVisible] = useState<boolean>(false);
-  const [buyChooseChainModalVisible, setBuyChooseChainModalVisible] = useState<boolean>(false);
+  const [buyChooseChainModalVisible, setBuyChooseChainModalVisible] =
+    useState<boolean>(false);
   const [sellModalVisible, setSellModalVisible] = useState<boolean>(false);
-  const [sellChooseChainModalVisible, setSellChooseChainModalVisible] = useState<boolean>(false);
+  const [sellChooseChainModalVisible, setSellChooseChainModalVisible] =
+    useState<boolean>(false);
   const [chainData, setChainData] = useState<Chain[]>([CHAIN_ETH]);
   const [buyType, setBuyType] = useState<IBuyOptionsData>(buyOptionsData[0]);
-  const [sellType, setSellType] = useState<ISellOptionsData>(sellOptionsData[0]);
+  const [sellType, setSellType] = useState<ISellOptionsData>(
+    sellOptionsData[0],
+  );
   const [chooseChainModal, setChooseChainModal] = useState<boolean>(false);
   const [chooseTokenModal, setChooseTokenModal] = useState<boolean>(false);
   const [tokenData, setTokenData] = useState<any>([]);
   const [navigationPath, setNavigationPath] = useState<string>('');
   const [selectedChain, setSelectedChain] = useState<Chain>(CHAIN_ETH);
-  const [selectedOption, setSelectedOption] = useState<ShortcutsTitle>(ShortcutsTitle.RECEIVE);
+  const [selectedOption, setSelectedOption] = useState<ShortcutsTitle>(
+    ShortcutsTitle.RECEIVE,
+  );
   const [appState, setAppState] = useState<string>('');
   const [animation, setAnimation] = useState<any>();
   const [totalHoldings, setTotalHoldings] = useState([]);
@@ -288,31 +322,36 @@ export default function ShortcutsModal ({ navigationRef }) {
       case ShortcutsTitle.FUND_CARD:
         hdWallet.state.card
           ? navigationRef.navigate(screenTitle.DEBIT_CARD, {
-            screen: screenTitle.FUND_CARD_SCREEN
-          })
+              screen: screenTitle.FUND_CARD_SCREEN,
+            })
           : navigationRef.navigate(screenTitle.DEBIT_CARD, {
-            screen: screenTitle.DEBIT_CARD_SCREEN,
-            params: {
-              toScreen: screenTitle.FUND_CARD_SCREEN
-            }
-          });
+              screen: screenTitle.DEBIT_CARD_SCREEN,
+              params: {
+                toScreen: screenTitle.FUND_CARD_SCREEN,
+              },
+            });
         break;
       case ShortcutsTitle.BRIDGE:
         navigationRef.navigate(screenTitle.BRIDGE_SCREEN, {
           title: t('BRIDGE'),
-          renderPage: 'bridgePage'
+          renderPage: 'bridgePage',
         });
         break;
       case ShortcutsTitle.SWAP:
         navigationRef.navigate(screenTitle.BRIDGE_SCREEN, {
           title: t('SWAP_TITLE'),
-          renderPage: 'swapPage'
-
+          renderPage: 'swapPage',
         });
         break;
       default:
         item?.navigationProps
-          ? setTimeout(() => navigationRef.navigate(item.screenTitle, { ...item.navigationProps }), 250)
+          ? setTimeout(
+              () =>
+                navigationRef.navigate(item.screenTitle, {
+                  ...item.navigationProps,
+                }),
+              250,
+            )
           : navigationRef.navigate(item.screenTitle);
     }
   };
@@ -320,7 +359,9 @@ export default function ShortcutsModal ({ navigationRef }) {
   const onPressShortcutsItem = (item: IShortcutsData) => {
     if (item.isPrivateKeyDependent) {
       setShortcutsModalVisible(false);
-      isSignableTransaction(ActivityType.BUY, () => { void onSelectingShortCutItems(item); });
+      isSignableTransaction(ActivityType.BUY, () => {
+        void onSelectingShortCutItems(item);
+      });
     } else {
       void onSelectingShortCutItems(item);
     }
@@ -328,12 +369,23 @@ export default function ShortcutsModal ({ navigationRef }) {
 
   const renderShortcutsItem = (item: IShortcutsData, navigationRef: any) => {
     return (
-      <CyDTouchView className={''} onPress={async () => { onPressShortcutsItem(item); }}>
+      <CyDTouchView
+        className={''}
+        onPress={async () => {
+          onPressShortcutsItem(item);
+        }}>
         <CyDView className={'flex flex-row items-center py-[16px]'}>
-          <CyDImage source={item.logo} className={'w-[46px] h-[46px] mr-[18px]'} />
+          <CyDImage
+            source={item.logo}
+            className={'w-[46px] h-[46px] mr-[18px]'}
+          />
           <CyDView>
-            <CyDText className={'font-bold text-[18px] '}>{t(item.title).toString()}</CyDText>
-            <CyDText className={'font-semibold text-subTextColor text-[14px] '}>{t(item.subTitle).toString()}</CyDText>
+            <CyDText className={'font-bold text-[18px] '}>
+              {t(item.title).toString()}
+            </CyDText>
+            <CyDText className={'font-semibold text-subTextColor text-[14px] '}>
+              {t(item.subTitle).toString()}
+            </CyDText>
           </CyDView>
         </CyDView>
         <CyDView className={'h-[1px] w-full bg-[#F5F5F5]'}></CyDView>
@@ -343,86 +395,151 @@ export default function ShortcutsModal ({ navigationRef }) {
 
   const renderBuyPlatformItem = (item: IBuyOptionsData, navigationRef: any) => {
     return (
-      item.isVisibileInUI && <CyDTouchView className={'mb-[16px]'} onPress={() => {
-        setBuyType(item);
-        setChainData(item.supportedChains);
-        setBuyModalVisible(false);
-        setTimeout(() => setBuyChooseChainModalVisible(true), 250);
-      }}>
-        <CyDView className={'bg-[#FAFAFA] p-[16px] rounded-[18px]'}>
-          <CyDView className={'flex flex-row justify-between'}>
-            <CyDView className={'flex flex-row items-center'}>
-              <CyDImage source={item.logo} className={'w-[22px] h-[22px] mr-[6px]'} />
-              <CyDText className={'font-bold text-[18px] text-versionColor'}>{item.displayTitle}</CyDText>
+      item.isVisibileInUI && (
+        <CyDTouchView
+          className={'mb-[16px]'}
+          onPress={() => {
+            setBuyType(item);
+            setChainData(item.supportedChains);
+            setBuyModalVisible(false);
+            setTimeout(() => setBuyChooseChainModalVisible(true), 250);
+          }}>
+          <CyDView className={'bg-[#FAFAFA] p-[16px] rounded-[18px]'}>
+            <CyDView className={'flex flex-row justify-between'}>
+              <CyDView className={'flex flex-row items-center'}>
+                <CyDImage
+                  source={item.logo}
+                  className={'w-[22px] h-[22px] mr-[6px]'}
+                />
+                <CyDText className={'font-bold text-[18px] text-versionColor'}>
+                  {item.displayTitle}
+                </CyDText>
+              </CyDView>
+              {/* <CyDText className={'font-bold text-[18px] text-versionColor'}>{item.currencyType}</CyDText> */}
             </CyDView>
-            {/* <CyDText className={'font-bold text-[18px] text-versionColor'}>{item.currencyType}</CyDText> */}
-          </CyDView>
-          <CyDView className={'flex flex-row flex-wrap mt-[16px] pl-[2px]'}>
-            {
-              item.supportedChains.map((chain) => (
-                <CyDView key={chain.backendName} className={'flex flex-row items-center mr-[12px] mb-[6px]'}>
-                  <CyDImage source={chain.logo_url} className={'w-[12px] h-[12px] mr-[4px]'} />
-                  <CyDText className={'text-subTextColor font-medium text-[12px]'}>{chain.name.toUpperCase()}</CyDText>
+            <CyDView className={'flex flex-row flex-wrap mt-[16px] pl-[2px]'}>
+              {item.supportedChains.map(chain => (
+                <CyDView
+                  key={chain.backendName}
+                  className={'flex flex-row items-center mr-[12px] mb-[6px]'}>
+                  <CyDImage
+                    source={chain.logo_url}
+                    className={'w-[12px] h-[12px] mr-[4px]'}
+                  />
+                  <CyDText
+                    className={'text-subTextColor font-medium text-[12px]'}>
+                    {chain.name.toUpperCase()}
+                  </CyDText>
                 </CyDView>
-              ))
-            }
+              ))}
+            </CyDView>
+            <CyDView
+              className={'w-full h-[1px] bg-sepratorColor my-[16px]'}></CyDView>
+            {item.title !== BuyOptions.COINBASE &&
+              item.title !== BuyOptions.TRANSFI && (
+                <CyDView className='pl-[2px]'>
+                  <CyDText className={'text-subTextColor'}>
+                    {t('MODES_INIT_CAPS')} :{' '}
+                    <CyDText className={'font-black text-subTextColor'}>
+                      {item.supportedPaymentModes}
+                    </CyDText>
+                  </CyDText>
+                </CyDView>
+              )}
           </CyDView>
-          <CyDView className={'w-full h-[1px] bg-sepratorColor my-[16px]'}></CyDView>
-          {item.title !== BuyOptions.COINBASE && item.title !== BuyOptions.TRANSFI && <CyDView className='pl-[2px]'>
-            <CyDText className={'text-subTextColor'}>{t('MODES_INIT_CAPS')} : <CyDText className={'font-black text-subTextColor'}>{item.supportedPaymentModes}</CyDText></CyDText>
-          </CyDView>}
-        </CyDView>
-      </CyDTouchView>
+        </CyDTouchView>
+      )
     );
   };
 
-  const renderSellPlatformItem = (item: ISellOptionsData, navigationRef: any) => {
+  const renderSellPlatformItem = (
+    item: ISellOptionsData,
+    navigationRef: any,
+  ) => {
     return (
-      item.isVisibileInUI && <CyDTouchView className={'mb-[16px]'} onPress={() => {
-        setSellType(item);
-        setChainData(item.supportedChains);
-        setSellModalVisible(false);
-        setTimeout(() => setSellChooseChainModalVisible(true), 250);
-      }}>
-        <CyDView className={'bg-[#FAFAFA] p-[16px] rounded-[18px]'}>
-          <CyDView className={'flex flex-row justify-between'}>
-            <CyDView className={'flex flex-row items-center'}>
-              <CyDImage source={item.logo} className={'w-[22px] h-[22px] mr-[6px]'} />
-              <CyDText className={'font-bold text-[18px] text-versionColor'}>{item.displayTitle}</CyDText>
+      item.isVisibileInUI && (
+        <CyDTouchView
+          className={'mb-[16px]'}
+          onPress={() => {
+            setSellType(item);
+            setChainData(item.supportedChains);
+            setSellModalVisible(false);
+            setTimeout(() => setSellChooseChainModalVisible(true), 250);
+          }}>
+          <CyDView className={'bg-[#FAFAFA] p-[16px] rounded-[18px]'}>
+            <CyDView className={'flex flex-row justify-between'}>
+              <CyDView className={'flex flex-row items-center'}>
+                <CyDImage
+                  source={item.logo}
+                  className={'w-[22px] h-[22px] mr-[6px]'}
+                />
+                <CyDText className={'font-bold text-[18px] text-versionColor'}>
+                  {item.displayTitle}
+                </CyDText>
+              </CyDView>
+              {/* <CyDText className={'font-bold text-[18px] text-versionColor'}>{item.currencyType}</CyDText> */}
             </CyDView>
-            {/* <CyDText className={'font-bold text-[18px] text-versionColor'}>{item.currencyType}</CyDText> */}
-          </CyDView>
-          <CyDView className={'flex flex-row flex-wrap mt-[16px]'}>
-            {
-              item.supportedChains.map((chain) => (
-                <CyDView key={chain.backendName} className={'flex flex-row items-center mr-[12px] mb-[6px] pl-[2px]'}>
-                  <CyDImage source={chain.logo_url} className={'w-[12px] h-[12px] mr-[4px]'} />
-                  <CyDText className={'text-subTextColor font-medium text-[12px]'}>{chain.name.toUpperCase()}</CyDText>
+            <CyDView className={'flex flex-row flex-wrap mt-[16px]'}>
+              {item.supportedChains.map(chain => (
+                <CyDView
+                  key={chain.backendName}
+                  className={
+                    'flex flex-row items-center mr-[12px] mb-[6px] pl-[2px]'
+                  }>
+                  <CyDImage
+                    source={chain.logo_url}
+                    className={'w-[12px] h-[12px] mr-[4px]'}
+                  />
+                  <CyDText
+                    className={'text-subTextColor font-medium text-[12px]'}>
+                    {chain.name.toUpperCase()}
+                  </CyDText>
                 </CyDView>
-              ))
-            }
+              ))}
+            </CyDView>
+            <CyDView
+              className={'w-full h-[1px] bg-sepratorColor my-[16px]'}></CyDView>
+            {item.title !== SellOptions.COINBASE && (
+              <CyDView className='pl-[2px]'>
+                <CyDText className={'text-subTextColor'}>
+                  {t('MODES_INIT_CAPS')}:{' '}
+                  <CyDText className={'font-black text-subTextColor'}>
+                    {item.supportedPaymentModes}
+                  </CyDText>
+                </CyDText>
+              </CyDView>
+            )}
           </CyDView>
-          <CyDView className={'w-full h-[1px] bg-sepratorColor my-[16px]'}></CyDView>
-          {item.title !== SellOptions.COINBASE && <CyDView className='pl-[2px]'>
-            <CyDText className={'text-subTextColor'}>{t('MODES_INIT_CAPS')}: <CyDText className={'font-black text-subTextColor'}>{item.supportedPaymentModes}</CyDText></CyDText>
-          </CyDView>}
-        </CyDView>
-      </CyDTouchView>
+        </CyDTouchView>
+      )
     );
   };
 
   const renderChainItem = (item: Chain, navigationRef: any) => {
     return (
-      <CyDTouchView className={'p-[20px] bg-[#FAFAFA] rounded-[18px] mb-[10px]'} onPress={() => {
-        setBuyChooseChainModalVisible(false);
-        navigationRef.navigate(buyType.screenTitle, { url: item.backendName, operation: 'buy' });
-      }}>
+      <CyDTouchView
+        className={'p-[20px] bg-[#FAFAFA] rounded-[18px] mb-[10px]'}
+        onPress={() => {
+          setBuyChooseChainModalVisible(false);
+          navigationRef.navigate(buyType.screenTitle, {
+            url: item.backendName,
+            operation: 'buy',
+          });
+        }}>
         <CyDView className={'flex flex-row items-center justify-between'}>
           <CyDView className='flex flex-row items-center'>
-          <CyDImage source={item.logo_url} className={'w-[18px] h-[18px] mr-[10px]'} />
-          <CyDText className={'font-medium text-[17px] text-versionColor'}>{item.name.toUpperCase()}</CyDText>
+            <CyDImage
+              source={item.logo_url}
+              className={'w-[18px] h-[18px] mr-[10px]'}
+            />
+            <CyDText className={'font-medium text-[17px] text-versionColor'}>
+              {item.name.toUpperCase()}
+            </CyDText>
           </CyDView>
-          <CyDImage source={AppImages.BROWSER_REDIRECT} className={'w-[18px] h-[18px] ml-[10px]'} />
+          <CyDImage
+            source={AppImages.BROWSER_REDIRECT}
+            className={'w-[18px] h-[18px] ml-[10px]'}
+          />
         </CyDView>
       </CyDTouchView>
     );
@@ -430,17 +547,30 @@ export default function ShortcutsModal ({ navigationRef }) {
 
   const renderSellChainItem = (item: Chain, navigationRef: any) => {
     return (
-      <CyDTouchView className={'p-[20px] bg-[#FAFAFA] rounded-[18px] mb-[10px]'} onPress={() => {
-        setSellChooseChainModalVisible(false);
-        navigationRef.navigate(sellType.screenTitle, { url: item.backendName, operation: 'sell' });
-      }}>
+      <CyDTouchView
+        className={'p-[20px] bg-[#FAFAFA] rounded-[18px] mb-[10px]'}
+        onPress={() => {
+          setSellChooseChainModalVisible(false);
+          navigationRef.navigate(sellType.screenTitle, {
+            url: item.backendName,
+            operation: 'sell',
+          });
+        }}>
         <CyDView className={'flex flex-row items-center justify-between'}>
           <CyDView className='flex flex-row items-center'>
-          <CyDImage source={item.logo_url} className={'w-[18px] h-[18px] mr-[10px]'} />
-          <CyDText className={'font-medium text-[17px] text-versionColor'}>{item.name.toUpperCase()}</CyDText>
+            <CyDImage
+              source={item.logo_url}
+              className={'w-[18px] h-[18px] mr-[10px]'}
+            />
+            <CyDText className={'font-medium text-[17px] text-versionColor'}>
+              {item.name.toUpperCase()}
+            </CyDText>
           </CyDView>
-          <CyDImage source={AppImages.BROWSER_REDIRECT} className={'w-[18px] h-[18px] ml-[10px]'} />
-          </CyDView>
+          <CyDImage
+            source={AppImages.BROWSER_REDIRECT}
+            className={'w-[18px] h-[18px] ml-[10px]'}
+          />
+        </CyDView>
       </CyDTouchView>
     );
   };
@@ -493,25 +623,38 @@ export default function ShortcutsModal ({ navigationRef }) {
           break;
       }
       setChooseChainModal(false);
-      setTimeout(() => navigationRef.navigate(screenTitle.QRCODE, {
-        addressType: addressTypeQRCode
-      }), 70);
+      setTimeout(
+        () =>
+          navigationRef.navigate(screenTitle.QRCODE, {
+            addressType: addressTypeQRCode,
+          }),
+        70,
+      );
     } else {
       setSelectedChain(item);
-      const tokenHoldingData = portfolioState.statePortfolio.tokenPortfolio[item.backendName.toLowerCase()].holdings;
+      const tokenHoldingData =
+        portfolioState.statePortfolio.tokenPortfolio[
+          item.backendName.toLowerCase()
+        ].holdings;
       setTokenData(tokenHoldingData);
       setTimeout(() => setChooseTokenModal(true), MODAL_HIDE_TIMEOUT_250);
     }
   };
 
   const onChooseToken = (item: any) => {
-    setTimeout(() => {
-      navigationRef.navigate(navigationPath, { tokenData: item });
-    }, (isIOS() ? MODAL_HIDE_TIMEOUT_250 : 600));
+    setTimeout(
+      () => {
+        navigationRef.navigate(navigationPath, { tokenData: item });
+      },
+      isIOS() ? MODAL_HIDE_TIMEOUT_250 : 600,
+    );
   };
 
   const handleAppStateChange = (nextAppState: string) => {
-    if ((appState === 'inactive' || appState === 'background') && nextAppState === 'active') {
+    if (
+      (appState === 'inactive' || appState === 'background') &&
+      nextAppState === 'active'
+    ) {
       if (animation) {
         animation.play();
       }
@@ -520,10 +663,16 @@ export default function ShortcutsModal ({ navigationRef }) {
   };
 
   useEffect(() => {
-    let data = portfolioState.statePortfolio.portfolioState === PORTFOLIO_EMPTY ? emptyWalletShortcutsData : shortcutsData;
+    let data =
+      portfolioState.statePortfolio.portfolioState === PORTFOLIO_EMPTY
+        ? emptyWalletShortcutsData
+        : shortcutsData;
     data = sortJSONArrayByKey(data, 'index');
     setSortedShortcutsData(data);
-    const appStateChangeListener = AppState.addEventListener('change', handleAppStateChange);
+    const appStateChangeListener = AppState.addEventListener(
+      'change',
+      handleAppStateChange,
+    );
 
     return () => {
       appStateChangeListener.remove();
@@ -538,27 +687,41 @@ export default function ShortcutsModal ({ navigationRef }) {
   }, [portfolioState.statePortfolio.buyButtonClicked]);
 
   useEffect(() => {
-    if (portfolioState.statePortfolio.tokenPortfolio && portfolioState.statePortfolio.tokenPortfolio.totalHoldings) {
-      setTotalHoldings(portfolioState.statePortfolio.tokenPortfolio.totalHoldings);
+    if (
+      portfolioState.statePortfolio.tokenPortfolio &&
+      portfolioState.statePortfolio.tokenPortfolio.totalHoldings
+    ) {
+      setTotalHoldings(
+        portfolioState.statePortfolio.tokenPortfolio.totalHoldings,
+      );
     }
   }, [portfolioState.statePortfolio.tokenPortfolio]);
 
   return (
-    <CyDTouchView onPress={async () => {
-      setShortcutsModalVisible(true);
-      await analytics().logEvent('shortcuts_button_click');
-    }}
-      disabled={portfolioState.statePortfolio.portfolioState === PORTFOLIO_NEW_LOAD}
-    >
+    <CyDTouchView
+      onPress={async () => {
+        setShortcutsModalVisible(true);
+        await analytics().logEvent('shortcuts_button_click');
+      }}
+      disabled={
+        portfolioState.statePortfolio.portfolioState === PORTFOLIO_NEW_LOAD
+      }>
       {/* shortcuts modal */}
       <CyDModalLayout
         isModalVisible={shortcutsModalVisible}
         setModalVisible={setShortcutsModalVisible}
-        animationIn={'slideInUp'} animationOut={'slideOutDown'}
+        animationIn={'slideInUp'}
+        animationOut={'slideOutDown'}
         style={{ justifyContent: 'flex-end', margin: 0, padding: 0 }}>
-        <CyDView className={'relative bg-white p-[32px] rounded-t-[36px] pb-[40px]'}>
-          <CyDTouchView onPress={() => setShortcutsModalVisible(false)} className={'z-50 absolute top-[24px] right-[24px]'}>
-            <CyDImage source={AppImages.CLOSE} className={'w-[16px] h-[16px]'} />
+        <CyDView
+          className={'relative bg-white p-[32px] rounded-t-[36px] pb-[40px]'}>
+          <CyDTouchView
+            onPress={() => setShortcutsModalVisible(false)}
+            className={'z-50 absolute top-[24px] right-[24px]'}>
+            <CyDImage
+              source={AppImages.CLOSE}
+              className={'w-[16px] h-[16px]'}
+            />
           </CyDTouchView>
           <CyDFlatList
             data={sortedShortcutsData}
@@ -574,15 +737,29 @@ export default function ShortcutsModal ({ navigationRef }) {
       <CyDModalLayout
         isModalVisible={buyModalVisible}
         setModalVisible={setBuyModalVisible}
-        animationIn={'slideInUp'} animationOut={'slideOutDown'} style={{ justifyContent: 'flex-end', margin: 0, padding: 0 }}>
-        <CyDView className={'relative bg-white p-[40px] rounded-t-[36px] pb-[40px] max-h-[90%]'}>
-          <CyDTouchView onPress={() => setBuyModalVisible(false)} className={'z-50 absolute top-[24px] right-[24px]'}>
-            <CyDImage source={AppImages.CLOSE} className={'w-[16px] h-[16px]'} />
+        animationIn={'slideInUp'}
+        animationOut={'slideOutDown'}
+        style={{ justifyContent: 'flex-end', margin: 0, padding: 0 }}>
+        <CyDView
+          className={
+            'relative bg-white p-[40px] rounded-t-[36px] pb-[40px] max-h-[90%]'
+          }>
+          <CyDTouchView
+            onPress={() => setBuyModalVisible(false)}
+            className={'z-50 absolute top-[24px] right-[24px]'}>
+            <CyDImage
+              source={AppImages.CLOSE}
+              className={'w-[16px] h-[16px]'}
+            />
           </CyDTouchView>
-          <CyDText className={'text-center font-bold text-[22px] mb-[14px]'}>{'Choose platform to buy'}</CyDText>
+          <CyDText className={'text-center font-bold text-[22px] mb-[14px]'}>
+            {'Choose platform to buy'}
+          </CyDText>
           <CyDFlatList
             data={buyOptionsData}
-            renderItem={({ item }) => renderBuyPlatformItem(item, navigationRef)}
+            renderItem={({ item }) =>
+              renderBuyPlatformItem(item, navigationRef)
+            }
             key={({ item }) => item.index}
             showsVerticalScrollIndicator={true}
           />
@@ -593,15 +770,27 @@ export default function ShortcutsModal ({ navigationRef }) {
       <CyDModalLayout
         isModalVisible={sellModalVisible}
         setModalVisible={setSellModalVisible}
-        animationIn={'slideInUp'} animationOut={'slideOutDown'} style={{ justifyContent: 'flex-end', margin: 0, padding: 0 }}>
-        <CyDView className={'relative bg-white p-[40px] rounded-t-[36px] pb-[40px]'}>
-          <CyDTouchView onPress={() => setSellModalVisible(false)} className={'z-50 absolute top-[24px] right-[24px]'}>
-            <CyDImage source={AppImages.CLOSE} className={'w-[16px] h-[16px]'} />
+        animationIn={'slideInUp'}
+        animationOut={'slideOutDown'}
+        style={{ justifyContent: 'flex-end', margin: 0, padding: 0 }}>
+        <CyDView
+          className={'relative bg-white p-[40px] rounded-t-[36px] pb-[40px]'}>
+          <CyDTouchView
+            onPress={() => setSellModalVisible(false)}
+            className={'z-50 absolute top-[24px] right-[24px]'}>
+            <CyDImage
+              source={AppImages.CLOSE}
+              className={'w-[16px] h-[16px]'}
+            />
           </CyDTouchView>
-          <CyDText className={'text-center font-bold text-[22px] mb-[14px]'}>{'Choose platform to sell'}</CyDText>
+          <CyDText className={'text-center font-bold text-[22px] mb-[14px]'}>
+            {'Choose platform to sell'}
+          </CyDText>
           <CyDFlatList
             data={sellOptionsData}
-            renderItem={({ item }) => renderSellPlatformItem(item, navigationRef)}
+            renderItem={({ item }) =>
+              renderSellPlatformItem(item, navigationRef)
+            }
             key={({ item }) => item.index}
             showsVerticalScrollIndicator={true}
           />
@@ -612,24 +801,41 @@ export default function ShortcutsModal ({ navigationRef }) {
       <CyDModalLayout
         isModalVisible={buyChooseChainModalVisible}
         setModalVisible={setBuyChooseChainModalVisible}
-        animationIn={'slideInUp'} animationOut={'slideOutDown'} style={{ justifyContent: 'flex-end', margin: 0, padding: 0 }}>
-        <CyDView className={'relative bg-white p-[40px] rounded-t-[36px] pb-[40px]'}>
+        animationIn={'slideInUp'}
+        animationOut={'slideOutDown'}
+        style={{ justifyContent: 'flex-end', margin: 0, padding: 0 }}>
+        <CyDView
+          className={'relative bg-white p-[40px] rounded-t-[36px] pb-[40px]'}>
           <CyDView className={'flex flex-row justify-between items-center '}>
-            <CyDTouchView onPress={() => {
-              setBuyChooseChainModalVisible(false);
-              setTimeout(() => setBuyModalVisible(true), 250);
-            }} className={''}>
-              <CyDImage source={AppImages.BACK} className={'w-[20px] h-[20px]'} />
+            <CyDTouchView
+              onPress={() => {
+                setBuyChooseChainModalVisible(false);
+                setTimeout(() => setBuyModalVisible(true), 250);
+              }}
+              className={''}>
+              <CyDImage
+                source={AppImages.BACK}
+                className={'w-[20px] h-[20px]'}
+              />
             </CyDTouchView>
             <CyDView className={'flex flex-row'}>
               <CyDImage source={buyType.logo} className={'w-[20px] h-[20px]'} />
-              <CyDText className={'text-center font-bold text-[16px] ml-[6px]'}>{buyType.title}</CyDText>
+              <CyDText className={'text-center font-bold text-[16px] ml-[6px]'}>
+                {buyType.title}
+              </CyDText>
             </CyDView>
-            <CyDTouchView onPress={() => setBuyChooseChainModalVisible(false)} className={''}>
-              <CyDImage source={AppImages.CLOSE} className={'w-[16px] h-[16px]'} />
+            <CyDTouchView
+              onPress={() => setBuyChooseChainModalVisible(false)}
+              className={''}>
+              <CyDImage
+                source={AppImages.CLOSE}
+                className={'w-[16px] h-[16px]'}
+              />
             </CyDTouchView>
           </CyDView>
-          <CyDText className={'text-center font-bold text-[22px] my-[20px]'}>{'Choose Chain'}</CyDText>
+          <CyDText className={'text-center font-bold text-[22px] my-[20px]'}>
+            {'Choose Chain'}
+          </CyDText>
           <CyDFlatList
             data={chainData}
             renderItem={({ item }) => renderChainItem(item, navigationRef)}
@@ -644,24 +850,44 @@ export default function ShortcutsModal ({ navigationRef }) {
       <CyDModalLayout
         isModalVisible={sellChooseChainModalVisible}
         setModalVisible={setSellChooseChainModalVisible}
-        animationIn={'slideInUp'} animationOut={'slideOutDown'} style={{ justifyContent: 'flex-end', margin: 0, padding: 0 }}>
-        <CyDView className={'relative bg-white p-[40px] rounded-t-[36px] pb-[40px]'}>
+        animationIn={'slideInUp'}
+        animationOut={'slideOutDown'}
+        style={{ justifyContent: 'flex-end', margin: 0, padding: 0 }}>
+        <CyDView
+          className={'relative bg-white p-[40px] rounded-t-[36px] pb-[40px]'}>
           <CyDView className={'flex flex-row justify-between items-center '}>
-            <CyDTouchView onPress={() => {
-              setSellChooseChainModalVisible(false);
-              setTimeout(() => setSellModalVisible(true), 250);
-            }} className={''}>
-              <CyDImage source={AppImages.BACK} className={'w-[20px] h-[20px]'} />
+            <CyDTouchView
+              onPress={() => {
+                setSellChooseChainModalVisible(false);
+                setTimeout(() => setSellModalVisible(true), 250);
+              }}
+              className={''}>
+              <CyDImage
+                source={AppImages.BACK}
+                className={'w-[20px] h-[20px]'}
+              />
             </CyDTouchView>
             <CyDView className={'flex flex-row'}>
-              <CyDImage source={sellType.logo} className={'w-[20px] h-[20px]'} />
-              <CyDText className={'text-center font-bold text-[16px] ml-[6px]'}>{sellType.title}</CyDText>
+              <CyDImage
+                source={sellType.logo}
+                className={'w-[20px] h-[20px]'}
+              />
+              <CyDText className={'text-center font-bold text-[16px] ml-[6px]'}>
+                {sellType.title}
+              </CyDText>
             </CyDView>
-            <CyDTouchView onPress={() => setSellChooseChainModalVisible(false)} className={''}>
-              <CyDImage source={AppImages.CLOSE} className={'w-[16px] h-[16px]'} />
+            <CyDTouchView
+              onPress={() => setSellChooseChainModalVisible(false)}
+              className={''}>
+              <CyDImage
+                source={AppImages.CLOSE}
+                className={'w-[16px] h-[16px]'}
+              />
             </CyDTouchView>
           </CyDView>
-          <CyDText className={'text-center font-bold text-[22px] my-[20px]'}>{'Choose Chain'}</CyDText>
+          <CyDText className={'text-center font-bold text-[22px] my-[20px]'}>
+            {'Choose Chain'}
+          </CyDText>
           <CyDFlatList
             data={chainData}
             renderItem={({ item }) => renderSellChainItem(item, navigationRef)}
@@ -690,14 +916,25 @@ export default function ShortcutsModal ({ navigationRef }) {
       <ChooseTokenModal
         isChooseTokenModalVisible={chooseTokenModal}
         tokenList={totalHoldings.length ? totalHoldings : []}
-        onSelectingToken={(token) => { setChooseTokenModal(false); onChooseToken(token); }}
-        onCancel={() => { setChooseTokenModal(false); }}
+        onSelectingToken={token => {
+          setChooseTokenModal(false);
+          onChooseToken(token);
+        }}
+        onCancel={() => {
+          setChooseTokenModal(false);
+        }}
       />
 
-      <CyDView className={ isIOS() ? 'mx-[12px]' : 'mx-[12px] mt-[4px]' }>
-        <LottieView source={AppImages.SHORTCUTS} ref={(ref) => setAnimation(ref)} autoPlay loop resizeMode={'contain'} style={{ width: 50, height: 50 }} />
+      <CyDView className={isIOS() ? 'mx-[12px]' : 'mx-[12px] mt-[4px]'}>
+        <LottieView
+          source={AppImages.SHORTCUTS}
+          ref={ref => setAnimation(ref)}
+          autoPlay
+          loop
+          resizeMode={'contain'}
+          style={{ width: 50, height: 50 }}
+        />
       </CyDView>
-
     </CyDTouchView>
   );
 }

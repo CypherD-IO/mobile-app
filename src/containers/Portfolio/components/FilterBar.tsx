@@ -13,7 +13,7 @@ const FilterBar = ({ setFilterModalVisible }: FilterBarProps) => {
       <CyDTouchView onPress={() => {
         setFilterModalVisible(true);
       }}>
-        <CyDFastImage className='w-[78px] h-[25px]' source={AppImages.ACTIVITY_FILTER} />
+        <CyDFastImage className='w-[48px] h-[26px]' source={AppImages.FILTER} resizeMode='contain' />
       </CyDTouchView>
     </CyDView>
   );

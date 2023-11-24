@@ -31,7 +31,8 @@ export interface CardProfile {
         cardId: string
         status: CardStatus
       }
-    ]
+    ],
+    isPhysicalCardEligible: boolean
   }
   solid?: {
     applicationStatus: CardApplicationStatus

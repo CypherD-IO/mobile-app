@@ -3,6 +3,7 @@ import AsyncStorage from '@react-native-async-storage/async-storage';
 import { PORTFOLIO_EMPTY } from '../reducers/portfolio_reducer';
 import * as Sentry from '@sentry/react-native';
 import { advancedSettingsInitialState, IAdvancedSettingsData } from '../containers/Options/advancedSettings';
+import { DefiAllocation, DefiData, DefiResponse } from '../models/defi.interface';
 
 export const storePortfolioData = async (value: any, ethereum: { address: any }, portfolioState: { dispatchPortfolio: (arg0: { value: { portfolioState: string } }) => void }, key = '') => {
   try {
@@ -24,6 +25,27 @@ export const getPortfolioData = async (ethereum: { address: any }, portfolioStat
   }
 };
 
+export const storeDeFiData = async (data: {
+  iat: string;
+  rawData: DefiResponse;
+  filteredData: DefiData;
+},key='') =>{
+  try {
+    const jsonValue = JSON.stringify(data);
+    await AsyncStorage.setItem(`deFiData${key}`, jsonValue);
+  } catch (error) {
+    Sentry.captureException(error);
+  }
+};
+
+export const getDeFiData = async (key='')=>{
+  try {
+    const jsonValue = await AsyncStorage.getItem(`deFiData${key}`);
+    return (jsonValue != null) ? JSON.parse(jsonValue) : null;
+  } catch (error) {
+    Sentry.captureException(error);
+  }
+};
 export const storeConnectWalletData = async (value: any, address: string) => {
   try {
     const jsonValue = JSON.stringify({ data: value });
@@ -355,6 +377,42 @@ export const getSkipSeedConfirmation = async () => {
   try {
     const seedPhraseConfirmed = await AsyncStorage.getItem('SEED_PHRASE_CONFIRMED');
     return seedPhraseConfirmed;
+  } catch (error) {
+    Sentry.captureException(error);
+  }
+};
+
+
+// The cardID is in the format <CARD_ID>:<DATE_TIME>
+export const getDismissedActivityCardIDs = async () => {
+  try {
+    const dismissedCardIDs = await AsyncStorage.getItem('DISMISSED_ACTIVITY_CARD_IDS') ?? '[]';
+    return dismissedCardIDs;
+  } catch (error) {
+    Sentry.captureException(error);
+  }
+};
+
+export const setDismissedActivityCardIDs = async (newDismissedCardIDs: string[]) => {
+  try {
+    await AsyncStorage.setItem('DISMISSED_ACTIVITY_CARD_IDS', JSON.stringify(newDismissedCardIDs));
+  } catch (error) {
+    Sentry.captureException(error);
+  }
+};
+
+export const getDismissedStaticCardIDs = async () => {
+  try {
+    const dismissedCardIDs = await AsyncStorage.getItem('DISMISSED_STATIC_CARD_IDS') ?? '[]';
+    return dismissedCardIDs;
+  } catch (error) {
+    Sentry.captureException(error);
+  }
+};
+
+export const setDismissedStaticCardIDs = async (newDismissedCardIDs: string[]) => {
+  try {
+    await AsyncStorage.setItem('DISMISSED_STATIC_CARD_IDS', JSON.stringify(newDismissedCardIDs));
   } catch (error) {
     Sentry.captureException(error);
   }

@@ -1,4 +1,3 @@
-/* eslint-disable @typescript-eslint/strict-boolean-expressions */
 import {
   Chain,
   ChainBackendNames,
@@ -63,6 +62,7 @@ export interface Holding {
   isBridgeable: boolean;
   isSwapable: boolean;
   isStakeable?: boolean;
+  isZeroFeeCardFunding?: boolean;
 }
 
 export interface ChainHoldings {
@@ -137,7 +137,7 @@ export interface NftHoldings {
 
 export function getCurrentChainHoldings(
   portfolio: WalletHoldings,
-  chain: Chain
+  chain: Chain,
 ) {
   if (!portfolio) {
     return undefined;
@@ -187,7 +187,7 @@ export function getCurrentChainHoldings(
 export async function fetchNftDatav2(
   portfolioState: any,
   ethereum: any,
-  stargaze: any
+  stargaze: any,
 ) {
   const allChainNftHoldings: NftHoldings = {
     ETH: [],
@@ -206,7 +206,7 @@ export async function fetchNftDatav2(
     SHM: [],
     'ALL CHAINS': [],
   };
-  const cursor: string = '';
+  const cursor = '';
   const PORTFOLIO_HOST: string = hostWorker.getHost('PORTFOLIO_HOST');
   const ARCH_HOST: string = hostWorker.getHost('ARCH_HOST');
   const getNfturl = `${PORTFOLIO_HOST}/v1/userholdings/nfts`;
@@ -302,7 +302,7 @@ export async function fetchNftDatav2(
     }
 
     const chainNftData: ChainNftHoldings[] = [];
-    tempCollections.forEach((value) => {
+    tempCollections.forEach(value => {
       chainNftData.push(value);
     });
     if (allChainNftHoldings['ALL CHAINS'] && chainNftData) {
@@ -352,7 +352,7 @@ export async function fetchNftDatav2(
     allChainNftHoldings,
     ethereum,
     portfolioState,
-    'ALL_NFT'
+    'ALL_NFT',
   );
   return allChainNftHoldings;
 }
@@ -375,7 +375,7 @@ export function sortDesc(a: any, b: any) {
 export async function getPortfolioModel(
   ethereum: any,
   portfolioState: any,
-  archCall: any
+  archCall: any,
 ): Promise<WalletHoldings> {
   let id = 1;
   let totalUnverifiedBalance = 0;
@@ -469,6 +469,7 @@ export async function getPortfolioModel(
         isBridgeable: holding.isBridgeable,
         isSwapable: holding.isSwapable,
         isStakeable: holding.isStakeable ?? false,
+        isZeroFeeCardFunding: holding.isZeroFeeCardFunding ?? false,
       };
       if (has(holding, 'isMainnet')) {
         tokenHolding.isMainnet = holding.isMainnet;
@@ -564,7 +565,7 @@ export async function getPortfolioModel(
       chainHoldings,
       ethereum,
       portfolioState,
-      allholdings[i]?.chain_id
+      allholdings[i]?.chain_id,
     );
 
     chainHoldings.holdings.sort(sortDesc);
@@ -628,8 +629,8 @@ export async function getPortfolioModel(
   }
   const remainingChains = new Set(
     [...allChains].filter(
-      (x) => !fetchedChains.has(x as ChainBackendNames | 'ALL')
-    )
+      x => !fetchedChains.has(x as ChainBackendNames | 'ALL'),
+    ),
   );
 
   if (remainingChains.size > 0 && portfolioState.statePortfolio.developerMode) {
@@ -655,7 +656,7 @@ export async function getPortfolioModel(
 
       totalBalance += parseFloat(chainHoldings.chainTotalBalance);
       totalUnverifiedBalance += parseFloat(
-        chainHoldings.chainUnVerifiedBalance
+        chainHoldings.chainUnVerifiedBalance,
       );
 
       chainHoldings.holdings.sort(sortDesc);
@@ -751,7 +752,7 @@ export async function getPortfolioModel(
 
 export async function fetchTokenData(
   hdWalletState: { state: { wallet: any } },
-  portfolioState: any
+  portfolioState: any,
 ) {
   const ARCH_HOST: string = hostWorker.getHost('ARCH_HOST');
   const fromAnkr: boolean = portfolioState.statePortfolio.developerMode;
@@ -846,7 +847,7 @@ export async function fetchTokenData(
         newPortfolio = await getPortfolioModel(
           ethereum,
           portfolioState,
-          archBackend
+          archBackend,
         );
       }
 
@@ -901,7 +902,7 @@ export async function fetchTokenData(
 export async function fetchRequiredTokenData(
   chain: string,
   address: string,
-  symbol?: string
+  symbol?: string,
 ) {
   const ARCH_HOST: string = hostWorker.getHost('ARCH_HOST');
   const portfolioUrl = `${ARCH_HOST}/v1/portfolio/balances?`;
@@ -919,7 +920,7 @@ export async function fetchRequiredTokenData(
   if (response.data) {
     if (symbol) {
       const tokenHoldings = response.data.chain_portfolios[0].token_holdings;
-      const tokenData = tokenHoldings?.find((token) => token.symbol === symbol);
+      const tokenData = tokenHoldings?.find(token => token.symbol === symbol);
       return tokenData;
     } else {
       return response.data;

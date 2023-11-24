@@ -40,7 +40,6 @@ import CosmosValidators from '../containers/CosmosStaking/validators';
 import CosmosAction from '../containers/CosmosStaking/action';
 import CosmosSelectReValidator from '../containers/CosmosStaking/reValidator';
 import CoinbasePay from '../containers/FundCardScreen/cbpay';
-import SardinePay from '../containers/FundCardScreen/sardinePay';
 import QRScanner from '../containers/Qrcode/QRScanner';
 import FundCardScreen from '../containers/FundCardScreen';
 import AppSettings from '../containers/Options/appSettings';
@@ -55,7 +54,7 @@ import { t } from 'i18next';
 import OTPVerificationScreen from '../containers/DebitCard/OTPVerification';
 import CardSignupCompleteScreen from '../containers/DebitCard/signUpComplete';
 import CardKYCStatusScreen from '../containers/DebitCard/KYCStatus';
-import BridgeCardScreen from '../containers/DebitCard/bridgeCard/bridgeCard';
+import CypherCardScreen from '../containers/DebitCard/CardV2';
 import CardRevealAuthScreen from '../containers/DebitCard/bridgeCard/cardRevealAuth';
 import CardSignupLandingScreen from '../containers/DebitCard/cardSignupLanding';
 import BridgeFundCardScreen from '../containers/DebitCard/bridgeCard/fundCard';
@@ -74,6 +73,7 @@ import { NFTOverviewScreen, NFTHoldingsScreen } from '../containers/NFT';
 import { AddressBook } from '../containers/AddressBook/myAddress';
 import { CreateContact } from '../containers/AddressBook/createContact';
 import TransFiScreen from '../containers/ramp/transFi';
+import UpgradeToPhysicalCardScreen from '../containers/DebitCard/CardV2/UpgradeToPhysicalCardScreen';
 import { useEffect } from 'react';
 import {
   BackHandler,
@@ -85,6 +85,9 @@ import {
 import ActivateCardScreen from '../containers/DebitCard/bridgeCard/activateCard';
 import SetPinScreen from '../containers/DebitCard/bridgeCard/setPin';
 import { useKeyboard } from '../hooks/useKeyboard';
+import { DEFIOverviewScreen } from '../containers/DeFi/DEFIOverview';
+import ShippingDetailsOTPScreen from '../containers/DebitCard/CardV2/ShippingDetailsOTPScreen';
+import CardSignupConfirmation from '../containers/DebitCard/cardSignupConfirmation';
 
 const { DynamicImage, DynamicButton } = require('../styles');
 
@@ -94,7 +97,7 @@ const FundCardStack = createNativeStackNavigator();
 const OptionsStack = createNativeStackNavigator();
 // const ActivityStack = createNativeStackNavigator();
 
-const defaultHeaderLeft = (navigation) => {
+const defaultHeaderLeft = navigation => {
   const { keyboardHeight } = useKeyboard();
   return (
     <CyDTouchView
@@ -108,8 +111,7 @@ const defaultHeaderLeft = (navigation) => {
         } else {
           navigation.goBack();
         }
-      }}
-    >
+      }}>
       <CyDFastImage
         className={'h-[20px] w-[20px]'}
         resizeMode='cover'
@@ -159,6 +161,24 @@ export function PortfolioStackScreen({ navigation, route }) {
         component={PortfolioScreen}
         options={{ headerShown: false }}
       />
+      <PortfolioStack.Screen
+        name={screenTitle.DEFI_PROTOCOL_OVERVIEW_SCREEN}
+        component={DEFIOverviewScreen}
+        options={({ navigation, route }) => ({
+          headerTransparent: false,
+          headerShadowVisible: false,
+          title: '',
+          headerTitleAlign: 'center',
+          headerTitleStyle: portfolioStackScreenHeaderTitleStyles,
+          navigationOptions: {
+            tabBarVisible: false,
+          },
+
+          headerTintColor: Colors.primaryTextColor,
+          headerBackTitleVisible: false,
+          headerLeft: props => defaultHeaderLeft(navigation),
+        })}
+      />
 
       <PortfolioStack.Screen
         name={screenTitle.NFT_OVERVIEW_SCREEN}
@@ -175,7 +195,7 @@ export function PortfolioStackScreen({ navigation, route }) {
 
           headerTintColor: Colors.primaryTextColor,
           headerBackTitleVisible: false,
-          headerLeft: (props) => defaultHeaderLeft(navigation),
+          headerLeft: props => defaultHeaderLeft(navigation),
         })}
       />
 
@@ -194,7 +214,7 @@ export function PortfolioStackScreen({ navigation, route }) {
 
           headerTintColor: Colors.primaryTextColor,
           headerBackTitleVisible: false,
-          headerLeft: (props) => defaultHeaderLeft(navigation),
+          headerLeft: props => defaultHeaderLeft(navigation),
         })}
       />
       <PortfolioStack.Screen
@@ -212,7 +232,7 @@ export function PortfolioStackScreen({ navigation, route }) {
 
           headerTintColor: Colors.primaryTextColor,
           headerBackTitleVisible: false,
-          headerLeft: (props) => defaultHeaderLeft(navigation),
+          headerLeft: props => defaultHeaderLeft(navigation),
         })}
       />
 
@@ -230,7 +250,7 @@ export function PortfolioStackScreen({ navigation, route }) {
           },
           headerTintColor: Colors.primaryTextColor,
           headerBackTitleVisible: false,
-          headerLeft: (props) => defaultHeaderLeft(navigation),
+          headerLeft: props => defaultHeaderLeft(navigation),
         })}
       />
 
@@ -249,7 +269,7 @@ export function PortfolioStackScreen({ navigation, route }) {
 
           headerTintColor: Colors.primaryTextColor,
           headerBackTitleVisible: false,
-          headerLeft: (props) => defaultHeaderLeft(navigation),
+          headerLeft: props => defaultHeaderLeft(navigation),
         })}
       />
 
@@ -268,7 +288,7 @@ export function PortfolioStackScreen({ navigation, route }) {
 
           headerTintColor: Colors.primaryTextColor,
           headerBackTitleVisible: false,
-          headerLeft: (props) => defaultHeaderLeft(navigation),
+          headerLeft: props => defaultHeaderLeft(navigation),
         })}
       />
 
@@ -287,7 +307,7 @@ export function PortfolioStackScreen({ navigation, route }) {
 
           headerTintColor: Colors.primaryTextColor,
           headerBackTitleVisible: false,
-          headerLeft: (props) => defaultHeaderLeft(navigation),
+          headerLeft: props => defaultHeaderLeft(navigation),
         })}
       />
 
@@ -306,7 +326,7 @@ export function PortfolioStackScreen({ navigation, route }) {
 
           headerTintColor: Colors.primaryTextColor,
           headerBackTitleVisible: false,
-          headerLeft: (props) => defaultHeaderLeft(navigation),
+          headerLeft: props => defaultHeaderLeft(navigation),
         })}
       />
 
@@ -325,7 +345,7 @@ export function PortfolioStackScreen({ navigation, route }) {
 
           headerTintColor: Colors.primaryTextColor,
           headerBackTitleVisible: false,
-          headerLeft: (props) => defaultHeaderLeft(navigation),
+          headerLeft: props => defaultHeaderLeft(navigation),
         })}
       />
 
@@ -344,7 +364,7 @@ export function PortfolioStackScreen({ navigation, route }) {
 
           headerTintColor: Colors.primaryTextColor,
           headerBackTitleVisible: false,
-          headerLeft: (props) => defaultHeaderLeft(navigation),
+          headerLeft: props => defaultHeaderLeft(navigation),
         })}
       />
 
@@ -363,7 +383,7 @@ export function PortfolioStackScreen({ navigation, route }) {
 
           headerTintColor: Colors.primaryTextColor,
           headerBackTitleVisible: false,
-          headerLeft: (props) => defaultHeaderLeft(navigation),
+          headerLeft: props => defaultHeaderLeft(navigation),
         })}
       />
 
@@ -382,7 +402,7 @@ export function PortfolioStackScreen({ navigation, route }) {
 
           headerTintColor: Colors.primaryTextColor,
           headerBackTitleVisible: false,
-          headerLeft: (props) => defaultHeaderLeft(navigation),
+          headerLeft: props => defaultHeaderLeft(navigation),
         })}
       />
 
@@ -401,7 +421,7 @@ export function PortfolioStackScreen({ navigation, route }) {
 
           headerTintColor: Colors.primaryTextColor,
           headerBackTitleVisible: false,
-          headerLeft: (props) => defaultHeaderLeft(navigation),
+          headerLeft: props => defaultHeaderLeft(navigation),
         })}
       />
 
@@ -420,7 +440,7 @@ export function PortfolioStackScreen({ navigation, route }) {
 
           headerTintColor: Colors.primaryTextColor,
           headerBackTitleVisible: false,
-          headerLeft: (props) => defaultHeaderLeft(navigation),
+          headerLeft: props => defaultHeaderLeft(navigation),
         })}
       />
       <PortfolioStack.Screen
@@ -438,7 +458,7 @@ export function PortfolioStackScreen({ navigation, route }) {
 
           headerTintColor: Colors.primaryTextColor,
           headerBackTitleVisible: false,
-          headerLeft: (props) => defaultHeaderLeft(navigation),
+          headerLeft: props => defaultHeaderLeft(navigation),
         })}
       />
       <PortfolioStack.Screen
@@ -456,7 +476,7 @@ export function PortfolioStackScreen({ navigation, route }) {
 
           headerTintColor: Colors.primaryTextColor,
           headerBackTitleVisible: false,
-          headerLeft: (props) => defaultHeaderLeft(navigation),
+          headerLeft: props => defaultHeaderLeft(navigation),
         })}
       />
       <PortfolioStack.Screen
@@ -471,7 +491,7 @@ export function PortfolioStackScreen({ navigation, route }) {
           },
           headerTitleAlign: 'center',
           headerTitleStyle: portfolioStackScreenHeaderTitleStyles,
-          headerLeft: (props) => defaultHeaderLeft(navigation),
+          headerLeft: props => defaultHeaderLeft(navigation),
         })}
       />
       <PortfolioStack.Screen
@@ -490,26 +510,7 @@ export function PortfolioStackScreen({ navigation, route }) {
             fontSize: 20,
             fontWeight: '800',
           },
-          headerLeft: (props) => defaultHeaderLeft(navigation),
-        })}
-      />
-      <PortfolioStack.Screen
-        name={screenTitle.SARD_PAY}
-        component={SardinePay}
-        options={({ navigation, route }) => ({
-          headerTransparent: false,
-          headerShadowVisible: false,
-          title: t('SARD_PAY'),
-          navigationOptions: {
-            tabBarVisible: false,
-          },
-          headerTitleAlign: 'center',
-          headerTitleStyle: {
-            fontFamily: C.fontsName.FONT_BLACK,
-            fontSize: 20,
-            fontWeight: '800',
-          },
-          headerLeft: (props) => defaultHeaderLeft(navigation),
+          headerLeft: props => defaultHeaderLeft(navigation),
         })}
       />
       <PortfolioStack.Screen
@@ -530,7 +531,7 @@ export function PortfolioStackScreen({ navigation, route }) {
 
           headerTintColor: Colors.primaryTextColor,
           headerBackTitleVisible: false,
-          headerLeft: (props) => defaultHeaderLeft(navigation),
+          headerLeft: props => defaultHeaderLeft(navigation),
         })}
       />
       <PortfolioStack.Screen
@@ -550,7 +551,7 @@ export function PortfolioStackScreen({ navigation, route }) {
             fontWeight: '700',
             color: Colors.primaryTextColor,
           },
-          headerLeft: (props) => defaultHeaderLeft(navigation),
+          headerLeft: props => defaultHeaderLeft(navigation),
         })}
       />
       <PortfolioStack.Screen
@@ -587,7 +588,7 @@ export function PortfolioStackScreen({ navigation, route }) {
           },
           headerTitleAlign: 'center',
           headerTitleStyle: portfolioStackScreenHeaderTitleStyles,
-          headerLeft: (props) => defaultHeaderLeft(navigation),
+          headerLeft: props => defaultHeaderLeft(navigation),
         })}
       />
 
@@ -603,7 +604,7 @@ export function PortfolioStackScreen({ navigation, route }) {
           },
           headerTitleAlign: 'center',
           headerTitleStyle: portfolioStackScreenHeaderTitleStyles,
-          headerLeft: (props) => defaultHeaderLeft(navigation),
+          headerLeft: props => defaultHeaderLeft(navigation),
         })}
       />
       <PortfolioStack.Screen
@@ -654,7 +655,7 @@ export function PortfolioStackScreen({ navigation, route }) {
 
           headerTintColor: Colors.primaryTextColor,
           headerBackTitleVisible: false,
-          headerLeft: (props) => defaultHeaderLeft(navigation),
+          headerLeft: props => defaultHeaderLeft(navigation),
         }}
       />
 
@@ -736,8 +737,21 @@ export function PortfolioStackScreen({ navigation, route }) {
 
           headerTintColor: Colors.primaryTextColor,
           headerBackTitleVisible: false,
-          headerLeft: (props) => defaultHeaderLeft(navigation),
+          headerLeft: props => defaultHeaderLeft(navigation),
         })}
+      />
+      <PortfolioStack.Screen
+        name={screenTitle.SOCIAL_MEDIA_SCREEN}
+        component={SocialMediaScreen}
+        options={{
+          headerTransparent: false,
+          headerShadowVisible: false,
+          headerTitleAlign: 'center',
+          headerTitleStyle: portfolioStackScreenHeaderTitleStyles,
+
+          headerTintColor: Colors.primaryTextColor,
+          headerBackTitleVisible: false,
+        }}
       />
     </PortfolioStack.Navigator>
   );
@@ -788,7 +802,25 @@ export function DebitCardStackScreen({ navigation }) {
           headerTitleAlign: 'center',
           headerTitleStyle: portfolioStackScreenHeaderTitleStyles,
           headerBackVisible: false,
-          headerLeft: (props) => defaultHeaderLeft(navigation),
+          headerLeft: props => defaultHeaderLeft(navigation),
+        })}
+      />
+
+      <FundCardStack.Screen
+        name={screenTitle.CARD_SIGNUP_CONFIRMATION}
+        component={CardSignupConfirmation}
+        options={({ navigation }) => ({
+          headerShown: true,
+          headerTransparent: false,
+          headerShadowVisible: false,
+          title: 'Cypher Card Signup',
+          navigationOptions: {
+            tabBarVisible: false,
+          },
+          headerTitleAlign: 'center',
+          headerTitleStyle: portfolioStackScreenHeaderTitleStyles,
+          headerBackVisible: false,
+          headerLeft: props => defaultHeaderLeft(navigation),
         })}
       />
 
@@ -807,35 +839,53 @@ export function DebitCardStackScreen({ navigation }) {
       <FundCardStack.Screen
         name={screenTitle.CARD_KYC_STATUS_SCREEN}
         component={CardKYCStatusScreen}
-        options={({ navigation }) => ({ headerShown: false })}
+        options={({ navigation }) => ({
+          headerTransparent: false,
+          headerShadowVisible: false,
+          title: 'Application Status',
+          headerTitleAlign: 'center',
+          headerTitleStyle: portfolioStackScreenHeaderTitleStyles,
+          headerTintColor: Colors.primaryTextColor,
+          headerBackTitleVisible: false,
+          headerLeft: props => defaultHeaderLeft(navigation),
+        })}
       />
 
       <FundCardStack.Screen
         name={screenTitle.CARD_SIGNUP_OTP_VERIFICATION_SCREEN}
         component={OTPVerificationScreen}
-        options={({ navigation }) => ({ headerShown: false })}
+        options={({ navigation }) => ({
+          headerTransparent: false,
+          headerShadowVisible: false,
+          title: 'Verify OTP',
+          headerTitleAlign: 'center',
+          headerTitleStyle: portfolioStackScreenHeaderTitleStyles,
+          headerTintColor: Colors.primaryTextColor,
+          headerBackTitleVisible: false,
+          headerLeft: props => defaultHeaderLeft(navigation),
+        })}
       />
 
       <FundCardStack.Screen
         name={screenTitle.UPDATE_CARD_APPLICATION_SCREEN}
         component={UpdateCardApplicationScreen}
-        options={({ navigation, route }) => ({ headerShown: false })}
+        options={({ navigation }) => ({
+          headerTransparent: false,
+          headerShadowVisible: false,
+          title: 'Update Application',
+          headerTitleAlign: 'center',
+          headerTitleStyle: portfolioStackScreenHeaderTitleStyles,
+          headerTintColor: Colors.primaryTextColor,
+          headerBackTitleVisible: false,
+          headerLeft: props => defaultHeaderLeft(navigation),
+        })}
       />
 
       <FundCardStack.Screen
         name={screenTitle.BRIDGE_CARD_SCREEN}
-        component={BridgeCardScreen}
+        component={CypherCardScreen}
         options={{
-          headerTransparent: false,
-          headerShadowVisible: false,
-          title: 'Cypher Card',
-          headerTitleAlign: 'center',
-          headerTitleStyle: portfolioStackScreenHeaderTitleStyles,
-          headerLeft: () => {
-            return <></>;
-          },
-          headerTintColor: Colors.primaryTextColor,
-          headerBackTitleVisible: false,
+          headerShown: false,
         }}
       />
 
@@ -864,7 +914,7 @@ export function DebitCardStackScreen({ navigation }) {
           headerTitleStyle: portfolioStackScreenHeaderTitleStyles,
           headerTintColor: Colors.primaryTextColor,
           headerBackTitleVisible: false,
-          headerLeft: (props) => defaultHeaderLeft(navigation),
+          headerLeft: props => defaultHeaderLeft(navigation),
         })}
       />
 
@@ -879,7 +929,7 @@ export function DebitCardStackScreen({ navigation }) {
           headerTitleStyle: portfolioStackScreenHeaderTitleStyles,
           headerTintColor: Colors.primaryTextColor,
           headerBackTitleVisible: false,
-          headerLeft: (props) => defaultHeaderLeft(navigation),
+          headerLeft: props => defaultHeaderLeft(navigation),
         })}
       />
 
@@ -894,7 +944,7 @@ export function DebitCardStackScreen({ navigation }) {
           headerTitleStyle: portfolioStackScreenHeaderTitleStyles,
           headerTintColor: Colors.primaryTextColor,
           headerBackTitleVisible: false,
-          headerLeft: (props) => defaultHeaderLeft(navigation),
+          headerLeft: props => defaultHeaderLeft(navigation),
         })}
       />
 
@@ -909,7 +959,7 @@ export function DebitCardStackScreen({ navigation }) {
           headerTitleStyle: portfolioStackScreenHeaderTitleStyles,
           headerTintColor: Colors.primaryTextColor,
           headerBackTitleVisible: false,
-          headerLeft: (props) => defaultHeaderLeft(navigation),
+          headerLeft: props => defaultHeaderLeft(navigation),
         })}
       />
 
@@ -976,6 +1026,45 @@ export function DebitCardStackScreen({ navigation }) {
           headerBackTitleVisible: false,
         }}
       />
+      <FundCardStack.Screen
+        name={screenTitle.TRANS_DETAIL}
+        component={TransDetail}
+        options={({ navigation, route }) => ({
+          headerTransparent: false,
+          headerShadowVisible: false,
+          headerTitle: 'Explorer',
+          headerTitleAlign: 'center',
+          headerTitleStyle: portfolioStackScreenHeaderTitleStyles,
+          headerTintColor: Colors.primaryTextColor,
+          headerBackTitleVisible: false,
+        })}
+      />
+      <FundCardStack.Screen
+        name={screenTitle.UPGRADE_TO_PHYSICAL_CARD_SCREEN}
+        component={UpgradeToPhysicalCardScreen}
+        options={({ navigation, route }) => ({
+          headerTransparent: false,
+          headerShadowVisible: false,
+          headerTitleShown: false,
+          title: 'Add Shipping details',
+          headerTitleStyle: portfolioStackScreenHeaderTitleStyles,
+          headerTintColor: Colors.primaryTextColor,
+          headerBackTitleVisible: false,
+        })}
+      />
+      <FundCardStack.Screen
+        name={screenTitle.SHIPPING_DETAILS_OTP_SCREEN}
+        component={ShippingDetailsOTPScreen}
+        options={({ navigation, route }) => ({
+          headerTransparent: false,
+          headerShadowVisible: false,
+          headerTitleShown: false,
+          title: '',
+          headerTitleStyle: portfolioStackScreenHeaderTitleStyles,
+          headerTintColor: Colors.primaryTextColor,
+          headerBackTitleVisible: false,
+        })}
+      />
     </FundCardStack.Navigator>
   );
 }
@@ -1032,8 +1121,7 @@ export function BrowserStackScreen({ navigation, route }) {
             <DynamicButton
               onPress={() => {
                 navigation.goBack();
-              }}
-            >
+              }}>
               <DynamicImage
                 dynamic
                 height={20}
@@ -1062,8 +1150,7 @@ export function BrowserStackScreen({ navigation, route }) {
               onPress={() => {
                 navigation.goBack();
               }}
-              fD={'row'}
-            >
+              fD={'row'}>
               <DynamicImage
                 dynamic
                 height={18}
@@ -1076,8 +1163,7 @@ export function BrowserStackScreen({ navigation, route }) {
                 fF={C.fontsName.FONT_BLACK}
                 fS={16}
                 color={Colors.primaryTextColor}
-                mL={20}
-              >
+                mL={20}>
                 {t('TRAN_DETAIL')}
               </CText>
             </DynamicTouchView>
@@ -1182,7 +1268,7 @@ export function OptionsStackScreen({ navigation, route }) {
 
           headerTintColor: Colors.primaryTextColor,
           headerBackTitleVisible: false,
-          headerLeft: (props) => defaultHeaderLeft(navigation),
+          headerLeft: props => defaultHeaderLeft(navigation),
         })}
       />
       <OptionsStack.Screen
@@ -1249,7 +1335,7 @@ export function OptionsStackScreen({ navigation, route }) {
           navigationOptions: {
             tabBarVisible: false,
           },
-          headerLeft: (props) => defaultHeaderLeft(navigation),
+          headerLeft: props => defaultHeaderLeft(navigation),
         })}
       />
       <OptionsStack.Screen
@@ -1264,7 +1350,7 @@ export function OptionsStackScreen({ navigation, route }) {
           navigationOptions: {
             tabBarVisible: false,
           },
-          headerLeft: (props) => defaultHeaderLeft(navigation),
+          headerLeft: props => defaultHeaderLeft(navigation),
         })}
       />
       <OptionsStack.Screen
@@ -1315,7 +1401,7 @@ export function OptionsStackScreen({ navigation, route }) {
           },
           headerTintColor: Colors.primaryTextColor,
           headerBackTitleVisible: false,
-          headerLeft: (props) => defaultHeaderLeft(navigation),
+          headerLeft: props => defaultHeaderLeft(navigation),
         })}
       />
       <OptionsStack.Screen
@@ -1332,7 +1418,7 @@ export function OptionsStackScreen({ navigation, route }) {
           },
           headerTintColor: Colors.primaryTextColor,
           headerBackTitleVisible: false,
-          headerLeft: (props) => defaultHeaderLeft(navigation),
+          headerLeft: props => defaultHeaderLeft(navigation),
         })}
       />
       <OptionsStack.Screen
@@ -1349,7 +1435,7 @@ export function OptionsStackScreen({ navigation, route }) {
           },
           headerTintColor: Colors.primaryTextColor,
           headerBackTitleVisible: false,
-          headerLeft: (props) => defaultHeaderLeft(navigation),
+          headerLeft: props => defaultHeaderLeft(navigation),
         })}
       />
       <OptionsStack.Screen
@@ -1372,7 +1458,7 @@ export function OptionsStackScreen({ navigation, route }) {
 
           headerTintColor: Colors.primaryTextColor,
           headerBackTitleVisible: false,
-          headerLeft: (props) => defaultHeaderLeft(navigation),
+          headerLeft: props => defaultHeaderLeft(navigation),
         })}
       />
       <OptionsStack.Screen
@@ -1390,7 +1476,7 @@ export function OptionsStackScreen({ navigation, route }) {
 
           headerTintColor: Colors.primaryTextColor,
           headerBackTitleVisible: false,
-          headerLeft: (props) => defaultHeaderLeft(navigation),
+          headerLeft: props => defaultHeaderLeft(navigation),
         })}
       />
       <OptionsStack.Screen
@@ -1480,7 +1566,7 @@ export function OptionsStackScreen({ navigation, route }) {
           },
           headerTintColor: Colors.primaryTextColor,
           headerBackTitleVisible: false,
-          headerLeft: (props) => defaultHeaderLeft(navigation),
+          headerLeft: props => defaultHeaderLeft(navigation),
         })}
       />
       <OptionsStack.Screen

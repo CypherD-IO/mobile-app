@@ -40,11 +40,10 @@ import { PORTFOLIO_EMPTY } from '../../../reducers/portfolio_reducer';
 import Button from '../../../components/v2/button';
 import { screenTitle } from '../../../constants';
 import { CHAIN_COLLECTION, Chain } from '../../../constants/server';
-import { H_BALANCE_BANNER } from '../constants';
 import { TokenMeta } from '../../../models/tokenMetaData.model';
-import { render } from 'react-dom';
-import { get, isEmpty, isEqual, sortBy } from 'lodash';
+import { get, groupBy, isEmpty, isEqual, sortBy } from 'lodash';
 import Loading from '../../../components/v2/loading';
+import { PortfolioBannerHeights } from '../../../hooks/useScrollManager';
 
 type ScrollEvent = NativeSyntheticEvent<NativeScrollEvent>;
 
@@ -56,6 +55,7 @@ interface TokenSceneProps {
   onMomentumScrollEnd: (e: ScrollEvent) => void;
   onScrollEndDrag: (e: ScrollEvent) => void;
   navigation: any;
+  bannerHeight: PortfolioBannerHeights;
   isVerifyCoinChecked: boolean;
   getAllChainBalance: (portfolioState: {
     statePortfolio: {
@@ -80,6 +80,7 @@ const TokenScene = ({
   onMomentumScrollEnd,
   onScrollEndDrag,
   navigation,
+  bannerHeight,
   isVerifyCoinChecked,
   getAllChainBalance,
   setRefreshData,
@@ -92,7 +93,7 @@ const TokenScene = ({
     shouldRefreshAssets: false,
   });
   const [holdingsByCoinGeckoId, setHoldingsByCoinGeckoId] = useState<string[]>(
-    []
+    [],
   );
 
   const flatListRef = useRef<FlatList<any>>(null);
@@ -126,7 +127,7 @@ const TokenScene = ({
       } else {
         holdings = data;
       }
-      let tempHoldingsData = {};
+      let tempHoldingsData: { [key: string]: Holding } = {};
       holdings.forEach(
         (holding: Holding) =>
           (tempHoldingsData = {
@@ -137,7 +138,7 @@ const TokenScene = ({
             holding.chainDetails?.backendName +
             holding.name +
             holding.symbol]: holding,
-          })
+          }),
       );
       return tempHoldingsData;
     } else {
@@ -148,27 +149,33 @@ const TokenScene = ({
   const holdingsData = useMemo(() => {
     const data = getCurrentChainHoldings(
       portfolioState.statePortfolio.tokenPortfolio,
-      CHAIN_COLLECTION
+      CHAIN_COLLECTION,
     );
     return getIndexedData(data);
   }, [portfolioState.statePortfolio.tokenPortfolio]);
 
-  useEffect(() => {
+  const sortedHoldingsByCoinGeckoId = useMemo(() => {
     const data = getCurrentChainHoldings(
       portfolioState.statePortfolio.tokenPortfolio,
-      portfolioState.statePortfolio.selectedChain
+      portfolioState.statePortfolio.selectedChain,
     );
     const newHoldingsByCoingeckoId = Object.keys(getIndexedData(data));
-    if (
-      holdingsByCoinGeckoId.length !== newHoldingsByCoingeckoId.length ||
-      !isEqual(sortBy(holdingsByCoinGeckoId), sortBy(newHoldingsByCoingeckoId))
-    ) {
-      setHoldingsByCoinGeckoId(newHoldingsByCoingeckoId);
-    }
+    return [...newHoldingsByCoingeckoId].sort(
+      (a, b) => holdingsData[b].totalValue - holdingsData[a].totalValue,
+    );
   }, [
     portfolioState.statePortfolio.tokenPortfolio,
     portfolioState.statePortfolio.selectedChain,
   ]);
+
+  useEffect(() => {
+    if (
+      holdingsByCoinGeckoId.length !== sortedHoldingsByCoinGeckoId.length ||
+      !isEqual(holdingsByCoinGeckoId, sortedHoldingsByCoinGeckoId)
+    ) {
+      setHoldingsByCoinGeckoId(sortedHoldingsByCoinGeckoId);
+    }
+  }, [sortedHoldingsByCoinGeckoId]);
 
   const swipeableRefs: Array<Swipeable | null> = [];
   let previousOpenedSwipeableRef: Swipeable | null;
@@ -189,7 +196,7 @@ const TokenScene = ({
   };
 
   const renderItem = useCallback(
-    ({ item, index, viewableItems }) => {
+    ({ item, index, otherChainsWithToken, viewableItems }) => {
       if (item) {
         return (
           // To Do animation
@@ -203,6 +210,7 @@ const TokenScene = ({
             item={item}
             key={index}
             index={index}
+            otherChainsWithToken={otherChainsWithToken}
             isVerifyCoinChecked={isVerifyCoinChecked}
             navigation={navigation}
             onSwipe={onSwipe}
@@ -213,90 +221,124 @@ const TokenScene = ({
       }
       return <></>;
     },
-    [isVerifyCoinChecked]
+    [isVerifyCoinChecked],
   );
 
+  const tokensGroupedByCoinGeckoId = useMemo(() => {
+    return groupBy(
+      holdingsByCoinGeckoId,
+      currentKey => currentKey.split(':')[0],
+    );
+  }, [holdingsByCoinGeckoId]);
+
   return (
-    <>
-      {getAllChainBalance(portfolioState) > 0 ? (
-        <CyDView className='flex-1 h-full mx-[10px]'>
-          {!isEmpty(holdingsData) ? (
-            <AnimatedTabView
-              data={holdingsByCoinGeckoId}
-              extraData={{ isVerifyCoinChecked, holdingsData }}
-              keyExtractor={(item) => item}
-              refreshControl={
-                <RefreshControl
-                  refreshing={isPortfolioRefreshing.shouldRefreshAssets}
-                  onRefresh={() => {
-                    void onRefresh();
-                  }}
-                  progressViewOffset={H_BALANCE_BANNER}
-                />
-              }
-              renderItem={({ item, index, viewableItems }) =>
-                renderItem({
-                  item: get(holdingsData, item),
-                  index,
-                  viewableItems,
-                })
-              }
-              onRef={flatListRef}
-              scrollY={scrollY}
-              onScrollEndDrag={onScrollEndDrag}
-              onMomentumScrollBegin={onMomentumScrollBegin}
-              onMomentumScrollEnd={onMomentumScrollEnd}
-              ListEmptyComponent={
-                <CyDView className='flex flex-col justify-center items-center'>
-                  <EmptyView
-                    text={t('NO_CURRENT_HOLDINGS')}
-                    image={AppImages.EMPTY}
-                    buyVisible={false}
-                    marginTop={30}
-                  />
-                </CyDView>
-              }
-            />
-          ) : (
-            <Loading />
-          )}
-        </CyDView>
-      ) : (
-        portfolioState.statePortfolio.portfolioState === PORTFOLIO_EMPTY && (
-          <CyDView
-            className={'flex h-full justify-center items-center mt-[5px]'}
-          >
-            <LottieView
-              source={AppImages.PORTFOLIO_EMPTY}
-              autoPlay
-              loop
-              style={styles.lottieView}
-            />
-            <Button
-              title={t('FUND_WALLET')}
-              onPress={() => {
-                navigation.navigate(screenTitle.QRCODE);
-              }}
-              style='mt-[-40px] px-[20px] h-[40px] py-[0px]'
-              titleStyle='text-[14px]'
-              image={AppImages.RECEIVE}
-              imageStyle='h-[12px] w-[12px] mr-[15px]'
-            />
-            <CyDTouchView
-              className='mt-[20px]'
-              onPress={() => {
+    <CyDView className='flex-1 h-full mx-[10px]'>
+      {!isEmpty(holdingsData) ? (
+        <AnimatedTabView
+          bannerHeight={bannerHeight}
+          data={
+            getAllChainBalance(portfolioState) > 0 ? holdingsByCoinGeckoId : []
+          }
+          extraData={{ isVerifyCoinChecked, holdingsData }}
+          keyExtractor={item => item}
+          refreshControl={
+            <RefreshControl
+              refreshing={isPortfolioRefreshing.shouldRefreshAssets}
+              onRefresh={() => {
                 void onRefresh();
               }}
-            >
-              <CyDText className='text-center text-blue-500 underline'>
-                {t<string>('CLICK_TO_REFRESH')}
-              </CyDText>
-            </CyDTouchView>
-          </CyDView>
-        )
+              progressViewOffset={bannerHeight}
+            />
+          }
+          renderItem={({ item, index, viewableItems }) =>
+            renderItem({
+              item: get(holdingsData, item),
+              index,
+              otherChainsWithToken: get(
+                tokensGroupedByCoinGeckoId,
+                item.split(':')[0],
+              ).map(otherChain => get(holdingsData, otherChain)),
+              viewableItems,
+            })
+          }
+          onRef={flatListRef}
+          scrollY={scrollY}
+          onScrollEndDrag={onScrollEndDrag}
+          onMomentumScrollBegin={onMomentumScrollBegin}
+          onMomentumScrollEnd={onMomentumScrollEnd}
+          ListEmptyComponent={
+            <TokenListEmptyComponent
+              navigation={navigation}
+              isPortfolioEmpty={
+                portfolioState.statePortfolio.portfolioState === PORTFOLIO_EMPTY
+              }
+              onRefresh={onRefresh}
+            />
+          }
+        />
+      ) : (
+        <CyDView className='w-full absolute bottom-[100px]'>
+          <Loading />
+        </CyDView>
       )}
-    </>
+    </CyDView>
   );
+};
+
+interface TokenListEmptyComponentProps {
+  navigation: any;
+  isPortfolioEmpty: boolean;
+  onRefresh: (pullToRefresh?: boolean) => Promise<void>;
+}
+
+const TokenListEmptyComponent = ({
+  navigation,
+  isPortfolioEmpty,
+  onRefresh,
+}: TokenListEmptyComponentProps) => {
+  const { t } = useTranslation();
+  if (isPortfolioEmpty) {
+    return (
+      <CyDView className={'flex h-full justify-start items-center mt-[5px]'}>
+        <LottieView
+          source={AppImages.PORTFOLIO_EMPTY}
+          autoPlay
+          loop
+          style={styles.lottieView}
+        />
+        <Button
+          title={t('FUND_WALLET')}
+          onPress={() => {
+            navigation.navigate(screenTitle.QRCODE);
+          }}
+          style='mt-[-40px] px-[20px] h-[40px] py-[0px]'
+          titleStyle='text-[14px]'
+          image={AppImages.RECEIVE}
+          imageStyle='h-[12px] w-[12px] mr-[15px]'
+        />
+        <CyDTouchView
+          className='mt-[20px]'
+          onPress={() => {
+            void onRefresh();
+          }}>
+          <CyDText className='text-center text-blue-500 underline'>
+            {t<string>('CLICK_TO_REFRESH')}
+          </CyDText>
+        </CyDTouchView>
+      </CyDView>
+    );
+  } else {
+    return (
+      <CyDView className='flex flex-col justify-start items-center'>
+        <EmptyView
+          text={t('NO_CURRENT_HOLDINGS')}
+          image={AppImages.EMPTY}
+          buyVisible={false}
+          marginTop={30}
+        />
+      </CyDView>
+    );
+  }
 };
 
 export const AnimatedPortfolioToken = (props: {
@@ -312,7 +354,7 @@ export const AnimatedPortfolioToken = (props: {
       isVisible = viewableItems.value.includes(item);
       if (!isVisible) {
         const latViewableIndex = Number(
-          viewableItems.value[viewableItems.value.length - 1].index
+          viewableItems.value[viewableItems.value.length - 1].index,
         );
         isVisible = latViewableIndex < 5 && latViewableIndex + 1 === index;
       }

@@ -31,7 +31,7 @@ import { hostWorker } from '../../global';
 import useEns from '../../hooks/useEns';
 import { isAndroid } from '../../misc/checkers';
 import { ActivityReducerAction } from '../../reducers/activity_reducer';
-import { CyDImage, CyDSafeAreaView, CyDScrollView, CyDText, CyDTouchView, CyDView } from '../../styles/tailwindStyles';
+import { CyDFastImage, CyDImage, CyDSafeAreaView, CyDScrollView, CyDText, CyDTouchView, CyDView } from '../../styles/tailwindStyles';
 import { OptionsContainer } from '../Auth/Share';
 import { onShare } from '../utilities/socialShareUtility';
 import { screenTitle } from '../../constants/index';
@@ -78,7 +78,7 @@ export default function Options(props: { navigation: { goBack: () => void, popTo
   const ethereum = hdWalletContext.state.wallet.ethereum;
   const { isReadOnlyWallet }: { isReadOnlyWallet: boolean } = hdWalletContext.state;
   const activityContext = useContext<any>(ActivityContext);
-  const [updateModal, setUpdateModal] = useState<Boolean>(false);
+  const [updateModal, setUpdateModal] = useState<boolean>(false);
   const [devMode, setDevMode] = useState<boolean>(portfolioState.statePortfolio.developerMode);
   const inAppUpdates = new SpInAppUpdates(
     false // isDebug
@@ -147,10 +147,10 @@ export default function Options(props: { navigation: { goBack: () => void, popTo
         <ImageBackground source={AppImages.BG_SETTINGS} resizeMode="cover" imageStyle={{ height: 450, width: '100%' }}>
           <DynamicView dynamic dynamicWidth dynamicHeight height={100} width={100} jC={'space-between'} mT={25}>
             <DynamicView dynamic dynamicWidth dynamicHeight height={100} width={100} jC={'flex-start'}>
-              <DynamicImage dynamic dynamicWidth height={100} width={100} resizemode='contain' source={AppImages.CYPHERD_WALLET} mL={10} mT={20} />
+              <CyDFastImage className='h-[100px] w-[100px] m-[15px]' source={AppImages.CYPHERD_WALLET} resizeMode='cover' />
               <CyDView className='flex flex-row justify-center w-[80%] items-center pb-[25px]' >
                 {isReadOnlyWallet && <CyDImage source={AppImages.CYPHER_LOCK} className='h-[18px] w-[18px] mr-[5px]' resizeMode='contain' />}
-                <CyDText className='text-[18px] font-bold pt-[3px]'>{title}</CyDText>
+                <CyDText className='text-[18px] font-bold'>{title}</CyDText>
                 {ens && <CyDText className='text-[10px] secondaryTextColor font-semibold  bg-appColor px-[2px] mt-[3px] ml-[4px]'>ens</CyDText>}
               </CyDView>
 
@@ -162,7 +162,7 @@ export default function Options(props: { navigation: { goBack: () => void, popTo
                 title={t('ADDRESS_BOOK')}
                 iW={75}
                 logo={AppImages.ADDRESS_BOOK_ICON}
-              ></OptionsContainer>
+              />
 
               <DynamicView dynamic dynamicWidth dynamicHeightFix height={1} width={88} bGC={Colors.portfolioBorderColor} />
 
@@ -202,7 +202,7 @@ export default function Options(props: { navigation: { goBack: () => void, popTo
                   }}
                   title={'Wallet Connect'}
                   logo={AppImages.WALLET_CONNECT_LOGO}
-                ></OptionsContainer>
+                />
               }
 
               {!isReadOnlyWallet && <DynamicView dynamic dynamicWidth dynamicHeightFix height={1} width={88} bGC={Colors.portfolioBorderColor} />}
@@ -229,7 +229,7 @@ export default function Options(props: { navigation: { goBack: () => void, popTo
                 }}
                 title={'Security & Privacy'}
                 logo={AppImages.CYPHER_LOCKED}
-              ></OptionsContainer>
+              />
 
               <DynamicView dynamic dynamicWidth dynamicHeightFix height={1} width={88} bGC={Colors.portfolioBorderColor} />
 
@@ -240,7 +240,7 @@ export default function Options(props: { navigation: { goBack: () => void, popTo
                 }}
                 title={'Manage Wallet'}
                 logo={AppImages.WALLET}
-              ></OptionsContainer>
+              />
 
               <DynamicView dynamic dynamicWidth dynamicHeightFix height={1} width={88} bGC={Colors.portfolioBorderColor} />
 
@@ -251,7 +251,7 @@ export default function Options(props: { navigation: { goBack: () => void, popTo
                 }}
                 title={'App Settings'}
                 logo={AppImages.SETTINGS}
-              ></OptionsContainer>
+              />
 
               <DynamicView dynamic dynamicWidth dynamicHeightFix height={1} width={88} bGC={Colors.portfolioBorderColor} />
 
@@ -263,7 +263,7 @@ export default function Options(props: { navigation: { goBack: () => void, popTo
                 }}
                 title={'Support'}
                 logo={AppImages.SUPPORT}
-              ></OptionsContainer>
+              />
 
               <DynamicView dynamic dynamicWidth dynamicHeightFix height={1} width={88} bGC={Colors.portfolioBorderColor} />
 
@@ -274,7 +274,7 @@ export default function Options(props: { navigation: { goBack: () => void, popTo
                 }}
                 title={t('LEGAL')}
                 logo={AppImages.TERMS_AND_CONDITIONS}
-              ></OptionsContainer>
+              />
 
               {/* <DynamicView dynamic dynamicWidth dynamicHeightFix height={1} width={88} bGC={Colors.portfolioBorderColor} /> */}
 

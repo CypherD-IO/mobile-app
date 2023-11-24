@@ -1,6 +1,6 @@
 /* eslint-disable array-callback-return */
 /* eslint-disable no-void */
-/* eslint-disable react-native/no-color-literals */
+
 import React, { useContext, useState } from 'react';
 import { StyleSheet } from 'react-native';
 import { SignClientTypes, SessionTypes } from '@walletconnect/types';
@@ -167,7 +167,7 @@ export default function PairingModal({
                 <CyDText className={'font-extrabold text-[16px]'}>{name}</CyDText>
               </CyDView>
               <CyDView className={'flex flex-row items-center align-center'}>
-                <CyDText className={'text-[14px]'}>{url}</CyDText>
+                <CyDText className={'text-[14px] w-[200px]'}>{url}</CyDText>
               </CyDView>
             </CyDView>
           </CyDView>
@@ -178,7 +178,7 @@ export default function PairingModal({
 
   const Divider = () => {
     return (
-      <CyDView className={'h-[1px] bg-sepratorColor mt-[14px] mb-[8px]'}></CyDView>
+      <CyDView className={'h-[1px] bg-sepratorColor mt-[14px] mb-[8px]'} />
     );
   };
 
@@ -203,8 +203,8 @@ export default function PairingModal({
           <Divider />
         </CyDView>
         <CyDView className={'w-full flex justify-end'}>
-          <Button loading={acceptingRequest} style={acceptingRequest ? 'mb-[10px] py-[7px]' : 'mb-[10px] py-[15px]'} title='Accept' onPress={() => void handleAccept()}></Button>
-          <Button loading={rejectingRequest} style={rejectingRequest ? 'mb-[10px] py-[7px]' : 'mb-[10px] py-[15px]'} type={ButtonType.TERNARY} title='Reject' onPress={() => void handleReject()}></Button>
+          <Button loading={acceptingRequest} style={acceptingRequest ? 'mb-[10px] py-[7px]' : 'mb-[10px] py-[15px]'} title='Accept' onPress={() => void handleAccept()} />
+          <Button loading={rejectingRequest} style={rejectingRequest ? 'mb-[10px] py-[7px]' : 'mb-[10px] py-[15px]'} type={ButtonType.TERNARY} title='Reject' onPress={() => void handleReject()} />
         </CyDView>
       </CyDView>
     </CyDModalLayout>
