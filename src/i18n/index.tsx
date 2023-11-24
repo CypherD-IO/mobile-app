@@ -893,6 +893,14 @@ const resources = {
       UPDATED_SUCCESSFULLY: 'Updated Successfully',
       CARD_SIGNUP_CONFIRMATION_CAPTION:
         'During signup make sure you follow these guidelines:',
+      CHANGE_PHONE_NUMBER: 'Change Phone Number',
+      CHANGE_EMAIL_ADDRESS: 'Change Email Address',
+      UPDATE_CARD_DETAILS_OTP: 'Enter the OTP received on your phone or email',
+      EMAIL_ADDRESS: 'Email address',
+      CURRENT_PHONE_NUMBER: 'Current Phone Number:',
+      CONTACT_DETAILS_UPDATION_SUCCESSFUL:
+        'Contact details updated successfully',
+      CONTACT_DETAILS_UPDATION_FAILURE: 'Unable to update contact details',
     },
   },
 };

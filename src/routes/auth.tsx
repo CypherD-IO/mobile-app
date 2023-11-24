@@ -88,6 +88,7 @@ import { useKeyboard } from '../hooks/useKeyboard';
 import { DEFIOverviewScreen } from '../containers/DeFi/DEFIOverview';
 import ShippingDetailsOTPScreen from '../containers/DebitCard/CardV2/ShippingDetailsOTPScreen';
 import CardSignupConfirmation from '../containers/DebitCard/cardSignupConfirmation';
+import UpdateCardContactDetails from '../containers/DebitCard/bridgeCard/updateContactDetails';
 
 const { DynamicImage, DynamicButton } = require('../styles');
 
@@ -976,6 +977,24 @@ export function DebitCardStackScreen({ navigation }) {
           headerTintColor: Colors.primaryTextColor,
           headerBackTitleVisible: false,
         }}
+      />
+
+      <FundCardStack.Screen
+        name={screenTitle.CARD_UPDATE_CONTACT_DETAILS_SCREEN}
+        component={UpdateCardContactDetails}
+        options={({ navigation }) => ({
+          headerShown: true,
+          headerTransparent: false,
+          headerShadowVisible: false,
+          title: 'Update Contact Details',
+          navigationOptions: {
+            tabBarVisible: false,
+          },
+          headerTitleAlign: 'center',
+          headerTitleStyle: portfolioStackScreenHeaderTitleStyles,
+          headerBackVisible: false,
+          headerLeft: props => defaultHeaderLeft(navigation),
+        })}
       />
 
       <FundCardStack.Screen

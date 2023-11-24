@@ -171,7 +171,10 @@ const TokenScene = ({
   useEffect(() => {
     if (
       holdingsByCoinGeckoId.length !== sortedHoldingsByCoinGeckoId.length ||
-      !isEqual(holdingsByCoinGeckoId, sortedHoldingsByCoinGeckoId)
+      !isEqual(
+        sortBy(holdingsByCoinGeckoId),
+        sortBy(sortedHoldingsByCoinGeckoId),
+      )
     ) {
       setHoldingsByCoinGeckoId(sortedHoldingsByCoinGeckoId);
     }
@@ -239,7 +242,7 @@ const TokenScene = ({
           data={
             getAllChainBalance(portfolioState) > 0 ? holdingsByCoinGeckoId : []
           }
-          extraData={{ isVerifyCoinChecked, holdingsData }}
+          extraData={{ isVerifyCoinChecked }}
           keyExtractor={item => item}
           refreshControl={
             <RefreshControl

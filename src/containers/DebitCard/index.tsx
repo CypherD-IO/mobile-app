@@ -20,6 +20,8 @@ import { useTranslation } from 'react-i18next';
 import { BackHandler } from 'react-native';
 import { get, has } from 'lodash';
 import CardWailtList from './cardWaitList';
+import useAxios from '../../core/HttpRequest';
+import * as Sentry from '@sentry/react-native';
 export interface RouteProps {
   navigation: {
     navigate: (screen: string, params?: any) => void;
@@ -40,6 +42,7 @@ export default function DebitCardScreen(props: RouteProps) {
   const cardProfile: CardProfile = globalContext.globalState.cardProfile;
 
   const [loading, setLoading] = useState<boolean>(true);
+  const { getWithAuth } = useAxios();
 
   const handleBackButton = () => {
     props.navigation.navigate(screenTitle.PORTFOLIO_SCREEN);
@@ -84,6 +87,11 @@ export default function DebitCardScreen(props: RouteProps) {
               },
             ],
           });
+        } else if (
+          get(cardProfile, CardProviders.PAYCADDY)?.applicationStatus ===
+          CardApplicationStatus.CREATED
+        ) {
+          void checkApplication();
         } else {
           props.navigation.navigate(screenTitle.CARD_KYC_STATUS_SCREEN);
         }
@@ -92,6 +100,29 @@ export default function DebitCardScreen(props: RouteProps) {
       setLoading(false);
     }
   }, [isFocused, globalContext.globalState.cardProfile]);
+
+  const checkApplication = async () => {
+    try {
+      const response = await getWithAuth(
+        `/v1/cards/${CardProviders.PAYCADDY}/application`,
+      );
+      if (!response.isError) {
+        const { data } = response;
+        if (!data.phoneVerified || !data.emailVerfied) {
+          props.navigation.reset({
+            index: 0,
+            routes: [
+              {
+                name: screenTitle.CARD_SIGNUP_OTP_VERIFICATION_SCREEN,
+              },
+            ],
+          });
+        }
+      }
+    } catch (e) {
+      Sentry.captureException(e);
+    }
+  };
 
   if (loading) {
     return <Loading />;
