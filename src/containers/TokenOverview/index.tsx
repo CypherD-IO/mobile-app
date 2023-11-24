@@ -36,7 +36,11 @@ interface RouteProps {
     goBack: () => void;
     setOptions: ({ title }: { title: string }) => void;
     setParams: (arg0: { tokenData: any; otherChainsWithToken: any[] }) => void;
-    navigate: (screen: string, params?: {}) => void;
+    navigate: (screen: string, params?: object) => void;
+    reset: (arg0: {
+      index: number;
+      routes: Array<{ name: string; params?: object }>;
+    }) => void;
   };
 }
 
@@ -124,8 +128,7 @@ function TokenOverviewV2({ route, navigation }: RouteProps) {
           'h-[110px] self-end bg-white pb-[20px] bottom-[-30px] pt-[2px] rounded-t-[24px] shadow shadow-gray-400',
           { 'pt-[16px]': isAndroid() },
         )}
-        style={styles.elevatedBackground}
-      >
+        style={styles.elevatedBackground}>
         <TokenOverviewToolBar tokenData={tokenData} navigation={navigation} />
       </CyDAnimatedView>
     </CyDView>
