@@ -45,7 +45,6 @@ import {
 import AppImages from '../../../assets/images/appImages';
 import FastImage from 'react-native-fast-image';
 import { Colors } from '../../constants/theme';
-import { REFRESH_CLOSING_TIMEOUT } from '../../constants/timeOuts';
 import HTML from 'react-native-render-html';
 import { screenTitle } from '../../constants';
 import Animated, {
@@ -607,7 +606,9 @@ export default function Overview({
           <FlatList
             horizontal
             showsHorizontalScrollIndicator={false}
-            data={otherChainsWithToken}
+            data={otherChainsWithToken.filter(
+              otherChainItem => otherChainItem !== tokenData,
+            )}
             renderItem={({ item }) => {
               const tokenVal = `${
                 +item.totalValue +

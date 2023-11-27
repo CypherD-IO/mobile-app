@@ -260,9 +260,7 @@ const TokenScene = ({
               otherChainsWithToken: get(
                 tokensGroupedByCoinGeckoId,
                 item.split(':')[0],
-              )
-                .filter(otherChain => otherChain !== item)
-                .map(otherChain => get(holdingsData, otherChain)),
+              ).map(otherChain => get(holdingsData, otherChain)),
               viewableItems,
             })
           }
