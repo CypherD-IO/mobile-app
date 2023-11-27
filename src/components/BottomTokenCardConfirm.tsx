@@ -86,84 +86,61 @@ export default function BottomCardConfirm({
       style={styles.modalContainer}
       animationIn={'slideInUp'}
       animationOut={'slideOutDown'}
-      setModalVisible={(_val: any) => {
-        onCancelPress();
-      }}>
+      setModalVisible={onCancelPress}>
       <CyDView
-        className={'bg-white pb-[30px] flex items-center rounded-[20px]'}>
+        className={'bg-white pb-[30px] flex items-center rounded-t-[24px]'}>
         <CyDTouchView
           className={'flex flex-row pl-[95%] justify-end z-10'}
           onPress={hideModal}>
           <CyDImage
             source={AppImages.CLOSE}
-            className={'w-[20px] h-[20px] top-[20px] right-[20px] '}
+            className={'w-[18px] h-[18px] top-[20px] right-[20px] '}
           />
         </CyDTouchView>
-        <CyDText className='text-[20px] font-nunito font-bold'>
+        <CyDText className='text-[18px] font-nunito font-bold'>
           {t('CONFIRM_PAYMENT')}
         </CyDText>
-        <CyDView className={'p-[10px] px-[20px]'}>
+        <CyDView className={'mx-[16px]'}>
           <CyDView
             className={
-              'flex flex-row mt-[40px] pb-[15px] border-b-[1px] border-sepratorColor'
+              'flex flex-row justify-between items-center mt-[40px] pb-[16px]'
             }>
-            <CyDText
-              className={
-                'font-bold text-[16px] ml-[5px] text-primaryTextColor'
-              }>
+            <CyDText className={'font-bold text-[14px]'}>
               {t('SEND_ON')}
             </CyDText>
             <CyDView className={'flex flex-row pl-[25px] max-w-[70%]'}>
-              <CyDImage
+              <CyDFastImage
                 source={modalParams.appImage}
-                className={'w-[16px] h-[16px] mt-[3px]'}
+                className={'w-[18px] h-[18px] mt-[3px]'}
               />
-              <CyDText
-                className={
-                  ' font-medium text-[15px] ml-[5px] text-primaryTextColor'
-                }>
+              <CyDText className={'font-medium text-[14px] ml-[4px]'}>
                 {modalParams.networkName}
               </CyDText>
             </CyDView>
           </CyDView>
           {modalParams.cardNumber && (
-            <CyDView className={'flex flex-row w-[95%] py-[25px]'}>
-              <CyDText
-                className={
-                  ' font-bold text-[16px] ml-[5px] text-primaryTextColor'
-                }>
-                {t('CARD')}
-              </CyDText>
-              <CyDView
-                className={
-                  'flex flex-row flex-wrap justify-between w-[90%]  pl-[55px]'
-                }>
-                <CyDText
-                  className={' font-medium text-[15px] text-primaryTextColor'}>
-                  {modalParams.cardNumber}
-                </CyDText>
-              </CyDView>
-            </CyDView>
-          )}
-          <CyDView className={'flex flex-row w-[95%] py-[25px]'}>
-            <CyDText
-              className={
-                ' font-bold text-[16px] ml-[5px] text-primaryTextColor'
-              }>
-              {t('VALUE')}
-            </CyDText>
             <CyDView
               className={
-                'flex flex-row flex-wrap justify-between w-[90%]  pl-[45px]'
+                'flex flex-row justify-between items-center py-[16px]'
+              }>
+              <CyDText className={'font-bold text-[14px]'}>{t('CARD')}</CyDText>
+              <CyDText className={'font-medium text-[14px]'}>
+                {modalParams.cardNumber}
+              </CyDText>
+            </CyDView>
+          )}
+          <CyDView
+            className={'flex flex-row justify-between items-center py-[16px]'}>
+            <CyDText className={'font-bold text-[14px]'}>{t('VALUE')}</CyDText>
+            <CyDView
+              className={
+                'w-[70%] flex flex-row flex-wrap justify-between items-center'
               }>
               <CyDText
-                className={' font-medium text-[15px] text-primaryTextColor'}>
+                className={' font-medium text-[14px] text-primaryTextColor'}>
                 {parseFloat(modalParams.tokenAmount)} {modalParams.tokenSymbol}
               </CyDText>
-              <CyDText
-                className={
-                  ' font-medium text-[15px] text-primaryTextColor mr-[10px]'
-                }>
+              <CyDText className={' font-medium text-[14px]'}>
                 {'$'}
                 {modalParams.totalValueDollar}
               </CyDText>
@@ -171,28 +148,20 @@ export default function BottomCardConfirm({
           </CyDView>
 
           <CyDView
-            className={
-              'flex flex-row  w-[95%] py-[25px] border-b-[1px] border-sepratorColor'
-            }>
-            <CyDText
-              className={
-                ' font-bold text-[16px] ml-[5px] text-primaryTextColor'
-              }>
-              {t('GAS')}
+            className={'flex flex-row justify-between items-center py-[16px]'}>
+            <CyDText className={'font-bold text-[14px] w-[26%]'}>
+              {t('ESTIMATED_GAS')}
             </CyDText>
             <CyDView
               className={
-                'flex flex-row flex-wrap justify-between w-[95%] pl-[60px]'
+                'flex flex-row flex-wrap justify-between items-center w-[70%]'
               }>
               <CyDText
-                className={' font-medium text-[15px] text-primaryTextColor'}>
+                className={'font-medium text-[14px] text-primaryTextColor'}>
                 {modalParams.gasFeeETH} {modalParams.networkCurrency}
               </CyDText>
-              <CyDText
-                className={
-                  ' font-medium text-[15px] text-primaryTextColor mr-[10px]'
-                }>
-                $ {formatAmount(modalParams.gasFeeDollar)}
+              <CyDText className={'font-medium text-[14px]'}>
+                ${formatAmount(modalParams.gasFeeDollar)}
               </CyDText>
             </CyDView>
           </CyDView>
@@ -215,6 +184,7 @@ export default function BottomCardConfirm({
           }>
           <Button
             title={t<string>('CANCEL')}
+            titleStyle='text-[14px]'
             disabled={loading}
             type={ButtonType.SECONDARY}
             onPress={() => {
@@ -231,6 +201,7 @@ export default function BottomCardConfirm({
                   : ''
                 : '')
             }
+            titleStyle='text-[14px]'
             loading={loading}
             disabled={isPayDisabled}
             onPress={() => {

@@ -300,6 +300,7 @@ const resources = {
       NEXT_REWARD_DISTRIBUTION_AT: 'Next reward distribution at',
       SEND_ON: 'Send On',
       GAS: 'Gas',
+      ESTIMATED_GAS: 'Estimated Gas',
       TEMP_SYSTEM_ERROR: 'Temp System Error',
       UNABLE_TO_LOAD_CARD:
         'Unable to load your card. Please try after some time.',
@@ -495,6 +496,8 @@ const resources = {
       BRIDGE_ALL_CAPS: 'BRIDGE',
       LOAD: 'Load',
       LOAD_MAX: 'Load Max',
+      QUOTE: 'Quote',
+      QUOTE_MAX: 'Quote Max',
       LOAD_ALL_CAPS: 'LOAD',
       CARD_INSUFFICIENT_FUNDS:
         "You don't seem to have any tokens worth over $10 to load your card!",
