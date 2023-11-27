@@ -12,6 +12,7 @@ import {
   CardProviders,
   CardTransactionStatuses,
   CardTransactionTypes,
+  GlobalContextType,
 } from '../../../constants/enum';
 import AnimatedCardSection from './AnimatedCardSection';
 import { useSharedValue } from 'react-native-reanimated';
@@ -43,6 +44,7 @@ import {
   TYPES,
   initialCardTxnDateRange,
 } from '../../../constants/cardPageV2';
+import { getWalletProfile } from '../../../core/card';
 
 interface CypherCardScreenProps {
   navigation: any;
@@ -86,10 +88,17 @@ const CypherCardScreen = ({ navigation, route }: CypherCardScreenProps) => {
   const scrollY = useSharedValue(-cardSectionHeight);
 
   const onRefresh = () => {
+    void refreshProfile();
     setCardBalance('');
     void fetchCardBalance();
     void retrieveTxns();
   };
+
+  useEffect(() => {
+    if (isFocused) {
+      void refreshProfile();
+    }
+  }, [isFocused]);
 
   useEffect(() => {
     if (isFocused && cardProfile && !currentCardProvider) {
@@ -114,6 +123,14 @@ const CypherCardScreen = ({ navigation, route }: CypherCardScreenProps) => {
   useEffect(() => {
     void retrieveTxns();
   }, [filter.dateRange]);
+
+  const refreshProfile = async () => {
+    const data = await getWalletProfile(globalContext.globalState.token);
+    globalContext.globalDispatch({
+      type: GlobalContextType.CARD_PROFILE,
+      cardProfile: data,
+    });
+  };
 
   const fetchCardBalance = async () => {
     const currentCard = get(cardProfile, currentCardProvider).cards[
