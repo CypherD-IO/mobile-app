@@ -107,7 +107,6 @@ export default function BridgeFundCardScreen({ route }: { route: any }) {
     currentCardProvider,
   )?.cards[currentCardIndex];
   const activityRef = useRef<DebitCardTransaction | null>(null);
-  const inputRef = useRef<TextInput | null>(null);
   const { getWithAuth, postWithAuth } = useAxios();
 
   const cosmos = hdWallet.state.wallet.cosmos;
@@ -1360,10 +1359,7 @@ export default function BridgeFundCardScreen({ route }: { route: any }) {
         minTokenValueLimit={minTokenValueLimit}
         onSelectingToken={token => {
           setIsChooseTokenVisible(false);
-          setTimeout(() => {
-            onSelectingToken(token);
-            inputRef.current?.focus();
-          }, MODAL_HIDE_TIMEOUT_600);
+          onSelectingToken(token);
         }}
         onCancel={() => {
           setIsChooseTokenVisible(false);
@@ -1409,7 +1405,6 @@ export default function BridgeFundCardScreen({ route }: { route: any }) {
                 {isCrpytoInput ? selectedToken?.name : 'USD'}
               </CyDText>
               <CyDTextInput
-                ref={inputRef}
                 className={clsx(
                   'font-extrabold text-center text-primaryTextColor h-[85px] font-nunito',
                   {
@@ -1446,6 +1441,7 @@ export default function BridgeFundCardScreen({ route }: { route: any }) {
                     setUsdAmount(text);
                   }
                 }}
+                placeholder='0.00'
               />
               <CyDText
                 className={clsx(
@@ -1494,7 +1490,6 @@ export default function BridgeFundCardScreen({ route }: { route: any }) {
                 );
                 setUsdAmount(amount);
               }
-              inputRef.current?.focus();
             }}
             className={clsx(
               'bg-white border border-inputBorderColor rounded-full h-[40px] w-[40px] flex justify-center items-center p-[4px]',
