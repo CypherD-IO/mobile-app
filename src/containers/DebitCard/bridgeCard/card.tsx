@@ -31,6 +31,7 @@ import clsx from 'clsx';
 import { Card } from '../../../models/card.model';
 import { orderBy } from 'lodash';
 import { UserCardDetails } from '../../../models/userCardDetails.interface';
+import { CardProfile } from '../../../models/cardProfile.model';
 import { useIsFocused } from '@react-navigation/native';
 import CardCarousel from '../../../components/v2/CardCarousel';
 import {
@@ -50,8 +51,17 @@ export default function CardScreen({
   setCurrentCardProvider: Dispatch<SetStateAction<string>>;
 }) {
   const globalContext = useContext<any>(GlobalContext);
-  const cardProfile = globalContext.globalState.cardProfile;
-  const upgradeToPhysicalAvailable = cardProfile.pc?.isPhysicalCardEligible;
+  const cardProfile: CardProfile = globalContext.globalState.cardProfile;
+  const {
+    lifetimeAmountUsd: lifetimeLoadUSD,
+    pc: { isPhysicalCardEligible: upgradeToPhysicalAvailable },
+    physicalCardEligibilityLimit,
+  } = cardProfile;
+
+  const physicalCardEligibilityProgressPercentage = `${(
+    (lifetimeLoadUSD / physicalCardEligibilityLimit) *
+    100
+  ).toFixed(2)}%`;
 
   const { t } = useTranslation();
   const isFocused = useIsFocused();
@@ -469,8 +479,9 @@ export default function CardScreen({
             source={{ uri: getCardBackgroundLayout(card) }}
             resizeMode='stretch'
           />
-          <CyDView className='flex flex-col justify-center h-[200px] w-[300px] border-[1px] border-inputBorderColor rounded-[12px]'>
+          <CyDView className='flex flex-col items-center justify-center h-[200px] w-[300px] border-[1px] border-inputBorderColor rounded-[12px]'>
             <CyDTouchView
+              disabled={!upgradeToPhysicalAvailable}
               onPress={() =>
                 navigation.navigate(
                   screenTitle.UPGRADE_TO_PHYSICAL_CARD_SCREEN,
@@ -479,15 +490,41 @@ export default function CardScreen({
                   },
                 )
               }
-              className='flex flex-row justify-center items-center border border-inputBorderColor bg-white mx-[30px] p-[5px] rounded-[10px]'>
+              className={clsx(
+                'flex flex-row justify-start items-center border border-inputBorderColor bg-privacyMessageBackgroundColor mx-[30px] px-[5px] rounded-[8px]',
+                { 'bg-white': upgradeToPhysicalAvailable },
+              )}>
+              <CyDView
+                className={clsx(
+                  'absolute h-full bg-toastColor rounded-[8px] my-[5px]',
+                  { 'bg-white': upgradeToPhysicalAvailable },
+                )}
+                style={{
+                  width: physicalCardEligibilityProgressPercentage,
+                }}
+              />
               <CyDFastImage
                 source={AppImages.UPGRADE_TO_PHYSICAL_CARD_ARROW}
-                className='h-[30px] w-[30px] mr-[10px]'
+                className='h-[30px] w-[30px] mr-[10px] my-[5px]'
               />
-              <CyDText className='font-nunito font-extrabold'>
+              <CyDText className='font-nunito font-extrabold my-[5px]'>
                 {t<string>('UPGRADE_TO_PHYSICAL_CARD')}
               </CyDText>
             </CyDTouchView>
+            <CyDView className='flex flex-row my-[5px]'>
+              {!upgradeToPhysicalAvailable ? (
+                <>
+                  <CyDText className='mb-[4px]'>{`Load `}</CyDText>
+                  <CyDText className='mb-[4px] font-extrabold'>
+                    {physicalCardEligibilityLimit - lifetimeLoadUSD}
+                  </CyDText>
+                  <CyDText className='mb-[4px] font-extrabold'>{` USD`}</CyDText>
+                  <CyDText className='mb-[4px]'>{` more to upgrade`}</CyDText>
+                </>
+              ) : (
+                <CyDText className='mb-[4px] font-extrabold rounded-[8px]'>{`You're now eligible for a physical card!`}</CyDText>
+              )}
+            </CyDView>
           </CyDView>
         </CyDAnimatedView>
       );
@@ -644,8 +681,9 @@ export default function CardScreen({
   const cardsWithUpgrade = useMemo(() => {
     const actualCards = userCardDetails.cards.map(card => card);
     if (
-      upgradeToPhysicalAvailable &&
-      currentCardProvider === CardProviders.PAYCADDY
+      (currentCardProvider === CardProviders.PAYCADDY &&
+        lifetimeLoadUSD < physicalCardEligibilityLimit) ||
+      upgradeToPhysicalAvailable
     ) {
       actualCards.unshift({
         cardId: '',
