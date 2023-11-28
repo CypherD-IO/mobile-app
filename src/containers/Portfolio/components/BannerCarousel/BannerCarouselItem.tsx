@@ -241,9 +241,9 @@ const BannerCarouselItem = ({
         );
       } else {
         return (
-          <CyDView className='h-full w-full flex flex-col justify-center items-center bg-privacyMessageBackgroundColor'>
+          <CyDView className='h-full w-full flex flex-col justify-center items-center bg-privacyMessageBackgroundColor px-[2px]'>
             <CyDText className='text-[14px] font-bold'>{title}</CyDText>
-            <CyDText className='text-[14px] text-subTextColor font-medium'>
+            <CyDText className='text-[14px] text-subTextColor font-medium text-center'>
               {description}
             </CyDText>
           </CyDView>
