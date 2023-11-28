@@ -7,10 +7,8 @@ import {
   CyDText,
   CyDView,
   CyDImageBackground,
-  CyDTouchView,
   CyDTextInput,
   CyDScrollView,
-  CyDSafeAreaView,
 } from '../../styles/tailwindStyles';
 import clsx from 'clsx';
 import { screenTitle } from '../../constants';
@@ -18,7 +16,6 @@ import LottieView from 'lottie-react-native';
 import { isAndroid } from '../../misc/checkers';
 import { Colors } from '../../constants/theme';
 import useAxios from '../../core/HttpRequest';
-import { StatusBar } from 'react-native';
 import Button from '../../components/v2/button';
 import { ButtonType } from '../../constants/enum';
 import { ICountry } from '../../models/cardApplication.model';
@@ -94,9 +91,12 @@ export default function CardSignupLandingScreen(props: {
   };
 
   return (
-    <CyDView className='flex-1 bg-appColor'>
+    <CyDView
+      className={clsx('flex-1 pb-[40px]', {
+        'pb-[75px]': isAndroid(),
+      })}>
       {/* <StatusBar backgroundColor={Colors.appColor} barStyle='light-content' /> */}
-      <CyDScrollView>
+      <CyDScrollView className='bg-appColor'>
         <CyDImageBackground
           className={'h-[70%] pt-[10px]'}
           source={AppImages.CARD_SIGNUP_BACKGROUND}
