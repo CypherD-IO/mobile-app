@@ -98,7 +98,7 @@ export default function BottomCardConfirm({
           />
         </CyDTouchView>
         <CyDText className='text-[18px] font-nunito font-bold'>
-          {t('CONFIRM_PAYMENT')}
+          {t('LOAD_CARD')}
         </CyDText>
         <CyDView className={'mx-[16px]'}>
           <CyDView
@@ -118,17 +118,6 @@ export default function BottomCardConfirm({
               </CyDText>
             </CyDView>
           </CyDView>
-          {modalParams.cardNumber && (
-            <CyDView
-              className={
-                'flex flex-row justify-between items-center py-[16px]'
-              }>
-              <CyDText className={'font-bold text-[14px]'}>{t('CARD')}</CyDText>
-              <CyDText className={'font-medium text-[14px]'}>
-                {modalParams.cardNumber}
-              </CyDText>
-            </CyDView>
-          )}
           <CyDView
             className={'flex flex-row justify-between items-center py-[16px]'}>
             <CyDText className={'font-bold text-[14px]'}>{t('VALUE')}</CyDText>

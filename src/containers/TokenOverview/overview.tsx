@@ -602,7 +602,9 @@ export default function Overview({
         <CyDText className='text-[16px] font-bold mb-[8px]'>
           {t('TOKEN_IN_OTHER_CHAIN_HOLDINGS')}
         </CyDText>
-        {otherChainsWithToken.length ? (
+        {otherChainsWithToken.filter(
+          otherChainItem => otherChainItem !== tokenData,
+        ).length ? (
           <FlatList
             horizontal
             showsHorizontalScrollIndicator={false}
