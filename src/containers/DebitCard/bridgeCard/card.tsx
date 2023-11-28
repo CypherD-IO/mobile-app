@@ -58,10 +58,12 @@ export default function CardScreen({
     physicalCardEligibilityLimit,
   } = cardProfile;
 
-  const physicalCardEligibilityProgressPercentage = `${(
-    (lifetimeLoadUSD / physicalCardEligibilityLimit) *
-    100
-  ).toFixed(2)}%`;
+  const physicalCardEligibilityProgress =
+    parseFloat(
+      ((lifetimeLoadUSD / physicalCardEligibilityLimit) * 100).toFixed(2),
+    ) > 100
+      ? '100'
+      : ((lifetimeLoadUSD / physicalCardEligibilityLimit) * 100).toFixed(2);
 
   const { t } = useTranslation();
   const isFocused = useIsFocused();
@@ -491,7 +493,7 @@ export default function CardScreen({
                 )
               }
               className={clsx(
-                'flex flex-row justify-start items-center border border-inputBorderColor bg-privacyMessageBackgroundColor mx-[30px] px-[5px] rounded-[8px]',
+                'flex flex-row w-[75%] justify-start items-center border border-inputBorderColor bg-privacyMessageBackgroundColor mx-[30px] rounded-[8px]',
                 { 'bg-white': upgradeToPhysicalAvailable },
               )}>
               <CyDView
@@ -500,12 +502,12 @@ export default function CardScreen({
                   { 'bg-white': upgradeToPhysicalAvailable },
                 )}
                 style={{
-                  width: physicalCardEligibilityProgressPercentage,
+                  width: `${physicalCardEligibilityProgress}%`,
                 }}
               />
               <CyDFastImage
                 source={AppImages.UPGRADE_TO_PHYSICAL_CARD_ARROW}
-                className='h-[30px] w-[30px] mr-[10px] my-[5px]'
+                className='h-[30px] w-[30px] mx-[8px] my-[5px]'
               />
               <CyDText className='font-nunito font-extrabold my-[5px]'>
                 {t<string>('UPGRADE_TO_PHYSICAL_CARD')}
