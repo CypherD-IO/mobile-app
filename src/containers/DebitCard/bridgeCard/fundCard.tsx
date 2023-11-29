@@ -1246,7 +1246,7 @@ export default function BridgeFundCardScreen({ route }: { route: any }) {
     return (
       <CyDTouchView
         className={
-          'bg-[#F7F8FE] mx-[40px] my-[16px] border-[1px] border-[#EBEBEB] rounded-[8px]'
+          'bg-[#F7F8FE] mx-[20px] my-[16px] border-[1px] border-[#EBEBEB] rounded-[8px]'
         }
         onPress={() => setIsChooseTokenVisible(true)}>
         <CyDView
@@ -1391,7 +1391,7 @@ export default function BridgeFundCardScreen({ route }: { route: any }) {
         <RenderSelectedToken />
         <CyDView
           className={
-            'pb-[0px] px-[10px] bg-[#F7F8FE] mx-[40px] h-[300px] rounded-[8px]'
+            'pb-[0px] px-[10px] bg-[#F7F8FE] mx-[20px] h-[300px] rounded-[8px]'
           }>
           <CyDView className='flex flex-row h-[100%] justify-between items-center'>
             <CyDView className={'h-[40px] w-[40px] p-[4px]'} />
