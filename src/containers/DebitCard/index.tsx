@@ -93,7 +93,14 @@ export default function DebitCardScreen(props: RouteProps) {
         ) {
           void checkApplication();
         } else {
-          props.navigation.navigate(screenTitle.CARD_KYC_STATUS_SCREEN);
+          props.navigation.reset({
+            index: 0,
+            routes: [
+              {
+                name: screenTitle.CARD_KYC_STATUS_SCREEN,
+              },
+            ],
+          });
         }
       }
     } else {
