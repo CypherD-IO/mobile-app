@@ -86,7 +86,10 @@ export default function BottomCardConfirm({
       style={styles.modalContainer}
       animationIn={'slideInUp'}
       animationOut={'slideOutDown'}
-      setModalVisible={onCancelPress}>
+      setModalVisible={() => {
+        clearInterval(expiryTimer);
+        onCancelPress();
+      }}>
       <CyDView
         className={'bg-white pb-[30px] flex items-center rounded-t-[24px]'}>
         <CyDTouchView
@@ -168,9 +171,7 @@ export default function BottomCardConfirm({
           </CyDView>
         ) : null}
         <CyDView
-          className={
-            'flex flex-row justify-center items-center px-[20px] pb-[10px] mt-[20px]'
-          }>
+          className={'flex flex-row justify-between items-center px-[20px]'}>
           <Button
             title={t<string>('CANCEL')}
             titleStyle='text-[14px]'
@@ -179,7 +180,7 @@ export default function BottomCardConfirm({
             onPress={() => {
               hideModal();
             }}
-            style={'h-[60px] w-[166px] mr-[9px]'}
+            style={'h-[60px] w-[166px] mx-[6px]'}
           />
           <Button
             title={
@@ -199,7 +200,7 @@ export default function BottomCardConfirm({
               }
             }}
             isPrivateKeyDependent={true}
-            style={'h-[60px] w-[166px] ml-[9px]'}
+            style={'h-[60px] w-[166px] mx-[6px]'}
           />
         </CyDView>
       </CyDView>

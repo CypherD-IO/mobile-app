@@ -88,6 +88,11 @@ export enum CardTransactionTypes {
   REFUND = 'REFUND',
 }
 
+export enum CardType {
+  PHYSICAL = 'physical',
+  VIRTUAL = 'virtual',
+}
+
 export enum CardTransactionStatuses {
   SETTLED = 'Settled',
   PENDING = 'Pending',

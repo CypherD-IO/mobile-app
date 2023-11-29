@@ -1386,7 +1386,7 @@ export default function BridgeFundCardScreen({ route }: { route: any }) {
       <CyDKeyboardAwareScrollView>
         <RenderSelectedToken />
         <CyDView className={'mx-[20px]'}>
-          <CyDView className='flex flex-row bg-[#F7F8FE] rounded-[8px] h-[300px] justify-between items-center'>
+          <CyDView className='flex flex-row bg-[#F7F8FE] rounded-[8px] h-[300px] px-[20px] justify-between items-center'>
             <CyDView className={'h-[40px] w-[40px] p-[4px]'} />
             <CyDView className={'pb-[10px] w-[60%] items-center bg-[#F7F8FE]'}>
               <CyDText
