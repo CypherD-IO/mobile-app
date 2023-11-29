@@ -24,7 +24,7 @@ import {
   CyDView,
 } from '../../../styles/tailwindStyles';
 import useAxios from '../../../core/HttpRequest';
-import { CardProviders, CardStatus } from '../../../constants/enum';
+import { CardProviders, CardStatus, CardType } from '../../../constants/enum';
 import { useGlobalModalContext } from '../../../components/v2/GlobalModal';
 import AppImages from '../../../../assets/images/appImages';
 import clsx from 'clsx';
@@ -684,7 +684,8 @@ export default function CardScreen({
     const actualCards = userCardDetails.cards.map(card => card);
     if (
       (currentCardProvider === CardProviders.PAYCADDY &&
-        lifetimeLoadUSD < physicalCardEligibilityLimit) ||
+        lifetimeLoadUSD < physicalCardEligibilityLimit &&
+        !actualCards.map(card => card.type).includes(CardType.PHYSICAL)) ||
       upgradeToPhysicalAvailable
     ) {
       actualCards.unshift({
