@@ -154,7 +154,6 @@ export default function CardKYCStatusScreen({ navigation }) {
           '',
         );
         const cardProfile = response.data;
-        console.log(cardProfile);
         const { kyc } = get(cardProfile, provider);
         if (kyc) {
           setKYC(kyc);
