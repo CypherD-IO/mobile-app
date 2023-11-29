@@ -848,7 +848,9 @@ export function DebitCardStackScreen({ navigation }) {
           headerTitleStyle: portfolioStackScreenHeaderTitleStyles,
           headerTintColor: Colors.primaryTextColor,
           headerBackTitleVisible: false,
-          headerLeft: props => defaultHeaderLeft(navigation),
+          headerLeft: () => {
+            return <></>;
+          },
         })}
       />
 

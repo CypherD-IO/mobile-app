@@ -448,7 +448,7 @@ const resources = {
       CARD_KYC_HEADING: 'Your card application is in progress',
       CARD_KYC_SUB_HEADING: 'We will notify you when there is a status update',
       APPLICATION_SUBMITTED: 'Application submitted',
-      KYC_INITITATED: 'KYC',
+      KYC_INITITATED: 'KYC Initiated',
       APPLICATION_UNDER_REVIEW: 'Application under review',
       KYC_COMPLETED: 'KYC completed',
       CARD_ISSUED: 'Card issued',
