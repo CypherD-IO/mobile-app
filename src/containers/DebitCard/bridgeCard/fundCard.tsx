@@ -1385,11 +1385,8 @@ export default function BridgeFundCardScreen({ route }: { route: any }) {
       />
       <CyDKeyboardAwareScrollView>
         <RenderSelectedToken />
-        <CyDView
-          className={
-            'pb-[0px] px-[10px] bg-[#F7F8FE] mx-[20px] h-[300px] rounded-[8px]'
-          }>
-          <CyDView className='flex flex-row h-[100%] justify-between items-center'>
+        <CyDView className={'mx-[20px]'}>
+          <CyDView className='flex flex-row bg-[#F7F8FE] rounded-[8px] h-[300px] justify-between items-center'>
             <CyDView className={'h-[40px] w-[40px] p-[4px]'} />
             <CyDView className={'pb-[10px] w-[60%] items-center bg-[#F7F8FE]'}>
               <CyDText
@@ -1440,6 +1437,7 @@ export default function BridgeFundCardScreen({ route }: { route: any }) {
                     }
                   }}
                   placeholder='0.00'
+                  placeholderTextColor={'#999'}
                 />
                 <CyDText
                   className={clsx(
@@ -1508,7 +1506,7 @@ export default function BridgeFundCardScreen({ route }: { route: any }) {
             type={ButtonType.PRIMARY}
             disabled={isLoadCardDisabled()}
             title={t('QUOTE')}
-            style={clsx('h-[60px] mx-[16px] py-[10px] -top-[25px]', {
+            style={clsx('h-[60px] mx-[32px] py-[10px] -top-[25px]', {
               'py-[8px]': loading,
             })}
             loading={loading}
@@ -1519,7 +1517,7 @@ export default function BridgeFundCardScreen({ route }: { route: any }) {
             }}
             type={ButtonType.SECONDARY}
             title={`${t('QUOTE_MAX')} ⚡`}
-            style={clsx('h-[60px] py-[10px]', {
+            style={clsx('h-[60px] mx-[16px] py-[10px]', {
               'py-[8px]': isMaxLoading,
             })}
             loading={isMaxLoading}
