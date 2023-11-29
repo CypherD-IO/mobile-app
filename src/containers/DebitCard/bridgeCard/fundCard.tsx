@@ -26,6 +26,7 @@ import {
   CyDFastImage,
   CyDImage,
   CyDSafeAreaView,
+  CyDScrollView,
   CyDText,
   CyDTextInput,
   CyDTouchView,
@@ -1386,147 +1387,149 @@ export default function BridgeFundCardScreen({ route }: { route: any }) {
             });
         }}
       />
-      <RenderSelectedToken />
-      <CyDView
-        className={
-          'pb-[0px] px-[10px] bg-[#F7F8FE] mx-[40px] h-[300px] rounded-[8px]'
-        }>
-        <CyDView className='flex flex-row h-[100%] justify-between items-center'>
-          <CyDView className={'h-[40px] w-[40px] p-[4px]'} />
-          <CyDView className={'pb-[10px] w-[60%] items-center bg-[#F7F8FE]'}>
-            <CyDText
-              className={
-                'font-extrabold text-[22px] text-center font-nunito text-black'
-              }>
-              {t<string>('ENTER_AMOUNT')}
-            </CyDText>
-            <CyDView className={'flex justify-center items-center'}>
-              <CyDText className='text-[20px] font-semibold mt-[5px]'>
-                {isCrpytoInput ? selectedToken?.name : 'USD'}
-              </CyDText>
-              <CyDTextInput
-                className={clsx(
-                  'font-extrabold text-center text-primaryTextColor h-[85px] font-nunito',
-                  {
-                    'text-[20px]': amount.length <= 15,
-                    'text-[40px]': amount.length <= 10,
-                    'text-[60px]': amount.length <= 5,
-                  },
-                )}
-                value={amount}
-                keyboardType='numeric'
-                autoCapitalize='none'
-                autoCorrect={false}
-                onChangeText={text => {
-                  setAmount(text);
-                  if (isCrpytoInput) {
-                    const usdText =
-                      parseFloat(text) *
-                      (selectedToken?.isZeroFeeCardFunding
-                        ? 1
-                        : Number(selectedToken?.price));
-                    setCryptoAmount(text);
-                    setUsdAmount(
-                      (isNaN(usdText) ? '0.00' : usdText).toString(),
-                    );
-                  } else {
-                    const cryptoText =
-                      parseFloat(text) /
-                      (selectedToken?.isZeroFeeCardFunding
-                        ? 1
-                        : Number(selectedToken?.price));
-                    setCryptoAmount(
-                      (isNaN(cryptoText) ? '0.00' : cryptoText).toString(),
-                    );
-                    setUsdAmount(text);
-                  }
-                }}
-                placeholder='0.00'
-              />
+      <CyDScrollView keyboardShouldPersistTaps='handled'>
+        <RenderSelectedToken />
+        <CyDView
+          className={
+            'pb-[0px] px-[10px] bg-[#F7F8FE] mx-[40px] h-[300px] rounded-[8px]'
+          }>
+          <CyDView className='flex flex-row h-[100%] justify-between items-center'>
+            <CyDView className={'h-[40px] w-[40px] p-[4px]'} />
+            <CyDView className={'pb-[10px] w-[60%] items-center bg-[#F7F8FE]'}>
               <CyDText
-                className={clsx(
-                  'text-center text-primaryTextColor h-[50px] text-[16px]',
-                )}>
-                {'~' +
-                  (isCrpytoInput
-                    ? (!isNaN(parseFloat(usdAmount))
-                        ? formatAmount(usdAmount).toString()
-                        : '0.00') + ' USD'
-                    : (!isNaN(parseFloat(cryptoAmount))
-                        ? formatAmount(cryptoAmount).toString()
-                        : '0.00') +
-                      ' ' +
-                      (selectedToken?.symbol ?? ' '))}
+                className={
+                  'font-extrabold text-[22px] text-center font-nunito text-black'
+                }>
+                {t<string>('ENTER_AMOUNT')}
               </CyDText>
-            </CyDView>
-            {(!usdAmount || Number(usdAmount) < minTokenValueLimit) && (
-              <CyDView className='mb-[10px]'>
-                <CyDText className='text-center font-semibold'>
-                  {t<string>('CARD_LOAD_MIN_AMOUNT')}
+              <CyDView className={'flex justify-center items-center'}>
+                <CyDText className='text-[20px] font-semibold mt-[5px]'>
+                  {isCrpytoInput ? selectedToken?.name : 'USD'}
+                </CyDText>
+                <CyDTextInput
+                  className={clsx(
+                    'font-extrabold text-center text-primaryTextColor h-[85px] font-nunito',
+                    {
+                      'text-[20px]': amount.length <= 15,
+                      'text-[40px]': amount.length <= 10,
+                      'text-[60px]': amount.length <= 5,
+                    },
+                  )}
+                  value={amount}
+                  keyboardType='numeric'
+                  autoCapitalize='none'
+                  autoCorrect={false}
+                  onChangeText={text => {
+                    setAmount(text);
+                    if (isCrpytoInput) {
+                      const usdText =
+                        parseFloat(text) *
+                        (selectedToken?.isZeroFeeCardFunding
+                          ? 1
+                          : Number(selectedToken?.price));
+                      setCryptoAmount(text);
+                      setUsdAmount(
+                        (isNaN(usdText) ? '0.00' : usdText).toString(),
+                      );
+                    } else {
+                      const cryptoText =
+                        parseFloat(text) /
+                        (selectedToken?.isZeroFeeCardFunding
+                          ? 1
+                          : Number(selectedToken?.price));
+                      setCryptoAmount(
+                        (isNaN(cryptoText) ? '0.00' : cryptoText).toString(),
+                      );
+                      setUsdAmount(text);
+                    }
+                  }}
+                  placeholder='0.00'
+                />
+                <CyDText
+                  className={clsx(
+                    'text-center text-primaryTextColor h-[50px] text-[16px]',
+                  )}>
+                  {'~' +
+                    (isCrpytoInput
+                      ? (!isNaN(parseFloat(usdAmount))
+                          ? formatAmount(usdAmount).toString()
+                          : '0.00') + ' USD'
+                      : (!isNaN(parseFloat(cryptoAmount))
+                          ? formatAmount(cryptoAmount).toString()
+                          : '0.00') +
+                        ' ' +
+                        (selectedToken?.symbol ?? ' '))}
                 </CyDText>
               </CyDView>
-            )}
-            <RenderWarningMessage />
+              {(!usdAmount || Number(usdAmount) < minTokenValueLimit) && (
+                <CyDView className='mb-[10px]'>
+                  <CyDText className='text-center font-semibold'>
+                    {t<string>('CARD_LOAD_MIN_AMOUNT')}
+                  </CyDText>
+                </CyDView>
+              )}
+              <RenderWarningMessage />
+            </CyDView>
+            <CyDTouchView
+              onPress={() => {
+                setIsCryptoInput(!isCrpytoInput);
+                if (!isCrpytoInput) {
+                  const usdAmt =
+                    parseFloat(amount) *
+                    (selectedToken?.isZeroFeeCardFunding
+                      ? 1
+                      : Number(selectedToken?.price));
+                  setCryptoAmount(amount);
+                  setUsdAmount((isNaN(usdAmt) ? '0.00' : usdAmt).toString());
+                } else {
+                  const cryptoAmt =
+                    parseFloat(amount) /
+                    (selectedToken?.isZeroFeeCardFunding
+                      ? 1
+                      : Number(selectedToken?.price));
+                  setCryptoAmount(
+                    (isNaN(cryptoAmt) ? '0.00' : cryptoAmt).toString(),
+                  );
+                  setUsdAmount(amount);
+                }
+              }}
+              className={clsx(
+                'bg-white border border-inputBorderColor rounded-full h-[40px] w-[40px] flex justify-center items-center p-[4px]',
+              )}>
+              <CyDFastImage
+                className='h-[16px] w-[16px]'
+                source={AppImages.TOGGLE_ICON}
+                resizeMode='contain'
+              />
+            </CyDTouchView>
           </CyDView>
-          <CyDTouchView
+          <Button
             onPress={() => {
-              setIsCryptoInput(!isCrpytoInput);
-              if (!isCrpytoInput) {
-                const usdAmt =
-                  parseFloat(amount) *
-                  (selectedToken?.isZeroFeeCardFunding
-                    ? 1
-                    : Number(selectedToken?.price));
-                setCryptoAmount(amount);
-                setUsdAmount((isNaN(usdAmt) ? '0.00' : usdAmt).toString());
-              } else {
-                const cryptoAmt =
-                  parseFloat(amount) /
-                  (selectedToken?.isZeroFeeCardFunding
-                    ? 1
-                    : Number(selectedToken?.price));
-                setCryptoAmount(
-                  (isNaN(cryptoAmt) ? '0.00' : cryptoAmt).toString(),
-                );
-                setUsdAmount(amount);
+              if (validateAmount(amount)) {
+                void fundCard();
               }
             }}
-            className={clsx(
-              'bg-white border border-inputBorderColor rounded-full h-[40px] w-[40px] flex justify-center items-center p-[4px]',
-            )}>
-            <CyDFastImage
-              className='h-[16px] w-[16px]'
-              source={AppImages.TOGGLE_ICON}
-              resizeMode='contain'
-            />
-          </CyDTouchView>
+            type={ButtonType.PRIMARY}
+            disabled={isLoadCardDisabled()}
+            title={t('QUOTE')}
+            style={clsx('h-[60px] mx-[16px] py-[10px] -top-[25px]', {
+              'py-[8px]': loading,
+            })}
+            loading={loading}
+          />
+          <Button
+            onPress={() => {
+              void onMax();
+            }}
+            type={ButtonType.SECONDARY}
+            title={`${t('QUOTE_MAX')} ⚡`}
+            style={clsx('h-[60px] py-[10px]', {
+              'py-[8px]': isMaxLoading,
+            })}
+            loading={isMaxLoading}
+          />
         </CyDView>
-        <Button
-          onPress={() => {
-            if (validateAmount(amount)) {
-              void fundCard();
-            }
-          }}
-          type={ButtonType.PRIMARY}
-          disabled={isLoadCardDisabled()}
-          title={t('QUOTE')}
-          style={clsx('h-[60px] mx-[16px] py-[10px] -top-[25px]', {
-            'py-[8px]': loading,
-          })}
-          loading={loading}
-        />
-        <Button
-          onPress={() => {
-            void onMax();
-          }}
-          type={ButtonType.SECONDARY}
-          title={`${t('QUOTE_MAX')} ⚡`}
-          style={clsx('h-[60px] py-[10px]', {
-            'py-[8px]': isMaxLoading,
-          })}
-          loading={isMaxLoading}
-        />
-      </CyDView>
+      </CyDScrollView>
     </CyDSafeAreaView>
   );
 }
