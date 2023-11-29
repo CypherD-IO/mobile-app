@@ -274,25 +274,6 @@ export default function Options(props: {
               />
 
               {!isReadOnlyWallet && (
-                <OptionsContainer
-                  sentryLabel={'referrals'}
-                  onPress={() => {
-                    !isReadOnlyWallet
-                      ? props.navigation.navigate(
-                          C.screenTitle.REFERRAL_REWARDS,
-                        )
-                      : referToFriend();
-                  }}
-                  title={
-                    !isReadOnlyWallet
-                      ? 'Referral & rewards'
-                      : t('MENU_RECOMMEND_FRIEND')
-                  }
-                  logo={AppImages.REFER_OUTLINE}
-                />
-              )}
-
-              {!isReadOnlyWallet && (
                 <DynamicView
                   dynamic
                   dynamicWidth
@@ -403,6 +384,17 @@ export default function Options(props: {
                 title={'Support'}
                 logo={AppImages.SUPPORT}
               />
+
+              {!isReadOnlyWallet && (
+                <OptionsContainer
+                  sentryLabel={'referrals'}
+                  onPress={() => {
+                    referToFriend();
+                  }}
+                  title={t('MENU_RECOMMEND_FRIEND')}
+                  logo={AppImages.REFER_OUTLINE}
+                />
+              )}
 
               <DynamicView
                 dynamic
