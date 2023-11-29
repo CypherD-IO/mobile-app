@@ -25,6 +25,7 @@ import {
 import {
   CyDFastImage,
   CyDImage,
+  CyDKeyboardAwareScrollView,
   CyDSafeAreaView,
   CyDScrollView,
   CyDText,
@@ -1387,7 +1388,7 @@ export default function BridgeFundCardScreen({ route }: { route: any }) {
             });
         }}
       />
-      <CyDScrollView keyboardShouldPersistTaps='handled'>
+      <CyDKeyboardAwareScrollView>
         <RenderSelectedToken />
         <CyDView
           className={
@@ -1529,7 +1530,7 @@ export default function BridgeFundCardScreen({ route }: { route: any }) {
             loading={isMaxLoading}
           />
         </CyDView>
-      </CyDScrollView>
+      </CyDKeyboardAwareScrollView>
     </CyDSafeAreaView>
   );
 }
