@@ -1,6 +1,6 @@
 import React, { useContext, useEffect, useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import { Keyboard, TextInput } from 'react-native';
+import { Keyboard } from 'react-native';
 import AppImages from '../../../../assets/images/appImages';
 import Button from '../../../components/v2/button';
 import {
@@ -27,16 +27,12 @@ import {
   CyDImage,
   CyDKeyboardAwareScrollView,
   CyDSafeAreaView,
-  CyDScrollView,
   CyDText,
   CyDTextInput,
   CyDTouchView,
   CyDView,
 } from '../../../styles/tailwindStyles';
-import {
-  MODAL_HIDE_TIMEOUT_250,
-  MODAL_HIDE_TIMEOUT_600,
-} from '../../../core/Http';
+import { MODAL_HIDE_TIMEOUT_250 } from '../../../core/Http';
 import { getGasPriceFor } from '../../Browser/gasHelper';
 import { GasPriceDetail } from '../../../core/types';
 import * as Sentry from '@sentry/react-native';
@@ -79,7 +75,6 @@ import {
 } from '../../../constants/enum';
 import { TokenMeta } from '../../../models/tokenMetaData.model';
 import clsx from 'clsx';
-import { isIOS } from '../../../misc/checkers';
 import {
   CardQuoteResponse,
   GAS_BUFFER_FACTOR_FOR_LOAD_MAX,
