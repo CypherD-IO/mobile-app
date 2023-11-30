@@ -9,7 +9,7 @@ import Animated, {
   SharedValue,
   useAnimatedScrollHandler,
 } from 'react-native-reanimated';
-import { CardSectionHeights } from '.';
+import { CardSectionHeights } from '../../../constants/cardPageV2';
 
 export interface AnimatedTxnListProps
   extends Pick<
@@ -20,10 +20,12 @@ export interface AnimatedTxnListProps
     | 'onMomentumScrollBegin'
     | 'onMomentumScrollEnd'
     | 'onScrollEndDrag'
+    | 'onEndReached'
     | 'keyExtractor'
     | 'updateCellsBatchingPeriod'
     | 'windowSize'
     | 'ListEmptyComponent'
+    | 'ListFooterComponent'
   > {
   data?: any[];
   renderItem?:
@@ -47,9 +49,11 @@ const AnimatedTxnListWithoutMemo = ({
   onMomentumScrollBegin,
   onMomentumScrollEnd,
   onScrollEndDrag,
+  onEndReached,
   scrollY,
   refreshControl,
   ListEmptyComponent,
+  ListFooterComponent,
   keyExtractor,
   extraData,
 }: AnimatedTxnListProps) => {
@@ -63,6 +67,7 @@ const AnimatedTxnListWithoutMemo = ({
     onMomentumScrollEnd,
     onScroll: handleScroll,
     onScrollEndDrag,
+    onEndReached,
     scrollEventThrottle: 1,
     // ios has over scrolling and other things which make this look and feel nicer
     contentInset: Platform.select({ ios: { top: cardSectionHeight } }),
@@ -120,6 +125,7 @@ const AnimatedTxnListWithoutMemo = ({
       initialNumToRender={initialNumToRender}
       maxToRenderPerBatch={maxToRenderPerBatch}
       onContentSizeChange={onContentSizeChange}
+      ListFooterComponent={ListFooterComponent}
       extraData={extraData}
     />
   );

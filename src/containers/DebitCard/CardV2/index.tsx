@@ -1,4 +1,4 @@
-import React, { memo, useContext, useEffect, useState } from 'react';
+import React, { memo, useContext, useEffect, useRef, useState } from 'react';
 import {
   CyDFastImage,
   CyDImageBackground,
@@ -45,6 +45,7 @@ import {
   initialCardTxnDateRange,
 } from '../../../constants/cardPageV2';
 import { getWalletProfile } from '../../../core/card';
+import InfiniteScrollFooterLoader from '../../../components/v2/InfiniteScrollFooterLoader';
 
 interface CypherCardScreenProps {
   navigation: any;
@@ -63,18 +64,21 @@ const CypherCardScreen = ({ navigation, route }: CypherCardScreenProps) => {
   const cardProfile: CardProfile = globalContext.globalState.cardProfile;
 
   const cardSectionHeight: CardSectionHeights = hasBothProviders ? 320 : 270;
+  const scrollY = useSharedValue(-cardSectionHeight);
+
+  const txnRetrievalOffset = useRef<string | undefined>();
 
   const [cardBalance, setCardBalance] = useState('');
   const [currentCardIndex] = useState(0); // Not setting anywhere.
-  const [currentCardProvider, setCurrentCardProvider] =
-    useState<string>(cardProvider);
-  const [transactions, setTransactions] = useState<ICardTransaction[]>([]);
-  const [filteredTransactions, setFilteredTransactions] = useState<
-    ICardTransaction[]
-  >([]);
   const [refreshing, setRefreshing] = useState(false);
   const [isExporting, setIsExporting] = useState(false);
   const [filterModalVisible, setFilterModalVisible] = useState(false);
+  const [transactions, setTransactions] = useState<ICardTransaction[]>([]);
+  const [currentCardProvider, setCurrentCardProvider] =
+    useState<string>(cardProvider);
+  const [filteredTransactions, setFilteredTransactions] = useState<
+    ICardTransaction[]
+  >([]);
   const [filter, setFilter] = useState<{
     types: CardTransactionTypes[];
     dateRange: DateRange;
@@ -85,13 +89,11 @@ const CypherCardScreen = ({ navigation, route }: CypherCardScreenProps) => {
     statuses: STATUSES,
   });
 
-  const scrollY = useSharedValue(-cardSectionHeight);
-
   const onRefresh = () => {
     void refreshProfile();
     setCardBalance('');
     void fetchCardBalance();
-    void retrieveTxns();
+    void retrieveTxns(true);
   };
 
   useEffect(() => {
@@ -118,11 +120,7 @@ const CypherCardScreen = ({ navigation, route }: CypherCardScreenProps) => {
 
   useEffect(() => {
     spliceTransactions(transactions);
-  }, [filter.statuses, filter.types]);
-
-  useEffect(() => {
-    void retrieveTxns();
-  }, [filter.dateRange]);
+  }, [filter.statuses, filter.types, filter.dateRange]);
 
   const refreshProfile = async () => {
     const data = await getWalletProfile(globalContext.globalState.token);
@@ -152,33 +150,45 @@ const CypherCardScreen = ({ navigation, route }: CypherCardScreenProps) => {
     }
   };
 
-  const retrieveTxns = async () => {
+  const retrieveTxns = async (pullToRefresh = false) => {
     const currentCard = get(cardProfile, currentCardProvider).cards[
       currentCardIndex
     ];
+
+    if (pullToRefresh) {
+      txnRetrievalOffset.current = undefined;
+    }
+
     let txnURL = `/v1/cards/${currentCardProvider}/card/${String(
       currentCard?.cardId,
-    )}/transactions`;
-    if (filter.dateRange !== initialCardTxnDateRange) {
-      const { fromDate, toDate } = filter.dateRange;
-      txnURL += `?startDate=${moment
-        .utc(fromDate)
-        .startOf('day')
-        .toISOString()}&endDate=${moment
-        .utc(toDate)
-        .endOf('day')
-        .toISOString()}`;
+    )}/transactions?newRoute=true&limit=20`;
+    if (txnRetrievalOffset.current) {
+      txnURL += `&offset=${txnRetrievalOffset.current}`;
     }
+
     try {
       setRefreshing(true);
       const res = await getWithAuth(txnURL);
       if (!res.isError) {
-        const { transactions: txnsToSet } = res.data;
+        const { transactions: txnsToSet, offset } = res.data;
         txnsToSet.sort((a: ICardTransaction, b: ICardTransaction) => {
           return a.date < b.date ? 1 : -1;
         });
-        setTransactions(txnsToSet);
-        spliceTransactions(txnsToSet);
+
+        if (offset) {
+          txnRetrievalOffset.current = offset;
+        } else {
+          txnRetrievalOffset.current = 'END';
+        }
+
+        if (pullToRefresh) {
+          setTransactions(txnsToSet);
+          spliceTransactions(txnsToSet);
+        } else {
+          setTransactions([...transactions, ...txnsToSet]);
+          spliceTransactions([...transactions, ...txnsToSet]);
+        }
+
         setRefreshing(false);
       } else {
         setRefreshing(false);
@@ -275,7 +285,14 @@ const CypherCardScreen = ({ navigation, route }: CypherCardScreenProps) => {
         ? CardTransactionStatuses.SETTLED
         : CardTransactionStatuses.PENDING;
       const isIncludedStatus = filter.statuses.includes(statusString); // FILTERING THE STATUS
-      return isIncludedType && isIncludedStatus;
+      // FILTERING THE DATERANGE
+      const isIncludedInDateRange = moment
+        .unix(txn.createdAt)
+        .isBetween(
+          moment.utc(filter.dateRange.fromDate).startOf('day'),
+          moment.utc(filter.dateRange.toDate).endOf('day'),
+        );
+      return isIncludedType && isIncludedStatus && isIncludedInDateRange;
     });
 
     setFilteredTransactions(filteredTxns);
@@ -363,14 +380,9 @@ const CypherCardScreen = ({ navigation, route }: CypherCardScreenProps) => {
             cardSectionHeight={cardSectionHeight}>
             <CyDView className='h-[50px] flex flex-row justify-between items-center py-[10px] px-[10px] bg-white border border-sepratorColor mt-[10px] rounded-t-[24px]'>
               <CyDView className='flex justify-center items-start px-[5px]'>
-                <CyDText className='text-[16px] font-bold'>
+                <CyDText className='text-[18px] font-bold'>
                   {t('TRANS')}
                 </CyDText>
-                <CyDText className='text-[10px] text-subTextColor'>{`from ${moment(
-                  filter.dateRange.fromDate,
-                ).format("DD MMM, 'YY")} to ${moment(
-                  filter.dateRange.toDate,
-                ).format("DD MMM, 'YY")}`}</CyDText>
               </CyDView>
               <CyDView className='flex flex-row justify-end items-center px-[5px]'>
                 <CyDTouchView
@@ -411,6 +423,11 @@ const CypherCardScreen = ({ navigation, route }: CypherCardScreenProps) => {
                 progressViewOffset={cardSectionHeight}
               />
             }
+            onEndReached={() => {
+              if (txnRetrievalOffset.current !== 'END') {
+                void retrieveTxns();
+              }
+            }}
             data={filteredTransactions}
             keyExtractor={(_, index) => index.toString()}
             renderItem={({ item }: { item: ICardTransaction }) => {
@@ -425,6 +442,12 @@ const CypherCardScreen = ({ navigation, route }: CypherCardScreenProps) => {
                 />
               </CyDView>
             }
+            ListFooterComponent={
+              <InfiniteScrollFooterLoader
+                refreshing={refreshing}
+                style={styles.infiniteScrollFooterLoaderStyle}
+              />
+            }
           />
           {/* TXN LIST */}
         </CyDView>
@@ -437,5 +460,8 @@ export default memo(CypherCardScreen);
 const styles = StyleSheet.create({
   imageBackgroundImageStyles: {
     top: -50,
+  },
+  infiniteScrollFooterLoaderStyle: {
+    height: 40,
   },
 });
