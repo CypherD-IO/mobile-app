@@ -720,7 +720,7 @@ export async function _estimateGasForNativeTransaction(
         gasPrice: gasPriceDetail,
         tokenSymbol: send_token_symbol,
         tokenAmount: send_token_amount,
-        tokenValueDollar: send_token_usd_value.toFixed(2),
+        tokenValueDollar: send_token_usd_value,
         totalValueTransfer,
         totalValueDollar,
       };

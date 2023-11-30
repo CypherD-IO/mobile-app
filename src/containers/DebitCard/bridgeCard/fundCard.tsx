@@ -21,6 +21,7 @@ import {
   logAnalytics,
   validateAmount,
   parseErrorMessage,
+  limitDecimalPlaces,
 } from '../../../core/util';
 import {
   CyDFastImage,
@@ -1016,8 +1017,7 @@ export default function BridgeFundCardScreen({ route }: { route: any }) {
               actualBalance -
               parseFloat(gasFeeEstimationForTxn) *
                 GAS_BUFFER_FACTOR_FOR_LOAD_MAX;
-            const calcDec = Math.pow(10, 18);
-            amountInCrypto = Math.trunc(amountInCrypto * calcDec) / calcDec;
+            amountInCrypto = Number(limitDecimalPlaces(amountInCrypto));
           } else {
             showModal('state', {
               type: 'error',
