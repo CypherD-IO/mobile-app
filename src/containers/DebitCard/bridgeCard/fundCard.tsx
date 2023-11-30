@@ -578,6 +578,7 @@ export default function BridgeFundCardScreen({ route }: { route: any }) {
       actualBalance,
       logoUrl: selectedTokenLogoUrl,
       symbol: selectedTokenSymbol,
+      contractDecimals,
     } = selectedToken as TokenMeta;
     const gasPriceForEstimation: GasPriceDetail = {
       chainId: chainDetails.backendName,
@@ -588,7 +589,9 @@ export default function BridgeFundCardScreen({ route }: { route: any }) {
       chainDetails.chainName === ChainNames.ETH ||
       chainDetails.chainName === ChainNames.EVMOS
     ) {
-      const actualTokensRequired = quote.tokenRequired;
+      const actualTokensRequired = parseFloat(
+        limitDecimalPlaces(quote.tokenRequired, contractDecimals),
+      );
       const web3RPCEndpoint = new Web3(
         getWeb3Endpoint(hdWallet.state.selectedChain, globalContext),
       );
@@ -603,7 +606,7 @@ export default function BridgeFundCardScreen({ route }: { route: any }) {
             hdWallet,
             chainDetails,
             selectedToken,
-            quote.tokenRequired.toString(),
+            actualTokensRequired.toString(),
             true,
             gasPriceFromBackend,
             () => null,
@@ -649,7 +652,7 @@ export default function BridgeFundCardScreen({ route }: { route: any }) {
             hdWallet,
             chainDetails,
             selectedToken,
-            quote.tokenRequired.toString(),
+            actualTokensRequired.toString(),
             true,
             gasPriceForEstimation,
             () => null,
@@ -708,7 +711,7 @@ export default function BridgeFundCardScreen({ route }: { route: any }) {
           tokenSymbol: selectedTokenSymbol,
           tokenAmount: quote.tokenRequired,
           tokenValueDollar: Number(usdAmount).toFixed(2),
-          totalValueTransfer: quote.tokenRequired,
+          totalValueTransfer: actualTokensRequired,
           totalValueDollar: Number(usdAmount).toFixed(2),
           hasSufficientBalanceAndGasFee: false,
         };
