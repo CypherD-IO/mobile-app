@@ -374,7 +374,7 @@ const resources = {
         'Returned error: insufficient funds for gas * price + value',
       INSUFFICIENT_GAS: 'token to pay gas fee.',
       SENT_ON: 'SENT ON',
-      MENU_RECOMMEND_FRIEND: 'Recommend To A Friend',
+      MENU_RECOMMEND_FRIEND: 'Refer a friend',
       TRANSACTION_FAILED_REASON_NA:
         'Failed reason not available for this transaction',
       FUND_WALLET_ACCESS_BRIDGE: 'Fund your wallet to access bridge',

@@ -264,15 +264,6 @@ export default function Options(props: {
                 logo={AppImages.ACTIVITIES}
               />
 
-              <DynamicView
-                dynamic
-                dynamicWidth
-                dynamicHeightFix
-                height={1}
-                width={88}
-                bGC={Colors.portfolioBorderColor}
-              />
-
               {!isReadOnlyWallet && (
                 <DynamicView
                   dynamic
@@ -383,6 +374,15 @@ export default function Options(props: {
                 }}
                 title={'Support'}
                 logo={AppImages.SUPPORT}
+              />
+
+              <DynamicView
+                dynamic
+                dynamicWidth
+                dynamicHeightFix
+                height={1}
+                width={88}
+                bGC={Colors.portfolioBorderColor}
               />
 
               {!isReadOnlyWallet && (

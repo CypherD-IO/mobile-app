@@ -720,7 +720,7 @@ export async function _estimateGasForNativeTransaction(
         gasPrice: gasPriceDetail,
         tokenSymbol: send_token_symbol,
         tokenAmount: send_token_amount,
-        tokenValueDollar: send_token_usd_value.toFixed(2),
+        tokenValueDollar: send_token_usd_value,
         totalValueTransfer,
         totalValueDollar,
       };
@@ -826,9 +826,7 @@ export async function estimateGasForCosmosTransaction(
         tokenImage: tokenData.logoUrl,
         sentTokenAmount: valueForUsd,
         sentTokenSymbol: tokenData.symbol,
-        sentValueUSD: (
-          parseFloat(valueForUsd) * parseFloat(tokenData.price)
-        ).toFixed(6),
+        sentValueUSD: parseFloat(valueForUsd) * parseFloat(tokenData.price),
         to_address: address,
         fromNativeTokenSymbol: nativeToken?.symbol ?? tokenData.symbol,
         gasFeeNative: microAtomToAtom(fee.amount[0].amount),
