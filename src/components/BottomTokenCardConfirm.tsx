@@ -134,7 +134,7 @@ export default function BottomCardConfirm({
               </CyDText>
               <CyDText className={' font-medium text-[14px]'}>
                 {'$'}
-                {modalParams.totalValueDollar}
+                {modalParams.tokenValueDollar}
               </CyDText>
             </CyDView>
           </CyDView>

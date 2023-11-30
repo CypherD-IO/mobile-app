@@ -261,7 +261,10 @@ export default function BridgeFundCardScreen({ route }: { route: any }) {
         totalValueTransfer:
           parseFloat(cosmosPayTokenModalParamsLocal.gasFeeNative) +
           parseFloat(cosmosPayTokenModalParamsLocal.sentTokenAmount),
-        totalValueDollar: cosmosPayTokenModalParamsLocal.sentValueUSD,
+        totalValueDollar: (
+          parseFloat(cosmosPayTokenModalParamsLocal.finalGasPrice) +
+          parseFloat(cosmosPayTokenModalParamsLocal.sentValueUSD)
+        ).toFixed(6),
         cardNumber: 'xxxx xxxx xxxx ' + last4,
         hasSufficientBalanceAndGasFee: hasSufficientBalanceAndGasFee(
           selectedToken.symbol === selectedToken.chainDetails.symbol,
@@ -607,10 +610,8 @@ export default function BridgeFundCardScreen({ route }: { route: any }) {
             targetWalletAddress,
           );
           if (estimatedGasData) {
-            if (isMaxQuote) {
-              estimatedGasData.totalValueDollar = quote.tokenFunded.toString();
-              estimatedGasData.totalValueTransfer = quote.tokenRequired;
-            }
+            estimatedGasData.tokenValueDollar = quote.tokenFunded;
+            estimatedGasData.totalValueTransfer = quote.tokenRequired;
             const hasSufficient = hasSufficientBalanceAndGasFee(
               selectedTokenSymbol === chainDetails.symbol,
               parseFloat(estimatedGasData.gasFeeETH),
@@ -655,10 +656,8 @@ export default function BridgeFundCardScreen({ route }: { route: any }) {
             targetWalletAddress,
           );
           if (estimatedGasData) {
-            if (isMaxQuote) {
-              estimatedGasData.totalValueDollar = quote.tokenFunded.toString();
-              estimatedGasData.totalValueTransfer = quote.tokenRequired;
-            }
+            estimatedGasData.tokenValueDollar = quote.tokenFunded;
+            estimatedGasData.totalValueTransfer = quote.tokenRequired;
             const hasSufficient = hasSufficientBalanceAndGasFee(
               selectedTokenSymbol === chainDetails.symbol,
               parseFloat(estimatedGasData.gasFeeETH),
@@ -749,11 +748,9 @@ export default function BridgeFundCardScreen({ route }: { route: any }) {
             globalStateContext.globalState.rpcEndpoints,
           );
           if (estimatedGasData) {
-            if (isMaxQuote) {
-              estimatedGasData.sentValueUSD = quote.tokenFunded.toString();
-              // Do not have to set any value as quote.tokenRequired as in EVM.
-              // It passed in to the function as actualTokensRequired and is returned as is as sentTokenAmount field.
-            }
+            estimatedGasData.sentValueUSD = quote.tokenFunded;
+            // Do not have to set any value as quote.tokenRequired as in EVM.
+            // It passed in to the function as actualTokensRequired and is returned as is as sentTokenAmount field.
             cosmosPayTokenModal(estimatedGasData);
           } else {
             setLoading(false);
