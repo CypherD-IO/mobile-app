@@ -48,6 +48,7 @@ export interface ICardTransaction {
   title: string;
   amount: number;
   date: Date;
+  createdAt: number;
   fId?: string;
   metadata?: ICardSubObject;
   tokenData?: ITokenData;
