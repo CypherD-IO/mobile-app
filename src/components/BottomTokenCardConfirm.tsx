@@ -12,7 +12,7 @@ import {
 import CyDModalLayout from './v2/modal';
 import Button from './v2/button';
 import { ButtonType } from '../constants/enum';
-import { formatAmount } from '../core/util';
+import { formatAmount, limitDecimalPlaces } from '../core/util';
 import { PayTokenModalParams } from '../models/card.model';
 
 interface BottomCardConfirmProps {
@@ -130,11 +130,12 @@ export default function BottomCardConfirm({
               }>
               <CyDText
                 className={' font-medium text-[14px] text-primaryTextColor'}>
-                {parseFloat(modalParams.tokenAmount)} {modalParams.tokenSymbol}
+                {formatAmount(modalParams.tokenAmount)}{' '}
+                {modalParams.tokenSymbol}
               </CyDText>
               <CyDText className={' font-medium text-[14px]'}>
                 {'$'}
-                {modalParams.totalValueDollar}
+                {limitDecimalPlaces(modalParams.tokenValueDollar, 4)}
               </CyDText>
             </CyDView>
           </CyDView>

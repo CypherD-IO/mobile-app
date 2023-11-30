@@ -655,7 +655,7 @@ export default function SendTo(props: { navigation?: any; route?: any }) {
       .then(gasFeeResponse => {
         setLoading(false);
         gasPrice = gasFeeResponse;
-        _estimateGasForNativeTransaction(
+        void _estimateGasForNativeTransaction(
           hdWalletContext,
           tokenData.chainDetails,
           tokenData,
@@ -676,7 +676,7 @@ export default function SendTo(props: { navigation?: any; route?: any }) {
           screen: route.name,
         });
         Sentry.captureException(gasFeeError);
-        _estimateGasForNativeTransaction(
+        void _estimateGasForNativeTransaction(
           hdWalletContext,
           tokenData.chainDetails,
           tokenData,
