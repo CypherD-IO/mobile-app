@@ -175,11 +175,7 @@ const CypherCardScreen = ({ navigation, route }: CypherCardScreenProps) => {
           return a.date < b.date ? 1 : -1;
         });
 
-        if (offset) {
-          txnRetrievalOffset.current = offset;
-        } else {
-          txnRetrievalOffset.current = 'END';
-        }
+        txnRetrievalOffset.current = offset;
 
         if (pullToRefresh) {
           setTransactions(txnsToSet);
@@ -424,7 +420,7 @@ const CypherCardScreen = ({ navigation, route }: CypherCardScreenProps) => {
               />
             }
             onEndReached={() => {
-              if (txnRetrievalOffset.current !== 'END') {
+              if (txnRetrievalOffset.current) {
                 void retrieveTxns();
               }
             }}
