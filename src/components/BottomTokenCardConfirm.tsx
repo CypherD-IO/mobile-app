@@ -130,7 +130,8 @@ export default function BottomCardConfirm({
               }>
               <CyDText
                 className={' font-medium text-[14px] text-primaryTextColor'}>
-                {parseFloat(modalParams.tokenAmount)} {modalParams.tokenSymbol}
+                {formatAmount(modalParams.tokenAmount)}{' '}
+                {modalParams.tokenSymbol}
               </CyDText>
               <CyDText className={' font-medium text-[14px]'}>
                 {'$'}
