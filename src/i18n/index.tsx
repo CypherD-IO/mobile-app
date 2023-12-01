@@ -592,7 +592,7 @@ const resources = {
       CTA_JOIN_WAITLIST: 'JOIN WAITLIST',
       TRANSACTION_DETAILS: 'Transaction Details',
       MERCHANT_DETAILS: 'Merchant Details',
-      LOADING_DETAILS: 'Loading Details',
+      TOKEN_DETAILS: 'Token Details',
       CURRENCY_CONVERSION_DETAILS: 'Currency Conversion Details',
       TRANSACTION_ID: 'Transaction ID',
       PAYMENT_MODE: 'Payment Mode',
