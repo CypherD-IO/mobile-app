@@ -17,7 +17,7 @@ export interface DateRange {
   toDate: Date;
 }
 export const initialCardTxnDateRange = {
-  fromDate: new Date('June 01, 2023 00:00:00'), // inital date in June 1st, 2023 when the card was launched
+  fromDate: new Date(2023, 5, 1), // inital date in June 1st, 2023 when the card was launched
   toDate: new Date(),
 };
 
