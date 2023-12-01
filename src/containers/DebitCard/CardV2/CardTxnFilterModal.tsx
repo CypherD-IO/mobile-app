@@ -178,7 +178,7 @@ const CardTxnFilterModal = ({
             )}
             {index === 1 && (
               <DateRangeFilterPicker
-                minimumDate={new Date(2023, 6, 1)}
+                minimumDate={new Date('June 01, 2023 00:00:00')}
                 maximumDate={new Date()}
                 dateRangeState={[selectedDateRange, setSelectedDateRange]}
               />
