@@ -239,7 +239,7 @@ export default function TransactionDetails({
       },
       {
         icon: AppImages.CARD_SEL,
-        title: t('LOADING_DETAILS'),
+        title: t('TOKEN_DETAILS'),
         data: [
           { label: t('CHAIN'), value: chain },
           {

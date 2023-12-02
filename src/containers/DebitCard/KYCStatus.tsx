@@ -8,47 +8,37 @@ import React, {
   useRef,
   useState,
 } from 'react';
-import { StyleSheet, Linking, RefreshControl } from 'react-native';
+import { StyleSheet, Linking } from 'react-native';
 import AppImages from '../../../assets/images/appImages';
 import { useTranslation } from 'react-i18next';
 import {
   CyDImage,
   CyDText,
   CyDView,
-  CyDImageBackground,
-  CyDFlatList,
   CyDTouchView,
   CyDScrollView,
   CyDSafeAreaView,
 } from '../../styles/tailwindStyles';
 import clsx from 'clsx';
-import { isAndroid, isIOS } from '../../misc/checkers';
 import * as Sentry from '@sentry/react-native';
 import { useIsFocused } from '@react-navigation/native';
 import { GlobalContext } from '../../core/globalContext';
-import axios from 'axios';
 import Loading from '../../components/v2/loading';
 import {
   ButtonType,
   CardApplicationStatus,
   CardProviders,
   GlobalContextType,
-  KYCStatus,
 } from '../../constants/enum';
-import { getWalletProfile } from '../../core/card';
 import { screenTitle } from '../../constants';
 import Intercom from '@intercom/intercom-react-native';
 import { sendFirebaseEvent } from '../utilities/analyticsUtility';
 import { HdWalletContext } from '../../core/util';
-import { hostWorker } from '../../global';
 import useAxios from '../../core/HttpRequest';
 import { useGlobalModalContext } from '../../components/v2/GlobalModal';
-import { fill, get } from 'lodash';
+import { get } from 'lodash';
 import Button from '../../components/v2/button';
-interface timeLineItem {
-  item: any;
-  index: number;
-}
+import LottieView from 'lottie-react-native';
 
 const indexStatusMapping: Record<string, number> = {
   created: 0,
@@ -72,7 +62,6 @@ export default function CardKYCStatusScreen({ navigation }) {
   const [loading, setLoading] = useState<boolean>(false);
   const [fillIndex, setFillIndex] = useState<number>(1);
   const [error, setError] = useState<boolean>(false);
-  const [refreshing, setRefreshing] = React.useState(false);
   const provider = 'pc';
   const data = [
     t('APPLICATION_SUBMITTED'),
@@ -82,6 +71,10 @@ export default function CardKYCStatusScreen({ navigation }) {
     t('CARD_ISSUED'),
   ];
   const [applicationStatus, setApplicationStatus] = useState();
+  const [kyc, setKYC] = useState({
+    isRetryable: false,
+    message: '',
+  });
   const latestKycStatus = useRef<NodeJS.Timeout>();
   const { getWithAuth } = useAxios();
   const { showModal, hideModal } = useGlobalModalContext();
@@ -103,7 +96,7 @@ export default function CardKYCStatusScreen({ navigation }) {
   }, []);
 
   const refreshProfile = async () => {
-    const response = await getWithAuth('v1/authentication/profile');
+    const response = await getWithAuth('/v1/authentication/profile');
     if (!response.isError) {
       globalContext.globalDispatch({
         type: GlobalContextType.CARD_PROFILE,
@@ -155,13 +148,46 @@ export default function CardKYCStatusScreen({ navigation }) {
     try {
       const response = await getWithAuth('/v1/authentication/profile');
       if (!response.isError) {
-        let applicationStatus = get(
+        const tempApplicationStatus = get(
           response,
-          ['data', provider!, 'applicationStatus'],
+          ['data', provider, 'applicationStatus'],
           '',
         );
-        setApplicationStatus(applicationStatus);
-        await fillIndexAccordingToKYCStatus(applicationStatus);
+        const cardProfile = response.data;
+        const { kyc } = get(cardProfile, provider);
+        if (kyc) {
+          setKYC(kyc);
+        }
+        if (tempApplicationStatus !== applicationStatus) {
+          globalContext.globalDispatch({
+            type: GlobalContextType.CARD_PROFILE,
+            cardProfile: response.data,
+          });
+        }
+        const bcApplicationStatus =
+          get(cardProfile, CardProviders.BRIDGE_CARD)?.applicationStatus ===
+          CardApplicationStatus.COMPLETED;
+        const pcApplicationStatus =
+          get(cardProfile, CardProviders.PAYCADDY)?.applicationStatus ===
+          CardApplicationStatus.COMPLETED;
+        if (bcApplicationStatus || pcApplicationStatus) {
+          navigation.reset({
+            index: 0,
+            routes: [
+              {
+                name: screenTitle.BRIDGE_CARD_SCREEN,
+                params: {
+                  hasBothProviders: bcApplicationStatus && pcApplicationStatus,
+                  cardProvider: bcApplicationStatus
+                    ? CardProviders.BRIDGE_CARD
+                    : CardProviders.PAYCADDY,
+                },
+              },
+            ],
+          });
+        }
+        setApplicationStatus(tempApplicationStatus);
+        await fillIndexAccordingToKYCStatus(tempApplicationStatus);
       }
     } catch (e) {
       Sentry.captureException(e);
@@ -186,62 +212,6 @@ export default function CardKYCStatusScreen({ navigation }) {
       await Linking.openURL(data.url);
     }
   };
-
-  // const timeLine = () => {
-  //   return kycStatus.map(
-  //     (item, index) =>
-  //       ((index === 3 &&
-  //         applicationStatus !== CardApplicationStatus.DECLINED) ||
-  //         index !== 3) && (
-  //         <div className={'flex flex-row'} key={index}>
-  //           <div className={'w-2/12 flex flex-col items-center'}>
-  //             <div
-  //               className={clsx(
-  //                 'flex justify-center items-center rounded-full flex-shrink-0 w-[28px] h-[28px] border border-timeline drop-shadow-xl',
-  //                 {
-  //                   'bg-success': index < fillIndex,
-  //                   'bg-appBg': index === fillIndex,
-  //                   'bg-error': error && index === fillIndex,
-  //                 },
-  //               )}>
-  //               {index < fillIndex && (
-  //                 <img src={'https://public.cypherd.io/icons/blackTick.svg'} />
-  //               )}
-  //               {index === fillIndex && error && (
-  //                 <img src={'https://public.cypherd.io/icons/errorCross.svg'} />
-  //               )}
-  //               {index === fillIndex && !error && (
-  //                 <div>
-  //                   <Lottie
-  //                     animationData={loadingAnimationData}
-  //                     autoplay
-  //                     loop
-  //                     width={50}
-  //                   />
-  //                 </div>
-  //               )}
-  //             </div>
-  //             {index !== kycStatus.length - 1 && (
-  //               <div className={'w-[1px] bg-timeline h-full'}></div>
-  //             )}
-  //           </div>
-
-  //           <div className={'w-10/12'} style={{ minHeight: '6rem' }}>
-  //             <div>
-  //               <div
-  //                 className={
-  //                   'mb-0 font-bold text-[24px] font-nunito text-primaryText -mt-1'
-  //                 }>
-  //                 <p className={''}>{item.title}</p>
-  //                 <p className={'text-[16px]'}>{item.subtitle}</p>
-  //                 {item.showKyc && <KYC />}
-  //               </div>
-  //             </div>
-  //           </div>
-  //         </div>
-  //       ),
-  //   );
-  // };
 
   const ShowKYCStatus = useCallback(
     ({ index }: { index: number }) => {
@@ -288,40 +258,48 @@ export default function CardKYCStatusScreen({ navigation }) {
           applicationStatus === CardApplicationStatus.KYC_FAILED) ||
         (index === 2 && fillIndex === 2)
       ) {
+        if (kyc?.isRetryable) {
+          return (
+            <CyDView className={'ml-[30px]'}>
+              <CyDView className='w-[70%]'>
+                <Button
+                  title={t('REINITIATE_KYC')}
+                  style='py-[12px]'
+                  type={ButtonType.PRIMARY}
+                  onPress={() => {
+                    void getKyc();
+                  }}
+                />
+              </CyDView>
+              <CyDView>
+                <CyDText className='my-[8px]'>{kyc?.message}</CyDText>
+                <CyDTouchView
+                  className={'mt-[10px] mb-[15px]'}
+                  onPress={() =>
+                    navigation.navigate(
+                      screenTitle.UPDATE_CARD_APPLICATION_SCREEN,
+                    )
+                  }>
+                  <CyDText
+                    className={
+                      'text-blue-700 font-bold underline underline-offset-2'
+                    }>
+                    {t<string>('CLICK_TO_EDIT_YOUR_APPLICATION')}
+                  </CyDText>
+                </CyDTouchView>
+              </CyDView>
+            </CyDView>
+          );
+        }
         return (
           <CyDView className={'ml-[30px]'}>
-            <CyDView className='w-[70%]'>
-              <Button
-                title={t('REINITIATE_KYC')}
-                style='py-[12px]'
-                type={ButtonType.PRIMARY}
-                onPress={() => {
-                  void getKyc();
-                }}
-              />
-            </CyDView>
-            <CyDView>
-              <CyDTouchView
-                className={'mt-[10px] mb-[15px]'}
-                onPress={() =>
-                  navigation.navigate(
-                    screenTitle.UPDATE_CARD_APPLICATION_SCREEN,
-                  )
-                }>
-                <CyDText
-                  className={
-                    'text-blue-700 font-bold underline underline-offset-2'
-                  }>
-                  {t<string>('CLICK_TO_EDIT_YOUR_APPLICATION')}
-                </CyDText>
-              </CyDTouchView>
-            </CyDView>
+            <CyDText className='my-[8px]'>{kyc?.message}</CyDText>
           </CyDView>
         );
       }
       return <></>;
     },
-    [applicationStatus, error, fillIndex],
+    [applicationStatus, error, fillIndex, kyc],
   );
 
   const KYCTimeline = useCallback(() => {
@@ -349,10 +327,16 @@ export default function CardKYCStatusScreen({ navigation }) {
                   )}
 
                   {!error && index === fillIndex && (
-                    <CyDImage
-                      className={'w-[14px] h-[10px]'}
-                      source={AppImages.CORRECT}
-                      style={styles.tintBlack}
+                    // <CyDImage
+                    //   className={'w-[14px] h-[10px]'}
+                    //   source={AppImages.CORRECT}
+                    //   style={styles.tintBlack}
+                    // />
+                    <LottieView
+                      source={AppImages.LOADER_TRANSPARENT}
+                      autoPlay
+                      loop
+                      style={styles.loader}
                     />
                   )}
 
@@ -428,5 +412,8 @@ const styles = StyleSheet.create({
   },
   tintWhite: {
     tintColor: 'white',
+  },
+  loader: {
+    height: 32,
   },
 });

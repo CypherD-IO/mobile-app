@@ -19,7 +19,6 @@ import {
   getWeb3Endpoint,
   convertAmountOfContractDecimal,
   formatAmount,
-  logAnalytics,
   getNativeToken,
 } from './util';
 import {
@@ -57,12 +56,9 @@ import {
 } from '@metamask/eth-sig-util';
 import { generatePostBodyBroadcast } from '@tharsis/provider';
 import axios from './Http';
-import { createAlchemyWeb3 } from '@alch/alchemy-web3';
 import { signatureToPubkey } from '@hanchon/signature-to-pubkey';
 import { get } from 'lodash';
-import { estimateGas } from '../containers/Browser/gasHelper';
-import { useState } from 'react';
-import { AnalyticsType } from '../constants/enum';
+import { TokenMeta } from '../models/tokenMetaData.model';
 
 // const {showModal, hideModal} = useGlobalModalContext()
 // ETH in Optimims chain's contract address
@@ -578,7 +574,7 @@ function _sendToken(
   }
 }
 
-export function estimateGasForNativeTransaction(
+export async function estimateGasForNativeTransaction(
   hdWalletContext: any,
   fromChain: any,
   fromTokenItem: any,
@@ -595,7 +591,7 @@ export function estimateGasForNativeTransaction(
   if (tragetWalletAddress !== '') {
     to_address = tragetWalletAddress;
   }
-  void _estimateGasForNativeTransaction(
+  return await _estimateGasForNativeTransaction(
     hdWalletContext,
     fromChain,
     fromTokenItem,
@@ -609,8 +605,8 @@ export function estimateGasForNativeTransaction(
 
 export async function _estimateGasForNativeTransaction(
   hdWalletContext: any,
-  fromChain: any,
-  fromTokenItem: any,
+  fromChain: Chain,
+  fromTokenItem: TokenMeta,
   send_token_amount: string,
   to_address: string,
   gasPriceDetail: GasPriceDetail,
@@ -724,12 +720,12 @@ export async function _estimateGasForNativeTransaction(
         gasPrice: gasPriceDetail,
         tokenSymbol: send_token_symbol,
         tokenAmount: send_token_amount,
-        tokenValueDollar: send_token_usd_value.toFixed(2),
+        tokenValueDollar: send_token_usd_value,
         totalValueTransfer,
         totalValueDollar,
-        hasSufficientBalance: true,
       };
       sendTransaction(_data);
+      return _data;
     }
   } catch (error) {
     // TODO (user feedback): Give feedback to user.
@@ -754,106 +750,127 @@ export async function getCosmosSignerClient(
 
 // Gas fee simulation for cosmos based chains
 export async function estimateGasForCosmosTransaction(
-  chainSelected: any,
+  chainSelected: Chain,
   signer: any,
   amount: string,
   senderAddress: string,
   address: string,
-  tokenData: any,
+  tokenData: TokenMeta,
   rpc: string,
   handleTransactionResult: any,
   valueForUsd: string,
   portfolioState: any,
   rpcContext?: any,
 ) {
-  if (signer) {
-    let signingClient = await SigningStargateClient.connectWithSigner(
-      rpc,
-      signer,
-    );
-
-    // transaction gas fee calculation
-    const sendMsg: MsgSendEncodeObject = {
-      typeUrl: '/cosmos.bank.v1beta1.MsgSend',
-      value: {
-        fromAddress: senderAddress,
-        toAddress: address,
-        amount: [
-          {
-            denom: tokenData.denom,
-            amount,
-          },
-        ],
-      },
-    };
-
-    const simulation = await signingClient.simulate(
-      senderAddress,
-      [sendMsg],
-      '',
-    );
-
-    const nativeToken = getNativeToken(
-      get(NativeTokenMapping, chainSelected.symbol) || chainSelected.symbol,
-      portfolioState.statePortfolio.tokenPortfolio[
-        get(ChainNameMapping, chainSelected.backendName)
-      ].holdings,
-    );
-
-    const gasPrice = cosmosConfig[chainSelected.chainName].gasPrice;
-    const gasFee = simulation * gasPrice;
-    const fee = {
-      gas: Math.floor(simulation * 1.8).toString(),
-      amount: [
-        {
-          denom: nativeToken?.denom ?? tokenData.denom,
-          amount: GASLESS_CHAINS.includes(chainSelected.backendName)
-            ? '0'
-            : parseInt(gasFee.toFixed(6).split('.')[1]).toString(),
-        },
-      ],
-    };
-
-    if (
-      rpcContext &&
-      rpcContext[chainSelected.chainName.toUpperCase()]?.secondaryList !== ''
-    ) {
-      signingClient = await SigningStargateClient.connectWithSigner(
-        rpcContext[chainSelected.chainName.toUpperCase()]?.secondaryList,
+  try {
+    if (signer) {
+      let signingClient = await SigningStargateClient.connectWithSigner(
+        rpc,
         signer,
       );
+
+      // transaction gas fee calculation
+      const sendMsg: MsgSendEncodeObject = {
+        typeUrl: '/cosmos.bank.v1beta1.MsgSend',
+        value: {
+          fromAddress: senderAddress,
+          toAddress: address,
+          amount: [
+            {
+              denom: tokenData.denom,
+              amount,
+            },
+          ],
+        },
+      };
+      const simulation = await signingClient.simulate(
+        senderAddress,
+        [sendMsg],
+        '',
+      );
+
+      const nativeToken = getNativeToken(
+        get(NativeTokenMapping, chainSelected.symbol) || chainSelected.symbol,
+        portfolioState.statePortfolio.tokenPortfolio[
+          get(ChainNameMapping, chainSelected.backendName)
+        ].holdings,
+      );
+
+      const gasPrice = cosmosConfig[chainSelected.chainName].gasPrice;
+      const gasFee = simulation * gasPrice;
+      const fee = {
+        gas: Math.floor(simulation * 1.8).toString(),
+        amount: [
+          {
+            denom: nativeToken?.denom ?? tokenData.denom,
+            amount: GASLESS_CHAINS.includes(chainSelected.backendName)
+              ? '0'
+              : parseInt(gasFee.toFixed(6).split('.')[1]).toString(),
+          },
+        ],
+      };
+
+      if (
+        rpcContext &&
+        rpcContext[chainSelected.chainName.toUpperCase()]?.secondaryList !== ''
+      ) {
+        signingClient = await SigningStargateClient.connectWithSigner(
+          rpcContext[chainSelected.chainName.toUpperCase()]?.secondaryList,
+          signer,
+        );
+      }
+
+      const _data = {
+        chain: chainSelected.chainName.toUpperCase(),
+        appImage: chainSelected.logo_url,
+        tokenImage: tokenData.logoUrl,
+        sentTokenAmount: valueForUsd,
+        sentTokenSymbol: tokenData.symbol,
+        sentValueUSD: parseFloat(valueForUsd) * parseFloat(tokenData.price),
+        to_address: address,
+        fromNativeTokenSymbol: nativeToken?.symbol ?? tokenData.symbol,
+        gasFeeNative: microAtomToAtom(fee.amount[0].amount),
+        gasFeeDollar: microAtomToUsd(
+          fee.amount[0].amount,
+          nativeToken?.price ?? tokenData?.price,
+        ),
+        finalGasPrice: microAtomToUsd(
+          fee.amount[0].amount,
+          nativeToken?.price ?? tokenData?.price,
+        ),
+        gasLimit: fee.gas,
+        signingClient,
+        fee,
+        chainInfo: tokenData.chainDetails,
+        gasPrice: fee.amount[0].amount,
+      };
+      handleTransactionResult(_data);
+      return _data;
     }
-
-    const _data = {
-      chain: chainSelected.chainName.toUpperCase(),
-      appImage: chainSelected.logo_url,
-      tokenImage: tokenData.logoUrl,
-      sentTokenAmount: valueForUsd,
-      sentTokenSymbol: tokenData.symbol,
-      sentValueUSD: (
-        parseFloat(valueForUsd) * parseFloat(tokenData.price)
-      ).toFixed(6),
-      to_address: address,
-      fromNativeTokenSymbol: nativeToken?.symbol ?? tokenData.symbol,
-      gasFeeNative: microAtomToAtom(fee.amount[0].amount),
-      gasFeeDollar: microAtomToUsd(
-        fee.amount[0].amount,
-        nativeToken?.price ?? tokenData?.price,
-      ),
-      finalGasPrice: microAtomToUsd(
-        fee.amount[0].amount,
-        nativeToken?.price ?? tokenData?.price,
-      ),
-      gasLimit: fee.gas,
-      signingClient,
-      fee,
-      chainInfo: tokenData.chainDetails,
-      gasPrice: fee.amount[0].amount,
-    };
-
-    handleTransactionResult(_data);
+  } catch (e) {
+    Toast.show({
+      type: 'error',
+      text1: 'Gas estimation error',
+      text2: e.message,
+      position: 'bottom',
+    });
+    Sentry.captureException(e);
   }
 }
+
+export const hasSufficientBalanceAndGasFee = (
+  isNativeToken: boolean,
+  gasFeeEstimation: number,
+  nativeTokenBalance: number,
+  sentAmount: number,
+  sendingTokenBalance: number,
+) => {
+  const hasSufficientGasFee = gasFeeEstimation <= nativeTokenBalance;
+  const hasSufficientBalance = isNativeToken
+    ? sentAmount + gasFeeEstimation <= sendingTokenBalance
+    : sentAmount <= sendingTokenBalance;
+  return hasSufficientBalance && hasSufficientGasFee;
+};
 
 // Send tokens for cosmos based chains
 export async function cosmosSendTokens(

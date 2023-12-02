@@ -88,6 +88,11 @@ export enum CardTransactionTypes {
   REFUND = 'REFUND',
 }
 
+export enum CardType {
+  PHYSICAL = 'physical',
+  VIRTUAL = 'virtual',
+}
+
 export enum CardTransactionStatuses {
   SETTLED = 'Settled',
   PENDING = 'Pending',
@@ -261,4 +266,9 @@ export enum ApplicationName {
 export enum AnalyticsType {
   SUCCESS = 'SUCCESS',
   ERROR = 'ERROR',
+}
+
+export enum CardDetails {
+  PHONE = 'phone',
+  EMAIL = 'email',
 }

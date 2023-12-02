@@ -1,5 +1,5 @@
 // NOTE: SCREEN TITLE 🍎🍎🍎🍎
-export const screenTitle: Record<string, string> = {
+export const screenTitle = {
   ACTIVITYFILTER: 'ACTIVITYFILTER',
   ACTIVITIES: 'Activities',
   REFERRAL_REWARDS: 'ReferralRewards',
@@ -106,6 +106,7 @@ export const screenTitle: Record<string, string> = {
   UPGRADE_TO_PHYSICAL_CARD_SCREEN: 'UpgradeToPhysicalCardScreen',
   SHIPPING_DETAILS_OTP_SCREEN: 'ShippingDetailsOTPScreen',
   CARD_SIGNUP_CONFIRMATION: 'CardSignupConfirmation',
+  CARD_UPDATE_CONTACT_DETAILS_SCREEN: 'updateCardContctDetailsScreen',
 };
 
 export const fontsName = {

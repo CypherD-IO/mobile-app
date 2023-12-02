@@ -300,6 +300,7 @@ const resources = {
       NEXT_REWARD_DISTRIBUTION_AT: 'Next reward distribution at',
       SEND_ON: 'Send On',
       GAS: 'Gas',
+      ESTIMATED_GAS: 'Estimated Gas',
       TEMP_SYSTEM_ERROR: 'Temp System Error',
       UNABLE_TO_LOAD_CARD:
         'Unable to load your card. Please try after some time.',
@@ -373,7 +374,7 @@ const resources = {
         'Returned error: insufficient funds for gas * price + value',
       INSUFFICIENT_GAS: 'token to pay gas fee.',
       SENT_ON: 'SENT ON',
-      MENU_RECOMMEND_FRIEND: 'Recommend To A Friend',
+      MENU_RECOMMEND_FRIEND: 'Refer a friend',
       TRANSACTION_FAILED_REASON_NA:
         'Failed reason not available for this transaction',
       FUND_WALLET_ACCESS_BRIDGE: 'Fund your wallet to access bridge',
@@ -447,7 +448,7 @@ const resources = {
       CARD_KYC_HEADING: 'Your card application is in progress',
       CARD_KYC_SUB_HEADING: 'We will notify you when there is a status update',
       APPLICATION_SUBMITTED: 'Application submitted',
-      KYC_INITITATED: 'KYC',
+      KYC_INITITATED: 'KYC Initiated',
       APPLICATION_UNDER_REVIEW: 'Application under review',
       KYC_COMPLETED: 'KYC completed',
       CARD_ISSUED: 'Card issued',
@@ -493,6 +494,10 @@ const resources = {
       GO_TO_DEPRECATED_CARD: 'Deprecated Card',
       GO_TO_NEW_CARD: 'New Card',
       BRIDGE_ALL_CAPS: 'BRIDGE',
+      LOAD: 'Load',
+      LOAD_MAX: 'Load Max',
+      QUOTE: 'Quote',
+      QUOTE_MAX: 'Quote Max',
       LOAD_ALL_CAPS: 'LOAD',
       CARD_INSUFFICIENT_FUNDS:
         "You don't seem to have any tokens worth over $10 to load your card!",
@@ -587,7 +592,7 @@ const resources = {
       CTA_JOIN_WAITLIST: 'JOIN WAITLIST',
       TRANSACTION_DETAILS: 'Transaction Details',
       MERCHANT_DETAILS: 'Merchant Details',
-      LOADING_DETAILS: 'Loading Details',
+      TOKEN_DETAILS: 'Token Details',
       CURRENCY_CONVERSION_DETAILS: 'Currency Conversion Details',
       TRANSACTION_ID: 'Transaction ID',
       PAYMENT_MODE: 'Payment Mode',
@@ -801,7 +806,7 @@ const resources = {
       CARD_SET_PIN_TO_USE_CARD:
         'This pin will be used while making transactions with your card',
       INSUFFICIENT_BALANCE_CARD:
-        'Amount that you are trying to load is higher than your actual balance',
+        'Amount that you are trying to load is higher than your actual balance or you might not have sufficient gas for it',
       MAYBE_LATER: 'Maybe later',
       HOME: 'Home',
       HISTORY: 'History',
@@ -887,12 +892,30 @@ const resources = {
       OTP_TRIGGER_FAILED_TEXT:
         'Failed to send OTP. Please contact Cypher Support.',
       TOKEN_IN_OTHER_CHAIN_HOLDINGS: 'Token across chains',
+      TOKEN_NOT_HELD_IN_ANYOTHER_SUPPORTED_CHAIN:
+        'Token not held in any other supported chain',
       DATE_OF_BIRTH: 'Date Of Birth',
       REINITIATE_KYC: 'Reinitiate KYC',
       KYC_FAILED: 'Kyc Failed',
       UPDATED_SUCCESSFULLY: 'Updated Successfully',
       CARD_SIGNUP_CONFIRMATION_CAPTION:
         'During signup make sure you follow these guidelines:',
+      CHANGE_PHONE_NUMBER: 'Change Phone Number',
+      CHANGE_EMAIL_ADDRESS: 'Change Email Address',
+      UPDATE_CARD_DETAILS_OTP: 'Enter the OTP received on your phone or email',
+      EMAIL_ADDRESS: 'Email address',
+      CURRENT_PHONE_NUMBER: 'Current Phone Number:',
+      CONTACT_DETAILS_UPDATION_SUCCESSFUL:
+        'Contact details updated successfully',
+      CONTACT_DETAILS_UPDATION_FAILURE: 'Unable to update contact details',
+      UNABLE_TO_DECODE_TRANSACTION:
+        'Unable to decode this transaction. Proceed with caution and ensure understanding before action. Your vigilance is appreciated.',
+      MISSING_QUOTE: 'Missing Quote',
+      MISSING_QUOTE_DESCRIPTION:
+        'You have not quoted yet. If you think this is a mistake, try to quote again, or contact support.',
+      GAS_ESTIMATION_FAILED: 'Gas Estimation Failed',
+      GAS_ESTIMATION_FAILED_DESCRIPTION:
+        'Could not estimate gas fee for the transaction, try again or contact support.',
     },
   },
 };

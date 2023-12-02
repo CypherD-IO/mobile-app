@@ -1,42 +1,44 @@
 import { CardApplicationStatus, CardStatus } from '../constants/enum';
 
 export interface CardProfile {
-  primaryEthAddress: string
-  fcmToken?: string
-  phone?: string
-  email?: string
+  primaryEthAddress: string;
+  fcmToken?: string;
+  phone?: string;
+  email?: string;
   apto?: {
-    cardHolderId: string
-    status: CardStatus
-  }
+    cardHolderId: string;
+    status: CardStatus;
+  };
   bc?: {
-    personId?: string
-    applicationStatus: CardApplicationStatus
+    personId?: string;
+    applicationStatus: CardApplicationStatus;
     cards?: [
       {
-        last4: string
-        type: string
-        cardId: string
-        status: CardStatus
-      }
-    ]
-  }
+        last4: string;
+        type: string;
+        cardId: string;
+        status: CardStatus;
+      },
+    ];
+  };
   pc?: {
-    personId?: string
-    applicationStatus: CardApplicationStatus
+    personId?: string;
+    applicationStatus: CardApplicationStatus;
     cards?: [
       {
-        last4: string
-        type: string
-        cardId: string
-        status: CardStatus
-      }
-    ],
-    isPhysicalCardEligible: boolean
-  }
+        last4: string;
+        type: string;
+        cardId: string;
+        status: CardStatus;
+      },
+    ];
+    isPhysicalCardEligible: boolean;
+  };
   solid?: {
-    applicationStatus: CardApplicationStatus
-    cardStatus?: CardStatus
-    personId: string
-  }
+    applicationStatus: CardApplicationStatus;
+    cardStatus?: CardStatus;
+    personId: string;
+  };
+  lifetimeAmountUsd: number;
+  physicalCardEligibilityLimit: number;
 }
