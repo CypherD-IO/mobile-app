@@ -22,6 +22,9 @@ import {
   CHAIN_ZKSYNC_ERA,
   CHAIN_BASE,
   CHAIN_POLYGON_ZKEVM,
+  CHAIN_AURORA,
+  CHAIN_MOONBEAM,
+  CHAIN_MOONRIVER,
 } from '../../constants/server';
 import { HdWalletContext } from '../../core/util';
 import {
@@ -95,6 +98,7 @@ export function AddressBook({ route, navigation }) {
                 addressTypeQRCode={FundWalletAddressType.EVM}
                 bGC={'#f6f6f9'}
               />
+
               <AddressBookContainer
                 chain={CHAIN_COSMOS.name}
                 wallet={cosmos.wallets[cosmos.currentIndex]}
@@ -103,6 +107,7 @@ export function AddressBook({ route, navigation }) {
                 navigation={navigation}
                 addressTypeQRCode={FundWalletAddressType.COSMOS}
               />
+
               <AddressBookContainer
                 chain={CHAIN_OSMOSIS.name}
                 wallet={osmosis.wallets[osmosis.currentIndex]}
@@ -111,6 +116,7 @@ export function AddressBook({ route, navigation }) {
                 navigation={navigation}
                 addressTypeQRCode={FundWalletAddressType.OSMOSIS}
               />
+
               <AddressBookContainer
                 chain={CHAIN_JUNO.name}
                 wallet={juno.wallets[juno.currentIndex]}
@@ -119,6 +125,7 @@ export function AddressBook({ route, navigation }) {
                 navigation={navigation}
                 addressTypeQRCode={FundWalletAddressType.JUNO}
               />
+
               <AddressBookContainer
                 chain={CHAIN_STARGAZE.name}
                 wallet={stargaze.wallets[stargaze.currentIndex]}
@@ -127,6 +134,7 @@ export function AddressBook({ route, navigation }) {
                 navigation={navigation}
                 addressTypeQRCode={FundWalletAddressType.STARGAZE}
               />
+
               <AddressBookContainer
                 chain={CHAIN_NOBLE.name}
                 wallet={noble.wallets[noble.currentIndex]}
@@ -135,6 +143,7 @@ export function AddressBook({ route, navigation }) {
                 navigation={navigation}
                 addressTypeQRCode={FundWalletAddressType.NOBLE}
               />
+
               <AddressBookContainer
                 chain={CHAIN_EVMOS.name}
                 wallet={evmos.wallets[evmos.currentIndex]}
@@ -143,6 +152,7 @@ export function AddressBook({ route, navigation }) {
                 navigation={navigation}
                 addressTypeQRCode={FundWalletAddressType.EVMOS}
               />
+
               <AddressBookContainer
                 chain={CHAIN_EVMOS.name}
                 wallet={ethereum}
@@ -151,6 +161,7 @@ export function AddressBook({ route, navigation }) {
                 navigation={navigation}
                 addressTypeQRCode={FundWalletAddressType.EVMOS}
               />
+
               <AddressBookContainer
                 chain={CHAIN_POLYGON.name}
                 wallet={ethereum}
@@ -159,6 +170,7 @@ export function AddressBook({ route, navigation }) {
                 navigation={navigation}
                 addressTypeQRCode={FundWalletAddressType.POLYGON}
               />
+
               <AddressBookContainer
                 chain={CHAIN_BSC.name}
                 wallet={ethereum}
@@ -167,6 +179,7 @@ export function AddressBook({ route, navigation }) {
                 navigation={navigation}
                 addressTypeQRCode={FundWalletAddressType.BSC}
               />
+
               <AddressBookContainer
                 chain={CHAIN_AVALANCHE.name}
                 wallet={ethereum}
@@ -175,6 +188,7 @@ export function AddressBook({ route, navigation }) {
                 navigation={navigation}
                 addressTypeQRCode={FundWalletAddressType.AVALANCHE}
               />
+
               <AddressBookContainer
                 chain={CHAIN_FTM.name}
                 wallet={ethereum}
@@ -183,6 +197,7 @@ export function AddressBook({ route, navigation }) {
                 navigation={navigation}
                 addressTypeQRCode={FundWalletAddressType.FANTOM}
               />
+
               <AddressBookContainer
                 chain={CHAIN_ARBITRUM.name}
                 wallet={ethereum}
@@ -191,6 +206,7 @@ export function AddressBook({ route, navigation }) {
                 navigation={navigation}
                 addressTypeQRCode={FundWalletAddressType.ARBITRUM}
               />
+
               <AddressBookContainer
                 chain={CHAIN_OPTIMISM.name}
                 wallet={ethereum}
@@ -199,6 +215,7 @@ export function AddressBook({ route, navigation }) {
                 navigation={navigation}
                 addressTypeQRCode={FundWalletAddressType.OPTIMISM}
               />
+
               <AddressBookContainer
                 chain={CHAIN_ZKSYNC_ERA.name}
                 wallet={ethereum}
@@ -207,6 +224,7 @@ export function AddressBook({ route, navigation }) {
                 navigation={navigation}
                 addressTypeQRCode={FundWalletAddressType.ZKSYNC_ERA}
               />
+
               <AddressBookContainer
                 chain={CHAIN_BASE.name}
                 wallet={ethereum}
@@ -215,6 +233,7 @@ export function AddressBook({ route, navigation }) {
                 navigation={navigation}
                 addressTypeQRCode={FundWalletAddressType.BASE}
               />
+
               <AddressBookContainer
                 chain={CHAIN_POLYGON_ZKEVM.name}
                 wallet={ethereum}
@@ -223,6 +242,34 @@ export function AddressBook({ route, navigation }) {
                 navigation={navigation}
                 addressTypeQRCode={FundWalletAddressType.POLYGON_ZKEVM}
               />
+
+              <AddressBookContainer
+                chain={CHAIN_AURORA.name}
+                wallet={ethereum}
+                logo={AppImages.AURORA_LOGO}
+                bGC={'#f3fee3'}
+                navigation={navigation}
+                addressTypeQRCode={FundWalletAddressType.AURORA}
+              />
+
+              <AddressBookContainer
+                chain={CHAIN_MOONBEAM.name}
+                wallet={ethereum}
+                logo={AppImages.MOONBEAM_LOGO}
+                bGC={'#faedf8'}
+                navigation={navigation}
+                addressTypeQRCode={FundWalletAddressType.MOONBEAM}
+              />
+
+              <AddressBookContainer
+                chain={CHAIN_MOONRIVER.name}
+                wallet={ethereum}
+                logo={AppImages.MOONRIVER_LOGO}
+                bGC={'#f2fcfa'}
+                navigation={navigation}
+                addressTypeQRCode={FundWalletAddressType.MOONRIVER}
+              />
+
               <AddressBookContainer
                 chain={CHAIN_SHARDEUM_SPHINX.name}
                 wallet={ethereum}

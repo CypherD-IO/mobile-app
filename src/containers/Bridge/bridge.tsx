@@ -178,7 +178,7 @@ export default function Bridge(props: { navigation?: any; route?: any }) {
   });
   const [swapParams, setSwapParams] = useState({});
   const [swapSupportedChains, setSwapSupportedChains] = useState([
-    1, 137, 10, 43114, 42161, 56, 250, 324, 8453, 1101,
+    1, 137, 10, 43114, 42161, 56, 250, 324, 8453, 1101, 1313161554, 1284, 1285,
   ]);
   const slippage = 0.4;
 

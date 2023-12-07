@@ -314,6 +314,9 @@ export default function SendTo(props: { navigation?: any; route?: any }) {
       zksync_era: {},
       base: {},
       polygon_zkevm: {},
+      aurora: {},
+      moonbeam: {},
+      moonriver: {},
     };
     if (tempContactBook) {
       setContactBook(tempContactBook);

@@ -35,6 +35,9 @@ import {
   CHAIN_ZKSYNC_ERA,
   CHAIN_BASE,
   CHAIN_POLYGON_ZKEVM,
+  CHAIN_AURORA,
+  CHAIN_MOONBEAM,
+  CHAIN_MOONRIVER,
   CHAIN_SHARDEUM,
   CHAIN_SHARDEUM_SPHINX,
 } from '../../constants/server';
@@ -114,6 +117,18 @@ export default function QRCodeGenerator(props) {
     { ...CHAIN_BASE, address: hdWalletContext.state.wallet.ethereum.address },
     {
       ...CHAIN_POLYGON_ZKEVM,
+      address: hdWalletContext.state.wallet.ethereum.address,
+    },
+    {
+      ...CHAIN_AURORA,
+      address: hdWalletContext.state.wallet.ethereum.address,
+    },
+    {
+      ...CHAIN_MOONBEAM,
+      address: hdWalletContext.state.wallet.ethereum.address,
+    },
+    {
+      ...CHAIN_MOONRIVER,
       address: hdWalletContext.state.wallet.ethereum.address,
     },
     {
@@ -216,10 +231,16 @@ export default function QRCodeGenerator(props) {
         setSelectedChain(data[14]);
       } else if (walletAddressType === FundWalletAddressType.POLYGON_ZKEVM) {
         setSelectedChain(data[15]);
-      } else if (walletAddressType === FundWalletAddressType.SHARDEUM) {
+      } else if (walletAddressType === FundWalletAddressType.AURORA) {
         setSelectedChain(data[16]);
-      } else if (walletAddressType === FundWalletAddressType.SHARDEUM_SPHINX) {
+      } else if (walletAddressType === FundWalletAddressType.MOONBEAM) {
         setSelectedChain(data[17]);
+      } else if (walletAddressType === FundWalletAddressType.MOONRIVER) {
+        setSelectedChain(data[18]);
+      } else if (walletAddressType === FundWalletAddressType.SHARDEUM) {
+        setSelectedChain(data[19]);
+      } else if (walletAddressType === FundWalletAddressType.SHARDEUM_SPHINX) {
+        setSelectedChain(data[20]);
       }
     }
 
@@ -321,7 +342,7 @@ export default function QRCodeGenerator(props) {
               </CyDText>
               <CyDText className={'text-[14px] text-center font-bold'}>
                 {selectedChain.chainName === 'ethereum'
-                  ? 'Ethereum, Polygon, Binance Smart Chain, zkSync Era, Base, Polygon zkEVM, Avalanche, Fantom, Optimism, Arbitrum, Evmos, Shardeum'
+                  ? 'Ethereum, Polygon, Binance Smart Chain, zkSync Era, Base, Polygon zkEVM, Avalanche, Fantom, Optimism, Arbitrum, Evmos, Aurora, Moonbeam, Moonriver, Shardeum'
                   : selectedChain.name}
               </CyDText>
             </CyDView>

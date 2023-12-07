@@ -138,6 +138,15 @@ export const initialGlobalState: GlobalStateDef = {
     POLYGON_ZKEVM: {
       primary: 'https://rpc.ankr.com/polygon_zkevm',
     },
+    AURORA: {
+      primary: 'https://1rpc.io/aurora',
+    },
+    MOONBEAM: {
+      primary: 'https://rpc.ankr.com/moonbeam',
+    },
+    MOONRIVER: {
+      primary: 'https://moonriver.publicnode.com',
+    },
     STARGAZE: {
       otherUrls: {
         balance:
