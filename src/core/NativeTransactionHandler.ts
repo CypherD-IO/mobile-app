@@ -729,13 +729,28 @@ export async function _estimateGasForNativeTransaction(
     }
   } catch (error) {
     // TODO (user feedback): Give feedback to user.
+    const errorObject = {
+      error,
+      params: {
+        fromChain,
+        fromTokenItem,
+        send_token_amount,
+        to_address,
+        gasPriceDetail,
+      },
+      numberOfTokensParsing: {
+        send_token_amount,
+        numberOfDecimals,
+        numberOfTokens,
+      },
+    };
     Toast.show({
       type: 'error',
       text1: 'Transaction Error',
       text2: error.message,
       position: 'bottom',
     });
-    Sentry.captureException(error);
+    Sentry.captureException(errorObject);
   }
 }
 
@@ -848,13 +863,25 @@ export async function estimateGasForCosmosTransaction(
       return _data;
     }
   } catch (e) {
+    const errorObject = {
+      e,
+      params: {
+        chainSelected,
+        amount,
+        senderAddress,
+        address,
+        tokenData,
+        rpc,
+        valueForUsd,
+      },
+    };
     Toast.show({
       type: 'error',
       text1: 'Gas estimation error',
       text2: e.message,
       position: 'bottom',
     });
-    Sentry.captureException(e);
+    Sentry.captureException(errorObject);
   }
 }
 
