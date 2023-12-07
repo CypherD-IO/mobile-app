@@ -36,7 +36,6 @@ import useAxios from '../../core/HttpRequest';
 
 export default function OTPVerificationScreen({ navigation }) {
   const globalContext = useContext<any>(GlobalContext);
-  const ARCH_HOST: string = hostWorker.getHost('ARCH_HOST');
   const { showModal, hideModal } = useGlobalModalContext();
   const [isPhoneOTPVerified, setPhoneOTPVerified] = useState<boolean>(false);
   const [isEmailOTPVerified, setEmailOTPVerified] = useState<boolean>(false);
@@ -50,8 +49,9 @@ export default function OTPVerificationScreen({ navigation }) {
   const [resendingCode, setResendingCode] = useState<boolean>(false);
   const resendOtpTime = 30;
   const [resendInterval, setResendInterval] = useState(0);
-  const [timer, setTimer] = useState();
-  const { getWithAuth, postWithAuth } = useAxios();
+  const [timer, setTimer] = useState<NodeJS.Timer>();
+  const { getWithAuth, postWithAuth, patchWithAuth } = useAxios();
+  const provider = CardProviders.PAYCADDY;
 
   const [formData, setFormData] = useState({
     countryFlag: '',
@@ -202,16 +202,11 @@ export default function OTPVerificationScreen({ navigation }) {
       );
       payload = { phone: formData.dialCode + phoneNumberWithoutDialCodes };
     }
-    const updateUrl = `${ARCH_HOST}/v1/cards/application`;
-    const config = {
-      headers: {
-        Authorization: `Bearer ${String(globalContext.globalState.token)}`,
-      },
-    };
-
-    try {
-      await axios.patch(updateUrl, payload, config);
-      setLoading(false);
+    const response = await patchWithAuth(
+      `/v1/cards/${provider}/application`,
+      payload,
+    );
+    if (!response.isError) {
       if (detail === OTPType.PHONE) {
         setFormData({
           ...formData,
@@ -222,15 +217,16 @@ export default function OTPVerificationScreen({ navigation }) {
         setFormData({ ...formData, email: formData.updatedEmail });
       }
       await triggerOTP(detail);
-    } catch (e) {
-      Toast.show({
-        type: t('TOAST_TYPE_ERROR'),
-        text2: concatErrorMessagesFromArray(e.response.data.errors),
-        position: 'bottom',
+    } else {
+      showModal('state', {
+        type: 'error',
+        title: '',
+        description: t('UPDATE_INFO_ERROR_MESSAGE'),
+        onSuccess: hideModal,
+        onFailure: hideModal,
       });
-      Sentry.captureException(e);
-      setLoading(false);
     }
+    setLoading(false);
   };
 
   const submitVerification = async () => {
