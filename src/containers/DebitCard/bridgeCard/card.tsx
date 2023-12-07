@@ -54,7 +54,7 @@ export default function CardScreen({
   const cardProfile: CardProfile = globalContext.globalState.cardProfile;
   const {
     lifetimeAmountUsd: lifetimeLoadUSD,
-    pc: { isPhysicalCardEligible: upgradeToPhysicalAvailable },
+    pc: { isPhysicalCardEligible: upgradeToPhysicalAvailable = false } = {},
     physicalCardEligibilityLimit,
   } = cardProfile;
 
@@ -83,12 +83,21 @@ export default function CardScreen({
     isFetchingCardDetails: false,
   });
   const { showModal, hideModal } = useGlobalModalContext();
+  const isUpgradeToPhysicalCardStatusShown =
+    currentCardProvider === CardProviders.PAYCADDY &&
+    lifetimeLoadUSD < physicalCardEligibilityLimit &&
+    !cardProfile[currentCardProvider]?.cards
+      ?.map(card => card.type)
+      .includes(CardType.PHYSICAL);
   const [currentCardIndex, setCurrentCardIndex] = useState<number>(
-    upgradeToPhysicalAvailable ? 1 : 0,
+    isUpgradeToPhysicalCardStatusShown || upgradeToPhysicalAvailable ? 1 : 0,
   );
   const setUpgradeCorrectedCardIndex = (index: number) => {
     // is upgradeToPhysicalAvailable is true, the prompting card will be at index -1.
-    const newIndex = upgradeToPhysicalAvailable ? index - 1 : index;
+    const newIndex =
+      upgradeToPhysicalAvailable || isUpgradeToPhysicalCardStatusShown
+        ? index - 1
+        : index;
     setCurrentCardIndex(newIndex);
   };
   const { postWithAuth } = useAxios();
@@ -682,12 +691,7 @@ export default function CardScreen({
 
   const cardsWithUpgrade = useMemo(() => {
     const actualCards = userCardDetails.cards.map(card => card);
-    if (
-      (currentCardProvider === CardProviders.PAYCADDY &&
-        lifetimeLoadUSD < physicalCardEligibilityLimit &&
-        !actualCards.map(card => card.type).includes(CardType.PHYSICAL)) ||
-      upgradeToPhysicalAvailable
-    ) {
+    if (isUpgradeToPhysicalCardStatusShown || upgradeToPhysicalAvailable) {
       actualCards.unshift({
         cardId: '',
         bin: '',
