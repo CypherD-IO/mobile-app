@@ -72,6 +72,7 @@ export default function CardSignupLandingScreen(props: {
       } else {
         setLoadersAndValidators({
           ...loadersAndValidators,
+          inviteCodeVerified: false,
           isInvalidInviteCode: true,
           isInviteCodeVerifying: false,
         });
@@ -79,6 +80,7 @@ export default function CardSignupLandingScreen(props: {
     } catch (e) {
       setLoadersAndValidators({
         ...loadersAndValidators,
+        inviteCodeVerified: false,
         isInvalidInviteCode: true,
         isInviteCodeVerifying: false,
       });
