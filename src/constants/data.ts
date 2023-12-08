@@ -19,7 +19,7 @@ export const gasFeeReservation: Record<ChainBackendNames, number> = {
   EVMOS: 0.02,
   JUNO: 0.007,
   STARGAZE: 0.1,
-  NOBLE: 0,
+  NOBLE: 0.02,
   SHARDEUM: 0.01,
   SHARDEUM_SPHINX: 0.01,
   ZKSYNC_ERA: 0.0006, // TODO

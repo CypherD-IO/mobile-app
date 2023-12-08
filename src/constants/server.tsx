@@ -709,9 +709,10 @@ export const ChainNameToContactsChainNameMapping = {
 
 export enum NativeTokenMapping {
   COSMOS = 'ATOM',
+  NOBLE = 'USDC',
 }
 
-export const GASLESS_CHAINS = [ChainBackendNames.NOBLE];
+export const GASLESS_CHAINS = []; // Add any cosmos gasless chain backend names in this array
 
 // DeFi Data
 export const DEFI_URL = '/v1/portfolio/evm/defi';

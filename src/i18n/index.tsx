@@ -234,7 +234,7 @@ const resources = {
       VALUE: 'Value',
       NETWORK_FEE: 'Network Fee',
       TOTAL_RECEIVED: 'Total Estimated \nReceived ',
-      ESTIMATED_TIME: 'Estimated Time: ',
+      ESTIMATED_TIME: 'Estimated Time ',
       UPDATE: 'UPDATE',
       LATER: 'LATER',
       NO_CONNECTIONS: 'No Active Connections',

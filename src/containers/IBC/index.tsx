@@ -69,7 +69,7 @@ import { useGlobalModalContext } from '../../components/v2/GlobalModal';
 import { MODAL_CLOSING_TIMEOUT } from '../../constants/timeOuts';
 import { SuccessTransaction } from '../../components/v2/StateModal';
 import CyDTokenAmount from '../../components/v2/tokenAmount';
-import { AnalyticsType } from '../../constants/enum';
+import { AnalyticsType, ButtonType } from '../../constants/enum';
 import { get } from 'lodash';
 
 export default function IBC({
@@ -872,7 +872,9 @@ export default function IBC({
             <CyDView className={'mr-[6%] flex flex-col items-end'}>
               <CyDText
                 className={'font-nunito font-[16px] text-black font-bold'}>
-                {String(formatAmount(gasFee)) + String(nativeToken?.symbol)}
+                {String(formatAmount(gasFee)) +
+                  ' ' +
+                  String(nativeToken?.symbol)}
               </CyDText>
               <CyDText
                 className={'font-nunito font-[12px] text-[#929292] font-bold'}>
@@ -884,51 +886,28 @@ export default function IBC({
 
         <CyDView
           className={
-            'flex flex-row w-full justify-center items-center space-x-[16px] px-[30px] pb-[50px]'
+            'flex flex-row justify-between items-center px-[20px] pb-[42px]'
           }>
-          <CyDTouchView
+          <Button
+            title={t<string>('CANCEL')}
+            titleStyle='text-[14px]'
             disabled={loading}
+            type={ButtonType.SECONDARY}
             onPress={() => {
               setSignModalVisible(false);
             }}
-            className={
-              'border-[1px] border-[#525252] rounded-[12px] px-[20px] py-[20px] w-1/2 flex items-center'
-            }>
-            <CyDText
-              className={
-                'text-[#525252] text-[16px] font-extrabold font-nunito'
-              }>
-              {'Cancel'}
-            </CyDText>
-          </CyDTouchView>
-
-          <CyDTouchView
-            disabled={loading}
-            onPress={async () => {
-              await ibcTransfer('txn');
+            style={'h-[60px] w-[166px] mx-[6px]'}
+          />
+          <Button
+            title={'IBC'}
+            titleStyle='text-[14px]'
+            loading={loading}
+            onPress={() => {
+              void ibcTransfer('txn');
             }}
-            className={clsx(
-              'rounded-[12px] bg-[#FFDE59] px-[20px]  w-1/2 items-center',
-            )}>
-            {loading && (
-              <CyDView className={'mr-[16px]'}>
-                <LottieView
-                  source={AppImages.LOADING_SPINNER}
-                  autoPlay
-                  loop
-                  style={{ height: 60, left: 2 }}
-                />
-              </CyDView>
-            )}
-            {!loading && (
-              <CyDText
-                className={
-                  'text-[#525252] text-[16px] font-extrabold font-nunito my-[20px]'
-                }>
-                {'IBC'}
-              </CyDText>
-            )}
-          </CyDTouchView>
+            isPrivateKeyDependent={true}
+            style={'h-[60px] w-[166px] mx-[6px]'}
+          />
         </CyDView>
       </SignatureModal>
 
@@ -1290,7 +1269,7 @@ export default function IBC({
             // setShowWarningModal(true);
           }}
           isPrivateKeyDependent={true}
-          style={'w-[90%] py-[18px]'}
+          style={'w-[90%] h-[60px]'}
         />
       </CyDView>
     </CyDScrollView>
