@@ -114,12 +114,13 @@ export default function EnterAmount(props) {
     }
     const nativeBackendName = backendName;
     const nativeTokenSymbol = NativeTokenMapping[symbol] || symbol;
-    const nativeTokenBalance = getNativeToken(
-      nativeTokenSymbol,
-      portfolioState.statePortfolio.tokenPortfolio[
-        ChainNameMapping[nativeBackendName]
-      ].holdings,
-    )?.actualBalance ?? 0;
+    const nativeTokenBalance =
+      getNativeToken(
+        nativeTokenSymbol,
+        portfolioState.statePortfolio.tokenPortfolio[
+          ChainNameMapping[nativeBackendName]
+        ].holdings,
+      )?.actualBalance ?? 0;
     const gasReserved = gasFeeReservation[backendName];
 
     return nativeTokenBalance <= gasReserved;
@@ -154,8 +155,8 @@ export default function EnterAmount(props) {
       const reqAmount = enterCryptoAmount
         ? `${cryVal.toFixed(6)} ${tokenData.symbol}`
         : `${parseFloat(
-          (cryVal * parseFloat(tokenData.price)).toFixed(6),
-        )} USD`;
+            (cryVal * parseFloat(tokenData.price)).toFixed(6),
+          )} USD`;
       showModal('state', {
         type: 'error',
         title: t('INSUFFICIENT_GAS_FEE'),
@@ -180,11 +181,9 @@ export default function EnterAmount(props) {
           <CyDView
             className={
               'flex items-center justify-center pb-[35px] pt-[15px] w-full bg-secondaryBackgroundColor rounded-b-[25px]'
-            }
-          >
+            }>
             <CyDView
-              className={'flex items-center justify-center w-full relative'}
-            >
+              className={'flex items-center justify-center w-full relative'}>
               <CyDTouchView
                 onPress={() => {
                   const gasReserved =
@@ -216,8 +215,7 @@ export default function EnterAmount(props) {
                 className={clsx(
                   'absolute left-[10%] bottom-[60%] bg-white rounded-full h-[40px] w-[40px] flex justify-center items-center p-[4px]',
                 )}
-                style={styles.roundButtonContainer}
-              >
+                style={styles.roundButtonContainer}>
                 <CyDText className={'font-nunito text-black '}>
                   {t<string>('MAX')}
                 </CyDText>
@@ -239,8 +237,7 @@ export default function EnterAmount(props) {
                 className={clsx(
                   'absolute right-[10%] bottom-[60%] bg-white rounded-full h-[40px] w-[40px] flex justify-center items-center p-[4px]',
                 )}
-                style={styles.roundButtonContainer}
-              >
+                style={styles.roundButtonContainer}>
                 <CyDImage
                   source={AppImages.TOGGLE_ICON}
                   className={'w-[14px] h-[16px]'}
@@ -259,7 +256,7 @@ export default function EnterAmount(props) {
                     },
                   )}
                   keyboardType='numeric'
-                  onChangeText={(text) => {
+                  onChangeText={text => {
                     setValueForUsd(text);
                     if (enterCryptoAmount) {
                       setCryptoValue(text);
@@ -287,21 +284,19 @@ export default function EnterAmount(props) {
                 dynamic
                 fF={C.fontsName.FONT_BOLD}
                 fS={15}
-                color={Colors.subTextColor}
-              >
+                color={Colors.subTextColor}>
                 {enterCryptoAmount
                   ? (!isNaN(parseFloat(usdValue))
-                    ? formatAmount(usdValue)
-                    : '0.00') + ' USD'
+                      ? formatAmount(usdValue)
+                      : '0.00') + ' USD'
                   : (!isNaN(parseFloat(cryptoValue))
-                    ? formatAmount(cryptoValue)
-                    : '0.00') + ` ${tokenData.name}`}
+                      ? formatAmount(cryptoValue)
+                      : '0.00') + ` ${tokenData.name}`}
               </CText>
 
               <CyDView
                 style={styles.tokenContainer}
-                className='flex flex-row mt-[12px] mb-[6px] items-center rounded-[10px] self-center px-[10px] bg-white'
-              >
+                className='flex flex-row mt-[12px] mb-[6px] items-center rounded-[10px] self-center px-[10px] bg-white'>
                 <CyDView>
                   <CyDFastImage
                     className={'h-[35px] w-[35px] rounded-[50px]'}
@@ -322,8 +317,7 @@ export default function EnterAmount(props) {
                       <CyDText
                         className={
                           'text-[14px] text-subTextColor font-bold mt-[2px]'
-                        }
-                      >
+                        }>
                         {tokenData.symbol}
                       </CyDText>
                     </CyDView>
