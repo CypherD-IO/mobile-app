@@ -27,14 +27,13 @@ export default function BridgeCardOptionsScreen(props: {
   navigation: any;
   route: {
     params: {
-      onSuccess: (data: any, provider: CardProviders) => {};
       currentCardProvider: CardProviders;
       card: { cardId: string; status: string; type: string };
     };
   };
 }) {
   const { route, navigation } = props;
-  const { card, currentCardProvider, onSuccess } = route.params;
+  const { card, currentCardProvider } = route.params;
   const { cardId, status } = card;
   const [isCardBlocked, setIsCardBlocked] = useState(status === 'inactive');
   const globalContext = useContext<any>(GlobalContext);
@@ -143,7 +142,6 @@ export default function BridgeCardOptionsScreen(props: {
         <CyDTouchView
           onPress={() =>
             navigation.navigate(screenTitle.CARD_SET_PIN_SCREEN, {
-              onSuccess,
               currentCardProvider,
               card,
             })

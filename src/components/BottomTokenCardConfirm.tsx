@@ -160,9 +160,8 @@ export default function BottomCardConfirm({
             </CyDView>
           </CyDView>
 
-          <CyDView
-            className={'mr-[10px] flex flex-row justify-between py-[16px]'}>
-            <CyDView className='flex flex-row justify-start w-[50%]'>
+          <CyDView className={'flex flex-row justify-between py-[16px]'}>
+            <CyDView className='flex flex-row justify-start items-center w-[50%]'>
               <CyDText className={'font-bold text-[14px]'}>
                 {t('ESTIMATED_TIME')}
               </CyDText>
