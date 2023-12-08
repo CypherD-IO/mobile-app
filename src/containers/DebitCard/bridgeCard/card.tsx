@@ -108,9 +108,9 @@ export default function CardScreen({
       const { type }: { last4: string; type: string } =
         cardProfile[currentCardProvider].cards[0];
       setUserCardDetails({
+        ...userCardDetails,
         hideCardDetails: true,
         showCVVAndExpiry: false,
-        isFetchingCardDetails: false,
         cards: orderBy(cardProfile[currentCardProvider].cards, 'type', 'asc'),
         personId: cardProfile[currentCardProvider].personId,
         currentCardRevealedDetails: {
@@ -184,6 +184,10 @@ export default function CardScreen({
     if (cardProvider === CardProviders.BRIDGE_CARD) {
       response = await axios.get(vaultId + token);
     } else if (cardProvider === CardProviders.PAYCADDY) {
+      setUserCardDetails({
+        ...userCardDetails,
+        isFetchingCardDetails: true,
+      });
       response = await axios.post(
         vaultId,
         { cardId, isProd: true },
@@ -458,9 +462,6 @@ export default function CardScreen({
             <CyDTouchView
               onPress={() =>
                 navigation.navigate(screenTitle.CARD_ACTIAVTION_SCREEN, {
-                  onSuccess: (data: any, cardProvider: CardProviders) => {
-                    void sendCardDetails(data, cardProvider);
-                  },
                   currentCardProvider,
                   card,
                 })
@@ -621,9 +622,6 @@ export default function CardScreen({
                   <CyDTouchView
                     onPress={() =>
                       navigation.navigate(screenTitle.CARD_SETTINGS_SCREEN, {
-                        onSuccess: (data: any, cardProvider: CardProviders) => {
-                          void sendCardDetails(data, cardProvider);
-                        },
                         currentCardProvider,
                         card,
                       })
@@ -668,9 +666,6 @@ export default function CardScreen({
               <CyDTouchView
                 onPress={() =>
                   navigation.navigate(screenTitle.CARD_SETTINGS_SCREEN, {
-                    onSuccess: (data: any, cardProvider: CardProviders) => {
-                      void sendCardDetails(data, cardProvider);
-                    },
                     currentCardProvider,
                     card,
                   })

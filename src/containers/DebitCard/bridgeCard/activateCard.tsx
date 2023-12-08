@@ -33,7 +33,6 @@ export default function ActivateCard(props: {
   navigation: any;
   route: {
     params: {
-      onSuccess: (data: any, provider: CardProviders) => void;
       currentCardProvider: CardProviders;
       card: { cardId: string };
     };
@@ -168,8 +167,7 @@ export default function ActivateCard(props: {
         contentContainerStyle={{
           ...styles.contentContainerStyle,
           ...(!keyboardHeight && { flex: 1 }),
-        }}
-      >
+        }}>
         <CyDView>
           <CyDView className='px-[20px]'>
             <CyDText className={'text-[25px] font-extrabold'}>
@@ -213,7 +211,7 @@ export default function ActivateCard(props: {
               <CyDView className={'mt-[5px]'}>
                 <OtpInput
                   pinCount={4}
-                  getOtp={(otp) => {
+                  getOtp={otp => {
                     setOtp(otp);
                   }}
                   placeholder={t('ENTER_OTP')}
@@ -223,13 +221,11 @@ export default function ActivateCard(props: {
                   disabled={sendingOTP || resendInterval !== 0}
                   onPress={() => {
                     void resendOTP();
-                  }}
-                >
+                  }}>
                   <CyDText
                     className={
                       'font-bold underline decoration-solid underline-offset-4'
-                    }
-                  >
+                    }>
                     {t<string>('RESEND_CODE_INIT_CAPS')}
                   </CyDText>
                   {sendingOTP && (

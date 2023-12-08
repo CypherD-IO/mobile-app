@@ -21,7 +21,6 @@ export default function SetPin(props: {
   navigation: any;
   route: {
     params: {
-      onSuccess: (data: any, provider: CardProviders) => {};
       currentCardProvider: CardProviders;
       card: { cardId: string };
     };
