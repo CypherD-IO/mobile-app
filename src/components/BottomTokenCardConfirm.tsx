@@ -14,6 +14,7 @@ import Button from './v2/button';
 import { ButtonType } from '../constants/enum';
 import { formatAmount, limitDecimalPlaces } from '../core/util';
 import { PayTokenModalParams } from '../models/card.model';
+import LottieView from 'lottie-react-native';
 
 interface BottomCardConfirmProps {
   isModalVisible: boolean;
@@ -155,6 +156,31 @@ export default function BottomCardConfirm({
               </CyDText>
               <CyDText className={'font-medium text-[14px]'}>
                 ${formatAmount(modalParams.gasFeeDollar)}
+              </CyDText>
+            </CyDView>
+          </CyDView>
+
+          <CyDView
+            className={'mr-[10px] flex flex-row justify-between py-[16px]'}>
+            <CyDView className='flex flex-row justify-start w-[50%]'>
+              <CyDText className={'font-bold text-[14px]'}>
+                {t('ESTIMATED_TIME')}
+              </CyDText>
+              <LottieView
+                source={AppImages.ESTIMATED_TIME}
+                resizeMode={'contain'}
+                autoPlay
+                loop
+                style={{ width: 20 }}
+              />
+            </CyDView>
+
+            <CyDView className={'flex flex-row justify-between items-center'}>
+              <CyDText
+                className={
+                  'font-nunito font-[16px] text-black font-bold ml-[12px]'
+                }>
+                ~ 4 mins
               </CyDText>
             </CyDView>
           </CyDView>

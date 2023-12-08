@@ -173,7 +173,7 @@ export const cosmosConfig: Record<string, IIBCData> = {
       juno: 'channel-3',
       stargaze: '',
     },
-    gasPrice: 0.00000005,
+    gasPrice: 0.0000002,
     ibcDenoms: {
       cosmos:
         'ibc/6CDD4663F2F09CD62285E2D45891FC149A3568E316CE3EBBE201A71A78A69388',
