@@ -113,7 +113,10 @@ export default function CardWailtList({ navigation }: Props) {
   }
 
   return (
-    <CyDView className='flex-1 bg-white mt-[32px]'>
+    <CyDView
+      className={clsx('flex-1 bg-white mt-[32px]', {
+        'pb-[75px]': isAndroid(),
+      })}>
       <CyDScrollView className='bg-white py-[12px]'>
         <ChooseCountryModal
           isModalVisible={isModalVisible}
