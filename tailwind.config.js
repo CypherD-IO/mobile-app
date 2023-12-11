@@ -46,7 +46,7 @@ module.exports = {
       secondaryTextColor: '#000000',
       whiteColor: '#FFFFFF',
       redColor: '#FD1A1A',
-      appColor: '#FFDE59',
+      appColor: '#F7C645',
       fadedAppColor: '#FFE370',
       borderColor: '#8E8E8E',
       inputBorderColor: '#C5C5C5',

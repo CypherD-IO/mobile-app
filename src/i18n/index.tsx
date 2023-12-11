@@ -859,6 +859,7 @@ const resources = {
       DEFI_POSITIONS: 'DeFi Positions',
       ONLY_ACTIVE_POSITIONS: 'Only active positions',
       PLUS: '+',
+      MANAGE_POSITIONS: 'Manage positions',
       TOTAL_DEBT: 'Total Debt',
       TOTAL_SUPPLY: 'Total Supply',
       TOTAL_VALUE: 'Total Value',
