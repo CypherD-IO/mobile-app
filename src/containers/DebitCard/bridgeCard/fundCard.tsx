@@ -468,6 +468,10 @@ export default function BridgeFundCardScreen({ route }: { route: any }) {
   const sendTransaction = async (payTokenModalParamsLocal: any) => {
     const { contractAddress, chainDetails, contractDecimals } =
       selectedToken as TokenMeta;
+    const actualTokensRequired = limitDecimalPlaces(
+      tokenQuote.tokenRequired,
+      contractDecimals,
+    );
     const { chainName } = chainDetails;
     const currentTimeStamp = new Date();
     setLoading(true);
@@ -490,15 +494,15 @@ export default function BridgeFundCardScreen({ route }: { route: any }) {
             void intercomAnalyticsLog('send_token_for_card', {
               from: ethereum.address,
               dollar: selectedToken.chainDetails,
-              token_quantity: tokenQuote.tokenRequired,
+              token_quantity: actualTokensRequired,
               from_contract: contractAddress,
               quote_uuid: tokenQuote.quoteUUID,
             });
-            await sendNativeCoinOrTokenToAnyAddress(
+            sendNativeCoinOrTokenToAnyAddress(
               hdWallet,
               portfolioState,
               chainDetails,
-              tokenQuote.tokenRequired.toString(),
+              actualTokensRequired,
               contractAddress,
               contractDecimals,
               tokenQuote.quoteUUID,
@@ -535,7 +539,7 @@ export default function BridgeFundCardScreen({ route }: { route: any }) {
             void intercomAnalyticsLog('send_token_for_card', {
               from: get(senderAddress, chainName),
               dollar: selectedToken.chainDetails,
-              token_quantity: tokenQuote.tokenRequired,
+              token_quantity: actualTokensRequired,
               from_contract: contractAddress,
               quote_uuid: tokenQuote.quoteUUID,
             });
