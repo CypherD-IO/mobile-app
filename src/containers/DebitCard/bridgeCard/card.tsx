@@ -8,7 +8,7 @@ import React, {
 } from 'react';
 import { GlobalContext } from '../../../core/globalContext';
 import { screenTitle } from '../../../constants';
-import { copyToClipboard } from '../../../core/util';
+import { copyToClipboard, limitDecimalPlaces } from '../../../core/util';
 import { showToast } from '../../utilities/toastUtility';
 import { useTranslation } from 'react-i18next';
 import {
@@ -528,7 +528,10 @@ export default function CardScreen({
                 <>
                   <CyDText className='mb-[4px]'>{`Load `}</CyDText>
                   <CyDText className='mb-[4px] font-extrabold'>
-                    {physicalCardEligibilityLimit - lifetimeLoadUSD}
+                    {limitDecimalPlaces(
+                      physicalCardEligibilityLimit - lifetimeLoadUSD,
+                      2,
+                    )}
                   </CyDText>
                   <CyDText className='mb-[4px] font-extrabold'>{` USD`}</CyDText>
                   <CyDText className='mb-[4px]'>{` more to upgrade`}</CyDText>

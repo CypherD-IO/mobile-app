@@ -343,7 +343,7 @@ const CypherCardScreen = ({ navigation, route }: CypherCardScreenProps) => {
               <CyDText className={'font-bold text-[10px]'}>
                 {t<string>('TOTAL_BALANCE')}
               </CyDText>
-              <CyDText className={'font-bold text-[18px]'}>
+              <CyDText className={'font-extrabold text-[18px]'}>
                 {(cardBalance !== 'NA' ? '$ ' : '') + cardBalance}
               </CyDText>
             </CyDView>
@@ -358,7 +358,7 @@ const CypherCardScreen = ({ navigation, route }: CypherCardScreenProps) => {
                 });
               }}
               style={
-                'pr-[7%] pl-[5%] py-[2%] w-[40%]  items-center align-center rounded-[8px]'
+                'pr-[7%] pl-[5%] py-[0px] w-[40%] flex flex-row items-center justify-center rounded-[8px]'
               }
               title={t('LOAD_CARD_CAPS')}
               titleStyle={'text-[14px]'}
