@@ -163,7 +163,7 @@ export default function ChooseTokenModal(props: TokenModal) {
                   <CyDText className={'font-extrabold text-[16px]'}>
                     {name}
                   </CyDText>
-                  {isZeroFeeCardFunding ? (
+                  {isZeroFeeCardFunding && renderPage === 'fundCardPage' ? (
                     <CyDView className='h-[20px] bg-privacyMessageBackgroundColor rounded-[8px] mx-[4px] px-[8px] flex justify-center items-center'>
                       <CyDText className={'font-black text-[10px]'}>
                         {'ZERO FEE ✨'}
