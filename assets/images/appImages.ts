@@ -100,6 +100,7 @@ const NEW = require('./new.json');
 const GAS_STATION = require('./gasStation.png');
 const GIFT_BOX_PNG = require('./giftBox.png');
 const LINK = require('./link.png');
+const LINK_WHITE = require('./link_white.png');
 const USDC_EVMOS = require('./nUSDC.png');
 const DELETE = require('./delete_bin.png');
 const ADDRESS_COPY = require('./address-copy.png');
@@ -435,6 +436,7 @@ const AppImages = {
   GIFT_BOX_PNG,
   EVMOS_LOGO_TRANSPARENT,
   LINK,
+  LINK_WHITE,
   USDC_EVMOS,
   DELETE,
   ADDRESS_COPY,
