@@ -8,7 +8,7 @@ import { MODAL_HIDE_TIMEOUT_250 } from '../../core/Http';
 import { HdWalletContext } from '../../core/util';
 import { HdWalletContextDef } from '../../reducers/hdwallet_reducer';
 
-export default function useIsSignable () {
+export default function useIsSignable() {
   const hdWalletContext = useContext(HdWalletContext) as HdWalletContextDef;
   const navigation = useNavigation();
   const { ethereum } = hdWalletContext.state.wallet;
@@ -25,8 +25,15 @@ export default function useIsSignable () {
             hideModal();
             callback();
           },
-          onFailure: () => { setTimeout(() => { hideModal(); }, MODAL_CLOSING_TIMEOUT); navigation.navigate(screenTitle.PORTFOLIO_SCREEN); },
-          onCancel: () => { hideModal(); }
+          onFailure: () => {
+            setTimeout(() => {
+              hideModal();
+            }, MODAL_CLOSING_TIMEOUT);
+            navigation.navigate(screenTitle.PORTFOLIO_SCREEN);
+          },
+          onCancel: () => {
+            hideModal();
+          },
         });
       }, MODAL_HIDE_TIMEOUT_250);
     } else {
