@@ -1086,6 +1086,18 @@ export function DebitCardStackScreen({ navigation }) {
           headerBackTitleVisible: false,
         })}
       />
+      <FundCardStack.Screen
+        name={screenTitle.SOCIAL_MEDIA_SCREEN}
+        component={SocialMediaScreen}
+        options={{
+          headerTransparent: false,
+          headerShadowVisible: false,
+          headerTitleAlign: 'center',
+          headerTitleStyle: portfolioStackScreenHeaderTitleStyles,
+          headerTintColor: Colors.primaryTextColor,
+          headerBackTitleVisible: false,
+        }}
+      />
     </FundCardStack.Navigator>
   );
 }
