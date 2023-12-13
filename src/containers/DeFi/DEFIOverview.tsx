@@ -6,10 +6,10 @@ import {
 } from '../../models/defi.interface';
 import analytics from '@react-native-firebase/analytics';
 import {
+  CyDAnimatedView,
   CyDFastImage,
   CyDImage,
   CyDSafeAreaView,
-  CyDScrollView,
   CyDText,
   CyDTouchView,
   CyDView,
@@ -26,6 +26,13 @@ import { HdWalletContext } from '../../core/util';
 import { useGlobalModalContext } from '../../components/v2/GlobalModal';
 import { MODAL_CLOSING_TIMEOUT } from '../../constants/timeOuts';
 import { GlobalModalType } from '../../constants/enum';
+import Animated, {
+  Easing,
+  useAnimatedScrollHandler,
+  useAnimatedStyle,
+  useSharedValue,
+  withTiming,
+} from 'react-native-reanimated';
 
 interface RouteProps {
   route: {
@@ -97,7 +104,7 @@ const RenderType = ({ type }: { type: PositionTypeData }) => {
           className='h-[18px] w-[18px]'
           resizeMode='contain'
         />
-        <CyDText className='font-medium text-[18px]'>{type.type}</CyDText>
+        <CyDText className='font-bold text-[18px]'>{type.type}</CyDText>
       </CyDView>
       <CyDView className='w-full border border-sepratorColor rounded-[10px] flex pb-[12px]'>
         {holdings.sort(sortDefiPositionDesc).map((holding, index) => {
@@ -120,10 +127,10 @@ const RenderType = ({ type }: { type: PositionTypeData }) => {
               <CyDView className='flex flex-row justify-start items-center mb-[4px]'>
                 <CyDFastImage
                   source={holding.chainLogo}
-                  className='h-[14px] w-[14px] mr-[2px] rounded-full'
+                  className='h-[14px] w-[14px] mr-[4px] rounded-full'
                   resizeMode='contain'
                 />
-                <CyDText className='font-normal text-[14px]'>
+                <CyDText className='font-bold text-[12px]'>
                   {holding.chain}
                 </CyDText>
                 {!holding.total.isActive && (
@@ -134,11 +141,11 @@ const RenderType = ({ type }: { type: PositionTypeData }) => {
               </CyDView>
               <CyDView className='p-[10px] rounded-[10px] border border-sepratorColor'>
                 <CyDView className='flex flex-row justify-between items-start mb-[8px]'>
-                  <CyDText className='font-normal text-[14px] max-w-[50%]'>
+                  <CyDText className='font-bold text-[14px] max-w-[50%]'>
                     {pool.join(' + ')}
                   </CyDText>
                   <CyDTokenValue
-                    className={'font-bold text-[16px]  max-w-[50%]'}>
+                    className={'font-bold text-[16px] max-w-[50%]'}>
                     {holding.total.value}
                   </CyDTokenValue>
                 </CyDView>
@@ -180,6 +187,8 @@ const RenderType = ({ type }: { type: PositionTypeData }) => {
 export function DEFIOverviewScreen({ route, navigation }: RouteProps) {
   const { protocol } = route.params;
   const [imageZoomIn, setImageZoomIn] = useState<boolean>(false);
+  const scrollY = useSharedValue(0);
+  const isVisible = useSharedValue(true);
   const hdWalletContext = useContext(HdWalletContext);
   const { isReadOnlyWallet } = hdWalletContext.state;
   const { ethereum } = hdWalletContext.state.wallet;
@@ -191,6 +200,30 @@ export function DEFIOverviewScreen({ route, navigation }: RouteProps) {
       title: protocol.protocolName,
     });
   }, [navigation, protocol.protocolName]);
+
+  const handleScroll = useAnimatedScrollHandler({
+    onScroll: e => {
+      if (scrollY.value > 0) {
+        isVisible.value = scrollY.value > e.contentOffset.y;
+      } else if (scrollY.value === 0) {
+        isVisible.value = scrollY.value >= e.contentOffset.y;
+      }
+      scrollY.value = e.contentOffset.y;
+    },
+  });
+
+  const animatedStyles = useAnimatedStyle(() => {
+    return {
+      transform: [
+        {
+          translateY: withTiming(isVisible.value ? 0 : 100, {
+            duration: 300,
+            easing: Easing.exp,
+          }),
+        },
+      ],
+    };
+  });
 
   return (
     <CyDSafeAreaView className='h-full bg-whiteColor'>
@@ -221,8 +254,12 @@ export function DEFIOverviewScreen({ route, navigation }: RouteProps) {
           </CyDTouchView>
         </CyDView>
       </CyDModalLayout>
-      <CyDScrollView className='w-full h-full px-[12px] mt-[12px]'>
-        <CyDView className='flex flex-row w-full'>
+      <Animated.ScrollView
+        bounces={false}
+        scrollEventThrottle={16}
+        onScroll={handleScroll}
+        className='w-full h-full px-[12px] mt-[12px]'>
+        <CyDView className='flex flex-row w-full mb-[20px]'>
           <CyDView className='flex-1 flex-row gap-[4px] justify-start items-center'>
             <CyDFastImage
               source={protocol.protocolLogo}
@@ -302,8 +339,15 @@ export function DEFIOverviewScreen({ route, navigation }: RouteProps) {
             )}
           </CyDView>
         </CyDView>
+        {Object.values(protocol.types).map((type, index) => {
+          return <RenderType type={type} key={`${type.type}-${index}`} />;
+        })}
+      </Animated.ScrollView>
+      <CyDAnimatedView
+        className={'absolute w-full bottom-[10px]'}
+        style={animatedStyles}>
         <CyDTouchView
-          className='flex flex-row my-[10px] bg-appColor justify-between items-center rounded-[8px] border border-sepratorColor px-[20px] py-[10px]'
+          className='w-[70%] h-[55px] flex flex-row my-[10px] mx-[60px] bg-black justify-center items-center rounded-[8px] border border-borderColor px-[20px] py-[10px]'
           onPress={() => {
             if (!isReadOnlyWallet) {
               navigation.navigate(screenTitle.BROWSER, {
@@ -332,24 +376,23 @@ export function DEFIOverviewScreen({ route, navigation }: RouteProps) {
               });
             }
           }}>
-          <CyDView className='flex justify-center items-start'>
-            <CyDText className='font-bold text-[16px] text-infoTextBlue pr-[4px]'>
+          <CyDView className='flex flex-col justify-center items-center'>
+            <CyDText className='font-bold text-[16px] pr-[4px] text-white'>
               {t('MANAGE_POSITIONS')}
             </CyDText>
-            <CyDText className='underline text-[14px] text-blueColor pr-[4px]'>
-              {protocol.protocolURL}
-            </CyDText>
+            <CyDView className='flex flex-row justify-center items-center'>
+              <CyDText className='underline text-[12px] text-appColor pr-[4px]'>
+                {protocol.protocolURL}
+              </CyDText>
+              <CyDFastImage
+                source={AppImages.LINK_WHITE}
+                className='h-[10px] w-[10px]'
+                resizeMode='contain'
+              />
+            </CyDView>
           </CyDView>
-          <CyDFastImage
-            source={AppImages.LINK}
-            className='h-[18px] w-[18px]'
-            resizeMode='contain'
-          />
         </CyDTouchView>
-        {Object.values(protocol.types).map((type, index) => {
-          return <RenderType type={type} key={`${type.type}-${index}`} />;
-        })}
-      </CyDScrollView>
+      </CyDAnimatedView>
     </CyDSafeAreaView>
   );
 }

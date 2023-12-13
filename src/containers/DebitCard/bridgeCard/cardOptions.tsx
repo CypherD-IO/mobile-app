@@ -189,6 +189,21 @@ export default function BridgeCardOptionsScreen(props: {
           resizeMode={'contain'}
         />
       </CyDTouchView>
+      <CyDTouchView
+        onPress={() =>
+          navigation.navigate(screenTitle.SOCIAL_MEDIA_SCREEN, {
+            title: 'Card FAQ',
+            uri: 'https://www.cypherwallet.io/card#faq',
+          })
+        }
+        className='flex flex-row justify-between align-center ml-[20px] mr-[4px] pt-[20px] pb-[15px] border-b-[1px] border-sepratorColor'>
+        <CyDText className='text-[16px] font-bold'>{'FAQ'}</CyDText>
+        <CyDImage
+          source={AppImages.LINK}
+          className={'w-[15%] h-[18px]'}
+          resizeMode={'contain'}
+        />
+      </CyDTouchView>
     </CyDView>
   );
 }
