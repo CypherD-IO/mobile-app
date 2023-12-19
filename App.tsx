@@ -659,6 +659,7 @@ function App() {
       await initializeHostsFromAsync().then(resp => {
         if (
           ethereum?.address &&
+          ethereum?.address !== _NO_CYPHERD_CREDENTIAL_AVAILABLE_ &&
           ethereum?.privateKey !== _NO_CYPHERD_CREDENTIAL_AVAILABLE_
         ) {
           void getAuthTokenData();
