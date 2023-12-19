@@ -4,6 +4,7 @@ import React, {
   useCallback,
   useContext,
   useEffect,
+  useRef,
   useState,
 } from 'react';
 import { HdWalletContext, PortfolioContext } from '../../core/util';
@@ -33,6 +34,7 @@ export const WalletConnectV2Provider: React.FC<any> = ({ children }) => {
   const ethereum = hdWalletContext.state.wallet.ethereum;
   const { walletConnectDispatch } = useContext<any>(WalletConnectContext);
   const { getWithAuth } = useAxios();
+  const isInitializationInProgress = useRef<boolean>(false);
 
   // Step 2 - Once initialized, set up wallet connect event manager
 
@@ -49,10 +51,6 @@ export const WalletConnectV2Provider: React.FC<any> = ({ children }) => {
     if (!resp.isError) {
       const { data } = resp;
       projectId = data.projectId;
-      console.log(
-        '🚀 ~ file: index.tsx:51 ~ onInitialize ~ projectId:',
-        projectId,
-      );
     }
     try {
       if (projectId) {
@@ -65,7 +63,12 @@ export const WalletConnectV2Provider: React.FC<any> = ({ children }) => {
   }, []);
 
   useEffect(() => {
-    if (!isWeb3WalletInitialized && globalContext.globalState.token) {
+    if (
+      !isWeb3WalletInitialized &&
+      globalContext.globalState.token &&
+      !isInitializationInProgress.current
+    ) {
+      isInitializationInProgress.current = true;
       void onInitialize();
     }
     // if (prevRelayerURLValue.current !== relayerRegionURL) {
