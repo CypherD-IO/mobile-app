@@ -635,7 +635,7 @@ PODS:
     - React-Core
   - RNCAsyncStorage (1.21.0):
     - React-Core
-  - RNCClipboard (1.12.1):
+  - RNCClipboard (1.13.0):
     - React-Core
   - RNCPushNotificationIOS (1.11.0):
     - React-Core
@@ -1150,7 +1150,7 @@ SPEC CHECKSUMS:
   ReactCommon: 54a0af7fed8df83c4de245309f1627110ba1f8af
   rn-fetch-blob: f065bb7ab7fb48dd002629f8bdcb0336602d3cba
   RNCAsyncStorage: 618d03a5f52fbccb3d7010076bc54712844c18ef
-  RNCClipboard: d77213bfa269013bf4b857b7a9ca37ee062d8ef1
+  RNCClipboard: 204b94473a99932e314b730a81363e0bf795a60d
   RNCPushNotificationIOS: 64218f3c776c03d7408284a819b2abfda1834bc8
   RNDateTimePicker: 65e1d202799460b286ff5e741d8baf54695e8abd
   RNDeviceInfo: aad3c663b25752a52bf8fce93f2354001dd185aa
@@ -1183,4 +1183,4 @@ SPEC CHECKSUMS:
 
 PODFILE CHECKSUM: 1c722bae26d4a152d26e8bc5bb8ac70fa6ef52a9
 
-COCOAPODS: 1.12.1
+COCOAPODS: 1.12.0
