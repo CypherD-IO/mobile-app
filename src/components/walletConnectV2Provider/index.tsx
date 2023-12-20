@@ -63,11 +63,7 @@ export const WalletConnectV2Provider: React.FC<any> = ({ children }) => {
   }, []);
 
   useEffect(() => {
-    if (
-      !isWeb3WalletInitialized &&
-      globalContext.globalState.token &&
-      !isInitializationInProgress.current
-    ) {
+    if (!isWeb3WalletInitialized && !isInitializationInProgress.current) {
       isInitializationInProgress.current = true;
       void onInitialize();
     }
@@ -75,7 +71,7 @@ export const WalletConnectV2Provider: React.FC<any> = ({ children }) => {
     //   setInitialized(false);
     //   onInitialize();
     // }
-  }, [isWeb3WalletInitialized, globalContext.globalState.token]);
+  }, [isWeb3WalletInitialized]);
 
   const { url: initialUrl } = useInitialIntentURL();
 

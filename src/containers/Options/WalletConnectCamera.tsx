@@ -48,6 +48,7 @@ import Button from '../../components/v2/button';
 import { ButtonType } from '../../constants/enum';
 import { useGlobalModalContext } from '../../components/v2/GlobalModal';
 import { WALLET_CONNECT_PROPOSAL_LISTENER } from '../../constants/timeOuts';
+import * as Sentry from '@sentry/react-native';
 
 export default function WalletConnectCamera(props) {
   const { walletConnectState, walletConnectDispatch } =
@@ -103,6 +104,7 @@ export default function WalletConnectCamera(props) {
           });
         }
       } catch (e) {
+        Sentry.captureException(e);
         loading.current = false;
         showModal('state', {
           type: 'error',
