@@ -7,7 +7,11 @@ import React, {
   useRef,
   useState,
 } from 'react';
-import { HdWalletContext, PortfolioContext } from '../../core/util';
+import {
+  HdWalletContext,
+  PortfolioContext,
+  _NO_CYPHERD_CREDENTIAL_AVAILABLE_,
+} from '../../core/util';
 import {
   createWeb3Wallet,
   web3WalletPair,
@@ -46,24 +50,33 @@ export const WalletConnectV2Provider: React.FC<any> = ({ children }) => {
   // const { relayerRegionURL } = useSnapshot(SettingsStore.state)
 
   const onInitialize = useCallback(async () => {
-    let projectId = Config.WALLET_CONNECT_PROJECTID;
-    const resp = await getWithAuth('/v1/authentication/creds/wc');
-    if (!resp.isError) {
-      const { data } = resp;
-      projectId = data.projectId;
-    }
-    try {
-      if (projectId) {
-        await createWeb3Wallet(projectId);
-        setIsWeb3WalletInitialized(true);
+    const projectId = Config.WALLET_CONNECT_PROJECTID;
+    if (
+      ethereum.address &&
+      ethereum.address !== _NO_CYPHERD_CREDENTIAL_AVAILABLE_
+    ) {
+      // const resp = await getWithAuth('/v1/authentication/creds/wc'); //TO DO Eliminate sign message race condition (axios intercept)
+      // if (!resp.isError) {
+      //   const { data } = resp;
+      //   projectId = data.projectId;
+      // }
+      try {
+        if (projectId) {
+          await createWeb3Wallet(projectId);
+          setIsWeb3WalletInitialized(true);
+        }
+      } catch (err: unknown) {
+        Sentry.captureException(err);
       }
-    } catch (err: unknown) {
-      Sentry.captureException(err);
     }
   }, []);
 
   useEffect(() => {
-    if (!isWeb3WalletInitialized && !isInitializationInProgress.current) {
+    if (
+      !isWeb3WalletInitialized &&
+      !isInitializationInProgress.current &&
+      ethereum.address
+    ) {
       isInitializationInProgress.current = true;
       void onInitialize();
     }
@@ -71,7 +84,7 @@ export const WalletConnectV2Provider: React.FC<any> = ({ children }) => {
     //   setInitialized(false);
     //   onInitialize();
     // }
-  }, [isWeb3WalletInitialized]);
+  }, [isWeb3WalletInitialized, ethereum.address]);
 
   const { url: initialUrl } = useInitialIntentURL();
 
