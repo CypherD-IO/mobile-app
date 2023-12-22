@@ -23,7 +23,6 @@ axiosRetry(axios, {
   },
 });
 axios.defaults.headers.common = {
-  // client: `${Platform.OS}:${DeviceInfo.getVersion()}`,
-  client: `${Platform.OS}:500`,
+  client: `${Platform.OS}:${DeviceInfo.getVersion()}`,
 };
 export default axios;
