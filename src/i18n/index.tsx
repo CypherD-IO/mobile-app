@@ -917,6 +917,13 @@ const resources = {
       GAS_ESTIMATION_FAILED: 'Gas Estimation Failed',
       GAS_ESTIMATION_FAILED_DESCRIPTION:
         'Could not estimate gas fee for the transaction, try again or contact support.',
+      SEND_INVITE_CODE_TITLE: 'Invite a Friend',
+      SEND_INVITE_CODE: 'SEND INVITE',
+      INVITE_SENT_SUCCESSFULLY: 'Invite Sent Successfully',
+      INVITE_SENT_DESCRIPTION:
+        'An email with the invite code has been sent to ',
+      INVALID_EMAIL_NAME_ERROR: 'Enter a valid email and name',
+      INVITE_SEND_ERROR: 'Unable to send invite code',
     },
   },
 };
