@@ -89,6 +89,7 @@ import { DEFIOverviewScreen } from '../containers/DeFi/DEFIOverview';
 import ShippingDetailsOTPScreen from '../containers/DebitCard/CardV2/ShippingDetailsOTPScreen';
 import CardSignupConfirmation from '../containers/DebitCard/cardSignupConfirmation';
 import UpdateCardContactDetails from '../containers/DebitCard/bridgeCard/updateContactDetails';
+import SendInviteCode from '../containers/DebitCard/sendInviteCode';
 
 const { DynamicImage, DynamicButton } = require('../styles');
 
@@ -852,6 +853,12 @@ export function DebitCardStackScreen({ navigation }) {
             return <></>;
           },
         })}
+      />
+
+      <FundCardStack.Screen
+        name={screenTitle.SEND_INVITE_CODE_SCREEN}
+        component={SendInviteCode}
+        options={({ navigation }) => ({ headerShown: false })}
       />
 
       <FundCardStack.Screen
