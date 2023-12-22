@@ -7,6 +7,7 @@ import { isAndroid } from '../../misc/checkers';
 import {
   CyDImage,
   CyDImageBackground,
+  CyDSafeAreaView,
   CyDScrollView,
   CyDText,
   CyDTextInput,
@@ -131,131 +132,133 @@ export default function SendInviteCode({ navigation }: Props) {
     <CyDImageBackground
       source={AppImages.SEND_INVITE_CODE_BG}
       className='flex-1'>
-      <CyDView
-        className={clsx('', {
-          'pb-[75px]': isAndroid(),
-        })}>
-        <CyDScrollView className='py-[12px]'>
-          <ChooseCountryModal
-            isModalVisible={isModalVisible}
-            setModalVisible={setModalVisible}
-            selectedCountryState={[selectedCountry, setSelectedCountry]}
-          />
-          <CyDView className={'w-screen'}>
-            <CyDView className='flex-row justify-center items-center w-[100%] mt-[60px] px-[10px]'>
-              <CyDTouchView
-                onPress={() => {
-                  navigation.goBack();
-                }}>
-                <CyDImage
-                  source={AppImages.BACK}
-                  className='h-[22px] w-[25px]'
-                  resizeMode='contain'
-                />
-              </CyDTouchView>
-              <CyDView className='flex flex-1 items-center'>
-                <CyDText className='font-extrabold text-[20px] ml-[-25px]'>
-                  {t<string>('SEND_INVITE_CODE_TITLE')}
-                </CyDText>
-              </CyDView>
+      <CyDSafeAreaView className='flex-1'>
+        <CyDView
+          className={clsx('', {
+            'pb-[75px]': isAndroid(),
+          })}>
+          <CyDView className='flex-row justify-center items-center w-[100%] px-[10px]'>
+            <CyDTouchView
+              onPress={() => {
+                navigation.goBack();
+              }}>
+              <CyDImage
+                source={AppImages.BACK}
+                className='h-[22px] w-[25px]'
+                resizeMode='contain'
+              />
+            </CyDTouchView>
+            <CyDView className='flex flex-1 items-center'>
+              <CyDText className='font-extrabold text-[20px] ml-[-25px]'>
+                {t<string>('SEND_INVITE_CODE_TITLE')}
+              </CyDText>
             </CyDView>
-            {/* <CyDText
+          </CyDView>
+          <CyDScrollView className='py-[12px]'>
+            <ChooseCountryModal
+              isModalVisible={isModalVisible}
+              setModalVisible={setModalVisible}
+              selectedCountryState={[selectedCountry, setSelectedCountry]}
+            />
+            <CyDView className={'w-screen'}>
+              {/* <CyDText
               className={
                 'text-center font-bold text-[22px] mt-[60px] mb-[10px]'
               }>
               {t<string>('SEND_INVITE_CODE_TITLE')}
             </CyDText> */}
-            {/* <CyDText className={'text-center font-bold text-[14px] mt-[-6px] mb-[6px]'}>{`(${t('AVAILABLE_ONLY_IN_USA')})`}</CyDText> */}
-            <CyDView>
-              <CyDView className={'flex items-center text-center z-50'}>
-                <CyDImage
-                  source={AppImages.SEND_INVITE_CODE}
-                  className='h-[180px] w-[180px]'
-                />
-              </CyDView>
-              <CyDView
-                className={
-                  'flex justify-center items-center text-center relative mt-[-120px]'
-                }>
-                <CyDView className={'pt-[100px] w-[75%]'}>
-                  <CyDTouchView
-                    className={
-                      'my-[5px] border-[1px] bg-white border-inputBorderColor py-[12px] px-[10px] rounded-[8px] flex w-[100%]'
-                    }
-                    onPress={() => setModalVisible(true)}>
-                    <CyDView
-                      className={clsx(
-                        'flex flex-row justify-between items-center',
-                        { 'border-redOffColor': !selectedCountry },
-                      )}>
-                      <CyDView className={'flex flex-row items-center'}>
-                        <CyDText className='text-center text-[18px] ml-[8px]'>
-                          {selectedCountry.flag}
-                        </CyDText>
-                        <CyDText className='text-center text-[16px] ml-[8px]'>
-                          {selectedCountry.name}
-                        </CyDText>
-                      </CyDView>
-                      <CyDImage source={AppImages.DOWN_ARROW} />
-                    </CyDView>
-                  </CyDTouchView>
-                  <CyDTextInput
-                    value={name}
-                    textContentType='name'
-                    autoFocus={true}
-                    keyboardType='default'
-                    autoCapitalize='none'
-                    autoCorrect={false}
-                    onChangeText={(text: string) => {
-                      setName(text);
-                    }}
-                    placeholderTextColor={'#C5C5C5'}
-                    className={clsx(
-                      'border-[1px] border-[#C5C5C5] bg-white h-[50px] rounded-[8px] text-center text-black',
-                      {
-                        'pb-[10px]': isAndroid(),
-                      },
-                    )}
-                    placeholder={`Friend\'s name`}
+              {/* <CyDText className={'text-center font-bold text-[14px] mt-[-6px] mb-[6px]'}>{`(${t('AVAILABLE_ONLY_IN_USA')})`}</CyDText> */}
+              <CyDView>
+                <CyDView className={'flex items-center text-center z-50'}>
+                  <CyDImage
+                    source={AppImages.SEND_INVITE_CODE}
+                    className='h-[180px] w-[180px]'
                   />
-                  <CyDTextInput
-                    value={userEmail}
-                    textContentType='emailAddress'
-                    autoFocus={true}
-                    keyboardType='email-address'
-                    autoCapitalize='none'
-                    autoCorrect={false}
-                    onChangeText={(text: string) => {
-                      setUserEmail(text);
-                    }}
-                    placeholderTextColor={'#C5C5C5'}
-                    className={clsx(
-                      'border-[1px] my-[5px] border-[#C5C5C5] bg-white h-[50px] rounded-[8px] text-center text-black',
-                      {
-                        'pb-[10px]': isAndroid(),
-                      },
-                    )}
-                    placeholder={`Friend\'s email`}
-                  />
-                  <Button
-                    onPress={() => {
-                      void joinWaitlist();
-                    }}
-                    loading={joiningWaitlist}
-                    style={'rounded-[8px] h-[50px] mt-[20px]'}
-                    title={t<string>('SEND_INVITE_CODE')}
-                  />
-
-                  <CyDView className='flex flex-row mt-[12px] pr-[32px]'>
-                    <CyDImage
-                      source={AppImages.CANDY_CANE}
-                      className='h-[20px] w-[20px]'
-                      resizeMode='contain'
-                    />
-                    <CyDText className='text-center text-successTextGreen font-bold'>
-                      {
-                        ' Share the joy of giving this season! Gift your friends an invite code for Cypher Card. They will receive it instantly via email, courtesy of you.  '
+                </CyDView>
+                <CyDView
+                  className={
+                    'flex justify-center items-center text-center relative mt-[-120px]'
+                  }>
+                  <CyDView className={'pt-[100px] w-[75%]'}>
+                    <CyDTouchView
+                      className={
+                        'my-[5px] border-[1px] bg-white border-inputBorderColor py-[12px] px-[10px] rounded-[8px] flex w-[100%]'
                       }
+                      onPress={() => setModalVisible(true)}>
+                      <CyDView
+                        className={clsx(
+                          'flex flex-row justify-between items-center',
+                          { 'border-redOffColor': !selectedCountry },
+                        )}>
+                        <CyDView className={'flex flex-row items-center'}>
+                          <CyDText className='text-center text-[18px] ml-[8px]'>
+                            {selectedCountry.flag}
+                          </CyDText>
+                          <CyDText className='text-center text-[16px] ml-[8px]'>
+                            {selectedCountry.name}
+                          </CyDText>
+                        </CyDView>
+                        <CyDImage source={AppImages.DOWN_ARROW} />
+                      </CyDView>
+                    </CyDTouchView>
+                    <CyDTextInput
+                      value={name}
+                      textContentType='name'
+                      autoFocus={true}
+                      keyboardType='default'
+                      autoCapitalize='none'
+                      autoCorrect={false}
+                      onChangeText={(text: string) => {
+                        setName(text);
+                      }}
+                      placeholderTextColor={'#C5C5C5'}
+                      className={clsx(
+                        'border-[1px] border-[#C5C5C5] bg-white h-[50px] rounded-[8px] text-center text-black',
+                        {
+                          'pb-[10px]': isAndroid(),
+                        },
+                      )}
+                      placeholder={`Friend\'s name`}
+                    />
+                    <CyDTextInput
+                      value={userEmail}
+                      textContentType='emailAddress'
+                      autoFocus={true}
+                      keyboardType='email-address'
+                      autoCapitalize='none'
+                      autoCorrect={false}
+                      onChangeText={(text: string) => {
+                        setUserEmail(text);
+                      }}
+                      placeholderTextColor={'#C5C5C5'}
+                      className={clsx(
+                        'border-[1px] my-[5px] border-[#C5C5C5] bg-white h-[50px] rounded-[8px] text-center text-black',
+                        {
+                          'pb-[10px]': isAndroid(),
+                        },
+                      )}
+                      placeholder={`Friend\'s email`}
+                    />
+                    <Button
+                      onPress={() => {
+                        void joinWaitlist();
+                      }}
+                      loading={joiningWaitlist}
+                      style={'rounded-[8px] h-[50px] mt-[20px]'}
+                      title={t<string>('SEND_INVITE_CODE')}
+                    />
+
+                    <CyDView className='flex flex-row mt-[12px] pr-[32px]'>
+                      <CyDImage
+                        source={AppImages.CANDY_CANE}
+                        className='h-[20px] w-[20px]'
+                        resizeMode='contain'
+                      />
+                      <CyDText className='text-center text-successTextGreen font-bold px-[2px]'>
+                        {
+                          ' Share the joy of giving this season! Gift your friends an invite code for Cypher Card. They will receive it instantly via email, courtesy of you.  '
+                        }
+                      </CyDText>
                       <CyDImage
                         source={AppImages.CANDY_CANE}
                         className='h-[20px] w-[20px]'
@@ -264,13 +267,12 @@ export default function SendInviteCode({ navigation }: Props) {
                           transform: [{ scaleX: -1 }],
                         }}
                       />
-                    </CyDText>
+                    </CyDView>
                   </CyDView>
                 </CyDView>
               </CyDView>
             </CyDView>
-          </CyDView>
-          {/* <CyDView>
+            {/* <CyDView>
           <CyDText className={'mt-[25px] mx-[40px] text-[20px] font-bold'}>
             {t<string>('CARD_WAITLIST_PAGE_CAPTION')}
           </CyDText>
@@ -294,8 +296,9 @@ export default function SendInviteCode({ navigation }: Props) {
             className={'w-[200px] h-[90px]'}
           />
         </CyDView> */}
-        </CyDScrollView>
-      </CyDView>
+          </CyDScrollView>
+        </CyDView>
+      </CyDSafeAreaView>
     </CyDImageBackground>
   );
 }
