@@ -302,6 +302,9 @@ const AURORA_LOGO = require('./aurora.png');
 const MOONBEAM_LOGO = require('./moonbeam.png');
 const MOONRIVER_LOGO = require('./moonriver.png');
 const UPGRADE_TO_PHYSICAL_CARD_ARROW = require('./upgradeToPhysicalCardArrow.png');
+const SEND_INVITE_CODE_BG = require('./sendInviteCodeBg.png');
+const SEND_INVITE_CODE = require('./sendInviteCode.png');
+const CANDY_CANE = require('./candyCane.png');
 
 // ICONS FROM S3
 const SWAP = { uri: `${S3_BUCKET_URL_ICONS}/swap.png` };
@@ -661,5 +664,8 @@ const AppImages = {
   DEFI_DEBT,
   DEFI_VALUE,
   UPGRADE_TO_PHYSICAL_CARD_ARROW,
+  SEND_INVITE_CODE_BG,
+  SEND_INVITE_CODE,
+  CANDY_CANE,
 };
 export default AppImages;

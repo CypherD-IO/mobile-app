@@ -58,6 +58,7 @@ function TabStack() {
     screenTitle.DEBIT_CARD_SCREEN,
     screenTitle.BRIDGE_CARD_SCREEN,
     screenTitle.ON_META,
+    screenTitle.SEND_INVITE_CODE_SCREEN,
   ];
 
   const [badgedTabBarOptions, setBadgedTabBarOptions] = useState<any>({});

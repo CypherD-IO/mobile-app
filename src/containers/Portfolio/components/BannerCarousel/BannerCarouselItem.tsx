@@ -36,6 +36,7 @@ import {
   setDismissedActivityCardIDs,
   setDismissedStaticCardIDs,
 } from '../../../../core/asyncStorage';
+import { cloneDeep, get } from 'lodash';
 
 interface BannerCarouselItemProps {
   item: BannerRecord | BridgeOrCardActivity;
@@ -252,6 +253,34 @@ const BannerCarouselItem = ({
     }
   }, [isActivity, item]);
 
+  const onBannerClick = () => {
+    if (isActivity) {
+      navigation.navigate(screenTitle.ACTIVITIES);
+    } else {
+      const { redirectURI, title, appCta } = item;
+      if (redirectURI) {
+        navigation.navigate(screenTitle.SOCIAL_MEDIA_SCREEN, {
+          title,
+          uri: redirectURI,
+        });
+      } else if (appCta) {
+        //appCta = 'DEBIT_CARD/CARD_INVITE/CARD_SIGNUP';
+        const screens = appCta.split('/');
+        if (Object.keys(screenTitle).includes(screens[0])) {
+          let routeObj = {};
+          for (let i = screens.length - 1; i > 0; i--) {
+            const screenParams = {
+              screen: get(screenTitle, screens[i]),
+              params: cloneDeep(routeObj),
+            };
+            routeObj = cloneDeep(screenParams);
+          }
+          navigation.navigate(get(screenTitle, screens[0]), routeObj);
+        }
+      }
+    }
+  };
+
   return (
     <CyDAnimatedView
       className={'flex justify-center items-center'}
@@ -259,19 +288,13 @@ const BannerCarouselItem = ({
       <CyDView className='flex flex-row h-full w-full'>
         <CyDTouchView
           className='h-full border border-sepratorColor overflow-hidden rounded-[16px]'
-          disabled={!isActivity && item.redirectURI === undefined}
+          disabled={
+            !isActivity &&
+            item.redirectURI === undefined &&
+            item.appCta === undefined
+          }
           onPress={() => {
-            if (isActivity) {
-              navigation.navigate(screenTitle.ACTIVITIES);
-            } else {
-              const { redirectURI, title } = item;
-              if (redirectURI) {
-                navigation.navigate(screenTitle.SOCIAL_MEDIA_SCREEN, {
-                  title,
-                  uri: redirectURI,
-                });
-              }
-            }
+            onBannerClick();
           }}>
           <CyDView
             className={clsx(

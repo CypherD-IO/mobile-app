@@ -107,6 +107,7 @@ export const screenTitle = {
   SHIPPING_DETAILS_OTP_SCREEN: 'ShippingDetailsOTPScreen',
   CARD_SIGNUP_CONFIRMATION: 'CardSignupConfirmation',
   CARD_UPDATE_CONTACT_DETAILS_SCREEN: 'updateCardContctDetailsScreen',
+  SEND_INVITE_CODE_SCREEN: 'sendInviteCodeScreen',
 };
 
 export const fontsName = {
