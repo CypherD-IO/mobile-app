@@ -14,8 +14,7 @@ import {
   CyDTouchView,
   CyDView,
 } from '../../styles/tailwindStyles';
-import { hostWorker } from '../../global';
-import { isValidEmailID, HdWalletContext } from '../../core/util';
+import { isValidEmailID } from '../../core/util';
 import * as Sentry from '@sentry/react-native';
 import { useTranslation } from 'react-i18next';
 import * as C from '../../constants/index';
@@ -23,13 +22,6 @@ import clsx from 'clsx';
 import ChooseCountryModal from '../../components/v2/ChooseCountryModal';
 import { ICountry } from '../../models/cardApplication.model';
 import useAxios from '../../core/HttpRequest';
-
-const cardBenefits = [
-  'Instantly swap crypto to USD',
-  'Receive free lifetime access',
-  'Spend crypto from 20 different chains - more coming soon!',
-  'Use your card anywhere in the world',
-];
 
 interface Props {
   navigation: any;
@@ -43,19 +35,15 @@ export default function SendInviteCode({ navigation }: Props) {
   const [userEmail, setUserEmail] = useState<string>('');
   const [name, setName] = useState<string>('');
   const [isModalVisible, setModalVisible] = useState<boolean>(false);
-  const [selectedCountry, setSelectedCountry] = useState<ICountry>({
-    name: 'United States',
-    dialCode: '+1',
-    flag: '🇺🇸',
-    Iso2: 'US',
-    Iso3: 'USA',
-    currency: 'USD',
-  });
+  const [selectedCountry, setSelectedCountry] = useState<ICountry>();
   const { postWithAuth } = useAxios();
 
   useEffect(() => {
     return () => {
-      navigation.reset({ index: 0 });
+      navigation.reset({
+        index: 0,
+        routes: [{ name: C.screenTitle.DEBIT_CARD_SCREEN }],
+      });
     };
   }, []);
 
@@ -140,7 +128,10 @@ export default function SendInviteCode({ navigation }: Props) {
           <CyDView className='flex-row justify-center items-center w-[100%] px-[10px]'>
             <CyDTouchView
               onPress={() => {
-                navigation.goBack();
+                navigation.reset({
+                  index: 0,
+                  routes: [{ name: C.screenTitle.DEBIT_CARD_SCREEN }],
+                });
               }}>
               <CyDImage
                 source={AppImages.BACK}
@@ -192,10 +183,10 @@ export default function SendInviteCode({ navigation }: Props) {
                         )}>
                         <CyDView className={'flex flex-row items-center'}>
                           <CyDText className='text-center text-[18px] ml-[8px]'>
-                            {selectedCountry.flag}
+                            {selectedCountry?.flag ?? ''}
                           </CyDText>
                           <CyDText className='text-center text-[16px] ml-[8px]'>
-                            {selectedCountry.name}
+                            {selectedCountry?.name ?? 'Select Country'}
                           </CyDText>
                         </CyDView>
                         <CyDImage source={AppImages.DOWN_ARROW} />

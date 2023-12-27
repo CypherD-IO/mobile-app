@@ -25,7 +25,7 @@ interface Props {
   isModalVisible: boolean;
   setModalVisible: React.Dispatch<React.SetStateAction<boolean>>;
   selectedCountryState: [
-    ICountry,
+    ICountry | undefined,
     React.Dispatch<React.SetStateAction<ICountry>>,
   ];
 }
@@ -144,7 +144,7 @@ const ChooseCountryModal = ({
                       className={clsx(
                         'flex flex-row items-center justify-between px-[16px] py-[6px] mx-[12px] rounded-[8px]',
                         {
-                          'bg-paleBlue': country.name === selectedCountry.name,
+                          'bg-paleBlue': country.name === selectedCountry?.name,
                         },
                       )}
                       key={country.name}>
