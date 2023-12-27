@@ -1,8 +1,7 @@
-import React, { useContext, useEffect, useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import AppImages from '../../../assets/images/appImages';
 import Button from '../../components/v2/button';
 import { useGlobalModalContext } from '../../components/v2/GlobalModal';
-import axios from '../../core/Http';
 import { isAndroid } from '../../misc/checkers';
 import {
   CyDImage,
@@ -35,7 +34,9 @@ export default function SendInviteCode({ navigation }: Props) {
   const [userEmail, setUserEmail] = useState<string>('');
   const [name, setName] = useState<string>('');
   const [isModalVisible, setModalVisible] = useState<boolean>(false);
-  const [selectedCountry, setSelectedCountry] = useState<ICountry>();
+  const [selectedCountry, setSelectedCountry] = useState<
+    ICountry | undefined
+  >();
   const { postWithAuth } = useAxios();
 
   useEffect(() => {
@@ -48,7 +49,13 @@ export default function SendInviteCode({ navigation }: Props) {
   }, []);
 
   async function joinWaitlist() {
-    if (userEmail && userEmail !== '' && name && name !== '') {
+    if (
+      userEmail &&
+      userEmail !== '' &&
+      name &&
+      name !== '' &&
+      selectedCountry
+    ) {
       if (isValidEmailID(userEmail)) {
         try {
           setJoiningWaitlist(true);
