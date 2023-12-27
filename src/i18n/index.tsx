@@ -882,6 +882,7 @@ const resources = {
       CARD_TXNS_EXPORTED_TEXT:
         'Your transactions will be exported as a CSV (.csv) file and sent shortly to \n',
       UPGRADE_TO_PHYSICAL_CARD: 'Upgrade to physical card',
+      UPGRADE_NOW: 'Upgrade now',
       ADD_SHIPPING_DETAILS_SUBTEXT:
         'Cypher card will be shipped to this address. Note that the shipping address cannot be a PO Box.',
       SEND_OTP_TEXT:
