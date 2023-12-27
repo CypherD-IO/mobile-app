@@ -27,14 +27,13 @@ export default function BridgeCardOptionsScreen(props: {
   navigation: any;
   route: {
     params: {
-      onSuccess: (data: any, provider: CardProviders) => {};
       currentCardProvider: CardProviders;
       card: { cardId: string; status: string; type: string };
     };
   };
 }) {
   const { route, navigation } = props;
-  const { card, currentCardProvider, onSuccess } = route.params;
+  const { card, currentCardProvider } = route.params;
   const { cardId, status } = card;
   const [isCardBlocked, setIsCardBlocked] = useState(status === 'inactive');
   const globalContext = useContext<any>(GlobalContext);
@@ -143,7 +142,6 @@ export default function BridgeCardOptionsScreen(props: {
         <CyDTouchView
           onPress={() =>
             navigation.navigate(screenTitle.CARD_SET_PIN_SCREEN, {
-              onSuccess,
               currentCardProvider,
               card,
             })
@@ -187,6 +185,21 @@ export default function BridgeCardOptionsScreen(props: {
         </CyDText>
         <CyDImage
           source={AppImages.OPTIONS_ARROW}
+          className={'w-[15%] h-[18px]'}
+          resizeMode={'contain'}
+        />
+      </CyDTouchView>
+      <CyDTouchView
+        onPress={() =>
+          navigation.navigate(screenTitle.SOCIAL_MEDIA_SCREEN, {
+            title: 'Card FAQ',
+            uri: 'https://www.cypherwallet.io/card#faq',
+          })
+        }
+        className='flex flex-row justify-between align-center ml-[20px] mr-[4px] pt-[20px] pb-[15px] border-b-[1px] border-sepratorColor'>
+        <CyDText className='text-[16px] font-bold'>{'FAQ'}</CyDText>
+        <CyDImage
+          source={AppImages.LINK}
           className={'w-[15%] h-[18px]'}
           resizeMode={'contain'}
         />

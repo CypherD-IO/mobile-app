@@ -234,7 +234,7 @@ const resources = {
       VALUE: 'Value',
       NETWORK_FEE: 'Network Fee',
       TOTAL_RECEIVED: 'Total Estimated \nReceived ',
-      ESTIMATED_TIME: 'Estimated Time: ',
+      ESTIMATED_TIME: 'Estimated Time ',
       UPDATE: 'UPDATE',
       LATER: 'LATER',
       NO_CONNECTIONS: 'No Active Connections',
@@ -859,6 +859,7 @@ const resources = {
       DEFI_POSITIONS: 'DeFi Positions',
       ONLY_ACTIVE_POSITIONS: 'Only active positions',
       PLUS: '+',
+      MANAGE_POSITIONS: 'Manage positions',
       TOTAL_DEBT: 'Total Debt',
       TOTAL_SUPPLY: 'Total Supply',
       TOTAL_VALUE: 'Total Value',
@@ -916,6 +917,14 @@ const resources = {
       GAS_ESTIMATION_FAILED: 'Gas Estimation Failed',
       GAS_ESTIMATION_FAILED_DESCRIPTION:
         'Could not estimate gas fee for the transaction, try again or contact support.',
+      SEND_INVITE_CODE_TITLE: 'Invite a Friend',
+      SEND_INVITE_CODE: 'SEND INVITE',
+      INVITE_SENT_SUCCESSFULLY: 'Invite Sent Successfully',
+      INVITE_SENT_DESCRIPTION:
+        'An email with the invite code has been sent to ',
+      INVALID_EMAIL_NAME_ERROR:
+        'Make sure you entered a valid country, email and name',
+      INVITE_SEND_ERROR: 'Unable to send invite code',
     },
   },
 };

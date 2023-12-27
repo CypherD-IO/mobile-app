@@ -25,6 +25,9 @@ import {
   CHAIN_ZKSYNC_ERA,
   CHAIN_BASE,
   CHAIN_POLYGON_ZKEVM,
+  CHAIN_AURORA,
+  CHAIN_MOONBEAM,
+  CHAIN_MOONRIVER,
 } from '../constants/server';
 import {
   GlobalStateDef,
@@ -113,6 +116,12 @@ export function getExplorerUrlFromBackendNames(chain: string, hash: string) {
       return `https://zkevm.polygonscan.com/tx/${hash}`;
     case ChainBackendNames.ZKSYNC_ERA:
       return `https://www.oklink.com/zksync/tx/${hash}`;
+    case ChainBackendNames.AURORA:
+      return `https://explorer.aurora.dev/tx/${hash}`;
+    case ChainBackendNames.MOONBEAM:
+      return `https://moonbeam.moonscan.io/tx/${hash}`;
+    case ChainBackendNames.MOONRIVER:
+      return `https://moonriver.moonscan.io/tx/${hash}`;
     case ChainBackendNames.FANTOM:
       return `https://ftmscan.com/tx/${hash}`;
     case ChainBackendNames.EVMOS:
@@ -149,6 +158,8 @@ export function getExplorerUrl(
         return `https://base.dex.guru/tx/${hash}`;
       } else if (chainName === CHAIN_POLYGON_ZKEVM.name) {
         return `https://zkevm.polygonscan.com/tx/${hash}`;
+      } else if (chainName === CHAIN_AURORA.name) {
+        return `https://explorer.aurora.dev/tx/${hash}`;
       }
       return `https://etherscan.io/tx/${hash}`;
     case CHAIN_AVALANCHE.symbol:
@@ -159,6 +170,10 @@ export function getExplorerUrl(
       return `https://polygonscan.com/tx/${hash}`;
     case CHAIN_FTM.symbol:
       return `https://ftmscan.com/tx/${hash}`;
+    case CHAIN_MOONBEAM.symbol:
+      return `https://moonbeam.moonscan.io/tx/${hash}`;
+    case CHAIN_MOONRIVER.symbol:
+      return `https://moonriver.moonscan.io/tx/${hash}`;
     case CHAIN_EVMOS.symbol:
       return `https://escan.live/tx/${hash}`;
     case CHAIN_COSMOS.symbol:

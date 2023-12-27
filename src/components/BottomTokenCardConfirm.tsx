@@ -14,6 +14,7 @@ import Button from './v2/button';
 import { ButtonType } from '../constants/enum';
 import { formatAmount, limitDecimalPlaces } from '../core/util';
 import { PayTokenModalParams } from '../models/card.model';
+import LottieView from 'lottie-react-native';
 
 interface BottomCardConfirmProps {
   isModalVisible: boolean;
@@ -111,10 +112,13 @@ export default function BottomCardConfirm({
             <CyDText className={'font-bold text-[14px]'}>
               {t('SEND_ON')}
             </CyDText>
-            <CyDView className={'flex flex-row pl-[25px] max-w-[70%]'}>
+            <CyDView
+              className={
+                'flex flex-row justify-center items-center pl-[25px] max-w-[70%]'
+              }>
               <CyDFastImage
                 source={modalParams.appImage}
-                className={'w-[18px] h-[18px] mt-[3px]'}
+                className={'w-[18px] h-[18px]'}
               />
               <CyDText className={'font-medium text-[14px] ml-[4px]'}>
                 {modalParams.networkName}
@@ -158,6 +162,30 @@ export default function BottomCardConfirm({
               </CyDText>
             </CyDView>
           </CyDView>
+
+          <CyDView className={'flex flex-row justify-between py-[16px]'}>
+            <CyDView className='flex flex-row justify-start items-center w-[50%]'>
+              <CyDText className={'font-bold text-[14px]'}>
+                {t('ESTIMATED_TIME')}
+              </CyDText>
+              <LottieView
+                source={AppImages.ESTIMATED_TIME}
+                resizeMode={'contain'}
+                autoPlay
+                loop
+                style={{ width: 20 }}
+              />
+            </CyDView>
+
+            <CyDView className={'flex flex-row justify-between items-center'}>
+              <CyDText
+                className={
+                  'font-nunito font-[16px] text-black font-bold ml-[12px]'
+                }>
+                ~ 4 mins
+              </CyDText>
+            </CyDView>
+          </CyDView>
         </CyDView>
         {!modalParams?.hasSufficientBalanceAndGasFee ? (
           <CyDView className='flex flex-row items-center rounded-[8px] justify-center py-[15px] mt-[20px] mb-[10px] bg-warningRedBg'>
@@ -172,7 +200,7 @@ export default function BottomCardConfirm({
           </CyDView>
         ) : null}
         <CyDView
-          className={'flex flex-row justify-between items-center px-[20px]'}>
+          className={'flex flex-row justify-between items-center px-[10px]'}>
           <Button
             title={t<string>('CANCEL')}
             titleStyle='text-[14px]'
@@ -181,7 +209,7 @@ export default function BottomCardConfirm({
             onPress={() => {
               hideModal();
             }}
-            style={'h-[60px] w-[166px] mx-[6px]'}
+            style={'h-[60px] w-[46%] mr-[6px]'}
           />
           <Button
             title={
@@ -201,7 +229,7 @@ export default function BottomCardConfirm({
               }
             }}
             isPrivateKeyDependent={true}
-            style={'h-[60px] w-[166px] mx-[6px]'}
+            style={'h-[60px] w-[46%] ml-[6px]'}
           />
         </CyDView>
       </CyDView>

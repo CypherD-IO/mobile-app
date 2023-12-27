@@ -24,7 +24,7 @@ import { ICountry } from '../../models/cardApplication.model';
 const cardBenefits = [
   'Instantly swap crypto to USD',
   'Receive free lifetime access',
-  'Spend crypto from 17 different chains - more coming soon!',
+  'Spend crypto from 20 different chains - more coming soon!',
   'Use your card anywhere in the world',
 ];
 
@@ -113,7 +113,10 @@ export default function CardWailtList({ navigation }: Props) {
   }
 
   return (
-    <CyDView className='flex-1 bg-white mt-[32px]'>
+    <CyDView
+      className={clsx('flex-1 bg-white mt-[32px]', {
+        'pb-[75px]': isAndroid(),
+      })}>
       <CyDScrollView className='bg-white py-[12px]'>
         <ChooseCountryModal
           isModalVisible={isModalVisible}

@@ -19,12 +19,15 @@ export const gasFeeReservation: Record<ChainBackendNames, number> = {
   EVMOS: 0.02,
   JUNO: 0.007,
   STARGAZE: 0.1,
-  NOBLE: 0,
+  NOBLE: 0.02,
   SHARDEUM: 0.01,
   SHARDEUM_SPHINX: 0.01,
   ZKSYNC_ERA: 0.0006, // TODO
   BASE: 0.0006, // TODO
   POLYGON_ZKEVM: 0.0006, // TODO
+  AURORA: 0.0006, // TODO
+  MOONBEAM: 0.0006, // TODO
+  MOONRIVER: 0.0006, // TODO
 };
 
 export const nativeTokenMapping: Record<ChainBackendNames, string> = {
@@ -46,6 +49,9 @@ export const nativeTokenMapping: Record<ChainBackendNames, string> = {
   ZKSYNC_ERA: 'Ethereum',
   BASE: 'Ethereum',
   POLYGON_ZKEVM: 'Ethereum',
+  AURORA: 'Ethereum',
+  MOONBEAM: 'Glimmer',
+  MOONRIVER: 'Moonriver',
 };
 
 export const MINIMUM_TRANSFER_AMOUNT_ETH = 50;

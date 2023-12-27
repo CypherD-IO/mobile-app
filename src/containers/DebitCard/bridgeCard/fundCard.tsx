@@ -184,6 +184,7 @@ export default function BridgeFundCardScreen({ route }: { route: any }) {
   const [usdAmount, setUsdAmount] = useState('');
   const [cryptoAmount, setCryptoAmount] = useState('');
   const [isMaxLoading, setIsMaxLoading] = useState(false);
+  const [placeholderText, setPlaceholderText] = useState('0.00');
   const [loading, setLoading] = useState<boolean>(false);
   const minTokenValueLimit = 10;
   const [selectedToken, setSelectedToken] = useState<TokenMeta>();
@@ -468,6 +469,10 @@ export default function BridgeFundCardScreen({ route }: { route: any }) {
   const sendTransaction = async (payTokenModalParamsLocal: any) => {
     const { contractAddress, chainDetails, contractDecimals } =
       selectedToken as TokenMeta;
+    const actualTokensRequired = limitDecimalPlaces(
+      tokenQuote.tokenRequired,
+      contractDecimals,
+    );
     const { chainName } = chainDetails;
     const currentTimeStamp = new Date();
     setLoading(true);
@@ -490,15 +495,15 @@ export default function BridgeFundCardScreen({ route }: { route: any }) {
             void intercomAnalyticsLog('send_token_for_card', {
               from: ethereum.address,
               dollar: selectedToken.chainDetails,
-              token_quantity: tokenQuote.tokenRequired,
+              token_quantity: actualTokensRequired,
               from_contract: contractAddress,
               quote_uuid: tokenQuote.quoteUUID,
             });
-            await sendNativeCoinOrTokenToAnyAddress(
+            sendNativeCoinOrTokenToAnyAddress(
               hdWallet,
               portfolioState,
               chainDetails,
-              tokenQuote.tokenRequired.toString(),
+              actualTokensRequired,
               contractAddress,
               contractDecimals,
               tokenQuote.quoteUUID,
@@ -535,7 +540,7 @@ export default function BridgeFundCardScreen({ route }: { route: any }) {
             void intercomAnalyticsLog('send_token_for_card', {
               from: get(senderAddress, chainName),
               dollar: selectedToken.chainDetails,
-              token_quantity: tokenQuote.tokenRequired,
+              token_quantity: actualTokensRequired,
               from_contract: contractAddress,
               quote_uuid: tokenQuote.quoteUUID,
             });
@@ -1422,7 +1427,12 @@ export default function BridgeFundCardScreen({ route }: { route: any }) {
                           : Number(selectedToken?.price));
                       setCryptoAmount(text);
                       setUsdAmount(
-                        (isNaN(usdText) ? '0.00' : usdText).toString(),
+                        (isNaN(usdText)
+                          ? '0.00'
+                          : selectedToken?.isZeroFeeCardFunding
+                            ? usdText
+                            : usdText / 1.02
+                        ).toString(),
                       );
                     } else {
                       const cryptoText =
@@ -1431,12 +1441,20 @@ export default function BridgeFundCardScreen({ route }: { route: any }) {
                           ? 1
                           : Number(selectedToken?.price));
                       setCryptoAmount(
-                        (isNaN(cryptoText) ? '0.00' : cryptoText).toString(),
+                        (isNaN(cryptoText)
+                          ? '0.00'
+                          : selectedToken?.isZeroFeeCardFunding
+                            ? cryptoText
+                            : cryptoText * 1.02
+                        ).toString(),
                       );
                       setUsdAmount(text);
                     }
                   }}
-                  placeholder='0.00'
+                  onFocus={() => {
+                    setPlaceholderText('');
+                  }}
+                  placeholder={placeholderText}
                   placeholderTextColor={'#999'}
                 />
                 <CyDText
@@ -1474,7 +1492,14 @@ export default function BridgeFundCardScreen({ route }: { route: any }) {
                       ? 1
                       : Number(selectedToken?.price));
                   setCryptoAmount(amount);
-                  setUsdAmount((isNaN(usdAmt) ? '0.00' : usdAmt).toString());
+                  setUsdAmount(
+                    (isNaN(usdAmt)
+                      ? '0.00'
+                      : selectedToken?.isZeroFeeCardFunding
+                        ? usdAmt
+                        : usdAmt / 1.02
+                    ).toString(),
+                  );
                 } else {
                   const cryptoAmt =
                     parseFloat(amount) /
@@ -1482,7 +1507,12 @@ export default function BridgeFundCardScreen({ route }: { route: any }) {
                       ? 1
                       : Number(selectedToken?.price));
                   setCryptoAmount(
-                    (isNaN(cryptoAmt) ? '0.00' : cryptoAmt).toString(),
+                    (isNaN(cryptoAmt)
+                      ? '0.00'
+                      : selectedToken?.isZeroFeeCardFunding
+                        ? cryptoAmt
+                        : cryptoAmt * 1.02
+                    ).toString(),
                   );
                   setUsdAmount(amount);
                 }

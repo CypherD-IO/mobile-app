@@ -89,6 +89,7 @@ import { DEFIOverviewScreen } from '../containers/DeFi/DEFIOverview';
 import ShippingDetailsOTPScreen from '../containers/DebitCard/CardV2/ShippingDetailsOTPScreen';
 import CardSignupConfirmation from '../containers/DebitCard/cardSignupConfirmation';
 import UpdateCardContactDetails from '../containers/DebitCard/bridgeCard/updateContactDetails';
+import SendInviteCode from '../containers/DebitCard/sendInviteCode';
 
 const { DynamicImage, DynamicButton } = require('../styles');
 
@@ -855,6 +856,12 @@ export function DebitCardStackScreen({ navigation }) {
       />
 
       <FundCardStack.Screen
+        name={screenTitle.SEND_INVITE_CODE_SCREEN}
+        component={SendInviteCode}
+        options={({ navigation }) => ({ headerShown: false })}
+      />
+
+      <FundCardStack.Screen
         name={screenTitle.CARD_SIGNUP_OTP_VERIFICATION_SCREEN}
         component={OTPVerificationScreen}
         options={({ navigation }) => ({
@@ -1085,6 +1092,18 @@ export function DebitCardStackScreen({ navigation }) {
           headerTintColor: Colors.primaryTextColor,
           headerBackTitleVisible: false,
         })}
+      />
+      <FundCardStack.Screen
+        name={screenTitle.SOCIAL_MEDIA_SCREEN}
+        component={SocialMediaScreen}
+        options={{
+          headerTransparent: false,
+          headerShadowVisible: false,
+          headerTitleAlign: 'center',
+          headerTitleStyle: portfolioStackScreenHeaderTitleStyles,
+          headerTintColor: Colors.primaryTextColor,
+          headerBackTitleVisible: false,
+        }}
       />
     </FundCardStack.Navigator>
   );
