@@ -54,6 +54,7 @@ import { screenTitle } from '../../constants';
 import { ICountry, IState } from '../../models/cardApplication.model';
 import { stateMaster as backupStateMaster } from '../../../assets/datasets/stateMaster';
 import ChooseStateFromCountryModal from '../../components/v2/ChooseStateFromCountryModal';
+import ChooseCountryModal from '../../components/v2/ChooseCountryModal';
 
 export default function CardSignupScreen({ navigation, route }) {
   const globalContext = useContext<any>(GlobalContext);
@@ -70,6 +71,8 @@ export default function CardSignupScreen({ navigation, route }) {
   const [screenIndex, setScreenIndex] = useState<number>(0);
   const [loading, setLoading] = useState<boolean>(false);
   const [isModalVisible, setModalVisible] = useState<boolean>(false);
+  const [isDialCodeModalVisible, setIsDialCodeModalVisible] =
+    useState<boolean>(false);
   const [isDOBModalVisible, setDOBModalVisible] = useState<boolean>(false);
   const [isSSNModalVisibile, setSSNModalVisible] = useState<boolean>(false);
   const [isChangeNumberModalVisible, setChangeNumberModalVisible] =
@@ -102,6 +105,15 @@ export default function CardSignupScreen({ navigation, route }) {
     flag: '🇺🇸',
     Iso2: 'US',
   });
+  const [selectedCountryForDialCode, setSelectedCountryForDialCode] =
+    useState<ICountry>({
+      name: 'United States',
+      dialCode: '+1',
+      flag: '🇺🇸',
+      Iso2: 'US',
+      Iso3: 'USA',
+      currency: 'USD',
+    });
 
   const selectedCountryStates = useMemo(() => {
     return stateMaster.filter(
@@ -260,12 +272,6 @@ export default function CardSignupScreen({ navigation, route }) {
   }, [selectedCountry]);
 
   useEffect(() => {
-    if (billingAddress.postalCode !== '' && billingAddress.city !== '') {
-      void createApplication();
-    }
-  }, [billingAddress]);
-
-  useEffect(() => {
     if (countryFilterText === '') {
       setOrigCountryList(copyCountriesWithFlagAndDialcodes);
     } else {
@@ -337,15 +343,15 @@ export default function CardSignupScreen({ navigation, route }) {
     setDOBModalVisible(false);
   };
 
-  const createApplication = async () => {
+  const createApplication = async (latestBillingAddress: any) => {
     setLoading(true);
     const payload = {
       dateOfBirth: userBasicDetails.dateOfBirth,
       firstName: userBasicDetails.firstName,
       lastName: userBasicDetails.lastName,
-      phone: userBasicDetails.dialCode + userBasicDetails.phoneNumber,
+      phone: selectedCountryForDialCode.dialCode + userBasicDetails.phoneNumber,
       email: userBasicDetails.email,
-      ...billingAddress,
+      ...latestBillingAddress,
       country: userBasicDetails.Iso2,
       inviteCode,
     };
@@ -387,6 +393,11 @@ export default function CardSignupScreen({ navigation, route }) {
         ...values,
         state: selectedState.name,
       });
+      void createApplication({
+        ...billingAddress,
+        ...values,
+        state: selectedState.name,
+      });
     }
     if (screenIndex < screens.length - 1) setScreenIndex(screenIndex + 1);
   };
@@ -420,7 +431,7 @@ export default function CardSignupScreen({ navigation, route }) {
 
   const onDialCodeModalOpen = values => {
     setUserBasicDetails({ ...userBasicDetails, ...values });
-    setModalVisible(true);
+    setIsDialCodeModalVisible(true);
   };
 
   const GetToKnowTheUserBetter = useCallback(() => {
@@ -449,6 +460,14 @@ export default function CardSignupScreen({ navigation, route }) {
                 date={new Date()}
                 onConfirm={(date: Date) => confirmDate(String(date))}
                 onCancel={() => setDOBModalVisible(false)}
+              />
+              <ChooseCountryModal
+                isModalVisible={isDialCodeModalVisible}
+                setModalVisible={setIsDialCodeModalVisible}
+                selectedCountryState={[
+                  selectedCountryForDialCode,
+                  setSelectedCountryForDialCode,
+                ]}
               />
               <CyDTouchView
                 className={
@@ -502,13 +521,13 @@ export default function CardSignupScreen({ navigation, route }) {
                   }>
                   <CyDView className={'mt-[-4px] ml-[-55px]'}>
                     <CyDText className={'text-[33px] mt-[-6px]'}>
-                      {formProps.values.flag}
+                      {selectedCountryForDialCode.flag}
                     </CyDText>
                   </CyDView>
                   <CyDView className={'mt-[-20px] ml-[45px]'}>
                     <CyDText
                       className={'text-[13px] font-extrabold text-center'}>
-                      {formProps.values.dialCode}
+                      {selectedCountryForDialCode.dialCode}
                     </CyDText>
                   </CyDView>
                 </CyDTouchView>
@@ -687,7 +706,12 @@ export default function CardSignupScreen({ navigation, route }) {
         </Formik>
       </CyDScrollView>
     );
-  }, [isDOBModalVisible, userBasicDetails]);
+  }, [
+    isDOBModalVisible,
+    userBasicDetails,
+    isDialCodeModalVisible,
+    selectedCountryForDialCode,
+  ]);
 
   const UserBillingAddress = useCallback(() => {
     return (
@@ -919,6 +943,15 @@ export default function CardSignupScreen({ navigation, route }) {
                             dialCode: country.dial_code,
                             flag: country.unicode_flag,
                             Iso2: country.Iso2,
+                          });
+                          setSelectedCountryForDialCode({
+                            ...selectedCountry,
+                            name: country.name,
+                            dialCode: country.dial_code ?? '',
+                            flag: country.unicode_flag,
+                            Iso2: country.Iso2 ?? '',
+                            Iso3: country.Iso3 ?? '',
+                            currency: country.currency ?? '',
                           });
                           setSelectedCountry(country);
                           setModalVisible(false);

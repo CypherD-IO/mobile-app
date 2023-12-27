@@ -922,7 +922,8 @@ const resources = {
       INVITE_SENT_SUCCESSFULLY: 'Invite Sent Successfully',
       INVITE_SENT_DESCRIPTION:
         'An email with the invite code has been sent to ',
-      INVALID_EMAIL_NAME_ERROR: 'Enter a valid email and name',
+      INVALID_EMAIL_NAME_ERROR:
+        'Make sure you entered a valid country, email and name',
       INVITE_SEND_ERROR: 'Unable to send invite code',
     },
   },
