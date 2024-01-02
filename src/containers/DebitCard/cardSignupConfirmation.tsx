@@ -57,16 +57,7 @@ export default function CardSignupConfirmation(props: {
                 Name on Id: André Alexander Harrington
               </CyDText>
               <CyDText className={'ml-[35px] leading-[25px]'}>
-                Acceptable: Andre Alexander Harringt
-              </CyDText>
-            </CyDView>
-            <CyDView className={'flex flex-row my-[4px]'}>
-              <CyDImage
-                className={'mt-[6px]'}
-                source={AppImages.RIGHT_ARROW_BULLET}
-              />
-              <CyDText className={'ml-[10px] font-bold leading-[25px]'}>
-                First name + Last name should not exceed 22 characters
+                Acceptable: Andre Alexander Harrington
               </CyDText>
             </CyDView>
             <CyDView>
@@ -76,15 +67,15 @@ export default function CardSignupConfirmation(props: {
                   source={AppImages.RIGHT_ARROW_BULLET}
                 />
                 <CyDText className={'ml-[10px] font-bold leading-[25px]'}>
-                  If the combined first and last name exceeds 22 characters,
-                  trim the last name
+                  Enter your first name, middle name (if applicable), and last
+                  name as they appear in your KYC document separated by spaces
                 </CyDText>
               </CyDView>
               <CyDText className={'ml-[35px] leading-[25px]'}>
                 Actual name: Alexander Harrington Smith
               </CyDText>
               <CyDText className={'ml-[35px] leading-[25px]'}>
-                Trimmed name: Alexander Harrington Smi
+                Acceptable: Alexander Harrington Smith
               </CyDText>
             </CyDView>
             <CyDView>

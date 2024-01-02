@@ -93,12 +93,11 @@ export default function CardSignupScreen({ navigation, route }) {
   >([]);
   const [selectStateModalVisible, setSelectStateModalVisible] =
     useState<boolean>(false);
-
+  const [isFullNameFocused, setIsFullNameFocused] = useState(false);
   const [userBasicDetails, setUserBasicDetails] = useState({
     country: 'United States',
     dialCode: '+1',
-    firstName: '',
-    lastName: '',
+    fullName: '',
     phoneNumber: '',
     dateOfBirth: '',
     email: '',
@@ -141,22 +140,17 @@ export default function CardSignupScreen({ navigation, route }) {
   const { postWithAuth } = useAxios();
 
   const userBasicDetailsValidationSchema = yup.object({
-    firstName: yup
+    fullName: yup
       .string()
-      .required(t('FIRST_NAME_REQUIRED'))
+      .required(t('FULL_NAME_REQUIRED'))
       .test(
-        'Name length test',
-        'First name + last name should not exceed 22 characters in length.',
-        (value, ctx) => {
-          if (value && ctx.parent.lastName) {
-            return value.length + Number(ctx.parent.lastName.length) <= 22;
-          }
-          return true;
-        },
+        'First name and last name should be separated by space',
+        'Enter First name and Last name with spaces inbetween',
+        fname => /\S\s+\S/.test(fname),
       )
       .test(
-        'First name must be in english',
-        'Unrecognized characters found. Please enter your first name in english',
+        'Full name must be in english',
+        'Unrecognized characters found. Please enter your full name in english',
         fName => isEnglish(fName ?? ''),
       ),
     country: yup.string().required(),
@@ -185,24 +179,6 @@ export default function CardSignupScreen({ navigation, route }) {
           return true;
         }
       }),
-    lastName: yup
-      .string()
-      .required(t('LAST_NAME_REQUIRED'))
-      .test(
-        'Name length test',
-        'First name + last name should not exceed 22 characters in length.',
-        (value, ctx) => {
-          if (value && ctx.parent.firstName) {
-            return value.length + Number(ctx.parent.firstName.length) <= 22;
-          }
-          return true;
-        },
-      )
-      .test(
-        'First name must be in english',
-        'Unrecognized characters found. Please enter your first name in english',
-        lName => isEnglish(lName ?? ''),
-      ),
     phoneNumber: yup.string().required(t('PHONE_NUMBER_REQUIRED')),
   });
 
@@ -343,12 +319,29 @@ export default function CardSignupScreen({ navigation, route }) {
     setDOBModalVisible(false);
   };
 
+  const getFirstAndLastName = (fullName: string) => {
+    const trimmedFullName = fullName.trim().replace(/\s+/g, ' ');
+
+    const firstSpaceIndex = trimmedFullName.indexOf(' ');
+
+    const firstName = trimmedFullName.substring(0, firstSpaceIndex);
+    let lastName = trimmedFullName.substring(firstSpaceIndex + 1);
+
+    if (firstName.length + lastName.length > 22) {
+      lastName = lastName.slice(0, 22 - firstName.length);
+    }
+    return { firstName, lastName };
+  };
+
   const createApplication = async (latestBillingAddress: any) => {
     setLoading(true);
+    const { firstName, lastName } = getFirstAndLastName(
+      userBasicDetails.fullName,
+    );
     const payload = {
       dateOfBirth: userBasicDetails.dateOfBirth,
-      firstName: userBasicDetails.firstName,
-      lastName: userBasicDetails.lastName,
+      firstName,
+      lastName,
       phone: selectedCountryForDialCode.dialCode + userBasicDetails.phoneNumber,
       email: userBasicDetails.email,
       ...latestBillingAddress,
@@ -432,6 +425,14 @@ export default function CardSignupScreen({ navigation, route }) {
   const onDialCodeModalOpen = values => {
     setUserBasicDetails({ ...userBasicDetails, ...values });
     setIsDialCodeModalVisible(true);
+  };
+
+  const handleFullNameFocus = () => {
+    setIsFullNameFocused(true);
+  };
+
+  const handleFullNameBlur = () => {
+    setIsFullNameFocused(false);
   };
 
   const GetToKnowTheUserBetter = useCallback(() => {
@@ -565,47 +566,31 @@ export default function CardSignupScreen({ navigation, route }) {
                     'ml-[4px] border-[1px] border-inputBorderColor rounded-[5px] p-[12px] text-[18px] w-[85%] font-nunito text-primaryTextColor',
                     {
                       'border-redOffColor':
-                        formProps.touched.firstName &&
-                        formProps.errors.firstName,
+                        formProps.touched.fullName && formProps.errors.fullName,
                     },
                   )}
-                  value={formProps.values.firstName}
+                  value={formProps.values.fullName}
                   autoCapitalize='none'
-                  key='firstName'
+                  key='fullName'
                   autoCorrect={false}
-                  onChangeText={formProps.handleChange('firstName')}
+                  onFocus={handleFullNameFocus}
+                  onBlur={handleFullNameBlur}
+                  onChangeText={formProps.handleChange('fullName')}
                   placeholderTextColor={'#C5C5C5'}
-                  placeholder='First name'
+                  placeholder='Full Name * (same as in KYC Doc.)'
                 />
               </CyDView>
-              {formProps.touched.firstName && formProps.errors.firstName && (
+              {formProps.touched.fullName && formProps.errors.fullName && (
                 <CyDView className={'ml-[33px] mt-[6px] mb-[-11px]'}>
                   <CyDText className={'text-redOffColor font-semibold'}>
-                    {formProps.errors.firstName}
+                    {formProps.errors.fullName}
                   </CyDText>
                 </CyDView>
               )}
-              <CyDView className={'mt-[20px] flex flex-row justify-center'}>
-                <CyDTextInput
-                  className={clsx(
-                    'ml-[4px] border-[1px] border-inputBorderColor rounded-[5px] p-[12px] text-[18px] w-[85%] font-nunito text-primaryTextColor',
-                    {
-                      'border-redOffColor':
-                        formProps.touched.lastName && formProps.errors.lastName,
-                    },
-                  )}
-                  value={formProps.values.lastName}
-                  autoCapitalize='none'
-                  autoCorrect={false}
-                  onChangeText={formProps.handleChange('lastName')}
-                  placeholderTextColor={'#C5C5C5'}
-                  placeholder='Last name / First surname'
-                />
-              </CyDView>
-              {formProps.touched.lastName && formProps.errors.lastName && (
+              {isFullNameFocused && (
                 <CyDView className={'ml-[33px] mt-[6px] mb-[-11px]'}>
-                  <CyDText className={'text-redOffColor font-semibold'}>
-                    {formProps.errors.lastName}
+                  <CyDText className={'text-yellow-600 font-semibold'}>
+                    {t('FULL_NAME_DISCLAIMER')}
                   </CyDText>
                 </CyDView>
               )}
@@ -711,6 +696,7 @@ export default function CardSignupScreen({ navigation, route }) {
     userBasicDetails,
     isDialCodeModalVisible,
     selectedCountryForDialCode,
+    isFullNameFocused,
   ]);
 
   const UserBillingAddress = useCallback(() => {

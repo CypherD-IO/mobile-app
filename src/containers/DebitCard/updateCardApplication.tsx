@@ -47,13 +47,13 @@ export default function UpdateCardApplicationScreen({ navigation }) {
   const [updating, setUpdating] = useState<boolean>(false);
   const [isModalVisible, setModalVisible] = useState<boolean>(false);
   const [stateMaster, setStateMaster] = useState<IState[]>(backupStateMaster);
+  const [isFullNameFocused, setIsFullNameFocused] = useState(false);
   const [selectStateModalVisible, setSelectStateModalVisible] =
     useState<boolean>(false);
   const [userInfo, setUserInfo] = useState<CardApplication>({
     country: '',
     dialCode: '',
-    firstName: '',
-    lastName: '',
+    fullName: '',
     phoneNumber: '',
     email: '',
     flag: '',
@@ -93,41 +93,18 @@ export default function UpdateCardApplicationScreen({ navigation }) {
   ];
 
   const userInfoValidationSchema = yup.object({
-    firstName: yup
+    fullName: yup
       .string()
-      .required(t('FIRST_NAME_REQUIRED'))
+      .required(t('FULL_NAME_REQUIRED'))
       .test(
-        'Name length test',
-        'First name + last name should not exceed 22 characters in length.',
-        (value, ctx) => {
-          if (value && ctx.parent.lastName) {
-            return value.length + Number(ctx.parent.lastName.length) <= 22;
-          }
-          return true;
-        },
+        'First name and last name should be separated by space',
+        'Enter First name and Last name with spaces inbetween',
+        fname => /\S\s+\S/.test(fname),
       )
       .test(
-        'First name must be in english',
-        'Unrecognized characters found. Please enter your first name in english',
+        'Full name must be in english',
+        'Unrecognized characters found. Please enter your full name in english',
         fName => isEnglish(fName ?? ''),
-      ),
-    lastName: yup
-      .string()
-      .required(t('LAST_NAME_REQUIRED'))
-      .test(
-        'Name length test',
-        'First name + last name should not exceed 22 characters in length.',
-        (value, ctx) => {
-          if (value && ctx.parent.firstName) {
-            return value.length + Number(ctx.parent.firstName.length) <= 22;
-          }
-          return true;
-        },
-      )
-      .test(
-        'First name must be in english',
-        'Unrecognized characters found. Please enter your first name in english',
-        lName => isEnglish(lName ?? ''),
       ),
     line1: yup.string().required(t('LINE1_REQUIRED')),
     city: yup.string().required(t('CITY_REQUIRED')),
@@ -175,8 +152,7 @@ export default function UpdateCardApplicationScreen({ navigation }) {
         const profileData = {
           country: selectedCountryWithDialCode.name,
           dialCode: selectedCountryWithDialCode.dial_code,
-          firstName: data.firstName,
-          lastName: data.lastName,
+          fullName: data.firstName + ' ' + data.lastName,
           phoneNumber: data.phone,
           email: data.email,
           flag: selectedCountryWithDialCode.unicode_flag,
@@ -255,11 +231,26 @@ export default function UpdateCardApplicationScreen({ navigation }) {
     }, MODAL_HIDE_TIMEOUT);
   }
 
+  const getFirstAndLastName = (fullName: string) => {
+    const trimmedFullName = fullName.trim().replace(/\s+/g, ' ');
+
+    const firstSpaceIndex = trimmedFullName.indexOf(' ');
+
+    const firstName = trimmedFullName.substring(0, firstSpaceIndex);
+    let lastName = trimmedFullName.substring(firstSpaceIndex + 1);
+
+    if (firstName.length + lastName.length > 22) {
+      lastName = lastName.slice(0, 22 - firstName.length);
+    }
+    return { firstName, lastName };
+  };
+
   const updateApplication = async (profileData: CardApplication) => {
     setUpdating(true);
+    const { firstName, lastName } = getFirstAndLastName(profileData.fullName);
     const payload = {
-      firstName: profileData.firstName,
-      lastName: profileData.lastName,
+      firstName,
+      lastName,
       line1: profileData.line1,
       line2: profileData.line2,
       city: profileData.city,
@@ -308,6 +299,14 @@ export default function UpdateCardApplicationScreen({ navigation }) {
       dateOfBirth: moment(date).format('YYYY-MM-DD'),
     });
     setDOBModalVisible(false);
+  };
+
+  const handleFullNameFocus = () => {
+    setIsFullNameFocused(true);
+  };
+
+  const handleFullNameBlur = () => {
+    setIsFullNameFocused(false);
   };
 
   return (
@@ -454,56 +453,37 @@ export default function UpdateCardApplicationScreen({ navigation }) {
                             'ml-[4px] border-[1px] border-inputBorderColor rounded-[5px] p-[12px] text-[18px] w-[85%] font-nunito text-primaryTextColor',
                             {
                               'border-redOffColor':
-                                formProps.touched.firstName &&
-                                formProps.errors.firstName,
+                                formProps.touched.fullName &&
+                                formProps.errors.fullName,
                             },
                           )}
-                          value={formProps.values.firstName}
+                          value={formProps.values.fullName}
                           autoCapitalize='none'
-                          key='firstName'
+                          key='fullName'
                           autoCorrect={false}
-                          onChangeText={formProps.handleChange('firstName')}
+                          onFocus={handleFullNameFocus}
+                          onBlur={handleFullNameBlur}
+                          onChangeText={formProps.handleChange('fullName')}
                           placeholderTextColor={'#C5C5C5'}
-                          placeholder='First name'
+                          placeholder='Full Name * (same as in KYC Doc.)'
                         />
                       </CyDView>
-                      {formProps.touched.firstName &&
-                        formProps.errors.firstName && (
+                      {formProps.touched.fullName &&
+                        formProps.errors.fullName && (
                           <CyDView className={'ml-[33px] mt-[6px] mb-[-11px]'}>
                             <CyDText
                               className={'text-redOffColor font-semibold'}>
-                              {formProps.errors.firstName}
+                              {formProps.errors.fullName}
                             </CyDText>
                           </CyDView>
                         )}
-                      <CyDView
-                        className={'mt-[20px] flex flex-row justify-center'}>
-                        <CyDTextInput
-                          className={clsx(
-                            'ml-[4px] border-[1px] border-inputBorderColor rounded-[5px] p-[12px] text-[18px] w-[85%] font-nunito text-primaryTextColor',
-                            {
-                              'border-redOffColor':
-                                formProps.touched.lastName &&
-                                formProps.errors.lastName,
-                            },
-                          )}
-                          value={formProps.values.lastName}
-                          autoCapitalize='none'
-                          autoCorrect={false}
-                          onChangeText={formProps.handleChange('lastName')}
-                          placeholderTextColor={'#C5C5C5'}
-                          placeholder='Last name'
-                        />
-                      </CyDView>
-                      {formProps.touched.lastName &&
-                        formProps.errors.lastName && (
-                          <CyDView className={'ml-[33px] mt-[6px] mb-[-11px]'}>
-                            <CyDText
-                              className={'text-redOffColor font-semibold'}>
-                              {formProps.errors.lastName}
-                            </CyDText>
-                          </CyDView>
-                        )}
+                      {isFullNameFocused && (
+                        <CyDView className={'ml-[33px] mt-[6px] mb-[-11px]'}>
+                          <CyDText className={'text-yellow-600 font-semibold'}>
+                            {t('FULL_NAME_DISCLAIMER')}
+                          </CyDText>
+                        </CyDView>
+                      )}
                       <CyDTouchView
                         className={clsx(
                           'ml-[30px] mt-[20px] border-[1px] border-inputBorderColor rounded-[5px] w-[85%]',

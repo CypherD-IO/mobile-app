@@ -427,7 +427,7 @@ const resources = {
       UNRECOGNIZED_QR_CODE: 'Unrecognized QR Code',
       UNRECOGNIZED_QR_CODE_DESCRIPTION:
         'Sorry, this QR code is not associated with an account address or a contract address',
-      FIRST_NAME_REQUIRED: 'First Name is required',
+      FULL_NAME_REQUIRED: 'Full Name is required',
       LAST_NAME_REQUIRED: 'Last Name is required',
       EMAIL_REQUIRED: 'Email is required',
       PHONE_NUMBER_REQUIRED: 'Phone Number is required',
@@ -926,6 +926,8 @@ const resources = {
       INVALID_EMAIL_NAME_ERROR:
         'Make sure you entered a valid country, email and name',
       INVITE_SEND_ERROR: 'Unable to send invite code',
+      FULL_NAME_DISCLAIMER:
+        '** Enter your first name, middle name (if applicable), and last name as they appear in your KYC document separated by spaces',
     },
   },
 };

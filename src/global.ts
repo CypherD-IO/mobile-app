@@ -1,10 +1,17 @@
-import { getArchHost, getPortfolioHost, getOwlracleHost, setArchHost, setPortfolioHost, setOwlracleHost } from './core/asyncStorage';
+import {
+  getArchHost,
+  getPortfolioHost,
+  getOwlracleHost,
+  setArchHost,
+  setPortfolioHost,
+  setOwlracleHost,
+} from './core/asyncStorage';
 
 let ARCH_HOST = 'https://arch.cypherd.io';
 let PORTFOLIO_HOST = 'https://api.cypherd.io';
 let OWLRACLE_HOST = 'https://api.owlracle.info';
 
-export async function initializeHostsFromAsync () {
+export async function initializeHostsFromAsync() {
   const archFromAsync = await getArchHost();
   if (archFromAsync && archFromAsync !== '') {
     ARCH_HOST = archFromAsync;
@@ -55,5 +62,5 @@ const getHost = (host: string) => {
 
 export const hostWorker = {
   setHost,
-  getHost
+  getHost,
 };

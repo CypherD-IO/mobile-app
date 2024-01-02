@@ -1,8 +1,7 @@
 export interface CardApplication {
   country: string;
   dialCode: string;
-  firstName: string;
-  lastName: string;
+  fullName: string;
   phoneNumber: string;
   email: string;
   flag: string;
