@@ -340,7 +340,7 @@ export default function UpdateCardApplicationScreen({ navigation }) {
                   validationSchema={userInfoValidationSchema}
                   onSubmit={async values => await updateApplication(values)}>
                   {formProps => (
-                    <>
+                    <CyDView className='mx-[9%]'>
                       <DatePickerModal
                         isVisible={isDOBModalVisible}
                         mode='date'
@@ -350,7 +350,7 @@ export default function UpdateCardApplicationScreen({ navigation }) {
                       />
                       <CyDTouchView
                         className={
-                          'ml-[30px] mt-[20px] border-[1px] border-inputBorderColor rounded-[5px] w-[85%]'
+                          'mt-[20px] border-[1px] border-inputBorderColor rounded-[5px] w-full'
                         }
                         onPress={() => setModalVisible(true)}>
                         <CyDView
@@ -380,7 +380,7 @@ export default function UpdateCardApplicationScreen({ navigation }) {
                       </CyDTouchView>
                       {formProps.touched.country &&
                         formProps.errors.country && (
-                          <CyDView className={'ml-[33px] mt-[6px] mb-[-11px]'}>
+                          <CyDView className={'mt-[6px] mb-[-11px]'}>
                             <CyDText
                               className={'text-redOffColor font-semibold'}>
                               {formProps.errors.country}
@@ -389,7 +389,7 @@ export default function UpdateCardApplicationScreen({ navigation }) {
                         )}
                       <CyDView
                         className={clsx(
-                          'h-[50px] ml-[30px] mt-[20px] border-[1px] border-inputBorderColor rounded-[5px] w-[85%] flex flex-row',
+                          'h-[50px] mt-[20px] border-[1px] border-inputBorderColor rounded-[5px] w-full flex flex-row',
                           {
                             'border-redOffColor':
                               formProps.touched.phoneNumber &&
@@ -439,7 +439,7 @@ export default function UpdateCardApplicationScreen({ navigation }) {
                       </CyDView>
                       {formProps.touched.phoneNumber &&
                         formProps.errors.phoneNumber && (
-                          <CyDView className={'ml-[33px] mt-[6px] mb-[-11px]'}>
+                          <CyDView className={'mt-[6px] mb-[-11px]'}>
                             <CyDText
                               className={'text-redOffColor font-semibold'}>
                               {formProps.errors.phoneNumber}
@@ -450,7 +450,7 @@ export default function UpdateCardApplicationScreen({ navigation }) {
                         className={'mt-[20px] flex flex-row justify-center'}>
                         <CyDTextInput
                           className={clsx(
-                            'ml-[4px] border-[1px] border-inputBorderColor rounded-[5px] p-[12px] text-[18px] w-[85%] font-nunito text-primaryTextColor',
+                            'ml-[4px] border-[1px] border-inputBorderColor rounded-[5px] p-[12px] text-[18px] w-full font-nunito text-primaryTextColor',
                             {
                               'border-redOffColor':
                                 formProps.touched.fullName &&
@@ -470,7 +470,7 @@ export default function UpdateCardApplicationScreen({ navigation }) {
                       </CyDView>
                       {formProps.touched.fullName &&
                         formProps.errors.fullName && (
-                          <CyDView className={'ml-[33px] mt-[6px] mb-[-11px]'}>
+                          <CyDView className={'mt-[6px] mb-[-11px]'}>
                             <CyDText
                               className={'text-redOffColor font-semibold'}>
                               {formProps.errors.fullName}
@@ -478,7 +478,7 @@ export default function UpdateCardApplicationScreen({ navigation }) {
                           </CyDView>
                         )}
                       {isFullNameFocused && (
-                        <CyDView className={'ml-[33px] mt-[6px] mb-[-11px]'}>
+                        <CyDView className={'mt-[6px] mb-[-11px]'}>
                           <CyDText className={'text-yellow-600 font-semibold'}>
                             {t('FULL_NAME_DISCLAIMER')}
                           </CyDText>
@@ -486,7 +486,7 @@ export default function UpdateCardApplicationScreen({ navigation }) {
                       )}
                       <CyDTouchView
                         className={clsx(
-                          'ml-[30px] mt-[20px] border-[1px] border-inputBorderColor rounded-[5px] w-[85%]',
+                          'mt-[20px] border-[1px] border-inputBorderColor rounded-[5px] w-full',
                           {
                             'border-redOffColor':
                               formProps.touched.dateOfBirth &&
@@ -526,7 +526,7 @@ export default function UpdateCardApplicationScreen({ navigation }) {
                       </CyDTouchView>
                       {formProps.touched.dateOfBirth &&
                         formProps.errors.dateOfBirth && (
-                          <CyDView className={'ml-[33px] mt-[6px] mb-[-11px]'}>
+                          <CyDView className={'mt-[6px] mb-[-11px]'}>
                             <CyDText
                               className={'text-redOffColor font-semibold'}>
                               {formProps.errors.dateOfBirth}
@@ -537,7 +537,7 @@ export default function UpdateCardApplicationScreen({ navigation }) {
                         className={'mt-[20px] flex flex-row justify-center'}>
                         <CyDTextInput
                           className={clsx(
-                            'ml-[4px] border-[1px] border-inputBorderColor rounded-[5px] p-[12px] text-[18px] w-[85%] font-nunito text-primaryTextColor',
+                            'ml-[4px] border-[1px] border-inputBorderColor rounded-[5px] p-[12px] text-[18px] w-full font-nunito text-primaryTextColor',
                             {
                               'border-redOffColor':
                                 formProps.touched.email &&
@@ -556,7 +556,7 @@ export default function UpdateCardApplicationScreen({ navigation }) {
                         />
                       </CyDView>
                       {formProps.touched.email && formProps.errors.email && (
-                        <CyDView className={'ml-[33px] mt-[6px] mb-[-11px]'}>
+                        <CyDView className={'mt-[6px] mb-[-11px]'}>
                           <CyDText className={'text-redOffColor font-semibold'}>
                             {formProps.errors.email}
                           </CyDText>
@@ -576,7 +576,7 @@ export default function UpdateCardApplicationScreen({ navigation }) {
                           className={'mt-[20px] flex flex-row justify-center'}>
                           <CyDTextInput
                             className={clsx(
-                              'ml-[4px] border-[1px] border-inputBorderColor rounded-[5px] p-[12px] text-[18px] w-[85%] font-nunito text-primaryTextColor',
+                              'ml-[4px] border-[1px] border-inputBorderColor rounded-[5px] p-[12px] text-[18px] w-full font-nunito text-primaryTextColor',
                               {
                                 'border-redOffColor':
                                   formProps.touched.line1 &&
@@ -593,7 +593,7 @@ export default function UpdateCardApplicationScreen({ navigation }) {
                           />
                         </CyDView>
                         {formProps.touched.line1 && formProps.errors.line1 && (
-                          <CyDView className={'ml-[33px] mt-[6px] mb-[-11px]'}>
+                          <CyDView className={'mt-[6px] mb-[-11px]'}>
                             <CyDText
                               className={'text-redOffColor font-semibold'}>
                               {formProps.errors.line1}
@@ -604,7 +604,7 @@ export default function UpdateCardApplicationScreen({ navigation }) {
                           className={'mt-[20px] flex flex-row justify-center'}>
                           <CyDTextInput
                             className={clsx(
-                              'ml-[4px] border-[1px] border-inputBorderColor rounded-[5px] p-[12px] text-[18px] w-[85%] font-nunito text-primaryTextColor',
+                              'ml-[4px] border-[1px] border-inputBorderColor rounded-[5px] p-[12px] text-[18px] w-full font-nunito text-primaryTextColor',
                             )}
                             value={formProps.values.line2}
                             autoCapitalize='none'
@@ -618,7 +618,7 @@ export default function UpdateCardApplicationScreen({ navigation }) {
                           className={'mt-[20px] flex flex-row justify-center'}>
                           <CyDTextInput
                             className={clsx(
-                              'ml-[4px] border-[1px] border-inputBorderColor rounded-[5px] p-[12px] text-[18px] w-[85%] font-nunito text-primaryTextColor',
+                              'ml-[4px] border-[1px] border-inputBorderColor rounded-[5px] p-[12px] text-[18px] w-full font-nunito text-primaryTextColor',
                               {
                                 'border-redOffColor':
                                   formProps.touched.city &&
@@ -635,7 +635,7 @@ export default function UpdateCardApplicationScreen({ navigation }) {
                           />
                         </CyDView>
                         {formProps.touched.city && formProps.errors.city && (
-                          <CyDView className={'ml-[33px] mt-[6px] mb-[-11px]'}>
+                          <CyDView className={'mt-[6px] mb-[-11px]'}>
                             <CyDText
                               className={'text-redOffColor font-semibold'}>
                               {formProps.errors.city}
@@ -649,7 +649,7 @@ export default function UpdateCardApplicationScreen({ navigation }) {
                           }}>
                           <CyDView
                             className={clsx(
-                              'ml-[4px] border-[1px] border-inputBorderColor rounded-[5px] p-[12px] text-[18px] w-[85%] font-nunito text-primaryTextColor',
+                              'ml-[4px] border-[1px] border-inputBorderColor rounded-[5px] p-[12px] text-[18px] w-full font-nunito text-primaryTextColor',
                               {
                                 'border-redOffColor':
                                   formProps.touched.state &&
@@ -662,7 +662,7 @@ export default function UpdateCardApplicationScreen({ navigation }) {
                           </CyDView>
                         </CyDTouchView>
                         {formProps.touched.state && formProps.errors.state && (
-                          <CyDView className={'ml-[33px] mt-[6px] mb-[-11px]'}>
+                          <CyDView className={'mt-[6px] mb-[-11px]'}>
                             <CyDText
                               className={'text-redOffColor font-semibold'}>
                               {formProps.errors.state}
@@ -673,7 +673,7 @@ export default function UpdateCardApplicationScreen({ navigation }) {
                           className={'mt-[20px] flex flex-row justify-center'}>
                           <CyDTextInput
                             className={clsx(
-                              'ml-[4px] border-[1px] border-inputBorderColor rounded-[5px] p-[12px] text-[18px] w-[85%] font-nunito text-primaryTextColor',
+                              'ml-[4px] border-[1px] border-inputBorderColor rounded-[5px] p-[12px] text-[18px] w-full font-nunito text-primaryTextColor',
                               {
                                 'border-redOffColor':
                                   formProps.touched.postalCode &&
@@ -691,8 +691,7 @@ export default function UpdateCardApplicationScreen({ navigation }) {
                         </CyDView>
                         {formProps.touched.postalCode &&
                           formProps.errors.postalCode && (
-                            <CyDView
-                              className={'ml-[33px] mt-[6px] mb-[-11px]'}>
+                            <CyDView className={'mt-[6px] mb-[-11px]'}>
                               <CyDText
                                 className={'text-redOffColor font-semibold'}>
                                 {formProps.errors.postalCode}
@@ -705,11 +704,11 @@ export default function UpdateCardApplicationScreen({ navigation }) {
                           onPress={() => {
                             formProps.handleSubmit();
                           }}
-                          style='h-[55px] mt-[20px] mx-auto justify-center items-center w-[86%]'
+                          style='h-[55px] mt-[20px] mx-auto justify-center items-center w-full'
                           isPrivateKeyDependent={false}
                         />
                       </>
-                    </>
+                    </CyDView>
                   )}
                 </Formik>
               </CyDScrollView>

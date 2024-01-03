@@ -93,7 +93,6 @@ export default function CardSignupScreen({ navigation, route }) {
   >([]);
   const [selectStateModalVisible, setSelectStateModalVisible] =
     useState<boolean>(false);
-  const [isFullNameFocused, setIsFullNameFocused] = useState(false);
   const [userBasicDetails, setUserBasicDetails] = useState({
     country: 'United States',
     dialCode: '+1',
@@ -427,21 +426,13 @@ export default function CardSignupScreen({ navigation, route }) {
     setIsDialCodeModalVisible(true);
   };
 
-  const handleFullNameFocus = () => {
-    setIsFullNameFocused(true);
-  };
-
-  const handleFullNameBlur = () => {
-    setIsFullNameFocused(false);
-  };
-
   const GetToKnowTheUserBetter = useCallback(() => {
     return (
       <CyDScrollView>
         <CyDView>
           <CyDText
             className={
-              'text-[30px] font-bold mx-[34px] mt-[26px] leading-[40px]'
+              'text-[30px] font-bold ml-[9%] mt-[26px] leading-[40px]'
             }>
             {t<string>('CARD_SIGNUP_PAGE1_TITLE')}
           </CyDText>
@@ -454,7 +445,7 @@ export default function CardSignupScreen({ navigation, route }) {
             proceedToNextScreen('USER_BASIC_DETAILS', values)
           }>
           {formProps => (
-            <>
+            <CyDView className='mx-[9%]'>
               <DatePickerModal
                 isVisible={isDOBModalVisible}
                 mode='date'
@@ -472,7 +463,7 @@ export default function CardSignupScreen({ navigation, route }) {
               />
               <CyDTouchView
                 className={
-                  'ml-[30px] mt-[20px] border-[1px] border-inputBorderColor rounded-[5px] w-[85%]'
+                  'mt-[20px] border-[1px] border-inputBorderColor rounded-[5px] w-full'
                 }
                 onPress={() => setModalVisible(true)}>
                 <CyDView
@@ -500,7 +491,7 @@ export default function CardSignupScreen({ navigation, route }) {
                 </CyDView>
               </CyDTouchView>
               {formProps.touched.country && formProps.errors.country && (
-                <CyDView className={'ml-[33px] mt-[6px] mb-[-11px]'}>
+                <CyDView className={'mt-[6px] mb-[-11px]'}>
                   <CyDText className={'text-redOffColor font-semibold'}>
                     {formProps.errors.country}
                   </CyDText>
@@ -508,7 +499,7 @@ export default function CardSignupScreen({ navigation, route }) {
               )}
               <CyDView
                 className={clsx(
-                  'h-[50px] ml-[30px] mt-[20px] border-[1px] border-inputBorderColor rounded-[5px] w-[85%] flex flex-row',
+                  'h-[50px] mt-[20px] border-[1px] border-inputBorderColor rounded-[5px] flex flex-row w-full',
                   {
                     'border-redOffColor':
                       formProps.touched.phoneNumber &&
@@ -554,7 +545,7 @@ export default function CardSignupScreen({ navigation, route }) {
               </CyDView>
               {formProps.touched.phoneNumber &&
                 formProps.errors.phoneNumber && (
-                  <CyDView className={'ml-[33px] mt-[6px] mb-[-11px]'}>
+                  <CyDView className={'mt-[6px] mb-[-11px]'}>
                     <CyDText className={'text-redOffColor font-semibold'}>
                       {formProps.errors.phoneNumber}
                     </CyDText>
@@ -563,7 +554,7 @@ export default function CardSignupScreen({ navigation, route }) {
               <CyDView className={'mt-[20px] flex flex-row justify-center'}>
                 <CyDTextInput
                   className={clsx(
-                    'ml-[4px] border-[1px] border-inputBorderColor rounded-[5px] p-[12px] text-[18px] w-[85%] font-nunito text-primaryTextColor',
+                    'border-[1px] border-inputBorderColor w-full rounded-[5px] p-[12px] text-[18px] font-nunito text-primaryTextColor',
                     {
                       'border-redOffColor':
                         formProps.touched.fullName && formProps.errors.fullName,
@@ -581,22 +572,15 @@ export default function CardSignupScreen({ navigation, route }) {
                 />
               </CyDView>
               {formProps.touched.fullName && formProps.errors.fullName && (
-                <CyDView className={'ml-[33px] mt-[6px] mb-[-11px]'}>
+                <CyDView className={'mt-[6px] mb-[-11px]'}>
                   <CyDText className={'text-redOffColor font-semibold'}>
                     {formProps.errors.fullName}
                   </CyDText>
                 </CyDView>
               )}
-              {isFullNameFocused && (
-                <CyDView className={'ml-[33px] mt-[6px] mb-[-11px]'}>
-                  <CyDText className={'text-yellow-600 font-semibold'}>
-                    {t('FULL_NAME_DISCLAIMER')}
-                  </CyDText>
-                </CyDView>
-              )}
               <CyDTouchView
                 className={clsx(
-                  'ml-[30px] mt-[20px] border-[1px] border-inputBorderColor rounded-[5px] w-[85%]',
+                  'mt-[20px] border-[1px] border-inputBorderColor rounded-[5px]',
                   {
                     'border-redOffColor':
                       formProps.touched.dateOfBirth &&
@@ -636,7 +620,7 @@ export default function CardSignupScreen({ navigation, route }) {
               </CyDTouchView>
               {formProps.touched.dateOfBirth &&
                 formProps.errors.dateOfBirth && (
-                  <CyDView className={'ml-[33px] mt-[6px] mb-[-11px]'}>
+                  <CyDView className={'mt-[6px] mb-[-11px]'}>
                     <CyDText className={'text-redOffColor font-semibold'}>
                       {formProps.errors.dateOfBirth}
                     </CyDText>
@@ -645,7 +629,7 @@ export default function CardSignupScreen({ navigation, route }) {
               <CyDView className={'mt-[20px] flex flex-row justify-center'}>
                 <CyDTextInput
                   className={clsx(
-                    'ml-[4px] border-[1px] border-inputBorderColor rounded-[5px] p-[12px] text-[18px] w-[85%] font-nunito text-primaryTextColor',
+                    'ml-[4px] border-[1px] border-inputBorderColor rounded-[5px] p-[12px] text-[18px] font-nunito text-primaryTextColor w-full',
                     {
                       'border-redOffColor':
                         formProps.touched.email && formProps.errors.email,
@@ -663,7 +647,7 @@ export default function CardSignupScreen({ navigation, route }) {
                 />
               </CyDView>
               {formProps.touched.email && formProps.errors.email && (
-                <CyDView className={'ml-[33px] mt-[6px] mb-[-11px]'}>
+                <CyDView className={'mt-[6px] mb-[-11px]'}>
                   <CyDText className={'text-redOffColor font-semibold'}>
                     {formProps.errors.email}
                   </CyDText>
@@ -683,10 +667,10 @@ export default function CardSignupScreen({ navigation, route }) {
                 onPress={() => {
                   formProps.handleSubmit();
                 }}
-                style='h-[55px] mt-[20px] mx-auto justify-center items-center px-[55px] w-[86%]'
+                style='h-[55px] mt-[20px] mx-auto justify-center items-center px-[55px] w-full'
                 isPrivateKeyDependent={false}
               />
-            </>
+            </CyDView>
           )}
         </Formik>
       </CyDScrollView>
@@ -696,7 +680,6 @@ export default function CardSignupScreen({ navigation, route }) {
     userBasicDetails,
     isDialCodeModalVisible,
     selectedCountryForDialCode,
-    isFullNameFocused,
   ]);
 
   const UserBillingAddress = useCallback(() => {
@@ -717,11 +700,11 @@ export default function CardSignupScreen({ navigation, route }) {
             proceedToNextScreen('BILLING_ADDRESS', values);
           }}>
           {formProps => (
-            <>
+            <CyDView className='mx-[9%]'>
               <CyDView className={'mt-[20px] flex flex-row justify-center'}>
                 <CyDTextInput
                   className={clsx(
-                    'ml-[4px] border-[1px] border-inputBorderColor rounded-[5px] p-[12px] text-[18px] w-[85%] font-nunito text-primaryTextColor',
+                    'ml-[4px] border-[1px] border-inputBorderColor rounded-[5px] p-[12px] text-[18px] w-full font-nunito text-primaryTextColor',
                     {
                       'border-redOffColor':
                         formProps.touched.line1 && formProps.errors.line1,
@@ -737,7 +720,7 @@ export default function CardSignupScreen({ navigation, route }) {
                 />
               </CyDView>
               {formProps.touched.line1 && formProps.errors.line1 && (
-                <CyDView className={'ml-[33px] mt-[6px] mb-[-11px]'}>
+                <CyDView className={'mt-[6px] mb-[-11px]'}>
                   <CyDText className={'text-redOffColor font-semibold'}>
                     {formProps.errors.line1}
                   </CyDText>
@@ -746,7 +729,7 @@ export default function CardSignupScreen({ navigation, route }) {
               <CyDView className={'mt-[20px] flex flex-row justify-center'}>
                 <CyDTextInput
                   className={clsx(
-                    'ml-[4px] border-[1px] border-inputBorderColor rounded-[5px] p-[12px] text-[18px] w-[85%] font-nunito text-primaryTextColor',
+                    'ml-[4px] border-[1px] border-inputBorderColor rounded-[5px] p-[12px] text-[18px] w-full font-nunito text-primaryTextColor',
                   )}
                   value={formProps.values.line2}
                   autoCapitalize='none'
@@ -759,7 +742,7 @@ export default function CardSignupScreen({ navigation, route }) {
               <CyDView className={'mt-[20px] flex flex-row justify-center'}>
                 <CyDTextInput
                   className={clsx(
-                    'ml-[4px] border-[1px] border-inputBorderColor rounded-[5px] p-[12px] text-[18px] w-[85%] font-nunito text-primaryTextColor',
+                    'ml-[4px] border-[1px] border-inputBorderColor rounded-[5px] p-[12px] text-[18px] w-full font-nunito text-primaryTextColor',
                     {
                       'border-redOffColor':
                         formProps.touched.city && formProps.errors.city,
@@ -775,7 +758,7 @@ export default function CardSignupScreen({ navigation, route }) {
                 />
               </CyDView>
               {formProps.touched.city && formProps.errors.city && (
-                <CyDView className={'ml-[33px] mt-[6px] mb-[-11px]'}>
+                <CyDView className={'mt-[6px] mb-[-11px]'}>
                   <CyDText className={'text-redOffColor font-semibold'}>
                     {formProps.errors.city}
                   </CyDText>
@@ -789,7 +772,7 @@ export default function CardSignupScreen({ navigation, route }) {
                 }}>
                 <CyDView
                   className={clsx(
-                    'ml-[4px] border-[1px] border-inputBorderColor rounded-[5px] p-[12px] text-[18px] w-[85%] font-nunito text-primaryTextColor',
+                    'ml-[4px] border-[1px] border-inputBorderColor rounded-[5px] p-[12px] text-[18px] w-full font-nunito text-primaryTextColor',
                     {
                       'border-redOffColor':
                         formProps.touched.state && formProps.errors.state,
@@ -801,7 +784,7 @@ export default function CardSignupScreen({ navigation, route }) {
                 </CyDView>
               </CyDTouchView>
               {formProps.touched.state && formProps.errors.state && (
-                <CyDView className={'ml-[33px] mt-[6px] mb-[-11px]'}>
+                <CyDView className={'mt-[6px] mb-[-11px]'}>
                   <CyDText className={'text-redOffColor font-semibold'}>
                     {formProps.errors.state}
                   </CyDText>
@@ -810,7 +793,7 @@ export default function CardSignupScreen({ navigation, route }) {
               <CyDView className={'mt-[20px] flex flex-row justify-center'}>
                 <CyDTextInput
                   className={clsx(
-                    'ml-[4px] border-[1px] border-inputBorderColor rounded-[5px] p-[12px] text-[18px] w-[85%] font-nunito text-primaryTextColor',
+                    'ml-[4px] border-[1px] border-inputBorderColor rounded-[5px] p-[12px] text-[18px] w-full font-nunito text-primaryTextColor',
                     {
                       'border-redOffColor':
                         formProps.touched.postalCode &&
@@ -827,7 +810,7 @@ export default function CardSignupScreen({ navigation, route }) {
                 />
               </CyDView>
               {formProps.touched.postalCode && formProps.errors.postalCode && (
-                <CyDView className={'ml-[33px] mt-[6px] mb-[-11px]'}>
+                <CyDView className={'mt-[6px] mb-[-11px]'}>
                   <CyDText className={'text-redOffColor font-semibold'}>
                     {formProps.errors.postalCode}
                   </CyDText>
@@ -838,10 +821,10 @@ export default function CardSignupScreen({ navigation, route }) {
                 onPress={() => {
                   formProps.handleSubmit();
                 }}
-                style='h-[55px] mt-[20px] mx-auto justify-center items-center w-[86%]'
+                style='h-[55px] mt-[20px] mx-auto justify-center items-center w-full'
                 isPrivateKeyDependent={false}
               />
-            </>
+            </CyDView>
           )}
         </Formik>
       </CyDScrollView>
