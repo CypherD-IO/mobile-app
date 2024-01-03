@@ -178,7 +178,12 @@ export default function CardSignupScreen({ navigation, route }) {
           return true;
         }
       }),
-    phoneNumber: yup.string().required(t('PHONE_NUMBER_REQUIRED')),
+    phoneNumber: yup
+      .string()
+      .required(t('PHONE_NUMBER_REQUIRED'))
+      .test('isValidPhoneNumber', t('INVALID_PHONE_NUMBER'), phoneNumber =>
+        /^\d+$/.test(phoneNumber),
+      ),
   });
 
   const userBillingAddressValidationSchema = yup.object({
@@ -564,8 +569,6 @@ export default function CardSignupScreen({ navigation, route }) {
                   autoCapitalize='none'
                   key='fullName'
                   autoCorrect={false}
-                  onFocus={handleFullNameFocus}
-                  onBlur={handleFullNameBlur}
                   onChangeText={formProps.handleChange('fullName')}
                   placeholderTextColor={'#C5C5C5'}
                   placeholder='Full Name * (same as in KYC Doc.)'

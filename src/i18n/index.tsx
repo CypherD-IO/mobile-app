@@ -439,6 +439,8 @@ const resources = {
       SSN_REQUIRED: 'SSN is required',
       PASSPORT_NUMBER_REQUIRED: 'Passport number is required',
       INVALID_EMAIL: 'Please provide a valid Email ID',
+      INVALID_PHONE_NUMBER:
+        'Phone number should contain only the digits 0-9. Please provide a valid Phone Number',
       INVALID_SSN: 'Please provide a valid SSN',
       INVALID_PASSPORT_NUMBER: 'Please provide a valid passport number',
       SOMETHING_WENT_WRONG: 'Something went wrong !',
