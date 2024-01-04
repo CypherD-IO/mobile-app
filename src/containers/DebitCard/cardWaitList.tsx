@@ -22,10 +22,13 @@ import ChooseCountryModal from '../../components/v2/ChooseCountryModal';
 import { ICountry } from '../../models/cardApplication.model';
 
 const cardBenefits = [
-  'Instantly swap crypto to USD',
-  'Receive free lifetime access',
-  'Spend crypto from 20 different chains - more coming soon!',
-  'Use your card anywhere in the world',
+  'Available globally',
+  'Accepted by 40+ million merchants worldwide',
+  'Supports 20+ chains, 500+ tokens - more coming soon!',
+  'Access both virtual and physical cards',
+  'Free worldwide shipping for physical cards',
+  'Zero fee funding for USDC',
+  '24/7 customer support',
 ];
 
 interface Props {
