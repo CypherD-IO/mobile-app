@@ -57,18 +57,19 @@ export default function CardRevealAuthScreen(props: {
     }/trigger/${
       triggerOTPParam === 'verify/show-token' ? 'show-token' : triggerOTPParam
     }`;
-    try {
-      const response = await postWithAuth(triggerOTPUrl, {});
-      return !response.isError;
-    } catch (e: any) {
+    const response = await postWithAuth(triggerOTPUrl, {});
+
+    if (!response.isError) {
+      return true;
+    } else {
       showModal('state', {
         type: 'error',
         title: t('OTP_TRIGGER_FAILED'),
-        description: e.mesaage,
+        description: response?.error?.message ?? '',
         onSuccess: hideModal,
         onFailure: hideModal,
       });
-      Sentry.captureException(e);
+      Sentry.captureException(response.error);
       return false;
     }
   };
@@ -149,7 +150,7 @@ export default function CardRevealAuthScreen(props: {
             <CyDView className={'mt-[15%]'}>
               <OtpInput
                 pinCount={4}
-                getOtp={(otp) => {
+                getOtp={otp => {
                   void verifyOTP(Number(otp));
                 }}
                 placeholder={t('ENTER_OTP')}
@@ -159,13 +160,11 @@ export default function CardRevealAuthScreen(props: {
                 disabled={sendingOTP || resendInterval !== 0}
                 onPress={() => {
                   void resendOTP();
-                }}
-              >
+                }}>
                 <CyDText
                   className={
                     'font-bold underline decoration-solid underline-offset-4'
-                  }
-                >
+                  }>
                   {t<string>('RESEND_CODE_INIT_CAPS')}
                 </CyDText>
                 {sendingOTP && (
