@@ -65,7 +65,7 @@ export default function CardRevealAuthScreen(props: {
       showModal('state', {
         type: 'error',
         title: t('OTP_TRIGGER_FAILED'),
-        description: response.error.message,
+        description: response?.error?.message ?? '',
         onSuccess: hideModal,
         onFailure: hideModal,
       });
