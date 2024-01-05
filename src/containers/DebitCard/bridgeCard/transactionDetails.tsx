@@ -43,6 +43,8 @@ const getTransactionSign = (type: string) => {
       return '+';
     case TransactionFilterTypes.DEBIT:
       return '-';
+    case TransactionFilterTypes.WITHDRAWAL:
+      return '-';
     case TransactionFilterTypes.REFUND:
       return '+';
     default:
@@ -156,7 +158,8 @@ export default function TransactionDetails({
   }> = [];
   if (
     transaction.type === CardTransactionTypes.DEBIT ||
-    transaction.type === CardTransactionTypes.REFUND
+    transaction.type === CardTransactionTypes.REFUND ||
+    transaction.type === CardTransactionTypes.WITHDRAWAL
   ) {
     const last4 =
       globalContext?.globalState.cardProfile?.pc?.cards?.reduce((_, curVal) => {
@@ -166,12 +169,16 @@ export default function TransactionDetails({
           return 'XXXX';
         }
       }, 'XXXX') ?? 'XXXX';
+    const transactionId =
+      transaction.id && String(transaction.id)?.length <= 10
+        ? transaction.id
+        : String(transaction.id).substring(String(transaction.id).length - 10);
     const debitOrRefundDetails = [
       {
         icon: AppImages.PAYMENT_DETAILS,
         title: t('TRANSACTION_DETAILS'),
         data: [
-          { label: t('TRANSACTION_ID'), value: transaction.id },
+          { label: t('TRANSACTION_ID'), value: transactionId },
           { label: t('TYPE'), value: transaction.type },
           {
             label: t('STATUS'),
