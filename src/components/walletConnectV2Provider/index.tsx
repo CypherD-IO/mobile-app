@@ -23,6 +23,14 @@ import * as Sentry from '@sentry/react-native';
 import { Config } from 'react-native-config';
 import useAxios from '../../core/HttpRequest';
 import { GlobalContext } from '../../core/globalContext';
+import '@walletconnect/react-native-compat';
+import { WagmiConfig } from 'wagmi';
+import { mainnet, polygon, arbitrum } from 'viem/chains';
+import {
+  createWeb3Modal,
+  defaultWagmiConfig,
+} from '@web3modal/wagmi-react-native';
+import { WalletConnectModal } from '@walletconnect/modal-react-native';
 
 const walletConnectInitialValue = {
   initialized: false,
@@ -39,6 +47,7 @@ export const WalletConnectV2Provider: React.FC<any> = ({ children }) => {
   const { walletConnectDispatch } = useContext<any>(WalletConnectContext);
   const { getWithAuth } = useAxios();
   const isInitializationInProgress = useRef<boolean>(false);
+  const projectId = String(Config.WALLET_CONNECT_PROJECTID);
 
   // Step 2 - Once initialized, set up wallet connect event manager
 
@@ -50,7 +59,6 @@ export const WalletConnectV2Provider: React.FC<any> = ({ children }) => {
   // const { relayerRegionURL } = useSnapshot(SettingsStore.state)
 
   const onInitialize = useCallback(async () => {
-    const projectId = Config.WALLET_CONNECT_PROJECTID;
     if (
       ethereum.address &&
       ethereum.address !== _NO_CYPHERD_CREDENTIAL_AVAILABLE_
@@ -70,6 +78,28 @@ export const WalletConnectV2Provider: React.FC<any> = ({ children }) => {
       }
     }
   }, []);
+
+  const metadata = {
+    name: 'Web3Modal RN',
+    description: 'Web3Modal RN Example',
+    url: 'https://web3modal.com',
+    icons: ['https://avatars.githubusercontent.com/u/37784886'],
+    redirect: {
+      native: 'YOUR_APP_SCHEME://',
+      universal: 'YOUR_APP_UNIVERSAL_LINK.com',
+    },
+  };
+
+  const chains = [mainnet, polygon, arbitrum];
+
+  const wagmiConfig = defaultWagmiConfig({ chains, projectId, metadata });
+
+  // 3. Create modal
+  createWeb3Modal({
+    projectId,
+    chains,
+    wagmiConfig,
+  });
 
   useEffect(() => {
     if (
@@ -129,7 +159,11 @@ export const WalletConnectV2Provider: React.FC<any> = ({ children }) => {
   return (
     <WalletConnectContext.Provider
       value={{ initialized: isWeb3WalletInitialized }}>
-      {children}
+      <WagmiConfig config={wagmiConfig}>
+        {children}
+        {/* <Web3Modal /> */}
+        <WalletConnectModal projectId={projectId} providerMetadata={metadata} />
+      </WagmiConfig>
     </WalletConnectContext.Provider>
   );
 };

@@ -93,6 +93,7 @@ import SendInviteCode from '../containers/DebitCard/sendInviteCode';
 import { LinkedWallets } from '../containers/DebitCard/bridgeCard/linkedWallets';
 import LinkAnotherWallet from '../containers/DebitCard/bridgeCard/linkAnotherWallet';
 import LinkWalletAuth from '../containers/DebitCard/bridgeCard/linkWalletAuth';
+import ImportWalletOptions from '../containers/Options/importWalletOptions';
 
 const { DynamicImage, DynamicButton } = require('../styles');
 
@@ -1638,6 +1639,20 @@ export function OptionsStackScreen({ navigation, route }) {
 
           headerTintColor: Colors.primaryTextColor,
           headerBackTitleVisible: false,
+        })}
+      />
+      <OptionsStack.Screen
+        name={screenTitle.IMPORT_WALLET_OPTIONS}
+        component={ImportWalletOptions}
+        options={({ navigation, route }) => ({
+          headerTransparent: false,
+          headerShadowVisible: false,
+          title: t('IMPORT_WALLET'),
+          headerTitleAlign: 'center',
+          headerTitleStyle: optionsStackScreenHeaderTitleStyles,
+          headerTintColor: Colors.primaryTextColor,
+          headerBackTitleVisible: false,
+          headerLeft: props => defaultHeaderLeft(navigation),
         })}
       />
       <OptionsStack.Screen
