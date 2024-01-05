@@ -5,6 +5,7 @@ export const TYPES = [
   CardTransactionTypes.CREDIT,
   CardTransactionTypes.DEBIT,
   CardTransactionTypes.REFUND,
+  CardTransactionTypes.WITHDRAWAL,
 ];
 export const STATUSES = [
   CardTransactionStatuses.PENDING,
