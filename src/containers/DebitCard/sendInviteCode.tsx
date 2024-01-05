@@ -159,13 +159,6 @@ export default function SendInviteCode({ navigation }: Props) {
               selectedCountryState={[selectedCountry, setSelectedCountry]}
             />
             <CyDView className={'w-screen'}>
-              {/* <CyDText
-              className={
-                'text-center font-bold text-[22px] mt-[60px] mb-[10px]'
-              }>
-              {t<string>('SEND_INVITE_CODE_TITLE')}
-            </CyDText> */}
-              {/* <CyDText className={'text-center font-bold text-[14px] mt-[-6px] mb-[6px]'}>{`(${t('AVAILABLE_ONLY_IN_USA')})`}</CyDText> */}
               <CyDView>
                 <CyDView className={'flex items-center text-center z-50'}>
                   <CyDImage
@@ -245,55 +238,10 @@ export default function SendInviteCode({ navigation }: Props) {
                       style={'rounded-[8px] h-[50px] mt-[20px]'}
                       title={t<string>('SEND_INVITE_CODE')}
                     />
-
-                    <CyDView className='flex flex-row mt-[12px] pr-[32px]'>
-                      <CyDImage
-                        source={AppImages.CANDY_CANE}
-                        className='h-[20px] w-[20px]'
-                        resizeMode='contain'
-                      />
-                      <CyDText className='text-center text-successTextGreen font-bold px-[2px]'>
-                        {
-                          ' Share the joy of giving this season! Gift your friends an invite code for Cypher Card. They will receive it instantly via email, courtesy of you.  '
-                        }
-                      </CyDText>
-                      <CyDImage
-                        source={AppImages.CANDY_CANE}
-                        className='h-[20px] w-[20px]'
-                        resizeMode='contain'
-                        style={{
-                          transform: [{ scaleX: -1 }],
-                        }}
-                      />
-                    </CyDView>
                   </CyDView>
                 </CyDView>
               </CyDView>
             </CyDView>
-            {/* <CyDView>
-          <CyDText className={'mt-[25px] mx-[40px] text-[20px] font-bold'}>
-            {t<string>('CARD_WAITLIST_PAGE_CAPTION')}
-          </CyDText>
-        </CyDView>
-        <CyDView className={'mx-[40px] my-[10px]'}>
-          {cardBenefits.map(item => {
-            return (
-              <CyDView className={'flex flex-row my-[4px]'} key={item}>
-                <CyDImage
-                  className={'mt-[6px]'}
-                  source={AppImages.RIGHT_ARROW_BULLET}
-                />
-                <CyDText className={'ml-[10px] leading-[25px]'}>{item}</CyDText>
-              </CyDView>
-            );
-          })}
-        </CyDView>
-        <CyDView className={'flex items-center text-center'}>
-          <CyDImage
-            source={AppImages.DOTS_ILLUSTRATION}
-            className={'w-[200px] h-[90px]'}
-          />
-        </CyDView> */}
           </CyDScrollView>
         </CyDView>
       </CyDSafeAreaView>

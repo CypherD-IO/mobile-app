@@ -38,14 +38,14 @@ interface Transaction {
   amount: number;
   iconUrl: string;
   tokenData?: {
-    id: number,
-    chain: string,
-    hash: string,
-    symbol: string,
-    coinId: string,
-    tokenNos: number,
-    tokenAddress: string
-  }
+    id: number;
+    chain: string;
+    hash: string;
+    symbol: string;
+    coinId: string;
+    tokenNos: number;
+    tokenAddress: string;
+  };
 }
 
 function TransactionsScreen(props: {
@@ -205,14 +205,12 @@ function TransactionsScreen(props: {
       <CyDView
         className={
           'flex flex-row justify-between items-center pl-[10px] pr-[5px] mb-[10px] mt-[10px]'
-        }
-      >
+        }>
         <CyDView className={'flex flex-row justify-start items-center'}>
           <CyDTouchView
             onPress={() => {
               setTransactionFilterByTypeModal(true);
-            }}
-          >
+            }}>
             <CyDText className={'font-bold text-[16px]'}>
               {t<string>(selectedTransactionType)}
             </CyDText>
@@ -254,13 +252,11 @@ function TransactionsScreen(props: {
             screenTitle.BRIDGE_CARD_TRANSACTION_DETAILS_SCREEN,
             { transaction: item },
           );
-        }}
-      >
+        }}>
         <CyDView
           className={
             'flex flex-row justify-start align-center items-center w-[65%]'
-          }
-        >
+          }>
           <CyDFastImage
             source={
               iconUrl && iconUrl !== ''
@@ -274,8 +270,7 @@ function TransactionsScreen(props: {
             <CyDText
               className={clsx('font-bold flex-wrap', {
                 'text-redCyD': type === 'failed',
-              })}
-            >
+              })}>
               {title}
             </CyDText>
             <CyDText>{formatDate(String(date))}</CyDText>
@@ -284,11 +279,12 @@ function TransactionsScreen(props: {
         <CyDView className='flex flex-row self-center items-center'>
           <CyDText
             className={clsx('font-bold text-[16px] mr-[5px]', {
-              'text-redCyD': type === CardTransactionTypes.DEBIT,
+              'text-redCyD':
+                type === CardTransactionTypes.DEBIT ||
+                type === CardTransactionTypes.WITHDRAWAL,
               'text-successTextGreen': type === CardTransactionTypes.CREDIT,
-              'text-darkYellow': type === CardTransactionTypes.REFUND
-            })}
-          >
+              'text-darkYellow': type === CardTransactionTypes.REFUND,
+            })}>
             {getTransactionSign(type)}
             {amount} {t<string>('USD')}
           </CyDText>
@@ -312,7 +308,7 @@ function TransactionsScreen(props: {
         setTransactions({
           ...transactions,
           filteredTransactions: transactions.originalTransactions.filter(
-            (transaction) => transaction.type === CardTransactionTypes.CREDIT,
+            transaction => transaction.type === CardTransactionTypes.CREDIT,
           ),
         });
         break;
@@ -320,7 +316,7 @@ function TransactionsScreen(props: {
         setTransactions({
           ...transactions,
           filteredTransactions: transactions.originalTransactions.filter(
-            (transaction) => transaction.type === CardTransactionTypes.DEBIT,
+            transaction => transaction.type === CardTransactionTypes.DEBIT,
           ),
         });
         break;
@@ -328,7 +324,15 @@ function TransactionsScreen(props: {
         setTransactions({
           ...transactions,
           filteredTransactions: transactions.originalTransactions.filter(
-            (transaction) => transaction.type === CardTransactionTypes.REFUND,
+            transaction => transaction.type === CardTransactionTypes.REFUND,
+          ),
+        });
+        break;
+      case TransactionFilterTypes.WITHDRAWAL:
+        setTransactions({
+          ...transactions,
+          filteredTransactions: transactions.originalTransactions.filter(
+            transaction => transaction.type === CardTransactionTypes.WITHDRAWAL,
           ),
         });
         break;
@@ -353,8 +357,7 @@ function TransactionsScreen(props: {
             'bg-selectedOption border-b-[0px] rounded-[5px]':
               selectedTransactionType === transactionType,
           },
-        )}
-      >
+        )}>
         <CyDText className={'text-center font-nunito text-[16px]  '}>
           {t<string>(transactionType)}
         </CyDText>
@@ -373,15 +376,13 @@ function TransactionsScreen(props: {
         animationInTiming={300}
         animationOutTiming={300}
         isModalVisible={transactionFilterByTypeModal}
-        style={styles.modalContainer}
-      >
+        style={styles.modalContainer}>
         <CyDView className={'bg-white pb-[30px] w-[100%] rounded-t-[20px]'}>
           <CyDTouchView
             className={'flex flex-row justify-end z-10'}
             onPress={() => {
               setTransactionFilterByTypeModal(false);
-            }}
-          >
+            }}>
             <CyDImage
               source={AppImages.CLOSE}
               className={'w-[16px] h-[16px] top-[20px] right-[20px] '}
@@ -395,7 +396,7 @@ function TransactionsScreen(props: {
           <CyDView className={'mt-[10px]'}>
             <CyDFlatList
               data={Object.keys(TransactionFilterTypes)}
-              renderItem={(item) => TransactionTypeItem(item)}
+              renderItem={item => TransactionTypeItem(item)}
               showsVerticalScrollIndicator={true}
             />
           </CyDView>
@@ -404,7 +405,7 @@ function TransactionsScreen(props: {
     );
   };
 
-  const onDateChange = (date) => {
+  const onDateChange = date => {
     const { year, yearIndex, month, monthIndex } = date;
     if (!Object.keys(month).length) {
       setDate({ year, yearIndex, month: months[0], monthIndex });
@@ -428,15 +429,13 @@ function TransactionsScreen(props: {
         animationInTiming={300}
         animationOutTiming={300}
         isModalVisible={transactionFilterByDateModal}
-        style={styles.modalContainer}
-      >
+        style={styles.modalContainer}>
         <CyDView className={'bg-white pb-[30px] w-[100%] rounded-t-[20px]'}>
           <CyDTouchView
             className={'flex flex-row justify-end z-10 px-[10px]'}
             onPress={() => {
               onDateChange({ year, yearIndex, month, monthIndex });
-            }}
-          >
+            }}>
             <CyDImage
               source={AppImages.CLOSE}
               className={'w-[20px] h-[20px] top-[20px] right-[20px] '}
@@ -515,17 +514,21 @@ function TransactionsScreen(props: {
             <TransactionsFilterByTypeModal />
             <FlatList
               style={{ height: listHeight - 100 }}
-              refreshControl={<RefreshControl refreshing={refreshing} onRefresh={onRefresh} />}
+              refreshControl={
+                <RefreshControl refreshing={refreshing} onRefresh={onRefresh} />
+              }
               data={transactions.filteredTransactions}
               renderItem={({ item, index }) => (
                 <TransactionItem item={item} key={index} />
               )}
-              ListEmptyComponent={<CyDView className={'flex justify-center items-center'}>
-                <CyDImage
-                  source={AppImages.NO_TRANSACTIONS_YET}
-                  className={'h-[150px] w-[150px]'}
-                />
-              </CyDView>}
+              ListEmptyComponent={
+                <CyDView className={'flex justify-center items-center'}>
+                  <CyDImage
+                    source={AppImages.NO_TRANSACTIONS_YET}
+                    className={'h-[150px] w-[150px]'}
+                  />
+                </CyDView>
+              }
             />
           </CyDView>
         )}

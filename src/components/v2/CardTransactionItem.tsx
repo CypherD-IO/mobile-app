@@ -45,6 +45,8 @@ const getTransactionSign = (type: string) => {
       return '+';
     case TransactionFilterTypes.DEBIT:
       return '-';
+    case TransactionFilterTypes.WITHDRAWAL:
+      return '-';
     case TransactionFilterTypes.REFUND:
       return '+';
     default:
@@ -102,7 +104,9 @@ const CardTransactionItem = ({ item }: CardTransactionItemProps) => {
         <CyDView className='flex justify-center items-end'>
           <CyDText
             className={clsx('font-bold text-[16px] mr-[5px]', {
-              'text-redCyD': type === CardTransactionTypes.DEBIT,
+              'text-redCyD':
+                type === CardTransactionTypes.DEBIT ||
+                type === CardTransactionTypes.WITHDRAWAL,
               'text-successTextGreen': type === CardTransactionTypes.CREDIT,
               'text-darkYellow': type === CardTransactionTypes.REFUND,
               'text-orange-400': !isSettled,
