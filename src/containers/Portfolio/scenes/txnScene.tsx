@@ -121,7 +121,8 @@ const GetTransactionItemIcon = ({
       return (
         <CyDView
           className='h-[25px] w-[25px] justify-center items-center'
-          style={{ position: 'relative', backgroundColor: 'transparent' }}>
+          style={{ position: 'relative', backgroundColor: 'transparent' }}
+        >
           <CyDFastImage
             className='h-[25px] w-[25px] absolute right-[8px] rounded-full'
             resizeMode='contain'
@@ -259,9 +260,10 @@ const TxnScene = ({
   const isFocused = useIsFocused();
   const hdWalletContext = useContext<any>(HdWalletContext);
   const portfolioContext = useContext(PortfolioContext);
-  const { address: ethereumAddress }: { address: string } =
-    hdWalletContext.state.wallet.ethereum;
-  const getTransactionsUrl = `${ARCH_HOST}/v1/txn/transactions/${ethereumAddress}?descOrder=true&blockchain=`;
+  const {
+    address: ethereumAddress,
+  }: { address: string } = hdWalletContext.state.wallet.ethereum;
+  const getTransactionsUrl = `${ARCH_HOST}/v1/txn/transactions/${ethereumAddress}?descOrder=true`;
 
   const [filter, setFilter] = useState({
     types: TRANSACTION_TYPES,
@@ -466,7 +468,8 @@ const TxnScene = ({
             className={clsx(
               ' border-sepratorColor pl-[10px] pr-[30px] py-[10px] justify-center',
               { 'mt-[28px]': index !== 0 },
-            )}>
+            )}
+          >
             <CyDText className='font-bold text-[16px]'>{formatedDay}</CyDText>
           </CyDView>
         )}
@@ -480,7 +483,8 @@ const TxnScene = ({
           )}
           onPress={() => {
             setTransactionInfoParams(activity);
-          }}>
+          }}
+        >
           <GetTransactionItemIcon
             type={activity.type}
             status={activity.status}
