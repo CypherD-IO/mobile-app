@@ -183,7 +183,6 @@ export default function BridgeFundCardScreen({ route }: { route: any }) {
   const [isCrpytoInput, setIsCryptoInput] = useState(false);
   const [usdAmount, setUsdAmount] = useState('');
   const [cryptoAmount, setCryptoAmount] = useState('');
-  const [isMaxLoading, setIsMaxLoading] = useState(false);
   const [placeholderText, setPlaceholderText] = useState('0.00');
   const [loading, setLoading] = useState<boolean>(false);
   const minTokenValueLimit = 10;
@@ -634,7 +633,6 @@ export default function BridgeFundCardScreen({ route }: { route: any }) {
             });
           } else {
             setLoading(false);
-            setIsMaxLoading(false);
             showModal('state', {
               type: 'error',
               title: t('GAS_ESTIMATION_FAILED'),
@@ -680,7 +678,6 @@ export default function BridgeFundCardScreen({ route }: { route: any }) {
             });
           } else {
             setLoading(false);
-            setIsMaxLoading(false);
             showModal('state', {
               type: 'error',
               title: t('GAS_ESTIMATION_FAILED'),
@@ -724,7 +721,6 @@ export default function BridgeFundCardScreen({ route }: { route: any }) {
       }
       setTokenQuote(quote);
       setLoading(false);
-      setIsMaxLoading(false);
     } else if (COSMOS_CHAINS.includes(chainDetails.chainName)) {
       const actualTokensRequired = quote.tokenRequired;
       const usdAmountForCosmosGasEstimation = ethers.utils
@@ -763,7 +759,6 @@ export default function BridgeFundCardScreen({ route }: { route: any }) {
             cosmosPayTokenModal(estimatedGasData);
           } else {
             setLoading(false);
-            setIsMaxLoading(false);
             showModal('state', {
               type: 'error',
               title: t('GAS_ESTIMATION_FAILED'),
@@ -777,7 +772,6 @@ export default function BridgeFundCardScreen({ route }: { route: any }) {
             retryCount += 1;
             if (retryCount === 3) {
               setLoading(false);
-              setIsMaxLoading(false);
               showModal('state', {
                 type: 'error',
                 title: t('GAS_ESTIMATION_FAILED'),
@@ -803,7 +797,6 @@ export default function BridgeFundCardScreen({ route }: { route: any }) {
       }
       setLoading(false);
       setTokenQuote(quote);
-      setIsMaxLoading(false);
     }
   };
 
@@ -995,7 +988,7 @@ export default function BridgeFundCardScreen({ route }: { route: any }) {
       const web3RPCEndpoint = new Web3(
         getWeb3Endpoint(hdWallet.state.selectedChain, globalContext),
       );
-      setIsMaxLoading(true);
+      setLoading(true);
       let amountInCrypto = actualBalance;
       try {
         // Reserving gas for the txn if the selected token is a native token.
@@ -1044,7 +1037,7 @@ export default function BridgeFundCardScreen({ route }: { route: any }) {
           selectedToken,
         };
         Sentry.captureException(errorObject);
-        setIsMaxLoading(false);
+        setLoading(false);
         showModal('state', {
           type: 'error',
           title: t('GAS_ESTIMATION_FAILED'),
@@ -1067,7 +1060,7 @@ export default function BridgeFundCardScreen({ route }: { route: any }) {
           const quote: CardQuoteResponse = response.data;
           void showQuoteModal(quote, true);
         } else {
-          setIsMaxLoading(false);
+          setLoading(false);
           showModal('state', {
             type: 'error',
             title: response?.error?.message?.includes('minimum amount')
@@ -1094,7 +1087,7 @@ export default function BridgeFundCardScreen({ route }: { route: any }) {
           },
         };
         Sentry.captureException(errorObject);
-        setIsMaxLoading(false);
+        setLoading(false);
         showModal('state', {
           type: 'error',
           title: '',
@@ -1108,7 +1101,7 @@ export default function BridgeFundCardScreen({ route }: { route: any }) {
       const gasReservedTokenAmount =
         actualBalance - get(gasFeeReservation, chainDetails.backendName);
       // Reserving gas for the txn if the selected token is a native token.
-      setIsMaxLoading(true);
+      setLoading(true);
       if (
         selectedTokenSymbol === nativeTokenSymbol &&
         !GASLESS_CHAINS.includes(chainDetails.backendName)
@@ -1149,7 +1142,7 @@ export default function BridgeFundCardScreen({ route }: { route: any }) {
               parseFloat(gasFeeEstimationForTxn) *
                 GAS_BUFFER_FACTOR_FOR_LOAD_MAX;
           } else {
-            setIsMaxLoading(false);
+            setLoading(false);
             showModal('state', {
               type: 'error',
               title: t('GAS_ESTIMATION_FAILED'),
@@ -1166,7 +1159,7 @@ export default function BridgeFundCardScreen({ route }: { route: any }) {
             selectedToken,
           };
           Sentry.captureException(errorObject);
-          setIsMaxLoading(false);
+          setLoading(false);
           showModal('state', {
             type: 'error',
             title: t('GAS_ESTIMATION_FAILED'),
@@ -1192,7 +1185,7 @@ export default function BridgeFundCardScreen({ route }: { route: any }) {
           const quote: CardQuoteResponse = response.data;
           void showQuoteModal(quote, true);
         } else {
-          setIsMaxLoading(false);
+          setLoading(false);
           showModal('state', {
             type: 'error',
             title: response?.error?.message?.includes('minimum amount')
@@ -1221,7 +1214,7 @@ export default function BridgeFundCardScreen({ route }: { route: any }) {
           },
         };
         Sentry.captureException(errorObject);
-        setIsMaxLoading(false);
+        setLoading(false);
         showModal('state', {
           type: 'error',
           title: '',
@@ -1231,7 +1224,7 @@ export default function BridgeFundCardScreen({ route }: { route: any }) {
         });
       }
     } else {
-      setIsMaxLoading(true);
+      setLoading(false);
       showModal('state', {
         type: 'error',
         title: '',
@@ -1239,7 +1232,6 @@ export default function BridgeFundCardScreen({ route }: { route: any }) {
         onSuccess: hideModal,
         onFailure: hideModal,
       });
-      setIsMaxLoading(false);
     }
   };
 
@@ -1353,6 +1345,41 @@ export default function BridgeFundCardScreen({ route }: { route: any }) {
     return null;
   };
 
+  const onPressToggle = () => {
+    setIsCryptoInput(!isCrpytoInput);
+    if (!isCrpytoInput) {
+      const usdAmt =
+        parseFloat(amount) *
+        (selectedToken?.isZeroFeeCardFunding
+          ? 1
+          : Number(selectedToken?.price));
+      setCryptoAmount(amount);
+      setUsdAmount(
+        (isNaN(usdAmt)
+          ? '0.00'
+          : selectedToken?.isZeroFeeCardFunding
+          ? usdAmt
+          : usdAmt / 1.02
+        ).toString(),
+      );
+    } else {
+      const cryptoAmt =
+        parseFloat(amount) /
+        (selectedToken?.isZeroFeeCardFunding
+          ? 1
+          : Number(selectedToken?.price));
+      setCryptoAmount(
+        (isNaN(cryptoAmt)
+          ? '0.00'
+          : selectedToken?.isZeroFeeCardFunding
+          ? cryptoAmt
+          : cryptoAmt * 1.02
+        ).toString(),
+      );
+      setUsdAmount(amount);
+    }
+  };
+
   return (
     <CyDSafeAreaView className='h-full bg-white'>
       <ChooseTokenModal
@@ -1392,8 +1419,20 @@ export default function BridgeFundCardScreen({ route }: { route: any }) {
         <RenderSelectedToken />
         <CyDView className={'mx-[20px]'}>
           <CyDView className='flex flex-row bg-[#F7F8FE] rounded-[8px] h-[300px] px-[20px] justify-between items-center'>
-            <CyDView className={'h-[40px] w-[40px] p-[4px]'} />
-            <CyDView className={'pb-[10px] w-[60%] items-center bg-[#F7F8FE]'}>
+            <CyDView className={'p-[4px]'}>
+              <CyDTouchView
+                onPress={() => {
+                  void onMax();
+                }}
+                disabled={loading}
+                className={clsx(
+                  'bg-white border border-inputBorderColor rounded-full h-[40px] w-[40px] flex justify-center items-center p-[4px]',
+                )}>
+                <CyDText>{t('MAX')}</CyDText>
+              </CyDTouchView>
+            </CyDView>
+            <CyDView
+              className={'pb-[10px] max-w-[60%] items-center bg-[#F7F8FE]'}>
               <CyDText
                 className={
                   'font-extrabold text-[22px] text-center font-nunito text-black'
@@ -1430,8 +1469,8 @@ export default function BridgeFundCardScreen({ route }: { route: any }) {
                         (isNaN(usdText)
                           ? '0.00'
                           : selectedToken?.isZeroFeeCardFunding
-                            ? usdText
-                            : usdText / 1.02
+                          ? usdText
+                          : usdText / 1.02
                         ).toString(),
                       );
                     } else {
@@ -1444,8 +1483,8 @@ export default function BridgeFundCardScreen({ route }: { route: any }) {
                         (isNaN(cryptoText)
                           ? '0.00'
                           : selectedToken?.isZeroFeeCardFunding
-                            ? cryptoText
-                            : cryptoText * 1.02
+                          ? cryptoText
+                          : cryptoText * 1.02
                         ).toString(),
                       );
                       setUsdAmount(text);
@@ -1482,50 +1521,21 @@ export default function BridgeFundCardScreen({ route }: { route: any }) {
               )}
               <RenderWarningMessage />
             </CyDView>
-            <CyDTouchView
-              onPress={() => {
-                setIsCryptoInput(!isCrpytoInput);
-                if (!isCrpytoInput) {
-                  const usdAmt =
-                    parseFloat(amount) *
-                    (selectedToken?.isZeroFeeCardFunding
-                      ? 1
-                      : Number(selectedToken?.price));
-                  setCryptoAmount(amount);
-                  setUsdAmount(
-                    (isNaN(usdAmt)
-                      ? '0.00'
-                      : selectedToken?.isZeroFeeCardFunding
-                        ? usdAmt
-                        : usdAmt / 1.02
-                    ).toString(),
-                  );
-                } else {
-                  const cryptoAmt =
-                    parseFloat(amount) /
-                    (selectedToken?.isZeroFeeCardFunding
-                      ? 1
-                      : Number(selectedToken?.price));
-                  setCryptoAmount(
-                    (isNaN(cryptoAmt)
-                      ? '0.00'
-                      : selectedToken?.isZeroFeeCardFunding
-                        ? cryptoAmt
-                        : cryptoAmt * 1.02
-                    ).toString(),
-                  );
-                  setUsdAmount(amount);
-                }
-              }}
-              className={clsx(
-                'bg-white border border-inputBorderColor rounded-full h-[40px] w-[40px] flex justify-center items-center p-[4px]',
-              )}>
-              <CyDFastImage
-                className='h-[16px] w-[16px]'
-                source={AppImages.TOGGLE_ICON}
-                resizeMode='contain'
-              />
-            </CyDTouchView>
+            <CyDView className={'p-[4px]'}>
+              <CyDTouchView
+                onPress={() => {
+                  onPressToggle();
+                }}
+                className={clsx(
+                  'bg-white border border-inputBorderColor rounded-full h-[40px] w-[40px] flex justify-center items-center p-[4px]',
+                )}>
+                <CyDFastImage
+                  className='h-[16px] w-[16px]'
+                  source={AppImages.TOGGLE_ICON}
+                  resizeMode='contain'
+                />
+              </CyDTouchView>
+            </CyDView>
           </CyDView>
           <Button
             onPress={() => {
@@ -1540,17 +1550,6 @@ export default function BridgeFundCardScreen({ route }: { route: any }) {
               'py-[8px]': loading,
             })}
             loading={loading}
-          />
-          <Button
-            onPress={() => {
-              void onMax();
-            }}
-            type={ButtonType.SECONDARY}
-            title={`${t('QUOTE_MAX')} ⚡`}
-            style={clsx('h-[60px] mx-[16px] py-[10px]', {
-              'py-[8px]': isMaxLoading,
-            })}
-            loading={isMaxLoading}
           />
         </CyDView>
       </CyDKeyboardAwareScrollView>
