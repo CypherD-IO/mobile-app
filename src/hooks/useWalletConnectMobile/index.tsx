@@ -40,18 +40,11 @@ export default function useWalletConnectMobile() {
     );
     if (!response.isError) {
       const msg = response.data.message;
-      console.log('🚀 ~ file: index.tsx:34 ~ signMessage ~ msg:', msg);
       const hexMsg = utf8ToHex(msg);
       const signature = await web3Provider.send('personal_sign', [
         hexMsg,
         address?.toLowerCase(),
       ]);
-      console.log(address);
-      console.log(
-        '🚀 ~ file: index.tsx:46 ~ signMessage ~ signature:',
-        signature,
-        typeof signature,
-      );
       const verifyMessageResponse = await axios.post(
         `${ARCH_HOST}/v1/authentication/verify-message/${address?.toLowerCase()}`,
         {
@@ -60,7 +53,6 @@ export default function useWalletConnectMobile() {
       );
       if (verifyMessageResponse?.data.token) {
         const token = verifyMessageResponse.data.token;
-        console.log('🚀 ~ file: index.tsx:45 ~ signMessage ~ token:', token);
         globalContext.globalDispatch({
           type: GlobalContextType.SIGN_IN,
           sessionToken: token,

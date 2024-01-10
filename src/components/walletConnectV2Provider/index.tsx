@@ -49,7 +49,6 @@ export const WalletConnectV2Provider: React.FC<any> = ({ children }) => {
   const { getWithAuth } = useAxios();
   const isInitializationInProgress = useRef<boolean>(false);
   const projectId = String(Config.WALLET_CONNECT_PROJECTID);
-  console.log('🚀 ~ file: index.tsx:52 ~ projectId:', projectId);
 
   // Step 2 - Once initialized, set up wallet connect event manager
 

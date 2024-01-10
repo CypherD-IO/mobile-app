@@ -749,8 +749,6 @@ function App() {
     };
   }, []);
 
-  console.log('ethereum.address:', ethereum.address);
-
   return (
     <KeyboardAvoidingView
       style={{ flex: 1, backgroundColor: 'white' }}

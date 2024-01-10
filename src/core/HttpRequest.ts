@@ -107,10 +107,6 @@ export default function useAxios() {
           response.data = data;
           response.status = status;
         } else if (method === 'POST_WITHOUT_AUTH') {
-          console.log(
-            '🚀 ~ file: HttpRequest.ts:111 ~ useAxios ~ reqBody:',
-            reqBody,
-          );
           const { data, status } = await axios.post(url, reqBody);
           response.data = data;
           response.status = status;
