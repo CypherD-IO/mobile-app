@@ -10,27 +10,16 @@ import {
 import AppImages from '../../../assets/images/appImages';
 import { screenTitle } from '../../constants';
 import { useWalletConnectModal } from '@walletconnect/modal-react-native';
+import * as Sentry from '@sentry/react-native';
+import { W3mButton } from '@web3modal/wagmi-react-native';
+import useConnectionManager from '../../hooks/useConnectionManager';
 
 export default function ImportWalletOptions({
   navigation,
 }: {
   navigation: { navigate: (screen: string) => void };
 }) {
-  const { open, isConnected, provider, address } = useWalletConnectModal();
-
-  useEffect(() => {
-    if (isConnected && address) {
-      console.log(address);
-    }
-  }, [isConnected, address]);
-
-  const onPressWalletConnect = () => {
-    if (isConnected) {
-      void provider?.disconnect();
-    } else {
-      void open();
-    }
-  };
+  const { openWalletConnectModal } = useConnectionManager();
   return (
     <CyDImageBackground
       source={AppImages.BG_SETTINGS}
@@ -50,7 +39,7 @@ export default function ImportWalletOptions({
             className='h-[22px] w-[12px]'
           />
         </CyDTouchView>
-        <CyDTouchView className='flex flex-row justify-between items-center border-b-[0.2px] py-[22px]'>
+        {/* <CyDTouchView className='flex flex-row justify-between items-center border-b-[0.2px] py-[22px]'>
           <CyDView>
             <CyDText className='text-[16px] font-semibold'>Private Key</CyDText>
           </CyDView>
@@ -58,10 +47,10 @@ export default function ImportWalletOptions({
             source={AppImages.OPTIONS_ARROW}
             className='h-[22px] w-[12px]'
           />
-        </CyDTouchView>
+        </CyDTouchView> */}
         <CyDTouchView
           onPress={() => {
-            onPressWalletConnect();
+            void openWalletConnectModal();
           }}
           className='flex flex-row justify-between items-center border-b-[0.2px] py-[22px]'>
           <CyDView>

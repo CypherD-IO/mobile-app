@@ -324,6 +324,7 @@ export async function signIn(ethereum: {
         verifyMessage,
         ethereum.privateKey,
       );
+      console.log('🚀 ~ file: globalContext.tsx:327 ~ signature:', signature);
       const result = await axios.post(
         `${ARCH_HOST}/v1/authentication/verify-message/${ethereum.address}`,
         {

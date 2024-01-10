@@ -128,6 +128,7 @@ import { ethToEvmos } from '@tharsis/address-converter';
 import { WalletConnectV2Provider } from './src/components/walletConnectV2Provider';
 import DefaultAuthRemoveModal from './src/components/v2/defaultAuthRemoveModal';
 import { Config } from 'react-native-config';
+import NoopTransport from '@sentry/react-native';
 
 const { DynamicView, CText, DynamicImage } = require('./src/styles');
 
@@ -153,6 +154,7 @@ Sentry.init({
       tracingOrigins: ['127.0.0.1', 'api.cypherd.io'],
     }),
   ],
+  transport: NoopTransport,
   tracesSampleRate: 1.0,
   beforeSend(event, hint) {
     if (event?.extra && typeof event.extra === 'object') {
@@ -746,6 +748,8 @@ function App() {
       BackHandler.removeEventListener('hardwareBackPress', handleBackButton);
     };
   }, []);
+
+  console.log('ethereum.address:', ethereum.address);
 
   return (
     <KeyboardAvoidingView

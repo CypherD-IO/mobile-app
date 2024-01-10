@@ -14,6 +14,7 @@ type RequestMethod =
   | 'GET'
   | 'GET_WITHOUT_AUTH'
   | 'POST'
+  | 'POST_WITHOUT_AUTH'
   | 'PUT'
   | 'PATCH'
   | 'DELETE';
@@ -105,6 +106,14 @@ export default function useAxios() {
           const { data, status } = await axiosInstance.post(url, reqBody);
           response.data = data;
           response.status = status;
+        } else if (method === 'POST_WITHOUT_AUTH') {
+          console.log(
+            '🚀 ~ file: HttpRequest.ts:111 ~ useAxios ~ reqBody:',
+            reqBody,
+          );
+          const { data, status } = await axios.post(url, reqBody);
+          response.data = data;
+          response.status = status;
         } else if (method === 'PUT') {
           const { data, status } = await axiosInstance.put(url, reqBody);
           response.data = data;
@@ -165,6 +174,13 @@ export default function useAxios() {
   ) {
     return await request('POST', url, timeout, data);
   }
+  async function postWithoutAuth(
+    url: string,
+    data: any,
+    timeout = DEFAULT_AXIOS_TIMEOUT,
+  ) {
+    return await request('POST_WITHOUT_AUTH', url, timeout, data);
+  }
   const putWithAuth = async (
     url: string,
     data: any,
@@ -193,5 +209,6 @@ export default function useAxios() {
     patchWithAuth,
     deleteWithAuth,
     getWithoutAuth,
+    postWithoutAuth,
   };
 }

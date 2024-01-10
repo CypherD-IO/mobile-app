@@ -27,6 +27,7 @@ import '@walletconnect/react-native-compat';
 import { WagmiConfig } from 'wagmi';
 import { mainnet, polygon, arbitrum } from 'viem/chains';
 import {
+  Web3Modal,
   createWeb3Modal,
   defaultWagmiConfig,
 } from '@web3modal/wagmi-react-native';
@@ -48,6 +49,7 @@ export const WalletConnectV2Provider: React.FC<any> = ({ children }) => {
   const { getWithAuth } = useAxios();
   const isInitializationInProgress = useRef<boolean>(false);
   const projectId = String(Config.WALLET_CONNECT_PROJECTID);
+  console.log('🚀 ~ file: index.tsx:52 ~ projectId:', projectId);
 
   // Step 2 - Once initialized, set up wallet connect event manager
 
@@ -80,12 +82,12 @@ export const WalletConnectV2Provider: React.FC<any> = ({ children }) => {
   }, []);
 
   const metadata = {
-    name: 'Web3Modal RN',
-    description: 'Web3Modal RN Example',
-    url: 'https://web3modal.com',
+    name: 'Cypher Wallet',
+    description: 'Cypher Wallet',
+    url: 'https://cypherwallet.io',
     icons: ['https://avatars.githubusercontent.com/u/37784886'],
     redirect: {
-      native: 'YOUR_APP_SCHEME://',
+      native: 'cypherwallet://',
       universal: 'YOUR_APP_UNIVERSAL_LINK.com',
     },
   };
@@ -159,11 +161,11 @@ export const WalletConnectV2Provider: React.FC<any> = ({ children }) => {
   return (
     <WalletConnectContext.Provider
       value={{ initialized: isWeb3WalletInitialized }}>
-      <WagmiConfig config={wagmiConfig}>
-        {children}
-        {/* <Web3Modal /> */}
-        <WalletConnectModal projectId={projectId} providerMetadata={metadata} />
-      </WagmiConfig>
+      {/* <WagmiConfig config={wagmiConfig}> */}
+      {children}
+      {/* <Web3Modal /> */}
+      <WalletConnectModal projectId={projectId} providerMetadata={metadata} />
+      {/* </WagmiConfig> */}
     </WalletConnectContext.Provider>
   );
 };
