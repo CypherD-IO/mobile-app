@@ -274,3 +274,9 @@ export enum CardDetails {
   PHONE = 'phone',
   EMAIL = 'email',
 }
+
+export enum ConnectionTypes {
+  SEED_PHRASE = 'seedPhrase',
+  PRIVATE_KEY = 'privateKey',
+  WALLET_CONNECT = 'walletConnect',
+}

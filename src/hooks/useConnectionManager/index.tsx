@@ -1,9 +1,13 @@
-import { useWalletConnectModal } from '@walletconnect/modal-react-native';
-import { useEffect } from 'react';
+import { getConnectionType } from '../../core/asyncStorage';
 import useWalletConnectMobile from '../useWalletConnectMobile';
 
 export default function useConnectionManager() {
   const { openWalletConnectModal } = useWalletConnectMobile();
 
-  return { openWalletConnectModal };
+  const getConnectedType = async () => {
+    const connectionType = await getConnectionType();
+    return connectionType;
+  };
+
+  return { getConnectedType, openWalletConnectModal };
 }

@@ -4,6 +4,7 @@ import React, {
   useCallback,
   useContext,
   useEffect,
+  useMemo,
   useRef,
   useState,
 } from 'react';
@@ -24,14 +25,23 @@ import { Config } from 'react-native-config';
 import useAxios from '../../core/HttpRequest';
 import { GlobalContext } from '../../core/globalContext';
 import '@walletconnect/react-native-compat';
-import { WagmiConfig } from 'wagmi';
 import { mainnet, polygon, arbitrum } from 'viem/chains';
 import {
-  Web3Modal,
   createWeb3Modal,
   defaultWagmiConfig,
 } from '@web3modal/wagmi-react-native';
-import { WalletConnectModal } from '@walletconnect/modal-react-native';
+import {
+  WalletConnectModal,
+  useWalletConnectModal,
+} from '@walletconnect/modal-react-native';
+import { ethers } from 'ethers';
+import axios from '../../core/Http';
+import { GlobalContextType } from '../../constants/enum';
+import { setAuthToken, setRefreshToken } from '../../core/asyncStorage';
+import { ethToEvmos } from '@tharsis/address-converter';
+import { hostWorker } from '../../global';
+import useValidSessionToken from '../../hooks/useValidSessionToken';
+import { utf8ToHex } from 'web3-utils';
 
 const walletConnectInitialValue = {
   initialized: false,
@@ -46,9 +56,12 @@ export const WalletConnectV2Provider: React.FC<any> = ({ children }) => {
   const globalContext = useContext<any>(GlobalContext);
   const ethereum = hdWalletContext.state.wallet.ethereum;
   const { walletConnectDispatch } = useContext<any>(WalletConnectContext);
-  const { getWithAuth } = useAxios();
   const isInitializationInProgress = useRef<boolean>(false);
   const projectId = String(Config.WALLET_CONNECT_PROJECTID);
+  const { isConnected, provider, address } = useWalletConnectModal();
+  const { getWithoutAuth } = useAxios();
+  const ARCH_HOST: string = hostWorker.getHost('ARCH_HOST');
+  const { verifySessionToken } = useValidSessionToken();
 
   // Step 2 - Once initialized, set up wallet connect event manager
 
@@ -144,6 +157,89 @@ export const WalletConnectV2Provider: React.FC<any> = ({ children }) => {
             value: connector,
           });
         }
+      }
+    }
+  };
+
+  useEffect(() => {
+    console.log(isConnected, address);
+    if (isConnected && address) {
+      void verifySessionTokenAndSign();
+    }
+  }, [isConnected, address]);
+
+  const loadHdWallet = () => {
+    hdWalletContext.dispatch({
+      type: 'LOAD_WALLET',
+      value: {
+        address,
+        privateKey: _NO_CYPHERD_CREDENTIAL_AVAILABLE_,
+        chain: 'ethereum',
+        publicKey: '',
+        rawAddress: '',
+        algo: '',
+      },
+    });
+    hdWalletContext.dispatch({
+      type: 'LOAD_WALLET',
+      value: {
+        address: ethToEvmos(String(address)),
+        privateKey: _NO_CYPHERD_CREDENTIAL_AVAILABLE_,
+        chain: 'evmos',
+        publicKey: '',
+        rawAddress: '',
+        algo: '',
+      },
+    });
+  };
+
+  const verifySessionTokenAndSign = async () => {
+    const isSessionTokenValid = await verifySessionToken();
+    console.log(
+      '🚀 ~ file: index.tsx:58 ~ verifySessionTokenAndSign ~ isSessionTokenValid:',
+      isSessionTokenValid,
+    );
+    if (!isSessionTokenValid) {
+      void signMessage();
+    } else {
+      void loadHdWallet();
+    }
+  };
+
+  const web3Provider = useMemo(
+    () => (provider ? new ethers.providers.Web3Provider(provider) : undefined),
+    [provider],
+  );
+
+  const signMessage = async () => {
+    if (!web3Provider) {
+      throw new Error('web3Provider not connected');
+    }
+    const response = await getWithoutAuth(
+      `/v1/authentication/sign-message/${String(address)}`,
+    );
+    if (!response.isError) {
+      const msg = response.data.message;
+      const hexMsg = utf8ToHex(msg);
+      const signature = await web3Provider.send('personal_sign', [
+        hexMsg,
+        address?.toLowerCase(),
+      ]);
+      const verifyMessageResponse = await axios.post(
+        `${ARCH_HOST}/v1/authentication/verify-message/${address?.toLowerCase()}`,
+        {
+          signature,
+        },
+      );
+      if (verifyMessageResponse?.data.token) {
+        const { token, refreshToken } = verifyMessageResponse.data;
+        globalContext.globalDispatch({
+          type: GlobalContextType.SIGN_IN,
+          sessionToken: token,
+        });
+        void setAuthToken(token);
+        void setRefreshToken(refreshToken);
+        void loadHdWallet();
       }
     }
   };

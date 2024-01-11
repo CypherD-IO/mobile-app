@@ -780,3 +780,5 @@ export const deFiPositionTypes = [
     label: 'Airdrop',
   },
 ];
+
+export const OP_ETH_ADDRESS = '0xdeaddeaddeaddeaddeaddeaddeaddeaddead0000';

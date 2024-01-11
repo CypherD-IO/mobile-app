@@ -11,7 +11,7 @@ import Clipboard from '@react-native-clipboard/clipboard';
 import analytics from '@react-native-firebase/analytics';
 import * as Sentry from '@sentry/react-native';
 import { ethers } from 'ethers';
-import { get } from 'lodash';
+import { chain, get } from 'lodash';
 import React, { useContext, useEffect, useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { BackHandler } from 'react-native';
@@ -35,6 +35,8 @@ import {
   ChainNameToContactsChainNameMapping,
   EVM_CHAINS_FOR_ADDRESS_DIR,
   CHAIN_NAMES,
+  NativeTokenMapping,
+  ChainNameMapping,
 } from '../../constants/server';
 import { Colors } from '../../constants/theme';
 import { GlobalContext, GlobalContextDef } from '../../core/globalContext';
@@ -53,11 +55,14 @@ import { GasPriceDetail } from '../../core/types';
 import {
   ActivityContext,
   convertAmountOfContractDecimal,
+  formatAmount,
   getMaskedAddress,
+  getNativeToken,
   getSendAddressFieldPlaceholder,
   getWeb3Endpoint,
   HdWalletContext,
   isValidEns,
+  limitDecimalPlaces,
   logAnalytics,
   parseErrorMessage,
   PortfolioContext,
@@ -101,6 +106,11 @@ import {
 } from '../utilities/contactBookUtility';
 import { intercomAnalyticsLog } from '../utilities/analyticsUtility';
 import { useKeyboard } from '../../hooks/useKeyboard';
+import useGasService from '../../hooks/useGasService';
+import { TokenSendConfirmationParams } from '../../models/tokenSendConfirmationParams.interface';
+import { string } from 'yup';
+import useTransactionManager from '../../hooks/useTransactionManager';
+import TokenSendConfirmationModal from '../../components/v2/tokenSendConfirmationModal';
 
 export default function SendTo(props: { navigation?: any; route?: any }) {
   const { t } = useTranslation();
@@ -143,6 +153,22 @@ export default function SendTo(props: { navigation?: any; route?: any }) {
   const [isSignableTransaction] = useIsSignable();
   const chainDetails = tokenData?.chainDetails;
   const { keyboardHeight } = useKeyboard();
+  const [tokenSendConfirmationParams, setTokenSendConfirmationParams] =
+    useState<TokenSendConfirmationParams>({
+      isModalVisible: false,
+      tokenSendParams: {
+        onConfirm: () => {},
+        onCancel: () => {},
+        chain: '',
+        amountInCrypto: '',
+        amountInFiat: '',
+        symbol: '',
+        toAddress: '',
+        gasFeeInCrypto: '',
+        gasFeeInFiat: '',
+        nativeTokenSymbol: '',
+      },
+    });
   // const route = useRoute();
   const searchOptions = {
     isCaseSensitive: false,
@@ -151,6 +177,8 @@ export default function SendTo(props: { navigation?: any; route?: any }) {
     threshold: 0.1,
   };
   const fuseByNames = new Fuse(Object.keys(contactBook), searchOptions);
+  const { estimateGasForEvm } = useGasService();
+  const { sendEvmToken } = useTransactionManager();
   let fuseByAddresses: Fuse<string>;
   if (Object.keys(addressDirectory).length) {
     if (
@@ -1089,6 +1117,85 @@ export default function SendTo(props: { navigation?: any; route?: any }) {
     }
   };
 
+  const onCancelConfirmationModal = () => {
+    setTokenSendConfirmationParams({
+      ...tokenSendConfirmationParams,
+      isModalVisible: false,
+    });
+  };
+
+  const onConfirmConfirmationModal = async () => {
+    const amountToSend = limitDecimalPlaces(
+      valueForUsd,
+      tokenData.contractDecimals,
+    );
+    const response = await sendEvmToken({
+      chain: tokenData.chainDetails.backendName,
+      amountToSend,
+      toAddress: addressText,
+      contractAddress: tokenData.contractAddress,
+      contractDecimals: tokenData.contractDecimals,
+      symbol: tokenData.symbol,
+    });
+    console.log('🚀 ~ onConfirmConfirmationModal ~ response:', response);
+  };
+
+  const showGasQuote = async () => {
+    const { ethereum } = hdWalletContext.state.wallet;
+    const web3 = new Web3(
+      getWeb3Endpoint(tokenData?.chainDetails ?? CHAIN_ETH, globalContext),
+    );
+    const amountToSend = limitDecimalPlaces(
+      valueForUsd,
+      tokenData.contractDecimals,
+    );
+    const { backendName: chainBackendName } = tokenData.chainDetails;
+    const gasDetails = await estimateGasForEvm({
+      web3,
+      chain: chainBackendName,
+      fromAddress: ethereum?.address,
+      toAddress: addressText,
+      amountToSend,
+      contractAddress: tokenData.contractAddress,
+      contractDecimals: tokenData.contractDecimals,
+    });
+    const nativeTokenSymbol =
+      get(nativeTokenMapping, tokenData.symbol) || tokenData.symbol;
+    const nativeToken = getNativeToken(
+      nativeTokenSymbol,
+      get(
+        portfolioState.statePortfolio.tokenPortfolio,
+        String(get(ChainNameMapping, chainBackendName)),
+      ).holdings,
+    );
+    setTokenSendConfirmationParams({
+      isModalVisible: true,
+      tokenSendParams: {
+        onConfirm: () => {
+          void onConfirmConfirmationModal();
+        },
+        onCancel: () => {
+          onCancelConfirmationModal();
+        },
+        chain: chainBackendName,
+        amountInCrypto: amountToSend,
+        amountInFiat: String(
+          formatAmount(Number(amountToSend) * Number(tokenData.price)),
+        ),
+        symbol: tokenData.symbol,
+        toAddress: addressText,
+        gasFeeInCrypto: String(formatAmount(gasDetails.gasFeeInCrypto)),
+        gasFeeInFiat: String(
+          formatAmount(
+            Number(gasDetails.gasFeeInCrypto) * Number(nativeToken.price),
+          ),
+        ),
+        nativeTokenSymbol: String(tokenData.chainDetails?.symbol),
+      },
+    });
+    console.log('gasDetails:', gasDetails);
+  };
+
   const onSuccess = async (readEvent: BarCodeReadEvent) => {
     let error = false;
     const content = readEvent.data;
@@ -1280,6 +1387,10 @@ export default function SendTo(props: { navigation?: any; route?: any }) {
   return (
     <CyDSafeAreaView className='flex-1 bg-white'>
       <CyDView>
+        <TokenSendConfirmationModal
+          isModalVisible={tokenSendConfirmationParams.isModalVisible}
+          tokenSendParams={tokenSendConfirmationParams.tokenSendParams}
+        />
         <BottomSendToConfirm
           isModalVisible={payTokenBottomConfirm}
           modalParams={payTokenModalParams}
@@ -1438,7 +1549,7 @@ export default function SendTo(props: { navigation?: any; route?: any }) {
             <Button
               title={t('SEND')}
               onPress={() => {
-                void (async () => await submitSendTransaction())();
+                void (async () => await showGasQuote())();
               }}
               type={ButtonType.PRIMARY}
               loading={loading}
