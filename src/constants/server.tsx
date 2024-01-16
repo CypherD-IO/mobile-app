@@ -782,3 +782,9 @@ export const deFiPositionTypes = [
 ];
 
 export const OP_ETH_ADDRESS = '0xdeaddeaddeaddeaddeaddeaddeaddeaddead0000';
+export const ACCOUNT_DETAILS_INFO =
+  'https://api-evmos-ia.cosmosia.notional.ventures/cosmos/auth/v1beta1/accounts';
+export const SIMULATION_ENDPOINT =
+  'https://api-evmos-ia.cosmosia.notional.ventures/cosmos/tx/v1beta1/simulate';
+export const TRANSACTION_ENDPOINT =
+  'https://api-evmos-ia.cosmosia.notional.ventures/cosmos/tx/v1beta1/txs';

@@ -1,10 +1,12 @@
 import { ethers } from 'ethers';
 import {
+  ACCOUNT_DETAILS_INFO,
   CHAIN_BSC,
   CHAIN_ETH,
   CHAIN_OPTIMISM,
   ChainBackendNames,
   OP_ETH_ADDRESS,
+  SIMULATION_ENDPOINT,
 } from '../../constants/server';
 import useAxios from '../../core/HttpRequest';
 import Web3 from 'web3';
@@ -12,10 +14,18 @@ import { removeOutliers } from '../../misc/outliers';
 import { GasPriceDetail } from '../../core/types';
 import * as Sentry from '@sentry/react-native';
 import analytics from '@react-native-firebase/analytics';
+import { EvmGasInterface } from '../../models/evmGas.interface';
+import axios from '../../core/Http';
+import { cosmosConfig } from '../../constants/cosmosConfig';
+import useEvmosSigner from '../useEvmosSigner';
+import { useContext } from 'react';
+import { HdWalletContext, limitDecimalPlaces } from '../../core/util';
 
 export default function useGasService() {
   const { getWithoutAuth } = useAxios();
   const minimumGasFee = '20';
+  const { getSignedEvmosTransaction } = useEvmosSigner();
+  const hdWalletContext = useContext<any>(HdWalletContext);
 
   async function getGasPriceLocallyUsingGasHistory(
     chain: ChainBackendNames,
@@ -108,7 +118,7 @@ export default function useGasService() {
     amountToSend,
     contractAddress,
     contractDecimals,
-  }) => {
+  }: EvmGasInterface) => {
     // How many tokens? -- Use BigNumber everywhere
     const numberOfTokens = ethers.utils.parseUnits(
       amountToSend,
@@ -170,32 +180,91 @@ export default function useGasService() {
         return { gasFeeInCrypto, gasLimit, gasPrice: finalGasPrice };
       }
     } catch (error) {
-      // TODO (user feedback): Give feedback to user.
-      //   const errorObject = {
-      //     error,
-      //     params: {
-      //       fromChain,
-      //       fromTokenItem,
-      //       send_token_amount,
-      //       to_address,
-      //       gasPriceDetail,
-      //     },
-      //     numberOfTokensParsing: {
-      //       send_token_amount,
-      //       numberOfDecimals,
-      //       numberOfTokens,
-      //     },
-      //   };
-      //   Toast.show({
-      //     type: 'error',
-      //     text1: 'Transaction Error',
-      //     text2: error.message,
-      //     position: 'bottom',
-      //   });
       Sentry.captureException(error);
     }
     return { gasFeeInCrypto: 0, gasLimit: 0, gasPrice: 0 }; // fallback
   };
 
-  return { estimateGasForEvm };
+  const simulateEvmosTransaction = async ({
+    toAddress,
+    amountToSend,
+    gasAmount = '14000000000000000',
+    gas = '450000',
+  }: {
+    toAddress: string;
+    amountToSend: string;
+    gasAmount?: string;
+    gas?: string;
+  }) => {
+    const { evmos } = hdWalletContext.state.wallet;
+    const fromAddress: string = evmos.address;
+    const userAccountData = await axios.get(
+      `${ACCOUNT_DETAILS_INFO}/${fromAddress}`,
+    );
+    const accountData = userAccountData?.data?.account.base_account;
+
+    const chain = {
+      chainId: 9001,
+      cosmosChainId: 'evmos_9001-2',
+    };
+
+    const sender = {
+      accountAddress: fromAddress,
+      sequence: accountData.sequence,
+      accountNumber: accountData.account_number,
+      pubkey: accountData.pub_key?.key,
+    };
+
+    const fee = {
+      amount: gasAmount,
+      denom: cosmosConfig.evmos.denom,
+      gas,
+    };
+
+    const memo = '';
+
+    const params = {
+      destinationAddress: toAddress,
+      amount: ethers.utils
+        .parseUnits(limitDecimalPlaces(amountToSend, 18), 18)
+        .toString(),
+      denom: cosmosConfig.evmos.denom,
+    };
+
+    const body = getSignedEvmosTransaction({
+      chain,
+      sender,
+      fee,
+      memo,
+      params,
+    });
+    return body;
+  };
+
+  const estimateGasForEvmos = async ({
+    toAddress,
+    amountToSend,
+  }: {
+    toAddress: string;
+    amountToSend: string;
+  }) => {
+    const txnRequest = await simulateEvmosTransaction({
+      toAddress,
+      amountToSend,
+    });
+    const response = await axios.post(SIMULATION_ENDPOINT, txnRequest);
+    const simulatedGasInfo = response.data.gas_info
+      ? response.data.gas_info
+      : 0;
+    const gasWanted = simulatedGasInfo.gas_used ? simulatedGasInfo.gas_used : 0;
+    const gasFeeInCrypto = cosmosConfig.evmos.gasPrice * gasWanted;
+    return {
+      simulatedTxnRequest: txnRequest,
+      gasFeeInCrypto,
+      gasLimit: gasWanted,
+      gasPrice: cosmosConfig.evmos.gasPrice,
+    };
+  };
+
+  return { estimateGasForEvm, estimateGasForEvmos };
 }

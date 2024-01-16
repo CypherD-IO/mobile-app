@@ -177,8 +177,8 @@ export default function SendTo(props: { navigation?: any; route?: any }) {
     threshold: 0.1,
   };
   const fuseByNames = new Fuse(Object.keys(contactBook), searchOptions);
-  const { estimateGasForEvm } = useGasService();
-  const { sendEvmToken } = useTransactionManager();
+  const { estimateGasForEvm, estimateGasForEvmos } = useGasService();
+  const { sendEvmToken, sendEvmosToken } = useTransactionManager();
   let fuseByAddresses: Fuse<string>;
   if (Object.keys(addressDirectory).length) {
     if (
@@ -1129,71 +1129,243 @@ export default function SendTo(props: { navigation?: any; route?: any }) {
       valueForUsd,
       tokenData.contractDecimals,
     );
-    const response = await sendEvmToken({
-      chain: tokenData.chainDetails.backendName,
-      amountToSend,
-      toAddress: addressText,
-      contractAddress: tokenData.contractAddress,
-      contractDecimals: tokenData.contractDecimals,
-      symbol: tokenData.symbol,
+    setTokenSendConfirmationParams({
+      ...tokenSendConfirmationParams,
+      isModalVisible: false,
     });
-    console.log('🚀 ~ onConfirmConfirmationModal ~ response:', response);
+    setLoading(true);
+    let response;
+    if (
+      chainDetails?.chainName === ChainNames.ETH ||
+      (chainDetails?.chainName === ChainNames.EVMOS &&
+        !isEvmosAddress(addressRef.current))
+    ) {
+      response = await sendEvmToken({
+        chain: tokenData.chainDetails.backendName,
+        amountToSend,
+        toAddress: addressRef.current,
+        contractAddress: tokenData.contractAddress,
+        contractDecimals: tokenData.contractDecimals,
+        symbol: tokenData.symbol,
+      });
+    } else if (chainDetails?.chainName === ChainNames.EVMOS) {
+      response = await sendEvmosToken({
+        toAddress: addressRef.current,
+        amountToSend,
+      });
+    }
+    if (!response?.isError) {
+      let willPrompt: boolean;
+      if (
+        EVM_CHAINS_FOR_ADDRESS_DIR.includes(
+          get(ChainNameToContactsChainNameMapping, chainDetails?.name),
+        )
+      ) {
+        willPrompt = !(addressText in addressDirectory.evmAddresses);
+      } else {
+        willPrompt = !(
+          addressText in
+          addressDirectory[
+            get(
+              ChainNameToContactsChainNameMapping,
+              tokenData.chainDetails?.name,
+            )
+          ]
+        );
+      }
+      const finalArray = Data;
+      const toAddrBook = ensRef.current
+        ? `${ensRef.current}:${addressRef.current}`
+        : addressRef.current;
+      if (!finalArray.includes(toAddrBook)) {
+        finalArray.push(toAddrBook);
+      }
+      chainDetails?.chainName &&
+        (await AsyncStorage.setItem(
+          `address_book_${tokenData.chainDetails.chainName}`,
+          JSON.stringify(finalArray),
+        ));
+
+      activityContext.dispatch({
+        type: ActivityReducerAction.POST,
+        value: {
+          ...activityRef.current,
+          status: ActivityStatus.SUCCESS,
+          transactionHash: response?.hash,
+        },
+      });
+      setLoading(false);
+      if (willPrompt) {
+        showModal('state', {
+          type: 'custom',
+          title: t('TRANSACTION_SUCCESS'),
+          modalImage: AppImages.CYPHER_SUCCESS,
+          modalButtonText: {
+            success: t('YES'),
+            failure: t('MAYBE_LATER').toUpperCase(),
+          },
+          description: renderSuccessTransaction(response?.hash, willPrompt),
+          onSuccess: onModalHide,
+          onFailure: onModalHideWithNo,
+        });
+      } else {
+        showModal('state', {
+          type: 'success',
+          title: t('TRANSACTION_SUCCESS'),
+          description: renderSuccessTransaction(response.hash, willPrompt),
+          onSuccess: onModalHideWithNo,
+          onFailure: onModalHideWithNo,
+        });
+      }
+    } else {
+      setLoading(false);
+      activityContext.dispatch({
+        type: ActivityReducerAction.POST,
+        value: {
+          ...activityRef.current,
+          status: ActivityStatus.FAILED,
+          reason: response.error,
+        },
+      });
+      showModal('state', {
+        type: 'error',
+        title: t('TRANSACTION_FAILED'),
+        description: response.error,
+        onSuccess: hideModal,
+        onFailure: hideModal,
+      });
+    }
   };
 
   const showGasQuote = async () => {
-    const { ethereum } = hdWalletContext.state.wallet;
-    const web3 = new Web3(
-      getWeb3Endpoint(tokenData?.chainDetails ?? CHAIN_ETH, globalContext),
-    );
-    const amountToSend = limitDecimalPlaces(
-      valueForUsd,
-      tokenData.contractDecimals,
-    );
-    const { backendName: chainBackendName } = tokenData.chainDetails;
-    const gasDetails = await estimateGasForEvm({
-      web3,
-      chain: chainBackendName,
-      fromAddress: ethereum?.address,
-      toAddress: addressText,
-      amountToSend,
-      contractAddress: tokenData.contractAddress,
-      contractDecimals: tokenData.contractDecimals,
-    });
-    const nativeTokenSymbol =
-      get(nativeTokenMapping, tokenData.symbol) || tokenData.symbol;
-    const nativeToken = getNativeToken(
-      nativeTokenSymbol,
-      get(
-        portfolioState.statePortfolio.tokenPortfolio,
-        String(get(ChainNameMapping, chainBackendName)),
-      ).holdings,
-    );
-    setTokenSendConfirmationParams({
-      isModalVisible: true,
-      tokenSendParams: {
-        onConfirm: () => {
-          void onConfirmConfirmationModal();
-        },
-        onCancel: () => {
-          onCancelConfirmationModal();
-        },
-        chain: chainBackendName,
-        amountInCrypto: amountToSend,
-        amountInFiat: String(
-          formatAmount(Number(amountToSend) * Number(tokenData.price)),
+    addressRef.current = addressText;
+    if (
+      chainDetails?.chainName === ChainNames.ETH ||
+      chainDetails.chainName === ChainNames.EVMOS
+    ) {
+      if (
+        chainDetails?.chainName === ChainNames.ETH &&
+        Object.keys(EnsCoinTypes).includes(
+          tokenData.chainDetails.backendName,
+        ) &&
+        isValidEns(addressRef.current)
+      ) {
+        const ens = addressText;
+        const addr = await resolveAddress(
+          ens,
+          tokenData.chainDetails.backendName,
+        );
+        if (addr && Web3.utils.isAddress(addr)) {
+          addressRef.current = addr;
+          ensRef.current = ens;
+        } else {
+          showModal('state', {
+            type: 'error',
+            title: t('NOT_VALID_ENS'),
+            description: `This ens domain is not mapped for ${tokenData.chainDetails.name.toLowerCase()} in ens.domains`,
+            onSuccess: hideModal,
+            onFailure: hideModal,
+          });
+          return;
+        }
+      }
+      const amountToSend = limitDecimalPlaces(
+        valueForUsd,
+        tokenData.contractDecimals,
+      );
+      setLoading(true);
+      const { ethereum } = hdWalletContext.state.wallet;
+      const { backendName: chainBackendName } = tokenData.chainDetails;
+      const web3 = new Web3(
+        getWeb3Endpoint(tokenData?.chainDetails ?? CHAIN_ETH, globalContext),
+      );
+      const nativeTokenSymbol =
+        get(nativeTokenMapping, tokenData.chainDetails.symbol) ||
+        tokenData.chainDetails.symbol;
+      const nativeToken = getNativeToken(
+        nativeTokenSymbol,
+        get(
+          portfolioState.statePortfolio.tokenPortfolio,
+          String(get(ChainNameMapping, chainBackendName)),
+        ).holdings,
+      );
+      const id = genId();
+      const activityData: SendTransactionActivity = {
+        id,
+        status: ActivityStatus.PENDING,
+        type: ActivityType.SEND,
+        transactionHash: '',
+        fromAddress: ethereum.address,
+        toAddress: addressRef.current,
+        amount: amountToSend,
+        chainName: chainDetails?.name ?? ChainNames.ETH,
+        symbol: chainDetails?.symbol ?? ChainNames.ETH,
+        logoUrl: chainDetails?.logo_url ?? '',
+        datetime: new Date(),
+        gasAmount: '0',
+        tokenName: tokenData.name,
+        tokenLogo: tokenData.logoUrl,
+      };
+      activityRef.current = activityData;
+      let gasDetails;
+      if (
+        chainDetails?.chainName === ChainNames.ETH ||
+        (chainDetails?.chainName === ChainNames.EVMOS &&
+          !isEvmosAddress(addressRef.current))
+      ) {
+        gasDetails = await estimateGasForEvm({
+          web3,
+          chain: chainBackendName,
+          fromAddress: ethereum?.address,
+          toAddress: addressText,
+          amountToSend,
+          contractAddress: tokenData.contractAddress,
+          contractDecimals: tokenData.contractDecimals,
+        });
+        setLoading(false);
+      } else if (chainDetails?.chainName === ChainNames.EVMOS) {
+        gasDetails = await estimateGasForEvmos({
+          toAddress: addressRef.current,
+          amountToSend,
+        });
+        setLoading(false);
+      }
+      activityRef.current.gasAmount = String(
+        formatAmount(
+          Number(gasDetails?.gasFeeInCrypto) * Number(nativeToken?.price ?? 0),
         ),
-        symbol: tokenData.symbol,
-        toAddress: addressText,
-        gasFeeInCrypto: String(formatAmount(gasDetails.gasFeeInCrypto)),
-        gasFeeInFiat: String(
-          formatAmount(
-            Number(gasDetails.gasFeeInCrypto) * Number(nativeToken.price),
+      );
+      setTokenSendConfirmationParams({
+        isModalVisible: true,
+        tokenSendParams: {
+          onConfirm: () => {
+            void onConfirmConfirmationModal();
+          },
+          onCancel: () => {
+            onCancelConfirmationModal();
+          },
+          chain: chainBackendName,
+          amountInCrypto: amountToSend,
+          amountInFiat: String(
+            formatAmount(Number(amountToSend) * Number(tokenData?.price ?? 0)),
           ),
-        ),
-        nativeTokenSymbol: String(tokenData.chainDetails?.symbol),
-      },
-    });
-    console.log('gasDetails:', gasDetails);
+          symbol: tokenData.symbol,
+          toAddress: addressRef.current,
+          gasFeeInCrypto: String(
+            formatAmount(Number(gasDetails?.gasFeeInCrypto)),
+          ),
+          gasFeeInFiat: String(
+            formatAmount(
+              Number(gasDetails?.gasFeeInCrypto) *
+                Number(nativeToken?.price ?? 0),
+            ),
+          ),
+          nativeTokenSymbol: String(tokenData.chainDetails?.symbol),
+        },
+      });
+    } else {
+      void submitSendTransaction();
+    }
   };
 
   const onSuccess = async (readEvent: BarCodeReadEvent) => {

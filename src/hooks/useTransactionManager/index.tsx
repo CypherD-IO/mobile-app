@@ -13,6 +13,7 @@ import {
   Chain,
   ChainConfigMapping,
   ChainNameMapping,
+  TRANSACTION_ENDPOINT,
 } from '../../constants/server';
 import { getConnectionType } from '../../core/asyncStorage';
 import { ConnectionTypes } from '../../constants/enum';
@@ -21,12 +22,16 @@ import useGasService from '../useGasService';
 import analytics from '@react-native-firebase/analytics';
 import Toast from 'react-native-toast-message';
 import { get } from 'lodash';
+import useEthSigner from '../useEthSigner';
+import { ethers } from 'ethers';
+import axios from '../../core/Http';
 
 export default function useTransactionManager() {
   const globalContext = useContext<any>(GlobalContext);
   const hdWalletContext = useContext<any>(HdWalletContext);
   const OP_ETH_ADDRESS = '0xdeaddeaddeaddeaddeaddeaddeaddeaddead0000';
-  const { estimateGasForEvm } = useGasService();
+  const { estimateGasForEvm, estimateGasForEvmos } = useGasService();
+  const { signEthTransaction } = useEthSigner();
 
   function isNativeCurrency(
     fromChain: Chain,
@@ -84,114 +89,91 @@ export default function useTransactionManager() {
           value: web3.utils.toWei(amountToSend, 'ether'),
           gas: web3.utils.toHex(gasLimit),
         };
-
-        let txHash: string;
-        const signedTransaction = await web3.eth.accounts.signTransaction(
-          tx,
-          ethereum.privateKey,
-        );
-        const hash = await new Promise((resolve, reject) => {
-          void web3.eth
-            .sendSignedTransaction(String(signedTransaction.rawTransaction))
-            .once('transactionHash', function (hash: string) {
-              txHash = hash;
-              console.log('🚀 ~ txHash:', txHash);
-              Toast.show({
-                type: 'info',
-                text1: 'Transaction Hash',
-                text2: hash,
-                position: 'bottom',
-              });
-              void analytics().logEvent('bridge_transaction_receipt', {
-                from: fromAddress,
-                to: toAddress,
-                gasPrice,
-                data: '',
-                value: amountToSend,
-                gas: gasLimit,
-                hash,
-                chain,
-              });
-            })
-            .once('receipt', () => {
-              // expression expected
-            })
-            .on('confirmation', () => {
-              // expression expected
-            })
-            .on('error', function (error: { message: string }) {
-              if (!txHash) {
-                void analytics().logEvent('bridge_transaction_receipt_failed', {
-                  from: fromAddress,
-                  to: toAddress,
-                  value: amountToSend,
-                  message: 'Insufficient funds for gas',
-                });
-              } else {
-                setTimeout(() => {
-                  void (async () => {
-                    const receipt =
-                      await web3.eth.getTransactionReceipt(txHash);
-                    if (receipt?.status) {
-                      Toast.show({
-                        type: 'success',
-                        text1: 'Transaction',
-                        text2: 'Transaction Receipt Received',
-                        position: 'bottom',
-                      });
-                      console.log(receipt);
-                      resolve(receipt.transactionHash);
-                    } else {
-                      void analytics().logEvent(
-                        'bridge_transaction_receipt_failed',
-                        {
-                          from: fromAddress,
-                          to: toAddress,
-                          value: amountToSend,
-                          hash: receipt.transactionHash,
-                          message: JSON.stringify(receipt),
-                        },
-                      );
-                      Sentry.captureException(error);
-                      Toast.show({
-                        type: 'error',
-                        text1: 'Transaction Error',
-                        text2: error.message,
-                        position: 'bottom',
-                      });
-                    }
-                    console.log('🚀 ~ void ~ receipt:', receipt);
-                  })();
-                }, 5000);
-              }
-            })
-            .then(async function (receipt: { transactionHash: string }) {
-              Toast.show({
-                type: 'success',
-                text1: 'Transaction',
-                text2: 'Transaction Receipt Received',
-                position: 'bottom',
-              });
-              void analytics().logEvent('bridge_transaction_receipt', {
-                from: fromAddress,
-                to: toAddress,
-                gasPrice,
-                data: '',
-                value: amountToSend,
-                gas: gasLimit,
-                hash: receipt.transactionHash,
-                chain,
-              });
-              console.log(receipt);
-              resolve(receipt.transactionHash);
-            });
+        const hash = await signEthTransaction({
+          web3,
+          transactionToBeSigned: tx,
         });
-        console.log(hash);
         return hash;
       } catch (err: any) {
         // TODO (user feedback): Give feedback to user.
         throw new Error(err);
       }
+    }
+  };
+
+  const sendERC20Token = async ({
+    web3,
+    chain,
+    amountToSend,
+    toAddress,
+    contractAddress,
+    contractDecimals,
+  }: SendNativeToken) => {
+    try {
+      const ethereum = hdWalletContext.state.wallet.ethereum;
+      const fromAddress = ethereum.address;
+      const contractAbiFragment = [
+        {
+          name: 'transfer',
+          type: 'function',
+          inputs: [
+            {
+              name: '_to',
+              type: 'address',
+            },
+            {
+              type: 'uint256',
+              name: '_tokens',
+            },
+          ],
+          constant: false,
+          outputs: [],
+          payable: false,
+        },
+      ];
+
+      // How many tokens? -- Use BigNumber everywhere
+      const numberOfTokens = ethers.utils.parseUnits(
+        amountToSend,
+        contractDecimals,
+      );
+      // Form the contract and contract data
+      const contract = new web3.eth.Contract(
+        contractAbiFragment,
+        contractAddress,
+      );
+      const contractData = contract.methods
+        .transfer(toAddress, numberOfTokens)
+        .encodeABI();
+
+      const code = await web3.eth.getCode(toAddress);
+      let { gasLimit, gasPrice } = await estimateGasForEvm({
+        web3,
+        chain,
+        fromAddress,
+        toAddress,
+        amountToSend,
+        contractAddress,
+        contractDecimals,
+      });
+      gasLimit = decideGasLimitBasedOnTypeOfToAddress(code, gasLimit);
+
+      const tx = {
+        from: ethereum.address,
+        to: contractAddress,
+        gasPrice,
+        value: '0x0',
+        gas: web3.utils.toHex(gasLimit),
+        data: contractData,
+      };
+      const hash = await signEthTransaction({
+        web3,
+        transactionToBeSigned: tx,
+      });
+      return hash;
+    } catch (err: any) {
+      // TODO (user feedback): Give feedback to user.
+      throw new Error(err);
     }
   };
 
@@ -204,7 +186,7 @@ export default function useTransactionManager() {
     symbol,
   }: SendInEvmInterface): Promise<{
     isError: boolean;
-    hash?: string;
+    hash: string;
     error?: any;
   }> => {
     const chainConfig = get(
@@ -232,12 +214,62 @@ export default function useTransactionManager() {
         return { hash: String(hash), isError: false };
       } catch (error) {
         Sentry.captureException(error);
-        return { isError: true, error };
+        return { hash: '', isError: true, error: error?.message ?? error };
       }
     } else {
+      try {
+        const hash = await sendERC20Token({
+          web3,
+          chain,
+          amountToSend,
+          toAddress,
+          contractAddress,
+          contractDecimals,
+        });
+        return { hash: String(hash), isError: false };
+      } catch (error) {
+        Sentry.captureException(error);
+        return { hash: '', isError: true, error: error?.message ?? error };
+      }
     }
     return { hash: '', isError: false }; // fallback
   };
 
-  return { sendEvmToken };
+  const sendEvmosToken = async ({
+    toAddress,
+    amountToSend,
+  }: {
+    toAddress: string;
+    amountToSend: string;
+  }): Promise<{
+    isError: boolean;
+    hash: string;
+    error?: any;
+  }> => {
+    const gasDetails = await estimateGasForEvmos({ toAddress, amountToSend });
+    const simulatedTxnRequest = gasDetails.simulatedTxnRequest;
+    const response = await axios.post(
+      TRANSACTION_ENDPOINT,
+      simulatedTxnRequest,
+    );
+
+    if (response.data.tx_response.code === 0) {
+      Toast.show({
+        type: 'success',
+        text1: 'Transaction hash',
+        text2: response.data.tx_response.txhash,
+        position: 'bottom',
+      });
+      return { hash: response.data.tx_response.txhash, isError: false };
+    } else {
+      return {
+        hash: '',
+        isError: true,
+        error: response?.data?.error?.message ?? '',
+      };
+    }
+    return { hash: '', isError: false };
+  };
+
+  return { sendEvmToken, sendEvmosToken };
 }
