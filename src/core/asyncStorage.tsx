@@ -476,8 +476,8 @@ export const setAuthToken = async (token: string) => {
 
 export const getAuthToken = async () => {
   try {
-    const authTokem = await AsyncStorage.getItem('AUTH_TOKEN');
-    return authTokem;
+    const authToken = await AsyncStorage.getItem('AUTH_TOKEN');
+    return authToken;
   } catch (error) {
     Sentry.captureException(error);
   }
@@ -493,8 +493,8 @@ export const setRefreshToken = async (token: string) => {
 
 export const getRefreshToken = async () => {
   try {
-    const authTokem = await AsyncStorage.getItem('REFRESH_TOKEN');
-    return authTokem;
+    const refreshToken = await AsyncStorage.getItem('REFRESH_TOKEN');
+    return refreshToken;
   } catch (error) {
     Sentry.captureException(error);
   }
@@ -502,7 +502,7 @@ export const getRefreshToken = async () => {
 
 export const setConnectionType = async (token: string) => {
   try {
-    await AsyncStorage.setItem('CONNECTION_TYPE', JSON.stringify(token));
+    await AsyncStorage.setItem('CONNECTION_TYPE', token);
   } catch (error) {
     Sentry.captureException(error);
   }

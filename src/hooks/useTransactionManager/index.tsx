@@ -67,38 +67,39 @@ export default function useTransactionManager() {
     contractDecimals,
   }: SendNativeToken) => {
     const connectionType = await getConnectionType();
-    if (!connectionType || connectionType === ConnectionTypes.SEED_PHRASE) {
-      const ethereum = hdWalletContext.state.wallet.ethereum;
-      const fromAddress = ethereum.address;
-      try {
-        const code = await web3.eth.getCode(toAddress);
-        let { gasLimit, gasPrice } = await estimateGasForEvm({
-          web3,
-          chain,
-          fromAddress,
-          toAddress,
-          amountToSend,
-          contractAddress,
-          contractDecimals,
-        });
-        gasLimit = decideGasLimitBasedOnTypeOfToAddress(code, gasLimit);
-        const tx = {
-          from: ethereum.address,
-          to: toAddress,
-          gasPrice,
-          value: web3.utils.toWei(amountToSend, 'ether'),
-          gas: web3.utils.toHex(gasLimit),
-        };
-        const hash = await signEthTransaction({
-          web3,
-          transactionToBeSigned: tx,
-        });
-        return hash;
-      } catch (err: any) {
-        // TODO (user feedback): Give feedback to user.
-        throw new Error(err);
-      }
+    // if (!connectionType || connectionType === ConnectionTypes.SEED_PHRASE) {
+    const ethereum = hdWalletContext.state.wallet.ethereum;
+    const fromAddress = ethereum.address;
+    try {
+      const code = await web3.eth.getCode(toAddress);
+      let { gasLimit, gasPrice } = await estimateGasForEvm({
+        web3,
+        chain,
+        fromAddress,
+        toAddress,
+        amountToSend,
+        contractAddress,
+        contractDecimals,
+      });
+      gasLimit = decideGasLimitBasedOnTypeOfToAddress(code, gasLimit);
+      const tx = {
+        from: ethereum.address,
+        to: toAddress,
+        gasPrice,
+        value: web3.utils.toWei(amountToSend, 'ether').toString(),
+        gas: web3.utils.toHex(gasLimit),
+      };
+      const hash = await signEthTransaction({
+        web3,
+        chain,
+        transactionToBeSigned: tx,
+      });
+      return hash;
+    } catch (err: any) {
+      // TODO (user feedback): Give feedback to user.
+      throw new Error(err);
     }
+    // }
   };
 
   const sendERC20Token = async ({
@@ -168,6 +169,7 @@ export default function useTransactionManager() {
       };
       const hash = await signEthTransaction({
         web3,
+        chain,
         transactionToBeSigned: tx,
       });
       return hash;

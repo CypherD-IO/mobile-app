@@ -11,7 +11,7 @@ import AppImages from '../../../assets/images/appImages';
 import { screenTitle } from '../../constants';
 import { useWalletConnectModal } from '@walletconnect/modal-react-native';
 import * as Sentry from '@sentry/react-native';
-import { W3mButton } from '@web3modal/wagmi-react-native';
+import { W3mButton, useWeb3Modal } from '@web3modal/wagmi-react-native';
 import useConnectionManager from '../../hooks/useConnectionManager';
 
 export default function ImportWalletOptions({
@@ -20,6 +20,7 @@ export default function ImportWalletOptions({
   navigation: { navigate: (screen: string) => void };
 }) {
   const { openWalletConnectModal } = useConnectionManager();
+  const { open } = useWeb3Modal();
   return (
     <CyDImageBackground
       source={AppImages.BG_SETTINGS}
@@ -50,7 +51,8 @@ export default function ImportWalletOptions({
         </CyDTouchView> */}
         <CyDTouchView
           onPress={() => {
-            void openWalletConnectModal();
+            //void openWalletConnectModal();
+            void open();
           }}
           className='flex flex-row justify-between items-center border-b-[0.2px] py-[22px]'>
           <CyDView>
