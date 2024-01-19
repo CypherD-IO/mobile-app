@@ -131,6 +131,7 @@ export default function OTPVerificationScreen({ navigation }) {
       if (!response.isError) {
         if (!isPhoneOTPVerified) {
           setPhoneOTPVerified(true);
+          void triggerOTP(OTPType.EMAIL);
         } else if (isPhoneOTPVerified && !isEmailOTPVerified) {
           setEmailOTPVerified(true);
         }
