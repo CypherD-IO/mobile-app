@@ -97,7 +97,7 @@ export default function OTPVerificationScreen({ navigation }) {
         if (!data.phoneVerified) {
           void triggerOTP(OTPType.PHONE);
         }
-        if (!data.emailVerfied) {
+        if (data.phoneVerified && !data.emailVerfied) {
           void triggerOTP(OTPType.EMAIL);
         }
         setPhoneOTPVerified(data.phoneVerified);
@@ -131,6 +131,7 @@ export default function OTPVerificationScreen({ navigation }) {
       if (!response.isError) {
         if (!isPhoneOTPVerified) {
           setPhoneOTPVerified(true);
+          void triggerOTP(OTPType.EMAIL);
         } else if (isPhoneOTPVerified && !isEmailOTPVerified) {
           setEmailOTPVerified(true);
         }
