@@ -943,6 +943,8 @@ const resources = {
       WALLET_DELETED_SUCCESSFULLY:
         'Wallet removed from your Cypher Card successfully',
       EMPTY_LINKED_WALLET: 'No Additional Wallets linked to your Cypher Card',
+      CYPHER_CARD_INVITE_DISCLAIMER:
+        '**Our referral program is a way to share Cypher Card with friends, without extra rewards. We value your support in expanding our community.',
     },
   },
 };
