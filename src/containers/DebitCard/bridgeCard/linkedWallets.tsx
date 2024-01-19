@@ -55,7 +55,7 @@ export function LinkedWallets({
           </CyDText>
           <CyDScrollView className='flex flex-col w-full'>
             <CyDView className={'w-[100%] flex flex-col items-center'}>
-              {!!cardProfile.children?.length &&
+              {cardProfile.children?.length ? (
                 cardProfile.children.map(
                   (childWallet: { address: string; label: string }) => {
                     return (
@@ -78,6 +78,21 @@ export function LinkedWallets({
                           </CyDText>
                         </CyDView>
                         <CyDView className='flex flex-row justify-between items-center w-[16%]'>
+                          <CyDTouchView
+                            onPress={() => {
+                              copyToClipboard(childWallet.address);
+                              showToast(`${t('ADDRESS_COPY_ALL_SMALL')}`);
+                              sendFirebaseEvent(
+                                hdWalletContext,
+                                'copy_address',
+                              );
+                            }}>
+                            <CyDImage
+                              source={AppImages.COPY}
+                              className='h-[18px] w-[18px]'
+                              resizeMode='contain'
+                            />
+                          </CyDTouchView>
                           <CyDTouchView
                             onPress={() => {
                               navigation.navigate(
@@ -105,27 +120,22 @@ export function LinkedWallets({
                               resizeMode='contain'
                             />
                           </CyDTouchView>
-
-                          <CyDTouchView
-                            onPress={() => {
-                              copyToClipboard(childWallet.address);
-                              showToast(`${t('ADDRESS_COPY_ALL_SMALL')}`);
-                              sendFirebaseEvent(
-                                hdWalletContext,
-                                'copy_address',
-                              );
-                            }}>
-                            <CyDImage
-                              source={AppImages.COPY}
-                              className='h-[18px] w-[18px]'
-                              resizeMode='contain'
-                            />
-                          </CyDTouchView>
                         </CyDView>
                       </CyDView>
                     );
                   },
-                )}
+                )
+              ) : (
+                <CyDView className='h-full flex flex-col justify-center items-center'>
+                  <CyDImage
+                    source={AppImages.EMPTY}
+                    height={300}
+                    width={300}
+                    className='mt-[50px] mb-[20px]'
+                  />
+                  <CyDText>{t('EMPTY_LINKED_WALLET')}</CyDText>
+                </CyDView>
+              )}
             </CyDView>
           </CyDScrollView>
         </CyDView>

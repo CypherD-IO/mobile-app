@@ -942,6 +942,7 @@ const resources = {
         'Unable to link wallet to the card. Contact Cypher Support',
       WALLET_DELETED_SUCCESSFULLY:
         'Wallet removed from your Cypher Card successfully',
+      EMPTY_LINKED_WALLET: 'No Additional Wallets linked to your Cypher Card',
     },
   },
 };
