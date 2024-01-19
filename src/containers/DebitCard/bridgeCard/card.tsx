@@ -673,7 +673,6 @@ export default function CardScreen({
                       navigation.navigate(screenTitle.CARD_SETTINGS_SCREEN, {
                         currentCardProvider,
                         card,
-                        cardProfile,
                       })
                     }>
                     <CyDFastImage
@@ -718,7 +717,6 @@ export default function CardScreen({
                   navigation.navigate(screenTitle.CARD_SETTINGS_SCREEN, {
                     currentCardProvider,
                     card,
-                    cardProfile,
                   })
                 }>
                 <CyDFastImage

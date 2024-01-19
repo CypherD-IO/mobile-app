@@ -14,6 +14,7 @@ import LottieView from 'lottie-react-native';
 import Loading from '../../../components/v2/loading';
 import { StyleSheet } from 'react-native';
 import useAxios from '../../../core/HttpRequest';
+import { useIsFocused } from '@react-navigation/native';
 
 export default function LinkWalletAuth(props: {
   navigation: any;
@@ -35,15 +36,19 @@ export default function LinkWalletAuth(props: {
   const [resendInterval, setResendInterval] = useState(0);
   const [timer, setTimer] = useState<NodeJS.Timer>();
   const { postWithAuth, deleteWithAuth } = useAxios();
+  const isFocused = useIsFocused();
 
   useEffect(() => {
     void triggerOTP();
-  }, []);
+  }, [isFocused]);
 
   useEffect(() => {
     if (resendInterval === 0) {
       clearInterval(timer);
     }
+    return () => {
+      clearInterval(timer);
+    };
   }, [resendInterval]);
 
   const triggerOTP = async () => {
