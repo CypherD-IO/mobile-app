@@ -53,10 +53,10 @@ export function LinkedWallets({
             }}>
             {t('PLUS_LINK_ANOTHER_WALLET')}
           </CyDText>
-          <CyDScrollView className='flex flex-col w-full'>
-            <CyDView className={'w-[100%] flex flex-col items-center'}>
-              {cardProfile.children?.length ? (
-                cardProfile.children.map(
+          {cardProfile.children?.length ? (
+            <CyDScrollView className='flex flex-col w-full'>
+              <CyDView className={'w-[100%] flex flex-col items-center'}>
+                {cardProfile.children.map(
                   (childWallet: { address: string; label: string }) => {
                     return (
                       <CyDView
@@ -124,20 +124,20 @@ export function LinkedWallets({
                       </CyDView>
                     );
                   },
-                )
-              ) : (
-                <CyDView className='h-full flex flex-col justify-center items-center'>
-                  <CyDImage
-                    source={AppImages.EMPTY}
-                    height={300}
-                    width={300}
-                    className='mt-[50px] mb-[20px]'
-                  />
-                  <CyDText>{t('EMPTY_LINKED_WALLET')}</CyDText>
-                </CyDView>
-              )}
+                )}
+              </CyDView>
+            </CyDScrollView>
+          ) : (
+            <CyDView className='h-[75%] flex flex-col w-[100%] justify-center items-center'>
+              <CyDImage
+                source={AppImages.EMPTY}
+                height={300}
+                width={300}
+                className='mb-[20px]'
+              />
+              <CyDText>{t('EMPTY_LINKED_WALLET')}</CyDText>
             </CyDView>
-          </CyDScrollView>
+          )}
         </CyDView>
       </CyDSafeAreaView>
     </>
