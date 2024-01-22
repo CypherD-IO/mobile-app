@@ -55,6 +55,8 @@ import { ICountry, IState } from '../../models/cardApplication.model';
 import { stateMaster as backupStateMaster } from '../../../assets/datasets/stateMaster';
 import ChooseStateFromCountryModal from '../../components/v2/ChooseStateFromCountryModal';
 import ChooseCountryModal from '../../components/v2/ChooseCountryModal';
+import RadioButtons from '../../components/radioButtons';
+import Tooltip from 'react-native-walkthrough-tooltip';
 
 export default function CardSignupScreen({ navigation, route }) {
   const globalContext = useContext<any>(GlobalContext);
@@ -102,6 +104,7 @@ export default function CardSignupScreen({ navigation, route }) {
     email: '',
     flag: '🇺🇸',
     Iso2: 'US',
+    pep: false,
   });
   const [selectedCountryForDialCode, setSelectedCountryForDialCode] =
     useState<ICountry>({
@@ -135,6 +138,8 @@ export default function CardSignupScreen({ navigation, route }) {
     dateOfBirth: '',
     idNumber: '',
   });
+
+  const [showPepToolTip, setPepToolTip] = useState<boolean>(false);
 
   const { postWithAuth } = useAxios();
 
@@ -197,6 +202,8 @@ export default function CardSignupScreen({ navigation, route }) {
       ? 'SSN Number is invalid'
       : 'Passport Number is invalid';
   };
+
+  const PEP_OPTIONS = ['Yes', 'No'];
 
   const cardResponseMapping = {
     firstName: 'First name',
@@ -351,6 +358,7 @@ export default function CardSignupScreen({ navigation, route }) {
       ...latestBillingAddress,
       country: userBasicDetails.Iso2,
       inviteCode,
+      pep: userBasicDetails.pep,
     };
     try {
       const response = await postWithAuth(
@@ -656,6 +664,44 @@ export default function CardSignupScreen({ navigation, route }) {
                   </CyDText>
                 </CyDView>
               )}
+              <CyDView className='flex flex-row items-center'>
+                <CyDText className='mt-[20] mb-[10px] text-[16px]'>
+                  {t('PEP_QUESTION')}
+                </CyDText>
+                <CyDView>
+                  <Tooltip
+                    isVisible={showPepToolTip}
+                    disableShadow={true}
+                    content={
+                      <CyDView className={'p-[5px]'}>
+                        <CyDText className={'mb-[5px] font-bold text-[15px]'}>
+                          {t<string>('PEP_EXPLAINATION')}
+                        </CyDText>
+                      </CyDView>
+                    }
+                    onClose={() => setPepToolTip(false)}
+                    placement='top'>
+                    <CyDTouchView
+                      onPress={() => {
+                        setPepToolTip(true);
+                      }}>
+                      <CyDImage
+                        source={AppImages.INFO_ICON}
+                        resizeMode='contain'
+                        className={'w-[14px] h-[14px] ml-[4px]'}
+                      />
+                    </CyDTouchView>
+                  </Tooltip>
+                </CyDView>
+              </CyDView>
+              <RadioButtons
+                radioButtonsData={PEP_OPTIONS}
+                onPressRadioButton={(value: string) => {
+                  formProps.values.pep = value === PEP_OPTIONS[0];
+                }}
+                initialValue={PEP_OPTIONS[1]}
+                containerStyle={'flex flex-row justify-around ml-[-21%]'}
+              />
               {/* <CyDTouchView
                 onPress={() => formProps.handleSubmit()}
                 className={
@@ -683,6 +729,7 @@ export default function CardSignupScreen({ navigation, route }) {
     userBasicDetails,
     isDialCodeModalVisible,
     selectedCountryForDialCode,
+    showPepToolTip,
   ]);
 
   const UserBillingAddress = useCallback(() => {
