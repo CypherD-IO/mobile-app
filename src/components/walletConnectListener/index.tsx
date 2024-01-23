@@ -6,12 +6,13 @@ import {
 import useAxios from '../../core/HttpRequest';
 import { GlobalContext } from '../../core/globalContext';
 import '@walletconnect/react-native-compat';
-import { Web3Modal } from '@web3modal/wagmi-react-native';
+import { createWeb3Modal, Web3Modal } from '@web3modal/wagmi-react-native';
 import { WalletConnectModal } from '@walletconnect/modal-react-native';
 import { ethers } from 'ethers';
 import axios from '../../core/Http';
 import { ConnectionTypes, GlobalContextType } from '../../constants/enum';
 import {
+  getAuthToken,
   setAuthToken,
   setConnectionType,
   setRefreshToken,
@@ -20,7 +21,8 @@ import { ethToEvmos } from '@tharsis/address-converter';
 import { hostWorker } from '../../global';
 import useValidSessionToken from '../../hooks/useValidSessionToken';
 import { utf8ToHex } from 'web3-utils';
-import { useAccount } from 'wagmi';
+import { useAccount, useConnect } from 'wagmi';
+import { getWalletProfile } from '../../core/card';
 
 export default function WalletConnectListener() {
   const hdWalletContext = useContext<any>(HdWalletContext);
@@ -30,20 +32,33 @@ export default function WalletConnectListener() {
   const ARCH_HOST: string = hostWorker.getHost('ARCH_HOST');
   const { verifySessionToken } = useValidSessionToken();
   const { getWithoutAuth } = useAxios();
+  const { connectAsync } = useConnect();
 
   useEffect(() => {
-    console.log(isConnected, address);
+    console.log(
+      'WalletConnect Listener isConnected:',
+      isConnected,
+      address,
+      ethereum.address,
+    );
     if (
       isConnected &&
       address &&
-      (!ethereum.address ||
-        ethereum.address === _NO_CYPHERD_CREDENTIAL_AVAILABLE_)
+      ethereum.address === _NO_CYPHERD_CREDENTIAL_AVAILABLE_
     ) {
       void verifySessionTokenAndSign();
     }
   }, [isConnected, address]);
 
-  const loadHdWallet = () => {
+  const dispatchProfileData = async (token: string) => {
+    const profileData = await getWalletProfile(token);
+    globalContext.globalDispatch({
+      type: GlobalContextType.CARD_PROFILE,
+      cardProfile: profileData,
+    });
+  };
+
+  const loadHdWallet = async () => {
     void setConnectionType(ConnectionTypes.WALLET_CONNECT);
     hdWalletContext.dispatch({
       type: 'LOAD_WALLET',
@@ -71,13 +86,23 @@ export default function WalletConnectListener() {
 
   const verifySessionTokenAndSign = async () => {
     const isSessionTokenValid = await verifySessionToken();
-    console.log(
-      '🚀 ~ file: index.tsx:58 ~ verifySessionTokenAndSign ~ isSessionTokenValid:',
-      isSessionTokenValid,
-    );
     if (!isSessionTokenValid) {
       void signMessage();
     } else {
+      let authToken = await getAuthToken();
+      authToken = JSON.parse(String(authToken));
+      console.log('authToken', authToken);
+      // await dispatchProfileData(String(authToken));
+      const profileData = await getWalletProfile(authToken);
+      globalContext.globalDispatch({
+        type: GlobalContextType.SIGN_IN,
+        sessionToken: authToken,
+      });
+      globalContext.globalDispatch({
+        type: GlobalContextType.CARD_PROFILE,
+        cardProfile: profileData,
+      });
+      console.log('loadHdWallet');
       void loadHdWallet();
     }
   };
@@ -88,13 +113,17 @@ export default function WalletConnectListener() {
   }, [connector]);
 
   const signMessage = async () => {
+    console.log('signMessage');
     const provider = await connector?.getProvider();
+    console.log(provider, provider);
     if (!provider) {
       throw new Error('web3Provider not connected');
     }
     const response = await getWithoutAuth(
       `/v1/authentication/sign-message/${String(address)}`,
+      { format: 'ERC-4361' },
     );
+    console.log(response);
     if (!response.isError) {
       const msg = response.data.message;
       const hexMsg = utf8ToHex(msg);
@@ -103,6 +132,7 @@ export default function WalletConnectListener() {
       if (provider?.connector) {
         signature = await provider?.connector.signPersonalMessage(msgParams);
       } else {
+        console.log('signature');
         signature = await provider?.request({
           method: 'personal_sign',
           params: msgParams,
@@ -113,7 +143,7 @@ export default function WalletConnectListener() {
       //   address?.toLowerCase(),
       // ]);
       const verifyMessageResponse = await axios.post(
-        `${ARCH_HOST}/v1/authentication/verify-message/${address?.toLowerCase()}`,
+        `${ARCH_HOST}/v1/authentication/verify-message/${address?.toLowerCase()}?format=ERC-4361`,
         {
           signature,
         },
@@ -126,6 +156,8 @@ export default function WalletConnectListener() {
         });
         void setAuthToken(token);
         void setRefreshToken(refreshToken);
+        await dispatchProfileData(String(token));
+        console.log('loadHdWallet');
         void loadHdWallet();
       }
     }

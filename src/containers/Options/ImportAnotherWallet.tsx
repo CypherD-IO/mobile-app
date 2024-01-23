@@ -12,25 +12,30 @@ import {
 } from '../../core/Keychain';
 import * as C from '../../constants/index';
 import { ActivityReducerAction } from '../../reducers/activity_reducer';
-import { clearAllData } from '../../core/asyncStorage';
+import { clearAllData, getConnectionType } from '../../core/asyncStorage';
 import { BackHandler } from 'react-native';
 import { AUTHORIZE_WALLET_DELETION } from '../../core/util';
+import { ConnectionTypes } from '../../constants/enum';
 const { SafeAreaView } = require('../../styles');
 
-export async function deleteThisWallet(
-  hdWalletContext,
-  activityContext,
-  portfolioContext,
-) {
-  return new Promise(async resolve => {
-    await removeCredentialsFromKeychain();
-    await clearAllData();
-    hdWalletContext.dispatch({ type: 'FORGET_WALLET' });
-    activityContext.dispatch({ type: ActivityReducerAction.RESET });
-    portfolioContext.dispatchPortfolio({ type: 'RESET' });
-    resolve(true);
-  });
-}
+// export async function deleteThisWallet(
+//   hdWalletContext,
+//   activityContext,
+//   portfolioContext,
+// ) {
+//   const connectionType = await getConnectionType();
+//   return new Promise(async resolve => {
+//     if (connectionType === ConnectionTypes.WALLET_CONNECT) {
+//     } else {
+//       await removeCredentialsFromKeychain();
+//     }
+//     await clearAllData();
+//     hdWalletContext.dispatch({ type: 'FORGET_WALLET' });
+//     activityContext.dispatch({ type: ActivityReducerAction.RESET });
+//     portfolioContext.dispatchPortfolio({ type: 'RESET' });
+//     resolve(true);
+//   });
+// }
 
 export default function ImportAnotherWallet(props) {
   const { route } = props;
@@ -84,15 +89,15 @@ export default function ImportAnotherWallet(props) {
           seedPharse
             ? t('SEED_PHARSE_TITLE')
             : importNewWallet
-            ? t('IMPORT_ANOTHER_WALLET_TITLE')
-            : t('DELTE_WALLET')
+              ? t('IMPORT_ANOTHER_WALLET_TITLE')
+              : t('DELTE_WALLET')
         }
         subTitleMsg={
           seedPharse
             ? t('SEED_PHARSE_SUB')
             : importNewWallet
-            ? t('IMPORT_ANOTHER_WALLET_SUB')
-            : t('DELETE_WALLET_SUB')
+              ? t('IMPORT_ANOTHER_WALLET_SUB')
+              : t('DELETE_WALLET_SUB')
         }
         accoMsg={t('REMOVE_WALL_ACC')}
         onPress={() => {
@@ -105,7 +110,7 @@ export default function ImportAnotherWallet(props) {
         selectedChain={selectedChain}
         seedPharse={seedPharse}
         onPressSeed={route.params.onPressSeed}
-        deleteWallet={deleteWallet}
+        shouldDeleteWallet={deleteWallet}
         importNewWallet={importNewWallet}
         navigation={props.navigation}
       />

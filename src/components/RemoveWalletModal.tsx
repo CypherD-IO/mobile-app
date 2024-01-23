@@ -31,6 +31,7 @@ import {
   MODAL_CLOSING_TIMEOUT,
 } from '../constants/timeOuts';
 import { isPinAuthenticated, loadFromKeyChain } from '../core/Keychain';
+import useConnectionManager from '../hooks/useConnectionManager';
 
 const { CText, DynamicImage } = require('../styles');
 
@@ -47,7 +48,7 @@ export default function RemoveWalletModal(props) {
     seedPharse,
     onPressSeed,
     importNewWallet,
-    deleteWallet,
+    shouldDeleteWallet,
     navigation,
   } = props;
   const { t } = useTranslation();
@@ -56,6 +57,7 @@ export default function RemoveWalletModal(props) {
   const hdWalletContext = useContext<any>(HdWalletContext);
   const activityContext = useContext<any>(ActivityContext);
   const portfolioContext = useContext<any>(PortfolioContext);
+  const { deleteWallet } = useConnectionManager();
 
   const cosmosAddress =
     hdWalletContext.state.wallet.cosmos?.wallets[0]?.address;
@@ -118,11 +120,12 @@ export default function RemoveWalletModal(props) {
 
   const ResetReducers = async () => {
     try {
-      await deleteThisWallet(
-        hdWalletContext,
-        activityContext,
-        portfolioContext,
-      );
+      // await deleteThisWallet(
+      //   hdWalletContext,
+      //   activityContext,
+      //   portfolioContext,
+      // );
+      await deleteWallet();
       analytics().logEvent('delete_wallet');
     } catch (error) {
       Sentry.captureException(error);
@@ -212,7 +215,7 @@ export default function RemoveWalletModal(props) {
             </DynamicTouchView>
           )}
 
-          {deleteWallet && (
+          {shouldDeleteWallet && (
             <DynamicTouchView
               dynamic
               fD={'row'}

@@ -4,7 +4,6 @@ import React, {
   useCallback,
   useContext,
   useEffect,
-  useMemo,
   useRef,
   useState,
 } from 'react';
@@ -22,33 +21,17 @@ import useWalletConnectEventsManager from '../../hooks/useWalletConnectV2EventsM
 import { WalletConnectActions } from '../../reducers/wallet_connect_reducer';
 import * as Sentry from '@sentry/react-native';
 import { Config } from 'react-native-config';
-import useAxios from '../../core/HttpRequest';
-import { GlobalContext } from '../../core/globalContext';
 import '@walletconnect/react-native-compat';
 import { mainnet, polygon, arbitrum } from 'viem/chains';
 import {
-  Web3Modal,
   createWeb3Modal,
   defaultWagmiConfig,
 } from '@web3modal/wagmi-react-native';
-import {
-  WalletConnectModal,
-  useWalletConnectModal,
-} from '@walletconnect/modal-react-native';
-import { ethers } from 'ethers';
-import axios from '../../core/Http';
-import { ConnectionTypes, GlobalContextType } from '../../constants/enum';
-import {
-  setAuthToken,
-  setConnectionType,
-  setRefreshToken,
-} from '../../core/asyncStorage';
-import { ethToEvmos } from '@tharsis/address-converter';
-import { hostWorker } from '../../global';
-import useValidSessionToken from '../../hooks/useValidSessionToken';
-import { utf8ToHex } from 'web3-utils';
-import { WagmiConfig, useAccount } from 'wagmi';
+import { WagmiConfig } from 'wagmi';
 import WalletConnectListener from '../walletConnectListener';
+import { WalletConnectConnector } from 'wagmi/connectors/walletConnect';
+import { configureChains, createConfig, type Chain } from 'wagmi';
+import { publicProvider } from 'wagmi/providers/public';
 
 const walletConnectInitialValue = {
   initialized: false,
@@ -60,7 +43,6 @@ export const WalletConnectV2Provider: React.FC<any> = ({ children }) => {
   // Step 1 - Initialize wallets and wallet connect client
   const portfolioState = useContext<any>(PortfolioContext);
   const hdWalletContext = useContext<any>(HdWalletContext);
-  const globalContext = useContext<any>(GlobalContext);
   const ethereum = hdWalletContext.state.wallet.ethereum;
   const { walletConnectDispatch } = useContext<any>(WalletConnectContext);
   const isInitializationInProgress = useRef<boolean>(false);
@@ -110,7 +92,20 @@ export const WalletConnectV2Provider: React.FC<any> = ({ children }) => {
 
   const chains = [mainnet, polygon, arbitrum];
 
+  const walletConnectConnector = new WalletConnectConnector({
+    chains,
+    options: { projectId, showQrModal: false, metadata },
+  });
+
+  const { publicClient } = configureChains(chains, [publicProvider()]);
+
   const wagmiConfig = defaultWagmiConfig({ chains, projectId, metadata });
+
+  // const wagmiConfig = createConfig({
+  //   autoConnect: true,
+  //   connectors: [walletConnectConnector],
+  //   publicClient,
+  // });
 
   // 3. Create modal
   createWeb3Modal({

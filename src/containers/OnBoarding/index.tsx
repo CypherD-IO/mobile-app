@@ -1,4 +1,4 @@
-import React, { useRef, useState } from 'react';
+import React, { useCallback, useRef, useState } from 'react';
 import {
   CyDSafeAreaView,
   CyDImage,
@@ -26,14 +26,14 @@ import {
   SeedPhraseType,
 } from '../../constants/enum';
 import CyDModalLayout from '../../components/v2/modal';
-import { Colors } from 'react-native/Libraries/NewAppScreen';
-import { ButtonWithOutImage } from '../Auth/Share';
 import { MODAL_HIDE_TIMEOUT_250 } from '../../core/Http';
+import useConnectionManager from '../../hooks/useConnectionManager';
 
 const { width, height } = Dimensions.get('screen');
 
 export default function OnBoarding({ navigation }) {
   const { t } = useTranslation();
+  const { openWalletConnectModal } = useConnectionManager();
 
   const scrollX: Animated.Value = useRef(new Animated.Value(0)).current;
 
@@ -88,7 +88,7 @@ export default function OnBoarding({ navigation }) {
     );
   };
 
-  const Screen3 = (): JSX.Element => {
+  const Screen3 = useCallback((): JSX.Element => {
     return (
       <CyDScrollView className={''} style={{ width }}>
         <CyDView className='bg-secondaryBackgroundColor pb-[20px] rounded-b-[25px]'>
@@ -127,7 +127,7 @@ export default function OnBoarding({ navigation }) {
             </CyDTouchView>
             <CyDTouchView
               onPress={() => {
-                navigation.navigate(screenTitle.IMPORT_WALLET_OPTIONS);
+                navigation.navigate(screenTitle.ENTER_KEY);
               }}
               className={
                 'bg-transparent border-[1px] border-[#525252] py-[14px] mt-[20px] items-center rounded-[8px] flex-row justify-around w-[80%] mx-auto'
@@ -145,7 +145,21 @@ export default function OnBoarding({ navigation }) {
           </CyDView>
         </CyDView>
         <CyDView className='w-[80%] mx-auto mt-[20px]'>
-          <CyDView className='flex flex-row items-center justify-center bg-ternaryBackgroundColor px-[5px] py-[5px] rounded-[10px]'>
+          <Button
+            title={t('WALLET_CONNECT')}
+            onPress={() => {
+              void openWalletConnectModal();
+            }}
+            style='mt-[20px]'
+            titleStyle='ml-auto'
+            type={ButtonType.SECONDARY}
+            image={AppImages.RIGHT_ARROW}
+            imagePosition={ImagePosition.RIGHT}
+            imageStyle='h-[15px] w-[15px] ml-auto mr-[10px]'
+          />
+        </CyDView>
+        <CyDView className='w-[80%] mx-auto mt-[2px]'>
+          {/* <CyDView className='flex flex-row items-center justify-center bg-ternaryBackgroundColor px-[5px] py-[5px] rounded-[10px]'>
             <CyDText className='text-center font-bold'>
               {t<string>('TRY_TRACK_WALLET')}
             </CyDText>
@@ -153,7 +167,7 @@ export default function OnBoarding({ navigation }) {
               source={AppImages.CELEBRATE}
               className='h-[20px] w-[20px] ml-[10px]'
             />
-          </CyDView>
+          </CyDView> */}
           <Button
             title={t('TRACK_ANY_WALLET')}
             onPress={() => navigation.navigate(screenTitle.TRACK_WALLET_SCREEN)}
@@ -167,7 +181,7 @@ export default function OnBoarding({ navigation }) {
         </CyDView>
       </CyDScrollView>
     );
-  };
+  }, []);
 
   const onBoardingData: React.FunctionComponent[] = [Screen1, Screen2, Screen3];
 
@@ -187,61 +201,64 @@ export default function OnBoarding({ navigation }) {
     setCurrentCarouselIndex(lastIndex);
   };
 
-  const Indicator = ({ scrollX }: { scrollX: any }): JSX.Element => {
-    return (
-      <CyDView className={''}>
-        {currentCarouselIndex !== onBoardingData.length - 1 && (
-          <CyDView className={'flex-row mx-[20px] justify-between mb-[10px]'}>
-            <Button
-              onPress={onPressSkip}
-              title={'SKIP'}
-              type={'secondary'}
-              style={'p-[5%] w-[30%]'}
-            />
-            <Button
-              onPress={onPressNext}
-              title={'NEXT'}
-              style={'p-[5%] w-[30%]'}
-            />
-          </CyDView>
-        )}
-        <CyDView className={'flex-row bottom-[2%] w-full justify-center'}>
-          {onBoardingData.map((_, i) => {
-            const inputRange: number[] = [
-              (i - 1) * width,
-              i * width,
-              (i + 1) * width,
-            ];
-            const scale = scrollX.interpolate({
-              inputRange,
-              outputRange: [1, 1.4, 1],
-              extrapolate: 'clamp',
-            });
-
-            const opacity = scrollX.interpolate({
-              inputRange,
-              outputRange: [0.4, 0.9, 0.4],
-              extrapolate: 'clamp',
-            });
-            return (
-              <Animated.View
-                key={`indicator-${i}`}
-                style={{
-                  height: 6,
-                  width: 6,
-                  borderRadius: 5,
-                  backgroundColor: '#434343',
-                  opacity,
-                  transform: [{ scale }],
-                  marginHorizontal: 4,
-                }}
+  const Indicator = useCallback(
+    ({ scrollX }: { scrollX: any }): JSX.Element => {
+      return (
+        <CyDView className={''}>
+          {currentCarouselIndex !== onBoardingData.length - 1 && (
+            <CyDView className={'flex-row mx-[20px] justify-between mb-[10px]'}>
+              <Button
+                onPress={onPressSkip}
+                title={'SKIP'}
+                type={'secondary'}
+                style={'p-[5%] w-[30%]'}
               />
-            );
-          })}
+              <Button
+                onPress={onPressNext}
+                title={'NEXT'}
+                style={'p-[5%] w-[30%]'}
+              />
+            </CyDView>
+          )}
+          <CyDView className={'flex-row bottom-[2%] w-full justify-center'}>
+            {onBoardingData.map((_, i) => {
+              const inputRange: number[] = [
+                (i - 1) * width,
+                i * width,
+                (i + 1) * width,
+              ];
+              const scale = scrollX.interpolate({
+                inputRange,
+                outputRange: [1, 1.4, 1],
+                extrapolate: 'clamp',
+              });
+
+              const opacity = scrollX.interpolate({
+                inputRange,
+                outputRange: [0.4, 0.9, 0.4],
+                extrapolate: 'clamp',
+              });
+              return (
+                <Animated.View
+                  key={`indicator-${i}`}
+                  style={{
+                    height: 6,
+                    width: 6,
+                    borderRadius: 5,
+                    backgroundColor: '#434343',
+                    opacity,
+                    transform: [{ scale }],
+                    marginHorizontal: 4,
+                  }}
+                />
+              );
+            })}
+          </CyDView>
         </CyDView>
-      </CyDView>
-    );
-  };
+      );
+    },
+    [onBoardingData],
+  );
 
   const navigateToSeedPhraseGeneration = (type: string) => {
     setIsModalVisible(false);

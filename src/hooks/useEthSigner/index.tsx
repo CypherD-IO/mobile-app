@@ -12,7 +12,7 @@ import { createWalletClient, custom } from 'viem';
 
 export default function useEthSigner() {
   const { connector } = useAccount();
-  const { getConnectedType } = useConnectionManager();
+  const { connectionType } = useConnectionManager();
   const hdWalletContext = useContext<any>(HdWalletContext);
 
   const signEthTransaction = async ({
@@ -21,15 +21,21 @@ export default function useEthSigner() {
     transactionToBeSigned,
   }: RawTransaction) => {
     const ethereum = hdWalletContext.state.wallet.ethereum;
-    const connectionType = await getConnectedType();
     if (connectionType === ConnectionTypes.WALLET_CONNECT) {
+      console.log('chain', chain);
       const chainConfig = get(walletConnectChainData, chain).chainConfig;
       const walletClient = createWalletClient({
         account: transactionToBeSigned.from,
         chain: chainConfig,
         transport: custom(await connector?.getProvider()),
       });
-      await walletClient.switchChain({ id: chainConfig.id });
+      try {
+        await walletClient.switchChain({ id: chainConfig.id });
+      } catch (e) {
+        console.log(e);
+      }
+
+      transactionToBeSigned['data'] = '0x';
       const response = await walletClient.sendTransaction(
         transactionToBeSigned,
       );
