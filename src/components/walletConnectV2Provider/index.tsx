@@ -219,8 +219,7 @@ export const WalletConnectV2Provider: React.FC<any> = ({ children }) => {
     <WalletConnectContext.Provider
       value={{ initialized: isWeb3WalletInitialized }}>
       <WagmiConfig config={wagmiConfig}>
-        {children}
-        <WalletConnectListener />
+        <WalletConnectListener>{children}</WalletConnectListener>
         {/* <WalletConnectModal projectId={projectId} providerMetadata={metadata} /> */}
       </WagmiConfig>
     </WalletConnectContext.Provider>

@@ -1,4 +1,10 @@
-import React, { useContext, useEffect, useMemo } from 'react';
+import React, {
+  Children,
+  useContext,
+  useEffect,
+  useMemo,
+  useState,
+} from 'react';
 import {
   HdWalletContext,
   _NO_CYPHERD_CREDENTIAL_AVAILABLE_,
@@ -22,19 +28,28 @@ import { ethToEvmos } from '@tharsis/address-converter';
 import { hostWorker } from '../../global';
 import useValidSessionToken from '../../hooks/useValidSessionToken';
 import { utf8ToHex } from 'web3-utils';
-import { useAccount, useConnect } from 'wagmi';
+import { useAccount, useConnect, useDisconnect } from 'wagmi';
 import { getWalletProfile } from '../../core/card';
 import AsyncStorage from '@react-native-async-storage/async-storage';
+import { getAccount } from '@wagmi/core';
+import Loading from '../../containers/Loading';
+import { CyDView } from '../../styles/tailwindStyles';
+import useConnectionManager from '../../hooks/useConnectionManager';
 
-export default function WalletConnectListener() {
+export default function WalletConnectListener({ children }) {
   const hdWalletContext = useContext<any>(HdWalletContext);
   const globalContext = useContext<any>(GlobalContext);
   const ethereum = hdWalletContext.state.wallet.ethereum;
   const { isConnected, address, connector } = useAccount();
+  const { disconnect } = useDisconnect();
   const ARCH_HOST: string = hostWorker.getHost('ARCH_HOST');
   const { verifySessionToken } = useValidSessionToken();
   const { getWithoutAuth } = useAxios();
   const { connectAsync } = useConnect();
+  const { connectionType } = useConnectionManager();
+  const [loading, setLoading] = useState<boolean>(
+    connectionType === ConnectionTypes.WALLET_CONNECT,
+  );
 
   useEffect(() => {
     console.log(
@@ -92,15 +107,15 @@ export default function WalletConnectListener() {
       connectionType === ConnectionTypes.WALLET_CONNECT_WITHOUT_SIGN &&
       isConnected
     ) {
-      const provider = await connector?.getProvider();
-      console.log(await provider?.disconnect());
-      void AsyncStorage.clear();
+      disconnect();
+      void setConnectionType('');
     } else {
       void verifySessionTokenAndSign();
     }
   };
 
   const verifySessionTokenAndSign = async () => {
+    setLoading(true);
     void setConnectionType(ConnectionTypes.WALLET_CONNECT_WITHOUT_SIGN);
     const isSessionTokenValid = await verifySessionToken();
     if (!isSessionTokenValid) {
@@ -122,6 +137,7 @@ export default function WalletConnectListener() {
       console.log('loadHdWallet');
       void loadHdWallet();
     }
+    setLoading(false);
   };
 
   const web3Provider = useMemo(async () => {
@@ -131,7 +147,7 @@ export default function WalletConnectListener() {
 
   const signMessage = async () => {
     console.log('signMessage');
-    let provider = await connector?.getProvider();
+    const provider = await connector?.getProvider();
     console.log(provider, provider);
     if (!provider) {
       throw new Error('web3Provider not connected');
@@ -177,5 +193,10 @@ export default function WalletConnectListener() {
     }
   };
 
-  return <Web3Modal />;
+  return (
+    <CyDView className='flex-1'>
+      {loading ? <Loading /> : children}
+      <Web3Modal />
+    </CyDView>
+  );
 }
