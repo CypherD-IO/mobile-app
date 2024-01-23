@@ -13,6 +13,7 @@ import axios from '../../core/Http';
 import { ConnectionTypes, GlobalContextType } from '../../constants/enum';
 import {
   getAuthToken,
+  getConnectionType,
   setAuthToken,
   setConnectionType,
   setRefreshToken,
@@ -23,6 +24,7 @@ import useValidSessionToken from '../../hooks/useValidSessionToken';
 import { utf8ToHex } from 'web3-utils';
 import { useAccount, useConnect } from 'wagmi';
 import { getWalletProfile } from '../../core/card';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 
 export default function WalletConnectListener() {
   const hdWalletContext = useContext<any>(HdWalletContext);
@@ -46,7 +48,7 @@ export default function WalletConnectListener() {
       address &&
       ethereum.address === _NO_CYPHERD_CREDENTIAL_AVAILABLE_
     ) {
-      void verifySessionTokenAndSign();
+      void validateStaleConnection();
     }
   }, [isConnected, address]);
 
@@ -84,7 +86,22 @@ export default function WalletConnectListener() {
     });
   };
 
+  const validateStaleConnection = async () => {
+    const connectionType = await getConnectionType();
+    if (
+      connectionType === ConnectionTypes.WALLET_CONNECT_WITHOUT_SIGN &&
+      isConnected
+    ) {
+      const provider = await connector?.getProvider();
+      console.log(await provider?.disconnect());
+      void AsyncStorage.clear();
+    } else {
+      void verifySessionTokenAndSign();
+    }
+  };
+
   const verifySessionTokenAndSign = async () => {
+    void setConnectionType(ConnectionTypes.WALLET_CONNECT_WITHOUT_SIGN);
     const isSessionTokenValid = await verifySessionToken();
     if (!isSessionTokenValid) {
       void signMessage();
@@ -114,7 +131,7 @@ export default function WalletConnectListener() {
 
   const signMessage = async () => {
     console.log('signMessage');
-    const provider = await connector?.getProvider();
+    let provider = await connector?.getProvider();
     console.log(provider, provider);
     if (!provider) {
       throw new Error('web3Provider not connected');
@@ -129,6 +146,7 @@ export default function WalletConnectListener() {
       const hexMsg = utf8ToHex(msg);
       const msgParams = [hexMsg, address?.toLowerCase()];
       let signature;
+      console.log(msgParams);
       if (provider?.connector) {
         signature = await provider?.connector.signPersonalMessage(msgParams);
       } else {
@@ -138,10 +156,6 @@ export default function WalletConnectListener() {
           params: msgParams,
         });
       }
-      // const signature = await web3Provider.send('personal_sign', [
-      //   hexMsg,
-      //   address?.toLowerCase(),
-      // ]);
       const verifyMessageResponse = await axios.post(
         `${ARCH_HOST}/v1/authentication/verify-message/${address?.toLowerCase()}?format=ERC-4361`,
         {

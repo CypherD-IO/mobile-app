@@ -279,4 +279,5 @@ export enum ConnectionTypes {
   SEED_PHRASE = 'seedPhrase',
   PRIVATE_KEY = 'privateKey',
   WALLET_CONNECT = 'walletConnect',
+  WALLET_CONNECT_WITHOUT_SIGN = 'walletConnectWithoutSign',
 }

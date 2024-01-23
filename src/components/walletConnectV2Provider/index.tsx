@@ -22,7 +22,22 @@ import { WalletConnectActions } from '../../reducers/wallet_connect_reducer';
 import * as Sentry from '@sentry/react-native';
 import { Config } from 'react-native-config';
 import '@walletconnect/react-native-compat';
-import { mainnet, polygon, arbitrum } from 'viem/chains';
+import {
+  mainnet,
+  polygon,
+  optimism,
+  arbitrum,
+  avalanche,
+  fantom,
+  bsc,
+  evmos,
+  zkSync,
+  base,
+  polygonZkEvm,
+  aurora,
+  moonbeam,
+  moonriver,
+} from 'viem/chains';
 import {
   createWeb3Modal,
   defaultWagmiConfig,
@@ -32,6 +47,8 @@ import WalletConnectListener from '../walletConnectListener';
 import { WalletConnectConnector } from 'wagmi/connectors/walletConnect';
 import { configureChains, createConfig, type Chain } from 'wagmi';
 import { publicProvider } from 'wagmi/providers/public';
+import { CoinbaseWagmiConnector } from '@web3modal/coinbase-react-native';
+import { walletConnectProvider } from '../../core/walletConnectProvider';
 
 const walletConnectInitialValue = {
   initialized: false,
@@ -90,20 +107,49 @@ export const WalletConnectV2Provider: React.FC<any> = ({ children }) => {
     },
   };
 
-  const chains = [mainnet, polygon, arbitrum];
+  const chains = [
+    mainnet,
+    polygon,
+    optimism,
+    arbitrum,
+    avalanche,
+    fantom,
+    bsc,
+    evmos,
+    zkSync,
+    base,
+    polygonZkEvm,
+    aurora,
+    moonbeam,
+    moonriver,
+  ];
 
-  const walletConnectConnector = new WalletConnectConnector({
+  // const walletConnectConnector = new WalletConnectConnector({
+  //   chains,
+  //   options: { projectId, showQrModal: false, metadata },
+  // });
+
+  // const { publicClient } = configureChains(chains, [
+  //   walletConnectProvider({ projectId }),
+  //   publicProvider(),
+  // ]);
+
+  // const coinbaseConnector = new CoinbaseWagmiConnector({
+  //   chains,
+  //   options: {
+  //     redirect: 'cypherwallet://',
+  //   },
+  // });
+
+  const wagmiConfig = defaultWagmiConfig({
     chains,
-    options: { projectId, showQrModal: false, metadata },
+    projectId,
+    metadata,
   });
-
-  const { publicClient } = configureChains(chains, [publicProvider()]);
-
-  const wagmiConfig = defaultWagmiConfig({ chains, projectId, metadata });
 
   // const wagmiConfig = createConfig({
   //   autoConnect: true,
-  //   connectors: [walletConnectConnector],
+  //   connectors: [walletConnectConnector, coinbaseConnector],
   //   publicClient,
   // });
 
