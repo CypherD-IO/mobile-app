@@ -185,8 +185,8 @@ export default function SendInviteCode({ navigation }: Props) {
                           <CyDText className='text-center text-[18px] ml-[8px]'>
                             {selectedCountry?.flag ?? ''}
                           </CyDText>
-                          <CyDText className='text-center text-[16px] ml-[8px]'>
-                            {selectedCountry?.name ?? 'Select Country'}
+                          <CyDText className='text-center text-[16px] ml-[2px]'>
+                            {selectedCountry?.name ?? "Select Friend's Country"}
                           </CyDText>
                         </CyDView>
                         <CyDImage source={AppImages.DOWN_ARROW} />
@@ -204,7 +204,7 @@ export default function SendInviteCode({ navigation }: Props) {
                       }}
                       placeholderTextColor={'#C5C5C5'}
                       className={clsx(
-                        'border-[1px] border-[#C5C5C5] bg-white h-[50px] rounded-[8px] text-center text-black',
+                        'border-[1px] border-[#C5C5C5] bg-white h-[50px] rounded-[8px] pl-[20px] text-left text-black',
                         {
                           'pb-[10px]': isAndroid(),
                         },
@@ -223,7 +223,7 @@ export default function SendInviteCode({ navigation }: Props) {
                       }}
                       placeholderTextColor={'#C5C5C5'}
                       className={clsx(
-                        'border-[1px] my-[5px] border-[#C5C5C5] bg-white h-[50px] rounded-[8px] text-center text-black',
+                        'border-[1px] my-[5px] border-[#C5C5C5] bg-white h-[50px] pl-[20px] rounded-[8px] text-left text-black',
                         {
                           'pb-[10px]': isAndroid(),
                         },
@@ -238,6 +238,9 @@ export default function SendInviteCode({ navigation }: Props) {
                       style={'rounded-[8px] h-[50px] mt-[20px]'}
                       title={t<string>('SEND_INVITE_CODE')}
                     />
+                    <CyDText className='text-[12px] mt-[20px] text-center'>
+                      {t('CYPHER_CARD_INVITE_DISCLAIMER')}
+                    </CyDText>
                   </CyDView>
                 </CyDView>
               </CyDView>

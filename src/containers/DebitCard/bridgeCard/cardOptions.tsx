@@ -22,6 +22,7 @@ import {
 import * as Sentry from '@sentry/react-native';
 import useAxios from '../../../core/HttpRequest';
 import { screenTitle } from '../../../constants';
+import { CardProfile } from '../../../models/cardProfile.model';
 
 export default function BridgeCardOptionsScreen(props: {
   navigation: any;
@@ -37,6 +38,7 @@ export default function BridgeCardOptionsScreen(props: {
   const { cardId, status } = card;
   const [isCardBlocked, setIsCardBlocked] = useState(status === 'inactive');
   const globalContext = useContext<any>(GlobalContext);
+  const cardProfile: CardProfile = globalContext.globalState.cardProfile;
   const [isStatusLoading, setIsStatusLoading] = useState(false);
   const { showModal, hideModal } = useGlobalModalContext();
   const { patchWithAuth } = useAxios();
@@ -149,6 +151,25 @@ export default function BridgeCardOptionsScreen(props: {
           className='flex flex-row justify-between align-center ml-[20px] mr-[4px] pt-[20px] pb-[15px] border-b-[1px] border-sepratorColor'>
           <CyDText className='text-[16px] font-bold'>
             {t<string>('SET_NEW_PIN')}
+          </CyDText>
+          <CyDImage
+            source={AppImages.OPTIONS_ARROW}
+            className={'w-[15%] h-[18px]'}
+            resizeMode={'contain'}
+          />
+        </CyDTouchView>
+      )}
+      {!cardProfile.child && (
+        <CyDTouchView
+          onPress={() =>
+            navigation.navigate(screenTitle.LINKED_WALLETS, {
+              currentCardProvider,
+              card,
+            })
+          }
+          className='flex flex-row justify-between align-center ml-[20px] mr-[4px] pt-[20px] pb-[15px] border-b-[1px] border-sepratorColor'>
+          <CyDText className='text-[16px] font-bold'>
+            {t<string>('LINKED_WALLETS')}
           </CyDText>
           <CyDImage
             source={AppImages.OPTIONS_ARROW}

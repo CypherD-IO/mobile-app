@@ -930,6 +930,21 @@ const resources = {
       INVITE_SEND_ERROR: 'Unable to send invite code',
       FULL_NAME_DISCLAIMER:
         '** Enter your first name, middle name (if applicable), and last name as they appear in your KYC document separated by spaces',
+      PLUS_LINK_ANOTHER_WALLET: '+ Link Another Wallet',
+      LINKED_WALLETS: 'Linked Wallets',
+      ADDRESS_UPPERCASE: 'ADDRESS',
+      LINK_ADDRESS_PLACEHOLDER: 'Enter the wallet address to be linked',
+      WALLET_NAME_UPPERCASE: 'WALLET NAME',
+      WALLET_NAME_PLACEHOLDER: 'Enter a name for the wallet address',
+      WALLET_LINKED_SUCCESSFULLY:
+        'New wallet linked to your Cypher Card successfully',
+      WALLET_LINK_UNSUCCESSFUL:
+        'Unable to link wallet to the card. Contact Cypher Support',
+      WALLET_DELETED_SUCCESSFULLY:
+        'Wallet removed from your Cypher Card successfully',
+      EMPTY_LINKED_WALLET: 'No Additional Wallets linked to your Cypher Card',
+      CYPHER_CARD_INVITE_DISCLAIMER:
+        '**Our referral program is a way to share Cypher Card with friends, without extra rewards. We value your support in expanding our community.',
     },
   },
 };

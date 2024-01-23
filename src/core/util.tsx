@@ -813,3 +813,21 @@ export const isEnglish = (value: string) => {
     .replace(/\w/, s => s.toUpperCase());
   return validatedLName !== '';
 };
+
+export function getChainNameFromAddress(address: string) {
+  if (Web3.utils.isAddress(address)) {
+    return ChainBackendNames.ETH;
+  } else if (isEvmosAddress(address)) {
+    return ChainBackendNames.EVMOS;
+  } else if (isCosmosAddress(address)) {
+    return ChainBackendNames.COSMOS;
+  } else if (isOsmosisAddress(address)) {
+    return ChainBackendNames.OSMOSIS;
+  } else if (isJunoAddress(address)) {
+    return ChainBackendNames.JUNO;
+  } else if (isStargazeAddress(address)) {
+    return ChainBackendNames.STARGAZE;
+  } else if (isNobleAddress(address)) {
+    return ChainBackendNames.NOBLE;
+  }
+}

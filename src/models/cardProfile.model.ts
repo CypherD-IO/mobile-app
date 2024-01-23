@@ -41,4 +41,6 @@ export interface CardProfile {
   };
   lifetimeAmountUsd: number;
   physicalCardEligibilityLimit: number;
+  children?: Array<{ address: string; label: string }>;
+  child?: string;
 }
