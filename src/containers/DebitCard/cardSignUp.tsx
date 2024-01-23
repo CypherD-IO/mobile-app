@@ -57,6 +57,7 @@ import ChooseStateFromCountryModal from '../../components/v2/ChooseStateFromCoun
 import ChooseCountryModal from '../../components/v2/ChooseCountryModal';
 import RadioButtons from '../../components/radioButtons';
 import Tooltip from 'react-native-walkthrough-tooltip';
+import { PEP_OPTIONS } from '../../constants/data';
 
 export default function CardSignupScreen({ navigation, route }) {
   const globalContext = useContext<any>(GlobalContext);
@@ -203,7 +204,7 @@ export default function CardSignupScreen({ navigation, route }) {
       : 'Passport Number is invalid';
   };
 
-  const PEP_OPTIONS = ['Yes', 'No'];
+  const [currentPepValue, setCurrentPepValue] = useState(PEP_OPTIONS[1]);
 
   const cardResponseMapping = {
     firstName: 'First name',
@@ -697,9 +698,10 @@ export default function CardSignupScreen({ navigation, route }) {
               <RadioButtons
                 radioButtonsData={PEP_OPTIONS}
                 onPressRadioButton={(value: string) => {
+                  setCurrentPepValue(value);
                   formProps.values.pep = value === PEP_OPTIONS[0];
                 }}
-                initialValue={PEP_OPTIONS[1]}
+                currentValue={currentPepValue}
                 containerStyle={'flex flex-row justify-around ml-[-21%]'}
               />
               {/* <CyDTouchView

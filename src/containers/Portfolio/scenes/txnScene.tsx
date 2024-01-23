@@ -121,8 +121,7 @@ const GetTransactionItemIcon = ({
       return (
         <CyDView
           className='h-[25px] w-[25px] justify-center items-center'
-          style={{ position: 'relative', backgroundColor: 'transparent' }}
-        >
+          style={{ position: 'relative', backgroundColor: 'transparent' }}>
           <CyDFastImage
             className='h-[25px] w-[25px] absolute right-[8px] rounded-full'
             resizeMode='contain'
@@ -260,14 +259,13 @@ const TxnScene = ({
   const isFocused = useIsFocused();
   const hdWalletContext = useContext<any>(HdWalletContext);
   const portfolioContext = useContext(PortfolioContext);
-  const {
-    address: ethereumAddress,
-  }: { address: string } = hdWalletContext.state.wallet.ethereum;
+  const { address: ethereumAddress }: { address: string } =
+    hdWalletContext.state.wallet.ethereum;
   const getTransactionsUrl = `${ARCH_HOST}/v1/txn/transactions/${ethereumAddress}?descOrder=true`;
 
   const [filter, setFilter] = useState({
     types: TRANSACTION_TYPES,
-    statuses: STATUSES,
+    status: STATUSES[2],
   });
   const [transactions, setTransactions] = useState([]);
   const [showTransactionInfo, setShowTransactionInfo] = useState(false);
@@ -346,6 +344,13 @@ const TxnScene = ({
     }
   }, [isLoading, filter, portfolioContext.statePortfolio.selectedChain]);
 
+  const getIsIncludedStatus = (status: string) => {
+    if (filter.status === STATUSES[2]) {
+      return status === STATUSES[1] || status === STATUSES[0];
+    }
+    return status === filter.status;
+  };
+
   const spliceTransactions = () => {
     if (transactions.length === 0) {
       return [];
@@ -361,9 +366,7 @@ const TxnScene = ({
           ChainConfigMapping[chain];
       const isIncludedType = filter.types.includes(activity.type);
       const isOtherType = !TRANSACTION_TYPES.includes(activity.type);
-      const isIncludedStatus =
-        filter.statuses.length === 0 ||
-        filter.statuses.includes(activity.status);
+      const isIncludedStatus = getIsIncludedStatus(activity.status);
 
       return (
         (isIncludedType ||
@@ -468,8 +471,7 @@ const TxnScene = ({
             className={clsx(
               ' border-sepratorColor pl-[10px] pr-[30px] py-[10px] justify-center',
               { 'mt-[28px]': index !== 0 },
-            )}
-          >
+            )}>
             <CyDText className='font-bold text-[16px]'>{formatedDay}</CyDText>
           </CyDView>
         )}
@@ -483,8 +485,7 @@ const TxnScene = ({
           )}
           onPress={() => {
             setTransactionInfoParams(activity);
-          }}
-        >
+          }}>
           <GetTransactionItemIcon
             type={activity.type}
             status={activity.status}

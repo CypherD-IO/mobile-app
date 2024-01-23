@@ -750,3 +750,5 @@ export const APPLICATION_LOGO_MAP: Map<string, string> = new Map([
     'https://public.cypherd.io/assets/blockchains/token-icons/wormhole.png',
   ],
 ]);
+
+export const PEP_OPTIONS = ['Yes', 'No'];

@@ -36,6 +36,9 @@ import useAxios from '../../core/HttpRequest';
 import { stateMaster as backupStateMaster } from '../../../assets/datasets/stateMaster';
 import ChooseStateFromCountryModal from '../../components/v2/ChooseStateFromCountryModal';
 import { MODAL_HIDE_TIMEOUT } from '../../core/Http';
+import RadioButtons from '../../components/radioButtons';
+import { PEP_OPTIONS } from '../../constants/data';
+import Tooltip from 'react-native-walkthrough-tooltip';
 
 export default function UpdateCardApplicationScreen({ navigation }) {
   const globalContext = useContext<any>(GlobalContext);
@@ -64,8 +67,11 @@ export default function UpdateCardApplicationScreen({ navigation }) {
     postalCode: '',
     dateOfBirth: '',
     idNumber: '',
+    pep: false,
   });
   const [selectedIdType, setSelectedIdType] = useState('passport');
+  const [currentPepValue, setCurrentPepValue] = useState(PEP_OPTIONS[1]);
+  const [showPepToolTip, setPepToolTip] = useState<boolean>(false);
   const provider = CardProviders.PAYCADDY;
   const [selectedCountryStates, setSelectedCountryStates] = useState<IState[]>(
     [],
@@ -163,7 +169,9 @@ export default function UpdateCardApplicationScreen({ navigation }) {
           postalCode: data.postalCode,
           dateOfBirth: data.dateOfBirth,
           idNumber: '',
+          pep: data.pep,
         };
+        setCurrentPepValue(data.pep === true ? PEP_OPTIONS[0] : PEP_OPTIONS[1]);
         if (profileData.country === 'United States') {
           profileData.idNumber = data.ssn;
         } else {
@@ -257,6 +265,7 @@ export default function UpdateCardApplicationScreen({ navigation }) {
       state: selectedState.name,
       postalCode: profileData.postalCode,
       dateOfBirth: profileData.dateOfBirth,
+      pep: profileData.pep,
     };
 
     try {
@@ -698,6 +707,50 @@ export default function UpdateCardApplicationScreen({ navigation }) {
                               </CyDText>
                             </CyDView>
                           )}
+                        <CyDView className='flex flex-row items-center'>
+                          <CyDText className='mt-[20] mb-[10px] text-[16px]'>
+                            {t('PEP_QUESTION')}
+                          </CyDText>
+                          <CyDView>
+                            <Tooltip
+                              isVisible={showPepToolTip}
+                              disableShadow={true}
+                              content={
+                                <CyDView className={'p-[5px]'}>
+                                  <CyDText
+                                    className={
+                                      'mb-[5px] font-bold text-[15px]'
+                                    }>
+                                    {t<string>('PEP_EXPLAINATION')}
+                                  </CyDText>
+                                </CyDView>
+                              }
+                              onClose={() => setPepToolTip(false)}
+                              placement='top'>
+                              <CyDTouchView
+                                onPress={() => {
+                                  setPepToolTip(true);
+                                }}>
+                                <CyDImage
+                                  source={AppImages.INFO_ICON}
+                                  resizeMode='contain'
+                                  className={'w-[14px] h-[14px] ml-[4px]'}
+                                />
+                              </CyDTouchView>
+                            </Tooltip>
+                          </CyDView>
+                        </CyDView>
+                        <RadioButtons
+                          radioButtonsData={PEP_OPTIONS}
+                          onPressRadioButton={(value: string) => {
+                            setCurrentPepValue(value);
+                            formProps.values.pep = value === PEP_OPTIONS[0];
+                          }}
+                          currentValue={currentPepValue}
+                          containerStyle={
+                            'flex flex-row justify-around ml-[-21%]'
+                          }
+                        />
                         <Button
                           title={t<string>('NEXT')}
                           loading={updating}
