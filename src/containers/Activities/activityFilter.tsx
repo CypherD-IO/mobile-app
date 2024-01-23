@@ -15,6 +15,7 @@ import {
 import { BackHandler } from 'react-native';
 import Button from '../../components/v2/button';
 import { useTranslation } from 'react-i18next';
+import { TIME_GAPS } from '../../constants/data';
 
 export const FILTERS = ['Type', 'Time', 'Status'];
 export const ACTIVITY_TYPES = [
@@ -27,7 +28,6 @@ export const ACTIVITY_TYPES = [
   'Wallet Connect',
   'Onmeta',
 ];
-export const TIME_GAPS = ['All', 'Today', 'This Week', 'This Month'];
 export const STATUSES = [
   'PENDING',
   'FAILED',
@@ -42,7 +42,9 @@ export default function ActivitesFilter(props: any) {
   const [index, setIndex] = useState<number>(0);
   const [selectedTypes, setSelectedTypes] = useState<string[]>([]);
   const [selectedStatuses, setSelectedStatuses] = useState<string[]>([]);
-  const [selectedTimeGap, setSelectedTimeGap] = useState<string>(TIME_GAPS[0]);
+  const [selectedTimeGap, setSelectedTimeGap] = useState<number>(
+    TIME_GAPS[0].id,
+  );
 
   const handleBackButton = () => {
     props.navigation.goBack();
@@ -63,7 +65,7 @@ export default function ActivitesFilter(props: any) {
           onPress={() => {
             setSelectedStatuses(STATUSES);
             setSelectedTypes(ACTIVITY_TYPES);
-            setSelectedTimeGap(TIME_GAPS[0]);
+            setSelectedTimeGap(TIME_GAPS[0].id);
           }}>
           <CyDText className='color-[#048A81] font-bold text-[16px]'>
             {t('RESET_ALL')}
@@ -75,7 +77,7 @@ export default function ActivitesFilter(props: any) {
 
   function onApply() {
     const data = {
-      time: selectedTimeGap,
+      time: TIME_GAPS[selectedTimeGap].value,
       types: selectedTypes.length === 0 ? ACTIVITY_TYPES : selectedTypes,
       statuses: selectedStatuses.length === 0 ? STATUSES : selectedStatuses,
     };

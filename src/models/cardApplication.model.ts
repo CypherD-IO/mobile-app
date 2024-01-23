@@ -12,7 +12,7 @@ export interface CardApplication {
   postalCode: string;
   dateOfBirth: string;
   idNumber: string;
-  pep: boolean;
+  pep: boolean | undefined;
 }
 
 export interface ICountry {

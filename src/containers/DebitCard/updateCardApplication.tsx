@@ -39,6 +39,7 @@ import { MODAL_HIDE_TIMEOUT } from '../../core/Http';
 import RadioButtons from '../../components/radioButtons';
 import { PEP_OPTIONS } from '../../constants/data';
 import Tooltip from 'react-native-walkthrough-tooltip';
+import { findIndex } from 'lodash';
 
 export default function UpdateCardApplicationScreen({ navigation }) {
   const globalContext = useContext<any>(GlobalContext);
@@ -67,10 +68,9 @@ export default function UpdateCardApplicationScreen({ navigation }) {
     postalCode: '',
     dateOfBirth: '',
     idNumber: '',
-    pep: false,
+    pep: undefined,
   });
   const [selectedIdType, setSelectedIdType] = useState('passport');
-  const [currentPepValue, setCurrentPepValue] = useState(PEP_OPTIONS[1]);
   const [showPepToolTip, setPepToolTip] = useState<boolean>(false);
   const provider = CardProviders.PAYCADDY;
   const [selectedCountryStates, setSelectedCountryStates] = useState<IState[]>(
@@ -130,6 +130,7 @@ export default function UpdateCardApplicationScreen({ navigation }) {
           }
         }
       }),
+    pep: yup.boolean().required(t('PEP_REQUIRED')),
   });
 
   const getProfile = async () => {
@@ -169,9 +170,10 @@ export default function UpdateCardApplicationScreen({ navigation }) {
           postalCode: data.postalCode,
           dateOfBirth: data.dateOfBirth,
           idNumber: '',
-          pep: data.pep,
+          pep: findIndex(PEP_OPTIONS, option => {
+            return option.value === data.pep;
+          }),
         };
-        setCurrentPepValue(data.pep === true ? PEP_OPTIONS[0] : PEP_OPTIONS[1]);
         if (profileData.country === 'United States') {
           profileData.idNumber = data.ssn;
         } else {
@@ -265,9 +267,8 @@ export default function UpdateCardApplicationScreen({ navigation }) {
       state: selectedState.name,
       postalCode: profileData.postalCode,
       dateOfBirth: profileData.dateOfBirth,
-      pep: profileData.pep,
+      pep: PEP_OPTIONS[userInfo.pep].value,
     };
-
     try {
       const response = await patchWithAuth(
         `/v1/cards/${provider}/application`,
@@ -316,6 +317,13 @@ export default function UpdateCardApplicationScreen({ navigation }) {
 
   const handleFullNameBlur = () => {
     setIsFullNameFocused(false);
+  };
+
+  const onPepValueSet = (values, curPepValue) => {
+    setUserInfo({
+      ...values,
+      pep: curPepValue,
+    });
   };
 
   return (
@@ -742,15 +750,22 @@ export default function UpdateCardApplicationScreen({ navigation }) {
                         </CyDView>
                         <RadioButtons
                           radioButtonsData={PEP_OPTIONS}
-                          onPressRadioButton={(value: string) => {
-                            setCurrentPepValue(value);
-                            formProps.values.pep = value === PEP_OPTIONS[0];
+                          onPressRadioButton={(value: number) => {
+                            onPepValueSet(formProps.values, value);
                           }}
-                          currentValue={currentPepValue}
+                          currentValue={userInfo.pep}
                           containerStyle={
                             'flex flex-row justify-around ml-[-21%]'
                           }
                         />
+                        {formProps.touched.pep && formProps.errors.pep && (
+                          <CyDView className={'mt-[-15px] mb-[11px]'}>
+                            <CyDText
+                              className={'text-redOffColor font-semibold'}>
+                              {formProps.errors.pep}
+                            </CyDText>
+                          </CyDView>
+                        )}
                         <Button
                           title={t<string>('NEXT')}
                           loading={updating}

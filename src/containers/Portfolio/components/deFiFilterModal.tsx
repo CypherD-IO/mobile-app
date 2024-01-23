@@ -26,6 +26,8 @@ import DeFiCheckBox from '../../../components/deFiCheckBox';
 import { deFiPositionTypes } from '../../../constants/server';
 import { sortProtocols } from '../../../core/defi';
 import RadioButtons from '../../../components/radioButtons';
+import { DEFI_FILTER_STATUSES } from '../../../constants/data';
+import { get } from 'lodash';
 
 interface DeFiFilterModalInterface {
   filters: DeFiFilter;
@@ -36,12 +38,11 @@ interface DeFiFilterModalInterface {
   navigation: any;
 }
 const FILTERS = ['Protocols', 'Positions', 'Only Active Positions'];
-const STATUSES = ['Yes', 'No'];
 
 const DeFiFilterModal = (props: DeFiFilterModalInterface) => {
   const [index, setIndex] = useState<number>(0);
   const [currentActivePositionsOnlyValue, setCurrentActivePositionsOnlyValue] =
-    useState<string>(props.filters.activePositionsOnly);
+    useState<string | number>(props.filters.activePositionsOnly);
   const onReset = () => {
     props.setFilters(prev => ({
       ...prev,
@@ -136,12 +137,15 @@ const DeFiFilterModal = (props: DeFiFilterModalInterface) => {
             )}
             {index === 2 && (
               <RadioButtons
-                radioButtonsData={STATUSES}
-                onPressRadioButton={(value: string) => {
+                radioButtonsData={DEFI_FILTER_STATUSES}
+                onPressRadioButton={(value: number | string) => {
                   setCurrentActivePositionsOnlyValue(value);
                   props.setFilters(prev => ({
                     ...prev,
-                    activePositionsOnly: value,
+                    activePositionsOnly: get(DEFI_FILTER_STATUSES, [
+                      value,
+                      'value',
+                    ]),
                   }));
                 }}
                 currentValue={currentActivePositionsOnlyValue}

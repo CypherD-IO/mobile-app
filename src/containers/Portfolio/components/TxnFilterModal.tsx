@@ -14,10 +14,10 @@ import Button from '../../../components/v2/button';
 import CyDModalLayout from '../../../components/v2/modal';
 import { ButtonType } from '../../../constants/enum';
 import AppImages from '../../../../assets/images/appImages';
+import { TXN_FILTER_STATUSES } from '../../../constants/data';
 
 export const FILTERS = ['Type', 'Status'];
 export const TRANSACTION_TYPES = ['send', 'receive', 'swap', 'others'];
-export const STATUSES = ['completed', 'error', 'all'];
 
 interface TxnFilterModalProps {
   navigation: any;
@@ -51,7 +51,7 @@ const TxnFilterModal = ({
     filter.types === TRANSACTION_TYPES ? [] : filter.types,
   );
   const [selectedStatus, setSelectedStatus] = useState<string>(
-    filter.status ?? STATUSES[2],
+    filter.status ?? TXN_FILTER_STATUSES[2].id,
   );
 
   const [isModalVisible, setModalVisible] = modalVisibilityState;
@@ -73,7 +73,7 @@ const TxnFilterModal = ({
       headerRight: () => (
         <CyDTouchView
           onPress={() => {
-            setSelectedStatus(STATUSES[2]);
+            setSelectedStatus(TXN_FILTER_STATUSES[2].id);
             setSelectedTypes(TRANSACTION_TYPES);
           }}>
           <CyDText className='color-[#048A81] font-bold text-[16px]'>
@@ -98,8 +98,8 @@ const TxnFilterModal = ({
 
   const onReset = () => {
     setSelectedTypes([]);
-    setSelectedStatus(STATUSES[2]);
-    setFilter({ types: TRANSACTION_TYPES, status: STATUSES[2] });
+    setSelectedStatus(TXN_FILTER_STATUSES[2].id);
+    setFilter({ types: TRANSACTION_TYPES, status: TXN_FILTER_STATUSES[2].id });
   };
 
   return (
@@ -158,7 +158,7 @@ const TxnFilterModal = ({
             )}
             {index === 1 && (
               <RadioButtons
-                radioButtonsData={STATUSES}
+                radioButtonsData={TXN_FILTER_STATUSES}
                 onPressRadioButton={value => setSelectedStatus(value)}
                 currentValue={selectedStatus}
               />

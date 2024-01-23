@@ -751,4 +751,22 @@ export const APPLICATION_LOGO_MAP: Map<string, string> = new Map([
   ],
 ]);
 
-export const PEP_OPTIONS = ['Yes', 'No'];
+export const PEP_OPTIONS = [
+  { id: 0, label: 'Yes', value: true },
+  { id: 1, label: 'No', value: false },
+];
+export const TXN_FILTER_STATUSES = [
+  { id: 0, label: 'completed', value: 'completed' },
+  { id: 1, label: 'error', value: 'error' },
+  { id: 2, label: 'all', value: 'all' },
+];
+export const DEFI_FILTER_STATUSES = [
+  { id: 0, label: 'Yes', value: 'Yes' },
+  { id: 1, label: 'No', value: 'No' },
+];
+export const TIME_GAPS = [
+  { id: 0, label: 'All', value: 'All' },
+  { id: 1, label: 'Today', value: 'Today' },
+  { id: 2, label: 'This Week', value: 'This Week' },
+  { id: 3, label: 'This Month', value: 'This Month' },
+];

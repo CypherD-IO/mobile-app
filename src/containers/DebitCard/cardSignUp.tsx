@@ -105,7 +105,7 @@ export default function CardSignupScreen({ navigation, route }) {
     email: '',
     flag: '🇺🇸',
     Iso2: 'US',
-    pep: false,
+    pep: undefined,
   });
   const [selectedCountryForDialCode, setSelectedCountryForDialCode] =
     useState<ICountry>({
@@ -190,6 +190,7 @@ export default function CardSignupScreen({ navigation, route }) {
       .test('isValidPhoneNumber', t('INVALID_PHONE_NUMBER'), phoneNumber =>
         /^\d+$/.test(phoneNumber),
       ),
+    pep: yup.boolean().required(t('PEP_REQUIRED')),
   });
 
   const userBillingAddressValidationSchema = yup.object({
@@ -203,8 +204,6 @@ export default function CardSignupScreen({ navigation, route }) {
       ? 'SSN Number is invalid'
       : 'Passport Number is invalid';
   };
-
-  const [currentPepValue, setCurrentPepValue] = useState(PEP_OPTIONS[1]);
 
   const cardResponseMapping = {
     firstName: 'First name',
@@ -356,10 +355,10 @@ export default function CardSignupScreen({ navigation, route }) {
       lastName,
       phone: selectedCountryForDialCode.dialCode + userBasicDetails.phoneNumber,
       email: userBasicDetails.email,
+      pep: PEP_OPTIONS[userBasicDetails.pep].value,
       ...latestBillingAddress,
       country: userBasicDetails.Iso2,
       inviteCode,
-      pep: userBasicDetails.pep,
     };
     try {
       const response = await postWithAuth(
@@ -438,6 +437,13 @@ export default function CardSignupScreen({ navigation, route }) {
   const onDialCodeModalOpen = values => {
     setUserBasicDetails({ ...userBasicDetails, ...values });
     setIsDialCodeModalVisible(true);
+  };
+
+  const onPepValueSet = (values, curPepValue) => {
+    setUserBasicDetails({
+      ...values,
+      pep: curPepValue,
+    });
   };
 
   const GetToKnowTheUserBetter = useCallback(() => {
@@ -697,13 +703,19 @@ export default function CardSignupScreen({ navigation, route }) {
               </CyDView>
               <RadioButtons
                 radioButtonsData={PEP_OPTIONS}
-                onPressRadioButton={(value: string) => {
-                  setCurrentPepValue(value);
-                  formProps.values.pep = value === PEP_OPTIONS[0];
+                onPressRadioButton={async (value: number) => {
+                  onPepValueSet(formProps.values, value);
                 }}
-                currentValue={currentPepValue}
+                currentValue={userBasicDetails.pep}
                 containerStyle={'flex flex-row justify-around ml-[-21%]'}
               />
+              {formProps.touched.pep && formProps.errors.pep && (
+                <CyDView className={'mt-[-15px] mb-[11px]'}>
+                  <CyDText className={'text-redOffColor font-semibold'}>
+                    {formProps.errors.pep}
+                  </CyDText>
+                </CyDView>
+              )}
               {/* <CyDTouchView
                 onPress={() => formProps.handleSubmit()}
                 className={
