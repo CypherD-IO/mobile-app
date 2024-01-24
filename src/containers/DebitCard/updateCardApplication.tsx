@@ -36,6 +36,10 @@ import useAxios from '../../core/HttpRequest';
 import { stateMaster as backupStateMaster } from '../../../assets/datasets/stateMaster';
 import ChooseStateFromCountryModal from '../../components/v2/ChooseStateFromCountryModal';
 import { MODAL_HIDE_TIMEOUT } from '../../core/Http';
+import RadioButtons from '../../components/radioButtons';
+import { PEP_OPTIONS } from '../../constants/data';
+import Tooltip from 'react-native-walkthrough-tooltip';
+import { findIndex } from 'lodash';
 
 export default function UpdateCardApplicationScreen({ navigation }) {
   const globalContext = useContext<any>(GlobalContext);
@@ -64,8 +68,10 @@ export default function UpdateCardApplicationScreen({ navigation }) {
     postalCode: '',
     dateOfBirth: '',
     idNumber: '',
+    pep: undefined,
   });
   const [selectedIdType, setSelectedIdType] = useState('passport');
+  const [showPepToolTip, setPepToolTip] = useState<boolean>(false);
   const provider = CardProviders.PAYCADDY;
   const [selectedCountryStates, setSelectedCountryStates] = useState<IState[]>(
     [],
@@ -124,6 +130,7 @@ export default function UpdateCardApplicationScreen({ navigation }) {
           }
         }
       }),
+    pep: yup.boolean().required(t('PEP_REQUIRED')),
   });
 
   const getProfile = async () => {
@@ -163,6 +170,9 @@ export default function UpdateCardApplicationScreen({ navigation }) {
           postalCode: data.postalCode,
           dateOfBirth: data.dateOfBirth,
           idNumber: '',
+          pep: findIndex(PEP_OPTIONS, option => {
+            return option.value === data.pep;
+          }),
         };
         if (profileData.country === 'United States') {
           profileData.idNumber = data.ssn;
@@ -257,8 +267,8 @@ export default function UpdateCardApplicationScreen({ navigation }) {
       state: selectedState.name,
       postalCode: profileData.postalCode,
       dateOfBirth: profileData.dateOfBirth,
+      pep: PEP_OPTIONS[userInfo.pep].value,
     };
-
     try {
       const response = await patchWithAuth(
         `/v1/cards/${provider}/application`,
@@ -307,6 +317,13 @@ export default function UpdateCardApplicationScreen({ navigation }) {
 
   const handleFullNameBlur = () => {
     setIsFullNameFocused(false);
+  };
+
+  const onPepValueSet = (values, curPepValue) => {
+    setUserInfo({
+      ...values,
+      pep: curPepValue,
+    });
   };
 
   return (
@@ -698,6 +715,57 @@ export default function UpdateCardApplicationScreen({ navigation }) {
                               </CyDText>
                             </CyDView>
                           )}
+                        <CyDView className='flex flex-row items-center'>
+                          <CyDText className='mt-[20] mb-[10px] text-[16px]'>
+                            {t('PEP_QUESTION')}
+                          </CyDText>
+                          <CyDView>
+                            <Tooltip
+                              isVisible={showPepToolTip}
+                              disableShadow={true}
+                              content={
+                                <CyDView className={'p-[5px]'}>
+                                  <CyDText
+                                    className={
+                                      'mb-[5px] font-bold text-[15px]'
+                                    }>
+                                    {t<string>('PEP_EXPLAINATION')}
+                                  </CyDText>
+                                </CyDView>
+                              }
+                              onClose={() => setPepToolTip(false)}
+                              placement='top'>
+                              <CyDTouchView
+                                onPress={() => {
+                                  setPepToolTip(true);
+                                }}>
+                                <CyDImage
+                                  source={AppImages.INFO_ICON}
+                                  resizeMode='contain'
+                                  className={'w-[14px] h-[14px] ml-[4px]'}
+                                />
+                              </CyDTouchView>
+                            </Tooltip>
+                          </CyDView>
+                        </CyDView>
+                        <RadioButtons
+                          radioButtonsData={PEP_OPTIONS}
+                          onPressRadioButton={(value: number) => {
+                            onPepValueSet(formProps.values, value);
+                          }}
+                          currentValue={userInfo.pep}
+                          containerStyle={
+                            'flex flex-row justify-around ml-[-21%]'
+                          }
+                        />
+                        {formProps.touched.pep && formProps.errors.pep && (
+                          <CyDView className={'mt-[-15px] mb-[11px]'}>
+                            <CyDText
+                              className={'text-redOffColor font-semibold'}>
+                              {formProps.errors.pep}
+                            </CyDText>
+                          </CyDView>
+                        )}
                         <Button
                           title={t<string>('NEXT')}
                           loading={updating}
