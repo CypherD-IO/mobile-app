@@ -92,7 +92,7 @@ const resources = {
       REVEAL_SEED_PHARSE: 'Reveal Seed Phrase',
       REVEAL_PRIVATE_KEY: 'Reveal Private Key',
       IMPORT_ANOTHER_WALLET: 'IMPORT WALLET',
-      DELETE_WALLET: 'DELETE WALLET',
+      DELETE_WALLET: 'Delete Wallet',
       ADDRESS_COPY: 'Address copied to clipboard',
       ADDRESS_COPY_ALL_SMALL: 'address copied to clipboard',
       SAVED_TO_CONTACTS_ALL_SMALL: 'saved to contacts',
@@ -949,6 +949,13 @@ const resources = {
       PEP_EXPLAINATION:
         'A Politically Exposed Person (PEP) is someone who holds, or has held, a high-profile public position, or is closely related to such a person. This category often includes government officials, senior executives in state-owned enterprises, political party leaders, and high-ranking members of the judiciary or military, along with their family members and close associates.',
       PEP_REQUIRED: 'Choose any one option',
+      CONNECT_ANOTHER_WALLET: 'Connect another wallet',
+      DISCONNECT_WALLET: 'Disconnect wallet',
+      DISCONNECT_WALLET_SUB:
+        'Are you sure you want to disconnect from your wallet ?',
+      UNABLE_TO_CONNECT: 'Unable to connect',
+      BROWSER_WALLET_CONNECT_ERROR:
+        'Unable to connect when connected via wallet coonect. Import wallet with seed phrase to connect to a dApp from browser.',
     },
   },
 };

@@ -1477,6 +1477,11 @@ export function OptionsStackScreen({ navigation, route }) {
         })}
       />
       <OptionsStack.Screen
+        name={screenTitle.SEND_INVITE_CODE_SCREEN}
+        component={SendInviteCode}
+        options={({ navigation }) => ({ headerShown: false })}
+      />
+      <OptionsStack.Screen
         name={screenTitle.CHANGE_PIN}
         component={ChangePin}
         options={({ navigation, route }) => ({

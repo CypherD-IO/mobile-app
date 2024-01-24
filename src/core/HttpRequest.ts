@@ -17,7 +17,8 @@ type RequestMethod =
   | 'POST_WITHOUT_AUTH'
   | 'PUT'
   | 'PATCH'
-  | 'DELETE';
+  | 'DELETE'
+  | 'DELETE_WITHOUT_AUTH';
 
 interface IHttpResponse {
   isError: boolean;
@@ -99,7 +100,11 @@ export default function useAxios() {
           response.data = data;
           response.status = status;
         } else if (method === 'DELETE') {
-          const { data, status } = await axiosInstance.delete(url);
+          const { data, status } = await axiosInstance.delete(url, body);
+          response.data = data;
+          response.status = status;
+        } else if (method === 'DELETE_WITHOUT_AUTH') {
+          const { data, status } = await axios.delete(url, body);
           response.data = data;
           response.status = status;
         } else if (method === 'POST') {
@@ -197,6 +202,12 @@ export default function useAxios() {
   ) => {
     return await request('DELETE', url, timeout);
   };
+  const deleteWithoutAuth = async (
+    url: string,
+    timeout = DEFAULT_AXIOS_TIMEOUT,
+  ) => {
+    return await request('DELETE_WITHOUT_AUTH', url, timeout);
+  };
 
   return {
     getWithAuth,
@@ -204,6 +215,7 @@ export default function useAxios() {
     putWithAuth,
     patchWithAuth,
     deleteWithAuth,
+    deleteWithoutAuth,
     getWithoutAuth,
     postWithoutAuth,
   };

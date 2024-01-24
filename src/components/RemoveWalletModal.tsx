@@ -44,7 +44,6 @@ export default function RemoveWalletModal(props) {
     image,
     titleMsg,
     subTitleMsg,
-    removeWallet,
     seedPharse,
     onPressSeed,
     importNewWallet,
@@ -126,6 +125,9 @@ export default function RemoveWalletModal(props) {
       //   portfolioContext,
       // );
       await deleteWallet();
+      if (importNewWallet) {
+        navigation.navigate(C.screenTitle.ENTER_KEY);
+      }
       analytics().logEvent('delete_wallet');
     } catch (error) {
       Sentry.captureException(error);
@@ -292,9 +294,8 @@ export default function RemoveWalletModal(props) {
               text={t('IMPORT_ANOTHER_WALLET')}
               isBorder={false}
               onPress={() => {
-                onPress();
                 setTimeout(() => {
-                  removeWallet();
+                  void onDeleteWallet();
                 }, MODAL_CLOSING_TIMEOUT);
               }}
             />
@@ -309,8 +310,8 @@ export default function RemoveWalletModal(props) {
               text={t('DELETE_WALLET')}
               isBorder={false}
               fC={'white'}
-              onPress={async () => {
-                onDeleteWallet();
+              onPress={() => {
+                void onDeleteWallet();
               }}
             />
           )}

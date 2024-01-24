@@ -9,6 +9,7 @@ import CosmosSigningModal from './walletConnectV2Views/CosmosSigningModal';
 import CyDModalLayout from './modal';
 import { CyDView } from '../../styles/tailwindStyles';
 import { CustomModalLayoutDef } from '../../models/globalModal.interface';
+import RemoveWalletModal from './removeWalletModal';
 
 interface GlobalModalContextInterface {
   showModal: (modalType: string, params: any) => void;
@@ -41,6 +42,9 @@ export const GlobalModal: React.FC<any> = ({ children }) => {
       {store?.modalType === GlobalModalType.STATE && <StateModal {...store} />}
       {store?.modalType === GlobalModalType.PROMPT_IMPORT_WALLET && (
         <PromptImportWallet {...store} />
+      )}
+      {store?.modalType === GlobalModalType.REMOVE_WALLET && (
+        <RemoveWalletModal {...store} />
       )}
       {store?.modalType === GlobalModalType.WALLET_CONNECT_V2_PAIRING && (
         <PairingModal {...store} />

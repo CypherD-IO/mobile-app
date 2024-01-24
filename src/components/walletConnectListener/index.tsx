@@ -35,6 +35,9 @@ import { getAccount } from '@wagmi/core';
 import Loading from '../../containers/Loading';
 import { CyDView } from '../../styles/tailwindStyles';
 import useConnectionManager from '../../hooks/useConnectionManager';
+import Intercom from '@intercom/intercom-react-native';
+import * as Sentry from '@sentry/react-native';
+import DeviceInfo from 'react-native-device-info';
 
 export default function WalletConnectListener({ children }) {
   const hdWalletContext = useContext<any>(HdWalletContext);
@@ -75,6 +78,22 @@ export default function WalletConnectListener({ children }) {
     });
   };
 
+  const registerIntercomUser = () => {
+    Intercom.registerIdentifiedUser({
+      userId: address,
+    }).catch(error => {
+      Sentry.captureException(error);
+    });
+    Intercom.updateUser({
+      userId: address,
+      customAttributes: {
+        version: DeviceInfo.getVersion(),
+      },
+    }).catch(error => {
+      Sentry.captureException(error);
+    });
+  };
+
   const loadHdWallet = async () => {
     void setConnectionType(ConnectionTypes.WALLET_CONNECT);
     hdWalletContext.dispatch({
@@ -99,6 +118,7 @@ export default function WalletConnectListener({ children }) {
         algo: '',
       },
     });
+    registerIntercomUser();
   };
 
   const validateStaleConnection = async () => {

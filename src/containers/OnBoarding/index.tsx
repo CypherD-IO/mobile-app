@@ -28,6 +28,8 @@ import {
 import CyDModalLayout from '../../components/v2/modal';
 import { MODAL_HIDE_TIMEOUT_250 } from '../../core/Http';
 import useConnectionManager from '../../hooks/useConnectionManager';
+import CyDContainer from '../../components/v2/container';
+import { Colors } from '../../constants/theme';
 
 const { width, height } = Dimensions.get('screen');
 
@@ -52,7 +54,9 @@ export default function OnBoarding({ navigation }) {
     return (
       <CyDScrollView className={''} style={{ width }}>
         <CyDText
-          className={'text-versionColor font-bold mt-[10%] text-left mx-[44px]'}
+          className={
+            'text-versionColor font-bold mt-[12px] text-left mx-[44px]'
+          }
           numberOfLines={4}
           style={{ fontSize: height * 0.03 }}>
           {t('ON_BOARDING_PAGE_1_CONTENT').toString()}
@@ -61,7 +65,7 @@ export default function OnBoarding({ navigation }) {
           source={AppImages.ON_BOARDING_1}
           className={clsx('mt-[20px]')}
           resizeMode='contain'
-          style={{ height: height * 0.6, width }}
+          style={{ height: height * 0.62, width }}
         />
       </CyDScrollView>
     );
@@ -72,7 +76,7 @@ export default function OnBoarding({ navigation }) {
       <CyDScrollView className={''} style={{ width }}>
         <CyDText
           className={
-            'text-versionColor text-[30px] font-bold mt-[10%] text-left mx-[44px]'
+            'text-versionColor text-[30px] font-bold mt-[12px] text-left mx-[44px]'
           }
           numberOfLines={4}
           style={{ fontSize: height * 0.03 }}>
@@ -91,13 +95,22 @@ export default function OnBoarding({ navigation }) {
   const Screen3 = useCallback((): JSX.Element => {
     return (
       <CyDScrollView className={''} style={{ width }}>
-        <CyDView className='bg-secondaryBackgroundColor pb-[20px] rounded-b-[25px]'>
-          <CyDImage
+        <CyDView className='bg-secondaryBackgroundColor py-[20px] rounded-[25px] m-[12px] px-[20px]'>
+          {/* <CyDImage
             source={AppImages.ON_BOARDING_3}
             className={clsx('mt-[20px] w-screen ')}
             resizeMode='contain'
             style={{ height: height * 0.4 }}
-          />
+          /> */}
+          <CyDView>
+            <CyDText className='text-[28px] font-extrabold'>Welcome to</CyDText>
+            <CyDText className='text-[28px] font-extrabold'>
+              Cypher Wallet
+            </CyDText>
+            <CyDText className='text-[16px] font-bold mt-[12px]'>
+              Explore all of Web3 in one place
+            </CyDText>
+          </CyDView>
 
           <CyDView>
             <CyDTouchView
@@ -105,13 +118,13 @@ export default function OnBoarding({ navigation }) {
                 setIsModalVisible(true);
               }}
               className={clsx(
-                'bg-buttonColor py-[14px] items-center rounded-[8px] mt-[20px] flex-row justify-around w-[80%] mx-auto',
+                'bg-buttonColor py-[14px] items-center rounded-[8px] mt-[20px] flex-row justify-around w-[98%]',
                 {
                   'py-[30px]': loading,
                 },
               )}>
               {!loading && (
-                <CyDText className={'text-[16px] font-extrabold '}>
+                <CyDText className={'text-[16px] font-extrabold w-[80%]'}>
                   {t('CREATE_WALLET').toString()}
                 </CyDText>
               )}
@@ -130,9 +143,9 @@ export default function OnBoarding({ navigation }) {
                 navigation.navigate(screenTitle.ENTER_KEY);
               }}
               className={
-                'bg-transparent border-[1px] border-[#525252] py-[14px] mt-[20px] items-center rounded-[8px] flex-row justify-around w-[80%] mx-auto'
+                'bg-transparent border-[1px] border-[#525252] py-[14px] mt-[20px] items-center rounded-[8px] flex-row justify-around w-[98%]'
               }>
-              <CyDText className={'text-[16px] font-extrabold '}>
+              <CyDText className={'text-[16px] font-extrabold w-[80%]'}>
                 {t('IMPORT_WALLET').toString()}
               </CyDText>
               <CyDImage
@@ -144,35 +157,24 @@ export default function OnBoarding({ navigation }) {
             </CyDTouchView>
           </CyDView>
         </CyDView>
-        <CyDView className='w-[80%] mx-auto mt-[20px]'>
+        <CyDView className='mx-[12px] px-[20px] mt-[20px]'>
           <Button
             title={t('WALLET_CONNECT')}
             onPress={() => {
               void openWalletConnectModal();
             }}
-            style='mt-[20px]'
-            titleStyle='ml-auto'
+            style='mt-[20px] w-[98%] h-[48px]'
+            titleStyle='w-[90%] text-left ml-[12px]'
             type={ButtonType.SECONDARY}
             image={AppImages.RIGHT_ARROW}
             imagePosition={ImagePosition.RIGHT}
             imageStyle='h-[15px] w-[15px] ml-auto mr-[10px]'
           />
-        </CyDView>
-        <CyDView className='w-[80%] mx-auto mt-[2px]'>
-          {/* <CyDView className='flex flex-row items-center justify-center bg-ternaryBackgroundColor px-[5px] py-[5px] rounded-[10px]'>
-            <CyDText className='text-center font-bold'>
-              {t<string>('TRY_TRACK_WALLET')}
-            </CyDText>
-            <CyDImage
-              source={AppImages.CELEBRATE}
-              className='h-[20px] w-[20px] ml-[10px]'
-            />
-          </CyDView> */}
           <Button
             title={t('TRACK_ANY_WALLET')}
             onPress={() => navigation.navigate(screenTitle.TRACK_WALLET_SCREEN)}
-            style='mt-[20px]'
-            titleStyle='ml-auto'
+            style='mt-[20px] w-[98%] h-[48px]'
+            titleStyle='w-[90%] text-left ml-[12px]'
             type={ButtonType.SECONDARY}
             image={AppImages.RIGHT_ARROW}
             imagePosition={ImagePosition.RIGHT}
@@ -270,7 +272,7 @@ export default function OnBoarding({ navigation }) {
   };
 
   return (
-    <CyDSafeAreaView className={'relative'}>
+    <CyDContainer>
       <CyDModalLayout
         isModalVisible={isModalVisible}
         style={styles.modalLayout}
@@ -279,9 +281,6 @@ export default function OnBoarding({ navigation }) {
         setModalVisible={setIsModalVisible}>
         <CyDView
           className={'bg-white p-[25px] pb-[30px] rounded-t-[20px] relative'}>
-          {/* <CyDTouchView onPress={() => setIsModalVisible(false)} className={'z-[50]'}>
-            <CyDImage source={AppImages.CLOSE} className={' w-[22px] h-[22px] z-[50] absolute right-[0px] '} />
-          </CyDTouchView> */}
           <CyDText className={'my-[14px] font-black text-center text-[22px]'}>
             {t<string>('CREATE_SEED_PHRASE_TYPE_TITLE')}
           </CyDText>
@@ -309,7 +308,7 @@ export default function OnBoarding({ navigation }) {
           </CyDView>
         </CyDView>
       </CyDModalLayout>
-      <CyDView className={'h-full w-full bg-white'}>
+      <CyDView className={'h-full w-full'}>
         <CyDImage
           source={AppImages.BG_SETTINGS}
           className={'h-[50%] w-full absolute top-0 right-0'}
@@ -331,7 +330,7 @@ export default function OnBoarding({ navigation }) {
         />
         <Indicator scrollX={scrollX} />
       </CyDView>
-    </CyDSafeAreaView>
+    </CyDContainer>
   );
 }
 

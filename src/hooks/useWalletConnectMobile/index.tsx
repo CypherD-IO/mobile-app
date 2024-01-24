@@ -33,12 +33,9 @@ export default function useWalletConnectMobile() {
   const disconnectWalletConnect = async () => {
     try {
       const provider = await connector?.getProvider();
+      const result = await disconnect();
       await provider?.disconnect();
       await connector?.disconnect();
-      const result = await disconnect();
-      const account = getAccount();
-      const tempProvider = await account.connector?.getProvider();
-      await tempProvider?.disconnect();
       RNRestart.Restart();
       console.log('result:', result);
       return result;
