@@ -55,6 +55,9 @@ import { ICountry, IState } from '../../models/cardApplication.model';
 import { stateMaster as backupStateMaster } from '../../../assets/datasets/stateMaster';
 import ChooseStateFromCountryModal from '../../components/v2/ChooseStateFromCountryModal';
 import ChooseCountryModal from '../../components/v2/ChooseCountryModal';
+import RadioButtons from '../../components/radioButtons';
+import Tooltip from 'react-native-walkthrough-tooltip';
+import { PEP_OPTIONS } from '../../constants/data';
 
 export default function CardSignupScreen({ navigation, route }) {
   const globalContext = useContext<any>(GlobalContext);
@@ -102,6 +105,7 @@ export default function CardSignupScreen({ navigation, route }) {
     email: '',
     flag: '🇺🇸',
     Iso2: 'US',
+    pep: undefined,
   });
   const [selectedCountryForDialCode, setSelectedCountryForDialCode] =
     useState<ICountry>({
@@ -135,6 +139,8 @@ export default function CardSignupScreen({ navigation, route }) {
     dateOfBirth: '',
     idNumber: '',
   });
+
+  const [showPepToolTip, setPepToolTip] = useState<boolean>(false);
 
   const { postWithAuth } = useAxios();
 
@@ -184,6 +190,7 @@ export default function CardSignupScreen({ navigation, route }) {
       .test('isValidPhoneNumber', t('INVALID_PHONE_NUMBER'), phoneNumber =>
         /^\d+$/.test(phoneNumber),
       ),
+    pep: yup.boolean().required(t('PEP_REQUIRED')),
   });
 
   const userBillingAddressValidationSchema = yup.object({
@@ -348,6 +355,7 @@ export default function CardSignupScreen({ navigation, route }) {
       lastName,
       phone: selectedCountryForDialCode.dialCode + userBasicDetails.phoneNumber,
       email: userBasicDetails.email,
+      pep: PEP_OPTIONS[userBasicDetails.pep].value,
       ...latestBillingAddress,
       country: userBasicDetails.Iso2,
       inviteCode,
@@ -429,6 +437,13 @@ export default function CardSignupScreen({ navigation, route }) {
   const onDialCodeModalOpen = values => {
     setUserBasicDetails({ ...userBasicDetails, ...values });
     setIsDialCodeModalVisible(true);
+  };
+
+  const onPepValueSet = (values, curPepValue) => {
+    setUserBasicDetails({
+      ...values,
+      pep: curPepValue,
+    });
   };
 
   const GetToKnowTheUserBetter = useCallback(() => {
@@ -656,6 +671,51 @@ export default function CardSignupScreen({ navigation, route }) {
                   </CyDText>
                 </CyDView>
               )}
+              <CyDView className='flex flex-row items-center'>
+                <CyDText className='mt-[20] mb-[10px] text-[16px]'>
+                  {t('PEP_QUESTION')}
+                </CyDText>
+                <CyDView>
+                  <Tooltip
+                    isVisible={showPepToolTip}
+                    disableShadow={true}
+                    content={
+                      <CyDView className={'p-[5px]'}>
+                        <CyDText className={'mb-[5px] font-bold text-[15px]'}>
+                          {t<string>('PEP_EXPLAINATION')}
+                        </CyDText>
+                      </CyDView>
+                    }
+                    onClose={() => setPepToolTip(false)}
+                    placement='top'>
+                    <CyDTouchView
+                      onPress={() => {
+                        setPepToolTip(true);
+                      }}>
+                      <CyDImage
+                        source={AppImages.INFO_ICON}
+                        resizeMode='contain'
+                        className={'w-[14px] h-[14px] ml-[4px]'}
+                      />
+                    </CyDTouchView>
+                  </Tooltip>
+                </CyDView>
+              </CyDView>
+              <RadioButtons
+                radioButtonsData={PEP_OPTIONS}
+                onPressRadioButton={async (value: number) => {
+                  onPepValueSet(formProps.values, value);
+                }}
+                currentValue={userBasicDetails.pep}
+                containerStyle={'flex flex-row justify-around ml-[-21%]'}
+              />
+              {formProps.touched.pep && formProps.errors.pep && (
+                <CyDView className={'mt-[-15px] mb-[11px]'}>
+                  <CyDText className={'text-redOffColor font-semibold'}>
+                    {formProps.errors.pep}
+                  </CyDText>
+                </CyDView>
+              )}
               {/* <CyDTouchView
                 onPress={() => formProps.handleSubmit()}
                 className={
@@ -683,6 +743,7 @@ export default function CardSignupScreen({ navigation, route }) {
     userBasicDetails,
     isDialCodeModalVisible,
     selectedCountryForDialCode,
+    showPepToolTip,
   ]);
 
   const UserBillingAddress = useCallback(() => {

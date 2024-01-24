@@ -945,6 +945,10 @@ const resources = {
       EMPTY_LINKED_WALLET: 'No Additional Wallets linked to your Cypher Card',
       CYPHER_CARD_INVITE_DISCLAIMER:
         '**Our referral program is a way to share Cypher Card with friends, without extra rewards. We value your support in expanding our community.',
+      PEP_QUESTION: 'Are you a Politically Exposed Person ?',
+      PEP_EXPLAINATION:
+        'A Politically Exposed Person (PEP) is someone who holds, or has held, a high-profile public position, or is closely related to such a person. This category often includes government officials, senior executives in state-owned enterprises, political party leaders, and high-ranking members of the judiciary or military, along with their family members and close associates.',
+      PEP_REQUIRED: 'Choose any one option',
     },
   },
 };

@@ -13,7 +13,10 @@ import {
   formatAmount,
   getMaskedAddress,
 } from '../../../core/util';
-import { APPLICATION_ADDRESS_NAME_MAP } from '../../../constants/data';
+import {
+  APPLICATION_ADDRESS_NAME_MAP,
+  TXN_FILTER_STATUSES,
+} from '../../../constants/data';
 import moment from 'moment';
 import { useIsFocused } from '@react-navigation/native';
 import Loading from '../../../components/v2/loading';
@@ -30,7 +33,6 @@ import { hostWorker } from '../../../global';
 import { AnimatedTabView } from '../animatedComponents';
 import { SharedValue } from 'react-native-reanimated';
 import TxnFilterModal, {
-  STATUSES,
   TRANSACTION_TYPES,
 } from '../components/TxnFilterModal';
 import { TransactionType } from '../../../constants/enum';
@@ -121,8 +123,7 @@ const GetTransactionItemIcon = ({
       return (
         <CyDView
           className='h-[25px] w-[25px] justify-center items-center'
-          style={{ position: 'relative', backgroundColor: 'transparent' }}
-        >
+          style={{ position: 'relative', backgroundColor: 'transparent' }}>
           <CyDFastImage
             className='h-[25px] w-[25px] absolute right-[8px] rounded-full'
             resizeMode='contain'
@@ -260,14 +261,13 @@ const TxnScene = ({
   const isFocused = useIsFocused();
   const hdWalletContext = useContext<any>(HdWalletContext);
   const portfolioContext = useContext(PortfolioContext);
-  const {
-    address: ethereumAddress,
-  }: { address: string } = hdWalletContext.state.wallet.ethereum;
+  const { address: ethereumAddress }: { address: string } =
+    hdWalletContext.state.wallet.ethereum;
   const getTransactionsUrl = `${ARCH_HOST}/v1/txn/transactions/${ethereumAddress}?descOrder=true`;
 
   const [filter, setFilter] = useState({
     types: TRANSACTION_TYPES,
-    statuses: STATUSES,
+    status: TXN_FILTER_STATUSES[2].id,
   });
   const [transactions, setTransactions] = useState([]);
   const [showTransactionInfo, setShowTransactionInfo] = useState(false);
@@ -346,6 +346,16 @@ const TxnScene = ({
     }
   }, [isLoading, filter, portfolioContext.statePortfolio.selectedChain]);
 
+  const getIsIncludedStatus = (status: string) => {
+    if (filter.status === TXN_FILTER_STATUSES[2].id) {
+      return (
+        status === TXN_FILTER_STATUSES[1].value ||
+        status === TXN_FILTER_STATUSES[0].value
+      );
+    }
+    return status === TXN_FILTER_STATUSES[filter.status].value;
+  };
+
   const spliceTransactions = () => {
     if (transactions.length === 0) {
       return [];
@@ -361,9 +371,7 @@ const TxnScene = ({
           ChainConfigMapping[chain];
       const isIncludedType = filter.types.includes(activity.type);
       const isOtherType = !TRANSACTION_TYPES.includes(activity.type);
-      const isIncludedStatus =
-        filter.statuses.length === 0 ||
-        filter.statuses.includes(activity.status);
+      const isIncludedStatus = getIsIncludedStatus(activity.status);
 
       return (
         (isIncludedType ||
@@ -468,8 +476,7 @@ const TxnScene = ({
             className={clsx(
               ' border-sepratorColor pl-[10px] pr-[30px] py-[10px] justify-center',
               { 'mt-[28px]': index !== 0 },
-            )}
-          >
+            )}>
             <CyDText className='font-bold text-[16px]'>{formatedDay}</CyDText>
           </CyDView>
         )}
@@ -483,8 +490,7 @@ const TxnScene = ({
           )}
           onPress={() => {
             setTransactionInfoParams(activity);
-          }}
-        >
+          }}>
           <GetTransactionItemIcon
             type={activity.type}
             status={activity.status}
