@@ -198,6 +198,9 @@ PODS:
   - lottie-react-native (5.1.6):
     - lottie-ios (~> 3.4.0)
     - React-Core
+  - MMKV (1.3.2):
+    - MMKVCore (~> 1.3.2)
+  - MMKVCore (1.3.2)
   - nanopb (2.30908.0):
     - nanopb/decode (= 2.30908.0)
     - nanopb/encode (= 2.30908.0)
@@ -509,6 +512,9 @@ PODS:
     - React-Core
   - react-native-lottie-splash-screen (1.1.2):
     - React
+  - react-native-mmkv (2.11.0):
+    - MMKV (>= 1.2.13)
+    - React-Core
   - react-native-netinfo (11.2.1):
     - React-Core
   - react-native-pager-view (6.2.3):
@@ -796,6 +802,7 @@ DEPENDENCIES:
   - "react-native-cookies (from `../node_modules/@react-native-cookies/cookies`)"
   - react-native-get-random-values (from `../node_modules/react-native-get-random-values`)
   - react-native-lottie-splash-screen (from `../node_modules/react-native-lottie-splash-screen`)
+  - react-native-mmkv (from `../node_modules/react-native-mmkv`)
   - "react-native-netinfo (from `../node_modules/@react-native-community/netinfo`)"
   - react-native-pager-view (from `../node_modules/react-native-pager-view`)
   - react-native-randombytes (from `../node_modules/react-native-randombytes`)
@@ -879,6 +886,8 @@ SPEC REPOS:
     - Intercom
     - libevent
     - libwebp
+    - MMKV
+    - MMKVCore
     - nanopb
     - NWWebSocket
     - OpenSSL-Universal
@@ -961,6 +970,8 @@ EXTERNAL SOURCES:
     :path: "../node_modules/react-native-get-random-values"
   react-native-lottie-splash-screen:
     :path: "../node_modules/react-native-lottie-splash-screen"
+  react-native-mmkv:
+    :path: "../node_modules/react-native-mmkv"
   react-native-netinfo:
     :path: "../node_modules/@react-native-community/netinfo"
   react-native-pager-view:
@@ -1106,6 +1117,8 @@ SPEC CHECKSUMS:
   libwebp: 1786c9f4ff8a279e4dac1e8f385004d5fc253009
   lottie-ios: 69495122151a378fdc7d1bb4c5930347e37baf1f
   lottie-react-native: 8f9d4be452e23f6e5ca0fdc11669dc99ab52be81
+  MMKV: f21593c0af4b3f2a0ceb8f820f28bb639ea22bb7
+  MMKVCore: 31b4cb83f8266467eef20a35b6d78e409a11060d
   nanopb: a0ba3315591a9ae0a16a309ee504766e90db0c96
   NWWebSocket: 05fc4419102f33934f87157d70228837e327064f
   OpenSSL-Universal: ebc357f1e6bc71fa463ccb2fe676756aff50e88c
@@ -1135,6 +1148,7 @@ SPEC CHECKSUMS:
   react-native-cookies: f54fcded06bb0cda05c11d86788020b43528a26c
   react-native-get-random-values: 384787fd76976f5aec9465aff6fa9e9129af1e74
   react-native-lottie-splash-screen: 4e1b1fd9d6633f9cd2106d6877eb5ba0147f3e2b
+  react-native-mmkv: e97c0c79403fb94577e5d902ab1ebd42b0715b43
   react-native-netinfo: 8a7fd3f7130ef4ad2fb4276d5c9f8d3f28d2df3d
   react-native-pager-view: e26d35e382d86950c936f8917e3beb9188115ccc
   react-native-randombytes: 421f1c7d48c0af8dbcd471b0324393ebf8fe7846
@@ -1198,4 +1212,4 @@ SPEC CHECKSUMS:
 
 PODFILE CHECKSUM: 1c722bae26d4a152d26e8bc5bb8ac70fa6ef52a9
 
-COCOAPODS: 1.14.3
+COCOAPODS: 1.12.0
