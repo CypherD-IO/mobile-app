@@ -105,17 +105,21 @@ export default function useConnectionManager() {
   }: {
     navigation: any;
   }) => {
-    const isPinSet = await isPinAuthenticated();
-    if (!isPinSet) {
-      const authorization = await loadFromKeyChain(AUTHORIZE_WALLET_DELETION);
-      if (authorization) {
-        await deleteWalletConfig();
+    if (connectionType !== ConnectionTypes.WALLET_CONNECT) {
+      const isPinSet = await isPinAuthenticated();
+      if (!isPinSet) {
+        const authorization = await loadFromKeyChain(AUTHORIZE_WALLET_DELETION);
+        if (authorization) {
+          await deleteWalletConfig();
+        }
+      } else {
+        navigation.navigate(screenTitle.PIN, {
+          title: `${t<string>('ENTER_PIN_TO_DELETE')}`,
+          callback: deleteWalletConfig,
+        });
       }
     } else {
-      navigation.navigate(screenTitle.PIN, {
-        title: `${t<string>('ENTER_PIN_TO_DELETE')}`,
-        callback: deleteWalletConfig,
-      });
+      await deleteWalletConfig();
     }
   };
 

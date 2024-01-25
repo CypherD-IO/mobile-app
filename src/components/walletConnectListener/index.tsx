@@ -55,12 +55,6 @@ export default function WalletConnectListener({ children }) {
   );
 
   useEffect(() => {
-    console.log(
-      'WalletConnect Listener isConnected:',
-      isConnected,
-      address,
-      ethereum.address,
-    );
     if (
       isConnected &&
       address &&
@@ -143,7 +137,6 @@ export default function WalletConnectListener({ children }) {
     } else {
       let authToken = await getAuthToken();
       authToken = JSON.parse(String(authToken));
-      console.log('authToken', authToken);
       // await dispatchProfileData(String(authToken));
       const profileData = await getWalletProfile(authToken);
       globalContext.globalDispatch({
@@ -154,7 +147,6 @@ export default function WalletConnectListener({ children }) {
         type: GlobalContextType.CARD_PROFILE,
         cardProfile: profileData,
       });
-      console.log('loadHdWallet');
       void loadHdWallet();
     }
     setLoading(false);
@@ -166,9 +158,7 @@ export default function WalletConnectListener({ children }) {
   }, [connector]);
 
   const signMessage = async () => {
-    console.log('signMessage');
     const provider = await connector?.getProvider();
-    console.log(provider, provider);
     if (!provider) {
       throw new Error('web3Provider not connected');
     }
@@ -176,17 +166,14 @@ export default function WalletConnectListener({ children }) {
       `/v1/authentication/sign-message/${String(address)}`,
       { format: 'ERC-4361' },
     );
-    console.log(response);
     if (!response.isError) {
       const msg = response.data.message;
       const hexMsg = utf8ToHex(msg);
       const msgParams = [hexMsg, address?.toLowerCase()];
       let signature;
-      console.log(msgParams);
       if (provider?.connector) {
         signature = await provider?.connector.signPersonalMessage(msgParams);
       } else {
-        console.log('signature');
         signature = await provider?.request({
           method: 'personal_sign',
           params: msgParams,
@@ -207,7 +194,6 @@ export default function WalletConnectListener({ children }) {
         void setAuthToken(token);
         void setRefreshToken(refreshToken);
         await dispatchProfileData(String(token));
-        console.log('loadHdWallet');
         void loadHdWallet();
       }
     }

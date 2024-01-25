@@ -1724,6 +1724,7 @@ export default function SendTo(props: { navigation?: any; route?: any }) {
                 void (async () => await showGasQuote())();
               }}
               type={ButtonType.PRIMARY}
+              disabled={!isAddressValid || addressText === ''}
               loading={loading}
               style=' h-[60px] w-[90%]'
             />

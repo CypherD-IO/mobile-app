@@ -154,7 +154,6 @@ Sentry.init({
       tracingOrigins: ['127.0.0.1', 'api.cypherd.io'],
     }),
   ],
-  transport: NoopTransport,
   tracesSampleRate: 1.0,
   beforeSend(event, hint) {
     if (event?.extra && typeof event.extra === 'object') {

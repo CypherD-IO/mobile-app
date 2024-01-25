@@ -49,7 +49,6 @@ export default function useValidSessionToken() {
               type: GlobalContextType.SIGN_IN,
               sessionToken: token,
             });
-            console.log('setNewAuthToken');
             return true;
           } else {
             // throw error

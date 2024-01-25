@@ -22,7 +22,6 @@ export default function useEthSigner() {
   }: RawTransaction) => {
     const ethereum = hdWalletContext.state.wallet.ethereum;
     if (connectionType === ConnectionTypes.WALLET_CONNECT) {
-      console.log('chain', chain);
       const chainConfig = get(walletConnectChainData, chain).chainConfig;
       const walletClient = createWalletClient({
         account: transactionToBeSigned.from,
@@ -31,9 +30,7 @@ export default function useEthSigner() {
       });
       try {
         await walletClient.switchChain({ id: chainConfig.id });
-      } catch (e) {
-        console.log(e);
-      }
+      } catch (e) {}
 
       transactionToBeSigned['data'] = '0x';
       const response = await walletClient.sendTransaction(
@@ -51,7 +48,6 @@ export default function useEthSigner() {
           .sendSignedTransaction(String(signedTransaction.rawTransaction))
           .once('transactionHash', function (hash: string) {
             txHash = hash;
-            console.log('🚀 ~ txHash:', txHash);
             Toast.show({
               type: 'info',
               text1: 'Transaction Hash',
@@ -79,7 +75,6 @@ export default function useEthSigner() {
                       text2: 'Transaction Receipt Received',
                       position: 'bottom',
                     });
-                    console.log(receipt);
                     resolve(receipt.transactionHash);
                   } else {
                     Sentry.captureException(error);
@@ -104,7 +99,6 @@ export default function useEthSigner() {
             resolve(receipt.transactionHash);
           });
       });
-      console.log(hash);
       return hash;
     }
   };

@@ -143,7 +143,7 @@ export default function OnBoarding({ navigation }) {
                 navigation.navigate(screenTitle.ENTER_KEY);
               }}
               className={
-                'bg-transparent border-[1px] border-[#525252] py-[14px] mt-[20px] items-center rounded-[8px] flex-row justify-around w-[98%]'
+                'bg-white border-[0.3px] border-[#525252] py-[14px] mt-[20px] items-center rounded-[8px] flex-row justify-around w-[98%]'
               }>
               <CyDText className={'text-[16px] font-extrabold w-[80%]'}>
                 {t('IMPORT_WALLET').toString()}
@@ -155,31 +155,42 @@ export default function OnBoarding({ navigation }) {
                 style={{ tintColor: '#434343' }}
               />
             </CyDTouchView>
+            <CyDTouchView
+              onPress={() => {
+                void openWalletConnectModal();
+              }}
+              className={
+                'bg-white border-[0.3px] border-[#525252] mt-[20px] px-[12px] items-center rounded-[8px] flex flex-row justify-between w-[98%]'
+              }>
+              <CyDView>
+                <CyDText className={'text-[16px] font-extrabold'}>
+                  {t('CONNECT_A_WALLET')}
+                </CyDText>
+              </CyDView>
+              <CyDImage
+                source={AppImages.WALLET_ICONS}
+                resizeMode={'contain'}
+                className={'w-[30%] h-[54px]'}
+              />
+            </CyDTouchView>
           </CyDView>
-        </CyDView>
-        <CyDView className='mx-[12px] px-[20px] mt-[20px]'>
-          <Button
-            title={t('WALLET_CONNECT')}
+          <CyDTouchView
             onPress={() => {
-              void openWalletConnectModal();
+              navigation.navigate(screenTitle.TRACK_WALLET_SCREEN);
             }}
-            style='mt-[20px] w-[98%] h-[48px]'
-            titleStyle='w-[90%] text-left ml-[12px]'
-            type={ButtonType.SECONDARY}
-            image={AppImages.RIGHT_ARROW}
-            imagePosition={ImagePosition.RIGHT}
-            imageStyle='h-[15px] w-[15px] ml-auto mr-[10px]'
-          />
-          <Button
-            title={t('TRACK_ANY_WALLET')}
-            onPress={() => navigation.navigate(screenTitle.TRACK_WALLET_SCREEN)}
-            style='mt-[20px] w-[98%] h-[48px]'
-            titleStyle='w-[90%] text-left ml-[12px]'
-            type={ButtonType.SECONDARY}
-            image={AppImages.RIGHT_ARROW}
-            imagePosition={ImagePosition.RIGHT}
-            imageStyle='h-[15px] w-[15px] ml-auto mr-[10px]'
-          />
+            className={
+              'bg-white border-[0.3px] border-[#525252] py-[14px] mt-[20px] items-center rounded-[8px] flex-row justify-around w-[98%]'
+            }>
+            <CyDText className={'text-[16px] font-extrabold w-[80%]'}>
+              {t('TRACK_ANY_WALLET')}
+            </CyDText>
+            <CyDImage
+              source={AppImages.RIGHT_ARROW}
+              resizeMode={'contain'}
+              className={'w-[9px] h-[17px]'}
+              style={{ tintColor: '#434343' }}
+            />
+          </CyDTouchView>
         </CyDView>
       </CyDScrollView>
     );

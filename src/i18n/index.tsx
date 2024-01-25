@@ -13,8 +13,8 @@ const resources = {
       LETS_CONNECT_MSG: 'Let’s connect to Cypher wallet',
       LETS_CONNECT_SUB_MSG:
         'Create or import wallet to keep your crypto securely',
-      CREATE_WALLET: 'CREATE NEW WALLET',
-      IMPORT_WALLET: 'IMPORT EXISTING WALLET',
+      CREATE_WALLET: 'Create New Wallet',
+      IMPORT_WALLET: 'Import With Seed Phrase',
       BACK_UP_MYSELF: 'Back up myself',
       BACK_UP_SUB_MSG:
         'You will loose access to your wallet if you loose your private key. ',
@@ -634,7 +634,7 @@ const resources = {
         'Want to see this token as verified? \nPlease let us know',
       DEFAULT_INIT_CAPS: 'Default',
       UPDATED_INIT_CAPS: 'Updated',
-      TRACK_ANY_WALLET: 'TRACK ANY WALLET',
+      TRACK_ANY_WALLET: 'Track Any Wallet',
       TRACK: 'TRACK',
       QR_TRACK_WALLET: 'Scan QR code to track the wallet',
       TRY_TRACK_WALLET: 'Try our new track wallet feature',
@@ -956,6 +956,7 @@ const resources = {
       UNABLE_TO_CONNECT: 'Unable to connect',
       BROWSER_WALLET_CONNECT_ERROR:
         'Unable to connect when connected via wallet coonect. Import wallet with seed phrase to connect to a dApp from browser.',
+      CONNECT_A_WALLET: 'Connect A Wallet',
     },
   },
 };
