@@ -289,7 +289,8 @@ export default function Options(props: {
                   />
                 )}
 
-              {!isReadOnlyWallet && (
+              {!isReadOnlyWallet &&
+                connectionType !== ConnectionTypes.WALLET_CONNECT && (
                 <DynamicView
                   dynamic
                   dynamicWidth
