@@ -110,6 +110,7 @@ import { Colors } from '../../constants/theme';
 import { ethers } from 'ethers';
 import { AllowanceParams } from '../../models/swapMetaData';
 import { Holding } from '../../core/Portfolio';
+import useTransactionManager from '../../hooks/useTransactionManager';
 
 const QUOTE_RETRY = 3;
 const QUOTE_EXPIRY_SEC = 60;
@@ -216,6 +217,7 @@ export default function Bridge(props: { navigation?: any; route?: any }) {
   const [nativeTokenBalance, setNativeTokenBalance] = useState<number>(0);
   const [animation, setAnimation] = useState<boolean>(true);
   const { getWithAuth } = useAxios();
+  const { sendEvmToken } = useTransactionManager();
   let enterAmountRef;
 
   const handleBackButton = () => {
@@ -542,22 +544,65 @@ export default function Bridge(props: { navigation?: any; route?: any }) {
     }
   };
 
-  const sendTransaction = (payTokenModalParamsLocal: any) => {
-    sendNativeCoinOrToken(
-      hdWallet,
-      portfolioState,
-      fromChain,
-      convertAmountOfContractDecimal(cryptoAmount, fromToken?.contractDecimals),
-      fromToken?.contractAddress,
-      fromToken?.contractDecimals,
-      quoteData.step1TargetWallet,
-      quoteData.quoteId,
-      handleBridgeTransactionResult,
-      true,
-      payTokenModalParamsLocal.finalGasPrice,
-      payTokenModalParamsLocal.gasLimit,
-      globalStateContext,
-    );
+  const sendTransaction = async (payTokenModalParamsLocal: any) => {
+    const { symbol, contractAddress, contractDecimals, chainDetails } =
+      fromToken;
+    const response = await sendEvmToken({
+      chain: chainDetails.backendName,
+      amountToSend: convertAmountOfContractDecimal(
+        cryptoAmount,
+        fromToken?.contractDecimals,
+      ),
+      toAddress: quoteData.step1TargetWallet,
+      contractAddress,
+      contractDecimals,
+      symbol: symbol,
+    });
+    const { isError, hash, error } = response;
+    if (isError) {
+      // monitoring api
+      void logAnalytics({
+        type: AnalyticsType.ERROR,
+        chain: fromChain.chainName,
+        message: parseErrorMessage(error),
+        screen: route.name,
+      });
+      if (hash) {
+        activityContext.dispatch({
+          type: ActivityReducerAction.PATCH,
+          value: {
+            id: activityId.current,
+            status: ActivityStatus.FAILED,
+            quoteId: quoteData.quoteId,
+            reason: error,
+          },
+        });
+      } else {
+        activityContext.dispatch({
+          type: ActivityReducerAction.DELETE,
+          value: { id: activityId.current },
+        });
+      }
+      setSignModalVisible(false);
+      setBridgeLoading(false);
+      setTimeout(() => {
+        showModal('state', {
+          type: 'error',
+          title: 'Transaction Failed',
+          description: error,
+          onSuccess: onModalHide,
+          onFailure: hideModal,
+        });
+      }, 500);
+    } else {
+      // monitoring api
+      void logAnalytics({
+        type: AnalyticsType.SUCCESS,
+        txnHash: hash,
+        chain: fromChain.chainName,
+      });
+      transferSentQuote(ethereum.address, quoteData.quoteId, hash);
+    }
   };
 
   const parseBridgeQuoteData = data => {

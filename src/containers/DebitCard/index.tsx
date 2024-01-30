@@ -5,7 +5,11 @@
 import React, { useContext, useEffect, useState } from 'react';
 import { GlobalContext } from '../../core/globalContext';
 import { CardProfile } from '../../models/cardProfile.model';
-import { CardApplicationStatus, CardProviders } from '../../constants/enum';
+import {
+  CardApplicationStatus,
+  CardProviders,
+  GlobalContextType,
+} from '../../constants/enum';
 import Loading from '../../components/v2/loading';
 import { useIsFocused } from '@react-navigation/native';
 import { screenTitle } from '../../constants';
@@ -22,6 +26,7 @@ import { get, has } from 'lodash';
 import CardWailtList from './cardWaitList';
 import useAxios from '../../core/HttpRequest';
 import * as Sentry from '@sentry/react-native';
+import { getWalletProfile } from '../../core/card';
 export interface RouteProps {
   navigation: {
     navigate: (screen: string, params?: any) => void;
@@ -39,7 +44,6 @@ export default function DebitCardScreen(props: RouteProps) {
   const globalContext = useContext<any>(GlobalContext);
   const hdWalletContext = useContext<any>(HdWalletContext);
   const { isReadOnlyWallet } = hdWalletContext.state;
-  const cardProfile: CardProfile = globalContext.globalState.cardProfile;
 
   const [loading, setLoading] = useState<boolean>(true);
   const { getWithAuth } = useAxios();
@@ -56,11 +60,22 @@ export default function DebitCardScreen(props: RouteProps) {
     };
   }, []);
 
+  const refreshProfile = async () => {
+    const data = await getWalletProfile(globalContext.globalState.token);
+    globalContext.globalDispatch({
+      type: GlobalContextType.CARD_PROFILE,
+      cardProfile: data,
+    });
+  };
+
   useEffect(() => {
     if (!isReadOnlyWallet && isFocused) {
+      const cardProfile: CardProfile = globalContext.globalState.cardProfile;
       setLoading(true);
       if (cardProfile) {
         setLoading(false);
+      } else {
+        void refreshProfile();
       }
       if (
         has(cardProfile, CardProviders.BRIDGE_CARD) ||

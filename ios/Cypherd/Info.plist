@@ -50,6 +50,7 @@
 		<key>LSApplicationQueriesSchemes</key>
 		<array>
 			<string>itms-apps</string>
+			<string>cbwallet</string>
 		</array>
 		<key>LSRequiresIPhoneOS</key>
 		<true/>

@@ -53,7 +53,7 @@ export interface Holding {
   coinGeckoId: string;
   about: string;
   id: number;
-  chainDetails?: Chain;
+  chainDetails: Chain;
   denom?: string;
   stakedBalance?: string;
   actualStakedBalance: number;

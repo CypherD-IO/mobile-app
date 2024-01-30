@@ -139,6 +139,8 @@ const CypherCardScreen = ({ navigation, route }: CypherCardScreenProps) => {
     )}/balance`;
     try {
       const response = await getWithAuth(url);
+      console.log(url);
+      console.log(response.error);
       if (!response.isError && response?.data && response.data.balance) {
         setCardBalance(String(response.data.balance));
       } else {

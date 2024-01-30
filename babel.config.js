@@ -9,7 +9,7 @@ module.exports = (api) => {
   return {
     comments: false,
     compact: true,
-    presets: ['module:metro-react-native-babel-preset'],
+    presets: [['module:metro-react-native-babel-preset', { useTransformReactJSXExperimental: true }],],
     plugins: [
       'react-native-reanimated/plugin',
       'nativewind/babel',
@@ -30,7 +30,12 @@ module.exports = (api) => {
       // SUPPORTED BY DEFAULT: '@babel/plugin-transform-literals',
       // SUPPORTED BY DEFAULT: '@babel/plugin-transform-parameters',
       // SUPPORTED BY DEFAULT: '@babel/plugin-transform-shorthand-properties',
-      '@babel/plugin-transform-react-jsx',
+      [
+            '@babel/plugin-transform-react-jsx',
+            {
+                runtime: 'automatic',
+            },
+        ],
       // SUPPORTED BY DEFAULT: '@babel/plugin-transform-regenerator',
       '@babel/plugin-transform-sticky-regex',
       '@babel/plugin-transform-unicode-regex',

@@ -128,6 +128,7 @@ import { ethToEvmos } from '@tharsis/address-converter';
 import { WalletConnectV2Provider } from './src/components/walletConnectV2Provider';
 import DefaultAuthRemoveModal from './src/components/v2/defaultAuthRemoveModal';
 import { Config } from 'react-native-config';
+import NoopTransport from '@sentry/react-native';
 
 const { DynamicView, CText, DynamicImage } = require('./src/styles');
 

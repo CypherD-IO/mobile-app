@@ -6,7 +6,7 @@ export const getWalletProfile = async (token: string) => {
   const ARCH_HOST: string = hostWorker.getHost('ARCH_HOST');
   const profileUrl = `${ARCH_HOST}/v1/authentication/profile`;
   const config = {
-    headers: { Authorization: `Bearer ${String(token)}` }
+    headers: { Authorization: `Bearer ${String(token)}` },
   };
   try {
     const { data } = await axios.get(profileUrl, config);

@@ -81,6 +81,7 @@ import {
   GAS_BUFFER_FACTOR_FOR_LOAD_MAX,
   PayTokenModalParams,
 } from '../../../models/card.model';
+import useTransactionManager from '../../../hooks/useTransactionManager';
 
 export default function BridgeFundCardScreen({ route }: { route: any }) {
   const {
@@ -193,6 +194,7 @@ export default function BridgeFundCardScreen({ route }: { route: any }) {
   const { showModal, hideModal } = useGlobalModalContext();
   const tokenQuoteExpiry = 60;
   const isFocused = useIsFocused();
+  const { sendEvmToken } = useTransactionManager();
 
   useEffect(() => {
     if (isFocused) {
@@ -498,20 +500,52 @@ export default function BridgeFundCardScreen({ route }: { route: any }) {
               from_contract: contractAddress,
               quote_uuid: tokenQuote.quoteUUID,
             });
-            sendNativeCoinOrTokenToAnyAddress(
-              hdWallet,
-              portfolioState,
-              chainDetails,
-              actualTokensRequired,
+            const response = await sendEvmToken({
+              chain: selectedToken.chainDetails.backendName,
+              amountToSend: actualTokensRequired,
+              toAddress: tokenQuote.targetWallet,
               contractAddress,
               contractDecimals,
-              tokenQuote.quoteUUID,
-              handleTransactionResult,
-              tokenQuote.targetWallet,
-              payTokenModalParamsLocal.finalGasPrice,
-              payTokenModalParamsLocal.gasLimit,
-              globalContext,
-            );
+              symbol: selectedToken.symbol,
+            });
+            const { hash, isError, error } = response;
+            if (!isError) {
+              void logAnalytics({
+                type: AnalyticsType.SUCCESS,
+                txnHash: hash,
+                chain: selectedToken?.chainDetails?.chainName ?? '',
+              });
+              void transferSentQuote(
+                ethereum.address,
+                tokenQuote.quoteUUID,
+                hash,
+              );
+            } else {
+              void logAnalytics({
+                type: AnalyticsType.ERROR,
+                chain: selectedToken?.chainDetails?.chainName ?? '',
+                message: parseErrorMessage(error),
+                screen: route.name,
+              });
+              activityRef.current &&
+                activityContext.dispatch({
+                  type: ActivityReducerAction.PATCH,
+                  value: {
+                    id: activityRef.current.id,
+                    status: ActivityStatus.FAILED,
+                    quoteId: tokenQuote.quoteUUID,
+                    reason: error,
+                  },
+                });
+              setLoading(false);
+              showModal('state', {
+                type: 'error',
+                title: 'Transaction Failed',
+                description: `${error}. Please contact customer support with the quote_id: ${tokenQuote.quoteUUID}`,
+                onSuccess: hideModal,
+                onFailure: hideModal,
+              });
+            }
           } else if (COSMOS_CHAINS.includes(chainName)) {
             const amount = ethers.utils
               .parseUnits(
@@ -1358,8 +1392,8 @@ export default function BridgeFundCardScreen({ route }: { route: any }) {
         (isNaN(usdAmt)
           ? '0.00'
           : selectedToken?.isZeroFeeCardFunding
-          ? usdAmt
-          : usdAmt / 1.02
+            ? usdAmt
+            : usdAmt / 1.02
         ).toString(),
       );
     } else {
@@ -1372,8 +1406,8 @@ export default function BridgeFundCardScreen({ route }: { route: any }) {
         (isNaN(cryptoAmt)
           ? '0.00'
           : selectedToken?.isZeroFeeCardFunding
-          ? cryptoAmt
-          : cryptoAmt * 1.02
+            ? cryptoAmt
+            : cryptoAmt * 1.02
         ).toString(),
       );
       setUsdAmount(amount);
@@ -1469,8 +1503,8 @@ export default function BridgeFundCardScreen({ route }: { route: any }) {
                         (isNaN(usdText)
                           ? '0.00'
                           : selectedToken?.isZeroFeeCardFunding
-                          ? usdText
-                          : usdText / 1.02
+                            ? usdText
+                            : usdText / 1.02
                         ).toString(),
                       );
                     } else {
@@ -1483,8 +1517,8 @@ export default function BridgeFundCardScreen({ route }: { route: any }) {
                         (isNaN(cryptoText)
                           ? '0.00'
                           : selectedToken?.isZeroFeeCardFunding
-                          ? cryptoText
-                          : cryptoText * 1.02
+                            ? cryptoText
+                            : cryptoText * 1.02
                         ).toString(),
                       );
                       setUsdAmount(text);

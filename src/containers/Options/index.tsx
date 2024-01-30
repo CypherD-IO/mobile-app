@@ -17,7 +17,7 @@ import DeviceInfo from 'react-native-device-info';
 import Toast from 'react-native-toast-message';
 import SpInAppUpdates from 'sp-react-native-in-app-updates';
 import AppImages from '../../../assets/images/appImages';
-import { GlobalContextType } from '../../constants/enum';
+import { ConnectionTypes, GlobalContextType } from '../../constants/enum';
 import * as C from '../../constants/index';
 import { Colors } from '../../constants/theme';
 import { sendFirebaseEvent } from '../../containers/utilities/analyticsUtility';
@@ -45,6 +45,7 @@ import {
 import { OptionsContainer } from '../Auth/Share';
 import { onShare } from '../utilities/socialShareUtility';
 import { screenTitle } from '../../constants/index';
+import useConnectionManager from '../../hooks/useConnectionManager';
 
 const { DynamicView, CText, DynamicImage } = require('../../styles');
 
@@ -109,6 +110,7 @@ export default function Options(props: {
   const inAppUpdates = new SpInAppUpdates(
     false, // isDebug
   );
+  const { connectionType } = useConnectionManager();
 
   const resolveDomain = useEns()[1];
 
@@ -275,18 +277,20 @@ export default function Options(props: {
                 />
               )}
 
-              {!isReadOnlyWallet && (
-                <OptionsContainer
-                  sentryLabel={'wallet-connect'}
-                  onPress={() => {
-                    props.navigation.navigate(C.screenTitle.WALLET_CONNECT);
-                  }}
-                  title={'Wallet Connect'}
-                  logo={AppImages.WALLET_CONNECT_LOGO}
-                />
-              )}
+              {!isReadOnlyWallet &&
+                connectionType !== ConnectionTypes.WALLET_CONNECT && (
+                  <OptionsContainer
+                    sentryLabel={'wallet-connect'}
+                    onPress={() => {
+                      props.navigation.navigate(C.screenTitle.WALLET_CONNECT);
+                    }}
+                    title={'Wallet Connect'}
+                    logo={AppImages.WALLET_CONNECT_LOGO}
+                  />
+                )}
 
-              {!isReadOnlyWallet && (
+              {!isReadOnlyWallet &&
+                connectionType !== ConnectionTypes.WALLET_CONNECT && (
                 <DynamicView
                   dynamic
                   dynamicWidth
@@ -400,9 +404,9 @@ export default function Options(props: {
                 <OptionsContainer
                   sentryLabel={'referrals'}
                   onPress={() => {
-                    props.navigation.navigate(C.screenTitle.DEBIT_CARD, {
-                      screen: C.screenTitle.SEND_INVITE_CODE_SCREEN,
-                    });
+                    props.navigation.navigate(
+                      C.screenTitle.SEND_INVITE_CODE_SCREEN,
+                    );
                   }}
                   title={t('MENU_RECOMMEND_FRIEND')}
                   logo={AppImages.REFER_OUTLINE}

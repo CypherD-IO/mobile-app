@@ -16,12 +16,12 @@ import Button from './button';
 const styles = StyleSheet.create({
   modalLayout: {
     margin: 0,
-    justifyContent: 'flex-end'
-  }
+    justifyContent: 'flex-end',
+  },
 });
 
-export default function DefaultAuthRemoveModal (props: {
-  isModalVisible: boolean
+export default function DefaultAuthRemoveModal(props: {
+  isModalVisible: boolean;
 }) {
   const { isModalVisible } = props;
   const { t } = useTranslation();
@@ -46,18 +46,33 @@ export default function DefaultAuthRemoveModal (props: {
       animationOut={'slideOutDown'}
       setModalVisible={(_val: any) => {
         onCancelPress();
-      } }>
-      <CyDView className={'bg-white flex flex-col items-center rounded-t-[20px] pt-[15px] pb-[30px]'}>
+      }}>
+      <CyDView
+        className={
+          'bg-white flex flex-col items-center rounded-t-[20px] pt-[15px] pb-[30px]'
+        }>
+        <CyDText className='text-center font-nunito text-[19px] font-bold  '>
+          {t('DEFAULT_AUTH_REMOVE_TITLE')}
+        </CyDText>
 
-        <CyDText className='text-center font-nunito text-[19px] font-bold  '>{t('DEFAULT_AUTH_REMOVE_TITLE')}</CyDText>
-
-        <CyDText className='text-center font-nunito px-[8%] mt-[20px] text-[16px] mb-[10px]  '>{t('DEFAULT_AUTH_REMOVE')}</CyDText>
+        <CyDText className='text-center font-nunito px-[8%] mt-[20px] text-[16px] mb-[10px]  '>
+          {t('DEFAULT_AUTH_REMOVE')}
+        </CyDText>
 
         <CyDView className='flex w-[90%] px-[10px] mt-[45px]'>
-          <Button style='py-[15px]' type='red' title={t('PROCEED')} onPress={() => void onProceedPress()}/>
-          <Button style='mt-[10px]' type='secondary' title={t('CANCEL')} onPress={onCancelPress}/>
+          <Button
+            style='py-[15px]'
+            type='red'
+            title={t('PROCEED')}
+            onPress={() => void onProceedPress()}
+          />
+          <Button
+            style='mt-[10px]'
+            type='secondary'
+            title={t('CANCEL')}
+            onPress={onCancelPress}
+          />
         </CyDView>
-
       </CyDView>
     </CyDModalLayout>
   );

@@ -17,6 +17,8 @@ import {
 } from 'react-native-reanimated';
 import { isIOS } from '../../../misc/checkers';
 import { PortfolioBannerHeights } from '../../../hooks/useScrollManager';
+import { ConnectionTypes } from '../../../constants/enum';
+import useConnectionManager from '../../../hooks/useConnectionManager';
 
 interface HeaderBarProps {
   navigation: any;
@@ -36,6 +38,7 @@ export const HeaderBar = ({
   renderTitleComponent,
 }: HeaderBarProps) => {
   const portfolioState = useContext<any>(PortfolioContext);
+  const { connectionType } = useConnectionManager();
   const OFFSET_TABVIEW = isIOS() ? -bannerHeight : 0;
   const opacity = useAnimatedStyle(() => {
     return {
@@ -66,21 +69,21 @@ export const HeaderBar = ({
         <CyDFastImage className={'h-[8px] w-[8px]'} source={AppImages.DOWN} />
       </CyDTouchView>
       <CyDAnimatedView style={opacity}>{renderTitleComponent}</CyDAnimatedView>
-      <CyDTouchView
-        className={'pl-[8px] rounded-[18px]'}
+      {connectionType !== ConnectionTypes.WALLET_CONNECT && <CyDTouchView
+          className={'pl-[8px] rounded-[18px]'}
         onPress={() => {
           navigation.navigate(screenTitle.QR_CODE_SCANNER, {
             navigation,
             fromPage: QRScannerScreens.WALLET_CONNECT,
             onSuccess,
-          });
+            });
         }}>
         <CyDFastImage
           source={AppImages.QR_CODE_SCANNER_BLACK}
           className={'h-[23px] w-[23px] mt-[5px]'}
           resizeMode='contain'
         />
-      </CyDTouchView>
+      </CyDTouchView>}
     </CyDView>
   );
 };

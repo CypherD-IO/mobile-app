@@ -831,3 +831,14 @@ export function getChainNameFromAddress(address: string) {
     return ChainBackendNames.NOBLE;
   }
 }
+
+export function isNativeCurrency(
+  fromChain: Chain,
+  contractAddress: string,
+): boolean {
+  const isNative = [
+    fromChain.native_token_address,
+    fromChain.secondaryAddress,
+  ].includes(contractAddress);
+  return isNative;
+}
