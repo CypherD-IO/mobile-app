@@ -178,50 +178,50 @@ export const WalletConnectV2Provider: React.FC<any> = ({ children }) => {
   const { url: initialUrl } = useInitialIntentURL();
 
   const initiateWalletConnection = async () => {
-    if (initialUrl) {
-      let uri = initialUrl?.url ?? initialUrl;
-      if (uri?.includes('cypherwallet://')) {
-        uri = uri?.replace('cypherwallet://', '');
-      }
-      if (uri?.includes('wc?uri')) {
-        uri = uri?.replace('wc?uri=', '');
-      }
-      if (
-        uri?.startsWith('wc') &&
-        (uri.includes('bridge') || uri.includes('relay-protocol'))
-      ) {
-        if (uri.includes('relay-protocol')) {
-          await web3WalletPair({ uri: decodeURIComponent(uri) });
-        } else if (uri.includes('bridge')) {
-          const connector = new WalletConnect({ uri });
-          portfolioState.dispatchPortfolio({
-            value: { walletConnectURI: uri },
-          });
-          walletConnectDispatch({
-            type: WalletConnectActions.ADD_CONNECTOR,
-            value: connector,
-          });
-        }
-      }
-    }
+    // if (initialUrl) {
+    //   let uri = initialUrl?.url ?? initialUrl;
+    //   if (uri?.includes('cypherwallet://')) {
+    //     uri = uri?.replace('cypherwallet://', '');
+    //   }
+    //   if (uri?.includes('wc?uri')) {
+    //     uri = uri?.replace('wc?uri=', '');
+    //   }
+    //   if (
+    //     uri?.startsWith('wc') &&
+    //     (uri.includes('bridge') || uri.includes('relay-protocol'))
+    //   ) {
+    //     if (uri.includes('relay-protocol')) {
+    //       await web3WalletPair({ uri: decodeURIComponent(uri) });
+    //     } else if (uri.includes('bridge')) {
+    //       const connector = new WalletConnect({ uri });
+    //       portfolioState.dispatchPortfolio({
+    //         value: { walletConnectURI: uri },
+    //       });
+    //       walletConnectDispatch({
+    //         type: WalletConnectActions.ADD_CONNECTOR,
+    //         value: connector,
+    //       });
+    //     }
+    //   }
+    // }
   };
 
-  useEffect(() => {
-    if (
-      isWeb3WalletInitialized &&
-      ethereum?.wallets[ethereum?.currentIndex]?.address
-    ) {
-      void initiateWalletConnection();
-    }
-  }, [initialUrl, isWeb3WalletInitialized, ethereum.wallets.length]);
+  // useEffect(() => {
+  //   if (
+  //     isWeb3WalletInitialized &&
+  //     ethereum?.wallets[ethereum?.currentIndex]?.address
+  //   ) {
+  //     void initiateWalletConnection();
+  //   }
+  // }, [initialUrl, isWeb3WalletInitialized, ethereum.wallets.length]);
 
   return (
-    <WalletConnectContext.Provider
-      value={{ initialized: isWeb3WalletInitialized }}>
+    // <WalletConnectContext.Provider
+    //   value={{ initialized: isWeb3WalletInitialized }}>
       <WagmiConfig config={wagmiConfig}>
         <WalletConnectListener>{children}</WalletConnectListener>
         {/* <WalletConnectModal projectId={projectId} providerMetadata={metadata} /> */}
       </WagmiConfig>
-    </WalletConnectContext.Provider>
+    // </WalletConnectContext.Provider>
   );
 };

@@ -13,7 +13,6 @@ import useAxios from '../../core/HttpRequest';
 import { GlobalContext } from '../../core/globalContext';
 import '@walletconnect/react-native-compat';
 import { createWeb3Modal, Web3Modal } from '@web3modal/wagmi-react-native';
-import { WalletConnectModal } from '@walletconnect/modal-react-native';
 import { ethers } from 'ethers';
 import axios from '../../core/Http';
 import { ConnectionTypes, GlobalContextType } from '../../constants/enum';

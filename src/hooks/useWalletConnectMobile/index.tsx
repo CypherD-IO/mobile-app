@@ -21,7 +21,7 @@ export default function useWalletConnectMobile() {
         await provider?.disconnect();
       } catch (e) {}
     }
-    void open({ view: 'Connect' });
+    void open();
   };
   const disconnectWalletConnect = async () => {
     try {
