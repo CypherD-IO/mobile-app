@@ -1,5 +1,21 @@
 import AppImages from '../../assets/images/appImages';
 import { DefiPositonTypes } from '../models/defi.interface';
+import {
+  mainnet,
+  polygon,
+  optimism,
+  arbitrum,
+  avalanche,
+  fantom,
+  bsc,
+  evmos,
+  zkSync,
+  base,
+  polygonZkEvm,
+  aurora,
+  moonbeam,
+  moonriver,
+} from 'wagmi/chains';
 export interface Chain {
   chainName: string;
   name: string;
@@ -780,3 +796,205 @@ export const deFiPositionTypes = [
     label: 'Airdrop',
   },
 ];
+
+export const OP_ETH_ADDRESS = '0xdeaddeaddeaddeaddeaddeaddeaddeaddead0000';
+export const ACCOUNT_DETAILS_INFO =
+  'https://api-evmos-ia.cosmosia.notional.ventures/cosmos/auth/v1beta1/accounts';
+export const SIMULATION_ENDPOINT =
+  'https://api-evmos-ia.cosmosia.notional.ventures/cosmos/tx/v1beta1/simulate';
+export const TRANSACTION_ENDPOINT =
+  'https://api-evmos-ia.cosmosia.notional.ventures/cosmos/tx/v1beta1/txs';
+
+export interface NetworkInterface {
+  [key: string]: any;
+}
+
+export const walletConnectChainData: Record<string, NetworkInterface> = {
+  ETH: {
+    chainId: `0x${Number(1).toString(16)}`,
+    chainName: 'Ethereum Mainnet',
+    nativeCurrency: {
+      name: 'Ether',
+      symbol: 'ETH',
+      decimals: 18,
+    },
+    rpcUrls: [
+      'https://rpc.ankr.com/eth',
+      'https://eth-rpc.gateway.pokt.network',
+    ],
+    blockExplorerUrls: ['https://etherscan.io'],
+    chainConfig: mainnet,
+  },
+  POLYGON: {
+    chainId: `0x${Number(137).toString(16)}`,
+    chainName: 'Polygon Mainnet',
+    nativeCurrency: {
+      name: 'MATIC',
+      symbol: 'MATIC',
+      decimals: 18,
+    },
+    rpcUrls: ['https://polygon-rpc.com/'],
+    blockExplorerUrls: ['https://polygonscan.com/'],
+    chainConfig: polygon,
+  },
+  BSC: {
+    chainId: `0x${Number(56).toString(16)}`,
+    chainName: 'Binance Smart Chain Mainnet',
+    nativeCurrency: {
+      name: 'Binance Chain Native Token',
+      symbol: 'BNB',
+      decimals: 18,
+    },
+    rpcUrls: [
+      'https://bsc-dataseed1.binance.org',
+      'https://bsc-dataseed2.binance.org',
+      'https://bsc-dataseed3.binance.org',
+      'https://bsc-dataseed4.binance.org',
+      'https://bsc-dataseed1.defibit.io',
+      'https://bsc-dataseed2.defibit.io',
+      'https://bsc-dataseed3.defibit.io',
+      'https://bsc-dataseed4.defibit.io',
+      'https://bsc-dataseed1.ninicoin.io',
+      'https://bsc-dataseed2.ninicoin.io',
+      'https://bsc-dataseed3.ninicoin.io',
+      'https://bsc-dataseed4.ninicoin.io',
+      'wss://bsc-ws-node.nariox.org',
+    ],
+    blockExplorerUrls: ['https://bscscan.com'],
+    chainConfig: bsc,
+  },
+  AVALANCHE: {
+    chainId: `0x${Number(43114).toString(16)}`,
+    chainName: 'Avalanche Mainnet',
+    nativeCurrency: {
+      name: 'Avalanche',
+      symbol: 'AVAX',
+      decimals: 18,
+    },
+    rpcUrls: ['https://api.avax.network/ext/bc/C/rpc'],
+    blockExplorerUrls: ['https://snowtrace.io'],
+    chainConfig: avalanche,
+  },
+  FANTOM: {
+    chainId: `0x${Number(250).toString(16)}`,
+    chainName: 'Fantom Opera',
+    nativeCurrency: {
+      name: 'Fantom',
+      symbol: 'FTM',
+      decimals: 18,
+    },
+    rpcUrls: [
+      'https://fantom-mainnet.gateway.pokt.network/v1/lb/62759259ea1b320039c9e7ac',
+    ],
+    blockExplorerUrls: ['https://ftmscan.com'],
+    chainConfig: fantom,
+  },
+  ARBITRUM: {
+    chainId: `0x${Number(42161).toString(16)}`,
+    chainName: 'Arbitrum One',
+    nativeCurrency: {
+      name: 'Arbitrum One Ether',
+      symbol: 'ETH',
+      decimals: 18,
+    },
+    rpcUrls: ['https://rpc.ankr.com/arbitrum'],
+    blockExplorerUrls: ['https://arbiscan.io/'],
+    chainConfig: arbitrum,
+  },
+  OPTIMISM: {
+    chainId: `0x${Number(10).toString(16)}`,
+    chainName: 'Optimism',
+    nativeCurrency: {
+      name: 'Optimism Ether',
+      symbol: 'ETH',
+      decimals: 18,
+    },
+    rpcUrls: ['https://mainnet.optimism.io'],
+    blockExplorerUrls: ['https://optimistic.etherscan.io/'],
+    chainConfig: optimism,
+  },
+  EVMOS: {
+    chainId: `0x${Number(9001).toString(16)}`,
+    chainName: 'Evmos',
+    nativeCurrency: {
+      name: 'Evmos',
+      symbol: 'EVMOS',
+      decimals: 18,
+    },
+    rpcUrls: ['https://eth.bd.evmos.org:8545'],
+    blockExplorerUrls: ['https://evm.evmos.org'],
+    chainConfig: evmos,
+  },
+  ZKSYNC_ERA: {
+    chainId: '0x144',
+    chainName: 'ZkSync Era',
+    nativeCurrency: {
+      name: 'Ether',
+      symbol: 'ETH',
+      decimals: 18,
+    },
+    rpcUrls: ['https://mainnet.era.zksync.io'],
+    blockExplorerUrls: ['https://explorer.zksync.io'],
+    chainConfig: zkSync,
+  },
+  BASE: {
+    chainId: '0x2105',
+    chainName: 'base',
+    nativeCurrency: {
+      name: 'Ether',
+      symbol: 'ETH',
+      decimals: 18,
+    },
+    rpcUrls: ['https://developer-access-mainnet.base.org'],
+    blockExplorerUrls: ['https://basescan.org'],
+    chainConfig: base,
+  },
+  POLYGON_ZKEVM: {
+    chainId: '0x44d',
+    chainName: 'Polygon zkEVM',
+    nativeCurrency: {
+      name: 'Ether',
+      symbol: 'ETH',
+      decimals: 18,
+    },
+    rpcUrls: ['https://zkevm-rpc.com'],
+    blockExplorerUrls: ['https://zkevm.polygonscan.com'],
+    chainConfig: polygonZkEvm,
+  },
+  AURORA: {
+    chainId: '0x4e454152',
+    chainName: 'Aurora',
+    nativeCurrency: {
+      name: 'Ether',
+      symbol: 'ETH',
+      decimals: 18,
+    },
+    rpcUrls: ['https://1rpc.io/aurora'],
+    blockExplorerUrls: ['https://explorer.aurora.dev'],
+    chainConfig: aurora,
+  },
+  MOONBEAM: {
+    chainId: '0x504',
+    chainName: 'Moonbeam',
+    nativeCurrency: {
+      name: 'Glimmer',
+      symbol: 'GLMR',
+      decimals: 18,
+    },
+    rpcUrls: ['https://rpc.ankr.com/moonbeam'],
+    blockExplorerUrls: ['https://moonbeam.moonscan.io'],
+    chainConfig: moonbeam,
+  },
+  MOONRIVER: {
+    chainId: '0x505',
+    chainName: 'Moonriver',
+    nativeCurrency: {
+      name: 'Moonriver',
+      symbol: 'MOVR',
+      decimals: 18,
+    },
+    rpcUrls: ['https://moonriver.publicnode.com'],
+    blockExplorerUrls: ['https://moonriver.moonscan.io'],
+    chainConfig: moonriver,
+  },
+};

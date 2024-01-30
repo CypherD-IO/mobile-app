@@ -21,8 +21,34 @@ import useWalletConnectEventsManager from '../../hooks/useWalletConnectV2EventsM
 import { WalletConnectActions } from '../../reducers/wallet_connect_reducer';
 import * as Sentry from '@sentry/react-native';
 import { Config } from 'react-native-config';
-import useAxios from '../../core/HttpRequest';
-import { GlobalContext } from '../../core/globalContext';
+import '@walletconnect/react-native-compat';
+import {
+  mainnet,
+  polygon,
+  optimism,
+  arbitrum,
+  avalanche,
+  fantom,
+  bsc,
+  evmos,
+  zkSync,
+  base,
+  polygonZkEvm,
+  aurora,
+  moonbeam,
+  moonriver,
+} from 'viem/chains';
+import {
+  createWeb3Modal,
+  defaultWagmiConfig,
+} from '@web3modal/wagmi-react-native';
+import { WagmiConfig } from 'wagmi';
+import WalletConnectListener from '../walletConnectListener';
+import { WalletConnectConnector } from 'wagmi/connectors/walletConnect';
+import { configureChains, createConfig, type Chain } from 'wagmi';
+import { publicProvider } from 'wagmi/providers/public';
+import { CoinbaseWagmiConnector } from '@web3modal/coinbase-react-native';
+import { walletConnectProvider } from '../../core/walletConnectProvider';
 
 const walletConnectInitialValue = {
   initialized: false,
@@ -34,11 +60,11 @@ export const WalletConnectV2Provider: React.FC<any> = ({ children }) => {
   // Step 1 - Initialize wallets and wallet connect client
   const portfolioState = useContext<any>(PortfolioContext);
   const hdWalletContext = useContext<any>(HdWalletContext);
-  const globalContext = useContext<any>(GlobalContext);
   const ethereum = hdWalletContext.state.wallet.ethereum;
   const { walletConnectDispatch } = useContext<any>(WalletConnectContext);
-  const { getWithAuth } = useAxios();
   const isInitializationInProgress = useRef<boolean>(false);
+  const projectId = String(Config.WALLET_CONNECT_PROJECTID);
+  // const { isConnected, provider, address } = useWalletConnectModal()
 
   // Step 2 - Once initialized, set up wallet connect event manager
 
@@ -50,7 +76,6 @@ export const WalletConnectV2Provider: React.FC<any> = ({ children }) => {
   // const { relayerRegionURL } = useSnapshot(SettingsStore.state)
 
   const onInitialize = useCallback(async () => {
-    const projectId = Config.WALLET_CONNECT_PROJECTID;
     if (
       ethereum.address &&
       ethereum.address !== _NO_CYPHERD_CREDENTIAL_AVAILABLE_
@@ -70,6 +95,70 @@ export const WalletConnectV2Provider: React.FC<any> = ({ children }) => {
       }
     }
   }, []);
+
+  const metadata = {
+    name: 'Cypher Wallet',
+    description: 'Cypher Wallet',
+    url: 'https://cypherwallet.io',
+    icons: ['https://avatars.githubusercontent.com/u/37784886'],
+    redirect: {
+      native: 'cypherwallet://',
+      universal: 'YOUR_APP_UNIVERSAL_LINK.com',
+    },
+  };
+
+  const chains = [
+    mainnet,
+    polygon,
+    optimism,
+    arbitrum,
+    avalanche,
+    fantom,
+    bsc,
+    evmos,
+    zkSync,
+    base,
+    polygonZkEvm,
+    aurora,
+    moonbeam,
+    moonriver,
+  ];
+
+  // const walletConnectConnector = new WalletConnectConnector({
+  //   chains,
+  //   options: { projectId, showQrModal: false, metadata },
+  // });
+
+  // const { publicClient } = configureChains(chains, [
+  //   walletConnectProvider({ projectId }),
+  //   publicProvider(),
+  // ]);
+
+  // const coinbaseConnector = new CoinbaseWagmiConnector({
+  //   chains,
+  //   options: {
+  //     redirect: 'cypherwallet://',
+  //   },
+  // });
+
+  const wagmiConfig = defaultWagmiConfig({
+    chains,
+    projectId,
+    metadata,
+  });
+
+  // const wagmiConfig = createConfig({
+  //   autoConnect: true,
+  //   connectors: [walletConnectConnector, coinbaseConnector],
+  //   publicClient,
+  // });
+
+  // 3. Create modal
+  createWeb3Modal({
+    projectId,
+    chains,
+    wagmiConfig,
+  });
 
   useEffect(() => {
     if (
@@ -129,7 +218,10 @@ export const WalletConnectV2Provider: React.FC<any> = ({ children }) => {
   return (
     <WalletConnectContext.Provider
       value={{ initialized: isWeb3WalletInitialized }}>
-      {children}
+      <WagmiConfig config={wagmiConfig}>
+        <WalletConnectListener>{children}</WalletConnectListener>
+        {/* <WalletConnectModal projectId={projectId} providerMetadata={metadata} /> */}
+      </WagmiConfig>
     </WalletConnectContext.Provider>
   );
 };

@@ -21,6 +21,8 @@ import clsx from 'clsx';
 import ChooseCountryModal from '../../components/v2/ChooseCountryModal';
 import { ICountry } from '../../models/cardApplication.model';
 import useAxios from '../../core/HttpRequest';
+import { useKeyboard } from '../../hooks/useKeyboard';
+import { Keyboard } from 'react-native';
 
 interface Props {
   navigation: any;
@@ -38,6 +40,7 @@ export default function SendInviteCode({ navigation }: Props) {
     ICountry | undefined
   >();
   const { postWithAuth } = useAxios();
+  const { keyboardHeight } = useKeyboard();
 
   useEffect(() => {
     return () => {
@@ -123,6 +126,17 @@ export default function SendInviteCode({ navigation }: Props) {
     }
   }
 
+  const handleBack = () => {
+    if (keyboardHeight) {
+      Keyboard.dismiss();
+      setTimeout(() => {
+        navigation.goBack();
+      }, 100);
+    } else {
+      navigation.goBack();
+    }
+  };
+
   return (
     <CyDImageBackground
       source={AppImages.SEND_INVITE_CODE_BG}
@@ -135,10 +149,7 @@ export default function SendInviteCode({ navigation }: Props) {
           <CyDView className='flex-row justify-center items-center w-[100%] px-[10px]'>
             <CyDTouchView
               onPress={() => {
-                navigation.reset({
-                  index: 0,
-                  routes: [{ name: C.screenTitle.DEBIT_CARD_SCREEN }],
-                });
+                handleBack();
               }}>
               <CyDImage
                 source={AppImages.BACK}

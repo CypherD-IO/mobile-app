@@ -176,6 +176,7 @@ export enum RenderViewType {
 export enum GlobalModalType {
   STATE = 'state',
   PROMPT_IMPORT_WALLET = 'promptImportWallet',
+  REMOVE_WALLET = 'removeWallet',
   WALLET_CONNECT_V2_PAIRING = 'walletConnectV2Pairing',
   WALLET_CONNECT_V2_SIGNING = 'walletConnectV2Signing',
   WALLET_CONNECT_V2_TYPED_SIGNING = 'walletConnectV2TypedSigning',
@@ -273,4 +274,11 @@ export enum AnalyticsType {
 export enum CardDetails {
   PHONE = 'phone',
   EMAIL = 'email',
+}
+
+export enum ConnectionTypes {
+  SEED_PHRASE = 'seedPhrase',
+  PRIVATE_KEY = 'privateKey',
+  WALLET_CONNECT = 'walletConnect',
+  WALLET_CONNECT_WITHOUT_SIGN = 'walletConnectWithoutSign',
 }

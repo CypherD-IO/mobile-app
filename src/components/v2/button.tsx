@@ -79,13 +79,13 @@ export default function Button({
         `rounded-[8px] py-[15px] flex flex-row items-center justify-center ${style}`,
         {
           'bg-buttonColor': ButtonType.PRIMARY === type,
-          'bg-white border-[1px] py-[15px] border-[secondaryButtonBackgroundColor]':
+          'bg-white border-[1px] py-[15px] border-greyButtonBackgroundColor':
             ButtonType.SECONDARY === type,
           'bg-white border-[1px] border-buttonColor':
             ButtonType.TERNARY === type,
           'bg-white border-[1px] border-greyButtonBackgroundColor':
             ButtonType.GREY === type,
-          'bg-red-600': ButtonType.RED === type,
+          'bg-redColor': ButtonType.RED === type,
           'bg-black': ButtonType.DARK === type,
           'bg-[#CFCFCF]': disabled,
         },
