@@ -80,12 +80,14 @@ export enum TransactionFilterTypes {
   CREDIT = 'CREDIT',
   DEBIT = 'DEBIT',
   REFUND = 'REFUND',
+  WITHDRAWAL = 'WITHDRAWAL',
 }
 
 export enum CardTransactionTypes {
   CREDIT = 'CREDIT',
   DEBIT = 'DEBIT',
   REFUND = 'REFUND',
+  WITHDRAWAL = 'WITHDRAWAL',
 }
 
 export enum CardType {

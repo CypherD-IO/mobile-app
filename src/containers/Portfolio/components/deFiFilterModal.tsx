@@ -26,6 +26,8 @@ import DeFiCheckBox from '../../../components/deFiCheckBox';
 import { deFiPositionTypes } from '../../../constants/server';
 import { sortProtocols } from '../../../core/defi';
 import RadioButtons from '../../../components/radioButtons';
+import { DEFI_FILTER_STATUSES } from '../../../constants/data';
+import { get } from 'lodash';
 
 interface DeFiFilterModalInterface {
   filters: DeFiFilter;
@@ -36,11 +38,13 @@ interface DeFiFilterModalInterface {
   navigation: any;
 }
 const FILTERS = ['Protocols', 'Positions', 'Only Active Positions'];
-const STATUSES = ['Yes', 'No'];
+
 const DeFiFilterModal = (props: DeFiFilterModalInterface) => {
   const [index, setIndex] = useState<number>(0);
+  const [currentActivePositionsOnlyValue, setCurrentActivePositionsOnlyValue] =
+    useState<string | number>(props.filters.activePositionsOnly);
   const onReset = () => {
-    props.setFilters((prev) => ({
+    props.setFilters(prev => ({
       ...prev,
       positionTypes: [],
       protocols: [],
@@ -65,16 +69,14 @@ const DeFiFilterModal = (props: DeFiFilterModalInterface) => {
       setModalVisible={props.setVisible}
       style={styles.modalLayout}
       animationIn='slideInUp'
-      animationOut='slideOutDown'
-    >
+      animationOut='slideOutDown'>
       <CyDSafeAreaView className='bg-white flex-1'>
         <CyDView className='flex flex-row justify-between items-center px-[20px] py-[10px] border-b border-sepratorColor'>
           <CyDTouchView
             onPress={() => {
               props.setVisible(false);
             }}
-            className='p-[5px]'
-          >
+            className='p-[5px]'>
             <CyDFastImage
               className='h-[16px] w-[16px]'
               source={AppImages.CLOSE}
@@ -92,24 +94,21 @@ const DeFiFilterModal = (props: DeFiFilterModalInterface) => {
         </CyDView>
         <CyDView className='h-full flex flex-row'>
           <CyDView
-            className={'border-r border-activityFilterBorderLine w-[30%]'}
-          >
+            className={'border-r border-activityFilterBorderLine w-[30%]'}>
             {FILTERS.map((filter, idx) => (
               <CyDTouchView
                 key={idx}
                 onPress={() => setIndex(idx)}
                 className={`${
                   index === idx ? 'bg-appColor' : 'bg-whiteflex'
-                } justify-center py-[20px]`}
-              >
+                } justify-center py-[20px]`}>
                 <CyDText
-                  className={'text-left pl-[12px] text-[16px] font-bold'}
-                >
+                  className={'text-left pl-[12px] text-[16px] font-bold'}>
                   {idx === 0
                     ? `${filter} (${props.filters.protocols.length})`
                     : idx === 1
-                    ? `${filter} (${props.filters.positionTypes.length})`
-                    : filter}
+                      ? `${filter} (${props.filters.positionTypes.length})`
+                      : filter}
                 </CyDText>
               </CyDTouchView>
             ))}
@@ -119,7 +118,7 @@ const DeFiFilterModal = (props: DeFiFilterModalInterface) => {
               <DeFiCheckBox
                 radioButtonsData={props.protocols}
                 onPressRadioButton={(state: string[]) => {
-                  props.setFilters((prev) => ({ ...prev, protocols: state }));
+                  props.setFilters(prev => ({ ...prev, protocols: state }));
                 }}
                 initialValues={props.filters.protocols}
               />
@@ -128,7 +127,7 @@ const DeFiFilterModal = (props: DeFiFilterModalInterface) => {
               <DeFiCheckBox
                 radioButtonsData={deFiPositionTypes}
                 onPressRadioButton={(state: DeFiPositionTypes[]) => {
-                  props.setFilters((prev) => ({
+                  props.setFilters(prev => ({
                     ...prev,
                     positionTypes: state,
                   }));
@@ -138,14 +137,18 @@ const DeFiFilterModal = (props: DeFiFilterModalInterface) => {
             )}
             {index === 2 && (
               <RadioButtons
-                radioButtonsData={STATUSES}
-                onPressRadioButton={(value: string) => {
-                  props.setFilters((prev) => ({
+                radioButtonsData={DEFI_FILTER_STATUSES}
+                onPressRadioButton={(value: number | string) => {
+                  setCurrentActivePositionsOnlyValue(value);
+                  props.setFilters(prev => ({
                     ...prev,
-                    activePositionsOnly: value,
+                    activePositionsOnly: get(DEFI_FILTER_STATUSES, [
+                      value,
+                      'value',
+                    ]),
                   }));
                 }}
-                initialValue={props.filters.activePositionsOnly}
+                currentValue={currentActivePositionsOnlyValue}
               />
             )}
           </CyDView>

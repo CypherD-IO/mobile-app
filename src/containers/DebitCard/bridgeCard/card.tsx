@@ -277,17 +277,34 @@ export default function CardScreen({
       );
     } else if (
       currentCardProvider === CardProviders.PAYCADDY &&
-      card.type === 'physical'
+      card.type === CardType.PHYSICAL
     ) {
+      if (card.status === 'upgradeAvailable' && upgradeToPhysicalAvailable) {
+        return (
+          'https://public.cypherd.io/icons/upgradeToPhysicalCardAvailableCardLayout.png?t=' +
+          currentTimestamp
+        );
+      }
       return (
         'https://public.cypherd.io/icons/masterCardLayoutPhysical.png?t=' +
         currentTimestamp
       );
     }
-    return (
-      'https://public.cypherd.io/icons/masterCardLayout.png?t=' +
-      currentTimestamp
-    );
+    if (card.type === CardType.VIRTUAL) {
+      if (
+        card.status === 'upgradeAvailable' &&
+        isUpgradeToPhysicalCardStatusShown
+      ) {
+        return (
+          'https://public.cypherd.io/icons/isUpgradeToPhysicalCardStatusShownCardLayout.png?t=' +
+          currentTimestamp
+        );
+      }
+      return (
+        'https://public.cypherd.io/icons/masterCardLayout.png?t=' +
+        currentTimestamp
+      );
+    }
   };
 
   const RenderCVVAndExpiry = ({ card }: { card: Card }) => {
@@ -483,66 +500,95 @@ export default function CardScreen({
       );
     }
 
-    if (card.type === 'physical' && card.status === 'upgradeAvailable') {
-      return (
-        <CyDAnimatedView className='mb-[10px]' style={animatedStyle}>
-          <CyDFastImage
-            className={clsx('absolute w-full h-full')}
-            source={{ uri: getCardBackgroundLayout(card) }}
-            resizeMode='stretch'
-          />
-          <CyDView className='flex flex-col items-center justify-center h-[200px] w-[300px] border-[1px] border-inputBorderColor rounded-[12px]'>
-            <CyDTouchView
-              disabled={!upgradeToPhysicalAvailable}
-              onPress={() =>
-                navigation.navigate(
-                  screenTitle.UPGRADE_TO_PHYSICAL_CARD_SCREEN,
-                  {
-                    currentCardProvider,
-                  },
-                )
-              }
-              className={clsx(
-                'flex flex-row w-[75%] justify-start items-center border border-inputBorderColor bg-privacyMessageBackgroundColor mx-[30px] rounded-[8px]',
-                { 'bg-white': upgradeToPhysicalAvailable },
-              )}>
-              <CyDView
-                className={clsx(
-                  'absolute h-full bg-toastColor rounded-[8px] my-[5px]',
-                  { 'bg-white': upgradeToPhysicalAvailable },
-                )}
-                style={{
-                  width: `${physicalCardEligibilityProgress}%`,
-                }}
-              />
-              <CyDFastImage
-                source={AppImages.UPGRADE_TO_PHYSICAL_CARD_ARROW}
-                className='h-[30px] w-[30px] mx-[8px] my-[5px]'
-              />
-              <CyDText className='font-nunito font-extrabold my-[5px]'>
-                {t<string>('UPGRADE_TO_PHYSICAL_CARD')}
-              </CyDText>
-            </CyDTouchView>
-            <CyDView className='flex flex-row my-[5px]'>
-              {!upgradeToPhysicalAvailable ? (
-                <>
-                  <CyDText className='mb-[4px]'>{`Load `}</CyDText>
-                  <CyDText className='mb-[4px] font-extrabold'>
-                    {limitDecimalPlaces(
-                      physicalCardEligibilityLimit - lifetimeLoadUSD,
-                      2,
-                    )}
-                  </CyDText>
-                  <CyDText className='mb-[4px] font-extrabold'>{` USD`}</CyDText>
-                  <CyDText className='mb-[4px]'>{` more to upgrade`}</CyDText>
-                </>
-              ) : (
-                <CyDText className='mb-[4px] font-extrabold rounded-[8px]'>{`You're now eligible for a physical card!`}</CyDText>
-              )}
+    if (card.status === 'upgradeAvailable') {
+      if (card.type === CardType.VIRTUAL) {
+        return (
+          <CyDAnimatedView className='mb-[12px]' style={animatedStyle}>
+            <CyDFastImage
+              className={clsx('absolute w-full h-full')}
+              source={{ uri: getCardBackgroundLayout(card) }}
+              resizeMode='stretch'
+            />
+            <CyDView className='flex flex-col items-center justify-center h-[200px] w-[300px] border-[1px] border-inputBorderColor rounded-[12px]'>
+              <CyDView className='flex flex-row my-[5px]'>
+                <CyDText className='bottom-[16px] text-white text-[18px] font-extrabold rounded-[8px]'>
+                  {t('UPGRADE_TO_PHYSICAL_CARD')}
+                </CyDText>
+              </CyDView>
+              <CyDView className='flex flex-row w-[75%] justify-between items-center mx-[30px]'>
+                <CyDText className='text-white text-[12px] font-semibold rounded-[8px]'>
+                  {`$${lifetimeLoadUSD}`}
+                </CyDText>
+                <CyDText className='text-white text-[18px] font-extrabold rounded-[8px]'>
+                  {`$${physicalCardEligibilityLimit}`}
+                </CyDText>
+              </CyDView>
+              <CyDView className='flex flex-row h-[8px] w-[75%] justify-start items-center border border-inputBorderColor bg-white mx-[30px] rounded-[8px]'>
+                <CyDView
+                  className={clsx(
+                    'absolute bg-toastColor h-full rounded-[8px] my-[5px]',
+                    {
+                      'bg-appColor':
+                        parseFloat(physicalCardEligibilityProgress) <= 60,
+                    },
+                    {
+                      'bg-redColor':
+                        parseFloat(physicalCardEligibilityProgress) <= 30,
+                    },
+                  )}
+                  style={{
+                    width: `${physicalCardEligibilityProgress}%`,
+                  }}
+                />
+              </CyDView>
+              <CyDView className='flex flex-row my-[5px] top-[20px]'>
+                <CyDText className='mb-[4px] text-white'>{`Load `}</CyDText>
+                <CyDText className='mb-[4px] font-extrabold text-appColor'>
+                  {limitDecimalPlaces(
+                    physicalCardEligibilityLimit - lifetimeLoadUSD,
+                    2,
+                  )}
+                </CyDText>
+                <CyDText className='mb-[4px] font-extrabold text-appColor'>{` USD`}</CyDText>
+                <CyDText className='mb-[4px] text-white'>{` more to upgrade`}</CyDText>
+              </CyDView>
             </CyDView>
-          </CyDView>
-        </CyDAnimatedView>
-      );
+          </CyDAnimatedView>
+        );
+      } else if (card.type === CardType.PHYSICAL) {
+        return (
+          <CyDAnimatedView className='mb-[12px]' style={animatedStyle}>
+            <CyDFastImage
+              className={clsx('absolute w-full h-full')}
+              source={{ uri: getCardBackgroundLayout(card) }}
+              resizeMode='stretch'
+            />
+            <CyDView className='flex flex-col items-center justify-end py-[10px] h-[200px] w-[300px] border-[1px] border-inputBorderColor rounded-[12px] shadow shadow-slate-200'>
+              <CyDTouchView
+                disabled={!upgradeToPhysicalAvailable}
+                onPress={() =>
+                  navigation.navigate(
+                    screenTitle.UPGRADE_TO_PHYSICAL_CARD_SCREEN,
+                    {
+                      currentCardProvider,
+                    },
+                  )
+                }
+                className={clsx(
+                  'flex flex-row w-[60%] justify-center items-center border border-inputBorderColor bg-white rounded-[8px]',
+                )}>
+                <CyDFastImage
+                  source={AppImages.UPGRADE_TO_PHYSICAL_CARD_ARROW}
+                  className='h-[30px] w-[30px] mx-[8px] my-[5px]'
+                />
+                <CyDText className='font-nunito font-extrabold my-[5px]'>
+                  {t<string>('UPGRADE_NOW')}
+                </CyDText>
+              </CyDTouchView>
+            </CyDView>
+          </CyDAnimatedView>
+        );
+      }
     }
 
     return (
@@ -689,14 +735,23 @@ export default function CardScreen({
 
   const cardsWithUpgrade = useMemo(() => {
     const actualCards = userCardDetails.cards.map(card => card);
-    if (isUpgradeToPhysicalCardStatusShown || upgradeToPhysicalAvailable) {
+    if (upgradeToPhysicalAvailable) {
       actualCards.unshift({
         cardId: '',
         bin: '',
         last4: '',
         network: 'pc',
         status: 'upgradeAvailable',
-        type: 'physical',
+        type: CardType.PHYSICAL,
+      });
+    } else if (isUpgradeToPhysicalCardStatusShown) {
+      actualCards.unshift({
+        cardId: '',
+        bin: '',
+        last4: '',
+        network: 'pc',
+        status: 'upgradeAvailable',
+        type: CardType.VIRTUAL,
       });
     }
     return actualCards;

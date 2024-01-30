@@ -374,7 +374,7 @@ const resources = {
         'Returned error: insufficient funds for gas * price + value',
       INSUFFICIENT_GAS: 'token to pay gas fee.',
       SENT_ON: 'SENT ON',
-      MENU_RECOMMEND_FRIEND: 'Refer a friend',
+      MENU_RECOMMEND_FRIEND: 'Send Cypher Card Invite',
       TRANSACTION_FAILED_REASON_NA:
         'Failed reason not available for this transaction',
       FUND_WALLET_ACCESS_BRIDGE: 'Fund your wallet to access bridge',
@@ -427,7 +427,7 @@ const resources = {
       UNRECOGNIZED_QR_CODE: 'Unrecognized QR Code',
       UNRECOGNIZED_QR_CODE_DESCRIPTION:
         'Sorry, this QR code is not associated with an account address or a contract address',
-      FIRST_NAME_REQUIRED: 'First Name is required',
+      FULL_NAME_REQUIRED: 'Full Name is required',
       LAST_NAME_REQUIRED: 'Last Name is required',
       EMAIL_REQUIRED: 'Email is required',
       PHONE_NUMBER_REQUIRED: 'Phone Number is required',
@@ -439,6 +439,8 @@ const resources = {
       SSN_REQUIRED: 'SSN is required',
       PASSPORT_NUMBER_REQUIRED: 'Passport number is required',
       INVALID_EMAIL: 'Please provide a valid Email ID',
+      INVALID_PHONE_NUMBER:
+        'Phone number should contain only the digits 0-9. Please provide a valid Phone Number',
       INVALID_SSN: 'Please provide a valid SSN',
       INVALID_PASSPORT_NUMBER: 'Please provide a valid passport number',
       SOMETHING_WENT_WRONG: 'Something went wrong !',
@@ -882,6 +884,7 @@ const resources = {
       CARD_TXNS_EXPORTED_TEXT:
         'Your transactions will be exported as a CSV (.csv) file and sent shortly to \n',
       UPGRADE_TO_PHYSICAL_CARD: 'Upgrade to physical card',
+      UPGRADE_NOW: 'Upgrade now',
       ADD_SHIPPING_DETAILS_SUBTEXT:
         'Cypher card will be shipped to this address. Note that the shipping address cannot be a PO Box.',
       SEND_OTP_TEXT:
@@ -925,6 +928,27 @@ const resources = {
       INVALID_EMAIL_NAME_ERROR:
         'Make sure you entered a valid country, email and name',
       INVITE_SEND_ERROR: 'Unable to send invite code',
+      FULL_NAME_DISCLAIMER:
+        '** Enter your first name, middle name (if applicable), and last name as they appear in your KYC document separated by spaces',
+      PLUS_LINK_ANOTHER_WALLET: '+ Link Another Wallet',
+      LINKED_WALLETS: 'Linked Wallets',
+      ADDRESS_UPPERCASE: 'ADDRESS',
+      LINK_ADDRESS_PLACEHOLDER: 'Enter the wallet address to be linked',
+      WALLET_NAME_UPPERCASE: 'WALLET NAME',
+      WALLET_NAME_PLACEHOLDER: 'Enter a name for the wallet address',
+      WALLET_LINKED_SUCCESSFULLY:
+        'New wallet linked to your Cypher Card successfully',
+      WALLET_LINK_UNSUCCESSFUL:
+        'Unable to link wallet to the card. Contact Cypher Support',
+      WALLET_DELETED_SUCCESSFULLY:
+        'Wallet removed from your Cypher Card successfully',
+      EMPTY_LINKED_WALLET: 'No Additional Wallets linked to your Cypher Card',
+      CYPHER_CARD_INVITE_DISCLAIMER:
+        '**Our referral program is a way to share Cypher Card with friends, without extra rewards. We value your support in expanding our community.',
+      PEP_QUESTION: 'Are you a Politically Exposed Person ?',
+      PEP_EXPLAINATION:
+        'A Politically Exposed Person (PEP) is someone who holds, or has held, a high-profile public position, or is closely related to such a person. This category often includes government officials, senior executives in state-owned enterprises, political party leaders, and high-ranking members of the judiciary or military, along with their family members and close associates.',
+      PEP_REQUIRED: 'Choose any one option',
     },
   },
 };

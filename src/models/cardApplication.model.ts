@@ -1,8 +1,7 @@
 export interface CardApplication {
   country: string;
   dialCode: string;
-  firstName: string;
-  lastName: string;
+  fullName: string;
   phoneNumber: string;
   email: string;
   flag: string;
@@ -13,6 +12,7 @@ export interface CardApplication {
   postalCode: string;
   dateOfBirth: string;
   idNumber: string;
+  pep: boolean | undefined;
 }
 
 export interface ICountry {

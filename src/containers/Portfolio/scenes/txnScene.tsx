@@ -13,7 +13,10 @@ import {
   formatAmount,
   getMaskedAddress,
 } from '../../../core/util';
-import { APPLICATION_ADDRESS_NAME_MAP } from '../../../constants/data';
+import {
+  APPLICATION_ADDRESS_NAME_MAP,
+  TXN_FILTER_STATUSES,
+} from '../../../constants/data';
 import moment from 'moment';
 import { useIsFocused } from '@react-navigation/native';
 import Loading from '../../../components/v2/loading';
@@ -30,7 +33,6 @@ import { hostWorker } from '../../../global';
 import { AnimatedTabView } from '../animatedComponents';
 import { SharedValue } from 'react-native-reanimated';
 import TxnFilterModal, {
-  STATUSES,
   TRANSACTION_TYPES,
 } from '../components/TxnFilterModal';
 import { TransactionType } from '../../../constants/enum';
@@ -261,11 +263,11 @@ const TxnScene = ({
   const portfolioContext = useContext(PortfolioContext);
   const { address: ethereumAddress }: { address: string } =
     hdWalletContext.state.wallet.ethereum;
-  const getTransactionsUrl = `${ARCH_HOST}/v1/txn/transactions/${ethereumAddress}?descOrder=true&blockchain=`;
+  const getTransactionsUrl = `${ARCH_HOST}/v1/txn/transactions/${ethereumAddress}?descOrder=true`;
 
   const [filter, setFilter] = useState({
     types: TRANSACTION_TYPES,
-    statuses: STATUSES,
+    status: TXN_FILTER_STATUSES[2].id,
   });
   const [transactions, setTransactions] = useState([]);
   const [showTransactionInfo, setShowTransactionInfo] = useState(false);
@@ -344,6 +346,16 @@ const TxnScene = ({
     }
   }, [isLoading, filter, portfolioContext.statePortfolio.selectedChain]);
 
+  const getIsIncludedStatus = (status: string) => {
+    if (filter.status === TXN_FILTER_STATUSES[2].id) {
+      return (
+        status === TXN_FILTER_STATUSES[1].value ||
+        status === TXN_FILTER_STATUSES[0].value
+      );
+    }
+    return status === TXN_FILTER_STATUSES[filter.status].value;
+  };
+
   const spliceTransactions = () => {
     if (transactions.length === 0) {
       return [];
@@ -359,9 +371,7 @@ const TxnScene = ({
           ChainConfigMapping[chain];
       const isIncludedType = filter.types.includes(activity.type);
       const isOtherType = !TRANSACTION_TYPES.includes(activity.type);
-      const isIncludedStatus =
-        filter.statuses.length === 0 ||
-        filter.statuses.includes(activity.status);
+      const isIncludedStatus = getIsIncludedStatus(activity.status);
 
       return (
         (isIncludedType ||

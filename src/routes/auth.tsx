@@ -90,6 +90,9 @@ import ShippingDetailsOTPScreen from '../containers/DebitCard/CardV2/ShippingDet
 import CardSignupConfirmation from '../containers/DebitCard/cardSignupConfirmation';
 import UpdateCardContactDetails from '../containers/DebitCard/bridgeCard/updateContactDetails';
 import SendInviteCode from '../containers/DebitCard/sendInviteCode';
+import { LinkedWallets } from '../containers/DebitCard/bridgeCard/linkedWallets';
+import LinkAnotherWallet from '../containers/DebitCard/bridgeCard/linkAnotherWallet';
+import LinkWalletAuth from '../containers/DebitCard/bridgeCard/linkWalletAuth';
 
 const { DynamicImage, DynamicButton } = require('../styles');
 
@@ -962,6 +965,51 @@ export function DebitCardStackScreen({ navigation }) {
         name={screenTitle.CARD_SET_PIN_SCREEN}
         component={SetPinScreen}
         options={({ navigation }) => ({
+          headerTransparent: false,
+          headerShadowVisible: false,
+          title: '',
+          headerTitleAlign: 'center',
+          headerTitleStyle: portfolioStackScreenHeaderTitleStyles,
+          headerTintColor: Colors.primaryTextColor,
+          headerBackTitleVisible: false,
+          headerLeft: props => defaultHeaderLeft(navigation),
+        })}
+      />
+
+      <FundCardStack.Screen
+        name={screenTitle.LINK_ANOTHER_WALLET}
+        component={LinkAnotherWallet}
+        options={({ navigation }) => ({
+          headerTransparent: false,
+          headerShadowVisible: false,
+          title: 'Link Another Wallet',
+          headerTitleAlign: 'center',
+          headerTitleStyle: portfolioStackScreenHeaderTitleStyles,
+          headerTintColor: Colors.primaryTextColor,
+          headerBackTitleVisible: false,
+          headerLeft: props => defaultHeaderLeft(navigation),
+        })}
+      />
+
+      <FundCardStack.Screen
+        name={screenTitle.LINKED_WALLETS}
+        component={LinkedWallets}
+        options={({ navigation }) => ({
+          headerTransparent: false,
+          headerShadowVisible: false,
+          title: 'Linked Wallets',
+          headerTitleAlign: 'center',
+          headerTitleStyle: portfolioStackScreenHeaderTitleStyles,
+          headerTintColor: Colors.primaryTextColor,
+          headerBackTitleVisible: false,
+          headerLeft: props => defaultHeaderLeft(navigation),
+        })}
+      />
+
+      <FundCardStack.Screen
+        name={screenTitle.LINK_WALLET_AUTH}
+        component={LinkWalletAuth}
+        options={({ navigation, route }) => ({
           headerTransparent: false,
           headerShadowVisible: false,
           title: '',

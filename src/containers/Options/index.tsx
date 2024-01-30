@@ -86,7 +86,7 @@ export default function Options(props: {
   navigation: {
     goBack: () => void;
     popToTop: () => void;
-    navigate: (arg0: string) => void;
+    navigate: (arg0: string, arg1: any) => void;
   };
 }) {
   const { t } = useTranslation();
@@ -385,11 +385,24 @@ export default function Options(props: {
                 bGC={Colors.portfolioBorderColor}
               />
 
-              {!isReadOnlyWallet && (
+              {/* {!isReadOnlyWallet && (
                 <OptionsContainer
                   sentryLabel={'referrals'}
                   onPress={() => {
                     referToFriend();
+                  }}
+                  title={t('MENU_RECOMMEND_FRIEND')}
+                  logo={AppImages.REFER_OUTLINE}
+                />
+              )} */}
+
+              {!isReadOnlyWallet && (
+                <OptionsContainer
+                  sentryLabel={'referrals'}
+                  onPress={() => {
+                    props.navigation.navigate(C.screenTitle.DEBIT_CARD, {
+                      screen: C.screenTitle.SEND_INVITE_CODE_SCREEN,
+                    });
                   }}
                   title={t('MENU_RECOMMEND_FRIEND')}
                   logo={AppImages.REFER_OUTLINE}

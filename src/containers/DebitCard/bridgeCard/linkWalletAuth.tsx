@@ -14,17 +14,14 @@ import LottieView from 'lottie-react-native';
 import Loading from '../../../components/v2/loading';
 import { StyleSheet } from 'react-native';
 import useAxios from '../../../core/HttpRequest';
-import { CardProviders } from '../../../constants/enum';
+import { useIsFocused } from '@react-navigation/native';
 
-export default function CardRevealAuthScreen(props: {
+export default function LinkWalletAuth(props: {
   navigation: any;
   route: {
     params: {
-      onSuccess: (data: any, provider: CardProviders) => {};
-      currentCardProvider: CardProviders;
-      card: { cardId: string };
-      triggerOTPParam?: string;
-      verifyOTPPayload?: any;
+      onSuccess: () => void;
+      linkedWalletToDelete: string;
     };
   };
 }) {
@@ -33,30 +30,30 @@ export default function CardRevealAuthScreen(props: {
   const [sendingOTP, setSendingOTP] = useState<boolean>(false);
   const [verifyingOTP, setVerifyingOTP] = useState<boolean>(false);
   const { navigation, route } = props;
-  const { currentCardProvider, card, verifyOTPPayload } = route.params;
-  const triggerOTPParam = route.params.triggerOTPParam ?? 'show-token';
+  const { linkedWalletToDelete } = route.params;
   const onSuccess = route.params.onSuccess;
   const resendOtpTime = 30;
   const [resendInterval, setResendInterval] = useState(0);
   const [timer, setTimer] = useState<NodeJS.Timer>();
-  const { postWithAuth } = useAxios();
+  const { postWithAuth, deleteWithAuth } = useAxios();
+  const isFocused = useIsFocused();
 
   useEffect(() => {
     void triggerOTP();
-  }, []);
+  }, [isFocused]);
 
   useEffect(() => {
     if (resendInterval === 0) {
       clearInterval(timer);
     }
+    return () => {
+      clearInterval(timer);
+    };
   }, [resendInterval]);
 
   const triggerOTP = async () => {
-    const triggerOTPUrl = `/v1/cards/${currentCardProvider}/card/${
-      card.cardId
-    }/trigger/${
-      triggerOTPParam === 'verify/show-token' ? 'show-token' : triggerOTPParam
-    }`;
+    const triggerOTPUrl = '/v1/authentication/profile/trigger/update-child';
+
     const response = await postWithAuth(triggerOTPUrl, {});
 
     if (!response.isError) {
@@ -95,28 +92,15 @@ export default function CardRevealAuthScreen(props: {
   };
 
   const verifyOTP = async (num: number) => {
-    const OTPVerificationUrl = `/v1/cards/${currentCardProvider}/card/${card?.cardId}/${triggerOTPParam}`;
     setVerifyingOTP(true);
-    const payload = {
-      otp: +num,
-      ...(verifyOTPPayload || {}),
-    };
-    try {
-      const response = await postWithAuth(OTPVerificationUrl, payload);
-      if (!response.isError) {
-        setVerifyingOTP(false);
-        onSuccess(response.data, currentCardProvider);
-        navigation.goBack();
-      } else {
-        showModal('state', {
-          type: 'error',
-          title: t('VERIFICATION_FAILED'),
-          description: t('INVALID_OTP'),
-          onSuccess: () => onModalHide(),
-          onFailure: () => onModalHide(),
-        });
-      }
-    } catch (e: any) {
+    const response = await deleteWithAuth(
+      `/v1/authentication/profile/child/${linkedWalletToDelete.toLowerCase()}?otp=${num}`,
+    );
+    if (!response.isError) {
+      setVerifyingOTP(false);
+      onSuccess();
+      navigation.goBack();
+    } else {
       showModal('state', {
         type: 'error',
         title: t('VERIFICATION_FAILED'),
@@ -124,7 +108,6 @@ export default function CardRevealAuthScreen(props: {
         onSuccess: () => onModalHide(),
         onFailure: () => onModalHide(),
       });
-      Sentry.captureException(e);
     }
   };
 

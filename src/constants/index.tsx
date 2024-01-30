@@ -108,6 +108,9 @@ export const screenTitle = {
   CARD_SIGNUP_CONFIRMATION: 'CardSignupConfirmation',
   CARD_UPDATE_CONTACT_DETAILS_SCREEN: 'updateCardContctDetailsScreen',
   SEND_INVITE_CODE_SCREEN: 'sendInviteCodeScreen',
+  LINK_ANOTHER_WALLET: 'LinkAnotherWallet',
+  LINKED_WALLETS: 'LinkedWallets',
+  LINK_WALLET_AUTH: 'LinkWalletAuth',
 };
 
 export const fontsName = {
