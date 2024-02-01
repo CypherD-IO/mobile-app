@@ -1,4 +1,3 @@
-import WalletConnect from '@walletconnect/client';
 import React, {
   createContext,
   useCallback,
@@ -154,11 +153,11 @@ export const WalletConnectV2Provider: React.FC<any> = ({ children }) => {
   // });
 
   // 3. Create modal
-  createWeb3Modal({
-    projectId,
-    chains,
-    wagmiConfig,
-  });
+  // createWeb3Modal({
+  //   projectId,
+  //   chains,
+  //   wagmiConfig,
+  // });
 
   useEffect(() => {
     if (
@@ -192,15 +191,6 @@ export const WalletConnectV2Provider: React.FC<any> = ({ children }) => {
       ) {
         if (uri.includes('relay-protocol')) {
           await web3WalletPair({ uri: decodeURIComponent(uri) });
-        } else if (uri.includes('bridge')) {
-          const connector = new WalletConnect({ uri });
-          portfolioState.dispatchPortfolio({
-            value: { walletConnectURI: uri },
-          });
-          walletConnectDispatch({
-            type: WalletConnectActions.ADD_CONNECTOR,
-            value: connector,
-          });
         }
       }
     }
@@ -218,10 +208,11 @@ export const WalletConnectV2Provider: React.FC<any> = ({ children }) => {
   return (
     <WalletConnectContext.Provider
       value={{ initialized: isWeb3WalletInitialized }}>
-      <WagmiConfig config={wagmiConfig}>
-        <WalletConnectListener>{children}</WalletConnectListener>
-        {/* <WalletConnectModal projectId={projectId} providerMetadata={metadata} /> */}
-      </WagmiConfig>
+      {/* <WagmiConfig config={wagmiConfig}> */}
+      {children}
+      {/* <WalletConnectListener>{children}</WalletConnectListener> */}
+      {/* <WalletConnectModal projectId={projectId} providerMetadata={metadata} /> */}
+      {/* </WagmiConfig> */}
     </WalletConnectContext.Provider>
   );
 };

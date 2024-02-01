@@ -6,7 +6,7 @@ import { StyleSheet } from 'react-native';
 import { SignClientTypes, SessionTypes } from '@walletconnect/types';
 import CyDModalLayout from '../modal';
 import { web3wallet } from '../../../core/walletConnectV2Utils';
-import { getSdkError } from '@walletconnect/utils';
+import { buildApprovedNamespaces, getSdkError } from '@walletconnect/utils';
 import { t } from 'i18next';
 import { ButtonType } from '../../../constants/enum';
 import {
@@ -22,7 +22,7 @@ import {
 } from '../../../reducers/wallet_connect_reducer';
 import { HdWalletContext } from '../../../core/util';
 import { EIP155_CHAIN_IDS } from '../../../constants/EIP155Data';
-import { has } from 'lodash';
+import { has, isEmpty } from 'lodash';
 
 interface PairingModalProps {
   currentProposal:
@@ -47,11 +47,11 @@ export default function PairingModal({
   const { wallet } = hdWalletContext.state;
   const { address: cosmosAddress } = wallet?.cosmos;
   const { params } = currentProposal;
+  console.log('params:', params);
   const { proposer, requiredNamespaces, optionalNamespaces } = params;
   const { metadata } = proposer;
   const { eip155 } = requiredNamespaces;
   const { name, url, icons } = metadata;
-  const { methods } = eip155;
   const icon = icons[0];
   const message =
     'Requesting permission to view addresses of your accounts and approval for transactions';
@@ -83,7 +83,7 @@ export default function PairingModal({
         topic: currentProposal?.params.pairingTopic,
         name,
         url,
-        methods,
+        methods: eip155?.methods ?? optionalNamespaces?.eip155?.methods,
         icon,
         version: 'v2',
         sessionTopic,
@@ -107,52 +107,106 @@ export default function PairingModal({
     try {
       setAcceptingRequest(true);
       const { id, params } = currentProposal;
+      console.log('params:', params);
       const { requiredNamespaces, relays } = params;
       if (currentProposal) {
         const namespaces: SessionTypes.Namespaces = {};
-        Object.keys(requiredNamespaces).forEach(key => {
-          const accounts: string[] = [];
-          requiredNamespaces[key].chains.map((chain: string) => {
-            if (key === 'eip155') {
-              [currentETHAddress].map(acc => accounts.push(`${chain}:${acc}`));
-            } else if (key === 'cosmos' && cosmosAddress) {
-              [cosmosAddress].map(acc => accounts.push(`${chain}:${acc}`));
-            }
-          });
-
-          if (optionalNamespaces && has(optionalNamespaces, key)) {
-            optionalNamespaces[key].chains.map((chain: string) => {
+        const namespaceKeys = !isEmpty(requiredNamespaces)
+          ? Object.keys(requiredNamespaces)
+          : Object.keys(optionalNamespaces);
+        const accounts: string[] = [];
+        const eip155Chains: string[] = [];
+        namespaceKeys.forEach(key => {
+          if (requiredNamespaces && has(requiredNamespaces, key)) {
+            requiredNamespaces[key].chains.map((chain: string) => {
               if (key === 'eip155') {
-                [currentETHAddress].map(acc =>
-                  accounts.push(`${chain}:${acc}`),
-                );
+                [currentETHAddress].map(acc => {
+                  eip155Chains.push(chain);
+                  accounts.push(`${chain}:${acc}`);
+                });
               } else if (key === 'cosmos' && cosmosAddress) {
                 [cosmosAddress].map(acc => accounts.push(`${chain}:${acc}`));
               }
             });
           }
 
-          namespaces[key] = {
-            chains: EIP155_CHAIN_IDS,
-            accounts,
-            methods: [
+          console.log('accounts required:', accounts);
+
+          if (optionalNamespaces && has(optionalNamespaces, key)) {
+            optionalNamespaces[key].chains.map((chain: string) => {
+              if (key === 'eip155') {
+                [currentETHAddress].map(acc => {
+                  eip155Chains.push(chain);
+                  accounts.push(`${chain}:${acc}`);
+                });
+              } else if (key === 'cosmos' && cosmosAddress) {
+                [cosmosAddress].map(acc => accounts.push(`${chain}:${acc}`));
+              }
+            });
+          }
+          // for (const chain of EIP155_CHAIN_IDS) {
+          //   [currentETHAddress].map(acc => accounts.push(`${chain}:${acc}`));
+          // }
+
+          console.log('accounts optional:', accounts);
+          let namespaceMethods: any = [];
+          let namespaceEvents: any = [];
+
+          if (requiredNamespaces[key]?.methods) {
+            namespaceMethods = namespaceMethods.concat(
               ...requiredNamespaces[key].methods,
-              ...(has(optionalNamespaces, key)
-                ? optionalNamespaces[key]?.methods
-                : []),
-            ],
-            events: [
+            );
+          }
+          if (optionalNamespaces[key]?.methods) {
+            namespaceMethods = namespaceMethods.concat(
+              ...optionalNamespaces[key].methods,
+            );
+          }
+          if (requiredNamespaces[key]?.events) {
+            namespaceEvents = namespaceEvents.concat(
               ...requiredNamespaces[key].events,
-              ...(has(optionalNamespaces, key)
-                ? optionalNamespaces[key]?.events
-                : []),
-            ],
+            );
+          }
+          if (optionalNamespaces[key]?.events) {
+            namespaceEvents = namespaceEvents.concat(
+              ...optionalNamespaces[key].events,
+            );
+          }
+
+          console.log(
+            '🚀 ~ handleAccept ~ namespaceMethods:',
+            namespaceMethods,
+          );
+
+          namespaces[key] = {
+            chains: eip155Chains,
+            accounts,
+            methods: namespaceMethods,
+            events: namespaceEvents,
           };
         });
 
+        // const approvedNamespaces = buildApprovedNamespaces({
+        //   proposal: params,
+        //   supportedNamespaces: {
+        //     eip155: {
+        //       chains: eip155Chains,
+        //       methods: ['eth_sendTransaction', 'personal_sign'],
+        //       events: ['accountsChanged', 'chainChanged'],
+        //       accounts,
+        //     },
+        //   },
+        // });
+
+        console.log('namespaces:', namespaces);
+
+        // console.log(
+        //   '🚀 ~ handleAccept ~ approvedNamespaces:',
+        //   approvedNamespaces,
+        // );
+
         await web3wallet?.approveSession({
           id,
-          relayProtocol: relays[0].protocol,
           namespaces,
         });
         setAcceptingRequest(false);
@@ -160,6 +214,7 @@ export default function PairingModal({
         hideModal();
       }
     } catch (e) {
+      console.log('error:', e);
       walletConnectDispatch({
         type: WalletConnectActions.WALLET_CONNECT_TRIGGER_REFRESH,
       });

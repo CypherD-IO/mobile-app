@@ -31,8 +31,8 @@ import { useGlobalModalContext } from '../../components/v2/GlobalModal';
 export default function useConnectionManager() {
   const ARCH_HOST: string = hostWorker.getHost('ARCH_HOST');
   const { t } = useTranslation();
-  const { openWalletConnectModal, disconnectWalletConnect } =
-    useWalletConnectMobile();
+  // const { openWalletConnectModal, disconnectWalletConnect } =
+  //   useWalletConnectMobile();
   const hdWalletContext = useContext<any>(HdWalletContext);
   const activityContext = useContext<any>(ActivityContext);
   const portfolioContext = useContext<any>(PortfolioContext);
@@ -54,7 +54,7 @@ export default function useConnectionManager() {
 
   const deletAndResetReducers = async () => {
     if (connectionType === ConnectionTypes.WALLET_CONNECT) {
-      await disconnectWalletConnect();
+      // await disconnectWalletConnect();
     } else {
       await removeCredentialsFromKeychain();
     }
@@ -146,8 +146,8 @@ export default function useConnectionManager() {
 
   return {
     connectionType,
-    openWalletConnectModal,
-    disconnectWalletConnect,
+    // openWalletConnectModal,
+    // disconnectWalletConnect,
     deleteWallet,
   };
 }
