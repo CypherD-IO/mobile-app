@@ -985,6 +985,8 @@ const resources = {
         'Unable to change Mobile Notification status. Please try again later!',
       FCM_NOTIFICATION: 'Mobile Notification',
       WARNING: 'WARNING',
+      LOCK_CARD: 'Lock Card',
+      UNLOCK_CARD: 'Unlock Card',
     },
   },
 };
