@@ -26,12 +26,13 @@ import { Keyboard } from 'react-native';
 
 interface Props {
   navigation: any;
+  route: { params: { fromOptionsStack?: boolean } };
 }
 
-export default function SendInviteCode({ navigation }: Props) {
+export default function SendInviteCode({ route, navigation }: Props) {
   const { showModal, hideModal } = useGlobalModalContext();
+  const { fromOptionsStack } = route.params;
   const { t } = useTranslation();
-
   const [joiningWaitlist, setJoiningWaitlist] = useState<boolean>(false);
   const [userEmail, setUserEmail] = useState<string>('');
   const [name, setName] = useState<string>('');
@@ -41,15 +42,6 @@ export default function SendInviteCode({ navigation }: Props) {
   >();
   const { postWithAuth } = useAxios();
   const { keyboardHeight } = useKeyboard();
-
-  useEffect(() => {
-    return () => {
-      navigation.reset({
-        index: 0,
-        routes: [{ name: C.screenTitle.DEBIT_CARD_SCREEN }],
-      });
-    };
-  }, []);
 
   async function joinWaitlist() {
     if (
@@ -125,15 +117,28 @@ export default function SendInviteCode({ navigation }: Props) {
       });
     }
   }
+  const resetNavigation = () => {
+    if (!fromOptionsStack) {
+      navigation.reset({
+        index: 0,
+        routes: [{ name: C.screenTitle.DEBIT_CARD_SCREEN }],
+      });
+    } else {
+      navigation.reset({
+        index: 0,
+        routes: [{ name: C.screenTitle.OPTIONS_SCREEN }],
+      });
+    }
+  };
 
   const handleBack = () => {
     if (keyboardHeight) {
       Keyboard.dismiss();
       setTimeout(() => {
-        navigation.goBack();
+        resetNavigation();
       }, 100);
     } else {
-      navigation.goBack();
+      resetNavigation();
     }
   };
 
