@@ -43,7 +43,7 @@ export default function BridgeCardOptionsScreen(props: {
   const { showModal, hideModal } = useGlobalModalContext();
   const { patchWithAuth } = useAxios();
   const [cardUpdateToStatus, setCardUpdateToStatus] = useState(
-    card.status === CardStatus.ACTIVE ? 'block' : 'unblock',
+    card.status === CardStatus.ACTIVE ? 'lock' : 'unlock',
   );
 
   const onCardStatusChange = async (blockCard: boolean) => {
@@ -62,13 +62,13 @@ export default function BridgeCardOptionsScreen(props: {
           type: 'success',
           title: t('CHANGE_CARD_STATUS_SUCCESS'),
           description: `Successfully ${
-            blockCard ? 'blocked' : 'unblocked'
+            blockCard ? 'locked' : 'unlocked'
           } your card!`,
           onSuccess: hideModal,
           onFailure: hideModal,
         });
         setIsCardBlocked(blockCard);
-        setCardUpdateToStatus(blockCard ? 'unblock' : 'block');
+        setCardUpdateToStatus(blockCard ? 'unlock' : 'lock');
       } else {
         showModal('state', {
           type: 'error',
@@ -105,7 +105,11 @@ export default function BridgeCardOptionsScreen(props: {
     showModal('state', {
       type: 'warning',
       title: `${t('CARD_STATUS_UPDATE')}`,
-      description: `Are you sure you want to ${status} your card?`,
+      description:
+        `Are you sure you want to ${status} your card?` +
+        (blockCard
+          ? 'This is just a temporary lock. You can unlock it anytime'
+          : ''),
       onSuccess: () => {
         void onCardStatusChange(blockCard);
       },
@@ -121,7 +125,7 @@ export default function BridgeCardOptionsScreen(props: {
       <CyDView className='flex flex-row justify-between align-center mx-[20px] pb-[15px] border-b-[1px] border-sepratorColor'>
         <CyDView>
           <CyDText className='text-[16px] font-bold'>
-            {t<string>('CARD_STATUS')}
+            {isCardBlocked ? t<string>('UNLOCK_CARD') : t<string>('LOCK_CARD')}
           </CyDText>
         </CyDView>
         {isStatusLoading ? (
