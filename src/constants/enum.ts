@@ -282,3 +282,16 @@ export enum ConnectionTypes {
   WALLET_CONNECT = 'walletConnect',
   WALLET_CONNECT_WITHOUT_SIGN = 'walletConnectWithoutSign',
 }
+
+export enum CARD_ALERT_TYPES {
+  WEEKLY_REMINDER_LIMITED = 'weeklyReminderLimited',
+  CARD_TRANSACTION_SMS = 'cardTransactionSms',
+  CARD_TRANSACTION_EMAIL = 'cardTransactionEmail',
+  CARD_TRANSACTION_FCM = 'cardTransactionFcm',
+}
+
+export enum CARD_NOTIFICATION_TYPES {
+  EMAIL = 'email',
+  SMS = 'sms',
+  FCM = 'fcm',
+}

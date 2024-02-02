@@ -957,6 +957,34 @@ const resources = {
       BROWSER_WALLET_CONNECT_ERROR:
         'Unable to connect when connected via wallet coonect. Import wallet with seed phrase to connect to a dApp from browser.',
       CONNECT_A_WALLET: 'Connect A Wallet',
+      CARD_NOTIFICATION_SETTINGS: 'Card Notification Settings',
+      TOGGLE_EMAIL_NOTIFICATION_SUCCESS:
+        'Email Notification Status Update Success',
+      EMAIL_NOTIFICATION_TURNED_ON:
+        'Email Notifications Turned On Successfully',
+      EMAIL_NOTIFICATION_TURNED_OFF:
+        'Email Notifications Turned Off Successfully',
+      ERROR_IN_TOGGLE_EMAIL: 'Email Notification Status Update Failed',
+      TOGGLE_EMAIL_NOTIFICATION_FAIL:
+        'Unable to change Email Notification status. Please try again later!',
+      EMAIL_NOTIFICATION: 'Email Notification',
+      TOGGLE_SMS_NOTIFICATION_SUCCESS: 'Sms Notification Status Update Success',
+      SMS_NOTIFICATION_TURNED_ON: 'Sms Notifications Turned On Successfully',
+      SMS_NOTIFICATION_TURNED_OFF: 'Sms Notifications Turned Off Successfully',
+      ERROR_IN_TOGGLE_SMS: 'Sms Notification Status Update Failed',
+      TOGGLE_SMS_NOTIFICATION_FAIL:
+        'Unable to change Sms Notification status. Please try again later!',
+      SMS_NOTIFICATION: 'Sms Notification',
+      TOGGLE_FCM_NOTIFICATION_SUCCESS:
+        'Mobile Notification Status Update Success',
+      FCM_NOTIFICATION_TURNED_ON: 'Mobile Notifications Turned On Successfully',
+      FCM_NOTIFICATION_TURNED_OFF:
+        'Mobile Notifications Turned Off Successfully',
+      ERROR_IN_TOGGLE_FCM: 'Mobile Notification Status Update Failed',
+      TOGGLE_FCM_NOTIFICATION_FAIL:
+        'Unable to change Mobile Notification status. Please try again later!',
+      FCM_NOTIFICATION: 'Mobile Notification',
+      WARNING: 'WARNING',
     },
   },
 };

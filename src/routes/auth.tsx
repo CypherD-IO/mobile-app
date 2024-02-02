@@ -94,6 +94,7 @@ import { LinkedWallets } from '../containers/DebitCard/bridgeCard/linkedWallets'
 import LinkAnotherWallet from '../containers/DebitCard/bridgeCard/linkAnotherWallet';
 import LinkWalletAuth from '../containers/DebitCard/bridgeCard/linkWalletAuth';
 import ImportWalletOptions from '../containers/Options/importWalletOptions';
+import CardNotificationSettings from '../containers/DebitCard/bridgeCard/cardNotificationSettings';
 
 const { DynamicImage, DynamicButton } = require('../styles');
 
@@ -1014,6 +1015,21 @@ export function DebitCardStackScreen({ navigation }) {
           headerTransparent: false,
           headerShadowVisible: false,
           title: '',
+          headerTitleAlign: 'center',
+          headerTitleStyle: portfolioStackScreenHeaderTitleStyles,
+          headerTintColor: Colors.primaryTextColor,
+          headerBackTitleVisible: false,
+          headerLeft: props => defaultHeaderLeft(navigation),
+        })}
+      />
+
+      <FundCardStack.Screen
+        name={screenTitle.CARD_NOTIFICATION_SETTINGS}
+        component={CardNotificationSettings}
+        options={({ navigation, route }) => ({
+          headerTransparent: false,
+          headerShadowVisible: false,
+          title: 'Notification Settings',
           headerTitleAlign: 'center',
           headerTitleStyle: portfolioStackScreenHeaderTitleStyles,
           headerTintColor: Colors.primaryTextColor,
