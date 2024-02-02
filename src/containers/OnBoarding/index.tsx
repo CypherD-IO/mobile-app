@@ -20,14 +20,10 @@ import clsx from 'clsx';
 import Button from '../../components/v2/button';
 import { screenTitle } from '../../constants';
 import { useTranslation } from 'react-i18next';
-import {
-  ButtonType,
-  ImagePosition,
-  SeedPhraseType,
-} from '../../constants/enum';
+import { ButtonType, SeedPhraseType } from '../../constants/enum';
 import CyDModalLayout from '../../components/v2/modal';
 import { MODAL_HIDE_TIMEOUT_250 } from '../../core/Http';
-import useConnectionManager from '../../hooks/useConnectionManager';
+// import useConnectionManager from '../../hooks/useConnectionManager';
 import CyDContainer from '../../components/v2/container';
 import { Colors } from '../../constants/theme';
 
@@ -35,7 +31,7 @@ const { width, height } = Dimensions.get('screen');
 
 export default function OnBoarding({ navigation }) {
   const { t } = useTranslation();
-  const { openWalletConnectModal } = useConnectionManager();
+  // const { openWalletConnectModal } = useConnectionManager();
 
   const scrollX: Animated.Value = useRef(new Animated.Value(0)).current;
 
@@ -155,7 +151,7 @@ export default function OnBoarding({ navigation }) {
                 style={{ tintColor: '#434343' }}
               />
             </CyDTouchView>
-            <CyDTouchView
+            {/* <CyDTouchView
               onPress={() => {
                 void openWalletConnectModal();
               }}
@@ -172,7 +168,7 @@ export default function OnBoarding({ navigation }) {
                 resizeMode={'contain'}
                 className={'w-[30%] h-[54px]'}
               />
-            </CyDTouchView>
+            </CyDTouchView> */}
           </CyDView>
           <CyDTouchView
             onPress={() => {

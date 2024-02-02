@@ -140,11 +140,11 @@ export const WalletConnectV2Provider: React.FC<any> = ({ children }) => {
   //   },
   // });
 
-  const wagmiConfig = defaultWagmiConfig({
-    chains,
-    projectId,
-    metadata,
-  });
+  // const wagmiConfig = defaultWagmiConfig({
+  //   chains,
+  //   projectId,
+  //   metadata,
+  // });
 
   // const wagmiConfig = createConfig({
   //   autoConnect: true,
@@ -208,11 +208,10 @@ export const WalletConnectV2Provider: React.FC<any> = ({ children }) => {
   return (
     <WalletConnectContext.Provider
       value={{ initialized: isWeb3WalletInitialized }}>
-      {/* <WagmiConfig config={wagmiConfig}> */}
       {children}
-      {/* <WalletConnectListener>{children}</WalletConnectListener> */}
-      {/* <WalletConnectModal projectId={projectId} providerMetadata={metadata} /> */}
-      {/* </WagmiConfig> */}
+      {/* <WagmiConfig config={wagmiConfig}>
+        <WalletConnectListener>{children}</WalletConnectListener>
+      </WagmiConfig> */}
     </WalletConnectContext.Provider>
   );
 };

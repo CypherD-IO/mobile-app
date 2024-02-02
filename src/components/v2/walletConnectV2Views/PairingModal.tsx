@@ -47,7 +47,6 @@ export default function PairingModal({
   const { wallet } = hdWalletContext.state;
   const { address: cosmosAddress } = wallet?.cosmos;
   const { params } = currentProposal;
-  console.log('params:', params);
   const { proposer, requiredNamespaces, optionalNamespaces } = params;
   const { metadata } = proposer;
   const { eip155 } = requiredNamespaces;
@@ -107,7 +106,6 @@ export default function PairingModal({
     try {
       setAcceptingRequest(true);
       const { id, params } = currentProposal;
-      console.log('params:', params);
       const { requiredNamespaces, relays } = params;
       if (currentProposal) {
         const namespaces: SessionTypes.Namespaces = {};
@@ -130,8 +128,6 @@ export default function PairingModal({
             });
           }
 
-          console.log('accounts required:', accounts);
-
           if (optionalNamespaces && has(optionalNamespaces, key)) {
             optionalNamespaces[key].chains.map((chain: string) => {
               if (key === 'eip155') {
@@ -147,8 +143,6 @@ export default function PairingModal({
           // for (const chain of EIP155_CHAIN_IDS) {
           //   [currentETHAddress].map(acc => accounts.push(`${chain}:${acc}`));
           // }
-
-          console.log('accounts optional:', accounts);
           let namespaceMethods: any = [];
           let namespaceEvents: any = [];
 
@@ -173,11 +167,6 @@ export default function PairingModal({
             );
           }
 
-          console.log(
-            '🚀 ~ handleAccept ~ namespaceMethods:',
-            namespaceMethods,
-          );
-
           namespaces[key] = {
             chains: eip155Chains,
             accounts,
@@ -198,13 +187,6 @@ export default function PairingModal({
         //   },
         // });
 
-        console.log('namespaces:', namespaces);
-
-        // console.log(
-        //   '🚀 ~ handleAccept ~ approvedNamespaces:',
-        //   approvedNamespaces,
-        // );
-
         await web3wallet?.approveSession({
           id,
           namespaces,
@@ -214,7 +196,6 @@ export default function PairingModal({
         hideModal();
       }
     } catch (e) {
-      console.log('error:', e);
       walletConnectDispatch({
         type: WalletConnectActions.WALLET_CONNECT_TRIGGER_REFRESH,
       });

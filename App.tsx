@@ -2,7 +2,7 @@
 /* eslint-disable @typescript-eslint/no-var-requires */
 /* eslint-disable react-native/no-inline-styles */
 import * as React from 'react';
-// import '@walletconnect/react-native-compat';
+import '@walletconnect/react-native-compat';
 import 'fast-text-encoding';
 import { useEffect, useReducer, useState } from 'react';
 import Toast from 'react-native-toast-message';
