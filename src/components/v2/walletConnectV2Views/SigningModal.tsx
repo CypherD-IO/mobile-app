@@ -364,12 +364,7 @@ export default function SigningModal({
             { title: '', host: '', origin: '', url: '' },
             chain,
           );
-          console.log('response:', response);
           const formattedRPCResponse = formatJsonRpcResult(id, response.result);
-          console.log(
-            '🚀 ~ handleAccept ~ formattedRPCResponse:',
-            formattedRPCResponse,
-          );
           await web3wallet?.respondSessionRequest({
             topic,
             response: formattedRPCResponse,
@@ -377,7 +372,6 @@ export default function SigningModal({
         }
         hideModal();
       } catch (e) {
-        console.log('error:', e);
         hideModal();
       }
     } else {
