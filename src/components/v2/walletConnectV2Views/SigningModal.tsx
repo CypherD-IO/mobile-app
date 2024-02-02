@@ -370,9 +370,9 @@ export default function SigningModal({
             response: formattedRPCResponse,
           });
         }
-        (hideModal as () => void)(); // Type asserting that hideModal cannot be undefined here.
+        hideModal();
       } catch (e) {
-        (hideModal as () => void)(); // Type asserting that hideModal cannot be undefined here.
+        hideModal();
       }
     } else {
       modalPayload?.resolve(true);

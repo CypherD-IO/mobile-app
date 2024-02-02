@@ -13,7 +13,6 @@ import React, {
   useLayoutEffect,
   useRef,
 } from 'react';
-import WalletConnect from '@walletconnect/client';
 import { useTranslation } from 'react-i18next';
 import * as C from '../../constants/index';
 import AppImages from './../../../assets/images/appImages';
@@ -114,13 +113,14 @@ export default function WalletConnectCamera(props) {
           onFailure: hideModal,
         });
       }
-    } else {
-      const connector = new WalletConnect({ uri });
-      walletConnectDispatch({
-        type: WalletConnectActions.ADD_CONNECTOR,
-        value: connector,
-      });
     }
+    // else {
+    //   const connector = new WalletConnect({ uri });
+    //   walletConnectDispatch({
+    //     type: WalletConnectActions.ADD_CONNECTOR,
+    //     value: connector,
+    //   });
+    // }
   };
 
   const handleBackButton = () => {

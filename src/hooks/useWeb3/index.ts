@@ -55,6 +55,7 @@ import {
 import useConnectionManager from '../useConnectionManager';
 import { useGlobalModalContext } from '../../components/v2/GlobalModal';
 import { useTranslation } from 'react-i18next';
+import { getConnectionType } from '../../core/asyncStorage';
 
 const bigNumberToHex = (val: string) =>
   `0x${new BigNumber(val, 10).toString(16)}`;
@@ -98,7 +99,6 @@ export default function useWeb3(origin: Web3Origin) {
   const modalContext = useContext<any>(ModalContext);
   const { showModal, hideModal } = useGlobalModalContext();
   const { t } = useTranslation();
-  const { connectionType } = useConnectionManager();
 
   const web3Callback = useWeb3Callbacks(origin);
 
@@ -433,6 +433,7 @@ export default function useWeb3(origin: Web3Origin) {
     websiteInfo: WebsiteInfo,
     chain: Chain | undefined,
   ) {
+    const connectionType = await getConnectionType();
     if (connectionType === ConnectionTypes.WALLET_CONNECT) {
       showModal('state', {
         type: 'error',
