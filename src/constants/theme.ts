@@ -4,7 +4,7 @@ export const Colors: Record<string, string> = {
   whiteColor: '#FFFFFF',
   white: '#FFFFFF',
   redColor: '#EE4D30',
-  appColor: '#FFDE59',
+  appColor: '#F7C645',
   borderColor: '#8E8E8E',
   inputBorderColor: '#C5C5C5',
   subTextColor: '#929292',
@@ -45,5 +45,5 @@ export const Colors: Record<string, string> = {
   transparent: 'transparent',
   secondaryBackgroundColor: '#F7F8FE',
   placeHolderColor: '#C5C5C5',
-  buttonColor: '#F7C645'
+  buttonColor: '#F7C645',
 };

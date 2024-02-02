@@ -1,14 +1,22 @@
-
 /**
  * Types
  */
-export type TEIP155Chain = keyof typeof EIP155_CHAINS
+export type TEIP155Chain = keyof typeof EIP155_CHAINS;
 
 /**
  * Chains
  */
 
-export const EIP155_CHAIN_IDS = ['eip155:1', 'eip155:137', 'eip155:10', 'eip155:42161', 'eip155:43114', 'eip155:250', 'eip155:56', 'eip155:9001'];
+export const EIP155_CHAIN_IDS = [
+  'eip155:1',
+  'eip155:137',
+  'eip155:10',
+  'eip155:42161',
+  'eip155:43114',
+  'eip155:250',
+  'eip155:56',
+  'eip155:9001',
+];
 
 export const EIP155_MAINNET_CHAINS = {
   'eip155:1': {
@@ -16,22 +24,22 @@ export const EIP155_MAINNET_CHAINS = {
     name: 'Ethereum',
     logo: '/chain-logos/eip155-1.png',
     rgb: '99, 125, 234',
-    rpc: 'https://cloudflare-eth.com/'
+    rpc: 'https://cloudflare-eth.com/',
   },
   'eip155:43114': {
     chainId: 43114,
     name: 'Avalanche C-Chain',
     logo: '/chain-logos/eip155-43113.png',
     rgb: '232, 65, 66',
-    rpc: 'https://api.avax.network/ext/bc/C/rpc'
+    rpc: 'https://api.avax.network/ext/bc/C/rpc',
   },
   'eip155:137': {
     chainId: 137,
     name: 'Polygon',
     logo: '/chain-logos/eip155-137.png',
     rgb: '130, 71, 229',
-    rpc: 'https://polygon-rpc.com/'
-  }
+    rpc: 'https://polygon-rpc.com/',
+  },
 };
 
 export const EIP155_CHAINS = { ...EIP155_MAINNET_CHAINS };
@@ -51,10 +59,10 @@ export const EIP155_SIGNING_METHODS = {
   ETH_SEND_RAW_TRANSACTION: 'eth_sendRawTransaction',
   ETH_SEND_TRANSACTION: 'eth_sendTransaction',
   WALLET_GET_PERMISSIONS: 'wallet_getPermissions',
-  WALLET_REQUEST_PERMISSIONS: 'wallet_requestPermissions'
+  WALLET_REQUEST_PERMISSIONS: 'wallet_requestPermissions',
 };
 
 export const COSMOS_SIGNING_METHODS = {
   COSMOS_SIGN_DIRECT: 'cosmos_signDirect',
-  COSMOS_SIGN_AMINO: 'cosmos_signAmino'
+  COSMOS_SIGN_AMINO: 'cosmos_signAmino',
 };

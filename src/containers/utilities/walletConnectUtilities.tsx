@@ -4,7 +4,6 @@ import { Secp256k1, sha256 } from '@cosmjs-rn/crypto';
 import { StdSignDoc } from '@cosmjs/launchpad';
 import { PrivKeySecp256k1 } from '@keplr-wallet/crypto';
 import * as Sentry from '@sentry/react-native';
-import WalletConnect from '@walletconnect/client';
 import { t } from 'i18next';
 import { Dispatch } from 'react';
 import Toast from 'react-native-toast-message';
@@ -113,7 +112,7 @@ const embedChainIdBasedOnPlatform = (peerMetaName: string) => {
 };
 
 export const subscribeToEvents = async (
-  connector: WalletConnect | null,
+  connector: any | null,
   setWalletConnectModalVisible: Dispatch<boolean>,
   setRequest: Dispatch<boolean>,
   walletConnectDispatch: Dispatch<IWalletConnect>,
@@ -301,7 +300,7 @@ export const subscribeToEvents = async (
 };
 
 const approveSession = (
-  connector: WalletConnect,
+  connector: any,
   address: string,
   payload,
   dispatchFn: Dispatch<IWalletConnect>,
@@ -324,7 +323,7 @@ const approveSession = (
 };
 
 const updateSession = (
-  connector: WalletConnect,
+  connector: any,
   address: string,
   chainId: string,
   dAppInfo: IdAppInfo,
@@ -344,13 +343,13 @@ const updateSession = (
   });
 };
 
-const rejectSession = (connector: WalletConnect) => {
+const rejectSession = (connector: any) => {
   if (connector) {
     connector.rejectSession();
   }
 };
 
-const rejectRequest = (connector: WalletConnect, id: number) => {
+const rejectRequest = (connector: any, id: number) => {
   if (connector) {
     connector.rejectRequest({
       id,

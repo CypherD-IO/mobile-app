@@ -6,7 +6,7 @@ import { StyleSheet } from 'react-native';
 import { SignClientTypes, SessionTypes } from '@walletconnect/types';
 import CyDModalLayout from '../modal';
 import { web3wallet } from '../../../core/walletConnectV2Utils';
-import { getSdkError } from '@walletconnect/utils';
+import { buildApprovedNamespaces, getSdkError } from '@walletconnect/utils';
 import { t } from 'i18next';
 import { ButtonType } from '../../../constants/enum';
 import {
@@ -22,7 +22,7 @@ import {
 } from '../../../reducers/wallet_connect_reducer';
 import { HdWalletContext } from '../../../core/util';
 import { EIP155_CHAIN_IDS } from '../../../constants/EIP155Data';
-import { has } from 'lodash';
+import { has, isEmpty } from 'lodash';
 
 interface PairingModalProps {
   currentProposal:
@@ -51,7 +51,6 @@ export default function PairingModal({
   const { metadata } = proposer;
   const { eip155 } = requiredNamespaces;
   const { name, url, icons } = metadata;
-  const { methods } = eip155;
   const icon = icons[0];
   const message =
     'Requesting permission to view addresses of your accounts and approval for transactions';
@@ -83,7 +82,7 @@ export default function PairingModal({
         topic: currentProposal?.params.pairingTopic,
         name,
         url,
-        methods,
+        methods: eip155?.methods ?? optionalNamespaces?.eip155?.methods,
         icon,
         version: 'v2',
         sessionTopic,
@@ -110,49 +109,86 @@ export default function PairingModal({
       const { requiredNamespaces, relays } = params;
       if (currentProposal) {
         const namespaces: SessionTypes.Namespaces = {};
-        Object.keys(requiredNamespaces).forEach(key => {
-          const accounts: string[] = [];
-          requiredNamespaces[key].chains.map((chain: string) => {
-            if (key === 'eip155') {
-              [currentETHAddress].map(acc => accounts.push(`${chain}:${acc}`));
-            } else if (key === 'cosmos' && cosmosAddress) {
-              [cosmosAddress].map(acc => accounts.push(`${chain}:${acc}`));
-            }
-          });
-
-          if (optionalNamespaces && has(optionalNamespaces, key)) {
-            optionalNamespaces[key].chains.map((chain: string) => {
+        const namespaceKeys = !isEmpty(requiredNamespaces)
+          ? Object.keys(requiredNamespaces)
+          : Object.keys(optionalNamespaces);
+        const accounts: string[] = [];
+        const eip155Chains: string[] = [];
+        namespaceKeys.forEach(key => {
+          if (requiredNamespaces && has(requiredNamespaces, key)) {
+            requiredNamespaces[key].chains.map((chain: string) => {
               if (key === 'eip155') {
-                [currentETHAddress].map(acc =>
-                  accounts.push(`${chain}:${acc}`),
-                );
+                [currentETHAddress].map(acc => {
+                  eip155Chains.push(chain);
+                  accounts.push(`${chain}:${acc}`);
+                });
               } else if (key === 'cosmos' && cosmosAddress) {
                 [cosmosAddress].map(acc => accounts.push(`${chain}:${acc}`));
               }
             });
           }
 
-          namespaces[key] = {
-            chains: EIP155_CHAIN_IDS,
-            accounts,
-            methods: [
+          if (optionalNamespaces && has(optionalNamespaces, key)) {
+            optionalNamespaces[key].chains.map((chain: string) => {
+              if (key === 'eip155') {
+                [currentETHAddress].map(acc => {
+                  eip155Chains.push(chain);
+                  accounts.push(`${chain}:${acc}`);
+                });
+              } else if (key === 'cosmos' && cosmosAddress) {
+                [cosmosAddress].map(acc => accounts.push(`${chain}:${acc}`));
+              }
+            });
+          }
+          // for (const chain of EIP155_CHAIN_IDS) {
+          //   [currentETHAddress].map(acc => accounts.push(`${chain}:${acc}`));
+          // }
+          let namespaceMethods: any = [];
+          let namespaceEvents: any = [];
+
+          if (requiredNamespaces[key]?.methods) {
+            namespaceMethods = namespaceMethods.concat(
               ...requiredNamespaces[key].methods,
-              ...(has(optionalNamespaces, key)
-                ? optionalNamespaces[key]?.methods
-                : []),
-            ],
-            events: [
+            );
+          }
+          if (optionalNamespaces[key]?.methods) {
+            namespaceMethods = namespaceMethods.concat(
+              ...optionalNamespaces[key].methods,
+            );
+          }
+          if (requiredNamespaces[key]?.events) {
+            namespaceEvents = namespaceEvents.concat(
               ...requiredNamespaces[key].events,
-              ...(has(optionalNamespaces, key)
-                ? optionalNamespaces[key]?.events
-                : []),
-            ],
+            );
+          }
+          if (optionalNamespaces[key]?.events) {
+            namespaceEvents = namespaceEvents.concat(
+              ...optionalNamespaces[key].events,
+            );
+          }
+
+          namespaces[key] = {
+            chains: eip155Chains,
+            accounts,
+            methods: namespaceMethods,
+            events: namespaceEvents,
           };
         });
 
+        // const approvedNamespaces = buildApprovedNamespaces({
+        //   proposal: params,
+        //   supportedNamespaces: {
+        //     eip155: {
+        //       chains: eip155Chains,
+        //       methods: ['eth_sendTransaction', 'personal_sign'],
+        //       events: ['accountsChanged', 'chainChanged'],
+        //       accounts,
+        //     },
+        //   },
+        // });
+
         await web3wallet?.approveSession({
           id,
-          relayProtocol: relays[0].protocol,
           namespaces,
         });
         setAcceptingRequest(false);
@@ -194,7 +230,7 @@ export default function PairingModal({
 
   const RenderDAPPInfo = () => {
     return (
-      <CyDView className='flex flex-row items-center mt-[12px] border-[1px] rounded-[8px] border-fadedGrey'>
+      <CyDView className='flex flex-row items-center mt-[12px] border-[1px] rounded-[8px] border-fadedGrey p-[8px]'>
         <CyDView className='flex flex-row rounded-r-[20px] self-center px-[10px]'>
           <CyDFastImage
             className={'h-[35px] w-[35px] rounded-[50px]'}
@@ -202,18 +238,12 @@ export default function PairingModal({
             resizeMode='contain'
           />
         </CyDView>
-        <CyDView className={'flex flex-row'}>
-          <CyDView className='flex flex-row w-full justify-between items-center rounded-r-[20px] py-[15px] pr-[20px]'>
-            <CyDView className='ml-[10px]'>
-              <CyDView className={'flex flex-row items-center align-center'}>
-                <CyDText className={'font-extrabold text-[16px]'}>
-                  {name}
-                </CyDText>
-              </CyDView>
-              <CyDView className={'flex flex-row items-center align-center'}>
-                <CyDText className={'text-[14px] w-[200px]'}>{url}</CyDText>
-              </CyDView>
-            </CyDView>
+        <CyDView className='ml-[10px] max-w-[80%]'>
+          <CyDView className={'flex flex-row items-center align-center'}>
+            <CyDText className={'font-extrabold text-[16px]'}>{name}</CyDText>
+          </CyDView>
+          <CyDView className={'flex flex-row items-center align-center'}>
+            <CyDText className={'text-[14px] w-[200px]'}>{url}</CyDText>
           </CyDView>
         </CyDView>
       </CyDView>

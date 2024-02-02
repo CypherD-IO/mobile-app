@@ -1,31 +1,34 @@
 /* eslint-disable no-case-declarations */
-import WalletConnect from '@walletconnect/client';
 import { isEqual } from 'lodash';
 import { createContext, Dispatch } from 'react';
 
-export interface IdAppInfo{
-  version?: string
-  topic?: any
-  chainId: number
-  description: string
-  name: string
-  icons: string[]
-  url: string
-  sessionTopic?: string
+export interface IdAppInfo {
+  version?: string;
+  topic?: any;
+  chainId: number;
+  description: string;
+  name: string;
+  icons: string[];
+  url: string;
+  sessionTopic?: string;
 }
 
-export interface IWalletConnect{
-  connectors: WalletConnect[]
-  dAppInfo: IdAppInfo[]
-  itemsAdded: boolean
+export interface IWalletConnect {
+  connectors: any[];
+  dAppInfo: IdAppInfo[];
+  itemsAdded: boolean;
 }
 
 export interface walletConnectContextDef {
-  walletConnectState: IWalletConnect
-  walletConnectDispatch: Dispatch<any>
+  walletConnectState: IWalletConnect;
+  walletConnectDispatch: Dispatch<any>;
 }
 
-export const walletConnectInitialState: IWalletConnect = { connectors: [], dAppInfo: [], itemsAdded: false };
+export const walletConnectInitialState: IWalletConnect = {
+  connectors: [],
+  dAppInfo: [],
+  itemsAdded: false,
+};
 
 export const WalletConnectContext = createContext(null);
 
@@ -38,7 +41,7 @@ export const WalletConnectActions = {
   WALLET_CONNECT_TRIGGER_REFRESH: 'WALLET_CONNECT_TRIGGER_REFRESH',
   RESTORE_SESSION: 'RESTORE_SESSION',
   REMOVE_WALLETCONNECT_2_CONNECTION: 'REMOVE_WALLETCONNECT_2_CONNECTION',
-  RESTORE_INITIAL_STATE: 'RESTORE_INITIAL_STATE'
+  RESTORE_INITIAL_STATE: 'RESTORE_INITIAL_STATE',
 };
 
 export const walletConnectReducer = (state, action) => {
@@ -58,7 +61,9 @@ export const walletConnectReducer = (state, action) => {
       });
       return { ...state, connectors: newConnectors, itemsAdded: false };
     case WalletConnectActions.DELETE_DAPP_INFO:
-      const key = state.connectors.findIndex((connector) => isEqual(connector, action.value.connector));
+      const key = state.connectors.findIndex(connector =>
+        isEqual(connector, action.value.connector),
+      );
       const nConnectors = state.connectors.filter((element, index) => {
         if (index !== key) {
           return element;
@@ -69,13 +74,22 @@ export const walletConnectReducer = (state, action) => {
           return element;
         }
       });
-      return { ...state, dAppInfo: ndAppInfo, connectors: nConnectors, itemsAdded: false };
+      return {
+        ...state,
+        dAppInfo: ndAppInfo,
+        connectors: nConnectors,
+        itemsAdded: false,
+      };
 
     case WalletConnectActions.REMOVE_WALLETCONNECT_2_CONNECTION:
       if (state.dAppInfo?.length > 0) {
-        const [connection] = state?.dAppInfo.filter((connectionObj) => connectionObj?.sessionTopic === action.value.topic);
+        const [connection] = state?.dAppInfo.filter(
+          connectionObj => connectionObj?.sessionTopic === action.value.topic,
+        );
         if (connection) {
-          const key = state.connectors.findIndex((connector) => isEqual(connector, connection));
+          const key = state.connectors.findIndex(connector =>
+            isEqual(connector, connection),
+          );
           const nConnectors = state.connectors.filter((element, index) => {
             if (index !== key) {
               return element;
@@ -86,10 +100,20 @@ export const walletConnectReducer = (state, action) => {
               return element;
             }
           });
-          return { ...state, dAppInfo: ndAppInfo, connectors: nConnectors, itemsAdded: false };
+          return {
+            ...state,
+            dAppInfo: ndAppInfo,
+            connectors: nConnectors,
+            itemsAdded: false,
+          };
         }
       }
-      return { ...state, dAppInfo: ndAppInfo, connectors: nConnectors, itemsAdded: false };
+      return {
+        ...state,
+        dAppInfo: ndAppInfo,
+        connectors: nConnectors,
+        itemsAdded: false,
+      };
 
     case WalletConnectActions.UPDATE_DAPP_INFO:
       const idKey = state.dAppInfo.indexOf(action.value.oldInfo);
@@ -103,7 +127,12 @@ export const walletConnectReducer = (state, action) => {
       return { ...state, dAppInfo: newDAppInfo, itemsAdded: false };
 
     case WalletConnectActions.RESTORE_SESSION:
-      return { ...state, dAppInfo: action.value.dAppInfo, connectors: action.value.connectors, itemsAdded: true };
+      return {
+        ...state,
+        dAppInfo: action.value.dAppInfo,
+        connectors: action.value.connectors,
+        itemsAdded: true,
+      };
 
     case WalletConnectActions.WALLET_CONNECT_TRIGGER_REFRESH:
       return { ...state };
