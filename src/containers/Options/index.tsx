@@ -87,7 +87,7 @@ export default function Options(props: {
   navigation: {
     goBack: () => void;
     popToTop: () => void;
-    navigate: (arg0: string, arg1: any) => void;
+    navigate: (arg0: string, arg1?: any) => void;
   };
 }) {
   const { t } = useTranslation();
@@ -291,15 +291,15 @@ export default function Options(props: {
 
               {!isReadOnlyWallet &&
                 connectionType !== ConnectionTypes.WALLET_CONNECT && (
-                <DynamicView
-                  dynamic
-                  dynamicWidth
-                  dynamicHeightFix
-                  height={1}
-                  width={88}
-                  bGC={Colors.portfolioBorderColor}
-                />
-              )}
+                  <DynamicView
+                    dynamic
+                    dynamicWidth
+                    dynamicHeightFix
+                    height={1}
+                    width={88}
+                    bGC={Colors.portfolioBorderColor}
+                  />
+                )}
 
               {/* <OptionsContainer
                             sentryLabel={'debit-card'}
@@ -406,6 +406,7 @@ export default function Options(props: {
                   onPress={() => {
                     props.navigation.navigate(
                       C.screenTitle.SEND_INVITE_CODE_SCREEN,
+                      { fromOptionsStack: true },
                     );
                   }}
                   title={t('MENU_RECOMMEND_FRIEND')}
