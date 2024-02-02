@@ -15,7 +15,7 @@ import AppImages from '../../../../../assets/images/appImages';
 import { DecodedResponseTypes } from '../../../../constants/enum';
 const RenderDAPPInfo = ({ dAppInfo }: { dAppInfo: IDAppInfo }) => {
   return (
-    <CyDView className='flex flex-row items-center mt-[12px] border-[1px] rounded-[12px] border-fadedGrey'>
+    <CyDView className='flex flex-row items-center mt-[12px] border-[1px] rounded-[12px] border-fadedGrey p-[8px]'>
       <CyDView className='flex flex-row rounded-r-[20px] self-center px-[10px]'>
         <CyDFastImage
           className={'h-[35px] w-[35px] rounded-[50px]'}
@@ -23,18 +23,14 @@ const RenderDAPPInfo = ({ dAppInfo }: { dAppInfo: IDAppInfo }) => {
           resizeMode='contain'
         />
       </CyDView>
-      <CyDView className={'flex flex-row'}>
-        <CyDView className='flex flex-row w-full justify-between items-center rounded-r-[20px] py-[15px] pr-[20px]'>
-          <CyDView className='ml-[10px]'>
-            <CyDView className={'flex flex-row items-center align-center'}>
-              <CyDText className={'font-extrabold text-[16px]'}>
-                {dAppInfo.name}
-              </CyDText>
-            </CyDView>
-            <CyDView className={'flex flex-row items-center align-center'}>
-              <CyDText className={'text-[14px]'}>{dAppInfo.url}</CyDText>
-            </CyDView>
-          </CyDView>
+      <CyDView className='ml-[10px] max-w-[80%]'>
+        <CyDView className={'flex flex-row items-center align-center'}>
+          <CyDText className={'font-extrabold text-[16px]'}>
+            {dAppInfo.name}
+          </CyDText>
+        </CyDView>
+        <CyDView className={'flex flex-row items-center align-center'}>
+          <CyDText className={'text-[14px]'}>{dAppInfo.url}</CyDText>
         </CyDView>
       </CyDView>
     </CyDView>
