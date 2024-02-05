@@ -20,7 +20,6 @@ import useWalletConnectEventsManager from '../../hooks/useWalletConnectV2EventsM
 import { WalletConnectActions } from '../../reducers/wallet_connect_reducer';
 import * as Sentry from '@sentry/react-native';
 import { Config } from 'react-native-config';
-import '@walletconnect/react-native-compat';
 import {
   mainnet,
   polygon,
@@ -48,6 +47,7 @@ import { configureChains, createConfig, type Chain } from 'wagmi';
 import { publicProvider } from 'wagmi/providers/public';
 import { CoinbaseWagmiConnector } from '@web3modal/coinbase-react-native';
 import { walletConnectProvider } from '../../core/walletConnectProvider';
+import WagmiConfigBuilder from '../wagmiConfigBuilder';
 
 const walletConnectInitialValue = {
   initialized: false,
@@ -75,23 +75,18 @@ export const WalletConnectV2Provider: React.FC<any> = ({ children }) => {
   // const { relayerRegionURL } = useSnapshot(SettingsStore.state)
 
   const onInitialize = useCallback(async () => {
-    if (
-      ethereum.address &&
-      ethereum.address !== _NO_CYPHERD_CREDENTIAL_AVAILABLE_
-    ) {
-      // const resp = await getWithAuth('/v1/authentication/creds/wc'); //TO DO Eliminate sign message race condition (axios intercept)
-      // if (!resp.isError) {
-      //   const { data } = resp;
-      //   projectId = data.projectId;
-      // }
-      try {
-        if (projectId) {
-          await createWeb3Wallet(projectId);
-          setIsWeb3WalletInitialized(true);
-        }
-      } catch (err: unknown) {
-        Sentry.captureException(err);
+    // const resp = await getWithAuth('/v1/authentication/creds/wc'); //TO DO Eliminate sign message race condition (axios intercept)
+    // if (!resp.isError) {
+    //   const { data } = resp;
+    //   projectId = data.projectId;
+    // }
+    try {
+      if (projectId) {
+        await createWeb3Wallet(projectId);
+        setIsWeb3WalletInitialized(true);
       }
+    } catch (err: unknown) {
+      Sentry.captureException(err);
     }
   }, []);
 
@@ -163,7 +158,8 @@ export const WalletConnectV2Provider: React.FC<any> = ({ children }) => {
     if (
       !isWeb3WalletInitialized &&
       !isInitializationInProgress.current &&
-      ethereum.address
+      ethereum.address &&
+      ethereum.address !== _NO_CYPHERD_CREDENTIAL_AVAILABLE_
     ) {
       isInitializationInProgress.current = true;
       void onInitialize();
@@ -208,7 +204,8 @@ export const WalletConnectV2Provider: React.FC<any> = ({ children }) => {
   return (
     <WalletConnectContext.Provider
       value={{ initialized: isWeb3WalletInitialized }}>
-      {children}
+      <WagmiConfigBuilder>{children}</WagmiConfigBuilder>
+
       {/* <WagmiConfig config={wagmiConfig}>
         <WalletConnectListener>{children}</WalletConnectListener>
       </WagmiConfig> */}

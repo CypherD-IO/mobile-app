@@ -52,7 +52,6 @@ import {
   JSONUint8Array,
   parseCosmosMessage,
 } from './util';
-import useConnectionManager from '../useConnectionManager';
 import { useGlobalModalContext } from '../../components/v2/GlobalModal';
 import { useTranslation } from 'react-i18next';
 import { getConnectionType } from '../../core/asyncStorage';
