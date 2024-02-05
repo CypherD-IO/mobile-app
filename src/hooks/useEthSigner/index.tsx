@@ -11,7 +11,7 @@ import { get } from 'lodash';
 import { createWalletClient, custom } from 'viem';
 
 export default function useEthSigner() {
-  // const { connector } = useAccount();
+  const { connector } = useAccount();
   const { connectionType } = useConnectionManager();
   const hdWalletContext = useContext<any>(HdWalletContext);
 
@@ -22,20 +22,20 @@ export default function useEthSigner() {
   }: RawTransaction) => {
     const ethereum = hdWalletContext.state.wallet.ethereum;
     if (connectionType === ConnectionTypes.WALLET_CONNECT) {
-      // const chainConfig = get(walletConnectChainData, chain).chainConfig;
-      // const walletClient = createWalletClient({
-      //   account: transactionToBeSigned.from,
-      //   chain: chainConfig,
-      //   transport: custom(await connector?.getProvider()),
-      // });
-      // try {
-      //   await walletClient.switchChain({ id: chainConfig.id });
-      // } catch (e) {}
-      // transactionToBeSigned['data'] = '0x';
-      // const response = await walletClient.sendTransaction(
-      //   transactionToBeSigned,
-      // );
-      // return response;
+      const chainConfig = get(walletConnectChainData, chain).chainConfig;
+      const walletClient = createWalletClient({
+        account: transactionToBeSigned.from,
+        chain: chainConfig,
+        transport: custom(await connector?.getProvider()),
+      });
+      try {
+        await walletClient.switchChain({ id: chainConfig.id });
+      } catch (e) {}
+      transactionToBeSigned['data'] = '0x';
+      const response = await walletClient.sendTransaction(
+        transactionToBeSigned,
+      );
+      return response;
     } else {
       const signedTransaction = await web3.eth.accounts.signTransaction(
         transactionToBeSigned,

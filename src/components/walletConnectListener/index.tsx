@@ -1,19 +1,11 @@
-import React, {
-  Children,
-  useContext,
-  useEffect,
-  useMemo,
-  useState,
-} from 'react';
+import React, { useContext, useEffect, useMemo, useState } from 'react';
 import {
   HdWalletContext,
   _NO_CYPHERD_CREDENTIAL_AVAILABLE_,
 } from '../../core/util';
 import useAxios from '../../core/HttpRequest';
 import { GlobalContext } from '../../core/globalContext';
-import '@walletconnect/react-native-compat';
-import { createWeb3Modal, Web3Modal } from '@web3modal/wagmi-react-native';
-import { WalletConnectModal } from '@walletconnect/modal-react-native';
+import { Web3Modal } from '@web3modal/wagmi-react-native';
 import { ethers } from 'ethers';
 import axios from '../../core/Http';
 import { ConnectionTypes, GlobalContextType } from '../../constants/enum';
@@ -30,8 +22,6 @@ import useValidSessionToken from '../../hooks/useValidSessionToken';
 import { utf8ToHex } from 'web3-utils';
 import { useAccount, useConnect, useDisconnect } from 'wagmi';
 import { getWalletProfile } from '../../core/card';
-import AsyncStorage from '@react-native-async-storage/async-storage';
-import { getAccount } from '@wagmi/core';
 import Loading from '../../containers/Loading';
 import { CyDView } from '../../styles/tailwindStyles';
 import useConnectionManager from '../../hooks/useConnectionManager';
