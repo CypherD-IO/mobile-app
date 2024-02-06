@@ -106,7 +106,7 @@ export default function ChooseChainModal({
       style={styles.modalLayout}>
       <CyDView
         className={
-          'bg-white border-1 rounded-t-[36px] border-[#E6E6E6] p-[12px] h-[60%] max-h-[400px] relative'
+          'bg-white border-1 rounded-t-[36px] border-[#E6E6E6] p-[12px] pb-[22px] h-[60%] relative'
         }>
         <CyDTouchView
           onPress={() => {
@@ -120,7 +120,7 @@ export default function ChooseChainModal({
         </CyDTouchView>
         <CyDText
           className={
-            'text-center pt-[24px] pb-[32px] text-[24px] font-nunito font-bold text-primaryTextColor'
+            'text-center pt-[24px] pb-[14px] text-[22px] font-nunito font-bold text-primaryTextColor'
           }>
           {title}
         </CyDText>
@@ -135,17 +135,11 @@ export default function ChooseChainModal({
             />
           </CyDTouchView>
         )}
-        <CyDView>
-          <CyDFlatList
-            className={clsx({
-              'h-[70%]': !isClosable,
-              'h-[75%]': isClosable,
-            })}
-            data={data}
-            renderItem={renderFromList}
-            showsVerticalScrollIndicator={true}
-          />
-        </CyDView>
+        <CyDFlatList
+          data={data}
+          renderItem={renderFromList}
+          showsVerticalScrollIndicator={true}
+        />
       </CyDView>
     </CyDModalLayout>
   );
@@ -155,6 +149,5 @@ const styles = StyleSheet.create({
   modalLayout: {
     margin: 0,
     justifyContent: 'flex-end',
-    height: '50%',
   },
 });

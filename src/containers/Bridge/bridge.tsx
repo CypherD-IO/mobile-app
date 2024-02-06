@@ -33,6 +33,7 @@ import {
   formatAmount,
   logAnalytics,
   parseErrorMessage,
+  getAvailableChains,
 } from '../../core/util';
 import AppImages from './../../../assets/images/appImages';
 import ChooseChainModal from '../../components/v2/chooseChainModal';
@@ -137,6 +138,7 @@ export default function Bridge(props: { navigation?: any; route?: any }) {
   const [fromChain, setFromChain] = useState<Chain>(
     routeData?.fromChainData?.chainDetails ?? ALL_CHAINS[0],
   );
+  const fromChainData = getAvailableChains(hdWallet);
   const [fromTokenData, setFromTokenData] = useState([]);
   const [fromToken, setFromToken] = useState<TokenMeta>();
   const [toChainData, setToChainData] = useState<Chain>(CHAIN_STARGAZE);
@@ -2215,7 +2217,7 @@ export default function Bridge(props: { navigation?: any; route?: any }) {
         <ChooseChainModal
           setModalVisible={setFromChainModalVisible}
           isModalVisible={fromChainModalVisible}
-          data={ALL_CHAINS}
+          data={fromChainData}
           title={'Choose Chain'}
           selectedItem={fromChain.name}
           onPress={setFromChainFunction}
