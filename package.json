@@ -65,7 +65,7 @@
     "@walletconnect/core": "^2.11.0",
     "@walletconnect/react-native-compat": "^2.11.0",
     "@walletconnect/utils": "^2.11.0",
-    "@walletconnect/web3wallet": "^1.10.0",
+    "@walletconnect/web3wallet": "^1.9.1",
     "@web3modal/coinbase-react-native": "^1.1.1",
     "@web3modal/wagmi-react-native": "^1.2.0",
     "assert": "^1.5.0",
