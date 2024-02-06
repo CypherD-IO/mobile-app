@@ -28,6 +28,8 @@ import {
   CHAIN_AURORA,
   CHAIN_MOONBEAM,
   CHAIN_MOONRIVER,
+  CHAIN_COLLECTION,
+  EVM_CHAINS,
 } from '../constants/server';
 import {
   GlobalStateDef,
@@ -39,7 +41,7 @@ import Toast from 'react-native-toast-message';
 import { isIOS } from '../misc/checkers';
 import countryMaster from '../../assets/datasets/countryMaster';
 import Clipboard from '@react-native-clipboard/clipboard';
-import { find } from 'lodash';
+import { find, get } from 'lodash';
 import Web3 from 'web3';
 import { isCosmosAddress } from '../containers/utilities/cosmosSendUtility';
 import { isOsmosisAddress } from '../containers/utilities/osmosisSendUtility';
@@ -841,4 +843,30 @@ export function isNativeCurrency(
     fromChain.secondaryAddress,
   ].includes(contractAddress);
   return isNative;
+}
+
+export function getAvailableChains(hdWallet: HdWalletContextDef): Chain[] {
+  const { ethereum, cosmos, osmosis, juno, stargaze, noble } =
+    hdWallet.state.wallet;
+  let availableChains: Chain[] = [];
+  if (get(ethereum.wallets, ethereum.currentIndex)?.address) {
+    availableChains = [CHAIN_COLLECTION, ...EVM_CHAINS, CHAIN_EVMOS];
+  }
+  if (get(cosmos.wallets, cosmos.currentIndex)?.address) {
+    availableChains.push(CHAIN_COSMOS);
+  }
+  if (get(osmosis.wallets, osmosis.currentIndex)?.address) {
+    availableChains.push(CHAIN_OSMOSIS);
+  }
+  if (get(juno.wallets, juno.currentIndex)?.address) {
+    availableChains.push(CHAIN_JUNO);
+  }
+  if (get(stargaze.wallets, stargaze.currentIndex)?.address) {
+    availableChains.push(CHAIN_STARGAZE);
+  }
+  if (get(noble.wallets, noble.currentIndex)?.address) {
+    availableChains.push(CHAIN_NOBLE);
+  }
+
+  return availableChains;
 }

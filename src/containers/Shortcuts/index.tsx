@@ -29,6 +29,7 @@ import ChooseChainModal from '../../components/v2/chooseChainModal';
 import {
   HdWalletContext,
   PortfolioContext,
+  getAvailableChains,
   sortJSONArrayByKey,
 } from '../../core/util';
 import {
@@ -315,7 +316,7 @@ export default function ShortcutsModal({ navigationRef }) {
         setTimeout(() => setChooseTokenModal(true), 250);
         break;
       case ShortcutsTitle.RECEIVE:
-        setChainData(ALL_CHAINS);
+        setChainData(getAvailableChains(hdWallet));
         setNavigationPath(item.screenTitle);
         setTimeout(() => setChooseChainModal(true), 250);
         break;
