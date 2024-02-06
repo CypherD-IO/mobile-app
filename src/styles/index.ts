@@ -14,7 +14,7 @@ import {
   CyDSafeAreaView,
   CyDRefreshControl,
   CyDSwitch,
-  CyDTextInput
+  CyDTextInput,
 } from './tailwindStyles';
 
 module.exports = {
@@ -33,5 +33,5 @@ module.exports = {
   CyDSafeAreaView,
   CyDRefreshControl,
   CyDSwitch,
-  CyDTextInput
+  CyDTextInput,
 };
