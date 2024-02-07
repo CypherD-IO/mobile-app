@@ -1,6 +1,6 @@
 import React, { useContext, useEffect, useRef, useState } from 'react';
-import WalletConnectListener from '../walletConnectListener';
-import { WagmiConfig, configureChains, createConfig } from 'wagmi';
+import { WalletConnectListener } from '../walletConnectListener';
+import { WagmiConfig } from 'wagmi';
 import {
   mainnet,
   polygon,
@@ -22,19 +22,15 @@ import {
   defaultWagmiConfig,
 } from '@web3modal/wagmi-react-native';
 import { Config } from 'react-native-config';
-import { WalletConnectConnector } from 'wagmi/dist/connectors/walletConnect';
-import { publicProvider } from 'wagmi/providers/public';
-import { walletConnectProvider } from '../../core/walletConnectProvider';
 import { getConnectionType } from '../../core/asyncStorage';
 import { ConnectionTypes } from '../../constants/enum';
-import { PublicClient } from 'viem';
 import Loading from '../v2/loading';
 import {
   HdWalletContext,
   _NO_CYPHERD_CREDENTIAL_AVAILABLE_,
 } from '../../core/util';
 
-export default function WagmiConfigBuilder({ children }) {
+export const WagmiConfigBuilder: React.FC = ({ children }) => {
   const [wagmiConfig, setWagmiConfig] = useState();
   const hdWalletContext = useContext<any>(HdWalletContext);
   const projectId = String(Config.WALLET_CONNECT_PROJECTID);
@@ -122,4 +118,4 @@ export default function WagmiConfigBuilder({ children }) {
   ) : (
     <Loading />
   );
-}
+};
