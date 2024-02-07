@@ -54,7 +54,7 @@ export default function useConnectionManager() {
 
   const deletAndResetReducers = async () => {
     if (connectionType === ConnectionTypes.WALLET_CONNECT) {
-      // await disconnectWalletConnect();
+      await disconnectWalletConnect();
     } else {
       await removeCredentialsFromKeychain();
     }

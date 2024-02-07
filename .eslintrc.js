@@ -14,7 +14,12 @@ module.exports = {
     'plugin:@typescript-eslint/recommended',
     'prettier',
   ],
-  overrides: [],
+  overrides: [{
+    "files": ["*.ts", "*.tsx"],
+    "rules": {
+        "no-undef": "off"
+    }
+  }],
   parserOptions: {
     ecmaVersion: 12,
     sourceType: 'module',
