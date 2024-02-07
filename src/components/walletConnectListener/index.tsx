@@ -1,4 +1,4 @@
-import React, { useContext, useEffect, useMemo, useState } from 'react';
+import React, { useContext, useEffect, useState } from 'react';
 import {
   HdWalletContext,
   _NO_CYPHERD_CREDENTIAL_AVAILABLE_,
@@ -6,7 +6,6 @@ import {
 import useAxios from '../../core/HttpRequest';
 import { GlobalContext } from '../../core/globalContext';
 import { Web3Modal } from '@web3modal/wagmi-react-native';
-import { ethers } from 'ethers';
 import axios from '../../core/Http';
 import { ConnectionTypes, GlobalContextType } from '../../constants/enum';
 import {
@@ -20,7 +19,7 @@ import { ethToEvmos } from '@tharsis/address-converter';
 import { hostWorker } from '../../global';
 import useValidSessionToken from '../../hooks/useValidSessionToken';
 import { utf8ToHex } from 'web3-utils';
-import { useAccount, useConnect, useDisconnect } from 'wagmi';
+import { useAccount, useDisconnect } from 'wagmi';
 import { getWalletProfile } from '../../core/card';
 import Loading from '../../containers/Loading';
 import { CyDView } from '../../styles/tailwindStyles';
@@ -29,7 +28,7 @@ import Intercom from '@intercom/intercom-react-native';
 import * as Sentry from '@sentry/react-native';
 import DeviceInfo from 'react-native-device-info';
 
-export default function WalletConnectListener({ children }) {
+export const WalletConnectListener: React.FC = ({ children }) => {
   const hdWalletContext = useContext<any>(HdWalletContext);
   const globalContext = useContext<any>(GlobalContext);
   const ethereum = hdWalletContext.state.wallet.ethereum;
@@ -38,7 +37,6 @@ export default function WalletConnectListener({ children }) {
   const ARCH_HOST: string = hostWorker.getHost('ARCH_HOST');
   const { verifySessionToken } = useValidSessionToken();
   const { getWithoutAuth } = useAxios();
-  const { connectAsync } = useConnect();
   const { connectionType } = useConnectionManager();
   const [loading, setLoading] = useState<boolean>(
     connectionType === ConnectionTypes.WALLET_CONNECT,
@@ -127,7 +125,6 @@ export default function WalletConnectListener({ children }) {
     } else {
       let authToken = await getAuthToken();
       authToken = JSON.parse(String(authToken));
-      // await dispatchProfileData(String(authToken));
       const profileData = await getWalletProfile(authToken);
       globalContext.globalDispatch({
         type: GlobalContextType.SIGN_IN,
@@ -141,11 +138,6 @@ export default function WalletConnectListener({ children }) {
     }
     setLoading(false);
   };
-
-  const web3Provider = useMemo(async () => {
-    const provider = await connector?.getProvider();
-    return provider ? new ethers.providers.Web3Provider(provider) : undefined;
-  }, [connector]);
 
   const signMessage = async () => {
     const provider = await connector?.getProvider();
@@ -195,4 +187,4 @@ export default function WalletConnectListener({ children }) {
       <Web3Modal />
     </CyDView>
   );
-}
+};
