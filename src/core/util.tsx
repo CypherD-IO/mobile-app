@@ -63,6 +63,7 @@ import DeviceInfo from 'react-native-device-info';
 import axios from './Http';
 import { Holding } from './Portfolio';
 import { TokenMeta } from '../models/tokenMetaData.model';
+import { Wallet } from '@ethersproject/wallet';
 
 // const {showModal, hideModal} = useGlobalModalContext()
 
@@ -78,6 +79,7 @@ export const ActivityContext = React.createContext<ActivityContextDef | null>(
 export const IOS = 'ios';
 export const ANDROID = 'android';
 export const CYPHERD_SEED_PHRASE_KEY = 'CypherD_SPK';
+export const CYPHERD_PRIVATE_KEY = 'CypherD_PK';
 export const CYPHERD_ROOT_DATA = 'CypherD_Root';
 export const IMPORTING = 'IMPORTING';
 export const _NO_CYPHERD_CREDENTIAL_AVAILABLE_ =
@@ -843,6 +845,22 @@ export function isNativeCurrency(
     fromChain.secondaryAddress,
   ].includes(contractAddress);
   return isNative;
+}
+
+export function addHexPrefix(value: string): string {
+  if (!value.startsWith('0x')) {
+    return '0x' + value;
+  }
+  return value;
+}
+
+export function isValidPrivateKey(privateKey: string): boolean {
+  try {
+    const wallet = new Wallet(addHexPrefix(privateKey));
+    return !!wallet;
+  } catch (e) {
+    return false;
+  }
 }
 
 export function getAvailableChains(hdWallet: HdWalletContextDef): Chain[] {

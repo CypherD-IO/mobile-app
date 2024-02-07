@@ -23,13 +23,17 @@ const resources = {
       IMPORT_WALLET_MSG: 'Import Wallet',
       IMPORT_WALLET_SUB_MSG:
         'Enter your 12 or 24 word seed phrase to import your wallet to Cypher.',
+      PRIVATE_KEY_IMPORT_SUB_MSG:
+        'Enter your private key to import your wallet into Cypher.',
       ENTER_KEY_MANUALLY: 'ENTER KEY MANUALLY',
       IMPORT_KEY_FROM_ICLOUD: 'IMPORT KEY FROM ICLOUD',
       ENTER_SEED_PHRASE: 'Enter Seed Phrase',
       SUBMIT: 'SUBMIT',
       GET_QUOTE: 'Get Quote',
       ENTER_KEY_PLACEHOLDER: 'Enter your key (12 or 24 words)',
+      ENTER_PRIVATE_KEY_PLACEHOLDER: 'Enter your private key',
       BAD_KEY_PHARSE: 'Bad key phrase',
+      BAD_PRIVATE_KEY_PHARSE: 'Bad private key',
       COPY_PRIVATE_MSG: 'Copy private key to your clipboard',
       COPY_TO_CLIPBOARD: 'COPY TO CLIPBOARD',
       COPY: 'COPY',

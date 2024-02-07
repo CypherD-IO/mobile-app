@@ -20,6 +20,7 @@ import {
   PIN_AUTH,
   convertToHexa,
   AUTHORIZE_WALLET_DELETION,
+  CYPHERD_PRIVATE_KEY,
 } from './util';
 import DeviceInfo from 'react-native-device-info';
 import RNExitApp from 'react-native-exit-app';
@@ -46,6 +47,8 @@ import { isValidMnemonic, sha256 } from 'ethers/lib/utils';
 import { initialHdWalletState } from '../reducers';
 import { t } from 'i18next';
 import { KeychainErrors } from '../constants/KeychainErrors';
+import { SECRET_TYPES } from '../constants/enum';
+import { get } from 'lodash';
 
 const currentSchemaVersion = 5;
 
@@ -53,20 +56,26 @@ export async function saveCredentialsToKeychain(
   hdWalletContext: any,
   portfolioState: any,
   wallet: any,
+  secretType: SECRET_TYPES,
 ) {
   await clearAsyncStorage();
   await removeCredentialsFromKeychain();
+  const keyChainKey =
+    secretType === SECRET_TYPES.MENEMONIC
+      ? CYPHERD_SEED_PHRASE_KEY
+      : CYPHERD_PRIVATE_KEY;
   // Save Seed Phrase (master private key is not stored)
   if (await isPinAuthenticated()) {
     await saveToKeychain(
-      CYPHERD_SEED_PHRASE_KEY,
+      keyChainKey,
       CryptoJS.AES.encrypt(
-        wallet.mnemonic,
+        get(wallet, [secretType]),
         hdWalletContext.state.pinValue,
       ).toString(),
     );
   } else {
-    await saveToKeychain(CYPHERD_SEED_PHRASE_KEY, wallet.mnemonic);
+    await saveToKeychain(keyChainKey, get(wallet, [secretType]));
+    console.log('saved to keychain success');
   }
   await saveToKeychain(AUTHORIZE_WALLET_DELETION, 'AUTHORIZE_WALLET_DELETION');
   const rootData = constructRootData(wallet.accounts);
@@ -74,7 +83,7 @@ export async function saveCredentialsToKeychain(
   if (isAndroid()) {
     const encrypted = CryptoJS.AES.encrypt(
       JSON.stringify(rootData),
-      wallet.mnemonic,
+      get(wallet, [secretType]),
     ).toString();
     await saveCyRootDataToKeyChain(encrypted);
   } else {
