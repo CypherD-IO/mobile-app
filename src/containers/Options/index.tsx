@@ -46,6 +46,7 @@ import { OptionsContainer } from '../Auth/Share';
 import { onShare } from '../utilities/socialShareUtility';
 import { screenTitle } from '../../constants/index';
 import useConnectionManager from '../../hooks/useConnectionManager';
+import { get } from 'lodash';
 
 const { DynamicView, CText, DynamicImage } = require('../../styles');
 
@@ -170,10 +171,28 @@ export default function Options(props: {
   };
 
   useEffect(() => {
-    void resolveDomain(ethereum.address).then(ens => {
-      setTitle(ens ?? (isReadOnlyWallet ? t('WALLET') : t('MY_WALLET')));
-      setEns(!!ens);
-    });
+    const getTitleValue = async () => {
+      const profileData = await getWalletProfile(
+        globalContext.globalState.token,
+      );
+      console.log(
+        'get(profileData, ["child"])',
+        profileData,
+        get(profileData, ['child']),
+      );
+      const ens = await resolveDomain(ethereum.address);
+      if (get(profileData, ['child'])) {
+        setTitle(t('LINKED_WALLET'));
+      } else if (ens) {
+        setTitle(ens);
+      } else if (isReadOnlyWallet) {
+        setTitle(t('WALLET'));
+      } else {
+        setTitle(t('MY_WALLET'));
+      }
+    };
+
+    void getTitleValue();
   });
 
   const referToFriend = () => {
@@ -212,6 +231,7 @@ export default function Options(props: {
                 source={AppImages.CYPHERD_WALLET}
                 resizeMode='cover'
               />
+
               <CyDView className='flex flex-row justify-center w-[80%] items-center pb-[25px]'>
                 {isReadOnlyWallet && (
                   <CyDImage
