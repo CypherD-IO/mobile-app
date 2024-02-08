@@ -1,16 +1,28 @@
-import React, { useReducer } from 'react';
+import React, { Dispatch, SetStateAction, useReducer, useState } from 'react';
 import * as Sentry from '@sentry/react-native';
 import { Config } from 'react-native-config';
 import JailMonkey from 'jail-monkey';
 import RNExitApp from 'react-native-exit-app';
-import { GlobalContextType, RPCPreference } from '../../constants/enum';
-import { hostWorker } from '../../global';
-import { getRpcEndpoints, setRpcEndpoints } from '../../core/asyncStorage';
+import {
+  GlobalContextType,
+  PinPresentStates,
+  RPCPreference,
+  SignMessageValidationType,
+} from '../../constants/enum';
+import { hostWorker, initializeHostsFromAsync } from '../../global';
+import {
+  getDeveloperMode,
+  getReadOnlyWalletData,
+  getRpcEndpoints,
+  setRpcEndpoints,
+} from '../../core/asyncStorage';
 import {
   RpcResponseDetail,
+  gloabalContextReducer,
   initialGlobalState,
+  signIn,
 } from '../../core/globalContext';
-import { get } from 'lodash';
+import { get, has, set } from 'lodash';
 import useAxios from '../../core/HttpRequest';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import {
@@ -18,6 +30,19 @@ import {
   ActivityStateReducer,
   initialActivityState,
 } from '../../reducers/activity_reducer';
+import {
+  isBiometricEnabled,
+  isPinAuthenticated,
+  loadCyRootDataFromKeyChain,
+} from '../../core/Keychain';
+import { hdWalletStateReducer, initialHdWalletState } from '../../reducers';
+import { _NO_CYPHERD_CREDENTIAL_AVAILABLE_ } from '../../core/util';
+import { getToken } from '../../core/push';
+import { ethToEvmos } from '@tharsis/address-converter';
+import Intercom from '@intercom/intercom-react-native';
+import analytics from '@react-native-firebase/analytics';
+import DeviceInfo, { getVersion } from 'react-native-device-info';
+import { getWalletProfile } from '../../core/card';
 
 export default function useInitializer() {
   const SENSITIVE_DATA_KEYS = ['password', 'seed', 'creditCardNumber'];
@@ -27,6 +52,15 @@ export default function useInitializer() {
     ActivityStateReducer,
     initialActivityState,
   );
+  const [state, dispatch] = useReducer(
+    hdWalletStateReducer,
+    initialHdWalletState,
+  );
+  const [globalState, globalDispatch] = React.useReducer(
+    gloabalContextReducer,
+    initialGlobalState,
+  );
+  const ethereum = state.wallet.ethereum;
 
   const scrubData = (key: string, value: any): any => {
     if (SENSITIVE_DATA_KEYS.includes(key)) {
@@ -101,6 +135,32 @@ export default function useInitializer() {
       },
     });
   };
+
+  async function registerIntercomUser(walletAddresses: {
+    [key: string]: string;
+  }) {
+    const devMode = await getDeveloperMode();
+    if (
+      !devMode &&
+      walletAddresses.ethereumAddress !== _NO_CYPHERD_CREDENTIAL_AVAILABLE_
+    ) {
+      Intercom.registerIdentifiedUser({
+        userId: walletAddresses.ethereumAddress,
+      }).catch(error => {
+        Sentry.captureException(error);
+      });
+      Intercom.updateUser({
+        userId: walletAddresses.ethereumAddress,
+        customAttributes: {
+          ...walletAddresses,
+          version: DeviceInfo.getVersion(),
+        },
+      }).catch(error => {
+        Sentry.captureException(error);
+      });
+    }
+    void analytics().setAnalyticsCollectionEnabled(!devMode);
+  }
 
   const exitIfJailBroken = async () => {
     try {
@@ -179,10 +239,224 @@ export default function useInitializer() {
     });
   };
 
+  const setPinAuthenticationStateValue = async () => {
+    const isBiometricPasscodeEnabled = await isBiometricEnabled();
+    return isBiometricPasscodeEnabled && !(await isPinAuthenticated()); //  for devices with biometreics enabled the pinAuthentication will be set true
+  };
+
+  const setPinPresentStateValue = async (
+    setShowDefaultAuthRemoveModal: Dispatch<SetStateAction<boolean>>,
+  ) => {
+    const pinAuthenticated = await isPinAuthenticated();
+    const hasBiometricEnabled = await isBiometricEnabled();
+    if (!hasBiometricEnabled) {
+      if (pinAuthenticated) {
+        return PinPresentStates.TRUE;
+      } else {
+        await loadCyRootDataFromKeyChain(state, () =>
+          setShowDefaultAuthRemoveModal(true),
+        );
+        return PinPresentStates.FALSE;
+      }
+    } else {
+      if (pinAuthenticated) {
+        return PinPresentStates.TRUE;
+      }
+    }
+  };
+
+  const loadExistingWallet = async (
+    dispatch: {
+      (value: any): void;
+      (arg0: {
+        type: string;
+        value: {
+          chain: string;
+          address: any;
+          privateKey: any;
+          publicKey: any;
+          algo: any;
+          rawAddress: Uint8Array | undefined;
+        };
+      }): void;
+    },
+    state = initialHdWalletState,
+  ) => {
+    const cyRootData = await loadCyRootDataFromKeyChain(state);
+    console.log('loadCyRootDataFromKeyChain : ', cyRootData);
+    if (cyRootData) {
+      console.log('cyRoot data loaded from keychain : ', cyRootData);
+      const { accounts } = cyRootData;
+      console.log('accounts : ', accounts);
+      if (!accounts) {
+        void Sentry.captureMessage('app load error for load existing wallet');
+      } else if (
+        accounts.ethereum[0].address !== _NO_CYPHERD_CREDENTIAL_AVAILABLE_
+      ) {
+        const attributes = {};
+        Object.keys(accounts).forEach((chainName: string) => {
+          const chainAccountList = accounts[chainName];
+          chainAccountList.forEach(
+            (addressDetail: {
+              address: any;
+              privateKey: any;
+              publicKey: any;
+              algo: any;
+              rawAddress: { [s: string]: number } | ArrayLike<number>;
+            }) => {
+              dispatch({
+                type: 'ADD_ADDRESS',
+                value: {
+                  chain: chainName,
+                  address: addressDetail.address,
+                  privateKey: addressDetail.privateKey,
+                  publicKey: addressDetail.publicKey,
+                  algo: addressDetail.algo,
+                  rawAddress: addressDetail.rawAddress
+                    ? new Uint8Array(Object.values(addressDetail.rawAddress))
+                    : undefined,
+                },
+              });
+              set(attributes, `${chainName}Address`, addressDetail.address);
+            },
+          );
+        });
+        await getToken(
+          get(attributes, 'ethereumAddress'),
+          get(attributes, 'cosmosAddress'),
+          get(attributes, 'osmosisAddress'),
+          get(attributes, 'junoAddress'),
+          get(attributes, 'stargazeAddress'),
+          get(attributes, 'nobleAddress'),
+        );
+        void registerIntercomUser(attributes);
+      } else {
+        void getReadOnlyWalletData().then(data => {
+          if (data) {
+            const ethereum = JSON.parse(data);
+            dispatch({
+              type: 'ADD_ADDRESS',
+              value: {
+                chain: 'ethereum',
+                address: ethereum.address,
+                privateKey: _NO_CYPHERD_CREDENTIAL_AVAILABLE_,
+                publicKey: '',
+                algo: '',
+                rawAddress: undefined,
+              },
+            });
+            dispatch({
+              type: 'ADD_ADDRESS',
+              value: {
+                address: ethToEvmos(ethereum.address),
+                privateKey: _NO_CYPHERD_CREDENTIAL_AVAILABLE_,
+                chain: 'evmos',
+                publicKey: '',
+                rawAddress: undefined,
+                algo: '',
+              },
+            });
+            dispatch({
+              type: 'SET_READ_ONLY_WALLET',
+              value: {
+                isReadOnlyWallet: true,
+              },
+            });
+            Intercom.registerIdentifiedUser({
+              userId: ethereum.observerId,
+            }).catch(error => {
+              Sentry.captureException(error);
+            });
+          } else {
+            dispatch({
+              type: 'ADD_ADDRESS',
+              value: {
+                chain: 'ethereum',
+                address: _NO_CYPHERD_CREDENTIAL_AVAILABLE_,
+                privateKey: _NO_CYPHERD_CREDENTIAL_AVAILABLE_,
+                publicKey: '',
+                algo: '',
+                rawAddress: undefined,
+              },
+            });
+          }
+        });
+      }
+    }
+  };
+
+  const getProfile = async (token: string) => {
+    const data = await getWalletProfile(token);
+    globalDispatch({ type: GlobalContextType.CARD_PROFILE, cardProfile: data });
+  };
+
+  const getAuthTokenData = async (
+    setForcedUpdate,
+    setTamperedSignMessageModal,
+    setUpdateModal,
+  ) => {
+    if (
+      ethereum?.address &&
+      ethereum?.privateKey !== _NO_CYPHERD_CREDENTIAL_AVAILABLE_
+    ) {
+      const signInResponse = await signIn(ethereum);
+      if (signInResponse) {
+        if (
+          signInResponse?.message === SignMessageValidationType.VALID &&
+          has(signInResponse, 'token')
+        ) {
+          setForcedUpdate(false);
+          setTamperedSignMessageModal(false);
+          globalDispatch({
+            type: GlobalContextType.SIGN_IN,
+            sessionToken: signInResponse?.token,
+          });
+          void getProfile(signInResponse.token);
+        } else if (
+          signInResponse?.message === SignMessageValidationType.INVALID
+        ) {
+          setUpdateModal(false);
+          setTamperedSignMessageModal(true);
+        } else if (
+          signInResponse?.message === SignMessageValidationType.NEEDS_UPDATE
+        ) {
+          setUpdateModal(true);
+          setForcedUpdate(true);
+        }
+      }
+    }
+  };
+
+  const getHosts = async (
+    setForcedUpdate,
+    setTamperedSignMessageModal,
+    setUpdateModal,
+  ) => {
+    const hosts = await initializeHostsFromAsync();
+    console.log('hosts : ', hosts, 'ethereum address: ', ethereum?.address);
+    if (hosts) {
+      if (
+        ethereum?.address &&
+        ethereum?.address !== _NO_CYPHERD_CREDENTIAL_AVAILABLE_ &&
+        ethereum?.privateKey !== _NO_CYPHERD_CREDENTIAL_AVAILABLE_
+      ) {
+        void getAuthTokenData(
+          setForcedUpdate,
+          setTamperedSignMessageModal,
+          setUpdateModal,
+        );
+      }
+    }
+  };
+
   return {
     initializeSentry,
     exitIfJailBroken,
     fetchRPCEndpointsFromServer,
     loadActivitiesFromAsyncStorage,
+    setPinAuthenticationStateValue,
+    setPinPresentStateValue,
+    loadExistingWallet,
+    getHosts,
   };
 }

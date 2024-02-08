@@ -129,253 +129,256 @@ import { WalletConnectV2Provider } from './src/components/walletConnectV2Provide
 import DefaultAuthRemoveModal from './src/components/v2/defaultAuthRemoveModal';
 import { Config } from 'react-native-config';
 import NoopTransport from '@sentry/react-native';
+import { InitializeAppProvider } from './src/components/initializeAppProvider';
 
 const { DynamicView, CText, DynamicImage } = require('./src/styles');
 
 const routingInstrumentation = new Sentry.ReactNavigationInstrumentation();
-const SENSITIVE_DATA_KEYS = ['password', 'seed', 'creditCardNumber'];
-function scrubData(key: string, value: any): any {
-  if (SENSITIVE_DATA_KEYS.includes(key)) {
-    return '********'; // Replace with asterisks
-  } else if (key === 'email') {
-    const domain: string = value.slice(value.indexOf('@'));
-    return `****${domain}`; // Replace with asterisks before domain name
-  } else {
-    return value; // Don't scrub other data
-  }
-}
-Sentry.init({
-  dsn: Config.SENTRY_DSN,
-  // environment: 'staging',
-  environment: Config.ENVIROINMENT ?? 'staging',
-  integrations: [
-    new Sentry.ReactNativeTracing({
-      routingInstrumentation,
-      tracingOrigins: ['127.0.0.1', 'api.cypherd.io'],
-    }),
-  ],
-  tracesSampleRate: 1.0,
-  beforeSend(event, hint) {
-    if (event?.extra && typeof event.extra === 'object') {
-      // Scrub data in extra context
-      for (const [key, value] of Object.entries(event.extra)) {
-        event.extra[key] = scrubData(key, value);
-      }
-    }
-    if (event?.request && typeof event.request === 'object') {
-      // Scrub data in request body
-      event.request.data = scrubData('requestBody', event.request.data);
-    }
-    if (event?.contexts?.app && typeof event.contexts.app === 'object') {
-      // Scrub data in app info under contexts
-      for (const [key, value] of Object.entries(event.contexts.app)) {
-        event.contexts.app[key] = scrubData(key, value);
-      }
-    }
-    if (event?.tags && typeof event.tags === 'object') {
-      // Scrub data in tags
-      for (const [key, value] of Object.entries(event.tags)) {
-        event.tags[key] = scrubData(key, value);
-      }
-    }
-    if (
-      event?.exception?.values &&
-      typeof event.exception.values === 'object'
-    ) {
-      // Scrub data in exceptions
-      for (const valueObj of event.exception.values) {
-        if (valueObj.type && SENSITIVE_DATA_KEYS.includes(valueObj.type)) {
-          valueObj.value = '********';
-        }
-      }
-    }
-    return event;
-  },
-  beforeBreadcrumb: (breadcrumb, hint) => {
-    if (breadcrumb.category === 'xhr') {
-      const requestUrl = JSON.stringify(hint?.xhr.__sentry_xhr__.url);
-      return {
-        ...breadcrumb,
-        data: {
-          requestUrl,
-        },
-      };
-    }
-    return breadcrumb;
-  },
-});
+// const SENSITIVE_DATA_KEYS = ['password', 'seed', 'creditCardNumber'];
+// function scrubData(key: string, value: any): any {
+//   if (SENSITIVE_DATA_KEYS.includes(key)) {
+//     return '********'; // Replace with asterisks
+//   } else if (key === 'email') {
+//     const domain: string = value.slice(value.indexOf('@'));
+//     return `****${domain}`; // Replace with asterisks before domain name
+//   } else {
+//     return value; // Don't scrub other data
+//   }
+// }
+// Sentry.init({
+//   dsn: Config.SENTRY_DSN,
+//   // environment: 'staging',
+//   environment: Config.ENVIROINMENT ?? 'staging',
+//   integrations: [
+//     new Sentry.ReactNativeTracing({
+//       routingInstrumentation,
+//       tracingOrigins: ['127.0.0.1', 'api.cypherd.io'],
+//     }),
+//   ],
+//   tracesSampleRate: 1.0,
+//   beforeSend(event, hint) {
+//     if (event?.extra && typeof event.extra === 'object') {
+//       // Scrub data in extra context
+//       for (const [key, value] of Object.entries(event.extra)) {
+//         event.extra[key] = scrubData(key, value);
+//       }
+//     }
+//     if (event?.request && typeof event.request === 'object') {
+//       // Scrub data in request body
+//       event.request.data = scrubData('requestBody', event.request.data);
+//     }
+//     if (event?.contexts?.app && typeof event.contexts.app === 'object') {
+//       // Scrub data in app info under contexts
+//       for (const [key, value] of Object.entries(event.contexts.app)) {
+//         event.contexts.app[key] = scrubData(key, value);
+//       }
+//     }
+//     if (event?.tags && typeof event.tags === 'object') {
+//       // Scrub data in tags
+//       for (const [key, value] of Object.entries(event.tags)) {
+//         event.tags[key] = scrubData(key, value);
+//       }
+//     }
+//     if (
+//       event?.exception?.values &&
+//       typeof event.exception.values === 'object'
+//     ) {
+//       // Scrub data in exceptions
+//       for (const valueObj of event.exception.values) {
+//         if (valueObj.type && SENSITIVE_DATA_KEYS.includes(valueObj.type)) {
+//           valueObj.value = '********';
+//         }
+//       }
+//     }
+//     return event;
+//   },
+//   beforeBreadcrumb: (breadcrumb, hint) => {
+//     if (breadcrumb.category === 'xhr') {
+//       const requestUrl = JSON.stringify(hint?.xhr.__sentry_xhr__.url);
+//       return {
+//         ...breadcrumb,
+//         data: {
+//           requestUrl,
+//         },
+//       };
+//     }
+//     return breadcrumb;
+//   },
+// });
 
 // AppsFlyer SDK initialization
-const NoOpFunction = () => {};
-appsFlyer.initSdk(
-  {
-    devKey: Config.AF_DEVKEY ?? '',
-    // TODO: make this based on ENV
-    isDebug: Config.ENVIROINMENT !== 'production',
-    appId: Config.AF_APPID ?? '',
-    // to begin we are not recieving any raw data on Cypher side.
-    onInstallConversionDataListener: false,
-    onDeepLinkListener: true,
-    // Deferring the SDK start launch event to later.
-    manualStart: true,
-  },
-  () => {
-    appsFlyer.onDeepLink(appsFlyerDeepLinkCallback);
-    appsFlyer.setOneLinkCustomDomains(
-      AppsFlyerConfiguration.brandedDomains,
-      () => {
-        appsFlyer.setAppInviteOneLinkID(
-          AppsFlyerConfiguration.oneLinkId,
-          NoOpFunction,
-        );
-      },
-      NoOpFunction,
-    );
-  },
-  NoOpFunction,
-);
+// const NoOpFunction = () => {};
+// appsFlyer.initSdk(
+//   {
+//     devKey: Config.AF_DEVKEY ?? '',
+//     // TODO: make this based on ENV
+//     isDebug: Config.ENVIROINMENT !== 'production',
+//     appId: Config.AF_APPID ?? '',
+//     // to begin we are not recieving any raw data on Cypher side.
+//     onInstallConversionDataListener: false,
+//     onDeepLinkListener: true,
+//     // Deferring the SDK start launch event to later.
+//     manualStart: true,
+//   },
+//   () => {
+//     appsFlyer.onDeepLink(appsFlyerDeepLinkCallback);
+//     appsFlyer.setOneLinkCustomDomains(
+//       AppsFlyerConfiguration.brandedDomains,
+//       () => {
+//         appsFlyer.setAppInviteOneLinkID(
+//           AppsFlyerConfiguration.oneLinkId,
+//           NoOpFunction,
+//         );
+//       },
+//       NoOpFunction,
+//     );
+//   },
+//   NoOpFunction,
+// );
 
-async function registerIntercomUser(walletAddresses: {
-  [key: string]: string;
-}) {
-  const devMode = await getDeveloperMode();
-  if (
-    !devMode &&
-    walletAddresses.ethereumAddress !== _NO_CYPHERD_CREDENTIAL_AVAILABLE_
-  ) {
-    Intercom.registerIdentifiedUser({
-      userId: walletAddresses.ethereumAddress,
-    }).catch(error => {});
-    Intercom.updateUser({
-      userId: walletAddresses.ethereumAddress,
-      customAttributes: {
-        ...walletAddresses,
-        version: DeviceInfo.getVersion(),
-      },
-    }).catch(error => {
-      Sentry.captureException(error);
-    });
-  }
-  void analytics().setAnalyticsCollectionEnabled(!devMode);
-}
+// async function registerIntercomUser(walletAddresses: {
+//   [key: string]: string;
+// }) {
+//   const devMode = await getDeveloperMode();
+//   if (
+//     !devMode &&
+//     walletAddresses.ethereumAddress !== _NO_CYPHERD_CREDENTIAL_AVAILABLE_
+//   ) {
+//     Intercom.registerIdentifiedUser({
+//       userId: walletAddresses.ethereumAddress,
+//     }).catch(error => {
+//       Sentry.captureException(error);
+//     });
+//     Intercom.updateUser({
+//       userId: walletAddresses.ethereumAddress,
+//       customAttributes: {
+//         ...walletAddresses,
+//         version: DeviceInfo.getVersion(),
+//       },
+//     }).catch(error => {
+//       Sentry.captureException(error);
+//     });
+//   }
+//   void analytics().setAnalyticsCollectionEnabled(!devMode);
+// }
 
-function _loadExistingWallet(
-  dispatch: {
-    (value: any): void;
-    (arg0: {
-      type: string;
-      value: {
-        chain: string;
-        address: any;
-        privateKey: any;
-        publicKey: any;
-        algo: any;
-        rawAddress: Uint8Array | undefined;
-      };
-    }): void;
-  },
-  state = initialHdWalletState,
-) {
-  loadCyRootDataFromKeyChain(state)
-    .then(cyRootData => {
-      const { accounts } = cyRootData;
-      if (!accounts) {
-        void Sentry.captureMessage('app load error for load existing wallet');
-      } else if (
-        accounts.ethereum[0].address !== _NO_CYPHERD_CREDENTIAL_AVAILABLE_
-      ) {
-        const attributes = {};
-        Object.keys(accounts).forEach((chainName: string) => {
-          const chainAccountList = accounts[chainName];
-          chainAccountList.forEach(
-            (addressDetail: {
-              address: any;
-              privateKey: any;
-              publicKey: any;
-              algo: any;
-              rawAddress: { [s: string]: number } | ArrayLike<number>;
-            }) => {
-              dispatch({
-                type: 'ADD_ADDRESS',
-                value: {
-                  chain: chainName,
-                  address: addressDetail.address,
-                  privateKey: addressDetail.privateKey,
-                  publicKey: addressDetail.publicKey,
-                  algo: addressDetail.algo,
-                  rawAddress: addressDetail.rawAddress
-                    ? new Uint8Array(Object.values(addressDetail.rawAddress))
-                    : undefined,
-                },
-              });
-              set(attributes, `${chainName}Address`, addressDetail.address);
-            },
-          );
-        });
-        getToken(
-          get(attributes, 'ethereumAddress'),
-          get(attributes, 'cosmosAddress'),
-          get(attributes, 'osmosisAddress'),
-          get(attributes, 'junoAddress'),
-          get(attributes, 'stargazeAddress'),
-          get(attributes, 'nobleAddress'),
-        );
-        void registerIntercomUser(attributes);
-      } else {
-        void getReadOnlyWalletData().then(data => {
-          if (data) {
-            const ethereum = JSON.parse(data);
-            dispatch({
-              type: 'ADD_ADDRESS',
-              value: {
-                chain: 'ethereum',
-                address: ethereum.address,
-                privateKey: _NO_CYPHERD_CREDENTIAL_AVAILABLE_,
-                publicKey: '',
-                algo: '',
-                rawAddress: undefined,
-              },
-            });
-            dispatch({
-              type: 'ADD_ADDRESS',
-              value: {
-                address: ethToEvmos(ethereum.address),
-                privateKey: _NO_CYPHERD_CREDENTIAL_AVAILABLE_,
-                chain: 'evmos',
-                publicKey: '',
-                rawAddress: undefined,
-                algo: '',
-              },
-            });
-            dispatch({
-              type: 'SET_READ_ONLY_WALLET',
-              value: {
-                isReadOnlyWallet: true,
-              },
-            });
-            Intercom.registerIdentifiedUser({
-              userId: ethereum.observerId,
-            }).catch(error => {
-              Sentry.captureException(error);
-            });
-          } else {
-            dispatch({
-              type: 'ADD_ADDRESS',
-              value: {
-                chain: 'ethereum',
-                address: _NO_CYPHERD_CREDENTIAL_AVAILABLE_,
-                privateKey: _NO_CYPHERD_CREDENTIAL_AVAILABLE_,
-                publicKey: '',
-                algo: '',
-                rawAddress: undefined,
-              },
-            });
-          }
-        });
-      }
-    })
-    .catch(Sentry.captureException);
-}
+// function _loadExistingWallet(
+//   dispatch: {
+//     (value: any): void;
+//     (arg0: {
+//       type: string;
+//       value: {
+//         chain: string;
+//         address: any;
+//         privateKey: any;
+//         publicKey: any;
+//         algo: any;
+//         rawAddress: Uint8Array | undefined;
+//       };
+//     }): void;
+//   },
+//   state = initialHdWalletState,
+// ) {
+//   loadCyRootDataFromKeyChain(state)
+//     .then(cyRootData => {
+//       const { accounts } = cyRootData;
+//       if (!accounts) {
+//         void Sentry.captureMessage('app load error for load existing wallet');
+//       } else if (
+//         accounts.ethereum[0].address !== _NO_CYPHERD_CREDENTIAL_AVAILABLE_
+//       ) {
+//         const attributes = {};
+//         Object.keys(accounts).forEach((chainName: string) => {
+//           const chainAccountList = accounts[chainName];
+//           chainAccountList.forEach(
+//             (addressDetail: {
+//               address: any;
+//               privateKey: any;
+//               publicKey: any;
+//               algo: any;
+//               rawAddress: { [s: string]: number } | ArrayLike<number>;
+//             }) => {
+//               dispatch({
+//                 type: 'ADD_ADDRESS',
+//                 value: {
+//                   chain: chainName,
+//                   address: addressDetail.address,
+//                   privateKey: addressDetail.privateKey,
+//                   publicKey: addressDetail.publicKey,
+//                   algo: addressDetail.algo,
+//                   rawAddress: addressDetail.rawAddress
+//                     ? new Uint8Array(Object.values(addressDetail.rawAddress))
+//                     : undefined,
+//                 },
+//               });
+//               set(attributes, `${chainName}Address`, addressDetail.address);
+//             },
+//           );
+//         });
+//         getToken(
+//           get(attributes, 'ethereumAddress'),
+//           get(attributes, 'cosmosAddress'),
+//           get(attributes, 'osmosisAddress'),
+//           get(attributes, 'junoAddress'),
+//           get(attributes, 'stargazeAddress'),
+//           get(attributes, 'nobleAddress'),
+//         );
+//         void registerIntercomUser(attributes);
+//       } else {
+//         void getReadOnlyWalletData().then(data => {
+//           if (data) {
+//             const ethereum = JSON.parse(data);
+//             dispatch({
+//               type: 'ADD_ADDRESS',
+//               value: {
+//                 chain: 'ethereum',
+//                 address: ethereum.address,
+//                 privateKey: _NO_CYPHERD_CREDENTIAL_AVAILABLE_,
+//                 publicKey: '',
+//                 algo: '',
+//                 rawAddress: undefined,
+//               },
+//             });
+//             dispatch({
+//               type: 'ADD_ADDRESS',
+//               value: {
+//                 address: ethToEvmos(ethereum.address),
+//                 privateKey: _NO_CYPHERD_CREDENTIAL_AVAILABLE_,
+//                 chain: 'evmos',
+//                 publicKey: '',
+//                 rawAddress: undefined,
+//                 algo: '',
+//               },
+//             });
+//             dispatch({
+//               type: 'SET_READ_ONLY_WALLET',
+//               value: {
+//                 isReadOnlyWallet: true,
+//               },
+//             });
+//             Intercom.registerIdentifiedUser({
+//               userId: ethereum.observerId,
+//             }).catch(error => {
+//               Sentry.captureException(error);
+//             });
+//           } else {
+//             dispatch({
+//               type: 'ADD_ADDRESS',
+//               value: {
+//                 chain: 'ethereum',
+//                 address: _NO_CYPHERD_CREDENTIAL_AVAILABLE_,
+//                 privateKey: _NO_CYPHERD_CREDENTIAL_AVAILABLE_,
+//                 publicKey: '',
+//                 algo: '',
+//                 rawAddress: undefined,
+//               },
+//             });
+//           }
+//         });
+//       }
+//     })
+//     .catch(Sentry.captureException);
+// }
 
 const toastConfig = {
   simpleToast: ({ text1, props }: { text1: string; props: any }) => (
@@ -414,16 +417,16 @@ const toastConfig = {
   ),
 };
 
-const checkUpdateNeeded = async () => {
-  try {
-    if (JailMonkey.isJailBroken()) {
-      // Alternative behaviour for jail-broken/rooted devices.
-      RNExitApp.exitApp();
-    }
-  } catch (error) {
-    Sentry.captureException(error);
-  }
-};
+// const checkUpdateNeeded = async () => {
+//   try {
+//     if (JailMonkey.isJailBroken()) {
+//       // Alternative behaviour for jail-broken/rooted devices.
+//       RNExitApp.exitApp();
+//     }
+//   } catch (error) {
+//     Sentry.captureException(error);
+//   }
+// };
 
 function App() {
   const { t } = useTranslation();
@@ -529,144 +532,144 @@ function App() {
   }, [walletConnectModalVisible]);
 
   // Don't change, its meant for one time operation
-  useEffect(() => {
-    void checkUpdateNeeded();
-    fetchRPCEndpointsFromServer(globalDispatch).catch(e => {
-      Sentry.captureException(e.message);
-    });
+  // useEffect(() => {
+  //   void checkUpdateNeeded();
+  //   fetchRPCEndpointsFromServer(globalDispatch).catch(e => {
+  //     Sentry.captureException(e.message);
+  //   });
 
-    const checkForUpdatesAndShowModal = async () => {
-      try {
-        const res = await inAppUpdates.checkNeedsUpdate();
-        if (res.shouldUpdate) {
-          setUpdateModal(true);
-        }
-      } catch (e) {
-        const errorObject = {
-          e,
-          platform: getPlatform(),
-          platformVersion: getPlatformVersion(),
-          appVersion: getVersion(),
-        };
-        Sentry.captureException(errorObject);
-      }
-    };
+  //   const checkForUpdatesAndShowModal = async () => {
+  //     try {
+  //       const res = await inAppUpdates.checkNeedsUpdate();
+  //       if (res.shouldUpdate) {
+  //         setUpdateModal(true);
+  //       }
+  //     } catch (e) {
+  //       const errorObject = {
+  //         e,
+  //         platform: getPlatform(),
+  //         platformVersion: getPlatformVersion(),
+  //         appVersion: getVersion(),
+  //       };
+  //       Sentry.captureException(errorObject);
+  //     }
+  //   };
 
-    void checkForUpdatesAndShowModal();
+  //   void checkForUpdatesAndShowModal();
 
-    AsyncStorage.getItem('activities', (_err, data) => {
-      data &&
-        dispatchActivity({
-          type: ActivityReducerAction.LOAD,
-          value: JSON.parse(data),
-        });
-    }).catch(Sentry.captureException);
+  //   AsyncStorage.getItem('activities', (_err, data) => {
+  //     data &&
+  //       dispatchActivity({
+  //         type: ActivityReducerAction.LOAD,
+  //         value: JSON.parse(data),
+  //       });
+  //   }).catch(Sentry.captureException);
 
-    if (Platform.OS === 'ios') {
-      registerForRemoteMessages();
-    } else {
-      onMessage();
-    }
-  }, []);
+  //   if (Platform.OS === 'ios') {
+  //     registerForRemoteMessages();
+  //   } else {
+  //     onMessage();
+  //   }
+  // }, []);
 
-  const getProfile = async (token: string) => {
-    const data = await getWalletProfile(token);
-    globalDispatch({ type: GlobalContextType.CARD_PROFILE, cardProfile: data });
-  };
+  // const getProfile = async (token: string) => {
+  //   const data = await getWalletProfile(token);
+  //   globalDispatch({ type: GlobalContextType.CARD_PROFILE, cardProfile: data });
+  // };
 
-  useEffect(() => {
-    const biometricType = async () => {
-      // if (isAndroid()) {
-      const isBiometricPasscodeEnabled = await isBiometricEnabled();
-      setPinAuthentication(
-        isBiometricPasscodeEnabled && !(await isPinAuthenticated()),
-      ); //  for android devices with biometreics enabled the pinAuthentication will be set true
-      // }
-    };
-    setTimeout(() => {
-      SplashScreen.hide();
-      void biometricType();
-    }, SPLASH_SCREEN_TIMEOUT);
-  }, []);
+  // useEffect(() => {
+  //   const biometricType = async () => {
+  //     // if (isAndroid()) {
+  //     const isBiometricPasscodeEnabled = await isBiometricEnabled();
+  //     setPinAuthentication(
+  //       isBiometricPasscodeEnabled && !(await isPinAuthenticated()),
+  //     ); //  for android devices with biometreics enabled the pinAuthentication will be set true
+  //     // }
+  //   };
+  //   setTimeout(() => {
+  //     SplashScreen.hide();
+  //     void biometricType();
+  //   }, SPLASH_SCREEN_TIMEOUT);
+  // }, []);
 
-  useEffect(() => {
-    const getPinValue = async () => {
-      const pinAuthenticated = await isPinAuthenticated();
-      const hasBiometricEnabled = await isBiometricEnabled();
-      if (!hasBiometricEnabled) {
-        if (pinAuthenticated) {
-          setPinPresent(PinPresentStates.TRUE);
-        } else {
-          await loadCyRootDataFromKeyChain(state, () =>
-            setShowDefaultAuthRemoveModal(true),
-          );
-          setPinPresent(PinPresentStates.FALSE);
-        }
-      } else {
-        if (pinAuthenticated) {
-          setPinPresent(PinPresentStates.TRUE);
-        }
-      }
-    };
-    void getPinValue();
-  }, []);
+  // useEffect(() => {
+  //   const getPinValue = async () => {
+  //     const pinAuthenticated = await isPinAuthenticated();
+  //     const hasBiometricEnabled = await isBiometricEnabled();
+  //     if (!hasBiometricEnabled) {
+  //       if (pinAuthenticated) {
+  //         setPinPresent(PinPresentStates.TRUE);
+  //       } else {
+  //         await loadCyRootDataFromKeyChain(state, () =>
+  //           setShowDefaultAuthRemoveModal(true),
+  //         );
+  //         setPinPresent(PinPresentStates.FALSE);
+  //       }
+  //     } else {
+  //       if (pinAuthenticated) {
+  //         setPinPresent(PinPresentStates.TRUE);
+  //       }
+  //     }
+  //   };
+  //   void getPinValue();
+  // }, []);
 
-  useEffect(() => {
-    if (ethereum.address === undefined && pinAuthentication) {
-      _loadExistingWallet(dispatch, state);
-    }
-  }, [pinAuthentication]);
+  // useEffect(() => {
+  //   if (ethereum.address === undefined && pinAuthentication) {
+  //     _loadExistingWallet(dispatch, state);
+  //   }
+  // }, [pinAuthentication]);
 
-  const getAuthTokenData = async () => {
-    if (
-      ethereum?.address &&
-      ethereum?.privateKey !== _NO_CYPHERD_CREDENTIAL_AVAILABLE_
-    ) {
-      signIn(ethereum)
-        .then(signInResponse => {
-          if (
-            signInResponse?.message === SignMessageValidationType.VALID &&
-            has(signInResponse, 'token')
-          ) {
-            setForcedUpdate(false);
-            setTamperedSignMessageModal(false);
-            globalDispatch({
-              type: GlobalContextType.SIGN_IN,
-              sessionToken: signInResponse?.token,
-            });
-            void getProfile(signInResponse.token);
-          } else if (
-            signInResponse?.message === SignMessageValidationType.INVALID
-          ) {
-            setUpdateModal(false);
-            setTamperedSignMessageModal(true);
-          } else if (
-            signInResponse?.message === SignMessageValidationType.NEEDS_UPDATE
-          ) {
-            setUpdateModal(true);
-            setForcedUpdate(true);
-          }
-        })
-        .catch(e => {
-          Sentry.captureException(e.message);
-        });
-    }
-  };
+  // const getAuthTokenData = async () => {
+  //   if (
+  //     ethereum?.address &&
+  //     ethereum?.privateKey !== _NO_CYPHERD_CREDENTIAL_AVAILABLE_
+  //   ) {
+  //     signIn(ethereum)
+  //       .then(signInResponse => {
+  //         if (
+  //           signInResponse?.message === SignMessageValidationType.VALID &&
+  //           has(signInResponse, 'token')
+  //         ) {
+  //           setForcedUpdate(false);
+  //           setTamperedSignMessageModal(false);
+  //           globalDispatch({
+  //             type: GlobalContextType.SIGN_IN,
+  //             sessionToken: signInResponse?.token,
+  //           });
+  //           void getProfile(signInResponse.token);
+  //         } else if (
+  //           signInResponse?.message === SignMessageValidationType.INVALID
+  //         ) {
+  //           setUpdateModal(false);
+  //           setTamperedSignMessageModal(true);
+  //         } else if (
+  //           signInResponse?.message === SignMessageValidationType.NEEDS_UPDATE
+  //         ) {
+  //           setUpdateModal(true);
+  //           setForcedUpdate(true);
+  //         }
+  //       })
+  //       .catch(e => {
+  //         Sentry.captureException(e.message);
+  //       });
+  //   }
+  // };
 
-  useEffect(() => {
-    const getHosts = async () => {
-      await initializeHostsFromAsync().then(resp => {
-        if (
-          ethereum?.address &&
-          ethereum?.address !== _NO_CYPHERD_CREDENTIAL_AVAILABLE_ &&
-          ethereum?.privateKey !== _NO_CYPHERD_CREDENTIAL_AVAILABLE_
-        ) {
-          void getAuthTokenData();
-        }
-      });
-    };
-    void getHosts();
-  }, [ethereum.address]);
+  // useEffect(() => {
+  //   const getHosts = async () => {
+  //     await initializeHostsFromAsync().then(resp => {
+  //       if (
+  //         ethereum?.address &&
+  //         ethereum?.address !== _NO_CYPHERD_CREDENTIAL_AVAILABLE_ &&
+  //         ethereum?.privateKey !== _NO_CYPHERD_CREDENTIAL_AVAILABLE_
+  //       ) {
+  //         void getAuthTokenData();
+  //       }
+  //     });
+  //   };
+  //   void getHosts();
+  // }, [ethereum.address]);
 
   useEffect(() => {
     if (walletConnectState?.itemsAdded) {
@@ -888,7 +891,7 @@ function App() {
                             <GlobalModal>
                               <InitializeAppProvider>
                                 <WalletConnectV2Provider>
-                                  {ethereum.address === undefined ? (
+                                  {/* {ethereum.address === undefined ? (
                                     pinAuthentication ||
                                     pinPresent === PinPresentStates.NOTSET ? (
                                       <LoadingStack />
@@ -920,7 +923,9 @@ function App() {
                                     )
                                   ) : (
                                     <TabStack />
-                                  )}
+                                  )} */}
+                                  {console.log('tabstack rendered')}
+                                  <TabStack />
                                   <Toast
                                     config={toastConfig}
                                     position={'bottom'}
