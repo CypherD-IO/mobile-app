@@ -331,7 +331,7 @@ function App() {
                             <GlobalModal>
                               <InitializeAppProvider>
                                 <WalletConnectV2Provider>
-                                  {ethereum.address === undefined ? (
+                                  {/* {ethereum.address === undefined ? (
                                     pinAuthentication ||
                                     pinPresent === PinPresentStates.NOTSET ? (
                                       <LoadingStack />
@@ -363,7 +363,9 @@ function App() {
                                     )
                                   ) : (
                                     <TabStack />
-                                  )}
+                                  )} */}
+                                  {console.log('tabstack rendered')}
+                                  <TabStack />
                                   <Toast
                                     config={toastConfig}
                                     position={'bottom'}
