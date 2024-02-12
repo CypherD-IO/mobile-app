@@ -59,7 +59,7 @@ export default function OnBoarding({ navigation }) {
           source={AppImages.ON_BOARDING_1}
           className={clsx('mt-[20px]')}
           resizeMode='contain'
-          style={{ height: height * 0.62, width }}
+          style={{ height: height * 0.7, width }}
         />
       </CyDScrollView>
     );

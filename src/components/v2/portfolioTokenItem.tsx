@@ -100,7 +100,9 @@ const RenderRightActions = (navigation: any, tokenData: any) => {
           <CyDText className={'text-center mt-[5px] text-[12px] font-bold'}>{t<string>('FUND_CARD')}</CyDText>
       </CyDView>} */}
 
-      {isBridgeable && (
+      {/* disabled bridge - Feb 10th 2024 */}
+
+      {/* {isBridgeable && (
         <CyDView>
           <CyDTouchView
             className={'flex items-center justify-center mx-[15px]'}
@@ -120,7 +122,7 @@ const RenderRightActions = (navigation: any, tokenData: any) => {
             {t<string>('BRIDGE')}
           </CyDText>
         </CyDView>
-      )}
+      )} */}
 
       {isSwapable && (
         <CyDView>
