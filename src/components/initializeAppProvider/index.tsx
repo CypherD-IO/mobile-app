@@ -90,7 +90,7 @@ export const InitializeAppProvider = ({ children }: any) => {
   }, [ethereum.address]);
 
   return (
-    <>
+    <WalletConnectV2Provider>
       {ethereum.address === undefined ? (
         pinAuthentication || pinPresent === PinPresentStates.NOTSET ? (
           <LoadingStack />
@@ -112,12 +112,8 @@ export const InitializeAppProvider = ({ children }: any) => {
           <OnBoardingStack />
         )
       ) : (
-        <WalletConnectV2Provider>
-          <TabStack />
-        </WalletConnectV2Provider>
-
-        // children
+        children
       )}
-    </>
+    </WalletConnectV2Provider>
   );
 };

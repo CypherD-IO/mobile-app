@@ -890,8 +890,7 @@ function App() {
                             }}>
                             <GlobalModal>
                               <InitializeAppProvider>
-                                <WalletConnectV2Provider>
-                                  {/* {ethereum.address === undefined ? (
+                                {/* {ethereum.address === undefined ? (
                                     pinAuthentication ||
                                     pinPresent === PinPresentStates.NOTSET ? (
                                       <LoadingStack />
@@ -924,38 +923,35 @@ function App() {
                                   ) : (
                                     <TabStack />
                                   )} */}
-                                  {console.log('tabstack rendered')}
-                                  <TabStack />
-                                  <Toast
-                                    config={toastConfig}
-                                    position={'bottom'}
-                                    bottomOffset={140}
-                                  />
-                                  {<ConfirmationModals />}
-                                  <WalletConnectModal
-                                    walletConnectModalVisible={
-                                      walletConnectModalData.displayWalletConnectModal
-                                    }
-                                    setWalletConnectModalVisible={
-                                      setWalletConnectModalVisible
-                                    }
-                                    renderContent={
-                                      walletConnectModalData.renderContent
-                                    }
-                                    walletConnectApproveRequest={
-                                      walletConnectApproveRequest
-                                    }
-                                    walletConnectRejectRequest={
-                                      walletConnectRejectRequest
-                                    }
-                                    dispatchActivity={dispatchActivity}
-                                    params={walletConnectModalData.params}
-                                    request={request}
-                                    walletConnectDispatch={
-                                      walletConnectDispatch
-                                    }
-                                  />
-                                </WalletConnectV2Provider>
+                                {console.log('tabstack rendered')}
+                                <TabStack />
+                                <Toast
+                                  config={toastConfig}
+                                  position={'bottom'}
+                                  bottomOffset={140}
+                                />
+                                {<ConfirmationModals />}
+                                <WalletConnectModal
+                                  walletConnectModalVisible={
+                                    walletConnectModalData.displayWalletConnectModal
+                                  }
+                                  setWalletConnectModalVisible={
+                                    setWalletConnectModalVisible
+                                  }
+                                  renderContent={
+                                    walletConnectModalData.renderContent
+                                  }
+                                  walletConnectApproveRequest={
+                                    walletConnectApproveRequest
+                                  }
+                                  walletConnectRejectRequest={
+                                    walletConnectRejectRequest
+                                  }
+                                  dispatchActivity={dispatchActivity}
+                                  params={walletConnectModalData.params}
+                                  request={request}
+                                  walletConnectDispatch={walletConnectDispatch}
+                                />
                               </InitializeAppProvider>
                             </GlobalModal>
                           </NavigationContainer>
