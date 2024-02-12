@@ -138,7 +138,6 @@ export default function Bridge(props: { navigation?: any; route?: any }) {
   const [fromChain, setFromChain] = useState<Chain>(
     routeData?.fromChainData?.chainDetails ?? ALL_CHAINS[0],
   );
-  const fromChainData = getAvailableChains(hdWallet);
   const [fromTokenData, setFromTokenData] = useState([]);
   const [fromToken, setFromToken] = useState<TokenMeta>();
   const [toChainData, setToChainData] = useState<Chain>(CHAIN_STARGAZE);
@@ -183,6 +182,9 @@ export default function Bridge(props: { navigation?: any; route?: any }) {
   const [swapSupportedChains, setSwapSupportedChains] = useState([
     1, 137, 10, 43114, 42161, 56, 250, 324, 8453, 1101, 1313161554, 1284, 1285,
   ]);
+  let fromChainData = getAvailableChains(hdWallet).filter(chain =>
+    swapSupportedChains.includes(chain.chainIdNumber),
+  );
   const slippage = 0.4;
 
   const [quoteData, setQuoteData] = useState<bridgeQuoteCosmosInterface>({
@@ -299,6 +301,7 @@ export default function Bridge(props: { navigation?: any; route?: any }) {
 
   const setFromChainFunction = ({ item }) => {
     setFromChain(item);
+    setToChain(item);
     if (
       [
         ChainBackendNames.COSMOS,
@@ -1266,15 +1269,20 @@ export default function Bridge(props: { navigation?: any; route?: any }) {
       const getSwapSupportedChains = async () => {
         const response = await getWithAuth('/v1/swap/evm/chains');
         if (!response.isError && response?.data?.chains) {
-          const { fromChainData } = routeData;
+          const { fromChainData: fromChainDataFromRoute } = routeData;
           const { chains } = response.data ?? [];
+          fromChainData = getAvailableChains(hdWallet).filter(chain =>
+            chains.includes(chain.chainIdNumber),
+          );
           setSwapSupportedChains(chains);
           if (
             routeData?.fromChainData &&
-            chains.includes(fromChainData.chainDetails.chainIdNumber) &&
+            chains.includes(
+              fromChainDataFromRoute.chainDetails.chainIdNumber,
+            ) &&
             routeData.title === 'Swap'
           ) {
-            setToChain(fromChainData.chainDetails);
+            setToChain(fromChainDataFromRoute.chainDetails);
           }
         }
       };
@@ -1301,7 +1309,8 @@ export default function Bridge(props: { navigation?: any; route?: any }) {
       toChain?.name === fromChain.name &&
       !swapSupportedChains.includes(fromChain.chainIdNumber)
     ) {
-      setToChain(tempData);
+      // diaabled bridge - Feb 10th 2024
+      // setToChain(tempData);
     }
     setToChainData(chainData);
   }, [fromChain, toChain]);
@@ -2611,7 +2620,10 @@ export default function Bridge(props: { navigation?: any; route?: any }) {
                 className={
                   'bg-secondaryBackgroundColor my-[5px] border-[1px] border-[#EBEBEB] rounded-[8px]'
                 }
-                onPress={() => setToChainModalVisible(true)}>
+                onPress={() => setToChainModalVisible(true)}
+                disabled={true}
+                // disabled bridge - Feb 10th 2024
+              >
                 <CyDView
                   className={
                     'h-[50px] px-[18px] flex flex-row justify-between items-center'
@@ -2628,8 +2640,8 @@ export default function Bridge(props: { navigation?: any; route?: any }) {
                       {toChain?.name}
                     </CyDText>
                   </CyDView>
-
-                  <CyDImage source={AppImages.DOWN_ARROW} />
+                  {/* disabled bridge - Feb 10th 2024 */}
+                  {/* <CyDImage source={AppImages.DOWN_ARROW} /> */}
                 </CyDView>
               </CyDTouchView>
 
