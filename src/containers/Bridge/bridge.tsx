@@ -2529,7 +2529,7 @@ export default function Bridge(props: { navigation?: any; route?: any }) {
 
         {showDropDown && (
           <CyDView className='mt-[20px]'>
-            <CyDView
+            {/* <CyDView
               className='bg-white border-[0.2px] rounded-[8px] border-sepratorColor mx-[20px] px-[20px] py-[10px] shadow shadow-sepratorColor'
               style={styles.shadowProp}>
               <CyDText
@@ -2538,6 +2538,43 @@ export default function Bridge(props: { navigation?: any; route?: any }) {
                 }>
                 {t<string>('FROM')}
               </CyDText>
+
+            </CyDView> */}
+
+            <CyDView
+              className={
+                'my-[16px] bg-white rounded-[8px] border-sepratorColor border-[0.2px] mx-[20px] px-[20px] pt-[10px] shadow'
+              }
+              style={styles.shadowProp}>
+              {/* disabled bridge - Feb 10th 2024 */}
+
+              {/* <CyDTouchView
+                className={
+                  'bg-secondaryBackgroundColor my-[5px] border-[1px] border-[#EBEBEB] rounded-[8px]'
+                }
+                onPress={() => setToChainModalVisible(true)}
+                disabled={true}
+                // disabled bridge - Feb 10th 2024
+              >
+                <CyDView
+                  className={
+                    'h-[50px] px-[18px] flex flex-row justify-between items-center'
+                  }>
+                  <CyDView className={'flex flex-row items-center'}>
+                    <CyDImage
+                      source={toChain?.logo_url}
+                      className={'w-[30px] h-[30px]'}
+                    />
+                    <CyDText
+                      className={
+                        'text-center text-black font-nunito text-[16px] ml-[8px]'
+                      }>
+                      {toChain?.name}
+                    </CyDText>
+                  </CyDView>
+                  <CyDImage source={AppImages.DOWN_ARROW} />
+                </CyDView>
+              </CyDTouchView> */}
 
               <CyDTouchView
                 className={
@@ -2551,7 +2588,7 @@ export default function Bridge(props: { navigation?: any; route?: any }) {
                   <CyDView className={'flex flex-row items-center'}>
                     <CyDImage
                       source={fromChain.logo_url}
-                      className={'w-[30px] h-[30px]'}
+                      className={'w-[24px] h-[24px]'}
                     />
                     <CyDText
                       className={
@@ -2577,7 +2614,7 @@ export default function Bridge(props: { navigation?: any; route?: any }) {
                     }>
                     <CyDText
                       className={'text-[#434343] text-[16px] font-extrabold'}>
-                      {'Token'}
+                      {'From'}
                     </CyDText>
                   </CyDView>
 
@@ -2588,7 +2625,7 @@ export default function Bridge(props: { navigation?: any; route?: any }) {
                     <CyDView className={'flex flex-row items-center'}>
                       <CyDImage
                         source={{ uri: fromToken?.logoUrl ?? '' }}
-                        className={'w-[30px] h-[30px]'}
+                        className={'w-[24px] h-[24px]'}
                       />
                       <CyDText
                         className={
@@ -2600,48 +2637,6 @@ export default function Bridge(props: { navigation?: any; route?: any }) {
                     </CyDView>
                     <CyDImage source={AppImages.DOWN_ARROW} />
                   </CyDView>
-                </CyDView>
-              </CyDTouchView>
-            </CyDView>
-
-            <CyDView
-              className={
-                'my-[16px] bg-white rounded-[8px] border-sepratorColor border-[0.2px] mx-[20px] px-[20px] pt-[10px] shadow'
-              }
-              style={styles.shadowProp}>
-              <CyDText
-                className={
-                  'font-extrabold text-[16px] mt-[1px] ml-[3px] font-nunito text-black '
-                }>
-                {t<string>('TO')}
-              </CyDText>
-
-              <CyDTouchView
-                className={
-                  'bg-secondaryBackgroundColor my-[5px] border-[1px] border-[#EBEBEB] rounded-[8px]'
-                }
-                onPress={() => setToChainModalVisible(true)}
-                disabled={true}
-                // disabled bridge - Feb 10th 2024
-              >
-                <CyDView
-                  className={
-                    'h-[50px] px-[18px] flex flex-row justify-between items-center'
-                  }>
-                  <CyDView className={'flex flex-row items-center'}>
-                    <CyDImage
-                      source={toChain?.logo_url}
-                      className={'w-[30px] h-[30px]'}
-                    />
-                    <CyDText
-                      className={
-                        'text-center text-black font-nunito text-[16px] ml-[8px]'
-                      }>
-                      {toChain?.name}
-                    </CyDText>
-                  </CyDView>
-                  {/* disabled bridge - Feb 10th 2024 */}
-                  {/* <CyDImage source={AppImages.DOWN_ARROW} /> */}
                 </CyDView>
               </CyDTouchView>
 
@@ -2661,7 +2656,7 @@ export default function Bridge(props: { navigation?: any; route?: any }) {
                     }>
                     <CyDText
                       className={'text-[#434343] text-[16px] font-extrabold'}>
-                      {'Token'}
+                      {'To'}
                     </CyDText>
                   </CyDView>
 
@@ -2674,7 +2669,7 @@ export default function Bridge(props: { navigation?: any; route?: any }) {
                         source={{
                           uri: toToken?.logoUrl ?? toToken?.logo ?? '',
                         }}
-                        className={'w-[30px] h-[30px]'}
+                        className={'w-[24px] h-[24px]'}
                       />
                       <CyDText
                         className={
