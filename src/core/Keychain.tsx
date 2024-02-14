@@ -517,10 +517,19 @@ export const isBiometricEnabled = async () => {
 
 export const removePin = async (hdWallet: any, pin = '') => {
   const mnemonic = await loadRecoveryPhraseFromKeyChain(false, pin);
-  const cyRootData = await loadCyRootDataFromKeyChain(hdWallet);
+  const cyRootData = await loadCyRootDataFromKeyChain(hdWallet.state);
   if (cyRootData) {
     await removeFromKeyChain(CYPHERD_ROOT_DATA);
-    await saveCyRootDataToKeyChain(cyRootData);
+    let dataToSave;
+    if (isAndroid() && cyRootData && mnemonic) {
+      dataToSave = CryptoJS.AES.encrypt(
+        JSON.stringify(cyRootData),
+        mnemonic,
+      ).toString();
+    } else {
+      dataToSave = cyRootData;
+    }
+    await saveCyRootDataToKeyChain(dataToSave);
   }
   if (mnemonic) {
     await removeFromKeyChain(CYPHERD_SEED_PHRASE_KEY);
