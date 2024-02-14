@@ -1,4 +1,4 @@
-import React, { Dispatch, SetStateAction, useReducer, useState } from 'react';
+import { Dispatch, SetStateAction, useContext } from 'react';
 import * as Sentry from '@sentry/react-native';
 import { Config } from 'react-native-config';
 import JailMonkey from 'jail-monkey';
@@ -17,51 +17,47 @@ import {
   setRpcEndpoints,
 } from '../../core/asyncStorage';
 import {
+  GlobalContext,
   RpcResponseDetail,
-  gloabalContextReducer,
   initialGlobalState,
   signIn,
 } from '../../core/globalContext';
 import { get, has, set } from 'lodash';
 import useAxios from '../../core/HttpRequest';
 import AsyncStorage from '@react-native-async-storage/async-storage';
-import {
-  ActivityReducerAction,
-  ActivityStateReducer,
-  initialActivityState,
-} from '../../reducers/activity_reducer';
+import { ActivityReducerAction } from '../../reducers/activity_reducer';
 import {
   isBiometricEnabled,
   isPinAuthenticated,
   loadCyRootDataFromKeyChain,
 } from '../../core/Keychain';
-import { hdWalletStateReducer, initialHdWalletState } from '../../reducers';
-import { _NO_CYPHERD_CREDENTIAL_AVAILABLE_ } from '../../core/util';
+import { initialHdWalletState } from '../../reducers';
+import {
+  ActivityContext,
+  HdWalletContext,
+  _NO_CYPHERD_CREDENTIAL_AVAILABLE_,
+  getPlatform,
+  getPlatformVersion,
+} from '../../core/util';
 import { getToken } from '../../core/push';
 import { ethToEvmos } from '@tharsis/address-converter';
 import Intercom from '@intercom/intercom-react-native';
 import analytics from '@react-native-firebase/analytics';
 import DeviceInfo, { getVersion } from 'react-native-device-info';
 import { getWalletProfile } from '../../core/card';
+import SpInAppUpdates from 'sp-react-native-in-app-updates';
 
 export default function useInitializer() {
   const SENSITIVE_DATA_KEYS = ['password', 'seed', 'creditCardNumber'];
   const routingInstrumentation = new Sentry.ReactNavigationInstrumentation();
   const { getWithoutAuth } = useAxios();
-  const [stateActivity, dispatchActivity] = useReducer(
-    ActivityStateReducer,
-    initialActivityState,
+  const globalContext = useContext<any>(GlobalContext);
+  const hdWallet = useContext<any>(HdWalletContext);
+  const activityContext = useContext<any>(ActivityContext);
+  const ethereum = hdWallet.state.wallet.ethereum;
+  const inAppUpdates = new SpInAppUpdates(
+    false, // isDebug
   );
-  const [state, dispatch] = useReducer(
-    hdWalletStateReducer,
-    initialHdWalletState,
-  );
-  const [globalState, globalDispatch] = React.useReducer(
-    gloabalContextReducer,
-    initialGlobalState,
-  );
-  const ethereum = state.wallet.ethereum;
-
   const scrubData = (key: string, value: any): any => {
     if (SENSITIVE_DATA_KEYS.includes(key)) {
       return '********'; // Replace with asterisks
@@ -229,10 +225,29 @@ export default function useInitializer() {
     return result;
   };
 
+  const checkForUpdatesAndShowModal = async (
+    setUpdateModal: Dispatch<SetStateAction<boolean>>,
+  ) => {
+    try {
+      const res = await inAppUpdates.checkNeedsUpdate();
+      if (res.shouldUpdate) {
+        setUpdateModal(true);
+      }
+    } catch (e) {
+      const errorObject = {
+        e,
+        platform: getPlatform(),
+        platformVersion: getPlatformVersion(),
+        appVersion: getVersion(),
+      };
+      Sentry.captureException(errorObject);
+    }
+  };
+
   const loadActivitiesFromAsyncStorage = async () => {
     await AsyncStorage.getItem('activities', (_err, data) => {
       data &&
-        dispatchActivity({
+        activityContext.dispatchActivity({
           type: ActivityReducerAction.LOAD,
           value: JSON.parse(data),
         });
@@ -253,8 +268,12 @@ export default function useInitializer() {
       if (pinAuthenticated) {
         return PinPresentStates.TRUE;
       } else {
-        await loadCyRootDataFromKeyChain(state, () =>
-          setShowDefaultAuthRemoveModal(true),
+        await loadCyRootDataFromKeyChain(
+          hdWallet.state,
+          () => {
+            setShowDefaultAuthRemoveModal(true);
+          },
+          false,
         );
         return PinPresentStates.FALSE;
       }
@@ -283,11 +302,8 @@ export default function useInitializer() {
     state = initialHdWalletState,
   ) => {
     const cyRootData = await loadCyRootDataFromKeyChain(state);
-    console.log('loadCyRootDataFromKeyChain : ', cyRootData);
     if (cyRootData) {
-      console.log('cyRoot data loaded from keychain : ', cyRootData);
       const { accounts } = cyRootData;
-      console.log('accounts : ', accounts);
       if (!accounts) {
         void Sentry.captureMessage('app load error for load existing wallet');
       } else if (
@@ -387,13 +403,16 @@ export default function useInitializer() {
 
   const getProfile = async (token: string) => {
     const data = await getWalletProfile(token);
-    globalDispatch({ type: GlobalContextType.CARD_PROFILE, cardProfile: data });
+    globalContext.globalDispatch({
+      type: GlobalContextType.CARD_PROFILE,
+      cardProfile: data,
+    });
   };
 
   const getAuthTokenData = async (
-    setForcedUpdate,
-    setTamperedSignMessageModal,
-    setUpdateModal,
+    setForcedUpdate: Dispatch<SetStateAction<boolean>>,
+    setTamperedSignMessageModal: Dispatch<SetStateAction<boolean>>,
+    setUpdateModal: Dispatch<SetStateAction<boolean>>,
   ) => {
     if (
       ethereum?.address &&
@@ -407,7 +426,7 @@ export default function useInitializer() {
         ) {
           setForcedUpdate(false);
           setTamperedSignMessageModal(false);
-          globalDispatch({
+          globalContext.globalDispatch({
             type: GlobalContextType.SIGN_IN,
             sessionToken: signInResponse?.token,
           });
@@ -428,12 +447,11 @@ export default function useInitializer() {
   };
 
   const getHosts = async (
-    setForcedUpdate,
-    setTamperedSignMessageModal,
-    setUpdateModal,
+    setForcedUpdate: Dispatch<SetStateAction<boolean>>,
+    setTamperedSignMessageModal: Dispatch<SetStateAction<boolean>>,
+    setUpdateModal: Dispatch<SetStateAction<boolean>>,
   ) => {
     const hosts = await initializeHostsFromAsync();
-    console.log('hosts : ', hosts, 'ethereum address: ', ethereum?.address);
     if (hosts) {
       if (
         ethereum?.address &&
@@ -458,5 +476,6 @@ export default function useInitializer() {
     setPinPresentStateValue,
     loadExistingWallet,
     getHosts,
+    checkForUpdatesAndShowModal,
   };
 }

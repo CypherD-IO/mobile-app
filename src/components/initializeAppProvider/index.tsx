@@ -1,22 +1,33 @@
-import React, { useEffect, useReducer, useState } from 'react';
+import React, { useContext, useEffect, useState } from 'react';
 import useInitializer from '../../hooks/useInitializer';
-import {
-  gloabalContextReducer,
-  initialGlobalState,
-} from '../../core/globalContext';
-import { Platform } from 'react-native';
+import { GlobalContext } from '../../core/globalContext';
+import { Linking, Platform } from 'react-native';
 import { onMessage, registerForRemoteMessages } from '../../core/push';
 import { PinPresentStates } from '../../constants/enum';
-import { hdWalletStateReducer, initialHdWalletState } from '../../reducers';
 import LoadingStack from '../../routes/loading';
 import PinAuthRoute from '../../routes/pinAuthRoute';
 import * as C from '../../../src/constants/index';
 import OnBoardingStack from '../../routes/onBoarding';
-import { _NO_CYPHERD_CREDENTIAL_AVAILABLE_ } from '../../core/util';
-import TabStack from '../../routes/tabStack';
+import {
+  HdWalletContext,
+  _NO_CYPHERD_CREDENTIAL_AVAILABLE_,
+} from '../../core/util';
 import { WalletConnectV2Provider } from '../walletConnectV2Provider';
 import { SPLASH_SCREEN_TIMEOUT } from '../../constants/timeOuts';
 import SplashScreen from 'react-native-lottie-splash-screen';
+import DefaultAuthRemoveModal from '../v2/defaultAuthRemoveModal';
+import Dialog, {
+  DialogButton,
+  DialogContent,
+  DialogFooter,
+} from 'react-native-popup-dialog';
+import * as Sentry from '@sentry/react-native';
+import analytics from '@react-native-firebase/analytics';
+import { t } from 'i18next';
+import { CyDText } from '../../styles/tailwindStyles';
+import { sendFirebaseEvent } from '../../containers/utilities/analyticsUtility';
+import Intercom from '@intercom/intercom-react-native';
+import RNExitApp from 'react-native-exit-app';
 
 export const InitializeAppProvider = ({ children }: any) => {
   const {
@@ -28,31 +39,27 @@ export const InitializeAppProvider = ({ children }: any) => {
     setPinPresentStateValue,
     loadExistingWallet,
     getHosts,
+    checkForUpdatesAndShowModal,
   } = useInitializer();
-  const [globalState, globalDispatch] = React.useReducer(
-    gloabalContextReducer,
-    initialGlobalState,
-  );
+  const globalContext = useContext<any>(GlobalContext);
   const [pinAuthentication, setPinAuthentication] = useState(false);
   const [pinPresent, setPinPresent] = useState(PinPresentStates.NOTSET);
   const [showDefaultAuthRemoveModal, setShowDefaultAuthRemoveModal] =
     useState<boolean>(false);
-  const [state, dispatch] = useReducer(
-    hdWalletStateReducer,
-    initialHdWalletState,
-  );
+  const hdWallet = useContext<any>(HdWalletContext);
+
   const [updateModal, setUpdateModal] = useState<boolean>(false);
   const [forcedUpdate, setForcedUpdate] = useState<boolean>(false);
   const [tamperedSignMessageModal, setTamperedSignMessageModal] =
     useState<boolean>(false);
-  const ethereum = state.wallet.ethereum;
+  const ethereum = hdWallet.state.wallet.ethereum;
 
   useEffect(() => {
     const initializeApp = async () => {
       initializeSentry();
       await exitIfJailBroken();
-      console.log('here ::: globalDispatch');
-      await fetchRPCEndpointsFromServer(globalDispatch);
+      await fetchRPCEndpointsFromServer(globalContext.globalDispatch);
+      await checkForUpdatesAndShowModal(setUpdateModal);
       await loadActivitiesFromAsyncStorage();
 
       if (Platform.OS === 'ios') {
@@ -75,45 +82,134 @@ export const InitializeAppProvider = ({ children }: any) => {
 
   useEffect(() => {
     if (ethereum.address === undefined && pinAuthentication) {
-      console.log(
-        'loading exisitng wallet,,, pinAuthentication : ',
-        pinAuthentication,
-      );
-      void loadExistingWallet(dispatch, state);
-      console.log('loaded existing wallet /////');
+      void loadExistingWallet(hdWallet.dispatch, hdWallet.state);
     }
   }, [pinAuthentication]);
 
   useEffect(() => {
     void getHosts(setForcedUpdate, setTamperedSignMessageModal, setUpdateModal);
-    console.log('ethereum address : ', ethereum.address);
   }, [ethereum.address]);
 
   return (
-    <WalletConnectV2Provider>
-      {ethereum.address === undefined ? (
-        pinAuthentication || pinPresent === PinPresentStates.NOTSET ? (
-          <LoadingStack />
-        ) : pinPresent === PinPresentStates.TRUE ? (
-          <PinAuthRoute
-            setPinAuthentication={setPinAuthentication}
-            initialScreen={C.screenTitle.PIN_VALIDATION}
-          />
+    <>
+      <Dialog
+        visible={updateModal}
+        footer={
+          <DialogFooter>
+            <DialogButton
+              text={t('UPDATE')}
+              onPress={() => {
+                analytics()
+                  .logEvent('update_now', {})
+                  .catch(Sentry.captureException);
+                setUpdateModal(false);
+                if (Platform.OS === 'android') {
+                  void Linking.openURL(
+                    'market://details?id=com.cypherd.androidwallet',
+                  );
+                } else {
+                  const link =
+                    'itms-apps://apps.apple.com/app/cypherd-wallet/id1604120414';
+                  Linking.canOpenURL(link).then(
+                    supported => {
+                      supported && Linking.openURL(link);
+                    },
+                    err => Sentry.captureException(err),
+                  );
+                }
+              }}
+            />
+            <DialogButton
+              text={t('LATER')}
+              disabled={forcedUpdate}
+              onPress={() => {
+                setUpdateModal(false);
+                void analytics().logEvent('update_later', {});
+              }}
+            />
+          </DialogFooter>
+        }
+        width={0.8}
+        onTouchOutside={() => {
+          !forcedUpdate && setUpdateModal(false);
+        }}>
+        <DialogContent>
+          <CyDText
+            className={
+              'font-bold text-[16px] text-primaryTextColor mt-[20px] text-center'
+            }>
+            {t<string>('NEW_UPDATE')}
+          </CyDText>
+          <CyDText
+            className={
+              'font-bold text-[13px] text-primaryTextColor mt-[20px] text-center'
+            }>
+            {!forcedUpdate ? t('NEW_UPDATE_MSG') : t('NEW_MUST_UPDATE_MSG')}
+          </CyDText>
+        </DialogContent>
+      </Dialog>
+      <Dialog
+        visible={tamperedSignMessageModal}
+        footer={
+          <DialogFooter>
+            <DialogButton
+              text={t('CLOSE')}
+              onPress={() => {
+                RNExitApp.exitApp();
+              }}
+            />
+            <DialogButton
+              text={t('CONTACT_TEXT')}
+              onPress={() => {
+                void Intercom.displayMessenger();
+                sendFirebaseEvent(hdWallet.state, 'support');
+              }}
+            />
+          </DialogFooter>
+        }
+        width={0.8}>
+        <DialogContent>
+          <CyDText
+            className={
+              'font-bold text-[16px] text-primaryTextColor mt-[20px] text-center'
+            }>
+            {t<string>('SOMETHING_WENT_WRONG')}
+          </CyDText>
+          <CyDText
+            className={
+              'font-bold text-[13px] text-primaryTextColor mt-[20px] text-center'
+            }>
+            {t<string>('CONTACT_CYPHERD_SUPPORT')}
+          </CyDText>
+        </DialogContent>
+      </Dialog>
+
+      <WalletConnectV2Provider>
+        <DefaultAuthRemoveModal isModalVisible={showDefaultAuthRemoveModal} />
+        {ethereum.address === undefined ? (
+          pinAuthentication || pinPresent === PinPresentStates.NOTSET ? (
+            <LoadingStack />
+          ) : pinPresent === PinPresentStates.TRUE ? (
+            <PinAuthRoute
+              setPinAuthentication={setPinAuthentication}
+              initialScreen={C.screenTitle.PIN_VALIDATION}
+            />
+          ) : (
+            <PinAuthRoute
+              setPinAuthentication={setPinAuthentication}
+              initialScreen={C.screenTitle.SET_PIN}
+            />
+          )
+        ) : ethereum.address === _NO_CYPHERD_CREDENTIAL_AVAILABLE_ ? (
+          hdWallet.reset ? (
+            <OnBoardingStack initialScreen={C.screenTitle.ENTER_KEY} />
+          ) : (
+            <OnBoardingStack />
+          )
         ) : (
-          <PinAuthRoute
-            setPinAuthentication={setPinAuthentication}
-            initialScreen={C.screenTitle.SET_PIN}
-          />
-        )
-      ) : ethereum.address === _NO_CYPHERD_CREDENTIAL_AVAILABLE_ ? (
-        state.reset ? (
-          <OnBoardingStack initialScreen={C.screenTitle.ENTER_KEY} />
-        ) : (
-          <OnBoardingStack />
-        )
-      ) : (
-        children
-      )}
-    </WalletConnectV2Provider>
+          children
+        )}
+      </WalletConnectV2Provider>
+    </>
   );
 };
