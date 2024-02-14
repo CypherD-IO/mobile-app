@@ -19,7 +19,6 @@ import {
 import {
   GlobalContext,
   RpcResponseDetail,
-  gloabalContextReducer,
   initialGlobalState,
   signIn,
 } from '../../core/globalContext';

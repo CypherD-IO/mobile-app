@@ -330,40 +330,6 @@ function App() {
                             }}>
                             <GlobalModal>
                               <InitializeAppProvider>
-                                {/* {ethereum.address === undefined ? (
-                                    pinAuthentication ||
-                                    pinPresent === PinPresentStates.NOTSET ? (
-                                      <LoadingStack />
-                                    ) : pinPresent === PinPresentStates.TRUE ? (
-                                      <PinAuthRoute
-                                        setPinAuthentication={
-                                          setPinAuthentication
-                                        }
-                                        initialScreen={
-                                          C.screenTitle.PIN_VALIDATION
-                                        }
-                                      />
-                                    ) : (
-                                      <PinAuthRoute
-                                        setPinAuthentication={
-                                          setPinAuthentication
-                                        }
-                                        initialScreen={C.screenTitle.SET_PIN}
-                                      />
-                                    )
-                                  ) : ethereum.address ===
-                                    _NO_CYPHERD_CREDENTIAL_AVAILABLE_ ? (
-                                    state.reset ? (
-                                      <OnBoardingStack
-                                        initialScreen={C.screenTitle.ENTER_KEY}
-                                      />
-                                    ) : (
-                                      <OnBoardingStack />
-                                    )
-                                  ) : (
-                                    <TabStack />
-                                  )} */}
-                                {console.log('tabstack rendered')}
                                 <TabStack />
                                 <Toast
                                   config={toastConfig}
