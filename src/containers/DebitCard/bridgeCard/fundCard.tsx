@@ -1109,7 +1109,7 @@ export default function BridgeFundCardScreen({ route }: { route: any }) {
           setLoading(false);
           showModal('state', {
             type: 'error',
-            title: response?.error?.message?.includes('minimum amount')
+            title: response?.error?.message?.includes('minimum per Quote Limit')
               ? t('INSUFFICIENT_FUNDS')
               : '',
             description: response.error.message ?? t('UNABLE_TO_TRANSFER'),
