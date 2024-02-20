@@ -23,6 +23,7 @@ import {
   isCosmosStakingToken,
   logAnalytics,
   parseErrorMessage,
+  _NO_CYPHERD_CREDENTIAL_AVAILABLE_,
 } from '../../core/util';
 import { TokenMeta } from '../../models/tokenMetaData.model';
 import {
@@ -44,7 +45,10 @@ import { SigningStargateClient } from '@cosmjs/stargate';
 import Toast from 'react-native-toast-message';
 import { screenTitle } from '../../constants';
 import axios, { MODAL_HIDE_TIMEOUT_250, TIMEOUT } from '../../core/Http';
-import { getSignerClient } from '../../core/Keychain';
+import {
+  getSignerClient,
+  loadPrivateKeyFromKeyChain,
+} from '../../core/Keychain';
 import { IIBCData, cosmosConfig } from '../../constants/cosmosConfig';
 import analytics from '@react-native-firebase/analytics';
 import * as Sentry from '@sentry/react-native';
@@ -77,7 +81,7 @@ export default function TokenStaking({
   navigation,
 }: {
   tokenData: TokenMeta;
-  navigation: { navigate: (screen: string, { }: any) => void };
+  navigation: { navigate: (screen: string, {}: any) => void };
 }) {
   const globalStateContext = useContext<any>(GlobalContext);
   const hdWalletContext = useContext<any>(HdWalletContext);
@@ -132,8 +136,8 @@ export default function TokenStaking({
   const currentChain: IIBCData = cosmosConfig[tokenData.chainDetails.chainName];
   const chainAPIURLs = isCOSMOSEcoSystem
     ? globalStateContext.globalState.rpcEndpoints[
-      tokenData.chainDetails.chainName.toUpperCase()
-    ].otherUrls
+        tokenData.chainDetails.chainName.toUpperCase()
+      ].otherUrls
     : null;
   let evmosRewardTimer: ReturnType<typeof setInterval>;
   const [isSignableTransaction] = useIsSignable();
@@ -152,7 +156,7 @@ export default function TokenStaking({
     return (
       (tokenData.chainDetails.backendName !== ChainBackendNames.EVMOS &&
         cosmosStaking.cosmosStakingState.allValidatorsListState !==
-        COSMOS_STAKING_EMPTY) ||
+          COSMOS_STAKING_EMPTY) ||
       (tokenData.chainDetails.backendName === ChainBackendNames.EVMOS &&
         stakingValidators.stateStaking.allValidatorsListState !== STAKING_EMPTY)
     );
@@ -162,8 +166,8 @@ export default function TokenStaking({
     if (isStakingContextDispatched()) {
       const defaultUnboundingPeriod =
         tokenData.chainDetails.backendName === ChainBackendNames.EVMOS ||
-          tokenData.chainDetails.backendName === ChainBackendNames.STARGAZE ||
-          tokenData.chainDetails.backendName === ChainBackendNames.NOBLE
+        tokenData.chainDetails.backendName === ChainBackendNames.STARGAZE ||
+        tokenData.chainDetails.backendName === ChainBackendNames.NOBLE
           ? 14
           : 21;
       const variables = {
@@ -322,7 +326,7 @@ export default function TokenStaking({
     void getStakingMetaData();
   };
 
-  const generateTransactionBodyForEVMOSSimulation = (
+  const generateTransactionBodyForEVMOSSimulation = async (
     response,
     gasFee = '14000000000000000',
     gasLimit = '700000',
@@ -362,27 +366,31 @@ export default function TokenStaking({
       params,
     );
 
-    const privateKeyBuffer = Buffer.from(
-      ethereum.privateKey.substring(2),
-      'hex',
+    const privateKey = await loadPrivateKeyFromKeyChain(
+      false,
+      hdWalletContext.state.pinValue,
     );
-    const signature = signTypedData({
-      privateKey: privateKeyBuffer,
-      data: msg.eipToSign,
-      version: SignTypedDataVersion.V4,
-    });
+    if (privateKey && privateKey !== _NO_CYPHERD_CREDENTIAL_AVAILABLE_) {
+      const privateKeyBuffer = Buffer.from(privateKey.substring(2), 'hex');
 
-    const extension = signatureToWeb3Extension(chain, sender, signature);
+      const signature = signTypedData({
+        privateKey: privateKeyBuffer,
+        data: msg.eipToSign,
+        version: SignTypedDataVersion.V4,
+      });
 
-    const rawTx = createTxRawEIP712(
-      msg.legacyAmino.body,
-      msg.legacyAmino.authInfo,
-      extension,
-    );
+      const extension = signatureToWeb3Extension(chain, sender, signature);
 
-    const body = generatePostBodyBroadcast(rawTx);
+      const rawTx = createTxRawEIP712(
+        msg.legacyAmino.body,
+        msg.legacyAmino.authInfo,
+        extension,
+      );
 
-    return body;
+      const body = generatePostBodyBroadcast(rawTx);
+
+      return body;
+    }
   };
 
   const txnSimulation = async (method: string) => {
@@ -406,7 +414,7 @@ export default function TokenStaking({
       await analytics().logEvent('evmos_claim_simulation');
 
       try {
-        bodyForSimulate = generateTransactionBodyForEVMOSSimulation(
+        bodyForSimulate = await generateTransactionBodyForEVMOSSimulation(
           accountDetailsResponse.data.account.base_account,
         );
         simulationResponse = await axios.post(
@@ -418,7 +426,7 @@ export default function TokenStaking({
         }
       } catch (e) {
         sequence += 1;
-        bodyForSimulate = generateTransactionBodyForEVMOSSimulation({
+        bodyForSimulate = await generateTransactionBodyForEVMOSSimulation({
           ...accountDetailsResponse.data.account.base_account,
           sequence,
         });
@@ -430,7 +438,7 @@ export default function TokenStaking({
 
       const gasWanted = simulationResponse.data.gas_info.gas_used;
 
-      const bodyForTxn = generateTransactionBodyForEVMOSSimulation(
+      const bodyForTxn = await generateTransactionBodyForEVMOSSimulation(
         { ...accountDetailsResponse.data.account.base_account, sequence },
         ethers.utils
           .parseUnits(
@@ -600,7 +608,7 @@ export default function TokenStaking({
     if (
       type === CosmosActionType.TRANSACTION &&
       parseFloat(gasFee.toFixed(6)) >
-      parseFloat(stakingVariables.availableToStake)
+        parseFloat(stakingVariables.availableToStake)
     ) {
       setLoading(false);
       setSignModalVisible(false);
@@ -743,7 +751,7 @@ export default function TokenStaking({
     if (
       type === CosmosActionType.TRANSACTION &&
       parseFloat(gasFee.toFixed(6)) >
-      parseFloat(stakingVariables.availableToStake)
+        parseFloat(stakingVariables.availableToStake)
     ) {
       showNoGasFeeModal();
     } else {
@@ -1174,7 +1182,7 @@ export default function TokenStaking({
           {tokenData.chainDetails.backendName === ChainBackendNames.EVMOS &&
             tokenData.name === CosmosStakingTokens.EVMOS &&
             stakingValidators.stateStaking.myValidatorsListState ===
-            STAKING_NOT_EMPTY && (
+              STAKING_NOT_EMPTY && (
               <CyDView
                 className={
                   'flex flex-row justify-center items-center w-screen bg-babyPink mt-[10px] py-[10px]'
@@ -1225,12 +1233,12 @@ export default function TokenStaking({
                   }}
                   disabled={
                     tokenData.chainDetails.backendName ===
-                      ChainBackendNames.EVMOS
+                    ChainBackendNames.EVMOS
                       ? convertToEvmosFromAevmos(
-                        stakingValidators.stateStaking.totalReward,
-                      ) < 0.0001
+                          stakingValidators.stateStaking.totalReward,
+                        ) < 0.0001
                       : cosmosStaking.cosmosStakingState.reward.toString() ===
-                      '0'
+                        '0'
                   }
                   title={'CLAIM'}
                   isPrivateKeyDependent={true}
@@ -1387,10 +1395,10 @@ export default function TokenStaking({
                   className={
                     'text-center w-3/4  text-[20px] font-semibold text-secondaryTextColor'
                   }>{`${t<string>(
-                    'STAKE_YOUR_TEXT',
-                  )} ${tokenData.name.toLowerCase()} ${t<string>(
-                    'WITH_US_TEXT',
-                  )}`}</CyDText>
+                  'STAKE_YOUR_TEXT',
+                )} ${tokenData.name.toLowerCase()} ${t<string>(
+                  'WITH_US_TEXT',
+                )}`}</CyDText>
                 <Button
                   onPress={() => {
                     isSignableTransaction(ActivityType.STAKE, onStake);
@@ -1426,59 +1434,59 @@ export default function TokenStaking({
           {(stakingVariables.totalClaimableRewards !== '0' ||
             stakingVariables.currentlyStaked !== '0' ||
             stakingVariables.totalUnboundings !== '0') && (
-              <CyDView
-                className={
-                  'bg-[#F6F7FF] rounded-[8px] px-[46px] py-[16px] mx-[16px] my-[18px] flex flex-col items-center'
-                }>
-                <CyDView className={'flex flex-row items-center justify-center'}>
-                  <CyDImage
-                    source={AppImages.STARS_LEFT}
-                    className={'w-[20px] h-[20px]'}
-                  />
-                  <CyDText
-                    className={
-                      'text-center w-3/4  text-[14px] font-bold text-secondaryTextColor'
-                    }>{`${t<string>(
-                      'STAKE_YOUR_TEXT',
-                    )} ${tokenData.name.toLowerCase()} ${t<string>(
-                      'WITH_US_TEXT',
-                    )}`}</CyDText>
-                  <CyDImage
-                    source={AppImages.STARS_RIGHT}
-                    className={'w-[20px] h-[20px]'}
-                  />
-                </CyDView>
+            <CyDView
+              className={
+                'bg-[#F6F7FF] rounded-[8px] px-[46px] py-[16px] mx-[16px] my-[18px] flex flex-col items-center'
+              }>
+              <CyDView className={'flex flex-row items-center justify-center'}>
+                <CyDImage
+                  source={AppImages.STARS_LEFT}
+                  className={'w-[20px] h-[20px]'}
+                />
+                <CyDText
+                  className={
+                    'text-center w-3/4  text-[14px] font-bold text-secondaryTextColor'
+                  }>{`${t<string>(
+                  'STAKE_YOUR_TEXT',
+                )} ${tokenData.name.toLowerCase()} ${t<string>(
+                  'WITH_US_TEXT',
+                )}`}</CyDText>
+                <CyDImage
+                  source={AppImages.STARS_RIGHT}
+                  className={'w-[20px] h-[20px]'}
+                />
+              </CyDView>
 
-                {tokenData.chainDetails.backendName ===
-                  ChainBackendNames.EVMOS && (
-                    <CyDView className={'flex flex-row mt-[12px] '}>
-                      <CyDText
-                        className={
-                          'mr-[6px] font-[14px] text-subTextColor font-semibold '
-                        }>
-                        {t<string>('STAKING_REWARDS_DISTRIBUTED_AT')}
-                      </CyDText>
-                      <CyDText
-                        className={'font-[16px] text-primaryTextColor font-bold '}>
-                        19:00 UTC
-                      </CyDText>
-                    </CyDView>
-                  )}
-
+              {tokenData.chainDetails.backendName ===
+                ChainBackendNames.EVMOS && (
                 <CyDView className={'flex flex-row mt-[12px] '}>
                   <CyDText
                     className={
                       'mr-[6px] font-[14px] text-subTextColor font-semibold '
                     }>
-                    {t<string>('UNBOUNDING_PERIOD_IS')}
+                    {t<string>('STAKING_REWARDS_DISTRIBUTED_AT')}
                   </CyDText>
                   <CyDText
                     className={'font-[16px] text-primaryTextColor font-bold '}>
-                    {unboundingPeriodInDays} {t('DAYS')}
+                    19:00 UTC
                   </CyDText>
                 </CyDView>
+              )}
+
+              <CyDView className={'flex flex-row mt-[12px] '}>
+                <CyDText
+                  className={
+                    'mr-[6px] font-[14px] text-subTextColor font-semibold '
+                  }>
+                  {t<string>('UNBOUNDING_PERIOD_IS')}
+                </CyDText>
+                <CyDText
+                  className={'font-[16px] text-primaryTextColor font-bold '}>
+                  {unboundingPeriodInDays} {t('DAYS')}
+                </CyDText>
               </CyDView>
-            )}
+            </CyDView>
+          )}
 
           {!pageLoading && isStakingDataEmpty() && <EmptyView />}
         </CyDScrollView>

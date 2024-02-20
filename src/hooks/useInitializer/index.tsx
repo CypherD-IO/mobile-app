@@ -29,6 +29,7 @@ import { ActivityReducerAction } from '../../reducers/activity_reducer';
 import {
   isBiometricEnabled,
   isPinAuthenticated,
+  loadCyRootData,
   loadCyRootDataFromKeyChain,
 } from '../../core/Keychain';
 import { initialHdWalletState } from '../../reducers';
@@ -267,13 +268,14 @@ export default function useInitializer() {
       if (pinAuthenticated) {
         return PinPresentStates.TRUE;
       } else {
-        await loadCyRootDataFromKeyChain(
-          hdWallet.state,
-          () => {
-            setShowDefaultAuthRemoveModal(true);
-          },
-          false,
-        );
+        await loadCyRootData();
+        // await loadCyRootDataFromKeyChain(
+        //   hdWallet.state,
+        //   () => {
+        //     setShowDefaultAuthRemoveModal(true);
+        //   },
+        //   false,
+        // );
         return PinPresentStates.FALSE;
       }
     } else {
@@ -292,7 +294,7 @@ export default function useInitializer() {
         value: {
           chain: string;
           address: any;
-          privateKey: any;
+          // privateKey: any;
           publicKey: any;
           algo: any;
           rawAddress: Uint8Array | undefined;
@@ -301,7 +303,8 @@ export default function useInitializer() {
     },
     state = initialHdWalletState,
   ) => {
-    const cyRootData = await loadCyRootDataFromKeyChain(state);
+    // const cyRootData = await loadCyRootDataFromKeyChain(state);
+    const cyRootData = await loadCyRootData();
     if (cyRootData) {
       const { accounts } = cyRootData;
       if (!accounts) {
@@ -315,7 +318,7 @@ export default function useInitializer() {
           chainAccountList.forEach(
             (addressDetail: {
               address: any;
-              privateKey: any;
+              // privateKey: any;
               publicKey: any;
               algo: any;
               rawAddress: { [s: string]: number } | ArrayLike<number>;
@@ -325,7 +328,7 @@ export default function useInitializer() {
                 value: {
                   chain: chainName,
                   address: addressDetail.address,
-                  privateKey: addressDetail.privateKey,
+                  // privateKey: addressDetail.privateKey,
                   publicKey: addressDetail.publicKey,
                   algo: addressDetail.algo,
                   rawAddress: addressDetail.rawAddress
@@ -355,7 +358,7 @@ export default function useInitializer() {
               value: {
                 chain: 'ethereum',
                 address: ethereum.address,
-                privateKey: _NO_CYPHERD_CREDENTIAL_AVAILABLE_,
+                // privateKey: _NO_CYPHERD_CREDENTIAL_AVAILABLE_,
                 publicKey: '',
                 algo: '',
                 rawAddress: undefined,
@@ -365,7 +368,7 @@ export default function useInitializer() {
               type: 'ADD_ADDRESS',
               value: {
                 address: ethToEvmos(ethereum.address),
-                privateKey: _NO_CYPHERD_CREDENTIAL_AVAILABLE_,
+                // privateKey: _NO_CYPHERD_CREDENTIAL_AVAILABLE_,
                 chain: 'evmos',
                 publicKey: '',
                 rawAddress: undefined,
@@ -389,7 +392,7 @@ export default function useInitializer() {
               value: {
                 chain: 'ethereum',
                 address: _NO_CYPHERD_CREDENTIAL_AVAILABLE_,
-                privateKey: _NO_CYPHERD_CREDENTIAL_AVAILABLE_,
+                // privateKey: _NO_CYPHERD_CREDENTIAL_AVAILABLE_,
                 publicKey: '',
                 algo: '',
                 rawAddress: undefined,
@@ -415,10 +418,10 @@ export default function useInitializer() {
     setUpdateModal: Dispatch<SetStateAction<boolean>>,
   ) => {
     if (
-      ethereum?.address &&
-      ethereum?.privateKey !== _NO_CYPHERD_CREDENTIAL_AVAILABLE_
+      ethereum?.address
+      // && ethereum?.privateKey !== _NO_CYPHERD_CREDENTIAL_AVAILABLE_
     ) {
-      const signInResponse = await signIn(ethereum);
+      const signInResponse = await signIn(ethereum, hdWallet);
       if (signInResponse) {
         if (
           signInResponse?.message === SignMessageValidationType.VALID &&
@@ -455,8 +458,8 @@ export default function useInitializer() {
     if (hosts) {
       if (
         ethereum?.address &&
-        ethereum?.address !== _NO_CYPHERD_CREDENTIAL_AVAILABLE_ &&
-        ethereum?.privateKey !== _NO_CYPHERD_CREDENTIAL_AVAILABLE_
+        ethereum?.address !== _NO_CYPHERD_CREDENTIAL_AVAILABLE_
+        // && ethereum?.privateKey !== _NO_CYPHERD_CREDENTIAL_AVAILABLE_
       ) {
         void getAuthTokenData(
           setForcedUpdate,

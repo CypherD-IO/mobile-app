@@ -17,6 +17,9 @@ import {
 } from './asyncStorage';
 import { get } from 'lodash';
 import jwt_decode, { JwtPayload } from 'jwt-decode';
+import { loadPrivateKeyFromKeyChain } from './Keychain';
+import { _NO_CYPHERD_CREDENTIAL_AVAILABLE_ } from './util';
+import { HdWalletContextDef } from '../reducers/hdwallet_reducer';
 
 export type RpcResponseDetail = {
   [key in ChainBackendNames]: RPCDetail;
@@ -251,10 +254,11 @@ export function isTokenValid(token: any) {
   }
   return false;
 }
-export async function signIn(ethereum: {
-  address: string;
-  privateKey: string;
-}) {
+export async function signIn(
+  ethereum: { address: string },
+  hdWallet: HdWalletContextDef,
+) {
+  console.log('inside sign in in global context');
   const web3 = new Web3();
   const ARCH_HOST: string = hostWorker.getHost('ARCH_HOST');
   try {
@@ -264,19 +268,22 @@ export async function signIn(ethereum: {
     const verifyMessage = data.message;
     const validationResponse = isValidMessage(ethereum.address, verifyMessage);
     if (validationResponse.message === SignMessageValidationType.VALID) {
-      const { signature } = web3.eth.accounts.sign(
-        verifyMessage,
-        ethereum.privateKey,
+      const privateKey = await loadPrivateKeyFromKeyChain(
+        false,
+        hdWallet.state.pinValue,
       );
-      const result = await axios.post(
-        `${ARCH_HOST}/v1/authentication/verify-message/${ethereum.address}`,
-        {
-          signature,
-        },
-      );
-      return { ...validationResponse, token: result.data.token };
+      if (privateKey && privateKey !== _NO_CYPHERD_CREDENTIAL_AVAILABLE_) {
+        const { signature } = web3.eth.accounts.sign(verifyMessage, privateKey);
+        const result = await axios.post(
+          `${ARCH_HOST}/v1/authentication/verify-message/${ethereum.address}`,
+          {
+            signature,
+          },
+        );
+        return { ...validationResponse, token: result.data.token };
+      }
+      return validationResponse;
     }
-    return validationResponse;
   } catch (error) {
     Sentry.captureException(error);
   }

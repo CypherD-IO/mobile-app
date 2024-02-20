@@ -79,6 +79,7 @@ export const ActivityContext = React.createContext<ActivityContextDef | null>(
 export const IOS = 'ios';
 export const ANDROID = 'android';
 export const CYPHERD_SEED_PHRASE_KEY = 'CypherD_SPK';
+export const CYPHERD_PRIVATE_KEY = 'CypherD_PK';
 export const CYPHERD_ROOT_DATA = 'CypherD_Root';
 export const IMPORTING = 'IMPORTING';
 export const _NO_CYPHERD_CREDENTIAL_AVAILABLE_ =

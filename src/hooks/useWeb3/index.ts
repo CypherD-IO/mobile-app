@@ -38,7 +38,11 @@ import { AnalyticEvent, logAnalytics } from '../../core/analytics';
 import { GlobalContext } from '../../core/globalContext';
 import axios from '../../core/Http';
 import { GasPriceDetail } from '../../core/types';
-import { getWeb3Endpoint, HdWalletContext } from '../../core/util';
+import {
+  _NO_CYPHERD_CREDENTIAL_AVAILABLE_,
+  getWeb3Endpoint,
+  HdWalletContext,
+} from '../../core/util';
 import { hostWorker } from '../../global';
 import { ActivityStatus, ActivityType } from '../../reducers/activity_reducer';
 import { ModalContext } from '../../reducers/modalReducer';
@@ -55,6 +59,7 @@ import {
 import { useGlobalModalContext } from '../../components/v2/GlobalModal';
 import { useTranslation } from 'react-i18next';
 import { getConnectionType } from '../../core/asyncStorage';
+import { loadPrivateKeyFromKeyChain } from '../../core/Keychain';
 
 const bigNumberToHex = (val: string) =>
   `0x${new BigNumber(val, 10).toString(16)}`;
@@ -152,6 +157,8 @@ export default function useWeb3(origin: Web3Origin) {
       return { error: 'Invalid arguments' };
     }
 
+    console.log('private key needed in handleweb3cosmos');
+
     try {
       if (method === CosmosWeb3Method.GETKEY) {
         const [chainId] = parsed;
@@ -159,26 +166,31 @@ export default function useWeb3(origin: Web3Origin) {
 
         const chainInfo = getChainInfo(chainId);
         const { name: chainName } = chainInfo;
-        const { privateKey: privKey, address: bech32Address } =
-          wallet[chainName];
-        const privateKey = hexToUint(privKey);
+        const { address: bech32Address } = wallet[chainName];
+        const privKey = await loadPrivateKeyFromKeyChain(
+          false,
+          hdWalletContext.state.pinValue,
+        );
+        if (privKey && privKey !== _NO_CYPHERD_CREDENTIAL_AVAILABLE_) {
+          const privateKey = hexToUint(privKey);
 
-        const privateKeyInstance = new PrivKeySecp256k1(privateKey);
-        const publicKey = privateKeyInstance.getPubKey();
+          const privateKeyInstance = new PrivKeySecp256k1(privateKey);
+          const publicKey = privateKeyInstance.getPubKey();
 
-        const pubKey = publicKey.toBytes();
-        const address = publicKey.getAddress();
+          const pubKey = publicKey.toBytes();
+          const address = publicKey.getAddress();
 
-        const unWrappedJson = {
-          name: 'cypherd',
-          algo: 'secp256k1',
-          pubKey,
-          address,
-          bech32Address,
-          isNanoLedger: false,
-        };
+          const unWrappedJson = {
+            name: 'cypherd',
+            algo: 'secp256k1',
+            pubKey,
+            address,
+            bech32Address,
+            isNanoLedger: false,
+          };
 
-        return JSONUint8Array.wrap(unWrappedJson);
+          return JSONUint8Array.wrap(unWrappedJson);
+        }
       } else if (method === CosmosWeb3Method.ENABLE) {
         // TODO: Implement enable method
         const [chainId] = parsed;
@@ -191,64 +203,71 @@ export default function useWeb3(origin: Web3Origin) {
         const chainInfo = getChainInfo(chainId);
         const { name: chainName } = chainInfo;
 
-        const { privateKey: privKey } = wallet[chainName];
-
-        if (signer !== wallet[chainInfo.name].address) {
-          throw new Error('Signer mismatch');
-        }
-
-        const bech32Prefix = chainInfo.bech32Config.bech32PrefixAccAddr;
-        const isADR36SignDoc = checkAndValidateADR36AminoSignDoc(
-          signDoc,
-          bech32Prefix,
+        const privKey = await loadPrivateKeyFromKeyChain(
+          false,
+          hdWalletContext.state.pinValue,
         );
-
-        if (isADR36SignDoc) {
-          if (signDoc.msgs[0].value.signer !== signer) {
-            throw new Error('Unmatched signer in sign doc');
+        if (privKey && privKey !== _NO_CYPHERD_CREDENTIAL_AVAILABLE_) {
+          if (signer !== wallet[chainInfo.name].address) {
+            throw new Error('Signer mismatch');
           }
-        }
 
-        if (signOptions.isADR36WithString != null && !isADR36SignDoc) {
-          throw new Error(
-            'Sign doc is not for ADR-36. But, "isADR36WithString" option is defined',
+          const bech32Prefix = chainInfo.bech32Config.bech32PrefixAccAddr;
+          const isADR36SignDoc = checkAndValidateADR36AminoSignDoc(
+            signDoc,
+            bech32Prefix,
           );
+
+          if (isADR36SignDoc) {
+            if (signDoc.msgs[0].value.signer !== signer) {
+              throw new Error('Unmatched signer in sign doc');
+            }
+          }
+
+          if (signOptions.isADR36WithString != null && !isADR36SignDoc) {
+            throw new Error(
+              'Sign doc is not for ADR-36. But, "isADR36WithString" option is defined',
+            );
+          }
+
+          const privateKeyInstance = new PrivKeySecp256k1(hexToUint(privKey));
+          const publicKey = privateKeyInstance.getPubKey().toBytes();
+
+          const finalSignDoc: StdSignDoc = calculateFeeSignAmino(
+            chainId,
+            signDoc,
+          );
+
+          const serializedSignDoc = serializeSignDoc(finalSignDoc);
+
+          const acknowledgement = await SendTransactionCosmosFunc(
+            modalContext,
+            {
+              signable: finalSignDoc,
+              chain: chainInfo.name,
+            },
+          );
+
+          if (!acknowledgement) {
+            return { error: 'Request rejected' };
+          }
+
+          const signature = privateKeyInstance.sign(serializedSignDoc);
+
+          logAnalytics(AnalyticEvent.COSMOS_SIGNAMINO, {
+            origin,
+            websiteInfo,
+            method,
+            payload,
+          });
+
+          const unWrappedJson = {
+            signed: signDoc,
+            signature: encodeSecp256k1Signature(publicKey, signature),
+          };
+
+          return JSONUint8Array.wrap(unWrappedJson);
         }
-
-        const privateKeyInstance = new PrivKeySecp256k1(hexToUint(privKey));
-        const publicKey = privateKeyInstance.getPubKey().toBytes();
-
-        const finalSignDoc: StdSignDoc = calculateFeeSignAmino(
-          chainId,
-          signDoc,
-        );
-
-        const serializedSignDoc = serializeSignDoc(finalSignDoc);
-
-        const acknowledgement = await SendTransactionCosmosFunc(modalContext, {
-          signable: finalSignDoc,
-          chain: chainInfo.name,
-        });
-
-        if (!acknowledgement) {
-          return { error: 'Request rejected' };
-        }
-
-        const signature = privateKeyInstance.sign(serializedSignDoc);
-
-        logAnalytics(AnalyticEvent.COSMOS_SIGNAMINO, {
-          origin,
-          websiteInfo,
-          method,
-          payload,
-        });
-
-        const unWrappedJson = {
-          signed: signDoc,
-          signature: encodeSecp256k1Signature(publicKey, signature),
-        };
-
-        return JSONUint8Array.wrap(unWrappedJson);
       } else if (method === CosmosWeb3Method.SIGN_DIRECT) {
         const [chainId, signer, signDoc] = parsed;
         changeSelectedChainForCosmos(chainId);
@@ -256,65 +275,72 @@ export default function useWeb3(origin: Web3Origin) {
         const chainInfo = getChainInfo(chainId);
         const { name: chainName } = chainInfo;
 
-        const {
-          privateKey,
-          publicKey,
-          address: bech32Address,
-        } = wallet[chainName];
+        const { publicKey, address: bech32Address } = wallet[chainName];
 
-        const privateKeyInstance = new PrivKeySecp256k1(hexToUint(privateKey));
+        const privateKey = await loadPrivateKeyFromKeyChain(
+          false,
+          hdWalletContext.state.pinValue,
+        );
+        if (privateKey && privateKey !== _NO_CYPHERD_CREDENTIAL_AVAILABLE_) {
+          const privateKeyInstance = new PrivKeySecp256k1(
+            hexToUint(privateKey),
+          );
 
-        const pubKey = hexToUint(publicKey);
+          const pubKey = hexToUint(publicKey);
 
-        if (signer !== bech32Address) {
-          throw new Error('Signer mismatch');
+          if (signer !== bech32Address) {
+            throw new Error('Signer mismatch');
+          }
+
+          const authInfo = calculateFeeSignDirect(chainId, signDoc);
+
+          const authInfoBytes = AuthInfo.encode(authInfo).finish();
+          const modifiedSignDoc = { ...signDoc, authInfoBytes };
+
+          const decoder = new ProtoSignDocDecoder(modifiedSignDoc);
+
+          const signable = decoder.toJSON();
+
+          const { accountNumber, ...signDocRest } = modifiedSignDoc;
+
+          const cosmJsSignDoc = {
+            ...signDocRest,
+            accountNumber:
+              typeof accountNumber === 'string'
+                ? Long.fromString(accountNumber)
+                : accountNumber,
+          };
+
+          const messageToSign = makeSignBytes(cosmJsSignDoc);
+
+          const acknowledgement = await SendTransactionCosmosFunc(
+            modalContext,
+            {
+              signable,
+              chain: chainInfo.name,
+            },
+          );
+
+          if (!acknowledgement) {
+            return { error: 'Request rejected' };
+          }
+
+          const signature = privateKeyInstance.sign(messageToSign);
+
+          logAnalytics(AnalyticEvent.COSMOS_SIGNDIRECT, {
+            origin,
+            method,
+            websiteInfo,
+            payload,
+          });
+
+          const unWrappedJson = {
+            signed: cosmJsSignDoc,
+            signature: encodeSecp256k1Signature(pubKey, signature),
+          };
+
+          return JSONUint8Array.wrap(unWrappedJson);
         }
-
-        const authInfo = calculateFeeSignDirect(chainId, signDoc);
-
-        const authInfoBytes = AuthInfo.encode(authInfo).finish();
-        const modifiedSignDoc = { ...signDoc, authInfoBytes };
-
-        const decoder = new ProtoSignDocDecoder(modifiedSignDoc);
-
-        const signable = decoder.toJSON();
-
-        const { accountNumber, ...signDocRest } = modifiedSignDoc;
-
-        const cosmJsSignDoc = {
-          ...signDocRest,
-          accountNumber:
-            typeof accountNumber === 'string'
-              ? Long.fromString(accountNumber)
-              : accountNumber,
-        };
-
-        const messageToSign = makeSignBytes(cosmJsSignDoc);
-
-        const acknowledgement = await SendTransactionCosmosFunc(modalContext, {
-          signable,
-          chain: chainInfo.name,
-        });
-
-        if (!acknowledgement) {
-          return { error: 'Request rejected' };
-        }
-
-        const signature = privateKeyInstance.sign(messageToSign);
-
-        logAnalytics(AnalyticEvent.COSMOS_SIGNDIRECT, {
-          origin,
-          method,
-          websiteInfo,
-          payload,
-        });
-
-        const unWrappedJson = {
-          signed: cosmJsSignDoc,
-          signature: encodeSecp256k1Signature(pubKey, signature),
-        };
-
-        return JSONUint8Array.wrap(unWrappedJson);
       } else if (method === CosmosWeb3Method.SEND_TX) {
         const [chainId, tx, mode] = parsed;
         const chainInfo = getChainInfo(chainId);
@@ -432,6 +458,7 @@ export default function useWeb3(origin: Web3Origin) {
     websiteInfo: WebsiteInfo,
     chain: Chain | undefined,
   ) {
+    console.log('private key needed in handle web 3 payloav');
     const connectionType = await getConnectionType();
     if (connectionType === ConnectionTypes.WALLET_CONNECT) {
       showModal('state', {
@@ -444,7 +471,7 @@ export default function useWeb3(origin: Web3Origin) {
     } else {
       const {
         wallet: {
-          ethereum: { address, privateKey },
+          ethereum: { address },
         },
         selectedChain: sChain,
       } = hdWalletContext.state;
@@ -561,37 +588,45 @@ export default function useWeb3(origin: Web3Origin) {
             gas,
           };
 
-          const signedTx =
-            await web3RPCEndpoint.current.eth.accounts.signTransaction(
-              txPayload,
-              privateKey,
-            );
+          const privateKey = await loadPrivateKeyFromKeyChain(
+            false,
+            hdWalletContext.state.pinValue,
+          );
 
-          let receipt;
-
-          if (signedTx.rawTransaction && signedTx.transactionHash) {
-            activityData.transactionHash = signedTx.transactionHash;
-            try {
-              receipt = await web3RPCEndpoint.current.eth.sendSignedTransaction(
-                signedTx.rawTransaction,
+          if (privateKey && privateKey !== _NO_CYPHERD_CREDENTIAL_AVAILABLE_) {
+            const signedTx =
+              await web3RPCEndpoint.current.eth.accounts.signTransaction(
+                txPayload,
+                privateKey,
               );
-            } catch (e: any) {
-              Sentry.captureException(e);
-              activityData.status = ActivityStatus.FAILED;
-              return internalError(e);
+
+            let receipt;
+
+            if (signedTx.rawTransaction && signedTx.transactionHash) {
+              activityData.transactionHash = signedTx.transactionHash;
+              try {
+                receipt =
+                  await web3RPCEndpoint.current.eth.sendSignedTransaction(
+                    signedTx.rawTransaction,
+                  );
+              } catch (e: any) {
+                Sentry.captureException(e);
+                activityData.status = ActivityStatus.FAILED;
+                return internalError(e);
+              }
             }
-          }
 
-          callbackData.activityData = activityData;
-          callbackData.receipt = receipt;
+            callbackData.activityData = activityData;
+            callbackData.receipt = receipt;
 
-          if (signedTx.rawTransaction && receipt) {
-            return {
-              result: receipt.transactionHash,
-              callbackData,
-            };
+            if (signedTx.rawTransaction && receipt) {
+              return {
+                result: receipt.transactionHash,
+                callbackData,
+              };
+            }
+            return invalidParams();
           }
-          return invalidParams();
           break;
         }
         case Web3Method.ACCOUNTS:
@@ -771,14 +806,21 @@ export default function useWeb3(origin: Web3Origin) {
             return userRejectedRequest();
           }
 
-          const signature = web3RPCEndpoint.current.eth.accounts.sign(
-            messageToSign,
-            privateKey,
+          const privateKey = await loadPrivateKeyFromKeyChain(
+            false,
+            hdWalletContext.state.pinValue,
           );
 
-          return {
-            result: signature.signature,
-          };
+          if (privateKey && privateKey !== _NO_CYPHERD_CREDENTIAL_AVAILABLE_) {
+            const signature = web3RPCEndpoint.current.eth.accounts.sign(
+              messageToSign,
+              privateKey,
+            );
+
+            return {
+              result: signature.signature,
+            };
+          }
           break;
         }
         case Web3Method.ESTIMATE_GAS: {
@@ -813,39 +855,53 @@ export default function useWeb3(origin: Web3Origin) {
         case Web3Method.SIGN_TYPED_DATA:
         case Web3Method.SIGN_TYPED_DATA_V3:
         case Web3Method.SIGN_TYPED_DATA_V4: {
-          const privateKeyBuffer = Buffer.from(privateKey.substring(2), 'hex');
+          const privateKey = await loadPrivateKeyFromKeyChain(
+            false,
+            hdWalletContext.state.pinValue,
+          );
 
-          const [arg1, arg2] = params;
-          if (!arg1 || !arg2) {
-            return invalidParams();
+          if (privateKey && privateKey !== _NO_CYPHERD_CREDENTIAL_AVAILABLE_) {
+            const privateKeyBuffer = Buffer.from(
+              privateKey.substring(2),
+              'hex',
+            );
+
+            const [arg1, arg2] = params;
+            if (!arg1 || !arg2) {
+              return invalidParams();
+            }
+            const eip712Data = Array.isArray(arg1) ? arg1 : JSON.parse(arg2);
+
+            const typedDataVersion = Array.isArray(arg1)
+              ? SignTypedDataVersion.V1
+              : Web3Method.SIGN_TYPED_DATA_V4 === method
+                ? SignTypedDataVersion.V4
+                : SignTypedDataVersion.V3;
+
+            const acknowledgement = await SignTransactionModalFunc(
+              modalContext,
+              {
+                signMessage: JSON.stringify(eip712Data, undefined, 4),
+                payload,
+                signMessageTitle:
+                  'SignTypedData ' + typedDataVersion.toString(),
+              },
+            );
+
+            if (!acknowledgement) {
+              return userRejectedRequest();
+            }
+
+            const signature = signTypedData({
+              privateKey: privateKeyBuffer,
+              data: eip712Data,
+              version: typedDataVersion,
+            });
+
+            return {
+              result: signature,
+            };
           }
-          const eip712Data = Array.isArray(arg1) ? arg1 : JSON.parse(arg2);
-
-          const typedDataVersion = Array.isArray(arg1)
-            ? SignTypedDataVersion.V1
-            : Web3Method.SIGN_TYPED_DATA_V4 === method
-              ? SignTypedDataVersion.V4
-              : SignTypedDataVersion.V3;
-
-          const acknowledgement = await SignTransactionModalFunc(modalContext, {
-            signMessage: JSON.stringify(eip712Data, undefined, 4),
-            payload,
-            signMessageTitle: 'SignTypedData ' + typedDataVersion.toString(),
-          });
-
-          if (!acknowledgement) {
-            return userRejectedRequest();
-          }
-
-          const signature = signTypedData({
-            privateKey: privateKeyBuffer,
-            data: eip712Data,
-            version: typedDataVersion,
-          });
-
-          return {
-            result: signature,
-          };
           break;
         }
         case Web3Method.ADD_ETHEREUM_CHAIN:

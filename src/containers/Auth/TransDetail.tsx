@@ -12,24 +12,24 @@ import { Web3Origin } from '../../constants/enum';
 import { CommunicationEvents } from '../../constants/web3';
 import useWeb3 from '../../hooks/useWeb3';
 import { WebsiteInfo } from '../../types/Browser';
-const {
-  SafeAreaView,
-  DynamicView
-} = require('../../styles');
+const { SafeAreaView, DynamicView } = require('../../styles');
 
 interface TransactionDetailProps {
-  route: any
-  navigation: any
+  route: any;
+  navigation: any;
 }
 
 const websiteInfo: WebsiteInfo = {
   title: '',
   host: '',
   origin: '',
-  url: ''
+  url: '',
 };
 
-export default function TransDetail ({ route, navigation }: TransactionDetailProps) {
+export default function TransDetail({
+  route,
+  navigation,
+}: TransactionDetailProps) {
   const { url } = route.params;
   const webviewRef = useRef<any>(null);
 
@@ -40,34 +40,36 @@ export default function TransDetail ({ route, navigation }: TransactionDetailPro
     return true;
   };
 
-  async function onWebviewMessage (event: WebViewMessageEvent) {
+  async function onWebviewMessage(event: WebViewMessageEvent) {
     const jsonObj = JSON.parse(event.nativeEvent.data);
     const { type } = jsonObj;
 
     switch (type) {
       case CommunicationEvents.WEB3: {
         const { payload } = jsonObj;
+        console.log('handleweb3 called in onWebviewmessage communication web3');
+
         const response = await handleWeb3(jsonObj.payload, websiteInfo);
-        webviewRef.current.postMessage(JSON.stringify(
-          {
+        webviewRef.current.postMessage(
+          JSON.stringify({
             id: payload.id,
             type: CommunicationEvents.WEB3,
-            ...response
-          }
-        ));
+            ...response,
+          }),
+        );
         break;
       }
       case CommunicationEvents.WEB3COSMOS: {
         const { id, method } = jsonObj;
         const response = await handleWeb3Cosmos(jsonObj, websiteInfo);
-        webviewRef.current.postMessage(JSON.stringify(
-          {
+        webviewRef.current.postMessage(
+          JSON.stringify({
             id,
             type: CommunicationEvents.WEB3COSMOS,
             method,
-            result: response
-          }
-        ));
+            result: response,
+          }),
+        );
       }
     }
   }

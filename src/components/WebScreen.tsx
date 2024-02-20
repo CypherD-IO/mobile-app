@@ -12,43 +12,48 @@ import useWeb3 from '../hooks/useWeb3';
 import { WebsiteInfo } from '../types/Browser';
 
 interface WebScreenProps {
-  websiteInfo: WebsiteInfo
-  origin: Web3Origin
-  url: string
+  websiteInfo: WebsiteInfo;
+  origin: Web3Origin;
+  url: string;
 }
 
 const webviewStyles = { marginTop: 0 };
 
-export default function WebScreen ({ websiteInfo, origin, url }: WebScreenProps) {
+export default function WebScreen({
+  websiteInfo,
+  origin,
+  url,
+}: WebScreenProps) {
   const [injectedCode, setInjectedCode] = useState('');
   const [handleWeb3, handleWeb3Cosmos] = useWeb3(origin);
   const webviewRef = useRef<any>(null);
 
-  async function onWebviewMessage (event: WebViewMessageEvent) {
+  async function onWebviewMessage(event: WebViewMessageEvent) {
     const jsonObj = JSON.parse(event.nativeEvent.data);
     const { type } = jsonObj;
 
     if (type === CommunicationEvents.WEB3) {
       const { payload } = jsonObj;
+      console.log('handleweb3 called in webscreen');
       const response = await handleWeb3(jsonObj.payload, websiteInfo);
-      webviewRef.current.postMessage(JSON.stringify(
-        {
+      webviewRef.current.postMessage(
+        JSON.stringify({
           id: payload.id,
           type: CommunicationEvents.WEB3,
-          ...response
-        }
-      ));
+          ...response,
+        }),
+      );
     } else if (type === CommunicationEvents.WEB3COSMOS) {
       const { id, method } = jsonObj;
       const response = await handleWeb3Cosmos(jsonObj, websiteInfo);
-      webviewRef.current.postMessage(JSON.stringify(
-        {
+      webviewRef.current.postMessage(
+        JSON.stringify({
           id,
           type: CommunicationEvents.WEB3COSMOS,
           method,
-          result: response
-        }
-      ));
+          result: response,
+        }),
+      );
     }
   }
 

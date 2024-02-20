@@ -26,7 +26,6 @@ export type AddressChainNames =
   | 'noble';
 export interface IAccountDetail {
   address: string;
-  privateKey: string;
   algo?: string;
   publicKey: string;
   rawAddress?: Uint8Array;
@@ -44,6 +43,15 @@ export const hexToUint = (value: string) => {
   return Uint8Array.from(Buffer.from(inp, 'hex'));
 };
 
+const generateEthPrivateKey = (mnemonic: string, index = 0): string => {
+  const hdPathString = "m/44'/60'/0'/0";
+  const seed = bip39.mnemonicToSeedSync(mnemonic);
+  const hdWallet = hdkey.fromMasterSeed(seed);
+  const root = hdWallet.derivePath(hdPathString);
+  const wallet = root.deriveChild(index).getWallet();
+  return wallet.getPrivateKeyString();
+};
+
 export const generateEthAddress = (
   mnemonic: string,
   index = 0,
@@ -56,9 +64,28 @@ export const generateEthAddress = (
   return {
     name: 'ethereum',
     address: wallet.getAddressString(),
-    privateKey: wallet.getPrivateKeyString(),
     publicKey: wallet.getPublicKeyString(),
   };
+};
+
+export const generateCosmosPrivateKey = async (
+  chainConfig: IIBCData,
+  mnemonic: string,
+  bip44HDPath: {
+    account: number;
+    change: number;
+    addressIndex: number;
+  },
+) => {
+  const masterSeed = Mnemonic.generateMasterSeedFromMnemonic(mnemonic);
+
+  const path = `m/44'/${chainConfig.coinType}'/${bip44HDPath.account}'/${bip44HDPath.change}/${bip44HDPath.addressIndex}`;
+  const privateKey = Mnemonic.generatePrivateKeyFromMasterSeed(
+    masterSeed,
+    path,
+  );
+
+  return uintToHex(privateKey);
 };
 
 export const generateCosmosWallet = async (
@@ -98,7 +125,7 @@ export const generateCosmosWallet = async (
   return {
     name: chainName,
     address,
-    privateKey: uintToHex(privateKey),
+    // privateKey: uintToHex(privateKey),
     publicKey: uintToHex(publicKey),
   };
 };
@@ -127,7 +154,7 @@ export const generateEvmosWallet = (
   return {
     name: 'evmos',
     address,
-    privateKey: uintToHex(privateKey),
+    // privateKey: uintToHex(privateKey),
     publicKey: uintToHex(publicKey),
   };
 };
@@ -143,14 +170,20 @@ export const generateRawAddressFromPubKeys = (publicKey: Uint8Array) => {
 export const generateWalletFromMnemonic = async (
   mnemonic: string,
   trackingEventId: string,
-): Promise<{ accounts: IAccountDetailWithChain[]; mnemonic: string }> => {
+): Promise<{
+  accounts: IAccountDetailWithChain[];
+  mnemonic: string;
+  privateKey: string;
+}> => {
   const bip44HDPath = {
     account: 0,
     change: 0,
     addressIndex: 0,
   };
-
+  console.log('generate wallet from mnemonic');
   const ethereumWallet = await generateEthAddress(mnemonic);
+
+  const ethereumPrivateKey = await generateEthPrivateKey(mnemonic);
 
   const cosmosChains: AddressChainNames[] = [
     'cosmos',
@@ -193,7 +226,7 @@ export const generateWalletFromMnemonic = async (
     { address: stargazeAddress },
     { address: nobleAddress },
   ] = cosmosAccounts;
-  getToken(
+  await getToken(
     ethereumWallet.address,
     cosmosAddress,
     osmosisAddress,
@@ -207,6 +240,10 @@ export const generateWalletFromMnemonic = async (
   } else {
     onMessage();
   }
-
-  return { accounts, mnemonic };
+  console.log('{ accounts, mnemonic, privateKey: ethereumPrivateKey }', {
+    accounts,
+    mnemonic,
+    privateKey: ethereumPrivateKey,
+  });
+  return { accounts, mnemonic, privateKey: ethereumPrivateKey };
 };

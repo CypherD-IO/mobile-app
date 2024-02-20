@@ -15,38 +15,42 @@ import { useContext } from 'react';
 import {
   HdWalletContext,
   convertAmountOfContractDecimal,
+  _NO_CYPHERD_CREDENTIAL_AVAILABLE_,
 } from '../../core/util';
 import { cosmosConfig } from '../../constants/cosmosConfig';
 import { ethers } from 'ethers';
 import Long from 'long';
 import { Chain } from '../../constants/server';
+import { loadPrivateKeyFromKeyChain } from '../../core/Keychain';
 
 export default function useEvmosSigner() {
   const hdWalletContext = useContext<any>(HdWalletContext);
-  const ethereum = hdWalletContext.state.wallet.ethereum;
-  const getPublicKey = () => {
-    const privateKeyBuffer = Buffer.from(
-      ethereum.privateKey.substring(2),
-      'hex',
+  const getPublicKey = async () => {
+    const privateKey = await loadPrivateKeyFromKeyChain(
+      false,
+      hdWalletContext.state.pinValue,
     );
+    if (privateKey && privateKey !== _NO_CYPHERD_CREDENTIAL_AVAILABLE_) {
+      const privateKeyBuffer = Buffer.from(privateKey.substring(2), 'hex');
 
-    const sig = personalSign({
-      privateKey: privateKeyBuffer,
-      data: 'generate_pubkey',
-    });
+      const sig = personalSign({
+        privateKey: privateKeyBuffer,
+        data: 'generate_pubkey',
+      });
 
-    const publicKey = signatureToPubkey(
-      sig,
-      Buffer.from([
-        50, 215, 18, 245, 169, 63, 252, 16, 225, 169, 71, 95, 254, 165, 146,
-        216, 40, 162, 115, 78, 147, 125, 80, 182, 25, 69, 136, 250, 65, 200, 94,
-        178,
-      ]),
-    );
+      const publicKey = signatureToPubkey(
+        sig,
+        Buffer.from([
+          50, 215, 18, 245, 169, 63, 252, 16, 225, 169, 71, 95, 254, 165, 146,
+          216, 40, 162, 115, 78, 147, 125, 80, 182, 25, 69, 136, 250, 65, 200,
+          94, 178,
+        ]),
+      );
 
-    return publicKey;
+      return publicKey;
+    }
   };
-  const getSignedEvmosTransaction = ({
+  const getSignedEvmosTransaction = async ({
     chain,
     sender,
     fee,
@@ -55,7 +59,7 @@ export default function useEvmosSigner() {
     isIBC = false,
   }: any) => {
     if (!sender.pubkey) {
-      sender.pubkey = getPublicKey();
+      sender.pubkey = await getPublicKey();
     }
     let msg;
     if (isIBC) {
@@ -64,27 +68,30 @@ export default function useEvmosSigner() {
       msg = createMessageSend(chain, sender, fee, memo, params);
     }
 
-    const privateKeyBuffer = Buffer.from(
-      ethereum.privateKey.substring(2),
-      'hex',
+    const privateKey = await loadPrivateKeyFromKeyChain(
+      false,
+      hdWalletContext.state.pinValue,
     );
+    if (privateKey && privateKey !== _NO_CYPHERD_CREDENTIAL_AVAILABLE_) {
+      const privateKeyBuffer = Buffer.from(privateKey.substring(2), 'hex');
 
-    const signature = signTypedData({
-      privateKey: privateKeyBuffer,
-      data: msg.eipToSign,
-      version: SignTypedDataVersion.V4,
-    });
+      const signature = signTypedData({
+        privateKey: privateKeyBuffer,
+        data: msg.eipToSign,
+        version: SignTypedDataVersion.V4,
+      });
 
-    const extension = signatureToWeb3Extension(chain, sender, signature);
+      const extension = signatureToWeb3Extension(chain, sender, signature);
 
-    const rawTx = createTxRawEIP712(
-      msg.legacyAmino.body,
-      msg.legacyAmino.authInfo,
-      extension,
-    );
+      const rawTx = createTxRawEIP712(
+        msg.legacyAmino.body,
+        msg.legacyAmino.authInfo,
+        extension,
+      );
 
-    const body = generatePostBodyBroadcast(rawTx);
-    return body;
+      const body = generatePostBodyBroadcast(rawTx);
+      return body;
+    }
   };
 
   const simulateEvmosIBCTransaction = ({

@@ -82,14 +82,14 @@ export const InitializeAppProvider: React.FC<JSX.Element> = ({ children }) => {
   }, []);
 
   useEffect(() => {
+    void getHosts(setForcedUpdate, setTamperedSignMessageModal, setUpdateModal);
+  }, [ethereum.address]);
+
+  useEffect(() => {
     if (ethereum.address === undefined && pinAuthentication) {
       void loadExistingWallet(hdWallet.dispatch, hdWallet.state);
     }
   }, [pinAuthentication]);
-
-  useEffect(() => {
-    void getHosts(setForcedUpdate, setTamperedSignMessageModal, setUpdateModal);
-  }, [ethereum.address]);
 
   return (
     <>

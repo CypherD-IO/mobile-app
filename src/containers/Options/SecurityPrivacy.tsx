@@ -77,15 +77,15 @@ export default function SecurityPrivacy(props) {
           className={'flex flex-row justify-between pl-[15px] py-[24px]'}
           onPress={() => {
             if (item.index === 0) {
-              isAuthenticatedForPrivateKey().then(
-                (isAuthenticated: boolean) => {
-                  if (isAuthenticated) {
-                    props.navigation.navigate(C.screenTitle.PRIVATE_KEY);
-                  } else {
-                    showToast(t('PVT_KEY_FETCH_FAILED'));
-                  }
-                },
-              );
+              // isAuthenticatedForPrivateKey().then(
+              //   (isAuthenticated: boolean) => {
+              //     if (isAuthenticated) {
+              props.navigation.navigate(C.screenTitle.PRIVATE_KEY);
+              //     } else {
+              //       showToast(t('PVT_KEY_FETCH_FAILED'));
+              //     }
+              //   },
+              // );
               sendFirebaseEvent(hdWalletContext, 'reveal_private_key');
             } else if (item.index === 1) {
               props.navigation.navigate(C.screenTitle.SEED_PHRASE);

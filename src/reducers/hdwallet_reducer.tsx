@@ -7,7 +7,7 @@ import { Dispatch } from 'react';
 
 export interface WalletKey {
   address: string;
-  privateKey: Buffer | Uint8Array | string;
+  // privateKey: Buffer | Uint8Array | string
   publicKey: Buffer | Uint8Array | string;
 }
 
@@ -31,11 +31,11 @@ export class ChainWallet {
       : this.wallets[this.currentIndex].address;
   }
 
-  public get privateKey(): Buffer | Uint8Array | string {
-    return this.currentIndex < 0 || this.currentIndex > this.wallets.length - 1
-      ? 'null'
-      : this.wallets[this.currentIndex].privateKey;
-  }
+  // public get privateKey(): Buffer | Uint8Array | string {
+  //   return this.currentIndex < 0 || this.currentIndex > this.wallets.length - 1
+  //     ? 'null'
+  //     : this.wallets[this.currentIndex].privateKey;
+  // }
 
   public get publicKey(): Buffer | Uint8Array | string {
     return this.currentIndex < 0 || this.currentIndex > this.wallets.length - 1
@@ -93,7 +93,7 @@ export const initialHdWalletState: HDWallet = {
 export function hdWalletStateReducer(state: any, action: any) {
   switch (action.type) {
     case 'ADD_ADDRESS': {
-      const { address, privateKey, chain, publicKey } = action.value;
+      const { address, chain, publicKey } = action.value;
 
       const wallet = state.wallet;
 
@@ -104,7 +104,6 @@ export function hdWalletStateReducer(state: any, action: any) {
       ) {
         wallet[chain].wallets.push({
           address,
-          privateKey,
           publicKey,
         });
 
@@ -117,15 +116,13 @@ export function hdWalletStateReducer(state: any, action: any) {
       return { ...state, wallet };
     }
     case 'LOAD_WALLET': {
-      const { address, privateKey, chain, publicKey, rawAddress, algo } =
-        action.value;
+      const { address, chain, publicKey, rawAddress, algo } = action.value;
 
       const wallet = state.wallet;
       if (isAddressSet(address) && CHAIN_NAMES.includes(chain)) {
         wallet[chain].wallets.length = 0;
         wallet[chain].wallets.push({
           address,
-          privateKey,
           publicKey,
           rawAddress,
           algo,
@@ -137,8 +134,8 @@ export function hdWalletStateReducer(state: any, action: any) {
         }
 
         if (
-          chain === CHAIN_ETH.chainName &&
-          privateKey !== _NO_CYPHERD_CREDENTIAL_AVAILABLE_
+          chain === CHAIN_ETH.chainName
+          // && privateKey !== _NO_CYPHERD_CREDENTIAL_AVAILABLE_
         ) {
           Intercom.registerIdentifiedUser({ userId: address }).catch(error => {
             Sentry.captureException(error);
@@ -174,7 +171,7 @@ export function hdWalletStateReducer(state: any, action: any) {
 
     case 'FORGET_WALLET': {
       const address = _NO_CYPHERD_CREDENTIAL_AVAILABLE_;
-      const privateKey = _NO_CYPHERD_CREDENTIAL_AVAILABLE_;
+      // const privateKey = _NO_CYPHERD_CREDENTIAL_AVAILABLE_;
       const publicKey = _NO_CYPHERD_CREDENTIAL_AVAILABLE_;
 
       const wallet: CypherDWallet = {};
@@ -190,7 +187,7 @@ export function hdWalletStateReducer(state: any, action: any) {
 
       wallet.ethereum.wallets.push({
         address,
-        privateKey,
+        // privateKey,
         publicKey,
       });
 
