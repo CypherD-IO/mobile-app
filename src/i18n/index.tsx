@@ -507,6 +507,8 @@ const resources = {
       CARD_LOAD_MIN_AMOUNT: 'Min Amount $10',
       INSUFFICIENT_FUNDS: 'Insufficient Funds',
       INSUFFICIENT_GAS_FEE: 'Insufficient funds to pay gas fee',
+      YOU_DONT_HAVE_ENOUGH_FUNDS_FOR_PAYING_GAS_FEE:
+        "You don't have enough funds for paying gas fee",
       ACTIVATE_CARD: 'Activate Card',
       BLOCK_CARD: 'Block Card',
       CARD_STATUS: 'Card Status',

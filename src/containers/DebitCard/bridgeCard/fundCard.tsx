@@ -1082,6 +1082,18 @@ export default function BridgeFundCardScreen({ route }: { route: any }) {
         return;
       }
 
+      if (amountInCrypto <= 0) {
+        setLoading(false);
+        showModal('state', {
+          type: 'error',
+          title: t('INSUFFICIENT_FUNDS'),
+          description: t('YOU_DONT_HAVE_ENOUGH_FUNDS_FOR_PAYING_GAS_FEE'),
+          onSuccess: hideModal,
+          onFailure: hideModal,
+        });
+        return;
+      }
+
       // Quote with isAmountInCrypto = true and amount as the adjusted crypto amount
       const getQuoteUrl = `/v1/cards/${currentCardProvider}/card/${cardId}/quote/evm?chain=${
         chainDetails.backendName
