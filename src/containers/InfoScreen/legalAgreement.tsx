@@ -62,7 +62,6 @@ export default function LegalAgreementScreen(props) {
   };
 
   const personalSign = async (messageToSign: string) => {
-    console.log('privatekey needed in personal sign');
     if (isValidMessage(messageToSign)) {
       const web3 = new Web3();
       const verifyMessage = `${PORTFOLIO_HOST}/v1/card/mobile/verify_message?address=${ethereum.address}`;

@@ -22,6 +22,7 @@ import {
   AUTHORIZE_WALLET_DELETION,
   sleepFor,
   CYPHERD_PRIVATE_KEY,
+  DUMMY_AUTH,
 } from './util';
 import DeviceInfo from 'react-native-device-info';
 import RNExitApp from 'react-native-exit-app';
@@ -60,7 +61,6 @@ export async function saveCredentialsToKeychain(
   portfolioState: any,
   wallet: any,
 ) {
-  console.log('save credentials to keychain : ', wallet);
   await clearAsyncStorage();
   await removeCredentialsFromKeychain();
   // Save Seed Phrase (master private key is not stored)
@@ -84,6 +84,7 @@ export async function saveCredentialsToKeychain(
     await saveToKeychain(CYPHERD_PRIVATE_KEY, wallet.privateKey);
   }
   await saveToKeychain(AUTHORIZE_WALLET_DELETION, 'AUTHORIZE_WALLET_DELETION');
+  await saveToKeychain(DUMMY_AUTH, 'DUMMY_AUTH');
   const rootData = constructRootData(wallet.accounts);
   // save root data after wallet creation
   // if (isAndroid()) {
@@ -281,7 +282,6 @@ export async function loadRecoveryPhraseFromKeyChain(
   if (mnemonic && (await isPinAuthenticated())) {
     mnemonic = decryptMnemonic(mnemonic, pin);
   }
-  console.log('load seed phrase from keychain : ', mnemonic);
   return mnemonic;
 }
 
@@ -298,7 +298,6 @@ export async function loadPrivateKeyFromKeyChain(
   if (privateKey && (await isPinAuthenticated())) {
     privateKey = decryptMnemonic(privateKey, pin);
   }
-  console.log('load privat key from keychain : ', privateKey);
   return privateKey;
 }
 
@@ -312,11 +311,10 @@ export async function isAuthenticatedForPrivateKey(
   return mnemonic && mnemonic !== _NO_CYPHERD_CREDENTIAL_AVAILABLE_;
 }
 
-export async function loadCyRootData() {
+export async function loadCyRootData(pin = '') {
   // Update schemaVersion whenever adding a new address generation logic
-  let mnemonic: string | undefined;
+  // let mnemonic: string | undefined;
   // const hdWallet = useContext<any>(HdWalletContext);
-  console.log('load Cy Root Data ....');
   // if (isAndroid()) {
   //   mnemonic = await loadRecoveryPhraseFromKeyChain(
   //     true,
@@ -330,11 +328,9 @@ export async function loadCyRootData() {
   if (schemaVersion === currentSchemaVersion.toString()) {
     // let cyData = await loadFromKeyChain(CYPHERD_ROOT_DATA, false, showModal);
     const cyData = await getCyRootData();
-    console.log('cyD data :: ', cyData);
 
     if (cyData) {
       const parsedCyData = JSON.parse(cyData);
-      console.log('parsed cyD data :: ', cyData);
 
       if (
         parsedCyData.accounts &&
@@ -346,22 +342,13 @@ export async function loadCyRootData() {
   }
 
   // if (isIOS()) {
-  //   mnemonic = await loadRecoveryPhraseFromKeyChain(
-  //     true,
-  //     hdWallet.pinValue,
-  //     showModal,
-  //   );
+  const mnemonic = await loadRecoveryPhraseFromKeyChain(false, pin);
   // }
-
-  // console.log(
-  //   'this is where fingerprint is checked first ........... mnemonic :: ',
-  //   mnemonic,
-  // );
 
   if (mnemonic && mnemonic !== _NO_CYPHERD_CREDENTIAL_AVAILABLE_) {
     const wallet = await generateWalletFromMnemonic(mnemonic, 'import_wallet');
     const rootData = constructRootData(wallet.accounts);
-    let dataToSave;
+    // let dataToSave;
     // if (isAndroid() && rootData) {
     //   dataToSave = CryptoJS.AES.encrypt(
     //     JSON.stringify(rootData),
@@ -370,8 +357,9 @@ export async function loadCyRootData() {
     // } else {
     //   dataToSave = rootData;
     // }
-    await setCyRootData(dataToSave);
+    await setCyRootData(rootData);
     await setSchemaVersion(currentSchemaVersion);
+    await removeFromKeyChain(CYPHERD_ROOT_DATA);
     return rootData;
   }
 

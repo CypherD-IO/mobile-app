@@ -359,7 +359,6 @@ export default function SigningModal({
         if (isMessageModalForSigningTypedData) {
           modalPayload?.resolve(true);
         } else {
-          console.log('handleweb3 called in handleccept');
           const response = await handleWeb3(
             params.request,
             { title: '', host: '', origin: '', url: '' },

@@ -85,7 +85,7 @@ export const IMPORTING = 'IMPORTING';
 export const _NO_CYPHERD_CREDENTIAL_AVAILABLE_ =
   '_NO_CYPHERD_CREDENTIAL_AVAILABLE_';
 export const AUTHORIZE_WALLET_DELETION = 'AUTHORIZE_WALLET_DELETION';
-
+export const DUMMY_AUTH = 'DUMMY_AUTH';
 export const PIN_AUTH = 'pin_auth';
 
 export const getPlatform = () => {

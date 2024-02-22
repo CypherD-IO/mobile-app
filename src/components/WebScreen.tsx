@@ -34,7 +34,6 @@ export default function WebScreen({
 
     if (type === CommunicationEvents.WEB3) {
       const { payload } = jsonObj;
-      console.log('handleweb3 called in webscreen');
       const response = await handleWeb3(jsonObj.payload, websiteInfo);
       webviewRef.current.postMessage(
         JSON.stringify({

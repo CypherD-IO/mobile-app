@@ -180,7 +180,6 @@ export const generateWalletFromMnemonic = async (
     change: 0,
     addressIndex: 0,
   };
-  console.log('generate wallet from mnemonic');
   const ethereumWallet = await generateEthAddress(mnemonic);
 
   const ethereumPrivateKey = await generateEthPrivateKey(mnemonic);
@@ -240,10 +239,5 @@ export const generateWalletFromMnemonic = async (
   } else {
     onMessage();
   }
-  console.log('{ accounts, mnemonic, privateKey: ethereumPrivateKey }', {
-    accounts,
-    mnemonic,
-    privateKey: ethereumPrivateKey,
-  });
   return { accounts, mnemonic, privateKey: ethereumPrivateKey };
 };

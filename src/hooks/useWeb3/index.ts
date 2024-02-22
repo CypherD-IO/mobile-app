@@ -157,8 +157,6 @@ export default function useWeb3(origin: Web3Origin) {
       return { error: 'Invalid arguments' };
     }
 
-    console.log('private key needed in handleweb3cosmos');
-
     try {
       if (method === CosmosWeb3Method.GETKEY) {
         const [chainId] = parsed;
@@ -458,7 +456,6 @@ export default function useWeb3(origin: Web3Origin) {
     websiteInfo: WebsiteInfo,
     chain: Chain | undefined,
   ) {
-    console.log('private key needed in handle web 3 payloav');
     const connectionType = await getConnectionType();
     if (connectionType === ConnectionTypes.WALLET_CONNECT) {
       showModal('state', {

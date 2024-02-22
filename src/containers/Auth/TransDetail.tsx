@@ -47,8 +47,6 @@ export default function TransDetail({
     switch (type) {
       case CommunicationEvents.WEB3: {
         const { payload } = jsonObj;
-        console.log('handleweb3 called in onWebviewmessage communication web3');
-
         const response = await handleWeb3(jsonObj.payload, websiteInfo);
         webviewRef.current.postMessage(
           JSON.stringify({

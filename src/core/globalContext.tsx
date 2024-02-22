@@ -1,4 +1,4 @@
-import React, { type Dispatch } from 'react';
+import React, { SetStateAction, type Dispatch } from 'react';
 import Web3 from 'web3';
 import * as Sentry from '@sentry/react-native';
 import { ChainBackendNames } from '../constants/server';
@@ -257,8 +257,8 @@ export function isTokenValid(token: any) {
 export async function signIn(
   ethereum: { address: string },
   hdWallet: HdWalletContextDef,
+  setShowDefaultAuthRemoveModal: Dispatch<SetStateAction<boolean>> = () => {},
 ) {
-  console.log('inside sign in in global context');
   const web3 = new Web3();
   const ARCH_HOST: string = hostWorker.getHost('ARCH_HOST');
   try {
@@ -269,8 +269,9 @@ export async function signIn(
     const validationResponse = isValidMessage(ethereum.address, verifyMessage);
     if (validationResponse.message === SignMessageValidationType.VALID) {
       const privateKey = await loadPrivateKeyFromKeyChain(
-        false,
+        true,
         hdWallet.state.pinValue,
+        () => setShowDefaultAuthRemoveModal(true),
       );
       if (privateKey && privateKey !== _NO_CYPHERD_CREDENTIAL_AVAILABLE_) {
         const { signature } = web3.eth.accounts.sign(verifyMessage, privateKey);
@@ -280,7 +281,11 @@ export async function signIn(
             signature,
           },
         );
-        return { ...validationResponse, token: result.data.token };
+        return {
+          ...validationResponse,
+          token: result.data.token,
+          refreshToken: result.data.refreshToken,
+        };
       }
       return validationResponse;
     }

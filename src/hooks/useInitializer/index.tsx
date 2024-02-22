@@ -11,9 +11,12 @@ import {
 } from '../../constants/enum';
 import { hostWorker, initializeHostsFromAsync } from '../../global';
 import {
+  getAuthToken,
   getDeveloperMode,
   getReadOnlyWalletData,
   getRpcEndpoints,
+  setAuthToken,
+  setRefreshToken,
   setRpcEndpoints,
 } from '../../core/asyncStorage';
 import {
@@ -30,11 +33,12 @@ import {
   isBiometricEnabled,
   isPinAuthenticated,
   loadCyRootData,
-  loadCyRootDataFromKeyChain,
+  loadFromKeyChain,
 } from '../../core/Keychain';
 import { initialHdWalletState } from '../../reducers';
 import {
   ActivityContext,
+  DUMMY_AUTH,
   HdWalletContext,
   _NO_CYPHERD_CREDENTIAL_AVAILABLE_,
   getPlatform,
@@ -47,6 +51,7 @@ import analytics from '@react-native-firebase/analytics';
 import DeviceInfo, { getVersion } from 'react-native-device-info';
 import { getWalletProfile } from '../../core/card';
 import SpInAppUpdates from 'sp-react-native-in-app-updates';
+import useValidSessionToken from '../useValidSessionToken';
 
 export default function useInitializer() {
   const SENSITIVE_DATA_KEYS = ['password', 'seed', 'creditCardNumber'];
@@ -59,6 +64,8 @@ export default function useInitializer() {
   const inAppUpdates = new SpInAppUpdates(
     false, // isDebug
   );
+  const { verifySessionToken } = useValidSessionToken();
+
   const scrubData = (key: string, value: any): any => {
     if (SENSITIVE_DATA_KEYS.includes(key)) {
       return '********'; // Replace with asterisks
@@ -259,16 +266,14 @@ export default function useInitializer() {
     return isBiometricPasscodeEnabled && !(await isPinAuthenticated()); //  for devices with biometreics enabled the pinAuthentication will be set true
   };
 
-  const setPinPresentStateValue = async (
-    setShowDefaultAuthRemoveModal: Dispatch<SetStateAction<boolean>>,
-  ) => {
+  const setPinPresentStateValue = async () => {
     const pinAuthenticated = await isPinAuthenticated();
     const hasBiometricEnabled = await isBiometricEnabled();
     if (!hasBiometricEnabled) {
       if (pinAuthenticated) {
         return PinPresentStates.TRUE;
       } else {
-        await loadCyRootData();
+        await loadCyRootData(hdWallet.state.pinValue);
         // await loadCyRootDataFromKeyChain(
         //   hdWallet.state,
         //   () => {
@@ -304,7 +309,7 @@ export default function useInitializer() {
     state = initialHdWalletState,
   ) => {
     // const cyRootData = await loadCyRootDataFromKeyChain(state);
-    const cyRootData = await loadCyRootData();
+    const cyRootData = await loadCyRootData(state.pinValue);
     if (cyRootData) {
       const { accounts } = cyRootData;
       if (!accounts) {
@@ -416,35 +421,58 @@ export default function useInitializer() {
     setForcedUpdate: Dispatch<SetStateAction<boolean>>,
     setTamperedSignMessageModal: Dispatch<SetStateAction<boolean>>,
     setUpdateModal: Dispatch<SetStateAction<boolean>>,
+    setShowDefaultAuthRemoveModal: Dispatch<SetStateAction<boolean>> = () => {},
   ) => {
     if (
       ethereum?.address
       // && ethereum?.privateKey !== _NO_CYPHERD_CREDENTIAL_AVAILABLE_
     ) {
-      const signInResponse = await signIn(ethereum, hdWallet);
-      if (signInResponse) {
-        if (
-          signInResponse?.message === SignMessageValidationType.VALID &&
-          has(signInResponse, 'token')
-        ) {
-          setForcedUpdate(false);
-          setTamperedSignMessageModal(false);
-          globalContext.globalDispatch({
-            type: GlobalContextType.SIGN_IN,
-            sessionToken: signInResponse?.token,
-          });
-          void getProfile(signInResponse.token);
-        } else if (
-          signInResponse?.message === SignMessageValidationType.INVALID
-        ) {
-          setUpdateModal(false);
-          setTamperedSignMessageModal(true);
-        } else if (
-          signInResponse?.message === SignMessageValidationType.NEEDS_UPDATE
-        ) {
-          setUpdateModal(true);
-          setForcedUpdate(true);
+      const isSessionTokenValid = await verifySessionToken();
+      if (!isSessionTokenValid) {
+        const signInResponse = await signIn(
+          ethereum,
+          hdWallet,
+          setShowDefaultAuthRemoveModal,
+        );
+        if (signInResponse) {
+          if (
+            signInResponse?.message === SignMessageValidationType.VALID &&
+            has(signInResponse, 'token')
+          ) {
+            setForcedUpdate(false);
+            setTamperedSignMessageModal(false);
+            globalContext.globalDispatch({
+              type: GlobalContextType.SIGN_IN,
+              sessionToken: signInResponse?.token,
+            });
+            await setAuthToken(signInResponse?.token);
+            if (has(signInResponse, 'refreshToken')) {
+              await setRefreshToken(signInResponse?.refreshToken);
+            }
+            void getProfile(signInResponse.token);
+          } else if (
+            signInResponse?.message === SignMessageValidationType.INVALID
+          ) {
+            setUpdateModal(false);
+            setTamperedSignMessageModal(true);
+          } else if (
+            signInResponse?.message === SignMessageValidationType.NEEDS_UPDATE
+          ) {
+            setUpdateModal(true);
+            setForcedUpdate(true);
+          }
         }
+      } else {
+        let authToken = await getAuthToken();
+        await loadFromKeyChain(DUMMY_AUTH, true, () =>
+          setShowDefaultAuthRemoveModal(true),
+        );
+        authToken = JSON.parse(String(authToken));
+        void getProfile(authToken);
+        globalContext.globalDispatch({
+          type: GlobalContextType.SIGN_IN,
+          sessionToken: authToken,
+        });
       }
     }
   };
@@ -453,6 +481,7 @@ export default function useInitializer() {
     setForcedUpdate: Dispatch<SetStateAction<boolean>>,
     setTamperedSignMessageModal: Dispatch<SetStateAction<boolean>>,
     setUpdateModal: Dispatch<SetStateAction<boolean>>,
+    setShowDefaultAuthRemoveModal: Dispatch<SetStateAction<boolean>> = () => {},
   ) => {
     const hosts = await initializeHostsFromAsync();
     if (hosts) {
@@ -465,6 +494,7 @@ export default function useInitializer() {
           setForcedUpdate,
           setTamperedSignMessageModal,
           setUpdateModal,
+          setShowDefaultAuthRemoveModal,
         );
       }
     }

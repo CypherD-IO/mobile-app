@@ -31,8 +31,6 @@ export async function handleWeb3Payload(
   const { ethereum } = hdWalletContext.state.wallet;
   const { address: wallet_address } = ethereum;
 
-  console.log('privatekey needed in handle web3 payload');
-
   const privateKey = await loadPrivateKeyFromKeyChain(
     false,
     hdWalletContext.state.pinValue,

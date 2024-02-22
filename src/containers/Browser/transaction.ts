@@ -63,8 +63,6 @@ export async function sendTransaction(
       gas: gasLimit,
     };
 
-    console.log('loading private key inside sendtransaction :: ');
-
     const privateKey = await loadPrivateKeyFromKeyChain(
       false,
       hdWalletContext.state.pinValue,
@@ -190,8 +188,6 @@ export async function signTypedDataCypherD(
   webviewRef,
   typeDataVersion,
 ) {
-  console.log('loading private key inside signTypedDataCypherD :: ');
-
   const privateKey = await loadPrivateKeyFromKeyChain(
     false,
     hdWalletContext.state.pinValue,
@@ -230,7 +226,6 @@ export async function personal_sign(
   } else if (payload.method == 'eth_sign') {
     messageToSign = payload.params[1];
   }
-  console.log('loading private key inside personal sign :: ');
 
   const privateKey = await loadPrivateKeyFromKeyChain(
     false,
