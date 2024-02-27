@@ -3,16 +3,25 @@ import {
   SendInEvmInterface,
   SendNativeToken,
 } from '../../models/sendInEvm.interface';
-import { HdWalletContext, getWeb3Endpoint } from '../../core/util';
+import {
+  HdWalletContext,
+  PortfolioContext,
+  getNativeToken,
+  getTimeOutTime,
+  getWeb3Endpoint,
+  limitDecimalPlaces,
+} from '../../core/util';
 import { useContext } from 'react';
 import { GlobalContext } from '../../core/globalContext';
 import {
+  ACCOUNT_DETAILS_INFO,
   CHAIN_OPTIMISM,
   CHAIN_SHARDEUM,
   CHAIN_SHARDEUM_SPHINX,
   Chain,
   ChainConfigMapping,
   ChainNameMapping,
+  NativeTokenMapping,
   TRANSACTION_ENDPOINT,
 } from '../../constants/server';
 import { getConnectionType } from '../../core/asyncStorage';
@@ -25,13 +34,39 @@ import { get } from 'lodash';
 import useEthSigner from '../useEthSigner';
 import { ethers } from 'ethers';
 import axios from '../../core/Http';
+import {
+  Coin,
+  MsgTransferEncodeObject,
+  SigningStargateClient,
+} from '@cosmjs/stargate';
+import useCosmosSigner from '../useCosmosSigner';
+import { cosmosConfig } from '../../constants/cosmosConfig';
+import Long from 'long';
+import { MsgTransfer } from 'cosmjs-types/ibc/applications/transfer/v1/tx';
+import useEvmosSigner from '../useEvmosSigner';
 
 export default function useTransactionManager() {
   const globalContext = useContext<any>(GlobalContext);
   const hdWalletContext = useContext<any>(HdWalletContext);
+  const portfolioState = useContext<any>(PortfolioContext);
   const OP_ETH_ADDRESS = '0xdeaddeaddeaddeaddeaddeaddeaddeaddead0000';
-  const { estimateGasForEvm, estimateGasForEvmos } = useGasService();
+  const evmosUrls = globalContext.globalState.rpcEndpoints.EVMOS.otherUrls;
+  const { evmos } = hdWalletContext.state.wallet;
+  const ACCOUNT_DETAILS = evmosUrls.accountDetails.replace(
+    'address',
+    evmos.wallets[evmos.currentIndex].address,
+  );
+  const {
+    estimateGasForEvm,
+    estimateGasForEvmos,
+    estimateGasForCosmosIBC,
+    estimateGasForEvmosIBC,
+  } = useGasService();
   const { signEthTransaction } = useEthSigner();
+  const { simulateEvmosIBCTransaction } = useEvmosSigner();
+  const { getCosmosSignerClient, getCosmosRpc } = useCosmosSigner();
+
+  const EVMOS_TXN_ENDPOINT = evmosUrls.transact;
 
   function isNativeCurrency(
     fromChain: Chain,
@@ -273,5 +308,175 @@ export default function useTransactionManager() {
     return { hash: '', isError: false };
   };
 
-  return { sendEvmToken, sendEvmosToken };
+  const interCosmosIBC = async ({
+    fromChain,
+    toChain,
+    denom,
+    contractDecimals,
+    amount,
+    fromAddress,
+    toAddress,
+  }: {
+    fromChain: Chain;
+    toChain: Chain;
+    denom: string;
+    contractDecimals: number;
+    amount: string;
+    fromAddress: string;
+    toAddress: string;
+  }): Promise<{
+    isError: boolean;
+    hash: string;
+    error?: any;
+  }> => {
+    try {
+      const gasFeeDetails = await estimateGasForCosmosIBC({
+        fromChain,
+        toChain,
+        denom,
+        amount,
+        fromAddress,
+        toAddress,
+      });
+      const { chainName, backendName, symbol } = fromChain;
+      const signer = await getCosmosSignerClient(chainName);
+      const rpc = getCosmosRpc(backendName);
+      const signingClient = await SigningStargateClient.connectWithSigner(
+        rpc,
+        signer,
+      );
+      const nativeToken = getNativeToken(
+        get(NativeTokenMapping, symbol) || symbol,
+        get(
+          portfolioState.statePortfolio.tokenPortfolio,
+          ChainNameMapping[backendName],
+        ).holdings,
+      );
+      const fee = {
+        gas: gasFeeDetails.gasLimit,
+        amount: [
+          {
+            denom: nativeToken?.denom ?? denom,
+            amount: parseInt(
+              gasFeeDetails.gasFeeInCrypto.toFixed(6).split('.')[1],
+              10,
+            ).toString(),
+          },
+        ],
+      };
+
+      const amountToSend = parseFloat(amount) * Math.pow(10, contractDecimals);
+      const transferAmount: Coin = {
+        denom,
+        amount: amountToSend.toString(),
+      };
+
+      const sourcePort = 'transfer';
+      const sourceChannel: string = get(cosmosConfig, chainName).channel[
+        toChain.chainName.toLowerCase()
+      ];
+      const timeOut: any = getTimeOutTime();
+      const memo = 'Cypher Wallet';
+      const timeoutHeight: any = {
+        revisionHeight: Long.fromNumber(123),
+        revisionNumber: Long.fromNumber(456),
+      };
+      const transferMsg: MsgTransferEncodeObject = {
+        typeUrl: '/ibc.applications.transfer.v1.MsgTransfer',
+        value: MsgTransfer.fromPartial({
+          sourcePort,
+          sourceChannel,
+          sender: fromAddress,
+          receiver: toAddress,
+          token: transferAmount,
+          timeoutHeight,
+          timeoutTimestamp: timeOut,
+        }),
+      };
+
+      const ibcResponse = await signingClient.signAndBroadcast(
+        fromAddress,
+        [transferMsg],
+        fee,
+        memo,
+      );
+      const hash = ibcResponse?.transactionHash;
+      const rawLog = ibcResponse?.rawLog;
+      return { hash, isError: false };
+    } catch (e) {
+      return { hash: '', isError: true, error: e };
+    }
+  };
+
+  const evmosIBC = async ({
+    toAddress,
+    toChain,
+    amount,
+    denom,
+    contractDecimals,
+  }: {
+    toAddress: string;
+    toChain: Chain;
+    amount: string;
+    denom: string;
+    contractDecimals: number;
+  }): Promise<{
+    isError: boolean;
+    hash: string;
+    error?: any;
+  }> => {
+    try {
+      const gasDetails = await estimateGasForEvmosIBC({
+        toAddress,
+        toChain,
+        amount,
+        denom,
+        contractDecimals,
+      });
+      console.log(gasDetails);
+      const { evmos } = hdWalletContext.state.wallet;
+      const fromAddress: string = evmos.address;
+      // const userAccountData = await axios.get(
+      //   `${ACCOUNT_DETAILS_INFO}/${fromAddress}`,
+      // );
+      const userAccountData = await axios.get(ACCOUNT_DETAILS, {
+        timeout: 2000,
+      });
+
+      const simulatedIBCTransferBody = simulateEvmosIBCTransaction({
+        toAddress,
+        toChain,
+        amount,
+        denom,
+        contractDecimals,
+        userAccountData,
+        gasFee: ethers.utils
+          .parseUnits(gasDetails.gasFeeInCrypto.toString(), '18')
+          .toString(), //limitDecimalPlaces(gasDetails.gasFeeInCrypto, contractDecimals),
+        gasWanted: String(gasDetails.gasLimit),
+      });
+      const resp: any = await axios.post(
+        EVMOS_TXN_ENDPOINT,
+        simulatedIBCTransferBody,
+      );
+      if (resp.data.tx_response.code === 0) {
+        return { hash: resp.data.tx_response.txhash, isError: false };
+      } else if (resp.data.tx_response.code === 5) {
+        return {
+          hash: '',
+          isError: true,
+          error: resp.data.tx_response.raw_log,
+        };
+      }
+      return {
+        hash: '',
+        isError: true,
+        error: resp.data,
+      };
+    } catch (e) {
+      return { hash: '', isError: true, error: e };
+    }
+  };
+
+  return { sendEvmToken, sendEvmosToken, interCosmosIBC, evmosIBC };
 }

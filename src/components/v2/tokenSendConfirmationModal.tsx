@@ -34,8 +34,10 @@ export default function TokenSendConfirmationModal(
   } = tokenSendParams;
   const { t } = useTranslation();
 
-  const chainLogo = get(ChainConfigMapping, get(ChainNameMapping, chain))
-    ?.logo_url;
+  const chainLogo = get(
+    ChainConfigMapping,
+    get(ChainNameMapping, chain),
+  )?.logo_url;
   return (
     <CyDModalLayout
       setModalVisible={() => {

@@ -15,36 +15,44 @@ import { ButtonType } from '../constants/enum';
 import { formatAmount, limitDecimalPlaces } from '../core/util';
 import { PayTokenModalParams } from '../models/card.model';
 import LottieView from 'lottie-react-native';
-
-interface BottomCardConfirmProps {
-  isModalVisible: boolean;
-  onPayPress: () => void;
-  onCancelPress: () => void;
-  modalParams: PayTokenModalParams;
-}
+import { get } from 'lodash';
+import { ChainConfigMapping, ChainNameMapping } from '../constants/server';
 
 export default function BottomCardConfirm({
   isModalVisible,
-  onPayPress,
-  onCancelPress,
-  modalParams,
-}: BottomCardConfirmProps) {
+  quoteExpiry,
+  hasSufficientBalanceAndGasFee,
+  tokenSendParams,
+}: PayTokenModalParams) {
   const { t } = useTranslation();
   const [loading, setLoading] = useState<boolean>(false);
-  const [tokenExpiryTime, setTokenExpiryTime] = useState(
-    modalParams.tokenQuoteExpiry,
-  );
+  const {
+    onConfirm,
+    onCancel,
+    chain,
+    amountInCrypto,
+    amountInFiat,
+    symbol,
+    gasFeeInCrypto,
+    gasFeeInFiat,
+    nativeTokenSymbol,
+  } = tokenSendParams;
+  const [tokenExpiryTime, setTokenExpiryTime] = useState(quoteExpiry);
   const [expiryTimer, setExpiryTimer] = useState<NodeJS.Timer>();
   const [isPayDisabled, setIsPayDisabled] = useState<boolean>(
-    !modalParams.hasSufficientBalanceAndGasFee,
+    hasSufficientBalanceAndGasFee,
   );
+  const chainLogo = get(
+    ChainConfigMapping,
+    get(ChainNameMapping, chain),
+  )?.logo_url;
 
   useEffect(() => {
     let tempIsPayDisabled = false;
-    tempIsPayDisabled = !modalParams?.hasSufficientBalanceAndGasFee;
+    tempIsPayDisabled = !hasSufficientBalanceAndGasFee;
     setIsPayDisabled(tempIsPayDisabled);
-    if (isModalVisible && modalParams?.tokenQuoteExpiry && !tempIsPayDisabled) {
-      let tempTokenExpiryTime = modalParams.tokenQuoteExpiry;
+    if (isModalVisible && quoteExpiry && !tempIsPayDisabled) {
+      let tempTokenExpiryTime = quoteExpiry;
       setIsPayDisabled(false);
       setTokenExpiryTime(tempTokenExpiryTime);
       setExpiryTimer(
@@ -57,18 +65,18 @@ export default function BottomCardConfirm({
   }, [isModalVisible]);
 
   useEffect(() => {
-    if (tokenExpiryTime === 0 && modalParams?.tokenQuoteExpiry) {
+    if (tokenExpiryTime === 0 && quoteExpiry) {
       clearInterval(expiryTimer);
       setIsPayDisabled(true);
     }
   }, [tokenExpiryTime]);
 
   const hideModal = () => {
-    if (modalParams.tokenQuoteExpiry && tokenExpiryTime !== 0) {
+    if (quoteExpiry && tokenExpiryTime !== 0) {
       clearInterval(expiryTimer);
     }
     setLoading(true);
-    onCancelPress();
+    onCancel();
     setLoading(false);
   };
 
@@ -77,7 +85,7 @@ export default function BottomCardConfirm({
       clearInterval(expiryTimer);
     }
     setLoading(true);
-    onPayPress();
+    onConfirm();
     setLoading(false);
   };
 
@@ -89,7 +97,7 @@ export default function BottomCardConfirm({
       animationOut={'slideOutDown'}
       setModalVisible={() => {
         clearInterval(expiryTimer);
-        onCancelPress();
+        onCancel();
       }}>
       <CyDView
         className={'bg-white pb-[30px] flex items-center rounded-t-[24px]'}>
@@ -117,11 +125,11 @@ export default function BottomCardConfirm({
                 'flex flex-row justify-center items-center pl-[25px] max-w-[70%]'
               }>
               <CyDFastImage
-                source={modalParams.appImage}
+                source={chainLogo}
                 className={'w-[18px] h-[18px]'}
               />
               <CyDText className={'font-medium text-[14px] ml-[4px]'}>
-                {modalParams.networkName}
+                {chain}
               </CyDText>
             </CyDView>
           </CyDView>
@@ -134,12 +142,10 @@ export default function BottomCardConfirm({
               }>
               <CyDText
                 className={' font-medium text-[14px] text-primaryTextColor'}>
-                {formatAmount(modalParams.tokenAmount)}{' '}
-                {modalParams.tokenSymbol}
+                {String(formatAmount(amountInCrypto)) + ' ' + symbol}
               </CyDText>
               <CyDText className={' font-medium text-[14px]'}>
-                {'$'}
-                {limitDecimalPlaces(modalParams.tokenValueDollar, 4)}
+                {'$' + limitDecimalPlaces(amountInFiat, 4)}
               </CyDText>
             </CyDView>
           </CyDView>
@@ -155,10 +161,10 @@ export default function BottomCardConfirm({
               }>
               <CyDText
                 className={'font-medium text-[14px] text-primaryTextColor'}>
-                {modalParams.gasFeeETH} {modalParams.networkCurrency}
+                {String(gasFeeInCrypto) + ' ' + nativeTokenSymbol}
               </CyDText>
               <CyDText className={'font-medium text-[14px]'}>
-                ${formatAmount(modalParams.gasFeeDollar)}
+                {'$' + String(formatAmount(gasFeeInFiat))}
               </CyDText>
             </CyDView>
           </CyDView>
@@ -187,7 +193,7 @@ export default function BottomCardConfirm({
             </CyDView>
           </CyDView>
         </CyDView>
-        {!modalParams?.hasSufficientBalanceAndGasFee ? (
+        {!hasSufficientBalanceAndGasFee ? (
           <CyDView className='flex flex-row items-center rounded-[8px] justify-center py-[15px] mt-[20px] mb-[10px] bg-warningRedBg'>
             <CyDFastImage
               source={AppImages.CYPHER_WARNING_RED}

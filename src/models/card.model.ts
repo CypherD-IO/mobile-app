@@ -66,48 +66,39 @@ export interface ICardTransaction {
 }
 
 export interface CardQuoteResponse {
-  status: string;
-  tokenRequired: number;
-  tokenFunded: number;
-  cardFeeUsd: number;
-  estimatedGasFee: number;
+  quoteId: string;
+  chain: string;
+  tokensRequired: number;
+  tokenAddress: string;
+  tokenCoinId: string;
+  tokensRequiredFiat: number;
+  amount: number;
+  fromAddress: string;
+  targetAddress: string;
+  masterAddress: string;
+  cardProvider: string;
+  tokenSymbol: string;
   expiry: number;
-  targetWallet: string;
-  usdValue: number;
-  userStats: {
-    lifetimeAmountUsd: number;
-    lifetimeCount: number;
-    lifetimeFeeUsd: number;
-  };
-  toFundCardId: string;
-  quoteUUID: string;
   estimatedTime: number;
+  version: 2;
 }
 
 export interface PayTokenModalParams {
-  gasFeeDollar: string;
-  gasFeeETH: string;
-  networkName: string;
-  networkCurrency: string;
-  totalDollar: string;
-  appImage: number;
-  tokenImage: string;
-  finalGasPrice: string;
-  gasLimit: number;
-  gasPrice: {
-    chainId: string;
-    gasPrice: number;
-    tokenPrice: number;
-    cached: boolean;
-  };
-  tokenSymbol: string;
-  tokenAmount: string;
-  tokenValueDollar: string;
-  totalValueTransfer: number;
-  totalValueDollar: string;
+  isModalVisible: boolean;
+  quoteExpiry: number;
   hasSufficientBalanceAndGasFee: boolean;
-  tokenQuoteExpiry: number;
-  cardNumber: string;
+  tokenSendParams: {
+    onConfirm: () => void;
+    onCancel: () => void;
+    chain: ChainBackendNames;
+    amountInCrypto: string;
+    amountInFiat: string;
+    symbol: string;
+    toAddress: string;
+    gasFeeInCrypto: string;
+    gasFeeInFiat: string;
+    nativeTokenSymbol: string;
+  };
 }
 
 export const GAS_BUFFER_FACTOR_FOR_LOAD_MAX = 1.2;
