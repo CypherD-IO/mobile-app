@@ -1,0 +1,206 @@
+import React, { useContext, useEffect, useState, useLayoutEffect } from 'react';
+import { useTranslation } from 'react-i18next';
+import {
+  CyDText,
+  CyDTouchView,
+  CyDView,
+  CyDImage,
+  CyDTouchableWithoutFeedback,
+  CyDSafeAreaView,
+  CyDTextInput,
+  CyDScrollView,
+} from '../../styles/tailwindStyles';
+import { BackHandler, Keyboard, NativeModules } from 'react-native';
+import * as C from '../../constants/index';
+import {
+  ActivityContext,
+  HdWalletContext,
+  PortfolioContext,
+  isValidPrivateKey,
+} from '../../core/util';
+import { importWallet, importWalletPrivateKey } from '../../core/HdWallet';
+import { PORTFOLIO_LOADING } from '../../reducers/portfolio_reducer';
+import AppImages from '../../../assets/images/appImages';
+import Clipboard from '@react-native-clipboard/clipboard';
+import { QRScannerScreens } from '../../constants/server';
+import LottieView from 'lottie-react-native';
+import { ActivityReducerAction } from '../../reducers/activity_reducer';
+import { screenTitle } from '../../constants/index';
+import Loading from '../../components/v2/loading';
+import { getReadOnlyWalletData } from '../../core/asyncStorage';
+import useAxios from '../../core/HttpRequest';
+import clsx from 'clsx';
+import { fetchTokenData } from '../../core/Portfolio';
+import { IMPORT_WALLET_TIMEOUT } from '../../constants/timeOuts';
+import { useIsFocused } from '@react-navigation/native';
+import { isAndroid } from '../../misc/checkers';
+import { Colors } from '../../constants/theme';
+import Button from '../../components/v2/button';
+
+export default function Login(props) {
+  const { t } = useTranslation();
+  const isFocused = useIsFocused();
+  const [privateKey, setPrivateKey] = useState<string>('');
+  const [badKeyError, setBadKeyError] = useState<boolean>(false);
+  const [loading, setLoading] = useState<boolean>(false);
+  const [createWalletLoading, setCreateWalletLoading] =
+    useState<boolean>(false);
+
+  const hdWalletContext = useContext<any>(HdWalletContext);
+  const portfolioState = useContext<any>(PortfolioContext);
+  const activityContext = useContext<any>(ActivityContext);
+  const { deleteWithAuth } = useAxios();
+
+  const fetchCopiedText = async () => {
+    const text = await Clipboard.getString();
+    setPrivateKey(text);
+  };
+
+  const handleBackButton = () => {
+    props?.navigation?.goBack();
+    return true;
+  };
+
+  const onSuccess = async e => {
+    const textValue = e.data;
+    setPrivateKey(textValue);
+  };
+
+  const submitImportWallet = async (textValue = privateKey) => {
+    const { isReadOnlyWallet } = hdWalletContext.state;
+    const { ethereum } = hdWalletContext.state.wallet;
+    console.log('is valid private key :: ', isValidPrivateKey(textValue));
+    if (textValue.length >= 64 && isValidPrivateKey(textValue)) {
+      setLoading(true);
+      console.log('reaconly wlalet L ', isReadOnlyWallet);
+      if (isReadOnlyWallet) {
+        const data = await getReadOnlyWalletData();
+        if (data) {
+          const readOnlyWalletData = JSON.parse(data);
+          await deleteWithAuth(
+            `/v1/configuration/address/${ethereum.address}/observer/${readOnlyWalletData.observerId}`,
+          );
+        }
+      }
+      console.log('imoprt wallet private key');
+      await importWalletPrivateKey(hdWalletContext, portfolioState, textValue);
+      console.log('dispatching ...');
+      portfolioState.dispatchPortfolio({
+        value: { portfolioState: PORTFOLIO_LOADING },
+      });
+      console.log('dispatched success');
+      hdWalletContext.dispatch({ type: 'RESET_WALLET' });
+      activityContext.dispatch({ type: ActivityReducerAction.RESET });
+      setLoading(false);
+      setPrivateKey('');
+      if (props && props.navigation) {
+        const getCurrentRoute = props.navigation.getState().routes[0].name;
+        if (getCurrentRoute === screenTitle.OPTIONS_SCREEN)
+          props.navigation.navigate(C.screenTitle.PORTFOLIO_SCREEN);
+        else setCreateWalletLoading(true);
+      } else {
+        void fetchTokenData(hdWalletContext, portfolioState);
+      }
+    } else {
+      setBadKeyError(true);
+    }
+  };
+
+  useEffect(() => {
+    BackHandler.addEventListener('hardwareBackPress', handleBackButton);
+    if (isFocused) {
+      if (isAndroid()) NativeModules.PreventScreenshotModule.forbid();
+    } else {
+      if (isAndroid()) NativeModules.PreventScreenshotModule.allow();
+    }
+    return () => {
+      if (isAndroid()) NativeModules.PreventScreenshotModule.allow();
+      BackHandler.removeEventListener('hardwareBackPress', handleBackButton);
+    };
+  }, [isFocused]);
+
+  useLayoutEffect(() => {
+    if (props && props.navigation) {
+      props.navigation.setOptions({
+        headerRight: () => (
+          <CyDTouchView
+            onPress={() => {
+              props.navigation.navigate(C.screenTitle.QR_CODE_SCANNER, {
+                fromPage: QRScannerScreens.IMPORT,
+                onSuccess,
+              });
+            }}>
+            <CyDImage
+              source={AppImages.QR_CODE_SCANNER_BLACK}
+              className='h-[22px] w-[22px]'
+              resizeMode='contain'
+            />
+          </CyDTouchView>
+        ),
+      });
+    }
+  }, []);
+
+  return (
+    <CyDSafeAreaView className='flex-1 bg-white'>
+      <CyDScrollView className='flex-1 px-[20px]'>
+        {createWalletLoading && <Loading />}
+        <CyDTouchableWithoutFeedback onPress={Keyboard.dismiss}>
+          <CyDView>
+            <CyDText
+              className={'text-[#434343] text-[16px] mt-[30px] text-center'}>
+              {t('PRIVATE_KEY_IMPORT_SUB_MSG')}
+            </CyDText>
+            <CyDView className={'flex flex-row justify-center'}>
+              <CyDTextInput
+                placeholder={t('ENTER_PRIVATE_KEY_PLACEHOLDER')}
+                placeholderTextColor={Colors.placeHolderColor}
+                value={privateKey}
+                onChangeText={text => {
+                  setPrivateKey(text.toLowerCase());
+                  setBadKeyError(false);
+                }}
+                multiline={true}
+                textAlignVertical={'top'}
+                secureTextEntry={true}
+                className={clsx(
+                  'border-[1px] border-inputBorderColor p-[10px] mt-[20px] h-[100px] text-[18px] w-[100%]',
+                  { 'border-errorRed': badKeyError },
+                )}
+              />
+            </CyDView>
+            {badKeyError && (
+              <CyDText className='text-[16px] text-errorTextRed text-center'>
+                {t('BAD_PRIVATE_KEY_PHARSE')}
+              </CyDText>
+            )}
+            <CyDView className={'flex flex-row justify-end w-full mt-[20px]'}>
+              <CyDTouchView
+                className={'flex flex-row justify-end'}
+                onPress={() => {
+                  void fetchCopiedText();
+                }}>
+                <CyDImage
+                  source={AppImages.COPY}
+                  className={'w-[16px] h-[18px] mr-[10px]'}
+                />
+                <CyDText
+                  className={'text-[#434343] text-[14px] font-extrabold'}>
+                  {t('PASTE_CLIPBOARD')}
+                </CyDText>
+              </CyDTouchView>
+            </CyDView>
+            <Button
+              title={t('SUBMIT')}
+              onPress={() => {
+                void submitImportWallet();
+              }}
+              style={'h-[60px] mt-[40px]'}
+              loading={loading}
+            />
+          </CyDView>
+        </CyDTouchableWithoutFeedback>
+      </CyDScrollView>
+    </CyDSafeAreaView>
+  );
+}

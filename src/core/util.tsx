@@ -65,6 +65,7 @@ import { Holding } from './Portfolio';
 import { TokenMeta } from '../models/tokenMetaData.model';
 import Long from 'long';
 
+import { Wallet } from '@ethersproject/wallet';
 // const {showModal, hideModal} = useGlobalModalContext()
 
 export const HdWalletContext = React.createContext<HdWalletContextDef | null>(
@@ -845,6 +846,22 @@ export function isNativeCurrency(
     fromChain.secondaryAddress,
   ].includes(contractAddress);
   return isNative;
+}
+
+export function addHexPrefix(value: string): string {
+  if (!value.startsWith('0x')) {
+    return '0x' + value;
+  }
+  return value;
+}
+
+export function isValidPrivateKey(privateKey: string): boolean {
+  try {
+    const wallet = new Wallet(addHexPrefix(privateKey));
+    return !!wallet;
+  } catch (e) {
+    return false;
+  }
 }
 
 export function getAvailableChains(hdWallet: HdWalletContextDef): Chain[] {

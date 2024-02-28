@@ -9,6 +9,8 @@ import { cosmosConfig, IIBCData } from '../constants/cosmosConfig';
 import CryptoJS from 'crypto-js';
 import { Mnemonic, PrivKeySecp256k1 } from '@keplr-wallet/crypto';
 import { isIOS } from '../misc/checkers';
+import { Wallet } from '@ethersproject/wallet';
+import { addHexPrefix } from './util';
 
 function sendFirebaseEvent(walletaddress: string, trkEvent: string) {
   void analytics().logEvent(trkEvent, {
@@ -165,6 +167,35 @@ export const generateRawAddressFromPubKeys = (publicKey: Uint8Array) => {
   ).toString();
   hash = CryptoJS.RIPEMD160(CryptoJS.enc.Hex.parse(hash)).toString();
   return new Uint8Array(Buffer.from(hash, 'hex'));
+};
+
+export const generateWalletFromPrivateKey = async (privateKey: string) => {
+  const ethersWallet = new Wallet(addHexPrefix(privateKey));
+  const ethereumWallet = {
+    name: 'ethereum',
+    address: ethersWallet.address,
+    privateKey: addHexPrefix(privateKey),
+    publicKey: ethersWallet.publicKey,
+  };
+
+  const evmosWallet = {
+    name: 'evmos',
+    address: ethToEvmos(ethersWallet.address),
+    privateKey: addHexPrefix(privateKey),
+    publicKey: ethersWallet.publicKey,
+  };
+
+  const accounts: IAccountDetailWithChain[] = [ethereumWallet, evmosWallet];
+  // emit event to firebase
+  sendFirebaseEvent(ethereumWallet.address, 'import_wallet_private_key');
+  // Register FCM
+  if (isIOS()) {
+    registerForRemoteMessages();
+  } else {
+    onMessage();
+  }
+
+  return { accounts, privateKey };
 };
 
 export const generateWalletFromMnemonic = async (

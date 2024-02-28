@@ -11,6 +11,7 @@ import {
 } from '../../constants/enum';
 import { hostWorker, initializeHostsFromAsync } from '../../global';
 import {
+  getActivities,
   getAuthToken,
   getDeveloperMode,
   getReadOnlyWalletData,
@@ -60,6 +61,7 @@ export default function useInitializer() {
   const globalContext = useContext<any>(GlobalContext);
   const hdWallet = useContext<any>(HdWalletContext);
   const activityContext = useContext<any>(ActivityContext);
+  console.log('activityContext :: ', activityContext);
   const ethereum = hdWallet.state.wallet.ethereum;
   const inAppUpdates = new SpInAppUpdates(
     false, // isDebug
@@ -251,14 +253,14 @@ export default function useInitializer() {
   };
 
   const loadActivitiesFromAsyncStorage = async () => {
-    await AsyncStorage.getItem('activities', (_err, data) => {
-      if (data) {
-        activityContext.dispatch({
-          type: ActivityReducerAction.LOAD,
-          value: JSON.parse(data),
-        });
-      }
-    });
+    const activities = await getActivities();
+    console.log('activites fetched ::: ', activities);
+    if (activities) {
+      activityContext.dispatchActivity({
+        type: ActivityReducerAction.LOAD,
+        value: JSON.parse(activities),
+      });
+    }
   };
 
   const setPinAuthenticationStateValue = async () => {

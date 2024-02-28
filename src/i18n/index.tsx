@@ -991,6 +991,11 @@ const resources = {
       LOCK_CARD: 'Lock Card',
       UNLOCK_CARD: 'Unlock Card',
       FUNDING_IN_PROGRESS: 'Funding in progress',
+      PRIVATE_KEY_IMPORT_SUB_MSG:
+        'Enter your private key to import your wallet into Cypher.',
+      ENTER_PRIVATE_KEY_PLACEHOLDER: 'Enter your private key',
+      BAD_PRIVATE_KEY_PHARSE: 'Bad private key',
+      IMPORT_WALLET_USING_PRIVATE_KEY: 'Import Wallet Using PrivateKey',
     },
   },
 };

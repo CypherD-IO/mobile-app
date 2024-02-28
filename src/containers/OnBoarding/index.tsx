@@ -151,6 +151,23 @@ export default function OnBoarding({ navigation }) {
             </CyDTouchView>
             <CyDTouchView
               onPress={() => {
+                navigation.navigate(screenTitle.ENTER_PRIVATE_KEY);
+              }}
+              className={
+                'bg-white border-[0.3px] border-[#525252] py-[14px] mt-[20px] items-center rounded-[8px] flex-row justify-around w-[98%]'
+              }>
+              <CyDText className={'text-[16px] font-extrabold w-[80%]'}>
+                {t('IMPORT_WALLET_USING_PRIVATE_KEY').toString()}
+              </CyDText>
+              <CyDImage
+                source={AppImages.RIGHT_ARROW}
+                resizeMode={'contain'}
+                className={'w-[9px] h-[17px]'}
+                style={{ tintColor: '#434343' }}
+              />
+            </CyDTouchView>
+            <CyDTouchView
+              onPress={() => {
                 void openWalletConnectModal();
               }}
               className={

@@ -30,7 +30,7 @@ import { saveCredentialsToKeychain } from '../../core/Keychain';
 import * as C from '../../constants';
 import { Colors } from '../../constants/theme';
 import Button from '../../components/v2/button';
-import { ButtonType, SeedPhraseType } from '../../constants/enum';
+import { ButtonType, SECRET_TYPES, SeedPhraseType } from '../../constants/enum';
 import { setSkipSeedConfirmation } from '../../core/asyncStorage';
 
 function CreateSeedPhrase({ route, navigation }) {
@@ -348,7 +348,12 @@ function CreateSeedPhrase({ route, navigation }) {
   };
 
   const proceedToPortfolio = async () => {
-    void saveCredentialsToKeychain(hdWalletContext, portfolioState, wallet);
+    void saveCredentialsToKeychain(
+      hdWalletContext,
+      portfolioState,
+      wallet,
+      SECRET_TYPES.MENEMONIC,
+    );
   };
 
   const skipConfirmation = async () => {

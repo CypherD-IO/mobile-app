@@ -9,6 +9,7 @@ import * as C from '../constants';
 import CreateSeedPhrase from '../containers/OnBoarding/createSeedPhrase';
 import TrackWallet from '../containers/OnBoarding/trackWallet';
 import ImportWalletOptions from '../containers/Options/importWalletOptions';
+import EnterPrivateKey from '../containers/Auth/EnterPrivateKey';
 
 const Stack = createNativeStackNavigator();
 
@@ -24,6 +25,22 @@ function OnBoardingStack(props: any) {
       <Stack.Screen
         name={screenTitle.ENTER_KEY}
         component={EnterKeyScreen}
+        options={{
+          headerTransparent: false,
+          headerShadowVisible: false,
+          title: 'Import Wallet',
+          headerTitleAlign: 'center',
+          headerTitleStyle: {
+            fontFamily: C.fontsName.FONT_BLACK,
+            fontSize: 20,
+          },
+          headerTintColor: Colors.primaryTextColor,
+          headerBackTitleVisible: false,
+        }}
+      />
+      <Stack.Screen
+        name={screenTitle.ENTER_PRIVATE_KEY}
+        component={EnterPrivateKey}
         options={{
           headerTransparent: false,
           headerShadowVisible: false,

@@ -543,3 +543,20 @@ export const removeCyRootData = async () => {
     Sentry.captureException(error);
   }
 };
+
+export const getActivities = async () => {
+  try {
+    const activities = await AsyncStorage.getItem('activities');
+    return activities;
+  } catch (error) {
+    Sentry.captureException(error);
+  }
+};
+
+export const setActivities = async (data: any) => {
+  try {
+    await AsyncStorage.setItem('activities', JSON.stringify(data));
+  } catch (error) {
+    Sentry.captureException(error);
+  }
+};

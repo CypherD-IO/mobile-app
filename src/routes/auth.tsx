@@ -95,6 +95,7 @@ import LinkAnotherWallet from '../containers/DebitCard/bridgeCard/linkAnotherWal
 import LinkWalletAuth from '../containers/DebitCard/bridgeCard/linkWalletAuth';
 import ImportWalletOptions from '../containers/Options/importWalletOptions';
 import CardNotificationSettings from '../containers/DebitCard/bridgeCard/cardNotificationSettings';
+import EnterPrivateKey from '../containers/Auth/EnterPrivateKey';
 
 const { DynamicImage, DynamicButton } = require('../styles');
 
@@ -1683,6 +1684,23 @@ export function OptionsStackScreen({ navigation, route }) {
           headerTransparent: false,
           headerShadowVisible: false,
           title: t('ENTER_SEED_PHRASE'),
+          headerTitleAlign: 'center',
+          headerTitleStyle: optionsStackScreenHeaderTitleStyles,
+          headerStyle: {
+            elevation: 0,
+          },
+          headerTintColor: Colors.primaryTextColor,
+          headerBackTitleVisible: false,
+          headerLeft: props => defaultHeaderLeft(navigation),
+        })}
+      />
+      <OptionsStack.Screen
+        name={screenTitle.ENTER_PRIVATE_KEY}
+        component={EnterPrivateKey}
+        options={({ navigation, route }) => ({
+          headerTransparent: false,
+          headerShadowVisible: false,
+          title: t('ENTER_PRIVATE_KEY'),
           headerTitleAlign: 'center',
           headerTitleStyle: optionsStackScreenHeaderTitleStyles,
           headerStyle: {

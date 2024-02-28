@@ -53,6 +53,7 @@ import { initialHdWalletState } from '../reducers';
 import { t } from 'i18next';
 import { KeychainErrors } from '../constants/KeychainErrors';
 import { HdWalletContextDef } from '../reducers/hdwallet_reducer';
+import { SECRET_TYPES } from '../constants/enum';
 
 const currentSchemaVersion = 5;
 
@@ -60,27 +61,36 @@ export async function saveCredentialsToKeychain(
   hdWalletContext: HdWalletContextDef,
   portfolioState: any,
   wallet: any,
+  secretType: SECRET_TYPES,
 ) {
   await clearAsyncStorage();
   await removeCredentialsFromKeychain();
+  const keyChainKey =
+    secretType === SECRET_TYPES.MENEMONIC
+      ? CYPHERD_SEED_PHRASE_KEY
+      : CYPHERD_PRIVATE_KEY;
   // Save Seed Phrase (master private key is not stored)
   if (await isPinAuthenticated()) {
+    if (secretType === SECRET_TYPES.MENEMONIC) {
+      await saveToKeychain(
+        keyChainKey,
+        CryptoJS.AES.encrypt(
+          wallet.mnemonic,
+          hdWalletContext.state.pinValue,
+        ).toString(),
+      );
+    }
     await saveToKeychain(
-      CYPHERD_SEED_PHRASE_KEY,
-      CryptoJS.AES.encrypt(
-        wallet.mnemonic,
-        hdWalletContext.state.pinValue,
-      ).toString(),
-    );
-    await saveToKeychain(
-      CYPHERD_PRIVATE_KEY,
+      keyChainKey,
       CryptoJS.AES.encrypt(
         wallet.privateKey,
         hdWalletContext.state.pinValue,
       ).toString(),
     );
   } else {
-    await saveToKeychain(CYPHERD_SEED_PHRASE_KEY, wallet.mnemonic);
+    if (secretType === SECRET_TYPES.MENEMONIC) {
+      await saveToKeychain(CYPHERD_SEED_PHRASE_KEY, wallet.mnemonic);
+    }
     await saveToKeychain(CYPHERD_PRIVATE_KEY, wallet.privateKey);
   }
   await saveToKeychain(AUTHORIZE_WALLET_DELETION, 'AUTHORIZE_WALLET_DELETION');
