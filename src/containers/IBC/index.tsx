@@ -342,14 +342,6 @@ export default function IBC({
         setWallets(wallets);
         wallet = wallets.get(currentChain.prefix);
         const accounts: any = await wallet?.getAccounts();
-        console.log({
-          fromChain: tokenData.chainDetails,
-          toChain: chain,
-          denom: tokenData.denom,
-          amount,
-          fromAddress: accounts[0].address,
-          toAddress: receiverAddress,
-        });
         const gasDetails = await estimateGasForCosmosIBC({
           fromChain: tokenData.chainDetails,
           toChain: chain,

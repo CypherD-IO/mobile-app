@@ -341,6 +341,7 @@ export default function useTransactionManager() {
       const { chainName, backendName, symbol } = fromChain;
       const signer = await getCosmosSignerClient(chainName);
       const rpc = getCosmosRpc(backendName);
+
       const signingClient = await SigningStargateClient.connectWithSigner(
         rpc,
         signer,
@@ -433,7 +434,6 @@ export default function useTransactionManager() {
         denom,
         contractDecimals,
       });
-      console.log(gasDetails);
       const { evmos } = hdWalletContext.state.wallet;
       const fromAddress: string = evmos.address;
       // const userAccountData = await axios.get(

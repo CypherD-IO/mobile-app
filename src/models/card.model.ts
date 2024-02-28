@@ -88,8 +88,6 @@ export interface PayTokenModalParams {
   quoteExpiry: number;
   hasSufficientBalanceAndGasFee: boolean;
   tokenSendParams: {
-    onConfirm: () => void;
-    onCancel: () => void;
     chain: ChainBackendNames;
     amountInCrypto: string;
     amountInFiat: string;

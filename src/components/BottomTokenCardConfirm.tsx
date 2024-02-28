@@ -19,16 +19,23 @@ import { get } from 'lodash';
 import { ChainConfigMapping, ChainNameMapping } from '../constants/server';
 
 export default function BottomCardConfirm({
-  isModalVisible,
-  quoteExpiry,
-  hasSufficientBalanceAndGasFee,
-  tokenSendParams,
-}: PayTokenModalParams) {
+  modalParams,
+  onConfirm,
+  onCancel,
+}: {
+  onConfirm: () => void;
+  onCancel: () => void;
+  modalParams: PayTokenModalParams;
+}) {
   const { t } = useTranslation();
   const [loading, setLoading] = useState<boolean>(false);
   const {
-    onConfirm,
-    onCancel,
+    isModalVisible,
+    quoteExpiry,
+    hasSufficientBalanceAndGasFee,
+    tokenSendParams,
+  } = modalParams;
+  const {
     chain,
     amountInCrypto,
     amountInFiat,

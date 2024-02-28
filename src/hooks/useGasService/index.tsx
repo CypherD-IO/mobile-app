@@ -389,7 +389,6 @@ export default function useGasService() {
     const amountToSend = String(
       parseFloat(amount) * Math.pow(10, contractDecimal),
     ).split('.')[0];
-    console.log('amountToSend:', amountToSend);
     const transferAmount: Coin = {
       denom,
       amount: amountToSend.toString(),

@@ -114,7 +114,6 @@ export default function useEvmosSigner() {
     };
 
     const accountData = userAccountData.data.account.base_account;
-    console.log('🚀 ~ useEvmosSigner ~ accountData:', accountData);
     const sender = {
       accountAddress: fromAddress,
       sequence: accountData.sequence,
