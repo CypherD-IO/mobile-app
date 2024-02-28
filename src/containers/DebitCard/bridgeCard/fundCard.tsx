@@ -271,128 +271,155 @@ export default function BridgeFundCardScreen({ route }: { route: any }) {
 
   const sendTransaction = useCallback(
     async (payTokenModalParamsLocal: any) => {
-      const {
-        contractAddress,
-        chainDetails,
-        contractDecimals,
-        denom,
-        symbol,
-        name,
-      } = selectedToken as TokenMeta;
-      const actualTokensRequired = limitDecimalPlaces(
-        tokenQuote.tokensRequired,
-        contractDecimals,
-      );
-      const { chainName } = chainDetails;
-      const activityData: DebitCardTransaction = {
-        id: genId(),
-        status: ActivityStatus.PENDING,
-        type: ActivityType.CARD,
-        quoteId: '',
-        tokenSymbol: symbol ?? '',
-        chainName: chainDetails?.backendName ?? '',
-        tokenName: name.toString() ?? '',
-        amount: tokenQuote.tokensRequired.toString() ?? '',
-        amountInUsd: tokenQuote.amount ?? '',
-        datetime: new Date(),
-        transactionHash: '',
-      };
-      activityRef.current = activityData;
-      activityContext.dispatch({
-        type: ActivityReducerAction.POST,
-        value: activityRef.current,
-      });
-      setLoading(true);
-      if (tokenQuote && selectedToken) {
+      try {
+        const {
+          contractAddress,
+          chainDetails,
+          contractDecimals,
+          denom,
+          symbol,
+          name,
+        } = selectedToken as TokenMeta;
+        const actualTokensRequired = limitDecimalPlaces(
+          tokenQuote.tokensRequired,
+          contractDecimals,
+        );
+        const { chainName } = chainDetails;
+        const activityData: DebitCardTransaction = {
+          id: genId(),
+          status: ActivityStatus.PENDING,
+          type: ActivityType.CARD,
+          quoteId: '',
+          tokenSymbol: symbol ?? '',
+          chainName: chainDetails?.backendName ?? '',
+          tokenName: name.toString() ?? '',
+          amount: tokenQuote.tokensRequired.toString() ?? '',
+          amountInUsd: tokenQuote.amount ?? '',
+          datetime: new Date(),
+          transactionHash: '',
+        };
+        activityRef.current = activityData;
+        activityContext.dispatch({
+          type: ActivityReducerAction.POST,
+          value: activityRef.current,
+        });
+        setLoading(true);
+        if (tokenQuote && selectedToken) {
+          activityRef.current &&
+            activityContext.dispatch({
+              type: ActivityReducerAction.PATCH,
+              value: {
+                id: activityRef.current.id,
+                gasAmount: payTokenModalParams.tokenSendParams.gasFeeInCrypto,
+              },
+            });
+          if (chainName != null) {
+            let response;
+            if (chainName === ChainNames.ETH) {
+              response = await sendEvmToken({
+                chain: selectedToken.chainDetails.backendName,
+                amountToSend: actualTokensRequired,
+                toAddress: tokenQuote.targetAddress,
+                contractAddress,
+                contractDecimals,
+                symbol: selectedToken.symbol,
+              });
+            } else if (PURE_COSMOS_CHAINS.includes(chainName)) {
+              const wallets: Map<string, OfflineDirectSigner> =
+                await getSignerClient(hdWallet);
+              const wallet = wallets.get(
+                cosmosConfig[chainDetails.chainName].prefix,
+              );
+              const accounts: any = await wallet?.getAccounts();
+              const fromAddress = accounts[0].address;
+              response = await interCosmosIBC({
+                fromChain: chainDetails,
+                toChain: CHAIN_OSMOSIS,
+                denom,
+                contractDecimals,
+                amount: actualTokensRequired,
+                fromAddress,
+                toAddress: tokenQuote.targetAddress,
+              });
+            } else {
+              response = await evmosIBC({
+                toAddress: tokenQuote.targetAddress,
+                toChain: CHAIN_OSMOSIS,
+                amount: actualTokensRequired,
+                denom,
+                contractDecimals,
+              });
+            }
+            const { hash, isError, error } = response;
+            if (!isError) {
+              void logAnalytics({
+                type: AnalyticsType.SUCCESS,
+                txnHash: hash,
+                chain: selectedToken?.chainDetails?.chainName ?? '',
+              });
+              void transferSentQuote(
+                tokenQuote.fromAddress,
+                tokenQuote.quoteId,
+                hash,
+              );
+            } else {
+              void logAnalytics({
+                type: AnalyticsType.ERROR,
+                chain: selectedToken?.chainDetails?.chainName ?? '',
+                message: parseErrorMessage(error),
+                screen: route.name,
+              });
+              activityRef.current &&
+                activityContext.dispatch({
+                  type: ActivityReducerAction.PATCH,
+                  value: {
+                    id: activityRef.current.id,
+                    status: ActivityStatus.FAILED,
+                    quoteId: tokenQuote.quoteId,
+                    reason: error,
+                  },
+                });
+              setLoading(false);
+              showModal('state', {
+                type: 'error',
+                title: 'Transaction Failed',
+                description: `${String(error)}. Please contact customer support with the quote_id: ${tokenQuote.quoteId}`,
+                onSuccess: hideModal,
+                onFailure: hideModal,
+              });
+            }
+          }
+        } else {
+          showModal('state', {
+            type: 'error',
+            title: t('MISSING_QUOTE'),
+            description: t('MISSING_QUOTE_DESCRIPTION'),
+            onSuccess: hideModal,
+            onFailure: hideModal,
+          });
+        }
+      } catch (error) {
+        void logAnalytics({
+          type: AnalyticsType.ERROR,
+          chain: selectedToken?.chainDetails?.chainName ?? '',
+          message: parseErrorMessage(error),
+          screen: route.name,
+        });
         activityRef.current &&
           activityContext.dispatch({
             type: ActivityReducerAction.PATCH,
             value: {
               id: activityRef.current.id,
-              gasAmount: payTokenModalParams.tokenSendParams.gasFeeInCrypto,
+              status: ActivityStatus.FAILED,
+              quoteId: tokenQuote.quoteId,
+              reason: error,
             },
           });
-        if (chainName != null) {
-          let response;
-          if (chainName === ChainNames.ETH) {
-            response = await sendEvmToken({
-              chain: selectedToken.chainDetails.backendName,
-              amountToSend: actualTokensRequired,
-              toAddress: tokenQuote.targetAddress,
-              contractAddress,
-              contractDecimals,
-              symbol: selectedToken.symbol,
-            });
-          } else if (PURE_COSMOS_CHAINS.includes(chainName)) {
-            const wallets: Map<string, OfflineDirectSigner> =
-              await getSignerClient(hdWallet);
-            const wallet = wallets.get(
-              cosmosConfig[chainDetails.chainName].prefix,
-            );
-            const accounts: any = await wallet?.getAccounts();
-            const fromAddress = accounts[0].address;
-            response = await interCosmosIBC({
-              fromChain: chainDetails,
-              toChain: CHAIN_OSMOSIS,
-              denom,
-              contractDecimals,
-              amount: actualTokensRequired,
-              fromAddress,
-              toAddress: tokenQuote.targetAddress,
-            });
-          } else {
-            response = await evmosIBC({
-              toAddress: tokenQuote.targetAddress,
-              toChain: CHAIN_OSMOSIS,
-              amount: actualTokensRequired,
-              denom,
-              contractDecimals,
-            });
-          }
-          const { hash, isError, error } = response;
-          if (!isError) {
-            void logAnalytics({
-              type: AnalyticsType.SUCCESS,
-              txnHash: hash,
-              chain: selectedToken?.chainDetails?.chainName ?? '',
-            });
-            void transferSentQuote(
-              tokenQuote.fromAddress,
-              tokenQuote.quoteId,
-              hash,
-            );
-          } else {
-            void logAnalytics({
-              type: AnalyticsType.ERROR,
-              chain: selectedToken?.chainDetails?.chainName ?? '',
-              message: parseErrorMessage(error),
-              screen: route.name,
-            });
-            activityRef.current &&
-              activityContext.dispatch({
-                type: ActivityReducerAction.PATCH,
-                value: {
-                  id: activityRef.current.id,
-                  status: ActivityStatus.FAILED,
-                  quoteId: tokenQuote.quoteId,
-                  reason: error,
-                },
-              });
-            setLoading(false);
-            showModal('state', {
-              type: 'error',
-              title: 'Transaction Failed',
-              description: `${String(error)}. Please contact customer support with the quote_id: ${tokenQuote.quoteId}`,
-              onSuccess: hideModal,
-              onFailure: hideModal,
-            });
-          }
-        }
-      } else {
+        setLoading(false);
         showModal('state', {
           type: 'error',
-          title: t('MISSING_QUOTE'),
-          description: t('MISSING_QUOTE_DESCRIPTION'),
+          title: 'Transaction Failed',
+          description: `${String(error)}. Please contact customer support with the quote_id: ${tokenQuote.quoteId}`,
           onSuccess: hideModal,
           onFailure: hideModal,
         });
