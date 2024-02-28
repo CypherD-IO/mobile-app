@@ -61,6 +61,7 @@ import { CHOOSE_TOKEN_MODAL_TIMEOUT } from '../../../constants/timeOuts';
 import { screenTitle } from '../../../constants';
 import { useIsFocused } from '@react-navigation/native';
 import {
+  GAS_BUFFER_FACTOR_FOR_LOAD_MAX,
   MINIMUM_TRANSFER_AMOUNT_ETH,
   gasFeeReservation,
 } from '../../../constants/data';
@@ -77,7 +78,6 @@ import { TokenMeta } from '../../../models/tokenMetaData.model';
 import clsx from 'clsx';
 import {
   CardQuoteResponse,
-  GAS_BUFFER_FACTOR_FOR_LOAD_MAX,
   PayTokenModalParams,
 } from '../../../models/card.model';
 import useTransactionManager from '../../../hooks/useTransactionManager';

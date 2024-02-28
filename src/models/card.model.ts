@@ -98,5 +98,3 @@ export interface PayTokenModalParams {
     nativeTokenSymbol: string;
   };
 }
-
-export const GAS_BUFFER_FACTOR_FOR_LOAD_MAX = 1.2;
