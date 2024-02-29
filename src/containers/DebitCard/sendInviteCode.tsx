@@ -68,7 +68,12 @@ export default function SendInviteCode({ route, navigation }: Props) {
             showModal('state', {
               type: 'success',
               title: t('INVITE_SENT_SUCCESSFULLY'),
-              description: t('INVITE_SENT_DESCRIPTION') + ' ' + userEmail,
+              description:
+                t('INVITE_SENT_DESCRIPTION') +
+                ' ' +
+                userEmail +
+                '. ' +
+                t('INVITE_REFERRAL_PROGRESS_UPDATE'),
               onSuccess: () => {
                 setUserEmail('');
                 setName('');

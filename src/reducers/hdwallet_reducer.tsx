@@ -6,52 +6,64 @@ import * as Sentry from '@sentry/react-native';
 import { Dispatch } from 'react';
 
 export interface WalletKey {
-  address: string
-  privateKey: Buffer | Uint8Array | string
-  publicKey: Buffer | Uint8Array | string
+  address: string;
+  privateKey: Buffer | Uint8Array | string;
+  publicKey: Buffer | Uint8Array | string;
 }
 
 export class ChainWallet {
   public currentIndex: number;
   public wallets: WalletKey[];
-  constructor({ currentIndex, wallets }: { currentIndex: number, wallets: WalletKey[] }) {
+  constructor({
+    currentIndex,
+    wallets,
+  }: {
+    currentIndex: number;
+    wallets: WalletKey[];
+  }) {
     this.currentIndex = currentIndex;
     this.wallets = wallets;
   }
 
   public get address(): string | undefined {
-    return (this.currentIndex < 0 || this.currentIndex > (this.wallets.length - 1)) ? undefined : this.wallets[this.currentIndex].address;
+    return this.currentIndex < 0 || this.currentIndex > this.wallets.length - 1
+      ? undefined
+      : this.wallets[this.currentIndex].address;
   }
 
   public get privateKey(): Buffer | Uint8Array | string {
-    return (this.currentIndex < 0 || this.currentIndex > (this.wallets.length - 1)) ? 'null' : this.wallets[this.currentIndex].privateKey;
+    return this.currentIndex < 0 || this.currentIndex > this.wallets.length - 1
+      ? 'null'
+      : this.wallets[this.currentIndex].privateKey;
   }
 
   public get publicKey(): Buffer | Uint8Array | string {
-    return (this.currentIndex < 0 || this.currentIndex > (this.wallets.length - 1)) ? 'null' : this.wallets[this.currentIndex].publicKey;
+    return this.currentIndex < 0 || this.currentIndex > this.wallets.length - 1
+      ? 'null'
+      : this.wallets[this.currentIndex].publicKey;
   }
 }
 
 export interface CypherDWallet {
-  [key: string]: ChainWallet
+  [key: string]: ChainWallet;
 }
 
 export interface HDWallet {
-  wallet: CypherDWallet
-  selectedChain: Chain
-  isForceRefresh: any
-  card: any
-  pre_card_token: any
-  reset: boolean
-  pinValue: string
-  hideTabBar: boolean
-  hideBalance: boolean
-  isReadOnlyWallet: boolean
+  wallet: CypherDWallet;
+  selectedChain: Chain;
+  isForceRefresh: any;
+  card: any;
+  pre_card_token: any;
+  reset: boolean;
+  pinValue: string;
+  hideTabBar: boolean;
+  hideBalance: boolean;
+  isReadOnlyWallet: boolean;
 }
 
 export interface HdWalletContextDef {
-  state: HDWallet
-  dispatch: Dispatch<any>
+  state: HDWallet;
+  dispatch: Dispatch<any>;
 }
 
 const wallet: CypherDWallet = {};
@@ -59,7 +71,7 @@ const wallet: CypherDWallet = {};
 CHAIN_NAMES.forEach(chain => {
   wallet[chain] = new ChainWallet({
     currentIndex: -1,
-    wallets: []
+    wallets: [],
   });
 });
 
@@ -74,7 +86,7 @@ export const initialHdWalletState: HDWallet = {
   pinValue: '',
   hideTabBar: false,
   hideBalance: false,
-  isReadOnlyWallet: false
+  isReadOnlyWallet: false,
 };
 
 // reducers
@@ -85,11 +97,15 @@ export function hdWalletStateReducer(state: any, action: any) {
 
       const wallet = state.wallet;
 
-      if (address !== undefined && address !== 'IMPORTING' && CHAIN_NAMES.includes(chain)) {
+      if (
+        address !== undefined &&
+        address !== 'IMPORTING' &&
+        CHAIN_NAMES.includes(chain)
+      ) {
         wallet[chain].wallets.push({
           address,
           privateKey,
-          publicKey
+          publicKey,
         });
 
         // currIndex = 0 when its the first entry for wallets
@@ -101,7 +117,8 @@ export function hdWalletStateReducer(state: any, action: any) {
       return { ...state, wallet };
     }
     case 'LOAD_WALLET': {
-      const { address, privateKey, chain, publicKey, rawAddress, algo } = action.value;
+      const { address, privateKey, chain, publicKey, rawAddress, algo } =
+        action.value;
 
       const wallet = state.wallet;
       if (isAddressSet(address) && CHAIN_NAMES.includes(chain)) {
@@ -111,7 +128,7 @@ export function hdWalletStateReducer(state: any, action: any) {
           privateKey,
           publicKey,
           rawAddress,
-          algo
+          algo,
         });
 
         // currIndex = 0 when its the first entry for wallets
@@ -119,7 +136,10 @@ export function hdWalletStateReducer(state: any, action: any) {
           wallet[chain].currentIndex = 0;
         }
 
-        if (chain === CHAIN_ETH.chainName && privateKey !== _NO_CYPHERD_CREDENTIAL_AVAILABLE_) {
+        if (
+          chain === CHAIN_ETH.chainName &&
+          privateKey !== _NO_CYPHERD_CREDENTIAL_AVAILABLE_
+        ) {
           Intercom.registerIdentifiedUser({ userId: address }).catch(error => {
             Sentry.captureException(error);
           });
@@ -134,7 +154,11 @@ export function hdWalletStateReducer(state: any, action: any) {
       const { chain, index } = action.value;
       const { wallet } = state;
 
-      if (CHAIN_NAMES.includes(chain) && index >= 0 && index <= (wallet[chain].wallets.length - 1)) {
+      if (
+        CHAIN_NAMES.includes(chain) &&
+        index >= 0 &&
+        index <= wallet[chain].wallets.length - 1
+      ) {
         wallet[chain].currentIndex = index;
       }
       return { ...state, wallet };
@@ -158,7 +182,7 @@ export function hdWalletStateReducer(state: any, action: any) {
       CHAIN_NAMES.forEach(chain => {
         wallet[chain] = new ChainWallet({
           currentIndex: -1,
-          wallets: []
+          wallets: [],
         });
       });
 
@@ -167,7 +191,7 @@ export function hdWalletStateReducer(state: any, action: any) {
       wallet.ethereum.wallets.push({
         address,
         privateKey,
-        publicKey
+        publicKey,
       });
 
       return { ...state, wallet, isReadOnlyWallet: false };
@@ -196,7 +220,7 @@ export function hdWalletStateReducer(state: any, action: any) {
       CHAIN_NAMES.forEach(chain => {
         emptyWallet[chain] = new ChainWallet({
           currentIndex: -1,
-          wallets: []
+          wallets: [],
         });
       });
       resetWallet.wallet = emptyWallet;
