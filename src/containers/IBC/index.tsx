@@ -92,22 +92,20 @@ export default function IBC({
   );
   const { t } = useTranslation();
   const hdWallet = useContext<any>(HdWalletContext);
-  const globalStateContext = useContext<any>(GlobalContext);
   const cosmos = hdWallet.state.wallet.cosmos;
-  const ethereum = hdWallet.state.wallet.ethereum;
   const osmosis = hdWallet.state.wallet.osmosis;
   const evmos = hdWallet.state.wallet.evmos;
   const juno = hdWallet.state.wallet.juno;
   const stargaze = hdWallet.state.wallet.stargaze;
   const noble = hdWallet.state.wallet.noble;
 
-  const evmosUrls = globalStateContext.globalState.rpcEndpoints.EVMOS.otherUrls;
-  const ACCOUNT_DETAILS = evmosUrls.accountDetails.replace(
-    'address',
-    evmos.wallets[evmos.currentIndex].address,
-  );
-  const SIMULATION_ENDPOINT = evmosUrls.simulate;
-  const TXN_ENDPOINT = evmosUrls.transact;
+  const cosmosAddresses = {
+    cosmos: cosmos.address,
+    osmosis: osmosis.address,
+    juno: juno.address,
+    stargaze: stargaze.address,
+    noble: noble.address,
+  };
 
   const [chain, setChain] = useState<Chain>([]);
   const [chainData, setChainData] = useState<Chain[]>(IBC_CHAINS);
@@ -115,11 +113,9 @@ export default function IBC({
   const [showMerged, setShowMerged] = useState<boolean>(false);
   const [amount, setAmount] = useState<string>('0.00');
   const [loading, setLoading] = useState<boolean>(false);
-  const [wallets, setWallets] = useState<any>(null);
   const [receiverAddress, setReceiverAddress] = useState<string>('');
   const [memo, setMemo] = useState<string>('');
   const [senderAddress, setSenderAddress] = useState<string>('');
-  const [rpc, setRpc] = useState<string>('');
   const [signModalVisible, setSignModalVisible] = useState<boolean>(false);
   const [gasFee, setGasFee] = useState<string | number>(0);
   const activityContext = useContext<any>(ActivityContext);
@@ -157,12 +153,6 @@ export default function IBC({
 
     setChainData(temp);
     setChain(temp[0]);
-
-    setRpc(
-      globalStateContext.globalState.rpcEndpoints[
-        tokenData.chainDetails.chainName.toUpperCase()
-      ].primary,
-    );
   }, []);
 
   const getAddress = () => {
@@ -191,93 +181,6 @@ export default function IBC({
       setReceiverAddress(address);
     } else setReceiverAddress('');
   }, [chain]);
-
-  const evmosToOtherChainIbcMsg = (
-    senderEvmosAddress: string,
-    receiverAddress: string,
-    inputAmount: string,
-    userAccountData: any,
-    ethereum: any,
-    amount = '14000000000000000',
-    gas = '450000',
-  ) => {
-    const chainData = {
-      chainId: 9001,
-      cosmosChainId: 'evmos_9001-2',
-    };
-
-    const accountData = userAccountData.data.account.base_account;
-
-    const sender = {
-      accountAddress: senderEvmosAddress,
-      sequence: accountData.sequence,
-      accountNumber: accountData.account_number,
-      pubkey: accountData.pub_key.key,
-    };
-
-    const fee = {
-      amount,
-      denom: cosmosConfig.evmos.denom,
-      gas,
-    };
-
-    const params = {
-      receiver: receiverAddress,
-      denom: tokenData.denom,
-      amount: ethers.utils
-        .parseUnits(
-          convertAmountOfContractDecimal(
-            inputAmount,
-            tokenData.contractDecimals,
-          ),
-          tokenData.contractDecimals,
-        )
-        .toString(),
-      sourcePort: 'transfer',
-      sourceChannel:
-        cosmosConfig[tokenData.chainDetails.chainName].channel[
-          chain.name.toLowerCase()
-        ],
-      revisionNumber: Long.fromNumber(456),
-      revisionHeight: Long.fromNumber(123),
-      timeoutTimestamp: (
-        1e9 *
-        (Math.floor(Date.now() / 1e3) + 1200)
-      ).toString(),
-    };
-
-    const memo = '';
-
-    const msg: any = createTxIBCMsgTransfer(
-      chainData,
-      sender,
-      fee,
-      memo,
-      params,
-    );
-
-    const privateKeyBuffer = Buffer.from(
-      ethereum.privateKey.substring(2),
-      'hex',
-    );
-
-    const signature = signTypedData({
-      privateKey: privateKeyBuffer,
-      data: msg.eipToSign,
-      version: SignTypedDataVersion.V4,
-    });
-
-    const extension = signatureToWeb3Extension(chainData, sender, signature);
-
-    const rawTx = createTxRawEIP712(
-      msg.legacyAmino.body,
-      msg.legacyAmino.authInfo,
-      extension,
-    );
-
-    const body = generatePostBodyBroadcast(rawTx);
-    return body;
-  };
 
   function onModalHide() {
     hideModal();
@@ -335,33 +238,29 @@ export default function IBC({
       ].includes(tokenData.chainDetails.backendName)
     ) {
       setLoading(true);
-      let wallet: OfflineDirectSigner | undefined;
+      const fromAddress = get(
+        cosmosAddresses,
+        tokenData.chainDetails.chainName,
+      );
       if (type === 'simulation') {
-        const wallets: Map<string, OfflineDirectSigner> =
-          await getSignerClient(hdWallet);
-        setWallets(wallets);
-        wallet = wallets.get(currentChain.prefix);
-        const accounts: any = await wallet?.getAccounts();
         const gasDetails = await estimateGasForCosmosIBC({
           fromChain: tokenData.chainDetails,
           toChain: chain,
           denom: tokenData.denom,
           amount,
-          fromAddress: accounts[0].address,
+          fromAddress,
           toAddress: receiverAddress,
         });
         setGasFee(gasDetails.gasFeeInCrypto);
         setSignModalVisible(true);
       } else if (type === 'txn') {
-        wallet = wallets.get(currentChain.prefix);
-        const accounts: any = await wallet?.getAccounts();
         const transaction = await interCosmosIBC({
           fromChain: tokenData.chainDetails,
           toChain: chain,
           denom: tokenData.denom,
           contractDecimals: tokenData.contractDecimals,
           amount,
-          fromAddress: accounts[0].address,
+          fromAddress,
           toAddress: receiverAddress,
         });
         if (!transaction.isError) {

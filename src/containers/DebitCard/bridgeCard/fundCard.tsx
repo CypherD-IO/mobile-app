@@ -82,9 +82,6 @@ import {
 } from '../../../models/card.model';
 import useTransactionManager from '../../../hooks/useTransactionManager';
 import useGasService from '../../../hooks/useGasService';
-import { getSignerClient } from '../../../core/Keychain';
-import { OfflineDirectSigner } from '@cosmjs/proto-signing';
-import { cosmosConfig } from '../../../constants/cosmosConfig';
 
 export default function BridgeFundCardScreen({ route }: { route: any }) {
   const {
@@ -108,6 +105,20 @@ export default function BridgeFundCardScreen({ route }: { route: any }) {
   const cardId: string = get(cards, currentCardIndex)?.cardId;
   const activityRef = useRef<DebitCardTransaction | null>(null);
   const { postWithAuth } = useAxios();
+
+  const cosmos = hdWallet.state.wallet.cosmos;
+  const osmosis = hdWallet.state.wallet.osmosis;
+  const juno = hdWallet.state.wallet.juno;
+  const stargaze = hdWallet.state.wallet.stargaze;
+  const noble = hdWallet.state.wallet.noble;
+
+  const cosmosAddresses = {
+    cosmos: cosmos.address,
+    osmosis: osmosis.address,
+    juno: juno.address,
+    stargaze: stargaze.address,
+    noble: noble.address,
+  };
 
   const rpc = {
     cosmos: globalStateContext.globalState.rpcEndpoints.COSMOS.primary,
@@ -325,20 +336,13 @@ export default function BridgeFundCardScreen({ route }: { route: any }) {
                 symbol: selectedToken.symbol,
               });
             } else if (PURE_COSMOS_CHAINS.includes(chainName)) {
-              const wallets: Map<string, OfflineDirectSigner> =
-                await getSignerClient(hdWallet);
-              const wallet = wallets.get(
-                cosmosConfig[chainDetails.chainName].prefix,
-              );
-              const accounts: any = await wallet?.getAccounts();
-              const fromAddress = accounts[0].address;
               response = await interCosmosIBC({
                 fromChain: chainDetails,
                 toChain: CHAIN_OSMOSIS,
                 denom,
                 contractDecimals,
                 amount: actualTokensRequired,
-                fromAddress,
+                fromAddress: get(cosmosAddresses, chainDetails.chainName),
                 toAddress: tokenQuote.targetAddress,
               });
             } else {
@@ -503,16 +507,12 @@ export default function BridgeFundCardScreen({ route }: { route: any }) {
           });
         }
       } else if (PURE_COSMOS_CHAINS.includes(chainDetails.chainName)) {
-        const wallets: Map<string, OfflineDirectSigner> =
-          await getSignerClient(hdWallet);
-        const wallet = wallets.get(cosmosConfig[chainDetails.chainName].prefix);
-        const accounts: any = await wallet?.getAccounts();
         gasDetails = await estimateGasForCosmosIBC({
           fromChain: chainDetails,
           toChain: CHAIN_OSMOSIS,
           denom,
           amount: String(quote.tokensRequired),
-          fromAddress: accounts[0].address,
+          fromAddress: get(cosmosAddresses, chainDetails.chainName),
           toAddress: targetWalletAddress,
         });
       } else if (chainDetails.chainName === ChainNames.EVMOS) {
@@ -886,33 +886,23 @@ export default function BridgeFundCardScreen({ route }: { route: any }) {
         !GASLESS_CHAINS.includes(chainDetails.backendName)
       ) {
         try {
-          const wallets: Map<string, OfflineDirectSigner> =
-            await getSignerClient(hdWallet);
-          const osmosisWallet = wallets.get(
-            cosmosConfig[chainDetails.chainName].prefix,
-          );
-          const osmosisAccounts: any = await osmosisWallet?.getAccounts();
           let gasDetails;
           if (chainDetails.chainName === ChainNames.EVMOS) {
             gasDetails = await estimateGasForEvmosIBC({
-              toAddress: osmosisAccounts[0].address,
+              toAddress: get(cosmosAddresses, ChainNames.OSMOSIS),
               toChain: CHAIN_OSMOSIS,
               amount,
               denom,
               contractDecimals,
             });
           } else {
-            const wallet = wallets.get(
-              cosmosConfig[chainDetails.chainName].prefix,
-            );
-            const accounts: any = await wallet?.getAccounts();
             gasDetails = await estimateGasForCosmosIBC({
               fromChain: chainDetails,
               toChain: CHAIN_OSMOSIS,
               denom,
               amount: String(actualBalance),
-              fromAddress: accounts[0].address,
-              toAddress: osmosisAccounts[0].address,
+              fromAddress: get(cosmosAddresses, chainDetails.chainName),
+              toAddress: get(cosmosAddresses, ChainNames.OSMOSIS),
             });
           }
 

@@ -452,7 +452,7 @@ export default function useTransactionManager() {
         userAccountData,
         gasFee: ethers.utils
           .parseUnits(gasDetails.gasFeeInCrypto.toString(), '18')
-          .toString(), //limitDecimalPlaces(gasDetails.gasFeeInCrypto, contractDecimals),
+          .toString(), // limitDecimalPlaces(gasDetails.gasFeeInCrypto, contractDecimals),
         gasWanted: String(gasDetails.gasLimit),
       });
       const resp: any = await axios.post(
