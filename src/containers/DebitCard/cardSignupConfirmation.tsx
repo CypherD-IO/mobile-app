@@ -27,7 +27,7 @@ export default function CardSignupConfirmation(props: {
   const [acknowledgement, setAcknowledgment] = useState<boolean>(false);
 
   return (
-    <CyDSafeAreaView className='flex-1 bg-white'>
+    <CyDSafeAreaView className='flex-1 bg-white mb-[75px]'>
       <CyDImageBackground
         className='flex h-full'
         resizeMode='cover'

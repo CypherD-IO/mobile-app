@@ -24,12 +24,7 @@ import * as yup from 'yup';
 import { t } from 'i18next';
 import CyDModalLayout from '../../components/v2/modal';
 import { CountryCodesWithFlags } from '../../models/CountryCodesWithFlags.model';
-import {
-  isEnglish,
-  isValidEmailID,
-  isValidPassportNumber,
-  isValidSSN,
-} from '../../core/util';
+import { isEnglish, isValidEmailID } from '../../core/util';
 import DatePickerModal from 'react-native-modal-datetime-picker';
 import { isAndroid } from '../../misc/checkers';
 import * as Sentry from '@sentry/react-native';
@@ -39,13 +34,7 @@ import { GlobalContext } from '../../core/globalContext';
 import axios from '../../core/Http';
 import { useGlobalModalContext } from '../../components/v2/GlobalModal';
 import { getWalletProfile } from '../../core/card';
-import {
-  CardProviders,
-  GlobalContextType,
-  IdTypes,
-  OtherIdTypes,
-} from '../../constants/enum';
-import { hostWorker } from '../../global';
+import { CardProviders, GlobalContextType } from '../../constants/enum';
 import { countryMaster } from '../../../assets/datasets/countryMaster';
 import { Colors } from '../../constants/theme';
 import useAxios from '../../core/HttpRequest';
@@ -133,11 +122,6 @@ export default function CardSignupScreen({ navigation, route }) {
     city: '',
     state: '',
     postalCode: '',
-  });
-
-  const [userIdentity, setUserIdentity] = useState({
-    dateOfBirth: '',
-    idNumber: '',
   });
 
   const [showPepToolTip, setPepToolTip] = useState<boolean>(false);
@@ -924,7 +908,7 @@ export default function CardSignupScreen({ navigation, route }) {
   };
 
   return (
-    <CyDSafeAreaView className={'h-full bg-white'}>
+    <CyDSafeAreaView className={'flex-1 bg-white mb-[75px]'}>
       <CyDModalLayout
         setModalVisible={setModalVisible}
         isModalVisible={isModalVisible}
