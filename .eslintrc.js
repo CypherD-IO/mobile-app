@@ -38,7 +38,14 @@ module.exports = {
     'react-native/split-platform-components': 2,
     'react-native/no-inline-styles': 2,
     'react-native/no-color-literals': 'off',
-    'react-native/no-raw-text': 2,
+    'react-native/no-raw-text': [
+      'error',
+      {
+        skip: [
+          'CyDText',
+        ],
+      },
+    ],
     'react-hooks/exhaustive-deps': 'off',
     'react-native/no-single-element-style-arrays': 2,
     '@typescript-eslint/strict-boolean-expressions': 'off',

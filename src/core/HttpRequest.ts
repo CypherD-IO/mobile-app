@@ -148,7 +148,7 @@ export default function useAxios() {
           Sentry.captureException(error);
           return {
             isError: true,
-            error: error?.response?.data?.errors[0] ?? null,
+            error: error?.response?.data?.errors?.[0] ?? null,
             status: error?.response?.status,
           };
         }

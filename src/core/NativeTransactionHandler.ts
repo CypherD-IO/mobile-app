@@ -885,20 +885,6 @@ export async function estimateGasForCosmosTransaction(
   }
 }
 
-export const hasSufficientBalanceAndGasFee = (
-  isNativeToken: boolean,
-  gasFeeEstimation: number,
-  nativeTokenBalance: number,
-  sentAmount: number,
-  sendingTokenBalance: number,
-) => {
-  const hasSufficientGasFee = gasFeeEstimation <= nativeTokenBalance;
-  const hasSufficientBalance = isNativeToken
-    ? sentAmount + gasFeeEstimation <= sendingTokenBalance
-    : sentAmount <= sendingTokenBalance;
-  return hasSufficientBalance && hasSufficientGasFee;
-};
-
 // Send tokens for cosmos based chains
 export async function cosmosSendTokens(
   address: string,

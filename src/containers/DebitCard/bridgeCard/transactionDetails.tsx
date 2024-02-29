@@ -26,6 +26,7 @@ import { screenTitle } from '../../../constants';
 import { useNavigation } from '@react-navigation/native';
 import { GlobalContext } from '../../../core/globalContext';
 import { ICardTransaction } from '../../../models/card.model';
+import { capitalize } from 'lodash';
 
 const formatDate = (date: Date) => {
   return moment(date).format('MMM DD YYYY, h:mm a');
@@ -191,7 +192,7 @@ export default function TransactionDetails({
         title: t('MERCHANT_DETAILS'),
         data: [
           { label: t('NAME'), value: merchantName },
-          { label: t('CATEGORY'), value: transaction.category },
+          { label: t('CATEGORY'), value: capitalize(transaction.category) },
         ],
       },
     ];

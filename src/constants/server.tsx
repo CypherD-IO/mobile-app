@@ -648,6 +648,7 @@ export enum ChainNameMapping {
   AURORA = 'aurora',
   MOONBEAM = 'moonbeam',
   MOONRIVER = 'moonriver',
+  ALL = 'All',
 }
 
 export const ChainConfigMapping = {
@@ -728,7 +729,7 @@ export enum NativeTokenMapping {
   NOBLE = 'USDC',
 }
 
-export const GASLESS_CHAINS = []; // Add any cosmos gasless chain backend names in this array
+export const GASLESS_CHAINS: ChainBackendNames[] = []; // Add any cosmos gasless chain backend names in this array
 
 // DeFi Data
 export const DEFI_URL = '/v1/portfolio/evm/defi';

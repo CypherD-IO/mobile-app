@@ -63,6 +63,7 @@ import DeviceInfo from 'react-native-device-info';
 import axios from './Http';
 import { Holding } from './Portfolio';
 import { TokenMeta } from '../models/tokenMetaData.model';
+import Long from 'long';
 
 // const {showModal, hideModal} = useGlobalModalContext()
 
@@ -870,3 +871,23 @@ export function getAvailableChains(hdWallet: HdWalletContextDef): Chain[] {
 
   return availableChains;
 }
+
+export function getTimeOutTime() {
+  return Long.fromNumber(Math.floor(Date.now() / 1000) + 60).multiply(
+    1000000000,
+  );
+}
+
+export const hasSufficientBalanceAndGasFee = (
+  isNativeToken: boolean,
+  gasFeeEstimation: number,
+  nativeTokenBalance: number,
+  sentAmount: number,
+  sendingTokenBalance: number,
+) => {
+  const hasSufficientGasFee = gasFeeEstimation <= nativeTokenBalance;
+  const hasSufficientBalance = isNativeToken
+    ? sentAmount + gasFeeEstimation <= sendingTokenBalance
+    : sentAmount <= sendingTokenBalance;
+  return hasSufficientBalance && hasSufficientGasFee;
+};
