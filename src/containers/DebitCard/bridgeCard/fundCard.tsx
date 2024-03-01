@@ -225,9 +225,9 @@ export default function BridgeFundCardScreen({ route }: { route: any }) {
         setLoading(false);
         showModal('state', {
           type: 'success',
-          title: '',
+          title: t('FUNDING_IN_PROGRESS'),
           description:
-            'Success, Your card funding is in progress and will be done within 5 mins!',
+            'Your card funding is in progress and will be done within 5 mins!',
           onSuccess: () => {
             hideModal();
             setTimeout(() => {
