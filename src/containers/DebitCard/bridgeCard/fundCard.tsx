@@ -176,9 +176,14 @@ export default function BridgeFundCardScreen({ route }: { route: any }) {
   const { showModal, hideModal } = useGlobalModalContext();
   const tokenQuoteExpiry = 60;
   const isFocused = useIsFocused();
-  const { estimateGasForEvm, estimateGasForCosmosIBC, estimateGasForEvmosIBC } =
-    useGasService();
-  const { sendEvmToken, interCosmosIBC, evmosIBC } = useTransactionManager();
+  const {
+    estimateGasForEvm,
+    estimateGasForCosmos,
+    estimateGasForCosmosIBC,
+    estimateGasForEvmosIBC,
+  } = useGasService();
+  const { sendEvmToken, sendCosmosToken, interCosmosIBC, evmosIBC } =
+    useTransactionManager();
 
   useEffect(() => {
     if (isFocused) {
@@ -335,7 +340,10 @@ export default function BridgeFundCardScreen({ route }: { route: any }) {
                 contractDecimals,
                 symbol: selectedToken.symbol,
               });
-            } else if (PURE_COSMOS_CHAINS.includes(chainName)) {
+            } else if (
+              PURE_COSMOS_CHAINS.includes(chainName) &&
+              chainName !== ChainNames.OSMOSIS
+            ) {
               response = await interCosmosIBC({
                 fromChain: chainDetails,
                 toChain: CHAIN_OSMOSIS,
@@ -344,6 +352,14 @@ export default function BridgeFundCardScreen({ route }: { route: any }) {
                 amount: actualTokensRequired,
                 fromAddress: get(cosmosAddresses, chainDetails.chainName),
                 toAddress: tokenQuote.targetAddress,
+              });
+            } else if (chainName === ChainNames.OSMOSIS) {
+              response = await sendCosmosToken({
+                fromChain: chainDetails,
+                denom,
+                amount: actualTokensRequired,
+                fromAddress: get(cosmosAddresses, chainDetails.chainName),
+                toAddress: 'osmo1fp45ju4wlmxx6m64m9dl9xyfa8ymjkdaenxjn8', // tokenQuote.targetAddress,
               });
             } else {
               response = await evmosIBC({
@@ -506,10 +522,21 @@ export default function BridgeFundCardScreen({ route }: { route: any }) {
             },
           });
         }
-      } else if (PURE_COSMOS_CHAINS.includes(chainDetails.chainName)) {
+      } else if (
+        PURE_COSMOS_CHAINS.includes(chainDetails.chainName) &&
+        chainDetails.chainName !== ChainNames.OSMOSIS
+      ) {
         gasDetails = await estimateGasForCosmosIBC({
           fromChain: chainDetails,
           toChain: CHAIN_OSMOSIS,
+          denom,
+          amount: String(quote.tokensRequired),
+          fromAddress: get(cosmosAddresses, chainDetails.chainName),
+          toAddress: targetWalletAddress,
+        });
+      } else if (chainDetails.chainName === ChainNames.OSMOSIS) {
+        gasDetails = await estimateGasForCosmos({
+          chain: chainDetails,
           denom,
           amount: String(quote.tokensRequired),
           fromAddress: get(cosmosAddresses, chainDetails.chainName),
@@ -894,6 +921,14 @@ export default function BridgeFundCardScreen({ route }: { route: any }) {
               amount,
               denom,
               contractDecimals,
+            });
+          } else if (chainDetails.chainName === ChainNames.OSMOSIS) {
+            gasDetails = await estimateGasForCosmos({
+              chain: chainDetails,
+              denom,
+              amount: String(actualBalance),
+              fromAddress: get(cosmosAddresses, chainDetails.chainName),
+              toAddress: get(cosmosAddresses, ChainNames.OSMOSIS),
             });
           } else {
             gasDetails = await estimateGasForCosmosIBC({
