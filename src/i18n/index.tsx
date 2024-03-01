@@ -989,6 +989,7 @@ const resources = {
       WARNING: 'WARNING',
       LOCK_CARD: 'Lock Card',
       UNLOCK_CARD: 'Unlock Card',
+      FUNDING_IN_PROGRESS: 'Funding in progress',
     },
   },
 };
