@@ -245,9 +245,7 @@ async function registerIntercomUser(walletAddresses: {
   ) {
     Intercom.registerIdentifiedUser({
       userId: walletAddresses.ethereumAddress,
-    }).catch(error => {
-      Sentry.captureException(error);
-    });
+    }).catch(error => {});
     Intercom.updateUser({
       userId: walletAddresses.ethereumAddress,
       customAttributes: {

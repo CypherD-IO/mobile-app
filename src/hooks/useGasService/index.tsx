@@ -42,13 +42,6 @@ import { get } from 'lodash';
 import { HdWalletContextDef } from '../../reducers/hdwallet_reducer';
 import { MsgTransfer } from 'cosmjs-types/ibc/applications/transfer/v1/tx';
 import Long from 'long';
-import {
-  createTxIBCMsgTransfer,
-  createTxRawEIP712,
-  signatureToWeb3Extension,
-} from '@tharsis/transactions';
-import { SignTypedDataVersion, signTypedData } from '@metamask/eth-sig-util';
-import { generatePostBodyBroadcast } from '@tharsis/provider';
 
 export default function useGasService() {
   const { getWithoutAuth } = useAxios();
@@ -318,6 +311,10 @@ export default function useGasService() {
       rpc,
       signer,
     );
+    const contractDecimal = get(cosmosConfig, chainName).contractDecimal;
+    const amountToSend = String(
+      parseFloat(amount) * Math.pow(10, contractDecimal),
+    ).split('.')[0];
 
     // transaction gas fee calculation
     const sendMsg: MsgSendEncodeObject = {
@@ -328,7 +325,7 @@ export default function useGasService() {
         amount: [
           {
             denom,
-            amount,
+            amount: amountToSend,
           },
         ],
       },
@@ -357,7 +354,7 @@ export default function useGasService() {
       ],
     };
     return {
-      gasFeeInCrypto: fee.amount[0].amount,
+      gasFeeInCrypto: gasFee,
       gasLimit: fee.gas,
       gasPrice,
     };
