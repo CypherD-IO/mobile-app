@@ -9,26 +9,22 @@ import {
   getNativeToken,
   getTimeOutTime,
   getWeb3Endpoint,
-  limitDecimalPlaces,
 } from '../../core/util';
 import { useContext } from 'react';
 import { GlobalContext } from '../../core/globalContext';
 import {
-  ACCOUNT_DETAILS_INFO,
   CHAIN_OPTIMISM,
   CHAIN_SHARDEUM,
   CHAIN_SHARDEUM_SPHINX,
   Chain,
   ChainConfigMapping,
   ChainNameMapping,
+  GASLESS_CHAINS,
   NativeTokenMapping,
   TRANSACTION_ENDPOINT,
 } from '../../constants/server';
-import { getConnectionType } from '../../core/asyncStorage';
-import { ConnectionTypes } from '../../constants/enum';
 import * as Sentry from '@sentry/react-native';
 import useGasService from '../useGasService';
-import analytics from '@react-native-firebase/analytics';
 import Toast from 'react-native-toast-message';
 import { get } from 'lodash';
 import useEthSigner from '../useEthSigner';
@@ -59,6 +55,7 @@ export default function useTransactionManager() {
   const {
     estimateGasForEvm,
     estimateGasForEvmos,
+    estimateGasForCosmos,
     estimateGasForCosmosIBC,
     estimateGasForEvmosIBC,
   } = useGasService();
@@ -101,8 +98,6 @@ export default function useTransactionManager() {
     contractAddress,
     contractDecimals,
   }: SendNativeToken) => {
-    const connectionType = await getConnectionType();
-    // if (!connectionType || connectionType === ConnectionTypes.SEED_PHRASE) {
     const ethereum = hdWalletContext.state.wallet.ethereum;
     const fromAddress = ethereum.address;
     try {
@@ -308,6 +303,87 @@ export default function useTransactionManager() {
     return { hash: '', isError: false };
   };
 
+  const sendCosmosToken = async ({
+    fromChain,
+    denom,
+    amount,
+    fromAddress,
+    toAddress,
+  }: {
+    fromChain: Chain;
+    denom: string;
+    amount: string;
+    fromAddress: string;
+    toAddress: string;
+  }): Promise<{
+    isError: boolean;
+    hash: string;
+    error?: any;
+  }> => {
+    try {
+      const { chainName, backendName, symbol } = fromChain;
+      const gasDetails = await estimateGasForCosmos({
+        chain: fromChain,
+        denom,
+        amount,
+        fromAddress,
+        toAddress,
+      });
+      const signer = await getCosmosSignerClient(chainName);
+      const rpc = getCosmosRpc(backendName);
+
+      const signingClient = await SigningStargateClient.connectWithSigner(
+        rpc,
+        signer,
+      );
+
+      const tokenDenom = denom ?? cosmosConfig[backendName].denom;
+      const nativeToken = getNativeToken(
+        get(NativeTokenMapping, symbol) || symbol,
+        get(
+          portfolioState.statePortfolio.tokenPortfolio,
+          ChainNameMapping[backendName],
+        ).holdings,
+      );
+      const fee = {
+        gas: gasDetails.gasLimit,
+        amount: [
+          {
+            denom: nativeToken?.denom ?? denom,
+            amount: parseInt(
+              Number(gasDetails.gasFeeInCrypto).toFixed(6).split('.')[1],
+              10,
+            ).toString(),
+          },
+        ],
+      };
+      const contractDecimals = get(cosmosConfig, chainName).contractDecimal;
+      const amountToSend = String(
+        parseFloat(amount) * Math.pow(10, contractDecimals),
+      );
+      if (
+        GASLESS_CHAINS.includes(get(ChainConfigMapping, chainName).backendName)
+      ) {
+        fee.amount[0].amount = '0';
+      }
+      const result = await signingClient.sendTokens(
+        fromAddress,
+        toAddress,
+        [{ denom: tokenDenom, amount: amountToSend }],
+        fee,
+        'Cypher Wallet',
+      );
+
+      if (result.code === 0) {
+        return { isError: false, hash: result.transactionHash };
+      } else {
+        return { isError: true, hash: '', error: result?.error ?? '' };
+      }
+    } catch (e) {
+      return { isError: true, hash: '', error: e };
+    }
+  };
+
   const interCosmosIBC = async ({
     fromChain,
     toChain,
@@ -478,5 +554,11 @@ export default function useTransactionManager() {
     }
   };
 
-  return { sendEvmToken, sendEvmosToken, interCosmosIBC, evmosIBC };
+  return {
+    sendEvmToken,
+    sendEvmosToken,
+    sendCosmosToken,
+    interCosmosIBC,
+    evmosIBC,
+  };
 }
