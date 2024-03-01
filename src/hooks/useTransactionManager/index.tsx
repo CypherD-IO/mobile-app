@@ -9,12 +9,10 @@ import {
   getNativeToken,
   getTimeOutTime,
   getWeb3Endpoint,
-  limitDecimalPlaces,
 } from '../../core/util';
 import { useContext } from 'react';
 import { GlobalContext } from '../../core/globalContext';
 import {
-  ACCOUNT_DETAILS_INFO,
   CHAIN_OPTIMISM,
   CHAIN_SHARDEUM,
   CHAIN_SHARDEUM_SPHINX,
@@ -25,13 +23,10 @@ import {
   NativeTokenMapping,
   TRANSACTION_ENDPOINT,
 } from '../../constants/server';
-import { getConnectionType } from '../../core/asyncStorage';
-import { ConnectionTypes } from '../../constants/enum';
 import * as Sentry from '@sentry/react-native';
 import useGasService from '../useGasService';
-import analytics from '@react-native-firebase/analytics';
 import Toast from 'react-native-toast-message';
-import { get, isError } from 'lodash';
+import { get } from 'lodash';
 import useEthSigner from '../useEthSigner';
 import { ethers } from 'ethers';
 import axios from '../../core/Http';
@@ -103,8 +98,6 @@ export default function useTransactionManager() {
     contractAddress,
     contractDecimals,
   }: SendNativeToken) => {
-    const connectionType = await getConnectionType();
-    // if (!connectionType || connectionType === ConnectionTypes.SEED_PHRASE) {
     const ethereum = hdWalletContext.state.wallet.ethereum;
     const fromAddress = ethereum.address;
     try {
