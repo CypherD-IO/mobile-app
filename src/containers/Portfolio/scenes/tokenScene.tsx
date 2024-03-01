@@ -154,31 +154,36 @@ const TokenScene = ({
     return getIndexedData(data);
   }, [portfolioState.statePortfolio.tokenPortfolio]);
 
-  const sortedHoldingsByCoinGeckoId = useMemo(() => {
+  useEffect(() => {
     const data = getCurrentChainHoldings(
       portfolioState.statePortfolio.tokenPortfolio,
       portfolioState.statePortfolio.selectedChain,
     );
-    const newHoldingsByCoingeckoId = Object.keys(getIndexedData(data));
-    return [...newHoldingsByCoingeckoId].sort(
-      (a, b) => holdingsData[b].totalValue - holdingsData[a].totalValue,
-    );
+    const tempHoldingsData = getIndexedData(data);
+    const newHoldingsByCoingeckoId = Object.keys(tempHoldingsData);
+    const tempSortedHoldingsByCoinGeckoId = sortBy(newHoldingsByCoingeckoId, [
+      function (holding) {
+        const { totalValue, actualStakedBalance, actualUnbondingBalance } = get(
+          tempHoldingsData,
+          holding,
+        );
+        return -(
+          totalValue +
+          actualStakedBalance +
+          Number(actualUnbondingBalance)
+        );
+      },
+    ]);
+    if (
+      holdingsByCoinGeckoId.length !== tempSortedHoldingsByCoinGeckoId.length ||
+      !isEqual(holdingsByCoinGeckoId, tempSortedHoldingsByCoinGeckoId)
+    ) {
+      setHoldingsByCoinGeckoId(tempSortedHoldingsByCoinGeckoId);
+    }
   }, [
     portfolioState.statePortfolio.tokenPortfolio,
     portfolioState.statePortfolio.selectedChain,
   ]);
-
-  useEffect(() => {
-    if (
-      holdingsByCoinGeckoId.length !== sortedHoldingsByCoinGeckoId.length ||
-      !isEqual(
-        sortBy(holdingsByCoinGeckoId),
-        sortBy(sortedHoldingsByCoinGeckoId),
-      )
-    ) {
-      setHoldingsByCoinGeckoId(sortedHoldingsByCoinGeckoId);
-    }
-  }, [sortedHoldingsByCoinGeckoId]);
 
   const swipeableRefs: Array<Swipeable | null> = [];
   let previousOpenedSwipeableRef: Swipeable | null;

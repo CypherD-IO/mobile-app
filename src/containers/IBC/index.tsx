@@ -71,6 +71,8 @@ import { SuccessTransaction } from '../../components/v2/StateModal';
 import CyDTokenAmount from '../../components/v2/tokenAmount';
 import { AnalyticsType, ButtonType } from '../../constants/enum';
 import { get } from 'lodash';
+import useGasService from '../../hooks/useGasService';
+import useTransactionManager from '../../hooks/useTransactionManager';
 
 export default function IBC({
   route,
@@ -90,22 +92,20 @@ export default function IBC({
   );
   const { t } = useTranslation();
   const hdWallet = useContext<any>(HdWalletContext);
-  const globalStateContext = useContext<any>(GlobalContext);
   const cosmos = hdWallet.state.wallet.cosmos;
-  const ethereum = hdWallet.state.wallet.ethereum;
   const osmosis = hdWallet.state.wallet.osmosis;
   const evmos = hdWallet.state.wallet.evmos;
   const juno = hdWallet.state.wallet.juno;
   const stargaze = hdWallet.state.wallet.stargaze;
   const noble = hdWallet.state.wallet.noble;
 
-  const evmosUrls = globalStateContext.globalState.rpcEndpoints.EVMOS.otherUrls;
-  const ACCOUNT_DETAILS = evmosUrls.accountDetails.replace(
-    'address',
-    evmos.wallets[evmos.currentIndex].address,
-  );
-  const SIMULATION_ENDPOINT = evmosUrls.simulate;
-  const TXN_ENDPOINT = evmosUrls.transact;
+  const cosmosAddresses = {
+    cosmos: cosmos.address,
+    osmosis: osmosis.address,
+    juno: juno.address,
+    stargaze: stargaze.address,
+    noble: noble.address,
+  };
 
   const [chain, setChain] = useState<Chain>([]);
   const [chainData, setChainData] = useState<Chain[]>(IBC_CHAINS);
@@ -113,17 +113,16 @@ export default function IBC({
   const [showMerged, setShowMerged] = useState<boolean>(false);
   const [amount, setAmount] = useState<string>('0.00');
   const [loading, setLoading] = useState<boolean>(false);
-  const [wallets, setWallets] = useState<any>(null);
   const [receiverAddress, setReceiverAddress] = useState<string>('');
   const [memo, setMemo] = useState<string>('');
   const [senderAddress, setSenderAddress] = useState<string>('');
-  const [rpc, setRpc] = useState<string>('');
   const [signModalVisible, setSignModalVisible] = useState<boolean>(false);
-  const [gasFee, setGasFee] = useState<number>(0);
-  const [showWarningModal, setShowWarningModal] = useState<boolean>(false);
+  const [gasFee, setGasFee] = useState<string | number>(0);
   const activityContext = useContext<any>(ActivityContext);
   const activityRef = useRef<IBCTransaction | null>(null);
   const { showModal, hideModal } = useGlobalModalContext();
+  const { estimateGasForCosmosIBC, estimateGasForEvmosIBC } = useGasService();
+  const { interCosmosIBC, evmosIBC } = useTransactionManager();
   const handleBackButton = () => {
     navigation.goBack();
     return true;
@@ -154,12 +153,6 @@ export default function IBC({
 
     setChainData(temp);
     setChain(temp[0]);
-
-    setRpc(
-      globalStateContext.globalState.rpcEndpoints[
-        tokenData.chainDetails.chainName.toUpperCase()
-      ].primary,
-    );
   }, []);
 
   const getAddress = () => {
@@ -188,93 +181,6 @@ export default function IBC({
       setReceiverAddress(address);
     } else setReceiverAddress('');
   }, [chain]);
-
-  const evmosToOtherChainIbcMsg = (
-    senderEvmosAddress: string,
-    receiverAddress: string,
-    inputAmount: string,
-    userAccountData: any,
-    ethereum: any,
-    amount = '14000000000000000',
-    gas = '450000',
-  ) => {
-    const chainData = {
-      chainId: 9001,
-      cosmosChainId: 'evmos_9001-2',
-    };
-
-    const accountData = userAccountData.data.account.base_account;
-
-    const sender = {
-      accountAddress: senderEvmosAddress,
-      sequence: accountData.sequence,
-      accountNumber: accountData.account_number,
-      pubkey: accountData.pub_key.key,
-    };
-
-    const fee = {
-      amount,
-      denom: cosmosConfig.evmos.denom,
-      gas,
-    };
-
-    const params = {
-      receiver: receiverAddress,
-      denom: tokenData.denom,
-      amount: ethers.utils
-        .parseUnits(
-          convertAmountOfContractDecimal(
-            inputAmount,
-            tokenData.contractDecimals,
-          ),
-          tokenData.contractDecimals,
-        )
-        .toString(),
-      sourcePort: 'transfer',
-      sourceChannel:
-        cosmosConfig[tokenData.chainDetails.chainName].channel[
-          chain.name.toLowerCase()
-        ],
-      revisionNumber: Long.fromNumber(456),
-      revisionHeight: Long.fromNumber(123),
-      timeoutTimestamp: (
-        1e9 *
-        (Math.floor(Date.now() / 1e3) + 1200)
-      ).toString(),
-    };
-
-    const memo = '';
-
-    const msg: any = createTxIBCMsgTransfer(
-      chainData,
-      sender,
-      fee,
-      memo,
-      params,
-    );
-
-    const privateKeyBuffer = Buffer.from(
-      ethereum.privateKey.substring(2),
-      'hex',
-    );
-
-    const signature = signTypedData({
-      privateKey: privateKeyBuffer,
-      data: msg.eipToSign,
-      version: SignTypedDataVersion.V4,
-    });
-
-    const extension = signatureToWeb3Extension(chainData, sender, signature);
-
-    const rawTx = createTxRawEIP712(
-      msg.legacyAmino.body,
-      msg.legacyAmino.authInfo,
-      extension,
-    );
-
-    const body = generatePostBodyBroadcast(rawTx);
-    return body;
-  };
 
   function onModalHide() {
     hideModal();
@@ -321,7 +227,6 @@ export default function IBC({
 
     const currentChain: IIBCData =
       cosmosConfig[tokenData.chainDetails.chainName];
-    let isIbcReached = false;
 
     if (
       [
@@ -332,137 +237,40 @@ export default function IBC({
         ChainBackendNames.NOBLE,
       ].includes(tokenData.chainDetails.backendName)
     ) {
-      try {
-        setLoading(true);
-        let wallet: OfflineDirectSigner | undefined;
-
-        if (type === 'simulation') {
-          const wallets: Map<string, OfflineDirectSigner> =
-            await getSignerClient(hdWallet);
-          setWallets(wallets);
-          wallet = wallets.get(currentChain.prefix);
-        } else if (type === 'txn') {
-          wallet = wallets.get(currentChain.prefix);
-        }
-
-        let senderAddress: any = await wallet.getAccounts();
-        senderAddress = senderAddress[0].address;
-        const client = await SigningStargateClient.connectWithSigner(
-          rpc,
-          wallet,
-          {
-            prefix: currentChain.prefix,
-          },
-        );
-
-        const transferAmount = {
+      setLoading(true);
+      const fromAddress = get(
+        cosmosAddresses,
+        tokenData.chainDetails.chainName,
+      );
+      if (type === 'simulation') {
+        const gasDetails = await estimateGasForCosmosIBC({
+          fromChain: tokenData.chainDetails,
+          toChain: chain,
           denom: tokenData.denom,
-          amount: ethers.utils
-            .parseUnits(
-              convertAmountOfContractDecimal(
-                amount,
-                tokenData.contractDecimals,
-              ),
-              tokenData.contractDecimals,
-            )
-            .toString(),
-        };
-        const sourcePort = 'transfer';
-        const sourceChannel =
-          cosmosConfig[tokenData.chainDetails.chainName].channel[
-            chain.name.toLowerCase()
-          ];
-
-        let timeOut = Long.fromNumber(
-          Math.floor(Date.now() / 1000) + 60,
-        ).multiply(1000000000);
-
-        const transferMsg: MsgTransferEncodeObject = {
-          typeUrl: '/ibc.applications.transfer.v1.MsgTransfer',
-          value: MsgTransfer.fromPartial({
-            sourcePort,
-            sourceChannel,
-            sender: senderAddress,
-            receiver: receiverAddress,
-            token: transferAmount,
-            timeoutHeight: {
-              revisionHeight: Long.fromNumber(123),
-              revisionNumber: Long.fromNumber(456),
-            },
-            timeoutTimestamp: timeOut,
-          }),
-        };
-
-        const simulation = await client.simulate(
-          senderAddress,
-          [transferMsg],
-          '',
-        );
-
-        const tempGasFee = simulation * currentChain.gasPrice;
-        setGasFee(tempGasFee);
-
-        if (type === 'simulation') {
-          if (GASLESS_CHAINS.includes(tokenData.chainDetails.backendName)) {
-            setGasFee(0);
-          }
-          setLoading(false);
-          setSignModalVisible(true);
-        }
-        if (type === 'txn') {
-          const fee = {
-            gas: Math.floor(simulation * 1.2).toString(),
-            amount: [
-              {
-                denom: currentChain.denom,
-                amount: GASLESS_CHAINS.includes(
-                  tokenData.chainDetails.backendName,
-                )
-                  ? '0'
-                  : parseInt(
-                      (tempGasFee * 1.2).toFixed(6).split('.')[1],
-                    ).toString(),
-              },
-            ],
-          };
-
-          timeOut = Long.fromNumber(
-            Math.floor(Date.now() / 1000) + 60,
-          ).multiply(1000000000);
-
-          isIbcReached = true;
-
-          const resp = await client.sendIbcTokens(
-            senderAddress,
-            receiverAddress,
-            transferAmount,
-            sourcePort,
-            sourceChannel,
-            {
-              revisionHeight: Long.fromNumber(123),
-              revisionNumber: Long.fromNumber(456),
-            },
-            timeOut,
-            fee,
-            memo,
-          );
-
-          activityRef.current &&
-            activityContext.dispatch({
-              type: ActivityReducerAction.PATCH,
-              value: {
-                id: activityRef.current.id,
-                status: ActivityStatus.SUCCESS,
-                transactionHash: resp.transactionHash,
-              },
-            });
+          amount,
+          fromAddress,
+          toAddress: receiverAddress,
+        });
+        setGasFee(gasDetails.gasFeeInCrypto);
+        setSignModalVisible(true);
+      } else if (type === 'txn') {
+        const transaction = await interCosmosIBC({
+          fromChain: tokenData.chainDetails,
+          toChain: chain,
+          denom: tokenData.denom,
+          contractDecimals: tokenData.contractDecimals,
+          amount,
+          fromAddress,
+          toAddress: receiverAddress,
+        });
+        if (!transaction.isError) {
           setSignModalVisible(false);
           setTimeout(
             () =>
               showModal('state', {
                 type: t<string>('TOAST_TYPE_SUCCESS'),
                 title: t<string>('IBC_SUCCESS'),
-                description: renderSuccessTransaction(resp.transactionHash),
+                description: renderSuccessTransaction(transaction.hash),
                 onSuccess: onModalHide,
                 onFailure: onModalHide,
               }),
@@ -471,199 +279,109 @@ export default function IBC({
           // monitoring api
           void logAnalytics({
             type: AnalyticsType.SUCCESS,
-            txnHash: resp.transactionHash,
+            txnHash: transaction.hash,
             chain: tokenData.chainDetails?.chainName ?? '',
           });
-        }
-        setLoading(false);
-      } catch (error) {
-        setLoading(false);
-        if (type === 'txn') {
-          // Save as failed if the error comes from sendIbc function call
-          if (isIbcReached) {
-            activityRef.current &&
-              activityContext.dispatch({
-                type: ActivityReducerAction.PATCH,
-                value: {
-                  id: activityRef.current.id,
-                  status: ActivityStatus.FAILED,
-                },
-              });
-          } else {
-            activityRef.current &&
-              activityContext.dispatch({
-                type: ActivityReducerAction.DELETE,
-                value: { id: activityRef.current.id },
-              });
-          }
-        }
-        // monitoring api
-        void logAnalytics({
-          type: AnalyticsType.ERROR,
-          chain: tokenData.chainDetails?.chainName ?? '',
-          message: parseErrorMessage(error),
-          screen: route.name,
-        });
-        Sentry.captureException(error);
-        setSignModalVisible(false);
-        setTimeout(
-          () =>
-            showModal('state', {
-              type: t<string>('TOAST_TYPE_ERROR'),
-              title: 'Transaction failed',
-              description: parseErrorMessage(error) ?? '',
-              onSuccess: hideModal,
-              onFailure: hideModal,
-            }),
-          MODAL_HIDE_TIMEOUT_250,
-        );
-      }
-    } else {
-      try {
-        setLoading(true);
-        const evmosAddress = evmos.wallets[evmos.currentIndex].address;
-
-        const accountInfoResponse = await axios.get(ACCOUNT_DETAILS, {
-          timeout: 2000,
-        });
-
-        let ibcTransferBody = evmosToOtherChainIbcMsg(
-          evmosAddress,
-          receiverAddress,
-          amount,
-          accountInfoResponse,
-          ethereum,
-        );
-
-        const response = await axios.post(SIMULATION_ENDPOINT, ibcTransferBody);
-
-        const simulatedGasInfo = response.data.gas_info
-          ? response.data.gas_info
-          : 0;
-        const gasWanted = simulatedGasInfo.gas_used
-          ? simulatedGasInfo.gas_used
-          : 0;
-        setGasFee(parseFloat(gasWanted) * currentChain.gasPrice);
-
-        if (type === 'simulation') {
-          setLoading(false);
-          setSignModalVisible(true);
-        }
-        if (type === 'txn') {
-          ibcTransferBody = evmosToOtherChainIbcMsg(
-            evmosAddress,
-            receiverAddress,
-            amount,
-            accountInfoResponse,
-            ethereum,
-            ethers.utils
-              .parseUnits(
-                (cosmosConfig.evmos.gasPrice * gasWanted).toString(),
-                '18',
-              )
-              .toString(),
-            Math.floor(gasWanted * 1.3).toString(),
-          );
-
-          isIbcReached = true;
-
-          const resp: any = await axios.post(TXN_ENDPOINT, ibcTransferBody);
-
+        } else {
+          void logAnalytics({
+            type: AnalyticsType.ERROR,
+            chain: tokenData.chainDetails?.chainName ?? '',
+            message: parseErrorMessage(transaction.error),
+            screen: route.name,
+          });
+          Sentry.captureException(transaction.error);
           setSignModalVisible(false);
-          setLoading(false);
-          if (resp.data.tx_response.code === 0) {
-            activityRef.current &&
-              activityContext.dispatch({
-                type: ActivityReducerAction.PATCH,
-                value: {
-                  id: activityRef.current.id,
-                  status: ActivityStatus.SUCCESS,
-                  transactionHash: resp.data.tx_response.txhash,
-                },
-              });
-            setTimeout(() => {
-              showModal('state', {
-                type: t<string>('TOAST_TYPE_SUCCESS'),
-                title: t<string>('IBC_SUCCESS'),
-                description: renderSuccessTransaction(
-                  resp.data.tx_response.txhash,
-                ),
-                onSuccess: onModalHide,
-                onFailure: onModalHide,
-              });
-            }, MODAL_HIDE_TIMEOUT_250);
-            // monitoring api
-            void logAnalytics({
-              type: AnalyticsType.SUCCESS,
-              txnHash: resp.data.tx_response.txhash,
-              chain: tokenData.chainDetails?.chainName ?? '',
-            });
-          } else if (resp.data.tx_response.code === 5) {
-            activityRef.current &&
-              activityContext.dispatch({
-                type: ActivityReducerAction.PATCH,
-                value: {
-                  id: activityRef.current.id,
-                  status: ActivityStatus.FAILED,
-                },
-              });
-            // monitoring api
-            void logAnalytics({
-              type: AnalyticsType.ERROR,
-              chain: tokenData.chainDetails?.chainName ?? '',
-              message: parseErrorMessage(resp.data.tx_response.raw_log),
-              screen: route.name,
-            });
-            Sentry.captureException(resp.data.tx_response.raw_log);
-            setTimeout(() => {
+          setTimeout(
+            () =>
               showModal('state', {
                 type: t<string>('TOAST_TYPE_ERROR'),
                 title: 'Transaction failed',
-                description: '',
+                description: parseErrorMessage(transaction.error) ?? '',
                 onSuccess: hideModal,
-                onFailure: onModalHide,
-              });
-            }, MODAL_HIDE_TIMEOUT_250);
-          }
+                onFailure: hideModal,
+              }),
+            MODAL_HIDE_TIMEOUT_250,
+          );
         }
-      } catch (error) {
+      }
+
+      setLoading(false);
+    } else {
+      setLoading(true);
+      if (type === 'simulation') {
+        const gasDetails = await estimateGasForEvmosIBC({
+          toAddress: receiverAddress,
+          toChain: chain,
+          amount,
+          denom: tokenData.denom,
+          contractDecimals: tokenData.contractDecimals,
+        });
+
+        setGasFee(gasDetails.gasFeeInCrypto);
+        setLoading(false);
+        setSignModalVisible(true);
+      } else if (type === 'txn') {
+        const transaction = await evmosIBC({
+          toAddress: receiverAddress,
+          toChain: chain,
+          amount,
+          denom: tokenData.denom,
+          contractDecimals: tokenData.contractDecimals,
+        });
         setLoading(false);
         setSignModalVisible(false);
-        if (type === 'txn') {
-          if (isIbcReached) {
-            activityRef.current &&
-              activityContext.dispatch({
-                type: ActivityReducerAction.PATCH,
-                value: {
-                  id: activityRef.current.id,
-                  status: ActivityStatus.FAILED,
-                },
-              });
-          } else {
-            activityRef.current &&
-              activityContext.dispatch({
-                type: ActivityReducerAction.DELETE,
-                value: { id: activityRef.current.id },
-              });
-          }
-        }
-        // monitoring api
-        void logAnalytics({
-          type: AnalyticsType.ERROR,
-          chain: tokenData.chainDetails?.chainName ?? '',
-          message: parseErrorMessage(error),
-          screen: route.name,
-        });
-        Sentry.captureException(error);
-        setTimeout(() => {
-          showModal('state', {
-            type: t<string>('TOAST_TYPE_ERROR'),
-            title: 'Transaction failed',
-            description: error.message.toString(),
-            onSuccess: hideModal,
-            onFailure: onModalHide,
+        if (!transaction.isError) {
+          activityRef.current &&
+            activityContext.dispatch({
+              type: ActivityReducerAction.PATCH,
+              value: {
+                id: activityRef.current.id,
+                status: ActivityStatus.SUCCESS,
+                transactionHash: transaction.hash,
+              },
+            });
+          setTimeout(() => {
+            showModal('state', {
+              type: t<string>('TOAST_TYPE_SUCCESS'),
+              title: t<string>('IBC_SUCCESS'),
+              description: renderSuccessTransaction(transaction.hash),
+              onSuccess: onModalHide,
+              onFailure: onModalHide,
+            });
+          }, MODAL_HIDE_TIMEOUT_250);
+          // monitoring api
+          void logAnalytics({
+            type: AnalyticsType.SUCCESS,
+            txnHash: transaction.hash,
+            chain: tokenData.chainDetails?.chainName ?? '',
           });
-        }, MODAL_HIDE_TIMEOUT_250);
+        } else {
+          activityRef.current &&
+            activityContext.dispatch({
+              type: ActivityReducerAction.PATCH,
+              value: {
+                id: activityRef.current.id,
+                status: ActivityStatus.FAILED,
+              },
+            });
+          // monitoring api
+          void logAnalytics({
+            type: AnalyticsType.ERROR,
+            chain: tokenData.chainDetails?.chainName ?? '',
+            message: parseErrorMessage(transaction.error),
+            screen: route.name,
+          });
+          Sentry.captureException(transaction.error);
+          setTimeout(() => {
+            showModal('state', {
+              type: t<string>('TOAST_TYPE_ERROR'),
+              title: 'Transaction failed',
+              description: '',
+              onSuccess: hideModal,
+              onFailure: onModalHide,
+            });
+          }, MODAL_HIDE_TIMEOUT_250);
+        }
       }
     }
   };
@@ -701,63 +419,12 @@ export default function IBC({
         type={'chain'}
       />
 
-      <CyDModalLayout
-        setModalVisible={setShowWarningModal}
-        isModalVisible={showWarningModal}
-        animationIn={'slideInUp'}
-        animationOut={'slideOutDown'}>
-        <CyDView className={'relative bg-white rounded-t-[12px] p-[24px]'}>
-          <CyDTouchView
-            onPress={() => setShowWarningModal(false)}
-            className={'z-[50] absolute right-[16px] top-[16px]'}>
-            <CyDImage source={AppImages.CLOSE_CIRCLE} />
-          </CyDTouchView>
-          <CyDView className={'flex items-center'}>
-            <CyDImage
-              source={AppImages.WARNING}
-              className={'w-[110px] h-[100px]'}
-            />
-            <CyDText
-              className={'text-orange-400 text-[16px] mt-[6px] font-bold'}>
-              {'WARNING'}
-            </CyDText>
-            <CyDText
-              className={
-                'text-primaryTextColor text-[16px] mt-[6px] font-bold text-center'
-              }>
-              {t('IBC_WARNING')}
-            </CyDText>
-            <CyDView className={'flex flex-row item-center '}>
-              <Button
-                onPress={() => {
-                  setShowWarningModal(false);
-                }}
-                title={'CANCEL'}
-                style={'mt-[20px] p-[5%] mr-[24px]'}
-                type={'secondary'}
-              />
-              <Button
-                onPress={() => {
-                  setShowWarningModal(false);
-                  if (validateAmount(amount)) {
-                    setTimeout(
-                      async () => await ibcTransfer('simulation'),
-                      MODAL_CLOSING_TIMEOUT,
-                    );
-                    setLoading(false);
-                  }
-                }}
-                title={'PROCEED'}
-                style={'mt-[20px] p-[5%]'}
-              />
-            </CyDView>
-          </CyDView>
-        </CyDView>
-      </CyDModalLayout>
-
       <SignatureModal
         isModalVisible={signModalVisible}
-        setModalVisible={setSignModalVisible}>
+        setModalVisible={setSignModalVisible}
+        onCancel={() => {
+          setSignModalVisible(false);
+        }}>
         <CyDView className={'px-[40px]'}>
           <CyDText
             className={
@@ -1266,7 +933,6 @@ export default function IBC({
           }
           onPress={() => {
             onIBCSubmit();
-            // setShowWarningModal(true);
           }}
           isPrivateKeyDependent={true}
           style={'w-[90%] h-[60px]'}

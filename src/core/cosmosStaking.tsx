@@ -2,8 +2,9 @@ import axios from './Http';
 import {
   COSMOS_STAKING_LOADING,
   COSMOS_STAKING_NOT_EMPTY,
-  IAllValidators, IReward,
-  IUnboundings
+  IAllValidators,
+  IReward,
+  IUnboundings,
 } from '../reducers/cosmosStakingReducer';
 import { Dispatch } from 'react';
 import { GlobalStateDef } from './globalContext';
@@ -14,11 +15,14 @@ import analytics from '@react-native-firebase/analytics';
 import { hostWorker } from '../global';
 import { find } from 'lodash';
 
-const parseAllValidators = (validators: any, aprData: any): Map<string, IAllValidators> => {
+const parseAllValidators = (
+  validators: any,
+  aprData: any,
+): Map<string, IAllValidators> => {
   const data = validators.data.validators;
   const { apr } = aprData.data;
   const val: Map<string, IAllValidators> = new Map<string, IAllValidators>();
-  data.forEach((item) => {
+  data.forEach(item => {
     const temp = {
       commissionRate: item.commission.commission_rates.rate,
       description: item.description.details,
@@ -27,20 +31,30 @@ const parseAllValidators = (validators: any, aprData: any): Map<string, IAllVali
       tokens: item.tokens,
       balance: '0',
       address: item.operator_address,
-      apr: (parseFloat(apr) - (parseFloat(apr) * item.commission.commission_rates.rate)).toFixed(2)
+      apr: (
+        parseFloat(apr) -
+        parseFloat(apr) * item.commission.commission_rates.rate
+      ).toFixed(2),
     };
     val.set(item.operator_address, temp);
   });
   return val;
 };
 
-const parseUserDelegations = (validators: any, allValidators: Map<string, IAllValidators>): [Map<string, IAllValidators>, bigint] => {
+const parseUserDelegations = (
+  validators: any,
+  allValidators: Map<string, IAllValidators>,
+): [Map<string, IAllValidators>, bigint] => {
   const data = validators.data.delegation_responses;
   let balance = BigInt(0);
   const val = new Map<string, IAllValidators>();
   data.forEach(item => {
-    const validatorAddressObject = allValidators.get(item.delegation.validator_address);
-    if (validatorAddressObject) { val.set(item.delegation.validator_address, validatorAddressObject); }
+    const validatorAddressObject = allValidators.get(
+      item.delegation.validator_address,
+    );
+    if (validatorAddressObject) {
+      val.set(item.delegation.validator_address, validatorAddressObject);
+    }
     const newValidatorObject = val.get(item.delegation.validator_address);
     if (newValidatorObject && item.balance.amount) {
       newValidatorObject.balance = BigInt(item.balance.amount);
@@ -66,7 +80,7 @@ const parseBalance = (balance: any, denom: string): string => {
 
 const parseReward = (reward: any, denom: string): [string, IReward[]] => {
   const rewardList: IReward[] = [];
-  reward.data.rewards.forEach((item) => {
+  reward.data.rewards.forEach(item => {
     if (item) {
       const { validator_address, reward } = item;
       if (reward.length > 0) {
@@ -75,7 +89,7 @@ const parseReward = (reward: any, denom: string): [string, IReward[]] => {
         if (amount) {
           const temp: IReward = {
             validatorAddress: validator_address,
-            amount
+            amount,
           };
           rewardList.push(temp);
         }
@@ -88,21 +102,29 @@ const parseReward = (reward: any, denom: string): [string, IReward[]] => {
   return [totalReward, rewardList];
 };
 
-const parseUnBoundings = (unboundings: any): [Map<string, IUnboundings>, bigint] => {
+const parseUnBoundings = (
+  unboundings: any,
+): [Map<string, IUnboundings>, bigint] => {
   const unbound: Map<string, IUnboundings> = new Map<string, IUnboundings>();
   let unboundingTotal: bigint = BigInt(0);
   unboundings.data.unbonding_responses.forEach(item => {
     unboundingTotal += BigInt(item.entries[0].balance);
     const temp = {
       balance: item.entries[0].balance,
-      completionTime: item.entries[0].completion_time
+      completionTime: item.entries[0].completion_time,
     };
     unbound.set(item.validator_address, temp);
   });
   return [unbound, unboundingTotal];
 };
 
-export const getCosmosStakingData = async (cosmosStakingDispatch: Dispatch<any>, globalState: GlobalStateDef, chain: string, address: string, denom: string): Promise<void> => {
+export const getCosmosStakingData = async (
+  cosmosStakingDispatch: Dispatch<any>,
+  globalState: GlobalStateDef,
+  chain: string,
+  address: string,
+  denom: string,
+): Promise<void> => {
   cosmosStakingDispatch({ status: COSMOS_STAKING_LOADING });
   const rpc = globalState.rpcEndpoints[chain].otherUrls;
   const ARCH_HOST: string = hostWorker.getHost('ARCH_HOST');
@@ -112,14 +134,17 @@ export const getCosmosStakingData = async (cosmosStakingDispatch: Dispatch<any>,
     rpc.balance.replace('address', address),
     rpc.delegations.replace('address', address),
     rpc.rewards.replace('address', address),
-    rpc.unBoundings.replace('address', address)
+    rpc.unBoundings.replace('address', address),
   ];
 
   try {
-    const [allValidators, balance, delegations, rewards, unboundings] = await Promise.all(endPoints.map(async (endpoint) => {
-      const t = await axios.get(endpoint);
-      return t;
-    }));
+    const [allValidators, balance, delegations, rewards, unboundings] =
+      await Promise.all(
+        endPoints.map(async endpoint => {
+          const t = await axios.get(endpoint);
+          return t;
+        }),
+      );
     let apr;
     try {
       apr = await axios.get(aprEndpoint);
@@ -144,7 +169,7 @@ export const getCosmosStakingData = async (cosmosStakingDispatch: Dispatch<any>,
       userValidators: userVal,
       unBoundings: unbound,
       rewardList,
-      unBoundingBalance: unboundingTotal
+      unBoundingBalance: unboundingTotal,
     });
   } catch (error: any) {
     Sentry.captureException(error);
@@ -152,7 +177,7 @@ export const getCosmosStakingData = async (cosmosStakingDispatch: Dispatch<any>,
       type: 'error',
       text1: 'Transaction failed',
       text2: error.message,
-      position: 'bottom'
+      position: 'bottom',
     });
     await analytics().logEvent(`${chain}_fetch_failed`);
   }

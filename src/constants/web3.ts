@@ -28,7 +28,7 @@ export const Web3Method = {
   CHAINID: 'eth_chainid',
   GET_CODE: 'eth_getCode',
   ETH_SIGN: 'eth_sign',
-  PERSONAL_ECRECOVER: 'personal_ecRecover'
+  PERSONAL_ECRECOVER: 'personal_ecRecover',
 };
 
 export const CosmosWeb3Method = {
@@ -36,8 +36,8 @@ export const CosmosWeb3Method = {
   SIGN_AMINO: 'signAmino',
   SEND_TX: 'sendTx',
   SIGN_DIRECT: 'signDirect',
-  ENABLE: 'enable'
-}
+  ENABLE: 'enable',
+};
 
 export const WEB3METHODS = Web3Method;
 
@@ -53,113 +53,102 @@ export const errorCodes = {
     invalidRequest: -32600,
     methodNotFound: -32601,
     invalidParams: -32602,
-    internal: -32603
+    internal: -32603,
   },
   provider: {
     userRejectedRequest: 4001,
     unauthorized: 4100,
     unsupportedMethod: 4200,
     disconnected: 4900,
-    chainDisconnected: 4901
-  }
+    chainDisconnected: 4901,
+  },
 };
 
-export const ProviderError: Record<string, {
-  standard: string
-  message: string
-}> = {
-  '-32700':
+export const ProviderError: Record<
+  string,
   {
-    standard: 'JSON RPC 2.0',
-    message: 'Invalid JSON was received by the server. An error occurred on the server while parsing the JSON text.'
-  },
-  '-32600':
-  {
-    standard: 'JSON RPC 2.0',
-    message: 'The JSON sent is not a valid Request object.'
-  },
-  '-32601':
-  {
-    standard: 'JSON RPC 2.0',
-    message: 'The method does not exist / is not available.'
-  },
-  '-32602':
-  {
-    standard: 'JSON RPC 2.0',
-    message: 'Invalid method parameter(s).'
-  },
-  '-32603':
-  {
-    standard: 'JSON RPC 2.0',
-    message: 'Internal JSON-RPC error.'
-  },
-  '-32000':
-  {
-    standard: 'EIP-1474',
-    message: 'Invalid input.'
-  },
-  '-32001':
-  {
-    standard: 'EIP-1474',
-    message: 'Resource not found.'
-  },
-  '-32002':
-  {
-    standard: 'EIP-1474',
-    message: 'Resource unavailable.'
-  },
-  '-32003':
-  {
-    standard: 'EIP-1474',
-    message: 'Transaction rejected.'
-  },
-  '-32004':
-  {
-    standard: 'EIP-1474',
-    message: 'Method not supported.'
-  },
-  '-32005':
-  {
-    standard: 'EIP-1474',
-    message: 'Request limit exceeded.'
-  },
-  '4001':
-  {
-    standard: 'EIP-1193',
-    message: 'User rejected the request.'
-  },
-  '4100':
-  {
-    standard: 'EIP-1193',
-    message: 'The requested account and/or method has not been authorized by the user.'
-  },
-  '4200':
-  {
-    standard: 'EIP-1193',
-    message: 'The requested method is not supported by this Ethereum provider.'
-  },
-  '4900':
-  {
-    standard: 'EIP-1193',
-    message: 'The provider is disconnected from all chains.'
-  },
-  '4901':
-  {
-    standard: 'EIP-1193',
-    message: 'The provider is disconnected from the specified chain.'
+    standard: string;
+    message: string;
   }
+> = {
+  '-32700': {
+    standard: 'JSON RPC 2.0',
+    message:
+      'Invalid JSON was received by the server. An error occurred on the server while parsing the JSON text.',
+  },
+  '-32600': {
+    standard: 'JSON RPC 2.0',
+    message: 'The JSON sent is not a valid Request object.',
+  },
+  '-32601': {
+    standard: 'JSON RPC 2.0',
+    message: 'The method does not exist / is not available.',
+  },
+  '-32602': {
+    standard: 'JSON RPC 2.0',
+    message: 'Invalid method parameter(s).',
+  },
+  '-32603': {
+    standard: 'JSON RPC 2.0',
+    message: 'Internal JSON-RPC error.',
+  },
+  '-32000': {
+    standard: 'EIP-1474',
+    message: 'Invalid input.',
+  },
+  '-32001': {
+    standard: 'EIP-1474',
+    message: 'Resource not found.',
+  },
+  '-32002': {
+    standard: 'EIP-1474',
+    message: 'Resource unavailable.',
+  },
+  '-32003': {
+    standard: 'EIP-1474',
+    message: 'Transaction rejected.',
+  },
+  '-32004': {
+    standard: 'EIP-1474',
+    message: 'Method not supported.',
+  },
+  '-32005': {
+    standard: 'EIP-1474',
+    message: 'Request limit exceeded.',
+  },
+  '4001': {
+    standard: 'EIP-1193',
+    message: 'User rejected the request.',
+  },
+  '4100': {
+    standard: 'EIP-1193',
+    message:
+      'The requested account and/or method has not been authorized by the user.',
+  },
+  '4200': {
+    standard: 'EIP-1193',
+    message: 'The requested method is not supported by this Ethereum provider.',
+  },
+  '4900': {
+    standard: 'EIP-1193',
+    message: 'The provider is disconnected from all chains.',
+  },
+  '4901': {
+    standard: 'EIP-1193',
+    message: 'The provider is disconnected from the specified chain.',
+  },
 };
 
 export const OSMOSIS_WALLET_CONNECT_METHODS = {
   ENABLE_WALLET_CONNECT: 'keplr_enable_wallet_connect_v1',
   GET_KEY_WALLET_CONNECT: 'keplr_get_key_wallet_connect_v1',
-  SIGN_AMINO: 'keplr_sign_amino_wallet_connect_v1'
+  SIGN_AMINO: 'keplr_sign_amino_wallet_connect_v1',
 };
 
 export const WALLET_PERMISSIONS = {
   NO_DATA: 'NO_DATA',
   DENY: 'DENY',
-  ALLOW: 'ALLOW'
+  ALLOW: 'ALLOW',
 };
 
 export const EVENTS = {
@@ -168,7 +157,7 @@ export const EVENTS = {
   CALL_REQUEST: 'call_request',
   DISCONNECT: 'disconnect',
   REJECT_REQUEST: 'reject_request',
-  REJECT_SESSION: 'reject_session'
+  REJECT_SESSION: 'reject_session',
 };
 
 export enum CommunicationEvents {
@@ -176,5 +165,5 @@ export enum CommunicationEvents {
   ANALYTICS = 'analytics',
   WEB3 = 'web3',
   WEBINFO = 'webinfo',
-  WEB3COSMOS = 'proxy-request'
+  WEB3COSMOS = 'proxy-request',
 }

@@ -43,7 +43,7 @@ export default function BridgeCardOptionsScreen(props: {
   const { showModal, hideModal } = useGlobalModalContext();
   const { patchWithAuth } = useAxios();
   const [cardUpdateToStatus, setCardUpdateToStatus] = useState(
-    card.status === CardStatus.ACTIVE ? 'block' : 'unblock',
+    card.status === CardStatus.ACTIVE ? 'lock' : 'unlock',
   );
 
   const onCardStatusChange = async (blockCard: boolean) => {
@@ -62,13 +62,13 @@ export default function BridgeCardOptionsScreen(props: {
           type: 'success',
           title: t('CHANGE_CARD_STATUS_SUCCESS'),
           description: `Successfully ${
-            blockCard ? 'blocked' : 'unblocked'
+            blockCard ? 'locked' : 'unlocked'
           } your card!`,
           onSuccess: hideModal,
           onFailure: hideModal,
         });
         setIsCardBlocked(blockCard);
-        setCardUpdateToStatus(blockCard ? 'unblock' : 'block');
+        setCardUpdateToStatus(blockCard ? 'unlock' : 'lock');
       } else {
         showModal('state', {
           type: 'error',
@@ -105,7 +105,11 @@ export default function BridgeCardOptionsScreen(props: {
     showModal('state', {
       type: 'warning',
       title: `${t('CARD_STATUS_UPDATE')}`,
-      description: `Are you sure you want to ${status} your card?`,
+      description:
+        `Are you sure you want to ${status} your card?` +
+        (blockCard
+          ? 'This is just a temporary lock. You can unlock it anytime'
+          : ''),
       onSuccess: () => {
         void onCardStatusChange(blockCard);
       },
@@ -121,7 +125,7 @@ export default function BridgeCardOptionsScreen(props: {
       <CyDView className='flex flex-row justify-between align-center mx-[20px] pb-[15px] border-b-[1px] border-sepratorColor'>
         <CyDView>
           <CyDText className='text-[16px] font-bold'>
-            {t<string>('CARD_STATUS')}
+            {isCardBlocked ? t<string>('UNLOCK_CARD') : t<string>('LOCK_CARD')}
           </CyDText>
         </CyDView>
         {isStatusLoading ? (
@@ -212,13 +216,30 @@ export default function BridgeCardOptionsScreen(props: {
       </CyDTouchView>
       <CyDTouchView
         onPress={() =>
+          navigation.navigate(screenTitle.CARD_NOTIFICATION_SETTINGS, {
+            currentCardProvider,
+            card,
+          })
+        }
+        className='flex flex-row justify-between align-center ml-[20px] mr-[4px] pt-[20px] pb-[15px] border-b-[1px] border-sepratorColor'>
+        <CyDText className='text-[16px] font-bold'>
+          {t<string>('CARD_NOTIFICATION_SETTINGS')}
+        </CyDText>
+        <CyDImage
+          source={AppImages.OPTIONS_ARROW}
+          className={'w-[15%] h-[18px]'}
+          resizeMode={'contain'}
+        />
+      </CyDTouchView>
+      <CyDTouchView
+        onPress={() =>
           navigation.navigate(screenTitle.SOCIAL_MEDIA_SCREEN, {
             title: 'Card FAQ',
             uri: 'https://www.cypherwallet.io/card#faq',
           })
         }
         className='flex flex-row justify-between align-center ml-[20px] mr-[4px] pt-[20px] pb-[15px] border-b-[1px] border-sepratorColor'>
-        <CyDText className='text-[16px] font-bold'>{'FAQ'}</CyDText>
+        <CyDText className='text-[16px] font-bold'>{t<string>('FAQ')}</CyDText>
         <CyDImage
           source={AppImages.LINK}
           className={'w-[15%] h-[18px]'}

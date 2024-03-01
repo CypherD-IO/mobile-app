@@ -4,13 +4,26 @@ import { TextInput } from 'react-native';
 import AppImages from '../../../assets/images/appImages';
 import Button from '../../components/v2/button';
 import { ButtonType } from '../../constants/enum';
-import { CyDFlatList, CyDImage, CyDImageBackground, CyDScrollView, CyDText, CyDTextInput, CyDTouchView, CyDView } from '../../styles/tailwindStyles';
+import {
+  CyDFlatList,
+  CyDImage,
+  CyDImageBackground,
+  CyDScrollView,
+  CyDText,
+  CyDTextInput,
+  CyDTouchView,
+  CyDView,
+} from '../../styles/tailwindStyles';
 import { v4 as uuidv4 } from 'uuid';
 import { getToken } from '../../core/push';
 import { hostWorker } from '../../global';
 import axios from '../../core/Http';
 import * as Sentry from '@sentry/react-native';
-import { HdWalletContext, isValidEns, _NO_CYPHERD_CREDENTIAL_AVAILABLE_ } from '../../core/util';
+import {
+  HdWalletContext,
+  isValidEns,
+  _NO_CYPHERD_CREDENTIAL_AVAILABLE_,
+} from '../../core/util';
 import { setReadOnlyWalletData } from '../../core/asyncStorage';
 import { ChainBackendNames, QRScannerScreens } from '../../constants/server';
 import { screenTitle } from '../../constants';
@@ -23,7 +36,11 @@ import appsFlyer from 'react-native-appsflyer';
 import { intercomAnalyticsLog } from '../utilities/analyticsUtility';
 import { ethToEvmos } from '@tharsis/address-converter';
 
-export default function TrackWallet ({ navigation }: {navigation: {navigate: () => {}}}) {
+export default function TrackWallet({
+  navigation,
+}: {
+  navigation: { navigate: () => {} };
+}) {
   const [address, setAddress] = useState('');
   const ARCH_HOST: string = hostWorker.getHost('ARCH_HOST');
   const hdWalletContext = useContext<any>(HdWalletContext);
@@ -41,12 +58,18 @@ export default function TrackWallet ({ navigation }: {navigation: {navigate: () 
       if (fcmToken) {
         const payload = {
           fcmToken,
-          observerId: uuidv4()
+          observerId: uuidv4(),
         };
         try {
-          const data = await axios.post(`${ARCH_HOST}/v1/configuration/address/${ethAddress}/observer`, payload);
+          const data = await axios.post(
+            `${ARCH_HOST}/v1/configuration/address/${ethAddress}/observer`,
+            payload,
+          );
           if (data && data.status === 201) {
-            const data = { address: ethAddress, observerId: payload.observerId };
+            const data = {
+              address: ethAddress,
+              observerId: payload.observerId,
+            };
             void setReadOnlyWalletData(data);
             void appsFlyer.logEvent('track_wallet_event', data);
             void intercomAnalyticsLog('track_wallet_event', data);
@@ -59,8 +82,8 @@ export default function TrackWallet ({ navigation }: {navigation: {navigate: () 
                 chain: 'ethereum',
                 publicKey: '',
                 rawAddress: '',
-                algo: ''
-              }
+                algo: '',
+              },
             });
             hdWalletContext.dispatch({
               type: 'LOAD_WALLET',
@@ -70,26 +93,44 @@ export default function TrackWallet ({ navigation }: {navigation: {navigate: () 
                 chain: 'evmos',
                 publicKey: '',
                 rawAddress: '',
-                algo: ''
-              }
+                algo: '',
+              },
             });
             hdWalletContext.dispatch({
               type: 'SET_READ_ONLY_WALLET',
               value: {
-                isReadOnlyWallet: true
-              }
+                isReadOnlyWallet: true,
+              },
             });
           }
         } catch (error) {
           setLoading(false);
-          showModal('state', { type: 'error', title: '', description: t('UNABLE_TO_TRACK'), onSuccess: hideModal, onFailure: hideModal });
+          showModal('state', {
+            type: 'error',
+            title: '',
+            description: t('UNABLE_TO_TRACK'),
+            onSuccess: hideModal,
+            onFailure: hideModal,
+          });
           Sentry.captureException(error);
         }
       } else {
-        showModal('state', { type: 'error', title: '', description: t('UNABLE_TO_TRACK'), onSuccess: hideModal, onFailure: hideModal });
+        showModal('state', {
+          type: 'error',
+          title: '',
+          description: t('UNABLE_TO_TRACK'),
+          onSuccess: hideModal,
+          onFailure: hideModal,
+        });
       }
     } else {
-      showModal('state', { type: 'error', title: t('INVALID_ADDRESS'), description: t('ONLY_ETHEREUM_SUPPORTED'), onSuccess: hideModal, onFailure: hideModal });
+      showModal('state', {
+        type: 'error',
+        title: t('INVALID_ADDRESS'),
+        description: t('ONLY_ETHEREUM_SUPPORTED'),
+        onSuccess: hideModal,
+        onFailure: hideModal,
+      });
     }
   };
 
@@ -104,8 +145,14 @@ export default function TrackWallet ({ navigation }: {navigation: {navigate: () 
   const RenderTrackWalletInfo = ({ item }) => {
     return (
       <CyDView className={'flex flex-row my-[18px]'} key={item}>
-          <CyDImage className={'mt-[6px] h-[12px] w-[12px]'} source={AppImages.RIGHT_ARROW_BULLET} resizeMode='contain'/>
-          <CyDText className={'ml-[10px] text-[16px] font-semibold'}>{item}</CyDText>
+        <CyDImage
+          className={'mt-[6px] h-[12px] w-[12px]'}
+          source={AppImages.RIGHT_ARROW_BULLET}
+          resizeMode='contain'
+        />
+        <CyDText className={'ml-[10px] text-[16px] font-semibold'}>
+          {item}
+        </CyDText>
       </CyDView>
     );
   };
@@ -113,34 +160,70 @@ export default function TrackWallet ({ navigation }: {navigation: {navigate: () 
   return (
     <CyDView className='flex-1 h-[100%] flex-col justify-between bg-white'>
       <CyDView className='px-[20px] flex flex-col items-center'>
-        <CyDView className={'flex flex-row justify-between items-center self-center mt-[15px] border-[0.2px] border-black rounded-[5px] pl-[15px] pr-[10px] py-[5px]'}>
+        <CyDView
+          className={
+            'flex flex-row justify-between items-center self-center mt-[15px] border-[0.2px] border-black rounded-[5px] pl-[15px] pr-[10px] py-[5px]'
+          }>
           <CyDTextInput
             className={'self-center py-[12px] w-[90%] pr-[10px]'}
             value={address}
-            autoCapitalize="none"
+            autoCapitalize='none'
             autoCorrect={false}
-            onChangeText={(text) => { setAddress(text); }}
+            onChangeText={text => {
+              setAddress(text);
+            }}
             placeholderTextColor={'#C5C5C5'}
-            placeholder={t('ENTER_OR_SCAN_ETHEREUM_ADDRESS')} />
-            <CyDTouchView onPress={() => { address === '' ? navigation.navigate(screenTitle.QR_CODE_SCANNER, { fromPage: QRScannerScreens.TRACK_WALLET, onSuccess }) : setAddress(''); }}>
-              <CyDImage className={'h-[25px] w-[25px]'} source={address === '' ? AppImages.QR_CODE_SCANNER : AppImages.CLOSE_CIRCLE}/>
-            </CyDTouchView>
+            placeholder={t('ENTER_OR_SCAN_ETHEREUM_ADDRESS')}
+          />
+          <CyDTouchView
+            onPress={() => {
+              address === ''
+                ? navigation.navigate(screenTitle.QR_CODE_SCANNER, {
+                    fromPage: QRScannerScreens.TRACK_WALLET,
+                    onSuccess,
+                  })
+                : setAddress('');
+            }}>
+            <CyDImage
+              className={'h-[25px] w-[25px]'}
+              source={
+                address === ''
+                  ? AppImages.QR_CODE_SCANNER
+                  : AppImages.CLOSE_CIRCLE
+              }
+            />
+          </CyDTouchView>
         </CyDView>
         <CyDView className='flex flex-row items-center self-start mt-[15px] ml-[5px]'>
-          <CyDImage source={AppImages.INFO_CIRCLE} className='h-[16px] w-[16px]'/>
+          <CyDImage
+            source={AppImages.INFO_CIRCLE}
+            className='h-[16px] w-[16px]'
+          />
           <CyDText className='ml-[7px]'>
             {t<string>('ONLY_ETHEREUM_SUPPORTED')}
           </CyDText>
         </CyDView>
-        <Button title={t('TRACK')} image={AppImages.TRACK} onPress={() => { void registerObserver(address); }} loading={loading} type={ButtonType.PRIMARY} style='mt-[30px] w-[100%] h-[50px]'/>
+        <Button
+          title={t('TRACK')}
+          image={AppImages.TRACK}
+          onPress={() => {
+            void registerObserver(address);
+          }}
+          loading={loading}
+          type={ButtonType.PRIMARY}
+          style='mt-[30px] w-[100%] h-[50px]'
+        />
       </CyDView>
-      <CyDImageBackground className='flex flex-col justify-end rounded-t-[45px]' source={AppImages.DEBIT_CARD_BACKGROUND} imageStyle={{ height: 900 }}>
-          <CyDFlatList
-            className={'h-[60%] px-[20px]'}
-            data={JSON.parse(t('TRACK_WALLET_INFO'))}
-            renderItem={(item) => RenderTrackWalletInfo(item)}
-            showsVerticalScrollIndicator={true}
-          />
+      <CyDImageBackground
+        className='flex flex-col justify-end rounded-t-[45px]'
+        source={AppImages.DEBIT_CARD_BACKGROUND}
+        imageStyle={{ height: 900 }}>
+        <CyDFlatList
+          className={'h-[60%] px-[20px]'}
+          data={JSON.parse(t('TRACK_WALLET_INFO'))}
+          renderItem={item => RenderTrackWalletInfo(item)}
+          showsVerticalScrollIndicator={true}
+        />
       </CyDImageBackground>
     </CyDView>
   );

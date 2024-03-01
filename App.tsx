@@ -2,6 +2,7 @@
 /* eslint-disable @typescript-eslint/no-var-requires */
 /* eslint-disable react-native/no-inline-styles */
 import * as React from 'react';
+import '@walletconnect/react-native-compat';
 import 'fast-text-encoding';
 import { useEffect, useReducer, useState } from 'react';
 import Toast from 'react-native-toast-message';
@@ -98,7 +99,6 @@ import {
 } from './src/containers/utilities/walletConnectUtilities';
 import SplashScreen from 'react-native-lottie-splash-screen';
 import DeviceInfo, { getVersion } from 'react-native-device-info';
-import WalletConnect from '@walletconnect/client';
 import WalletConnectModal from './src/components/WalletConnectModal';
 import { GlobalModal } from './src/components/v2/GlobalModal';
 import OnBoardingStack from './src/routes/onBoarding';
@@ -128,6 +128,7 @@ import { ethToEvmos } from '@tharsis/address-converter';
 import { WalletConnectV2Provider } from './src/components/walletConnectV2Provider';
 import DefaultAuthRemoveModal from './src/components/v2/defaultAuthRemoveModal';
 import { Config } from 'react-native-config';
+import NoopTransport from '@sentry/react-native';
 
 const { DynamicView, CText, DynamicImage } = require('./src/styles');
 
@@ -244,9 +245,7 @@ async function registerIntercomUser(walletAddresses: {
   ) {
     Intercom.registerIdentifiedUser({
       userId: walletAddresses.ethereumAddress,
-    }).catch(error => {
-      Sentry.captureException(error);
-    });
+    }).catch(error => {});
     Intercom.updateUser({
       userId: walletAddresses.ethereumAddress,
       customAttributes: {
@@ -696,26 +695,7 @@ function App() {
         const { connectors, dAppInfo } = data.data;
         if (connectors && dAppInfo) {
           const connectorList = connectors.map((connectionObject: any) => {
-            let connector: any;
-            if (
-              !(
-                has(connectionObject, 'version') &&
-                connectionObject.version === 'v2'
-              )
-            ) {
-              connector = new WalletConnect({ session: connectionObject });
-              void subscribeToEvents(
-                connector,
-                setWalletConnectModalVisible,
-                setRequest,
-                walletConnectDispatch,
-                state,
-                { state: modalState, dispatch: modalDispatch },
-              );
-            } else {
-              connector = connectionObject;
-            }
-            return connector;
+            return connectionObject;
           });
           walletConnectDispatch({
             type: WalletConnectActions.RESTORE_SESSION,

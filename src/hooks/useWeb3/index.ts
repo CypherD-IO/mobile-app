@@ -13,7 +13,7 @@ import BigNumber from 'bignumber.js';
 import Long from 'long';
 import { useContext, useEffect, useRef } from 'react';
 import Web3 from 'web3';
-import { Web3Origin } from '../../constants/enum';
+import { ConnectionTypes, Web3Origin } from '../../constants/enum';
 import { ALL_CHAINS, Chain, CHAIN_ETH } from '../../constants/server';
 import {
   CosmosWeb3Method,
@@ -52,6 +52,9 @@ import {
   JSONUint8Array,
   parseCosmosMessage,
 } from './util';
+import { useGlobalModalContext } from '../../components/v2/GlobalModal';
+import { useTranslation } from 'react-i18next';
+import { getConnectionType } from '../../core/asyncStorage';
 
 const bigNumberToHex = (val: string) =>
   `0x${new BigNumber(val, 10).toString(16)}`;
@@ -93,6 +96,8 @@ export default function useWeb3(origin: Web3Origin) {
   const hdWalletContext = useContext<any>(HdWalletContext);
   const globalContext = useContext<any>(GlobalContext);
   const modalContext = useContext<any>(ModalContext);
+  const { showModal, hideModal } = useGlobalModalContext();
+  const { t } = useTranslation();
 
   const web3Callback = useWeb3Callbacks(origin);
 
@@ -427,486 +432,502 @@ export default function useWeb3(origin: Web3Origin) {
     websiteInfo: WebsiteInfo,
     chain: Chain | undefined,
   ) {
-    const {
-      wallet: {
-        ethereum: { address, privateKey },
-      },
-      selectedChain: sChain,
-    } = hdWalletContext.state;
+    const connectionType = await getConnectionType();
+    if (connectionType === ConnectionTypes.WALLET_CONNECT) {
+      showModal('state', {
+        type: 'error',
+        title: t('UNABLE_TO_CONNECT'),
+        description: t('BROWSER_WALLET_CONNECT_ERROR'),
+        onSuccess: hideModal,
+        onFailure: hideModal,
+      });
+    } else {
+      const {
+        wallet: {
+          ethereum: { address, privateKey },
+        },
+        selectedChain: sChain,
+      } = hdWalletContext.state;
 
-    const { params, method, id: payloadId } = payload;
+      const { params, method, id: payloadId } = payload;
 
-    const selectedChain = chain ?? sChain;
-    web3RPCEndpoint.current = new Web3(
-      getWeb3Endpoint(selectedChain, globalContext),
-    );
-    switch (method) {
-      case 'eth_cypherd_state': {
-        const stateAaccounts = [address];
-        const stateChainId = await web3RPCEndpoint.current.eth.getChainId();
-        return {
-          result: {
-            accounts: stateAaccounts,
-            chainId: NumberToHex(stateChainId),
-            networkVersion: stateChainId,
-          },
-        };
-        break;
-      }
-      case Web3Method.SEND_TRANSACTION: {
-        let [{ from, to, gasPrice, data, value, gas }] = params;
-        const gasPriceFinal = gasPrice;
-        value = value ?? '0x0';
+      const selectedChain = chain ?? sChain;
+      web3RPCEndpoint.current = new Web3(
+        getWeb3Endpoint(selectedChain, globalContext),
+      );
+      switch (method) {
+        case 'eth_cypherd_state': {
+          const stateAaccounts = [address];
+          const stateChainId = await web3RPCEndpoint.current.eth.getChainId();
+          return {
+            result: {
+              accounts: stateAaccounts,
+              chainId: NumberToHex(stateChainId),
+              networkVersion: stateChainId,
+            },
+          };
+          break;
+        }
+        case Web3Method.SEND_TRANSACTION: {
+          let [{ from, to, gasPrice, data, value, gas }] = params;
+          const gasPriceFinal = gasPrice;
+          value = value ?? '0x0';
 
-        const callbackData: any = {};
+          const callbackData: any = {};
 
-        const gasPriceDetail: GasPriceDetail = await getGasPriceFor(
-          selectedChain,
-          web3RPCEndpoint.current,
-        );
-        if (gasPriceFinal) {
-          if (gasPriceFinal.startsWith('0x')) {
-            gasPriceDetail.gasPrice = parseFloat(
-              Web3.utils.fromWei(
-                Web3.utils.hexToNumberString(gasPriceFinal),
-                'Gwei',
-              ),
-            );
+          const gasPriceDetail: GasPriceDetail = await getGasPriceFor(
+            selectedChain,
+            web3RPCEndpoint.current,
+          );
+          if (gasPriceFinal) {
+            if (gasPriceFinal.startsWith('0x')) {
+              gasPriceDetail.gasPrice = parseFloat(
+                Web3.utils.fromWei(
+                  Web3.utils.hexToNumberString(gasPriceFinal),
+                  'Gwei',
+                ),
+              );
+            } else {
+              // Finally this code path has a breaking test-case with KOGE when gasPrice is an integer
+              gasPriceDetail.gasPrice = parseFloat(
+                Web3.utils.fromWei(gasPriceFinal, 'Gwei'),
+              );
+            }
           } else {
-            // Finally this code path has a breaking test-case with KOGE when gasPrice is an integer
             gasPriceDetail.gasPrice = parseFloat(
-              Web3.utils.fromWei(gasPriceFinal, 'Gwei'),
+              gasPriceDetail.gasPrice.toString(),
             );
           }
-        } else {
-          gasPriceDetail.gasPrice = parseFloat(
-            gasPriceDetail.gasPrice.toString(),
+
+          const gasPriceInHex = Web3.utils.toHex(
+            Web3.utils.toWei(gasPriceDetail.gasPrice.toFixed(9), 'Gwei'),
           );
-        }
 
-        const gasPriceInHex = Web3.utils.toHex(
-          Web3.utils.toWei(gasPriceDetail.gasPrice.toFixed(9), 'Gwei'),
-        );
+          try {
+            const estimated = await web3RPCEndpoint.current.eth.estimateGas({
+              to,
+              data,
+              value,
+              from: address,
+            });
+            gas = gas ?? estimated;
+          } catch (e) {
+            const estimatedGasException = {
+              e,
+              params,
+              message:
+                'estimateGas inside eth_sendTransaction failed. Using given gas.',
+            };
+            Sentry.captureException(estimatedGasException);
+          }
 
-        try {
-          const estimated = await web3RPCEndpoint.current.eth.estimateGas({
+          from = from ?? address;
+
+          const modalParams = await getPayloadParams(
+            payload,
+            gasPriceDetail,
+            selectedChain,
+            gas,
+          );
+
+          const acknowledgement =
+            origin !== Web3Origin.WALLETCONNECT
+              ? await SendTransactionModalFunc(modalContext, modalParams)
+              : true;
+          if (!acknowledgement) {
+            return userRejectedRequest();
+          }
+
+          const activityData = {
+            id: genId(),
+            status: ActivityStatus.SUCCESS,
+            type: ActivityType.BROWSER,
+            transactionHash: '',
+            fromAddress: address,
+            toAddress: to,
+            websiteInfo,
+            chainName: hdWalletContext.state.selectedChain.name,
+            symbol: modalParams.networkCurrency,
+            datetime: new Date(),
+            amount: modalParams.totalETH,
+          };
+
+          const txPayload = {
+            from,
             to,
+            gasPrice: gasPriceInHex,
             data,
             value,
-            from: address,
-          });
-          gas = gas ?? estimated;
-        } catch (e) {
-          const estimatedGasException = {
-            e,
-            params,
-            message:
-              'estimateGas inside eth_sendTransaction failed. Using given gas.',
+            gas,
           };
-          Sentry.captureException(estimatedGasException);
+
+          const signedTx =
+            await web3RPCEndpoint.current.eth.accounts.signTransaction(
+              txPayload,
+              privateKey,
+            );
+
+          let receipt;
+
+          if (signedTx.rawTransaction && signedTx.transactionHash) {
+            activityData.transactionHash = signedTx.transactionHash;
+            try {
+              receipt = await web3RPCEndpoint.current.eth.sendSignedTransaction(
+                signedTx.rawTransaction,
+              );
+            } catch (e: any) {
+              Sentry.captureException(e);
+              activityData.status = ActivityStatus.FAILED;
+              return internalError(e);
+            }
+          }
+
+          callbackData.activityData = activityData;
+          callbackData.receipt = receipt;
+
+          if (signedTx.rawTransaction && receipt) {
+            return {
+              result: receipt.transactionHash,
+              callbackData,
+            };
+          }
+          return invalidParams();
+          break;
         }
-
-        from = from ?? address;
-
-        const modalParams = await getPayloadParams(
-          payload,
-          gasPriceDetail,
-          selectedChain,
-          gas,
-        );
-
-        const acknowledgement =
-          origin !== Web3Origin.WALLETCONNECT
-            ? await SendTransactionModalFunc(modalContext, modalParams)
-            : true;
-        if (!acknowledgement) {
-          return userRejectedRequest();
+        case Web3Method.ACCOUNTS:
+        case Web3Method.REQUEST_ACCOUNTS: {
+          return {
+            result: [address],
+          };
+          break;
         }
+        case Web3Method.GET_BALANCE: {
+          const addressToFetch = params ? params[0] ?? address : address;
+          const balanceInHex = bigNumberToHex(
+            await web3RPCEndpoint.current.eth.getBalance(addressToFetch),
+          );
+          return {
+            result: balanceInHex,
+          };
+          break;
+        }
+        case Web3Method.BLOCK_NUMBER: {
+          const blockNumber =
+            await web3RPCEndpoint.current.eth.getBlockNumber();
+          return {
+            result: blockNumber,
+          };
+          break;
+        }
+        case Web3Method.BLOCK_BY_NUMBER:
+        case Web3Method.BLOCK_BY_HASH: {
+          const [blockNumber, returnTransactionObject] = params;
 
-        const activityData = {
-          id: genId(),
-          status: ActivityStatus.SUCCESS,
-          type: ActivityType.BROWSER,
-          transactionHash: '',
-          fromAddress: address,
-          toAddress: to,
-          websiteInfo,
-          chainName: hdWalletContext.state.selectedChain.name,
-          symbol: modalParams.networkCurrency,
-          datetime: new Date(),
-          amount: modalParams.totalETH,
-        };
+          if (!blockNumber || !returnTransactionObject === undefined) {
+            return invalidParams();
+          }
+          const blockByNumber = await web3RPCEndpoint.current.eth.getBlock(
+            blockNumber,
+            returnTransactionObject,
+          );
 
-        const txPayload = {
-          from,
-          to,
-          gasPrice: gasPriceInHex,
-          data,
-          value,
-          gas,
-        };
+          return {
+            result: blockByNumber,
+          };
+          break;
+        }
+        case Web3Method.GAS_PRICE: {
+          const gasPrice = await web3RPCEndpoint.current.eth.getGasPrice();
 
-        const signedTx =
-          await web3RPCEndpoint.current.eth.accounts.signTransaction(
-            txPayload,
+          return {
+            result: gasPrice,
+          };
+          break;
+        }
+        case Web3Method.CHAINID:
+        case Web3Method.CHAIN_ID: {
+          const chainId = await web3RPCEndpoint.current.eth.getChainId();
+          return {
+            result: NumberToHex(chainId),
+          };
+          break;
+        }
+        case Web3Method.NET_VERSION: {
+          const chainId = await web3RPCEndpoint.current.eth.getChainId();
+          return {
+            result: chainId,
+          };
+          break;
+        }
+        case Web3Method.GET_LOGS: {
+          const [options] = params;
+          if (!options) {
+            return invalidParams();
+          }
+          const logs = await web3RPCEndpoint.current.eth.getPastLogs(options);
+
+          return {
+            result: logs,
+          };
+          break;
+        }
+        case Web3Method.ETH_CALL: {
+          const [transactionConfig] = params;
+          if (!transactionConfig) {
+            return invalidParams();
+          }
+
+          const callResult =
+            await web3RPCEndpoint.current.eth.call(transactionConfig);
+
+          return {
+            result: callResult,
+          };
+          break;
+        }
+        case Web3Method.GET_TRANSACTION_BY_HASH: {
+          const [transactionHash] = params;
+          if (!transactionHash) {
+            return invalidParams();
+          }
+          const rawTx =
+            await web3RPCEndpoint.current.eth.getTransaction(transactionHash);
+
+          return {
+            result: rawTx,
+          };
+          break;
+        }
+        case Web3Method.GET_TRANSACTION_RECEIPT: {
+          const [hash] = params;
+          if (!hash) {
+            return invalidParams();
+          }
+          const rawTx =
+            await web3RPCEndpoint.current.eth.getTransactionReceipt(hash);
+
+          if (rawTx) {
+            return {
+              result: { ...rawTx, status: rawTx.status ? '0x1' : '0x0' },
+            };
+          }
+          return rawTx;
+          break;
+        }
+        case Web3Method.GET_TRANSACTION_COUNT: {
+          const [addressToFetch] = params;
+          if (!addressToFetch) {
+            return invalidParams();
+          }
+          const txnCount =
+            await web3RPCEndpoint.current.eth.getTransactionCount(
+              addressToFetch,
+            );
+
+          return {
+            result: txnCount,
+          };
+          break;
+        }
+        case Web3Method.PERSONAL_SIGN:
+        case Web3Method.ETH_SIGN: {
+          const [personalSignData, ethSignData] = params;
+          if (!(personalSignData || ethSignData)) {
+            return invalidParams();
+          }
+          let messageToSign =
+            method === Web3Method.PERSONAL_SIGN
+              ? personalSignData
+              : method === Web3Method.ETH_SIGN
+                ? ethSignData
+                : personalSignData;
+
+          try {
+            messageToSign = Web3.utils.hexToUtf8(messageToSign);
+          } catch (e) {
+            Sentry.captureMessage(
+              'Nothing to bother. Just a mandatory catch block',
+            );
+          }
+
+          let acknowledgement;
+          try {
+            acknowledgement =
+              origin !== Web3Origin.WALLETCONNECT
+                ? await SignTransactionModalFunc(modalContext, {
+                    signMessage: messageToSign,
+                    chainIdNumber: Number(
+                      messageToSign.match(/Chain ID: (\d+)/)[1],
+                    ),
+                    payload,
+                    signMessageTitle: 'Message',
+                  })
+                : true;
+          } catch (e) {
+            acknowledgement = false;
+          }
+
+          if (!acknowledgement) {
+            return userRejectedRequest();
+          }
+
+          const signature = web3RPCEndpoint.current.eth.accounts.sign(
+            messageToSign,
             privateKey,
           );
 
-        let receipt;
-
-        if (signedTx.rawTransaction && signedTx.transactionHash) {
-          activityData.transactionHash = signedTx.transactionHash;
-          try {
-            receipt = await web3RPCEndpoint.current.eth.sendSignedTransaction(
-              signedTx.rawTransaction,
-            );
-          } catch (e: any) {
-            Sentry.captureException(e);
-            activityData.status = ActivityStatus.FAILED;
-            return internalError(e);
+          return {
+            result: signature.signature,
+          };
+          break;
+        }
+        case Web3Method.ESTIMATE_GAS: {
+          const [transactionConfig] = params;
+          if (!transactionConfig) {
+            return invalidParams();
           }
-        }
+          const gas =
+            await web3RPCEndpoint.current.eth.estimateGas(transactionConfig);
 
-        callbackData.activityData = activityData;
-        callbackData.receipt = receipt;
-
-        if (signedTx.rawTransaction && receipt) {
           return {
-            result: receipt.transactionHash,
-            callbackData,
+            result: gas,
           };
+          break;
         }
-        return invalidParams();
-        break;
-      }
-      case Web3Method.ACCOUNTS:
-      case Web3Method.REQUEST_ACCOUNTS: {
-        return {
-          result: [address],
-        };
-        break;
-      }
-      case Web3Method.GET_BALANCE: {
-        const addressToFetch = params ? params[0] ?? address : address;
-        const balanceInHex = bigNumberToHex(
-          await web3RPCEndpoint.current.eth.getBalance(addressToFetch),
-        );
-        return {
-          result: balanceInHex,
-        };
-        break;
-      }
-      case Web3Method.BLOCK_NUMBER: {
-        const blockNumber = await web3RPCEndpoint.current.eth.getBlockNumber();
-        return {
-          result: blockNumber,
-        };
-        break;
-      }
-      case Web3Method.BLOCK_BY_NUMBER:
-      case Web3Method.BLOCK_BY_HASH: {
-        const [blockNumber, returnTransactionObject] = params;
-
-        if (!blockNumber || !returnTransactionObject === undefined) {
-          return invalidParams();
-        }
-        const blockByNumber = await web3RPCEndpoint.current.eth.getBlock(
-          blockNumber,
-          returnTransactionObject,
-        );
-
-        return {
-          result: blockByNumber,
-        };
-        break;
-      }
-      case Web3Method.GAS_PRICE: {
-        const gasPrice = await web3RPCEndpoint.current.eth.getGasPrice();
-
-        return {
-          result: gasPrice,
-        };
-        break;
-      }
-      case Web3Method.CHAINID:
-      case Web3Method.CHAIN_ID: {
-        const chainId = await web3RPCEndpoint.current.eth.getChainId();
-        return {
-          result: NumberToHex(chainId),
-        };
-        break;
-      }
-      case Web3Method.NET_VERSION: {
-        const chainId = await web3RPCEndpoint.current.eth.getChainId();
-        return {
-          result: chainId,
-        };
-        break;
-      }
-      case Web3Method.GET_LOGS: {
-        const [options] = params;
-        if (!options) {
-          return invalidParams();
-        }
-        const logs = await web3RPCEndpoint.current.eth.getPastLogs(options);
-
-        return {
-          result: logs,
-        };
-        break;
-      }
-      case Web3Method.ETH_CALL: {
-        const [transactionConfig] = params;
-        if (!transactionConfig) {
-          return invalidParams();
-        }
-
-        const callResult =
-          await web3RPCEndpoint.current.eth.call(transactionConfig);
-
-        return {
-          result: callResult,
-        };
-        break;
-      }
-      case Web3Method.GET_TRANSACTION_BY_HASH: {
-        const [transactionHash] = params;
-        if (!transactionHash) {
-          return invalidParams();
-        }
-        const rawTx =
-          await web3RPCEndpoint.current.eth.getTransaction(transactionHash);
-
-        return {
-          result: rawTx,
-        };
-        break;
-      }
-      case Web3Method.GET_TRANSACTION_RECEIPT: {
-        const [hash] = params;
-        if (!hash) {
-          return invalidParams();
-        }
-        const rawTx =
-          await web3RPCEndpoint.current.eth.getTransactionReceipt(hash);
-
-        if (rawTx) {
-          return {
-            result: { ...rawTx, status: rawTx.status ? '0x1' : '0x0' },
-          };
-        }
-        return rawTx;
-        break;
-      }
-      case Web3Method.GET_TRANSACTION_COUNT: {
-        const [addressToFetch] = params;
-        if (!addressToFetch) {
-          return invalidParams();
-        }
-        const txnCount =
-          await web3RPCEndpoint.current.eth.getTransactionCount(addressToFetch);
-
-        return {
-          result: txnCount,
-        };
-        break;
-      }
-      case Web3Method.PERSONAL_SIGN:
-      case Web3Method.ETH_SIGN: {
-        const [personalSignData, ethSignData] = params;
-        if (!(personalSignData || ethSignData)) {
-          return invalidParams();
-        }
-        let messageToSign =
-          method === Web3Method.PERSONAL_SIGN
-            ? personalSignData
-            : method === Web3Method.ETH_SIGN
-            ? ethSignData
-            : personalSignData;
-
-        try {
-          messageToSign = Web3.utils.hexToUtf8(messageToSign);
-        } catch (e) {
-          Sentry.captureMessage(
-            'Nothing to bother. Just a mandatory catch block',
+        case Web3Method.FEE_HISTORY: {
+          const [blockCount, lastBlock, rewardPercentile] = params;
+          if (!blockCount || !lastBlock || !rewardPercentile) {
+            return invalidParams();
+          }
+          const feeHistory = await web3RPCEndpoint.current.eth.getFeeHistory(
+            blockCount,
+            lastBlock,
+            rewardPercentile,
           );
-        }
 
-        let acknowledgement;
-        try {
-          acknowledgement =
-            origin !== Web3Origin.WALLETCONNECT
-              ? await SignTransactionModalFunc(modalContext, {
-                  signMessage: messageToSign,
-                  chainIdNumber: Number(
-                    messageToSign.match(/Chain ID: (\d+)/)[1],
-                  ),
-                  payload,
-                  signMessageTitle: 'Message',
-                })
-              : true;
-        } catch (e) {
-          acknowledgement = false;
-        }
-
-        if (!acknowledgement) {
-          return userRejectedRequest();
-        }
-
-        const signature = web3RPCEndpoint.current.eth.accounts.sign(
-          messageToSign,
-          privateKey,
-        );
-
-        return {
-          result: signature.signature,
-        };
-        break;
-      }
-      case Web3Method.ESTIMATE_GAS: {
-        const [transactionConfig] = params;
-        if (!transactionConfig) {
-          return invalidParams();
-        }
-        const gas =
-          await web3RPCEndpoint.current.eth.estimateGas(transactionConfig);
-
-        return {
-          result: gas,
-        };
-        break;
-      }
-      case Web3Method.FEE_HISTORY: {
-        const [blockCount, lastBlock, rewardPercentile] = params;
-        if (!blockCount || !lastBlock || !rewardPercentile) {
-          return invalidParams();
-        }
-        const feeHistory = await web3RPCEndpoint.current.eth.getFeeHistory(
-          blockCount,
-          lastBlock,
-          rewardPercentile,
-        );
-
-        return {
-          result: feeHistory,
-        };
-        break;
-      }
-      case Web3Method.SIGN_TYPED_DATA:
-      case Web3Method.SIGN_TYPED_DATA_V3:
-      case Web3Method.SIGN_TYPED_DATA_V4: {
-        const privateKeyBuffer = Buffer.from(privateKey.substring(2), 'hex');
-
-        const [arg1, arg2] = params;
-        if (!arg1 || !arg2) {
-          return invalidParams();
-        }
-        const eip712Data = Array.isArray(arg1) ? arg1 : JSON.parse(arg2);
-
-        const typedDataVersion = Array.isArray(arg1)
-          ? SignTypedDataVersion.V1
-          : Web3Method.SIGN_TYPED_DATA_V4 === method
-          ? SignTypedDataVersion.V4
-          : SignTypedDataVersion.V3;
-
-        const acknowledgement = await SignTransactionModalFunc(modalContext, {
-          signMessage: JSON.stringify(eip712Data, undefined, 4),
-          payload,
-          signMessageTitle: 'SignTypedData ' + typedDataVersion.toString(),
-        });
-
-        if (!acknowledgement) {
-          return userRejectedRequest();
-        }
-
-        const signature = signTypedData({
-          privateKey: privateKeyBuffer,
-          data: eip712Data,
-          version: typedDataVersion,
-        });
-
-        return {
-          result: signature,
-        };
-        break;
-      }
-      case Web3Method.ADD_ETHEREUM_CHAIN:
-      case Web3Method.SWITCH_ETHEREUM_CHAIN: {
-        let [{ chainId: ethereumChainId }] = params;
-        const supportedChain = ALL_CHAINS.find(
-          chain => chain.chain_id === ethereumChainId,
-        );
-        ethereumChainId = supportedChain ? ethereumChainId : CHAIN_ETH.chain_id;
-        if (supportedChain) {
-          updateSelectedChain(supportedChain);
           return {
-            result: null,
+            result: feeHistory,
           };
+          break;
         }
-        break;
-      }
-      case Web3Method.WALLET_PUSH_PERRMISSION: {
-        // eslint-disable-next-line @typescript-eslint/naming-convention
-        const [{ app_id, app_name, appImage, reasonMessage }] = params;
-        const PORTFOLIO_HOST: string = hostWorker.getHost('PORTFOLIO_HOST');
-        const pushPermissionURL = `${PORTFOLIO_HOST}/v1/push/permissions`;
-        const Urlparams = new URLSearchParams({
-          wallet_address: address,
-          app_id,
-        });
+        case Web3Method.SIGN_TYPED_DATA:
+        case Web3Method.SIGN_TYPED_DATA_V3:
+        case Web3Method.SIGN_TYPED_DATA_V4: {
+          const privateKeyBuffer = Buffer.from(privateKey.substring(2), 'hex');
 
-        const { permission } = (
-          await axios.get(pushPermissionURL, {
-            params: Urlparams,
-            timeout: 1000,
-          })
-        ).data;
-        if (
-          [WALLET_PERMISSIONS.NO_DATA, WALLET_PERMISSIONS.DENY].includes(
-            permission,
-          )
-        ) {
-          const modalParams = {
-            app_name,
-            appImage,
-            reasonMessage,
-            app_id,
-            wallet_address: address,
-            payload_id: payloadId,
-          };
-          const acknowledgement = await PushModalFunc(
-            modalContext,
-            modalParams,
-          );
+          const [arg1, arg2] = params;
+          if (!arg1 || !arg2) {
+            return invalidParams();
+          }
+          const eip712Data = Array.isArray(arg1) ? arg1 : JSON.parse(arg2);
+
+          const typedDataVersion = Array.isArray(arg1)
+            ? SignTypedDataVersion.V1
+            : Web3Method.SIGN_TYPED_DATA_V4 === method
+              ? SignTypedDataVersion.V4
+              : SignTypedDataVersion.V3;
+
+          const acknowledgement = await SignTransactionModalFunc(modalContext, {
+            signMessage: JSON.stringify(eip712Data, undefined, 4),
+            payload,
+            signMessageTitle: 'SignTypedData ' + typedDataVersion.toString(),
+          });
+
           if (!acknowledgement) {
+            return userRejectedRequest();
+          }
+
+          const signature = signTypedData({
+            privateKey: privateKeyBuffer,
+            data: eip712Data,
+            version: typedDataVersion,
+          });
+
+          return {
+            result: signature,
+          };
+          break;
+        }
+        case Web3Method.ADD_ETHEREUM_CHAIN:
+        case Web3Method.SWITCH_ETHEREUM_CHAIN: {
+          let [{ chainId: ethereumChainId }] = params;
+          const supportedChain = ALL_CHAINS.find(
+            chain => chain.chain_id === ethereumChainId,
+          );
+          ethereumChainId = supportedChain
+            ? ethereumChainId
+            : CHAIN_ETH.chain_id;
+          if (supportedChain) {
+            updateSelectedChain(supportedChain);
             return {
-              result: WALLET_PERMISSIONS.DENY,
+              result: null,
             };
           }
+          break;
         }
+        case Web3Method.WALLET_PUSH_PERRMISSION: {
+          // eslint-disable-next-line @typescript-eslint/naming-convention
+          const [{ app_id, app_name, appImage, reasonMessage }] = params;
+          const PORTFOLIO_HOST: string = hostWorker.getHost('PORTFOLIO_HOST');
+          const pushPermissionURL = `${PORTFOLIO_HOST}/v1/push/permissions`;
+          const Urlparams = new URLSearchParams({
+            wallet_address: address,
+            app_id,
+          });
 
-        return {
-          result: WALLET_PERMISSIONS.ALLOW,
-        };
-        break;
-      }
-      case Web3Method.PERSONAL_ECRECOVER: {
-        const [msg, signature] = params;
-        const recoverAddress = web3RPCEndpoint.current.eth.accounts.recover(
-          msg,
-          signature,
-        );
-        return {
-          result: recoverAddress,
-        };
-      }
-      default: {
-        logAnalytics(AnalyticEvent.WEB3_METHOD_NOTFOUND, {
-          origin,
-          ...payload,
-          websiteInfo,
-        });
-        return methodNotSupported();
+          const { permission } = (
+            await axios.get(pushPermissionURL, {
+              params: Urlparams,
+              timeout: 1000,
+            })
+          ).data;
+          if (
+            [WALLET_PERMISSIONS.NO_DATA, WALLET_PERMISSIONS.DENY].includes(
+              permission,
+            )
+          ) {
+            const modalParams = {
+              app_name,
+              appImage,
+              reasonMessage,
+              app_id,
+              wallet_address: address,
+              payload_id: payloadId,
+            };
+            const acknowledgement = await PushModalFunc(
+              modalContext,
+              modalParams,
+            );
+            if (!acknowledgement) {
+              return {
+                result: WALLET_PERMISSIONS.DENY,
+              };
+            }
+          }
+
+          return {
+            result: WALLET_PERMISSIONS.ALLOW,
+          };
+          break;
+        }
+        case Web3Method.PERSONAL_ECRECOVER: {
+          const [msg, signature] = params;
+          const recoverAddress = web3RPCEndpoint.current.eth.accounts.recover(
+            msg,
+            signature,
+          );
+          return {
+            result: recoverAddress,
+          };
+        }
+        default: {
+          logAnalytics(AnalyticEvent.WEB3_METHOD_NOTFOUND, {
+            origin,
+            ...payload,
+            websiteInfo,
+          });
+          return methodNotSupported();
+        }
       }
     }
   }

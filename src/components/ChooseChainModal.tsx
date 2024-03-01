@@ -2,85 +2,126 @@ import React, { useContext } from 'react';
 import { FlatList, StyleSheet } from 'react-native';
 import { useTranslation } from 'react-i18next';
 import AppImages from '../../assets/images/appImages';
-import { HdWalletContext, PortfolioContext } from '../core/util';
-import { ALL_CHAINS, ALL_CHAINS_WITH_COLLECTION, CHAIN_COLLECTION, CHAIN_EVMOS, EVM_CHAINS } from '../constants/server';
+import {
+  HdWalletContext,
+  PortfolioContext,
+  getAvailableChains,
+} from '../core/util';
+import { ALL_CHAINS, Chain } from '../constants/server';
 import { Colors } from '../constants/theme';
-import { DynamicTouchView } from '../styles/viewStyle';
-import { CyDImage, CyDText, CyDTouchView, CyDView } from '../styles/tailwindStyles';
+import {
+  CyDImage,
+  CyDText,
+  CyDTouchView,
+  CyDView,
+} from '../styles/tailwindStyles';
 import CyDModalLayout from './v2/modal';
-const {
-  DynamicView,
-  DynamicImage
-} = require('../styles');
+import clsx from 'clsx';
 
 export const WHERE_BROWSER = 'BROWSER';
 export const WHERE_PORTFOLIO = 'PORTFOLIO';
 
-export function ChooseChainModal(props) {
+export function ChooseChainModal(props: {
+  isModalVisible: boolean;
+  onPress: () => void;
+  where: string;
+}) {
   const { isModalVisible, onPress, where } = props;
   const { t } = useTranslation();
   const hdWallet = useContext(HdWalletContext);
   const portfolioState = useContext<any>(PortfolioContext);
 
-  const isReadOnlyWallet = hdWallet?.state.isReadOnlyWallet;
-  const EVM_CHAINS_WITH_COLLECTION = [CHAIN_COLLECTION, ...EVM_CHAINS, CHAIN_EVMOS];
+  const onChainSelection = (chain: Chain) => {
+    if (where === WHERE_BROWSER) {
+      hdWallet?.dispatch({
+        type: 'CHOOSE_CHAIN',
+        value: { selectedChain: chain },
+      });
+    } else {
+      portfolioState.dispatchPortfolio({
+        value: { selectedChain: chain },
+      });
+    }
+    onPress();
+  };
 
-  const renderItem = (item) => {
+  const renderItem = ({ item }: { item: Chain }) => {
+    const { logo_url: logoUrl, name, symbol } = item;
+    const selectedChainId =
+      where === WHERE_BROWSER
+        ? hdWallet?.state.selectedChain.id
+        : portfolioState.statePortfolio.selectedChain.id;
+    const isSelected = item.id === selectedChainId;
     return (
-      <>
-        {where === WHERE_BROWSER
-          ? (
-            <DynamicTouchView sentry-label='browser-chain-choose-selection' dynamic dynamicWidth width={100} fD='row' mT={2} bR={15} pH={8} pV={8}
-              bGC={item.item.id == hdWallet.state.selectedChain.id ? 'rgba(88, 173, 171, 0.09)' : Colors.whiteColor}
-              onPress={() => {
-                hdWallet.dispatch({ type: 'CHOOSE_CHAIN', value: { selectedChain: item.item } });
-                onPress();
-              }} jC={'flex-start'}>
-              <DynamicImage dynamic source={item.item.logo_url} width={25} height={25} />
-              <DynamicView dynamic dynamicWidth width={70} aLIT={'flex-start'}>
-                <CyDText className='ml-[8px] font-bold text-[16px] text-secondaryTextColor'>{item.item.name}</CyDText>
-                <CyDText className='ml-[8px] font-bold text-[12px] text-subTextColor'>{item.item.symbol}</CyDText>
-              </DynamicView>
-              {item.item.id == hdWallet.state.selectedChain.id &&
-                <DynamicView dynamic dynamicWidth width={25} jC={'flex-end'}>
-                  <DynamicImage dynamic dynamicTintColor tC={Colors.toastColor} source={AppImages.CORRECT} width={15} height={10} />
-                </DynamicView>
-              }
-            </DynamicTouchView>
-          )
-          : (
-            <DynamicTouchView sentry-label='portfolio-chain-choose-selection' dynamic dynamicWidth width={100} fD='row' mT={2} bR={15} pH={8} pV={8}
-              bGC={item.item.id == portfolioState.statePortfolio.selectedChain.id ? 'rgba(88, 173, 171, 0.09)' : Colors.whiteColor}
-              onPress={() => {
-                portfolioState.dispatchPortfolio({ value: { selectedChain: item.item } });
-                onPress();
-              }} jC={'flex-start'}>
-              <DynamicImage dynamic source={item.item.logo_url} width={25} height={25} />
-              <DynamicView dynamic dynamicWidth width={70} aLIT={'flex-start'}>
-                <CyDText className='ml-[8px] font-bold text-[16px] text-secondaryTextColor'>{item.item.name}</CyDText>
-                <CyDText className='ml-[8px] font-bold text-[12px] text-subTextColor'>{item.item.symbol}</CyDText>
-              </DynamicView>
-              {item.item.id == portfolioState.statePortfolio.selectedChain.id &&
-                <DynamicView dynamic dynamicWidth width={25} jC={'flex-end'}>
-                  <DynamicImage dynamic dynamicTintColor tC={Colors.toastColor} source={AppImages.CORRECT} width={15} height={10} />
-                </DynamicView>
-              }
-            </DynamicTouchView>
+      <CyDTouchView
+        className={clsx('px-[12px] rounded-[8px]', {
+          'bg-selectedOption': isSelected,
+        })}
+        onPress={() => {
+          onChainSelection(item);
+        }}>
+        <CyDView className='flex flex-row justify-between items-center my-[8px]'>
+          <CyDView className='flex flex-row items-center'>
+            <CyDImage
+              source={logoUrl}
+              className='h-[28px] w-[28px]'
+              resizeMode='contain'
+            />
+            <CyDView>
+              <CyDText className='ml-[8px] font-bold text-[16px] text-secondaryTextColor'>
+                {name}
+              </CyDText>
+              <CyDText className='ml-[8px] mt-[2px] font-bold text-[12px] text-subTextColor'>
+                {symbol}
+              </CyDText>
+            </CyDView>
+          </CyDView>
+          {isSelected && (
+            <CyDImage
+              style={styles.imageTint}
+              source={AppImages.CORRECT}
+              className='h-[16px] w-[16px]'
+              resizeMode='contain'
+            />
           )}
-      </>
+        </CyDView>
+      </CyDTouchView>
     );
   };
 
   return (
-    <CyDModalLayout setModalVisible={() => { }} isModalVisible={isModalVisible} style={styles.modalLayout} animationIn={'slideInUp'} animationOut={'slideOutDown'}>
-      <CyDView className={'bg-white p-[25px] pb-[30px] rounded-t-[24px] relative'}>
-        <CyDTouchView onPress={() => { onPress(); }} className={'z-[50]'}>
-          <CyDImage source={AppImages.CLOSE} className={' w-[22px] h-[22px] z-[50] absolute right-[0px] '} />
+    <CyDModalLayout
+      setModalVisible={() => {}}
+      isModalVisible={isModalVisible}
+      style={styles.modalLayout}
+      animationIn={'slideInUp'}
+      animationOut={'slideOutDown'}>
+      <CyDView
+        className={
+          'bg-white pt-[12px] px-[12px] pb-[30px] rounded-t-[24px] relative'
+        }>
+        <CyDTouchView
+          onPress={() => {
+            onPress();
+          }}
+          className={'z-[50]'}>
+          <CyDImage
+            source={AppImages.CLOSE}
+            className={
+              ' w-[22px] h-[22px] z-[50] absolute right-[4px] top-[4px] '
+            }
+          />
         </CyDTouchView>
-        <CyDText className={' mt-[10px] font-bold text-[22px] text-center '}>{t('CHOOSE_CHAIN')}</CyDText>
+        <CyDText className={' mt-[10px] font-bold text-[22px] text-center '}>
+          {t('CHOOSE_CHAIN')}
+        </CyDText>
         <FlatList
-          data={where === WHERE_PORTFOLIO ? (isReadOnlyWallet ? EVM_CHAINS_WITH_COLLECTION : ALL_CHAINS_WITH_COLLECTION) : ALL_CHAINS}
-          renderItem={(item) => renderItem(item)}
+          data={
+            where === WHERE_PORTFOLIO
+              ? getAvailableChains(hdWallet)
+              : ALL_CHAINS
+          }
+          renderItem={item => renderItem(item)}
           style={styles.chainList}
           showsVerticalScrollIndicator={true}
         />
@@ -93,10 +134,13 @@ const styles = StyleSheet.create({
   modalLayout: {
     margin: 0,
     justifyContent: 'flex-end',
-    height: '50%'
+    height: '50%',
   },
   chainList: {
     height: '50%',
-    marginTop: '10%'
-  }
+    marginTop: '10%',
+  },
+  imageTint: {
+    tintColor: Colors.black,
+  },
 });

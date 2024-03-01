@@ -21,15 +21,18 @@ import clsx from 'clsx';
 import ChooseCountryModal from '../../components/v2/ChooseCountryModal';
 import { ICountry } from '../../models/cardApplication.model';
 import useAxios from '../../core/HttpRequest';
+import { useKeyboard } from '../../hooks/useKeyboard';
+import { Keyboard } from 'react-native';
 
 interface Props {
   navigation: any;
+  route: { params: { fromOptionsStack?: boolean } };
 }
 
-export default function SendInviteCode({ navigation }: Props) {
+export default function SendInviteCode({ route, navigation }: Props) {
   const { showModal, hideModal } = useGlobalModalContext();
+  const { fromOptionsStack } = route.params;
   const { t } = useTranslation();
-
   const [joiningWaitlist, setJoiningWaitlist] = useState<boolean>(false);
   const [userEmail, setUserEmail] = useState<string>('');
   const [name, setName] = useState<string>('');
@@ -38,15 +41,7 @@ export default function SendInviteCode({ navigation }: Props) {
     ICountry | undefined
   >();
   const { postWithAuth } = useAxios();
-
-  useEffect(() => {
-    return () => {
-      navigation.reset({
-        index: 0,
-        routes: [{ name: C.screenTitle.DEBIT_CARD_SCREEN }],
-      });
-    };
-  }, []);
+  const { keyboardHeight } = useKeyboard();
 
   async function joinWaitlist() {
     if (
@@ -73,7 +68,12 @@ export default function SendInviteCode({ navigation }: Props) {
             showModal('state', {
               type: 'success',
               title: t('INVITE_SENT_SUCCESSFULLY'),
-              description: t('INVITE_SENT_DESCRIPTION') + ' ' + userEmail,
+              description:
+                t('INVITE_SENT_DESCRIPTION') +
+                ' ' +
+                userEmail +
+                '. ' +
+                t('INVITE_REFERRAL_PROGRESS_UPDATE'),
               onSuccess: () => {
                 setUserEmail('');
                 setName('');
@@ -122,6 +122,30 @@ export default function SendInviteCode({ navigation }: Props) {
       });
     }
   }
+  const resetNavigation = () => {
+    if (!fromOptionsStack) {
+      navigation.reset({
+        index: 0,
+        routes: [{ name: C.screenTitle.DEBIT_CARD_SCREEN }],
+      });
+    } else {
+      navigation.reset({
+        index: 0,
+        routes: [{ name: C.screenTitle.OPTIONS_SCREEN }],
+      });
+    }
+  };
+
+  const handleBack = () => {
+    if (keyboardHeight) {
+      Keyboard.dismiss();
+      setTimeout(() => {
+        resetNavigation();
+      }, 100);
+    } else {
+      resetNavigation();
+    }
+  };
 
   return (
     <CyDImageBackground
@@ -135,10 +159,7 @@ export default function SendInviteCode({ navigation }: Props) {
           <CyDView className='flex-row justify-center items-center w-[100%] px-[10px]'>
             <CyDTouchView
               onPress={() => {
-                navigation.reset({
-                  index: 0,
-                  routes: [{ name: C.screenTitle.DEBIT_CARD_SCREEN }],
-                });
+                handleBack();
               }}>
               <CyDImage
                 source={AppImages.BACK}

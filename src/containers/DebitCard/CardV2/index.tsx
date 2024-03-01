@@ -88,6 +88,12 @@ const CypherCardScreen = ({ navigation, route }: CypherCardScreenProps) => {
     dateRange: initialCardTxnDateRange,
     statuses: STATUSES,
   });
+  const cardId = get(cardProfile, [
+    currentCardProvider,
+    'cards',
+    currentCardIndex,
+    'cardId',
+  ]);
 
   const onRefresh = () => {
     void refreshProfile();
@@ -131,11 +137,8 @@ const CypherCardScreen = ({ navigation, route }: CypherCardScreenProps) => {
   };
 
   const fetchCardBalance = async () => {
-    const currentCard = get(cardProfile, currentCardProvider).cards[
-      currentCardIndex
-    ];
     const url = `/v1/cards/${currentCardProvider}/card/${String(
-      currentCard?.cardId,
+      cardId,
     )}/balance`;
     try {
       const response = await getWithAuth(url);
@@ -151,16 +154,12 @@ const CypherCardScreen = ({ navigation, route }: CypherCardScreenProps) => {
   };
 
   const retrieveTxns = async (pullToRefresh = false) => {
-    const currentCard = get(cardProfile, currentCardProvider).cards[
-      currentCardIndex
-    ];
-
     if (pullToRefresh) {
       txnRetrievalOffset.current = undefined;
     }
 
     let txnURL = `/v1/cards/${currentCardProvider}/card/${String(
-      currentCard?.cardId,
+      cardId,
     )}/transactions?newRoute=true&limit=20`;
     if (txnRetrievalOffset.current) {
       txnURL += `&offset=${txnRetrievalOffset.current}`;
@@ -219,11 +218,8 @@ const CypherCardScreen = ({ navigation, route }: CypherCardScreenProps) => {
   };
 
   const exportCardTransactions = async () => {
-    const currentCard = get(cardProfile, currentCardProvider).cards[
-      currentCardIndex
-    ];
     const exportEndpoint = `/v1/cards/${currentCardProvider}/card/${String(
-      currentCard?.cardId,
+      cardId,
     )}/transactions/export`;
     try {
       setIsExporting(true);

@@ -13,8 +13,8 @@ const resources = {
       LETS_CONNECT_MSG: 'Let’s connect to Cypher wallet',
       LETS_CONNECT_SUB_MSG:
         'Create or import wallet to keep your crypto securely',
-      CREATE_WALLET: 'CREATE NEW WALLET',
-      IMPORT_WALLET: 'IMPORT EXISTING WALLET',
+      CREATE_WALLET: 'Create New Wallet',
+      IMPORT_WALLET: 'Import With Seed Phrase',
       BACK_UP_MYSELF: 'Back up myself',
       BACK_UP_SUB_MSG:
         'You will loose access to your wallet if you loose your private key. ',
@@ -92,7 +92,7 @@ const resources = {
       REVEAL_SEED_PHARSE: 'Reveal Seed Phrase',
       REVEAL_PRIVATE_KEY: 'Reveal Private Key',
       IMPORT_ANOTHER_WALLET: 'IMPORT WALLET',
-      DELETE_WALLET: 'DELETE WALLET',
+      DELETE_WALLET: 'Delete Wallet',
       ADDRESS_COPY: 'Address copied to clipboard',
       ADDRESS_COPY_ALL_SMALL: 'address copied to clipboard',
       SAVED_TO_CONTACTS_ALL_SMALL: 'saved to contacts',
@@ -634,7 +634,7 @@ const resources = {
         'Want to see this token as verified? \nPlease let us know',
       DEFAULT_INIT_CAPS: 'Default',
       UPDATED_INIT_CAPS: 'Updated',
-      TRACK_ANY_WALLET: 'TRACK ANY WALLET',
+      TRACK_ANY_WALLET: 'Track Any Wallet',
       TRACK: 'TRACK',
       QR_TRACK_WALLET: 'Scan QR code to track the wallet',
       TRY_TRACK_WALLET: 'Try our new track wallet feature',
@@ -925,6 +925,8 @@ const resources = {
       INVITE_SENT_SUCCESSFULLY: 'Invite Sent Successfully',
       INVITE_SENT_DESCRIPTION:
         'An email with the invite code has been sent to ',
+      INVITE_REFERRAL_PROGRESS_UPDATE:
+        "You will get email updates on this application's progress",
       INVALID_EMAIL_NAME_ERROR:
         'Make sure you entered a valid country, email and name',
       INVITE_SEND_ERROR: 'Unable to send invite code',
@@ -949,6 +951,45 @@ const resources = {
       PEP_EXPLAINATION:
         'A Politically Exposed Person (PEP) is someone who holds, or has held, a high-profile public position, or is closely related to such a person. This category often includes government officials, senior executives in state-owned enterprises, political party leaders, and high-ranking members of the judiciary or military, along with their family members and close associates.',
       PEP_REQUIRED: 'Choose any one option',
+      CONNECT_ANOTHER_WALLET: 'Connect another wallet',
+      DISCONNECT_WALLET: 'Disconnect wallet',
+      DISCONNECT_WALLET_SUB:
+        'Are you sure you want to disconnect from your wallet ?',
+      UNABLE_TO_CONNECT: 'Unable to connect',
+      BROWSER_WALLET_CONNECT_ERROR:
+        'Unable to connect when connected via wallet coonect. Import wallet with seed phrase to connect to a dApp from browser.',
+      CONNECT_A_WALLET: 'Connect A Wallet',
+      CARD_NOTIFICATION_SETTINGS: 'Card Notification Settings',
+      TOGGLE_EMAIL_NOTIFICATION_SUCCESS:
+        'Email Notification Status Update Success',
+      EMAIL_NOTIFICATION_TURNED_ON:
+        'Email Notifications Turned On Successfully',
+      EMAIL_NOTIFICATION_TURNED_OFF:
+        'Email Notifications Turned Off Successfully',
+      ERROR_IN_TOGGLE_EMAIL: 'Email Notification Status Update Failed',
+      TOGGLE_EMAIL_NOTIFICATION_FAIL:
+        'Unable to change Email Notification status. Please try again later!',
+      EMAIL_NOTIFICATION: 'Email Notification',
+      TOGGLE_SMS_NOTIFICATION_SUCCESS: 'Sms Notification Status Update Success',
+      SMS_NOTIFICATION_TURNED_ON: 'Sms Notifications Turned On Successfully',
+      SMS_NOTIFICATION_TURNED_OFF: 'Sms Notifications Turned Off Successfully',
+      ERROR_IN_TOGGLE_SMS: 'Sms Notification Status Update Failed',
+      TOGGLE_SMS_NOTIFICATION_FAIL:
+        'Unable to change Sms Notification status. Please try again later!',
+      SMS_NOTIFICATION: 'Sms Notification',
+      TOGGLE_FCM_NOTIFICATION_SUCCESS:
+        'Mobile Notification Status Update Success',
+      FCM_NOTIFICATION_TURNED_ON: 'Mobile Notifications Turned On Successfully',
+      FCM_NOTIFICATION_TURNED_OFF:
+        'Mobile Notifications Turned Off Successfully',
+      ERROR_IN_TOGGLE_FCM: 'Mobile Notification Status Update Failed',
+      TOGGLE_FCM_NOTIFICATION_FAIL:
+        'Unable to change Mobile Notification status. Please try again later!',
+      FCM_NOTIFICATION: 'Mobile Notification',
+      WARNING: 'WARNING',
+      LOCK_CARD: 'Lock Card',
+      UNLOCK_CARD: 'Unlock Card',
+      FUNDING_IN_PROGRESS: 'Funding in progress',
     },
   },
 };

@@ -1,35 +1,60 @@
-
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { PORTFOLIO_EMPTY } from '../reducers/portfolio_reducer';
 import * as Sentry from '@sentry/react-native';
-import { advancedSettingsInitialState, IAdvancedSettingsData } from '../containers/Options/advancedSettings';
-import { DefiAllocation, DefiData, DefiResponse } from '../models/defi.interface';
+import {
+  advancedSettingsInitialState,
+  IAdvancedSettingsData,
+} from '../containers/Options/advancedSettings';
+import { DefiData, DefiResponse } from '../models/defi.interface';
 
-export const storePortfolioData = async (value: any, ethereum: { address: any }, portfolioState: { dispatchPortfolio: (arg0: { value: { portfolioState: string } }) => void }, key = '') => {
+export const storePortfolioData = async (
+  value: any,
+  ethereum: { address: any },
+  portfolioState: {
+    dispatchPortfolio: (arg0: { value: { portfolioState: string } }) => void;
+  },
+  key = '',
+) => {
   try {
-    const jsonValue = JSON.stringify({ data: value, timestamp: new Date().toISOString() });
+    const jsonValue = JSON.stringify({
+      data: value,
+      timestamp: new Date().toISOString(),
+    });
     await AsyncStorage.setItem(String(ethereum.address) + key, jsonValue);
   } catch (error) {
-    portfolioState.dispatchPortfolio({ value: { portfolioState: PORTFOLIO_EMPTY } });
+    portfolioState.dispatchPortfolio({
+      value: { portfolioState: PORTFOLIO_EMPTY },
+    });
     Sentry.captureException(error);
   }
 };
 
-export const getPortfolioData = async (ethereum: { address: any }, portfolioState: { dispatchPortfolio: any }, key = '') => {
+export const getPortfolioData = async (
+  ethereum: { address: any },
+  portfolioState: { dispatchPortfolio: any },
+  key = '',
+) => {
   try {
-    const jsonValue = await AsyncStorage.getItem(String(ethereum.address) + key);
-    return (jsonValue != null) ? JSON.parse(jsonValue) : null;
+    const jsonValue = await AsyncStorage.getItem(
+      String(ethereum.address) + key,
+    );
+    return jsonValue != null ? JSON.parse(jsonValue) : null;
   } catch (error) {
-    portfolioState.dispatchPortfolio({ value: { portfolioState: PORTFOLIO_EMPTY } });
+    portfolioState.dispatchPortfolio({
+      value: { portfolioState: PORTFOLIO_EMPTY },
+    });
     Sentry.captureException(error);
   }
 };
 
-export const storeDeFiData = async (data: {
-  iat: string;
-  rawData: DefiResponse;
-  filteredData: DefiData;
-},key='') =>{
+export const storeDeFiData = async (
+  data: {
+    iat: string;
+    rawData: DefiResponse;
+    filteredData: DefiData;
+  },
+  key = '',
+) => {
   try {
     const jsonValue = JSON.stringify(data);
     await AsyncStorage.setItem(`deFiData${key}`, jsonValue);
@@ -38,10 +63,10 @@ export const storeDeFiData = async (data: {
   }
 };
 
-export const getDeFiData = async (key='')=>{
+export const getDeFiData = async (key = '') => {
   try {
     const jsonValue = await AsyncStorage.getItem(`deFiData${key}`);
-    return (jsonValue != null) ? JSON.parse(jsonValue) : null;
+    return jsonValue != null ? JSON.parse(jsonValue) : null;
   } catch (error) {
     Sentry.captureException(error);
   }
@@ -58,7 +83,7 @@ export const storeConnectWalletData = async (value: any, address: string) => {
 export const getConnectWalletData = async (address: string) => {
   try {
     const jsonValue = await AsyncStorage.getItem(address + 'wc');
-    return (jsonValue != null) ? JSON.parse(jsonValue) : null;
+    return jsonValue != null ? JSON.parse(jsonValue) : null;
   } catch (error) {
     Sentry.captureException(error);
   }
@@ -105,7 +130,7 @@ export const setQuoteCancelReasons = async (dontAsk: boolean) => {
     const now = new Date();
     const item = {
       dontAsk,
-      expiry: now.getTime() + 30 * 24 * 60 * 60 * 1000
+      expiry: now.getTime() + 30 * 24 * 60 * 60 * 1000,
     };
     await AsyncStorage.setItem('quoteCancelReasons', JSON.stringify(item));
   } catch (error) {
@@ -221,7 +246,10 @@ export const getAdvancedSettings = async (): Promise<IAdvancedSettingsData> => {
   let enabled;
   try {
     const advancedSettingsData = await AsyncStorage.getItem('advancedSettings');
-    enabled = advancedSettingsData != null ? JSON.parse(advancedSettingsData) : advancedSettingsInitialState;
+    enabled =
+      advancedSettingsData != null
+        ? JSON.parse(advancedSettingsData)
+        : advancedSettingsInitialState;
   } catch (error) {
     Sentry.captureException(error);
   }
@@ -283,7 +311,10 @@ export const clearRpcEndpoints = async () => {
   await AsyncStorage.removeItem('RPC_ENDPOINTS');
 };
 
-export const setCardRevealReuseToken = async (cardId: string, reuseToken: string) => {
+export const setCardRevealReuseToken = async (
+  cardId: string,
+  reuseToken: string,
+) => {
   try {
     await AsyncStorage.setItem(cardId + '_CARD_REVEAL_REUSE_TOKEN', reuseToken);
   } catch (error) {
@@ -293,7 +324,9 @@ export const setCardRevealReuseToken = async (cardId: string, reuseToken: string
 
 export const getCardRevealReuseToken = async (cardId: string) => {
   try {
-    const cardRevealReuseToken = await AsyncStorage.getItem(cardId + '_CARD_REVEAL_REUSE_TOKEN');
+    const cardRevealReuseToken = await AsyncStorage.getItem(
+      cardId + '_CARD_REVEAL_REUSE_TOKEN',
+    );
     return cardRevealReuseToken;
   } catch (error) {
     Sentry.captureException(error);
@@ -304,7 +337,9 @@ export const clearAllData = async (clearContacts = false) => {
   try {
     const allKeys = await AsyncStorage.getAllKeys();
     if (!clearContacts) {
-      const newAsyncStorageKeys = allKeys.filter((obj) => { return !(/^CONTACT_BOOK/i.test(obj)); });
+      const newAsyncStorageKeys = allKeys.filter(obj => {
+        return !/^CONTACT_BOOK/i.test(obj);
+      });
       await AsyncStorage.multiRemove(newAsyncStorageKeys);
     } else {
       await AsyncStorage.multiRemove(allKeys);
@@ -375,27 +410,34 @@ export const setSkipSeedConfirmation = async (status: boolean) => {
 
 export const getSkipSeedConfirmation = async () => {
   try {
-    const seedPhraseConfirmed = await AsyncStorage.getItem('SEED_PHRASE_CONFIRMED');
+    const seedPhraseConfirmed = await AsyncStorage.getItem(
+      'SEED_PHRASE_CONFIRMED',
+    );
     return seedPhraseConfirmed;
   } catch (error) {
     Sentry.captureException(error);
   }
 };
 
-
 // The cardID is in the format <CARD_ID>:<DATE_TIME>
 export const getDismissedActivityCardIDs = async () => {
   try {
-    const dismissedCardIDs = await AsyncStorage.getItem('DISMISSED_ACTIVITY_CARD_IDS') ?? '[]';
+    const dismissedCardIDs =
+      (await AsyncStorage.getItem('DISMISSED_ACTIVITY_CARD_IDS')) ?? '[]';
     return dismissedCardIDs;
   } catch (error) {
     Sentry.captureException(error);
   }
 };
 
-export const setDismissedActivityCardIDs = async (newDismissedCardIDs: string[]) => {
+export const setDismissedActivityCardIDs = async (
+  newDismissedCardIDs: string[],
+) => {
   try {
-    await AsyncStorage.setItem('DISMISSED_ACTIVITY_CARD_IDS', JSON.stringify(newDismissedCardIDs));
+    await AsyncStorage.setItem(
+      'DISMISSED_ACTIVITY_CARD_IDS',
+      JSON.stringify(newDismissedCardIDs),
+    );
   } catch (error) {
     Sentry.captureException(error);
   }
@@ -403,16 +445,73 @@ export const setDismissedActivityCardIDs = async (newDismissedCardIDs: string[])
 
 export const getDismissedStaticCardIDs = async () => {
   try {
-    const dismissedCardIDs = await AsyncStorage.getItem('DISMISSED_STATIC_CARD_IDS') ?? '[]';
+    const dismissedCardIDs =
+      (await AsyncStorage.getItem('DISMISSED_STATIC_CARD_IDS')) ?? '[]';
     return dismissedCardIDs;
   } catch (error) {
     Sentry.captureException(error);
   }
 };
 
-export const setDismissedStaticCardIDs = async (newDismissedCardIDs: string[]) => {
+export const setDismissedStaticCardIDs = async (
+  newDismissedCardIDs: string[],
+) => {
   try {
-    await AsyncStorage.setItem('DISMISSED_STATIC_CARD_IDS', JSON.stringify(newDismissedCardIDs));
+    await AsyncStorage.setItem(
+      'DISMISSED_STATIC_CARD_IDS',
+      JSON.stringify(newDismissedCardIDs),
+    );
+  } catch (error) {
+    Sentry.captureException(error);
+  }
+};
+
+export const setAuthToken = async (token: string) => {
+  try {
+    await AsyncStorage.setItem('AUTH_TOKEN', JSON.stringify(token));
+  } catch (error) {
+    Sentry.captureException(error);
+  }
+};
+
+export const getAuthToken = async () => {
+  try {
+    const authToken = await AsyncStorage.getItem('AUTH_TOKEN');
+    return authToken;
+  } catch (error) {
+    Sentry.captureException(error);
+  }
+};
+
+export const setRefreshToken = async (token: string) => {
+  try {
+    await AsyncStorage.setItem('REFRESH_TOKEN', JSON.stringify(token));
+  } catch (error) {
+    Sentry.captureException(error);
+  }
+};
+
+export const getRefreshToken = async () => {
+  try {
+    const refreshToken = await AsyncStorage.getItem('REFRESH_TOKEN');
+    return refreshToken;
+  } catch (error) {
+    Sentry.captureException(error);
+  }
+};
+
+export const setConnectionType = async (token: string) => {
+  try {
+    await AsyncStorage.setItem('CONNECTION_TYPE', token);
+  } catch (error) {
+    Sentry.captureException(error);
+  }
+};
+
+export const getConnectionType = async () => {
+  try {
+    const connectionType = await AsyncStorage.getItem('CONNECTION_TYPE');
+    return connectionType;
   } catch (error) {
     Sentry.captureException(error);
   }

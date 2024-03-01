@@ -9,17 +9,18 @@ import CosmosSigningModal from './walletConnectV2Views/CosmosSigningModal';
 import CyDModalLayout from './modal';
 import { CyDView } from '../../styles/tailwindStyles';
 import { CustomModalLayoutDef } from '../../models/globalModal.interface';
+import RemoveWalletModal from './removeWalletModal';
 
 interface GlobalModalContextInterface {
-  showModal: (modalType: string, params: any) => void
-  hideModal: () => void
-  store: any
+  showModal: (modalType: string, params: any) => void;
+  hideModal: () => void;
+  store: any;
 }
 
 const initalState: GlobalModalContextInterface = {
-  showModal: () => { },
-  hideModal: () => { },
-  store: {}
+  showModal: () => {},
+  hideModal: () => {},
+  store: {},
 };
 
 const GlobalModalContext = createContext(initalState);
@@ -39,11 +40,28 @@ export const GlobalModal: React.FC<any> = ({ children }) => {
   return (
     <GlobalModalContext.Provider value={{ store, showModal, hideModal }}>
       {store?.modalType === GlobalModalType.STATE && <StateModal {...store} />}
-      {store?.modalType === GlobalModalType.PROMPT_IMPORT_WALLET && <PromptImportWallet {...store} />}
-      {store?.modalType === GlobalModalType.WALLET_CONNECT_V2_PAIRING && <PairingModal {...store} />}
-      {store?.modalType === GlobalModalType.WALLET_CONNECT_V2_SIGNING && <SigningModal payloadFrom={SigningModalPayloadFrom.WALLETCONNECT} {...store} />}
-      {store?.modalType === GlobalModalType.WALLET_CONNECT_V2_COSMOS_SIGNING && <CosmosSigningModal {...store} />}
-      {store?.modalType === GlobalModalType.CUSTOM_LAYOUT && <CustomModalLayout {...store} />}
+      {store?.modalType === GlobalModalType.PROMPT_IMPORT_WALLET && (
+        <PromptImportWallet {...store} />
+      )}
+      {store?.modalType === GlobalModalType.REMOVE_WALLET && (
+        <RemoveWalletModal {...store} />
+      )}
+      {store?.modalType === GlobalModalType.WALLET_CONNECT_V2_PAIRING && (
+        <PairingModal {...store} />
+      )}
+      {store?.modalType === GlobalModalType.WALLET_CONNECT_V2_SIGNING && (
+        <SigningModal
+          payloadFrom={SigningModalPayloadFrom.WALLETCONNECT}
+          {...store}
+        />
+      )}
+      {store?.modalType ===
+        GlobalModalType.WALLET_CONNECT_V2_COSMOS_SIGNING && (
+        <CosmosSigningModal {...store} />
+      )}
+      {store?.modalType === GlobalModalType.CUSTOM_LAYOUT && (
+        <CustomModalLayout {...store} />
+      )}
       {children}
     </GlobalModalContext.Provider>
   );
@@ -56,8 +74,9 @@ const CustomModalLayout = (store: CustomModalLayoutDef) => {
       style={styles.modalLayout}
       animationIn={'slideInUp'}
       animationOut={'slideOutDown'}
-      setModalVisible={() => { store.onSuccess(); }}
-    >
+      setModalVisible={() => {
+        store.onSuccess();
+      }}>
       <CyDView className={'bg-white rounded-t-[24px] min-h-[30%] pb-[15px]'}>
         {store.customComponent}
       </CyDView>
@@ -68,6 +87,6 @@ const CustomModalLayout = (store: CustomModalLayoutDef) => {
 const styles = StyleSheet.create({
   modalLayout: {
     margin: 0,
-    justifyContent: 'flex-end'
-  }
+    justifyContent: 'flex-end',
+  },
 });

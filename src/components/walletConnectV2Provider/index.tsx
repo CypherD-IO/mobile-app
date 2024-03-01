@@ -1,4 +1,3 @@
-import WalletConnect from '@walletconnect/client';
 import React, {
   createContext,
   useCallback,
@@ -9,7 +8,6 @@ import React, {
 } from 'react';
 import {
   HdWalletContext,
-  PortfolioContext,
   _NO_CYPHERD_CREDENTIAL_AVAILABLE_,
 } from '../../core/util';
 import {
@@ -18,11 +16,9 @@ import {
 } from '../../core/walletConnectV2Utils';
 import useInitialIntentURL from '../../hooks/useInitialIntentURL';
 import useWalletConnectEventsManager from '../../hooks/useWalletConnectV2EventsManager';
-import { WalletConnectActions } from '../../reducers/wallet_connect_reducer';
 import * as Sentry from '@sentry/react-native';
 import { Config } from 'react-native-config';
-import useAxios from '../../core/HttpRequest';
-import { GlobalContext } from '../../core/globalContext';
+import { WagmiConfigBuilder } from '../wagmiConfigBuilder';
 
 const walletConnectInitialValue = {
   initialized: false,
@@ -32,42 +28,30 @@ export const WalletConnectContext = createContext(walletConnectInitialValue);
 
 export const WalletConnectV2Provider: React.FC<any> = ({ children }) => {
   // Step 1 - Initialize wallets and wallet connect client
-  const portfolioState = useContext<any>(PortfolioContext);
   const hdWalletContext = useContext<any>(HdWalletContext);
-  const globalContext = useContext<any>(GlobalContext);
   const ethereum = hdWalletContext.state.wallet.ethereum;
-  const { walletConnectDispatch } = useContext<any>(WalletConnectContext);
-  const { getWithAuth } = useAxios();
   const isInitializationInProgress = useRef<boolean>(false);
+  const projectId = String(Config.WALLET_CONNECT_PROJECTID);
 
   // Step 2 - Once initialized, set up wallet connect event manager
 
   const [isWeb3WalletInitialized, setIsWeb3WalletInitialized] =
     useState<boolean>(false);
   useWalletConnectEventsManager(isWeb3WalletInitialized);
-  // const prevRelayerURLValue = useRef<string>('')
-
-  // const { relayerRegionURL } = useSnapshot(SettingsStore.state)
 
   const onInitialize = useCallback(async () => {
-    const projectId = Config.WALLET_CONNECT_PROJECTID;
-    if (
-      ethereum.address &&
-      ethereum.address !== _NO_CYPHERD_CREDENTIAL_AVAILABLE_
-    ) {
-      // const resp = await getWithAuth('/v1/authentication/creds/wc'); //TO DO Eliminate sign message race condition (axios intercept)
-      // if (!resp.isError) {
-      //   const { data } = resp;
-      //   projectId = data.projectId;
-      // }
-      try {
-        if (projectId) {
-          await createWeb3Wallet(projectId);
-          setIsWeb3WalletInitialized(true);
-        }
-      } catch (err: unknown) {
-        Sentry.captureException(err);
+    // const resp = await getWithAuth('/v1/authentication/creds/wc'); //TO DO Eliminate sign message race condition (axios intercept)
+    // if (!resp.isError) {
+    //   const { data } = resp;
+    //   projectId = data.projectId;
+    // }
+    try {
+      if (projectId) {
+        await createWeb3Wallet(projectId);
+        setIsWeb3WalletInitialized(true);
       }
+    } catch (err: unknown) {
+      Sentry.captureException(err);
     }
   }, []);
 
@@ -75,15 +59,12 @@ export const WalletConnectV2Provider: React.FC<any> = ({ children }) => {
     if (
       !isWeb3WalletInitialized &&
       !isInitializationInProgress.current &&
-      ethereum.address
+      ethereum.address &&
+      ethereum.address !== _NO_CYPHERD_CREDENTIAL_AVAILABLE_
     ) {
       isInitializationInProgress.current = true;
       void onInitialize();
     }
-    // if (prevRelayerURLValue.current !== relayerRegionURL) {
-    //   setInitialized(false);
-    //   onInitialize();
-    // }
   }, [isWeb3WalletInitialized, ethereum.address]);
 
   const { url: initialUrl } = useInitialIntentURL();
@@ -103,15 +84,6 @@ export const WalletConnectV2Provider: React.FC<any> = ({ children }) => {
       ) {
         if (uri.includes('relay-protocol')) {
           await web3WalletPair({ uri: decodeURIComponent(uri) });
-        } else if (uri.includes('bridge')) {
-          const connector = new WalletConnect({ uri });
-          portfolioState.dispatchPortfolio({
-            value: { walletConnectURI: uri },
-          });
-          walletConnectDispatch({
-            type: WalletConnectActions.ADD_CONNECTOR,
-            value: connector,
-          });
         }
       }
     }
@@ -129,7 +101,7 @@ export const WalletConnectV2Provider: React.FC<any> = ({ children }) => {
   return (
     <WalletConnectContext.Provider
       value={{ initialized: isWeb3WalletInitialized }}>
-      {children}
+      <WagmiConfigBuilder>{children}</WagmiConfigBuilder>
     </WalletConnectContext.Provider>
   );
 };

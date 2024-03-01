@@ -14,9 +14,11 @@ type RequestMethod =
   | 'GET'
   | 'GET_WITHOUT_AUTH'
   | 'POST'
+  | 'POST_WITHOUT_AUTH'
   | 'PUT'
   | 'PATCH'
-  | 'DELETE';
+  | 'DELETE'
+  | 'DELETE_WITHOUT_AUTH';
 
 interface IHttpResponse {
   isError: boolean;
@@ -98,11 +100,19 @@ export default function useAxios() {
           response.data = data;
           response.status = status;
         } else if (method === 'DELETE') {
-          const { data, status } = await axiosInstance.delete(url);
+          const { data, status } = await axiosInstance.delete(url, body);
+          response.data = data;
+          response.status = status;
+        } else if (method === 'DELETE_WITHOUT_AUTH') {
+          const { data, status } = await axios.delete(url, body);
           response.data = data;
           response.status = status;
         } else if (method === 'POST') {
           const { data, status } = await axiosInstance.post(url, reqBody);
+          response.data = data;
+          response.status = status;
+        } else if (method === 'POST_WITHOUT_AUTH') {
+          const { data, status } = await axios.post(url, reqBody);
           response.data = data;
           response.status = status;
         } else if (method === 'PUT') {
@@ -138,7 +148,7 @@ export default function useAxios() {
           Sentry.captureException(error);
           return {
             isError: true,
-            error: error?.response?.data?.errors[0] ?? null,
+            error: error?.response?.data?.errors?.[0] ?? null,
             status: error?.response?.status,
           };
         }
@@ -165,6 +175,13 @@ export default function useAxios() {
   ) {
     return await request('POST', url, timeout, data);
   }
+  async function postWithoutAuth(
+    url: string,
+    data: any,
+    timeout = DEFAULT_AXIOS_TIMEOUT,
+  ) {
+    return await request('POST_WITHOUT_AUTH', url, timeout, data);
+  }
   const putWithAuth = async (
     url: string,
     data: any,
@@ -185,6 +202,12 @@ export default function useAxios() {
   ) => {
     return await request('DELETE', url, timeout);
   };
+  const deleteWithoutAuth = async (
+    url: string,
+    timeout = DEFAULT_AXIOS_TIMEOUT,
+  ) => {
+    return await request('DELETE_WITHOUT_AUTH', url, timeout);
+  };
 
   return {
     getWithAuth,
@@ -192,6 +215,8 @@ export default function useAxios() {
     putWithAuth,
     patchWithAuth,
     deleteWithAuth,
+    deleteWithoutAuth,
     getWithoutAuth,
+    postWithoutAuth,
   };
 }

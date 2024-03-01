@@ -790,7 +790,11 @@ export default function Activites(props: {
 }) {
   const ARCH_HOST: string = hostWorker.getHost('ARCH_HOST');
   const { navigation, route } = props;
-
+  const filter = route?.params?.filter ?? {
+    time: TIME_GAPS[0].value,
+    types: ACTIVITY_TYPES,
+    statuses: STATUSES,
+  };
   const { t } = useTranslation();
   const activityContext = useContext<any>(ActivityContext);
   const hdWalletContext = useContext<any>(HdWalletContext);

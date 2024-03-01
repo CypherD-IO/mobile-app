@@ -305,6 +305,7 @@ const UPGRADE_TO_PHYSICAL_CARD_ARROW = require('./upgradeToPhysicalCardArrow.png
 const SEND_INVITE_CODE_BG = require('./sendInviteCodeBg.png');
 const SEND_INVITE_CODE = require('./sendInviteCode.png');
 const CANDY_CANE = require('./candyCane.png');
+const WALLET_ICONS = require('./walletIcons.png');
 
 // ICONS FROM S3
 const SWAP = { uri: `${S3_BUCKET_URL_ICONS}/swap.png` };
@@ -667,5 +668,6 @@ const AppImages = {
   SEND_INVITE_CODE_BG,
   SEND_INVITE_CODE,
   CANDY_CANE,
+  WALLET_ICONS,
 };
 export default AppImages;

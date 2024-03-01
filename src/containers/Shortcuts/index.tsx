@@ -29,6 +29,7 @@ import ChooseChainModal from '../../components/v2/chooseChainModal';
 import {
   HdWalletContext,
   PortfolioContext,
+  getAvailableChains,
   sortJSONArrayByKey,
 } from '../../core/util';
 import {
@@ -141,13 +142,14 @@ export default function ShortcutsModal({ navigationRef }) {
 
   const shortcutsData: IShortcutsData[] = [
     ...emptyWalletShortcutsData,
-    {
-      index: 1,
-      title: ShortcutsTitle.BRIDGE,
-      logo: AppImages.BRIDGE_SHORTCUT,
-      subTitle: t('EXCHANGE_SHORTCUTS_SUBTITLE'),
-      screenTitle: screenTitle.BRIDGE_SCREEN,
-    },
+    // disabled bridge - Feb 10th 2024
+    // {
+    //   index: 1,
+    //   title: ShortcutsTitle.BRIDGE,
+    //   logo: AppImages.BRIDGE_SHORTCUT,
+    //   subTitle: t('EXCHANGE_SHORTCUTS_SUBTITLE'),
+    //   screenTitle: screenTitle.BRIDGE_SCREEN,
+    // },
     {
       index: 2,
       title: ShortcutsTitle.SWAP,
@@ -315,7 +317,7 @@ export default function ShortcutsModal({ navigationRef }) {
         setTimeout(() => setChooseTokenModal(true), 250);
         break;
       case ShortcutsTitle.RECEIVE:
-        setChainData(ALL_CHAINS);
+        setChainData(getAvailableChains(hdWallet));
         setNavigationPath(item.screenTitle);
         setTimeout(() => setChooseChainModal(true), 250);
         break;
