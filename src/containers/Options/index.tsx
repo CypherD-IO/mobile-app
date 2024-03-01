@@ -175,11 +175,6 @@ export default function Options(props: {
       const profileData = await getWalletProfile(
         globalContext.globalState.token,
       );
-      console.log(
-        'get(profileData, ["child"])',
-        profileData,
-        get(profileData, ['child']),
-      );
       const ens = await resolveDomain(ethereum.address);
       if (get(profileData, ['child'])) {
         setTitle(t('LINKED_WALLET'));
