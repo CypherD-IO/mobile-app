@@ -646,6 +646,7 @@ const resources = {
       UNEXCPECTED_ERROR: 'Unexpected error occured. Please try again later.',
       WALLET: 'Wallet',
       MY_WALLET: 'My Wallet',
+      LINKED_WALLET: 'Linked Wallet',
       ETHEREUM_ADDRESS_PLACEHOLDER: '0x12345g...',
       COSMOS_ADDRESS_PLACEHOLDER: 'cosmos1f...',
       EVMOS_ADDRESS_PLACEHOLDER: 'evmos19...',
