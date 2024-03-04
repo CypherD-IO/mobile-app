@@ -388,7 +388,7 @@ export default function Options(props: {
               <OptionsContainer
                 sentryLabel={'support-button'}
                 onPress={async () => {
-                  await Intercom.displayMessenger();
+                  void Intercom.present();
                   sendFirebaseEvent(hdWalletContext, 'support');
                 }}
                 title={'Support'}

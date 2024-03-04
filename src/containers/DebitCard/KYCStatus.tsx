@@ -393,7 +393,7 @@ export default function CardKYCStatusScreen({ navigation }) {
         </CyDScrollView>
         <CyDTouchView
           onPress={async () => {
-            await Intercom.displayMessenger();
+            void Intercom.present();
             sendFirebaseEvent(hdWalletContext, 'support');
           }}
           className={

@@ -897,7 +897,7 @@ export default function Overview({
         <CyDTouchView
           className={'mb-[15px]'}
           onPress={() => {
-            void Intercom.displayMessenger();
+            void Intercom.present();
             sendFirebaseEvent(hdWalletContext, 'support');
           }}>
           <CyDText
