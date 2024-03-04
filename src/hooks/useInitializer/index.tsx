@@ -172,9 +172,8 @@ export default function useInitializer() {
   const checkAndMaintainUpdatedRPCEndpointsInAsync = async (
     rpcEndpoints: RpcResponseDetail,
   ) => {
-    const ARCH_HOST: string = hostWorker.getHost('ARCH_HOST');
     const resultFromEndpoint = await getWithoutAuth(
-      `${ARCH_HOST}/v1/configuration/rpcEndpoints`,
+      `/v1/configuration/rpcEndpoints`,
     );
     const updatedEndpoints = {};
     const availableChains = Object.keys(resultFromEndpoint.data);
@@ -203,7 +202,6 @@ export default function useInitializer() {
     //   rpcPreference = rpcPreferenceFromAsync;
     // }
     let result;
-    const ARCH_HOST: string = hostWorker.getHost('ARCH_HOST');
     const RPCFromAsync = await getRpcEndpoints();
     if (
       RPCFromAsync &&
@@ -217,7 +215,7 @@ export default function useInitializer() {
       result = updatedRPCFromAsync;
     } else {
       const resultFromEndpoint = await getWithoutAuth(
-        `${ARCH_HOST}/v1/configuration/rpcEndpoints`,
+        `/v1/configuration/rpcEndpoints`,
       );
       result = resultFromEndpoint.data;
     }
