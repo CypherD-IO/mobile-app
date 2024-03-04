@@ -26,8 +26,7 @@ import { PORTFOLIO_LOADING } from '../../reducers/portfolio_reducer';
 import AppImages from '../../../assets/images/appImages';
 import Clipboard from '@react-native-clipboard/clipboard';
 import { QRScannerScreens } from '../../constants/server';
-import LottieView from 'lottie-react-native';
-import { ActivityReducerAction } from '../../reducers/activity_reducer';
+import { ActivityContextDef } from '../../reducers/activity_reducer';
 import { screenTitle } from '../../constants/index';
 import Loading from '../../components/v2/loading';
 import { isValidMnemonic } from 'ethers/lib/utils';
@@ -44,6 +43,8 @@ import { isAndroid } from '../../misc/checkers';
 import { Colors } from '../../constants/theme';
 import Button from '../../components/v2/button';
 import { ConnectionTypes } from '../../constants/enum';
+import { generateMultipleWalletAddressesFromSeedPhrase } from '../../core/Address';
+import { HdWalletContextDef } from '../../reducers/hdwallet_reducer';
 
 export default function Login(props) {
   // NOTE: DEFINE VARIABLE 🍎🍎🍎🍎🍎🍎
@@ -57,9 +58,8 @@ export default function Login(props) {
     useState<boolean>(false);
 
   // NOTE: DEFINE HOOKS 🍎🍎🍎🍎🍎🍎
-  const hdWalletContext = useContext<any>(HdWalletContext);
-  const portfolioState = useContext<any>(PortfolioContext);
-  const activityContext = useContext<any>(ActivityContext);
+  const hdWalletContext = useContext(HdWalletContext) as HdWalletContextDef;
+  const portfolioState = useContext(PortfolioContext);
   const { deleteWithAuth } = useAxios();
 
   const fetchCopiedText = async () => {
@@ -77,29 +77,13 @@ export default function Login(props) {
     onChangeseedPhraseTextValue(textValue);
   };
 
-  const submitImportWallet = async (textValue = seedPhraseTextValue) => {
-    const keyValue = textValue.split(/\s+/);
-    const { isReadOnlyWallet } = hdWalletContext.state;
-    const { ethereum } = hdWalletContext.state.wallet;
-    if (keyValue.length >= 12 && isValidMnemonic(textValue)) {
-      setLoading(true);
-      if (isReadOnlyWallet) {
-        const data = await getReadOnlyWalletData();
-        if (data) {
-          const readOnlyWalletData = JSON.parse(data);
-          await deleteWithAuth(
-            `/v1/configuration/address/${ethereum.address}/observer/${readOnlyWalletData.observerId}`,
-          );
-        }
-      }
+  useEffect(() => {
+    if (hdWalletContext.state.choosenWalletIndex !== -1) {
       setTimeout(() => {
-        importWallet(hdWalletContext, portfolioState, textValue);
+        void importWallet(hdWalletContext, portfolioState, seedPhraseTextValue);
         portfolioState.dispatchPortfolio({
           value: { portfolioState: PORTFOLIO_LOADING },
         });
-        hdWalletContext.dispatch({ type: 'RESET_WALLET' });
-        activityContext.dispatch({ type: ActivityReducerAction.RESET });
-        setLoading(false);
         onChangeseedPhraseTextValue('');
         void setConnectionType(ConnectionTypes.SEED_PHRASE);
         if (props && props.navigation) {
@@ -111,7 +95,31 @@ export default function Login(props) {
           void fetchTokenData(hdWalletContext, portfolioState);
         }
       }, IMPORT_WALLET_TIMEOUT);
+    }
+  }, [hdWalletContext]);
+
+  const submitImportWallet = async (textValue = seedPhraseTextValue) => {
+    const keyValue = textValue.split(/\s+/);
+    const { isReadOnlyWallet } = hdWalletContext.state;
+    const { ethereum } = hdWalletContext.state.wallet;
+    if (keyValue.length >= 12 && isValidMnemonic(textValue)) {
+      if (isReadOnlyWallet) {
+        const data = await getReadOnlyWalletData();
+        if (data) {
+          const readOnlyWalletData = JSON.parse(data);
+          await deleteWithAuth(
+            `/v1/configuration/address/${ethereum.address}/observer/${readOnlyWalletData.observerId}`,
+          );
+        }
+      }
+      const walletAddresses =
+        generateMultipleWalletAddressesFromSeedPhrase(textValue);
+      props?.navigation?.navigate(screenTitle.CHOOSE_WALLET_INDEX, {
+        walletAddresses,
+      });
+      setLoading(false);
     } else {
+      setLoading(false);
       setBadKeyError(true);
     }
   };
@@ -203,6 +211,7 @@ export default function Login(props) {
             <Button
               title={t('SUBMIT')}
               onPress={() => {
+                setLoading(true);
                 void submitImportWallet();
               }}
               style={'h-[60px] mt-[40px]'}

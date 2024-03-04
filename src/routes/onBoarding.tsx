@@ -10,6 +10,8 @@ import CreateSeedPhrase from '../containers/OnBoarding/createSeedPhrase';
 import TrackWallet from '../containers/OnBoarding/trackWallet';
 import ImportWalletOptions from '../containers/Options/importWalletOptions';
 import EnterPrivateKey from '../containers/Auth/EnterPrivateKey';
+import { ChooseWalletIndex } from '../containers/Auth/ChooseWalletIndex';
+import { t } from 'i18next';
 
 const Stack = createNativeStackNavigator();
 
@@ -37,6 +39,25 @@ function OnBoardingStack(props: any) {
           headerTintColor: Colors.primaryTextColor,
           headerBackTitleVisible: false,
         }}
+      />
+      <Stack.Screen
+        name={screenTitle.CHOOSE_WALLET_INDEX}
+        component={ChooseWalletIndex}
+        options={({ navigation, route }) => ({
+          headerTransparent: false,
+          headerShadowVisible: false,
+          title: t('CHOOSE_WALLET_TO_IMPORT'),
+          headerTitleAlign: 'center',
+          headerTitleStyle: {
+            fontFamily: C.fontsName.FONT_BLACK,
+            fontSize: 20,
+          },
+          headerStyle: {
+            elevation: 0,
+          },
+          headerTintColor: Colors.primaryTextColor,
+          headerBackTitleVisible: false,
+        })}
       />
       <Stack.Screen
         name={screenTitle.ENTER_PRIVATE_KEY}

@@ -61,7 +61,6 @@ export default function useInitializer() {
   const globalContext = useContext<any>(GlobalContext);
   const hdWallet = useContext<any>(HdWalletContext);
   const activityContext = useContext<any>(ActivityContext);
-  console.log('activityContext :: ', activityContext);
   const ethereum = hdWallet.state.wallet.ethereum;
   const inAppUpdates = new SpInAppUpdates(
     false, // isDebug
@@ -254,7 +253,6 @@ export default function useInitializer() {
 
   const loadActivitiesFromAsyncStorage = async () => {
     const activities = await getActivities();
-    console.log('activites fetched ::: ', activities);
     if (activities) {
       activityContext.dispatchActivity({
         type: ActivityReducerAction.LOAD,
@@ -275,14 +273,7 @@ export default function useInitializer() {
       if (pinAuthenticated) {
         return PinPresentStates.TRUE;
       } else {
-        await loadCyRootData(hdWallet.state.pinValue);
-        // await loadCyRootDataFromKeyChain(
-        //   hdWallet.state,
-        //   () => {
-        //     setShowDefaultAuthRemoveModal(true);
-        //   },
-        //   false,
-        // );
+        await loadCyRootData(hdWallet.state);
         return PinPresentStates.FALSE;
       }
     } else {
@@ -311,7 +302,7 @@ export default function useInitializer() {
     state = initialHdWalletState,
   ) => {
     // const cyRootData = await loadCyRootDataFromKeyChain(state);
-    const cyRootData = await loadCyRootData(state.pinValue);
+    const cyRootData = await loadCyRootData(state);
     if (cyRootData) {
       const { accounts } = cyRootData;
       if (!accounts) {

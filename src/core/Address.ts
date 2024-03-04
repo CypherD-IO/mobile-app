@@ -11,6 +11,7 @@ import { Mnemonic, PrivKeySecp256k1 } from '@keplr-wallet/crypto';
 import { isIOS } from '../misc/checkers';
 import { Wallet } from '@ethersproject/wallet';
 import { addHexPrefix } from './util';
+import { ethers } from 'ethers';
 
 function sendFirebaseEvent(walletaddress: string, trkEvent: string) {
   void analytics().logEvent(trkEvent, {
@@ -52,6 +53,20 @@ const generateEthPrivateKey = (mnemonic: string, index = 0): string => {
   const root = hdWallet.derivePath(hdPathString);
   const wallet = root.deriveChild(index).getWallet();
   return wallet.getPrivateKeyString();
+};
+
+export const generateMultipleWalletAddressesFromSeedPhrase = (
+  mnemonic: string,
+  numberOfAddresses = 100,
+) => {
+  const hdNode = ethers.utils.HDNode.fromMnemonic(mnemonic);
+  const basePath = "m/44'/60'/0'/0/";
+  const addresses = Array.from({ length: numberOfAddresses }, (_, index) => {
+    const derivedNode = hdNode.derivePath(basePath + index.toString());
+    return { address: derivedNode.address.toLowerCase(), index };
+  });
+
+  return addresses;
 };
 
 export const generateEthAddress = (
@@ -201,6 +216,7 @@ export const generateWalletFromPrivateKey = async (privateKey: string) => {
 export const generateWalletFromMnemonic = async (
   mnemonic: string,
   trackingEventId: string,
+  addressIndex = 0,
 ): Promise<{
   accounts: IAccountDetailWithChain[];
   mnemonic: string;
@@ -209,11 +225,14 @@ export const generateWalletFromMnemonic = async (
   const bip44HDPath = {
     account: 0,
     change: 0,
-    addressIndex: 0,
+    addressIndex,
   };
-  const ethereumWallet = await generateEthAddress(mnemonic);
+  const ethereumWallet = await generateEthAddress(mnemonic, addressIndex);
 
-  const ethereumPrivateKey = await generateEthPrivateKey(mnemonic);
+  const ethereumPrivateKey = await generateEthPrivateKey(
+    mnemonic,
+    addressIndex,
+  );
 
   const cosmosChains: AddressChainNames[] = [
     'cosmos',

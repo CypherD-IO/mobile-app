@@ -27,7 +27,10 @@ import LottieView from 'lottie-react-native';
 import { ActivityReducerAction } from '../../reducers/activity_reducer';
 import { screenTitle } from '../../constants/index';
 import Loading from '../../components/v2/loading';
-import { getReadOnlyWalletData } from '../../core/asyncStorage';
+import {
+  getReadOnlyWalletData,
+  setConnectionType,
+} from '../../core/asyncStorage';
 import useAxios from '../../core/HttpRequest';
 import clsx from 'clsx';
 import { fetchTokenData } from '../../core/Portfolio';
@@ -36,6 +39,7 @@ import { useIsFocused } from '@react-navigation/native';
 import { isAndroid } from '../../misc/checkers';
 import { Colors } from '../../constants/theme';
 import Button from '../../components/v2/button';
+import { ConnectionTypes } from '../../constants/enum';
 
 export default function Login(props) {
   const { t } = useTranslation();
@@ -69,10 +73,8 @@ export default function Login(props) {
   const submitImportWallet = async (textValue = privateKey) => {
     const { isReadOnlyWallet } = hdWalletContext.state;
     const { ethereum } = hdWalletContext.state.wallet;
-    console.log('is valid private key :: ', isValidPrivateKey(textValue));
     if (textValue.length >= 64 && isValidPrivateKey(textValue)) {
       setLoading(true);
-      console.log('reaconly wlalet L ', isReadOnlyWallet);
       if (isReadOnlyWallet) {
         const data = await getReadOnlyWalletData();
         if (data) {
@@ -82,25 +84,23 @@ export default function Login(props) {
           );
         }
       }
-      console.log('imoprt wallet private key');
-      await importWalletPrivateKey(hdWalletContext, portfolioState, textValue);
-      console.log('dispatching ...');
-      portfolioState.dispatchPortfolio({
-        value: { portfolioState: PORTFOLIO_LOADING },
-      });
-      console.log('dispatched success');
-      hdWalletContext.dispatch({ type: 'RESET_WALLET' });
-      activityContext.dispatch({ type: ActivityReducerAction.RESET });
-      setLoading(false);
-      setPrivateKey('');
-      if (props && props.navigation) {
-        const getCurrentRoute = props.navigation.getState().routes[0].name;
-        if (getCurrentRoute === screenTitle.OPTIONS_SCREEN)
-          props.navigation.navigate(C.screenTitle.PORTFOLIO_SCREEN);
-        else setCreateWalletLoading(true);
-      } else {
-        void fetchTokenData(hdWalletContext, portfolioState);
-      }
+      setTimeout(() => {
+        void importWalletPrivateKey(hdWalletContext, portfolioState, textValue);
+        portfolioState.dispatchPortfolio({
+          value: { portfolioState: PORTFOLIO_LOADING },
+        });
+        setLoading(false);
+        setPrivateKey('');
+        void setConnectionType(ConnectionTypes.PRIVATE_KEY);
+        if (props && props.navigation) {
+          const getCurrentRoute = props.navigation.getState().routes[0].name;
+          if (getCurrentRoute === screenTitle.OPTIONS_SCREEN) {
+            props.navigation.navigate(C.screenTitle.PORTFOLIO_SCREEN);
+          } else setCreateWalletLoading(true);
+        } else {
+          void fetchTokenData(hdWalletContext, portfolioState);
+        }
+      }, IMPORT_WALLET_TIMEOUT);
     } else {
       setBadKeyError(true);
     }

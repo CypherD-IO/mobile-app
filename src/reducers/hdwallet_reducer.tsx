@@ -59,6 +59,7 @@ export interface HDWallet {
   hideTabBar: boolean;
   hideBalance: boolean;
   isReadOnlyWallet: boolean;
+  choosenWalletIndex: number;
 }
 
 export interface HdWalletContextDef {
@@ -87,6 +88,7 @@ export const initialHdWalletState: HDWallet = {
   hideTabBar: false,
   hideBalance: false,
   isReadOnlyWallet: false,
+  choosenWalletIndex: -1,
 };
 
 // reducers
@@ -236,6 +238,13 @@ export function hdWalletStateReducer(state: any, action: any) {
       let pinValue = state.pinValue;
       pinValue = pin;
       return { ...state, pinValue };
+    }
+
+    case 'SET_CHOOSEN_WALLET_INDEX': {
+      const { indexValue } = action.value;
+      let choosenWalletIndex = state.choosenWalletIndex;
+      choosenWalletIndex = indexValue;
+      return { ...state, choosenWalletIndex };
     }
 
     case 'TOGGLE_BALANCE_VISIBILITY': {

@@ -30,8 +30,8 @@ interface ISecurityPrivacyData {
 export default function SecurityPrivacy(props) {
   const { t } = useTranslation();
   const hdWalletContext = useContext<any>(HdWalletContext);
-  const { isReadOnlyWallet } = hdWalletContext.state;
   const { connectionType } = useConnectionManager();
+  const { isReadOnlyWallet } = hdWalletContext.state;
   const isSecurityOptionDisabled =
     isReadOnlyWallet || connectionType === ConnectionTypes.WALLET_CONNECT;
   let securityPrivacyData: ISecurityPrivacyData[] = [
@@ -40,12 +40,17 @@ export default function SecurityPrivacy(props) {
       title: t('REVEAL_PRIVATE_KEY'),
       logo: AppImages.PRIVATE_KEY,
     },
-    {
-      index: 1,
-      title: t('REVEAL_SEED_PHARSE'),
-      logo: AppImages.EYE_OPEN,
-    },
   ];
+  if (connectionType === ConnectionTypes.SEED_PHRASE) {
+    securityPrivacyData = [
+      ...securityPrivacyData,
+      {
+        index: 1,
+        title: t('REVEAL_SEED_PHARSE'),
+        logo: AppImages.EYE_OPEN,
+      },
+    ];
+  }
   if (hdWalletContext.state.pinValue) {
     securityPrivacyData = [
       ...securityPrivacyData,
@@ -77,15 +82,7 @@ export default function SecurityPrivacy(props) {
           className={'flex flex-row justify-between pl-[15px] py-[24px]'}
           onPress={() => {
             if (item.index === 0) {
-              // isAuthenticatedForPrivateKey().then(
-              //   (isAuthenticated: boolean) => {
-              //     if (isAuthenticated) {
               props.navigation.navigate(C.screenTitle.PRIVATE_KEY);
-              //     } else {
-              //       showToast(t('PVT_KEY_FETCH_FAILED'));
-              //     }
-              //   },
-              // );
               sendFirebaseEvent(hdWalletContext, 'reveal_private_key');
             } else if (item.index === 1) {
               props.navigation.navigate(C.screenTitle.SEED_PHRASE);

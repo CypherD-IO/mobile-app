@@ -62,9 +62,7 @@ export const InitializeAppProvider: React.FC<JSX.Element> = ({ children }) => {
       await exitIfJailBroken();
       await fetchRPCEndpointsFromServer(globalContext.globalDispatch);
       await checkForUpdatesAndShowModal(setUpdateModal);
-      console.log(';;;;;;;;;;;;;;;;;;;;;;');
       await loadActivitiesFromAsyncStorage();
-      console.log('......................');
 
       if (Platform.OS === 'ios') {
         registerForRemoteMessages();

@@ -13,7 +13,11 @@ export const _generateWalletFromMnemonic = async (
   mnemonic,
   trk_event: string,
 ) => {
-  const wallet = await generateWalletFromMnemonic(mnemonic, trk_event);
+  const wallet = await generateWalletFromMnemonic(
+    mnemonic,
+    trk_event,
+    hdWalletContext.state.choosenWalletIndex,
+  );
   saveCredentialsToKeychain(
     hdWalletContext,
     portfolioState,
@@ -33,8 +37,12 @@ export const createWallet = (hdWalletContext, portfolioState) => {
   });
 };
 
-export const importWallet = (hdWalletContext, portfolioState, mnemonic) => {
-  _generateWalletFromMnemonic(
+export const importWallet = async (
+  hdWalletContext,
+  portfolioState,
+  mnemonic,
+) => {
+  await _generateWalletFromMnemonic(
     hdWalletContext,
     portfolioState,
     mnemonic,
@@ -47,9 +55,7 @@ export const importWalletPrivateKey = async (
   portfolioState,
   privateKey,
 ) => {
-  console.log('import wallet priv key ... ');
   const wallet = await generateWalletFromPrivateKey(privateKey);
-  console.log('wallet :: ', wallet);
   await saveCredentialsToKeychain(
     hdWalletContext,
     portfolioState,

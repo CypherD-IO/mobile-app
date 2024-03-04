@@ -136,14 +136,6 @@ export default function SigningModal({
     dAppInfo = undefined;
   }
 
-  // if (requestParams[0]?.gasPrice.startsWith('0x')) {
-  //   requestParams[0].gasPrice = parseFloat(Web3.utils.fromWei(Web3.utils.hexToNumberString(requestParams[0]?.gasPrice), 'Gwei'));
-  // } else {
-  //   // Finally this code path has a breaking test-case with KOGE when gasPrice is an integer
-  //   requestParams[0].gasPrice = parseFloat(Web3.utils.fromWei(requestParams[0], 'Gwei'));
-  // }
-  // console.log('GasPrice Detail', JSON.stringify(requestParams[0], undefined, 4));
-
   useEffect(() => {
     let decodeTxnRequestBody: DecodeTxnRequestBody;
     const decodeTxnRequest = async () => {

@@ -96,6 +96,7 @@ import LinkWalletAuth from '../containers/DebitCard/bridgeCard/linkWalletAuth';
 import ImportWalletOptions from '../containers/Options/importWalletOptions';
 import CardNotificationSettings from '../containers/DebitCard/bridgeCard/cardNotificationSettings';
 import EnterPrivateKey from '../containers/Auth/EnterPrivateKey';
+import { ChooseWalletIndex } from '../containers/Auth/ChooseWalletIndex';
 
 const { DynamicImage, DynamicButton } = require('../styles');
 
@@ -1684,6 +1685,23 @@ export function OptionsStackScreen({ navigation, route }) {
           headerTransparent: false,
           headerShadowVisible: false,
           title: t('ENTER_SEED_PHRASE'),
+          headerTitleAlign: 'center',
+          headerTitleStyle: optionsStackScreenHeaderTitleStyles,
+          headerStyle: {
+            elevation: 0,
+          },
+          headerTintColor: Colors.primaryTextColor,
+          headerBackTitleVisible: false,
+          headerLeft: props => defaultHeaderLeft(navigation),
+        })}
+      />
+      <OptionsStack.Screen
+        name={screenTitle.CHOOSE_WALLET_INDEX}
+        component={ChooseWalletIndex}
+        options={({ navigation, route }) => ({
+          headerTransparent: false,
+          headerShadowVisible: false,
+          title: t('CHOOSE_WALLET_TO_IMPORT'),
           headerTitleAlign: 'center',
           headerTitleStyle: optionsStackScreenHeaderTitleStyles,
           headerStyle: {

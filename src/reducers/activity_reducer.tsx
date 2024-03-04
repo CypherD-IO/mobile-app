@@ -170,9 +170,7 @@ export const initialActivityState: ActivityState = {
 };
 
 function synchronizeStorage(state: ActivityState) {
-  console.log('setting async');
   void setActivities(state);
-  console.log('finished setting async');
 }
 
 export enum ActivityReducerAction {
@@ -188,9 +186,7 @@ export enum ActivityReducerAction {
 export function ActivityStateReducer(state: any, action: any): any {
   switch (action.type) {
     case ActivityReducerAction.LOAD: {
-      console.log('before re : ');
       const re = action.value;
-      console.log('re : ', re);
       synchronizeStorage(re);
       return re;
     }

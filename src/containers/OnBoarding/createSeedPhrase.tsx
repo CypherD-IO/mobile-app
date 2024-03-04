@@ -79,6 +79,7 @@ function CreateSeedPhrase({ route, navigation }) {
     const generatedWallet = await generateWalletFromMnemonic(
       mnemonic,
       trkEvent,
+      hdWalletContext.state.choosenWalletIndex,
     );
     setWallet(generatedWallet);
   };

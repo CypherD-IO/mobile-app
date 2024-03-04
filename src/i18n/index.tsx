@@ -996,6 +996,9 @@ const resources = {
       ENTER_PRIVATE_KEY_PLACEHOLDER: 'Enter your private key',
       BAD_PRIVATE_KEY_PHARSE: 'Bad private key',
       IMPORT_WALLET_USING_PRIVATE_KEY: 'Import Wallet Using PrivateKey',
+      CHOOSE_WALLET_INDEX_TEXT:
+        'These wallets are associated with your recovery phrase. Choose the wallet to import',
+      CHOOSE_WALLET_TO_IMPORT: 'Select Wallet',
     },
   },
 };

@@ -96,20 +96,9 @@ export async function saveCredentialsToKeychain(
   await saveToKeychain(AUTHORIZE_WALLET_DELETION, 'AUTHORIZE_WALLET_DELETION');
   await saveToKeychain(DUMMY_AUTH, 'DUMMY_AUTH');
   const rootData = constructRootData(wallet.accounts);
-  // save root data after wallet creation
-  // if (isAndroid()) {
-  //   const encrypted = CryptoJS.AES.encrypt(
-  //     JSON.stringify(rootData),
-  //     wallet.mnemonic,
-  //   ).toString();
-  //   await saveCyRootDataToKeyChain(encrypted);
-  // } else {
-  //   await saveCyRootDataToKeyChain(rootData);
-  // }
-  // await saveCyRootDataToKeyChain(rootData);
   await setCyRootData(rootData);
   await setSchemaVersion(currentSchemaVersion);
-  // Only retain wallet address and private key in memory, load others are required
+  // Only retain wallet address in memory, load others are required
   wallet.accounts.forEach((account: IAccountDetailWithChain) => {
     hdWalletContext.dispatch({
       type: 'LOAD_WALLET',
@@ -123,7 +112,6 @@ export async function saveCredentialsToKeychain(
       },
     });
   });
-
   portfolioState.dispatchPortfolio({
     value: { tokenPortfolio: null, portfolioState: PORTFOLIO_NEW_LOAD },
   });
@@ -147,12 +135,6 @@ export async function _setInternetCredentialsOptions(
   try {
     if (acl) {
       const options = await getPrivateACLOptions();
-      // if (isAndroid() && key === CYPHERD_ROOT_DATA) {
-      //   options = {
-      //     ...options,
-      //     storage: STORAGE_TYPE.AES,
-      //   };
-      // }
       await setInternetCredentials(key, key, value, options);
     } else {
       // For storing wallet address, which is public and to access without faceID or passcode
@@ -321,22 +303,12 @@ export async function isAuthenticatedForPrivateKey(
   return mnemonic && mnemonic !== _NO_CYPHERD_CREDENTIAL_AVAILABLE_;
 }
 
-export async function loadCyRootData(pin = '') {
+export async function loadCyRootData(hdWallet) {
   // Update schemaVersion whenever adding a new address generation logic
-  // let mnemonic: string | undefined;
-  // const hdWallet = useContext<any>(HdWalletContext);
-  // if (isAndroid()) {
-  //   mnemonic = await loadRecoveryPhraseFromKeyChain(
-  //     true,
-  //     hdWallet.pinValue,
-  //     showModal,
-  //   );
-  // }
 
   // No authentication needed to fetch CYD_RootData in Android but needed in case of IOS
   const schemaVersion = await getSchemaVersion();
   if (schemaVersion === currentSchemaVersion.toString()) {
-    // let cyData = await loadFromKeyChain(CYPHERD_ROOT_DATA, false, showModal);
     const cyData = await getCyRootData();
 
     if (cyData) {
@@ -351,22 +323,18 @@ export async function loadCyRootData(pin = '') {
     }
   }
 
-  // if (isIOS()) {
-  const mnemonic = await loadRecoveryPhraseFromKeyChain(false, pin);
-  // }
+  const mnemonic = await loadRecoveryPhraseFromKeyChain(
+    false,
+    hdWallet.pinValue,
+  );
 
   if (mnemonic && mnemonic !== _NO_CYPHERD_CREDENTIAL_AVAILABLE_) {
-    const wallet = await generateWalletFromMnemonic(mnemonic, 'import_wallet');
+    const wallet = await generateWalletFromMnemonic(
+      mnemonic,
+      'import_wallet',
+      hdWallet.choosenWalletIndex,
+    );
     const rootData = constructRootData(wallet.accounts);
-    // let dataToSave;
-    // if (isAndroid() && rootData) {
-    //   dataToSave = CryptoJS.AES.encrypt(
-    //     JSON.stringify(rootData),
-    //     mnemonic,
-    //   ).toString();
-    // } else {
-    //   dataToSave = rootData;
-    // }
     await setCyRootData(rootData);
     await setSchemaVersion(currentSchemaVersion);
     await removeFromKeyChain(CYPHERD_ROOT_DATA);
@@ -379,7 +347,6 @@ export async function loadCyRootData(pin = '') {
     {
       name: 'ethereum',
       address: _NO_CYPHERD_CREDENTIAL_AVAILABLE_,
-      // privateKey: _NO_CYPHERD_CREDENTIAL_AVAILABLE_,
       publicKey: _NO_CYPHERD_CREDENTIAL_AVAILABLE_,
     },
   ]);
@@ -394,7 +361,6 @@ function constructRootData(accounts: IAccountDetailWithChain[]) {
     accountDetails[account.name] = [
       {
         address,
-        // privateKey,
         algo,
         publicKey,
         rawAddress,
@@ -406,16 +372,6 @@ function constructRootData(accounts: IAccountDetailWithChain[]) {
     schemaVersion: currentSchemaVersion,
   };
 }
-
-// async function saveCyRootDataToKeyChain(result: any) {
-//   let password: string;
-//   if (isAndroid()) {
-//     password = result;
-//   } else {
-//     password = JSON.stringify(result);
-//   }
-//   await saveToKeychain(CYPHERD_ROOT_DATA, password, true);
-// }
 
 // End of load utility methods
 
@@ -551,22 +507,7 @@ export const isBiometricEnabled = async () => {
 
 export const removePin = async (hdWallet: any, pin = '') => {
   const mnemonic = await loadRecoveryPhraseFromKeyChain(false, pin);
-  // const cyRootData = await loadCyRootDataFromKeyChain(hdWallet.state);
-  // const cyRootData = await loadCyRootData();
   const privateKey = await loadPrivateKeyFromKeyChain(false, pin);
-  // if (cyRootData) {
-  //   await removeFromKeyChain(CYPHERD_ROOT_DATA);
-  //   let dataToSave;
-  //   if (isAndroid() && cyRootData && mnemonic) {
-  //     dataToSave = CryptoJS.AES.encrypt(
-  //       JSON.stringify(cyRootData),
-  //       mnemonic,
-  //     ).toString();
-  //   } else {
-  //     dataToSave = cyRootData;
-  //   }
-  //   await saveCyRootDataToKeyChain(dataToSave);
-  // }
   if (mnemonic) {
     await removeFromKeyChain(CYPHERD_SEED_PHRASE_KEY);
     await saveToKeychain(CYPHERD_SEED_PHRASE_KEY, mnemonic);

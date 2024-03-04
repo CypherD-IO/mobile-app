@@ -447,7 +447,6 @@ export const walletConnectApproveRequest = async (
           const chain = SUPPORTED_CHAIN_ID_MAP[dAppInfo.chainId];
 
           // activityData && dispatchActivity({ type: ActivityReducerAction.POST, value: activityData });
-          console.log('handleweb3 called in wallet connect approve request');
 
           const hash = await handleWeb3(payload, websiteInfo, chain);
 

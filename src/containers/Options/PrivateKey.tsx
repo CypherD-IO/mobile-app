@@ -42,6 +42,8 @@ import {
 } from '../../core/Keychain';
 import { generateCosmosPrivateKey } from '../../core/Address';
 import { cosmosConfig } from '../../constants/cosmosConfig';
+import useConnectionManager from '../../hooks/useConnectionManager';
+import { ConnectionTypes } from '../../constants/enum';
 
 function copyToClipboard(text: string) {
   Clipboard.setString(text);
@@ -65,24 +67,31 @@ export default function PrivateKey(props) {
   const [privateKey, setPrivateKey] = useState<string>(
     _NO_CYPHERD_CREDENTIAL_AVAILABLE_,
   );
+  const { connectionType } = useConnectionManager();
 
-  const data: UserChain[] = [
+  let data: UserChain[] = [
     {
       ...CHAIN_ETH,
     },
     {
       ...CHAIN_EVMOS,
     },
-    {
-      ...CHAIN_COSMOS,
-    },
-    {
-      ...CHAIN_OSMOSIS,
-    },
-    {
-      ...CHAIN_JUNO,
-    },
   ];
+
+  if (connectionType === ConnectionTypes.SEED_PHRASE) {
+    data = [
+      ...data,
+      {
+        ...CHAIN_COSMOS,
+      },
+      {
+        ...CHAIN_OSMOSIS,
+      },
+      {
+        ...CHAIN_JUNO,
+      },
+    ];
+  }
 
   const [selectedChain, setSelectedChain] = useState<UserChain>(data[0]);
 
