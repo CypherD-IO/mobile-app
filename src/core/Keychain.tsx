@@ -20,6 +20,7 @@ import {
   PIN_AUTH,
   convertToHexa,
   AUTHORIZE_WALLET_DELETION,
+  sleepFor,
 } from './util';
 import DeviceInfo from 'react-native-device-info';
 import RNExitApp from 'react-native-exit-app';
@@ -46,11 +47,12 @@ import { isValidMnemonic, sha256 } from 'ethers/lib/utils';
 import { initialHdWalletState } from '../reducers';
 import { t } from 'i18next';
 import { KeychainErrors } from '../constants/KeychainErrors';
+import { HdWalletContextDef } from '../reducers/hdwallet_reducer';
 
 const currentSchemaVersion = 5;
 
 export async function saveCredentialsToKeychain(
-  hdWalletContext: any,
+  hdWalletContext: HdWalletContextDef,
   portfolioState: any,
   wallet: any,
 ) {
@@ -136,7 +138,7 @@ export async function _setInternetCredentialsOptions(
         {
           text: 'OK',
           onPress: () => {
-            void Intercom.displayMessenger();
+            void Intercom.present();
           },
         },
       ],
@@ -158,7 +160,8 @@ export async function saveToKeychain(key: string, value: string, acl = true) {
         Sentry.captureException(e1);
       }
     };
-    setTimeout(retrySave, 1000);
+    await sleepFor(1000);
+    void retrySave();
   }
 }
 
@@ -188,7 +191,7 @@ export async function loadFromKeyChain(
     } else {
       return _NO_CYPHERD_CREDENTIAL_AVAILABLE_;
     }
-  } catch (error) {
+  } catch (error: any) {
     // TODO (user feedback): Give feedback to user.
     if (
       error.message === KeychainErrors.CODE_11 ||
@@ -276,6 +279,7 @@ export async function isAuthenticatedForPrivateKey(
 export async function loadCyRootDataFromKeyChain(
   hdWallet = initialHdWalletState,
   showModal = () => {},
+  shouldTriggerShowAuth = true,
 ) {
   // Update schemaVersion whenever adding a new address generation logic
   let mnemonic: string | undefined;
@@ -292,7 +296,7 @@ export async function loadCyRootDataFromKeyChain(
   // No authentication needed to fetch CYD_RootData in Android but needed in case of IOS
   const schemaVersion = await getSchemaVersion();
   if (schemaVersion === currentSchemaVersion.toString()) {
-    let cyData = await loadFromKeyChain(CYPHERD_ROOT_DATA);
+    let cyData = await loadFromKeyChain(CYPHERD_ROOT_DATA, false, showModal);
 
     if (
       isAndroid() &&
@@ -318,7 +322,9 @@ export async function loadCyRootDataFromKeyChain(
       }
     } else {
       // on cyData being undefined, auth has been cancelled.
-      await showReAuthAlert();
+      if (shouldTriggerShowAuth) {
+        await showReAuthAlert();
+      }
     }
   }
 
@@ -511,9 +517,22 @@ export const isBiometricEnabled = async () => {
 
 export const removePin = async (hdWallet: any, pin = '') => {
   const mnemonic = await loadRecoveryPhraseFromKeyChain(false, pin);
+  const cyRootData = await loadCyRootDataFromKeyChain(hdWallet.state);
+  if (cyRootData) {
+    await removeFromKeyChain(CYPHERD_ROOT_DATA);
+    let dataToSave;
+    if (isAndroid() && cyRootData && mnemonic) {
+      dataToSave = CryptoJS.AES.encrypt(
+        JSON.stringify(cyRootData),
+        mnemonic,
+      ).toString();
+    } else {
+      dataToSave = cyRootData;
+    }
+    await saveCyRootDataToKeyChain(dataToSave);
+  }
   if (mnemonic) {
     await removeFromKeyChain(CYPHERD_SEED_PHRASE_KEY);
-
     await saveToKeychain(CYPHERD_SEED_PHRASE_KEY, mnemonic);
   }
   await removeFromKeyChain(PIN_AUTH);

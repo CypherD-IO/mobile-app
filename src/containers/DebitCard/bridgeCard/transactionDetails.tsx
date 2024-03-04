@@ -290,8 +290,8 @@ export default function TransactionDetails({
           }
         })}
         <CyDTouchView
-          onPress={async () => {
-            await Intercom.displayMessenger();
+          onPress={() => {
+            void Intercom.present();
             sendFirebaseEvent(hdWalletContext, 'support');
           }}
           className={
