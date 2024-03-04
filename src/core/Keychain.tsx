@@ -20,6 +20,7 @@ import {
   PIN_AUTH,
   convertToHexa,
   AUTHORIZE_WALLET_DELETION,
+  sleepFor,
 } from './util';
 import DeviceInfo from 'react-native-device-info';
 import RNExitApp from 'react-native-exit-app';
@@ -46,11 +47,12 @@ import { isValidMnemonic, sha256 } from 'ethers/lib/utils';
 import { initialHdWalletState } from '../reducers';
 import { t } from 'i18next';
 import { KeychainErrors } from '../constants/KeychainErrors';
+import { HdWalletContextDef } from '../reducers/hdwallet_reducer';
 
 const currentSchemaVersion = 5;
 
 export async function saveCredentialsToKeychain(
-  hdWalletContext: any,
+  hdWalletContext: HdWalletContextDef,
   portfolioState: any,
   wallet: any,
 ) {
@@ -136,7 +138,7 @@ export async function _setInternetCredentialsOptions(
         {
           text: 'OK',
           onPress: () => {
-            void Intercom.displayMessenger();
+            void Intercom.present();
           },
         },
       ],
@@ -158,7 +160,8 @@ export async function saveToKeychain(key: string, value: string, acl = true) {
         Sentry.captureException(e1);
       }
     };
-    setTimeout(retrySave, 1000);
+    await sleepFor(1000);
+    void retrySave();
   }
 }
 
@@ -188,7 +191,7 @@ export async function loadFromKeyChain(
     } else {
       return _NO_CYPHERD_CREDENTIAL_AVAILABLE_;
     }
-  } catch (error) {
+  } catch (error: any) {
     // TODO (user feedback): Give feedback to user.
     if (
       error.message === KeychainErrors.CODE_11 ||

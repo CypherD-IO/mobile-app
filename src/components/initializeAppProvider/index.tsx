@@ -1,6 +1,6 @@
 import React, { useContext, useEffect, useState } from 'react';
 import useInitializer from '../../hooks/useInitializer';
-import { GlobalContext } from '../../core/globalContext';
+import { GlobalContext, GlobalContextDef } from '../../core/globalContext';
 import { Linking, Platform } from 'react-native';
 import { onMessage, registerForRemoteMessages } from '../../core/push';
 import { PinPresentStates } from '../../constants/enum';
@@ -28,8 +28,9 @@ import { CyDText } from '../../styles/tailwindStyles';
 import { sendFirebaseEvent } from '../../containers/utilities/analyticsUtility';
 import Intercom from '@intercom/intercom-react-native';
 import RNExitApp from 'react-native-exit-app';
+import { HdWalletContextDef } from '../../reducers/hdwallet_reducer';
 
-export const InitializeAppProvider = ({ children }: any) => {
+export const InitializeAppProvider: React.FC<JSX.Element> = ({ children }) => {
   const {
     initializeSentry,
     exitIfJailBroken,
@@ -41,12 +42,12 @@ export const InitializeAppProvider = ({ children }: any) => {
     getHosts,
     checkForUpdatesAndShowModal,
   } = useInitializer();
-  const globalContext = useContext<any>(GlobalContext);
+  const globalContext = useContext(GlobalContext) as GlobalContextDef;
   const [pinAuthentication, setPinAuthentication] = useState(false);
   const [pinPresent, setPinPresent] = useState(PinPresentStates.NOTSET);
   const [showDefaultAuthRemoveModal, setShowDefaultAuthRemoveModal] =
     useState<boolean>(false);
-  const hdWallet = useContext<any>(HdWalletContext);
+  const hdWallet = useContext(HdWalletContext) as HdWalletContextDef;
 
   const [updateModal, setUpdateModal] = useState<boolean>(false);
   const [forcedUpdate, setForcedUpdate] = useState<boolean>(false);
@@ -112,7 +113,9 @@ export const InitializeAppProvider = ({ children }: any) => {
                     'itms-apps://apps.apple.com/app/cypherd-wallet/id1604120414';
                   Linking.canOpenURL(link).then(
                     supported => {
-                      supported && Linking.openURL(link);
+                      if (supported) {
+                        void Linking.openURL(link);
+                      }
                     },
                     err => Sentry.captureException(err),
                   );
@@ -161,8 +164,8 @@ export const InitializeAppProvider = ({ children }: any) => {
             <DialogButton
               text={t('CONTACT_TEXT')}
               onPress={() => {
-                void Intercom.displayMessenger();
-                sendFirebaseEvent(hdWallet.state, 'support');
+                void Intercom.present();
+                sendFirebaseEvent(hdWallet, 'support');
               }}
             />
           </DialogFooter>
@@ -201,7 +204,7 @@ export const InitializeAppProvider = ({ children }: any) => {
             />
           )
         ) : ethereum.address === _NO_CYPHERD_CREDENTIAL_AVAILABLE_ ? (
-          hdWallet.reset ? (
+          hdWallet.state.reset ? (
             <OnBoardingStack initialScreen={C.screenTitle.ENTER_KEY} />
           ) : (
             <OnBoardingStack />

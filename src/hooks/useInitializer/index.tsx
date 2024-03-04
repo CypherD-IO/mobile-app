@@ -246,11 +246,12 @@ export default function useInitializer() {
 
   const loadActivitiesFromAsyncStorage = async () => {
     await AsyncStorage.getItem('activities', (_err, data) => {
-      data &&
-        activityContext.dispatchActivity({
+      if (data) {
+        activityContext.dispatch({
           type: ActivityReducerAction.LOAD,
           value: JSON.parse(data),
         });
+      }
     });
   };
 
@@ -282,6 +283,7 @@ export default function useInitializer() {
         return PinPresentStates.TRUE;
       }
     }
+    return PinPresentStates.NOTSET;
   };
 
   const loadExistingWallet = async (
