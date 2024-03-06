@@ -803,10 +803,7 @@ export async function fetchTokenData(
   portfolioState: any,
 ) {
   const ARCH_HOST: string = hostWorker.getHost('ARCH_HOST');
-  const fromAnkr: boolean = portfolioState.statePortfolio.developerMode;
-  const cosmosPortfolioUrl = `${ARCH_HOST}/v1/portfolio/balances?ankr=${
-    fromAnkr as unknown as string
-  }`;
+  const portfolioUrl = `${ARCH_HOST}/v1/portfolio/balances`;
   const { isReadOnlyWallet } = hdWalletState.state;
   const { cosmos, osmosis, juno, stargaze, noble, ethereum } =
     hdWalletState.state.wallet;
@@ -848,48 +845,27 @@ export async function fetchTokenData(
         });
       }
     }
-    let params = {
-      'chains[]': PORTFOLIO_CHAINS_BACKEND_NAMES,
-      allowTestnet: true,
-      'address[]': [
+    let addresses;
+    if (isReadOnlyWallet) {
+      addresses = [ethereum.address];
+    } else {
+      addresses = [
         cosmos?.wallets[cosmos?.currentIndex]?.address,
         osmosis?.wallets[osmosis?.currentIndex]?.address,
         juno?.wallets[juno?.currentIndex]?.address,
         stargaze?.address,
         noble?.address,
         ethereum.address,
-      ],
+      ];
+    }
+    const payload = {
+      chains: PORTFOLIO_CHAINS_BACKEND_NAMES,
+      addresses,
+      allowTestNets: true,
+      isVerified: false,
     };
-    if (isReadOnlyWallet) {
-      params = {
-        allowTestnet: true,
-        'chains[]': PORTFOLIO_CHAINS_BACKEND_NAMES,
-        'address[]': [ethereum.address],
-      };
-    }
-    const archCall = axios.get(cosmosPortfolioUrl, {
-      params,
-      timeout: 25000,
-      paramsSerializer: function (params) {
-        return qs.stringify(params, { arrayFormat: 'repeat' });
-      },
-    });
-
-    const promiseArray: Array<Promise<any>> = [archCall];
-    let result, archBackend;
-    try {
-      result = await Promise.all(promiseArray);
-      archBackend = result[0];
-    } catch (e) {
-      Toast.show({
-        type: 'error',
-        text1: 'Network Timeout Error',
-        text2: 'Try refreshing in a while!',
-        position: 'bottom',
-      });
-    }
-
-    if (archBackend && archBackend?.status === 200) {
+    const archBackend = await axios.post(portfolioUrl, payload);
+    if (archBackend && archBackend?.status === 201) {
       let newPortfolio = portfolio;
       if (archBackend.data.chain_portfolios.length > 0) {
         newPortfolio = await getPortfolioModel(
@@ -953,22 +929,21 @@ export async function fetchRequiredTokenData(
   symbol?: string,
 ) {
   const ARCH_HOST: string = hostWorker.getHost('ARCH_HOST');
-  const portfolioUrl = `${ARCH_HOST}/v1/portfolio/balances?`;
-  const params = {
-    'chains[]': [chain],
-    'address[]': [address],
+  const portfolioUrl = `${ARCH_HOST}/v1/portfolio/balances`;
+  const payload = {
+    chains: [chain],
+    addresses: [address],
   };
-  const response = await axios.get(portfolioUrl, {
-    params,
+  const response = await axios.post(portfolioUrl, {
+    payload,
     timeout: 25000,
-    paramsSerializer: function (params) {
-      return qs.stringify(params, { arrayFormat: 'repeat' });
-    },
   });
   if (response.data) {
     if (symbol) {
       const tokenHoldings = response.data.chain_portfolios[0].token_holdings;
-      const tokenData = tokenHoldings?.find(token => token.symbol === symbol);
+      const tokenData = tokenHoldings?.find(
+        (token: { symbol: string }) => token.symbol === symbol,
+      );
       return tokenData;
     } else {
       return response.data;
