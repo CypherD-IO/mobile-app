@@ -42,7 +42,6 @@ export default function useEthSigner() {
         );
         return response;
       } else {
-        console.log('privatekey needed in use eth signer');
         const privateKey = await loadPrivateKeyFromKeyChain(
           false,
           hdWalletContext.state.pinValue,

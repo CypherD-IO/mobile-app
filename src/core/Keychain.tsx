@@ -55,7 +55,8 @@ import { KeychainErrors } from '../constants/KeychainErrors';
 import { HdWalletContextDef } from '../reducers/hdwallet_reducer';
 import { SECRET_TYPES } from '../constants/enum';
 
-const currentSchemaVersion = 5;
+// increase this when you want the CyRootData to be reconstructed
+const currentSchemaVersion = 6;
 
 export async function saveCredentialsToKeychain(
   hdWalletContext: HdWalletContextDef,
