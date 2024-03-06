@@ -23,6 +23,7 @@ import {
   sleepFor,
   CYPHERD_PRIVATE_KEY,
   DUMMY_AUTH,
+  isValidMessage,
 } from './util';
 import DeviceInfo from 'react-native-device-info';
 import RNExitApp from 'react-native-exit-app';
@@ -47,16 +48,25 @@ import {
   getCyRootData,
   setCyRootData,
   removeCyRootData,
+  setConnectionType,
 } from './asyncStorage';
 import { isValidMnemonic, sha256 } from 'ethers/lib/utils';
 import { initialHdWalletState } from '../reducers';
 import { t } from 'i18next';
 import { KeychainErrors } from '../constants/KeychainErrors';
 import { HdWalletContextDef } from '../reducers/hdwallet_reducer';
-import { SECRET_TYPES } from '../constants/enum';
+import {
+  ConnectionTypes,
+  SECRET_TYPES,
+  SignMessageValidationType,
+} from '../constants/enum';
+import { Dispatch, SetStateAction } from 'react';
+import Web3 from 'web3';
+import { hostWorker } from '../global';
+import axios from 'axios';
 
 // increase this when you want the CyRootData to be reconstructed
-const currentSchemaVersion = 6;
+const currentSchemaVersion = 10;
 
 export async function saveCredentialsToKeychain(
   hdWalletContext: HdWalletContextDef,
@@ -70,6 +80,12 @@ export async function saveCredentialsToKeychain(
     secretType === SECRET_TYPES.MENEMONIC
       ? CYPHERD_SEED_PHRASE_KEY
       : CYPHERD_PRIVATE_KEY;
+  if (SECRET_TYPES.MENEMONIC) {
+    void setConnectionType(ConnectionTypes.SEED_PHRASE);
+  } else if (SECRET_TYPES.PRIVATE_KEY) {
+    void setConnectionType(ConnectionTypes.PRIVATE_KEY);
+  }
+
   // Save Seed Phrase (master private key is not stored)
   if (await isPinAuthenticated()) {
     if (secretType === SECRET_TYPES.MENEMONIC) {
@@ -304,7 +320,7 @@ export async function isAuthenticatedForPrivateKey(
   return mnemonic && mnemonic !== _NO_CYPHERD_CREDENTIAL_AVAILABLE_;
 }
 
-export async function loadCyRootData(hdWallet) {
+export async function loadCyRootData(hdWallet: any) {
   // Update schemaVersion whenever adding a new address generation logic
 
   // No authentication needed to fetch CYD_RootData in Android but needed in case of IOS
@@ -338,6 +354,7 @@ export async function loadCyRootData(hdWallet) {
     const rootData = constructRootData(wallet.accounts);
     await setCyRootData(rootData);
     await setSchemaVersion(currentSchemaVersion);
+    await saveToKeychain(CYPHERD_PRIVATE_KEY, wallet.privateKey);
     await removeFromKeyChain(CYPHERD_ROOT_DATA);
     return rootData;
   }
@@ -539,4 +556,44 @@ export function decryptMnemonic(encryptedMnemonic: string, pin: string) {
     CryptoJS.enc.Utf8,
   );
   return mnemonic;
+}
+
+export async function signIn(
+  ethereum: { address: string },
+  hdWallet: HdWalletContextDef,
+  setShowDefaultAuthRemoveModal: Dispatch<SetStateAction<boolean>> = () => {},
+) {
+  const web3 = new Web3();
+  const ARCH_HOST: string = hostWorker.getHost('ARCH_HOST');
+  try {
+    const { data } = await axios.get(
+      `${ARCH_HOST}/v1/authentication/sign-message/${ethereum.address}`,
+    );
+    const verifyMessage = data.message;
+    const validationResponse = isValidMessage(ethereum.address, verifyMessage);
+    if (validationResponse.message === SignMessageValidationType.VALID) {
+      const privateKey = await loadPrivateKeyFromKeyChain(
+        true,
+        hdWallet.state.pinValue,
+        () => setShowDefaultAuthRemoveModal(true),
+      );
+      if (privateKey && privateKey !== _NO_CYPHERD_CREDENTIAL_AVAILABLE_) {
+        const { signature } = web3.eth.accounts.sign(verifyMessage, privateKey);
+        const result = await axios.post(
+          `${ARCH_HOST}/v1/authentication/verify-message/${ethereum.address}`,
+          {
+            signature,
+          },
+        );
+        return {
+          ...validationResponse,
+          token: result.data.token,
+          refreshToken: result.data.refreshToken,
+        };
+      }
+      return validationResponse;
+    }
+  } catch (error) {
+    Sentry.captureException(error);
+  }
 }

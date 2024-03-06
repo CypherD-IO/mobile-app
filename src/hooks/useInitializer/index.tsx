@@ -24,7 +24,6 @@ import {
   GlobalContext,
   RpcResponseDetail,
   initialGlobalState,
-  signIn,
 } from '../../core/globalContext';
 import { get, has, set } from 'lodash';
 import useAxios from '../../core/HttpRequest';
@@ -35,6 +34,7 @@ import {
   isPinAuthenticated,
   loadCyRootData,
   loadFromKeyChain,
+  signIn,
 } from '../../core/Keychain';
 import { initialHdWalletState } from '../../reducers';
 import {

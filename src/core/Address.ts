@@ -12,6 +12,8 @@ import { isIOS } from '../misc/checkers';
 import { Wallet } from '@ethersproject/wallet';
 import { addHexPrefix } from './util';
 import { ethers } from 'ethers';
+import { setConnectionType } from './asyncStorage';
+import { ConnectionTypes } from '../constants/enum';
 
 function sendFirebaseEvent(walletaddress: string, trkEvent: string) {
   void analytics().logEvent(trkEvent, {
@@ -55,18 +57,20 @@ const generateEthPrivateKey = (mnemonic: string, index = 0): string => {
   return wallet.getPrivateKeyString();
 };
 
-export const generateMultipleWalletAddressesFromSeedPhrase = (
+export const generateMultipleWalletAddressesFromSeedPhrase = async (
   mnemonic: string,
   numberOfAddresses = 100,
 ) => {
-  const hdNode = ethers.utils.HDNode.fromMnemonic(mnemonic);
-  const basePath = "m/44'/60'/0'/0/";
-  const addresses = Array.from({ length: numberOfAddresses }, (_, index) => {
-    const derivedNode = hdNode.derivePath(basePath + index.toString());
-    return { address: derivedNode.address.toLowerCase(), index };
-  });
+  return await new Promise((resolve, reject) => {
+    const hdNode = ethers.utils.HDNode.fromMnemonic(mnemonic);
+    const basePath = "m/44'/60'/0'/0/";
+    const addresses = Array.from({ length: numberOfAddresses }, (_, index) => {
+      const derivedNode = hdNode.derivePath(basePath + index.toString());
+      return { address: derivedNode.address.toLowerCase(), index };
+    });
 
-  return addresses;
+    resolve(addresses);
+  });
 };
 
 export const generateEthAddress = (
@@ -222,11 +226,14 @@ export const generateWalletFromMnemonic = async (
   mnemonic: string;
   privateKey: string;
 }> => {
+  addressIndex = addressIndex === -1 ? 0 : addressIndex;
   const bip44HDPath = {
     account: 0,
     change: 0,
     addressIndex,
   };
+  void setConnectionType(ConnectionTypes.SEED_PHRASE);
+
   const ethereumWallet = await generateEthAddress(mnemonic, addressIndex);
 
   const ethereumPrivateKey = await generateEthPrivateKey(

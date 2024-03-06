@@ -20,6 +20,7 @@ import {
   ActivityContext,
   HdWalletContext,
   PortfolioContext,
+  sleepFor,
 } from '../../core/util';
 import { importWallet } from '../../core/HdWallet';
 import { PORTFOLIO_LOADING } from '../../reducers/portfolio_reducer';
@@ -30,10 +31,7 @@ import { ActivityContextDef } from '../../reducers/activity_reducer';
 import { screenTitle } from '../../constants/index';
 import Loading from '../../components/v2/loading';
 import { isValidMnemonic } from 'ethers/lib/utils';
-import {
-  getReadOnlyWalletData,
-  setConnectionType,
-} from '../../core/asyncStorage';
+import { getReadOnlyWalletData } from '../../core/asyncStorage';
 import useAxios from '../../core/HttpRequest';
 import clsx from 'clsx';
 import { fetchTokenData } from '../../core/Portfolio';
@@ -85,7 +83,6 @@ export default function Login(props) {
           value: { portfolioState: PORTFOLIO_LOADING },
         });
         onChangeseedPhraseTextValue('');
-        void setConnectionType(ConnectionTypes.SEED_PHRASE);
         if (props && props.navigation) {
           const getCurrentRoute = props.navigation.getState().routes[0].name;
           if (getCurrentRoute === screenTitle.OPTIONS_SCREEN)
@@ -96,9 +93,12 @@ export default function Login(props) {
         }
       }, IMPORT_WALLET_TIMEOUT);
     }
-  }, [hdWalletContext]);
+  }, [hdWalletContext.state.choosenWalletIndex]);
 
   const submitImportWallet = async (textValue = seedPhraseTextValue) => {
+    setLoading(true);
+    await sleepFor(500);
+
     const keyValue = textValue.split(/\s+/);
     const { isReadOnlyWallet } = hdWalletContext.state;
     const { ethereum } = hdWalletContext.state.wallet;
@@ -112,8 +112,11 @@ export default function Login(props) {
           );
         }
       }
+      // const walletAddresses = [
+      //   { address: '0x01A5e4c3072a232c317EA6403eAe68D53A00a2Bc', index: 0 },
+      // ];
       const walletAddresses =
-        generateMultipleWalletAddressesFromSeedPhrase(textValue);
+        await generateMultipleWalletAddressesFromSeedPhrase(textValue);
       props?.navigation?.navigate(screenTitle.CHOOSE_WALLET_INDEX, {
         walletAddresses,
       });
@@ -211,7 +214,6 @@ export default function Login(props) {
             <Button
               title={t('SUBMIT')}
               onPress={() => {
-                setLoading(true);
                 void submitImportWallet();
               }}
               style={'h-[60px] mt-[40px]'}

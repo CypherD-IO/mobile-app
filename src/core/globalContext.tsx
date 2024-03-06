@@ -222,28 +222,6 @@ export interface GlobalContextDef {
 
 export const GlobalContext = React.createContext<GlobalContextDef | null>(null);
 
-const isValidMessage = (address: string, messageToBeValidated: string) => {
-  const messageToBeValidatedWith =
-    /^Cypher Wallet wants you to sign in with your Ethereum account: \nAddress: 0x[a-fA-F0-9]{40} \n\nBy signing this transaction you are allowing Cypher Wallet to see the following: \n\nYour wallet address: 0x[a-fA-F0-9]{40} \nSessionId: [0-9a-f]{8}-[0-9a-f]{4}-[0-5][0-9a-f]{3}-[089ab][0-9a-f]{3}-[0-9a-f]{12} \nVersion: 1.0 \n\nPlease sign this message to authenticate. \nThis is a proof that you own this account. \nThis will not consume any gas.$/i;
-  const currentVersion = '1.0';
-  const versionSubstring = messageToBeValidated
-    .match(/Version: (.*)[^\\n]/g)
-    ?.join('');
-  const expectedVersion = versionSubstring
-    ?.match(/[^Version: ](.*)[^\\n]/g)
-    ?.join('')
-    .trim();
-  if (messageToBeValidatedWith.test(messageToBeValidated)) {
-    return { message: SignMessageValidationType.VALID };
-  } else {
-    if (currentVersion !== expectedVersion) {
-      return { message: SignMessageValidationType.NEEDS_UPDATE };
-    } else {
-      return { message: SignMessageValidationType.INVALID };
-    }
-  }
-};
-
 export function isTokenValid(token: any) {
   if (token) {
     const jwtInfo = jwt_decode<JwtPayload>(token);
@@ -253,43 +231,4 @@ export function isTokenValid(token: any) {
     return true;
   }
   return false;
-}
-export async function signIn(
-  ethereum: { address: string },
-  hdWallet: HdWalletContextDef,
-  setShowDefaultAuthRemoveModal: Dispatch<SetStateAction<boolean>> = () => {},
-) {
-  const web3 = new Web3();
-  const ARCH_HOST: string = hostWorker.getHost('ARCH_HOST');
-  try {
-    const { data } = await axios.get(
-      `${ARCH_HOST}/v1/authentication/sign-message/${ethereum.address}`,
-    );
-    const verifyMessage = data.message;
-    const validationResponse = isValidMessage(ethereum.address, verifyMessage);
-    if (validationResponse.message === SignMessageValidationType.VALID) {
-      const privateKey = await loadPrivateKeyFromKeyChain(
-        true,
-        hdWallet.state.pinValue,
-        () => setShowDefaultAuthRemoveModal(true),
-      );
-      if (privateKey && privateKey !== _NO_CYPHERD_CREDENTIAL_AVAILABLE_) {
-        const { signature } = web3.eth.accounts.sign(verifyMessage, privateKey);
-        const result = await axios.post(
-          `${ARCH_HOST}/v1/authentication/verify-message/${ethereum.address}`,
-          {
-            signature,
-          },
-        );
-        return {
-          ...validationResponse,
-          token: result.data.token,
-          refreshToken: result.data.refreshToken,
-        };
-      }
-      return validationResponse;
-    }
-  } catch (error) {
-    Sentry.captureException(error);
-  }
 }

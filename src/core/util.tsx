@@ -53,7 +53,7 @@ import { ActivityContextDef } from '../reducers/activity_reducer';
 import { HdWalletContextDef } from '../reducers/hdwallet_reducer';
 import { isEvmosAddress } from '../containers/utilities/evmosSendUtility';
 import { t } from 'i18next';
-import { AnalyticsType } from '../constants/enum';
+import { AnalyticsType, SignMessageValidationType } from '../constants/enum';
 import {
   ErrorAnalytics,
   SuccessAnalytics,
@@ -908,4 +908,29 @@ export const hasSufficientBalanceAndGasFee = (
     ? sentAmount + gasFeeEstimation <= sendingTokenBalance
     : sentAmount <= sendingTokenBalance;
   return hasSufficientBalance && hasSufficientGasFee;
+};
+
+export const isValidMessage = (
+  address: string,
+  messageToBeValidated: string,
+) => {
+  const messageToBeValidatedWith =
+    /^Cypher Wallet wants you to sign in with your Ethereum account: \nAddress: 0x[a-fA-F0-9]{40} \n\nBy signing this transaction you are allowing Cypher Wallet to see the following: \n\nYour wallet address: 0x[a-fA-F0-9]{40} \nSessionId: [0-9a-f]{8}-[0-9a-f]{4}-[0-5][0-9a-f]{3}-[089ab][0-9a-f]{3}-[0-9a-f]{12} \nVersion: 1.0 \n\nPlease sign this message to authenticate. \nThis is a proof that you own this account. \nThis will not consume any gas.$/i;
+  const currentVersion = '1.0';
+  const versionSubstring = messageToBeValidated
+    .match(/Version: (.*)[^\\n]/g)
+    ?.join('');
+  const expectedVersion = versionSubstring
+    ?.match(/[^Version: ](.*)[^\\n]/g)
+    ?.join('')
+    .trim();
+  if (messageToBeValidatedWith.test(messageToBeValidated)) {
+    return { message: SignMessageValidationType.VALID };
+  } else {
+    if (currentVersion !== expectedVersion) {
+      return { message: SignMessageValidationType.NEEDS_UPDATE };
+    } else {
+      return { message: SignMessageValidationType.INVALID };
+    }
+  }
 };

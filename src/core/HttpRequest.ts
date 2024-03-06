@@ -1,7 +1,7 @@
 import { hostWorker } from '../global';
 import axios, { DEFAULT_AXIOS_TIMEOUT } from './Http';
 import { useContext } from 'react';
-import { GlobalContext, signIn, isTokenValid } from '../core/globalContext';
+import { GlobalContext, isTokenValid } from '../core/globalContext';
 import * as Sentry from '@sentry/react-native';
 import { HdWalletContext } from './util';
 import {
@@ -10,6 +10,7 @@ import {
 } from '../constants/enum';
 import { has } from 'lodash';
 import { t } from 'i18next';
+import { signIn } from './Keychain';
 type RequestMethod =
   | 'GET'
   | 'GET_WITHOUT_AUTH'
