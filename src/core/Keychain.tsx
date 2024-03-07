@@ -349,6 +349,7 @@ export async function loadCyRootData(hdWallet: any) {
     await setCyRootData(rootData);
     await setSchemaVersion(currentSchemaVersion);
     await saveToKeychain(CYPHERD_PRIVATE_KEY, wallet.privateKey);
+    await saveToKeychain(DUMMY_AUTH, 'DUMMY_AUTH');
     await removeFromKeyChain(CYPHERD_ROOT_DATA);
     return rootData;
   }
