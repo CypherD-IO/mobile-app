@@ -76,10 +76,6 @@ export async function saveCredentialsToKeychain(
 ) {
   await clearAsyncStorage();
   await removeCredentialsFromKeychain();
-  const keyChainKey =
-    secretType === SECRET_TYPES.MENEMONIC
-      ? CYPHERD_SEED_PHRASE_KEY
-      : CYPHERD_PRIVATE_KEY;
   if (SECRET_TYPES.MENEMONIC) {
     void setConnectionType(ConnectionTypes.SEED_PHRASE);
   } else if (SECRET_TYPES.PRIVATE_KEY) {
@@ -90,7 +86,7 @@ export async function saveCredentialsToKeychain(
   if (await isPinAuthenticated()) {
     if (secretType === SECRET_TYPES.MENEMONIC) {
       await saveToKeychain(
-        keyChainKey,
+        CYPHERD_SEED_PHRASE_KEY,
         CryptoJS.AES.encrypt(
           wallet.mnemonic,
           hdWalletContext.state.pinValue,
@@ -98,7 +94,7 @@ export async function saveCredentialsToKeychain(
       );
     }
     await saveToKeychain(
-      keyChainKey,
+      CYPHERD_PRIVATE_KEY,
       CryptoJS.AES.encrypt(
         wallet.privateKey,
         hdWalletContext.state.pinValue,
@@ -327,7 +323,6 @@ export async function loadCyRootData(hdWallet: any) {
   const schemaVersion = await getSchemaVersion();
   if (schemaVersion === currentSchemaVersion.toString()) {
     const cyData = await getCyRootData();
-
     if (cyData) {
       const parsedCyData = JSON.parse(cyData);
 
@@ -344,7 +339,6 @@ export async function loadCyRootData(hdWallet: any) {
     false,
     hdWallet.pinValue,
   );
-
   if (mnemonic && mnemonic !== _NO_CYPHERD_CREDENTIAL_AVAILABLE_) {
     const wallet = await generateWalletFromMnemonic(
       mnemonic,
@@ -535,6 +529,8 @@ export const removePin = async (hdWallet: any, pin = '') => {
     await saveToKeychain(CYPHERD_PRIVATE_KEY, privateKey);
   }
   await removeFromKeyChain(PIN_AUTH);
+  await saveToKeychain(AUTHORIZE_WALLET_DELETION, 'AUTHORIZE_WALLET_DELETION');
+  await saveToKeychain(DUMMY_AUTH, 'DUMMY_AUTH');
   hdWallet.dispatch({ type: 'SET_PIN_VALUE', value: { pin: '' } });
 };
 
