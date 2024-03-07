@@ -112,9 +112,6 @@ export default function Login(props) {
           );
         }
       }
-      // const walletAddresses = [
-      //   { address: '0x01A5e4c3072a232c317EA6403eAe68D53A00a2Bc', index: 0 },
-      // ];
       const walletAddresses =
         await generateMultipleWalletAddressesFromSeedPhrase(textValue);
       props?.navigation?.navigate(screenTitle.CHOOSE_WALLET_INDEX, {
