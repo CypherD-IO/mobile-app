@@ -995,7 +995,7 @@ const resources = {
         'Enter your Ethereum private key to import your wallet into Cypher.',
       ENTER_PRIVATE_KEY_PLACEHOLDER: 'Enter your Ethereum private key',
       BAD_PRIVATE_KEY_PHARSE: 'Bad private key',
-      IMPORT_WALLET_USING_PRIVATE_KEY: 'Import Wallet Using PrivateKey',
+      IMPORT_WALLET_USING_PRIVATE_KEY: 'Import With Private Key',
       CHOOSE_WALLET_INDEX_TEXT:
         'These wallets are associated with your recovery phrase. Choose the wallet to import',
       CHOOSE_WALLET_TO_IMPORT: 'Select Wallet',
