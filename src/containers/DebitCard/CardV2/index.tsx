@@ -46,6 +46,7 @@ import {
 } from '../../../constants/cardPageV2';
 import { getWalletProfile } from '../../../core/card';
 import InfiniteScrollFooterLoader from '../../../components/v2/InfiniteScrollFooterLoader';
+import { MODAL_HIDE_TIMEOUT } from '../../../core/Http';
 
 interface CypherCardScreenProps {
   navigation: any;
@@ -94,6 +95,9 @@ const CypherCardScreen = ({ navigation, route }: CypherCardScreenProps) => {
     currentCardIndex,
     'cardId',
   ]);
+  const {
+    pc: { physicalCardUpgradationFee } = { physicalCardUpgradationFee: 50 },
+  } = cardProfile;
 
   const onRefresh = () => {
     void refreshProfile();
@@ -290,6 +294,33 @@ const CypherCardScreen = ({ navigation, route }: CypherCardScreenProps) => {
     setFilteredTransactions(filteredTxns);
   };
 
+  const onPressFundCard = () => {
+    navigation.navigate(screenTitle.BRIDGE_FUND_CARD_SCREEN, {
+      navigation,
+      currentCardProvider,
+      currentCardIndex,
+    });
+  };
+
+  function onModalHide() {
+    hideModal();
+    setTimeout(() => {
+      onPressFundCard();
+    }, MODAL_HIDE_TIMEOUT);
+  }
+
+  const onPressUpgradeNow = () => {
+    if (cardBalance < physicalCardUpgradationFee) {
+      showModal('state', {
+        type: 'error',
+        title: t('INSUFFICIENT_FUNDS'),
+        description: `You do not have $  ${physicalCardUpgradationFee} balance to upgrade to physical card. Please load now to upgrade`,
+        onSuccess: onModalHide,
+        onFailure: hideModal,
+      });
+    }
+  };
+
   return (
     <CyDSafeAreaView className='flex-1 bg-white'>
       {/* TXN FILTER MODAL */}
@@ -328,6 +359,7 @@ const CypherCardScreen = ({ navigation, route }: CypherCardScreenProps) => {
             hideCardDetails={isFocused}
             currentCardProvider={currentCardProvider}
             setCurrentCardProvider={setCurrentCardProvider}
+            onPressUpgradeNow={onPressUpgradeNow}
           />
           {/* SWITCH PROVIDER */}
           {/* FUND CARD */}
@@ -347,11 +379,7 @@ const CypherCardScreen = ({ navigation, route }: CypherCardScreenProps) => {
               image={AppImages.LOAD_CARD_LOTTIE}
               isLottie={true}
               onPress={() => {
-                navigation.navigate(screenTitle.BRIDGE_FUND_CARD_SCREEN, {
-                  navigation,
-                  currentCardProvider,
-                  currentCardIndex,
-                });
+                onPressFundCard();
               }}
               style={
                 'pr-[7%] pl-[5%] py-[0px] w-[40%] flex flex-row items-center justify-center rounded-[8px]'

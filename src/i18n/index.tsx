@@ -1000,6 +1000,7 @@ const resources = {
         'These wallets are associated with your recovery phrase. Choose the wallet to import',
       CHOOSE_WALLET_TO_IMPORT: 'Select Wallet',
       LOADING_TEXT: 'Almost there, please hold on...',
+      UPGRADE_NOW_FOR: 'Upgrade now for ',
     },
   },
 };

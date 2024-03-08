@@ -1,6 +1,7 @@
 import React, {
   Dispatch,
   SetStateAction,
+  useCallback,
   useContext,
   useEffect,
   useMemo,
@@ -45,16 +46,21 @@ export default function CardScreen({
   navigation,
   currentCardProvider,
   setCurrentCardProvider,
+  onPressUpgradeNow,
 }: {
   navigation: any;
   currentCardProvider: string;
   setCurrentCardProvider: Dispatch<SetStateAction<string>>;
+  onPressUpgradeNow: () => void;
 }) {
   const globalContext = useContext<any>(GlobalContext);
   const cardProfile: CardProfile = globalContext.globalState.cardProfile;
   const {
     lifetimeAmountUsd: lifetimeLoadUSD,
-    pc: { isPhysicalCardEligible: upgradeToPhysicalAvailable = false } = {},
+    pc: {
+      isPhysicalCardEligible: upgradeToPhysicalAvailable = false,
+      physicalCardUpgradationFee,
+    } = {},
     physicalCardEligibilityLimit,
   } = cardProfile;
 
@@ -307,95 +313,101 @@ export default function CardScreen({
     }
   };
 
-  const RenderCVVAndExpiry = ({ card }: { card: Card }) => {
-    const { hideCardDetails, showCVVAndExpiry, currentCardRevealedDetails } =
-      userCardDetails;
-    const revealCVVAndExpiry = () => {
-      setUserCardDetails({
-        ...userCardDetails,
-        currentCardRevealedDetails: {
-          ...currentCardRevealedDetails,
-          cardNumber:
-            'XXXX XXXX XXXX ' + String(card.last4).toUpperCase() ?? 'XXXX',
-        },
-        showCVVAndExpiry: true,
-      });
-    };
-    const getCVV = () => {
-      if (
-        card.cardId === userCardDetails.currentCardRevealedDetails.cardId &&
-        !userCardDetails.hideCardDetails &&
-        userCardDetails.showCVVAndExpiry
-      ) {
-        return userCardDetails.currentCardRevealedDetails.cvv;
-      } else {
-        return 'XXX';
-      }
-    };
-    const getExpiry = () => {
-      const { currentCardRevealedDetails, hideCardDetails, showCVVAndExpiry } =
+  const RenderCVVAndExpiry = useCallback(
+    ({ card }: { card: Card }) => {
+      const { hideCardDetails, showCVVAndExpiry, currentCardRevealedDetails } =
         userCardDetails;
-      const { expiryMonth, expiryYear } = currentCardRevealedDetails;
+      const revealCVVAndExpiry = () => {
+        setUserCardDetails({
+          ...userCardDetails,
+          currentCardRevealedDetails: {
+            ...currentCardRevealedDetails,
+            cardNumber:
+              'XXXX XXXX XXXX ' + String(card.last4).toUpperCase() ?? 'XXXX',
+          },
+          showCVVAndExpiry: true,
+        });
+      };
+      const getCVV = () => {
+        if (
+          card.cardId === userCardDetails.currentCardRevealedDetails.cardId &&
+          !userCardDetails.hideCardDetails &&
+          userCardDetails.showCVVAndExpiry
+        ) {
+          return userCardDetails.currentCardRevealedDetails.cvv;
+        } else {
+          return 'XXX';
+        }
+      };
+      const getExpiry = () => {
+        const {
+          currentCardRevealedDetails,
+          hideCardDetails,
+          showCVVAndExpiry,
+        } = userCardDetails;
+        const { expiryMonth, expiryYear } = currentCardRevealedDetails;
+        if (
+          card.cardId === currentCardRevealedDetails.cardId &&
+          !hideCardDetails &&
+          showCVVAndExpiry
+        ) {
+          return expiryMonth + ' / ' + expiryYear;
+        } else {
+          return 'XX / XX';
+        }
+      };
       if (
-        card.cardId === currentCardRevealedDetails.cardId &&
         !hideCardDetails &&
-        showCVVAndExpiry
+        !showCVVAndExpiry &&
+        card.cardId === userCardDetails.currentCardRevealedDetails.cardId
       ) {
-        return expiryMonth + ' / ' + expiryYear;
-      } else {
-        return 'XX / XX';
+        return (
+          <CyDTouchView
+            className='flex justify-center items-center self-center bg-fadedDarkBackgroundColor p-[10px] rounded-[20px] mb-[15px]'
+            onPress={() => revealCVVAndExpiry()}>
+            <CyDText className='text-white text-center font-bold'>
+              {t('SHOW_CVV_EXPIRY')}
+            </CyDText>
+          </CyDTouchView>
+        );
       }
-    };
-    if (
-      !hideCardDetails &&
-      !showCVVAndExpiry &&
-      card.cardId === userCardDetails.currentCardRevealedDetails.cardId
-    ) {
       return (
-        <CyDTouchView
-          className='flex justify-center items-center self-center bg-fadedDarkBackgroundColor p-[10px] rounded-[20px] mb-[15px]'
-          onPress={() => revealCVVAndExpiry()}>
-          <CyDText className='text-white text-center font-bold'>
-            {t('SHOW_CVV_EXPIRY')}
-          </CyDText>
-        </CyDTouchView>
+        <CyDView className='flex flex-row mb-[10px]'>
+          <CyDView className='ml-[10px]'>
+            <CyDText
+              className={clsx('font-nunito font-bold text-[12px] mx-[10px]', {
+                'text-white': card.type !== 'physical',
+              })}>
+              {t('CVV')}
+            </CyDText>
+            <CyDText
+              className={clsx(
+                'font-nunito font-bold text-[12px] mx-[10px] mt-[5px]',
+                { 'text-white': card.type !== 'physical' },
+              )}>
+              {getCVV()}
+            </CyDText>
+          </CyDView>
+          <CyDView className='flex-1 items-center ml-[-50px]'>
+            <CyDText
+              className={clsx('font-nunito font-bold text-[12px] mx-[10px]', {
+                'text-white': card.type !== 'physical',
+              })}>
+              {t('VALID_THRU')}
+            </CyDText>
+            <CyDText
+              className={clsx(
+                'font-nunito font-bold text-[12px] mx-[10px] mt-[5px]',
+                { 'text-white': card.type !== 'physical' },
+              )}>
+              {getExpiry()}
+            </CyDText>
+          </CyDView>
+        </CyDView>
       );
-    }
-    return (
-      <CyDView className='flex flex-row mb-[10px]'>
-        <CyDView className='ml-[10px]'>
-          <CyDText
-            className={clsx('font-nunito font-bold text-[12px] mx-[10px]', {
-              'text-white': card.type !== 'physical',
-            })}>
-            {t('CVV')}
-          </CyDText>
-          <CyDText
-            className={clsx(
-              'font-nunito font-bold text-[12px] mx-[10px] mt-[5px]',
-              { 'text-white': card.type !== 'physical' },
-            )}>
-            {getCVV()}
-          </CyDText>
-        </CyDView>
-        <CyDView className='flex-1 items-center ml-[-50px]'>
-          <CyDText
-            className={clsx('font-nunito font-bold text-[12px] mx-[10px]', {
-              'text-white': card.type !== 'physical',
-            })}>
-            {t('VALID_THRU')}
-          </CyDText>
-          <CyDText
-            className={clsx(
-              'font-nunito font-bold text-[12px] mx-[10px] mt-[5px]',
-              { 'text-white': card.type !== 'physical' },
-            )}>
-            {getExpiry()}
-          </CyDText>
-        </CyDView>
-      </CyDView>
-    );
-  };
+    },
+    [userCardDetails],
+  );
 
   const getCardNumber = (card: Card) => {
     if (
@@ -566,23 +578,26 @@ export default function CardScreen({
             <CyDView className='flex flex-col items-center justify-end py-[10px] h-[200px] w-[300px] border-[1px] border-inputBorderColor rounded-[12px] shadow shadow-slate-200'>
               <CyDTouchView
                 disabled={!upgradeToPhysicalAvailable}
-                onPress={() =>
-                  navigation.navigate(
-                    screenTitle.UPGRADE_TO_PHYSICAL_CARD_SCREEN,
-                    {
-                      currentCardProvider,
-                    },
-                  )
-                }
+                onPress={() => {
+                  onPressUpgradeNow();
+                }}
+                // navigation.navigate(
+                //   screenTitle.UPGRADE_TO_PHYSICAL_CARD_SCREEN,
+                //   {
+                //     currentCardProvider,
+                //   },
+                // )
+
                 className={clsx(
-                  'flex flex-row w-[60%] justify-center items-center border border-inputBorderColor bg-white rounded-[8px]',
+                  'flex flex-row justify-center items-center border border-inputBorderColor bg-white rounded-[8px] px-[12px]',
                 )}>
                 <CyDFastImage
                   source={AppImages.UPGRADE_TO_PHYSICAL_CARD_ARROW}
-                  className='h-[30px] w-[30px] mx-[8px] my-[5px]'
+                  className='h-[30px] w-[30px] mr-[8px] my-[5px]'
                 />
                 <CyDText className='font-nunito font-extrabold my-[5px]'>
-                  {t<string>('UPGRADE_NOW')}
+                  {t<string>('UPGRADE_NOW_FOR')}{' '}
+                  {'$ ' + String(physicalCardUpgradationFee ?? 0)}
                 </CyDText>
               </CyDTouchView>
             </CyDView>
