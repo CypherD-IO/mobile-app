@@ -1,7 +1,7 @@
 import { hostWorker } from '../global';
 import axios, { DEFAULT_AXIOS_TIMEOUT } from './Http';
 import { useContext } from 'react';
-import { GlobalContext, signIn, isTokenValid } from '../core/globalContext';
+import { GlobalContext, isTokenValid } from '../core/globalContext';
 import * as Sentry from '@sentry/react-native';
 import { HdWalletContext } from './util';
 import {
@@ -10,6 +10,7 @@ import {
 } from '../constants/enum';
 import { has } from 'lodash';
 import { t } from 'i18next';
+import { signIn } from './Keychain';
 type RequestMethod =
   | 'GET'
   | 'GET_WITHOUT_AUTH'
@@ -49,7 +50,7 @@ export default function useAxios() {
     async (req: any) => {
       if (!isTokenValid(token)) {
         try {
-          const signInResponse = await signIn(ethereum);
+          const signInResponse = await signIn(ethereum, hdWalletContext);
           if (
             signInResponse?.message === SignMessageValidationType.VALID &&
             has(signInResponse, 'token')
@@ -128,7 +129,7 @@ export default function useAxios() {
       } catch (error: any) {
         if (error?.response?.status === 401) {
           try {
-            const signInResponse = await signIn(ethereum);
+            const signInResponse = await signIn(ethereum, hdWalletContext);
             if (
               signInResponse?.message === SignMessageValidationType.VALID &&
               has(signInResponse, 'token')

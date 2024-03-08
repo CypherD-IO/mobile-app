@@ -268,13 +268,13 @@ export default function Onmeta({ route }) {
             isModalVisible={paybottom}
             signMessage={signModalParams.signMessage}
             signMessageTitle={signModalParams.signMessageTitle}
-            onSignPress={() => {
+            onSignPress={async () => {
               setPayBottom(false);
               if (
                 signModalParams.payload.method === WEB3METHODS.PERSONAL_SIGN ||
                 signModalParams.payload.method === WEB3METHODS.ETH_SIGN
               ) {
-                personal_sign(
+                await personal_sign(
                   hdWallet,
                   signModalParams.payload,
                   webviewRef,
@@ -283,7 +283,7 @@ export default function Onmeta({ route }) {
               } else if (
                 signModalParams.payload.method === WEB3METHODS.SIGN_TYPED_DATA
               ) {
-                signTypedDataCypherD(
+                await signTypedDataCypherD(
                   hdWallet,
                   signModalParams.payload,
                   webviewRef,
@@ -293,7 +293,7 @@ export default function Onmeta({ route }) {
                 signModalParams.payload.method ===
                 WEB3METHODS.SIGN_TYPED_DATA_V3
               ) {
-                signTypedDataCypherD(
+                await signTypedDataCypherD(
                   hdWallet,
                   signModalParams.payload,
                   webviewRef,
@@ -303,7 +303,7 @@ export default function Onmeta({ route }) {
                 signModalParams.payload.method ===
                 WEB3METHODS.SIGN_TYPED_DATA_V4
               ) {
-                signTypedDataCypherD(
+                await signTypedDataCypherD(
                   hdWallet,
                   signModalParams.payload,
                   webviewRef,
@@ -331,8 +331,8 @@ export default function Onmeta({ route }) {
             modalParams={payModalParams}
             onPayPress={() => {
               setPayBottomConfirm(false);
-              payModalParams &&
-                sendTransaction(
+              if (payModalParams) {
+                void sendTransaction(
                   hdWallet,
                   payModalParams.payload,
                   payModalParams.finalGasPrice,
@@ -342,6 +342,7 @@ export default function Onmeta({ route }) {
                   activityRef,
                   activityContext,
                 );
+              }
             }}
             onCancelPress={() => {
               activityRef.current &&

@@ -82,7 +82,7 @@ export const WalletConnectListener: React.FC = ({ children }) => {
       type: 'LOAD_WALLET',
       value: {
         address,
-        privateKey: _NO_CYPHERD_CREDENTIAL_AVAILABLE_,
+        // privateKey: _NO_CYPHERD_CREDENTIAL_AVAILABLE_,
         chain: 'ethereum',
         publicKey: '',
         rawAddress: '',
@@ -93,7 +93,7 @@ export const WalletConnectListener: React.FC = ({ children }) => {
       type: 'LOAD_WALLET',
       value: {
         address: ethToEvmos(String(address)),
-        privateKey: _NO_CYPHERD_CREDENTIAL_AVAILABLE_,
+        // privateKey: _NO_CYPHERD_CREDENTIAL_AVAILABLE_,
         chain: 'evmos',
         publicKey: '',
         rawAddress: '',

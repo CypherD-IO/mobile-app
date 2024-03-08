@@ -113,6 +113,8 @@ export const screenTitle = {
   LINK_WALLET_AUTH: 'LinkWalletAuth',
   IMPORT_WALLET_OPTIONS: 'importWalletOptionsScreen',
   CARD_NOTIFICATION_SETTINGS: 'cardNotificationSettings',
+  ENTER_PRIVATE_KEY: 'enterPrivateKey',
+  CHOOSE_WALLET_INDEX: 'chooseWalletIndex',
 };
 
 export const fontsName = {

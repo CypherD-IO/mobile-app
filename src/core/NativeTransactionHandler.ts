@@ -20,6 +20,7 @@ import {
   convertAmountOfContractDecimal,
   formatAmount,
   getNativeToken,
+  _NO_CYPHERD_CREDENTIAL_AVAILABLE_,
 } from './util';
 import {
   Chain,
@@ -39,7 +40,7 @@ import {
   microAtomToUsd,
 } from '../containers/utilities/cosmosSendUtility';
 import { OfflineDirectSigner } from '@cosmjs/proto-signing';
-import { getSignerClient } from './Keychain';
+import { getSignerClient, loadPrivateKeyFromKeyChain } from './Keychain';
 import { MsgSendEncodeObject, SigningStargateClient } from '@cosmjs/stargate';
 import { cosmosConfig } from '../constants/cosmosConfig';
 import { t } from 'i18next';
@@ -113,7 +114,7 @@ export function sendNativeCoinOrToken(
       fromChain,
     );
   } else {
-    _sendToken(
+    void _sendToken(
       hdWalletContext,
       portfolioState,
       web3,
@@ -129,7 +130,7 @@ export function sendNativeCoinOrToken(
   }
 }
 
-export function sendNativeCoinOrTokenToAnyAddress(
+export async function sendNativeCoinOrTokenToAnyAddress(
   hdWalletContext: any,
   portfolioState: any,
   fromChain: any,
@@ -165,7 +166,7 @@ export function sendNativeCoinOrTokenToAnyAddress(
       fromChain,
     );
   } else {
-    _sendToken(
+    void _sendToken(
       hdWalletContext,
       portfolioState,
       web3,
@@ -249,137 +250,143 @@ async function _sendNativeCoin(
     };
 
     let txHash: string;
-    const signPromise = web3.eth.accounts.signTransaction(
-      tx,
-      ethereum.privateKey,
+    const privateKey = await loadPrivateKeyFromKeyChain(
+      false,
+      hdWalletContext.state.pinValue,
     );
-    signPromise.then(
-      signedTx => {
-        web3.eth
-          .sendSignedTransaction(signedTx.rawTransaction)
-          .once('transactionHash', async function (hash: string) {
-            txHash = hash;
-            // showModal('state', {type: 'info', title: 'Transaction Hash', description: hash, onSuccess: hideModal, onFailure: hideModal});
-            Toast.show({
-              type: 'info',
-              text1: 'Transaction Hash',
-              text2: hash,
-              position: 'bottom',
-            });
-            const logEventName =
-              currentQuoteUUID === ''
-                ? 'send_transaction'
-                : 'bridge_transaction_submit';
-            await analytics().logEvent(logEventName, {
-              from: ethereum.address,
-              to: to_address,
-              gasPrice: finalGasPrice,
-              data: '',
-              value: send_token_amount,
-              gas: gasLimit,
-              hash,
-              chain: portfolioState.statePortfolio.selectedChain.name,
-            });
-          })
-          .once('receipt', function (receipt: string) {})
-          .on('confirmation', function (confNumber: string) {})
-          .on('error', async function (error: { message: string }) {
-            if (!txHash) {
-              await analytics().logEvent('bridge_transaction_receipt_failed', {
+    if (privateKey && privateKey !== _NO_CYPHERD_CREDENTIAL_AVAILABLE_) {
+      const signPromise = web3.eth.accounts.signTransaction(tx, privateKey);
+      signPromise.then(
+        signedTx => {
+          web3.eth
+            .sendSignedTransaction(signedTx.rawTransaction)
+            .once('transactionHash', async function (hash: string) {
+              txHash = hash;
+              // showModal('state', {type: 'info', title: 'Transaction Hash', description: hash, onSuccess: hideModal, onFailure: hideModal});
+              Toast.show({
+                type: 'info',
+                text1: 'Transaction Hash',
+                text2: hash,
+                position: 'bottom',
+              });
+              const logEventName =
+                currentQuoteUUID === ''
+                  ? 'send_transaction'
+                  : 'bridge_transaction_submit';
+              await analytics().logEvent(logEventName, {
                 from: ethereum.address,
                 to: to_address,
+                gasPrice: finalGasPrice,
+                data: '',
                 value: send_token_amount,
-                message: 'Insufficient funds for gas',
+                gas: gasLimit,
+                hash,
+                chain: portfolioState.statePortfolio.selectedChain.name,
+              });
+            })
+            .once('receipt', function (receipt: string) {})
+            .on('confirmation', function (confNumber: string) {})
+            .on('error', async function (error: { message: string }) {
+              if (!txHash) {
+                await analytics().logEvent(
+                  'bridge_transaction_receipt_failed',
+                  {
+                    from: ethereum.address,
+                    to: to_address,
+                    value: send_token_amount,
+                    message: 'Insufficient funds for gas',
+                  },
+                );
+                handleTransactionResult(
+                  error.message,
+                  currentQuoteUUID,
+                  ethereum.address,
+                  true,
+                  true,
+                );
+              } else {
+                setTimeout(async () => {
+                  const receipt = await web3.eth.getTransactionReceipt(txHash);
+                  if (receipt?.status) {
+                    // showModal('state', {type: 'success', title: 'Transaction', description: 'Transaction Receipt Received', onSuccess: hideModal, onFailure: hideModal});
+                    Toast.show({
+                      type: 'success',
+                      text1: 'Transaction',
+                      text2: 'Transaction Receipt Received',
+                      position: 'bottom',
+                    });
+                    handleTransactionResult(
+                      receipt.txHash,
+                      currentQuoteUUID,
+                      ethereum.address,
+                      false,
+                    );
+                  } else {
+                    await analytics().logEvent(
+                      'bridge_transaction_receipt_failed',
+                      {
+                        from: ethereum.address,
+                        to: to_address,
+                        value: send_token_amount,
+                        hash: receipt.transactionHash,
+                        message: JSON.stringify(receipt),
+                      },
+                    );
+                    Sentry.captureException(error);
+                    // showModal('state', {type: 'error', title: 'Transaction Error', description: error.message, onSuccess: hideModal, onFailure: hideModal});
+                    Toast.show({
+                      type: 'error',
+                      text1: 'Transaction Error',
+                      text2: error.message,
+                      position: 'bottom',
+                    });
+                    handleTransactionResult(
+                      error.message,
+                      currentQuoteUUID,
+                      ethereum.address,
+                      true,
+                    );
+                  }
+                }, 5000);
+              }
+            })
+            .then(async function (receipt: { transactionHash: string }) {
+              // showModal('state', {type: 'success', title: 'Transaction', description: 'Transaction Receipt Received', onSuccess: hideModal, onFailure: hideModal});
+              Toast.show({
+                type: 'success',
+                text1: 'Transaction',
+                text2: 'Transaction Receipt Received',
+                position: 'bottom',
               });
               handleTransactionResult(
-                error.message,
+                receipt.transactionHash,
                 currentQuoteUUID,
                 ethereum.address,
-                true,
-                true,
+                false,
               );
-            } else {
-              setTimeout(async () => {
-                const receipt = await web3.eth.getTransactionReceipt(txHash);
-                if (receipt?.status) {
-                  // showModal('state', {type: 'success', title: 'Transaction', description: 'Transaction Receipt Received', onSuccess: hideModal, onFailure: hideModal});
-                  Toast.show({
-                    type: 'success',
-                    text1: 'Transaction',
-                    text2: 'Transaction Receipt Received',
-                    position: 'bottom',
-                  });
-                  handleTransactionResult(
-                    receipt.txHash,
-                    currentQuoteUUID,
-                    ethereum.address,
-                    false,
-                  );
-                } else {
-                  await analytics().logEvent(
-                    'bridge_transaction_receipt_failed',
-                    {
-                      from: ethereum.address,
-                      to: to_address,
-                      value: send_token_amount,
-                      hash: receipt.transactionHash,
-                      message: JSON.stringify(receipt),
-                    },
-                  );
-                  Sentry.captureException(error);
-                  // showModal('state', {type: 'error', title: 'Transaction Error', description: error.message, onSuccess: hideModal, onFailure: hideModal});
-                  Toast.show({
-                    type: 'error',
-                    text1: 'Transaction Error',
-                    text2: error.message,
-                    position: 'bottom',
-                  });
-                  handleTransactionResult(
-                    error.message,
-                    currentQuoteUUID,
-                    ethereum.address,
-                    true,
-                  );
-                }
-              }, 5000);
-            }
-          })
-          .then(async function (receipt: { transactionHash: string }) {
-            // showModal('state', {type: 'success', title: 'Transaction', description: 'Transaction Receipt Received', onSuccess: hideModal, onFailure: hideModal});
-            Toast.show({
-              type: 'success',
-              text1: 'Transaction',
-              text2: 'Transaction Receipt Received',
-              position: 'bottom',
+              await analytics().logEvent('bridge_transaction_receipt', {
+                from: ethereum.address,
+                to: to_address,
+                gasPrice: finalGasPrice,
+                data: '',
+                value: send_token_amount,
+                gas: gasLimit,
+                hash: receipt.transactionHash,
+                chain: portfolioState.statePortfolio.selectedChain.name,
+              });
             });
-            handleTransactionResult(
-              receipt.transactionHash,
-              currentQuoteUUID,
-              ethereum.address,
-              false,
-            );
-            await analytics().logEvent('bridge_transaction_receipt', {
-              from: ethereum.address,
-              to: to_address,
-              gasPrice: finalGasPrice,
-              data: '',
-              value: send_token_amount,
-              gas: gasLimit,
-              hash: receipt.transactionHash,
-              chain: portfolioState.statePortfolio.selectedChain.name,
-            });
-          });
-      },
-      (err: any) => {
-        handleTransactionResult(
-          err.message,
-          currentQuoteUUID,
-          ethereum.address,
-          true,
-        );
-        Sentry.captureException(err);
-      },
-    );
+        },
+        (err: any) => {
+          handleTransactionResult(
+            err.message,
+            currentQuoteUUID,
+            ethereum.address,
+            true,
+          );
+          Sentry.captureException(err);
+        },
+      );
+    }
   } catch (err: any) {
     handleTransactionResult(
       err.message,
@@ -392,7 +399,7 @@ async function _sendNativeCoin(
   }
 }
 
-function sendToken(
+async function sendToken(
   hdWalletContext: any,
   portfolioState: any,
   web3: any,
@@ -408,7 +415,7 @@ function sendToken(
   const to_address = is_bridge
     ? TARGET_BRIDGE_EVM_WALLET_ADDRESS
     : TARGET_CARD_EVM_WALLET_ADDRESS;
-  _sendToken(
+  void _sendToken(
     hdWalletContext,
     portfolioState,
     web3,
@@ -423,7 +430,7 @@ function sendToken(
   );
 }
 
-function _sendToken(
+async function _sendToken(
   hdWalletContext: any,
   portfolioState: any,
   web3: any,
@@ -480,88 +487,90 @@ function _sendToken(
       gas: web3.utils.toHex(gasLimit),
       data: contract_data,
     };
-
-    const signPromise = web3.eth.accounts.signTransaction(
-      tx,
-      ethereum.privateKey,
+    const privateKey = await loadPrivateKeyFromKeyChain(
+      false,
+      hdWalletContext.state.pinValue,
     );
-    signPromise.then(
-      signedTx => {
-        web3.eth
-          .sendSignedTransaction(signedTx.rawTransaction)
-          .once('transactionHash', function (hash) {
-            // showModal('state', {type: 'info', title: 'Transaction Hash', description: hash, onSuccess: hideModal, onFailure: hideModal});
-            Toast.show({
-              type: 'info',
-              text1: 'Transaction Hash',
-              text2: hash,
-              position: 'bottom',
+    if (privateKey && privateKey !== _NO_CYPHERD_CREDENTIAL_AVAILABLE_) {
+      const signPromise = web3.eth.accounts.signTransaction(tx, privateKey);
+      signPromise.then(
+        signedTx => {
+          web3.eth
+            .sendSignedTransaction(signedTx.rawTransaction)
+            .once('transactionHash', function (hash) {
+              // showModal('state', {type: 'info', title: 'Transaction Hash', description: hash, onSuccess: hideModal, onFailure: hideModal});
+              Toast.show({
+                type: 'info',
+                text1: 'Transaction Hash',
+                text2: hash,
+                position: 'bottom',
+              });
+              const logEventName =
+                currentQuoteUUID === ''
+                  ? 'send_transaction'
+                  : 'bridge_transaction_submit';
+              analytics()
+                .logEvent(logEventName, {
+                  from: ethereum.address,
+                  to: to_address,
+                  gasPrice: finalGasPrice,
+                  data: `Contract: ${contractAddress}`,
+                  value: send_token_amount,
+                  gas: gasLimit,
+                  hash,
+                  chain: portfolioState.statePortfolio.selectedChain.name,
+                })
+                .catch(Sentry.captureException);
+            })
+            .once('receipt', function (receipt) {})
+            .on('confirmation', function (confNumber) {})
+            .on('error', function (error) {
+              // showModal('state', {type: 'error', title: 'Transaction Error', description: error.message, onSuccess: hideModal, onFailure: hideModal});
+              Toast.show({
+                type: 'error',
+                text1: 'Transaction Error',
+                text2: error.message,
+                position: 'bottom',
+              });
+              handleTransactionResult(
+                error.message,
+                currentQuoteUUID,
+                ethereum.address,
+                true,
+              );
+            })
+            .then(function (receipt) {
+              handleTransactionResult(
+                receipt.transactionHash,
+                currentQuoteUUID,
+                ethereum.address,
+                false,
+              );
+              analytics()
+                .logEvent('bridge_transaction_receipt', {
+                  from: ethereum.address,
+                  to: to_address,
+                  gasPrice: finalGasPrice,
+                  data: `Contract: ${contractAddress}`,
+                  value: send_token_amount,
+                  gas: gasLimit,
+                  hash: receipt.transactionHash,
+                  chain: portfolioState.statePortfolio.selectedChain.name,
+                })
+                .catch(Sentry.captureException);
             });
-            const logEventName =
-              currentQuoteUUID === ''
-                ? 'send_transaction'
-                : 'bridge_transaction_submit';
-            analytics()
-              .logEvent(logEventName, {
-                from: ethereum.address,
-                to: to_address,
-                gasPrice: finalGasPrice,
-                data: `Contract: ${contractAddress}`,
-                value: send_token_amount,
-                gas: gasLimit,
-                hash,
-                chain: portfolioState.statePortfolio.selectedChain.name,
-              })
-              .catch(Sentry.captureException);
-          })
-          .once('receipt', function (receipt) {})
-          .on('confirmation', function (confNumber) {})
-          .on('error', function (error) {
-            // showModal('state', {type: 'error', title: 'Transaction Error', description: error.message, onSuccess: hideModal, onFailure: hideModal});
-            Toast.show({
-              type: 'error',
-              text1: 'Transaction Error',
-              text2: error.message,
-              position: 'bottom',
-            });
-            handleTransactionResult(
-              error.message,
-              currentQuoteUUID,
-              ethereum.address,
-              true,
-            );
-          })
-          .then(function (receipt) {
-            handleTransactionResult(
-              receipt.transactionHash,
-              currentQuoteUUID,
-              ethereum.address,
-              false,
-            );
-            analytics()
-              .logEvent('bridge_transaction_receipt', {
-                from: ethereum.address,
-                to: to_address,
-                gasPrice: finalGasPrice,
-                data: `Contract: ${contractAddress}`,
-                value: send_token_amount,
-                gas: gasLimit,
-                hash: receipt.transactionHash,
-                chain: portfolioState.statePortfolio.selectedChain.name,
-              })
-              .catch(Sentry.captureException);
-          });
-      },
-      err => {
-        handleTransactionResult(
-          err.message,
-          currentQuoteUUID,
-          ethereum.address,
-          true,
-        );
-        Sentry.captureException(err);
-      },
-    );
+        },
+        err => {
+          handleTransactionResult(
+            err.message,
+            currentQuoteUUID,
+            ethereum.address,
+            true,
+          );
+          Sentry.captureException(err);
+        },
+      );
+    }
   } catch (err) {
     handleTransactionResult(
       err.message,
@@ -952,7 +961,7 @@ const TRANSACTION_ENDPOINT =
 const evmosSendBody = async (
   senderAddress: string,
   destinationAddress: string,
-  ethereum: any,
+  hdWallet: any,
   transferAmount: string,
   gasAmount = '14000000000000000',
   gas = '450000',
@@ -967,11 +976,13 @@ const evmosSendBody = async (
     cosmosChainId: 'evmos_9001-2',
   };
 
+  const privateKey = await loadPrivateKeyFromKeyChain(
+    false,
+    hdWallet.state.pinValue,
+  );
+
   const getPublicKey = () => {
-    const privateKeyBuffer = Buffer.from(
-      ethereum.privateKey.substring(2),
-      'hex',
-    );
+    const privateKeyBuffer = Buffer.from(privateKey.substring(2), 'hex');
 
     const sig = personalSign({
       privateKey: privateKeyBuffer,
@@ -1015,7 +1026,7 @@ const evmosSendBody = async (
 
   const msg = createMessageSend(chain, sender, fee, memo, params);
 
-  const privateKeyBuffer = Buffer.from(ethereum.privateKey.substring(2), 'hex');
+  const privateKeyBuffer = Buffer.from(privateKey.substring(2), 'hex');
 
   const signature = signTypedData({
     privateKey: privateKeyBuffer,
@@ -1037,13 +1048,13 @@ const evmosSendBody = async (
 export async function evmosSendSimulation(
   senderAddress: string,
   destinationAddress: string,
-  ethereum: any,
+  hdWallet: any,
   transferAmount: string,
 ) {
   const body = await evmosSendBody(
     senderAddress,
     destinationAddress,
-    ethereum,
+    hdWallet,
     transferAmount,
   );
   const response = await axios.post(SIMULATION_ENDPOINT, body);
@@ -1056,7 +1067,7 @@ export async function evmosSendSimulation(
 export const evmosSendTxn = async (
   senderAddress: string,
   destinationAddress: string,
-  ethereum: any,
+  hdWallet: any,
   transferAmount: string,
   gasWanted: number,
   handleSuccessTransaction: any,
@@ -1066,7 +1077,7 @@ export const evmosSendTxn = async (
   const body = await evmosSendBody(
     senderAddress,
     destinationAddress,
-    ethereum,
+    hdWallet,
     transferAmount,
     ethers.utils
       .parseUnits(

@@ -21,6 +21,9 @@ import {
   convertToHexa,
   AUTHORIZE_WALLET_DELETION,
   sleepFor,
+  CYPHERD_PRIVATE_KEY,
+  DUMMY_AUTH,
+  isValidMessage,
 } from './util';
 import DeviceInfo from 'react-native-device-info';
 import RNExitApp from 'react-native-exit-app';
@@ -42,54 +45,79 @@ import {
   setSchemaVersion,
   getSchemaVersion,
   clearAllData as clearAsyncStorage,
+  getCyRootData,
+  setCyRootData,
+  removeCyRootData,
+  setConnectionType,
 } from './asyncStorage';
 import { isValidMnemonic, sha256 } from 'ethers/lib/utils';
 import { initialHdWalletState } from '../reducers';
 import { t } from 'i18next';
 import { KeychainErrors } from '../constants/KeychainErrors';
 import { HdWalletContextDef } from '../reducers/hdwallet_reducer';
+import {
+  ConnectionTypes,
+  SECRET_TYPES,
+  SignMessageValidationType,
+} from '../constants/enum';
+import { Dispatch, SetStateAction } from 'react';
+import Web3 from 'web3';
+import { hostWorker } from '../global';
+import axios from 'axios';
 
-const currentSchemaVersion = 5;
+// increase this when you want the CyRootData to be reconstructed
+const currentSchemaVersion = 6;
 
 export async function saveCredentialsToKeychain(
   hdWalletContext: HdWalletContextDef,
   portfolioState: any,
   wallet: any,
+  secretType: SECRET_TYPES,
 ) {
   await clearAsyncStorage();
   await removeCredentialsFromKeychain();
+  if (SECRET_TYPES.MENEMONIC) {
+    void setConnectionType(ConnectionTypes.SEED_PHRASE);
+  } else if (SECRET_TYPES.PRIVATE_KEY) {
+    void setConnectionType(ConnectionTypes.PRIVATE_KEY);
+  }
+
   // Save Seed Phrase (master private key is not stored)
   if (await isPinAuthenticated()) {
+    if (secretType === SECRET_TYPES.MENEMONIC) {
+      await saveToKeychain(
+        CYPHERD_SEED_PHRASE_KEY,
+        CryptoJS.AES.encrypt(
+          wallet.mnemonic,
+          hdWalletContext.state.pinValue,
+        ).toString(),
+      );
+    }
     await saveToKeychain(
-      CYPHERD_SEED_PHRASE_KEY,
+      CYPHERD_PRIVATE_KEY,
       CryptoJS.AES.encrypt(
-        wallet.mnemonic,
+        wallet.privateKey,
         hdWalletContext.state.pinValue,
       ).toString(),
     );
   } else {
-    await saveToKeychain(CYPHERD_SEED_PHRASE_KEY, wallet.mnemonic);
+    if (secretType === SECRET_TYPES.MENEMONIC) {
+      await saveToKeychain(CYPHERD_SEED_PHRASE_KEY, wallet.mnemonic);
+    }
+    await saveToKeychain(CYPHERD_PRIVATE_KEY, wallet.privateKey);
   }
   await saveToKeychain(AUTHORIZE_WALLET_DELETION, 'AUTHORIZE_WALLET_DELETION');
+  await saveToKeychain(DUMMY_AUTH, 'DUMMY_AUTH');
   const rootData = constructRootData(wallet.accounts);
-  // save root data after wallet creation
-  if (isAndroid()) {
-    const encrypted = CryptoJS.AES.encrypt(
-      JSON.stringify(rootData),
-      wallet.mnemonic,
-    ).toString();
-    await saveCyRootDataToKeyChain(encrypted);
-  } else {
-    await saveCyRootDataToKeyChain(rootData);
-  }
+  await setCyRootData(rootData);
   await setSchemaVersion(currentSchemaVersion);
-  // Only retain wallet address and private key in memory, load others are required
+  // Only retain wallet address in memory, load others are required
   wallet.accounts.forEach((account: IAccountDetailWithChain) => {
     hdWalletContext.dispatch({
       type: 'LOAD_WALLET',
       value: {
         address: account.address,
-        privateKey: account.privateKey,
+        // privateKey: account.privateKey,
         chain: account.name,
         publicKey: account.publicKey,
         rawAddress: account.rawAddress,
@@ -97,7 +125,6 @@ export async function saveCredentialsToKeychain(
       },
     });
   });
-
   portfolioState.dispatchPortfolio({
     value: { tokenPortfolio: null, portfolioState: PORTFOLIO_NEW_LOAD },
   });
@@ -106,8 +133,11 @@ export async function saveCredentialsToKeychain(
 export async function removeCredentialsFromKeychain() {
   // Reset Seed Phrase (master private key is not stored)
   await removeFromKeyChain(CYPHERD_SEED_PHRASE_KEY);
+  // Reset Private Key
+  await removeFromKeyChain(CYPHERD_PRIVATE_KEY);
   // Remove cypherD root data
-  await removeFromKeyChain(CYPHERD_ROOT_DATA);
+  // await removeFromKeyChain(CYPHERD_ROOT_DATA);
+  await removeCyRootData();
 }
 
 export async function _setInternetCredentialsOptions(
@@ -117,13 +147,7 @@ export async function _setInternetCredentialsOptions(
 ) {
   try {
     if (acl) {
-      let options = await getPrivateACLOptions();
-      if (isAndroid() && key === CYPHERD_ROOT_DATA) {
-        options = {
-          ...options,
-          storage: STORAGE_TYPE.AES,
-        };
-      }
+      const options = await getPrivateACLOptions();
       await setInternetCredentials(key, key, value, options);
     } else {
       // For storing wallet address, which is public and to access without faceID or passcode
@@ -266,6 +290,22 @@ export async function loadRecoveryPhraseFromKeyChain(
   return mnemonic;
 }
 
+export async function loadPrivateKeyFromKeyChain(
+  forceCloseOnFailure = false,
+  pin = '',
+  showModal = () => {},
+) {
+  let privateKey = await loadFromKeyChain(
+    CYPHERD_PRIVATE_KEY,
+    forceCloseOnFailure,
+    showModal,
+  );
+  if (privateKey && (await isPinAuthenticated())) {
+    privateKey = decryptMnemonic(privateKey, pin);
+  }
+  return privateKey;
+}
+
 export async function isAuthenticatedForPrivateKey(
   forceCloseOnFailure = false,
 ) {
@@ -276,80 +316,41 @@ export async function isAuthenticatedForPrivateKey(
   return mnemonic && mnemonic !== _NO_CYPHERD_CREDENTIAL_AVAILABLE_;
 }
 
-export async function loadCyRootDataFromKeyChain(
-  hdWallet = initialHdWalletState,
-  showModal = () => {},
-  shouldTriggerShowAuth = true,
-) {
+export async function loadCyRootData(hdWallet: any) {
   // Update schemaVersion whenever adding a new address generation logic
-  let mnemonic: string | undefined;
-  // const hdWallet = useContext<any>(HdWalletContext);
-
-  if (isAndroid()) {
-    mnemonic = await loadRecoveryPhraseFromKeyChain(
-      true,
-      hdWallet.pinValue,
-      showModal,
-    );
-  }
 
   // No authentication needed to fetch CYD_RootData in Android but needed in case of IOS
   const schemaVersion = await getSchemaVersion();
   if (schemaVersion === currentSchemaVersion.toString()) {
-    let cyData = await loadFromKeyChain(CYPHERD_ROOT_DATA, false, showModal);
+    const cyData = await getCyRootData();
+    if (cyData) {
+      const parsedCyData = JSON.parse(cyData);
 
-    if (
-      isAndroid() &&
-      cyData &&
-      cyData !== _NO_CYPHERD_CREDENTIAL_AVAILABLE_ &&
-      mnemonic
-    ) {
-      const bytes = CryptoJS.AES.decrypt(cyData, mnemonic);
-      cyData = JSON.parse(bytes.toString(CryptoJS.enc.Utf8));
-    }
-    if (cyData && cyData !== _NO_CYPHERD_CREDENTIAL_AVAILABLE_) {
-      let parsedData;
-      if (isAndroid()) {
-        parsedData = cyData;
-      } else {
-        parsedData = JSON.parse(cyData);
-      }
       if (
-        parsedData.accounts &&
-        parsedData.schemaVersion === currentSchemaVersion
+        parsedCyData.accounts &&
+        parsedCyData.schemaVersion === currentSchemaVersion
       ) {
-        return parsedData;
-      }
-    } else {
-      // on cyData being undefined, auth has been cancelled.
-      if (shouldTriggerShowAuth) {
-        await showReAuthAlert();
+        return parsedCyData;
       }
     }
   }
 
-  if (isIOS()) {
-    mnemonic = await loadRecoveryPhraseFromKeyChain(
-      true,
-      hdWallet.pinValue,
-      showModal,
-    );
-  }
-
+  const mnemonic = await loadRecoveryPhraseFromKeyChain(
+    false,
+    hdWallet.pinValue,
+  );
   if (mnemonic && mnemonic !== _NO_CYPHERD_CREDENTIAL_AVAILABLE_) {
-    const wallet = await generateWalletFromMnemonic(mnemonic, 'import_wallet');
+    const wallet = await generateWalletFromMnemonic(
+      mnemonic,
+      'import_wallet',
+      hdWallet.choosenWalletIndex,
+    );
     const rootData = constructRootData(wallet.accounts);
-    let dataToSave;
-    if (isAndroid() && rootData) {
-      dataToSave = CryptoJS.AES.encrypt(
-        JSON.stringify(rootData),
-        mnemonic,
-      ).toString();
-    } else {
-      dataToSave = rootData;
-    }
-    await saveCyRootDataToKeyChain(dataToSave);
+    await setCyRootData(rootData);
     await setSchemaVersion(currentSchemaVersion);
+    await saveToKeychain(CYPHERD_PRIVATE_KEY, wallet.privateKey);
+    await saveToKeychain(DUMMY_AUTH, 'DUMMY_AUTH');
+    await removeFromKeyChain(CYPHERD_ROOT_DATA);
     return rootData;
   }
 
@@ -359,7 +360,6 @@ export async function loadCyRootDataFromKeyChain(
     {
       name: 'ethereum',
       address: _NO_CYPHERD_CREDENTIAL_AVAILABLE_,
-      privateKey: _NO_CYPHERD_CREDENTIAL_AVAILABLE_,
       publicKey: _NO_CYPHERD_CREDENTIAL_AVAILABLE_,
     },
   ]);
@@ -370,11 +370,10 @@ export async function loadCyRootDataFromKeyChain(
 function constructRootData(accounts: IAccountDetailWithChain[]) {
   const accountDetails: { [key in AddressChainNames]?: IAccountDetail[] } = {};
   accounts.forEach(account => {
-    const { address, privateKey, algo, publicKey, rawAddress } = account;
+    const { address, algo, publicKey, rawAddress } = account;
     accountDetails[account.name] = [
       {
         address,
-        privateKey,
         algo,
         publicKey,
         rawAddress,
@@ -385,16 +384,6 @@ function constructRootData(accounts: IAccountDetailWithChain[]) {
     accounts: accountDetails,
     schemaVersion: currentSchemaVersion,
   };
-}
-
-async function saveCyRootDataToKeyChain(result: any) {
-  let password: string;
-  if (isAndroid()) {
-    password = result;
-  } else {
-    password = JSON.stringify(result);
-  }
-  await saveToKeychain(CYPHERD_ROOT_DATA, password, true);
 }
 
 // End of load utility methods
@@ -478,6 +467,13 @@ export const savePin = async (pin: string) => {
         CryptoJS.AES.encrypt(mnemonic, pin).toString(),
       );
     }
+    const privateKey = await loadPrivateKeyFromKeyChain(true);
+    if (privateKey && privateKey !== _NO_CYPHERD_CREDENTIAL_AVAILABLE_) {
+      await saveToKeychain(
+        CYPHERD_PRIVATE_KEY,
+        CryptoJS.AES.encrypt(privateKey, pin).toString(),
+      );
+    }
   } catch (e) {
     Sentry.captureException(e);
   }
@@ -486,10 +482,17 @@ export const savePin = async (pin: string) => {
 export const changePin = async (oldPin: string, newPin: string) => {
   await saveToKeychain(PIN_AUTH, sha256('0x' + convertToHexa(newPin)));
   const mnemonic = await loadRecoveryPhraseFromKeyChain(false, oldPin);
+  const privateKey = await loadPrivateKeyFromKeyChain(false, oldPin);
   if (mnemonic) {
     await saveToKeychain(
       CYPHERD_SEED_PHRASE_KEY,
       CryptoJS.AES.encrypt(mnemonic, newPin).toString(),
+    );
+  }
+  if (privateKey) {
+    await saveToKeychain(
+      CYPHERD_PRIVATE_KEY,
+      CryptoJS.AES.encrypt(privateKey, newPin).toString(),
     );
   }
 };
@@ -517,25 +520,18 @@ export const isBiometricEnabled = async () => {
 
 export const removePin = async (hdWallet: any, pin = '') => {
   const mnemonic = await loadRecoveryPhraseFromKeyChain(false, pin);
-  const cyRootData = await loadCyRootDataFromKeyChain(hdWallet.state);
-  if (cyRootData) {
-    await removeFromKeyChain(CYPHERD_ROOT_DATA);
-    let dataToSave;
-    if (isAndroid() && cyRootData && mnemonic) {
-      dataToSave = CryptoJS.AES.encrypt(
-        JSON.stringify(cyRootData),
-        mnemonic,
-      ).toString();
-    } else {
-      dataToSave = cyRootData;
-    }
-    await saveCyRootDataToKeyChain(dataToSave);
-  }
+  const privateKey = await loadPrivateKeyFromKeyChain(false, pin);
   if (mnemonic) {
     await removeFromKeyChain(CYPHERD_SEED_PHRASE_KEY);
     await saveToKeychain(CYPHERD_SEED_PHRASE_KEY, mnemonic);
   }
+  if (privateKey) {
+    await removeFromKeyChain(CYPHERD_PRIVATE_KEY);
+    await saveToKeychain(CYPHERD_PRIVATE_KEY, privateKey);
+  }
   await removeFromKeyChain(PIN_AUTH);
+  await saveToKeychain(AUTHORIZE_WALLET_DELETION, 'AUTHORIZE_WALLET_DELETION');
+  await saveToKeychain(DUMMY_AUTH, 'DUMMY_AUTH');
   hdWallet.dispatch({ type: 'SET_PIN_VALUE', value: { pin: '' } });
 };
 
@@ -557,4 +553,44 @@ export function decryptMnemonic(encryptedMnemonic: string, pin: string) {
     CryptoJS.enc.Utf8,
   );
   return mnemonic;
+}
+
+export async function signIn(
+  ethereum: { address: string },
+  hdWallet: HdWalletContextDef,
+  setShowDefaultAuthRemoveModal: Dispatch<SetStateAction<boolean>> = () => {},
+) {
+  const web3 = new Web3();
+  const ARCH_HOST: string = hostWorker.getHost('ARCH_HOST');
+  try {
+    const { data } = await axios.get(
+      `${ARCH_HOST}/v1/authentication/sign-message/${ethereum.address}`,
+    );
+    const verifyMessage = data.message;
+    const validationResponse = isValidMessage(ethereum.address, verifyMessage);
+    if (validationResponse.message === SignMessageValidationType.VALID) {
+      const privateKey = await loadPrivateKeyFromKeyChain(
+        true,
+        hdWallet.state.pinValue,
+        () => setShowDefaultAuthRemoveModal(true),
+      );
+      if (privateKey && privateKey !== _NO_CYPHERD_CREDENTIAL_AVAILABLE_) {
+        const { signature } = web3.eth.accounts.sign(verifyMessage, privateKey);
+        const result = await axios.post(
+          `${ARCH_HOST}/v1/authentication/verify-message/${ethereum.address}`,
+          {
+            signature,
+          },
+        );
+        return {
+          ...validationResponse,
+          token: result.data.token,
+          refreshToken: result.data.refreshToken,
+        };
+      }
+      return validationResponse;
+    }
+  } catch (error) {
+    Sentry.captureException(error);
+  }
 }
