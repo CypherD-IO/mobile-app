@@ -1,7 +1,3 @@
-/**
- * @format
- * @flow
- */
 import React, { useContext, useEffect, useState, useLayoutEffect } from 'react';
 import { useTranslation } from 'react-i18next';
 import {
@@ -20,18 +16,21 @@ import {
   ActivityContext,
   HdWalletContext,
   PortfolioContext,
-  sleepFor,
+  isValidPrivateKey,
 } from '../../core/util';
-import { importWallet } from '../../core/HdWallet';
+import { importWallet, importWalletPrivateKey } from '../../core/HdWallet';
 import { PORTFOLIO_LOADING } from '../../reducers/portfolio_reducer';
 import AppImages from '../../../assets/images/appImages';
 import Clipboard from '@react-native-clipboard/clipboard';
 import { QRScannerScreens } from '../../constants/server';
-import { ActivityContextDef } from '../../reducers/activity_reducer';
+import LottieView from 'lottie-react-native';
+import { ActivityReducerAction } from '../../reducers/activity_reducer';
 import { screenTitle } from '../../constants/index';
 import Loading from '../../components/v2/loading';
-import { isValidMnemonic } from 'ethers/lib/utils';
-import { getReadOnlyWalletData } from '../../core/asyncStorage';
+import {
+  getReadOnlyWalletData,
+  setConnectionType,
+} from '../../core/asyncStorage';
 import useAxios from '../../core/HttpRequest';
 import clsx from 'clsx';
 import { fetchTokenData } from '../../core/Portfolio';
@@ -41,28 +40,24 @@ import { isAndroid } from '../../misc/checkers';
 import { Colors } from '../../constants/theme';
 import Button from '../../components/v2/button';
 import { ConnectionTypes } from '../../constants/enum';
-import { generateMultipleWalletAddressesFromSeedPhrase } from '../../core/Address';
-import { HdWalletContextDef } from '../../reducers/hdwallet_reducer';
 
 export default function Login(props) {
-  // NOTE: DEFINE VARIABLE 🍎🍎🍎🍎🍎🍎
   const { t } = useTranslation();
   const isFocused = useIsFocused();
-  const [seedPhraseTextValue, onChangeseedPhraseTextValue] =
-    useState<string>('');
+  const [privateKey, setPrivateKey] = useState<string>('');
   const [badKeyError, setBadKeyError] = useState<boolean>(false);
   const [loading, setLoading] = useState<boolean>(false);
   const [createWalletLoading, setCreateWalletLoading] =
     useState<boolean>(false);
 
-  // NOTE: DEFINE HOOKS 🍎🍎🍎🍎🍎🍎
-  const hdWalletContext = useContext(HdWalletContext) as HdWalletContextDef;
-  const portfolioState = useContext(PortfolioContext);
+  const hdWalletContext = useContext<any>(HdWalletContext);
+  const portfolioState = useContext<any>(PortfolioContext);
+  const activityContext = useContext<any>(ActivityContext);
   const { deleteWithAuth } = useAxios();
 
   const fetchCopiedText = async () => {
     const text = await Clipboard.getString();
-    onChangeseedPhraseTextValue(text);
+    setPrivateKey(text);
   };
 
   const handleBackButton = () => {
@@ -72,37 +67,14 @@ export default function Login(props) {
 
   const onSuccess = async e => {
     const textValue = e.data;
-    onChangeseedPhraseTextValue(textValue);
+    setPrivateKey(textValue);
   };
 
-  useEffect(() => {
-    if (hdWalletContext.state.choosenWalletIndex !== -1) {
-      setTimeout(() => {
-        void importWallet(hdWalletContext, portfolioState, seedPhraseTextValue);
-        portfolioState.dispatchPortfolio({
-          value: { portfolioState: PORTFOLIO_LOADING },
-        });
-        onChangeseedPhraseTextValue('');
-        if (props && props.navigation) {
-          const getCurrentRoute = props.navigation.getState().routes[0].name;
-          if (getCurrentRoute === screenTitle.OPTIONS_SCREEN)
-            props.navigation.navigate(C.screenTitle.PORTFOLIO_SCREEN);
-          else setCreateWalletLoading(true);
-        } else {
-          void fetchTokenData(hdWalletContext, portfolioState);
-        }
-      }, IMPORT_WALLET_TIMEOUT);
-    }
-  }, [hdWalletContext.state.choosenWalletIndex]);
-
-  const submitImportWallet = async (textValue = seedPhraseTextValue) => {
-    setLoading(true);
-    await sleepFor(500);
-
-    const keyValue = textValue.split(/\s+/);
+  const submitImportWallet = async (textValue = privateKey) => {
     const { isReadOnlyWallet } = hdWalletContext.state;
     const { ethereum } = hdWalletContext.state.wallet;
-    if (keyValue.length >= 12 && isValidMnemonic(textValue)) {
+    if (textValue.length >= 64 && isValidPrivateKey(textValue)) {
+      setLoading(true);
       if (isReadOnlyWallet) {
         const data = await getReadOnlyWalletData();
         if (data) {
@@ -112,14 +84,24 @@ export default function Login(props) {
           );
         }
       }
-      const walletAddresses =
-        await generateMultipleWalletAddressesFromSeedPhrase(textValue);
-      props?.navigation?.navigate(screenTitle.CHOOSE_WALLET_INDEX, {
-        walletAddresses,
-      });
-      setLoading(false);
+      setTimeout(() => {
+        void importWalletPrivateKey(hdWalletContext, portfolioState, textValue);
+        portfolioState.dispatchPortfolio({
+          value: { portfolioState: PORTFOLIO_LOADING },
+        });
+        setLoading(false);
+        setPrivateKey('');
+        void setConnectionType(ConnectionTypes.PRIVATE_KEY);
+        if (props && props.navigation) {
+          const getCurrentRoute = props.navigation.getState().routes[0].name;
+          if (getCurrentRoute === screenTitle.OPTIONS_SCREEN) {
+            props.navigation.navigate(C.screenTitle.PORTFOLIO_SCREEN);
+          } else setCreateWalletLoading(true);
+        } else {
+          void fetchTokenData(hdWalletContext, portfolioState);
+        }
+      }, IMPORT_WALLET_TIMEOUT);
     } else {
-      setLoading(false);
       setBadKeyError(true);
     }
   };
@@ -167,29 +149,29 @@ export default function Login(props) {
           <CyDView>
             <CyDText
               className={'text-[#434343] text-[16px] mt-[30px] text-center'}>
-              {t('IMPORT_WALLET_SUB_MSG')}
+              {t('PRIVATE_KEY_IMPORT_SUB_MSG')}
             </CyDText>
             <CyDView className={'flex flex-row justify-center'}>
               <CyDTextInput
-                placeholder={t('ENTER_KEY_PLACEHOLDER')}
+                placeholder={t('ENTER_PRIVATE_KEY_PLACEHOLDER')}
                 placeholderTextColor={Colors.placeHolderColor}
-                value={seedPhraseTextValue}
+                value={privateKey}
                 onChangeText={text => {
-                  onChangeseedPhraseTextValue(text.toLowerCase());
+                  setPrivateKey(text.toLowerCase());
                   setBadKeyError(false);
                 }}
                 multiline={true}
                 textAlignVertical={'top'}
                 secureTextEntry={true}
                 className={clsx(
-                  'border-[1px] border-inputBorderColor p-[10px] mt-[20px] h-[200px] text-[18px] w-[100%]',
+                  'border-[1px] border-inputBorderColor p-[10px] mt-[20px] h-[100px] text-[18px] w-[100%]',
                   { 'border-errorRed': badKeyError },
                 )}
               />
             </CyDView>
             {badKeyError && (
               <CyDText className='text-[16px] text-errorTextRed text-center'>
-                {t('BAD_KEY_PHARSE')}
+                {t('BAD_PRIVATE_KEY_PHARSE')}
               </CyDText>
             )}
             <CyDView className={'flex flex-row justify-end w-full mt-[20px]'}>

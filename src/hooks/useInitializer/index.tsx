@@ -11,16 +11,19 @@ import {
 } from '../../constants/enum';
 import { hostWorker, initializeHostsFromAsync } from '../../global';
 import {
+  getActivities,
+  getAuthToken,
   getDeveloperMode,
   getReadOnlyWalletData,
   getRpcEndpoints,
+  setAuthToken,
+  setRefreshToken,
   setRpcEndpoints,
 } from '../../core/asyncStorage';
 import {
   GlobalContext,
   RpcResponseDetail,
   initialGlobalState,
-  signIn,
 } from '../../core/globalContext';
 import { get, has, set } from 'lodash';
 import useAxios from '../../core/HttpRequest';
@@ -29,11 +32,14 @@ import { ActivityReducerAction } from '../../reducers/activity_reducer';
 import {
   isBiometricEnabled,
   isPinAuthenticated,
-  loadCyRootDataFromKeyChain,
+  loadCyRootData,
+  loadFromKeyChain,
+  signIn,
 } from '../../core/Keychain';
 import { initialHdWalletState } from '../../reducers';
 import {
   ActivityContext,
+  DUMMY_AUTH,
   HdWalletContext,
   _NO_CYPHERD_CREDENTIAL_AVAILABLE_,
   getPlatform,
@@ -46,6 +52,7 @@ import analytics from '@react-native-firebase/analytics';
 import DeviceInfo, { getVersion } from 'react-native-device-info';
 import { getWalletProfile } from '../../core/card';
 import SpInAppUpdates from 'sp-react-native-in-app-updates';
+import useValidSessionToken from '../useValidSessionToken';
 
 export default function useInitializer() {
   const SENSITIVE_DATA_KEYS = ['password', 'seed', 'creditCardNumber'];
@@ -58,6 +65,8 @@ export default function useInitializer() {
   const inAppUpdates = new SpInAppUpdates(
     false, // isDebug
   );
+  const { verifySessionToken } = useValidSessionToken();
+
   const scrubData = (key: string, value: any): any => {
     if (SENSITIVE_DATA_KEYS.includes(key)) {
       return '********'; // Replace with asterisks
@@ -243,14 +252,15 @@ export default function useInitializer() {
   };
 
   const loadActivitiesFromAsyncStorage = async () => {
-    await AsyncStorage.getItem('activities', (_err, data) => {
-      if (data) {
-        activityContext.dispatch({
-          type: ActivityReducerAction.LOAD,
-          value: JSON.parse(data),
-        });
-      }
-    });
+    const activities = await getActivities();
+    console.log('load activities ...', activities);
+    if (activities) {
+      activityContext.dispatch({
+        type: ActivityReducerAction.LOAD,
+        value: JSON.parse(activities),
+      });
+    }
+    console.log('dispatching activities');
   };
 
   const setPinAuthenticationStateValue = async () => {
@@ -258,22 +268,14 @@ export default function useInitializer() {
     return isBiometricPasscodeEnabled && !(await isPinAuthenticated()); //  for devices with biometreics enabled the pinAuthentication will be set true
   };
 
-  const setPinPresentStateValue = async (
-    setShowDefaultAuthRemoveModal: Dispatch<SetStateAction<boolean>>,
-  ) => {
+  const setPinPresentStateValue = async () => {
     const pinAuthenticated = await isPinAuthenticated();
     const hasBiometricEnabled = await isBiometricEnabled();
     if (!hasBiometricEnabled) {
       if (pinAuthenticated) {
         return PinPresentStates.TRUE;
       } else {
-        await loadCyRootDataFromKeyChain(
-          hdWallet.state,
-          () => {
-            setShowDefaultAuthRemoveModal(true);
-          },
-          false,
-        );
+        await loadCyRootData(hdWallet.state);
         return PinPresentStates.FALSE;
       }
     } else {
@@ -292,7 +294,7 @@ export default function useInitializer() {
         value: {
           chain: string;
           address: any;
-          privateKey: any;
+          // privateKey: any;
           publicKey: any;
           algo: any;
           rawAddress: Uint8Array | undefined;
@@ -301,7 +303,8 @@ export default function useInitializer() {
     },
     state = initialHdWalletState,
   ) => {
-    const cyRootData = await loadCyRootDataFromKeyChain(state);
+    // const cyRootData = await loadCyRootDataFromKeyChain(state);
+    const cyRootData = await loadCyRootData(state);
     if (cyRootData) {
       const { accounts } = cyRootData;
       if (!accounts) {
@@ -315,7 +318,7 @@ export default function useInitializer() {
           chainAccountList.forEach(
             (addressDetail: {
               address: any;
-              privateKey: any;
+              // privateKey: any;
               publicKey: any;
               algo: any;
               rawAddress: { [s: string]: number } | ArrayLike<number>;
@@ -325,7 +328,7 @@ export default function useInitializer() {
                 value: {
                   chain: chainName,
                   address: addressDetail.address,
-                  privateKey: addressDetail.privateKey,
+                  // privateKey: addressDetail.privateKey,
                   publicKey: addressDetail.publicKey,
                   algo: addressDetail.algo,
                   rawAddress: addressDetail.rawAddress
@@ -355,7 +358,7 @@ export default function useInitializer() {
               value: {
                 chain: 'ethereum',
                 address: ethereum.address,
-                privateKey: _NO_CYPHERD_CREDENTIAL_AVAILABLE_,
+                // privateKey: _NO_CYPHERD_CREDENTIAL_AVAILABLE_,
                 publicKey: '',
                 algo: '',
                 rawAddress: undefined,
@@ -365,7 +368,7 @@ export default function useInitializer() {
               type: 'ADD_ADDRESS',
               value: {
                 address: ethToEvmos(ethereum.address),
-                privateKey: _NO_CYPHERD_CREDENTIAL_AVAILABLE_,
+                // privateKey: _NO_CYPHERD_CREDENTIAL_AVAILABLE_,
                 chain: 'evmos',
                 publicKey: '',
                 rawAddress: undefined,
@@ -389,7 +392,7 @@ export default function useInitializer() {
               value: {
                 chain: 'ethereum',
                 address: _NO_CYPHERD_CREDENTIAL_AVAILABLE_,
-                privateKey: _NO_CYPHERD_CREDENTIAL_AVAILABLE_,
+                // privateKey: _NO_CYPHERD_CREDENTIAL_AVAILABLE_,
                 publicKey: '',
                 algo: '',
                 rawAddress: undefined,
@@ -413,35 +416,58 @@ export default function useInitializer() {
     setForcedUpdate: Dispatch<SetStateAction<boolean>>,
     setTamperedSignMessageModal: Dispatch<SetStateAction<boolean>>,
     setUpdateModal: Dispatch<SetStateAction<boolean>>,
+    setShowDefaultAuthRemoveModal: Dispatch<SetStateAction<boolean>> = () => {},
   ) => {
     if (
-      ethereum?.address &&
-      ethereum?.privateKey !== _NO_CYPHERD_CREDENTIAL_AVAILABLE_
+      ethereum?.address
+      // && ethereum?.privateKey !== _NO_CYPHERD_CREDENTIAL_AVAILABLE_
     ) {
-      const signInResponse = await signIn(ethereum);
-      if (signInResponse) {
-        if (
-          signInResponse?.message === SignMessageValidationType.VALID &&
-          has(signInResponse, 'token')
-        ) {
-          setForcedUpdate(false);
-          setTamperedSignMessageModal(false);
-          globalContext.globalDispatch({
-            type: GlobalContextType.SIGN_IN,
-            sessionToken: signInResponse?.token,
-          });
-          void getProfile(signInResponse.token);
-        } else if (
-          signInResponse?.message === SignMessageValidationType.INVALID
-        ) {
-          setUpdateModal(false);
-          setTamperedSignMessageModal(true);
-        } else if (
-          signInResponse?.message === SignMessageValidationType.NEEDS_UPDATE
-        ) {
-          setUpdateModal(true);
-          setForcedUpdate(true);
+      const isSessionTokenValid = await verifySessionToken();
+      if (!isSessionTokenValid) {
+        const signInResponse = await signIn(
+          ethereum,
+          hdWallet,
+          setShowDefaultAuthRemoveModal,
+        );
+        if (signInResponse) {
+          if (
+            signInResponse?.message === SignMessageValidationType.VALID &&
+            has(signInResponse, 'token')
+          ) {
+            setForcedUpdate(false);
+            setTamperedSignMessageModal(false);
+            globalContext.globalDispatch({
+              type: GlobalContextType.SIGN_IN,
+              sessionToken: signInResponse?.token,
+            });
+            await setAuthToken(signInResponse?.token);
+            if (has(signInResponse, 'refreshToken')) {
+              await setRefreshToken(signInResponse?.refreshToken);
+            }
+            void getProfile(signInResponse.token);
+          } else if (
+            signInResponse?.message === SignMessageValidationType.INVALID
+          ) {
+            setUpdateModal(false);
+            setTamperedSignMessageModal(true);
+          } else if (
+            signInResponse?.message === SignMessageValidationType.NEEDS_UPDATE
+          ) {
+            setUpdateModal(true);
+            setForcedUpdate(true);
+          }
         }
+      } else {
+        let authToken = await getAuthToken();
+        await loadFromKeyChain(DUMMY_AUTH, true, () =>
+          setShowDefaultAuthRemoveModal(true),
+        );
+        authToken = JSON.parse(String(authToken));
+        void getProfile(authToken);
+        globalContext.globalDispatch({
+          type: GlobalContextType.SIGN_IN,
+          sessionToken: authToken,
+        });
       }
     }
   };
@@ -450,18 +476,20 @@ export default function useInitializer() {
     setForcedUpdate: Dispatch<SetStateAction<boolean>>,
     setTamperedSignMessageModal: Dispatch<SetStateAction<boolean>>,
     setUpdateModal: Dispatch<SetStateAction<boolean>>,
+    setShowDefaultAuthRemoveModal: Dispatch<SetStateAction<boolean>> = () => {},
   ) => {
     const hosts = await initializeHostsFromAsync();
     if (hosts) {
       if (
         ethereum?.address &&
-        ethereum?.address !== _NO_CYPHERD_CREDENTIAL_AVAILABLE_ &&
-        ethereum?.privateKey !== _NO_CYPHERD_CREDENTIAL_AVAILABLE_
+        ethereum?.address !== _NO_CYPHERD_CREDENTIAL_AVAILABLE_
+        // && ethereum?.privateKey !== _NO_CYPHERD_CREDENTIAL_AVAILABLE_
       ) {
         void getAuthTokenData(
           setForcedUpdate,
           setTamperedSignMessageModal,
           setUpdateModal,
+          setShowDefaultAuthRemoveModal,
         );
       }
     }

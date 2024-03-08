@@ -604,10 +604,10 @@ export default function SendTo(props: { navigation?: any; route?: any }) {
     }
   };
 
-  const sendTransaction = (payTokenModalParamsLocal: any) => {
+  const sendTransaction = async (payTokenModalParamsLocal: any) => {
     setLoading(true);
 
-    sendNativeCoinOrTokenToAnyAddress(
+    await sendNativeCoinOrTokenToAnyAddress(
       hdWalletContext,
       portfolioState,
       tokenData.chainDetails,
@@ -801,7 +801,7 @@ export default function SendTo(props: { navigation?: any; route?: any }) {
       await evmosSendTxn(
         evmos.address,
         addressRef.current,
-        ethereum,
+        hdWalletContext,
         valueForUsd,
         payTokenModalParams.gasLimit,
         handleSuccessfulTransaction,
@@ -929,14 +929,14 @@ export default function SendTo(props: { navigation?: any; route?: any }) {
   const evmosTransaction = async (
     address: string,
     toAddress: string,
-    ethereumData: any,
+    hdWallet: any,
   ) => {
     try {
       setLoading(true);
       const gasWanted = await evmosSendSimulation(
         address,
         toAddress,
-        ethereumData,
+        hdWallet,
         valueForUsd,
       );
 
@@ -1039,7 +1039,11 @@ export default function SendTo(props: { navigation?: any; route?: any }) {
       activityData.toAddress = addressRef.current;
       if (chainDetails?.chainName === ChainNames.EVMOS) {
         if (isEvmosAddress(addressRef.current)) {
-          await evmosTransaction(evmos.address, addressRef.current, ethereum);
+          await evmosTransaction(
+            evmos.address,
+            addressRef.current,
+            hdWalletContext,
+          );
           activityData.fromAddress = evmos.address;
         } else {
           getGasPrice(addressRef.current);
@@ -1551,7 +1555,7 @@ export default function SendTo(props: { navigation?: any; route?: any }) {
     ) {
       await sendEvmosTransaction();
     } else {
-      sendTransaction(payTokenModalParams);
+      await sendTransaction(payTokenModalParams);
     }
   };
 

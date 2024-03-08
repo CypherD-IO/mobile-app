@@ -12,7 +12,10 @@ import BottomTracker from '../../components/BottomTracker';
 import * as C from '../../constants/index';
 import { Colors } from '../../constants/theme';
 import { ButtonWithOutImage } from '../../containers/Auth/Share';
-import { HdWalletContext } from '../../core/util';
+import {
+  HdWalletContext,
+  _NO_CYPHERD_CREDENTIAL_AVAILABLE_,
+} from '../../core/util';
 import axios from '../../core/Http';
 import LottieView from 'lottie-react-native';
 import EmptyView from '../../components/EmptyView';
@@ -29,6 +32,7 @@ import Dialog, {
 } from 'react-native-popup-dialog';
 import { CyDText } from '../../styles/tailwindStyles';
 import { sendFirebaseEvent } from '../utilities/analyticsUtility';
+import { loadPrivateKeyFromKeyChain } from '../../core/Keychain';
 const {
   SafeAreaView,
   DynamicView,
@@ -57,40 +61,43 @@ export default function LegalAgreementScreen(props) {
     return messageToBeValidatedWith.test(messageToBeValidated);
   };
 
-  const personalSign = (messageToSign: string) => {
+  const personalSign = async (messageToSign: string) => {
     if (isValidMessage(messageToSign)) {
       const web3 = new Web3();
       const verifyMessage = `${PORTFOLIO_HOST}/v1/card/mobile/verify_message?address=${ethereum.address}`;
-      const signature = web3.eth.accounts.sign(
-        messageToSign,
-        ethereum.privateKey,
+      const privateKey = await loadPrivateKeyFromKeyChain(
+        false,
+        hdWallet.state.pinValue,
       );
-      axios
-        .post(verifyMessage, {
-          address: ethereum.address,
-          signed_message: signature.signature,
-        })
-        .then(res => {
-          if (res.status === 200) {
-            if (res.data.user_has_card) {
-              hdWallet.dispatch({
-                type: 'CARD_REFRESH',
-                value: {
-                  card: { id: res.data.card_id, token: res.data.token },
-                },
-              });
-            } else {
-              hdWallet.dispatch({
-                type: 'PRE_CARD_TOKEN',
-                value: { pre_card_token: res.data.uuid },
-              });
+      if (privateKey && privateKey !== _NO_CYPHERD_CREDENTIAL_AVAILABLE_) {
+        const signature = web3.eth.accounts.sign(messageToSign, privateKey);
+        axios
+          .post(verifyMessage, {
+            address: ethereum.address,
+            signed_message: signature.signature,
+          })
+          .then(res => {
+            if (res.status === 200) {
+              if (res.data.user_has_card) {
+                hdWallet.dispatch({
+                  type: 'CARD_REFRESH',
+                  value: {
+                    card: { id: res.data.card_id, token: res.data.token },
+                  },
+                });
+              } else {
+                hdWallet.dispatch({
+                  type: 'PRE_CARD_TOKEN',
+                  value: { pre_card_token: res.data.uuid },
+                });
+              }
             }
-          }
-        })
-        .catch(error => {
-          // TODO (user feedback): Give feedback to user.
-          Sentry.captureException(error);
-        });
+          })
+          .catch(error => {
+            // TODO (user feedback): Give feedback to user.
+            Sentry.captureException(error);
+          });
+      }
     } else {
       setTamperedSignMessageModal(true);
     }
@@ -103,9 +110,9 @@ export default function LegalAgreementScreen(props) {
     const signMessage = `${PORTFOLIO_HOST}/v1/card/mobile/sign_message?address=${ethereum.address}`;
     axios
       .get(signMessage)
-      .then(res => {
+      .then(async res => {
         const inputMessage = res.data.message;
-        personalSign(inputMessage);
+        await personalSign(inputMessage);
       })
       .catch(error => {
         // TODO (user feedback): Give feedback to user.

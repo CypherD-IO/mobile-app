@@ -256,7 +256,7 @@ export default function useGasService() {
       denom: cosmosConfig.evmos.denom,
     };
 
-    const body = getSignedEvmosTransaction({
+    const body = await getSignedEvmosTransaction({
       chain,
       sender,
       fee,

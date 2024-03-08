@@ -295,3 +295,8 @@ export enum CARD_NOTIFICATION_TYPES {
   SMS = 'sms',
   FCM = 'fcm',
 }
+
+export enum SECRET_TYPES {
+  MENEMONIC = 'mnemonic',
+  PRIVATE_KEY = 'privateKey',
+}

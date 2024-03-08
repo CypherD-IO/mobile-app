@@ -78,7 +78,6 @@ export default function TrackWallet({
               type: 'LOAD_WALLET',
               value: {
                 address: ethAddress,
-                privateKey: _NO_CYPHERD_CREDENTIAL_AVAILABLE_,
                 chain: 'ethereum',
                 publicKey: '',
                 rawAddress: '',
@@ -89,7 +88,6 @@ export default function TrackWallet({
               type: 'LOAD_WALLET',
               value: {
                 address: ethToEvmos(ethAddress),
-                privateKey: _NO_CYPHERD_CREDENTIAL_AVAILABLE_,
                 chain: 'evmos',
                 publicKey: '',
                 rawAddress: '',

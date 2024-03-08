@@ -999,7 +999,7 @@ export default function Bridge(props: { navigation?: any; route?: any }) {
         const evmosAddress = evmos.wallets[evmos.currentIndex].address;
         const { transactionHash, gasFee }: any = await evmosIbc(
           evmosAddress,
-          ethereum,
+          hdWallet,
           quoteData.receiverAddress,
           cryptoAmount,
         );

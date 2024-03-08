@@ -54,6 +54,7 @@ export const InitializeAppProvider: React.FC<JSX.Element> = ({ children }) => {
   const [tamperedSignMessageModal, setTamperedSignMessageModal] =
     useState<boolean>(false);
   const ethereum = hdWallet.state.wallet.ethereum;
+  const authToken = globalContext.globalState.token;
 
   useEffect(() => {
     const initializeApp = async () => {
@@ -74,22 +75,25 @@ export const InitializeAppProvider: React.FC<JSX.Element> = ({ children }) => {
       }, SPLASH_SCREEN_TIMEOUT);
 
       setPinAuthentication(await setPinAuthenticationStateValue());
-      setPinPresent(
-        await setPinPresentStateValue(setShowDefaultAuthRemoveModal),
-      );
+      setPinPresent(await setPinPresentStateValue());
     };
     void initializeApp();
   }, []);
+
+  useEffect(() => {
+    void getHosts(
+      setForcedUpdate,
+      setTamperedSignMessageModal,
+      setUpdateModal,
+      setShowDefaultAuthRemoveModal,
+    );
+  }, [ethereum.address]);
 
   useEffect(() => {
     if (ethereum.address === undefined && pinAuthentication) {
       void loadExistingWallet(hdWallet.dispatch, hdWallet.state);
     }
   }, [pinAuthentication]);
-
-  useEffect(() => {
-    void getHosts(setForcedUpdate, setTamperedSignMessageModal, setUpdateModal);
-  }, [ethereum.address]);
 
   return (
     <>
@@ -209,6 +213,8 @@ export const InitializeAppProvider: React.FC<JSX.Element> = ({ children }) => {
           ) : (
             <OnBoardingStack />
           )
+        ) : authToken === undefined ? (
+          <LoadingStack />
         ) : (
           children
         )}

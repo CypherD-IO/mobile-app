@@ -53,7 +53,7 @@ import { ActivityContextDef } from '../reducers/activity_reducer';
 import { HdWalletContextDef } from '../reducers/hdwallet_reducer';
 import { isEvmosAddress } from '../containers/utilities/evmosSendUtility';
 import { t } from 'i18next';
-import { AnalyticsType } from '../constants/enum';
+import { AnalyticsType, SignMessageValidationType } from '../constants/enum';
 import {
   ErrorAnalytics,
   SuccessAnalytics,
@@ -65,6 +65,7 @@ import { Holding } from './Portfolio';
 import { TokenMeta } from '../models/tokenMetaData.model';
 import Long from 'long';
 
+import { Wallet } from '@ethersproject/wallet';
 // const {showModal, hideModal} = useGlobalModalContext()
 
 export const HdWalletContext = React.createContext<HdWalletContextDef | null>(
@@ -79,12 +80,13 @@ export const ActivityContext = React.createContext<ActivityContextDef | null>(
 export const IOS = 'ios';
 export const ANDROID = 'android';
 export const CYPHERD_SEED_PHRASE_KEY = 'CypherD_SPK';
+export const CYPHERD_PRIVATE_KEY = 'CypherD_PK';
 export const CYPHERD_ROOT_DATA = 'CypherD_Root';
 export const IMPORTING = 'IMPORTING';
 export const _NO_CYPHERD_CREDENTIAL_AVAILABLE_ =
   '_NO_CYPHERD_CREDENTIAL_AVAILABLE_';
 export const AUTHORIZE_WALLET_DELETION = 'AUTHORIZE_WALLET_DELETION';
-
+export const DUMMY_AUTH = 'DUMMY_AUTH';
 export const PIN_AUTH = 'pin_auth';
 
 export const getPlatform = () => {
@@ -846,6 +848,22 @@ export function isNativeCurrency(
   return isNative;
 }
 
+export function addHexPrefix(value: string): string {
+  if (!value.startsWith('0x')) {
+    return '0x' + value;
+  }
+  return value;
+}
+
+export function isValidPrivateKey(privateKey: string): boolean {
+  try {
+    const wallet = new Wallet(addHexPrefix(privateKey));
+    return !!wallet;
+  } catch (e) {
+    return false;
+  }
+}
+
 export function getAvailableChains(hdWallet: HdWalletContextDef): Chain[] {
   const { ethereum, cosmos, osmosis, juno, stargaze, noble } =
     hdWallet.state.wallet;
@@ -890,4 +908,29 @@ export const hasSufficientBalanceAndGasFee = (
     ? sentAmount + gasFeeEstimation <= sendingTokenBalance
     : sentAmount <= sendingTokenBalance;
   return hasSufficientBalance && hasSufficientGasFee;
+};
+
+export const isValidMessage = (
+  address: string,
+  messageToBeValidated: string,
+) => {
+  const messageToBeValidatedWith =
+    /^Cypher Wallet wants you to sign in with your Ethereum account: \nAddress: 0x[a-fA-F0-9]{40} \n\nBy signing this transaction you are allowing Cypher Wallet to see the following: \n\nYour wallet address: 0x[a-fA-F0-9]{40} \nSessionId: [0-9a-f]{8}-[0-9a-f]{4}-[0-5][0-9a-f]{3}-[089ab][0-9a-f]{3}-[0-9a-f]{12} \nVersion: 1.0 \n\nPlease sign this message to authenticate. \nThis is a proof that you own this account. \nThis will not consume any gas.$/i;
+  const currentVersion = '1.0';
+  const versionSubstring = messageToBeValidated
+    .match(/Version: (.*)[^\\n]/g)
+    ?.join('');
+  const expectedVersion = versionSubstring
+    ?.match(/[^Version: ](.*)[^\\n]/g)
+    ?.join('')
+    .trim();
+  if (messageToBeValidatedWith.test(messageToBeValidated)) {
+    return { message: SignMessageValidationType.VALID };
+  } else {
+    if (currentVersion !== expectedVersion) {
+      return { message: SignMessageValidationType.NEEDS_UPDATE };
+    } else {
+      return { message: SignMessageValidationType.INVALID };
+    }
+  }
 };

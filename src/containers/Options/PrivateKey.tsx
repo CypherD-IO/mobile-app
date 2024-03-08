@@ -12,7 +12,11 @@ import {
 } from '../../styles/tailwindStyles';
 import { useTranslation } from 'react-i18next';
 import AppImages from '../../../assets/images/appImages';
-import { HdWalletContext, PortfolioContext } from '../../core/util';
+import {
+  HdWalletContext,
+  PortfolioContext,
+  _NO_CYPHERD_CREDENTIAL_AVAILABLE_,
+} from '../../core/util';
 import { showToast } from '../../containers/utilities/toastUtility';
 import Clipboard from '@react-native-clipboard/clipboard';
 import { BackHandler, NativeModules } from 'react-native';
@@ -24,10 +28,22 @@ import {
   CHAIN_OSMOSIS,
   CHAIN_JUNO,
   FundWalletAddressType,
+  EVM_CHAINS_BACKEND_NAMES,
+  COSMOS_CHAINS,
+  ChainNames,
 } from '../../constants/server';
 import ChooseChainModal from '../../components/v2/chooseChainModal';
 import { useIsFocused } from '@react-navigation/native';
 import { isAndroid } from '../../misc/checkers';
+import { get, includes } from 'lodash';
+import {
+  loadPrivateKeyFromKeyChain,
+  loadRecoveryPhraseFromKeyChain,
+} from '../../core/Keychain';
+import { generateCosmosPrivateKey } from '../../core/Address';
+import { cosmosConfig } from '../../constants/cosmosConfig';
+import useConnectionManager from '../../hooks/useConnectionManager';
+import { ConnectionTypes } from '../../constants/enum';
 
 function copyToClipboard(text: string) {
   Clipboard.setString(text);
@@ -38,7 +54,6 @@ export interface UserChain {
   name: string;
   logo_url: number;
   chainName: string;
-  privateKey: string;
   backendName: string;
 }
 
@@ -49,31 +64,73 @@ export default function PrivateKey(props) {
   const portfolioState = useContext<any>(PortfolioContext);
   const [showChainModal, setShowChainModal] = useState<boolean>(false);
   const [showPrivateKey, setShowPrivateKey] = useState<boolean>(false);
+  const [privateKey, setPrivateKey] = useState<string>(
+    _NO_CYPHERD_CREDENTIAL_AVAILABLE_,
+  );
+  const { connectionType } = useConnectionManager();
 
-  const data: UserChain[] = [
+  let data: UserChain[] = [
     {
       ...CHAIN_ETH,
-      privateKey: hdWalletContext.state.wallet.ethereum.wallets[0].privateKey,
     },
     {
       ...CHAIN_EVMOS,
-      privateKey: hdWalletContext.state.wallet.evmos.wallets[0].privateKey,
-    },
-    {
-      ...CHAIN_COSMOS,
-      privateKey: hdWalletContext.state.wallet.cosmos.wallets[0].privateKey,
-    },
-    {
-      ...CHAIN_OSMOSIS,
-      privateKey: hdWalletContext.state.wallet.osmosis.wallets[0].privateKey,
-    },
-    {
-      ...CHAIN_JUNO,
-      privateKey: hdWalletContext.state.wallet.juno.wallets[0].privateKey,
     },
   ];
 
+  if (connectionType === ConnectionTypes.SEED_PHRASE) {
+    data = [
+      ...data,
+      {
+        ...CHAIN_COSMOS,
+      },
+      {
+        ...CHAIN_OSMOSIS,
+      },
+      {
+        ...CHAIN_JUNO,
+      },
+    ];
+  }
+
   const [selectedChain, setSelectedChain] = useState<UserChain>(data[0]);
+
+  const bip44HDPath = {
+    account: 0,
+    change: 0,
+    addressIndex: 0,
+  };
+
+  useEffect(() => {
+    const loadPrivateKey = async () => {
+      if (get(selectedChain, ['chainName']) === ChainNames.ETH) {
+        const privKey = await loadPrivateKeyFromKeyChain(
+          false,
+          hdWalletContext.state.pinValue,
+        );
+        if (privKey && privKey !== _NO_CYPHERD_CREDENTIAL_AVAILABLE_) {
+          setPrivateKey(privKey);
+        }
+      } else if (includes(COSMOS_CHAINS, get(selectedChain, ['chainName']))) {
+        const mnemonic = await loadRecoveryPhraseFromKeyChain(
+          false,
+          hdWalletContext.pinValue,
+        );
+        if (mnemonic && mnemonic !== _NO_CYPHERD_CREDENTIAL_AVAILABLE_) {
+          const privKey = await generateCosmosPrivateKey(
+            cosmosConfig[selectedChain.chainName],
+            mnemonic,
+            bip44HDPath,
+          );
+          if (privKey && privKey !== _NO_CYPHERD_CREDENTIAL_AVAILABLE_) {
+            setPrivateKey(privKey);
+          }
+        }
+      }
+    };
+
+    void loadPrivateKey();
+  }, [selectedChain]);
 
   const handleBackButton = () => {
     props.navigation.goBack();
@@ -87,7 +144,7 @@ export default function PrivateKey(props) {
   const RenderQRCode = (chain: { item: UserChain }) => {
     return selectedChain.backendName === chain.item.backendName ? (
       <QRCode
-        content={chain.item.privateKey}
+        content={privateKey}
         codeStyle='dot'
         logo={AppImages.QR_LOGO}
         logoSize={60}
@@ -221,7 +278,7 @@ export default function PrivateKey(props) {
                 className={
                   'text-addressColor text-[16px] text-center font-semibold'
                 }>
-                {selectedChain.privateKey}
+                {privateKey}
               </CyDText>
             </CyDView>
           )}
@@ -231,7 +288,7 @@ export default function PrivateKey(props) {
             'flex flex-row items-center justify-center mt-[30px] h-[60px] w-3/4 border-[1px] border-[#8E8E8E] rounded-[12px]'
           }
           onPress={() => {
-            copyToClipboard(selectedChain.privateKey);
+            copyToClipboard(privateKey);
             showToast(t('PRIVATE_KEY_COPY'));
           }}>
           <CyDImage

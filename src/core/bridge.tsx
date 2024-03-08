@@ -18,8 +18,14 @@ import { signTypedData, SignTypedDataVersion } from '@metamask/eth-sig-util';
 import { generatePostBodyBroadcast } from '@tharsis/provider';
 import * as Sentry from '@sentry/react-native';
 import { OfflineDirectSigner } from '@cosmjs/proto-signing';
-import { convertAmountOfContractDecimal } from './util';
+import {
+  HdWalletContext,
+  _NO_CYPHERD_CREDENTIAL_AVAILABLE_,
+  convertAmountOfContractDecimal,
+} from './util';
 import { Chain, ChainBackendNames, GASLESS_CHAINS } from '../constants/server';
+import { loadPrivateKeyFromKeyChain } from './Keychain';
+import { useContext } from 'react';
 
 export enum TypeOfTransaction {
   SIMULATION = 'simulation',
@@ -38,20 +44,19 @@ const getTimeOutTime = () => {
   );
 };
 
-const evmosToCosmosSignatureContent = (
+const evmosToCosmosSignatureContent = async (
   senderEvmosAddress: string,
   receiverAddress: string,
   inputAmount: string,
   userAccountData: any,
-  ethereum: any,
-  amount: string = '14000000000000000',
-  gas: string = '450000',
+  hdWallet: any,
+  amount = '14000000000000000',
+  gas = '450000',
 ) => {
   const chainData = {
     chainId: 9001,
     cosmosChainId: 'evmos_9001-2',
   };
-
   const accountData = userAccountData.data.account.base_account;
 
   const sender = {
@@ -82,24 +87,30 @@ const evmosToCosmosSignatureContent = (
 
   const msg: any = createTxIBCMsgTransfer(chainData, sender, fee, '', params);
 
-  const privateKeyBuffer = Buffer.from(ethereum.privateKey.substring(2), 'hex');
-
-  const signature = signTypedData({
-    privateKey: privateKeyBuffer,
-    data: msg.eipToSign,
-    version: SignTypedDataVersion.V4,
-  });
-
-  const extension = signatureToWeb3Extension(chainData, sender, signature);
-
-  const rawTx = createTxRawEIP712(
-    msg.legacyAmino.body,
-    msg.legacyAmino.authInfo,
-    extension,
+  const privateKey = await loadPrivateKeyFromKeyChain(
+    false,
+    hdWallet.state.pinValue,
   );
+  if (privateKey && privateKey !== _NO_CYPHERD_CREDENTIAL_AVAILABLE_) {
+    const privateKeyBuffer = Buffer.from(privateKey.substring(2), 'hex');
 
-  const body = generatePostBodyBroadcast(rawTx);
-  return body;
+    const signature = signTypedData({
+      privateKey: privateKeyBuffer,
+      data: msg.eipToSign,
+      version: SignTypedDataVersion.V4,
+    });
+
+    const extension = signatureToWeb3Extension(chainData, sender, signature);
+
+    const rawTx = createTxRawEIP712(
+      msg.legacyAmino.body,
+      msg.legacyAmino.authInfo,
+      extension,
+    );
+
+    const body = generatePostBodyBroadcast(rawTx);
+    return body;
+  }
 };
 
 export const sendInCosmosChain = async (
@@ -285,7 +296,7 @@ export const interCosmosIbc = async (
 
 export const evmosIbc = async (
   evmosAddress: string,
-  ethereum: any,
+  hdWallet: any,
   receiverAddress: string,
   transferAmount: string,
 ) => {
@@ -297,12 +308,12 @@ export const evmosIbc = async (
       },
     );
 
-    let ibcTransferBody = evmosToCosmosSignatureContent(
+    let ibcTransferBody = await evmosToCosmosSignatureContent(
       evmosAddress,
       receiverAddress,
       transferAmount,
       accountInfoResponse,
-      ethereum,
+      hdWallet,
     );
 
     const response = await axios.post(SIMULATION_ENDPOINT, ibcTransferBody);
@@ -312,12 +323,12 @@ export const evmosIbc = async (
       : 0;
     const gasWanted = simulatedGasInfo.gas_used ? simulatedGasInfo.gas_used : 0;
 
-    ibcTransferBody = evmosToCosmosSignatureContent(
+    ibcTransferBody = await evmosToCosmosSignatureContent(
       evmosAddress,
       receiverAddress,
       transferAmount,
       accountInfoResponse,
-      ethereum,
+      hdWallet,
       ethers.utils
         .parseUnits((cosmosConfig.evmos.gasPrice * gasWanted).toString(), '18')
         .toString(),
