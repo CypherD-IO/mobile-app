@@ -5,11 +5,15 @@ import Loading from '../containers/Loading';
 
 const Stack = createNativeStackNavigator();
 
-function LoadingStack () {
+function LoadingStack() {
   return (
-        <Stack.Navigator initialRouteName={screenTitle.LOADING}>
-            <Stack.Screen name={screenTitle.LOADING} component={Loading} options={{ headerShown: false }} />
-        </Stack.Navigator>
+    <Stack.Navigator initialRouteName={screenTitle.LOADING}>
+      <Stack.Screen
+        name={screenTitle.LOADING}
+        component={Loading}
+        options={{ headerShown: false }}
+      />
+    </Stack.Navigator>
   );
 }
 
