@@ -581,13 +581,6 @@ export default function CardScreen({
                 onPress={() => {
                   onPressUpgradeNow();
                 }}
-                // navigation.navigate(
-                //   screenTitle.UPGRADE_TO_PHYSICAL_CARD_SCREEN,
-                //   {
-                //     currentCardProvider,
-                //   },
-                // )
-
                 className={clsx(
                   'flex flex-row justify-center items-center border border-inputBorderColor bg-white rounded-[8px] px-[12px]',
                 )}>
@@ -596,8 +589,9 @@ export default function CardScreen({
                   className='h-[30px] w-[30px] mr-[8px] my-[5px]'
                 />
                 <CyDText className='font-nunito font-extrabold my-[5px]'>
-                  {t<string>('UPGRADE_NOW_FOR')}{' '}
-                  {'$ ' + String(physicalCardUpgradationFee ?? 0)}
+                  {t<string>('UPGRADE_PHYSICAL_CARD')}
+                  {' for '}
+                  {'$' + String(physicalCardUpgradationFee ?? 0)}
                 </CyDText>
               </CyDTouchView>
             </CyDView>

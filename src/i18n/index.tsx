@@ -1000,7 +1000,16 @@ const resources = {
         'These wallets are associated with your recovery phrase. Choose the wallet to import',
       CHOOSE_WALLET_TO_IMPORT: 'Select Wallet',
       LOADING_TEXT: 'Almost there, please hold on...',
+      LOADING_TEXT_WALLET_CREATION:
+        'This might take upto 1 min. Please do not go back or close the app.',
       UPGRADE_NOW_FOR: 'Upgrade now for ',
+      SHIPPING_FEE_SUB1: 'Kindly be advised that a nominal fee of ',
+      SHIPPING_FEE_SUB2:
+        ' will be debited from your Cypher Card balance to facilitate the transition to a physical card upgrade.',
+      SHIPPING_FEE_ACC:
+        'I acknowledge and authorize the deduction of the above mentioned amount from my account',
+      PROCEED_TO_PAY: 'PROCEED TO PAY',
+      UPGRADE_PHYSICAL_CARD: 'Upgrade to Physical Card',
     },
   },
 };
