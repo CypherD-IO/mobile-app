@@ -4,7 +4,6 @@ import { GlobalContext, GlobalContextDef } from '../../core/globalContext';
 import { Linking, Platform } from 'react-native';
 import { onMessage, registerForRemoteMessages } from '../../core/push';
 import { PinPresentStates } from '../../constants/enum';
-import LoadingStack from '../../routes/loading';
 import PinAuthRoute from '../../routes/pinAuthRoute';
 import * as C from '../../../src/constants/index';
 import OnBoardingStack from '../../routes/onBoarding';
@@ -29,6 +28,7 @@ import { sendFirebaseEvent } from '../../containers/utilities/analyticsUtility';
 import Intercom from '@intercom/intercom-react-native';
 import RNExitApp from 'react-native-exit-app';
 import { HdWalletContextDef } from '../../reducers/hdwallet_reducer';
+import Loading from '../../containers/Loading';
 
 export const InitializeAppProvider: React.FC<JSX.Element> = ({ children }) => {
   const {
@@ -195,16 +195,15 @@ export const InitializeAppProvider: React.FC<JSX.Element> = ({ children }) => {
         <DefaultAuthRemoveModal isModalVisible={showDefaultAuthRemoveModal} />
         {ethereum.address === undefined ? (
           pinAuthentication || pinPresent === PinPresentStates.NOTSET ? (
-            <LoadingStack />
-          ) : pinPresent === PinPresentStates.TRUE ? (
-            <PinAuthRoute
-              setPinAuthentication={setPinAuthentication}
-              initialScreen={C.screenTitle.PIN_VALIDATION}
-            />
+            <Loading loadingText={t('LOADING_TEXT_WALLET_CREATION')} />
           ) : (
             <PinAuthRoute
               setPinAuthentication={setPinAuthentication}
-              initialScreen={C.screenTitle.SET_PIN}
+              initialScreen={
+                pinPresent === PinPresentStates.TRUE
+                  ? C.screenTitle.PIN_VALIDATION
+                  : C.screenTitle.SET_PIN
+              }
             />
           )
         ) : ethereum.address === _NO_CYPHERD_CREDENTIAL_AVAILABLE_ ? (
@@ -214,7 +213,7 @@ export const InitializeAppProvider: React.FC<JSX.Element> = ({ children }) => {
             <OnBoardingStack />
           )
         ) : authToken === undefined ? (
-          <LoadingStack />
+          <Loading />
         ) : (
           children
         )}

@@ -146,13 +146,14 @@ const UpgradeToPhysicalCardScreen = ({ navigation, route }: Props) => {
   const onSubmit = async (values: typeof initialValues) => {
     const phoneNumber =
       selectedCountryForDialCode.dialCode + values.phoneNumber;
-    const shippingDetails: Record<string, string | number> = {
+    const shippingDetails: Record<string, string | number | boolean> = {
       country: selectedCountry.Iso2,
       line1: values.line1.trim(),
       line2: values.line2.trim(),
       city: values.city.trim(),
       state: selectedState.name,
       postalCode: values.postalCode,
+      isUserChargeable: true,
     };
 
     if (values.phoneNumber) {

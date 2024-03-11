@@ -135,7 +135,7 @@ const ShippingDetailsOTPScreen = ({ navigation, route }: Props) => {
 
   const onOTPEntry = async (otp: string) => {
     setIsSubmitting(true);
-    const data: Record<string, string | number> = {
+    const data: Record<string, string | number | boolean> = {
       ...shippingDetails,
     };
 
