@@ -908,6 +908,8 @@ const resources = {
       CHANGE_PHONE_NUMBER: 'Change Phone Number',
       CHANGE_EMAIL_ADDRESS: 'Change Email Address',
       UPDATE_CARD_DETAILS_OTP: 'Enter the OTP received on your phone or email',
+      SET_SMS_NOTIFICATION_TOGGLE_TRUE_OTP:
+        'Enter the OTP received on your phone',
       EMAIL_ADDRESS: 'Email address',
       CURRENT_PHONE_NUMBER: 'Current Phone Number:',
       CONTACT_DETAILS_UPDATION_SUCCESSFUL:
