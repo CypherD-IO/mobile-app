@@ -253,14 +253,12 @@ export default function useInitializer() {
 
   const loadActivitiesFromAsyncStorage = async () => {
     const activities = await getActivities();
-    console.log('load activities ...', activities);
     if (activities) {
       activityContext.dispatch({
         type: ActivityReducerAction.LOAD,
         value: JSON.parse(activities),
       });
     }
-    console.log('dispatching activities');
   };
 
   const setPinAuthenticationStateValue = async () => {

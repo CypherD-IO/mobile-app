@@ -162,6 +162,7 @@ export default function Overview({
   const [showMaxSupplyTip, setMaxSupplyTip] = useState(false);
   const [showTotalSupplyTip, setTotalSupplyTip] = useState(false);
   const chartXValue = useSharedValue('');
+  const [tokenDescription, setTokenDescription] = useState<string>('');
   const [totalValueInAmount, setTotalAmountInValue] = useState(
     `${
       +tokenData.totalValue +
@@ -238,6 +239,7 @@ export default function Overview({
       if (has(data, 'marketCap')) {
         setMarketDistribution(data);
         setMarketDistributionLoading(false);
+        setTokenDescription(data.description);
       } else {
         if (isFocused) {
           marketDistributionTimeout = setTimeout(() => {
@@ -572,12 +574,12 @@ export default function Overview({
             renderersProps={renderersProps}
             source={{
               html:
-                tokenData.about.split(' ').length > 50 && loadMoreAbout
-                  ? tokenData.about.split(' ').slice(0, 50).join(' ')
-                  : tokenData.about,
+                tokenDescription.split(' ').length > 50 && loadMoreAbout
+                  ? tokenDescription.split(' ').slice(0, 50).join(' ')
+                  : tokenDescription,
             }}
           />
-          {tokenData.about.length > 0 && loadMoreAbout && (
+          {tokenDescription.length > 0 && loadMoreAbout && (
             <CyDTouchView
               className={'justify-start mt-[6px]'}
               onPress={() => {
@@ -981,7 +983,7 @@ export default function Overview({
         )}
         {UserBalance}
         <OtherChainsWithToken />
-        {tokenData.about !== ' ' && <AboutTheToken />}
+        {tokenDescription && tokenDescription !== ' ' && <AboutTheToken />}
         {!marketDistributionLoading && marketDistribution && (
           <MarketDistribution />
         )}
