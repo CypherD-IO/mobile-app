@@ -10,12 +10,19 @@ import { useGlobalModalContext } from '../../../components/v2/GlobalModal';
 import useAxios from '../../../core/HttpRequest';
 import { CardProfile } from '../../../models/cardProfile.model';
 import { get } from 'lodash';
-import { CyDSwitch, CyDText, CyDView } from '../../../styles/tailwindStyles';
+import {
+  CyDSwitch,
+  CyDText,
+  CyDTouchView,
+  CyDView,
+} from '../../../styles/tailwindStyles';
 import { t } from 'i18next';
 import AppImages from '../../../../assets/images/appImages';
 import { StyleSheet } from 'react-native';
 import LottieView from 'lottie-react-native';
 import { getWalletProfile } from '../../../core/card';
+import OtpInput from '../../../components/v2/OTPInput';
+import * as Sentry from '@sentry/react-native';
 
 export default function CardNotificationSettings(props: {
   route: {
@@ -25,13 +32,14 @@ export default function CardNotificationSettings(props: {
     };
   };
 }) {
+  const RESENT_OTP_TIME = 30;
   const { route } = props;
   const { card, currentCardProvider } = route.params;
   const { cardId, status } = card;
   const globalContext = useContext<any>(GlobalContext);
   const cardProfile: CardProfile = globalContext.globalState.cardProfile;
   const { showModal, hideModal } = useGlobalModalContext();
-  const { patchWithAuth } = useAxios();
+  const { patchWithAuth, postWithAuth } = useAxios();
   const [emailSwitchLoading, setEmailSwitchLoading] = useState(false);
   const [smsSwitchLoading, setSmsSwitchLoading] = useState(false);
   const [fcmSwitchLoading, setFcmSwitchLoading] = useState(false);
@@ -40,6 +48,10 @@ export default function CardNotificationSettings(props: {
     sms: get(cardProfile, ['cardNotification', 'isSmsAllowed'], true),
     fcm: get(cardProfile, ['cardNotification', 'isFcmAllowed'], true),
   });
+  const [isOTPTriggered, setIsOTPTriggered] = useState<boolean>(false);
+  const [sendingOTP, setSendingOTP] = useState(false);
+  const [resendInterval, setResendInterval] = useState(0);
+  const [timer, setTimer] = useState<NodeJS.Timer>();
 
   useEffect(() => {
     setCurrentNotificationOption({
@@ -49,12 +61,64 @@ export default function CardNotificationSettings(props: {
     });
   }, [globalContext]);
 
+  useEffect(() => {
+    if (resendInterval === 0) {
+      clearInterval(timer);
+    }
+    return () => {
+      clearInterval(timer);
+    };
+  }, [resendInterval]);
+
   const refreshProfile = async () => {
     const data = await getWalletProfile(globalContext.globalState.token);
     globalContext.globalDispatch({
       type: GlobalContextType.CARD_PROFILE,
       cardProfile: data,
     });
+  };
+
+  const resendOTP = async () => {
+    setSendingOTP(true);
+    const otpTriggered = await triggerOtp();
+    if (otpTriggered) {
+      let resendTime = RESENT_OTP_TIME;
+      setTimer(
+        setInterval(() => {
+          resendTime--;
+          setResendInterval(resendTime);
+        }, 1000),
+      );
+    }
+    setSendingOTP(false);
+  };
+
+  const triggerOtp = async () => {
+    const path = '/v1/cards/trigger/unsubscribe-alerts';
+
+    const response = await postWithAuth(path, {});
+    if (response.isError) {
+      const errorObject = {
+        response,
+        message:
+          'isError=true when trying to sendOtp in update card contact details scree.',
+      };
+      Sentry.captureException(errorObject);
+      showModal('state', {
+        type: 'error',
+        title: t('OTP_TRIGGER_FAILED'),
+        description: t('OTP_TRIGGER_FAILED_TEXT'),
+        onSuccess: hideModal,
+        onFailure: hideModal,
+      });
+      return false;
+    }
+    return true;
+  };
+
+  const onOTPEntry = async (otp: string) => {
+    await toggleSmsNotifiction(otp);
+    setIsOTPTriggered(false);
   };
 
   const toggleEmailNotifiction = async () => {
@@ -88,11 +152,12 @@ export default function CardNotificationSettings(props: {
     }
   };
 
-  const toggleSmsNotifiction = async () => {
+  const toggleSmsNotifiction = async (otp = '') => {
     setSmsSwitchLoading(true);
     const response = await patchWithAuth(`/v1/cards/unsubscribe-alerts`, {
       type: CARD_ALERT_TYPES.CARD_TRANSACTION_SMS,
       toggleValue: !currentNotificationOption.sms,
+      ...(!currentNotificationOption.sms ? { otp: Number(otp) } : {}),
     });
     if (!response.isError) {
       await refreshProfile();
@@ -182,7 +247,8 @@ export default function CardNotificationSettings(props: {
           void toggleEmailNotifiction();
           break;
         case CARD_NOTIFICATION_TYPES.SMS:
-          void toggleSmsNotifiction();
+          setIsOTPTriggered(true);
+          void triggerOtp();
           break;
         case CARD_NOTIFICATION_TYPES.FCM:
           void toggleFcmNotifiction();
@@ -193,72 +259,114 @@ export default function CardNotificationSettings(props: {
 
   return (
     <CyDView className='h-full bg-white pt-[30px]'>
-      <CyDView className='flex flex-row justify-between align-center mx-[20px] pb-[15px] border-b-[1px] border-sepratorColor'>
-        <CyDView>
-          <CyDText className='text-[16px] font-bold'>
-            {t<string>('EMAIL_NOTIFICATION')}
+      {!isOTPTriggered && (
+        <>
+          <CyDView className='flex flex-row justify-between align-center mx-[20px] pb-[15px] border-b-[1px] border-sepratorColor'>
+            <CyDView>
+              <CyDText className='text-[16px] font-bold'>
+                {t<string>('EMAIL_NOTIFICATION')}
+              </CyDText>
+            </CyDView>
+            {emailSwitchLoading ? (
+              <LottieView
+                style={styles.loader}
+                autoPlay
+                loop
+                source={AppImages.LOADER_TRANSPARENT}
+              />
+            ) : (
+              <CyDSwitch
+                onValueChange={() => {
+                  void handleToggleNotifications(CARD_NOTIFICATION_TYPES.EMAIL);
+                }}
+                value={currentNotificationOption.email}
+              />
+            )}
+          </CyDView>
+          <CyDView className='flex flex-row justify-between align-center mt-[20px] mx-[20px] pb-[15px] border-b-[1px] border-sepratorColor'>
+            <CyDView>
+              <CyDText className='text-[16px] font-bold'>
+                {t<string>('SMS_NOTIFICATION')}
+              </CyDText>
+            </CyDView>
+            {smsSwitchLoading ? (
+              <LottieView
+                style={styles.loader}
+                autoPlay
+                loop
+                source={AppImages.LOADER_TRANSPARENT}
+              />
+            ) : (
+              <CyDSwitch
+                onValueChange={() => {
+                  void handleToggleNotifications(CARD_NOTIFICATION_TYPES.SMS);
+                }}
+                value={currentNotificationOption.sms}
+              />
+            )}
+          </CyDView>
+          <CyDView className='flex flex-row justify-between align-center mt-[20px] mx-[20px] pb-[15px] border-b-[1px] border-sepratorColor'>
+            <CyDView>
+              <CyDText className='text-[16px] font-bold'>
+                {t<string>('FCM_NOTIFICATION')}
+              </CyDText>
+            </CyDView>
+            {fcmSwitchLoading ? (
+              <LottieView
+                style={styles.loader}
+                autoPlay
+                loop
+                source={AppImages.LOADER_TRANSPARENT}
+              />
+            ) : (
+              <CyDSwitch
+                onValueChange={() => {
+                  void handleToggleNotifications(CARD_NOTIFICATION_TYPES.FCM);
+                }}
+                value={currentNotificationOption.fcm}
+              />
+            )}
+          </CyDView>
+        </>
+      )}
+      {isOTPTriggered && (
+        <CyDView className={'mx-[25px]'}>
+          <CyDText className={'text-[15px] mb-[12px] font-bold'}>
+            {t<string>('SET_SMS_NOTIFICATION_TOGGLE_TRUE_OTP')}
           </CyDText>
-        </CyDView>
-        {emailSwitchLoading ? (
-          <LottieView
-            style={styles.loader}
-            autoPlay
-            loop
-            source={AppImages.LOADER_TRANSPARENT}
-          />
-        ) : (
-          <CyDSwitch
-            onValueChange={() => {
-              void handleToggleNotifications(CARD_NOTIFICATION_TYPES.EMAIL);
+          <OtpInput
+            pinCount={6}
+            getOtp={otp => {
+              void onOTPEntry(otp);
             }}
-            value={currentNotificationOption.email}
+            placeholder={t('ENTER_OTP')}
           />
-        )}
-      </CyDView>
-      <CyDView className='flex flex-row justify-between align-center mt-[20px] mx-[20px] pb-[15px] border-b-[1px] border-sepratorColor'>
-        <CyDView>
-          <CyDText className='text-[16px] font-bold'>
-            {t<string>('SMS_NOTIFICATION')}
-          </CyDText>
+          <CyDTouchView
+            className={'flex flex-row items-center mt-[18px]'}
+            disabled={sendingOTP || resendInterval !== 0}
+            onPress={() => {
+              void resendOTP();
+            }}>
+            <CyDText
+              className={
+                'font-bold underline decoration-solid underline-offset-4'
+              }>
+              {t<string>('RESEND_CODE_INIT_CAPS')}
+            </CyDText>
+            {sendingOTP && (
+              <LottieView
+                source={AppImages.LOADER_TRANSPARENT}
+                autoPlay
+                loop
+                style={styles.lottie}
+              />
+            )}
+            {resendInterval !== 0 && (
+              <CyDText>{String(` in ${resendInterval} sec`)}</CyDText>
+            )}
+          </CyDTouchView>
         </CyDView>
-        {smsSwitchLoading ? (
-          <LottieView
-            style={styles.loader}
-            autoPlay
-            loop
-            source={AppImages.LOADER_TRANSPARENT}
-          />
-        ) : (
-          <CyDSwitch
-            onValueChange={() => {
-              void handleToggleNotifications(CARD_NOTIFICATION_TYPES.SMS);
-            }}
-            value={currentNotificationOption.sms}
-          />
-        )}
-      </CyDView>
-      <CyDView className='flex flex-row justify-between align-center mt-[20px] mx-[20px] pb-[15px] border-b-[1px] border-sepratorColor'>
-        <CyDView>
-          <CyDText className='text-[16px] font-bold'>
-            {t<string>('FCM_NOTIFICATION')}
-          </CyDText>
-        </CyDView>
-        {fcmSwitchLoading ? (
-          <LottieView
-            style={styles.loader}
-            autoPlay
-            loop
-            source={AppImages.LOADER_TRANSPARENT}
-          />
-        ) : (
-          <CyDSwitch
-            onValueChange={() => {
-              void handleToggleNotifications(CARD_NOTIFICATION_TYPES.FCM);
-            }}
-            value={currentNotificationOption.fcm}
-          />
-        )}
-      </CyDView>
+      )}
     </CyDView>
   );
 }
@@ -268,5 +376,8 @@ const styles = StyleSheet.create({
     alignSelf: 'center',
     left: 75,
     top: -3,
+  },
+  lottie: {
+    height: 25,
   },
 });
