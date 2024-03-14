@@ -935,7 +935,7 @@ export async function fetchRequiredTokenData(
   });
   if (response.data) {
     if (symbol) {
-      const tokenHoldings = response.data.chain_portfolios[0].token_holdings;
+      const tokenHoldings = response.data.chainPortfolios[0].tokens;
       const tokenData = tokenHoldings?.find(
         (token: { symbol: string }) => token.symbol === symbol,
       );
