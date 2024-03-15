@@ -1152,7 +1152,7 @@ export default function BridgeFundCardScreen({ route }: { route: any }) {
       }
     }
     return null;
-  }, [selectedToken]);
+  }, [selectedToken, cryptoAmount]);
 
   const onPressToggle = () => {
     setIsCryptoInput(!isCrpytoInput);
