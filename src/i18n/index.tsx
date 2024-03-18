@@ -1014,6 +1014,10 @@ const resources = {
       PROCEED_TO_PAY: 'PROCEED TO PAY',
       UPGRADE_PHYSICAL_CARD: 'Upgrade to Physical Card',
       BALANCE_CAPITAL_FIRST_LETTER: 'Balance',
+      TRANSACTION_YET_TO_BE_SETTLED:
+        'This transaction is yet to be settled on the merchant side',
+      TRANSACTION_SETTLEMENT_AMOUNT:
+        '*The transaction amount is subject to adjustment based on fluctuations in forex rates at the time of final settlement',
     },
   },
 };

@@ -22,6 +22,8 @@ import { Holding } from '../../core/Portfolio';
 import { SwapToken } from '../../models/swapToken.interface';
 import FastImage from 'react-native-fast-image';
 import { copyToClipboard, isNativeToken } from '../../core/util';
+import Toast from 'react-native-toast-message';
+import { toastConfig } from './toast';
 
 interface TokenModal {
   tokenList: Holding[];
@@ -232,6 +234,7 @@ export default function ChooseTokenModal(props: TokenModal) {
             </CyDView>
           )}
         </CyDView>
+        <Toast config={toastConfig} position={'bottom'} bottomOffset={140} />
       </CyDView>
     </CyDModalLayout>
   );
@@ -262,6 +265,14 @@ const TokenItem = ({
   isTokenDisabled: (arg1: number, arg2: boolean, arg3: boolean) => boolean;
   onSelectingToken: (arg: Holding | SwapToken) => void;
 }) => {
+  const copyContractAddress = (contractAddress: string) => {
+    copyToClipboard(contractAddress);
+    Toast.show({
+      type: 'success',
+      text1: 'Copied to clipboard',
+      position: 'bottom',
+    });
+  };
   if (type === TokenModalType.PORTFOLIO) {
     const {
       totalValue,
@@ -333,7 +344,7 @@ const TokenItem = ({
                     </CyDText>
                     <CyDTouchView
                       onPress={() => {
-                        copyToClipboard(contractAddress);
+                        copyContractAddress(contractAddress);
                       }}>
                       <CyDImage
                         source={AppImages.COPY}
