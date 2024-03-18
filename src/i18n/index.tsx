@@ -95,6 +95,7 @@ const resources = {
       DELETE_WALLET: 'Delete Wallet',
       ADDRESS_COPY: 'Address copied to clipboard',
       ADDRESS_COPY_ALL_SMALL: 'address copied to clipboard',
+      CONTRACT_ADDRESS_COPY_ALL_SMALL: 'Contract address copied to clipboard',
       SAVED_TO_CONTACTS_ALL_SMALL: 'saved to contacts',
       PRIVATE_KEY_COPY: 'Private Key copied to clipboard',
       SEED_PHARSE_COPY: 'Seed phrase copied to clipboard',
@@ -1012,6 +1013,11 @@ const resources = {
         'I acknowledge and authorize the deduction of the above mentioned amount from my account',
       PROCEED_TO_PAY: 'PROCEED TO PAY',
       UPGRADE_PHYSICAL_CARD: 'Upgrade to Physical Card',
+      BALANCE_CAPITAL_FIRST_LETTER: 'Balance',
+      TRANSACTION_YET_TO_BE_SETTLED:
+        'This transaction is yet to be settled on the merchant side',
+      TRANSACTION_SETTLEMENT_AMOUNT:
+        '*The transaction amount is subject to adjustment based on fluctuations in forex rates at the time of final settlement',
     },
   },
 };

@@ -281,6 +281,14 @@ export default function TransactionDetails({
           </CyDText>
           <CyDText>{formatDate(transaction.date)}</CyDText>
         </CyDView>
+        {!transaction.isSettled && (
+          <CyDView className='mb-[-20px] mt-[12px]'>
+            <CyDText className='pl-[12px]'>
+              <CyDText className='font-bold underline'>Note:</CyDText>
+              {' ' + t('TRANSACTION_YET_TO_BE_SETTLED')}
+            </CyDText>
+          </CyDView>
+        )}
         {transactionDetails.map((item, index) => {
           if (
             !(fxCurrencySymbol === 'USD' && index === 2) &&
@@ -289,6 +297,13 @@ export default function TransactionDetails({
             return <TransactionDetail item={item} key={index} />;
           }
         })}
+        {!transaction.isSettled && fxCurrencySymbol !== 'USD' && (
+          <CyDView className='bg-lightGrey'>
+            <CyDText className='px-[12px] pb-[12px] mt-[-15px]'>
+              {t('TRANSACTION_SETTLEMENT_AMOUNT')}
+            </CyDText>
+          </CyDView>
+        )}
         <CyDTouchView
           onPress={() => {
             void Intercom.present();

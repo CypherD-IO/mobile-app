@@ -30,9 +30,6 @@ import {
   portfolioStateReducer,
   ValidatorsListReducer,
 } from './src/reducers';
-import { Colors } from './src/constants/theme';
-import * as C from './src/constants/index';
-import AppImages from './assets/images/appImages';
 import analytics from '@react-native-firebase/analytics';
 import '@react-native-firebase/messaging';
 import * as Sentry from '@sentry/react-native';
@@ -76,47 +73,9 @@ import {
 } from './src/reducers/modalReducer';
 import appsFlyer from 'react-native-appsflyer';
 import { InitializeAppProvider } from './src/components/initializeAppProvider';
-
-const { DynamicView, CText, DynamicImage } = require('./src/styles');
+import { toastConfig } from './src/components/v2/toast';
 
 const routingInstrumentation = new Sentry.ReactNavigationInstrumentation();
-
-const toastConfig = {
-  simpleToast: ({ text1, props }: { text1: string; props: any }) => (
-    <DynamicView
-      dynamic
-      dynamicWidth
-      dynamicHeightFix
-      height={36}
-      width={80}
-      bR={13}
-      aLIT={'center'}
-      jC={'center'}
-      bGC={Colors.toastColor}
-      fD={'row'}
-      style={{ opacity: 0.9 }}>
-      {props.image && (
-        <DynamicImage
-          dynamic
-          dynamicWidthFix
-          dynamicHeightFix
-          height={18}
-          width={18}
-          resizemode='cover'
-          source={AppImages.CORRECT}
-        />
-      )}
-      <CText
-        dynamic
-        fF={C.fontsName.FONT_REGULAR}
-        mL={10}
-        fS={15}
-        color={Colors.secondaryTextColor}>
-        {props.text}
-      </CText>
-    </DynamicView>
-  ),
-};
 
 function App() {
   const routeNameRef = React.useRef();

@@ -13,9 +13,11 @@ import {
   beautifyPriceWithUSDDenom,
   convertFromUnitAmount,
   convertToEvmosFromAevmos,
+  copyToClipboard,
   HdWalletContext,
   isABasicCosmosStakingToken,
   isCosmosStakingToken,
+  isNativeToken,
   StakingContext,
 } from '../../core/util';
 import {
@@ -67,6 +69,7 @@ import { getDateFormatBasedOnLocaleForTimestamp } from '../../core/locale';
 import getValidatorsForUSer from '../../core/Staking';
 import { getCosmosStakingData } from '../../core/cosmosStaking';
 import { GlobalContext } from '../../core/globalContext';
+import { showToast } from '../utilities/toastUtility';
 
 const { width } = Dimensions.get('window');
 
@@ -467,6 +470,14 @@ export default function Overview({
               <CyDView className={'flex flex-row items-center align-center'}>
                 <CyDText className={'font-extrabold text-[16px]'}>
                   {tokenData.name}{' '}
+                </CyDText>
+                <CyDView className='bg-gray-200 rounded-[5px] px-[4px]'>
+                  <CyDText className={'text-[12px]'}>
+                    {tokenData.symbol}
+                  </CyDText>
+                </CyDView>
+                <CyDText>
+                  {' '}
                   {tokenData?.isVerified && (
                     <CyDImage
                       source={AppImages.VERIFIED_ICON}
@@ -475,7 +486,24 @@ export default function Overview({
                   )}
                 </CyDText>
               </CyDView>
-              <CyDText className={'text-[12px]'}>{tokenData.symbol}</CyDText>
+              {tokenData.contractAddress && !isNativeToken(tokenData) && (
+                <CyDView className='flex flex-row items-center'>
+                  <CyDText className={'text-[12px]'}>
+                    {`${tokenData.contractAddress.substring(0, 6)}...${tokenData.contractAddress.substring(tokenData.contractAddress.length - 6)}`}
+                  </CyDText>
+                  <CyDTouchView
+                    onPress={() => {
+                      copyToClipboard(tokenData.contractAddress);
+                      showToast(`${t('CONTRACT_ADDRESS_COPY_ALL_SMALL')}`);
+                    }}>
+                    <CyDImage
+                      source={AppImages.COPY}
+                      className='h-[10px] w-[10px] ml-[3px]'
+                      resizeMode='contain'
+                    />
+                  </CyDTouchView>
+                </CyDView>
+              )}
             </CyDView>
             <CyDView className='flex self-center items-end'>
               <CyDView>
