@@ -352,6 +352,12 @@ export default function useInitializer() {
           if (data) {
             const ethereum = JSON.parse(data);
             dispatch({
+              type: 'SET_READ_ONLY_WALLET',
+              value: {
+                isReadOnlyWallet: true,
+              },
+            });
+            dispatch({
               type: 'ADD_ADDRESS',
               value: {
                 chain: 'ethereum',
@@ -371,12 +377,6 @@ export default function useInitializer() {
                 publicKey: '',
                 rawAddress: undefined,
                 algo: '',
-              },
-            });
-            dispatch({
-              type: 'SET_READ_ONLY_WALLET',
-              value: {
-                isReadOnlyWallet: true,
               },
             });
             Intercom.registerIdentifiedUser({

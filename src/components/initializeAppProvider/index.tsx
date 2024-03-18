@@ -53,7 +53,8 @@ export const InitializeAppProvider: React.FC<JSX.Element> = ({ children }) => {
   const [forcedUpdate, setForcedUpdate] = useState<boolean>(false);
   const [tamperedSignMessageModal, setTamperedSignMessageModal] =
     useState<boolean>(false);
-  const ethereum = hdWallet.state.wallet.ethereum;
+  const { isReadOnlyWallet } = hdWallet.state;
+  const { ethereum } = hdWallet.state.wallet;
   const authToken = globalContext.globalState.token;
 
   useEffect(() => {
@@ -212,7 +213,7 @@ export const InitializeAppProvider: React.FC<JSX.Element> = ({ children }) => {
           ) : (
             <OnBoardingStack />
           )
-        ) : authToken === undefined ? (
+        ) : !isReadOnlyWallet && authToken === undefined ? (
           <Loading />
         ) : (
           children
