@@ -3,5 +3,5 @@ export const AppsFlyerConfiguration = {
   devKey: 'wGbeNLrPrqVXjtgryufVv5',
   brandedDomains: ['getapp.cypherwallet.io'],
   oneLinkId: 'YxOA',
-  userInviteChannel: 'UserInvite'
+  userInviteChannel: 'UserInvite',
 };
