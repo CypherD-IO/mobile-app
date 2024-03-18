@@ -75,6 +75,12 @@ export default function TrackWallet({
             void intercomAnalyticsLog('track_wallet_event', data);
             setLoading(false);
             hdWalletContext.dispatch({
+              type: 'SET_READ_ONLY_WALLET',
+              value: {
+                isReadOnlyWallet: true,
+              },
+            });
+            hdWalletContext.dispatch({
               type: 'LOAD_WALLET',
               value: {
                 address: ethAddress,
@@ -92,12 +98,6 @@ export default function TrackWallet({
                 publicKey: '',
                 rawAddress: '',
                 algo: '',
-              },
-            });
-            hdWalletContext.dispatch({
-              type: 'SET_READ_ONLY_WALLET',
-              value: {
-                isReadOnlyWallet: true,
               },
             });
           }
