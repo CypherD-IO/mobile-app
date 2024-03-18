@@ -482,7 +482,7 @@ export async function getPortfolioModel(
         isBridgeable: flags.bridgeable,
         isSwapable: flags.swapable,
         isStakeable: flags.stakeable ?? false,
-        isZeroFeeCardFunding: holding.zeroFeeToken ?? false,
+        isZeroFeeCardFunding: flags.zeroFeeToken ?? false,
       };
       if (has(holding, 'isMainnet')) {
         tokenHolding.isMainnet = holding.isMainnet;
