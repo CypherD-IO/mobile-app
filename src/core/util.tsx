@@ -910,6 +910,13 @@ export const hasSufficientBalanceAndGasFee = (
   return hasSufficientBalance && hasSufficientGasFee;
 };
 
+export const isNativeToken = (tokenData: any) => {
+  const nativeTokenSymbol =
+    NativeTokenMapping[tokenData.chainDetails.symbol] ||
+    tokenData.chainDetails.symbol;
+  return tokenData.symbol === nativeTokenSymbol;
+};
+
 export const isValidMessage = (
   address: string,
   messageToBeValidated: string,

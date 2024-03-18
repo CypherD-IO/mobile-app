@@ -20,6 +20,8 @@ import CyDTokenValue from './tokenValue';
 import { get } from 'lodash';
 import { Holding } from '../../core/Portfolio';
 import { SwapToken } from '../../models/swapToken.interface';
+import FastImage from 'react-native-fast-image';
+import { copyToClipboard, isNativeToken } from '../../core/util';
 
 interface TokenModal {
   tokenList: Holding[];
@@ -271,6 +273,7 @@ const TokenItem = ({
       isFundable,
       isSwapable,
       isZeroFeeCardFunding,
+      contractAddress,
     } = item as Holding;
     const { logo_url, backendName } = chainDetails;
     return (
@@ -284,18 +287,34 @@ const TokenItem = ({
           { 'opacity-25': isTokenDisabled(totalValue, isFundable, isSwapable) },
         )}>
         <CyDView className={'flex flex-row w-full justify-start items-center'}>
-          <CyDView>
-            <CyDImage
+          <CyDView className='flex flex-row h-full mb-[10px] items-center rounded-r-[20px] self-center px-[10px]'>
+            <CyDFastImage
+              className={'h-[35px] w-[35px] rounded-[50px]'}
               source={{ uri: logoUrl }}
-              className={'h-[38px] w-[38px] rounded-[20px] mr-[10px]'}
+              resizeMode='contain'
             />
+            <CyDView className='absolute top-[54%] right-[5px]'>
+              <CyDFastImage
+                className={
+                  'h-[20px] w-[20px] rounded-[50px] border-[1px] border-white bg-white'
+                }
+                source={
+                  chainDetails.logo_url ??
+                  'https://raw.githubusercontent.com/cosmostation/cosmostation_token_resource/master/assets/images/common/unknown.png'
+                }
+                resizeMode={FastImage.resizeMode.contain}
+              />
+            </CyDView>
           </CyDView>
-          <CyDView className='flex flex-1 flex-col justify-center'>
-            <CyDView className='flex flex-1 flex-row justify-between'>
-              <CyDView className='flex flex-row  max-w-[80%]'>
+          <CyDView className='flex flex-1 flex-row items-center'>
+            <CyDView className='flex flex-1 flex-col items-between justify-center'>
+              <CyDView className='flex flex-row  max-w-[80%] items-center'>
                 <CyDText className={'font-extrabold text-[16px]'}>
-                  {name}
+                  {name}{' '}
                 </CyDText>
+                <CyDView className='bg-gray-200 rounded-[5px] px-[4px]'>
+                  <CyDText className={'text-[12px]'}>{symbol}</CyDText>
+                </CyDView>
                 {isZeroFeeCardFunding && renderPage === 'fundCardPage' ? (
                   <CyDView className='h-[20px] bg-privacyMessageBackgroundColor rounded-[8px] mx-[4px] px-[8px] flex justify-center items-center'>
                     <CyDText className={'font-black text-[10px]'}>
@@ -304,21 +323,32 @@ const TokenItem = ({
                   </CyDView>
                 ) : null}
               </CyDView>
+
+              <CyDView
+                className={'flex flex-row items-center align-center mt-[5px]'}>
+                {contractAddress && !isNativeToken(item) && (
+                  <>
+                    <CyDText className={'text-[12px]'}>
+                      {`${contractAddress.substring(0, 6)}...${contractAddress.substring(contractAddress.length - 6)}`}
+                    </CyDText>
+                    <CyDTouchView
+                      onPress={() => {
+                        copyToClipboard(contractAddress);
+                      }}>
+                      <CyDImage
+                        source={AppImages.COPY}
+                        className='h-[10px] w-[10px] ml-[3px]'
+                        resizeMode='contain'
+                      />
+                    </CyDTouchView>
+                  </>
+                )}
+              </CyDView>
+            </CyDView>
+            <CyDView className='flex flex-col items-end'>
               <CyDTokenValue className={'font-extrabold text-[18px]'}>
                 {totalValue}
               </CyDTokenValue>
-            </CyDView>
-            <CyDView className='flex flex-1 flex-row justify-between'>
-              <CyDView
-                className={'flex flex-row items-center align-center mt-[5px]'}>
-                <CyDFastImage
-                  source={logo_url}
-                  className={'h-[15px] w-[15px] rounded-[7px] mr-[2px]'}
-                />
-                <CyDText className={'text-[12px]'}>
-                  {backendName.toUpperCase()}
-                </CyDText>
-              </CyDView>
               <CyDView className='flex flex-row items-end self-end'>
                 <CyDTokenAmount className='text-[14px]'>
                   {actualBalance}
