@@ -4,6 +4,7 @@ import { Config } from 'react-native-config';
 import JailMonkey from 'jail-monkey';
 import RNExitApp from 'react-native-exit-app';
 import {
+  ConnectionTypes,
   GlobalContextType,
   PinPresentStates,
   RPCPreference,
@@ -13,6 +14,7 @@ import { hostWorker, initializeHostsFromAsync } from '../../global';
 import {
   getActivities,
   getAuthToken,
+  getConnectionType,
   getDeveloperMode,
   getReadOnlyWalletData,
   getRpcEndpoints,
@@ -457,9 +459,13 @@ export default function useInitializer() {
         }
       } else {
         let authToken = await getAuthToken();
-        await loadFromKeyChain(DUMMY_AUTH, true, () =>
-          setShowDefaultAuthRemoveModal(true),
-        );
+        const connectionType = await getConnectionType();
+        // don't ask for authentication in case of wallet connect
+        if (!(connectionType === ConnectionTypes.WALLET_CONNECT)) {
+          await loadFromKeyChain(DUMMY_AUTH, true, () =>
+            setShowDefaultAuthRemoveModal(true),
+          );
+        }
         authToken = JSON.parse(String(authToken));
         void getProfile(authToken);
         globalContext.globalDispatch({
