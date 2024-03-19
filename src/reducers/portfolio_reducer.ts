@@ -1,14 +1,17 @@
 import { fetchTokenData, WalletHoldings } from '../core/Portfolio';
 import { Chain, CHAIN_COLLECTION } from '../constants/server';
-import { advancedSettingsInitialState, IAdvancedSettingsData } from '../containers/Options/advancedSettings';
+import {
+  advancedSettingsInitialState,
+  IAdvancedSettingsData,
+} from '../containers/Options/advancedSettings';
 export interface PortfolioState {
-  tokenPortfolio?: WalletHoldings
-  portfolioState: string
-  selectedChain: Chain
-  developerMode: boolean
-  appAdvancedSettings: IAdvancedSettingsData
-  walletConnectURI: string
-  buyButtonClicked: boolean
+  tokenPortfolio?: WalletHoldings;
+  portfolioState: string;
+  selectedChain: Chain;
+  developerMode: boolean;
+  appAdvancedSettings: IAdvancedSettingsData;
+  walletConnectURI: string;
+  buyButtonClicked: boolean;
 }
 
 export const PORTFOLIO_EMPTY = 'EMPTY';
@@ -26,17 +29,55 @@ export const initialPortfolioState: PortfolioState = {
   developerMode: false,
   appAdvancedSettings: advancedSettingsInitialState,
   walletConnectURI: '',
-  buyButtonClicked: false
+  buyButtonClicked: false,
 };
 
 // reducers
-export function portfolioStateReducer (state: any, action: { type: any, value: { hdWallet: { state: { wallet: { ethereum: any, cosmos: any, osmosis: any } } }, portfolioState: { dispatchPortfolio: (arg0: { value: { tokenPortfolio: WalletHoldings, portfolioState: string, rtimestamp: any } | { portfolioState: string } | { tokenPortfolio: WalletHoldings | null, portfolioState: string, rtimestamp: string } | { portfolioState: string } | { tokenPortfolio: WalletHoldings, portfolioState: string, rtimestamp: any } | { portfolioState: string } | { portfolioState: string } }) => void } } }) {
+export function portfolioStateReducer(
+  state: any,
+  action: {
+    type: any;
+    value: {
+      hdWallet: {
+        state: { wallet: { ethereum: any; cosmos: any; osmosis: any } };
+      };
+      portfolioState: {
+        dispatchPortfolio: (arg0: {
+          value:
+            | {
+                tokenPortfolio: WalletHoldings;
+                portfolioState: string;
+                rtimestamp: any;
+              }
+            | { portfolioState: string }
+            | {
+                tokenPortfolio: WalletHoldings | null;
+                portfolioState: string;
+                rtimestamp: string;
+              }
+            | { portfolioState: string }
+            | {
+                tokenPortfolio: WalletHoldings;
+                portfolioState: string;
+                rtimestamp: any;
+              }
+            | { portfolioState: string }
+            | { portfolioState: string };
+        }) => void;
+      };
+    };
+  },
+) {
   switch (action.type) {
-    case 'REFRESH' : {
-      void fetchTokenData(action.value.hdWallet, action.value.portfolioState);
+    case 'REFRESH': {
+      void fetchTokenData(
+        action.value.hdWallet,
+        action.value.portfolioState,
+        true,
+      );
       return state;
     }
-    case 'RESET' : {
+    case 'RESET': {
       return { ...initialPortfolioState };
     }
     default:
