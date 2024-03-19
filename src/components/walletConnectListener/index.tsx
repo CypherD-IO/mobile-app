@@ -27,6 +27,7 @@ import useConnectionManager from '../../hooks/useConnectionManager';
 import Intercom from '@intercom/intercom-react-native';
 import * as Sentry from '@sentry/react-native';
 import DeviceInfo from 'react-native-device-info';
+import { getToken } from '../../core/push';
 
 export const WalletConnectListener: React.FC = ({ children }) => {
   const hdWalletContext = useContext<any>(HdWalletContext);
@@ -118,6 +119,7 @@ export const WalletConnectListener: React.FC = ({ children }) => {
 
   const verifySessionTokenAndSign = async () => {
     setLoading(true);
+    await getToken(String(address));
     void setConnectionType(ConnectionTypes.WALLET_CONNECT_WITHOUT_SIGN);
     const isSessionTokenValid = await verifySessionToken();
     if (!isSessionTokenValid) {
