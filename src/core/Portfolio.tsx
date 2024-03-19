@@ -796,6 +796,7 @@ export async function getPortfolioModel(
 export async function fetchTokenData(
   hdWalletState: { state: { wallet: any; isReadOnlyWallet: boolean } },
   portfolioState: any,
+  isVerifyCoinChecked = true,
 ) {
   const ARCH_HOST: string = hostWorker.getHost('ARCH_HOST');
   const portfolioUrl = `${ARCH_HOST}/v1/portfolio/balances`;
@@ -852,7 +853,7 @@ export async function fetchTokenData(
       chains: PORTFOLIO_CHAINS_BACKEND_NAMES,
       addresses,
       allowTestNets: true,
-      isVerified: false,
+      isVerified: isVerifyCoinChecked,
     };
     const archBackend = await axios.post(portfolioUrl, payload);
     if (archBackend && archBackend?.status === 201) {

@@ -214,7 +214,7 @@ export default function Portfolio({ navigation }: PortfolioProps) {
       ) {
         void refresh();
       }
-      void getHideBalanceStatus().then((resp) => {
+      void getHideBalanceStatus().then(resp => {
         if (resp && resp === 'true') {
           hdWallet?.dispatch({
             type: 'TOGGLE_BALANCE_VISIBILITY',
@@ -241,7 +241,7 @@ export default function Portfolio({ navigation }: PortfolioProps) {
           if (portfolioState?.statePortfolio?.developerMode !== developerMode)
             portfolioState.dispatchPortfolio({ value: { developerMode } });
         })
-        .catch((e) => {
+        .catch(e => {
           Sentry.captureException(e.message);
         });
 
@@ -256,7 +256,7 @@ export default function Portfolio({ navigation }: PortfolioProps) {
           });
       };
 
-      getIBCStatus().catch((error) => {
+      getIBCStatus().catch(error => {
         Sentry.captureException(error.message);
       });
     }
@@ -267,7 +267,7 @@ export default function Portfolio({ navigation }: PortfolioProps) {
       const selectedChain =
         portfolioState?.statePortfolio.selectedChain.backendName;
       if (deFiFilters.chain !== selectedChain)
-        setDeFiFilters((prev) => ({ ...prev, chain: selectedChain }));
+        setDeFiFilters(prev => ({ ...prev, chain: selectedChain }));
     }
   }, [portfolioState.statePortfolio.selectedChain.symbol]);
   const constructTokenMeta = (localPortfolio: any, event: string) => {
@@ -489,20 +489,23 @@ export default function Portfolio({ navigation }: PortfolioProps) {
 
   async function refresh() {
     if (hdWallet) {
-      await fetchTokenData(hdWallet, portfolioState);
+      await fetchTokenData(hdWallet, portfolioState, isVerifyCoinChecked);
     }
   }
 
-  const onRefresh = useCallback(async (pullToRefresh = true) => {
-    if (hdWallet) {
-      setRefreshData({
-        isRefreshing: true,
-        shouldRefreshAssets: pullToRefresh,
-      });
-      await fetchTokenData(hdWallet, portfolioState);
-      setRefreshData({ isRefreshing: false, shouldRefreshAssets: false });
-    }
-  }, []);
+  const onRefresh = useCallback(
+    async (pullToRefresh = true) => {
+      if (hdWallet) {
+        setRefreshData({
+          isRefreshing: true,
+          shouldRefreshAssets: pullToRefresh,
+        });
+        await fetchTokenData(hdWallet, portfolioState, isVerifyCoinChecked);
+        setRefreshData({ isRefreshing: false, shouldRefreshAssets: false });
+      }
+    },
+    [isVerifyCoinChecked],
+  );
 
   useEffect(() => {
     const currTimestamp =
@@ -790,14 +793,13 @@ export default function Portfolio({ navigation }: PortfolioProps) {
             ) : null}
           </AnimatedBanner>
           <CyDView
-            className={clsx('flex-1 pb-[40px]', { 'pb-[75px]': !isIOS() })}
-          >
+            className={clsx('flex-1 pb-[40px]', { 'pb-[75px]': !isIOS() })}>
             <PortfolioTabView
               index={index}
               setIndex={setIndex}
               routes={tabs}
               width={windowWidth}
-              renderTabBar={(p) => (
+              renderTabBar={p => (
                 <AnimatedTabBar bannerHeight={bannerHeight} scrollY={scrollY}>
                   <TabBar {...p} />
                 </AnimatedTabBar>
