@@ -840,19 +840,14 @@ export async function fetchTokenData(
         });
       }
     }
-    let addresses;
-    if (isReadOnlyWallet) {
-      addresses = [ethereum.address];
-    } else {
-      addresses = [
-        cosmos?.wallets[cosmos?.currentIndex]?.address,
-        osmosis?.wallets[osmosis?.currentIndex]?.address,
-        juno?.wallets[juno?.currentIndex]?.address,
-        stargaze?.address,
-        noble?.address,
-        ethereum.address,
-      ];
-    }
+    const addresses = [
+      cosmos?.wallets[cosmos?.currentIndex]?.address,
+      osmosis?.wallets[osmosis?.currentIndex]?.address,
+      juno?.wallets[juno?.currentIndex]?.address,
+      stargaze?.address,
+      noble?.address,
+      ethereum.address,
+    ].filter(address => address !== undefined);
     const payload = {
       chains: PORTFOLIO_CHAINS_BACKEND_NAMES,
       addresses,
