@@ -89,7 +89,7 @@ export default function Login(props) {
             props.navigation.navigate(C.screenTitle.PORTFOLIO_SCREEN);
           else setCreateWalletLoading(true);
         } else {
-          void fetchTokenData(hdWalletContext, portfolioState);
+          void fetchTokenData(hdWalletContext, portfolioState, true);
         }
       }, IMPORT_WALLET_TIMEOUT);
     }
