@@ -106,7 +106,7 @@ const TokenScene = ({
   }, [flatListRef.current]);
 
   useEffect(() => {
-    void onRefresh(true);
+    void onRefresh(false);
   }, [isVerifyCoinChecked]);
 
   const onRefresh = async (pullToRefresh = true) => {
