@@ -69,21 +69,23 @@ export const HeaderBar = ({
         <CyDFastImage className={'h-[8px] w-[8px]'} source={AppImages.DOWN} />
       </CyDTouchView>
       <CyDAnimatedView style={opacity}>{renderTitleComponent}</CyDAnimatedView>
-      {connectionType !== ConnectionTypes.WALLET_CONNECT && <CyDTouchView
+      {connectionType !== ConnectionTypes.WALLET_CONNECT && (
+        <CyDTouchView
           className={'pl-[8px] rounded-[18px]'}
-        onPress={() => {
-          navigation.navigate(screenTitle.QR_CODE_SCANNER, {
-            navigation,
-            fromPage: QRScannerScreens.WALLET_CONNECT,
-            onSuccess,
+          onPress={() => {
+            navigation.navigate(screenTitle.QR_CODE_SCANNER, {
+              navigation,
+              fromPage: QRScannerScreens.WALLET_CONNECT,
+              onSuccess,
             });
-        }}>
-        <CyDFastImage
-          source={AppImages.QR_CODE_SCANNER_BLACK}
-          className={'h-[23px] w-[23px] mt-[5px]'}
-          resizeMode='contain'
-        />
-      </CyDTouchView>}
+          }}>
+          <CyDFastImage
+            source={AppImages.QR_CODE_SCANNER_BLACK}
+            className={'h-[23px] w-[23px] mt-[5px]'}
+            resizeMode='contain'
+          />
+        </CyDTouchView>
+      )}
     </CyDView>
   );
 };

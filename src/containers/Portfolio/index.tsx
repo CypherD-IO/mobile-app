@@ -543,7 +543,6 @@ export default function Portfolio({ navigation }: PortfolioProps) {
       );
     } else {
       return (
-        Number(totalBalance) +
         Number(totalUnverifiedBalance) +
         Number(totalStakedBalance) +
         Number(totalUnbondingBalance)
@@ -570,8 +569,7 @@ export default function Portfolio({ navigation }: PortfolioProps) {
           ? Number(chainTotalBalance) +
               Number(chainStakedBalance) +
               Number(chainUnbondingBalance)
-          : Number(chainTotalBalance) +
-              Number(chainUnVerifiedBalance) +
+          : Number(chainUnVerifiedBalance) +
               Number(chainStakedBalance) +
               Number(chainUnbondingBalance);
       } else {

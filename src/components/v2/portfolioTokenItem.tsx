@@ -290,13 +290,15 @@ const PortfolioTokenItem = ({
               <CyDText className={'text-[12px]'}>{item.symbol}</CyDText>
             </CyDView>
             <CyDView className='flex self-center items-end max-w-[35%]'>
-              <CyDTokenValue className='text-[18px] font-bold'>
-                {item.actualUnbondingBalance !== undefined
-                  ? item.totalValue +
-                    item.actualStakedBalance +
-                    item.actualUnbondingBalance
-                  : '...'}
-              </CyDTokenValue>
+              {item.isVerified && (
+                <CyDTokenValue className='text-[18px] font-bold'>
+                  {item.actualUnbondingBalance !== undefined
+                    ? item.totalValue +
+                      item.actualStakedBalance +
+                      item.actualUnbondingBalance
+                    : '...'}
+                </CyDTokenValue>
+              )}
               <CyDTokenAmount className='text-[14px]'>
                 {item.stakedBalanceTotalValue !== undefined &&
                 item.unbondingBalanceTotalValue !== undefined
