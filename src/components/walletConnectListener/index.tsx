@@ -51,7 +51,7 @@ export const WalletConnectListener: React.FC = ({ children }) => {
     ) {
       void validateStaleConnection();
     }
-  }, [isConnected, address]);
+  }, [isConnected, address, ethereum.address]);
 
   const dispatchProfileData = async (token: string) => {
     const profileData = await getWalletProfile(token);
