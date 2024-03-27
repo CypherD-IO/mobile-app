@@ -12,47 +12,31 @@ import { useTranslation } from 'react-i18next';
 import AppImages from '../../../assets/images/appImages';
 import Button from './button';
 import clsx from 'clsx';
-export default function ShippingFeeConsentModal({
+export default function CardActivationConsentModal({
   isModalVisible,
-  feeAmount,
   onSuccess,
   onFailure,
 }: {
   isModalVisible: boolean;
-  feeAmount: string;
   onSuccess: () => void;
   onFailure: () => void;
 }) {
   const { t } = useTranslation();
-  const title = 'Upgrade to Physical Card';
   const [hasConsent, setHasConsent] = useState(false);
 
   const RenderContent = useCallback(() => {
     return (
       <CyDView className='pr-[12px]'>
-        <CyDText className='mt-[42px] text-[16px] font-bold'>
-          {t('PLEASE_BE_AWARE')}
+        <CyDView className='w-full flex flex-row justify-center items-center mt-[12px] bg-secondaryBackgroundColor'>
+          <CyDImage
+            source={AppImages.VIRTUAL_TO_PHYSICAL}
+            className='h-[150px] w-[180px]'
+            resizeMode='contain'
+          />
+        </CyDView>
+        <CyDText className={'mt-[10px] text-center font-semibold'}>
+          {t('ACTIVATE_PHYSICAL_CARD_SUB')}
         </CyDText>
-        <CyDView className={'flex flex-row my-[18px]'}>
-          <CyDImage
-            className={'mt-[6px] h-[12px] w-[12px]'}
-            source={AppImages.RIGHT_ARROW_BULLET}
-            resizeMode='contain'
-          />
-          <CyDText className={'ml-[10px] font-semibold'}>
-            {t('VIRTUAL_CARD_CANCEL')}
-          </CyDText>
-        </CyDView>
-        <CyDView className={'flex flex-row mt-[4px]'}>
-          <CyDImage
-            className={'mt-[6px] h-[12px] w-[12px]'}
-            source={AppImages.RIGHT_ARROW_BULLET}
-            resizeMode='contain'
-          />
-          <CyDText className={'ml-[10px] font-semibold'}>
-            {t('SHIPPING_FEE_SUB1') + '$' + feeAmount + t('SHIPPING_FEE_SUB2')}
-          </CyDText>
-        </CyDView>
 
         <CyDTouchView
           className='flex flex-row items-center mt-[32px]'
@@ -72,7 +56,7 @@ export default function ShippingFeeConsentModal({
             )}
           </CyDView>
           <CyDText className='px-[12px] text-[12px]'>
-            {t('SHIPPING_FEE_ACC')}
+            {t('ACTIVATE_PHYSICAL_CARD_CONSENT')}
           </CyDText>
         </CyDTouchView>
       </CyDView>
@@ -101,14 +85,14 @@ export default function ShippingFeeConsentModal({
         </CyDTouchView>
         {
           <CyDText className={'mt-[10px] font-bold text-center text-[22px]'}>
-            {title}
+            {t('ACTIVATE_PYHSICAL_CARD')}
           </CyDText>
         }
         <RenderContent />
         <CyDView className={'w-[100%]'}>
           <Button
             style='h-[54px] mt-[12px]'
-            title={t('PROCEED_TO_PAY') + ` $${feeAmount}`}
+            title={t('PROCEED')}
             disabled={!hasConsent}
             onPress={() => {
               onSuccess();

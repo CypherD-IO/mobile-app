@@ -48,6 +48,7 @@ import { getWalletProfile } from '../../../core/card';
 import InfiniteScrollFooterLoader from '../../../components/v2/InfiniteScrollFooterLoader';
 import { MODAL_HIDE_TIMEOUT } from '../../../core/Http';
 import ShippingFeeConsentModal from '../../../components/v2/shippingFeeConsentModal';
+import CardActivationConsentModal from '../../../components/v2/CardActivationConsentModal';
 
 interface CypherCardScreenProps {
   navigation: any;
@@ -79,6 +80,10 @@ const CypherCardScreen = ({ navigation, route }: CypherCardScreenProps) => {
     isShippingFeeConsentModalVisible,
     setIsShippingFeeConsentModalVisible,
   ] = useState(false);
+  const [cardActivationDetails, setCardActivationDetails] = useState({
+    isConsentModalVisible: false,
+    cardToBeActivated: null,
+  });
   const [transactions, setTransactions] = useState<ICardTransaction[]>([]);
   const [currentCardProvider, setCurrentCardProvider] =
     useState<string>(cardProvider);
@@ -328,8 +333,23 @@ const CypherCardScreen = ({ navigation, route }: CypherCardScreenProps) => {
     }
   };
 
+  const onCardActivationConfirmation = () => {
+    if (cardActivationDetails.isConsentModalVisible) {
+      setCardActivationDetails({
+        ...cardActivationDetails,
+        isConsentModalVisible: false,
+      });
+      setTimeout(() => {
+        navigation.navigate(screenTitle.CARD_ACTIAVTION_SCREEN, {
+          currentCardProvider,
+          card: cardActivationDetails.cardToBeActivated,
+        });
+      }, MODAL_HIDE_TIMEOUT);
+    }
+  };
+
   const onPressUpgradeNow = () => {
-    if (Number(cardBalance) < physicalCardUpgradationFee) {
+    if (Number(cardBalance) < Number(physicalCardUpgradationFee)) {
       showModal('state', {
         type: 'error',
         title: t('INSUFFICIENT_FUNDS'),
@@ -346,6 +366,13 @@ const CypherCardScreen = ({ navigation, route }: CypherCardScreenProps) => {
     }
   };
 
+  const onPressActivateCard = (card: any) => {
+    setCardActivationDetails({
+      isConsentModalVisible: true,
+      cardToBeActivated: card,
+    });
+  };
+
   return (
     <CyDSafeAreaView className='flex-1 bg-white'>
       <ShippingFeeConsentModal
@@ -356,6 +383,19 @@ const CypherCardScreen = ({ navigation, route }: CypherCardScreenProps) => {
         }}
         onFailure={() => {
           setIsShippingFeeConsentModalVisible(false);
+        }}
+      />
+
+      <CardActivationConsentModal
+        isModalVisible={cardActivationDetails.isConsentModalVisible}
+        onSuccess={() => {
+          onCardActivationConfirmation();
+        }}
+        onFailure={() => {
+          setCardActivationDetails({
+            ...cardActivationDetails,
+            isConsentModalVisible: false,
+          });
         }}
       />
       {/* TXN FILTER MODAL */}
@@ -395,6 +435,7 @@ const CypherCardScreen = ({ navigation, route }: CypherCardScreenProps) => {
             currentCardProvider={currentCardProvider}
             setCurrentCardProvider={setCurrentCardProvider}
             onPressUpgradeNow={onPressUpgradeNow}
+            onPressActivateCard={onPressActivateCard}
           />
           {/* SWITCH PROVIDER */}
           {/* FUND CARD */}

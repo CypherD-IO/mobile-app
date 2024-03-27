@@ -130,6 +130,7 @@ export default function ActivateCard(props: {
     const payload = {
       otp: +otp,
       last4,
+      shouldCancelVirtualCard: true,
     };
     setLoading(true);
     Keyboard.dismiss();
