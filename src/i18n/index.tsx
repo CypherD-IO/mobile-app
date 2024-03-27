@@ -798,7 +798,7 @@ const resources = {
       ENTER_PIN_PLACEHOLDER: 'Enter PIN',
       ACTIVATE: 'ACTIVATE',
       INVALID_DETAILS: 'Please ensure that the details submitted are valid',
-      ACTIVATE_PYHSICAL_CARD: 'Activate your physical card',
+      ACTIVATE_PYHSICAL_CARD: 'Activate Physical Card',
       ACTIVATION_SUCCESSFUL: 'Activation Successful',
       CARD_ACTIVATION_SUCCESSFUL: 'Your card has been activated successfully',
       CARD_SET_PIN: 'Set Pin',
@@ -1006,7 +1006,7 @@ const resources = {
       LOADING_TEXT_WALLET_CREATION:
         'This might take upto 1 min. Please do not go back or close the app.',
       UPGRADE_NOW_FOR: 'Upgrade now for ',
-      SHIPPING_FEE_SUB1: 'Kindly be advised that a nominal fee of ',
+      SHIPPING_FEE_SUB1: 'A nominal fee of ',
       SHIPPING_FEE_SUB2:
         ' will be debited from your Cypher Card balance to facilitate the transition to a physical card upgrade.',
       SHIPPING_FEE_ACC:
@@ -1018,6 +1018,13 @@ const resources = {
         'This transaction is yet to be settled on the merchant side',
       TRANSACTION_SETTLEMENT_AMOUNT:
         '*The transaction amount is subject to adjustment based on fluctuations in forex rates at the time of final settlement',
+      VIRTUAL_CARD_CANCEL:
+        "Once you receive and activate your physical card, you won't be able to use or access the virtual card anymore.",
+      PLEASE_BE_AWARE: 'Please be aware of the following:',
+      ACTIVATE_PHYSICAL_CARD_SUB:
+        "Please be informed that once you activate your physical card, you won't be able to use or access the virtual card anymore.",
+      ACTIVATE_PHYSICAL_CARD_CONSENT:
+        'I understand and agree to permanently terminate/close my virtual card',
     },
   },
 };

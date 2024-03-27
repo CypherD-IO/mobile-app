@@ -47,11 +47,13 @@ export default function CardScreen({
   currentCardProvider,
   setCurrentCardProvider,
   onPressUpgradeNow,
+  onPressActivateCard,
 }: {
   navigation: any;
   currentCardProvider: string;
   setCurrentCardProvider: Dispatch<SetStateAction<string>>;
   onPressUpgradeNow: () => void;
+  onPressActivateCard: (card: any) => void;
 }) {
   const globalContext = useContext<any>(GlobalContext);
   const cardProfile: CardProfile = globalContext.globalState.cardProfile;
@@ -489,12 +491,7 @@ export default function CardScreen({
           />
           <CyDView className='flex flex-col justify-center h-[200px] w-[300px] border-[1px] border-inputBorderColor rounded-[12px]'>
             <CyDTouchView
-              onPress={() =>
-                navigation.navigate(screenTitle.CARD_ACTIAVTION_SCREEN, {
-                  currentCardProvider,
-                  card,
-                })
-              }
+              onPress={() => onPressActivateCard(card)}
               className='flex flex-row justify-center items-center border-[2px] border-inputBorderColor bg-inputBorderColor mx-[30px] p-[5px] rounded-[10px]'>
               <CyDFastImage
                 source={AppImages.ACTIVATE_PHYSICAL_CARD}
@@ -662,20 +659,22 @@ export default function CardScreen({
                   )}
               </CyDView>
               <CyDView className='flex flex-row justify-start bg-black border-[1px] border-black p-[5px] rounded-l-[50px] mr-[0.7px]'>
-                <CyDTouchView onPress={toggleCardDetails}>
-                  <CyDFastImage
-                    source={{
-                      uri: `https://public.cypherd.io/icons/${
-                        !hideCardDetails &&
-                        currentCardRevealedDetails.cardId === card.cardId
-                          ? 'reveal.png'
-                          : 'hide.png'
-                      }`,
-                    }}
-                    className='h-[21px] w-[21px] ml-[5px] mr-[10px]'
-                    resizeMode='contain'
-                  />
-                </CyDTouchView>
+                {card.type === CardType.VIRTUAL && (
+                  <CyDTouchView onPress={toggleCardDetails}>
+                    <CyDFastImage
+                      source={{
+                        uri: `https://public.cypherd.io/icons/${
+                          !hideCardDetails &&
+                          currentCardRevealedDetails.cardId === card.cardId
+                            ? 'reveal.png'
+                            : 'hide.png'
+                        }`,
+                      }}
+                      className='h-[21px] w-[21px] ml-[5px] mr-[10px]'
+                      resizeMode='contain'
+                    />
+                  </CyDTouchView>
+                )}
                 {['physical', 'virtual'].includes(card.type) && (
                   <CyDTouchView
                     onPress={() =>
