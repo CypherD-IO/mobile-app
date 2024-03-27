@@ -509,7 +509,7 @@ PODS:
     - React-Core
   - react-native-camera/RN (4.2.1):
     - React-Core
-  - react-native-compat (2.11.3):
+  - react-native-compat (2.11.0):
     - RCT-Folly (= 2021.07.22.00)
     - React-Core
   - react-native-config (1.5.1):
@@ -727,7 +727,7 @@ PODS:
     - React-RCTText
     - ReactCommon/turbomodule/core
     - Yoga
-  - RNScreens (3.29.0):
+  - RNScreens (3.30.1):
     - RCT-Folly (= 2021.07.22.00)
     - React-Core
   - RNSentry (5.15.2):
@@ -1154,7 +1154,7 @@ SPEC CHECKSUMS:
   React-logger: d4010de0b0564e63637ad08373bc73b5d919974b
   react-native-appsflyer: 2cc1f96348065fc23e976fc7a27e371789fb349e
   react-native-camera: 3eae183c1d111103963f3dd913b65d01aef8110f
-  react-native-compat: d3934ce877ee9107c282b31705edd268468fe969
+  react-native-compat: 4612e56f0bf7665221b754e1f470649e8ce1752d
   react-native-config: 86038147314e2e6d10ea9972022aa171e6b1d4d8
   react-native-cookies: f54fcded06bb0cda05c11d86788020b43528a26c
   react-native-get-random-values: 21325b2244dfa6b58878f51f9aa42821e7ba3d06
@@ -1206,7 +1206,7 @@ SPEC CHECKSUMS:
   RNOS: 6f2f9a70895bbbfbdad7196abd952e7b01d45027
   RNPermissions: de7b7c3fe1680d974ac7a85e3e97aa539c0e68ea
   RNReanimated: f8379347f71248607d530a21e31e4140c5910c25
-  RNScreens: 8ba3eeb8f5cb9f13662df564e785d64ef7214bf2
+  RNScreens: e5ee7223f7c8fa261f0c4594a0541c56ea99bbfc
   RNSentry: 7ac3c054dcd81ebb21455af87dbd96e9f11df6b6
   RNShare: a5dc3b9c53ddc73e155b8cd9a94c70c91913c43c
   RNSVG: d7d7bc8229af3842c9cfc3a723c815a52cdd1105
