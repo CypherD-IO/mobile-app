@@ -66,7 +66,7 @@ import { hostWorker } from '../global';
 import axios from 'axios';
 
 // increase this when you want the CyRootData to be reconstructed
-const currentSchemaVersion = 6;
+export const currentSchemaVersion = 6;
 
 export async function saveCredentialsToKeychain(
   hdWalletContext: HdWalletContextDef,

@@ -1025,6 +1025,7 @@ const resources = {
         "Please be informed that once you activate your physical card, you won't be able to use or access the virtual card anymore.",
       ACTIVATE_PHYSICAL_CARD_CONSENT:
         'I understand and agree to permanently terminate/close my virtual card',
+      CONTINUE_WITH_UPDATE: 'Continue With Update',
     },
   },
 };
