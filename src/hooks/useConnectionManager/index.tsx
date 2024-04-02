@@ -132,7 +132,7 @@ export default function useConnectionManager() {
       connectionType,
       onSuccess: () => {
         hideModal();
-        void authorizeWalletDeletion(navigation);
+        void authorizeWalletDeletion({ navigation });
       },
       onFailure: hideModal,
     });
