@@ -319,6 +319,22 @@ export async function isAuthenticatedForPrivateKey(
 export async function loadCyRootData(hdWallet: any) {
   // Update schemaVersion whenever adding a new address generation logic
 
+  // Specifically for BUILD 2.48 (remove in subsequent builds)
+  if (await isPinAuthenticated()) {
+    if (!(await loadPrivateKeyFromKeyChain(false, hdWallet.pinValue))) {
+      const unEncryptedPrivateKey = await loadFromKeyChain(CYPHERD_PRIVATE_KEY);
+      if (unEncryptedPrivateKey) {
+        await saveToKeychain(
+          CYPHERD_PRIVATE_KEY,
+          CryptoJS.AES.encrypt(
+            unEncryptedPrivateKey,
+            hdWallet.pinValue,
+          ).toString(),
+        );
+      }
+    }
+  }
+
   // No authentication needed to fetch CYD_RootData in Android but needed in case of IOS
   const schemaVersion = await getSchemaVersion();
   if (schemaVersion === currentSchemaVersion.toString()) {
@@ -347,9 +363,16 @@ export async function loadCyRootData(hdWallet: any) {
     );
     const rootData = constructRootData(wallet.accounts);
     await setCyRootData(rootData);
-    await setSchemaVersion(currentSchemaVersion);
-    await saveToKeychain(CYPHERD_PRIVATE_KEY, wallet.privateKey);
+    if (await isPinAuthenticated()) {
+      await saveToKeychain(
+        CYPHERD_PRIVATE_KEY,
+        CryptoJS.AES.encrypt(wallet.privateKey, hdWallet.pinValue).toString(),
+      );
+    } else {
+      await saveToKeychain(CYPHERD_PRIVATE_KEY, wallet.privateKey);
+    }
     await saveToKeychain(DUMMY_AUTH, 'DUMMY_AUTH');
+    await setSchemaVersion(currentSchemaVersion);
     await removeFromKeyChain(CYPHERD_ROOT_DATA);
     return rootData;
   }
