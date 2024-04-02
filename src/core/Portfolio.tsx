@@ -925,10 +925,13 @@ export async function fetchRequiredTokenData(
     chains: [chain],
     addresses: [address],
   };
-  const response = await axios.post(portfolioUrl, {
-    payload,
-    timeout: 25000,
-  });
+  const response = await axios.post(
+    portfolioUrl,
+    {
+      ...payload,
+    },
+    { timeout: 25000 },
+  );
   if (response.data) {
     if (symbol) {
       const tokenHoldings = response.data.chainPortfolios[0].tokens;
