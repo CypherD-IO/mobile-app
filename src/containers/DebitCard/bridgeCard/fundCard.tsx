@@ -210,6 +210,16 @@ export default function BridgeFundCardScreen({ route }: { route: any }) {
     };
 
     try {
+      if (!body.txnHash) {
+        showModal('state', {
+          type: 'error',
+          title: 'Unable to process your transaction',
+          description: `Incase your transaction went through, please contact customer support with the quote_id: ${quoteId}`,
+          onSuccess: hideModal,
+          onFailure: hideModal,
+        });
+        return;
+      }
       const response = await postWithAuth(transferSentUrl, body);
       if (!response.isError) {
         activityRef.current &&
