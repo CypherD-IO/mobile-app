@@ -71,7 +71,7 @@ export default function ActivateCard(props: {
     const triggerOTPUrl = `/v1/cards/${currentCardProvider}/card/${card.cardId}/trigger/activate-card`;
     try {
       const response = await postWithAuth(triggerOTPUrl, {});
-      if (!response.isError) {
+      if (response.isError) {
         showModal('state', {
           type: 'error',
           title: t('OTP_TRIGGER_FAILED'),
