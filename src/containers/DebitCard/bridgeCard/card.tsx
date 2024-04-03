@@ -550,7 +550,7 @@ export default function CardScreen({
                   }}
                 />
               </CyDView>
-              <CyDView className='flex flex-row my-[5px] top-[20px]'>
+              {lifetimeLoadUSD < physicalCardEligibilityLimit && <CyDView className='flex flex-row my-[5px] top-[20px]'>
                 <CyDText className='mb-[4px] text-white'>{`Load `}</CyDText>
                 <CyDText className='mb-[4px] font-extrabold text-appColor'>
                   {limitDecimalPlaces(
@@ -560,7 +560,7 @@ export default function CardScreen({
                 </CyDText>
                 <CyDText className='mb-[4px] font-extrabold text-appColor'>{` USD`}</CyDText>
                 <CyDText className='mb-[4px] text-white'>{` more to upgrade`}</CyDText>
-              </CyDView>
+              </CyDView>}
             </CyDView>
           </CyDAnimatedView>
         );
