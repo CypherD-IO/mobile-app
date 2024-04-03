@@ -485,7 +485,7 @@ export default function CardScreen({
       return (
         <CyDAnimatedView className='mb-[10px]' style={animatedStyle}>
           <CyDFastImage
-            className={clsx('absolute w-full h-full')}
+            className={clsx('absolute w-full h-[200px]')}
             source={{ uri: getCardBackgroundLayout(card) }}
             resizeMode='stretch'
           />

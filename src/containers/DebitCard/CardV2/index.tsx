@@ -1,6 +1,15 @@
-import React, { memo, useContext, useEffect, useRef, useState } from 'react';
+import React, {
+  memo,
+  useCallback,
+  useContext,
+  useEffect,
+  useRef,
+  useState,
+} from 'react';
 import {
   CyDFastImage,
+  CyDFlatList,
+  CyDImage,
   CyDImageBackground,
   CyDSafeAreaView,
   CyDText,
@@ -10,6 +19,7 @@ import {
 import AppImages from '../../../../assets/images/appImages';
 import {
   CardProviders,
+  CardStatus,
   CardTransactionStatuses,
   CardTransactionTypes,
   GlobalContextType,
@@ -49,6 +59,10 @@ import InfiniteScrollFooterLoader from '../../../components/v2/InfiniteScrollFoo
 import { MODAL_HIDE_TIMEOUT } from '../../../core/Http';
 import ShippingFeeConsentModal from '../../../components/v2/shippingFeeConsentModal';
 import CardActivationConsentModal from '../../../components/v2/CardActivationConsentModal';
+import Loading from '../../../components/v2/loading';
+import { RenderMessage } from '../../../components/v2/walletConnectV2Views/SigningModals/SigningModalComponents';
+import { copyToClipboard } from '../../../core/util';
+import { showToast } from '../../utilities/toastUtility';
 
 interface CypherCardScreenProps {
   navigation: any;
@@ -65,8 +79,12 @@ const CypherCardScreen = ({ navigation, route }: CypherCardScreenProps) => {
 
   const globalContext = useContext<any>(GlobalContext);
   const cardProfile: CardProfile = globalContext.globalState.cardProfile;
-
-  const cardSectionHeight: CardSectionHeights = hasBothProviders ? 320 : 270;
+  const [trackingDetails, setTrackingDetails] = useState({});
+  const [cardSectionHeight, setCardSectionHeight] = useState(270);
+  // Object.keys(trackingDetails)
+  //   .length
+  //   ? 420
+  //   : 270;
   const scrollY = useSharedValue(-cardSectionHeight);
 
   const txnRetrievalOffset = useRef<string | undefined>();
@@ -108,11 +126,23 @@ const CypherCardScreen = ({ navigation, route }: CypherCardScreenProps) => {
   const {
     pc: { physicalCardUpgradationFee } = { physicalCardUpgradationFee: 50 },
   } = cardProfile;
-  const onRefresh = () => {
+  const [isLayoutRendered, setIsLayoutRendered] = useState(false);
+
+  const onRefresh = async () => {
     void refreshProfile();
     setCardBalance('');
-    void fetchCardBalance();
-    void retrieveTxns(true);
+    const availableCards = cardProfile?.pc?.cards ?? [];
+    const notActivatedCards = availableCards.filter(
+      card => card.status === CardStatus.PENDING_ACTIVATION,
+    );
+    if (notActivatedCards.length) {
+      await getTrackingDetails();
+    }
+    await fetchCardBalance();
+    await retrieveTxns(true);
+    if (!isLayoutRendered) {
+      setIsLayoutRendered(true);
+    }
   };
 
   useEffect(() => {
@@ -134,12 +164,24 @@ const CypherCardScreen = ({ navigation, route }: CypherCardScreenProps) => {
   }, [cardProfile, currentCardProvider, isFocused]);
 
   useEffect(() => {
-    onRefresh();
+    void onRefresh();
   }, [currentCardProvider]);
 
   useEffect(() => {
     spliceTransactions(transactions);
   }, [filter.statuses, filter.types, filter.dateRange]);
+
+  const getTrackingDetails = async () => {
+    const response = await getWithAuth(
+      `/v1/cards/${CardProviders.PAYCADDY}/card/tracking`,
+    );
+    if (!response.error) {
+      const tempTrackingDetails = response.data;
+      setTrackingDetails(tempTrackingDetails);
+      if (Object.keys(tempTrackingDetails).length) setCardSectionHeight(420);
+    }
+    return response;
+  };
 
   const refreshProfile = async () => {
     const data = await getWalletProfile(globalContext.globalState.token);
@@ -373,7 +415,78 @@ const CypherCardScreen = ({ navigation, route }: CypherCardScreenProps) => {
     });
   };
 
-  return (
+  const copyTrackingNumber = (trackingNumber: string) => {
+    copyToClipboard(trackingNumber);
+    showToast('Tracking number copied to clipboard');
+  };
+
+  const RenderTrackingItem = useCallback(
+    ({ item, index }) => {
+      const physicalCard = get(trackingDetails, item);
+      const trackingNumber = get(trackingDetails, item)?.trackingId;
+      return (
+        <CyDView
+          className='flex flex-row items-start w-[350px] mx-[20px] px-[10px] mb-[20px] bg-highlightBg rounded-[12px] self-center'
+          key={index}>
+          <CyDView className='py-[20px]'>
+            <CyDImage source={AppImages.MAIL} className='h-[32px] w-[32px]' />
+          </CyDView>
+          <CyDView className='py-[20px] flex justify-center ml-[12px] w-[90%]'>
+            <CyDView className='flex flex-row items-center'>
+              <CyDText className='font-bold text-[16px]'>
+                {t('CARD_ON_WAY')}
+              </CyDText>
+              <CyDImage
+                source={AppImages.CELEBRATE}
+                className='h-[24px] w-[24px] ml-[8px]'
+              />
+            </CyDView>
+            <CyDText className='mt-[6px]'>
+              {t('CARD_SHIP_DESCRIPTION_SUB1') +
+                String(physicalCard.last4) +
+                t('CARD_SHIP_DESCRIPTION_SUB2')}
+            </CyDText>
+            {trackingNumber && (
+              <CyDView className='flex flex-row items-center mt-[6px]'>
+                <CyDText className=''>{t('FEDEX_TRACKING_NO')}</CyDText>
+                <CyDText className='max-w-[50%] text-highlightText ml-[8px]'>
+                  {trackingNumber}
+                </CyDText>
+                <CyDTouchView
+                  onPress={() => copyTrackingNumber(trackingNumber)}>
+                  <CyDImage
+                    source={AppImages.COPY}
+                    className='h-[14px] w-[14px] ml-[12px]'
+                    resizeMode='contain'
+                  />
+                </CyDTouchView>
+              </CyDView>
+            )}
+          </CyDView>
+        </CyDView>
+      );
+    },
+    [trackingDetails],
+  );
+
+  const RenderMessage = useCallback(() => {
+    return (
+      <CyDFlatList
+        data={Object.keys(trackingDetails)}
+        horizontal
+        renderItem={RenderTrackingItem}
+        showsHorizontalScrollIndicator={false}
+        contentInsetAdjustmentBehavior='never'
+        snapToAlignment='center'
+        decelerationRate='fast'
+        automaticallyAdjustContentInsets={false}
+        showsVerticalScrollIndicator={false}
+        contentContainerStyle={styles.contentContainerStyle}
+      />
+    );
+  }, [trackingDetails]);
+
+  return isLayoutRendered ? (
     <CyDSafeAreaView className='flex-1 bg-white'>
       <ShippingFeeConsentModal
         isModalVisible={isShippingFeeConsentModalVisible}
@@ -439,9 +552,10 @@ const CypherCardScreen = ({ navigation, route }: CypherCardScreenProps) => {
           />
           {/* SWITCH PROVIDER */}
           {/* FUND CARD */}
+          <RenderMessage />
           <CyDView
             className={
-              'h-[50px] flex flex-row justify-between py-[5px] px-[10px] bg-white border-[1px] mx-[20px] rounded-[8px] border-sepratorColor'
+              'h-[50px] flex flex-row justify-between py-[5px] px-[10px] bg-white border-[1px] mx-[12px] rounded-[8px] border-sepratorColor'
             }>
             <CyDView>
               <CyDText className={'font-bold text-[10px]'}>
@@ -549,6 +663,8 @@ const CypherCardScreen = ({ navigation, route }: CypherCardScreenProps) => {
         </CyDView>
       </CyDImageBackground>
     </CyDSafeAreaView>
+  ) : (
+    <Loading />
   );
 };
 export default memo(CypherCardScreen);
@@ -559,5 +675,8 @@ const styles = StyleSheet.create({
   },
   infiniteScrollFooterLoaderStyle: {
     height: 40,
+  },
+  contentContainerStyle: {
+    marginHorizontal: '12px',
   },
 });

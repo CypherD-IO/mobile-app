@@ -12,7 +12,7 @@ export const STATUSES = [
   CardTransactionStatuses.SETTLED,
 ];
 
-export type CardSectionHeights = 270 | 320;
+export type CardSectionHeights = 270 | 420;
 export interface DateRange {
   fromDate: Date;
   toDate: Date;
