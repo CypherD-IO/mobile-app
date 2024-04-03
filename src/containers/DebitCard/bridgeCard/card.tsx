@@ -632,7 +632,7 @@ export default function CardScreen({
             </CyDView>
             <CyDView className='flex flex-row justify-between items-center'>
               <CyDView className='flex flex-row items-center'>
-                <CyDTouchView onPress={toggleCardDetails}>
+                <CyDView>
                   <CyDText
                     className={clsx(
                       'font-nunito font-bold text-[16px] m-[10px]',
@@ -640,7 +640,7 @@ export default function CardScreen({
                     )}>
                     {getCardNumber(card)}
                   </CyDText>
-                </CyDTouchView>
+                </CyDView>
                 {!hideCardDetails &&
                   currentCardRevealedDetails.cardId === card.cardId && (
                     <CyDTouchView onPress={() => copyCardNumber()}>
