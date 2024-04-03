@@ -307,6 +307,7 @@ const SEND_INVITE_CODE = require('./sendInviteCode.png');
 const CANDY_CANE = require('./candyCane.png');
 const WALLET_ICONS = require('./walletIcons.png');
 const VIRTUAL_TO_PHYSICAL = require('./virtualToPhysical.png');
+const MAIL = require('./mail.png');
 
 // ICONS FROM S3
 const SWAP = { uri: `${S3_BUCKET_URL_ICONS}/swap.png` };
@@ -671,5 +672,6 @@ const AppImages = {
   CANDY_CANE,
   WALLET_ICONS,
   VIRTUAL_TO_PHYSICAL,
+  MAIL
 };
 export default AppImages;

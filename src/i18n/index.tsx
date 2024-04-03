@@ -1025,6 +1025,10 @@ const resources = {
         "Please be informed that once you activate your physical card, you won't be able to use or access the virtual card anymore.",
       ACTIVATE_PHYSICAL_CARD_CONSENT:
         'I understand and agree to permanently terminate/close my virtual card',
+      CARD_ON_WAY: 'Your card is on its way',
+      CARD_SHIP_DESCRIPTION_SUB1: 'Your physical card ending with ',
+      CARD_SHIP_DESCRIPTION_SUB2: ' has been dispatched and is in transit',
+      FEDEX_TRACKING_NO: 'Fedex Tracking No:',
     },
   },
 };
