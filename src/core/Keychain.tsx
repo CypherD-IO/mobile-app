@@ -321,12 +321,16 @@ export async function loadCyRootData(hdWallet: any) {
 
   // Specifically for BUILD 2.48 (remove in subsequent builds)
   if (await isPinAuthenticated()) {
+    const privateKeyFromKeychain = await loadFromKeyChain(CYPHERD_PRIVATE_KEY);
+    const privateKeyFromKeychainWithPinAuth = await loadPrivateKeyFromKeyChain(
+      false,
+      hdWallet.pinValue,
+    );
     if (
-      (await loadFromKeyChain(CYPHERD_PRIVATE_KEY)) !==
-        _NO_CYPHERD_CREDENTIAL_AVAILABLE_ &&
-      !(await loadPrivateKeyFromKeyChain(false, hdWallet.pinValue))
+      privateKeyFromKeychain !== _NO_CYPHERD_CREDENTIAL_AVAILABLE_ &&
+      !privateKeyFromKeychainWithPinAuth
     ) {
-      const unEncryptedPrivateKey = await loadFromKeyChain(CYPHERD_PRIVATE_KEY);
+      const unEncryptedPrivateKey = privateKeyFromKeychain;
       if (unEncryptedPrivateKey) {
         await saveToKeychain(
           CYPHERD_PRIVATE_KEY,
