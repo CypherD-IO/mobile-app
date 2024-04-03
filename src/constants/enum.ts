@@ -54,6 +54,7 @@ export enum CardStatus {
   ACTIVE = 'active',
   IN_ACTIVE = 'inactive',
   BLOCKED = 'blocked',
+  PENDING_ACTIVATION = 'pendingActivation',
 }
 
 export enum OTPType {

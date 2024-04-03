@@ -115,7 +115,9 @@ module.exports = {
       fadedDarkBackgroundColor: '#343434',
       buttonColor: '#F7C645',
       textInputBackground: '#C5C5C5',
-      textInputFocussedBackground: '#434343'
+      textInputFocussedBackground: '#434343',
+      highlightBg: '#E5F3F2',
+      highlightText: '#058A81'
     },
     columns: {
       auto: 'auto',
