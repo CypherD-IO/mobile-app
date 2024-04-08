@@ -941,3 +941,12 @@ export const isValidMessage = (
     }
   }
 };
+
+export const generateUserInviteLink = () => {
+  if (Platform.OS === 'ios') {
+    return 'https://apps.apple.com/us/app/cypher-wallet/id1604120414';
+  } else if (Platform.OS === 'android') {
+    return 'https://play.google.com/store/apps/details?id=com.cypherd.androidwallet';
+  }
+  return '';
+};

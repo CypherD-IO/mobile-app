@@ -71,7 +71,6 @@ import {
   modalContextInitialState,
   modalReducer,
 } from './src/reducers/modalReducer';
-import appsFlyer from 'react-native-appsflyer';
 import { InitializeAppProvider } from './src/components/initializeAppProvider';
 import { toastConfig } from './src/components/v2/toast';
 
@@ -180,13 +179,6 @@ function App() {
       );
     }
   }, [walletConnectState?.connectors]);
-
-  // Kick off appsflyer SDK by setting the ethereum address.
-  useEffect(() => {
-    // Register app download with appsFlyer SDK
-    appsFlyer.setCustomerUserId(ethereum.address);
-    appsFlyer.startSdk();
-  }, [ethereum.address]);
 
   useEffect(() => {
     const getData = async () => {

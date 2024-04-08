@@ -29,8 +29,6 @@ target 'Cypherd' do
 
   pod 'react-native-view-shot', :path => '../node_modules/react-native-view-shot'
 
-  pod 'react-native-appsflyer', :path => '../node_modules/react-native-appsflyer'
-
   pod 'RNLocalize', :path => '../node_modules/react-native-localize'
 
   target 'CypherdTests' do

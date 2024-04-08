@@ -64,16 +64,16 @@ export const WalletConnectListener: React.FC = ({ children }) => {
   const registerIntercomUser = () => {
     Intercom.registerIdentifiedUser({
       userId: address,
-    }).catch(error => {
-      Sentry.captureException(error);
+    }).catch(() => {
+      // throws error if user is already registered
     });
     Intercom.updateUser({
       userId: address,
       customAttributes: {
         version: DeviceInfo.getVersion(),
       },
-    }).catch(error => {
-      Sentry.captureException(error);
+    }).catch(() => {
+      // throws error if user is already registered
     });
   };
 

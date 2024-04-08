@@ -55,7 +55,6 @@ import {
   ScrollableType,
   TokenOverviewTabIndices,
 } from '../../constants/enum';
-import appsFlyer from 'react-native-appsflyer';
 import { TokenMeta } from '../../models/tokenMetaData.model';
 import Button from '../../components/v2/button';
 import {
@@ -318,7 +317,6 @@ export default function Portfolio({ navigation }: PortfolioProps) {
     if (ethereum) {
       const localPortfolio = await getPortfolioData(ethereum, portfolioState);
       if (remoteMessage?.data) {
-        void appsFlyer.logEvent('notification_opened', remoteMessage.data);
         switch (remoteMessage.data.title) {
           case NotificationEvents.DAPP_BROWSER_OPEN: {
             void analytics().logEvent(`DAPP_${remoteMessage.data.title}`, {

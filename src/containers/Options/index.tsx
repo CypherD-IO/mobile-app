@@ -12,7 +12,6 @@ import axios from 'axios';
 import React, { useContext, useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { BackHandler, ImageBackground, Linking } from 'react-native';
-import appsFlyer from 'react-native-appsflyer';
 import DeviceInfo from 'react-native-device-info';
 import Toast from 'react-native-toast-message';
 import SpInAppUpdates from 'sp-react-native-in-app-updates';
@@ -47,6 +46,7 @@ import { onShare } from '../utilities/socialShareUtility';
 import { screenTitle } from '../../constants/index';
 import useConnectionManager from '../../hooks/useConnectionManager';
 import { get } from 'lodash';
+import { CHAIN_ETH } from '../../constants/server';
 
 const { DynamicView, CText, DynamicImage } = require('../../styles');
 
@@ -175,7 +175,7 @@ export default function Options(props: {
       const profileData = await getWalletProfile(
         globalContext.globalState.token,
       );
-      const ens = await resolveDomain(ethereum.address);
+      const ens = await resolveDomain(ethereum.address, CHAIN_ETH.backendName);
       if (get(profileData, ['child'])) {
         setTitle(t('LINKED_WALLET'));
       } else if (ens) {
@@ -193,9 +193,7 @@ export default function Options(props: {
   const referToFriend = () => {
     onShare(t('RECOMMEND_TITLE'), t('RECOMMEND_MESSAGE'), t('RECOMMEND_URL'))
       .then(() => {})
-      .catch(error => {
-        void appsFlyer.logEvent('share_invite_failed', error);
-      });
+      .catch(error => {});
   };
 
   // NOTE: LIFE CYCLE METHOD 🍎🍎🍎🍎
