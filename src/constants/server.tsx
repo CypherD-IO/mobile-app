@@ -553,7 +553,7 @@ export const PORTFOLIO_CHAINS_BACKEND_NAMES = [
   ChainBackendNames.OPTIMISM,
   ChainBackendNames.ARBITRUM,
   ChainBackendNames.EVMOS,
-  ChainBackendNames.SHARDEUM,
+  // ChainBackendNames.SHARDEUM,
   ChainBackendNames.SHARDEUM_SPHINX,
   ChainBackendNames.EVMOS,
   ChainBackendNames.COSMOS,

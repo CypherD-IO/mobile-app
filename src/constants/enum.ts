@@ -54,6 +54,7 @@ export enum CardStatus {
   ACTIVE = 'active',
   IN_ACTIVE = 'inactive',
   BLOCKED = 'blocked',
+  PENDING_ACTIVATION = 'pendingActivation',
 }
 
 export enum OTPType {
@@ -294,4 +295,9 @@ export enum CARD_NOTIFICATION_TYPES {
   EMAIL = 'email',
   SMS = 'sms',
   FCM = 'fcm',
+}
+
+export enum SECRET_TYPES {
+  MENEMONIC = 'mnemonic',
+  PRIVATE_KEY = 'privateKey',
 }

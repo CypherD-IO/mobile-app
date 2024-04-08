@@ -42,9 +42,7 @@ export default function useConnectionManager() {
   const osmosisAddress =
     hdWalletContext.state.wallet.osmosis?.wallets[0]?.address;
   const junoAddress = hdWalletContext.state.wallet.juno?.wallets[0]?.address;
-  const [connectionType, setConnectionType] = useState<ConnectionTypes>(
-    ConnectionTypes.SEED_PHRASE,
-  );
+  const [connectionType, setConnectionType] = useState<ConnectionTypes>();
   const { showModal, hideModal } = useGlobalModalContext();
   const { deleteWithoutAuth } = useAxios();
   const getConnectedType = async () => {
@@ -134,7 +132,7 @@ export default function useConnectionManager() {
       connectionType,
       onSuccess: () => {
         hideModal();
-        void authorizeWalletDeletion(navigation);
+        void authorizeWalletDeletion({ navigation });
       },
       onFailure: hideModal,
     });

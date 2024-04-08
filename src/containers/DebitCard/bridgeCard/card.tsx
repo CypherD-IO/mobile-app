@@ -1,6 +1,7 @@
 import React, {
   Dispatch,
   SetStateAction,
+  useCallback,
   useContext,
   useEffect,
   useMemo,
@@ -45,16 +46,23 @@ export default function CardScreen({
   navigation,
   currentCardProvider,
   setCurrentCardProvider,
+  onPressUpgradeNow,
+  onPressActivateCard,
 }: {
   navigation: any;
   currentCardProvider: string;
   setCurrentCardProvider: Dispatch<SetStateAction<string>>;
+  onPressUpgradeNow: () => void;
+  onPressActivateCard: (card: any) => void;
 }) {
   const globalContext = useContext<any>(GlobalContext);
   const cardProfile: CardProfile = globalContext.globalState.cardProfile;
   const {
     lifetimeAmountUsd: lifetimeLoadUSD,
-    pc: { isPhysicalCardEligible: upgradeToPhysicalAvailable = false } = {},
+    pc: {
+      isPhysicalCardEligible: upgradeToPhysicalAvailable = false,
+      physicalCardUpgradationFee,
+    } = {},
     physicalCardEligibilityLimit,
   } = cardProfile;
 
@@ -307,95 +315,101 @@ export default function CardScreen({
     }
   };
 
-  const RenderCVVAndExpiry = ({ card }: { card: Card }) => {
-    const { hideCardDetails, showCVVAndExpiry, currentCardRevealedDetails } =
-      userCardDetails;
-    const revealCVVAndExpiry = () => {
-      setUserCardDetails({
-        ...userCardDetails,
-        currentCardRevealedDetails: {
-          ...currentCardRevealedDetails,
-          cardNumber:
-            'XXXX XXXX XXXX ' + String(card.last4).toUpperCase() ?? 'XXXX',
-        },
-        showCVVAndExpiry: true,
-      });
-    };
-    const getCVV = () => {
-      if (
-        card.cardId === userCardDetails.currentCardRevealedDetails.cardId &&
-        !userCardDetails.hideCardDetails &&
-        userCardDetails.showCVVAndExpiry
-      ) {
-        return userCardDetails.currentCardRevealedDetails.cvv;
-      } else {
-        return 'XXX';
-      }
-    };
-    const getExpiry = () => {
-      const { currentCardRevealedDetails, hideCardDetails, showCVVAndExpiry } =
+  const RenderCVVAndExpiry = useCallback(
+    ({ card }: { card: Card }) => {
+      const { hideCardDetails, showCVVAndExpiry, currentCardRevealedDetails } =
         userCardDetails;
-      const { expiryMonth, expiryYear } = currentCardRevealedDetails;
+      const revealCVVAndExpiry = () => {
+        setUserCardDetails({
+          ...userCardDetails,
+          currentCardRevealedDetails: {
+            ...currentCardRevealedDetails,
+            cardNumber:
+              'XXXX XXXX XXXX ' + String(card.last4).toUpperCase() ?? 'XXXX',
+          },
+          showCVVAndExpiry: true,
+        });
+      };
+      const getCVV = () => {
+        if (
+          card.cardId === userCardDetails.currentCardRevealedDetails.cardId &&
+          !userCardDetails.hideCardDetails &&
+          userCardDetails.showCVVAndExpiry
+        ) {
+          return userCardDetails.currentCardRevealedDetails.cvv;
+        } else {
+          return 'XXX';
+        }
+      };
+      const getExpiry = () => {
+        const {
+          currentCardRevealedDetails,
+          hideCardDetails,
+          showCVVAndExpiry,
+        } = userCardDetails;
+        const { expiryMonth, expiryYear } = currentCardRevealedDetails;
+        if (
+          card.cardId === currentCardRevealedDetails.cardId &&
+          !hideCardDetails &&
+          showCVVAndExpiry
+        ) {
+          return expiryMonth + ' / ' + expiryYear;
+        } else {
+          return 'XX / XX';
+        }
+      };
       if (
-        card.cardId === currentCardRevealedDetails.cardId &&
         !hideCardDetails &&
-        showCVVAndExpiry
+        !showCVVAndExpiry &&
+        card.cardId === userCardDetails.currentCardRevealedDetails.cardId
       ) {
-        return expiryMonth + ' / ' + expiryYear;
-      } else {
-        return 'XX / XX';
+        return (
+          <CyDTouchView
+            className='flex justify-center items-center self-center bg-fadedDarkBackgroundColor p-[10px] rounded-[20px] mb-[15px]'
+            onPress={() => revealCVVAndExpiry()}>
+            <CyDText className='text-white text-center font-bold'>
+              {t('SHOW_CVV_EXPIRY')}
+            </CyDText>
+          </CyDTouchView>
+        );
       }
-    };
-    if (
-      !hideCardDetails &&
-      !showCVVAndExpiry &&
-      card.cardId === userCardDetails.currentCardRevealedDetails.cardId
-    ) {
       return (
-        <CyDTouchView
-          className='flex justify-center items-center self-center bg-fadedDarkBackgroundColor p-[10px] rounded-[20px] mb-[15px]'
-          onPress={() => revealCVVAndExpiry()}>
-          <CyDText className='text-white text-center font-bold'>
-            {t('SHOW_CVV_EXPIRY')}
-          </CyDText>
-        </CyDTouchView>
+        <CyDView className='flex flex-row mb-[10px]'>
+          <CyDView className='ml-[10px]'>
+            <CyDText
+              className={clsx('font-nunito font-bold text-[12px] mx-[10px]', {
+                'text-white': card.type !== 'physical',
+              })}>
+              {t('CVV')}
+            </CyDText>
+            <CyDText
+              className={clsx(
+                'font-nunito font-bold text-[12px] mx-[10px] mt-[5px]',
+                { 'text-white': card.type !== 'physical' },
+              )}>
+              {getCVV()}
+            </CyDText>
+          </CyDView>
+          <CyDView className='flex-1 items-center ml-[-50px]'>
+            <CyDText
+              className={clsx('font-nunito font-bold text-[12px] mx-[10px]', {
+                'text-white': card.type !== 'physical',
+              })}>
+              {t('VALID_THRU')}
+            </CyDText>
+            <CyDText
+              className={clsx(
+                'font-nunito font-bold text-[12px] mx-[10px] mt-[5px]',
+                { 'text-white': card.type !== 'physical' },
+              )}>
+              {getExpiry()}
+            </CyDText>
+          </CyDView>
+        </CyDView>
       );
-    }
-    return (
-      <CyDView className='flex flex-row mb-[10px]'>
-        <CyDView className='ml-[10px]'>
-          <CyDText
-            className={clsx('font-nunito font-bold text-[12px] mx-[10px]', {
-              'text-white': card.type !== 'physical',
-            })}>
-            {t('CVV')}
-          </CyDText>
-          <CyDText
-            className={clsx(
-              'font-nunito font-bold text-[12px] mx-[10px] mt-[5px]',
-              { 'text-white': card.type !== 'physical' },
-            )}>
-            {getCVV()}
-          </CyDText>
-        </CyDView>
-        <CyDView className='flex-1 items-center ml-[-50px]'>
-          <CyDText
-            className={clsx('font-nunito font-bold text-[12px] mx-[10px]', {
-              'text-white': card.type !== 'physical',
-            })}>
-            {t('VALID_THRU')}
-          </CyDText>
-          <CyDText
-            className={clsx(
-              'font-nunito font-bold text-[12px] mx-[10px] mt-[5px]',
-              { 'text-white': card.type !== 'physical' },
-            )}>
-            {getExpiry()}
-          </CyDText>
-        </CyDView>
-      </CyDView>
-    );
-  };
+    },
+    [userCardDetails],
+  );
 
   const getCardNumber = (card: Card) => {
     if (
@@ -471,18 +485,13 @@ export default function CardScreen({
       return (
         <CyDAnimatedView className='mb-[10px]' style={animatedStyle}>
           <CyDFastImage
-            className={clsx('absolute w-full h-full')}
+            className={clsx('absolute w-full h-[200px]')}
             source={{ uri: getCardBackgroundLayout(card) }}
             resizeMode='stretch'
           />
           <CyDView className='flex flex-col justify-center h-[200px] w-[300px] border-[1px] border-inputBorderColor rounded-[12px]'>
             <CyDTouchView
-              onPress={() =>
-                navigation.navigate(screenTitle.CARD_ACTIAVTION_SCREEN, {
-                  currentCardProvider,
-                  card,
-                })
-              }
+              onPress={() => onPressActivateCard(card)}
               className='flex flex-row justify-center items-center border-[2px] border-inputBorderColor bg-inputBorderColor mx-[30px] p-[5px] rounded-[10px]'>
               <CyDFastImage
                 source={AppImages.ACTIVATE_PHYSICAL_CARD}
@@ -541,7 +550,7 @@ export default function CardScreen({
                   }}
                 />
               </CyDView>
-              <CyDView className='flex flex-row my-[5px] top-[20px]'>
+              {lifetimeLoadUSD < physicalCardEligibilityLimit && <CyDView className='flex flex-row my-[5px] top-[20px]'>
                 <CyDText className='mb-[4px] text-white'>{`Load `}</CyDText>
                 <CyDText className='mb-[4px] font-extrabold text-appColor'>
                   {limitDecimalPlaces(
@@ -551,7 +560,7 @@ export default function CardScreen({
                 </CyDText>
                 <CyDText className='mb-[4px] font-extrabold text-appColor'>{` USD`}</CyDText>
                 <CyDText className='mb-[4px] text-white'>{` more to upgrade`}</CyDText>
-              </CyDView>
+              </CyDView>}
             </CyDView>
           </CyDAnimatedView>
         );
@@ -566,23 +575,20 @@ export default function CardScreen({
             <CyDView className='flex flex-col items-center justify-end py-[10px] h-[200px] w-[300px] border-[1px] border-inputBorderColor rounded-[12px] shadow shadow-slate-200'>
               <CyDTouchView
                 disabled={!upgradeToPhysicalAvailable}
-                onPress={() =>
-                  navigation.navigate(
-                    screenTitle.UPGRADE_TO_PHYSICAL_CARD_SCREEN,
-                    {
-                      currentCardProvider,
-                    },
-                  )
-                }
+                onPress={() => {
+                  onPressUpgradeNow();
+                }}
                 className={clsx(
-                  'flex flex-row w-[60%] justify-center items-center border border-inputBorderColor bg-white rounded-[8px]',
+                  'flex flex-row justify-center items-center border border-inputBorderColor bg-white rounded-[8px] px-[12px]',
                 )}>
                 <CyDFastImage
                   source={AppImages.UPGRADE_TO_PHYSICAL_CARD_ARROW}
-                  className='h-[30px] w-[30px] mx-[8px] my-[5px]'
+                  className='h-[30px] w-[30px] mr-[8px] my-[5px]'
                 />
                 <CyDText className='font-nunito font-extrabold my-[5px]'>
-                  {t<string>('UPGRADE_NOW')}
+                  {t<string>('UPGRADE_PHYSICAL_CARD')}
+                  {' for '}
+                  {'$' + String(physicalCardUpgradationFee ?? 0)}
                 </CyDText>
               </CyDTouchView>
             </CyDView>
@@ -626,7 +632,7 @@ export default function CardScreen({
             </CyDView>
             <CyDView className='flex flex-row justify-between items-center'>
               <CyDView className='flex flex-row items-center'>
-                <CyDTouchView onPress={toggleCardDetails}>
+                <CyDView>
                   <CyDText
                     className={clsx(
                       'font-nunito font-bold text-[16px] m-[10px]',
@@ -634,7 +640,7 @@ export default function CardScreen({
                     )}>
                     {getCardNumber(card)}
                   </CyDText>
-                </CyDTouchView>
+                </CyDView>
                 {!hideCardDetails &&
                   currentCardRevealedDetails.cardId === card.cardId && (
                     <CyDTouchView onPress={() => copyCardNumber()}>
@@ -653,20 +659,22 @@ export default function CardScreen({
                   )}
               </CyDView>
               <CyDView className='flex flex-row justify-start bg-black border-[1px] border-black p-[5px] rounded-l-[50px] mr-[0.7px]'>
-                <CyDTouchView onPress={toggleCardDetails}>
-                  <CyDFastImage
-                    source={{
-                      uri: `https://public.cypherd.io/icons/${
-                        !hideCardDetails &&
-                        currentCardRevealedDetails.cardId === card.cardId
-                          ? 'reveal.png'
-                          : 'hide.png'
-                      }`,
-                    }}
-                    className='h-[21px] w-[21px] ml-[5px] mr-[10px]'
-                    resizeMode='contain'
-                  />
-                </CyDTouchView>
+                {card.type === CardType.VIRTUAL && (
+                  <CyDTouchView onPress={toggleCardDetails}>
+                    <CyDFastImage
+                      source={{
+                        uri: `https://public.cypherd.io/icons/${
+                          !hideCardDetails &&
+                          currentCardRevealedDetails.cardId === card.cardId
+                            ? 'reveal.png'
+                            : 'hide.png'
+                        }`,
+                      }}
+                      className='h-[21px] w-[21px] ml-[5px] mr-[10px]'
+                      resizeMode='contain'
+                    />
+                  </CyDTouchView>
+                )}
                 {['physical', 'virtual'].includes(card.type) && (
                   <CyDTouchView
                     onPress={() =>

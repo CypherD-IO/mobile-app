@@ -18,15 +18,21 @@ import CyDModalLayout from './modal';
 import CyDTokenAmount from './tokenAmount';
 import CyDTokenValue from './tokenValue';
 import { get } from 'lodash';
+import { Holding } from '../../core/Portfolio';
+import { SwapToken } from '../../models/swapToken.interface';
+import FastImage from 'react-native-fast-image';
+import { copyToClipboard, isNativeToken } from '../../core/util';
+import Toast from 'react-native-toast-message';
+import { toastConfig } from './toast';
 
 interface TokenModal {
-  tokenList: any[];
+  tokenList: Holding[];
   isChooseTokenModalVisible: boolean;
   minTokenValueLimit?: number;
-  onSelectingToken: (token: any) => void;
+  onSelectingToken: (token: Holding | SwapToken) => void;
   onCancel: () => void;
   noTokensAvailableMessage?: string;
-  type?: string;
+  type?: TokenModalType;
   renderPage?: string;
 }
 
@@ -43,10 +49,12 @@ export default function ChooseTokenModal(props: TokenModal) {
     renderPage = '',
   } = props;
   const [searchText, setSearchText] = useState<string>('');
-  const [totalHoldings, setTotalHoldings] = useState({
-    originalHoldings: [],
-    filteredHoldings: [],
-  });
+  const [totalHoldings, setTotalHoldings] = useState<Record<string, Holding[]>>(
+    {
+      originalHoldings: [],
+      filteredHoldings: [],
+    },
+  );
   const searchOptions = {
     isCaseSensitive: false,
     includeScore: true,
@@ -72,16 +80,16 @@ export default function ChooseTokenModal(props: TokenModal) {
     }
   }, [tokenList]);
 
-  const sortDescTokenData = (tokenA: any, tokenB: any) => {
+  const sortDescTokenData = (tokenA: Holding, tokenB: Holding) => {
     const totalValueA = get(tokenA, 'totalValue');
     const totalValueB = get(tokenB, 'totalValue');
-    const isBridgeableA = get(tokenA, 'isBridgeable');
-    const isBridgeableB = get(tokenB, 'isBridgeable');
-    if (isBridgeableA && !isBridgeableB) {
+    const isFundableA = get(tokenA, 'isFundable');
+    const isFundableB = get(tokenB, 'isFundable');
+    if (isFundableA && !isFundableB) {
       return -1;
-    } else if (isBridgeableB && !isBridgeableA) {
+    } else if (isFundableB && !isFundableA) {
       return 1;
-    } else if (!isBridgeableA && !isBridgeableB) {
+    } else if (!isFundableA && !isFundableB) {
       return 0;
     } else if (totalValueA < totalValueB) {
       return 1;
@@ -102,137 +110,16 @@ export default function ChooseTokenModal(props: TokenModal) {
     }
   };
   const isTokenDisabled = (
-    totalValue: string | number,
-    isBridgeable: boolean,
+    totalValue: number,
+    isFundable: boolean,
+    isSwapable: boolean,
   ) => {
     if (renderPage === 'fundCardPage') {
-      return totalValue < minTokenValueLimit || !isBridgeable;
+      return totalValue < minTokenValueLimit || !isFundable;
     } else if (renderPage === 'bridgePage') {
-      return !isBridgeable;
+      return !isSwapable;
     }
     return totalValue < minTokenValueLimit;
-  };
-
-  const TokenItem = ({
-    item,
-  }: {
-    item: {
-      totalValue: string | number;
-      logoUrl: string;
-      name: string;
-      chainDetails: any;
-      actualBalance: string | number;
-      symbol: string;
-      isBridgeable: boolean;
-      isZeroFeeCardFunding: boolean;
-    };
-  }) => {
-    if (type === TokenModalType.PORTFOLIO) {
-      const {
-        totalValue,
-        logoUrl,
-        name,
-        chainDetails,
-        actualBalance,
-        symbol,
-        isBridgeable,
-        isZeroFeeCardFunding,
-      } = item;
-      const { logo_url, backendName } = chainDetails;
-      return (
-        <CyDTouchView
-          disabled={isTokenDisabled(totalValue, isBridgeable)}
-          onPress={() => {
-            onSelectingToken(item);
-          }}
-          className={clsx(
-            'flex flex-row justify-between py-[20px] border-b-[1px] border-b-sepratorColor mx-[15px]',
-            { 'opacity-25': isTokenDisabled(totalValue, isBridgeable) },
-          )}>
-          <CyDView
-            className={'flex flex-row w-full justify-start items-center'}>
-            <CyDView>
-              <CyDImage
-                source={{ uri: logoUrl }}
-                className={'h-[38px] w-[38px] rounded-[20px] mr-[10px]'}
-              />
-            </CyDView>
-            <CyDView className='flex flex-1 flex-col justify-center'>
-              <CyDView className='flex flex-1 flex-row justify-between'>
-                <CyDView className='flex flex-row  max-w-[80%]'>
-                  <CyDText className={'font-extrabold text-[16px]'}>
-                    {name}
-                  </CyDText>
-                  {isZeroFeeCardFunding && renderPage === 'fundCardPage' ? (
-                    <CyDView className='h-[20px] bg-privacyMessageBackgroundColor rounded-[8px] mx-[4px] px-[8px] flex justify-center items-center'>
-                      <CyDText className={'font-black text-[10px]'}>
-                        {'ZERO FEE ✨'}
-                      </CyDText>
-                    </CyDView>
-                  ) : null}
-                </CyDView>
-                <CyDTokenValue className={'font-extrabold text-[18px]'}>
-                  {totalValue}
-                </CyDTokenValue>
-              </CyDView>
-              <CyDView className='flex flex-1 flex-row justify-between'>
-                <CyDView
-                  className={
-                    'flex flex-row items-center align-center mt-[5px]'
-                  }>
-                  <CyDFastImage
-                    source={logo_url}
-                    className={'h-[15px] w-[15px] rounded-[7px] mr-[2px]'}
-                  />
-                  <CyDText className={'text-[12px]'}>
-                    {backendName.toUpperCase()}
-                  </CyDText>
-                </CyDView>
-                <CyDView className='flex flex-row items-end self-end'>
-                  <CyDTokenAmount className='text-[14px]'>
-                    {actualBalance}
-                  </CyDTokenAmount>
-                  <CyDText className={'text-[14px]'}> {symbol}</CyDText>
-                </CyDView>
-              </CyDView>
-            </CyDView>
-          </CyDView>
-        </CyDTouchView>
-      );
-    } else if (type === TokenModalType.SWAP) {
-      return <SwapTokenItem item={item} />;
-    }
-    return <></>;
-  };
-
-  const SwapTokenItem = ({ item }) => {
-    const { logo, name, symbol } = item;
-    return (
-      <CyDTouchView
-        onPress={() => {
-          onSelectingToken(item);
-        }}
-        className={
-          'flex flex-row justify-between py-[20px] border-b-[1px] border-b-sepratorColor mx-[30px]'
-        }>
-        <CyDView className={'flex flex-row justify-start items-center'}>
-          <CyDView>
-            <CyDImage
-              source={{ uri: logo }}
-              className={'h-[30px] w-[30px] rounded-[7px] ml-[10px] mr-[4px]'}
-            />
-          </CyDView>
-          <CyDView>
-            <CyDText className={'pl-[20px] pr-[30px] font-bold text-[18px]'}>
-              {name}
-            </CyDText>
-            <CyDText className={'pl-[20px] pr-[30px] text-[13px]'}>
-              {symbol}
-            </CyDText>
-          </CyDView>
-        </CyDView>
-      </CyDTouchView>
-    );
   };
 
   const clearSearch = () => {
@@ -328,7 +215,15 @@ export default function ChooseTokenModal(props: TokenModal) {
             <CyDFlatList
               className={'mt-[10px]'}
               data={totalHoldings.filteredHoldings}
-              renderItem={(item: any) => TokenItem(item)}
+              renderItem={(item: any) =>
+                TokenItem({
+                  item: item.item,
+                  type,
+                  renderPage,
+                  isTokenDisabled,
+                  onSelectingToken,
+                })
+              }
               showsVerticalScrollIndicator={true}
             />
           ) : (
@@ -339,6 +234,7 @@ export default function ChooseTokenModal(props: TokenModal) {
             </CyDView>
           )}
         </CyDView>
+        <Toast config={toastConfig} position={'bottom'} bottomOffset={140} />
       </CyDView>
     </CyDModalLayout>
   );
@@ -355,3 +251,169 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
 });
+
+const TokenItem = ({
+  item,
+  type,
+  renderPage,
+  isTokenDisabled,
+  onSelectingToken,
+}: {
+  item: Holding | SwapToken;
+  type: TokenModalType;
+  renderPage: string;
+  isTokenDisabled: (arg1: number, arg2: boolean, arg3: boolean) => boolean;
+  onSelectingToken: (arg: Holding | SwapToken) => void;
+}) => {
+  const copyContractAddress = (contractAddress: string) => {
+    copyToClipboard(contractAddress);
+    Toast.show({
+      type: 'success',
+      text1: 'Copied to clipboard',
+      position: 'bottom',
+    });
+  };
+  if (type === TokenModalType.PORTFOLIO) {
+    const {
+      totalValue,
+      logoUrl,
+      name,
+      chainDetails,
+      actualBalance,
+      symbol,
+      isFundable,
+      isSwapable,
+      isZeroFeeCardFunding,
+      contractAddress,
+    } = item as Holding;
+    const { logo_url, backendName } = chainDetails;
+    return (
+      <CyDTouchView
+        disabled={isTokenDisabled(totalValue, isFundable, isSwapable)}
+        onPress={() => {
+          onSelectingToken(item);
+        }}
+        className={clsx(
+          'flex flex-row justify-between py-[20px] border-b-[1px] border-b-sepratorColor mx-[15px]',
+          { 'opacity-25': isTokenDisabled(totalValue, isFundable, isSwapable) },
+        )}>
+        <CyDView className={'flex flex-row w-full justify-start items-center'}>
+          <CyDView className='flex flex-row h-full mb-[10px] items-center rounded-r-[20px] self-center px-[10px]'>
+            <CyDFastImage
+              className={'h-[35px] w-[35px] rounded-[50px]'}
+              source={{ uri: logoUrl }}
+              resizeMode='contain'
+            />
+            <CyDView className='absolute top-[54%] right-[5px]'>
+              <CyDFastImage
+                className={
+                  'h-[20px] w-[20px] rounded-[50px] border-[1px] border-white bg-white'
+                }
+                source={
+                  chainDetails.logo_url ??
+                  'https://raw.githubusercontent.com/cosmostation/cosmostation_token_resource/master/assets/images/common/unknown.png'
+                }
+                resizeMode={FastImage.resizeMode.contain}
+              />
+            </CyDView>
+          </CyDView>
+          <CyDView className='flex flex-1 flex-row items-center'>
+            <CyDView className='flex flex-1 flex-col items-between justify-center'>
+              <CyDView className='flex flex-row  max-w-[80%] items-center'>
+                <CyDText className={'font-extrabold text-[16px]'}>
+                  {name}{' '}
+                </CyDText>
+                <CyDView className='bg-gray-200 rounded-[5px] px-[4px]'>
+                  <CyDText className={'text-[12px]'}>{symbol}</CyDText>
+                </CyDView>
+                {isZeroFeeCardFunding && renderPage === 'fundCardPage' ? (
+                  <CyDView className='h-[20px] bg-privacyMessageBackgroundColor rounded-[8px] mx-[4px] px-[8px] flex justify-center items-center'>
+                    <CyDText className={'font-black text-[10px]'}>
+                      {'ZERO FEE ✨'}
+                    </CyDText>
+                  </CyDView>
+                ) : null}
+              </CyDView>
+
+              <CyDView
+                className={'flex flex-row items-center align-center mt-[5px]'}>
+                {contractAddress && !isNativeToken(item) && (
+                  <>
+                    <CyDText className={'text-[12px]'}>
+                      {`${contractAddress.substring(0, 6)}...${contractAddress.substring(contractAddress.length - 6)}`}
+                    </CyDText>
+                    <CyDTouchView
+                      onPress={() => {
+                        copyContractAddress(contractAddress);
+                      }}>
+                      <CyDImage
+                        source={AppImages.COPY}
+                        className='h-[10px] w-[10px] ml-[3px]'
+                        resizeMode='contain'
+                      />
+                    </CyDTouchView>
+                  </>
+                )}
+              </CyDView>
+            </CyDView>
+            <CyDView className='flex flex-col items-end'>
+              <CyDTokenValue className={'font-extrabold text-[18px]'}>
+                {totalValue}
+              </CyDTokenValue>
+              <CyDView className='flex flex-row items-end self-end'>
+                <CyDTokenAmount className='text-[14px]'>
+                  {actualBalance}
+                </CyDTokenAmount>
+                <CyDText className={'text-[14px]'}> {symbol}</CyDText>
+              </CyDView>
+            </CyDView>
+          </CyDView>
+        </CyDView>
+      </CyDTouchView>
+    );
+  } else if (type === TokenModalType.SWAP) {
+    return (
+      <SwapTokenItem
+        item={item as SwapToken}
+        onSelectingToken={onSelectingToken}
+      />
+    );
+  }
+  return <></>;
+};
+
+const SwapTokenItem = ({
+  item,
+  onSelectingToken,
+}: {
+  item: SwapToken;
+  onSelectingToken: (arg: Holding | SwapToken) => void;
+}) => {
+  const { logo, name, symbol } = item;
+  return (
+    <CyDTouchView
+      onPress={() => {
+        onSelectingToken(item);
+      }}
+      className={
+        'flex flex-row justify-between py-[20px] border-b-[1px] border-b-sepratorColor mx-[30px]'
+      }>
+      <CyDView className={'flex flex-row justify-start items-center'}>
+        <CyDView>
+          <CyDImage
+            source={{ uri: logo }}
+            className={'h-[30px] w-[30px] rounded-[7px] ml-[10px] mr-[4px]'}
+          />
+        </CyDView>
+        <CyDView>
+          <CyDText className={'pl-[20px] pr-[30px] font-bold text-[18px]'}>
+            {name}
+          </CyDText>
+          <CyDText className={'pl-[20px] pr-[30px] text-[13px]'}>
+            {symbol}
+          </CyDText>
+        </CyDView>
+      </CyDView>
+    </CyDTouchView>
+  );
+};

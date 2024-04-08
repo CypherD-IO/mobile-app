@@ -12,14 +12,14 @@ export const getToken = async (
   osmosisAddress?: string,
   junoAddress?: string,
   stargazeAddress?: string,
-  nobleAddress?: string
+  nobleAddress?: string,
 ) => {
   return await new Promise((resolve, reject) => {
     const ARCH_HOST: string = hostWorker.getHost('ARCH_HOST');
     firebase
       .messaging()
       .getToken()
-      .then((fcmToken) => {
+      .then(fcmToken => {
         if (isAddressSet(walletAddress)) {
           const registerURL = `${ARCH_HOST}/v1/configuration/device/register`;
           const payload = {
@@ -29,11 +29,13 @@ export const getToken = async (
             junoAddress,
             stargazeAddress,
             nobleAddress,
-            fcmToken
+            fcmToken,
           };
-          axios.put(registerURL, payload).then(resp => {
-            resolve({ fcmToken });
-          })
+          axios
+            .put(registerURL, payload)
+            .then(resp => {
+              resolve({ fcmToken });
+            })
             .catch(error => {
               Sentry.captureException(error);
               resolve({ error });
@@ -63,7 +65,7 @@ export const requestPermissions = () => {
   firebase
     .messaging()
     .requestPermission()
-    .then((status) => {
+    .then(status => {
       if (status === 1) {
         onMessage();
       }
@@ -73,17 +75,19 @@ export const requestPermissions = () => {
     });
 };
 
-export const showNotification = (notification: FirebaseMessagingTypes.Notification | undefined) => {
+export const showNotification = (
+  notification: FirebaseMessagingTypes.Notification | undefined,
+) => {
   if (notification?.body) {
     PushNotification.localNotification({
       title: notification.title,
-      message: notification.body
+      message: notification.body,
     });
   }
 };
 
 export const onMessage = () => {
-  firebase.messaging().onMessage((response) => {
+  firebase.messaging().onMessage(response => {
     showNotification(response.notification);
   });
 };

@@ -6,6 +6,7 @@ import {
   IAdvancedSettingsData,
 } from '../containers/Options/advancedSettings';
 import { DefiData, DefiResponse } from '../models/defi.interface';
+import { CYPHERD_ROOT_DATA } from './util';
 
 export const storePortfolioData = async (
   value: any,
@@ -512,6 +513,49 @@ export const getConnectionType = async () => {
   try {
     const connectionType = await AsyncStorage.getItem('CONNECTION_TYPE');
     return connectionType;
+  } catch (error) {
+    Sentry.captureException(error);
+  }
+};
+
+export const setCyRootData = async (cyRootData: any) => {
+  try {
+    const stringifiedData = JSON.stringify(cyRootData);
+    await AsyncStorage.setItem(CYPHERD_ROOT_DATA, stringifiedData);
+  } catch (error) {
+    Sentry.captureException(error);
+  }
+};
+
+export const getCyRootData = async () => {
+  try {
+    const cyRootData = await AsyncStorage.getItem(CYPHERD_ROOT_DATA);
+    return cyRootData;
+  } catch (error) {
+    Sentry.captureException(error);
+  }
+};
+
+export const removeCyRootData = async () => {
+  try {
+    await AsyncStorage.removeItem(CYPHERD_ROOT_DATA);
+  } catch (error) {
+    Sentry.captureException(error);
+  }
+};
+
+export const getActivities = async () => {
+  try {
+    const activities = await AsyncStorage.getItem('activities');
+    return activities;
+  } catch (error) {
+    Sentry.captureException(error);
+  }
+};
+
+export const setActivities = async (data: any) => {
+  try {
+    await AsyncStorage.setItem('activities', JSON.stringify(data));
   } catch (error) {
     Sentry.captureException(error);
   }

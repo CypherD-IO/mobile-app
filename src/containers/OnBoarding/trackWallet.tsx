@@ -75,10 +75,15 @@ export default function TrackWallet({
             void intercomAnalyticsLog('track_wallet_event', data);
             setLoading(false);
             hdWalletContext.dispatch({
+              type: 'SET_READ_ONLY_WALLET',
+              value: {
+                isReadOnlyWallet: true,
+              },
+            });
+            hdWalletContext.dispatch({
               type: 'LOAD_WALLET',
               value: {
                 address: ethAddress,
-                privateKey: _NO_CYPHERD_CREDENTIAL_AVAILABLE_,
                 chain: 'ethereum',
                 publicKey: '',
                 rawAddress: '',
@@ -89,17 +94,10 @@ export default function TrackWallet({
               type: 'LOAD_WALLET',
               value: {
                 address: ethToEvmos(ethAddress),
-                privateKey: _NO_CYPHERD_CREDENTIAL_AVAILABLE_,
                 chain: 'evmos',
                 publicKey: '',
                 rawAddress: '',
                 algo: '',
-              },
-            });
-            hdWalletContext.dispatch({
-              type: 'SET_READ_ONLY_WALLET',
-              value: {
-                isReadOnlyWallet: true,
               },
             });
           }

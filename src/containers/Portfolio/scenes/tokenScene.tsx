@@ -105,13 +105,17 @@ const TokenScene = ({
     }
   }, [flatListRef.current]);
 
+  useEffect(() => {
+    void onRefresh(false);
+  }, [isVerifyCoinChecked]);
+
   const onRefresh = async (pullToRefresh = true) => {
     setRefreshData({ isRefreshing: true, shouldRefreshAssets: pullToRefresh });
     setIsPortfolioRefreshing({
       isRefreshing: true,
       shouldRefreshAssets: pullToRefresh,
     });
-    await fetchTokenData(hdWallet, portfolioState);
+    await fetchTokenData(hdWallet, portfolioState, isVerifyCoinChecked);
     setRefreshData({ isRefreshing: false, shouldRefreshAssets: false });
     setIsPortfolioRefreshing({
       isRefreshing: false,

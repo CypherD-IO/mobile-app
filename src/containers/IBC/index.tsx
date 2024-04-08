@@ -20,6 +20,7 @@ import {
   getNativeToken,
   PortfolioContext,
   formatAmount,
+  _NO_CYPHERD_CREDENTIAL_AVAILABLE_,
 } from '../../core/util';
 import clsx from 'clsx';
 import {
@@ -40,7 +41,10 @@ import {
 import Long from 'long';
 import { MsgTransfer } from 'cosmjs-types/ibc/applications/transfer/v1/tx';
 import { OfflineDirectSigner } from '@cosmjs/proto-signing';
-import { getSignerClient } from '../../core/Keychain';
+import {
+  getSignerClient,
+  loadPrivateKeyFromKeyChain,
+} from '../../core/Keychain';
 import { ethers } from 'ethers';
 import { GlobalContext, GlobalContextDef } from '../../core/globalContext';
 import * as Sentry from '@sentry/react-native';

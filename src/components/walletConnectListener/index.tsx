@@ -27,6 +27,7 @@ import useConnectionManager from '../../hooks/useConnectionManager';
 import Intercom from '@intercom/intercom-react-native';
 import * as Sentry from '@sentry/react-native';
 import DeviceInfo from 'react-native-device-info';
+import { getToken } from '../../core/push';
 
 export const WalletConnectListener: React.FC = ({ children }) => {
   const hdWalletContext = useContext<any>(HdWalletContext);
@@ -50,7 +51,7 @@ export const WalletConnectListener: React.FC = ({ children }) => {
     ) {
       void validateStaleConnection();
     }
-  }, [isConnected, address]);
+  }, [isConnected, address, ethereum.address]);
 
   const dispatchProfileData = async (token: string) => {
     const profileData = await getWalletProfile(token);
@@ -82,7 +83,7 @@ export const WalletConnectListener: React.FC = ({ children }) => {
       type: 'LOAD_WALLET',
       value: {
         address,
-        privateKey: _NO_CYPHERD_CREDENTIAL_AVAILABLE_,
+        // privateKey: _NO_CYPHERD_CREDENTIAL_AVAILABLE_,
         chain: 'ethereum',
         publicKey: '',
         rawAddress: '',
@@ -93,7 +94,7 @@ export const WalletConnectListener: React.FC = ({ children }) => {
       type: 'LOAD_WALLET',
       value: {
         address: ethToEvmos(String(address)),
-        privateKey: _NO_CYPHERD_CREDENTIAL_AVAILABLE_,
+        // privateKey: _NO_CYPHERD_CREDENTIAL_AVAILABLE_,
         chain: 'evmos',
         publicKey: '',
         rawAddress: '',
@@ -118,6 +119,7 @@ export const WalletConnectListener: React.FC = ({ children }) => {
 
   const verifySessionTokenAndSign = async () => {
     setLoading(true);
+    await getToken(String(address));
     void setConnectionType(ConnectionTypes.WALLET_CONNECT_WITHOUT_SIGN);
     const isSessionTokenValid = await verifySessionToken();
     if (!isSessionTokenValid) {

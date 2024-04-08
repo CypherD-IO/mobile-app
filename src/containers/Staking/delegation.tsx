@@ -11,6 +11,7 @@ import {
   PortfolioContext,
   logAnalytics,
   parseErrorMessage,
+  _NO_CYPHERD_CREDENTIAL_AVAILABLE_,
 } from '../../core/util';
 import * as C from '../../constants';
 import { BackHandler, Keyboard, TextInput, StyleSheet } from 'react-native';
@@ -61,6 +62,7 @@ import { AnalyticsType, TokenOverviewTabIndices } from '../../constants/enum';
 import { gasFeeReservation } from '../../constants/data';
 import { GlobalContext } from '../../core/globalContext';
 import { useRoute } from '@react-navigation/native';
+import { loadPrivateKeyFromKeyChain } from '../../core/Keychain';
 
 const {
   CText,
@@ -116,7 +118,7 @@ export default function StakingDelegation({ route, navigation }) {
     };
   }, []);
 
-  const convert = (n) => {
+  const convert = n => {
     if (n < 1e3) return n;
     if (n >= 1e3 && n < 1e6) return +(n / 1e3).toFixed(1) + 'K';
     if (n >= 1e6 && n < 1e9) return +(n / 1e6).toFixed(1) + 'M';
@@ -126,30 +128,33 @@ export default function StakingDelegation({ route, navigation }) {
 
   const gasPrice = 0.000000075;
 
-  const generatePublicKey = () => {
-    const privateKeyBuffer = Buffer.from(
-      ethereum.privateKey.substring(2),
-      'hex',
+  const generatePublicKey = async () => {
+    const privateKey = await loadPrivateKeyFromKeyChain(
+      false,
+      hdWallet.state.pinValue,
     );
+    if (privateKey && privateKey !== _NO_CYPHERD_CREDENTIAL_AVAILABLE_) {
+      const privateKeyBuffer = Buffer.from(privateKey.substring(2), 'hex');
 
-    const sig = personalSign({
-      privateKey: privateKeyBuffer,
-      data: 'generate_pubkey',
-    });
+      const sig = personalSign({
+        privateKey: privateKeyBuffer,
+        data: 'generate_pubkey',
+      });
 
-    const publicKey = signatureToPubkey(
-      sig,
-      Buffer.from([
-        50, 215, 18, 245, 169, 63, 252, 16, 225, 169, 71, 95, 254, 165, 146,
-        216, 40, 162, 115, 78, 147, 125, 80, 182, 25, 69, 136, 250, 65, 200, 94,
-        178,
-      ]),
-    );
+      const publicKey = signatureToPubkey(
+        sig,
+        Buffer.from([
+          50, 215, 18, 245, 169, 63, 252, 16, 225, 169, 71, 95, 254, 165, 146,
+          216, 40, 162, 115, 78, 147, 125, 80, 182, 25, 69, 136, 250, 65, 200,
+          94, 178,
+        ]),
+      );
 
-    return publicKey;
+      return publicKey;
+    }
   };
 
-  const generateTransactionBody = (
+  const generateTransactionBody = async (
     response,
     gasFee = '14000000000000000',
     gasLimit = '700000',
@@ -162,7 +167,9 @@ export default function StakingDelegation({ route, navigation }) {
       accountAddress: evmos.wallets[evmos.currentIndex].address,
       sequence: response.sequence ? response.sequence : 0,
       accountNumber: response.account_number,
-      pubkey: response.pub_key ? response.pub_key.key : generatePublicKey(),
+      pubkey: response.pub_key
+        ? response.pub_key.key
+        : await generatePublicKey(),
     };
     const fee = {
       amount: gasFee,
@@ -201,27 +208,30 @@ export default function StakingDelegation({ route, navigation }) {
       var msg = createTxMsgBeginRedelegate(chain, sender, fee, memo, params);
     }
 
-    const privateKeyBuffer = Buffer.from(
-      ethereum.privateKey.substring(2),
-      'hex',
+    const privateKey = await loadPrivateKeyFromKeyChain(
+      false,
+      hdWallet.state.pinValue,
     );
+    if (privateKey && privateKey !== _NO_CYPHERD_CREDENTIAL_AVAILABLE_) {
+      const privateKeyBuffer = Buffer.from(privateKey.substring(2), 'hex');
 
-    const signature = signTypedData({
-      privateKey: privateKeyBuffer,
-      data: msg.eipToSign,
-      version: SignTypedDataVersion.V4,
-    });
+      const signature = signTypedData({
+        privateKey: privateKeyBuffer,
+        data: msg.eipToSign,
+        version: SignTypedDataVersion.V4,
+      });
 
-    const extension = signatureToWeb3Extension(chain, sender, signature);
-    const rawTx = createTxRawEIP712(
-      msg.legacyAmino.body,
-      msg.legacyAmino.authInfo,
-      extension,
-    );
+      const extension = signatureToWeb3Extension(chain, sender, signature);
+      const rawTx = createTxRawEIP712(
+        msg.legacyAmino.body,
+        msg.legacyAmino.authInfo,
+        extension,
+      );
 
-    const body = generatePostBodyBroadcast(rawTx);
+      const body = generatePostBodyBroadcast(rawTx);
 
-    return body;
+      return body;
+    }
   };
 
   const txnSimulation = async () => {
@@ -240,7 +250,7 @@ export default function StakingDelegation({ route, navigation }) {
         `evmos_simulate_${stakingValidators.stateStaking.typeOfDelegation}`,
       );
       try {
-        bodyForSimulate = generateTransactionBody(
+        bodyForSimulate = await generateTransactionBody(
           accountDetailsResponse.data.account.base_account,
         );
         simulationResponse = await axios.post(
@@ -252,7 +262,7 @@ export default function StakingDelegation({ route, navigation }) {
         }
       } catch (e) {
         sequence += 1;
-        bodyForSimulate = generateTransactionBody({
+        bodyForSimulate = await generateTransactionBody({
           ...accountDetailsResponse.data.account.base_account,
           sequence,
         });
@@ -263,7 +273,7 @@ export default function StakingDelegation({ route, navigation }) {
       }
       if (simulationResponse.data.gas_info.gas_used) {
         const gasWanted = simulationResponse.data.gas_info.gas_used;
-        const bodyForTransaction = generateTransactionBody(
+        const bodyForTransaction = await generateTransactionBody(
           { ...accountDetailsResponse.data.account.base_account, sequence },
           ethers.utils
             .parseUnits(
@@ -504,11 +514,9 @@ export default function StakingDelegation({ route, navigation }) {
         isModalVisible={signModalVisible}
         style={styles.modalLayout}
         animationIn={'slideInUp'}
-        animationOut={'slideOutDown'}
-      >
+        animationOut={'slideOutDown'}>
         <CyDView
-          className={'bg-white p-[25px] pb-[30px] rounded-t-[20px] relative'}
-        >
+          className={'bg-white p-[25px] pb-[30px] rounded-t-[20px] relative'}>
           <CyDTouchView onPress={() => onModalHide()} className={'z-[50]'}>
             <CyDImage
               source={AppImages.CLOSE}
@@ -536,8 +544,7 @@ export default function StakingDelegation({ route, navigation }) {
               <CyDText
                 className={
                   ' font-bold text-[16px] ml-[5px] text-primaryTextColor'
-                }
-              >
+                }>
                 {convertToEvmosFromAevmos(finalAmount).toFixed(6) + ' EVMOS '}
               </CyDText>
             </CyDView>
@@ -553,8 +560,7 @@ export default function StakingDelegation({ route, navigation }) {
               <CyDText
                 className={
                   ' font-medium text-[16px] ml-[10px] text-primaryTextColor'
-                }
-              >
+                }>
                 {t('GAS_FEE_LABEL')} {finalGasFee.toFixed(6) + ' EVMOS'}
               </CyDText>
             </CyDView>
@@ -591,24 +597,21 @@ export default function StakingDelegation({ route, navigation }) {
         aLIT={'center'}
         jC={'center'}
         height={100}
-        bGC={Colors.whiteColor}
-      >
+        bGC={Colors.whiteColor}>
         <DynamicScrollView
           dynamic
           dynamicWidth
           width={100}
           dynamicHeight
           height={100}
-          style={{ paddingHorizontal: 16 }}
-        >
+          style={{ paddingHorizontal: 16 }}>
           <DynamicView dynamic dynamicWidth width={100}>
             <CText
               dynamic
               fF={C.fontsName.FONT_SEMI_BOLD}
               fS={14}
               pV={5}
-              color={Colors.primaryTextColor}
-            >
+              color={Colors.primaryTextColor}>
               {itemData.description.name}
             </CText>
             <DynamicView dynamic fD={'row'}>
@@ -624,8 +627,7 @@ export default function StakingDelegation({ route, navigation }) {
                 fF={C.fontsName.FONT_SEMI_BOLD}
                 fS={12}
                 tA={'left'}
-                color={Colors.subTextColor}
-              >
+                color={Colors.subTextColor}>
                 {'Commission at ' + itemData.commission * 100 + ' %'}
               </CText>
             </DynamicView>
@@ -643,8 +645,7 @@ export default function StakingDelegation({ route, navigation }) {
                 fF={C.fontsName.FONT_SEMI_BOLD}
                 fS={12}
                 tA={'left'}
-                color={Colors.subTextColor}
-              >
+                color={Colors.subTextColor}>
                 {'Voting power with ' +
                   convert(convertToEvmosFromAevmos(itemData.tokens)) +
                   ' EVMOS'}
@@ -664,8 +665,7 @@ export default function StakingDelegation({ route, navigation }) {
             pB={16}
             fD={'row'}
             jC={'center'}
-            bGC={Colors.lightOrange}
-          >
+            bGC={Colors.lightOrange}>
             <DynamicView dynamic>
               <LottieView
                 source={AppImages.INSIGHT_BULB}
@@ -681,8 +681,7 @@ export default function StakingDelegation({ route, navigation }) {
               fF={C.fontsName.FONT_SEMI_BOLD}
               fS={12}
               tA={'left'}
-              color={Colors.primaryTextColor}
-            >
+              color={Colors.primaryTextColor}>
               {t('UNDELEGATE_WAIT_DAYS')}
             </CText>
           </DynamicView>
@@ -693,16 +692,14 @@ export default function StakingDelegation({ route, navigation }) {
             fD={'row'}
             jC={'space-between'}
             dynamicWidth
-            width={100}
-          >
+            width={100}>
             <CText
               dynamic
               mL={8}
               fF={C.fontsName.FONT_REGULAR}
               fS={16}
               tA={'left'}
-              color={Colors.primaryTextColor}
-            >
+              color={Colors.primaryTextColor}>
               {t('MY_DELEGATION')}
             </CText>
             <CText
@@ -711,8 +708,7 @@ export default function StakingDelegation({ route, navigation }) {
               fF={C.fontsName.FONT_BOLD}
               fS={16}
               tA={'left'}
-              color={Colors.primaryTextColor}
-            >
+              color={Colors.primaryTextColor}>
               {convertToEvmosFromAevmos(itemData.balance).toFixed(6) + ' EVMOS'}
             </CText>
           </DynamicView>
@@ -724,16 +720,14 @@ export default function StakingDelegation({ route, navigation }) {
               fD={'row'}
               jC={'space-between'}
               dynamicWidth
-              width={100}
-            >
+              width={100}>
               <CText
                 dynamic
                 mL={8}
                 fF={C.fontsName.FONT_REGULAR}
                 fS={16}
                 tA={'left'}
-                color={Colors.primaryTextColor}
-              >
+                color={Colors.primaryTextColor}>
                 {t('AVAILABLE_BALANCE')}
               </CText>
               <CText
@@ -742,8 +736,7 @@ export default function StakingDelegation({ route, navigation }) {
                 fF={C.fontsName.FONT_BOLD}
                 fS={16}
                 tA={'left'}
-                color={Colors.primaryTextColor}
-              >
+                color={Colors.primaryTextColor}>
                 {convertToEvmosFromAevmos(
                   stakingValidators.stateStaking.unStakedBalance,
                 ).toFixed(6) + ' EVMOS'}
@@ -758,16 +751,14 @@ export default function StakingDelegation({ route, navigation }) {
               fD={'row'}
               jC={'space-between'}
               dynamicWidth
-              width={100}
-            >
+              width={100}>
               <CText
                 dynamic
                 mL={8}
                 fF={C.fontsName.FONT_REGULAR}
                 fS={16}
                 tA={'left'}
-                color={Colors.primaryTextColor}
-              >
+                color={Colors.primaryTextColor}>
                 {t('VALIDATOR_REDELEGATE')}
               </CText>
             </DynamicView>
@@ -793,8 +784,7 @@ export default function StakingDelegation({ route, navigation }) {
                   tokenData,
                   currentValidatorName: itemData.description.name,
                 });
-              }}
-            >
+              }}>
               <TextInput
                 value={reDelegatorName}
                 autoCorrect={false}
@@ -804,15 +794,13 @@ export default function StakingDelegation({ route, navigation }) {
               <DynamicView
                 style={{ position: 'absolute', right: 10 }}
                 fD={'row'}
-                dynamic
-              >
+                dynamic>
                 <CText
                   dynamic
                   fF={C.fontsName.FONT_SEMI_BOLD}
                   fS={14}
                   tA={'left'}
-                  color={Colors.subTextColor}
-                >
+                  color={Colors.subTextColor}>
                   <DynamicImage
                     dynamic
                     source={AppImages.RIGHT_ARROW}
@@ -830,22 +818,20 @@ export default function StakingDelegation({ route, navigation }) {
             fD={'row'}
             jC={'space-between'}
             dynamicWidth
-            width={100}
-          >
+            width={100}>
             <CText
               dynamic
               mL={8}
               fF={C.fontsName.FONT_REGULAR}
               fS={16}
               tA={'left'}
-              color={Colors.primaryTextColor}
-            >
+              color={Colors.primaryTextColor}>
               {stakingValidators.stateStaking.typeOfDelegation === DELEGATE
                 ? 'Amount to delegate'
                 : stakingValidators.stateStaking.typeOfDelegation ===
-                  UN_DELEGATE
-                ? 'Amount to undelegate'
-                : 'Amount to redelegate'}
+                    UN_DELEGATE
+                  ? 'Amount to undelegate'
+                  : 'Amount to redelegate'}
             </CText>
           </DynamicView>
 
@@ -861,10 +847,9 @@ export default function StakingDelegation({ route, navigation }) {
             aLIT={'center'}
             jC={'flex-start'}
             fD={'row'}
-            style={{ position: 'relative' }}
-          >
+            style={{ position: 'relative' }}>
             <TextInput
-              onChangeText={(e) => {
+              onChangeText={e => {
                 setAmount(e);
                 setMaxEnabled(false);
               }}
@@ -877,15 +862,13 @@ export default function StakingDelegation({ route, navigation }) {
             <DynamicView
               style={{ position: 'absolute', right: 10 }}
               fD={'row'}
-              dynamic
-            >
+              dynamic>
               <CText
                 dynamic
                 fF={C.fontsName.FONT_SEMI_BOLD}
                 fS={14}
                 tA={'left'}
-                color={Colors.subTextColor}
-              >
+                color={Colors.subTextColor}>
                 {'EVMOS'}
               </CText>
               <DynamicTouchView
@@ -910,16 +893,14 @@ export default function StakingDelegation({ route, navigation }) {
                     maxAmount < 0 ? '0.00' : maxAmount.toString();
                   setAmount(textAmount);
                   setMaxEnabled(true);
-                }}
-              >
+                }}>
                 <DynamicView dynamic aLIT={'center'} jC={'center'}>
                   <CText
                     dynamic
                     fF={C.fontsName.FONT_BOLD}
                     fS={14}
                     pV={8}
-                    color={Colors.primaryTextColor}
-                  >
+                    color={Colors.primaryTextColor}>
                     {t<string>('MAX')}
                   </CText>
                 </DynamicView>
@@ -934,8 +915,7 @@ export default function StakingDelegation({ route, navigation }) {
                 mT={10}
                 fS={12}
                 tA={'left'}
-                color={Colors.subTextColor}
-              >
+                color={Colors.subTextColor}>
                 {`${gasReserved} EVMOS${t(' reserved on MAX')}`}
               </CText>
             </DynamicView>
@@ -948,8 +928,7 @@ export default function StakingDelegation({ route, navigation }) {
             fD={'column'}
             jC={'center'}
             mT={25}
-            mB={32}
-          >
+            mB={32}>
             <CyDView className={'w-[100%]'}>
               <Button
                 disabled={

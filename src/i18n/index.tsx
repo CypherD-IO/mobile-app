@@ -95,6 +95,7 @@ const resources = {
       DELETE_WALLET: 'Delete Wallet',
       ADDRESS_COPY: 'Address copied to clipboard',
       ADDRESS_COPY_ALL_SMALL: 'address copied to clipboard',
+      CONTRACT_ADDRESS_COPY_ALL_SMALL: 'Contract address copied to clipboard',
       SAVED_TO_CONTACTS_ALL_SMALL: 'saved to contacts',
       PRIVATE_KEY_COPY: 'Private Key copied to clipboard',
       SEED_PHARSE_COPY: 'Seed phrase copied to clipboard',
@@ -797,7 +798,7 @@ const resources = {
       ENTER_PIN_PLACEHOLDER: 'Enter PIN',
       ACTIVATE: 'ACTIVATE',
       INVALID_DETAILS: 'Please ensure that the details submitted are valid',
-      ACTIVATE_PYHSICAL_CARD: 'Activate your physical card',
+      ACTIVATE_PYHSICAL_CARD: 'Activate Physical Card',
       ACTIVATION_SUCCESSFUL: 'Activation Successful',
       CARD_ACTIVATION_SUCCESSFUL: 'Your card has been activated successfully',
       CARD_SET_PIN: 'Set Pin',
@@ -908,6 +909,8 @@ const resources = {
       CHANGE_PHONE_NUMBER: 'Change Phone Number',
       CHANGE_EMAIL_ADDRESS: 'Change Email Address',
       UPDATE_CARD_DETAILS_OTP: 'Enter the OTP received on your phone or email',
+      SET_SMS_NOTIFICATION_TOGGLE_TRUE_OTP:
+        'Enter the OTP received on your phone',
       EMAIL_ADDRESS: 'Email address',
       CURRENT_PHONE_NUMBER: 'Current Phone Number:',
       CONTACT_DETAILS_UPDATION_SUCCESSFUL:
@@ -991,6 +994,41 @@ const resources = {
       LOCK_CARD: 'Lock Card',
       UNLOCK_CARD: 'Unlock Card',
       FUNDING_IN_PROGRESS: 'Funding in progress',
+      PRIVATE_KEY_IMPORT_SUB_MSG:
+        'Enter your Ethereum private key to import your wallet into Cypher.',
+      ENTER_PRIVATE_KEY_PLACEHOLDER: 'Enter your Ethereum private key',
+      BAD_PRIVATE_KEY_PHARSE: 'Bad private key',
+      IMPORT_WALLET_USING_PRIVATE_KEY: 'Import With Private Key',
+      CHOOSE_WALLET_INDEX_TEXT:
+        'These wallets are associated with your recovery phrase. Choose the wallet to import',
+      CHOOSE_WALLET_TO_IMPORT: 'Select Wallet',
+      LOADING_TEXT: 'Almost there, please hold on...',
+      LOADING_TEXT_WALLET_CREATION:
+        'This might take upto 1 min. Please do not go back or close the app.',
+      UPGRADE_NOW_FOR: 'Upgrade now for ',
+      SHIPPING_FEE_SUB1: 'A nominal fee of ',
+      SHIPPING_FEE_SUB2:
+        ' will be debited from your Cypher Card balance to facilitate the transition to a physical card upgrade.',
+      SHIPPING_FEE_ACC:
+        'I acknowledge and authorize the deduction of the above mentioned amount from my account',
+      PROCEED_TO_PAY: 'PROCEED TO PAY',
+      UPGRADE_PHYSICAL_CARD: 'Upgrade to Physical Card',
+      BALANCE_CAPITAL_FIRST_LETTER: 'Balance',
+      TRANSACTION_YET_TO_BE_SETTLED:
+        'This transaction is yet to be settled on the merchant side',
+      TRANSACTION_SETTLEMENT_AMOUNT:
+        '*The transaction amount is subject to adjustment based on fluctuations in forex rates at the time of final settlement',
+      VIRTUAL_CARD_CANCEL:
+        "Once you receive and activate your physical card, you won't be able to use or access the virtual card anymore.",
+      PLEASE_BE_AWARE: 'Please be aware of the following:',
+      ACTIVATE_PHYSICAL_CARD_SUB:
+        "Please be informed that once you activate your physical card, you won't be able to use or access the virtual card anymore.",
+      ACTIVATE_PHYSICAL_CARD_CONSENT:
+        'I understand and agree to permanently terminate/close my virtual card',
+      CARD_ON_WAY: 'Your card is on its way',
+      CARD_SHIP_DESCRIPTION_SUB1: 'Your physical card ending with ',
+      CARD_SHIP_DESCRIPTION_SUB2: ' has been dispatched and is in transit',
+      FEDEX_TRACKING_NO: 'Fedex Tracking No:',
     },
   },
 };

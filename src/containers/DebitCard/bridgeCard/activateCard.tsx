@@ -71,6 +71,15 @@ export default function ActivateCard(props: {
     const triggerOTPUrl = `/v1/cards/${currentCardProvider}/card/${card.cardId}/trigger/activate-card`;
     try {
       const response = await postWithAuth(triggerOTPUrl, {});
+      if (response.isError) {
+        showModal('state', {
+          type: 'error',
+          title: t('OTP_TRIGGER_FAILED'),
+          description: response?.error?.message ?? '',
+          onSuccess: hideModal,
+          onFailure: hideModal,
+        });
+      }
       return !response.isError;
     } catch (e: any) {
       showModal('state', {
@@ -121,6 +130,7 @@ export default function ActivateCard(props: {
     const payload = {
       otp: +otp,
       last4,
+      shouldCancelVirtualCard: true,
     };
     setLoading(true);
     Keyboard.dismiss();

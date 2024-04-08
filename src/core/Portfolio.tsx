@@ -58,10 +58,12 @@ export interface Holding {
   stakedBalance?: string;
   actualStakedBalance: number;
   stakedBalanceTotalValue?: number;
-  price24h?: number;
+  price24h?: number | string;
   unbondingBalanceTotalValue?: number;
   actualUnbondingBalance?: number;
   isMainnet?: boolean;
+  isNativeToken: boolean;
+  isFundable: boolean;
   isBridgeable: boolean;
   isSwapable: boolean;
   isStakeable?: boolean;
@@ -441,53 +443,46 @@ export async function getPortfolioModel(
 
   const fetchedChains = new Set<ChainBackendNames | 'ALL'>();
 
-  const cosmoholdings = archCall.data.chain_portfolios;
+  const tokenHoldings = archCall.data.chainPortfolios;
   let allholdings;
-  if (cosmoholdings) {
-    allholdings = cosmoholdings;
+  if (tokenHoldings) {
+    allholdings = tokenHoldings;
   } else allholdings = [];
 
   for (let i = 0; i < allholdings.length; i++) {
     let chainStakedBalance = 0;
     let chainUnbondingBalance = 0;
     const tokenHoldings: Holding[] = [];
-    const currentHoldings = allholdings[i]?.token_holdings || [];
+    const currentHoldings = allholdings[i]?.tokens || [];
 
     for (const holding of currentHoldings) {
+      const { flags } = holding;
       const tokenHolding: Holding = {
         name: holding.name,
         symbol: holding.symbol,
-        logoUrl: holding.logo_url,
+        logoUrl: holding.logoUrl,
         price: holding.price,
-        contractAddress: holding.contract_address,
-        balance: holding.balance,
-        contractDecimals: holding.contract_decimals,
-        totalValue: holding.total_value,
-        actualBalance: holding.actual_balance,
-        isVerified: holding.is_verified,
-        coinGeckoId: holding.coin_gecko_id,
-        about: holding.about,
+        contractAddress: holding.contractAddress,
+        balance: holding.balanceInInteger,
+        contractDecimals: holding.decimals,
+        totalValue: holding.totalValue,
+        actualBalance: holding.actualBalance,
+        isVerified: flags.verified,
+        coinGeckoId: holding.coingeckoId,
+        about: '',
         id: id++,
-        price24h: holding.price24h,
-        stakedBalance: holding.stakedBalance
-          ? holding.stakedBalance
-          : undefined,
-        actualStakedBalance: holding.actualStakedBalance
-          ? holding.actualStakedBalance
-          : 0,
-        stakedBalanceTotalValue: holding.stakedBalanceTotalValue
-          ? holding.stakedBalanceTotalValue
-          : 0,
-        actualUnbondingBalance: holding.actualUnbondingBalance
-          ? holding.actualUnbondingBalance
-          : 0,
-        unbondingBalanceTotalValue: holding.unbondingBalanceTotalValue
-          ? holding.unbondingBalanceTotalValue
-          : 0,
-        isBridgeable: holding.isBridgeable,
-        isSwapable: holding.isSwapable,
-        isStakeable: holding.isStakeable ?? false,
-        isZeroFeeCardFunding: holding.isZeroFeeCardFunding ?? false,
+        price24h: holding.coingeckoId ?? 'NA',
+        stakedBalance: holding.stakedBalance ?? undefined,
+        actualStakedBalance: holding.actualStakedBalance ?? 0,
+        stakedBalanceTotalValue: holding.stakedBalanceTotalValue ?? 0,
+        actualUnbondingBalance: holding.actualUnbondingBalance ?? 0,
+        unbondingBalanceTotalValue: holding.unbondingBalanceTotalValue ?? 0,
+        isNativeToken: flags.nativeToken,
+        isFundable: flags.fundable,
+        isBridgeable: flags.bridgeable,
+        isSwapable: flags.swapable,
+        isStakeable: flags.stakeable ?? false,
+        isZeroFeeCardFunding: flags.zeroFeeToken ?? false,
       };
       if (has(holding, 'isMainnet')) {
         tokenHolding.isMainnet = holding.isMainnet;
@@ -495,7 +490,7 @@ export async function getPortfolioModel(
         tokenHolding.isMainnet = true;
       }
       if (holding?.denom) tokenHolding.denom = holding.denom;
-      switch (allholdings[i]?.chain_id) {
+      switch (allholdings[i]?.chain) {
         case CHAIN_ETH.backendName:
           tokenHolding.chainDetails = CHAIN_ETH;
           break;
@@ -568,11 +563,11 @@ export async function getPortfolioModel(
       chainUnbondingBalance += Number(tokenHolding.actualUnbondingBalance);
     }
 
-    const chainTotalBalance = allholdings[i]?.total_value
-      ? parseFloat(allholdings[i]?.total_value)
+    const chainTotalBalance = allholdings[i]?.totalValue
+      ? parseFloat(allholdings[i]?.totalValue)
       : 0;
-    const chainUnVerifiedBalance = allholdings[i]?.unverfied_total_value
-      ? parseFloat(allholdings[i]?.unverfied_total_value)
+    const chainUnVerifiedBalance = allholdings[i]?.unverifiedTotalValue
+      ? parseFloat(allholdings[i]?.unverifiedTotalValue)
       : 0;
     const chainHoldings: ChainHoldings = {
       chainUnVerifiedBalance,
@@ -587,17 +582,17 @@ export async function getPortfolioModel(
     totalStakedBalance += chainStakedBalance;
     totalUnbondingBalance += chainUnbondingBalance;
 
-    fetchedChains.add(allholdings[i]?.chain_id);
+    fetchedChains.add(allholdings[i]?.chain);
     await storePortfolioData(
       chainHoldings,
       ethereum,
       portfolioState,
-      allholdings[i]?.chain_id,
+      allholdings[i]?.chain,
     );
 
     chainHoldings.holdings.sort(sortDesc);
 
-    switch (allholdings[i]?.chain_id) {
+    switch (allholdings[i]?.chain) {
       case CHAIN_ETH.backendName:
         ethHoldings = chainHoldings;
         break;
@@ -799,14 +794,12 @@ export async function getPortfolioModel(
 }
 
 export async function fetchTokenData(
-  hdWalletState: { state: { wallet: any } },
+  hdWalletState: { state: { wallet: any; isReadOnlyWallet: boolean } },
   portfolioState: any,
+  isVerifyCoinChecked = true,
 ) {
   const ARCH_HOST: string = hostWorker.getHost('ARCH_HOST');
-  const fromAnkr: boolean = portfolioState.statePortfolio.developerMode;
-  const cosmosPortfolioUrl = `${ARCH_HOST}/v1/portfolio/balances?ankr=${
-    fromAnkr as unknown as string
-  }`;
+  const portfolioUrl = `${ARCH_HOST}/v1/portfolio/balances`;
   const { isReadOnlyWallet } = hdWalletState.state;
   const { cosmos, osmosis, juno, stargaze, noble, ethereum } =
     hdWalletState.state.wallet;
@@ -848,50 +841,24 @@ export async function fetchTokenData(
         });
       }
     }
-    let params = {
-      'chains[]': PORTFOLIO_CHAINS_BACKEND_NAMES,
-      allowTestnet: true,
-      'address[]': [
-        cosmos?.wallets[cosmos?.currentIndex]?.address,
-        osmosis?.wallets[osmosis?.currentIndex]?.address,
-        juno?.wallets[juno?.currentIndex]?.address,
-        stargaze?.address,
-        noble?.address,
-        ethereum.address,
-      ],
+    const addresses = [
+      cosmos?.wallets[cosmos?.currentIndex]?.address,
+      osmosis?.wallets[osmosis?.currentIndex]?.address,
+      juno?.wallets[juno?.currentIndex]?.address,
+      stargaze?.address,
+      noble?.address,
+      ethereum.address,
+    ].filter(address => address !== undefined);
+    const payload = {
+      chains: PORTFOLIO_CHAINS_BACKEND_NAMES,
+      addresses,
+      allowTestNets: true,
+      isVerified: isVerifyCoinChecked,
     };
-    if (isReadOnlyWallet) {
-      params = {
-        allowTestnet: true,
-        'chains[]': PORTFOLIO_CHAINS_BACKEND_NAMES,
-        'address[]': [ethereum.address],
-      };
-    }
-    const archCall = axios.get(cosmosPortfolioUrl, {
-      params,
-      timeout: 25000,
-      paramsSerializer: function (params) {
-        return qs.stringify(params, { arrayFormat: 'repeat' });
-      },
-    });
-
-    const promiseArray: Array<Promise<any>> = [archCall];
-    let result, archBackend;
-    try {
-      result = await Promise.all(promiseArray);
-      archBackend = result[0];
-    } catch (e) {
-      Toast.show({
-        type: 'error',
-        text1: 'Network Timeout Error',
-        text2: 'Try refreshing in a while!',
-        position: 'bottom',
-      });
-    }
-
-    if (archBackend && archBackend?.status === 200) {
+    const archBackend = await axios.post(portfolioUrl, payload);
+    if (archBackend && archBackend?.status === 201) {
       let newPortfolio = portfolio;
-      if (archBackend.data.chain_portfolios.length > 0) {
+      if (archBackend.data.chainPortfolios.length > 0) {
         newPortfolio = await getPortfolioModel(
           ethereum,
           portfolioState,
@@ -953,22 +920,24 @@ export async function fetchRequiredTokenData(
   symbol?: string,
 ) {
   const ARCH_HOST: string = hostWorker.getHost('ARCH_HOST');
-  const portfolioUrl = `${ARCH_HOST}/v1/portfolio/balances?`;
-  const params = {
-    'chains[]': [chain],
-    'address[]': [address],
+  const portfolioUrl = `${ARCH_HOST}/v1/portfolio/balances`;
+  const payload = {
+    chains: [chain],
+    addresses: [address],
   };
-  const response = await axios.get(portfolioUrl, {
-    params,
-    timeout: 25000,
-    paramsSerializer: function (params) {
-      return qs.stringify(params, { arrayFormat: 'repeat' });
+  const response = await axios.post(
+    portfolioUrl,
+    {
+      ...payload,
     },
-  });
+    { timeout: 25000 },
+  );
   if (response.data) {
     if (symbol) {
-      const tokenHoldings = response.data.chain_portfolios[0].token_holdings;
-      const tokenData = tokenHoldings?.find(token => token.symbol === symbol);
+      const tokenHoldings = response.data.chainPortfolios[0].tokens;
+      const tokenData = tokenHoldings?.find(
+        (token: { symbol: string }) => token.symbol === symbol,
+      );
       return tokenData;
     } else {
       return response.data;

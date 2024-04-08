@@ -999,7 +999,7 @@ export default function Bridge(props: { navigation?: any; route?: any }) {
         const evmosAddress = evmos.wallets[evmos.currentIndex].address;
         const { transactionHash, gasFee }: any = await evmosIbc(
           evmosAddress,
-          ethereum,
+          hdWallet,
           quoteData.receiverAddress,
           cryptoAmount,
         );
@@ -2916,7 +2916,10 @@ export default function Bridge(props: { navigation?: any; route?: any }) {
               className={
                 'font-semibold text-[14px] text-center text-primaryTextColor font-nunito mt-[8px]'
               }>
-              {String(fromToken?.name) + ' ' + t<string>('BALANCE')}
+              {String(fromToken?.name) +
+                ' ' +
+                t<string>('BALANCE_CAPITAL_FIRST_LETTER') +
+                ' '}
               <CyDTokenAmount
                 className='text-primaryTextColor'
                 decimalPlaces={6}>

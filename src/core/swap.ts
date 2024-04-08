@@ -3,6 +3,8 @@ import Web3 from 'web3';
 import { NativeTokenMapping } from '../constants/server';
 import { getGasPriceFor } from '../containers/Browser/gasHelper';
 import { SwapMetaData } from '../models/swapMetaData';
+import { loadPrivateKeyFromKeyChain } from './Keychain';
+import { _NO_CYPHERD_CREDENTIAL_AVAILABLE_ } from './util';
 
 // Contract ABI for allowance and approval
 const contractABI = [
@@ -79,28 +81,34 @@ export const getApproval = async ({
           gas: web3.utils.toHex(String(gasLimit)),
           data: contractData,
         };
-        const signPromise = web3.eth.accounts.signTransaction(
-          tx,
-          String(ethereum.privateKey),
+        const privateKey = await loadPrivateKeyFromKeyChain(
+          false,
+          hdWallet.state.pinValue,
         );
-        signPromise.then(
-          (signedTx: { rawTransaction: string }) => {
-            void web3.eth
-              .sendSignedTransaction(signedTx.rawTransaction)
-              .once('transactionHash', function (hash: string) {})
-              .once('receipt', function (receipt: unknown) {
-                resolve(receipt);
-              })
-              .on('confirmation', function (confNumber: any) {})
-              .on('error', function (error: any) {
-                resolve(false);
-              })
-              .then(function (receipt: any) {});
-          },
-          (err: any) => {
-            resolve(false);
-          },
-        );
+        if (privateKey && privateKey !== _NO_CYPHERD_CREDENTIAL_AVAILABLE_) {
+          const signPromise = web3.eth.accounts.signTransaction(
+            tx,
+            String(privateKey),
+          );
+          signPromise.then(
+            (signedTx: { rawTransaction: string }) => {
+              void web3.eth
+                .sendSignedTransaction(signedTx.rawTransaction)
+                .once('transactionHash', function (hash: string) {})
+                .once('receipt', function (receipt: unknown) {
+                  resolve(receipt);
+                })
+                .on('confirmation', function (confNumber: any) {})
+                .on('error', function (error: any) {
+                  resolve(false);
+                })
+                .then(function (receipt: any) {});
+            },
+            (err: any) => {
+              resolve(false);
+            },
+          );
+        }
       } catch (e: any) {
         resolve(false);
       }
@@ -203,35 +211,41 @@ export const swapTokens = async ({
             'gwei',
           ),
         };
-        const signPromise = web3?.eth.accounts.signTransaction(
-          tx,
-          String(ethereum.privateKey),
+        const privateKey = await loadPrivateKeyFromKeyChain(
+          false,
+          hdWallet.state.pinValue,
         );
-        signPromise.then(
-          (signedTx: { rawTransaction: any }) => {
-            void web3.eth
-              .sendSignedTransaction(signedTx.rawTransaction)
-              .once('transactionHash', function (hash: any) {
-                Toast.show({
-                  type: 'info',
-                  text1: 'Transaction Hash',
-                  text2: hash,
-                  position: 'bottom',
-                });
-              })
-              .once('receipt', function (receipt: unknown) {
-                resolve({ isError: false, receipt });
-              })
-              .on('confirmation', function (confNumber: any) {})
-              .on('error', function (error: any) {
-                resolve({ isError: true, error });
-              })
-              .then(function (receipt: unknown) {});
-          },
-          (err: any) => {
-            resolve({ isError: true, error: err });
-          },
-        );
+        if (privateKey && privateKey !== _NO_CYPHERD_CREDENTIAL_AVAILABLE_) {
+          const signPromise = web3?.eth.accounts.signTransaction(
+            tx,
+            String(privateKey),
+          );
+          signPromise.then(
+            (signedTx: { rawTransaction: any }) => {
+              void web3.eth
+                .sendSignedTransaction(signedTx.rawTransaction)
+                .once('transactionHash', function (hash: any) {
+                  Toast.show({
+                    type: 'info',
+                    text1: 'Transaction Hash',
+                    text2: hash,
+                    position: 'bottom',
+                  });
+                })
+                .once('receipt', function (receipt: unknown) {
+                  resolve({ isError: false, receipt });
+                })
+                .on('confirmation', function (confNumber: any) {})
+                .on('error', function (error: any) {
+                  resolve({ isError: true, error });
+                })
+                .then(function (receipt: unknown) {});
+            },
+            (err: any) => {
+              resolve({ isError: true, error: err });
+            },
+          );
+        }
       } catch (e: any) {
         resolve({ isError: true, error: e });
       }

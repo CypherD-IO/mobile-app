@@ -135,7 +135,7 @@ const ShippingDetailsOTPScreen = ({ navigation, route }: Props) => {
 
   const onOTPEntry = async (otp: string) => {
     setIsSubmitting(true);
-    const data: Record<string, string | number> = {
+    const data: Record<string, string | number | boolean> = {
       ...shippingDetails,
     };
 
@@ -181,7 +181,9 @@ const ShippingDetailsOTPScreen = ({ navigation, route }: Props) => {
         showModal('state', {
           type: 'error',
           title: t('FAILURE'),
-          description: t('PHYSICAL_CARD_UPGRADE_SUBMISSION_FAILURE_TEXT'),
+          description:
+            response.error.message ??
+            t('PHYSICAL_CARD_UPGRADE_SUBMISSION_FAILURE_TEXT'),
           onSuccess: onSuccessForModals,
           onFailure: hideModal,
         });

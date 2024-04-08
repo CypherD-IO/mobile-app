@@ -16,6 +16,8 @@ import {
   ActivityStatus,
 } from '../../reducers/activity_reducer';
 import { hostWorker } from '../../global';
+import { loadPrivateKeyFromKeyChain } from '../../core/Keychain';
+import { _NO_CYPHERD_CREDENTIAL_AVAILABLE_ } from '../../core/util';
 
 const chainIdToChain = chainId =>
   ALL_CHAINS.find(chain => chain.chainIdNumber == chainId) ?? CHAIN_ETH;
@@ -35,7 +37,7 @@ export function toJson<T>(
 const bigNumberToHex = (val: string) =>
   `0x${new BigNumber(val, 10).toString(16)}`;
 
-export function sendTransaction(
+export async function sendTransaction(
   hdWalletContext,
   payload,
   finalGasPrice,
@@ -61,97 +63,104 @@ export function sendTransaction(
       gas: gasLimit,
     };
 
-    const signPromise = web3RPCEndpoint.eth.accounts.signTransaction(
-      tx,
-      ethereum.privateKey,
+    const privateKey = await loadPrivateKeyFromKeyChain(
+      false,
+      hdWalletContext.state.pinValue,
     );
-    isHashGenerated = true;
-    signPromise.then(signedTx => {
-      if (signedTx.rawTransaction) {
-        web3RPCEndpoint.eth
-          .sendSignedTransaction(signedTx.rawTransaction)
-          .once('transactionHash', function (hash) {
-            webviewRef.current.injectJavaScript(
-              `window.ethereum.sendResponse(${payload.id}, ${JSON.stringify(
+
+    if (privateKey && privateKey !== _NO_CYPHERD_CREDENTIAL_AVAILABLE_) {
+      const signedTx = await web3RPCEndpoint.eth.accounts.signTransaction(
+        tx,
+        privateKey,
+      );
+      isHashGenerated = true;
+      if (signedTx) {
+        if (signedTx.rawTransaction) {
+          await web3RPCEndpoint.eth
+            .sendSignedTransaction(signedTx.rawTransaction)
+            .once('transactionHash', function (hash) {
+              webviewRef.current.injectJavaScript(
+                `window.ethereum.sendResponse(${payload.id}, ${JSON.stringify(
+                  hash,
+                )})`,
+              );
+              // showModal('state', {type: 'info', title: 'Transaction Hash', description: hash, onSuccess: hideModal, onFailure: hideModal});
+              Toast.show({
+                type: 'info',
+                text1: 'Transaction Hash',
+                text2: hash,
+                position: 'bottom',
+              });
+              activityRef.current &&
+                activityContext.dispatch({
+                  type: ActivityReducerAction.PATCH,
+                  value: {
+                    id: activityRef.current.id,
+                    transactionHash: hash,
+                    status: ActivityStatus.SUCCESS,
+                  },
+                });
+              void analytics().logEvent('transaction_submit', {
+                from: ethereum.address,
+                to: payload.params[0].to,
+                gasPrice: finalGasPrice,
+                data: payload.params[0].data,
+                value: payload.params[0].value,
+                gas: gasLimit,
                 hash,
-              )})`,
-            );
-            // showModal('state', {type: 'info', title: 'Transaction Hash', description: hash, onSuccess: hideModal, onFailure: hideModal});
-            Toast.show({
-              type: 'info',
-              text1: 'Transaction Hash',
-              text2: hash,
-              position: 'bottom',
-            });
-            activityRef.current &&
-              activityContext.dispatch({
-                type: ActivityReducerAction.PATCH,
-                value: {
-                  id: activityRef.current.id,
-                  transactionHash: hash,
-                  status: ActivityStatus.SUCCESS,
-                },
+                chain: hdWalletContext.state.selectedChain.name,
               });
-            analytics().logEvent('transaction_submit', {
-              from: ethereum.address,
-              to: payload.params[0].to,
-              gasPrice: finalGasPrice,
-              data: payload.params[0].data,
-              value: payload.params[0].value,
-              gas: gasLimit,
-              hash,
-              chain: hdWalletContext.state.selectedChain.name,
-            });
-          })
-          .once('receipt', function (receipt) {
-            // showModal('state', {type: 'success', title: '', description: 'Transaction Receipt Received', onSuccess: hideModal, onFailure: hideModal});
-            Toast.show({
-              type: 'success',
-              text1: 'Transaction',
-              text2: 'Transaction Receipt Received',
-              position: 'bottom',
-            });
-          })
-          .on('confirmation', function (confNumber) {})
-          .on('error', function (error) {
-            activityRef.current &&
-              activityContext.dispatch({
-                type: ActivityReducerAction.PATCH,
-                value: {
-                  id: activityRef.current.id,
-                  status: ActivityStatus.FAILED,
-                  reason: error.message,
-                },
+            })
+            .once('receipt', function (receipt) {
+              // showModal('state', {type: 'success', title: '', description: 'Transaction Receipt Received', onSuccess: hideModal, onFailure: hideModal});
+              Toast.show({
+                type: 'success',
+                text1: 'Transaction',
+                text2: 'Transaction Receipt Received',
+                position: 'bottom',
               });
-            // showModal('state', {type: 'error', title: 'Transaction Error', description: error.message, onSuccess: hideModal, onFailure: hideModal});
-            Toast.show({
-              type: 'error',
-              text1: 'Transaction Error',
-              text2: error.message,
-              position: 'bottom',
+            })
+            .on('confirmation', function (confNumber) {})
+            .on('error', function (error) {
+              activityRef.current &&
+                activityContext.dispatch({
+                  type: ActivityReducerAction.PATCH,
+                  value: {
+                    id: activityRef.current.id,
+                    status: ActivityStatus.FAILED,
+                    reason: error.message,
+                  },
+                });
+              // showModal('state', {type: 'error', title: 'Transaction Error', description: error.message, onSuccess: hideModal, onFailure: hideModal});
+              Toast.show({
+                type: 'error',
+                text1: 'Transaction Error',
+                text2: error.message,
+                position: 'bottom',
+              });
+            })
+            .then(function (receipt) {
+              // showModal('state', {type: 'success', title: '', description: 'Transaction Receipt Received', onSuccess: hideModal, onFailure: hideModal});
+              Toast.show({
+                type: 'success',
+                text1: 'Transaction',
+                text2: 'Transaction Receipt Received',
+                position: 'bottom',
+              });
+              void analytics().logEvent('transaction_receipt', {
+                from: ethereum.address,
+                to: payload.params[0].to,
+                gasPrice: finalGasPrice,
+                data: payload.params[0].data,
+                value: payload.params[0].value,
+                gas: gasLimit,
+                receipt,
+                chain: hdWalletContext.state.selectedChain.name,
+              });
             });
-          })
-          .then(function (receipt) {
-            // showModal('state', {type: 'success', title: '', description: 'Transaction Receipt Received', onSuccess: hideModal, onFailure: hideModal});
-            Toast.show({
-              type: 'success',
-              text1: 'Transaction',
-              text2: 'Transaction Receipt Received',
-              position: 'bottom',
-            });
-            analytics().logEvent('transaction_receipt', {
-              from: ethereum.address,
-              to: payload.params[0].to,
-              gasPrice: finalGasPrice,
-              data: payload.params[0].data,
-              value: payload.params[0].value,
-              gas: gasLimit,
-              receipt,
-              chain: hdWalletContext.state.selectedChain.name,
-            });
-          });
+        }
       }
-    });
+    }
   } catch (e: any) {
     if (!isHashGenerated) {
       activityContext.dispatch({
@@ -173,32 +182,37 @@ export function sendTransaction(
   }
 }
 
-export function signTypedDataCypherD(
+export async function signTypedDataCypherD(
   hdWalletContext,
   payload,
   webviewRef,
   typeDataVersion,
 ) {
-  const ethereum = hdWalletContext.state.wallet.ethereum;
-  const privateKeyBuffer = Buffer.from(ethereum.privateKey.substring(2), 'hex');
-  let eip712Data;
-  if (typeDataVersion == SignTypedDataVersion.V1) {
-    eip712Data = payload.params[0];
-  } else {
-    eip712Data = JSON.parse(payload.params[1]);
-  }
-  const signature = signTypedData({
-    privateKey: privateKeyBuffer,
-    data: eip712Data,
-    version: typeDataVersion,
-  });
-
-  webviewRef.current.injectJavaScript(
-    `window.ethereum.sendResponse(${payload.id}, "${signature}")`,
+  const privateKey = await loadPrivateKeyFromKeyChain(
+    false,
+    hdWalletContext.state.pinValue,
   );
+  if (privateKey && privateKey !== _NO_CYPHERD_CREDENTIAL_AVAILABLE_) {
+    const privateKeyBuffer = Buffer.from(privateKey.substring(2), 'hex');
+    let eip712Data;
+    if (typeDataVersion == SignTypedDataVersion.V1) {
+      eip712Data = payload.params[0];
+    } else {
+      eip712Data = JSON.parse(payload.params[1]);
+    }
+    const signature = signTypedData({
+      privateKey: privateKeyBuffer,
+      data: eip712Data,
+      version: typeDataVersion,
+    });
+
+    webviewRef.current.injectJavaScript(
+      `window.ethereum.sendResponse(${payload.id}, "${signature}")`,
+    );
+  }
 }
 
-export function personal_sign(
+export async function personal_sign(
   hdWalletContext,
   payload,
   webviewRef,
@@ -213,25 +227,31 @@ export function personal_sign(
     messageToSign = payload.params[1];
   }
 
-  const signature = web3RPCEndpoint.eth.accounts.sign(
-    messageToSign,
-    ethereum.privateKey,
+  const privateKey = await loadPrivateKeyFromKeyChain(
+    false,
+    hdWalletContext.state.pinValue,
   );
-  webviewRef.current.injectJavaScript(
-    `window.ethereum.sendResponse(${payload.id}, "${signature.signature}")`,
-  );
-  // showModal('state', {type: 'success', title: 'Message Signed', description: 'Message Signed', onSuccess: hideModal, onFailure: hideModal});
-  Toast.show({
-    type: 'success',
-    text1: 'Message Signed',
-    text2: 'Message Signed',
-    position: 'bottom',
-  });
-  analytics().logEvent('transaction_personal_sign', {
-    from: ethereum.address,
-    method: payload.method,
-    chain: hdWalletContext.state.selectedChain.name,
-  });
+  if (privateKey && privateKey !== _NO_CYPHERD_CREDENTIAL_AVAILABLE_) {
+    const signature = web3RPCEndpoint.eth.accounts.sign(
+      messageToSign,
+      privateKey,
+    );
+    webviewRef.current.injectJavaScript(
+      `window.ethereum.sendResponse(${payload.id}, "${signature.signature}")`,
+    );
+    // showModal('state', {type: 'success', title: 'Message Signed', description: 'Message Signed', onSuccess: hideModal, onFailure: hideModal});
+    Toast.show({
+      type: 'success',
+      text1: 'Message Signed',
+      text2: 'Message Signed',
+      position: 'bottom',
+    });
+    await analytics().logEvent('transaction_personal_sign', {
+      from: ethereum.address,
+      method: payload.method,
+      chain: hdWalletContext.state.selectedChain.name,
+    });
+  }
 }
 
 export function parseWebviewPayload(

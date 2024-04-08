@@ -2,6 +2,7 @@ import AsyncStorage from '@react-native-async-storage/async-storage';
 import * as Sentry from '@sentry/react-native';
 import { Dispatch } from 'react';
 import { WebsiteInfo } from '../types/Browser';
+import { setActivities } from '../core/asyncStorage';
 
 export enum ActivityStatus {
   SUCCESS,
@@ -169,9 +170,7 @@ export const initialActivityState: ActivityState = {
 };
 
 function synchronizeStorage(state: ActivityState) {
-  AsyncStorage.setItem('activities', JSON.stringify(state)).catch(e =>
-    Sentry.captureException(e),
-  );
+  void setActivities(state);
 }
 
 export enum ActivityReducerAction {

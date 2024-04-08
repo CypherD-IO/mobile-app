@@ -33,6 +33,7 @@ export interface CardProfile {
       },
     ];
     isPhysicalCardEligible: boolean;
+    physicalCardUpgradationFee: number | string;
   };
   solid?: {
     applicationStatus: CardApplicationStatus;
