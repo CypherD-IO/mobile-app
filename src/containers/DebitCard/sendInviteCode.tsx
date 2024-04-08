@@ -58,7 +58,6 @@ export default function SendInviteCode({ route, navigation }: Props) {
     );
     if (!response.isError) {
       if (response.data.referralData) {
-        console.log(response.data);
         setReferralData(response.data.referralData);
       }
     }

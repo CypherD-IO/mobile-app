@@ -12,6 +12,7 @@
 		13B07FBC1A68108700A75B9A /* AppDelegate.m in Sources */ = {isa = PBXBuildFile; fileRef = 13B07FB01A68108700A75B9A /* AppDelegate.m */; };
 		13B07FBF1A68108700A75B9A /* Images.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 13B07FB51A68108700A75B9A /* Images.xcassets */; };
 		13B07FC11A68108700A75B9A /* main.m in Sources */ = {isa = PBXBuildFile; fileRef = 13B07FB71A68108700A75B9A /* main.m */; };
+		2377ED832BC428F400B63CF4 /* PrivacyInfo.xcprivacy in Resources */ = {isa = PBXBuildFile; fileRef = 2377ED822BC428F400B63CF4 /* PrivacyInfo.xcprivacy */; };
 		2995AE3EDB41435A925EC58D /* Nunito-LightItalic.ttf in Resources */ = {isa = PBXBuildFile; fileRef = 9F806EDEA739469884919814 /* Nunito-LightItalic.ttf */; };
 		2F1D943749FE4F2AB87543E8 /* Nunito-Black.ttf in Resources */ = {isa = PBXBuildFile; fileRef = 61EDA9C61CC7422CA2A983A0 /* Nunito-Black.ttf */; };
 		4EAECDB21A134642C7B2ED60 /* libPods-Cypherd-CypherdTests.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 2C228B8C032CDCCF4C55A9E2 /* libPods-Cypherd-CypherdTests.a */; };
@@ -61,6 +62,7 @@
 		13B07FB71A68108700A75B9A /* main.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; name = main.m; path = Cypherd/main.m; sourceTree = "<group>"; };
 		1A20FD52E8DA48F1B113ED44 /* Nunito-Regular.ttf */ = {isa = PBXFileReference; explicitFileType = undefined; fileEncoding = 9; includeInIndex = 0; lastKnownFileType = unknown; name = "Nunito-Regular.ttf"; path = "../assets/fonts/Nunito-Regular.ttf"; sourceTree = "<group>"; };
 		1BB7433AAB934E96B7741438 /* Nunito-ExtraBoldItalic.ttf */ = {isa = PBXFileReference; explicitFileType = undefined; fileEncoding = 9; includeInIndex = 0; lastKnownFileType = unknown; name = "Nunito-ExtraBoldItalic.ttf"; path = "../assets/fonts/Nunito-ExtraBoldItalic.ttf"; sourceTree = "<group>"; };
+		2377ED822BC428F400B63CF4 /* PrivacyInfo.xcprivacy */ = {isa = PBXFileReference; lastKnownFileType = text.xml; path = PrivacyInfo.xcprivacy; sourceTree = "<group>"; };
 		23B0EF2924D64AA2AB396998 /* Nunito-Bold.ttf */ = {isa = PBXFileReference; explicitFileType = undefined; fileEncoding = 9; includeInIndex = 0; lastKnownFileType = unknown; name = "Nunito-Bold.ttf"; path = "../assets/fonts/Nunito-Bold.ttf"; sourceTree = "<group>"; };
 		25D03ABE98DD4490AC7A7F29 /* Nunito-ExtraLightItalic.ttf */ = {isa = PBXFileReference; explicitFileType = undefined; fileEncoding = 9; includeInIndex = 0; lastKnownFileType = unknown; name = "Nunito-ExtraLightItalic.ttf"; path = "../assets/fonts/Nunito-ExtraLightItalic.ttf"; sourceTree = "<group>"; };
 		2C228B8C032CDCCF4C55A9E2 /* libPods-Cypherd-CypherdTests.a */ = {isa = PBXFileReference; explicitFileType = archive.ar; includeInIndex = 0; path = "libPods-Cypherd-CypherdTests.a"; sourceTree = BUILT_PRODUCTS_DIR; };
@@ -226,6 +228,7 @@
 		83CBB9F61A601CBA00E9B192 = {
 			isa = PBXGroup;
 			children = (
+				2377ED822BC428F400B63CF4 /* PrivacyInfo.xcprivacy */,
 				B76522962792A50F002A2E46 /* GoogleService-Info.plist */,
 				13B07FAE1A68108700A75B9A /* Cypherd */,
 				832341AE1AAA6A7D00B99B32 /* Libraries */,
@@ -361,6 +364,7 @@
 				DCED601B75664948BA3E09E3 /* Nunito-Light.ttf in Resources */,
 				2995AE3EDB41435A925EC58D /* Nunito-LightItalic.ttf in Resources */,
 				5C433F6528E585ED00FA84F8 /* splash.json in Resources */,
+				2377ED832BC428F400B63CF4 /* PrivacyInfo.xcprivacy in Resources */,
 				8A77E50B811245D3971BCDF8 /* Nunito-Medium.ttf in Resources */,
 				E1F81B00A30041C09BA7A944 /* Nunito-MediumItalic.ttf in Resources */,
 				0AE3F621F8354F91B43777EA /* Nunito-Regular.ttf in Resources */,
