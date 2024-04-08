@@ -1029,6 +1029,14 @@ const resources = {
       CARD_SHIP_DESCRIPTION_SUB1: 'Your physical card ending with ',
       CARD_SHIP_DESCRIPTION_SUB2: ' has been dispatched and is in transit',
       FEDEX_TRACKING_NO: 'Fedex Tracking No:',
+      INVITE_SENT_NOT_USED:
+        'Your friend might have missed or unnoticed your invitation to use Cypher Card. Try sending it again.',
+      SEND_INVITE_CODE_DESC:
+        'Bring a buddy along and tell them about your incredible Cypher wallet experience',
+      INVITE_A_FRIEND: 'Invite a friend',
+      INVITED_FRIENDS: 'Invited Friends',
+      INVITE_SOCIAL_SHARE_MESSAGE:
+        'Hi there, Your Cypher card awaits you. Use this invite code and grab your card now! ',
     },
   },
 };

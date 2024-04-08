@@ -117,7 +117,13 @@ module.exports = {
       textInputBackground: '#C5C5C5',
       textInputFocussedBackground: '#434343',
       highlightBg: '#E5F3F2',
-      highlightText: '#058A81'
+      highlightText: '#058A81',
+      cyanBg: '#F2FAFE',
+      cyanText: '#048A81',
+      wheatBg: '#FFF7E3',
+      wheatText: '#D69B00',
+      errorBg: '#FEEFEC',
+      errorText: '#EE4D30',
     },
     columns: {
       auto: 'auto',
