@@ -54,7 +54,7 @@
     "@react-navigation/drawer": "^6.1.8",
     "@react-navigation/native": "^6.0.6",
     "@react-navigation/native-stack": "^6.2.5",
-    "@sentry/react-native": "5.15.2",
+    "@sentry/react-native": "^5.19.3",
     "@tharsis/address-converter": "^0.1.8",
     "@tharsis/provider": "^0.2.4",
     "@tharsis/transactions": "^0.2.6",
