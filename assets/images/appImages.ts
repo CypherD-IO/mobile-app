@@ -339,6 +339,9 @@ const PORTFOLIO_BG_S3 = {
   uri: `${S3_BUCKET_URL_ICONS}/portfolio-bg.png?${String(new Date().getDay())}`,
 };
 const NO_TRANSACTIONS = { uri: `${S3_BUCKET_URL_ICONS}/noTransactions.png` };
+const DECLINE = { uri: `${S3_BUCKET_URL_ICONS}/decline.png` };
+const PENDING = { uri: `${S3_BUCKET_URL_ICONS}/pending.png` };
+const CORRECT_WHEAT = { uri: `${S3_BUCKET_URL_ICONS}/correctWheat.png` };
 
 const AppImages = {
   PLUS,
@@ -672,6 +675,9 @@ const AppImages = {
   CANDY_CANE,
   WALLET_ICONS,
   VIRTUAL_TO_PHYSICAL,
-  MAIL
+  MAIL,
+  DECLINE,
+  PENDING,
+  CORRECT_WHEAT,
 };
 export default AppImages;

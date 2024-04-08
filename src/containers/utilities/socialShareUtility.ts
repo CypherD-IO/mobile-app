@@ -6,14 +6,14 @@ export const onShare = async (title: string, message: string, url: string) => {
     title,
     message,
     subject: title,
-    url: url !== '' ? url : recommendImageBase64
+    url: url !== '' ? url : recommendImageBase64,
   };
 
   await Share.open(shareOptions)
-    .then((res) => {
+    .then(res => {
       return res;
     })
-    .catch((err) => {
+    .catch(err => {
       return err;
     });
 };

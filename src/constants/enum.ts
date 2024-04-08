@@ -301,3 +301,11 @@ export enum SECRET_TYPES {
   MENEMONIC = 'mnemonic',
   PRIVATE_KEY = 'privateKey',
 }
+
+export enum CardReferralStatus {
+  CREATED = 'created',
+  CARD_ISSUED = 'card-issued',
+  KYC_FAILED = 'kyc-failed',
+  INVITE_USED = 'invite-used',
+  LOADED = 'loaded',
+}
