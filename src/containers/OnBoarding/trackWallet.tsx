@@ -32,7 +32,6 @@ import Web3 from 'web3';
 import { useGlobalModalContext } from '../../components/v2/GlobalModal';
 import useEns from '../../hooks/useEns';
 import firebase from '@react-native-firebase/app';
-import appsFlyer from 'react-native-appsflyer';
 import { intercomAnalyticsLog } from '../utilities/analyticsUtility';
 import { ethToEvmos } from '@tharsis/address-converter';
 
@@ -71,7 +70,6 @@ export default function TrackWallet({
               observerId: payload.observerId,
             };
             void setReadOnlyWalletData(data);
-            void appsFlyer.logEvent('track_wallet_event', data);
             void intercomAnalyticsLog('track_wallet_event', data);
             setLoading(false);
             hdWalletContext.dispatch({

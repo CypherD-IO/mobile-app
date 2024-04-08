@@ -1,4 +1,4 @@
-import React, { useContext } from 'react';
+import React from 'react';
 import { StyleSheet } from 'react-native';
 import CyDModalLayout from './modal';
 import {
@@ -16,10 +16,7 @@ import { onShare } from '../../containers/utilities/socialShareUtility';
 import { ActivityStatus, ActivityType } from '../../reducers/activity_reducer';
 import clsx from 'clsx';
 import { round } from 'lodash';
-import { generateUserInviteLink } from '../../core/appsFlyerUtils';
-import appsFlyer from 'react-native-appsflyer';
-import useAxios from '../../core/HttpRequest';
-import { HdWalletContext } from '../../core/util';
+import { generateUserInviteLink } from '../../core/util';
 
 const statuses: Record<string, string> = {
   [ActivityStatus.PENDING]: 'PENDING',
@@ -38,31 +35,13 @@ export default function ActivityBridgeInfoModal({
   setModalVisible: React.Dispatch<React.SetStateAction<boolean>>;
   params: any;
 }) {
-  const { getWithAuth } = useAxios();
-
-  const hdWalletContext = useContext<any>(HdWalletContext);
-  const {
-    ethereum: { address },
-  } = hdWalletContext.state.wallet;
   async function referFriend() {
     try {
-      const resp = await getWithAuth('/v1/referral/tabDetails');
-      await generateUserInviteLink(
-        resp?.data?.inviteCodeTab.referralCode,
-        address,
-        referralInviteLink => {
-          onShare(
-            t('RECOMMEND_TITLE'),
-            t('RECOMMEND_MESSAGE'),
-            referralInviteLink,
-          )
-            .then(() => {
-              void appsFlyer.logEvent('referral_invite_shared', {});
-            })
-            .catch(error => {
-              void appsFlyer.logEvent('share_invite_failed', error);
-            });
-        },
+      const referralInviteLink = generateUserInviteLink();
+      void onShare(
+        t('RECOMMEND_TITLE'),
+        t('RECOMMEND_MESSAGE'),
+        referralInviteLink,
       );
     } catch (error) {
       // Ignore if the link generation fails

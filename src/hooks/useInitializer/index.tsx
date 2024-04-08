@@ -153,8 +153,8 @@ export default function useInitializer() {
     ) {
       Intercom.registerIdentifiedUser({
         userId: walletAddresses.ethereumAddress,
-      }).catch(error => {
-        Sentry.captureException(error);
+      }).catch(() => {
+        // throws error if user is already registered
       });
       Intercom.updateUser({
         userId: walletAddresses.ethereumAddress,
@@ -162,8 +162,8 @@ export default function useInitializer() {
           ...walletAddresses,
           version: DeviceInfo.getVersion(),
         },
-      }).catch(error => {
-        Sentry.captureException(error);
+      }).catch(() => {
+        // throws error if user is already registered
       });
     }
     void analytics().setAnalyticsCollectionEnabled(!devMode);
@@ -383,8 +383,8 @@ export default function useInitializer() {
             });
             Intercom.registerIdentifiedUser({
               userId: ethereum.observerId,
-            }).catch(error => {
-              Sentry.captureException(error);
+            }).catch(() => {
+              // throws error if user is already registered
             });
           } else {
             dispatch({
