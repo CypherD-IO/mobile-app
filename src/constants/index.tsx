@@ -73,6 +73,7 @@ export const screenTitle = {
   CARD_SIGNUP_SCREEN: 'CardSignupScreen',
   LEGAL_SCREEN: 'LegalScreen',
   CARD_SIGNUP_OTP_VERIFICATION_SCREEN: 'OTPVerificationScreen',
+  PHONE_NUMBER_VERIFICATION_SCREEN: 'PhoneNumberVerificationScreen',
   CARD_SIGNUP_COMPLETE_SCREEN: 'CardSignupCompleteScreen',
   CARD_KYC_STATUS_SCREEN: 'CardKYCStatusScreen',
   BRIDGE_CARD_SCREEN: 'BridgeCardScreen',

@@ -144,6 +144,20 @@ export default function BridgeCardOptionsScreen(props: {
           />
         )}
       </CyDView>
+      <CyDTouchView
+        onPress={() =>
+          navigation.navigate(screenTitle.PHONE_NUMBER_VERIFICATION_SCREEN)
+        }
+        className='flex flex-row justify-between align-center ml-[20px] mr-[4px] pt-[20px] pb-[15px] border-b-[1px] border-sepratorColor'>
+        <CyDText className='text-[16px] font-bold'>
+          {t<string>('VERIFY_PHONE_NUMBER_INIT_CAPS')}
+        </CyDText>
+        <CyDImage
+          source={AppImages.OPTIONS_ARROW}
+          className={'w-[15%] h-[18px]'}
+          resizeMode={'contain'}
+        />
+      </CyDTouchView>
       {!isCardBlocked && card.type === 'physical' && (
         <CyDTouchView
           onPress={() =>

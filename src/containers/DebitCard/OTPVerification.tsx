@@ -22,17 +22,17 @@ import LottieView from 'lottie-react-native';
 import Toast from 'react-native-toast-message';
 import { screenTitle } from '../../constants';
 import { isAndroid, isIOS } from '../../misc/checkers';
-import { concatErrorMessagesFromArray } from '../../core/util';
 import {
   OTPType,
   GlobalContextType,
   CardProviders,
+  ButtonType,
 } from '../../constants/enum';
 import { useGlobalModalContext } from '../../components/v2/GlobalModal';
 import { getWalletProfile } from '../../core/card';
-import { hostWorker } from '../../global';
 import { countryMaster } from '../../../assets/datasets/countryMaster';
 import useAxios from '../../core/HttpRequest';
+import Button from '../../components/v2/button';
 
 export default function OTPVerificationScreen({ navigation }) {
   const globalContext = useContext<any>(GlobalContext);
@@ -115,7 +115,13 @@ export default function OTPVerificationScreen({ navigation }) {
     setVerifyingOTP(false);
   };
 
-  const verifyOTPByType = async (otp: string | number) => {
+  const verifyOTPByType = async ({
+    otp,
+    shouldSkip = false,
+  }: {
+    otp?: string | number;
+    shouldSkip?: boolean;
+  }) => {
     setVerifyingOTP(true);
     try {
       let OTPVerificationUrl = `/v1/cards/${CardProviders.PAYCADDY}/application/verify/`;
@@ -124,9 +130,9 @@ export default function OTPVerificationScreen({ navigation }) {
       } else if (isPhoneOTPVerified && !isEmailOTPVerified) {
         OTPVerificationUrl += OTPType.EMAIL;
       }
-
       const response = await postWithAuth(OTPVerificationUrl, {
-        otp: Number(otp),
+        otp: otp ? Number(otp) : undefined,
+        toSkip: shouldSkip,
       });
       if (!response.isError) {
         if (!isPhoneOTPVerified) {
@@ -168,8 +174,8 @@ export default function OTPVerificationScreen({ navigation }) {
     }
   };
 
-  const getOTP = async otp => {
-    await verifyOTPByType(otp);
+  const getOTP = async (otp: string | number) => {
+    await verifyOTPByType({ otp });
   };
 
   const resendCode = async (type: string) => {
@@ -416,7 +422,7 @@ export default function OTPVerificationScreen({ navigation }) {
                 className={clsx(
                   'absolute mt-[14px] ml-[26px] w-[3px] bg-paleGrey',
                   {
-                    'h-[230px]': !isPhoneOTPVerified,
+                    'h-[345px]': !isPhoneOTPVerified,
                     'h-[141px]': isPhoneOTPVerified,
                     'h-[248px]': invalidOTP !== '',
                   },
@@ -426,7 +432,7 @@ export default function OTPVerificationScreen({ navigation }) {
                 className={clsx(
                   'absolute ml-[21px] rounded-[50px] w-[14px] h-[14px]',
                   {
-                    'mt-[243px] border-[1px] border-appColor':
+                    'mt-[360px] border-[1px] border-appColor':
                       !isPhoneOTPVerified,
                     'mt-[148px] bg-appColor': isPhoneOTPVerified,
                     'mt-[260px]': invalidOTP !== '',
@@ -480,7 +486,7 @@ export default function OTPVerificationScreen({ navigation }) {
                     )}
                     <CyDView
                       className={
-                        'flex flex-row justify-between mt-[12px] mr-[12px]'
+                        'flex flex-row justify-between mt-[12px] mx-[1px]'
                       }>
                       <CyDTouchView
                         className={'flex flex-row items-center'}
@@ -520,6 +526,19 @@ export default function OTPVerificationScreen({ navigation }) {
                         </CyDText>
                       </CyDTouchView>
                     </CyDView>
+                    <Button
+                      title='Verify Later'
+                      onPress={() => {
+                        void verifyOTPByType({ shouldSkip: true });
+                      }}
+                      disabled={verifyingOTP}
+                      type={ButtonType.SECONDARY}
+                      style={'mt-[16px] py-[10px]'}
+                    />
+                    <CyDText className='flex flex-row items-start mt-[12px]'>
+                      <CyDText className='font-bold underline'>Note: </CyDText>
+                      <CyDText>{t('PHONE_VERIFY_LATER_DESC')}</CyDText>
+                    </CyDText>
                   </CyDView>
                 )}
                 {isPhoneOTPVerified && (
