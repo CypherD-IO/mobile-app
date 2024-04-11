@@ -137,7 +137,7 @@ export default function useEvmosSigner() {
     const params = {
       receiver: toAddress,
       denom: denom,
-      amount: ethers.utils
+      amount: ethers
         .parseUnits(
           convertAmountOfContractDecimal(amount, contractDecimals),
           contractDecimals,

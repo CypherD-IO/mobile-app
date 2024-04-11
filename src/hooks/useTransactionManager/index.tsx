@@ -164,10 +164,7 @@ export default function useTransactionManager() {
       ];
 
       // How many tokens? -- Use BigNumber everywhere
-      const numberOfTokens = ethers.utils.parseUnits(
-        amountToSend,
-        contractDecimals,
-      );
+      const numberOfTokens = ethers.parseUnits(amountToSend, contractDecimals);
       // Form the contract and contract data
       const contract = new web3.eth.Contract(
         contractAbiFragment,
@@ -526,7 +523,7 @@ export default function useTransactionManager() {
         denom,
         contractDecimals,
         userAccountData,
-        gasFee: ethers.utils
+        gasFee: ethers
           .parseUnits(gasDetails.gasFeeInCrypto.toString(), '18')
           .toString(), // limitDecimalPlaces(gasDetails.gasFeeInCrypto, contractDecimals),
         gasWanted: String(gasDetails.gasLimit),
