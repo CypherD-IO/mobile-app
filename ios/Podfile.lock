@@ -522,7 +522,7 @@ PODS:
     - React-Core
   - react-native-netinfo (11.3.1):
     - React-Core
-  - react-native-pager-view (6.2.3):
+  - react-native-pager-view (6.3.0):
     - RCT-Folly (= 2021.07.22.00)
     - React-Core
   - react-native-randombytes (3.6.1):
@@ -651,7 +651,7 @@ PODS:
     - React-Core
   - RNCAsyncStorage (1.23.1):
     - React-Core
-  - RNCClipboard (1.13.2):
+  - RNCClipboard (1.14.0):
     - React-Core
   - RNCPushNotificationIOS (1.11.0):
     - React-Core
@@ -724,7 +724,7 @@ PODS:
   - RNScreens (3.30.1):
     - RCT-Folly (= 2021.07.22.00)
     - React-Core
-  - RNSentry (5.19.3):
+  - RNSentry (5.20.0):
     - React-Core
     - Sentry/HybridSDK (= 8.21.0)
   - RNShare (7.9.1):
@@ -1149,7 +1149,7 @@ SPEC CHECKSUMS:
   react-native-lottie-splash-screen: 4e1b1fd9d6633f9cd2106d6877eb5ba0147f3e2b
   react-native-mmkv: e2d73a7d37f23918066a4b985a94c9fafc3f20c1
   react-native-netinfo: bdb108d340cdb41875c9ced535977cac6d2ff321
-  react-native-pager-view: 948dc00b6545d82b53e5f99cafef4a8521c60dd4
+  react-native-pager-view: 3bec7a5e0d12727ce3fe21770756beae39b3c88a
   react-native-randombytes: 421f1c7d48c0af8dbcd471b0324393ebf8fe7846
   react-native-render-html: 984dfe2294163d04bf5fe25d7c9f122e60e05ebe
   react-native-restart: 45c8dca02491980f2958595333cbccd6877cb57e
@@ -1177,7 +1177,7 @@ SPEC CHECKSUMS:
   ReactCommon: b719671b680a98daf077e79491cf05173c2af5d3
   rn-fetch-blob: f065bb7ab7fb48dd002629f8bdcb0336602d3cba
   RNCAsyncStorage: 826b603ae9c0f88b5ac4e956801f755109fa4d5c
-  RNCClipboard: 60fed4b71560d7bfe40e9d35dea9762b024da86d
+  RNCClipboard: 090462274cc05b02628bd158baf6d73c3abe8441
   RNCPushNotificationIOS: 64218f3c776c03d7408284a819b2abfda1834bc8
   RNDateTimePicker: 65e1d202799460b286ff5e741d8baf54695e8abd
   RNDeviceInfo: aad3c663b25752a52bf8fce93f2354001dd185aa
@@ -1195,7 +1195,7 @@ SPEC CHECKSUMS:
   RNPermissions: de7b7c3fe1680d974ac7a85e3e97aa539c0e68ea
   RNReanimated: f8379347f71248607d530a21e31e4140c5910c25
   RNScreens: e5ee7223f7c8fa261f0c4594a0541c56ea99bbfc
-  RNSentry: 98e170b6eedc5c54e3ac88b6140fffb8b496deb4
+  RNSentry: fb15f17d0f074c089c38bb913625ceab8665c8fd
   RNShare: a5dc3b9c53ddc73e155b8cd9a94c70c91913c43c
   RNSVG: d7d7bc8229af3842c9cfc3a723c815a52cdd1105
   RNVectorIcons: fcc2f6cb32f5735b586e66d14103a74ce6ad61f8

@@ -422,7 +422,7 @@ export default function Options(props: {
                       { fromOptionsStack: true },
                     );
                   }}
-                  title={t('MENU_RECOMMEND_FRIEND')}
+                  title={t('CYPHER_CARD_REFERRALS')}
                   logo={AppImages.REFER_OUTLINE}
                 />
               )}
@@ -525,62 +525,41 @@ export default function Options(props: {
                   {t<string>('VERSION')} {DeviceInfo.getVersion()}
                 </CText>
               </CyDTouchView>
-
-              {devMode && (
-                <>
-                  {/* <CyDTouchView onPress={async () => await setQuoteCancelReasons(false)} className={'flex flex-row justify-center items-center my-[10px]'}>
-                  <CyDText className={'underline underline-offset-2 text-blue-700 '}>
-                  {t<string>('ENABLE_FEEDBACK')}
-                  </CyDText>
-                </CyDTouchView> */}
-                  <CyDTouchView
-                    onPress={async () => await deleteSolidCredentials()}
-                    className={
-                      'flex flex-row justify-center items-center my-[10px]'
-                    }>
-                    <CyDText
-                      className={'underline underline-offset-2 text-blue-700 '}>
-                      {t<string>('REMOVE_SOLID_CREDENTIALS')}
-                    </CyDText>
-                  </CyDTouchView>
-                </>
-              )}
-
               <CyDView
                 className={
                   'flex flex-row items-center justify-between mt-[10px] mb-[30px]'
                 }>
                 <SocialMedia
                   title={t('DISCORD')}
-                  uri={'https://discord.com/invite/S9tDGZ9hgT'}
+                  uri={'https://cypherhq.io/discord'}
                   screenTitle={C.screenTitle.SOCIAL_MEDIA_SCREEN}
                   imageUri={'https://public.cypherd.io/icons/discord.png'}
                   navigationRef={props.navigation}
                 />
                 <SocialMedia
                   title={t('TWITTER')}
-                  uri={'https://twitter.com/cypherwalletio'}
+                  uri={'https://cypherhq.io/twitter'}
                   screenTitle={C.screenTitle.SOCIAL_MEDIA_SCREEN}
                   imageUri={'https://public.cypherd.io/icons/twitter.png'}
                   navigationRef={props.navigation}
                 />
                 <SocialMedia
                   title={t('REDDIT')}
-                  uri={'https://www.reddit.com/r/CypherWallet/'}
+                  uri={'https://cypherhq.io/reddit'}
                   screenTitle={C.screenTitle.SOCIAL_MEDIA_SCREEN}
                   imageUri={'https://public.cypherd.io/icons/reddit.png'}
                   navigationRef={props.navigation}
                 />
                 <SocialMedia
                   title={t('MEDIUM')}
-                  uri={'https://medium.com/@CypherWallet'}
+                  uri={'https://cypherhq.io/medium'}
                   screenTitle={C.screenTitle.SOCIAL_MEDIA_SCREEN}
                   imageUri={'https://public.cypherd.io/icons/medium.png'}
                   navigationRef={props.navigation}
                 />
                 <SocialMedia
                   title={t('YOUTUBE')}
-                  uri={'https://youtube.com/@cypherwallet_'}
+                  uri={'https://cypherhq.io/youtube'}
                   screenTitle={C.screenTitle.SOCIAL_MEDIA_SCREEN}
                   imageUri={'https://public.cypherd.io/icons/youtube.png'}
                   navigationRef={props.navigation}
