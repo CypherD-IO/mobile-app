@@ -38,7 +38,7 @@ export default function OTPVerificationScreen({ navigation }) {
   const globalContext = useContext<any>(GlobalContext);
   const { showModal, hideModal } = useGlobalModalContext();
   const [isPhoneOTPVerified, setPhoneOTPVerified] = useState<boolean>(false);
-  const [isEmailOTPVerified, setEmailOTPVerified] = useState<boolean>(true);
+  const [isEmailOTPVerified, setEmailOTPVerified] = useState<boolean>(false);
   const [invalidOTP, setInvalidOTP] = useState<string>('');
   const [isChangeNumberModalVisible, setChangeNumberModalVisible] =
     useState<boolean>(false);
@@ -63,7 +63,7 @@ export default function OTPVerificationScreen({ navigation }) {
   });
 
   useEffect(() => {
-    // void getApplication();
+    void getApplication();
   }, []);
 
   useEffect(() => {
