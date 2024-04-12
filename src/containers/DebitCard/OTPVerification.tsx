@@ -125,21 +125,21 @@ export default function OTPVerificationScreen({ navigation }) {
     setVerifyingOTP(true);
     try {
       let OTPVerificationUrl = `/v1/cards/${CardProviders.PAYCADDY}/application/verify/`;
-      if (!isPhoneOTPVerified) {
-        OTPVerificationUrl += OTPType.PHONE;
-      } else if (isPhoneOTPVerified && !isEmailOTPVerified) {
+      if (!isEmailOTPVerified) {
         OTPVerificationUrl += OTPType.EMAIL;
+      } else if (isEmailOTPVerified && !isPhoneOTPVerified) {
+        OTPVerificationUrl += OTPType.PHONE;
       }
       const response = await postWithAuth(OTPVerificationUrl, {
         otp: otp ? Number(otp) : undefined,
         toSkip: shouldSkip,
       });
       if (!response.isError) {
-        if (!isPhoneOTPVerified) {
-          setPhoneOTPVerified(true);
-          void triggerOTP(OTPType.EMAIL);
-        } else if (isPhoneOTPVerified && !isEmailOTPVerified) {
+        if (!isEmailOTPVerified) {
           setEmailOTPVerified(true);
+          void triggerOTP(OTPType.PHONE);
+        } else if (isEmailOTPVerified && !isPhoneOTPVerified) {
+          setPhoneOTPVerified(true);
         }
       } else {
         showModal('state', {
