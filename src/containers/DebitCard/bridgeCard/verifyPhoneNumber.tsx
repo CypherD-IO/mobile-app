@@ -11,42 +11,31 @@ import {
   CyDTouchView,
   CyDImage,
   CyDSafeAreaView,
-  CyDTextInput,
-  CyDKeyboardAvoidingView,
 } from '../../../styles/tailwindStyles';
-import CyDModalLayout from '../../../components/v2/modal';
 import Loading from '../../../components/v2/loading';
 import LottieView from 'lottie-react-native';
-import { isAndroid } from '../../../misc/checkers';
 import { OTPType, CardProviders } from '../../../constants/enum';
 import { useGlobalModalContext } from '../../../components/v2/GlobalModal';
 import useAxios from '../../../core/HttpRequest';
 import Intercom from '@intercom/intercom-react-native';
 import { useTranslation } from 'react-i18next';
 
-export default function PhoneNumberVerificationScreen() {
+export default function PhoneNumberVerificationScreen({
+  route,
+}: {
+  route: { params: { phoneNumber: string } };
+}) {
+  const { phoneNumber } = route.params;
   const { showModal, hideModal } = useGlobalModalContext();
   const [isPhoneOTPVerified, setPhoneOTPVerified] = useState<boolean>(false);
   const [invalidOTP, setInvalidOTP] = useState<string>('');
-  const [isChangeNumberModalVisible, setChangeNumberModalVisible] =
-    useState<boolean>(false);
   const [loading, setLoading] = useState<boolean>(false);
   const [verifyingOTP, setVerifyingOTP] = useState<boolean>(false);
   const [resendingCode, setResendingCode] = useState<boolean>(false);
   const resendOtpTime = 30;
   const [resendInterval, setResendInterval] = useState(0);
   const [timer, setTimer] = useState<NodeJS.Timer>();
-  const { postWithAuth, patchWithAuth } = useAxios();
-  const provider = CardProviders.PAYCADDY;
-
-  const [formData, setFormData] = useState({
-    countryFlag: '',
-    dialCode: '',
-    updatedPhoneNumber: '',
-    updatedEmail: '',
-    phoneNumber: '',
-    email: '',
-  });
+  const { postWithAuth } = useAxios();
 
   useEffect(() => {
     if (resendInterval === 0) {
@@ -123,129 +112,8 @@ export default function PhoneNumberVerificationScreen() {
     );
   };
 
-  const updateUserDetails = async (detail: string) => {
-    setLoading(true);
-    let payload = {};
-    let phoneNumberWithoutSpecialCharacters = '';
-    let phoneNumberWithoutDialCodes = '';
-    phoneNumberWithoutSpecialCharacters = formData.updatedPhoneNumber.replace(
-      /[- +()#*;,.<>{}[\]\\/]/gi,
-      '',
-    );
-    phoneNumberWithoutDialCodes = phoneNumberWithoutSpecialCharacters.replace(
-      formData.dialCode,
-      '',
-    );
-    payload = { phone: formData.dialCode + phoneNumberWithoutDialCodes };
-    const response = await patchWithAuth(
-      `/v1/cards/${provider}/application`,
-      payload,
-    );
-    if (!response.isError) {
-      setFormData({
-        ...formData,
-        phoneNumber: formData.dialCode + phoneNumberWithoutDialCodes,
-        updatedPhoneNumber: phoneNumberWithoutDialCodes,
-      });
-      await triggerOTP(detail);
-    } else {
-      showModal('state', {
-        type: 'error',
-        title: '',
-        description: t('UPDATE_INFO_ERROR_MESSAGE'),
-        onSuccess: hideModal,
-        onFailure: hideModal,
-      });
-    }
-    setLoading(false);
-  };
-
   return (
     <>
-      <CyDModalLayout
-        setModalVisible={setChangeNumberModalVisible}
-        isModalVisible={isChangeNumberModalVisible}
-        style={styles.modalLayout}
-        animationIn={'slideInUp'}
-        animationOut={'slideOutDown'}>
-        <CyDKeyboardAvoidingView
-          behavior={isAndroid() ? 'height' : 'padding'}
-          className='flex flex-col justify-end h-full'>
-          <CyDView className={'bg-white h-[250px] rounded-t-[20px]'}>
-            <CyDView
-              className={'flex flex-row mt-[20px] justify-end mr-[22px] z-50'}>
-              <CyDTouchView
-                onPress={() => {
-                  setChangeNumberModalVisible(false);
-                }}
-                className={'ml-[18px]'}>
-                <CyDImage
-                  source={AppImages.CLOSE}
-                  className={' w-[22px] h-[22px] z-[50] right-[0px] '}
-                />
-              </CyDTouchView>
-            </CyDView>
-            <CyDView className={'mt-[-18px]'}>
-              <CyDText className={'text-center text-[18px] font-bold'}>
-                {t<string>('CHANGE_NUMBER_INIT_CAPS')}
-              </CyDText>
-            </CyDView>
-            <CyDView
-              className={clsx(
-                'h-[50px] ml-[30px] mt-[20px] border-[1px] border-inputBorderColor rounded-[5px] w-[85%] flex flex-row',
-              )}>
-              <CyDView
-                className={
-                  'w-4/12 border-r-[1px] border-[#EBEBEB] bg-white py-[13px] rounded-l-[16px] flex items-center'
-                }>
-                <CyDView className={'mt-[-4px] ml-[-55px]'}>
-                  <CyDText className={'text-[33px] mt-[-6px]'}>
-                    {formData.countryFlag}
-                  </CyDText>
-                </CyDView>
-                <CyDView className={'mt-[-20px] ml-[45px]'}>
-                  <CyDText className={'text-[13px] font-extrabold text-center'}>
-                    {formData.dialCode}
-                  </CyDText>
-                </CyDView>
-              </CyDView>
-              <CyDView className={'flex flex-row items-center w-8/12'}>
-                <CyDView className={'flex flex-row items-center'}>
-                  <CyDTextInput
-                    className={clsx(
-                      'text-center text-black font-nunito text-[16px] ml-[8px]',
-                      { 'mt-[-8px]': isAndroid() },
-                    )}
-                    value={formData.updatedPhoneNumber}
-                    autoCapitalize='none'
-                    keyboardType={'numeric'}
-                    maxLength={15}
-                    key='phoneNumber'
-                    autoCorrect={false}
-                    placeholderTextColor={'#C5C5C5'}
-                    onChangeText={value =>
-                      setFormData({ ...formData, updatedPhoneNumber: value })
-                    }
-                    placeholder='Phone Number'
-                  />
-                </CyDView>
-              </CyDView>
-            </CyDView>
-            <CyDTouchView
-              onPress={() => {
-                setChangeNumberModalVisible(false);
-                void updateUserDetails(OTPType.PHONE);
-              }}
-              className={
-                'bg-appColor py-[20px] flex flex-row justify-center items-center rounded-[12px] justify-around w-[86%] mx-auto mt-[25px]'
-              }>
-              <CyDText className={'text-[16px] text-center font-bold'}>
-                {t<string>('UPDATE_INIT_CAPS')}
-              </CyDText>
-            </CyDTouchView>
-          </CyDView>
-        </CyDKeyboardAvoidingView>
-      </CyDModalLayout>
       {loading ? (
         <Loading />
       ) : (
@@ -282,9 +150,7 @@ export default function PhoneNumberVerificationScreen() {
             <CyDView className={'w-[93%]'}>
               <CyDView className={'mx-[22px]'}>
                 <CyDText className={'text-[17px] mb-[12px] font-semibold'}>
-                  {t<string>('SENT_AUTHENTICATION_CODE_TO') +
-                    ' ' +
-                    formData.phoneNumber}
+                  {t<string>('SENT_AUTHENTICATION_CODE_TO') + ' ' + phoneNumber}
                 </CyDText>
                 {!isPhoneOTPVerified && (
                   <CyDView>
@@ -350,17 +216,6 @@ export default function PhoneNumberVerificationScreen() {
                           </CyDText>
                         )}
                       </CyDTouchView>
-                      <CyDTouchView
-                        onPress={() => {
-                          setChangeNumberModalVisible(true);
-                        }}>
-                        <CyDText
-                          className={
-                            'font-bold underline decoration-solid underline-offset-4'
-                          }>
-                          {t<string>('CHANGE_NUMBER_INIT_CAPS')}
-                        </CyDText>
-                      </CyDTouchView>
                     </CyDView>
                     <CyDView className='mt-[54px]'>
                       <ManualVerification />
@@ -373,7 +228,7 @@ export default function PhoneNumberVerificationScreen() {
                       'flex flex-row justify-between items-center bg-paleDarkGreen mt-[10px] px-[8px] py-[10px] rounded-[5px]'
                     }>
                     <CyDText className={'text-[16px] pl-[8px] font-bold'}>
-                      {formData.phoneNumber}
+                      {phoneNumber}
                     </CyDText>
                     <CyDImage source={AppImages.DARK_GREEN_BACKGROUND_TICK} />
                   </CyDView>
