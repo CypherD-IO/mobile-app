@@ -148,7 +148,9 @@ export default function BridgeCardOptionsScreen(props: {
       {!isPhoneVerified && (
         <CyDTouchView
           onPress={() =>
-            navigation.navigate(screenTitle.PHONE_NUMBER_VERIFICATION_SCREEN)
+            navigation.navigate(screenTitle.PHONE_NUMBER_VERIFICATION_SCREEN, {
+              phoneNumber: cardProfile?.phone,
+            })
           }
           className='flex flex-row justify-between align-center ml-[20px] mr-[4px] pt-[20px] pb-[15px] border-b-[1px] border-sepratorColor'>
           <CyDText className='text-[16px] font-bold'>
