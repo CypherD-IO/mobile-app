@@ -79,7 +79,7 @@ export default function Button({
         `rounded-[8px] py-[15px] flex flex-row items-center justify-center ${style}`,
         {
           'bg-buttonColor': ButtonType.PRIMARY === type,
-          'bg-white border-[1px] py-[15px] border-greyButtonBackgroundColor':
+          'bg-white border-[1px]  border-greyButtonBackgroundColor':
             ButtonType.SECONDARY === type,
           'bg-white border-[1px] border-buttonColor':
             ButtonType.TERNARY === type,
