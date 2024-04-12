@@ -65,7 +65,6 @@ const CardTransactionItem = ({ item }: CardTransactionItemProps) => {
         key={item.id}
         className={clsx(
           'h-[70px] flex flex-row justify-between items-center bg-white px-[10px] border-b border-x border-sepratorColor',
-          { 'bg-orange-50': !isSettled },
         )}
         onPress={() => {
           void intercomAnalyticsLog('card_transaction_info_clicked');
@@ -84,9 +83,7 @@ const CardTransactionItem = ({ item }: CardTransactionItemProps) => {
                 ? { uri: iconUrl }
                 : getTransactionIndicator(type)
             }
-            className={clsx('h-[30px] w-[30px]', {
-              'rounded-full border border-orange-400': !isSettled,
-            })}
+            className={clsx('h-[30px] w-[30px]', {})}
             resizeMode={'contain'}
           />
           <CyDView className={'ml-[10px]'}>
@@ -109,16 +106,11 @@ const CardTransactionItem = ({ item }: CardTransactionItemProps) => {
                 type === CardTransactionTypes.WITHDRAWAL,
               'text-successTextGreen': type === CardTransactionTypes.CREDIT,
               'text-darkYellow': type === CardTransactionTypes.REFUND,
-              'text-orange-400': !isSettled,
+              'text-black': !isSettled,
             })}>
             {getTransactionSign(type)}
             {amount} {t<string>('USD')}
           </CyDText>
-          {!isSettled ? (
-            <CyDText className='font-bold text-[10px] mr-[5px] text-orange-400 uppercase'>
-              {t('PENDING')}
-            </CyDText>
-          ) : null}
         </CyDView>
       </CyDTouchView>
     </>
