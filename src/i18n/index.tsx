@@ -1038,7 +1038,7 @@ const resources = {
       INVITE_SOCIAL_SHARE_MESSAGE:
         'Hi there, Your Cypher card awaits you. Use this invite code and grab your card now! ',
       PHONE_VERIFY_LATER_DESC:
-        'If you choose to verify your phone number later, you may not have access to the complete range of features, including higher card load and spend limits.',
+        'If you choose to verify your phone number later, you may not have access to the complete range of features, including higher card load and spend limits. You can always verify later from card settings.',
       VERIFY_PHONE_NUMBER_INIT_CAPS: 'Verify Phone Number',
       TROUBLE_PHONE_VERIFICATION:
         'If you are facing any trouble with verifying your phone number',
