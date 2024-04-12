@@ -778,7 +778,8 @@ export function DebitCardStackScreen({ navigation }) {
     fontWeight: '800',
   };
   return (
-    <FundCardStack.Navigator initialRouteName={screenTitle.DEBIT_CARD_SCREEN}>
+    <FundCardStack.Navigator
+      initialRouteName={screenTitle.CARD_SIGNUP_OTP_VERIFICATION_SCREEN}>
       <FundCardStack.Screen
         name={screenTitle.DEBIT_CARD_SCREEN}
         component={DebitCardScreen}

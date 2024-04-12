@@ -38,7 +38,7 @@ export default function OTPVerificationScreen({ navigation }) {
   const globalContext = useContext<any>(GlobalContext);
   const { showModal, hideModal } = useGlobalModalContext();
   const [isPhoneOTPVerified, setPhoneOTPVerified] = useState<boolean>(false);
-  const [isEmailOTPVerified, setEmailOTPVerified] = useState<boolean>(false);
+  const [isEmailOTPVerified, setEmailOTPVerified] = useState<boolean>(true);
   const [invalidOTP, setInvalidOTP] = useState<string>('');
   const [isChangeNumberModalVisible, setChangeNumberModalVisible] =
     useState<boolean>(false);
@@ -63,7 +63,7 @@ export default function OTPVerificationScreen({ navigation }) {
   });
 
   useEffect(() => {
-    void getApplication();
+    // void getApplication();
   }, []);
 
   useEffect(() => {
@@ -634,20 +634,29 @@ export default function OTPVerificationScreen({ navigation }) {
                           </CyDTouchView>
                         </CyDView>
                         <Button
-                          title='Verify Later'
+                          title={t('VERIFY_LATER')}
                           onPress={() => {
-                            void verifyOTPByType({ shouldSkip: true });
+                            showModal('state', {
+                              type: 'warning',
+                              title: t('VERIFY_LATER'),
+                              description: t('PHONE_VERIFY_LATER_DESC'),
+                              onSuccess: () => {
+                                void verifyOTPByType({ shouldSkip: true });
+                                hideModal();
+                              },
+                              onFailure: hideModal,
+                            });
                           }}
                           disabled={verifyingOTP}
                           type={ButtonType.SECONDARY}
                           style={'mt-[16px] py-[10px]'}
                         />
-                        <CyDText className='flex flex-row items-start mt-[12px]'>
+                        {/* <CyDText className='flex flex-row items-start mt-[12px]'>
                           <CyDText className='font-bold underline'>
                             Note:{' '}
                           </CyDText>
                           <CyDText>{t('PHONE_VERIFY_LATER_DESC')}</CyDText>
-                        </CyDText>
+                        </CyDText> */}
                       </CyDView>
                     )}
                     {isPhoneOTPVerified && (

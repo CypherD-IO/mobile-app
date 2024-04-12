@@ -1043,6 +1043,7 @@ const resources = {
       TROUBLE_PHONE_VERIFICATION:
         'If you are facing any trouble with verifying your phone number',
       CONTACT_CYPHER_SUPPORT: 'Contact Cypher Support',
+      VERIFY_LATER: 'Verify Later',
     },
   },
 };
