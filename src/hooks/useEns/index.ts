@@ -1,7 +1,7 @@
 import axios from 'axios';
 import Web3 from 'web3';
 import { AbiItem } from 'web3-utils';
-import { namehash } from 'ethers/lib/utils';
+import { namehash } from 'ethers';
 import { useContext } from 'react';
 import { ensAbi } from '../../constants/data';
 import { CHAIN_ETH, EnsCoinTypes } from '../../constants/server';

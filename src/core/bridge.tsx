@@ -75,7 +75,7 @@ const evmosToCosmosSignatureContent = async (
   const params = {
     receiver: receiverAddress,
     denom: cosmosConfig.evmos.denom,
-    amount: ethers.utils
+    amount: ethers
       .parseUnits(convertAmountOfContractDecimal(inputAmount, 18), 18)
       .toString(),
     sourcePort: 'transfer',
@@ -130,7 +130,7 @@ export const sendInCosmosChain = async (
       rpc,
       signer,
     );
-    const amount = ethers.utils
+    const amount = ethers
       .parseUnits(
         convertAmountOfContractDecimal(
           inputAmount,
@@ -222,7 +222,7 @@ export const interCosmosIbc = async (
 
       const transferAmount: Coin = {
         denom: cosmosConfig[fromChain.chainName].denom,
-        amount: ethers.utils
+        amount: ethers
           .parseUnits(convertAmountOfContractDecimal(inputAmount, 6), 6)
           .toString(),
       };
@@ -262,7 +262,7 @@ export const interCosmosIbc = async (
         amount: [
           {
             denom: cosmosConfig[fromChain.chainName].denom,
-            amount: ethers.utils
+            amount: ethers
               .parseUnits(
                 convertAmountOfContractDecimal(gasFee.toString(), 6),
                 6,
@@ -329,7 +329,7 @@ export const evmosIbc = async (
       transferAmount,
       accountInfoResponse,
       hdWallet,
-      ethers.utils
+      ethers
         .parseUnits((cosmosConfig.evmos.gasPrice * gasWanted).toString(), '18')
         .toString(),
       Math.floor(gasWanted * 1.3).toString(),
@@ -362,7 +362,7 @@ export const sendCosmosTokens = async (
         rpc,
         signer,
       );
-      const amount = ethers.utils
+      const amount = ethers
         .parseUnits(
           convertAmountOfContractDecimal(
             inputAmount,

@@ -440,7 +440,7 @@ export default function TokenStaking({
 
       const bodyForTxn = await generateTransactionBodyForEVMOSSimulation(
         { ...accountDetailsResponse.data.account.base_account, sequence },
-        ethers.utils
+        ethers
           .parseUnits(
             convertAmountOfContractDecimal(
               (cosmosConfig.evmos.gasPrice * gasWanted).toString(),

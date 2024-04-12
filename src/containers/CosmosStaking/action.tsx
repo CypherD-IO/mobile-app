@@ -146,7 +146,7 @@ export default function CosmosAction({ route, navigation }) {
               validatorAddress: validatorData.address,
               amount: {
                 denom: currentChain.denom,
-                amount: ethers.utils
+                amount: ethers
                   .parseUnits(
                     convertAmountOfContractDecimal(
                       amount,
@@ -169,7 +169,7 @@ export default function CosmosAction({ route, navigation }) {
               validatorAddress: validatorData.address,
               amount: {
                 denom: currentChain.denom,
-                amount: ethers.utils
+                amount: ethers
                   .parseUnits(
                     convertAmountOfContractDecimal(
                       amount,
@@ -192,7 +192,7 @@ export default function CosmosAction({ route, navigation }) {
               validatorDstAddress: reValidator.address,
               amount: {
                 denom: currentChain.denom,
-                amount: ethers.utils
+                amount: ethers
                   .parseUnits(
                     convertAmountOfContractDecimal(
                       amount,

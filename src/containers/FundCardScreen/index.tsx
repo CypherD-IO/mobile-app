@@ -415,7 +415,7 @@ export default function FundCardScreen(props) {
           globalContext,
         );
       } else if (COSMOS_CHAINS.includes(chainSelected.chainName)) {
-        const amount = ethers.utils
+        const amount = ethers
           .parseUnits(
             parseFloat(
               cosmosPayTokenModalParams.sentTokenAmount.length > 8
@@ -574,7 +574,7 @@ export default function FundCardScreen(props) {
                 Number(quote.token_required).toFixed(5),
               );
               const valueForUsd = quote.token_required;
-              const amount = ethers.utils
+              const amount = ethers
                 .parseUnits(
                   parseFloat(
                     valueForUsd.length > 8
