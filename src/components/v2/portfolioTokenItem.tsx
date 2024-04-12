@@ -18,6 +18,7 @@ import {
 import CyDTokenAmount from './tokenAmount';
 import CyDTokenValue from './tokenValue';
 import { Holding } from '../../core/Portfolio';
+import { limitDecimalPlaces } from '../../core/util';
 
 interface PortfolioTokenItemProps {
   item: Holding;
@@ -287,7 +288,9 @@ const PortfolioTokenItem = ({
                   </CyDView>
                 )}
               </CyDView>
-              <CyDText className={'text-[12px]'}>{item.symbol}</CyDText>
+              <CyDText className={'text-[12px]'}>
+                ${limitDecimalPlaces(item.price, 2)}
+              </CyDText>
             </CyDView>
             <CyDView className='flex self-center items-end max-w-[35%]'>
               {item.isVerified && (
@@ -299,14 +302,17 @@ const PortfolioTokenItem = ({
                     : '...'}
                 </CyDTokenValue>
               )}
-              <CyDTokenAmount className='text-[14px]'>
-                {item.stakedBalanceTotalValue !== undefined &&
-                item.unbondingBalanceTotalValue !== undefined
-                  ? item.actualBalance +
-                    item.stakedBalanceTotalValue +
-                    item.unbondingBalanceTotalValue
-                  : '...'}
-              </CyDTokenAmount>
+              <CyDView className='flex flex-row items-center gap-[4px]'>
+                <CyDTokenAmount className='text-[14px]'>
+                  {item.stakedBalanceTotalValue !== undefined &&
+                  item.unbondingBalanceTotalValue !== undefined
+                    ? item.actualBalance +
+                      item.stakedBalanceTotalValue +
+                      item.unbondingBalanceTotalValue
+                    : '...'}
+                </CyDTokenAmount>
+                <CyDText className='font-semibold'>{item.symbol}</CyDText>
+              </CyDView>
             </CyDView>
           </CyDView>
         </Swipeable>

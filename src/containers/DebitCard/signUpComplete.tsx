@@ -45,7 +45,7 @@ export default function CardSignupCompleteScreen({ navigation }) {
           )}>
           <CyDText
             className={clsx('text-center font-black text-white text-[18px]')}>
-            {t<string>('VIEW_CARD_STATUS')}
+            {t<string>('PROCEED')}
           </CyDText>
         </CyDTouchView>
       </CyDImageBackground>
