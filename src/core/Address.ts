@@ -9,12 +9,15 @@ import { cosmosConfig, IIBCData } from '../constants/cosmosConfig';
 import CryptoJS from 'crypto-js';
 import { Mnemonic, PrivKeySecp256k1 } from '@keplr-wallet/crypto';
 import { isIOS } from '../misc/checkers';
-import { Wallet } from '@ethersproject/wallet';
 import { addHexPrefix } from './util';
-import { ethers } from 'ethers';
+import {
+  HDNodeWallet,
+  ethers,
+  Mnemonic as EthersMnemonic,
+  Wallet,
+} from 'ethers';
 import { setConnectionType } from './asyncStorage';
 import { ConnectionTypes } from '../constants/enum';
-
 function sendFirebaseEvent(walletaddress: string, trkEvent: string) {
   void analytics().logEvent(trkEvent, {
     walletaddress,
@@ -62,10 +65,11 @@ export const generateMultipleWalletAddressesFromSeedPhrase = async (
   numberOfAddresses = 100,
 ) => {
   return await new Promise((resolve, reject) => {
-    const hdNode = ethers.utils.HDNode.fromMnemonic(mnemonic);
-    const basePath = "m/44'/60'/0'/0/";
+    // const hdNode = HDNodeWallet.fromPhrase(mnemonic);
+    const _mnemonic = EthersMnemonic.fromPhrase(mnemonic);
+    const hdNode = HDNodeWallet.fromMnemonic(_mnemonic, "m/44'/60'/0'/0");
     const addresses = Array.from({ length: numberOfAddresses }, (_, index) => {
-      const derivedNode = hdNode.derivePath(basePath + index.toString());
+      const derivedNode = hdNode.derivePath(index.toString());
       return { address: derivedNode.address.toLowerCase(), index };
     });
 

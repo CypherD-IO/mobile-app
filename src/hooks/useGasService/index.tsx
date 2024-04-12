@@ -38,7 +38,7 @@ import {
   MsgTransferEncodeObject,
   SigningStargateClient,
 } from '@cosmjs/stargate';
-import { get } from 'lodash';
+import { ceil, get } from 'lodash';
 import { HdWalletContextDef } from '../../reducers/hdwallet_reducer';
 import { MsgTransfer } from 'cosmjs-types/ibc/applications/transfer/v1/tx';
 import Long from 'long';
@@ -145,10 +145,7 @@ export default function useGasService() {
     contractDecimals,
   }: EvmGasInterface) => {
     // How many tokens? -- Use BigNumber everywhere
-    const numberOfTokens = ethers.utils.parseUnits(
-      amountToSend,
-      contractDecimals,
-    );
+    const numberOfTokens = ethers.parseUnits(amountToSend, contractDecimals);
     // Form the contract and contract data
     const contract = new web3.eth.Contract(
       [
@@ -177,16 +174,17 @@ export default function useGasService() {
       .encodeABI();
     try {
       const gasPriceDetail = await getGasPrice(chain, web3);
-      const gasLimit = await web3.eth.estimateGas({
+      let gasLimit = await web3.eth.estimateGas({
         from: fromAddress,
         // For Optimism the ETH token has different contract address
         to:
-          contractAddress.toLowerCase() === OP_ETH_ADDRESS
+          contractAddress?.toLowerCase() === OP_ETH_ADDRESS
             ? '0xeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee'
             : contractAddress,
         value: '0x0',
         data: contractData,
       });
+      gasLimit = ceil(gasLimit * 1.3);
       if (gasLimit) {
         let finalGasPrice;
         if (gasPriceDetail.gasPrice > 0) {
@@ -202,7 +200,11 @@ export default function useGasService() {
             web3.utils.toWei(finalGasPrice.toFixed(9), 'gwei'),
           );
         }
-        return { gasFeeInCrypto, gasLimit, gasPrice: finalGasPrice };
+        return {
+          gasFeeInCrypto,
+          gasLimit: gasLimit,
+          gasPrice: finalGasPrice,
+        };
       }
     } catch (error) {
       Sentry.captureException(error);
@@ -250,7 +252,7 @@ export default function useGasService() {
 
     const params = {
       destinationAddress: toAddress,
-      amount: ethers.utils
+      amount: ethers
         .parseUnits(limitDecimalPlaces(amountToSend, 18), 18)
         .toString(),
       denom: cosmosConfig.evmos.denom,

@@ -50,7 +50,6 @@ import {
   removeCyRootData,
   setConnectionType,
 } from './asyncStorage';
-import { isValidMnemonic, sha256 } from 'ethers/lib/utils';
 import { initialHdWalletState } from '../reducers';
 import { t } from 'i18next';
 import { KeychainErrors } from '../constants/KeychainErrors';
@@ -64,6 +63,7 @@ import { Dispatch, SetStateAction } from 'react';
 import Web3 from 'web3';
 import { hostWorker } from '../global';
 import axios from 'axios';
+import { Mnemonic, sha256 } from 'ethers';
 
 // increase this when you want the CyRootData to be reconstructed
 const currentSchemaVersion = 6;
@@ -475,7 +475,7 @@ export async function getSignerClient(
   );
   const accounts: string[] = ['cosmos', 'osmo', 'juno', 'stars', 'noble'];
   const wallets: Map<string, OfflineDirectSigner> = new Map();
-  if (seedPhrase && isValidMnemonic(seedPhrase)) {
+  if (seedPhrase && Mnemonic.isValidMnemonic(seedPhrase)) {
     for (const wallet of accounts) {
       const signer: OfflineDirectSigner =
         await DirectSecp256k1HdWallet.fromMnemonic(seedPhrase, {

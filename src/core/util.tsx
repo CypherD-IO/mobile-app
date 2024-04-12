@@ -65,7 +65,7 @@ import { Holding } from './Portfolio';
 import { TokenMeta } from '../models/tokenMetaData.model';
 import Long from 'long';
 
-import { Wallet } from '@ethersproject/wallet';
+import { Wallet } from 'ethers';
 // const {showModal, hideModal} = useGlobalModalContext()
 
 export const HdWalletContext = React.createContext<HdWalletContextDef | null>(
