@@ -24,6 +24,8 @@ export interface CardProfile {
   pc?: {
     personId?: string;
     applicationStatus: CardApplicationStatus;
+    phoneVerified: boolean;
+    emailVerified: boolean;
     cards?: [
       {
         last4: string;

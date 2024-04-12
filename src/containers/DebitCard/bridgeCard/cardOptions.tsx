@@ -18,7 +18,6 @@ import {
   CardProviders,
   CardStatus,
   GlobalContextType,
-  OTPType,
 } from '../../../constants/enum';
 import * as Sentry from '@sentry/react-native';
 import useAxios from '../../../core/HttpRequest';
@@ -42,29 +41,11 @@ export default function BridgeCardOptionsScreen(props: {
   const cardProfile: CardProfile = globalContext.globalState.cardProfile;
   const [isStatusLoading, setIsStatusLoading] = useState(false);
   const { showModal, hideModal } = useGlobalModalContext();
-  const { patchWithAuth, getWithAuth } = useAxios();
-  const [isPhoneVerified, setIsPhoneVerified] = useState<boolean>(true);
+  const { patchWithAuth } = useAxios();
+  const isPhoneVerified = cardProfile.pc?.phoneVerified ?? false;
   const [cardUpdateToStatus, setCardUpdateToStatus] = useState(
     card.status === CardStatus.ACTIVE ? 'lock' : 'unlock',
   );
-
-  useEffect(() => {
-    void getApplication();
-  }, []);
-
-  const getApplication = async () => {
-    try {
-      const response = await getWithAuth(
-        `/v1/cards/${CardProviders.PAYCADDY}/application`,
-      );
-      if (!response.isError) {
-        const { data } = response;
-        setIsPhoneVerified(data.phoneVerified);
-      }
-    } catch (e) {
-      Sentry.captureException(e);
-    }
-  };
 
   const onCardStatusChange = async (blockCard: boolean) => {
     hideModal();
@@ -164,7 +145,7 @@ export default function BridgeCardOptionsScreen(props: {
           />
         )}
       </CyDView>
-      {isPhoneVerified && (
+      {!isPhoneVerified && (
         <CyDTouchView
           onPress={() =>
             navigation.navigate(screenTitle.PHONE_NUMBER_VERIFICATION_SCREEN)

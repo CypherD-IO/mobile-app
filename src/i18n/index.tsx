@@ -396,7 +396,7 @@ const resources = {
         'I confirm that I have read, understood and agree to CypherD’s',
       CARD_SIGNUP_PAGE1_TITLE: 'Let’s get to know you better',
       CARD_SIGNUP_COMPLETE_TEXT:
-        'Your card application is in process. We will notify you when there is a status update.',
+        'Your card application is submitted successfully. Please proceed with KYC',
       CONGRATULATIONS_INIT_CAPS: 'Congratulations',
       BILLING_ADDRESS: 'Add Your Billing Address',
       CONFIRM_USER_IDENTITY: 'Confirm Your Identity',
@@ -1044,7 +1044,7 @@ const resources = {
         'If you are facing any trouble with verifying your phone number',
       CONTACT_CYPHER_SUPPORT: 'Contact Cypher Support',
       VERIFY_LATER: 'Verify Later',
-      CYPHER_CARD_REFERRALS: 'Invite a Friend',
+      CYPHER_CARD_REFERRALS: 'Card Referrals',
     },
   },
 };
