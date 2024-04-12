@@ -1,5 +1,5 @@
 import { t } from 'i18next';
-import React, { useContext, useState } from 'react';
+import React, { useContext, useEffect, useState } from 'react';
 import { StyleSheet } from 'react-native';
 import { GlobalContext } from '../../../core/globalContext';
 import {
@@ -18,6 +18,7 @@ import {
   CardProviders,
   CardStatus,
   GlobalContextType,
+  OTPType,
 } from '../../../constants/enum';
 import * as Sentry from '@sentry/react-native';
 import useAxios from '../../../core/HttpRequest';
@@ -41,10 +42,29 @@ export default function BridgeCardOptionsScreen(props: {
   const cardProfile: CardProfile = globalContext.globalState.cardProfile;
   const [isStatusLoading, setIsStatusLoading] = useState(false);
   const { showModal, hideModal } = useGlobalModalContext();
-  const { patchWithAuth } = useAxios();
+  const { patchWithAuth, getWithAuth } = useAxios();
+  const [isPhoneVerified, setIsPhoneVerified] = useState<boolean>(true);
   const [cardUpdateToStatus, setCardUpdateToStatus] = useState(
     card.status === CardStatus.ACTIVE ? 'lock' : 'unlock',
   );
+
+  useEffect(() => {
+    void getApplication();
+  }, []);
+
+  const getApplication = async () => {
+    try {
+      const response = await getWithAuth(
+        `/v1/cards/${CardProviders.PAYCADDY}/application`,
+      );
+      if (!response.isError) {
+        const { data } = response;
+        setIsPhoneVerified(data.phoneVerified);
+      }
+    } catch (e) {
+      Sentry.captureException(e);
+    }
+  };
 
   const onCardStatusChange = async (blockCard: boolean) => {
     hideModal();
@@ -144,6 +164,22 @@ export default function BridgeCardOptionsScreen(props: {
           />
         )}
       </CyDView>
+      {isPhoneVerified && (
+        <CyDTouchView
+          onPress={() =>
+            navigation.navigate(screenTitle.PHONE_NUMBER_VERIFICATION_SCREEN)
+          }
+          className='flex flex-row justify-between align-center ml-[20px] mr-[4px] pt-[20px] pb-[15px] border-b-[1px] border-sepratorColor'>
+          <CyDText className='text-[16px] font-bold'>
+            {t<string>('VERIFY_PHONE_NUMBER_INIT_CAPS')}
+          </CyDText>
+          <CyDImage
+            source={AppImages.OPTIONS_ARROW}
+            className={'w-[15%] h-[18px]'}
+            resizeMode={'contain'}
+          />
+        </CyDTouchView>
+      )}
       {!isCardBlocked && card.type === 'physical' && (
         <CyDTouchView
           onPress={() =>

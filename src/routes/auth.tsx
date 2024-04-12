@@ -97,6 +97,7 @@ import ImportWalletOptions from '../containers/Options/importWalletOptions';
 import CardNotificationSettings from '../containers/DebitCard/bridgeCard/cardNotificationSettings';
 import EnterPrivateKey from '../containers/Auth/EnterPrivateKey';
 import { ChooseWalletIndex } from '../containers/Auth/ChooseWalletIndex';
+import PhoneNumberVerificationScreen from '../containers/DebitCard/bridgeCard/verifyPhoneNumber';
 
 const { DynamicImage, DynamicButton } = require('../styles');
 
@@ -875,6 +876,21 @@ export function DebitCardStackScreen({ navigation }) {
           headerTransparent: false,
           headerShadowVisible: false,
           title: 'Verify OTP',
+          headerTitleAlign: 'center',
+          headerTitleStyle: portfolioStackScreenHeaderTitleStyles,
+          headerTintColor: Colors.primaryTextColor,
+          headerBackTitleVisible: false,
+          headerLeft: props => defaultHeaderLeft(navigation),
+        })}
+      />
+
+      <FundCardStack.Screen
+        name={screenTitle.PHONE_NUMBER_VERIFICATION_SCREEN}
+        component={PhoneNumberVerificationScreen}
+        options={({ navigation }) => ({
+          headerTransparent: false,
+          headerShadowVisible: false,
+          title: 'Verify Phone Number',
           headerTitleAlign: 'center',
           headerTitleStyle: portfolioStackScreenHeaderTitleStyles,
           headerTintColor: Colors.primaryTextColor,

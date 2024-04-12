@@ -21,18 +21,18 @@ import Loading from '../../components/v2/loading';
 import LottieView from 'lottie-react-native';
 import Toast from 'react-native-toast-message';
 import { screenTitle } from '../../constants';
-import { isAndroid, isIOS } from '../../misc/checkers';
-import { concatErrorMessagesFromArray } from '../../core/util';
+import { isAndroid } from '../../misc/checkers';
 import {
   OTPType,
   GlobalContextType,
   CardProviders,
+  ButtonType,
 } from '../../constants/enum';
 import { useGlobalModalContext } from '../../components/v2/GlobalModal';
 import { getWalletProfile } from '../../core/card';
-import { hostWorker } from '../../global';
 import { countryMaster } from '../../../assets/datasets/countryMaster';
 import useAxios from '../../core/HttpRequest';
+import Button from '../../components/v2/button';
 
 export default function OTPVerificationScreen({ navigation }) {
   const globalContext = useContext<any>(GlobalContext);
@@ -63,7 +63,7 @@ export default function OTPVerificationScreen({ navigation }) {
   });
 
   useEffect(() => {
-    void getProfile();
+    void getApplication();
   }, []);
 
   useEffect(() => {
@@ -72,7 +72,7 @@ export default function OTPVerificationScreen({ navigation }) {
     }
   }, [resendInterval]);
 
-  const getProfile = async () => {
+  const getApplication = async () => {
     setLoading(true);
     try {
       const response = await getWithAuth(
@@ -94,11 +94,11 @@ export default function OTPVerificationScreen({ navigation }) {
           email: data.email,
         };
         setFormData(profileData);
-        if (!data.phoneVerified) {
-          void triggerOTP(OTPType.PHONE);
-        }
-        if (data.phoneVerified && !data.emailVerfied) {
+        if (!data.emailVerfied) {
           void triggerOTP(OTPType.EMAIL);
+        }
+        if (data.emailVerfied && !data.phoneVerified) {
+          void triggerOTP(OTPType.PHONE);
         }
         setPhoneOTPVerified(data.phoneVerified);
         setEmailOTPVerified(data.emailVerfied);
@@ -115,7 +115,13 @@ export default function OTPVerificationScreen({ navigation }) {
     setVerifyingOTP(false);
   };
 
-  const verifyOTPByType = async (otp: string | number) => {
+  const verifyOTPByType = async ({
+    otp,
+    shouldSkip = false,
+  }: {
+    otp?: string | number;
+    shouldSkip?: boolean;
+  }) => {
     setVerifyingOTP(true);
     try {
       let OTPVerificationUrl = `/v1/cards/${CardProviders.PAYCADDY}/application/verify/`;
@@ -124,9 +130,9 @@ export default function OTPVerificationScreen({ navigation }) {
       } else if (isPhoneOTPVerified && !isEmailOTPVerified) {
         OTPVerificationUrl += OTPType.EMAIL;
       }
-
       const response = await postWithAuth(OTPVerificationUrl, {
-        otp: Number(otp),
+        otp: otp ? Number(otp) : undefined,
+        toSkip: shouldSkip,
       });
       if (!response.isError) {
         if (!isPhoneOTPVerified) {
@@ -168,8 +174,8 @@ export default function OTPVerificationScreen({ navigation }) {
     }
   };
 
-  const getOTP = async otp => {
-    await verifyOTPByType(otp);
+  const getOTP = async (otp: string | number) => {
+    await verifyOTPByType({ otp });
   };
 
   const resendCode = async (type: string) => {
@@ -416,8 +422,8 @@ export default function OTPVerificationScreen({ navigation }) {
                 className={clsx(
                   'absolute mt-[14px] ml-[26px] w-[3px] bg-paleGrey',
                   {
-                    'h-[230px]': !isPhoneOTPVerified,
-                    'h-[141px]': isPhoneOTPVerified,
+                    'h-[180px]': !isEmailOTPVerified,
+                    'h-[120px]': isEmailOTPVerified,
                     'h-[248px]': invalidOTP !== '',
                   },
                 )}
@@ -426,9 +432,9 @@ export default function OTPVerificationScreen({ navigation }) {
                 className={clsx(
                   'absolute ml-[21px] rounded-[50px] w-[14px] h-[14px]',
                   {
-                    'mt-[243px] border-[1px] border-appColor':
-                      !isPhoneOTPVerified,
-                    'mt-[148px] bg-appColor': isPhoneOTPVerified,
+                    'mt-[195px] border-[1px] border-appColor':
+                      !isEmailOTPVerified,
+                    'mt-[135px] bg-appColor': isEmailOTPVerified,
                     'mt-[260px]': invalidOTP !== '',
                   },
                 )}
@@ -436,126 +442,120 @@ export default function OTPVerificationScreen({ navigation }) {
             </CyDView>
             <CyDView className={'w-[93%]'}>
               <CyDView className={'mx-[22px]'}>
-                <CyDText className={'text-[26px] font-bold mt-[-6px]'}>
-                  {t<string>('VERIFY_PHONE_NO_HEADING')}
+                <CyDText className={clsx('text-[26px] font-bold', {})}>
+                  {t<string>('VERIFY_EMAIL_ID_HEADING')}
                 </CyDText>
-                {!isPhoneOTPVerified && (
-                  <CyDView>
-                    <CyDText className={'text-[17px] mt-[12px] font-semibold'}>
-                      {t<string>('SENT_AUTHENTICATION_CODE_TO') +
-                        ' ' +
-                        formData.phoneNumber}
-                    </CyDText>
-                    {!verifyingOTP && (
-                      <CyDView className={'flex flex-row justify-center'}>
-                        <OtpInput
-                          pinCount={4}
-                          getOtp={otp => {
-                            void getOTP(otp);
-                          }}
-                          placeholder={t('ENTER_OTP')}
-                        />
-                      </CyDView>
-                    )}
-                    {verifyingOTP && (
-                      <CyDView
-                        className={
-                          'flex items-center justify-between  h-[65px]'
-                        }>
-                        <LottieView
-                          source={AppImages.LOADER_TRANSPARENT}
-                          autoPlay
-                          loop
-                          style={styles.lottie40}
-                        />
-                      </CyDView>
-                    )}
-                    {invalidOTP !== '' && (
-                      <CyDView>
-                        <CyDText
-                          className={'text-redOffColor font-bold text-center'}>
-                          {invalidOTP}
-                        </CyDText>
-                      </CyDView>
-                    )}
-                    <CyDView
-                      className={
-                        'flex flex-row justify-between mt-[12px] mr-[12px]'
-                      }>
-                      <CyDTouchView
-                        className={'flex flex-row items-center'}
-                        disabled={resendingCode || resendInterval !== 0}
-                        onPress={() => {
-                          void resendCode(OTPType.PHONE);
-                        }}>
-                        <CyDText
-                          className={
-                            'font-bold underline decoration-solid underline-offset-4'
-                          }>
-                          {t<string>('RESEND_CODE_INIT_CAPS')}
-                        </CyDText>
-                        {resendingCode && (
+                <CyDView className={'w-full'}>
+                  {!isEmailOTPVerified && (
+                    <CyDView>
+                      <CyDText
+                        className={'text-[17px] mt-[12px] font-semibold'}>
+                        {t<string>('SENT_AUTHENTICATION_CODE_TO') +
+                          ' ' +
+                          formData.email}
+                      </CyDText>
+                      {!verifyingOTP && (
+                        <CyDView className={'flex flex-row justify-center'}>
+                          <OtpInput
+                            pinCount={4}
+                            getOtp={otp => {
+                              void getOTP(otp);
+                            }}
+                            placeholder={t('ENTER_OTP')}
+                          />
+                        </CyDView>
+                      )}
+                      {verifyingOTP && (
+                        <CyDView
+                          className={'flex items-center justify-between'}>
                           <LottieView
                             source={AppImages.LOADER_TRANSPARENT}
                             autoPlay
                             loop
-                            style={styles.lottie25}
+                            style={styles.lottie40}
                           />
-                        )}
-                        {resendInterval !== 0 && (
-                          <CyDText>
-                            {'in ' + String(resendInterval) + ' sec'}
+                        </CyDView>
+                      )}
+                      {invalidOTP !== '' && (
+                        <CyDView>
+                          <CyDText
+                            className={
+                              'text-redOffColor font-bold text-center'
+                            }>
+                            {invalidOTP}
                           </CyDText>
-                        )}
-                      </CyDTouchView>
-                      <CyDTouchView
-                        onPress={() => {
-                          setChangeNumberModalVisible(true);
-                        }}>
-                        <CyDText
-                          className={
-                            'font-bold underline decoration-solid underline-offset-4'
-                          }>
-                          {t<string>('CHANGE_NUMBER_INIT_CAPS')}
-                        </CyDText>
-                      </CyDTouchView>
+                        </CyDView>
+                      )}
+                      <CyDView
+                        className={
+                          'flex flex-row justify-between items-center mt-[12px] mr-[12px]'
+                        }>
+                        <CyDTouchView
+                          className={'flex flex-row items-center'}
+                          disabled={resendingCode || resendInterval !== 0}
+                          onPress={() => {
+                            void resendCode(OTPType.EMAIL);
+                          }}>
+                          <CyDText
+                            className={
+                              'font-bold underline decoration-solid underline-offset-4'
+                            }>
+                            {t<string>('RESEND_CODE_INIT_CAPS')}
+                          </CyDText>
+                          {resendingCode && (
+                            <LottieView
+                              source={AppImages.LOADER_TRANSPARENT}
+                              autoPlay
+                              loop
+                              style={styles.lottie25}
+                            />
+                          )}
+                          {resendInterval !== 0 && (
+                            <CyDText>
+                              {'in ' + String(resendInterval) + ' sec'}
+                            </CyDText>
+                          )}
+                        </CyDTouchView>
+                        <CyDTouchView
+                          onPress={() => {
+                            setChangeEmailModalVisible(true);
+                          }}>
+                          <CyDText
+                            className={
+                              'font-bold underline decoration-solid underline-offset-4'
+                            }>
+                            {t<string>('CHANGE_EMAIL_INIT_CAPS')}
+                          </CyDText>
+                        </CyDTouchView>
+                      </CyDView>
                     </CyDView>
-                  </CyDView>
-                )}
-                {isPhoneOTPVerified && (
-                  <CyDView
-                    className={
-                      'flex flex-row justify-between items-center bg-paleDarkGreen mt-[10px] px-[8px] py-[10px] rounded-[5px]'
-                    }>
-                    <CyDText className={'text-[16px] pl-[8px] font-bold'}>
-                      {formData.phoneNumber}
-                    </CyDText>
-                    <CyDImage source={AppImages.DARK_GREEN_BACKGROUND_TICK} />
-                  </CyDView>
-                )}
-                <CyDView
-                  className={
-                    'h-[1px] w-[100%] bg-portfolioBorderColor mt-[25px]'
-                  }
-                />
+                  )}
+                  {isEmailOTPVerified && (
+                    <CyDView
+                      className={
+                        'flex flex-row justify-between items-center bg-paleDarkGreen mt-[10px] px-[8px] py-[10px] rounded-[5px]'
+                      }>
+                      <CyDText className={'text-[16px] pl-[8px] font-bold'}>
+                        {formData.email}
+                      </CyDText>
+                      <CyDImage source={AppImages.DARK_GREEN_BACKGROUND_TICK} />
+                    </CyDView>
+                  )}
+                </CyDView>
               </CyDView>
-              <CyDView className={'mx-[22px]'}>
-                <CyDText
-                  className={clsx('text-[26px] font-bold', {
-                    'mt-[23px]': isIOS(),
-                    'mt-[33px]': isAndroid(),
-                  })}>
-                  {t<string>('VERIFY_EMAIL_ID_HEADING')}
-                </CyDText>
-                {isPhoneOTPVerified && (
-                  <CyDView className={'w-full'}>
-                    {!isEmailOTPVerified && (
+              <CyDView className={'mx-[22px] mt-[36px]'}>
+                {isEmailOTPVerified && (
+                  <CyDView>
+                    <CyDText className={'text-[26px] font-bold mt-[-6px]'}>
+                      {t<string>('VERIFY_PHONE_NO_HEADING')}
+                    </CyDText>
+                    {!isPhoneOTPVerified && (
                       <CyDView>
                         <CyDText
                           className={'text-[17px] mt-[12px] font-semibold'}>
                           {t<string>('SENT_AUTHENTICATION_CODE_TO') +
                             ' ' +
-                            formData.email}
+                            formData.phoneNumber}
                         </CyDText>
                         {!verifyingOTP && (
                           <CyDView className={'flex flex-row justify-center'}>
@@ -570,7 +570,9 @@ export default function OTPVerificationScreen({ navigation }) {
                         )}
                         {verifyingOTP && (
                           <CyDView
-                            className={'flex items-center justify-between'}>
+                            className={
+                              'flex items-center justify-between  h-[65px]'
+                            }>
                             <LottieView
                               source={AppImages.LOADER_TRANSPARENT}
                               autoPlay
@@ -591,13 +593,13 @@ export default function OTPVerificationScreen({ navigation }) {
                         )}
                         <CyDView
                           className={
-                            'flex flex-row justify-between items-center mt-[12px] mr-[12px]'
+                            'flex flex-row justify-between mt-[12px] mx-[1px]'
                           }>
                           <CyDTouchView
                             className={'flex flex-row items-center'}
                             disabled={resendingCode || resendInterval !== 0}
                             onPress={() => {
-                              void resendCode(OTPType.EMAIL);
+                              void resendCode(OTPType.PHONE);
                             }}>
                             <CyDText
                               className={
@@ -621,25 +623,49 @@ export default function OTPVerificationScreen({ navigation }) {
                           </CyDTouchView>
                           <CyDTouchView
                             onPress={() => {
-                              setChangeEmailModalVisible(true);
+                              setChangeNumberModalVisible(true);
                             }}>
                             <CyDText
                               className={
                                 'font-bold underline decoration-solid underline-offset-4'
                               }>
-                              {t<string>('CHANGE_EMAIL_INIT_CAPS')}
+                              {t<string>('CHANGE_NUMBER_INIT_CAPS')}
                             </CyDText>
                           </CyDTouchView>
                         </CyDView>
+                        <Button
+                          title={t('VERIFY_LATER')}
+                          onPress={() => {
+                            showModal('state', {
+                              type: 'warning',
+                              title: t('VERIFY_LATER'),
+                              description: t('PHONE_VERIFY_LATER_DESC'),
+                              onSuccess: () => {
+                                void verifyOTPByType({ shouldSkip: true });
+                                hideModal();
+                              },
+                              onFailure: hideModal,
+                            });
+                          }}
+                          disabled={verifyingOTP}
+                          type={ButtonType.SECONDARY}
+                          style={'mt-[16px] py-[10px]'}
+                        />
+                        {/* <CyDText className='flex flex-row items-start mt-[12px]'>
+                          <CyDText className='font-bold underline'>
+                            Note:{' '}
+                          </CyDText>
+                          <CyDText>{t('PHONE_VERIFY_LATER_DESC')}</CyDText>
+                        </CyDText> */}
                       </CyDView>
                     )}
-                    {isEmailOTPVerified && (
+                    {isPhoneOTPVerified && (
                       <CyDView
                         className={
                           'flex flex-row justify-between items-center bg-paleDarkGreen mt-[10px] px-[8px] py-[10px] rounded-[5px]'
                         }>
                         <CyDText className={'text-[16px] pl-[8px] font-bold'}>
-                          {formData.email}
+                          {formData.phoneNumber}
                         </CyDText>
                         <CyDImage
                           source={AppImages.DARK_GREEN_BACKGROUND_TICK}
@@ -648,22 +674,24 @@ export default function OTPVerificationScreen({ navigation }) {
                     )}
                   </CyDView>
                 )}
-                {isPhoneOTPVerified && isEmailOTPVerified && (
-                  <CyDView>
-                    <CyDTouchView
-                      onPress={() => {
-                        void submitVerification();
-                      }}
-                      className={
-                        'bg-appColor py-[20px] flex flex-row justify-center items-center rounded-[12px] w-[100%] mx-auto mt-[25px]'
-                      }>
-                      <CyDText className={'text-center font-bold'}>
-                        {t<string>('PROCEED')}
-                      </CyDText>
-                    </CyDTouchView>
-                  </CyDView>
-                )}
+
+                <CyDView
+                  className={
+                    'h-[1px] w-[100%] bg-portfolioBorderColor mt-[25px]'
+                  }
+                />
               </CyDView>
+              {isPhoneOTPVerified && isEmailOTPVerified && (
+                <CyDView className='mx-[20px] mt-[16px]'>
+                  <Button
+                    title={t<string>('PROCEED')}
+                    style={'h-[54px]'}
+                    onPress={() => {
+                      void submitVerification();
+                    }}
+                  />
+                </CyDView>
+              )}
             </CyDView>
           </CyDView>
         </CyDSafeAreaView>
