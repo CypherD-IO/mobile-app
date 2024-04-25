@@ -963,7 +963,7 @@ const resources = {
       BROWSER_WALLET_CONNECT_ERROR:
         'Unable to connect when connected via wallet coonect. Import wallet with seed phrase to connect to a dApp from browser.',
       CONNECT_A_WALLET: 'Connect A Wallet',
-      CARD_NOTIFICATION_SETTINGS: 'Card Notification Settings',
+      CARD_NOTIFICATION_SETTINGS: 'Notification Settings',
       TOGGLE_EMAIL_NOTIFICATION_SUCCESS:
         'Email Notification Status Update Success',
       EMAIL_NOTIFICATION_TURNED_ON:
@@ -1045,6 +1045,17 @@ const resources = {
       CONTACT_CYPHER_SUPPORT: 'Contact Cypher Support',
       VERIFY_LATER: 'Verify Later',
       CYPHER_CARD_REFERRALS: 'Card Referrals',
+      TELEGRAM_NOTIFICATION: 'Telegram Notification',
+      TOGGLE_TELEGRAM_NOTIFICATION_SUCCESS:
+        'Telegram Notification Status Update Success',
+      TELEGRAM_NOTIFICATION_TURNED_ON:
+        'Authentication Successful. CypherHQBot is added to your telegram',
+      TELEGRAM_NOTIFICATION_TURNED_OFF:
+        'Telegram Notifications turned off Successfully',
+      ERROR_IN_TOGGLE_TELEGRAM: 'Telegram Notification Status Update Failed',
+      TOGGLE_TELEGRAM_NOTIFICATION_FAIL:
+        'Unable to change Teleegram Notification status. Please try again later!',
+      AUTHENTICATION_FAILED: 'Authentication Failed',
     },
   },
 };

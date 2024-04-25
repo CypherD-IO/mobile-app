@@ -151,7 +151,7 @@ export default function useInitializer() {
       !devMode &&
       walletAddresses.ethereumAddress !== _NO_CYPHERD_CREDENTIAL_AVAILABLE_
     ) {
-      Intercom.registerIdentifiedUser({
+      Intercom.loginUserWithUserAttributes({
         userId: walletAddresses.ethereumAddress,
       }).catch(() => {
         // throws error if user is already registered
@@ -381,7 +381,7 @@ export default function useInitializer() {
                 algo: '',
               },
             });
-            Intercom.registerIdentifiedUser({
+            Intercom.loginUserWithUserAttributes({
               userId: ethereum.observerId,
             }).catch(() => {
               // throws error if user is already registered
