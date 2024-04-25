@@ -118,14 +118,12 @@ export default function SendTo(props: { navigation?: any; route?: any }) {
   const {
     valueForUsd,
     tokenData,
-    sendAddress = '',
   }: {
     valueForUsd: string;
     tokenData: Holding;
-    sendAddress: string;
   } = route.params;
   const [Data, setData] = useState<string[]>([]);
-  const [addressText, setAddressText] = useState<string>(sendAddress);
+  const [addressText, setAddressText] = useState<string>('');
   const addressRef = useRef('');
   const ensRef = useRef<string | null>(null);
   const [isAddressValid, setIsAddressValid] = useState(true);

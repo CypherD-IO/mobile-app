@@ -332,6 +332,7 @@ const AddressProfile = props => {
 
   const onChooseToken = (item: any) => {
     navigation.navigate(screenTitle.ENTER_AMOUNT, {
+      navigation,
       tokenData: item,
       sendAddress,
     });
