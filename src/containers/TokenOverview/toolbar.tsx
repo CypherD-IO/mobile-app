@@ -86,6 +86,7 @@ export default function TokenOverviewToolBar({
           className={'flex items-center justify-center'}
           onPress={() => {
             navigation.navigate(screenTitle.ENTER_AMOUNT, {
+              navigation,
               tokenData,
             });
           }}>

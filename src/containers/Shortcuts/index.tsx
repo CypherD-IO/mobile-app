@@ -18,12 +18,10 @@ import {
   CHAIN_AVALANCHE,
   FundWalletAddressType,
   ChainBackendNames,
-  ALL_CHAINS,
   CHAIN_POLYGON,
   CHAIN_ARBITRUM,
   CHAIN_FTM,
   CHAIN_BSC,
-  CHAIN_OPTIMISM,
 } from '../../constants/server';
 import ChooseChainModal from '../../components/v2/chooseChainModal';
 import {
@@ -40,8 +38,6 @@ import LottieView from 'lottie-react-native';
 import analytics from '@react-native-firebase/analytics';
 import { useTranslation } from 'react-i18next';
 import { AppState } from 'react-native';
-import ChooseTokenModal from '../../components/v2/chooseTokenModal';
-import clsx from 'clsx';
 import useIsSignable from '../../hooks/useIsSignable';
 import { ActivityType } from '../../reducers/activity_reducer';
 import { isIOS } from '../../misc/checkers';
@@ -283,8 +279,6 @@ export default function ShortcutsModal({ navigationRef }) {
     sellOptionsData[0],
   );
   const [chooseChainModal, setChooseChainModal] = useState<boolean>(false);
-  const [chooseTokenModal, setChooseTokenModal] = useState<boolean>(false);
-  const [tokenData, setTokenData] = useState<any>([]);
   const [navigationPath, setNavigationPath] = useState<string>('');
   const [selectedChain, setSelectedChain] = useState<Chain>(CHAIN_ETH);
   const [selectedOption, setSelectedOption] = useState<ShortcutsTitle>(
@@ -313,8 +307,7 @@ export default function ShortcutsModal({ navigationRef }) {
         setTimeout(() => setSellModalVisible(true), 250);
         break;
       case ShortcutsTitle.SEND:
-        setNavigationPath(item.screenTitle);
-        setTimeout(() => setChooseTokenModal(true), 250);
+        navigationRef.navigate(item.screenTitle);
         break;
       case ShortcutsTitle.RECEIVE:
         setChainData(getAvailableChains(hdWallet));
@@ -634,22 +627,7 @@ export default function ShortcutsModal({ navigationRef }) {
       );
     } else {
       setSelectedChain(item);
-      const tokenHoldingData =
-        portfolioState.statePortfolio.tokenPortfolio[
-          item.backendName.toLowerCase()
-        ].holdings;
-      setTokenData(tokenHoldingData);
-      setTimeout(() => setChooseTokenModal(true), MODAL_HIDE_TIMEOUT_250);
     }
-  };
-
-  const onChooseToken = (item: any) => {
-    setTimeout(
-      () => {
-        navigationRef.navigate(navigationPath, { tokenData: item });
-      },
-      isIOS() ? MODAL_HIDE_TIMEOUT_250 : 600,
-    );
   };
 
   const handleAppStateChange = (nextAppState: string) => {
@@ -913,18 +891,6 @@ export default function ShortcutsModal({ navigationRef }) {
         isClosable={true}
         animationOut={'slideOutDown'}
         animationIn={'slideInUp'}
-      />
-
-      <ChooseTokenModal
-        isChooseTokenModalVisible={chooseTokenModal}
-        tokenList={totalHoldings.length ? totalHoldings : []}
-        onSelectingToken={token => {
-          setChooseTokenModal(false);
-          onChooseToken(token);
-        }}
-        onCancel={() => {
-          setChooseTokenModal(false);
-        }}
       />
 
       <CyDView className={isIOS() ? 'mx-[12px]' : 'mx-[12px] mt-[4px]'}>
