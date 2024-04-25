@@ -313,8 +313,6 @@ export default function CardNotificationSettings(props: {
 
   const onTelegramAuth = () => {
     setIsTelegramAuthModalVisible(true);
-    // void Linking.openURL('http://192.168.0.104/telegram/auth?type=app');
-    // void Linking.openURL('https://cypherhq.io/telegram/auth?type=app');
   };
 
   const onWebViewMessage = async (event: any) => {
