@@ -62,7 +62,7 @@ export const WalletConnectListener: React.FC = ({ children }) => {
   };
 
   const registerIntercomUser = () => {
-    Intercom.registerIdentifiedUser({
+    Intercom.loginUserWithUserAttributes({
       userId: address,
     }).catch(() => {
       // throws error if user is already registered

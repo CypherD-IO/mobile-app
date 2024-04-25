@@ -342,6 +342,7 @@ const NO_TRANSACTIONS = { uri: `${S3_BUCKET_URL_ICONS}/noTransactions.png` };
 const DECLINE = { uri: `${S3_BUCKET_URL_ICONS}/decline.png` };
 const PENDING = { uri: `${S3_BUCKET_URL_ICONS}/pending.png` };
 const CORRECT_WHEAT = { uri: `${S3_BUCKET_URL_ICONS}/correctWheat.png` };
+const TELEGRAM_BLUE = { uri: `${S3_BUCKET_URL_ICONS}/telegram_blue.png` };
 
 const AppImages = {
   PLUS,
@@ -679,5 +680,6 @@ const AppImages = {
   DECLINE,
   PENDING,
   CORRECT_WHEAT,
+  TELEGRAM_BLUE,
 };
 export default AppImages;

@@ -113,7 +113,7 @@ export default function useAxios() {
           response.data = data;
           response.status = status;
         } else if (method === 'POST_WITHOUT_AUTH') {
-          const { data, status } = await axios.post(url, reqBody);
+          const { data, status } = await axios.post(url, body);
           response.data = data;
           response.status = status;
         } else if (method === 'PUT') {

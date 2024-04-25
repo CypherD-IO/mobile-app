@@ -26,7 +26,7 @@ export type RpcResponseDetail = {
 };
 export interface GlobalStateDef {
   rpcEndpoints?: RpcResponseDetail;
-  token?: string;
+  token: string;
   cardProfile?: CardProfile;
   ibc?: boolean;
 }

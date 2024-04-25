@@ -289,9 +289,11 @@ export enum CARD_ALERT_TYPES {
   CARD_TRANSACTION_SMS = 'cardTransactionSms',
   CARD_TRANSACTION_EMAIL = 'cardTransactionEmail',
   CARD_TRANSACTION_FCM = 'cardTransactionFcm',
+  CARD_TRANSACTION_TELEGRAM = 'cardTransactionTelegram',
 }
 
 export enum CARD_NOTIFICATION_TYPES {
+  TELEGRAM = 'telegram',
   EMAIL = 'email',
   SMS = 'sms',
   FCM = 'fcm',
