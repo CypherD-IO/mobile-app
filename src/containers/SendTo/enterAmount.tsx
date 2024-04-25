@@ -37,29 +37,39 @@ import CyDTokenAmount from '../../components/v2/tokenAmount';
 import CyDTokenValue from '../../components/v2/tokenValue';
 import Button from '../../components/v2/button';
 import { ButtonType } from '../../constants/enum';
+import ChooseTokenModal from '../../components/v2/chooseTokenModal';
+import { useIsFocused } from '@react-navigation/native';
+import { CHOOSE_TOKEN_MODAL_TIMEOUT } from '../../constants/timeOuts';
+import { TokenMeta } from '../../models/tokenMetaData.model';
+import { get } from 'lodash';
 
 const { CText, DynamicView, DynamicImage } = require('../../styles');
 
-export default function EnterAmount(props) {
+export default function EnterAmount(props: any) {
   // NOTE: DEFINE VARIABLE 🍎🍎🍎🍎🍎🍎
   const { t } = useTranslation();
-  const { route } = props;
-  const { tokenData }: { tokenData: Holding } = route.params;
-  const { sendAddress = '' } = route.params;
+  const { navigation } = props;
+  const portfolioState = useContext<any>(PortfolioContext);
+  const [tokenData, setTokenData] = useState<TokenMeta>(
+    portfolioState.statePortfolio.tokenPortfolio.totalHoldings[0],
+  );
+  // const { tokenData }: { tokenData: Holding } = route.params;
   const [valueForUsd, setValueForUsd] = useState('0.00'); // native token amount
   const [usdValue, setUsdValue] = useState<string>('0.00');
   const [cryptoValue, setCryptoValue] = useState<string>('0.00');
   const [enterCryptoAmount, setEnterCryptoAmount] = useState<boolean>(true);
+  const [isChooseTokenVisible, setIsChooseTokenVisible] =
+    useState<boolean>(false);
   const currencyFormatter = new Intl.NumberFormat('en-US', {
     style: 'currency',
     currency: 'USD',
   });
-  const portfolioState = useContext<any>(PortfolioContext);
+  const isFocused = useIsFocused();
 
   const { showModal, hideModal } = useGlobalModalContext();
 
   const handleBackButton = () => {
-    props.navigation.goBack();
+    navigation.goBack();
     return true;
   };
 
@@ -69,6 +79,18 @@ export default function EnterAmount(props) {
       BackHandler.removeEventListener('hardwareBackPress', handleBackButton);
     };
   }, []);
+
+  useEffect(() => {
+    if (isFocused) {
+      if (props.route.params?.tokenData) {
+        setTokenData(props.route.params.tokenData);
+      } else {
+        setTimeout(() => {
+          setIsChooseTokenVisible(true);
+        }, CHOOSE_TOKEN_MODAL_TIMEOUT);
+      }
+    }
+  }, [isFocused]);
 
   const formatAmount = (amount: string) => {
     if (amount.includes('.')) {
@@ -84,7 +106,7 @@ export default function EnterAmount(props) {
     return (
       <BuyOrBridge
         text={text}
-        navigation={props.navigation}
+        navigation={navigation}
         portfolioState={portfolioState}
         hideModal={hideModal}
       />
@@ -93,7 +115,7 @@ export default function EnterAmount(props) {
 
   const isGasReservedForNative = (cryptoValue: string) => {
     const nativeTokenSymbol =
-      NativeTokenMapping[tokenData.chainDetails.symbol] ||
+      get(NativeTokenMapping, tokenData.chainDetails.symbol) ||
       tokenData.chainDetails.symbol;
     const isNative = tokenData.symbol === nativeTokenSymbol;
     if (!isNative) return true;
@@ -102,18 +124,18 @@ export default function EnterAmount(props) {
       : 0;
     return (
       parseFloat(
-        (parseFloat(tokenData.actualBalance) - gasReserved).toFixed(6),
+        (parseFloat(String(tokenData.actualBalance)) - gasReserved).toFixed(6),
       ) >= parseFloat(cryptoValue)
     );
   };
 
   const haveEnoughNativeBalance = (cryptoValue: string) => {
-    const { backendName, symbol } = tokenData?.chainDetails;
+    const { backendName, symbol } = tokenData.chainDetails;
     if (GASLESS_CHAINS.includes(backendName)) {
       return false;
     }
     const nativeBackendName = backendName;
-    const nativeTokenSymbol = NativeTokenMapping[symbol] || symbol;
+    const nativeTokenSymbol = get(NativeTokenMapping, symbol) || symbol;
     const nativeTokenBalance =
       getNativeToken(
         nativeTokenSymbol,
@@ -165,10 +187,9 @@ export default function EnterAmount(props) {
         onFailure: hideModal,
       });
     } else {
-      props.navigation.navigate(C.screenTitle.SEND_TO, {
+      navigation.navigate(C.screenTitle.SEND_TO, {
         valueForUsd: cryptoValue,
         tokenData,
-        sendAddress,
       });
     }
   };
@@ -176,6 +197,18 @@ export default function EnterAmount(props) {
   // NOTE: LIFE CYCLE METHOD 🍎🍎🍎🍎
   return (
     <CyDSafeAreaView className='flex-1 bg-white'>
+      <ChooseTokenModal
+        isChooseTokenModalVisible={isChooseTokenVisible}
+        tokenList={portfolioState.statePortfolio.tokenPortfolio.totalHoldings}
+        onSelectingToken={token => {
+          setIsChooseTokenVisible(false);
+          setTokenData(token);
+        }}
+        onCancel={() => {
+          setIsChooseTokenVisible(false);
+          navigation.goBack();
+        }}
+      />
       <CyDView className={'bg-white w-full'}>
         <CyDView>
           <CyDView
@@ -271,7 +304,6 @@ export default function EnterAmount(props) {
                     }
                   }}
                   value={valueForUsd}
-                  autoFocus={true}
                   onFocus={() => {
                     if (valueForUsd === '0.00') setValueForUsd('');
                   }}
