@@ -1717,7 +1717,9 @@ export default function Bridge(props: { navigation?: any; route?: any }) {
             amount: cryptoAmount.toString(),
           },
         ],
-        toToken: toToken.address,
+        toToken: toToken.isNative
+          ? '0x0000000000000000000000000000000000000000'
+          : toToken.address,
         slippage,
         walletAddress: ethereum.address,
       };
