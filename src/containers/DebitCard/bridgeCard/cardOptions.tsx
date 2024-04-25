@@ -141,7 +141,7 @@ export default function BridgeCardOptionsScreen(props: {
             onValueChange={() => {
               void updateCardStatus(cardUpdateToStatus, !isCardBlocked);
             }}
-            value={!isCardBlocked}
+            value={isCardBlocked}
           />
         )}
       </CyDView>

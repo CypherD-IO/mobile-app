@@ -139,9 +139,11 @@ export function hdWalletStateReducer(state: any, action: any) {
           chain === CHAIN_ETH.chainName
           // && privateKey !== _NO_CYPHERD_CREDENTIAL_AVAILABLE_
         ) {
-          Intercom.registerIdentifiedUser({ userId: address }).catch(() => {
-            // throws error if user is already registered
-          });
+          Intercom.loginUserWithUserAttributes({ userId: address }).catch(
+            () => {
+              // throws error if user is already registered
+            },
+          );
           void analytics().setUserId(address);
         }
       }
