@@ -80,7 +80,13 @@ export default function OTPVerificationScreen({ navigation }) {
       );
       if (!response.isError) {
         const { data } = response;
-        const [selectedCountryWithDialCode] = countryMaster.filter(
+        const countryMasterResponse = await axios.get(
+          `https://public.cypherd.io/js/countryMaster.js?${String(new Date())}`,
+        );
+        const countryData = countryMasterResponse?.data
+          ? countryMasterResponse.data
+          : countryMaster;
+        const [selectedCountryWithDialCode] = countryData.filter(
           country => country.Iso2 === data.country,
         );
         const profileData = {
