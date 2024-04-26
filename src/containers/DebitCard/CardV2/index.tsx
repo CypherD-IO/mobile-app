@@ -559,7 +559,7 @@ const CypherCardScreen = ({ navigation, route }: CypherCardScreenProps) => {
             }>
             <CyDView>
               <CyDText className={'font-bold text-[10px]'}>
-                {t<string>('TOTAL_BALANCE')}
+                {t<string>('TOTAL_BALANCE') + ' (USD)'}
               </CyDText>
               <CyDText className={'font-extrabold text-[18px]'}>
                 {(cardBalance !== 'NA' ? '$ ' : '') + cardBalance}
