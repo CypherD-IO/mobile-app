@@ -1,5 +1,5 @@
-import jwt_decode, { JwtPayload } from 'jwt-decode';
-import { nanoid } from 'nanoid';
+// import jwt_decode, { JwtPayload } from 'jwt-decode';
+// import { nanoid } from 'nanoid';
 import {
   getAuthToken,
   getRefreshToken,
@@ -20,45 +20,45 @@ export default function useValidSessionToken() {
   const verifySessionToken = async () => {
     const authToken: string = await getAuthToken();
     if (authToken) {
-      const jwtInfo = jwt_decode<JwtPayload>(authToken);
+      // const jwtInfo = jwt_decode<JwtPayload>(authToken);
 
-      if (jwtInfo.exp && Date.now() >= jwtInfo.exp * 1000) {
-        const refreshToken = await getRefreshToken();
+      // if (jwtInfo.exp && Date.now() >= jwtInfo.exp * 1000) {
+      const refreshToken = await getRefreshToken();
 
-        const baseUrl: string = ARCH_HOST;
+      const baseUrl: string = ARCH_HOST;
 
-        const config = {
-          headers: {
-            Accept: 'application/json',
-            client: `${Platform.OS}:${DeviceInfo.getVersion()}`,
-            'Content-Type': 'application/json',
-            Authorization: refreshToken ? `Bearer ${String(refreshToken)}` : '',
-          },
-        };
-        try {
-          const resp = await axios.post(
-            `${baseUrl}/v1/authentication/refresh`,
-            {},
-            config,
-          );
-          if (resp?.data) {
-            const { token, refreshToken } = resp.data;
-            void setAuthToken(token);
-            void setRefreshToken(refreshToken);
-            globalContext.globalDispatch({
-              type: GlobalContextType.SIGN_IN,
-              sessionToken: token,
-            });
-            return true;
-          } else {
-            // throw error
-            return false;
-          }
-        } catch (e) {
+      const config = {
+        headers: {
+          Accept: 'application/json',
+          client: `${Platform.OS}:${DeviceInfo.getVersion()}`,
+          'Content-Type': 'application/json',
+          Authorization: refreshToken ? `Bearer ${String(refreshToken)}` : '',
+        },
+      };
+      try {
+        const resp = await axios.post(
+          `${baseUrl}/v1/authentication/refresh`,
+          {},
+          config,
+        );
+        if (resp?.data) {
+          const { token, refreshToken } = resp.data;
+          void setAuthToken(token);
+          void setRefreshToken(refreshToken);
+          globalContext.globalDispatch({
+            type: GlobalContextType.SIGN_IN,
+            sessionToken: token,
+          });
+          return true;
+        } else {
           // throw error
           return false;
         }
+      } catch (e) {
+        // throw error
+        return false;
       }
+      // }
       return true;
     }
     return false;
