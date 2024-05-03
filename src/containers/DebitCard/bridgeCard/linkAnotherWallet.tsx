@@ -25,7 +25,7 @@ import OtpInput from '../../../components/v2/OTPInput';
 import LottieView from 'lottie-react-native';
 import * as Sentry from '@sentry/react-native';
 import { StyleSheet } from 'react-native';
-import { getChainNameFromAddress } from '../../../core/util';
+import { getChainNameFromAddress, trimWhitespace } from '../../../core/util';
 
 export default function LinkAnotherWallet({ navigation }) {
   const [formValues, setFormValues] = useState({
@@ -48,7 +48,7 @@ export default function LinkAnotherWallet({ navigation }) {
       .string()
       .required('Address Required')
       .test('Enter valid ETH Address', 'Enter valid ETH Address', address => {
-        return Web3.utils.isAddress(address);
+        return Web3.utils.isAddress(trimWhitespace(address));
       }),
     walletName: yup.string().required('Wallet Name Required'),
   });
@@ -181,7 +181,7 @@ export default function LinkAnotherWallet({ navigation }) {
   const handleTextChange = (text, handleChange, field) => {
     handleChange(field);
     const tempFormValues = { ...formValues };
-    tempFormValues[field] = text;
+    tempFormValues[field] = trimWhitespace(text);
     setFormValues(tempFormValues);
   };
 

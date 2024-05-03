@@ -950,3 +950,9 @@ export const generateUserInviteLink = () => {
   }
   return '';
 };
+
+export function trimWhitespace(textValue: string) {
+  let tempTextValue = textValue.trim();
+  tempTextValue = tempTextValue.replace(/\s+/g, ' ');
+  return tempTextValue;
+}
