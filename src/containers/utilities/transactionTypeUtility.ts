@@ -1,6 +1,6 @@
 import Web3 from 'web3';
 
-export default async function getTransactionType (address: string) {
+export default async function getTransactionType(address: string) {
   const ETH_RPC_URL = 'https://rpc.ankr.com/eth';
   const web3 = new Web3(ETH_RPC_URL);
   try {
@@ -21,7 +21,10 @@ export default async function getTransactionType (address: string) {
         bytecode.includes('transferFrom')
       ) {
         type = 'ERC721_Contract';
-      } else if (bytecode.includes('ERC777TokensRecipient') || bytecode.includes('ERC777TokensSender')) {
+      } else if (
+        bytecode.includes('ERC777TokensRecipient') ||
+        bytecode.includes('ERC777TokensSender')
+      ) {
         type = 'ERC777_Contract';
       } else {
         // Note: getting standard from byte code doesn't cover all variations of contracts
@@ -32,4 +35,4 @@ export default async function getTransactionType (address: string) {
   } catch (e) {
     throw Error(JSON.stringify({ message: String(e), errorAddress: address }));
   }
-};
+}

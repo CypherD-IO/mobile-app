@@ -40,6 +40,9 @@ import {
   CHAIN_MOONRIVER,
   CHAIN_SHARDEUM,
   CHAIN_SHARDEUM_SPHINX,
+  CHAIN_COREUM,
+  CHAIN_INJECTIVE,
+  CHAIN_KUJIRA,
 } from '../../constants/server';
 import { captureRef } from 'react-native-view-shot';
 import Share from 'react-native-share';
@@ -109,6 +112,18 @@ export default function QRCodeGenerator(props) {
     {
       ...CHAIN_NOBLE,
       address: hdWalletContext.state.wallet.noble?.wallets[0]?.address,
+    },
+    {
+      ...CHAIN_COREUM,
+      address: hdWalletContext.state.wallet.coreum?.wallets[0]?.address,
+    },
+    {
+      ...CHAIN_INJECTIVE,
+      address: hdWalletContext.state.wallet.injective?.wallets[0]?.address,
+    },
+    {
+      ...CHAIN_KUJIRA,
+      address: hdWalletContext.state.wallet.kujira?.wallets[0]?.address,
     },
     {
       ...CHAIN_ZKSYNC_ERA,

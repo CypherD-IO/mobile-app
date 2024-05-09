@@ -2,7 +2,6 @@ import {
   ACCESS_CONTROL,
   ACCESSIBLE,
   AUTHENTICATION_TYPE,
-  STORAGE_TYPE,
   canImplyAuthentication,
   getInternetCredentials,
   getSupportedBiometryType,
@@ -40,7 +39,7 @@ import {
   OfflineDirectSigner,
 } from '@cosmjs/proto-signing';
 import CryptoJS from 'crypto-js';
-import { isAndroid, isIOS } from '../misc/checkers';
+import { isIOS } from '../misc/checkers';
 import {
   setSchemaVersion,
   getSchemaVersion,
@@ -64,6 +63,8 @@ import Web3 from 'web3';
 import { hostWorker } from '../global';
 import axios from 'axios';
 import { Mnemonic, sha256 } from 'ethers';
+import { cosmosConfig } from '../constants/cosmosConfig';
+import { Slip10RawIndex } from '@cosmjs-rn/crypto';
 
 // increase this when you want the CyRootData to be reconstructed
 const currentSchemaVersion = 6;
@@ -473,15 +474,39 @@ export async function getSignerClient(
     false,
     hdWallet.state?.pinValue ? hdWallet.state.pinValue : hdWallet.pinValue,
   );
-  const accounts: string[] = ['cosmos', 'osmo', 'juno', 'stars', 'noble'];
+  const accounts: string[] = [
+    'cosmos',
+    'osmosis',
+    'juno',
+    'stargaze',
+    'noble',
+    'coreum',
+    'injective',
+    'kujira',
+  ];
+
   const wallets: Map<string, OfflineDirectSigner> = new Map();
   if (seedPhrase && Mnemonic.isValidMnemonic(seedPhrase)) {
     for (const wallet of accounts) {
+      const chainConfig = cosmosConfig[wallet];
+      const bip44HDPath = {
+        account: 0,
+        change: 0,
+        addressIndex: 0,
+      };
+      const mnemonicPath = [
+        Slip10RawIndex.hardened(44),
+        Slip10RawIndex.hardened(chainConfig.coinType),
+        Slip10RawIndex.hardened(bip44HDPath.account),
+        Slip10RawIndex.normal(bip44HDPath.change),
+        Slip10RawIndex.normal(bip44HDPath.addressIndex),
+      ];
       const signer: OfflineDirectSigner =
         await DirectSecp256k1HdWallet.fromMnemonic(seedPhrase, {
-          prefix: wallet,
+          prefix: chainConfig.prefix,
+          hdPaths: [mnemonicPath],
         });
-      wallets.set(wallet, signer);
+      wallets.set(chainConfig.prefix, signer);
     }
   }
 
