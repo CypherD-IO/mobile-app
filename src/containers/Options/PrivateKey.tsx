@@ -103,9 +103,9 @@ export default function PrivateKey(props) {
       {
         ...CHAIN_NOBLE,
       },
-      // {
-      //   ...CHAIN_COREUM,
-      // },
+      {
+        ...CHAIN_COREUM,
+      },
       // {
       //   ...CHAIN_KUJIRA,
       // },
