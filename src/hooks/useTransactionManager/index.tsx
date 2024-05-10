@@ -410,7 +410,6 @@ export default function useTransactionManager() {
         amount,
         fromAddress,
         toAddress,
-        contractDecimals,
       });
       const { chainName, backendName, symbol } = fromChain;
       const signer = await getCosmosSignerClient(chainName);

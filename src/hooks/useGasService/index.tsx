@@ -368,7 +368,6 @@ export default function useGasService() {
     amount,
     fromAddress,
     toAddress,
-    contractDecimals = 6,
   }: {
     fromChain: Chain;
     toChain: Chain;
@@ -376,7 +375,6 @@ export default function useGasService() {
     amount: string;
     fromAddress: string;
     toAddress: string;
-    contractDecimals: number;
   }) => {
     const { chainName, backendName, symbol } = fromChain;
     const signer = await getCosmosSignerClient(chainName);

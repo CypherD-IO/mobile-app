@@ -544,7 +544,6 @@ export default function BridgeFundCardScreen({ route }: { route: any }) {
           amount: String(quote.tokensRequired),
           fromAddress: get(cosmosAddresses, chainDetails.chainName),
           toAddress: targetWalletAddress,
-          contractDecimals,
         });
       } else if (chainDetails.chainName === ChainNames.OSMOSIS) {
         gasDetails = await estimateGasForCosmos({
@@ -950,7 +949,6 @@ export default function BridgeFundCardScreen({ route }: { route: any }) {
               amount: String(actualBalance),
               fromAddress: get(cosmosAddresses, chainDetails.chainName),
               toAddress: get(cosmosAddresses, ChainNames.OSMOSIS),
-              contractDecimals,
             });
           }
 

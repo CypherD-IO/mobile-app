@@ -240,7 +240,6 @@ export default function IBC({
           amount,
           fromAddress,
           toAddress: receiverAddress,
-          contractDecimals: tokenData.contractDecimals,
         });
 
         setGasFee(gasDetails.gasFeeInCrypto);
@@ -548,13 +547,23 @@ export default function IBC({
             <CyDView className={'mr-[6%] flex flex-col items-end'}>
               <CyDText
                 className={'font-nunito font-[16px] text-black font-bold'}>
-                {String(formatAmount(gasFee)) +
+                {String(
+                  formatAmount(
+                    Number(gasFee) * 10 ** -tokenData.contractDecimals,
+                  ),
+                ) +
                   ' ' +
                   String(nativeToken?.symbol)}
               </CyDText>
               <CyDText
                 className={'font-nunito font-[12px] text-[#929292] font-bold'}>
-                {String(formatAmount(nativeToken.price * gasFee)) + ' USD'}
+                {String(
+                  formatAmount(
+                    Number(nativeToken.price) *
+                      Number(gasFee) *
+                      10 ** -tokenData.contractDecimals,
+                  ),
+                ) + ' USD'}
               </CyDText>
             </CyDView>
           </CyDView>
