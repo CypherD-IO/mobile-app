@@ -67,7 +67,7 @@ import { cosmosConfig } from '../constants/cosmosConfig';
 import { Slip10RawIndex } from '@cosmjs-rn/crypto';
 
 // increase this when you want the CyRootData to be reconstructed
-const currentSchemaVersion = 6;
+const currentSchemaVersion = 7;
 
 export async function saveCredentialsToKeychain(
   hdWalletContext: HdWalletContextDef,

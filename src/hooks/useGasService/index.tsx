@@ -26,7 +26,6 @@ import { useContext } from 'react';
 import {
   HdWalletContext,
   PortfolioContext,
-  convertAmountOfContractDecimal,
   getNativeToken,
   getTimeOutTime,
   limitDecimalPlaces,
@@ -369,6 +368,7 @@ export default function useGasService() {
     amount,
     fromAddress,
     toAddress,
+    contractDecimals = 6,
   }: {
     fromChain: Chain;
     toChain: Chain;
@@ -376,6 +376,7 @@ export default function useGasService() {
     amount: string;
     fromAddress: string;
     toAddress: string;
+    contractDecimals: number;
   }) => {
     const { chainName, backendName, symbol } = fromChain;
     const signer = await getCosmosSignerClient(chainName);
@@ -442,7 +443,7 @@ export default function useGasService() {
       ],
     };
     return {
-      gasFeeInCrypto: gasFee,
+      gasFeeInCrypto: parseFloat((gasFee * 10 ** -contractDecimals).toFixed(6)),
       gasLimit: fee.gas,
       gasPrice,
     };

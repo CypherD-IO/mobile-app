@@ -11,7 +11,6 @@ import ChooseChainModal from '../../components/v2/chooseChainModal';
 import AppImages from '../../../assets/images/appImages';
 import {
   ActivityContext,
-  convertAmountOfContractDecimal,
   HdWalletContext,
   validateAmount,
   limitDecimalPlaces,
@@ -20,47 +19,22 @@ import {
   getNativeToken,
   PortfolioContext,
   formatAmount,
-  _NO_CYPHERD_CREDENTIAL_AVAILABLE_,
 } from '../../core/util';
 import clsx from 'clsx';
 import {
   Chain,
   ChainBackendNames,
   ChainNameMapping,
-  GASLESS_CHAINS,
   IBC_CHAINS,
   NativeTokenMapping,
 } from '../../constants/server';
 import { gasFeeReservation } from '../../constants/data';
-import LottieView from 'lottie-react-native';
-import { cosmosConfig, IIBCData } from '../../constants/cosmosConfig';
-import {
-  MsgTransferEncodeObject,
-  SigningStargateClient,
-} from '@cosmjs/stargate';
-import Long from 'long';
-import { MsgTransfer } from 'cosmjs-types/ibc/applications/transfer/v1/tx';
-import { OfflineDirectSigner } from '@cosmjs/proto-signing';
-import {
-  getSignerClient,
-  loadPrivateKeyFromKeyChain,
-} from '../../core/Keychain';
-import { ethers } from 'ethers';
-import { GlobalContext, GlobalContextDef } from '../../core/globalContext';
 import * as Sentry from '@sentry/react-native';
 import SignatureModal from '../../components/v2/signatureModal';
 import { screenTitle } from '../../constants';
-import axios, { MODAL_HIDE_TIMEOUT_250 } from '../../core/Http';
-import {
-  createTxIBCMsgTransfer,
-  createTxRawEIP712,
-  signatureToWeb3Extension,
-} from '@tharsis/transactions';
-import { signTypedData, SignTypedDataVersion } from '@metamask/eth-sig-util';
-import { generatePostBodyBroadcast } from '@tharsis/provider';
+import { MODAL_HIDE_TIMEOUT_250 } from '../../core/Http';
 import { useTranslation } from 'react-i18next';
 import { BackHandler } from 'react-native';
-import CyDModalLayout from '../../components/v2/modal';
 import Button from '../../components/v2/button';
 import {
   ActivityReducerAction,
@@ -102,6 +76,9 @@ export default function IBC({
   const juno = hdWallet.state.wallet.juno;
   const stargaze = hdWallet.state.wallet.stargaze;
   const noble = hdWallet.state.wallet.noble;
+  const coreum = hdWallet.state.wallet.coreum;
+  const injective = hdWallet.state.wallet.injective;
+  const kujira = hdWallet.state.wallet.kujira;
 
   const cosmosAddresses = {
     cosmos: cosmos.address,
@@ -109,6 +86,9 @@ export default function IBC({
     juno: juno.address,
     stargaze: stargaze.address,
     noble: noble.address,
+    coreum: coreum.address,
+    injective: injective.address,
+    kujira: kujira.address,
   };
 
   const [chain, setChain] = useState<Chain>([]);
@@ -173,6 +153,12 @@ export default function IBC({
         return stargaze.address;
       case ChainBackendNames.NOBLE:
         return noble.address;
+      case ChainBackendNames.COREUM:
+        return coreum.address;
+      case ChainBackendNames.INJECTIVE:
+        return injective.address;
+      case ChainBackendNames.KUJIRA:
+        return kujira.address;
       default:
         return undefined;
     }
@@ -229,9 +215,6 @@ export default function IBC({
       });
     }
 
-    const currentChain: IIBCData =
-      cosmosConfig[tokenData.chainDetails.chainName];
-
     if (
       [
         ChainBackendNames.COSMOS,
@@ -239,6 +222,9 @@ export default function IBC({
         ChainBackendNames.JUNO,
         ChainBackendNames.STARGAZE,
         ChainBackendNames.NOBLE,
+        ChainBackendNames.COREUM,
+        // ChainBackendNames.INJECTIVE,
+        // ChainBackendNames.KUJIRA,
       ].includes(tokenData.chainDetails.backendName)
     ) {
       setLoading(true);
@@ -254,7 +240,9 @@ export default function IBC({
           amount,
           fromAddress,
           toAddress: receiverAddress,
+          contractDecimals: tokenData.contractDecimals,
         });
+
         setGasFee(gasDetails.gasFeeInCrypto);
         setSignModalVisible(true);
       } else if (type === 'txn') {
@@ -280,6 +268,15 @@ export default function IBC({
               }),
             MODAL_HIDE_TIMEOUT_250,
           );
+          activityRef.current &&
+            activityContext.dispatch({
+              type: ActivityReducerAction.PATCH,
+              value: {
+                id: activityRef.current.id,
+                status: ActivityStatus.SUCCESS,
+                transactionHash: transaction.hash,
+              },
+            });
           // monitoring api
           void logAnalytics({
             type: AnalyticsType.SUCCESS,
@@ -287,6 +284,14 @@ export default function IBC({
             chain: tokenData.chainDetails?.chainName ?? '',
           });
         } else {
+          activityRef.current &&
+            activityContext.dispatch({
+              type: ActivityReducerAction.PATCH,
+              value: {
+                id: activityRef.current.id,
+                status: ActivityStatus.FAILED,
+              },
+            });
           void logAnalytics({
             type: AnalyticsType.ERROR,
             chain: tokenData.chainDetails?.chainName ?? '',
