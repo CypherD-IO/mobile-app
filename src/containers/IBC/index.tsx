@@ -242,7 +242,7 @@ export default function IBC({
           toAddress: receiverAddress,
         });
 
-        setGasFee(gasDetails.gasFeeInCrypto);
+        setGasFee(gasDetails.gasPrice);
         setSignModalVisible(true);
       } else if (type === 'txn') {
         const transaction = await interCosmosIBC({
@@ -547,22 +547,14 @@ export default function IBC({
             <CyDView className={'mr-[6%] flex flex-col items-end'}>
               <CyDText
                 className={'font-nunito font-[16px] text-black font-bold'}>
-                {String(
-                  formatAmount(
-                    Number(gasFee) * 10 ** -tokenData.contractDecimals,
-                  ),
-                ) +
+                {String(formatAmount(Number(gasFee))) +
                   ' ' +
                   String(nativeToken?.symbol)}
               </CyDText>
               <CyDText
                 className={'font-nunito font-[12px] text-[#929292] font-bold'}>
                 {String(
-                  formatAmount(
-                    Number(nativeToken.price) *
-                      Number(gasFee) *
-                      10 ** -tokenData.contractDecimals,
-                  ),
+                  formatAmount(Number(nativeToken.price) * Number(gasFee)),
                 ) + ' USD'}
               </CyDText>
             </CyDView>

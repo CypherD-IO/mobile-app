@@ -581,13 +581,10 @@ export default function BridgeFundCardScreen({ route }: { route: any }) {
             amountInFiat: String(quote.amount),
             symbol: selectedTokenSymbol,
             toAddress: targetWalletAddress,
-            gasFeeInCrypto: String(
-              formatAmount(Number(gasDetails?.gasFeeInCrypto)),
-            ),
+            gasFeeInCrypto: String(formatAmount(Number(gasDetails?.gasPrice))),
             gasFeeInFiat: String(
               formatAmount(
-                Number(gasDetails?.gasFeeInCrypto) *
-                  Number(nativeToken?.price ?? 0),
+                Number(gasDetails?.gasPrice) * Number(nativeToken?.price ?? 0),
               ),
             ),
             nativeTokenSymbol: String(selectedToken?.chainDetails?.symbol),

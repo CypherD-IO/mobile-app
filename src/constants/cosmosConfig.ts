@@ -40,7 +40,7 @@ export const cosmosConfig: Record<string, IIBCData> = {
       injective: 'channel-220',
       kujira: 'channel-343',
     },
-    gasPrice: 0.025,
+    gasPrice: 0.03,
     ibcDenoms: {
       cosmos: 'uatom',
       osmosis:
@@ -76,7 +76,7 @@ export const cosmosConfig: Record<string, IIBCData> = {
       injective: 'channel-122',
       kujira: 'channel-259',
     },
-    gasPrice: 0.025,
+    gasPrice: 0.08,
     ibcDenoms: {
       osmosis: 'uosmo',
       cosmos:
@@ -119,7 +119,7 @@ export const cosmosConfig: Record<string, IIBCData> = {
       injective: 'channel-10',
       kujira: 'channel-18',
     },
-    gasPrice: 25000000000,
+    gasPrice: 40000000000,
     ibcDenoms: {
       cosmos:
         'ibc/A4DB47A9D3CF9A068D454513891B526702455D3EF08FB9EB558C561F9DC2B701',
@@ -155,7 +155,7 @@ export const cosmosConfig: Record<string, IIBCData> = {
       injective: '',
       kujira: '',
     },
-    gasPrice: 0.1,
+    gasPrice: 0.004,
     ibcDenoms: {
       cosmos:
         'ibc/C4CFF46FD6DE35CA4CF4CE031E643C8FDC9BA4B99AE598E9B0ED98FE3A2319F9',
@@ -222,7 +222,7 @@ export const cosmosConfig: Record<string, IIBCData> = {
       injective: 'channel-31',
       kujira: 'channel-2',
     },
-    gasPrice: 0.15,
+    gasPrice: 0.2,
     ibcDenoms: {
       cosmos:
         'ibc/EF48E6B1A1A19F47ECAEA62F5670C37C0580E86A9E88498B7E393EB6F49F33C0',
@@ -258,7 +258,7 @@ export const cosmosConfig: Record<string, IIBCData> = {
       injective: '',
       kujira: 'channel-17',
     },
-    gasPrice: 0.0325,
+    gasPrice: 0.0625,
     ibcDenoms: {
       cosmos:
         'ibc/45C001A5AE212D09879BE4627C45B64D5636086285590D5145A51E18E9D16722',
@@ -292,7 +292,7 @@ export const cosmosConfig: Record<string, IIBCData> = {
       coreum: '',
       kujira: 'channel-98',
     },
-    gasPrice: 700000000,
+    gasPrice: 900000000,
     ibcDenoms: {
       cosmos:
         'ibc/C4CFF46FD6DE35CA4CF4CE031E643C8FDC9BA4B99AE598E9B0ED98FE3A2319F9',
@@ -326,7 +326,7 @@ export const cosmosConfig: Record<string, IIBCData> = {
       coreum: 'channel-122',
       injective: 'channel-54',
     },
-    gasPrice: 0.0051,
+    gasPrice: 0.007,
     ibcDenoms: {
       cosmos:
         'ibc/27394FB092D2ECCD56123C74F36E4C1F926001CEADA9CA97EA622B25F41E5EB2',
