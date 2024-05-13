@@ -1,11 +1,15 @@
 import { ApplicationName } from './enum';
 import { ChainBackendNames } from './server';
+
 export const INJECTED_WEB3_CDN =
   'https://public.cypherd.io/js/injected.web3.js';
+
 export const ANALYTICS_SUCCESS_URL =
   'https://arch.cypherd.io/v1/monitoring/transaction';
+
 export const ANALYTICS_ERROR_URL =
   'https://arch.cypherd.io/v1/monitoring/error';
+
 export const gasFeeReservation: Record<ChainBackendNames, number> = {
   ETH: 0.0006,
   POLYGON: 0.02,
@@ -20,6 +24,9 @@ export const gasFeeReservation: Record<ChainBackendNames, number> = {
   JUNO: 0.007,
   STARGAZE: 0.1,
   NOBLE: 0.02,
+  COREUM: 0.003,
+  INJECTIVE: 0.02,
+  KUJIRA: 0.003,
   SHARDEUM: 0.01,
   SHARDEUM_SPHINX: 0.01,
   ZKSYNC_ERA: 0.0006, // TODO
@@ -28,30 +35,35 @@ export const gasFeeReservation: Record<ChainBackendNames, number> = {
   AURORA: 0.0006, // TODO
   MOONBEAM: 0.0006, // TODO
   MOONRIVER: 0.0006, // TODO
+  ALL: 0.0,
 };
 
 export const nativeTokenMapping: Record<ChainBackendNames, string> = {
-  ETH: 'Ethereum',
-  POLYGON: 'Matic',
-  AVALANCHE: 'Avalanche',
-  FANTOM: 'Fantom',
-  ARBITRUM: 'Ethereum',
-  OPTIMISM: 'Ethereum',
-  BSC: 'Binance',
-  EVMOS: 'Evmos',
-  COSMOS: 'Atom',
-  OSMOSIS: 'Osmo',
-  JUNO: 'Juno',
-  STARGAZE: 'Stargaze',
-  NOBLE: 'Noble',
-  SHARDEUM: 'Shm',
-  SHARDEUM_SPHINX: 'Shm',
-  ZKSYNC_ERA: 'Ethereum',
-  BASE: 'Ethereum',
-  POLYGON_ZKEVM: 'Ethereum',
-  AURORA: 'Ethereum',
-  MOONBEAM: 'Glimmer',
-  MOONRIVER: 'Moonriver',
+  [ChainBackendNames.ETH]: 'Ethereum',
+  [ChainBackendNames.POLYGON]: 'Matic',
+  [ChainBackendNames.AVALANCHE]: 'Avalanche',
+  [ChainBackendNames.FANTOM]: 'Fantom',
+  [ChainBackendNames.ARBITRUM]: 'Ethereum',
+  [ChainBackendNames.OPTIMISM]: 'Ethereum',
+  [ChainBackendNames.BSC]: 'Binance',
+  [ChainBackendNames.EVMOS]: 'Evmos',
+  [ChainBackendNames.COSMOS]: 'Atom',
+  [ChainBackendNames.OSMOSIS]: 'Osmo',
+  [ChainBackendNames.JUNO]: 'Juno',
+  [ChainBackendNames.STARGAZE]: 'Stargaze',
+  [ChainBackendNames.NOBLE]: 'Noble',
+  [ChainBackendNames.COREUM]: 'Coreum',
+  [ChainBackendNames.INJECTIVE]: 'Injective',
+  [ChainBackendNames.KUJIRA]: 'Kujira',
+  [ChainBackendNames.SHARDEUM]: 'Shm',
+  [ChainBackendNames.SHARDEUM_SPHINX]: 'Shm',
+  [ChainBackendNames.ZKSYNC_ERA]: 'Ethereum',
+  [ChainBackendNames.BASE]: 'Ethereum',
+  [ChainBackendNames.POLYGON_ZKEVM]: 'Ethereum',
+  [ChainBackendNames.AURORA]: 'Ethereum',
+  [ChainBackendNames.MOONBEAM]: 'Glimmer',
+  [ChainBackendNames.MOONRIVER]: 'Moonriver',
+  [ChainBackendNames.ALL]: '',
 };
 
 export const MINIMUM_TRANSFER_AMOUNT_ETH = 50;

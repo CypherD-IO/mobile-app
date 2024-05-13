@@ -418,18 +418,6 @@ export default function useTransactionManager() {
           ChainNameMapping[backendName],
         ).holdings,
       );
-      const fee = {
-        gas: gasFeeDetails.gasLimit,
-        amount: [
-          {
-            denom: nativeToken?.denom ?? denom,
-            amount: parseInt(
-              gasFeeDetails.gasFeeInCrypto.toFixed(6).split('.')[1],
-              10,
-            ).toString(),
-          },
-        ],
-      };
 
       const amountToSend = parseFloat(amount) * Math.pow(10, contractDecimals);
       const transferAmount: Coin = {
@@ -463,11 +451,10 @@ export default function useTransactionManager() {
       const ibcResponse = await signingClient.signAndBroadcast(
         fromAddress,
         [transferMsg],
-        fee,
+        gasFeeDetails.fee,
         memo,
       );
       const hash = ibcResponse?.transactionHash;
-      const rawLog = ibcResponse?.rawLog;
       return { hash, isError: false };
     } catch (e) {
       return { hash: '', isError: true, error: e };

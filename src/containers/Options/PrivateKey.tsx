@@ -27,8 +27,12 @@ import {
   CHAIN_EVMOS,
   CHAIN_OSMOSIS,
   CHAIN_JUNO,
+  CHAIN_STARGAZE,
+  CHAIN_NOBLE,
+  CHAIN_COREUM,
+  CHAIN_KUJIRA,
+  CHAIN_INJECTIVE,
   FundWalletAddressType,
-  EVM_CHAINS_BACKEND_NAMES,
   COSMOS_CHAINS,
   ChainNames,
 } from '../../constants/server';
@@ -76,6 +80,9 @@ export default function PrivateKey(props) {
     {
       ...CHAIN_EVMOS,
     },
+    // {
+    //   ...CHAIN_INJECTIVE,
+    // },
   ];
 
   if (connectionType === ConnectionTypes.SEED_PHRASE) {
@@ -90,6 +97,18 @@ export default function PrivateKey(props) {
       {
         ...CHAIN_JUNO,
       },
+      {
+        ...CHAIN_STARGAZE,
+      },
+      {
+        ...CHAIN_NOBLE,
+      },
+      {
+        ...CHAIN_COREUM,
+      },
+      // {
+      //   ...CHAIN_KUJIRA,
+      // },
     ];
   }
 

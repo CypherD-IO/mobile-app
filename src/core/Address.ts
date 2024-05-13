@@ -18,6 +18,8 @@ import {
 } from 'ethers';
 import { setConnectionType } from './asyncStorage';
 import { ConnectionTypes } from '../constants/enum';
+import { getInjectiveAddress } from '@injectivelabs/sdk-ts';
+
 function sendFirebaseEvent(walletaddress: string, trkEvent: string) {
   void analytics().logEvent(trkEvent, {
     walletaddress,
@@ -31,7 +33,10 @@ export type AddressChainNames =
   | 'osmosis'
   | 'juno'
   | 'stargaze'
-  | 'noble';
+  | 'noble'
+  | 'coreum'
+  | 'injective'
+  | 'kujira';
 export interface IAccountDetail {
   address: string;
   algo?: string;
@@ -183,6 +188,34 @@ export const generateEvmosWallet = (
     publicKey: uintToHex(publicKey),
   };
 };
+export const generateInjectiveWallet = (
+  ethereumAddress: string,
+  chainConfig: IIBCData,
+  mnemonic: string,
+  bip44HDPath: {
+    account: number;
+    change: number;
+    addressIndex: number;
+  },
+): IAccountDetailWithChain => {
+  const masterSeed = Mnemonic.generateMasterSeedFromMnemonic(mnemonic);
+  const path = `m/44'/${chainConfig.coinType}'/${bip44HDPath.account}'/${bip44HDPath.change}/${bip44HDPath.addressIndex}`;
+  const privateKey = Mnemonic.generatePrivateKeyFromMasterSeed(
+    masterSeed,
+    path,
+  );
+  const address = getInjectiveAddress(ethereumAddress);
+
+  const privKeyInstance = new PrivKeySecp256k1(privateKey);
+  const publicKey = privKeyInstance.getPubKey().toBytes();
+
+  return {
+    name: 'injective',
+    address,
+    // privateKey: uintToHex(privateKey),
+    publicKey: uintToHex(publicKey),
+  };
+};
 
 export const generateRawAddressFromPubKeys = (publicKey: Uint8Array) => {
   let hash = CryptoJS.SHA256(
@@ -251,6 +284,9 @@ export const generateWalletFromMnemonic = async (
     'juno',
     'stargaze',
     'noble',
+    'coreum',
+    // 'injective',
+    'kujira',
   ];
 
   const cosmosAccounts = await Promise.all(
@@ -271,10 +307,18 @@ export const generateWalletFromMnemonic = async (
     bip44HDPath,
   );
 
+  const injectiveWallet = generateInjectiveWallet(
+    ethereumWallet.address,
+    cosmosConfig.injective,
+    mnemonic,
+    bip44HDPath,
+  );
+
   const accounts: IAccountDetailWithChain[] = [
     ethereumWallet,
     ...cosmosAccounts,
     evmosWallet,
+    injectiveWallet,
   ];
   // emit event to firebase
   sendFirebaseEvent(ethereumWallet.address, trackingEventId);

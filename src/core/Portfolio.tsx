@@ -24,6 +24,9 @@ import {
   CHAIN_AURORA,
   CHAIN_MOONBEAM,
   CHAIN_MOONRIVER,
+  CHAIN_COREUM,
+  CHAIN_INJECTIVE,
+  CHAIN_KUJIRA,
 } from '../constants/server';
 import {
   PORTFOLIO_EMPTY,
@@ -105,6 +108,9 @@ export interface WalletHoldings {
   aurora: ChainHoldings | undefined;
   moonbeam: ChainHoldings | undefined;
   moonriver: ChainHoldings | undefined;
+  coreum: ChainHoldings | undefined;
+  // injective: ChainHoldings | undefined;
+  // kujira: ChainHoldings | undefined;
   totalHoldings: Holding[];
 }
 
@@ -195,6 +201,12 @@ export function getCurrentChainHoldings(
       return portfolio.moonbeam;
     case CHAIN_MOONRIVER.backendName:
       return portfolio.moonriver;
+    case CHAIN_COREUM.backendName:
+      return portfolio.coreum;
+    // case CHAIN_INJECTIVE.backendName:
+    //   return portfolio.injective;
+    // case CHAIN_KUJIRA.backendName:
+    //   return portfolio.kujira;
   }
 }
 
@@ -406,6 +418,9 @@ export async function getPortfolioModel(
   let junoHoldings;
   let stargazeHoldings;
   let nobleHoldings;
+  let coreumHoldings;
+  // let injectiveHoldings;
+  // let kujiraHoldings;
   let shardeumHoldings;
   let shardeumSphinxHoldings;
   let totalHoldings: Holding[] = [];
@@ -439,6 +454,9 @@ export async function getPortfolioModel(
     CHAIN_AURORA.backendName,
     CHAIN_MOONBEAM.backendName,
     CHAIN_MOONRIVER.backendName,
+    CHAIN_COREUM.backendName,
+    // CHAIN_INJECTIVE.backendName,
+    // CHAIN_KUJIRA.backendName,
   ]);
 
   const fetchedChains = new Set<ChainBackendNames | 'ALL'>();
@@ -554,6 +572,15 @@ export async function getPortfolioModel(
         case CHAIN_MOONRIVER.backendName:
           tokenHolding.chainDetails = CHAIN_MOONRIVER;
           break;
+        case CHAIN_COREUM.backendName:
+          tokenHolding.chainDetails = CHAIN_COREUM;
+          break;
+          // case CHAIN_INJECTIVE.backendName:
+          //   tokenHolding.chainDetails = CHAIN_INJECTIVE;
+          //   break;
+          // case CHAIN_KUJIRA.backendName:
+          //   tokenHolding.chainDetails = CHAIN_KUJIRA;
+          break;
       }
       if (has(tokenHolding, 'chainDetails')) {
         tokenHoldings.push(tokenHolding);
@@ -656,6 +683,15 @@ export async function getPortfolioModel(
       case CHAIN_MOONRIVER.backendName:
         moonriverHoldings = chainHoldings;
         break;
+      case CHAIN_COREUM.backendName:
+        coreumHoldings = chainHoldings;
+        break;
+        // case CHAIN_INJECTIVE.backendName:
+        //   injectiveHoldings = chainHoldings;
+        //   break;
+        // case CHAIN_KUJIRA.backendName:
+        //   kujiraHoldings = chainHoldings;
+        break;
     }
   }
   const remainingChains = new Set(
@@ -755,6 +791,15 @@ export async function getPortfolioModel(
         case CHAIN_MOONRIVER.backendName:
           moonriverHoldings = chainHoldings;
           break;
+        case CHAIN_COREUM.backendName:
+          coreumHoldings = chainHoldings;
+          break;
+          // case CHAIN_INJECTIVE.backendName:
+          //   injectiveHoldings = chainHoldings;
+          //   break;
+          // case CHAIN_KUJIRA.backendName:
+          //   kujiraHoldings = chainHoldings;
+          break;
       }
     }
   }
@@ -787,6 +832,9 @@ export async function getPortfolioModel(
     aurora: auroraHoldings,
     moonbeam: moonbeamHoldings,
     moonriver: moonriverHoldings,
+    coreum: coreumHoldings,
+    // injective: injectiveHoldings,
+    // kujira: kujiraHoldings,
     totalHoldings,
   };
   await storePortfolioData(portfolio, ethereum, portfolioState);
@@ -800,9 +848,17 @@ export async function fetchTokenData(
 ) {
   const ARCH_HOST: string = hostWorker.getHost('ARCH_HOST');
   const portfolioUrl = `${ARCH_HOST}/v1/portfolio/balances`;
-  const { isReadOnlyWallet } = hdWalletState.state;
-  const { cosmos, osmosis, juno, stargaze, noble, ethereum } =
-    hdWalletState.state.wallet;
+  const {
+    cosmos,
+    osmosis,
+    juno,
+    stargaze,
+    noble,
+    ethereum,
+    coreum,
+    // injective,
+    // kujira,
+  } = hdWalletState.state.wallet;
   if (ethereum.address !== 'null') {
     const localPortfolio = await getPortfolioData(ethereum, portfolioState);
     const portfolio: WalletHoldings | null = localPortfolio
@@ -847,6 +903,9 @@ export async function fetchTokenData(
       juno?.wallets[juno?.currentIndex]?.address,
       stargaze?.address,
       noble?.address,
+      coreum?.address,
+      // injective?.address,
+      // kujira?.address,
       ethereum.address,
     ].filter(address => address !== undefined);
     const payload = {

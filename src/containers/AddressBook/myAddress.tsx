@@ -25,6 +25,9 @@ import {
   CHAIN_AURORA,
   CHAIN_MOONBEAM,
   CHAIN_MOONRIVER,
+  CHAIN_COREUM,
+  CHAIN_INJECTIVE,
+  CHAIN_KUJIRA,
 } from '../../constants/server';
 import { HdWalletContext } from '../../core/util';
 import {
@@ -42,13 +45,18 @@ export function AddressBook({ route, navigation }) {
   const { indexValue = 0 } = route.params;
   const [index, setIndex] = useState(indexValue);
   const hdWalletContext = useContext<any>(HdWalletContext);
-  const ethereum = hdWalletContext.state.wallet.ethereum;
-  const evmos = hdWalletContext.state.wallet.evmos;
-  const cosmos = hdWalletContext.state.wallet.cosmos;
-  const osmosis = hdWalletContext.state.wallet.osmosis;
-  const juno = hdWalletContext.state.wallet.juno;
-  const { stargaze } = hdWalletContext.state.wallet;
-  const noble = hdWalletContext.state.wallet.noble;
+  const {
+    ethereum,
+    stargaze,
+    evmos,
+    cosmos,
+    osmosis,
+    juno,
+    noble,
+    coreum,
+    injective,
+    kujira,
+  } = hdWalletContext.state.wallet;
 
   const handleBackButton = () => {
     navigation.goBack();
@@ -142,6 +150,33 @@ export function AddressBook({ route, navigation }) {
                 bGC={'#ebebeb'}
                 navigation={navigation}
                 addressTypeQRCode={FundWalletAddressType.NOBLE}
+              />
+
+              <AddressBookContainer
+                chain={CHAIN_COREUM.name}
+                wallet={coreum.wallets[coreum.currentIndex]}
+                logo={AppImages.COREUM_LOGO}
+                bGC={'#f3fee3'}
+                navigation={navigation}
+                addressTypeQRCode={FundWalletAddressType.COREUM}
+              />
+
+              <AddressBookContainer
+                chain={CHAIN_INJECTIVE.name}
+                wallet={injective.wallets[injective.currentIndex]}
+                logo={AppImages.INJECTIVE_LOGO}
+                bGC={'#f1f4fa'}
+                navigation={navigation}
+                addressTypeQRCode={FundWalletAddressType.INJECTIVE}
+              />
+
+              <AddressBookContainer
+                chain={CHAIN_KUJIRA.name}
+                wallet={kujira.wallets[kujira.currentIndex]}
+                logo={AppImages.KUJIRA_LOGO}
+                bGC={'#fff0f0'}
+                navigation={navigation}
+                addressTypeQRCode={FundWalletAddressType.KUJIRA}
               />
 
               <AddressBookContainer

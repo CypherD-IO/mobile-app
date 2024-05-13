@@ -11,7 +11,7 @@ import Clipboard from '@react-native-clipboard/clipboard';
 import analytics from '@react-native-firebase/analytics';
 import * as Sentry from '@sentry/react-native';
 import { ethers } from 'ethers';
-import { chain, get } from 'lodash';
+import { get } from 'lodash';
 import React, { useContext, useEffect, useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { BackHandler } from 'react-native';
@@ -34,8 +34,6 @@ import {
   QRScannerScreens,
   ChainNameToContactsChainNameMapping,
   EVM_CHAINS_FOR_ADDRESS_DIR,
-  CHAIN_NAMES,
-  NativeTokenMapping,
   ChainNameMapping,
 } from '../../constants/server';
 import { Colors } from '../../constants/theme';
@@ -93,7 +91,7 @@ import { isOsmosisAddress } from '../utilities/osmosisSendUtility';
 import { isStargazeAddress } from '../utilities/stargazeSendUtility';
 import { isNobleAddress } from '../utilities/nobleSendUtility';
 import { cosmosConfig } from '../../constants/cosmosConfig';
-import { useIsFocused, useRoute } from '@react-navigation/native';
+import { useIsFocused } from '@react-navigation/native';
 import Fuse from 'fuse.js';
 import AddressProfile from '../AddressBook/addressProfile';
 import { AnalyticsType, ButtonType } from '../../constants/enum';
@@ -108,9 +106,11 @@ import { intercomAnalyticsLog } from '../utilities/analyticsUtility';
 import { useKeyboard } from '../../hooks/useKeyboard';
 import useGasService from '../../hooks/useGasService';
 import { TokenSendConfirmationParams } from '../../models/tokenSendConfirmationParams.interface';
-import { string } from 'yup';
 import useTransactionManager from '../../hooks/useTransactionManager';
 import TokenSendConfirmationModal from '../../components/v2/tokenSendConfirmationModal';
+import { isCoreumAddress } from '../utilities/coreumUtilities';
+import { isInjectiveAddress } from '../utilities/injectiveUtilities';
+import { isKujiraAddress } from '../utilities/kujiraUtilities';
 
 export default function SendTo(props: { navigation?: any; route?: any }) {
   const { t } = useTranslation();
@@ -267,7 +267,7 @@ export default function SendTo(props: { navigation?: any; route?: any }) {
   };
 
   const activityRef = useRef<SendTransactionActivity | null>(null);
-  const { cosmos, osmosis, juno, stargaze, noble } =
+  const { cosmos, osmosis, juno, stargaze, noble, coreum, injective, kujira } =
     hdWalletContext.state.wallet;
   const senderAddress: Record<string, string> = {
     cosmos: cosmos.address,
@@ -275,6 +275,9 @@ export default function SendTo(props: { navigation?: any; route?: any }) {
     juno: juno.address,
     stargaze: stargaze.address,
     noble: noble.address,
+    coreum: coreum.address,
+    injective: injective.address,
+    kujira: kujira.address,
   };
 
   const rpc: Record<string, string | undefined> = {
@@ -283,6 +286,9 @@ export default function SendTo(props: { navigation?: any; route?: any }) {
     juno: globalStateContext.globalState.rpcEndpoints?.JUNO.primary,
     stargaze: globalStateContext.globalState.rpcEndpoints?.STARGAZE.primary,
     noble: globalStateContext.globalState.rpcEndpoints?.NOBLE.primary,
+    coreum: globalStateContext.globalState.rpcEndpoints?.COREUM.primary,
+    kujira: globalStateContext.globalState.rpcEndpoints?.KUJIRA.primary,
+    injective: globalStateContext.globalState.rpcEndpoints?.INJECTIVE.primary,
   };
 
   const handleBackButton = () => {
@@ -329,6 +335,9 @@ export default function SendTo(props: { navigation?: any; route?: any }) {
       osmosis: {},
       stargaze: {},
       noble: {},
+      coreum: {},
+      injective: {},
+      kujira: {},
       binance: {},
       polygon: {},
       avalanche: {},
@@ -795,7 +804,7 @@ export default function SendTo(props: { navigation?: any; route?: any }) {
 
   const sendEvmosTransaction = async () => {
     try {
-      const { ethereum, evmos } = hdWalletContext.state.wallet;
+      const { evmos } = hdWalletContext.state.wallet;
       await evmosSendTxn(
         evmos.address,
         addressRef.current,
@@ -1000,8 +1009,7 @@ export default function SendTo(props: { navigation?: any; route?: any }) {
       tokenLogo: tokenData.logoUrl,
     };
 
-    const { ethereum, cosmos, osmosis, juno, stargaze, noble, evmos } =
-      hdWalletContext.state.wallet;
+    const { evmos, ethereum } = hdWalletContext.state.wallet;
 
     let error = false;
     addressRef.current = addressText;
@@ -1077,6 +1085,24 @@ export default function SendTo(props: { navigation?: any; route?: any }) {
       ) {
         await cosmosTransaction(addressRef.current, ChainNames.NOBLE);
         activityData.fromAddress = noble.address;
+      } else if (
+        chainDetails?.chainName === ChainNames.COREUM &&
+        isCoreumAddress(addressRef.current)
+      ) {
+        await cosmosTransaction(addressRef.current, ChainNames.COREUM);
+        activityData.fromAddress = coreum.address;
+      } else if (
+        chainDetails?.chainName === ChainNames.INJECTIVE &&
+        isInjectiveAddress(addressRef.current)
+      ) {
+        await cosmosTransaction(addressRef.current, ChainNames.INJECTIVE);
+        activityData.fromAddress = injective.address;
+      } else if (
+        chainDetails?.chainName === ChainNames.KUJIRA &&
+        isKujiraAddress(addressRef.current)
+      ) {
+        await cosmosTransaction(addressRef.current, ChainNames.KUJIRA);
+        activityData.fromAddress = kujira.address;
       } else if (chainDetails?.chainName === ChainNames.ETH) {
         getGasPrice(addressRef.current);
         activityData.fromAddress = ethereum.address;
@@ -1462,6 +1488,42 @@ export default function SendTo(props: { navigation?: any; route?: any }) {
             });
           }
           break;
+        case ChainNames.COREUM:
+          if (!isCoreumAddress(address)) {
+            error = true;
+            showModal('state', {
+              type: 'error',
+              title: t('INVALID_ADDRESS'),
+              description: t('NOT_VALID_NOBLE_ADDRESS'),
+              onSuccess: hideModal,
+              onFailure: hideModal,
+            });
+          }
+          break;
+        case ChainNames.INJECTIVE:
+          if (!isInjectiveAddress(address)) {
+            error = true;
+            showModal('state', {
+              type: 'error',
+              title: t('INVALID_ADDRESS'),
+              description: t('NOT_VALID_NOBLE_ADDRESS'),
+              onSuccess: hideModal,
+              onFailure: hideModal,
+            });
+          }
+          break;
+        case ChainNames.KUJIRA:
+          if (!isKujiraAddress(address)) {
+            error = true;
+            showModal('state', {
+              type: 'error',
+              title: t('INVALID_ADDRESS'),
+              description: t('NOT_VALID_NOBLE_ADDRESS'),
+              onSuccess: hideModal,
+              onFailure: hideModal,
+            });
+          }
+          break;
         case ChainNames.ETH:
           if (!web3.utils.isAddress(address)) {
             error = true;
@@ -1554,6 +1616,39 @@ export default function SendTo(props: { navigation?: any; route?: any }) {
         payTokenModalParams.signingClient,
         payTokenModalParams.fee,
         ChainNames.NOBLE,
+      );
+    } else if (
+      chainDetails?.chainName === ChainNames.COREUM &&
+      isCoreumAddress(addressRef.current)
+    ) {
+      await sendCosmosTransaction(
+        payTokenModalParams.to_address,
+        payTokenModalParams.sentTokenAmount,
+        payTokenModalParams.signingClient,
+        payTokenModalParams.fee,
+        ChainNames.COREUM,
+      );
+    } else if (
+      chainDetails?.chainName === ChainNames.INJECTIVE &&
+      isInjectiveAddress(addressRef.current)
+    ) {
+      await sendCosmosTransaction(
+        payTokenModalParams.to_address,
+        payTokenModalParams.sentTokenAmount,
+        payTokenModalParams.signingClient,
+        payTokenModalParams.fee,
+        ChainNames.INJECTIVE,
+      );
+    } else if (
+      chainDetails?.chainName === ChainNames.KUJIRA &&
+      isKujiraAddress(addressRef.current)
+    ) {
+      await sendCosmosTransaction(
+        payTokenModalParams.to_address,
+        payTokenModalParams.sentTokenAmount,
+        payTokenModalParams.signingClient,
+        payTokenModalParams.fee,
+        ChainNames.KUJIRA,
       );
     } else if (
       chainDetails?.chainName === ChainNames.EVMOS &&

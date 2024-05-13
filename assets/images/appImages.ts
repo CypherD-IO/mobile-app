@@ -108,6 +108,9 @@ const OPTIONS_ARROW = require('./options-arrow.png');
 const WHATS_NEW = require('./whats-new.png');
 const COSMOS_LOGO = require('./cosmos.png');
 const OSMOSIS_LOGO = require('./osmo.png');
+const COREUM_LOGO = require('./coreum.png');
+const INJECTIVE_LOGO = require('./injective.png');
+const KUJIRA_LOGO = require('./kujira.png');
 const ACTIVITY = require('./activity.png');
 const WALLET = require('./wallet.png');
 const ACTIVITIES = require('./activities.png');
@@ -681,5 +684,8 @@ const AppImages = {
   PENDING,
   CORRECT_WHEAT,
   TELEGRAM_BLUE,
+  COREUM_LOGO,
+  INJECTIVE_LOGO,
+  KUJIRA_LOGO,
 };
 export default AppImages;

@@ -1,34 +1,42 @@
 /* eslint-disable @typescript-eslint/consistent-type-assertions */
 /* eslint-disable @typescript-eslint/no-dynamic-delete */
 import AppImages from '../../assets/images/appImages';
-import { CHAIN_ARBITRUM,
-    CHAIN_AVALANCHE,
-    CHAIN_BASE,
-    CHAIN_BSC,
-    CHAIN_COSMOS,
-    CHAIN_ETH,
-    CHAIN_EVMOS,
-    CHAIN_FTM,
-    CHAIN_JUNO,
-    CHAIN_NOBLE,
-    CHAIN_OPTIMISM,
-    CHAIN_OSMOSIS,
-    CHAIN_POLYGON,
-    CHAIN_POLYGON_ZKEVM,
-    CHAIN_STARGAZE,
-    CHAIN_ZKSYNC_ERA,ChainBackendNames } from '../constants/server';
+import {
+  CHAIN_ARBITRUM,
+  CHAIN_AVALANCHE,
+  CHAIN_BASE,
+  CHAIN_BSC,
+  CHAIN_COREUM,
+  CHAIN_COSMOS,
+  CHAIN_ETH,
+  CHAIN_EVMOS,
+  CHAIN_FTM,
+  CHAIN_INJECTIVE,
+  CHAIN_JUNO,
+  CHAIN_KUJIRA,
+  CHAIN_NOBLE,
+  CHAIN_OPTIMISM,
+  CHAIN_OSMOSIS,
+  CHAIN_POLYGON,
+  CHAIN_POLYGON_ZKEVM,
+  CHAIN_STARGAZE,
+  CHAIN_ZKSYNC_ERA,
+  ChainBackendNames,
+} from '../constants/server';
 
-import { ChainPositionData,
-    DeFiFilter,
-    DeFiPositionTypes,
-    DefiAllocation,
-    DefiData,
-    DefiPositonTypes,
-    Position,
-    PositionTypeData,
-    Protocol,
-    defiProtocolData,
-    protocolOptionType, } from '../models/defi.interface';
+import {
+  ChainPositionData,
+  DeFiFilter,
+  DeFiPositionTypes,
+  DefiAllocation,
+  DefiData,
+  DefiPositonTypes,
+  Position,
+  PositionTypeData,
+  Protocol,
+  defiProtocolData,
+  protocolOptionType,
+} from '../models/defi.interface';
 
 export function getChainLogo(chainName: ChainBackendNames) {
   switch (chainName) {
@@ -52,6 +60,12 @@ export function getChainLogo(chainName: ChainBackendNames) {
       return CHAIN_JUNO.logo_url;
     case ChainBackendNames.NOBLE:
       return CHAIN_NOBLE.logo_url;
+    case ChainBackendNames.COREUM:
+      return CHAIN_COREUM.logo_url;
+    case ChainBackendNames.INJECTIVE:
+      return CHAIN_INJECTIVE.logo_url;
+    case ChainBackendNames.KUJIRA:
+      return CHAIN_KUJIRA.logo_url;
     case ChainBackendNames.OPTIMISM:
       return CHAIN_OPTIMISM.logo_url;
     case ChainBackendNames.OSMOSIS:
@@ -69,7 +83,9 @@ export function getChainLogo(chainName: ChainBackendNames) {
   }
 }
 
-export function getPositionDetails(type: DeFiPositionTypes): [{uri:string}, string] {
+export function getPositionDetails(
+  type: DeFiPositionTypes,
+): [{ uri: string }, string] {
   switch (type) {
     case DefiPositonTypes.LIQUIDITY:
       return [AppImages.DEFI_LIQUIDITY, 'Liquidity Provision'];
@@ -132,23 +148,35 @@ export function parseDefiData(
     const protocolName: string = protocol.name;
     const chainName: ChainBackendNames = protocol.chain as ChainBackendNames;
 
-    if (protocolName in parsedProtocolData.protocols && [ChainBackendNames.ALL, chainName].includes(filters.chain)) {
+    if (
+      protocolName in parsedProtocolData.protocols &&
+      [ChainBackendNames.ALL, chainName].includes(filters.chain)
+    ) {
       protocol.positions.forEach(position => {
         if (
-          (filters.positionTypes.length === 0 || filters.positionTypes.includes(position.type)) &&
-          (!filters.activePositionsOnly || (filters.activePositionsOnly && position.total.isActive))
+          (filters.positionTypes.length === 0 ||
+            filters.positionTypes.includes(position.type)) &&
+          (!filters.activePositionsOnly ||
+            (filters.activePositionsOnly && position.total.isActive))
         ) {
-          if (!parsedProtocolData.protocols[protocolName].chains.includes(chainName))
+          if (
+            !parsedProtocolData.protocols[protocolName].chains.includes(
+              chainName,
+            )
+          )
             parsedProtocolData.protocols[protocolName].chains.push(chainName);
 
           if (position.details.rewards) {
             position.details.rewards.forEach(reward => {
               parsedProtocolData.total.claimable += reward.balanceUSD;
-              parsedProtocolData.protocols[protocol.name].total.claimable += reward.balanceUSD;
+              parsedProtocolData.protocols[protocol.name].total.claimable +=
+                reward.balanceUSD;
             });
           }
 
-          const chainIndex = chainAllocation.findIndex(chain => chain.name === chainName);
+          const chainIndex = chainAllocation.findIndex(
+            chain => chain.name === chainName,
+          );
           if (chainIndex !== -1) {
             chainAllocation[chainIndex].balance += position.total.value;
           } else {
@@ -164,14 +192,18 @@ export function parseDefiData(
           parsedProtocolData.total.debt += position.total.debt;
           parsedProtocolData.total.value += position.total.value;
 
-          parsedProtocolData.protocols[protocolName].total.supply += position.total.supply;
-          parsedProtocolData.protocols[protocolName].total.debt += position.total.debt;
-          parsedProtocolData.protocols[protocolName].total.value += position.total.value;
+          parsedProtocolData.protocols[protocolName].total.supply +=
+            position.total.supply;
+          parsedProtocolData.protocols[protocolName].total.debt +=
+            position.total.debt;
+          parsedProtocolData.protocols[protocolName].total.value +=
+            position.total.value;
 
-          
           const type = position.type;
           const [typeLogo, typeName] = getPositionDetails(type);
-          const typeIndex = typeAllocation.findIndex(item => item.name === typeName);
+          const typeIndex = typeAllocation.findIndex(
+            item => item.name === typeName,
+          );
           if (typeIndex !== -1) {
             typeAllocation[typeIndex].balance += position.total.value;
           } else {
@@ -183,16 +215,24 @@ export function parseDefiData(
             });
           }
           if (type in parsedProtocolData.protocols[protocolName].types) {
-            parsedProtocolData.protocols[protocolName].types[position.type].total.supply += position.total.supply;
-            parsedProtocolData.protocols[protocolName].types[position.type].total.debt += position.total.debt;
-            parsedProtocolData.protocols[protocolName].types[position.type].total.value += position.total.value;
-            
-            parsedProtocolData.protocols[protocolName].types[type].holdings.push({
+            parsedProtocolData.protocols[protocolName].types[
+              position.type
+            ].total.supply += position.total.supply;
+            parsedProtocolData.protocols[protocolName].types[
+              position.type
+            ].total.debt += position.total.debt;
+            parsedProtocolData.protocols[protocolName].types[
+              position.type
+            ].total.value += position.total.value;
+
+            parsedProtocolData.protocols[protocolName].types[
+              type
+            ].holdings.push({
               chain: chainName,
               chainLogo: getChainLogo(chainName),
               ...position,
             });
-        } else {
+          } else {
             const [typeLogo, typeName] = getPositionDetails(type);
             parsedProtocolData.protocols[protocolName].types[type] = {
               value: type,
@@ -216,15 +256,20 @@ export function parseDefiData(
       });
     } else {
       if (
-        (filters.protocols.length === 0 || filters.protocols.includes(protocolName)) &&
+        (filters.protocols.length === 0 ||
+          filters.protocols.includes(protocolName)) &&
         [ChainBackendNames.ALL, chainName].includes(filters.chain)
       ) {
-        protocolOptionsData.push({ logo: {uri:protocol.logo}, label: protocolName, value: protocolName });
+        protocolOptionsData.push({
+          logo: { uri: protocol.logo },
+          label: protocolName,
+          value: protocolName,
+        });
         const tempProtocolData: defiProtocolData = {
           chains: [],
           protocolName: protocol.name,
           protocolURL: protocol.url,
-          protocolLogo: {uri: protocol.logo},
+          protocolLogo: { uri: protocol.logo },
           total: {
             supply: 0,
             debt: 0,
@@ -235,10 +280,13 @@ export function parseDefiData(
         };
         protocol.positions.forEach(position => {
           if (
-            (filters.positionTypes.length === 0 || filters.positionTypes.includes(position.type)) &&
-            (!filters.activePositionsOnly || (filters.activePositionsOnly && position.total.isActive))
+            (filters.positionTypes.length === 0 ||
+              filters.positionTypes.includes(position.type)) &&
+            (!filters.activePositionsOnly ||
+              (filters.activePositionsOnly && position.total.isActive))
           ) {
-            if (!tempProtocolData.chains.includes(chainName)) tempProtocolData.chains.push(chainName);
+            if (!tempProtocolData.chains.includes(chainName))
+              tempProtocolData.chains.push(chainName);
 
             if (position.details.rewards) {
               position.details.rewards.forEach(reward => {
@@ -246,7 +294,9 @@ export function parseDefiData(
                 tempProtocolData.total.claimable += reward.balanceUSD;
               });
             }
-            const index = chainAllocation.findIndex(chain => chain.name === chainName);
+            const index = chainAllocation.findIndex(
+              chain => chain.name === chainName,
+            );
             if (index !== -1) {
               chainAllocation[index].balance += position.total.value;
             } else {
@@ -265,10 +315,12 @@ export function parseDefiData(
             tempProtocolData.total.supply += position.total.supply;
             tempProtocolData.total.debt += position.total.debt;
             tempProtocolData.total.value += position.total.value;
-            
+
             const type = position.type;
             const [typeLogo, typeName] = getPositionDetails(type);
-            const typeIndex = typeAllocation.findIndex(item => item.name === typeName);
+            const typeIndex = typeAllocation.findIndex(
+              item => item.name === typeName,
+            );
             if (typeIndex !== -1) {
               typeAllocation[typeIndex].balance += position.total.value;
             } else {
@@ -280,9 +332,12 @@ export function parseDefiData(
               });
             }
             if (type in tempProtocolData.types) {
-              tempProtocolData.types[position.type].total.supply += position.total.supply;
-              tempProtocolData.types[position.type].total.debt += position.total.debt;
-              tempProtocolData.types[position.type].total.value += position.total.value;
+              tempProtocolData.types[position.type].total.supply +=
+                position.total.supply;
+              tempProtocolData.types[position.type].total.debt +=
+                position.total.debt;
+              tempProtocolData.types[position.type].total.value +=
+                position.total.value;
               tempProtocolData.types[type].holdings.push({
                 chain: chainName,
                 chainLogo: getChainLogo(chainName),
@@ -332,7 +387,10 @@ export function parseDefiData(
   };
 }
 
-export function sortDefiProtocolDesc(protocolA: defiProtocolData, protocolB: defiProtocolData) {
+export function sortDefiProtocolDesc(
+  protocolA: defiProtocolData,
+  protocolB: defiProtocolData,
+) {
   if (protocolA.total.value < protocolB.total.value) {
     return 1;
   } else if (protocolA.total.value > protocolB.total.value) {
@@ -341,7 +399,10 @@ export function sortDefiProtocolDesc(protocolA: defiProtocolData, protocolB: def
   return 0;
 }
 
-export function sortDefiChainsDesc(chainA: ChainPositionData, chainB: ChainPositionData) {
+export function sortDefiChainsDesc(
+  chainA: ChainPositionData,
+  chainB: ChainPositionData,
+) {
   if (chainA.total.value < chainB.total.value) {
     return 1;
   } else if (chainA.total.value > chainB.total.value) {
@@ -359,7 +420,10 @@ export function sortDefiPositionDesc(positionA: Position, positionB: Position) {
   return 0;
 }
 
-export function sortDefiAllocation(dataA: DefiAllocation, dataB: DefiAllocation) {
+export function sortDefiAllocation(
+  dataA: DefiAllocation,
+  dataB: DefiAllocation,
+) {
   if (dataA.balance < dataB.balance) {
     return 1;
   } else if (dataA.balance > dataB.balance) {
@@ -368,11 +432,18 @@ export function sortDefiAllocation(dataA: DefiAllocation, dataB: DefiAllocation)
   return 0;
 }
 
-export function sortProtocols(protocolA: protocolOptionType, protocolB:protocolOptionType){
-    if(protocolA.label.toLocaleLowerCase()<protocolB.label.toLocaleLowerCase()){
-        return -1;
-    }else if(protocolA.label.toLocaleLowerCase() > protocolB.label.toLocaleLowerCase()){
-        return 1;
-    }
-    return 0;
+export function sortProtocols(
+  protocolA: protocolOptionType,
+  protocolB: protocolOptionType,
+) {
+  if (
+    protocolA.label.toLocaleLowerCase() < protocolB.label.toLocaleLowerCase()
+  ) {
+    return -1;
+  } else if (
+    protocolA.label.toLocaleLowerCase() > protocolB.label.toLocaleLowerCase()
+  ) {
+    return 1;
+  }
+  return 0;
 }
