@@ -333,7 +333,7 @@ export default function ReStake({ route, navigation }) {
         const gasWanted = simulationResponse.data.gas_info.gas_used;
         const bodyForTransaction = await delegateTxnBody(
           { ...accountDetailsResponse.data.account.base_account, sequence },
-          ethers.utils
+          ethers
             .parseUnits(
               convertAmountOfContractDecimal(
                 (cosmosConfig.evmos.gasPrice * gasWanted).toString(),

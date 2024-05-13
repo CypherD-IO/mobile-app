@@ -40,6 +40,7 @@ import { cosmosConfig } from '../../constants/cosmosConfig';
 import Long from 'long';
 import { MsgTransfer } from 'cosmjs-types/ibc/applications/transfer/v1/tx';
 import useEvmosSigner from '../useEvmosSigner';
+import { decideGasLimitBasedOnTypeOfToAddress } from '../../core/NativeTransactionHandler';
 
 export default function useTransactionManager() {
   const globalContext = useContext<any>(GlobalContext);
@@ -76,20 +77,6 @@ export default function useTransactionManager() {
     return isNative;
   }
 
-  const decideGasLimitBasedOnTypeOfToAddress = (
-    code: string,
-    gasLimit: number,
-  ): number => {
-    if (gasLimit > 21000) {
-      if (code !== '0x') {
-        return 2 * gasLimit;
-      }
-      return gasLimit;
-    } else {
-      return 21000;
-    }
-  };
-
   const sendNativeToken = async ({
     web3,
     chain,
@@ -111,7 +98,12 @@ export default function useTransactionManager() {
         contractAddress,
         contractDecimals,
       });
-      gasLimit = decideGasLimitBasedOnTypeOfToAddress(code, gasLimit);
+      gasLimit = decideGasLimitBasedOnTypeOfToAddress(
+        code,
+        gasLimit,
+        chain,
+        contractAddress,
+      );
       const tx = {
         from: ethereum.address,
         to: toAddress,
@@ -164,10 +156,7 @@ export default function useTransactionManager() {
       ];
 
       // How many tokens? -- Use BigNumber everywhere
-      const numberOfTokens = ethers.utils.parseUnits(
-        amountToSend,
-        contractDecimals,
-      );
+      const numberOfTokens = ethers.parseUnits(amountToSend, contractDecimals);
       // Form the contract and contract data
       const contract = new web3.eth.Contract(
         contractAbiFragment,
@@ -526,7 +515,7 @@ export default function useTransactionManager() {
         denom,
         contractDecimals,
         userAccountData,
-        gasFee: ethers.utils
+        gasFee: ethers
           .parseUnits(gasDetails.gasFeeInCrypto.toString(), '18')
           .toString(), // limitDecimalPlaces(gasDetails.gasFeeInCrypto, contractDecimals),
         gasWanted: String(gasDetails.gasLimit),

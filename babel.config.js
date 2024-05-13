@@ -15,6 +15,7 @@ module.exports = (api) => {
       'nativewind/babel',
       '@babel/plugin-transform-flow-strip-types',
       '@babel/plugin-proposal-optional-catch-binding',
+      ['@babel/plugin-transform-private-methods', { loose: true }],
       // SUPPORTED BY DEFAULT: '@babel/plugin-transform-block-scoping',
       [
         '@babel/plugin-proposal-class-properties',

@@ -323,9 +323,6 @@ const TokenItem = ({
                 <CyDText className={'font-extrabold text-[16px]'}>
                   {name}{' '}
                 </CyDText>
-                <CyDView className='bg-gray-200 rounded-[5px] px-[4px]'>
-                  <CyDText className={'text-[12px]'}>{symbol}</CyDText>
-                </CyDView>
                 {isZeroFeeCardFunding && renderPage === 'fundCardPage' ? (
                   <CyDView className='h-[20px] bg-privacyMessageBackgroundColor rounded-[8px] mx-[4px] px-[8px] flex justify-center items-center'>
                     <CyDText className={'font-black text-[10px]'}>

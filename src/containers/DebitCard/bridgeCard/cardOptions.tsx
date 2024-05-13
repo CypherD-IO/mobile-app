@@ -1,5 +1,5 @@
 import { t } from 'i18next';
-import React, { useContext, useState } from 'react';
+import React, { useContext, useEffect, useState } from 'react';
 import { StyleSheet } from 'react-native';
 import { GlobalContext } from '../../../core/globalContext';
 import {
@@ -42,6 +42,7 @@ export default function BridgeCardOptionsScreen(props: {
   const [isStatusLoading, setIsStatusLoading] = useState(false);
   const { showModal, hideModal } = useGlobalModalContext();
   const { patchWithAuth } = useAxios();
+  const isPhoneVerified = cardProfile.pc?.phoneVerified ?? false;
   const [cardUpdateToStatus, setCardUpdateToStatus] = useState(
     card.status === CardStatus.ACTIVE ? 'lock' : 'unlock',
   );
@@ -140,10 +141,28 @@ export default function BridgeCardOptionsScreen(props: {
             onValueChange={() => {
               void updateCardStatus(cardUpdateToStatus, !isCardBlocked);
             }}
-            value={!isCardBlocked}
+            value={isCardBlocked}
           />
         )}
       </CyDView>
+      {!isPhoneVerified && (
+        <CyDTouchView
+          onPress={() =>
+            navigation.navigate(screenTitle.PHONE_NUMBER_VERIFICATION_SCREEN, {
+              phoneNumber: cardProfile?.phone,
+            })
+          }
+          className='flex flex-row justify-between align-center ml-[20px] mr-[4px] pt-[20px] pb-[15px] border-b-[1px] border-sepratorColor'>
+          <CyDText className='text-[16px] font-bold'>
+            {t<string>('VERIFY_PHONE_NUMBER_INIT_CAPS')}
+          </CyDText>
+          <CyDImage
+            source={AppImages.OPTIONS_ARROW}
+            className={'w-[15%] h-[18px]'}
+            resizeMode={'contain'}
+          />
+        </CyDTouchView>
+      )}
       {!isCardBlocked && card.type === 'physical' && (
         <CyDTouchView
           onPress={() =>

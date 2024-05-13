@@ -431,9 +431,18 @@ export default function BridgeFundCardScreen({ route }: { route: any }) {
       } catch (error) {
         void logAnalytics({
           type: AnalyticsType.ERROR,
-          chain: selectedToken?.chainDetails?.chainName ?? '',
+          chain: selectedToken?.chainDetails?.backendName ?? '',
           message: parseErrorMessage(error),
           screen: route.name,
+          address: PURE_COSMOS_CHAINS.includes(
+            selectedToken?.chainDetails?.chainName as string,
+          )
+            ? get(
+                cosmosAddresses,
+                selectedToken?.chainDetails?.chainName as string,
+                '',
+              )
+            : get(ethereum, 'address', ''),
         });
         activityRef.current &&
           activityContext.dispatch({

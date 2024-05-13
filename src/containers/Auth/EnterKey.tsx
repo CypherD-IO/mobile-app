@@ -30,7 +30,6 @@ import { QRScannerScreens } from '../../constants/server';
 import { ActivityContextDef } from '../../reducers/activity_reducer';
 import { screenTitle } from '../../constants/index';
 import Loading from '../../components/v2/loading';
-import { isValidMnemonic } from 'ethers/lib/utils';
 import { getReadOnlyWalletData } from '../../core/asyncStorage';
 import useAxios from '../../core/HttpRequest';
 import clsx from 'clsx';
@@ -43,6 +42,7 @@ import Button from '../../components/v2/button';
 import { ConnectionTypes } from '../../constants/enum';
 import { generateMultipleWalletAddressesFromSeedPhrase } from '../../core/Address';
 import { HdWalletContextDef } from '../../reducers/hdwallet_reducer';
+import { Mnemonic } from 'ethers';
 
 export default function Login(props) {
   // NOTE: DEFINE VARIABLE 🍎🍎🍎🍎🍎🍎
@@ -102,7 +102,7 @@ export default function Login(props) {
     const keyValue = textValue.split(/\s+/);
     const { isReadOnlyWallet } = hdWalletContext.state;
     const { ethereum } = hdWalletContext.state.wallet;
-    if (keyValue.length >= 12 && isValidMnemonic(textValue)) {
+    if (keyValue.length >= 12 && Mnemonic.isValidMnemonic(textValue)) {
       if (isReadOnlyWallet) {
         const data = await getReadOnlyWalletData();
         if (data) {

@@ -275,7 +275,7 @@ export default function StakingDelegation({ route, navigation }) {
         const gasWanted = simulationResponse.data.gas_info.gas_used;
         const bodyForTransaction = await generateTransactionBody(
           { ...accountDetailsResponse.data.account.base_account, sequence },
-          ethers.utils
+          ethers
             .parseUnits(
               convertAmountOfContractDecimal(
                 (cosmosConfig.evmos.gasPrice * gasWanted).toString(),
@@ -974,10 +974,7 @@ export default function StakingDelegation({ route, navigation }) {
                     ) {
                       setFinalAmount(itemData.balance);
                     } else {
-                      const numberOfTokens = ethers.utils.parseUnits(
-                        amount,
-                        '18',
-                      );
+                      const numberOfTokens = ethers.parseUnits(amount, 18);
                       setFinalAmount(BigInt(numberOfTokens.toString()));
                     }
 

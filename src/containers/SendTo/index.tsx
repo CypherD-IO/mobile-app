@@ -118,14 +118,12 @@ export default function SendTo(props: { navigation?: any; route?: any }) {
   const {
     valueForUsd,
     tokenData,
-    sendAddress = '',
   }: {
     valueForUsd: string;
     tokenData: Holding;
-    sendAddress: string;
   } = route.params;
   const [Data, setData] = useState<string[]>([]);
-  const [addressText, setAddressText] = useState<string>(sendAddress);
+  const [addressText, setAddressText] = useState<string>('');
   const addressRef = useRef('');
   const ensRef = useRef<string | null>(null);
   const [isAddressValid, setIsAddressValid] = useState(true);
@@ -722,7 +720,7 @@ export default function SendTo(props: { navigation?: any; route?: any }) {
 
   const cosmosTransaction = async (address: string, chainName: string) => {
     setLoading(true);
-    const amount = ethers.utils
+    const amount = ethers
       .parseUnits(
         parseFloat(
           valueForUsd.length > 8 ? valueForUsd.substring(0, 8) : valueForUsd,
@@ -776,7 +774,7 @@ export default function SendTo(props: { navigation?: any; route?: any }) {
     chainName: string,
   ) => {
     setLoading(true);
-    const amount = ethers.utils
+    const amount = ethers
       .parseUnits(convertAmountOfContractDecimal(valueForUsd, 6), 6)
       .toString();
     await cosmosSendTokens(
@@ -1148,7 +1146,11 @@ export default function SendTo(props: { navigation?: any; route?: any }) {
         chain: tokenData.chainDetails.backendName,
         amountToSend,
         toAddress: addressRef.current,
-        contractAddress: tokenData.contractAddress,
+        contractAddress:
+          tokenData.contractAddress ??
+          (chainDetails?.chainName === ChainNames.EVMOS
+            ? CHAIN_EVMOS.native_token_address
+            : ''),
         contractDecimals: tokenData.contractDecimals,
         symbol: tokenData.symbol,
       });
@@ -1323,7 +1325,11 @@ export default function SendTo(props: { navigation?: any; route?: any }) {
           fromAddress: ethereum?.address,
           toAddress: addressText,
           amountToSend,
-          contractAddress: tokenData.contractAddress,
+          contractAddress:
+            tokenData.contractAddress ??
+            (chainDetails?.chainName === ChainNames.EVMOS
+              ? CHAIN_EVMOS.native_token_address
+              : ''),
           contractDecimals: tokenData.contractDecimals,
         });
         setLoading(false);
