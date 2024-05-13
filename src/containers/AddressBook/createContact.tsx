@@ -201,6 +201,21 @@ export const CreateContact = ({ route, navigation }: RouteProps) => {
       placeHolder: t('ETHEREUM_ADDRESS_PLACEHOLDER'),
       logo: AppImages.MOONRIVER_LOGO,
     },
+    coreum: {
+      label: t(`${ChainNames.COREUM.toUpperCase()} ADDRESS`),
+      placeHolder: t('ETHEREUM_ADDRESS_PLACEHOLDER'),
+      logo: AppImages.MOONRIVER_LOGO,
+    },
+    injectuive: {
+      label: t(`${ChainNames.INJECTIVE.toUpperCase()} ADDRESS`),
+      placeHolder: t('ETHEREUM_ADDRESS_PLACEHOLDER'),
+      logo: AppImages.MOONRIVER_LOGO,
+    },
+    kujira: {
+      label: t(`${ChainNames.KUJIRA.toUpperCase()} ADDRESS`),
+      placeHolder: t('ETHEREUM_ADDRESS_PLACEHOLDER'),
+      logo: AppImages.MOONRIVER_LOGO,
+    },
   };
 
   const validateAddress = (
