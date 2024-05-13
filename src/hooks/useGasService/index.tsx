@@ -26,7 +26,6 @@ import { useContext } from 'react';
 import {
   HdWalletContext,
   PortfolioContext,
-  convertAmountOfContractDecimal,
   getNativeToken,
   getTimeOutTime,
   limitDecimalPlaces,
@@ -385,9 +384,7 @@ export default function useGasService() {
       signer,
     );
     const contractDecimal = get(cosmosConfig, chainName).contractDecimal;
-    const amountToSend = String(
-      parseFloat(amount) * Math.pow(10, contractDecimal),
-    ).split('.')[0];
+    const amountToSend = ethers.parseUnits(amount, contractDecimal).toString();
     const transferAmount: Coin = {
       denom,
       amount: amountToSend.toString(),
@@ -429,7 +426,14 @@ export default function useGasService() {
     );
 
     const gasPrice = cosmosConfig[chainName].gasPrice;
-    const gasFee = simulation * gasPrice;
+
+    const gasFee = ethers
+      .formatUnits(
+        Math.floor(simulation * Number(gasPrice)),
+        nativeToken.contractDecimals,
+      )
+      .toString();
+
     const fee = {
       gas: Math.floor(simulation * 1.8).toString(),
       amount: [
@@ -437,7 +441,9 @@ export default function useGasService() {
           denom: nativeToken?.denom ?? denom,
           amount: GASLESS_CHAINS.includes(backendName)
             ? '0'
-            : parseInt(gasFee.toFixed(6).split('.')[1]).toString(),
+            : ethers
+                .parseUnits(gasPrice.toString(), nativeToken.contractDecimals)
+                .toString(),
         },
       ],
     };
@@ -445,6 +451,7 @@ export default function useGasService() {
       gasFeeInCrypto: gasFee,
       gasLimit: fee.gas,
       gasPrice,
+      fee,
     };
   };
 

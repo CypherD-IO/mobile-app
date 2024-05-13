@@ -347,6 +347,9 @@ export default function useInitializer() {
           get(attributes, 'junoAddress'),
           get(attributes, 'stargazeAddress'),
           get(attributes, 'nobleAddress'),
+          get(attributes, 'coreumAddress'),
+          // get(attributes, 'injectiveAddress'),
+          // get(attributes, 'kujiraAddress'),
         );
         void registerIntercomUser(attributes);
       } else {

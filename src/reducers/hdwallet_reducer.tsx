@@ -2,7 +2,6 @@ import Intercom from '@intercom/intercom-react-native';
 import analytics from '@react-native-firebase/analytics';
 import { CHAIN_ETH, Chain, CHAIN_NAMES } from '../constants/server';
 import { _NO_CYPHERD_CREDENTIAL_AVAILABLE_, isAddressSet } from '../core/util';
-import * as Sentry from '@sentry/react-native';
 import { Dispatch } from 'react';
 
 export interface WalletKey {

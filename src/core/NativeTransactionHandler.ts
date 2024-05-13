@@ -796,8 +796,6 @@ export async function estimateGasForCosmosTransaction(
         rpc,
         signer,
       );
-
-      // transaction gas fee calculation
       const sendMsg: MsgSendEncodeObject = {
         typeUrl: '/cosmos.bank.v1beta1.MsgSend',
         value: {

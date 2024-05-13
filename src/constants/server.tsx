@@ -46,6 +46,9 @@ export enum ChainBackendNames {
   JUNO = 'JUNO',
   STARGAZE = 'STARGAZE',
   NOBLE = 'NOBLE',
+  COREUM = 'COREUM',
+  INJECTIVE = 'INJECTIVE',
+  KUJIRA = 'KUJIRA',
   SHARDEUM = 'SHARDEUM',
   SHARDEUM_SPHINX = 'SHARDEUM_SPHINX',
   ZKSYNC_ERA = 'ZKSYNC_ERA',
@@ -73,6 +76,9 @@ export enum FundWalletAddressType {
   JUNO = 'JUNO',
   STARGAZE = 'STARGAZE',
   NOBLE = 'NOBLE',
+  COREUM = 'COREUM',
+  INJECTIVE = 'INJECTIVE',
+  KUJIRA = 'KUJIRA',
   POLYGON = 'POLYGON',
   AVALANCHE = 'AVALANCHE',
   FANTOM = 'FANTOM',
@@ -327,6 +333,45 @@ export const CHAIN_NOBLE: Chain = {
   coinGeckoId: '',
 };
 
+export const CHAIN_COREUM: Chain = {
+  chainName: 'coreum',
+  name: 'Coreum',
+  symbol: 'COREUM',
+  id: 22,
+  logo_url: AppImages.COREUM_LOGO,
+  backendName: ChainBackendNames.COREUM,
+  chain_id: 'coreum-mainnet-1',
+  native_token_address: '0xeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee',
+  chainIdNumber: 0,
+  coinGeckoId: 'coreum',
+};
+
+export const CHAIN_INJECTIVE: Chain = {
+  chainName: 'injective',
+  name: 'Injective',
+  symbol: 'INJECTIVE',
+  id: 23,
+  logo_url: AppImages.INJECTIVE_LOGO,
+  backendName: ChainBackendNames.INJECTIVE,
+  chain_id: 'injective-1',
+  native_token_address: '0xeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee',
+  chainIdNumber: 0,
+  coinGeckoId: 'injective-protocol',
+};
+
+export const CHAIN_KUJIRA: Chain = {
+  chainName: 'kujira',
+  name: 'Kujira',
+  symbol: 'KUJIRA',
+  id: 24,
+  logo_url: AppImages.KUJIRA_LOGO,
+  backendName: ChainBackendNames.KUJIRA,
+  chain_id: 'kaiyo-1',
+  native_token_address: '0xeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee',
+  chainIdNumber: 0,
+  coinGeckoId: 'kujira',
+};
+
 export const CHAIN_ZKSYNC_ERA: Chain = {
   chainName: 'ethereum',
   name: 'zkSync Era',
@@ -433,6 +478,9 @@ export const CHAIN_NAMES = [
   'juno',
   'stargaze',
   'noble',
+  'coreum',
+  'injective',
+  'kujira',
 ];
 export const COSMOS_CHAINS = [
   'cosmos',
@@ -441,6 +489,9 @@ export const COSMOS_CHAINS = [
   'juno',
   'stargaze',
   'noble',
+  'coreum',
+  'injective',
+  'kujira',
 ];
 export const PURE_COSMOS_CHAINS = [
   'cosmos',
@@ -448,6 +499,8 @@ export const PURE_COSMOS_CHAINS = [
   'juno',
   'stargaze',
   'noble',
+  'coreum',
+  'kujira',
 ];
 export const ALL_CHAINS: Chain[] = [
   CHAIN_ETH,
@@ -462,6 +515,9 @@ export const ALL_CHAINS: Chain[] = [
   CHAIN_COSMOS,
   CHAIN_OSMOSIS,
   CHAIN_JUNO,
+  CHAIN_COREUM,
+  CHAIN_INJECTIVE,
+  CHAIN_KUJIRA,
   CHAIN_BSC,
   CHAIN_ZKSYNC_ERA,
   CHAIN_BASE,
@@ -559,6 +615,9 @@ export const PORTFOLIO_CHAINS_BACKEND_NAMES = [
   ChainBackendNames.COSMOS,
   ChainBackendNames.JUNO,
   ChainBackendNames.NOBLE,
+  ChainBackendNames.COREUM,
+  ChainBackendNames.INJECTIVE,
+  ChainBackendNames.KUJIRA,
   ChainBackendNames.OSMOSIS,
   ChainBackendNames.STARGAZE,
   ChainBackendNames.ZKSYNC_ERA,
@@ -581,6 +640,9 @@ export const CARD_CHAINS: Chain[] = [
   CHAIN_COSMOS,
   CHAIN_OSMOSIS,
   CHAIN_JUNO,
+  CHAIN_COREUM,
+  // CHAIN_INJECTIVE,
+  // CHAIN_KUJIRA,
   CHAIN_SHARDEUM,
   CHAIN_SHARDEUM_SPHINX,
   CHAIN_ZKSYNC_ERA,
@@ -598,6 +660,9 @@ export const IBC_CHAINS: Chain[] = [
   CHAIN_JUNO,
   CHAIN_STARGAZE,
   CHAIN_NOBLE,
+  CHAIN_COREUM,
+  // CHAIN_INJECTIVE,
+  // CHAIN_KUJIRA,
 ];
 
 export const ALL_CHAINS_WITH_COLLECTION = [CHAIN_COLLECTION, ...ALL_CHAINS];
@@ -610,6 +675,9 @@ export enum ChainNames {
   JUNO = 'juno',
   STARGAZE = 'stargaze',
   NOBLE = 'noble',
+  COREUM = 'coreum',
+  INJECTIVE = 'injective',
+  KUJIRA = 'kujira',
   BSC = 'binance',
   POLYGON = 'polygon',
   AVALANCHE = 'avalanche',
@@ -638,6 +706,9 @@ export enum ChainNameMapping {
   COSMOS = 'cosmos',
   OSMOSIS = 'osmosis',
   JUNO = 'juno',
+  COREUM = 'coreum',
+  INJECTIVE = 'injective',
+  KUJIRA = 'kujira',
   STARGAZE = 'stargaze',
   NOBLE = 'noble',
   SHARDEUM = 'shardeum',
@@ -667,6 +738,9 @@ export const ChainConfigMapping = {
   juno: CHAIN_JUNO,
   stargaze: CHAIN_STARGAZE,
   noble: CHAIN_NOBLE,
+  coreum: CHAIN_COREUM,
+  injective: CHAIN_INJECTIVE,
+  kujira: CHAIN_KUJIRA,
   shardeum: CHAIN_SHARDEUM,
   shardeum_sphinx: CHAIN_SHARDEUM_SPHINX,
   zksync_era: CHAIN_ZKSYNC_ERA,
@@ -713,6 +787,9 @@ export const ChainNameToContactsChainNameMapping = {
   Cosmos: 'cosmos',
   Osmosis: 'osmosis',
   Juno: 'juno',
+  Coreum: 'coreum',
+  Injective: 'injective',
+  Kujira: 'kujira',
   Optimism: 'optimism',
   Stargaze: 'stargaze',
   Noble: 'noble',

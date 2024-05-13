@@ -18,7 +18,6 @@ import {
   GASLESS_CHAINS,
   PURE_COSMOS_CHAINS,
   CHAIN_OSMOSIS,
-  CHAIN_EVMOS,
 } from '../../../constants/server';
 import {
   ActivityContext,
@@ -111,6 +110,7 @@ export default function BridgeFundCardScreen({ route }: { route: any }) {
   const juno = hdWallet.state.wallet.juno;
   const stargaze = hdWallet.state.wallet.stargaze;
   const noble = hdWallet.state.wallet.noble;
+  const coreum = hdWallet.state.wallet.coreum;
 
   const cosmosAddresses = {
     cosmos: cosmos.address,
@@ -118,6 +118,7 @@ export default function BridgeFundCardScreen({ route }: { route: any }) {
     juno: juno.address,
     stargaze: stargaze.address,
     noble: noble.address,
+    coreum: coreum.address,
   };
 
   const rpc = {
@@ -126,6 +127,7 @@ export default function BridgeFundCardScreen({ route }: { route: any }) {
     juno: globalStateContext.globalState.rpcEndpoints.JUNO.primary,
     stargaze: globalContext.globalState.rpcEndpoints.STARGAZE.primary,
     noble: globalContext.globalState.rpcEndpoints.NOBLE.primary,
+    coreum: globalContext.globalState.rpcEndpoints.COREUM.primary,
   };
 
   const [isChooseTokenVisible, setIsChooseTokenVisible] =
@@ -174,7 +176,6 @@ export default function BridgeFundCardScreen({ route }: { route: any }) {
   const [nativeTokenBalance, setNativeTokenBalance] = useState<number>(0);
   const { t } = useTranslation();
   const { showModal, hideModal } = useGlobalModalContext();
-  const tokenQuoteExpiry = 60;
   const isFocused = useIsFocused();
   const {
     estimateGasForEvm,
@@ -589,13 +590,10 @@ export default function BridgeFundCardScreen({ route }: { route: any }) {
             amountInFiat: String(quote.amount),
             symbol: selectedTokenSymbol,
             toAddress: targetWalletAddress,
-            gasFeeInCrypto: String(
-              formatAmount(Number(gasDetails?.gasFeeInCrypto)),
-            ),
+            gasFeeInCrypto: String(formatAmount(Number(gasDetails?.gasPrice))),
             gasFeeInFiat: String(
               formatAmount(
-                Number(gasDetails?.gasFeeInCrypto) *
-                  Number(nativeToken?.price ?? 0),
+                Number(gasDetails?.gasPrice) * Number(nativeToken?.price ?? 0),
               ),
             ),
             nativeTokenSymbol: String(selectedToken?.chainDetails?.symbol),
