@@ -831,7 +831,7 @@ export async function estimateGasForCosmosTransaction(
             denom: nativeToken?.denom ?? tokenData.denom,
             amount: GASLESS_CHAINS.includes(chainSelected.backendName)
               ? '0'
-              : parseInt(gasFee.toFixed(6).split('.')[1]).toString(),
+              : Math.floor(gasFee).toString(),
           },
         ],
       };
@@ -855,14 +855,19 @@ export async function estimateGasForCosmosTransaction(
         sentValueUSD: parseFloat(valueForUsd) * parseFloat(tokenData.price),
         to_address: address,
         fromNativeTokenSymbol: nativeToken?.symbol ?? tokenData.symbol,
-        gasFeeNative: microAtomToAtom(fee.amount[0].amount),
+        gasFeeNative: microAtomToAtom(
+          fee.amount[0].amount,
+          tokenData.contractDecimals,
+        ),
         gasFeeDollar: microAtomToUsd(
           fee.amount[0].amount,
           nativeToken?.price ?? tokenData?.price,
+          tokenData.contractDecimals,
         ),
         finalGasPrice: microAtomToUsd(
           fee.amount[0].amount,
           nativeToken?.price ?? tokenData?.price,
+          tokenData.contractDecimals,
         ),
         gasLimit: fee.gas,
         signingClient,
