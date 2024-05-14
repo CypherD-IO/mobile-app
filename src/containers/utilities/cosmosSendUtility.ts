@@ -1,9 +1,13 @@
-export const microAtomToAtom = (amount: string): string => {
-  return (parseFloat(amount) * 10 ** -6).toFixed(6).toString();
+export const microAtomToAtom = (amount: string, decimals = 6): string => {
+  return (parseFloat(amount) * 10 ** -decimals).toFixed(6).toString();
 };
 
-export const microAtomToUsd = (amount: string, tokenPrice: string): string => {
-  return (parseFloat(amount) * 10 ** -6 * parseFloat(tokenPrice))
+export const microAtomToUsd = (
+  amount: string,
+  tokenPrice: string,
+  decimals = 6,
+): string => {
+  return (parseFloat(amount) * 10 ** -decimals * parseFloat(tokenPrice))
     .toFixed(6)
     .toString();
 };

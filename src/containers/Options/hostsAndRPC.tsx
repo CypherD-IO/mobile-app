@@ -27,7 +27,6 @@ import RNExitApp from 'react-native-exit-app';
 import AppImages from '../../../assets/images/appImages';
 import { showToast } from '../utilities/toastUtility';
 import { RPCPreference } from '../../constants/enum';
-import { isIOS } from '../../misc/checkers';
 import { BackHandler, Keyboard } from 'react-native';
 
 export default function HostsAndRPCScreen({ navigation }) {
@@ -72,8 +71,8 @@ export default function HostsAndRPCScreen({ navigation }) {
     moonbeam: globalContext.globalState.rpcEndpoints?.MOONBEAM?.primary,
     moonriver: globalContext.globalState.rpcEndpoints?.MOONRIVER?.primary,
     coreum: globalContext.globalState.rpcEndpoints?.COREUM?.primary,
-    // injective: globalContext.globalState.rpcEndpoints?.INJECTIVE?.primary,
-    // kujira: globalContext.globalState.rpcEndpoints?.KUJIRA?.primary,
+    injective: globalContext.globalState.rpcEndpoints?.INJECTIVE?.primary,
+    kujira: globalContext.globalState.rpcEndpoints?.KUJIRA?.primary,
   });
 
   const handleBackButton = () => {
@@ -158,6 +157,15 @@ export default function HostsAndRPCScreen({ navigation }) {
     tempRPCEndpoints.JUNO.primary = rpcEndpoints.juno;
     if (tempRPCEndpoints?.NOBLE?.primary) {
       tempRPCEndpoints.NOBLE.primary = rpcEndpoints?.noble;
+    }
+    if (tempRPCEndpoints?.COREUM?.primary) {
+      tempRPCEndpoints.COREUM.primary = rpcEndpoints?.coreum;
+    }
+    if (tempRPCEndpoints?.INJECTIVE?.primary) {
+      tempRPCEndpoints.INJECTIVE.primary = rpcEndpoints?.injective;
+    }
+    if (tempRPCEndpoints?.KUJIRA?.primary) {
+      tempRPCEndpoints.KUJIRA.primary = rpcEndpoints?.kujira;
     }
     if (tempRPCEndpoints?.SHARDEUM?.primary) {
       tempRPCEndpoints.SHARDEUM.primary = rpcEndpoints?.shardeum;

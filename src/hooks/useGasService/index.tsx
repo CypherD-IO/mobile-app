@@ -342,7 +342,7 @@ export default function useGasService() {
     );
 
     const gasPrice = cosmosConfig[chainName].gasPrice;
-    const gasFee = simulation * gasPrice;
+    const gasFee = simulation * 1.8 * gasPrice;
     const fee = {
       gas: Math.floor(simulation * 1.8).toString(),
       amount: [
@@ -350,14 +350,17 @@ export default function useGasService() {
           denom: nativeToken?.denom ?? denom,
           amount: GASLESS_CHAINS.includes(backendName)
             ? '0'
-            : parseInt(gasFee.toFixed(6).split('.')[1]).toString(),
+            : Math.floor(gasFee).toString(),
         },
       ],
     };
     return {
-      gasFeeInCrypto: gasFee,
+      gasFeeInCrypto: parseFloat(
+        String(gasFee * 10 ** -nativeToken.contractDecimals),
+      ).toFixed(6),
       gasLimit: fee.gas,
       gasPrice,
+      fee,
     };
   };
 
@@ -427,12 +430,7 @@ export default function useGasService() {
 
     const gasPrice = cosmosConfig[chainName].gasPrice;
 
-    const gasFee = ethers
-      .formatUnits(
-        Math.floor(simulation * Number(gasPrice)),
-        nativeToken.contractDecimals,
-      )
-      .toString();
+    const gasFee = simulation * 1.8 * gasPrice;
 
     const fee = {
       gas: Math.floor(simulation * 1.8).toString(),
@@ -441,14 +439,14 @@ export default function useGasService() {
           denom: nativeToken?.denom ?? denom,
           amount: GASLESS_CHAINS.includes(backendName)
             ? '0'
-            : ethers
-                .parseUnits(gasPrice.toString(), nativeToken.contractDecimals)
-                .toString(),
+            : Math.floor(gasFee).toString(),
         },
       ],
     };
     return {
-      gasFeeInCrypto: gasFee,
+      gasFeeInCrypto: parseFloat(
+        String(gasFee * 10 ** -nativeToken.contractDecimals),
+      ).toFixed(6),
       gasLimit: fee.gas,
       gasPrice,
       fee,

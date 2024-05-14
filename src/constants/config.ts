@@ -2,7 +2,7 @@
 
 import { ChainInfo } from '@keplr-wallet/types';
 export interface CypherDCosmosChainInfo extends ChainInfo {
-  name: string
+  name: string;
 }
 
 export const EmbedChainInfos: CypherDCosmosChainInfo[] = [
@@ -16,7 +16,7 @@ export const EmbedChainInfos: CypherDCosmosChainInfo[] = [
       coinDenom: 'ATOM',
       coinMinimalDenom: 'uatom',
       coinDecimals: 6,
-      coinGeckoId: 'cosmos'
+      coinGeckoId: 'cosmos',
     },
     walletUrl:
       process.env.NODE_ENV === 'production'
@@ -27,7 +27,7 @@ export const EmbedChainInfos: CypherDCosmosChainInfo[] = [
         ? 'https://wallet.keplr.app/chains/cosmos-hub'
         : 'http://localhost:8080/chains/cosmos-hub',
     bip44: {
-      coinType: 118
+      coinType: 118,
     },
     bech32Config: {
       bech32PrefixAccAddr: 'cosmos',
@@ -35,26 +35,26 @@ export const EmbedChainInfos: CypherDCosmosChainInfo[] = [
       bech32PrefixValAddr: 'cosmosvaloper',
       bech32PrefixValPub: 'cosmosvaloperpub',
       bech32PrefixConsAddr: 'cosmosvalcons',
-      bech32PrefixConsPub: 'cosmosvalconspub'
+      bech32PrefixConsPub: 'cosmosvalconspub',
     },
     currencies: [
       {
         coinDenom: 'ATOM',
         coinMinimalDenom: 'uatom',
         coinDecimals: 6,
-        coinGeckoId: 'cosmos'
-      }
+        coinGeckoId: 'cosmos',
+      },
     ],
     feeCurrencies: [
       {
         coinDenom: 'ATOM',
         coinMinimalDenom: 'uatom',
         coinDecimals: 6,
-        coinGeckoId: 'cosmos'
-      }
+        coinGeckoId: 'cosmos',
+      },
     ],
     coinType: 118,
-    features: ['ibc-transfer', 'ibc-go']
+    features: ['ibc-transfer', 'ibc-go'],
   },
   {
     name: 'osmosis',
@@ -66,7 +66,7 @@ export const EmbedChainInfos: CypherDCosmosChainInfo[] = [
       coinDenom: 'OSMO',
       coinMinimalDenom: 'uosmo',
       coinDecimals: 6,
-      coinGeckoId: 'osmosis'
+      coinGeckoId: 'osmosis',
     },
     walletUrl:
       process.env.NODE_ENV === 'production'
@@ -83,21 +83,21 @@ export const EmbedChainInfos: CypherDCosmosChainInfo[] = [
       bech32PrefixValAddr: 'osmosisvaloper',
       bech32PrefixValPub: 'osmosisvaloperpub',
       bech32PrefixConsAddr: 'osmosisvalcons',
-      bech32PrefixConsPub: 'osmosisvalconspub'
+      bech32PrefixConsPub: 'osmosisvalconspub',
     },
     currencies: [
       {
         coinDenom: 'OSMO',
         coinMinimalDenom: 'uosmo',
         coinDecimals: 6,
-        coinGeckoId: 'osmosis'
+        coinGeckoId: 'osmosis',
       },
       {
         coinDenom: 'ION',
         coinMinimalDenom: 'uion',
         coinDecimals: 6,
-        coinGeckoId: 'ion'
-      }
+        coinGeckoId: 'ion',
+      },
     ],
     feeCurrencies: [
       {
@@ -108,11 +108,11 @@ export const EmbedChainInfos: CypherDCosmosChainInfo[] = [
         gasPriceStep: {
           low: 0,
           average: 0.025,
-          high: 0.04
-        }
-      }
+          high: 0.04,
+        },
+      },
     ],
-    features: ['ibc-transfer', 'ibc-go', 'cosmwasm', 'osmosis-txfees']
+    features: ['ibc-transfer', 'ibc-go', 'cosmwasm', 'osmosis-txfees'],
   },
   {
     name: 'juno',
@@ -124,7 +124,7 @@ export const EmbedChainInfos: CypherDCosmosChainInfo[] = [
       coinDenom: 'JUNO',
       coinMinimalDenom: 'ujuno',
       coinDecimals: 6,
-      coinGeckoId: 'juno-network'
+      coinGeckoId: 'juno-network',
     },
     walletUrl:
       process.env.NODE_ENV === 'production'
@@ -135,7 +135,7 @@ export const EmbedChainInfos: CypherDCosmosChainInfo[] = [
         ? 'https://wallet.keplr.app/chains/juno'
         : 'http://localhost:8080/chains/juno',
     bip44: {
-      coinType: 118
+      coinType: 118,
     },
     bech32Config: {
       bech32PrefixAccAddr: 'juno',
@@ -143,15 +143,15 @@ export const EmbedChainInfos: CypherDCosmosChainInfo[] = [
       bech32PrefixValAddr: 'junovaloper',
       bech32PrefixValPub: 'junovaloperpub',
       bech32PrefixConsAddr: 'junovalcons',
-      bech32PrefixConsPub: 'junovalconspub'
+      bech32PrefixConsPub: 'junovalconspub',
     },
     currencies: [
       {
         coinDenom: 'JUNO',
         coinMinimalDenom: 'ujuno',
         coinDecimals: 6,
-        coinGeckoId: 'juno-network'
-      }
+        coinGeckoId: 'juno-network',
+      },
     ],
     feeCurrencies: [
       {
@@ -162,8 +162,8 @@ export const EmbedChainInfos: CypherDCosmosChainInfo[] = [
         gasPriceStep: {
           low: 0.075,
           average: 0.1,
-          high: 0.125
-        }
+          high: 0.125,
+        },
       },
       {
         coinDenom: 'ATOM',
@@ -173,11 +173,11 @@ export const EmbedChainInfos: CypherDCosmosChainInfo[] = [
         gasPriceStep: {
           low: 0.001 * 0.33,
           average: 0.0025 * 0.33,
-          high: 0.004 * 0.33
-        }
-      }
+          high: 0.004 * 0.33,
+        },
+      },
     ],
-    features: ['cosmwasm', 'ibc-transfer', 'ibc-go', 'wasmd_0.24+']
+    features: ['cosmwasm', 'ibc-transfer', 'ibc-go', 'wasmd_0.24+'],
   },
   {
     name: 'stargaze',
@@ -189,18 +189,18 @@ export const EmbedChainInfos: CypherDCosmosChainInfo[] = [
       coinDenom: 'STARS',
       coinMinimalDenom: 'ustars',
       coinDecimals: 6,
-      coinGeckoId: 'stargaze'
+      coinGeckoId: 'stargaze',
     },
     walletUrl:
-          process.env.NODE_ENV === 'production'
-            ? 'https://wallet.keplr.app/chains/stargaze'
-            : 'http://localhost:8080/chains/stargaze',
+      process.env.NODE_ENV === 'production'
+        ? 'https://wallet.keplr.app/chains/stargaze'
+        : 'http://localhost:8080/chains/stargaze',
     walletUrlForStaking:
-          process.env.NODE_ENV === 'production'
-            ? 'https://wallet.keplr.app/chains/stargaze'
-            : 'http://localhost:8080/chains/stargaze',
+      process.env.NODE_ENV === 'production'
+        ? 'https://wallet.keplr.app/chains/stargaze'
+        : 'http://localhost:8080/chains/stargaze',
     bip44: {
-      coinType: 118
+      coinType: 118,
     },
     bech32Config: {
       bech32PrefixAccAddr: 'stars',
@@ -208,15 +208,15 @@ export const EmbedChainInfos: CypherDCosmosChainInfo[] = [
       bech32PrefixValAddr: 'starsvaloper',
       bech32PrefixValPub: 'starsvaloperpub',
       bech32PrefixConsAddr: 'starsvalcons',
-      bech32PrefixConsPub: 'starsvalconspub'
+      bech32PrefixConsPub: 'starsvalconspub',
     },
     currencies: [
       {
         coinDenom: 'STARS',
         coinMinimalDenom: 'ustars',
         coinDecimals: 6,
-        coinGeckoId: 'stargaze'
-      }
+        coinGeckoId: 'stargaze',
+      },
     ],
     feeCurrencies: [
       {
@@ -227,11 +227,11 @@ export const EmbedChainInfos: CypherDCosmosChainInfo[] = [
         gasPriceStep: {
           low: 0.01,
           average: 0.025,
-          high: 0.04
-        }
-      }
+          high: 0.04,
+        },
+      },
     ],
-    features: ['ibc-transfer', 'ibc-go']
+    features: ['ibc-transfer', 'ibc-go'],
   },
   {
     name: 'noble',
@@ -243,18 +243,18 @@ export const EmbedChainInfos: CypherDCosmosChainInfo[] = [
       coinDenom: 'ATOM',
       coinMinimalDenom: 'uatom',
       coinDecimals: 6,
-      coinGeckoId: ''
+      coinGeckoId: '',
     },
     walletUrl:
-          process.env.NODE_ENV === 'production'
-            ? 'https://wallet.keplr.app/chains/noble'
-            : 'http://localhost:8080/chains/noble',
+      process.env.NODE_ENV === 'production'
+        ? 'https://wallet.keplr.app/chains/noble'
+        : 'http://localhost:8080/chains/noble',
     walletUrlForStaking:
-          process.env.NODE_ENV === 'production'
-            ? 'https://wallet.keplr.app/chains/noble'
-            : 'http://localhost:8080/chains/noble',
+      process.env.NODE_ENV === 'production'
+        ? 'https://wallet.keplr.app/chains/noble'
+        : 'http://localhost:8080/chains/noble',
     bip44: {
-      coinType: 118
+      coinType: 118,
     },
     bech32Config: {
       bech32PrefixAccAddr: 'noble',
@@ -262,15 +262,15 @@ export const EmbedChainInfos: CypherDCosmosChainInfo[] = [
       bech32PrefixValAddr: 'noblevaloper',
       bech32PrefixValPub: 'noblevaloperpub',
       bech32PrefixConsAddr: 'noblevalcons',
-      bech32PrefixConsPub: 'noblevalconspub'
+      bech32PrefixConsPub: 'noblevalconspub',
     },
     currencies: [
       {
         coinDenom: 'ATOM',
         coinMinimalDenom: 'uatom',
         coinDecimals: 6,
-        coinGeckoId: ''
-      }
+        coinGeckoId: '',
+      },
     ],
     feeCurrencies: [
       {
@@ -281,12 +281,66 @@ export const EmbedChainInfos: CypherDCosmosChainInfo[] = [
         gasPriceStep: {
           low: 0.01,
           average: 0.025,
-          high: 0.04
-        }
-      }
+          high: 0.04,
+        },
+      },
     ],
-    features: ['ibc-transfer', 'ibc-go']
-  }
+    features: ['ibc-transfer', 'ibc-go'],
+  },
+  {
+    name: 'coreum',
+    chainId: 'coreum-mainnet-1',
+    chainName: 'Coreum',
+    chainSymbolImageUrl:
+      'https://raw.githubusercontent.com/chainapsis/keplr-chain-registry/main/images/coreum-mainnet/chain.png',
+    rpc: 'https://full-node.mainnet-1.coreum.dev:26657',
+    rest: 'https://full-node.mainnet-1.coreum.dev:1317',
+    nodeProvider: {
+      name: 'Coreum Full Node',
+      website: 'https://www.coreum.com/',
+      email: 'hello@coreum.com',
+    },
+    bip44: {
+      coinType: 990,
+    },
+    bech32Config: {
+      bech32PrefixAccAddr: 'core',
+      bech32PrefixAccPub: 'corepub',
+      bech32PrefixValAddr: 'corevaloper',
+      bech32PrefixValPub: 'corevaloperpub',
+      bech32PrefixConsAddr: 'corevalcons',
+      bech32PrefixConsPub: 'corevalconspub',
+    },
+    currencies: [
+      {
+        coinDenom: 'CORE',
+        coinMinimalDenom: 'ucore',
+        coinDecimals: 6,
+        coinGeckoId: 'coreum',
+      },
+    ],
+    feeCurrencies: [
+      {
+        coinDenom: 'CORE',
+        coinMinimalDenom: 'ucore',
+        coinDecimals: 6,
+        coinGeckoId: 'coreum',
+        gasPriceStep: {
+          low: 0.0625,
+          average: 0.0625,
+          high: 0.0625,
+        },
+      },
+    ],
+    stakeCurrency: {
+      coinDenom: 'CORE',
+      coinMinimalDenom: 'ucore',
+      coinDecimals: 6,
+      coinGeckoId: 'coreum',
+    },
+    features: ['cosmwasm'],
+    beta: true,
+  },
 ];
 
 // export const EmbedChainInfos_: ChainInfo[] = [
@@ -2211,5 +2265,5 @@ export const EmbedChainInfos: CypherDCosmosChainInfo[] = [
 export const solidCredentials = {
   orgId: 'ACci3u9aEmutHr7zpAeVY2Zc',
   testVaultId: 'tntbevlgikb',
-  liveVaultId: 'tntpsikpeyn'
+  liveVaultId: 'tntpsikpeyn',
 };

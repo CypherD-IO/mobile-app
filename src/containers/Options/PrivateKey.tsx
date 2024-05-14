@@ -184,6 +184,12 @@ export default function PrivateKey(props) {
         setSelectedChain(data[3]);
       } else if (walletAddressType === FundWalletAddressType.JUNO) {
         setSelectedChain(data[4]);
+      } else if (walletAddressType === FundWalletAddressType.COREUM) {
+        setSelectedChain(data[5]);
+      } else if (walletAddressType === FundWalletAddressType.INJECTIVE) {
+        setSelectedChain(data[6]);
+      } else if (walletAddressType === FundWalletAddressType.KUJIRA) {
+        setSelectedChain(data[7]);
       }
     } else {
       if (isAndroid()) NativeModules.PreventScreenshotModule.allow();

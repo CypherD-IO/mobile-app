@@ -33,8 +33,8 @@ export const getToken = async (
             stargazeAddress,
             nobleAddress,
             coreumAddress,
-            // injectiveAddress,
-            // kujiraAddress,
+            injectiveAddress,
+            kujiraAddress,
             fcmToken,
           };
           axios
