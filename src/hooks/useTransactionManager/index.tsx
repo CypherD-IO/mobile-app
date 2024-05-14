@@ -327,39 +327,16 @@ export default function useTransactionManager() {
       );
 
       const tokenDenom = denom ?? cosmosConfig[backendName].denom;
-      const nativeToken = getNativeToken(
-        get(NativeTokenMapping, symbol) || symbol,
-        get(
-          portfolioState.statePortfolio.tokenPortfolio,
-          ChainNameMapping[backendName],
-        ).holdings,
-      );
-      const fee = {
-        gas: gasDetails.gasLimit,
-        amount: [
-          {
-            denom: nativeToken?.denom ?? denom,
-            amount: parseInt(
-              Number(gasDetails.gasFeeInCrypto).toFixed(6).split('.')[1],
-              10,
-            ).toString(),
-          },
-        ],
-      };
+
       const contractDecimals = get(cosmosConfig, chainName).contractDecimal;
       const amountToSend = String(
         parseFloat(amount) * Math.pow(10, contractDecimals),
       );
-      if (
-        GASLESS_CHAINS.includes(get(ChainConfigMapping, chainName).backendName)
-      ) {
-        fee.amount[0].amount = '0';
-      }
       const result = await signingClient.sendTokens(
         fromAddress,
         toAddress,
         [{ denom: tokenDenom, amount: amountToSend }],
-        fee,
+        gasDetails.fee,
         'Cypher Wallet',
       );
 
@@ -410,13 +387,6 @@ export default function useTransactionManager() {
       const signingClient = await SigningStargateClient.connectWithSigner(
         rpc,
         signer,
-      );
-      const nativeToken = getNativeToken(
-        get(NativeTokenMapping, symbol) || symbol,
-        get(
-          portfolioState.statePortfolio.tokenPortfolio,
-          ChainNameMapping[backendName],
-        ).holdings,
       );
 
       const amountToSend = parseFloat(amount) * Math.pow(10, contractDecimals);

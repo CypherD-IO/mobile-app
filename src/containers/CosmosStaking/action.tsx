@@ -210,7 +210,11 @@ export default function CosmosAction({ route, navigation }) {
 
       const simulation = await client.simulate(senderAddress, [msg], memo);
 
-      const gasFee = simulation * currentChain.gasPrice * 1.3;
+      const gasFee =
+        simulation *
+        currentChain.gasPrice *
+        1.3 *
+        10 ** -currentChain.contractDecimal;
       setGasFee(gasFee);
       if (CosmosActionType.SIMULATION === type) {
         analytics().logEvent(`${from}_simulated`);

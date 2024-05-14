@@ -453,7 +453,11 @@ export default function TokenStaking({
       );
 
       setLoading(false);
-      setGasFee(parseInt(gasWanted) * currentChain.gasPrice);
+      setGasFee(
+        parseInt(gasWanted) *
+          currentChain.gasPrice *
+          10 ** -currentChain.contractDecimal,
+      );
       setFinalData(bodyForTxn);
       if (claimTryCount) {
         void finalTxn(bodyForTxn);
@@ -662,7 +666,10 @@ export default function TokenStaking({
         setReward(rewardAmount);
         const simulation = await client.simulate(senderAddress, msgList, '');
 
-        const gasFee = simulation * currentChain.gasPrice;
+        const gasFee =
+          simulation *
+          currentChain.gasPrice *
+          10 ** -currentChain.contractDecimal;
         setGasFee(gasFee);
 
         if (CosmosActionType.SIMULATION === type) {
@@ -792,7 +799,10 @@ export default function TokenStaking({
 
         const simulation = await client.simulate(senderAddress, [msg], '');
 
-        const gasFee = simulation * currentChain.gasPrice;
+        const gasFee =
+          simulation *
+          currentChain.gasPrice *
+          10 ** -currentChain.contractDecimal;
         setGasFee(gasFee);
 
         if (CosmosActionType.SIMULATION === type) {
