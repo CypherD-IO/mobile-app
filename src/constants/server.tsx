@@ -60,12 +60,12 @@ export enum ChainBackendNames {
 }
 
 export enum CosmosStakingTokens {
-  EVMOS = 'Evmos',
-  COSMOS = 'ATOM',
-  OSMOSIS = 'Osmosis',
-  JUNO = 'Juno',
-  STARGAZE = 'Stargaze',
-  NOBLE = 'Noble',
+  EVMOS = 'evmos',
+  COSMOS = 'atom',
+  OSMOSIS = 'osmosis',
+  JUNO = 'juno',
+  STARGAZE = 'stargaze',
+  NOBLE = 'noble',
 }
 
 export enum FundWalletAddressType {

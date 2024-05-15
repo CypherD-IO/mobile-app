@@ -9,7 +9,6 @@ import {
 import { Dispatch } from 'react';
 import { GlobalStateDef } from './globalContext';
 import * as Sentry from '@sentry/react-native';
-import { cosmosConfig, Denom } from '../constants/cosmosConfig';
 import Toast from 'react-native-toast-message';
 import analytics from '@react-native-firebase/analytics';
 import { hostWorker } from '../global';

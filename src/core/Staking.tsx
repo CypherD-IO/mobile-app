@@ -131,7 +131,7 @@ export default async function getValidatorsForUSer(
             Sentry.captureException(`failed to fetch APR ${error.message}`);
           }
 
-          const delegatedValidatorsArray: any = [];
+          let delegatedValidatorsArray: any = [];
           allData[0].data.delegation_responses.forEach(delegatedValidator => {
             const [delegatedValidatorFullObject] =
               allData[2].data.validators.filter(
@@ -141,6 +141,10 @@ export default async function getValidatorsForUSer(
               );
             delegatedValidatorsArray.push(delegatedValidatorFullObject);
           });
+
+          delegatedValidatorsArray = delegatedValidatorsArray.filter(
+            item => item !== undefined,
+          );
 
           const delegatedValidators = {
             data: {
@@ -161,6 +165,7 @@ export default async function getValidatorsForUSer(
             allData[4],
             apr,
           );
+
           const allVList = getValidatorsInfoFromGet(
             allData[2],
             allData[0],
