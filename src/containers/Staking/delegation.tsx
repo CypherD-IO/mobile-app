@@ -53,10 +53,7 @@ import {
   CyDView,
 } from '../../styles/tailwindStyles';
 import CyDModalLayout from '../../components/v2/modal';
-import {
-  SuccessTransaction,
-  BuyOrBridge,
-} from '../../components/v2/StateModal';
+import { SuccessTransaction } from '../../components/v2/StateModal';
 import { cosmosConfig } from '../../constants/cosmosConfig';
 import { AnalyticsType, TokenOverviewTabIndices } from '../../constants/enum';
 import { gasFeeReservation } from '../../constants/data';
@@ -368,9 +365,7 @@ export default function StakingDelegation({ route, navigation }) {
         showModal('state', {
           type: 'error',
           title: t('INSUFFICIENT_FUNDS'),
-          description: renderModalBody(
-            `You don't have sufficient ${tokenData.chainDetails.symbol} to pay gas fee. Would you like to buy or bridge?`,
-          ),
+          description: `You don't have sufficient ${tokenData.chainDetails.symbol} to pay gas fee.`,
           onSuccess: hideModal,
           onFailure: hideModal,
         });
@@ -459,17 +454,6 @@ export default function StakingDelegation({ route, navigation }) {
       }
     }
     setLoading(false);
-  };
-
-  const renderModalBody = (text: string) => {
-    return (
-      <BuyOrBridge
-        text={text}
-        navigation={navigation}
-        portfolioState={portfolioState}
-        hideModal={hideModal}
-      />
-    );
   };
 
   useEffect(() => {
