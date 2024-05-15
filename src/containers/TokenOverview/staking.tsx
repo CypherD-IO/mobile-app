@@ -491,7 +491,7 @@ export default function TokenStaking({
       showModal('state', {
         type: 'error',
         title: t('INSUFFICIENT_FUNDS'),
-        description: `You don't have sufficient ${tokenData.chainDetails.symbol} to pay gas fee. Would you like to buy or bridge?`,
+        description: `You don't have sufficient ${tokenData.chainDetails.symbol} to pay gas fee.`,
         onSuccess: hideModal,
         onFailure: hideModal,
       });
