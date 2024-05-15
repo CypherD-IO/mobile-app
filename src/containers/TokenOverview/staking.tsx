@@ -61,7 +61,6 @@ import {
   signatureToWeb3Extension,
 } from '@tharsis/transactions';
 import { useGlobalModalContext } from '../../components/v2/GlobalModal';
-import { BuyOrBridge } from '../../components/v2/StateModal';
 import { generatePostBodyBroadcast } from '@tharsis/provider';
 import { AnalyticsType, TokenOverviewTabIndices } from '../../constants/enum';
 import {
@@ -487,25 +486,12 @@ export default function TokenStaking({
     }
   };
 
-  const renderModalBody = (text: string) => {
-    return (
-      <BuyOrBridge
-        text={text}
-        navigation={navigation}
-        portfolioState={portfolioState}
-        hideModal={hideModal}
-      />
-    );
-  };
-
   const showNoGasFeeModal = () => {
     setTimeout(() => {
       showModal('state', {
         type: 'error',
         title: t('INSUFFICIENT_FUNDS'),
-        description: renderModalBody(
-          `You don't have sufficient ${tokenData.chainDetails.symbol} to pay gas fee. Would you like to buy or bridge?`,
-        ),
+        description: `You don't have sufficient ${tokenData.chainDetails.symbol} to pay gas fee.`,
         onSuccess: hideModal,
         onFailure: hideModal,
       });
