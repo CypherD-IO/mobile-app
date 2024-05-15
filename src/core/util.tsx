@@ -668,7 +668,8 @@ export const isCosmosChain = (backendName: string) =>
 export const isCosmosStakingToken = (chain: string, tokenData: any) =>
   tokenData.chainDetails.backendName ===
     ChainBackendNames[chain as ChainBackendNames] &&
-  tokenData.name === CosmosStakingTokens[chain as CosmosStakingTokens];
+  tokenData.name.toLowerCase() ===
+    CosmosStakingTokens[chain as CosmosStakingTokens];
 
 export const isACosmosStakingToken = (tokenData: any) =>
   [
