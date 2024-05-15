@@ -34,7 +34,7 @@ import Button from '../../../components/v2/button';
 import { screenTitle } from '../../../constants';
 import { GlobalContext } from '../../../core/globalContext';
 import { CardProfile } from '../../../models/cardProfile.model';
-import { get, has } from 'lodash';
+import { get, has, isUndefined } from 'lodash';
 import useAxios from '../../../core/HttpRequest';
 import * as Sentry from '@sentry/react-native';
 import SwitchView from '../../../components/v2/switchView';
@@ -442,9 +442,14 @@ const CypherCardScreen = ({ navigation, route }: CypherCardScreenProps) => {
               />
             </CyDView>
             <CyDText className='mt-[6px]'>
-              {t('CARD_SHIP_DESCRIPTION_SUB1') +
-                String(physicalCard.last4) +
-                t('CARD_SHIP_DESCRIPTION_SUB2')}
+              {trackingDetails &&
+              isUndefined(get(trackingDetails, physicalCard.cardId)?.trackingId)
+                ? t('CARD_PRINTING_DESCRIPTION_SUB1') +
+                  String(physicalCard.last4) +
+                  t('CARD_PRINTING_DESCRIPTION_SUB2')
+                : t('CARD_SHIP_DESCRIPTION_SUB1') +
+                  String(physicalCard.last4) +
+                  t('CARD_SHIP_DESCRIPTION_SUB2')}
             </CyDText>
             {trackingNumber && (
               <CyDView className='flex flex-row items-center mt-[6px]'>
