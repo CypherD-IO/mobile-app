@@ -18,7 +18,6 @@ import {
   isBasicCosmosChain,
   HdWalletContext,
   PortfolioContext,
-  convertAmountOfContractDecimal,
   isABasicCosmosStakingToken,
   isCosmosStakingToken,
   logAnalytics,
@@ -439,15 +438,7 @@ export default function TokenStaking({
 
       const bodyForTxn = await generateTransactionBodyForEVMOSSimulation(
         { ...accountDetailsResponse.data.account.base_account, sequence },
-        ethers
-          .parseUnits(
-            convertAmountOfContractDecimal(
-              (cosmosConfig.evmos.gasPrice * gasWanted).toString(),
-              18,
-            ),
-            18,
-          )
-          .toString(),
+        String(cosmosConfig.evmos.gasPrice * gasWanted),
         Math.floor(gasWanted * 1.3).toString(),
       );
 

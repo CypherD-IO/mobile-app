@@ -7,7 +7,6 @@ import {
   StakingContext,
   validateAmount,
   convertToEvmosFromAevmos,
-  convertAmountOfContractDecimal,
   PortfolioContext,
   logAnalytics,
   parseErrorMessage,
@@ -173,7 +172,6 @@ export default function StakingDelegation({ route, navigation }) {
       denom: 'aevmos',
       gas: gasLimit,
     };
-
     const memo = '';
 
     if (DELEGATE === stakingValidators.stateStaking.typeOfDelegation) {
@@ -272,16 +270,8 @@ export default function StakingDelegation({ route, navigation }) {
         const gasWanted = simulationResponse.data.gas_info.gas_used;
         const bodyForTransaction = await generateTransactionBody(
           { ...accountDetailsResponse.data.account.base_account, sequence },
-          ethers
-            .parseUnits(
-              convertAmountOfContractDecimal(
-                (cosmosConfig.evmos.gasPrice * gasWanted).toString(),
-                18,
-              ),
-              18,
-            )
-            .toString(),
-          Math.floor(gasWanted * 1.3).toString(),
+          String(cosmosConfig.evmos.gasPrice * gasWanted),
+          Math.floor(gasWanted * 1.8).toString(),
         );
         setFinalGasFee(
           parseInt(simulationResponse.data.gas_info.gas_used) * gasPrice,
@@ -352,8 +342,10 @@ export default function StakingDelegation({ route, navigation }) {
 
   const finalTxn = async (finalTxnData = finalData) => {
     setLoading(true);
-    const balance = convertToEvmosFromAevmos(
-      stakingValidators.stateStaking.unStakedBalance,
+    const balance = parseFloat(
+      convertToEvmosFromAevmos(
+        stakingValidators.stateStaking.unStakedBalance,
+      ).toFixed(6),
     );
     if (
       (DELEGATE === stakingValidators.stateStaking.typeOfDelegation &&

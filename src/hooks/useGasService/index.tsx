@@ -488,7 +488,7 @@ export default function useGasService() {
       ? response.data.gas_info
       : 0;
     const gasWanted = simulatedGasInfo.gas_used ? simulatedGasInfo.gas_used : 0;
-    const gasFee = parseFloat(gasWanted) * cosmosConfig.evmos.gasPrice;
+    const gasFee = parseFloat(gasWanted) * cosmosConfig.evmos.gasPrice * 1.3;
     return {
       gasFeeInCrypto: gasFee,
       gasLimit: gasWanted * 1.3,

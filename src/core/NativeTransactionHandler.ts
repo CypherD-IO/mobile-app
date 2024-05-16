@@ -823,7 +823,7 @@ export async function estimateGasForCosmosTransaction(
       );
 
       const gasPrice = cosmosConfig[chainSelected.chainName].gasPrice;
-      const gasFee = simulation * gasPrice;
+      const gasFee = simulation * gasPrice * 1.8;
       const fee = {
         gas: Math.floor(simulation * 1.8).toString(),
         amount: [
@@ -1086,16 +1086,7 @@ export const evmosSendTxn = async (
     destinationAddress,
     hdWallet,
     transferAmount,
-    ethers
-      .parseUnits(
-        convertAmountOfContractDecimal(
-          (cosmosConfig.evmos.gasPrice * gasWanted).toString(),
-          18,
-        ),
-        18,
-      )
-      .toString(),
-    Math.floor(gasWanted * 1.3).toString(),
+    String(cosmosConfig.evmos.gasPrice * gasWanted),
   );
 
   const response = await axios.post(TRANSACTION_ENDPOINT, body);
