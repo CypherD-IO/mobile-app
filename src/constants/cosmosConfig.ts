@@ -76,7 +76,7 @@ export const cosmosConfig: Record<string, IIBCData> = {
       injective: 'channel-122',
       kujira: 'channel-259',
     },
-    gasPrice: 0.08,
+    gasPrice: 0.04,
     ibcDenoms: {
       osmosis: 'uosmo',
       cosmos:
@@ -155,7 +155,7 @@ export const cosmosConfig: Record<string, IIBCData> = {
       injective: '',
       kujira: '',
     },
-    gasPrice: 0.004,
+    gasPrice: 0.1,
     ibcDenoms: {
       cosmos:
         'ibc/C4CFF46FD6DE35CA4CF4CE031E643C8FDC9BA4B99AE598E9B0ED98FE3A2319F9',
