@@ -10,7 +10,6 @@ import {
   PortfolioContext,
   StakingContext,
   convertToEvmosFromAevmos,
-  convertAmountOfContractDecimal,
   logAnalytics,
   _NO_CYPHERD_CREDENTIAL_AVAILABLE_,
 } from '../../core/util';
@@ -333,19 +332,13 @@ export default function ReStake({ route, navigation }) {
         const gasWanted = simulationResponse.data.gas_info.gas_used;
         const bodyForTransaction = await delegateTxnBody(
           { ...accountDetailsResponse.data.account.base_account, sequence },
-          ethers
-            .parseUnits(
-              convertAmountOfContractDecimal(
-                (cosmosConfig.evmos.gasPrice * gasWanted).toString(),
-                18,
-              ),
-              18,
-            )
-            .toString(),
+          String(cosmosConfig.evmos.gasPrice * gasWanted),
           Math.floor(gasWanted * 1.3).toString(),
           'tnx',
         );
-        setFinalDelegateGasFee(parseInt(gasWanted) * gasPrice);
+        setFinalDelegateGasFee(
+          parseInt(gasWanted) * cosmosConfig.evmos.gasPrice * 10 ** -18,
+        );
         setFinalDelegateTxnData(bodyForTransaction);
         if (reStakeTryCount) {
           void delegateFinalTxn(bodyForTransaction);

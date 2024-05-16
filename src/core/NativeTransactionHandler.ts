@@ -1086,16 +1086,7 @@ export const evmosSendTxn = async (
     destinationAddress,
     hdWallet,
     transferAmount,
-    ethers
-      .parseUnits(
-        convertAmountOfContractDecimal(
-          (cosmosConfig.evmos.gasPrice * gasWanted).toString(),
-          18,
-        ),
-        18,
-      )
-      .toString(),
-    Math.floor(gasWanted * 1.3).toString(),
+    String(cosmosConfig.evmos.gasPrice * gasWanted),
   );
 
   const response = await axios.post(TRANSACTION_ENDPOINT, body);
