@@ -823,7 +823,7 @@ export async function estimateGasForCosmosTransaction(
       );
 
       const gasPrice = cosmosConfig[chainSelected.chainName].gasPrice;
-      const gasFee = simulation * gasPrice;
+      const gasFee = simulation * gasPrice * 1.8;
       const fee = {
         gas: Math.floor(simulation * 1.8).toString(),
         amount: [
