@@ -27,6 +27,7 @@ import {
   CHAIN_OPTIMISM,
   CHAIN_SHARDEUM,
   CHAIN_SHARDEUM_SPHINX,
+  ChainBackendNames,
   ChainConfigMapping,
   ChainNameMapping,
   GASLESS_CHAINS,
@@ -60,6 +61,7 @@ import axios from './Http';
 import { signatureToPubkey } from '@hanchon/signature-to-pubkey';
 import { get } from 'lodash';
 import { TokenMeta } from '../models/tokenMetaData.model';
+import { InjectiveStargate } from '@injectivelabs/sdk-ts';
 
 // const {showModal, hideModal} = useGlobalModalContext()
 // ETH in Optimims chain's contract address
@@ -776,6 +778,21 @@ export async function getCosmosSignerClient(
   return wallets.get(cosmosConfig[chainSelected.chainName].prefix);
 }
 
+export async function getCosmosSigningClient(
+  chain: Chain,
+  rpc: string,
+  signer: OfflineDirectSigner,
+) {
+  if (chain.backendName === ChainBackendNames.INJECTIVE) {
+    return await InjectiveStargate.InjectiveSigningStargateClient.connectWithSigner(
+      rpc,
+      signer,
+    );
+  } else {
+    return await SigningStargateClient.connectWithSigner(rpc, signer);
+  }
+}
+
 // Gas fee simulation for cosmos based chains
 export async function estimateGasForCosmosTransaction(
   chainSelected: Chain,
@@ -792,7 +809,8 @@ export async function estimateGasForCosmosTransaction(
 ) {
   try {
     if (signer) {
-      let signingClient = await SigningStargateClient.connectWithSigner(
+      let signingClient = await getCosmosSigningClient(
+        chainSelected,
         rpc,
         signer,
       );
@@ -814,7 +832,6 @@ export async function estimateGasForCosmosTransaction(
         [sendMsg],
         '',
       );
-
       const nativeToken = getNativeToken(
         get(NativeTokenMapping, chainSelected.symbol) || chainSelected.symbol,
         portfolioState.statePortfolio.tokenPortfolio[
@@ -823,7 +840,7 @@ export async function estimateGasForCosmosTransaction(
       );
 
       const gasPrice = cosmosConfig[chainSelected.chainName].gasPrice;
-      const gasFee = simulation * gasPrice * 1.8;
+      const gasFee = simulation * Number(gasPrice) * 1.8;
       const fee = {
         gas: Math.floor(simulation * 1.8).toString(),
         amount: [
@@ -831,16 +848,16 @@ export async function estimateGasForCosmosTransaction(
             denom: nativeToken?.denom ?? tokenData.denom,
             amount: GASLESS_CHAINS.includes(chainSelected.backendName)
               ? '0'
-              : Math.floor(gasFee).toString(),
+              : String(Math.floor(gasFee)),
           },
         ],
       };
-
       if (
         rpcContext &&
         rpcContext[chainSelected.chainName.toUpperCase()]?.secondaryList !== ''
       ) {
-        signingClient = await SigningStargateClient.connectWithSigner(
+        signingClient = await getCosmosSigningClient(
+          chainSelected,
           rpcContext[chainSelected.chainName.toUpperCase()]?.secondaryList,
           signer,
         );
@@ -852,7 +869,9 @@ export async function estimateGasForCosmosTransaction(
         tokenImage: tokenData.logoUrl,
         sentTokenAmount: valueForUsd,
         sentTokenSymbol: tokenData.symbol,
-        sentValueUSD: parseFloat(valueForUsd) * parseFloat(tokenData.price),
+        sentValueUSD: (
+          parseFloat(valueForUsd) * parseFloat(tokenData.price)
+        ).toFixed(6),
         to_address: address,
         fromNativeTokenSymbol: nativeToken?.symbol ?? tokenData.symbol,
         gasFeeNative: microAtomToAtom(
@@ -860,12 +879,12 @@ export async function estimateGasForCosmosTransaction(
           tokenData.contractDecimals,
         ),
         gasFeeDollar: microAtomToUsd(
-          fee.amount[0].amount,
+          String(fee.amount[0].amount),
           nativeToken?.price ?? tokenData?.price,
           tokenData.contractDecimals,
         ),
         finalGasPrice: microAtomToUsd(
-          fee.amount[0].amount,
+          String(fee.amount[0].amount),
           nativeToken?.price ?? tokenData?.price,
           tokenData.contractDecimals,
         ),
@@ -920,6 +939,7 @@ export async function cosmosSendTokens(
     if (GASLESS_CHAINS.includes(get(ChainConfigMapping, chain).backendName)) {
       fee.amount[0].amount = '0';
     }
+
     const result = await signingClient.sendTokens(
       senderAddress,
       address,
