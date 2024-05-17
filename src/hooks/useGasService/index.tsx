@@ -360,27 +360,28 @@ export default function useGasService() {
         ).holdings,
       );
 
-    const gasPrice = cosmosConfig[chainName].gasPrice;
-    const gasFee = simulation * 1.8 * gasPrice;
-    const fee = {
-      gas: Math.floor(simulation * 1.8).toString(),
-      amount: [
-        {
-          denom: nativeToken?.denom ?? denom,
-          amount: GASLESS_CHAINS.includes(backendName)
-            ? '0'
-            : Math.floor(gasFee).toString(),
-        },
-      ],
-    };
-    return {
-      gasFeeInCrypto: parseFloat(
-        String(gasFee * 10 ** -nativeToken.contractDecimals),
-      ).toFixed(6),
-      gasLimit: fee.gas,
-      gasPrice,
-      fee,
-    };
+      const gasPrice = cosmosConfig[chainName].gasPrice;
+      const gasFee = simulation * 1.8 * gasPrice;
+      const fee = {
+        gas: Math.floor(simulation * 1.8).toString(),
+        amount: [
+          {
+            denom: nativeToken?.denom ?? denom,
+            amount: GASLESS_CHAINS.includes(backendName)
+              ? '0'
+              : Math.floor(gasFee).toString(),
+          },
+        ],
+      };
+      return {
+        gasFeeInCrypto: parseFloat(
+          String(gasFee * 10 ** -nativeToken.contractDecimals),
+        ).toFixed(6),
+        gasLimit: fee.gas,
+        gasPrice,
+        fee,
+      };
+    }
   };
 
   const estimateGasForCosmosIBC = async ({
@@ -456,25 +457,26 @@ export default function useGasService() {
 
       const gasFee = simulation * Number(gasPrice) * 1.8;
 
-    const fee = {
-      gas: Math.floor(simulation * 1.8).toString(),
-      amount: [
-        {
-          denom: nativeToken?.denom ?? denom,
-          amount: GASLESS_CHAINS.includes(backendName)
-            ? '0'
-            : Math.floor(gasFee).toString(),
-        },
-      ],
-    };
-    return {
-      gasFeeInCrypto: parseFloat(
-        String(gasFee * 10 ** -nativeToken.contractDecimals),
-      ).toFixed(6),
-      gasLimit: fee.gas,
-      gasPrice,
-      fee,
-    };
+      const fee = {
+        gas: Math.floor(simulation * 1.8).toString(),
+        amount: [
+          {
+            denom: nativeToken?.denom ?? denom,
+            amount: GASLESS_CHAINS.includes(backendName)
+              ? '0'
+              : Math.floor(gasFee).toString(),
+          },
+        ],
+      };
+      return {
+        gasFeeInCrypto: parseFloat(
+          String(gasFee * 10 ** -nativeToken.contractDecimals),
+        ).toFixed(6),
+        gasLimit: fee.gas,
+        gasPrice,
+        fee,
+      };
+    }
   };
 
   const estimateGasForEvmosIBC = async ({
