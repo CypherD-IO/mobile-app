@@ -206,16 +206,16 @@ export const CreateContact = ({ route, navigation }: RouteProps) => {
       placeHolder: t('ETHEREUM_ADDRESS_PLACEHOLDER'),
       logo: AppImages.COREUM_LOGO,
     },
-    injectuive: {
-      label: t(`${ChainNames.INJECTIVE.toUpperCase()} ADDRESS`),
-      placeHolder: t('ETHEREUM_ADDRESS_PLACEHOLDER'),
-      logo: AppImages.INJECTIVE_LOGO,
-    },
-    kujira: {
-      label: t(`${ChainNames.KUJIRA.toUpperCase()} ADDRESS`),
-      placeHolder: t('ETHEREUM_ADDRESS_PLACEHOLDER'),
-      logo: AppImages.KUJIRA_LOGO,
-    },
+    // injective: {
+    //   label: t(`${ChainNames.INJECTIVE.toUpperCase()} ADDRESS`),
+    //   placeHolder: t('ETHEREUM_ADDRESS_PLACEHOLDER'),
+    //   logo: AppImages.INJECTIVE_LOGO,
+    // },
+    // kujira: {
+    //   label: t(`${ChainNames.KUJIRA.toUpperCase()} ADDRESS`),
+    //   placeHolder: t('ETHEREUM_ADDRESS_PLACEHOLDER'),
+    //   logo: AppImages.KUJIRA_LOGO,
+    // },
   };
 
   const validateAddress = (
