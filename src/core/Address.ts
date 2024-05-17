@@ -285,7 +285,8 @@ export const generateWalletFromMnemonic = async (
     'stargaze',
     'noble',
     'coreum',
-    'kujira',
+    // 'injective',
+    // 'kujira',
   ];
 
   const cosmosAccounts = await Promise.all(

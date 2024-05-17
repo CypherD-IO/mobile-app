@@ -242,7 +242,7 @@ export default function IBC({
           toAddress: receiverAddress,
         });
 
-        setGasFee(gasDetails.gasPrice);
+        setGasFee(gasDetails?.gasFeeInCrypto);
         setSignModalVisible(true);
       } else if (type === 'txn') {
         const transaction = await interCosmosIBC({

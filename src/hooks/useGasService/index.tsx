@@ -41,6 +41,8 @@ import { ceil, get } from 'lodash';
 import { HdWalletContextDef } from '../../reducers/hdwallet_reducer';
 import { MsgTransfer } from 'cosmjs-types/ibc/applications/transfer/v1/tx';
 import Long from 'long';
+import { InjectiveStargate } from '@injectivelabs/sdk-ts';
+import { OfflineDirectSigner } from '@cosmjs/proto-signing';
 
 export default function useGasService() {
   const { getWithoutAuth } = useAxios();
@@ -50,6 +52,21 @@ export default function useGasService() {
   const { getCosmosSignerClient, getCosmosRpc } = useCosmosSigner();
   const hdWalletContext = useContext(HdWalletContext) as HdWalletContextDef;
   const portfolioState = useContext<any>(PortfolioContext);
+
+  async function getCosmosSigningClient(
+    chain: Chain,
+    rpc: string,
+    signer: OfflineDirectSigner,
+  ) {
+    if (chain.backendName === ChainBackendNames.INJECTIVE) {
+      return await InjectiveStargate.InjectiveSigningStargateClient.connectWithSigner(
+        rpc,
+        signer,
+      );
+    } else {
+      return await SigningStargateClient.connectWithSigner(rpc, signer);
+    }
+  }
 
   async function getGasPriceLocallyUsingGasHistory(
     chain: ChainBackendNames,
@@ -307,39 +324,41 @@ export default function useGasService() {
   }) => {
     const { chainName, backendName, symbol } = chain;
     const signer = await getCosmosSignerClient(chainName);
-    const rpc = getCosmosRpc(backendName);
-    const signingClient = await SigningStargateClient.connectWithSigner(
-      rpc,
-      signer,
-    );
-    const contractDecimal = get(cosmosConfig, chainName).contractDecimal;
-    const amountToSend = String(
-      parseFloat(amount) * Math.pow(10, contractDecimal),
-    ).split('.')[0];
+    if (signer) {
+      const rpc = getCosmosRpc(backendName);
+      const signingClient = await getCosmosSigningClient(chain, rpc, signer);
+      const contractDecimal = get(cosmosConfig, chainName).contractDecimal;
+      const amountToSend = String(
+        parseFloat(amount) * Math.pow(10, contractDecimal),
+      ).split('.')[0];
 
-    // transaction gas fee calculation
-    const sendMsg: MsgSendEncodeObject = {
-      typeUrl: '/cosmos.bank.v1beta1.MsgSend',
-      value: {
+      // transaction gas fee calculation
+      const sendMsg: MsgSendEncodeObject = {
+        typeUrl: '/cosmos.bank.v1beta1.MsgSend',
+        value: {
+          fromAddress,
+          toAddress,
+          amount: [
+            {
+              denom,
+              amount: amountToSend,
+            },
+          ],
+        },
+      };
+      const simulation = await signingClient.simulate(
         fromAddress,
-        toAddress,
-        amount: [
-          {
-            denom,
-            amount: amountToSend,
-          },
-        ],
-      },
-    };
-    const simulation = await signingClient.simulate(fromAddress, [sendMsg], '');
+        [sendMsg],
+        '',
+      );
 
-    const nativeToken = getNativeToken(
-      get(NativeTokenMapping, symbol) || symbol,
-      get(
-        portfolioState.statePortfolio.tokenPortfolio,
-        ChainNameMapping[backendName],
-      ).holdings,
-    );
+      const nativeToken = getNativeToken(
+        get(NativeTokenMapping, symbol) || symbol,
+        get(
+          portfolioState.statePortfolio.tokenPortfolio,
+          ChainNameMapping[backendName],
+        ).holdings,
+      );
 
     const gasPrice = cosmosConfig[chainName].gasPrice;
     const gasFee = simulation * 1.8 * gasPrice;
@@ -382,55 +401,60 @@ export default function useGasService() {
     const { chainName, backendName, symbol } = fromChain;
     const signer = await getCosmosSignerClient(chainName);
     const rpc = getCosmosRpc(backendName);
-    const signingClient = await SigningStargateClient.connectWithSigner(
-      rpc,
-      signer,
-    );
-    const contractDecimal = get(cosmosConfig, chainName).contractDecimal;
-    const amountToSend = ethers.parseUnits(amount, contractDecimal).toString();
-    const transferAmount: Coin = {
-      denom,
-      amount: amountToSend.toString(),
-    };
+    if (signer) {
+      const signingClient = await getCosmosSigningClient(
+        fromChain,
+        rpc,
+        signer,
+      );
 
-    const sourceChannel =
-      cosmosConfig[chainName].channel[toChain.chainName.toLowerCase()];
+      const contractDecimal = get(cosmosConfig, chainName).contractDecimal;
+      const amountToSend = ethers
+        .parseUnits(amount, contractDecimal)
+        .toString();
+      const transferAmount: Coin = {
+        denom,
+        amount: amountToSend.toString(),
+      };
 
-    const timeOut: any = getTimeOutTime();
+      const sourceChannel =
+        cosmosConfig[chainName].channel[toChain.chainName.toLowerCase()];
 
-    // transaction gas fee calculation
-    const transferMsg: MsgTransferEncodeObject = {
-      typeUrl: '/ibc.applications.transfer.v1.MsgTransfer',
-      value: MsgTransfer.fromPartial({
-        sourcePort: 'transfer',
-        sourceChannel,
-        sender: fromAddress,
-        receiver: toAddress,
-        token: transferAmount,
-        timeoutHeight: {
-          revisionHeight: Long.fromNumber(123),
-          revisionNumber: Long.fromNumber(456),
-        },
-        timeoutTimestamp: timeOut,
-      }),
-    };
-    const simulation = await signingClient.simulate(
-      fromAddress,
-      [transferMsg],
-      '',
-    );
+      const timeOut: any = getTimeOutTime();
 
-    const nativeToken = getNativeToken(
-      get(NativeTokenMapping, symbol) || symbol,
-      get(
-        portfolioState.statePortfolio.tokenPortfolio,
-        ChainNameMapping[backendName],
-      ).holdings,
-    );
+      // transaction gas fee calculation
+      const transferMsg: MsgTransferEncodeObject = {
+        typeUrl: '/ibc.applications.transfer.v1.MsgTransfer',
+        value: MsgTransfer.fromPartial({
+          sourcePort: 'transfer',
+          sourceChannel,
+          sender: fromAddress,
+          receiver: toAddress,
+          token: transferAmount,
+          timeoutHeight: {
+            revisionHeight: Long.fromNumber(123),
+            revisionNumber: Long.fromNumber(456),
+          },
+          timeoutTimestamp: timeOut,
+        }),
+      };
+      const simulation = await signingClient.simulate(
+        fromAddress,
+        [transferMsg],
+        '',
+      );
 
-    const gasPrice = cosmosConfig[chainName].gasPrice;
+      const nativeToken = getNativeToken(
+        get(NativeTokenMapping, symbol) || symbol,
+        get(
+          portfolioState.statePortfolio.tokenPortfolio,
+          ChainNameMapping[backendName],
+        ).holdings,
+      );
 
-    const gasFee = simulation * 1.8 * gasPrice;
+      const gasPrice = cosmosConfig[chainName].gasPrice;
+
+      const gasFee = simulation * Number(gasPrice) * 1.8;
 
     const fee = {
       gas: Math.floor(simulation * 1.8).toString(),

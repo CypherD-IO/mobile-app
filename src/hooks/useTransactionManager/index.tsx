@@ -17,6 +17,7 @@ import {
   CHAIN_SHARDEUM,
   CHAIN_SHARDEUM_SPHINX,
   Chain,
+  ChainBackendNames,
   ChainConfigMapping,
   ChainNameMapping,
   GASLESS_CHAINS,
@@ -41,6 +42,8 @@ import Long from 'long';
 import { MsgTransfer } from 'cosmjs-types/ibc/applications/transfer/v1/tx';
 import useEvmosSigner from '../useEvmosSigner';
 import { decideGasLimitBasedOnTypeOfToAddress } from '../../core/NativeTransactionHandler';
+import { OfflineDirectSigner } from '@cosmjs/proto-signing';
+import { InjectiveStargate } from '@injectivelabs/sdk-ts';
 
 export default function useTransactionManager() {
   const globalContext = useContext<any>(GlobalContext);
@@ -65,6 +68,21 @@ export default function useTransactionManager() {
   const { getCosmosSignerClient, getCosmosRpc } = useCosmosSigner();
 
   const EVMOS_TXN_ENDPOINT = evmosUrls.transact;
+
+  async function getCosmosSigningClient(
+    chain: Chain,
+    rpc: string,
+    signer: OfflineDirectSigner,
+  ) {
+    if (chain.backendName === ChainBackendNames.INJECTIVE) {
+      return await InjectiveStargate.InjectiveSigningStargateClient.connectWithSigner(
+        rpc,
+        signer,
+      );
+    } else {
+      return await SigningStargateClient.connectWithSigner(rpc, signer);
+    }
+  }
 
   function isNativeCurrency(
     fromChain: Chain,
@@ -319,31 +337,35 @@ export default function useTransactionManager() {
         toAddress,
       });
       const signer = await getCosmosSignerClient(chainName);
-      const rpc = getCosmosRpc(backendName);
 
-      const signingClient = await SigningStargateClient.connectWithSigner(
-        rpc,
-        signer,
-      );
+      if (signer) {
+        const rpc = getCosmosRpc(backendName);
 
-      const tokenDenom = denom ?? cosmosConfig[backendName].denom;
+        const signingClient = await getCosmosSigningClient(
+          fromChain,
+          rpc,
+          signer,
+        );
 
-      const contractDecimals = get(cosmosConfig, chainName).contractDecimal;
-      const amountToSend = String(
-        parseFloat(amount) * Math.pow(10, contractDecimals),
-      );
-      const result = await signingClient.sendTokens(
-        fromAddress,
-        toAddress,
-        [{ denom: tokenDenom, amount: amountToSend }],
-        gasDetails.fee,
-        'Cypher Wallet',
-      );
+        const tokenDenom = denom ?? cosmosConfig[backendName].denom;
 
-      if (result.code === 0) {
-        return { isError: false, hash: result.transactionHash };
-      } else {
-        return { isError: true, hash: '', error: result?.error ?? '' };
+        const contractDecimals = get(cosmosConfig, chainName).contractDecimal;
+        const amountToSend = String(
+          parseFloat(amount) * Math.pow(10, contractDecimals),
+        );
+        const result = await signingClient.sendTokens(
+          fromAddress,
+          toAddress,
+          [{ denom: tokenDenom, amount: amountToSend }],
+          gasDetails.fee,
+          'Cypher Wallet',
+        );
+
+        if (result.code === 0) {
+          return { isError: false, hash: result.transactionHash };
+        } else {
+          return { isError: true, hash: '', error: result?.error ?? '' };
+        }
       }
     } catch (e) {
       return { isError: true, hash: '', error: e };
@@ -380,11 +402,14 @@ export default function useTransactionManager() {
         fromAddress,
         toAddress,
       });
+
       const { chainName, backendName, symbol } = fromChain;
       const signer = await getCosmosSignerClient(chainName);
       const rpc = getCosmosRpc(backendName);
+      // const rpc = 'https://rpc-injective-ia.cosmosia.notional.ventures/';
 
-      const signingClient = await SigningStargateClient.connectWithSigner(
+      const signingClient = await getCosmosSigningClient(
+        fromChain,
         rpc,
         signer,
       );

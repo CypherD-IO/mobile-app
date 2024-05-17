@@ -730,12 +730,7 @@ export default function SendTo(props: { navigation?: any; route?: any }) {
   const cosmosTransaction = async (address: string, chainName: string) => {
     setLoading(true);
     const amount = ethers
-      .parseUnits(
-        parseFloat(
-          valueForUsd.length > 8 ? valueForUsd.substring(0, 8) : valueForUsd,
-        ).toFixed(6),
-        6,
-      )
+      .parseUnits(valueForUsd, tokenData.contractDecimals)
       .toString();
     const signer = await getCosmosSignerClient(
       tokenData.chainDetails,
@@ -784,7 +779,7 @@ export default function SendTo(props: { navigation?: any; route?: any }) {
   ) => {
     setLoading(true);
     const amount = ethers
-      .parseUnits(convertAmountOfContractDecimal(valueForUsd, 6), 6)
+      .parseUnits(valueForUsd, tokenData.contractDecimals)
       .toString();
     await cosmosSendTokens(
       address,

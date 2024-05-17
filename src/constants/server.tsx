@@ -349,7 +349,7 @@ export const CHAIN_COREUM: Chain = {
 export const CHAIN_INJECTIVE: Chain = {
   chainName: 'injective',
   name: 'Injective',
-  symbol: 'INJECTIVE',
+  symbol: 'INJ',
   id: 23,
   logo_url: AppImages.INJECTIVE_LOGO,
   backendName: ChainBackendNames.INJECTIVE,
@@ -362,7 +362,7 @@ export const CHAIN_INJECTIVE: Chain = {
 export const CHAIN_KUJIRA: Chain = {
   chainName: 'kujira',
   name: 'Kujira',
-  symbol: 'KUJIRA',
+  symbol: 'KUJI',
   id: 24,
   logo_url: AppImages.KUJIRA_LOGO,
   backendName: ChainBackendNames.KUJIRA,

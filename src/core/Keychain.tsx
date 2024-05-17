@@ -30,6 +30,7 @@ import { PORTFOLIO_NEW_LOAD } from '../reducers/portfolio_reducer';
 import * as Sentry from '@sentry/react-native';
 import {
   AddressChainNames,
+  generateCosmosPrivateKey,
   generateWalletFromMnemonic,
   IAccountDetail,
   IAccountDetailWithChain,
@@ -65,6 +66,7 @@ import axios from 'axios';
 import { Mnemonic, sha256 } from 'ethers';
 import { cosmosConfig } from '../constants/cosmosConfig';
 import { Slip10RawIndex } from '@cosmjs-rn/crypto';
+import { InjectiveDirectEthSecp256k1Wallet } from '@injectivelabs/sdk-ts';
 
 // increase this when you want the CyRootData to be reconstructed
 const currentSchemaVersion = 7;
@@ -501,11 +503,23 @@ export async function getSignerClient(
         Slip10RawIndex.normal(bip44HDPath.change),
         Slip10RawIndex.normal(bip44HDPath.addressIndex),
       ];
-      const signer: OfflineDirectSigner =
-        await DirectSecp256k1HdWallet.fromMnemonic(seedPhrase, {
+      let signer: OfflineDirectSigner;
+      if (wallet === 'injective') {
+        const privateKey = await generateCosmosPrivateKey(
+          chainConfig,
+          seedPhrase,
+          bip44HDPath,
+        );
+        signer = (await InjectiveDirectEthSecp256k1Wallet.fromKey(
+          Buffer.from(privateKey.substring(2), 'hex'),
+          chainConfig.prefix,
+        )) as OfflineDirectSigner;
+      } else {
+        signer = await DirectSecp256k1HdWallet.fromMnemonic(seedPhrase, {
           prefix: chainConfig.prefix,
           hdPaths: [mnemonicPath],
         });
+      }
       wallets.set(chainConfig.prefix, signer);
     }
   }
