@@ -11,3 +11,4 @@ export const H_HEADER_BAR = 60;
 export const OFFSET_TABVIEW = isIOS() ? -H_BALANCE_BANNER : 0;
 export const H_GUTTER = 40;
 export const H_TAB_BAR = 40;
+export const ODOS_SWAP_QUOTE_GASLIMIT_MULTIPLICATION_FACTOR = 1.2;
