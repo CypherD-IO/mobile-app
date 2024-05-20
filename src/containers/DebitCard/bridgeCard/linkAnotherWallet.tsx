@@ -25,7 +25,11 @@ import OtpInput from '../../../components/v2/OTPInput';
 import LottieView from 'lottie-react-native';
 import * as Sentry from '@sentry/react-native';
 import { StyleSheet } from 'react-native';
-import { getChainNameFromAddress, trimWhitespace } from '../../../core/util';
+import {
+  getChainNameFromAddress,
+  isValidTRONAddress,
+  trimWhitespace,
+} from '../../../core/util';
 
 export default function LinkAnotherWallet({ navigation }) {
   const [formValues, setFormValues] = useState({
@@ -48,7 +52,10 @@ export default function LinkAnotherWallet({ navigation }) {
       .string()
       .required('Address Required')
       .test('Enter valid ETH Address', 'Enter valid ETH Address', address => {
-        return Web3.utils.isAddress(trimWhitespace(address));
+        return (
+          Web3.utils.isAddress(trimWhitespace(address)) ||
+          isValidTRONAddress(address)
+        );
       }),
     walletName: yup.string().required('Wallet Name Required'),
   });
@@ -71,8 +78,7 @@ export default function LinkAnotherWallet({ navigation }) {
     } else {
       const errorObject = {
         response,
-        message:
-          'isError=true when trying to sendOtp in link another wallet screen.',
+        message: 'Error when trying to send OTP',
       };
       Sentry.captureException(errorObject);
       showModal('state', {
@@ -122,7 +128,9 @@ export default function LinkAnotherWallet({ navigation }) {
   const onOTPEntry = async (otp: string) => {
     setIsSubmitting(true);
     const data: Record<string, string | number> = {
-      child: formValues.address.toLowerCase(),
+      child: isValidTRONAddress(formValues.address)
+        ? formValues.address
+        : formValues.address.toLowerCase(),
       label: formValues.walletName,
       chain: getChainNameFromAddress(formValues.address),
       otp: '',

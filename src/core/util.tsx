@@ -1020,3 +1020,8 @@ export function trimWhitespace(textValue: string) {
   tempTextValue = tempTextValue.replace(/\s+/g, ' ');
   return tempTextValue;
 }
+
+export function isValidTRONAddress(address: string) {
+  const regex = /^T[a-zA-Z0-9]{33}$/;
+  return regex.test(address);
+}
