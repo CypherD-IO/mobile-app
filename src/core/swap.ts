@@ -5,6 +5,7 @@ import { getGasPriceFor } from '../containers/Browser/gasHelper';
 import { SwapMetaData } from '../models/swapMetaData';
 import { loadPrivateKeyFromKeyChain } from './Keychain';
 import { _NO_CYPHERD_CREDENTIAL_AVAILABLE_ } from './util';
+import { get } from 'lodash';
 
 // Contract ABI for allowance and approval
 const contractABI = [
@@ -190,19 +191,14 @@ export const swapTokens = async ({
     void (async () => {
       try {
         const nativeTokenSymbol =
-          NativeTokenMapping[fromToken.chainDetails.symbol] ||
+          NativeTokenMapping[fromToken?.chainDetails?.symbol] ||
           fromToken.chainDetails.symbol;
         const isNative = fromToken.symbol === nativeTokenSymbol;
         const { ethereum } = hdWallet.state.wallet;
 
         const tx = {
           chainId: quoteData.data.chainId,
-          value: isNative
-            ? web3.utils.toWei(
-                String(Number(amount).toFixed(fromToken?.contractDecimals)),
-                'ether',
-              )
-            : '0',
+          value: isNative ? get(quoteData, ['data', 'value']) : '0',
           to: routerAddress,
           data: quoteData.data.data,
           gas: web3.utils.toHex(2 * Number(gasLimit)),

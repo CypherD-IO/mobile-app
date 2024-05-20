@@ -88,7 +88,7 @@ import { BridgeTokenDataInterface } from '../../models/bridgeTokenData.interface
 import { cosmosConfig } from '../../constants/cosmosConfig';
 import { hostWorker } from '../../global';
 import { intercomAnalyticsLog } from '../utilities/analyticsUtility';
-import { get } from 'lodash';
+import { floor, get } from 'lodash';
 import CyDTokenAmount from '../../components/v2/tokenAmount';
 import { FadeIn } from 'react-native-reanimated';
 import {
@@ -112,6 +112,7 @@ import { ethers } from 'ethers';
 import { AllowanceParams } from '../../models/swapMetaData';
 import { Holding } from '../../core/Portfolio';
 import useTransactionManager from '../../hooks/useTransactionManager';
+import { ODOS_SWAP_QUOTE_GASLIMIT_MULTIPLICATION_FACTOR } from '../Portfolio/constants';
 
 const QUOTE_RETRY = 3;
 const QUOTE_EXPIRY_SEC = 60;
@@ -1866,18 +1867,10 @@ export default function Bridge(props: { navigation?: any; route?: any }) {
       if (
         parseFloat(cryptoAmount) <= parseFloat(String(fromToken?.actualBalance))
       ) {
-        const gasLimit = await web3.eth.estimateGas({
-          from: ethereum.address,
-          // For Optimism the ETH token has different contract address
-          to: routerAddress,
-          value: isNative
-            ? web3.utils.toWei(
-                limitDecimalPlaces(cryptoAmount, fromToken?.contractDecimals),
-                'ether',
-              )
-            : '0x0',
-          data: isAllowance ? quoteData.data.data : '',
-        });
+        const gasLimit = floor(
+          get(quoteData, ['gasEstimate']) *
+            ODOS_SWAP_QUOTE_GASLIMIT_MULTIPLICATION_FACTOR,
+        );
         let finalGasPrice;
         const gasFeeResponse = quoteData.gasInfo;
         if (gasFeeResponse.gasPrice > 0) {
@@ -1991,17 +1984,10 @@ export default function Bridge(props: { navigation?: any; route?: any }) {
             },
           };
           activityId.current = id;
-          const gasLimit = await web3.eth.estimateGas({
-            from: ethereum.address,
-            // For Optimism the ETH token has different contract address
-            to: routerAddress,
-            value: isNative
-              ? web3.utils.toWei(
-                  limitDecimalPlaces(cryptoAmount, fromToken?.contractDecimals),
-                )
-              : '0x0',
-            data: quoteData.data.data,
-          });
+          const gasLimit = floor(
+            get(quoteData, ['gasEstimate']) *
+              ODOS_SWAP_QUOTE_GASLIMIT_MULTIPLICATION_FACTOR,
+          );
           const gasFeeResponse = quoteData.gasInfo;
           const response: any = await swapTokens({
             ...confirmSwapParams,
