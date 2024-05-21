@@ -351,6 +351,7 @@ export default function QRCodeGenerator(props) {
                   imageStyle='self-center h-[18px] w-[18px]'
                   type='secondary'
                   title={''}
+                  title={''}
                 />
               </CyDView>
             )}
@@ -363,7 +364,7 @@ export default function QRCodeGenerator(props) {
               </CyDText>
               <CyDText className={'text-[14px] text-center font-bold'}>
                 {selectedChain.chainName === 'ethereum'
-                  ? 'Ethereum, Polygon, Binance Smart Chain, zkSync Era, Base, Polygon zkEVM, Avalanche, Fantom, Optimism, Arbitrum, Evmos, Aurora, Moonbeam, Moonriver, Shardeum'
+                  ? 'Ethereum, Polygon, Binance Smart Chain, zkSync Era, Base, Polygon zkEVM, Avalanche, Fantom, Optimism, Arbitrum, Evmos, Aurora, Moonbeam, Moonriver, Shardeum, Coreum'
                   : selectedChain.name}
               </CyDText>
             </CyDView>

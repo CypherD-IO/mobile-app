@@ -616,6 +616,15 @@ export default function ShortcutsModal({ navigationRef }) {
         case ChainBackendNames.SHARDEUM_SPHINX:
           addressTypeQRCode = FundWalletAddressType.SHARDEUM_SPHINX;
           break;
+        case ChainBackendNames.COREUM:
+          addressTypeQRCode = FundWalletAddressType.COREUM;
+          break;
+        // case ChainBackendNames.INJECTIVE:
+        //   addressTypeQRCode = FundWalletAddressType.INJECTIVE;
+        //   break;
+        // case ChainBackendNames.KUJIRA:
+        //   addressTypeQRCode = FundWalletAddressType.KUJIRA;
+        //   break;
       }
       setChooseChainModal(false);
       setTimeout(
