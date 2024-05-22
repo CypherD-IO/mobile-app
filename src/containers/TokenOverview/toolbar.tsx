@@ -213,7 +213,20 @@ export default function TokenOverviewToolBar({
               tokenData.chainDetails.backendName === ChainBackendNames.NOBLE
             ) {
               addressTypeQRCode = FundWalletAddressType.NOBLE;
+            } else if (
+              tokenData.chainDetails.backendName === ChainBackendNames.COREUM
+            ) {
+              addressTypeQRCode = FundWalletAddressType.COREUM;
             }
+            // else if (
+            //   tokenData.chainDetails.backendName === ChainBackendNames.INJECTIVE
+            // ) {
+            //   addressTypeQRCode = FundWalletAddressType.INJECTIVE;
+            // } else if (
+            //   tokenData.chainDetails.backendName === ChainBackendNames.KUJIRA
+            // ) {
+            //   addressTypeQRCode = FundWalletAddressType.KUJIRA;
+            // }
             navigation.navigate(screenTitle.QRCODE, {
               addressType: addressTypeQRCode,
             });

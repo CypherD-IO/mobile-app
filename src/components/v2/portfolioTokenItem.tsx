@@ -189,7 +189,20 @@ const RenderRightActions = (navigation: any, tokenData: any) => {
               ChainBackendNames.SHARDEUM_SPHINX
             ) {
               addressTypeQRCode = FundWalletAddressType.SHARDEUM_SPHINX;
+            } else if (
+              tokenData.chainDetails.backendName === ChainBackendNames.COREUM
+            ) {
+              addressTypeQRCode = FundWalletAddressType.COREUM;
             }
+            // else if (
+            //   tokenData.chainDetails.backendName === ChainBackendNames.INJECTIVE
+            // ) {
+            //   addressTypeQRCode = FundWalletAddressType.INJECTIVE;
+            // } else if (
+            //   tokenData.chainDetails.backendName === ChainBackendNames.KUJIRA
+            // ) {
+            //   addressTypeQRCode = FundWalletAddressType.KUJIRA;
+            // }
             navigation.navigate(screenTitle.QRCODE, {
               addressType: addressTypeQRCode,
             });
