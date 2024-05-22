@@ -182,9 +182,9 @@ PODS:
   - GoogleUtilities/UserDefaults (7.13.2):
     - GoogleUtilities/Logger
     - GoogleUtilities/Privacy
-  - Intercom (17.0.3)
-  - intercom-react-native (7.1.0):
-    - Intercom (~> 17.0.3)
+  - Intercom (16.5.9)
+  - intercom-react-native (6.8.1):
+    - Intercom (~> 16.5.9)
     - React-Core
   - jail-monkey (2.8.0):
     - React-Core
@@ -1108,8 +1108,8 @@ SPEC CHECKSUMS:
   GoogleAppMeasurement: 4c19f031220c72464d460c9daa1fb5d1acce958e
   GoogleDataTransport: 6c09b596d841063d76d4288cc2d2f42cc36e1e2a
   GoogleUtilities: c56430aef51a1aa57b25da78c3f8397e522c67b7
-  Intercom: 85b6c558c853da66e1041e23a6a8ed99a6bef640
-  intercom-react-native: dd1319474fff61385377074a49b22b145242004c
+  Intercom: d9c81b3e45e6ecd9b2db2dc188d0521a40393f56
+  intercom-react-native: 267c5e40d45cf663da091c4417b5306d8ecfe4ee
   jail-monkey: a71b35d482a70ecba844a90f002994012cf12a5d
   libevent: 4049cae6c81cdb3654a443be001fb9bdceff7913
   libwebp: 1786c9f4ff8a279e4dac1e8f385004d5fc253009
