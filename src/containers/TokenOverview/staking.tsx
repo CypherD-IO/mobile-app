@@ -1,3 +1,4 @@
+/* eslint-disable no-empty-pattern */
 /* eslint-disable react-native/no-raw-text */
 /* eslint-disable @typescript-eslint/no-misused-promises */
 import { useIsFocused, useRoute } from '@react-navigation/native';
@@ -52,7 +53,6 @@ import { IIBCData, cosmosConfig } from '../../constants/cosmosConfig';
 import analytics from '@react-native-firebase/analytics';
 import * as Sentry from '@sentry/react-native';
 import { signTypedData, SignTypedDataVersion } from '@metamask/eth-sig-util';
-import { ethers } from 'ethers';
 import { PORTFOLIO_REFRESH } from '../../reducers/portfolio_reducer';
 import {
   createTxMsgMultipleWithdrawDelegatorReward,
@@ -74,12 +74,29 @@ import Loading from '../../components/v2/loading';
 import useIsSignable from '../../hooks/useIsSignable';
 import { ActivityType } from '../../reducers/activity_reducer';
 
+const EmptyView = () => {
+  return (
+    <CyDView className={'flex flex-row justify-center'}>
+      <CyDView className={'mt-[15%]'}>
+        <CyDImage
+          source={AppImages.STAKING_EMPTY_ILLUSTRATION}
+          className='h-[250px] w-[350px]'
+          resizeMode='contain'
+        />
+        <CyDText className={'text-center text-[24px] font-semibold mt-[20px]'}>
+          No holdings yet
+        </CyDText>
+      </CyDView>
+    </CyDView>
+  );
+};
+
 export default function TokenStaking({
   tokenData,
   navigation,
 }: {
   tokenData: TokenMeta;
-  navigation: { navigate: (screen: string, {}: any) => void };
+  navigation: { navigate: (screen: string, {}: unknown) => void };
 }) {
   const globalStateContext = useContext<any>(GlobalContext);
   const hdWalletContext = useContext<any>(HdWalletContext);
@@ -101,7 +118,6 @@ export default function TokenStaking({
   );
   const cosmosStaking = useContext<any>(CosmosStakingContext);
   const evmos = hdWalletContext.state.wallet.evmos;
-  const ethereum = hdWalletContext.state.wallet.ethereum;
   const stakingValidators = useContext<any>(StakingContext);
   const [time, setTime] = useState({ hours: '0', min: '0', sec: '0' });
   const [finalData, setFinalData] = useState({});
@@ -845,24 +861,6 @@ export default function TokenStaking({
         });
       }
     }
-  };
-
-  const EmptyView = () => {
-    return (
-      <CyDView className={'flex flex-row justify-center'}>
-        <CyDView className={'mt-[15%]'}>
-          <CyDImage
-            source={AppImages.STAKING_EMPTY_ILLUSTRATION}
-            className='h-[250px] w-[350px]'
-            resizeMode='contain'
-          />
-          <CyDText
-            className={'text-center text-[24px] font-semibold mt-[20px]'}>
-            No holdings yet
-          </CyDText>
-        </CyDView>
-      </CyDView>
-    );
   };
 
   const onClaim = () => {

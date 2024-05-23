@@ -48,7 +48,7 @@ import { MODAL_CLOSING_TIMEOUT } from '../../constants/timeOuts';
 import { SuccessTransaction } from '../../components/v2/StateModal';
 import CyDTokenAmount from '../../components/v2/tokenAmount';
 import { AnalyticsType, ButtonType } from '../../constants/enum';
-import { get } from 'lodash';
+import { get, random } from 'lodash';
 import useGasService from '../../hooks/useGasService';
 import useTransactionManager from '../../hooks/useTransactionManager';
 
@@ -105,7 +105,7 @@ export default function IBC({
   const activityContext = useContext<any>(ActivityContext);
   const activityRef = useRef<IBCTransaction | null>(null);
   const { showModal, hideModal } = useGlobalModalContext();
-  const { estimateGasForCosmosIBC, estimateGasForEvmosIBC } = useGasService();
+  const { estimateGasForEvmosIBC } = useGasService();
   const { interCosmosIBC, evmosIBC } = useTransactionManager();
   const handleBackButton = () => {
     navigation.goBack();
@@ -233,15 +233,11 @@ export default function IBC({
         tokenData.chainDetails.chainName,
       );
       if (type === 'simulation') {
-        const gasDetails = await estimateGasForCosmosIBC({
-          fromChain: tokenData.chainDetails,
-          toChain: chain,
-          denom: tokenData.denom,
-          amount,
-          fromAddress,
-          toAddress: receiverAddress,
-        });
-
+        const gasDetails = {
+          gasFeeInCrypto: parseFloat(String(random(0.001, 0.01, true))).toFixed(
+            4,
+          ),
+        };
         setGasFee(gasDetails?.gasFeeInCrypto);
         setSignModalVisible(true);
       } else if (type === 'txn') {
@@ -249,7 +245,6 @@ export default function IBC({
           fromChain: tokenData.chainDetails,
           toChain: chain,
           denom: tokenData.denom,
-          contractDecimals: tokenData.contractDecimals,
           amount,
           fromAddress,
           toAddress: receiverAddress,

@@ -42,7 +42,13 @@ import { SuccessTransaction } from '../../components/v2/StateModal';
 import { AnalyticsType, TokenOverviewTabIndices } from '../../constants/enum';
 import { useRoute } from '@react-navigation/native';
 
-export default function CosmosAction({ route, navigation }) {
+export default function CosmosAction({
+  route,
+  navigation,
+}: {
+  route: any;
+  navigation: any;
+}) {
   const { t } = useTranslation();
   const { tokenData, from, validatorData } = route.params;
   const cosmosStaking = useContext<any>(CosmosStakingContext);

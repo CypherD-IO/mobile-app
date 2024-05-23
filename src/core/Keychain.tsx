@@ -517,7 +517,7 @@ export async function getSignerClient(
       } else {
         signer = await DirectSecp256k1HdWallet.fromMnemonic(seedPhrase, {
           prefix: chainConfig.prefix,
-          hdPaths: [mnemonicPath],
+          hdPaths: [mnemonicPath] as any,
         });
       }
       wallets.set(chainConfig.prefix, signer);
