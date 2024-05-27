@@ -43,13 +43,27 @@ import { MsgTransfer } from 'cosmjs-types/ibc/applications/transfer/v1/tx';
 import Long from 'long';
 import { InjectiveStargate } from '@injectivelabs/sdk-ts';
 import { OfflineDirectSigner } from '@cosmjs/proto-signing';
+import { IReward } from '../../reducers/cosmosStakingReducer';
+
+export interface GasServiceResult {
+  gasFeeInCrypto: string;
+  gasLimit: string;
+  gasPrice: number;
+  fee: {
+    gas: string;
+    amount: Array<{
+      denom: string;
+      amount: string;
+    }>;
+  };
+}
 
 export default function useGasService() {
   const { getWithoutAuth } = useAxios();
   const minimumGasFee = '20';
   const { getSignedEvmosTransaction, simulateEvmosIBCTransaction } =
     useEvmosSigner();
-  const { getCosmosSignerClient, getCosmosRpc } = useCosmosSigner();
+  const { getCosmosRpc } = useCosmosSigner();
   const hdWalletContext = useContext(HdWalletContext) as HdWalletContextDef;
   const portfolioState = useContext<any>(PortfolioContext);
 
@@ -240,7 +254,7 @@ export default function useGasService() {
     gas?: string;
   }) => {
     const { evmos } = hdWalletContext.state.wallet;
-    const fromAddress: string = evmos.address;
+    const fromAddress: string = evmos.address ?? '';
     const userAccountData = await axios.get(
       `${ACCOUNT_DETAILS_INFO}/${fromAddress}`,
     );
@@ -300,7 +314,7 @@ export default function useGasService() {
       ? response.data.gas_info
       : 0;
     const gasWanted = simulatedGasInfo.gas_used ? simulatedGasInfo.gas_used : 0;
-    const gasFeeInCrypto = cosmosConfig.evmos.gasPrice * gasWanted;
+    const gasFeeInCrypto = cosmosConfig.evmos.gasPrice * gasWanted * 10 ** -18;
     return {
       simulatedTxnRequest: txnRequest,
       gasFeeInCrypto,
@@ -315,22 +329,23 @@ export default function useGasService() {
     amount,
     fromAddress,
     toAddress,
+    signer,
   }: {
     chain: Chain;
     denom: string;
     amount: string;
     fromAddress: string;
     toAddress: string;
-  }) => {
+    signer: OfflineDirectSigner;
+  }): Promise<GasServiceResult | undefined> => {
     const { chainName, backendName, symbol } = chain;
-    const signer = await getCosmosSignerClient(chainName);
     if (signer) {
       const rpc = getCosmosRpc(backendName);
       const signingClient = await getCosmosSigningClient(chain, rpc, signer);
       const contractDecimal = get(cosmosConfig, chainName).contractDecimal;
-      const amountToSend = String(
-        parseFloat(amount) * Math.pow(10, contractDecimal),
-      ).split('.')[0];
+      const amountToSend = ethers
+        .parseUnits(amount, contractDecimal)
+        .toString();
 
       // transaction gas fee calculation
       const sendMsg: MsgSendEncodeObject = {
@@ -391,6 +406,7 @@ export default function useGasService() {
     amount,
     fromAddress,
     toAddress,
+    signer,
   }: {
     fromChain: Chain;
     toChain: Chain;
@@ -398,9 +414,9 @@ export default function useGasService() {
     amount: string;
     fromAddress: string;
     toAddress: string;
-  }) => {
+    signer: OfflineDirectSigner;
+  }): Promise<GasServiceResult | undefined> => {
     const { chainName, backendName, symbol } = fromChain;
-    const signer = await getCosmosSignerClient(chainName);
     const rpc = getCosmosRpc(backendName);
     if (signer) {
       const signingClient = await getCosmosSigningClient(
@@ -522,11 +538,294 @@ export default function useGasService() {
     };
   };
 
+  const estimateGasForClaimRewards = async ({
+    chain,
+    userAddress,
+    denom,
+    signer,
+    rewardList,
+  }: {
+    chain: Chain;
+    userAddress: string;
+    denom: string;
+    signer: OfflineDirectSigner;
+    rewardList: IReward[];
+  }): Promise<GasServiceResult | undefined> => {
+    const { chainName, backendName } = chain;
+    if (signer) {
+      const rpc = getCosmosRpc(backendName);
+      const contractDecimal = get(cosmosConfig, chainName).contractDecimal;
+
+      const msgList: Array<{
+        typeUrl: string;
+        value: { delegatorAddress: string; validatorAddress: string };
+      }> = [];
+      rewardList.forEach(item => {
+        const msg = {
+          typeUrl: '/cosmos.distribution.v1beta1.MsgWithdrawDelegatorReward',
+          value: {
+            delegatorAddress: userAddress,
+            validatorAddress: item.validatorAddress,
+          },
+        };
+        msgList.push(msg);
+      });
+
+      const signingClient = await getCosmosSigningClient(chain, rpc, signer);
+
+      const simulation = await signingClient.simulate(
+        userAddress,
+        msgList,
+        'Cypher claim rewards',
+      );
+
+      const gasPrice = cosmosConfig[chainName].gasPrice;
+
+      const gasFee = simulation * Number(gasPrice) * 1.8;
+
+      const fee = {
+        gas: Math.floor(simulation * 1.8).toString(),
+        amount: [
+          {
+            denom,
+            amount: Math.floor(gasFee).toString(),
+          },
+        ],
+      };
+
+      return {
+        gasFeeInCrypto: parseFloat(
+          String(gasFee * 10 ** -contractDecimal),
+        ).toFixed(6),
+        gasLimit: fee.gas,
+        gasPrice,
+        fee,
+      };
+    }
+    return undefined;
+  };
+
+  const estiamteGasForDelgate = async ({
+    chain,
+    amountToDelegate,
+    userAddress,
+    validatorAddress,
+    denom,
+    signer,
+  }: {
+    chain: Chain;
+    amountToDelegate: string;
+    userAddress: string;
+    validatorAddress: string;
+    denom: string;
+    signer: OfflineDirectSigner;
+  }): Promise<GasServiceResult | undefined> => {
+    const { chainName, backendName } = chain;
+    if (signer) {
+      const contractDecimal = get(cosmosConfig, chainName).contractDecimal;
+      const parsedAmount = ethers
+        .parseUnits(amountToDelegate, contractDecimal)
+        .toString();
+
+      const rpc = getCosmosRpc(backendName);
+      const signingClient = await getCosmosSigningClient(chain, rpc, signer);
+
+      const msg = {
+        typeUrl: '/cosmos.staking.v1beta1.MsgDelegate',
+        value: {
+          delegatorAddress: userAddress,
+          validatorAddress,
+          amount: {
+            denom,
+            amount: parsedAmount,
+          },
+        },
+      };
+
+      const simulation = await signingClient.simulate(
+        userAddress,
+        [msg],
+        'Cypher delegation',
+      );
+
+      const gasPrice = cosmosConfig[chainName].gasPrice;
+
+      const gasFee = simulation * Number(gasPrice) * 1.8;
+
+      const fee = {
+        gas: Math.floor(simulation * 1.8).toString(),
+        amount: [
+          {
+            denom,
+            amount: Math.floor(gasFee).toString(),
+          },
+        ],
+      };
+
+      return {
+        gasFeeInCrypto: parseFloat(
+          String(gasFee * 10 ** -contractDecimal),
+        ).toFixed(6),
+        gasLimit: fee.gas,
+        gasPrice,
+        fee,
+      };
+    }
+
+    return undefined;
+  };
+
+  const estimateGasForUndelegate = async ({
+    chain,
+    amountToUndelegate,
+    userAddress,
+    validatorAddress,
+    denom,
+    signer,
+  }: {
+    chain: Chain;
+    amountToUndelegate: string;
+    userAddress: string;
+    validatorAddress: string;
+    denom: string;
+    signer: OfflineDirectSigner;
+  }): Promise<GasServiceResult | undefined> => {
+    const { chainName, backendName } = chain;
+    if (signer) {
+      const contractDecimal = get(cosmosConfig, chainName).contractDecimal;
+      const parsedAmount = ethers
+        .parseUnits(amountToUndelegate, contractDecimal)
+        .toString();
+
+      const rpc = getCosmosRpc(backendName);
+      const signingClient = await getCosmosSigningClient(chain, rpc, signer);
+
+      const msg = {
+        typeUrl: '/cosmos.staking.v1beta1.MsgUndelegate',
+        value: {
+          delegatorAddress: userAddress,
+          validatorAddress,
+          amount: {
+            denom,
+            amount: parsedAmount,
+          },
+        },
+      };
+
+      const simulation = await signingClient.simulate(
+        userAddress,
+        [msg],
+        'Cypher Undelegate',
+      );
+
+      const gasPrice = cosmosConfig[chainName].gasPrice;
+
+      const gasFee = simulation * Number(gasPrice) * 1.8;
+
+      const fee = {
+        gas: Math.floor(simulation * 1.8).toString(),
+        amount: [
+          {
+            denom,
+            amount: Math.floor(gasFee).toString(),
+          },
+        ],
+      };
+
+      return {
+        gasFeeInCrypto: parseFloat(
+          String(gasFee * 10 ** -contractDecimal),
+        ).toFixed(6),
+        gasLimit: fee.gas,
+        gasPrice,
+        fee,
+      };
+    }
+    return undefined;
+  };
+
+  const estimateGasForRedelgate = async ({
+    chain,
+    amountToRedelegate,
+    userAddress,
+    validatorSrcAddress,
+    validatorDstAddress,
+    denom,
+    signer,
+  }: {
+    chain: Chain;
+    amountToRedelegate: string;
+    userAddress: string;
+    validatorSrcAddress: string;
+    validatorDstAddress: string;
+    denom: string;
+    signer: OfflineDirectSigner;
+  }) => {
+    const { chainName, backendName } = chain;
+    if (signer) {
+      const contractDecimal = get(cosmosConfig, chainName).contractDecimal;
+      const parsedAmount = ethers
+        .parseUnits(amountToRedelegate, contractDecimal)
+        .toString();
+
+      const rpc = getCosmosRpc(backendName);
+      const signingClient = await getCosmosSigningClient(chain, rpc, signer);
+
+      const msg = {
+        typeUrl: '/cosmos.staking.v1beta1.MsgBeginRedelegate',
+        value: {
+          delegatorAddress: userAddress,
+          validatorSrcAddress,
+          validatorDstAddress,
+          amount: {
+            denom,
+            amount: parsedAmount,
+          },
+        },
+      };
+
+      const simulation = await signingClient.simulate(
+        userAddress,
+        [msg],
+        'Cypher delegation',
+      );
+
+      const gasPrice = cosmosConfig[chainName].gasPrice;
+
+      const gasFee = simulation * Number(gasPrice) * 1.8;
+
+      const fee = {
+        gas: Math.floor(simulation * 1.8).toString(),
+        amount: [
+          {
+            denom,
+            amount: Math.floor(gasFee).toString(),
+          },
+        ],
+      };
+
+      return {
+        gasFeeInCrypto: parseFloat(
+          String(gasFee * 10 ** -contractDecimal),
+        ).toFixed(6),
+        gasLimit: fee.gas,
+        gasPrice,
+        fee,
+      };
+    }
+
+    return undefined;
+  };
+
   return {
     estimateGasForEvm,
     estimateGasForEvmos,
     estimateGasForCosmos,
     estimateGasForCosmosIBC,
     estimateGasForEvmosIBC,
+    estimateGasForClaimRewards,
+    estiamteGasForDelgate,
+    estimateGasForUndelegate,
+    estimateGasForRedelgate,
   };
 }
