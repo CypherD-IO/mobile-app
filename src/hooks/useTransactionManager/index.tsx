@@ -42,6 +42,13 @@ import useEvmosSigner from '../useEvmosSigner';
 import useGasService from '../useGasService';
 import { IReward } from '../../reducers/cosmosStakingReducer';
 
+export interface TransactionServiceResult {
+  isError: boolean;
+  hash?: string;
+  error?: any;
+  gasFeeInCrypto?: string;
+}
+
 export default function useTransactionManager() {
   const globalContext = useContext<any>(GlobalContext);
   const hdWalletContext = useContext<any>(HdWalletContext);
@@ -174,7 +181,9 @@ export default function useTransactionManager() {
       ];
 
       // How many tokens? -- Use BigNumber everywhere
-      const numberOfTokens = ethers.parseUnits(amountToSend, contractDecimals);
+      const numberOfTokens = ethers
+        .parseUnits(amountToSend, contractDecimals)
+        .toString();
       // Form the contract and contract data
       const contract = new web3.eth.Contract(
         contractAbiFragment as any,
@@ -438,7 +447,9 @@ export default function useTransactionManager() {
           signer,
         });
 
-        const amountToSend = ethers.parseUnits(amount, contractDecimals);
+        const amountToSend = ethers
+          .parseUnits(amount, contractDecimals)
+          .toString();
         const transferAmount: Coin = {
           denom,
           amount: amountToSend.toString(),
@@ -449,7 +460,6 @@ export default function useTransactionManager() {
           toChain.chainName.toLowerCase()
         ];
         const timeOut: any = getTimeOutTime();
-        const memo = 'Cypher Wallet';
         const timeoutHeight: any = {
           revisionHeight: Long.fromNumber(123),
           revisionNumber: Long.fromNumber(456),
@@ -464,14 +474,17 @@ export default function useTransactionManager() {
             token: transferAmount,
             timeoutHeight,
             timeoutTimestamp: timeOut,
-          }),
+          }) as any,
         };
 
         const ibcResponse = await signingClient.signAndBroadcast(
           fromAddress,
           [transferMsg],
-          gasFeeDetails?.fee,
-          memo,
+          {
+            gas: gasFeeDetails?.fee.gas,
+            amount: gasFeeDetails?.fee.amount,
+          } as any,
+          'Cypher Wallet',
         );
         const hash = ibcResponse?.transactionHash;
         return { hash, isError: false };
@@ -554,247 +567,80 @@ export default function useTransactionManager() {
 
   const delegateCosmosToken = async ({
     chain,
-    denom,
     amount,
-    userAddress,
     validatorAddress,
   }: {
     chain: Chain;
-    denom: string;
     amount: string;
-    userAddress: string;
     validatorAddress: string;
   }) => {
     try {
       const { chainName, backendName } = chain;
       const signer = await getCosmosSignerClient(chainName);
       if (signer) {
-        const contractDecimals = get(cosmosConfig, chainName).contractDecimal;
-        const gasDetails = await estiamteGasForDelgate({
-          chain,
-          denom,
-          amountToDelegate: amount,
-          userAddress,
-          validatorAddress,
-          signer,
-        });
+        const accounts = await signer?.getAccounts();
 
-        if (gasDetails) {
-          const rpc = getCosmosRpc(backendName, true);
+        if (accounts) {
+          const userAddress = accounts[0].address;
+          const contractDecimals = get(cosmosConfig, chainName).contractDecimal;
+          const denom = get(cosmosConfig, chainName).denom;
 
-          const signingClient = await getCosmosSigningClient(
+          const gasDetails = await estiamteGasForDelgate({
             chain,
-            rpc,
-            signer,
-          );
-
-          const amountToSend = ethers.parseUnits(amount, contractDecimals);
-
-          const msg = {
-            typeUrl: '/cosmos.staking.v1beta1.MsgDelegate',
-            value: {
-              delegatorAddress: userAddress,
-              validatorAddress,
-              amount: {
-                denom,
-                amount: amountToSend,
-              },
-            },
-          };
-
-          const result = await signingClient.signAndBroadcast(
+            denom,
+            amountToDelegate: amount,
             userAddress,
-            [msg],
-            gasDetails.fee,
-            'Cypher Delegation',
-          );
-
-          if (result.code === 0) {
-            return {
-              isError: false,
-              hash: result.transactionHash,
-              gasFeeInCrypto: gasDetails?.gasFeeInCrypto,
-            };
-          } else {
-            return {
-              isError: true,
-              hash: '',
-              error: result?.events ?? 'Unable to delegate',
-              gasFeeInCrypto: undefined,
-            };
-          }
-        }
-        return {
-          isError: true,
-          hash: '',
-          error: 'Unable to create the signer',
-        };
-      }
-    } catch (e) {
-      return {
-        isError: true,
-        hash: '',
-        error: e,
-      };
-    }
-  };
-
-  const unDelegateCosmosToken = async ({
-    chain,
-    denom,
-    amount,
-    userAddress,
-    validatorAddress,
-  }: {
-    chain: Chain;
-    denom: string;
-    amount: string;
-    userAddress: string;
-    validatorAddress: string;
-  }) => {
-    try {
-      const { chainName, backendName } = chain;
-      const signer = await getCosmosSignerClient(chainName);
-      if (signer) {
-        const contractDecimals = get(cosmosConfig, chainName).contractDecimal;
-        const gasDetails = await estimateGasForUndelegate({
-          chain,
-          denom,
-          amountToUndelegate: amount,
-          userAddress,
-          validatorAddress,
-          signer,
-        });
-
-        if (gasDetails) {
-          const rpc = getCosmosRpc(backendName, true);
-
-          const signingClient = await getCosmosSigningClient(
-            chain,
-            rpc,
+            validatorAddress,
             signer,
-          );
-
-          const amountToSend = ethers.parseUnits(amount, contractDecimals);
-
-          const msg = {
-            typeUrl: '/cosmos.staking.v1beta1.MsgUndelegate',
-            value: {
-              delegatorAddress: userAddress,
-              validatorAddress,
-              amount: {
-                denom,
-                amount: amountToSend,
-              },
-            },
-          };
-          const result = await signingClient.signAndBroadcast(
-            userAddress,
-            [msg],
-            gasDetails.fee,
-            'Cypher Delegation',
-          );
-
-          if (result.code === 0) {
-            return {
-              isError: false,
-              hash: result.transactionHash,
-              gasFeeInCrypto: gasDetails?.gasFeeInCrypto,
-            };
-          } else {
-            return {
-              isError: true,
-              hash: '',
-              error: result?.events ?? 'Unable to delegate',
-              gasFeeInCrypto: undefined,
-            };
-          }
-        }
-        return {
-          isError: true,
-          hash: '',
-          error: 'Unable to create the signer',
-        };
-      }
-    } catch (e) {
-      return {
-        isError: true,
-        hash: '',
-        error: e,
-      };
-    }
-  };
-
-  const claimCosmosReward = async ({
-    chain,
-    denom,
-    userAddress,
-    rewardList,
-  }: {
-    chain: Chain;
-    denom: string;
-    userAddress: string;
-    rewardList: IReward[];
-  }) => {
-    try {
-      const { chainName, backendName } = chain;
-      const signer = await getCosmosSignerClient(chainName);
-
-      if (signer) {
-        const gasFeeDetails = await estimateGasForClaimRewards({
-          chain,
-          denom,
-          signer,
-          userAddress,
-          rewardList,
-        });
-
-        if (gasFeeDetails) {
-          const rpc = getCosmosRpc(backendName);
-          const signingClient = await getCosmosSigningClient(
-            chain,
-            rpc,
-            signer,
-          );
-
-          const msgList: Array<{
-            typeUrl: string;
-            value: { delegatorAddress: string; validatorAddress: string };
-          }> = [];
-          rewardList.forEach(item => {
-            const msg = {
-              typeUrl:
-                '/cosmos.distribution.v1beta1.MsgWithdrawDelegatorReward',
-              value: {
-                delegatorAddress: userAddress,
-                validatorAddress: item.validatorAddress,
-              },
-            };
-            msgList.push(msg);
           });
 
-          const result = await signingClient.signAndBroadcast(
-            userAddress,
-            msgList,
-            gasFeeDetails.fee,
-            'Cypher Claim rewards',
-          );
+          if (gasDetails) {
+            const rpc = getCosmosRpc(backendName, true);
 
-          if (result.code === 0) {
-            return {
-              isError: false,
-              hash: result.transactionHash,
-              gasFeeInCrypto: gasFeeDetails?.gasFeeInCrypto,
+            const signingClient = await getCosmosSigningClient(
+              chain,
+              rpc,
+              signer,
+            );
+
+            const amountToSend = ethers
+              .parseUnits(amount, contractDecimals)
+              .toString();
+
+            const msg = {
+              typeUrl: '/cosmos.staking.v1beta1.MsgDelegate',
+              value: {
+                delegatorAddress: userAddress,
+                validatorAddress,
+                amount: {
+                  denom,
+                  amount: amountToSend,
+                },
+              },
             };
-          } else {
-            return {
-              isError: true,
-              hash: '',
-              error: result?.events ?? 'Unable to claim the rewards',
-              gasFeeInCrypto: undefined,
-            };
+
+            const result = await signingClient.signAndBroadcast(
+              userAddress,
+              [msg],
+              gasDetails.fee,
+              'Cypher Delegation',
+            );
+
+            if (result.code === 0) {
+              return {
+                isError: false,
+                hash: result.transactionHash,
+                gasFeeInCrypto: gasDetails?.gasFeeInCrypto,
+              };
+            } else {
+              return {
+                isError: true,
+                hash: '',
+                error: result?.events ?? 'Unable to delegate',
+                gasFeeInCrypto: undefined,
+              };
+            }
           }
-        } else {
           return {
             isError: true,
             hash: '',
@@ -811,90 +657,266 @@ export default function useTransactionManager() {
     }
   };
 
-  const reCosmosDelegate = async ({
+  const unDelegateCosmosToken = async ({
     chain,
-    denom,
     amount,
-    userAddress,
+    validatorAddress,
+  }: {
+    chain: Chain;
+    amount: string;
+    validatorAddress: string;
+  }) => {
+    try {
+      const { chainName, backendName } = chain;
+      const signer = await getCosmosSignerClient(chainName);
+      if (signer) {
+        const accounts = await signer?.getAccounts();
+        if (accounts) {
+          const userAddress = accounts[0].address;
+          const contractDecimals = get(cosmosConfig, chainName).contractDecimal;
+          const denom = get(cosmosConfig, chainName).denom;
+          const gasDetails = await estimateGasForUndelegate({
+            chain,
+            denom,
+            amountToUndelegate: amount,
+            userAddress,
+            validatorAddress,
+            signer,
+          });
+
+          if (gasDetails) {
+            const rpc = getCosmosRpc(backendName, true);
+
+            const signingClient = await getCosmosSigningClient(
+              chain,
+              rpc,
+              signer,
+            );
+
+            const amountToSend = ethers
+              .parseUnits(amount, contractDecimals)
+              .toString();
+
+            const msg = {
+              typeUrl: '/cosmos.staking.v1beta1.MsgUndelegate',
+              value: {
+                delegatorAddress: userAddress,
+                validatorAddress,
+                amount: {
+                  denom,
+                  amount: amountToSend,
+                },
+              },
+            };
+            const result = await signingClient.signAndBroadcast(
+              userAddress,
+              [msg],
+              gasDetails.fee,
+              'Cypher Delegation',
+            );
+
+            if (result.code === 0) {
+              return {
+                isError: false,
+                hash: result.transactionHash,
+                gasFeeInCrypto: gasDetails?.gasFeeInCrypto,
+              };
+            } else {
+              return {
+                isError: true,
+                hash: '',
+                error: result?.events ?? 'Unable to delegate',
+                gasFeeInCrypto: undefined,
+              };
+            }
+          }
+          return {
+            isError: true,
+            hash: '',
+            error: 'Unable to create the signer',
+          };
+        }
+      }
+    } catch (e) {
+      return {
+        isError: true,
+        hash: '',
+        error: e,
+      };
+    }
+  };
+
+  const claimCosmosReward = async ({
+    chain,
+    rewardList,
+  }: {
+    chain: Chain;
+    rewardList: IReward[];
+  }): Promise<TransactionServiceResult | undefined> => {
+    try {
+      const { chainName, backendName } = chain;
+      const signer = await getCosmosSignerClient(chainName);
+      const accounts = await signer?.getAccounts();
+
+      if (accounts) {
+        const userAddress = accounts[0].address;
+
+        if (signer) {
+          const denom = get(cosmosConfig, chainName).denom;
+          const gasFeeDetails = await estimateGasForClaimRewards({
+            chain,
+            denom,
+            signer,
+            userAddress,
+            rewardList,
+          });
+
+          if (gasFeeDetails) {
+            const rpc = getCosmosRpc(backendName);
+            const signingClient = await getCosmosSigningClient(
+              chain,
+              rpc,
+              signer,
+            );
+
+            const msgList: Array<{
+              typeUrl: string;
+              value: { delegatorAddress: string; validatorAddress: string };
+            }> = [];
+
+            rewardList.forEach(item => {
+              const msg = {
+                typeUrl:
+                  '/cosmos.distribution.v1beta1.MsgWithdrawDelegatorReward',
+                value: {
+                  delegatorAddress: userAddress,
+                  validatorAddress: item.validatorAddress,
+                },
+              };
+              msgList.push(msg);
+            });
+
+            const result = await signingClient.signAndBroadcast(
+              userAddress,
+              msgList,
+              gasFeeDetails.fee,
+              'Cypher Claim rewards',
+            );
+
+            if (result.code === 0) {
+              return {
+                isError: false,
+                hash: result.transactionHash,
+                gasFeeInCrypto: gasFeeDetails?.gasFeeInCrypto,
+              };
+            } else {
+              return {
+                isError: true,
+                error: result?.events ?? 'Unable to claim the rewards',
+              };
+            }
+          } else {
+            return {
+              isError: true,
+              error: 'Unable to create the signer',
+            };
+          }
+        }
+      }
+    } catch (e) {
+      return {
+        isError: true,
+        error: e,
+      };
+    }
+  };
+
+  const reDelegateCosmosToken = async ({
+    chain,
+    amount,
     validatorSrcAddress,
     validatorDstAddress,
   }: {
     chain: Chain;
-    denom: string;
     amount: string;
-    userAddress: string;
     validatorSrcAddress: string;
     validatorDstAddress: string;
   }) => {
     try {
       const { chainName, backendName } = chain;
       const signer = await getCosmosSignerClient(chainName);
-      if (signer) {
-        const contractDecimals = get(cosmosConfig, chainName).contractDecimal;
-        const gasDetails = await estimateGasForRedelgate({
-          chain,
-          denom,
-          amountToRedelegate: amount,
-          userAddress,
-          validatorSrcAddress,
-          validatorDstAddress,
-          signer,
-        });
 
-        if (gasDetails) {
-          const rpc = getCosmosRpc(backendName, true);
+      const accounts = await signer?.getAccounts();
 
-          const signingClient = await getCosmosSigningClient(
+      if (accounts) {
+        const userAddress = accounts[0].address;
+        if (signer) {
+          const contractDecimals = get(cosmosConfig, chainName).contractDecimal;
+          const denom = get(cosmosConfig, chainName).denom;
+          const gasDetails = await estimateGasForRedelgate({
             chain,
-            rpc,
-            signer,
-          );
-
-          const amountToRedelegate = ethers.parseUnits(
-            amount,
-            contractDecimals,
-          );
-
-          const msg = {
-            typeUrl: '/cosmos.staking.v1beta1.MsgBeginRedelegate',
-            value: {
-              delegatorAddress: userAddress,
-              validatorSrcAddress,
-              validatorDstAddress,
-              amount: {
-                denom,
-                amount: amountToRedelegate,
-              },
-            },
-          };
-
-          const result = await signingClient.signAndBroadcast(
+            denom,
+            amountToRedelegate: amount,
             userAddress,
-            [msg],
-            gasDetails.fee,
-            'Cypher Delegation',
-          );
+            validatorSrcAddress,
+            validatorDstAddress,
+            signer,
+          });
 
-          if (result.code === 0) {
-            return {
-              isError: false,
-              hash: result.transactionHash,
-              gasFeeInCrypto: gasDetails?.gasFeeInCrypto,
+          if (gasDetails) {
+            const rpc = getCosmosRpc(backendName, true);
+
+            const signingClient = await getCosmosSigningClient(
+              chain,
+              rpc,
+              signer,
+            );
+
+            const amountToRedelegate = ethers
+              .parseUnits(amount, contractDecimals)
+              .toString();
+
+            const msg = {
+              typeUrl: '/cosmos.staking.v1beta1.MsgBeginRedelegate',
+              value: {
+                delegatorAddress: userAddress,
+                validatorSrcAddress,
+                validatorDstAddress,
+                amount: {
+                  denom,
+                  amount: amountToRedelegate,
+                },
+              },
             };
-          } else {
-            return {
-              isError: true,
-              hash: '',
-              error: result?.events ?? 'Unable to re delegate',
-              gasFeeInCrypto: undefined,
-            };
+
+            const result = await signingClient.signAndBroadcast(
+              userAddress,
+              [msg],
+              gasDetails.fee,
+              'Cypher Delegation',
+            );
+
+            if (result.code === 0) {
+              return {
+                isError: false,
+                hash: result.transactionHash,
+                gasFeeInCrypto: gasDetails?.gasFeeInCrypto,
+              };
+            } else {
+              return {
+                isError: true,
+                hash: '',
+                error: result?.events ?? 'Unable to re delegate',
+                gasFeeInCrypto: undefined,
+              };
+            }
           }
+          return {
+            isError: true,
+            hash: '',
+            error: 'Unable to create the signer',
+          };
         }
-        return {
-          isError: true,
-          hash: '',
-          error: 'Unable to create the signer',
-        };
       }
     } catch (e) {
       return {
@@ -914,6 +936,6 @@ export default function useTransactionManager() {
     delegateCosmosToken,
     unDelegateCosmosToken,
     claimCosmosReward,
-    reCosmosDelegate,
+    reDelegateCosmosToken,
   };
 }

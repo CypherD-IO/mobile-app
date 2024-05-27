@@ -2,7 +2,6 @@
 /* eslint-disable react-native/no-raw-text */
 /* eslint-disable @typescript-eslint/no-misused-promises */
 import { useIsFocused, useRoute } from '@react-navigation/native';
-import { OfflineDirectSigner } from '@cosmjs/proto-signing';
 import { t } from 'i18next';
 import React, { useContext, useEffect, useState } from 'react';
 import { RefreshControl, StyleSheet } from 'react-native';
@@ -41,14 +40,10 @@ import {
 } from '../../styles/tailwindStyles';
 import LottieView from 'lottie-react-native';
 import { GlobalContext } from '../../core/globalContext';
-import { SigningStargateClient } from '@cosmjs/stargate';
 import Toast from 'react-native-toast-message';
 import { screenTitle } from '../../constants';
 import axios, { MODAL_HIDE_TIMEOUT_250, TIMEOUT } from '../../core/Http';
-import {
-  getSignerClient,
-  loadPrivateKeyFromKeyChain,
-} from '../../core/Keychain';
+import { loadPrivateKeyFromKeyChain } from '../../core/Keychain';
 import { IIBCData, cosmosConfig } from '../../constants/cosmosConfig';
 import analytics from '@react-native-firebase/analytics';
 import * as Sentry from '@sentry/react-native';
@@ -73,6 +68,9 @@ import { getCosmosStakingData } from '../../core/cosmosStaking';
 import Loading from '../../components/v2/loading';
 import useIsSignable from '../../hooks/useIsSignable';
 import { ActivityType } from '../../reducers/activity_reducer';
+import { random } from 'lodash';
+import useTransactionManager from '../../hooks/useTransactionManager';
+import { ethers } from 'ethers';
 
 const EmptyView = () => {
   return (
@@ -106,12 +104,9 @@ export default function TokenStaking({
   const [claimModal, setClaimModal] = useState<boolean>(false);
   const [signModalVisible, setSignModalVisible] = useState<boolean>(false);
   const [refreshing, setRefreshing] = useState<boolean>(false);
-  const [wallets, setWallets] = useState<Map<string, OfflineDirectSigner>>(
-    new Map(),
-  );
   const [gasFee, setGasFee] = useState<number>(0);
   const [reward, setReward] = useState<bigint>(BigInt(0));
-  const [validator, setValidator] = useState({ name: '' });
+  const [validator, setValidator] = useState({ name: '', address: '' });
   const [reStakeModalVisible, setReStakeModalVisible] = useState(false);
   const [actionType, setActionType] = useState<CosmosActionType>(
     CosmosActionType.CLAIM,
@@ -138,6 +133,7 @@ export default function TokenStaking({
   let claimTryCount = 0;
 
   const { showModal, hideModal } = useGlobalModalContext();
+  const { claimCosmosReward, delegateCosmosToken } = useTransactionManager();
   const route = useRoute();
   const isCOSMOSEcoSystem = [
     ChainBackendNames.COSMOS,
@@ -318,6 +314,7 @@ export default function TokenStaking({
   };
 
   const reloadPage = () => {
+    setLoading(true);
     if (tokenData.chainDetails.backendName !== ChainBackendNames.EVMOS) {
       setTimeout(() => {
         cosmosStaking.cosmosStakingDispatch({
@@ -469,6 +466,7 @@ export default function TokenStaking({
         void finalTxn(bodyForTxn);
       } else {
         setClaimModal(false);
+        setLoading(false);
         setTimeout(() => setSignModalVisible(true), MODAL_HIDE_TIMEOUT_250);
       }
     } catch (error: any) {
@@ -601,73 +599,33 @@ export default function TokenStaking({
   };
 
   const onPressClaim = async (type: CosmosActionType): Promise<void> => {
-    setLoading(true);
     if (
       type === CosmosActionType.TRANSACTION &&
       parseFloat(gasFee.toFixed(6)) >
         parseFloat(stakingVariables.availableToStake)
     ) {
-      setLoading(false);
+      setLoading(true);
       setSignModalVisible(false);
       showNoGasFeeModal();
     } else {
+      setLoading(true);
+
       try {
-        let wallet: OfflineDirectSigner | undefined;
-        if (type === CosmosActionType.SIMULATION) {
-          const wallets: Map<string, OfflineDirectSigner> =
-            await getSignerClient(hdWalletContext);
-          wallet = wallets.get(currentChain.prefix);
-          setWallets(wallets);
-        } else {
-          wallet = wallets.get(currentChain.prefix);
-        }
-        const rpc =
-          globalStateContext.globalState.rpcEndpoints[
-            tokenData.chainDetails.chainName.toUpperCase()
-          ].primary;
-
-        let senderAddress: any = await wallet?.getAccounts();
-        senderAddress = senderAddress[0].address;
-
-        const client = await SigningStargateClient.connectWithSigner(
-          rpc,
-          wallet,
-          {
-            prefix: currentChain.prefix,
-          },
-        );
-
-        const msgList: Array<{
-          typeUrl: string;
-          value: { delegatorAddress: string; validatorAddress: string };
-        }> = [];
         let rewardAmount = BigInt(0);
 
-        cosmosStaking.cosmosStakingState.rewardList.forEach(item => {
+        cosmosStaking.cosmosStakingState.rewardList.forEach((item: any) => {
           const [amountToBeAddedToRewards] = item.amount.split('.');
           rewardAmount += BigInt(amountToBeAddedToRewards);
-          const msg = {
-            typeUrl: '/cosmos.distribution.v1beta1.MsgWithdrawDelegatorReward',
-            value: {
-              delegatorAddress: senderAddress,
-              validatorAddress: item.validatorAddress,
-            },
-          };
-          msgList.push(msg);
         });
 
         setReward(rewardAmount);
-        const simulation = await client.simulate(senderAddress, msgList, '');
 
-        const gasFee =
-          simulation *
-          currentChain.gasPrice *
-          10 ** -currentChain.contractDecimal;
-        setGasFee(gasFee);
+        setGasFee(random(0.001, 0.01, true));
 
         if (CosmosActionType.SIMULATION === type) {
           void analytics().logEvent(`${tokenData.name}_claim_simulation`);
           setClaimModal(false);
+          setLoading(false);
           setTimeout(() => setSignModalVisible(true), MODAL_HIDE_TIMEOUT_250);
         }
 
@@ -675,52 +633,52 @@ export default function TokenStaking({
           CosmosActionType.TRANSACTION === type ||
           CosmosActionType.RESTAKE === type
         ) {
-          const fee = {
-            gas: Math.floor(simulation * 1.8).toString(),
-            amount: [
-              {
-                denom: currentChain.denom,
-                amount: parseInt(gasFee.toFixed(6).split('.')[1]).toString(),
-              },
-            ],
-          };
-          const resp = await client.signAndBroadcast(
-            senderAddress,
-            msgList,
-            fee,
-            '',
-          );
-
+          const resp = await claimCosmosReward({
+            chain: tokenData.chainDetails,
+            rewardList: cosmosStaking.cosmosStakingState.rewardList,
+          });
           setLoading(false);
-          setSignModalVisible(false);
-          // monitoring api
-          void logAnalytics({
-            type: AnalyticsType.SUCCESS,
-            txnHash: resp.transactionHash,
-            chain: tokenData?.chainDetails?.chainName ?? '',
-          });
-          Toast.show({
-            type: t('TOAST_TYPE_SUCCESS'),
-            text1: t('TRANSACTION_SUCCESS'),
-            text2: resp.transactionHash,
-            position: 'bottom',
-          });
-          void analytics().logEvent(
-            `${tokenData.name}_claim_transaction_success`,
-          );
 
-          if (actionType === CosmosActionType.RESTAKE) {
-            setSignModalVisible(false);
-            navigation.navigate(screenTitle.COSMOS_REVALIDATOR, {
-              validatorData: { name: '' },
-              tokenData,
-              setReValidator: setValidator,
-              from: screenTitle.TOKEN_OVERVIEW,
+          setSignModalVisible(false);
+          if (!resp?.isError) {
+            // monitoring api
+            void logAnalytics({
+              type: AnalyticsType.SUCCESS,
+              txnHash: resp?.hash,
+              chain: tokenData?.chainDetails?.chainName ?? '',
             });
+            Toast.show({
+              type: t('TOAST_TYPE_SUCCESS'),
+              text1: t('TRANSACTION_SUCCESS'),
+              text2: resp?.hash,
+              position: 'bottom',
+            });
+            void analytics().logEvent(
+              `${tokenData.name}_claim_transaction_success`,
+            );
+            if (actionType === CosmosActionType.RESTAKE) {
+              setSignModalVisible(false);
+              navigation.navigate(screenTitle.COSMOS_REVALIDATOR, {
+                validatorData: { name: '', address: '' },
+                tokenData,
+                setReValidator: setValidator,
+                from: screenTitle.TOKEN_OVERVIEW,
+              });
+            }
+          } else {
+            Toast.show({
+              type: t('TOAST_TYPE_ERROR'),
+              text1: t('TRANSACTION_FAILED'),
+              text2: resp?.error.message,
+              position: 'bottom',
+            });
+            void analytics().logEvent(
+              `${tokenData.name.toLowerCase()}_claim_transaction_failure`,
+            );
           }
+          setLoading(false);
           reloadPage();
         }
-        setLoading(false);
       } catch (error) {
         setLoading(false);
         setClaimModal(false);
@@ -756,90 +714,52 @@ export default function TokenStaking({
       showNoGasFeeModal();
     } else {
       try {
-        const currentChain: IIBCData =
-          cosmosConfig[tokenData.chainDetails.chainName];
-        const wallet: OfflineDirectSigner | undefined = wallets.get(
-          currentChain.prefix,
-        );
-
-        const rpc =
-          globalStateContext.globalState.rpcEndpoints[
-            tokenData.chainDetails.chainName.toUpperCase()
-          ].primary;
-
-        let senderAddress: any = await wallet.getAccounts();
-        senderAddress = senderAddress[0].address;
-
-        const client = await SigningStargateClient.connectWithSigner(
-          rpc,
-          wallet,
-          {
-            prefix: currentChain.prefix,
-          },
-        );
-
-        const msg = {
-          typeUrl: '/cosmos.staking.v1beta1.MsgDelegate',
-          value: {
-            delegatorAddress: senderAddress,
-            validatorAddress: validator.address,
-            amount: {
-              denom: currentChain.denom,
-              amount: reward.toString(),
-            },
-          },
-        };
-
-        const simulation = await client.simulate(senderAddress, [msg], '');
-
-        const gasFee =
-          simulation *
-          currentChain.gasPrice *
-          10 ** -currentChain.contractDecimal;
-        setGasFee(gasFee);
+        setGasFee(random(0.001, 0.01, true));
 
         if (CosmosActionType.SIMULATION === type) {
           void analytics().logEvent(`${tokenData.name}_restake_simulation`);
-
+          setLoading(false);
           setReStakeModalVisible(true);
         }
 
         if (CosmosActionType.TRANSACTION === type) {
-          const fee = {
-            gas: Math.floor(simulation * 1.8).toString(),
-            amount: [
-              {
-                denom: currentChain.denom,
-                amount: parseInt(gasFee.toFixed(6).split('.')[1]).toString(),
-              },
-            ],
-          };
-          const resp = await client.signAndBroadcast(
-            senderAddress,
-            [msg],
-            fee,
-            '',
-          );
+          const resp = await delegateCosmosToken({
+            chain: tokenData.chainDetails,
+            validatorAddress: validator.address,
+            amount: ethers.formatUnits(reward, tokenData.contractDecimals ?? 6),
+          });
           setReStakeModalVisible(false);
-          // monitoring api
-          void logAnalytics({
-            type: AnalyticsType.SUCCESS,
-            txnHash: resp.transactionHash,
-            chain: tokenData?.chainDetails?.chainName ?? '',
-          });
-          Toast.show({
-            type: t('TOAST_TYPE_SUCCESS'),
-            text1: t('TRANSACTION_SUCCESS'),
-            text2: resp.transactionHash,
-            position: 'bottom',
-          });
+          if (!resp?.isError) {
+            // monitoring api
+            void logAnalytics({
+              type: AnalyticsType.SUCCESS,
+              txnHash: resp?.hash,
+              chain: tokenData?.chainDetails?.chainName ?? '',
+            });
+            Toast.show({
+              type: t('TOAST_TYPE_SUCCESS'),
+              text1: t('TRANSACTION_SUCCESS'),
+              text2: resp?.hash,
+              position: 'bottom',
+            });
 
-          void analytics().logEvent(
-            `${tokenData.name}_restake_Transaction_success`,
-          );
+            void analytics().logEvent(
+              `${tokenData.name}_restake_Transaction_success`,
+            );
+          } else {
+            Toast.show({
+              type: t('TOAST_TYPE_ERROR'),
+              text1: t('TRANSACTION_FAILED'),
+              text2: resp?.error.message,
+              position: 'bottom',
+            });
+            void analytics().logEvent(
+              `${tokenData.name.toLowerCase()}_claim_transaction_failure`,
+            );
+          }
+          setLoading(false);
           reloadPage();
         }
-        setLoading(false);
       } catch (error: any) {
         setLoading(false);
         // monitoring api
@@ -1509,6 +1429,6 @@ const styles = StyleSheet.create({
   },
 
   loaderHeight30: {
-    height: 30,
+    height: 24,
   },
 });

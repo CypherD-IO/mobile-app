@@ -68,6 +68,6 @@ export interface cosmosStakingContextDef {
 }
 export const CosmosStakingContext = React.createContext(null);
 
-export const cosmosStakingReducer = (state, value) => {
+export const cosmosStakingReducer = (state: any, value: any) => {
   return { ...state, ...value };
 };
