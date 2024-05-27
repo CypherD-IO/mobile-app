@@ -123,7 +123,6 @@ export default function CosmosAction({
               amount,
               validatorAddress: validatorData.address,
             });
-            console.log('🚀 ~ onAction ~ resp:', resp);
             break;
           }
 
@@ -256,7 +255,7 @@ export default function CosmosAction({
             title={t('APPROVE')}
             style={'py-[5%] mt-[15px]'}
             loading={loading}
-            loaderStyle={{ height: 30 }}
+            loaderStyle={{ height: 24 }}
           />
 
           <Button
@@ -517,6 +516,7 @@ export default function CosmosAction({
             await onAction(CosmosActionType.SIMULATION);
           }}
           loading={loading}
+          loaderStyle={{ height: 24 }}
           title={`${from.toUpperCase()}`}
           style={loading ? 'px-[7%] min-h-[60px]' : 'p-[5%] min-h-[60px]'}
         />
