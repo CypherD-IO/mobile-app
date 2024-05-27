@@ -1,25 +1,8 @@
-import React, { SetStateAction, type Dispatch } from 'react';
-import Web3 from 'web3';
-import * as Sentry from '@sentry/react-native';
-import { ChainBackendNames } from '../constants/server';
-import axios from './Http';
-import { CardProfile } from '../models/cardProfile.model';
-import {
-  GlobalContextType,
-  RPCPreference,
-  SignMessageValidationType,
-} from '../constants/enum';
-import { hostWorker } from '../global';
-import {
-  getRpcEndpoints,
-  getRpcPreference,
-  setRpcEndpoints,
-} from './asyncStorage';
-import { get } from 'lodash';
 import jwt_decode, { JwtPayload } from 'jwt-decode';
-import { loadPrivateKeyFromKeyChain } from './Keychain';
-import { _NO_CYPHERD_CREDENTIAL_AVAILABLE_ } from './util';
-import { HdWalletContextDef } from '../reducers/hdwallet_reducer';
+import React, { type Dispatch } from 'react';
+import { GlobalContextType } from '../constants/enum';
+import { ChainBackendNames } from '../constants/server';
+import { CardProfile } from '../models/cardProfile.model';
 
 export type RpcResponseDetail = {
   [key in ChainBackendNames]: RPCDetail;
@@ -33,11 +16,15 @@ export interface GlobalStateDef {
 
 export interface RPCDetail {
   primary: string;
+  secondaryList?: string;
   otherUrls?: Record<string, string>;
 }
 
 export const initialGlobalState: GlobalStateDef = {
   rpcEndpoints: {
+    ALL: {
+      primary: '',
+    },
     ARBITRUM: {
       primary: 'https://arb1.arbitrum.io/rpc',
     },
@@ -180,7 +167,20 @@ export const initialGlobalState: GlobalStateDef = {
       },
       primary: 'https://noble-rpc.polkachu.com',
     },
+    COREUM: {
+      primary: 'https://coreum-rpc.publicnode.com:443',
+      secondaryList: 'https://rpc.m.core.solonation.io',
+    },
+    INJECTIVE: {
+      primary: 'https://injective-1-public-rpc.mesa.ec1-prod.newmetric.xyz',
+      secondaryList: 'https://rpc-injective-ia.cosmosia.notional.ventures/',
+    },
+    KUJIRA: {
+      primary: 'https://rpc-kujira-ia.cosmosia.notional.ventures/',
+      secondaryList: 'https://rpc-kujira.whispernode.com:443',
+    },
   },
+  token: '',
 };
 
 interface GlobalReducerInput {

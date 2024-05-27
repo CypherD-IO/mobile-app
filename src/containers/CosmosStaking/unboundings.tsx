@@ -6,14 +6,15 @@ import { BackHandler } from 'react-native';
 import {
   CosmosStakingContext,
   cosmosStakingContextDef,
-  IUnboundings
+  IUnboundings,
 } from '../../reducers/cosmosStakingReducer';
 import * as Progress from 'react-native-progress';
 import { convertFromUnitAmount } from '../../core/util';
 
-export default function CosmosUnboundings ({ route, navigation }) {
+export default function CosmosUnboundings({ route, navigation }) {
   const { tokenData } = route.params;
-  const cosmosStaking = useContext<cosmosStakingContextDef>(CosmosStakingContext);
+  const cosmosStaking =
+    useContext<cosmosStakingContextDef>(CosmosStakingContext);
   const [unboundings, setUnboundings] = useState([]);
   const { t } = useTranslation();
 
@@ -24,13 +25,15 @@ export default function CosmosUnboundings ({ route, navigation }) {
 
   React.useEffect(() => {
     navigation.setOptions({
-      title: 'Unboundings'
+      title: 'Unboundings',
     });
 
     BackHandler.addEventListener('hardwareBackPress', handleBackButton);
 
     const allData: IUnboundings = [];
-    for (const item of cosmosStaking.cosmosStakingState.unBoundings.values()) { allData.push(item); }
+    for (const item of cosmosStaking.cosmosStakingState.unBoundings.values()) {
+      allData.push(item);
+    }
     setUnboundings(allData);
 
     return () => {
@@ -38,7 +41,7 @@ export default function CosmosUnboundings ({ route, navigation }) {
     };
   }, []);
 
-  const convertDate = (date) => {
+  const convertDate = date => {
     const today = new Date(date);
     const yyyy = today.getFullYear();
     const mm = today.getMonth() + 1;
@@ -47,22 +50,30 @@ export default function CosmosUnboundings ({ route, navigation }) {
     return `${yyyy} - ${mm} - ${dd}`;
   };
 
-  const daysRemaining = (date) => {
+  const daysRemaining = date => {
     const oneDay = 1000 * 60 * 60 * 24;
     const EndDate = new Date(date);
     const StartDate = new Date();
-    const start = Date.UTC(EndDate.getFullYear(), EndDate.getMonth(), EndDate.getDate());
-    const end = Date.UTC(StartDate.getFullYear(), StartDate.getMonth(), StartDate.getDate());
+    const start = Date.UTC(
+      EndDate.getFullYear(),
+      EndDate.getMonth(),
+      EndDate.getDate(),
+    );
+    const end = Date.UTC(
+      StartDate.getFullYear(),
+      StartDate.getMonth(),
+      StartDate.getDate(),
+    );
     return (start - end) / oneDay;
   };
 
-  const progressPercentage = (date) => {
+  const progressPercentage = date => {
     const data = new Date(date);
     const today = new Date();
 
     let difference = data.getTime() - today.getTime();
     difference = difference / (1000 * 3600 * 24);
-    return (1 - (difference / 14));
+    return 1 - difference / 14;
   };
 
   const Item = ({ item }) => {
@@ -70,29 +81,47 @@ export default function CosmosUnboundings ({ route, navigation }) {
       <CyDView>
         <CyDView className={'mx-[20px] mt-[20px]'}>
           <CyDView className={'flex flex-row justify-between'}>
-            <CyDText className={'text-[16px] font-nunito font-bold text-primaryTextColor'}>{`${convertFromUnitAmount(item.balance.toString(), tokenData.contractDecimals)} ${tokenData.name}`}</CyDText>
-            <CyDText className={'text-[16px] font-nunito font-semibold text-subTextColor'}>{convertDate(item.completionTime)}</CyDText>
+            <CyDText
+              className={
+                'text-[16px] font-nunito font-bold text-primaryTextColor'
+              }>{`${convertFromUnitAmount(item.balance.toString(), tokenData.contractDecimals)} ${tokenData.name}`}</CyDText>
+            <CyDText
+              className={
+                'text-[16px] font-nunito font-semibold text-subTextColor'
+              }>
+              {convertDate(item.completionTime)}
+            </CyDText>
           </CyDView>
 
           <CyDView className={'mt-[6px] mb-[12px]'}>
-            <CyDText className={'text-[16px] font-nunito font-semibold text-subTextColor'}>{`${daysRemaining(item.completionTime)}${t(' days remaining')}`}</CyDText>
+            <CyDText
+              className={
+                'text-[16px] font-nunito font-semibold text-subTextColor'
+              }>{`${daysRemaining(item.completionTime)}${t(' days remaining')}`}</CyDText>
           </CyDView>
         </CyDView>
         <CyDView className={'mx-[20px]'}>
-          <Progress.Bar progress={progressPercentage(item.completionTime)}
-                        width={350} height={5} unfilledColor={'#EFEDED'}
-                        color={'#8372FC'} borderColor={'#EFEDED'}
+          <Progress.Bar
+            progress={progressPercentage(item.completionTime)}
+            width={350}
+            height={5}
+            unfilledColor={'#EFEDED'}
+            color={'#8372FC'}
+            borderColor={'#EFEDED'}
           />
         </CyDView>
-    </CyDView>);
+      </CyDView>
+    );
   };
-  const renderItem = ({ item, index }) => (
-    <Item item={item}/>
-  );
+  const renderItem = ({ item, index }) => <Item item={item} />;
 
   return (
     <CyDView className={'bg-white h-full w-full'}>
-      <CyDFlatList data={unboundings} renderItem={renderItem} ListEmptyComponent={Empty}/>
+      <CyDFlatList
+        data={unboundings}
+        renderItem={renderItem}
+        ListEmptyComponent={Empty}
+      />
     </CyDView>
   );
 }

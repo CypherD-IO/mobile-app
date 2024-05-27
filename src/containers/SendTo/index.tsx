@@ -1,6 +1,8 @@
+/* eslint-disable @typescript-eslint/no-empty-function */
 /* eslint-disable react-native/no-inline-styles */
 
 /* eslint-disable react-native/no-raw-text */
+/* @typescript-eslint/no-empty-function */
 
 /**
  * @format
@@ -8,25 +10,20 @@
  */
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import Clipboard from '@react-native-clipboard/clipboard';
-import analytics from '@react-native-firebase/analytics';
 import * as Sentry from '@sentry/react-native';
-import { ethers } from 'ethers';
-import { get } from 'lodash';
+import { get, random } from 'lodash';
 import React, { useContext, useEffect, useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { BackHandler } from 'react-native';
 import { BarCodeReadEvent } from 'react-native-camera';
-import { v4 as uuidv4 } from 'uuid';
 import Web3 from 'web3';
 import AppImages from '../../../assets/images/appImages';
-import BottomSendToConfirm from '../../components/BottomSendToConfirm';
 import EmptyView from '../../components/EmptyView';
 import { useGlobalModalContext } from '../../components/v2/GlobalModal';
 import { SuccessTransaction } from '../../components/v2/StateModal';
 import { nativeTokenMapping } from '../../constants/data';
 import * as C from '../../constants/index';
 import {
-  ChainBackendNames,
   ChainNames,
   CHAIN_ETH,
   CHAIN_EVMOS,
@@ -35,24 +32,14 @@ import {
   ChainNameToContactsChainNameMapping,
   EVM_CHAINS_FOR_ADDRESS_DIR,
   ChainNameMapping,
+  Chain,
 } from '../../constants/server';
 import { Colors } from '../../constants/theme';
-import { GlobalContext, GlobalContextDef } from '../../core/globalContext';
+import { GlobalContext } from '../../core/globalContext';
 import { MODAL_HIDE_TIMEOUT_250 } from '../../core/Http';
-import {
-  cosmosSendTokens,
-  estimateGasForCosmosTransaction,
-  getCosmosSignerClient,
-  sendNativeCoinOrTokenToAnyAddress,
-  _estimateGasForNativeTransaction,
-  evmosSendTxn,
-  evmosSendSimulation,
-} from '../../core/NativeTransactionHandler';
 import { Holding } from '../../core/Portfolio';
-import { GasPriceDetail } from '../../core/types';
 import {
   ActivityContext,
-  convertAmountOfContractDecimal,
   formatAmount,
   getMaskedAddress,
   getNativeToken,
@@ -82,7 +69,6 @@ import {
   CyDTouchView,
   CyDView,
 } from '../../styles/tailwindStyles';
-import { getGasPriceFor } from '../Browser/gasHelper';
 import { genId } from '../utilities/activityUtilities';
 import { isCosmosAddress } from '../utilities/cosmosSendUtility';
 import { isEvmosAddress } from '../utilities/evmosSendUtility';
@@ -90,7 +76,6 @@ import { isJunoAddress } from '../utilities/junoSendUtility';
 import { isOsmosisAddress } from '../utilities/osmosisSendUtility';
 import { isStargazeAddress } from '../utilities/stargazeSendUtility';
 import { isNobleAddress } from '../utilities/nobleSendUtility';
-import { cosmosConfig } from '../../constants/cosmosConfig';
 import { useIsFocused } from '@react-navigation/native';
 import Fuse from 'fuse.js';
 import AddressProfile from '../AddressBook/addressProfile';
@@ -131,13 +116,8 @@ export default function SendTo(props: { navigation?: any; route?: any }) {
   const hdWalletContext = useContext<any>(HdWalletContext);
   const activityContext = useContext<any>(ActivityContext);
   const globalContext = useContext<any>(GlobalContext);
-  const globalStateContext = useContext(GlobalContext) as GlobalContextDef;
   const portfolioState = useContext<any>(PortfolioContext);
   const [loading, setLoading] = useState<boolean>(false);
-  const [payTokenBottomConfirm, setPayTokenBottomConfirm] =
-    useState<boolean>(false);
-  const [payTokenModalParams, setPayTokenModalParams] = useState<any>(false);
-  const [lowBalance] = useState<boolean>(false);
   const [resolveAddress] = useEns();
   const [isDropDown, setIsDropDown] = useState(false);
   const [contactBook, setContactBook] = useState({});
@@ -147,8 +127,6 @@ export default function SendTo(props: { navigation?: any; route?: any }) {
   const isFocused = useIsFocused();
   const [filteredContactBook, setFilteredContactBook] = useState({});
   const { showModal, hideModal } = useGlobalModalContext();
-  const { isReadOnlyWallet } = hdWalletContext.state;
-  const [isSignableTransaction] = useIsSignable();
   const chainDetails = tokenData?.chainDetails;
   const { keyboardHeight } = useKeyboard();
   const [tokenSendConfirmationParams, setTokenSendConfirmationParams] =
@@ -157,7 +135,7 @@ export default function SendTo(props: { navigation?: any; route?: any }) {
       tokenSendParams: {
         onConfirm: () => {},
         onCancel: () => {},
-        chain: '',
+        chain: CHAIN_ETH,
         amountInCrypto: '',
         amountInFiat: '',
         symbol: '',
@@ -167,7 +145,6 @@ export default function SendTo(props: { navigation?: any; route?: any }) {
         nativeTokenSymbol: '',
       },
     });
-  // const route = useRoute();
   const searchOptions = {
     isCaseSensitive: false,
     includeScore: true,
@@ -176,21 +153,24 @@ export default function SendTo(props: { navigation?: any; route?: any }) {
   };
   const fuseByNames = new Fuse(Object.keys(contactBook), searchOptions);
   const { estimateGasForEvm, estimateGasForEvmos } = useGasService();
-  const { sendEvmToken, sendEvmosToken } = useTransactionManager();
+  const { sendEvmToken, sendEvmosToken, sendCosmosToken } =
+    useTransactionManager();
   let fuseByAddresses: Fuse<string>;
   if (Object.keys(addressDirectory).length) {
     if (
       EVM_CHAINS_FOR_ADDRESS_DIR.includes(
-        ChainNameToContactsChainNameMapping[chainDetails?.name],
+        get(ChainNameToContactsChainNameMapping, 'chainDetails.name', ''),
       )
     ) {
       fuseByAddresses = new Fuse(Object.keys(addressDirectory.evmAddresses));
     } else {
       fuseByAddresses = new Fuse(
         Object.keys(
-          addressDirectory[
-            ChainNameToContactsChainNameMapping[chainDetails?.name]
-          ],
+          get(
+            addressDirectory,
+            get(ChainNameToContactsChainNameMapping, 'chainDetails.name', ''),
+            '',
+          ),
         ),
       );
     }
@@ -219,7 +199,11 @@ export default function SendTo(props: { navigation?: any; route?: any }) {
           return (
             chains.includes(chainDetails?.chainName) ||
             EVM_CHAINS_FOR_ADDRESS_DIR.includes(
-              ChainNameToContactsChainNameMapping[tokenData.chainDetails?.name],
+              get(
+                ChainNameToContactsChainNameMapping,
+                'tokenData.chainDetails.name',
+                '',
+              ),
             )
           );
         });
@@ -230,13 +214,17 @@ export default function SendTo(props: { navigation?: any; route?: any }) {
         .map(address => {
           if (
             EVM_CHAINS_FOR_ADDRESS_DIR.includes(
-              ChainNameToContactsChainNameMapping[tokenData.chainDetails?.name],
+              get(ChainNameToContactsChainNameMapping, 'chainDetails.name', ''),
             )
           ) {
             return addressDirectory.evmAddresses[address];
           }
           return addressDirectory[
-            ChainNameToContactsChainNameMapping[tokenData.chainDetails.name]
+            get(
+              ChainNameToContactsChainNameMapping,
+              'tokenData.chainDetails.name',
+              '',
+            )
           ][address];
         })
         .forEach(nameList => {
@@ -278,17 +266,6 @@ export default function SendTo(props: { navigation?: any; route?: any }) {
     coreum: coreum.address,
     injective: injective.address,
     kujira: kujira.address,
-  };
-
-  const rpc: Record<string, string | undefined> = {
-    cosmos: globalStateContext.globalState.rpcEndpoints?.COSMOS.primary,
-    osmosis: globalStateContext.globalState.rpcEndpoints?.OSMOSIS.primary,
-    juno: globalStateContext.globalState.rpcEndpoints?.JUNO.primary,
-    stargaze: globalStateContext.globalState.rpcEndpoints?.STARGAZE.primary,
-    noble: globalStateContext.globalState.rpcEndpoints?.NOBLE.primary,
-    coreum: globalStateContext.globalState.rpcEndpoints?.COREUM.primary,
-    kujira: globalStateContext.globalState.rpcEndpoints?.KUJIRA.primary,
-    injective: globalStateContext.globalState.rpcEndpoints?.INJECTIVE.primary,
   };
 
   const handleBackButton = () => {
@@ -466,8 +443,10 @@ export default function SendTo(props: { navigation?: any; route?: any }) {
         screen: C.screenTitle.CREATE_CONTACT,
         params: {
           additionalAddress: {
-            chain:
-              ChainNameToContactsChainNameMapping[tokenData.chainDetails?.name],
+            chain: get(
+              ChainNameToContactsChainNameMapping,
+              'tokenData.chainDetails.name',
+            ),
             toAddress: addressText,
           },
         },
@@ -509,480 +488,40 @@ export default function SendTo(props: { navigation?: any; route?: any }) {
     }, MODAL_HIDE_TIMEOUT_250);
   }
 
-  const handleSendToTransactionResult = (
-    message: string,
-    quoteUuid: string,
-    fromAddress: string,
-    isError: boolean,
-  ) => {
-    setLoading(false);
-    if (isError) {
-      const backendName = get(tokenData, 'chainDetails.backendName');
-      const symbol: string = get(tokenData, 'chainDetails.symbol');
-      // monitoring api
-      void logAnalytics({
-        type: AnalyticsType.ERROR,
-        chain: tokenData.chainDetails?.chainName ?? '',
-        message: parseErrorMessage(message),
-        screen: route.name,
-      });
-      if (message === t('INSUFFICIENT_GAS_ERROR')) {
-        message = `You need ${
-          nativeTokenMapping[backendName as ChainBackendNames]
-        } ( ${symbol} ) ${t('INSUFFICIENT_GAS')}`;
-      }
-
-      const description =
-        quoteUuid !== ''
-          ? `${message}. ${t('CUSTOMER_SUPPORT_QUOTE_UUID')} ${quoteUuid}`
-          : message;
-      activityRef.current &&
-        activityContext.dispatch({
-          type: ActivityReducerAction.POST,
-          value: {
-            ...activityRef.current,
-            status: ActivityStatus.FAILED,
-            reason: description,
-          },
-        });
-
-      showModal('state', {
-        type: 'error',
-        title: t('TRANSACTION_FAILED'),
-        description,
-        onSuccess: hideModal,
-        onFailure: hideModal,
-      });
-    } else {
-      // monitoring api
-      void logAnalytics({
-        type: AnalyticsType.SUCCESS,
-        txnHash: message,
-        chain: tokenData.chainDetails?.chainName ?? '',
-      });
-      activityRef.current &&
-        activityContext.dispatch({
-          type: ActivityReducerAction.POST,
-          value: {
-            ...activityRef.current,
-            status: ActivityStatus.SUCCESS,
-            transactionHash: message,
-          },
-        });
-
-      let willPrompt: boolean;
-      if (
-        EVM_CHAINS_FOR_ADDRESS_DIR.includes(
-          ChainNameToContactsChainNameMapping[chainDetails?.name],
-        )
-      ) {
-        willPrompt = !(addressText in addressDirectory.evmAddresses);
-      } else {
-        willPrompt = !(
-          addressText in
-          addressDirectory[
-            ChainNameToContactsChainNameMapping[tokenData.chainDetails?.name]
-          ]
-        );
-      }
-
-      if (willPrompt) {
-        showModal('state', {
-          type: 'custom',
-          title: t('TRANSACTION_SUCCESS'),
-          modalImage: AppImages.CYPHER_SUCCESS,
-          modalButtonText: {
-            success: t('YES'),
-            failure: t('MAYBE_LATER').toUpperCase(),
-          },
-          description: renderSuccessTransaction(message, willPrompt),
-          onSuccess: onModalHide,
-          onFailure: onModalHideWithNo,
-        });
-      } else {
-        showModal('state', {
-          type: 'success',
-          title: t('TRANSACTION_SUCCESS'),
-          description: renderSuccessTransaction(message, willPrompt),
-          onSuccess: onModalHideWithNo,
-          onFailure: onModalHideWithNo,
-        });
-      }
-    }
-  };
-
-  const sendTransaction = async (payTokenModalParamsLocal: any) => {
+  const cosmosTransaction = async (chain: Chain) => {
     setLoading(true);
 
-    await sendNativeCoinOrTokenToAnyAddress(
-      hdWalletContext,
-      portfolioState,
-      tokenData.chainDetails,
-      Number(valueForUsd).toFixed(tokenData.contractDecimals),
-      tokenData.contractAddress,
+    const amountToSend = limitDecimalPlaces(
+      valueForUsd,
       tokenData.contractDecimals,
-      '',
-      handleSendToTransactionResult,
-      addressRef.current.trim(),
-      payTokenModalParamsLocal.finalGasPrice,
-      payTokenModalParamsLocal.gasLimit,
-      globalContext,
-      tokenData.symbol,
     );
-  };
 
-  const _prepareSendPayload = (payTokenModalParamsLocal: any) => {
-    tokenData?.chainDetails &&
-      payTokenModal({
-        chain: tokenData.chainDetails.name,
-        appImage: tokenData.chainDetails.logo_url,
-        sentTokenAmount: valueForUsd,
-        sentTokenSymbol: tokenData.symbol,
-        sentValueUSD: (
-          parseFloat(valueForUsd) * parseFloat(tokenData.price)
-        ).toFixed(6),
-        to_address: ensRef.current
-          ? `${ensRef.current} ${getMaskedAddress(
-              addressRef.current.trim(),
-              3,
-            )}`
-          : getMaskedAddress(addressRef.current.trim(), 6),
-        fromNativeTokenSymbol: tokenData.chainDetails.symbol,
-        gasFeeNative: payTokenModalParamsLocal.gasFeeETH,
-        gasFeeDollar: payTokenModalParamsLocal.gasFeeDollar,
-        finalGasPrice: payTokenModalParamsLocal.finalGasPrice,
-        gasLimit: payTokenModalParamsLocal.gasLimit,
-      });
-    activityRef.current = activityRef.current
-      ? {
-          ...activityRef.current,
-          gasAmount: payTokenModalParamsLocal.gasFeeDollar,
-        }
-      : null;
-  };
+    const randomGas = random(0.001, 0.01, true);
 
-  const payTokenModal = (payTokenModalParamsLocal: any) => {
-    setPayTokenBottomConfirm(true);
-    setPayTokenModalParams(payTokenModalParamsLocal);
-  };
-
-  const getGasPrice = (address: string) => {
-    const web3 = new Web3(
-      getWeb3Endpoint(tokenData?.chainDetails ?? CHAIN_ETH, globalContext),
-    );
-    if (!web3.utils.isAddress(address)) {
-      showModal('state', {
-        type: 'error',
-        title: t('NOT_VALID_ADDRESS'),
-        description: t('CHECK_RECEIVER_ADDRESS'),
-        onSuccess: hideModal,
-        onFailure: hideModal,
-      });
-      return;
-    }
-    setLoading(true);
-    let gasPrice: GasPriceDetail = {
-      chainId: chainDetails?.backendName ?? ChainBackendNames.ETH,
-      gasPrice: 0,
-      tokenPrice: 0,
-    };
-    const web3RPCEndpoint = new Web3(
-      getWeb3Endpoint(hdWalletContext.state.selectedChain, globalContext),
-    );
-    getGasPriceFor(tokenData?.chainDetails ?? CHAIN_ETH, web3RPCEndpoint)
-      .then(gasFeeResponse => {
-        setLoading(false);
-        gasPrice = gasFeeResponse;
-        void _estimateGasForNativeTransaction(
-          hdWalletContext,
-          tokenData.chainDetails,
-          tokenData,
-          Number(valueForUsd).toFixed(tokenData.contractDecimals),
-          address,
-          gasPrice,
-          _prepareSendPayload,
-          globalContext,
-        );
-      })
-      .catch(gasFeeError => {
-        setLoading(false);
-        // monitoring api
-        void logAnalytics({
-          type: AnalyticsType.ERROR,
-          chain: tokenData?.chainDetails?.chainName ?? CHAIN_ETH.chainName,
-          message: parseErrorMessage(gasFeeError),
-          screen: route.name,
-        });
-        Sentry.captureException(gasFeeError);
-        void _estimateGasForNativeTransaction(
-          hdWalletContext,
-          tokenData.chainDetails,
-          tokenData,
-          Number(valueForUsd).toFixed(tokenData.contractDecimals),
-          address,
-          gasPrice,
-          _prepareSendPayload,
-          globalContext,
-        );
-      });
-  };
-
-  const cosmosTransaction = async (address: string, chainName: string) => {
-    setLoading(true);
-    const amount = ethers
-      .parseUnits(valueForUsd, tokenData.contractDecimals)
-      .toString();
-    const signer = await getCosmosSignerClient(
-      tokenData.chainDetails,
-      hdWalletContext,
-    );
-    try {
-      await estimateGasForCosmosTransaction(
-        tokenData.chainDetails,
-        signer,
-        amount,
-        senderAddress[chainName],
-        address,
-        tokenData,
-        rpc[chainName] ?? '',
-        payTokenModal,
-        valueForUsd,
-        portfolioState,
-        globalStateContext.globalState.rpcEndpoints,
-      );
-    } catch (err) {
-      // monitoring api
-      void logAnalytics({
-        type: AnalyticsType.ERROR,
-        chain: chainName,
-        message: parseErrorMessage(err),
-        screen: route.name,
-      });
-      Sentry.captureException(err);
-      showModal('state', {
-        type: 'error',
-        title: t('TRANSACTION_ERROR'),
-        description: err?.toString(),
-        onSuccess: hideModal,
-        onFailure: hideModal,
-      });
-    }
-    setLoading(false);
-  };
-
-  const sendCosmosTransaction = async (
-    address: string,
-    valueForUsd: string,
-    signingClient: any,
-    fee: any,
-    chainName: string,
-  ) => {
-    setLoading(true);
-    const amount = ethers
-      .parseUnits(valueForUsd, tokenData.contractDecimals)
-      .toString();
-    await cosmosSendTokens(
-      address,
-      signingClient,
-      fee,
-      senderAddress[chainName],
-      amount,
-      memo,
-      handleSuccessfulTransaction,
-      handleFailedTransaction,
-      chainName,
-      uuidv4(),
-      tokenData.denom,
-    );
-    setLoading(false);
-  };
-
-  const sendEvmosTransaction = async () => {
-    try {
-      const { evmos } = hdWalletContext.state.wallet;
-      await evmosSendTxn(
-        evmos.address,
-        addressRef.current,
-        hdWalletContext,
-        valueForUsd,
-        payTokenModalParams.gasLimit,
-        handleSuccessfulTransaction,
-        handleFailedTransaction,
-        uuidv4(),
-      );
-    } catch (e) {
-      // monitoring api
-      void logAnalytics({
-        type: AnalyticsType.ERROR,
-        chain: CHAIN_EVMOS.chainName,
-        message: parseErrorMessage(e),
-        screen: route.name,
-      });
-      Sentry.captureException(e);
-      showModal('state', {
-        type: 'error',
-        title: t('TRANSACTION_ERROR'),
-        description: e.toString(),
-        onSuccess: hideModal,
-        onFailure: hideModal,
-      });
-    }
-  };
-
-  const handleSuccessfulTransaction = async (
-    result: any,
-    analyticsData: any,
-  ) => {
-    // monitoring api
-    void logAnalytics({
-      type: AnalyticsType.SUCCESS,
-      txnHash: analyticsData.hash,
-      chain: analyticsData.chain,
-    });
-    activityRef.current &&
-      activityContext.dispatch({
-        type: ActivityReducerAction.POST,
-        value: {
-          ...activityRef.current,
-          status: ActivityStatus.SUCCESS,
-          transactionHash: result.transactionHash,
+    setTokenSendConfirmationParams({
+      isModalVisible: true,
+      tokenSendParams: {
+        onConfirm: () => {
+          void onConfirmConfirmationModal();
         },
-      });
-
-    let willPrompt: boolean;
-    if (
-      EVM_CHAINS_FOR_ADDRESS_DIR.includes(
-        ChainNameToContactsChainNameMapping[chainDetails?.name],
-      )
-    ) {
-      willPrompt = !(addressText in addressDirectory.evmAddresses);
-    } else {
-      willPrompt = !(
-        addressText in
-        addressDirectory[
-          ChainNameToContactsChainNameMapping[tokenData.chainDetails?.name]
-        ]
-      );
-    }
-
-    if (willPrompt) {
-      showModal('state', {
-        type: 'custom',
-        title: t('TRANSACTION_SUCCESS'),
-        modalImage: AppImages.CYPHER_SUCCESS,
-        modalButtonText: {
-          success: t('YES'),
-          failure: t('MAYBE_LATER').toUpperCase(),
+        onCancel: () => {
+          onCancelConfirmationModal();
         },
-        description: renderSuccessTransaction(
-          result.transactionHash,
-          willPrompt,
+        chain,
+        amountInCrypto: amountToSend,
+        amountInFiat: String(
+          formatAmount(Number(amountToSend) * Number(tokenData?.price ?? 0)),
         ),
-        onSuccess: onModalHide,
-        onFailure: onModalHideWithNo,
-      });
-    } else {
-      showModal('state', {
-        type: 'success',
-        title: t('TRANSACTION_SUCCESS'),
-        description: renderSuccessTransaction(
-          result.transactionHash,
-          willPrompt,
-        ),
-        onSuccess: onModalHideWithNo,
-        onFailure: onModalHideWithNo,
-      });
-    }
-
-    await analytics().logEvent('transaction_submit', analyticsData);
-  };
-
-  const handleFailedTransaction = async (
-    err: any,
-    uuid: string,
-    chain: string,
-  ) => {
-    // monitoring api
-    void logAnalytics({
-      type: AnalyticsType.ERROR,
-      chain,
-      message: parseErrorMessage(err),
-      screen: route.name,
+        symbol: tokenData.symbol,
+        toAddress: addressRef.current,
+        gasFeeInCrypto: parseFloat(String(randomGas)).toFixed(4),
+        gasFeeInFiat: parseFloat(
+          String(formatAmount(randomGas * Number(tokenData?.price ?? 0))),
+        ).toFixed(4),
+        nativeTokenSymbol: String(tokenData.chainDetails?.symbol),
+      },
     });
-    activityRef.current &&
-      activityContext.dispatch({
-        type: ActivityReducerAction.POST,
-        value: {
-          ...activityRef.current,
-          status: ActivityStatus.FAILED,
-          reason: JSON.stringify(err),
-        },
-      });
-    Sentry.captureException(err);
-    showModal('state', {
-      type: 'error',
-      title: t('TRANSACTION_ERROR'),
-      description: JSON.stringify(err),
-      onSuccess: hideModal,
-      onFailure: hideModal,
-    });
-  };
-
-  const evmosTransaction = async (
-    address: string,
-    toAddress: string,
-    hdWallet: any,
-  ) => {
-    try {
-      setLoading(true);
-      const gasWanted = await evmosSendSimulation(
-        address,
-        toAddress,
-        hdWallet,
-        valueForUsd,
-      );
-
-      tokenData?.chainDetails &&
-        payTokenModal({
-          chain: tokenData.chainDetails.name,
-          appImage: tokenData.chainDetails.logo_url,
-          sentTokenAmount: valueForUsd,
-          sentTokenSymbol: tokenData.symbol,
-          sentValueUSD: (
-            parseFloat(valueForUsd) * parseFloat(tokenData.price)
-          ).toFixed(6),
-          to_address: ensRef.current
-            ? `${ensRef.current} ${getMaskedAddress(
-                addressRef.current.trim(),
-                3,
-              )}`
-            : getMaskedAddress(addressRef.current.trim(), 6),
-          fromNativeTokenSymbol: tokenData.chainDetails.symbol,
-          gasFeeNative: (cosmosConfig.evmos.gasPrice * gasWanted).toFixed(4),
-          gasFeeDollar: (
-            cosmosConfig.evmos.gasPrice *
-            gasWanted *
-            parseFloat(tokenData.price)
-          ).toFixed(4),
-          gasLimit: gasWanted,
-        });
-    } catch (e) {
-      // monitoring api
-      void logAnalytics({
-        type: AnalyticsType.ERROR,
-        chain: CHAIN_EVMOS.chainName,
-        message: parseErrorMessage(e),
-        screen: route.name,
-      });
-      Sentry.captureException(e);
-      showModal('state', {
-        type: 'error',
-        title: t('TRANSACTION_ERROR'),
-        description: e.toString(),
-        onSuccess: hideModal,
-        onFailure: hideModal,
-      });
-    }
+    setLoading(false);
   };
 
   const submitSendTransaction = async () => {
@@ -1003,8 +542,6 @@ export default function SendTo(props: { navigation?: any; route?: any }) {
       tokenName: tokenData.name,
       tokenLogo: tokenData.logoUrl,
     };
-
-    const { evmos, ethereum } = hdWalletContext.state.wallet;
 
     let error = false;
     addressRef.current = addressText;
@@ -1038,69 +575,46 @@ export default function SendTo(props: { navigation?: any; route?: any }) {
 
     try {
       activityData.toAddress = addressRef.current;
-      if (chainDetails?.chainName === ChainNames.EVMOS) {
-        if (isEvmosAddress(addressRef.current)) {
-          await evmosTransaction(
-            evmos.address,
-            addressRef.current,
-            hdWalletContext,
-          );
-          activityData.fromAddress = evmos.address;
-        } else {
-          getGasPrice(addressRef.current);
-          activityData.fromAddress = ethereum.address;
-        }
-      } else if (
+      if (
         chainDetails?.chainName === ChainNames.COSMOS &&
         isCosmosAddress(addressRef.current)
       ) {
-        await cosmosTransaction(addressRef.current, ChainNames.COSMOS);
         activityData.fromAddress = cosmos.address;
       } else if (
         chainDetails?.chainName === ChainNames.OSMOSIS &&
         isOsmosisAddress(addressRef.current)
       ) {
-        await cosmosTransaction(addressRef.current, ChainNames.OSMOSIS);
         activityData.fromAddress = osmosis.address;
       } else if (
         chainDetails?.chainName === ChainNames.JUNO &&
         isJunoAddress(addressRef.current)
       ) {
-        await cosmosTransaction(addressRef.current, ChainNames.JUNO);
         activityData.fromAddress = juno.address;
       } else if (
         chainDetails?.chainName === ChainNames.STARGAZE &&
         isStargazeAddress(addressRef.current)
       ) {
-        await cosmosTransaction(addressRef.current, ChainNames.STARGAZE);
         activityData.fromAddress = stargaze.address;
       } else if (
         chainDetails?.chainName === ChainNames.NOBLE &&
         isNobleAddress(addressRef.current)
       ) {
-        await cosmosTransaction(addressRef.current, ChainNames.NOBLE);
         activityData.fromAddress = noble.address;
       } else if (
         chainDetails?.chainName === ChainNames.COREUM &&
         isCoreumAddress(addressRef.current)
       ) {
-        await cosmosTransaction(addressRef.current, ChainNames.COREUM);
         activityData.fromAddress = coreum.address;
       } else if (
         chainDetails?.chainName === ChainNames.INJECTIVE &&
         isInjectiveAddress(addressRef.current)
       ) {
-        await cosmosTransaction(addressRef.current, ChainNames.INJECTIVE);
         activityData.fromAddress = injective.address;
       } else if (
         chainDetails?.chainName === ChainNames.KUJIRA &&
         isKujiraAddress(addressRef.current)
       ) {
-        await cosmosTransaction(addressRef.current, ChainNames.KUJIRA);
         activityData.fromAddress = kujira.address;
-      } else if (chainDetails?.chainName === ChainNames.ETH) {
-        getGasPrice(addressRef.current);
-        activityData.fromAddress = ethereum.address;
       } else {
         error = true;
         showModal('state', {
@@ -1111,6 +625,7 @@ export default function SendTo(props: { navigation?: any; route?: any }) {
           onFailure: hideModal,
         });
       }
+      await cosmosTransaction(chainDetails);
     } catch (e) {
       error = true;
       // monitoring api
@@ -1157,7 +672,12 @@ export default function SendTo(props: { navigation?: any; route?: any }) {
       isModalVisible: false,
     });
     setLoading(true);
-    let response;
+    let response: {
+      isError: boolean;
+      hash: string;
+      error?: string;
+      gasFeeInCrypto?: string | undefined;
+    };
     if (
       chainDetails?.chainName === ChainNames.ETH ||
       (chainDetails?.chainName === ChainNames.EVMOS &&
@@ -1179,6 +699,14 @@ export default function SendTo(props: { navigation?: any; route?: any }) {
       response = await sendEvmosToken({
         toAddress: addressRef.current,
         amountToSend,
+      });
+    } else {
+      response = await sendCosmosToken({
+        fromChain: chainDetails,
+        denom: tokenData.denom ?? '',
+        amount: amountToSend,
+        fromAddress: get(senderAddress, chainDetails.chainName, ''),
+        toAddress: addressRef.current,
       });
     }
     if (!response?.isError) {
@@ -1217,6 +745,13 @@ export default function SendTo(props: { navigation?: any; route?: any }) {
         type: ActivityReducerAction.POST,
         value: {
           ...activityRef.current,
+          gasAmount: response.gasFeeInCrypto
+            ? parseFloat(
+                String(
+                  Number(response?.gasFeeInCrypto) * Number(tokenData.price),
+                ),
+              ).toFixed(4)
+            : activityRef.current?.gasAmount,
           status: ActivityStatus.SUCCESS,
           transactionHash: response?.hash,
         },
@@ -1306,16 +841,6 @@ export default function SendTo(props: { navigation?: any; route?: any }) {
       const web3 = new Web3(
         getWeb3Endpoint(tokenData?.chainDetails ?? CHAIN_ETH, globalContext),
       );
-      const nativeTokenSymbol =
-        get(nativeTokenMapping, tokenData.chainDetails.symbol) ||
-        tokenData.chainDetails.symbol;
-      const nativeToken = getNativeToken(
-        nativeTokenSymbol,
-        get(
-          portfolioState.statePortfolio.tokenPortfolio,
-          String(get(ChainNameMapping, chainBackendName)),
-        ).holdings,
-      );
       const id = genId();
       const activityData: SendTransactionActivity = {
         id,
@@ -1363,7 +888,7 @@ export default function SendTo(props: { navigation?: any; route?: any }) {
       }
       activityRef.current.gasAmount = String(
         formatAmount(
-          Number(gasDetails?.gasFeeInCrypto) * Number(nativeToken?.price ?? 0),
+          Number(gasDetails?.gasFeeInCrypto) * Number(tokenData?.price ?? 0),
         ),
       );
       setTokenSendConfirmationParams({
@@ -1375,7 +900,7 @@ export default function SendTo(props: { navigation?: any; route?: any }) {
           onCancel: () => {
             onCancelConfirmationModal();
           },
-          chain: chainBackendName,
+          chain: tokenData.chainDetails,
           amountInCrypto: amountToSend,
           amountInFiat: String(
             formatAmount(Number(amountToSend) * Number(tokenData?.price ?? 0)),
@@ -1388,7 +913,7 @@ export default function SendTo(props: { navigation?: any; route?: any }) {
           gasFeeInFiat: String(
             formatAmount(
               Number(gasDetails?.gasFeeInCrypto) *
-                Number(nativeToken?.price ?? 0),
+                Number(tokenData?.price ?? 0),
             ),
           ),
           nativeTokenSymbol: String(tokenData.chainDetails?.symbol),
@@ -1555,106 +1080,6 @@ export default function SendTo(props: { navigation?: any; route?: any }) {
     );
   };
 
-  const onPayPress = async () => {
-    setPayTokenBottomConfirm(false);
-    if (
-      chainDetails?.chainName === ChainNames.COSMOS &&
-      isCosmosAddress(addressRef.current)
-    ) {
-      await sendCosmosTransaction(
-        payTokenModalParams.to_address,
-        payTokenModalParams.sentTokenAmount,
-        payTokenModalParams.signingClient,
-        payTokenModalParams.fee,
-        ChainNames.COSMOS,
-      );
-    } else if (
-      chainDetails?.chainName === ChainNames.OSMOSIS &&
-      isOsmosisAddress(addressRef.current)
-    ) {
-      await sendCosmosTransaction(
-        payTokenModalParams.to_address,
-        payTokenModalParams.sentTokenAmount,
-        payTokenModalParams.signingClient,
-        payTokenModalParams.fee,
-        ChainNames.OSMOSIS,
-      );
-    } else if (
-      chainDetails?.chainName === ChainNames.JUNO &&
-      isJunoAddress(addressRef.current)
-    ) {
-      await sendCosmosTransaction(
-        payTokenModalParams.to_address,
-        payTokenModalParams.sentTokenAmount,
-        payTokenModalParams.signingClient,
-        payTokenModalParams.fee,
-        ChainNames.JUNO,
-      );
-    } else if (
-      chainDetails?.chainName === ChainNames.STARGAZE &&
-      isStargazeAddress(addressRef.current)
-    ) {
-      await sendCosmosTransaction(
-        payTokenModalParams.to_address,
-        payTokenModalParams.sentTokenAmount,
-        payTokenModalParams.signingClient,
-        payTokenModalParams.fee,
-        ChainNames.STARGAZE,
-      );
-    } else if (
-      chainDetails?.chainName === ChainNames.NOBLE &&
-      isNobleAddress(addressRef.current)
-    ) {
-      await sendCosmosTransaction(
-        payTokenModalParams.to_address,
-        payTokenModalParams.sentTokenAmount,
-        payTokenModalParams.signingClient,
-        payTokenModalParams.fee,
-        ChainNames.NOBLE,
-      );
-    } else if (
-      chainDetails?.chainName === ChainNames.COREUM &&
-      isCoreumAddress(addressRef.current)
-    ) {
-      await sendCosmosTransaction(
-        payTokenModalParams.to_address,
-        payTokenModalParams.sentTokenAmount,
-        payTokenModalParams.signingClient,
-        payTokenModalParams.fee,
-        ChainNames.COREUM,
-      );
-    } else if (
-      chainDetails?.chainName === ChainNames.INJECTIVE &&
-      isInjectiveAddress(addressRef.current)
-    ) {
-      await sendCosmosTransaction(
-        payTokenModalParams.to_address,
-        payTokenModalParams.sentTokenAmount,
-        payTokenModalParams.signingClient,
-        payTokenModalParams.fee,
-        ChainNames.INJECTIVE,
-      );
-    } else if (
-      chainDetails?.chainName === ChainNames.KUJIRA &&
-      isKujiraAddress(addressRef.current)
-    ) {
-      await sendCosmosTransaction(
-        payTokenModalParams.to_address,
-        payTokenModalParams.sentTokenAmount,
-        payTokenModalParams.signingClient,
-        payTokenModalParams.fee,
-        ChainNames.KUJIRA,
-      );
-    } else if (
-      chainDetails?.chainName === ChainNames.EVMOS &&
-      isEvmosAddress(addressRef.current)
-    ) {
-      await sendEvmosTransaction();
-    } else {
-      await sendTransaction(payTokenModalParams);
-    }
-  };
-
   // NOTE: LIFE CYCLE METHOD 🍎🍎🍎🍎
   return (
     <CyDSafeAreaView className='flex-1 bg-white'>
@@ -1663,23 +1088,6 @@ export default function SendTo(props: { navigation?: any; route?: any }) {
           isModalVisible={tokenSendConfirmationParams.isModalVisible}
           tokenSendParams={tokenSendConfirmationParams.tokenSendParams}
         />
-        <BottomSendToConfirm
-          isModalVisible={payTokenBottomConfirm}
-          modalParams={payTokenModalParams}
-          onPayPress={() => {
-            setPayTokenBottomConfirm(false);
-            isSignableTransaction(
-              ActivityType.SEND,
-              isReadOnlyWallet ? submitSendTransaction : onPayPress,
-            );
-          }}
-          onCancelPress={() => {
-            setPayTokenBottomConfirm(false);
-            setLoading(false);
-          }}
-          lowBalance={lowBalance}
-        />
-
         <CyDView className='h-full mx-[20px] pt-[10px]'>
           <CyDText className='text-[16px] font-semibold'>
             {t<string>('ADDRESS')}
@@ -1795,7 +1203,7 @@ export default function SendTo(props: { navigation?: any; route?: any }) {
                 </CyDText>
                 <CyDFlatList
                   data={Data}
-                  renderItem={renderItem}
+                  renderItem={renderItem as any}
                   ListEmptyComponent={emptyView}
                   style={{ marginBottom: 60, flexGrow: 0 }}
                   showsVerticalScrollIndicator={false}

@@ -1,7 +1,9 @@
+import { Chain } from '../constants/server';
+
 interface TokenSendParams {
   onConfirm: () => void;
   onCancel: () => void;
-  chain: string;
+  chain: Chain;
   amountInCrypto: string;
   amountInFiat: string;
   symbol: string;
