@@ -60,8 +60,10 @@ import { CHOOSE_TOKEN_MODAL_TIMEOUT } from '../../../constants/timeOuts';
 import { screenTitle } from '../../../constants';
 import { useIsFocused } from '@react-navigation/native';
 import {
+  CardFeePercentage,
   GAS_BUFFER_FACTOR_FOR_LOAD_MAX,
   MINIMUM_TRANSFER_AMOUNT_ETH,
+  SlippageFactor,
   gasFeeReservation,
 } from '../../../constants/data';
 import ChooseTokenModal from '../../../components/v2/chooseTokenModal';
@@ -1160,6 +1162,19 @@ export default function BridgeFundCardScreen({ route }: { route: any }) {
 
   const onPressToggle = () => {
     setIsCryptoInput(!isCrpytoInput);
+    const multiplier =
+      1 +
+      get(
+        CardFeePercentage,
+        selectedToken?.chainDetails.backendName as string,
+        0.5,
+      ) +
+      get(
+        SlippageFactor,
+        selectedToken?.chainDetails.backendName as string,
+        0.003,
+      );
+
     if (!isCrpytoInput) {
       const usdAmt =
         parseFloat(amount) *
@@ -1172,7 +1187,7 @@ export default function BridgeFundCardScreen({ route }: { route: any }) {
           ? '0.00'
           : selectedToken?.isZeroFeeCardFunding
             ? usdAmt
-            : usdAmt / 1.02
+            : usdAmt / multiplier
         ).toString(),
       );
     } else {
@@ -1186,7 +1201,7 @@ export default function BridgeFundCardScreen({ route }: { route: any }) {
           ? '0.00'
           : selectedToken?.isZeroFeeCardFunding
             ? cryptoAmt
-            : cryptoAmt * 1.02
+            : cryptoAmt * multiplier
         ).toString(),
       );
       setUsdAmount(amount);
