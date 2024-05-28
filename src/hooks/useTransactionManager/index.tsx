@@ -147,8 +147,6 @@ export default function useTransactionManager() {
         );
       }
 
-      console.log('🚀 ~ useTransactionManager ~ tx:', tx);
-
       const hash = await signEthTransaction({
         web3,
         chain,
