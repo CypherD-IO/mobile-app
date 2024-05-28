@@ -232,8 +232,11 @@ export default function useGasService() {
         }
         return {
           gasFeeInCrypto,
-          gasLimit: gasLimit,
+          gasLimit,
           gasPrice: finalGasPrice,
+          priorityFee: get(gasPriceDetail, 'priorityFee', 0),
+          baseFee: get(gasPriceDetail, 'baseFee', 0),
+          maxFee: get(gasPriceDetail, 'maxFee', 0),
         };
       }
     } catch (error) {

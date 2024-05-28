@@ -7,8 +7,7 @@ import {
 import { InjectiveStargate } from '@injectivelabs/sdk-ts';
 import * as Sentry from '@sentry/react-native';
 import { MsgTransfer } from 'cosmjs-types/ibc/applications/transfer/v1/tx';
-import { ethers } from 'ethers';
-import { get } from 'lodash';
+import { get, set } from 'lodash';
 import Long from 'long';
 import { useContext } from 'react';
 import Toast from 'react-native-toast-message';
@@ -41,6 +40,7 @@ import useEthSigner from '../useEthSigner';
 import useEvmosSigner from '../useEvmosSigner';
 import useGasService from '../useGasService';
 import { IReward } from '../../reducers/cosmosStakingReducer';
+import { ethers } from 'ethers';
 
 export interface TransactionServiceResult {
   isError: boolean;
@@ -114,15 +114,17 @@ export default function useTransactionManager() {
     const fromAddress = ethereum.address;
     try {
       const code = await web3.eth.getCode(toAddress);
-      let { gasLimit, gasPrice } = await estimateGasForEvm({
-        web3,
-        chain,
-        fromAddress,
-        toAddress,
-        amountToSend,
-        contractAddress,
-        contractDecimals,
-      });
+      let { gasLimit, gasPrice, priorityFee, baseFee } =
+        await estimateGasForEvm({
+          web3,
+          chain,
+          fromAddress,
+          toAddress,
+          amountToSend,
+          contractAddress,
+          contractDecimals,
+        });
+
       gasLimit = decideGasLimitBasedOnTypeOfToAddress(
         code,
         gasLimit,
@@ -132,10 +134,21 @@ export default function useTransactionManager() {
       const tx = {
         from: ethereum.address,
         to: toAddress,
-        gasPrice,
         value: web3.utils.toWei(amountToSend, 'ether').toString(),
         gas: web3.utils.toHex(gasLimit),
       };
+      if (!baseFee) {
+        set(tx, 'gasPrice', gasPrice);
+      } else {
+        set(
+          tx,
+          'maxPriorityFeePerGas',
+          web3.utils.toWei(priorityFee.toFixed(9), 'gwei'),
+        );
+      }
+
+      console.log('🚀 ~ useTransactionManager ~ tx:', tx);
+
       const hash = await signEthTransaction({
         web3,
         chain,
