@@ -4,9 +4,11 @@ import { ChainBackendNames } from '../constants/server';
 export interface EthTransaction {
   from: string;
   to: string;
-  gasPrice: number;
+  gasPrice?: number;
   value: string | number;
   gas: string | number;
+  maxPriorityFeePerGas?: string | number;
+  maxFeePerGas?: string | number;
 }
 
 export interface RawTransaction {
