@@ -1,64 +1,42 @@
-import * as React from 'react';
-import { useContext, useEffect, useState } from 'react';
-import { Colors } from '../../constants/theme';
+import analytics from '@react-native-firebase/analytics';
+import { useRoute } from '@react-navigation/native';
+import * as Sentry from '@sentry/react-native';
+import { ethers } from 'ethers';
+import { get, random } from 'lodash';
+import LottieView from 'lottie-react-native';
+import React, { useContext, useEffect, useState } from 'react';
+import { useTranslation } from 'react-i18next';
+import { BackHandler, Keyboard, StyleSheet, TextInput } from 'react-native';
 import AppImages from '../../../assets/images/appImages';
+import { useGlobalModalContext } from '../../components/v2/GlobalModal';
+import { SuccessTransaction } from '../../components/v2/StateModal';
+import Button from '../../components/v2/button';
+import CyDModalLayout from '../../components/v2/modal';
+import * as C from '../../constants';
+import { gasFeeReservation } from '../../constants/data';
+import { AnalyticsType, TokenOverviewTabIndices } from '../../constants/enum';
+import { Colors } from '../../constants/theme';
+import { MODAL_HIDE_TIMEOUT, MODAL_HIDE_TIMEOUT_250 } from '../../core/Http';
 import {
-  HdWalletContext,
   StakingContext,
-  validateAmount,
   convertToEvmosFromAevmos,
-  PortfolioContext,
   logAnalytics,
   parseErrorMessage,
-  _NO_CYPHERD_CREDENTIAL_AVAILABLE_,
+  validateAmount,
 } from '../../core/util';
-import * as C from '../../constants';
-import { BackHandler, Keyboard, TextInput, StyleSheet } from 'react-native';
-import axios, {
-  MODAL_HIDE_TIMEOUT,
-  MODAL_HIDE_TIMEOUT_250,
-} from '../../core/Http';
-import {
-  createTxMsgDelegate,
-  createTxMsgUndelegate,
-  createTxMsgBeginRedelegate,
-  createTxRawEIP712,
-  signatureToWeb3Extension,
-} from '@tharsis/transactions';
-import {
-  signTypedData,
-  SignTypedDataVersion,
-  personalSign,
-} from '@metamask/eth-sig-util';
-import { generatePostBodyBroadcast } from '@tharsis/provider';
+import useTransactionManager from '../../hooks/useTransactionManager';
 import {
   DELEGATE,
   RESET,
   RE_DELEGATE,
   UN_DELEGATE,
 } from '../../reducers/stakingReducer';
-import LottieView from 'lottie-react-native';
-import * as Sentry from '@sentry/react-native';
-import analytics from '@react-native-firebase/analytics';
-import { signatureToPubkey } from '@hanchon/signature-to-pubkey';
-import { ethers } from 'ethers';
-import { useGlobalModalContext } from '../../components/v2/GlobalModal';
-import Button from '../../components/v2/button';
-import { useTranslation } from 'react-i18next';
 import {
   CyDImage,
   CyDText,
   CyDTouchView,
   CyDView,
 } from '../../styles/tailwindStyles';
-import CyDModalLayout from '../../components/v2/modal';
-import { SuccessTransaction } from '../../components/v2/StateModal';
-import { cosmosConfig } from '../../constants/cosmosConfig';
-import { AnalyticsType, TokenOverviewTabIndices } from '../../constants/enum';
-import { gasFeeReservation } from '../../constants/data';
-import { GlobalContext } from '../../core/globalContext';
-import { useRoute } from '@react-navigation/native';
-import { loadPrivateKeyFromKeyChain } from '../../core/Keychain';
 
 const {
   CText,
@@ -68,11 +46,15 @@ const {
   DynamicScrollView,
 } = require('../../styles');
 
-export default function StakingDelegation({ route, navigation }) {
+export default function StakingDelegation({
+  route,
+  navigation,
+}: {
+  route: any;
+  navigation: any;
+}) {
   const { itemData, tokenData, reDelegator = '' } = route.params;
   const stakingValidators = useContext<any>(StakingContext);
-  const hdWallet = useContext<any>(HdWalletContext);
-  const globalStateContext = useContext<any>(GlobalContext);
   const [amount, setAmount] = useState<string>('');
   const [reDelegatorName, setReDelegatorName] = useState<string>(reDelegator);
   const [loading, setLoading] = useState<boolean>(false);
@@ -80,27 +62,20 @@ export default function StakingDelegation({ route, navigation }) {
   const [finalAmount, setFinalAmount] = useState<bigint>(BigInt(0));
   const [maxEnabled, setMaxEnabled] = useState<boolean>(false);
   const [finalGasFee, setFinalGasFee] = useState<number>(0);
-  const [finalData, setFinalData] = useState({});
   const [onSubmit, setOnSubmit] = useState(false);
 
   const { showModal, hideModal } = useGlobalModalContext();
+  const { delegateEvmosToken, reDelegateEvmosToken, unDelegateEvmosToken } =
+    useTransactionManager();
 
   const { t } = useTranslation();
-
-  const evmos = hdWallet.state.wallet.evmos;
-  const ethereum = hdWallet.state.wallet.ethereum;
-  const portfolioState = useContext<any>(PortfolioContext);
-  const gasReserved = gasFeeReservation[tokenData.chainDetails?.backendName];
-
-  const evmosUrls = globalStateContext.globalState.rpcEndpoints.EVMOS.otherUrls;
-  const ACCOUNT_DETAILS = evmosUrls.accountDetails.replace(
-    'address',
-    evmos.wallets[evmos.currentIndex].address,
+  const gasReserved = get(
+    gasFeeReservation,
+    tokenData.chainDetails?.backendName,
+    0.02,
   );
-  const SIMULATION_ENDPOINT = evmosUrls.simulate;
-  const TXN_ENDPOINT = evmosUrls.transact;
+
   const useroute = useRoute();
-  let delegateTryCount = 0;
 
   const handleBackButton = () => {
     navigation.goBack();
@@ -114,200 +89,17 @@ export default function StakingDelegation({ route, navigation }) {
     };
   }, []);
 
-  const convert = n => {
+  const convert = (n: number) => {
     if (n < 1e3) return n;
-    if (n >= 1e3 && n < 1e6) return +(n / 1e3).toFixed(1) + 'K';
-    if (n >= 1e6 && n < 1e9) return +(n / 1e6).toFixed(1) + 'M';
-    if (n >= 1e9 && n < 1e12) return +(n / 1e9).toFixed(1) + 'B';
-    if (n >= 1e12) return +(n / 1e12).toFixed(1) + 'T';
-  };
-
-  const gasPrice = 0.000000075;
-
-  const generatePublicKey = async () => {
-    const privateKey = await loadPrivateKeyFromKeyChain(
-      false,
-      hdWallet.state.pinValue,
-    );
-    if (privateKey && privateKey !== _NO_CYPHERD_CREDENTIAL_AVAILABLE_) {
-      const privateKeyBuffer = Buffer.from(privateKey.substring(2), 'hex');
-
-      const sig = personalSign({
-        privateKey: privateKeyBuffer,
-        data: 'generate_pubkey',
-      });
-
-      const publicKey = signatureToPubkey(
-        sig,
-        Buffer.from([
-          50, 215, 18, 245, 169, 63, 252, 16, 225, 169, 71, 95, 254, 165, 146,
-          216, 40, 162, 115, 78, 147, 125, 80, 182, 25, 69, 136, 250, 65, 200,
-          94, 178,
-        ]),
-      );
-
-      return publicKey;
-    }
-  };
-
-  const generateTransactionBody = async (
-    response,
-    gasFee = '14000000000000000',
-    gasLimit = '700000',
-  ) => {
-    const chain = {
-      chainId: 9001,
-      cosmosChainId: 'evmos_9001-2',
-    };
-    const sender = {
-      accountAddress: evmos.wallets[evmos.currentIndex].address,
-      sequence: response.sequence ? response.sequence : 0,
-      accountNumber: response.account_number,
-      pubkey: response.pub_key
-        ? response.pub_key.key
-        : await generatePublicKey(),
-    };
-    const fee = {
-      amount: gasFee,
-      denom: 'aevmos',
-      gas: gasLimit,
-    };
-    const memo = '';
-
-    if (DELEGATE === stakingValidators.stateStaking.typeOfDelegation) {
-      const params = {
-        validatorAddress: itemData.address,
-        amount: finalAmount.toString(),
-        denom: 'aevmos',
-      };
-      var msg = createTxMsgDelegate(chain, sender, fee, memo, params);
-    }
-
-    if (UN_DELEGATE === stakingValidators.stateStaking.typeOfDelegation) {
-      const params = {
-        validatorAddress: itemData.address,
-        amount: finalAmount.toString(),
-        denom: 'aevmos',
-      };
-
-      var msg = createTxMsgUndelegate(chain, sender, fee, memo, params);
-    }
-
-    if (RE_DELEGATE === stakingValidators.stateStaking.typeOfDelegation) {
-      const params = {
-        validatorSrcAddress: itemData.address,
-        validatorDstAddress: stakingValidators.stateStaking.reValidator.address,
-        amount: finalAmount.toString(),
-        denom: 'aevmos',
-      };
-      var msg = createTxMsgBeginRedelegate(chain, sender, fee, memo, params);
-    }
-
-    const privateKey = await loadPrivateKeyFromKeyChain(
-      false,
-      hdWallet.state.pinValue,
-    );
-    if (privateKey && privateKey !== _NO_CYPHERD_CREDENTIAL_AVAILABLE_) {
-      const privateKeyBuffer = Buffer.from(privateKey.substring(2), 'hex');
-
-      const signature = signTypedData({
-        privateKey: privateKeyBuffer,
-        data: msg.eipToSign,
-        version: SignTypedDataVersion.V4,
-      });
-
-      const extension = signatureToWeb3Extension(chain, sender, signature);
-      const rawTx = createTxRawEIP712(
-        msg.legacyAmino.body,
-        msg.legacyAmino.authInfo,
-        extension,
-      );
-
-      const body = generatePostBodyBroadcast(rawTx);
-
-      return body;
-    }
+    if (n >= 1e3 && n < 1e6) return (n / 1e3).toFixed(1) + 'K';
+    if (n >= 1e6 && n < 1e9) return (n / 1e6).toFixed(1) + 'M';
+    if (n >= 1e9 && n < 1e12) return (n / 1e9).toFixed(1) + 'B';
+    if (n >= 1e12) return (n / 1e12).toFixed(1) + 'T';
   };
 
   const txnSimulation = async () => {
-    setLoading(true);
-
-    try {
-      const accountDetailsResponse = await axios.get(ACCOUNT_DETAILS, {
-        timeout: 2000,
-      });
-      let sequence =
-        Number(accountDetailsResponse.data.account.base_account.sequence) +
-        delegateTryCount;
-      let simulationResponse;
-      let bodyForSimulate;
-      void analytics().logEvent(
-        `evmos_simulate_${stakingValidators.stateStaking.typeOfDelegation}`,
-      );
-      try {
-        bodyForSimulate = await generateTransactionBody(
-          accountDetailsResponse.data.account.base_account,
-        );
-        simulationResponse = await axios.post(
-          SIMULATION_ENDPOINT,
-          bodyForSimulate,
-        );
-        if (!simulationResponse.data.gas_info.gas_used) {
-          throw new Error('sequence doesnt match');
-        }
-      } catch (e) {
-        sequence += 1;
-        bodyForSimulate = await generateTransactionBody({
-          ...accountDetailsResponse.data.account.base_account,
-          sequence,
-        });
-        simulationResponse = await axios.post(
-          SIMULATION_ENDPOINT,
-          bodyForSimulate,
-        );
-      }
-      if (simulationResponse.data.gas_info.gas_used) {
-        const gasWanted = simulationResponse.data.gas_info.gas_used;
-        const bodyForTransaction = await generateTransactionBody(
-          { ...accountDetailsResponse.data.account.base_account, sequence },
-          String(cosmosConfig.evmos.gasPrice * gasWanted),
-          Math.floor(gasWanted * 1.8).toString(),
-        );
-        setFinalGasFee(
-          parseInt(simulationResponse.data.gas_info.gas_used) * gasPrice,
-        );
-        setFinalData(bodyForTransaction);
-        if (delegateTryCount) {
-          void finalTxn(bodyForTransaction);
-        } else {
-          setLoading(false);
-          setSignModalVisible(true);
-        }
-      } else {
-        throw new Error('Please try again later');
-      }
-    } catch (error: any) {
-      setLoading(false);
-      // monitoring api
-      void logAnalytics({
-        type: AnalyticsType.ERROR,
-        chain: tokenData?.chainDetails?.chainName ?? '',
-        message:
-          'error while simulating the transaction in evmos staking/delegation.tsx',
-        screen: useroute.name,
-      });
-      Sentry.captureException(error);
-      await analytics().logEvent('evmos_staking_error', {
-        from: 'error while simulating the transaction in evmos staking/delegation.tsx',
-      });
-      showModal('state', {
-        type: 'error',
-        title: t('TRANSACTION_FAILED'),
-        description: error?.response?.data?.message,
-        onSuccess: hideModal,
-        onFailure: hideModal,
-      });
-    }
+    setFinalGasFee(random(0.001, 0.01, true));
+    setSignModalVisible(true);
   };
 
   const renderSuccessTransaction = (hash: string) => {
@@ -340,7 +132,7 @@ export default function StakingDelegation({ route, navigation }) {
     return balance >= finalGasFee;
   };
 
-  const finalTxn = async (finalTxnData = finalData) => {
+  const finalTxn = async () => {
     setLoading(true);
     const balance = parseFloat(
       convertToEvmosFromAevmos(
@@ -357,19 +149,41 @@ export default function StakingDelegation({ route, navigation }) {
         showModal('state', {
           type: 'error',
           title: t('INSUFFICIENT_FUNDS'),
-          description: `You don't have sufficient ${tokenData.chainDetails.symbol} to pay gas fee.`,
+          description: `You don't have sufficient ${tokenData.chainDetails.symbol as string} to pay gas fee.`,
           onSuccess: hideModal,
           onFailure: hideModal,
         });
       }, MODAL_HIDE_TIMEOUT_250);
     } else {
       try {
-        const txnResponse = await axios.post(TXN_ENDPOINT, finalTxnData);
-        if (txnResponse.data.tx_response.raw_log === '[]') {
+        let txnResponse: any;
+        if (DELEGATE === stakingValidators.stateStaking.typeOfDelegation) {
+          txnResponse = await delegateEvmosToken({
+            validatorAddress: itemData.address,
+            amountToDelegate: ethers.formatUnits(finalAmount, 18),
+          });
+        } else if (
+          UN_DELEGATE === stakingValidators.stateStaking.typeOfDelegation
+        ) {
+          txnResponse = await unDelegateEvmosToken({
+            validatorAddress: itemData.address,
+            amountToUnDelegate: ethers.formatUnits(finalAmount, 18),
+          });
+        } else if (
+          RE_DELEGATE === stakingValidators.stateStaking.typeOfDelegation
+        ) {
+          txnResponse = await reDelegateEvmosToken({
+            validatorSrcAddress: itemData.address,
+            validatorDstAddress:
+              stakingValidators.stateStaking.reValidator.address,
+            amountToReDelegate: ethers.formatUnits(finalAmount, 18),
+          });
+        }
+        if (!txnResponse?.isError) {
           setLoading(false);
           setSignModalVisible(false);
           await analytics().logEvent(
-            `evmos_${stakingValidators.stateStaking.typeOfDelegation}_completed`,
+            `evmos_${stakingValidators.stateStaking.typeOfDelegation as string}_completed`,
           );
           setTimeout(() => {
             stakingValidators.dispatchStaking({
@@ -378,47 +192,41 @@ export default function StakingDelegation({ route, navigation }) {
             // monitoring api
             void logAnalytics({
               type: AnalyticsType.SUCCESS,
-              txnHash: txnResponse.data.tx_response.txhash,
+              txnHash: txnResponse?.hash,
               chain: tokenData?.chainDetails?.chainName ?? '',
             });
             showModal('state', {
               type: 'success',
               title: t('TRANSACTION_SUCCESS'),
-              description: renderSuccessTransaction(
-                txnResponse.data.tx_response.txhash,
-              ),
+              description: renderSuccessTransaction(txnResponse?.hash),
               onSuccess: onTransModalHide,
               onFailure: hideModal,
             });
           }, MODAL_HIDE_TIMEOUT_250);
         } else {
-          if (delegateTryCount === 0) {
-            delegateTryCount += 1;
-            void txnSimulation();
-          } else {
-            setLoading(false);
-            setSignModalVisible(false);
-            // monitoring api
-            void logAnalytics({
-              type: AnalyticsType.ERROR,
-              chain: tokenData.chainDetails.chainName,
-              message: `error while broadcasting the transaction in evmos staking/delegation.tsx : ${txnResponse.data.tx_response.raw_log}`,
-              screen: useroute.name,
+          setLoading(false);
+          setSignModalVisible(false);
+          // monitoring api
+          void logAnalytics({
+            type: AnalyticsType.ERROR,
+            chain: tokenData.chainDetails.chainName,
+            message: `error while broadcasting the transaction in evmos staking/delegation.tsx : ${txnResponse.data.tx_response.raw_log}`,
+            screen: useroute.name,
+          });
+          Sentry.captureException(txnResponse);
+          await analytics().logEvent('evmos_staking_error', {
+            from: `error while broadcasting the transaction in evmos staking/delegation.tsx : ${txnResponse.data.tx_response.raw_log}`,
+          });
+          setTimeout(() => {
+            showModal('state', {
+              type: 'error',
+              title: t('TRANSACTION_FAILED'),
+              description: txnResponse.data.tx_response.raw_log,
+              onSuccess: hideModal,
+              onFailure: hideModal,
             });
-            Sentry.captureException(txnResponse);
-            await analytics().logEvent('evmos_staking_error', {
-              from: `error while broadcasting the transaction in evmos staking/delegation.tsx : ${txnResponse.data.tx_response.raw_log}`,
-            });
-            setTimeout(() => {
-              showModal('state', {
-                type: 'error',
-                title: t('TRANSACTION_FAILED'),
-                description: txnResponse.data.tx_response.raw_log,
-                onSuccess: hideModal,
-                onFailure: hideModal,
-              });
-            }, MODAL_HIDE_TIMEOUT_250);
-          }
+          }, MODAL_HIDE_TIMEOUT_250);
+          // }
         }
       } catch (error: any) {
         setLoading(false);
@@ -548,7 +356,7 @@ export default function StakingDelegation({ route, navigation }) {
             }}
             title={t('APPROVE')}
             style={'py-[5%] mt-[15px]'}
-            loaderStyle={{ height: 30 }}
+            loaderStyle={{ height: 24 }}
             loading={loading}
           />
 

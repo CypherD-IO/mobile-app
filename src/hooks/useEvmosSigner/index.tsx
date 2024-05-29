@@ -8,6 +8,10 @@ import { generatePostBodyBroadcast } from '@tharsis/provider';
 import {
   createMessageSend,
   createTxIBCMsgTransfer,
+  createTxMsgBeginRedelegate,
+  createTxMsgDelegate,
+  createTxMsgMultipleWithdrawDelegatorReward,
+  createTxMsgUndelegate,
   createTxRawEIP712,
   signatureToWeb3Extension,
 } from '@tharsis/transactions';
@@ -26,13 +30,8 @@ import { loadPrivateKeyFromKeyChain } from '../../core/Keychain';
 export default function useEvmosSigner() {
   const hdWalletContext = useContext<any>(HdWalletContext);
   const getPublicKey = async () => {
-    const privateKey = await loadPrivateKeyFromKeyChain(
-      false,
-      hdWalletContext.state.pinValue,
-    );
-    if (privateKey && privateKey !== _NO_CYPHERD_CREDENTIAL_AVAILABLE_) {
-      const privateKeyBuffer = Buffer.from(privateKey.substring(2), 'hex');
-
+    const privateKeyBuffer = await getPrivateKeyBuffer();
+    if (privateKeyBuffer) {
       const sig = personalSign({
         privateKey: privateKeyBuffer,
         data: 'generate_pubkey',
@@ -49,6 +48,20 @@ export default function useEvmosSigner() {
 
       return publicKey;
     }
+  };
+
+  const getPrivateKey = async () => {
+    return await loadPrivateKeyFromKeyChain(
+      false,
+      hdWalletContext.state.pinValue,
+    );
+  };
+
+  const getPrivateKeyBuffer = async () => {
+    const privateKey = await getPrivateKey();
+    if (privateKey && privateKey !== _NO_CYPHERD_CREDENTIAL_AVAILABLE_)
+      return Buffer.from(privateKey.substring(2), 'hex');
+    return undefined;
   };
   const getSignedEvmosTransaction = async ({
     chain,
@@ -94,7 +107,7 @@ export default function useEvmosSigner() {
     }
   };
 
-  const simulateEvmosIBCTransaction = ({
+  const simulateEvmosIBCTransaction = async ({
     toAddress,
     toChain,
     amount,
@@ -136,7 +149,7 @@ export default function useEvmosSigner() {
 
     const params = {
       receiver: toAddress,
-      denom: denom,
+      denom,
       amount: ethers
         .parseUnits(
           convertAmountOfContractDecimal(amount, contractDecimals),
@@ -156,7 +169,7 @@ export default function useEvmosSigner() {
 
     const memo = 'Cypher Wallet';
 
-    return getSignedEvmosTransaction({
+    return await getSignedEvmosTransaction({
       chain: chainData,
       sender,
       fee,
@@ -166,5 +179,294 @@ export default function useEvmosSigner() {
     });
   };
 
-  return { getSignedEvmosTransaction, simulateEvmosIBCTransaction };
+  const simulateEvmosClaimReward = async ({
+    fromAddress,
+    validatorAddresses,
+    privateKeyBuffer,
+    accountData,
+    gasAmount = '14000000000000000',
+    gas = '450000',
+  }: {
+    fromAddress: string;
+    validatorAddresses: string[];
+    privateKeyBuffer: Buffer;
+    accountData: {
+      sequence: number;
+      account_number: number;
+      pub_key: {
+        key: string;
+      };
+    };
+    gasAmount?: string;
+    gas?: string;
+  }) => {
+    const chain = {
+      chainId: 9001,
+      cosmosChainId: 'evmos_9001-2',
+    };
+
+    const sender = {
+      accountAddress: fromAddress,
+      sequence: accountData.sequence,
+      accountNumber: accountData.account_number,
+      pubkey: accountData.pub_key?.key,
+    };
+
+    const fee = {
+      amount: gasAmount,
+      denom: cosmosConfig.evmos.denom,
+      gas,
+    };
+
+    const memo = 'Cypher Wallet evmos staking';
+
+    const params = { validatorAddresses };
+
+    const msg: any = createTxMsgMultipleWithdrawDelegatorReward(
+      chain,
+      sender,
+      fee,
+      memo,
+      params,
+    );
+
+    const signature = signTypedData({
+      privateKey: privateKeyBuffer,
+      data: msg.eipToSign,
+      version: SignTypedDataVersion.V4,
+    });
+
+    const extension = signatureToWeb3Extension(chain, sender, signature);
+
+    const rawTx = createTxRawEIP712(
+      msg.legacyAmino.body,
+      msg.legacyAmino.authInfo,
+      extension,
+    );
+
+    return generatePostBodyBroadcast(rawTx);
+  };
+
+  const simulateEvmosDelegate = async ({
+    fromAddress,
+    validatorAddress,
+    amountToDelegate,
+    privateKeyBuffer,
+    accountData,
+    gasAmount = '14000000000000000',
+    gas = '450000',
+  }: {
+    fromAddress: string;
+    validatorAddress: string;
+    amountToDelegate: string;
+    privateKeyBuffer: Buffer;
+    accountData: {
+      sequence: number;
+      account_number: number;
+      pub_key: {
+        key: string;
+      };
+    };
+    gasAmount?: string;
+    gas?: string;
+  }) => {
+    const chain = {
+      chainId: 9001,
+      cosmosChainId: 'evmos_9001-2',
+    };
+
+    const sender = {
+      accountAddress: fromAddress,
+      sequence: accountData.sequence,
+      accountNumber: accountData.account_number,
+      pubkey: accountData.pub_key?.key,
+    };
+
+    const fee = {
+      amount: gasAmount,
+      denom: cosmosConfig.evmos.denom,
+      gas,
+    };
+
+    const memo = 'Cypher Wallet evmos staking';
+
+    const params = {
+      validatorAddress,
+      amount: amountToDelegate,
+      denom: cosmosConfig.evmos.denom,
+    };
+
+    const msg: any = createTxMsgDelegate(chain, sender, fee, memo, params);
+
+    const signature = signTypedData({
+      privateKey: privateKeyBuffer,
+      data: msg.eipToSign,
+      version: SignTypedDataVersion.V4,
+    });
+
+    const extension = signatureToWeb3Extension(chain, sender, signature);
+
+    const rawTx = createTxRawEIP712(
+      msg.legacyAmino.body,
+      msg.legacyAmino.authInfo,
+      extension,
+    );
+
+    return generatePostBodyBroadcast(rawTx);
+  };
+
+  const simulateEvmosReDelegate = async ({
+    fromAddress,
+    validatorSrcAddress,
+    validatorDstAddress,
+    amountToReDelegate,
+    privateKeyBuffer,
+    accountData,
+    gasAmount = '14000000000000000',
+    gas = '450000',
+  }: {
+    fromAddress: string;
+    validatorSrcAddress: string;
+    validatorDstAddress: string;
+    amountToReDelegate: string;
+    privateKeyBuffer: Buffer;
+    accountData: {
+      sequence: number;
+      account_number: number;
+      pub_key: {
+        key: string;
+      };
+    };
+    gasAmount?: string;
+    gas?: string;
+  }) => {
+    const chain = {
+      chainId: 9001,
+      cosmosChainId: 'evmos_9001-2',
+    };
+
+    const sender = {
+      accountAddress: fromAddress,
+      sequence: accountData.sequence,
+      accountNumber: accountData.account_number,
+      pubkey: accountData.pub_key?.key,
+    };
+
+    const fee = {
+      amount: gasAmount,
+      denom: cosmosConfig.evmos.denom,
+      gas,
+    };
+
+    const memo = 'Cypher Wallet evmos staking';
+
+    const params = {
+      validatorSrcAddress,
+      validatorDstAddress,
+      amount: amountToReDelegate,
+      denom: cosmosConfig.evmos.denom,
+    };
+
+    const msg: any = createTxMsgBeginRedelegate(
+      chain,
+      sender,
+      fee,
+      memo,
+      params,
+    );
+
+    const signature = signTypedData({
+      privateKey: privateKeyBuffer,
+      data: msg.eipToSign,
+      version: SignTypedDataVersion.V4,
+    });
+
+    const extension = signatureToWeb3Extension(chain, sender, signature);
+
+    const rawTx = createTxRawEIP712(
+      msg.legacyAmino.body,
+      msg.legacyAmino.authInfo,
+      extension,
+    );
+
+    return generatePostBodyBroadcast(rawTx);
+  };
+
+  const simulateEvmosUnDelegate = async ({
+    fromAddress,
+    validatorAddress,
+    amountToUnDelegate,
+    privateKeyBuffer,
+    accountData,
+    gasAmount = '14000000000000000',
+    gas = '450000',
+  }: {
+    fromAddress: string;
+    validatorAddress: string;
+    amountToUnDelegate: string;
+    privateKeyBuffer: Buffer;
+    accountData: {
+      sequence: number;
+      account_number: number;
+      pub_key: {
+        key: string;
+      };
+    };
+    gasAmount?: string;
+    gas?: string;
+  }) => {
+    const chain = {
+      chainId: 9001,
+      cosmosChainId: 'evmos_9001-2',
+    };
+
+    const sender = {
+      accountAddress: fromAddress,
+      sequence: accountData.sequence,
+      accountNumber: accountData.account_number,
+      pubkey: accountData.pub_key?.key,
+    };
+
+    const fee = {
+      amount: gasAmount,
+      denom: cosmosConfig.evmos.denom,
+      gas,
+    };
+
+    const memo = 'Cypher Wallet evmos staking';
+
+    const params = {
+      validatorAddress,
+      amount: amountToUnDelegate,
+      denom: cosmosConfig.evmos.denom,
+    };
+
+    const msg: any = createTxMsgUndelegate(chain, sender, fee, memo, params);
+
+    const signature = signTypedData({
+      privateKey: privateKeyBuffer,
+      data: msg.eipToSign,
+      version: SignTypedDataVersion.V4,
+    });
+
+    const extension = signatureToWeb3Extension(chain, sender, signature);
+
+    const rawTx = createTxRawEIP712(
+      msg.legacyAmino.body,
+      msg.legacyAmino.authInfo,
+      extension,
+    );
+
+    return generatePostBodyBroadcast(rawTx);
+  };
+
+  return {
+    getPrivateKeyBuffer,
+    getSignedEvmosTransaction,
+    simulateEvmosIBCTransaction,
+    simulateEvmosClaimReward,
+    simulateEvmosDelegate,
+    simulateEvmosReDelegate,
+    simulateEvmosUnDelegate,
+  };
 }

@@ -61,8 +61,14 @@ export interface GasServiceResult {
 export default function useGasService() {
   const { getWithoutAuth } = useAxios();
   const minimumGasFee = '20';
-  const { getSignedEvmosTransaction, simulateEvmosIBCTransaction } =
-    useEvmosSigner();
+  const {
+    getSignedEvmosTransaction,
+    simulateEvmosIBCTransaction,
+    simulateEvmosClaimReward,
+    simulateEvmosDelegate,
+    simulateEvmosReDelegate,
+    simulateEvmosUnDelegate,
+  } = useEvmosSigner();
   const { getCosmosRpc } = useCosmosSigner();
   const hdWalletContext = useContext(HdWalletContext) as HdWalletContextDef;
   const portfolioState = useContext<any>(PortfolioContext);
@@ -817,6 +823,203 @@ export default function useGasService() {
     return undefined;
   };
 
+  const estimateGasForEvmosClaimReward = async ({
+    privateKeyBuffer,
+    validatorAddresses,
+    accountData,
+    gasAmount = '14000000000000000',
+    gas = '450000',
+  }: {
+    privateKeyBuffer: Buffer;
+    validatorAddresses: string[];
+    accountData: {
+      sequence: number;
+      account_number: number;
+      pub_key: {
+        key: string;
+      };
+    };
+    gasAmount?: string;
+    gas?: string;
+  }) => {
+    const { evmos } = hdWalletContext.state.wallet;
+    const fromAddress: string = evmos.address ?? '';
+
+    const body = await simulateEvmosClaimReward({
+      fromAddress,
+      validatorAddresses,
+      privateKeyBuffer,
+      accountData,
+      gasAmount,
+      gas,
+    });
+
+    const response = await axios.post(SIMULATION_ENDPOINT, body);
+
+    const simulatedGasInfo = response.data.gas_info
+      ? response.data.gas_info
+      : 0;
+    const gasWanted = simulatedGasInfo.gas_used ? simulatedGasInfo.gas_used : 0;
+    const gasFee = parseFloat(gasWanted) * cosmosConfig.evmos.gasPrice * 1.3;
+    return {
+      gasFeeInCrypto: gasFee,
+      gasLimit: Math.floor(gasWanted * 1.3),
+      gasPrice: cosmosConfig.evmos.gasPrice,
+    };
+  };
+
+  const estimateGasForEvmosDelegate = async ({
+    privateKeyBuffer,
+    validatorAddress,
+    amountToDelegate,
+    accountData,
+    gasAmount = '14000000000000000',
+    gas = '450000',
+  }: {
+    privateKeyBuffer: Buffer;
+    validatorAddress: string;
+    amountToDelegate: string;
+    accountData: {
+      sequence: number;
+      account_number: number;
+      pub_key: {
+        key: string;
+      };
+    };
+    gasAmount?: string;
+    gas?: string;
+  }) => {
+    const { evmos } = hdWalletContext.state.wallet;
+    const fromAddress: string = evmos.address ?? '';
+
+    const parsedAmount = ethers.parseUnits(amountToDelegate, 18).toString();
+
+    const body = await simulateEvmosDelegate({
+      fromAddress,
+      validatorAddress,
+      privateKeyBuffer,
+      amountToDelegate: parsedAmount,
+      accountData,
+      gasAmount,
+      gas,
+    });
+
+    const response = await axios.post(SIMULATION_ENDPOINT, body);
+
+    const simulatedGasInfo = response.data.gas_info
+      ? response.data.gas_info
+      : 0;
+    const gasWanted = simulatedGasInfo.gas_used ? simulatedGasInfo.gas_used : 0;
+    const gasFee = parseFloat(gasWanted) * cosmosConfig.evmos.gasPrice * 1.3;
+    return {
+      gasFeeInCrypto: gasFee,
+      gasLimit: Math.floor(gasWanted * 1.3),
+      gasPrice: cosmosConfig.evmos.gasPrice,
+    };
+  };
+
+  const estimateGasForEvmosUnDelegate = async ({
+    privateKeyBuffer,
+    validatorAddress,
+    amountToUnDelegate,
+    accountData,
+    gasAmount = '14000000000000000',
+    gas = '450000',
+  }: {
+    privateKeyBuffer: Buffer;
+    validatorAddress: string;
+    amountToUnDelegate: string;
+    accountData: {
+      sequence: number;
+      account_number: number;
+      pub_key: {
+        key: string;
+      };
+    };
+    gasAmount?: string;
+    gas?: string;
+  }) => {
+    const { evmos } = hdWalletContext.state.wallet;
+    const fromAddress: string = evmos.address ?? '';
+
+    const parsedAmount = ethers.parseUnits(amountToUnDelegate, 18).toString();
+
+    const body = await simulateEvmosUnDelegate({
+      fromAddress,
+      validatorAddress,
+      privateKeyBuffer,
+      amountToUnDelegate: parsedAmount,
+      accountData,
+      gasAmount,
+      gas,
+    });
+
+    const response = await axios.post(SIMULATION_ENDPOINT, body);
+
+    const simulatedGasInfo = response.data.gas_info
+      ? response.data.gas_info
+      : 0;
+    const gasWanted = simulatedGasInfo.gas_used ? simulatedGasInfo.gas_used : 0;
+    const gasFee = parseFloat(gasWanted) * cosmosConfig.evmos.gasPrice * 1.3;
+    return {
+      gasFeeInCrypto: gasFee,
+      gasLimit: Math.floor(gasWanted * 1.3),
+      gasPrice: cosmosConfig.evmos.gasPrice,
+    };
+  };
+
+  const estimateGasForEvmosReDelegate = async ({
+    privateKeyBuffer,
+    validatorSrcAddress,
+    validatorDstAddress,
+    amountToReDelegate,
+    accountData,
+    gasAmount = '14000000000000000',
+    gas = '450000',
+  }: {
+    privateKeyBuffer: Buffer;
+    validatorSrcAddress: string;
+    validatorDstAddress: string;
+    amountToReDelegate: string;
+    accountData: {
+      sequence: number;
+      account_number: number;
+      pub_key: {
+        key: string;
+      };
+    };
+    gasAmount?: string;
+    gas?: string;
+  }) => {
+    const { evmos } = hdWalletContext.state.wallet;
+    const fromAddress: string = evmos.address ?? '';
+
+    const parsedAmount = ethers.parseUnits(amountToReDelegate, 18).toString();
+
+    const body = await simulateEvmosReDelegate({
+      fromAddress,
+      validatorSrcAddress,
+      validatorDstAddress,
+      privateKeyBuffer,
+      amountToReDelegate: parsedAmount,
+      accountData,
+      gasAmount,
+      gas,
+    });
+
+    const response = await axios.post(SIMULATION_ENDPOINT, body);
+
+    const simulatedGasInfo = response.data.gas_info
+      ? response.data.gas_info
+      : 0;
+    const gasWanted = simulatedGasInfo.gas_used ? simulatedGasInfo.gas_used : 0;
+    const gasFee = parseFloat(gasWanted) * cosmosConfig.evmos.gasPrice * 1.3;
+    return {
+      gasFeeInCrypto: gasFee,
+      gasLimit: Math.floor(gasWanted * 1.3),
+      gasPrice: cosmosConfig.evmos.gasPrice,
+    };
+  };
   return {
     estimateGasForEvm,
     estimateGasForEvmos,
@@ -827,5 +1030,9 @@ export default function useGasService() {
     estiamteGasForDelgate,
     estimateGasForUndelegate,
     estimateGasForRedelgate,
+    estimateGasForEvmosClaimReward,
+    estimateGasForEvmosDelegate,
+    estimateGasForEvmosUnDelegate,
+    estimateGasForEvmosReDelegate,
   };
 }

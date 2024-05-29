@@ -15,6 +15,7 @@ import Toast from 'react-native-toast-message';
 import Web3 from 'web3';
 import { cosmosConfig } from '../../constants/cosmosConfig';
 import {
+  ACCOUNT_DETAILS_INFO,
   CHAIN_OPTIMISM,
   CHAIN_SHARDEUM,
   CHAIN_SHARDEUM_SPHINX,
@@ -69,9 +70,20 @@ export default function useTransactionManager() {
     estiamteGasForDelgate,
     estimateGasForUndelegate,
     estimateGasForRedelgate,
+    estimateGasForEvmosClaimReward,
+    estimateGasForEvmosDelegate,
+    estimateGasForEvmosUnDelegate,
+    estimateGasForEvmosReDelegate,
   } = useGasService();
   const { signEthTransaction } = useEthSigner();
-  const { simulateEvmosIBCTransaction } = useEvmosSigner();
+  const {
+    simulateEvmosIBCTransaction,
+    getPrivateKeyBuffer,
+    simulateEvmosClaimReward,
+    simulateEvmosDelegate,
+    simulateEvmosReDelegate,
+    simulateEvmosUnDelegate,
+  } = useEvmosSigner();
   const { getCosmosSignerClient, getCosmosRpc } = useCosmosSigner();
 
   const EVMOS_TXN_ENDPOINT = evmosUrls.transact;
@@ -429,7 +441,7 @@ export default function useTransactionManager() {
       const signer = await getCosmosSignerClient(chainName);
 
       if (signer) {
-        const rpc = getCosmosRpc(backendName);
+        const rpc = getCosmosRpc(backendName, true);
         const signingClient = await getCosmosSigningClient(
           fromChain,
           rpc,
@@ -521,8 +533,6 @@ export default function useTransactionManager() {
         denom,
         contractDecimals,
       });
-      const { evmos } = hdWalletContext.state.wallet;
-      const fromAddress: string = evmos.address;
       // const userAccountData = await axios.get(
       //   `${ACCOUNT_DETAILS_INFO}/${fromAddress}`,
       // );
@@ -772,7 +782,7 @@ export default function useTransactionManager() {
           });
 
           if (gasFeeDetails) {
-            const rpc = getCosmosRpc(backendName);
+            const rpc = getCosmosRpc(backendName, true);
             const signingClient = await getCosmosSigningClient(
               chain,
               rpc,
@@ -927,6 +937,308 @@ export default function useTransactionManager() {
     }
   };
 
+  const claimEvmosRewards = async ({
+    validatorAddresses,
+  }: {
+    validatorAddresses: string[];
+  }): Promise<TransactionServiceResult | undefined> => {
+    try {
+      const fromAddress: string = evmos.address ?? '';
+      const userAccountData = await axios.get(
+        `${ACCOUNT_DETAILS_INFO}/${fromAddress}`,
+      );
+      const accountData = userAccountData?.data?.account.base_account;
+
+      const privateKeyBuffer = await getPrivateKeyBuffer();
+
+      if (privateKeyBuffer) {
+        const gasFeeDetails = await estimateGasForEvmosClaimReward({
+          validatorAddresses,
+          privateKeyBuffer,
+          accountData: {
+            sequence: accountData.sequence,
+            account_number: accountData.account_number,
+            pub_key: {
+              key: accountData.pub_key?.key,
+            },
+          },
+        });
+
+        if (gasFeeDetails) {
+          const body = await simulateEvmosClaimReward({
+            fromAddress,
+            validatorAddresses,
+            privateKeyBuffer,
+            accountData,
+            gasAmount: gasFeeDetails.gasFeeInCrypto.toString(),
+            gas: String(gasFeeDetails.gasLimit),
+          });
+
+          const resp: any = await axios.post(EVMOS_TXN_ENDPOINT, body);
+          if (resp.data.tx_response.code === 0) {
+            return { hash: resp.data.tx_response.txhash, isError: false };
+          } else if (resp.data.tx_response.code === 5) {
+            return {
+              isError: true,
+              error: resp.data.tx_response.raw_log,
+            };
+          }
+          return {
+            isError: true,
+            error: resp.data,
+          };
+        } else {
+          return {
+            isError: true,
+            error: 'Unable to calculate gas',
+          };
+        }
+      } else {
+        return {
+          isError: true,
+          error: 'Unable to fetch private key',
+        };
+      }
+    } catch (e) {
+      return {
+        isError: true,
+        error: e,
+      };
+    }
+  };
+
+  const delegateEvmosToken = async ({
+    validatorAddress,
+    amountToDelegate,
+  }: {
+    validatorAddress: string;
+    amountToDelegate: string;
+  }): Promise<TransactionServiceResult | undefined> => {
+    try {
+      const fromAddress: string = evmos.address ?? '';
+      const userAccountData = await axios.get(
+        `${ACCOUNT_DETAILS_INFO}/${fromAddress}`,
+      );
+      const accountData = userAccountData?.data?.account.base_account;
+
+      const privateKeyBuffer = await getPrivateKeyBuffer();
+
+      if (privateKeyBuffer) {
+        const gasFeeDetails = await estimateGasForEvmosDelegate({
+          validatorAddress,
+          privateKeyBuffer,
+          amountToDelegate,
+          accountData: {
+            sequence: accountData.sequence,
+            account_number: accountData.account_number,
+            pub_key: {
+              key: accountData.pub_key?.key,
+            },
+          },
+        });
+
+        const parsedAmount = ethers.parseUnits(amountToDelegate, 18).toString();
+
+        if (gasFeeDetails) {
+          const body = await simulateEvmosDelegate({
+            fromAddress,
+            validatorAddress,
+            amountToDelegate: parsedAmount,
+            privateKeyBuffer,
+            accountData,
+            gasAmount: gasFeeDetails.gasFeeInCrypto.toString(),
+            gas: String(gasFeeDetails.gasLimit),
+          });
+
+          const resp: any = await axios.post(EVMOS_TXN_ENDPOINT, body);
+          if (resp.data.tx_response.code === 0) {
+            return { hash: resp.data.tx_response.txhash, isError: false };
+          } else if (resp.data.tx_response.code === 5) {
+            return {
+              isError: true,
+              error: resp.data.tx_response.raw_log,
+            };
+          }
+          return {
+            isError: true,
+            error: resp.data,
+          };
+        } else {
+          return {
+            isError: true,
+            error: 'Unable to calculate gas',
+          };
+        }
+      } else {
+        return {
+          isError: true,
+          error: 'Unable to fetch private key',
+        };
+      }
+    } catch (e) {
+      return {
+        isError: true,
+        error: e,
+      };
+    }
+  };
+
+  const reDelegateEvmosToken = async ({
+    validatorSrcAddress,
+    validatorDstAddress,
+    amountToReDelegate,
+  }: {
+    validatorSrcAddress: string;
+    validatorDstAddress: string;
+    amountToReDelegate: string;
+  }): Promise<TransactionServiceResult | undefined> => {
+    try {
+      const fromAddress: string = evmos.address ?? '';
+      const userAccountData = await axios.get(
+        `${ACCOUNT_DETAILS_INFO}/${fromAddress}`,
+      );
+      const accountData = userAccountData?.data?.account.base_account;
+
+      const privateKeyBuffer = await getPrivateKeyBuffer();
+
+      const parsedAmount = ethers.parseUnits(amountToReDelegate, 18).toString();
+
+      if (privateKeyBuffer) {
+        const gasFeeDetails = await estimateGasForEvmosReDelegate({
+          validatorSrcAddress,
+          validatorDstAddress,
+          amountToReDelegate,
+          privateKeyBuffer,
+          accountData: {
+            sequence: accountData.sequence,
+            account_number: accountData.account_number,
+            pub_key: {
+              key: accountData.pub_key?.key,
+            },
+          },
+        });
+
+        if (gasFeeDetails) {
+          const body = await simulateEvmosReDelegate({
+            fromAddress,
+            validatorSrcAddress,
+            validatorDstAddress,
+            amountToReDelegate: parsedAmount,
+            privateKeyBuffer,
+            accountData,
+            gasAmount: gasFeeDetails.gasFeeInCrypto.toString(),
+            gas: String(gasFeeDetails.gasLimit),
+          });
+
+          const resp: any = await axios.post(EVMOS_TXN_ENDPOINT, body);
+          if (resp.data.tx_response.code === 0) {
+            return { hash: resp.data.tx_response.txhash, isError: false };
+          } else if (resp.data.tx_response.code === 5) {
+            return {
+              isError: true,
+              error: resp.data.tx_response.raw_log,
+            };
+          }
+          return {
+            isError: true,
+            error: resp.data,
+          };
+        } else {
+          return {
+            isError: true,
+            error: 'Unable to calculate gas',
+          };
+        }
+      } else {
+        return {
+          isError: true,
+          error: 'Unable to fetch private key',
+        };
+      }
+    } catch (e) {
+      return {
+        isError: true,
+        error: e,
+      };
+    }
+  };
+
+  const unDelegateEvmosToken = async ({
+    validatorAddress,
+    amountToUnDelegate,
+  }: {
+    validatorAddress: string;
+    amountToUnDelegate: string;
+  }): Promise<TransactionServiceResult | undefined> => {
+    try {
+      const fromAddress: string = evmos.address ?? '';
+      const userAccountData = await axios.get(
+        `${ACCOUNT_DETAILS_INFO}/${fromAddress}`,
+      );
+      const accountData = userAccountData?.data?.account.base_account;
+
+      const privateKeyBuffer = await getPrivateKeyBuffer();
+
+      const parsedAmount = ethers.parseUnits(amountToUnDelegate, 18).toString();
+
+      if (privateKeyBuffer) {
+        const gasFeeDetails = await estimateGasForEvmosUnDelegate({
+          validatorAddress,
+          privateKeyBuffer,
+          amountToUnDelegate,
+          accountData: {
+            sequence: accountData.sequence,
+            account_number: accountData.account_number,
+            pub_key: {
+              key: accountData.pub_key?.key,
+            },
+          },
+        });
+
+        if (gasFeeDetails) {
+          const body = await simulateEvmosUnDelegate({
+            fromAddress,
+            validatorAddress,
+            amountToUnDelegate: parsedAmount,
+            privateKeyBuffer,
+            accountData,
+            gasAmount: gasFeeDetails.gasFeeInCrypto.toString(),
+            gas: String(gasFeeDetails.gasLimit),
+          });
+
+          const resp: any = await axios.post(EVMOS_TXN_ENDPOINT, body);
+          if (resp.data.tx_response.code === 0) {
+            return { hash: resp.data.tx_response.txhash, isError: false };
+          } else if (resp.data.tx_response.code === 5) {
+            return {
+              isError: true,
+              error: resp.data.tx_response.raw_log,
+            };
+          }
+          return {
+            isError: true,
+            error: resp.data,
+          };
+        } else {
+          return {
+            isError: true,
+            error: 'Unable to calculate gas',
+          };
+        }
+      } else {
+        return {
+          isError: true,
+          error: 'Unable to fetch private key',
+        };
+      }
+    } catch (e) {
+      return {
+        isError: true,
+        error: e,
+      };
+    }
+  };
+
   return {
     sendEvmToken,
     sendEvmosToken,
@@ -937,5 +1249,9 @@ export default function useTransactionManager() {
     unDelegateCosmosToken,
     claimCosmosReward,
     reDelegateCosmosToken,
+    claimEvmosRewards,
+    delegateEvmosToken,
+    reDelegateEvmosToken,
+    unDelegateEvmosToken,
   };
 }

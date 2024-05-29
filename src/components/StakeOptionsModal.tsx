@@ -4,7 +4,6 @@ import { useTranslation } from 'react-i18next';
 import AppImages from '../../assets/images/appImages';
 import { StakingContext } from '../core/util';
 import { DELEGATE, RE_DELEGATE, UN_DELEGATE } from '../reducers/stakingReducer';
-import { platform } from 'process';
 import {
   CyDImage,
   CyDText,
@@ -79,7 +78,7 @@ export function StakeOptionsModal(props) {
 
         {data.balance !== BigInt(0) && (
           <Button
-            onPress={async () => {
+            onPress={() => {
               stakingValidators.dispatchStaking({
                 value: { typeOfDelegation: RE_DELEGATE },
               });
@@ -87,7 +86,7 @@ export function StakeOptionsModal(props) {
             }}
             title={t('REDELEGATE')}
             style={'py-[5%] mt-[15px]'}
-            loaderStyle={{ height: 30 }}
+            loaderStyle={{ height: 24 }}
           />
         )}
         {typeOfAction !== 'unstake' && (
