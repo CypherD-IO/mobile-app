@@ -18,7 +18,6 @@ import {
   GASLESS_CHAINS,
   PURE_COSMOS_CHAINS,
   CHAIN_OSMOSIS,
-  CHAIN_EVMOS,
 } from '../../../constants/server';
 import {
   ActivityContext,
@@ -68,7 +67,7 @@ import {
 import ChooseTokenModal from '../../../components/v2/chooseTokenModal';
 import CyDTokenAmount from '../../../components/v2/tokenAmount';
 import useAxios from '../../../core/HttpRequest';
-import { get } from 'lodash';
+import { get, random } from 'lodash';
 import {
   AnalyticsType,
   ButtonType,
@@ -111,6 +110,7 @@ export default function BridgeFundCardScreen({ route }: { route: any }) {
   const juno = hdWallet.state.wallet.juno;
   const stargaze = hdWallet.state.wallet.stargaze;
   const noble = hdWallet.state.wallet.noble;
+  const coreum = hdWallet.state.wallet.coreum;
 
   const cosmosAddresses = {
     cosmos: cosmos.address,
@@ -118,6 +118,7 @@ export default function BridgeFundCardScreen({ route }: { route: any }) {
     juno: juno.address,
     stargaze: stargaze.address,
     noble: noble.address,
+    coreum: coreum.address,
   };
 
   const rpc = {
@@ -126,6 +127,7 @@ export default function BridgeFundCardScreen({ route }: { route: any }) {
     juno: globalStateContext.globalState.rpcEndpoints.JUNO.primary,
     stargaze: globalContext.globalState.rpcEndpoints.STARGAZE.primary,
     noble: globalContext.globalState.rpcEndpoints.NOBLE.primary,
+    coreum: globalContext.globalState.rpcEndpoints.COREUM.primary,
   };
 
   const [isChooseTokenVisible, setIsChooseTokenVisible] =
@@ -174,14 +176,8 @@ export default function BridgeFundCardScreen({ route }: { route: any }) {
   const [nativeTokenBalance, setNativeTokenBalance] = useState<number>(0);
   const { t } = useTranslation();
   const { showModal, hideModal } = useGlobalModalContext();
-  const tokenQuoteExpiry = 60;
   const isFocused = useIsFocused();
-  const {
-    estimateGasForEvm,
-    estimateGasForCosmos,
-    estimateGasForCosmosIBC,
-    estimateGasForEvmosIBC,
-  } = useGasService();
+  const { estimateGasForEvm, estimateGasForEvmosIBC } = useGasService();
   const { sendEvmToken, sendCosmosToken, interCosmosIBC, evmosIBC } =
     useTransactionManager();
 
@@ -358,7 +354,6 @@ export default function BridgeFundCardScreen({ route }: { route: any }) {
                 fromChain: chainDetails,
                 toChain: CHAIN_OSMOSIS,
                 denom,
-                contractDecimals,
                 amount: actualTokensRequired,
                 fromAddress: get(cosmosAddresses, chainDetails.chainName),
                 toAddress: tokenQuote.targetAddress,
@@ -545,22 +540,17 @@ export default function BridgeFundCardScreen({ route }: { route: any }) {
         PURE_COSMOS_CHAINS.includes(chainDetails.chainName) &&
         chainDetails.chainName !== ChainNames.OSMOSIS
       ) {
-        gasDetails = await estimateGasForCosmosIBC({
-          fromChain: chainDetails,
-          toChain: CHAIN_OSMOSIS,
-          denom,
-          amount: String(quote.tokensRequired),
-          fromAddress: get(cosmosAddresses, chainDetails.chainName),
-          toAddress: targetWalletAddress,
-        });
+        gasDetails = {
+          gasFeeInCrypto: parseFloat(String(random(0.001, 0.01, true))).toFixed(
+            4,
+          ),
+        };
       } else if (chainDetails.chainName === ChainNames.OSMOSIS) {
-        gasDetails = await estimateGasForCosmos({
-          chain: chainDetails,
-          denom,
-          amount: String(quote.tokensRequired),
-          fromAddress: get(cosmosAddresses, chainDetails.chainName),
-          toAddress: targetWalletAddress,
-        });
+        gasDetails = {
+          gasFeeInCrypto: parseFloat(String(random(0.001, 0.01, true))).toFixed(
+            4,
+          ),
+        };
       } else if (chainDetails.chainName === ChainNames.EVMOS) {
         gasDetails = await estimateGasForEvmosIBC({
           toAddress: quote.targetAddress,
@@ -942,22 +932,17 @@ export default function BridgeFundCardScreen({ route }: { route: any }) {
               contractDecimals,
             });
           } else if (chainDetails.chainName === ChainNames.OSMOSIS) {
-            gasDetails = await estimateGasForCosmos({
-              chain: chainDetails,
-              denom,
-              amount: String(actualBalance),
-              fromAddress: get(cosmosAddresses, chainDetails.chainName),
-              toAddress: get(cosmosAddresses, ChainNames.OSMOSIS),
-            });
+            gasDetails = {
+              gasFeeInCrypto: parseFloat(
+                String(random(0.001, 0.01, true)),
+              ).toFixed(4),
+            };
           } else {
-            gasDetails = await estimateGasForCosmosIBC({
-              fromChain: chainDetails,
-              toChain: CHAIN_OSMOSIS,
-              denom,
-              amount: String(actualBalance),
-              fromAddress: get(cosmosAddresses, chainDetails.chainName),
-              toAddress: get(cosmosAddresses, ChainNames.OSMOSIS),
-            });
+            gasDetails = {
+              gasFeeInCrypto: parseFloat(
+                String(random(0.001, 0.01, true)),
+              ).toFixed(4),
+            };
           }
 
           if (gasDetails) {

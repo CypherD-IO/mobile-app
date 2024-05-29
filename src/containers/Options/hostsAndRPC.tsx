@@ -27,7 +27,6 @@ import RNExitApp from 'react-native-exit-app';
 import AppImages from '../../../assets/images/appImages';
 import { showToast } from '../utilities/toastUtility';
 import { RPCPreference } from '../../constants/enum';
-import { isIOS } from '../../misc/checkers';
 import { BackHandler, Keyboard } from 'react-native';
 
 export default function HostsAndRPCScreen({ navigation }) {
@@ -71,6 +70,9 @@ export default function HostsAndRPCScreen({ navigation }) {
     aurora: globalContext.globalState.rpcEndpoints?.AURORA?.primary,
     moonbeam: globalContext.globalState.rpcEndpoints?.MOONBEAM?.primary,
     moonriver: globalContext.globalState.rpcEndpoints?.MOONRIVER?.primary,
+    coreum: globalContext.globalState.rpcEndpoints?.COREUM?.primary,
+    injective: globalContext.globalState.rpcEndpoints?.INJECTIVE?.primary,
+    kujira: globalContext.globalState.rpcEndpoints?.KUJIRA?.primary,
   });
 
   const handleBackButton = () => {
@@ -155,6 +157,15 @@ export default function HostsAndRPCScreen({ navigation }) {
     tempRPCEndpoints.JUNO.primary = rpcEndpoints.juno;
     if (tempRPCEndpoints?.NOBLE?.primary) {
       tempRPCEndpoints.NOBLE.primary = rpcEndpoints?.noble;
+    }
+    if (tempRPCEndpoints?.COREUM?.primary) {
+      tempRPCEndpoints.COREUM.primary = rpcEndpoints?.coreum;
+    }
+    if (tempRPCEndpoints?.INJECTIVE?.primary) {
+      tempRPCEndpoints.INJECTIVE.primary = rpcEndpoints?.injective;
+    }
+    if (tempRPCEndpoints?.KUJIRA?.primary) {
+      tempRPCEndpoints.KUJIRA.primary = rpcEndpoints?.kujira;
     }
     if (tempRPCEndpoints?.SHARDEUM?.primary) {
       tempRPCEndpoints.SHARDEUM.primary = rpcEndpoints?.shardeum;
@@ -732,6 +743,78 @@ export default function HostsAndRPCScreen({ navigation }) {
       ) : (
         <CyDView />
       )}
+      {rpcEndpoints.coreum ? (
+        <CyDView className={'mb-[30px]'}>
+          <CyDText className={'text-[16px] font-black'}>
+            {ChainBackendNames.COREUM}
+          </CyDText>
+          <CyDTextInput
+            className={clsx(
+              'mt-[10px] border-[1px] border-inputBorderColor rounded-[5px] p-[12px] text-[18px] font-nunito text-primaryTextColor',
+            )}
+            value={maskString(rpcEndpoints.moonriver)}
+            editable={devMode}
+            autoCapitalize='none'
+            key='coreum'
+            onChangeText={value => {
+              setRPCEndpoints({ ...rpcEndpoints, coreum: value });
+            }}
+            autoCorrect={false}
+            placeholderTextColor={'#C5C5C5'}
+            placeholder=''
+          />
+        </CyDView>
+      ) : (
+        <CyDView />
+      )}
+      {/* {rpcEndpoints.injective ? (
+        <CyDView className={'mb-[30px]'}>
+          <CyDText className={'text-[16px] font-black'}>
+            {ChainBackendNames.INJECTIVE}
+          </CyDText>
+          <CyDTextInput
+            className={clsx(
+              'mt-[10px] border-[1px] border-inputBorderColor rounded-[5px] p-[12px] text-[18px] font-nunito text-primaryTextColor',
+            )}
+            value={maskString(rpcEndpoints.injective)}
+            editable={devMode}
+            autoCapitalize='none'
+            key='moonriver'
+            onChangeText={value => {
+              setRPCEndpoints({ ...rpcEndpoints, injective: value });
+            }}
+            autoCorrect={false}
+            placeholderTextColor={'#C5C5C5'}
+            placeholder=''
+          />
+        </CyDView>
+      ) : (
+        <CyDView />
+      )}
+      {rpcEndpoints.kujira ? (
+        <CyDView className={'mb-[30px]'}>
+          <CyDText className={'text-[16px] font-black'}>
+            {ChainBackendNames.KUJIRA}
+          </CyDText>
+          <CyDTextInput
+            className={clsx(
+              'mt-[10px] border-[1px] border-inputBorderColor rounded-[5px] p-[12px] text-[18px] font-nunito text-primaryTextColor',
+            )}
+            value={maskString(rpcEndpoints.kujira)}
+            editable={devMode}
+            autoCapitalize='none'
+            key='moonriver'
+            onChangeText={value => {
+              setRPCEndpoints({ ...rpcEndpoints, kujira: value });
+            }}
+            autoCorrect={false}
+            placeholderTextColor={'#C5C5C5'}
+            placeholder=''
+          />
+        </CyDView>
+      ) : (
+        <CyDView />
+      )} */}
       <CyDView
         className={'flex flex-row justify-center items-center mb-[40px]'}>
         {devMode && (

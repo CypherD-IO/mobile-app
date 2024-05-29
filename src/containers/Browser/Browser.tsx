@@ -31,7 +31,6 @@ import MoreViewModal from '../../components/MoreViewModal';
 import { INJECTED_WEB3_CDN } from '../../constants/data';
 import { Web3Origin } from '../../constants/enum';
 import { useGlobalModalContext } from '../../components/v2/GlobalModal';
-import { BuyOrBridge } from '../../components/v2/StateModal';
 import * as C from '../../constants/index';
 import {
   ChainNameMapping,
@@ -320,9 +319,7 @@ export default function Browser({ route, navigation }: any) {
             showModal('state', {
               type: 'error',
               title: t('INSUFFICIENT_FUNDS'),
-              description: renderModalBody(
-                `You don't have sufficient ${nativeTokenSymbol} to pay gas fee. Would you like to buy or bridge?`,
-              ),
+              description: `You don't have sufficient ${nativeTokenSymbol} to pay gas fee`,
               onSuccess: hideModal,
               onFailure: hideModal,
             });
@@ -361,17 +358,6 @@ export default function Browser({ route, navigation }: any) {
   useEffect(() => {
     void injectWeb3FromCDN();
   }, []);
-
-  const renderModalBody = (text: string) => {
-    return (
-      <BuyOrBridge
-        text={text}
-        navigation={navigation}
-        portfolioState={portfolioState}
-        hideModal={hideModal}
-      />
-    );
-  };
 
   async function onWebviewMessage(event: WebViewMessageEvent) {
     const jsonObj = JSON.parse(event.nativeEvent.data);

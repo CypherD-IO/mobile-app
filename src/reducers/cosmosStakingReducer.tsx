@@ -9,27 +9,27 @@ export enum CosmosActionType {
   RESTAKE = 'restake',
   SIMULATION = 'simulation',
   TRANSACTION = 'transaction',
-  CLAIM = 'claim'
+  CLAIM = 'claim',
 }
 export interface IAllValidators {
-  commissionRate: string
-  description: string
-  name: string
-  jailed: boolean
-  tokens: bigint
-  balance: bigint
-  address: string
-  apr: string
+  commissionRate: string;
+  description: string;
+  name: string;
+  jailed: boolean;
+  tokens: bigint;
+  balance: bigint;
+  address: string;
+  apr: string;
 }
 
 export interface IUnboundings {
-  balance: bigint
-  completionTime: string
+  balance: bigint;
+  completionTime: string;
 }
 
 export interface IReward {
-  amount: string
-  validatorAddress: string
+  amount: string;
+  validatorAddress: string;
 }
 
 export const COSMOS_STAKING_EMPTY = 'EMPTY';
@@ -38,16 +38,16 @@ export const COSMOS_STAKING_LOADING = 'LOADING';
 export const COSMOS_STAKING_ERROR = 'ERROR';
 
 export interface CosmosStakingDef {
-  status: string
-  stakedBalance: bigint
-  reward: bigint
-  balance: bigint
-  allValidators: Map<string, IAllValidators>
-  allValidatorsListState: string
-  userValidators: Map<string, IAllValidators>
-  unBoundings: Map<string, IUnboundings>
-  rewardList: IReward[]
-  unBoundingBalance: bigint
+  status: string;
+  stakedBalance: bigint;
+  reward: bigint;
+  balance: bigint;
+  allValidators: Map<string, IAllValidators>;
+  allValidatorsListState: string;
+  userValidators: Map<string, IAllValidators>;
+  unBoundings: Map<string, IUnboundings>;
+  rewardList: IReward[];
+  unBoundingBalance: bigint;
 }
 
 export const cosmosStakingInitialState: CosmosStakingDef = {
@@ -60,14 +60,14 @@ export const cosmosStakingInitialState: CosmosStakingDef = {
   userValidators: new Map<string, IAllValidators>(),
   unBoundings: new Map<string, IUnboundings>(),
   rewardList: [],
-  unBoundingBalance: BigInt(0)
+  unBoundingBalance: BigInt(0),
 };
 export interface cosmosStakingContextDef {
-  cosmosStakingState: CosmosStakingDef
-  cosmosStakingDispatch: Dispatch<any>
+  cosmosStakingState: CosmosStakingDef;
+  cosmosStakingDispatch: Dispatch<any>;
 }
 export const CosmosStakingContext = React.createContext(null);
 
-export const cosmosStakingReducer = (state, value) => {
+export const cosmosStakingReducer = (state: any, value: any) => {
   return { ...state, ...value };
 };

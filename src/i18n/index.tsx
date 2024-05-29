@@ -1004,7 +1004,7 @@ const resources = {
       CHOOSE_WALLET_TO_IMPORT: 'Select Wallet',
       LOADING_TEXT: 'Almost there, please hold on...',
       LOADING_TEXT_WALLET_CREATION:
-        'This might take upto 1 min. Please do not go back or close the app.',
+        'Updating with new chain support, this might take upto 1 min. Please do not go back or close the app.',
       UPGRADE_NOW_FOR: 'Upgrade now for ',
       SHIPPING_FEE_SUB1: 'A nominal fee of ',
       SHIPPING_FEE_SUB2:
@@ -1028,6 +1028,9 @@ const resources = {
       CARD_ON_WAY: 'Your card is on its way',
       CARD_SHIP_DESCRIPTION_SUB1: 'Your physical card ending with ',
       CARD_SHIP_DESCRIPTION_SUB2: ' has been dispatched and is in transit',
+      CARD_PRINTING_DESCRIPTION_SUB1: 'Your physical card ending with ',
+      CARD_PRINTING_DESCRIPTION_SUB2:
+        ' is being printed and will be dispatched shortly.',
       FEDEX_TRACKING_NO: 'Fedex Tracking No:',
       INVITE_SENT_NOT_USED:
         'Your friend might have missed or unnoticed your invitation to use Cypher Card. Try sending it again.',

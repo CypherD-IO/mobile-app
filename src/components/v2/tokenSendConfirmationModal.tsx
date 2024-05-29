@@ -36,7 +36,7 @@ export default function TokenSendConfirmationModal(
 
   const chainLogo = get(
     ChainConfigMapping,
-    get(ChainNameMapping, chain),
+    get(ChainNameMapping, chain.backendName),
   )?.logo_url;
   return (
     <CyDModalLayout
@@ -75,7 +75,7 @@ export default function TokenSendConfirmationModal(
                 className={
                   ' font-medium text-[15px] ml-[5px] text-primaryTextColor'
                 }>
-                {chain}
+                {chain.backendName}
               </CyDText>
             </CyDView>
           </CyDView>

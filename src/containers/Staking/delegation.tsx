@@ -7,7 +7,6 @@ import {
   StakingContext,
   validateAmount,
   convertToEvmosFromAevmos,
-  convertAmountOfContractDecimal,
   PortfolioContext,
   logAnalytics,
   parseErrorMessage,
@@ -53,10 +52,7 @@ import {
   CyDView,
 } from '../../styles/tailwindStyles';
 import CyDModalLayout from '../../components/v2/modal';
-import {
-  SuccessTransaction,
-  BuyOrBridge,
-} from '../../components/v2/StateModal';
+import { SuccessTransaction } from '../../components/v2/StateModal';
 import { cosmosConfig } from '../../constants/cosmosConfig';
 import { AnalyticsType, TokenOverviewTabIndices } from '../../constants/enum';
 import { gasFeeReservation } from '../../constants/data';
@@ -176,7 +172,6 @@ export default function StakingDelegation({ route, navigation }) {
       denom: 'aevmos',
       gas: gasLimit,
     };
-
     const memo = '';
 
     if (DELEGATE === stakingValidators.stateStaking.typeOfDelegation) {
@@ -275,16 +270,8 @@ export default function StakingDelegation({ route, navigation }) {
         const gasWanted = simulationResponse.data.gas_info.gas_used;
         const bodyForTransaction = await generateTransactionBody(
           { ...accountDetailsResponse.data.account.base_account, sequence },
-          ethers
-            .parseUnits(
-              convertAmountOfContractDecimal(
-                (cosmosConfig.evmos.gasPrice * gasWanted).toString(),
-                18,
-              ),
-              18,
-            )
-            .toString(),
-          Math.floor(gasWanted * 1.3).toString(),
+          String(cosmosConfig.evmos.gasPrice * gasWanted),
+          Math.floor(gasWanted * 1.8).toString(),
         );
         setFinalGasFee(
           parseInt(simulationResponse.data.gas_info.gas_used) * gasPrice,
@@ -355,8 +342,10 @@ export default function StakingDelegation({ route, navigation }) {
 
   const finalTxn = async (finalTxnData = finalData) => {
     setLoading(true);
-    const balance = convertToEvmosFromAevmos(
-      stakingValidators.stateStaking.unStakedBalance,
+    const balance = parseFloat(
+      convertToEvmosFromAevmos(
+        stakingValidators.stateStaking.unStakedBalance,
+      ).toFixed(6),
     );
     if (
       (DELEGATE === stakingValidators.stateStaking.typeOfDelegation &&
@@ -368,9 +357,7 @@ export default function StakingDelegation({ route, navigation }) {
         showModal('state', {
           type: 'error',
           title: t('INSUFFICIENT_FUNDS'),
-          description: renderModalBody(
-            `You don't have sufficient ${tokenData.chainDetails.symbol} to pay gas fee. Would you like to buy or bridge?`,
-          ),
+          description: `You don't have sufficient ${tokenData.chainDetails.symbol} to pay gas fee.`,
           onSuccess: hideModal,
           onFailure: hideModal,
         });
@@ -459,17 +446,6 @@ export default function StakingDelegation({ route, navigation }) {
       }
     }
     setLoading(false);
-  };
-
-  const renderModalBody = (text: string) => {
-    return (
-      <BuyOrBridge
-        text={text}
-        navigation={navigation}
-        portfolioState={portfolioState}
-        hideModal={hideModal}
-      />
-    );
   };
 
   useEffect(() => {

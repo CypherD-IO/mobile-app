@@ -13,6 +13,9 @@ export const getToken = async (
   junoAddress?: string,
   stargazeAddress?: string,
   nobleAddress?: string,
+  coreumAddress?: string,
+  injectiveAddress?: string,
+  kujiraAddress?: string,
 ) => {
   return await new Promise((resolve, reject) => {
     const ARCH_HOST: string = hostWorker.getHost('ARCH_HOST');
@@ -29,6 +32,9 @@ export const getToken = async (
             junoAddress,
             stargazeAddress,
             nobleAddress,
+            coreumAddress,
+            injectiveAddress,
+            kujiraAddress,
             fcmToken,
           };
           axios

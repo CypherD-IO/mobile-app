@@ -8,7 +8,6 @@ import { useTranslation } from 'react-i18next';
 import { BackHandler, Keyboard, StyleSheet } from 'react-native';
 import AppImages from '../../../assets/images/appImages';
 import { useGlobalModalContext } from '../../components/v2/GlobalModal';
-import { BuyOrBridge } from '../../components/v2/StateModal';
 import { gasFeeReservation } from '../../constants/data';
 import * as C from '../../constants/index';
 import {
@@ -102,17 +101,6 @@ export default function EnterAmount(props: any) {
     return amount;
   };
 
-  const renderModalBody = (text: string) => {
-    return (
-      <BuyOrBridge
-        text={text}
-        navigation={navigation}
-        portfolioState={portfolioState}
-        hideModal={hideModal}
-      />
-    );
-  };
-
   const isGasReservedForNative = (cryptoValue: string) => {
     const nativeTokenSymbol =
       get(NativeTokenMapping, tokenData.chainDetails.symbol) ||
@@ -164,9 +152,7 @@ export default function EnterAmount(props: any) {
       showModal('state', {
         type: 'error',
         title: t('INSUFFICIENT_FUNDS'),
-        description: renderModalBody(
-          `You don't have sufficient ${nativeTokenSymbol} to pay gas fee. Would you like to buy or bridge?`,
-        ),
+        description: `You don't have sufficient ${nativeTokenSymbol} to pay gas fee.`,
         onSuccess: hideModal,
         onFailure: hideModal,
       });

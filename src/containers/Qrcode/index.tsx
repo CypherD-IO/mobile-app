@@ -40,6 +40,9 @@ import {
   CHAIN_MOONRIVER,
   CHAIN_SHARDEUM,
   CHAIN_SHARDEUM_SPHINX,
+  CHAIN_COREUM,
+  // CHAIN_INJECTIVE,
+  // CHAIN_KUJIRA,
 } from '../../constants/server';
 import { captureRef } from 'react-native-view-shot';
 import Share from 'react-native-share';
@@ -64,7 +67,6 @@ export default function QRCodeGenerator(props) {
   const { t } = useTranslation();
   const routeParams = props.route.params;
   const hdWalletContext = useContext<any>(HdWalletContext);
-  const [showChainModal, setShowChainModal] = useState<boolean>(false);
 
   const data: UserChain[] = [
     { ...CHAIN_ETH, address: hdWalletContext.state.wallet.ethereum.address },
@@ -139,6 +141,18 @@ export default function QRCodeGenerator(props) {
       ...CHAIN_SHARDEUM_SPHINX,
       address: hdWalletContext.state.wallet.ethereum.address,
     },
+    {
+      ...CHAIN_COREUM,
+      address: hdWalletContext.state.wallet.coreum?.wallets[0]?.address,
+    },
+    // {
+    //   ...CHAIN_INJECTIVE,
+    //   address: hdWalletContext.state.wallet.injective?.wallets[0]?.address,
+    // },
+    // {
+    //   ...CHAIN_KUJIRA,
+    //   address: hdWalletContext.state.wallet.kujira?.wallets[0]?.address,
+    // },
   ];
 
   const [selectedChain, setSelectedChain] = useState<UserChain>(data[0]);
@@ -241,7 +255,14 @@ export default function QRCodeGenerator(props) {
         setSelectedChain(data[19]);
       } else if (walletAddressType === FundWalletAddressType.SHARDEUM_SPHINX) {
         setSelectedChain(data[20]);
+      } else if (walletAddressType === FundWalletAddressType.COREUM) {
+        setSelectedChain(data[21]);
       }
+      // else if (walletAddressType === FundWalletAddressType.INJECTIVE) {
+      //   setSelectedChain(data[22]);
+      // } else if (walletAddressType === FundWalletAddressType.KUJIRA) {
+      //   setSelectedChain(data[23]);
+      // }
     }
 
     BackHandler.addEventListener('hardwareBackPress', handleBackButton);
@@ -330,6 +351,7 @@ export default function QRCodeGenerator(props) {
                   imageStyle='self-center h-[18px] w-[18px]'
                   type='secondary'
                   title={''}
+                  title={''}
                 />
               </CyDView>
             )}
@@ -342,7 +364,7 @@ export default function QRCodeGenerator(props) {
               </CyDText>
               <CyDText className={'text-[14px] text-center font-bold'}>
                 {selectedChain.chainName === 'ethereum'
-                  ? 'Ethereum, Polygon, Binance Smart Chain, zkSync Era, Base, Polygon zkEVM, Avalanche, Fantom, Optimism, Arbitrum, Evmos, Aurora, Moonbeam, Moonriver, Shardeum'
+                  ? 'Ethereum, Polygon, Binance Smart Chain, zkSync Era, Base, Polygon zkEVM, Avalanche, Fantom, Optimism, Arbitrum, Evmos, Aurora, Moonbeam, Moonriver, Shardeum, Coreum'
                   : selectedChain.name}
               </CyDText>
             </CyDView>

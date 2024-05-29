@@ -42,6 +42,9 @@ import {
 } from '../utilities/contactBookUtility';
 import { intercomAnalyticsLog } from '../utilities/analyticsUtility';
 import { showToast } from '../utilities/toastUtility';
+import { isCoreumAddress } from '../utilities/coreumUtilities';
+import { isInjectiveAddress } from '../utilities/injectiveUtilities';
+import { isKujiraAddress } from '../utilities/kujiraUtilities';
 
 interface RouteProps {
   route: {
@@ -198,6 +201,21 @@ export const CreateContact = ({ route, navigation }: RouteProps) => {
       placeHolder: t('ETHEREUM_ADDRESS_PLACEHOLDER'),
       logo: AppImages.MOONRIVER_LOGO,
     },
+    coreum: {
+      label: t(`${ChainNames.COREUM.toUpperCase()} ADDRESS`),
+      placeHolder: t('ETHEREUM_ADDRESS_PLACEHOLDER'),
+      logo: AppImages.COREUM_LOGO,
+    },
+    // injective: {
+    //   label: t(`${ChainNames.INJECTIVE.toUpperCase()} ADDRESS`),
+    //   placeHolder: t('ETHEREUM_ADDRESS_PLACEHOLDER'),
+    //   logo: AppImages.INJECTIVE_LOGO,
+    // },
+    // kujira: {
+    //   label: t(`${ChainNames.KUJIRA.toUpperCase()} ADDRESS`),
+    //   placeHolder: t('ETHEREUM_ADDRESS_PLACEHOLDER'),
+    //   logo: AppImages.KUJIRA_LOGO,
+    // },
   };
 
   const validateAddress = (
@@ -315,6 +333,42 @@ export const CreateContact = ({ route, navigation }: RouteProps) => {
           .string()
           .test('isValidAddress', t('INVALID_ADDRESS'), noble =>
             validateAddress(noble, isNobleAddress),
+          ),
+      )
+      .test('isDuplicate', t('DUPLICATE_FOUND'), addressList =>
+        checkForDuplicates(addressList),
+      ),
+    coreum: yup
+      .array()
+      .of(
+        yup
+          .string()
+          .test('isValidAddress', t('INVALID_ADDRESS'), coreum =>
+            validateAddress(coreum, isCoreumAddress),
+          ),
+      )
+      .test('isDuplicate', t('DUPLICATE_FOUND'), addressList =>
+        checkForDuplicates(addressList),
+      ),
+    injective: yup
+      .array()
+      .of(
+        yup
+          .string()
+          .test('isValidAddress', t('INVALID_ADDRESS'), injective =>
+            validateAddress(injective, isInjectiveAddress),
+          ),
+      )
+      .test('isDuplicate', t('DUPLICATE_FOUND'), addressList =>
+        checkForDuplicates(addressList),
+      ),
+    kujira: yup
+      .array()
+      .of(
+        yup
+          .string()
+          .test('isValidAddress', t('INVALID_ADDRESS'), kujira =>
+            validateAddress(kujira, isKujiraAddress),
           ),
       )
       .test('isDuplicate', t('DUPLICATE_FOUND'), addressList =>

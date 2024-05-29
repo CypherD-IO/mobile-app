@@ -30,6 +30,9 @@ import {
   CHAIN_MOONRIVER,
   CHAIN_COLLECTION,
   EVM_CHAINS,
+  CHAIN_COREUM,
+  CHAIN_INJECTIVE,
+  CHAIN_KUJIRA,
 } from '../constants/server';
 import {
   GlobalStateDef,
@@ -66,6 +69,9 @@ import { TokenMeta } from '../models/tokenMetaData.model';
 import Long from 'long';
 
 import { Wallet } from 'ethers';
+import { isCoreumAddress } from '../containers/utilities/coreumUtilities';
+import { isInjectiveAddress } from '../containers/utilities/injectiveUtilities';
+import { isKujiraAddress } from '../containers/utilities/kujiraUtilities';
 // const {showModal, hideModal} = useGlobalModalContext()
 
 export const HdWalletContext = React.createContext<HdWalletContextDef | null>(
@@ -141,6 +147,12 @@ export function getExplorerUrlFromBackendNames(chain: string, hash: string) {
       return `https://www.mintscan.io/stargaze/txs/${hash}`;
     case ChainBackendNames.NOBLE:
       return `https://www.mintscan.io/noble/txs/${hash}`;
+    case ChainBackendNames.COREUM:
+      return `https://www.mintscan.io/coreum/txs/${hash}`;
+    case ChainBackendNames.INJECTIVE:
+      return `https://www.mintscan.io/injective/txs/${hash}`;
+    case ChainBackendNames.KUJIRA:
+      return `https://atomscan.com/kujira/transactions/${hash}`;
     default:
       return '';
   }
@@ -192,6 +204,12 @@ export function getExplorerUrl(
       return `https://www.mintscan.io/stargaze/txs/${hash}`;
     case CHAIN_NOBLE.symbol:
       return `https://www.mintscan.io/noble/txs/${hash}`;
+    case CHAIN_COREUM.symbol:
+      return `https://www.mintscan.io/coreum/txs/${hash}`;
+    case CHAIN_INJECTIVE.symbol:
+      return `https://www.mintscan.io/injective/txs/${hash}`;
+    case CHAIN_KUJIRA.symbol:
+      return `https://atomscan.com/kujira/transactions/${hash}`;
     case CHAIN_SHARDEUM.symbol:
       return `https://explorer-dapps.shardeum.org/transaction/${hash}`;
     case CHAIN_SHARDEUM_SPHINX.symbol:
@@ -582,6 +600,12 @@ export function SendToAddressValidator(
         return isStargazeAddress(address);
       case CHAIN_NOBLE.chainName:
         return isNobleAddress(address);
+      case CHAIN_COREUM.chainName:
+        return isCoreumAddress(address);
+      case CHAIN_INJECTIVE.chainName:
+        return isInjectiveAddress(address);
+      case CHAIN_KUJIRA.chainName:
+        return isKujiraAddress(address);
       default:
         return false;
     }
@@ -597,6 +621,9 @@ export function findChainOfAddress(address: string) {
     if (isJunoAddress(address)) return 'juno';
     if (isStargazeAddress(address)) return 'stargaze';
     if (isNobleAddress(address)) return 'noble';
+    if (isCoreumAddress(address)) return 'coreum';
+    if (isInjectiveAddress(address)) return 'injective';
+    if (isKujiraAddress(address)) return 'kujira';
     if (
       Object.keys(EnsCoinTypes).includes(ChainBackendNames.ETH)
         ? Web3.utils.isAddress(address) || isValidEns(address)
@@ -627,6 +654,9 @@ export const isBasicCosmosChain = (backendName: string) =>
     ChainBackendNames.JUNO,
     ChainBackendNames.STARGAZE,
     ChainBackendNames.NOBLE,
+    ChainBackendNames.COREUM,
+    ChainBackendNames.INJECTIVE,
+    ChainBackendNames.KUJIRA,
   ].includes(backendName);
 
 export const isEvmosChain = (backendName: string) =>
@@ -638,7 +668,8 @@ export const isCosmosChain = (backendName: string) =>
 export const isCosmosStakingToken = (chain: string, tokenData: any) =>
   tokenData.chainDetails.backendName ===
     ChainBackendNames[chain as ChainBackendNames] &&
-  tokenData.name === CosmosStakingTokens[chain as CosmosStakingTokens];
+  tokenData.name.toLowerCase() ===
+    CosmosStakingTokens[chain as CosmosStakingTokens];
 
 export const isACosmosStakingToken = (tokenData: any) =>
   [
@@ -737,6 +768,15 @@ export const getChain = (chain: string): Chain => {
     case 'noble':
       blockchain = CHAIN_NOBLE;
       break;
+    case 'coreum':
+      blockchain = CHAIN_COREUM;
+      break;
+    case 'injective':
+      blockchain = CHAIN_INJECTIVE;
+      break;
+    case 'kujira':
+      blockchain = CHAIN_KUJIRA;
+      break;
     case 'evmos':
       blockchain = CHAIN_EVMOS;
       break;
@@ -834,6 +874,12 @@ export function getChainNameFromAddress(address: string) {
     return ChainBackendNames.STARGAZE;
   } else if (isNobleAddress(address)) {
     return ChainBackendNames.NOBLE;
+  } else if (isCoreumAddress(address)) {
+    return ChainBackendNames.COREUM;
+  } else if (isInjectiveAddress(address)) {
+    return ChainBackendNames.INJECTIVE;
+  } else if (isKujiraAddress(address)) {
+    return ChainBackendNames.KUJIRA;
   }
 }
 
@@ -865,8 +911,17 @@ export function isValidPrivateKey(privateKey: string): boolean {
 }
 
 export function getAvailableChains(hdWallet: HdWalletContextDef): Chain[] {
-  const { ethereum, cosmos, osmosis, juno, stargaze, noble } =
-    hdWallet.state.wallet;
+  const {
+    ethereum,
+    cosmos,
+    osmosis,
+    juno,
+    stargaze,
+    noble,
+    coreum,
+    // injective,
+    // kujira,
+  } = hdWallet.state.wallet;
   let availableChains: Chain[] = [];
   if (get(ethereum.wallets, ethereum.currentIndex)?.address) {
     availableChains = [CHAIN_COLLECTION, ...EVM_CHAINS, CHAIN_EVMOS];
@@ -886,6 +941,15 @@ export function getAvailableChains(hdWallet: HdWalletContextDef): Chain[] {
   if (get(noble.wallets, noble.currentIndex)?.address) {
     availableChains.push(CHAIN_NOBLE);
   }
+  if (get(coreum.wallets, coreum.currentIndex)?.address) {
+    availableChains.push(CHAIN_COREUM);
+  }
+  // if (get(injective.wallets, injective.currentIndex)?.address) {
+  //   availableChains.push(CHAIN_INJECTIVE);
+  // }
+  // if (get(kujira.wallets, kujira.currentIndex)?.address) {
+  //   availableChains.push(CHAIN_KUJIRA);
+  // }
 
   return availableChains;
 }

@@ -10,10 +10,8 @@ import {
 import AppImages from '../../../assets/images/appImages';
 import { BackHandler, StyleSheet } from 'react-native';
 import {
-  convertAmountOfContractDecimal,
   convertFromUnitAmount,
   convertNumberToShortHandNotation,
-  HdWalletContext,
   logAnalytics,
   parseErrorMessage,
 } from '../../core/util';
@@ -25,14 +23,8 @@ import {
 } from '../../reducers/cosmosStakingReducer';
 import clsx from 'clsx';
 import Button from '../../components/v2/button';
-import { SigningStargateClient } from '@cosmjs/stargate';
-import { getSignerClient } from '../../core/Keychain';
-import { OfflineDirectSigner } from '@cosmjs/proto-signing';
-import { cosmosConfig, IIBCData } from '../../constants/cosmosConfig';
-import { ethers } from 'ethers';
 import { screenTitle } from '../../constants';
 import CyDModalLayout from '../../components/v2/modal';
-import { GlobalContext, GlobalContextDef } from '../../core/globalContext';
 import * as Sentry from '@sentry/react-native';
 import analytics from '@react-native-firebase/analytics';
 import { useTranslation } from 'react-i18next';
@@ -41,24 +33,30 @@ import { MODAL_HIDE_TIMEOUT } from '../../core/Http';
 import { SuccessTransaction } from '../../components/v2/StateModal';
 import { AnalyticsType, TokenOverviewTabIndices } from '../../constants/enum';
 import { useRoute } from '@react-navigation/native';
+import useTransactionManager from '../../hooks/useTransactionManager';
+import { random } from 'lodash';
+import Toast from 'react-native-toast-message';
 
-export default function CosmosAction({ route, navigation }) {
+export default function CosmosAction({
+  route,
+  navigation,
+}: {
+  route: any;
+  navigation: any;
+}) {
   const { t } = useTranslation();
   const { tokenData, from, validatorData } = route.params;
   const cosmosStaking = useContext<any>(CosmosStakingContext);
-  const globalStateContext = useContext<GlobalContextDef>(GlobalContext);
-  const hdWallet = useContext<any>(HdWalletContext);
   const [amount, setAmount] = useState<string>('');
   const [loading, setLoading] = useState<boolean>(false);
-  const [wallets, setWallets] = useState<Map<string, OfflineDirectSigner>>(
-    new Map(),
-  );
   const [memo, setMemo] = useState<string>('');
   const [signModalVisible, setSignModalVisible] = useState<boolean>(false);
   const [gasFee, setGasFee] = useState<number>(0);
-  const [reValidator, setReValidator] = useState({ name: '' });
+  const [reValidator, setReValidator] = useState({ name: '', address: '' });
   const useroute = useRoute();
   const { showModal, hideModal } = useGlobalModalContext();
+  const { delegateCosmosToken, unDelegateCosmosToken, reDelegateCosmosToken } =
+    useTransactionManager();
 
   const handleBackButton = () => {
     navigation.goBack();
@@ -108,146 +106,72 @@ export default function CosmosAction({ route, navigation }) {
   const onAction = async (type = CosmosActionType.SIMULATION) => {
     setLoading(true);
     try {
-      const currentChain: IIBCData =
-        cosmosConfig[tokenData.chainDetails.chainName];
-      let wallet: OfflineDirectSigner | undefined;
-      if (type === CosmosActionType.SIMULATION) {
-        const wallets: Map<string, OfflineDirectSigner> =
-          await getSignerClient(hdWallet);
-        wallet = wallets.get(currentChain.prefix);
-        setWallets(wallets);
-      } else {
-        wallet = wallets.get(currentChain.prefix);
-      }
+      setGasFee(random(0.001, 0.01, true));
 
-      const rpc =
-        globalStateContext.globalState.rpcEndpoints[
-          tokenData.chainDetails.chainName.toUpperCase()
-        ].primary;
-
-      let senderAddress: any = await wallet.getAccounts();
-      senderAddress = senderAddress[0].address;
-
-      const client = await SigningStargateClient.connectWithSigner(
-        rpc,
-        wallet,
-        {
-          prefix: currentChain.prefix,
-        },
-      );
-
-      let msg;
-      switch (from) {
-        case CosmosActionType.DELEGATE: {
-          msg = {
-            typeUrl: '/cosmos.staking.v1beta1.MsgDelegate',
-            value: {
-              delegatorAddress: senderAddress,
-              validatorAddress: validatorData.address,
-              amount: {
-                denom: currentChain.denom,
-                amount: ethers
-                  .parseUnits(
-                    convertAmountOfContractDecimal(
-                      amount,
-                      tokenData.contractDecimals,
-                    ),
-                    tokenData.contractDecimals,
-                  )
-                  .toString(),
-              },
-            },
-          };
-          break;
-        }
-
-        case CosmosActionType.UNDELEGATE: {
-          msg = {
-            typeUrl: '/cosmos.staking.v1beta1.MsgUndelegate',
-            value: {
-              delegatorAddress: senderAddress,
-              validatorAddress: validatorData.address,
-              amount: {
-                denom: currentChain.denom,
-                amount: ethers
-                  .parseUnits(
-                    convertAmountOfContractDecimal(
-                      amount,
-                      tokenData.contractDecimals,
-                    ),
-                    tokenData.contractDecimals,
-                  )
-                  .toString(),
-              },
-            },
-          };
-          break;
-        }
-        case CosmosActionType.REDELEGATE: {
-          msg = {
-            typeUrl: '/cosmos.staking.v1beta1.MsgBeginRedelegate',
-            value: {
-              delegatorAddress: senderAddress,
-              validatorSrcAddress: validatorData.address,
-              validatorDstAddress: reValidator.address,
-              amount: {
-                denom: currentChain.denom,
-                amount: ethers
-                  .parseUnits(
-                    convertAmountOfContractDecimal(
-                      amount,
-                      tokenData.contractDecimals,
-                    ),
-                    tokenData.contractDecimals,
-                  )
-                  .toString(),
-              },
-            },
-          };
-          break;
-        }
-      }
-
-      const simulation = await client.simulate(senderAddress, [msg], memo);
-
-      const gasFee = simulation * currentChain.gasPrice * 1.3;
-      setGasFee(gasFee);
       if (CosmosActionType.SIMULATION === type) {
-        analytics().logEvent(`${from}_simulated`);
+        void analytics().logEvent(`${from}_simulated`);
         setSignModalVisible(true);
       }
 
       if (CosmosActionType.TRANSACTION === type) {
-        const fee = {
-          gas: Math.floor(simulation * 1.3).toString(),
-          amount: [
-            {
-              denom: currentChain.denom,
-              amount: parseInt(gasFee.toFixed(6).split('.')[1]).toString(),
-            },
-          ],
-        };
-        const resp = await client.signAndBroadcast(
-          senderAddress,
-          [msg],
-          fee,
-          memo,
-        );
+        let resp;
 
-        showModal('state', {
-          type: 'success',
-          title: t('TRANSACTION_SUCCESS'),
-          description: renderSuccessTransaction(resp.transactionHash),
-          onSuccess: onModalHide,
-          onFailure: hideModal,
-        });
-        // monitoring api
-        void logAnalytics({
-          type: AnalyticsType.SUCCESS,
-          txnHash: resp.transactionHash,
-          chain: tokenData?.chainDetails?.chainName ?? '',
-        });
-        analytics().logEvent(`${from}_transaction_success`);
+        switch (from) {
+          case CosmosActionType.DELEGATE: {
+            resp = await delegateCosmosToken({
+              chain: tokenData.chainDetails,
+              amount,
+              validatorAddress: validatorData.address,
+            });
+            console.log('🚀 ~ onAction ~ resp:', resp);
+            break;
+          }
+
+          case CosmosActionType.UNDELEGATE: {
+            resp = await unDelegateCosmosToken({
+              chain: tokenData.chainDetails,
+              amount,
+              validatorAddress: validatorData.address,
+            });
+            break;
+          }
+          case CosmosActionType.REDELEGATE: {
+            resp = await reDelegateCosmosToken({
+              chain: tokenData.chainDetails,
+              amount,
+              validatorSrcAddress: validatorData.address,
+              validatorDstAddress: reValidator.address,
+            });
+            break;
+          }
+        }
+
+        if (resp && !resp?.isError) {
+          showModal('state', {
+            type: 'success',
+            title: t('TRANSACTION_SUCCESS'),
+            description: renderSuccessTransaction(resp?.hash),
+            onSuccess: onModalHide,
+            onFailure: hideModal,
+          });
+          // monitoring api
+          void logAnalytics({
+            type: AnalyticsType.SUCCESS,
+            txnHash: resp.hash,
+            chain: tokenData?.chainDetails?.chainName ?? '',
+          });
+          void analytics().logEvent(`${from as string}_transaction_success`);
+        } else {
+          Toast.show({
+            type: t('TOAST_TYPE_ERROR'),
+            text1: t('TRANSACTION_FAILED'),
+            text2: resp?.error.message,
+            position: 'bottom',
+          });
+          void analytics().logEvent(
+            `${tokenData.name.toLowerCase() as string}_claim_transaction_failure`,
+          );
+        }
       }
       setLoading(false);
     } catch (error: any) {
@@ -267,7 +191,7 @@ export default function CosmosAction({ route, navigation }) {
         onFailure: hideModal,
       });
       Sentry.captureException(error);
-      analytics().logEvent(`${from}_failed`);
+      void analytics().logEvent(`${from}_failed`);
     }
   };
   return (
