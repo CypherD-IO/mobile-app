@@ -10,7 +10,7 @@ import useConnectionManager from '../useConnectionManager';
 import { ConnectionTypes } from '../../constants/enum';
 import { useAccount } from 'wagmi';
 import { walletConnectChainData } from '../../constants/server';
-import { get } from 'lodash';
+import { get, set } from 'lodash';
 import { createWalletClient, custom } from 'viem';
 import { loadPrivateKeyFromKeyChain } from '../../core/Keychain';
 
@@ -24,7 +24,6 @@ export default function useEthSigner() {
     chain,
     transactionToBeSigned,
   }: RawTransaction) => {
-    const ethereum = hdWalletContext.state.wallet.ethereum;
     try {
       if (connectionType === ConnectionTypes.WALLET_CONNECT) {
         const chainConfig = get(walletConnectChainData, chain).chainConfig;
@@ -36,9 +35,9 @@ export default function useEthSigner() {
         try {
           await walletClient.switchChain({ id: chainConfig.id });
         } catch (e) {}
-        transactionToBeSigned['data'] = '0x';
+        set(transactionToBeSigned, 'data', '0x');
         const response = await walletClient.sendTransaction(
-          transactionToBeSigned,
+          transactionToBeSigned as any,
         );
         return response;
       } else {
