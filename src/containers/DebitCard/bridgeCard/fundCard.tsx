@@ -113,6 +113,7 @@ export default function BridgeFundCardScreen({ route }: { route: any }) {
   const stargaze = hdWallet.state.wallet.stargaze;
   const noble = hdWallet.state.wallet.noble;
   const coreum = hdWallet.state.wallet.coreum;
+  const kujira = hdWallet.state.wallet.kujira;
 
   const cosmosAddresses = {
     cosmos: cosmos.address,
@@ -121,6 +122,7 @@ export default function BridgeFundCardScreen({ route }: { route: any }) {
     stargaze: stargaze.address,
     noble: noble.address,
     coreum: coreum.address,
+    kujira: kujira.address,
   };
 
   const rpc = {
@@ -130,6 +132,7 @@ export default function BridgeFundCardScreen({ route }: { route: any }) {
     stargaze: globalContext.globalState.rpcEndpoints.STARGAZE.primary,
     noble: globalContext.globalState.rpcEndpoints.NOBLE.primary,
     coreum: globalContext.globalState.rpcEndpoints.COREUM.primary,
+    kujira: globalContext.globalState.rpcEndpoints.KUJIRA.primary,
   };
 
   const [isChooseTokenVisible, setIsChooseTokenVisible] =
