@@ -106,9 +106,9 @@ export default function PrivateKey(props) {
       {
         ...CHAIN_COREUM,
       },
-      // {
-      //   ...CHAIN_KUJIRA,
-      // },
+      {
+        ...CHAIN_KUJIRA,
+      },
     ];
   }
 
@@ -189,9 +189,10 @@ export default function PrivateKey(props) {
       }
       // else if (walletAddressType === FundWalletAddressType.INJECTIVE) {
       //   setSelectedChain(data[6]);
-      // } else if (walletAddressType === FundWalletAddressType.KUJIRA) {
-      //   setSelectedChain(data[7]);
       // }
+      else if (walletAddressType === FundWalletAddressType.KUJIRA) {
+        setSelectedChain(data[7]);
+      }
     } else {
       if (isAndroid()) NativeModules.PreventScreenshotModule.allow();
     }

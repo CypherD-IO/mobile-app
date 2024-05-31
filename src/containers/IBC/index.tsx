@@ -224,7 +224,7 @@ export default function IBC({
         ChainBackendNames.NOBLE,
         ChainBackendNames.COREUM,
         // ChainBackendNames.INJECTIVE,
-        // ChainBackendNames.KUJIRA,
+        ChainBackendNames.KUJIRA,
       ].includes(tokenData.chainDetails.backendName)
     ) {
       setLoading(true);

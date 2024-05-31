@@ -349,7 +349,7 @@ export default function useInitializer() {
           get(attributes, 'nobleAddress'),
           get(attributes, 'coreumAddress'),
           // get(attributes, 'injectiveAddress'),
-          // get(attributes, 'kujiraAddress'),
+          get(attributes, 'kujiraAddress'),
         );
         void registerIntercomUser(attributes);
       } else {

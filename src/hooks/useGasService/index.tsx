@@ -240,6 +240,7 @@ export default function useGasService() {
           gasFeeInCrypto,
           gasLimit,
           gasPrice: finalGasPrice,
+          isEIP1599Supported: get(gasPriceDetail, 'isEIP1599Supported', false),
           priorityFee: get(gasPriceDetail, 'priorityFee', 0),
           baseFee: get(gasPriceDetail, 'baseFee', 0),
           maxFee: get(gasPriceDetail, 'maxFee', 0),

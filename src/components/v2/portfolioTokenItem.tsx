@@ -198,11 +198,12 @@ const RenderRightActions = (navigation: any, tokenData: any) => {
             //   tokenData.chainDetails.backendName === ChainBackendNames.INJECTIVE
             // ) {
             //   addressTypeQRCode = FundWalletAddressType.INJECTIVE;
-            // } else if (
-            //   tokenData.chainDetails.backendName === ChainBackendNames.KUJIRA
-            // ) {
-            //   addressTypeQRCode = FundWalletAddressType.KUJIRA;
             // }
+            else if (
+              tokenData.chainDetails.backendName === ChainBackendNames.KUJIRA
+            ) {
+              addressTypeQRCode = FundWalletAddressType.KUJIRA;
+            }
             navigation.navigate(screenTitle.QRCODE, {
               addressType: addressTypeQRCode,
             });

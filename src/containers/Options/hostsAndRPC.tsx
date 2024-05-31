@@ -790,7 +790,7 @@ export default function HostsAndRPCScreen({ navigation }) {
         </CyDView>
       ) : (
         <CyDView />
-      )}
+      )} */}
       {rpcEndpoints.kujira ? (
         <CyDView className={'mb-[30px]'}>
           <CyDText className={'text-[16px] font-black'}>
@@ -814,7 +814,7 @@ export default function HostsAndRPCScreen({ navigation }) {
         </CyDView>
       ) : (
         <CyDView />
-      )} */}
+      )}
       <CyDView
         className={'flex flex-row justify-center items-center mb-[40px]'}>
         {devMode && (
