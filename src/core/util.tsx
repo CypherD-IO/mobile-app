@@ -920,7 +920,7 @@ export function getAvailableChains(hdWallet: HdWalletContextDef): Chain[] {
     noble,
     coreum,
     // injective,
-    // kujira,
+    kujira,
   } = hdWallet.state.wallet;
   let availableChains: Chain[] = [];
   if (get(ethereum.wallets, ethereum.currentIndex)?.address) {
@@ -947,9 +947,9 @@ export function getAvailableChains(hdWallet: HdWalletContextDef): Chain[] {
   // if (get(injective.wallets, injective.currentIndex)?.address) {
   //   availableChains.push(CHAIN_INJECTIVE);
   // }
-  // if (get(kujira.wallets, kujira.currentIndex)?.address) {
-  //   availableChains.push(CHAIN_KUJIRA);
-  // }
+  if (get(kujira.wallets, kujira.currentIndex)?.address) {
+    availableChains.push(CHAIN_KUJIRA);
+  }
 
   return availableChains;
 }

@@ -126,7 +126,7 @@ export default function useTransactionManager() {
     const fromAddress = ethereum.address;
     try {
       const code = await web3.eth.getCode(toAddress);
-      let { gasLimit, gasPrice, priorityFee, baseFee } =
+      let { gasLimit, gasPrice, priorityFee, isEIP1599Supported } =
         await estimateGasForEvm({
           web3,
           chain,
@@ -149,7 +149,7 @@ export default function useTransactionManager() {
         value: web3.utils.toWei(amountToSend, 'ether').toString(),
         gas: web3.utils.toHex(gasLimit),
       };
-      if (!baseFee) {
+      if (!isEIP1599Supported) {
         set(tx, 'gasPrice', gasPrice);
       } else {
         set(
