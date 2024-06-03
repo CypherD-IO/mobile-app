@@ -330,7 +330,6 @@ export const generateWalletFromMnemonic = async (
     { address: stargazeAddress },
     { address: nobleAddress },
     { address: coreumAddress },
-    // { address: injectiveAddress },
     { address: kujiraAddress },
   ] = cosmosAccounts;
   await getToken(
@@ -341,7 +340,6 @@ export const generateWalletFromMnemonic = async (
     stargazeAddress,
     nobleAddress,
     coreumAddress,
-    // injectiveAddress,
     kujiraAddress,
   );
 
