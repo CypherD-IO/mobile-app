@@ -69,7 +69,7 @@ import { Slip10RawIndex } from '@cosmjs-rn/crypto';
 import { InjectiveDirectEthSecp256k1Wallet } from '@injectivelabs/sdk-ts';
 
 // increase this when you want the CyRootData to be reconstructed
-const currentSchemaVersion = 7;
+const currentSchemaVersion = 8;
 
 export async function saveCredentialsToKeychain(
   hdWalletContext: HdWalletContextDef,
