@@ -14,7 +14,6 @@ export const getToken = async (
   stargazeAddress?: string,
   nobleAddress?: string,
   coreumAddress?: string,
-  injectiveAddress?: string,
   kujiraAddress?: string,
 ) => {
   return await new Promise((resolve, reject) => {
@@ -33,7 +32,6 @@ export const getToken = async (
             stargazeAddress,
             nobleAddress,
             coreumAddress,
-            injectiveAddress,
             kujiraAddress,
             fcmToken,
           };
