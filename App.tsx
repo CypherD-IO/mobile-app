@@ -1,5 +1,5 @@
 /* eslint-disable @typescript-eslint/no-misused-promises */
-/* eslint-disable @typescript-eslint/no-var-requires */
+
 /* eslint-disable react-native/no-inline-styles */
 import * as React from 'react';
 import '@walletconnect/react-native-compat';
@@ -16,7 +16,6 @@ import {
   StatusBar,
 } from 'react-native';
 import {
-  _NO_CYPHERD_CREDENTIAL_AVAILABLE_,
   HdWalletContext,
   PortfolioContext,
   StakingContext,
@@ -233,7 +232,7 @@ function App() {
               <HdWalletContext.Provider value={{ state, dispatch }}>
                 <PortfolioContext.Provider
                   value={{ statePortfolio, dispatchPortfolio }}>
-                  {Platform.OS == 'android' && (
+                  {Platform.OS === 'android' && (
                     <StatusBar
                       backgroundColor='white'
                       barStyle='dark-content'

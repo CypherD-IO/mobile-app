@@ -8,10 +8,8 @@ import {
   PortfolioStackScreen,
 } from './auth';
 import {
-  BottomTabBar,
   BottomTabBarProps,
   createBottomTabNavigator,
-  useBottomTabBarHeight,
 } from '@react-navigation/bottom-tabs';
 import AppImages from '../../assets/images/appImages';
 import ShortcutsModal from '../containers/Shortcuts';
@@ -32,7 +30,7 @@ import {
 } from '../styles/tailwindStyles';
 import { t } from 'i18next';
 import clsx from 'clsx';
-import { isAndroid, isIOS } from '../misc/checkers';
+import { isIOS } from '../misc/checkers';
 import { Easing, Layout } from 'react-native-reanimated';
 import { Colors } from '../constants/theme';
 import { useKeyboard } from '../hooks/useKeyboardVisibily';

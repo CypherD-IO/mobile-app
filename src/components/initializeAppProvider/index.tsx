@@ -29,6 +29,7 @@ import Intercom from '@intercom/intercom-react-native';
 import RNExitApp from 'react-native-exit-app';
 import { HdWalletContextDef } from '../../reducers/hdwallet_reducer';
 import Loading from '../../containers/Loading';
+import { isEmpty } from 'lodash';
 
 export const InitializeAppProvider: React.FC<JSX.Element> = ({ children }) => {
   const {
@@ -82,12 +83,14 @@ export const InitializeAppProvider: React.FC<JSX.Element> = ({ children }) => {
   }, []);
 
   useEffect(() => {
-    void getHosts(
-      setForcedUpdate,
-      setTamperedSignMessageModal,
-      setUpdateModal,
-      setShowDefaultAuthRemoveModal,
-    );
+    if (ethereum.address) {
+      void getHosts(
+        setForcedUpdate,
+        setTamperedSignMessageModal,
+        setUpdateModal,
+        setShowDefaultAuthRemoveModal,
+      );
+    }
   }, [ethereum.address]);
 
   useEffect(() => {
@@ -213,7 +216,7 @@ export const InitializeAppProvider: React.FC<JSX.Element> = ({ children }) => {
           ) : (
             <OnBoardingStack />
           )
-        ) : !isReadOnlyWallet && authToken === undefined ? (
+        ) : !isReadOnlyWallet && isEmpty(authToken) ? (
           <Loading />
         ) : (
           children
