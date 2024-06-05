@@ -13,7 +13,7 @@ import {
   Image,
   TouchableWithoutFeedback,
   TouchableHighlight,
-  KeyboardAvoidingView
+  KeyboardAvoidingView,
 } from 'react-native';
 import { styled } from 'nativewind';
 import FastImage from 'react-native-fast-image';

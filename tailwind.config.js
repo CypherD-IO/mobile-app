@@ -124,6 +124,7 @@ module.exports = {
       wheatText: '#D69B00',
       errorBg: '#FEEFEC',
       errorText: '#EE4D30',
+      cardBgTo: '#EBEDF0',
     },
     columns: {
       auto: 'auto',
