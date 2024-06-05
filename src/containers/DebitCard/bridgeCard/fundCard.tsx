@@ -386,6 +386,15 @@ export default function BridgeFundCardScreen({ route }: { route: any }) {
                 type: AnalyticsType.SUCCESS,
                 txnHash: hash,
                 chain: selectedToken?.chainDetails?.chainName ?? '',
+                address: PURE_COSMOS_CHAINS.includes(
+                  selectedToken?.chainDetails?.chainName,
+                )
+                  ? get(
+                      cosmosAddresses,
+                      selectedToken?.chainDetails?.chainName,
+                      '',
+                    )
+                  : get(ethereum, 'address', ''),
               });
               void transferSentQuote(
                 tokenQuote.fromAddress,
@@ -398,6 +407,15 @@ export default function BridgeFundCardScreen({ route }: { route: any }) {
                 chain: selectedToken?.chainDetails?.chainName ?? '',
                 message: parseErrorMessage(error),
                 screen: route.name,
+                address: PURE_COSMOS_CHAINS.includes(
+                  selectedToken?.chainDetails?.chainName,
+                )
+                  ? get(
+                      cosmosAddresses,
+                      selectedToken?.chainDetails?.chainName,
+                      '',
+                    )
+                  : get(ethereum, 'address', ''),
               });
               activityRef.current &&
                 activityContext.dispatch({

@@ -4,6 +4,7 @@ export interface SuccessAnalytics {
   type: AnalyticsType;
   chain: string;
   txnHash?: string;
+  address?: string;
 }
 
 export interface ErrorAnalytics {
@@ -11,4 +12,5 @@ export interface ErrorAnalytics {
   chain: string;
   message?: string;
   screen?: string;
+  address?: string;
 }
