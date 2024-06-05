@@ -346,8 +346,16 @@ const DECLINE = { uri: `${S3_BUCKET_URL_ICONS}/decline.png` };
 const PENDING = { uri: `${S3_BUCKET_URL_ICONS}/pending.png` };
 const CORRECT_WHEAT = { uri: `${S3_BUCKET_URL_ICONS}/correctWheat.png` };
 const TELEGRAM_BLUE = { uri: `${S3_BUCKET_URL_ICONS}/telegram_blue.png` };
+const TELEGRAM_SETUP_STATUSBAR = {
+  uri: `${S3_BUCKET_URL_ICONS}/telegramSetupStatusbar.png`,
+};
+const CYPHER_TELEGRAM_BOT_LOGO = {
+  uri: `${S3_BUCKET_URL_ICONS}/cypherTelegramBotLogo.png`,
+};
 
 const AppImages = {
+  TELEGRAM_SETUP_STATUSBAR,
+  CYPHER_TELEGRAM_BOT_LOGO,
   PLUS,
   ARROW,
   HOME,

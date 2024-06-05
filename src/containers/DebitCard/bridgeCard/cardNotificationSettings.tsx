@@ -8,8 +8,9 @@ import {
 import { GlobalContext, GlobalContextDef } from '../../../core/globalContext';
 import { useGlobalModalContext } from '../../../components/v2/GlobalModal';
 import useAxios from '../../../core/HttpRequest';
-import { get, omitBy } from 'lodash';
+import { get } from 'lodash';
 import {
+  CyDFastImage,
   CyDImage,
   CyDSafeAreaView,
   CyDSwitch,
@@ -25,9 +26,9 @@ import { getWalletProfile } from '../../../core/card';
 import OtpInput from '../../../components/v2/OTPInput';
 import * as Sentry from '@sentry/react-native';
 import CyDModalLayout from '../../../components/v2/modal';
-import WebView from 'react-native-webview';
-import { HdWalletContext } from '../../../core/util';
-import { HdWalletContextDef } from '../../../reducers/hdwallet_reducer';
+import { copyToClipboard } from '../../../core/util';
+import Button from '../../../components/v2/button';
+import { showToast } from '../../utilities/toastUtility';
 
 export default function CardNotificationSettings(props: {
   route: {
@@ -38,19 +39,15 @@ export default function CardNotificationSettings(props: {
   };
 }) {
   const RESENT_OTP_TIME = 30;
-  const { route } = props;
-  const { card, currentCardProvider } = route.params;
-  const { cardId, status } = card;
   const globalContext = useContext(GlobalContext) as GlobalContextDef;
-  const hdWalletContext = useContext(HdWalletContext) as HdWalletContextDef;
   const cardProfile = globalContext.globalState.cardProfile;
-  const { ethereum } = hdWalletContext.state.wallet;
   const { showModal, hideModal } = useGlobalModalContext();
-  const { patchWithAuth, postWithAuth, postWithoutAuth } = useAxios();
+  const { patchWithAuth, postWithAuth, getWithAuth } = useAxios();
   const [telegramSwitchLoading, setTelegramSwitchLoading] = useState(false);
   const [emailSwitchLoading, setEmailSwitchLoading] = useState(false);
   const [smsSwitchLoading, setSmsSwitchLoading] = useState(false);
   const [fcmSwitchLoading, setFcmSwitchLoading] = useState(false);
+  const [telegramConnectionId, setTelegramConnectionId] = useState('');
   const [currentNotificationOption, setCurrentNotificationOption] = useState({
     email: get(cardProfile, ['cardNotification', 'isEmailAllowed'], true),
     sms: get(cardProfile, ['cardNotification', 'isSmsAllowed'], true),
@@ -67,6 +64,7 @@ export default function CardNotificationSettings(props: {
   const [timer, setTimer] = useState<NodeJS.Timer>();
   const [isTelegramAuthModalVisible, setIsTelegramAuthModalVisible] =
     useState<boolean>(false);
+  const [isLoading, setIsLoading] = useState(false);
 
   useEffect(() => {
     setCurrentNotificationOption({
@@ -97,6 +95,14 @@ export default function CardNotificationSettings(props: {
       cardProfile: data,
     });
   };
+
+  useEffect(() => {
+    const getNewTelegramConnectionId = async () => {
+      const resp = await getWithAuth('/v1/cards/tg-create');
+      setTelegramConnectionId(resp.data);
+    };
+    void getNewTelegramConnectionId();
+  }, [isTelegramAuthModalVisible]);
 
   const resendOTP = async () => {
     setSendingOTP(true);
@@ -315,77 +321,98 @@ export default function CardNotificationSettings(props: {
     setIsTelegramAuthModalVisible(true);
   };
 
-  const onWebViewMessage = async (event: any) => {
-    const data = JSON.parse(event.nativeEvent.data);
-    setIsTelegramAuthModalVisible(false);
-    const payload = {
-      id: get(data, 'id'),
-      first_name: get(data, 'first_name'),
-      last_name: get(data, 'last_name'),
-      username: get(data, 'username'),
-      photo_url: get(data, 'photo_url'),
-      auth_date: get(data, 'auth_date'),
-      hash: get(data, 'hash'),
-    };
-    const body = omitBy(payload, value => value === null);
-    const response = await postWithoutAuth(
-      `/v1/wh/tg/b2c/?walletAddress=${String(ethereum.address)}`,
-      body,
-    );
-    if (!response.isError) {
-      void refreshProfile();
-      showModal('state', {
-        type: 'success',
-        title: t('TOGGLE_TELEGRAM_NOTIFICATION_SUCCESS'),
-        description: !currentNotificationOption.telegram
-          ? t('TELEGRAM_NOTIFICATION_TURNED_ON')
-          : t('TELEGRAM_NOTIFICATION_TURNED_OFF'),
-        onSuccess: hideModal,
-        onFailure: hideModal,
-      });
-    } else {
-      showModal('state', {
-        type: 'error',
-        title: t('AUTHENTICATION_FAILED'),
-        description:
-          response.error.errors[0].message ?? t('ERROR_IN_TOGGLE_TELEGRAM'),
-        onSuccess: hideModal,
-        onFailure: hideModal,
-      });
-    }
-  };
-
   return (
     <CyDView className='h-full bg-white pt-[30px]'>
       <CyDModalLayout
         isModalVisible={isTelegramAuthModalVisible}
         setModalVisible={setIsTelegramAuthModalVisible}
         style={styles.modalContainer}>
-        <CyDView className='bg-appColor h-[100%] w-[100%]'>
-          <CyDSafeAreaView>
-            <CyDTouchView
-              className='flex flex-row ml-[12px] mb-[12px]'
-              onPress={() => setIsTelegramAuthModalVisible(false)}>
-              <CyDImage
-                source={AppImages.BACK}
-                className='h-[22px] w-[22px]'
-                resizeMode='contain'
-              />
-            </CyDTouchView>
+        <CyDView className='bg-white h-[100%] w-[100%]'>
+          <CyDSafeAreaView className='flex flex-row w-full'>
+            <CyDView className='flex-row items-center w-[100%] px-[10px]'>
+              <CyDTouchView
+                onPress={() => setIsTelegramAuthModalVisible(false)}>
+                <CyDImage
+                  source={AppImages.BACK}
+                  className='h-[22px] w-[25px]'
+                  resizeMode='contain'
+                />
+              </CyDTouchView>
+              <CyDView className='flex flex-1 items-center'>
+                <CyDText className='font-extrabold text-[20px] ml-[-25px]'>
+                  {t<string>('Setup Telegram')}
+                </CyDText>
+              </CyDView>
+            </CyDView>
           </CyDSafeAreaView>
           {isTelegramAuthModalVisible && (
-            <WebView
-              javaScriptCanOpenWindowsAutomatically={true}
-              originWhitelist={['*']}
-              javaScriptEnabled={true}
-              setSupportMultipleWindows={false}
-              allowUrl
-              source={{
-                uri: `https://cypherhq.io/telegram/auth?type=app`,
-              }}
-              // source={{ uri: 'https://cypherhq.io' }}
-              onMessage={onWebViewMessage}
-            />
+            <>
+              <CyDView className='h-full bg-white p-[30px] flex flex-row'>
+                <CyDFastImage
+                  className='h-[232px] w-[10px] mr-3 mt-[35px]'
+                  source={AppImages.TELEGRAM_SETUP_STATUSBAR}
+                />
+                <CyDView className='p-[15px] flex flex-col'>
+                  <CyDView className='border-[1px] border-cardBgTo m-[8px] rounded-[5px] p-[12px]'>
+                    <CyDText className='text-[15px] font-nunito text-primaryTextColor'>
+                      {t<string>(
+                        `CypherHQ bot, using the account where you want to receive notifications at,`,
+                      )}
+                    </CyDText>
+                    <CyDText
+                      className='text-blue-600 underline cursor-pointer'
+                      onPress={() => {
+                        console.log('FEAUFIGAO');
+                        void Linking.openURL('https://t.me/CypherHQBot');
+                      }}>
+                      CypherHQBot{' '}
+                    </CyDText>
+                  </CyDView>
+                  <CyDView className='border-[1px] border-cardBgTo m-[8px] rounded-[5px] p-[6px]'>
+                    <CyDText className='text-[15px] font-nunito text-primaryTextColor'>
+                      {t<string>(
+                        `Copy and paste the following bot command after clicking on start to begin receiving notifications.\nClick Done after you have gotten the confirmation!`,
+                      )}
+                    </CyDText>
+                  </CyDView>
+
+                  <CyDText className='ml-[8px] text-primaryText text-[10px]'>
+                    Bot Command
+                  </CyDText>
+                  <CyDView className='border-[1px] border-cardBgTo m-[8px] rounded-[5px] p-[6px]'>
+                    <CyDTouchView
+                      className='text-[15px] font-nunito text-primaryTextColor justify-between flex flex-row'
+                      onPress={() => {
+                        copyToClipboard(`/link ${telegramConnectionId}`);
+                        showToast(t('SEED_PHARSE_COPY'));
+                      }}>
+                      <CyDText className='text-center font-nunito text-[14px] font-bold mt-[3px]'>
+                        {t<string>(`/link ${telegramConnectionId}`)}
+                      </CyDText>
+                      <CyDImage
+                        source={AppImages.COPY}
+                        className={'w-[16px] h-[18px] mt-[3px]'}
+                      />
+                    </CyDTouchView>
+                  </CyDView>
+                  <Button
+                    title={t('Done')}
+                    loading={isLoading}
+                    // eslint-disable-next-line @typescript-eslint/no-misused-promises
+                    onPress={async () => {
+                      setIsLoading(true);
+                      await refreshProfile();
+                      setIsLoading(false);
+                      if (currentNotificationOption.telegram) {
+                        setIsTelegramAuthModalVisible(false);
+                      }
+                    }}
+                    style='h-[55px] px-[55px]'
+                    isPrivateKeyDependent={true}
+                  />
+                </CyDView>
+              </CyDView>
+            </>
           )}
         </CyDView>
       </CyDModalLayout>
@@ -399,10 +426,6 @@ export default function CardNotificationSettings(props: {
                 <CyDText className='text-[16px] font-bold'>
                   {t<string>('TELEGRAM_NOTIFICATION')}
                 </CyDText>
-                <CyDImage
-                  source={AppImages.LINK}
-                  className='h-[14px] w-[14px] ml-[2px]'
-                />
               </CyDView>
               <CyDImage
                 source={AppImages.TELEGRAM_BLUE}

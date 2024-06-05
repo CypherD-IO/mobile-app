@@ -1,6 +1,11 @@
 import React, { Dispatch, SetStateAction, useEffect, useState } from 'react';
 import moment from 'moment';
-import { CyDFastImage, CyDText, CyDTouchView, CyDView } from '../styles/tailwindStyles';
+import {
+  CyDFastImage,
+  CyDText,
+  CyDTouchView,
+  CyDView,
+} from '../styles/tailwindStyles';
 import { useTranslation } from 'react-i18next';
 import AppImages from '../../assets/images/appImages';
 import { DeFiFilter, protocolOptionType } from '../models/defi.interface';
@@ -38,8 +43,8 @@ export const DeFiFilterRefreshBar = (props: DeFiFilterRefreshBarInterface) => {
       M: t('TIMER_BAR_M'),
       MM: t('TIMER_BAR_MM'),
       y: t('TIMER_BAR_y'),
-      yy: t('TIMER_BAR_yy')
-    }
+      yy: t('TIMER_BAR_yy'),
+    },
   });
 
   const calculateTimeDiff = (currTimestamp: string) => {
@@ -63,13 +68,22 @@ export const DeFiFilterRefreshBar = (props: DeFiFilterRefreshBarInterface) => {
   return (
     <CyDView className='flex flex-row justify-between  mx-[15px] py-[10px] border-sepratorColor border-t-[0.5px] border-b-[0.5px]'>
       <CyDView className='flex flex-row items-center'>
-        <CyDFastImage source={AppImages.CLOCK} className='h-[16px] w-[16px]' resizeMode='contain' />
+        <CyDFastImage
+          source={AppImages.CLOCK}
+          className='h-[16px] w-[16px]'
+          resizeMode='contain'
+        />
         <CyDText className='ml-[10px]'>{time}</CyDText>
       </CyDView>
-      <CyDTouchView onPress={() => {
-        props.setFilterVisible(true);
-      }}>
-        <CyDFastImage className='w-[48px] h-[26px]' source={AppImages.FILTER} resizeMode='contain' />
+      <CyDTouchView
+        onPress={() => {
+          props.setFilterVisible(true);
+        }}>
+        <CyDFastImage
+          className='w-[48px] h-[26px]'
+          source={AppImages.FILTER}
+          resizeMode='contain'
+        />
       </CyDTouchView>
     </CyDView>
   );
