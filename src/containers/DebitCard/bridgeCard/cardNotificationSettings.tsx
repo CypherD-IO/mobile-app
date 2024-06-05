@@ -410,9 +410,8 @@ export default function CardNotificationSettings(props: {
                     <Button
                       title={t('Done')}
                       loading={isLoading}
-                      // eslint-disable-next-line @typescript-eslint/no-misused-promises
-                      onPress={async () => {
-                        await closeAndRefreshPortfolio();
+                      onPress={() => {
+                        void closeAndRefreshPortfolio();
                       }}
                       style='h-[55px] px-[55px]'
                       isPrivateKeyDependent={true}
