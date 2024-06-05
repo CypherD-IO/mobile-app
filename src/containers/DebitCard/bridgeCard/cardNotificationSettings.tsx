@@ -395,21 +395,23 @@ export default function CardNotificationSettings(props: {
                       />
                     </CyDTouchView>
                   </CyDView>
-                  <Button
-                    title={t('Done')}
-                    loading={isLoading}
-                    // eslint-disable-next-line @typescript-eslint/no-misused-promises
-                    onPress={async () => {
-                      setIsLoading(true);
-                      await refreshProfile();
-                      setIsLoading(false);
-                      if (currentNotificationOption.telegram) {
-                        setIsTelegramAuthModalVisible(false);
-                      }
-                    }}
-                    style='h-[55px] px-[55px]'
-                    isPrivateKeyDependent={true}
-                  />
+                  <CyDView className='pt-[10px]'>
+                    <Button
+                      title={t('Done')}
+                      loading={isLoading}
+                      // eslint-disable-next-line @typescript-eslint/no-misused-promises
+                      onPress={async () => {
+                        setIsLoading(true);
+                        await refreshProfile();
+                        setIsLoading(false);
+                        if (currentNotificationOption.telegram) {
+                          setIsTelegramAuthModalVisible(false);
+                        }
+                      }}
+                      style='h-[55px] px-[55px]'
+                      isPrivateKeyDependent={true}
+                    />
+                  </CyDView>
                 </CyDView>
               </CyDView>
             </>
