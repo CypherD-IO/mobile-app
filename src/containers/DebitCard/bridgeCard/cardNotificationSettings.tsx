@@ -66,6 +66,15 @@ export default function CardNotificationSettings(props: {
     useState<boolean>(false);
   const [isLoading, setIsLoading] = useState(false);
 
+  const closeAndRefreshPortfolio = async () => {
+    setIsLoading(true);
+    await refreshProfile();
+    setIsLoading(false);
+    if (currentNotificationOption.telegram) {
+      setIsTelegramAuthModalVisible(false);
+    }
+  };
+
   useEffect(() => {
     setCurrentNotificationOption({
       email: get(cardProfile, ['cardNotification', 'isEmailAllowed'], true),
@@ -98,8 +107,10 @@ export default function CardNotificationSettings(props: {
 
   useEffect(() => {
     const getNewTelegramConnectionId = async () => {
-      const resp = await getWithAuth('/v1/cards/tg-create');
-      setTelegramConnectionId(resp.data);
+      const { data, isError } = await getWithAuth('/v1/cards/tg-create');
+      if (!isError) {
+        setTelegramConnectionId(data);
+      }
     };
     void getNewTelegramConnectionId();
   }, [isTelegramAuthModalVisible]);
@@ -401,12 +412,7 @@ export default function CardNotificationSettings(props: {
                       loading={isLoading}
                       // eslint-disable-next-line @typescript-eslint/no-misused-promises
                       onPress={async () => {
-                        setIsLoading(true);
-                        await refreshProfile();
-                        setIsLoading(false);
-                        if (currentNotificationOption.telegram) {
-                          setIsTelegramAuthModalVisible(false);
-                        }
+                        await closeAndRefreshPortfolio();
                       }}
                       style='h-[55px] px-[55px]'
                       isPrivateKeyDependent={true}
