@@ -341,7 +341,13 @@ export default function BridgeFundCardScreen({ route }: { route: any }) {
               },
             });
           if (chainName != null) {
-            let response;
+            let response: {
+              isError: boolean;
+              hash: string;
+              contractData?: string | undefined;
+              error?: any;
+              gasFeeInCrypto?: string | undefined;
+            };
             if (chainName === ChainNames.ETH) {
               response = await sendEvmToken({
                 chain: selectedToken.chainDetails.backendName,
@@ -386,6 +392,9 @@ export default function BridgeFundCardScreen({ route }: { route: any }) {
                 type: AnalyticsType.SUCCESS,
                 txnHash: hash,
                 chain: selectedToken?.chainDetails?.chainName ?? '',
+                ...(response?.contractData
+                  ? { contractData: response?.contractData }
+                  : ''),
                 address: PURE_COSMOS_CHAINS.includes(
                   selectedToken?.chainDetails?.chainName,
                 )

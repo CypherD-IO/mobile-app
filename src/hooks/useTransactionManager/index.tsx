@@ -246,7 +246,7 @@ export default function useTransactionManager() {
         chain,
         transactionToBeSigned: tx,
       });
-      return hash;
+      return { hash, contractData };
     } catch (err: any) {
       // TODO (user feedback): Give feedback to user.
       throw new Error(err);
@@ -263,6 +263,7 @@ export default function useTransactionManager() {
   }: SendInEvmInterface): Promise<{
     isError: boolean;
     hash: string;
+    contractData?: string;
     error?: any;
   }> => {
     const chainConfig = get(
@@ -294,7 +295,7 @@ export default function useTransactionManager() {
       }
     } else {
       try {
-        const hash = await sendERC20Token({
+        const { hash, contractData } = await sendERC20Token({
           web3,
           chain,
           amountToSend,
@@ -302,7 +303,7 @@ export default function useTransactionManager() {
           contractAddress,
           contractDecimals,
         });
-        return { hash: String(hash), isError: false };
+        return { hash: String(hash), contractData, isError: false };
       } catch (error) {
         Sentry.captureException(error);
         return { hash: '', isError: true, error: error?.message ?? error };
