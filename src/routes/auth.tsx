@@ -98,6 +98,7 @@ import CardNotificationSettings from '../containers/DebitCard/bridgeCard/cardNot
 import EnterPrivateKey from '../containers/Auth/EnterPrivateKey';
 import { ChooseWalletIndex } from '../containers/Auth/ChooseWalletIndex';
 import PhoneNumberVerificationScreen from '../containers/DebitCard/bridgeCard/verifyPhoneNumber';
+import CardTransactions from '../containers/DebitCard/bridgeCard/transactions';
 
 const { DynamicImage, DynamicButton } = require('../styles');
 
@@ -920,6 +921,21 @@ export function DebitCardStackScreen({ navigation }) {
         options={{
           headerShown: false,
         }}
+      />
+
+      <FundCardStack.Screen
+        name={screenTitle.CARD_TRANSACTIONS_SCREEN}
+        component={CardTransactions}
+        options={({ navigation }) => ({
+          headerTransparent: false,
+          headerShadowVisible: false,
+          title: 'Card Transactions',
+          headerTitleAlign: 'center',
+          headerTitleStyle: portfolioStackScreenHeaderTitleStyles,
+          headerTintColor: Colors.primaryTextColor,
+          headerBackTitleVisible: false,
+          headerLeft: props => defaultHeaderLeft(navigation),
+        })}
       />
 
       <FundCardStack.Screen

@@ -116,6 +116,7 @@ export const screenTitle = {
   CARD_NOTIFICATION_SETTINGS: 'cardNotificationSettings',
   ENTER_PRIVATE_KEY: 'enterPrivateKey',
   CHOOSE_WALLET_INDEX: 'chooseWalletIndex',
+  CARD_TRANSACTIONS_SCREEN: 'cardTransactionsScreen',
 };
 
 export const fontsName = {

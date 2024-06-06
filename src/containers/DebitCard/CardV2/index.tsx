@@ -12,6 +12,7 @@ import {
   CyDImage,
   CyDImageBackground,
   CyDSafeAreaView,
+  CyDScrollView,
   CyDText,
   CyDTouchView,
   CyDView,
@@ -108,6 +109,9 @@ const CypherCardScreen = ({ navigation, route }: CypherCardScreenProps) => {
   const [filteredTransactions, setFilteredTransactions] = useState<
     ICardTransaction[]
   >([]);
+  const [recentTransactions, setRecentTransactions] = useState<
+    ICardTransaction[]
+  >([]);
   const [filter, setFilter] = useState<{
     types: CardTransactionTypes[];
     dateRange: DateRange;
@@ -140,6 +144,7 @@ const CypherCardScreen = ({ navigation, route }: CypherCardScreenProps) => {
     }
     await fetchCardBalance();
     await retrieveTxns(true);
+    void fetchRecentTransactions();
     if (!isLayoutRendered) {
       setIsLayoutRendered(true);
     }
@@ -205,6 +210,19 @@ const CypherCardScreen = ({ navigation, route }: CypherCardScreenProps) => {
     } catch (error) {
       Sentry.captureException(error);
       setCardBalance('NA');
+    }
+  };
+  const fetchRecentTransactions = async () => {
+    const txnURL = `/v1/cards/${currentCardProvider}/card/${String(
+      cardId,
+    )}/transactions?newRoute=true&limit=5`;
+    const response = await getWithAuth(txnURL);
+    if (!response.isError) {
+      const { transactions: txnsToSet } = response.data;
+      txnsToSet.sort((a: ICardTransaction, b: ICardTransaction) => {
+        return a.date < b.date ? 1 : -1;
+      });
+      setRecentTransactions(txnsToSet);
     }
   };
 
@@ -492,7 +510,7 @@ const CypherCardScreen = ({ navigation, route }: CypherCardScreenProps) => {
   }, [trackingDetails]);
 
   return isLayoutRendered ? (
-    <CyDSafeAreaView className='flex-1 bg-white'>
+    <CyDSafeAreaView className='flex-1 bg-gradient-to-b from-cardBgFrom to-cardBgTo mt-[70px]'>
       <ShippingFeeConsentModal
         isModalVisible={isShippingFeeConsentModalVisible}
         feeAmount={String(physicalCardUpgradationFee)}
@@ -523,7 +541,75 @@ const CypherCardScreen = ({ navigation, route }: CypherCardScreenProps) => {
         filterState={[filter, setFilter]}
       />
       {/* TXN FILTER MODAL */}
-      <CyDImageBackground
+      <CyDView
+        className={
+          'h-[50px] flex flex-row justify-between items-center py-[5px] px-[10px] mx-[12px] mb-[8px]'
+        }>
+        <CyDView>
+          <CyDText className={'font-bold text-[16px]'}>
+            {t<string>('TOTAL_BALANCE') + ' (USD)'}
+          </CyDText>
+          <CyDText className={'font-bold text-[28px]'}>
+            {(cardBalance !== 'NA' ? '$ ' : '') + cardBalance}
+          </CyDText>
+        </CyDView>
+        <Button
+          image={AppImages.LOAD_CARD_LOTTIE}
+          isLottie={true}
+          onPress={() => {
+            onPressFundCard();
+          }}
+          style={
+            'pr-[7%] pl-[5%] py-[0px] w-[40%] flex flex-row items-center justify-center rounded-[8px] h-[44px]'
+          }
+          title={t('LOAD_CARD_CAPS')}
+          titleStyle={'text-[14px]'}
+        />
+      </CyDView>
+      <CyDScrollView>
+        <CyDView className='mt-[8px]'>
+          <CardScreen
+            navigation={navigation}
+            hideCardDetails={isFocused}
+            currentCardProvider={currentCardProvider}
+            setCurrentCardProvider={setCurrentCardProvider}
+            onPressUpgradeNow={onPressUpgradeNow}
+            onPressActivateCard={onPressActivateCard}
+          />
+        </CyDView>
+        <CyDView className='w-full bg-white mt-[12px] pb-[120px]'>
+          <CyDView className='mx-[12px] my-[12px]'>
+            <CyDText className='text-[18px] font-bold ml-[4px] mb-[4px]'>
+              {t<string>('RECENT_TRANSACTIONS')}
+            </CyDText>
+            <CyDView className='border-[1px] border-sepratorColor rounded-[22px] pt-[12px]'>
+              {recentTransactions.map((transaction, index) => {
+                return <CardTransactionItem item={transaction} key={index} />;
+              })}
+              <CyDTouchView
+                className='bg-cardBgTo flex flex-row justify-center items-center py-[22px] rounded-b-[22px]'
+                onPress={() =>
+                  navigation.navigate(screenTitle.CARD_TRANSACTIONS_SCREEN, {
+                    navigation,
+                    hasBothProviders,
+                    cardProvider: currentCardProvider,
+                    currentCardIndex,
+                  })
+                }>
+                <CyDText className='text-[16px] font-bold'>
+                  {t<string>('VIEW_ALL_TRANSACTIONS')}
+                </CyDText>
+                <CyDImage
+                  source={AppImages.RIGHT_ARROW_LONG}
+                  className='h-[14px] w-[14px] ml-[4px] accent-black'
+                  resizeMode='contain'
+                />
+              </CyDTouchView>
+            </CyDView>
+          </CyDView>
+        </CyDView>
+      </CyDScrollView>
+      {/* <CyDImageBackground
         className='h-full w-full'
         source={AppImages.DEBIT_CARD_BACKGROUND}
         resizeMode='cover'
@@ -531,7 +617,6 @@ const CypherCardScreen = ({ navigation, route }: CypherCardScreenProps) => {
         <AnimatedCardSection
           scrollY={scrollY}
           cardSectionHeight={cardSectionHeight}>
-          {/* SWITCH PROVIDER */}
           {hasBothProviders && (
             <CyDView className='flex items-center mt-[-10px] mb-[10px]'>
               <SwitchView
@@ -547,49 +632,12 @@ const CypherCardScreen = ({ navigation, route }: CypherCardScreenProps) => {
               />
             </CyDView>
           )}
-          <CardScreen
-            navigation={navigation}
-            hideCardDetails={isFocused}
-            currentCardProvider={currentCardProvider}
-            setCurrentCardProvider={setCurrentCardProvider}
-            onPressUpgradeNow={onPressUpgradeNow}
-            onPressActivateCard={onPressActivateCard}
-          />
-          {/* SWITCH PROVIDER */}
-          {/* FUND CARD */}
           <RenderMessage />
-          <CyDView
-            className={
-              'h-[50px] flex flex-row justify-between py-[5px] px-[10px] bg-white border-[1px] mx-[12px] rounded-[8px] border-sepratorColor'
-            }>
-            <CyDView>
-              <CyDText className={'font-bold text-[10px]'}>
-                {t<string>('TOTAL_BALANCE') + ' (USD)'}
-              </CyDText>
-              <CyDText className={'font-extrabold text-[18px]'}>
-                {(cardBalance !== 'NA' ? '$ ' : '') + cardBalance}
-              </CyDText>
-            </CyDView>
-            <Button
-              image={AppImages.LOAD_CARD_LOTTIE}
-              isLottie={true}
-              onPress={() => {
-                onPressFundCard();
-              }}
-              style={
-                'pr-[7%] pl-[5%] py-[0px] w-[40%] flex flex-row items-center justify-center rounded-[8px]'
-              }
-              title={t('LOAD_CARD_CAPS')}
-              titleStyle={'text-[14px]'}
-            />
-          </CyDView>
-          {/* FUND CARD */}
-        </AnimatedCardSection>
-        <CyDView
+        </AnimatedCardSection> */}
+      {/* <CyDView
           className={clsx('h-full px-[10px] pb-[40px]', {
             'pb-[75px]': isAndroid(),
           })}>
-          {/* TOOLBAR */}
           <AnimatedToolBar
             scrollY={scrollY}
             cardSectionHeight={cardSectionHeight}>
@@ -625,8 +673,6 @@ const CypherCardScreen = ({ navigation, route }: CypherCardScreenProps) => {
               </CyDView>
             </CyDView>
           </AnimatedToolBar>
-          {/* TOOLBAR */}
-          {/* TXN LIST */}
           <AnimatedTxnList
             scrollY={scrollY}
             cardSectionHeight={cardSectionHeight}
@@ -664,9 +710,8 @@ const CypherCardScreen = ({ navigation, route }: CypherCardScreenProps) => {
               />
             }
           />
-          {/* TXN LIST */}
-        </CyDView>
-      </CyDImageBackground>
+        </CyDView> */}
+      {/* </CyDImageBackground> */}
     </CyDSafeAreaView>
   ) : (
     <Loading />

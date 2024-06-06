@@ -1,6 +1,14 @@
 import React, { memo, useCallback, useRef, useState } from 'react';
-import { FlatList, Platform, StyleSheet, ViewToken } from 'react-native';
+import {
+  FlatList,
+  Platform,
+  StyleSheet,
+  useWindowDimensions,
+  ViewToken,
+} from 'react-native';
 import { SharedValue, useSharedValue } from 'react-native-reanimated';
+import Carousel from 'react-native-reanimated-carousel';
+import { CyDView } from '../../styles/tailwindStyles';
 
 /* 
 It is looks nice to have some sort of scaling animation in the carousel items, like such:
@@ -57,6 +65,7 @@ const CardCarousel = ({
   const boxDistance = scrollViewWidth / boxOffset - boxWidth;
   const halfBoxDistance = boxDistance / 2;
   const panX = useSharedValue(0);
+  const { width } = useWindowDimensions();
 
   const handleViewableItemsChanged = useRef(
     ({
@@ -83,42 +92,59 @@ const CardCarousel = ({
   );
 
   return (
-    <FlatList
-      horizontal
-      inverted={inverted}
+    <Carousel
+      loop={false}
+      width={width}
+      height={250}
+      autoPlay={false}
       data={cardsData}
-      onViewableItemsChanged={handleViewableItemsChanged.current}
-      viewabilityConfig={{
-        itemVisiblePercentThreshold: 100, // Item is considered visible if 100% of it is visible
+      snapEnabled={true}
+      pagingEnabled={false}
+      mode='parallax'
+      modeConfig={{
+        parallaxScrollingScale: 0.9,
+        parallaxScrollingOffset: 110,
       }}
-      contentContainerStyle={[
-        styles.contentContainerStyle,
-        Platform.select({ android: { paddingHorizontal: halfBoxDistance } }),
-      ]}
-      contentInsetAdjustmentBehavior='never'
-      snapToAlignment='center'
-      decelerationRate='fast'
-      automaticallyAdjustContentInsets={false}
-      showsHorizontalScrollIndicator={false}
-      showsVerticalScrollIndicator={false}
-      scrollEventThrottle={1}
-      snapToInterval={boxWidth}
-      contentInset={Platform.select({
-        ios: {
-          left: halfBoxDistance,
-          right: halfBoxDistance,
-        },
-      })}
-      contentOffset={{ x: halfBoxDistance * -1, y: 0 }}
-      onLayout={e => {
-        setScrollViewWidth(e.nativeEvent.layout.width);
-      }}
-      onScroll={e => {
-        panX.value = e.nativeEvent.contentOffset.x;
-      }}
-      keyExtractor={(_, index) => index.toString()}
+      scrollAnimationDuration={1000}
+      onSnapToItem={index => onCardChange?.(index)}
       renderItem={modifiedRenderItem}
     />
+    // <FlatList
+    //   horizontal
+    //   inverted={inverted}
+    //   data={cardsData}
+    //   onViewableItemsChanged={handleViewableItemsChanged.current}
+    //   viewabilityConfig={{
+    //     itemVisiblePercentThreshold: 100, // Item is considered visible if 100% of it is visible
+    //   }}
+    //   contentContainerStyle={[
+    //     styles.contentContainerStyle,
+    //     Platform.select({ android: { paddingHorizontal: halfBoxDistance } }),
+    //   ]}
+    //   contentInsetAdjustmentBehavior='never'
+    //   snapToAlignment='center'
+    //   decelerationRate='fast'
+    //   automaticallyAdjustContentInsets={false}
+    //   showsHorizontalScrollIndicator={false}
+    //   showsVerticalScrollIndicator={false}
+    //   scrollEventThrottle={1}
+    //   snapToInterval={boxWidth}
+    //   contentInset={Platform.select({
+    //     ios: {
+    //       left: halfBoxDistance,
+    //       right: halfBoxDistance,
+    //     },
+    //   })}
+    //   // contentOffset={{ x: halfBoxDistance * -1, y: 0 }}
+    //   // onLayout={e => {
+    //   //   setScrollViewWidth(e.nativeEvent.layout.width);
+    //   // }}
+    //   // onScroll={e => {
+    //   //   panX.value = e.nativeEvent.contentOffset.x;
+    //   // }}
+    //   keyExtractor={(_, index) => index.toString()}
+    //   renderItem={modifiedRenderItem}
+    // />
   );
 };
 

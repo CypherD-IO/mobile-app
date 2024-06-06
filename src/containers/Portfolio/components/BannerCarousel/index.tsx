@@ -349,11 +349,12 @@ const BannerCarousel = ({ setBannerHeight }: BannerCarouselProps) => {
   const cards = makeCards();
 
   return (
-    <CardCarousel
-      cardsData={cards}
-      moreThanOneCardOffset={1.1}
-      renderItem={renderItem}
-    />
+    // <CardCarousel
+    //   cardsData={cards}
+    //   moreThanOneCardOffset={1.1}
+    //   renderItem={renderItem}
+    // />
+    <></>
   );
 };
 

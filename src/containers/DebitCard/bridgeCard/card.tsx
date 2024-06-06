@@ -20,6 +20,8 @@ import axios from '../../../core/Http';
 import {
   CyDAnimatedView,
   CyDFastImage,
+  CyDImage,
+  CyDImageBackground,
   CyDText,
   CyDTouchView,
   CyDView,
@@ -30,7 +32,7 @@ import { useGlobalModalContext } from '../../../components/v2/GlobalModal';
 import AppImages from '../../../../assets/images/appImages';
 import clsx from 'clsx';
 import { Card } from '../../../models/card.model';
-import { orderBy } from 'lodash';
+import { get, orderBy } from 'lodash';
 import { UserCardDetails } from '../../../models/userCardDetails.interface';
 import { CardProfile } from '../../../models/cardProfile.model';
 import { useIsFocused } from '@react-navigation/native';
@@ -41,6 +43,21 @@ import {
   interpolate,
   useAnimatedStyle,
 } from 'react-native-reanimated';
+import CardDetailsModal from '../../../components/v2/card/cardDetailsModal';
+
+interface CardSecrets {
+  cvv: string;
+  expiryMonth: string;
+  expiryYear: string;
+  cardNumber: string;
+}
+
+const initialCardDetails: CardSecrets = {
+  cvv: 'xxx',
+  expiryMonth: 'xx',
+  expiryYear: 'xxxx',
+  cardNumber: 'xxxx xxxx xxxx xxxx',
+};
 
 export default function CardScreen({
   navigation,
@@ -102,11 +119,12 @@ export default function CardScreen({
   );
   const setUpgradeCorrectedCardIndex = (index: number) => {
     // is upgradeToPhysicalAvailable is true, the prompting card will be at index -1.
-    const newIndex =
-      upgradeToPhysicalAvailable || isUpgradeToPhysicalCardStatusShown
-        ? index - 1
-        : index;
-    setCurrentCardIndex(newIndex);
+    // const newIndex =
+    //   upgradeToPhysicalAvailable || isUpgradeToPhysicalCardStatusShown
+    //     ? index - 1
+    //     : index;
+    console.log(cardsWithUpgrade, index);
+    setCurrentCardIndex(index);
   };
   const { postWithAuth } = useAxios();
   const currentTimestamp = String(new Date().getDay());
@@ -279,11 +297,7 @@ export default function CardScreen({
   };
 
   const getCardBackgroundLayout = (card: Card) => {
-    if (currentCardProvider === CardProviders.BRIDGE_CARD) {
-      return (
-        'https://public.cypherd.io/icons/cardLayout.png?t=' + currentTimestamp
-      );
-    } else if (
+    if (
       currentCardProvider === CardProviders.PAYCADDY &&
       card.type === CardType.PHYSICAL
     ) {
@@ -435,311 +449,299 @@ export default function CardScreen({
     halfBoxDistance: number;
     panX: SharedValue<number>;
   }) => {
+    const card = item;
     return (
-      <RenderCard
-        item={item}
-        index={index}
-        boxWidth={boxWidth}
-        halfBoxDistance={halfBoxDistance}
-        panX={panX}
+      <CyDImageBackground
+        className='h-[200px] w-[300px] ml-[45px]'
+        resizeMode='stretch'
+        source={
+          card.type === CardType.VIRTUAL
+            ? AppImages.VIRTUAL_CARD_MASTER
+            : AppImages.PHYSICAL_CARD_MASTER
+        }
       />
     );
   };
 
-  const RenderCard = ({
-    item,
-    index,
-    boxWidth,
-    halfBoxDistance,
-    panX,
-  }: {
-    item: Card;
-    index: number;
-    boxWidth: number;
-    halfBoxDistance: number;
-    panX: SharedValue<number>;
-  }) => {
-    const card = item;
-    const {
-      isFetchingCardDetails,
-      currentCardRevealedDetails,
-      hideCardDetails,
-    } = userCardDetails;
+  // const RenderCard = ({
+  //   item,
+  //   index,
+  //   boxWidth,
+  //   halfBoxDistance,
+  //   panX,
+  // }: {
+  //   item: Card;
+  //   index: number;
+  //   boxWidth: number;
+  //   halfBoxDistance: number;
+  //   panX: SharedValue<number>;
+  // }) => {
+  //   const card = item;
+  //   const {
+  //     isFetchingCardDetails,
+  //     currentCardRevealedDetails,
+  //     hideCardDetails,
+  //   } = userCardDetails;
 
-    const animatedStyle = useAnimatedStyle(() => {
-      const scale = interpolate(
-        panX.value,
-        [
-          (index - 1) * boxWidth - halfBoxDistance,
-          index * boxWidth - halfBoxDistance,
-          (index + 1) * boxWidth - halfBoxDistance, // adjust positioning
-        ],
-        [0.88, 1, 0.88], // scale down when out of scope
-        Extrapolation.CLAMP,
-      );
-      return {
-        transform: [{ scale }],
-      };
-    });
-    if (card.type === 'physical' && card.status === 'pendingActivation') {
-      return (
-        <CyDAnimatedView className='mb-[10px]' style={animatedStyle}>
-          <CyDFastImage
-            className={clsx('absolute w-full h-[200px]')}
-            source={{ uri: getCardBackgroundLayout(card) }}
-            resizeMode='stretch'
-          />
-          <CyDView className='flex flex-col justify-center h-[200px] w-[300px] border-[1px] border-inputBorderColor rounded-[12px]'>
-            <CyDTouchView
-              onPress={() => onPressActivateCard(card)}
-              className='flex flex-row justify-center items-center border-[2px] border-inputBorderColor bg-inputBorderColor mx-[30px] p-[5px] rounded-[10px]'>
-              <CyDFastImage
-                source={AppImages.ACTIVATE_PHYSICAL_CARD}
-                className='h-[30px] w-[30px] mr-[10px]'
-              />
-              <CyDText className='font-nunito font-extrabold'>
-                {t<string>('ACTIVATE_PYHSICAL_CARD')}
-              </CyDText>
-            </CyDTouchView>
-            <CyDText className='text-center pt-[6px] font-bold'>
-              {'XXXX XXXX XXXX ' + card.last4}
-            </CyDText>
-          </CyDView>
-        </CyDAnimatedView>
-      );
-    }
+  //   if (card.type === 'physical' && card.status === 'pendingActivation') {
+  //     return (
+  //       <CyDAnimatedView className='mb-[10px]'>
+  //         <CyDFastImage
+  //           className={clsx('absolute w-[300px] h-[200px]')}
+  //           source={{ uri: getCardBackgroundLayout(card) }}
+  //           resizeMode='stretch'
+  //         />
+  //         <CyDView className='flex flex-col justify-center h-[200px] w-[300px] border-[1px] border-inputBorderColor rounded-[12px]'>
+  //           <CyDTouchView
+  //             onPress={() => onPressActivateCard(card)}
+  //             className='flex flex-row justify-center items-center border-[2px] border-inputBorderColor bg-inputBorderColor mx-[30px] p-[5px] rounded-[10px]'>
+  //             <CyDFastImage
+  //               source={AppImages.ACTIVATE_PHYSICAL_CARD}
+  //               className='h-[30px] w-[30px] mr-[10px]'
+  //             />
+  //             <CyDText className='font-nunito font-extrabold'>
+  //               {t<string>('ACTIVATE_PYHSICAL_CARD')}
+  //             </CyDText>
+  //           </CyDTouchView>
+  //           <CyDText className='text-center pt-[6px] font-bold'>
+  //             {'XXXX XXXX XXXX ' + card.last4}
+  //           </CyDText>
+  //         </CyDView>
+  //       </CyDAnimatedView>
+  //     );
+  //   }
 
-    if (card.status === 'upgradeAvailable') {
-      if (card.type === CardType.VIRTUAL) {
-        return (
-          <CyDAnimatedView className='mb-[12px]' style={animatedStyle}>
-            <CyDFastImage
-              className={clsx('absolute w-full h-full')}
-              source={{ uri: getCardBackgroundLayout(card) }}
-              resizeMode='stretch'
-            />
-            <CyDView className='flex flex-col items-center justify-center h-[200px] w-[300px] border-[1px] border-inputBorderColor rounded-[12px]'>
-              <CyDView className='flex flex-row my-[5px]'>
-                <CyDText className='bottom-[16px] text-white text-[18px] font-extrabold rounded-[8px]'>
-                  {t('UPGRADE_TO_PHYSICAL_CARD')}
-                </CyDText>
-              </CyDView>
-              <CyDView className='flex flex-row w-[75%] justify-between items-center mx-[30px]'>
-                <CyDText className='text-white text-[12px] font-semibold rounded-[8px]'>
-                  {`$${lifetimeLoadUSD}`}
-                </CyDText>
-                <CyDText className='text-white text-[18px] font-extrabold rounded-[8px]'>
-                  {`$${physicalCardEligibilityLimit}`}
-                </CyDText>
-              </CyDView>
-              <CyDView className='flex flex-row h-[8px] w-[75%] justify-start items-center border border-inputBorderColor bg-white mx-[30px] rounded-[8px]'>
-                <CyDView
-                  className={clsx(
-                    'absolute bg-toastColor h-full rounded-[8px] my-[5px]',
-                    {
-                      'bg-appColor':
-                        parseFloat(physicalCardEligibilityProgress) <= 60,
-                    },
-                    {
-                      'bg-redColor':
-                        parseFloat(physicalCardEligibilityProgress) <= 30,
-                    },
-                  )}
-                  style={{
-                    width: `${physicalCardEligibilityProgress}%`,
-                  }}
-                />
-              </CyDView>
-              {lifetimeLoadUSD < physicalCardEligibilityLimit && <CyDView className='flex flex-row my-[5px] top-[20px]'>
-                <CyDText className='mb-[4px] text-white'>{`Load `}</CyDText>
-                <CyDText className='mb-[4px] font-extrabold text-appColor'>
-                  {limitDecimalPlaces(
-                    physicalCardEligibilityLimit - lifetimeLoadUSD,
-                    2,
-                  )}
-                </CyDText>
-                <CyDText className='mb-[4px] font-extrabold text-appColor'>{` USD`}</CyDText>
-                <CyDText className='mb-[4px] text-white'>{` more to upgrade`}</CyDText>
-              </CyDView>}
-            </CyDView>
-          </CyDAnimatedView>
-        );
-      } else if (card.type === CardType.PHYSICAL) {
-        return (
-          <CyDAnimatedView className='mb-[12px]' style={animatedStyle}>
-            <CyDFastImage
-              className={clsx('absolute w-full h-full')}
-              source={{ uri: getCardBackgroundLayout(card) }}
-              resizeMode='stretch'
-            />
-            <CyDView className='flex flex-col items-center justify-end py-[10px] h-[200px] w-[300px] border-[1px] border-inputBorderColor rounded-[12px] shadow shadow-slate-200'>
-              <CyDTouchView
-                disabled={!upgradeToPhysicalAvailable}
-                onPress={() => {
-                  onPressUpgradeNow();
-                }}
-                className={clsx(
-                  'flex flex-row justify-center items-center border border-inputBorderColor bg-white rounded-[8px] px-[12px]',
-                )}>
-                <CyDFastImage
-                  source={AppImages.UPGRADE_TO_PHYSICAL_CARD_ARROW}
-                  className='h-[30px] w-[30px] mr-[8px] my-[5px]'
-                />
-                <CyDText className='font-nunito font-extrabold my-[5px]'>
-                  {t<string>('UPGRADE_PHYSICAL_CARD')}
-                  {' for '}
-                  {'$' + String(physicalCardUpgradationFee ?? 0)}
-                </CyDText>
-              </CyDTouchView>
-            </CyDView>
-          </CyDAnimatedView>
-        );
-      }
-    }
+  //   if (card.status === 'upgradeAvailable') {
+  //     if (card.type === CardType.VIRTUAL) {
+  //       return (
+  //         <CyDAnimatedView className='mb-[12px]'>
+  //           <CyDFastImage
+  //             className={clsx('absolute w-full h-full')}
+  //             source={{ uri: getCardBackgroundLayout(card) }}
+  //             resizeMode='stretch'
+  //           />
+  //           <CyDView className='flex flex-col items-center justify-center h-[200px] w-[300px] border-[1px] border-inputBorderColor rounded-[12px]'>
+  //             <CyDView className='flex flex-row my-[5px]'>
+  //               <CyDText className='bottom-[16px] text-white text-[18px] font-extrabold rounded-[8px]'>
+  //                 {t('UPGRADE_TO_PHYSICAL_CARD')}
+  //               </CyDText>
+  //             </CyDView>
+  //             <CyDView className='flex flex-row w-[75%] justify-between items-center mx-[30px]'>
+  //               <CyDText className='text-white text-[12px] font-semibold rounded-[8px]'>
+  //                 {`$${lifetimeLoadUSD}`}
+  //               </CyDText>
+  //               <CyDText className='text-white text-[18px] font-extrabold rounded-[8px]'>
+  //                 {`$${physicalCardEligibilityLimit}`}
+  //               </CyDText>
+  //             </CyDView>
+  //             <CyDView className='flex flex-row h-[8px] w-[75%] justify-start items-center border border-inputBorderColor bg-white mx-[30px] rounded-[8px]'>
+  //               <CyDView
+  //                 className={clsx(
+  //                   'absolute bg-toastColor h-full rounded-[8px] my-[5px]',
+  //                   {
+  //                     'bg-appColor':
+  //                       parseFloat(physicalCardEligibilityProgress) <= 60,
+  //                   },
+  //                   {
+  //                     'bg-redColor':
+  //                       parseFloat(physicalCardEligibilityProgress) <= 30,
+  //                   },
+  //                 )}
+  //                 style={{
+  //                   width: `${physicalCardEligibilityProgress}%`,
+  //                 }}
+  //               />
+  //             </CyDView>
+  //             {lifetimeLoadUSD < physicalCardEligibilityLimit && (
+  //               <CyDView className='flex flex-row my-[5px] top-[20px]'>
+  //                 <CyDText className='mb-[4px] text-white'>{`Load `}</CyDText>
+  //                 <CyDText className='mb-[4px] font-extrabold text-appColor'>
+  //                   {limitDecimalPlaces(
+  //                     physicalCardEligibilityLimit - lifetimeLoadUSD,
+  //                     2,
+  //                   )}
+  //                 </CyDText>
+  //                 <CyDText className='mb-[4px] font-extrabold text-appColor'>{` USD`}</CyDText>
+  //                 <CyDText className='mb-[4px] text-white'>{` more to upgrade`}</CyDText>
+  //               </CyDView>
+  //             )}
+  //           </CyDView>
+  //         </CyDAnimatedView>
+  //       );
+  //     } else if (card.type === CardType.PHYSICAL) {
+  //       return (
+  //         <CyDAnimatedView className='mb-[12px]'>
+  //           <CyDFastImage
+  //             className={clsx('absolute w-[300px] h-full object-cover')}
+  //             source={{ uri: getCardBackgroundLayout(card) }}
+  //           />
+  //           <CyDView className='flex flex-col items-center justify-end py-[10px] h-[200px] w-[300px] border-[1px] border-inputBorderColor rounded-[12px] shadow shadow-slate-200'>
+  //             <CyDTouchView
+  //               disabled={!upgradeToPhysicalAvailable}
+  //               onPress={() => {
+  //                 onPressUpgradeNow();
+  //               }}
+  //               className={clsx(
+  //                 'flex flex-row justify-center items-center border border-inputBorderColor bg-white rounded-[8px] px-[12px]',
+  //               )}>
+  //               <CyDFastImage
+  //                 source={AppImages.UPGRADE_TO_PHYSICAL_CARD_ARROW}
+  //                 className='h-[30px] w-[30px] mr-[8px] my-[5px]'
+  //               />
+  //               <CyDText className='font-nunito font-extrabold my-[5px]'>
+  //                 {t<string>('UPGRADE_PHYSICAL_CARD')}
+  //                 {' for '}
+  //                 {'$' + String(physicalCardUpgradationFee ?? 0)}
+  //               </CyDText>
+  //             </CyDTouchView>
+  //           </CyDView>
+  //         </CyDAnimatedView>
+  //       );
+  //     }
+  //   }
 
-    return (
-      <CyDAnimatedView
-        className={clsx(
-          'flex flex-col justify-center h-[200px] rounded-[8px] mb-[10px] w-[300px]',
-          {
-            'border border-inputBorderColor': card.type === 'physical',
-          },
-        )}
-        style={animatedStyle}>
-        <CyDFastImage
-          className={clsx('absolute w-full h-full')}
-          source={{ uri: getCardBackgroundLayout(card) }}
-          resizeMode='stretch'
-        />
-        {isFetchingCardDetails &&
-        card.cardId === currentCardRevealedDetails.cardId ? (
-          <CyDFastImage
-            source={{
-              uri: 'https://public.cypherd.io/icons/details_loading.png',
-            }}
-            className='h-[50px] w-[50px] self-center'
-            resizeMode='contain'
-          />
-        ) : card.status === CardStatus.ACTIVE ? (
-          <CyDView className='flex-1 flex-col justify-between'>
-            <CyDView>
-              <CyDText
-                className={clsx('font-nunito font-bold text-[16px] m-[10px]', {
-                  'text-white': card.type !== 'physical',
-                })}>
-                {card.type.toUpperCase()}
-              </CyDText>
-            </CyDView>
-            <CyDView className='flex flex-row justify-between items-center'>
-              <CyDView className='flex flex-row items-center'>
-                <CyDView>
-                  <CyDText
-                    className={clsx(
-                      'font-nunito font-bold text-[16px] m-[10px]',
-                      { 'text-white': card.type !== 'physical' },
-                    )}>
-                    {getCardNumber(card)}
-                  </CyDText>
-                </CyDView>
-                {!hideCardDetails &&
-                  currentCardRevealedDetails.cardId === card.cardId && (
-                    <CyDTouchView onPress={() => copyCardNumber()}>
-                      <CyDFastImage
-                        source={{
-                          uri: `https://public.cypherd.io/icons/${
-                            card.type === 'physical'
-                              ? 'copyBlack.png'
-                              : 'copy.png'
-                          }`,
-                        }}
-                        className='h-[20px] w-[20px] ml-[5px]'
-                        resizeMode='contain'
-                      />
-                    </CyDTouchView>
-                  )}
-              </CyDView>
-              <CyDView className='flex flex-row justify-start bg-black border-[1px] border-black p-[5px] rounded-l-[50px] mr-[0.7px]'>
-                {card.type === CardType.VIRTUAL && (
-                  <CyDTouchView onPress={toggleCardDetails}>
-                    <CyDFastImage
-                      source={{
-                        uri: `https://public.cypherd.io/icons/${
-                          !hideCardDetails &&
-                          currentCardRevealedDetails.cardId === card.cardId
-                            ? 'reveal.png'
-                            : 'hide.png'
-                        }`,
-                      }}
-                      className='h-[21px] w-[21px] ml-[5px] mr-[10px]'
-                      resizeMode='contain'
-                    />
-                  </CyDTouchView>
-                )}
-                {['physical', 'virtual'].includes(card.type) && (
-                  <CyDTouchView
-                    onPress={() =>
-                      navigation.navigate(screenTitle.CARD_SETTINGS_SCREEN, {
-                        currentCardProvider,
-                        card,
-                      })
-                    }>
-                    <CyDFastImage
-                      source={{
-                        uri: 'https://public.cypherd.io/icons/settings_outline.png',
-                      }}
-                      className='h-[20px] w-[20px] mx-[3px]'
-                    />
-                  </CyDTouchView>
-                )}
-              </CyDView>
-            </CyDView>
-            <RenderCVVAndExpiry card={card} />
-          </CyDView>
-        ) : (
-          <CyDView className='w-full h-full'>
-            <CyDView>
-              <CyDText
-                className={clsx('font-nunito font-bold text-[16px] m-[10px]', {
-                  'text-white': card.type !== 'physical',
-                })}>
-                {card.type.toUpperCase()}
-              </CyDText>
-            </CyDView>
+  //   return (
+  //     <CyDAnimatedView
+  //       className={clsx(
+  //         'flex flex-col justify-center h-[200px] rounded-[8px] mb-[10px] w-[300px]',
+  //         {
+  //           'border border-inputBorderColor': card.type === 'physical',
+  //         },
+  //       )}>
+  //       <CyDFastImage
+  //         className={clsx('absolute w-full h-full')}
+  //         source={{ uri: getCardBackgroundLayout(card) }}
+  //         resizeMode='stretch'
+  //       />
+  //       {isFetchingCardDetails &&
+  //       card.cardId === currentCardRevealedDetails.cardId ? (
+  //         <CyDFastImage
+  //           source={{
+  //             uri: 'https://public.cypherd.io/icons/details_loading.png',
+  //           }}
+  //           className='h-[50px] w-[50px] self-center'
+  //           resizeMode='contain'
+  //         />
+  //       ) : card.status === CardStatus.ACTIVE ? (
+  //         <CyDView className='flex-1 flex-col justify-between'>
+  //           <CyDView>
+  //             <CyDText
+  //               className={clsx('font-nunito font-bold text-[16px] m-[10px]', {
+  //                 'text-white': card.type !== 'physical',
+  //               })}>
+  //               {card.type.toUpperCase()}
+  //             </CyDText>
+  //           </CyDView>
+  //           <CyDView className='flex flex-row justify-between items-center'>
+  //             <CyDView className='flex flex-row items-center'>
+  //               <CyDView>
+  //                 <CyDText
+  //                   className={clsx(
+  //                     'font-nunito font-bold text-[16px] m-[10px]',
+  //                     { 'text-white': card.type !== 'physical' },
+  //                   )}>
+  //                   {getCardNumber(card)}
+  //                 </CyDText>
+  //               </CyDView>
+  //               {!hideCardDetails &&
+  //                 currentCardRevealedDetails.cardId === card.cardId && (
+  //                   <CyDTouchView onPress={() => copyCardNumber()}>
+  //                     <CyDFastImage
+  //                       source={{
+  //                         uri: `https://public.cypherd.io/icons/${
+  //                           card.type === 'physical'
+  //                             ? 'copyBlack.png'
+  //                             : 'copy.png'
+  //                         }`,
+  //                       }}
+  //                       className='h-[20px] w-[20px] ml-[5px]'
+  //                       resizeMode='contain'
+  //                     />
+  //                   </CyDTouchView>
+  //                 )}
+  //             </CyDView>
+  //             <CyDView className='flex flex-row justify-start bg-black border-[1px] border-black p-[5px] rounded-l-[50px] mr-[0.7px]'>
+  //               {card.type === CardType.VIRTUAL && (
+  //                 <CyDTouchView onPress={toggleCardDetails}>
+  //                   <CyDFastImage
+  //                     source={{
+  //                       uri: `https://public.cypherd.io/icons/${
+  //                         !hideCardDetails &&
+  //                         currentCardRevealedDetails.cardId === card.cardId
+  //                           ? 'reveal.png'
+  //                           : 'hide.png'
+  //                       }`,
+  //                     }}
+  //                     className='h-[21px] w-[21px] ml-[5px] mr-[10px]'
+  //                     resizeMode='contain'
+  //                   />
+  //                 </CyDTouchView>
+  //               )}
+  //               {['physical', 'virtual'].includes(card.type) && (
+  //                 <CyDTouchView
+  //                   onPress={() =>
+  //                     navigation.navigate(screenTitle.CARD_SETTINGS_SCREEN, {
+  //                       currentCardProvider,
+  //                       card,
+  //                     })
+  //                   }>
+  //                   <CyDFastImage
+  //                     source={{
+  //                       uri: 'https://public.cypherd.io/icons/settings_outline.png',
+  //                     }}
+  //                     className='h-[20px] w-[20px] mx-[3px]'
+  //                   />
+  //                 </CyDTouchView>
+  //               )}
+  //             </CyDView>
+  //           </CyDView>
+  //           <RenderCVVAndExpiry card={card} />
+  //         </CyDView>
+  //       ) : (
+  //         <CyDView className='w-full h-full'>
+  //           <CyDView>
+  //             <CyDText
+  //               className={clsx('font-nunito font-bold text-[16px] m-[10px]', {
+  //                 'text-white': card.type !== 'physical',
+  //               })}>
+  //               {card.type.toUpperCase()}
+  //             </CyDText>
+  //           </CyDView>
 
-            <CyDView className='pt-[15px]'>
-              <CyDFastImage
-                source={AppImages.CARD_BLOCKED}
-                className='h-[50px] w-[50px] mx-auto'
-              />
-              <CyDText
-                className={clsx(
-                  'font-nunito font-bold text-[16px] m-[10px] blur-md text-center',
-                  { 'text-white': card.type !== 'physical' },
-                )}>
-                {t<string>('CARD_LOCKED')}
-              </CyDText>
-            </CyDView>
-            <CyDView className=' bg-black border-[1px] border-black p-[5px] rounded-l-[50px] mr-[0.7px] w-[45px] absolute right-0 top-[41%]'>
-              <CyDTouchView
-                onPress={() =>
-                  navigation.navigate(screenTitle.CARD_SETTINGS_SCREEN, {
-                    currentCardProvider,
-                    card,
-                  })
-                }>
-                <CyDFastImage
-                  source={{
-                    uri: 'https://public.cypherd.io/icons/settings_outline.png',
-                  }}
-                  className='h-[20px] w-[20px] mx-[3px]'
-                />
-              </CyDTouchView>
-            </CyDView>
-          </CyDView>
-        )}
-      </CyDAnimatedView>
-    );
-  };
+  //           <CyDView className='pt-[15px]'>
+  //             <CyDFastImage
+  //               source={AppImages.CARD_BLOCKED}
+  //               className='h-[50px] w-[50px] mx-auto'
+  //             />
+  //             <CyDText
+  //               className={clsx(
+  //                 'font-nunito font-bold text-[16px] m-[10px] blur-md text-center',
+  //                 { 'text-white': card.type !== 'physical' },
+  //               )}>
+  //               {t<string>('CARD_LOCKED')}
+  //             </CyDText>
+  //           </CyDView>
+  //           <CyDView className=' bg-black border-[1px] border-black p-[5px] rounded-l-[50px] mr-[0.7px] w-[45px] absolute right-0 top-[41%]'>
+  //             <CyDTouchView
+  //               onPress={() =>
+  //                 navigation.navigate(screenTitle.CARD_SETTINGS_SCREEN, {
+  //                   currentCardProvider,
+  //                   card,
+  //                 })
+  //               }>
+  //               <CyDFastImage
+  //                 source={{
+  //                   uri: 'https://public.cypherd.io/icons/settings_outline.png',
+  //                 }}
+  //                 className='h-[20px] w-[20px] mx-[3px]'
+  //               />
+  //             </CyDTouchView>
+  //           </CyDView>
+  //         </CyDView>
+  //       )}
+  //     </CyDAnimatedView>
+  //   );
+  // };
 
   const cardsWithUpgrade = useMemo(() => {
     const actualCards = userCardDetails.cards.map(card => card);
@@ -766,11 +768,192 @@ export default function CardScreen({
   }, [currentCardProvider, upgradeToPhysicalAvailable, userCardDetails.cards]);
 
   return (
-    <CardCarousel
-      boxWidthMultiplier={0.8}
-      cardsData={cardsWithUpgrade}
-      renderItem={renderItem}
-      onCardChange={setUpgradeCorrectedCardIndex}
-    />
+    <CyDView>
+      <CardCarousel
+        boxWidthMultiplier={0.8}
+        cardsData={cardsWithUpgrade}
+        renderItem={renderItem}
+        onCardChange={setUpgradeCorrectedCardIndex}
+      />
+      {cardsWithUpgrade && (
+        <RenderCardActions
+          card={get(cardsWithUpgrade, currentCardIndex)}
+          cardProvider={currentCardProvider}
+          navigation={navigation}
+        />
+      )}
+    </CyDView>
   );
 }
+
+const RenderCardActions = ({
+  card,
+  cardProvider,
+  navigation,
+}: {
+  card: Card;
+  cardProvider: string;
+  navigation: any;
+}) => {
+  const { t } = useTranslation();
+  const { postWithAuth } = useAxios();
+  const [cardDetails, setCardDetails] =
+    useState<CardSecrets>(initialCardDetails);
+  const [showCardDetailsModal, setShowCardDetailsModal] =
+    useState<boolean>(false);
+  const { showModal, hideModal } = useGlobalModalContext();
+
+  if (card) {
+    const { type, last4, status, cardId } = card;
+
+    const validateReuseToken = async () => {
+      const cardRevealReuseToken = await getCardRevealReuseToken(cardId);
+      if (cardRevealReuseToken) {
+        const verifyReuseTokenUrl = `/v1/cards/${cardProvider}/card/${String(
+          cardId,
+        )}/verify/reuse-token`;
+        const payload = { reuseToken: cardRevealReuseToken };
+        try {
+          const response = await postWithAuth(verifyReuseTokenUrl, payload);
+          if (!response.isError) {
+            void sendCardDetails(response.data);
+          } else {
+            verifyWithOTP();
+          }
+        } catch (e: any) {
+          verifyWithOTP();
+        }
+      } else {
+        verifyWithOTP();
+      }
+    };
+
+    const verifyWithOTP = () => {
+      navigation.navigate(screenTitle.BRIDGE_CARD_REVEAL_AUTH_SCREEN, {
+        onSuccess: (data: any, cardProvider: CardProviders) => {
+          void sendCardDetails(data);
+        },
+        currentCardProvider: cardProvider,
+        card,
+        triggerOTPParam: 'verify/show-token',
+        verifyOTPPayload: { isMobile: true },
+      });
+    };
+
+    const sendCardDetails = async ({
+      vaultId,
+      cardId,
+      token,
+      reuseToken,
+    }: {
+      vaultId: string;
+      cardId: string;
+      token: string;
+      reuseToken?: string;
+    }) => {
+      if (reuseToken) {
+        await setCardRevealReuseToken(cardId, reuseToken);
+      }
+      let response;
+      if (cardProvider === CardProviders.BRIDGE_CARD) {
+        response = await axios.get(vaultId + token);
+      } else if (cardProvider === CardProviders.PAYCADDY) {
+        response = await axios.post(
+          vaultId,
+          { cardId, isProd: true },
+          { headers: { Authorization: `Bearer ${token}` } },
+        );
+      }
+      if (response?.data) {
+        if (response?.data.result) {
+          const { result } = response.data;
+          const cardDetails = {
+            cvv: result.cvv,
+            expiryMonth: result.expDate.slice(-2),
+            expiryYear: result.expDate.slice(0, 4),
+            cardNumber: result.pan.match(/.{1,4}/g).join(' '),
+          };
+          setCardDetails(cardDetails);
+          setShowCardDetailsModal(true);
+        }
+      } else {
+        showModal('state', {
+          type: 'error',
+          title: t('UNABLE_TO_REVEAL_CARD_DETAILS'),
+          description: t('CONTACT_CYPHERD_SUPPORT'),
+          onSuccess: hideModal,
+          onFailure: hideModal,
+        });
+      }
+    };
+    return (
+      <CyDView>
+        <CardDetailsModal
+          isModalVisible={showCardDetailsModal}
+          setShowModal={setShowCardDetailsModal}
+          cardDetails={cardDetails}
+        />
+
+        <CyDView className='flex flex-row justify-center items-center mb-[12px] mt-[-32px]'>
+          <CyDText className='font-bold text-[18px]'>
+            {t<string>(
+              type === CardType.VIRTUAL ? 'VIRTUAL_CARD' : 'PHYSICAL_CARD',
+            )}
+          </CyDText>
+          <CyDText className='font-bold text-[18px]'>
+            {' xxxx ' + last4}
+          </CyDText>
+        </CyDView>
+        <CyDView className='flex flex-row justify-around items-center'>
+          <CyDTouchView
+            className='flex lfex-col justify-center items-center'
+            onPress={() => {
+              void validateReuseToken();
+            }}>
+            <CyDView className='bg-appColor p-[12px] rounded-[50px]'>
+              <CyDImage
+                source={AppImages.MANAGE_CARD}
+                className='h-[26px] w-[26px]'
+                resizeMode='contain'
+              />
+            </CyDView>
+            <CyDView className='mt-[4px]'>
+              <CyDText className='font-semibold'>{'Card Details'}</CyDText>
+            </CyDView>
+          </CyDTouchView>
+          <CyDView className='flex lfex-col justify-center items-center'>
+            <CyDView className='bg-appColor p-[12px] rounded-[50px]'>
+              <CyDImage
+                source={
+                  status === CardStatus.ACTIVE
+                    ? AppImages.CYPHER_LOCKED
+                    : AppImages.UNLOCK
+                }
+                className='h-[26px] w-[26px]'
+                resizeMode='contain'
+              />
+            </CyDView>
+            <CyDView className='mt-[4px]'>
+              <CyDText className='font-semibold'>
+                {status === CardStatus.ACTIVE ? 'Lock' : 'Unlock'}
+              </CyDText>
+            </CyDView>
+          </CyDView>
+          <CyDView className='flex lfex-col justify-center items-center'>
+            <CyDView className='bg-appColor p-[12px] rounded-[50px]'>
+              <CyDImage
+                source={AppImages.MORE}
+                className='h-[26px] w-[26px] accent-black rotate-90'
+                resizeMode='contain'
+              />
+            </CyDView>
+            <CyDView className='mt-[4px]'>
+              <CyDText className='font-semibold'>{'Options'}</CyDText>
+            </CyDView>
+          </CyDView>
+        </CyDView>
+      </CyDView>
+    );
+  }
+  return <></>;
+};
