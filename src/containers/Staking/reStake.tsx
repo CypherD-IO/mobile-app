@@ -203,7 +203,7 @@ export default function ReStake({
   };
 
   const onDelegate = async () => {
-    setFinalDelegateGasFee(random(0.001, 0.01, true));
+    setFinalDelegateGasFee(random(0.01, 0.1, true));
     setDelegateModalVisible(true);
   };
 
