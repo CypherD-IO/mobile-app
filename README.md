@@ -87,4 +87,4 @@ sudo arch -x86_64 gem install ffi
 arch -x86_64 pod install -- for pod install
 ```
 
-
+![Alt](https://repobeats.axiom.co/api/embed/6b56a18d1d04f0be2d12cef997469095a3e92039.svg "Repobeats analytics image")
