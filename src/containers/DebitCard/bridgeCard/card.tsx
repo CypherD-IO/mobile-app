@@ -337,12 +337,12 @@ const RenderCardActions = ({
       const payload = { reuseToken: cardRevealReuseToken };
       try {
         const response = await postWithAuth(verifyReuseTokenUrl, payload);
+        setIsFetchingCardDetails(false);
         if (!response.isError) {
           void sendCardDetails(response.data);
         } else {
           verifyWithOTP();
         }
-        setIsFetchingCardDetails(false);
       } catch (e: any) {
         verifyWithOTP();
       }
@@ -386,6 +386,7 @@ const RenderCardActions = ({
         { headers: { Authorization: `Bearer ${token}` } },
       );
     }
+    setIsFetchingCardDetails(false);
     if (response?.data) {
       if (response?.data.result) {
         const { result } = response.data;
@@ -397,7 +398,6 @@ const RenderCardActions = ({
         };
         setCardDetails(tempCardDetails);
         setShowCardDetailsModal(true);
-        setIsFetchingCardDetails(false);
       }
     } else {
       showModal('state', {
