@@ -246,7 +246,6 @@ export default function CardTransactions({
           lastViewableTransactionDate.current = parseMonthYear(
             viewableItems[0].item.date,
           );
-          console.log(parseMonthYear(viewableItems[0].item.date));
           setViewableTransactionsDate(
             parseMonthYear(viewableItems[0].item.date),
           );

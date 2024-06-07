@@ -56,7 +56,6 @@ const BannerCarouselItem = ({
   setDismissedActivityCards,
   setDismissedStaticCards,
 }: BannerCarouselItemProps) => {
-  console.log(item);
   const isActivity = item ? 'transactionHash' in item : false;
   const { t } = useTranslation();
   const navigation = useNavigation();

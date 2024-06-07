@@ -35,18 +35,32 @@ export default function CardDetailsModal({
   const detailsAutoCloseTime = 60;
 
   useEffect(() => {
-    let hideTime = detailsAutoCloseTime;
-    setHideInterval(
-      setInterval(() => {
-        hideTime--;
-        setHideTimer(hideTime);
-      }, 1000),
-    );
-
+    if (isModalVisible) {
+      let hideTime = detailsAutoCloseTime;
+      setHideInterval(
+        setInterval(() => {
+          hideTime--;
+          setHideTimer(hideTime);
+        }, 1000),
+      );
+    }
+    if (!isModalVisible) {
+      clearInterval(hideInterval);
+      setShowDetails({
+        cardNumber: false,
+        expiry: false,
+        cvv: false,
+      });
+    }
     return () => {
-      clearInterval(hideTimer);
+      clearInterval(hideInterval);
+      setShowDetails({
+        cardNumber: false,
+        expiry: false,
+        cvv: false,
+      });
     };
-  }, []);
+  }, [isModalVisible]);
 
   useEffect(() => {
     if (hideTimer === 0) {
@@ -141,8 +155,8 @@ export default function CardDetailsModal({
                 <CyDImage
                   source={
                     showDetails.cardNumber
-                      ? AppImages.CYPHER_HIDE
-                      : AppImages.CYPHER_SHOW
+                      ? AppImages.EYE_CLOSE
+                      : AppImages.EYE_OPEN
                   }
                   className='h-[24px] w-[24px]'
                   resizeMode='contain'
@@ -174,8 +188,8 @@ export default function CardDetailsModal({
                 <CyDImage
                   source={
                     showDetails.expiry
-                      ? AppImages.CYPHER_HIDE
-                      : AppImages.CYPHER_SHOW
+                      ? AppImages.EYE_CLOSE
+                      : AppImages.EYE_OPEN
                   }
                   className='h-[24px] w-[24px]'
                   resizeMode='contain'
@@ -204,9 +218,7 @@ export default function CardDetailsModal({
               <CyDTouchView onPress={() => toggleCardDetail('cvv')}>
                 <CyDImage
                   source={
-                    showDetails.cvv
-                      ? AppImages.CYPHER_HIDE
-                      : AppImages.CYPHER_SHOW
+                    showDetails.cvv ? AppImages.EYE_CLOSE : AppImages.EYE_OPEN
                   }
                   className='h-[24px] w-[24px]'
                   resizeMode='contain'

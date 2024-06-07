@@ -65,7 +65,6 @@ const CardCarousel = ({
   const boxDistance = scrollViewWidth / boxOffset - boxWidth;
   const halfBoxDistance = boxDistance / 2;
   const panX = useSharedValue(0);
-  const { width } = useWindowDimensions();
 
   const handleViewableItemsChanged = useRef(
     ({
@@ -92,59 +91,42 @@ const CardCarousel = ({
   );
 
   return (
-    <Carousel
-      loop={false}
-      width={width}
-      height={250}
-      autoPlay={false}
+    <FlatList
+      horizontal
+      inverted={inverted}
       data={cardsData}
-      snapEnabled={true}
-      pagingEnabled={false}
-      mode='parallax'
-      modeConfig={{
-        parallaxScrollingScale: 0.9,
-        parallaxScrollingOffset: 110,
+      onViewableItemsChanged={handleViewableItemsChanged.current}
+      viewabilityConfig={{
+        itemVisiblePercentThreshold: 100, // Item is considered visible if 100% of it is visible
       }}
-      scrollAnimationDuration={1000}
-      onSnapToItem={index => onCardChange?.(index)}
+      contentContainerStyle={[
+        styles.contentContainerStyle,
+        Platform.select({ android: { paddingHorizontal: halfBoxDistance } }),
+      ]}
+      contentInsetAdjustmentBehavior='never'
+      snapToAlignment='center'
+      decelerationRate='fast'
+      automaticallyAdjustContentInsets={false}
+      showsHorizontalScrollIndicator={false}
+      showsVerticalScrollIndicator={false}
+      scrollEventThrottle={1}
+      snapToInterval={boxWidth}
+      contentInset={Platform.select({
+        ios: {
+          left: halfBoxDistance,
+          right: halfBoxDistance,
+        },
+      })}
+      contentOffset={{ x: halfBoxDistance * -1, y: 0 }}
+      onLayout={e => {
+        setScrollViewWidth(e.nativeEvent.layout.width);
+      }}
+      onScroll={e => {
+        panX.value = e.nativeEvent.contentOffset.x;
+      }}
+      keyExtractor={(_, index) => index.toString()}
       renderItem={modifiedRenderItem}
     />
-    // <FlatList
-    //   horizontal
-    //   inverted={inverted}
-    //   data={cardsData}
-    //   onViewableItemsChanged={handleViewableItemsChanged.current}
-    //   viewabilityConfig={{
-    //     itemVisiblePercentThreshold: 100, // Item is considered visible if 100% of it is visible
-    //   }}
-    //   contentContainerStyle={[
-    //     styles.contentContainerStyle,
-    //     Platform.select({ android: { paddingHorizontal: halfBoxDistance } }),
-    //   ]}
-    //   contentInsetAdjustmentBehavior='never'
-    //   snapToAlignment='center'
-    //   decelerationRate='fast'
-    //   automaticallyAdjustContentInsets={false}
-    //   showsHorizontalScrollIndicator={false}
-    //   showsVerticalScrollIndicator={false}
-    //   scrollEventThrottle={1}
-    //   snapToInterval={boxWidth}
-    //   contentInset={Platform.select({
-    //     ios: {
-    //       left: halfBoxDistance,
-    //       right: halfBoxDistance,
-    //     },
-    //   })}
-    //   // contentOffset={{ x: halfBoxDistance * -1, y: 0 }}
-    //   // onLayout={e => {
-    //   //   setScrollViewWidth(e.nativeEvent.layout.width);
-    //   // }}
-    //   // onScroll={e => {
-    //   //   panX.value = e.nativeEvent.contentOffset.x;
-    //   // }}
-    //   keyExtractor={(_, index) => index.toString()}
-    //   renderItem={modifiedRenderItem}
-    // />
   );
 };
 

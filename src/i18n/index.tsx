@@ -1062,6 +1062,7 @@ const resources = {
       VIRTUAL_CARD: 'Virtual Card',
       PHYSICAL_CARD: 'Physical Card',
       VIEW_ALL_TRANSACTIONS: 'View All Transactions',
+      UPDATE_CONTACT_DETAILS: 'Update Contact Details',
     },
   },
 };
