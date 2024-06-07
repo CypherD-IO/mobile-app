@@ -98,7 +98,7 @@ export default function StakingDelegation({
   };
 
   const txnSimulation = async () => {
-    setFinalGasFee(random(0.001, 0.01, true));
+    setFinalGasFee(random(0.01, 0.1, true));
     setSignModalVisible(true);
   };
 

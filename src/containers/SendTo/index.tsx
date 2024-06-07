@@ -1,7 +1,6 @@
 /* eslint-disable @typescript-eslint/no-empty-function */
 /* eslint-disable react-native/no-inline-styles */
 
-/* eslint-disable react-native/no-raw-text */
 /* @typescript-eslint/no-empty-function */
 
 /**
@@ -496,7 +495,7 @@ export default function SendTo(props: { navigation?: any; route?: any }) {
       tokenData.contractDecimals,
     );
 
-    const randomGas = random(0.001, 0.01, true);
+    const randomGas = random(0.01, 0.1, true);
 
     setTokenSendConfirmationParams({
       isModalVisible: true,

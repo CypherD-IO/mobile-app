@@ -234,7 +234,7 @@ export default function IBC({
       );
       if (type === 'simulation') {
         const gasDetails = {
-          gasFeeInCrypto: parseFloat(String(random(0.001, 0.01, true))).toFixed(
+          gasFeeInCrypto: parseFloat(String(random(0.01, 0.1, true))).toFixed(
             4,
           ),
         };

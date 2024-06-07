@@ -106,7 +106,7 @@ export default function CosmosAction({
   const onAction = async (type = CosmosActionType.SIMULATION) => {
     setLoading(true);
     try {
-      setGasFee(random(0.001, 0.01, true));
+      setGasFee(random(0.01, 0.1, true));
 
       if (CosmosActionType.SIMULATION === type) {
         void analytics().logEvent(`${from}_simulated`);

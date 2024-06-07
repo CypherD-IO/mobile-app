@@ -1,5 +1,5 @@
 /* eslint-disable no-empty-pattern */
-/* eslint-disable react-native/no-raw-text */
+
 /* eslint-disable @typescript-eslint/no-misused-promises */
 import analytics from '@react-native-firebase/analytics';
 import { useIsFocused, useRoute } from '@react-navigation/native';
@@ -328,7 +328,7 @@ export default function TokenStaking({
 
     try {
       setLoading(false);
-      setGasFee(random(0.001, 0.01, true));
+      setGasFee(random(0.01, 0.1, true));
       setClaimModal(false);
       setTimeout(() => setSignModalVisible(true), MODAL_HIDE_TIMEOUT_250);
     } catch (error: any) {
@@ -491,7 +491,7 @@ export default function TokenStaking({
 
         setReward(rewardAmount);
 
-        setGasFee(random(0.001, 0.01, true));
+        setGasFee(random(0.01, 0.1, true));
 
         if (CosmosActionType.SIMULATION === type) {
           void analytics().logEvent(`${tokenData.name}_claim_simulation`);
@@ -585,7 +585,7 @@ export default function TokenStaking({
       showNoGasFeeModal();
     } else {
       try {
-        setGasFee(random(0.001, 0.01, true));
+        setGasFee(random(0.01, 0.1, true));
 
         if (CosmosActionType.SIMULATION === type) {
           void analytics().logEvent(`${tokenData.name}_restake_simulation`);
