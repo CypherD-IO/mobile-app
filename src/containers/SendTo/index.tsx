@@ -662,6 +662,7 @@ export default function SendTo(props: { navigation?: any; route?: any }) {
   };
 
   const onConfirmConfirmationModal = async () => {
+    let fromAddress: string;
     const amountToSend = limitDecimalPlaces(
       valueForUsd,
       tokenData.contractDecimals,
@@ -676,12 +677,15 @@ export default function SendTo(props: { navigation?: any; route?: any }) {
       hash: string;
       error?: string;
       gasFeeInCrypto?: string | undefined;
+      contractData?: string;
     };
     if (
       chainDetails?.chainName === ChainNames.ETH ||
       (chainDetails?.chainName === ChainNames.EVMOS &&
         !isEvmosAddress(addressRef.current))
     ) {
+      const ethereum = hdWalletContext.state.wallet.ethereum;
+      fromAddress = ethereum.address;
       response = await sendEvmToken({
         chain: tokenData.chainDetails.backendName,
         amountToSend,
@@ -695,16 +699,19 @@ export default function SendTo(props: { navigation?: any; route?: any }) {
         symbol: tokenData.symbol,
       });
     } else if (chainDetails?.chainName === ChainNames.EVMOS) {
+      const ethereum = hdWalletContext.state.wallet.ethereum;
+      fromAddress = ethereum.address;
       response = await sendEvmosToken({
         toAddress: addressRef.current,
         amountToSend,
       });
     } else {
+      fromAddress = get(senderAddress, chainDetails.chainName, '');
       response = await sendCosmosToken({
         fromChain: chainDetails,
         denom: tokenData.denom ?? '',
         amount: amountToSend,
-        fromAddress: get(senderAddress, chainDetails.chainName, ''),
+        fromAddress,
         toAddress: addressRef.current,
       });
     }
@@ -756,6 +763,17 @@ export default function SendTo(props: { navigation?: any; route?: any }) {
         },
       });
       setLoading(false);
+      // monitoring api
+      void logAnalytics({
+        type: AnalyticsType.SUCCESS,
+        txnHash: response?.hash,
+        chain: chainDetails?.chainName ?? '',
+        address: fromAddress,
+        ...(response?.contractData
+          ? { contractData: response?.contractData }
+          : ''),
+        screen: route.name,
+      });
       if (willPrompt) {
         showModal('state', {
           type: 'custom',
@@ -780,6 +798,14 @@ export default function SendTo(props: { navigation?: any; route?: any }) {
       }
     } else {
       setLoading(false);
+      // monitoring api
+      void logAnalytics({
+        type: AnalyticsType.ERROR,
+        chain: chainDetails?.chainName ?? '',
+        message: parseErrorMessage(response.error),
+        screen: route.name,
+        address: fromAddress,
+      });
       activityContext.dispatch({
         type: ActivityReducerAction.POST,
         value: {
