@@ -1,16 +1,26 @@
-import React, { ReactNode, memo } from "react";
-import { Extrapolate, SharedValue, interpolate, useAnimatedStyle } from "react-native-reanimated";
-import { CyDAnimatedView } from "../../../styles/tailwindStyles";
-import { CardSectionHeights } from ".";
-import { isIOS } from "../../../misc/checkers";
+import React, { ReactNode, memo } from 'react';
+import {
+  Extrapolate,
+  SharedValue,
+  interpolate,
+  useAnimatedStyle,
+} from 'react-native-reanimated';
+import { CyDAnimatedView } from '../../../styles/tailwindStyles';
+import { CardSectionHeights } from '.';
+import { isIOS } from '../../../misc/checkers';
 
 export interface AnimatedCardSectionProps {
   scrollY: SharedValue<number>;
   children: ReactNode;
-  cardSectionHeight: CardSectionHeights
+  cardSectionHeight: CardSectionHeights;
 }
 
-const AnimatedCardSection = ({ scrollY, children, cardSectionHeight, ...otherProps }: AnimatedCardSectionProps) => {
+const AnimatedCardSection = ({
+  scrollY,
+  children,
+  cardSectionHeight,
+  ...otherProps
+}: AnimatedCardSectionProps) => {
   const OFFSET_CARD_SECTION = isIOS() ? -cardSectionHeight : 0;
   const animatedStyles = useAnimatedStyle(() => {
     const translateY = interpolate(
@@ -34,8 +44,7 @@ const AnimatedCardSection = ({ scrollY, children, cardSectionHeight, ...otherPro
     <CyDAnimatedView
       className={`absolute z-10 w-full`}
       style={[animatedStyles, { height: cardSectionHeight }]}
-      {...otherProps}
-    >
+      {...otherProps}>
       {children}
     </CyDAnimatedView>
   );

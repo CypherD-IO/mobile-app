@@ -72,6 +72,7 @@ import { Wallet } from 'ethers';
 import { isCoreumAddress } from '../containers/utilities/coreumUtilities';
 import { isInjectiveAddress } from '../containers/utilities/injectiveUtilities';
 import { isKujiraAddress } from '../containers/utilities/kujiraUtilities';
+import moment from 'moment';
 // const {showModal, hideModal} = useGlobalModalContext()
 
 export const HdWalletContext = React.createContext<HdWalletContextDef | null>(
@@ -1021,3 +1022,17 @@ export function trimWhitespace(textValue: string) {
   tempTextValue = tempTextValue.replace(/\s+/g, ' ');
   return tempTextValue;
 }
+
+export function formatToLocalDate(date: string) {
+  return moment.utc(date).local().format('MMM DD YYYY, h:mm a');
+}
+
+export const parseMonthYear = (dateString: string): string => {
+  if (dateString) {
+    const monthName = new Intl.DateTimeFormat('en-US', { month: 'long' })
+      .format;
+    const date = new Date(dateString);
+    return `${monthName(date)} ${date.getFullYear()}`;
+  }
+  return '';
+};

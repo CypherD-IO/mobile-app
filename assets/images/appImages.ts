@@ -352,6 +352,21 @@ const TELEGRAM_SETUP_STATUSBAR = {
 const CYPHER_TELEGRAM_BOT_LOGO = {
   uri: `${S3_BUCKET_URL_ICONS}/cypherTelegramBotLogo.png`,
 };
+const VIRTUAL_CARD_MASTER = {
+  uri: `${S3_BUCKET_URL_ICONS}/virtualCardMaster.png`,
+};
+const PHYSICAL_CARD_MASTER = {
+  uri: `${S3_BUCKET_URL_ICONS}/physicalCardMaster.png`,
+};
+const CIRCLE_WITH_DOTS = { uri: `${S3_BUCKET_URL_ICONS}/circleWithDots.png` };
+const PERSON = { uri: `${S3_BUCKET_URL_ICONS}/person.png` };
+const WALLETS = { uri: `${S3_BUCKET_URL_ICONS}/wallets.png` };
+const NOTIFICATION_BELL = {
+  uri: `${S3_BUCKET_URL_ICONS}/notificationBell.png`,
+};
+const DOCUMENT = {
+  uri: `${S3_BUCKET_URL_ICONS}/document.png`,
+};
 
 const AppImages = {
   TELEGRAM_SETUP_STATUSBAR,
@@ -695,5 +710,12 @@ const AppImages = {
   COREUM_LOGO,
   INJECTIVE_LOGO,
   KUJIRA_LOGO,
+  VIRTUAL_CARD_MASTER,
+  PHYSICAL_CARD_MASTER,
+  CIRCLE_WITH_DOTS,
+  PERSON,
+  WALLETS,
+  NOTIFICATION_BELL,
+  DOCUMENT,
 };
 export default AppImages;

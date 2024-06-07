@@ -58,7 +58,6 @@ import CypherCardScreen from '../containers/DebitCard/CardV2';
 import CardRevealAuthScreen from '../containers/DebitCard/bridgeCard/cardRevealAuth';
 import CardSignupLandingScreen from '../containers/DebitCard/cardSignupLanding';
 import BridgeFundCardScreen from '../containers/DebitCard/bridgeCard/fundCard';
-import BridgeCardOptionsScreen from '../containers/DebitCard/bridgeCard/cardOptions';
 import ChangePin from '../containers/PinAuthetication/changePin';
 import ConfirmPin from '../containers/PinAuthetication/confirmPin';
 import SetPin from '../containers/PinAuthetication/setPin';
@@ -98,6 +97,7 @@ import CardNotificationSettings from '../containers/DebitCard/bridgeCard/cardNot
 import EnterPrivateKey from '../containers/Auth/EnterPrivateKey';
 import { ChooseWalletIndex } from '../containers/Auth/ChooseWalletIndex';
 import PhoneNumberVerificationScreen from '../containers/DebitCard/bridgeCard/verifyPhoneNumber';
+import CardTransactions from '../containers/DebitCard/bridgeCard/transactions';
 
 const { DynamicImage, DynamicButton } = require('../styles');
 
@@ -923,6 +923,21 @@ export function DebitCardStackScreen({ navigation }) {
       />
 
       <FundCardStack.Screen
+        name={screenTitle.CARD_TRANSACTIONS_SCREEN}
+        component={CardTransactions}
+        options={({ navigation }) => ({
+          headerTransparent: false,
+          headerShadowVisible: false,
+          title: 'Card Transactions',
+          headerTitleAlign: 'center',
+          headerTitleStyle: portfolioStackScreenHeaderTitleStyles,
+          headerTintColor: Colors.primaryTextColor,
+          headerBackTitleVisible: false,
+          headerLeft: props => defaultHeaderLeft(navigation),
+        })}
+      />
+
+      <FundCardStack.Screen
         name={screenTitle.BRIDGE_CARD_TRANSACTION_DETAILS_SCREEN}
         component={TransactionDetails}
         options={{
@@ -1057,21 +1072,6 @@ export function DebitCardStackScreen({ navigation }) {
       />
 
       <FundCardStack.Screen
-        name={screenTitle.BRIDGE_CARD_OPTIONS_SCREEN}
-        component={BridgeCardOptionsScreen}
-        options={{
-          headerTransparent: false,
-          headerShadowVisible: false,
-          headerShown: true,
-          title: 'Cypher Card',
-          headerTitleAlign: 'center',
-          headerTitleStyle: portfolioStackScreenHeaderTitleStyles,
-          headerTintColor: Colors.primaryTextColor,
-          headerBackTitleVisible: false,
-        }}
-      />
-
-      <FundCardStack.Screen
         name={screenTitle.CARD_UPDATE_CONTACT_DETAILS_SCREEN}
         component={UpdateCardContactDetails}
         options={({ navigation }) => ({
@@ -1117,20 +1117,6 @@ export function DebitCardStackScreen({ navigation }) {
           headerTransparent: false,
           headerShadowVisible: false,
           title: 'Cypher Card',
-          headerTitleAlign: 'center',
-          headerTitleStyle: portfolioStackScreenHeaderTitleStyles,
-          headerTintColor: Colors.primaryTextColor,
-          headerBackTitleVisible: false,
-        }}
-      />
-      <FundCardStack.Screen
-        name={screenTitle.CARD_SETTINGS_SCREEN}
-        component={BridgeCardOptionsScreen}
-        options={{
-          headerTransparent: false,
-          headerShadowVisible: false,
-          headerShown: true,
-          title: 'Card Options',
           headerTitleAlign: 'center',
           headerTitleStyle: portfolioStackScreenHeaderTitleStyles,
           headerTintColor: Colors.primaryTextColor,

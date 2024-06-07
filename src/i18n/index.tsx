@@ -1059,6 +1059,10 @@ const resources = {
       TOGGLE_TELEGRAM_NOTIFICATION_FAIL:
         'Unable to change Teleegram Notification status. Please try again later!',
       AUTHENTICATION_FAILED: 'Authentication Failed',
+      VIRTUAL_CARD: 'Virtual Card',
+      PHYSICAL_CARD: 'Physical Card',
+      VIEW_ALL_TRANSACTIONS: 'View All Transactions',
+      UPDATE_CONTACT_DETAILS: 'Update Contact Details',
     },
   },
 };
