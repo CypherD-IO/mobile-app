@@ -546,13 +546,13 @@ export default function BridgeFundCardScreen({ route }: { route: any }) {
         chainDetails.chainName !== ChainNames.OSMOSIS
       ) {
         gasDetails = {
-          gasFeeInCrypto: parseFloat(String(random(0.001, 0.01, true))).toFixed(
+          gasFeeInCrypto: parseFloat(String(random(0.01, 0.1, true))).toFixed(
             4,
           ),
         };
       } else if (chainDetails.chainName === ChainNames.OSMOSIS) {
         gasDetails = {
-          gasFeeInCrypto: parseFloat(String(random(0.001, 0.01, true))).toFixed(
+          gasFeeInCrypto: parseFloat(String(random(0.01, 0.1, true))).toFixed(
             4,
           ),
         };
@@ -936,17 +936,13 @@ export default function BridgeFundCardScreen({ route }: { route: any }) {
               denom,
               contractDecimals,
             });
-          } else if (chainDetails.chainName === ChainNames.OSMOSIS) {
-            gasDetails = {
-              gasFeeInCrypto: parseFloat(
-                String(random(0.001, 0.01, true)),
-              ).toFixed(4),
-            };
           } else {
             gasDetails = {
-              gasFeeInCrypto: parseFloat(
-                String(random(0.001, 0.01, true)),
-              ).toFixed(4),
+              gasFeeInCrypto: get(
+                gasFeeReservation,
+                [chainDetails.chainName, 'backendName'],
+                0.1,
+              ),
             };
           }
 
@@ -985,7 +981,6 @@ export default function BridgeFundCardScreen({ route }: { route: any }) {
           return;
         }
       }
-
       try {
         const payload = {
           ecosystem: 'cosmos',
