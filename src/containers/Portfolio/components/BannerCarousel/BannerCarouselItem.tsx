@@ -56,7 +56,7 @@ const BannerCarouselItem = ({
   setDismissedActivityCards,
   setDismissedStaticCards,
 }: BannerCarouselItemProps) => {
-  const isActivity = 'transactionHash' in item;
+  const isActivity = item ? 'transactionHash' in item : false;
   const { t } = useTranslation();
   const navigation = useNavigation();
   const animatedStyle = useAnimatedStyle(() => {
@@ -134,10 +134,12 @@ const BannerCarouselItem = ({
           toSymbol,
           toTokenAmount,
         } = item as ExchangeTransaction;
-        const fromChainlogo = ALL_CHAINS.find(chain => chain.name === fromChain)
-          ?.logo_url;
-        const toChainlogo = ALL_CHAINS.find(chain => chain.name === toChain)
-          ?.logo_url;
+        const fromChainlogo = ALL_CHAINS.find(
+          chain => chain.name === fromChain,
+        )?.logo_url;
+        const toChainlogo = ALL_CHAINS.find(
+          chain => chain.name === toChain,
+        )?.logo_url;
         return (
           <>
             <CyDView>

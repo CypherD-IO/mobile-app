@@ -17,6 +17,7 @@ import AppImages from '../../../assets/images/appImages';
 import moment from 'moment';
 import { useNavigation } from '@react-navigation/native';
 import { ICardTransaction } from '../../models/card.model';
+import { formatToLocalDate } from '../../core/util';
 
 interface CardTransactionItemProps {
   item: ICardTransaction;
@@ -33,10 +34,6 @@ const getTransactionIndicator = (type: string) => {
     default:
       return AppImages.MOVE_FUNDS;
   }
-};
-
-const formatDate = (date: string) => {
-  return moment.utc(date).local().format('MMM DD YYYY, h:mm a');
 };
 
 const getTransactionSign = (type: string) => {
@@ -60,7 +57,7 @@ const CardTransactionItem = ({ item }: CardTransactionItemProps) => {
   const { iconUrl, type, createdAt, title, amount, isSettled } = item;
   return (
     <>
-      <CyDView className='absolute bottom-[-930px] h-[1000px] w-full bg-white border-x border-sepratorColor' />
+      {/* <CyDView className='absolute bottom-[-930px] h-[1000px] w-full bg-white border-x border-sepratorColor' /> */}
       <CyDTouchView
         key={item.id}
         className={clsx(
@@ -94,7 +91,7 @@ const CardTransactionItem = ({ item }: CardTransactionItemProps) => {
               {title.replace(/\s+/g, ' ')}
             </CyDText>
             <CyDText>
-              {formatDate(moment.unix(createdAt).toISOString())}
+              {formatToLocalDate(moment.unix(createdAt).toISOString())}
             </CyDText>
           </CyDView>
         </CyDView>

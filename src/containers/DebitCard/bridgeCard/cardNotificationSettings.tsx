@@ -373,7 +373,6 @@ export default function CardNotificationSettings(props: {
                     <CyDText
                       className='text-blue-600 underline cursor-pointer'
                       onPress={() => {
-                        console.log('FEAUFIGAO');
                         void Linking.openURL('https://t.me/CypherHQBot');
                       }}>
                       CypherHQBot{' '}

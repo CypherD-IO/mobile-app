@@ -30,16 +30,13 @@ import LottieView from 'lottie-react-native';
 
 export default function UpdateCardContactDetails({
   navigation,
-  route,
 }: {
-  navigation: { navigate: () => {} };
-  route: { params: { type: CardDetails } };
+  navigation: any;
 }) {
   const [phoneNumber, setPhoneNumber] = useState<string>('');
   const [isOTPTriggered, setIsOTPTriggered] = useState<boolean>(false);
   const globalContext = useContext<any>(GlobalContext);
   const cardProfile: CardProfile = globalContext.globalState.cardProfile;
-  const { type } = route.params;
 
   const [userBasicDetails, setUserBasicDetails] = useState({
     phoneNumber: '',
@@ -68,22 +65,19 @@ export default function UpdateCardContactDetails({
 
   const RESENT_OTP_TIME = 30;
 
-  const userBasicDetailsValidationSchema = yup.object(
-    type === CardDetails.EMAIL
-      ? {
-          email: yup
-            .string()
-            .required(t('EMAIL_REQUIRED'))
-            .test('isValidEmail', t('INVALID_EMAIL'), email => {
-              if (email) {
-                return isValidEmailID(email);
-              } else {
-                return true;
-              }
-            }),
+  const userBasicDetailsValidationSchema = yup.object({
+    email: yup
+      .string()
+      .required(t('EMAIL_REQUIRED'))
+      .test('isValidEmail', t('INVALID_EMAIL'), email => {
+        if (email) {
+          return isValidEmailID(email);
+        } else {
+          return true;
         }
-      : { phoneNumber: yup.string().required(t('PHONE_NUMBER_REQUIRED')) },
-  );
+      }),
+    phoneNumber: yup.string().required(t('PHONE_NUMBER_REQUIRED')),
+  });
 
   useEffect(() => {
     void getProfile();
@@ -102,7 +96,7 @@ export default function UpdateCardContactDetails({
     setPhoneNumber(cardProfile.phone);
     setUserBasicDetails({
       phoneNumber: '',
-      email: cardProfile.email,
+      email: String(cardProfile.email),
     });
   };
 
@@ -193,14 +187,10 @@ export default function UpdateCardContactDetails({
 
   const onOTPEntry = async (otp: string) => {
     setIsSubmitting(true);
-    const data: Record<string, string | number> =
-      type === CardDetails.PHONE
-        ? {
-            phone:
-              selectedCountryForDialCode.dialCode +
-              userBasicDetails.phoneNumber,
-          }
-        : { email: userBasicDetails.email };
+    const data: Record<string, string | number> = {
+      phone: selectedCountryForDialCode.dialCode + userBasicDetails.phoneNumber,
+      email: userBasicDetails.email,
+    };
 
     if (otp.length === 4) {
       data.otp = Number(otp);
@@ -271,92 +261,89 @@ export default function UpdateCardContactDetails({
           onSubmit={values => updateDetails(values)}>
           {formProps => (
             <CyDView className='mx-[30px]'>
-              {type === CardDetails.PHONE && (
-                <CyDView>
-                  <CyDText className='text-[16px] font-bold mt-[20px]'>
-                    {t('CURRENT_PHONE_NUMBER')} {phoneNumber}
-                  </CyDText>
-                  <CyDView
-                    className={clsx(
-                      'h-[50px] mt-[8px] border-[1px] border-inputBorderColor rounded-[5px] flex flex-row',
-                      {
-                        'border-redOffColor':
-                          formProps.touched.phoneNumber &&
-                          formProps.errors.phoneNumber,
-                      },
-                    )}>
-                    <CyDTouchView
-                      onPress={() => onDialCodeModalOpen(formProps.values)}
-                      className={
-                        'w-4/12 border-r-[1px] border-[#EBEBEB] bg-white py-[13px] rounded-l-[16px] flex items-center'
-                      }>
-                      <CyDView className={'mt-[-4px] ml-[-55px]'}>
-                        <CyDText className={'text-[33px] mt-[-6px]'}>
-                          {selectedCountryForDialCode.flag}
-                        </CyDText>
-                      </CyDView>
-                      <CyDView className={'mt-[-20px] ml-[45px]'}>
-                        <CyDText
-                          className={'text-[13px] font-extrabold text-center'}>
-                          {selectedCountryForDialCode.dialCode}
-                        </CyDText>
-                      </CyDView>
-                    </CyDTouchView>
-                    <CyDView className={'flex flex-row items-center w-8/12'}>
-                      <CyDView className={'flex flex-row items-center'}>
-                        <CyDTextInput
-                          className={clsx(
-                            'text-black font-nunito text-[16px] ml-[8px] w-[100%]',
-                            { 'mt-[-8px]': isAndroid() },
-                          )}
-                          value={formProps.values.phoneNumber}
-                          autoCapitalize='none'
-                          keyboardType={'numeric'}
-                          maxLength={15}
-                          key='phoneNumber'
-                          autoCorrect={false}
-                          placeholderTextColor={'#C5C5C5'}
-                          onChangeText={formProps.handleChange('phoneNumber')}
-                          placeholder='Phone Number'
-                        />
-                      </CyDView>
+              <CyDView>
+                <CyDText className='text-[16px] font-bold mt-[20px]'>
+                  {t('CURRENT_PHONE_NUMBER')} {phoneNumber}
+                </CyDText>
+                <CyDView
+                  className={clsx(
+                    'h-[50px] mt-[8px] border-[1px] border-inputBorderColor rounded-[5px] flex flex-row',
+                    {
+                      'border-redOffColor':
+                        formProps.touched.phoneNumber &&
+                        formProps.errors.phoneNumber,
+                    },
+                  )}>
+                  <CyDTouchView
+                    onPress={() => onDialCodeModalOpen(formProps.values)}
+                    className={
+                      'w-4/12 border-r-[1px] border-[#EBEBEB] bg-white py-[13px] rounded-l-[16px] flex items-center'
+                    }>
+                    <CyDView className={'mt-[-4px] ml-[-55px]'}>
+                      <CyDText className={'text-[33px] mt-[-6px]'}>
+                        {selectedCountryForDialCode.flag}
+                      </CyDText>
+                    </CyDView>
+                    <CyDView className={'mt-[-20px] ml-[45px]'}>
+                      <CyDText
+                        className={'text-[13px] font-extrabold text-center'}>
+                        {selectedCountryForDialCode.dialCode}
+                      </CyDText>
+                    </CyDView>
+                  </CyDTouchView>
+                  <CyDView className={'flex flex-row items-center w-8/12'}>
+                    <CyDView className={'flex flex-row items-center'}>
+                      <CyDTextInput
+                        className={clsx(
+                          'text-black font-nunito text-[16px] ml-[8px] w-[100%]',
+                          { 'mt-[-8px]': isAndroid() },
+                        )}
+                        value={formProps.values.phoneNumber}
+                        autoCapitalize='none'
+                        keyboardType={'numeric'}
+                        maxLength={15}
+                        key='phoneNumber'
+                        autoCorrect={false}
+                        placeholderTextColor={'#C5C5C5'}
+                        onChangeText={formProps.handleChange('phoneNumber')}
+                        placeholder='Phone Number'
+                      />
                     </CyDView>
                   </CyDView>
-                  {formProps.touched.phoneNumber &&
-                    formProps.errors.phoneNumber && (
-                      <CyDView className={'ml-[33px] mt-[6px] mb-[-11px]'}>
-                        <CyDText className={'text-redOffColor font-semibold'}>
-                          {formProps.errors.phoneNumber}
-                        </CyDText>
-                      </CyDView>
-                    )}
                 </CyDView>
-              )}
-              {type === CardDetails.EMAIL && (
-                <CyDView className={'mt-[24px]'}>
-                  <CyDText className='text-[16px] font-bold mt-[20px]'>
-                    {t('EMAIL_ADDRESS')}
-                  </CyDText>
-                  <CyDTextInput
-                    className={clsx(
-                      ' border-[1px] border-inputBorderColor mt-[8px] rounded-[5px] p-[12px] text-[18px] font-nunito text-primaryTextColor',
-                      {
-                        'border-redOffColor':
-                          formProps.touched.email && formProps.errors.email,
-                      },
-                    )}
-                    value={formProps.values.email}
-                    key='email'
-                    textContentType='emailAddress'
-                    keyboardType='email-address'
-                    autoCapitalize='none'
-                    autoCorrect={false}
-                    onChangeText={formProps.handleChange('email')}
-                    placeholderTextColor={'#C5C5C5'}
-                    placeholder='Email'
-                  />
-                </CyDView>
-              )}
+                {formProps.touched.phoneNumber &&
+                  formProps.errors.phoneNumber && (
+                    <CyDView className={'ml-[33px] mt-[6px] mb-[-11px]'}>
+                      <CyDText className={'text-redOffColor font-semibold'}>
+                        {formProps.errors.phoneNumber}
+                      </CyDText>
+                    </CyDView>
+                  )}
+              </CyDView>
+
+              <CyDView className={'mt-[24px]'}>
+                <CyDText className='text-[16px] font-bold mt-[20px]'>
+                  {t('EMAIL_ADDRESS')}
+                </CyDText>
+                <CyDTextInput
+                  className={clsx(
+                    ' border-[1px] border-inputBorderColor mt-[8px] rounded-[5px] p-[12px] text-[18px] font-nunito text-primaryTextColor',
+                    {
+                      'border-redOffColor':
+                        formProps.touched.email && formProps.errors.email,
+                    },
+                  )}
+                  value={formProps.values.email}
+                  key='email'
+                  textContentType='emailAddress'
+                  keyboardType='email-address'
+                  autoCapitalize='none'
+                  autoCorrect={false}
+                  onChangeText={formProps.handleChange('email')}
+                  placeholderTextColor={'#C5C5C5'}
+                  placeholder='Email'
+                />
+              </CyDView>
               {formProps.touched.email && formProps.errors.email && (
                 <CyDView className={'ml-[33px] mt-[6px] mb-[-11px]'}>
                   <CyDText className={'text-redOffColor font-semibold'}>
