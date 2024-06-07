@@ -217,15 +217,16 @@ export default function useTransactionManager() {
         .encodeABI();
 
       const code = await web3.eth.getCode(toAddress);
-      let { gasLimit, gasPrice } = await estimateGasForEvm({
-        web3,
-        chain,
-        fromAddress,
-        toAddress,
-        amountToSend,
-        contractAddress,
-        contractDecimals,
-      });
+      let { gasLimit, gasPrice, priorityFee, isEIP1599Supported } =
+        await estimateGasForEvm({
+          web3,
+          chain,
+          fromAddress,
+          toAddress,
+          amountToSend,
+          contractAddress,
+          contractDecimals,
+        });
       gasLimit = decideGasLimitBasedOnTypeOfToAddress(
         code,
         gasLimit,
@@ -236,11 +237,21 @@ export default function useTransactionManager() {
       const tx = {
         from: ethereum.address,
         to: contractAddress,
-        gasPrice,
         value: '0x0',
         gas: web3.utils.toHex(gasLimit),
         data: contractData,
       };
+
+      if (!isEIP1599Supported) {
+        set(tx, 'gasPrice', gasPrice);
+      } else {
+        set(
+          tx,
+          'maxPriorityFeePerGas',
+          web3.utils.toWei(priorityFee.toFixed(9), 'gwei'),
+        );
+      }
+
       const hash = await signEthTransaction({
         web3,
         chain,
