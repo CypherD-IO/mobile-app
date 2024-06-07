@@ -817,12 +817,13 @@ export function logAnalytics(params: SuccessAnalytics | ErrorAnalytics): void {
       break;
     }
     case AnalyticsType.ERROR: {
-      const { chain, message, screen } = params as ErrorAnalytics;
+      const { chain, message, screen, address } = params as ErrorAnalytics;
       const data = {
         chain,
         message,
         client: `${Platform.OS}:${DeviceInfo.getVersion()}`,
         screen,
+        ...(address ? { address } : {}),
       };
       void axios.post(ANALYTICS_ERROR_URL, data);
       break;
