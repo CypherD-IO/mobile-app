@@ -337,26 +337,37 @@ const RenderCardActions = ({
   }, [trackingDetails, cardId]);
 
   const validateReuseToken = async () => {
-    setIsFetchingCardDetails(true);
-    const cardRevealReuseToken = await getCardRevealReuseToken(cardId);
-    if (cardRevealReuseToken) {
-      const verifyReuseTokenUrl = `/v1/cards/${cardProvider}/card/${String(
-        cardId,
-      )}/verify/reuse-token`;
-      const payload = { reuseToken: cardRevealReuseToken };
-      try {
-        const response = await postWithAuth(verifyReuseTokenUrl, payload);
-        setIsFetchingCardDetails(false);
-        if (!response.isError) {
-          void sendCardDetails(response.data);
-        } else {
+    if (card.type === CardType.VIRTUAL) {
+      setIsFetchingCardDetails(true);
+      const cardRevealReuseToken = await getCardRevealReuseToken(cardId);
+      if (cardRevealReuseToken) {
+        const verifyReuseTokenUrl = `/v1/cards/${cardProvider}/card/${String(
+          cardId,
+        )}/verify/reuse-token`;
+        const payload = { reuseToken: cardRevealReuseToken };
+        try {
+          const response = await postWithAuth(verifyReuseTokenUrl, payload);
+          setIsFetchingCardDetails(false);
+          if (!response.isError) {
+            void sendCardDetails(response.data);
+          } else {
+            verifyWithOTP();
+          }
+        } catch (e: any) {
           verifyWithOTP();
         }
-      } catch (e: any) {
+      } else {
         verifyWithOTP();
       }
     } else {
-      verifyWithOTP();
+      showModal('state', {
+        type: 'error',
+        title: ' ',
+        description:
+          'Reveal card feature has been disabled for your safety. Refer to your physical card for card details',
+        onSuccess: hideModal,
+        onFailure: hideModal,
+      });
     }
   };
 
