@@ -234,7 +234,7 @@ export default function CypherCardScreen({
   };
 
   return isLayoutRendered ? (
-    <CyDSafeAreaView className='flex-1 bg-gradient-to-b from-cardBgFrom to-cardBgTo mt-[70px]'>
+    <CyDSafeAreaView className='flex-1 bg-gradient-to-b from-cardBgFrom to-cardBgTo mt-[20px] mb-[75px]'>
       <ShippingFeeConsentModal
         isModalVisible={isShippingFeeConsentModalVisible}
         feeAmount={String(physicalCardUpgradationFee)}
@@ -328,7 +328,7 @@ export default function CypherCardScreen({
                   </CyDText>
                   <CyDImage
                     source={AppImages.RIGHT_ARROW_LONG}
-                    className='h-[14px] w-[14px] ml-[4px] accent-black'
+                    className='h-[14px] w-[14px] ml-[4px] mt-[4px] accent-black'
                     resizeMode='contain'
                   />
                 </CyDTouchView>

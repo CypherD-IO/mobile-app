@@ -135,7 +135,7 @@ export default function CardDetailsModal({
           </CyDTouchView>
         </CyDView>
         <CyDView className='flex flex-row justify-between items-center w-full'>
-          <CyDText className='text-center text-sm text-lightThemeGrayText w-full'>
+          <CyDText className='text-center text-[14px] text-lightThemeGrayText w-full'>
             Details will be hidden in {hideTimer} sec
           </CyDText>
         </CyDView>
@@ -206,7 +206,7 @@ export default function CardDetailsModal({
           </CyDView>
         </CyDView>
         <CyDView className='bg-white rounded-[12px] px-[8px] py-[10px] mt-[18px]'>
-          <CyDText className='ftext-[18px] ont-bold'>CVV</CyDText>
+          <CyDText className='text-[18px] ont-bold'>CVV</CyDText>
           <CyDView className='flex flex-row justify-between items-center'>
             <CyDText
               className={clsx('text-[18px]', {

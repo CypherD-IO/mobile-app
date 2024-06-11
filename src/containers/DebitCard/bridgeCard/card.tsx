@@ -9,7 +9,11 @@ import React, {
 } from 'react';
 import { GlobalContext } from '../../../core/globalContext';
 import { screenTitle } from '../../../constants';
-import { copyToClipboard, limitDecimalPlaces } from '../../../core/util';
+import {
+  copyToClipboard,
+  limitDecimalPlaces,
+  sleepFor,
+} from '../../../core/util';
 import { useTranslation } from 'react-i18next';
 import {
   setCardRevealReuseToken,
@@ -102,9 +106,7 @@ export default function CardScreen({
     !cardProfile[currentCardProvider]?.cards
       ?.map(card => card.type)
       .includes(CardType.PHYSICAL);
-  const [currentCardIndex, setCurrentCardIndex] = useState<number>(
-    isUpgradeToPhysicalCardStatusShown || upgradeToPhysicalAvailable ? 1 : 0,
-  );
+  const [currentCardIndex, setCurrentCardIndex] = useState<number>(0);
   const [trackingDetails, setTrackingDetails] = useState({});
 
   const setUpgradeCorrectedCardIndex = (index: number) => {
@@ -254,6 +256,7 @@ const RenderCardActions = ({
     useState<boolean>(false);
   const [isStatusLoading, setIsStatusLoading] = useState<boolean>(false);
   const { type, last4, status, cardId } = card;
+  const isFocused = useIsFocused();
   const {
     lifetimeAmountUsd: lifetimeLoadUSD,
     pc: { isPhysicalCardEligible: upgradeToPhysicalAvailable = false } = {},
@@ -273,6 +276,12 @@ const RenderCardActions = ({
     !cardProfile[cardProvider]?.cards
       ?.map(card => card.type)
       .includes(CardType.PHYSICAL);
+
+  useEffect(() => {
+    if (isFocused && isFetchingCardDetails) {
+      setIsFetchingCardDetails(false);
+    }
+  }, [isFocused]);
 
   const copyTrackingNumber = (trackingNumber: string) => {
     copyToClipboard(trackingNumber);
@@ -374,6 +383,7 @@ const RenderCardActions = ({
     token: string;
     reuseToken?: string;
   }) => {
+    await sleepFor(1000);
     setIsFetchingCardDetails(true);
     if (reuseToken) {
       await setCardRevealReuseToken(cardId, reuseToken);
