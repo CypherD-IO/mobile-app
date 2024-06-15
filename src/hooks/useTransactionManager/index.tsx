@@ -363,12 +363,14 @@ export default function useTransactionManager() {
     amount,
     fromAddress,
     toAddress,
+    contractDecimals,
   }: {
     fromChain: Chain;
     denom: string;
     amount: string;
     fromAddress: string;
     toAddress: string;
+    contractDecimals: number;
   }): Promise<{
     isError: boolean;
     hash: string;
@@ -398,10 +400,10 @@ export default function useTransactionManager() {
 
         const tokenDenom = denom ?? cosmosConfig[backendName].denom;
 
-        const contractDecimals = get(cosmosConfig, chainName).contractDecimal;
         const amountToSend = ethers
           .parseUnits(amount, contractDecimals)
           .toString();
+
         const result = await signingClient.sendTokens(
           fromAddress,
           toAddress,
@@ -447,6 +449,7 @@ export default function useTransactionManager() {
     amount,
     fromAddress,
     toAddress,
+    contractDecimals,
   }: {
     fromChain: Chain;
     toChain: Chain;
@@ -454,6 +457,7 @@ export default function useTransactionManager() {
     amount: string;
     fromAddress: string;
     toAddress: string;
+    contractDecimals: number;
   }): Promise<{
     isError: boolean;
     hash: string;
@@ -470,7 +474,6 @@ export default function useTransactionManager() {
           rpc,
           signer,
         );
-        const contractDecimals = get(cosmosConfig, chainName).contractDecimal;
 
         const gasFeeDetails = await estimateGasForCosmosIBC({
           fromChain,
@@ -602,10 +605,12 @@ export default function useTransactionManager() {
     chain,
     amount,
     validatorAddress,
+    contractDecimals,
   }: {
     chain: Chain;
     amount: string;
     validatorAddress: string;
+    contractDecimals: number;
   }) => {
     try {
       const { chainName, backendName } = chain;
@@ -615,7 +620,6 @@ export default function useTransactionManager() {
 
         if (accounts) {
           const userAddress = accounts[0].address;
-          const contractDecimals = get(cosmosConfig, chainName).contractDecimal;
           const denom = get(cosmosConfig, chainName).denom;
 
           const gasDetails = await estiamteGasForDelgate({
@@ -694,10 +698,12 @@ export default function useTransactionManager() {
     chain,
     amount,
     validatorAddress,
+    contractDecimals,
   }: {
     chain: Chain;
     amount: string;
     validatorAddress: string;
+    contractDecimals: number;
   }) => {
     try {
       const { chainName, backendName } = chain;
@@ -706,7 +712,6 @@ export default function useTransactionManager() {
         const accounts = await signer?.getAccounts();
         if (accounts) {
           const userAddress = accounts[0].address;
-          const contractDecimals = get(cosmosConfig, chainName).contractDecimal;
           const denom = get(cosmosConfig, chainName).denom;
           const gasDetails = await estimateGasForUndelegate({
             chain,
@@ -869,11 +874,13 @@ export default function useTransactionManager() {
     amount,
     validatorSrcAddress,
     validatorDstAddress,
+    contractDecimals,
   }: {
     chain: Chain;
     amount: string;
     validatorSrcAddress: string;
     validatorDstAddress: string;
+    contractDecimals: number;
   }) => {
     try {
       const { chainName, backendName } = chain;
@@ -884,7 +891,6 @@ export default function useTransactionManager() {
       if (accounts) {
         const userAddress = accounts[0].address;
         if (signer) {
-          const contractDecimals = get(cosmosConfig, chainName).contractDecimal;
           const denom = get(cosmosConfig, chainName).denom;
           const gasDetails = await estimateGasForRedelgate({
             chain,

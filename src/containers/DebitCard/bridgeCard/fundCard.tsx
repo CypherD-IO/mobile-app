@@ -368,6 +368,7 @@ export default function BridgeFundCardScreen({ route }: { route: any }) {
                 amount: actualTokensRequired,
                 fromAddress: get(cosmosAddresses, chainDetails.chainName),
                 toAddress: tokenQuote.targetAddress,
+                contractDecimals,
               });
             } else if (chainName === ChainNames.OSMOSIS) {
               response = await sendCosmosToken({
@@ -376,6 +377,7 @@ export default function BridgeFundCardScreen({ route }: { route: any }) {
                 amount: actualTokensRequired,
                 fromAddress: get(cosmosAddresses, chainDetails.chainName),
                 toAddress: tokenQuote.targetAddress,
+                contractDecimals,
               });
             } else {
               response = await evmosIBC({
