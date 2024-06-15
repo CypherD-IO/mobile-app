@@ -598,6 +598,7 @@ export default function TokenStaking({
             chain: tokenData.chainDetails,
             validatorAddress: validator.address,
             amount: ethers.formatUnits(reward, tokenData.contractDecimals ?? 6),
+            contractDecimals: tokenData.contractDecimals,
           });
 
           setReStakeModalVisible(false);

@@ -122,6 +122,7 @@ export default function CosmosAction({
               chain: tokenData.chainDetails,
               amount,
               validatorAddress: validatorData.address,
+              contractDecimals: tokenData.contractDecimals,
             });
             break;
           }
@@ -131,6 +132,7 @@ export default function CosmosAction({
               chain: tokenData.chainDetails,
               amount,
               validatorAddress: validatorData.address,
+              contractDecimals: tokenData.contractDecimals,
             });
             break;
           }
@@ -140,6 +142,7 @@ export default function CosmosAction({
               amount,
               validatorSrcAddress: validatorData.address,
               validatorDstAddress: reValidator.address,
+              contractDecimals: tokenData.contractDecimals,
             });
             break;
           }

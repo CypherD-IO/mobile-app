@@ -248,6 +248,7 @@ export default function IBC({
           amount,
           fromAddress,
           toAddress: receiverAddress,
+          contractDecimals: tokenData.contractDecimals,
         });
         if (!transaction.isError) {
           setSignModalVisible(false);
