@@ -809,22 +809,27 @@ export function logAnalytics(params: SuccessAnalytics | ErrorAnalytics): void {
   const { type } = params;
   switch (type) {
     case AnalyticsType.SUCCESS: {
-      const { chain, txnHash } = params as SuccessAnalytics;
+      const { chain, txnHash, contractData, address } =
+        params as SuccessAnalytics;
       const data = {
         chain,
         txnHash,
+        ...(contractData ? { contractData } : {}),
+        ...(address ? { address } : {}),
       };
       void axios.post(ANALYTICS_SUCCESS_URL, data);
       break;
     }
     case AnalyticsType.ERROR: {
-      const { chain, message, screen, address } = params as ErrorAnalytics;
+      const { chain, message, screen, address, contractData } =
+        params as ErrorAnalytics;
       const data = {
         chain,
         message,
         client: `${Platform.OS}:${DeviceInfo.getVersion()}`,
         screen,
         ...(address ? { address } : {}),
+        ...(contractData ? { contractData } : {}),
       };
       void axios.post(ANALYTICS_ERROR_URL, data);
       break;
