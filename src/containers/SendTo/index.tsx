@@ -115,7 +115,6 @@ export default function SendTo(props: { navigation?: any; route?: any }) {
   const hdWalletContext = useContext<any>(HdWalletContext);
   const activityContext = useContext<any>(ActivityContext);
   const globalContext = useContext<any>(GlobalContext);
-  const portfolioState = useContext<any>(PortfolioContext);
   const [loading, setLoading] = useState<boolean>(false);
   const [resolveAddress] = useEns();
   const [isDropDown, setIsDropDown] = useState(false);
@@ -713,6 +712,7 @@ export default function SendTo(props: { navigation?: any; route?: any }) {
         amount: amountToSend,
         fromAddress,
         toAddress: addressRef.current,
+        contractDecimals: tokenData.contractDecimals,
       });
     }
     if (!response?.isError) {
