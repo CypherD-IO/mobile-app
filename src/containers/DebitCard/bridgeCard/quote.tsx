@@ -42,6 +42,7 @@ import { MODAL_HIDE_TIMEOUT_250 } from '../../../core/Http';
 import useAxios from '../../../core/HttpRequest';
 import { intercomAnalyticsLog } from '../../utilities/analyticsUtility';
 import * as Sentry from '@sentry/react-native';
+import { StyleSheet } from 'react-native';
 
 export default function CardQuote({
   navigation,
@@ -315,6 +316,7 @@ export default function CardQuote({
               amount: actualTokensRequired,
               fromAddress: get(cosmosAddresses, chainDetails.chainName),
               toAddress: tokenQuote.targetAddress,
+              contractDecimals,
             });
           } else if (chainName === ChainNames.OSMOSIS) {
             response = await sendCosmosToken({
@@ -323,6 +325,7 @@ export default function CardQuote({
               amount: actualTokensRequired,
               fromAddress: get(cosmosAddresses, chainDetails.chainName),
               toAddress: tokenQuote.targetAddress,
+              contractDecimals,
             });
           } else {
             response = await evmosIBC({
@@ -514,7 +517,7 @@ export default function CardQuote({
               resizeMode={'contain'}
               autoPlay
               loop
-              style={{ width: 20 }}
+              style={styles.loaderStyle}
             />
           </CyDView>
 
@@ -576,3 +579,9 @@ export default function CardQuote({
     </CyDView>
   );
 }
+
+const styles = StyleSheet.create({
+  loaderStyle: {
+    width: 20,
+  },
+});
