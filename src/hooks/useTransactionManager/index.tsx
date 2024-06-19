@@ -31,6 +31,7 @@ import {
   HdWalletContext,
   getTimeOutTime,
   getWeb3Endpoint,
+  limitDecimalPlaces,
 } from '../../core/util';
 import {
   SendInEvmInterface,
@@ -42,6 +43,9 @@ import useEvmosSigner from '../useEvmosSigner';
 import useGasService from '../useGasService';
 import { IReward } from '../../reducers/cosmosStakingReducer';
 import { ethers } from 'ethers';
+import { SendAuthorization } from 'cosmjs-types/cosmos/bank/v1beta1/authz';
+import { IAutoLoadResponse } from '../../models/autoLoadResponse.interface';
+import { MsgRevoke } from 'cosmjs-types/cosmos/authz/v1beta1/tx';
 
 export interface TransactionServiceResult {
   isError: boolean;
@@ -1268,6 +1272,148 @@ export default function useTransactionManager() {
     }
   };
 
+  async function grantAutoLoad({
+    chain,
+    granter,
+    grantee,
+    allowList,
+    amount,
+    denom,
+    expiry,
+  }: {
+    chain: Chain;
+    granter: string;
+    grantee: string;
+    allowList: string[];
+    amount: string;
+    denom: string;
+    expiry: string;
+  }): Promise<IAutoLoadResponse> {
+    try {
+      const { chainName, backendName } = chain;
+      const { gasPrice, contractDecimal } = get(cosmosConfig, chainName);
+      const grantMsg = {
+        typeUrl: '/cosmos.authz.v1beta1.MsgGrant',
+        value: {
+          granter,
+          grantee,
+          grant: {
+            authorization: {
+              typeUrl: '/cosmos.bank.v1beta1.SendAuthorization',
+              value: SendAuthorization.encode(
+                SendAuthorization.fromPartial({
+                  spendLimit: [
+                    {
+                      denom,
+                      amount: ethers
+                        .parseUnits(
+                          limitDecimalPlaces(amount, contractDecimal),
+                          contractDecimal,
+                        )
+                        .toString(),
+                    },
+                  ],
+                  allowList,
+                }),
+              ).finish(),
+            },
+            expiration: null,
+          },
+        },
+      };
+
+      const signer = await getCosmosSignerClient(chainName);
+      if (signer) {
+        const rpc = getCosmosRpc(backendName, true);
+
+        const signingClient = await getCosmosSigningClient(chain, rpc, signer);
+
+        const simulation = await signingClient.simulate(
+          granter,
+          [grantMsg],
+          'Cypher',
+        );
+        const gasFee = simulation * 2.5 * gasPrice;
+        const fee = {
+          gas: Math.floor(simulation * 2.5).toString(),
+          amount: [
+            {
+              denom,
+              amount: Math.floor(gasFee).toString(),
+            },
+          ],
+        };
+        const grantResult = await signingClient.signAndBroadcast(
+          granter,
+          [grantMsg],
+          fee,
+          'Cypher',
+        );
+        console.log(grantResult);
+        return { isError: false, hash: grantResult.transactionHash };
+      }
+      return { isError: true, error: 'Unable to fetch signer' };
+    } catch (e) {
+      return { isError: true, error: e };
+    }
+  }
+
+  async function revokeAutoLoad({
+    chain,
+    granter,
+    grantee,
+  }: {
+    chain: Chain;
+    granter: string;
+    grantee: string;
+  }): Promise<IAutoLoadResponse> {
+    try {
+      const { chainName, backendName } = chain;
+      const { gasPrice, denom } = get(cosmosConfig, chainName);
+      const revokeMsg = {
+        typeUrl: '/cosmos.authz.v1beta1.MsgRevoke',
+        value: MsgRevoke.fromPartial({
+          granter,
+          grantee,
+          msgTypeUrl: '/cosmos.bank.v1beta1.MsgSend',
+        }),
+      };
+      const signer = await getCosmosSignerClient(chainName);
+      if (signer) {
+        const rpc = getCosmosRpc(backendName, true);
+
+        const signingClient = await getCosmosSigningClient(chain, rpc, signer);
+        const simulation = await signingClient.simulate(
+          granter,
+          [revokeMsg],
+          'Cypher',
+        );
+        const gasFee = simulation * 2.5 * gasPrice;
+        const fee = {
+          gas: Math.floor(simulation * 2.5).toString(),
+          amount: [
+            {
+              denom,
+              amount: Math.floor(gasFee).toString(),
+            },
+          ],
+        };
+        console.log('revoke');
+        const revokeResult = await signingClient.signAndBroadcast(
+          granter,
+          [revokeMsg],
+          fee,
+          'Cypher',
+        );
+        console.log(revokeResult);
+        return { isError: false, hash: revokeResult.transactionHash };
+      }
+      return { isError: true, error: 'Unable to fetch signer' };
+    } catch (e) {
+      return { isError: true, error: e };
+    }
+  }
+
   return {
     sendEvmToken,
     sendEvmosToken,
@@ -1282,5 +1428,7 @@ export default function useTransactionManager() {
     delegateEvmosToken,
     reDelegateEvmosToken,
     unDelegateEvmosToken,
+    grantAutoLoad,
+    revokeAutoLoad,
   };
 }

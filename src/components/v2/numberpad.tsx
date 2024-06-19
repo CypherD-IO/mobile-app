@@ -1,0 +1,56 @@
+import React, { Dispatch, SetStateAction } from 'react';
+import {
+  CyDFlatList,
+  CyDText,
+  CyDTouchView,
+  CyDView,
+} from '../../styles/tailwindStyles';
+
+export default function CyDNumberPad({
+  value,
+  setValue,
+}: {
+  value: string[];
+  setValue: Dispatch<SetStateAction<string[]>>;
+}) {
+  const numberPadValues = [
+    '1',
+    '2',
+    '3',
+    '4',
+    '5',
+    '6',
+    '7',
+    '8',
+    '9',
+    '.',
+    '0',
+    '<',
+  ];
+
+  const renderItem = ({ item }: { item: string }) => {
+    return (
+      <CyDTouchView
+        className='w-[33.3%] h-[92px] justify-center items-center'
+        onPress={() => {
+          if (item === '<') {
+            setValue(value.slice(0, -1));
+          } else {
+            setValue([...value, item]);
+          }
+        }}>
+        <CyDText className='text-[18px] font-extrabold'>{item}</CyDText>
+      </CyDTouchView>
+    );
+  };
+
+  return (
+    <CyDView className='w-full'>
+      <CyDFlatList
+        data={numberPadValues}
+        numColumns={3}
+        renderItem={renderItem as any}
+      />
+    </CyDView>
+  );
+}

@@ -99,6 +99,9 @@ import { ChooseWalletIndex } from '../containers/Auth/ChooseWalletIndex';
 import PhoneNumberVerificationScreen from '../containers/DebitCard/bridgeCard/verifyPhoneNumber';
 import CardTransactions from '../containers/DebitCard/bridgeCard/transactions';
 import TelegramSetupSettings from '../containers/DebitCard/bridgeCard/cardTelegramSetup';
+import CardQuote from '../containers/DebitCard/bridgeCard/quote';
+import AutoLoad from '../containers/DebitCard/bridgeCard/autoLoad';
+import PreviewAutoLoad from '../containers/DebitCard/bridgeCard/previewAutoLoad';
 
 const { DynamicImage, DynamicButton } = require('../styles');
 
@@ -959,6 +962,51 @@ export function DebitCardStackScreen({ navigation }) {
           headerTransparent: false,
           headerShadowVisible: false,
           title: 'Load card',
+          headerTitleAlign: 'center',
+          headerTitleStyle: portfolioStackScreenHeaderTitleStyles,
+          headerTintColor: Colors.primaryTextColor,
+          headerBackTitleVisible: false,
+          headerLeft: props => defaultHeaderLeft(navigation),
+        })}
+      />
+
+      <FundCardStack.Screen
+        name={screenTitle.CARD_QUOTE_SCREEN}
+        component={CardQuote}
+        options={({ navigation }) => ({
+          headerTransparent: false,
+          headerShadowVisible: false,
+          title: 'Load card',
+          headerTitleAlign: 'center',
+          headerTitleStyle: portfolioStackScreenHeaderTitleStyles,
+          headerTintColor: Colors.primaryTextColor,
+          headerBackTitleVisible: false,
+          headerLeft: props => defaultHeaderLeft(navigation),
+        })}
+      />
+
+      <FundCardStack.Screen
+        name={screenTitle.AUTO_LOAD_SCREEN}
+        component={AutoLoad}
+        options={({ navigation }) => ({
+          headerTransparent: false,
+          headerShadowVisible: false,
+          title: 'Auto Load',
+          headerTitleAlign: 'center',
+          headerTitleStyle: portfolioStackScreenHeaderTitleStyles,
+          headerTintColor: Colors.primaryTextColor,
+          headerBackTitleVisible: false,
+          headerLeft: props => defaultHeaderLeft(navigation),
+        })}
+      />
+
+      <FundCardStack.Screen
+        name={screenTitle.PREVIEW_AUTO_LOAD_SCREEN}
+        component={PreviewAutoLoad}
+        options={({ navigation }) => ({
+          headerTransparent: false,
+          headerShadowVisible: false,
+          title: 'Auto Load',
           headerTitleAlign: 'center',
           headerTitleStyle: portfolioStackScreenHeaderTitleStyles,
           headerTintColor: Colors.primaryTextColor,

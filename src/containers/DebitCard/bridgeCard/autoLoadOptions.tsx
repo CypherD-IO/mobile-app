@@ -1,0 +1,228 @@
+import React, { useContext, useEffect, useMemo, useState } from 'react';
+import { CardProviders, GlobalContextType } from '../../../constants/enum';
+import { Card } from '../../../models/card.model';
+import { GlobalContext } from '../../../core/globalContext';
+import { CardProfile } from '../../../models/cardProfile.model';
+import AppImages from '../../../../assets/images/appImages';
+import { screenTitle } from '../../../constants';
+import CyDModalLayout from '../../../components/v2/modal';
+import {
+  CyDImage,
+  CyDText,
+  CyDTouchView,
+  CyDView,
+} from '../../../styles/tailwindStyles';
+import { StyleSheet } from 'react-native';
+import useAxios from '../../../core/HttpRequest';
+import { IAutoLoadConfig } from '../../../models/autoLoad.interface';
+import Toast from 'react-native-toast-message';
+import { getWalletProfile } from '../../../core/card';
+import LottieView from 'lottie-react-native';
+import { COSMOS_CHAINS_TYPE } from '../../../constants/type';
+import useTransactionManager from '../../../hooks/useTransactionManager';
+import { getChain } from '../../../core/util';
+
+export default function AutoLoadOptionsModal({
+  isModalVisible,
+  setShowModal,
+  navigation,
+}: {
+  isModalVisible: boolean;
+  setShowModal: (arg1: boolean) => void;
+  navigation: any;
+}) {
+  const globalContext = useContext<any>(GlobalContext);
+  const cardProfile: CardProfile = globalContext.globalState.cardProfile;
+  const [autoLoadConfig, setAutoLoadConfig] = useState<IAutoLoadConfig>();
+  const [isToggling, setIsToggling] = useState<boolean>(false);
+  const [isCancelling, setIsCancelling] = useState<boolean>(false);
+  const { getWithAuth, postWithAuth } = useAxios();
+  const { revokeAutoLoad } = useTransactionManager();
+
+  useEffect(() => {
+    if (isModalVisible && cardProfile.isAutoloadConfigured) {
+      void getAutoLoadConfig();
+    }
+  }, [isModalVisible]);
+
+  const getAutoLoadConfig = async () => {
+    const response = await getWithAuth('/v1/cards/autoLoad');
+    if (!response.isError) {
+      console.log(response.data);
+      setAutoLoadConfig(response.data);
+    }
+  };
+
+  const refreshProfile = async () => {
+    const data = await getWalletProfile(globalContext.globalState.token);
+    globalContext.globalDispatch({
+      type: GlobalContextType.CARD_PROFILE,
+      cardProfile: data,
+    });
+  };
+
+  const toggleAutoLoad = async () => {
+    setIsToggling(true);
+    const response = await postWithAuth('/v1/cards/autoLoad/toggle', {
+      isPaused: !autoLoadConfig?.isPaused,
+    });
+    if (!response.isError) {
+      setIsToggling(false);
+      setShowModal(false);
+      Toast.show({
+        type: 'success',
+        text2: `Auto load has been ${autoLoadConfig?.isPaused ? 'resumed' : 'paused'} successfully`,
+        position: 'bottom',
+      });
+    } else {
+      setIsToggling(false);
+      Toast.show({
+        type: 'error',
+        text2: `Error while ${autoLoadConfig?.isPaused ? 'resuming' : 'pausing'} auto load`,
+        position: 'top',
+      });
+    }
+  };
+
+  const cancelAutoLoad = async () => {
+    setIsCancelling(true);
+    if (autoLoadConfig) {
+      const revokeResponse = await revokeAutoLoad({
+        chain: getChain(autoLoadConfig.chain),
+        granter: autoLoadConfig?.granterAddress,
+        grantee: autoLoadConfig?.granteeAddress,
+      });
+      if (!revokeResponse.isError) {
+        const response = await postWithAuth('/v1/cards/autoLoad/revoke', {});
+        if (!response.isError) {
+          await refreshProfile();
+          setIsCancelling(false);
+          setShowModal(false);
+          Toast.show({
+            type: 'success',
+            text2: 'Auto load has been cancelled successfully',
+            position: 'bottom',
+          });
+          void refreshProfile();
+        } else {
+          setIsCancelling(false);
+          Toast.show({
+            type: 'error',
+            text2: 'Error while cancelling auto load',
+            position: 'bottom',
+          });
+        }
+      } else {
+        setIsCancelling(false);
+        Toast.show({
+          type: 'error',
+          text2: 'Error while cancelling auto load',
+          position: 'bottom',
+        });
+      }
+    }
+  };
+
+  const cardOptions = useMemo(() => {
+    return [
+      {
+        title: 'Update Auto Load',
+        description: 'Update auto load configuration',
+        image: AppImages.CIRCLE_WITH_DOTS,
+        action: () => {
+          navigation.navigate(screenTitle.AUTO_LOAD_SCREEN);
+          setShowModal(false);
+        },
+      },
+      {
+        title: (autoLoadConfig?.isPaused ? 'Resume' : 'Pause') + ' Auto Load',
+        description: 'Pause/Resume Auto load',
+        image: autoLoadConfig?.isPaused ? AppImages.RESUME : AppImages.PAUSE,
+        action: () => {
+          void toggleAutoLoad();
+        },
+      },
+      {
+        title: 'Cancel Auto Load',
+        description: 'Permanently cancel auto load',
+        image: AppImages.ICON_CANCEL,
+        action: () => {
+          void cancelAutoLoad();
+        },
+      },
+    ];
+  }, [autoLoadConfig]);
+
+  return (
+    <CyDModalLayout
+      isModalVisible={isModalVisible}
+      setModalVisible={setShowModal}
+      animationIn={'slideInUp'}
+      animationOut={'slideOutDown'}
+      animationInTiming={300}
+      animationOutTiming={300}
+      style={styles.modalLayout}>
+      <CyDView className='bg-cardBgTo px-[12px] py-[24px] m-[2px] mb-[6px] rounded-[16px]'>
+        <CyDView className='flex flex-row justify-between items-center mb-[24px]'>
+          <CyDView className='flex-1 justify-center items-center'>
+            <CyDText className='text-[22px] font-semibold ml-[24px]'>
+              Auto Load
+            </CyDText>
+          </CyDView>
+          <CyDTouchView onPress={() => setShowModal(false)}>
+            <CyDImage
+              source={AppImages.CLOSE_CIRCLE}
+              className='h-[28px] w-[28px]'
+              resizeMode='contain'
+            />
+          </CyDTouchView>
+        </CyDView>
+        {cardOptions.map((option, index) => {
+          const { image, title, description, action } = option;
+          return (
+            <CyDTouchView
+              key={index}
+              onPress={action}
+              className='flex flex-row justify-start items-center mt-[12px] py-[15px] bg-white rounded-[6px]'>
+              {(index === 1 && isToggling) || (index === 2 && isCancelling) ? (
+                <CyDView className='relative w-[48px]'>
+                  <LottieView
+                    source={AppImages.LOADER_TRANSPARENT}
+                    autoPlay
+                    loop
+                    style={styles.loaderStyle}
+                  />
+                </CyDView>
+              ) : (
+                <CyDImage
+                  source={image}
+                  className={'h-[24px] w-[24px] mx-[12px]'}
+                  resizeMode={'contain'}
+                />
+              )}
+
+              <CyDView className='flex flex-col justify-between'>
+                <CyDText className='text-[16px] font-bold'>{title}</CyDText>
+                <CyDText className='text-[12px] font-semibold'>
+                  {description}
+                </CyDText>
+              </CyDView>
+            </CyDTouchView>
+          );
+        })}
+      </CyDView>
+    </CyDModalLayout>
+  );
+}
+
+const styles = StyleSheet.create({
+  modalLayout: {
+    marginBottom: 50,
+    justifyContent: 'flex-end',
+  },
+  loaderStyle: {
+    height: 32,
+    width: 32,
+    left: -2,
+  },
+});

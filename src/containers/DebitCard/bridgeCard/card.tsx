@@ -115,24 +115,26 @@ export default function CardScreen({
 
   useEffect(() => {
     if (isFocused && !isEmpty(currentCardProvider)) {
-      const { type }: { last4: string; type: string } =
-        cardProfile[currentCardProvider].cards[0];
-      setUserCardDetails({
-        ...userCardDetails,
-        hideCardDetails: true,
-        showCVVAndExpiry: false,
-        cards: orderBy(cardProfile[currentCardProvider].cards, 'type', 'asc'),
-        personId: cardProfile[currentCardProvider].personId,
-        currentCardRevealedDetails: {
-          cardNumber: 'XXXX XXXX XXXX ',
-          type,
-          cvv: 'XXX',
-          expiryMonth: 'XX',
-          expiryYear: 'XX',
-          cardId: '',
-        },
-      });
-      void getTrackingDetails();
+      const cardConfig = get(cardProfile, currentCardProvider);
+      if (cardConfig?.cards) {
+        const { type }: { last4: string; type: string } = cardConfig.cards[0];
+        setUserCardDetails({
+          ...userCardDetails,
+          hideCardDetails: true,
+          showCVVAndExpiry: false,
+          cards: orderBy(cardConfig.cards, 'type', 'asc'),
+          personId: cardConfig.personId,
+          currentCardRevealedDetails: {
+            cardNumber: 'XXXX XXXX XXXX ',
+            type,
+            cvv: 'XXX',
+            expiryMonth: 'XX',
+            expiryYear: 'XX',
+            cardId: '',
+          },
+        });
+        void getTrackingDetails();
+      }
     }
   }, [currentCardProvider, isFocused, cardProfile]);
 

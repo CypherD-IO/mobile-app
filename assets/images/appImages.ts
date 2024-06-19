@@ -311,6 +311,8 @@ const CANDY_CANE = require('./candyCane.png');
 const WALLET_ICONS = require('./walletIcons.png');
 const VIRTUAL_TO_PHYSICAL = require('./virtualToPhysical.png');
 const MAIL = require('./mail.png');
+const PAUSE = require('./pause.png');
+const RESUME = require('./resume.png');
 
 // ICONS FROM S3
 const SWAP = { uri: `${S3_BUCKET_URL_ICONS}/swap.png` };
@@ -366,6 +368,10 @@ const NOTIFICATION_BELL = {
 };
 const DOCUMENT = {
   uri: `${S3_BUCKET_URL_ICONS}/document.png`,
+};
+
+const AUTOLOAD = {
+  uri: `${S3_BUCKET_URL_ICONS}/autoLoad.png`,
 };
 
 const AppImages = {
@@ -717,5 +723,8 @@ const AppImages = {
   WALLETS,
   NOTIFICATION_BELL,
   DOCUMENT,
+  AUTOLOAD,
+  PAUSE,
+  RESUME,
 };
 export default AppImages;

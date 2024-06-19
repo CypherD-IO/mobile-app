@@ -1,10 +1,4 @@
-import React, {
-  useCallback,
-  useContext,
-  useEffect,
-  useRef,
-  useState,
-} from 'react';
+import React, { useCallback, useContext, useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Keyboard } from 'react-native';
 import AppImages from '../../../../assets/images/appImages';
@@ -20,15 +14,12 @@ import {
   CHAIN_OSMOSIS,
 } from '../../../constants/server';
 import {
-  ActivityContext,
   getWeb3Endpoint,
   HdWalletContext,
   PortfolioContext,
   getNativeToken,
   formatAmount,
-  logAnalytics,
   validateAmount,
-  parseErrorMessage,
   limitDecimalPlaces,
   hasSufficientBalanceAndGasFee,
 } from '../../../core/util';
@@ -42,20 +33,10 @@ import {
   CyDTouchView,
   CyDView,
 } from '../../../styles/tailwindStyles';
-import { MODAL_HIDE_TIMEOUT_250 } from '../../../core/Http';
 import * as Sentry from '@sentry/react-native';
 import { GlobalContext } from '../../../core/globalContext';
 import Web3 from 'web3';
-import {
-  ActivityStatus,
-  DebitCardTransaction,
-  ActivityReducerAction,
-  ActivityType,
-} from '../../../reducers/activity_reducer';
 import { useGlobalModalContext } from '../../../components/v2/GlobalModal';
-import BottomTokenCardConfirm from '../../../components/BottomTokenCardConfirm';
-import { genId } from '../../utilities/activityUtilities';
-import { intercomAnalyticsLog } from '../../utilities/analyticsUtility';
 import { CHOOSE_TOKEN_MODAL_TIMEOUT } from '../../../constants/timeOuts';
 import { screenTitle } from '../../../constants';
 import { useIsFocused } from '@react-navigation/native';
@@ -70,19 +51,12 @@ import ChooseTokenModal from '../../../components/v2/chooseTokenModal';
 import CyDTokenAmount from '../../../components/v2/tokenAmount';
 import useAxios from '../../../core/HttpRequest';
 import { get, random } from 'lodash';
-import {
-  AnalyticsType,
-  ButtonType,
-  CardProviders,
-} from '../../../constants/enum';
-import { TokenMeta } from '../../../models/tokenMetaData.model';
+import { ButtonType, CardProviders } from '../../../constants/enum';
 import clsx from 'clsx';
-import {
-  CardQuoteResponse,
-  PayTokenModalParams,
-} from '../../../models/card.model';
-import useTransactionManager from '../../../hooks/useTransactionManager';
+import { CardQuoteResponse } from '../../../models/card.model';
 import useGasService from '../../../hooks/useGasService';
+import { Holding } from '../../../core/Portfolio';
+import CyDNumberPad from '../../../components/v2/numberpad';
 
 export default function BridgeFundCardScreen({ route }: { route: any }) {
   const {
@@ -100,11 +74,9 @@ export default function BridgeFundCardScreen({ route }: { route: any }) {
   const ethereum = hdWallet.state.wallet.ethereum;
   const wallet = hdWallet.state.wallet;
   const globalStateContext = useContext<any>(GlobalContext);
-  const activityContext = useContext<any>(ActivityContext);
   const cardProfile = globalContext.globalState.cardProfile;
   const cards = get(cardProfile, currentCardProvider)?.cards;
   const cardId: string = get(cards, currentCardIndex)?.cardId;
-  const activityRef = useRef<DebitCardTransaction | null>(null);
   const { postWithAuth } = useAxios();
 
   const cosmos = hdWallet.state.wallet.cosmos;
@@ -137,390 +109,39 @@ export default function BridgeFundCardScreen({ route }: { route: any }) {
 
   const [isChooseTokenVisible, setIsChooseTokenVisible] =
     useState<boolean>(false);
-  const [payTokenModalParams, setPayTokenModalParams] =
-    useState<PayTokenModalParams>({
-      isModalVisible: false,
-      quoteExpiry: 60,
-      hasSufficientBalanceAndGasFee: true,
-      tokenSendParams: {
-        chain: CHAIN_ETH.backendName,
-        amountInCrypto: '',
-        amountInFiat: '10',
-        symbol: 'eth',
-        toAddress: '',
-        gasFeeInCrypto: '',
-        gasFeeInFiat: '',
-        nativeTokenSymbol: '',
-      },
-    });
-  const [tokenQuote, setTokenQuote] = useState<CardQuoteResponse>({
-    quoteId: '',
-    chain: '',
-    tokensRequired: 0,
-    tokenAddress: '',
-    tokenCoinId: '',
-    tokensRequiredFiat: 0,
-    amount: 0,
-    fromAddress: '',
-    targetAddress: '',
-    masterAddress: '',
-    cardProvider: '',
-    tokenSymbol: '',
-    expiry: 0,
-    estimatedTime: 0,
-    version: 2,
-  });
-  const [amount, setAmount] = useState('');
+  const [amount, setAmount] = useState('10');
   const [isCrpytoInput, setIsCryptoInput] = useState(false);
   const [usdAmount, setUsdAmount] = useState('');
   const [cryptoAmount, setCryptoAmount] = useState('');
   const [placeholderText, setPlaceholderText] = useState('0.00');
   const [loading, setLoading] = useState<boolean>(false);
   const minTokenValueLimit = 10;
-  const [selectedToken, setSelectedToken] = useState<TokenMeta>();
+  const [selectedToken, setSelectedToken] = useState<Holding>();
   const [nativeTokenBalance, setNativeTokenBalance] = useState<number>(0);
   const { t } = useTranslation();
   const { showModal, hideModal } = useGlobalModalContext();
   const isFocused = useIsFocused();
   const { estimateGasForEvm, estimateGasForEvmosIBC } = useGasService();
-  const { sendEvmToken, sendCosmosToken, interCosmosIBC, evmosIBC } =
-    useTransactionManager();
+  const [value, setValue] = useState<string[]>([]);
 
   useEffect(() => {
     if (isFocused) {
       if (route.params?.tokenData) {
         setSelectedToken(route.params.tokenData);
       } else {
-        setTimeout(() => {
-          setIsChooseTokenVisible(true);
-        }, CHOOSE_TOKEN_MODAL_TIMEOUT);
+        if (!selectedToken) {
+          setTimeout(() => {
+            setIsChooseTokenVisible(true);
+          }, CHOOSE_TOKEN_MODAL_TIMEOUT);
+        }
       }
     }
   }, [isFocused]);
-
-  const transferSentQuote = async (
-    address: string,
-    quoteId: string,
-    txnHash: string,
-  ) => {
-    const transferSentUrl = `/v1/cards/${currentCardProvider}/card/${cardId}/deposit`;
-    const body = {
-      address,
-      quoteUUID: quoteId,
-      txnHash,
-    };
-
-    try {
-      if (!body.txnHash) {
-        showModal('state', {
-          type: 'error',
-          title: 'Unable to process your transaction',
-          description: `Incase your transaction went through, please contact customer support with the quote_id: ${quoteId}`,
-          onSuccess: hideModal,
-          onFailure: hideModal,
-        });
-        return;
-      }
-      const response = await postWithAuth(transferSentUrl, body);
-      if (!response.isError) {
-        activityRef.current &&
-          activityContext.dispatch({
-            type: ActivityReducerAction.PATCH,
-            value: {
-              id: activityRef.current.id,
-              status: ActivityStatus.INPROCESS,
-              transactionHash: txnHash,
-              quoteId,
-            },
-          });
-        setLoading(false);
-        showModal('state', {
-          type: 'success',
-          title: t('FUNDING_IN_PROGRESS'),
-          description:
-            'Your card funding is in progress and will be done within 5 mins!',
-          onSuccess: () => {
-            hideModal();
-            setTimeout(() => {
-              navigation.navigate(screenTitle.OPTIONS, {
-                screen: screenTitle.ACTIVITIES,
-                initial: false,
-              });
-              navigation.popToTop();
-            }, MODAL_HIDE_TIMEOUT_250);
-          },
-          onFailure: hideModal,
-        });
-      } else {
-        activityRef.current &&
-          activityContext.dispatch({
-            type: ActivityReducerAction.PATCH,
-            value: {
-              id: activityRef.current.id,
-              status: ActivityStatus.FAILED,
-              quoteId,
-              transactionHash: txnHash,
-              reason: `Please contact customer support with the quote_id: ${quoteId}`,
-            },
-          });
-        setLoading(false);
-        showModal('state', {
-          type: 'error',
-          title: 'Error processing your txn',
-          description: `Please contact customer support with the quote_id: ${quoteId}`,
-          onSuccess: hideModal,
-          onFailure: hideModal,
-        });
-      }
-    } catch (error) {
-      activityRef.current &&
-        activityContext.dispatch({
-          type: ActivityReducerAction.PATCH,
-          value: {
-            id: activityRef.current.id,
-            status: ActivityStatus.FAILED,
-            quoteId,
-            transactionHash: txnHash,
-            reason: `Please contact customer support with the quote_id: ${quoteId}`,
-          },
-        });
-      Sentry.captureException(error);
-      setLoading(false);
-      showModal('state', {
-        type: 'error',
-        title: 'Error processing your txn',
-        description: `Please contact customer support with the quote_id: ${quoteId}`,
-        onSuccess: hideModal,
-        onFailure: hideModal,
-      });
-    }
-  };
-
-  const sendTransaction = useCallback(
-    async (payTokenModalParamsLocal: any) => {
-      try {
-        const {
-          contractAddress,
-          chainDetails,
-          contractDecimals,
-          denom,
-          symbol,
-          name,
-        } = selectedToken as TokenMeta;
-        const actualTokensRequired = limitDecimalPlaces(
-          tokenQuote.tokensRequired,
-          contractDecimals,
-        );
-        const { chainName } = chainDetails;
-        const activityData: DebitCardTransaction = {
-          id: genId(),
-          status: ActivityStatus.PENDING,
-          type: ActivityType.CARD,
-          quoteId: '',
-          tokenSymbol: symbol ?? '',
-          chainName: chainDetails?.backendName ?? '',
-          tokenName: name.toString() ?? '',
-          amount: tokenQuote.tokensRequired.toString() ?? '',
-          amountInUsd: tokenQuote.amount ?? '',
-          datetime: new Date(),
-          transactionHash: '',
-        };
-        activityRef.current = activityData;
-        activityContext.dispatch({
-          type: ActivityReducerAction.POST,
-          value: activityRef.current,
-        });
-        setLoading(true);
-        if (tokenQuote && selectedToken) {
-          activityRef.current &&
-            activityContext.dispatch({
-              type: ActivityReducerAction.PATCH,
-              value: {
-                id: activityRef.current.id,
-                gasAmount: payTokenModalParams.tokenSendParams.gasFeeInCrypto,
-              },
-            });
-          if (chainName != null) {
-            let response: {
-              isError: boolean;
-              hash: string;
-              contractData?: string | undefined;
-              error?: any;
-              gasFeeInCrypto?: string | undefined;
-            };
-            if (chainName === ChainNames.ETH) {
-              response = await sendEvmToken({
-                chain: selectedToken.chainDetails.backendName,
-                amountToSend: actualTokensRequired,
-                toAddress: tokenQuote.targetAddress,
-                contractAddress,
-                contractDecimals,
-                symbol: selectedToken.symbol,
-              });
-            } else if (
-              PURE_COSMOS_CHAINS.includes(chainName) &&
-              chainName !== ChainNames.OSMOSIS
-            ) {
-              response = await interCosmosIBC({
-                fromChain: chainDetails,
-                toChain: CHAIN_OSMOSIS,
-                denom,
-                amount: actualTokensRequired,
-                fromAddress: get(cosmosAddresses, chainDetails.chainName),
-                toAddress: tokenQuote.targetAddress,
-                contractDecimals,
-              });
-            } else if (chainName === ChainNames.OSMOSIS) {
-              response = await sendCosmosToken({
-                fromChain: chainDetails,
-                denom,
-                amount: actualTokensRequired,
-                fromAddress: get(cosmosAddresses, chainDetails.chainName),
-                toAddress: tokenQuote.targetAddress,
-                contractDecimals,
-              });
-            } else {
-              response = await evmosIBC({
-                toAddress: tokenQuote.targetAddress,
-                toChain: CHAIN_OSMOSIS,
-                amount: actualTokensRequired,
-                denom,
-                contractDecimals,
-              });
-            }
-            const { hash, isError, error } = response;
-            if (!isError) {
-              void logAnalytics({
-                type: AnalyticsType.SUCCESS,
-                txnHash: hash,
-                chain: selectedToken?.chainDetails?.chainName ?? '',
-                ...(response?.contractData
-                  ? { contractData: response?.contractData }
-                  : ''),
-                address: PURE_COSMOS_CHAINS.includes(
-                  selectedToken?.chainDetails?.chainName,
-                )
-                  ? get(
-                      cosmosAddresses,
-                      selectedToken?.chainDetails?.chainName,
-                      '',
-                    )
-                  : get(ethereum, 'address', ''),
-              });
-              void transferSentQuote(
-                tokenQuote.fromAddress,
-                tokenQuote.quoteId,
-                hash,
-              );
-            } else {
-              void logAnalytics({
-                type: AnalyticsType.ERROR,
-                chain: selectedToken?.chainDetails?.chainName ?? '',
-                message: parseErrorMessage(error),
-                screen: route.name,
-                address: PURE_COSMOS_CHAINS.includes(
-                  selectedToken?.chainDetails?.chainName,
-                )
-                  ? get(
-                      cosmosAddresses,
-                      selectedToken?.chainDetails?.chainName,
-                      '',
-                    )
-                  : get(ethereum, 'address', ''),
-              });
-              activityRef.current &&
-                activityContext.dispatch({
-                  type: ActivityReducerAction.PATCH,
-                  value: {
-                    id: activityRef.current.id,
-                    status: ActivityStatus.FAILED,
-                    quoteId: tokenQuote.quoteId,
-                    reason: error,
-                  },
-                });
-              setLoading(false);
-              showModal('state', {
-                type: 'error',
-                title: 'Transaction Failed',
-                description: `${String(error)}. Please contact customer support with the quote_id: ${tokenQuote.quoteId}`,
-                onSuccess: hideModal,
-                onFailure: hideModal,
-              });
-            }
-          }
-        } else {
-          showModal('state', {
-            type: 'error',
-            title: t('MISSING_QUOTE'),
-            description: t('MISSING_QUOTE_DESCRIPTION'),
-            onSuccess: hideModal,
-            onFailure: hideModal,
-          });
-        }
-      } catch (error) {
-        void logAnalytics({
-          type: AnalyticsType.ERROR,
-          chain: selectedToken?.chainDetails?.backendName ?? '',
-          message: parseErrorMessage(error),
-          screen: route.name,
-          address: PURE_COSMOS_CHAINS.includes(
-            selectedToken?.chainDetails?.chainName as string,
-          )
-            ? get(
-                cosmosAddresses,
-                selectedToken?.chainDetails?.chainName as string,
-                '',
-              )
-            : get(ethereum, 'address', ''),
-        });
-        activityRef.current &&
-          activityContext.dispatch({
-            type: ActivityReducerAction.PATCH,
-            value: {
-              id: activityRef.current.id,
-              status: ActivityStatus.FAILED,
-              quoteId: tokenQuote.quoteId,
-              reason: error,
-            },
-          });
-        setLoading(false);
-        showModal('state', {
-          type: 'error',
-          title: 'Transaction Failed',
-          description: `${String(error)}. Please contact customer support with the quote_id: ${tokenQuote.quoteId}`,
-          onSuccess: hideModal,
-          onFailure: hideModal,
-        });
-      }
-    },
-    [payTokenModalParams, tokenQuote, selectedToken],
-  );
-
-  const onCancelConfirmationModal = () => {
-    setPayTokenModalParams({
-      ...payTokenModalParams,
-      isModalVisible: false,
-    });
-    void intercomAnalyticsLog('cancel_transfer_token', {
-      from: ethereum.address,
-    });
-    activityRef.current &&
-      activityContext.dispatch({
-        type: ActivityReducerAction.DELETE,
-        value: { id: activityRef.current.id },
-      });
-  };
-
-  const onConfirmConfirmationModal = () => {
-    void sendTransaction(payTokenModalParams);
-    setPayTokenModalParams({ ...payTokenModalParams, isModalVisible: false });
-  };
 
   const showQuoteModal = async (
     quote: CardQuoteResponse,
     isMaxQuote: boolean,
   ) => {
-    setTokenQuote(quote);
     const {
       chainDetails,
       actualBalance,
@@ -528,7 +149,7 @@ export default function BridgeFundCardScreen({ route }: { route: any }) {
       contractAddress,
       contractDecimals,
       denom,
-    } = selectedToken as TokenMeta;
+    } = selectedToken as Holding;
     const nativeToken = getNativeToken(
       get(NativeTokenMapping, chainDetails.symbol) || chainDetails.symbol,
       portfolioState.statePortfolio.tokenPortfolio[
@@ -554,10 +175,10 @@ export default function BridgeFundCardScreen({ route }: { route: any }) {
             contractDecimals,
           });
         } else {
-          setPayTokenModalParams({
-            isModalVisible: true,
-            quoteExpiry: 60,
+          navigation.navigate(screenTitle.CARD_QUOTE_SCREEN, {
             hasSufficientBalanceAndGasFee: false,
+            cardProvider: currentCardProvider,
+            cardId,
             tokenSendParams: {
               chain: chainDetails.backendName,
               amountInCrypto: String(actualTokensRequired),
@@ -567,6 +188,8 @@ export default function BridgeFundCardScreen({ route }: { route: any }) {
               gasFeeInCrypto: '0',
               gasFeeInFiat: '0',
               nativeTokenSymbol: String(selectedToken?.chainDetails?.symbol),
+              selectedToken,
+              tokenQuote: quote,
             },
           });
         }
@@ -603,10 +226,10 @@ export default function BridgeFundCardScreen({ route }: { route: any }) {
           actualTokensRequired,
           actualBalance,
         );
-        setPayTokenModalParams({
-          isModalVisible: true,
-          quoteExpiry: 60,
+        navigation.navigate(screenTitle.CARD_QUOTE_SCREEN, {
           hasSufficientBalanceAndGasFee: hasSufficient,
+          cardProvider: currentCardProvider,
+          cardId,
           tokenSendParams: {
             chain: chainDetails.backendName,
             amountInCrypto: String(actualTokensRequired),
@@ -623,6 +246,8 @@ export default function BridgeFundCardScreen({ route }: { route: any }) {
               ),
             ),
             nativeTokenSymbol: String(selectedToken?.chainDetails?.symbol),
+            selectedToken,
+            tokenQuote: quote,
           },
         });
       } else {
@@ -658,7 +283,7 @@ export default function BridgeFundCardScreen({ route }: { route: any }) {
 
   const fundCard = async () => {
     const { contractAddress, coinGeckoId, contractDecimals, chainDetails } =
-      selectedToken as TokenMeta;
+      selectedToken as Holding;
     setLoading(true);
     Keyboard.dismiss();
     if (chainDetails.chainName === ChainNames.ETH) {
@@ -805,7 +430,7 @@ export default function BridgeFundCardScreen({ route }: { route: any }) {
     return true;
   };
 
-  const onSelectingToken = (item: TokenMeta) => {
+  const onSelectingToken = (item: Holding) => {
     setSelectedToken(item);
     setIsChooseTokenVisible(false);
     setNativeTokenBalance(
@@ -817,7 +442,6 @@ export default function BridgeFundCardScreen({ route }: { route: any }) {
         ].holdings,
       )?.actualBalance ?? 0,
     );
-    setAmount('');
     setIsCryptoInput(false);
     setUsdAmount('');
     setCryptoAmount('');
@@ -832,7 +456,7 @@ export default function BridgeFundCardScreen({ route }: { route: any }) {
       actualBalance,
       symbol: selectedTokenSymbol,
       denom,
-    } = selectedToken as TokenMeta;
+    } = selectedToken as Holding;
 
     const nativeTokenSymbol =
       get(NativeTokenMapping, chainDetails.symbol) || chainDetails.symbol;
@@ -1243,7 +867,7 @@ export default function BridgeFundCardScreen({ route }: { route: any }) {
         minTokenValueLimit={minTokenValueLimit}
         onSelectingToken={token => {
           setIsChooseTokenVisible(false);
-          onSelectingToken(token);
+          onSelectingToken(token as Holding);
         }}
         onCancel={() => {
           setIsChooseTokenVisible(false);
@@ -1252,49 +876,26 @@ export default function BridgeFundCardScreen({ route }: { route: any }) {
         noTokensAvailableMessage={t<string>('CARD_INSUFFICIENT_FUNDS')}
         renderPage={'fundCardPage'}
       />
-
-      <BottomTokenCardConfirm
-        modalParams={{
-          isModalVisible: payTokenModalParams.isModalVisible,
-          quoteExpiry: payTokenModalParams.quoteExpiry,
-          hasSufficientBalanceAndGasFee:
-            payTokenModalParams.hasSufficientBalanceAndGasFee,
-          tokenSendParams: payTokenModalParams.tokenSendParams,
-        }}
-        onConfirm={onConfirmConfirmationModal}
-        onCancel={onCancelConfirmationModal}
-      />
-      <CyDKeyboardAwareScrollView>
-        <RenderSelectedToken />
-        <CyDView className={'mx-[20px]'}>
-          <CyDView className='flex flex-row bg-[#F7F8FE] rounded-[8px] h-[300px] px-[20px] justify-between items-center'>
-            <CyDView className={'p-[4px]'}>
-              <CyDTouchView
-                onPress={() => {
-                  void onMax();
-                }}
-                disabled={loading}
-                className={clsx(
-                  'bg-white border border-inputBorderColor rounded-full h-[40px] w-[40px] flex justify-center items-center p-[4px]',
-                )}>
-                <CyDText>{t('MAX')}</CyDText>
-              </CyDTouchView>
-            </CyDView>
-            <CyDView
-              className={'pb-[10px] max-w-[60%] items-center bg-[#F7F8FE]'}>
-              <CyDText
-                className={
-                  'font-extrabold text-[22px] text-center font-nunito text-black'
-                }>
-                {t<string>('ENTER_AMOUNT')}
-              </CyDText>
-              <CyDView className={'flex justify-center items-center'}>
-                <CyDText className='text-[20px] font-semibold mt-[5px]'>
-                  {isCrpytoInput ? selectedToken?.name : 'USD'}
-                </CyDText>
+      {/* <CyDKeyboardAwareScrollView> */}
+      <CyDView className={'flex flex-1 flex-col justify-between h-full'}>
+        <CyDView>
+          <RenderSelectedToken />
+          <CyDView className='flex flex-row rounded-[8px] px-[20px] justify-between items-center'>
+            <CyDView className={'pb-[10px] w-full items-center'}>
+              <CyDView className={'flex flex-row justify-center items-center'}>
+                {!isCrpytoInput && (
+                  <CyDText
+                    className={clsx('text-mandarin font-bold mt-[5px]', {
+                      'text-[20px]': amount.length <= 15,
+                      'text-[40px]': amount.length <= 10,
+                      'text-[60px]': amount.length <= 5,
+                    })}>
+                    {'$'}
+                  </CyDText>
+                )}
                 <CyDTextInput
                   className={clsx(
-                    'font-extrabold text-center text-primaryTextColor h-[85px] font-nunito',
+                    'font-extrabold text-center text-mandarin h-[85px] font-nunito',
                     {
                       'text-[20px]': amount.length <= 15,
                       'text-[40px]': amount.length <= 10,
@@ -1345,22 +946,29 @@ export default function BridgeFundCardScreen({ route }: { route: any }) {
                   placeholder={placeholderText}
                   placeholderTextColor={'#999'}
                 />
-                <CyDText
-                  className={clsx(
-                    'text-center text-primaryTextColor h-[50px] text-[16px]',
-                  )}>
-                  {'~' +
-                    (isCrpytoInput
-                      ? (!isNaN(parseFloat(usdAmount))
-                          ? formatAmount(usdAmount).toString()
-                          : '0.00') + ' USD'
-                      : (!isNaN(parseFloat(cryptoAmount))
-                          ? formatAmount(cryptoAmount).toString()
-                          : '0.00') +
-                        ' ' +
-                        (selectedToken?.symbol ?? ' '))}
-                </CyDText>
+                {isCrpytoInput && (
+                  <CyDView>
+                    <CyDText className='font-extrabold mt-[26px] text-[16px] ml-[4px]'>
+                      {selectedToken?.symbol}
+                    </CyDText>
+                  </CyDView>
+                )}
               </CyDView>
+              <CyDText
+                className={clsx(
+                  'text-center text-primaryTextColor h-[50px] text-[16px]',
+                )}>
+                {'~' +
+                  (isCrpytoInput
+                    ? (!isNaN(parseFloat(usdAmount))
+                        ? formatAmount(usdAmount).toString()
+                        : '0.00') + ' USD'
+                    : (!isNaN(parseFloat(cryptoAmount))
+                        ? formatAmount(cryptoAmount).toString()
+                        : '0.00') +
+                      ' ' +
+                      (selectedToken?.symbol ?? ' '))}
+              </CyDText>
               {(!usdAmount || Number(usdAmount) < minTokenValueLimit) && (
                 <CyDView className='mb-[10px]'>
                   <CyDText className='text-center font-semibold'>
@@ -1370,13 +978,13 @@ export default function BridgeFundCardScreen({ route }: { route: any }) {
               )}
               <RenderWarningMessage />
             </CyDView>
-            <CyDView className={'p-[4px]'}>
+            <CyDView className={'p-[4px] ml-[-45px]'}>
               <CyDTouchView
                 onPress={() => {
                   onPressToggle();
                 }}
                 className={clsx(
-                  'bg-white border border-inputBorderColor rounded-full h-[40px] w-[40px] flex justify-center items-center p-[4px]',
+                  'border border-inputBorderColor bg-cardBg rounded-full h-[40px] w-[40px] flex justify-center items-center p-[4px]',
                 )}>
                 <CyDFastImage
                   className='h-[16px] w-[16px]'
@@ -1386,6 +994,61 @@ export default function BridgeFundCardScreen({ route }: { route: any }) {
               </CyDTouchView>
             </CyDView>
           </CyDView>
+          <CyDView className='flex flex-row justify-evenly items-center'>
+            <CyDTouchView
+              onPress={() => {
+                void onMax();
+              }}
+              disabled={loading}
+              className={clsx(
+                'border border-inputBorderColor rounded-[4px] h-[40px] w-[50px] flex justify-center items-center',
+              )}>
+              <CyDText className='font-bold'>{t('MAX')}</CyDText>
+            </CyDTouchView>
+            <CyDTouchView
+              onPress={() => {
+                setAmount('50');
+              }}
+              disabled={loading}
+              className={clsx(
+                'bg-white border border-inputBorderColor rounded-[4px] h-[40px] w-[50px] flex justify-center items-center',
+              )}>
+              <CyDText className='font-bold'>{'$50'}</CyDText>
+            </CyDTouchView>
+            <CyDTouchView
+              onPress={() => {
+                void onMax();
+              }}
+              disabled={loading}
+              className={clsx(
+                'bg-white border border-inputBorderColor rounded-[4px] h-[40px] w-[50px] flex justify-center items-center',
+              )}>
+              <CyDText className='font-bold'>{'$200'}</CyDText>
+            </CyDTouchView>
+            <CyDTouchView
+              onPress={() => {
+                void onMax();
+              }}
+              disabled={loading}
+              className={clsx(
+                'bg-white border border-inputBorderColor rounded-[4px] h-[40px] w-[50px] flex justify-center items-center',
+              )}>
+              <CyDText className='font-bold'>{'$500'}</CyDText>
+            </CyDTouchView>
+          </CyDView>
+        </CyDView>
+        <CyDView className='flex flex-row justify-around items-center mx-[16px]'>
+          <Button
+            onPress={() => {
+              navigation.navigate(screenTitle.AUTO_LOAD_SCREEN);
+            }}
+            type={ButtonType.TERNARY}
+            title={t('SETUP_AUTO_LOAD')}
+            style={clsx('h-[60px] w-[45%] mb-[18px] py-[10px]', {
+              'py-[8px]': loading,
+            })}
+            loading={loading}
+          />
           <Button
             onPress={() => {
               if (validateAmount(amount)) {
@@ -1395,13 +1058,11 @@ export default function BridgeFundCardScreen({ route }: { route: any }) {
             type={ButtonType.PRIMARY}
             disabled={isLoadCardDisabled()}
             title={t('QUOTE')}
-            style={clsx('h-[60px] mx-[32px] py-[10px] -top-[25px]', {
-              'py-[8px]': loading,
-            })}
-            loading={loading}
+            style={'h-[60px] w-[45%] mb-[18px] py-[10px]'}
           />
         </CyDView>
-      </CyDKeyboardAwareScrollView>
+      </CyDView>
+      {/* </CyDKeyboardAwareScrollView> */}
     </CyDSafeAreaView>
   );
 }

@@ -1,5 +1,6 @@
-import { CardTransactionTypes } from '../constants/enum';
+import { CardProviders, CardTransactionTypes } from '../constants/enum';
 import { ChainBackendNames } from '../constants/server';
+import { Holding } from '../core/Portfolio';
 
 export interface Card {
   bin: string;
@@ -87,6 +88,8 @@ export interface PayTokenModalParams {
   isModalVisible: boolean;
   quoteExpiry: number;
   hasSufficientBalanceAndGasFee: boolean;
+  cardProvider: CardProviders;
+  cardId: string;
   tokenSendParams: {
     chain: ChainBackendNames;
     amountInCrypto: string;
@@ -96,5 +99,7 @@ export interface PayTokenModalParams {
     gasFeeInCrypto: string;
     gasFeeInFiat: string;
     nativeTokenSymbol: string;
+    selectedToken: Holding;
+    tokenQuote: CardQuoteResponse;
   };
 }
