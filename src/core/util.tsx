@@ -1041,3 +1041,33 @@ export const parseMonthYear = (dateString: string): string => {
   }
   return '';
 };
+
+export const getCustomWallets = () => {
+  const wallets = [
+    {
+      id: 'cypherwallet',
+      name: 'Cypher Wallet',
+      image_url: 'https://avatars.githubusercontent.com/u/37784886',
+      mobile_link: 'cypherwallet://',
+    },
+  ];
+
+  if (Platform.OS === 'android') {
+    wallets.push({
+      id: 'android-wallet',
+      name: 'Wallet(Android)',
+      image_url:
+        'https://docs.walletconnect.com/assets/images/web3walletLogo-54d3b546146931ceaf47a3500868a73a.png',
+      mobile_link: 'kotlin-web3wallet://',
+    });
+  } else if (Platform.OS === 'ios') {
+    wallets.push({
+      id: 'ios-wallet',
+      name: 'Wallet(iOS)',
+      image_url:
+        'https://docs.walletconnect.com/assets/images/web3walletLogo-54d3b546146931ceaf47a3500868a73a.png',
+      mobile_link: 'walletapp://',
+    });
+  }
+  return wallets;
+};

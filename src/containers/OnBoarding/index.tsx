@@ -24,6 +24,7 @@ import CyDModalLayout from '../../components/v2/modal';
 import { MODAL_HIDE_TIMEOUT_250 } from '../../core/Http';
 import CyDContainer from '../../components/v2/container';
 import useConnectionManager from '../../hooks/useConnectionManager';
+import { W3mButton } from '@web3modal/wagmi-react-native';
 
 const { width, height } = Dimensions.get('screen');
 
@@ -166,7 +167,7 @@ export default function OnBoarding({ navigation }) {
                 style={{ tintColor: '#434343' }}
               />
             </CyDTouchView>
-            <CyDTouchView
+            {/* <CyDTouchView
               onPress={() => {
                 void openWalletConnectModal();
               }}
@@ -183,7 +184,8 @@ export default function OnBoarding({ navigation }) {
                 resizeMode={'contain'}
                 className={'w-[30%] h-[54px]'}
               />
-            </CyDTouchView>
+            </CyDTouchView> */}
+            <W3mButton />
           </CyDView>
           <CyDTouchView
             onPress={() => {

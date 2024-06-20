@@ -1,7 +1,6 @@
 import AppImages from '../../assets/images/appImages';
 import { DefiPositonTypes } from '../models/defi.interface';
 import {
-  mainnet,
   polygon,
   optimism,
   arbitrum,
@@ -15,7 +14,8 @@ import {
   aurora,
   moonbeam,
   moonriver,
-} from 'wagmi/chains';
+} from 'viem/chains';
+import { mainnet } from 'wagmi/chains';
 export interface Chain {
   chainName: string;
   name: string;

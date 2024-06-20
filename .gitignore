@@ -75,3 +75,8 @@ DEVELOPER_GUIDE.md
 android/app/google-services.json
 android/sentry.properties
 
+
+# Expo
+.expo
+dist/
+web-build/

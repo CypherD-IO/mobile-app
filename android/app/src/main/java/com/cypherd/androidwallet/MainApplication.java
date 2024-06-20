@@ -1,4 +1,7 @@
 package com.cypherd.androidwallet;
+import android.content.res.Configuration;
+import expo.modules.ApplicationLifecycleDispatcher;
+import expo.modules.ReactNativeHostWrapper;
 import com.cypherd.CustomPreventScreenshotPackage;
 
 import android.app.Application;
@@ -26,7 +29,7 @@ import com.lugg.RNCConfig.RNCConfigPackage;
 public class MainApplication extends Application implements ReactApplication {
 
   private final ReactNativeHost mReactNativeHost =
-      new DefaultReactNativeHost(this) {
+      new ReactNativeHostWrapper(this, new DefaultReactNativeHost(this) {
         @Override
         public boolean getUseDeveloperSupport() {
           return BuildConfig.DEBUG;
@@ -44,7 +47,7 @@ public class MainApplication extends Application implements ReactApplication {
 
         @Override
         protected String getJSMainModuleName() {
-          return "index";
+          return ".expo/.virtual-metro-entry";
         }
 
         @Override
@@ -55,7 +58,7 @@ public class MainApplication extends Application implements ReactApplication {
         protected Boolean isHermesEnabled() {
           return BuildConfig.IS_HERMES_ENABLED;
         }
-      };
+      });
 
   @Override
   public ReactNativeHost getReactNativeHost() {
@@ -73,5 +76,12 @@ public class MainApplication extends Application implements ReactApplication {
     }
     ReactNativeFlipper.initializeFlipper(this, getReactNativeHost().getReactInstanceManager());
     IntercomModule.initialize(this, "android_sdk-60866bc5b6b0e244ea48a178cb454791b75dff7a", BuildConfig.INTERCOM_APP_KEY);
+    ApplicationLifecycleDispatcher.onApplicationCreate(this);
+  }
+
+  @Override
+  public void onConfigurationChanged(Configuration newConfig) {
+    super.onConfigurationChanged(newConfig);
+    ApplicationLifecycleDispatcher.onConfigurationChanged(this, newConfig);
   }
 }

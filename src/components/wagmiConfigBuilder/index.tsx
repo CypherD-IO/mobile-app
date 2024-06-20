@@ -1,6 +1,7 @@
 import React, { useContext, useEffect, useRef, useState } from 'react';
 import { WalletConnectListener } from '../walletConnectListener';
-import { WagmiConfig } from 'wagmi';
+import { WagmiProvider } from 'wagmi';
+import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import {
   mainnet,
   polygon,
@@ -16,7 +17,7 @@ import {
   aurora,
   moonbeam,
   moonriver,
-} from 'viem/chains';
+} from '@wagmi/core/chains';
 import {
   createWeb3Modal,
   defaultWagmiConfig,
@@ -29,6 +30,9 @@ import {
   HdWalletContext,
   _NO_CYPHERD_CREDENTIAL_AVAILABLE_,
 } from '../../core/util';
+import { handleResponse } from '@coinbase/wallet-mobile-sdk';
+import { coinbaseConnector } from '@web3modal/coinbase-wagmi-react-native';
+import { Linking } from 'react-native';
 
 export const WagmiConfigBuilder: React.FC = ({ children }) => {
   const [wagmiConfig, setWagmiConfig] = useState();
@@ -47,6 +51,11 @@ export const WagmiConfigBuilder: React.FC = ({ children }) => {
     },
   };
 
+  // const customWallets = getCustomWallets();
+  const coinbase = coinbaseConnector({
+    redirect: metadata?.redirect?.native || '',
+  });
+
   const chains = [
     mainnet,
     polygon,
@@ -62,7 +71,7 @@ export const WagmiConfigBuilder: React.FC = ({ children }) => {
     aurora,
     moonbeam,
     moonriver,
-  ];
+  ] as const;
 
   useEffect(() => {
     void buildWagmiConfig();
@@ -85,11 +94,13 @@ export const WagmiConfigBuilder: React.FC = ({ children }) => {
         projectId,
         enableWalletConnect: enableWalletConnectRef.current,
         metadata,
+        extraConnectors: [coinbase],
       });
       createWeb3Modal({
         projectId,
-        chains,
         wagmiConfig: tempWagmiConfig,
+        // customWallets,
+        enableAnalytics: true,
       });
       setWagmiConfig(tempWagmiConfig);
     }
@@ -110,11 +121,25 @@ export const WagmiConfigBuilder: React.FC = ({ children }) => {
   //     connectors: [walletConnectConnector],
   //     publicClient,
   //   });
+  const queryClient = new QueryClient();
+
+  useEffect(() => {
+    const sub = Linking.addEventListener('url', ({ url }) => {
+      const handledBySdk = handleResponse(new URL(url));
+      if (!handledBySdk) {
+        // Handle other deeplinks
+      }
+    });
+
+    return () => sub.remove();
+  }, []);
 
   return wagmiConfig ? (
-    <WagmiConfig config={wagmiConfig}>
-      <WalletConnectListener>{children}</WalletConnectListener>
-    </WagmiConfig>
+    <WagmiProvider config={wagmiConfig}>
+      <QueryClientProvider client={queryClient}>
+        <WalletConnectListener>{children}</WalletConnectListener>
+      </QueryClientProvider>
+    </WagmiProvider>
   ) : (
     <Loading />
   );

@@ -11,28 +11,41 @@ export default function useWalletConnectMobile() {
   const { disconnect } = useDisconnect();
 
   const openWalletConnectModal = async () => {
-    const provider = await connector?.getProvider();
-    if (provider?.close) {
-      await provider.close();
-    }
+    console.log('open wallet connect modal');
+    // const provider = await connector?.getProvider();
+    // console.log('provider : ', provider);
+    // if (provider?.close) {
+    //   await provider.close();
+    // }
+    console.log('isConnected inside openwalletconnectwallet : ', isConnected);
+    // console.log('address : ', address);
     if (isConnected) {
       try {
         await disconnect();
-        await provider?.disconnect();
-      } catch (e) {}
+        // console.log('disconnecting : ', provider?.disconnect);
+        // await provider?.disconnect();
+        console.log('disconnected');
+      } catch (e) {
+        console.log('error while disconnection : ', e);
+      }
     }
     void open({ view: 'Connect' });
   };
   const disconnectWalletConnect = async () => {
-    try {
-      // const provider = await connector?.getProvider();
-      const result = await disconnect();
-      // const result = await disconnect();
-      // await provider?.disconnect();
-      // await connector?.disconnect();
-      // RNRestart.Restart();
-      return result;
-    } catch (e) {}
+    const provider = await connector?.getProvider();
+    console.log('🚀 ~ disconnectWalletConnect ~ provider:', provider);
+    if (isConnected) {
+      try {
+        await disconnect();
+        // console.log('disconnecting : ', provider?.disconnect);
+        // if (provider?.disconnect) {
+        //   await provider?.disconnect();
+        //   console.log('disconnected with provider');
+        // }
+      } catch (e) {
+        console.log('error while disconnecedtion : ', e);
+      }
+    }
   };
 
   return { openWalletConnectModal, disconnectWalletConnect };
