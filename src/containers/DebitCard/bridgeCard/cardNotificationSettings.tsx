@@ -29,6 +29,7 @@ import CyDModalLayout from '../../../components/v2/modal';
 import { copyToClipboard } from '../../../core/util';
 import Button from '../../../components/v2/button';
 import { showToast } from '../../utilities/toastUtility';
+import { screenTitle } from '../../../constants';
 
 export default function CardNotificationSettings(props: {
   route: {
@@ -37,6 +38,7 @@ export default function CardNotificationSettings(props: {
       card: { cardId: string; status: string; type: string };
     };
   };
+  navigation: any;
 }) {
   const RESENT_OTP_TIME = 30;
   const globalContext = useContext(GlobalContext) as GlobalContextDef;
@@ -328,10 +330,6 @@ export default function CardNotificationSettings(props: {
     }
   };
 
-  const onTelegramAuth = () => {
-    setIsTelegramAuthModalVisible(true);
-  };
-
   return (
     <CyDView className='h-full bg-white pt-[30px]'>
       <CyDModalLayout
@@ -365,13 +363,13 @@ export default function CardNotificationSettings(props: {
                 />
                 <CyDView className='p-[15px] flex flex-col'>
                   <CyDView className='border-[1px] border-cardBgTo m-[8px] rounded-[5px] p-[12px]'>
-                    <CyDText className='text-[15px] font-nunito text-primaryTextColor'>
+                    <CyDText className='text-[12px] font-nunito text-primaryTextColor'>
                       {t<string>(
-                        `CypherHQ bot, using the account where you want to receive notifications at,`,
+                        `Step 1:\nCypherHQ bot, using the account where you want to receive notifications at,`,
                       )}
                     </CyDText>
                     <CyDText
-                      className='text-blue-600 underline cursor-pointer'
+                      className='text-blue-600 underline cursor-pointer text-[12px]'
                       onPress={() => {
                         void Linking.openURL('https://t.me/CypherHQBot');
                       }}>
@@ -379,9 +377,9 @@ export default function CardNotificationSettings(props: {
                     </CyDText>
                   </CyDView>
                   <CyDView className='border-[1px] border-cardBgTo m-[8px] rounded-[5px] p-[6px]'>
-                    <CyDText className='text-[15px] font-nunito text-primaryTextColor'>
+                    <CyDText className='text-[12px] font-nunito text-primaryTextColor'>
                       {t<string>(
-                        `Copy and paste the following bot command after clicking on start to begin receiving notifications.\nClick Done after you have gotten the confirmation!`,
+                        `Step 2:\nCopy and paste the following bot command after clicking on start to begin receiving notifications.\n\nStep 3:\nClick Done after you have gotten the confirmation!`,
                       )}
                     </CyDText>
                   </CyDView>
@@ -391,12 +389,12 @@ export default function CardNotificationSettings(props: {
                   </CyDText>
                   <CyDView className='border-[1px] border-cardBgTo m-[8px] rounded-[5px] p-[6px]'>
                     <CyDTouchView
-                      className='text-[15px] font-nunito text-primaryTextColor justify-between flex flex-row'
+                      className='text-[15x] font-nunito text-primaryTextColor justify-between flex flex-row'
                       onPress={() => {
                         copyToClipboard(`/link ${telegramConnectionId}`);
                         showToast(t('SEED_PHARSE_COPY'));
                       }}>
-                      <CyDText className='text-center font-nunito text-[14px] font-bold mt-[3px]'>
+                      <CyDText className='text-center font-nunito text-[12px] font-bold mt-[3px]'>
                         {t<string>(`/link ${telegramConnectionId}`)}
                       </CyDText>
                       <CyDImage
@@ -427,16 +425,27 @@ export default function CardNotificationSettings(props: {
           {!currentNotificationOption.telegram ? (
             <CyDTouchView
               className='flex flex-row justify-between align-center mx-[20px] pb-[15px] border-b-[1px] border-sepratorColor'
-              onPress={() => onTelegramAuth()}>
+              onPress={() =>
+                props.navigation.navigate(
+                  screenTitle.TELEGRAM_SETUP_SETTINGS,
+                  {},
+                )
+              }>
               <CyDView className='flex flex-row items-center'>
-                <CyDText className='text-[16px] font-bold'>
-                  {t<string>('TELEGRAM_NOTIFICATION')}
+                <CyDText className='text-[16px] font-bold pr-[10px]'>
+                  {t<string>('Setup Telegram')}
                 </CyDText>
+                <CyDImage
+                  source={AppImages.BROWSER_REDIRECT}
+                  className='h-[14px] w-[14px]'
+                />
               </CyDView>
-              <CyDImage
-                source={AppImages.TELEGRAM_BLUE}
-                className='h-[22px] w-[22px]'
-              />
+              <CyDView className='flex flex-row'>
+                <CyDImage
+                  source={AppImages.TELEGRAM_BLUE}
+                  className='h-[26px] w-[26px]'
+                />
+              </CyDView>
             </CyDTouchView>
           ) : (
             <CyDView className='flex flex-row justify-between align-center mx-[20px] pb-[15px] border-b-[1px] border-sepratorColor'>
