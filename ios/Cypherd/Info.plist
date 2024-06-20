@@ -49,9 +49,16 @@
 	<false />
 	<key>LSApplicationQueriesSchemes</key>
 	<array>
-		<string>itms-apps</string>
+		<string>metamask</string>
+		<string>trust</string>
+		<string>safe</string>
+		<string>rainbow</string>
+		<string>uniswap</string>
 		<string>cbwallet</string>
+		<string>itms-apps</string>
 	</array>
+	<key>LSMinimumSystemVersion</key>
+	<string>13.4</string>
 	<key>LSRequiresIPhoneOS</key>
 	<true />
 	<key>NSAppTransportSecurity</key>
@@ -127,7 +134,5 @@
 	</array>
 	<key>UIViewControllerBasedStatusBarAppearance</key>
 	<false />
-	<key>LSMinimumSystemVersion</key>
-	<string>12.0</string>
 </dict>
 </plist>

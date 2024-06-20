@@ -2,5 +2,6 @@
 #define Cypherd_Bridging_Header_h
 
 #import "RNSplashScreen.h"
+#import <Expo/Expo.h>
 
 #endif
