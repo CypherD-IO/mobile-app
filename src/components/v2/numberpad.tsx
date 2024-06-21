@@ -11,7 +11,7 @@ export default function CyDNumberPad({
   setValue,
 }: {
   value: string;
-  setValue: Dispatch<SetStateAction<string>>;
+  setValue: (amt: string) => void;
 }) {
   const numberPadValues = [
     '1',
