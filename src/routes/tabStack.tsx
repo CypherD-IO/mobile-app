@@ -6,6 +6,7 @@ import {
   DebitCardStackScreen,
   OptionsStackScreen,
   PortfolioStackScreen,
+  SwapStackScreen,
 } from './auth';
 import {
   BottomTabBarProps,
@@ -262,10 +263,8 @@ function TabStack() {
               iconName = focused
                 ? AppImages.PORTFOLIO_SEL
                 : AppImages.PORTFOLIO_UNSEL;
-            } else if (route.name === screenTitle.BROWSER) {
-              iconName = focused
-                ? AppImages.BROWSER_SEL
-                : AppImages.BROWSER_UNSEL;
+            } else if (route.name === screenTitle.SWAP) {
+              iconName = focused ? AppImages.SWAP_SEL : AppImages.SWAP_UNSEL;
             } else if (route.name === screenTitle.OPTIONS) {
               iconName = focused
                 ? AppImages.OPTION_SEL
@@ -294,7 +293,10 @@ function TabStack() {
           name={screenTitle.PORTFOLIO}
           component={PortfolioStackScreen}
         />
-        <Tab.Screen name={screenTitle.BROWSER} component={BrowserStackScreen} />
+        <Tab.Screen
+          name={screenTitle.DEBIT_CARD}
+          component={DebitCardStackScreen}
+        />
         <Tab.Screen
           name={screenTitle.SHORTCUTS}
           component={PortfolioStackScreen}
@@ -309,10 +311,7 @@ function TabStack() {
             ),
           })}
         />
-        <Tab.Screen
-          name={screenTitle.DEBIT_CARD}
-          component={DebitCardStackScreen}
-        />
+        <Tab.Screen name={screenTitle.SWAP} component={SwapStackScreen} />
         <Tab.Screen
           name={screenTitle.OPTIONS}
           component={OptionsStackScreen}

@@ -14,6 +14,7 @@ export const screenTitle = {
   BROWSER_SCREEN: 'BrowserScreen',
   OPTIONS: 'Options',
   BRIDGE: 'Bridge',
+  SWAP: 'Swap',
   OPTIONS_SCREEN: 'OptionsScreen',
   MANAGE_WALLET: 'ManageWallet',
   SECURITY_PRIVACY: 'SecurityPrivacy',

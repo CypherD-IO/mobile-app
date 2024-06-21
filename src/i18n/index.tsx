@@ -1065,7 +1065,7 @@ const resources = {
       UPDATE_CONTACT_DETAILS: 'Update Contact Details',
       AMOUNT_TO_BE_LOADED_CARD: 'Amount to be loaded in your card',
       CRYPTO_VALUE: 'Crypto Value',
-      SETUP_AUTO_LOAD: 'Set up Auto Load',
+      SETUP_AUTO_LOAD: 'Set Up Auto Load',
       SETUP_AUTO_LOAD_CAPS: 'SETUP AUTO LOAD',
       AUTO_LOAD_DESC1:
         "Set your top-up threshold, and we'll keep your balance topped up.",
@@ -1077,6 +1077,7 @@ const resources = {
       AMOUNT_TO_BE_LOADED_IN_CARD: 'Amount to be loaded in your card',
       WHEN_BALANCE_GOES_BELOW: 'When balance goes below',
       AUTOLOAD_SETUP_SUCCESS: 'Auto Load has been setup successfully',
+      BROWSER: 'Browser',
     },
   },
 };

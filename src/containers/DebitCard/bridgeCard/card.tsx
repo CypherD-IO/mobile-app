@@ -142,7 +142,7 @@ export default function CardScreen({
     const card = item;
     return (
       <CyDImageBackground
-        className='h-[200px] w-[300px] ml-[45px]'
+        className='h-[200px] w-[300px] self-center'
         resizeMode='stretch'
         source={
           card.type === CardType.VIRTUAL
@@ -366,7 +366,7 @@ const RenderCardActions = ({
         type: 'error',
         title: ' ',
         description:
-          'Reveal card feature has been disabled for your safety. Refer to your physical card for card details',
+          'Reveal card feature for physical card has been disabled for your safety. Refer to your physical card for card details',
         onSuccess: hideModal,
         onFailure: hideModal,
       });
@@ -498,9 +498,9 @@ const RenderCardActions = ({
   if (card.status === 'upgradeAvailable') {
     if (upgradeToPhysicalAvailable) {
       return (
-        <CyDView className='flex flex-col justify-center items-center mx-[20px] mt-[-22px]'>
+        <CyDView className='flex flex-col justify-center items-center mx-[20px] mt-[-42px]'>
           <CyDText className='text-[22px] font-bold'>Get Physical Card</CyDText>
-          <CyDText className='text-[14px] font-semibold text-center my-[12px]'>
+          <CyDText className='text-[14px] font-semibold text-center mb-[12px] mt-[6px]'>
             Obtain a Physical card and enjoy the convenience of making purchases
             worldwide.
           </CyDText>
@@ -605,7 +605,7 @@ const RenderCardActions = ({
         navigation={navigation}
       />
 
-      <CyDView className='flex flex-row justify-center items-center mb-[12px] mt-[-32px]'>
+      <CyDView className='flex flex-row justify-center items-center mb-[14px] mt-[-42px]'>
         <CyDText className='font-bold text-[18px]'>
           {t<string>(
             type === CardType.VIRTUAL ? 'VIRTUAL_CARD' : 'PHYSICAL_CARD',

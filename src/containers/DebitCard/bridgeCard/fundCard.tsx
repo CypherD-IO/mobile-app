@@ -705,7 +705,7 @@ export default function BridgeFundCardScreen({ route }: { route: any }) {
     return (
       <CyDTouchView
         className={
-          'bg-[#F7F8FE] mx-[20px] my-[16px] border-[1px] border-[#EBEBEB] rounded-[8px]'
+          'bg-secondaryBackgroundColor mx-[20px] my-[16px] border-[1px] border-[#EBEBEB] rounded-[8px]'
         }
         onPress={() => setIsChooseTokenVisible(true)}>
         <CyDView
@@ -800,7 +800,7 @@ export default function BridgeFundCardScreen({ route }: { route: any }) {
           errorMessage = t('MINIMUM_AMOUNT_ETH');
         }
         return (
-          <CyDView className='mb-[10px]'>
+          <CyDView className='mb-[2px]'>
             <CyDText className='text-center text-redColor font-medium'>
               {errorMessage}
             </CyDText>
@@ -885,21 +885,21 @@ export default function BridgeFundCardScreen({ route }: { route: any }) {
               <CyDView className={'flex flex-row justify-center items-center'}>
                 {!isCrpytoInput && (
                   <CyDText
-                    className={clsx('text-mandarin font-bold mt-[5px]', {
-                      'text-[20px]': amount.length <= 15,
-                      'text-[40px]': amount.length <= 10,
-                      'text-[60px]': amount.length <= 5,
+                    className={clsx('text-mandarin font-bold', {
+                      'text-[32px]': amount.length <= 15,
+                      'text-[60px]': amount.length <= 7,
+                      'text-[75px]': amount.length <= 5,
                     })}>
                     {'$'}
                   </CyDText>
                 )}
                 <CyDTextInput
                   className={clsx(
-                    'font-extrabold text-center text-mandarin h-[85px] font-nunito',
+                    'font-extrabold text-center text-mandarin h-[85px] font-nunito ml-[4px]',
                     {
-                      'text-[20px]': amount.length <= 15,
-                      'text-[40px]': amount.length <= 10,
-                      'text-[60px]': amount.length <= 5,
+                      'text-[32px]': amount.length <= 15,
+                      'text-[60px]': amount.length <= 7,
+                      'text-[75px]': amount.length <= 5,
                     },
                   )}
                   value={amount}
@@ -969,14 +969,14 @@ export default function BridgeFundCardScreen({ route }: { route: any }) {
                       ' ' +
                       (selectedToken?.symbol ?? ' '))}
               </CyDText>
-              {(!usdAmount || Number(usdAmount) < minTokenValueLimit) && (
-                <CyDView className='mb-[10px]'>
+              {/* {(!usdAmount || Number(usdAmount) < minTokenValueLimit) && (
+                <CyDView className='mb-[2px]'>
                   <CyDText className='text-center font-semibold'>
                     {t<string>('CARD_LOAD_MIN_AMOUNT')}
                   </CyDText>
                 </CyDView>
               )}
-              <RenderWarningMessage />
+              <RenderWarningMessage /> */}
             </CyDView>
             <CyDView className={'p-[4px] ml-[-45px]'}>
               <CyDTouchView
@@ -1001,9 +1001,9 @@ export default function BridgeFundCardScreen({ route }: { route: any }) {
               }}
               disabled={loading}
               className={clsx(
-                'border border-inputBorderColor rounded-[4px] h-[40px] w-[50px] flex justify-center items-center',
+                'bg-white border border-appColor rounded-[4px] h-[40px] w-[50px] flex justify-center items-center',
               )}>
-              <CyDText className='font-bold'>{t('MAX')}</CyDText>
+              <CyDText className='font-extrabold'>{t('MAX')}</CyDText>
             </CyDTouchView>
             <CyDTouchView
               onPress={() => {
@@ -1011,32 +1011,33 @@ export default function BridgeFundCardScreen({ route }: { route: any }) {
               }}
               disabled={loading}
               className={clsx(
-                'bg-white border border-inputBorderColor rounded-[4px] h-[40px] w-[50px] flex justify-center items-center',
+                'bg-secondaryBackgroundColor border border-inputBorderColor rounded-[4px] h-[40px] w-[50px] flex justify-center items-center',
               )}>
-              <CyDText className='font-bold'>{'$50'}</CyDText>
+              <CyDText className='font-extrabold'>{'$50'}</CyDText>
             </CyDTouchView>
             <CyDTouchView
               onPress={() => {
-                void onMax();
+                setAmount('200');
               }}
               disabled={loading}
               className={clsx(
-                'bg-white border border-inputBorderColor rounded-[4px] h-[40px] w-[50px] flex justify-center items-center',
+                'bg-secondaryBackgroundColor border border-inputBorderColor rounded-[4px] h-[40px] w-[50px] flex justify-center items-center',
               )}>
-              <CyDText className='font-bold'>{'$200'}</CyDText>
+              <CyDText className='font-extrabold'>{'$200'}</CyDText>
             </CyDTouchView>
             <CyDTouchView
               onPress={() => {
-                void onMax();
+                setAmount('500');
               }}
               disabled={loading}
               className={clsx(
-                'bg-white border border-inputBorderColor rounded-[4px] h-[40px] w-[50px] flex justify-center items-center',
+                'bg-secondaryBackgroundColor border border-inputBorderColor rounded-[4px] h-[40px] w-[50px] flex justify-center items-center',
               )}>
-              <CyDText className='font-bold'>{'$500'}</CyDText>
+              <CyDText className='font-extrabold'>{'$500'}</CyDText>
             </CyDTouchView>
           </CyDView>
         </CyDView>
+        <CyDNumberPad value={amount} setValue={setAmount} />
         <CyDView className='flex flex-row justify-around items-center mx-[16px]'>
           <Button
             onPress={() => {

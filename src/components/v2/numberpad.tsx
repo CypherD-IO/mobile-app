@@ -10,8 +10,8 @@ export default function CyDNumberPad({
   value,
   setValue,
 }: {
-  value: string[];
-  setValue: Dispatch<SetStateAction<string[]>>;
+  value: string;
+  setValue: Dispatch<SetStateAction<string>>;
 }) {
   const numberPadValues = [
     '1',
@@ -31,21 +31,21 @@ export default function CyDNumberPad({
   const renderItem = ({ item }: { item: string }) => {
     return (
       <CyDTouchView
-        className='w-[33.3%] h-[92px] justify-center items-center'
+        className='w-[33.3%] h-[82px] justify-center items-center'
         onPress={() => {
           if (item === '<') {
             setValue(value.slice(0, -1));
           } else {
-            setValue([...value, item]);
+            setValue(value.concat(item));
           }
         }}>
-        <CyDText className='text-[18px] font-extrabold'>{item}</CyDText>
+        <CyDText className='text-[22px] font-extrabold'>{item}</CyDText>
       </CyDTouchView>
     );
   };
 
   return (
-    <CyDView className='w-full'>
+    <CyDView className='w-[86%] self-center'>
       <CyDFlatList
         data={numberPadValues}
         numColumns={3}

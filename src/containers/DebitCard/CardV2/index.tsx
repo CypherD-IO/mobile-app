@@ -275,12 +275,15 @@ export default function CypherCardScreen({
         filterState={[filter, setFilter]}
       />
       {/* TXN FILTER MODAL */}
+      <CyDView className='ml-[18px] mb-[4px]'>
+        <CyDText className='font-extrabold text-[26px]'>Cards</CyDText>
+      </CyDView>
       <CyDView
         className={
-          'h-[50px] flex flex-row justify-between items-center py-[5px] px-[10px] mx-[12px] mb-[8px] mt-[16px]'
+          'h-[50px] flex flex-row justify-between items-center py-[5px] px-[10px] mx-[12px] mb-[8px] mt-[8px]'
         }>
         <CyDView>
-          <CyDText className={'font-bold text-[16px]'}>
+          <CyDText className={'font-bold text-subTextColor text-[12px]'}>
             {t<string>('TOTAL_BALANCE') + ' (USD)'}
           </CyDText>
           <CyDText className={'font-bold text-[28px]'}>
@@ -303,7 +306,7 @@ export default function CypherCardScreen({
       <CyDScrollView>
         {/* <RenderMessage /> */}
         <CyDTouchView
-          className='flex flex-row justify-center items-center self-center py-[4px] px-[12px] border-[0.2px] border-black rounded-[26px] my-[12px] bg-white'
+          className='flex flex-row justify-center items-center self-center py-[4px] px-[12px] border-[0.2px] border-black rounded-[26px] mt-[4px] mb-[4px] bg-white'
           onPress={() => {
             cardProfile.isAutoloadConfigured
               ? setIsAutoLoadOptionsVisible(true)

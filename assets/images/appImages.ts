@@ -18,6 +18,8 @@ const DOWN = require('./down.png');
 const DOWNLOAD = require('./download.png');
 const BROWSER_UNSEL = require('./browser_unselect.png');
 const BROWSER_SEL = require('./browser_sel.png');
+const SWAP_SEL = require('./swap_sel.png');
+const SWAP_UNSEL = require('./swap_unsel.png');
 const PORTFOLIO_UNSEL = require('./portfolio_unsel.png');
 const PORTFOLIO_SEL = require('./portfolio_sel.png');
 const OPTION_UNSEL = require('./option_unselect.png');
@@ -400,6 +402,8 @@ const AppImages = {
   PORTFOLIO_SEL,
   OPTION_SEL,
   BROWSER_SEL,
+  SWAP_SEL,
+  SWAP_UNSEL,
   EMPTY,
   BOOKMARK_BROWSER,
   DOWN_ARROW,
