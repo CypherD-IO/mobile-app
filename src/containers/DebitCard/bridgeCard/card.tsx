@@ -142,14 +142,26 @@ export default function CardScreen({
     const card = item;
     return (
       <CyDImageBackground
-        className='h-[200px] w-[300px] self-center'
+        className='flex flex-ro justify-center items-center h-[200px] w-[300px] self-center'
         resizeMode='stretch'
         source={
           card.type === CardType.VIRTUAL
             ? AppImages.VIRTUAL_CARD_MASTER
             : AppImages.PHYSICAL_CARD_MASTER
-        }
-      />
+        }>
+        {card.status === CardStatus.IN_ACTIVE && (
+          <CyDView className='flex flex-row items-center bg-cardBg px-[12px] py-[6px] rounded-[6px]'>
+            <CyDImage
+              source={AppImages.CYPHER_LOCKED}
+              className='h-[18px] w-[18px]'
+              resizeMode='contain'
+            />
+            <CyDText className='font-extrabold mt-[1px] ml-[2px]'>
+              Locked
+            </CyDText>
+          </CyDView>
+        )}
+      </CyDImageBackground>
     );
   };
 

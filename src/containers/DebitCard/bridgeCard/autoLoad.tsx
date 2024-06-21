@@ -12,10 +12,7 @@ import AppImages from '../../../../assets/images/appImages';
 import { useTranslation } from 'react-i18next';
 import moment from 'moment';
 import { Holding } from '../../../core/Portfolio';
-import {
-  AUTO_LOAD_SUPPORTED_CHAINS,
-  ChainBackendNames,
-} from '../../../constants/server';
+import { AUTO_LOAD_SUPPORTED_CHAINS } from '../../../constants/server';
 import useAxios from '../../../core/HttpRequest';
 import ChooseTokenModal from '../../../components/v2/chooseTokenModal';
 import { PortfolioContext } from '../../../core/util';
@@ -34,7 +31,6 @@ export default function AutoLoad({ navigation }: { navigation: any }) {
   );
   const [autoLoadExpiry, setAutoLoadExpiry] = useState<boolean>(false);
   const [repeatFor, setRepeatFor] = useState('40');
-  const [selectedToken, setSelectedToken] = useState<Holding>({});
   const portfolioState = useContext<any>(PortfolioContext);
   const [isDatePickerVisible, setIsDatePickerVisible] =
     useState<boolean>(false);
@@ -51,6 +47,9 @@ export default function AutoLoad({ navigation }: { navigation: any }) {
         token.isFundable &&
         AUTO_LOAD_SUPPORTED_CHAINS.includes(token.chainDetails.backendName),
     );
+  const [selectedToken, setSelectedToken] = useState<Holding>(
+    supportedTokens?.length ? supportedTokens[0] : {},
+  );
 
   useEffect(() => {
     if (cardProfile.isAutoloadConfigured) {
@@ -87,7 +86,7 @@ export default function AutoLoad({ navigation }: { navigation: any }) {
     <CyDScrollView className='flex-1'>
       <ChooseTokenModal
         isChooseTokenModalVisible={isChooseTokenVisible}
-        tokenList={portfolioState.statePortfolio.tokenPortfolio.totalHoldings}
+        tokenList={supportedTokens}
         minTokenValueLimit={0}
         onSelectingToken={token => {
           setIsChooseTokenVisible(false);
