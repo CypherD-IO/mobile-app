@@ -8,7 +8,6 @@ import {
   CyDTouchView,
   CyDImage,
   CyDText,
-  CyDFastImage,
 } from '../../../styles/tailwindStyles';
 import { showToast } from '../../utilities/toastUtility';
 import { get } from 'lodash';
@@ -65,6 +64,7 @@ export default function TelegramSetupSettings(props: {
 
   const refreshProfile = async () => {
     const data = await getWalletProfile(globalContext.globalState.token);
+    console.log(data);
     const telegramChanged = get(
       data,
       ['cardNotification', 'isTelegramAllowed'],
@@ -97,59 +97,82 @@ export default function TelegramSetupSettings(props: {
   }, [currentNotificationOption.telegram]);
 
   return (
-    <CyDView className='h-full bg-white p-[30px] flex flex-row'>
-      <CyDFastImage
-        className='h-[247px] w-[10px] mr-3 mt-[54px]'
-        source={AppImages.TELEGRAM_SETUP_STATUSBAR}
-      />
-      <CyDView className='p-[15px] flex flex-col'>
-        <CyDView className='border-[1px] border-cardBgTo m-[8px] rounded-[5px] p-[12px]'>
-          <CyDText className='text-[15px] font-nunito text-primaryTextColor'>
-            {t<string>(
-              `Step 1: Connect\nConnect to CypherHQ bot, using the telegram account where you want to receive notifications,`,
-            )}
+    <CyDView className='h-full bg-white px-[22px] pt-[32px] flex flex-row'>
+      <CyDView className='flex flex-col justify-start items-center'>
+        <CyDView className='h-[14px] w-[14px] rounded-[20px] border-[1px] border-inputBorderColor' />
+        <CyDView className='h-[74px] w-[1px] border-[0.5px] border-inputBorderColor' />
+        <CyDView className='h-[14px] w-[14px] rounded-[20px] border-[1px] border-inputBorderColor' />
+        <CyDView className='h-[200px] w-[1px] border-[0.5px] border-inputBorderColor' />
+        <CyDView className='h-[14px] w-[14px] rounded-[20px] border-[1px] border-inputBorderColor' />
+      </CyDView>
+      <CyDView className='flex flex-col'>
+        <CyDView className='mx-[8px] rounded-[5px] px-[12px]'>
+          <CyDText className='font-extrabold text-[16px]'>
+            Step1: Connect
           </CyDText>
           <CyDText
-            className='text-blue-600 underline cursor-pointer text-[15px]'
+            className='mt-[2px]'
             onPress={() => {
               void Linking.openURL('https://t.me/CypherHQBot');
             }}>
-            CypherHQBot{' '}
-          </CyDText>
-          <CyDText className='text-[15px] font-nunito text-primaryTextColor'>
-            {t<string>(
-              `\nStep 2: Link\nAfter clicking on Start (if visible), Copy and paste the following bot command below to begin receiving notifications.\n\nStep 3: Confirm\nClick on 'Proceed' after you have got the confirmation!`,
-            )}
+            Connect to{'  '}
+            <CyDText className='text-blue-600 underline px-[6px]'>
+              CypherHQ Bot{' '}
+              <CyDImage
+                source={AppImages.BROWSER_REDIRECT}
+                className='h-[12px] w-[12px]'
+                resizeMode='contain'
+              />
+            </CyDText>
+            {'  '}
+            using the telegram account where you want to receive notifications
           </CyDText>
         </CyDView>
 
-        <CyDText className='ml-[8px] text-primaryText text-[10px]'>
-          Bot Command
-        </CyDText>
-        <CyDView className='border-[1px] border-cardBgTo m-[8px] rounded-[5px] p-[6px]'>
-          <CyDTouchView
-            className='text-[15x] font-nunito text-primaryTextColor justify-between flex flex-row'
-            onPress={() => {
-              copyToClipboard(`/link ${telegramConnectionId}`);
-              showToast(t('Bot Command Copied'));
-            }}>
-            <CyDText className='text-center font-nunito text-[15px] font-bold mt-[3px]'>
-              {t<string>(`/link ${telegramConnectionId}`)}
-            </CyDText>
+        <CyDView className='mx-[8px] rounded-[5px] px-[12px] mt-[22px]'>
+          <CyDText className='font-extrabold text-[16px]'>Step2: Link</CyDText>
+          <CyDText className='mt-[2px]'>
+            Click on Start (if visible), Copy and paste the below bot command to
+            begin receiving notifications
+          </CyDText>
+        </CyDView>
+
+        <CyDTouchView
+          className='flex flex-col justify-center items-center mt-[26px] mx-[54px] py-[12px] border-[1px] rounded-[6px] border-inputBorderColor'
+          onPress={() => {
+            copyToClipboard(`/link ${telegramConnectionId}`);
+            showToast(t('Bot Command Copied'));
+          }}>
+          <CyDText className='text-[26px] font-bold text-mandarin'>
+            {t<string>(`/link ${telegramConnectionId}`)}
+          </CyDText>
+          <CyDView className='flex flex-row items-start'>
+            <CyDText>Copy</CyDText>
             <CyDImage
               source={AppImages.COPY}
-              className={'w-[16px] h-[18px] mt-[3px]'}
+              className={'w-[12px] h-[16px] mt-[3px] ml-[6px]'}
+              resizeMode='contain'
             />
-          </CyDTouchView>
+          </CyDView>
+        </CyDTouchView>
+
+        <CyDView className='mx-[8px] rounded-[5px] px-[12px] mt-[26px]'>
+          <CyDText className='font-extrabold text-[16px]'>
+            Step3: Confirm
+          </CyDText>
+          <CyDText className='mt-[2px]'>
+            {`Click on 'Verify' after you have got the confirmation!`}
+          </CyDText>
         </CyDView>
-        <CyDView className='pt-[10px]'>
+
+        <CyDView className='mt-[22px]'>
           <Button
-            title={t('Proceed')}
+            title={t('VERIFY')}
             loading={isLoading}
             onPress={() => {
               void closeAndRefreshPortfolio();
             }}
-            style='h-[55px] px-[55px]'
+            style='h-[54px]'
             isPrivateKeyDependent={true}
           />
         </CyDView>
