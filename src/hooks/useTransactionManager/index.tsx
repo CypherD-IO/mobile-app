@@ -1349,7 +1349,6 @@ export default function useTransactionManager() {
           fee,
           'Cypher',
         );
-        console.log(grantResult);
         return { isError: false, hash: grantResult.transactionHash };
       }
       return { isError: true, error: 'Unable to fetch signer' };
@@ -1398,14 +1397,12 @@ export default function useTransactionManager() {
             },
           ],
         };
-        console.log('revoke');
         const revokeResult = await signingClient.signAndBroadcast(
           granter,
           [revokeMsg],
           fee,
           'Cypher',
         );
-        console.log(revokeResult);
         return { isError: false, hash: revokeResult.transactionHash };
       }
       return { isError: true, error: 'Unable to fetch signer' };

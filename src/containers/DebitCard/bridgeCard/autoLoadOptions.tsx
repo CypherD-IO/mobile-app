@@ -48,7 +48,6 @@ export default function AutoLoadOptionsModal({
   const getAutoLoadConfig = async () => {
     const response = await getWithAuth('/v1/cards/autoLoad');
     if (!response.isError) {
-      console.log(response.data);
       setAutoLoadConfig(response.data);
     }
   };

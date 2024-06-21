@@ -80,7 +80,6 @@ export default function PreviewAutoLoad({
           '/v1/cards/autoLoad',
           payload,
         );
-        console.log(autoLoadConfigResponse);
         if (!autoLoadConfigResponse.isError) {
           setLoading(false);
           showModal('state', {
@@ -104,7 +103,6 @@ export default function PreviewAutoLoad({
         }
       } else {
         setLoading(false);
-        console.log(grantResponse);
         showModal('state', {
           type: 'error',
           title: '',

@@ -64,7 +64,6 @@ export default function TelegramSetupSettings(props: {
 
   const refreshProfile = async () => {
     const data = await getWalletProfile(globalContext.globalState.token);
-    console.log(data);
     const telegramChanged = get(
       data,
       ['cardNotification', 'isTelegramAllowed'],

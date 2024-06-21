@@ -96,7 +96,7 @@ export default function AutoLoad({ navigation }: { navigation: any }) {
           setIsChooseTokenVisible(false);
         }}
         noTokensAvailableMessage={t<string>('CARD_INSUFFICIENT_FUNDS')}
-        renderPage={'fundCardPage'}
+        renderPage={'autoLoad'}
       />
       <DatePickerModal
         isVisible={isDatePickerVisible}
