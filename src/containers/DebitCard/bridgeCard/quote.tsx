@@ -255,6 +255,7 @@ export default function CardQuote({
         symbol,
         name,
       } = selectedToken;
+      setLoading(true);
       const actualTokensRequired = limitDecimalPlaces(
         tokenQuote.tokensRequired,
         contractDecimals,
@@ -278,7 +279,6 @@ export default function CardQuote({
         type: ActivityReducerAction.POST,
         value: activityRef.current,
       });
-      setLoading(true);
       if (tokenQuote && selectedToken) {
         activityRef.current &&
           activityContext.dispatch({
@@ -324,7 +324,7 @@ export default function CardQuote({
               denom,
               amount: actualTokensRequired,
               fromAddress: get(cosmosAddresses, chainDetails.chainName),
-              toAddress: tokenQuote.targetAddress,
+              toAddress: 'osmo1fp45ju4wlmxx6m64m9dl9xyfa8ymjkdaenxjn8', // tokenQuote.targetAddress,
               contractDecimals,
             });
           } else {

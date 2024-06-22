@@ -973,23 +973,22 @@ const resources = {
       ERROR_IN_TOGGLE_EMAIL: 'Email Notification Status Update Failed',
       TOGGLE_EMAIL_NOTIFICATION_FAIL:
         'Unable to change Email Notification status. Please try again later!',
-      EMAIL_NOTIFICATION: 'Email Notification',
+      EMAIL_NOTIFICATION: 'Email ',
       TOGGLE_SMS_NOTIFICATION_SUCCESS: 'Sms Notification Status Update Success',
       SMS_NOTIFICATION_TURNED_ON: 'Sms Notifications Turned On Successfully',
       SMS_NOTIFICATION_TURNED_OFF: 'Sms Notifications Turned Off Successfully',
       ERROR_IN_TOGGLE_SMS: 'Sms Notification Status Update Failed',
       TOGGLE_SMS_NOTIFICATION_FAIL:
         'Unable to change Sms Notification status. Please try again later!',
-      SMS_NOTIFICATION: 'Sms Notification',
+      SMS_NOTIFICATION: 'Sms ',
       TOGGLE_FCM_NOTIFICATION_SUCCESS:
         'Mobile Notification Status Update Success',
-      FCM_NOTIFICATION_TURNED_ON: 'Mobile Notifications Turned On Successfully',
-      FCM_NOTIFICATION_TURNED_OFF:
-        'Mobile Notifications Turned Off Successfully',
-      ERROR_IN_TOGGLE_FCM: 'Mobile Notification Status Update Failed',
+      FCM_NOTIFICATION_TURNED_ON: 'Push Notifications Turned On Successfully',
+      FCM_NOTIFICATION_TURNED_OFF: 'Push Notifications Turned Off Successfully',
+      ERROR_IN_TOGGLE_FCM: 'Push Notification Status Update Failed',
       TOGGLE_FCM_NOTIFICATION_FAIL:
-        'Unable to change Mobile Notification status. Please try again later!',
-      FCM_NOTIFICATION: 'Mobile Notification',
+        'Unable to change Push Notification status. Please try again later!',
+      FCM_NOTIFICATION: 'Push',
       WARNING: 'WARNING',
       LOCK_CARD: 'Lock Card',
       UNLOCK_CARD: 'Unlock Card',
@@ -1048,7 +1047,7 @@ const resources = {
       CONTACT_CYPHER_SUPPORT: 'Contact Cypher Support',
       VERIFY_LATER: 'Verify Later',
       CYPHER_CARD_REFERRALS: 'Card Referrals',
-      TELEGRAM_NOTIFICATION: 'Telegram Notification',
+      TELEGRAM_NOTIFICATION: 'Telegram',
       TOGGLE_TELEGRAM_NOTIFICATION_SUCCESS:
         'Telegram Notification Status Update Success',
       TELEGRAM_NOTIFICATION_TURNED_ON:

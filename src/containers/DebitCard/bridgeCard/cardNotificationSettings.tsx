@@ -293,6 +293,9 @@ export default function CardNotificationSettings(props: {
       });
     } else {
       switch (cardNotificationType) {
+        case CARD_NOTIFICATION_TYPES.TELEGRAM:
+          props.navigation.navigate(screenTitle.TELEGRAM_SETUP_SETTINGS, {});
+          break;
         case CARD_NOTIFICATION_TYPES.EMAIL:
           void toggleEmailNotifiction();
           break;
@@ -311,57 +314,31 @@ export default function CardNotificationSettings(props: {
     <CyDView className='h-full bg-white pt-[30px]'>
       {!isOTPTriggered && (
         <>
-          {!currentNotificationOption.telegram ? (
-            <CyDTouchView
-              className='flex flex-row justify-between align-center mx-[20px] pb-[15px] border-b-[1px] border-sepratorColor'
-              onPress={() =>
-                props.navigation.navigate(
-                  screenTitle.TELEGRAM_SETUP_SETTINGS,
-                  {},
-                )
-              }>
-              <CyDView className='flex flex-row items-center'>
-                <CyDText className='text-[16px] font-bold pr-[10px]'>
-                  {t<string>('Setup Telegram')}
-                </CyDText>
-                <CyDImage
-                  source={AppImages.BROWSER_REDIRECT}
-                  className='h-[14px] w-[14px]'
-                />
-              </CyDView>
-              <CyDView className='flex flex-row'>
-                <CyDImage
-                  source={AppImages.TELEGRAM_BLUE}
-                  className='h-[26px] w-[26px]'
-                />
-              </CyDView>
-            </CyDTouchView>
-          ) : (
-            <CyDView className='flex flex-row justify-between align-center mx-[20px] pb-[15px] border-b-[1px] border-sepratorColor'>
-              <CyDView>
-                <CyDText className='text-[16px] font-bold'>
-                  {t<string>('TELEGRAM_NOTIFICATION')}
-                </CyDText>
-              </CyDView>
-              {telegramSwitchLoading ? (
-                <LottieView
-                  style={styles.loader}
-                  autoPlay
-                  loop
-                  source={AppImages.LOADER_TRANSPARENT}
-                />
-              ) : (
-                <CyDSwitch
-                  onValueChange={() => {
-                    void handleToggleNotifications(
-                      CARD_NOTIFICATION_TYPES.TELEGRAM,
-                    );
-                  }}
-                  value={currentNotificationOption.telegram}
-                />
-              )}
+          <CyDView className='flex flex-row justify-between align-center mx-[20px] pb-[15px] border-b-[1px] border-sepratorColor'>
+            <CyDView>
+              <CyDText className='text-[16px] font-bold'>
+                {t<string>('TELEGRAM_NOTIFICATION')}
+              </CyDText>
             </CyDView>
-          )}
+            {telegramSwitchLoading ? (
+              <LottieView
+                style={styles.loader}
+                autoPlay
+                loop
+                source={AppImages.LOADER_TRANSPARENT}
+              />
+            ) : (
+              <CyDSwitch
+                onValueChange={() => {
+                  void handleToggleNotifications(
+                    CARD_NOTIFICATION_TYPES.TELEGRAM,
+                  );
+                }}
+                value={currentNotificationOption.telegram}
+              />
+            )}
+          </CyDView>
+          {/* )} */}
 
           <CyDView className='flex flex-row justify-between align-center mt-[20px] mx-[20px] pb-[15px] border-b-[1px] border-sepratorColor'>
             <CyDView>
