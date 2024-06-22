@@ -437,6 +437,24 @@ export default function Options(props: {
               />
 
               <OptionsContainer
+                sentryLabel={'browser'}
+                onPress={() => {
+                  props.navigation.navigate(C.screenTitle.BROWSER_SCREEN);
+                }}
+                title={t('BROWSER')}
+                logo={AppImages.BROWSER_UNSEL}
+              />
+
+              <DynamicView
+                dynamic
+                dynamicWidth
+                dynamicHeightFix
+                height={1}
+                width={88}
+                bGC={Colors.portfolioBorderColor}
+              />
+
+              <OptionsContainer
                 sentryLabel={'terms-and-conditions-button'}
                 onPress={() => {
                   props.navigation.navigate(C.screenTitle.LEGAL_SCREEN);

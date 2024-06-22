@@ -1,10 +1,4 @@
-import React, {
-  useCallback,
-  useContext,
-  useEffect,
-  useRef,
-  useState,
-} from 'react';
+import React, { useCallback, useContext, useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Keyboard } from 'react-native';
 import AppImages from '../../../../assets/images/appImages';
@@ -20,15 +14,12 @@ import {
   CHAIN_OSMOSIS,
 } from '../../../constants/server';
 import {
-  ActivityContext,
   getWeb3Endpoint,
   HdWalletContext,
   PortfolioContext,
   getNativeToken,
   formatAmount,
-  logAnalytics,
   validateAmount,
-  parseErrorMessage,
   limitDecimalPlaces,
   hasSufficientBalanceAndGasFee,
 } from '../../../core/util';
@@ -42,20 +33,10 @@ import {
   CyDTouchView,
   CyDView,
 } from '../../../styles/tailwindStyles';
-import { MODAL_HIDE_TIMEOUT_250 } from '../../../core/Http';
 import * as Sentry from '@sentry/react-native';
 import { GlobalContext } from '../../../core/globalContext';
 import Web3 from 'web3';
-import {
-  ActivityStatus,
-  DebitCardTransaction,
-  ActivityReducerAction,
-  ActivityType,
-} from '../../../reducers/activity_reducer';
 import { useGlobalModalContext } from '../../../components/v2/GlobalModal';
-import BottomTokenCardConfirm from '../../../components/BottomTokenCardConfirm';
-import { genId } from '../../utilities/activityUtilities';
-import { intercomAnalyticsLog } from '../../utilities/analyticsUtility';
 import { CHOOSE_TOKEN_MODAL_TIMEOUT } from '../../../constants/timeOuts';
 import { screenTitle } from '../../../constants';
 import { useIsFocused } from '@react-navigation/native';
@@ -69,20 +50,14 @@ import {
 import ChooseTokenModal from '../../../components/v2/chooseTokenModal';
 import CyDTokenAmount from '../../../components/v2/tokenAmount';
 import useAxios from '../../../core/HttpRequest';
-import { get, random } from 'lodash';
-import {
-  AnalyticsType,
-  ButtonType,
-  CardProviders,
-} from '../../../constants/enum';
-import { TokenMeta } from '../../../models/tokenMetaData.model';
+import { divide, floor, get, random } from 'lodash';
+import { ButtonType, CardProviders } from '../../../constants/enum';
 import clsx from 'clsx';
-import {
-  CardQuoteResponse,
-  PayTokenModalParams,
-} from '../../../models/card.model';
-import useTransactionManager from '../../../hooks/useTransactionManager';
+import { CardQuoteResponse } from '../../../models/card.model';
 import useGasService from '../../../hooks/useGasService';
+import { Holding } from '../../../core/Portfolio';
+import CyDNumberPad from '../../../components/v2/numberpad';
+import CyDTokenValue from '../../../components/v2/tokenValue';
 
 export default function BridgeFundCardScreen({ route }: { route: any }) {
   const {
@@ -100,11 +75,9 @@ export default function BridgeFundCardScreen({ route }: { route: any }) {
   const ethereum = hdWallet.state.wallet.ethereum;
   const wallet = hdWallet.state.wallet;
   const globalStateContext = useContext<any>(GlobalContext);
-  const activityContext = useContext<any>(ActivityContext);
   const cardProfile = globalContext.globalState.cardProfile;
   const cards = get(cardProfile, currentCardProvider)?.cards;
   const cardId: string = get(cards, currentCardIndex)?.cardId;
-  const activityRef = useRef<DebitCardTransaction | null>(null);
   const { postWithAuth } = useAxios();
 
   const cosmos = hdWallet.state.wallet.cosmos;
@@ -137,390 +110,45 @@ export default function BridgeFundCardScreen({ route }: { route: any }) {
 
   const [isChooseTokenVisible, setIsChooseTokenVisible] =
     useState<boolean>(false);
-  const [payTokenModalParams, setPayTokenModalParams] =
-    useState<PayTokenModalParams>({
-      isModalVisible: false,
-      quoteExpiry: 60,
-      hasSufficientBalanceAndGasFee: true,
-      tokenSendParams: {
-        chain: CHAIN_ETH.backendName,
-        amountInCrypto: '',
-        amountInFiat: '10',
-        symbol: 'eth',
-        toAddress: '',
-        gasFeeInCrypto: '',
-        gasFeeInFiat: '',
-        nativeTokenSymbol: '',
-      },
-    });
-  const [tokenQuote, setTokenQuote] = useState<CardQuoteResponse>({
-    quoteId: '',
-    chain: '',
-    tokensRequired: 0,
-    tokenAddress: '',
-    tokenCoinId: '',
-    tokensRequiredFiat: 0,
-    amount: 0,
-    fromAddress: '',
-    targetAddress: '',
-    masterAddress: '',
-    cardProvider: '',
-    tokenSymbol: '',
-    expiry: 0,
-    estimatedTime: 0,
-    version: 2,
-  });
   const [amount, setAmount] = useState('');
   const [isCrpytoInput, setIsCryptoInput] = useState(false);
   const [usdAmount, setUsdAmount] = useState('');
   const [cryptoAmount, setCryptoAmount] = useState('');
-  const [placeholderText, setPlaceholderText] = useState('0.00');
   const [loading, setLoading] = useState<boolean>(false);
   const minTokenValueLimit = 10;
-  const [selectedToken, setSelectedToken] = useState<TokenMeta>();
+  const minTokenValueEth = 50;
+  const [selectedToken, setSelectedToken] = useState<Holding>();
   const [nativeTokenBalance, setNativeTokenBalance] = useState<number>(0);
   const { t } = useTranslation();
   const { showModal, hideModal } = useGlobalModalContext();
   const isFocused = useIsFocused();
   const { estimateGasForEvm, estimateGasForEvmosIBC } = useGasService();
-  const { sendEvmToken, sendCosmosToken, interCosmosIBC, evmosIBC } =
-    useTransactionManager();
+  const [suggestedAmounts, setSuggestedAmounts] = useState<
+    Record<string, string>
+  >({ low: '', med: '', high: '' });
 
   useEffect(() => {
     if (isFocused) {
       if (route.params?.tokenData) {
         setSelectedToken(route.params.tokenData);
       } else {
-        setTimeout(() => {
-          setIsChooseTokenVisible(true);
-        }, CHOOSE_TOKEN_MODAL_TIMEOUT);
+        if (!selectedToken) {
+          setTimeout(() => {
+            setIsChooseTokenVisible(true);
+          }, CHOOSE_TOKEN_MODAL_TIMEOUT);
+        }
       }
     }
   }, [isFocused]);
 
-  const transferSentQuote = async (
-    address: string,
-    quoteId: string,
-    txnHash: string,
-  ) => {
-    const transferSentUrl = `/v1/cards/${currentCardProvider}/card/${cardId}/deposit`;
-    const body = {
-      address,
-      quoteUUID: quoteId,
-      txnHash,
-    };
-
-    try {
-      if (!body.txnHash) {
-        showModal('state', {
-          type: 'error',
-          title: 'Unable to process your transaction',
-          description: `Incase your transaction went through, please contact customer support with the quote_id: ${quoteId}`,
-          onSuccess: hideModal,
-          onFailure: hideModal,
-        });
-        return;
-      }
-      const response = await postWithAuth(transferSentUrl, body);
-      if (!response.isError) {
-        activityRef.current &&
-          activityContext.dispatch({
-            type: ActivityReducerAction.PATCH,
-            value: {
-              id: activityRef.current.id,
-              status: ActivityStatus.INPROCESS,
-              transactionHash: txnHash,
-              quoteId,
-            },
-          });
-        setLoading(false);
-        showModal('state', {
-          type: 'success',
-          title: t('FUNDING_IN_PROGRESS'),
-          description:
-            'Your card funding is in progress and will be done within 5 mins!',
-          onSuccess: () => {
-            hideModal();
-            setTimeout(() => {
-              navigation.navigate(screenTitle.OPTIONS, {
-                screen: screenTitle.ACTIVITIES,
-                initial: false,
-              });
-              navigation.popToTop();
-            }, MODAL_HIDE_TIMEOUT_250);
-          },
-          onFailure: hideModal,
-        });
-      } else {
-        activityRef.current &&
-          activityContext.dispatch({
-            type: ActivityReducerAction.PATCH,
-            value: {
-              id: activityRef.current.id,
-              status: ActivityStatus.FAILED,
-              quoteId,
-              transactionHash: txnHash,
-              reason: `Please contact customer support with the quote_id: ${quoteId}`,
-            },
-          });
-        setLoading(false);
-        showModal('state', {
-          type: 'error',
-          title: 'Error processing your txn',
-          description: `Please contact customer support with the quote_id: ${quoteId}`,
-          onSuccess: hideModal,
-          onFailure: hideModal,
-        });
-      }
-    } catch (error) {
-      activityRef.current &&
-        activityContext.dispatch({
-          type: ActivityReducerAction.PATCH,
-          value: {
-            id: activityRef.current.id,
-            status: ActivityStatus.FAILED,
-            quoteId,
-            transactionHash: txnHash,
-            reason: `Please contact customer support with the quote_id: ${quoteId}`,
-          },
-        });
-      Sentry.captureException(error);
-      setLoading(false);
-      showModal('state', {
-        type: 'error',
-        title: 'Error processing your txn',
-        description: `Please contact customer support with the quote_id: ${quoteId}`,
-        onSuccess: hideModal,
-        onFailure: hideModal,
-      });
-    }
-  };
-
-  const sendTransaction = useCallback(
-    async (payTokenModalParamsLocal: any) => {
-      try {
-        const {
-          contractAddress,
-          chainDetails,
-          contractDecimals,
-          denom,
-          symbol,
-          name,
-        } = selectedToken as TokenMeta;
-        const actualTokensRequired = limitDecimalPlaces(
-          tokenQuote.tokensRequired,
-          contractDecimals,
-        );
-        const { chainName } = chainDetails;
-        const activityData: DebitCardTransaction = {
-          id: genId(),
-          status: ActivityStatus.PENDING,
-          type: ActivityType.CARD,
-          quoteId: '',
-          tokenSymbol: symbol ?? '',
-          chainName: chainDetails?.backendName ?? '',
-          tokenName: name.toString() ?? '',
-          amount: tokenQuote.tokensRequired.toString() ?? '',
-          amountInUsd: tokenQuote.amount ?? '',
-          datetime: new Date(),
-          transactionHash: '',
-        };
-        activityRef.current = activityData;
-        activityContext.dispatch({
-          type: ActivityReducerAction.POST,
-          value: activityRef.current,
-        });
-        setLoading(true);
-        if (tokenQuote && selectedToken) {
-          activityRef.current &&
-            activityContext.dispatch({
-              type: ActivityReducerAction.PATCH,
-              value: {
-                id: activityRef.current.id,
-                gasAmount: payTokenModalParams.tokenSendParams.gasFeeInCrypto,
-              },
-            });
-          if (chainName != null) {
-            let response: {
-              isError: boolean;
-              hash: string;
-              contractData?: string | undefined;
-              error?: any;
-              gasFeeInCrypto?: string | undefined;
-            };
-            if (chainName === ChainNames.ETH) {
-              response = await sendEvmToken({
-                chain: selectedToken.chainDetails.backendName,
-                amountToSend: actualTokensRequired,
-                toAddress: tokenQuote.targetAddress,
-                contractAddress,
-                contractDecimals,
-                symbol: selectedToken.symbol,
-              });
-            } else if (
-              PURE_COSMOS_CHAINS.includes(chainName) &&
-              chainName !== ChainNames.OSMOSIS
-            ) {
-              response = await interCosmosIBC({
-                fromChain: chainDetails,
-                toChain: CHAIN_OSMOSIS,
-                denom,
-                amount: actualTokensRequired,
-                fromAddress: get(cosmosAddresses, chainDetails.chainName),
-                toAddress: tokenQuote.targetAddress,
-                contractDecimals,
-              });
-            } else if (chainName === ChainNames.OSMOSIS) {
-              response = await sendCosmosToken({
-                fromChain: chainDetails,
-                denom,
-                amount: actualTokensRequired,
-                fromAddress: get(cosmosAddresses, chainDetails.chainName),
-                toAddress: tokenQuote.targetAddress,
-                contractDecimals,
-              });
-            } else {
-              response = await evmosIBC({
-                toAddress: tokenQuote.targetAddress,
-                toChain: CHAIN_OSMOSIS,
-                amount: actualTokensRequired,
-                denom,
-                contractDecimals,
-              });
-            }
-            const { hash, isError, error } = response;
-            if (!isError) {
-              void logAnalytics({
-                type: AnalyticsType.SUCCESS,
-                txnHash: hash,
-                chain: selectedToken?.chainDetails?.chainName ?? '',
-                ...(response?.contractData
-                  ? { contractData: response?.contractData }
-                  : ''),
-                address: PURE_COSMOS_CHAINS.includes(
-                  selectedToken?.chainDetails?.chainName,
-                )
-                  ? get(
-                      cosmosAddresses,
-                      selectedToken?.chainDetails?.chainName,
-                      '',
-                    )
-                  : get(ethereum, 'address', ''),
-              });
-              void transferSentQuote(
-                tokenQuote.fromAddress,
-                tokenQuote.quoteId,
-                hash,
-              );
-            } else {
-              void logAnalytics({
-                type: AnalyticsType.ERROR,
-                chain: selectedToken?.chainDetails?.chainName ?? '',
-                message: parseErrorMessage(error),
-                screen: route.name,
-                address: PURE_COSMOS_CHAINS.includes(
-                  selectedToken?.chainDetails?.chainName,
-                )
-                  ? get(
-                      cosmosAddresses,
-                      selectedToken?.chainDetails?.chainName,
-                      '',
-                    )
-                  : get(ethereum, 'address', ''),
-              });
-              activityRef.current &&
-                activityContext.dispatch({
-                  type: ActivityReducerAction.PATCH,
-                  value: {
-                    id: activityRef.current.id,
-                    status: ActivityStatus.FAILED,
-                    quoteId: tokenQuote.quoteId,
-                    reason: error,
-                  },
-                });
-              setLoading(false);
-              showModal('state', {
-                type: 'error',
-                title: 'Transaction Failed',
-                description: `${String(error)}. Please contact customer support with the quote_id: ${tokenQuote.quoteId}`,
-                onSuccess: hideModal,
-                onFailure: hideModal,
-              });
-            }
-          }
-        } else {
-          showModal('state', {
-            type: 'error',
-            title: t('MISSING_QUOTE'),
-            description: t('MISSING_QUOTE_DESCRIPTION'),
-            onSuccess: hideModal,
-            onFailure: hideModal,
-          });
-        }
-      } catch (error) {
-        void logAnalytics({
-          type: AnalyticsType.ERROR,
-          chain: selectedToken?.chainDetails?.backendName ?? '',
-          message: parseErrorMessage(error),
-          screen: route.name,
-          address: PURE_COSMOS_CHAINS.includes(
-            selectedToken?.chainDetails?.chainName as string,
-          )
-            ? get(
-                cosmosAddresses,
-                selectedToken?.chainDetails?.chainName as string,
-                '',
-              )
-            : get(ethereum, 'address', ''),
-        });
-        activityRef.current &&
-          activityContext.dispatch({
-            type: ActivityReducerAction.PATCH,
-            value: {
-              id: activityRef.current.id,
-              status: ActivityStatus.FAILED,
-              quoteId: tokenQuote.quoteId,
-              reason: error,
-            },
-          });
-        setLoading(false);
-        showModal('state', {
-          type: 'error',
-          title: 'Transaction Failed',
-          description: `${String(error)}. Please contact customer support with the quote_id: ${tokenQuote.quoteId}`,
-          onSuccess: hideModal,
-          onFailure: hideModal,
-        });
-      }
-    },
-    [payTokenModalParams, tokenQuote, selectedToken],
-  );
-
-  const onCancelConfirmationModal = () => {
-    setPayTokenModalParams({
-      ...payTokenModalParams,
-      isModalVisible: false,
-    });
-    void intercomAnalyticsLog('cancel_transfer_token', {
-      from: ethereum.address,
-    });
-    activityRef.current &&
-      activityContext.dispatch({
-        type: ActivityReducerAction.DELETE,
-        value: { id: activityRef.current.id },
-      });
-  };
-
-  const onConfirmConfirmationModal = () => {
-    void sendTransaction(payTokenModalParams);
-    setPayTokenModalParams({ ...payTokenModalParams, isModalVisible: false });
-  };
+  useEffect(() => {
+    onEnterAmount(amount);
+  }, [selectedToken]);
 
   const showQuoteModal = async (
     quote: CardQuoteResponse,
     isMaxQuote: boolean,
   ) => {
-    setTokenQuote(quote);
     const {
       chainDetails,
       actualBalance,
@@ -528,7 +156,7 @@ export default function BridgeFundCardScreen({ route }: { route: any }) {
       contractAddress,
       contractDecimals,
       denom,
-    } = selectedToken as TokenMeta;
+    } = selectedToken as Holding;
     const nativeToken = getNativeToken(
       get(NativeTokenMapping, chainDetails.symbol) || chainDetails.symbol,
       portfolioState.statePortfolio.tokenPortfolio[
@@ -554,10 +182,10 @@ export default function BridgeFundCardScreen({ route }: { route: any }) {
             contractDecimals,
           });
         } else {
-          setPayTokenModalParams({
-            isModalVisible: true,
-            quoteExpiry: 60,
+          navigation.navigate(screenTitle.CARD_QUOTE_SCREEN, {
             hasSufficientBalanceAndGasFee: false,
+            cardProvider: currentCardProvider,
+            cardId,
             tokenSendParams: {
               chain: chainDetails.backendName,
               amountInCrypto: String(actualTokensRequired),
@@ -567,6 +195,8 @@ export default function BridgeFundCardScreen({ route }: { route: any }) {
               gasFeeInCrypto: '0',
               gasFeeInFiat: '0',
               nativeTokenSymbol: String(selectedToken?.chainDetails?.symbol),
+              selectedToken,
+              tokenQuote: quote,
             },
           });
         }
@@ -603,10 +233,10 @@ export default function BridgeFundCardScreen({ route }: { route: any }) {
           actualTokensRequired,
           actualBalance,
         );
-        setPayTokenModalParams({
-          isModalVisible: true,
-          quoteExpiry: 60,
+        navigation.navigate(screenTitle.CARD_QUOTE_SCREEN, {
           hasSufficientBalanceAndGasFee: hasSufficient,
+          cardProvider: currentCardProvider,
+          cardId,
           tokenSendParams: {
             chain: chainDetails.backendName,
             amountInCrypto: String(actualTokensRequired),
@@ -623,6 +253,8 @@ export default function BridgeFundCardScreen({ route }: { route: any }) {
               ),
             ),
             nativeTokenSymbol: String(selectedToken?.chainDetails?.symbol),
+            selectedToken,
+            tokenQuote: quote,
           },
         });
       } else {
@@ -658,7 +290,7 @@ export default function BridgeFundCardScreen({ route }: { route: any }) {
 
   const fundCard = async () => {
     const { contractAddress, coinGeckoId, contractDecimals, chainDetails } =
-      selectedToken as TokenMeta;
+      selectedToken as Holding;
     setLoading(true);
     Keyboard.dismiss();
     if (chainDetails.chainName === ChainNames.ETH) {
@@ -805,7 +437,7 @@ export default function BridgeFundCardScreen({ route }: { route: any }) {
     return true;
   };
 
-  const onSelectingToken = (item: TokenMeta) => {
+  const onSelectingToken = (item: Holding) => {
     setSelectedToken(item);
     setIsChooseTokenVisible(false);
     setNativeTokenBalance(
@@ -817,10 +449,25 @@ export default function BridgeFundCardScreen({ route }: { route: any }) {
         ].holdings,
       )?.actualBalance ?? 0,
     );
-    setAmount('');
     setIsCryptoInput(false);
-    setUsdAmount('');
-    setCryptoAmount('');
+    const tempMinTokenValue =
+      item.chainDetails.backendName === CHAIN_ETH.backendName
+        ? minTokenValueEth
+        : minTokenValueLimit;
+    const splittableAmount = item.totalValue - tempMinTokenValue;
+    if (splittableAmount >= tempMinTokenValue) {
+      setSuggestedAmounts({
+        low: String(tempMinTokenValue + floor(splittableAmount * 0.25)),
+        med: String(tempMinTokenValue + floor(splittableAmount * 0.5)),
+        high: String(tempMinTokenValue + floor(splittableAmount * 0.75)),
+      });
+    } else {
+      setSuggestedAmounts({
+        low: tempMinTokenValue.toString(),
+        med: tempMinTokenValue.toString(),
+        high: tempMinTokenValue.toString(),
+      });
+    }
   };
 
   const onMax = async () => {
@@ -832,7 +479,7 @@ export default function BridgeFundCardScreen({ route }: { route: any }) {
       actualBalance,
       symbol: selectedTokenSymbol,
       denom,
-    } = selectedToken as TokenMeta;
+    } = selectedToken as Holding;
 
     const nativeTokenSymbol =
       get(NativeTokenMapping, chainDetails.symbol) || chainDetails.symbol;
@@ -1081,36 +728,52 @@ export default function BridgeFundCardScreen({ route }: { route: any }) {
     return (
       <CyDTouchView
         className={
-          'bg-[#F7F8FE] mx-[20px] my-[16px] border-[1px] border-[#EBEBEB] rounded-[8px]'
+          'bg-cardBg py-[6px] px-[16px] my-[16px] border-[1px] border-[#EBEBEB] rounded-[34px] self-center'
         }
         onPress={() => setIsChooseTokenVisible(true)}>
         <CyDView
-          className={
-            'p-[18px] flex flex-row flex-wrap justify-between items-center'
-          }>
+          className={'flex flex-row flex-wrap justify-center items-center'}>
           {selectedToken && (
-            <CyDView className={'flex flex-row w-[50%] items-center'}>
+            <CyDView className={'flex flex-row items-center'}>
               <CyDImage
                 source={{ uri: selectedToken.logoUrl }}
-                className={'w-[25px] h-[25px] rounded-[20px]'}
+                className={'w-[26px] h-[26px] rounded-[20px]'}
               />
-              <CyDView className='flex flex-col justify-center items-start'>
+              <CyDView className='flex flex-col justify-start items-start ml-[8px]'>
                 <CyDText
                   className={clsx(
-                    'text-center text-black font-nunito font-bold text-[16px] ml-[8px]',
+                    'text-black font-nunito font-extrabold text-[16px]',
                     {
                       'text-[14px]': selectedToken.isZeroFeeCardFunding,
                     },
                   )}>
                   {selectedToken.name}
                 </CyDText>
-                {selectedToken.isZeroFeeCardFunding ? (
+                {/* {selectedToken.isZeroFeeCardFunding ? (
                   <CyDView className='h-[20px] bg-white rounded-[8px] mx-[4px] px-[8px] flex justify-center items-center'>
                     <CyDText className={'font-black text-[10px]'}>
                       {'ZERO FEE ✨'}
                     </CyDText>
                   </CyDView>
-                ) : null}
+                ) : null} */}
+                {selectedToken && (
+                  <CyDView className='flex flex-row items-center'>
+                    {isCrpytoInput ? (
+                      <CyDTokenAmount className={'font-bold mr-[3px]'}>
+                        {selectedToken.actualBalance}
+                      </CyDTokenAmount>
+                    ) : (
+                      <CyDTokenValue className={'font-bold mr-[3px]'}>
+                        {selectedToken.totalValue}
+                      </CyDTokenValue>
+                    )}
+                    {isCrpytoInput && (
+                      <CyDText className={'font-bold mr-[5px]'}>
+                        {selectedToken.symbol}
+                      </CyDText>
+                    )}
+                  </CyDView>
+                )}
               </CyDView>
             </CyDView>
           )}
@@ -1120,18 +783,7 @@ export default function BridgeFundCardScreen({ route }: { route: any }) {
             </CyDView>
           )}
 
-          <CyDView className='flex flex-row items-center'>
-            {selectedToken && (
-              <>
-                <CyDText className={'font-extrabold'}>~</CyDText>
-                <CyDTokenAmount className={'font-extrabold mr-[3px]'}>
-                  {selectedToken.actualBalance}
-                </CyDTokenAmount>
-                <CyDText className={'font-extrabold mr-[5px]'}>
-                  {selectedToken.symbol}
-                </CyDText>
-              </>
-            )}
+          <CyDView className='flex flex-row items-center ml-[8px]'>
             <CyDFastImage
               source={AppImages.DOWN_ARROW}
               className='h-[15px] w-[15px]'
@@ -1141,7 +793,7 @@ export default function BridgeFundCardScreen({ route }: { route: any }) {
         </CyDView>
       </CyDTouchView>
     );
-  }, [selectedToken]);
+  }, [selectedToken, isCrpytoInput]);
 
   const RenderWarningMessage = useCallback(() => {
     if (selectedToken) {
@@ -1174,9 +826,16 @@ export default function BridgeFundCardScreen({ route }: { route: any }) {
           Number(usdAmount) < MINIMUM_TRANSFER_AMOUNT_ETH
         ) {
           errorMessage = t('MINIMUM_AMOUNT_ETH');
+        } else if (!usdAmount || Number(usdAmount) < minTokenValueLimit) {
+          if (backendName === CHAIN_ETH.backendName) {
+            errorMessage = t('MINIMUM_AMOUNT_ETH');
+          } else {
+            errorMessage = t<string>('CARD_LOAD_MIN_AMOUNT');
+          }
         }
+
         return (
-          <CyDView className='mb-[10px]'>
+          <CyDView className='my-[8px]'>
             <CyDText className='text-center text-redColor font-medium'>
               {errorMessage}
             </CyDText>
@@ -1188,13 +847,17 @@ export default function BridgeFundCardScreen({ route }: { route: any }) {
   }, [selectedToken, cryptoAmount]);
 
   const onPressToggle = () => {
+    const tempIsCryproInput = !isCrpytoInput;
     setIsCryptoInput(!isCrpytoInput);
     const multiplier =
       1 +
-      get(
-        CardFeePercentage,
-        selectedToken?.chainDetails.backendName as string,
-        0.5,
+      divide(
+        get(
+          CardFeePercentage,
+          selectedToken?.chainDetails.backendName as string,
+          0.5,
+        ),
+        100,
       ) +
       get(
         SlippageFactor,
@@ -1202,7 +865,7 @@ export default function BridgeFundCardScreen({ route }: { route: any }) {
         0.003,
       );
 
-    if (!isCrpytoInput) {
+    if (tempIsCryproInput) {
       const usdAmt =
         parseFloat(amount) *
         (selectedToken?.isZeroFeeCardFunding
@@ -1214,24 +877,57 @@ export default function BridgeFundCardScreen({ route }: { route: any }) {
           ? '0.00'
           : selectedToken?.isZeroFeeCardFunding
             ? usdAmt
-            : usdAmt / multiplier
+            : usdAmt * multiplier
         ).toString(),
       );
     } else {
       const cryptoAmt =
-        parseFloat(amount) /
+        parseFloat(
+          String(
+            Number(amount) *
+              (selectedToken?.isZeroFeeCardFunding ? 1 : multiplier),
+          ),
+        ) /
+        (selectedToken?.isZeroFeeCardFunding
+          ? 1
+          : Number(selectedToken?.price));
+      setCryptoAmount((isNaN(cryptoAmt) ? '0.00' : cryptoAmt).toString());
+      setUsdAmount(amount);
+    }
+  };
+
+  const onEnterAmount = (amt: string) => {
+    setAmount(amt);
+    if (isCrpytoInput) {
+      const usdText =
+        parseFloat(amt) *
+        (selectedToken?.isZeroFeeCardFunding
+          ? 1
+          : Number(selectedToken?.price));
+      setCryptoAmount(amt);
+      setUsdAmount(
+        (isNaN(usdText)
+          ? '0.00'
+          : selectedToken?.isZeroFeeCardFunding
+            ? usdText
+            : usdText / 1.02
+        ).toString(),
+      );
+    } else {
+      const cryptoText =
+        parseFloat(amt) /
         (selectedToken?.isZeroFeeCardFunding
           ? 1
           : Number(selectedToken?.price));
       setCryptoAmount(
-        (isNaN(cryptoAmt)
+        (isNaN(cryptoText)
           ? '0.00'
           : selectedToken?.isZeroFeeCardFunding
-            ? cryptoAmt
-            : cryptoAmt * multiplier
+            ? cryptoText
+            : cryptoText * 1.02
         ).toString(),
       );
-      setUsdAmount(amount);
+      setUsdAmount(amt);
     }
   };
 
@@ -1243,140 +939,85 @@ export default function BridgeFundCardScreen({ route }: { route: any }) {
         minTokenValueLimit={minTokenValueLimit}
         onSelectingToken={token => {
           setIsChooseTokenVisible(false);
-          onSelectingToken(token);
+          onSelectingToken(token as Holding);
         }}
         onCancel={() => {
           setIsChooseTokenVisible(false);
-          navigation.goBack();
+          if (!selectedToken) {
+            navigation.goBack();
+          }
         }}
         noTokensAvailableMessage={t<string>('CARD_INSUFFICIENT_FUNDS')}
         renderPage={'fundCardPage'}
       />
-
-      <BottomTokenCardConfirm
-        modalParams={{
-          isModalVisible: payTokenModalParams.isModalVisible,
-          quoteExpiry: payTokenModalParams.quoteExpiry,
-          hasSufficientBalanceAndGasFee:
-            payTokenModalParams.hasSufficientBalanceAndGasFee,
-          tokenSendParams: payTokenModalParams.tokenSendParams,
-        }}
-        onConfirm={onConfirmConfirmationModal}
-        onCancel={onCancelConfirmationModal}
-      />
-      <CyDKeyboardAwareScrollView>
-        <RenderSelectedToken />
-        <CyDView className={'mx-[20px]'}>
-          <CyDView className='flex flex-row bg-[#F7F8FE] rounded-[8px] h-[300px] px-[20px] justify-between items-center'>
-            <CyDView className={'p-[4px]'}>
-              <CyDTouchView
-                onPress={() => {
-                  void onMax();
-                }}
-                disabled={loading}
-                className={clsx(
-                  'bg-white border border-inputBorderColor rounded-full h-[40px] w-[40px] flex justify-center items-center p-[4px]',
-                )}>
-                <CyDText>{t('MAX')}</CyDText>
-              </CyDTouchView>
-            </CyDView>
-            <CyDView
-              className={'pb-[10px] max-w-[60%] items-center bg-[#F7F8FE]'}>
-              <CyDText
-                className={
-                  'font-extrabold text-[22px] text-center font-nunito text-black'
-                }>
-                {t<string>('ENTER_AMOUNT')}
-              </CyDText>
-              <CyDView className={'flex justify-center items-center'}>
-                <CyDText className='text-[20px] font-semibold mt-[5px]'>
-                  {isCrpytoInput ? selectedToken?.name : 'USD'}
-                </CyDText>
-                <CyDTextInput
-                  className={clsx(
-                    'font-extrabold text-center text-primaryTextColor h-[85px] font-nunito',
-                    {
-                      'text-[20px]': amount.length <= 15,
-                      'text-[40px]': amount.length <= 10,
-                      'text-[60px]': amount.length <= 5,
-                    },
-                  )}
-                  value={amount}
-                  keyboardType='numeric'
-                  autoCapitalize='none'
-                  autoCorrect={false}
-                  onChangeText={text => {
-                    setAmount(text);
-                    if (isCrpytoInput) {
-                      const usdText =
-                        parseFloat(text) *
-                        (selectedToken?.isZeroFeeCardFunding
-                          ? 1
-                          : Number(selectedToken?.price));
-                      setCryptoAmount(text);
-                      setUsdAmount(
-                        (isNaN(usdText)
-                          ? '0.00'
-                          : selectedToken?.isZeroFeeCardFunding
-                            ? usdText
-                            : usdText / 1.02
-                        ).toString(),
-                      );
-                    } else {
-                      const cryptoText =
-                        parseFloat(text) /
-                        (selectedToken?.isZeroFeeCardFunding
-                          ? 1
-                          : Number(selectedToken?.price));
-                      setCryptoAmount(
-                        (isNaN(cryptoText)
-                          ? '0.00'
-                          : selectedToken?.isZeroFeeCardFunding
-                            ? cryptoText
-                            : cryptoText * 1.02
-                        ).toString(),
-                      );
-                      setUsdAmount(text);
-                    }
-                  }}
-                  onFocus={() => {
-                    setPlaceholderText('');
-                  }}
-                  placeholder={placeholderText}
-                  placeholderTextColor={'#999'}
-                />
+      {/* <CyDKeyboardAwareScrollView> */}
+      <CyDView className={'flex flex-1 flex-col justify-between h-full'}>
+        <CyDView>
+          <RenderSelectedToken />
+          <CyDView className='flex flex-row rounded-[8px] px-[20px] justify-between items-center'>
+            <CyDView className={'w-full items-center'}>
+              <CyDView className={'flex flex-row justify-center items-center'}>
+                {!isCrpytoInput && (
+                  <CyDText
+                    className={clsx('text-mandarin font-bold', {
+                      'text-[32px]': amount.length <= 15,
+                      'text-[60px]': amount.length <= 7,
+                      'text-[75px]': amount.length <= 5,
+                    })}>
+                    {'$'}
+                  </CyDText>
+                )}
                 <CyDText
                   className={clsx(
-                    'text-center text-primaryTextColor h-[50px] text-[16px]',
+                    'font-extrabold text-center text-mandarin font-nunito ml-[4px]',
+                    {
+                      'text-[32px]': amount.length <= 15,
+                      'text-[60px]': amount.length <= 7,
+                      'text-[75px]': amount.length <= 5,
+                    },
                   )}>
-                  {'~' +
-                    (isCrpytoInput
-                      ? (!isNaN(parseFloat(usdAmount))
-                          ? formatAmount(usdAmount).toString()
-                          : '0.00') + ' USD'
-                      : (!isNaN(parseFloat(cryptoAmount))
-                          ? formatAmount(cryptoAmount).toString()
-                          : '0.00') +
-                        ' ' +
-                        (selectedToken?.symbol ?? ' '))}
+                  {amount === '' ? '0.00' : amount}
                 </CyDText>
+                {isCrpytoInput && (
+                  <CyDView>
+                    <CyDText className='font-extrabold mt-[26px] text-[16px] ml-[4px]'>
+                      {selectedToken?.symbol}
+                    </CyDText>
+                  </CyDView>
+                )}
               </CyDView>
-              {(!usdAmount || Number(usdAmount) < minTokenValueLimit) && (
-                <CyDView className='mb-[10px]'>
+              <CyDText
+                className={clsx(
+                  'text-center text-primaryTextColor text-[16px]',
+                )}>
+                {'~' +
+                  (isCrpytoInput
+                    ? (!isNaN(parseFloat(usdAmount))
+                        ? formatAmount(usdAmount).toString()
+                        : '0.00') + ' USD'
+                    : (!isNaN(parseFloat(cryptoAmount))
+                        ? formatAmount(cryptoAmount).toString()
+                        : '0.00') +
+                      ' ' +
+                      (selectedToken?.symbol ?? ' '))}
+              </CyDText>
+              <RenderWarningMessage />
+              {/* {(!usdAmount || Number(usdAmount) < minTokenValueLimit) && (
+                <CyDView className='mb-[2px]'>
                   <CyDText className='text-center font-semibold'>
                     {t<string>('CARD_LOAD_MIN_AMOUNT')}
                   </CyDText>
                 </CyDView>
               )}
-              <RenderWarningMessage />
+              <RenderWarningMessage /> */}
             </CyDView>
-            <CyDView className={'p-[4px]'}>
+            <CyDView className={'p-[4px] ml-[-45px]'}>
               <CyDTouchView
                 onPress={() => {
                   onPressToggle();
                 }}
                 className={clsx(
-                  'bg-white border border-inputBorderColor rounded-full h-[40px] w-[40px] flex justify-center items-center p-[4px]',
+                  'border border-inputBorderColor bg-cardBg rounded-full h-[40px] w-[40px] flex justify-center items-center p-[4px]',
                 )}>
                 <CyDFastImage
                   className='h-[16px] w-[16px]'
@@ -1386,6 +1027,75 @@ export default function BridgeFundCardScreen({ route }: { route: any }) {
               </CyDTouchView>
             </CyDView>
           </CyDView>
+          {/* <RenderWarningMessage /> */}
+          <CyDView className='flex flex-row justify-evenly items-center'>
+            <CyDTouchView
+              onPress={() => {
+                onEnterAmount(suggestedAmounts.low);
+              }}
+              disabled={loading}
+              className={clsx(
+                'bg-secondaryBackgroundColor border border-inputBorderColor rounded-[4px] h-[40px] w-[50px] flex justify-center items-center',
+              )}>
+              <CyDText className='font-extrabold'>
+                {'$' + suggestedAmounts.low}
+              </CyDText>
+            </CyDTouchView>
+            {suggestedAmounts.low !== suggestedAmounts.med && (
+              <CyDTouchView
+                onPress={() => {
+                  onEnterAmount(suggestedAmounts.med);
+                }}
+                disabled={loading}
+                className={clsx(
+                  'bg-secondaryBackgroundColor border border-inputBorderColor rounded-[4px] h-[40px] w-[50px] flex justify-center items-center',
+                )}>
+                <CyDText className='font-extrabold'>
+                  {'$' + suggestedAmounts.med}
+                </CyDText>
+              </CyDTouchView>
+            )}
+            {suggestedAmounts.low !== suggestedAmounts.high && (
+              <CyDTouchView
+                onPress={() => {
+                  onEnterAmount(suggestedAmounts.high);
+                }}
+                disabled={loading}
+                className={clsx(
+                  'bg-secondaryBackgroundColor border border-inputBorderColor rounded-[4px] h-[40px] w-[50px] flex justify-center items-center',
+                )}>
+                <CyDText className='font-extrabold'>
+                  {'$' + suggestedAmounts.high}
+                </CyDText>
+              </CyDTouchView>
+            )}
+            <CyDTouchView
+              onPress={() => {
+                void onMax();
+              }}
+              disabled={loading}
+              className={clsx(
+                'bg-white border border-appColor rounded-[4px] h-[40px] w-[50px] flex justify-center items-center',
+              )}>
+              <CyDText className='font-extrabold'>{t('MAX')}</CyDText>
+            </CyDTouchView>
+          </CyDView>
+        </CyDView>
+        <CyDNumberPad
+          value={amount}
+          setValue={(amt: string) => onEnterAmount(amt)}
+        />
+        <CyDView className='flex flex-row justify-around items-center mx-[16px]'>
+          <Button
+            onPress={() => {
+              navigation.navigate(screenTitle.AUTO_LOAD_SCREEN);
+            }}
+            type={ButtonType.TERNARY}
+            title={t('SETUP_AUTO_LOAD')}
+            style={clsx('h-[60px] w-[45%] mb-[18px] py-[10px]', {
+              'py-[8px]': loading,
+            })}
+          />
           <Button
             onPress={() => {
               if (validateAmount(amount)) {
@@ -1395,13 +1105,12 @@ export default function BridgeFundCardScreen({ route }: { route: any }) {
             type={ButtonType.PRIMARY}
             disabled={isLoadCardDisabled()}
             title={t('QUOTE')}
-            style={clsx('h-[60px] mx-[32px] py-[10px] -top-[25px]', {
-              'py-[8px]': loading,
-            })}
+            style={'h-[60px] w-[45%] mb-[18px] py-[10px]'}
             loading={loading}
           />
         </CyDView>
-      </CyDKeyboardAwareScrollView>
+      </CyDView>
+      {/* </CyDKeyboardAwareScrollView> */}
     </CyDSafeAreaView>
   );
 }
