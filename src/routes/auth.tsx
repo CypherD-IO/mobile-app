@@ -1383,7 +1383,43 @@ export function SwapStackScreen({ navigation }) {
   }, []);
   return (
     <SwapStack.Navigator initialRouteName={screenTitle.BRIDGE_SCREEN}>
-      <SwapStack.Screen name={screenTitle.BRIDGE_SCREEN} component={Bridge} />
+      <SwapStack.Screen
+        name={screenTitle.BRIDGE_SCREEN}
+        component={Bridge}
+        options={{
+          headerTransparent: false,
+          headerShadowVisible: false,
+          title: 'Bridge',
+          headerTitleAlign: 'center',
+          headerTitleStyle: {
+            fontFamily: C.fontsName.FONT_BLACK,
+            fontSize: 18,
+            fontWeight: '800',
+          },
+
+          headerTintColor: Colors.primaryTextColor,
+          headerBackTitleVisible: false,
+          headerLeft: props => defaultHeaderLeft(navigation),
+        }}
+      />
+      <SwapStack.Screen
+        name={screenTitle.BRIDGE_STATUS}
+        component={BridgeStatus}
+        options={{
+          headerTransparent: false,
+          headerShadowVisible: false,
+          title: 'Bridge status',
+          headerTitleAlign: 'center',
+          headerTitleStyle: {
+            fontFamily: C.fontsName.FONT_BLACK,
+            fontSize: 18,
+            fontWeight: '800',
+          },
+
+          headerTintColor: Colors.primaryTextColor,
+          headerBackTitleVisible: false,
+        }}
+      />
     </SwapStack.Navigator>
   );
 }

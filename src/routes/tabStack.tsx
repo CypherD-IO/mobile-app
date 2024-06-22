@@ -2,7 +2,6 @@ import { screenTitle } from '../constants';
 import { BackHandler, ToastAndroid, StyleSheet } from 'react-native';
 import * as React from 'react';
 import {
-  BrowserStackScreen,
   DebitCardStackScreen,
   OptionsStackScreen,
   PortfolioStackScreen,
@@ -127,7 +126,10 @@ function TabStack() {
 
   function MyTabBar({ state, descriptors, navigation }) {
     return (
-      <CyDView className='flex flex-row justify-start items-center px-[10px]'>
+      <CyDView
+        className={clsx('flex flex-row justify-start items-center px-[10px]', {
+          'pb-[6px]': isIOS(),
+        })}>
         {state.routes.map((route, index) => {
           const { options } = descriptors[route.key];
           const label =
