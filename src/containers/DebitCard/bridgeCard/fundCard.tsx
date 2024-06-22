@@ -1038,6 +1038,8 @@ export default function BridgeFundCardScreen({ route }: { route: any }) {
             </CyDView>
           </CyDView>
           {/* <RenderWarningMessage /> */}
+        </CyDView>
+        <CyDView>
           <CyDView className='flex flex-row justify-evenly items-center'>
             <CyDTouchView
               onPress={() => {
@@ -1090,34 +1092,34 @@ export default function BridgeFundCardScreen({ route }: { route: any }) {
               <CyDText className='font-extrabold'>{t('MAX')}</CyDText>
             </CyDTouchView>
           </CyDView>
-        </CyDView>
-        <CyDNumberPad
-          value={amount}
-          setValue={(amt: string) => onEnterAmount(amt)}
-        />
-        <CyDView className='flex flex-row justify-around items-center mx-[16px]'>
-          <Button
-            onPress={() => {
-              navigation.navigate(screenTitle.AUTO_LOAD_SCREEN);
-            }}
-            type={ButtonType.TERNARY}
-            title={t('SETUP_AUTO_LOAD')}
-            style={clsx('h-[60px] w-[45%] mb-[18px] py-[10px]', {
-              'py-[8px]': loading,
-            })}
+          <CyDNumberPad
+            value={amount}
+            setValue={(amt: string) => onEnterAmount(amt)}
           />
-          <Button
-            onPress={() => {
-              if (validateAmount(amount)) {
-                void fundCard();
-              }
-            }}
-            type={ButtonType.PRIMARY}
-            disabled={isLoadCardDisabled()}
-            title={t('QUOTE')}
-            style={'h-[60px] w-[45%] mb-[18px] py-[10px]'}
-            loading={loading}
-          />
+          <CyDView className='flex flex-row justify-around items-center mx-[16px]'>
+            <Button
+              onPress={() => {
+                navigation.navigate(screenTitle.AUTO_LOAD_SCREEN);
+              }}
+              type={ButtonType.TERNARY}
+              title={t('SETUP_AUTO_LOAD')}
+              style={clsx('h-[60px] w-[45%] mb-[18px] py-[10px]', {
+                'py-[8px]': loading,
+              })}
+            />
+            <Button
+              onPress={() => {
+                if (validateAmount(amount)) {
+                  void fundCard();
+                }
+              }}
+              type={ButtonType.PRIMARY}
+              disabled={isLoadCardDisabled()}
+              title={t('QUOTE')}
+              style={'h-[60px] w-[45%] mb-[18px] py-[10px]'}
+              loading={loading}
+            />
+          </CyDView>
         </CyDView>
       </CyDView>
       {/* </CyDKeyboardAwareScrollView> */}
