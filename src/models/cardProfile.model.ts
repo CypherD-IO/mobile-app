@@ -21,6 +21,7 @@ export interface CardProfile {
       },
     ];
   };
+  isAutoloadConfigured: boolean;
   pc?: {
     personId?: string;
     applicationStatus: CardApplicationStatus;

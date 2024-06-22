@@ -1076,3 +1076,8 @@ export const walletConnectChainData: Record<string, NetworkInterface> = {
     chainConfig: moonriver,
   },
 };
+
+export const AUTO_LOAD_SUPPORTED_CHAINS = [
+  CHAIN_OSMOSIS.backendName,
+  CHAIN_NOBLE.backendName,
+];

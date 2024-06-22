@@ -115,24 +115,26 @@ export default function CardScreen({
 
   useEffect(() => {
     if (isFocused && !isEmpty(currentCardProvider)) {
-      const { type }: { last4: string; type: string } =
-        cardProfile[currentCardProvider].cards[0];
-      setUserCardDetails({
-        ...userCardDetails,
-        hideCardDetails: true,
-        showCVVAndExpiry: false,
-        cards: orderBy(cardProfile[currentCardProvider].cards, 'type', 'asc'),
-        personId: cardProfile[currentCardProvider].personId,
-        currentCardRevealedDetails: {
-          cardNumber: 'XXXX XXXX XXXX ',
-          type,
-          cvv: 'XXX',
-          expiryMonth: 'XX',
-          expiryYear: 'XX',
-          cardId: '',
-        },
-      });
-      void getTrackingDetails();
+      const cardConfig = get(cardProfile, currentCardProvider);
+      if (cardConfig?.cards) {
+        const { type }: { last4: string; type: string } = cardConfig.cards[0];
+        setUserCardDetails({
+          ...userCardDetails,
+          hideCardDetails: true,
+          showCVVAndExpiry: false,
+          cards: orderBy(cardConfig.cards, 'type', 'asc'),
+          personId: cardConfig.personId,
+          currentCardRevealedDetails: {
+            cardNumber: 'XXXX XXXX XXXX ',
+            type,
+            cvv: 'XXX',
+            expiryMonth: 'XX',
+            expiryYear: 'XX',
+            cardId: '',
+          },
+        });
+        void getTrackingDetails();
+      }
     }
   }, [currentCardProvider, isFocused, cardProfile]);
 
@@ -140,14 +142,26 @@ export default function CardScreen({
     const card = item;
     return (
       <CyDImageBackground
-        className='h-[200px] w-[300px] ml-[45px]'
+        className='flex flex-ro justify-center items-center h-[200px] w-[300px] self-center'
         resizeMode='stretch'
         source={
           card.type === CardType.VIRTUAL
             ? AppImages.VIRTUAL_CARD_MASTER
             : AppImages.PHYSICAL_CARD_MASTER
-        }
-      />
+        }>
+        {card.status === CardStatus.IN_ACTIVE && (
+          <CyDView className='flex flex-row items-center bg-cardBg px-[12px] py-[6px] rounded-[6px]'>
+            <CyDImage
+              source={AppImages.CYPHER_LOCKED}
+              className='h-[18px] w-[18px]'
+              resizeMode='contain'
+            />
+            <CyDText className='font-extrabold mt-[1px] ml-[2px]'>
+              Locked
+            </CyDText>
+          </CyDView>
+        )}
+      </CyDImageBackground>
     );
   };
 
@@ -364,7 +378,7 @@ const RenderCardActions = ({
         type: 'error',
         title: ' ',
         description:
-          'Reveal card feature has been disabled for your safety. Refer to your physical card for card details',
+          'Reveal card feature for physical card has been disabled for your safety. Refer to your physical card for card details',
         onSuccess: hideModal,
         onFailure: hideModal,
       });
@@ -496,9 +510,9 @@ const RenderCardActions = ({
   if (card.status === 'upgradeAvailable') {
     if (upgradeToPhysicalAvailable) {
       return (
-        <CyDView className='flex flex-col justify-center items-center mx-[20px] mt-[-22px]'>
+        <CyDView className='flex flex-col justify-center items-center mx-[20px] mt-[-42px]'>
           <CyDText className='text-[22px] font-bold'>Get Physical Card</CyDText>
-          <CyDText className='text-[14px] font-semibold text-center my-[12px]'>
+          <CyDText className='text-[14px] font-semibold text-center mb-[12px] mt-[6px]'>
             Obtain a Physical card and enjoy the convenience of making purchases
             worldwide.
           </CyDText>
@@ -603,7 +617,7 @@ const RenderCardActions = ({
         navigation={navigation}
       />
 
-      <CyDView className='flex flex-row justify-center items-center mb-[12px] mt-[-32px]'>
+      <CyDView className='flex flex-row justify-center items-center mb-[14px] mt-[-42px]'>
         <CyDText className='font-bold text-[18px]'>
           {t<string>(
             type === CardType.VIRTUAL ? 'VIRTUAL_CARD' : 'PHYSICAL_CARD',

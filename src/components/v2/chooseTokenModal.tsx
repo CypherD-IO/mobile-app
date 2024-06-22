@@ -24,6 +24,7 @@ import FastImage from 'react-native-fast-image';
 import { copyToClipboard, isNativeToken } from '../../core/util';
 import Toast from 'react-native-toast-message';
 import { toastConfig } from './toast';
+import { AUTO_LOAD_SUPPORTED_CHAINS } from '../../constants/server';
 
 interface TokenModal {
   tokenList: Holding[];
@@ -202,15 +203,15 @@ export default function ChooseTokenModal(props: TokenModal) {
               <></>
             )}
           </CyDView>
-          {renderPage === 'fundCardPage' ? (
-            <CyDView className={'mt-[10px]'}>
-              <CyDText className='text-center font-nunito text-[12px] font-semibold text-redColor'>
-                {t<string>('SUPPORTED_TOKENS_TEXT')}
-              </CyDText>
-            </CyDView>
-          ) : (
-            <></>
-          )}
+          <CyDView className={'mt-[10px]'}>
+            <CyDText className='text-center font-nunito text-[12px] font-semibold text-redColor'>
+              {renderPage === 'fundCardPage' &&
+                t<string>('SUPPORTED_TOKENS_TEXT')}
+              {renderPage === 'autoLoad' &&
+                `Only ${AUTO_LOAD_SUPPORTED_CHAINS.join(', ')} chains are supported for auto load`}
+            </CyDText>
+          </CyDView>
+
           {totalHoldings.originalHoldings.length ? (
             <CyDFlatList
               className={'mt-[10px]'}

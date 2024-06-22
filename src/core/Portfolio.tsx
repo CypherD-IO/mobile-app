@@ -57,7 +57,7 @@ export interface Holding {
   about: string;
   id: number;
   chainDetails: Chain;
-  denom?: string;
+  denom: string;
   stakedBalance?: string;
   actualStakedBalance: number;
   stakedBalanceTotalValue?: number;

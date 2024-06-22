@@ -14,6 +14,7 @@ export const screenTitle = {
   BROWSER_SCREEN: 'BrowserScreen',
   OPTIONS: 'Options',
   BRIDGE: 'Bridge',
+  SWAP: 'Swap',
   OPTIONS_SCREEN: 'OptionsScreen',
   MANAGE_WALLET: 'ManageWallet',
   SECURITY_PRIVACY: 'SecurityPrivacy',
@@ -117,6 +118,9 @@ export const screenTitle = {
   ENTER_PRIVATE_KEY: 'enterPrivateKey',
   CHOOSE_WALLET_INDEX: 'chooseWalletIndex',
   CARD_TRANSACTIONS_SCREEN: 'cardTransactionsScreen',
+  CARD_QUOTE_SCREEN: 'cardQuoteScreen',
+  AUTO_LOAD_SCREEN: 'autoLoadScreen',
+  PREVIEW_AUTO_LOAD_SCREEN: 'previewAutoLoadScreen',
 };
 
 export const fontsName = {

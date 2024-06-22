@@ -99,12 +99,16 @@ import { ChooseWalletIndex } from '../containers/Auth/ChooseWalletIndex';
 import PhoneNumberVerificationScreen from '../containers/DebitCard/bridgeCard/verifyPhoneNumber';
 import CardTransactions from '../containers/DebitCard/bridgeCard/transactions';
 import TelegramSetupSettings from '../containers/DebitCard/bridgeCard/cardTelegramSetup';
+import CardQuote from '../containers/DebitCard/bridgeCard/quote';
+import AutoLoad from '../containers/DebitCard/bridgeCard/autoLoad';
+import PreviewAutoLoad from '../containers/DebitCard/bridgeCard/previewAutoLoad';
 
 const { DynamicImage, DynamicButton } = require('../styles');
 
 const PortfolioStack = createNativeStackNavigator();
 const BrowserStack = createNativeStackNavigator();
 const FundCardStack = createNativeStackNavigator();
+const SwapStack = createNativeStackNavigator();
 const OptionsStack = createNativeStackNavigator();
 // const ActivityStack = createNativeStackNavigator();
 
@@ -194,7 +198,7 @@ export function PortfolioStackScreen({ navigation, route }) {
       <PortfolioStack.Screen
         name={screenTitle.NFT_OVERVIEW_SCREEN}
         component={NFTOverviewScreen}
-        options={({ navigation, route }) => ({
+        options={{
           headerTransparent: false,
           headerShadowVisible: false,
           title: '',
@@ -207,7 +211,7 @@ export function PortfolioStackScreen({ navigation, route }) {
           headerTintColor: Colors.primaryTextColor,
           headerBackTitleVisible: false,
           headerLeft: props => defaultHeaderLeft(navigation),
-        })}
+        }}
       />
 
       <PortfolioStack.Screen
@@ -968,6 +972,51 @@ export function DebitCardStackScreen({ navigation }) {
       />
 
       <FundCardStack.Screen
+        name={screenTitle.CARD_QUOTE_SCREEN}
+        component={CardQuote}
+        options={({ navigation }) => ({
+          headerTransparent: false,
+          headerShadowVisible: false,
+          title: 'Load card',
+          headerTitleAlign: 'center',
+          headerTitleStyle: portfolioStackScreenHeaderTitleStyles,
+          headerTintColor: Colors.primaryTextColor,
+          headerBackTitleVisible: false,
+          headerLeft: props => defaultHeaderLeft(navigation),
+        })}
+      />
+
+      <FundCardStack.Screen
+        name={screenTitle.AUTO_LOAD_SCREEN}
+        component={AutoLoad}
+        options={({ navigation }) => ({
+          headerTransparent: false,
+          headerShadowVisible: false,
+          title: 'Auto Load',
+          headerTitleAlign: 'center',
+          headerTitleStyle: portfolioStackScreenHeaderTitleStyles,
+          headerTintColor: Colors.primaryTextColor,
+          headerBackTitleVisible: false,
+          headerLeft: props => defaultHeaderLeft(navigation),
+        })}
+      />
+
+      <FundCardStack.Screen
+        name={screenTitle.PREVIEW_AUTO_LOAD_SCREEN}
+        component={PreviewAutoLoad}
+        options={({ navigation }) => ({
+          headerTransparent: false,
+          headerShadowVisible: false,
+          title: 'Auto Load',
+          headerTitleAlign: 'center',
+          headerTitleStyle: portfolioStackScreenHeaderTitleStyles,
+          headerTintColor: Colors.primaryTextColor,
+          headerBackTitleVisible: false,
+          headerLeft: props => defaultHeaderLeft(navigation),
+        })}
+      />
+
+      <FundCardStack.Screen
         name={screenTitle.BRIDGE_CARD_REVEAL_AUTH_SCREEN}
         component={CardRevealAuthScreen}
         options={({ navigation }) => ({
@@ -1299,6 +1348,81 @@ export function BrowserStackScreen({ navigation, route }) {
   );
 }
 
+export function SwapStackScreen({ navigation }) {
+  let backPressCount = 0;
+  const handleBackButton = () => {
+    navigation.navigate(screenTitle.PORTFOLIO);
+    if (backPressCount === 1) {
+      setTimeout(() => {
+        backPressCount = 0;
+      }, 2000);
+      ToastAndroid.show('Press again to exit', ToastAndroid.SHORT);
+    } else if (backPressCount === 2) {
+      backPressCount = 0;
+      BackHandler.exitApp();
+    }
+    backPressCount++;
+    return true;
+  };
+
+  const optionsStackScreenHeaderTitleStyles: StyleProp<
+    Pick<TextStyle, 'fontFamily' | 'fontSize' | 'fontWeight'> & {
+      color?: string | undefined;
+    }
+  > = {
+    fontFamily: C.fontsName.FONT_BLACK,
+    fontSize: 22,
+    fontWeight: '800',
+  };
+
+  useEffect(() => {
+    BackHandler.addEventListener('hardwareBackPress', handleBackButton);
+    return () => {
+      BackHandler.removeEventListener('hardwareBackPress', handleBackButton);
+    };
+  }, []);
+  return (
+    <SwapStack.Navigator initialRouteName={screenTitle.BRIDGE_SCREEN}>
+      <SwapStack.Screen
+        name={screenTitle.BRIDGE_SCREEN}
+        component={Bridge}
+        options={{
+          headerTransparent: false,
+          headerShadowVisible: false,
+          title: 'Bridge',
+          headerTitleAlign: 'center',
+          headerTitleStyle: {
+            fontFamily: C.fontsName.FONT_BLACK,
+            fontSize: 18,
+            fontWeight: '800',
+          },
+
+          headerTintColor: Colors.primaryTextColor,
+          headerBackTitleVisible: false,
+          headerLeft: props => defaultHeaderLeft(navigation),
+        }}
+      />
+      <SwapStack.Screen
+        name={screenTitle.BRIDGE_STATUS}
+        component={BridgeStatus}
+        options={{
+          headerTransparent: false,
+          headerShadowVisible: false,
+          title: 'Bridge status',
+          headerTitleAlign: 'center',
+          headerTitleStyle: {
+            fontFamily: C.fontsName.FONT_BLACK,
+            fontSize: 18,
+            fontWeight: '800',
+          },
+
+          headerTintColor: Colors.primaryTextColor,
+          headerBackTitleVisible: false,
+        }}
+      />
+    </SwapStack.Navigator>
+  );
+}
 export function OptionsStackScreen({ navigation, route }) {
   const { t } = useTranslation();
   let backPressCount = 0;

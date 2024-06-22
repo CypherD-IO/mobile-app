@@ -18,6 +18,8 @@ const DOWN = require('./down.png');
 const DOWNLOAD = require('./download.png');
 const BROWSER_UNSEL = require('./browser_unselect.png');
 const BROWSER_SEL = require('./browser_sel.png');
+const SWAP_SEL = require('./swap_sel.png');
+const SWAP_UNSEL = require('./swap_unsel.png');
 const PORTFOLIO_UNSEL = require('./portfolio_unsel.png');
 const PORTFOLIO_SEL = require('./portfolio_sel.png');
 const OPTION_UNSEL = require('./option_unselect.png');
@@ -311,6 +313,8 @@ const CANDY_CANE = require('./candyCane.png');
 const WALLET_ICONS = require('./walletIcons.png');
 const VIRTUAL_TO_PHYSICAL = require('./virtualToPhysical.png');
 const MAIL = require('./mail.png');
+const PAUSE = require('./pause.png');
+const RESUME = require('./resume.png');
 
 // ICONS FROM S3
 const SWAP = { uri: `${S3_BUCKET_URL_ICONS}/swap.png` };
@@ -346,9 +350,6 @@ const DECLINE = { uri: `${S3_BUCKET_URL_ICONS}/decline.png` };
 const PENDING = { uri: `${S3_BUCKET_URL_ICONS}/pending.png` };
 const CORRECT_WHEAT = { uri: `${S3_BUCKET_URL_ICONS}/correctWheat.png` };
 const TELEGRAM_BLUE = { uri: `${S3_BUCKET_URL_ICONS}/telegram_blue.png` };
-const TELEGRAM_SETUP_STATUSBAR = {
-  uri: `${S3_BUCKET_URL_ICONS}/telegramSetupStatusbar.png`,
-};
 const CYPHER_TELEGRAM_BOT_LOGO = {
   uri: `${S3_BUCKET_URL_ICONS}/cypherTelegramBotLogo.png`,
 };
@@ -368,8 +369,11 @@ const DOCUMENT = {
   uri: `${S3_BUCKET_URL_ICONS}/document.png`,
 };
 
+const AUTOLOAD = {
+  uri: `${S3_BUCKET_URL_ICONS}/autoLoad.png`,
+};
+
 const AppImages = {
-  TELEGRAM_SETUP_STATUSBAR,
   CYPHER_TELEGRAM_BOT_LOGO,
   PLUS,
   ARROW,
@@ -394,6 +398,8 @@ const AppImages = {
   PORTFOLIO_SEL,
   OPTION_SEL,
   BROWSER_SEL,
+  SWAP_SEL,
+  SWAP_UNSEL,
   EMPTY,
   BOOKMARK_BROWSER,
   DOWN_ARROW,
@@ -717,5 +723,8 @@ const AppImages = {
   WALLETS,
   NOTIFICATION_BELL,
   DOCUMENT,
+  AUTOLOAD,
+  PAUSE,
+  RESUME,
 };
 export default AppImages;

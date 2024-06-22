@@ -122,7 +122,10 @@ export default function Bridge(props: { navigation?: any; route?: any }) {
   const ARCH_HOST: string = hostWorker.getHost('ARCH_HOST');
   const isFocused = useIsFocused();
   const { t } = useTranslation();
-  const routeData = props.route.params;
+  const routeData = props.route.params ?? {
+    title: t('SWAP_TITLE'),
+    renderPage: 'swapPage',
+  };
   const { renderPage } = routeData;
   const { postWithAuth } = useAxios();
   const portfolioState = useContext<any>(PortfolioContext);
@@ -2178,7 +2181,7 @@ export default function Bridge(props: { navigation?: any; route?: any }) {
 
   return (
     <CyDSafeAreaView>
-      <CyDScrollView className={'w-full pb-[40px] bg-white'}>
+      <CyDScrollView className={'h-full w-full pb-[40px] bg-white'}>
         <ChooseTokenModal
           isChooseTokenModalVisible={fromTokenModalVisible}
           // tokenList = {totalHoldings.length ? totalHoldings : []}

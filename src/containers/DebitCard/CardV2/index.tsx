@@ -40,6 +40,7 @@ import { MODAL_HIDE_TIMEOUT } from '../../../core/Http';
 import ShippingFeeConsentModal from '../../../components/v2/shippingFeeConsentModal';
 import CardActivationConsentModal from '../../../components/v2/CardActivationConsentModal';
 import Loading from '../../../components/v2/loading';
+import AutoLoadOptionsModal from '../bridgeCard/autoLoadOptions';
 
 interface CypherCardScreenProps {
   navigation: any;
@@ -92,6 +93,8 @@ export default function CypherCardScreen({
     pc: { physicalCardUpgradationFee } = { physicalCardUpgradationFee: 50 },
   } = cardProfile;
   const [isLayoutRendered, setIsLayoutRendered] = useState(false);
+  const [isAutoLoadOptionsvisible, setIsAutoLoadOptionsVisible] =
+    useState<boolean>(false);
 
   const onRefresh = async () => {
     void refreshProfile();
@@ -105,7 +108,7 @@ export default function CypherCardScreen({
 
   useEffect(() => {
     if (isFocused) {
-      void refreshProfile();
+      void onRefresh();
     }
   }, [isFocused]);
 
@@ -258,6 +261,13 @@ export default function CypherCardScreen({
           });
         }}
       />
+
+      <AutoLoadOptionsModal
+        isModalVisible={isAutoLoadOptionsvisible}
+        setShowModal={setIsAutoLoadOptionsVisible}
+        navigation={navigation}
+      />
+
       {/* TXN FILTER MODAL */}
       <CardTxnFilterModal
         navigation={navigation}
@@ -265,12 +275,15 @@ export default function CypherCardScreen({
         filterState={[filter, setFilter]}
       />
       {/* TXN FILTER MODAL */}
+      <CyDView className='ml-[18px] mb-[4px]'>
+        <CyDText className='font-extrabold text-[26px]'>Cards</CyDText>
+      </CyDView>
       <CyDView
         className={
-          'h-[50px] flex flex-row justify-between items-center py-[5px] px-[10px] mx-[12px] mb-[8px]'
+          'h-[50px] flex flex-row justify-between items-center py-[5px] px-[10px] mx-[12px] mb-[8px] mt-[8px]'
         }>
         <CyDView>
-          <CyDText className={'font-bold text-[16px]'}>
+          <CyDText className={'font-bold text-subTextColor text-[12px]'}>
             {t<string>('TOTAL_BALANCE') + ' (USD)'}
           </CyDText>
           <CyDText className={'font-bold text-[28px]'}>
@@ -292,6 +305,23 @@ export default function CypherCardScreen({
       </CyDView>
       <CyDScrollView>
         {/* <RenderMessage /> */}
+        <CyDTouchView
+          className='flex flex-row justify-center items-center self-center py-[4px] px-[12px] border-[0.2px] border-black rounded-[26px] mt-[4px] mb-[4px] bg-white'
+          onPress={() => {
+            cardProfile.isAutoloadConfigured
+              ? setIsAutoLoadOptionsVisible(true)
+              : navigation.navigate(screenTitle.AUTO_LOAD_SCREEN);
+          }}>
+          <CyDImage
+            source={AppImages.AUTOLOAD}
+            className='h-[28px] w-[28px]'
+            resizeMode='contain'
+          />
+          <CyDText className='ml-[4px] text-[16px]'>
+            {(cardProfile.isAutoloadConfigured ? 'Manage' : 'Setup') +
+              ' Auto Load'}
+          </CyDText>
+        </CyDTouchView>
         <CyDView className='mt-[2px]'>
           <CardScreen
             navigation={navigation}
