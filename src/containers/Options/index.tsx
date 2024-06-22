@@ -47,6 +47,7 @@ import { screenTitle } from '../../constants/index';
 import useConnectionManager from '../../hooks/useConnectionManager';
 import { get } from 'lodash';
 import { CHAIN_ETH } from '../../constants/server';
+import { logAnalytics } from '../../core/analytics';
 
 const { DynamicView, CText, DynamicImage } = require('../../styles');
 
@@ -439,7 +440,8 @@ export default function Options(props: {
               <OptionsContainer
                 sentryLabel={'browser'}
                 onPress={() => {
-                  props.navigation.navigate(C.screenTitle.BROWSER_SCREEN);
+                  logAnalytics('broswerClick', {});
+                  props.navigation.navigate(C.screenTitle.BROWSER);
                 }}
                 title={t('BROWSER')}
                 logo={AppImages.BROWSER_UNSEL}
