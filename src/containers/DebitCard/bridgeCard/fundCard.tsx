@@ -1,6 +1,6 @@
 import React, { useCallback, useContext, useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import { Keyboard } from 'react-native';
+import { Keyboard, StyleSheet } from 'react-native';
 import AppImages from '../../../../assets/images/appImages';
 import Button from '../../../components/v2/button';
 import {
@@ -58,6 +58,7 @@ import useGasService from '../../../hooks/useGasService';
 import { Holding } from '../../../core/Portfolio';
 import CyDNumberPad from '../../../components/v2/numberpad';
 import CyDTokenValue from '../../../components/v2/tokenValue';
+import Loading from '../../../components/v2/loading';
 
 export default function BridgeFundCardScreen({ route }: { route: any }) {
   const {
@@ -115,6 +116,7 @@ export default function BridgeFundCardScreen({ route }: { route: any }) {
   const [usdAmount, setUsdAmount] = useState('');
   const [cryptoAmount, setCryptoAmount] = useState('');
   const [loading, setLoading] = useState<boolean>(false);
+  const [isMaxLoading, setIsMaxLoading] = useState<boolean>(false);
   const minTokenValueLimit = 10;
   const minTokenValueEth = 50;
   const [selectedToken, setSelectedToken] = useState<Holding>();
@@ -182,6 +184,8 @@ export default function BridgeFundCardScreen({ route }: { route: any }) {
             contractDecimals,
           });
         } else {
+          setLoading(false);
+          setIsMaxLoading(false);
           navigation.navigate(screenTitle.CARD_QUOTE_SCREEN, {
             hasSufficientBalanceAndGasFee: false,
             cardProvider: currentCardProvider,
@@ -225,6 +229,7 @@ export default function BridgeFundCardScreen({ route }: { route: any }) {
         });
       }
       setLoading(false);
+      setIsMaxLoading(false);
       if (gasDetails) {
         const hasSufficient = hasSufficientBalanceAndGasFee(
           selectedTokenSymbol === chainDetails.symbol,
@@ -258,7 +263,6 @@ export default function BridgeFundCardScreen({ route }: { route: any }) {
           },
         });
       } else {
-        setLoading(false);
         showModal('state', {
           type: 'error',
           title: t('GAS_ESTIMATION_FAILED'),
@@ -278,6 +282,7 @@ export default function BridgeFundCardScreen({ route }: { route: any }) {
       };
       Sentry.captureException(errorObject);
       setLoading(false);
+      setIsMaxLoading(false);
       showModal('state', {
         type: 'error',
         title: t('GAS_ESTIMATION_FAILED'),
@@ -486,7 +491,7 @@ export default function BridgeFundCardScreen({ route }: { route: any }) {
 
     if (chainDetails.chainName === ChainNames.ETH) {
       const web3 = new Web3(getWeb3Endpoint(chainDetails, globalContext));
-      setLoading(true);
+      setIsMaxLoading(true);
       let amountInCrypto = actualBalance;
       try {
         // Reserving gas for the txn if the selected token is a native token.
@@ -512,6 +517,7 @@ export default function BridgeFundCardScreen({ route }: { route: any }) {
                 GAS_BUFFER_FACTOR_FOR_LOAD_MAX;
             amountInCrypto = Number(limitDecimalPlaces(amountInCrypto));
           } else {
+            setIsMaxLoading(false);
             showModal('state', {
               type: 'error',
               title: t('GAS_ESTIMATION_FAILED'),
@@ -529,7 +535,7 @@ export default function BridgeFundCardScreen({ route }: { route: any }) {
           selectedToken,
         };
         Sentry.captureException(errorObject);
-        setLoading(false);
+        setIsMaxLoading(false);
         showModal('state', {
           type: 'error',
           title: t('GAS_ESTIMATION_FAILED'),
@@ -558,7 +564,7 @@ export default function BridgeFundCardScreen({ route }: { route: any }) {
           const quote: CardQuoteResponse = response.data;
           void showQuoteModal(quote, true);
         } else {
-          setLoading(false);
+          setIsMaxLoading(false);
           showModal('state', {
             type: 'error',
             title: response?.error?.message?.includes('minimum amount')
@@ -585,7 +591,7 @@ export default function BridgeFundCardScreen({ route }: { route: any }) {
           },
         };
         Sentry.captureException(errorObject);
-        setLoading(false);
+        setIsMaxLoading(false);
         showModal('state', {
           type: 'error',
           title: '',
@@ -597,7 +603,7 @@ export default function BridgeFundCardScreen({ route }: { route: any }) {
     } else if (COSMOS_CHAINS.includes(chainDetails.chainName)) {
       let amountInCrypto = actualBalance;
       // Reserving gas for the txn if the selected token is a native token.
-      setLoading(true);
+      setIsMaxLoading(true);
       if (
         selectedTokenSymbol === nativeTokenSymbol &&
         !GASLESS_CHAINS.includes(chainDetails.backendName)
@@ -629,7 +635,7 @@ export default function BridgeFundCardScreen({ route }: { route: any }) {
               parseFloat(gasFeeEstimationForTxn) *
                 GAS_BUFFER_FACTOR_FOR_LOAD_MAX;
           } else {
-            setLoading(false);
+            setIsMaxLoading(false);
             showModal('state', {
               type: 'error',
               title: t('GAS_ESTIMATION_FAILED'),
@@ -646,7 +652,7 @@ export default function BridgeFundCardScreen({ route }: { route: any }) {
             selectedToken,
           };
           Sentry.captureException(errorObject);
-          setLoading(false);
+          setIsMaxLoading(false);
           showModal('state', {
             type: 'error',
             title: t('GAS_ESTIMATION_FAILED'),
@@ -674,7 +680,7 @@ export default function BridgeFundCardScreen({ route }: { route: any }) {
           const quote: CardQuoteResponse = response.data;
           void showQuoteModal(quote, true);
         } else {
-          setLoading(false);
+          setIsMaxLoading(false);
           showModal('state', {
             type: 'error',
             title: response?.error?.message?.includes('minimum amount')
@@ -703,7 +709,7 @@ export default function BridgeFundCardScreen({ route }: { route: any }) {
           },
         };
         Sentry.captureException(errorObject);
-        setLoading(false);
+        setIsMaxLoading(false);
         showModal('state', {
           type: 'error',
           title: '',
@@ -713,7 +719,7 @@ export default function BridgeFundCardScreen({ route }: { route: any }) {
         });
       }
     } else {
-      setLoading(false);
+      setIsMaxLoading(false);
       showModal('state', {
         type: 'error',
         title: '',
@@ -933,6 +939,7 @@ export default function BridgeFundCardScreen({ route }: { route: any }) {
 
   return (
     <CyDSafeAreaView className='h-full bg-white'>
+      {isMaxLoading && <Loading blurBg={true} />}
       <ChooseTokenModal
         isChooseTokenModalVisible={isChooseTokenVisible}
         tokenList={portfolioState.statePortfolio.tokenPortfolio.totalHoldings}
@@ -951,7 +958,10 @@ export default function BridgeFundCardScreen({ route }: { route: any }) {
         renderPage={'fundCardPage'}
       />
       {/* <CyDKeyboardAwareScrollView> */}
-      <CyDView className={'flex flex-1 flex-col justify-between h-full'}>
+      <CyDView
+        className={clsx('flex flex-1 flex-col justify-between h-full', {
+          '': loading,
+        })}>
         <CyDView>
           <RenderSelectedToken />
           <CyDView className='flex flex-row rounded-[8px] px-[20px] justify-between items-center'>

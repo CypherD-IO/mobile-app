@@ -1365,16 +1365,6 @@ export function SwapStackScreen({ navigation }) {
     return true;
   };
 
-  const optionsStackScreenHeaderTitleStyles: StyleProp<
-    Pick<TextStyle, 'fontFamily' | 'fontSize' | 'fontWeight'> & {
-      color?: string | undefined;
-    }
-  > = {
-    fontFamily: C.fontsName.FONT_BLACK,
-    fontSize: 22,
-    fontWeight: '800',
-  };
-
   useEffect(() => {
     BackHandler.addEventListener('hardwareBackPress', handleBackButton);
     return () => {
@@ -1919,6 +1909,19 @@ export function OptionsStackScreen({ navigation, route }) {
           headerTitleAlign: 'center',
           headerTitleStyle: optionsStackScreenHeaderTitleStyles,
 
+          headerTintColor: Colors.primaryTextColor,
+          headerBackTitleVisible: false,
+        }}
+      />
+      <OptionsStack.Screen
+        name={screenTitle.BROWSER}
+        component={BrowserStackScreen}
+        options={{
+          headerTransparent: false,
+          headerShadowVisible: false,
+          title: 'Browser',
+          headerTitleAlign: 'center',
+          headerTitleStyle: optionsStackScreenHeaderTitleStyles,
           headerTintColor: Colors.primaryTextColor,
           headerBackTitleVisible: false,
         }}
