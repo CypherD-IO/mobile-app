@@ -13,6 +13,6 @@ export interface EthTransaction {
 
 export interface RawTransaction {
   web3: Web3;
-  chain: ChainBackendNames;
+  sendChain: ChainBackendNames;
   transactionToBeSigned: EthTransaction;
 }

@@ -19,7 +19,7 @@ import { ethToEvmos } from '@tharsis/address-converter';
 import { hostWorker } from '../../global';
 import useValidSessionToken from '../../hooks/useValidSessionToken';
 import { utf8ToHex } from 'web3-utils';
-import { useAccount, useDisconnect } from 'wagmi';
+import { useAccount, useDisconnect, useSignMessage } from 'wagmi';
 import { getWalletProfile } from '../../core/card';
 import Loading from '../../containers/Loading';
 import { CyDView } from '../../styles/tailwindStyles';
@@ -33,8 +33,8 @@ export const WalletConnectListener: React.FC = ({ children }) => {
   const hdWalletContext = useContext<any>(HdWalletContext);
   const globalContext = useContext<any>(GlobalContext);
   const ethereum = hdWalletContext.state.wallet.ethereum;
-  const { isConnected, address, connector } = useAccount();
-  const { disconnect } = useDisconnect();
+  const { isConnected, address, connector, isConnecting } = useAccount();
+  const { disconnectAsync } = useDisconnect();
   const ARCH_HOST: string = hostWorker.getHost('ARCH_HOST');
   const { verifySessionToken } = useValidSessionToken();
   const { getWithoutAuth } = useAxios();
@@ -43,13 +43,37 @@ export const WalletConnectListener: React.FC = ({ children }) => {
     connectionType === ConnectionTypes.WALLET_CONNECT,
   );
 
+  const { signMessageAsync } = useSignMessage({
+    mutation: {
+      async onSuccess(data) {
+        const verifyMessageResponse = await axios.post(
+          `${ARCH_HOST}/v1/authentication/verify-message/${address?.toLowerCase()}?format=ERC-4361`,
+          {
+            signature: data,
+          },
+        );
+        if (verifyMessageResponse?.data.token) {
+          const { token, refreshToken } = verifyMessageResponse.data;
+          globalContext.globalDispatch({
+            type: GlobalContextType.SIGN_IN,
+            sessionToken: token,
+          });
+          void setAuthToken(token);
+          void setRefreshToken(refreshToken);
+          await dispatchProfileData(String(token));
+          void loadHdWallet();
+        }
+      },
+    },
+  });
+
   useEffect(() => {
     if (
       isConnected &&
       address &&
       ethereum.address === _NO_CYPHERD_CREDENTIAL_AVAILABLE_
     ) {
-      void validateStaleConnection();
+      void verifySessionTokenAndSign();
     }
   }, [isConnected, address, ethereum.address]);
 
@@ -110,7 +134,7 @@ export const WalletConnectListener: React.FC = ({ children }) => {
       connectionType === ConnectionTypes.WALLET_CONNECT_WITHOUT_SIGN &&
       isConnected
     ) {
-      disconnect();
+      await disconnectAsync();
       void setConnectionType('');
     } else {
       void verifySessionTokenAndSign();
@@ -119,11 +143,11 @@ export const WalletConnectListener: React.FC = ({ children }) => {
 
   const verifySessionTokenAndSign = async () => {
     setLoading(true);
-    await getToken(String(address));
+    const token = await getToken(String(address));
     void setConnectionType(ConnectionTypes.WALLET_CONNECT_WITHOUT_SIGN);
     const isSessionTokenValid = await verifySessionToken();
     if (!isSessionTokenValid) {
-      void signMessage();
+      void signConnectionMessage();
     } else {
       let authToken = await getAuthToken();
       authToken = JSON.parse(String(authToken));
@@ -141,7 +165,7 @@ export const WalletConnectListener: React.FC = ({ children }) => {
     setLoading(false);
   };
 
-  const signMessage = async () => {
+  const signConnectionMessage = async () => {
     const provider = await connector?.getProvider();
     if (!provider) {
       throw new Error('web3Provider not connected');
@@ -151,35 +175,8 @@ export const WalletConnectListener: React.FC = ({ children }) => {
       { format: 'ERC-4361' },
     );
     if (!response.isError) {
-      const msg = response.data.message;
-      const hexMsg = utf8ToHex(msg);
-      const msgParams = [hexMsg, address?.toLowerCase()];
-      let signature;
-      if (provider?.connector) {
-        signature = await provider?.connector.signPersonalMessage(msgParams);
-      } else {
-        signature = await provider?.request({
-          method: 'personal_sign',
-          params: msgParams,
-        });
-      }
-      const verifyMessageResponse = await axios.post(
-        `${ARCH_HOST}/v1/authentication/verify-message/${address?.toLowerCase()}?format=ERC-4361`,
-        {
-          signature,
-        },
-      );
-      if (verifyMessageResponse?.data.token) {
-        const { token, refreshToken } = verifyMessageResponse.data;
-        globalContext.globalDispatch({
-          type: GlobalContextType.SIGN_IN,
-          sessionToken: token,
-        });
-        void setAuthToken(token);
-        void setRefreshToken(refreshToken);
-        await dispatchProfileData(String(token));
-        void loadHdWallet();
-      }
+      const msg = response?.data?.message;
+      const signMsgResponse = await signMessageAsync({ message: msg });
     }
   };
 

@@ -8,33 +8,37 @@ import {
 } from '../../core/util';
 import useConnectionManager from '../useConnectionManager';
 import { ConnectionTypes } from '../../constants/enum';
-import { useAccount } from 'wagmi';
+import { useAccount, useSwitchChain } from 'wagmi';
 import { walletConnectChainData } from '../../constants/server';
 import { get, set } from 'lodash';
 import { createWalletClient, custom } from 'viem';
 import { loadPrivateKeyFromKeyChain } from '../../core/Keychain';
 
 export default function useEthSigner() {
-  const { connector } = useAccount();
+  const { connector, chain } = useAccount();
   const { connectionType } = useConnectionManager();
   const hdWalletContext = useContext<any>(HdWalletContext);
+  const { switchChainAsync } = useSwitchChain();
 
   const signEthTransaction = async ({
     web3,
-    chain,
+    sendChain,
     transactionToBeSigned,
   }: RawTransaction) => {
     try {
       if (connectionType === ConnectionTypes.WALLET_CONNECT) {
-        const chainConfig = get(walletConnectChainData, chain).chainConfig;
+        const chainConfig = get(walletConnectChainData, sendChain).chainConfig;
         const walletClient = createWalletClient({
           account: transactionToBeSigned.from,
           chain: chainConfig,
           transport: custom(await connector?.getProvider()),
         });
-        try {
-          await walletClient.switchChain({ id: chainConfig.id });
-        } catch (e) {}
+        if (chain.id !== chainConfig.id) {
+          try {
+            // await walletClient.switchChain({ id: chainConfig.id });
+            await switchChainAsync({ chainId: chainConfig.id });
+          } catch (e) {}
+        }
         set(transactionToBeSigned, 'data', '0x');
         const response = await walletClient.sendTransaction(
           transactionToBeSigned as any,

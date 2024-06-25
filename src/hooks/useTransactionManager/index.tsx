@@ -165,7 +165,7 @@ export default function useTransactionManager() {
 
       const hash = await signEthTransaction({
         web3,
-        chain,
+        sendChain: chain,
         transactionToBeSigned: tx,
       });
       return hash;
@@ -259,7 +259,7 @@ export default function useTransactionManager() {
       }
       const hash = await signEthTransaction({
         web3,
-        chain,
+        sendChain: chain,
         transactionToBeSigned: tx,
       });
       return { hash, contractData: contractDataUser ?? contractData };
