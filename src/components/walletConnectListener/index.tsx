@@ -42,14 +42,6 @@ export const WalletConnectListener: React.FC = ({ children }) => {
     connectionType === ConnectionTypes.WALLET_CONNECT,
   );
 
-  useEffect(() => {
-    console.log('connecting .......');
-  }, [isConnecting]);
-
-  useEffect(() => {
-    console.log('address connected : ', address);
-  }, [address]);
-
   const { signMessageAsync } = useSignMessage({
     mutation: {
       async onSuccess(data) {
@@ -110,7 +102,6 @@ export const WalletConnectListener: React.FC = ({ children }) => {
 
   const loadHdWallet = async () => {
     void setConnectionType(ConnectionTypes.WALLET_CONNECT);
-    console.log('dispatching address : ', address);
     hdWalletContext.dispatch({
       type: 'LOAD_WALLET',
       value: {
@@ -168,7 +159,6 @@ export const WalletConnectListener: React.FC = ({ children }) => {
         type: GlobalContextType.CARD_PROFILE,
         cardProfile: profileData,
       });
-      console.log('loading hd wallet');
       void loadHdWallet();
     }
     setLoading(false);
@@ -176,9 +166,6 @@ export const WalletConnectListener: React.FC = ({ children }) => {
 
   const signConnectionMessage = async () => {
     const provider = await connector?.getProvider();
-    console.log('🚀 ~ signConnectionMessage ~ provider:', provider);
-    // const signer = await provider.getSigner();
-    // console.log("🚀 ~ signConnectionMessage ~ signer:", signer)
     if (!provider) {
       throw new Error('web3Provider not connected');
     }
