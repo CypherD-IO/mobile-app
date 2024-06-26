@@ -324,7 +324,7 @@ export default function CardQuote({
               denom,
               amount: actualTokensRequired,
               fromAddress: get(cosmosAddresses, chainDetails.chainName),
-              toAddress: 'osmo1fp45ju4wlmxx6m64m9dl9xyfa8ymjkdaenxjn8', // tokenQuote.targetAddress,
+              toAddress: tokenQuote.targetAddress,
               contractDecimals,
             });
           } else {
