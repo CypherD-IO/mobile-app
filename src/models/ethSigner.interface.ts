@@ -9,6 +9,7 @@ export interface EthTransaction {
   gas: string | number;
   maxPriorityFeePerGas?: string | number;
   maxFeePerGas?: string | number;
+  contractParams?: { toAddress: string; numberOfTokens: string };
 }
 
 export interface RawTransaction {

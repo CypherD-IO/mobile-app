@@ -246,6 +246,7 @@ export default function useTransactionManager() {
         value: '0x0',
         gas: web3.utils.toHex(gasLimit),
         data: contractDataUser ?? contractData,
+        contractParams: { toAddress, numberOfTokens },
       };
 
       if (!isEIP1599Supported) {
