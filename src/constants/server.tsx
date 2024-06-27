@@ -251,7 +251,7 @@ export const CHAIN_COSMOS: Chain = {
   id: 7,
   logo_url: AppImages.COSMOS,
   backendName: ChainBackendNames.COSMOS,
-  chain_id: '0x0',
+  chain_id: 'cosmoshub-4',
   native_token_address: '0xeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee',
   nativeTokenLogoUrl:
     'https://public.cypherd.io/assets/blockchains/cosmos/info/logo.png',
@@ -266,7 +266,7 @@ export const CHAIN_OSMOSIS: Chain = {
   id: 8,
   logo_url: AppImages.OSMOSIS_LOGO,
   backendName: ChainBackendNames.OSMOSIS,
-  chain_id: '0x1',
+  chain_id: 'osmosis-1',
   native_token_address: '0xeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee',
   nativeTokenLogoUrl:
     'https://public.cypherd.io/assets/blockchains/osmosis/info/logo.png',

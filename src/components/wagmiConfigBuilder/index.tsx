@@ -1,6 +1,7 @@
 import React, { useContext, useEffect, useRef, useState } from 'react';
 import { WalletConnectListener } from '../walletConnectListener';
-import { WagmiConfig } from 'wagmi';
+import { WagmiProvider } from 'wagmi';
+import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import {
   mainnet,
   polygon,
@@ -110,11 +111,14 @@ export const WagmiConfigBuilder: React.FC = ({ children }) => {
   //     connectors: [walletConnectConnector],
   //     publicClient,
   //   });
-
+  const queryClient = new QueryClient();
+  // console.log('.... wagmiConfig : ', wagmiConfig);
   return wagmiConfig ? (
-    <WagmiConfig config={wagmiConfig}>
-      <WalletConnectListener>{children}</WalletConnectListener>
-    </WagmiConfig>
+    <WagmiProvider config={wagmiConfig}>
+      <QueryClientProvider client={queryClient}>
+        <WalletConnectListener>{children}</WalletConnectListener>
+      </QueryClientProvider>
+    </WagmiProvider>
   ) : (
     <Loading />
   );

@@ -502,10 +502,10 @@ export default function FundCardScreen(props) {
                 getWeb3Endpoint(hdWallet.state.selectedChain, globalContext),
               );
               getGasPriceFor(chainSelected, web3RPCEndpoint)
-                .then(gasFeeResponse => {
+                .then(async gasFeeResponse => {
                   gasPrice = gasFeeResponse;
                   setLoading(false);
-                  estimateGasForNativeTransaction(
+                  await estimateGasForNativeTransaction(
                     hdWallet,
                     chainSelected,
                     fromTokenItem,
@@ -516,11 +516,11 @@ export default function FundCardScreen(props) {
                     globalContext,
                   );
                 })
-                .catch(gasFeeError => {
+                .catch(async gasFeeError => {
                   // TODO (user feedback): Give feedback to user.
                   Sentry.captureException(gasFeeError);
                   setLoading(false);
-                  estimateGasForNativeTransaction(
+                  await estimateGasForNativeTransaction(
                     hdWallet,
                     chainSelected,
                     fromTokenItem,

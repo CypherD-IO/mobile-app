@@ -98,7 +98,7 @@ export default function useTransactionManager() {
     signer: OfflineDirectSigner,
   ) {
     if (chain.backendName === ChainBackendNames.INJECTIVE) {
-      return await InjectiveStargate.InjectiveSigningStargateClient.connectWithSigner(
+      return InjectiveStargate.InjectiveSigningStargateClient.connectWithSigner(
         rpc,
         signer,
       );
@@ -170,7 +170,6 @@ export default function useTransactionManager() {
       });
       return hash;
     } catch (err: any) {
-      // TODO (user feedback): Give feedback to user.
       throw new Error(err);
     }
     // }
@@ -285,6 +284,7 @@ export default function useTransactionManager() {
       ChainConfigMapping,
       String(get(ChainNameMapping, chain)),
     );
+
     const web3 = new Web3(getWeb3Endpoint(chainConfig, globalContext));
     if (
       (contractAddress.toLowerCase() === OP_ETH_ADDRESS &&
