@@ -22,6 +22,7 @@ import { Address, createWalletClient, custom } from 'viem';
 import { loadPrivateKeyFromKeyChain } from '../../core/Keychain';
 import { utf8ToHex } from 'web3-utils';
 import { waitForTransactionReceipt } from '@wagmi/core';
+import { useWalletInfo } from '@web3modal/wagmi-react-native';
 
 export default function useEthSigner() {
   const { connector, chain } = useAccount();
@@ -31,25 +32,34 @@ export default function useEthSigner() {
   const { sendTransactionAsync } = useSendTransaction();
   const { signMessageAsync } = useSignMessage();
   const { writeContractAsync } = useWriteContract();
+  const { walletInfo } = useWalletInfo();
 
-  const getTransactionReceipt = async (
-    hash: `0x${string}`,
-    chainId: number,
-  ) => {
-    return new Promise(async resolve => {
-      let hashFromReceipt;
-      try {
-        const receipt = await waitForTransactionReceipt(config, {
-          hash,
-          chainId,
-        });
-        hashFromReceipt = receipt?.transactionHash;
-      } catch (error) {
-        hashFromReceipt = hash;
-      }
-      resolve(hashFromReceipt);
-    });
-  };
+  // const getTransactionReceipt = async (
+  //   hash: `0x${string}`,
+  //   chainId: number,
+  // ) => {
+  //   return new Promise((resolve) => {
+  //     const timeout = new Promise((resolve) => 
+  //       setTimeout(() => resolve(hash), 5000)
+  //     );
+  
+  //     const receiptPromise = (async () => {
+  //       try {
+  //         const receipt = await waitForTransactionReceipt(config, {
+  //           hash,
+  //           chainId,
+  //         });
+  //         return receipt?.transactionHash;
+  //       } catch (error) {
+  //         return hash;
+  //       }
+  //     })();
+  
+  //     Promise.race([timeout, receiptPromise]).then((result) => {
+  //       resolve(result);
+  //     });
+  //   });
+  // };
 
   async function sendNativeCoin({
     transactionToBeSigned,
@@ -64,8 +74,7 @@ export default function useEthSigner() {
       chainId,
       value: BigInt(transactionToBeSigned.value),
     });
-    const hash = await getTransactionReceipt(response, chainId);
-    return hash;
+    return response;
   }
 
   async function sendToken({
@@ -104,8 +113,7 @@ export default function useEthSigner() {
       ],
       chainId: chainId,
     });
-    const hash = await getTransactionReceipt(response, chainId);
-    return hash;
+    return response;
   }
 
   const signEthTransaction = async ({
@@ -116,9 +124,13 @@ export default function useEthSigner() {
     try {
       if (connectionType === ConnectionTypes.WALLET_CONNECT) {
         const chainConfig = get(walletConnectChainData, sendChain).chainConfig;
-        if (chain.id !== chainConfig.id) {
+        if (
+          walletInfo?.name === 'MetaMask Wallet' &&
+          chain.id !== chainConfig.id
+        ) {
           try {
             await switchChainAsync({ chainId: chainConfig.id });
+            await sleepFor(1000);
           } catch (e) {}
         }
         let hash;
