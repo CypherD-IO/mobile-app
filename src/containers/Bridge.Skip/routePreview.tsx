@@ -17,8 +17,6 @@ import clsx from 'clsx';
 import { SvgUri } from 'react-native-svg';
 import Button from '../../components/v2/button';
 import AppImages from '../../../assets/images/appImages';
-import { t } from 'i18next';
-import { screenTitle } from '../../constants';
 import { StyleSheet } from 'react-native';
 
 enum TxnStatus {
@@ -38,7 +36,6 @@ export default function RoutePreview({
   loading,
   onGetMSg,
   statusResponse,
-  // navigation,
   onBridgeSuccess,
 }: {
   setIndex: Dispatch<SetStateAction<number>>;
@@ -48,7 +45,6 @@ export default function RoutePreview({
   loading: boolean;
   onGetMSg: () => void;
   statusResponse: SkipApiStatus[];
-  // navigation: any;
   onBridgeSuccess: () => void;
 }) {
   if (!routeResponse) return <Loading />;

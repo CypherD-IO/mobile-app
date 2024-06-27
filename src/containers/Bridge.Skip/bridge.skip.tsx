@@ -895,6 +895,7 @@ export default function BridgeSkipApi({ navigation }: { navigation: any }) {
         ) : null}
       </SignatureModal>
 
+      {/* Transfer token Modal cosmos */}
       <SignatureModal
         isModalVisible={cosmosModalVisible}
         setModalVisible={setCosmosModalVisible}

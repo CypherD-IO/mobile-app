@@ -182,6 +182,7 @@ export default function useTransactionManager() {
     toAddress,
     contractAddress,
     contractDecimals,
+    contractData: contractDataUser,
   }: SendNativeToken) => {
     try {
       const ethereum = hdWalletContext.state.wallet.ethereum;
@@ -229,7 +230,9 @@ export default function useTransactionManager() {
           amountToSend,
           contractAddress,
           contractDecimals,
+          contractData: contractDataUser,
         });
+
       gasLimit = decideGasLimitBasedOnTypeOfToAddress(
         code,
         gasLimit,
@@ -242,7 +245,7 @@ export default function useTransactionManager() {
         to: contractAddress,
         value: '0x0',
         gas: web3.utils.toHex(gasLimit),
-        data: contractData,
+        data: contractDataUser ?? contractData,
       };
 
       if (!isEIP1599Supported) {
@@ -254,13 +257,12 @@ export default function useTransactionManager() {
           web3.utils.toWei(priorityFee.toFixed(9), 'gwei'),
         );
       }
-
       const hash = await signEthTransaction({
         web3,
         chain,
         transactionToBeSigned: tx,
       });
-      return { hash, contractData };
+      return { hash, contractData: contractDataUser ?? contractData };
     } catch (err: any) {
       // TODO (user feedback): Give feedback to user.
       throw new Error(err);
@@ -274,6 +276,7 @@ export default function useTransactionManager() {
     contractAddress,
     contractDecimals,
     symbol,
+    contractData: contractDataUser,
   }: SendInEvmInterface): Promise<{
     isError: boolean;
     hash: string;
@@ -317,6 +320,7 @@ export default function useTransactionManager() {
           toAddress,
           contractAddress,
           contractDecimals,
+          contractData: contractDataUser,
         });
         return { hash: String(hash), contractData, isError: false };
       } catch (error) {

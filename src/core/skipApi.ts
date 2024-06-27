@@ -29,7 +29,6 @@ import { Chain, ChainBackendNames } from '../constants/server';
 import { loadPrivateKeyFromKeyChain } from './Keychain';
 import { _NO_CYPHERD_CREDENTIAL_AVAILABLE_ } from './util';
 import { SwapMetaData } from '../models/swapMetaData';
-import { COSMOS_CHAINS_TYPE } from '../constants/type';
 import { ChainBackendNameMapping, ChainIdNameMapping } from '../constants/data';
 import { InjectiveStargate } from '@injectivelabs/sdk-ts';
 import { Dispatch, SetStateAction } from 'react';
@@ -350,7 +349,7 @@ export default function useSkipApiBridge() {
     if (sendGranted) {
       const hash = await sendEvmToken({
         chain: selectedFromToken.chainDetails?.backendName as ChainBackendNames,
-        toAddress: get(evmTx, 'to'),
+        toAddress: get(evmTx, 'to', ''),
         amountToSend: ethers
           .parseUnits(
             get(evmTx, 'value', 0).toString(),
@@ -360,6 +359,7 @@ export default function useSkipApiBridge() {
         contractAddress: get(evmTx, 'to', ''),
         contractDecimals: selectedFromToken.decimals,
         symbol: selectedFromToken.symbol,
+        contractData: '0x' + get(evmTx, 'data', ''),
       });
       if (hash.isError) {
         return { isError: true, error: 'Send transaction failed' };
