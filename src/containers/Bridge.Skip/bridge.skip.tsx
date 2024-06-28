@@ -953,13 +953,28 @@ export default function BridgeSkipApi({ navigation }: { navigation: any }) {
 
       <CyDScrollView>
         {Components()}
-        {!isEmpty(error) && (
-          <CyDView className=' bg-red-100 rounded-[8px] p-[12px] flex flex-row gap-x-[12px] m-[16px] justify-between items-center'>
+        {(!isEmpty(error) ||
+          parseFloat(cryptoAmount) > (selectedFromToken?.totalValue ?? 0)) && (
+          <CyDView className=' bg-red-100 rounded-[8px] p-[12px] flex flex-row gap-x-[12px] mx-[16px] mt-[16px] justify-between items-center'>
             <CyDFastImage
               source={AppImages.CYPHER_WARNING_RED}
               className='w-[32px] h-[32px]'
             />
-            <CyDText className='w-[80%]'>{error}</CyDText>
+            <CyDView className='w-[75%]'>
+              {!isEmpty(error) && (
+                <CyDView className='flex flex-row gap-x-[8px]'>
+                  <CyDText>{'\u2022'}</CyDText>
+                  <CyDText>{error}</CyDText>
+                </CyDView>
+              )}
+              {parseFloat(cryptoAmount) >
+                (selectedFromToken?.totalValue ?? 0) && (
+                <CyDView className='flex flex-row gap-x-[8px]'>
+                  <CyDText>{'\u2022'}</CyDText>
+                  <CyDText>{t('INSUFFICIENT_BALANCE_BRIDGE')}</CyDText>
+                </CyDView>
+              )}
+            </CyDView>
           </CyDView>
         )}
         {!isEmpty(routeResponse?.estimated_fees) && (
@@ -967,7 +982,7 @@ export default function BridgeSkipApi({ navigation }: { navigation: any }) {
             {routeResponse?.estimated_fees.map((item, index) => (
               <CyDView
                 key={index}
-                className='mt-[8px] flex flex-row gap-x-[12px] m-[16px] justify-between items-center'>
+                className='mt-[8px] flex flex-row gap-x-[12px] justify-between items-center'>
                 <CyDFastImage
                   source={AppImages.INFO_CIRCLE}
                   className='h-[32px] w-[32px]'

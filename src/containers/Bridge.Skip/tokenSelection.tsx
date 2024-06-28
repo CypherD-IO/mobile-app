@@ -216,13 +216,13 @@ function ChooseTokenModal({
             <SvgUri
               width='32'
               height='32'
-              className='mr-[18px]'
+              className='mr-[18px] rounded-full'
               uri={selectedChain.logo_uri ?? ''}
             />
           ) : (
             <CyDFastImage
               source={{ uri: selectedChain.logo_uri }}
-              className='w-[32px] h-[32px]'
+              className='w-[32px] h-[32px] rounded-full'
             />
           )}
           <CyDText>{capitalize(selectedChain.chain_name)}</CyDText>
@@ -237,7 +237,7 @@ function ChooseTokenModal({
   const renderContent = () => {
     return (
       <CyDScrollView className='h-[240px]'>
-        <CyDView className='flex flex-row p-[24px] w-full flex-wrap gap-[12px] items-center justify-between'>
+        <CyDView className='flex flex-row py-[24px] px-[6px] flex-wrap gap-[12px] items-center justify-between  '>
           {chainData.map((item, index) => {
             if (endsWith(item?.logo_uri, '.svg'))
               return (
@@ -253,7 +253,12 @@ function ChooseTokenModal({
                       'bg-appColor': selectedChain.chain_id === item.chain_id,
                     },
                   )}>
-                  <SvgUri width='42' height='42' uri={item.logo_uri ?? ''} />
+                  <SvgUri
+                    width='32'
+                    height='32'
+                    uri={item.logo_uri ?? ''}
+                    className='rounded-full'
+                  />
                   <CyDText className='text-[10px] mt-[6px]'>
                     {capitalize(item.chain_name)}
                   </CyDText>
@@ -268,14 +273,14 @@ function ChooseTokenModal({
                   }}
                   key={index}
                   className={clsx(
-                    'border-[1px] border-[#E6E6E6] rounded-[12px] p-[12px] flex flex-col items-center justify-center w-[85px]',
+                    'border-[1px] border-[#E6E6E6] rounded-[12px] p-[8px] flex flex-col items-center justify-center w-[75px]',
                     {
                       'bg-appColor': selectedChain.chain_id === item.chain_id,
                     },
                   )}>
                   <CyDFastImage
                     source={{ uri: item.logo_uri }}
-                    className='w-[32px] h-[32px] '
+                    className='w-[32px] h-[32px] rounded-full'
                   />
                   <CyDText className='text-[10px] mt-[6px]'>
                     {capitalize(item.chain_name)}
@@ -295,7 +300,7 @@ function ChooseTokenModal({
       style={styles.modalLayout}>
       <CyDView
         className={
-          'bg-white border-1 rounded-t-[36px] border-[#E6E6E6] p-[12px] pb-[22px] h-[60%] relative'
+          'bg-white border-1 rounded-t-[36px] border-[#E6E6E6] p-[12px] pb-[22px] h-[80%] relative'
         }>
         <CyDTouchView
           onPress={() => {
@@ -471,7 +476,7 @@ export default function TokenSelection({
         <CyDView className='m-[16px] bg-white rounded-[8px] p-[12px]'>
           <CyDView className='flex flex-row justify-between items-center mb-[12px]'>
             <CyDText className='text-[14px] font-medium'>{t('FROM')}</CyDText>
-            <CyDText className='text-[12px] font-normal'>
+            <CyDText className='text-[14px] font-normal'>
               {get(selectedFromToken, 'balanceInNumbers', 0)?.toFixed(6)}
             </CyDText>
           </CyDView>
@@ -486,32 +491,32 @@ export default function TokenSelection({
                 onChangeText={text => {
                   setCryptoAmount(text);
                 }}
-                placeholder='0.0'
+                // placeholder='0.0'
                 value={cryptoAmount}
                 autoFocus={true}
-                ref={input => {
-                  // enterAmountRef = input;
-                }}
+                // ref={input => {
+                //   enterAmountRef = input;
+                // }}
               />
               <CyDText
                 className={clsx(
                   'font-semibold text-center text-primaryTextColor font-nunito text-[12px]',
                 )}>
-                {usdAmount}
+                {`$${usdAmount}`}
               </CyDText>
             </CyDView>
             <CyDTouchView
               onPress={() => {
                 setFromTokenModalVisible(true);
               }}>
-              <CyDView className='flex flex-row gap-x-[6px] items-center'>
+              <CyDView className='flex flex-row items-center'>
                 <CyDView className={' relative'}>
                   <CyDView className={'flex flex-row items-center'}>
                     {endsWith(selectedFromChain?.logo_uri, '.svg') ? (
                       <SvgUri
                         width='48'
                         height='48'
-                        className='mr-[18px]'
+                        className='mr-[18px] rounded-full'
                         uri={selectedFromChain?.logo_uri ?? ''}
                       />
                     ) : (
@@ -519,7 +524,7 @@ export default function TokenSelection({
                         source={{
                           uri: selectedFromChain?.logo_uri,
                         }}
-                        className={'w-[48px] h-[48px] mr-[18px]'}
+                        className={'w-[48px] h-[48px] mr-[18px] rounded-full'}
                       />
                     )}
                   </CyDView>
@@ -584,14 +589,14 @@ export default function TokenSelection({
               onPress={() => {
                 setToTokenModalVisible(true);
               }}>
-              <CyDView className='flex flex-row gap-x-[6px] items-center'>
+              <CyDView className='flex flex-row items-center'>
                 <CyDView className={' relative'}>
                   <CyDView className={'flex flex-row items-center'}>
                     {endsWith(selectedToChain?.logo_uri, '.svg') ? (
                       <SvgUri
                         width='48'
                         height='48'
-                        className='mr-[18px]'
+                        className='mr-[18px] rounded-full'
                         uri={selectedToChain?.logo_uri ?? ''}
                       />
                     ) : (
@@ -599,7 +604,7 @@ export default function TokenSelection({
                         source={{
                           uri: selectedToChain?.logo_uri,
                         }}
-                        className={'w-[48px] h-[48px] mr-[18px]'}
+                        className={'w-[48px] h-[48px] mr-[18px] rounded-full'}
                       />
                     )}
                   </CyDView>
