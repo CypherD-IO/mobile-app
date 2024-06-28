@@ -72,6 +72,7 @@ import { Wallet } from 'ethers';
 import { isCoreumAddress } from '../containers/utilities/coreumUtilities';
 import { isInjectiveAddress } from '../containers/utilities/injectiveUtilities';
 import { isKujiraAddress } from '../containers/utilities/kujiraUtilities';
+import moment from 'moment';
 // const {showModal, hideModal} = useGlobalModalContext()
 
 export const HdWalletContext = React.createContext<HdWalletContextDef | null>(
@@ -808,21 +809,27 @@ export function logAnalytics(params: SuccessAnalytics | ErrorAnalytics): void {
   const { type } = params;
   switch (type) {
     case AnalyticsType.SUCCESS: {
-      const { chain, txnHash } = params as SuccessAnalytics;
+      const { chain, txnHash, contractData, address } =
+        params as SuccessAnalytics;
       const data = {
         chain,
         txnHash,
+        ...(contractData ? { contractData } : {}),
+        ...(address ? { address } : {}),
       };
       void axios.post(ANALYTICS_SUCCESS_URL, data);
       break;
     }
     case AnalyticsType.ERROR: {
-      const { chain, message, screen } = params as ErrorAnalytics;
+      const { chain, message, screen, address, contractData } =
+        params as ErrorAnalytics;
       const data = {
         chain,
         message,
         client: `${Platform.OS}:${DeviceInfo.getVersion()}`,
         screen,
+        ...(address ? { address } : {}),
+        ...(contractData ? { contractData } : {}),
       };
       void axios.post(ANALYTICS_ERROR_URL, data);
       break;
@@ -920,7 +927,7 @@ export function getAvailableChains(hdWallet: HdWalletContextDef): Chain[] {
     noble,
     coreum,
     // injective,
-    // kujira,
+    kujira,
   } = hdWallet.state.wallet;
   let availableChains: Chain[] = [];
   if (get(ethereum.wallets, ethereum.currentIndex)?.address) {
@@ -947,9 +954,9 @@ export function getAvailableChains(hdWallet: HdWalletContextDef): Chain[] {
   // if (get(injective.wallets, injective.currentIndex)?.address) {
   //   availableChains.push(CHAIN_INJECTIVE);
   // }
-  // if (get(kujira.wallets, kujira.currentIndex)?.address) {
-  //   availableChains.push(CHAIN_KUJIRA);
-  // }
+  if (get(kujira.wallets, kujira.currentIndex)?.address) {
+    availableChains.push(CHAIN_KUJIRA);
+  }
 
   return availableChains;
 }
@@ -1020,3 +1027,17 @@ export function trimWhitespace(textValue: string) {
   tempTextValue = tempTextValue.replace(/\s+/g, ' ');
   return tempTextValue;
 }
+
+export function formatToLocalDate(date: string) {
+  return moment.utc(date).local().format('MMM DD YYYY, h:mm a');
+}
+
+export const parseMonthYear = (dateString: string): string => {
+  if (dateString) {
+    const monthName = new Intl.DateTimeFormat('en-US', { month: 'long' })
+      .format;
+    const date = new Date(dateString);
+    return `${monthName(date)} ${date.getFullYear()}`;
+  }
+  return '';
+};

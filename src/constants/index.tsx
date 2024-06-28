@@ -14,6 +14,7 @@ export const screenTitle = {
   BROWSER_SCREEN: 'BrowserScreen',
   OPTIONS: 'Options',
   BRIDGE: 'Bridge',
+  SWAP: 'Swap',
   OPTIONS_SCREEN: 'OptionsScreen',
   MANAGE_WALLET: 'ManageWallet',
   SECURITY_PRIVACY: 'SecurityPrivacy',
@@ -81,7 +82,6 @@ export const screenTitle = {
   CARD_ACTIAVTION_SCREEN: 'CardActivationScreen',
   CARD_SET_PIN_SCREEN: 'CardSetPinScreen',
   BRIDGE_FUND_CARD_SCREEN: 'BridgeFundCardScreen',
-  BRIDGE_CARD_OPTIONS_SCREEN: 'BridgeCardOptionsScreen',
   PIN_VALIDATION: 'PinValidation',
   CONFIRM_PIN: 'ConfirmPin',
   SET_PIN: 'SetPin',
@@ -114,8 +114,13 @@ export const screenTitle = {
   LINK_WALLET_AUTH: 'LinkWalletAuth',
   IMPORT_WALLET_OPTIONS: 'importWalletOptionsScreen',
   CARD_NOTIFICATION_SETTINGS: 'cardNotificationSettings',
+  TELEGRAM_SETUP_SETTINGS: 'telegramSetupSettings',
   ENTER_PRIVATE_KEY: 'enterPrivateKey',
   CHOOSE_WALLET_INDEX: 'chooseWalletIndex',
+  CARD_TRANSACTIONS_SCREEN: 'cardTransactionsScreen',
+  CARD_QUOTE_SCREEN: 'cardQuoteScreen',
+  AUTO_LOAD_SCREEN: 'autoLoadScreen',
+  PREVIEW_AUTO_LOAD_SCREEN: 'previewAutoLoadScreen',
 };
 
 export const fontsName = {

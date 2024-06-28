@@ -642,7 +642,7 @@ export const CARD_CHAINS: Chain[] = [
   CHAIN_JUNO,
   CHAIN_COREUM,
   // CHAIN_INJECTIVE,
-  // CHAIN_KUJIRA,
+  CHAIN_KUJIRA,
   CHAIN_SHARDEUM,
   CHAIN_SHARDEUM_SPHINX,
   CHAIN_ZKSYNC_ERA,
@@ -662,7 +662,7 @@ export const IBC_CHAINS: Chain[] = [
   CHAIN_NOBLE,
   CHAIN_COREUM,
   // CHAIN_INJECTIVE,
-  // CHAIN_KUJIRA,
+  CHAIN_KUJIRA,
 ];
 
 export const ALL_CHAINS_WITH_COLLECTION = [CHAIN_COLLECTION, ...ALL_CHAINS];
@@ -1076,3 +1076,8 @@ export const walletConnectChainData: Record<string, NetworkInterface> = {
     chainConfig: moonriver,
   },
 };
+
+export const AUTO_LOAD_SUPPORTED_CHAINS = [
+  CHAIN_OSMOSIS.backendName,
+  CHAIN_NOBLE.backendName,
+];

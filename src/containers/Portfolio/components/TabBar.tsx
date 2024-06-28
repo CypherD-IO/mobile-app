@@ -90,14 +90,14 @@ const TabBarButton = ({
       if (el && scrollNode) {
         el.measureLayout(
           scrollNode,
-          (offsetX) => {
+          offsetX => {
             xPosition.current = offsetX;
           },
-          () => { }
+          () => {},
         );
       }
     },
-    [scrollViewRef]
+    [scrollViewRef],
   );
 
   const wrappedOnPress = useCallback(() => {
@@ -115,9 +115,13 @@ const TabBarButton = ({
     <CyDTouchView onPress={wrappedOnPress}>
       <CyDView
         className={'px-[5px] py-[5px] rounded-[8px] w-[70px]'}
-        ref={handleRef}
-      >
-        <CyDText className={clsx('text-[14px]w-full text-center', { 'font-bold': active })}>{title}</CyDText>
+        ref={handleRef}>
+        <CyDText
+          className={clsx('text-[14px]w-full text-center', {
+            'font-bold': active,
+          })}>
+          {title}
+        </CyDText>
       </CyDView>
     </CyDTouchView>
   );

@@ -1,35 +1,58 @@
 /* eslint-disable no-empty-pattern */
-/* eslint-disable react-native/no-raw-text */
+
 /* eslint-disable @typescript-eslint/no-misused-promises */
+import analytics from '@react-native-firebase/analytics';
 import { useIsFocused, useRoute } from '@react-navigation/native';
+import * as Sentry from '@sentry/react-native';
+import { ethers } from 'ethers';
 import { t } from 'i18next';
+import { random } from 'lodash';
+import LottieView from 'lottie-react-native';
 import React, { useContext, useEffect, useState } from 'react';
 import { RefreshControl, StyleSheet } from 'react-native';
-import Button from '../../components/v2/button';
+import Toast from 'react-native-toast-message';
 import AppImages from '../../../assets/images/appImages';
+import { useGlobalModalContext } from '../../components/v2/GlobalModal';
+import Button from '../../components/v2/button';
+import Loading from '../../components/v2/loading';
 import CyDModalLayout from '../../components/v2/modal';
+import CyDTokenAmount from '../../components/v2/tokenAmount';
+import { screenTitle } from '../../constants';
+import { AnalyticsType, TokenOverviewTabIndices } from '../../constants/enum';
 import { ChainBackendNames, CosmosStakingTokens } from '../../constants/server';
+import { MODAL_HIDE_TIMEOUT_250, TIMEOUT } from '../../core/Http';
+import getValidatorsForUSer from '../../core/Staking';
+import { getCosmosStakingData } from '../../core/cosmosStaking';
+import { GlobalContext } from '../../core/globalContext';
 import {
-  convertFromUnitAmount,
-  isBigIntZero,
-  convertToEvmosFromAevmos,
-  StakingContext,
-  getTimeForDate,
-  isBasicCosmosChain,
   HdWalletContext,
   PortfolioContext,
+  StakingContext,
+  convertFromUnitAmount,
+  convertToEvmosFromAevmos,
+  getTimeForDate,
   isABasicCosmosStakingToken,
+  isBasicCosmosChain,
+  isBigIntZero,
   isCosmosStakingToken,
   logAnalytics,
   parseErrorMessage,
-  _NO_CYPHERD_CREDENTIAL_AVAILABLE_,
 } from '../../core/util';
+import useIsSignable from '../../hooks/useIsSignable';
+import useTransactionManager from '../../hooks/useTransactionManager';
+import { isIOS } from '../../misc/checkers';
 import { TokenMeta } from '../../models/tokenMetaData.model';
+import { ActivityType } from '../../reducers/activity_reducer';
 import {
+  COSMOS_STAKING_EMPTY,
   CosmosActionType,
   CosmosStakingContext,
-  COSMOS_STAKING_EMPTY,
 } from '../../reducers/cosmosStakingReducer';
+import { PORTFOLIO_REFRESH } from '../../reducers/portfolio_reducer';
+import {
+  STAKING_EMPTY,
+  STAKING_NOT_EMPTY,
+} from '../../reducers/stakingReducer';
 import {
   CyDImage,
   CyDSafeAreaView,
@@ -38,39 +61,6 @@ import {
   CyDTouchView,
   CyDView,
 } from '../../styles/tailwindStyles';
-import LottieView from 'lottie-react-native';
-import { GlobalContext } from '../../core/globalContext';
-import Toast from 'react-native-toast-message';
-import { screenTitle } from '../../constants';
-import axios, { MODAL_HIDE_TIMEOUT_250, TIMEOUT } from '../../core/Http';
-import { loadPrivateKeyFromKeyChain } from '../../core/Keychain';
-import { IIBCData, cosmosConfig } from '../../constants/cosmosConfig';
-import analytics from '@react-native-firebase/analytics';
-import * as Sentry from '@sentry/react-native';
-import { signTypedData, SignTypedDataVersion } from '@metamask/eth-sig-util';
-import { PORTFOLIO_REFRESH } from '../../reducers/portfolio_reducer';
-import {
-  createTxMsgMultipleWithdrawDelegatorReward,
-  createTxRawEIP712,
-  signatureToWeb3Extension,
-} from '@tharsis/transactions';
-import { useGlobalModalContext } from '../../components/v2/GlobalModal';
-import { generatePostBodyBroadcast } from '@tharsis/provider';
-import { AnalyticsType, TokenOverviewTabIndices } from '../../constants/enum';
-import {
-  STAKING_EMPTY,
-  STAKING_NOT_EMPTY,
-} from '../../reducers/stakingReducer';
-import { isIOS } from '../../misc/checkers';
-import CyDTokenAmount from '../../components/v2/tokenAmount';
-import getValidatorsForUSer from '../../core/Staking';
-import { getCosmosStakingData } from '../../core/cosmosStaking';
-import Loading from '../../components/v2/loading';
-import useIsSignable from '../../hooks/useIsSignable';
-import { ActivityType } from '../../reducers/activity_reducer';
-import { random } from 'lodash';
-import useTransactionManager from '../../hooks/useTransactionManager';
-import { ethers } from 'ethers';
 
 const EmptyView = () => {
   return (
@@ -115,7 +105,6 @@ export default function TokenStaking({
   const evmos = hdWalletContext.state.wallet.evmos;
   const stakingValidators = useContext<any>(StakingContext);
   const [time, setTime] = useState({ hours: '0', min: '0', sec: '0' });
-  const [finalData, setFinalData] = useState({});
   const [method, setMethod] = useState<string>('');
   const initialStakeVariables = {
     totalClaimableRewards: '0',
@@ -133,7 +122,8 @@ export default function TokenStaking({
   let claimTryCount = 0;
 
   const { showModal, hideModal } = useGlobalModalContext();
-  const { claimCosmosReward, delegateCosmosToken } = useTransactionManager();
+  const { claimCosmosReward, delegateCosmosToken, claimEvmosRewards } =
+    useTransactionManager();
   const route = useRoute();
   const isCOSMOSEcoSystem = [
     ChainBackendNames.COSMOS,
@@ -143,12 +133,6 @@ export default function TokenStaking({
     ChainBackendNames.STARGAZE,
     ChainBackendNames.NOBLE,
   ].includes(tokenData.chainDetails.backendName);
-  const currentChain: IIBCData = cosmosConfig[tokenData.chainDetails.chainName];
-  const chainAPIURLs = isCOSMOSEcoSystem
-    ? globalStateContext.globalState.rpcEndpoints[
-        tokenData.chainDetails.chainName.toUpperCase()
-      ].otherUrls
-    : null;
   let evmosRewardTimer: ReturnType<typeof setInterval>;
   const [isSignableTransaction] = useIsSignable();
 
@@ -337,138 +321,16 @@ export default function TokenStaking({
     void getStakingMetaData();
   };
 
-  const generateTransactionBodyForEVMOSSimulation = async (
-    response,
-    gasFee = '14000000000000000',
-    gasLimit = '700000',
-  ) => {
-    const chain = {
-      chainId: 9001,
-      cosmosChainId: 'evmos_9001-2',
-    };
-
-    const sender = {
-      accountAddress: evmos.wallets[evmos.currentIndex].address,
-      sequence: response.sequence,
-      accountNumber: response.account_number,
-      pubkey: response.pub_key.key,
-    };
-
-    const fee = {
-      amount: gasFee,
-      denom: 'aevmos',
-      gas: gasLimit,
-    };
-
-    const memo = '';
-
-    const address: string[] = [];
-    stakingValidators.stateStaking.myValidators.forEach(val => {
-      address.push(val.address);
-    });
-
-    const params = { validatorAddresses: address };
-
-    const msg = createTxMsgMultipleWithdrawDelegatorReward(
-      chain,
-      sender,
-      fee,
-      memo,
-      params,
-    );
-
-    const privateKey = await loadPrivateKeyFromKeyChain(
-      false,
-      hdWalletContext.state.pinValue,
-    );
-    if (privateKey && privateKey !== _NO_CYPHERD_CREDENTIAL_AVAILABLE_) {
-      const privateKeyBuffer = Buffer.from(privateKey.substring(2), 'hex');
-
-      const signature = signTypedData({
-        privateKey: privateKeyBuffer,
-        data: msg.eipToSign,
-        version: SignTypedDataVersion.V4,
-      });
-
-      const extension = signatureToWeb3Extension(chain, sender, signature);
-
-      const rawTx = createTxRawEIP712(
-        msg.legacyAmino.body,
-        msg.legacyAmino.authInfo,
-        extension,
-      );
-
-      const body = generatePostBodyBroadcast(rawTx);
-
-      return body;
-    }
-  };
-
   const txnSimulation = async (method: string) => {
     setLoading(true);
     setMethod(method);
     setReward(stakingValidators.stateStaking.totalReward);
 
     try {
-      const walletURL = chainAPIURLs.accountDetails.replace(
-        'address',
-        evmos?.wallets[evmos.currentIndex]?.address,
-      );
-      const accountDetailsResponse = await axios.get(walletURL, {
-        timeout: TIMEOUT,
-      });
-      let sequence =
-        Number(accountDetailsResponse.data.account.base_account.sequence) +
-        claimTryCount;
-      let bodyForSimulate;
-      let simulationResponse;
-      await analytics().logEvent('evmos_claim_simulation');
-
-      try {
-        bodyForSimulate = await generateTransactionBodyForEVMOSSimulation(
-          accountDetailsResponse.data.account.base_account,
-        );
-        simulationResponse = await axios.post(
-          chainAPIURLs.simulate,
-          bodyForSimulate,
-        );
-        if (!simulationResponse.data.gas_info.gas_used) {
-          throw new Error('sequence doesnt match');
-        }
-      } catch (e) {
-        sequence += 1;
-        bodyForSimulate = await generateTransactionBodyForEVMOSSimulation({
-          ...accountDetailsResponse.data.account.base_account,
-          sequence,
-        });
-        simulationResponse = await axios.post(
-          chainAPIURLs.simulate,
-          bodyForSimulate,
-        );
-      }
-
-      const gasWanted = simulationResponse.data.gas_info.gas_used;
-
-      const bodyForTxn = await generateTransactionBodyForEVMOSSimulation(
-        { ...accountDetailsResponse.data.account.base_account, sequence },
-        String(cosmosConfig.evmos.gasPrice * gasWanted),
-        Math.floor(gasWanted * 1.3).toString(),
-      );
-
       setLoading(false);
-      setGasFee(
-        parseInt(gasWanted) *
-          currentChain.gasPrice *
-          10 ** -currentChain.contractDecimal,
-      );
-      setFinalData(bodyForTxn);
-      if (claimTryCount) {
-        void finalTxn(bodyForTxn);
-      } else {
-        setClaimModal(false);
-        setLoading(false);
-        setTimeout(() => setSignModalVisible(true), MODAL_HIDE_TIMEOUT_250);
-      }
+      setGasFee(random(0.01, 0.1, true));
+      setClaimModal(false);
+      setTimeout(() => setSignModalVisible(true), MODAL_HIDE_TIMEOUT_250);
     } catch (error: any) {
       setLoading(false);
       // monitoring api
@@ -503,7 +365,7 @@ export default function TokenStaking({
     }, MODAL_HIDE_TIMEOUT_250);
   };
 
-  const finalTxn = async (txnData = finalData) => {
+  const finalTxn = async () => {
     setSignModalVisible(false);
     if (
       parseFloat(gasFee.toFixed(6)) >
@@ -513,20 +375,29 @@ export default function TokenStaking({
     } else {
       try {
         setPageLoading(true);
-        const txnResponse = await axios.post(chainAPIURLs.transact, txnData);
 
-        if (txnResponse.data.tx_response.raw_log === '[]') {
+        const validatorAddresses: string[] = [];
+        stakingValidators.stateStaking.myValidators.forEach(
+          (val: { address: string }) => {
+            validatorAddresses.push(val.address);
+          },
+        );
+        const txnResponse = await claimEvmosRewards({
+          validatorAddresses,
+        });
+
+        if (!txnResponse?.isError) {
           void analytics().logEvent('evmos_reward_claim_success');
           // monitoring api
           void logAnalytics({
             type: AnalyticsType.SUCCESS,
-            txnHash: txnResponse.data.tx_response.txhash,
+            txnHash: txnResponse?.hash,
             chain: tokenData?.chainDetails?.chainName ?? '',
           });
           Toast.show({
             type: t('TOAST_TYPE_SUCCESS'),
             text1: t('TRANSACTION_SUCCESS'),
-            text2: txnResponse.data.tx_response.txhash,
+            text2: txnResponse?.hash,
             position: 'bottom',
           });
           if (method === CosmosActionType.CLAIM) {
@@ -620,7 +491,7 @@ export default function TokenStaking({
 
         setReward(rewardAmount);
 
-        setGasFee(random(0.001, 0.01, true));
+        setGasFee(random(0.01, 0.1, true));
 
         if (CosmosActionType.SIMULATION === type) {
           void analytics().logEvent(`${tokenData.name}_claim_simulation`);
@@ -714,7 +585,7 @@ export default function TokenStaking({
       showNoGasFeeModal();
     } else {
       try {
-        setGasFee(random(0.001, 0.01, true));
+        setGasFee(random(0.01, 0.1, true));
 
         if (CosmosActionType.SIMULATION === type) {
           void analytics().logEvent(`${tokenData.name}_restake_simulation`);
@@ -727,7 +598,9 @@ export default function TokenStaking({
             chain: tokenData.chainDetails,
             validatorAddress: validator.address,
             amount: ethers.formatUnits(reward, tokenData.contractDecimals ?? 6),
+            contractDecimals: tokenData.contractDecimals,
           });
+
           setReStakeModalVisible(false);
           if (!resp?.isError) {
             // monitoring api

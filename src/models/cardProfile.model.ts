@@ -3,8 +3,8 @@ import { CardApplicationStatus, CardStatus } from '../constants/enum';
 export interface CardProfile {
   primaryEthAddress: string;
   fcmToken?: string;
-  phone?: string;
-  email?: string;
+  phone: string;
+  email: string;
   apto?: {
     cardHolderId: string;
     status: CardStatus;
@@ -21,6 +21,7 @@ export interface CardProfile {
       },
     ];
   };
+  isAutoloadConfigured: boolean;
   pc?: {
     personId?: string;
     applicationStatus: CardApplicationStatus;

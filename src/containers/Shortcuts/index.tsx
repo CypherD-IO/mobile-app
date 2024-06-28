@@ -383,7 +383,7 @@ export default function ShortcutsModal({ navigationRef }) {
             </CyDText>
           </CyDView>
         </CyDView>
-        <CyDView className={'h-[1px] w-full bg-[#F5F5F5]'}></CyDView>
+        <CyDView className={'h-[1px] w-full bg-[#F5F5F5]'} />
       </CyDTouchView>
     );
   };
@@ -428,8 +428,7 @@ export default function ShortcutsModal({ navigationRef }) {
                 </CyDView>
               ))}
             </CyDView>
-            <CyDView
-              className={'w-full h-[1px] bg-sepratorColor my-[16px]'}></CyDView>
+            <CyDView className={'w-full h-[1px] bg-sepratorColor my-[16px]'} />
             {item.title !== BuyOptions.COINBASE &&
               item.title !== BuyOptions.TRANSFI && (
                 <CyDView className='pl-[2px]'>
@@ -492,8 +491,7 @@ export default function ShortcutsModal({ navigationRef }) {
                 </CyDView>
               ))}
             </CyDView>
-            <CyDView
-              className={'w-full h-[1px] bg-sepratorColor my-[16px]'}></CyDView>
+            <CyDView className={'w-full h-[1px] bg-sepratorColor my-[16px]'} />
             {item.title !== SellOptions.COINBASE && (
               <CyDView className='pl-[2px]'>
                 <CyDText className={'text-subTextColor'}>
@@ -622,9 +620,9 @@ export default function ShortcutsModal({ navigationRef }) {
         // case ChainBackendNames.INJECTIVE:
         //   addressTypeQRCode = FundWalletAddressType.INJECTIVE;
         //   break;
-        // case ChainBackendNames.KUJIRA:
-        //   addressTypeQRCode = FundWalletAddressType.KUJIRA;
-        //   break;
+        case ChainBackendNames.KUJIRA:
+          addressTypeQRCode = FundWalletAddressType.KUJIRA;
+          break;
       }
       setChooseChainModal(false);
       setTimeout(

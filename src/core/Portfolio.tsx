@@ -57,7 +57,7 @@ export interface Holding {
   about: string;
   id: number;
   chainDetails: Chain;
-  denom?: string;
+  denom: string;
   stakedBalance?: string;
   actualStakedBalance: number;
   stakedBalanceTotalValue?: number;
@@ -110,7 +110,7 @@ export interface WalletHoldings {
   moonriver: ChainHoldings | undefined;
   coreum: ChainHoldings | undefined;
   // injective: ChainHoldings | undefined;
-  // kujira: ChainHoldings | undefined;
+  kujira: ChainHoldings | undefined;
   totalHoldings: Holding[];
 }
 
@@ -205,8 +205,8 @@ export function getCurrentChainHoldings(
       return portfolio.coreum;
     // case CHAIN_INJECTIVE.backendName:
     //   return portfolio.injective;
-    // case CHAIN_KUJIRA.backendName:
-    //   return portfolio.kujira;
+    case CHAIN_KUJIRA.backendName:
+      return portfolio.kujira;
   }
 }
 
@@ -420,7 +420,7 @@ export async function getPortfolioModel(
   let nobleHoldings;
   let coreumHoldings;
   // let injectiveHoldings;
-  // let kujiraHoldings;
+  let kujiraHoldings;
   let shardeumHoldings;
   let shardeumSphinxHoldings;
   let totalHoldings: Holding[] = [];
@@ -456,7 +456,7 @@ export async function getPortfolioModel(
     CHAIN_MOONRIVER.backendName,
     CHAIN_COREUM.backendName,
     // CHAIN_INJECTIVE.backendName,
-    // CHAIN_KUJIRA.backendName,
+    CHAIN_KUJIRA.backendName,
   ]);
 
   const fetchedChains = new Set<ChainBackendNames | 'ALL'>();
@@ -575,12 +575,12 @@ export async function getPortfolioModel(
         case CHAIN_COREUM.backendName:
           tokenHolding.chainDetails = CHAIN_COREUM;
           break;
-          // case CHAIN_INJECTIVE.backendName:
-          //   tokenHolding.chainDetails = CHAIN_INJECTIVE;
-          //   break;
-          // case CHAIN_KUJIRA.backendName:
-          //   tokenHolding.chainDetails = CHAIN_KUJIRA;
+        case CHAIN_KUJIRA.backendName:
+          tokenHolding.chainDetails = CHAIN_KUJIRA;
           break;
+        // case CHAIN_INJECTIVE.backendName:
+        //   tokenHolding.chainDetails = chainHoldings;
+        //   break;
       }
       if (has(tokenHolding, 'chainDetails')) {
         tokenHoldings.push(tokenHolding);
@@ -686,12 +686,12 @@ export async function getPortfolioModel(
       case CHAIN_COREUM.backendName:
         coreumHoldings = chainHoldings;
         break;
-        // case CHAIN_INJECTIVE.backendName:
-        //   injectiveHoldings = chainHoldings;
-        //   break;
-        // case CHAIN_KUJIRA.backendName:
-        //   kujiraHoldings = chainHoldings;
+      case CHAIN_KUJIRA.backendName:
+        kujiraHoldings = chainHoldings;
         break;
+      // case CHAIN_INJECTIVE.backendName:
+      //   injectiveHoldings = chainHoldings;
+      //   break;
     }
   }
   const remainingChains = new Set(
@@ -794,12 +794,12 @@ export async function getPortfolioModel(
         case CHAIN_COREUM.backendName:
           coreumHoldings = chainHoldings;
           break;
-          // case CHAIN_INJECTIVE.backendName:
-          //   injectiveHoldings = chainHoldings;
-          //   break;
-          // case CHAIN_KUJIRA.backendName:
-          //   kujiraHoldings = chainHoldings;
+        case CHAIN_KUJIRA.backendName:
+          kujiraHoldings = chainHoldings;
           break;
+        // case CHAIN_INJECTIVE.backendName:
+        //   injectiveHoldings = chainHoldings;
+        //   break;
       }
     }
   }
@@ -834,7 +834,7 @@ export async function getPortfolioModel(
     moonriver: moonriverHoldings,
     coreum: coreumHoldings,
     // injective: injectiveHoldings,
-    // kujira: kujiraHoldings,
+    kujira: kujiraHoldings,
     totalHoldings,
   };
   await storePortfolioData(portfolio, ethereum, portfolioState);
@@ -857,7 +857,7 @@ export async function fetchTokenData(
     ethereum,
     coreum,
     // injective,
-    // kujira,
+    kujira,
   } = hdWalletState.state.wallet;
   if (ethereum.address !== 'null') {
     const localPortfolio = await getPortfolioData(ethereum, portfolioState);
@@ -905,7 +905,7 @@ export async function fetchTokenData(
       noble?.address,
       coreum?.address,
       // injective?.address,
-      // kujira?.address,
+      kujira?.address,
       ethereum.address,
     ].filter(address => address !== undefined);
     const payload = {

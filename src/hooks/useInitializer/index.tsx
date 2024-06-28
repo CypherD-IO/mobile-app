@@ -10,7 +10,7 @@ import {
   RPCPreference,
   SignMessageValidationType,
 } from '../../constants/enum';
-import { hostWorker, initializeHostsFromAsync } from '../../global';
+import { initializeHostsFromAsync } from '../../global';
 import {
   getActivities,
   getAuthToken,
@@ -29,7 +29,6 @@ import {
 } from '../../core/globalContext';
 import { get, has, set } from 'lodash';
 import useAxios from '../../core/HttpRequest';
-import AsyncStorage from '@react-native-async-storage/async-storage';
 import { ActivityReducerAction } from '../../reducers/activity_reducer';
 import {
   isBiometricEnabled,
@@ -348,8 +347,7 @@ export default function useInitializer() {
           get(attributes, 'stargazeAddress'),
           get(attributes, 'nobleAddress'),
           get(attributes, 'coreumAddress'),
-          // get(attributes, 'injectiveAddress'),
-          // get(attributes, 'kujiraAddress'),
+          get(attributes, 'kujiraAddress'),
         );
         void registerIntercomUser(attributes);
       } else {

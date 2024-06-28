@@ -2,16 +2,14 @@ import { screenTitle } from '../constants';
 import { BackHandler, ToastAndroid, StyleSheet } from 'react-native';
 import * as React from 'react';
 import {
-  BrowserStackScreen,
   DebitCardStackScreen,
   OptionsStackScreen,
   PortfolioStackScreen,
+  SwapStackScreen,
 } from './auth';
 import {
-  BottomTabBar,
   BottomTabBarProps,
   createBottomTabNavigator,
-  useBottomTabBarHeight,
 } from '@react-navigation/bottom-tabs';
 import AppImages from '../../assets/images/appImages';
 import ShortcutsModal from '../containers/Shortcuts';
@@ -32,7 +30,7 @@ import {
 } from '../styles/tailwindStyles';
 import { t } from 'i18next';
 import clsx from 'clsx';
-import { isAndroid, isIOS } from '../misc/checkers';
+import { isIOS } from '../misc/checkers';
 import { Easing, Layout } from 'react-native-reanimated';
 import { Colors } from '../constants/theme';
 import { useKeyboard } from '../hooks/useKeyboardVisibily';
@@ -128,7 +126,10 @@ function TabStack() {
 
   function MyTabBar({ state, descriptors, navigation }) {
     return (
-      <CyDView className='flex flex-row justify-start items-center px-[10px]'>
+      <CyDView
+        className={clsx('flex flex-row justify-start items-center px-[10px]', {
+          'pb-[6px]': isIOS(),
+        })}>
         {state.routes.map((route, index) => {
           const { options } = descriptors[route.key];
           const label =
@@ -264,10 +265,8 @@ function TabStack() {
               iconName = focused
                 ? AppImages.PORTFOLIO_SEL
                 : AppImages.PORTFOLIO_UNSEL;
-            } else if (route.name === screenTitle.BROWSER) {
-              iconName = focused
-                ? AppImages.BROWSER_SEL
-                : AppImages.BROWSER_UNSEL;
+            } else if (route.name === screenTitle.SWAP) {
+              iconName = focused ? AppImages.SWAP_SEL : AppImages.SWAP_UNSEL;
             } else if (route.name === screenTitle.OPTIONS) {
               iconName = focused
                 ? AppImages.OPTION_SEL
@@ -296,7 +295,10 @@ function TabStack() {
           name={screenTitle.PORTFOLIO}
           component={PortfolioStackScreen}
         />
-        <Tab.Screen name={screenTitle.BROWSER} component={BrowserStackScreen} />
+        <Tab.Screen
+          name={screenTitle.DEBIT_CARD}
+          component={DebitCardStackScreen}
+        />
         <Tab.Screen
           name={screenTitle.SHORTCUTS}
           component={PortfolioStackScreen}
@@ -311,10 +313,7 @@ function TabStack() {
             ),
           })}
         />
-        <Tab.Screen
-          name={screenTitle.DEBIT_CARD}
-          component={DebitCardStackScreen}
-        />
+        <Tab.Screen name={screenTitle.SWAP} component={SwapStackScreen} />
         <Tab.Screen
           name={screenTitle.OPTIONS}
           component={OptionsStackScreen}

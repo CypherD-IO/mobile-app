@@ -8,8 +8,9 @@ import {
 import { GlobalContext, GlobalContextDef } from '../../../core/globalContext';
 import { useGlobalModalContext } from '../../../components/v2/GlobalModal';
 import useAxios from '../../../core/HttpRequest';
-import { get, omitBy } from 'lodash';
+import { get } from 'lodash';
 import {
+  CyDFastImage,
   CyDImage,
   CyDSafeAreaView,
   CyDSwitch,
@@ -25,9 +26,10 @@ import { getWalletProfile } from '../../../core/card';
 import OtpInput from '../../../components/v2/OTPInput';
 import * as Sentry from '@sentry/react-native';
 import CyDModalLayout from '../../../components/v2/modal';
-import WebView from 'react-native-webview';
-import { HdWalletContext } from '../../../core/util';
-import { HdWalletContextDef } from '../../../reducers/hdwallet_reducer';
+import { copyToClipboard } from '../../../core/util';
+import Button from '../../../components/v2/button';
+import { showToast } from '../../utilities/toastUtility';
+import { screenTitle } from '../../../constants';
 
 export default function CardNotificationSettings(props: {
   route: {
@@ -36,17 +38,13 @@ export default function CardNotificationSettings(props: {
       card: { cardId: string; status: string; type: string };
     };
   };
+  navigation: any;
 }) {
   const RESENT_OTP_TIME = 30;
-  const { route } = props;
-  const { card, currentCardProvider } = route.params;
-  const { cardId, status } = card;
   const globalContext = useContext(GlobalContext) as GlobalContextDef;
-  const hdWalletContext = useContext(HdWalletContext) as HdWalletContextDef;
   const cardProfile = globalContext.globalState.cardProfile;
-  const { ethereum } = hdWalletContext.state.wallet;
   const { showModal, hideModal } = useGlobalModalContext();
-  const { patchWithAuth, postWithAuth, postWithoutAuth } = useAxios();
+  const { patchWithAuth, postWithAuth } = useAxios();
   const [telegramSwitchLoading, setTelegramSwitchLoading] = useState(false);
   const [emailSwitchLoading, setEmailSwitchLoading] = useState(false);
   const [smsSwitchLoading, setSmsSwitchLoading] = useState(false);
@@ -65,8 +63,6 @@ export default function CardNotificationSettings(props: {
   const [sendingOTP, setSendingOTP] = useState(false);
   const [resendInterval, setResendInterval] = useState(0);
   const [timer, setTimer] = useState<NodeJS.Timer>();
-  const [isTelegramAuthModalVisible, setIsTelegramAuthModalVisible] =
-    useState<boolean>(false);
 
   useEffect(() => {
     setCurrentNotificationOption({
@@ -297,6 +293,9 @@ export default function CardNotificationSettings(props: {
       });
     } else {
       switch (cardNotificationType) {
+        case CARD_NOTIFICATION_TYPES.TELEGRAM:
+          props.navigation.navigate(screenTitle.TELEGRAM_SETUP_SETTINGS, {});
+          break;
         case CARD_NOTIFICATION_TYPES.EMAIL:
           void toggleEmailNotifiction();
           break;
@@ -311,130 +310,35 @@ export default function CardNotificationSettings(props: {
     }
   };
 
-  const onTelegramAuth = () => {
-    setIsTelegramAuthModalVisible(true);
-  };
-
-  const onWebViewMessage = async (event: any) => {
-    const data = JSON.parse(event.nativeEvent.data);
-    setIsTelegramAuthModalVisible(false);
-    const payload = {
-      id: get(data, 'id'),
-      first_name: get(data, 'first_name'),
-      last_name: get(data, 'last_name'),
-      username: get(data, 'username'),
-      photo_url: get(data, 'photo_url'),
-      auth_date: get(data, 'auth_date'),
-      hash: get(data, 'hash'),
-    };
-    const body = omitBy(payload, value => value === null);
-    const response = await postWithoutAuth(
-      `/v1/wh/tg/b2c/?walletAddress=${String(ethereum.address)}`,
-      body,
-    );
-    if (!response.isError) {
-      void refreshProfile();
-      showModal('state', {
-        type: 'success',
-        title: t('TOGGLE_TELEGRAM_NOTIFICATION_SUCCESS'),
-        description: !currentNotificationOption.telegram
-          ? t('TELEGRAM_NOTIFICATION_TURNED_ON')
-          : t('TELEGRAM_NOTIFICATION_TURNED_OFF'),
-        onSuccess: hideModal,
-        onFailure: hideModal,
-      });
-    } else {
-      showModal('state', {
-        type: 'error',
-        title: t('AUTHENTICATION_FAILED'),
-        description:
-          response.error.errors[0].message ?? t('ERROR_IN_TOGGLE_TELEGRAM'),
-        onSuccess: hideModal,
-        onFailure: hideModal,
-      });
-    }
-  };
-
   return (
     <CyDView className='h-full bg-white pt-[30px]'>
-      <CyDModalLayout
-        isModalVisible={isTelegramAuthModalVisible}
-        setModalVisible={setIsTelegramAuthModalVisible}
-        style={styles.modalContainer}>
-        <CyDView className='bg-appColor h-[100%] w-[100%]'>
-          <CyDSafeAreaView>
-            <CyDTouchView
-              className='flex flex-row ml-[12px] mb-[12px]'
-              onPress={() => setIsTelegramAuthModalVisible(false)}>
-              <CyDImage
-                source={AppImages.BACK}
-                className='h-[22px] w-[22px]'
-                resizeMode='contain'
-              />
-            </CyDTouchView>
-          </CyDSafeAreaView>
-          {isTelegramAuthModalVisible && (
-            <WebView
-              javaScriptCanOpenWindowsAutomatically={true}
-              originWhitelist={['*']}
-              javaScriptEnabled={true}
-              setSupportMultipleWindows={false}
-              allowUrl
-              source={{
-                uri: `https://cypherhq.io/telegram/auth?type=app`,
-              }}
-              // source={{ uri: 'https://cypherhq.io' }}
-              onMessage={onWebViewMessage}
-            />
-          )}
-        </CyDView>
-      </CyDModalLayout>
       {!isOTPTriggered && (
         <>
-          {!currentNotificationOption.telegram ? (
-            <CyDTouchView
-              className='flex flex-row justify-between align-center mx-[20px] pb-[15px] border-b-[1px] border-sepratorColor'
-              onPress={() => onTelegramAuth()}>
-              <CyDView className='flex flex-row items-center'>
-                <CyDText className='text-[16px] font-bold'>
-                  {t<string>('TELEGRAM_NOTIFICATION')}
-                </CyDText>
-                <CyDImage
-                  source={AppImages.LINK}
-                  className='h-[14px] w-[14px] ml-[2px]'
-                />
-              </CyDView>
-              <CyDImage
-                source={AppImages.TELEGRAM_BLUE}
-                className='h-[22px] w-[22px]'
-              />
-            </CyDTouchView>
-          ) : (
-            <CyDView className='flex flex-row justify-between align-center mx-[20px] pb-[15px] border-b-[1px] border-sepratorColor'>
-              <CyDView>
-                <CyDText className='text-[16px] font-bold'>
-                  {t<string>('TELEGRAM_NOTIFICATION')}
-                </CyDText>
-              </CyDView>
-              {telegramSwitchLoading ? (
-                <LottieView
-                  style={styles.loader}
-                  autoPlay
-                  loop
-                  source={AppImages.LOADER_TRANSPARENT}
-                />
-              ) : (
-                <CyDSwitch
-                  onValueChange={() => {
-                    void handleToggleNotifications(
-                      CARD_NOTIFICATION_TYPES.TELEGRAM,
-                    );
-                  }}
-                  value={currentNotificationOption.telegram}
-                />
-              )}
+          <CyDView className='flex flex-row justify-between align-center mx-[20px] pb-[15px] border-b-[1px] border-sepratorColor'>
+            <CyDView>
+              <CyDText className='text-[16px] font-bold'>
+                {t<string>('TELEGRAM_NOTIFICATION')}
+              </CyDText>
             </CyDView>
-          )}
+            {telegramSwitchLoading ? (
+              <LottieView
+                style={styles.loader}
+                autoPlay
+                loop
+                source={AppImages.LOADER_TRANSPARENT}
+              />
+            ) : (
+              <CyDSwitch
+                onValueChange={() => {
+                  void handleToggleNotifications(
+                    CARD_NOTIFICATION_TYPES.TELEGRAM,
+                  );
+                }}
+                value={currentNotificationOption.telegram}
+              />
+            )}
+          </CyDView>
+          {/* )} */}
 
           <CyDView className='flex flex-row justify-between align-center mt-[20px] mx-[20px] pb-[15px] border-b-[1px] border-sepratorColor'>
             <CyDView>
@@ -554,12 +458,5 @@ const styles = StyleSheet.create({
   },
   lottie: {
     height: 25,
-  },
-  modalContainer: {
-    margin: 0,
-    display: 'flex',
-    flexDirection: 'column',
-    justifyContent: 'flex-end',
-    alignItems: 'center',
   },
 });

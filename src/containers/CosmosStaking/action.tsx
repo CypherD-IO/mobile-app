@@ -106,7 +106,7 @@ export default function CosmosAction({
   const onAction = async (type = CosmosActionType.SIMULATION) => {
     setLoading(true);
     try {
-      setGasFee(random(0.001, 0.01, true));
+      setGasFee(random(0.01, 0.1, true));
 
       if (CosmosActionType.SIMULATION === type) {
         void analytics().logEvent(`${from}_simulated`);
@@ -122,8 +122,8 @@ export default function CosmosAction({
               chain: tokenData.chainDetails,
               amount,
               validatorAddress: validatorData.address,
+              contractDecimals: tokenData.contractDecimals,
             });
-            console.log('🚀 ~ onAction ~ resp:', resp);
             break;
           }
 
@@ -132,6 +132,7 @@ export default function CosmosAction({
               chain: tokenData.chainDetails,
               amount,
               validatorAddress: validatorData.address,
+              contractDecimals: tokenData.contractDecimals,
             });
             break;
           }
@@ -141,6 +142,7 @@ export default function CosmosAction({
               amount,
               validatorSrcAddress: validatorData.address,
               validatorDstAddress: reValidator.address,
+              contractDecimals: tokenData.contractDecimals,
             });
             break;
           }
@@ -256,7 +258,7 @@ export default function CosmosAction({
             title={t('APPROVE')}
             style={'py-[5%] mt-[15px]'}
             loading={loading}
-            loaderStyle={{ height: 30 }}
+            loaderStyle={{ height: 24 }}
           />
 
           <Button
@@ -517,6 +519,7 @@ export default function CosmosAction({
             await onAction(CosmosActionType.SIMULATION);
           }}
           loading={loading}
+          loaderStyle={{ height: 24 }}
           title={`${from.toUpperCase()}`}
           style={loading ? 'px-[7%] min-h-[60px]' : 'p-[5%] min-h-[60px]'}
         />

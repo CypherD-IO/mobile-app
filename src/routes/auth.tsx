@@ -58,7 +58,6 @@ import CypherCardScreen from '../containers/DebitCard/CardV2';
 import CardRevealAuthScreen from '../containers/DebitCard/bridgeCard/cardRevealAuth';
 import CardSignupLandingScreen from '../containers/DebitCard/cardSignupLanding';
 import BridgeFundCardScreen from '../containers/DebitCard/bridgeCard/fundCard';
-import BridgeCardOptionsScreen from '../containers/DebitCard/bridgeCard/cardOptions';
 import ChangePin from '../containers/PinAuthetication/changePin';
 import ConfirmPin from '../containers/PinAuthetication/confirmPin';
 import SetPin from '../containers/PinAuthetication/setPin';
@@ -98,12 +97,18 @@ import CardNotificationSettings from '../containers/DebitCard/bridgeCard/cardNot
 import EnterPrivateKey from '../containers/Auth/EnterPrivateKey';
 import { ChooseWalletIndex } from '../containers/Auth/ChooseWalletIndex';
 import PhoneNumberVerificationScreen from '../containers/DebitCard/bridgeCard/verifyPhoneNumber';
+import CardTransactions from '../containers/DebitCard/bridgeCard/transactions';
+import TelegramSetupSettings from '../containers/DebitCard/bridgeCard/cardTelegramSetup';
+import CardQuote from '../containers/DebitCard/bridgeCard/quote';
+import AutoLoad from '../containers/DebitCard/bridgeCard/autoLoad';
+import PreviewAutoLoad from '../containers/DebitCard/bridgeCard/previewAutoLoad';
 
 const { DynamicImage, DynamicButton } = require('../styles');
 
 const PortfolioStack = createNativeStackNavigator();
 const BrowserStack = createNativeStackNavigator();
 const FundCardStack = createNativeStackNavigator();
+const SwapStack = createNativeStackNavigator();
 const OptionsStack = createNativeStackNavigator();
 // const ActivityStack = createNativeStackNavigator();
 
@@ -193,7 +198,7 @@ export function PortfolioStackScreen({ navigation, route }) {
       <PortfolioStack.Screen
         name={screenTitle.NFT_OVERVIEW_SCREEN}
         component={NFTOverviewScreen}
-        options={({ navigation, route }) => ({
+        options={{
           headerTransparent: false,
           headerShadowVisible: false,
           title: '',
@@ -206,7 +211,7 @@ export function PortfolioStackScreen({ navigation, route }) {
           headerTintColor: Colors.primaryTextColor,
           headerBackTitleVisible: false,
           headerLeft: props => defaultHeaderLeft(navigation),
-        })}
+        }}
       />
 
       <PortfolioStack.Screen
@@ -923,6 +928,21 @@ export function DebitCardStackScreen({ navigation }) {
       />
 
       <FundCardStack.Screen
+        name={screenTitle.CARD_TRANSACTIONS_SCREEN}
+        component={CardTransactions}
+        options={({ navigation }) => ({
+          headerTransparent: false,
+          headerShadowVisible: false,
+          title: 'Card Transactions',
+          headerTitleAlign: 'center',
+          headerTitleStyle: portfolioStackScreenHeaderTitleStyles,
+          headerTintColor: Colors.primaryTextColor,
+          headerBackTitleVisible: false,
+          headerLeft: props => defaultHeaderLeft(navigation),
+        })}
+      />
+
+      <FundCardStack.Screen
         name={screenTitle.BRIDGE_CARD_TRANSACTION_DETAILS_SCREEN}
         component={TransactionDetails}
         options={{
@@ -943,6 +963,51 @@ export function DebitCardStackScreen({ navigation }) {
           headerTransparent: false,
           headerShadowVisible: false,
           title: 'Load card',
+          headerTitleAlign: 'center',
+          headerTitleStyle: portfolioStackScreenHeaderTitleStyles,
+          headerTintColor: Colors.primaryTextColor,
+          headerBackTitleVisible: false,
+          headerLeft: props => defaultHeaderLeft(navigation),
+        })}
+      />
+
+      <FundCardStack.Screen
+        name={screenTitle.CARD_QUOTE_SCREEN}
+        component={CardQuote}
+        options={({ navigation }) => ({
+          headerTransparent: false,
+          headerShadowVisible: false,
+          title: 'Load card',
+          headerTitleAlign: 'center',
+          headerTitleStyle: portfolioStackScreenHeaderTitleStyles,
+          headerTintColor: Colors.primaryTextColor,
+          headerBackTitleVisible: false,
+          headerLeft: props => defaultHeaderLeft(navigation),
+        })}
+      />
+
+      <FundCardStack.Screen
+        name={screenTitle.AUTO_LOAD_SCREEN}
+        component={AutoLoad}
+        options={({ navigation }) => ({
+          headerTransparent: false,
+          headerShadowVisible: false,
+          title: 'Auto Load',
+          headerTitleAlign: 'center',
+          headerTitleStyle: portfolioStackScreenHeaderTitleStyles,
+          headerTintColor: Colors.primaryTextColor,
+          headerBackTitleVisible: false,
+          headerLeft: props => defaultHeaderLeft(navigation),
+        })}
+      />
+
+      <FundCardStack.Screen
+        name={screenTitle.PREVIEW_AUTO_LOAD_SCREEN}
+        component={PreviewAutoLoad}
+        options={({ navigation }) => ({
+          headerTransparent: false,
+          headerShadowVisible: false,
+          title: 'Auto Load',
           headerTitleAlign: 'center',
           headerTitleStyle: portfolioStackScreenHeaderTitleStyles,
           headerTintColor: Colors.primaryTextColor,
@@ -1057,18 +1122,18 @@ export function DebitCardStackScreen({ navigation }) {
       />
 
       <FundCardStack.Screen
-        name={screenTitle.BRIDGE_CARD_OPTIONS_SCREEN}
-        component={BridgeCardOptionsScreen}
-        options={{
+        name={screenTitle.TELEGRAM_SETUP_SETTINGS}
+        component={TelegramSetupSettings}
+        options={({ navigation, route }) => ({
           headerTransparent: false,
           headerShadowVisible: false,
-          headerShown: true,
-          title: 'Cypher Card',
+          title: 'Connect Telegram',
           headerTitleAlign: 'center',
           headerTitleStyle: portfolioStackScreenHeaderTitleStyles,
           headerTintColor: Colors.primaryTextColor,
           headerBackTitleVisible: false,
-        }}
+          headerLeft: props => defaultHeaderLeft(navigation),
+        })}
       />
 
       <FundCardStack.Screen
@@ -1117,20 +1182,6 @@ export function DebitCardStackScreen({ navigation }) {
           headerTransparent: false,
           headerShadowVisible: false,
           title: 'Cypher Card',
-          headerTitleAlign: 'center',
-          headerTitleStyle: portfolioStackScreenHeaderTitleStyles,
-          headerTintColor: Colors.primaryTextColor,
-          headerBackTitleVisible: false,
-        }}
-      />
-      <FundCardStack.Screen
-        name={screenTitle.CARD_SETTINGS_SCREEN}
-        component={BridgeCardOptionsScreen}
-        options={{
-          headerTransparent: false,
-          headerShadowVisible: false,
-          headerShown: true,
-          title: 'Card Options',
           headerTitleAlign: 'center',
           headerTitleStyle: portfolioStackScreenHeaderTitleStyles,
           headerTintColor: Colors.primaryTextColor,
@@ -1297,6 +1348,71 @@ export function BrowserStackScreen({ navigation, route }) {
   );
 }
 
+export function SwapStackScreen({ navigation }) {
+  let backPressCount = 0;
+  const handleBackButton = () => {
+    navigation.navigate(screenTitle.PORTFOLIO);
+    if (backPressCount === 1) {
+      setTimeout(() => {
+        backPressCount = 0;
+      }, 2000);
+      ToastAndroid.show('Press again to exit', ToastAndroid.SHORT);
+    } else if (backPressCount === 2) {
+      backPressCount = 0;
+      BackHandler.exitApp();
+    }
+    backPressCount++;
+    return true;
+  };
+
+  useEffect(() => {
+    BackHandler.addEventListener('hardwareBackPress', handleBackButton);
+    return () => {
+      BackHandler.removeEventListener('hardwareBackPress', handleBackButton);
+    };
+  }, []);
+  return (
+    <SwapStack.Navigator initialRouteName={screenTitle.BRIDGE_SCREEN}>
+      <SwapStack.Screen
+        name={screenTitle.BRIDGE_SCREEN}
+        component={Bridge}
+        options={{
+          headerTransparent: false,
+          headerShadowVisible: false,
+          title: 'Bridge',
+          headerTitleAlign: 'center',
+          headerTitleStyle: {
+            fontFamily: C.fontsName.FONT_BLACK,
+            fontSize: 18,
+            fontWeight: '800',
+          },
+
+          headerTintColor: Colors.primaryTextColor,
+          headerBackTitleVisible: false,
+          headerLeft: props => defaultHeaderLeft(navigation),
+        }}
+      />
+      <SwapStack.Screen
+        name={screenTitle.BRIDGE_STATUS}
+        component={BridgeStatus}
+        options={{
+          headerTransparent: false,
+          headerShadowVisible: false,
+          title: 'Bridge status',
+          headerTitleAlign: 'center',
+          headerTitleStyle: {
+            fontFamily: C.fontsName.FONT_BLACK,
+            fontSize: 18,
+            fontWeight: '800',
+          },
+
+          headerTintColor: Colors.primaryTextColor,
+          headerBackTitleVisible: false,
+        }}
+      />
+    </SwapStack.Navigator>
+  );
+}
 export function OptionsStackScreen({ navigation, route }) {
   const { t } = useTranslation();
   let backPressCount = 0;
@@ -1793,6 +1909,19 @@ export function OptionsStackScreen({ navigation, route }) {
           headerTitleAlign: 'center',
           headerTitleStyle: optionsStackScreenHeaderTitleStyles,
 
+          headerTintColor: Colors.primaryTextColor,
+          headerBackTitleVisible: false,
+        }}
+      />
+      <OptionsStack.Screen
+        name={screenTitle.BROWSER}
+        component={BrowserStackScreen}
+        options={{
+          headerTransparent: false,
+          headerShadowVisible: false,
+          title: 'Browser',
+          headerTitleAlign: 'center',
+          headerTitleStyle: optionsStackScreenHeaderTitleStyles,
           headerTintColor: Colors.primaryTextColor,
           headerBackTitleVisible: false,
         }}

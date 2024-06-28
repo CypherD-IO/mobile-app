@@ -224,7 +224,7 @@ export default function IBC({
         ChainBackendNames.NOBLE,
         ChainBackendNames.COREUM,
         // ChainBackendNames.INJECTIVE,
-        // ChainBackendNames.KUJIRA,
+        ChainBackendNames.KUJIRA,
       ].includes(tokenData.chainDetails.backendName)
     ) {
       setLoading(true);
@@ -234,7 +234,7 @@ export default function IBC({
       );
       if (type === 'simulation') {
         const gasDetails = {
-          gasFeeInCrypto: parseFloat(String(random(0.001, 0.01, true))).toFixed(
+          gasFeeInCrypto: parseFloat(String(random(0.01, 0.1, true))).toFixed(
             4,
           ),
         };
@@ -248,6 +248,7 @@ export default function IBC({
           amount,
           fromAddress,
           toAddress: receiverAddress,
+          contractDecimals: tokenData.contractDecimals,
         });
         if (!transaction.isError) {
           setSignModalVisible(false);

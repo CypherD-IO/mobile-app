@@ -286,7 +286,7 @@ export const generateWalletFromMnemonic = async (
     'noble',
     'coreum',
     // 'injective',
-    // 'kujira',
+    'kujira',
   ];
 
   const cosmosAccounts = await Promise.all(
@@ -330,8 +330,7 @@ export const generateWalletFromMnemonic = async (
     { address: stargazeAddress },
     { address: nobleAddress },
     { address: coreumAddress },
-    // { address: injectiveAddress },
-    // { address: kujiraAddress },
+    { address: kujiraAddress },
   ] = cosmosAccounts;
   await getToken(
     ethereumWallet.address,
@@ -341,8 +340,7 @@ export const generateWalletFromMnemonic = async (
     stargazeAddress,
     nobleAddress,
     coreumAddress,
-    // injectiveAddress,
-    // kujiraAddress,
+    kujiraAddress,
   );
 
   if (isIOS()) {
