@@ -18,7 +18,12 @@ import {
 import { ethToEvmos } from '@tharsis/address-converter';
 import { hostWorker } from '../../global';
 import useValidSessionToken from '../../hooks/useValidSessionToken';
-import { useAccount, useDisconnect, useSignMessage } from 'wagmi';
+import {
+  useAccount,
+  useDisconnect,
+  useSignMessage,
+  useWalletInfo,
+} from 'wagmi';
 import { getWalletProfile } from '../../core/card';
 import Loading from '../../containers/Loading';
 import { CyDView } from '../../styles/tailwindStyles';
@@ -27,6 +32,7 @@ import Intercom from '@intercom/intercom-react-native';
 import * as Sentry from '@sentry/react-native';
 import DeviceInfo from 'react-native-device-info';
 import { getToken } from '../../core/push';
+import analytics from '@react-native-firebase/analytics';
 
 export const WalletConnectListener: React.FC = ({ children }) => {
   const hdWalletContext = useContext<any>(HdWalletContext);
@@ -41,6 +47,7 @@ export const WalletConnectListener: React.FC = ({ children }) => {
   const [loading, setLoading] = useState<boolean>(
     connectionType === ConnectionTypes.WALLET_CONNECT,
   );
+  const { walletInfo } = useWalletInfo();
 
   const { signMessageAsync } = useSignMessage({
     mutation: {
@@ -176,6 +183,9 @@ export const WalletConnectListener: React.FC = ({ children }) => {
     if (!response.isError) {
       const msg = response?.data?.message;
       const signMsgResponse = await signMessageAsync({ message: msg });
+      void analytics().logEvent('sign_wallet_connect_msg', {
+        from: walletInfo.name,
+      });
     }
   };
 
