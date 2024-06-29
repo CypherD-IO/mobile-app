@@ -5,7 +5,7 @@ import {
 } from '../../core/util';
 import useAxios from '../../core/HttpRequest';
 import { GlobalContext } from '../../core/globalContext';
-import { Web3Modal } from '@web3modal/wagmi-react-native';
+import { Web3Modal, useWalletInfo } from '@web3modal/wagmi-react-native';
 import axios from '../../core/Http';
 import { ConnectionTypes, GlobalContextType } from '../../constants/enum';
 import {
@@ -18,12 +18,7 @@ import {
 import { ethToEvmos } from '@tharsis/address-converter';
 import { hostWorker } from '../../global';
 import useValidSessionToken from '../../hooks/useValidSessionToken';
-import {
-  useAccount,
-  useDisconnect,
-  useSignMessage,
-  useWalletInfo,
-} from 'wagmi';
+import { useAccount, useDisconnect, useSignMessage } from 'wagmi';
 import { getWalletProfile } from '../../core/card';
 import Loading from '../../containers/Loading';
 import { CyDView } from '../../styles/tailwindStyles';
