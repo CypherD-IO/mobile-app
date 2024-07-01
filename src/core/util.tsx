@@ -1041,3 +1041,31 @@ export const parseMonthYear = (dateString: string): string => {
   }
   return '';
 };
+
+export function extractErrorMessage(errorMessage: string): {
+  code: number;
+  message: string;
+} {
+  const regexCode = /"code":\s*(\d+)/;
+  const regexMessage = /"message":\s*"([^"]+)"/;
+
+  const codeMatch: RegExpExecArray | null = regexCode.exec(errorMessage);
+  const messageMatch: RegExpExecArray | null = regexMessage.exec(errorMessage);
+
+  const code: number = codeMatch && codeMatch[1] ? parseInt(codeMatch[1]) : -1;
+  const message: string =
+    messageMatch && messageMatch[1] ? messageMatch[1] : errorMessage;
+
+  return { code, message };
+}
+
+export async function setTimeOutNSec<T>(
+  timeOutDuration: number,
+  returnData?: T | undefined,
+) {
+  return await new Promise<T | undefined>(resolve => {
+    setTimeout(() => {
+      resolve(returnData);
+    }, timeOutDuration);
+  });
+}

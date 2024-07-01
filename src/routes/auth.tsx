@@ -102,6 +102,7 @@ import TelegramSetupSettings from '../containers/DebitCard/bridgeCard/cardTelegr
 import CardQuote from '../containers/DebitCard/bridgeCard/quote';
 import AutoLoad from '../containers/DebitCard/bridgeCard/autoLoad';
 import PreviewAutoLoad from '../containers/DebitCard/bridgeCard/previewAutoLoad';
+import BridgeSkipApi from '../containers/Bridge.Skip/bridge.skip';
 
 const { DynamicImage, DynamicButton } = require('../styles');
 
@@ -764,6 +765,19 @@ export function PortfolioStackScreen({ navigation, route }) {
           headerTitleAlign: 'center',
           headerTitleStyle: portfolioStackScreenHeaderTitleStyles,
 
+          headerTintColor: Colors.primaryTextColor,
+          headerBackTitleVisible: false,
+        }}
+      />
+      <PortfolioStack.Screen
+        name={screenTitle.BRIDGE_SKIP_API}
+        component={BridgeSkipApi}
+        options={{
+          headerTransparent: false,
+          headerShadowVisible: false,
+          headerTitleAlign: 'center',
+          headerTitleStyle: portfolioStackScreenHeaderTitleStyles,
+          title: t('BRIDGE'),
           headerTintColor: Colors.primaryTextColor,
           headerBackTitleVisible: false,
         }}

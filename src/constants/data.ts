@@ -844,3 +844,40 @@ export const SlippageFactor = {
   KUJIRA: 0.005,
   INJECTIVE: 0.005,
 };
+
+export const ChainIdNameMapping = {
+  '1': 'ethereum',
+  '137': 'ethereum',
+  '56': 'ethereum',
+  '43114': 'ethereum',
+  '250': 'ethereum',
+  '42161': 'ethereum',
+  '10': 'ethereum',
+  '9001': 'ethereum',
+  '324': 'ethereum',
+  '8453': 'ethereum',
+  '1101': 'ethereum',
+  '1313161554': 'ethereum',
+  '1284': 'ethereum',
+  '1285': 'ethereum',
+  '79': 'ethereum',
+  'cosmoshub-4': 'cosmos',
+  'osmosis-1': 'osmosis',
+  'juno-1': 'juno',
+  'stargaze-1': 'stargaze',
+  'noble-1': 'noble',
+  'coreum-mainnet-1': 'coreum',
+  'injective-1': 'injective',
+  'kaiyo-1': 'kujira',
+};
+
+export const ChainBackendNameMapping = {
+  cosmos: [ChainBackendNames.COSMOS],
+  osmosis: [ChainBackendNames.OSMOSIS],
+  juno: [ChainBackendNames.JUNO],
+  stargaze: [ChainBackendNames.STARGAZE],
+  noble: [ChainBackendNames.NOBLE],
+  coreum: [ChainBackendNames.COREUM],
+  injective: [ChainBackendNames.INJECTIVE],
+  kujira: [ChainBackendNames.KUJIRA],
+};

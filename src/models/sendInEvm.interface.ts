@@ -8,6 +8,7 @@ export interface SendInEvmInterface {
   contractAddress: string;
   contractDecimals: number;
   symbol: string;
+  contractData?: any;
 }
 
 export interface SendNativeToken {
@@ -17,4 +18,5 @@ export interface SendNativeToken {
   toAddress: string;
   contractAddress: string;
   contractDecimals: number;
+  contractData?: any;
 }

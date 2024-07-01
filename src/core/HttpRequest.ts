@@ -19,7 +19,9 @@ type RequestMethod =
   | 'PUT'
   | 'PATCH'
   | 'DELETE'
-  | 'DELETE_WITHOUT_AUTH';
+  | 'DELETE_WITHOUT_AUTH'
+  | 'GET_FROM_OTHER_SOURCE'
+  | 'POST_TO_OTHER_SOURCE';
 
 interface IHttpResponse {
   isError: boolean;
@@ -124,6 +126,24 @@ export default function useAxios() {
           const { data, status } = await axiosInstance.patch(url, reqBody);
           response.data = data;
           response.status = status;
+        } else if (method === 'GET_FROM_OTHER_SOURCE') {
+          const config = {
+            headers: {
+              accept: 'application/json',
+            },
+          };
+
+          const { data } = await axios.get(endpoint, config);
+          response.data = data;
+        } else if (method === 'POST_TO_OTHER_SOURCE') {
+          const config = {
+            headers: {
+              accept: 'application/json',
+            },
+          };
+
+          const { data } = await axios.post(endpoint, body, config);
+          response.data = data;
         }
         return response;
       } catch (error: any) {
@@ -149,7 +169,10 @@ export default function useAxios() {
           Sentry.captureException(error);
           return {
             isError: true,
-            error: error?.response?.data?.errors?.[0] ?? null,
+            error:
+              error?.response?.data?.errors?.[0] ??
+              error?.response?.data?.message ??
+              null,
             status: error?.response?.status,
           };
         }
@@ -209,6 +232,19 @@ export default function useAxios() {
   ) => {
     return await request('DELETE_WITHOUT_AUTH', url, timeout);
   };
+  const getFromOtherSource = async (
+    url: string,
+    timeout = DEFAULT_AXIOS_TIMEOUT,
+  ) => {
+    return await request('GET_FROM_OTHER_SOURCE', url, timeout);
+  };
+  const postToOtherSource = async (
+    url: string,
+    data: any,
+    timeout = DEFAULT_AXIOS_TIMEOUT,
+  ) => {
+    return await request('POST_TO_OTHER_SOURCE', url, timeout, data);
+  };
 
   return {
     getWithAuth,
@@ -219,5 +255,7 @@ export default function useAxios() {
     deleteWithoutAuth,
     getWithoutAuth,
     postWithoutAuth,
+    getFromOtherSource,
+    postToOtherSource,
   };
 }
