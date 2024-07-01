@@ -1077,6 +1077,11 @@ const resources = {
       WHEN_BALANCE_GOES_BELOW: 'When balance goes below',
       AUTOLOAD_SETUP_SUCCESS: 'Auto Load has been setup successfully',
       BROWSER: 'Browser',
+      FETCH_SKIP_API_ERROR: 'Unable to fetch data at the moment.',
+      TOKEN: 'Token',
+      AMOUNT_APPROVED: 'Your are approving',
+      BRIDGE_SUCCESS: 'Bridging Done',
+      BRIDGE_FAILURE: 'Bridging Failed',
     },
   },
 };

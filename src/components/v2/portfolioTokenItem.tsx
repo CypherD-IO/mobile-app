@@ -288,7 +288,7 @@ const PortfolioTokenItem = ({
             setSwipeableRefs(index, ref);
           }}>
           <CyDView className='flex flex-row w-full justify-between rounded-r-[20px] py-[17px] pr-[12px] bg-white'>
-            <CyDView className='ml-[10px] max-w-[75%]'>
+            <CyDView className='ml-[10px] max-w-[65%]'>
               <CyDView className={'flex flex-row items-center align-center'}>
                 <CyDText className={'font-extrabold text-[16px]'}>
                   {item.name}

@@ -114,7 +114,6 @@ export const generateCosmosPrivateKey = async (
     masterSeed,
     path,
   );
-
   return uintToHex(privateKey);
 };
 

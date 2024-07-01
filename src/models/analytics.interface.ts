@@ -6,6 +6,7 @@ export interface SuccessAnalytics {
   txnHash?: string;
   address?: string;
   contractData?: string;
+  category?: string;
 }
 
 export interface ErrorAnalytics {

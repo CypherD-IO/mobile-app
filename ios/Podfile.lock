@@ -733,7 +733,7 @@ PODS:
     - Sentry/HybridSDK (= 8.25.0)
   - RNShare (7.9.1):
     - React-Core
-  - RNSVG (12.5.1):
+  - RNSVG (15.3.0):
     - React-Core
   - RNVectorIcons (9.2.0):
     - React-Core
@@ -1202,7 +1202,7 @@ SPEC CHECKSUMS:
   RNScreens: b8d370282cdeae9df85dd5eab20c88eb5181243b
   RNSentry: 48710dee53beea7e7284db9612a83d0a1ca8352f
   RNShare: a5dc3b9c53ddc73e155b8cd9a94c70c91913c43c
-  RNSVG: d7d7bc8229af3842c9cfc3a723c815a52cdd1105
+  RNSVG: a48668fd382115bc89761ce291a81c4ca5f2fd2e
   RNVectorIcons: fcc2f6cb32f5735b586e66d14103a74ce6ad61f8
   SDWebImage: a7f831e1a65eb5e285e3fb046a23fcfbf08e696d
   SDWebImageWebPCoder: 908b83b6adda48effe7667cd2b7f78c897e5111d

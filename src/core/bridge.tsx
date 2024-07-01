@@ -19,13 +19,11 @@ import { generatePostBodyBroadcast } from '@tharsis/provider';
 import * as Sentry from '@sentry/react-native';
 import { OfflineDirectSigner } from '@cosmjs/proto-signing';
 import {
-  HdWalletContext,
   _NO_CYPHERD_CREDENTIAL_AVAILABLE_,
   convertAmountOfContractDecimal,
 } from './util';
 import { Chain, ChainBackendNames, GASLESS_CHAINS } from '../constants/server';
 import { loadPrivateKeyFromKeyChain } from './Keychain';
-import { useContext } from 'react';
 
 export enum TypeOfTransaction {
   SIMULATION = 'simulation',
@@ -227,7 +225,7 @@ export const interCosmosIbc = async (
           .toString(),
       };
 
-      const sourcePort: string = 'transfer';
+      const sourcePort = 'transfer';
       const sourceChannel: string =
         cosmosConfig[fromChain.chainName].channel.osmosis;
       const timeOut: Long = getTimeOutTime();

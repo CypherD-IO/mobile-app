@@ -41,6 +41,8 @@ import ShippingFeeConsentModal from '../../../components/v2/shippingFeeConsentMo
 import CardActivationConsentModal from '../../../components/v2/CardActivationConsentModal';
 import Loading from '../../../components/v2/loading';
 import AutoLoadOptionsModal from '../bridgeCard/autoLoadOptions';
+import LottieView from 'lottie-react-native';
+import { StyleSheet } from 'react-native';
 
 interface CypherCardScreenProps {
   navigation: any;
@@ -95,6 +97,7 @@ export default function CypherCardScreen({
   const [isLayoutRendered, setIsLayoutRendered] = useState(false);
   const [isAutoLoadOptionsvisible, setIsAutoLoadOptionsVisible] =
     useState<boolean>(false);
+  const [balanceLoading, setBalanceLoading] = useState(false);
 
   const onRefresh = async () => {
     void refreshProfile();
@@ -137,6 +140,7 @@ export default function CypherCardScreen({
   };
 
   const fetchCardBalance = async () => {
+    setBalanceLoading(true);
     const url = `/v1/cards/${currentCardProvider}/card/${String(
       cardId,
     )}/balance`;
@@ -151,6 +155,7 @@ export default function CypherCardScreen({
       Sentry.captureException(error);
       setCardBalance('NA');
     }
+    setBalanceLoading(false);
   };
   const fetchRecentTransactions = async () => {
     const txnURL = `/v1/cards/${currentCardProvider}/card/${String(
@@ -286,10 +291,28 @@ export default function CypherCardScreen({
           <CyDText className={'font-bold text-subTextColor text-[12px]'}>
             {t<string>('TOTAL_BALANCE') + ' (USD)'}
           </CyDText>
-          <CyDText className={'font-bold text-[28px]'}>
-            {(cardBalance !== 'NA' ? '$ ' : '') + cardBalance}
-          </CyDText>
+          {!balanceLoading ? (
+            <CyDTouchView onPress={() => fetchCardBalance().catch}>
+              <CyDView className='flex flex-row items-center justify-start gap-x-[8px]'>
+                <CyDText className={'font-bold text-[28px]'}>
+                  {(cardBalance !== 'NA' ? '$ ' : '') + cardBalance}
+                </CyDText>
+                <CyDImage
+                  source={AppImages.REFRESH_BROWSER}
+                  className='w-[24px] h-[24px]'
+                />
+              </CyDView>
+            </CyDTouchView>
+          ) : (
+            <LottieView
+              source={AppImages.LOADER_TRANSPARENT}
+              autoPlay
+              loop
+              style={style.loaderStyle}
+            />
+          )}
         </CyDView>
+
         <Button
           image={AppImages.LOAD_CARD_LOTTIE}
           isLottie={true}
@@ -380,3 +403,9 @@ export default function CypherCardScreen({
     <Loading />
   );
 }
+
+const style = StyleSheet.create({
+  loaderStyle: {
+    height: 40,
+  },
+});

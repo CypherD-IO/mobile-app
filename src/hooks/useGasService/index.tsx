@@ -179,6 +179,7 @@ export default function useGasService() {
     amountToSend,
     contractAddress,
     contractDecimals,
+    contractData: contractDataUser,
   }: EvmGasInterface) => {
     // How many tokens? -- Use BigNumber everywhere
     const numberOfTokens = ethers.parseUnits(amountToSend, contractDecimals);
@@ -218,7 +219,7 @@ export default function useGasService() {
             ? '0xeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee'
             : contractAddress,
         value: '0x0',
-        data: contractData,
+        data: contractDataUser ?? contractData,
       });
       gasLimit = ceil(gasLimit * 1.3);
       if (gasLimit) {
