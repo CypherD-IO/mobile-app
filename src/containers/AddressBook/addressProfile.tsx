@@ -278,13 +278,13 @@ const AddressProfile = props => {
         <CyDView className='flex flex-row justify-between items-center'>
           <CyDImage
             source={
-              AppImages[`ADDRESS_PROFILE_${contactBook[name].imageProfile}`]
+              AppImages[`ADDRESS_PROFILE_${contactBook[name]?.imageProfile}`]
             }
             className='h-[30px] w-[30px]'
             resizeMode='contain'
           />
           <CyDText className='ml-[10px] text-[16px] font-bold'>
-            {formatName(contactBook[name].name).join('\n')}
+            {formatName(contactBook[name]?.name).join('\n')}
           </CyDText>
         </CyDView>
         <CyDView className='flex flex-row justify-between items-center'>
@@ -409,7 +409,9 @@ const AddressProfile = props => {
                       key={`${index}-${address}`}>
                       <CyDView className='flex flex-row flex-wrap justify-start items-center w-[80%]'>
                         <CyDView
-                          className={`p-[5px] rounded-[30px] bg-${chain} ${addressIsEOA ? '' : 'border border-blue-500'}`}>
+                          className={`p-[5px] rounded-[30px] bg-${chain} ${
+                            addressIsEOA ? '' : 'border border-blue-500'
+                          }`}>
                           <CyDImage
                             source={logoUrl}
                             className='h-[20px] w-[20px]'
@@ -463,7 +465,9 @@ const AddressProfile = props => {
                       }}>
                       <CyDView className='flex flex-row flex-wrap justify-start items-center w-[80%]'>
                         <CyDView
-                          className={`p-[5px] rounded-[30px] bg-${chain} ${addressIsEOA ? '' : 'border border-blue-500'}`}>
+                          className={`p-[5px] rounded-[30px] bg-${chain} ${
+                            addressIsEOA ? '' : 'border border-blue-500'
+                          }`}>
                           <CyDImage
                             source={logoUrl}
                             className='h-[20px] w-[20px]'
