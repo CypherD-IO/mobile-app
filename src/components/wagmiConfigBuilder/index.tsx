@@ -112,7 +112,6 @@ export const WagmiConfigBuilder: React.FC = ({ children }) => {
   //     publicClient,
   //   });
   const queryClient = new QueryClient();
-  // console.log('.... wagmiConfig : ', wagmiConfig);
   return wagmiConfig ? (
     <WagmiProvider config={wagmiConfig}>
       <QueryClientProvider client={queryClient}>

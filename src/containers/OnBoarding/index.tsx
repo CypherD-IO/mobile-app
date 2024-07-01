@@ -24,6 +24,7 @@ import CyDModalLayout from '../../components/v2/modal';
 import { MODAL_HIDE_TIMEOUT_250 } from '../../core/Http';
 import CyDContainer from '../../components/v2/container';
 import useConnectionManager from '../../hooks/useConnectionManager';
+import analytics from '@react-native-firebase/analytics';
 
 const { width, height } = Dimensions.get('screen');
 
@@ -169,6 +170,7 @@ export default function OnBoarding({ navigation }) {
             <CyDTouchView
               onPress={() => {
                 void openWalletConnectModal();
+                void analytics().logEvent('connect_using_wallet_connect', {});
               }}
               className={
                 'bg-white border-[0.3px] border-[#525252] mt-[20px] px-[12px] items-center rounded-[8px] flex flex-row justify-between w-[98%]'

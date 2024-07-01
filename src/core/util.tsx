@@ -814,8 +814,10 @@ export function logAnalytics(params: SuccessAnalytics | ErrorAnalytics): void {
       const data = {
         chain,
         txnHash,
-        ...(contractData ? { contractData } : {}),
-        ...(address ? { address } : {}),
+        other: {
+          ...(contractData ? { contractData } : {}),
+          ...(address ? { address } : {}),
+        },
       };
       void axios.post(ANALYTICS_SUCCESS_URL, data);
       break;
@@ -828,8 +830,10 @@ export function logAnalytics(params: SuccessAnalytics | ErrorAnalytics): void {
         message,
         client: `${Platform.OS}:${DeviceInfo.getVersion()}`,
         screen,
-        ...(address ? { address } : {}),
-        ...(contractData ? { contractData } : {}),
+        other: {
+          ...(address ? { address } : {}),
+          ...(contractData ? { contractData } : {}),
+        },
       };
       void axios.post(ANALYTICS_ERROR_URL, data);
       break;

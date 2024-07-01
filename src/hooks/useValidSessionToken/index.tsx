@@ -20,19 +20,16 @@ export default function useValidSessionToken() {
   const verifySessionToken = async () => {
     const authToken: string = await getAuthToken();
     if (authToken) {
-      // const jwtInfo = jwt_decode<JwtPayload>(authToken);
-
-      // if (jwtInfo.exp && Date.now() >= jwtInfo.exp * 1000) {
       const refreshToken = await getRefreshToken();
-
       const baseUrl: string = ARCH_HOST;
-
       const config = {
         headers: {
           Accept: 'application/json',
           client: `${Platform.OS}:${DeviceInfo.getVersion()}`,
           'Content-Type': 'application/json',
-          Authorization: refreshToken ? `Bearer ${String(refreshToken)}` : '',
+          Authorization: refreshToken
+            ? 'Bearer ' + refreshToken.replace(/['"]/g, '')
+            : '',
         },
       };
       try {

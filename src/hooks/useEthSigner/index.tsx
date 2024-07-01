@@ -1,45 +1,151 @@
 import Toast from 'react-native-toast-message';
 import * as Sentry from '@sentry/react-native';
-import { RawTransaction } from '../../models/ethSigner.interface';
+import { EthTransaction, RawTransaction } from '../../models/ethSigner.interface';
 import { useContext } from 'react';
 import {
   HdWalletContext,
   _NO_CYPHERD_CREDENTIAL_AVAILABLE_,
+  sleepFor,
 } from '../../core/util';
 import useConnectionManager from '../useConnectionManager';
 import { ConnectionTypes } from '../../constants/enum';
-import { useAccount } from 'wagmi';
+import {
+  useAccount,
+  useSwitchChain,
+  useSendTransaction,
+  useSignMessage,
+  useWriteContract,
+} from 'wagmi';
 import { walletConnectChainData } from '../../constants/server';
 import { get, set } from 'lodash';
-import { createWalletClient, custom } from 'viem';
+import { Address, createWalletClient, custom } from 'viem';
 import { loadPrivateKeyFromKeyChain } from '../../core/Keychain';
+import { utf8ToHex } from 'web3-utils';
+import { waitForTransactionReceipt } from '@wagmi/core';
+import { useWalletInfo } from '@web3modal/wagmi-react-native';
 
 export default function useEthSigner() {
-  const { connector } = useAccount();
+  const { connector, chain } = useAccount();
   const { connectionType } = useConnectionManager();
   const hdWalletContext = useContext<any>(HdWalletContext);
+  const { switchChainAsync } = useSwitchChain();
+  const { sendTransactionAsync } = useSendTransaction();
+  const { signMessageAsync } = useSignMessage();
+  const { writeContractAsync } = useWriteContract();
+  const { walletInfo } = useWalletInfo();
+
+  // const getTransactionReceipt = async (
+  //   hash: `0x${string}`,
+  //   chainId: number,
+  // ) => {
+  //   return new Promise((resolve) => {
+  //     const timeout = new Promise((resolve) => 
+  //       setTimeout(() => resolve(hash), 5000)
+  //     );
+  
+  //     const receiptPromise = (async () => {
+  //       try {
+  //         const receipt = await waitForTransactionReceipt(config, {
+  //           hash,
+  //           chainId,
+  //         });
+  //         return receipt?.transactionHash;
+  //       } catch (error) {
+  //         return hash;
+  //       }
+  //     })();
+  
+  //     Promise.race([timeout, receiptPromise]).then((result) => {
+  //       resolve(result);
+  //     });
+  //   });
+  // };
+
+  async function sendNativeCoin({
+    transactionToBeSigned,
+    chainId,
+  }: {
+    transactionToBeSigned: EthTransaction;
+    chainId: number;
+  }) {
+    const response = await sendTransactionAsync({
+      account: transactionToBeSigned.from as `0x${string}`,
+      to: transactionToBeSigned.to as `0x${string}`,
+      chainId,
+      value: BigInt(transactionToBeSigned.value),
+    });
+    return response;
+  }
+
+  async function sendToken({
+    transactionToBeSigned,
+    chainId,
+  }: {
+    transactionToBeSigned: EthTransaction;
+    chainId: number;
+  }) {
+    const contractAbiFragment = [
+      {
+        name: 'transfer',
+        type: 'function',
+        inputs: [
+          {
+            name: '_to',
+            type: 'address',
+          },
+          {
+            type: 'uint256',
+            name: '_tokens',
+          },
+        ],
+        constant: false,
+        outputs: [],
+        payable: false,
+      },
+    ];
+    const response = await writeContractAsync({
+      abi: contractAbiFragment,
+      address: transactionToBeSigned.to as `0x${string}`,
+      functionName: 'transfer',
+      args: [
+        transactionToBeSigned.contractParams?.toAddress,
+        BigInt(transactionToBeSigned.contractParams?.numberOfTokens as string),
+      ],
+      chainId: chainId,
+    });
+    return response;
+  }
 
   const signEthTransaction = async ({
     web3,
-    chain,
+    sendChain,
     transactionToBeSigned,
   }: RawTransaction) => {
     try {
       if (connectionType === ConnectionTypes.WALLET_CONNECT) {
-        const chainConfig = get(walletConnectChainData, chain).chainConfig;
-        const walletClient = createWalletClient({
-          account: transactionToBeSigned.from,
-          chain: chainConfig,
-          transport: custom(await connector?.getProvider()),
-        });
-        try {
-          await walletClient.switchChain({ id: chainConfig.id });
-        } catch (e) {}
-        set(transactionToBeSigned, 'data', '0x');
-        const response = await walletClient.sendTransaction(
-          transactionToBeSigned as any,
-        );
-        return response;
+        const chainConfig = get(walletConnectChainData, sendChain).chainConfig;
+        if (
+          walletInfo?.name === 'MetaMask Wallet' &&
+          chain.id !== chainConfig.id
+        ) {
+          try {
+            await switchChainAsync({ chainId: chainConfig.id });
+            await sleepFor(1000);
+          } catch (e) {}
+        }
+        let hash;
+        if (transactionToBeSigned.contractParams) {
+          hash = await sendToken({
+            transactionToBeSigned,
+            chainId: chainConfig.id,
+          });
+        } else {
+          hash = await sendNativeCoin({
+            transactionToBeSigned,
+            chainId: chainConfig.id,
+          });
+        }
+        return hash;
       } else {
         const privateKey = await loadPrivateKeyFromKeyChain(
           false,
