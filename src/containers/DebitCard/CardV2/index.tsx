@@ -41,6 +41,7 @@ import ShippingFeeConsentModal from '../../../components/v2/shippingFeeConsentMo
 import CardActivationConsentModal from '../../../components/v2/CardActivationConsentModal';
 import Loading from '../../../components/v2/loading';
 import AutoLoadOptionsModal from '../bridgeCard/autoLoadOptions';
+import { HIDDEN_CARD_ID } from '../../../constants/data';
 import LottieView from 'lottie-react-native';
 import { StyleSheet } from 'react-native';
 
@@ -102,8 +103,10 @@ export default function CypherCardScreen({
   const onRefresh = async () => {
     void refreshProfile();
     setCardBalance('');
-    await fetchCardBalance();
-    void fetchRecentTransactions();
+    if (cardId !== HIDDEN_CARD_ID) {
+      await fetchCardBalance();
+      void fetchRecentTransactions();
+    }
     if (!isLayoutRendered) {
       setIsLayoutRendered(true);
     }
@@ -287,31 +290,42 @@ export default function CypherCardScreen({
         className={
           'h-[50px] flex flex-row justify-between items-center py-[5px] px-[10px] mx-[12px] mb-[8px] mt-[8px]'
         }>
-        <CyDView>
-          <CyDText className={'font-bold text-subTextColor text-[12px]'}>
-            {t<string>('TOTAL_BALANCE') + ' (USD)'}
-          </CyDText>
-          {!balanceLoading ? (
-            <CyDTouchView onPress={() => fetchCardBalance().catch}>
-              <CyDView className='flex flex-row items-center justify-start gap-x-[8px]'>
-                <CyDText className={'font-bold text-[28px]'}>
-                  {(cardBalance !== 'NA' ? '$ ' : '') + cardBalance}
-                </CyDText>
-                <CyDImage
-                  source={AppImages.REFRESH_BROWSER}
-                  className='w-[24px] h-[24px]'
-                />
-              </CyDView>
-            </CyDTouchView>
-          ) : (
-            <LottieView
-              source={AppImages.LOADER_TRANSPARENT}
-              autoPlay
-              loop
-              style={style.loaderStyle}
-            />
-          )}
-        </CyDView>
+        {cardId !== HIDDEN_CARD_ID ? (
+          <CyDView>
+            <CyDText className={'font-bold text-subTextColor text-[12px]'}>
+              {t<string>('TOTAL_BALANCE') + ' (USD)'}
+            </CyDText>
+            {!balanceLoading ? (
+              <CyDTouchView onPress={() => fetchCardBalance().catch}>
+                <CyDView className='flex flex-row items-center justify-start gap-x-[8px]'>
+                  <CyDText className={'font-bold text-[28px]'}>
+                    {(cardBalance !== 'NA' ? '$ ' : '') + cardBalance}
+                  </CyDText>
+                  <CyDImage
+                    source={AppImages.REFRESH_BROWSER}
+                    className='w-[24px] h-[24px]'
+                  />
+                </CyDView>
+              </CyDTouchView>
+            ) : (
+              <LottieView
+                source={AppImages.LOADER_TRANSPARENT}
+                autoPlay
+                loop
+                style={style.loaderStyle}
+              />
+            )}
+          </CyDView>
+        ) : (
+          <CyDView>
+            <CyDText className={'font-bold  text-[18px]'}>
+              {t<string>('ACTIVATE_CARD')}
+            </CyDText>
+            <CyDText className={'font-bold text-subTextColor text-[12px]'}>
+              {t<string>('LOAD_YOUR_CARD_TO_ACTIVATE_IT')}
+            </CyDText>
+          </CyDView>
+        )}
 
         <Button
           image={AppImages.LOAD_CARD_LOTTIE}
@@ -328,23 +342,25 @@ export default function CypherCardScreen({
       </CyDView>
       <CyDScrollView>
         {/* <RenderMessage /> */}
-        <CyDTouchView
-          className='flex flex-row justify-center items-center self-center py-[4px] px-[12px] border-[0.2px] border-black rounded-[26px] mt-[4px] mb-[4px] bg-white'
-          onPress={() => {
-            cardProfile.isAutoloadConfigured
-              ? setIsAutoLoadOptionsVisible(true)
-              : navigation.navigate(screenTitle.AUTO_LOAD_SCREEN);
-          }}>
-          <CyDImage
-            source={AppImages.AUTOLOAD}
-            className='h-[28px] w-[28px]'
-            resizeMode='contain'
-          />
-          <CyDText className='ml-[4px] text-[16px]'>
-            {(cardProfile.isAutoloadConfigured ? 'Manage' : 'Setup') +
-              ' Auto Load'}
-          </CyDText>
-        </CyDTouchView>
+        {cardId !== HIDDEN_CARD_ID && (
+          <CyDTouchView
+            className='flex flex-row justify-center items-center self-center py-[4px] px-[12px] border-[0.2px] border-black rounded-[26px] mt-[4px] mb-[4px] bg-white'
+            onPress={() => {
+              cardProfile.isAutoloadConfigured
+                ? setIsAutoLoadOptionsVisible(true)
+                : navigation.navigate(screenTitle.AUTO_LOAD_SCREEN);
+            }}>
+            <CyDImage
+              source={AppImages.AUTOLOAD}
+              className='h-[28px] w-[28px]'
+              resizeMode='contain'
+            />
+            <CyDText className='ml-[4px] text-[16px]'>
+              {(cardProfile.isAutoloadConfigured ? 'Manage' : 'Setup') +
+                ' Auto Load'}
+            </CyDText>
+          </CyDTouchView>
+        )}
         <CyDView className='mt-[2px]'>
           <CardScreen
             navigation={navigation}

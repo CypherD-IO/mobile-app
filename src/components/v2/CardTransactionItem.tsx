@@ -17,7 +17,7 @@ import AppImages from '../../../assets/images/appImages';
 import moment from 'moment';
 import { useNavigation } from '@react-navigation/native';
 import { ICardTransaction } from '../../models/card.model';
-import { formatToLocalDate } from '../../core/util';
+import { formatToLocalDate, limitDecimalPlaces } from '../../core/util';
 
 interface CardTransactionItemProps {
   item: ICardTransaction;
@@ -106,7 +106,7 @@ const CardTransactionItem = ({ item }: CardTransactionItemProps) => {
               'text-black': !isSettled,
             })}>
             {getTransactionSign(type)}
-            {amount} {t<string>('USD')}
+            {limitDecimalPlaces(amount, 2)} {t<string>('USD')}
           </CyDText>
         </CyDView>
       </CyDTouchView>
