@@ -103,8 +103,10 @@ export default function CypherCardScreen({
   const onRefresh = async () => {
     void refreshProfile();
     setCardBalance('');
-    await fetchCardBalance();
-    void fetchRecentTransactions();
+    if (cardId !== HIDDEN_CARD_ID) {
+      await fetchCardBalance();
+      void fetchRecentTransactions();
+    }
     if (!isLayoutRendered) {
       setIsLayoutRendered(true);
     }
