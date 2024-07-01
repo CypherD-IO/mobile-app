@@ -105,7 +105,10 @@ export default function CardScreen({
     lifetimeLoadUSD < physicalCardEligibilityLimit &&
     !cardProfile[currentCardProvider]?.cards
       ?.map(card => card.type)
-      .includes(CardType.PHYSICAL);
+      .includes(CardType.PHYSICAL) &&
+    !cardProfile[currentCardProvider]?.cards?.map(
+      card => card.status === CardStatus.HIDDEN,
+    );
   const [currentCardIndex, setCurrentCardIndex] = useState<number>(0);
   const [trackingDetails, setTrackingDetails] = useState({});
 
@@ -161,6 +164,18 @@ export default function CardScreen({
             </CyDText>
           </CyDView>
         )}
+        {card.status === CardStatus.HIDDEN && (
+          <CyDView className='flex flex-row items-center bg-cardBg px-[12px] py-[6px] rounded-[6px]'>
+            <CyDImage
+              source={AppImages.CYPHER_LOCKED}
+              className='h-[18px] w-[18px]'
+              resizeMode='contain'
+            />
+            <CyDText className='font-extrabold mt-[1px] ml-[2px]'>
+              {t('LOAD_TO_ACTIVATE')}
+            </CyDText>
+          </CyDView>
+        )}
       </CyDImageBackground>
     );
   };
@@ -204,6 +219,13 @@ export default function CardScreen({
     }
     return response;
   };
+
+  const isHiddenCard = () => {
+    return userCardDetails?.cards.map(
+      card => card.status === CardStatus.HIDDEN,
+    );
+  };
+
   return (
     <CyDView>
       <Carousel
@@ -223,18 +245,20 @@ export default function CardScreen({
         onSnapToItem={setUpgradeCorrectedCardIndex}
         renderItem={renderItem as any}
       />
-      {cardsWithUpgrade && get(cardsWithUpgrade, currentCardIndex) && (
-        <RenderCardActions
-          card={get(cardsWithUpgrade, currentCardIndex)}
-          cardProvider={currentCardProvider}
-          navigation={navigation}
-          refreshProfile={refreshProfile}
-          onPressUpgradeNow={onPressUpgradeNow}
-          onPressActivateCard={onPressActivateCard}
-          cardProfile={cardProfile}
-          trackingDetails={trackingDetails}
-        />
-      )}
+      {cardsWithUpgrade &&
+        get(cardsWithUpgrade, currentCardIndex) &&
+        !isHiddenCard() && (
+          <RenderCardActions
+            card={get(cardsWithUpgrade, currentCardIndex)}
+            cardProvider={currentCardProvider}
+            navigation={navigation}
+            refreshProfile={refreshProfile}
+            onPressUpgradeNow={onPressUpgradeNow}
+            onPressActivateCard={onPressActivateCard}
+            cardProfile={cardProfile}
+            trackingDetails={trackingDetails}
+          />
+        )}
     </CyDView>
   );
 }

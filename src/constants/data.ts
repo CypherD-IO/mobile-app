@@ -845,6 +845,8 @@ export const SlippageFactor = {
   INJECTIVE: 0.005,
 };
 
+export const HIDDEN_CARD_ID = 'hidden';
+
 export const ChainIdNameMapping = {
   '1': 'ethereum',
   '137': 'ethereum',
