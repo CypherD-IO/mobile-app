@@ -106,7 +106,7 @@ const CardTransactionItem = ({ item }: CardTransactionItemProps) => {
               'text-black': !isSettled,
             })}>
             {getTransactionSign(type)}
-            {limitDecimalPlaces(amount)} {t<string>('USD')}
+            {limitDecimalPlaces(amount, 2)} {t<string>('USD')}
           </CyDText>
         </CyDView>
       </CyDTouchView>
