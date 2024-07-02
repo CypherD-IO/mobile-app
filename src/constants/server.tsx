@@ -547,6 +547,16 @@ export const EVM_CHAINS: Chain[] = [
   CHAIN_MOONRIVER,
 ];
 
+export const COSMOS_CHAINS_LIST: Chain[] = [
+  CHAIN_COSMOS,
+  CHAIN_OSMOSIS,
+  CHAIN_JUNO,
+  CHAIN_STARGAZE,
+  CHAIN_NOBLE,
+  CHAIN_COREUM,
+  CHAIN_KUJIRA,
+];
+
 export const EVM_CHAINS_FOR_ADDRESS_DIR = [
   'ethereum',
   'polygon',
@@ -1080,4 +1090,365 @@ export const walletConnectChainData: Record<string, NetworkInterface> = {
 export const AUTO_LOAD_SUPPORTED_CHAINS = [
   CHAIN_OSMOSIS.backendName,
   CHAIN_NOBLE.backendName,
+  CHAIN_ARBITRUM.backendName,
+  CHAIN_POLYGON.backendName,
+  CHAIN_OPTIMISM.backendName,
 ];
+
+export const STABLE_TOKEN_CHAIN_MAP = new Map([
+  [
+    'POLYGON',
+    [
+      {
+        contractAddress: '0x3c499c542cef5e3811e1192ce70d8cc03d5c3359',
+        decimal: 6,
+        symbol: 'USDC',
+        name: 'USD Coin',
+        coingeckoId: 'usd-coin',
+        logo: 'https://assets.coingecko.com/coins/images/6319/large/USD_Coin_icon.png?1547042389',
+      },
+      {
+        contractAddress: '0xc2132d05d31c914a87c6611c10748aeb04b58e8f',
+        decimal: 6,
+        symbol: 'USDT',
+        name: 'Tether',
+        coingeckoId: 'tether',
+        logo: 'https://assets.coingecko.com/coins/images/325/large/Tether-logo.png?1598003707',
+      },
+      {
+        contractAddress: '0x8f3cf7ad23cd3cadbd9735aff958023239c6a063',
+        decimal: 18,
+        symbol: 'DAI',
+        name: 'Dai',
+        coingeckoId: 'dai',
+        logo: 'https://assets.coingecko.com/coins/images/9956/large/Badge_Dai.png?1687143508',
+      },
+    ],
+  ], // [usdc, usdt, dai]
+  [
+    'AVALANCHE',
+    [
+      {
+        contractAddress: '0xb97ef9ef8734c71904d8002f8b6bc66dd9c48a6e',
+        decimal: 6,
+        symbol: 'USDC',
+        name: 'USD Coin',
+        coingeckoId: 'usd-coin',
+        logo: 'https://assets.coingecko.com/coins/images/6319/large/USD_Coin_icon.png?1547042389',
+      },
+      {
+        contractAddress: '0xa7d7079b0fead91f3e65f86e8915cb59c1a4c664',
+        decimal: 6,
+        symbol: 'USDC.e',
+        name: 'Bridged USD Coin (Avalanche)',
+        coingeckoId: 'usd-coin',
+        logo: 'https://assets.coingecko.com/coins/images/6319/large/USD_Coin_icon.png?1547042389',
+      },
+      {
+        contractAddress: '0x9702230a8ea53601f5cd2dc00fdbc13d4df4a8c7',
+        decimal: 6,
+        symbol: 'USDT',
+        name: 'Tether',
+        coingeckoId: 'tether',
+        logo: 'https://assets.coingecko.com/coins/images/325/large/Tether-logo.png?1598003707',
+      },
+      {
+        contractAddress: '0xd586e7f844cea2f87f50152665bcbc2c279d8d70',
+        decimal: 18,
+        symbol: 'DAI',
+        name: 'Dai',
+        coingeckoId: 'dai',
+        logo: 'https://assets.coingecko.com/coins/images/9956/large/Badge_Dai.png?1687143508',
+      },
+    ],
+  ], // [usdc, usdc.e, usdt, dai]
+  [
+    'ETH',
+    [
+      {
+        contractAddress: '0xa0b86991c6218b36c1d19d4a2e9eb0ce3606eb48',
+        decimal: 6,
+        symbol: 'USDC',
+        name: 'USD Coin',
+        coingeckoId: 'usd-coin',
+        logo: 'https://assets.coingecko.com/coins/images/6319/large/USD_Coin_icon.png?1547042389',
+      },
+      {
+        contractAddress: '0xdac17f958d2ee523a2206206994597c13d831ec7',
+        decimal: 6,
+        symbol: 'USDT',
+        name: 'Tether',
+        coingeckoId: 'tether',
+        logo: 'https://assets.coingecko.com/coins/images/325/large/Tether-logo.png?1598003707',
+      },
+      {
+        contractAddress: '0x6b175474e89094c44da98b954eedeac495271d0f',
+        decimal: 18,
+        symbol: 'DAI',
+        name: 'Dai',
+        coingeckoId: 'dai',
+        logo: 'https://assets.coingecko.com/coins/images/9956/large/Badge_Dai.png?1687143508',
+      },
+    ],
+  ], // [usdc, usdt, dai]
+  [
+    'BSC',
+    [
+      {
+        contractAddress: '0x55d398326f99059ff775485246999027b3197955',
+        decimal: 18,
+        symbol: 'USDT',
+        name: 'Tether',
+        coingeckoId: 'tether',
+        logo: 'https://assets.coingecko.com/coins/images/325/large/Tether-logo.png?1598003707',
+      },
+      {
+        contractAddress: '0x8ac76a51cc950d9822d68b83fe1ad97b32cd580d',
+        decimal: 18,
+        symbol: 'USDC',
+        name: 'USD Coin',
+        coingeckoId: 'usd-coin',
+        logo: 'https://assets.coingecko.com/coins/images/6319/large/USD_Coin_icon.png?1547042389',
+      },
+      {
+        contractAddress: '0x1af3f329e8be154074d8769d1ffa4ee058b1dbc3',
+        decimal: 18,
+        symbol: 'DAI',
+        name: 'Dai',
+        coingeckoId: 'dai',
+        logo: 'https://assets.coingecko.com/coins/images/9956/large/Badge_Dai.png?1687143508',
+      },
+    ],
+  ], // [usdc, usdt, dai]
+  [
+    'FANTOM',
+    [
+      {
+        contractAddress: '0x1b6382dbdea11d97f24495c9a90b7c88469134a4',
+        decimal: 6,
+        symbol: 'axlUSDC',
+        name: 'Bridged USD Coin (Axelar)',
+        coingeckoId: 'axlusdc',
+        logo: 'https://assets.coingecko.com/coins/images/26476/large/axlUSDC.png?1658207579',
+      },
+      {
+        contractAddress: '0x049d68029688eabf473097a2fc38ef61633a3c7a',
+        decimal: 6,
+        symbol: 'USDT',
+        name: 'Tether',
+        coingeckoId: 'tether',
+        logo: 'https://assets.coingecko.com/coins/images/325/large/Tether.png?1668148663',
+      },
+      {
+        contractAddress: '0x8d11ec38a3eb5e956b052f67da8bdc9bef8abf3e',
+        decimal: 18,
+        symbol: 'DAI',
+        name: 'Dai',
+        coingeckoId: 'dai',
+        logo: 'https://assets.coingecko.com/coins/images/9956/large/Badge_Dai.png?1687143508',
+      },
+    ],
+  ], // [axlusdc, mulusdc, usdt, dai]
+  [
+    'ARBITRUM',
+    [
+      {
+        contractAddress: '0xaf88d065e77c8cc2239327c5edb3a432268e5831',
+        decimal: 6,
+        symbol: 'USDC',
+        name: 'USD Coin',
+        coingeckoId: 'usd-coin',
+        logo: 'https://assets.coingecko.com/coins/images/6319/large/USD_Coin_icon.png?1547042389',
+      },
+      {
+        contractAddress: '0xff970a61a04b1ca14834a43f5de4533ebddb5cc8',
+        decimal: 6,
+        symbol: 'USDC.e',
+        name: 'Bridged USD Coin (Arbitrum)',
+        coingeckoId: 'usd-coin-ethereum-bridged',
+        logo: 'https://assets.coingecko.com/coins/images/6319/large/USD_Coin_icon.png?1547042389',
+      },
+      {
+        contractAddress: '0xfd086bc7cd5c481dcc9c85ebe478a1c0b69fcbb9',
+        decimal: 6,
+        symbol: 'USDT',
+        name: 'Tether',
+        coingeckoId: 'tether',
+        logo: 'https://assets.coingecko.com/coins/images/325/large/Tether-logo.png?1598003707',
+      },
+      {
+        contractAddress: '0xda10009cbd5d07dd0cecc66161fc93d7c9000da1',
+        decimal: 18,
+        symbol: 'DAI',
+        name: 'Dai',
+        coingeckoId: 'dai',
+        logo: 'https://assets.coingecko.com/coins/images/9956/large/Badge_Dai.png?1687143508',
+      },
+    ],
+  ], // [usdc, usdc.e, usdt, dai]
+  [
+    'OPTIMISM',
+    [
+      {
+        contractAddress: '0x0b2c639c533813f4aa9d7837caf62653d097ff85',
+        decimal: 6,
+        symbol: 'USDC',
+        name: 'USD Coin',
+        coingeckoId: 'usd-coin',
+        logo: 'https://assets.coingecko.com/coins/images/6319/large/USD_Coin_icon.png?1547042389',
+      },
+      {
+        contractAddress: '0x94b008aa00579c1307b0ef2c499ad98a8ce58e58',
+        decimal: 6,
+        symbol: 'USDT',
+        name: 'Tether',
+        coingeckoId: 'tether',
+        logo: 'https://assets.coingecko.com/coins/images/325/large/Tether-logo.png?1598003707',
+      },
+      {
+        contractAddress: '0xda10009cbd5d07dd0cecc66161fc93d7c9000da1',
+        decimal: 18,
+        symbol: 'DAI',
+        name: 'Dai',
+        coingeckoId: 'dai',
+        logo: 'https://assets.coingecko.com/coins/images/9956/large/Badge_Dai.png?1687143508',
+      },
+    ],
+  ], // [usdc, usdt, dai]
+  [
+    'ZKSYNC_ERA',
+    [
+      {
+        contractAddress: '0x3355df6d4c9c3035724fd0e3914de96a5a83aaf4',
+        decimal: 6,
+        symbol: 'USDC',
+        name: 'USD Coin',
+        coingeckoId: 'usd-coin',
+        logo: 'https://assets.coingecko.com/coins/images/6319/large/USD_Coin_icon.png?1547042389',
+      },
+      {
+        contractAddress: '0x493257fd37edb34451f62edf8d2a0c418852ba4c',
+        decimal: 6,
+        symbol: 'USDT',
+        name: 'Tether',
+        coingeckoId: 'tether',
+        logo: 'https://assets.coingecko.com/coins/images/325/large/Tether-logo.png?1598003707',
+      },
+    ],
+  ],
+  [
+    'POLYGON_ZKEVM',
+    [
+      {
+        contractAddress: '0xa8ce8aee21bc2a48a5ef670afcc9274c7bbbc035',
+        decimal: 6,
+        symbol: 'USDC',
+        name: 'USD Coin',
+        coingeckoId: 'usd-coin',
+        logo: 'https://assets.coingecko.com/coins/images/6319/large/USD_Coin_icon.png?1547042389',
+      },
+      {
+        contractAddress: '0x1e4a5963abfd975d8c9021ce480b42188849d41d',
+        decimal: 6,
+        symbol: 'USDT',
+        name: 'Tether',
+        coingeckoId: 'tether',
+        logo: 'https://assets.coingecko.com/coins/images/325/large/Tether-logo.png?1598003707',
+      },
+      {
+        contractAddress: '0xc5015b9d9161dca7e18e32f6f25c4ad850731fd4',
+        decimal: 18,
+        symbol: 'DAI',
+        name: 'Dai',
+        coingeckoId: 'dai',
+        logo: 'https://assets.coingecko.com/coins/images/9956/large/Badge_Dai.png?1687143508',
+      },
+    ],
+  ],
+  [
+    'BASE',
+    [
+      {
+        contractAddress: '0x833589fcd6edb6e08f4c7c32d4f71b54bda02913',
+        decimal: 6,
+        symbol: 'USDC',
+        name: 'USD Coin',
+        coingeckoId: 'usd-coin',
+        logo: 'https://assets.coingecko.com/coins/images/6319/large/USD_Coin_icon.png?1547042389',
+      },
+      {
+        contractAddress: '0xd9aaec86b65d86f6a7b5b1b0c42ffa531710b6ca',
+        decimal: 6,
+        symbol: 'USDBC',
+        name: 'Bridged USD Coin (Base)',
+        coingeckoId: 'bridged-usd-coin-base',
+        logo: 'https://assets.coingecko.com/coins/images/6319/large/USD_Coin_icon.png?1547042389',
+      },
+      {
+        contractAddress: '0x50c5725949a6f0c72e6c4a641f24049a917db0cb',
+        decimal: 18,
+        symbol: 'DAI',
+        name: 'Dai',
+        coingeckoId: 'dai',
+        logo: 'https://assets.coingecko.com/coins/images/9956/large/Badge_Dai.png?1687143508',
+      },
+    ],
+  ],
+  [
+    'EVMOS',
+    [
+      {
+        contractAddress: '0x51e44ffad5c2b122c8b635671fcc8139dc636e82',
+        decimal: 18,
+        symbol: 'USDC',
+        name: 'USD Coin',
+        coingeckoId: 'usd-coin',
+        logo: 'https://assets.coingecko.com/coins/images/6319/large/USD_Coin_icon.png?1547042389',
+      },
+    ],
+  ],
+  ['MOONBEAM', []],
+  ['MOONRIVER', []],
+  [
+    'AURORA',
+    [
+      {
+        contractAddress: '0xb12bfca5a55806aaf64e99521918a4bf0fc40802',
+        decimal: 6,
+        symbol: 'USDC',
+        name: 'USD Coin',
+        coingeckoId: 'usd-coin',
+        logo: 'https://assets.coingecko.com/coins/images/6319/large/USD_Coin_icon.png?1547042389',
+      },
+      {
+        contractAddress: '0x4988a896b1227218e4a686fde5eabdcabd91571f',
+        decimal: 6,
+        symbol: 'USDT',
+        name: 'Tether',
+        coingeckoId: 'tether',
+        logo: 'https://assets.coingecko.com/coins/images/325/large/Tether-logo.png?1598003707',
+      },
+      {
+        contractAddress: '0xe3520349f477a5f6eb06107066048508498a291b',
+        decimal: 18,
+        symbol: 'DAI',
+        name: 'Dai',
+        coingeckoId: 'dai',
+        logo: 'https://assets.coingecko.com/coins/images/9956/large/Badge_Dai.png?1687143508',
+      },
+    ],
+  ],
+  [
+    'TRON',
+    [
+      {
+        contractAddress: 'TR7NHqjeKQxGTCi8q8ZY4pL8otSzgjLj6t',
+        decimal: 6,
+        symbol: 'USDT',
+        name: 'Tether',
+        coingeckoId: 'tether',
+        logo: 'https://assets.coingecko.com/coins/images/325/large/Tether-logo.png?1598003707',
+      },
+    ],
+  ],
+]);
