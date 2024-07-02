@@ -1,6 +1,7 @@
 import Web3 from 'web3';
 import { HdWalletContextDef } from '../reducers/hdwallet_reducer';
 import { TokenMeta } from './tokenMetaData.model';
+import { Chain } from 'viem';
 
 export interface SwapMetaData {
   web3: Web3;
@@ -14,6 +15,9 @@ export interface SwapMetaData {
   gasFeeResponse?: any;
   fromTokenContractAddress?: string;
   contractData?: any;
+  overrideAllowanceCheck?: boolean;
+  overrideAmountCheck?: boolean;
+  chainDetails?: Chain | undefined;
 }
 
 export interface AllowanceParams {

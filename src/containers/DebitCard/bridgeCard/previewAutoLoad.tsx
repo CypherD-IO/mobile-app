@@ -62,6 +62,7 @@ export default function PreviewAutoLoad({
         ),
         denom: String(selectedToken.denom),
         expiry: expiryDate,
+        selectedToken,
       });
       if (!grantResponse.isError) {
         const payload = {

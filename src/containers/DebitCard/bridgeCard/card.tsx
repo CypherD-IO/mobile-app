@@ -33,7 +33,7 @@ import { useGlobalModalContext } from '../../../components/v2/GlobalModal';
 import AppImages from '../../../../assets/images/appImages';
 import clsx from 'clsx';
 import { Card } from '../../../models/card.model';
-import { get, isEmpty, isUndefined, orderBy } from 'lodash';
+import { get, isEmpty, isUndefined, orderBy, some } from 'lodash';
 import { UserCardDetails } from '../../../models/userCardDetails.interface';
 import { CardProfile } from '../../../models/cardProfile.model';
 import { useIsFocused } from '@react-navigation/native';
@@ -221,9 +221,7 @@ export default function CardScreen({
   };
 
   const isHiddenCard = () => {
-    return userCardDetails?.cards.map(
-      card => card.status === CardStatus.HIDDEN,
-    );
+    return some(userCardDetails?.cards, { status: CardStatus.HIDDEN });
   };
 
   return (

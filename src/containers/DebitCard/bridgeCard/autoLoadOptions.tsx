@@ -18,9 +18,13 @@ import { IAutoLoadConfig } from '../../../models/autoLoad.interface';
 import Toast from 'react-native-toast-message';
 import { getWalletProfile } from '../../../core/card';
 import LottieView from 'lottie-react-native';
-import { COSMOS_CHAINS_TYPE } from '../../../constants/type';
 import useTransactionManager from '../../../hooks/useTransactionManager';
 import { getChain } from '../../../core/util';
+import {
+  ChainConfigMapping,
+  ChainNameMapping,
+} from '../../../constants/server';
+import { get } from 'lodash';
 
 export default function AutoLoadOptionsModal({
   isModalVisible,
@@ -90,6 +94,11 @@ export default function AutoLoadOptionsModal({
         chain: getChain(autoLoadConfig.chain),
         granter: autoLoadConfig?.granterAddress,
         grantee: autoLoadConfig?.granteeAddress,
+        contractAddress: autoLoadConfig?.assetId,
+        chainDetails: get(
+          ChainConfigMapping,
+          get(ChainNameMapping, [autoLoadConfig?.chain]),
+        ),
       });
       if (!revokeResponse.isError) {
         const response = await postWithAuth('/v1/cards/autoLoad/revoke', {});
