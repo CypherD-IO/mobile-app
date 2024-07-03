@@ -4,14 +4,21 @@ import { AbiItem } from 'web3-utils';
 import { namehash } from 'ethers';
 import { useContext } from 'react';
 import { ensAbi } from '../../constants/data';
-import { CHAIN_ETH, EnsCoinTypes } from '../../constants/server';
+import {
+  CHAIN_ETH,
+  ChainConfigMapping,
+  ChainNameMapping,
+  EnsCoinTypes,
+} from '../../constants/server';
 import { GlobalContext } from '../../core/globalContext';
 import { getWeb3Endpoint } from '../../core/util';
+import { createEnsPublicClient } from '@ensdomains/ensjs';
+import { get } from 'lodash';
+import { mainnet } from 'viem/chains';
+import { http } from 'viem';
 
 const ENS_RESOLVER_CONTRACT_ADDRESS =
   '0x4976fb03C32e5B8cfe2b6cCB31c09Ba78EBaBa41';
-const ENS_GRAPHQL_API =
-  'https://api.thegraph.com/subgraphs/name/ensdomains/ens';
 
 export default function useEns() {
   const globalContext = useContext(GlobalContext);
@@ -39,15 +46,21 @@ export default function useEns() {
   };
 
   const resolveDomain = async (address: string): Promise<string | null> => {
-    const domains = await axios.post(ENS_GRAPHQL_API, {
-      operationName: 'getNamesFromSubgraph',
-      query:
-        'query getNamesFromSubgraph($address: String!) {\n  domains(first: 1000, where: {resolvedAddress: $address}) {\n    name\n    __typename\n    id\n  }\n}\n',
-      variables: {
-        address,
-      },
-    });
-    return domains.data?.data?.domains?.[0]?.name ?? null;
+    try {
+      // ens for eth address
+      const client = createEnsPublicClient({
+        chain: mainnet,
+        transport: http(),
+      });
+
+      // Get the ENS name for the address
+      const ensName = await client.getName({ address });
+      console.log('🚀 ~ getENSNames ~ ensName:', ensName);
+      return ensName?.name ?? null;
+    } catch (error) {
+      console.error(`Error resolving ENS for address ${address}:`, error);
+      return null;
+    }
   };
 
   return [resolveAddress, resolveDomain];
