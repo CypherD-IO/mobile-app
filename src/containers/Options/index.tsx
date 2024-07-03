@@ -48,7 +48,6 @@ import useConnectionManager from '../../hooks/useConnectionManager';
 import { get } from 'lodash';
 import { CHAIN_ETH } from '../../constants/server';
 import { logAnalytics } from '../../core/analytics';
-import { useIsFocused } from '@react-navigation/native';
 
 const { DynamicView, CText, DynamicImage } = require('../../styles');
 
@@ -121,7 +120,6 @@ export default function Options(props: {
     props.navigation.navigate(screenTitle.PORTFOLIO);
     return true;
   };
-  const isFocused = useIsFocused();
 
   useEffect(() => {
     void inAppUpdates.checkNeedsUpdate().then(result => {
@@ -191,7 +189,7 @@ export default function Options(props: {
     };
 
     void getTitleValue();
-  }, [isFocused]);
+  });
 
   const referToFriend = () => {
     onShare(t('RECOMMEND_TITLE'), t('RECOMMEND_MESSAGE'), t('RECOMMEND_URL'))

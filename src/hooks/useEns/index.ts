@@ -16,6 +16,7 @@ import { createEnsPublicClient } from '@ensdomains/ensjs';
 import { get } from 'lodash';
 import { mainnet } from 'viem/chains';
 import { http } from 'viem';
+import * as Sentry from '@sentry/react-native';
 
 const ENS_RESOLVER_CONTRACT_ADDRESS =
   '0x4976fb03C32e5B8cfe2b6cCB31c09Ba78EBaBa41';
@@ -55,10 +56,9 @@ export default function useEns() {
 
       // Get the ENS name for the address
       const ensName = await client.getName({ address });
-      console.log('🚀 ~ getENSNames ~ ensName:', ensName);
       return ensName?.name ?? null;
     } catch (error) {
-      console.error(`Error resolving ENS for address ${address}:`, error);
+      Sentry.captureException(error);
       return null;
     }
   };
