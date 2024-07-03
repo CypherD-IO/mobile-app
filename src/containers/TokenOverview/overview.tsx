@@ -980,6 +980,7 @@ export default function Overview({
                 gradientEnabled={true}
                 backgroundGradientFrom={Colors.buttonColor}
                 backgroundGradientTo={Colors.white}
+                fill='none'
               />
               <ChartDot size={12} style={styles.chartDot} />
             </CyDView>
