@@ -7,7 +7,7 @@ import {
 import { InjectiveStargate } from '@injectivelabs/sdk-ts';
 import * as Sentry from '@sentry/react-native';
 import { MsgTransfer } from 'cosmjs-types/ibc/applications/transfer/v1/tx';
-import { get, set } from 'lodash';
+import { ceil, get, map, set } from 'lodash';
 import Long from 'long';
 import { useContext } from 'react';
 import Toast from 'react-native-toast-message';
@@ -18,10 +18,12 @@ import {
   CHAIN_OPTIMISM,
   CHAIN_SHARDEUM,
   CHAIN_SHARDEUM_SPHINX,
+  COSMOS_CHAINS_LIST,
   Chain,
   ChainBackendNames,
   ChainConfigMapping,
   ChainNameMapping,
+  EVM_CHAINS,
   TRANSACTION_ENDPOINT,
 } from '../../constants/server';
 import axios from '../../core/Http';
@@ -46,6 +48,9 @@ import { ethers } from 'ethers';
 import { SendAuthorization } from 'cosmjs-types/cosmos/bank/v1beta1/authz';
 import { IAutoLoadResponse } from '../../models/autoLoadResponse.interface';
 import { MsgRevoke } from 'cosmjs-types/cosmos/authz/v1beta1/tx';
+import { allowanceApprovalContractABI, getApproval } from '../../core/swap';
+import { Holding } from '../../core/Portfolio';
+import { getGasPriceFor } from '../../containers/Browser/gasHelper';
 
 export interface TransactionServiceResult {
   isError: boolean;
@@ -89,6 +94,7 @@ export default function useTransactionManager() {
     simulateEvmosUnDelegate,
   } = useEvmosSigner();
   const { getCosmosSignerClient, getCosmosRpc } = useCosmosSigner();
+  const hdWallet = useContext<any>(HdWalletContext);
 
   const EVMOS_TXN_ENDPOINT = evmosUrls.transact;
 
@@ -1277,6 +1283,61 @@ export default function useTransactionManager() {
     }
   };
 
+  const checkGrantAllowance = async ({
+    web3,
+    fromTokenContractAddress,
+    routerAddress,
+    amount,
+    overrideAllowanceCheck = false,
+    chainDetails,
+  }) => {
+    const { ethereum } = hdWallet?.state.wallet;
+    return await new Promise((resolve, reject) => {
+      void (async () => {
+        try {
+          const contract = new web3.eth.Contract(
+            allowanceApprovalContractABI as any,
+            fromTokenContractAddress,
+          );
+          const response = await contract.methods
+            .allowance(ethereum.address, routerAddress)
+            .call();
+          const tokenAmount = String(Number(ceil(amount)));
+          const allowance = response;
+          if (
+            overrideAllowanceCheck ||
+            Number(tokenAmount) > Number(allowance)
+          ) {
+            const tokens = Number(ceil(amount)).toString();
+            const resp = contract.methods
+              .approve(routerAddress, tokens)
+              .encodeABI();
+            const gasLimit = await web3?.eth.estimateGas({
+              from: ethereum.address,
+              // For Optimism the ETH token has different contract address
+              to: fromTokenContractAddress,
+              value: '0x0',
+              data: resp,
+            });
+            const gasFeeResponse = await getGasPriceFor(chainDetails, web3);
+            resolve({
+              isAllowance: false,
+              contract,
+              contractData: resp,
+              tokens,
+              gasLimit,
+              gasFeeResponse,
+            });
+          } else {
+            resolve({ isAllowance: true });
+          }
+        } catch (e) {
+          resolve(false);
+        }
+      })();
+    });
+  };
+
   async function grantAutoLoad({
     chain,
     granter,
@@ -1285,6 +1346,7 @@ export default function useTransactionManager() {
     amount,
     denom,
     expiry,
+    selectedToken,
   }: {
     chain: Chain;
     granter: string;
@@ -1293,70 +1355,116 @@ export default function useTransactionManager() {
     amount: string;
     denom: string;
     expiry: string;
+    selectedToken: Holding;
   }): Promise<IAutoLoadResponse> {
     try {
       const { chainName, backendName } = chain;
-      const { gasPrice, contractDecimal } = get(cosmosConfig, chainName);
-      const grantMsg = {
-        typeUrl: '/cosmos.authz.v1beta1.MsgGrant',
-        value: {
-          granter,
-          grantee,
-          grant: {
-            authorization: {
-              typeUrl: '/cosmos.bank.v1beta1.SendAuthorization',
-              value: SendAuthorization.encode(
-                SendAuthorization.fromPartial({
-                  spendLimit: [
-                    {
-                      denom,
-                      amount: ethers
-                        .parseUnits(
-                          limitDecimalPlaces(amount, contractDecimal),
-                          contractDecimal,
-                        )
-                        .toString(),
-                    },
-                  ],
-                  allowList,
-                }),
-              ).finish(),
-            },
-            expiration: null,
+      if (map(EVM_CHAINS, 'backendName').includes(backendName)) {
+        const web3 = new Web3(getWeb3Endpoint(chain, globalContext));
+        const allowanceResp = await checkGrantAllowance({
+          web3,
+          fromTokenContractAddress: selectedToken.contractAddress,
+          routerAddress: grantee,
+          amount,
+          chainDetails: selectedToken.chainDetails,
+        });
+
+        if (allowanceResp?.isAllowance) {
+          return { isError: false, hash: '' };
+        }
+
+        if (!allowanceResp) {
+          return { isError: true, error: 'Error in check for grant allowance' };
+        }
+
+        const approvalResp = await getApproval({
+          web3,
+          fromTokenContractAddress: selectedToken.contractAddress,
+          hdWallet,
+          gasLimit: allowanceResp?.gasLimit,
+          gasFeeResponse: {
+            ...allowanceResp?.gasFeeResponse,
+            gasPrice: get(allowanceResp, ['gasFeeResponse', 'gasPrice']) * 1.5,
           },
-        },
-      };
+          contractData: allowanceResp?.contractData,
+        });
 
-      const signer = await getCosmosSignerClient(chainName);
-      if (signer) {
-        const rpc = getCosmosRpc(backendName, true);
-
-        const signingClient = await getCosmosSigningClient(chain, rpc, signer);
-
-        const simulation = await signingClient.simulate(
-          granter,
-          [grantMsg],
-          'Cypher',
-        );
-        const gasFee = simulation * 2.5 * gasPrice;
-        const fee = {
-          gas: Math.floor(simulation * 2.5).toString(),
-          amount: [
-            {
-              denom,
-              amount: Math.floor(gasFee).toString(),
+        if (approvalResp?.isError) {
+          return { isError: true, error: 'Error approving allowance' };
+        } else {
+          return { isError: false, hash: approvalResp?.transactionHash };
+        }
+      } else if (map(COSMOS_CHAINS_LIST, 'backendName').includes(backendName)) {
+        const { gasPrice, contractDecimal } = get(cosmosConfig, chainName);
+        const grantMsg = {
+          typeUrl: '/cosmos.authz.v1beta1.MsgGrant',
+          value: {
+            granter,
+            grantee,
+            grant: {
+              authorization: {
+                typeUrl: '/cosmos.bank.v1beta1.SendAuthorization',
+                value: SendAuthorization.encode(
+                  SendAuthorization.fromPartial({
+                    spendLimit: [
+                      {
+                        denom,
+                        amount: ethers
+                          .parseUnits(
+                            limitDecimalPlaces(amount, contractDecimal),
+                            contractDecimal,
+                          )
+                          .toString(),
+                      },
+                    ],
+                    allowList,
+                  }),
+                ).finish(),
+              },
+              expiration: null,
             },
-          ],
+          },
         };
-        const grantResult = await signingClient.signAndBroadcast(
-          granter,
-          [grantMsg],
-          fee,
-          'Cypher',
-        );
-        return { isError: false, hash: grantResult.transactionHash };
+
+        const signer = await getCosmosSignerClient(chainName);
+        if (signer) {
+          const rpc = getCosmosRpc(backendName, true);
+
+          const signingClient = await getCosmosSigningClient(
+            chain,
+            rpc,
+            signer,
+          );
+
+          const simulation = await signingClient.simulate(
+            granter,
+            [grantMsg],
+            'Cypher',
+          );
+          const gasFee = simulation * 2.5 * gasPrice;
+          const fee = {
+            gas: Math.floor(simulation * 2.5).toString(),
+            amount: [
+              {
+                denom,
+                amount: Math.floor(gasFee).toString(),
+              },
+            ],
+          };
+          const grantResult = await signingClient.signAndBroadcast(
+            granter,
+            [grantMsg],
+            fee,
+            'Cypher',
+          );
+          return { isError: false, hash: grantResult.transactionHash };
+        }
+        return { isError: true, error: 'Unable to fetch signer' };
       }
-      return { isError: true, error: 'Unable to fetch signer' };
+      return {
+        isError: true,
+        error: 'Auto load currently not supported for this chain',
+      };
     } catch (e) {
       return { isError: true, error: e };
     }
@@ -1366,51 +1474,93 @@ export default function useTransactionManager() {
     chain,
     granter,
     grantee,
+    contractAddress,
+    chainDetails,
   }: {
     chain: Chain;
     granter: string;
     grantee: string;
+    contractAddress: string;
+    chainDetails: Chain;
   }): Promise<IAutoLoadResponse> {
     try {
       const { chainName, backendName } = chain;
-      const { gasPrice, denom } = get(cosmosConfig, chainName);
-      const revokeMsg = {
-        typeUrl: '/cosmos.authz.v1beta1.MsgRevoke',
-        value: MsgRevoke.fromPartial({
-          granter,
-          grantee,
-          msgTypeUrl: '/cosmos.bank.v1beta1.MsgSend',
-        }),
-      };
-      const signer = await getCosmosSignerClient(chainName);
-      if (signer) {
-        const rpc = getCosmosRpc(backendName, true);
+      if (map(EVM_CHAINS, 'backendName').includes(backendName)) {
+        const web3 = new Web3(getWeb3Endpoint(chain, globalContext));
+        const allowanceResp = await checkGrantAllowance({
+          web3,
+          fromTokenContractAddress: contractAddress,
+          routerAddress: grantee,
+          amount: 0,
+          overrideAllowanceCheck: true,
+          chainDetails,
+        });
 
-        const signingClient = await getCosmosSigningClient(chain, rpc, signer);
-        const simulation = await signingClient.simulate(
-          granter,
-          [revokeMsg],
-          'Cypher',
-        );
-        const gasFee = simulation * 2.5 * gasPrice;
-        const fee = {
-          gas: Math.floor(simulation * 2.5).toString(),
-          amount: [
-            {
-              denom,
-              amount: Math.floor(gasFee).toString(),
-            },
-          ],
+        const approvalResp = await getApproval({
+          web3,
+          fromTokenContractAddress: contractAddress,
+          hdWallet,
+          gasLimit: ceil(allowanceResp?.gasLimit),
+          gasFeeResponse: {
+            ...allowanceResp?.gasFeeResponse,
+            gasPrice: get(allowanceResp, ['gasFeeResponse', 'gasPrice']) * 1.5,
+          },
+          contractData: allowanceResp?.contractData,
+        });
+
+        if (approvalResp?.isError) {
+          return { isError: true, error: 'Error in revoking allowance' };
+        } else {
+          return { isError: false, hash: approvalResp?.transactionHash };
+        }
+      } else if (map(COSMOS_CHAINS_LIST, 'backendName').includes(backendName)) {
+        const { gasPrice, denom } = get(cosmosConfig, chainName);
+        const revokeMsg = {
+          typeUrl: '/cosmos.authz.v1beta1.MsgRevoke',
+          value: MsgRevoke.fromPartial({
+            granter,
+            grantee,
+            msgTypeUrl: '/cosmos.bank.v1beta1.MsgSend',
+          }),
         };
-        const revokeResult = await signingClient.signAndBroadcast(
-          granter,
-          [revokeMsg],
-          fee,
-          'Cypher',
-        );
-        return { isError: false, hash: revokeResult.transactionHash };
+        const signer = await getCosmosSignerClient(chainName);
+        if (signer) {
+          const rpc = getCosmosRpc(backendName, true);
+
+          const signingClient = await getCosmosSigningClient(
+            chain,
+            rpc,
+            signer,
+          );
+          const simulation = await signingClient.simulate(
+            granter,
+            [revokeMsg],
+            'Cypher',
+          );
+          const gasFee = simulation * 2.5 * gasPrice;
+          const fee = {
+            gas: Math.floor(simulation * 2.5).toString(),
+            amount: [
+              {
+                denom,
+                amount: Math.floor(gasFee).toString(),
+              },
+            ],
+          };
+          const revokeResult = await signingClient.signAndBroadcast(
+            granter,
+            [revokeMsg],
+            fee,
+            'Cypher',
+          );
+          return { isError: false, hash: revokeResult.transactionHash };
+        }
+        return { isError: true, error: 'Unable to fetch signer' };
       }
-      return { isError: true, error: 'Unable to fetch signer' };
+      return {
+        isError: true,
+        error: 'Revoke Auto load currently not supported for this chain',
+      };
     } catch (e) {
       return { isError: true, error: e };
     }

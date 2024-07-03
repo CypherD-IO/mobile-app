@@ -12,7 +12,12 @@ import AppImages from '../../../../assets/images/appImages';
 import { useTranslation } from 'react-i18next';
 import moment from 'moment';
 import { Holding } from '../../../core/Portfolio';
-import { AUTO_LOAD_SUPPORTED_CHAINS } from '../../../constants/server';
+import {
+  AUTO_LOAD_SUPPORTED_CHAINS,
+  COSMOS_CHAINS_LIST,
+  EVM_CHAINS,
+  STABLE_TOKEN_CHAIN_MAP,
+} from '../../../constants/server';
 import useAxios from '../../../core/HttpRequest';
 import ChooseTokenModal from '../../../components/v2/chooseTokenModal';
 import { PortfolioContext } from '../../../core/util';
@@ -22,6 +27,8 @@ import { ButtonType } from '../../../constants/enum';
 import { screenTitle } from '../../../constants';
 import { GlobalContext } from '../../../core/globalContext';
 import { CardProfile } from '../../../models/cardProfile.model';
+import { EVM_CHAINS_TYPE } from '../../../constants/type';
+import { map } from 'lodash';
 
 export default function AutoLoad({ navigation }: { navigation: any }) {
   const [threshold, setThreshold] = useState('100');
@@ -41,12 +48,23 @@ export default function AutoLoad({ navigation }: { navigation: any }) {
   const globalContext = useContext<any>(GlobalContext);
   const cardProfile: CardProfile = globalContext.globalState.cardProfile;
   const supportedTokens =
-    portfolioState.statePortfolio.tokenPortfolio.totalHoldings.filter(
-      (token: Holding) =>
-        token.isVerified &&
-        token.isFundable &&
-        AUTO_LOAD_SUPPORTED_CHAINS.includes(token.chainDetails.backendName),
-    );
+    portfolioState.statePortfolio.tokenPortfolio.totalHoldings.filter(token => {
+      const { backendName: chain } = token.chainDetails;
+      const stableTokens = STABLE_TOKEN_CHAIN_MAP.get(chain as EVM_CHAINS_TYPE);
+      if (
+        map(EVM_CHAINS, 'backendName').includes(chain) &&
+        stableTokens?.find(
+          stableToken =>
+            stableToken.contractAddress.toLowerCase() ===
+            token.contractAddress.toLowerCase(),
+        )
+      ) {
+        return AUTO_LOAD_SUPPORTED_CHAINS.includes(chain) && token.isFundable;
+      } else if (map(COSMOS_CHAINS_LIST, 'backendName').includes(chain)) {
+        return AUTO_LOAD_SUPPORTED_CHAINS.includes(chain) && token.isFundable;
+      }
+      return false;
+    });
   const [selectedToken, setSelectedToken] = useState<Holding>(
     supportedTokens?.length ? supportedTokens[0] : {},
   );
