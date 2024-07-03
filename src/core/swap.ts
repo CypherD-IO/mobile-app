@@ -8,7 +8,7 @@ import { _NO_CYPHERD_CREDENTIAL_AVAILABLE_ } from './util';
 import { get } from 'lodash';
 
 // Contract ABI for allowance and approval
-const contractABI = [
+export const allowanceApprovalContractABI = [
   {
     constant: true,
     inputs: [
@@ -131,7 +131,7 @@ export const checkAllowance = async ({
     void (async () => {
       try {
         const contract = new web3.eth.Contract(
-          contractABI as any,
+          allowanceApprovalContractABI as any,
           fromTokenContractAddress,
         );
         const response = await contract.methods
