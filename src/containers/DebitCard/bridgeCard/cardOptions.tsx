@@ -9,7 +9,7 @@ import {
   CyDView,
 } from '../../../styles/tailwindStyles';
 import AppImages from '../../../../assets/images/appImages';
-import { CardProviders, CardStatus } from '../../../constants/enum';
+import { CardProviders, CardType } from '../../../constants/enum';
 import { screenTitle } from '../../../constants';
 import { CardProfile } from '../../../models/cardProfile.model';
 import CyDModalLayout from '../../../components/v2/modal';
@@ -33,18 +33,22 @@ export default function CardOptionsModal({
   const isPhoneVerified = cardProfile.pc?.phoneVerified ?? false;
 
   const cardOptions = [
-    {
-      title: 'Set New Pin',
-      description: 'Change pin for your physical card',
-      image: AppImages.CIRCLE_WITH_DOTS,
-      action: () => {
-        navigation.navigate(screenTitle.CARD_SET_PIN_SCREEN, {
-          currentCardProvider: cardProvider,
-          card,
-        });
-        setShowModal(false);
-      },
-    },
+    ...(card.type === CardType.PHYSICAL
+      ? [
+          {
+            title: 'Set New Pin',
+            description: 'Change pin for your physical card',
+            image: AppImages.CIRCLE_WITH_DOTS,
+            action: () => {
+              navigation.navigate(screenTitle.CARD_SET_PIN_SCREEN, {
+                currentCardProvider: cardProvider,
+                card,
+              });
+              setShowModal(false);
+            },
+          },
+        ]
+      : []),
     {
       title: 'Linked Wallets',
       description: 'Link another wallet to card',
