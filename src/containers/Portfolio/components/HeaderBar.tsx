@@ -1,4 +1,4 @@
-import React, { ReactNode, useContext } from 'react';
+import React, { ReactNode, useContext, useEffect, useState } from 'react';
 import {
   CyDAnimatedView,
   CyDFastImage,
@@ -39,6 +39,13 @@ export const HeaderBar = ({
 }: HeaderBarProps) => {
   const portfolioState = useContext<any>(PortfolioContext);
   const { connectionType } = useConnectionManager();
+  const [connectionTypeValue, setConnectionTypeValue] =
+    useState(connectionType);
+
+  useEffect(() => {
+    setConnectionTypeValue(connectionType);
+  }, [connectionType]);
+
   const OFFSET_TABVIEW = isIOS() ? -bannerHeight : 0;
   const opacity = useAnimatedStyle(() => {
     return {
@@ -69,7 +76,7 @@ export const HeaderBar = ({
         <CyDFastImage className={'h-[8px] w-[8px]'} source={AppImages.DOWN} />
       </CyDTouchView>
       <CyDAnimatedView style={opacity}>{renderTitleComponent}</CyDAnimatedView>
-      {connectionType !== ConnectionTypes.WALLET_CONNECT && (
+      {connectionTypeValue !== ConnectionTypes.WALLET_CONNECT && (
         <CyDTouchView
           className={'pl-[8px] rounded-[18px]'}
           onPress={() => {

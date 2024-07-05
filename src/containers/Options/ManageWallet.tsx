@@ -1,4 +1,4 @@
-import React, { useContext, useEffect } from 'react';
+import React, { useContext, useEffect, useState } from 'react';
 import { BackHandler } from 'react-native';
 import { useTranslation } from 'react-i18next';
 import { HdWalletContext } from '../../core/util';
@@ -64,9 +64,15 @@ export default function ManageWallet({ navigation }) {
   const { t } = useTranslation();
   const hdWalletContext = useContext<any>(HdWalletContext);
   const { connectionType, deleteWallet } = useConnectionManager();
+  const [connectionTypeValue, setConnectionTypeValue] =
+    useState(connectionType);
+
+  useEffect(() => {
+    setConnectionTypeValue(connectionType);
+  }, [connectionType]);
 
   const manageWalletData: IManageWalletData[] =
-    connectionType === ConnectionTypes.WALLET_CONNECT
+    connectionTypeValue === ConnectionTypes.WALLET_CONNECT
       ? [
           {
             index: 0,
