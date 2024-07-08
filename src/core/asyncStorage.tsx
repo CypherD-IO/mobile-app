@@ -502,6 +502,7 @@ export const getRefreshToken = async () => {
 };
 
 export const setConnectionType = async (token: string) => {
+  console.log('set connection type called : ', token);
   try {
     await AsyncStorage.setItem('CONNECTION_TYPE', token);
   } catch (error) {

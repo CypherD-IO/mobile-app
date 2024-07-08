@@ -1,4 +1,10 @@
-import React, { useContext, useEffect, useRef, useState } from 'react';
+import React, {
+  createContext,
+  useContext,
+  useEffect,
+  useRef,
+  useState,
+} from 'react';
 import { WalletConnectListener } from '../walletConnectListener';
 import { WagmiProvider } from 'wagmi';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
@@ -30,6 +36,8 @@ import {
   HdWalletContext,
   _NO_CYPHERD_CREDENTIAL_AVAILABLE_,
 } from '../../core/util';
+
+const WagmiConfigContext = createContext(null);
 
 export const WagmiConfigBuilder: React.FC = ({ children }) => {
   const [wagmiConfig, setWagmiConfig] = useState();
@@ -113,12 +121,18 @@ export const WagmiConfigBuilder: React.FC = ({ children }) => {
   //   });
   const queryClient = new QueryClient();
   return wagmiConfig ? (
-    <WagmiProvider config={wagmiConfig}>
-      <QueryClientProvider client={queryClient}>
-        <WalletConnectListener>{children}</WalletConnectListener>
-      </QueryClientProvider>
-    </WagmiProvider>
+    <WagmiConfigContext.Provider value={wagmiConfig}>
+      <WagmiProvider config={wagmiConfig}>
+        <QueryClientProvider client={queryClient}>
+          <WalletConnectListener>{children}</WalletConnectListener>
+        </QueryClientProvider>
+      </WagmiProvider>
+    </WagmiConfigContext.Provider>
   ) : (
     <Loading />
   );
+};
+
+export const useWagmiConfig = () => {
+  return useContext(WagmiConfigContext);
 };
