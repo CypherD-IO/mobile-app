@@ -113,8 +113,13 @@ export default function Options(props: {
     false, // isDebug
   );
   const { connectionType } = useConnectionManager();
-
+  const [connectionTypeValue, setConnectionTypeValue] =
+    useState(connectionType);
   const resolveDomain = useEns()[1];
+
+  useEffect(() => {
+    setConnectionTypeValue(connectionType);
+  }, [connectionType]);
 
   const handleBackButton = () => {
     props.navigation.navigate(screenTitle.PORTFOLIO);
@@ -292,7 +297,7 @@ export default function Options(props: {
               )}
 
               {!isReadOnlyWallet &&
-                connectionType !== ConnectionTypes.WALLET_CONNECT && (
+                connectionTypeValue !== ConnectionTypes.WALLET_CONNECT && (
                   <OptionsContainer
                     sentryLabel={'wallet-connect'}
                     onPress={() => {
@@ -304,7 +309,7 @@ export default function Options(props: {
                 )}
 
               {!isReadOnlyWallet &&
-                connectionType !== ConnectionTypes.WALLET_CONNECT && (
+                connectionTypeValue !== ConnectionTypes.WALLET_CONNECT && (
                   <DynamicView
                     dynamic
                     dynamicWidth

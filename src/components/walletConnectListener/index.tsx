@@ -44,6 +44,10 @@ export const WalletConnectListener: React.FC = ({ children }) => {
   );
   const { walletInfo } = useWalletInfo();
 
+  useEffect(() => {
+    setLoading(connectionType === ConnectionTypes.WALLET_CONNECT);
+  }, [connectionType]);
+
   const { signMessageAsync } = useSignMessage({
     mutation: {
       async onSuccess(data) {

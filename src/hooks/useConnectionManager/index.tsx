@@ -48,6 +48,7 @@ export default function useConnectionManager() {
   const getConnectedType = async () => {
     const connectedType = await getConnectionType();
     setConnectionType(connectedType as ConnectionTypes);
+    return connectedType;
   };
 
   const deletAndResetReducers = async () => {
@@ -147,5 +148,6 @@ export default function useConnectionManager() {
     openWalletConnectModal,
     disconnectWalletConnect,
     deleteWallet,
+    getConnectedType,
   };
 }

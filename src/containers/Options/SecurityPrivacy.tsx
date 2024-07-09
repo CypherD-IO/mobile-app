@@ -1,5 +1,5 @@
 import * as C from '../../constants';
-import React, { useContext, useEffect } from 'react';
+import React, { useContext, useEffect, useState } from 'react';
 import { BackHandler } from 'react-native';
 import { useTranslation } from 'react-i18next';
 import {
@@ -32,8 +32,16 @@ export default function SecurityPrivacy(props) {
   const hdWalletContext = useContext<any>(HdWalletContext);
   const { connectionType } = useConnectionManager();
   const { isReadOnlyWallet } = hdWalletContext.state;
+
+  const [connectionTypeValue, setConnectionTypeValue] =
+    useState(connectionType);
+
+  useEffect(() => {
+    setConnectionTypeValue(connectionType);
+  }, [connectionType]);
+
   const isSecurityOptionDisabled =
-    isReadOnlyWallet || connectionType === ConnectionTypes.WALLET_CONNECT;
+    isReadOnlyWallet || connectionTypeValue === ConnectionTypes.WALLET_CONNECT;
   let securityPrivacyData: ISecurityPrivacyData[] = [
     {
       index: 0,
@@ -41,7 +49,7 @@ export default function SecurityPrivacy(props) {
       logo: AppImages.PRIVATE_KEY,
     },
   ];
-  if (connectionType === ConnectionTypes.SEED_PHRASE) {
+  if (connectionTypeValue === ConnectionTypes.SEED_PHRASE) {
     securityPrivacyData = [
       ...securityPrivacyData,
       {

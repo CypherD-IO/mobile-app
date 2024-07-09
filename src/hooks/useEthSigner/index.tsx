@@ -1,7 +1,10 @@
 import Toast from 'react-native-toast-message';
 import * as Sentry from '@sentry/react-native';
-import { EthTransaction, RawTransaction } from '../../models/ethSigner.interface';
-import { useContext } from 'react';
+import {
+  EthTransaction,
+  RawTransaction,
+} from '../../models/ethSigner.interface';
+import { useContext, useEffect, useState } from 'react';
 import {
   HdWalletContext,
   _NO_CYPHERD_CREDENTIAL_AVAILABLE_,
@@ -26,7 +29,7 @@ import { useWalletInfo } from '@web3modal/wagmi-react-native';
 
 export default function useEthSigner() {
   const { connector, chain } = useAccount();
-  const { connectionType } = useConnectionManager();
+  const { getConnectedType } = useConnectionManager();
   const hdWalletContext = useContext<any>(HdWalletContext);
   const { switchChainAsync } = useSwitchChain();
   const { sendTransactionAsync } = useSendTransaction();
@@ -39,10 +42,10 @@ export default function useEthSigner() {
   //   chainId: number,
   // ) => {
   //   return new Promise((resolve) => {
-  //     const timeout = new Promise((resolve) => 
+  //     const timeout = new Promise((resolve) =>
   //       setTimeout(() => resolve(hash), 5000)
   //     );
-  
+
   //     const receiptPromise = (async () => {
   //       try {
   //         const receipt = await waitForTransactionReceipt(config, {
@@ -54,7 +57,7 @@ export default function useEthSigner() {
   //         return hash;
   //       }
   //     })();
-  
+
   //     Promise.race([timeout, receiptPromise]).then((result) => {
   //       resolve(result);
   //     });
@@ -122,7 +125,8 @@ export default function useEthSigner() {
     transactionToBeSigned,
   }: RawTransaction) => {
     try {
-      if (connectionType === ConnectionTypes.WALLET_CONNECT) {
+      const connectionTypeValue = await getConnectedType();
+      if (connectionTypeValue === ConnectionTypes.WALLET_CONNECT) {
         const chainConfig = get(walletConnectChainData, sendChain).chainConfig;
         if (
           walletInfo?.name === 'MetaMask Wallet' &&
