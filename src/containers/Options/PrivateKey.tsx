@@ -72,6 +72,12 @@ export default function PrivateKey(props) {
     _NO_CYPHERD_CREDENTIAL_AVAILABLE_,
   );
   const { connectionType } = useConnectionManager();
+  const [connectionTypeValue, setConnectionTypeValue] =
+    useState(connectionType);
+
+  useEffect(() => {
+    setConnectionTypeValue(connectionType);
+  }, [connectionType]);
 
   let data: UserChain[] = [
     {
@@ -85,7 +91,7 @@ export default function PrivateKey(props) {
     // },
   ];
 
-  if (connectionType === ConnectionTypes.SEED_PHRASE) {
+  if (connectionTypeValue === ConnectionTypes.SEED_PHRASE) {
     data = [
       ...data,
       {
