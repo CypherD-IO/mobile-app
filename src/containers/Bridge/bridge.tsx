@@ -105,7 +105,7 @@ import {
 import { PORTFOLIO_EMPTY } from '../../reducers/portfolio_reducer';
 import useIsSignable from '../../hooks/useIsSignable';
 import ChooseTokenModal from '../../components/v2/chooseTokenModal';
-import { checkAllowance, getApproval, swapTokens } from '../../core/swap';
+import { checkAllowance } from '../../core/swap';
 import { TokenMeta } from '../../models/tokenMetaData.model';
 import { Colors } from '../../constants/theme';
 import { ethers } from 'ethers';
@@ -190,6 +190,7 @@ export default function Bridge(props: { navigation?: any; route?: any }) {
     swapSupportedChains.includes(chain.chainIdNumber),
   );
   const slippage = 0.4;
+  const { getApproval, swapTokens } = useTransactionManager();
 
   const [quoteData, setQuoteData] = useState<bridgeQuoteCosmosInterface>({
     fromAmount: 0,
@@ -1931,6 +1932,7 @@ export default function Bridge(props: { navigation?: any; route?: any }) {
       gasLimit,
       gasFeeResponse,
       contractData,
+      routerAddress,
     } = allowanceParams;
     const response = await getApproval({
       web3,
@@ -1939,6 +1941,11 @@ export default function Bridge(props: { navigation?: any; route?: any }) {
       gasLimit,
       gasFeeResponse,
       contractData,
+      chainDetails: fromChain,
+      contractParams: {
+        toAddress: routerAddress,
+        numberOfTokens: String(parseFloat(cryptoAmount) * 1000000),
+      },
     });
     if (response) {
       void swap({ showQuote: false });

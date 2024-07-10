@@ -24,6 +24,7 @@ import {
   ChainConfigMapping,
   ChainNameMapping,
   EVM_CHAINS,
+  NativeTokenMapping,
   TRANSACTION_ENDPOINT,
 } from '../../constants/server';
 import axios from '../../core/Http';
@@ -48,9 +49,10 @@ import { ethers } from 'ethers';
 import { SendAuthorization } from 'cosmjs-types/cosmos/bank/v1beta1/authz';
 import { IAutoLoadResponse } from '../../models/autoLoadResponse.interface';
 import { MsgRevoke } from 'cosmjs-types/cosmos/authz/v1beta1/tx';
-import { allowanceApprovalContractABI, getApproval } from '../../core/swap';
+import { allowanceApprovalContractABI } from '../../core/swap';
 import { Holding } from '../../core/Portfolio';
 import { getGasPriceFor } from '../../containers/Browser/gasHelper';
+import { SwapMetaData } from '../../models/swapMetaData';
 
 export interface TransactionServiceResult {
   isError: boolean;
@@ -84,7 +86,7 @@ export default function useTransactionManager() {
     estimateGasForEvmosUnDelegate,
     estimateGasForEvmosReDelegate,
   } = useGasService();
-  const { signEthTransaction } = useEthSigner();
+  const { signEthTransaction, signApprovalEthereum } = useEthSigner();
   const {
     simulateEvmosIBCTransaction,
     getPrivateKeyBuffer,
@@ -1283,6 +1285,54 @@ export default function useTransactionManager() {
     }
   };
 
+  const getApproval = async ({
+    web3,
+    fromTokenContractAddress,
+    hdWallet,
+    gasLimit,
+    gasFeeResponse,
+    contractData,
+    chainDetails,
+    contractParams,
+  }): Promise<{
+    isError: boolean;
+    error?: any;
+    hash?: string;
+  }> => {
+    const { ethereum } = hdWallet.state.wallet;
+    return await new Promise((resolve, reject) => {
+      void (async () => {
+        try {
+          let gasPrice = gasFeeResponse.gasPrice;
+          if (gasPrice > 1) {
+            gasPrice = Math.floor(gasPrice);
+          }
+          const tx = {
+            from: ethereum.address,
+            to: fromTokenContractAddress,
+            gasPrice: web3.utils.toWei(String(gasPrice.toFixed(9)), 'gwei'),
+            value: '0x0',
+            gas: web3.utils.toHex(String(gasLimit)),
+            data: contractData,
+            contractParams,
+          };
+
+          const hash = await signApprovalEthereum({
+            web3,
+            sendChain: chainDetails?.backendName,
+            dataToSign: tx,
+          });
+
+          if (hash) {
+            resolve({ isError: false, hash });
+          }
+        } catch (e: any) {
+          resolve({ isError: true, error: e });
+        }
+      })();
+    });
+  };
+
   const checkGrantAllowance = async ({
     web3,
     fromTokenContractAddress,
@@ -1387,6 +1437,11 @@ export default function useTransactionManager() {
             gasPrice: get(allowanceResp, ['gasFeeResponse', 'gasPrice']) * 1.5,
           },
           contractData: allowanceResp?.contractData,
+          chainDetails: selectedToken.chainDetails,
+          contractParams: {
+            toAddress: selectedToken.contractAddress,
+            numberOfTokens: allowanceResp?.tokens,
+          },
         });
 
         if (approvalResp?.isError) {
@@ -1506,6 +1561,11 @@ export default function useTransactionManager() {
             gasPrice: get(allowanceResp, ['gasFeeResponse', 'gasPrice']) * 1.5,
           },
           contractData: allowanceResp?.contractData,
+          chainDetails,
+          contractParams: {
+            toAddress: contractAddress,
+            numberOfTokens: '0',
+          },
         });
 
         if (approvalResp?.isError) {
@@ -1566,6 +1626,45 @@ export default function useTransactionManager() {
     }
   }
 
+  const swapTokens = async ({
+    web3,
+    fromToken,
+    amount,
+    routerAddress,
+    quoteData,
+    hdWallet,
+    gasLimit,
+    gasFeeResponse,
+  }: SwapMetaData) => {
+    return await new Promise((resolve, reject) => {
+      void (async () => {
+        try {
+          const nativeTokenSymbol =
+            NativeTokenMapping[fromToken?.chainDetails?.symbol] ||
+            fromToken.chainDetails.symbol;
+          const isNative = fromToken.symbol === nativeTokenSymbol;
+          const { ethereum } = hdWallet.state.wallet;
+          const tx = {
+            from: ethereum.address,
+            to: routerAddress,
+            value: isNative ? get(quoteData, ['data', 'value']) : '0',
+            gas: web3.utils.toHex(2 * Number(gasLimit)),
+            data: quoteData.data.data,
+          };
+
+          const hash = await signEthTransaction({
+            web3,
+            sendChain: fromToken?.chainDetails.backendName,
+            transactionToBeSigned: tx,
+          });
+          resolve({ isError: false, receipt: hash });
+        } catch (e: any) {
+          resolve({ isError: true, error: e });
+        }
+      })();
+    });
+  };
+
   return {
     sendEvmToken,
     sendEvmosToken,
@@ -1582,5 +1681,7 @@ export default function useTransactionManager() {
     unDelegateEvmosToken,
     grantAutoLoad,
     revokeAutoLoad,
+    getApproval,
+    swapTokens,
   };
 }

@@ -26,7 +26,6 @@ import useAxios from './HttpRequest';
 import Web3 from 'web3';
 import { getGasPriceFor } from '../containers/Browser/gasHelper';
 import { Chain, ChainBackendNames } from '../constants/server';
-import { loadPrivateKeyFromKeyChain } from './Keychain';
 import { _NO_CYPHERD_CREDENTIAL_AVAILABLE_ } from './util';
 import { SwapMetaData } from '../models/swapMetaData';
 import { ChainBackendNameMapping, ChainIdNameMapping } from '../constants/data';
@@ -109,7 +108,7 @@ async function getCosmosSigningClient(
   options?: any,
 ) {
   if (chain === ChainBackendNames.INJECTIVE) {
-    return InjectiveStargate.InjectiveSigningStargateClient.connectWithSigner(
+    return await InjectiveStargate.InjectiveSigningStargateClient.connectWithSigner(
       rpc,
       signer,
       {
@@ -126,7 +125,7 @@ async function getCosmosSigningClient(
 export default function useSkipApiBridge() {
   const { getWithoutAuth } = useAxios();
   const { getCosmosSignerClient, getCosmosRpc } = useCosmosSigner();
-  const { sendEvmToken } = useTransactionManager();
+  const { sendEvmToken, getApproval } = useTransactionManager();
 
   const checkAllowance = async ({
     web3,
@@ -202,73 +201,6 @@ export default function useSkipApiBridge() {
     });
   };
 
-  const getApproval = async ({
-    web3,
-    fromTokenContractAddress,
-    hdWallet,
-    gasLimit,
-    gasFeeResponse,
-    contractData,
-  }: SwapMetaData): Promise<{
-    isError: boolean;
-    error?: any;
-    hash?: string;
-  }> => {
-    const { ethereum } = hdWallet.state.wallet;
-    return await new Promise((resolve, reject) => {
-      void (async () => {
-        try {
-          let gasPrice = gasFeeResponse.gasPrice;
-          if (gasPrice > 1) {
-            gasPrice = Math.floor(gasPrice);
-          }
-          const tx = {
-            from: ethereum.address,
-            to: fromTokenContractAddress,
-            gasPrice: web3.utils.toWei(String(gasPrice.toFixed(9)), 'gwei'),
-            value: '0x0',
-            gas: web3.utils.toHex(String(gasLimit)),
-            data: contractData,
-          };
-
-          const privateKey = await loadPrivateKeyFromKeyChain(
-            false,
-            hdWallet.state.pinValue,
-          );
-          if (privateKey && privateKey !== _NO_CYPHERD_CREDENTIAL_AVAILABLE_) {
-            const signPromise = web3.eth.accounts.signTransaction(
-              tx,
-              String(privateKey),
-            );
-            signPromise.then(
-              (signedTx: { rawTransaction: string }) => {
-                void web3.eth
-                  .sendSignedTransaction(signedTx.rawTransaction)
-                  .once('transactionHash', function (hash: string) {
-                    resolve({ isError: false, hash });
-                  })
-                  .once('receipt', function (receipt: unknown) {
-                    resolve({ isError: false, hash: receipt });
-                  })
-                  .on('error', function (error: any) {
-                    resolve({ isError: true, error });
-                  })
-                  .then(function (receipt: any) {
-                    resolve({ isError: false, hash: receipt });
-                  });
-              },
-              (err: any) => {
-                resolve({ isError: true, error: err });
-              },
-            );
-          }
-        } catch (e: any) {
-          resolve({ isError: true, error: e });
-        }
-      })();
-    });
-  };
-
   const skipApiApproveAndSignEvm = async ({
     web3,
     evmTx,
@@ -331,6 +263,13 @@ export default function useSkipApiBridge() {
               gasLimit: allowanceResp.gasLimit,
               gasFeeResponse: allowanceResp.gasFeeResponse,
               contractData: allowanceResp.contractData,
+              chainDetails: selectedFromToken.chainDetails,
+              contractParams: {
+                toAddress: get(approval, 'spender', ''),
+                numberOfTokens: String(
+                  parseFloat(get(approval, 'amount', '')) * 10000,
+                ),
+              },
             });
 
             if (approvalResp.isError) {
