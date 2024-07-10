@@ -227,7 +227,7 @@ export default function useTransactionManager() {
         .encodeABI();
 
       const code = await web3.eth.getCode(toAddress);
-      console.log('🚀 ~ code:', code);
+      
       let { gasLimit, gasPrice, priorityFee, isEIP1599Supported } =
         await estimateGasForEvm({
           web3,
@@ -240,18 +240,12 @@ export default function useTransactionManager() {
           contractData: contractDataUser,
         });
 
-      console.log('🚀 ~ gasLimit:', gasLimit);
-      console.log('🚀 ~ gasPrice:', gasPrice);
-      console.log('🚀 ~ priorityFee:', priorityFee);
-      console.log('🚀 ~ isEIP1599Supported:', isEIP1599Supported);
-
       gasLimit = decideGasLimitBasedOnTypeOfToAddress(
         code,
         gasLimit,
         chain,
         contractAddress,
       );
-      console.log('🚀 ~ gasLimit:', gasLimit);
 
       const tx = {
         from: ethereum.address,
