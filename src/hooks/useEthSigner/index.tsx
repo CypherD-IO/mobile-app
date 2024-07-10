@@ -29,7 +29,7 @@ import { useWalletInfo } from '@web3modal/wagmi-react-native';
 import { allowanceApprovalContractABI } from '../../core/swap';
 import { getConnectionType } from '../../core/asyncStorage';
 import { ethers } from 'ethers';
-import { useWagmiConfig } from '../../components/wagmiConfigBuilder';
+import { wagmiConfig } from '../../components/wagmiConfigBuilder';
 
 export default function useEthSigner() {
   const { connector, chain } = useAccount();
@@ -39,7 +39,6 @@ export default function useEthSigner() {
   const { signMessageAsync } = useSignMessage();
   const { writeContractAsync } = useWriteContract();
   const { walletInfo } = useWalletInfo();
-  const wagmiConfig = useWagmiConfig();
 
   const getTransactionReceipt = async (
     hash: `0x${string}`,
@@ -54,7 +53,6 @@ export default function useEthSigner() {
         });
         hashFromReceipt = receipt?.transactionHash;
       } catch (error) {
-        console.log('error in waiting: ', error);
         hashFromReceipt = hash;
       }
       resolve(hashFromReceipt);
@@ -175,33 +173,29 @@ export default function useEthSigner() {
               .on('confirmation', () => {
                 // expression expected
               })
-              .on('error', function (error: any) {
+              .on('error', async function (error: any) {
                 if (!txHash) {
                   reject(error);
                 } else {
-                  setTimeout(() => {
-                    void (async () => {
-                      const receipt =
-                        await web3.eth.getTransactionReceipt(txHash);
-                      if (receipt?.status) {
-                        Toast.show({
-                          type: 'success',
-                          text1: 'Transaction',
-                          text2: 'Transaction Receipt Received',
-                          position: 'bottom',
-                        });
-                        resolve(receipt.transactionHash);
-                      } else {
-                        Sentry.captureException(error);
-                        Toast.show({
-                          type: 'error',
-                          text1: 'Transaction Error',
-                          text2: error.message,
-                          position: 'bottom',
-                        });
-                      }
-                    })();
-                  }, 5000);
+                  await sleepFor(5000);
+                  const receipt = await web3.eth.getTransactionReceipt(txHash);
+                  if (receipt?.status) {
+                    Toast.show({
+                      type: 'success',
+                      text1: 'Transaction',
+                      text2: 'Transaction Receipt Received',
+                      position: 'bottom',
+                    });
+                    resolve(receipt.transactionHash);
+                  } else {
+                    Sentry.captureException(error);
+                    Toast.show({
+                      type: 'error',
+                      text1: 'Transaction Error',
+                      text2: error.message,
+                      position: 'bottom',
+                    });
+                  }
                 }
               })
               .then(async function (receipt: { transactionHash: string }) {
@@ -228,11 +222,6 @@ export default function useEthSigner() {
     transactionToBeSigned,
   }: RawTransaction) => {
     try {
-      console.log('in sign eth txn : ', {
-        web3,
-        sendChain,
-        transactionToBeSigned,
-      });
       const connectionType = await getConnectionType();
       if (connectionType === ConnectionTypes.WALLET_CONNECT) {
         const chainConfig = get(walletConnectChainData, sendChain).chainConfig;
@@ -283,7 +272,6 @@ export default function useEthSigner() {
                 });
               })
               .once('receipt', function (receipt: unknown) {
-                console.log('receipt : ', receipt);
                 resolve(receipt?.transactionHash);
               })
               .on('confirmation', () => {
