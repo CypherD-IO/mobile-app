@@ -813,6 +813,7 @@ export const CardFeePercentage = {
   COREUM: 3,
   KUJIRA: 3,
   INJECTIVE: 3,
+  SOLANA: 0.5,
 };
 
 export const SlippageFactor = {
@@ -843,6 +844,7 @@ export const SlippageFactor = {
   COREUM: 0.005,
   KUJIRA: 0.005,
   INJECTIVE: 0.005,
+  SOLANA: 0.003,
 };
 
 export const HIDDEN_CARD_ID = 'hidden';

@@ -1006,7 +1006,7 @@ export default function BridgeSkipApi({ navigation }: { navigation: any }) {
             ))}
           </CyDView>
         )}
-        {routeResponse?.txs_required && (
+        {routeResponse?.txs_required && index === 0 && (
           <CyDView className='mx-[16px] mt-[16px] bg-white rounded-[8px] p-[12px] text-[14px] font-semibold'>
             <CyDText className='text-[14px] font-semibold'>{`${routeResponse?.txs_required} signature required`}</CyDText>
           </CyDView>
