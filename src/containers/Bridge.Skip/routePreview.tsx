@@ -18,6 +18,7 @@ import { SvgUri } from 'react-native-svg';
 import Button from '../../components/v2/button';
 import AppImages from '../../../assets/images/appImages';
 import { StyleSheet } from 'react-native';
+import { t } from 'i18next';
 
 enum TxnStatus {
   STATE_SUBMITTED = 'STATE_SUBMITTED',
@@ -304,10 +305,26 @@ export default function RoutePreview({
         </CyDView>
       )}
       {bridgeDoneStatus === TxnStatus.STATE_COMPLETED_SUCCESS && (
-        <CyDView className='mt-[32px]'>
+        <CyDView className='mt-[32px] flex flex-col items-center justify-center'>
+          <CyDImage source={AppImages.CYPHER_SUCCESS} />
+          <CyDText className='text-center'>{t('BRIDGE_SUCCESS')}</CyDText>
           <Button
             onPress={() => {
-              // navigation.navigate(screenTitle.BRIDGE_SKIP_API);
+              setIndex(0);
+              onBridgeSuccess();
+            }}
+            title={'Create new swap'}
+            disabled={isEmpty(routeResponse)}
+            loading={loading}
+          />
+        </CyDView>
+      )}
+      {bridgeDoneStatus === TxnStatus.STATE_COMPLETED_ERROR && (
+        <CyDView className='mt-[32px] flex flex-col items-center justify-center'>
+          <CyDImage source={AppImages.CYPHER_ERROR} />
+          <CyDText className='text-center'>{t('BRIDGE_FAILURE')}</CyDText>
+          <Button
+            onPress={() => {
               setIndex(0);
               onBridgeSuccess();
             }}

@@ -106,7 +106,7 @@ export default function useTransactionManager() {
     signer: OfflineDirectSigner,
   ) {
     if (chain.backendName === ChainBackendNames.INJECTIVE) {
-      return InjectiveStargate.InjectiveSigningStargateClient.connectWithSigner(
+      return await InjectiveStargate.InjectiveSigningStargateClient.connectWithSigner(
         rpc,
         signer,
       );
@@ -229,6 +229,7 @@ export default function useTransactionManager() {
         .encodeABI();
 
       const code = await web3.eth.getCode(toAddress);
+      
       let { gasLimit, gasPrice, priorityFee, isEIP1599Supported } =
         await estimateGasForEvm({
           web3,
@@ -274,7 +275,7 @@ export default function useTransactionManager() {
       return { hash, contractData: contractDataUser ?? contractData };
     } catch (err: any) {
       // TODO (user feedback): Give feedback to user.
-      throw new Error(err);
+      throw new Error(err.message ?? err);
     }
   };
 
@@ -332,7 +333,7 @@ export default function useTransactionManager() {
           contractData: contractDataUser,
         });
         return { hash: String(hash), contractData, isError: false };
-      } catch (error) {
+      } catch (error: any) {
         Sentry.captureException(error);
         return { hash: '', isError: true, error: error?.message ?? error };
       }

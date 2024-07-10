@@ -301,7 +301,7 @@ export default function useSkipApiBridge() {
         contractData: '0x' + get(evmTx, 'data', ''),
       });
       if (hash.isError) {
-        return { isError: true, error: 'Send transaction failed' };
+        return { isError: true, error: hash.error };
       } else {
         return { isError: false, hash: hash.hash, chainId: evmTx.chain_id };
       }

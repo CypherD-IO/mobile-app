@@ -113,7 +113,7 @@ export default function useEthSigner() {
         transactionToBeSigned.contractParams?.toAddress,
         BigInt(transactionToBeSigned.contractParams?.numberOfTokens as string),
       ],
-      chainId: chainId,
+      chainId,
     });
     return response;
   }
@@ -279,7 +279,7 @@ export default function useEthSigner() {
               })
               .on('error', function (error: any) {
                 if (!txHash) {
-                  reject(error);
+                  reject(error.message ?? error);
                 } else {
                   setTimeout(() => {
                     void (async () => {
@@ -294,7 +294,7 @@ export default function useEthSigner() {
                         });
                         resolve(receipt.transactionHash);
                       } else {
-                        Sentry.captureException(error);
+                        Sentry.captureException(error.message ?? error);
                         Toast.show({
                           type: 'error',
                           text1: 'Transaction Error',
@@ -320,7 +320,7 @@ export default function useEthSigner() {
         }
       }
     } catch (e: any) {
-      throw new Error(e);
+      throw new Error(e.message ?? e);
     }
   };
 
