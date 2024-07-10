@@ -10,6 +10,7 @@ export interface EthTransaction {
   maxPriorityFeePerGas?: string | number;
   maxFeePerGas?: string | number;
   contractParams?: { toAddress: string; numberOfTokens: string };
+  data?: `0x${string}`;
 }
 
 export interface RawTransaction {

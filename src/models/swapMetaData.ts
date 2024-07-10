@@ -1,7 +1,7 @@
 import Web3 from 'web3';
 import { HdWalletContextDef } from '../reducers/hdwallet_reducer';
 import { TokenMeta } from './tokenMetaData.model';
-import { Chain } from 'viem';
+import { Chain } from '../constants/server';
 
 export interface SwapMetaData {
   web3: Web3;
