@@ -130,6 +130,7 @@ export default function BridgeSkipApi({ navigation }: { navigation: any }) {
     } = await getFromOtherSource(
       'https://api.skip.money/v2/info/chains?include_evm=true',
     );
+
     if (isError) {
       showModal('state', {
         type: 'error',
@@ -156,6 +157,7 @@ export default function BridgeSkipApi({ navigation }: { navigation: any }) {
       setFromChainData(chains);
       setSelectedFromChain(chains[0]);
     }
+    await getTokens();
   };
 
   const getTokens = async () => {
@@ -166,6 +168,7 @@ export default function BridgeSkipApi({ navigation }: { navigation: any }) {
     } = await getFromOtherSource(
       'https://api.skip.money/v1/fungible/assets?include_no_metadata_assets=false&include_cw20_assets=false&include_evm_assets=true&include_svm_assets=false',
     );
+
     if (isError) {
       showModal('state', {
         type: 'error',
@@ -183,7 +186,6 @@ export default function BridgeSkipApi({ navigation }: { navigation: any }) {
   useEffect(() => {
     try {
       void getChains();
-      void getTokens();
     } catch (e) {
       showModal('state', {
         type: 'error',
@@ -485,8 +487,8 @@ export default function BridgeSkipApi({ navigation }: { navigation: any }) {
       setTimeout(() => {
         showModal('state', {
           type: 'error',
-          title: e.message,
-          description: t('UNEXCPECTED_ERROR'),
+          title: t('UNEXCPECTED_ERROR'),
+          description: e.message,
           onSuccess: hideModal,
           onFailure: hideModal,
         });
@@ -916,17 +918,19 @@ export default function BridgeSkipApi({ navigation }: { navigation: any }) {
                 {cosmosTxnParams.signer_address}
               </CyDText>
             </CyDView>
-            {cosmosTxnParams.msgs.map((item, index) => (
-              <CyDView key={index} className='mt-[8px]'>
-                <CyDText className='text-[12px] font-semibold'>
-                  {item.msg_type_url}
-                </CyDText>
-                <CyDScrollView className='h-[200px] p-[4px] rounded-[8px] mt-8px border-separate border '>
-                  {/* <CyDText>{item.msg}</CyDText> */}
-                  <JSONTree data={JSON.parse(item.msg)} invertTheme={true} />
-                </CyDScrollView>
-              </CyDView>
-            ))}
+            {cosmosTxnParams.msgs.map((item, index) => {
+              return (
+                <CyDView key={index} className='mt-[8px]'>
+                  <CyDText className='text-[12px] font-semibold'>
+                    {item.msg_type_url}
+                  </CyDText>
+                  <CyDScrollView className='h-[200px] p-[4px] rounded-[8px] mt-8px border-separate border '>
+                    {/* <CyDText>{item.msg}</CyDText> */}
+                    <JSONTree data={JSON.parse(item.msg)} invertTheme={true} />
+                  </CyDScrollView>
+                </CyDView>
+              );
+            })}
             <CyDView className='flex justify-end my-[30px]'>
               <Button
                 title={t('APPROVE')}
@@ -954,7 +958,7 @@ export default function BridgeSkipApi({ navigation }: { navigation: any }) {
       <CyDScrollView>
         {Components()}
         {(!isEmpty(error) ||
-          parseFloat(cryptoAmount) > (selectedFromToken?.totalValue ?? 0)) && (
+          parseFloat(usdAmount) > (selectedFromToken?.totalValue ?? 0)) && (
           <CyDView className=' bg-red-100 rounded-[8px] p-[12px] flex flex-row gap-x-[12px] mx-[16px] mt-[16px] justify-between items-center'>
             <CyDFastImage
               source={AppImages.CYPHER_WARNING_RED}
@@ -967,8 +971,7 @@ export default function BridgeSkipApi({ navigation }: { navigation: any }) {
                   <CyDText>{error}</CyDText>
                 </CyDView>
               )}
-              {parseFloat(cryptoAmount) >
-                (selectedFromToken?.totalValue ?? 0) && (
+              {parseFloat(usdAmount) > (selectedFromToken?.totalValue ?? 0) && (
                 <CyDView className='flex flex-row gap-x-[8px]'>
                   <CyDText>{'\u2022'}</CyDText>
                   <CyDText>{t('INSUFFICIENT_BALANCE_BRIDGE')}</CyDText>
@@ -1003,7 +1006,7 @@ export default function BridgeSkipApi({ navigation }: { navigation: any }) {
             ))}
           </CyDView>
         )}
-        {routeResponse?.txs_required && (
+        {routeResponse?.txs_required && index === 0 && (
           <CyDView className='mx-[16px] mt-[16px] bg-white rounded-[8px] p-[12px] text-[14px] font-semibold'>
             <CyDText className='text-[14px] font-semibold'>{`${routeResponse?.txs_required} signature required`}</CyDText>
           </CyDView>
@@ -1030,8 +1033,8 @@ export default function BridgeSkipApi({ navigation }: { navigation: any }) {
               }}
               title={'Review Route'}
               disabled={
-                parseFloat(cryptoAmount) >
-                  (selectedFromToken?.totalValue ?? 0) || isEmpty(routeResponse)
+                parseFloat(usdAmount) > (selectedFromToken?.totalValue ?? 0) ||
+                isEmpty(routeResponse)
               }
               loading={loading}
               loaderStyle={styles.loaderStyle}
