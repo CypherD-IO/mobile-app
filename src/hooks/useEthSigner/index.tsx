@@ -34,6 +34,9 @@ import { getConnectionType } from '../../core/asyncStorage';
 import { ethers } from 'ethers';
 import { wagmiConfig } from '../../components/wagmiConfigBuilder';
 import { useGlobalModalContext } from '../../components/v2/GlobalModal';
+import { MODAL_HIDE_TIMEOUT_250 } from '../../core/Http';
+import { useNavigation } from '@react-navigation/native';
+import { Linking, Platform } from 'react-native';
 
 export default function useEthSigner() {
   const hdWalletContext = useContext<any>(HdWalletContext);
@@ -43,6 +46,7 @@ export default function useEthSigner() {
   const { writeContractAsync } = useWriteContract();
   const { walletInfo } = useWalletInfo();
   const { showModal, hideModal } = useGlobalModalContext();
+  const navigation = useNavigation();
 
   const getTransactionReceipt = async (
     hash: `0x${string}`,
@@ -61,6 +65,13 @@ export default function useEthSigner() {
       }
       resolve(hashFromReceipt);
     });
+  };
+
+  const redirectToMetaMask = () => {
+    const metamaskDeepLink = 'metamask://';
+    Linking.openURL(metamaskDeepLink).catch(err =>
+      console.error('An error occurred', err),
+    );
   };
 
   // used To Send NativeCoins and to make any contact execution with contract data
@@ -245,21 +256,67 @@ export default function useEthSigner() {
           connectedChain !== chainConfig.id
         ) {
           try {
-            showModal('state', {
-              type: 'warning',
-              title: `Switch to ${chainConfig.name} chain`,
-              description: `Incase you don't see a switch chain popup in your ${walletInfo?.name} wallet, please change the connected chain to ${chainConfig.name} chain.`,
-              onSuccess: hideModal,
-            });
-            const response = await switchChain(wagmiConfig, {
+            setTimeout(() => {
+              const currentConnectedChain = getChainId(wagmiConfig);
+              if (
+                Platform.OS === 'android' &&
+                currentConnectedChain !== chainConfig.id
+              ) {
+                showModal('state', {
+                  type: 'warning',
+                  title: `Switch to ${chainConfig.name} chain`,
+                  description: `Incase you don't see a switch chain popup in your ${walletInfo?.name} wallet, please change the connected chain to ${chainConfig.name} chain and try again.`,
+                  onSuccess: () => {
+                    hideModal();
+                    redirectToMetaMask();
+                    navigation.goBack();
+                  },
+                  onFailure: () => {
+                    hideModal();
+                    navigation.goBack();
+                  },
+                });
+              }
+            }, 2000);
+            const response = await switchChainAsync({
               chainId: chainConfig.id,
             });
-            hideModal();
             await sleepFor(1000);
-          } catch (e) {}
+          } catch (e) {
+            Sentry.captureException(e);
+            setTimeout(() => {
+              showModal('state', {
+                type: 'error',
+                title: "Couldn't Switch Chain",
+                description: e,
+                onSuccess: () => {
+                  hideModal();
+                },
+                onFailure: () => {
+                  hideModal();
+                },
+              });
+            }, MODAL_HIDE_TIMEOUT_250);
+          }
         }
         let hash;
-
+        if (
+          Platform.OS === 'android' &&
+          walletInfo?.name === 'MetaMask Wallet'
+        ) {
+          setTimeout(() => {
+            showModal('state', {
+              type: 'warning',
+              title: `Approve transaction`,
+              description: `Incase you don't see a redirection to ${walletInfo?.name}, please open ${walletInfo?.name}`,
+              onSuccess: () => {
+                hideModal();
+                redirectToMetaMask();
+              },
+              onFailure: hideModal(),
+            });
+          }, 2000);
+        }
         if (transactionToBeSigned.contractParams) {
           hash = await sendToken({
             transactionToBeSigned,
@@ -271,6 +328,7 @@ export default function useEthSigner() {
             chainId: chainConfig.id,
           });
         }
+        hideModal();
         return hash;
       } else {
         const privateKey = await loadPrivateKeyFromKeyChain(
