@@ -13,7 +13,6 @@ import {
 import useConnectionManager from '../useConnectionManager';
 import { ConnectionTypes } from '../../constants/enum';
 import {
-  useAccount,
   useSwitchChain,
   useSendTransaction,
   useSignMessage,
@@ -24,21 +23,26 @@ import { get, set } from 'lodash';
 import { Address, createWalletClient, custom } from 'viem';
 import { loadPrivateKeyFromKeyChain } from '../../core/Keychain';
 import { utf8ToHex } from 'web3-utils';
-import { waitForTransactionReceipt } from '@wagmi/core';
+import {
+  waitForTransactionReceipt,
+  getChainId,
+  switchChain,
+} from '@wagmi/core';
 import { useWalletInfo } from '@web3modal/wagmi-react-native';
 import { allowanceApprovalContractABI } from '../../core/swap';
 import { getConnectionType } from '../../core/asyncStorage';
 import { ethers } from 'ethers';
 import { wagmiConfig } from '../../components/wagmiConfigBuilder';
+import { useGlobalModalContext } from '../../components/v2/GlobalModal';
 
 export default function useEthSigner() {
-  const { connector, chain } = useAccount();
   const hdWalletContext = useContext<any>(HdWalletContext);
   const { switchChainAsync } = useSwitchChain();
   const { sendTransactionAsync } = useSendTransaction();
   const { signMessageAsync } = useSignMessage();
   const { writeContractAsync } = useWriteContract();
   const { walletInfo } = useWalletInfo();
+  const { showModal, hideModal } = useGlobalModalContext();
 
   const getTransactionReceipt = async (
     hash: `0x${string}`,
@@ -121,14 +125,24 @@ export default function useEthSigner() {
   const signApprovalEthereum = async ({ web3, sendChain, dataToSign }) => {
     try {
       const connectionType = await getConnectionType();
+      const connectedChain = getChainId(wagmiConfig);
       if (connectionType === ConnectionTypes.WALLET_CONNECT) {
         const chainConfig = get(walletConnectChainData, sendChain).chainConfig;
         if (
           walletInfo?.name === 'MetaMask Wallet' &&
-          chain.id !== chainConfig.id
+          connectedChain !== chainConfig.id
         ) {
           try {
-            await switchChainAsync({ chainId: chainConfig.id });
+            showModal('state', {
+              type: 'warning',
+              title: `Switch to ${chainConfig.name} chain`,
+              description: `Incase you don't see a switch chain popup in your ${walletInfo?.name} wallet, please change the connected chain to ${chainConfig.name} chain.`,
+              onSuccess: hideModal,
+            });
+            const response = await switchChain(wagmiConfig, {
+              chainId: chainConfig.id,
+            });
+            hideModal();
             await sleepFor(1000);
           } catch (e) {}
         }
@@ -223,14 +237,24 @@ export default function useEthSigner() {
   }: RawTransaction) => {
     try {
       const connectionType = await getConnectionType();
+      const connectedChain = getChainId(wagmiConfig);
       if (connectionType === ConnectionTypes.WALLET_CONNECT) {
         const chainConfig = get(walletConnectChainData, sendChain).chainConfig;
         if (
           walletInfo?.name === 'MetaMask Wallet' &&
-          chain.id !== chainConfig.id
+          connectedChain !== chainConfig.id
         ) {
           try {
-            await switchChainAsync({ chainId: chainConfig.id });
+            showModal('state', {
+              type: 'warning',
+              title: `Switch to ${chainConfig.name} chain`,
+              description: `Incase you don't see a switch chain popup in your ${walletInfo?.name} wallet, please change the connected chain to ${chainConfig.name} chain.`,
+              onSuccess: hideModal,
+            });
+            const response = await switchChain(wagmiConfig, {
+              chainId: chainConfig.id,
+            });
+            hideModal();
             await sleepFor(1000);
           } catch (e) {}
         }

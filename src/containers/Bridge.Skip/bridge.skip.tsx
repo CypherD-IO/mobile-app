@@ -10,6 +10,7 @@ import {
 import {
   HdWalletContext,
   PortfolioContext,
+  getAvailableChains,
   getWeb3Endpoint,
   logAnalytics,
   setTimeOutNSec,
@@ -18,7 +19,7 @@ import { SkipApiChainInterface } from '../../models/skipApiChains.interface';
 import { SkipApiToken } from '../../models/skipApiTokens.interface';
 import useAxios from '../../core/HttpRequest';
 import { capitalize, endsWith, filter, get, isEmpty, some } from 'lodash';
-import { ALL_CHAINS, Chain } from '../../constants/server';
+import { ALL_CHAINS, Chain, EVM_CHAINS } from '../../constants/server';
 import { SkipApiRouteResponse } from '../../models/skipApiRouteResponse.interface';
 import { SkipApiStatus } from '../../models/skipApiStatus.interface';
 import { Holding, fetchTokenData } from '../../core/Portfolio';
@@ -39,7 +40,11 @@ import AppImages from '../../../assets/images/appImages';
 import Button from '../../components/v2/button';
 import { useGlobalModalContext } from '../../components/v2/GlobalModal';
 import { t } from 'i18next';
-import { AnalyticsType, ButtonType } from '../../constants/enum';
+import {
+  AnalyticsType,
+  ButtonType,
+  ConnectionTypes,
+} from '../../constants/enum';
 import { useRoute } from '@react-navigation/native';
 import SignatureModal from '../../components/v2/signatureModal';
 import { GasPriceDetail } from '../../core/types';
@@ -51,6 +56,7 @@ import {
   AnalyticEvent,
   logAnalytics as firebaseAnalytics,
 } from '../../core/analytics';
+import { getConnectionType } from '../../core/asyncStorage';
 
 enum TxnStatus {
   STATE_SUBMITTED = 'STATE_SUBMITTED',
@@ -144,16 +150,15 @@ export default function BridgeSkipApi({ navigation }: { navigation: any }) {
       const skipApiChains: SkipApiChainInterface[] = get(data, 'chains', []);
       setSkipApiChainsData(skipApiChains);
       setChainInfo(skipApiChains);
-
+      const chainsData = getAvailableChains(hdWallet);
       const chains = filter(skipApiChains, item2 => {
-        return some(ALL_CHAINS, item1 => {
+        return some(chainsData, item1 => {
           return (
             parseInt(item1.chain_id, 16) === parseInt(item2.chain_id, 10) ||
             item1.chain_id === item2.chain_id
           );
         });
       });
-
       setFromChainData(chains);
       setSelectedFromChain(chains[0]);
     }
@@ -198,68 +203,72 @@ export default function BridgeSkipApi({ navigation }: { navigation: any }) {
   }, [portfolioState]);
 
   useEffect(() => {
-    if (fromChainData && selectedFromChain) {
-      const chains = filter(skipApiChainsData, item2 => {
-        return some(ALL_CHAINS, item1 => {
-          return (
-            (parseInt(item1.chain_id, 16) === parseInt(item2.chain_id, 10) ||
-              item1.chain_id === item2.chain_id) &&
-            item2.chain_name !== selectedFromChain?.chain_name
-          );
-        });
-      });
-
-      setToChainData(chains);
-      setSelectedToChain(chains[0]);
-
-      if (totalHoldings) {
-        const skipApiTokens = get(
-          tokenData,
-          [selectedFromChain.chain_id, 'assets'],
-          [],
-        );
-
-        const tokensToParse = skipApiTokens
-          .filter(item2 => {
-            return totalHoldings.some((item1: Holding) => {
-              return (
-                (parseInt(item1.chainDetails.chain_id, 16) ===
-                  parseInt(item2.chain_id, 10) ||
-                  item1.chainDetails.chain_id === item2.chain_id) &&
-                item1.symbol === item2.recommended_symbol
-              );
-            });
-          })
-          .map(item2 => {
-            const matchingWalletToken = totalHoldings.find(
-              (item1: Holding) =>
-                (parseInt(item1.chainDetails.chain_id, 16) ===
-                  parseInt(item2.chain_id, 10) ||
-                  item1.chainDetails.chain_id === item2.chain_id) &&
-                item1.symbol === item2.recommended_symbol &&
-                item1.isVerified,
+    const initialiseTokens = async () => {
+      if (fromChainData && selectedFromChain) {
+        const chainsData = getAvailableChains(hdWallet);
+        const chains = filter(skipApiChainsData, item2 => {
+          return some(chainsData, item1 => {
+            return (
+              (parseInt(item1.chain_id, 16) === parseInt(item2.chain_id, 10) ||
+                item1.chain_id === item2.chain_id) &&
+              item2.chain_name !== selectedFromChain?.chain_name
             );
-
-            return {
-              ...item2,
-              balanceInNumbers: matchingWalletToken
-                ? matchingWalletToken.actualBalance
-                : null,
-              totalValue: matchingWalletToken
-                ? matchingWalletToken.totalValue
-                : null,
-              chainDetails: matchingWalletToken
-                ? matchingWalletToken.chainDetails
-                : null,
-              price: matchingWalletToken ? matchingWalletToken.price : null,
-              skipApiChain: selectedFromChain,
-            };
           });
+        });
 
-        setFromTokenData(tokensToParse);
-        setSelectedFromToken(tokensToParse[0]);
+        setToChainData(chains);
+        setSelectedToChain(chains[0]);
+
+        if (totalHoldings) {
+          const skipApiTokens = get(
+            tokenData,
+            [selectedFromChain.chain_id, 'assets'],
+            [],
+          );
+
+          const tokensToParse = skipApiTokens
+            .filter(item2 => {
+              return totalHoldings.some((item1: Holding) => {
+                return (
+                  (parseInt(item1.chainDetails.chain_id, 16) ===
+                    parseInt(item2.chain_id, 10) ||
+                    item1.chainDetails.chain_id === item2.chain_id) &&
+                  item1.symbol === item2.recommended_symbol
+                );
+              });
+            })
+            .map(item2 => {
+              const matchingWalletToken = totalHoldings.find(
+                (item1: Holding) =>
+                  (parseInt(item1.chainDetails.chain_id, 16) ===
+                    parseInt(item2.chain_id, 10) ||
+                    item1.chainDetails.chain_id === item2.chain_id) &&
+                  item1.symbol === item2.recommended_symbol &&
+                  item1.isVerified,
+              );
+
+              return {
+                ...item2,
+                balanceInNumbers: matchingWalletToken
+                  ? matchingWalletToken.actualBalance
+                  : null,
+                totalValue: matchingWalletToken
+                  ? matchingWalletToken.totalValue
+                  : null,
+                chainDetails: matchingWalletToken
+                  ? matchingWalletToken.chainDetails
+                  : null,
+                price: matchingWalletToken ? matchingWalletToken.price : null,
+                skipApiChain: selectedFromChain,
+              };
+            });
+
+          setFromTokenData(tokensToParse);
+          setSelectedFromToken(tokensToParse[0]);
+        }
       }
-    }
+    };
+    void initialiseTokens();
   }, [
     fromChainData,
     selectedFromChain,
