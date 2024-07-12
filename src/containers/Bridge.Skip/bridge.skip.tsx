@@ -10,6 +10,7 @@ import {
 import {
   HdWalletContext,
   PortfolioContext,
+  getAvailableChains,
   getWeb3Endpoint,
   logAnalytics,
   setTimeOutNSec,
@@ -149,14 +150,7 @@ export default function BridgeSkipApi({ navigation }: { navigation: any }) {
       const skipApiChains: SkipApiChainInterface[] = get(data, 'chains', []);
       setSkipApiChainsData(skipApiChains);
       setChainInfo(skipApiChains);
-
-      const connectionType = await getConnectionType();
-      let chainsData;
-      if (connectionType === ConnectionTypes.WALLET_CONNECT) {
-        chainsData = EVM_CHAINS;
-      } else {
-        chainsData = ALL_CHAINS;
-      }
+      const chainsData = getAvailableChains(hdWallet);
       const chains = filter(skipApiChains, item2 => {
         return some(chainsData, item1 => {
           return (
@@ -211,14 +205,7 @@ export default function BridgeSkipApi({ navigation }: { navigation: any }) {
   useEffect(() => {
     const initialiseTokens = async () => {
       if (fromChainData && selectedFromChain) {
-        const connectionType = await getConnectionType();
-        let chainsData;
-        if (connectionType === ConnectionTypes.WALLET_CONNECT) {
-          chainsData = EVM_CHAINS;
-        } else {
-          chainsData = ALL_CHAINS;
-        }
-
+        const chainsData = getAvailableChains(hdWallet);
         const chains = filter(skipApiChainsData, item2 => {
           return some(chainsData, item1 => {
             return (
