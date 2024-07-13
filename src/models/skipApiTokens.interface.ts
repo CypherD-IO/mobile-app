@@ -21,6 +21,11 @@ export interface SkipApiToken {
   totalValue: number | null;
   chainDetails: Chain | null;
   price: string | null;
+  actualBalance: number | null;
+
+  // added isNative for swap to main a single interface
+  isNative?: boolean;
+
   // chainDetails: any;
   skipApiChain: SkipApiChainInterface;
 }

@@ -44,9 +44,9 @@ export default function RoutePreview({
   chainInfo: SkipApiChainInterface[] | null;
   tokenData: Record<string, { assets: SkipApiToken[] }>;
   loading: boolean;
-  onGetMSg: () => void;
+  onGetMSg: () => Promise<void>;
   statusResponse: SkipApiStatus[];
-  onBridgeSuccess: () => void;
+  onBridgeSuccess: () => Promise<void>;
 }) {
   if (!routeResponse) return <Loading />;
 
