@@ -136,21 +136,20 @@ export default function ShortcutsModal({ navigationRef }) {
 
   const shortcutsData: IShortcutsData[] = [
     ...emptyWalletShortcutsData,
-    // disabled bridge - Feb 10th 2024
-    {
-      index: 1,
-      title: ShortcutsTitle.BRIDGE,
-      logo: AppImages.BRIDGE_SHORTCUT,
-      subTitle: t('EXCHANGE_SHORTCUTS_SUBTITLE'),
-      screenTitle: screenTitle.BRIDGE_SKIP_API,
-    },
-    {
-      index: 2,
-      title: ShortcutsTitle.SWAP,
-      logo: AppImages.SWAP_SHORTCUT,
-      subTitle: t('SWAP_SHORTCUTS_SUBTITLE'),
-      screenTitle: screenTitle.BRIDGE_SCREEN,
-    },
+    // {
+    //   index: 1,
+    //   title: ShortcutsTitle.BRIDGE,
+    //   logo: AppImages.BRIDGE_SHORTCUT,
+    //   subTitle: t('EXCHANGE_SHORTCUTS_SUBTITLE'),
+    //   screenTitle: screenTitle.BRIDGE_SKIP_API_SCREEN,
+    // },
+    // {
+    //   index: 2,
+    //   title: ShortcutsTitle.SWAP,
+    //   logo: AppImages.SWAP_SHORTCUT,
+    //   subTitle: t('SWAP_SHORTCUTS_SUBTITLE'),
+    //   screenTitle: screenTitle.BRIDGE_SCREEN,
+    // },
     {
       index: 3,
       title: ShortcutsTitle.SEND,
@@ -315,13 +314,10 @@ export default function ShortcutsModal({ navigationRef }) {
             });
         break;
       case ShortcutsTitle.BRIDGE:
-        navigationRef.navigate(screenTitle.BRIDGE_SKIP_API);
+        navigationRef.navigate(screenTitle.BRIDGE_SKIP_API_SCREEN);
         break;
       case ShortcutsTitle.SWAP:
-        navigationRef.navigate(screenTitle.BRIDGE_SCREEN, {
-          title: t('SWAP_TITLE'),
-          renderPage: 'swapPage',
-        });
+        navigationRef.navigate(screenTitle.BRIDGE_SKIP_API_SCREEN);
         break;
       default:
         item?.navigationProps

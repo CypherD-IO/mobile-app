@@ -130,19 +130,19 @@ const RenderRightActions = (navigation: any, tokenData: any) => {
           <CyDTouchView
             className={'flex items-center justify-center mx-[15px]'}
             onPress={() => {
-              navigation.navigate(screenTitle.BRIDGE_SCREEN, {
+              navigation.navigate(screenTitle.BRIDGE_SKIP_API_SCREEN, {
                 fromChainData: tokenData,
-                title: t('SWAP_TITLE'),
-                renderPage: 'swapPage',
+                title: t('BRIDGE_TITLE'),
+                // renderPage: 'swapPage',
               });
             }}>
             <CyDImage
-              source={AppImages.SWAP_SHORTCUT}
+              source={AppImages.BRIDGE_SHORTCUT}
               className={'w-[30px] h-[30px]'}
             />
           </CyDTouchView>
           <CyDText className={'text-center mt-[5px] text-[12px] font-bold'}>
-            {t<string>('SWAP_TITLE')}
+            {t<string>('BRIDGE_TITLE')}
           </CyDText>
         </CyDView>
       )}

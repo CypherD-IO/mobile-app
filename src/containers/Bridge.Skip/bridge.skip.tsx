@@ -1,6 +1,5 @@
 import React, { useContext, useEffect, useRef, useState } from 'react';
 import {
-  CyDAnimatedView,
   CyDFastImage,
   CyDImage,
   CyDSafeAreaView,
@@ -53,7 +52,7 @@ import useSkipApiBridge from '../../core/skipApi';
 import * as Sentry from '@sentry/react-native';
 import { GlobalContext, GlobalContextDef } from '../../core/globalContext';
 import Web3 from 'web3';
-import { ChainIdNameMapping, gasFeeReservation } from '../../constants/data';
+import { ChainIdNameMapping } from '../../constants/data';
 import TokenSelection from './tokenSelection';
 import RoutePreview from './routePreview';
 import AppImages from '../../../assets/images/appImages';
@@ -89,9 +88,6 @@ import {
   ActivityType,
   ExchangeTransaction,
 } from '../../reducers/activity_reducer';
-import { setQuoteCancelReasons } from '../../core/asyncStorage';
-import clsx from 'clsx';
-import { MODAL_CLOSING_TIMEOUT } from '../../constants/timeOuts';
 
 enum TxnStatus {
   STATE_SUBMITTED = 'STATE_SUBMITTED',
@@ -102,7 +98,11 @@ enum TxnStatus {
   STATE_PENDING_ERROR = 'STATE_PENDING_ERROR',
 }
 
-export default function BridgeSkipApi({ navigation }: { navigation: any }) {
+export default function BridgeSkipApi(props: {
+  navigation?: any;
+  route?: any;
+}) {
+  const routeData = props.route.params;
   const portfolioState = useContext<any>(PortfolioContext);
   const totalHoldings: Holding[] =
     portfolioState.statePortfolio.tokenPortfolio.totalHoldings;
@@ -117,14 +117,8 @@ export default function BridgeSkipApi({ navigation }: { navigation: any }) {
   const { getApproval, swapTokens } = useTransactionManager();
   const activityContext = useContext<any>(ActivityContext);
   const activityId = useRef<string>('id');
-  const expiryTimer = useRef<NodeJS.Timer>();
-  const retryTimer = useRef<NodeJS.Timeout>();
-  const retryQuote = useRef<number>(-1);
 
   const slippage = 0.4;
-  const QUOTE_RETRY = 3;
-  const QUOTE_EXPIRY_SEC = 60;
-  const QUOTE_EXPIRY = QUOTE_EXPIRY_SEC * 1000;
   const ethereum = hdWallet.state.wallet.ethereum;
 
   const [index, setIndex] = useState<number>(0);
@@ -195,10 +189,7 @@ export default function BridgeSkipApi({ navigation }: { navigation: any }) {
   } as unknown as AllowanceParams);
   const [swapParams, setSwapParams] = useState({});
   const [signModalVisible, setSignModalVisible] = useState<boolean>(false);
-  const [dontAskAgain, setDontAskAgain] = useState<boolean>(false);
   const [nativeTokenBalance, setNativeTokenBalance] = useState<number>(0);
-  const [quoteExpiryTime, setQuoteExpiryTime] =
-    useState<number>(QUOTE_EXPIRY_SEC);
   const [quoteData, setQuoteData] = useState<any>(null);
 
   // --------------------- swap funcitons -------------------------
@@ -213,6 +204,14 @@ export default function BridgeSkipApi({ navigation }: { navigation: any }) {
 
       setSwapSupportedChains(chains);
       return chains;
+    } else {
+      showModal('state', {
+        type: 'error',
+        title: '',
+        description: response?.error?.message ?? t('FETCH_SKIP_API_ERROR'),
+        onSuccess: hideModal,
+        onFailure: hideModal,
+      });
     }
 
     return [];
@@ -251,7 +250,19 @@ export default function BridgeSkipApi({ navigation }: { navigation: any }) {
         });
       });
       setFromChainData(chains);
-      setSelectedFromChain(chains[0]);
+      let tempSelectedFromChain;
+      if (routeData?.fromChainData?.chainDetails) {
+        const { chain_id: chainID } = get(
+          routeData,
+          ['fromChainData', 'chainDetails'],
+          '',
+        );
+        tempSelectedFromChain = chains.find(
+          chain => parseInt(chain.chain_id, 10) === parseInt(chainID, 16),
+        );
+      }
+      if (tempSelectedFromChain) setSelectedFromChain(tempSelectedFromChain);
+      else tempSelectedFromChain = chains[0];
 
       const swapChains = await getSwapSupportedChains(chains);
 
@@ -294,14 +305,29 @@ export default function BridgeSkipApi({ navigation }: { navigation: any }) {
       tokenPrice: number;
     }>
   > => {
-    if (selectedFromChain) {
-      const { data, isError, error } = await getWithAuth(
-        `/v1/swap/evm/chains/${parseInt(selectedFromChain?.chain_id, 10)}/tokens`,
+    if (
+      selectedFromChain &&
+      swapSupportedChains.includes(parseInt(selectedFromChain?.chain_id, 10))
+    ) {
+      const {
+        data,
+        isError,
+        error: swapTokenError,
+      } = await getWithAuth(
+        `/v1/swap/evm/chains/${parseInt(selectedFromChain?.chain_id, 10).toString()}/tokens`,
       );
       if (!isError) {
         const tempTokens = get(data, 'tokens', []);
         setSwapTokenData(tempTokens);
         return tempTokens;
+      } else {
+        showModal('state', {
+          type: 'error',
+          title: '',
+          description: swapTokenError?.message ?? t('FETCH_SKIP_API_ERROR'),
+          onSuccess: hideModal,
+          onFailure: hideModal,
+        });
       }
     }
     return [];
@@ -462,7 +488,7 @@ export default function BridgeSkipApi({ navigation }: { navigation: any }) {
           filteredTokens = tokensToParse;
         }
 
-        const temp = filteredTokens.map(item2 => {
+        const tempTokens = filteredTokens.map(item2 => {
           const matchingWalletToken = totalHoldings.find(
             (item1: Holding) =>
               (parseInt(item1.chainDetails.chain_id, 16) ===
@@ -491,8 +517,19 @@ export default function BridgeSkipApi({ navigation }: { navigation: any }) {
           };
         });
 
-        setFromTokenData(temp);
-        setSelectedFromToken(temp[0]);
+        setFromTokenData(tempTokens);
+
+        let tempSelectedFromToken;
+        if (routeData?.fromChainData) {
+          const { symbol } = get(routeData, ['fromChainData'], '');
+          tempSelectedFromToken = tempTokens.find(
+            token =>
+              token.recommended_symbol === symbol || token.symbol === symbol,
+          );
+        }
+
+        if (tempSelectedFromToken) setSelectedFromToken(tempSelectedFromToken);
+        else setSelectedFromToken(tempTokens[0]);
       }
     }
   };
@@ -501,7 +538,6 @@ export default function BridgeSkipApi({ navigation }: { navigation: any }) {
     try {
       void getChains();
     } catch (e) {
-      console.log('🚀 ~ useEffect ~ e:', e);
       showModal('state', {
         type: 'error',
         title: t('UNEXCPECTED_ERROR'),
@@ -607,21 +643,19 @@ export default function BridgeSkipApi({ navigation }: { navigation: any }) {
 
   useEffect(() => {
     if (selectedFromToken) {
-      setNativeTokenBalance(
-        getNativeToken(
-          (
-            get(
-              NativeTokenMapping,
-              selectedFromToken.symbol as ChainBackendNames,
-            ) ?? selectedFromToken.symbol
-          ).toUpperCase(),
-          portfolioState.statePortfolio.tokenPortfolio[
-            ChainNameMapping[
-              selectedFromToken.chainDetails?.backendName as ChainBackendNames
-            ]
-          ]?.holdings,
-        )?.actualBalance ?? 0,
-      );
+      const { chainDetails } = selectedFromToken;
+      const { symbol, backendName } = chainDetails ?? {};
+      const nativeTokenSymbol: string =
+        get(NativeTokenMapping, symbol) || symbol;
+
+      const nativeTokBal = getNativeToken(
+        nativeTokenSymbol,
+        portfolioState.statePortfolio.tokenPortfolio[
+          ChainNameMapping[backendName as ChainBackendNames]
+        ]?.holdings,
+      )?.actualBalance;
+
+      setNativeTokenBalance(nativeTokBal ?? 0);
     }
   }, [selectedFromToken]);
 
@@ -722,12 +756,45 @@ export default function BridgeSkipApi({ navigation }: { navigation: any }) {
 
   // bridge
   const onGetMsg = async () => {
-    if (!routeResponse) return;
+    if (
+      !routeResponse ||
+      !selectedFromChain ||
+      !selectedToChain ||
+      !selectedFromToken ||
+      !selectedToToken
+    )
+      return;
     const requiredAddresses = getAddress(
       routeResponse.required_chain_addresses,
     );
 
     setLoading(true);
+    const id = genId();
+    const activityData: ExchangeTransaction = {
+      id,
+      status: ActivityStatus.PENDING,
+      type: isSwap() ? ActivityType.SWAP : ActivityType.BRIDGE,
+      quoteId: quoteData?.quoteId,
+      fromChain: selectedFromChain.chain_name,
+      toChain: selectedToChain.chain_name,
+      fromToken: selectedFromToken.name,
+      toToken: selectedToToken.name,
+      fromSymbol: selectedFromToken.symbol,
+      toSymbol: selectedToToken.symbol,
+      fromTokenLogoUrl: selectedFromToken.logo_uri,
+      toTokenLogoUrl: selectedToToken.logo_uri,
+      fromTokenAmount: parseFloat(cryptoAmount).toFixed(3),
+      toTokenAmount: quoteData?.toToken?.amount.toString(),
+      datetime: new Date(),
+      transactionHash: '',
+      quoteData: {
+        fromAmountUsd: Number(cryptoAmount) * Number(selectedFromToken?.price),
+        toAmountUsd: quoteData?.value,
+        gasFee: '',
+      },
+    };
+    activityId.current = id;
+
     try {
       const body = {
         source_asset_denom: routeResponse.source_asset_denom,
@@ -762,6 +829,12 @@ export default function BridgeSkipApi({ navigation }: { navigation: any }) {
       await evmTxnMsg(data);
       await cosmosTxnMsg(data);
 
+      activityData.status = ActivityStatus.SUCCESS;
+      activityContext.dispatch({
+        type: ActivityReducerAction.POST,
+        value: activityData,
+      });
+
       firebaseAnalytics(AnalyticEvent.SKIP_API_BRIDGE_SUCESS, {
         fromChain: selectedFromChain?.chain_name,
         fromToken: selectedFromToken?.name,
@@ -776,6 +849,12 @@ export default function BridgeSkipApi({ navigation }: { navigation: any }) {
       });
     } catch (e: any) {
       setLoading(false);
+      activityData.status = ActivityStatus.FAILED;
+      activityContext.dispatch({
+        type: ActivityReducerAction.POST,
+        value: activityData,
+      });
+
       // monitoring API
       void logAnalytics({
         type: AnalyticsType.ERROR,
@@ -997,7 +1076,7 @@ export default function BridgeSkipApi({ navigation }: { navigation: any }) {
   function onModalHide(type = '') {
     hideModal();
     setTimeout(() => {
-      navigation.navigate(screenTitle.PORTFOLIO_SCREEN);
+      props.navigation.navigate(screenTitle.PORTFOLIO_SCREEN);
     }, MODAL_HIDE_TIMEOUT);
   }
 
@@ -1011,35 +1090,6 @@ export default function BridgeSkipApi({ navigation }: { navigation: any }) {
       return true;
     }
     return false;
-  };
-
-  const startQuoteExpiryTimer = () => {
-    let tempQuoteExpiryTime = QUOTE_EXPIRY_SEC;
-    setQuoteExpiryTime(QUOTE_EXPIRY_SEC);
-    expiryTimer.current = setInterval(() => {
-      setQuoteExpiryTime(--tempQuoteExpiryTime);
-    }, 1000);
-  };
-
-  const retryQuoteAfterExpiry = () => {
-    retryTimer.current = setTimeout(() => {
-      if (retryQuote.current === QUOTE_RETRY) {
-        setSignModalVisible(false);
-        setTimeout(() => {
-          showModal('state', {
-            type: 'error',
-            title: t<string>('BRIDGE_QUOTE_EXPIRED'),
-            description: t<string>('BRIDGE_QUOTE_EXPIRED_DESC'),
-            onSuccess: hideModal,
-            onFailure: hideModal,
-          });
-        }, MODAL_CLOSING_TIMEOUT);
-      } else {
-        clearInterval(expiryTimer.current);
-        void onAcceptSwap({ showQuote: true });
-        retryQuote.current++;
-      }
-    }, QUOTE_EXPIRY);
   };
 
   // swap
@@ -1086,8 +1136,6 @@ export default function BridgeSkipApi({ navigation }: { navigation: any }) {
           );
           setAmountOutUSd(parseFloat(responseQuoteData?.value).toFixed(4));
           setQuoteData(responseQuoteData);
-          // startQuoteExpiryTimer();
-          // retryQuoteAfterExpiry();
         } else {
           setLoading(false);
           showModal('state', {
@@ -1100,7 +1148,6 @@ export default function BridgeSkipApi({ navigation }: { navigation: any }) {
         }
       }
     } catch (e) {
-      console.log('🚀 ~ swap ~ e:', e);
       setLoading(false);
       showModal('state', {
         type: 'error',
@@ -1227,7 +1274,6 @@ export default function BridgeSkipApi({ navigation }: { navigation: any }) {
           });
         }
       } catch (e) {
-        console.log('🚀 ~ onAcceptSwap ~ e:', e);
         setLoading(false);
         showModal('state', {
           type: 'error',
@@ -1301,7 +1347,6 @@ export default function BridgeSkipApi({ navigation }: { navigation: any }) {
       setSignModalVisible(true);
       setLoading(false);
     } catch (e) {
-      console.log('🚀 ~ BridgeSkipApi ~ e:', e);
       setLoading(false);
       showModal('state', {
         type: 'error',
@@ -1337,7 +1382,7 @@ export default function BridgeSkipApi({ navigation }: { navigation: any }) {
         numberOfTokens: String(parseFloat(cryptoAmount) * 1000000),
       },
     });
-    if (response) {
+    if (!response.isError) {
       void onAcceptSwap({ showQuote: false });
     } else {
       setLoading(false);
@@ -1456,7 +1501,6 @@ export default function BridgeSkipApi({ navigation }: { navigation: any }) {
         throw new Error('Insufficient parameters');
       }
     } catch (error: any) {
-      console.log('🚀 ~ onConfirmSwap ~ error:', error);
       setLoading(false);
       // monitoring api
       void logAnalytics({
@@ -1557,6 +1601,7 @@ export default function BridgeSkipApi({ navigation }: { navigation: any }) {
       const nativeTokenSymbol: string =
         get(NativeTokenMapping, symbol) || symbol;
       const gas = swapParams?.gasFeeETH;
+
       if (parseFloat(cryptoAmount) > parseFloat(String(actualBalance))) {
         return renderWarningPopupMessage(
           t<string>('INSUFFICIENT_BALANCE_SWAP'),
@@ -1582,45 +1627,25 @@ export default function BridgeSkipApi({ navigation }: { navigation: any }) {
     return null;
   };
 
-  const onSignModalCancel = async () => {
-    // const dontAsk = await getQuoteCancelReasons();
-    // if (!dontAsk && fromToken) {
-    //   const { actualBalance, chainDetails } = fromToken;
-    //   const { symbol, backendName } = chainDetails ?? {};
-    //   const nativeTokenSymbol = get(NativeTokenMapping, symbol) || symbol;
-    //   if (
-    //     parseFloat(cryptoAmount) > parseFloat(String(actualBalance)) ||
-    //     nativeTokenBalance <= gasFeeReservation[backendName] ||
-    //     (fromToken?.symbol === nativeTokenSymbol &&
-    //       parseFloat(cryptoAmount) >
-    //         parseFloat(
-    //           (
-    //             parseFloat(String()) - get(gasFeeReservation, backendName)
-    //           ).toFixed(6),
-    //         ))
-    //   ) {
-    //     quoteData.reasons.push('Insufficient Funds');
-    //   }
-    //   setSelectedReasons([]);
-    //   setDontAskAgain(false);
-    //   commentsRef.current = '';
-    //   if (
-    //     isReadOnlyWallet ||
-    //     isSwap() ||
-    //     parseFloat(cryptoAmount) > parseFloat(String(actualBalance))
-    //   ) {
-    //     setSignModalVisible(false);
-    //   } else {
-    //     setQuoteCancelVisible(true);
-    //     setAnimation(true);
-    //     setTimeout(() => {
-    //       setAnimation(false);
-    //     }, 100);
-    //   }
-    // } else {
-    //   setSignModalVisible(false);
-    // }
-    setSignModalVisible(false);
+  const isExchangeDisabled = () => {
+    if (selectedFromToken) {
+      const { actualBalance, chainDetails } = selectedFromToken;
+      const { symbol, backendName } = chainDetails ?? {};
+      const nativeTokenSymbol = get(NativeTokenMapping, symbol) || symbol;
+      const gas = swapParams?.gasFeeETH;
+      const isGaslessChain = GASLESS_CHAINS.includes(backendName);
+      const hasInSufficientGas =
+        (!isGaslessChain && nativeTokenBalance <= gas) ||
+        (selectedFromToken?.symbol === nativeTokenSymbol &&
+          parseFloat(cryptoAmount) >
+            parseFloat((parseFloat(String(actualBalance)) - gas).toFixed(6)));
+      return (
+        (!isGaslessChain && nativeTokenBalance === 0) ||
+        parseFloat(cryptoAmount) > parseFloat(String(actualBalance)) ||
+        hasInSufficientGas
+      );
+    }
+    return true;
   };
 
   // eslint-disable-next-line react/no-unstable-nested-components
@@ -2051,7 +2076,7 @@ export default function BridgeSkipApi({ navigation }: { navigation: any }) {
                     'font-nunito font-[16px] text-black font-bold max-w-[150px]'
                   }
                   numberOfLines={1}>
-                  {formatAmount(swapParams?.amount) +
+                  {formatAmount(swapParams?.amount).toString() +
                     ' ' +
                     String(selectedFromToken?.name)}
                 </CyDText>
@@ -2080,7 +2105,9 @@ export default function BridgeSkipApi({ navigation }: { navigation: any }) {
                     'font-nunito font-[16px] text-black font-bold max-w-[150px]'
                   }
                   numberOfLines={1}>
-                  {formatAmount(swapParams?.quoteData?.toToken?.amount) +
+                  {formatAmount(
+                    swapParams?.quoteData?.toToken?.amount,
+                  ).toString() +
                     ' ' +
                     String(selectedToToken?.name)}
                 </CyDText>
@@ -2092,24 +2119,22 @@ export default function BridgeSkipApi({ navigation }: { navigation: any }) {
                 </CyDText>
               </CyDView>
             </CyDView>
-            {isSwap() && (
-              <CyDView className='flex flex-row justify-between items-center mt-[20px] mr-[10px]'>
-                <CyDView className='flex flex-row'>
-                  <CyDText className=' py-[10px] w-[60%] font-semibold'>
-                    {t<string>('GAS_FEE') + ' :'}
-                  </CyDText>
-                </CyDView>
-                <CyDView className='items-end'>
-                  <CyDText className='font-bold'>
-                    {formatAmount(swapParams?.gasFeeETH)}
-                    {' ' + String(selectedFromToken?.chainDetails?.symbol)}
-                  </CyDText>
-                  <CyDText className='font-bold text-subTextColor'>
-                    {String(formatAmount(swapParams?.gasFeeDollar)) + ' USD'}
-                  </CyDText>
-                </CyDView>
+            <CyDView className='flex flex-row justify-between items-center mt-[20px] mr-[10px]'>
+              <CyDView className='flex flex-row'>
+                <CyDText className=' py-[10px] w-[60%] font-semibold'>
+                  {t<string>('GAS_FEE') + ' :'}
+                </CyDText>
               </CyDView>
-            )}
+              <CyDView className='items-end'>
+                <CyDText className='font-bold'>
+                  {formatAmount(swapParams?.gasFeeETH)}
+                  {' ' + String(selectedFromToken?.chainDetails?.symbol)}
+                </CyDText>
+                <CyDText className='font-bold text-subTextColor'>
+                  {String(formatAmount(swapParams?.gasFeeDollar)) + ' USD'}
+                </CyDText>
+              </CyDView>
+            </CyDView>
             <RenderWarningMessage />
           </CyDView>
 
@@ -2122,19 +2147,17 @@ export default function BridgeSkipApi({ navigation }: { navigation: any }) {
               disabled={loading}
               type={ButtonType.SECONDARY}
               onPress={() => {
-                void onSignModalCancel();
+                setSignModalVisible(false);
               }}
               style={'h-[60px] w-[166px] mr-[9px]'}
             />
             <Button
-              title={
-                t('SWAP') +
-                (quoteExpiryTime ? ' (' + String(quoteExpiryTime) + ')' : '')
-              }
+              title={t('SWAP')}
               loading={loading}
               onPress={() => {
                 void onConfirmSwap(swapParams);
               }}
+              disabled={isExchangeDisabled()}
               isPrivateKeyDependent={true}
               style={'h-[60px] w-[166px] ml-[9px]'}
             />
@@ -2171,9 +2194,9 @@ export default function BridgeSkipApi({ navigation }: { navigation: any }) {
           )}
         {!isSwap() && !isEmpty(routeResponse?.estimated_fees) && (
           <CyDView className='mx-[16px] mt-[16px] bg-white rounded-[8px] p-[12px]'>
-            {routeResponse?.estimated_fees.map((item, index) => (
+            {routeResponse?.estimated_fees.map((item, _index) => (
               <CyDView
-                key={index}
+                key={_index}
                 className='mt-[8px] flex flex-row gap-x-[12px] justify-between items-center'>
                 <CyDFastImage
                   source={AppImages.INFO_CIRCLE}
@@ -2213,23 +2236,6 @@ export default function BridgeSkipApi({ navigation }: { navigation: any }) {
             </CyDText>
           </CyDView>
         )}
-        {!isSwap() && index === 0 && (
-          <CyDView className='mx-[16px] mt-[16px]'>
-            <Button
-              onPress={() => {
-                setStatusResponse([]);
-                setIndex(1);
-              }}
-              title={'Review Route'}
-              disabled={
-                parseFloat(usdAmount) > (selectedFromToken?.totalValue ?? 0) ||
-                isEmpty(routeResponse)
-              }
-              loading={loading}
-              loaderStyle={styles.loaderStyle}
-            />
-          </CyDView>
-        )}
         {isSwap() && quoteData && (
           <CyDView className='mx-[16px] mt-[16px] bg-white rounded-[8px] p-[12px]'>
             <CyDView className={'px-[20px]'}>
@@ -2246,7 +2252,7 @@ export default function BridgeSkipApi({ navigation }: { navigation: any }) {
                       'font-nunito font-[16px] text-black font-bold max-w-[150px]'
                     }
                     numberOfLines={1}>
-                    {formatAmount(cryptoAmount) +
+                    {formatAmount(cryptoAmount).toString() +
                       ' ' +
                       String(selectedFromToken?.name)}
                   </CyDText>
@@ -2275,7 +2281,7 @@ export default function BridgeSkipApi({ navigation }: { navigation: any }) {
                       'font-nunito font-[16px] text-black font-bold max-w-[150px]'
                     }
                     numberOfLines={1}>
-                    {formatAmount(quoteData?.toToken?.amount) +
+                    {formatAmount(quoteData?.toToken?.amount).toString() +
                       ' ' +
                       String(selectedToToken?.name)}
                   </CyDText>
@@ -2291,21 +2297,30 @@ export default function BridgeSkipApi({ navigation }: { navigation: any }) {
             </CyDView>
           </CyDView>
         )}
-        {isSwap() && quoteData && (
+        {index === 0 && (
           <CyDView className='mx-[16px] mt-[16px]'>
             <Button
               onPress={() => {
-                void onAcceptSwap({ showQuote: true });
+                if (isSwap()) {
+                  void onAcceptSwap({ showQuote: true });
+                } else {
+                  setStatusResponse([]);
+                  setIndex(1);
+                }
               }}
-              title={t('Swap')}
+              title={isSwap() ? 'Swap' : 'Preview'}
+              disabled={
+                isSwap()
+                  ? selectedFromToken
+                    ? parseFloat(cryptoAmount) >
+                      parseFloat(String(selectedFromToken.actualBalance))
+                    : true
+                  : parseFloat(usdAmount) >
+                      (selectedFromToken?.totalValue ?? 0) ||
+                    isEmpty(routeResponse)
+              }
               loading={loading}
               loaderStyle={styles.loaderStyle}
-              disabled={
-                selectedFromToken
-                  ? parseFloat(cryptoAmount) >
-                    parseFloat(String(selectedFromToken.actualBalance))
-                  : true
-              }
             />
           </CyDView>
         )}
