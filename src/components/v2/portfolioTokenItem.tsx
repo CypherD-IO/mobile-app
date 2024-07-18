@@ -125,7 +125,7 @@ const RenderRightActions = (navigation: any, tokenData: any) => {
         </CyDView>
       )} */}
 
-      {isSwapable && (
+      {(isSwapable || isBridgeable) && (
         <CyDView>
           <CyDTouchView
             className={'flex items-center justify-center mx-[15px]'}

@@ -32,7 +32,6 @@ import {
   some,
 } from 'lodash';
 import {
-  ALL_CHAINS,
   Chain,
   ChainBackendNames,
   ChainNameMapping,
@@ -59,11 +58,7 @@ import AppImages from '../../../assets/images/appImages';
 import Button from '../../components/v2/button';
 import { useGlobalModalContext } from '../../components/v2/GlobalModal';
 import { t } from 'i18next';
-import {
-  AnalyticsType,
-  ButtonType,
-  ConnectionTypes,
-} from '../../constants/enum';
+import { AnalyticsType, ButtonType } from '../../constants/enum';
 import { useRoute } from '@react-navigation/native';
 import SignatureModal from '../../components/v2/signatureModal';
 import { GasPriceDetail } from '../../core/types';
@@ -258,7 +253,9 @@ export default function BridgeSkipApi(props: {
           '',
         );
         tempSelectedFromChain = chains.find(
-          chain => parseInt(chain.chain_id, 10) === parseInt(chainID, 16),
+          chain =>
+            parseInt(chain.chain_id, 10) === parseInt(chainID, 16) ||
+            chain.chain_id === chainID,
         );
       }
       if (tempSelectedFromChain) setSelectedFromChain(tempSelectedFromChain);
@@ -359,12 +356,13 @@ export default function BridgeSkipApi(props: {
 
   const setFromTokens = async () => {
     if (fromChainData && selectedFromChain) {
+      const chainsData = getAvailableChains(hdWallet);
       const swapTokensTemp = await getSwapSupportedTokens();
 
       let chainData;
 
       const chains = filter(skipApiChainsData, item2 => {
-        return some(ALL_CHAINS, item1 => {
+        return some(chainsData, item1 => {
           return (
             parseInt(item1.chain_id, 16) === parseInt(item2.chain_id, 10) ||
             item1.chain_id === item2.chain_id
@@ -408,7 +406,7 @@ export default function BridgeSkipApi(props: {
         chainData = [...chains];
       } else {
         chainData = filter(skipApiChainsData, item2 => {
-          return some(ALL_CHAINS, item1 => {
+          return some(chainsData, item1 => {
             return (
               (parseInt(item1.chain_id, 16) === parseInt(item2.chain_id, 10) ||
                 item1.chain_id === item2.chain_id) &&
