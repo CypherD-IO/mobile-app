@@ -52,13 +52,7 @@ export default function BridgeCardScreen(props: {
 
   useEffect(() => {
     if (isFocused && cardProfile && !currentCardProvider) {
-      let tempCurrentCardProvider = '';
-      if (has(cardProfile, CardProviders.BRIDGE_CARD)) {
-        tempCurrentCardProvider = CardProviders.BRIDGE_CARD;
-      } else if (has(cardProfile, CardProviders.PAYCADDY)) {
-        tempCurrentCardProvider = CardProviders.PAYCADDY;
-      }
-      setCurrentCardProvider(tempCurrentCardProvider);
+      setCurrentCardProvider(cardProfile.provider ?? CardProviders.REAP_CARD);
     }
   }, [isFocused]);
 
@@ -101,8 +95,7 @@ export default function BridgeCardScreen(props: {
       <CyDView
         className={
           'flex flex-row justify-between px-[2%] py-[1.2%] bg-white border-[1px] mb-[0px] mx-[20px] rounded-[10px] border-sepratorColor'
-        }
-      >
+        }>
         <CyDView>
           <CyDText className={'font-bold text-[12px]'}>
             {t<string>('TOTAL_BALANCE')}
@@ -160,15 +153,13 @@ export default function BridgeCardScreen(props: {
     <CyDView className='bg-white'>
       <CyDView
         className='flex h-full bg-white'
-        onLayout={(event) => {
+        onLayout={event => {
           const layout = event.nativeEvent.layout;
           setMinHeight(layout.height);
-        }}
-      >
+        }}>
         <CyDImageBackground
           className='flex h-full'
-          source={AppImages.DEBIT_CARD_BACKGROUND}
-        >
+          source={AppImages.DEBIT_CARD_BACKGROUND}>
           {hasBothProviders && (
             <CyDView className='flex items-center mt-[-10px] mb-[10px]'>
               <SwitchView
@@ -254,8 +245,7 @@ export function Transactions(props: any) {
             } else {
               setSheetHeight(maxHeight);
             }
-          }}
-        >
+          }}>
           {/* <CyDView className={'h-full bg-white px-[10px] pt-[20px] mt-[5px] rounded-t-[50px]'}>
           <TabView
             renderTabBar={renderTabBar}

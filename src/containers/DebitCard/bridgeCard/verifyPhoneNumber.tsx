@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useContext, useEffect, useState } from 'react';
 import { StyleSheet } from 'react-native';
 import { t } from 'i18next';
 import * as Sentry from '@sentry/react-native';
@@ -19,12 +19,15 @@ import { useGlobalModalContext } from '../../../components/v2/GlobalModal';
 import useAxios from '../../../core/HttpRequest';
 import Intercom from '@intercom/intercom-react-native';
 import { useTranslation } from 'react-i18next';
+import { GlobalContext } from '../../../core/globalContext';
+import { CardProfile } from '../../../models/cardProfile.model';
 
 export default function PhoneNumberVerificationScreen({
   route,
 }: {
   route: { params: { phoneNumber: string } };
 }) {
+  const globalContext = useContext<any>(GlobalContext);
   const { phoneNumber } = route.params;
   const { showModal, hideModal } = useGlobalModalContext();
   const [isPhoneOTPVerified, setPhoneOTPVerified] = useState<boolean>(false);
@@ -36,6 +39,8 @@ export default function PhoneNumberVerificationScreen({
   const [resendInterval, setResendInterval] = useState(0);
   const [timer, setTimer] = useState<NodeJS.Timer>();
   const { postWithAuth } = useAxios();
+  const cardProfile: CardProfile = globalContext.globalState.cardProfile;
+  const provider = cardProfile.provider ?? CardProviders.REAP_CARD;
 
   useEffect(() => {
     if (resendInterval === 0) {
@@ -56,7 +61,7 @@ export default function PhoneNumberVerificationScreen({
   }) => {
     setVerifyingOTP(true);
     try {
-      const OTPVerificationUrl = `/v1/cards/${CardProviders.PAYCADDY}/application/verify/phone`;
+      const OTPVerificationUrl = `/v1/cards/${provider}/application/verify/phone`;
       const response = await postWithAuth(OTPVerificationUrl, {
         otp: Number(otp),
       });
@@ -79,7 +84,7 @@ export default function PhoneNumberVerificationScreen({
 
   const triggerOTP = async (type: string) => {
     try {
-      const path = `/v1/cards/${CardProviders.PAYCADDY}/application/trigger/${type}`;
+      const path = `/v1/cards/${provider}/application/trigger/${type}`;
       const response = await postWithAuth(path, {});
       if (response.isError) {
         showModal('state', {

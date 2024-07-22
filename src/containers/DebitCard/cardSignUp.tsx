@@ -34,7 +34,6 @@ import Loading from '../../components/v2/loading';
 import { GlobalContext } from '../../core/globalContext';
 import axios from '../../core/Http';
 import { useGlobalModalContext } from '../../components/v2/GlobalModal';
-import { getWalletProfile } from '../../core/card';
 import { CardProviders, GlobalContextType } from '../../constants/enum';
 import { countryMaster } from '../../../assets/datasets/countryMaster';
 import { Colors } from '../../constants/theme';
@@ -48,6 +47,8 @@ import ChooseCountryModal from '../../components/v2/ChooseCountryModal';
 import RadioButtons from '../../components/radioButtons';
 import Tooltip from 'react-native-walkthrough-tooltip';
 import { PEP_OPTIONS } from '../../constants/data';
+import { CardProfile } from '../../models/cardProfile.model';
+import useCardUtilities from '../../hooks/useCardUtilities';
 
 export default function CardSignupScreen({ navigation, route }) {
   const globalContext = useContext<any>(GlobalContext);
@@ -106,6 +107,8 @@ export default function CardSignupScreen({ navigation, route }) {
       Iso3: 'USA',
       currency: 'USD',
     });
+  const cardProfile: CardProfile = globalContext.globalState.cardProfile;
+  const { getWalletProfile } = useCardUtilities();
 
   const selectedCountryStates = useMemo(() => {
     return stateMaster.filter(
@@ -343,11 +346,12 @@ export default function CardSignupScreen({ navigation, route }) {
       pep: PEP_OPTIONS[userBasicDetails.pep].value,
       ...latestBillingAddress,
       country: userBasicDetails.Iso2,
-      inviteCode,
+      ...(inviteCode ? { inviteCode } : {}),
     };
     try {
+      const provider = cardProfile.provider ?? CardProviders.REAP_CARD;
       const response = await postWithAuth(
-        `/v1/cards/${CardProviders.PAYCADDY}/application`,
+        `/v1/cards/${provider}/application`,
         payload,
       );
       if (!response.isError) {

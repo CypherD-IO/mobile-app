@@ -21,12 +21,14 @@ import { useGlobalModalContext } from '../../../components/v2/GlobalModal';
 import useAxios from '../../../core/HttpRequest';
 import { MODAL_HIDE_TIMEOUT } from '../../../core/Http';
 import { GlobalContext } from '../../../core/globalContext';
-import { GlobalContextType } from '../../../constants/enum';
+import { CardProviders, GlobalContextType } from '../../../constants/enum';
 import OtpInput from '../../../components/v2/OTPInput';
 import LottieView from 'lottie-react-native';
 import * as Sentry from '@sentry/react-native';
 import { StyleSheet } from 'react-native';
 import { getChainNameFromAddress, trimWhitespace } from '../../../core/util';
+import { CardProfile } from '../../../models/cardProfile.model';
+import useCardUtilities from '../../../hooks/useCardUtilities';
 
 export default function LinkAnotherWallet({ navigation }) {
   const [formValues, setFormValues] = useState({
@@ -41,6 +43,9 @@ export default function LinkAnotherWallet({ navigation }) {
   const { postWithAuth, patchWithAuth, getWithAuth } = useAxios();
   const { showModal, hideModal } = useGlobalModalContext();
   const globalContext = useContext<any>(GlobalContext);
+  const cardProfile: CardProfile = globalContext.globalState.cardProfile;
+  const provider = cardProfile.provider ?? CardProviders.REAP_CARD;
+  const { cardProfileModal } = useCardUtilities();
 
   const RESENT_OTP_TIME = 30;
 
@@ -111,10 +116,11 @@ export default function LinkAnotherWallet({ navigation }) {
 
   const refreshProfile = async () => {
     const response = await getWithAuth('/v1/authentication/profile');
+    const tempProfile = cardProfileModal(response.data, provider);
     if (!response.isError) {
       globalContext.globalDispatch({
         type: GlobalContextType.CARD_PROFILE,
-        cardProfile: response.data,
+        cardProfile: tempProfile,
       });
       return true;
     }

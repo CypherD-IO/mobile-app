@@ -9,7 +9,11 @@ import {
   CyDView,
 } from '../../../styles/tailwindStyles';
 import AppImages from '../../../../assets/images/appImages';
-import { CardProviders, CardType } from '../../../constants/enum';
+import {
+  CardProviders,
+  PCCardType,
+  RC_CARD_TYPE,
+} from '../../../constants/enum';
 import { screenTitle } from '../../../constants';
 import { CardProfile } from '../../../models/cardProfile.model';
 import CyDModalLayout from '../../../components/v2/modal';
@@ -30,8 +34,11 @@ export default function CardOptionsModal({
 }) {
   const globalContext = useContext<any>(GlobalContext);
   const cardProfile: CardProfile = globalContext.globalState.cardProfile;
-  const isPhoneVerified = cardProfile.pc?.phoneVerified ?? false;
-
+  const isPhoneVerified =
+    cardProvider === CardProviders.REAP_CARD ||
+    (cardProfile.pc?.phoneVerified ?? false);
+  const CardType =
+    cardProvider === CardProviders.PAYCADDY ? PCCardType : RC_CARD_TYPE;
   const cardOptions = [
     ...(card.type === CardType.PHYSICAL
       ? [

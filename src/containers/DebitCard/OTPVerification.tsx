@@ -29,10 +29,12 @@ import {
   ButtonType,
 } from '../../constants/enum';
 import { useGlobalModalContext } from '../../components/v2/GlobalModal';
-import { getWalletProfile } from '../../core/card';
+import useCardUtilities from '../../hooks/useCardUtilities';
 import { countryMaster } from '../../../assets/datasets/countryMaster';
 import useAxios from '../../core/HttpRequest';
 import Button from '../../components/v2/button';
+import { CardProfile } from '../../models/cardProfile.model';
+import CardProviderSwitch from '../../components/cardProviderSwitch';
 
 export default function OTPVerificationScreen({ navigation }) {
   const globalContext = useContext<any>(GlobalContext);
@@ -51,7 +53,9 @@ export default function OTPVerificationScreen({ navigation }) {
   const [resendInterval, setResendInterval] = useState(0);
   const [timer, setTimer] = useState<NodeJS.Timer>();
   const { getWithAuth, postWithAuth, patchWithAuth } = useAxios();
-  const provider = CardProviders.PAYCADDY;
+  const cardProfile: CardProfile = globalContext.globalState.cardProfile;
+  const provider = cardProfile.provider ?? CardProviders.REAP_CARD;
+  const { getWalletProfile } = useCardUtilities();
 
   const [formData, setFormData] = useState({
     countryFlag: '',
@@ -75,9 +79,7 @@ export default function OTPVerificationScreen({ navigation }) {
   const getApplication = async () => {
     setLoading(true);
     try {
-      const response = await getWithAuth(
-        `/v1/cards/${CardProviders.PAYCADDY}/application`,
-      );
+      const response = await getWithAuth(`/v1/cards/${provider}/application`);
       if (!response.isError) {
         const { data } = response;
         const countryMasterResponse = await axios.get(
@@ -130,7 +132,7 @@ export default function OTPVerificationScreen({ navigation }) {
   }) => {
     setVerifyingOTP(true);
     try {
-      let OTPVerificationUrl = `/v1/cards/${CardProviders.PAYCADDY}/application/verify/`;
+      let OTPVerificationUrl = `/v1/cards/${provider}/application/verify/`;
       if (!isEmailOTPVerified) {
         OTPVerificationUrl += OTPType.EMAIL;
       } else if (isEmailOTPVerified && !isPhoneOTPVerified) {
@@ -143,7 +145,9 @@ export default function OTPVerificationScreen({ navigation }) {
       if (!response.isError) {
         if (!isEmailOTPVerified) {
           setEmailOTPVerified(true);
-          void triggerOTP(OTPType.PHONE);
+          if (!(provider === CardProviders.REAP_CARD)) {
+            void triggerOTP(OTPType.PHONE);
+          }
         } else if (isEmailOTPVerified && !isPhoneOTPVerified) {
           setPhoneOTPVerified(true);
         }
@@ -164,7 +168,7 @@ export default function OTPVerificationScreen({ navigation }) {
 
   const triggerOTP = async (type: string) => {
     try {
-      const path = `/v1/cards/${CardProviders.PAYCADDY}/application/trigger/${type}`;
+      const path = `/v1/cards/${provider}/application/trigger/${type}`;
       const response = await postWithAuth(path, {});
       if (response.isError) {
         showModal('state', {
@@ -182,6 +186,13 @@ export default function OTPVerificationScreen({ navigation }) {
 
   const getOTP = async (otp: string | number) => {
     await verifyOTPByType({ otp });
+  };
+
+  const verifyEmail = async (otp: string | number) => {
+    await getOTP(otp);
+    if (provider === CardProviders.REAP_CARD) {
+      await submitVerification();
+    }
   };
 
   const resendCode = async (type: string) => {
@@ -246,7 +257,7 @@ export default function OTPVerificationScreen({ navigation }) {
     setLoading(true);
     try {
       const response = await getWithAuth(
-        `/v1/cards/${CardProviders.PAYCADDY}/application/kyc`,
+        `/v1/cards/${provider}/application/kyc`,
       );
       if (!response.isError) {
         const data = await getWalletProfile(globalContext.globalState.token);
@@ -417,6 +428,10 @@ export default function OTPVerificationScreen({ navigation }) {
         <Loading />
       ) : (
         <CyDSafeAreaView className={'h-full bg-white '}>
+          <CardProviderSwitch />
+          <CyDText className='font-extrabold font-nunito text-[20px] mt-[10px] text-center'>
+            {'Verify OTP'}
+          </CyDText>
           <CyDView className={'flex flex-row mt-[30px]'}>
             <CyDView className={'w-[6%] h-full'}>
               <CyDView
@@ -465,7 +480,7 @@ export default function OTPVerificationScreen({ navigation }) {
                           <OtpInput
                             pinCount={4}
                             getOtp={otp => {
-                              void getOTP(otp);
+                              void verifyEmail(otp);
                             }}
                             placeholder={t('ENTER_OTP')}
                           />

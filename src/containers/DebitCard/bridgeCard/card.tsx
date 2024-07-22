@@ -11,8 +11,10 @@ import { GlobalContext } from '../../../core/globalContext';
 import { screenTitle } from '../../../constants';
 import {
   copyToClipboard,
+  getCardStatus,
   limitDecimalPlaces,
   sleepFor,
+  stripPemHeaders,
 } from '../../../core/util';
 import { useTranslation } from 'react-i18next';
 import {
@@ -28,7 +30,14 @@ import {
   CyDView,
 } from '../../../styles/tailwindStyles';
 import useAxios from '../../../core/HttpRequest';
-import { CardProviders, CardStatus, CardType } from '../../../constants/enum';
+import {
+  CardProviders,
+  PCCardStatus,
+  RC_CARD_STATUS,
+  PCCardType,
+  RC_CARD_TYPE,
+  CardStatus,
+} from '../../../constants/enum';
 import { useGlobalModalContext } from '../../../components/v2/GlobalModal';
 import AppImages from '../../../../assets/images/appImages';
 import clsx from 'clsx';
@@ -42,9 +51,13 @@ import * as Sentry from '@sentry/react-native';
 import LottieView from 'lottie-react-native';
 import CardOptionsModal from './cardOptions';
 import Carousel from 'react-native-reanimated-carousel';
-import { useWindowDimensions } from 'react-native';
+import { useWindowDimensions, StyleSheet } from 'react-native';
 import Button from '../../../components/v2/button';
 import { showToast } from '../../utilities/toastUtility';
+import { HIDDEN_CARD_ID } from '../../../constants/data';
+import WebView from 'react-native-webview';
+import CyDModalLayout from '../../../components/v2/modal';
+import crypto from 'crypto';
 
 interface CardSecrets {
   cvv: string;
@@ -80,6 +93,8 @@ export default function CardScreen({
     pc: { isPhysicalCardEligible: upgradeToPhysicalAvailable = false } = {},
     physicalCardEligibilityLimit,
   } = cardProfile;
+  const CardType =
+    currentCardProvider === CardProviders.PAYCADDY ? PCCardType : RC_CARD_TYPE;
 
   const { width } = useWindowDimensions();
   const { t } = useTranslation();
@@ -107,8 +122,9 @@ export default function CardScreen({
     return some(userCardDetails?.cards, { status: CardStatus.HIDDEN });
   };
 
+  // physical card upgrade only shown for reap cards
   const isUpgradeToPhysicalCardStatusShown =
-    currentCardProvider === CardProviders.PAYCADDY &&
+    currentCardProvider === CardProviders.REAP_CARD &&
     lifetimeLoadUSD < physicalCardEligibilityLimit &&
     !cardProfile[currentCardProvider]?.cards
       ?.map(card => card.type)
@@ -155,7 +171,8 @@ export default function CardScreen({
             ? AppImages.VIRTUAL_CARD_MASTER
             : AppImages.PHYSICAL_CARD_MASTER
         }>
-        {card.status === CardStatus.IN_ACTIVE && (
+        {card.status ===
+          getCardStatus(currentCardProvider, CardStatus.IN_ACTIVE) && (
           <CyDView className='flex flex-row items-center bg-cardBg px-[12px] py-[6px] rounded-[6px]'>
             <CyDImage
               source={AppImages.CYPHER_LOCKED}
@@ -167,7 +184,8 @@ export default function CardScreen({
             </CyDText>
           </CyDView>
         )}
-        {card.status === CardStatus.HIDDEN && (
+        {card.status ===
+          getCardStatus(currentCardProvider, CardStatus.HIDDEN) && (
           <CyDView className='flex flex-row items-center bg-cardBg px-[12px] py-[6px] rounded-[6px]'>
             <CyDImage
               source={AppImages.CYPHER_LOCKED}
@@ -214,7 +232,7 @@ export default function CardScreen({
 
   const getTrackingDetails = async () => {
     const response = await getWithAuth(
-      `/v1/cards/${CardProviders.PAYCADDY}/card/tracking`,
+      `/v1/cards/${currentCardProvider}/card/tracking`,
     );
     if (!response.error) {
       const tempTrackingDetails = response.data;
@@ -292,12 +310,15 @@ const RenderCardActions = ({
   const [isStatusLoading, setIsStatusLoading] = useState<boolean>(false);
   const { type, last4, status, cardId } = card;
   const isFocused = useIsFocused();
+  const [showRCCardDetailsModal, setShowRCCardDetailsModal] = useState(false);
+  const [webviewUrl, setWebviewUrl] = useState('');
   const {
     lifetimeAmountUsd: lifetimeLoadUSD,
     pc: { isPhysicalCardEligible: upgradeToPhysicalAvailable = false } = {},
     physicalCardEligibilityLimit,
   } = cardProfile;
-
+  const CardType =
+    cardProvider === CardProviders.PAYCADDY ? PCCardType : RC_CARD_TYPE;
   const physicalCardEligibilityProgress =
     parseFloat(
       ((lifetimeLoadUSD / physicalCardEligibilityLimit) * 100).toFixed(2),
@@ -306,7 +327,7 @@ const RenderCardActions = ({
       : ((lifetimeLoadUSD / physicalCardEligibilityLimit) * 100).toFixed(2);
 
   const isUpgradeToPhysicalCardStatusShown =
-    cardProvider === CardProviders.PAYCADDY &&
+    cardProvider === CardProviders.REAP_CARD &&
     lifetimeLoadUSD < physicalCardEligibilityLimit &&
     !cardProfile[cardProvider]?.cards
       ?.map(card => card.type)
@@ -375,7 +396,7 @@ const RenderCardActions = ({
     if (card.type === CardType.VIRTUAL) {
       setIsFetchingCardDetails(true);
       const cardRevealReuseToken = await getCardRevealReuseToken(cardId);
-      if (cardRevealReuseToken) {
+      if (cardProfile.provider && cardRevealReuseToken) {
         const verifyReuseTokenUrl = `/v1/cards/${cardProvider}/card/${String(
           cardId,
         )}/verify/reuse-token`;
@@ -409,13 +430,37 @@ const RenderCardActions = ({
   const verifyWithOTP = () => {
     navigation.navigate(screenTitle.BRIDGE_CARD_REVEAL_AUTH_SCREEN, {
       onSuccess: (data: any, cardProvider: CardProviders) => {
-        void sendCardDetails(data);
+        if (cardProvider === CardProviders.REAP_CARD) {
+          void decryptMessage(data);
+        } else if (cardProvider === CardProviders.PAYCADDY) {
+          void sendCardDetails(data);
+        }
       },
       currentCardProvider: cardProvider,
       card,
       triggerOTPParam: 'verify/show-token',
       verifyOTPPayload: { isMobile: true },
     });
+  };
+
+  const decryptMessage = ({ privateKey, base64Message }) => {
+    try {
+      const buffer = Buffer.from(base64Message, 'base64');
+
+      const decrypted = crypto.privateDecrypt(
+        {
+          key: privateKey,
+          padding: 4,
+        },
+        buffer,
+      );
+      const decryptedBuffer = decrypted.toString('utf8');
+      setWebviewUrl(decryptedBuffer);
+      setShowRCCardDetailsModal(true);
+      return decryptedBuffer;
+    } catch (error) {
+      console.error('Decryption error:', error);
+    }
   };
 
   const sendCardDetails = async ({
@@ -434,14 +479,11 @@ const RenderCardActions = ({
     if (reuseToken) {
       await setCardRevealReuseToken(cardId, reuseToken);
     }
-    let response;
-    if (cardProvider === CardProviders.PAYCADDY) {
-      response = await axios.post(
-        vaultId,
-        { cardId, isProd: true },
-        { headers: { Authorization: `Bearer ${token}` } },
-      );
-    }
+    const response = await axios.post(
+      vaultId,
+      { cardId, isProd: true },
+      { headers: { Authorization: `Bearer ${token}` } },
+    );
     setIsFetchingCardDetails(false);
     if (response?.data) {
       if (response?.data.result) {
@@ -471,7 +513,10 @@ const RenderCardActions = ({
     setIsStatusLoading(true);
     const url = `/v1/cards/${cardProvider}/card/${cardId}/status`;
     const payload = {
-      status: status === CardStatus.ACTIVE ? 'inactive' : 'active',
+      status:
+        status === getCardStatus(cardProvider, CardStatus.ACTIVE)
+          ? getCardStatus(cardProvider, CardStatus.IN_ACTIVE)
+          : getCardStatus(cardProvider, CardStatus.ACTIVE),
     };
 
     try {
@@ -483,7 +528,9 @@ const RenderCardActions = ({
           type: 'success',
           title: t('CHANGE_CARD_STATUS_SUCCESS'),
           description: `Successfully ${
-            status === CardStatus.ACTIVE ? 'locked' : 'unlocked'
+            status === getCardStatus(cardProvider, CardStatus.ACTIVE)
+              ? 'locked'
+              : 'unlocked'
           } your card!`,
           onSuccess: hideModal,
           onFailure: hideModal,
@@ -517,10 +564,12 @@ const RenderCardActions = ({
     showModal('state', {
       type: 'warning',
       title: `Are you sure you want to ${
-        status === CardStatus.ACTIVE ? 'lock' : 'unlock'
+        status === getCardStatus(cardProvider, CardStatus.ACTIVE)
+          ? 'lock'
+          : 'unlock'
       } your card?`,
       description:
-        status === CardStatus.ACTIVE
+        status === getCardStatus(cardProvider, CardStatus.ACTIVE)
           ? 'This is just a temporary lock. You can unlock it anytime'
           : '',
       onSuccess: onCardStatusChange,
@@ -596,7 +645,9 @@ const RenderCardActions = ({
         </CyDView>
       );
     }
-  } else if (status === CardStatus.PENDING_ACTIVATION) {
+  } else if (
+    status === getCardStatus(cardProvider, CardStatus.PENDING_ACTIVATION)
+  ) {
     return (
       <CyDView className='flex flex-col justify-center items-center mx-[20px] mt-[-32px]'>
         {get(trackingDetails, cardId) ? (
@@ -622,13 +673,69 @@ const RenderCardActions = ({
       </CyDView>
     );
   }
+
   return (
-    <CyDView>
+    <CyDView className='w-full'>
       <CardDetailsModal
         isModalVisible={showCardDetailsModal}
         setShowModal={setShowCardDetailsModal}
         cardDetails={cardDetails}
       />
+
+      {showRCCardDetailsModal && (
+        <CyDModalLayout
+          isModalVisible={showRCCardDetailsModal}
+          setModalVisible={setShowRCCardDetailsModal}
+          animationIn={'slideInUp'}
+          animationOut={'slideOutDown'}
+          animationInTiming={300}
+          animationOutTiming={300}
+          style={styles.modalLayout}>
+          <CyDView className='bg-cardBgTo py-[8px] mb-[12px] h-[305px] w-[90%] rounded-[16px]'>
+            <CyDTouchView onPress={() => setShowRCCardDetailsModal(false)}>
+              <CyDImage
+                source={AppImages.CLOSE_CIRCLE}
+                className='h-[22px] w-[22px] ml-[90%] mb-[5px]'
+                resizeMode='contain'
+              />
+            </CyDTouchView>
+            <WebView
+              source={{
+                html: `<!DOCTYPE html>
+                  <html lang="en">
+                  <head>
+                    <meta charset="UTF-8">
+                    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=2.0, user-scalable=yes">
+
+                    </head>
+                  <body style="background:#EBEDF0;overflow:hidden">
+                  <iframe scrolling="no" src=${webviewUrl} allow="clipboard-read; clipboard-write" style="height:250px;overflow:hidden;width:100%;margin:0;padding:0;border:none;background:#EBEDF0;border-radius:16px"></iframe></body>
+                  </html>
+                `,
+                // html: htmlContent
+              }}
+              // source={{
+              //   uri: encodeURIComponent(encodeURIComponent(webviewUrl)),
+              // }}
+              scalesPageToFit={true}
+              style={{
+                height: '100%',
+                weight: '100%',
+                background: '#EBEDF0',
+                padding: 0,
+                margin: 0,
+                borderRadius: 16,
+              }}
+              javaScriptEnabled={true}
+              domStorageEnabled={true}
+              startInLoadingState={true}
+              allowFileAccess={true}
+              allowFileAccessFromFileURLs={true}
+              allowUniversalAccessFromFileURLs={true}
+            />
+          </CyDView>
+        </CyDModalLayout>
+      )}
 
       <CardOptionsModal
         isModalVisible={showOptionsModal}
@@ -678,7 +785,7 @@ const RenderCardActions = ({
             ) : (
               <CyDImage
                 source={
-                  status === CardStatus.ACTIVE
+                  status === getCardStatus(cardProvider, CardStatus.ACTIVE)
                     ? AppImages.CYPHER_LOCKED
                     : AppImages.UNLOCK
                 }
@@ -689,7 +796,9 @@ const RenderCardActions = ({
           </CyDView>
           <CyDView className='mt-[4px]'>
             <CyDText className='font-semibold'>
-              {status === CardStatus.ACTIVE ? 'Lock' : 'Unlock'}
+              {status === getCardStatus(cardProvider, CardStatus.ACTIVE)
+                ? 'Lock'
+                : 'Unlock'}
             </CyDText>
           </CyDView>
         </CyDTouchView>
@@ -713,3 +822,11 @@ const RenderCardActions = ({
     </CyDView>
   );
 };
+
+const styles = StyleSheet.create({
+  modalLayout: {
+    marginBottom: 50,
+    justifyContent: 'flex-end',
+    width: '100%',
+  },
+});

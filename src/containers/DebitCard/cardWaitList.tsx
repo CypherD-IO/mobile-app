@@ -20,6 +20,7 @@ import * as C from '../../constants/index';
 import clsx from 'clsx';
 import ChooseCountryModal from '../../components/v2/ChooseCountryModal';
 import { ICountry } from '../../models/cardApplication.model';
+import CardProviderSwitch from '../../components/cardProviderSwitch';
 
 const cardBenefits = [
   'Available globally',
@@ -145,7 +146,7 @@ export default function CardWailtList({ navigation }: Props) {
                   'w-[85%] bg-white px-[50px] pt-[100px] pb-[30px] rounded-[18px] shadow-lg'
                 }>
                 <CyDView>
-                  <CyDTouchView
+                  {/* <CyDTouchView
                     className={
                       'mt-[5px] mb-[5px] border-[1px] border-inputBorderColor py-[12px] px-[10px] rounded-[8px] flex w-[100%]'
                     }
@@ -194,12 +195,20 @@ export default function CardWailtList({ navigation }: Props) {
                     loading={joiningWaitlist}
                     style={'rounded-[8px] h-[50px] mt-[20px]'}
                     title={t<string>('CTA_JOIN_WAITLIST')}
-                  />
-                  {!isValidUserEmail && userEmail !== '' && (
+                  /> */}
+                  {/* {!isValidUserEmail && userEmail !== '' && (
                     <CyDText className='text-center mt-[18px] mb-[-28px] text-red-500'>
                       {t<string>('VALID_EMAIL_ERROR')}
                     </CyDText>
-                  )}
+                  )} */}
+                  <Button
+                    disabled={!isValidUserEmail && userEmail !== ''}
+                    onPress={() => {
+                      navigation.navigate(C.screenTitle.CARD_SIGNUP_SCREEN);
+                    }}
+                    style={'rounded-[8px] h-[50px] mt-[20px]'}
+                    title={t<string>('CONTINUE_ALL_CAPS')}
+                  />
                   <CyDView className={'flex flex-row justify-center'}>
                     <CyDTouchView
                       className={'mt-[20px]'}
@@ -220,7 +229,7 @@ export default function CardWailtList({ navigation }: Props) {
                         className={
                           'text-center text-blue-700 underline underline-offset-2 font-semibold'
                         }>
-                        {t<string>('I_HAVE_AN_INVITE_CODE')}
+                        {t<string>('I_HAVE_A_REFERAL_CODE')}
                       </CyDText>
                     </CyDTouchView>
                   </CyDView>
