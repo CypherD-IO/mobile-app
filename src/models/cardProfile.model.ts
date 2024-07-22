@@ -11,7 +11,7 @@ export interface CardProfile {
   email: string;
   apto?: {
     cardHolderId: string;
-    status: CardStatus;
+    status: PCCardStatus | RC_CARD_STATUS;
   };
   provider?: CardProviders;
   bc?: {
@@ -22,7 +22,7 @@ export interface CardProfile {
         last4: string;
         type: string;
         cardId: string;
-        status: CardStatus;
+        status: PCCardStatus | RC_CARD_STATUS;
       },
     ];
   };
@@ -59,10 +59,44 @@ export interface CardProfile {
     ];
     isPhysicalCardEligible: boolean;
     physicalCardUpgradationFee: number | string;
+    isRcUpgradable?: boolean;
+  };
+  rc?: {
+    personId?: string;
+    applicationStatus: CardApplicationStatus;
+    phoneVerified: boolean;
+    emailVerified: boolean;
+    cards?: [
+      {
+        last4: string;
+        type: string;
+        cardId: string;
+        status: PCCardStatus | RC_CARD_STATUS;
+      },
+    ];
+    isPhysicalCardEligible: boolean;
+    physicalCardUpgradationFee: number | string;
+    isRcUpgradable?: boolean;
+  };
+  rc?: {
+    personId?: string;
+    applicationStatus: CardApplicationStatus;
+    phoneVerified: boolean;
+    emailVerified: boolean;
+    cards?: [
+      {
+        last4: string;
+        type: string;
+        cardId: string;
+        status: PCCardStatus | RC_CARD_STATUS;
+      },
+    ];
+    isPhysicalCardEligible: boolean;
+    physicalCardUpgradationFee: number | string;
   };
   solid?: {
     applicationStatus: CardApplicationStatus;
-    cardStatus?: CardStatus;
+    cardStatus?: PCCardStatus | RC_CARD_STATUS;
     personId: string;
   };
   lifetimeAmountUsd: number;
