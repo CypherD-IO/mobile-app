@@ -27,6 +27,7 @@ import { useGlobalModalContext } from '../../../components/v2/GlobalModal';
 import { MODAL_HIDE_TIMEOUT } from '../../../core/Http';
 import { StyleSheet } from 'react-native';
 import LottieView from 'lottie-react-native';
+import useCardUtilities from '../../../hooks/useCardUtilities';
 
 export default function UpdateCardContactDetails({
   navigation,
@@ -37,7 +38,7 @@ export default function UpdateCardContactDetails({
   const [isOTPTriggered, setIsOTPTriggered] = useState<boolean>(false);
   const globalContext = useContext<any>(GlobalContext);
   const cardProfile: CardProfile = globalContext.globalState.cardProfile;
-
+  const provider = cardProfile.provider;
   const [userBasicDetails, setUserBasicDetails] = useState({
     phoneNumber: '',
     email: '',
@@ -62,6 +63,7 @@ export default function UpdateCardContactDetails({
   const { postWithAuth, patchWithAuth, getWithAuth } = useAxios();
   const { showModal, hideModal } = useGlobalModalContext();
   const { t } = useTranslation();
+  const { cardProfileModal } = useCardUtilities();
 
   const RESENT_OTP_TIME = 30;
 
@@ -176,10 +178,11 @@ export default function UpdateCardContactDetails({
 
   const refreshProfile = async () => {
     const response = await getWithAuth('/v1/authentication/profile');
+    const tempProfile = cardProfileModal(response.data, provider);
     if (!response.isError) {
       globalContext.globalDispatch({
         type: GlobalContextType.CARD_PROFILE,
-        cardProfile: response.data,
+        cardProfile: tempProfile,
       });
       return true;
     }

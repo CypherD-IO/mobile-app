@@ -24,7 +24,7 @@ import clsx from 'clsx';
 import { isAndroid } from '../../../misc/checkers';
 import Button from '../../../components/v2/button';
 import { MODAL_HIDE_TIMEOUT } from '../../../core/Http';
-import { getWalletProfile } from '../../../core/card';
+import useCardUtilities from '../../../hooks/useCardUtilities';
 import { GlobalContext } from '../../../core/globalContext';
 import { screenTitle } from '../../../constants';
 import { useKeyboard } from '../../../hooks/useKeyboard';
@@ -52,6 +52,7 @@ export default function ActivateCard(props: {
   const [loading, setLoading] = useState<boolean>(false);
   const globalContext = useContext<any>(GlobalContext);
   const { keyboardHeight } = useKeyboard();
+  const { getWalletProfile } = useCardUtilities();
 
   useEffect(() => {
     void triggerOTP();

@@ -465,6 +465,7 @@ const resources = {
       INVALID_COUNTRY_FOR_INVITE_CODE: 'The invite code is not valid in ',
       COMPLETE_IDV: 'COMPLETE IDV',
       I_HAVE_AN_INVITE_CODE: 'I have an invite code',
+      I_HAVE_A_REFERAL_CODE: 'I have a referal code',
       REMOVE_SOLID_CREDENTIALS: 'Remove Solid Credentials',
       REMOVED_SOLID_CREDENTIALS: 'Removed Solid Credentials',
       FUND_CARD_INIT_CAPS: 'FUND CARD',

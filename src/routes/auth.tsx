@@ -807,17 +807,7 @@ export function DebitCardStackScreen({ navigation }) {
       <FundCardStack.Screen
         name={screenTitle.DEBIT_CARD_SCREEN}
         component={DebitCardScreen}
-        options={({ navigation, route }) => ({
-          headerTransparent: true,
-          headerShadowVisible: false,
-          title: '',
-          navigationOptions: {
-            tabBarVisible: false,
-          },
-          headerTitleAlign: 'center',
-          headerTitleStyle: portfolioStackScreenHeaderTitleStyles,
-          headerBackVisible: false,
-        })}
+        options={{ headerShown: false }}
       />
 
       <FundCardStack.Screen
@@ -874,18 +864,7 @@ export function DebitCardStackScreen({ navigation }) {
       <FundCardStack.Screen
         name={screenTitle.CARD_KYC_STATUS_SCREEN}
         component={CardKYCStatusScreen}
-        options={({ navigation }) => ({
-          headerTransparent: false,
-          headerShadowVisible: false,
-          title: 'Application Status',
-          headerTitleAlign: 'center',
-          headerTitleStyle: portfolioStackScreenHeaderTitleStyles,
-          headerTintColor: Colors.primaryTextColor,
-          headerBackTitleVisible: false,
-          headerLeft: () => {
-            return <></>;
-          },
-        })}
+        options={({ navigation }) => ({ headerShown: false })}
       />
 
       <FundCardStack.Screen
@@ -897,16 +876,7 @@ export function DebitCardStackScreen({ navigation }) {
       <FundCardStack.Screen
         name={screenTitle.CARD_SIGNUP_OTP_VERIFICATION_SCREEN}
         component={OTPVerificationScreen}
-        options={({ navigation }) => ({
-          headerTransparent: false,
-          headerShadowVisible: false,
-          title: 'Verify OTP',
-          headerTitleAlign: 'center',
-          headerTitleStyle: portfolioStackScreenHeaderTitleStyles,
-          headerTintColor: Colors.primaryTextColor,
-          headerBackTitleVisible: false,
-          headerLeft: props => defaultHeaderLeft(navigation),
-        })}
+        options={({ navigation }) => ({ headerShown: false })}
       />
 
       <FundCardStack.Screen

@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useContext, useEffect, useState } from 'react';
 import AppImages from '../../../assets/images/appImages';
 import Button from '../../components/v2/button';
 import { useGlobalModalContext } from '../../components/v2/GlobalModal';
@@ -27,6 +27,8 @@ import { CardProviders, CardReferralStatus } from '../../constants/enum';
 import { IReferredUser } from '../../models/referredUser.interface';
 import { showToast } from '../utilities/toastUtility';
 import { onShare } from '../utilities/socialShareUtility';
+import { GlobalContext } from '../../core/globalContext';
+import { CardProfile } from '../../models/cardProfile.model';
 
 interface Props {
   navigation: any;
@@ -34,6 +36,7 @@ interface Props {
 }
 
 export default function SendInviteCode({ route, navigation }: Props) {
+  const globalContext = useContext<any>(GlobalContext);
   const { showModal, hideModal } = useGlobalModalContext();
   const { fromOptionsStack } = route.params;
   const { t } = useTranslation();
@@ -47,15 +50,15 @@ export default function SendInviteCode({ route, navigation }: Props) {
   >();
   const { postWithAuth, getWithAuth } = useAxios();
   const { keyboardHeight } = useKeyboard();
+  const cardProfile: CardProfile = globalContext.globalState.cardProfile;
+  const provider = cardProfile.provider ?? CardProviders.REAP_CARD;
 
   useEffect(() => {
     void getReferralData();
   }, []);
 
   const getReferralData = async () => {
-    const response = await getWithAuth(
-      `/v1/cards/${CardProviders.PAYCADDY}/referrals`,
-    );
+    const response = await getWithAuth(`/v1/cards/${provider}/referrals`);
     if (!response.isError) {
       if (response.data.referralData) {
         setReferralData(response.data.referralData);

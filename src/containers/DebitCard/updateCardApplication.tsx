@@ -40,6 +40,7 @@ import RadioButtons from '../../components/radioButtons';
 import { PEP_OPTIONS } from '../../constants/data';
 import Tooltip from 'react-native-walkthrough-tooltip';
 import { findIndex } from 'lodash';
+import { CardProfile } from '../../models/cardProfile.model';
 
 export default function UpdateCardApplicationScreen({ navigation }) {
   const globalContext = useContext<any>(GlobalContext);
@@ -72,7 +73,8 @@ export default function UpdateCardApplicationScreen({ navigation }) {
   });
   const [selectedIdType, setSelectedIdType] = useState('passport');
   const [showPepToolTip, setPepToolTip] = useState<boolean>(false);
-  const provider = CardProviders.PAYCADDY;
+  const cardProfile: CardProfile = globalContext.globalState.cardProfile;
+  const provider = cardProfile.provider ?? CardProviders.REAP_CARD;
   const [selectedCountryStates, setSelectedCountryStates] = useState<IState[]>(
     [],
   );
