@@ -70,6 +70,15 @@ export enum PCCardStatus {
   HIDDEN = 'hidden',
 }
 
+export enum PCCardStatus {
+  NA = 'not-available',
+  ACTIVE = 'active',
+  IN_ACTIVE = 'inactive',
+  BLOCKED = 'blocked',
+  PENDING_ACTIVATION = 'pendingActivation',
+  HIDDEN = 'hidden',
+}
+
 export enum OTPType {
   PHONE = 'phone',
   EMAIL = 'email',
