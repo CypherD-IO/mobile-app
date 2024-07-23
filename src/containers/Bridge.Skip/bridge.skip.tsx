@@ -46,6 +46,7 @@ import {
   SkipAPiEvmTx,
   SkipApiCosmosTxn,
   SkipApiSignMsg,
+  SkipApiSolanaTxn,
 } from '../../models/skipApiSingMsg.interface';
 import useSkipApiBridge from '../../core/skipApi';
 import * as Sentry from '@sentry/react-native';
@@ -83,6 +84,7 @@ import {
   ActivityType,
   ExchangeTransaction,
 } from '../../reducers/activity_reducer';
+import { Transaction } from '@solana/web3.js';
 
 enum TxnStatus {
   STATE_SUBMITTED = 'STATE_SUBMITTED',
@@ -103,8 +105,11 @@ export default function BridgeSkipApi(props: {
     portfolioState.statePortfolio.tokenPortfolio.totalHoldings;
   const { getFromOtherSource, postToOtherSource, getWithAuth, postWithAuth } =
     useAxios();
-  const { skipApiApproveAndSignEvm, skipApiSignAndBroadcast } =
-    useSkipApiBridge();
+  const {
+    skipApiApproveAndSignEvm,
+    skipApiSignAndBroadcast,
+    skipApiSignAndApproveSolana,
+  } = useSkipApiBridge();
   const hdWallet = useContext<any>(HdWalletContext);
   const globalStateContext = useContext<GlobalContextDef>(GlobalContext);
   const { showModal, hideModal } = useGlobalModalContext();
@@ -163,6 +168,7 @@ export default function BridgeSkipApi(props: {
     useState<boolean>(false);
   const [evmModalVisible, setEvmModalVisible] = useState<boolean>(false);
   const [cosmosModalVisible, setCosmosModalVisible] = useState<boolean>(false);
+  const [solanaModalVisible, setSolanaModalVisible] = useState<boolean>(false);
   const [modalPromiseResolver, setModalPromiseResolver] = useState<
     ((value: boolean) => void) | null
   >(null);
@@ -174,6 +180,9 @@ export default function BridgeSkipApi(props: {
   const [evmTxnParams, setEvmTxnParams] = useState<SkipAPiEvmTx | null>(null);
   const [cosmosTxnParams, setCosmosTxnParams] =
     useState<SkipApiCosmosTxn | null>(null);
+  const [solanaTxnParams, setSolanaTxnParams] = useState<Transaction | null>(
+    null,
+  );
 
   // ------------- for swap states -----------------
   const [swapSupportedChains, setSwapSupportedChains] = useState([
@@ -826,6 +835,7 @@ export default function BridgeSkipApi(props: {
 
       await evmTxnMsg(data);
       await cosmosTxnMsg(data);
+      await solanaTxnMsg(data);
 
       activityData.status = ActivityStatus.SUCCESS;
       activityContext.dispatch({
@@ -958,6 +968,37 @@ export default function BridgeSkipApi(props: {
             await trackSign(cosmosResponse.hash, cosmosResponse.chainId);
           } else {
             throw new Error(cosmosResponse.error);
+          }
+        } catch (e: any) {
+          if (!e.message.includes('User denied transaction signature.')) {
+            Sentry.captureException(e);
+          }
+          throw new Error(e.message);
+        }
+      }
+    }
+  };
+
+  const solanaTxnMsg = async (data: SkipApiSignMsg) => {
+    const txs = data.txs;
+    for (const tx of txs) {
+      const svmTx = get(tx, 'svm_tx');
+      if (svmTx) {
+        try {
+          const solanaResponse = await skipApiSignAndApproveSolana({
+            svmTx,
+            showModalAndGetResponse,
+            setSolanaModalVisible,
+            setSolanaTxnParams,
+          });
+          if (
+            !solanaResponse?.isError &&
+            solanaResponse?.hash &&
+            solanaResponse.chainId
+          ) {
+            await trackSign(solanaResponse.hash, solanaResponse.chainId);
+          } else {
+            throw new Error(solanaResponse.error);
           }
         } catch (e: any) {
           if (!e.message.includes('User denied transaction signature.')) {

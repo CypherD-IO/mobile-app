@@ -604,6 +604,9 @@ export default function ShortcutsModal({ navigationRef }) {
         case ChainBackendNames.KUJIRA:
           addressTypeQRCode = FundWalletAddressType.KUJIRA;
           break;
+        case ChainBackendNames.SOLANA:
+          addressTypeQRCode = FundWalletAddressType.SOLANA;
+          break;
       }
       setChooseChainModal(false);
       setTimeout(

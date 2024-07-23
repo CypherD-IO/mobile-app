@@ -33,6 +33,7 @@ import {
   CHAIN_COREUM,
   CHAIN_INJECTIVE,
   CHAIN_KUJIRA,
+  CHAIN_SOLANA,
 } from '../constants/server';
 import {
   GlobalStateDef,
@@ -73,6 +74,7 @@ import { isCoreumAddress } from '../containers/utilities/coreumUtilities';
 import { isInjectiveAddress } from '../containers/utilities/injectiveUtilities';
 import { isKujiraAddress } from '../containers/utilities/kujiraUtilities';
 import moment from 'moment';
+import { isSolanaAddress } from '../containers/utilities/solanaUtilities';
 // const {showModal, hideModal} = useGlobalModalContext()
 
 export const HdWalletContext = React.createContext<HdWalletContextDef | null>(
@@ -607,6 +609,8 @@ export function SendToAddressValidator(
         return isInjectiveAddress(address);
       case CHAIN_KUJIRA.chainName:
         return isKujiraAddress(address);
+      case CHAIN_SOLANA.chainName:
+        return isSolanaAddress(address);
       default:
         return false;
     }
@@ -932,6 +936,7 @@ export function getAvailableChains(hdWallet: HdWalletContextDef): Chain[] {
     coreum,
     // injective,
     kujira,
+    solana,
   } = hdWallet.state.wallet;
   let availableChains: Chain[] = [];
   if (get(ethereum.wallets, ethereum.currentIndex)?.address) {
@@ -960,6 +965,9 @@ export function getAvailableChains(hdWallet: HdWalletContextDef): Chain[] {
   // }
   if (get(kujira.wallets, kujira.currentIndex)?.address) {
     availableChains.push(CHAIN_KUJIRA);
+  }
+  if (get(solana.wallets, solana.currentIndex)?.address) {
+    availableChains.push(CHAIN_SOLANA);
   }
 
   return availableChains;

@@ -2,6 +2,7 @@ import { camelCase, get, isArray, isObject, reduce, set } from 'lodash';
 import {
   SkipAPiEvmTx,
   SkipApiCosmosTxn,
+  SkipApiSolanaTxn,
 } from '../models/skipApiSingMsg.interface';
 import { SkipApiToken } from '../models/skipApiTokens.interface';
 import { HdWalletContextDef } from '../reducers/hdwallet_reducer';
@@ -32,6 +33,12 @@ import { ChainBackendNameMapping, ChainIdNameMapping } from '../constants/data';
 import { InjectiveStargate } from '@injectivelabs/sdk-ts';
 import { Dispatch, SetStateAction } from 'react';
 import { GasPriceDetail } from './types';
+import useSolanaSigner from '../hooks/useSolana';
+import {
+  Connection,
+  sendAndConfirmTransaction,
+  Transaction,
+} from '@solana/web3.js';
 
 // Contract ABI for allowance and approval
 const contractABI = [
@@ -126,6 +133,7 @@ export default function useSkipApiBridge() {
   const { getWithoutAuth } = useAxios();
   const { getCosmosSignerClient, getCosmosRpc } = useCosmosSigner();
   const { sendEvmToken, getApproval } = useTransactionManager();
+  const { getSolanaRpc, getSolanWallet } = useSolanaSigner();
 
   const checkAllowance = async ({
     web3,
@@ -429,5 +437,54 @@ export default function useSkipApiBridge() {
     }
   };
 
-  return { skipApiApproveAndSignEvm, skipApiSignAndBroadcast };
+  const skipApiSignAndApproveSolana = async ({
+    svmTx,
+    showModalAndGetResponse,
+    setSolanaModalVisible,
+    setSolanaTxnParams,
+  }: {
+    svmTx: SkipApiSolanaTxn;
+    showModalAndGetResponse: (setter: any) => Promise<boolean | null>;
+    setSolanaModalVisible: Dispatch<SetStateAction<boolean>>;
+    setSolanaTxnParams: Dispatch<SetStateAction<Transaction | null>>;
+  }): Promise<{
+    isError: boolean;
+    hash?: string;
+    error?: any;
+    chainId?: string;
+  }> => {
+    const solanRpc = getSolanaRpc();
+    const fromKeypair = await getSolanWallet();
+    if (fromKeypair) {
+      const payload = svmTx.tx;
+      const decodedTxn = Buffer.from(payload, 'base64');
+      const transactionDeserialized = Transaction.from(decodedTxn);
+      setSolanaTxnParams(transactionDeserialized);
+      const approveSend = await showModalAndGetResponse(setSolanaModalVisible);
+      if (approveSend) {
+        const connection = new Connection(solanRpc, 'confirmed');
+        transactionDeserialized.sign(fromKeypair);
+        const hash = await sendAndConfirmTransaction(
+          connection,
+          transactionDeserialized,
+          [fromKeypair],
+        );
+        return {
+          isError: false,
+          hash,
+          chainId: svmTx.chain_id,
+        };
+      } else {
+        return { isError: true, error: 'User reject token transfer' };
+      }
+    } else {
+      return { isError: true, error: 'Unable to generate user solana wallet' };
+    }
+  };
+
+  return {
+    skipApiApproveAndSignEvm,
+    skipApiSignAndBroadcast,
+    skipApiSignAndApproveSolana,
+  };
 }

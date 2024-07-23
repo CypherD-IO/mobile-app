@@ -132,18 +132,18 @@ const TokenScene = ({
         holdings = data;
       }
       let tempHoldingsData: { [key: string]: Holding } = {};
-      holdings.forEach(
-        (holding: Holding) =>
-          (tempHoldingsData = {
-            ...tempHoldingsData,
-            [holding.coinGeckoId +
-            ':' +
-            String(holding.chainDetails?.chainIdNumber) +
-            holding.chainDetails?.backendName +
-            holding.name +
-            holding.symbol]: holding,
-          }),
-      );
+      holdings.forEach((holding: Holding) => {
+        return (tempHoldingsData = {
+          ...tempHoldingsData,
+          [holding.coinGeckoId +
+          ':' +
+          String(holding.chainDetails?.chainIdNumber) +
+          holding.chainDetails?.backendName +
+          holding.name +
+          holding.symbol]: holding,
+        });
+      });
+
       return tempHoldingsData;
     } else {
       return {};
