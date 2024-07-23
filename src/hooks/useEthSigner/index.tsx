@@ -1,38 +1,32 @@
-import Toast from 'react-native-toast-message';
 import * as Sentry from '@sentry/react-native';
-import {
-  EthTransaction,
-  RawTransaction,
-} from '../../models/ethSigner.interface';
+import { waitForTransactionReceipt } from '@wagmi/core';
+import { useWalletInfo } from '@web3modal/wagmi-react-native';
+import { get } from 'lodash';
 import { useContext } from 'react';
+import Toast from 'react-native-toast-message';
+import {
+  useSendTransaction,
+  useSignMessage,
+  useSwitchChain,
+  useWriteContract,
+} from 'wagmi';
+import { wagmiConfig } from '../../components/wagmiConfigBuilder';
+import { ConnectionTypes } from '../../constants/enum';
+import { walletConnectChainData } from '../../constants/server';
+import { getConnectionType } from '../../core/asyncStorage';
+import { loadPrivateKeyFromKeyChain } from '../../core/Keychain';
+import { utf8ToHex } from 'web3-utils';
+import { getChainId, switchChain } from '@wagmi/core';
+import { allowanceApprovalContractABI } from '../../core/swap';
 import {
   HdWalletContext,
   _NO_CYPHERD_CREDENTIAL_AVAILABLE_,
   sleepFor,
 } from '../../core/util';
-import useConnectionManager from '../useConnectionManager';
-import { ConnectionTypes } from '../../constants/enum';
 import {
-  useSwitchChain,
-  useSendTransaction,
-  useSignMessage,
-  useWriteContract,
-} from 'wagmi';
-import { walletConnectChainData } from '../../constants/server';
-import { get, set } from 'lodash';
-import { Address, createWalletClient, custom } from 'viem';
-import { loadPrivateKeyFromKeyChain } from '../../core/Keychain';
-import { utf8ToHex } from 'web3-utils';
-import {
-  waitForTransactionReceipt,
-  getChainId,
-  switchChain,
-} from '@wagmi/core';
-import { useWalletInfo } from '@web3modal/wagmi-react-native';
-import { allowanceApprovalContractABI } from '../../core/swap';
-import { getConnectionType } from '../../core/asyncStorage';
-import { ethers } from 'ethers';
-import { wagmiConfig } from '../../components/wagmiConfigBuilder';
+  EthTransaction,
+  RawTransaction,
+} from '../../models/ethSigner.interface';
 import { useGlobalModalContext } from '../../components/v2/GlobalModal';
 import { MODAL_HIDE_TIMEOUT_250 } from '../../core/Http';
 import { useNavigation } from '@react-navigation/native';
@@ -52,7 +46,7 @@ export default function useEthSigner() {
     hash: `0x${string}`,
     chain: number,
   ): Promise<string> => {
-    return new Promise(async resolve => {
+    return await new Promise(async resolve => {
       let hashFromReceipt;
       try {
         const receipt = await waitForTransactionReceipt(wagmiConfig, {
