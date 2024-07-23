@@ -19,13 +19,11 @@ import {
 import { TokenMeta } from '../../models/tokenMetaData.model';
 import { CosmosStakingContext } from '../../reducers/cosmosStakingReducer';
 import {
-  CyDAnimatedView,
   CyDImage,
   CyDText,
   CyDTouchView,
   CyDView,
 } from '../../styles/tailwindStyles';
-import { Layout, SlideInUp, SlideOutDown } from 'react-native-reanimated';
 import { isIOS } from '../../misc/checkers';
 
 export default function TokenOverviewToolBar({
@@ -158,24 +156,23 @@ export default function TokenOverviewToolBar({
         </CyDView>
       )} */}
 
-      {isSwapable && (
-        <CyDView className='flex items-center'>
+      {(isSwapable || isBridgeable) && (
+        <CyDView>
           <CyDTouchView
-            className={'flex items-center justify-center'}
+            className={'flex items-center justify-center mx-[15px]'}
             onPress={() => {
-              navigation.navigate(screenTitle.BRIDGE_SCREEN, {
+              navigation.navigate(screenTitle.BRIDGE_SKIP_API_SCREEN, {
                 fromChainData: tokenData,
-                title: t<string>('SWAP_TITLE'),
-                renderPage: 'swapPage',
+                title: t('BRIDGE'),
               });
             }}>
             <CyDImage
-              source={AppImages.SWAP_SHORTCUT}
-              className={'w-[35px] h-[35px]'}
+              source={AppImages.BRIDGE_SHORTCUT}
+              className={'w-[30px] h-[30px]'}
             />
           </CyDTouchView>
-          <CyDText className={'text-center mt-[3px] text-[12px] font-semibold'}>
-            {t<string>('SWAP_TITLE')}
+          <CyDText className={'text-center mt-[5px] text-[12px] font-bold'}>
+            {t<string>('BRIDGE')}
           </CyDText>
         </CyDView>
       )}

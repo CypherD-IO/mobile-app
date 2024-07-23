@@ -121,7 +121,7 @@ export const screenTitle = {
   CARD_QUOTE_SCREEN: 'cardQuoteScreen',
   AUTO_LOAD_SCREEN: 'autoLoadScreen',
   PREVIEW_AUTO_LOAD_SCREEN: 'previewAutoLoadScreen',
-  BRIDGE_SKIP_API: 'bridgeSkipApiScreen',
+  BRIDGE_SKIP_API_SCREEN: 'bridgeSkipApiScreen',
 };
 
 export const fontsName = {

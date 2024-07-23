@@ -265,8 +265,8 @@ function TabStack() {
               iconName = focused
                 ? AppImages.PORTFOLIO_SEL
                 : AppImages.PORTFOLIO_UNSEL;
-            } else if (route.name === screenTitle.SWAP) {
-              iconName = focused ? AppImages.SWAP_SEL : AppImages.SWAP_UNSEL;
+            } else if (route.name === screenTitle.BRIDGE) {
+              iconName = focused ? AppImages.APP_SEL : AppImages.APP_UNSEL;
             } else if (route.name === screenTitle.OPTIONS) {
               iconName = focused
                 ? AppImages.OPTION_SEL
@@ -313,7 +313,7 @@ function TabStack() {
             ),
           })}
         />
-        <Tab.Screen name={screenTitle.SWAP} component={SwapStackScreen} />
+        <Tab.Screen name={screenTitle.BRIDGE} component={SwapStackScreen} />
         <Tab.Screen
           name={screenTitle.OPTIONS}
           component={OptionsStackScreen}

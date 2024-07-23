@@ -12,7 +12,7 @@ import {
   CyDView,
 } from '../../styles/tailwindStyles';
 import clsx from 'clsx';
-import { capitalize, endsWith, get } from 'lodash';
+import { capitalize, endsWith, get, isString } from 'lodash';
 import { SvgUri } from 'react-native-svg';
 import AppImages from '../../../assets/images/appImages';
 import CyDModalLayout from '../../components/v2/modal';
@@ -34,11 +34,13 @@ function RenderToken({
   selected,
   setSelected,
   setModalVisible,
+  type,
 }: {
   item: SkipApiToken;
   selected: SkipApiToken;
   setSelected: Dispatch<SetStateAction<SkipApiToken>>;
   setModalVisible: Dispatch<SetStateAction<boolean>>;
+  type: 'from' | 'to';
 }) {
   return (
     <CyDTouchView
@@ -87,20 +89,26 @@ function RenderToken({
         )}
       </CyDView>
 
-      <CyDView>
-        <CyDText
-          className={'font-semibold text-subTextColor text-[16px] text-right'}>
-          {new Intl.NumberFormat('en-US', {
-            maximumSignificantDigits: 4,
-          }).format(item.balanceInNumbers ?? 0)}
-        </CyDText>
-        <CyDText
-          className={
-            'font-semibold text-subTextColor text-[12px] text-right mr-[2px]'
-          }>
-          {currencyFormatter.format(item.totalValue ?? 0)}
-        </CyDText>
-      </CyDView>
+      {type === 'from' ? (
+        <CyDView>
+          <CyDText
+            className={
+              'font-semibold text-subTextColor text-[16px] text-right'
+            }>
+            {new Intl.NumberFormat('en-US', {
+              maximumSignificantDigits: 4,
+            }).format(item.balanceInNumbers ?? 0)}
+          </CyDText>
+          <CyDText
+            className={
+              'font-semibold text-subTextColor text-[12px] text-right mr-[2px]'
+            }>
+            {currencyFormatter.format(item.totalValue ?? 0)}
+          </CyDText>
+        </CyDView>
+      ) : (
+        <CyDView />
+      )}
     </CyDTouchView>
   );
 }
@@ -114,6 +122,7 @@ function ChooseTokenModal({
   selectedChain,
   setSelectedChain,
   chainData,
+  type,
 }: {
   isModalVisible: boolean;
   setModalVisible: Dispatch<SetStateAction<boolean>>;
@@ -123,6 +132,7 @@ function ChooseTokenModal({
   selectedChain: SkipApiChainInterface;
   setSelectedChain: Dispatch<SetStateAction<SkipApiChainInterface>>;
   chainData: SkipApiChainInterface[];
+  type: 'from' | 'to';
 }) {
   const [hasText, setHasText] = useState(false);
   const [searchText, setSearchText] = useState<string>('');
@@ -221,7 +231,11 @@ function ChooseTokenModal({
             />
           ) : (
             <CyDFastImage
-              source={{ uri: selectedChain.logo_uri }}
+              source={
+                isString(selectedChain.logo_uri)
+                  ? { uri: selectedChain.logo_uri ?? '' }
+                  : selectedChain.logo_uri
+              }
               className='w-[32px] h-[32px] rounded-full'
             />
           )}
@@ -279,7 +293,11 @@ function ChooseTokenModal({
                     },
                   )}>
                   <CyDFastImage
-                    source={{ uri: item.logo_uri }}
+                    source={
+                      isString(item.logo_uri)
+                        ? { uri: item.logo_uri ?? '' }
+                        : item.logo_uri
+                    }
                     className='w-[32px] h-[32px] rounded-full'
                   />
                   <CyDText className='text-[10px] mt-[6px]'>
@@ -376,6 +394,7 @@ function ChooseTokenModal({
               selected={selected}
               setSelected={setSelected}
               setModalVisible={setModalVisible}
+              type={type}
             />
           )}
           showsVerticalScrollIndicator={true}
@@ -456,6 +475,7 @@ export default function TokenSelection({
           >
         }
         chainData={fromChainData}
+        type={'from'}
       />
       <ChooseTokenModal
         setModalVisible={setToTokenModalVisible}
@@ -470,6 +490,7 @@ export default function TokenSelection({
           setSelectedToChain as Dispatch<SetStateAction<SkipApiChainInterface>>
         }
         chainData={toChainData}
+        type={'to'}
       />
 
       <CyDView className='mt-[24px]'>
@@ -494,9 +515,6 @@ export default function TokenSelection({
                 // placeholder='0.0'
                 value={cryptoAmount}
                 autoFocus={true}
-                // ref={input => {
-                //   enterAmountRef = input;
-                // }}
               />
               <CyDText
                 className={clsx(
@@ -521,9 +539,11 @@ export default function TokenSelection({
                       />
                     ) : (
                       <CyDFastImage
-                        source={{
-                          uri: selectedFromChain?.logo_uri,
-                        }}
+                        source={
+                          isString(selectedFromChain?.logo_uri)
+                            ? { uri: selectedFromChain.logo_uri ?? '' }
+                            : selectedFromChain?.logo_uri
+                        }
                         className={'w-[48px] h-[48px] mr-[18px] rounded-full'}
                       />
                     )}
@@ -539,9 +559,11 @@ export default function TokenSelection({
                         />
                       ) : (
                         <CyDFastImage
-                          source={{
-                            uri: selectedFromToken?.logo_uri,
-                          }}
+                          source={
+                            isString(selectedFromToken?.logo_uri)
+                              ? { uri: selectedFromToken.logo_uri ?? '' }
+                              : selectedFromToken?.logo_uri
+                          }
                           className={
                             'w-[20px] h-[20px] mr-[8px] border border-white rounded-full'
                           }
@@ -601,9 +623,11 @@ export default function TokenSelection({
                       />
                     ) : (
                       <CyDFastImage
-                        source={{
-                          uri: selectedToChain?.logo_uri,
-                        }}
+                        source={
+                          isString(selectedToChain?.logo_uri)
+                            ? { uri: selectedToChain.logo_uri ?? '' }
+                            : selectedToChain?.logo_uri
+                        }
                         className={'w-[48px] h-[48px] mr-[18px] rounded-full'}
                       />
                     )}
@@ -618,9 +642,11 @@ export default function TokenSelection({
                       />
                     ) : (
                       <CyDFastImage
-                        source={{
-                          uri: selectedToToken?.logo_uri,
-                        }}
+                        source={
+                          isString(selectedToToken?.logo_uri)
+                            ? { uri: selectedToToken.logo_uri ?? '' }
+                            : selectedToToken?.logo_uri
+                        }
                         className={
                           'w-[20px] h-[20px] mr-[8px] border border-white rounded-full'
                         }

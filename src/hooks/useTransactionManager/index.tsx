@@ -229,7 +229,7 @@ export default function useTransactionManager() {
         .encodeABI();
 
       const code = await web3.eth.getCode(toAddress);
-      
+
       let { gasLimit, gasPrice, priorityFee, isEIP1599Supported } =
         await estimateGasForEvm({
           web3,
@@ -1643,16 +1643,17 @@ export default function useTransactionManager() {
           const nativeTokenSymbol =
             NativeTokenMapping[fromToken?.chainDetails?.symbol] ||
             fromToken.chainDetails.symbol;
+
           const isNative = fromToken.symbol === nativeTokenSymbol;
+
           const { ethereum } = hdWallet.state.wallet;
           const tx = {
             from: ethereum.address,
             to: routerAddress,
-            value: isNative ? get(quoteData, ['data', 'value']) : '0',
+            value: isNative ? get(quoteData, ['data', 'value']) : '0x0',
             gas: web3.utils.toHex(2 * Number(gasLimit)),
             data: quoteData.data.data,
           };
-
           const hash = await signEthTransaction({
             web3,
             sendChain: fromToken?.chainDetails.backendName,
