@@ -57,14 +57,7 @@ import { ActivityContextDef } from '../reducers/activity_reducer';
 import { HdWalletContextDef } from '../reducers/hdwallet_reducer';
 import { isEvmosAddress } from '../containers/utilities/evmosSendUtility';
 import { t } from 'i18next';
-import {
-  AnalyticsType,
-  CardProviders,
-  CardStatus,
-  PCCardStatus,
-  RC_CARD_STATUS,
-  SignMessageValidationType,
-} from '../constants/enum';
+import { AnalyticsType, SignMessageValidationType } from '../constants/enum';
 import {
   ErrorAnalytics,
   SuccessAnalytics,
