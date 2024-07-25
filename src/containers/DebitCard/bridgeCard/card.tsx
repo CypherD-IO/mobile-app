@@ -11,7 +11,6 @@ import { GlobalContext } from '../../../core/globalContext';
 import { screenTitle } from '../../../constants';
 import {
   copyToClipboard,
-  getCardStatus,
   limitDecimalPlaces,
   sleepFor,
   stripPemHeaders,
@@ -169,8 +168,7 @@ export default function CardScreen({
             ? AppImages.VIRTUAL_CARD_MASTER
             : AppImages.PHYSICAL_CARD_MASTER
         }>
-        {card.status ===
-          getCardStatus(currentCardProvider, CardStatus.IN_ACTIVE) && (
+        {card.status === CardStatus.IN_ACTIVE && (
           <CyDView className='flex flex-row items-center bg-cardBg px-[12px] py-[6px] rounded-[6px]'>
             <CyDImage
               source={AppImages.CYPHER_LOCKED}
@@ -182,8 +180,7 @@ export default function CardScreen({
             </CyDText>
           </CyDView>
         )}
-        {card.status ===
-          getCardStatus(currentCardProvider, CardStatus.HIDDEN) && (
+        {card.status === CardStatus.HIDDEN && (
           <CyDView className='flex flex-row items-center bg-cardBg px-[12px] py-[6px] rounded-[6px]'>
             <CyDImage
               source={AppImages.CYPHER_LOCKED}
@@ -524,9 +521,7 @@ const RenderCardActions = ({
           type: 'success',
           title: t('CHANGE_CARD_STATUS_SUCCESS'),
           description: `Successfully ${
-            status === getCardStatus(cardProvider, CardStatus.ACTIVE)
-              ? 'locked'
-              : 'unlocked'
+            status === CardStatus.ACTIVE ? 'locked' : 'unlocked'
           } your card!`,
           onSuccess: hideModal,
           onFailure: hideModal,
@@ -560,9 +555,7 @@ const RenderCardActions = ({
     showModal('state', {
       type: 'warning',
       title: `Are you sure you want to ${
-        status === getCardStatus(cardProvider, CardStatus.ACTIVE)
-          ? 'lock'
-          : 'unlock'
+        status === CardStatus.ACTIVE ? 'lock' : 'unlock'
       } your card?`,
       description: CardStatus.ACTIVE
         ? 'This is just a temporary lock. You can unlock it anytime'
@@ -778,7 +771,7 @@ const RenderCardActions = ({
             ) : (
               <CyDImage
                 source={
-                  status === getCardStatus(cardProvider, CardStatus.ACTIVE)
+                  status === CardStatus.ACTIVE
                     ? AppImages.CYPHER_LOCKED
                     : AppImages.UNLOCK
                 }
@@ -789,9 +782,7 @@ const RenderCardActions = ({
           </CyDView>
           <CyDView className='mt-[4px]'>
             <CyDText className='font-semibold'>
-              {status === getCardStatus(cardProvider, CardStatus.ACTIVE)
-                ? 'Lock'
-                : 'Unlock'}
+              {status === CardStatus.ACTIVE ? 'Lock' : 'Unlock'}
             </CyDText>
           </CyDView>
         </CyDTouchView>

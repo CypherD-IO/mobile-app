@@ -54,29 +54,11 @@ export enum CardStatus {
   ACTIVE = 'active',
   IN_ACTIVE = 'inactive',
   BLOCKED = 'blocked',
-  ACTIVATION_PENDING = 'pendingActivation',
+  PENDING_ACTIVATION = 'pendingActivation',
   HIDDEN = 'hidden',
   CANCELLED = 'cancelled',
   EXPIRED = 'expired',
   OTHER = 'other',
-}
-
-export enum PCCardStatus {
-  NA = 'not-available',
-  ACTIVE = 'active',
-  IN_ACTIVE = 'inactive',
-  BLOCKED = 'blocked',
-  PENDING_ACTIVATION = 'pendingActivation',
-  HIDDEN = 'hidden',
-}
-
-export enum PCCardStatus {
-  NA = 'not-available',
-  ACTIVE = 'active',
-  IN_ACTIVE = 'inactive',
-  BLOCKED = 'blocked',
-  PENDING_ACTIVATION = 'pendingActivation',
-  HIDDEN = 'hidden',
 }
 
 export enum OTPType {
