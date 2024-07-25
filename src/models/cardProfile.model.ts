@@ -1,8 +1,7 @@
 import {
   CardApplicationStatus,
   CardProviders,
-  PCCardStatus,
-  RC_CARD_STATUS,
+  CardStatus,
 } from '../constants/enum';
 
 export interface CardProfile {
@@ -12,7 +11,7 @@ export interface CardProfile {
   email: string;
   apto?: {
     cardHolderId: string;
-    status: PCCardStatus | RC_CARD_STATUS;
+    status: CardStatus;
   };
   provider?: CardProviders;
   bc?: {
@@ -23,7 +22,7 @@ export interface CardProfile {
         last4: string;
         type: string;
         cardId: string;
-        status: PCCardStatus | RC_CARD_STATUS;
+        status: CardStatus;
       },
     ];
   };
@@ -38,7 +37,7 @@ export interface CardProfile {
         last4: string;
         type: string;
         cardId: string;
-        status: PCCardStatus | RC_CARD_STATUS;
+        status: CardStatus;
       },
     ];
     isPhysicalCardEligible: boolean;
@@ -55,7 +54,7 @@ export interface CardProfile {
         last4: string;
         type: string;
         cardId: string;
-        status: PCCardStatus | RC_CARD_STATUS;
+        status: CardStatus;
       },
     ];
     isPhysicalCardEligible: boolean;
@@ -63,7 +62,7 @@ export interface CardProfile {
   };
   solid?: {
     applicationStatus: CardApplicationStatus;
-    cardStatus?: PCCardStatus | RC_CARD_STATUS;
+    cardStatus?: CardStatus;
     personId: string;
   };
   lifetimeAmountUsd: number;
