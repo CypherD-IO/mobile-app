@@ -57,14 +57,7 @@ import { ActivityContextDef } from '../reducers/activity_reducer';
 import { HdWalletContextDef } from '../reducers/hdwallet_reducer';
 import { isEvmosAddress } from '../containers/utilities/evmosSendUtility';
 import { t } from 'i18next';
-import {
-  AnalyticsType,
-  CardProviders,
-  CardStatus,
-  PCCardStatus,
-  RC_CARD_STATUS,
-  SignMessageValidationType,
-} from '../constants/enum';
+import { AnalyticsType, SignMessageValidationType } from '../constants/enum';
 import {
   ErrorAnalytics,
   SuccessAnalytics,
@@ -1093,32 +1086,4 @@ export const stripPemHeaders = (pem: string) => {
   const pemHeaderFooterRegex =
     /-----BEGIN [A-Z ]+-----|-----END [A-Z ]+-----|\s+/g;
   return pem.replace(pemHeaderFooterRegex, '');
-};
-
-export const getCardStatus = (
-  provider: CardProviders,
-  cardStatus: CardStatus,
-) => {
-  switch (cardStatus) {
-    case CardStatus.ACTIVE:
-      return provider === CardProviders.PAYCADDY
-        ? PCCardStatus.ACTIVE
-        : RC_CARD_STATUS.ACTIVE;
-    case CardStatus.IN_ACTIVE:
-      return provider === CardProviders.PAYCADDY
-        ? PCCardStatus.IN_ACTIVE
-        : RC_CARD_STATUS.FROZEN;
-    case CardStatus.BLOCKED:
-      return provider === CardProviders.PAYCADDY
-        ? PCCardStatus.BLOCKED
-        : RC_CARD_STATUS.BLOCKED;
-    case CardStatus.HIDDEN:
-      return provider === CardProviders.PAYCADDY
-        ? PCCardStatus.HIDDEN
-        : RC_CARD_STATUS.HIDDEN;
-    case CardStatus.PENDING_ACTIVATION:
-      return provider === CardProviders.PAYCADDY
-        ? PCCardStatus.PENDING_ACTIVATION
-        : RC_CARD_STATUS.ACTIVATION_PENDING;
-  }
 };

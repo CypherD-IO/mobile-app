@@ -54,8 +54,11 @@ export enum CardStatus {
   ACTIVE = 'active',
   IN_ACTIVE = 'inactive',
   BLOCKED = 'blocked',
-  PENDING_ACTIVATION = 'pendingActivation',
+  ACTIVATION_PENDING = 'pendingActivation',
   HIDDEN = 'hidden',
+  CANCELLED = 'cancelled',
+  EXPIRED = 'expired',
+  OTHER = 'other',
 }
 
 export enum PCCardStatus {
