@@ -1718,10 +1718,7 @@ export default function useTransactionManager() {
         replaceRecentBlockhash: true,
       },
     );
-    console.log('🚀 ~ simulationResult:', simulationResult);
-
     if (simulationResult.err) {
-      console.log('🚀 ~ err:', simulationResult.err);
       throw new Error(String(simulationResult.err));
     } else {
       return simulationResult.unitsConsumed;
@@ -1742,7 +1739,6 @@ export default function useTransactionManager() {
       const connection = new Connection(solanRpc, 'confirmed');
 
       const lamportsToSend = parseFloat(amountToSend) * LAMPORTS_PER_SOL;
-      console.log('🚀 ~ lamportsToSend:', lamportsToSend);
 
       const fees = await connection.getRecentPrioritizationFees();
 

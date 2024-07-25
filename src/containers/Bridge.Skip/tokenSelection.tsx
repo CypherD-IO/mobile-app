@@ -268,8 +268,8 @@ function ChooseTokenModal({
                     },
                   )}>
                   <SvgUri
-                    width='32'
-                    height='32'
+                    width='50'
+                    height='24'
                     uri={item.logo_uri ?? ''}
                     className='rounded-full'
                   />
@@ -532,8 +532,8 @@ export default function TokenSelection({
                   <CyDView className={'flex flex-row items-center'}>
                     {endsWith(selectedFromChain?.logo_uri, '.svg') ? (
                       <SvgUri
-                        width='48'
-                        height='48'
+                        width='40'
+                        height='40'
                         className='mr-[18px] rounded-full'
                         uri={selectedFromChain?.logo_uri ?? ''}
                       />
@@ -616,8 +616,8 @@ export default function TokenSelection({
                   <CyDView className={'flex flex-row items-center'}>
                     {endsWith(selectedToChain?.logo_uri, '.svg') ? (
                       <SvgUri
-                        width='48'
-                        height='48'
+                        width='40'
+                        height='40'
                         className='mr-[18px] rounded-full'
                         uri={selectedToChain?.logo_uri ?? ''}
                       />

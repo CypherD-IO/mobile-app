@@ -86,11 +86,6 @@ export function ChooseWalletIndex({ route, navigation }) {
         <Button
           title={t('CONTINUE')}
           onPress={() => {
-            console.log(
-              '🚀 ~ ChooseWalletIndex ~ selectedIndex:',
-              selectedIndex,
-            );
-
             setLoading(true);
             hdWalletContext.dispatch({
               type: 'SET_CHOOSEN_WALLET_INDEX',

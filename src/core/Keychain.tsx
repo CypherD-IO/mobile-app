@@ -545,7 +545,6 @@ export const getSolanaWallet = async (hdWallet: any) => {
       return keypair;
     }
   } catch (e) {
-    console.log('🚀 ~ getSolanaWal ~ e:', e);
     Sentry.captureException(e);
   }
 };

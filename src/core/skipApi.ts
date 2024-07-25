@@ -27,18 +27,12 @@ import useAxios from './HttpRequest';
 import Web3 from 'web3';
 import { getGasPriceFor } from '../containers/Browser/gasHelper';
 import { Chain, ChainBackendNames } from '../constants/server';
-import { _NO_CYPHERD_CREDENTIAL_AVAILABLE_ } from './util';
-import { SwapMetaData } from '../models/swapMetaData';
 import { ChainBackendNameMapping, ChainIdNameMapping } from '../constants/data';
 import { InjectiveStargate } from '@injectivelabs/sdk-ts';
 import { Dispatch, SetStateAction } from 'react';
 import { GasPriceDetail } from './types';
 import useSolanaSigner from '../hooks/useSolana';
-import {
-  Connection,
-  sendAndConfirmTransaction,
-  Transaction,
-} from '@solana/web3.js';
+import { Transaction } from '@solana/web3.js';
 
 // Contract ABI for allowance and approval
 const contractABI = [
@@ -449,7 +443,7 @@ export default function useSkipApiBridge() {
     setSolanaTxnParams: Dispatch<SetStateAction<Transaction | null>>;
   }): Promise<{
     isError: boolean;
-    hash?: string;
+    txn?: string;
     error?: any;
     chainId?: string;
   }> => {
@@ -459,19 +453,19 @@ export default function useSkipApiBridge() {
       const payload = svmTx.tx;
       const decodedTxn = Buffer.from(payload, 'base64');
       const transactionDeserialized = Transaction.from(decodedTxn);
+
       setSolanaTxnParams(transactionDeserialized);
       const approveSend = await showModalAndGetResponse(setSolanaModalVisible);
       if (approveSend) {
-        const connection = new Connection(solanRpc, 'confirmed');
-        transactionDeserialized.sign(fromKeypair);
-        const hash = await sendAndConfirmTransaction(
-          connection,
-          transactionDeserialized,
-          [fromKeypair],
-        );
+        transactionDeserialized.partialSign(fromKeypair);
+        const updatedSerializedTransaction =
+          transactionDeserialized.serialize();
+        const updatedBase64Transaction = Buffer.from(
+          updatedSerializedTransaction,
+        ).toString('base64');
         return {
           isError: false,
-          hash,
+          txn: updatedBase64Transaction,
           chainId: svmTx.chain_id,
         };
       } else {

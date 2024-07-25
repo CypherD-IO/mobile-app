@@ -874,6 +874,7 @@ export const ChainIdNameMapping = {
   'coreum-mainnet-1': 'coreum',
   'injective-1': 'injective',
   'kaiyo-1': 'kujira',
+  solana: 'solana',
 };
 
 export const ChainBackendNameMapping = {

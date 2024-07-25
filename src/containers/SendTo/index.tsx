@@ -638,12 +638,12 @@ export default function SendTo(props: { navigation?: any; route?: any }) {
     } catch (e) {
       error = true;
       // monitoring api
-      // void logAnalytics({
-      //   type: AnalyticsType.ERROR,
-      //   chain: chainDetails?.chainName ?? '',
-      //   message: parseErrorMessage(e),
-      //   screen: route.name,
-      // });
+      void logAnalytics({
+        type: AnalyticsType.ERROR,
+        chain: chainDetails?.chainName ?? '',
+        message: parseErrorMessage(e),
+        screen: route.name,
+      });
       Sentry.captureException(e);
     }
 
@@ -782,16 +782,16 @@ export default function SendTo(props: { navigation?: any; route?: any }) {
       });
       setLoading(false);
       // monitoring api
-      // void logAnalytics({
-      //   type: AnalyticsType.SUCCESS,
-      //   txnHash: response?.hash,
-      //   chain: chainDetails?.chainName ?? '',
-      //   address: fromAddress,
-      //   ...(response?.contractData
-      //     ? { contractData: response?.contractData }
-      //     : ''),
-      //   screen: route.name,
-      // });
+      void logAnalytics({
+        type: AnalyticsType.SUCCESS,
+        txnHash: response?.hash,
+        chain: chainDetails?.chainName ?? '',
+        address: fromAddress,
+        ...(response?.contractData
+          ? { contractData: response?.contractData }
+          : ''),
+        screen: route.name,
+      });
       if (willPrompt) {
         showModal('state', {
           type: 'custom',
