@@ -72,7 +72,7 @@ import { derivePath } from 'ed25519-hd-key';
 import { Keypair } from '@solana/web3.js';
 
 // increase this when you want the CyRootData to be reconstructed
-const currentSchemaVersion = 8;
+const currentSchemaVersion = 9;
 
 export async function saveCredentialsToKeychain(
   hdWalletContext: HdWalletContextDef,
