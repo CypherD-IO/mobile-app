@@ -6,8 +6,10 @@ import { CardProviders } from '../../constants/enum';
 import { CardProfile } from '../../models/cardProfile.model';
 import { GlobalContext } from '../../core/globalContext';
 import { useContext } from 'react';
+import useAxios from '../../core/HttpRequest';
 
 export default function useCardUtilities() {
+  const { getWithoutAuth } = useAxios();
   const globalContext = useContext<any>(GlobalContext);
   const cardProfile: CardProfile = globalContext.globalState.cardProfile;
   const provider = cardProfile?.provider;
@@ -57,5 +59,21 @@ export default function useCardUtilities() {
     }
   };
 
-  return { getProvider, hasBothProviders, cardProfileModal, getWalletProfile };
+  const checkIsRCEnabled = async () => {
+    const response = await getWithoutAuth('/version');
+    if (!response.isError) {
+      if (response.data.isRcEnabled) {
+        return true;
+      }
+    }
+    return false;
+  };
+
+  return {
+    getProvider,
+    hasBothProviders,
+    cardProfileModal,
+    getWalletProfile,
+    checkIsRCEnabled,
+  };
 }

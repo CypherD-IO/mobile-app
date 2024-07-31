@@ -61,39 +61,6 @@ export interface CardProfile {
     physicalCardUpgradationFee: number | string;
     isRcUpgradable?: boolean;
   };
-  rc?: {
-    personId?: string;
-    applicationStatus: CardApplicationStatus;
-    phoneVerified: boolean;
-    emailVerified: boolean;
-    cards?: [
-      {
-        last4: string;
-        type: string;
-        cardId: string;
-        status: CardStatus;
-      },
-    ];
-    isPhysicalCardEligible: boolean;
-    physicalCardUpgradationFee: number | string;
-    isRcUpgradable?: boolean;
-  };
-  rc?: {
-    personId?: string;
-    applicationStatus: CardApplicationStatus;
-    phoneVerified: boolean;
-    emailVerified: boolean;
-    cards?: [
-      {
-        last4: string;
-        type: string;
-        cardId: string;
-        status: CardStatus;
-      },
-    ];
-    isPhysicalCardEligible: boolean;
-    physicalCardUpgradationFee: number | string;
-  };
   solid?: {
     applicationStatus: CardApplicationStatus;
     cardStatus?: CardStatus;
