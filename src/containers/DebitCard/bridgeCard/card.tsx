@@ -100,17 +100,20 @@ export default function CardScreen({
     showCVVAndExpiry: false,
     isFetchingCardDetails: false,
   });
+  const [currentCardIndex, setCurrentCardIndex] = useState<number>(0);
+  const [trackingDetails, setTrackingDetails] = useState({});
+
+  const isHiddenCard = () => {
+    return some(userCardDetails?.cards, { status: CardStatus.HIDDEN });
+  };
+
   const isUpgradeToPhysicalCardStatusShown =
     currentCardProvider === CardProviders.PAYCADDY &&
     lifetimeLoadUSD < physicalCardEligibilityLimit &&
     !cardProfile[currentCardProvider]?.cards
       ?.map(card => card.type)
       .includes(CardType.PHYSICAL) &&
-    !cardProfile[currentCardProvider]?.cards?.map(
-      card => card.status === CardStatus.HIDDEN,
-    );
-  const [currentCardIndex, setCurrentCardIndex] = useState<number>(0);
-  const [trackingDetails, setTrackingDetails] = useState({});
+    !isHiddenCard();
 
   const setUpgradeCorrectedCardIndex = (index: number) => {
     setCurrentCardIndex(index);
@@ -218,10 +221,6 @@ export default function CardScreen({
       setTrackingDetails(tempTrackingDetails);
     }
     return response;
-  };
-
-  const isHiddenCard = () => {
-    return some(userCardDetails?.cards, { status: CardStatus.HIDDEN });
   };
 
   return (
