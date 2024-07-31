@@ -33,6 +33,18 @@ export default function CardOptionsModal({
   const isPhoneVerified = cardProfile.pc?.phoneVerified ?? false;
 
   const cardOptions = [
+    {
+      title: 'Card Controls',
+      description: 'Link another wallet to card',
+      image: AppImages.WALLETS,
+      action: () => {
+        navigation.navigate(screenTitle.CARD_CONTROLS, {
+          currentCardProvider: cardProvider,
+          card,
+        });
+        setShowModal(false);
+      },
+    },
     ...(card.type === CardType.PHYSICAL
       ? [
           {

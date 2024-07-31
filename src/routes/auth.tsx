@@ -103,6 +103,7 @@ import CardQuote from '../containers/DebitCard/bridgeCard/quote';
 import AutoLoad from '../containers/DebitCard/bridgeCard/autoLoad';
 import PreviewAutoLoad from '../containers/DebitCard/bridgeCard/previewAutoLoad';
 import BridgeSkipApi from '../containers/Bridge.Skip/bridge.skip';
+import CardControls from '../containers/DebitCard/bridgeCard/cardControls';
 
 const { DynamicImage, DynamicButton } = require('../styles');
 
@@ -1104,6 +1105,21 @@ export function DebitCardStackScreen({ navigation }) {
           headerShadowVisible: false,
           title: 'Linked Wallets',
           headerTitleAlign: 'center',
+          headerTitleStyle: portfolioStackScreenHeaderTitleStyles,
+          headerTintColor: Colors.primaryTextColor,
+          headerBackTitleVisible: false,
+          headerLeft: props => defaultHeaderLeft(navigation),
+        })}
+      />
+
+      <FundCardStack.Screen
+        name={screenTitle.CARD_CONTROLS}
+        component={CardControls}
+        options={({ navigation, route }) => ({
+          headerTransparent: false,
+          headerShadowVisible: false,
+          title: 'Card Controls',
+          headerTitleAlign: 'left',
           headerTitleStyle: portfolioStackScreenHeaderTitleStyles,
           headerTintColor: Colors.primaryTextColor,
           headerBackTitleVisible: false,
