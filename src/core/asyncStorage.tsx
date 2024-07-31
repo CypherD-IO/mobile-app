@@ -560,3 +560,28 @@ export const setActivities = async (data: any) => {
     Sentry.captureException(error);
   }
 };
+
+export const setIsRcEnabled = async (value: boolean) => {
+  try {
+    await AsyncStorage.setItem('isRcEnabled', value.toString());
+  } catch (e) {
+    Sentry.captureException(e);
+  }
+};
+
+export const getIsRcEnabled = async () => {
+  try {
+    const value = await AsyncStorage.getItem('isRcEnabled');
+    return value;
+  } catch (e) {
+    Sentry.captureException(e);
+  }
+};
+
+export const removeIsRcEnabled = async () => {
+  try {
+    await AsyncStorage.removeItem('isRcEnabled');
+  } catch (e) {
+    Sentry.captureException(e);
+  }
+};
