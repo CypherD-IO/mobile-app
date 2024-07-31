@@ -7,6 +7,7 @@ import { CardProfile } from '../../models/cardProfile.model';
 import { GlobalContext } from '../../core/globalContext';
 import { useContext } from 'react';
 import useAxios from '../../core/HttpRequest';
+import { getDeveloperMode, getIsRcEnabled } from '../../core/asyncStorage';
 
 export default function useCardUtilities() {
   const { getWithoutAuth } = useAxios();
@@ -60,6 +61,14 @@ export default function useCardUtilities() {
   };
 
   const checkIsRCEnabled = async () => {
+    const isDevMode = await getDeveloperMode();
+    const isRcEnabledInAsync = await getIsRcEnabled();
+    if (isDevMode && isRcEnabledInAsync !== null) {
+      if (isRcEnabledInAsync === 'true') {
+        return true;
+      }
+      return false;
+    }
     const response = await getWithoutAuth('/version');
     if (!response.isError) {
       if (response.data.isRcEnabled) {
