@@ -315,6 +315,7 @@ const VIRTUAL_TO_PHYSICAL = require('./virtualToPhysical.png');
 const MAIL = require('./mail.png');
 const PAUSE = require('./pause.png');
 const RESUME = require('./resume.png');
+const SOLANA_LOGO = require('./solana.png');
 
 // ICONS FROM S3
 const SWAP = { uri: `${S3_BUCKET_URL_ICONS}/swap.png` };
@@ -726,5 +727,6 @@ const AppImages = {
   AUTOLOAD,
   PAUSE,
   RESUME,
+  SOLANA_LOGO,
 };
 export default AppImages;

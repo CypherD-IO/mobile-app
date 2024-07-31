@@ -1084,6 +1084,8 @@ const resources = {
       AMOUNT_APPROVED: 'Your are approving',
       BRIDGE_SUCCESS: 'Bridging Done',
       BRIDGE_FAILURE: 'Bridging Failed',
+      BRIDGE_SUCCESS_DESCRIPTION: 'Your tokens have been successfully bridged',
+      BRIDGE_ERROR_DESCRIPTION: 'Bridge Error. Please try again later',
     },
   },
 };

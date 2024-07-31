@@ -35,6 +35,7 @@ export const gasFeeReservation: Record<ChainBackendNames, number> = {
   AURORA: 0.0006, // TODO
   MOONBEAM: 0.0006, // TODO
   MOONRIVER: 0.0006, // TODO
+  SOLANA: 0.001,
   ALL: 0.0,
 };
 
@@ -873,6 +874,7 @@ export const ChainIdNameMapping = {
   'coreum-mainnet-1': 'coreum',
   'injective-1': 'injective',
   'kaiyo-1': 'kujira',
+  solana: 'solana',
 };
 
 export const ChainBackendNameMapping = {

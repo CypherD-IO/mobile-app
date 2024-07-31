@@ -28,6 +28,7 @@ import {
   CHAIN_COREUM,
   CHAIN_INJECTIVE,
   CHAIN_KUJIRA,
+  CHAIN_SOLANA,
 } from '../../constants/server';
 import { HdWalletContext } from '../../core/util';
 import {
@@ -56,6 +57,7 @@ export function AddressBook({ route, navigation }) {
     coreum,
     injective,
     kujira,
+    solana,
   } = hdWalletContext.state.wallet;
 
   const handleBackButton = () => {
@@ -312,6 +314,14 @@ export function AddressBook({ route, navigation }) {
                 bGC={'#fff0f0'}
                 navigation={navigation}
                 addressTypeQRCode={FundWalletAddressType.SHARDEUM_SPHINX}
+              />
+              <AddressBookContainer
+                chain={CHAIN_SOLANA.name}
+                wallet={solana}
+                logo={AppImages.SOLANA_LOGO}
+                bGC={'#f1f4fa'}
+                navigation={navigation}
+                addressTypeQRCode={FundWalletAddressType.SOLANA}
               />
             </CyDView>
           </CyDScrollView>

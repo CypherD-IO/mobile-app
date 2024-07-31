@@ -1,4 +1,3 @@
-/* eslint-disable react-native/no-raw-text */
 /**
  * @format
  * @flow
@@ -9,7 +8,7 @@ import { t } from 'i18next';
 import moment from 'moment';
 import React, { useContext, useEffect, useLayoutEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import { BackHandler, StyleSheet } from 'react-native';
+import { BackHandler } from 'react-native';
 import FastImage from 'react-native-fast-image';
 import AppImages from '../../../assets/images/appImages';
 import ActivityBridgeInfoModal from '../../components/v2/activityBridgeInfoModal';
@@ -43,7 +42,6 @@ import {
 } from '../../reducers/activity_reducer';
 import {
   CyDFastImage,
-  CyDImage,
   CyDScrollView,
   CyDText,
   CyDTouchView,
@@ -53,6 +51,7 @@ import { genId } from '../utilities/activityUtilities';
 import { ACTIVITY_TYPES, STATUSES } from './activityFilter';
 import { useIsFocused } from '@react-navigation/native';
 import { TIME_GAPS } from '../../constants/data';
+import { get, round } from 'lodash';
 
 const IN_PROGRESS = 'IN_PROGRESS';
 const PENDING = 'PENDING';
@@ -182,8 +181,9 @@ function BridgeItem(props: any) {
   const fromChainlogo = ALL_CHAINS.find(
     chain => chain.name === activity.fromChain,
   )?.logo_url;
-  const toChainlogo = ALL_CHAINS.find(chain => chain.name === activity.toChain)
-    ?.logo_url;
+  const toChainlogo = ALL_CHAINS.find(
+    chain => chain.name === activity.toChain,
+  )?.logo_url;
   const statusColor =
     activity.status === ActivityStatus.FAILED
       ? Colors.activityFailed
@@ -211,8 +211,8 @@ function BridgeItem(props: any) {
   const formatDate = fromNow.includes('day')
     ? moment(activity.datetime).format('MMM DD, h:mm a')
     : fromNow;
-  const formatFromAmount = `- ${activity.fromTokenAmount} ${activity.fromSymbol}`;
-  const formatToAmount = `+ ${activity?.toTokenAmount?.slice(0, 4)} ${
+  const formatFromAmount = `- ${get(activity, ['fromTokenAmount'])} ${get(activity, 'fromSymbol')}`;
+  const formatToAmount = `+ ${round(parseFloat(get(activity, ['toTokenAmount'], '0')), 4)} ${
     activity.toSymbol
   }`;
 
@@ -379,8 +379,9 @@ function IBCItem(props: any) {
   const fromChainlogo = ALL_CHAINS.find(
     chain => chain.name === activity.fromChain,
   )?.logo_url;
-  const toChainlogo = ALL_CHAINS.find(chain => chain.name === activity.toChain)
-    ?.logo_url;
+  const toChainlogo = ALL_CHAINS.find(
+    chain => chain.name === activity.toChain,
+  )?.logo_url;
   const statusColor =
     activity.status === ActivityStatus.FAILED
       ? Colors.activityFailed
@@ -397,10 +398,10 @@ function IBCItem(props: any) {
   const formatDate = fromNow.includes('day')
     ? moment(activity.datetime).format('MMM DD, h:mm a')
     : fromNow;
-  const formatFromAmount = `- ${activity.amount.slice(0, 4)} ${
+  const formatFromAmount = `- ${round(parseFloat(activity.amount), 4)} ${
     activity.symbol
   }`;
-  const formatToAmount = `+ ${activity.amount.slice(0, 4)} ${activity.symbol}`;
+  const formatToAmount = `+ ${round(parseFloat(activity.amount), 4)} ${activity.symbol}`;
 
   return (
     <CyDTouchView className='mb-[20px] mt-[10px]'>
@@ -524,7 +525,7 @@ function WalletConnectItem(props: any) {
   const formatDate = fromNow.includes('day')
     ? moment(activity.datetime).format('MMM DD, h:mm a')
     : fromNow;
-  const formatAmount = `- ${activity.amount.slice(0, 8)} ${activity.symbol}`;
+  const formatAmount = `- ${round(parseFloat(activity.amount), 8)} ${activity.symbol}`;
   const webIconUrl = `https://www.google.com/s2/favicons?domain=${activity.websiteInfo.host}&sz=32`;
 
   const onPressWCItem = () => {
@@ -622,7 +623,7 @@ function BrowserItem(props: any) {
   const formatDate = fromNow.includes('day')
     ? moment(activity.datetime).format('MMM DD, h:mm a')
     : fromNow;
-  const formatAmount = `- ${activity.amount.slice(0, 8)} ${activity.symbol}`;
+  const formatAmount = `- ${round(parseFloat(activity.amount), 8)} ${activity.symbol}`;
   const webIconUrl = `https://www.google.com/s2/favicons?domain=${activity.websiteInfo.host}&sz=32`;
 
   return (
@@ -751,7 +752,7 @@ function OnmetaPayItem(props: any) {
   const formatDate = fromNow.includes('day')
     ? moment(activity.datetime).format('MMM DD, h:mm a')
     : fromNow;
-  const formatAmount = `- ${activity.amount.slice(0, 8)} ${activity.symbol}`;
+  const formatAmount = `- ${round(parseFloat(activity.amount), 8)} ${activity.symbol}`;
   const operation = activity.onmetaType.toUpperCase();
 
   return (

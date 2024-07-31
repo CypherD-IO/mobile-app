@@ -67,9 +67,12 @@ import { Mnemonic, sha256 } from 'ethers';
 import { cosmosConfig } from '../constants/cosmosConfig';
 import { Slip10RawIndex } from '@cosmjs-rn/crypto';
 import { InjectiveDirectEthSecp256k1Wallet } from '@injectivelabs/sdk-ts';
+import * as bip39 from 'bip39';
+import { derivePath } from 'ed25519-hd-key';
+import { Keypair } from '@solana/web3.js';
 
 // increase this when you want the CyRootData to be reconstructed
-const currentSchemaVersion = 8;
+const currentSchemaVersion = 9;
 
 export async function saveCredentialsToKeychain(
   hdWalletContext: HdWalletContextDef,
@@ -526,6 +529,25 @@ export async function getSignerClient(
 
   return wallets;
 }
+
+export const getSolanaWallet = async (hdWallet: any) => {
+  try {
+    const seedPhrase = await loadRecoveryPhraseFromKeyChain(
+      false,
+      hdWallet.state?.pinValue ? hdWallet.state.pinValue : hdWallet.pinValue,
+    );
+
+    if (seedPhrase && Mnemonic.isValidMnemonic(seedPhrase)) {
+      const seed = bip39.mnemonicToSeedSync(seedPhrase);
+      const path = `m/44'/501'/0'/${String(hdWallet.state.choosenWalletIndex === -1 ? 0 : hdWallet.state.choosenWalletInde)}'`;
+      const derivedKey = derivePath(path, seed.toString('hex')).key;
+      const keypair = Keypair.fromSeed(derivedKey);
+      return keypair;
+    }
+  } catch (e) {
+    Sentry.captureException(e);
+  }
+};
 
 export const savePin = async (pin: string) => {
   try {

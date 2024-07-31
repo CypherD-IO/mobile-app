@@ -83,6 +83,7 @@ import {
   ActivityType,
   ExchangeTransaction,
 } from '../../reducers/activity_reducer';
+import { Transaction } from '@solana/web3.js';
 
 enum TxnStatus {
   STATE_SUBMITTED = 'STATE_SUBMITTED',
@@ -103,8 +104,11 @@ export default function BridgeSkipApi(props: {
     portfolioState.statePortfolio.tokenPortfolio.totalHoldings;
   const { getFromOtherSource, postToOtherSource, getWithAuth, postWithAuth } =
     useAxios();
-  const { skipApiApproveAndSignEvm, skipApiSignAndBroadcast } =
-    useSkipApiBridge();
+  const {
+    skipApiApproveAndSignEvm,
+    skipApiSignAndBroadcast,
+    skipApiSignAndApproveSolana,
+  } = useSkipApiBridge();
   const hdWallet = useContext<any>(HdWalletContext);
   const globalStateContext = useContext<GlobalContextDef>(GlobalContext);
   const { showModal, hideModal } = useGlobalModalContext();
@@ -163,6 +167,7 @@ export default function BridgeSkipApi(props: {
     useState<boolean>(false);
   const [evmModalVisible, setEvmModalVisible] = useState<boolean>(false);
   const [cosmosModalVisible, setCosmosModalVisible] = useState<boolean>(false);
+  const [solanaModalVisible, setSolanaModalVisible] = useState<boolean>(false);
   const [modalPromiseResolver, setModalPromiseResolver] = useState<
     ((value: boolean) => void) | null
   >(null);
@@ -174,6 +179,9 @@ export default function BridgeSkipApi(props: {
   const [evmTxnParams, setEvmTxnParams] = useState<SkipAPiEvmTx | null>(null);
   const [cosmosTxnParams, setCosmosTxnParams] =
     useState<SkipApiCosmosTxn | null>(null);
+  const [solanaTxnParams, setSolanaTxnParams] = useState<Transaction | null>(
+    null,
+  );
 
   // ------------- for swap states -----------------
   const [swapSupportedChains, setSwapSupportedChains] = useState([
@@ -214,19 +222,15 @@ export default function BridgeSkipApi(props: {
 
   // for bridge
   const getChains = async () => {
-    const {
-      isError,
-      data,
-      error: fetchError,
-    } = await getFromOtherSource(
-      'https://api.skip.money/v2/info/chains?include_evm=true',
+    const { isError, data } = await getFromOtherSource(
+      'https://api.skip.money/v2/info/chains?include_evm=true&include_svm=true',
     );
 
     if (isError) {
       showModal('state', {
         type: 'error',
         title: t('FETCH_SKIP_API_ERROR'),
-        description: JSON.stringify(fetchError),
+        description: 'Unable to fetch data, please try again',
         onSuccess: hideModal,
         onFailure: hideModal,
       });
@@ -257,9 +261,10 @@ export default function BridgeSkipApi(props: {
             parseInt(chain.chain_id, 10) === parseInt(chainID, 16) ||
             chain.chain_id === chainID,
         );
+      } else {
+        tempSelectedFromChain = chains[0];
       }
-      if (tempSelectedFromChain) setSelectedFromChain(tempSelectedFromChain);
-      else tempSelectedFromChain = chains[0];
+      setSelectedFromChain(tempSelectedFromChain);
 
       const swapChains = await getSwapSupportedChains(chains);
 
@@ -337,9 +342,8 @@ export default function BridgeSkipApi(props: {
       data,
       error: fetchError,
     } = await getFromOtherSource(
-      'https://api.skip.money/v1/fungible/assets?include_no_metadata_assets=false&include_cw20_assets=false&include_evm_assets=true&include_svm_assets=false',
+      'https://api.skip.money/v1/fungible/assets?include_no_metadata_assets=false&include_cw20_assets=false&include_evm_assets=true&include_svm_assets=true',
     );
-
     if (isError) {
       showModal('state', {
         type: 'error',
@@ -524,10 +528,11 @@ export default function BridgeSkipApi(props: {
             token =>
               token.recommended_symbol === symbol || token.symbol === symbol,
           );
+        } else {
+          tempSelectedFromToken = tempTokens[0];
         }
 
-        if (tempSelectedFromToken) setSelectedFromToken(tempSelectedFromToken);
-        else setSelectedFromToken(tempTokens[0]);
+        setSelectedFromToken(tempSelectedFromToken);
       }
     }
   };
@@ -762,36 +767,12 @@ export default function BridgeSkipApi(props: {
       !selectedToToken
     )
       return;
+
     const requiredAddresses = getAddress(
       routeResponse.required_chain_addresses,
     );
 
     setLoading(true);
-    const id = genId();
-    const activityData: ExchangeTransaction = {
-      id,
-      status: ActivityStatus.PENDING,
-      type: isSwap() ? ActivityType.SWAP : ActivityType.BRIDGE,
-      quoteId: quoteData?.quoteId,
-      fromChain: selectedFromChain.chain_name,
-      toChain: selectedToChain.chain_name,
-      fromToken: selectedFromToken.name,
-      toToken: selectedToToken.name,
-      fromSymbol: selectedFromToken.symbol,
-      toSymbol: selectedToToken.symbol,
-      fromTokenLogoUrl: selectedFromToken.logo_uri,
-      toTokenLogoUrl: selectedToToken.logo_uri,
-      fromTokenAmount: parseFloat(cryptoAmount).toFixed(3),
-      toTokenAmount: quoteData?.toToken?.amount.toString(),
-      datetime: new Date(),
-      transactionHash: '',
-      quoteData: {
-        fromAmountUsd: Number(cryptoAmount) * Number(selectedFromToken?.price),
-        toAmountUsd: quoteData?.value,
-        gasFee: '',
-      },
-    };
-    activityId.current = id;
 
     try {
       const body = {
@@ -813,6 +794,7 @@ export default function BridgeSkipApi(props: {
         'https://api.skip.money/v2/fungible/msgs',
         body,
       );
+
       if (isError) {
         showModal('state', {
           type: 'error',
@@ -823,15 +805,9 @@ export default function BridgeSkipApi(props: {
         });
         return;
       }
-
       await evmTxnMsg(data);
       await cosmosTxnMsg(data);
-
-      activityData.status = ActivityStatus.SUCCESS;
-      activityContext.dispatch({
-        type: ActivityReducerAction.POST,
-        value: activityData,
-      });
+      await solanaTxnMsg(data);
 
       firebaseAnalytics(AnalyticEvent.SKIP_API_BRIDGE_SUCESS, {
         fromChain: selectedFromChain?.chain_name,
@@ -847,11 +823,6 @@ export default function BridgeSkipApi(props: {
       });
     } catch (e: any) {
       setLoading(false);
-      activityData.status = ActivityStatus.FAILED;
-      activityContext.dispatch({
-        type: ActivityReducerAction.POST,
-        value: activityData,
-      });
 
       // monitoring API
       void logAnalytics({
@@ -969,6 +940,72 @@ export default function BridgeSkipApi(props: {
     }
   };
 
+  const solanaTxnMsg = async (data: SkipApiSignMsg) => {
+    const txs = data.txs;
+    for (const tx of txs) {
+      const svmTx = get(tx, 'svm_tx');
+      if (svmTx) {
+        try {
+          const solanaResponse = await skipApiSignAndApproveSolana({
+            svmTx,
+            showModalAndGetResponse,
+            setSolanaModalVisible,
+            setSolanaTxnParams,
+          });
+          if (
+            !solanaResponse?.isError &&
+            solanaResponse?.txn &&
+            solanaResponse.chainId
+          ) {
+            await submitSign(solanaResponse.txn, solanaResponse.chainId);
+          } else {
+            throw new Error(solanaResponse.error);
+          }
+        } catch (e: any) {
+          if (!e.message.includes('User denied transaction signature.')) {
+            Sentry.captureException(e);
+          }
+          throw new Error(e.message);
+        }
+      }
+    }
+  };
+
+  const submitSign = async (txn: string, chainID: string) => {
+    const body = {
+      tx: txn,
+      chain_id: chainID,
+    };
+    try {
+      const {
+        isError,
+        error: fetchError,
+        // eslint-disable-next-line @typescript-eslint/naming-convention
+        data: { tx_hash },
+      } = await postToOtherSource('https://api.skip.money/v2/tx/submit', body);
+
+      if (isError) {
+        showModal('state', {
+          type: 'error',
+          title: t('FETCH_SKIP_API_ERROR'),
+          description: JSON.stringify(fetchError),
+          onSuccess: hideModal,
+          onFailure: hideModal,
+        });
+      } else {
+        await trackStatus(tx_hash, chainID, true);
+      }
+    } catch (e) {
+      showModal('state', {
+        type: 'error',
+        title: t('UNEXCPECTED_ERROR'),
+        description: JSON.stringify(e),
+        onSuccess: hideModal,
+        onFailure: hideModal,
+      });
+    }
+  };
+
   // bridge
   const trackSign = async (hash: string, chainID: string) => {
     const body = {
@@ -1015,7 +1052,6 @@ export default function BridgeSkipApi(props: {
     } = await getFromOtherSource(
       `https://api.skip.money/v2/tx/status?tx_hash=${hash}&chain_id=${chainID}`,
     );
-
     if (isError) {
       showModal('state', {
         type: 'error',
@@ -1062,13 +1098,6 @@ export default function BridgeSkipApi(props: {
         await trackStatus(hash, chainID, false);
       }
     }
-  };
-
-  // bridge
-  const onBridgeSuccess = async () => {
-    setPortfolioLoading(true);
-    await fetchTokenData(hdWallet, portfolioState, true);
-    setPortfolioLoading(false);
   };
 
   function onModalHide(type = '') {
@@ -1646,6 +1675,53 @@ export default function BridgeSkipApi(props: {
     return true;
   };
 
+  const onBridgeSuccess = async (status: string) => {
+    if (
+      selectedFromChain &&
+      selectedToChain &&
+      selectedFromToken &&
+      selectedToToken &&
+      routeResponse
+    ) {
+      setPortfolioLoading(true);
+
+      const id = genId();
+      const activityData: ExchangeTransaction = {
+        id,
+        status:
+          status === 'success' ? ActivityStatus.SUCCESS : ActivityStatus.FAILED,
+        type: isSwap() ? ActivityType.SWAP : ActivityType.BRIDGE,
+        quoteId: quoteData?.quoteId,
+        fromChain: selectedFromChain.chain_name,
+        toChain: selectedToChain.chain_name,
+        fromToken: selectedFromToken.name,
+        toToken: selectedToToken.name,
+        fromSymbol: selectedFromToken.symbol,
+        toSymbol: selectedToToken.symbol,
+        fromTokenLogoUrl: selectedFromToken.logo_uri,
+        toTokenLogoUrl: selectedToToken.logo_uri,
+        fromTokenAmount: parseFloat(cryptoAmount).toFixed(3),
+        toTokenAmount: parseFloat(routeResponse?.usd_amount_out).toString(3),
+        datetime: new Date(),
+        transactionHash: '',
+        quoteData: {
+          fromAmountUsd: parseFloat(routeResponse?.usd_amount_in),
+          toAmountUsd: parseFloat(routeResponse?.usd_amount_out),
+          gasFee: '',
+        },
+      };
+
+      activityId.current = id;
+      activityContext.dispatch({
+        type: ActivityReducerAction.POST,
+        value: activityData,
+      });
+
+      await fetchTokenData(hdWallet, portfolioState, true);
+      setPortfolioLoading(false);
+    }
+  };
+
   // eslint-disable-next-line react/no-unstable-nested-components
   function Components() {
     switch (index) {
@@ -1909,6 +1985,52 @@ export default function BridgeSkipApi(props: {
                 title={t('CANCEL')}
                 onPress={() => {
                   setCosmosModalVisible(false);
+                  handleReject();
+                }}
+                type={ButtonType.SECONDARY}
+                style='mt-[15px]'
+              />
+            </CyDView>
+          </CyDView>
+        ) : null}
+      </SignatureModal>
+
+      {/* Transfer token Modal solana */}
+      <SignatureModal
+        isModalVisible={solanaModalVisible}
+        setModalVisible={setSolanaModalVisible}
+        onCancel={() => {
+          setCosmosModalVisible(false);
+          handleReject();
+        }}>
+        {solanaTxnParams ? (
+          <CyDView className={'px-[20px]'}>
+            <CyDText className={'text-center text-[24px] font-bold mt-[20px]'}>
+              {t<string>('TRANSFER_TOKENS')}
+            </CyDText>
+
+            {solanaTxnParams && (
+              <CyDScrollView className='h-[200px] p-[4px] rounded-[8px] mt-8px border-separate border '>
+                <JSONTree
+                  data={JSON.parse(JSON.stringify(solanaTxnParams))}
+                  invertTheme={true}
+                />
+              </CyDScrollView>
+            )}
+            <CyDView className='flex justify-end my-[30px]'>
+              <Button
+                title={t('APPROVE')}
+                onPress={() => {
+                  setSolanaModalVisible(false);
+                  handleApprove();
+                }}
+                type={ButtonType.PRIMARY}
+                style='h-[50px]'
+              />
+              <Button
+                title={t('CANCEL')}
+                onPress={() => {
+                  setSolanaModalVisible(false);
                   handleReject();
                 }}
                 type={ButtonType.SECONDARY}
@@ -2190,32 +2312,34 @@ export default function BridgeSkipApi(props: {
               </CyDView>
             </CyDView>
           )}
-        {!isSwap() && !isEmpty(routeResponse?.estimated_fees) && (
-          <CyDView className='mx-[16px] mt-[16px] bg-white rounded-[8px] p-[12px]'>
-            {routeResponse?.estimated_fees.map((item, _index) => (
-              <CyDView
-                key={_index}
-                className='mt-[8px] flex flex-row gap-x-[12px] justify-between items-center'>
-                <CyDFastImage
-                  source={AppImages.INFO_CIRCLE}
-                  className='h-[32px] w-[32px]'
-                />
-                <CyDView className='w-[80%]'>
-                  <CyDText className='text-[14px] font-medium'>{`$${item.usd_amount}`}</CyDText>
-                  <CyDText className='text-[10px] font-medium'>
-                    {'Estimated Network fee'}
-                  </CyDText>
-                  <CyDText className='text-[10px] font-medium'>
-                    {`$${item.usd_amount} (${ethers.formatUnits(
-                      item.amount,
-                      item.origin_asset.decimals,
-                    )} ${item.origin_asset.symbol})`}
-                  </CyDText>
+        {!isSwap() &&
+          !isEmpty(routeResponse?.estimated_fees) &&
+          index === 0 && (
+            <CyDView className='mx-[16px] mt-[16px] bg-white rounded-[8px] p-[12px]'>
+              {routeResponse?.estimated_fees.map((item, _index) => (
+                <CyDView
+                  key={_index}
+                  className='mt-[8px] flex flex-row gap-x-[12px] justify-between items-center'>
+                  <CyDFastImage
+                    source={AppImages.INFO_CIRCLE}
+                    className='h-[32px] w-[32px]'
+                  />
+                  <CyDView className='w-[80%]'>
+                    <CyDText className='text-[14px] font-medium'>{`$${item.usd_amount}`}</CyDText>
+                    <CyDText className='text-[10px] font-medium'>
+                      {'Estimated Network fee'}
+                    </CyDText>
+                    <CyDText className='text-[10px] font-medium'>
+                      {`$${item.usd_amount} (${ethers.formatUnits(
+                        item.amount,
+                        item.origin_asset.decimals,
+                      )} ${item.origin_asset.symbol})`}
+                    </CyDText>
+                  </CyDView>
                 </CyDView>
-              </CyDView>
-            ))}
-          </CyDView>
-        )}
+              ))}
+            </CyDView>
+          )}
         {!isSwap() && routeResponse?.txs_required && index === 0 && (
           <CyDView className='mx-[16px] mt-[16px] bg-white rounded-[8px] p-[12px] text-[14px] font-semibold'>
             <CyDText className='text-[14px] font-semibold'>{`${routeResponse?.txs_required} signature required`}</CyDText>
