@@ -1,22 +1,19 @@
 import * as Sentry from '@sentry/react-native';
-import { waitForTransactionReceipt } from '@wagmi/core';
+import {
+  waitForTransactionReceipt,
+  getChainId,
+  switchChain,
+} from '@wagmi/core';
 import { useWalletInfo } from '@web3modal/wagmi-react-native';
 import { get } from 'lodash';
 import { useContext } from 'react';
 import Toast from 'react-native-toast-message';
-import {
-  useSendTransaction,
-  useSignMessage,
-  useSwitchChain,
-  useWriteContract,
-} from 'wagmi';
+import { useSendTransaction, useSwitchChain, useWriteContract } from 'wagmi';
 import { wagmiConfig } from '../../components/wagmiConfigBuilder';
 import { ConnectionTypes } from '../../constants/enum';
 import { walletConnectChainData } from '../../constants/server';
 import { getConnectionType } from '../../core/asyncStorage';
 import { loadPrivateKeyFromKeyChain } from '../../core/Keychain';
-import { utf8ToHex } from 'web3-utils';
-import { getChainId, switchChain } from '@wagmi/core';
 import { allowanceApprovalContractABI } from '../../core/swap';
 import {
   HdWalletContext,
@@ -36,7 +33,6 @@ export default function useEthSigner() {
   const hdWalletContext = useContext<any>(HdWalletContext);
   const { switchChainAsync } = useSwitchChain();
   const { sendTransactionAsync } = useSendTransaction();
-  const { signMessageAsync } = useSignMessage();
   const { writeContractAsync } = useWriteContract();
   const { walletInfo } = useWalletInfo();
   const { showModal, hideModal } = useGlobalModalContext();

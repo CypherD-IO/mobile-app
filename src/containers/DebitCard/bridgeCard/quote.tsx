@@ -80,8 +80,13 @@ export default function CardQuote({
   const ethereum = hdWallet.state.wallet.ethereum;
   const activityContext = useContext<any>(ActivityContext);
   const activityRef = useRef<DebitCardTransaction | null>(null);
-  const { sendEvmToken, sendCosmosToken, interCosmosIBC, evmosIBC } =
-    useTransactionManager();
+  const {
+    sendEvmToken,
+    sendCosmosToken,
+    interCosmosIBC,
+    evmosIBC,
+    sendSolanaTokens,
+  } = useTransactionManager();
   const { showModal, hideModal } = useGlobalModalContext();
   const { postWithAuth } = useAxios();
 
@@ -326,6 +331,13 @@ export default function CardQuote({
               fromAddress: get(cosmosAddresses, chainDetails.chainName),
               toAddress: tokenQuote.targetAddress,
               contractDecimals,
+            });
+          } else if (chainName === ChainNames.SOLANA) {
+            response = await sendSolanaTokens({
+              amountToSend: actualTokensRequired,
+              toAddress: tokenQuote.targetAddress,
+              contractDecimals,
+              contractAddress,
             });
           } else {
             response = await evmosIBC({

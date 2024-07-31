@@ -10,15 +10,13 @@ import CryptoJS from 'crypto-js';
 import { Mnemonic, PrivKeySecp256k1 } from '@keplr-wallet/crypto';
 import { isIOS } from '../misc/checkers';
 import { addHexPrefix } from './util';
-import {
-  HDNodeWallet,
-  ethers,
-  Mnemonic as EthersMnemonic,
-  Wallet,
-} from 'ethers';
+import { HDNodeWallet, Mnemonic as EthersMnemonic, Wallet } from 'ethers';
 import { setConnectionType } from './asyncStorage';
 import { ConnectionTypes } from '../constants/enum';
 import { getInjectiveAddress } from '@injectivelabs/sdk-ts';
+import { Keypair } from '@solana/web3.js';
+import { derivePath } from 'ed25519-hd-key';
+import * as bs58 from 'bs58';
 
 function sendFirebaseEvent(walletaddress: string, trkEvent: string) {
   void analytics().logEvent(trkEvent, {
@@ -36,7 +34,8 @@ export type AddressChainNames =
   | 'noble'
   | 'coreum'
   | 'injective'
-  | 'kujira';
+  | 'kujira'
+  | 'solana';
 export interface IAccountDetail {
   address: string;
   algo?: string;
@@ -117,6 +116,16 @@ export const generateCosmosPrivateKey = async (
   return uintToHex(privateKey);
 };
 
+export const generateSolanaPrivateKey = async (
+  mnemonic: string,
+  bip44HDPath: string,
+) => {
+  const seed = bip39.mnemonicToSeedSync(mnemonic);
+  const derivedKey = derivePath(bip44HDPath, seed.toString('hex')).key;
+  const keypair = Keypair.fromSeed(derivedKey);
+  return bs58.default.encode(keypair.secretKey);
+};
+
 export const generateCosmosWallet = async (
   chainName: AddressChainNames,
   chainConfig: IIBCData,
@@ -187,6 +196,7 @@ export const generateEvmosWallet = (
     publicKey: uintToHex(publicKey),
   };
 };
+
 export const generateInjectiveWallet = (
   ethereumAddress: string,
   chainConfig: IIBCData,
@@ -213,6 +223,23 @@ export const generateInjectiveWallet = (
     address,
     // privateKey: uintToHex(privateKey),
     publicKey: uintToHex(publicKey),
+  };
+};
+
+export const generateSolanaWallet = async (
+  mnemonic: string,
+  bip44HDPath = `m/44'/501'/0'/0'`,
+): Promise<IAccountDetailWithChain> => {
+  const seed = await bip39.mnemonicToSeed(mnemonic);
+  const derivedSeed = derivePath(bip44HDPath, seed.toString('hex')).key;
+  const keypair = Keypair.fromSeed(derivedSeed);
+  const address = keypair.publicKey.toBase58();
+
+  return {
+    name: 'solana',
+    address,
+    // privateKey: uintToHex(privateKey),
+    publicKey: address,
   };
 };
 
@@ -313,11 +340,17 @@ export const generateWalletFromMnemonic = async (
     bip44HDPath,
   );
 
+  const solanaWallet = await generateSolanaWallet(
+    mnemonic,
+    `m/44'/501'/0'/${addressIndex}'`,
+  );
+
   const accounts: IAccountDetailWithChain[] = [
     ethereumWallet,
     ...cosmosAccounts,
     evmosWallet,
     injectiveWallet,
+    solanaWallet,
   ];
   // emit event to firebase
   sendFirebaseEvent(ethereumWallet.address, trackingEventId);

@@ -143,7 +143,7 @@ export default function ActivityBridgeInfoModal({
                 {t<string>('RECEIVED')}
               </CyDText>
               <CyDView className='flex items-start'>
-                <CyDText className='text-center font-nunito text-[14px] font-bold font-primaryTextColor'>{`${toTokenAmount.slice(0, toTokenAmount.indexOf('.') + 4)} ${toSymbol}`}</CyDText>
+                <CyDText className='text-center font-nunito text-[14px] font-bold font-primaryTextColor'>{`${round(parseFloat(toTokenAmount))} ${toSymbol}`}</CyDText>
                 <CyDText className='text-center font-nunito text-[13px] font-primaryTextColor'>{`${String(quoteData.toAmountUsd).slice(0, String(quoteData.toAmountUsd).indexOf('.') + 4)} USD`}</CyDText>
               </CyDView>
             </CyDView>

@@ -43,6 +43,7 @@ import {
   CHAIN_COREUM,
   // CHAIN_INJECTIVE,
   CHAIN_KUJIRA,
+  CHAIN_SOLANA,
 } from '../../constants/server';
 import { captureRef } from 'react-native-view-shot';
 import Share from 'react-native-share';
@@ -152,6 +153,10 @@ export default function QRCodeGenerator(props) {
     {
       ...CHAIN_KUJIRA,
       address: hdWalletContext.state.wallet.kujira?.wallets[0]?.address,
+    },
+    {
+      ...CHAIN_SOLANA,
+      address: hdWalletContext.state.wallet.solana?.wallets[0]?.address,
     },
   ];
 
@@ -263,6 +268,8 @@ export default function QRCodeGenerator(props) {
       // }
       else if (walletAddressType === FundWalletAddressType.KUJIRA) {
         setSelectedChain(data[22]);
+      } else if (walletAddressType === FundWalletAddressType.SOLANA) {
+        setSelectedChain(data[23]);
       }
     }
 
@@ -365,7 +372,7 @@ export default function QRCodeGenerator(props) {
               </CyDText>
               <CyDText className={'text-[14px] text-center font-bold'}>
                 {selectedChain.chainName === 'ethereum'
-                  ? 'Ethereum, Polygon, Binance Smart Chain, zkSync Era, Base, Polygon zkEVM, Avalanche, Fantom, Optimism, Arbitrum, Evmos, Aurora, Moonbeam, Moonriver, Shardeum, Coreum'
+                  ? 'Ethereum, Polygon, Binance Smart Chain, zkSync Era, Base, Polygon zkEVM, Avalanche, Fantom, Optimism, Arbitrum, Evmos, Aurora, Moonbeam, Moonriver, Shardeum'
                   : selectedChain.name}
               </CyDText>
             </CyDView>

@@ -21,6 +21,12 @@ export interface SkipApiCosmosTxn {
   operations_indices: number[];
 }
 
+export interface SkipApiSolanaTxn {
+  chain_id: string;
+  signer_address: string;
+  tx: string;
+}
+
 export interface SkipApiSignMsg {
   msgs: Array<{
     multi_chain_msg?: {
@@ -40,6 +46,11 @@ export interface SkipApiSignMsg {
       signer_address: string;
       to: string;
       value: string;
+    };
+    svm_tx?: {
+      chain_id: string;
+      signer_address: string;
+      tx: string;
     };
   }>;
   estimated_fees: Array<{
@@ -92,6 +103,12 @@ export interface SkipApiSignMsg {
       }>;
       signer_address: string;
       operations_indices: number[];
+    };
+
+    svm_tx?: {
+      chain_id: string;
+      signer_address: string;
+      tx: string;
     };
   }>;
 }

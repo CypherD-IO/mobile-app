@@ -53,6 +53,24 @@ import { allowanceApprovalContractABI } from '../../core/swap';
 import { Holding } from '../../core/Portfolio';
 import { getGasPriceFor } from '../../containers/Browser/gasHelper';
 import { SwapMetaData } from '../../models/swapMetaData';
+import {
+  ComputeBudgetProgram,
+  Connection,
+  Keypair,
+  LAMPORTS_PER_SOL,
+  PublicKey,
+  sendAndConfirmTransaction,
+  SystemProgram,
+  Transaction,
+  TransactionMessage,
+  VersionedTransaction,
+} from '@solana/web3.js';
+import useSolanaSigner from '../useSolana';
+import {
+  getOrCreateAssociatedTokenAccount,
+  createTransferInstruction,
+} from '@solana/spl-token';
+import { decodeBase64 } from 'tweetnacl-util';
 
 export interface TransactionServiceResult {
   isError: boolean;
@@ -96,6 +114,7 @@ export default function useTransactionManager() {
     simulateEvmosUnDelegate,
   } = useEvmosSigner();
   const { getCosmosSignerClient, getCosmosRpc } = useCosmosSigner();
+  const { getSolanWallet, getSolanaRpc } = useSolanaSigner();
   const hdWallet = useContext<any>(HdWalletContext);
 
   const EVMOS_TXN_ENDPOINT = evmosUrls.transact;
@@ -1667,6 +1686,233 @@ export default function useTransactionManager() {
     });
   };
 
+  const simulateSolanaTxn = async ({
+    connection,
+    fromPublickey,
+    toPublicKey,
+    amountToSend,
+  }: {
+    connection: Connection;
+    fromPublickey: PublicKey;
+    toPublicKey: PublicKey;
+    amountToSend: number;
+  }) => {
+    const { blockhash } = await connection.getLatestBlockhash();
+    const transactionMessage = new TransactionMessage({
+      payerKey: fromPublickey,
+      instructions: [
+        SystemProgram.transfer({
+          fromPubkey: fromPublickey,
+          toPubkey: toPublicKey,
+          lamports: amountToSend,
+        }),
+      ],
+      recentBlockhash: blockhash,
+    }).compileToV0Message();
+
+    const transferTransaction = new VersionedTransaction(transactionMessage);
+
+    const { value: simulationResult } = await connection.simulateTransaction(
+      transferTransaction,
+      {
+        replaceRecentBlockhash: true,
+      },
+    );
+    if (simulationResult.err) {
+      throw new Error(String(simulationResult.err));
+    } else {
+      return simulationResult.unitsConsumed;
+    }
+  };
+
+  const sendSOLTokens = async ({
+    amountToSend,
+    toAddress,
+  }: {
+    amountToSend: string;
+    toAddress: string;
+  }) => {
+    const solanRpc = getSolanaRpc();
+    const fromKeypair = await getSolanWallet();
+    const toPublicKey = new PublicKey(toAddress);
+    if (fromKeypair) {
+      const connection = new Connection(solanRpc, 'confirmed');
+
+      const lamportsToSend = parseFloat(amountToSend) * LAMPORTS_PER_SOL;
+
+      const fees = await connection.getRecentPrioritizationFees();
+
+      // 1 prioritizationFee = 0.000001 lamport, add 100000000 = 0.00001sol in case wanted
+      const totalFees = fees.reduce(
+        (sum, fee) => sum + fee.prioritizationFee,
+        0,
+      );
+      const avgPriorityFee = ceil(totalFees / fees.length);
+
+      // const simulation = await simulateSolanaTxn({
+      //   connection,
+      //   fromPublickey: fromKeypair.publicKey,
+      //   toPublicKey,
+      //   amountToSend: lamportsToSend,
+      // });
+
+      const transaction = new Transaction();
+
+      // transaction.add(
+      //   ComputeBudgetProgram.setComputeUnitLimit({
+      //     units: simulation ?? 0,
+      //   }),
+      // );
+
+      // transaction.add(
+      //   ComputeBudgetProgram.setComputeUnitPrice({
+      //     microLamports: avgPriorityFee,
+      //   }),
+      // );
+
+      transaction.add(
+        SystemProgram.transfer({
+          fromPubkey: fromKeypair.publicKey,
+          toPubkey: toPublicKey,
+          lamports: lamportsToSend,
+        }),
+      );
+
+      const resp = await sendAndConfirmTransaction(connection, transaction, [
+        fromKeypair,
+      ]);
+
+      return { hash: String(resp), isError: false };
+    } else {
+      // throw new Error('Unable to create user wallet');
+      return {
+        isError: true,
+        error: 'Unable to create user wallet',
+        hash: '',
+      };
+    }
+  };
+
+  const sendSPLTokens = async ({
+    amountToSend,
+    toAddress,
+    mintAddress,
+    contractDecimals = 9,
+  }: {
+    amountToSend: string;
+    toAddress: string;
+    mintAddress: string;
+    contractDecimals: number;
+  }) => {
+    const solanRpc = getSolanaRpc();
+    const fromKeypair = await getSolanWallet();
+    const toPublicKey = new PublicKey(toAddress);
+    const mintPublicKey = new PublicKey(mintAddress);
+    if (fromKeypair) {
+      const connection = new Connection(solanRpc, 'confirmed');
+
+      const lamportsToSend = ethers
+        .parseUnits(amountToSend, contractDecimals)
+        .toString();
+
+      const fromTokenAccount = await getOrCreateAssociatedTokenAccount(
+        connection,
+        fromKeypair,
+        mintPublicKey,
+        fromKeypair.publicKey,
+      );
+
+      const toTokenAccount = await getOrCreateAssociatedTokenAccount(
+        connection,
+        fromKeypair,
+        mintPublicKey,
+        toPublicKey,
+      );
+
+      const fees = await connection.getRecentPrioritizationFees();
+
+      const totalFees =
+        fees.reduce((sum, fee) => sum + fee.prioritizationFee, 0) + 100000000; // 1 prioritizationFee = 0.000001 lamport, add 100000000 = 0.00001sol in case wanted
+      const avgPriorityFee = totalFees / fees.length;
+
+      // const simulation = await simulateSolanaTxn({
+      //   connection,
+      //   fromPublickey: fromKeypair.publicKey,
+      //   toPublicKey,
+      //   amountToSend: parseInt(lamportsToSend, 10),
+      // });
+
+      const transaction = new Transaction();
+
+      // transaction.add(
+      //   ComputeBudgetProgram.setComputeUnitPrice({
+      //     microLamports: avgPriorityFee,
+      //   }),
+      // );
+
+      // transaction.add(
+      //   ComputeBudgetProgram.setComputeUnitLimit({
+      //     units: simulation ?? 0 + 10000,
+      //   }),
+      // );
+
+      transaction.add(
+        createTransferInstruction(
+          fromTokenAccount.address,
+          toTokenAccount.address,
+          fromKeypair.publicKey,
+          parseInt(lamportsToSend, 10),
+        ),
+      );
+
+      const resp = await sendAndConfirmTransaction(connection, transaction, [
+        fromKeypair,
+      ]);
+      return {
+        isError: false,
+        hash: resp,
+      };
+    } else {
+      return {
+        isError: true,
+        error: 'Unable to create user wallet',
+        hash: '',
+      };
+    }
+  };
+
+  const sendSolanaTokens = async ({
+    amountToSend,
+    toAddress,
+    contractAddress,
+    contractDecimals,
+  }: {
+    amountToSend: string;
+    toAddress: string;
+    contractAddress: string;
+    contractDecimals: number;
+  }) => {
+    try {
+      if (contractAddress === 'solana-native') {
+        return await sendSOLTokens({ amountToSend, toAddress });
+      } else {
+        return await sendSPLTokens({
+          amountToSend,
+          toAddress,
+          mintAddress: contractAddress,
+          contractDecimals,
+        });
+      }
+    } catch (e) {
+      console.log('🚀 ~ e:', e);
+      return {
+        isError: true,
+        error: e,
+        hash: '',
+      };
+    }
+  };
+
   return {
     sendEvmToken,
     sendEvmosToken,
@@ -1685,5 +1931,6 @@ export default function useTransactionManager() {
     revokeAutoLoad,
     getApproval,
     swapTokens,
+    sendSolanaTokens,
   };
 }

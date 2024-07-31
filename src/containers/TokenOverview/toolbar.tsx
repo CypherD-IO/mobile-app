@@ -224,6 +224,10 @@ export default function TokenOverviewToolBar({
               tokenData.chainDetails.backendName === ChainBackendNames.KUJIRA
             ) {
               addressTypeQRCode = FundWalletAddressType.KUJIRA;
+            } else if (
+              tokenData.chainDetails.backendName === ChainBackendNames.SOLANA
+            ) {
+              addressTypeQRCode = FundWalletAddressType.SOLANA;
             }
             navigation.navigate(screenTitle.QRCODE, {
               addressType: addressTypeQRCode,
