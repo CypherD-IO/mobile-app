@@ -102,6 +102,7 @@ import TelegramSetupSettings from '../containers/DebitCard/bridgeCard/cardTelegr
 import CardQuote from '../containers/DebitCard/bridgeCard/quote';
 import AutoLoad from '../containers/DebitCard/bridgeCard/autoLoad';
 import PreviewAutoLoad from '../containers/DebitCard/bridgeCard/previewAutoLoad';
+import BridgeSkipApi from '../containers/Bridge.Skip/bridge.skip';
 
 const { DynamicImage, DynamicButton } = require('../styles');
 
@@ -652,6 +653,25 @@ export function PortfolioStackScreen({ navigation, route }) {
           headerTintColor: Colors.primaryTextColor,
           headerBackTitleVisible: false,
         })}
+      />
+
+      <PortfolioStack.Screen
+        name={screenTitle.BRIDGE_SKIP_API_SCREEN}
+        component={BridgeSkipApi}
+        options={{
+          headerTransparent: false,
+          headerShadowVisible: false,
+          headerTitleAlign: 'center',
+          headerTitleStyle: {
+            fontFamily: C.fontsName.FONT_BLACK,
+            fontSize: 18,
+            fontWeight: '800',
+          },
+          title: t('BRIDGE'),
+          headerTintColor: Colors.primaryTextColor,
+          headerBackTitleVisible: false,
+          headerLeft: props => defaultHeaderLeft(navigation),
+        }}
       />
 
       <PortfolioStack.Screen
@@ -1372,40 +1392,20 @@ export function SwapStackScreen({ navigation }) {
     };
   }, []);
   return (
-    <SwapStack.Navigator initialRouteName={screenTitle.BRIDGE_SCREEN}>
+    <SwapStack.Navigator initialRouteName={screenTitle.BRIDGE_SKIP_API_SCREEN}>
       <SwapStack.Screen
-        name={screenTitle.BRIDGE_SCREEN}
-        component={Bridge}
+        name={screenTitle.BRIDGE_SKIP_API_SCREEN}
+        component={BridgeSkipApi}
         options={{
           headerTransparent: false,
           headerShadowVisible: false,
-          title: 'Bridge',
           headerTitleAlign: 'center',
           headerTitleStyle: {
             fontFamily: C.fontsName.FONT_BLACK,
             fontSize: 18,
             fontWeight: '800',
           },
-
-          headerTintColor: Colors.primaryTextColor,
-          headerBackTitleVisible: false,
-          headerLeft: props => defaultHeaderLeft(navigation),
-        }}
-      />
-      <SwapStack.Screen
-        name={screenTitle.BRIDGE_STATUS}
-        component={BridgeStatus}
-        options={{
-          headerTransparent: false,
-          headerShadowVisible: false,
-          title: 'Bridge status',
-          headerTitleAlign: 'center',
-          headerTitleStyle: {
-            fontFamily: C.fontsName.FONT_BLACK,
-            fontSize: 18,
-            fontWeight: '800',
-          },
-
+          title: t('BRIDGE'),
           headerTintColor: Colors.primaryTextColor,
           headerBackTitleVisible: false,
         }}

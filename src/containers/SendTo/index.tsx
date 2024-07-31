@@ -441,10 +441,9 @@ export default function SendTo(props: { navigation?: any; route?: any }) {
         screen: C.screenTitle.CREATE_CONTACT,
         params: {
           additionalAddress: {
-            chain: get(
-              ChainNameToContactsChainNameMapping,
-              'tokenData.chainDetails.name',
-            ),
+            chain: get(ChainNameToContactsChainNameMapping, [
+              tokenData.chainDetails.name,
+            ]),
             toAddress: addressText,
           },
         },

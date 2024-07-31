@@ -178,6 +178,7 @@ export default function CyDModalLayout({
         setModalVisible(false);
       }}
       backdropColor={'#000000'}
+      propagateSwipe={true}
       avoiKeyboardLikeIOS={true}
       keyboardAvoidingBehavior='height'
       backdropOpacity={0.85}

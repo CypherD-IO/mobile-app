@@ -9,10 +9,12 @@ export interface EthTransaction {
   gas: string | number;
   maxPriorityFeePerGas?: string | number;
   maxFeePerGas?: string | number;
+  contractParams?: { toAddress: string; numberOfTokens: string };
+  data?: `0x${string}`;
 }
 
 export interface RawTransaction {
   web3: Web3;
-  chain: ChainBackendNames;
+  sendChain: ChainBackendNames;
   transactionToBeSigned: EthTransaction;
 }

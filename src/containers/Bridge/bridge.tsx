@@ -105,10 +105,9 @@ import {
 import { PORTFOLIO_EMPTY } from '../../reducers/portfolio_reducer';
 import useIsSignable from '../../hooks/useIsSignable';
 import ChooseTokenModal from '../../components/v2/chooseTokenModal';
-import { checkAllowance, getApproval, swapTokens } from '../../core/swap';
+import { checkAllowance } from '../../core/swap';
 import { TokenMeta } from '../../models/tokenMetaData.model';
 import { Colors } from '../../constants/theme';
-import { ethers } from 'ethers';
 import { AllowanceParams } from '../../models/swapMetaData';
 import { Holding } from '../../core/Portfolio';
 import useTransactionManager from '../../hooks/useTransactionManager';
@@ -190,6 +189,7 @@ export default function Bridge(props: { navigation?: any; route?: any }) {
     swapSupportedChains.includes(chain.chainIdNumber),
   );
   const slippage = 0.4;
+  const { getApproval, swapTokens } = useTransactionManager();
 
   const [quoteData, setQuoteData] = useState<bridgeQuoteCosmosInterface>({
     fromAmount: 0,
@@ -565,7 +565,7 @@ export default function Bridge(props: { navigation?: any; route?: any }) {
       toAddress: quoteData.step1TargetWallet,
       contractAddress,
       contractDecimals,
-      symbol: symbol,
+      symbol,
     });
     const { isError, hash, error } = response;
     if (isError) {
@@ -1413,10 +1413,8 @@ export default function Bridge(props: { navigation?: any; route?: any }) {
       const nativeTokenSymbol = get(NativeTokenMapping, symbol) || symbol;
       const gas = isSwap()
         ? swapParams?.gasFeeETH
-        : gasFeeReservation[backendName as ChainBackendNames];
-      const isGaslessChain = GASLESS_CHAINS.includes(
-        backendName as ChainBackendNames,
-      );
+        : gasFeeReservation[backendName];
+      const isGaslessChain = GASLESS_CHAINS.includes(backendName);
       const hasInSufficientGas =
         (!isGaslessChain && nativeTokenBalance <= gas) ||
         (fromToken?.symbol === nativeTokenSymbol &&
@@ -1454,7 +1452,7 @@ export default function Bridge(props: { navigation?: any; route?: any }) {
         get(NativeTokenMapping, symbol) || symbol;
       const gas = isSwap()
         ? swapParams?.gasFeeETH
-        : gasFeeReservation[backendName as ChainBackendNames];
+        : gasFeeReservation[backendName];
       if (parseFloat(cryptoAmount) > parseFloat(String(actualBalance))) {
         return renderWarningPopupMessage(
           fromChain !== toChain
@@ -1462,7 +1460,7 @@ export default function Bridge(props: { navigation?: any; route?: any }) {
             : t<string>('INSUFFICIENT_BALANCE_SWAP'),
         );
       } else if (
-        !GASLESS_CHAINS.includes(backendName as ChainBackendNames) &&
+        !GASLESS_CHAINS.includes(backendName) &&
         nativeTokenBalance <= gas
       ) {
         return renderWarningPopupMessage(
@@ -1531,8 +1529,7 @@ export default function Bridge(props: { navigation?: any; route?: any }) {
       const nativeTokenSymbol = get(NativeTokenMapping, symbol) || symbol;
       if (
         parseFloat(cryptoAmount) > parseFloat(String(actualBalance)) ||
-        nativeTokenBalance <=
-          gasFeeReservation[backendName as ChainBackendNames] ||
+        nativeTokenBalance <= gasFeeReservation[backendName] ||
         (fromToken?.symbol === nativeTokenSymbol &&
           parseFloat(cryptoAmount) >
             parseFloat(
@@ -1931,6 +1928,7 @@ export default function Bridge(props: { navigation?: any; route?: any }) {
       gasLimit,
       gasFeeResponse,
       contractData,
+      routerAddress,
     } = allowanceParams;
     const response = await getApproval({
       web3,
@@ -1939,6 +1937,11 @@ export default function Bridge(props: { navigation?: any; route?: any }) {
       gasLimit,
       gasFeeResponse,
       contractData,
+      chainDetails: fromChain,
+      contractParams: {
+        toAddress: routerAddress,
+        numberOfTokens: String(parseFloat(cryptoAmount) * 1000000),
+      },
     });
     if (response) {
       void swap({ showQuote: false });
@@ -1954,7 +1957,7 @@ export default function Bridge(props: { navigation?: any; route?: any }) {
     }
   };
 
-  const onConfirmSwap = async confirmSwapParams => {
+  const onConfirmSwap = async (confirmSwapParams: any) => {
     try {
       if (fromChain && toChain && fromToken && toToken) {
         setSignModalVisible(false);
@@ -2161,7 +2164,7 @@ export default function Bridge(props: { navigation?: any; route?: any }) {
       const gasReserved =
         (get(NativeTokenMapping, symbol as ChainBackendNames) || symbol) ===
         fromToken?.symbol
-          ? gasFeeReservation[backendName as ChainBackendNames]
+          ? gasFeeReservation[backendName]
           : 0;
 
       const maxAmount = parseFloat(String(actualBalance)) - gasReserved;
@@ -2446,9 +2449,7 @@ export default function Bridge(props: { navigation?: any; route?: any }) {
                           ChainBackendNames.OSMOSIS,
                           ChainBackendNames.JUNO,
                           ChainBackendNames.EVMOS,
-                        ].includes(
-                          fromChain.backendName as ChainBackendNames,
-                        ) &&
+                        ].includes(fromChain.backendName) &&
                         [
                           ChainBackendNames.COSMOS,
                           ChainBackendNames.OSMOSIS,

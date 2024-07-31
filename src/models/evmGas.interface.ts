@@ -9,4 +9,5 @@ export interface EvmGasInterface {
   amountToSend: string;
   contractAddress: string;
   contractDecimals: number;
+  contractData?: any;
 }

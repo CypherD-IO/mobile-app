@@ -41,7 +41,6 @@ import { AppState } from 'react-native';
 import useIsSignable from '../../hooks/useIsSignable';
 import { ActivityType } from '../../reducers/activity_reducer';
 import { isIOS } from '../../misc/checkers';
-import { MODAL_HIDE_TIMEOUT_250 } from '../../core/Http';
 
 interface IShortcutsData {
   index: number;
@@ -116,7 +115,6 @@ export default function ShortcutsModal({ navigationRef }) {
   >([]);
   const [isSignableTransaction] = useIsSignable();
   const portfolioState = useContext<any>(PortfolioContext);
-  const developerMode: boolean = portfolioState.statePortfolio.developerMode;
 
   const emptyWalletShortcutsData: IShortcutsData[] = [
     {
@@ -138,21 +136,20 @@ export default function ShortcutsModal({ navigationRef }) {
 
   const shortcutsData: IShortcutsData[] = [
     ...emptyWalletShortcutsData,
-    // disabled bridge - Feb 10th 2024
     // {
     //   index: 1,
     //   title: ShortcutsTitle.BRIDGE,
     //   logo: AppImages.BRIDGE_SHORTCUT,
     //   subTitle: t('EXCHANGE_SHORTCUTS_SUBTITLE'),
+    //   screenTitle: screenTitle.BRIDGE_SKIP_API_SCREEN,
+    // },
+    // {
+    //   index: 2,
+    //   title: ShortcutsTitle.SWAP,
+    //   logo: AppImages.SWAP_SHORTCUT,
+    //   subTitle: t('SWAP_SHORTCUTS_SUBTITLE'),
     //   screenTitle: screenTitle.BRIDGE_SCREEN,
     // },
-    {
-      index: 2,
-      title: ShortcutsTitle.SWAP,
-      logo: AppImages.SWAP_SHORTCUT,
-      subTitle: t('SWAP_SHORTCUTS_SUBTITLE'),
-      screenTitle: screenTitle.BRIDGE_SCREEN,
-    },
     {
       index: 3,
       title: ShortcutsTitle.SEND,
@@ -279,21 +276,12 @@ export default function ShortcutsModal({ navigationRef }) {
     sellOptionsData[0],
   );
   const [chooseChainModal, setChooseChainModal] = useState<boolean>(false);
-  const [navigationPath, setNavigationPath] = useState<string>('');
   const [selectedChain, setSelectedChain] = useState<Chain>(CHAIN_ETH);
   const [selectedOption, setSelectedOption] = useState<ShortcutsTitle>(
     ShortcutsTitle.RECEIVE,
   );
   const [appState, setAppState] = useState<string>('');
   const [animation, setAnimation] = useState<any>();
-  const [totalHoldings, setTotalHoldings] = useState([]);
-
-  const isDisabled = (index: number) => {
-    if ((index === 0 || index === 6) && isReadOnlyWallet) {
-      return true;
-    }
-    return false;
-  };
 
   const onSelectingShortCutItems = async (item: any) => {
     await analytics().logEvent(`shortcuts_button_${item.title}`);
@@ -311,7 +299,6 @@ export default function ShortcutsModal({ navigationRef }) {
         break;
       case ShortcutsTitle.RECEIVE:
         setChainData(getAvailableChains(hdWallet));
-        setNavigationPath(item.screenTitle);
         setTimeout(() => setChooseChainModal(true), 250);
         break;
       case ShortcutsTitle.FUND_CARD:
@@ -327,16 +314,10 @@ export default function ShortcutsModal({ navigationRef }) {
             });
         break;
       case ShortcutsTitle.BRIDGE:
-        navigationRef.navigate(screenTitle.BRIDGE_SCREEN, {
-          title: t('BRIDGE'),
-          renderPage: 'bridgePage',
-        });
+        navigationRef.navigate(screenTitle.BRIDGE_SKIP_API_SCREEN);
         break;
       case ShortcutsTitle.SWAP:
-        navigationRef.navigate(screenTitle.BRIDGE_SCREEN, {
-          title: t('SWAP_TITLE'),
-          renderPage: 'swapPage',
-        });
+        navigationRef.navigate(screenTitle.BRIDGE_SKIP_API_SCREEN);
         break;
       default:
         item?.navigationProps
@@ -672,17 +653,6 @@ export default function ShortcutsModal({ navigationRef }) {
       setTimeout(() => setBuyModalVisible(true), 1000);
     }
   }, [portfolioState.statePortfolio.buyButtonClicked]);
-
-  useEffect(() => {
-    if (
-      portfolioState.statePortfolio.tokenPortfolio &&
-      portfolioState.statePortfolio.tokenPortfolio.totalHoldings
-    ) {
-      setTotalHoldings(
-        portfolioState.statePortfolio.tokenPortfolio.totalHoldings,
-      );
-    }
-  }, [portfolioState.statePortfolio.tokenPortfolio]);
 
   return (
     <CyDTouchView

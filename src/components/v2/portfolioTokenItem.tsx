@@ -125,24 +125,24 @@ const RenderRightActions = (navigation: any, tokenData: any) => {
         </CyDView>
       )} */}
 
-      {isSwapable && (
+      {(isSwapable || isBridgeable) && (
         <CyDView>
           <CyDTouchView
             className={'flex items-center justify-center mx-[15px]'}
             onPress={() => {
-              navigation.navigate(screenTitle.BRIDGE_SCREEN, {
+              navigation.navigate(screenTitle.BRIDGE_SKIP_API_SCREEN, {
                 fromChainData: tokenData,
-                title: t('SWAP_TITLE'),
-                renderPage: 'swapPage',
+                title: t('BRIDGE_TITLE'),
+                // renderPage: 'swapPage',
               });
             }}>
             <CyDImage
-              source={AppImages.SWAP_SHORTCUT}
+              source={AppImages.BRIDGE_SHORTCUT}
               className={'w-[30px] h-[30px]'}
             />
           </CyDTouchView>
           <CyDText className={'text-center mt-[5px] text-[12px] font-bold'}>
-            {t<string>('SWAP_TITLE')}
+            {t<string>('BRIDGE_TITLE')}
           </CyDText>
         </CyDView>
       )}
@@ -288,7 +288,7 @@ const PortfolioTokenItem = ({
             setSwipeableRefs(index, ref);
           }}>
           <CyDView className='flex flex-row w-full justify-between rounded-r-[20px] py-[17px] pr-[12px] bg-white'>
-            <CyDView className='ml-[10px] max-w-[75%]'>
+            <CyDView className='ml-[10px] max-w-[65%]'>
               <CyDView className={'flex flex-row items-center align-center'}>
                 <CyDText className={'font-extrabold text-[16px]'}>
                   {item.name}

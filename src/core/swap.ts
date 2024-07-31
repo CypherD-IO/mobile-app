@@ -8,7 +8,7 @@ import { _NO_CYPHERD_CREDENTIAL_AVAILABLE_ } from './util';
 import { get } from 'lodash';
 
 // Contract ABI for allowance and approval
-const contractABI = [
+export const allowanceApprovalContractABI = [
   {
     constant: true,
     inputs: [
@@ -126,12 +126,12 @@ export const checkAllowance = async ({
   amount,
   hdWallet,
 }: SwapMetaData) => {
-  const { ethereum } = hdWallet?.state.wallet;
+  const { ethereum } = hdWallet?.state.wallet as any;
   return await new Promise((resolve, reject) => {
     void (async () => {
       try {
         const contract = new web3.eth.Contract(
-          contractABI,
+          allowanceApprovalContractABI as any,
           fromTokenContractAddress,
         );
         const response = await contract.methods
@@ -155,7 +155,7 @@ export const checkAllowance = async ({
             data: resp,
           });
           const gasFeeResponse = await getGasPriceFor(
-            fromToken?.chainDetails,
+            fromToken?.chainDetails as any,
             web3,
           );
           resolve({
