@@ -96,7 +96,7 @@ export enum CardTransactionTypes {
   WITHDRAWAL = 'WITHDRAWAL',
 }
 
-export enum PCCardType {
+export enum CardType {
   PHYSICAL = 'physical',
   VIRTUAL = 'virtual',
 }
@@ -315,20 +315,4 @@ export enum CardReferralStatus {
   KYC_FAILED = 'kyc-failed',
   INVITE_USED = 'invite-used',
   LOADED = 'loaded',
-}
-
-export enum RC_CARD_TYPE {
-  VIRTUAL = 'Virtual',
-  PHYSICAL = 'Physical',
-}
-
-export enum RC_CARD_STATUS {
-  ACTIVE = 'ACTIVE',
-  DELETED = 'DELETED',
-  EXPIRED = 'EXPIRED',
-  FROZEN = 'FROZEN',
-  IN_ACTIVE = 'INACTIVE',
-  BLOCKED = 'BLOCKED',
-  HIDDEN = 'HIDDEN',
-  ACTIVATION_PENDING = 'ACTIVATION_PENDING', // internal type determined by RC_PHYSICAL_CARD_STATUS
 }

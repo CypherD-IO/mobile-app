@@ -66,7 +66,7 @@ export default function CardKYCStatusScreen({ navigation }) {
   const [loading, setLoading] = useState<boolean>(false);
   const [fillIndex, setFillIndex] = useState<number>(1);
   const [error, setError] = useState<boolean>(false);
-  const { hasBothProviders, cardProfileModal } = useCardUtilities();
+  const { cardProfileModal } = useCardUtilities();
   // const provider = 'pc';
   const data = [
     t('APPLICATION_SUBMITTED'),
@@ -85,7 +85,6 @@ export default function CardKYCStatusScreen({ navigation }) {
   const { showModal, hideModal } = useGlobalModalContext();
   const cardProfile: CardProfile = globalContext.globalState.cardProfile;
   const provider = cardProfile.provider ?? CardProviders.REAP_CARD;
-  const twoProviders = hasBothProviders(cardProfile);
   useEffect(() => {
     if (isFocused) {
       latestKycStatus.current = setInterval(() => {
@@ -105,7 +104,7 @@ export default function CardKYCStatusScreen({ navigation }) {
   const refreshProfile = async () => {
     const response = await getWithAuth('/v1/authentication/profile');
     if (!response.isError) {
-      const tempProfile = cardProfileModal(response.data, provider);
+      const tempProfile = cardProfileModal(response.data);
       globalContext.globalDispatch({
         type: GlobalContextType.CARD_PROFILE,
         cardProfile: tempProfile,
@@ -114,19 +113,6 @@ export default function CardKYCStatusScreen({ navigation }) {
         navigation.navigate(screenTitle.DEBIT_CARD_SCREEN);
       }, 500);
     }
-  };
-
-  const onSwitchProviders = (index: number) => {
-    const tempProfile = cardProfile;
-    if (index) {
-      tempProfile.provider = CardProviders.PAYCADDY;
-    } else {
-      tempProfile.provider = CardProviders.REAP_CARD;
-    }
-    globalContext.globalDispatch({
-      type: GlobalContextType.CARD_PROFILE,
-      cardProfile: tempProfile,
-    });
   };
 
   const fillIndexAccordingToKYCStatus = async (applicationStatus: string) => {
@@ -169,7 +155,7 @@ export default function CardKYCStatusScreen({ navigation }) {
     try {
       const response = await getWithAuth('/v1/authentication/profile');
       if (!response.isError) {
-        const tempProfile = cardProfileModal(response.data, provider);
+        const tempProfile = cardProfileModal(response.data);
         const tempProvider = get(tempProfile, 'provider', 'rc');
         const tempApplicationStatus = get(
           tempProfile,

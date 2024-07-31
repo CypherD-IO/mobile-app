@@ -29,12 +29,7 @@ import {
   CyDView,
 } from '../../../styles/tailwindStyles';
 import useAxios from '../../../core/HttpRequest';
-import {
-  CardProviders,
-  PCCardType,
-  RC_CARD_TYPE,
-  CardStatus,
-} from '../../../constants/enum';
+import { CardProviders, CardType, CardStatus } from '../../../constants/enum';
 import { useGlobalModalContext } from '../../../components/v2/GlobalModal';
 import AppImages from '../../../../assets/images/appImages';
 import clsx from 'clsx';
@@ -90,8 +85,6 @@ export default function CardScreen({
     pc: { isPhysicalCardEligible: upgradeToPhysicalAvailable = false } = {},
     physicalCardEligibilityLimit,
   } = cardProfile;
-  const CardType =
-    currentCardProvider === CardProviders.PAYCADDY ? PCCardType : RC_CARD_TYPE;
 
   const { width } = useWindowDimensions();
   const { t } = useTranslation();
@@ -119,9 +112,9 @@ export default function CardScreen({
     return some(userCardDetails?.cards, { status: CardStatus.HIDDEN });
   };
 
-  // physical card upgrade only shown for reap cards
+  // physical card upgrade only shown for paycaddy pc cards
   const isUpgradeToPhysicalCardStatusShown =
-    currentCardProvider === CardProviders.REAP_CARD &&
+    currentCardProvider === CardProviders.PAYCADDY &&
     lifetimeLoadUSD < physicalCardEligibilityLimit &&
     !cardProfile[currentCardProvider]?.cards
       ?.map(card => card.type)
@@ -312,8 +305,6 @@ const RenderCardActions = ({
     pc: { isPhysicalCardEligible: upgradeToPhysicalAvailable = false } = {},
     physicalCardEligibilityLimit,
   } = cardProfile;
-  const CardType =
-    cardProvider === CardProviders.PAYCADDY ? PCCardType : RC_CARD_TYPE;
   const physicalCardEligibilityProgress =
     parseFloat(
       ((lifetimeLoadUSD / physicalCardEligibilityLimit) * 100).toFixed(2),
@@ -321,8 +312,9 @@ const RenderCardActions = ({
       ? '100'
       : ((lifetimeLoadUSD / physicalCardEligibilityLimit) * 100).toFixed(2);
 
+  // physical card upgrade only shown for paycaddy pc cards
   const isUpgradeToPhysicalCardStatusShown =
-    cardProvider === CardProviders.REAP_CARD &&
+    cardProvider === CardProviders.PAYCADDY &&
     lifetimeLoadUSD < physicalCardEligibilityLimit &&
     !cardProfile[cardProvider]?.cards
       ?.map(card => card.type)

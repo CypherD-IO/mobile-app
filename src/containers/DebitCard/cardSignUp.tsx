@@ -107,7 +107,7 @@ export default function CardSignupScreen({ navigation, route }) {
       currency: 'USD',
     });
   const cardProfile: CardProfile = globalContext.globalState.cardProfile;
-  const { getWalletProfile } = useCardUtilities();
+  const { getWalletProfile, checkIsRCEnabled } = useCardUtilities();
 
   const selectedCountryStates = useMemo(() => {
     return stateMaster.filter(
@@ -348,7 +348,10 @@ export default function CardSignupScreen({ navigation, route }) {
       ...(inviteCode ? { inviteCode } : {}),
     };
     try {
-      const provider = cardProfile.provider ?? CardProviders.REAP_CARD;
+      const isRcEnabled = await checkIsRCEnabled();
+      const provider = isRcEnabled
+        ? CardProviders.REAP_CARD
+        : CardProviders.PAYCADDY;
       const response = await postWithAuth(
         `/v1/cards/${provider}/application`,
         payload,

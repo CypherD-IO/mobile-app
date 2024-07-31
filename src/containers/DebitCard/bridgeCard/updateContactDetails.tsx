@@ -178,7 +178,7 @@ export default function UpdateCardContactDetails({
 
   const refreshProfile = async () => {
     const response = await getWithAuth('/v1/authentication/profile');
-    const tempProfile = cardProfileModal(response.data, provider);
+    const tempProfile = cardProfileModal(response.data);
     if (!response.isError) {
       globalContext.globalDispatch({
         type: GlobalContextType.CARD_PROFILE,
