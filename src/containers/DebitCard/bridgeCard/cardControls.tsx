@@ -9,7 +9,7 @@ import AppImages from '../../../../assets/images/appImages';
 
 export default function CardControls() {
   return (
-    <CyDSafeAreaView className={'h-full bg-white pt-[10px]'}>
+    <CyDSafeAreaView className={'h-full bg-cardBgFrom pt-[10px]'}>
       <CyDView className='mx-[16px]'>
         <CyDText className='text-xs text-n200 font-bold'>
           Spend Category
