@@ -515,10 +515,10 @@ export default function TokenSelection({
           </CyDView>
 
           <CyDView className='flex flex-row justify-between items-center'>
-            <CyDView className='flex flex-col items-start'>
+            <CyDView className='flex flex-col items-start w-[60%]'>
               <CyDTextInput
                 className={clsx(
-                  'font-semibold text-center text-primaryTextColor font-nunito text-[20px]',
+                  'font-semibold text-start text-primaryTextColor font-nunito text-[20px] w-[100%]',
                 )}
                 keyboardType='numeric'
                 onChangeText={text => {
@@ -536,10 +536,11 @@ export default function TokenSelection({
               </CyDText>
             </CyDView>
             <CyDTouchView
+              className='w-[40%]'
               onPress={() => {
                 setFromTokenModalVisible(true);
               }}>
-              <CyDView className='flex flex-row items-center'>
+              <CyDView className='flex flex-row items-center justify-end'>
                 <CyDView className={' relative'}>
                   <CyDView className={'flex flex-row items-center'}>
                     {endsWith(selectedFromChain?.logo_uri, '.svg') ? (
