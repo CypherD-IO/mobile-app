@@ -103,6 +103,8 @@ import CardQuote from '../containers/DebitCard/bridgeCard/quote';
 import AutoLoad from '../containers/DebitCard/bridgeCard/autoLoad';
 import PreviewAutoLoad from '../containers/DebitCard/bridgeCard/previewAutoLoad';
 import BridgeSkipApi from '../containers/Bridge.Skip/bridge.skip';
+import CardControlsMenu from '../containers/DebitCard/bridgeCard/cardControlsMenu';
+import CardControlsSettings from '../containers/DebitCard/bridgeCard/cardControlsSettings';
 
 const { DynamicImage, DynamicButton } = require('../styles');
 
@@ -808,6 +810,51 @@ export function DebitCardStackScreen({ navigation }) {
         name={screenTitle.DEBIT_CARD_SCREEN}
         component={DebitCardScreen}
         options={{ headerShown: false }}
+      />
+
+      <FundCardStack.Screen
+        name={screenTitle.CARD_CONTROLS_MENU}
+        component={CardControlsMenu}
+        options={({ navigation, route }) => ({
+          headerTransparent: false,
+          headerShadowVisible: false,
+          title: 'Card Controls',
+          headerTitleAlign: 'left',
+          headerTitleStyle: portfolioStackScreenHeaderTitleStyles,
+          headerTintColor: Colors.primaryTextColor,
+          headerBackTitleVisible: false,
+          headerLeft: props => defaultHeaderLeft(navigation),
+        })}
+      />
+
+      <FundCardStack.Screen
+        name={screenTitle.DOMESTIC_CARD_CONTROLS}
+        component={CardControlsSettings}
+        options={({ navigation, route }) => ({
+          headerTransparent: false,
+          headerShadowVisible: false,
+          title: 'Domestic Transactions',
+          headerTitleAlign: 'left',
+          headerTitleStyle: portfolioStackScreenHeaderTitleStyles,
+          headerTintColor: Colors.primaryTextColor,
+          headerBackTitleVisible: false,
+          headerLeft: props => defaultHeaderLeft(navigation),
+        })}
+      />
+
+      <FundCardStack.Screen
+        name={screenTitle.INTERNATIONAL_CARD_CONTROLS}
+        component={CardControlsSettings}
+        options={({ navigation, route }) => ({
+          headerTransparent: false,
+          headerShadowVisible: false,
+          title: 'International Transactions',
+          headerTitleAlign: 'left',
+          headerTitleStyle: portfolioStackScreenHeaderTitleStyles,
+          headerTintColor: Colors.primaryTextColor,
+          headerBackTitleVisible: false,
+          headerLeft: props => defaultHeaderLeft(navigation),
+        })}
       />
 
       <FundCardStack.Screen

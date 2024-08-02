@@ -96,6 +96,11 @@ export enum CardTransactionTypes {
   WITHDRAWAL = 'WITHDRAWAL',
 }
 
+export enum CardControlTypes {
+  DOMESTIC = 'dom',
+  INTERNATIONAL = 'intl',
+}
+
 export enum CardType {
   PHYSICAL = 'physical',
   VIRTUAL = 'virtual',
@@ -167,6 +172,7 @@ export enum ButtonType {
   GREY = 'grey',
   RED = 'red',
   DARK = 'dark',
+  GREY_FILL = 'greyFill',
 }
 
 export enum ImagePosition {
@@ -315,4 +321,13 @@ export enum CardReferralStatus {
   KYC_FAILED = 'kyc-failed',
   INVITE_USED = 'invite-used',
   LOADED = 'loaded',
+}
+
+export enum CARD_LIMIT_TYPE {
+  ALLOWED_COUNTRIES = 'cLs', // allowed country list / default allow all
+  CARD_PIN = 'pos',
+  CONTACTLESS = 'tap',
+  ATM = 'atm',
+  ONLINE = 'ecom',
+  MOBILE_WALLET = 'wal',
 }

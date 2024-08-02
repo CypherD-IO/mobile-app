@@ -1087,6 +1087,10 @@ const resources = {
       BRIDGE_FAILURE: 'Bridging Failed',
       BRIDGE_SUCCESS_DESCRIPTION: 'Your tokens have been successfully bridged',
       BRIDGE_ERROR_DESCRIPTION: 'Bridge Error. Please try again later',
+      ONLINE_TRANSACTIONS: 'Online Transactions',
+      CONTACTLESS_TRANSACTIONS: 'Contactless Transactions',
+      CARD_PIN_TRANSACTIONS: 'Card and PIN Transactions',
+      MOBILE_WALLETS: 'Mobile Wallets',
       BRIDGE_TITLE: 'Bridge',
       BIRDGE_SWAP_AVAILABLE:
         'Our application offers seamless support for both swap and bridge operations across multiple chains',

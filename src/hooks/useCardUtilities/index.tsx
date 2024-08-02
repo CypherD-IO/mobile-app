@@ -26,14 +26,10 @@ export default function useCardUtilities() {
 
   // returns true if only pc object is there because we need to display apply card for rc
   const hasBothProviders = (profile: CardProfile) => {
-    if (
-      get(profile, [CardProviders.PAYCADDY, 'isRcUpgradable']) ||
-      (has(profile, CardProviders.PAYCADDY) &&
-        has(profile, CardProviders.REAP_CARD))
-    ) {
-      return true;
-    }
-    return false;
+    return (
+      has(profile, CardProviders.PAYCADDY) &&
+      has(profile, CardProviders.REAP_CARD)
+    );
   };
 
   const cardProfileModal = (profile: CardProfile) => {

@@ -29,12 +29,17 @@ import {
   CyDView,
 } from '../../../styles/tailwindStyles';
 import useAxios from '../../../core/HttpRequest';
-import { CardProviders, CardType, CardStatus } from '../../../constants/enum';
+import {
+  CardProviders,
+  CardType,
+  CardStatus,
+  GlobalContextType,
+} from '../../../constants/enum';
 import { useGlobalModalContext } from '../../../components/v2/GlobalModal';
 import AppImages from '../../../../assets/images/appImages';
 import clsx from 'clsx';
 import { Card } from '../../../models/card.model';
-import { get, isEmpty, isUndefined, orderBy, some } from 'lodash';
+import { get, has, isEmpty, isUndefined, orderBy, some } from 'lodash';
 import { UserCardDetails } from '../../../models/userCardDetails.interface';
 import { CardProfile } from '../../../models/cardProfile.model';
 import { useIsFocused } from '@react-navigation/native';
@@ -125,6 +130,11 @@ export default function CardScreen({
     setCurrentCardIndex(index);
   };
 
+  // rc card upgrade shown for pc card profiles with isRcUpgradable true
+  const isRcUpgradableCardShown =
+    !has(cardProfile, CardProviders.REAP_CARD) &&
+    get(cardProfile, [CardProviders.PAYCADDY, 'isRcUpgradable']);
+
   useEffect(() => {
     if (isFocused && !isEmpty(currentCardProvider)) {
       const cardConfig = get(cardProfile, currentCardProvider);
@@ -185,6 +195,18 @@ export default function CardScreen({
             </CyDText>
           </CyDView>
         )}
+        {card.status === 'rcUpgradable' && (
+          <CyDView className='flex flex-row items-center bg-cardBg px-[12px] py-[6px] rounded-[6px]'>
+            <CyDImage
+              source={AppImages.UPGRADE_TO_PHYSICAL_CARD_ARROW}
+              className='h-[24px] w-[24px]'
+              resizeMode='contain'
+            />
+            <CyDText className='font-extrabold mt-[1px] ml-[2px]'>
+              {'Upgrade to a new card'}
+            </CyDText>
+          </CyDView>
+        )}
       </CyDImageBackground>
     );
   };
@@ -208,6 +230,16 @@ export default function CardScreen({
         network: 'pc',
         status: 'upgradeAvailable',
         type: CardType.PHYSICAL,
+      });
+    }
+    if (isRcUpgradableCardShown) {
+      actualCards.unshift({
+        cardId: '',
+        bin: '',
+        last4: '',
+        network: 'pc',
+        status: 'rcUpgradable',
+        type: CardType.VIRTUAL,
       });
     }
     return actualCards;
@@ -305,6 +337,7 @@ const RenderCardActions = ({
     pc: { isPhysicalCardEligible: upgradeToPhysicalAvailable = false } = {},
     physicalCardEligibilityLimit,
   } = cardProfile;
+  const globalContext = useContext<any>(GlobalContext);
   const physicalCardEligibilityProgress =
     parseFloat(
       ((lifetimeLoadUSD / physicalCardEligibilityLimit) * 100).toFixed(2),
@@ -319,6 +352,11 @@ const RenderCardActions = ({
     !cardProfile[cardProvider]?.cards
       ?.map(card => card.type)
       .includes(CardType.PHYSICAL);
+
+  // rc card upgrade shown for pc card profiles with isRcUpgradable true
+  const isRcUpgradableCardShown =
+    !has(cardProfile, CardProviders.REAP_CARD) &&
+    get(cardProfile, [CardProviders.PAYCADDY, 'isRcUpgradable']);
 
   useEffect(() => {
     if (isFocused && isFetchingCardDetails) {
@@ -646,6 +684,29 @@ const RenderCardActions = ({
           style='px-[28px]'
           onPress={() => {
             void onPressActivateCard(card);
+          }}
+        />
+      </CyDView>
+    );
+  } else if (isRcUpgradableCardShown && !card.cardId) {
+    return (
+      <CyDView className='flex flex-col justify-center items-center mx-[20px] mt-[-32px]'>
+        <CyDView className='flex lfex-col justify-center items-center'>
+          <CyDText className='text-[16px] font-semibold text-center my-[12px]'>
+            Now get access to the much awaited {'\n'} Apple and Google pay
+          </CyDText>
+        </CyDView>
+        <Button
+          title='UPGRADE'
+          style='px-[88px]'
+          onPress={() => {
+            const tempProfile = cardProfile;
+            tempProfile.provider = CardProviders.REAP_CARD;
+            globalContext.globalDispatch({
+              type: GlobalContextType.CARD_PROFILE,
+              cardProfile: tempProfile,
+            });
+            navigation.navigate(screenTitle.CARD_SIGNUP_SCREEN);
           }}
         />
       </CyDView>
