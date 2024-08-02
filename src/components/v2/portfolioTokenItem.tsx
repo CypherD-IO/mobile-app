@@ -133,7 +133,6 @@ const RenderRightActions = (navigation: any, tokenData: any) => {
               navigation.navigate(screenTitle.BRIDGE_SKIP_API_SCREEN, {
                 fromChainData: tokenData,
                 title: t('BRIDGE_TITLE'),
-                // renderPage: 'swapPage',
               });
             }}>
             <CyDImage
