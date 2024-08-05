@@ -166,6 +166,7 @@ export default function CardControlsSettings({ route, navigation }) {
     const response = await getWithAuth(
       `/v1/cards/${currentCardProvider}/card/${card.cardId}/limits`,
     );
+
     if (!response.isError) {
       setLimits(response.data);
     }

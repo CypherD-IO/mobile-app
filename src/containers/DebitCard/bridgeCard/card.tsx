@@ -810,7 +810,7 @@ const RenderCardActions = ({
             )}
           </CyDView>
           <CyDView className='mt-[4px]'>
-            <CyDText className='font-semibold'>{'Card Details'}</CyDText>
+            <CyDText className='font-semibold'>{'Reveal Card'}</CyDText>
           </CyDView>
         </CyDTouchView>
         <CyDTouchView

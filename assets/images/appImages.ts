@@ -402,6 +402,9 @@ const CARD_CONTROLS = {
 const WHITE_CHECK_MARK = {
   uri: `${S3_BUCKET_URL_ICONS}/whiteCheckMark.png`,
 };
+const GOLD_LINE_MEMBER = {
+  uri: `${S3_BUCKET_URL_ICONS}/goldLineMember.png`,
+};
 
 const AppImages = {
   CYPHER_TELEGRAM_BOT_LOGO,
@@ -767,5 +770,6 @@ const AppImages = {
   THREE_D_SECURE,
   CARD_CONTROLS,
   WHITE_CHECK_MARK,
+  GOLD_LINE_MEMBER,
 };
 export default AppImages;

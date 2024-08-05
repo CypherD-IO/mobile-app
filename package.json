@@ -171,6 +171,7 @@
     "react-native-share": "^7.9.1",
     "react-native-size-matters": "^0.4.0",
     "react-native-svg": "^15.3.0",
+    "react-native-svg-charts": "^5.4.0",
     "react-native-tab-view": "^3.3.0",
     "react-native-tcp-socket": "^6.0.3",
     "react-native-toast-message": "^2.1.1",

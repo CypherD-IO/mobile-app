@@ -84,7 +84,7 @@ export default function CardOptionsModal({
       ? [
           {
             title: 'Card Controls',
-            description: 'Link another wallet to card',
+            description: "Edit your card's limit and behaviour",
             image: AppImages.CARD_CONTROLS,
             action: () => {
               navigation.navigate(screenTitle.CARD_CONTROLS_MENU, {
