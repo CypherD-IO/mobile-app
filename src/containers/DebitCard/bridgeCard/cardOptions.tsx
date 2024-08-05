@@ -55,9 +55,13 @@ export default function CardOptionsModal({
       setIs3DSecureSet(!current3DSecureValue);
       showModal('state', {
         type: 'success',
-        title: '3D Secure Toggle Successfull',
-        description: !current3DSecureValue
+        title: !current3DSecureValue
           ? '3D Secure has been setup successfully'
+          : '3D Secure Toggle successfull',
+        description: !current3DSecureValue
+          ? get(cardProfile, ['cardNotification', 'isTelegramAllowed'], false)
+            ? "You'll receive 3Ds notifications through Telegram & Email."
+            : "You'll receive 3Ds notifications through Cypher Wallet App notifications & Email"
           : '3D Secure has been turned off successfully',
         onSuccess: hideModal,
         onFailure: hideModal,
@@ -67,10 +71,12 @@ export default function CardOptionsModal({
         type: 'error',
         title: t('3D Secure Toggle Successfull'),
         description:
-          response.error.errors[0].message ?? 'Could not toggle 3D secure. Please contact support.',
+          response.error.errors[0].message ??
+          'Could not toggle 3D secure. Please contact support.',
         onSuccess: hideModal,
         onFailure: hideModal,
       });
+    }
   };
 
   const cardOptions = [
