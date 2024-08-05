@@ -8,7 +8,7 @@ export const isSolanaAddress = (address: string): boolean => {
   }
 
   try {
-    const resp = PublicKey.isOnCurve(new PublicKey(address).toBuffer());
+    PublicKey.isOnCurve(new PublicKey(address).toBuffer());
     return true;
   } catch (error) {
     return false;

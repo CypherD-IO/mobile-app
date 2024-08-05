@@ -16,7 +16,12 @@ import { capitalize, endsWith, get, isString } from 'lodash';
 import { SvgUri } from 'react-native-svg';
 import AppImages from '../../../assets/images/appImages';
 import CyDModalLayout from '../../components/v2/modal';
-import { Animated, StyleSheet, TouchableOpacity } from 'react-native';
+import {
+  Animated,
+  Dimensions,
+  StyleSheet,
+  TouchableOpacity,
+} from 'react-native';
 import { Colors } from '../../constants/theme';
 import Fuse from 'fuse.js';
 import Loading from '../../components/v2/loading';
@@ -249,9 +254,16 @@ function ChooseTokenModal({
     );
   };
   const renderContent = () => {
+    const { width, height } = Dimensions.get('window');
     return (
       <CyDScrollView className='h-[240px]'>
-        <CyDView className='flex flex-row py-[24px] px-[6px] flex-wrap gap-[12px] items-center justify-between  '>
+        <CyDView
+          className={clsx(
+            'flex flex-wrap flex-row justify-start items-start py-[24px] px-[16px] gap-[14px]',
+            {
+              'px-[10px] gap-[20px]': width >= 428 && height >= 926,
+            },
+          )}>
           {chainData.map((item, index) => {
             if (endsWith(item?.logo_uri, '.svg'))
               return (
@@ -503,10 +515,10 @@ export default function TokenSelection({
           </CyDView>
 
           <CyDView className='flex flex-row justify-between items-center'>
-            <CyDView className='flex flex-col items-start'>
+            <CyDView className='flex flex-col items-start w-[60%]'>
               <CyDTextInput
                 className={clsx(
-                  'font-semibold text-center text-primaryTextColor font-nunito text-[20px]',
+                  'font-semibold text-start text-primaryTextColor font-nunito text-[20px] w-[100%]',
                 )}
                 keyboardType='numeric'
                 onChangeText={text => {
@@ -524,10 +536,11 @@ export default function TokenSelection({
               </CyDText>
             </CyDView>
             <CyDTouchView
+              className='w-[40%]'
               onPress={() => {
                 setFromTokenModalVisible(true);
               }}>
-              <CyDView className='flex flex-row items-center'>
+              <CyDView className='flex flex-row items-center justify-end'>
                 <CyDView className={' relative'}>
                   <CyDView className={'flex flex-row items-center'}>
                     {endsWith(selectedFromChain?.logo_uri, '.svg') ? (

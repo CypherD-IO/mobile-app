@@ -1086,6 +1086,7 @@ const resources = {
       BRIDGE_FAILURE: 'Bridging Failed',
       BRIDGE_SUCCESS_DESCRIPTION: 'Your tokens have been successfully bridged',
       BRIDGE_ERROR_DESCRIPTION: 'Bridge Error. Please try again later',
+      BRIDGE_TITLE: 'Bridge',
     },
   },
 };
