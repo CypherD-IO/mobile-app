@@ -17,6 +17,7 @@ import CyDModalLayout from '../../../components/v2/modal';
 import { Card } from '../../../models/card.model';
 import useAxios from '../../../core/HttpRequest';
 import { get } from 'lodash';
+import { useGlobalModalContext } from '../../../components/v2/GlobalModal';
 
 export default function CardOptionsModal({
   isModalVisible,
@@ -34,6 +35,7 @@ export default function CardOptionsModal({
   const globalContext = useContext<any>(GlobalContext);
   const cardProfile: CardProfile = globalContext.globalState.cardProfile;
   const { postWithAuth } = useAxios();
+  const { showModal, hideModal } = useGlobalModalContext();
   const isPhoneVerified =
     cardProvider === CardProviders.REAP_CARD ||
     (cardProfile.pc?.phoneVerified ?? false);
@@ -49,8 +51,26 @@ export default function CardOptionsModal({
     );
 
     if (!response.isError) {
-      setIs3DSecureSet(!is3DSecureSet);
-    }
+      const current3DSecureValue = is3DSecureSet;
+      setIs3DSecureSet(!current3DSecureValue);
+      showModal('state', {
+        type: 'success',
+        title: '3D Secure Toggle Successfull',
+        description: !current3DSecureValue
+          ? '3D Secure has been setup successfully'
+          : '3D Secure has been turned off successfully',
+        onSuccess: hideModal,
+        onFailure: hideModal,
+      });
+    } else {
+      showModal('state', {
+        type: 'error',
+        title: t('3D Secure Toggle Successfull'),
+        description:
+          response.error.errors[0].message ?? 'Could not toggle 3D secure. Please contact support.',
+        onSuccess: hideModal,
+        onFailure: hideModal,
+      });
   };
 
   const cardOptions = [
