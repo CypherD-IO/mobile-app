@@ -928,6 +928,7 @@ export function isValidPrivateKey(privateKey: string): boolean {
 export function getAvailableChains(hdWallet: HdWalletContextDef): Chain[] {
   const {
     ethereum,
+    solana,
     cosmos,
     osmosis,
     juno,
@@ -936,11 +937,14 @@ export function getAvailableChains(hdWallet: HdWalletContextDef): Chain[] {
     coreum,
     // injective,
     kujira,
-    solana,
   } = hdWallet.state.wallet;
   let availableChains: Chain[] = [];
   if (get(ethereum.wallets, ethereum.currentIndex)?.address) {
     availableChains = [CHAIN_COLLECTION, ...EVM_CHAINS, CHAIN_EVMOS];
+  }
+  // add Solana to the 2nd postion of the array to show it after Ethereum
+  if (get(solana.wallets, solana.currentIndex)?.address) {
+    availableChains.splice(2, 0, CHAIN_SOLANA);
   }
   if (get(cosmos.wallets, cosmos.currentIndex)?.address) {
     availableChains.push(CHAIN_COSMOS);
@@ -965,9 +969,6 @@ export function getAvailableChains(hdWallet: HdWalletContextDef): Chain[] {
   // }
   if (get(kujira.wallets, kujira.currentIndex)?.address) {
     availableChains.push(CHAIN_KUJIRA);
-  }
-  if (get(solana.wallets, solana.currentIndex)?.address) {
-    availableChains.push(CHAIN_SOLANA);
   }
 
   return availableChains;
