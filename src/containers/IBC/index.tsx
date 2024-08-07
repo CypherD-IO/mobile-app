@@ -1,6 +1,7 @@
 import React, { useContext, useEffect, useRef, useState } from 'react';
 import {
   CyDImage,
+  CyDKeyboardAwareScrollView,
   CyDScrollView,
   CyDText,
   CyDTextInput,
@@ -411,34 +412,384 @@ export default function IBC({
 
   return (
     <CyDScrollView className={'w-full h-full bg-white'}>
-      <ChooseChainModal
-        setModalVisible={setShowChain}
-        isModalVisible={showChain}
-        data={chainData}
-        title={'Choose Chain'}
-        selectedItem={chain?.name}
-        onPress={({ item }: { item: Chain }) => {
-          setChain(item);
-        }}
-        type={'chain'}
-      />
+      <CyDKeyboardAwareScrollView>
+        <ChooseChainModal
+          setModalVisible={setShowChain}
+          isModalVisible={showChain}
+          data={chainData}
+          title={'Choose Chain'}
+          selectedItem={chain?.name}
+          onPress={({ item }: { item: Chain }) => {
+            setChain(item);
+          }}
+          type={'chain'}
+        />
 
-      <SignatureModal
-        isModalVisible={signModalVisible}
-        setModalVisible={setSignModalVisible}
-        onCancel={() => {
-          setSignModalVisible(false);
-        }}>
-        <CyDView className={'px-[40px]'}>
-          <CyDText
-            className={
-              'text-center font-nunito text-[24px] font-bold   mt-[20px]'
-            }>
-            {'Transfer tokens '}
-          </CyDText>
+        <SignatureModal
+          isModalVisible={signModalVisible}
+          setModalVisible={setSignModalVisible}
+          onCancel={() => {
+            setSignModalVisible(false);
+          }}>
+          <CyDView className={'px-[40px]'}>
+            <CyDText
+              className={
+                'text-center font-nunito text-[24px] font-bold   mt-[20px]'
+              }>
+              {'Transfer tokens '}
+            </CyDText>
+            <CyDView
+              className={
+                'flex flex-row justify-around my-[20px] bg-[#F7F8FE] rounded-[20px] px-[15px] py-[20px] '
+              }>
+              <CyDView className={'flex items-center justify-center'}>
+                <CyDImage
+                  source={{ uri: tokenData.logoUrl }}
+                  className={'w-[44px] h-[44px]'}
+                />
+                <CyDText
+                  className={
+                    'my-[6px] mx-[2px] text-black text-[14px] font-semibold flex flex-row justify-center font-nunito'
+                  }>
+                  {tokenData.name}
+                </CyDText>
+                <CyDView
+                  className={
+                    'bg-white rounded-[20px] flex flex-row items-center p-[4px]'
+                  }>
+                  <CyDImage
+                    source={tokenData.chainDetails.logo_url}
+                    className={'w-[14px] h-[14px]'}
+                  />
+                  <CyDText
+                    className={
+                      'ml-[6px] font-nunito font-normal text-black  text-[12px]'
+                    }>
+                    {tokenData.chainDetails.name}
+                  </CyDText>
+                </CyDView>
+              </CyDView>
+
+              <CyDView className={'flex justify-center'}>
+                <CyDImage source={AppImages.RIGHT_ARROW_LONG} />
+              </CyDView>
+
+              <CyDView className={'flex items-center justify-center '}>
+                <CyDImage
+                  source={{ uri: tokenData.logoUrl }}
+                  className={'w-[44px] h-[44px]'}
+                />
+                <CyDText
+                  className={
+                    'my-[6px] mx-[2px] text-black text-[14px] font-semibold flex flex-row justify-center font-nunito'
+                  }>
+                  {tokenData.name}
+                </CyDText>
+                <CyDView
+                  className={
+                    'bg-white rounded-[20px] flex flex-row items-center p-[4px]'
+                  }>
+                  <CyDImage
+                    source={chain.logo_url}
+                    className={'w-[14px] h-[14px]'}
+                  />
+                  <CyDText
+                    className={
+                      'ml-[6px] font-nunito text-black font-normal text-[12px]'
+                    }>
+                    {chain.name}
+                  </CyDText>
+                </CyDView>
+              </CyDView>
+            </CyDView>
+
+            <CyDView className={'flex flex-row justify-between mb-[14px]'}>
+              <CyDText
+                className={
+                  'font-[#434343] font-nunito font-[16px] text-medium'
+                }>
+                {t('TO_ADDRESS')}
+              </CyDText>
+              <CyDView className={'mr-[6%] flex flex-col items-end'}>
+                <CyDText
+                  className={
+                    'font-nunito font-[16px] text-black font-bold underline'
+                  }>
+                  {receiverAddress.substring(0, 8) +
+                    '...' +
+                    receiverAddress.substring(receiverAddress.length - 8)}
+                </CyDText>
+              </CyDView>
+            </CyDView>
+
+            <CyDView className={'flex flex-row justify-between mb-[14px]'}>
+              <CyDText
+                className={
+                  'font-[#434343] font-nunito font-[16px] text-medium'
+                }>
+                {t('SENT_AMOUNT')}
+              </CyDText>
+              <CyDView className={'mr-[6%] flex flex-col items-end'}>
+                <CyDText
+                  className={'font-nunito font-[16px] text-black font-bold'}>
+                  {`${parseFloat(amount).toFixed(3)} ${tokenData.name}`}
+                </CyDText>
+                <CyDText
+                  className={
+                    'font-nunito font-[12px] text-[#929292] font-bold'
+                  }>
+                  {(tokenData.price * parseFloat(amount)).toFixed(3) + ' USD'}
+                </CyDText>
+              </CyDView>
+            </CyDView>
+
+            <CyDView className={'flex flex-row justify-between mb-[14px]'}>
+              <CyDText
+                className={
+                  'font-[#434343] font-nunito font-[16px] text-medium'
+                }>
+                {t('TOTAL_GAS')}
+              </CyDText>
+              <CyDView className={'mr-[6%] flex flex-col items-end'}>
+                <CyDText
+                  className={'font-nunito font-[16px] text-black font-bold'}>
+                  {String(formatAmount(Number(gasFee))) +
+                    ' ' +
+                    String(nativeToken?.symbol)}
+                </CyDText>
+                <CyDText
+                  className={
+                    'font-nunito font-[12px] text-[#929292] font-bold'
+                  }>
+                  {String(
+                    formatAmount(Number(nativeToken.price) * Number(gasFee)),
+                  ) + ' USD'}
+                </CyDText>
+              </CyDView>
+            </CyDView>
+          </CyDView>
+
           <CyDView
             className={
-              'flex flex-row justify-around my-[20px] bg-[#F7F8FE] rounded-[20px] px-[15px] py-[20px] '
+              'flex flex-row justify-between items-center px-[20px] pb-[42px]'
+            }>
+            <Button
+              title={t<string>('CANCEL')}
+              titleStyle='text-[14px]'
+              disabled={loading}
+              type={ButtonType.SECONDARY}
+              onPress={() => {
+                setSignModalVisible(false);
+              }}
+              style={'h-[60px] w-[166px] mx-[6px]'}
+            />
+            <Button
+              title={'IBC'}
+              titleStyle='text-[14px]'
+              loading={loading}
+              onPress={() => {
+                void ibcTransfer('txn');
+              }}
+              isPrivateKeyDependent={true}
+              style={'h-[60px] w-[166px] mx-[6px]'}
+            />
+          </CyDView>
+        </SignatureModal>
+
+        {!showMerged && (
+          <CyDView>
+            <CyDView
+              className={
+                'bg-[#F7F8FE] mx-[20px] border-[1px] border-[#EBEBEB] rounded-[16px] mt-[16px]'
+              }>
+              <CyDView className={'h-[60px] flex flex-row w-full'}>
+                <CyDView
+                  className={
+                    'w-3/12 border-r-[1px] border-[#EBEBEB] bg-white px-[18px] rounded-l-[16px] flex items-center justify-center'
+                  }>
+                  <CyDText
+                    className={'text-[#434343] text-[16px] font-extrabold'}>
+                    {'From'}
+                  </CyDText>
+                  <CyDText
+                    className={'text-[#434343] text-[16px] font-extrabold'}>
+                    {'Chain'}
+                  </CyDText>
+                </CyDView>
+
+                <CyDView
+                  className={
+                    'flex flex-row items-center justify-between w-9/12 p-[18px]'
+                  }>
+                  <CyDView className={'flex flex-row items-center'}>
+                    <CyDImage
+                      source={tokenData.chainDetails.logo_url}
+                      className={'w-[30px] h-[30px]'}
+                    />
+                    <CyDText
+                      className={
+                        'text-center text-black font-nunito text-[16px] ml-[20px]'
+                      }>
+                      {tokenData.chainDetails.name}
+                    </CyDText>
+                  </CyDView>
+                </CyDView>
+              </CyDView>
+            </CyDView>
+
+            <CyDView
+              className={
+                'bg-[#F7F8FE] mx-[20px] border-[1px] border-[#EBEBEB] rounded-[16px] mt-[16px]'
+              }>
+              <CyDView className={'h-[60px] flex flex-row w-full'}>
+                <CyDView
+                  className={
+                    'w-3/12 border-r-[1px] border-[#EBEBEB] bg-white px-[18px] rounded-l-[16px] flex items-center justify-center'
+                  }>
+                  <CyDText
+                    className={'text-[#434343] text-[16px] font-extrabold'}>
+                    {'From'}
+                  </CyDText>
+                  <CyDText
+                    className={'text-[#434343] text-[16px] font-extrabold'}>
+                    {'Token'}
+                  </CyDText>
+                </CyDView>
+
+                <CyDView
+                  className={
+                    'flex flex-row items-center justify-between w-9/12 p-[18px]'
+                  }>
+                  <CyDView className={'flex flex-row items-center'}>
+                    <CyDImage
+                      source={{ uri: tokenData.logoUrl }}
+                      className={'w-[30px] h-[30px]'}
+                    />
+                    <CyDText
+                      className={
+                        'text-center text-black font-nunito text-[16px] ml-[20px]'
+                      }>
+                      {tokenData.name}
+                    </CyDText>
+                  </CyDView>
+                </CyDView>
+              </CyDView>
+            </CyDView>
+
+            <CyDTouchView
+              className={
+                'bg-[#F7F8FE] mx-[20px] my-[16px] border-[1px] border-[#EBEBEB] rounded-[16px]'
+              }
+              onPress={() => setShowChain(true)}>
+              <CyDView className={'h-[60px] flex flex-row w-full'}>
+                <CyDView
+                  className={
+                    'w-3/12 border-r-[1px] border-[#EBEBEB] bg-white px-[18px] rounded-l-[16px] flex items-center justify-center'
+                  }>
+                  <CyDText
+                    className={'text-[#434343] text-[16px] font-extrabold'}>
+                    {'To'}
+                  </CyDText>
+                  <CyDText
+                    className={'text-[#434343] text-[16px] font-extrabold'}>
+                    {'Chain'}
+                  </CyDText>
+                </CyDView>
+
+                <CyDView
+                  className={
+                    'flex flex-row items-center justify-between w-9/12 p-[18px]'
+                  }>
+                  <CyDView className={'flex flex-row items-center'}>
+                    <CyDImage
+                      source={chain?.logo_url}
+                      className={'w-[30px] h-[30px]'}
+                    />
+                    <CyDText
+                      className={
+                        'text-center text-black font-nunito text-[16px] ml-[8px] ml-[20px]'
+                      }>
+                      {chain?.name}
+                    </CyDText>
+                  </CyDView>
+                  <CyDImage source={AppImages.DOWN_ARROW} />
+                </CyDView>
+              </CyDView>
+            </CyDTouchView>
+
+            <CyDView
+              className={
+                'bg-[#F7F8FE] mx-[20px] border-[1px] border-[#EBEBEB] rounded-[16px] pl-[16px] pr-[10px] py-[8px] h-[60px] flex flex-row justify-center items-center'
+              }>
+              <CyDTextInput
+                className={clsx(
+                  'font-medium text-left text-black font-nunito text-[16px] w-[90%] mr-[10px]',
+                )}
+                onChangeText={text => {
+                  setReceiverAddress(text);
+                }}
+                placeholder={'Receiver Address'}
+                placeholderTextColor={'#929292'}
+                value={receiverAddress}
+                autoFocus={false}
+              />
+              <CyDTouchView
+                className={''}
+                onPress={() => {
+                  setReceiverAddress('');
+                }}>
+                <CyDImage source={AppImages.CLOSE_CIRCLE} />
+              </CyDTouchView>
+            </CyDView>
+
+            <CyDTouchView
+              className={
+                'flex flex-row justify-end mx-[30px] mb-[16px] mt-[4px]'
+              }
+              onPress={() => {
+                const address = getAddress();
+                setReceiverAddress(address);
+              }}>
+              <CyDText
+                className={'underline font-normal text-[12px] text-black'}>
+                {'Use My Address'}
+              </CyDText>
+            </CyDTouchView>
+
+            <CyDView
+              className={
+                'bg-[#F7F8FE] mx-[20px] border-[1px] border-[#EBEBEB] rounded-[16px] pl-[16px] pr-[10px] py-[8px] h-[60px] flex flex-row justify-center items-center'
+              }>
+              <CyDTextInput
+                className={clsx(
+                  'font-medium text-left text-black font-nunito text-[16px] w-[90%] mr-[10px]',
+                )}
+                onChangeText={text => {
+                  setMemo(text);
+                }}
+                placeholder={'Memo (optional)'}
+                placeholderTextColor={'#929292'}
+                value={memo}
+                autoFocus={false}
+              />
+              <CyDTouchView
+                className={''}
+                onPress={() => {
+                  setMemo('');
+                }}>
+                <CyDImage source={AppImages.CLOSE_CIRCLE} />
+              </CyDTouchView>
+            </CyDView>
+          </CyDView>
+        )}
+
+        {showMerged && (
+          <CyDTouchView
+            onPress={() => {
+              setShowMerged(false);
+            }}
+            className={
+              'flex flex-row justify-between my-[16px] bg-[#F7F8FE] rounded-[20px] mx-[20px] px-[15px] py-[20px] '
             }>
             <CyDView className={'flex items-center justify-center'}>
               <CyDImage
@@ -461,7 +812,7 @@ export default function IBC({
                 />
                 <CyDText
                   className={
-                    'ml-[6px] font-nunito font-normal text-black  text-[12px]'
+                    'ml-[6px] font-nunito text-black font-normal text-[12px]'
                   }>
                   {tokenData.chainDetails.name}
                 </CyDText>
@@ -469,7 +820,11 @@ export default function IBC({
             </CyDView>
 
             <CyDView className={'flex justify-center'}>
-              <CyDImage source={AppImages.RIGHT_ARROW_LONG} />
+              <CyDImage
+                source={AppImages.RIGHT_ARROW_LONG}
+                style={{ tintColor: 'black' }}
+                className={'w-[40px] h-[20px]'}
+              />
             </CyDView>
 
             <CyDView className={'flex items-center justify-center '}>
@@ -495,455 +850,120 @@ export default function IBC({
                   className={
                     'ml-[6px] font-nunito text-black font-normal text-[12px]'
                   }>
-                  {chain.name}
+                  {chain?.name}
                 </CyDText>
-              </CyDView>
-            </CyDView>
-          </CyDView>
-
-          <CyDView className={'flex flex-row justify-between mb-[14px]'}>
-            <CyDText
-              className={'font-[#434343] font-nunito font-[16px] text-medium'}>
-              {t('TO_ADDRESS')}
-            </CyDText>
-            <CyDView className={'mr-[6%] flex flex-col items-end'}>
-              <CyDText
-                className={
-                  'font-nunito font-[16px] text-black font-bold underline'
-                }>
-                {receiverAddress.substring(0, 8) +
-                  '...' +
-                  receiverAddress.substring(receiverAddress.length - 8)}
-              </CyDText>
-            </CyDView>
-          </CyDView>
-
-          <CyDView className={'flex flex-row justify-between mb-[14px]'}>
-            <CyDText
-              className={'font-[#434343] font-nunito font-[16px] text-medium'}>
-              {t('SENT_AMOUNT')}
-            </CyDText>
-            <CyDView className={'mr-[6%] flex flex-col items-end'}>
-              <CyDText
-                className={'font-nunito font-[16px] text-black font-bold'}>
-                {`${parseFloat(amount).toFixed(3)} ${tokenData.name}`}
-              </CyDText>
-              <CyDText
-                className={'font-nunito font-[12px] text-[#929292] font-bold'}>
-                {(tokenData.price * parseFloat(amount)).toFixed(3) + ' USD'}
-              </CyDText>
-            </CyDView>
-          </CyDView>
-
-          <CyDView className={'flex flex-row justify-between mb-[14px]'}>
-            <CyDText
-              className={'font-[#434343] font-nunito font-[16px] text-medium'}>
-              {t('TOTAL_GAS')}
-            </CyDText>
-            <CyDView className={'mr-[6%] flex flex-col items-end'}>
-              <CyDText
-                className={'font-nunito font-[16px] text-black font-bold'}>
-                {String(formatAmount(Number(gasFee))) +
-                  ' ' +
-                  String(nativeToken?.symbol)}
-              </CyDText>
-              <CyDText
-                className={'font-nunito font-[12px] text-[#929292] font-bold'}>
-                {String(
-                  formatAmount(Number(nativeToken.price) * Number(gasFee)),
-                ) + ' USD'}
-              </CyDText>
-            </CyDView>
-          </CyDView>
-        </CyDView>
-
-        <CyDView
-          className={
-            'flex flex-row justify-between items-center px-[20px] pb-[42px]'
-          }>
-          <Button
-            title={t<string>('CANCEL')}
-            titleStyle='text-[14px]'
-            disabled={loading}
-            type={ButtonType.SECONDARY}
-            onPress={() => {
-              setSignModalVisible(false);
-            }}
-            style={'h-[60px] w-[166px] mx-[6px]'}
-          />
-          <Button
-            title={'IBC'}
-            titleStyle='text-[14px]'
-            loading={loading}
-            onPress={() => {
-              void ibcTransfer('txn');
-            }}
-            isPrivateKeyDependent={true}
-            style={'h-[60px] w-[166px] mx-[6px]'}
-          />
-        </CyDView>
-      </SignatureModal>
-
-      {!showMerged && (
-        <CyDView>
-          <CyDView
-            className={
-              'bg-[#F7F8FE] mx-[20px] border-[1px] border-[#EBEBEB] rounded-[16px] mt-[16px]'
-            }>
-            <CyDView className={'h-[60px] flex flex-row w-full'}>
-              <CyDView
-                className={
-                  'w-3/12 border-r-[1px] border-[#EBEBEB] bg-white px-[18px] rounded-l-[16px] flex items-center justify-center'
-                }>
-                <CyDText
-                  className={'text-[#434343] text-[16px] font-extrabold'}>
-                  {'From'}
-                </CyDText>
-                <CyDText
-                  className={'text-[#434343] text-[16px] font-extrabold'}>
-                  {'Chain'}
-                </CyDText>
-              </CyDView>
-
-              <CyDView
-                className={
-                  'flex flex-row items-center justify-between w-9/12 p-[18px]'
-                }>
-                <CyDView className={'flex flex-row items-center'}>
-                  <CyDImage
-                    source={tokenData.chainDetails.logo_url}
-                    className={'w-[30px] h-[30px]'}
-                  />
-                  <CyDText
-                    className={
-                      'text-center text-black font-nunito text-[16px] ml-[20px]'
-                    }>
-                    {tokenData.chainDetails.name}
-                  </CyDText>
-                </CyDView>
-              </CyDView>
-            </CyDView>
-          </CyDView>
-
-          <CyDView
-            className={
-              'bg-[#F7F8FE] mx-[20px] border-[1px] border-[#EBEBEB] rounded-[16px] mt-[16px]'
-            }>
-            <CyDView className={'h-[60px] flex flex-row w-full'}>
-              <CyDView
-                className={
-                  'w-3/12 border-r-[1px] border-[#EBEBEB] bg-white px-[18px] rounded-l-[16px] flex items-center justify-center'
-                }>
-                <CyDText
-                  className={'text-[#434343] text-[16px] font-extrabold'}>
-                  {'From'}
-                </CyDText>
-                <CyDText
-                  className={'text-[#434343] text-[16px] font-extrabold'}>
-                  {'Token'}
-                </CyDText>
-              </CyDView>
-
-              <CyDView
-                className={
-                  'flex flex-row items-center justify-between w-9/12 p-[18px]'
-                }>
-                <CyDView className={'flex flex-row items-center'}>
-                  <CyDImage
-                    source={{ uri: tokenData.logoUrl }}
-                    className={'w-[30px] h-[30px]'}
-                  />
-                  <CyDText
-                    className={
-                      'text-center text-black font-nunito text-[16px] ml-[20px]'
-                    }>
-                    {tokenData.name}
-                  </CyDText>
-                </CyDView>
-              </CyDView>
-            </CyDView>
-          </CyDView>
-
-          <CyDTouchView
-            className={
-              'bg-[#F7F8FE] mx-[20px] my-[16px] border-[1px] border-[#EBEBEB] rounded-[16px]'
-            }
-            onPress={() => setShowChain(true)}>
-            <CyDView className={'h-[60px] flex flex-row w-full'}>
-              <CyDView
-                className={
-                  'w-3/12 border-r-[1px] border-[#EBEBEB] bg-white px-[18px] rounded-l-[16px] flex items-center justify-center'
-                }>
-                <CyDText
-                  className={'text-[#434343] text-[16px] font-extrabold'}>
-                  {'To'}
-                </CyDText>
-                <CyDText
-                  className={'text-[#434343] text-[16px] font-extrabold'}>
-                  {'Chain'}
-                </CyDText>
-              </CyDView>
-
-              <CyDView
-                className={
-                  'flex flex-row items-center justify-between w-9/12 p-[18px]'
-                }>
-                <CyDView className={'flex flex-row items-center'}>
-                  <CyDImage
-                    source={chain?.logo_url}
-                    className={'w-[30px] h-[30px]'}
-                  />
-                  <CyDText
-                    className={
-                      'text-center text-black font-nunito text-[16px] ml-[8px] ml-[20px]'
-                    }>
-                    {chain?.name}
-                  </CyDText>
-                </CyDView>
-                <CyDImage source={AppImages.DOWN_ARROW} />
               </CyDView>
             </CyDView>
           </CyDTouchView>
-
-          <CyDView
-            className={
-              'bg-[#F7F8FE] mx-[20px] border-[1px] border-[#EBEBEB] rounded-[16px] pl-[16px] pr-[10px] py-[8px] h-[60px] flex flex-row justify-center items-center'
-            }>
-            <CyDTextInput
-              className={clsx(
-                'font-medium text-left text-black font-nunito text-[16px] w-[90%] mr-[10px]',
-              )}
-              onChangeText={text => {
-                setReceiverAddress(text);
-              }}
-              placeholder={'Receiver Address'}
-              placeholderTextColor={'#929292'}
-              value={receiverAddress}
-              autoFocus={false}
-            />
-            <CyDTouchView
-              className={''}
-              onPress={() => {
-                setReceiverAddress('');
-              }}>
-              <CyDImage source={AppImages.CLOSE_CIRCLE} />
-            </CyDTouchView>
-          </CyDView>
-
-          <CyDTouchView
-            className={'flex flex-row justify-end mx-[30px] mb-[16px] mt-[4px]'}
-            onPress={() => {
-              const address = getAddress();
-              setReceiverAddress(address);
-            }}>
-            <CyDText className={'underline font-normal text-[12px] text-black'}>
-              {'Use My Address'}
-            </CyDText>
-          </CyDTouchView>
-
-          <CyDView
-            className={
-              'bg-[#F7F8FE] mx-[20px] border-[1px] border-[#EBEBEB] rounded-[16px] pl-[16px] pr-[10px] py-[8px] h-[60px] flex flex-row justify-center items-center'
-            }>
-            <CyDTextInput
-              className={clsx(
-                'font-medium text-left text-black font-nunito text-[16px] w-[90%] mr-[10px]',
-              )}
-              onChangeText={text => {
-                setMemo(text);
-              }}
-              placeholder={'Memo (optional)'}
-              placeholderTextColor={'#929292'}
-              value={memo}
-              autoFocus={false}
-            />
-            <CyDTouchView
-              className={''}
-              onPress={() => {
-                setMemo('');
-              }}>
-              <CyDImage source={AppImages.CLOSE_CIRCLE} />
-            </CyDTouchView>
-          </CyDView>
-        </CyDView>
-      )}
-
-      {showMerged && (
-        <CyDTouchView
-          onPress={() => {
-            setShowMerged(false);
-          }}
-          className={
-            'flex flex-row justify-between my-[16px] bg-[#F7F8FE] rounded-[20px] mx-[20px] px-[15px] py-[20px] '
-          }>
-          <CyDView className={'flex items-center justify-center'}>
-            <CyDImage
-              source={{ uri: tokenData.logoUrl }}
-              className={'w-[44px] h-[44px]'}
-            />
-            <CyDText
-              className={
-                'my-[6px] mx-[2px] text-black text-[14px] font-semibold flex flex-row justify-center font-nunito'
-              }>
-              {tokenData.name}
-            </CyDText>
-            <CyDView
-              className={
-                'bg-white rounded-[20px] flex flex-row items-center p-[4px]'
-              }>
-              <CyDImage
-                source={tokenData.chainDetails.logo_url}
-                className={'w-[14px] h-[14px]'}
-              />
-              <CyDText
-                className={
-                  'ml-[6px] font-nunito text-black font-normal text-[12px]'
-                }>
-                {tokenData.chainDetails.name}
-              </CyDText>
-            </CyDView>
-          </CyDView>
-
-          <CyDView className={'flex justify-center'}>
-            <CyDImage
-              source={AppImages.RIGHT_ARROW_LONG}
-              style={{ tintColor: 'black' }}
-              className={'w-[40px] h-[20px]'}
-            />
-          </CyDView>
-
-          <CyDView className={'flex items-center justify-center '}>
-            <CyDImage
-              source={{ uri: tokenData.logoUrl }}
-              className={'w-[44px] h-[44px]'}
-            />
-            <CyDText
-              className={
-                'my-[6px] mx-[2px] text-black text-[14px] font-semibold flex flex-row justify-center font-nunito'
-              }>
-              {tokenData.name}
-            </CyDText>
-            <CyDView
-              className={
-                'bg-white rounded-[20px] flex flex-row items-center p-[4px]'
-              }>
-              <CyDImage
-                source={chain.logo_url}
-                className={'w-[14px] h-[14px]'}
-              />
-              <CyDText
-                className={
-                  'ml-[6px] font-nunito text-black font-normal text-[12px]'
-                }>
-                {chain?.name}
-              </CyDText>
-            </CyDView>
-          </CyDView>
-        </CyDTouchView>
-      )}
-
-      <CyDTouchView
-        className={clsx(
-          ' mt-[25px] pb-[30px] bg-[#F7F8FE] mx-[20px] rounded-[20px]',
         )}
-        onPress={() => {
-          amount === '0.00' ? setAmount('') : setAmount(amount);
-          setShowMerged(true);
-        }}>
-        <CyDText
-          className={
-            'font-extrabold text-[22px] text-center mt-[20px] font-nunito text-black'
-          }>
-          {'Enter Amount'}
-        </CyDText>
 
-        <CyDText
-          className={
-            'font-extrabold text-[20px] text-center mt-[10px] font-nunito bottom-0 text-black '
-          }>
-          {tokenData.name}
-        </CyDText>
-
-        <CyDView className={'flex items-center justify-center items-center'}>
-          {!showMerged && (
-            <CyDText
-              className={clsx(
-                'font-bold text-[70px] h-[80px] text-justify font-nunito text-black ',
-              )}>
-              {parseFloat(amount).toFixed(2)}
-            </CyDText>
+        <CyDTouchView
+          className={clsx(
+            ' mt-[25px] pb-[30px] bg-[#F7F8FE] mx-[20px] rounded-[20px]',
           )}
-          {showMerged && (
-            <CyDView
-              className={'flex flex-row items-center justify-center relative'}>
-              <CyDTouchView
-                onPress={() => {
-                  const gasReserved =
-                    tokenData?.chainDetails?.symbol === tokenData?.symbol
-                      ? gasFeeReservation[tokenData.chainDetails.backendName]
-                      : 0;
-
-                  const maxAmount =
-                    parseFloat(tokenData?.actualBalance) - gasReserved;
-                  const textAmount =
-                    maxAmount < 0
-                      ? '0.00'
-                      : limitDecimalPlaces(maxAmount.toString(), 6);
-                  setAmount(textAmount);
-                }}
-                className={clsx(
-                  'absolute bg-white rounded-full h-[40px] w-[40px] flex justify-center items-center ' +
-                    'p-[4px] left-[-14%]',
-                )}>
-                <CyDText className={'font-nunito text-black '}>{'MAX'}</CyDText>
-              </CyDTouchView>
-              <CyDTextInput
-                className={clsx(
-                  'font-bold text-center text-black h-[80px] font-nunito w-8/12 pt-[16px]',
-                  {
-                    'text-[70px]': amount.length <= 5,
-                    'text-[40px]': amount.length > 5,
-                  },
-                )}
-                keyboardType='numeric'
-                onChangeText={(text: string) => {
-                  setAmount(text);
-                }}
-                value={amount}
-                autoFocus={true}
-              />
-            </CyDView>
-          )}
-        </CyDView>
-        <CyDView className='flex flex-row flex-wrap justify-center items-center'>
+          onPress={() => {
+            amount === '0.00' ? setAmount('') : setAmount(amount);
+            setShowMerged(true);
+          }}>
           <CyDText
             className={
-              'font-semibold text-[14px] text-center text-[#929292] font-nunito mt-[8px]'
-            }>{`${tokenData.name} balance`}</CyDText>
-          <CyDTokenAmount className='ml-[10px]' decimalPlaces={6}>
-            {tokenData.actualBalance}
-          </CyDTokenAmount>
-        </CyDView>
-      </CyDTouchView>
+              'font-extrabold text-[22px] text-center mt-[20px] font-nunito text-black'
+            }>
+            {'Enter Amount'}
+          </CyDText>
 
-      <CyDView
-        className={'flex flex-row items-center justify-center my-[10px]'}>
-        <Button
-          title={t('SUBMIT')}
-          loading={loading}
-          disabled={
-            loading ||
-            parseFloat(amount) <= 0 ||
-            receiverAddress === '' ||
-            parseFloat(amount) > parseFloat(tokenData.actualBalance)
-          }
-          onPress={() => {
-            onIBCSubmit();
-          }}
-          isPrivateKeyDependent={true}
-          style={'w-[90%] h-[60px]'}
-        />
-      </CyDView>
+          <CyDText
+            className={
+              'font-extrabold text-[20px] text-center mt-[10px] font-nunito bottom-0 text-black '
+            }>
+            {tokenData.name}
+          </CyDText>
+
+          <CyDView className={'flex items-center justify-center items-center'}>
+            {!showMerged && (
+              <CyDText
+                className={clsx(
+                  'font-bold text-[70px] h-[80px] text-justify font-nunito text-black ',
+                )}>
+                {parseFloat(amount).toFixed(2)}
+              </CyDText>
+            )}
+            {showMerged && (
+              <CyDView
+                className={
+                  'flex flex-row items-center justify-center relative'
+                }>
+                <CyDTouchView
+                  onPress={() => {
+                    const gasReserved =
+                      tokenData?.chainDetails?.symbol === tokenData?.symbol
+                        ? gasFeeReservation[tokenData.chainDetails.backendName]
+                        : 0;
+
+                    const maxAmount =
+                      parseFloat(tokenData?.actualBalance) - gasReserved;
+                    const textAmount =
+                      maxAmount < 0
+                        ? '0.00'
+                        : limitDecimalPlaces(maxAmount.toString(), 6);
+                    setAmount(textAmount);
+                  }}
+                  className={clsx(
+                    'absolute bg-white rounded-full h-[40px] w-[40px] flex justify-center items-center ' +
+                      'p-[4px] left-[-14%]',
+                  )}>
+                  <CyDText className={'font-nunito text-black '}>
+                    {'MAX'}
+                  </CyDText>
+                </CyDTouchView>
+                <CyDTextInput
+                  className={clsx(
+                    'font-bold text-center text-black h-[80px] font-nunito w-8/12 pt-[16px]',
+                    {
+                      'text-[70px]': amount.length <= 5,
+                      'text-[40px]': amount.length > 5,
+                    },
+                  )}
+                  keyboardType='numeric'
+                  onChangeText={(text: string) => {
+                    setAmount(text);
+                  }}
+                  value={amount}
+                  autoFocus={true}
+                />
+              </CyDView>
+            )}
+          </CyDView>
+          <CyDView className='flex flex-row flex-wrap justify-center items-center'>
+            <CyDText
+              className={
+                'font-semibold text-[14px] text-center text-[#929292] font-nunito mt-[8px]'
+              }>{`${tokenData.name} balance`}</CyDText>
+            <CyDTokenAmount className='ml-[10px]' decimalPlaces={6}>
+              {tokenData.actualBalance}
+            </CyDTokenAmount>
+          </CyDView>
+        </CyDTouchView>
+
+        <CyDView
+          className={'flex flex-row items-center justify-center my-[10px]'}>
+          <Button
+            title={t('SUBMIT')}
+            loading={loading}
+            disabled={
+              loading ||
+              parseFloat(amount) <= 0 ||
+              receiverAddress === '' ||
+              parseFloat(amount) > parseFloat(tokenData.actualBalance)
+            }
+            onPress={() => {
+              onIBCSubmit();
+            }}
+            isPrivateKeyDependent={true}
+            style={'w-[90%] h-[60px]'}
+          />
+        </CyDView>
+      </CyDKeyboardAwareScrollView>
     </CyDScrollView>
   );
 }

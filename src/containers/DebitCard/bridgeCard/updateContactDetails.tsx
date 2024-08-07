@@ -1,8 +1,9 @@
 import React, { useContext, useEffect, useState } from 'react';
 import useAxios from '../../../core/HttpRequest';
-import { CardDetails, GlobalContextType } from '../../../constants/enum';
+import { GlobalContextType } from '../../../constants/enum';
 import * as Sentry from '@sentry/react-native';
 import {
+  CyDKeyboardAwareScrollView,
   CyDSafeAreaView,
   CyDScrollView,
   CyDText,
@@ -246,167 +247,169 @@ export default function UpdateCardContactDetails({
   return (
     <CyDSafeAreaView className={'h-full bg-white'}>
       <CyDScrollView>
-        <ChooseCountryModal
-          isModalVisible={selectCountryModalForDialCodeVisible}
-          setModalVisible={setSelectCountryModalForDialCodeVisible}
-          selectedCountryState={[
-            selectedCountryForDialCode,
-            setSelectedCountryForDialCode,
-          ]}
-        />
-        <Formik
-          enableReinitialize={true}
-          initialValues={userBasicDetails}
-          validationSchema={userBasicDetailsValidationSchema}
-          onSubmit={values => updateDetails(values)}>
-          {formProps => (
-            <CyDView className='mx-[30px]'>
-              <CyDView>
-                <CyDText className='text-[16px] font-bold mt-[20px]'>
-                  {t('CURRENT_PHONE_NUMBER')} {phoneNumber}
-                </CyDText>
-                <CyDView
-                  className={clsx(
-                    'h-[50px] mt-[8px] border-[1px] border-inputBorderColor rounded-[5px] flex flex-row',
-                    {
-                      'border-redOffColor':
-                        formProps.touched.phoneNumber &&
-                        formProps.errors.phoneNumber,
-                    },
-                  )}>
-                  <CyDTouchView
-                    onPress={() => onDialCodeModalOpen(formProps.values)}
-                    className={
-                      'w-4/12 border-r-[1px] border-[#EBEBEB] bg-white py-[13px] rounded-l-[16px] flex items-center'
-                    }>
-                    <CyDView className={'mt-[-4px] ml-[-55px]'}>
-                      <CyDText className={'text-[33px] mt-[-6px]'}>
-                        {selectedCountryForDialCode.flag}
-                      </CyDText>
-                    </CyDView>
-                    <CyDView className={'mt-[-20px] ml-[45px]'}>
-                      <CyDText
-                        className={'text-[13px] font-extrabold text-center'}>
-                        {selectedCountryForDialCode.dialCode}
-                      </CyDText>
-                    </CyDView>
-                  </CyDTouchView>
-                  <CyDView className={'flex flex-row items-center w-8/12'}>
-                    <CyDView className={'flex flex-row items-center'}>
-                      <CyDTextInput
-                        className={clsx(
-                          'text-black font-nunito text-[16px] ml-[8px] w-[100%]',
-                          { 'mt-[-8px]': isAndroid() },
-                        )}
-                        value={formProps.values.phoneNumber}
-                        autoCapitalize='none'
-                        keyboardType={'numeric'}
-                        maxLength={15}
-                        key='phoneNumber'
-                        autoCorrect={false}
-                        placeholderTextColor={'#C5C5C5'}
-                        onChangeText={formProps.handleChange('phoneNumber')}
-                        placeholder='Phone Number'
-                      />
+        <CyDKeyboardAwareScrollView>
+          <ChooseCountryModal
+            isModalVisible={selectCountryModalForDialCodeVisible}
+            setModalVisible={setSelectCountryModalForDialCodeVisible}
+            selectedCountryState={[
+              selectedCountryForDialCode,
+              setSelectedCountryForDialCode,
+            ]}
+          />
+          <Formik
+            enableReinitialize={true}
+            initialValues={userBasicDetails}
+            validationSchema={userBasicDetailsValidationSchema}
+            onSubmit={values => updateDetails(values)}>
+            {formProps => (
+              <CyDView className='mx-[30px]'>
+                <CyDView>
+                  <CyDText className='text-[16px] font-bold mt-[20px]'>
+                    {t('CURRENT_PHONE_NUMBER')} {phoneNumber}
+                  </CyDText>
+                  <CyDView
+                    className={clsx(
+                      'h-[50px] mt-[8px] border-[1px] border-inputBorderColor rounded-[5px] flex flex-row',
+                      {
+                        'border-redOffColor':
+                          formProps.touched.phoneNumber &&
+                          formProps.errors.phoneNumber,
+                      },
+                    )}>
+                    <CyDTouchView
+                      onPress={() => onDialCodeModalOpen(formProps.values)}
+                      className={
+                        'w-4/12 border-r-[1px] border-[#EBEBEB] bg-white py-[13px] rounded-l-[16px] flex items-center'
+                      }>
+                      <CyDView className={'mt-[-4px] ml-[-55px]'}>
+                        <CyDText className={'text-[33px] mt-[-6px]'}>
+                          {selectedCountryForDialCode.flag}
+                        </CyDText>
+                      </CyDView>
+                      <CyDView className={'mt-[-20px] ml-[45px]'}>
+                        <CyDText
+                          className={'text-[13px] font-extrabold text-center'}>
+                          {selectedCountryForDialCode.dialCode}
+                        </CyDText>
+                      </CyDView>
+                    </CyDTouchView>
+                    <CyDView className={'flex flex-row items-center w-8/12'}>
+                      <CyDView className={'flex flex-row items-center'}>
+                        <CyDTextInput
+                          className={clsx(
+                            'text-black font-nunito text-[16px] ml-[8px] w-[100%]',
+                            { 'mt-[-8px]': isAndroid() },
+                          )}
+                          value={formProps.values.phoneNumber}
+                          autoCapitalize='none'
+                          keyboardType={'numeric'}
+                          maxLength={15}
+                          key='phoneNumber'
+                          autoCorrect={false}
+                          placeholderTextColor={'#C5C5C5'}
+                          onChangeText={formProps.handleChange('phoneNumber')}
+                          placeholder='Phone Number'
+                        />
+                      </CyDView>
                     </CyDView>
                   </CyDView>
+                  {formProps.touched.phoneNumber &&
+                    formProps.errors.phoneNumber && (
+                      <CyDView className={'ml-[33px] mt-[6px] mb-[-11px]'}>
+                        <CyDText className={'text-redOffColor font-semibold'}>
+                          {formProps.errors.phoneNumber}
+                        </CyDText>
+                      </CyDView>
+                    )}
                 </CyDView>
-                {formProps.touched.phoneNumber &&
-                  formProps.errors.phoneNumber && (
-                    <CyDView className={'ml-[33px] mt-[6px] mb-[-11px]'}>
-                      <CyDText className={'text-redOffColor font-semibold'}>
-                        {formProps.errors.phoneNumber}
-                      </CyDText>
-                    </CyDView>
-                  )}
-              </CyDView>
 
-              <CyDView className={'mt-[24px]'}>
-                <CyDText className='text-[16px] font-bold mt-[20px]'>
-                  {t('EMAIL_ADDRESS')}
-                </CyDText>
-                <CyDTextInput
-                  className={clsx(
-                    ' border-[1px] border-inputBorderColor mt-[8px] rounded-[5px] p-[12px] text-[18px] font-nunito text-primaryTextColor',
-                    {
-                      'border-redOffColor':
-                        formProps.touched.email && formProps.errors.email,
-                    },
-                  )}
-                  value={formProps.values.email}
-                  key='email'
-                  textContentType='emailAddress'
-                  keyboardType='email-address'
-                  autoCapitalize='none'
-                  autoCorrect={false}
-                  onChangeText={formProps.handleChange('email')}
-                  placeholderTextColor={'#C5C5C5'}
-                  placeholder='Email'
+                <CyDView className={'mt-[24px]'}>
+                  <CyDText className='text-[16px] font-bold mt-[20px]'>
+                    {t('EMAIL_ADDRESS')}
+                  </CyDText>
+                  <CyDTextInput
+                    className={clsx(
+                      ' border-[1px] border-inputBorderColor mt-[8px] rounded-[5px] p-[12px] text-[18px] font-nunito text-primaryTextColor',
+                      {
+                        'border-redOffColor':
+                          formProps.touched.email && formProps.errors.email,
+                      },
+                    )}
+                    value={formProps.values.email}
+                    key='email'
+                    textContentType='emailAddress'
+                    keyboardType='email-address'
+                    autoCapitalize='none'
+                    autoCorrect={false}
+                    onChangeText={formProps.handleChange('email')}
+                    placeholderTextColor={'#C5C5C5'}
+                    placeholder='Email'
+                  />
+                </CyDView>
+                {formProps.touched.email && formProps.errors.email && (
+                  <CyDView className={'ml-[33px] mt-[6px] mb-[-11px]'}>
+                    <CyDText className={'text-redOffColor font-semibold'}>
+                      {formProps.errors.email}
+                    </CyDText>
+                  </CyDView>
+                )}
+                <CyDView className={'bg-white pt-[10px]'}>
+                  <CyDView>
+                    {isOTPTriggered && (
+                      <CyDView className={'mt-[20px]'}>
+                        <CyDText className={'text-[15px] mb-[12px] font-bold'}>
+                          {t<string>('UPDATE_CARD_DETAILS_OTP')}
+                        </CyDText>
+                        <OtpInput
+                          pinCount={4}
+                          getOtp={otp => {
+                            void onOTPEntry(otp);
+                          }}
+                          placeholder={t('ENTER_OTP')}
+                        />
+                        <CyDTouchView
+                          className={'flex flex-row items-center mt-[18px]'}
+                          disabled={sendingOTP || resendInterval !== 0}
+                          onPress={() => {
+                            void resendOTP();
+                          }}>
+                          <CyDText
+                            className={
+                              'font-bold underline decoration-solid underline-offset-4'
+                            }>
+                            {t<string>('RESEND_CODE_INIT_CAPS')}
+                          </CyDText>
+                          {sendingOTP && (
+                            <LottieView
+                              source={AppImages.LOADER_TRANSPARENT}
+                              autoPlay
+                              loop
+                              style={styles.lottie}
+                            />
+                          )}
+                          {resendInterval !== 0 && (
+                            <CyDText>
+                              {String(` in ${resendInterval} sec`)}
+                            </CyDText>
+                          )}
+                        </CyDTouchView>
+                      </CyDView>
+                    )}
+                  </CyDView>
+                </CyDView>
+                <Button
+                  title={t<string>(isOTPTriggered ? 'SUBMIT' : 'UPDATE')}
+                  loading={isSubmitting}
+                  onPress={() => {
+                    formProps.handleSubmit();
+                  }}
+                  style='h-[55px] mt-[20px] mx-auto justify-center items-center px-[55px] w-full'
+                  isPrivateKeyDependent={false}
                 />
               </CyDView>
-              {formProps.touched.email && formProps.errors.email && (
-                <CyDView className={'ml-[33px] mt-[6px] mb-[-11px]'}>
-                  <CyDText className={'text-redOffColor font-semibold'}>
-                    {formProps.errors.email}
-                  </CyDText>
-                </CyDView>
-              )}
-              <CyDView className={'bg-white pt-[10px]'}>
-                <CyDView>
-                  {isOTPTriggered && (
-                    <CyDView className={'mt-[20px]'}>
-                      <CyDText className={'text-[15px] mb-[12px] font-bold'}>
-                        {t<string>('UPDATE_CARD_DETAILS_OTP')}
-                      </CyDText>
-                      <OtpInput
-                        pinCount={4}
-                        getOtp={otp => {
-                          void onOTPEntry(otp);
-                        }}
-                        placeholder={t('ENTER_OTP')}
-                      />
-                      <CyDTouchView
-                        className={'flex flex-row items-center mt-[18px]'}
-                        disabled={sendingOTP || resendInterval !== 0}
-                        onPress={() => {
-                          void resendOTP();
-                        }}>
-                        <CyDText
-                          className={
-                            'font-bold underline decoration-solid underline-offset-4'
-                          }>
-                          {t<string>('RESEND_CODE_INIT_CAPS')}
-                        </CyDText>
-                        {sendingOTP && (
-                          <LottieView
-                            source={AppImages.LOADER_TRANSPARENT}
-                            autoPlay
-                            loop
-                            style={styles.lottie}
-                          />
-                        )}
-                        {resendInterval !== 0 && (
-                          <CyDText>
-                            {String(` in ${resendInterval} sec`)}
-                          </CyDText>
-                        )}
-                      </CyDTouchView>
-                    </CyDView>
-                  )}
-                </CyDView>
-              </CyDView>
-              <Button
-                title={t<string>(isOTPTriggered ? 'SUBMIT' : 'UPDATE')}
-                loading={isSubmitting}
-                onPress={() => {
-                  formProps.handleSubmit();
-                }}
-                style='h-[55px] mt-[20px] mx-auto justify-center items-center px-[55px] w-full'
-                isPrivateKeyDependent={false}
-              />
-            </CyDView>
-          )}
-        </Formik>
+            )}
+          </Formik>
+        </CyDKeyboardAwareScrollView>
       </CyDScrollView>
     </CyDSafeAreaView>
   );

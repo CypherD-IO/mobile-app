@@ -72,6 +72,7 @@ import {
 } from './src/reducers/modalReducer';
 import { InitializeAppProvider } from './src/components/initializeAppProvider';
 import { toastConfig } from './src/components/v2/toast';
+import { CyDView } from './src/styles/tailwindStyles';
 
 const routingInstrumentation = new Sentry.ReactNavigationInstrumentation();
 
@@ -219,11 +220,7 @@ function App() {
   }, []);
 
   return (
-    <KeyboardAvoidingView
-      style={{ flex: 1, backgroundColor: 'white' }}
-      enabled
-      behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
-      keyboardVerticalOffset={0}>
+    <CyDView style={{ flex: 1, backgroundColor: 'white' }}>
       <GestureHandlerRootView style={{ flex: 1 }}>
         <Sentry.TouchEventBoundary>
           <WalletConnectContext.Provider
@@ -321,7 +318,7 @@ function App() {
           </WalletConnectContext.Provider>
         </Sentry.TouchEventBoundary>
       </GestureHandlerRootView>
-    </KeyboardAvoidingView>
+    </CyDView>
   );
 }
 

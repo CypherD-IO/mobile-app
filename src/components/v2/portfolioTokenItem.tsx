@@ -132,16 +132,16 @@ const RenderRightActions = (navigation: any, tokenData: any) => {
             onPress={() => {
               navigation.navigate(screenTitle.BRIDGE_SKIP_API_SCREEN, {
                 fromChainData: tokenData,
-                title: t('BRIDGE_TITLE'),
+                title: t('SWAP_TITLE'),
               });
             }}>
             <CyDImage
-              source={AppImages.BRIDGE_SHORTCUT}
+              source={AppImages.SWAP_SHORTCUT}
               className={'w-[30px] h-[30px]'}
             />
           </CyDTouchView>
           <CyDText className={'text-center mt-[5px] text-[12px] font-bold'}>
-            {t<string>('BRIDGE_TITLE')}
+            {t<string>('SWAP_TITLE')}
           </CyDText>
         </CyDView>
       )}
