@@ -8,8 +8,14 @@ export const useKeyboard = () => {
   const headerHeight = useHeaderHeight();
 
   useEffect(() => {
-    const showSubscription = Keyboard.addListener('keyboardDidShow', onKeyboardDidShow);
-    const hideSubscription = Keyboard.addListener('keyboardDidHide', onKeyboardDidHide);
+    const showSubscription = Keyboard.addListener(
+      'keyboardDidShow',
+      onKeyboardDidShow,
+    );
+    const hideSubscription = Keyboard.addListener(
+      'keyboardDidHide',
+      onKeyboardDidHide,
+    );
     return () => {
       showSubscription.remove();
       hideSubscription.remove();
@@ -17,7 +23,9 @@ export const useKeyboard = () => {
   }, []);
 
   const onKeyboardDidShow = (e: KeyboardEvent) => {
-    setKeyboardHeight(e.endCoordinates.screenY - StatusBar?.currentHeight - headerHeight - 8);
+    setKeyboardHeight(
+      e.endCoordinates.screenY - StatusBar?.currentHeight - headerHeight - 8,
+    );
   };
 
   const onKeyboardDidHide = () => {

@@ -7,7 +7,7 @@ import React, {
 } from 'react';
 import { Keyboard, StyleSheet } from 'react-native';
 import AppImages from '../../../assets/images/appImages';
-import { RouteProp, useIsFocused } from '@react-navigation/native';
+import { useIsFocused } from '@react-navigation/native';
 import {
   CyDImage,
   CyDText,
@@ -17,6 +17,7 @@ import {
   CyDSafeAreaView,
   CyDTouchView,
   CyDKeyboardAvoidingView,
+  CyDKeyboardAwareScrollView,
 } from '../../styles/tailwindStyles';
 import clsx from 'clsx';
 import { Formik } from 'formik';
@@ -449,7 +450,7 @@ export default function CardSignupScreen({ navigation, route }) {
             proceedToNextScreen('USER_BASIC_DETAILS', values)
           }>
           {formProps => (
-            <CyDView className='mx-[9%]'>
+            <KeyboardAwareScrollView className='mx-[9%]'>
               <DatePickerModal
                 isVisible={isDOBModalVisible}
                 mode='date'
@@ -717,7 +718,7 @@ export default function CardSignupScreen({ navigation, route }) {
                 style='h-[55px] mt-[20px] mx-auto justify-center items-center px-[55px] w-full'
                 isPrivateKeyDependent={false}
               />
-            </CyDView>
+            </KeyboardAwareScrollView>
           )}
         </Formik>
       </CyDScrollView>
@@ -1217,11 +1218,11 @@ export default function CardSignupScreen({ navigation, route }) {
               })}
             </CyDView>
           </CyDView>
-          <CyDView className={'h-full flex grow-1'}>
+          <CyDKeyboardAwareScrollView className={'h-full flex grow-1'}>
             <CyDScrollView className='mb-[45px]'>
               {screens[screenIndex].component}
             </CyDScrollView>
-          </CyDView>
+          </CyDKeyboardAwareScrollView>
         </>
       )}
     </CyDSafeAreaView>

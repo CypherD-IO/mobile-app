@@ -1,4 +1,3 @@
-/* eslint-disable react/jsx-no-undef */
 import React, { useContext, useEffect, useMemo, useState } from 'react';
 import * as yup from 'yup';
 import { t } from 'i18next';
@@ -14,13 +13,11 @@ import {
   CyDImage,
   CyDTextInput,
   CyDScrollView,
+  CyDKeyboardAwareScrollView,
 } from '../../styles/tailwindStyles';
 import { GlobalContext } from '../../core/globalContext';
 import { useIsFocused } from '@react-navigation/native';
-import {
-  concatErrorMessagesFromArrayOneByOne,
-  isEnglish,
-} from '../../core/util';
+import { isEnglish } from '../../core/util';
 import { CardApplication, IState } from '../../models/cardApplication.model';
 import { isAndroid } from '../../misc/checkers';
 import moment from 'moment';
@@ -351,235 +348,238 @@ export default function UpdateCardApplicationScreen({ navigation }) {
           <CyDView className={'h-full bg-white'}>
             <CyDView className={'h-full flex grow-1'}>
               <CyDScrollView className='my-[24px]'>
-                <Formik
-                  enableReinitialize={true}
-                  initialValues={userInfo}
-                  validationSchema={userInfoValidationSchema}
-                  onSubmit={async values => await updateApplication(values)}>
-                  {formProps => (
-                    <CyDView className='mx-[9%]'>
-                      <DatePickerModal
-                        isVisible={isDOBModalVisible}
-                        mode='date'
-                        date={new Date()}
-                        onConfirm={(date: Date) => confirmDate(String(date))}
-                        onCancel={() => setDOBModalVisible(false)}
-                      />
-                      <CyDTouchView
-                        className={
-                          'mt-[20px] border-[1px] border-inputBorderColor rounded-[5px] w-full'
-                        }
-                        onPress={() => setModalVisible(true)}>
+                <CyDKeyboardAwareScrollView>
+                  <Formik
+                    enableReinitialize={true}
+                    initialValues={userInfo}
+                    validationSchema={userInfoValidationSchema}
+                    onSubmit={async values => await updateApplication(values)}>
+                    {formProps => (
+                      <CyDView className='mx-[9%]'>
+                        <DatePickerModal
+                          isVisible={isDOBModalVisible}
+                          mode='date'
+                          date={new Date()}
+                          onConfirm={(date: Date) => confirmDate(String(date))}
+                          onCancel={() => setDOBModalVisible(false)}
+                        />
+                        <CyDTouchView
+                          className={
+                            'mt-[20px] border-[1px] border-inputBorderColor rounded-[5px] w-full'
+                          }
+                          onPress={() => setModalVisible(true)}>
+                          <CyDView
+                            className={clsx(
+                              'h-[50px] pl-[8px] pr-[12px] flex flex-row justify-between items-center',
+                              {
+                                'border-redOffColor':
+                                  formProps.touched.country &&
+                                  formProps.errors.country,
+                              },
+                            )}>
+                            <CyDView
+                              className={
+                                'flex flex-row justify-between items-center w-full'
+                              }>
+                              <CyDView className={'flex flex-row items-center'}>
+                                <CyDText className='text-center text-[18px] ml-[8px]'>
+                                  {userInfo.flag}
+                                </CyDText>
+                                <CyDText className='text-center text-[18px] ml-[8px]'>
+                                  {userInfo.country}
+                                </CyDText>
+                              </CyDView>
+                              <CyDImage source={AppImages.DOWN_ARROW} />
+                            </CyDView>
+                          </CyDView>
+                        </CyDTouchView>
+                        {formProps.touched.country &&
+                          formProps.errors.country && (
+                            <CyDView className={'mt-[6px] mb-[-11px]'}>
+                              <CyDText
+                                className={'text-redOffColor font-semibold'}>
+                                {formProps.errors.country}
+                              </CyDText>
+                            </CyDView>
+                          )}
                         <CyDView
                           className={clsx(
-                            'h-[50px] pl-[8px] pr-[12px] flex flex-row justify-between items-center',
+                            'h-[50px] mt-[20px] border-[1px] border-inputBorderColor rounded-[5px] w-full flex flex-row',
                             {
                               'border-redOffColor':
-                                formProps.touched.country &&
-                                formProps.errors.country,
+                                formProps.touched.phoneNumber &&
+                                formProps.errors.phoneNumber,
                             },
                           )}>
                           <CyDView
                             className={
-                              'flex flex-row justify-between items-center w-full'
+                              'w-4/12 border-r-[1px] border-[#EBEBEB] bg-white py-[13px] rounded-l-[16px] flex items-center'
                             }>
-                            <CyDView className={'flex flex-row items-center'}>
-                              <CyDText className='text-center text-[18px] ml-[8px]'>
-                                {userInfo.flag}
-                              </CyDText>
-                              <CyDText className='text-center text-[18px] ml-[8px]'>
-                                {userInfo.country}
+                            <CyDView className={'mt-[-4px] ml-[-55px]'}>
+                              <CyDText className={'text-[33px] mt-[-6px]'}>
+                                {formProps.values.flag}
                               </CyDText>
                             </CyDView>
-                            <CyDImage source={AppImages.DOWN_ARROW} />
-                          </CyDView>
-                        </CyDView>
-                      </CyDTouchView>
-                      {formProps.touched.country &&
-                        formProps.errors.country && (
-                          <CyDView className={'mt-[6px] mb-[-11px]'}>
-                            <CyDText
-                              className={'text-redOffColor font-semibold'}>
-                              {formProps.errors.country}
-                            </CyDText>
-                          </CyDView>
-                        )}
-                      <CyDView
-                        className={clsx(
-                          'h-[50px] mt-[20px] border-[1px] border-inputBorderColor rounded-[5px] w-full flex flex-row',
-                          {
-                            'border-redOffColor':
-                              formProps.touched.phoneNumber &&
-                              formProps.errors.phoneNumber,
-                          },
-                        )}>
-                        <CyDView
-                          className={
-                            'w-4/12 border-r-[1px] border-[#EBEBEB] bg-white py-[13px] rounded-l-[16px] flex items-center'
-                          }>
-                          <CyDView className={'mt-[-4px] ml-[-55px]'}>
-                            <CyDText className={'text-[33px] mt-[-6px]'}>
-                              {formProps.values.flag}
-                            </CyDText>
-                          </CyDView>
-                          <CyDView className={'mt-[-20px] ml-[45px]'}>
-                            <CyDText
-                              className={
-                                'text-[13px] font-extrabold text-center'
-                              }>
-                              {formProps.values.dialCode}
-                            </CyDText>
-                          </CyDView>
-                        </CyDView>
-                        <CyDView
-                          className={'flex flex-row items-center w-8/12'}>
-                          <CyDView className={'flex flex-row items-center'}>
-                            <CyDTextInput
-                              className={clsx(
-                                'text-black font-nunito text-[16px] ml-[8px] w-[100%]',
-                                { 'mt-[-8px]': isAndroid() },
-                              )}
-                              value={formProps.values.phoneNumber}
-                              autoCapitalize='none'
-                              keyboardType={'numeric'}
-                              maxLength={15}
-                              key='phoneNumber'
-                              autoCorrect={false}
-                              placeholderTextColor={'#C5C5C5'}
-                              onChangeText={formProps.handleChange(
-                                'phoneNumber',
-                              )}
-                              placeholder='Phone Number'
-                            />
-                          </CyDView>
-                        </CyDView>
-                      </CyDView>
-                      {formProps.touched.phoneNumber &&
-                        formProps.errors.phoneNumber && (
-                          <CyDView className={'mt-[6px] mb-[-11px]'}>
-                            <CyDText
-                              className={'text-redOffColor font-semibold'}>
-                              {formProps.errors.phoneNumber}
-                            </CyDText>
-                          </CyDView>
-                        )}
-                      <CyDView
-                        className={'mt-[20px] flex flex-row justify-center'}>
-                        <CyDTextInput
-                          className={clsx(
-                            'ml-[4px] border-[1px] border-inputBorderColor rounded-[5px] p-[12px] text-[18px] w-full font-nunito text-primaryTextColor',
-                            {
-                              'border-redOffColor':
-                                formProps.touched.fullName &&
-                                formProps.errors.fullName,
-                            },
-                          )}
-                          value={formProps.values.fullName}
-                          autoCapitalize='none'
-                          key='fullName'
-                          autoCorrect={false}
-                          onFocus={handleFullNameFocus}
-                          onBlur={handleFullNameBlur}
-                          onChangeText={formProps.handleChange('fullName')}
-                          placeholderTextColor={'#C5C5C5'}
-                          placeholder='Full Name * (same as in KYC Doc.)'
-                        />
-                      </CyDView>
-                      {formProps.touched.fullName &&
-                        formProps.errors.fullName && (
-                          <CyDView className={'mt-[6px] mb-[-11px]'}>
-                            <CyDText
-                              className={'text-redOffColor font-semibold'}>
-                              {formProps.errors.fullName}
-                            </CyDText>
-                          </CyDView>
-                        )}
-                      {isFullNameFocused && (
-                        <CyDView className={'mt-[6px] mb-[-11px]'}>
-                          <CyDText className={'text-yellow-600 font-semibold'}>
-                            {t('FULL_NAME_DISCLAIMER')}
-                          </CyDText>
-                        </CyDView>
-                      )}
-                      <CyDTouchView
-                        className={clsx(
-                          'mt-[20px] border-[1px] border-inputBorderColor rounded-[5px] w-full',
-                          {
-                            'border-redOffColor':
-                              formProps.touched.dateOfBirth &&
-                              formProps.errors.dateOfBirth,
-                          },
-                        )}
-                        onPress={() => {
-                          setUserInfo({
-                            ...userInfo,
-                            ...formProps.values,
-                          });
-                          setDOBModalVisible(true);
-                        }}>
-                        <CyDView
-                          className={
-                            'h-[50px] pl-[8px] pr-[12px] flex flex-row justify-between items-center'
-                          }>
-                          <CyDView className={'flex flex-row items-center'}>
-                            <CyDText
-                              className={
-                                'text-center text-black font-nunito text-[18px] ml-[8px]'
-                              }>
-                              {formatDOB(formProps.values.dateOfBirth)}
-                            </CyDText>
-                            {!formProps.values.dateOfBirth && (
+                            <CyDView className={'mt-[-20px] ml-[45px]'}>
                               <CyDText
                                 className={
-                                  'font-nunito text-[18px] text-inputBorderColor'
+                                  'text-[13px] font-extrabold text-center'
                                 }>
-                                {t('DATE_OF_BIRTH')}
+                                {formProps.values.dialCode}
                               </CyDText>
-                            )}
+                            </CyDView>
                           </CyDView>
-
-                          <CyDImage source={AppImages.CALENDAR} />
+                          <CyDView
+                            className={'flex flex-row items-center w-8/12'}>
+                            <CyDView className={'flex flex-row items-center'}>
+                              <CyDTextInput
+                                className={clsx(
+                                  'text-black font-nunito text-[16px] ml-[8px] w-[100%]',
+                                  { 'mt-[-8px]': isAndroid() },
+                                )}
+                                value={formProps.values.phoneNumber}
+                                autoCapitalize='none'
+                                keyboardType={'numeric'}
+                                maxLength={15}
+                                key='phoneNumber'
+                                autoCorrect={false}
+                                placeholderTextColor={'#C5C5C5'}
+                                onChangeText={formProps.handleChange(
+                                  'phoneNumber',
+                                )}
+                                placeholder='Phone Number'
+                              />
+                            </CyDView>
+                          </CyDView>
                         </CyDView>
-                      </CyDTouchView>
-                      {formProps.touched.dateOfBirth &&
-                        formProps.errors.dateOfBirth && (
+                        {formProps.touched.phoneNumber &&
+                          formProps.errors.phoneNumber && (
+                            <CyDView className={'mt-[6px] mb-[-11px]'}>
+                              <CyDText
+                                className={'text-redOffColor font-semibold'}>
+                                {formProps.errors.phoneNumber}
+                              </CyDText>
+                            </CyDView>
+                          )}
+                        <CyDView
+                          className={'mt-[20px] flex flex-row justify-center'}>
+                          <CyDTextInput
+                            className={clsx(
+                              'ml-[4px] border-[1px] border-inputBorderColor rounded-[5px] p-[12px] text-[18px] w-full font-nunito text-primaryTextColor',
+                              {
+                                'border-redOffColor':
+                                  formProps.touched.fullName &&
+                                  formProps.errors.fullName,
+                              },
+                            )}
+                            value={formProps.values.fullName}
+                            autoCapitalize='none'
+                            key='fullName'
+                            autoCorrect={false}
+                            onFocus={handleFullNameFocus}
+                            onBlur={handleFullNameBlur}
+                            onChangeText={formProps.handleChange('fullName')}
+                            placeholderTextColor={'#C5C5C5'}
+                            placeholder='Full Name * (same as in KYC Doc.)'
+                          />
+                        </CyDView>
+                        {formProps.touched.fullName &&
+                          formProps.errors.fullName && (
+                            <CyDView className={'mt-[6px] mb-[-11px]'}>
+                              <CyDText
+                                className={'text-redOffColor font-semibold'}>
+                                {formProps.errors.fullName}
+                              </CyDText>
+                            </CyDView>
+                          )}
+                        {isFullNameFocused && (
                           <CyDView className={'mt-[6px] mb-[-11px]'}>
                             <CyDText
-                              className={'text-redOffColor font-semibold'}>
-                              {formProps.errors.dateOfBirth}
+                              className={'text-yellow-600 font-semibold'}>
+                              {t('FULL_NAME_DISCLAIMER')}
                             </CyDText>
                           </CyDView>
                         )}
-                      <CyDView
-                        className={'mt-[20px] flex flex-row justify-center'}>
-                        <CyDTextInput
+                        <CyDTouchView
                           className={clsx(
-                            'ml-[4px] border-[1px] border-inputBorderColor rounded-[5px] p-[12px] text-[18px] w-full font-nunito text-primaryTextColor',
+                            'mt-[20px] border-[1px] border-inputBorderColor rounded-[5px] w-full',
                             {
                               'border-redOffColor':
-                                formProps.touched.email &&
-                                formProps.errors.email,
+                                formProps.touched.dateOfBirth &&
+                                formProps.errors.dateOfBirth,
                             },
                           )}
-                          value={formProps.values.email}
-                          key='email'
-                          textContentType='emailAddress'
-                          keyboardType='email-address'
-                          autoCapitalize='none'
-                          autoCorrect={false}
-                          onChangeText={formProps.handleChange('email')}
-                          placeholderTextColor={'#C5C5C5'}
-                          placeholder='Email'
-                        />
-                      </CyDView>
-                      {formProps.touched.email && formProps.errors.email && (
-                        <CyDView className={'mt-[6px] mb-[-11px]'}>
-                          <CyDText className={'text-redOffColor font-semibold'}>
-                            {formProps.errors.email}
-                          </CyDText>
+                          onPress={() => {
+                            setUserInfo({
+                              ...userInfo,
+                              ...formProps.values,
+                            });
+                            setDOBModalVisible(true);
+                          }}>
+                          <CyDView
+                            className={
+                              'h-[50px] pl-[8px] pr-[12px] flex flex-row justify-between items-center'
+                            }>
+                            <CyDView className={'flex flex-row items-center'}>
+                              <CyDText
+                                className={
+                                  'text-center text-black font-nunito text-[18px] ml-[8px]'
+                                }>
+                                {formatDOB(formProps.values.dateOfBirth)}
+                              </CyDText>
+                              {!formProps.values.dateOfBirth && (
+                                <CyDText
+                                  className={
+                                    'font-nunito text-[18px] text-inputBorderColor'
+                                  }>
+                                  {t('DATE_OF_BIRTH')}
+                                </CyDText>
+                              )}
+                            </CyDView>
+
+                            <CyDImage source={AppImages.CALENDAR} />
+                          </CyDView>
+                        </CyDTouchView>
+                        {formProps.touched.dateOfBirth &&
+                          formProps.errors.dateOfBirth && (
+                            <CyDView className={'mt-[6px] mb-[-11px]'}>
+                              <CyDText
+                                className={'text-redOffColor font-semibold'}>
+                                {formProps.errors.dateOfBirth}
+                              </CyDText>
+                            </CyDView>
+                          )}
+                        <CyDView
+                          className={'mt-[20px] flex flex-row justify-center'}>
+                          <CyDTextInput
+                            className={clsx(
+                              'ml-[4px] border-[1px] border-inputBorderColor rounded-[5px] p-[12px] text-[18px] w-full font-nunito text-primaryTextColor',
+                              {
+                                'border-redOffColor':
+                                  formProps.touched.email &&
+                                  formProps.errors.email,
+                              },
+                            )}
+                            value={formProps.values.email}
+                            key='email'
+                            textContentType='emailAddress'
+                            keyboardType='email-address'
+                            autoCapitalize='none'
+                            autoCorrect={false}
+                            onChangeText={formProps.handleChange('email')}
+                            placeholderTextColor={'#C5C5C5'}
+                            placeholder='Email'
+                          />
                         </CyDView>
-                      )}
-                      {/* <CyDTouchView
+                        {formProps.touched.email && formProps.errors.email && (
+                          <CyDView className={'mt-[6px] mb-[-11px]'}>
+                            <CyDText
+                              className={'text-redOffColor font-semibold'}>
+                              {formProps.errors.email}
+                            </CyDText>
+                          </CyDView>
+                        )}
+                        {/* <CyDTouchView
                 onPress={() => formProps.handleSubmit()}
                 className={
                   'bg-appColor py-[20px] flex flex-row items-center rounded-[12px] justify-around w-[86%] mx-auto mt-[25px]'
@@ -588,197 +588,210 @@ export default function UpdateCardApplicationScreen({ navigation }) {
                   {t<string>('NEXT')}
                 </CyDText>
               </CyDTouchView> */}
-                      <>
-                        <CyDView
-                          className={'mt-[20px] flex flex-row justify-center'}>
-                          <CyDTextInput
-                            className={clsx(
-                              'ml-[4px] border-[1px] border-inputBorderColor rounded-[5px] p-[12px] text-[18px] w-full font-nunito text-primaryTextColor',
-                              {
-                                'border-redOffColor':
-                                  formProps.touched.line1 &&
-                                  formProps.errors.line1,
-                              },
-                            )}
-                            value={formProps.values.line1}
-                            autoCapitalize='none'
-                            key='line1'
-                            autoCorrect={false}
-                            placeholderTextColor={'#C5C5C5'}
-                            onChangeText={formProps.handleChange('line1')}
-                            placeholder='Line 1'
-                          />
-                        </CyDView>
-                        {formProps.touched.line1 && formProps.errors.line1 && (
-                          <CyDView className={'mt-[6px] mb-[-11px]'}>
-                            <CyDText
-                              className={'text-redOffColor font-semibold'}>
-                              {formProps.errors.line1}
-                            </CyDText>
-                          </CyDView>
-                        )}
-                        <CyDView
-                          className={'mt-[20px] flex flex-row justify-center'}>
-                          <CyDTextInput
-                            className={clsx(
-                              'ml-[4px] border-[1px] border-inputBorderColor rounded-[5px] p-[12px] text-[18px] w-full font-nunito text-primaryTextColor',
-                            )}
-                            value={formProps.values.line2}
-                            autoCapitalize='none'
-                            autoCorrect={false}
-                            placeholderTextColor={'#C5C5C5'}
-                            onChangeText={formProps.handleChange('line2')}
-                            placeholder='Line 2'
-                          />
-                        </CyDView>
-                        <CyDView
-                          className={'mt-[20px] flex flex-row justify-center'}>
-                          <CyDTextInput
-                            className={clsx(
-                              'ml-[4px] border-[1px] border-inputBorderColor rounded-[5px] p-[12px] text-[18px] w-full font-nunito text-primaryTextColor',
-                              {
-                                'border-redOffColor':
-                                  formProps.touched.city &&
-                                  formProps.errors.city,
-                              },
-                            )}
-                            value={formProps.values.city}
-                            key='city'
-                            autoCapitalize='none'
-                            autoCorrect={false}
-                            placeholderTextColor={'#C5C5C5'}
-                            onChangeText={formProps.handleChange('city')}
-                            placeholder='City'
-                          />
-                        </CyDView>
-                        {formProps.touched.city && formProps.errors.city && (
-                          <CyDView className={'mt-[6px] mb-[-11px]'}>
-                            <CyDText
-                              className={'text-redOffColor font-semibold'}>
-                              {formProps.errors.city}
-                            </CyDText>
-                          </CyDView>
-                        )}
-                        <CyDTouchView
-                          className={'mt-[20px] flex flex-row justify-center'}
-                          onPress={() => {
-                            setSelectStateModalVisible(true);
-                          }}>
+                        <>
                           <CyDView
-                            className={clsx(
-                              'ml-[4px] border-[1px] border-inputBorderColor rounded-[5px] p-[12px] text-[18px] w-full font-nunito text-primaryTextColor',
-                              {
-                                'border-redOffColor':
-                                  formProps.touched.state &&
-                                  formProps.errors.state,
-                              },
-                            )}>
-                            <CyDText className='font-nunito text-[18px]'>
-                              {selectedState?.name}
-                            </CyDText>
+                            className={
+                              'mt-[20px] flex flex-row justify-center'
+                            }>
+                            <CyDTextInput
+                              className={clsx(
+                                'ml-[4px] border-[1px] border-inputBorderColor rounded-[5px] p-[12px] text-[18px] w-full font-nunito text-primaryTextColor',
+                                {
+                                  'border-redOffColor':
+                                    formProps.touched.line1 &&
+                                    formProps.errors.line1,
+                                },
+                              )}
+                              value={formProps.values.line1}
+                              autoCapitalize='none'
+                              key='line1'
+                              autoCorrect={false}
+                              placeholderTextColor={'#C5C5C5'}
+                              onChangeText={formProps.handleChange('line1')}
+                              placeholder='Line 1'
+                            />
                           </CyDView>
-                        </CyDTouchView>
-                        {formProps.touched.state && formProps.errors.state && (
-                          <CyDView className={'mt-[6px] mb-[-11px]'}>
-                            <CyDText
-                              className={'text-redOffColor font-semibold'}>
-                              {formProps.errors.state}
-                            </CyDText>
-                          </CyDView>
-                        )}
-                        <CyDView
-                          className={'mt-[20px] flex flex-row justify-center'}>
-                          <CyDTextInput
-                            className={clsx(
-                              'ml-[4px] border-[1px] border-inputBorderColor rounded-[5px] p-[12px] text-[18px] w-full font-nunito text-primaryTextColor',
-                              {
-                                'border-redOffColor':
-                                  formProps.touched.postalCode &&
-                                  formProps.errors.postalCode,
-                              },
+                          {formProps.touched.line1 &&
+                            formProps.errors.line1 && (
+                              <CyDView className={'mt-[6px] mb-[-11px]'}>
+                                <CyDText
+                                  className={'text-redOffColor font-semibold'}>
+                                  {formProps.errors.line1}
+                                </CyDText>
+                              </CyDView>
                             )}
-                            value={formProps.values.postalCode}
-                            key='zipcode'
-                            autoCapitalize='none'
-                            autoCorrect={false}
-                            placeholderTextColor={'#C5C5C5'}
-                            onChangeText={formProps.handleChange('postalCode')}
-                            placeholder='Zipcode'
-                          />
-                        </CyDView>
-                        {formProps.touched.postalCode &&
-                          formProps.errors.postalCode && (
+                          <CyDView
+                            className={
+                              'mt-[20px] flex flex-row justify-center'
+                            }>
+                            <CyDTextInput
+                              className={clsx(
+                                'ml-[4px] border-[1px] border-inputBorderColor rounded-[5px] p-[12px] text-[18px] w-full font-nunito text-primaryTextColor',
+                              )}
+                              value={formProps.values.line2}
+                              autoCapitalize='none'
+                              autoCorrect={false}
+                              placeholderTextColor={'#C5C5C5'}
+                              onChangeText={formProps.handleChange('line2')}
+                              placeholder='Line 2'
+                            />
+                          </CyDView>
+                          <CyDView
+                            className={
+                              'mt-[20px] flex flex-row justify-center'
+                            }>
+                            <CyDTextInput
+                              className={clsx(
+                                'ml-[4px] border-[1px] border-inputBorderColor rounded-[5px] p-[12px] text-[18px] w-full font-nunito text-primaryTextColor',
+                                {
+                                  'border-redOffColor':
+                                    formProps.touched.city &&
+                                    formProps.errors.city,
+                                },
+                              )}
+                              value={formProps.values.city}
+                              key='city'
+                              autoCapitalize='none'
+                              autoCorrect={false}
+                              placeholderTextColor={'#C5C5C5'}
+                              onChangeText={formProps.handleChange('city')}
+                              placeholder='City'
+                            />
+                          </CyDView>
+                          {formProps.touched.city && formProps.errors.city && (
                             <CyDView className={'mt-[6px] mb-[-11px]'}>
                               <CyDText
                                 className={'text-redOffColor font-semibold'}>
-                                {formProps.errors.postalCode}
+                                {formProps.errors.city}
                               </CyDText>
                             </CyDView>
                           )}
-                        <CyDView className='flex flex-row items-center'>
-                          <CyDText className='mt-[20] mb-[10px] text-[16px]'>
-                            {t('PEP_QUESTION')}
-                          </CyDText>
-                          <CyDView>
-                            <Tooltip
-                              isVisible={showPepToolTip}
-                              disableShadow={true}
-                              content={
-                                <CyDView className={'p-[5px]'}>
-                                  <CyDText
-                                    className={
-                                      'mb-[5px] font-bold text-[15px]'
-                                    }>
-                                    {t<string>('PEP_EXPLAINATION')}
-                                  </CyDText>
-                                </CyDView>
-                              }
-                              onClose={() => setPepToolTip(false)}
-                              placement='top'>
-                              <CyDTouchView
-                                onPress={() => {
-                                  setPepToolTip(true);
-                                }}>
-                                <CyDImage
-                                  source={AppImages.INFO_ICON}
-                                  resizeMode='contain'
-                                  className={'w-[14px] h-[14px] ml-[4px]'}
-                                />
-                              </CyDTouchView>
-                            </Tooltip>
+                          <CyDTouchView
+                            className={'mt-[20px] flex flex-row justify-center'}
+                            onPress={() => {
+                              setSelectStateModalVisible(true);
+                            }}>
+                            <CyDView
+                              className={clsx(
+                                'ml-[4px] border-[1px] border-inputBorderColor rounded-[5px] p-[12px] text-[18px] w-full font-nunito text-primaryTextColor',
+                                {
+                                  'border-redOffColor':
+                                    formProps.touched.state &&
+                                    formProps.errors.state,
+                                },
+                              )}>
+                              <CyDText className='font-nunito text-[18px]'>
+                                {selectedState?.name}
+                              </CyDText>
+                            </CyDView>
+                          </CyDTouchView>
+                          {formProps.touched.state &&
+                            formProps.errors.state && (
+                              <CyDView className={'mt-[6px] mb-[-11px]'}>
+                                <CyDText
+                                  className={'text-redOffColor font-semibold'}>
+                                  {formProps.errors.state}
+                                </CyDText>
+                              </CyDView>
+                            )}
+                          <CyDView
+                            className={
+                              'mt-[20px] flex flex-row justify-center'
+                            }>
+                            <CyDTextInput
+                              className={clsx(
+                                'ml-[4px] border-[1px] border-inputBorderColor rounded-[5px] p-[12px] text-[18px] w-full font-nunito text-primaryTextColor',
+                                {
+                                  'border-redOffColor':
+                                    formProps.touched.postalCode &&
+                                    formProps.errors.postalCode,
+                                },
+                              )}
+                              value={formProps.values.postalCode}
+                              key='zipcode'
+                              autoCapitalize='none'
+                              autoCorrect={false}
+                              placeholderTextColor={'#C5C5C5'}
+                              onChangeText={formProps.handleChange(
+                                'postalCode',
+                              )}
+                              placeholder='Zipcode'
+                            />
                           </CyDView>
-                        </CyDView>
-                        <RadioButtons
-                          radioButtonsData={PEP_OPTIONS}
-                          onPressRadioButton={(value: number) => {
-                            onPepValueSet(formProps.values, value);
-                          }}
-                          currentValue={userInfo.pep}
-                          containerStyle={
-                            'flex flex-row justify-around ml-[-21%]'
-                          }
-                        />
-                        {formProps.touched.pep && formProps.errors.pep && (
-                          <CyDView className={'mt-[-15px] mb-[11px]'}>
-                            <CyDText
-                              className={'text-redOffColor font-semibold'}>
-                              {formProps.errors.pep}
+                          {formProps.touched.postalCode &&
+                            formProps.errors.postalCode && (
+                              <CyDView className={'mt-[6px] mb-[-11px]'}>
+                                <CyDText
+                                  className={'text-redOffColor font-semibold'}>
+                                  {formProps.errors.postalCode}
+                                </CyDText>
+                              </CyDView>
+                            )}
+                          <CyDView className='flex flex-row items-center'>
+                            <CyDText className='mt-[20] mb-[10px] text-[16px]'>
+                              {t('PEP_QUESTION')}
                             </CyDText>
+                            <CyDView>
+                              <Tooltip
+                                isVisible={showPepToolTip}
+                                disableShadow={true}
+                                content={
+                                  <CyDView className={'p-[5px]'}>
+                                    <CyDText
+                                      className={
+                                        'mb-[5px] font-bold text-[15px]'
+                                      }>
+                                      {t<string>('PEP_EXPLAINATION')}
+                                    </CyDText>
+                                  </CyDView>
+                                }
+                                onClose={() => setPepToolTip(false)}
+                                placement='top'>
+                                <CyDTouchView
+                                  onPress={() => {
+                                    setPepToolTip(true);
+                                  }}>
+                                  <CyDImage
+                                    source={AppImages.INFO_ICON}
+                                    resizeMode='contain'
+                                    className={'w-[14px] h-[14px] ml-[4px]'}
+                                  />
+                                </CyDTouchView>
+                              </Tooltip>
+                            </CyDView>
                           </CyDView>
-                        )}
-                        <Button
-                          title={t<string>('NEXT')}
-                          loading={updating}
-                          onPress={() => {
-                            formProps.handleSubmit();
-                          }}
-                          style='h-[55px] mt-[20px] mx-auto justify-center items-center w-full'
-                          isPrivateKeyDependent={false}
-                        />
-                      </>
-                    </CyDView>
-                  )}
-                </Formik>
+                          <RadioButtons
+                            radioButtonsData={PEP_OPTIONS}
+                            onPressRadioButton={(value: number) => {
+                              onPepValueSet(formProps.values, value);
+                            }}
+                            currentValue={userInfo.pep}
+                            containerStyle={
+                              'flex flex-row justify-around ml-[-21%]'
+                            }
+                          />
+                          {formProps.touched.pep && formProps.errors.pep && (
+                            <CyDView className={'mt-[-15px] mb-[11px]'}>
+                              <CyDText
+                                className={'text-redOffColor font-semibold'}>
+                                {formProps.errors.pep}
+                              </CyDText>
+                            </CyDView>
+                          )}
+                          <Button
+                            title={t<string>('NEXT')}
+                            loading={updating}
+                            onPress={() => {
+                              formProps.handleSubmit();
+                            }}
+                            style='h-[55px] mt-[20px] mx-auto justify-center items-center w-full'
+                            isPrivateKeyDependent={false}
+                          />
+                        </>
+                      </CyDView>
+                    )}
+                  </Formik>
+                </CyDKeyboardAwareScrollView>
               </CyDScrollView>
             </CyDView>
           </CyDView>

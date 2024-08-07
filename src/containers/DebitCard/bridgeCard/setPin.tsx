@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { StyleSheet } from 'react-native';
 import {
+  CyDKeyboardAwareScrollView,
   CyDSafeAreaView,
   CyDScrollView,
   CyDText,
@@ -94,86 +95,88 @@ export default function SetPin(props: {
       <CyDScrollView
         className=' bg-white pb-[12px]'
         contentContainerStyle={styles.contentContainerStyle}>
-        <CyDView>
-          <ActivateCardHeader />
-          <CyDView className={' px-[24px] pt-[10px] mt-[14px]'}>
-            <CyDView>
-              <CyDText className={'text-[18px] font-extrabold'}>
-                {t<string>('CARD_SET_PIN')}
-              </CyDText>
-              <CyDView className={'mt-[5px] mb-[20px]'}>
-                <CyDTextInput
-                  className={clsx(
-                    'h-[55px] text-center w-[100%] tracking-[2px] rounded-[5px] border-[1px] border-inputBorderColor',
-                    {
-                      'pl-[1px] pt-[2px]': isAndroid(),
-                      'tracking-[15px]': pin !== '',
-                      'border-redCyD': pin !== '' && pin.length !== 4,
-                    },
-                  )}
-                  keyboardType='numeric'
-                  placeholder='Enter Pin'
-                  placeholderTextColor={'#C5C5C5'}
-                  onChangeText={(num: string) => setPin(num)}
-                  value={pin}
-                  maxLength={4}
-                  secureTextEntry={true}
-                />
-              </CyDView>
-            </CyDView>
-
-            <CyDView>
-              <CyDText className={'text-[18px] font-extrabold'}>
-                {t<string>('CARD_CONFIRM_PIN')}
-              </CyDText>
-              <CyDView className={'mt-[5px]'}>
-                <CyDTextInput
-                  className={clsx(
-                    'h-[55px] text-center w-[100%] tracking-[2px] rounded-[5px] border-[1px] border-inputBorderColor',
-                    {
-                      'pl-[1px] pt-[2px]': isAndroid(),
-                      'tracking-[15px]': confirmPin !== '',
-                      'border-redCyD':
-                        confirmPin !== '' &&
-                        confirmPin.length !== 4 &&
-                        pin !== confirmPin,
-                    },
-                  )}
-                  keyboardType='numeric'
-                  placeholder='Re-enter Pin'
-                  placeholderTextColor={'#C5C5C5'}
-                  onChangeText={(num: string) => setConfirmPin(num)}
-                  value={confirmPin}
-                  maxLength={4}
-                  secureTextEntry={true}
-                />
-                <CyDText className='text-redCyD mt-[5px]'>
-                  {confirmPin !== '' && confirmPin !== pin
-                    ? "Pin doesn't match"
-                    : ''}
+        <CyDKeyboardAwareScrollView>
+          <CyDView>
+            <ActivateCardHeader />
+            <CyDView className={' px-[24px] pt-[10px] mt-[14px]'}>
+              <CyDView>
+                <CyDText className={'text-[18px] font-extrabold'}>
+                  {t<string>('CARD_SET_PIN')}
                 </CyDText>
+                <CyDView className={'mt-[5px] mb-[20px]'}>
+                  <CyDTextInput
+                    className={clsx(
+                      'h-[55px] text-center w-[100%] tracking-[2px] rounded-[5px] border-[1px] border-inputBorderColor',
+                      {
+                        'pl-[1px] pt-[2px]': isAndroid(),
+                        'tracking-[15px]': pin !== '',
+                        'border-redCyD': pin !== '' && pin.length !== 4,
+                      },
+                    )}
+                    keyboardType='numeric'
+                    placeholder='Enter Pin'
+                    placeholderTextColor={'#C5C5C5'}
+                    onChangeText={(num: string) => setPin(num)}
+                    value={pin}
+                    maxLength={4}
+                    secureTextEntry={true}
+                  />
+                </CyDView>
+              </CyDView>
+
+              <CyDView>
+                <CyDText className={'text-[18px] font-extrabold'}>
+                  {t<string>('CARD_CONFIRM_PIN')}
+                </CyDText>
+                <CyDView className={'mt-[5px]'}>
+                  <CyDTextInput
+                    className={clsx(
+                      'h-[55px] text-center w-[100%] tracking-[2px] rounded-[5px] border-[1px] border-inputBorderColor',
+                      {
+                        'pl-[1px] pt-[2px]': isAndroid(),
+                        'tracking-[15px]': confirmPin !== '',
+                        'border-redCyD':
+                          confirmPin !== '' &&
+                          confirmPin.length !== 4 &&
+                          pin !== confirmPin,
+                      },
+                    )}
+                    keyboardType='numeric'
+                    placeholder='Re-enter Pin'
+                    placeholderTextColor={'#C5C5C5'}
+                    onChangeText={(num: string) => setConfirmPin(num)}
+                    value={confirmPin}
+                    maxLength={4}
+                    secureTextEntry={true}
+                  />
+                  <CyDText className='text-redCyD mt-[5px]'>
+                    {confirmPin !== '' && confirmPin !== pin
+                      ? "Pin doesn't match"
+                      : ''}
+                  </CyDText>
+                </CyDView>
               </CyDView>
             </CyDView>
           </CyDView>
-        </CyDView>
-        <CyDView className='w-full mb-[4px] mt-[12px] items-center'>
-          <Button
-            title={t('CONFIRM')}
-            disabled={
-              !confirmPin ||
-              !pin ||
-              confirmPin.length !== 4 ||
-              pin.length !== 4 ||
-              confirmPin !== pin
-            }
-            onPress={() => {
-              verifyWithOTP();
-            }}
-            type={ButtonType.PRIMARY}
-            loading={loading}
-            style='h-[60px] w-[90%]'
-          />
-        </CyDView>
+          <CyDView className='w-full mb-[4px] mt-[12px] items-center'>
+            <Button
+              title={t('CONFIRM')}
+              disabled={
+                !confirmPin ||
+                !pin ||
+                confirmPin.length !== 4 ||
+                pin.length !== 4 ||
+                confirmPin !== pin
+              }
+              onPress={() => {
+                verifyWithOTP();
+              }}
+              type={ButtonType.PRIMARY}
+              loading={loading}
+              style='h-[60px] w-[90%]'
+            />
+          </CyDView>
+        </CyDKeyboardAwareScrollView>
       </CyDScrollView>
     </CyDSafeAreaView>
   );

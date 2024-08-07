@@ -1087,6 +1087,8 @@ const resources = {
       BRIDGE_SUCCESS_DESCRIPTION: 'Your tokens have been successfully bridged',
       BRIDGE_ERROR_DESCRIPTION: 'Bridge Error. Please try again later',
       BRIDGE_TITLE: 'Bridge',
+      BIRDGE_SWAP_AVAILABLE:
+        'Our application offers seamless support for both swap and bridge operations across multiple chains',
     },
   },
 };

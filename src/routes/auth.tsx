@@ -667,14 +667,14 @@ export function PortfolioStackScreen({ navigation, route }) {
             fontSize: 18,
             fontWeight: '800',
           },
-          title: t('BRIDGE'),
+          title: t('SWAP_TITLE'),
           headerTintColor: Colors.primaryTextColor,
           headerBackTitleVisible: false,
           headerLeft: props => defaultHeaderLeft(navigation),
         }}
       />
 
-      <PortfolioStack.Screen
+      {/* <PortfolioStack.Screen
         name={screenTitle.BRIDGE_SCREEN}
         component={Bridge}
         options={{
@@ -692,7 +692,7 @@ export function PortfolioStackScreen({ navigation, route }) {
           headerBackTitleVisible: false,
           headerLeft: props => defaultHeaderLeft(navigation),
         }}
-      />
+      /> */}
 
       <PortfolioStack.Screen
         name={screenTitle.BRIDGE_STATUS}
@@ -1405,7 +1405,7 @@ export function SwapStackScreen({ navigation }) {
             fontSize: 18,
             fontWeight: '800',
           },
-          title: t('BRIDGE'),
+          title: t('SWAP_TITLE'),
           headerTintColor: Colors.primaryTextColor,
           headerBackTitleVisible: false,
         }}

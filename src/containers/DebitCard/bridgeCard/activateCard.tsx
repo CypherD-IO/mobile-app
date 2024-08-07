@@ -1,5 +1,6 @@
 import React, { useContext, useEffect, useState } from 'react';
 import {
+  CyDKeyboardAwareScrollView,
   CyDSafeAreaView,
   CyDScrollView,
   CyDText,
@@ -178,96 +179,102 @@ export default function ActivateCard(props: {
           ...styles.contentContainerStyle,
           ...(!keyboardHeight && { flex: 1 }),
         }}>
-        <CyDView>
-          <CyDView className='px-[20px]'>
-            <CyDText className={'text-[25px] font-extrabold'}>
-              {t<string>('CARD_ACTIVATION_HEADER')}
-            </CyDText>
-            <CyDText className={'text-[15px] font-bold'}>
-              {t<string>('CARD_ACTIVATION_DESCRIPTION')}
-            </CyDText>
-          </CyDView>
-          <CyDView className={' px-[24px] pt-[10px] mt-[14px]'}>
-            <CyDText className={'text-[18px] font-extrabold'}>
-              {t<string>('Last 4 digits of card number')}
-            </CyDText>
-            <CyDView>
-              <CyDView className={'mt-[5px]'}>
-                {/* <OtpInput pinCount={4} getOtp={(otp) => { void verifyOTP(Number(otp)); }}></OtpInput> */}
-                <CyDTextInput
-                  className={clsx(
-                    'h-[55px] text-center w-[100%] tracking-[2px] rounded-[5px] border-[1px] border-inputBorderColor',
-                    {
-                      'pl-[1px] pt-[2px]': isAndroid(),
-                      'tracking-[15px]': last4 !== '',
-                      'border-redCyD': last4 !== '' && last4.length !== 4,
-                    },
-                  )}
-                  keyboardType='numeric'
-                  placeholder='Enter last4 digits of card number'
-                  placeholderTextColor={'#C5C5C5'}
-                  onChangeText={(num: string) => setLast4(num)}
-                  value={last4}
-                  maxLength={4}
-                />
+        <CyDKeyboardAwareScrollView>
+          <CyDView>
+            <CyDView className='px-[20px]'>
+              <CyDText className={'text-[25px] font-extrabold'}>
+                {t<string>('CARD_ACTIVATION_HEADER')}
+              </CyDText>
+              <CyDText className={'text-[15px] font-bold'}>
+                {t<string>('CARD_ACTIVATION_DESCRIPTION')}
+              </CyDText>
+            </CyDView>
+            <CyDView className={' px-[24px] pt-[10px] mt-[14px]'}>
+              <CyDText className={'text-[18px] font-extrabold'}>
+                {t<string>('Last 4 digits of card number')}
+              </CyDText>
+              <CyDView>
+                <CyDView className={'mt-[5px]'}>
+                  {/* <OtpInput pinCount={4} getOtp={(otp) => { void verifyOTP(Number(otp)); }}></OtpInput> */}
+                  <CyDTextInput
+                    className={clsx(
+                      'h-[55px] text-center w-[100%] tracking-[2px] rounded-[5px] border-[1px] border-inputBorderColor',
+                      {
+                        'pl-[1px] pt-[2px]': isAndroid(),
+                        'tracking-[15px]': last4 !== '',
+                        'border-redCyD': last4 !== '' && last4.length !== 4,
+                      },
+                    )}
+                    keyboardType='numeric'
+                    placeholder='Enter last4 digits of card number'
+                    placeholderTextColor={'#C5C5C5'}
+                    onChangeText={(num: string) => setLast4(num)}
+                    value={last4}
+                    maxLength={4}
+                  />
+                </CyDView>
               </CyDView>
             </CyDView>
-          </CyDView>
-          <CyDView className={'px-[20px] mt-[30px]'}>
-            <CyDText className={'text-[18px] font-extrabold'}>
-              {t<string>('OTP')}
-            </CyDText>
-            <CyDView>
-              <CyDView className={'mt-[5px]'}>
-                <OtpInput
-                  pinCount={4}
-                  getOtp={otp => {
-                    setOtp(otp);
-                  }}
-                  placeholder={t('ENTER_OTP')}
-                />
-                <CyDTouchView
-                  className={'flex flex-row self-start items-center mt-[25px]'}
-                  disabled={sendingOTP || resendInterval !== 0}
-                  onPress={() => {
-                    void resendOTP();
-                  }}>
-                  <CyDText
+            <CyDView className={'px-[20px] mt-[30px]'}>
+              <CyDText className={'text-[18px] font-extrabold'}>
+                {t<string>('OTP')}
+              </CyDText>
+              <CyDView>
+                <CyDView className={'mt-[5px]'}>
+                  <OtpInput
+                    pinCount={4}
+                    getOtp={otp => {
+                      setOtp(otp);
+                    }}
+                    placeholder={t('ENTER_OTP')}
+                  />
+                  <CyDTouchView
                     className={
-                      'font-bold underline decoration-solid underline-offset-4'
-                    }>
-                    {t<string>('RESEND_CODE_INIT_CAPS')}
-                  </CyDText>
-                  {sendingOTP && (
-                    <LottieView
-                      source={AppImages.LOADER_TRANSPARENT}
-                      autoPlay
-                      loop
-                      style={styles.lottie}
-                    />
-                  )}
-                  {resendInterval !== 0 && (
-                    <CyDText>{String(` in ${resendInterval} sec`)}</CyDText>
-                  )}
-                </CyDTouchView>
+                      'flex flex-row self-start items-center mt-[25px]'
+                    }
+                    disabled={sendingOTP || resendInterval !== 0}
+                    onPress={() => {
+                      void resendOTP();
+                    }}>
+                    <CyDText
+                      className={
+                        'font-bold underline decoration-solid underline-offset-4'
+                      }>
+                      {t<string>('RESEND_CODE_INIT_CAPS')}
+                    </CyDText>
+                    {sendingOTP && (
+                      <LottieView
+                        source={AppImages.LOADER_TRANSPARENT}
+                        autoPlay
+                        loop
+                        style={styles.lottie}
+                      />
+                    )}
+                    {resendInterval !== 0 && (
+                      <CyDText>{String(` in ${resendInterval} sec`)}</CyDText>
+                    )}
+                  </CyDTouchView>
+                </CyDView>
               </CyDView>
             </CyDView>
           </CyDView>
-        </CyDView>
-        <CyDView className='w-full mb-[4px] mt-[12px] items-center'>
-          <Button
-            title={t('ACTIVATE')}
-            disabled={!otp || !last4 || otp.length !== 4 || last4.length !== 4}
-            onPress={() => {
-              void (async () => {
-                await activateCard();
-              })();
-            }}
-            type={ButtonType.PRIMARY}
-            loading={loading}
-            style=' h-[60px] w-[90%]'
-          />
-        </CyDView>
+          <CyDView className='w-full mb-[4px] mt-[12px] items-center'>
+            <Button
+              title={t('ACTIVATE')}
+              disabled={
+                !otp || !last4 || otp.length !== 4 || last4.length !== 4
+              }
+              onPress={() => {
+                void (async () => {
+                  await activateCard();
+                })();
+              }}
+              type={ButtonType.PRIMARY}
+              loading={loading}
+              style=' h-[60px] w-[90%]'
+            />
+          </CyDView>
+        </CyDKeyboardAwareScrollView>
       </CyDScrollView>
     </CyDSafeAreaView>
   );

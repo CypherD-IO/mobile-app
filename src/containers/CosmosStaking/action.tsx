@@ -6,6 +6,7 @@ import {
   CyDTextInput,
   CyDView,
   CyDTouchView,
+  CyDKeyboardAwareScrollView,
 } from '../../styles/tailwindStyles';
 import AppImages from '../../../assets/images/appImages';
 import { BackHandler, StyleSheet } from 'react-native';
@@ -198,340 +199,348 @@ export default function CosmosAction({
   };
   return (
     <CyDScrollView className={'bg-white h-full w-full px-[20px]'}>
-      <CyDModalLayout
-        setModalVisible={setSignModalVisible}
-        isModalVisible={signModalVisible}
-        style={styles.modalLayout}
-        animationIn={'slideInUp'}
-        animationOut={'slideOutDown'}>
-        <CyDView
-          className={'bg-white  px-[25px] pb-[30px] rounded-t-[20px] relative'}>
-          <CyDTouchView
-            onPress={() => setSignModalVisible(false)}
-            className={'w-full flex-1 flex-row py-[20px] justify-end z-[50]'}>
-            <CyDImage
-              source={AppImages.CLOSE}
-              className={' w-[18px] h-[18px]'}
+      <CyDKeyboardAwareScrollView>
+        <CyDModalLayout
+          setModalVisible={setSignModalVisible}
+          isModalVisible={signModalVisible}
+          style={styles.modalLayout}
+          animationIn={'slideInUp'}
+          animationOut={'slideOutDown'}>
+          <CyDView
+            className={
+              'bg-white  px-[25px] pb-[30px] rounded-t-[20px] relative'
+            }>
+            <CyDTouchView
+              onPress={() => setSignModalVisible(false)}
+              className={'w-full flex-1 flex-row py-[20px] justify-end z-[50]'}>
+              <CyDImage
+                source={AppImages.CLOSE}
+                className={' w-[18px] h-[18px]'}
+              />
+            </CyDTouchView>
+            <CyDText className={'mt-[10px] font-bold text-center text-[22px]'}>
+              {`${from} ${from === CosmosActionType.DELEGATE ? 'to' : 'from'} ${
+                validatorData.name
+              }`}
+            </CyDText>
+
+            <CyDView className={'flex flex-row mt-[40px]'}>
+              <CyDImage
+                source={AppImages[tokenData.chainDetails.backendName + '_LOGO']}
+                className={'h-[20px] w-[20px]'}
+              />
+              <CyDView className={' flex flex-row'}>
+                <CyDText
+                  className={
+                    ' font-bold text-[16px] ml-[5px] text-primaryTextColor'
+                  }>{`${parseFloat(amount).toFixed(2)} ${
+                  tokenData.name
+                }`}</CyDText>
+              </CyDView>
+            </CyDView>
+
+            <CyDView className={'flex flex-row mt-[20px]'}>
+              <CyDImage
+                source={AppImages.GAS_FEES}
+                className={'w-[16px] h-[16px] mt-[3px]'}
+              />
+              <CyDView className={' flex flex-row'}>
+                <CyDText
+                  className={
+                    ' font-medium text-[16px] ml-[10px] text-primaryTextColor'
+                  }>
+                  {t('GAS_FEE_LABEL')}{' '}
+                  {`${gasFee.toFixed(6)} ${tokenData.name}`}
+                </CyDText>
+              </CyDView>
+            </CyDView>
+
+            <Button
+              onPress={() => {
+                setSignModalVisible(false);
+                onAction(CosmosActionType.TRANSACTION);
+              }}
+              title={t('APPROVE')}
+              style={'py-[5%] mt-[15px]'}
+              loading={loading}
+              loaderStyle={{ height: 24 }}
             />
-          </CyDTouchView>
-          <CyDText className={'mt-[10px] font-bold text-center text-[22px]'}>
-            {`${from} ${from === CosmosActionType.DELEGATE ? 'to' : 'from'} ${
-              validatorData.name
-            }`}
+
+            <Button
+              onPress={() => {
+                setSignModalVisible(false);
+              }}
+              title={t('REJECT')}
+              type={'secondary'}
+              style={'py-[5%] mt-[15px]'}
+            />
+          </CyDView>
+        </CyDModalLayout>
+
+        <CyDText
+          className={
+            'text-[24px] mt-[24px] font-nunito text-secondaryTextColor font-extrabold text-start'
+          }>
+          {validatorData.name}
+        </CyDText>
+        <CyDView
+          className={'flex flex-row items-center justify-start mt-[24px]'}>
+          <CyDImage
+            source={AppImages.GIFT_BOX_PNG}
+            className={'w-[20px] h-[20px]'}
+          />
+          <CyDText
+            className={
+              'ml-[12px] text-[14px] font-nunito text-primaryTextColor font-medium text-center'
+            }>
+            {t('Commision rate ')}
           </CyDText>
-
-          <CyDView className={'flex flex-row mt-[40px]'}>
-            <CyDImage
-              source={AppImages[tokenData.chainDetails.backendName + '_LOGO']}
-              className={'h-[20px] w-[20px]'}
-            />
-            <CyDView className={' flex flex-row'}>
-              <CyDText
-                className={
-                  ' font-bold text-[16px] ml-[5px] text-primaryTextColor'
-                }>{`${parseFloat(amount).toFixed(2)} ${
-                tokenData.name
-              }`}</CyDText>
-            </CyDView>
-          </CyDView>
-
-          <CyDView className={'flex flex-row mt-[20px]'}>
-            <CyDImage
-              source={AppImages.GAS_FEES}
-              className={'w-[16px] h-[16px] mt-[3px]'}
-            />
-            <CyDView className={' flex flex-row'}>
-              <CyDText
-                className={
-                  ' font-medium text-[16px] ml-[10px] text-primaryTextColor'
-                }>
-                {t('GAS_FEE_LABEL')} {`${gasFee.toFixed(6)} ${tokenData.name}`}
-              </CyDText>
-            </CyDView>
-          </CyDView>
-
-          <Button
-            onPress={() => {
-              setSignModalVisible(false);
-              onAction(CosmosActionType.TRANSACTION);
-            }}
-            title={t('APPROVE')}
-            style={'py-[5%] mt-[15px]'}
-            loading={loading}
-            loaderStyle={{ height: 24 }}
-          />
-
-          <Button
-            onPress={() => {
-              setSignModalVisible(false);
-            }}
-            title={t('REJECT')}
-            type={'secondary'}
-            style={'py-[5%] mt-[15px]'}
-          />
+          <CyDText
+            className={
+              'ml-[4px] text-[14px] font-nunito text-secondaryTextColor font-bold text-center'
+            }>{`${parseFloat(validatorData.commissionRate) * 100}% `}</CyDText>
         </CyDView>
-      </CyDModalLayout>
+        <CyDView
+          className={'flex flex-row items-center justify-start mt-[12px]'}>
+          {/* <CyDImage source={AppImages.COINS} className={'w-[24px] h-[24px]'}/> */}
+          <CyDImage
+            source={{
+              uri: tokenData.logoUrl,
+            }}
+            className={'w-[20px] h-[20px]'}
+          />
 
-      <CyDText
-        className={
-          'text-[24px] mt-[24px] font-nunito text-secondaryTextColor font-extrabold text-start'
-        }>
-        {validatorData.name}
-      </CyDText>
-      <CyDView className={'flex flex-row items-center justify-start mt-[24px]'}>
-        <CyDImage
-          source={AppImages.GIFT_BOX_PNG}
-          className={'w-[20px] h-[20px]'}
-        />
-        <CyDText
-          className={
-            'ml-[12px] text-[14px] font-nunito text-primaryTextColor font-medium text-center'
-          }>
-          {t('Commision rate ')}
-        </CyDText>
-        <CyDText
-          className={
-            'ml-[4px] text-[14px] font-nunito text-secondaryTextColor font-bold text-center'
-          }>{`${parseFloat(validatorData.commissionRate) * 100}% `}</CyDText>
-      </CyDView>
-      <CyDView className={'flex flex-row items-center justify-start mt-[12px]'}>
-        {/* <CyDImage source={AppImages.COINS} className={'w-[24px] h-[24px]'}/> */}
-        <CyDImage
-          source={{
-            uri: tokenData.logoUrl,
-          }}
-          className={'w-[20px] h-[20px]'}
-        />
+          <CyDText
+            className={
+              'ml-[12px] text-[14px] font-nunito text-primaryTextColor font-medium text-center'
+            }>
+            {t('Voting Power of ')}
+          </CyDText>
+          <CyDText
+            className={
+              'ml-[4px] text-[14px] font-nunito ttext-secondaryTextColor font-bold text-center'
+            }>{`${convertNumberToShortHandNotation(
+            convertFromUnitAmount(
+              validatorData.tokens,
+              tokenData.contractDecimals,
+            ),
+          )} ${tokenData.name}`}</CyDText>
+        </CyDView>
 
-        <CyDText
-          className={
-            'ml-[12px] text-[14px] font-nunito text-primaryTextColor font-medium text-center'
-          }>
-          {t('Voting Power of ')}
-        </CyDText>
-        <CyDText
-          className={
-            'ml-[4px] text-[14px] font-nunito ttext-secondaryTextColor font-bold text-center'
-          }>{`${convertNumberToShortHandNotation(
-          convertFromUnitAmount(
-            validatorData.tokens,
-            tokenData.contractDecimals,
-          ),
-        )} ${tokenData.name}`}</CyDText>
-      </CyDView>
-
-      <CyDView
-        className={
-          'bg-[#FFE3DB4D] my-[32px] py-[16px] px-[20px] rounded-[8px] flex flex-row'
-        }>
-        <LottieView
-          source={AppImages.INSIGHT_BULB}
-          autoPlay
-          loop
-          resizeMode='cover'
-          style={{ width: 40, aspectRatio: 80 / 120, top: -3 }}
-        />
-        <CyDText
-          className={
-            'ml-[16px] font-nunito text-[13px] text-primaryTextColor w-10/12 font-semibold'
-          }>{`${t('Once you undelegate your staked')} ${tokenData.name}${t(
-          ', you will need to wait 21 days for your tokens to be liquid',
-        )}`}</CyDText>
-      </CyDView>
-
-      <CyDView className={'flex flex-row justify-between items-center'}>
-        <CyDText className={'font-nunito text-[16px] text-primaryTextColor'}>
-          {'My delegation'}
-        </CyDText>
-        <CyDText
-          className={
-            'font-nunito text-[18px] font-bold text-secondaryTextColor'
-          }>{`${convertFromUnitAmount(
-          validatorData.balance.toString(),
-          tokenData.contractDecimals,
-        )} ${tokenData.name}`}</CyDText>
-      </CyDView>
-
-      {CosmosActionType.DELEGATE === from && (
         <CyDView
           className={
-            'mt-[20px] mb-[40px] flex flex-row justify-between items-center'
+            'bg-[#FFE3DB4D] my-[32px] py-[16px] px-[20px] rounded-[8px] flex flex-row'
           }>
-          <CyDText className={' font-nunito text-[16px] text-primaryTextColor'}>
-            {t('Available balance')}
+          <LottieView
+            source={AppImages.INSIGHT_BULB}
+            autoPlay
+            loop
+            resizeMode='cover'
+            style={{ width: 40, aspectRatio: 80 / 120, top: -3 }}
+          />
+          <CyDText
+            className={
+              'ml-[16px] font-nunito text-[13px] text-primaryTextColor w-10/12 font-semibold'
+            }>{`${t('Once you undelegate your staked')} ${tokenData.name}${t(
+            ', you will need to wait 21 days for your tokens to be liquid',
+          )}`}</CyDText>
+        </CyDView>
+
+        <CyDView className={'flex flex-row justify-between items-center'}>
+          <CyDText className={'font-nunito text-[16px] text-primaryTextColor'}>
+            {'My delegation'}
           </CyDText>
           <CyDText
             className={
               'font-nunito text-[18px] font-bold text-secondaryTextColor'
             }>{`${convertFromUnitAmount(
-            cosmosStaking.cosmosStakingState.balance.toString(),
+            validatorData.balance.toString(),
             tokenData.contractDecimals,
           )} ${tokenData.name}`}</CyDText>
         </CyDView>
-      )}
 
-      {/* {from === CosmosActionType.DELEGATE && <CyDText
-        className={'mt-[4px] font-nunito text-[12px] font-medium text-primaryTextColor'}>{`${t('0.2')} ${tokenData.name}${t(' reserved on MAX')}`}</CyDText>
-      } */}
-      {from === CosmosActionType.REDELEGATE && (
-        <>
-          <CyDText
+        {CosmosActionType.DELEGATE === from && (
+          <CyDView
             className={
-              'font-nunito text-[16px] mt-[10px] text-primaryTextColor'
+              'mt-[20px] mb-[40px] flex flex-row justify-between items-center'
             }>
-            {t('Validator to Redelegate')}
-          </CyDText>
-          <CyDTouchView
-            className={
-              'bg-inputBackgroundColor p-[8px] rounded-[8px] h-[60px] flex flex-row items-center'
-            }
-            onPress={() => {
-              navigation.navigate(screenTitle.COSMOS_REVALIDATOR, {
-                validatorData,
-                tokenData,
-                setReValidator,
-                from: CosmosActionType.REDELEGATE,
-              });
-            }}>
+            <CyDText
+              className={' font-nunito text-[16px] text-primaryTextColor'}>
+              {t('Available balance')}
+            </CyDText>
             <CyDText
               className={
-                'ml-[4px] bg-[#F6F6F6] text-[16px] w-11/12 font-nunito'
+                'font-nunito text-[18px] font-bold text-secondaryTextColor'
+              }>{`${convertFromUnitAmount(
+              cosmosStaking.cosmosStakingState.balance.toString(),
+              tokenData.contractDecimals,
+            )} ${tokenData.name}`}</CyDText>
+          </CyDView>
+        )}
+
+        {/* {from === CosmosActionType.DELEGATE && <CyDText
+        className={'mt-[4px] font-nunito text-[12px] font-medium text-primaryTextColor'}>{`${t('0.2')} ${tokenData.name}${t(' reserved on MAX')}`}</CyDText>
+      } */}
+        {from === CosmosActionType.REDELEGATE && (
+          <>
+            <CyDText
+              className={
+                'font-nunito text-[16px] mt-[10px] text-primaryTextColor'
               }>
-              {reValidator.name}
+              {t('Validator to Redelegate')}
             </CyDText>
-            <CyDImage
-              source={AppImages.RIGHT_ARROW}
-              className={'w-[16px] h-[16px]'}
-            />
-          </CyDTouchView>
-        </>
-      )}
-      <CyDText
-        className={
-          'mt-[20px] font-nunito text-[16px] text-primaryTextColor'
-        }>{`${t('Amount to ')}${from}`}</CyDText>
-
-      <CyDView
-        className={
-          'bg-inputBackgroundColor p-[8px] mt-[10px] h-[60px] rounded-[8px] flex flex-row items-center'
-        }>
-        <CyDTextInput
-          className={
-            'ml-[4px] bg-inputBackgroundColor text-[16px] w-[63%] font-nunito text-primaryTextColor'
-          }
-          keyboardType={'numeric'}
-          onChangeText={text => {
-            setAmount(text);
-          }}
-          value={amount}
-        />
+            <CyDTouchView
+              className={
+                'bg-inputBackgroundColor p-[8px] rounded-[8px] h-[60px] flex flex-row items-center'
+              }
+              onPress={() => {
+                navigation.navigate(screenTitle.COSMOS_REVALIDATOR, {
+                  validatorData,
+                  tokenData,
+                  setReValidator,
+                  from: CosmosActionType.REDELEGATE,
+                });
+              }}>
+              <CyDText
+                className={
+                  'ml-[4px] bg-[#F6F6F6] text-[16px] w-11/12 font-nunito'
+                }>
+                {reValidator.name}
+              </CyDText>
+              <CyDImage
+                source={AppImages.RIGHT_ARROW}
+                className={'w-[16px] h-[16px]'}
+              />
+            </CyDTouchView>
+          </>
+        )}
         <CyDText
-          className={clsx('ml-[12px] text-subTextColor', {
-            'text-[16px]': tokenData.name.length <= 5,
-            'text-[12px]': tokenData.name.length > 5,
-          })}>
-          {tokenData.name.toUpperCase()}
+          className={
+            'mt-[20px] font-nunito text-[16px] text-primaryTextColor'
+          }>{`${t('Amount to ')}${from}`}</CyDText>
+
+        <CyDView
+          className={
+            'bg-inputBackgroundColor p-[8px] mt-[10px] h-[60px] rounded-[8px] flex flex-row items-center'
+          }>
+          <CyDTextInput
+            className={
+              'ml-[4px] bg-inputBackgroundColor text-[16px] w-[63%] font-nunito text-primaryTextColor'
+            }
+            keyboardType={'numeric'}
+            onChangeText={text => {
+              setAmount(text);
+            }}
+            value={amount}
+          />
+          <CyDText
+            className={clsx('ml-[12px] text-subTextColor', {
+              'text-[16px]': tokenData.name.length <= 5,
+              'text-[12px]': tokenData.name.length > 5,
+            })}>
+            {tokenData.name.toUpperCase()}
+          </CyDText>
+          <Button
+            onPress={() => {
+              if (
+                CosmosActionType.DELEGATE === from &&
+                parseFloat(cosmosStaking.cosmosStakingState.balance) *
+                  10 ** -tokenData.contractDecimals -
+                  0.2 >
+                  0
+              )
+                setAmount(
+                  (
+                    parseFloat(cosmosStaking.cosmosStakingState.balance) *
+                      10 ** -tokenData.contractDecimals -
+                    0.2
+                  ).toFixed(6),
+                );
+              else if (CosmosActionType.UNDELEGATE === from)
+                setAmount(
+                  (
+                    parseFloat(validatorData.balance) *
+                    10 ** -tokenData.contractDecimals
+                  ).toFixed(6),
+                );
+              else if (CosmosActionType.REDELEGATE === from)
+                setAmount(
+                  (
+                    parseFloat(validatorData.balance) *
+                    10 ** -tokenData.contractDecimals
+                  ).toFixed(6),
+                );
+            }}
+            title={t('MAX')}
+            type={'primary'}
+            style={'p-[3%] mr-[2px] text-[12px] bg-inputBorderColor'}
+            titleStyle={'text-[14px]'}
+          />
+        </CyDView>
+
+        {from === CosmosActionType.DELEGATE && (
+          <CyDText
+            className={
+              'mt-[4px] font-nunito text-[12px] font-medium text-primaryTextColor'
+            }>{`${t('0.2')} ${tokenData.name}${t(' reserved on MAX')}`}</CyDText>
+        )}
+
+        <CyDText
+          className={'font-nunito text-[16px] my-[10px] text-primaryTextColor'}>
+          {t('Memo')}
         </CyDText>
-        <Button
-          onPress={() => {
-            if (
-              CosmosActionType.DELEGATE === from &&
-              parseFloat(cosmosStaking.cosmosStakingState.balance) *
-                10 ** -tokenData.contractDecimals -
-                0.2 >
-                0
-            )
-              setAmount(
-                (
-                  parseFloat(cosmosStaking.cosmosStakingState.balance) *
-                    10 ** -tokenData.contractDecimals -
-                  0.2
-                ).toFixed(6),
-              );
-            else if (CosmosActionType.UNDELEGATE === from)
-              setAmount(
-                (
-                  parseFloat(validatorData.balance) *
-                  10 ** -tokenData.contractDecimals
-                ).toFixed(6),
-              );
-            else if (CosmosActionType.REDELEGATE === from)
-              setAmount(
-                (
-                  parseFloat(validatorData.balance) *
-                  10 ** -tokenData.contractDecimals
-                ).toFixed(6),
-              );
-          }}
-          title={t('MAX')}
-          type={'primary'}
-          style={'p-[3%] mr-[2px] text-[12px] bg-inputBorderColor'}
-          titleStyle={'text-[14px]'}
-        />
-      </CyDView>
-
-      {from === CosmosActionType.DELEGATE && (
-        <CyDText
+        <CyDView
           className={
-            'mt-[4px] font-nunito text-[12px] font-medium text-primaryTextColor'
-          }>{`${t('0.2')} ${tokenData.name}${t(' reserved on MAX')}`}</CyDText>
-      )}
+            'bg-inputBackgroundColor p-[10px] h-[60px] rounded-[8px] flex flex-row items-center'
+          }>
+          <CyDTextInput
+            className={
+              'ml-[4px] bg-inputBackgroundColor text-[16px] w-7/12 font-nunito'
+            }
+            onChangeText={text => {
+              setMemo(text);
+            }}
+            placeholder={'(optional)'}
+            placeholderTextColor={'#929292'}
+            value={memo}
+          />
+        </CyDView>
 
-      <CyDText
-        className={'font-nunito text-[16px] my-[10px] text-primaryTextColor'}>
-        {t('Memo')}
-      </CyDText>
-      <CyDView
-        className={
-          'bg-inputBackgroundColor p-[10px] h-[60px] rounded-[8px] flex flex-row items-center'
-        }>
-        <CyDTextInput
-          className={
-            'ml-[4px] bg-inputBackgroundColor text-[16px] w-7/12 font-nunito'
-          }
-          onChangeText={text => {
-            setMemo(text);
-          }}
-          placeholder={'(optional)'}
-          placeholderTextColor={'#929292'}
-          value={memo}
-        />
-      </CyDView>
-
-      <CyDView className={'flex flex-col my-[20px] justify-around'}>
-        <Button
-          disabled={
-            amount === '' ||
-            (from === CosmosActionType.DELEGATE &&
-              parseFloat(amount) >
-                parseInt(cosmosStaking.cosmosStakingState.balance) *
-                  10 ** -tokenData.contractDecimals) ||
-            (from === CosmosActionType.UNDELEGATE &&
-              parseFloat(amount) >
-                parseFloat(
-                  convertFromUnitAmount(
-                    validatorData.balance.toString(),
-                    tokenData.contractDecimals,
-                  ),
-                ))
-          }
-          onPress={async () => {
-            await onAction(CosmosActionType.SIMULATION);
-          }}
-          loading={loading}
-          loaderStyle={{ height: 24 }}
-          title={`${from.toUpperCase()}`}
-          style={loading ? 'px-[7%] min-h-[60px]' : 'p-[5%] min-h-[60px]'}
-        />
-        <Button
-          onPress={() => {
-            navigation.goBack();
-          }}
-          title={t('CANCEL')}
-          type={'secondary'}
-          style={'p-[5%] mt-[16px]'}
-        />
-      </CyDView>
+        <CyDView className={'flex flex-col my-[20px] justify-around'}>
+          <Button
+            disabled={
+              amount === '' ||
+              (from === CosmosActionType.DELEGATE &&
+                parseFloat(amount) >
+                  parseInt(cosmosStaking.cosmosStakingState.balance) *
+                    10 ** -tokenData.contractDecimals) ||
+              (from === CosmosActionType.UNDELEGATE &&
+                parseFloat(amount) >
+                  parseFloat(
+                    convertFromUnitAmount(
+                      validatorData.balance.toString(),
+                      tokenData.contractDecimals,
+                    ),
+                  ))
+            }
+            onPress={async () => {
+              await onAction(CosmosActionType.SIMULATION);
+            }}
+            loading={loading}
+            loaderStyle={{ height: 24 }}
+            title={`${from.toUpperCase()}`}
+            style={loading ? 'px-[7%] min-h-[60px]' : 'p-[5%] min-h-[60px]'}
+          />
+          <Button
+            onPress={() => {
+              navigation.goBack();
+            }}
+            title={t('CANCEL')}
+            type={'secondary'}
+            style={'p-[5%] mt-[16px]'}
+          />
+        </CyDView>
+      </CyDKeyboardAwareScrollView>
     </CyDScrollView>
   );
 }

@@ -29,6 +29,7 @@ import {
   floor,
   get,
   isEmpty,
+  orderBy,
   some,
 } from 'lodash';
 import {
@@ -182,6 +183,7 @@ export default function BridgeSkipApi(props: {
   const [solanaTxnParams, setSolanaTxnParams] = useState<Transaction | null>(
     null,
   );
+  const [toggling, setToggling] = useState<boolean>(false);
 
   // ------------- for swap states -----------------
   const [swapSupportedChains, setSwapSupportedChains] = useState([
@@ -212,8 +214,8 @@ export default function BridgeSkipApi(props: {
         type: 'error',
         title: '',
         description: response?.error?.message ?? t('FETCH_SKIP_API_ERROR'),
-        onSuccess: hideModal,
-        onFailure: hideModal,
+        onSuccess: onModalHide,
+        onFailure: onModalHide,
       });
     }
 
@@ -222,7 +224,11 @@ export default function BridgeSkipApi(props: {
 
   // for bridge
   const getChains = async () => {
-    const { isError, data } = await getFromOtherSource(
+    const {
+      isError,
+      data,
+      error: FetchError,
+    } = await getFromOtherSource(
       'https://api.skip.money/v2/info/chains?include_evm=true&include_svm=true',
     );
 
@@ -231,8 +237,8 @@ export default function BridgeSkipApi(props: {
         type: 'error',
         title: t('FETCH_SKIP_API_ERROR'),
         description: 'Unable to fetch data, please try again',
-        onSuccess: hideModal,
-        onFailure: hideModal,
+        onSuccess: onModalHide,
+        onFailure: onModalHide,
       });
     } else {
       setError('');
@@ -290,8 +296,8 @@ export default function BridgeSkipApi(props: {
       }) as unknown as SkipApiChainInterface[];
 
       setFromChainData([...chains, ...formattedChainData]);
+      await getTokens();
     }
-    await getTokens();
   };
 
   // for swap
@@ -316,7 +322,7 @@ export default function BridgeSkipApi(props: {
         isError,
         error: swapTokenError,
       } = await getWithAuth(
-        `/v1/swap/evm/chains/${parseInt(selectedFromChain?.chain_id, 10).toString()}/tokens`,
+        `/v1/swap/evm/chains/${selectedFromChain?.chain_id}/tokens`,
       );
       if (!isError) {
         const tempTokens = get(data, 'tokens', []);
@@ -349,8 +355,8 @@ export default function BridgeSkipApi(props: {
         type: 'error',
         title: t('FETCH_SKIP_API_ERROR'),
         description: JSON.stringify(fetchError),
-        onSuccess: hideModal,
-        onFailure: hideModal,
+        onSuccess: onModalHide,
+        onFailure: onModalHide,
       });
     } else {
       const tokenDataFormApi = get(data, 'chain_to_assets_map');
@@ -361,7 +367,7 @@ export default function BridgeSkipApi(props: {
   const setFromTokens = async () => {
     if (fromChainData && selectedFromChain) {
       const chainsData = getAvailableChains(hdWallet);
-      const swapTokensTemp = await getSwapSupportedTokens();
+      let swapTokensTemp: any = [];
 
       let chainData;
 
@@ -386,6 +392,10 @@ export default function BridgeSkipApi(props: {
         swapSupportedChains.includes(
           parseInt(selectedFromChain.chain_id, 10),
         ) && !fromChainIDs.has(parseInt(selectedFromChain.chain_id, 10));
+
+      if (isSwapSupportedChain || isOnlySwapSupportedChain) {
+        swapTokensTemp = await getSwapSupportedTokens();
+      }
 
       if (isOnlySwapSupportedChain) {
         const odosChains = getAvailableChains(hdWallet).filter(chain =>
@@ -421,7 +431,7 @@ export default function BridgeSkipApi(props: {
       }
 
       setToChainData([...chainData]);
-      setSelectedToChain(chainData[0]);
+      if (!toggling) setSelectedToChain(chainData[0]);
 
       if (totalHoldings) {
         const skipApiTokens = get(
@@ -519,7 +529,7 @@ export default function BridgeSkipApi(props: {
           };
         });
 
-        setFromTokenData(tempTokens);
+        setFromTokenData(orderBy(tempTokens, ['balanceInNumbers'], ['desc']));
 
         let tempSelectedFromToken;
         if (routeData?.fromChainData) {
@@ -532,7 +542,7 @@ export default function BridgeSkipApi(props: {
           tempSelectedFromToken = tempTokens[0];
         }
 
-        setSelectedFromToken(tempSelectedFromToken);
+        if (!toggling) setSelectedFromToken(tempSelectedFromToken);
       }
     }
   };
@@ -545,8 +555,8 @@ export default function BridgeSkipApi(props: {
         type: 'error',
         title: t('UNEXCPECTED_ERROR'),
         description: JSON.stringify(e),
-        onSuccess: hideModal,
-        onFailure: hideModal,
+        onSuccess: onModalHide,
+        onFailure: onModalHide,
       });
     }
   }, [portfolioState]);
@@ -584,14 +594,19 @@ export default function BridgeSkipApi(props: {
             isNative: item.isNative,
           };
         }) as unknown as SkipApiToken[];
-        setToTokenData(tokens);
+
+        setToTokenData(orderBy(tokens, ['name'], ['asc']));
         const tempTokens = tokens.map(item => {
           return {
             ...item,
             skipApiChain: selectedToChain,
           };
         });
-        setSelectedToToken(tempTokens[0]);
+        if (toggling) {
+          setToggling(false);
+        } else {
+          setSelectedToToken(tempTokens[0]);
+        }
       } else {
         const skipApiTokens = get(
           tokenData,
@@ -604,8 +619,12 @@ export default function BridgeSkipApi(props: {
             skipApiChain: selectedToChain,
           };
         });
-        setToTokenData(tempTokens);
-        setSelectedToToken(tempTokens[0]);
+        setToTokenData(orderBy(tempTokens, ['name'], ['asc']));
+        if (toggling) {
+          setToggling(false);
+        } else {
+          setSelectedToToken(tempTokens[0]);
+        }
       }
     }
   }, [selectedToChain, tokenData, selectedFromChain]);
@@ -686,7 +705,12 @@ export default function BridgeSkipApi(props: {
 
   // bridge
   const onGetQuote = async () => {
-    if (selectedFromToken && selectedToToken && parseFloat(cryptoAmount) > 0) {
+    if (
+      selectedFromToken &&
+      selectedToToken &&
+      parseFloat(cryptoAmount) > 0 &&
+      !isSwap()
+    ) {
       setLoading(true);
       const routeBody = {
         amount_in: ethers
@@ -800,8 +824,8 @@ export default function BridgeSkipApi(props: {
           type: 'error',
           title: t('FETCH_SKIP_API_ERROR'),
           description: JSON.stringify(fetchError),
-          onSuccess: hideModal,
-          onFailure: hideModal,
+          onSuccess: onModalHide,
+          onFailure: onModalHide,
         });
         return;
       }
@@ -849,8 +873,8 @@ export default function BridgeSkipApi(props: {
           type: 'error',
           title: t('UNEXCPECTED_ERROR'),
           description: e.message,
-          onSuccess: hideModal,
-          onFailure: hideModal,
+          onSuccess: onModalHide,
+          onFailure: onModalHide,
         });
       }, 1000);
     } finally {
@@ -989,8 +1013,8 @@ export default function BridgeSkipApi(props: {
           type: 'error',
           title: t('FETCH_SKIP_API_ERROR'),
           description: JSON.stringify(fetchError),
-          onSuccess: hideModal,
-          onFailure: hideModal,
+          onSuccess: onModalHide,
+          onFailure: onModalHide,
         });
       } else {
         await trackStatus(tx_hash, chainID, true);
@@ -1000,8 +1024,8 @@ export default function BridgeSkipApi(props: {
         type: 'error',
         title: t('UNEXCPECTED_ERROR'),
         description: JSON.stringify(e),
-        onSuccess: hideModal,
-        onFailure: hideModal,
+        onSuccess: onModalHide,
+        onFailure: onModalHide,
       });
     }
   };
@@ -1022,8 +1046,8 @@ export default function BridgeSkipApi(props: {
           type: 'error',
           title: t('FETCH_SKIP_API_ERROR'),
           description: JSON.stringify(fetchError),
-          onSuccess: hideModal,
-          onFailure: hideModal,
+          onSuccess: onModalHide,
+          onFailure: onModalHide,
         });
       } else {
         await trackStatus(hash, chainID, true);
@@ -1033,8 +1057,8 @@ export default function BridgeSkipApi(props: {
         type: 'error',
         title: t('UNEXCPECTED_ERROR'),
         description: JSON.stringify(e),
-        onSuccess: hideModal,
-        onFailure: hideModal,
+        onSuccess: onModalHide,
+        onFailure: onModalHide,
       });
     }
   };
@@ -1126,7 +1150,8 @@ export default function BridgeSkipApi(props: {
         selectedToToken &&
         selectedFromToken &&
         selectedToChain &&
-        selectedFromChain
+        selectedFromChain &&
+        isSwap()
       ) {
         setLoading(true);
         const nativeTokenSymbol =
@@ -1165,23 +1190,17 @@ export default function BridgeSkipApi(props: {
           setQuoteData(responseQuoteData);
         } else {
           setLoading(false);
-          showModal('state', {
-            type: 'error',
-            title: '',
-            description: response.error.message ?? t('UNEXCPECTED_ERROR'),
-            onSuccess: hideModal,
-            onFailure: hideModal,
-          });
+          throw new Error(response.error);
         }
       }
-    } catch (e) {
+    } catch (e: any) {
       setLoading(false);
       showModal('state', {
         type: 'error',
-        title: '',
-        description: t('UNEXCPECTED_ERROR'),
-        onSuccess: hideModal,
-        onFailure: hideModal,
+        title: t('UNEXCPECTED_ERROR'),
+        description: e.response.message ?? e,
+        onSuccess: onModalHide,
+        onFailure: onModalHide,
       });
     }
   };
@@ -1306,8 +1325,8 @@ export default function BridgeSkipApi(props: {
           type: 'error',
           title: '',
           description: t('UNEXCPECTED_ERROR'),
-          onSuccess: hideModal,
-          onFailure: hideModal,
+          onSuccess: onModalHide,
+          onFailure: onModalHide,
         });
       }
     }
@@ -1379,8 +1398,8 @@ export default function BridgeSkipApi(props: {
         type: 'error',
         title: '',
         description: t('UNEXCPECTED_ERROR'),
-        onSuccess: hideModal,
-        onFailure: hideModal,
+        onSuccess: onModalHide,
+        onFailure: onModalHide,
       });
     }
   };
@@ -1745,6 +1764,7 @@ export default function BridgeSkipApi(props: {
             setCryptoAmount={setCryptoAmount}
             amountOut={amountOut}
             usdAmountOut={amountOuUsd}
+            setToggling={setToggling}
           />
         );
 
@@ -2285,7 +2305,7 @@ export default function BridgeSkipApi(props: {
         </CyDView>
       </SignatureModal>
 
-      <CyDScrollView>
+      <CyDScrollView className='h-full'>
         {Components()}
         {!isSwap() &&
           (!isEmpty(error) ||
@@ -2321,7 +2341,7 @@ export default function BridgeSkipApi(props: {
                   key={_index}
                   className='mt-[8px] flex flex-row gap-x-[12px] justify-between items-center'>
                   <CyDFastImage
-                    source={AppImages.INFO_CIRCLE}
+                    source={AppImages.GAS_STATION}
                     className='h-[32px] w-[32px]'
                   />
                   <CyDView className='w-[80%]'>
@@ -2403,15 +2423,19 @@ export default function BridgeSkipApi(props: {
                       'font-nunito font-[16px] text-black font-bold max-w-[150px]'
                     }
                     numberOfLines={1}>
-                    {formatAmount(quoteData?.toToken?.amount).toString() +
-                      ' ' +
-                      String(selectedToToken?.name)}
+                    {loading
+                      ? 'Fetching data'
+                      : formatAmount(quoteData?.toToken?.amount).toString() +
+                        ' ' +
+                        String(selectedToToken?.name)}
                   </CyDText>
                   <CyDText
                     className={
                       'font-nunito font-[12px] text-[#929292] font-bold'
                     }>
-                    {Number(quoteData?.value).toFixed(4) + ' USD'}
+                    {loading
+                      ? 'Fetching data'
+                      : Number(quoteData?.value).toFixed(4) + ' USD'}
                   </CyDText>
                 </CyDView>
               </CyDView>
