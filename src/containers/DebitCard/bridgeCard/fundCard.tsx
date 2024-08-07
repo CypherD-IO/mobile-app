@@ -1,6 +1,6 @@
 import React, { useCallback, useContext, useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import { Keyboard, StyleSheet } from 'react-native';
+import { Keyboard } from 'react-native';
 import AppImages from '../../../../assets/images/appImages';
 import Button from '../../../components/v2/button';
 import {
@@ -26,10 +26,8 @@ import {
 import {
   CyDFastImage,
   CyDImage,
-  CyDKeyboardAwareScrollView,
   CyDSafeAreaView,
   CyDText,
-  CyDTextInput,
   CyDTouchView,
   CyDView,
 } from '../../../styles/tailwindStyles';
