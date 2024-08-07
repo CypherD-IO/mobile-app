@@ -220,7 +220,7 @@ function App() {
   }, []);
 
   return (
-    <KeyboardAvoidingView style={{ flex: 1, backgroundColor: 'white' }}>
+    <CyDView style={{ flex: 1, backgroundColor: 'white' }}>
       <GestureHandlerRootView style={{ flex: 1 }}>
         <Sentry.TouchEventBoundary>
           <WalletConnectContext.Provider
@@ -318,7 +318,7 @@ function App() {
           </WalletConnectContext.Provider>
         </Sentry.TouchEventBoundary>
       </GestureHandlerRootView>
-    </KeyboardAvoidingView>
+    </CyDView>
   );
 }
 
