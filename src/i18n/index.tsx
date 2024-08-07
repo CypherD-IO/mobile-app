@@ -1094,6 +1094,7 @@ const resources = {
       BRIDGE_TITLE: 'Bridge',
       SETUP_TELEGRAM: 'Setup Telegram',
       CONFIGURE_TELEGRAM: 'Configure Telegram',
+      APPLY_NOW: 'APPLY NOW',
       BIRDGE_SWAP_AVAILABLE:
         'Our application offers seamless support for both swap and bridge operations across multiple chains',
     },

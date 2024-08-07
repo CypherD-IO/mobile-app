@@ -70,7 +70,7 @@ export default function CardWailtList({ navigation }: Props) {
     };
 
     void setCardProvider();
-  }, []);
+  }, [selectedCountry]);
 
   async function joinWaitlist() {
     if (userEmail && userEmail !== '') {
@@ -227,7 +227,7 @@ export default function CardWailtList({ navigation }: Props) {
                         navigation.navigate(C.screenTitle.CARD_SIGNUP_SCREEN);
                       }}
                       style={'rounded-[8px] h-[50px] mt-[20px]'}
-                      title={t<string>('CONTINUE_ALL_CAPS')}
+                      title={t<string>('APPLY_NOW')}
                     />
                   )}
                   <CyDView className={'flex flex-row justify-center'}>

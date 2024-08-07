@@ -19,6 +19,12 @@ export default function useCardUtilities() {
     if (hasBothProviders(profile)) {
       return provider ?? CardProviders.REAP_CARD;
     } else if (has(profile, CardProviders.PAYCADDY)) {
+      if (
+        !get(profile, [CardProviders.PAYCADDY, 'cards']) &&
+        get(profile, [CardProviders.PAYCADDY, 'isRcUpgradable'])
+      ) {
+        return CardProviders.REAP_CARD;
+      }
       return CardProviders.PAYCADDY;
     }
     return CardProviders.REAP_CARD;
