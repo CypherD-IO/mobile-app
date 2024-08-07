@@ -405,6 +405,9 @@ const WHITE_CHECK_MARK = {
 const GOLD_LINE_MEMBER = {
   uri: `${S3_BUCKET_URL_ICONS}/goldLineMember.png`,
 };
+const UPGRADE_CARD_TIMELINE = {
+  uri: `${S3_BUCKET_URL_ICONS}/upgradeCardTimeline.png`,
+};
 
 const AppImages = {
   CYPHER_TELEGRAM_BOT_LOGO,
@@ -771,5 +774,6 @@ const AppImages = {
   CARD_CONTROLS,
   WHITE_CHECK_MARK,
   GOLD_LINE_MEMBER,
+  UPGRADE_CARD_TIMELINE,
 };
 export default AppImages;

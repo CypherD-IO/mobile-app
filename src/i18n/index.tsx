@@ -1092,6 +1092,8 @@ const resources = {
       CARD_PIN_TRANSACTIONS: 'Card and PIN Transactions',
       MOBILE_WALLETS: 'Mobile Wallets',
       BRIDGE_TITLE: 'Bridge',
+      SETUP_TELEGRAM: 'Setup Telegram',
+      CONFIGURE_TELEGRAM: 'Configure Telegram',
       BIRDGE_SWAP_AVAILABLE:
         'Our application offers seamless support for both swap and bridge operations across multiple chains',
     },

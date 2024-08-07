@@ -691,10 +691,21 @@ const RenderCardActions = ({
   } else if (isRcUpgradableCardShown && !card.cardId) {
     return (
       <CyDView className='flex flex-col justify-center items-center mx-[20px] mt-[-32px]'>
-        <CyDView className='flex lfex-col justify-center items-center'>
-          <CyDText className='text-[16px] font-semibold text-center my-[12px]'>
+        <CyDView className='flex flex-col justify-center items-center mb-[24px]'>
+          <CyDText className='text-[16px] font-bold text-center my-[12px]'>
             Now get access to the much awaited {'\n'} Apple and Google pay
           </CyDText>
+          <CyDImage
+            source={AppImages.UPGRADE_CARD_TIMELINE}
+            className='w-[272px] h-[12px] mb-[8px]'
+          />
+          <CyDView className='flex flex-row'>
+            <CyDText className='text-[12px] ml-[15px]'>{'Register'}</CyDText>
+            <CyDText className='text-[12px] ml-[55px] mr-[45px]'>
+              {'Complete your KYC'}
+            </CyDText>
+            <CyDText className='text-[12px]'>{'Get your card'}</CyDText>
+          </CyDView>
         </CyDView>
         <Button
           title='UPGRADE'

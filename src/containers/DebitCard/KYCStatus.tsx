@@ -200,6 +200,7 @@ export default function CardKYCStatusScreen({ navigation }) {
     const { isError, data, error } = await getWithAuth(
       `/v1/cards/${provider}/application/kyc`,
     );
+
     if (isError) {
       if (error?.hasOwnProperty('message')) {
         showModal('state', {

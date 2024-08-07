@@ -98,10 +98,7 @@ export default function DebitCardScreen(props: RouteProps) {
               },
             ],
           });
-        } else if (
-          get(cardProfile, provider as CardProviders)?.applicationStatus ===
-          CardApplicationStatus.CREATED
-        ) {
+        } else if (shouldCheckApplication()) {
           void checkApplication(provider as CardProviders);
         } else {
           props.navigation.reset({
@@ -119,12 +116,33 @@ export default function DebitCardScreen(props: RouteProps) {
     }
   }, [isFocused, cardProfile, provider]);
 
+  const shouldCheckApplication = () => {
+    if (provider === CardProviders.REAP_CARD) {
+      return (
+        (get(cardProfile, provider as CardProviders)?.applicationStatus ===
+          CardApplicationStatus.CREATED ||
+          get(cardProfile, provider as CardProviders)?.applicationStatus ===
+            CardApplicationStatus.KYC_INITIATED) &&
+        !get(cardProfile, ['cardNotification', 'isTelegramAllowed'], false)
+      );
+    }
+    return (
+      get(cardProfile, provider as CardProviders)?.applicationStatus ===
+      CardApplicationStatus.CREATED
+    );
+  };
+
   const checkApplication = async (provider: CardProviders) => {
     try {
       const response = await getWithAuth(`/v1/cards/${provider}/application`);
       if (!response.isError) {
         const { data } = response;
-        if (!data.phoneVerified || !data.emailVerfied) {
+        if (
+          (!(provider === CardProviders.REAP_CARD) && !data.phoneVerified) ||
+          !data.emailVerfied ||
+          (!(provider === CardProviders.REAP_CARD) &&
+            !get(cardProfile, ['cardNotification', 'isTelegramAllowed'], false))
+        ) {
           props.navigation.reset({
             index: 0,
             routes: [
