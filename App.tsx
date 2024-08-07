@@ -8,7 +8,13 @@ import { useEffect, useReducer, useState } from 'react';
 import Toast from 'react-native-toast-message';
 import { NavigationContainer } from '@react-navigation/native';
 import './src/i18n';
-import { BackHandler, Keyboard, Platform, StatusBar } from 'react-native';
+import {
+  BackHandler,
+  Keyboard,
+  KeyboardAvoidingView,
+  Platform,
+  StatusBar,
+} from 'react-native';
 import {
   HdWalletContext,
   PortfolioContext,
@@ -214,7 +220,7 @@ function App() {
   }, []);
 
   return (
-    <CyDView style={{ flex: 1, backgroundColor: 'white' }}>
+    <KeyboardAvoidingView style={{ flex: 1, backgroundColor: 'white' }}>
       <GestureHandlerRootView style={{ flex: 1 }}>
         <Sentry.TouchEventBoundary>
           <WalletConnectContext.Provider
@@ -312,7 +318,7 @@ function App() {
           </WalletConnectContext.Provider>
         </Sentry.TouchEventBoundary>
       </GestureHandlerRootView>
-    </CyDView>
+    </KeyboardAvoidingView>
   );
 }
 
