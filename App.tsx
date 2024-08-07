@@ -8,13 +8,7 @@ import { useEffect, useReducer, useState } from 'react';
 import Toast from 'react-native-toast-message';
 import { NavigationContainer } from '@react-navigation/native';
 import './src/i18n';
-import {
-  BackHandler,
-  Keyboard,
-  KeyboardAvoidingView,
-  Platform,
-  StatusBar,
-} from 'react-native';
+import { BackHandler, Keyboard, Platform, StatusBar } from 'react-native';
 import {
   HdWalletContext,
   PortfolioContext,
@@ -72,6 +66,7 @@ import {
 } from './src/reducers/modalReducer';
 import { InitializeAppProvider } from './src/components/initializeAppProvider';
 import { toastConfig } from './src/components/v2/toast';
+import { CyDView } from './src/styles/tailwindStyles';
 
 const routingInstrumentation = new Sentry.ReactNavigationInstrumentation();
 
@@ -219,11 +214,7 @@ function App() {
   }, []);
 
   return (
-    <KeyboardAvoidingView
-      style={{ flex: 1, backgroundColor: 'white' }}
-      enabled
-      behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
-      keyboardVerticalOffset={0}>
+    <CyDView style={{ flex: 1, backgroundColor: 'white' }}>
       <GestureHandlerRootView style={{ flex: 1 }}>
         <Sentry.TouchEventBoundary>
           <WalletConnectContext.Provider
@@ -321,7 +312,7 @@ function App() {
           </WalletConnectContext.Provider>
         </Sentry.TouchEventBoundary>
       </GestureHandlerRootView>
-    </KeyboardAvoidingView>
+    </CyDView>
   );
 }
 

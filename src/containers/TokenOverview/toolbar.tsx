@@ -163,16 +163,16 @@ export default function TokenOverviewToolBar({
             onPress={() => {
               navigation.navigate(screenTitle.BRIDGE_SKIP_API_SCREEN, {
                 fromChainData: tokenData,
-                title: t('BRIDGE'),
+                title: t('SWAP_TITLE'),
               });
             }}>
             <CyDImage
-              source={AppImages.BRIDGE_SHORTCUT}
+              source={AppImages.SWAP_SHORTCUT}
               className={'w-[30px] h-[30px]'}
             />
           </CyDTouchView>
           <CyDText className={'text-center mt-[5px] text-[12px] font-bold'}>
-            {t<string>('BRIDGE')}
+            {t<string>('SWAP_TITLE')}
           </CyDText>
         </CyDView>
       )}
