@@ -122,6 +122,9 @@ export const screenTitle = {
   AUTO_LOAD_SCREEN: 'autoLoadScreen',
   PREVIEW_AUTO_LOAD_SCREEN: 'previewAutoLoadScreen',
   BRIDGE_SKIP_API_SCREEN: 'bridgeSkipApiScreen',
+  CARD_CONTROLS_MENU: 'CardControls',
+  DOMESTIC_CARD_CONTROLS: 'DomesticTransactions',
+  INTERNATIONAL_CARD_CONTROLS: 'InternationalTransactions',
 };
 
 export const fontsName = {

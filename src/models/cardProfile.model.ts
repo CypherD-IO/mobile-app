@@ -1,4 +1,8 @@
-import { CardApplicationStatus, CardStatus } from '../constants/enum';
+import {
+  CardApplicationStatus,
+  CardProviders,
+  CardStatus,
+} from '../constants/enum';
 
 export interface CardProfile {
   primaryEthAddress: string;
@@ -9,6 +13,7 @@ export interface CardProfile {
     cardHolderId: string;
     status: CardStatus;
   };
+  provider?: CardProviders;
   bc?: {
     personId?: string;
     applicationStatus: CardApplicationStatus;
@@ -37,6 +42,24 @@ export interface CardProfile {
     ];
     isPhysicalCardEligible: boolean;
     physicalCardUpgradationFee: number | string;
+    isRcUpgradable?: boolean;
+  };
+  rc?: {
+    personId?: string;
+    applicationStatus: CardApplicationStatus;
+    phoneVerified: boolean;
+    emailVerified: boolean;
+    cards?: [
+      {
+        last4: string;
+        type: string;
+        cardId: string;
+        status: CardStatus;
+      },
+    ];
+    isPhysicalCardEligible: boolean;
+    physicalCardUpgradationFee: number | string;
+    isRcUpgradable?: boolean;
   };
   solid?: {
     applicationStatus: CardApplicationStatus;

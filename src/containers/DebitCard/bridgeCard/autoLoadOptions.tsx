@@ -16,7 +16,6 @@ import { StyleSheet } from 'react-native';
 import useAxios from '../../../core/HttpRequest';
 import { IAutoLoadConfig } from '../../../models/autoLoad.interface';
 import Toast from 'react-native-toast-message';
-import { getWalletProfile } from '../../../core/card';
 import LottieView from 'lottie-react-native';
 import useTransactionManager from '../../../hooks/useTransactionManager';
 import { getChain } from '../../../core/util';
@@ -25,6 +24,7 @@ import {
   ChainNameMapping,
 } from '../../../constants/server';
 import { get } from 'lodash';
+import useCardUtilities from '../../../hooks/useCardUtilities';
 
 export default function AutoLoadOptionsModal({
   isModalVisible,
@@ -42,6 +42,7 @@ export default function AutoLoadOptionsModal({
   const [isCancelling, setIsCancelling] = useState<boolean>(false);
   const { getWithAuth, postWithAuth } = useAxios();
   const { revokeAutoLoad } = useTransactionManager();
+  const { getWalletProfile } = useCardUtilities();
 
   useEffect(() => {
     if (isModalVisible && cardProfile.isAutoloadConfigured) {

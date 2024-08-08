@@ -22,7 +22,6 @@ import { Colors } from '../../constants/theme';
 import { sendFirebaseEvent } from '../../containers/utilities/analyticsUtility';
 import { showToast } from '../../containers/utilities/toastUtility';
 import { setDeveloperMode } from '../../core/asyncStorage';
-import { getWalletProfile } from '../../core/card';
 import { GlobalContext } from '../../core/globalContext';
 import {
   ActivityContext,
@@ -48,6 +47,7 @@ import useConnectionManager from '../../hooks/useConnectionManager';
 import { get } from 'lodash';
 import { CHAIN_ETH } from '../../constants/server';
 import { logAnalytics } from '../../core/analytics';
+import useCardUtilities from '../../hooks/useCardUtilities';
 
 const { DynamicView, CText, DynamicImage } = require('../../styles');
 
@@ -116,6 +116,7 @@ export default function Options(props: {
   const [connectionTypeValue, setConnectionTypeValue] =
     useState(connectionType);
   const resolveDomain = useEns()[1];
+  const { getWalletProfile } = useCardUtilities();
 
   useEffect(() => {
     setConnectionTypeValue(connectionType);

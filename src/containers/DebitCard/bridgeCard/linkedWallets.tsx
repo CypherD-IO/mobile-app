@@ -19,6 +19,7 @@ import AppImages from '../../../../assets/images/appImages';
 import { GlobalContextType } from '../../../constants/enum';
 import useAxios from '../../../core/HttpRequest';
 import { useGlobalModalContext } from '../../../components/v2/GlobalModal';
+import useCardUtilities from '../../../hooks/useCardUtilities';
 
 export function LinkedWallets({
   navigation,
@@ -27,16 +28,19 @@ export function LinkedWallets({
 }) {
   const globalContext = useContext<any>(GlobalContext);
   const cardProfile: CardProfile = globalContext.globalState.cardProfile;
+  const provider = cardProfile.provider;
   const hdWalletContext = useContext<any>(HdWalletContext);
   const { getWithAuth } = useAxios();
   const { showModal, hideModal } = useGlobalModalContext();
+  const { cardProfileModal } = useCardUtilities();
 
   const refreshProfile = async () => {
     const response = await getWithAuth('/v1/authentication/profile');
+    const tempProfile = cardProfileModal(response.data);
     if (!response.isError) {
       globalContext.globalDispatch({
         type: GlobalContextType.CARD_PROFILE,
-        cardProfile: response.data,
+        cardProfile: tempProfile,
       });
       return true;
     }

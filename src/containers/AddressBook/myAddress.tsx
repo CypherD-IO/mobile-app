@@ -110,6 +110,15 @@ export function AddressBook({ route, navigation }) {
               />
 
               <AddressBookContainer
+                chain={CHAIN_SOLANA.name}
+                wallet={solana}
+                logo={AppImages.SOLANA_LOGO}
+                bGC={'#f1f4fa'}
+                navigation={navigation}
+                addressTypeQRCode={FundWalletAddressType.SOLANA}
+              />
+
+              <AddressBookContainer
                 chain={CHAIN_COSMOS.name}
                 wallet={cosmos.wallets[cosmos.currentIndex]}
                 logo={AppImages.COSMOS_LOGO}
@@ -314,14 +323,6 @@ export function AddressBook({ route, navigation }) {
                 bGC={'#fff0f0'}
                 navigation={navigation}
                 addressTypeQRCode={FundWalletAddressType.SHARDEUM_SPHINX}
-              />
-              <AddressBookContainer
-                chain={CHAIN_SOLANA.name}
-                wallet={solana}
-                logo={AppImages.SOLANA_LOGO}
-                bGC={'#f1f4fa'}
-                navigation={navigation}
-                addressTypeQRCode={FundWalletAddressType.SOLANA}
               />
             </CyDView>
           </CyDScrollView>

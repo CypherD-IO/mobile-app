@@ -19,7 +19,7 @@ import { ethToEvmos } from '@tharsis/address-converter';
 import { hostWorker } from '../../global';
 import useValidSessionToken from '../../hooks/useValidSessionToken';
 import { useAccount, useDisconnect, useSignMessage } from 'wagmi';
-import { getWalletProfile } from '../../core/card';
+import useCardUtilities from '../../hooks/useCardUtilities';
 import Loading from '../../containers/Loading';
 import { CyDView } from '../../styles/tailwindStyles';
 import useConnectionManager from '../../hooks/useConnectionManager';
@@ -43,6 +43,7 @@ export const WalletConnectListener: React.FC = ({ children }) => {
     connectionType === ConnectionTypes.WALLET_CONNECT,
   );
   const { walletInfo } = useWalletInfo();
+  const { getWalletProfile } = useCardUtilities();
 
   useEffect(() => {
     setLoading(connectionType === ConnectionTypes.WALLET_CONNECT);

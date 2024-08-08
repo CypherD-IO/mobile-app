@@ -13,6 +13,8 @@ import { COSMOS_CHAINS } from '../../../constants/server';
 import { useGlobalModalContext } from '../../../components/v2/GlobalModal';
 import { screenTitle } from '../../../constants';
 import { MODAL_HIDE_TIMEOUT } from '../../../core/Http';
+import { GlobalContext } from '../../../core/globalContext';
+import { CardProfile } from '../../../models/cardProfile.model';
 
 export default function PreviewAutoLoad({
   navigation,
@@ -29,12 +31,15 @@ export default function PreviewAutoLoad({
     repeatFor,
     selectedToken,
   } = route.params;
+  const globalContext = useContext<any>(GlobalContext);
   const { getWithAuth, postWithAuth } = useAxios();
   const { grantAutoLoad } = useTransactionManager();
   const hdWallet = useContext<any>(HdWalletContext);
   const [loading, setLoading] = useState<boolean>(false);
   const { showModal, hideModal } = useGlobalModalContext();
   const { t } = useTranslation();
+  const cardProfile: CardProfile = globalContext.globalState.cardProfile;
+  const provider = cardProfile.provider ?? CardProviders.REAP_CARD;
 
   function onModalHide() {
     hideModal();
@@ -71,7 +76,7 @@ export default function PreviewAutoLoad({
             ? selectedToken.denom
             : selectedToken.contractAddress,
           granterAddress: granter,
-          cardProvider: CardProviders.PAYCADDY,
+          cardProvider: provider,
           threshold: Number(threshold),
           amountToBeLoaded: Number(amountToLoad),
           ...(autoLoadExpiry && { repeatFor: Number(repeatFor) }),

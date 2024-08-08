@@ -7,7 +7,7 @@ import {
   PortfolioContext,
   getAvailableChains,
 } from '../core/util';
-import { ALL_CHAINS, Chain } from '../constants/server';
+import { ALL_CHAINS, Chain, ChainBackendNames } from '../constants/server';
 import { Colors } from '../constants/theme';
 import {
   CyDImage,
@@ -17,6 +17,7 @@ import {
 } from '../styles/tailwindStyles';
 import CyDModalLayout from './v2/modal';
 import clsx from 'clsx';
+import LottieView from 'lottie-react-native';
 
 export const WHERE_BROWSER = 'BROWSER';
 export const WHERE_PORTFOLIO = 'PORTFOLIO';
@@ -54,26 +55,36 @@ export function ChooseChainModal(props: {
     const isSelected = item.id === selectedChainId;
     return (
       <CyDTouchView
-        className={clsx('px-[12px] rounded-[8px]', {
+        className={clsx('px-[12px] rounded-[8px] w-full', {
           'bg-selectedOption': isSelected,
         })}
         onPress={() => {
           onChainSelection(item);
         }}>
-        <CyDView className='flex flex-row justify-between items-center my-[8px]'>
-          <CyDView className='flex flex-row items-center'>
+        <CyDView className='flex flex-row justify-between w-full items-center my-[8px]'>
+          <CyDView className='flex flex-row items-center w-full'>
             <CyDImage
               source={logoUrl}
               className='h-[28px] w-[28px]'
               resizeMode='contain'
             />
-            <CyDView>
-              <CyDText className='ml-[8px] font-bold text-[16px] text-secondaryTextColor'>
-                {name}
-              </CyDText>
-              <CyDText className='ml-[8px] mt-[2px] font-bold text-[12px] text-subTextColor'>
-                {symbol}
-              </CyDText>
+            <CyDView className='flex flex-row w-full justify-between'>
+              <CyDView>
+                <CyDText className='ml-[8px] font-bold text-[16px] text-secondaryTextColor'>
+                  {name}
+                </CyDText>
+                <CyDText className='ml-[8px] mt-[2px] font-bold text-[12px] text-subTextColor'>
+                  {symbol}
+                </CyDText>
+              </CyDView>
+              {item.backendName === ChainBackendNames.SOLANA && (
+                <LottieView
+                  source={AppImages.NEW}
+                  autoPlay
+                  loop
+                  style={styles.lottieViewWidth}
+                />
+              )}
             </CyDView>
           </CyDView>
           {isSelected && (
@@ -142,5 +153,9 @@ const styles = StyleSheet.create({
   },
   imageTint: {
     tintColor: Colors.black,
+  },
+  lottieViewWidth: {
+    width: 34,
+    marginRight: 40,
   },
 });

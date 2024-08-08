@@ -7,6 +7,7 @@ import {
   CyDTextInput,
   CyDTouchView,
   CyDImage,
+  CyDSwitch,
   CyDKeyboardAwareScrollView,
 } from '../../styles/tailwindStyles';
 import { copyToClipboard, PortfolioContext } from '../../core/util';
@@ -20,6 +21,8 @@ import {
   clearHost,
   setRpcPreference,
   getRpcPreference,
+  getIsRcEnabled,
+  setIsRcEnabled,
 } from '../../core/asyncStorage';
 import { hostWorker } from '../../global';
 import { ChainBackendNames } from '../../constants/server';
@@ -29,6 +32,7 @@ import AppImages from '../../../assets/images/appImages';
 import { showToast } from '../utilities/toastUtility';
 import { RPCPreference } from '../../constants/enum';
 import { BackHandler, Keyboard } from 'react-native';
+import useCardUtilities from '../../hooks/useCardUtilities';
 
 export default function HostsAndRPCScreen({ navigation }) {
   const portfolioState = useContext<any>(PortfolioContext);
@@ -39,6 +43,8 @@ export default function HostsAndRPCScreen({ navigation }) {
   const [rpcPreference, setRPCPreference] = useState<
     string | null | undefined
   >();
+  const [isRcEnabledValue, setIsRcEnabledValue] = useState(false);
+  const { checkIsRCEnabled } = useCardUtilities();
 
   const [loading, setLoading] = useState<boolean>(true);
 
@@ -95,7 +101,21 @@ export default function HostsAndRPCScreen({ navigation }) {
       setRPCPreference(preference);
       setLoading(false);
     };
+
+    const checkIsRCEnabledValue = async () => {
+      const isRcEnabledInDB = await checkIsRCEnabled();
+      const isRcEnabledInAsync = await getIsRcEnabled();
+      if (isRcEnabledInAsync !== null) {
+        isRcEnabledInAsync === 'true'
+          ? setIsRcEnabledValue(true)
+          : setIsRcEnabledValue(false);
+      } else {
+        setIsRcEnabledValue(isRcEnabledInDB);
+      }
+    };
+
     void getRPCPreference();
+    void checkIsRCEnabledValue();
   }, []);
 
   const maskString = (endpoint: string) => {
@@ -223,6 +243,18 @@ export default function HostsAndRPCScreen({ navigation }) {
                   />
                 </CyDTouchView>
               </CyDView>
+            </CyDView>
+            <CyDView className='mt-[18px] flex felx-row'>
+              <CyDText className={'text-[16px] font-black'}>
+                {'ENABLE RC'}
+              </CyDText>
+              <CyDSwitch
+                onValueChange={async () => {
+                  await setIsRcEnabled(!isRcEnabledValue);
+                  setIsRcEnabledValue(!isRcEnabledValue);
+                }}
+                value={isRcEnabledValue}
+              />
             </CyDView>
           </CyDView>
         )}

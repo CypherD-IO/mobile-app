@@ -369,9 +369,44 @@ const NOTIFICATION_BELL = {
 const DOCUMENT = {
   uri: `${S3_BUCKET_URL_ICONS}/document.png`,
 };
-
 const AUTOLOAD = {
   uri: `${S3_BUCKET_URL_ICONS}/autoLoad.png`,
+};
+const COUNTRIES = {
+  uri: `${S3_BUCKET_URL_ICONS}/countries.png`,
+};
+const MOBILE_WALLETS = {
+  uri: `${S3_BUCKET_URL_ICONS}/mobileWallets.png`,
+};
+const CARD_AND_PIN_TRANSACTIONS = {
+  uri: `${S3_BUCKET_URL_ICONS}/cardAndPinTransactions.png`,
+};
+const CONTACTLESS_TRANSACTIONS = {
+  uri: `${S3_BUCKET_URL_ICONS}/contactlessTransactions.png`,
+};
+const ONLINE_TRANSACTIONS = {
+  uri: `${S3_BUCKET_URL_ICONS}/onlineTransactions.png`,
+};
+const ATM_WITHDRAWALS = {
+  uri: `${S3_BUCKET_URL_ICONS}/atmWithdrawals.png`,
+};
+const CHANGE_ICON = {
+  uri: `${S3_BUCKET_URL_ICONS}/changeIcon.png`,
+};
+const THREE_D_SECURE = {
+  uri: `${S3_BUCKET_URL_ICONS}/3DSecure.png`,
+};
+const CARD_CONTROLS = {
+  uri: `${S3_BUCKET_URL_ICONS}/cardControls.png`,
+};
+const WHITE_CHECK_MARK = {
+  uri: `${S3_BUCKET_URL_ICONS}/whiteCheckMark.png`,
+};
+const GOLD_LINE_MEMBER = {
+  uri: `${S3_BUCKET_URL_ICONS}/goldLineMember.png`,
+};
+const UPGRADE_CARD_TIMELINE = {
+  uri: `${S3_BUCKET_URL_ICONS}/upgradeCardTimeline.png`,
 };
 
 const AppImages = {
@@ -728,5 +763,17 @@ const AppImages = {
   PAUSE,
   RESUME,
   SOLANA_LOGO,
+  COUNTRIES,
+  MOBILE_WALLETS,
+  CARD_AND_PIN_TRANSACTIONS,
+  CONTACTLESS_TRANSACTIONS,
+  ONLINE_TRANSACTIONS,
+  ATM_WITHDRAWALS,
+  CHANGE_ICON,
+  THREE_D_SECURE,
+  CARD_CONTROLS,
+  WHITE_CHECK_MARK,
+  GOLD_LINE_MEMBER,
+  UPGRADE_CARD_TIMELINE,
 };
 export default AppImages;

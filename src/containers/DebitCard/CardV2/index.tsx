@@ -35,7 +35,6 @@ import {
   TYPES,
   initialCardTxnDateRange,
 } from '../../../constants/cardPageV2';
-import { getWalletProfile } from '../../../core/card';
 import { MODAL_HIDE_TIMEOUT } from '../../../core/Http';
 import ShippingFeeConsentModal from '../../../components/v2/shippingFeeConsentModal';
 import CardActivationConsentModal from '../../../components/v2/CardActivationConsentModal';
@@ -44,6 +43,8 @@ import AutoLoadOptionsModal from '../bridgeCard/autoLoadOptions';
 import { HIDDEN_CARD_ID } from '../../../constants/data';
 import LottieView from 'lottie-react-native';
 import { StyleSheet } from 'react-native';
+import CardProviderSwitch from '../../../components/cardProviderSwitch';
+import useCardUtilities from '../../../hooks/useCardUtilities';
 
 interface CypherCardScreenProps {
   navigation: any;
@@ -72,8 +73,6 @@ export default function CypherCardScreen({
     isConsentModalVisible: false,
     cardToBeActivated: null,
   });
-  const [currentCardProvider, setCurrentCardProvider] =
-    useState<CardProviders>(cardProvider);
   const [recentTransactions, setRecentTransactions] = useState<
     ICardTransaction[]
   >([]);
@@ -87,7 +86,7 @@ export default function CypherCardScreen({
     statuses: STATUSES,
   });
   const cardId = get(cardProfile, [
-    currentCardProvider,
+    cardProvider,
     'cards',
     currentCardIndex,
     'cardId',
@@ -99,6 +98,7 @@ export default function CypherCardScreen({
   const [isAutoLoadOptionsvisible, setIsAutoLoadOptionsVisible] =
     useState<boolean>(false);
   const [balanceLoading, setBalanceLoading] = useState(false);
+  const { getWalletProfile } = useCardUtilities();
 
   const onRefresh = async () => {
     void refreshProfile();
@@ -119,20 +119,8 @@ export default function CypherCardScreen({
   }, [isFocused]);
 
   useEffect(() => {
-    if (isFocused && cardProfile && !currentCardProvider) {
-      let tempCurrentCardProvider = '';
-      if (has(cardProfile, CardProviders.BRIDGE_CARD)) {
-        tempCurrentCardProvider = CardProviders.BRIDGE_CARD;
-      } else if (has(cardProfile, CardProviders.PAYCADDY)) {
-        tempCurrentCardProvider = CardProviders.PAYCADDY;
-      }
-      setCurrentCardProvider(tempCurrentCardProvider as CardProviders);
-    }
-  }, [cardProfile, currentCardProvider, isFocused]);
-
-  useEffect(() => {
     void onRefresh();
-  }, [currentCardProvider]);
+  }, [cardProvider]);
 
   const refreshProfile = async () => {
     const data = await getWalletProfile(globalContext.globalState.token);
@@ -144,9 +132,7 @@ export default function CypherCardScreen({
 
   const fetchCardBalance = async () => {
     setBalanceLoading(true);
-    const url = `/v1/cards/${currentCardProvider}/card/${String(
-      cardId,
-    )}/balance`;
+    const url = `/v1/cards/${cardProvider}/card/${String(cardId)}/balance`;
     try {
       const response = await getWithAuth(url);
       if (!response.isError && response?.data && response.data.balance) {
@@ -161,7 +147,7 @@ export default function CypherCardScreen({
     setBalanceLoading(false);
   };
   const fetchRecentTransactions = async () => {
-    const txnURL = `/v1/cards/${currentCardProvider}/card/${String(
+    const txnURL = `/v1/cards/${cardProvider}/card/${String(
       cardId,
     )}/transactions?newRoute=true&limit=5`;
     const response = await getWithAuth(txnURL);
@@ -177,7 +163,7 @@ export default function CypherCardScreen({
   const onPressFundCard = () => {
     navigation.navigate(screenTitle.BRIDGE_FUND_CARD_SCREEN, {
       navigation,
-      currentCardProvider,
+      currentCardProvider: cardProvider,
       currentCardIndex,
     });
   };
@@ -194,12 +180,12 @@ export default function CypherCardScreen({
       setIsShippingFeeConsentModalVisible(false);
       setTimeout(() => {
         navigation.navigate(screenTitle.UPGRADE_TO_PHYSICAL_CARD_SCREEN, {
-          currentCardProvider,
+          currentCardProvider: cardProvider,
         });
       }, MODAL_HIDE_TIMEOUT);
     } else {
       navigation.navigate(screenTitle.UPGRADE_TO_PHYSICAL_CARD_SCREEN, {
-        currentCardProvider,
+        currentCardProvider: cardProvider,
       });
     }
   };
@@ -212,7 +198,7 @@ export default function CypherCardScreen({
       });
       setTimeout(() => {
         navigation.navigate(screenTitle.CARD_ACTIAVTION_SCREEN, {
-          currentCardProvider,
+          currentCardProvider: cardProvider,
           card: cardActivationDetails.cardToBeActivated,
         });
       }, MODAL_HIDE_TIMEOUT);
@@ -246,6 +232,7 @@ export default function CypherCardScreen({
 
   return isLayoutRendered ? (
     <CyDSafeAreaView className='flex-1 bg-gradient-to-b from-cardBgFrom to-cardBgTo mt-[20px] mb-[75px]'>
+      <CardProviderSwitch />
       <ShippingFeeConsentModal
         isModalVisible={isShippingFeeConsentModalVisible}
         feeAmount={String(physicalCardUpgradationFee)}
@@ -364,7 +351,7 @@ export default function CypherCardScreen({
         <CyDView className='mt-[2px]'>
           <CardScreen
             navigation={navigation}
-            currentCardProvider={currentCardProvider}
+            currentCardProvider={cardProvider}
             onPressUpgradeNow={onPressUpgradeNow}
             onPressActivateCard={onPressActivateCard}
             refreshProfile={() => {
@@ -388,7 +375,7 @@ export default function CypherCardScreen({
                     navigation.navigate(screenTitle.CARD_TRANSACTIONS_SCREEN, {
                       navigation,
                       hasBothProviders,
-                      cardProvider: currentCardProvider,
+                      cardProvider,
                       currentCardIndex,
                     })
                   }>

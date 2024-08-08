@@ -128,6 +128,10 @@ module.exports = {
       cardBgFrom: '#F5F6F7',
       cardBgTo: '#EBEDF0',
       mandarin: '#FFB900',
+      n200: '#6B788E',
+      b200: '#444444',
+      n20: '#F5F6F7',
+      b400: '#C2C7D0'
     },
     columns: {
       auto: 'auto',

@@ -103,6 +103,8 @@ import CardQuote from '../containers/DebitCard/bridgeCard/quote';
 import AutoLoad from '../containers/DebitCard/bridgeCard/autoLoad';
 import PreviewAutoLoad from '../containers/DebitCard/bridgeCard/previewAutoLoad';
 import BridgeSkipApi from '../containers/Bridge.Skip/bridge.skip';
+import CardControlsMenu from '../containers/DebitCard/bridgeCard/cardControlsMenu';
+import CardControlsSettings from '../containers/DebitCard/bridgeCard/cardControlsSettings';
 
 const { DynamicImage, DynamicButton } = require('../styles');
 
@@ -807,16 +809,51 @@ export function DebitCardStackScreen({ navigation }) {
       <FundCardStack.Screen
         name={screenTitle.DEBIT_CARD_SCREEN}
         component={DebitCardScreen}
+        options={{ headerShown: false }}
+      />
+
+      <FundCardStack.Screen
+        name={screenTitle.CARD_CONTROLS_MENU}
+        component={CardControlsMenu}
         options={({ navigation, route }) => ({
-          headerTransparent: true,
+          headerTransparent: false,
           headerShadowVisible: false,
-          title: '',
-          navigationOptions: {
-            tabBarVisible: false,
-          },
-          headerTitleAlign: 'center',
+          title: 'Card Controls',
+          headerTitleAlign: 'left',
           headerTitleStyle: portfolioStackScreenHeaderTitleStyles,
-          headerBackVisible: false,
+          headerTintColor: Colors.primaryTextColor,
+          headerBackTitleVisible: false,
+          headerLeft: props => defaultHeaderLeft(navigation),
+        })}
+      />
+
+      <FundCardStack.Screen
+        name={screenTitle.DOMESTIC_CARD_CONTROLS}
+        component={CardControlsSettings}
+        options={({ navigation, route }) => ({
+          headerTransparent: false,
+          headerShadowVisible: false,
+          title: 'Domestic Transactions',
+          headerTitleAlign: 'left',
+          headerTitleStyle: portfolioStackScreenHeaderTitleStyles,
+          headerTintColor: Colors.primaryTextColor,
+          headerBackTitleVisible: false,
+          headerLeft: props => defaultHeaderLeft(navigation),
+        })}
+      />
+
+      <FundCardStack.Screen
+        name={screenTitle.INTERNATIONAL_CARD_CONTROLS}
+        component={CardControlsSettings}
+        options={({ navigation, route }) => ({
+          headerTransparent: false,
+          headerShadowVisible: false,
+          title: 'International Transactions',
+          headerTitleAlign: 'left',
+          headerTitleStyle: portfolioStackScreenHeaderTitleStyles,
+          headerTintColor: Colors.primaryTextColor,
+          headerBackTitleVisible: false,
+          headerLeft: props => defaultHeaderLeft(navigation),
         })}
       />
 
@@ -874,18 +911,7 @@ export function DebitCardStackScreen({ navigation }) {
       <FundCardStack.Screen
         name={screenTitle.CARD_KYC_STATUS_SCREEN}
         component={CardKYCStatusScreen}
-        options={({ navigation }) => ({
-          headerTransparent: false,
-          headerShadowVisible: false,
-          title: 'Application Status',
-          headerTitleAlign: 'center',
-          headerTitleStyle: portfolioStackScreenHeaderTitleStyles,
-          headerTintColor: Colors.primaryTextColor,
-          headerBackTitleVisible: false,
-          headerLeft: () => {
-            return <></>;
-          },
-        })}
+        options={({ navigation }) => ({ headerShown: false })}
       />
 
       <FundCardStack.Screen
@@ -897,16 +923,7 @@ export function DebitCardStackScreen({ navigation }) {
       <FundCardStack.Screen
         name={screenTitle.CARD_SIGNUP_OTP_VERIFICATION_SCREEN}
         component={OTPVerificationScreen}
-        options={({ navigation }) => ({
-          headerTransparent: false,
-          headerShadowVisible: false,
-          title: 'Verify OTP',
-          headerTitleAlign: 'center',
-          headerTitleStyle: portfolioStackScreenHeaderTitleStyles,
-          headerTintColor: Colors.primaryTextColor,
-          headerBackTitleVisible: false,
-          headerLeft: props => defaultHeaderLeft(navigation),
-        })}
+        options={({ navigation }) => ({ headerShown: false })}
       />
 
       <FundCardStack.Screen
