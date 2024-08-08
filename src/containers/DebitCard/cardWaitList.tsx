@@ -1,4 +1,4 @@
-import React, { useContext, useState } from 'react';
+import React, { useContext, useEffect, useState } from 'react';
 import AppImages from '../../../assets/images/appImages';
 import Button from '../../components/v2/button';
 import { useGlobalModalContext } from '../../components/v2/GlobalModal';
@@ -20,6 +20,8 @@ import * as C from '../../constants/index';
 import clsx from 'clsx';
 import ChooseCountryModal from '../../components/v2/ChooseCountryModal';
 import { ICountry } from '../../models/cardApplication.model';
+import { CardProviders } from '../../constants/enum';
+import useCardUtilities from '../../hooks/useCardUtilities';
 
 const cardBenefits = [
   'Available globally',
@@ -56,6 +58,19 @@ export default function CardWailtList({ navigation }: Props) {
     Iso3: 'USA',
     currency: 'USD',
   });
+  const [provider, setProvider] = useState(CardProviders.REAP_CARD);
+  const { checkIsRCEnabled } = useCardUtilities();
+
+  useEffect(() => {
+    const setCardProvider = async () => {
+      const isRcEnabled = await checkIsRCEnabled();
+      if (!isRcEnabled) {
+        setProvider(CardProviders.PAYCADDY);
+      }
+    };
+
+    void setCardProvider();
+  }, [selectedCountry]);
 
   async function joinWaitlist() {
     if (userEmail && userEmail !== '') {
@@ -145,60 +160,75 @@ export default function CardWailtList({ navigation }: Props) {
                   'w-[85%] bg-white px-[50px] pt-[100px] pb-[30px] rounded-[18px] shadow-lg'
                 }>
                 <CyDView>
-                  <CyDTouchView
-                    className={
-                      'mt-[5px] mb-[5px] border-[1px] border-inputBorderColor py-[12px] px-[10px] rounded-[8px] flex w-[100%]'
-                    }
-                    onPress={() => setModalVisible(true)}>
-                    <CyDView
-                      className={clsx(
-                        'flex flex-row justify-between items-center',
-                        { 'border-redOffColor': !selectedCountry },
-                      )}>
-                      <CyDView className={'flex flex-row items-center'}>
-                        <CyDText className='text-center text-[18px] ml-[8px]'>
-                          {selectedCountry.flag}
+                  {provider === CardProviders.PAYCADDY && (
+                    <>
+                      <CyDTouchView
+                        className={
+                          'mt-[5px] mb-[5px] border-[1px] border-inputBorderColor py-[12px] px-[10px] rounded-[8px] flex w-[100%]'
+                        }
+                        onPress={() => setModalVisible(true)}>
+                        <CyDView
+                          className={clsx(
+                            'flex flex-row justify-between items-center',
+                            { 'border-redOffColor': !selectedCountry },
+                          )}>
+                          <CyDView className={'flex flex-row items-center'}>
+                            <CyDText className='text-center text-[18px] ml-[8px]'>
+                              {selectedCountry.flag}
+                            </CyDText>
+                            <CyDText className='text-center text-[18px] ml-[8px]'>
+                              {selectedCountry.name}
+                            </CyDText>
+                          </CyDView>
+                          <CyDImage source={AppImages.DOWN_ARROW} />
+                        </CyDView>
+                      </CyDTouchView>
+                      <CyDTextInput
+                        value={userEmail}
+                        textContentType='emailAddress'
+                        autoFocus={true}
+                        keyboardType='email-address'
+                        autoCapitalize='none'
+                        autoCorrect={false}
+                        onChangeText={(text: string) => {
+                          setUserEmail(text);
+                          setIsValidUserEmail(true);
+                        }}
+                        placeholderTextColor={'#C5C5C5'}
+                        className={clsx(
+                          'border-[1px] border-[#C5C5C5] h-[50px] rounded-[8px] text-center text-black',
+                          {
+                            'pb-[10px]': isAndroid(),
+                          },
+                        )}
+                        placeholder='Enter your email'
+                      />
+                      <Button
+                        disabled={!isValidUserEmail && userEmail !== ''}
+                        onPress={() => {
+                          void joinWaitlist();
+                        }}
+                        loading={joiningWaitlist}
+                        style={'rounded-[8px] h-[50px] mt-[20px]'}
+                        title={t<string>('CTA_JOIN_WAITLIST')}
+                      />
+
+                      {!isValidUserEmail && userEmail !== '' && (
+                        <CyDText className='text-center mt-[18px] mb-[-28px] text-red-500'>
+                          {t<string>('VALID_EMAIL_ERROR')}
                         </CyDText>
-                        <CyDText className='text-center text-[18px] ml-[8px]'>
-                          {selectedCountry.name}
-                        </CyDText>
-                      </CyDView>
-                      <CyDImage source={AppImages.DOWN_ARROW} />
-                    </CyDView>
-                  </CyDTouchView>
-                  <CyDTextInput
-                    value={userEmail}
-                    textContentType='emailAddress'
-                    autoFocus={true}
-                    keyboardType='email-address'
-                    autoCapitalize='none'
-                    autoCorrect={false}
-                    onChangeText={(text: string) => {
-                      setUserEmail(text);
-                      setIsValidUserEmail(true);
-                    }}
-                    placeholderTextColor={'#C5C5C5'}
-                    className={clsx(
-                      'border-[1px] border-[#C5C5C5] h-[50px] rounded-[8px] text-center text-black',
-                      {
-                        'pb-[10px]': isAndroid(),
-                      },
-                    )}
-                    placeholder='Enter your email'
-                  />
-                  <Button
-                    disabled={!isValidUserEmail && userEmail !== ''}
-                    onPress={() => {
-                      void joinWaitlist();
-                    }}
-                    loading={joiningWaitlist}
-                    style={'rounded-[8px] h-[50px] mt-[20px]'}
-                    title={t<string>('CTA_JOIN_WAITLIST')}
-                  />
-                  {!isValidUserEmail && userEmail !== '' && (
-                    <CyDText className='text-center mt-[18px] mb-[-28px] text-red-500'>
-                      {t<string>('VALID_EMAIL_ERROR')}
-                    </CyDText>
+                      )}
+                    </>
+                  )}
+                  {provider === CardProviders.REAP_CARD && (
+                    <Button
+                      disabled={!isValidUserEmail && userEmail !== ''}
+                      onPress={() => {
+                        navigation.navigate(C.screenTitle.CARD_SIGNUP_SCREEN);
+                      }}
+                      style={'rounded-[8px] h-[50px] mt-[20px]'}
+                      title={t<string>('APPLY_NOW')}
+                    />
                   )}
                   <CyDView className={'flex flex-row justify-center'}>
                     <CyDTouchView
@@ -220,7 +250,7 @@ export default function CardWailtList({ navigation }: Props) {
                         className={
                           'text-center text-blue-700 underline underline-offset-2 font-semibold'
                         }>
-                        {t<string>('I_HAVE_AN_INVITE_CODE')}
+                        {t<string>('I_HAVE_A_REFERAL_CODE')}
                       </CyDText>
                     </CyDTouchView>
                   </CyDView>

@@ -104,7 +104,7 @@ export default function LinkWalletAuth(props: {
       showModal('state', {
         type: 'error',
         title: t('VERIFICATION_FAILED'),
-        description: t('INVALID_OTP'),
+        description: response.error.message ?? t('INVALID_OTP'),
         onSuccess: () => onModalHide(),
         onFailure: () => onModalHide(),
       });

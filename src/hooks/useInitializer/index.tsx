@@ -51,7 +51,7 @@ import { ethToEvmos } from '@tharsis/address-converter';
 import Intercom from '@intercom/intercom-react-native';
 import analytics from '@react-native-firebase/analytics';
 import DeviceInfo, { getVersion } from 'react-native-device-info';
-import { getWalletProfile } from '../../core/card';
+import useCardUtilities from '../useCardUtilities';
 import SpInAppUpdates from 'sp-react-native-in-app-updates';
 import useValidSessionToken from '../useValidSessionToken';
 
@@ -67,6 +67,7 @@ export default function useInitializer() {
     false, // isDebug
   );
   const { verifySessionToken } = useValidSessionToken();
+  const { getWalletProfile } = useCardUtilities();
 
   const scrubData = (key: string, value: any): any => {
     if (SENSITIVE_DATA_KEYS.includes(key)) {

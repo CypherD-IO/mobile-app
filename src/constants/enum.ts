@@ -56,6 +56,9 @@ export enum CardStatus {
   BLOCKED = 'blocked',
   PENDING_ACTIVATION = 'pendingActivation',
   HIDDEN = 'hidden',
+  CANCELLED = 'cancelled',
+  EXPIRED = 'expired',
+  OTHER = 'other',
 }
 
 export enum OTPType {
@@ -68,6 +71,7 @@ export enum CardProviders {
   APTO = 'apto',
   BRIDGE_CARD = 'bc',
   PAYCADDY = 'pc',
+  REAP_CARD = 'rc',
 }
 
 export enum GlobalContextType {
@@ -90,6 +94,11 @@ export enum CardTransactionTypes {
   DEBIT = 'DEBIT',
   REFUND = 'REFUND',
   WITHDRAWAL = 'WITHDRAWAL',
+}
+
+export enum CardControlTypes {
+  DOMESTIC = 'dom',
+  INTERNATIONAL = 'intl',
 }
 
 export enum CardType {
@@ -163,6 +172,7 @@ export enum ButtonType {
   GREY = 'grey',
   RED = 'red',
   DARK = 'dark',
+  GREY_FILL = 'greyFill',
 }
 
 export enum ImagePosition {
@@ -311,4 +321,13 @@ export enum CardReferralStatus {
   KYC_FAILED = 'kyc-failed',
   INVITE_USED = 'invite-used',
   LOADED = 'loaded',
+}
+
+export enum CARD_LIMIT_TYPE {
+  ALLOWED_COUNTRIES = 'cLs', // allowed country list / default allow all
+  CARD_PIN = 'pos',
+  CONTACTLESS = 'tap',
+  ATM = 'atm',
+  ONLINE = 'ecom',
+  MOBILE_WALLET = 'wal',
 }

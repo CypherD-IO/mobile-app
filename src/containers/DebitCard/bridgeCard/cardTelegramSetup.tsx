@@ -12,11 +12,11 @@ import {
 import { showToast } from '../../utilities/toastUtility';
 import { get } from 'lodash';
 import useAxios from '../../../core/HttpRequest';
-import { getWalletProfile } from '../../../core/card';
 import { GlobalContext, GlobalContextDef } from '../../../core/globalContext';
 import Button from '../../../components/v2/button';
 import { Linking } from 'react-native';
 import Toast from 'react-native-toast-message';
+import useCardUtilities from '../../../hooks/useCardUtilities';
 
 export default function TelegramSetupSettings(props: {
   route: {
@@ -42,6 +42,7 @@ export default function TelegramSetupSettings(props: {
     ),
   });
   const [isLoading, setIsLoading] = useState(false);
+  const { getWalletProfile } = useCardUtilities();
 
   const closeAndRefreshPortfolio = async () => {
     setIsLoading(true);

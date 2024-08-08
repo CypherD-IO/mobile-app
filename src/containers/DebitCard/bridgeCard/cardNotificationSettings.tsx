@@ -22,7 +22,6 @@ import { t } from 'i18next';
 import AppImages from '../../../../assets/images/appImages';
 import { Linking, StyleSheet } from 'react-native';
 import LottieView from 'lottie-react-native';
-import { getWalletProfile } from '../../../core/card';
 import OtpInput from '../../../components/v2/OTPInput';
 import * as Sentry from '@sentry/react-native';
 import CyDModalLayout from '../../../components/v2/modal';
@@ -30,6 +29,7 @@ import { copyToClipboard } from '../../../core/util';
 import Button from '../../../components/v2/button';
 import { showToast } from '../../utilities/toastUtility';
 import { screenTitle } from '../../../constants';
+import useCardUtilities from '../../../hooks/useCardUtilities';
 
 export default function CardNotificationSettings(props: {
   route: {
@@ -63,6 +63,7 @@ export default function CardNotificationSettings(props: {
   const [sendingOTP, setSendingOTP] = useState(false);
   const [resendInterval, setResendInterval] = useState(0);
   const [timer, setTimer] = useState<NodeJS.Timer>();
+  const { getWalletProfile } = useCardUtilities();
 
   useEffect(() => {
     setCurrentNotificationOption({
