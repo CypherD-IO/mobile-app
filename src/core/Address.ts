@@ -110,34 +110,55 @@ export const generateWalletFromMnemonic = async (
   const hdNode = HDNodeWallet.fromSeed(seed);
 
   // ethereum privatekey and ethereum address generation
-  const ethPath = `m/44'/60'/0'/0/${addressIndex}`;
+  const ethPath = AddressDerivationPath.ETH + String(addressIndex);
   const ethWallet = hdNode.derivePath(ethPath);
   const ethAddress = ethWallet.address;
   const ethPubKey = ethWallet.publicKey;
   const ethPrivateKey = ethWallet.privateKey;
 
   // cosmos chains address generation
-  const cosmosPath = `m/44'/118'/0'/0/${addressIndex}`;
+  const cosmosPath = AddressDerivationPath.COSMOS + String(addressIndex);
   const cosmosWallet = hdNode.derivePath(cosmosPath);
   const cosmosPubKey = cosmosWallet.publicKey;
   const cosmosPubKeyHash = sha256(hexlify(cosmosPubKey));
   const cosmosRipemd160Hash = ripemd160(cosmosPubKeyHash);
-  const cosmosAddress = Bech32.encode('cosmos', getBytes(cosmosRipemd160Hash));
-  const junoAddress = Bech32.encode('juno', getBytes(cosmosRipemd160Hash));
-  const stargazeAddress = Bech32.encode('stars', getBytes(cosmosRipemd160Hash));
-  const nobleAddress = Bech32.encode('noble', getBytes(cosmosRipemd160Hash));
-  const kujiraAddress = Bech32.encode('kujira', getBytes(cosmosRipemd160Hash));
-  const osmosisAddress = Bech32.encode('osmo', getBytes(cosmosRipemd160Hash));
+  const cosmosAddress = Bech32.encode(
+    Bech32Prefixes.COSMOS,
+    getBytes(cosmosRipemd160Hash),
+  );
+  const junoAddress = Bech32.encode(
+    Bech32Prefixes.JUNO,
+    getBytes(cosmosRipemd160Hash),
+  );
+  const stargazeAddress = Bech32.encode(
+    Bech32Prefixes.STARGAZE,
+    getBytes(cosmosRipemd160Hash),
+  );
+  const nobleAddress = Bech32.encode(
+    Bech32Prefixes.NOBLE,
+    getBytes(cosmosRipemd160Hash),
+  );
+  const kujiraAddress = Bech32.encode(
+    Bech32Prefixes.KUJIRA,
+    getBytes(cosmosRipemd160Hash),
+  );
+  const osmosisAddress = Bech32.encode(
+    Bech32Prefixes.OSMOSIS,
+    getBytes(cosmosRipemd160Hash),
+  );
 
   // coreum address generation
-  const coreumPath = `m/44'/990'/0'/0/${addressIndex}`;
+  const coreumPath = AddressDerivationPath.COREUM + String(addressIndex);
   const coreumWallet = hdNode.derivePath(coreumPath);
   const coreumPubKey = coreumWallet.publicKey;
   const coreumPubKeyHash = sha256(hexlify(coreumPubKey));
   const coreumRipemd160Hash = ripemd160(coreumPubKeyHash);
-  const coreumAddress = Bech32.encode('core', getBytes(coreumRipemd160Hash));
+  const coreumAddress = Bech32.encode(
+    Bech32Prefixes.COREUM,
+    getBytes(coreumRipemd160Hash),
+  );
 
-  const solanaPath = `m/44'/501'/0'/0'`;
+  const solanaPath = AddressDerivationPath.SOLANA;
   const solanaPrivateKey = derivePath(solanaPath, seed.toString('hex')).key;
   const solanaKeypair = Keypair.fromSeed(Uint8Array.from(solanaPrivateKey));
   const solanaAddress = solanaKeypair.publicKey.toBase58();
@@ -194,6 +215,11 @@ export const generateWalletFromMnemonic = async (
         address: solanaAddress,
         publicKey: solanaAddress,
       },
+      // {
+      //   name: 'injective',
+      //   address: getInjectiveAddress(ethAddress),
+      //   publicKey: ethPubKey,
+      // },
     ],
     privateKey: ethPrivateKey,
     mnemonic,
