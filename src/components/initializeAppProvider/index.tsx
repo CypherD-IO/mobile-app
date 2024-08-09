@@ -199,7 +199,10 @@ export const InitializeAppProvider: React.FC<JSX.Element> = ({ children }) => {
         <DefaultAuthRemoveModal isModalVisible={showDefaultAuthRemoveModal} />
         {ethereum.address === undefined ? (
           pinAuthentication || pinPresent === PinPresentStates.NOTSET ? (
-            <Loading loadingText={t('LOADING_TEXT_WALLET_CREATION')} />
+            // reomve in the next build
+            <Loading
+              loadingText={t('SOLANA_UPDATE_LOADING_TEXT_WALLET_CREATION')}
+            />
           ) : (
             <PinAuthRoute
               setPinAuthentication={setPinAuthentication}
