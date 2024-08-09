@@ -91,6 +91,7 @@ import { isNobleAddress } from '../utilities/nobleSendUtility';
 import { isOsmosisAddress } from '../utilities/osmosisSendUtility';
 import { isSolanaAddress } from '../utilities/solanaUtilities';
 import { isStargazeAddress } from '../utilities/stargazeSendUtility';
+import { evmosToEth } from '@tharsis/address-converter';
 
 export default function SendTo(props: { navigation?: any; route?: any }) {
   const { t } = useTranslation();
@@ -843,7 +844,11 @@ export default function SendTo(props: { navigation?: any; route?: any }) {
   };
 
   const showGasQuote = async () => {
-    addressRef.current = addressText;
+    if (isEvmosAddress(addressText)) {
+      addressRef.current = evmosToEth(addressText);
+    } else {
+      addressRef.current = addressText;
+    }
     if (
       chainDetails?.chainName === ChainNames.ETH ||
       chainDetails.chainName === ChainNames.EVMOS
@@ -912,7 +917,7 @@ export default function SendTo(props: { navigation?: any; route?: any }) {
           web3,
           chain: chainBackendName,
           fromAddress: ethereum?.address,
-          toAddress: addressText,
+          toAddress: addressRef.current,
           amountToSend,
           contractAddress:
             tokenData.contractAddress ??
@@ -1284,7 +1289,9 @@ export default function SendTo(props: { navigation?: any; route?: any }) {
             <Button
               title={t('SEND')}
               onPress={() => {
-                void (async () => await showGasQuote())();
+                void (async () => {
+                  await showGasQuote();
+                })();
               }}
               type={ButtonType.PRIMARY}
               disabled={!isAddressValid || addressText === ''}

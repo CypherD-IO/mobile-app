@@ -79,6 +79,7 @@ export enum GlobalContextType {
   RPC_UPDATE = 'RPC_UPDATE',
   CARD_PROFILE = 'CARD_PROFILE',
   IBC = 'IBC',
+  IS_APP_AUTHENTICATED = 'IS_APP_AUTHENTICATED',
 }
 
 export enum TransactionFilterTypes {

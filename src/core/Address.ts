@@ -1,22 +1,31 @@
-import { hdkey } from 'ethereumjs-wallet';
 import * as bip39 from 'bip39';
 import analytics from '@react-native-firebase/analytics';
 import { getToken, registerForRemoteMessages, onMessage } from '../core/push';
 import { ethToEvmos } from '@tharsis/address-converter';
 import { Slip10RawIndex } from '@cosmjs-rn/crypto';
-import { Secp256k1HdWallet } from '@cosmjs-rn/amino';
+import { Secp256k1HdWallet, pubkeyToAddress } from '@cosmjs-rn/amino';
 import { cosmosConfig, IIBCData } from '../constants/cosmosConfig';
 import CryptoJS from 'crypto-js';
 import { Mnemonic, PrivKeySecp256k1 } from '@keplr-wallet/crypto';
 import { isIOS } from '../misc/checkers';
 import { addHexPrefix } from './util';
-import { HDNodeWallet, Mnemonic as EthersMnemonic, Wallet } from 'ethers';
+import {
+  HDNodeWallet,
+  Mnemonic as EthersMnemonic,
+  Wallet,
+  sha256,
+  hexlify,
+  getBytes,
+  ripemd160,
+} from 'ethers';
 import { setConnectionType } from './asyncStorage';
 import { ConnectionTypes } from '../constants/enum';
 import { getInjectiveAddress } from '@injectivelabs/sdk-ts';
 import { Keypair } from '@solana/web3.js';
 import { derivePath } from 'ed25519-hd-key';
+import { Bech32 } from '@cosmjs-rn/encoding';
 import * as bs58 from 'bs58';
+import { AddressDerivationPath, Bech32Prefixes } from '../constants/data';
 
 function sendFirebaseEvent(walletaddress: string, trkEvent: string) {
   void analytics().logEvent(trkEvent, {
@@ -55,15 +64,6 @@ export const hexToUint = (value: string) => {
   return Uint8Array.from(Buffer.from(inp, 'hex'));
 };
 
-const generateEthPrivateKey = (mnemonic: string, index = 0): string => {
-  const hdPathString = "m/44'/60'/0'/0";
-  const seed = bip39.mnemonicToSeedSync(mnemonic);
-  const hdWallet = hdkey.fromMasterSeed(seed);
-  const root = hdWallet.derivePath(hdPathString);
-  const wallet = root.deriveChild(index).getWallet();
-  return wallet.getPrivateKeyString();
-};
-
 export const generateMultipleWalletAddressesFromSeedPhrase = async (
   mnemonic: string,
   numberOfAddresses = 100,
@@ -81,19 +81,136 @@ export const generateMultipleWalletAddressesFromSeedPhrase = async (
   });
 };
 
-export const generateEthAddress = (
+export const generateWalletFromMnemonic = async (
   mnemonic: string,
-  index = 0,
-): IAccountDetailWithChain => {
-  const hdPathString = "m/44'/60'/0'/0";
-  const seed = bip39.mnemonicToSeedSync(mnemonic);
-  const hdWallet = hdkey.fromMasterSeed(seed);
-  const root = hdWallet.derivePath(hdPathString);
-  const wallet = root.deriveChild(index).getWallet();
+  trackingEventId: string,
+  addressIndex = 0,
+): Promise<{
+  accounts: IAccountDetailWithChain[];
+  mnemonic: string;
+  privateKey: string;
+}> => {
+  addressIndex = addressIndex === -1 ? 0 : addressIndex;
+  void setConnectionType(ConnectionTypes.SEED_PHRASE);
+
+  const seed = await bip39.mnemonicToSeed(mnemonic);
+
+  const hdNode = HDNodeWallet.fromSeed(seed);
+
+  // ethereum privatekey and ethereum address generation
+  const ethPath = AddressDerivationPath.ETH + String(addressIndex);
+  const ethWallet = hdNode.derivePath(ethPath);
+  const ethAddress = ethWallet.address;
+  const ethPubKey = ethWallet.publicKey;
+  const ethPrivateKey = ethWallet.privateKey;
+
+  // cosmos chains address generation
+  const cosmosPath = AddressDerivationPath.COSMOS + String(addressIndex);
+  const cosmosWallet = hdNode.derivePath(cosmosPath);
+  const cosmosPubKey = cosmosWallet.publicKey;
+  const cosmosPubKeyHash = sha256(hexlify(cosmosPubKey));
+  const cosmosRipemd160Hash = ripemd160(cosmosPubKeyHash);
+  const cosmosAddress = Bech32.encode(
+    Bech32Prefixes.COSMOS,
+    getBytes(cosmosRipemd160Hash),
+  );
+  const junoAddress = Bech32.encode(
+    Bech32Prefixes.JUNO,
+    getBytes(cosmosRipemd160Hash),
+  );
+  const stargazeAddress = Bech32.encode(
+    Bech32Prefixes.STARGAZE,
+    getBytes(cosmosRipemd160Hash),
+  );
+  const nobleAddress = Bech32.encode(
+    Bech32Prefixes.NOBLE,
+    getBytes(cosmosRipemd160Hash),
+  );
+  const kujiraAddress = Bech32.encode(
+    Bech32Prefixes.KUJIRA,
+    getBytes(cosmosRipemd160Hash),
+  );
+  const osmosisAddress = Bech32.encode(
+    Bech32Prefixes.OSMOSIS,
+    getBytes(cosmosRipemd160Hash),
+  );
+
+  // coreum address generation
+  const coreumPath = AddressDerivationPath.COREUM + String(addressIndex);
+  const coreumWallet = hdNode.derivePath(coreumPath);
+  const coreumPubKey = coreumWallet.publicKey;
+  const coreumPubKeyHash = sha256(hexlify(coreumPubKey));
+  const coreumRipemd160Hash = ripemd160(coreumPubKeyHash);
+  const coreumAddress = Bech32.encode(
+    Bech32Prefixes.COREUM,
+    getBytes(coreumRipemd160Hash),
+  );
+
+  const solanaPath = AddressDerivationPath.SOLANA;
+  const solanaPrivateKey = derivePath(solanaPath, seed.toString('hex')).key;
+  const solanaKeypair = Keypair.fromSeed(Uint8Array.from(solanaPrivateKey));
+  const solanaAddress = solanaKeypair.publicKey.toBase58();
+
   return {
-    name: 'ethereum',
-    address: wallet.getAddressString(),
-    publicKey: wallet.getPublicKeyString(),
+    accounts: [
+      {
+        name: 'ethereum',
+        address: ethAddress,
+        publicKey: ethPubKey,
+      },
+      {
+        name: 'cosmos',
+        address: cosmosAddress,
+        publicKey: cosmosPubKey,
+      },
+      {
+        name: 'osmosis',
+        address: osmosisAddress,
+        publicKey: cosmosPubKey,
+      },
+      {
+        name: 'juno',
+        address: junoAddress,
+        publicKey: cosmosPubKey,
+      },
+      {
+        name: 'stargaze',
+        address: stargazeAddress,
+        publicKey: cosmosPubKey,
+      },
+      {
+        name: 'noble',
+        address: nobleAddress,
+        publicKey: cosmosPubKey,
+      },
+      {
+        name: 'kujira',
+        address: kujiraAddress,
+        publicKey: cosmosPubKey,
+      },
+      {
+        name: 'coreum',
+        address: coreumAddress,
+        publicKey: coreumPubKey,
+      },
+      {
+        name: 'evmos',
+        address: ethToEvmos(ethAddress),
+        publicKey: ethPubKey,
+      },
+      {
+        name: 'solana',
+        address: solanaAddress,
+        publicKey: solanaAddress,
+      },
+      // {
+      //   name: 'injective',
+      //   address: getInjectiveAddress(ethAddress),
+      //   publicKey: ethPubKey,
+      // },
+    ],
+    privateKey: ethPrivateKey,
+    mnemonic,
   };
 };
 
@@ -188,7 +305,6 @@ export const generateEvmosWallet = (
 
   const privKeyInstance = new PrivKeySecp256k1(privateKey);
   const publicKey = privKeyInstance.getPubKey().toBytes();
-
   return {
     name: 'evmos',
     address,
@@ -217,7 +333,6 @@ export const generateInjectiveWallet = (
 
   const privKeyInstance = new PrivKeySecp256k1(privateKey);
   const publicKey = privKeyInstance.getPubKey().toBytes();
-
   return {
     name: 'injective',
     address,
@@ -234,7 +349,6 @@ export const generateSolanaWallet = async (
   const derivedSeed = derivePath(bip44HDPath, seed.toString('hex')).key;
   const keypair = Keypair.fromSeed(derivedSeed);
   const address = keypair.publicKey.toBase58();
-
   return {
     name: 'solana',
     address,
@@ -276,109 +390,5 @@ export const generateWalletFromPrivateKey = async (privateKey: string) => {
   } else {
     onMessage();
   }
-
   return { accounts, privateKey };
-};
-
-export const generateWalletFromMnemonic = async (
-  mnemonic: string,
-  trackingEventId: string,
-  addressIndex = 0,
-): Promise<{
-  accounts: IAccountDetailWithChain[];
-  mnemonic: string;
-  privateKey: string;
-}> => {
-  addressIndex = addressIndex === -1 ? 0 : addressIndex;
-  const bip44HDPath = {
-    account: 0,
-    change: 0,
-    addressIndex,
-  };
-  void setConnectionType(ConnectionTypes.SEED_PHRASE);
-
-  const ethereumWallet = await generateEthAddress(mnemonic, addressIndex);
-
-  const ethereumPrivateKey = await generateEthPrivateKey(
-    mnemonic,
-    addressIndex,
-  );
-
-  const cosmosChains: AddressChainNames[] = [
-    'cosmos',
-    'osmosis',
-    'juno',
-    'stargaze',
-    'noble',
-    'coreum',
-    // 'injective',
-    'kujira',
-  ];
-
-  const cosmosAccounts = await Promise.all(
-    cosmosChains.map(async (chain: AddressChainNames) => {
-      return await generateCosmosWallet(
-        chain,
-        cosmosConfig[chain],
-        mnemonic,
-        bip44HDPath,
-      );
-    }),
-  );
-
-  const evmosWallet = generateEvmosWallet(
-    ethereumWallet.address,
-    cosmosConfig.evmos,
-    mnemonic,
-    bip44HDPath,
-  );
-
-  const injectiveWallet = generateInjectiveWallet(
-    ethereumWallet.address,
-    cosmosConfig.injective,
-    mnemonic,
-    bip44HDPath,
-  );
-
-  const solanaWallet = await generateSolanaWallet(
-    mnemonic,
-    `m/44'/501'/0'/${addressIndex}'`,
-  );
-
-  const accounts: IAccountDetailWithChain[] = [
-    ethereumWallet,
-    ...cosmosAccounts,
-    evmosWallet,
-    injectiveWallet,
-    solanaWallet,
-  ];
-  // emit event to firebase
-  sendFirebaseEvent(ethereumWallet.address, trackingEventId);
-  // Register FCM
-  const [
-    { address: cosmosAddress },
-    { address: osmosisAddress },
-    { address: junoAddress },
-    { address: stargazeAddress },
-    { address: nobleAddress },
-    { address: coreumAddress },
-    { address: kujiraAddress },
-  ] = cosmosAccounts;
-  await getToken(
-    ethereumWallet.address,
-    cosmosAddress,
-    osmosisAddress,
-    junoAddress,
-    stargazeAddress,
-    nobleAddress,
-    coreumAddress,
-    kujiraAddress,
-  );
-
-  if (isIOS()) {
-    registerForRemoteMessages();
-  } else {
-    onMessage();
-  }
-  return { accounts, mnemonic, privateKey: ethereumPrivateKey };
 };
