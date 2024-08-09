@@ -457,7 +457,7 @@ export default function CardSignupScreen({ navigation, route }) {
             proceedToNextScreen('USER_BASIC_DETAILS', values)
           }>
           {formProps => (
-            <KeyboardAwareScrollView className='mx-[9%]'>
+            <CyDKeyboardAwareScrollView className='mx-[9%]'>
               <DatePickerModal
                 isVisible={isDOBModalVisible}
                 mode='date'
@@ -725,7 +725,7 @@ export default function CardSignupScreen({ navigation, route }) {
                 style='h-[55px] mt-[20px] mx-auto justify-center items-center px-[55px] w-full'
                 isPrivateKeyDependent={false}
               />
-            </KeyboardAwareScrollView>
+            </CyDKeyboardAwareScrollView>
           )}
         </Formik>
       </CyDScrollView>
