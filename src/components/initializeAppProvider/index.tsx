@@ -56,7 +56,7 @@ export const InitializeAppProvider: React.FC<JSX.Element> = ({ children }) => {
     useState<boolean>(false);
   const { isReadOnlyWallet } = hdWallet.state;
   const { ethereum } = hdWallet.state.wallet;
-  const authToken = globalContext.globalState.token;
+  const isAuthenticated = globalContext.globalState.isAuthenticated;
 
   useEffect(() => {
     const initializeApp = async () => {
@@ -219,7 +219,7 @@ export const InitializeAppProvider: React.FC<JSX.Element> = ({ children }) => {
           ) : (
             <OnBoardingStack />
           )
-        ) : !isReadOnlyWallet && isEmpty(authToken) ? (
+        ) : !isReadOnlyWallet && !isAuthenticated ? (
           <Loading />
         ) : (
           children
