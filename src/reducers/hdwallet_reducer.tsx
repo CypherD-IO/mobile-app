@@ -223,6 +223,13 @@ export function hdWalletStateReducer(state: any, action: any) {
           wallets: [],
         });
       });
+      emptyWallet.ethereum.currentIndex = 0;
+
+      emptyWallet.ethereum.wallets.push({
+        address: _NO_CYPHERD_CREDENTIAL_AVAILABLE_,
+        // privateKey,
+        publicKey: _NO_CYPHERD_CREDENTIAL_AVAILABLE_,
+      });
       resetWallet.wallet = emptyWallet;
       return { ...resetWallet };
     }

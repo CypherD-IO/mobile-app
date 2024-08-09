@@ -442,6 +442,10 @@ export default function useInitializer() {
               type: GlobalContextType.SIGN_IN,
               sessionToken: signInResponse?.token,
             });
+            globalContext.globalDispatch({
+              type: GlobalContextType.IS_APP_AUTHENTICATED,
+              isAuthenticated: true,
+            });
             await setAuthToken(signInResponse?.token);
             if (has(signInResponse, 'refreshToken')) {
               await setRefreshToken(signInResponse?.refreshToken);
@@ -471,8 +475,8 @@ export default function useInitializer() {
         authToken = JSON.parse(String(authToken));
         void getProfile(authToken);
         globalContext.globalDispatch({
-          type: GlobalContextType.SIGN_IN,
-          sessionToken: authToken,
+          type: GlobalContextType.IS_APP_AUTHENTICATED,
+          isAuthenticated: true,
         });
       }
     }

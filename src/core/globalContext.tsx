@@ -12,6 +12,7 @@ export interface GlobalStateDef {
   token: string;
   cardProfile?: CardProfile;
   ibc?: boolean;
+  isAuthenticated?: boolean;
 }
 
 export interface RPCDetail {
@@ -181,6 +182,7 @@ export const initialGlobalState: GlobalStateDef = {
     },
   },
   token: '',
+  isAuthenticated: false,
 };
 
 interface GlobalReducerInput {
@@ -200,7 +202,8 @@ export const gloabalContextReducer = (
   input: GlobalReducerInput,
 ): GlobalStateDef => {
   if (input) {
-    const { type, rpc, sessionToken, cardProfile, ibc } = input;
+    const { type, rpc, sessionToken, cardProfile, ibc, isAuthenticated } =
+      input;
 
     if (type === GlobalContextType.RPC_UPDATE && rpc) {
       return { ...state, rpcEndpoints: rpc };
@@ -210,6 +213,8 @@ export const gloabalContextReducer = (
       return { ...state, cardProfile };
     } else if (type === GlobalContextType.IBC) {
       return { ...state, ibc };
+    } else if (type === GlobalContextType.IS_APP_AUTHENTICATED) {
+      return { ...state, isAuthenticated };
     }
   }
   return state;

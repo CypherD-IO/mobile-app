@@ -73,7 +73,8 @@ export default function RemoveWalletModal(store: {
       animationInTiming={300}
       animationOutTiming={300}
       style={styles.modalLayout}
-      isModalVisible={isModalVisible}>
+      isModalVisible={isModalVisible}
+      disableBackDropPress={true}>
       <CyDView
         className={'bg-white p-[25px] pb-[30px] rounded-t-[20px] relative'}>
         <CyDTouchView onPress={() => onFailure()} className={'z-[50]'}>
