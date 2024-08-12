@@ -254,7 +254,7 @@ export default function BridgeSkipApi(props: {
           );
         });
       });
-      setFromChainData(chains);
+      // setFromChainData(chains);
       let tempSelectedFromChain;
       if (routeData?.fromChainData?.chainDetails) {
         const { chain_id: chainID } = get(
@@ -270,7 +270,6 @@ export default function BridgeSkipApi(props: {
       } else {
         tempSelectedFromChain = chains[0];
       }
-      setSelectedFromChain(tempSelectedFromChain);
 
       const swapChains = await getSwapSupportedChains(chains);
 
@@ -295,6 +294,7 @@ export default function BridgeSkipApi(props: {
         };
       }) as unknown as SkipApiChainInterface[];
 
+      setSelectedFromChain(tempSelectedFromChain as any);
       setFromChainData([...chains, ...formattedChainData]);
       await getTokens();
     }
@@ -550,11 +550,11 @@ export default function BridgeSkipApi(props: {
   useEffect(() => {
     try {
       void getChains();
-    } catch (e) {
+    } catch (e: any) {
       showModal('state', {
         type: 'error',
         title: t('UNEXCPECTED_ERROR'),
-        description: JSON.stringify(e),
+        description: e?.message ?? JSON.stringify(e),
         onSuccess: onModalHide,
         onFailure: onModalHide,
       });
@@ -872,7 +872,7 @@ export default function BridgeSkipApi(props: {
         showModal('state', {
           type: 'error',
           title: t('UNEXCPECTED_ERROR'),
-          description: e.message,
+          description: e?.message ?? JSON.stringify(e),
           onSuccess: onModalHide,
           onFailure: onModalHide,
         });
@@ -925,7 +925,7 @@ export default function BridgeSkipApi(props: {
         if (!e.message.includes('User denied transaction signature.')) {
           Sentry.captureException(e);
         }
-        throw new Error(e.message);
+        throw new Error(e?.message ?? JSON.stringify(e));
       }
     }
   };
@@ -958,7 +958,7 @@ export default function BridgeSkipApi(props: {
           if (!e.message.includes('User denied transaction signature.')) {
             Sentry.captureException(e);
           }
-          throw new Error(e.message);
+          throw new Error(e?.message ?? JSON.stringify(e));
         }
       }
     }
@@ -989,7 +989,7 @@ export default function BridgeSkipApi(props: {
           if (!e.message.includes('User denied transaction signature.')) {
             Sentry.captureException(e);
           }
-          throw new Error(e.message);
+          throw new Error(e?.message ?? JSON.stringify(e));
         }
       }
     }
@@ -1019,11 +1019,11 @@ export default function BridgeSkipApi(props: {
       } else {
         await trackStatus(tx_hash, chainID, true);
       }
-    } catch (e) {
+    } catch (e: any) {
       showModal('state', {
         type: 'error',
         title: t('UNEXCPECTED_ERROR'),
-        description: JSON.stringify(e),
+        description: e?.message ?? JSON.stringify(e),
         onSuccess: onModalHide,
         onFailure: onModalHide,
       });
@@ -1198,7 +1198,7 @@ export default function BridgeSkipApi(props: {
       showModal('state', {
         type: 'error',
         title: t('UNEXCPECTED_ERROR'),
-        description: e.response.message ?? e,
+        description: e?.message ?? JSON.stringify(e),
         onSuccess: onModalHide,
         onFailure: onModalHide,
       });
@@ -1319,12 +1319,12 @@ export default function BridgeSkipApi(props: {
             isAllowance: true,
           });
         }
-      } catch (e) {
+      } catch (e: any) {
         setLoading(false);
         showModal('state', {
           type: 'error',
-          title: '',
-          description: t('UNEXCPECTED_ERROR'),
+          title: t('UNEXCPECTED_ERROR'),
+          description: e?.message ?? JSON.stringify(e),
           onSuccess: onModalHide,
           onFailure: onModalHide,
         });
@@ -1392,12 +1392,12 @@ export default function BridgeSkipApi(props: {
       });
       setSignModalVisible(true);
       setLoading(false);
-    } catch (e) {
+    } catch (e: any) {
       setLoading(false);
       showModal('state', {
         type: 'error',
-        title: '',
-        description: t('UNEXCPECTED_ERROR'),
+        title: t('UNEXCPECTED_ERROR'),
+        description: e?.message ?? JSON.stringify(e),
         onSuccess: onModalHide,
         onFailure: onModalHide,
       });
