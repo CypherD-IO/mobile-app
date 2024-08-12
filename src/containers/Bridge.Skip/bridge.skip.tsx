@@ -85,6 +85,7 @@ import {
   ExchangeTransaction,
 } from '../../reducers/activity_reducer';
 import { Transaction } from '@solana/web3.js';
+import { OdosToken } from '../../models/odosTokens.interface';
 
 enum TxnStatus {
   STATE_SUBMITTED = 'STATE_SUBMITTED',
@@ -125,20 +126,19 @@ export default function BridgeSkipApi(props: {
   const [skipApiChainsData, setSkipApiChainsData] = useState<
     SkipApiChainInterface[]
   >([]);
-  const [tokenData, setTokenData] = useState<
-    Record<string, { assets: SkipApiToken[] }>
+  const [odosChainData, setOdosChainData] = useState<number[]>([
+    1, 137, 10, 43114, 42161, 56, 250, 324, 8453, 1101, 1313161554, 1284, 1285,
+  ]);
+
+  const [skipApiTokenData, setSkipApiTokenData] = useState<
+    Record<string, SkipApiToken[]>
   >({});
-  const [swapTokenData, setSwapTokenData] = useState<Array<{
-    address: string;
-    decimals: number;
-    isNative: boolean;
-    isVerified: boolean;
-    logo: string;
-    name: string;
-    symbol: string;
-    tokenPrice: number;
-  }> | null>(null);
-  const [chainInfo, setChainInfo] = useState<SkipApiChainInterface[]>([]);
+  const [odosTokenData, setOdosTokenData] = useState<
+    Record<string, OdosToken[]>
+  >({});
+  const [skipChainInfo, setSkipChainInfo] = useState<SkipApiChainInterface[]>(
+    [],
+  );
   const [fromChainData, setFromChainData] = useState<SkipApiChainInterface[]>(
     [],
   );
@@ -186,9 +186,6 @@ export default function BridgeSkipApi(props: {
   const [toggling, setToggling] = useState<boolean>(false);
 
   // ------------- for swap states -----------------
-  const [swapSupportedChains, setSwapSupportedChains] = useState([
-    1, 137, 10, 43114, 42161, 56, 250, 324, 8453, 1101, 1313161554, 1284, 1285,
-  ]);
   const [allowanceParams, setAllowanceParams] = useState<AllowanceParams>({
     isApprovalModalVisible: false,
   } as unknown as AllowanceParams);
@@ -197,54 +194,33 @@ export default function BridgeSkipApi(props: {
   const [nativeTokenBalance, setNativeTokenBalance] = useState<number>(0);
   const [quoteData, setQuoteData] = useState<any>(null);
 
-  // --------------------- swap funcitons -------------------------
-
-  // for swap
-  const getSwapSupportedChains = async (
-    skipApiChains: SkipApiChainInterface[],
-  ) => {
-    const response = await getWithAuth('/v1/swap/evm/chains');
-    if (!response.isError && response?.data?.chains) {
-      const { chains } = response.data ?? [];
-
-      setSwapSupportedChains(chains);
-      return chains;
-    } else {
-      showModal('state', {
-        type: 'error',
-        title: '',
-        description: response?.error?.message ?? t('FETCH_SKIP_API_ERROR'),
-        onSuccess: onModalHide,
-        onFailure: onModalHide,
-      });
-    }
-
-    return [];
-  };
-
-  // for bridge
   const getChains = async () => {
     const {
       isError,
       data,
       error: FetchError,
-    } = await getFromOtherSource(
-      'https://api.skip.money/v2/info/chains?include_evm=true&include_svm=true',
-    );
+    } = await getWithAuth('/v1/swap/chains');
 
     if (isError) {
       showModal('state', {
         type: 'error',
         title: t('FETCH_SKIP_API_ERROR'),
-        description: 'Unable to fetch data, please try again',
+        description: FetchError?.message ?? JSON.stringify(FetchError),
         onSuccess: onModalHide,
         onFailure: onModalHide,
       });
     } else {
       setError('');
-      const skipApiChains: SkipApiChainInterface[] = get(data, 'chains', []);
+      const skipApiChains: SkipApiChainInterface[] = get(
+        data,
+        'skipSupportedChains',
+        [],
+      );
       setSkipApiChainsData(skipApiChains);
-      setChainInfo(skipApiChains);
+      setSkipChainInfo(skipApiChains);
+
+      const swapChains: number[] = get(data, 'odosSupportedChains', []);
+      setOdosChainData(swapChains);
       const chainsData = getAvailableChains(hdWallet);
       const chains = filter(skipApiChains, item2 => {
         return some(chainsData, item1 => {
@@ -271,8 +247,6 @@ export default function BridgeSkipApi(props: {
         tempSelectedFromChain = chains[0];
       }
 
-      const swapChains = await getSwapSupportedChains(chains);
-
       const odosChains = getAvailableChains(hdWallet).filter(chain =>
         swapChains.includes(chain.chainIdNumber),
       );
@@ -296,60 +270,15 @@ export default function BridgeSkipApi(props: {
 
       setSelectedFromChain(tempSelectedFromChain as any);
       setFromChainData([...chains, ...formattedChainData]);
-      await getTokens();
     }
   };
 
-  // for swap
-  const getSwapSupportedTokens = async (): Promise<
-    Array<{
-      address: string;
-      decimals: number;
-      isNative: boolean;
-      isVerified: boolean;
-      logo: string;
-      name: string;
-      symbol: string;
-      tokenPrice: number;
-    }>
-  > => {
-    if (
-      selectedFromChain &&
-      swapSupportedChains.includes(parseInt(selectedFromChain?.chain_id, 10))
-    ) {
-      const {
-        data,
-        isError,
-        error: swapTokenError,
-      } = await getWithAuth(
-        `/v1/swap/evm/chains/${selectedFromChain?.chain_id}/tokens`,
-      );
-      if (!isError) {
-        const tempTokens = get(data, 'tokens', []);
-        setSwapTokenData(tempTokens);
-        return tempTokens;
-      } else {
-        showModal('state', {
-          type: 'error',
-          title: '',
-          description: swapTokenError?.message ?? t('FETCH_SKIP_API_ERROR'),
-          onSuccess: hideModal,
-          onFailure: hideModal,
-        });
-      }
-    }
-    return [];
-  };
-
-  // for bridge
   const getTokens = async () => {
     const {
       isError,
       data,
       error: fetchError,
-    } = await getFromOtherSource(
-      'https://api.skip.money/v1/fungible/assets?include_no_metadata_assets=false&include_cw20_assets=false&include_evm_assets=true&include_svm_assets=true',
-    );
+    } = await getWithAuth('/v1/swap/tokens');
     if (isError) {
       showModal('state', {
         type: 'error',
@@ -359,8 +288,10 @@ export default function BridgeSkipApi(props: {
         onFailure: onModalHide,
       });
     } else {
-      const tokenDataFormApi = get(data, 'chain_to_assets_map');
-      setTokenData(tokenDataFormApi);
+      const tokenDataSkipApi = get(data, 'skipTokens', {});
+      const tokenDataOdosApi = get(data, 'odosTokens', {});
+      setSkipApiTokenData(tokenDataSkipApi);
+      setOdosTokenData(tokenDataOdosApi);
     }
   };
 
@@ -384,22 +315,21 @@ export default function BridgeSkipApi(props: {
         chains.map(chain => parseInt(chain.chain_id, 10)),
       );
 
-      const isSwapSupportedChain = swapSupportedChains.includes(
+      const isSwapSupportedChain = odosChainData.includes(
         parseInt(selectedFromChain.chain_id, 10),
       );
 
       const isOnlySwapSupportedChain =
-        swapSupportedChains.includes(
-          parseInt(selectedFromChain.chain_id, 10),
-        ) && !fromChainIDs.has(parseInt(selectedFromChain.chain_id, 10));
+        odosChainData.includes(parseInt(selectedFromChain.chain_id, 10)) &&
+        !fromChainIDs.has(parseInt(selectedFromChain.chain_id, 10));
 
       if (isSwapSupportedChain || isOnlySwapSupportedChain) {
-        swapTokensTemp = await getSwapSupportedTokens();
+        swapTokensTemp = get(odosTokenData, selectedFromChain?.chain_id, '');
       }
 
       if (isOnlySwapSupportedChain) {
         const odosChains = getAvailableChains(hdWallet).filter(chain =>
-          swapSupportedChains.includes(chain.chainIdNumber),
+          odosChainData.includes(chain.chainIdNumber),
         );
 
         const filteredChains = odosChains.filter(
@@ -435,8 +365,8 @@ export default function BridgeSkipApi(props: {
 
       if (totalHoldings) {
         const skipApiTokens = get(
-          tokenData,
-          [selectedFromChain.chain_id, 'assets'],
+          skipApiTokenData,
+          [selectedFromChain.chain_id],
           [],
         );
 
@@ -456,7 +386,7 @@ export default function BridgeSkipApi(props: {
         let filteredTokens;
 
         if (isOnlySwapSupportedChain) {
-          const odosTokens = swapTokensTemp.filter(item2 => {
+          const odosTokens = swapTokensTemp.filter((item2: OdosToken) => {
             return totalHoldings.some((item1: Holding) => {
               return (
                 item1.symbol === item2.symbol &&
@@ -466,7 +396,7 @@ export default function BridgeSkipApi(props: {
             });
           });
 
-          const formattedTokensData = odosTokens.map(item => {
+          const formattedTokensData = odosTokens.map((item: OdosToken) => {
             return {
               denom: item.address,
               chain_id: selectedFromChain.chain_id,
@@ -488,7 +418,7 @@ export default function BridgeSkipApi(props: {
           filteredTokens = formattedTokensData;
         } else if (isSwapSupportedChain || isOnlySwapSupportedChain) {
           const odosTokenSymbol = new Set(
-            swapTokensTemp.map(token => token.symbol),
+            swapTokensTemp.map((token: OdosToken) => token.symbol),
           );
 
           filteredTokens = tokensToParse.filter(
@@ -549,8 +479,12 @@ export default function BridgeSkipApi(props: {
 
   useEffect(() => {
     try {
-      void getChains();
-    } catch (e: any) {
+      if (portfolioState) {
+        void getChains();
+        void getTokens();
+      }
+    } catch (e) {
+      console.log('🚀 ~ useEffect ~ e:', e);
       showModal('state', {
         type: 'error',
         title: t('UNEXCPECTED_ERROR'),
@@ -562,19 +496,31 @@ export default function BridgeSkipApi(props: {
   }, [portfolioState]);
 
   useEffect(() => {
-    void setFromTokens();
+    if (
+      fromChainData &&
+      selectedFromChain &&
+      skipApiChainsData &&
+      skipApiTokenData &&
+      portfolioState
+    )
+      void setFromTokens();
   }, [
     fromChainData,
     selectedFromChain,
     skipApiChainsData,
-    tokenData,
+    skipApiTokenData,
     portfolioState,
   ]);
 
   useEffect(() => {
-    if (selectedToChain) {
-      if (isSwap() && swapTokenData && selectedFromChain) {
-        const tokens = swapTokenData?.map(item => {
+    if (selectedToChain && skipApiTokenData && selectedFromChain) {
+      if (isSwap() && odosTokenData && selectedFromChain) {
+        const swapTokensArray = get(
+          odosTokenData,
+          selectedFromChain.chain_id,
+          [],
+        );
+        const tokens = swapTokensArray?.map(item => {
           return {
             chain_id: parseInt(selectedFromChain.chain_id, 10).toString(),
             coingecko_id: '',
@@ -609,8 +555,8 @@ export default function BridgeSkipApi(props: {
         }
       } else {
         const skipApiTokens = get(
-          tokenData,
-          [selectedToChain.chain_id, 'assets'],
+          skipApiTokenData,
+          [selectedToChain.chain_id],
           [],
         );
         const tempTokens = skipApiTokens.map(item => {
@@ -627,7 +573,7 @@ export default function BridgeSkipApi(props: {
         }
       }
     }
-  }, [selectedToChain, tokenData, selectedFromChain]);
+  }, [selectedToChain, skipApiTokenData, selectedFromChain]);
 
   useEffect(() => {
     if (
@@ -1773,8 +1719,8 @@ export default function BridgeSkipApi(props: {
           <RoutePreview
             setIndex={setIndex}
             routeResponse={routeResponse}
-            chainInfo={chainInfo}
-            tokenData={tokenData}
+            chainInfo={skipChainInfo}
+            tokenData={skipApiTokenData}
             loading={loading}
             onGetMSg={onGetMsg}
             statusResponse={statusResponse}
@@ -1784,7 +1730,7 @@ export default function BridgeSkipApi(props: {
     }
   }
 
-  if (isEmpty(tokenData) || isEmpty(chainInfo) || portfolioLoading)
+  if (isEmpty(skipApiTokenData) || isEmpty(skipChainInfo) || portfolioLoading)
     return <Loading />;
   return (
     <CyDSafeAreaView>

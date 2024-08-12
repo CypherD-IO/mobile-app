@@ -42,7 +42,7 @@ export default function RoutePreview({
   setIndex: Dispatch<SetStateAction<number>>;
   routeResponse: SkipApiRouteResponse | null;
   chainInfo: SkipApiChainInterface[] | null;
-  tokenData: Record<string, { assets: SkipApiToken[] }>;
+  tokenData: Record<string, SkipApiToken[]>;
   loading: boolean;
   onGetMSg: () => Promise<void>;
   statusResponse: SkipApiStatus[];
@@ -97,7 +97,7 @@ export default function RoutePreview({
             const chainId = data
               ? get(data, 'from_chain_id')
               : routeResponse.dest_asset_chain_id;
-            const chainData = get(tokenData, [chainId, 'assets']);
+            const chainData = get(tokenData, [chainId]);
 
             const token = chainData.find(chainItem => {
               const denom = data
