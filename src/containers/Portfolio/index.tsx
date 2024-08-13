@@ -77,7 +77,15 @@ import FilterBar from './components/FilterBar';
 import BannerCarousel from './components/BannerCarousel';
 import { DeFiFilterRefreshBar } from '../../components/deFiRefreshFilterBar';
 import { DeFiFilter, protocolOptionType } from '../../models/defi.interface';
-import { isEmpty } from 'lodash';
+import { get, isEmpty, isNil } from 'lodash';
+import {
+  BridgeContext,
+  BridgeContextDef,
+  BridgeReducerAction,
+  BridgeStatus,
+} from '../../reducers/bridge.reducer';
+import useAxios from '../../core/HttpRequest';
+import { SkipApiChainInterface } from '../../models/skipApiChains.interface';
 
 export interface PortfolioProps {
   navigation: any;
@@ -90,6 +98,10 @@ export default function Portfolio({ navigation }: PortfolioProps) {
   const hdWallet = useContext(HdWalletContext);
   const portfolioState = useContext(PortfolioContext);
   const { showModal, hideModal } = useGlobalModalContext();
+  const { state: bridgeState, dispatch: bridgeDispatch } = useContext(
+    BridgeContext,
+  ) as BridgeContextDef;
+  const { getWithAuth } = useAxios();
 
   const [chooseChain, setChooseChain] = useState<boolean>(false);
   const [isVerifyCoinChecked, setIsVerifyCoinChecked] = useState<boolean>(true);
@@ -258,6 +270,10 @@ export default function Portfolio({ navigation }: PortfolioProps) {
       getIBCStatus().catch(error => {
         Sentry.captureException(error.message);
       });
+
+      if (isNil(bridgeState) || bridgeState.status === BridgeStatus.ERROR) {
+        void getBridgeData().catch;
+      }
     }
   }, [isFocused]);
 
@@ -269,6 +285,61 @@ export default function Portfolio({ navigation }: PortfolioProps) {
         setDeFiFilters(prev => ({ ...prev, chain: selectedChain }));
     }
   }, [portfolioState.statePortfolio.selectedChain.symbol]);
+
+  const getBridgeData = async () => {
+    bridgeDispatch({
+      type: BridgeReducerAction.FETCHING,
+    });
+    const {
+      isError: isFetchChainError,
+      data: fetchChainData,
+      error: fetchChainDataError,
+    } = await getWithAuth('/v1/swap/chains');
+
+    const {
+      isError: isFetchTokenError,
+      data: fethcTokenData,
+      error: fetchTokenDataError,
+    } = await getWithAuth('/v1/swap/tokens');
+
+    if (isFetchChainError || isFetchTokenError) {
+      bridgeDispatch({
+        type: BridgeReducerAction.ERROR,
+      });
+      if (fetchChainDataError) Sentry.captureException(fetchChainDataError);
+      else if (fetchTokenDataError)
+        Sentry.captureException(fetchTokenDataError);
+    } else {
+      const skipApiChains: SkipApiChainInterface[] = get(
+        fetchChainData,
+        'skipSupportedChains',
+        [],
+      );
+      const odosChains: number[] = get(
+        fetchChainData,
+        'odosSupportedChains',
+        [],
+      );
+
+      const tokenDataSkipApi = get(fethcTokenData, 'skipTokens', {});
+      const tokenDataOdosApi = get(fethcTokenData, 'odosTokens', {});
+
+      bridgeDispatch({
+        type: BridgeReducerAction.SUCCESS,
+        payload: {
+          odosChainData: odosChains,
+          odosTokenData: tokenDataOdosApi,
+          skipApiChaindata: skipApiChains,
+          skipApiTokenData: tokenDataSkipApi,
+        },
+      });
+    }
+  };
+
+  useEffect(() => {
+    void getBridgeData().catch;
+  }, []);
+
   const constructTokenMeta = (localPortfolio: any, event: string) => {
     switch (event) {
       case NotificationEvents.EVMOS_STAKING: {

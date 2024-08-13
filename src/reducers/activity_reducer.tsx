@@ -1,5 +1,3 @@
-import AsyncStorage from '@react-native-async-storage/async-storage';
-import * as Sentry from '@sentry/react-native';
 import { Dispatch } from 'react';
 import { WebsiteInfo } from '../types/Browser';
 import { setActivities } from '../core/asyncStorage';

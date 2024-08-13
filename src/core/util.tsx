@@ -66,7 +66,6 @@ import { ANALYTICS_ERROR_URL, ANALYTICS_SUCCESS_URL } from '../constants/data';
 import DeviceInfo from 'react-native-device-info';
 import axios from './Http';
 import { Holding } from './Portfolio';
-import { TokenMeta } from '../models/tokenMetaData.model';
 import Long from 'long';
 
 import { Wallet } from 'ethers';
