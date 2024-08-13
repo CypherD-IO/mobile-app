@@ -520,7 +520,7 @@ export default function BridgeSkipApi(props: {
           selectedFromChain.chain_id,
           [],
         );
-        const tokens = swapTokensArray?.map(item => {
+        let tokens = swapTokensArray?.map(item => {
           return {
             chain_id: parseInt(selectedFromChain.chain_id, 10).toString(),
             coingecko_id: '',
@@ -541,7 +541,12 @@ export default function BridgeSkipApi(props: {
           };
         }) as unknown as SkipApiToken[];
 
-        setToTokenData(orderBy(tokens, ['name'], ['asc']));
+        tokens = tokens.filter(
+          tok =>
+            tok.symbol !== selectedFromToken?.symbol ||
+            tok.symbol !== selectedFromToken?.recommended_symbol,
+        );
+        setToTokenData(tokens);
         const tempTokens = tokens.map(item => {
           return {
             ...item,
@@ -565,7 +570,7 @@ export default function BridgeSkipApi(props: {
             skipApiChain: selectedToChain,
           };
         });
-        setToTokenData(orderBy(tempTokens, ['name'], ['asc']));
+        setToTokenData(tempTokens);
         if (toggling) {
           setToggling(false);
         } else {
@@ -573,7 +578,7 @@ export default function BridgeSkipApi(props: {
         }
       }
     }
-  }, [selectedToChain, skipApiTokenData, selectedFromChain]);
+  }, [selectedToChain, skipApiTokenData, selectedFromChain, selectedFromToken]);
 
   useEffect(() => {
     if (
