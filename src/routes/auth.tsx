@@ -1848,17 +1848,7 @@ export function OptionsStackScreen({ navigation, route }) {
         name={screenTitle.CHOOSE_WALLET_INDEX}
         component={ChooseWalletIndex}
         options={({ navigation, route }) => ({
-          headerTransparent: false,
-          headerShadowVisible: false,
-          title: t('CHOOSE_WALLET_TO_IMPORT'),
-          headerTitleAlign: 'center',
-          headerTitleStyle: optionsStackScreenHeaderTitleStyles,
-          headerStyle: {
-            elevation: 0,
-          },
-          headerTintColor: Colors.primaryTextColor,
-          headerBackTitleVisible: false,
-          headerLeft: props => defaultHeaderLeft(navigation),
+          headerShown: false,
         })}
       />
       <OptionsStack.Screen

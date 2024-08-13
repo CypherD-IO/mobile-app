@@ -215,7 +215,7 @@ function TabStack() {
               // TO REDO : TABBAR ANIMATION
               layout={Layout.easing(Easing.ease).delay(50)}
               className={clsx(
-                'rounded-t-[24px] pb-[20px] shadow absolute bottom-[-20px] w-full',
+                'rounded-t-[24px] pb-[20px] bg-white shadow absolute bottom-[-20px] w-full',
                 {
                   'bottom-[-110px]': !showTabBar,
                   'bottom-[-350px]': keyboardHeight,

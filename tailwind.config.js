@@ -131,7 +131,8 @@ module.exports = {
       n200: '#6B788E',
       b200: '#444444',
       n20: '#F5F6F7',
-      b400: '#C2C7D0'
+      b400: '#C2C7D0',
+      n900: '#505F79'
     },
     columns: {
       auto: 'auto',
