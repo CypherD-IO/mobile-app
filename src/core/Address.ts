@@ -4,7 +4,6 @@ import { getToken, registerForRemoteMessages, onMessage } from '../core/push';
 import { ethToEvmos } from '@tharsis/address-converter';
 import { Slip10RawIndex } from '@cosmjs-rn/crypto';
 import { Secp256k1HdWallet, pubkeyToAddress } from '@cosmjs-rn/amino';
-import { Secp256k1HdWallet, pubkeyToAddress } from '@cosmjs-rn/amino';
 import { cosmosConfig, IIBCData } from '../constants/cosmosConfig';
 import CryptoJS from 'crypto-js';
 import { Mnemonic, PrivKeySecp256k1 } from '@keplr-wallet/crypto';
@@ -19,21 +18,11 @@ import {
   getBytes,
   ripemd160,
 } from 'ethers';
-import {
-  HDNodeWallet,
-  Mnemonic as EthersMnemonic,
-  Wallet,
-  sha256,
-  hexlify,
-  getBytes,
-  ripemd160,
-} from 'ethers';
 import { setConnectionType } from './asyncStorage';
 import { ConnectionTypes } from '../constants/enum';
 import { getInjectiveAddress } from '@injectivelabs/sdk-ts';
 import { Keypair } from '@solana/web3.js';
 import { derivePath } from 'ed25519-hd-key';
-import { Bech32 } from '@cosmjs-rn/encoding';
 import { Bech32 } from '@cosmjs-rn/encoding';
 import * as bs58 from 'bs58';
 import { AddressDerivationPath, Bech32Prefixes } from '../constants/data';
@@ -103,7 +92,6 @@ export const generateMultipleWalletAddressesFromSeedPhrase = async (
   });
 };
 
-export const generateWalletFromMnemonic = async (
 export const generateWalletFromMnemonic = async (
   mnemonic: string,
   trackingEventId: string,
