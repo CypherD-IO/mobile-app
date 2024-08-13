@@ -29,6 +29,7 @@ import {
   floor,
   get,
   isEmpty,
+  isNil,
   orderBy,
   some,
 } from 'lodash';
@@ -86,6 +87,11 @@ import {
 } from '../../reducers/activity_reducer';
 import { Transaction } from '@solana/web3.js';
 import { OdosToken } from '../../models/odosTokens.interface';
+import {
+  BridgeContext,
+  BridgeContextDef,
+  BridgeStatus,
+} from '../../reducers/bridge.reducer';
 
 enum TxnStatus {
   STATE_SUBMITTED = 'STATE_SUBMITTED',
@@ -101,7 +107,8 @@ export default function BridgeSkipApi(props: {
   route?: any;
 }) {
   const routeData = props.route.params;
-  const portfolioState = useContext<any>(PortfolioContext);
+  const portfolioState = useContext(PortfolioContext);
+  const { state: bridgeState } = useContext(BridgeContext) as BridgeContextDef;
   const totalHoldings: Holding[] =
     portfolioState.statePortfolio.tokenPortfolio.totalHoldings;
   const { getFromOtherSource, postToOtherSource, getWithAuth, postWithAuth } =
@@ -195,104 +202,68 @@ export default function BridgeSkipApi(props: {
   const [quoteData, setQuoteData] = useState<any>(null);
 
   const getChains = async () => {
-    const {
-      isError,
-      data,
-      error: FetchError,
-    } = await getWithAuth('/v1/swap/chains');
+    setError('');
+    const skipApiChains = bridgeState.skipApiChaindata;
+    setSkipApiChainsData(skipApiChains);
+    setSkipChainInfo(skipApiChains);
 
-    if (isError) {
-      showModal('state', {
-        type: 'error',
-        title: t('FETCH_SKIP_API_ERROR'),
-        description: FetchError?.message ?? JSON.stringify(FetchError),
-        onSuccess: onModalHide,
-        onFailure: onModalHide,
+    const swapChains: number[] = bridgeState.odosChainData;
+    setOdosChainData(swapChains);
+    const chainsData = getAvailableChains(hdWallet);
+    const chains = filter(skipApiChains, item2 => {
+      return some(chainsData, item1 => {
+        return (
+          parseInt(item1.chain_id, 16) === parseInt(item2.chain_id, 10) ||
+          item1.chain_id === item2.chain_id
+        );
       });
+    });
+    let tempSelectedFromChain;
+    if (routeData?.fromChainData?.chainDetails) {
+      const { chain_id: chainID } = get(
+        routeData,
+        ['fromChainData', 'chainDetails'],
+        '',
+      );
+      tempSelectedFromChain = chains.find(
+        chain =>
+          parseInt(chain.chain_id, 10) === parseInt(chainID, 16) ||
+          chain.chain_id === chainID,
+      );
     } else {
-      setError('');
-      const skipApiChains: SkipApiChainInterface[] = get(
-        data,
-        'skipSupportedChains',
-        [],
-      );
-      setSkipApiChainsData(skipApiChains);
-      setSkipChainInfo(skipApiChains);
-
-      const swapChains: number[] = get(data, 'odosSupportedChains', []);
-      setOdosChainData(swapChains);
-      const chainsData = getAvailableChains(hdWallet);
-      const chains = filter(skipApiChains, item2 => {
-        return some(chainsData, item1 => {
-          return (
-            parseInt(item1.chain_id, 16) === parseInt(item2.chain_id, 10) ||
-            item1.chain_id === item2.chain_id
-          );
-        });
-      });
-      // setFromChainData(chains);
-      let tempSelectedFromChain;
-      if (routeData?.fromChainData?.chainDetails) {
-        const { chain_id: chainID } = get(
-          routeData,
-          ['fromChainData', 'chainDetails'],
-          '',
-        );
-        tempSelectedFromChain = chains.find(
-          chain =>
-            parseInt(chain.chain_id, 10) === parseInt(chainID, 16) ||
-            chain.chain_id === chainID,
-        );
-      } else {
-        tempSelectedFromChain = chains[0];
-      }
-
-      const odosChains = getAvailableChains(hdWallet).filter(chain =>
-        swapChains.includes(chain.chainIdNumber),
-      );
-
-      const fromChainIDs = new Set(
-        skipApiChains.map(chain => parseInt(chain.chain_id, 10)),
-      );
-
-      const filteredChains = odosChains.filter(
-        chain => !fromChainIDs.has(parseInt(chain.chain_id, 16)),
-      );
-
-      const formattedChainData = filteredChains.map(item => {
-        return {
-          chain_id: item.chainIdNumber.toString(),
-          chain_name: item.name,
-          chain_type: 'evm',
-          logo_uri: item.logo_url,
-        };
-      }) as unknown as SkipApiChainInterface[];
-
-      setSelectedFromChain(tempSelectedFromChain as any);
-      setFromChainData([...chains, ...formattedChainData]);
+      tempSelectedFromChain = chains[0];
     }
+
+    const odosChains = getAvailableChains(hdWallet).filter(chain =>
+      swapChains.includes(chain.chainIdNumber),
+    );
+
+    const fromChainIDs = new Set(
+      skipApiChains.map(chain => parseInt(chain.chain_id, 10)),
+    );
+
+    const filteredChains = odosChains.filter(
+      chain => !fromChainIDs.has(parseInt(chain.chain_id, 16)),
+    );
+
+    const formattedChainData = filteredChains.map(item => {
+      return {
+        chain_id: item.chainIdNumber.toString(),
+        chain_name: item.name,
+        chain_type: 'evm',
+        logo_uri: item.logo_url,
+      };
+    }) as unknown as SkipApiChainInterface[];
+
+    setSelectedFromChain(tempSelectedFromChain as any);
+    setFromChainData([...chains, ...formattedChainData]);
   };
 
   const getTokens = async () => {
-    const {
-      isError,
-      data,
-      error: fetchError,
-    } = await getWithAuth('/v1/swap/tokens');
-    if (isError) {
-      showModal('state', {
-        type: 'error',
-        title: t('FETCH_SKIP_API_ERROR'),
-        description: JSON.stringify(fetchError),
-        onSuccess: onModalHide,
-        onFailure: onModalHide,
-      });
-    } else {
-      const tokenDataSkipApi = get(data, 'skipTokens', {});
-      const tokenDataOdosApi = get(data, 'odosTokens', {});
-      setSkipApiTokenData(tokenDataSkipApi);
-      setOdosTokenData(tokenDataOdosApi);
-    }
+    const tokenDataSkipApi = bridgeState.skipApiTokenData;
+    const tokenDataOdosApi = bridgeState.odosTokenData;
+    setSkipApiTokenData(tokenDataSkipApi);
+    setOdosTokenData(tokenDataOdosApi);
   };
 
   const setFromTokens = async () => {
@@ -478,22 +449,21 @@ export default function BridgeSkipApi(props: {
   };
 
   useEffect(() => {
-    try {
-      if (portfolioState) {
+    if (portfolioState && bridgeState) {
+      if (bridgeState.status === BridgeStatus.SUCCESS) {
         void getChains();
         void getTokens();
+      } else if (bridgeState.status === BridgeStatus.ERROR) {
+        showModal('state', {
+          type: 'error',
+          title: t('UNEXCPECTED_ERROR'),
+          description: 'Error fetching data, please try again later',
+          onSuccess: onModalHide,
+          onFailure: onModalHide,
+        });
       }
-    } catch (e) {
-      console.log('🚀 ~ useEffect ~ e:', e);
-      showModal('state', {
-        type: 'error',
-        title: t('UNEXCPECTED_ERROR'),
-        description: e?.message ?? JSON.stringify(e),
-        onSuccess: onModalHide,
-        onFailure: onModalHide,
-      });
     }
-  }, [portfolioState]);
+  }, [portfolioState, bridgeState]);
 
   useEffect(() => {
     if (
@@ -601,6 +571,7 @@ export default function BridgeSkipApi(props: {
     selectedToChain,
     selectedToToken,
     cryptoAmount,
+    index,
   ]);
 
   useEffect(() => {
@@ -775,7 +746,7 @@ export default function BridgeSkipApi(props: {
           type: 'error',
           title: t('FETCH_SKIP_API_ERROR'),
           description: JSON.stringify(fetchError),
-          onSuccess: onModalHide,
+          onSuccess: hideModal,
           onFailure: onModalHide,
         });
         return;
@@ -1003,11 +974,11 @@ export default function BridgeSkipApi(props: {
       } else {
         await trackStatus(hash, chainID, true);
       }
-    } catch (e) {
+    } catch (e: any) {
       showModal('state', {
         type: 'error',
         title: t('UNEXCPECTED_ERROR'),
-        description: JSON.stringify(e),
+        description: e?.message ?? JSON.stringify(e),
         onSuccess: onModalHide,
         onFailure: onModalHide,
       });
@@ -1146,13 +1117,7 @@ export default function BridgeSkipApi(props: {
       }
     } catch (e: any) {
       setLoading(false);
-      showModal('state', {
-        type: 'error',
-        title: t('UNEXCPECTED_ERROR'),
-        description: e?.message ?? JSON.stringify(e),
-        onSuccess: onModalHide,
-        onFailure: onModalHide,
-      });
+      setError(e?.message ?? JSON.stringify(e));
     }
   };
 
@@ -1472,7 +1437,7 @@ export default function BridgeSkipApi(props: {
             });
             showModal('state', {
               type: 'error',
-              title: '',
+              title: t('SWAP_ERROR'),
               description:
                 response?.error?.message ?? t('SWAP_ERROR_DESCRIPTION'),
               onSuccess: hideModal,
@@ -1735,603 +1700,444 @@ export default function BridgeSkipApi(props: {
     }
   }
 
-  if (isEmpty(skipApiTokenData) || isEmpty(skipChainInfo) || portfolioLoading)
+  if (
+    isEmpty(skipApiChainsData) ||
+    isEmpty(skipApiTokenData) ||
+    isEmpty(skipChainInfo) ||
+    isEmpty(odosTokenData) ||
+    isEmpty(odosChainData) ||
+    portfolioLoading ||
+    isNil(bridgeState) ||
+    bridgeState.status === BridgeStatus.FETCHING
+  )
     return <Loading />;
   return (
     <CyDSafeAreaView>
-      {/* Token approval modal */}
-      <SignatureModal
-        isModalVisible={approveModalVisible}
-        setModalVisible={setApproveModalVisible}
-        onCancel={() => {
-          setApproveModalVisible(false);
-          handleReject();
-        }}>
-        {approveParams && selectedFromToken ? (
-          <CyDView className='mb-[30px] pl-[30px] pr-[30px]'>
-            <CyDView className='flex flex-row justify-center'>
-              <CyDImage
-                source={AppImages.APP_LOGO}
-                className='h-[60px] w-[60px]'
-                resizeMode='contain'
-              />
-            </CyDView>
-            <CyDText className='text-center font-bold text-[22px] mt-[10px]'>
-              Allow Cypher to access your {selectedFromToken?.name}
-            </CyDText>
-            <CyDView className='border-t-[1px] border-b-[1px] border-sepratorColor my-[30px]'>
-              <CyDView className='flex flex-row justify-between items-center pt-[20px]'>
-                <CyDView className='flex flex-row items-center'>
-                  <CyDImage
-                    source={AppImages.UNKNOWN_TXN_TOKEN}
-                    className='h-[18px] w-[18px]'
-                    resizeMode='contain'
-                  />
-                  <CyDText className=' py-[10px] w-[50%] ml-[15px] font-semibold'>
-                    {t<string>('TOKEN')}
-                  </CyDText>
-                </CyDView>
-                <CyDView className='flex flex-row items-center justify-center gap-x-[8px]'>
-                  <CyDText className='text-right font-extrabold text-[14px]'>
-                    {selectedFromToken.recommended_symbol}
-                  </CyDText>
-                  {endsWith(selectedFromToken?.logo_uri, '.svg') ? (
-                    <SvgUri
-                      width='24'
-                      height='24'
-                      className=''
-                      uri={selectedFromToken?.logo_uri ?? ''}
-                    />
-                  ) : (
-                    <CyDFastImage
-                      source={{
-                        uri: selectedFromToken?.logo_uri,
-                      }}
-                      className={'w-[24px] h-[24px]'}
-                    />
-                  )}
-                </CyDView>
-              </CyDView>
-              <CyDView className='flex flex-row justify-between items-center'>
-                <CyDView className='flex flex-row items-center'>
-                  <CyDImage
-                    source={AppImages.UNKNOWN_TXN_TOKEN}
-                    className='h-[18px] w-[18px]'
-                    resizeMode='contain'
-                  />
-                  <CyDText className=' py-[10px] ml-[15px] font-semibold'>
-                    {t<string>('AMOUNT_APPROVED')}
-                  </CyDText>
-                </CyDView>
-                <CyDView className='flex flex-row items-center justify-center gap-x-[8px]'>
-                  <CyDText className='text-right font-extrabold text-[14px]'>
-                    {`${ethers.formatUnits(approveParams.tokens, selectedFromToken.decimals)}`}
-                  </CyDText>
-                  {endsWith(selectedFromToken?.logo_uri, '.svg') ? (
-                    <SvgUri
-                      width='24'
-                      height='24'
-                      className=''
-                      uri={selectedFromToken?.logo_uri ?? ''}
-                    />
-                  ) : (
-                    <CyDFastImage
-                      source={{
-                        uri: selectedFromToken?.logo_uri,
-                      }}
-                      className={'w-[24px] h-[24px]'}
-                    />
-                  )}
-                </CyDView>
-              </CyDView>
-            </CyDView>
-            <CyDView className='flex justify-end my-[30px]'>
-              <Button
-                title={t('APPROVE')}
-                onPress={() => {
-                  setApproveModalVisible(false);
-                  handleApprove();
-                }}
-                type={ButtonType.PRIMARY}
-                style='h-[50px]'
-              />
-              <Button
-                title={t('CANCEL')}
-                onPress={() => {
-                  setApproveModalVisible(false);
-                  handleReject();
-                }}
-                type={ButtonType.SECONDARY}
-                style='mt-[15px]'
-              />
-            </CyDView>
-          </CyDView>
-        ) : null}
-      </SignatureModal>
-
-      {/* Transfer token Modal evm */}
-      <SignatureModal
-        isModalVisible={evmModalVisible}
-        setModalVisible={setEvmModalVisible}
-        onCancel={() => {
-          setEvmModalVisible(false);
-          handleReject();
-        }}>
-        {evmTxnParams ? (
-          <CyDView className={'px-[20px]'}>
-            <CyDText className={'text-center text-[24px] font-bold mt-[20px]'}>
-              {t<string>('TRANSFER_TOKENS')}
-            </CyDText>
-            <CyDView className='mt-[8px]'>
-              <CyDText className='text-[12px] font-semibold'>
-                {t('FROM')}
-              </CyDText>
-              <CyDText className='text-[14px] font-bold mt-[2px]'>
-                {evmTxnParams.signer_address}
-              </CyDText>
-            </CyDView>
-            <CyDView className='mt-[8px]'>
-              <CyDText className='text-[12px] font-semibold'>{t('TO')}</CyDText>
-              <CyDText className='text-[14px] font-bold mt-[2px]'>
-                {evmTxnParams.to}
-              </CyDText>
-            </CyDView>
-            <CyDView className='mt-[8px]'>
-              <CyDText className='text-[12px] font-semibold'>
-                {t('DATA')}
-              </CyDText>
-              <CyDScrollView className='h-[200px] p-[4px] rounded-[8px] mt-8px border-separate border '>
-                <CyDText>{evmTxnParams.data}</CyDText>
-              </CyDScrollView>
-            </CyDView>
-            <CyDView className='flex justify-end my-[30px]'>
-              <Button
-                title={t('APPROVE')}
-                onPress={() => {
-                  setEvmModalVisible(false);
-                  handleApprove();
-                }}
-                type={ButtonType.PRIMARY}
-                style='h-[50px]'
-              />
-              <Button
-                title={t('CANCEL')}
-                onPress={() => {
-                  setEvmModalVisible(false);
-                  handleReject();
-                }}
-                type={ButtonType.SECONDARY}
-                style='mt-[15px]'
-              />
-            </CyDView>
-          </CyDView>
-        ) : null}
-      </SignatureModal>
-
-      {/* Transfer token Modal cosmos */}
-      <SignatureModal
-        isModalVisible={cosmosModalVisible}
-        setModalVisible={setCosmosModalVisible}
-        onCancel={() => {
-          setCosmosModalVisible(false);
-          handleReject();
-        }}>
-        {cosmosTxnParams ? (
-          <CyDView className={'px-[20px]'}>
-            <CyDText className={'text-center text-[24px] font-bold mt-[20px]'}>
-              {t<string>('TRANSFER_TOKENS')}
-            </CyDText>
-            <CyDView className='mt-[8px]'>
-              <CyDText className='text-[12px] font-semibold'>
-                {t('FROM')}
-              </CyDText>
-              <CyDText className='text-[14px] font-bold mt-[2px]'>
-                {cosmosTxnParams.signer_address}
-              </CyDText>
-            </CyDView>
-            {cosmosTxnParams.msgs.map((item, index) => {
-              return (
-                <CyDView key={index} className='mt-[8px]'>
-                  <CyDText className='text-[12px] font-semibold'>
-                    {item.msg_type_url}
-                  </CyDText>
-                  <CyDScrollView className='h-[200px] p-[4px] rounded-[8px] mt-8px border-separate border '>
-                    {/* <CyDText>{item.msg}</CyDText> */}
-                    <JSONTree data={JSON.parse(item.msg)} invertTheme={true} />
-                  </CyDScrollView>
-                </CyDView>
-              );
-            })}
-            <CyDView className='flex justify-end my-[30px]'>
-              <Button
-                title={t('APPROVE')}
-                onPress={() => {
-                  setCosmosModalVisible(false);
-                  handleApprove();
-                }}
-                type={ButtonType.PRIMARY}
-                style='h-[50px]'
-              />
-              <Button
-                title={t('CANCEL')}
-                onPress={() => {
-                  setCosmosModalVisible(false);
-                  handleReject();
-                }}
-                type={ButtonType.SECONDARY}
-                style='mt-[15px]'
-              />
-            </CyDView>
-          </CyDView>
-        ) : null}
-      </SignatureModal>
-
-      {/* Transfer token Modal solana */}
-      <SignatureModal
-        isModalVisible={solanaModalVisible}
-        setModalVisible={setSolanaModalVisible}
-        onCancel={() => {
-          setCosmosModalVisible(false);
-          handleReject();
-        }}>
-        {solanaTxnParams ? (
-          <CyDView className={'px-[20px]'}>
-            <CyDText className={'text-center text-[24px] font-bold mt-[20px]'}>
-              {t<string>('TRANSFER_TOKENS')}
-            </CyDText>
-
-            {solanaTxnParams && (
-              <CyDScrollView className='h-[200px] p-[4px] rounded-[8px] mt-8px border-separate border '>
-                <JSONTree
-                  data={JSON.parse(JSON.stringify(solanaTxnParams))}
-                  invertTheme={true}
-                />
-              </CyDScrollView>
-            )}
-            <CyDView className='flex justify-end my-[30px]'>
-              <Button
-                title={t('APPROVE')}
-                onPress={() => {
-                  setSolanaModalVisible(false);
-                  handleApprove();
-                }}
-                type={ButtonType.PRIMARY}
-                style='h-[50px]'
-              />
-              <Button
-                title={t('CANCEL')}
-                onPress={() => {
-                  setSolanaModalVisible(false);
-                  handleReject();
-                }}
-                type={ButtonType.SECONDARY}
-                style='mt-[15px]'
-              />
-            </CyDView>
-          </CyDView>
-        ) : null}
-      </SignatureModal>
-
-      <SignatureModal
-        isModalVisible={allowanceParams.isApprovalModalVisible}
-        setModalVisible={resp =>
-          setAllowanceParams({
-            ...allowanceParams,
-            isApprovalModalVisible: resp,
-          })
-        }
-        onCancel={() => {
-          setAllowanceParams({
-            ...allowanceParams,
-            isApprovalModalVisible: false,
-          });
-        }}>
-        <ApprovalModal />
-      </SignatureModal>
-
-      <SignatureModal
-        isModalVisible={signModalVisible}
-        setModalVisible={setSignModalVisible}
-        onCancel={() => {
-          setSignModalVisible(false);
-          // void setQuoteCancelReasons(dontAskAgain);
-        }}
-        avoidKeyboard={true}>
-        <CyDView>
-          <CyDView className={'px-[20px]'}>
-            <CyDText className={'text-center text-[24px] font-bold mt-[20px]'}>
-              {t<string>('SWAP_TOKENS')}
-            </CyDText>
-            <CyDView
-              className={
-                'flex flex-row justify-between items-center w-[100%] my-[20px] bg-[#F7F8FE] rounded-[20px] px-[15px] py-[20px] '
-              }>
-              <CyDView className={'flex w-[40%] items-center justify-center'}>
-                <CyDView className='items-center'>
-                  {endsWith(selectedFromToken?.logo_uri, '.svg') ? (
-                    <SvgUri
-                      width='24'
-                      height='24'
-                      className=''
-                      uri={selectedFromToken?.logo_uri ?? ''}
-                    />
-                  ) : (
-                    <CyDImage
-                      source={{ uri: selectedFromToken?.logo_uri }}
-                      className={'w-[44px] h-[44px]'}
-                    />
-                  )}
-
-                  <CyDText
-                    className={
-                      'my-[6px] mx-[2px] text-black text-[14px] text-center font-semibold flex flex-row justify-center font-nunito'
-                    }>
-                    {selectedFromToken?.name}
-                  </CyDText>
-                  <CyDView
-                    className={
-                      'bg-white rounded-[20px] flex flex-row items-center p-[4px]'
-                    }>
-                    {endsWith(selectedFromChain?.logo_uri, '.svg') ? (
-                      <SvgUri
-                        width='24'
-                        height='24'
-                        className=''
-                        uri={selectedFromChain?.logo_uri ?? ''}
-                      />
-                    ) : (
-                      <CyDImage
-                        source={{ uri: selectedFromChain?.logo_uri }}
-                        className={'w-[14px] h-[14px]'}
-                      />
-                    )}
-                    <CyDText
-                      className={
-                        'ml-[6px] font-nunito font-normal text-black  text-[12px]'
-                      }>
-                      {selectedFromChain?.chain_name}
-                    </CyDText>
-                  </CyDView>
-                </CyDView>
-              </CyDView>
-
-              <CyDView className={'flex justify-center h-[30px] w-[30px]'}>
-                <CyDFastImage
-                  source={AppImages.SWAP}
-                  className='h-[22px] w-[22px]'
+      <CyDScrollView>
+        {/* Token approval modal */}
+        <SignatureModal
+          isModalVisible={approveModalVisible}
+          setModalVisible={setApproveModalVisible}
+          onCancel={() => {
+            setApproveModalVisible(false);
+            handleReject();
+          }}>
+          {approveParams && selectedFromToken ? (
+            <CyDView className='mb-[30px] pl-[30px] pr-[30px]'>
+              <CyDView className='flex flex-row justify-center'>
+                <CyDImage
+                  source={AppImages.APP_LOGO}
+                  className='h-[60px] w-[60px]'
                   resizeMode='contain'
                 />
               </CyDView>
-
-              <CyDView
-                className={
-                  'flex w-[40%] items-center self-center align-center justify-center '
-                }>
-                <CyDView className='items-center'>
-                  {endsWith(selectedToToken?.logo_uri, '.svg') ? (
-                    <SvgUri
-                      width='24'
-                      height='24'
-                      className=''
-                      uri={selectedToToken?.logo_uri ?? ''}
-                    />
-                  ) : (
+              <CyDText className='text-center font-bold text-[22px] mt-[10px]'>
+                Allow Cypher to access your {selectedFromToken?.name}
+              </CyDText>
+              <CyDView className='border-t-[1px] border-b-[1px] border-sepratorColor my-[30px]'>
+                <CyDView className='flex flex-row justify-between items-center pt-[20px]'>
+                  <CyDView className='flex flex-row items-center'>
                     <CyDImage
-                      source={{ uri: selectedToToken?.logo_uri }}
-                      className={'w-[44px] h-[44px]'}
+                      source={AppImages.UNKNOWN_TXN_TOKEN}
+                      className='h-[18px] w-[18px]'
+                      resizeMode='contain'
                     />
-                  )}
-                  <CyDText
-                    className={
-                      'my-[6px] mx-[2px] text-black text-[14px] text-center font-semibold flex flex-row justify-center font-nunito'
-                    }>
-                    {selectedToToken?.name}
-                  </CyDText>
-                  <CyDView
-                    className={
-                      'bg-white rounded-[20px] flex flex-row items-center p-[4px]'
-                    }>
-                    {endsWith(selectedToChain?.logo_uri, '.svg') ? (
+                    <CyDText className=' py-[10px] w-[50%] ml-[15px] font-semibold'>
+                      {t<string>('TOKEN')}
+                    </CyDText>
+                  </CyDView>
+                  <CyDView className='flex flex-row items-center justify-center gap-x-[8px]'>
+                    <CyDText className='text-right font-extrabold text-[14px]'>
+                      {selectedFromToken.recommended_symbol}
+                    </CyDText>
+                    {endsWith(selectedFromToken?.logo_uri, '.svg') ? (
                       <SvgUri
                         width='24'
                         height='24'
                         className=''
-                        uri={selectedToChain?.logo_uri ?? ''}
+                        uri={selectedFromToken?.logo_uri ?? ''}
+                      />
+                    ) : (
+                      <CyDFastImage
+                        source={{
+                          uri: selectedFromToken?.logo_uri,
+                        }}
+                        className={'w-[24px] h-[24px]'}
+                      />
+                    )}
+                  </CyDView>
+                </CyDView>
+                <CyDView className='flex flex-row justify-between items-center'>
+                  <CyDView className='flex flex-row items-center'>
+                    <CyDImage
+                      source={AppImages.UNKNOWN_TXN_TOKEN}
+                      className='h-[18px] w-[18px]'
+                      resizeMode='contain'
+                    />
+                    <CyDText className=' py-[10px] ml-[15px] font-semibold'>
+                      {t<string>('AMOUNT_APPROVED')}
+                    </CyDText>
+                  </CyDView>
+                  <CyDView className='flex flex-row items-center justify-center gap-x-[8px]'>
+                    <CyDText className='text-right font-extrabold text-[14px]'>
+                      {`${ethers.formatUnits(approveParams.tokens, selectedFromToken.decimals)}`}
+                    </CyDText>
+                    {endsWith(selectedFromToken?.logo_uri, '.svg') ? (
+                      <SvgUri
+                        width='24'
+                        height='24'
+                        className=''
+                        uri={selectedFromToken?.logo_uri ?? ''}
+                      />
+                    ) : (
+                      <CyDFastImage
+                        source={{
+                          uri: selectedFromToken?.logo_uri,
+                        }}
+                        className={'w-[24px] h-[24px]'}
+                      />
+                    )}
+                  </CyDView>
+                </CyDView>
+              </CyDView>
+              <CyDView className='flex justify-end my-[30px]'>
+                <Button
+                  title={t('APPROVE')}
+                  onPress={() => {
+                    setApproveModalVisible(false);
+                    handleApprove();
+                  }}
+                  type={ButtonType.PRIMARY}
+                  style='h-[50px]'
+                />
+                <Button
+                  title={t('CANCEL')}
+                  onPress={() => {
+                    setApproveModalVisible(false);
+                    handleReject();
+                  }}
+                  type={ButtonType.SECONDARY}
+                  style='mt-[15px]'
+                />
+              </CyDView>
+            </CyDView>
+          ) : null}
+        </SignatureModal>
+
+        {/* Transfer token Modal evm */}
+        <SignatureModal
+          isModalVisible={evmModalVisible}
+          setModalVisible={setEvmModalVisible}
+          onCancel={() => {
+            setEvmModalVisible(false);
+            handleReject();
+          }}>
+          {evmTxnParams ? (
+            <CyDView className={'px-[20px]'}>
+              <CyDText
+                className={'text-center text-[24px] font-bold mt-[20px]'}>
+                {t<string>('TRANSFER_TOKENS')}
+              </CyDText>
+              <CyDView className='mt-[8px]'>
+                <CyDText className='text-[12px] font-semibold'>
+                  {t('FROM')}
+                </CyDText>
+                <CyDText className='text-[14px] font-bold mt-[2px]'>
+                  {evmTxnParams.signer_address}
+                </CyDText>
+              </CyDView>
+              <CyDView className='mt-[8px]'>
+                <CyDText className='text-[12px] font-semibold'>
+                  {t('TO')}
+                </CyDText>
+                <CyDText className='text-[14px] font-bold mt-[2px]'>
+                  {evmTxnParams.to}
+                </CyDText>
+              </CyDView>
+              <CyDView className='mt-[8px]'>
+                <CyDText className='text-[12px] font-semibold'>
+                  {t('DATA')}
+                </CyDText>
+                <CyDScrollView className='h-[200px] p-[4px] rounded-[8px] mt-8px border-separate border '>
+                  <CyDText>{evmTxnParams.data}</CyDText>
+                </CyDScrollView>
+              </CyDView>
+              <CyDView className='flex justify-end my-[30px]'>
+                <Button
+                  title={t('APPROVE')}
+                  onPress={() => {
+                    setEvmModalVisible(false);
+                    handleApprove();
+                  }}
+                  type={ButtonType.PRIMARY}
+                  style='h-[50px]'
+                />
+                <Button
+                  title={t('CANCEL')}
+                  onPress={() => {
+                    setEvmModalVisible(false);
+                    handleReject();
+                  }}
+                  type={ButtonType.SECONDARY}
+                  style='mt-[15px]'
+                />
+              </CyDView>
+            </CyDView>
+          ) : null}
+        </SignatureModal>
+
+        {/* Transfer token Modal cosmos */}
+        <SignatureModal
+          isModalVisible={cosmosModalVisible}
+          setModalVisible={setCosmosModalVisible}
+          onCancel={() => {
+            setCosmosModalVisible(false);
+            handleReject();
+          }}>
+          {cosmosTxnParams ? (
+            <CyDView className={'px-[20px]'}>
+              <CyDText
+                className={'text-center text-[24px] font-bold mt-[20px]'}>
+                {t<string>('TRANSFER_TOKENS')}
+              </CyDText>
+              <CyDView className='mt-[8px]'>
+                <CyDText className='text-[12px] font-semibold'>
+                  {t('FROM')}
+                </CyDText>
+                <CyDText className='text-[14px] font-bold mt-[2px]'>
+                  {cosmosTxnParams.signer_address}
+                </CyDText>
+              </CyDView>
+              {cosmosTxnParams.msgs.map(item => {
+                return (
+                  <CyDView key={index} className='mt-[8px]'>
+                    <CyDText className='text-[12px] font-semibold'>
+                      {item.msg_type_url}
+                    </CyDText>
+                    <CyDScrollView className='h-[200px] p-[4px] rounded-[8px] mt-8px border-separate border '>
+                      {/* <CyDText>{item.msg}</CyDText> */}
+                      <JSONTree
+                        data={JSON.parse(item.msg)}
+                        invertTheme={true}
+                      />
+                    </CyDScrollView>
+                  </CyDView>
+                );
+              })}
+              <CyDView className='flex justify-end my-[30px]'>
+                <Button
+                  title={t('APPROVE')}
+                  onPress={() => {
+                    setCosmosModalVisible(false);
+                    handleApprove();
+                  }}
+                  type={ButtonType.PRIMARY}
+                  style='h-[50px]'
+                />
+                <Button
+                  title={t('CANCEL')}
+                  onPress={() => {
+                    setCosmosModalVisible(false);
+                    handleReject();
+                  }}
+                  type={ButtonType.SECONDARY}
+                  style='mt-[15px]'
+                />
+              </CyDView>
+            </CyDView>
+          ) : null}
+        </SignatureModal>
+
+        {/* Transfer token Modal solana */}
+        <SignatureModal
+          isModalVisible={solanaModalVisible}
+          setModalVisible={setSolanaModalVisible}
+          onCancel={() => {
+            setCosmosModalVisible(false);
+            handleReject();
+          }}>
+          {solanaTxnParams ? (
+            <CyDView className={'px-[20px]'}>
+              <CyDText
+                className={'text-center text-[24px] font-bold mt-[20px]'}>
+                {t<string>('TRANSFER_TOKENS')}
+              </CyDText>
+
+              {solanaTxnParams && (
+                <CyDScrollView className='h-[200px] p-[4px] rounded-[8px] mt-8px border-separate border '>
+                  <JSONTree
+                    data={JSON.parse(JSON.stringify(solanaTxnParams))}
+                    invertTheme={true}
+                  />
+                </CyDScrollView>
+              )}
+              <CyDView className='flex justify-end my-[30px]'>
+                <Button
+                  title={t('APPROVE')}
+                  onPress={() => {
+                    setSolanaModalVisible(false);
+                    handleApprove();
+                  }}
+                  type={ButtonType.PRIMARY}
+                  style='h-[50px]'
+                />
+                <Button
+                  title={t('CANCEL')}
+                  onPress={() => {
+                    setSolanaModalVisible(false);
+                    handleReject();
+                  }}
+                  type={ButtonType.SECONDARY}
+                  style='mt-[15px]'
+                />
+              </CyDView>
+            </CyDView>
+          ) : null}
+        </SignatureModal>
+
+        <SignatureModal
+          isModalVisible={allowanceParams.isApprovalModalVisible}
+          setModalVisible={resp =>
+            setAllowanceParams({
+              ...allowanceParams,
+              isApprovalModalVisible: resp,
+            })
+          }
+          onCancel={() => {
+            setAllowanceParams({
+              ...allowanceParams,
+              isApprovalModalVisible: false,
+            });
+          }}>
+          <ApprovalModal />
+        </SignatureModal>
+
+        <SignatureModal
+          isModalVisible={signModalVisible}
+          setModalVisible={setSignModalVisible}
+          onCancel={() => {
+            setSignModalVisible(false);
+            // void setQuoteCancelReasons(dontAskAgain);
+          }}
+          avoidKeyboard={true}>
+          <CyDView>
+            <CyDView className={'px-[20px]'}>
+              <CyDText
+                className={'text-center text-[24px] font-bold mt-[20px]'}>
+                {t<string>('SWAP_TOKENS')}
+              </CyDText>
+              <CyDView
+                className={
+                  'flex flex-row justify-between items-center w-[100%] my-[20px] bg-[#F7F8FE] rounded-[20px] px-[15px] py-[20px] '
+                }>
+                <CyDView className={'flex w-[40%] items-center justify-center'}>
+                  <CyDView className='items-center'>
+                    {endsWith(selectedFromToken?.logo_uri, '.svg') ? (
+                      <SvgUri
+                        width='24'
+                        height='24'
+                        className=''
+                        uri={selectedFromToken?.logo_uri ?? ''}
                       />
                     ) : (
                       <CyDImage
-                        source={{ uri: selectedToChain?.logo_uri }}
-                        className={'w-[14px] h-[14px]'}
+                        source={{ uri: selectedFromToken?.logo_uri }}
+                        className={'w-[44px] h-[44px]'}
+                      />
+                    )}
+
+                    <CyDText
+                      className={
+                        'my-[6px] mx-[2px] text-black text-[14px] text-center font-semibold flex flex-row justify-center font-nunito'
+                      }>
+                      {selectedFromToken?.name}
+                    </CyDText>
+                    <CyDView
+                      className={
+                        'bg-white rounded-[20px] flex flex-row items-center p-[4px]'
+                      }>
+                      {endsWith(selectedFromChain?.logo_uri, '.svg') ? (
+                        <SvgUri
+                          width='24'
+                          height='24'
+                          className=''
+                          uri={selectedFromChain?.logo_uri ?? ''}
+                        />
+                      ) : (
+                        <CyDImage
+                          source={{ uri: selectedFromChain?.logo_uri }}
+                          className={'w-[14px] h-[14px]'}
+                        />
+                      )}
+                      <CyDText
+                        className={
+                          'ml-[6px] font-nunito font-normal text-black  text-[12px]'
+                        }>
+                        {selectedFromChain?.chain_name}
+                      </CyDText>
+                    </CyDView>
+                  </CyDView>
+                </CyDView>
+
+                <CyDView className={'flex justify-center h-[30px] w-[30px]'}>
+                  <CyDFastImage
+                    source={AppImages.SWAP}
+                    className='h-[22px] w-[22px]'
+                    resizeMode='contain'
+                  />
+                </CyDView>
+
+                <CyDView
+                  className={
+                    'flex w-[40%] items-center self-center align-center justify-center '
+                  }>
+                  <CyDView className='items-center'>
+                    {endsWith(selectedToToken?.logo_uri, '.svg') ? (
+                      <SvgUri
+                        width='24'
+                        height='24'
+                        className=''
+                        uri={selectedToToken?.logo_uri ?? ''}
+                      />
+                    ) : (
+                      <CyDImage
+                        source={{ uri: selectedToToken?.logo_uri }}
+                        className={'w-[44px] h-[44px]'}
                       />
                     )}
                     <CyDText
                       className={
-                        'ml-[6px] font-nunito text-black font-normal text-[12px]'
+                        'my-[6px] mx-[2px] text-black text-[14px] text-center font-semibold flex flex-row justify-center font-nunito'
                       }>
-                      {selectedToChain?.chain_name}
+                      {selectedToToken?.name}
                     </CyDText>
+                    <CyDView
+                      className={
+                        'bg-white rounded-[20px] flex flex-row items-center p-[4px]'
+                      }>
+                      {endsWith(selectedToChain?.logo_uri, '.svg') ? (
+                        <SvgUri
+                          width='24'
+                          height='24'
+                          className=''
+                          uri={selectedToChain?.logo_uri ?? ''}
+                        />
+                      ) : (
+                        <CyDImage
+                          source={{ uri: selectedToChain?.logo_uri }}
+                          className={'w-[14px] h-[14px]'}
+                        />
+                      )}
+                      <CyDText
+                        className={
+                          'ml-[6px] font-nunito text-black font-normal text-[12px]'
+                        }>
+                        {selectedToChain?.chain_name}
+                      </CyDText>
+                    </CyDView>
                   </CyDView>
                 </CyDView>
               </CyDView>
-            </CyDView>
-            <CyDView className={'flex flex-row justify-between'}>
-              <CyDText
-                className={
-                  'text-[#434343] font-nunito font-[16px] text-medium'
-                }>
-                {t<string>('SENT_AMOUNT')}
-              </CyDText>
-              <CyDView className={'mr-[10px] flex flex-col items-end'}>
-                <CyDText
-                  className={
-                    'font-nunito font-[16px] text-black font-bold max-w-[150px]'
-                  }
-                  numberOfLines={1}>
-                  {formatAmount(swapParams?.amount).toString() +
-                    ' ' +
-                    String(selectedFromToken?.name)}
-                </CyDText>
-                <CyDText
-                  className={
-                    'font-nunito font-[12px] text-[#929292] font-bold'
-                  }>
-                  {(
-                    Number(swapParams.amount) * Number(selectedFromToken?.price)
-                  ).toFixed(4) + ' USD'}
-                </CyDText>
-              </CyDView>
-            </CyDView>
-
-            <CyDView
-              className={'mr-[10px] flex flex-row justify-between mt-[20px]'}>
-              <CyDText
-                className={
-                  'text-[#434343] font-nunito font-[16px] text-medium'
-                }>
-                {t<string>('TOTAL_RECEIVED')}
-              </CyDText>
-              <CyDView className={'flex flex-col items-end'}>
-                <CyDText
-                  className={
-                    'font-nunito font-[16px] text-black font-bold max-w-[150px]'
-                  }
-                  numberOfLines={1}>
-                  {formatAmount(
-                    swapParams?.quoteData?.toToken?.amount,
-                  ).toString() +
-                    ' ' +
-                    String(selectedToToken?.name)}
-                </CyDText>
-                <CyDText
-                  className={
-                    'font-nunito font-[12px] text-[#929292] font-bold'
-                  }>
-                  {Number(swapParams?.quoteData?.value).toFixed(4) + ' USD'}
-                </CyDText>
-              </CyDView>
-            </CyDView>
-            <CyDView className='flex flex-row justify-between items-center mt-[20px] mr-[10px]'>
-              <CyDView className='flex flex-row'>
-                <CyDText className=' py-[10px] w-[60%] font-semibold'>
-                  {t<string>('GAS_FEE') + ' :'}
-                </CyDText>
-              </CyDView>
-              <CyDView className='items-end'>
-                <CyDText className='font-bold'>
-                  {formatAmount(swapParams?.gasFeeETH)}
-                  {' ' + String(selectedFromToken?.chainDetails?.symbol)}
-                </CyDText>
-                <CyDText className='font-bold text-subTextColor'>
-                  {String(formatAmount(swapParams?.gasFeeDollar)) + ' USD'}
-                </CyDText>
-              </CyDView>
-            </CyDView>
-            <RenderWarningMessage />
-          </CyDView>
-
-          <CyDView
-            className={
-              'flex flex-row justify-center items-center px-[20px] pb-[50px] mt-[10px]'
-            }>
-            <Button
-              title={t<string>('CANCEL')}
-              disabled={loading}
-              type={ButtonType.SECONDARY}
-              onPress={() => {
-                setSignModalVisible(false);
-              }}
-              style={'h-[60px] w-[166px] mr-[9px]'}
-            />
-            <Button
-              title={t('SWAP')}
-              loading={loading}
-              onPress={() => {
-                void onConfirmSwap(swapParams);
-              }}
-              disabled={isExchangeDisabled()}
-              isPrivateKeyDependent={true}
-              style={'h-[60px] w-[166px] ml-[9px]'}
-            />
-          </CyDView>
-        </CyDView>
-      </SignatureModal>
-
-      <CyDScrollView className='h-full'>
-        {Components()}
-        {!isSwap() &&
-          (!isEmpty(error) ||
-            parseFloat(usdAmount) > (selectedFromToken?.totalValue ?? 0)) && (
-            <CyDView className=' bg-red-100 rounded-[8px] p-[12px] flex flex-row gap-x-[12px] mx-[16px] mt-[16px] justify-between items-center'>
-              <CyDFastImage
-                source={AppImages.CYPHER_WARNING_RED}
-                className='w-[32px] h-[32px]'
-              />
-              <CyDView className='w-[75%]'>
-                {!isEmpty(error) && (
-                  <CyDView className='flex flex-row gap-x-[8px]'>
-                    <CyDText>{'\u2022'}</CyDText>
-                    <CyDText>{error}</CyDText>
-                  </CyDView>
-                )}
-                {parseFloat(usdAmount) >
-                  (selectedFromToken?.totalValue ?? 0) && (
-                  <CyDView className='flex flex-row gap-x-[8px]'>
-                    <CyDText>{'\u2022'}</CyDText>
-                    <CyDText>{t('INSUFFICIENT_BALANCE_BRIDGE')}</CyDText>
-                  </CyDView>
-                )}
-              </CyDView>
-            </CyDView>
-          )}
-        {!isSwap() &&
-          !isEmpty(routeResponse?.estimated_fees) &&
-          index === 0 && (
-            <CyDView className='mx-[16px] mt-[16px] bg-white rounded-[8px] p-[12px]'>
-              {routeResponse?.estimated_fees.map((item, _index) => (
-                <CyDView
-                  key={_index}
-                  className='mt-[8px] flex flex-row gap-x-[12px] justify-between items-center'>
-                  <CyDFastImage
-                    source={AppImages.GAS_STATION}
-                    className='h-[32px] w-[32px]'
-                  />
-                  <CyDView className='w-[80%]'>
-                    <CyDText className='text-[14px] font-medium'>{`$${item.usd_amount}`}</CyDText>
-                    <CyDText className='text-[10px] font-medium'>
-                      {'Estimated Network fee'}
-                    </CyDText>
-                    <CyDText className='text-[10px] font-medium'>
-                      {`$${item.usd_amount} (${ethers.formatUnits(
-                        item.amount,
-                        item.origin_asset.decimals,
-                      )} ${item.origin_asset.symbol})`}
-                    </CyDText>
-                  </CyDView>
-                </CyDView>
-              ))}
-            </CyDView>
-          )}
-        {!isSwap() && routeResponse?.txs_required && index === 0 && (
-          <CyDView className='mx-[16px] mt-[16px] bg-white rounded-[8px] p-[12px] text-[14px] font-semibold'>
-            <CyDText className='text-[14px] font-semibold'>{`${routeResponse?.txs_required} signature required`}</CyDText>
-          </CyDView>
-        )}
-        {!isSwap() && routeResponse?.warning && index === 0 && (
-          <CyDView className=' w-[92%] ml-[16px] mt-[16px] bg-orange-100 rounded-[8px] p-[12px] flex flex-row justify-between'>
-            <CyDView className='w-[15%] flex flex-col items-center justify-center'>
-              <CyDFastImage
-                source={AppImages.WARNING}
-                className='w-[24px] h-[24px]'
-              />
-            </CyDView>
-            <CyDText className='w-[75%]'>
-              {routeResponse.warning.message}
-            </CyDText>
-          </CyDView>
-        )}
-        {isSwap() && quoteData && (
-          <CyDView className='mx-[16px] mt-[16px] bg-white rounded-[8px] p-[12px]'>
-            <CyDView className={'px-[20px]'}>
               <CyDView className={'flex flex-row justify-between'}>
                 <CyDText
                   className={
@@ -2345,7 +2151,7 @@ export default function BridgeSkipApi(props: {
                       'font-nunito font-[16px] text-black font-bold max-w-[150px]'
                     }
                     numberOfLines={1}>
-                    {formatAmount(cryptoAmount).toString() +
+                    {formatAmount(swapParams?.amount).toString() +
                       ' ' +
                       String(selectedFromToken?.name)}
                   </CyDText>
@@ -2354,7 +2160,8 @@ export default function BridgeSkipApi(props: {
                       'font-nunito font-[12px] text-[#929292] font-bold'
                     }>
                     {(
-                      Number(cryptoAmount) * Number(selectedFromToken?.price)
+                      Number(swapParams.amount) *
+                      Number(selectedFromToken?.price)
                     ).toFixed(4) + ' USD'}
                   </CyDText>
                 </CyDView>
@@ -2374,53 +2181,234 @@ export default function BridgeSkipApi(props: {
                       'font-nunito font-[16px] text-black font-bold max-w-[150px]'
                     }
                     numberOfLines={1}>
-                    {loading
-                      ? 'Fetching data'
-                      : formatAmount(quoteData?.toToken?.amount).toString() +
-                        ' ' +
-                        String(selectedToToken?.name)}
+                    {formatAmount(
+                      swapParams?.quoteData?.toToken?.amount,
+                    ).toString() +
+                      ' ' +
+                      String(selectedToToken?.name)}
                   </CyDText>
                   <CyDText
                     className={
                       'font-nunito font-[12px] text-[#929292] font-bold'
                     }>
-                    {loading
-                      ? 'Fetching data'
-                      : Number(quoteData?.value).toFixed(4) + ' USD'}
+                    {Number(swapParams?.quoteData?.value).toFixed(4) + ' USD'}
+                  </CyDText>
+                </CyDView>
+              </CyDView>
+              <CyDView className='flex flex-row justify-between items-center mt-[20px] mr-[10px]'>
+                <CyDView className='flex flex-row'>
+                  <CyDText className=' py-[10px] w-[60%] font-semibold'>
+                    {t<string>('GAS_FEE') + ' :'}
+                  </CyDText>
+                </CyDView>
+                <CyDView className='items-end'>
+                  <CyDText className='font-bold'>
+                    {formatAmount(swapParams?.gasFeeETH)}
+                    {' ' + String(selectedFromToken?.chainDetails?.symbol)}
+                  </CyDText>
+                  <CyDText className='font-bold text-subTextColor'>
+                    {String(formatAmount(swapParams?.gasFeeDollar)) + ' USD'}
                   </CyDText>
                 </CyDView>
               </CyDView>
               <RenderWarningMessage />
             </CyDView>
+
+            <CyDView
+              className={
+                'flex flex-row justify-center items-center px-[20px] pb-[50px] mt-[10px]'
+              }>
+              <Button
+                title={t<string>('CANCEL')}
+                disabled={loading}
+                type={ButtonType.SECONDARY}
+                onPress={() => {
+                  setSignModalVisible(false);
+                }}
+                style={'h-[60px] w-[166px] mr-[9px]'}
+              />
+              <Button
+                title={t('SWAP')}
+                loading={loading}
+                onPress={() => {
+                  void onConfirmSwap(swapParams);
+                }}
+                disabled={isExchangeDisabled()}
+                isPrivateKeyDependent={true}
+                style={'h-[60px] w-[166px] ml-[9px]'}
+              />
+            </CyDView>
           </CyDView>
-        )}
-        {index === 0 && (
-          <CyDView className='mx-[16px] mt-[16px]'>
-            <Button
-              onPress={() => {
-                if (isSwap()) {
-                  void onAcceptSwap({ showQuote: true });
-                } else {
-                  setStatusResponse([]);
-                  setIndex(1);
+        </SignatureModal>
+
+        <CyDView className='h-full'>
+          {Components()}
+          {!isSwap() &&
+            (!isEmpty(error) ||
+              parseFloat(usdAmount) > (selectedFromToken?.totalValue ?? 0)) && (
+              <CyDView className=' bg-red-100 rounded-[8px] p-[12px] flex flex-row gap-x-[12px] mx-[16px] mt-[16px] justify-between items-center'>
+                <CyDFastImage
+                  source={AppImages.CYPHER_WARNING_RED}
+                  className='w-[32px] h-[32px]'
+                />
+                <CyDView className='w-[75%]'>
+                  {!isEmpty(error) && (
+                    <CyDView className='flex flex-row gap-x-[8px]'>
+                      <CyDText>{'\u2022'}</CyDText>
+                      <CyDText>{error}</CyDText>
+                    </CyDView>
+                  )}
+                  {parseFloat(usdAmount) >
+                    (selectedFromToken?.totalValue ?? 0) && (
+                    <CyDView className='flex flex-row gap-x-[8px]'>
+                      <CyDText>{'\u2022'}</CyDText>
+                      <CyDText>{t('INSUFFICIENT_BALANCE_BRIDGE')}</CyDText>
+                    </CyDView>
+                  )}
+                </CyDView>
+              </CyDView>
+            )}
+          {!isSwap() &&
+            !isEmpty(routeResponse?.estimated_fees) &&
+            index === 0 && (
+              <CyDView className='mx-[16px] mt-[16px] bg-white rounded-[8px] p-[12px]'>
+                {routeResponse?.estimated_fees.map((item, _index) => (
+                  <CyDView
+                    key={_index}
+                    className='mt-[8px] flex flex-row gap-x-[12px] justify-between items-center'>
+                    <CyDFastImage
+                      source={AppImages.GAS_STATION}
+                      className='h-[32px] w-[32px]'
+                    />
+                    <CyDView className='w-[80%]'>
+                      <CyDText className='text-[14px] font-medium'>{`$${item.usd_amount}`}</CyDText>
+                      <CyDText className='text-[10px] font-medium'>
+                        {'Estimated Network fee'}
+                      </CyDText>
+                      <CyDText className='text-[10px] font-medium'>
+                        {`$${item.usd_amount} (${ethers.formatUnits(
+                          item.amount,
+                          item.origin_asset.decimals,
+                        )} ${item.origin_asset.symbol})`}
+                      </CyDText>
+                    </CyDView>
+                  </CyDView>
+                ))}
+              </CyDView>
+            )}
+          {!isSwap() && routeResponse?.txs_required && index === 0 && (
+            <CyDView className='mx-[16px] mt-[16px] bg-white rounded-[8px] p-[12px] text-[14px] font-semibold'>
+              <CyDText className='text-[14px] font-semibold'>{`${routeResponse?.txs_required} signature required`}</CyDText>
+            </CyDView>
+          )}
+          {!isSwap() && routeResponse?.warning && index === 0 && (
+            <CyDView className=' w-[92%] ml-[16px] mt-[16px] bg-orange-100 rounded-[8px] p-[12px] flex flex-row justify-between'>
+              <CyDView className='w-[15%] flex flex-col items-center justify-center'>
+                <CyDFastImage
+                  source={AppImages.WARNING}
+                  className='w-[24px] h-[24px]'
+                />
+              </CyDView>
+              <CyDText className='w-[75%]'>
+                {routeResponse.warning.message}
+              </CyDText>
+            </CyDView>
+          )}
+          {isSwap() && quoteData && (
+            <CyDView className='mx-[16px] mt-[16px] bg-white rounded-[8px] p-[12px]'>
+              <CyDView className={'px-[20px]'}>
+                <CyDView className={'flex flex-row justify-between'}>
+                  <CyDText
+                    className={
+                      'text-[#434343] font-nunito font-[16px] text-medium'
+                    }>
+                    {t<string>('SENT_AMOUNT')}
+                  </CyDText>
+                  <CyDView className={'mr-[10px] flex flex-col items-end'}>
+                    <CyDText
+                      className={
+                        'font-nunito font-[16px] text-black font-bold max-w-[150px]'
+                      }
+                      numberOfLines={1}>
+                      {formatAmount(cryptoAmount).toString() +
+                        ' ' +
+                        String(selectedFromToken?.name)}
+                    </CyDText>
+                    <CyDText
+                      className={
+                        'font-nunito font-[12px] text-[#929292] font-bold'
+                      }>
+                      {(
+                        Number(cryptoAmount) * Number(selectedFromToken?.price)
+                      ).toFixed(4) + ' USD'}
+                    </CyDText>
+                  </CyDView>
+                </CyDView>
+
+                <CyDView
+                  className={
+                    'mr-[10px] flex flex-row justify-between mt-[20px]'
+                  }>
+                  <CyDText
+                    className={
+                      'text-[#434343] font-nunito font-[16px] text-medium'
+                    }>
+                    {t<string>('TOTAL_RECEIVED')}
+                  </CyDText>
+                  <CyDView className={'flex flex-col items-end'}>
+                    <CyDText
+                      className={
+                        'font-nunito font-[16px] text-black font-bold max-w-[150px]'
+                      }
+                      numberOfLines={1}>
+                      {loading
+                        ? 'Fetching data'
+                        : formatAmount(quoteData?.toToken?.amount).toString() +
+                          ' ' +
+                          String(selectedToToken?.name)}
+                    </CyDText>
+                    <CyDText
+                      className={
+                        'font-nunito font-[12px] text-[#929292] font-bold'
+                      }>
+                      {loading
+                        ? 'Fetching data'
+                        : Number(quoteData?.value).toFixed(4) + ' USD'}
+                    </CyDText>
+                  </CyDView>
+                </CyDView>
+                <RenderWarningMessage />
+              </CyDView>
+            </CyDView>
+          )}
+          {index === 0 && (
+            <CyDView className='mx-[16px] mt-[16px]'>
+              <Button
+                onPress={() => {
+                  if (isSwap()) {
+                    void onAcceptSwap({ showQuote: true });
+                  } else {
+                    setStatusResponse([]);
+                    setIndex(1);
+                  }
+                }}
+                title={isSwap() ? 'Swap' : 'Preview'}
+                disabled={
+                  isSwap()
+                    ? selectedFromToken
+                      ? parseFloat(cryptoAmount) >
+                        parseFloat(String(selectedFromToken.actualBalance))
+                      : true
+                    : parseFloat(usdAmount) >
+                        (selectedFromToken?.totalValue ?? 0) ||
+                      isEmpty(routeResponse)
                 }
-              }}
-              title={isSwap() ? 'Swap' : 'Preview'}
-              disabled={
-                isSwap()
-                  ? selectedFromToken
-                    ? parseFloat(cryptoAmount) >
-                      parseFloat(String(selectedFromToken.actualBalance))
-                    : true
-                  : parseFloat(usdAmount) >
-                      (selectedFromToken?.totalValue ?? 0) ||
-                    isEmpty(routeResponse)
-              }
-              loading={loading}
-              loaderStyle={styles.loaderStyle}
-            />
-          </CyDView>
-        )}
+                loading={loading}
+                loaderStyle={styles.loaderStyle}
+              />
+            </CyDView>
+          )}
+        </CyDView>
       </CyDScrollView>
     </CyDSafeAreaView>
   );

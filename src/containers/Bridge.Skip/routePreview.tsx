@@ -9,6 +9,7 @@ import { ethers } from 'ethers';
 import {
   CyDFastImage,
   CyDImage,
+  CyDScrollView,
   CyDText,
   CyDTouchView,
   CyDView,
@@ -56,7 +57,7 @@ export default function RoutePreview({
       : '';
 
   return (
-    <CyDView className={'px-[20px] font-nunito pt-[40px]'}>
+    <CyDScrollView className={'px-[20px] font-nunito pt-[40px]'}>
       <CyDView
         className={
           'bg-white pb-[40px] rounded-[8px] flex flex-col items-center justify-center relative'
@@ -340,7 +341,7 @@ export default function RoutePreview({
           </CyDView>
         </CyDView>
       )}
-    </CyDView>
+    </CyDScrollView>
   );
 }
 
