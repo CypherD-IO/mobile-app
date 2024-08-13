@@ -27,9 +27,11 @@ const resources = {
       IMPORT_KEY_FROM_ICLOUD: 'IMPORT KEY FROM ICLOUD',
       ENTER_SEED_PHRASE: 'Enter Seed Phrase',
       SUBMIT: 'SUBMIT',
+      SUBMIT_FIRST_LETTER_CAPS: 'Submit',
       GET_QUOTE: 'Get Quote',
-      ENTER_KEY_PLACEHOLDER: 'Enter your key (12 or 24 words)',
-      BAD_KEY_PHARSE: 'Bad key phrase',
+      ENTER_KEY_PLACEHOLDER:
+        'Enter your key 12 or 24-word seed phrase with the words separated by spaces.',
+      BAD_KEY_PHARSE: 'Invalid seed phrase. Please check your input.',
       COPY_PRIVATE_MSG: 'Copy private key to your clipboard',
       COPY_TO_CLIPBOARD: 'COPY TO CLIPBOARD',
       COPY: 'COPY',
@@ -196,7 +198,7 @@ const resources = {
       SEED_PHRASE: 'Seed Phrase',
       SEED_PHRASE_SUBTITLE:
         'The Seed Phrase gives full access to your wallet, funds and accounts. Cypher is a non-custodial wallet. You are the owner of your Seed Phrase.',
-      PASTE_CLIPBOARD: 'PASTE FROM CLIPBOARD',
+      PASTE_CLIPBOARD: 'Paste from clipboard',
       HIDE_SEED_PHRASE: 'Hide Seed Phrase',
       HIDE_PRIVATE_KEY: 'Hide Private Key',
       SEED_PHRASE_MESSAGE: 'Keep your seed phrase secured',
@@ -1000,7 +1002,7 @@ const resources = {
       BAD_PRIVATE_KEY_PHARSE: 'Bad private key',
       IMPORT_WALLET_USING_PRIVATE_KEY: 'Import With Private Key',
       CHOOSE_WALLET_INDEX_TEXT:
-        'These wallets are associated with your recovery phrase. Choose the wallet to import',
+        'We found these wallets associated with your recovery phrase',
       CHOOSE_WALLET_TO_IMPORT: 'Select Wallet',
       LOADING_TEXT: 'Almost there, please hold on...',
       LOADING_TEXT_WALLET_CREATION:
@@ -1099,6 +1101,11 @@ const resources = {
       APPLY_NOW: 'APPLY NOW',
       BIRDGE_SWAP_AVAILABLE:
         'Our application offers seamless support for both swap and bridge operations across multiple chains',
+      ENTER_RECOVERY_PHRASE: 'Enter recovery phrase',
+      CYPHER_AUDIT_TEXT: 'Cypher Passed Security Audit',
+      WALLETS: 'Wallets',
+      SHOW_MORE_WALLET_ADDRESS_TEXT: "not the wallet you're looking for?",
+      SHOW_MORE: 'Show More',
     },
   },
 };

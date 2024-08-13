@@ -42,7 +42,7 @@ export default function Button({
   imageStyle = 'h-[20px] w-[20px] mt-[1px] mr-[10px]',
   imagePosition = ImagePosition.LEFT,
   isPrivateKeyDependent = false,
-  paddingY = 15,
+  paddingY,
 }: IButton) {
   const [appState, setAppState] = useState<string>('');
   const [animation, setAnimation] = useState();
@@ -78,7 +78,7 @@ export default function Button({
       }}
       disabled={disabled || loading}
       className={clsx(
-        `rounded-[8px] py-[${paddingY}px] flex flex-row items-center justify-center ${style}`,
+        `rounded-[8px] py-[${paddingY ?? 15}px] flex flex-row items-center justify-center ${style}`,
         {
           'bg-buttonColor': ButtonType.PRIMARY === type,
           'bg-white border-[1px]  border-greyButtonBackgroundColor':
