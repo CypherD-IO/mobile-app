@@ -64,19 +64,30 @@ export const hexToUint = (value: string) => {
   return Uint8Array.from(Buffer.from(inp, 'hex'));
 };
 
+export const generateEthAddressFromSeedPhrase = async (mnemonic: string) => {
+  const seed = await bip39.mnemonicToSeed(mnemonic);
+
+  const hdNode = HDNodeWallet.fromSeed(seed);
+
+  // ethereum privatekey and ethereum address generation
+  const ethPath = AddressDerivationPath.ETH + String(0);
+  const ethWallet = hdNode.derivePath(ethPath);
+  const ethAddress = ethWallet.address;
+
+  return ethAddress;
+};
+
 export const generateMultipleWalletAddressesFromSeedPhrase = async (
   mnemonic: string,
   numberOfAddresses = 100,
 ) => {
   return await new Promise((resolve, reject) => {
-    // const hdNode = HDNodeWallet.fromPhrase(mnemonic);
     const _mnemonic = EthersMnemonic.fromPhrase(mnemonic);
     const hdNode = HDNodeWallet.fromMnemonic(_mnemonic, "m/44'/60'/0'/0");
     const addresses = Array.from({ length: numberOfAddresses }, (_, index) => {
       const derivedNode = hdNode.derivePath(index.toString());
       return { address: derivedNode.address.toLowerCase(), index };
     });
-
     resolve(addresses);
   });
 };

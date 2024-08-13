@@ -408,6 +408,21 @@ const GOLD_LINE_MEMBER = {
 const UPGRADE_CARD_TIMELINE = {
   uri: `${S3_BUCKET_URL_ICONS}/upgradeCardTimeline.png`,
 };
+const BACK_ARROW_CIRCLE = {
+  uri: `${S3_BUCKET_URL_ICONS}/backArrowCircle.png`,
+};
+const QR_CODE_V2 = {
+  uri: `${S3_BUCKET_URL_ICONS}/qrScanner.png`,
+};
+const PASTE_FILL = {
+  uri: `${S3_BUCKET_URL_ICONS}/pasteFill.png`,
+};
+const AUDIT_ICON = {
+  uri: `${S3_BUCKET_URL_ICONS}/auditIcon.png`,
+};
+const CANCEL_ICON = {
+  uri: `${S3_BUCKET_URL_ICONS}/cancelIcon.png`,
+};
 
 const AppImages = {
   CYPHER_TELEGRAM_BOT_LOGO,
@@ -775,5 +790,10 @@ const AppImages = {
   WHITE_CHECK_MARK,
   GOLD_LINE_MEMBER,
   UPGRADE_CARD_TIMELINE,
+  BACK_ARROW_CIRCLE,
+  QR_CODE_V2,
+  PASTE_FILL,
+  AUDIT_ICON,
+  CANCEL_ICON,
 };
 export default AppImages;

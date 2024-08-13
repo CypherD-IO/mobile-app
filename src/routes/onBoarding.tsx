@@ -28,35 +28,14 @@ function OnBoardingStack(props: any) {
         name={screenTitle.ENTER_KEY}
         component={EnterKeyScreen}
         options={{
-          headerTransparent: false,
-          headerShadowVisible: false,
-          title: 'Import Wallet',
-          headerTitleAlign: 'center',
-          headerTitleStyle: {
-            fontFamily: C.fontsName.FONT_BLACK,
-            fontSize: 20,
-          },
-          headerTintColor: Colors.primaryTextColor,
-          headerBackTitleVisible: false,
+          headerShown: false,
         }}
       />
       <Stack.Screen
         name={screenTitle.CHOOSE_WALLET_INDEX}
         component={ChooseWalletIndex}
         options={({ navigation, route }) => ({
-          headerTransparent: false,
-          headerShadowVisible: false,
-          title: t('CHOOSE_WALLET_TO_IMPORT'),
-          headerTitleAlign: 'center',
-          headerTitleStyle: {
-            fontFamily: C.fontsName.FONT_BLACK,
-            fontSize: 20,
-          },
-          headerStyle: {
-            elevation: 0,
-          },
-          headerTintColor: Colors.primaryTextColor,
-          headerBackTitleVisible: false,
+          headerShown: false,
         })}
       />
       <Stack.Screen
