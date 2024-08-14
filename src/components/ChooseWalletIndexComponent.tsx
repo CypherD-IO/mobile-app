@@ -117,12 +117,12 @@ export default function ChooseWalletIndexComponent({
           scrollEnabled={!onlyOneAddressShown}
         />
         {onlyOneAddressShown && (
-          <CyDView className='w-full items-center'>
+          <CyDView className='w-full items-center justify-center'>
             <CyDText className='text-[12px] text-center'>
               {t('SHOW_MORE_WALLET_ADDRESS_TEXT')}
             </CyDText>
             <CyDTouchView
-              className='rounded-[6px] w-[100px] bg-white py-[6px] px-[12px] border-[1px] border-[#D0D5DD] mt-[8px]'
+              className='rounded-[6px] w-[100px] bg-white py-[6px] px-[12px] border-[1px] border-[#D0D5DD] mt-[8px] items-center'
               onPress={() => {
                 setShowMoreLoading(true);
                 setTimeout(() => {

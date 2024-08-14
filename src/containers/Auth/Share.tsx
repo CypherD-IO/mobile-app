@@ -378,6 +378,6 @@ const styles = StyleSheet.create({
   lottieViewWidth: {
     width: 34,
     marginTop: 5,
-    marginLeft: -34,
+    marginLeft: -30,
   },
 });

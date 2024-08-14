@@ -1,7 +1,8 @@
-import React, { useEffect, useState } from 'react';
+import React, { useContext, useEffect, useState } from 'react';
 import {
   CyDImage,
   CyDSafeAreaView,
+  CyDSwitch,
   CyDText,
   CyDTouchView,
   CyDView,
@@ -13,13 +14,60 @@ import { CardControlTypes } from '../../../constants/enum';
 import { ProgressCircle } from 'react-native-svg-charts';
 import useAxios from '../../../core/HttpRequest';
 import { get } from 'lodash';
+import { useGlobalModalContext } from '../../../components/v2/GlobalModal';
+import LottieView from 'lottie-react-native';
+import { GlobalContext } from '../../../core/globalContext';
+import { CardProfile } from '../../../models/cardProfile.model';
 
 export default function CardControlsMenu({ route, navigation }) {
+  const globalContext = useContext<any>(GlobalContext);
+  const cardProfile: CardProfile = globalContext.globalState.cardProfile;
   const { currentCardProvider, card } = route.params;
   const [limits, setLimits] = useState();
   const [limitApplicable, setLimitApplicable] = useState('planLimit');
   const [loading, setLoading] = useState(true);
-  const { getWithAuth } = useAxios();
+  const { getWithAuth, postWithAuth } = useAxios();
+  const [loading3DSecure, setLoading3DSecure] = useState(false);
+  const [is3DSecureSet, setIs3DSecureSet] = useState<boolean>(
+    get(card, 'is3dsEnabled', false),
+  );
+  const { showModal, hideModal } = useGlobalModalContext();
+
+  const toggle3DSecure = async () => {
+    setLoading3DSecure(true);
+    const response = await postWithAuth(
+      `/v1/cards/${currentCardProvider}/card/${card.cardId}/update3ds`,
+      { status: !is3DSecureSet },
+    );
+    setLoading3DSecure(false);
+    if (!response.isError) {
+      const current3DSecureValue = is3DSecureSet;
+      setIs3DSecureSet(!current3DSecureValue);
+      showModal('state', {
+        type: 'success',
+        title: !current3DSecureValue
+          ? '3D Secure has been setup successfully'
+          : '3D Secure Toggle successfull',
+        description: !current3DSecureValue
+          ? get(cardProfile, ['cardNotification', 'isTelegramAllowed'], false)
+            ? "You'll receive 3Ds notifications through Telegram & Email."
+            : "You'll receive 3Ds notifications through Cypher Wallet App notifications & Email"
+          : '3D Secure has been turned off successfully',
+        onSuccess: hideModal,
+        onFailure: hideModal,
+      });
+    } else {
+      showModal('state', {
+        type: 'error',
+        title: t('3D Secure Toggle Successfull'),
+        description:
+          response.error.errors[0].message ??
+          'Could not toggle 3D secure. Please contact support.',
+        onSuccess: hideModal,
+        onFailure: hideModal,
+      });
+    }
+  };
 
   const getCardLimits = async () => {
     setLoading(true);
@@ -100,9 +148,15 @@ export default function CardControlsMenu({ route, navigation }) {
               card,
             });
           }}>
-          <CyDText className='text-[18px] font-medium tr'>
-            Domestic Transactions
-          </CyDText>
+          <CyDView className='flex flex-row items-center'>
+            <CyDImage
+              className='w-[24px] h-[24px] mr-[8px]'
+              source={AppImages.DOMESTIC_ICON}
+            />
+            <CyDText className='text-[18px] font-medium '>
+              Domestic Transactions
+            </CyDText>
+          </CyDView>
           <CyDImage
             source={AppImages.RIGHT_ARROW}
             className='w-[12px] h-[12px]'></CyDImage>
@@ -116,12 +170,53 @@ export default function CardControlsMenu({ route, navigation }) {
               card,
             });
           }}>
-          <CyDText className='text-[18px] font-medium tr'>
-            International Transactions
-          </CyDText>
+          <CyDView className='flex flex-row items-center'>
+            <CyDImage
+              className='w-[24px] h-[24px] mr-[8px]'
+              source={AppImages.INTERNATIONAL_ICON}
+            />
+            <CyDText className='text-[18px] font-medium '>
+              International Transactions
+            </CyDText>
+          </CyDView>
           <CyDImage
             source={AppImages.RIGHT_ARROW}
             className='w-[12px] h-[12px]'></CyDImage>
+        </CyDTouchView>
+        <CyDText className='text-xs text-n200 mt-[16px] font-bold'>
+          Security
+        </CyDText>
+        <CyDTouchView
+          onPress={() => {
+            void toggle3DSecure();
+          }}
+          className='flex flex-row items-center m-[2px] py-[15px] bg-white rounded-[6px]'>
+          <CyDImage
+            source={AppImages.THREE_D_SECURE}
+            className={'h-[24px] w-[24px] mx-[12px]'}
+            resizeMode={'contain'}
+          />
+          <CyDView className='flex flex-col justify-between mr-[6px]'>
+            <CyDText className='text-[16px] font-bold'>{'3D Secure'}</CyDText>
+            <CyDText className='text-[12px] font-semibold'>
+              {'Cardholder authentication for transactions.'}
+            </CyDText>
+          </CyDView>
+          {loading3DSecure ? (
+            <LottieView
+              source={AppImages.LOADER_TRANSPARENT}
+              autoPlay
+              loop
+              style={{ height: 24, width: 24 }}
+            />
+          ) : (
+            <CyDSwitch
+              value={is3DSecureSet}
+              onValueChange={() => {
+                void toggle3DSecure();
+              }}
+            />
+          )}
         </CyDTouchView>
       </CyDView>
     </CyDSafeAreaView>

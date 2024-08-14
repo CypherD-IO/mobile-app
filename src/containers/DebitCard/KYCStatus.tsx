@@ -385,9 +385,17 @@ export default function CardKYCStatusScreen({ navigation }) {
     <CyDSafeAreaView className={'h-full bg-white'}>
       <CyDView className='h-[90%]'>
         <CardProviderSwitch />
-        <CyDText className='font-extrabold font-nunito text-[20px] mt-[10px] mb-[10px] text-center'>
-          {'Application Status'}
-        </CyDText>
+        <CyDView className='flex flex-row  mt-[10px] mb-[10px] items-center justify-center'>
+          <CyDText className='font-extrabold font-nunito text-[20px] text-center'>
+            {'Application Status'}
+          </CyDText>
+          <CyDTouchView onPress={checkKYC}>
+            <CyDImage
+              className='h-[16px] w-[16px] ml-[8px]'
+              source={AppImages.REFRESH}
+            />
+          </CyDTouchView>
+        </CyDView>
         <CyDScrollView>
           <CyDImage
             source={AppImages.CARD_KYC_BACKGROUND}

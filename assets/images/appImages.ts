@@ -423,7 +423,12 @@ const AUDIT_ICON = {
 const CANCEL_ICON = {
   uri: `${S3_BUCKET_URL_ICONS}/cancelIcon.png`,
 };
-
+const DOMESTIC_ICON = {
+  uri: `${S3_BUCKET_URL_ICONS}/domesticIcon.png`,
+};
+const INTERNATIONAL_ICON = {
+  uri: `${S3_BUCKET_URL_ICONS}/internationalIcon.png`,
+};
 const AppImages = {
   CYPHER_TELEGRAM_BOT_LOGO,
   PLUS,
@@ -795,5 +800,7 @@ const AppImages = {
   PASTE_FILL,
   AUDIT_ICON,
   CANCEL_ICON,
+  DOMESTIC_ICON,
+  INTERNATIONAL_ICON,
 };
 export default AppImages;
