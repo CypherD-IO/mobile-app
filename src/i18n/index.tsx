@@ -485,6 +485,8 @@ const resources = {
       ENTER_AUTHENTICATION_CODE: 'Enter Authentication Code',
       CARD_SENT_OTP:
         'We have sent an authentication code to mobile number and email registered with this card.',
+      CARD_SENT_OTP_EMAIL_AND_TELEGRAM:
+        'We have sent an authentication code to your telegram and email registered with this card.',
       MONTH: 'Month',
       TRANSACTIONS_NOT_FOUND: 'No Transactions Yet!!',
       USD: 'USD',

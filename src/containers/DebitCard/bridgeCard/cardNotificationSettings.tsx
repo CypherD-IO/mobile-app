@@ -41,6 +41,7 @@ export default function CardNotificationSettings(props: {
   navigation: any;
 }) {
   const RESENT_OTP_TIME = 30;
+  const { currentCardProvider, card } = props.route.params;
   const globalContext = useContext(GlobalContext) as GlobalContextDef;
   const cardProfile = globalContext.globalState.cardProfile;
   const { showModal, hideModal } = useGlobalModalContext();
@@ -363,28 +364,30 @@ export default function CardNotificationSettings(props: {
               />
             )}
           </CyDView>
-          <CyDView className='flex flex-row justify-between align-center mt-[20px] mx-[20px] pb-[15px] border-b-[1px] border-sepratorColor'>
-            <CyDView>
-              <CyDText className='text-[16px] font-bold'>
-                {t<string>('SMS_NOTIFICATION')}
-              </CyDText>
+          {currentCardProvider === CardProviders.PAYCADDY && (
+            <CyDView className='flex flex-row justify-between align-center mt-[20px] mx-[20px] pb-[15px] border-b-[1px] border-sepratorColor'>
+              <CyDView>
+                <CyDText className='text-[16px] font-bold'>
+                  {t<string>('SMS_NOTIFICATION')}
+                </CyDText>
+              </CyDView>
+              {smsSwitchLoading ? (
+                <LottieView
+                  style={styles.loader}
+                  autoPlay
+                  loop
+                  source={AppImages.LOADER_TRANSPARENT}
+                />
+              ) : (
+                <CyDSwitch
+                  onValueChange={() => {
+                    void handleToggleNotifications(CARD_NOTIFICATION_TYPES.SMS);
+                  }}
+                  value={currentNotificationOption.sms}
+                />
+              )}
             </CyDView>
-            {smsSwitchLoading ? (
-              <LottieView
-                style={styles.loader}
-                autoPlay
-                loop
-                source={AppImages.LOADER_TRANSPARENT}
-              />
-            ) : (
-              <CyDSwitch
-                onValueChange={() => {
-                  void handleToggleNotifications(CARD_NOTIFICATION_TYPES.SMS);
-                }}
-                value={currentNotificationOption.sms}
-              />
-            )}
-          </CyDView>
+          )}
           <CyDView className='flex flex-row justify-between align-center mt-[20px] mx-[20px] pb-[15px] border-b-[1px] border-sepratorColor'>
             <CyDView>
               <CyDText className='text-[16px] font-bold'>

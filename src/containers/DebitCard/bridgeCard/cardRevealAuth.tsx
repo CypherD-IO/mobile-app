@@ -191,7 +191,11 @@ export default function CardRevealAuthScreen(props: {
           {t<string>('ENTER_AUTHENTICATION_CODE')}
         </CyDText>
         <CyDText className={'text-[15px] font-bold'}>
-          {t<string>('CARD_SENT_OTP')}
+          {t<string>(
+            currentCardProvider === CardProviders.REAP_CARD
+              ? 'CARD_SENT_OTP_EMAIL_AND_TELEGRAM'
+              : 'CARD_SENT_OTP',
+          )}
         </CyDText>
       </CyDView>
     );
