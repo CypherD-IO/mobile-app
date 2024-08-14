@@ -99,12 +99,14 @@ export default function SendTo(props: { navigation?: any; route?: any }) {
   const {
     valueForUsd,
     tokenData,
+    sendAddress = '',
   }: {
     valueForUsd: string;
     tokenData: Holding;
+    sendAddress: string;
   } = route.params;
   const [Data, setData] = useState<string[]>([]);
-  const [addressText, setAddressText] = useState<string>('');
+  const [addressText, setAddressText] = useState<string>(sendAddress);
   const addressRef = useRef('');
   const ensRef = useRef<string | null>(null);
   const [isAddressValid, setIsAddressValid] = useState(true);
@@ -155,7 +157,7 @@ export default function SendTo(props: { navigation?: any; route?: any }) {
   if (Object.keys(addressDirectory).length) {
     if (
       EVM_CHAINS_FOR_ADDRESS_DIR.includes(
-        get(ChainNameToContactsChainNameMapping, 'chainDetails.name', ''),
+        get(ChainNameToContactsChainNameMapping, [chainDetails.name], ''),
       )
     ) {
       fuseByAddresses = new Fuse(Object.keys(addressDirectory.evmAddresses));
@@ -164,7 +166,7 @@ export default function SendTo(props: { navigation?: any; route?: any }) {
         Object.keys(
           get(
             addressDirectory,
-            get(ChainNameToContactsChainNameMapping, 'chainDetails.name', ''),
+            get(ChainNameToContactsChainNameMapping, [chainDetails.name], ''),
             '',
           ),
         ),
@@ -197,7 +199,7 @@ export default function SendTo(props: { navigation?: any; route?: any }) {
             EVM_CHAINS_FOR_ADDRESS_DIR.includes(
               get(
                 ChainNameToContactsChainNameMapping,
-                'tokenData.chainDetails.name',
+                [tokenData.chainDetails.name],
                 '',
               ),
             )
@@ -210,7 +212,7 @@ export default function SendTo(props: { navigation?: any; route?: any }) {
         .map(address => {
           if (
             EVM_CHAINS_FOR_ADDRESS_DIR.includes(
-              get(ChainNameToContactsChainNameMapping, 'chainDetails.name', ''),
+              get(ChainNameToContactsChainNameMapping, [chainDetails.name], ''),
             )
           ) {
             return addressDirectory.evmAddresses[address];
@@ -218,7 +220,7 @@ export default function SendTo(props: { navigation?: any; route?: any }) {
           return addressDirectory[
             get(
               ChainNameToContactsChainNameMapping,
-              'tokenData.chainDetails.name',
+              [tokenData.chainDetails.name],
               '',
             )
           ][address];
@@ -753,18 +755,23 @@ export default function SendTo(props: { navigation?: any; route?: any }) {
           ]
         );
       }
-      const finalArray = Data;
-      const toAddrBook = ensRef.current
-        ? `${ensRef.current}:${addressRef.current}`
-        : addressRef.current;
-      if (!finalArray.includes(toAddrBook)) {
-        finalArray.push(toAddrBook);
+      try {
+        const finalArray = Data;
+        const toAddrBook = ensRef.current
+          ? `${ensRef.current}:${addressRef.current}`
+          : addressRef.current;
+        if (!finalArray.includes(toAddrBook)) {
+          finalArray.push(toAddrBook);
+        }
+        const chainName = tokenData.chainDetails.chainName;
+        if (chainName) {
+          const key = `address_book_${chainName}`;
+          const valueToStore = JSON.stringify(finalArray);
+          await AsyncStorage.setItem(key, valueToStore);
+        }
+      } catch (error) {
+        console.error('Error in onConfirmConfirmationModal:', error);
       }
-      chainDetails?.chainName &&
-        (await AsyncStorage.setItem(
-          `address_book_${tokenData.chainDetails.chainName}`,
-          JSON.stringify(finalArray),
-        ));
 
       activityContext.dispatch({
         type: ActivityReducerAction.POST,
