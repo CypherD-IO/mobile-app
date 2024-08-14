@@ -280,20 +280,18 @@ export default function CardScreen({
         onSnapToItem={setUpgradeCorrectedCardIndex}
         renderItem={renderItem as any}
       />
-      {cardsWithUpgrade &&
-        get(cardsWithUpgrade, currentCardIndex) &&
-        !isHiddenCard() && (
-          <RenderCardActions
-            card={get(cardsWithUpgrade, currentCardIndex)}
-            cardProvider={currentCardProvider}
-            navigation={navigation}
-            refreshProfile={refreshProfile}
-            onPressUpgradeNow={onPressUpgradeNow}
-            onPressActivateCard={onPressActivateCard}
-            cardProfile={cardProfile}
-            trackingDetails={trackingDetails}
-          />
-        )}
+      {cardsWithUpgrade && get(cardsWithUpgrade, currentCardIndex) && (
+        <RenderCardActions
+          card={get(cardsWithUpgrade, currentCardIndex)}
+          cardProvider={currentCardProvider}
+          navigation={navigation}
+          refreshProfile={refreshProfile}
+          onPressUpgradeNow={onPressUpgradeNow}
+          onPressActivateCard={onPressActivateCard}
+          cardProfile={cardProfile}
+          trackingDetails={trackingDetails}
+        />
+      )}
     </CyDView>
   );
 }
@@ -595,7 +593,9 @@ const RenderCardActions = ({
     });
   };
 
-  if (card.status === 'upgradeAvailable') {
+  if (card.status === CardStatus.HIDDEN) {
+    return <></>;
+  } else if (card.status === 'upgradeAvailable') {
     if (upgradeToPhysicalAvailable) {
       return (
         <CyDView className='flex flex-col justify-center items-center mx-[20px] mt-[-42px]'>
@@ -663,7 +663,7 @@ const RenderCardActions = ({
         </CyDView>
       );
     }
-  } else if (status === CardStatus.ACTIVATION_PENDING) {
+  } else if (status === CardStatus.PENDING_ACTIVATION) {
     return (
       <CyDView className='flex flex-col justify-center items-center mx-[20px] mt-[-32px]'>
         {get(trackingDetails, cardId) ? (
