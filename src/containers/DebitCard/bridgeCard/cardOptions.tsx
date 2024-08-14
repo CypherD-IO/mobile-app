@@ -1,10 +1,9 @@
 import { t } from 'i18next';
-import React, { useContext, useState } from 'react';
+import React, { useContext } from 'react';
 import { StyleSheet } from 'react-native';
 import { GlobalContext } from '../../../core/globalContext';
 import {
   CyDImage,
-  CyDSwitch,
   CyDText,
   CyDTouchView,
   CyDView,
@@ -15,9 +14,6 @@ import { screenTitle } from '../../../constants';
 import { CardProfile } from '../../../models/cardProfile.model';
 import CyDModalLayout from '../../../components/v2/modal';
 import { Card } from '../../../models/card.model';
-import useAxios from '../../../core/HttpRequest';
-import { get } from 'lodash';
-import { useGlobalModalContext } from '../../../components/v2/GlobalModal';
 
 export default function CardOptionsModal({
   isModalVisible,
@@ -34,50 +30,9 @@ export default function CardOptionsModal({
 }) {
   const globalContext = useContext<any>(GlobalContext);
   const cardProfile: CardProfile = globalContext.globalState.cardProfile;
-  const { postWithAuth } = useAxios();
-  const { showModal, hideModal } = useGlobalModalContext();
   const isPhoneVerified =
     cardProvider === CardProviders.REAP_CARD ||
     (cardProfile.pc?.phoneVerified ?? false);
-
-  const [is3DSecureSet, setIs3DSecureSet] = useState<boolean>(
-    get(card, 'is3dsEnabled', false),
-  );
-
-  const toggle3DSecure = async () => {
-    const response = await postWithAuth(
-      `/v1/cards/${cardProvider}/card/${card.cardId}/update3ds`,
-      { status: !is3DSecureSet },
-    );
-
-    if (!response.isError) {
-      const current3DSecureValue = is3DSecureSet;
-      setIs3DSecureSet(!current3DSecureValue);
-      showModal('state', {
-        type: 'success',
-        title: !current3DSecureValue
-          ? '3D Secure has been setup successfully'
-          : '3D Secure Toggle successfull',
-        description: !current3DSecureValue
-          ? get(cardProfile, ['cardNotification', 'isTelegramAllowed'], false)
-            ? "You'll receive 3Ds notifications through Telegram & Email."
-            : "You'll receive 3Ds notifications through Cypher Wallet App notifications & Email"
-          : '3D Secure has been turned off successfully',
-        onSuccess: hideModal,
-        onFailure: hideModal,
-      });
-    } else {
-      showModal('state', {
-        type: 'error',
-        title: t('3D Secure Toggle Successfull'),
-        description:
-          response.error.errors[0].message ??
-          'Could not toggle 3D secure. Please contact support.',
-        onSuccess: hideModal,
-        onFailure: hideModal,
-      });
-    }
-  };
 
   const cardOptions = [
     ...(cardProvider === CardProviders.REAP_CARD
@@ -208,31 +163,6 @@ export default function CardOptionsModal({
                 {'Verify now to unlock all features'}
               </CyDText>
             </CyDView>
-          </CyDTouchView>
-        )}
-        {cardProvider === CardProviders.REAP_CARD && (
-          <CyDTouchView
-            onPress={() => {
-              void toggle3DSecure();
-            }}
-            className='flex flex-row items-center m-[2px] py-[15px] bg-white rounded-[6px]'>
-            <CyDImage
-              source={AppImages.THREE_D_SECURE}
-              className={'h-[24px] w-[24px] mx-[12px]'}
-              resizeMode={'contain'}
-            />
-            <CyDView className='flex flex-col justify-between mr-[6px]'>
-              <CyDText className='text-[16px] font-bold'>{'3D Secure'}</CyDText>
-              <CyDText className='text-[12px] font-semibold'>
-                {'Cardholder authentication for transactions.'}
-              </CyDText>
-            </CyDView>
-            <CyDSwitch
-              value={is3DSecureSet}
-              onValueChange={() => {
-                void toggle3DSecure();
-              }}
-            />
           </CyDTouchView>
         )}
         {cardOptions.map((option, index) => {

@@ -47,7 +47,8 @@ const { CText, DynamicView, DynamicImage } = require('../../styles');
 export default function EnterAmount(props: any) {
   // NOTE: DEFINE VARIABLE 🍎🍎🍎🍎🍎🍎
   const { t } = useTranslation();
-  const { navigation } = props;
+  const { route, navigation } = props;
+  const { sendAddress = '' } = route.params ?? {};
   const portfolioState = useContext<any>(PortfolioContext);
   const [tokenData, setTokenData] = useState<TokenMeta>(
     portfolioState.statePortfolio.tokenPortfolio.totalHoldings[0],
@@ -176,6 +177,7 @@ export default function EnterAmount(props: any) {
       navigation.navigate(C.screenTitle.SEND_TO, {
         valueForUsd: cryptoValue,
         tokenData,
+        sendAddress,
       });
     }
   };
