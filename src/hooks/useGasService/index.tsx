@@ -44,6 +44,20 @@ import Long from 'long';
 import { InjectiveStargate } from '@injectivelabs/sdk-ts';
 import { OfflineDirectSigner } from '@cosmjs/proto-signing';
 import { IReward } from '../../reducers/cosmosStakingReducer';
+import {
+  Connection,
+  LAMPORTS_PER_SOL,
+  PublicKey,
+  SystemProgram,
+  TransactionMessage,
+  VersionedTransaction,
+} from '@solana/web3.js';
+import useSolanaSigner from '../useSolana';
+import {
+  createTransferInstruction,
+  getAssociatedTokenAddress,
+  TOKEN_PROGRAM_ID,
+} from '@solana/spl-token';
 
 export interface GasServiceResult {
   gasFeeInCrypto: string;
@@ -70,6 +84,7 @@ export default function useGasService() {
     simulateEvmosUnDelegate,
   } = useEvmosSigner();
   const { getCosmosRpc } = useCosmosSigner();
+  const { getSolanaRpc } = useSolanaSigner();
   const hdWalletContext = useContext(HdWalletContext) as HdWalletContextDef;
   const portfolioState = useContext<any>(PortfolioContext);
 
@@ -1025,6 +1040,76 @@ export default function useGasService() {
       gasPrice: cosmosConfig.evmos.gasPrice,
     };
   };
+
+  const estimateGasForSolana = async ({
+    amountToSend,
+    fromAddress,
+    toAddress,
+    contractAddress,
+    contractDecimals = 9,
+  }: {
+    amountToSend: string;
+    fromAddress: string;
+    toAddress: string;
+    contractAddress: string;
+    contractDecimals: number;
+  }) => {
+    let transferInstruction;
+    const solanRpc = getSolanaRpc();
+    const senderPublicKey = new PublicKey(fromAddress);
+    const recipientPublicKey = new PublicKey(toAddress);
+    const amountInLamports = ethers.parseUnits(amountToSend, contractDecimals);
+    const connection = new Connection(solanRpc, 'confirmed');
+    const { blockhash } = await connection.getLatestBlockhash();
+
+    if (contractAddress === 'solana-native') {
+      transferInstruction = SystemProgram.transfer({
+        fromPubkey: senderPublicKey,
+        toPubkey: recipientPublicKey,
+        lamports: amountInLamports,
+      });
+    } else {
+      const mintPublicKey = new PublicKey(contractAddress);
+      const fromTokenAccount = await getAssociatedTokenAddress(
+        mintPublicKey,
+        senderPublicKey,
+      );
+
+      const toTokenAccount = await getAssociatedTokenAddress(
+        mintPublicKey,
+        recipientPublicKey,
+      );
+
+      transferInstruction = createTransferInstruction(
+        fromTokenAccount,
+        toTokenAccount,
+        senderPublicKey,
+        amountInLamports,
+        [],
+        TOKEN_PROGRAM_ID,
+      );
+    }
+
+    const message = new TransactionMessage({
+      payerKey: senderPublicKey,
+      recentBlockhash: blockhash,
+      instructions: [transferInstruction],
+    }).compileToV0Message();
+    const transaction = new VersionedTransaction(message);
+    const simulation = await connection.simulateTransaction(transaction);
+    const unitsConsumed = simulation?.value?.unitsConsumed ?? 0;
+    const lamportsPerSignature = 5000;
+    const numSignatures = transaction.signatures.length;
+    const estimatedFee =
+      (lamportsPerSignature * numSignatures) / LAMPORTS_PER_SOL;
+
+    return {
+      gasFeeInCrypto: estimatedFee,
+      gasLimit: unitsConsumed * 1.3,
+      gasPrice: 0.000005,
+    };
+  };
+
   return {
     estimateGasForEvm,
     estimateGasForEvmos,
@@ -1039,5 +1124,6 @@ export default function useGasService() {
     estimateGasForEvmosDelegate,
     estimateGasForEvmosUnDelegate,
     estimateGasForEvmosReDelegate,
+    estimateGasForSolana,
   };
 }
