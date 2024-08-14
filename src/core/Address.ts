@@ -74,7 +74,7 @@ export const generateEthAddressFromSeedPhrase = async (mnemonic: string) => {
   const ethWallet = hdNode.derivePath(ethPath);
   const ethAddress = ethWallet.address;
 
-  return ethAddress;
+  return ethAddress.toLowerCase();
 };
 
 export const generateMultipleWalletAddressesFromSeedPhrase = async (
@@ -166,47 +166,47 @@ export const generateWalletFromMnemonic = async (
     accounts: [
       {
         name: 'ethereum',
-        address: ethAddress,
+        address: ethAddress.toLowerCase(),
         publicKey: ethPubKey,
       },
       {
         name: 'cosmos',
-        address: cosmosAddress,
+        address: cosmosAddress.toLowerCase(),
         publicKey: cosmosPubKey,
       },
       {
         name: 'osmosis',
-        address: osmosisAddress,
+        address: osmosisAddress.toLowerCase(),
         publicKey: cosmosPubKey,
       },
       {
         name: 'juno',
-        address: junoAddress,
+        address: junoAddress.toLowerCase(),
         publicKey: cosmosPubKey,
       },
       {
         name: 'stargaze',
-        address: stargazeAddress,
+        address: stargazeAddress.toLowerCase(),
         publicKey: cosmosPubKey,
       },
       {
         name: 'noble',
-        address: nobleAddress,
+        address: nobleAddress.toLowerCase(),
         publicKey: cosmosPubKey,
       },
       {
         name: 'kujira',
-        address: kujiraAddress,
+        address: kujiraAddress.toLowerCase(),
         publicKey: cosmosPubKey,
       },
       {
         name: 'coreum',
-        address: coreumAddress,
+        address: coreumAddress.toLowerCase(),
         publicKey: coreumPubKey,
       },
       {
         name: 'evmos',
-        address: ethToEvmos(ethAddress),
+        address: ethToEvmos(ethAddress).toLowerCase(),
         publicKey: ethPubKey,
       },
       {
