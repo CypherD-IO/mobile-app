@@ -86,6 +86,7 @@ export default function BridgeFundCardScreen({ route }: { route: any }) {
   const noble = hdWallet.state.wallet.noble;
   const coreum = hdWallet.state.wallet.coreum;
   const kujira = hdWallet.state.wallet.kujira;
+  const solana = hdWallet.state.wallet.solana;
 
   const cosmosAddresses = {
     cosmos: cosmos.address,
@@ -105,6 +106,7 @@ export default function BridgeFundCardScreen({ route }: { route: any }) {
     noble: globalContext.globalState.rpcEndpoints.NOBLE.primary,
     coreum: globalContext.globalState.rpcEndpoints.COREUM.primary,
     kujira: globalContext.globalState.rpcEndpoints.KUJIRA.primary,
+    solana: globalContext.globalState.rpcEndpoints.SOLANA.primary,
   };
 
   const [isChooseTokenVisible, setIsChooseTokenVisible] =
@@ -122,7 +124,8 @@ export default function BridgeFundCardScreen({ route }: { route: any }) {
   const { t } = useTranslation();
   const { showModal, hideModal } = useGlobalModalContext();
   const isFocused = useIsFocused();
-  const { estimateGasForEvm, estimateGasForEvmosIBC } = useGasService();
+  const { estimateGasForEvm, estimateGasForEvmosIBC, estimateGasForSolana } =
+    useGasService();
   const [suggestedAmounts, setSuggestedAmounts] = useState<
     Record<string, string>
   >({ low: '', med: '', high: '' });
@@ -223,6 +226,14 @@ export default function BridgeFundCardScreen({ route }: { route: any }) {
           toChain: CHAIN_OSMOSIS,
           amount,
           denom,
+          contractDecimals,
+        });
+      } else if (chainDetails.chainName === ChainNames.SOLANA) {
+        gasDetails = await estimateGasForSolana({
+          fromAddress: solana.address,
+          toAddress: targetWalletAddress,
+          amountToSend: String(actualTokensRequired),
+          contractAddress,
           contractDecimals,
         });
       }
@@ -398,6 +409,65 @@ export default function BridgeFundCardScreen({ route }: { route: any }) {
             ethAddress: ethereum.address,
             chainAddress: wallet[chainDetails.chainName].address,
             coinGeckoId,
+            contractDecimals,
+          },
+        };
+        Sentry.captureException(errorObject);
+        setLoading(false);
+        showModal('state', {
+          type: 'error',
+          title: '',
+          description: t('UNABLE_TO_TRANSFER'),
+          onSuccess: hideModal,
+          onFailure: hideModal,
+        });
+      }
+    } else if (chainDetails.chainName === ChainNames.SOLANA) {
+      try {
+        const amountToQuote = isCrpytoInput ? cryptoAmount : usdAmount;
+        const payload = {
+          ecosystem: 'solana',
+          address: solana.address,
+          chain: chainDetails.backendName,
+          amount: Number(amountToQuote),
+          tokenAddress: contractAddress,
+          amountInCrypto: isCrpytoInput,
+        };
+        const response = await postWithAuth(
+          `/v1/cards/${currentCardProvider}/card/${cardId}/quote`,
+          payload,
+        );
+
+        if (response?.data && !response.isError) {
+          if (chainDetails.chainName != null) {
+            const quote: CardQuoteResponse = response.data;
+            void showQuoteModal(quote, false);
+          }
+        } else {
+          Sentry.captureException(response.error);
+          showModal('state', {
+            type: 'error',
+            title: response?.error?.message?.includes('minimum amount')
+              ? t('INSUFFICIENT_FUNDS')
+              : '',
+            description: response.error.message ?? t('UNABLE_TO_TRANSFER'),
+            onSuccess: hideModal,
+            onFailure: hideModal,
+          });
+          setLoading(false);
+        }
+      } catch (e) {
+        const errorObject = {
+          e,
+          message: 'Error when quoting non-max amount in evm chains',
+          selectedToken,
+          quoteData: {
+            currentCardProvider,
+            cardId,
+            chain: chainDetails.backendName,
+            contractAddress,
+            usdAmount,
+            ethAddress: ethereum.address,
             contractDecimals,
           },
         };
