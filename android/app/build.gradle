@@ -84,7 +84,7 @@ android {
         applicationId "com.cypherd.androidwallet"
         minSdkVersion rootProject.ext.minSdkVersion
         targetSdkVersion rootProject.ext.targetSdkVersion
-        versionCode 419
+        versionCode 418
         versionName "4.17"
         missingDimensionStrategy 'react-native-camera', 'general'
     }
