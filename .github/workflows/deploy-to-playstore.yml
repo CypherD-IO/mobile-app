@@ -21,7 +21,7 @@ jobs:
           java-version: '8'
           distribution: 'temurin'
       - name: Install dependencies and clean build
-        run: npm ci
+        run: npm ci --legacy-peer-deps
       - name: Build with Gradle
         id: build
         run: cd android && ./gradlew clean && ./gradlew build
