@@ -31,14 +31,18 @@ jobs:
       - name: Configure npm
         run: |
           echo "@cypherd-io:registry=https://npm.pkg.github.com/" > .npmrc
-          echo "//npm.pkg.github.com/:_authToken=${{ secrets.NPM_TOKEN }}" >> .npmrc
+          echo "//npm.pkg.github.com/:_authToken=${NPM_TOKEN}" >> .npmrc
+        env:
+          NPM_TOKEN: ${{ secrets.NPM_TOKEN }}
 
       - name: Install dependencies and clean build
         run: npm ci --legacy-peer-deps
+        env:
+          NPM_TOKEN: ${{ secrets.NPM_TOKEN }}
 
-      - name: Build with Gradle
-        id: build
-        run: cd android && ./gradlew clean && ./gradlew build
+      - name: Gradle Gradle
+        id: clean
+        run: cd android && ./gradlew clean
 
       - name: Build Release AAB
         id: buildRelease
