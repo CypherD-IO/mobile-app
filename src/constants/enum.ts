@@ -325,6 +325,7 @@ export enum CardReferralStatus {
 }
 
 export enum CARD_LIMIT_TYPE {
+  DISABLED = 'dis',
   ALLOWED_COUNTRIES = 'cLs', // allowed country list / default allow all
   CARD_PIN = 'pos',
   CONTACTLESS = 'tap',
