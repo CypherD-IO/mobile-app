@@ -40,13 +40,27 @@ jobs:
         env:
           NPM_TOKEN: ${{ secrets.NPM_TOKEN }}
 
-      - name: Gradle Gradle
+      - name: Gradle clean
         id: clean
         run: cd android && ./gradlew clean
+
+      - name: Create Sentry properties file
+        run: |
+          cat << EOF > android/sentry.properties
+          defaults.url=https://sentry.io/
+          defaults.org=${{ secrets.SENTRY_ORG }}
+          defaults.project=${{ secrets.SENTRY_PROJECT }}
+          auth.token=${{ secrets.SENTRY_AUTH_TOKEN }}
+          EOF
+        shell: bash
 
       - name: Build Release AAB
         id: buildRelease
         run: cd android && ./gradlew bundleRelease
+
+      - name: Clean up Sentry properties
+        if: always()
+        run: rm -f android/sentry.properties
 
       - name: Sign AAB
         id: sign
