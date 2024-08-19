@@ -20,6 +20,8 @@ jobs:
         with:
           java-version: '8'
           distribution: 'temurin'
+      - name: Install dependencies and clean build
+        run: npm ci
       - name: Build with Gradle
         id: build
         run: cd android && ./gradlew clean && ./gradlew build
