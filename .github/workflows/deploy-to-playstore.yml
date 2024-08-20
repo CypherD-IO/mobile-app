@@ -52,10 +52,6 @@ jobs:
 
       - name: Gradle clean
         id: clean
-        env:
-          MYAPP_UPLOAD_STORE_PASSWORD: ${{ secrets.KEY_STORE_PASSWORD }}
-          MYAPP_UPLOAD_KEY_ALIAS: ${{ secrets.ALIAS }}
-          MYAPP_UPLOAD_KEY_PASSWORD: ${{ secrets.KEY_PASSWORD }}
         run: cd android && ./gradlew clean
 
       - name: Create Sentry properties file
@@ -72,14 +68,14 @@ jobs:
         run: |
           echo '${{ secrets.GOOGLE_SERVICES_JSON }}' > android/app/google-services.json
 
-      - name: Setup keystore
+      - name: Decode Keystore
         run: |
-          echo ${{ secrets.SIGNING_KEY }} | base64 -d > release.keystore
-          echo "STORE_FILE=$(pwd)/release.keystore" >> $GITHUB_ENV
+          echo ${{secrets.SIGNING_KEY}} | base64 -d > android/app/release.keystore
 
       - name: Build Release AAB
         id: buildRelease
         env:
+          MYAPP_UPLOAD_STORE_FILE: app/release.keystore
           MYAPP_UPLOAD_STORE_PASSWORD: ${{ secrets.KEY_STORE_PASSWORD }}
           MYAPP_UPLOAD_KEY_ALIAS: ${{ secrets.ALIAS }}
           MYAPP_UPLOAD_KEY_PASSWORD: ${{ secrets.KEY_PASSWORD }}
