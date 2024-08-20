@@ -1,13 +1,20 @@
 name: Deploy Android App to PlayStore
 
 on:
-  pull_request:
-    types: [opened, synchronize]
+  push:
     branches:
+      - main
+      - beta
+  pull_request:
+    types:
+      - closed
+    branches:
+      - main
       - beta
 
 jobs:
-  build-and-test:
+  build-and-deploy:
+    if: github.event.pull_request.merged == true || github.event_name == 'push'
     runs-on: ubuntu-latest
     env:
       SENTRY_DSN: ${{secrets.SENTRY_DSN}}
@@ -20,10 +27,6 @@ jobs:
       INTERCOM_APP_KEY: ${{secrets.INTERCOM_APP_KEY}}
       WALLET_CONNECT_PROJECTID: ${{secrets.WALLET_CONNECT_PROJECTID}}
     steps:
-      - uses: actions/checkout@v2
-        with:
-          ref: ${{ github.event.pull_request.head.sha }}
-
       - name: Checkout
         uses: actions/checkout@v2
 
@@ -36,7 +39,7 @@ jobs:
       - name: Set up Node.js
         uses: actions/setup-node@v2
         with:
-          node-version: '18.16.0' # or whatever version you're using
+          node-version: '18.16.0'
 
       - name: Configure npm
         run: |
@@ -45,7 +48,7 @@ jobs:
         env:
           NPM_TOKEN: ${{ secrets.NPM_TOKEN }}
 
-      - name: Install dependencies and clean build
+      - name: Clean Install Packages
         run: npm ci --legacy-peer-deps
         env:
           NPM_TOKEN: ${{ secrets.NPM_TOKEN }}
@@ -89,12 +92,6 @@ jobs:
           alias: ${{secrets.ALIAS}}
           keyStorePassword: ${{secrets.KEY_STORE_PASSWORD}}
           keyPassword: ${{secrets.KEY_PASSWORD}}
-
-      - name: List AAB Directory
-        run: ls -la android/app/build/outputs/bundle/release/
-
-      - name: Print working directory
-        run: pwd
 
       - name: Deploy to Play Store internal testing
         id: deploy
