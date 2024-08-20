@@ -136,7 +136,7 @@ export default function CardControlsMenu({ route, navigation }) {
             </CyDView>
           </CyDView>
         </CyDView>
-        <CyDText className='text-xs text-n200 mt-[16px] font-bold'>
+        <CyDText className='text-[12px] text-n200 mt-[16px] font-bold'>
           Spend Category
         </CyDText>
         <CyDTouchView
@@ -183,31 +183,33 @@ export default function CardControlsMenu({ route, navigation }) {
             source={AppImages.RIGHT_ARROW}
             className='w-[12px] h-[12px]'></CyDImage>
         </CyDTouchView>
-        <CyDText className='text-xs text-n200 mt-[16px] font-bold'>
+        <CyDText className='text-[12px] text-n200 mt-[16px] font-bold'>
           Security
         </CyDText>
         <CyDTouchView
           onPress={() => {
             void toggle3DSecure();
           }}
-          className='flex flex-row items-center m-[2px] py-[15px] bg-white rounded-[6px]'>
-          <CyDImage
-            source={AppImages.THREE_D_SECURE}
-            className={'h-[24px] w-[24px] mx-[12px]'}
-            resizeMode={'contain'}
-          />
-          <CyDView className='flex flex-col justify-between mr-[6px]'>
-            <CyDText className='text-[16px] font-bold'>{'3D Secure'}</CyDText>
-            <CyDText className='text-[12px] font-semibold'>
-              {'Cardholder authentication for transactions.'}
-            </CyDText>
+          className='flex flex-row items-center justify-between m-[2px] py-[15px] px-[12px] bg-white rounded-[6px]'>
+          <CyDView className='flex flex-row'>
+            <CyDImage
+              source={AppImages.THREE_D_SECURE}
+              className={'h-[24px] w-[24px] mr-[12px]'}
+              resizeMode={'contain'}
+            />
+            <CyDView className='flex flex-col justify-between mr-[6px]'>
+              <CyDText className='text-[16px] font-bold'>{'3D Secure'}</CyDText>
+              <CyDText className='text-[12px] font-semibold'>
+                {'Cardholder authentication for transactions.'}
+              </CyDText>
+            </CyDView>
           </CyDView>
           {loading3DSecure ? (
             <LottieView
               source={AppImages.LOADER_TRANSPARENT}
               autoPlay
               loop
-              style={{ height: 24, width: 24 }}
+              style={{ height: 24, width: 24, marginLeft: -24 }}
             />
           ) : (
             <CyDSwitch

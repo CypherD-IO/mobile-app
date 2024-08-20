@@ -429,6 +429,9 @@ const DOMESTIC_ICON = {
 const INTERNATIONAL_ICON = {
   uri: `${S3_BUCKET_URL_ICONS}/internationalIcon.png`,
 };
+const RC_PHYSICAL = require('./rcPhysical.png');
+const RC_VIRTUAL = require('./rcVirtual.png');
+
 const AppImages = {
   CYPHER_TELEGRAM_BOT_LOGO,
   PLUS,
@@ -802,5 +805,7 @@ const AppImages = {
   CANCEL_ICON,
   DOMESTIC_ICON,
   INTERNATIONAL_ICON,
+  RC_PHYSICAL,
+  RC_VIRTUAL,
 };
 export default AppImages;
