@@ -90,12 +90,8 @@ jobs:
           keyStorePassword: ${{secrets.KEY_STORE_PASSWORD}}
           keyPassword: ${{secrets.KEY_PASSWORD}}
 
-      - name: Upload AAB
-        id: uploadArtifact
-        uses: actions/upload-artifact@v1
-        with:
-          name: app
-          path: android/app/build/outputs/bundle/release/app-release.aab
+      - name: List AAB Directory
+        run: ls -la android/app/build/outputs/bundle/release/
 
       - name: Deploy to Play Store internal testing
         id: deploy
