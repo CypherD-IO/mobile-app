@@ -93,11 +93,14 @@ jobs:
       - name: List AAB Directory
         run: ls -la android/app/build/outputs/bundle/release/
 
+      - name: Print working directory
+        run: pwd
+
       - name: Deploy to Play Store internal testing
         id: deploy
         uses: r0adkll/upload-google-play@v1
         with:
-          serviceAccountJson: ${{secrets.SERVICE_ACCOUNT_JSON}}
+          serviceAccountJsonPlainText: ${{secrets.SERVICE_ACCOUNT_JSON}}
           packageName: com.cypherd.androidwallet
           releaseFiles: android/app/build/outputs/bundle/release/app-release.aab
           track: internal
