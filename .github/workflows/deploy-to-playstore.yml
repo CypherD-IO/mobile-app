@@ -70,7 +70,7 @@ jobs:
 
       - name: Build Release AAB
         id: buildRelease
-        run: cd android && ./gradlew bundleRelease -x signReleaseBundle
+        run: cd android && ./gradlew bundleRelease
 
       - name: Clean up Sentry properties
         if: always()
