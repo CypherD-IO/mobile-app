@@ -172,14 +172,14 @@ export function AddressBook({ route, navigation }) {
                 addressTypeQRCode={FundWalletAddressType.COREUM}
               />
 
-              {/* <AddressBookContainer
+              <AddressBookContainer
                 chain={CHAIN_INJECTIVE.name}
                 wallet={injective.wallets[injective.currentIndex]}
                 logo={AppImages.INJECTIVE_LOGO}
                 bGC={'#f1f4fa'}
                 navigation={navigation}
                 addressTypeQRCode={FundWalletAddressType.INJECTIVE}
-              /> */}
+              />
 
               <AddressBookContainer
                 chain={CHAIN_KUJIRA.name}

@@ -1009,8 +1009,8 @@ const resources = {
       LOADING_TEXT: 'Almost there, please hold on...',
       LOADING_TEXT_WALLET_CREATION:
         'Updating with new chain support, this might take upto 1 min. Please do not go back or close the app.',
-      SOLANA_UPDATE_LOADING_TEXT_WALLET_CREATION:
-        'Updating with SOLANA support, this might take upto 1 min. Please do not go back or close the app.',
+      INJECTIVE_UPDATE_LOADING_TEXT_WALLET_CREATION:
+        'Updating with Injective chain support, this might take upto 1 min. Please do not go back or close the app.',
       UPGRADE_NOW_FOR: 'Upgrade now for ',
       SHIPPING_FEE_SUB1: 'A nominal fee of ',
       SHIPPING_FEE_SUB2:

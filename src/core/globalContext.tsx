@@ -173,8 +173,8 @@ export const initialGlobalState: GlobalStateDef = {
       secondaryList: 'https://rpc.m.core.solonation.io',
     },
     INJECTIVE: {
-      primary: 'https://injective-1-public-rpc.mesa.ec1-prod.newmetric.xyz',
-      secondaryList: 'https://rpc-injective-ia.cosmosia.notional.ventures/',
+      primary: 'https://rpc-injective.keplr.app',
+      secondaryList: 'https://rpc-injective.keplr.app',
     },
     KUJIRA: {
       primary: 'https://rpc-kujira-ia.cosmosia.notional.ventures/',

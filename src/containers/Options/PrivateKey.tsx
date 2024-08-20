@@ -90,9 +90,9 @@ export default function PrivateKey(props) {
     {
       ...CHAIN_EVMOS,
     },
-    // {
-    //   ...CHAIN_INJECTIVE,
-    // },
+    {
+      ...CHAIN_INJECTIVE,
+    },
   ];
 
   if (connectionTypeValue === ConnectionTypes.SEED_PHRASE) {
@@ -214,11 +214,9 @@ export default function PrivateKey(props) {
         setSelectedChain(data[5]);
       } else if (walletAddressType === FundWalletAddressType.COREUM) {
         setSelectedChain(data[6]);
-      }
-      // else if (walletAddressType === FundWalletAddressType.INJECTIVE) {
-      //   setSelectedChain(data[7]);
-      // }
-      else if (walletAddressType === FundWalletAddressType.KUJIRA) {
+      } else if (walletAddressType === FundWalletAddressType.INJECTIVE) {
+        setSelectedChain(data[7]);
+      } else if (walletAddressType === FundWalletAddressType.KUJIRA) {
         setSelectedChain(data[8]);
       } else if (walletAddressType === FundWalletAddressType.SOLANA) {
         setSelectedChain(data[9]);

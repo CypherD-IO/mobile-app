@@ -41,7 +41,7 @@ import {
   CHAIN_SHARDEUM,
   CHAIN_SHARDEUM_SPHINX,
   CHAIN_COREUM,
-  // CHAIN_INJECTIVE,
+  CHAIN_INJECTIVE,
   CHAIN_KUJIRA,
   CHAIN_SOLANA,
 } from '../../constants/server';
@@ -146,10 +146,10 @@ export default function QRCodeGenerator(props) {
       ...CHAIN_COREUM,
       address: hdWalletContext.state.wallet.coreum?.wallets[0]?.address,
     },
-    // {
-    //   ...CHAIN_INJECTIVE,
-    //   address: hdWalletContext.state.wallet.injective?.wallets[0]?.address,
-    // },
+    {
+      ...CHAIN_INJECTIVE,
+      address: hdWalletContext.state.wallet.injective?.wallets[0]?.address,
+    },
     {
       ...CHAIN_KUJIRA,
       address: hdWalletContext.state.wallet.kujira?.wallets[0]?.address,
@@ -262,11 +262,9 @@ export default function QRCodeGenerator(props) {
         setSelectedChain(data[20]);
       } else if (walletAddressType === FundWalletAddressType.COREUM) {
         setSelectedChain(data[21]);
-      }
-      // else if (walletAddressType === FundWalletAddressType.INJECTIVE) {
-      //   setSelectedChain(data[22]);
-      // }
-      else if (walletAddressType === FundWalletAddressType.KUJIRA) {
+      } else if (walletAddressType === FundWalletAddressType.INJECTIVE) {
+        setSelectedChain(data[22]);
+      } else if (walletAddressType === FundWalletAddressType.KUJIRA) {
         setSelectedChain(data[22]);
       } else if (walletAddressType === FundWalletAddressType.SOLANA) {
         setSelectedChain(data[23]);

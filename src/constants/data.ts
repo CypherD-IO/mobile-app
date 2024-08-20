@@ -25,7 +25,7 @@ export const gasFeeReservation: Record<ChainBackendNames, number> = {
   STARGAZE: 0.1,
   NOBLE: 0.1,
   COREUM: 0.1,
-  INJECTIVE: 0.1,
+  INJECTIVE: 0.001,
   KUJIRA: 0.1,
   SHARDEUM: 0.1,
   SHARDEUM_SPHINX: 0.01,
@@ -65,6 +65,7 @@ export const nativeTokenMapping: Record<ChainBackendNames, string> = {
   [ChainBackendNames.MOONBEAM]: 'Glimmer',
   [ChainBackendNames.MOONRIVER]: 'Moonriver',
   [ChainBackendNames.ALL]: '',
+  [ChainBackendNames.SOLANA]: 'Solana',
 };
 
 export const MINIMUM_TRANSFER_AMOUNT_ETH = 50;
@@ -903,4 +904,5 @@ export const Bech32Prefixes = {
   KUJIRA: 'kujira',
   OSMOSIS: 'osmo',
   COREUM: 'core',
+  INJECTIVE: 'inj',
 };
