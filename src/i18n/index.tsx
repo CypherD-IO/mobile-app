@@ -889,7 +889,7 @@ const resources = {
       TXNS_EXPORTED: 'Transactions exported',
       FAILED_TO_EXPORT_TXNS: 'Failed to export transactions',
       CARD_TXNS_EXPORTED_TEXT:
-        'Your transactions will be exported as a CSV (.csv) file and sent shortly to \n',
+        'Your transactions will be exported and sent shortly to \n',
       UPGRADE_TO_PHYSICAL_CARD: 'Upgrade to physical card',
       UPGRADE_NOW: 'Upgrade now',
       ADD_SHIPPING_DETAILS_SUBTEXT:
@@ -1108,6 +1108,7 @@ const resources = {
       WALLETS: 'Wallets',
       SHOW_MORE_WALLET_ADDRESS_TEXT: "not the wallet you're looking for?",
       SHOW_MORE: 'Show More',
+      EXPORT_AS: 'Export as',
     },
   },
 };
