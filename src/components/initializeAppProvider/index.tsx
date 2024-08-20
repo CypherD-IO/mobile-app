@@ -201,7 +201,7 @@ export const InitializeAppProvider: React.FC<JSX.Element> = ({ children }) => {
           pinAuthentication || pinPresent === PinPresentStates.NOTSET ? (
             // reomve in the next build
             <Loading
-              loadingText={t('SOLANA_UPDATE_LOADING_TEXT_WALLET_CREATION')}
+              loadingText={t('INJECTIVE_UPDATE_LOADING_TEXT_WALLET_CREATION')}
             />
           ) : (
             <PinAuthRoute

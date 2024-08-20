@@ -54,9 +54,7 @@ import { Holding } from '../../core/Portfolio';
 import { getGasPriceFor } from '../../containers/Browser/gasHelper';
 import { SwapMetaData } from '../../models/swapMetaData';
 import {
-  ComputeBudgetProgram,
   Connection,
-  Keypair,
   LAMPORTS_PER_SOL,
   PublicKey,
   sendAndConfirmTransaction,

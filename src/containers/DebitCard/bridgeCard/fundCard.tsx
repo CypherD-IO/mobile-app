@@ -10,7 +10,6 @@ import {
   NativeTokenMapping,
   CHAIN_ETH,
   GASLESS_CHAINS,
-  PURE_COSMOS_CHAINS,
   CHAIN_OSMOSIS,
 } from '../../../constants/server';
 import {
@@ -206,8 +205,9 @@ export default function BridgeFundCardScreen({ route }: { route: any }) {
           });
         }
       } else if (
-        PURE_COSMOS_CHAINS.includes(chainDetails.chainName) &&
-        chainDetails.chainName !== ChainNames.OSMOSIS
+        COSMOS_CHAINS.includes(chainDetails.chainName) &&
+        chainDetails.chainName !== ChainNames.OSMOSIS &&
+        chainDetails.chainName !== ChainNames.EVMOS
       ) {
         gasDetails = {
           gasFeeInCrypto: parseFloat(String(random(0.01, 0.1, true))).toFixed(

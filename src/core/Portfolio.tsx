@@ -109,7 +109,7 @@ export interface WalletHoldings {
   moonbeam: ChainHoldings | undefined;
   moonriver: ChainHoldings | undefined;
   coreum: ChainHoldings | undefined;
-  // injective: ChainHoldings | undefined;
+  injective: ChainHoldings | undefined;
   kujira: ChainHoldings | undefined;
   solana: ChainHoldings | undefined;
   totalHoldings: Holding[];
@@ -204,8 +204,8 @@ export function getCurrentChainHoldings(
       return portfolio.moonriver;
     case CHAIN_COREUM.backendName:
       return portfolio.coreum;
-    // case CHAIN_INJECTIVE.backendName:
-    //   return portfolio.injective;
+    case CHAIN_INJECTIVE.backendName:
+      return portfolio.injective;
     case CHAIN_KUJIRA.backendName:
       return portfolio.kujira;
     case CHAIN_SOLANA.backendName:
@@ -424,7 +424,7 @@ export async function getPortfolioModel(
   let stargazeHoldings;
   let nobleHoldings;
   let coreumHoldings;
-  // let injectiveHoldings;
+  let injectiveHoldings;
   let kujiraHoldings;
   let shardeumHoldings;
   let shardeumSphinxHoldings;
@@ -461,7 +461,7 @@ export async function getPortfolioModel(
     CHAIN_MOONBEAM.backendName,
     CHAIN_MOONRIVER.backendName,
     CHAIN_COREUM.backendName,
-    // CHAIN_INJECTIVE.backendName,
+    CHAIN_INJECTIVE.backendName,
     CHAIN_KUJIRA.backendName,
     CHAIN_SOLANA.backendName,
   ]);
@@ -585,9 +585,9 @@ export async function getPortfolioModel(
         case CHAIN_KUJIRA.backendName:
           tokenHolding.chainDetails = CHAIN_KUJIRA;
           break;
-        // case CHAIN_INJECTIVE.backendName:
-        //   tokenHolding.chainDetails = chainHoldings;
-        //   break;
+        case CHAIN_INJECTIVE.backendName:
+          tokenHolding.chainDetails = CHAIN_INJECTIVE;
+          break;
         case CHAIN_SOLANA.backendName:
           tokenHolding.chainDetails = CHAIN_SOLANA;
           break;
@@ -699,9 +699,9 @@ export async function getPortfolioModel(
       case CHAIN_KUJIRA.backendName:
         kujiraHoldings = chainHoldings;
         break;
-      // case CHAIN_INJECTIVE.backendName:
-      //   injectiveHoldings = chainHoldings;
-      //   break;
+      case CHAIN_INJECTIVE.backendName:
+        injectiveHoldings = chainHoldings;
+        break;
       case CHAIN_SOLANA.backendName:
         solanaHoldings = chainHoldings;
         break;
@@ -808,9 +808,9 @@ export async function getPortfolioModel(
         case CHAIN_KUJIRA.backendName:
           kujiraHoldings = chainHoldings;
           break;
-        // case CHAIN_INJECTIVE.backendName:
-        //   injectiveHoldings = chainHoldings;
-        //   break;
+        case CHAIN_INJECTIVE.backendName:
+          injectiveHoldings = chainHoldings;
+          break;
         case CHAIN_SOLANA.backendName:
           solanaHoldings = chainHoldings;
           break;
@@ -847,7 +847,7 @@ export async function getPortfolioModel(
     moonbeam: moonbeamHoldings,
     moonriver: moonriverHoldings,
     coreum: coreumHoldings,
-    // injective: injectiveHoldings,
+    injective: injectiveHoldings,
     kujira: kujiraHoldings,
     solana: solanaHoldings,
     totalHoldings,
@@ -871,7 +871,7 @@ export async function fetchTokenData(
     noble,
     ethereum,
     coreum,
-    // injective,
+    injective,
     kujira,
     solana,
   } = hdWalletState.state.wallet;
@@ -920,7 +920,7 @@ export async function fetchTokenData(
       stargaze?.address,
       noble?.address,
       coreum?.address,
-      // injective?.address,
+      injective?.address,
       kujira?.address,
       ethereum.address,
       solana.address,

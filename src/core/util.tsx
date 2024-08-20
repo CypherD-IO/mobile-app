@@ -934,7 +934,7 @@ export function getAvailableChains(hdWallet: HdWalletContextDef): Chain[] {
     stargaze,
     noble,
     coreum,
-    // injective,
+    injective,
     kujira,
   } = hdWallet.state.wallet;
   let availableChains: Chain[] = [];
@@ -963,9 +963,9 @@ export function getAvailableChains(hdWallet: HdWalletContextDef): Chain[] {
   if (get(coreum.wallets, coreum.currentIndex)?.address) {
     availableChains.push(CHAIN_COREUM);
   }
-  // if (get(injective.wallets, injective.currentIndex)?.address) {
-  //   availableChains.push(CHAIN_INJECTIVE);
-  // }
+  if (get(injective.wallets, injective.currentIndex)?.address) {
+    availableChains.push(CHAIN_INJECTIVE);
+  }
   if (get(kujira.wallets, kujira.currentIndex)?.address) {
     availableChains.push(CHAIN_KUJIRA);
   }

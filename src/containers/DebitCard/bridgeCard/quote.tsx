@@ -23,6 +23,7 @@ import {
   ChainConfigMapping,
   ChainNameMapping,
   ChainNames,
+  COSMOS_CHAINS,
   PURE_COSMOS_CHAINS,
 } from '../../../constants/server';
 import { useTranslation } from 'react-i18next';
@@ -311,8 +312,9 @@ export default function CardQuote({
               symbol: selectedToken.symbol,
             });
           } else if (
-            PURE_COSMOS_CHAINS.includes(chainName) &&
-            chainName !== ChainNames.OSMOSIS
+            COSMOS_CHAINS.includes(chainName) &&
+            chainName !== ChainNames.OSMOSIS &&
+            chainName !== ChainNames.EVMOS
           ) {
             response = await interCosmosIBC({
               fromChain: chainDetails,
