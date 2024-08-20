@@ -52,6 +52,10 @@ jobs:
 
       - name: Gradle clean
         id: clean
+        env:
+          MYAPP_UPLOAD_STORE_PASSWORD: ${{ secrets.KEY_STORE_PASSWORD }}
+          MYAPP_UPLOAD_KEY_ALIAS: ${{ secrets.ALIAS }}
+          MYAPP_UPLOAD_KEY_PASSWORD: ${{ secrets.KEY_PASSWORD }}
         run: cd android && ./gradlew clean
 
       - name: Create Sentry properties file
