@@ -1,31 +1,31 @@
-import * as bip39 from 'bip39';
-import analytics from '@react-native-firebase/analytics';
-import { getToken, registerForRemoteMessages, onMessage } from '../core/push';
-import { ethToEvmos } from '@tharsis/address-converter';
+import { Secp256k1HdWallet } from '@cosmjs-rn/amino';
 import { Slip10RawIndex } from '@cosmjs-rn/crypto';
-import { Secp256k1HdWallet, pubkeyToAddress } from '@cosmjs-rn/amino';
-import { cosmosConfig, IIBCData } from '../constants/cosmosConfig';
-import CryptoJS from 'crypto-js';
-import { Mnemonic, PrivKeySecp256k1 } from '@keplr-wallet/crypto';
-import { isIOS } from '../misc/checkers';
-import { addHexPrefix } from './util';
-import {
-  HDNodeWallet,
-  Mnemonic as EthersMnemonic,
-  Wallet,
-  sha256,
-  hexlify,
-  getBytes,
-  ripemd160,
-} from 'ethers';
-import { setConnectionType } from './asyncStorage';
-import { ConnectionTypes } from '../constants/enum';
-import { getInjectiveAddress } from '@injectivelabs/sdk-ts';
-import { Keypair } from '@solana/web3.js';
-import { derivePath } from 'ed25519-hd-key';
 import { Bech32 } from '@cosmjs-rn/encoding';
+import { getInjectiveAddress } from '@injectivelabs/sdk-ts';
+import { Mnemonic, PrivKeySecp256k1 } from '@keplr-wallet/crypto';
+import analytics from '@react-native-firebase/analytics';
+import { Keypair } from '@solana/web3.js';
+import { ethToEvmos } from '@tharsis/address-converter';
+import * as bip39 from 'bip39';
 import * as bs58 from 'bs58';
+import CryptoJS from 'crypto-js';
+import { derivePath } from 'ed25519-hd-key';
+import {
+  Mnemonic as EthersMnemonic,
+  HDNodeWallet,
+  Wallet,
+  getBytes,
+  hexlify,
+  ripemd160,
+  sha256,
+} from 'ethers';
+import { IIBCData } from '../constants/cosmosConfig';
 import { AddressDerivationPath, Bech32Prefixes } from '../constants/data';
+import { ConnectionTypes } from '../constants/enum';
+import { onMessage, registerForRemoteMessages } from '../core/push';
+import { isIOS } from '../misc/checkers';
+import { setConnectionType } from './asyncStorage';
+import { addHexPrefix } from './util';
 
 function sendFirebaseEvent(walletaddress: string, trkEvent: string) {
   void analytics().logEvent(trkEvent, {
@@ -146,6 +146,11 @@ export const generateWalletFromMnemonic = async (
     getBytes(cosmosRipemd160Hash),
   );
 
+  const injectiveAddress = Bech32.encode(
+    Bech32Prefixes.INJECTIVE,
+    getBytes(cosmosRipemd160Hash),
+  );
+
   // coreum address generation
   const coreumPath = AddressDerivationPath.COREUM + String(addressIndex);
   const coreumWallet = hdNode.derivePath(coreumPath);
@@ -214,11 +219,11 @@ export const generateWalletFromMnemonic = async (
         address: solanaAddress,
         publicKey: solanaAddress,
       },
-      // {
-      //   name: 'injective',
-      //   address: getInjectiveAddress(ethAddress),
-      //   publicKey: ethPubKey,
-      // },
+      {
+        name: 'injective',
+        address: getInjectiveAddress(ethAddress),
+        publicKey: ethPubKey,
+      },
     ],
     privateKey: ethPrivateKey,
     mnemonic,

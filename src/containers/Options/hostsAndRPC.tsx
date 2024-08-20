@@ -801,30 +801,30 @@ export default function HostsAndRPCScreen({ navigation }) {
         ) : (
           <CyDView />
         )}
-        {/* {rpcEndpoints.injective ? (
-        <CyDView className={'mb-[30px]'}>
-          <CyDText className={'text-[16px] font-black'}>
-            {ChainBackendNames.INJECTIVE}
-          </CyDText>
-          <CyDTextInput
-            className={clsx(
-              'mt-[10px] border-[1px] border-inputBorderColor rounded-[5px] p-[12px] text-[18px] font-nunito text-primaryTextColor',
-            )}
-            value={maskString(rpcEndpoints.injective)}
-            editable={devMode}
-            autoCapitalize='none'
-            key='moonriver'
-            onChangeText={value => {
-              setRPCEndpoints({ ...rpcEndpoints, injective: value });
-            }}
-            autoCorrect={false}
-            placeholderTextColor={'#C5C5C5'}
-            placeholder=''
-          />
-        </CyDView>
-      ) : (
-        <CyDView />
-      )} */}
+        {rpcEndpoints.injective ? (
+          <CyDView className={'mb-[30px]'}>
+            <CyDText className={'text-[16px] font-black'}>
+              {ChainBackendNames.INJECTIVE}
+            </CyDText>
+            <CyDTextInput
+              className={clsx(
+                'mt-[10px] border-[1px] border-inputBorderColor rounded-[5px] p-[12px] text-[18px] font-nunito text-primaryTextColor',
+              )}
+              value={maskString(rpcEndpoints.injective)}
+              editable={devMode}
+              autoCapitalize='none'
+              key='moonriver'
+              onChangeText={value => {
+                setRPCEndpoints({ ...rpcEndpoints, injective: value });
+              }}
+              autoCorrect={false}
+              placeholderTextColor={'#C5C5C5'}
+              placeholder=''
+            />
+          </CyDView>
+        ) : (
+          <CyDView />
+        )}
         {rpcEndpoints.kujira ? (
           <CyDView className={'mb-[30px]'}>
             <CyDText className={'text-[16px] font-black'}>

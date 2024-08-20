@@ -598,9 +598,9 @@ export default function ShortcutsModal({ navigationRef }) {
         case ChainBackendNames.COREUM:
           addressTypeQRCode = FundWalletAddressType.COREUM;
           break;
-        // case ChainBackendNames.INJECTIVE:
-        //   addressTypeQRCode = FundWalletAddressType.INJECTIVE;
-        //   break;
+        case ChainBackendNames.INJECTIVE:
+          addressTypeQRCode = FundWalletAddressType.INJECTIVE;
+          break;
         case ChainBackendNames.KUJIRA:
           addressTypeQRCode = FundWalletAddressType.KUJIRA;
           break;
