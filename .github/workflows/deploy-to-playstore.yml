@@ -54,6 +54,10 @@ jobs:
           EOF
         shell: bash
 
+      - name: Create Google Services JSON file
+        run: |
+          echo '${{ secrets.GOOGLE_SERVICES_JSON }}' > android/app/google-services.json
+
       - name: Build Release AAB
         id: buildRelease
         run: cd android && ./gradlew bundleRelease
@@ -61,6 +65,10 @@ jobs:
       - name: Clean up Sentry properties
         if: always()
         run: rm -f android/sentry.properties
+
+      - name: Remove Google Services JSON file
+        if: always()
+        run: rm -f android/app/google-services.json
 
       - name: Sign AAB
         id: sign
