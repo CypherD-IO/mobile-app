@@ -559,6 +559,7 @@ export default function BridgeSkipApi(props: {
       !isEmpty(cryptoAmount) &&
       parseFloat(cryptoAmount) > 0
     ) {
+      setError('');
       if (isSwap()) {
         void swap();
       } else {
@@ -661,7 +662,6 @@ export default function BridgeSkipApi(props: {
         routeBody,
       );
       if (!isError) {
-        setError('');
         setRouteResponse(data);
         const cryptoAmountTemp = get(data, 'estimated_amount_out', '0.0');
         const usdAmountTemp = get(data, 'usd_amount_out', '0.0');
@@ -1116,8 +1116,9 @@ export default function BridgeSkipApi(props: {
         }
       }
     } catch (e: any) {
+      setQuoteData(null);
       setLoading(false);
-      setError(e?.message ?? JSON.stringify(e));
+      setError(capitalize(e?.message ?? JSON.stringify(e)));
     }
   };
 
@@ -2243,31 +2244,30 @@ export default function BridgeSkipApi(props: {
 
         <CyDView className='h-full'>
           {Components()}
-          {!isSwap() &&
-            (!isEmpty(error) ||
-              parseFloat(usdAmount) > (selectedFromToken?.totalValue ?? 0)) && (
-              <CyDView className=' bg-red-100 rounded-[8px] p-[12px] flex flex-row gap-x-[12px] mx-[16px] mt-[16px] justify-between items-center'>
-                <CyDFastImage
-                  source={AppImages.CYPHER_WARNING_RED}
-                  className='w-[32px] h-[32px]'
-                />
-                <CyDView className='w-[75%]'>
-                  {!isEmpty(error) && (
-                    <CyDView className='flex flex-row gap-x-[8px]'>
-                      <CyDText>{'\u2022'}</CyDText>
-                      <CyDText>{error}</CyDText>
-                    </CyDView>
-                  )}
-                  {parseFloat(usdAmount) >
-                    (selectedFromToken?.totalValue ?? 0) && (
-                    <CyDView className='flex flex-row gap-x-[8px]'>
-                      <CyDText>{'\u2022'}</CyDText>
-                      <CyDText>{t('INSUFFICIENT_BALANCE_BRIDGE')}</CyDText>
-                    </CyDView>
-                  )}
-                </CyDView>
+          {(!isEmpty(error) ||
+            parseFloat(usdAmount) > (selectedFromToken?.totalValue ?? 0)) && (
+            <CyDView className=' bg-red-100 rounded-[8px] p-[12px] flex flex-row gap-x-[12px] mx-[16px] mt-[16px] justify-between items-center'>
+              <CyDFastImage
+                source={AppImages.CYPHER_WARNING_RED}
+                className='w-[32px] h-[32px]'
+              />
+              <CyDView className='w-[75%]'>
+                {!isEmpty(error) && (
+                  <CyDView className='flex flex-row gap-x-[8px]'>
+                    <CyDText>{'\u2022'}</CyDText>
+                    <CyDText>{error}</CyDText>
+                  </CyDView>
+                )}
+                {parseFloat(usdAmount) >
+                  (selectedFromToken?.totalValue ?? 0) && (
+                  <CyDView className='flex flex-row gap-x-[8px]'>
+                    <CyDText>{'\u2022'}</CyDText>
+                    <CyDText>{t('INSUFFICIENT_BALANCE_BRIDGE')}</CyDText>
+                  </CyDView>
+                )}
               </CyDView>
-            )}
+            </CyDView>
+          )}
           {!isSwap() &&
             !isEmpty(routeResponse?.estimated_fees) &&
             index === 0 && (
@@ -2314,7 +2314,8 @@ export default function BridgeSkipApi(props: {
               </CyDText>
             </CyDView>
           )}
-          {isSwap() && quoteData && (
+
+          {isSwap() && !isNil(quoteData) && !isEmpty(swapParams) && (
             <CyDView className='mx-[16px] mt-[16px] bg-white rounded-[8px] p-[12px]'>
               <CyDView className={'px-[20px]'}>
                 <CyDView className={'flex flex-row justify-between'}>
@@ -2377,12 +2378,11 @@ export default function BridgeSkipApi(props: {
                     </CyDText>
                   </CyDView>
                 </CyDView>
-                <RenderWarningMessage />
               </CyDView>
             </CyDView>
           )}
           {index === 0 && (
-            <CyDView className='mx-[16px] mt-[16px]'>
+            <CyDView className='mx-[16px] mt-[16px] mb-[80px]'>
               <Button
                 onPress={() => {
                   if (isSwap()) {
@@ -2397,7 +2397,8 @@ export default function BridgeSkipApi(props: {
                   isSwap()
                     ? selectedFromToken
                       ? parseFloat(cryptoAmount) >
-                        parseFloat(String(selectedFromToken.actualBalance))
+                          parseFloat(String(selectedFromToken.actualBalance)) ||
+                        isNil(quoteData)
                       : true
                     : parseFloat(usdAmount) >
                         (selectedFromToken?.totalValue ?? 0) ||
