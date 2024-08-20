@@ -87,6 +87,7 @@ android {
         versionCode 418
         versionName "4.17"
         missingDimensionStrategy 'react-native-camera', 'general'
+        buildConfigField "String", "INTERCOM_APP_KEY", "\"${System.getenv('INTERCOM_APP_KEY') ?: ''}\""
     }
     signingConfigs {
         release {
