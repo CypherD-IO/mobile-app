@@ -22,6 +22,7 @@ import * as Sentry from '@sentry/react-native';
 import {
   CyDFastImage,
   CyDFlatList,
+  CyDImage,
   CyDText,
   CyDTouchView,
   CyDView,
@@ -33,7 +34,9 @@ import { isIOS } from '../../../misc/checkers';
 import InfiniteScrollFooterLoader from '../../../components/v2/InfiniteScrollFooterLoader';
 import AppImages from '../../../../assets/images/appImages';
 import CardTxnFilterModal from '../CardV2/CardTxnFilterModal';
-import { formatToLocalDate, parseMonthYear } from '../../../core/util';
+import { parseMonthYear } from '../../../core/util';
+import CyDModalLayout from '../../../components/v2/modal';
+import Button from '../../../components/v2/button';
 
 interface CardTransactionScreenProps {
   navigation: any;
@@ -83,6 +86,7 @@ export default function CardTransactions({
   const [viewableTransactionsDate, setViewableTransactionsDate] =
     useState<string>('');
   const lastViewableTransactionDate = useRef<string>('');
+  const [exportOptionOpen, setExportOptionOpen] = useState(false);
 
   useEffect(() => {
     void fetchTransactions(true);
@@ -114,10 +118,10 @@ export default function CardTransactions({
     setFilteredTransactions(filteredTxns);
   };
 
-  const exportCardTransactions = async () => {
+  const exportCardTransactions = async (type: 'pdf' | 'csv') => {
     const exportEndpoint = `/v1/cards/${cardProvider}/card/${String(
       cardId,
-    )}/transactions/export`;
+    )}/transactions/export/${type}`;
     try {
       setIsExporting(true);
       const res = await postWithAuth(exportEndpoint, {});
@@ -273,6 +277,44 @@ export default function CardTransactions({
 
   return (
     <CyDView>
+      <CyDModalLayout
+        isModalVisible={exportOptionOpen}
+        setModalVisible={setExportOptionOpen}
+        style={styles.modalLayout}>
+        <CyDView
+          className={'bg-white p-[25px] pb-[30px] rounded-t-[20px] relative'}>
+          <CyDTouchView
+            onPress={() => setExportOptionOpen(false)}
+            className={'z-[50]'}>
+            <CyDImage
+              source={AppImages.CLOSE}
+              className={' w-[22px] h-[22px] z-[50] absolute right-[0px] '}
+            />
+          </CyDTouchView>
+          <CyDText className={'mt-[10px] font-black text-center text-[22px]'}>
+            {t('EXPORT_AS')}
+          </CyDText>
+          <CyDView className={'w-[100%]'}>
+            <Button
+              style='h-[54px] mt-[12px]'
+              title={t('PDF')}
+              onPress={() => {
+                void exportCardTransactions('pdf');
+                setExportOptionOpen(false);
+              }}
+            />
+            <Button
+              style='h-[54px] mt-[15px]'
+              title={t('CSV')}
+              onPress={() => {
+                void exportCardTransactions('csv');
+                setExportOptionOpen(false);
+              }}
+              // type={ButtonType.SECONDARY}
+            />
+          </CyDView>
+        </CyDView>
+      </CyDModalLayout>
       <CardTxnFilterModal
         navigation={navigation}
         modalVisibilityState={[filterModalVisible, setFilterModalVisible]}
@@ -299,7 +341,8 @@ export default function CardTransactions({
             disabled={isExporting}
             className={clsx({ 'opacity-40': isExporting })}
             onPress={() => {
-              void exportCardTransactions();
+              setExportOptionOpen(true);
+              // void exportCardTransactions();
             }}>
             <CyDFastImage
               className='w-[48px] h-[26px]'
@@ -345,5 +388,9 @@ export default function CardTransactions({
 const styles = StyleSheet.create({
   infiniteScrollFooterLoaderStyle: {
     height: 40,
+  },
+  modalLayout: {
+    margin: 0,
+    justifyContent: 'flex-end',
   },
 });
