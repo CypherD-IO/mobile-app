@@ -13,22 +13,12 @@ export default function CardProviderSwitch() {
   const globalContext = useContext<any>(GlobalContext);
   const cardProfile: CardProfile = globalContext.globalState.cardProfile;
   const provider = cardProfile.provider;
-  const { hasBothProviders, checkIsRCEnabled } = useCardUtilities();
+  const { hasBothProviders } = useCardUtilities();
   const [twoProviders, setTwoProviders] = useState(false);
   const navigation = useNavigation();
-  const { getWithoutAuth } = useAxios();
-
-  const checkTwoProviders = async () => {
-    const isRcEnabled = await checkIsRCEnabled();
-    if (isRcEnabled && hasBothProviders(cardProfile)) {
-      setTwoProviders(true);
-      return;
-    }
-    setTwoProviders(false);
-  };
 
   useEffect(() => {
-    void checkTwoProviders();
+    void setTwoProviders(hasBothProviders(cardProfile));
   }, []);
 
   const onSwitchProviders = (index: number) => {
