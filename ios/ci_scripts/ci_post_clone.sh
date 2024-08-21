@@ -15,7 +15,7 @@ brew install node@18
 echo "linking node@18"
 brew link node@18
 
-echo 'export PATH="/usr/local/opt/node@18/bin:$PATH"' >> ~/.zshrc
+echo `export PATH="/usr/local/opt/node@18/bin:$PATH"` >> ~/.zshrc
 
 # setting the auth token
 npm config set @cypherd-io:registry https://npm.pkg.github.com
@@ -23,7 +23,7 @@ npm config set //npm.pkg.github.com/:_authToken ${NPM_TOKEN}
 
 # Install dependencies you manage with CocoaPods.
 echo "clean installing packages"
-npm ci --legacy-peer-deps
+npm ci --legacy-peer-deps --verbose
 
 pod --version
 
