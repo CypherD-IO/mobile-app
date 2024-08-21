@@ -125,6 +125,7 @@ export const screenTitle = {
   CARD_CONTROLS_MENU: 'CardControls',
   DOMESTIC_CARD_CONTROLS: 'DomesticTransactions',
   INTERNATIONAL_CARD_CONTROLS: 'InternationalTransactions',
+  LOCKDOWN_MODE: 'LockdownMode',
 };
 
 export const fontsName = {

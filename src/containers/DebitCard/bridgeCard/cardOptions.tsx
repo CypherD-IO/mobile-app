@@ -112,6 +112,21 @@ export default function CardOptionsModal({
         setShowModal(false);
       },
     },
+    ...(cardProvider === CardProviders.REAP_CARD
+      ? [
+          {
+            title: 'Lockdown Mode',
+            description: 'Secure account by blocking all Card Functionalities',
+            image: AppImages.LOCKDOWN_MODE_ICON,
+            action: () => {
+              navigation.navigate(screenTitle.LOCKDOWN_MODE, {
+                currentCardProvider: cardProvider,
+              });
+              setShowModal(false);
+            },
+          },
+        ]
+      : []),
   ];
 
   return (
@@ -177,9 +192,9 @@ export default function CardOptionsModal({
                 className={'h-[24px] w-[24px] mx-[12px]'}
                 resizeMode={'contain'}
               />
-              <CyDView className='flex flex-col justify-between'>
+              <CyDView>
                 <CyDText className='text-[16px] font-bold'>{title}</CyDText>
-                <CyDText className='text-[12px] font-semibold'>
+                <CyDText className='text-[12px] font-semibold overflow-clip mr-[30px]'>
                   {description}
                 </CyDText>
               </CyDView>

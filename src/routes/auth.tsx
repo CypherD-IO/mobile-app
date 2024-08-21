@@ -105,6 +105,7 @@ import PreviewAutoLoad from '../containers/DebitCard/bridgeCard/previewAutoLoad'
 import BridgeSkipApi from '../containers/Bridge.Skip/bridge.skip';
 import CardControlsMenu from '../containers/DebitCard/bridgeCard/cardControlsMenu';
 import CardControlsSettings from '../containers/DebitCard/bridgeCard/cardControlsSettings';
+import LockdownMode from '../containers/DebitCard/bridgeCard/lockdownMode';
 
 const { DynamicImage, DynamicButton } = require('../styles');
 
@@ -824,6 +825,14 @@ export function DebitCardStackScreen({ navigation }) {
           headerTintColor: Colors.primaryTextColor,
           headerBackTitleVisible: false,
           headerLeft: props => defaultHeaderLeft(navigation),
+        })}
+      />
+
+      <FundCardStack.Screen
+        name={screenTitle.LOCKDOWN_MODE}
+        component={LockdownMode}
+        options={({ navigation, route }) => ({
+          headerShown: false,
         })}
       />
 
