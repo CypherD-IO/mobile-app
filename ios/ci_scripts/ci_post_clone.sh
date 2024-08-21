@@ -17,10 +17,6 @@ brew link node@18
 
 echo "${NPM_TOKEN:0:10}"
 
-# create a .npmrc file with the npm token
-echo "@cypherd-io:registry=https://npm.pkg.github.com/" > .npmrc
-echo "//npm.pkg.github.com/:_authToken=${NPM_TOKEN}" >> .npmrc
-
 # Install dependencies you manage with CocoaPods.
 echo "installing packages"
 npm install --legacy-peer-deps
