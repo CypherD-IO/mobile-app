@@ -21,9 +21,13 @@ echo `export PATH="/usr/local/opt/node@18/bin:$PATH"` >> ~/.zshrc
 npm config set @cypherd-io:registry https://npm.pkg.github.com
 npm config set //npm.pkg.github.com/:_authToken ${NPM_TOKEN}
 
+
+echo "//npm.pkg.github.com/:_authToken=${NPM_TOKEN}" > ~/.npmrc
+npm config set @cypherd-io:registry https://npm.pkg.github.com
+
 # Install dependencies you manage with CocoaPods.
 echo "clean installing packages"
-npm ci --legacy-peer-deps --verbose
+npm ci --legacy-peer-deps
 
 pod --version
 
