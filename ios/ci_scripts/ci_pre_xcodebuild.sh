@@ -1,6 +1,8 @@
 #!/bin/sh
 chmod +x ci_pre_xcodebuild.sh
 
+xcodebuild clean -workspace Cypherd.xcworkspace -scheme Cypherd
+
 ls /Volumes/workspace/repository/ios/
 # Path to the Info.plist file
 INFO_PLIST_PATH="/Volumes/workspace/repository/ios/CypherD/Info.plist"
