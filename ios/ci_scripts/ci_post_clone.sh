@@ -19,8 +19,6 @@ brew link node@18
 echo "Clearing npm cache"
 npm cache clean --force
 
-echo "${NPM_TOKEN:0:10}"
-
 # Install dependencies
 echo "Installing packages"
 npm ci --legacy-peer-deps
