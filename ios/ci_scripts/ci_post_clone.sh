@@ -23,6 +23,7 @@ npm cache clean --force
 echo "Installing packages"
 npm ci --legacy-peer-deps
 
+# Pod install
 echo "pod installing"
 pod install
 
