@@ -82,64 +82,6 @@ PODS:
     - FirebaseInstallations (~> 8.0)
     - GoogleUtilities/Environment (~> 7.7)
     - "GoogleUtilities/NSData+zlib (~> 7.7)"
-  - Flipper (0.163.0):
-    - Flipper-Folly (~> 2.6)
-  - Flipper-Boost-iOSX (1.76.0.1.11)
-  - Flipper-DoubleConversion (3.2.0.1)
-  - Flipper-Fmt (7.1.7)
-  - Flipper-Folly (2.6.10):
-    - Flipper-Boost-iOSX
-    - Flipper-DoubleConversion
-    - Flipper-Fmt (= 7.1.7)
-    - Flipper-Glog
-    - libevent (~> 2.1.12)
-    - OpenSSL-Universal (= 1.1.1100)
-  - Flipper-Glog (0.5.0.5)
-  - Flipper-PeerTalk (0.0.4)
-  - FlipperKit (0.163.0):
-    - FlipperKit/Core (= 0.163.0)
-  - FlipperKit/Core (0.163.0):
-    - Flipper (~> 0.163.0)
-    - FlipperKit/CppBridge
-    - FlipperKit/FBCxxFollyDynamicConvert
-    - FlipperKit/FBDefines
-    - FlipperKit/FKPortForwarding
-    - SocketRocket (~> 0.6.0)
-  - FlipperKit/CppBridge (0.163.0):
-    - Flipper (~> 0.163.0)
-  - FlipperKit/FBCxxFollyDynamicConvert (0.163.0):
-    - Flipper-Folly (~> 2.6)
-  - FlipperKit/FBDefines (0.163.0)
-  - FlipperKit/FKPortForwarding (0.163.0):
-    - CocoaAsyncSocket (~> 7.6)
-    - Flipper-PeerTalk (~> 0.0.4)
-  - FlipperKit/FlipperKitHighlightOverlay (0.163.0)
-  - FlipperKit/FlipperKitLayoutHelpers (0.163.0):
-    - FlipperKit/Core
-    - FlipperKit/FlipperKitHighlightOverlay
-    - FlipperKit/FlipperKitLayoutTextSearchable
-  - FlipperKit/FlipperKitLayoutIOSDescriptors (0.163.0):
-    - FlipperKit/Core
-    - FlipperKit/FlipperKitHighlightOverlay
-    - FlipperKit/FlipperKitLayoutHelpers
-    - YogaKit (~> 1.18)
-  - FlipperKit/FlipperKitLayoutPlugin (0.163.0):
-    - FlipperKit/Core
-    - FlipperKit/FlipperKitHighlightOverlay
-    - FlipperKit/FlipperKitLayoutHelpers
-    - FlipperKit/FlipperKitLayoutIOSDescriptors
-    - FlipperKit/FlipperKitLayoutTextSearchable
-    - YogaKit (~> 1.18)
-  - FlipperKit/FlipperKitLayoutTextSearchable (0.163.0)
-  - FlipperKit/FlipperKitNetworkPlugin (0.163.0):
-    - FlipperKit/Core
-  - FlipperKit/FlipperKitReactPlugin (0.163.0):
-    - FlipperKit/Core
-  - FlipperKit/FlipperKitUserDefaultsPlugin (0.163.0):
-    - FlipperKit/Core
-  - FlipperKit/SKIOSNetworkPlugin (0.163.0):
-    - FlipperKit/Core
-    - FlipperKit/FlipperKitNetworkPlugin
   - fmt (6.2.1)
   - glog (0.3.5)
   - GoogleAppMeasurement/WithoutAdIdSupport (8.15.0):
@@ -188,7 +130,6 @@ PODS:
     - React-Core
   - jail-monkey (2.8.0):
     - React-Core
-  - libevent (2.1.12)
   - libwebp (1.3.2):
     - libwebp/demux (= 1.3.2)
     - libwebp/mux (= 1.3.2)
@@ -214,7 +155,6 @@ PODS:
   - nanopb/decode (2.30908.0)
   - nanopb/encode (2.30908.0)
   - NWWebSocket (0.5.4)
-  - OpenSSL-Universal (1.1.1100)
   - Permission-Camera (3.6.0):
     - RNPermissions
   - PromisesObjC (2.4.0)
@@ -750,8 +690,6 @@ PODS:
     - React-Core
   - TweetNacl (1.0.2)
   - Yoga (1.14.0)
-  - YogaKit (1.18.1):
-    - Yoga (~> 1.14)
 
 DEPENDENCIES:
   - boost (from `../node_modules/react-native/third-party-podspecs/boost.podspec`)
@@ -759,32 +697,11 @@ DEPENDENCIES:
   - DoubleConversion (from `../node_modules/react-native/third-party-podspecs/DoubleConversion.podspec`)
   - FBLazyVector (from `../node_modules/react-native/Libraries/FBLazyVector`)
   - FBReactNativeSpec (from `../node_modules/react-native/React/FBReactNativeSpec`)
-  - Flipper (= 0.163.0)
-  - Flipper-Boost-iOSX (= 1.76.0.1.11)
-  - Flipper-DoubleConversion (= 3.2.0.1)
-  - Flipper-Fmt (= 7.1.7)
-  - Flipper-Folly (= 2.6.10)
-  - Flipper-Glog (= 0.5.0.5)
-  - Flipper-PeerTalk (= 0.0.4)
-  - FlipperKit (= 0.163.0)
-  - FlipperKit/Core (= 0.163.0)
-  - FlipperKit/CppBridge (= 0.163.0)
-  - FlipperKit/FBCxxFollyDynamicConvert (= 0.163.0)
-  - FlipperKit/FBDefines (= 0.163.0)
-  - FlipperKit/FKPortForwarding (= 0.163.0)
-  - FlipperKit/FlipperKitHighlightOverlay (= 0.163.0)
-  - FlipperKit/FlipperKitLayoutPlugin (= 0.163.0)
-  - FlipperKit/FlipperKitLayoutTextSearchable (= 0.163.0)
-  - FlipperKit/FlipperKitNetworkPlugin (= 0.163.0)
-  - FlipperKit/FlipperKitReactPlugin (= 0.163.0)
-  - FlipperKit/FlipperKitUserDefaultsPlugin (= 0.163.0)
-  - FlipperKit/SKIOSNetworkPlugin (= 0.163.0)
   - glog (from `../node_modules/react-native/third-party-podspecs/glog.podspec`)
   - "intercom-react-native (from `../node_modules/@intercom/intercom-react-native`)"
   - jail-monkey (from `../node_modules/jail-monkey`)
   - lottie-ios (from `../node_modules/lottie-ios`)
   - lottie-react-native (from `../node_modules/lottie-react-native`)
-  - OpenSSL-Universal (= 1.1.1100)
   - Permission-Camera (from `../node_modules/react-native-permissions/ios/Camera`)
   - "pusher-websocket-react-native (from `../node_modules/@pusher/pusher-websocket-react-native`)"
   - RCT-Folly (from `../node_modules/react-native/third-party-podspecs/RCT-Folly.podspec`)
@@ -879,26 +796,16 @@ SPEC REPOS:
     - FirebaseMessaging
     - FirebasePerformance
     - FirebaseRemoteConfig
-    - Flipper
-    - Flipper-Boost-iOSX
-    - Flipper-DoubleConversion
-    - Flipper-Fmt
-    - Flipper-Folly
-    - Flipper-Glog
-    - Flipper-PeerTalk
-    - FlipperKit
     - fmt
     - GoogleAppMeasurement
     - GoogleDataTransport
     - GoogleUtilities
     - Intercom
-    - libevent
     - libwebp
     - MMKV
     - MMKVCore
     - nanopb
     - NWWebSocket
-    - OpenSSL-Universal
     - PromisesObjC
     - PusherSwift
     - SDWebImage
@@ -906,7 +813,6 @@ SPEC REPOS:
     - Sentry
     - SocketRocket
     - TweetNacl
-    - YogaKit
 
 EXTERNAL SOURCES:
   boost:
@@ -1105,14 +1011,6 @@ SPEC CHECKSUMS:
   FirebaseMessaging: 5e5118a2383b3531e730d974680954c679ca0a13
   FirebasePerformance: 66eb58c3e3568a0501a9be271c8ff424dea0ff34
   FirebaseRemoteConfig: 2d6e2cfdb49af79535c8af8a80a4a5009038ec2b
-  Flipper: 3f748432f5557ee89b9f84f73cc567c0858a2322
-  Flipper-Boost-iOSX: fd1e2b8cbef7e662a122412d7ac5f5bea715403c
-  Flipper-DoubleConversion: 2dc99b02f658daf147069aad9dbd29d8feb06d30
-  Flipper-Fmt: 60cbdd92fc254826e61d669a5d87ef7015396a9b
-  Flipper-Folly: 584845625005ff068a6ebf41f857f468decd26b3
-  Flipper-Glog: 70c50ce58ddaf67dc35180db05f191692570f446
-  Flipper-PeerTalk: 116d8f857dc6ef55c7a5a75ea3ceaafe878aadc9
-  FlipperKit: 0674bb0e923016a5296838ae2aa9a10e7efc6b91
   fmt: ff9d55029c625d3757ed641535fd4a75fedc7ce9
   glog: 04b94705f318337d7ead9e6d17c019bd9b1f6b1b
   GoogleAppMeasurement: 4c19f031220c72464d460c9daa1fb5d1acce958e
@@ -1121,7 +1019,6 @@ SPEC CHECKSUMS:
   Intercom: d9c81b3e45e6ecd9b2db2dc188d0521a40393f56
   intercom-react-native: 267c5e40d45cf663da091c4417b5306d8ecfe4ee
   jail-monkey: a71b35d482a70ecba844a90f002994012cf12a5d
-  libevent: 4049cae6c81cdb3654a443be001fb9bdceff7913
   libwebp: 1786c9f4ff8a279e4dac1e8f385004d5fc253009
   lottie-ios: 69495122151a378fdc7d1bb4c5930347e37baf1f
   lottie-react-native: 8f9d4be452e23f6e5ca0fdc11669dc99ab52be81
@@ -1129,7 +1026,6 @@ SPEC CHECKSUMS:
   MMKVCore: 9e2e5fd529b64a9fe15f1a7afb3d73b2e27b4db9
   nanopb: a0ba3315591a9ae0a16a309ee504766e90db0c96
   NWWebSocket: 040d22f23438cc09aaeabf537beff67699c3c76d
-  OpenSSL-Universal: ebc357f1e6bc71fa463ccb2fe676756aff50e88c
   Permission-Camera: 0a0fb4341f50ab242f496fb2f73380e0ec454fe7
   PromisesObjC: f5707f49cb48b9636751c5b2e7d227e43fba9f47
   pusher-websocket-react-native: e40c49a1e4ec96d4157375aebcf44943f0f8f62f
@@ -1216,8 +1112,7 @@ SPEC CHECKSUMS:
   transfi-ramp-react-native-sdk: 75063c233fff9f9eb04da96058103acb2c7262d4
   TweetNacl: 3abf4d1d2082b0114e7a67410e300892448951e6
   Yoga: c32e0be1a17f8f1f0e633a3122f7666441f52c82
-  YogaKit: f782866e155069a2cca2517aafea43200b01fd5a
 
-PODFILE CHECKSUM: 74d16c6ff8615f30d82e8d5635cf0460f21c3049
+PODFILE CHECKSUM: 67a3662906b02f99b93afa303d479e23a12298e8
 
 COCOAPODS: 1.15.2
