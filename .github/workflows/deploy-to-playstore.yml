@@ -24,6 +24,7 @@ jobs:
       AF_USER_INVITE_CHANNEL: ${{secrets.AF_USER_INVITE_CHANNEL}}
       INTERCOM_APP_KEY: ${{secrets.INTERCOM_APP_KEY}}
       WALLET_CONNECT_PROJECTID: ${{secrets.WALLET_CONNECT_PROJECTID}}
+      SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK_URL }}
     steps:
       - name: Checkout
         uses: actions/checkout@v2
@@ -102,3 +103,10 @@ jobs:
           status: completed
           changesNotSentForReview: false
           whatsNewDirectory: android/whatsnew
+
+      - name: Notify on Slack
+        uses: act10ns/slack@v1
+        with:
+          status: ${{ job.status }}
+          steps: ${{ toJson(steps) }}
+        if: always()
