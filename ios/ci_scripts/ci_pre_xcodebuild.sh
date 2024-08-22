@@ -1,4 +1,6 @@
 #!/bin/sh
+chmod +x ci_pre_xcodebuild.sh
+
 # Path to the Info.plist file
 INFO_PLIST_PATH="${PROJECT_DIR}/ios/CypherD/Info.plist"
 
