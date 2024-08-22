@@ -125,6 +125,7 @@ export const screenTitle = {
   CARD_CONTROLS_MENU: 'CardControls',
   DOMESTIC_CARD_CONTROLS: 'DomesticTransactions',
   INTERNATIONAL_CARD_CONTROLS: 'InternationalTransactions',
+  THREE_D_SECURE: '3D Secure',
 };
 
 export const fontsName = {

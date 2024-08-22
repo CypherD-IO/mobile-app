@@ -49,6 +49,7 @@ import Tooltip from 'react-native-walkthrough-tooltip';
 import { PEP_OPTIONS } from '../../constants/data';
 import { CardProfile } from '../../models/cardProfile.model';
 import useCardUtilities from '../../hooks/useCardUtilities';
+import { get } from 'lodash';
 
 export default function CardSignupScreen({ navigation, route }) {
   const globalContext = useContext<any>(GlobalContext);
@@ -350,9 +351,16 @@ export default function CardSignupScreen({ navigation, route }) {
     };
     try {
       const isRcEnabled = await checkIsRCEnabled();
-      const provider = isRcEnabled
+      // card application created with reap if user has isRcUpgradable or has isRcEnabled else created with paycaddy
+      const provider = get(
+        cardProfile,
+        [CardProviders.PAYCADDY, 'isRcUpgradable'],
+        false,
+      )
         ? CardProviders.REAP_CARD
-        : CardProviders.PAYCADDY;
+        : isRcEnabled
+          ? CardProviders.REAP_CARD
+          : CardProviders.PAYCADDY;
       const response = await postWithAuth(
         `/v1/cards/${provider}/application`,
         payload,
