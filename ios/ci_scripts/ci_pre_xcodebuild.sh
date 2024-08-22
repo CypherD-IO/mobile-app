@@ -1,8 +1,9 @@
 #!/bin/sh
 chmod +x ci_pre_xcodebuild.sh
 
+ls /Volumes/workspace/repository/ios/
 # Path to the Info.plist file
-INFO_PLIST_PATH="${PROJECT_DIR}/ios/CypherD/Info.plist"
+INFO_PLIST_PATH="/Volumes/workspace/repository/ios/CypherD/Info.plist"
 
 # Extract the current version and build number
 VERSION=$(/usr/libexec/PlistBuddy -c "Print CFBundleShortVersionString" "$INFO_PLIST_PATH")
