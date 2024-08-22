@@ -15,12 +15,11 @@ brew install node@18
 echo "linking node@18"
 brew link node@18
 
-# remove the cache from npm
-rm -rf /Users/local/.npm/_cacache
-
 # Clear npm cache
 echo "Clearing npm cache"
 npm cache clean --force
+
+echo "${NPM_TOKEN:0:10}"
 
 # Install dependencies
 echo "Installing packages"
