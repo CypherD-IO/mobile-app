@@ -254,6 +254,16 @@ export default function CypherCardScreen({
     });
   };
 
+  const shouldBlockAction = () => {
+    if (
+      isLockdownModeEnabled === ACCOUNT_STATUS.INACTIVE &&
+      cardProvider === CardProviders.REAP_CARD
+    ) {
+      return true;
+    }
+    return false;
+  };
+
   return isLayoutRendered ? (
     <CyDSafeAreaView className='flex-1 bg-gradient-to-b from-cardBgFrom to-cardBgTo mt-[20px] mb-[75px]'>
       <CardProviderSwitch />
@@ -341,6 +351,7 @@ export default function CypherCardScreen({
         <Button
           image={AppImages.LOAD_CARD_LOTTIE}
           isLottie={true}
+          disabled={shouldBlockAction()}
           onPress={() => {
             onPressFundCard();
           }}
@@ -353,41 +364,40 @@ export default function CypherCardScreen({
       </CyDView>
 
       <CyDScrollView>
-        {cardProvider === CardProviders.REAP_CARD &&
-          isLockdownModeEnabled === ACCOUNT_STATUS.INACTIVE && (
-            <CyDView className='rounded-[16px] bg-r20 border-[1px] border-r300 p-[14px] m-[16px]'>
-              <CyDText className='text-[18px] font-[700] text-r300'>
-                {'Your account has been locked'}
-              </CyDText>
-              <CyDText className='text-[14px] font-[500] mt-[6px]'>
-                {
-                  'Since, you have enabled lockdown mode, your card load and transaction will be completely disabled '
-                }
-              </CyDText>
-              <CyDTouchView
-                onPress={() => {
-                  void verifyWithOTP();
-                }}>
-                {!lockdownModeLoading ? (
-                  <CyDText className='underline font-[700] text-[14px] mt-[6px]'>
-                    Disable lockdown mode
-                  </CyDText>
-                ) : (
-                  <LottieView
-                    source={AppImages.LOADER_TRANSPARENT}
-                    autoPlay
-                    loop
-                    style={{ height: 25 }}
-                  />
-                )}
-              </CyDTouchView>
-            </CyDView>
-          )}
+        {shouldBlockAction() && (
+          <CyDView className='rounded-[16px] bg-r20 border-[1px] border-r300 p-[14px] m-[16px]'>
+            <CyDText className='text-[18px] font-[700] text-r300'>
+              {'Your account has been locked'}
+            </CyDText>
+            <CyDText className='text-[14px] font-[500] mt-[6px]'>
+              {
+                'Since, you have enabled lockdown mode, your card load and transaction will be completely disabled '
+              }
+            </CyDText>
+            <CyDTouchView
+              onPress={() => {
+                void verifyWithOTP();
+              }}>
+              {!lockdownModeLoading ? (
+                <CyDText className='underline font-[700] text-[14px] mt-[6px]'>
+                  Disable lockdown mode
+                </CyDText>
+              ) : (
+                <LottieView
+                  source={AppImages.LOADER_TRANSPARENT}
+                  autoPlay
+                  loop
+                  style={{ height: 25 }}
+                />
+              )}
+            </CyDTouchView>
+          </CyDView>
+        )}
 
         {cardId !== HIDDEN_CARD_ID && (
           <CyDTouchView
-            className={`flex flex-row justify-center items-center self-center py-[4px] px-[12px] border-[0.2px] border-black rounded-[26px] mt-[4px] mb-[4px]  ${isLockdownModeEnabled === ACCOUNT_STATUS.INACTIVE ? 'bg-n60' : 'bg-white'}`}
-            disabled={isLockdownModeEnabled === ACCOUNT_STATUS.INACTIVE}
+            className={`flex flex-row justify-center items-center self-center py-[4px] px-[12px] border-[0.2px] border-black rounded-[26px] mt-[4px] mb-[4px]  ${shouldBlockAction() ? 'bg-n60' : 'bg-white'}`}
+            disabled={shouldBlockAction()}
             onPress={() => {
               cardProfile.isAutoloadConfigured
                 ? setIsAutoLoadOptionsVisible(true)
