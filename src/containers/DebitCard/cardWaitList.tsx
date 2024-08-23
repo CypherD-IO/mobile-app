@@ -22,6 +22,9 @@ import ChooseCountryModal from '../../components/v2/ChooseCountryModal';
 import { ICountry } from '../../models/cardApplication.model';
 import { CardProviders } from '../../constants/enum';
 import useCardUtilities from '../../hooks/useCardUtilities';
+import { get } from 'lodash';
+import { CardProfile } from '../../models/cardProfile.model';
+import { GlobalContext } from '../../core/globalContext';
 
 const cardBenefits = [
   'Available globally',
@@ -60,11 +63,16 @@ export default function CardWailtList({ navigation }: Props) {
   });
   const [provider, setProvider] = useState(CardProviders.REAP_CARD);
   const { checkIsRCEnabled } = useCardUtilities();
+  const globalContext = useContext<any>(GlobalContext);
+  const cardProfile: CardProfile = globalContext.globalState.cardProfile;
 
   useEffect(() => {
     const setCardProvider = async () => {
       const isRcEnabled = await checkIsRCEnabled();
-      if (!isRcEnabled) {
+      if (
+        !isRcEnabled &&
+        !get(cardProfile, [CardProviders.PAYCADDY, 'isRcUpgradable'], false)
+      ) {
         setProvider(CardProviders.PAYCADDY);
       }
     };

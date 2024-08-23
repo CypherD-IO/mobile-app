@@ -136,7 +136,7 @@ export default function CardControlsMenu({ route, navigation }) {
             </CyDView>
           </CyDView>
         </CyDView>
-        <CyDText className='text-[12px] text-n200 mt-[16px] font-bold'>
+        <CyDText className='text-[12px] text-n200 mt-[16px] font-[600]'>
           Spend Category
         </CyDText>
         <CyDTouchView
@@ -153,7 +153,7 @@ export default function CardControlsMenu({ route, navigation }) {
               className='w-[24px] h-[24px] mr-[8px]'
               source={AppImages.DOMESTIC_ICON}
             />
-            <CyDText className='text-[18px] font-medium '>
+            <CyDText className='text-[18px] font-[500] '>
               Domestic Transactions
             </CyDText>
           </CyDView>
@@ -175,7 +175,7 @@ export default function CardControlsMenu({ route, navigation }) {
               className='w-[24px] h-[24px] mr-[8px]'
               source={AppImages.INTERNATIONAL_ICON}
             />
-            <CyDText className='text-[18px] font-medium '>
+            <CyDText className='text-[18px] font-[500] '>
               International Transactions
             </CyDText>
           </CyDView>
@@ -183,12 +183,15 @@ export default function CardControlsMenu({ route, navigation }) {
             source={AppImages.RIGHT_ARROW}
             className='w-[12px] h-[12px]'></CyDImage>
         </CyDTouchView>
-        <CyDText className='text-[12px] text-n200 mt-[16px] font-bold'>
+        <CyDText className='text-[12px] text-n200 mt-[16px] font-[600]'>
           Security
         </CyDText>
         <CyDTouchView
           onPress={() => {
-            void toggle3DSecure();
+            navigation.navigate(screenTitle.THREE_D_SECURE, {
+              currentCardProvider,
+              card,
+            });
           }}
           className='flex flex-row items-center justify-between m-[2px] py-[15px] px-[12px] bg-white rounded-[6px]'>
           <CyDView className='flex flex-row'>
@@ -199,26 +202,11 @@ export default function CardControlsMenu({ route, navigation }) {
             />
             <CyDView className='flex flex-col justify-between mr-[6px]'>
               <CyDText className='text-[16px] font-bold'>{'3D Secure'}</CyDText>
-              <CyDText className='text-[12px] font-semibold'>
-                {'Cardholder authentication for transactions.'}
-              </CyDText>
             </CyDView>
           </CyDView>
-          {loading3DSecure ? (
-            <LottieView
-              source={AppImages.LOADER_TRANSPARENT}
-              autoPlay
-              loop
-              style={{ height: 24, width: 24, marginLeft: -24 }}
-            />
-          ) : (
-            <CyDSwitch
-              value={is3DSecureSet}
-              onValueChange={() => {
-                void toggle3DSecure();
-              }}
-            />
-          )}
+          <CyDImage
+            source={AppImages.RIGHT_ARROW}
+            className='w-[12px] h-[12px]'></CyDImage>
         </CyDTouchView>
       </CyDView>
     </CyDSafeAreaView>

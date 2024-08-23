@@ -105,6 +105,7 @@ import PreviewAutoLoad from '../containers/DebitCard/bridgeCard/previewAutoLoad'
 import BridgeSkipApi from '../containers/Bridge.Skip/bridge.skip';
 import CardControlsMenu from '../containers/DebitCard/bridgeCard/cardControlsMenu';
 import CardControlsSettings from '../containers/DebitCard/bridgeCard/cardControlsSettings';
+import ThreeDSecure from '../containers/DebitCard/bridgeCard/threeDSecure';
 
 const { DynamicImage, DynamicButton } = require('../styles');
 
@@ -819,6 +820,21 @@ export function DebitCardStackScreen({ navigation }) {
           headerTransparent: false,
           headerShadowVisible: false,
           title: 'Card Controls',
+          headerTitleAlign: 'left',
+          headerTitleStyle: portfolioStackScreenHeaderTitleStyles,
+          headerTintColor: Colors.primaryTextColor,
+          headerBackTitleVisible: false,
+          headerLeft: props => defaultHeaderLeft(navigation),
+        })}
+      />
+
+      <FundCardStack.Screen
+        name={screenTitle.THREE_D_SECURE}
+        component={ThreeDSecure}
+        options={({ navigation, route }) => ({
+          headerTransparent: false,
+          headerShadowVisible: false,
+          title: '3D Secure',
           headerTitleAlign: 'left',
           headerTitleStyle: portfolioStackScreenHeaderTitleStyles,
           headerTintColor: Colors.primaryTextColor,
