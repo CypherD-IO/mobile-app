@@ -14,18 +14,20 @@ import LottieView from 'lottie-react-native';
 import Loading from '../../../components/v2/loading';
 import { StyleSheet } from 'react-native';
 import useAxios from '../../../core/HttpRequest';
-import { CardProviders } from '../../../constants/enum';
-import { RSA } from 'react-native-rsa-native';
+import { useIsFocused } from '@react-navigation/native';
+import {
+  ACCOUNT_STATUS,
+  CardProviders,
+  CardStatus,
+} from '../../../constants/enum';
 
-export default function CardRevealAuthScreen(props: {
+export default function CardUnlockAuth(props: {
   navigation: any;
   route: {
     params: {
-      onSuccess: (data: any, provider: CardProviders) => {};
+      onSuccess: () => void;
       currentCardProvider: CardProviders;
-      card: { cardId: string };
-      triggerOTPParam?: string;
-      verifyOTPPayload?: any;
+      cardId: string;
     };
   };
 }) {
@@ -34,30 +36,30 @@ export default function CardRevealAuthScreen(props: {
   const [sendingOTP, setSendingOTP] = useState<boolean>(false);
   const [verifyingOTP, setVerifyingOTP] = useState<boolean>(false);
   const { navigation, route } = props;
-  const { currentCardProvider, card, verifyOTPPayload } = route.params;
-  const triggerOTPParam = route.params.triggerOTPParam ?? 'show-token';
+  const { currentCardProvider, cardId } = route.params;
   const onSuccess = route.params.onSuccess;
   const resendOtpTime = 30;
   const [resendInterval, setResendInterval] = useState(0);
   const [timer, setTimer] = useState<NodeJS.Timer>();
-  const { postWithAuth } = useAxios();
+  const { postWithAuth, patchWithAuth } = useAxios();
+  const isFocused = useIsFocused();
 
   useEffect(() => {
     void triggerOTP();
-  }, []);
+  }, [isFocused]);
 
   useEffect(() => {
     if (resendInterval === 0) {
       clearInterval(timer);
     }
+    return () => {
+      clearInterval(timer);
+    };
   }, [resendInterval]);
 
   const triggerOTP = async () => {
-    const triggerOTPUrl = `/v1/cards/${currentCardProvider}/card/${
-      card.cardId
-    }/trigger/${
-      triggerOTPParam === 'verify/show-token' ? 'show-token' : triggerOTPParam
-    }`;
+    const triggerOTPUrl = `/v1/cards/${currentCardProvider}/card/${cardId}/trigger/status`;
+
     const response = await postWithAuth(triggerOTPUrl, {});
 
     if (!response.isError) {
@@ -95,92 +97,25 @@ export default function CardRevealAuthScreen(props: {
     setVerifyingOTP(false);
   };
 
-  const generateKeys = async () => {
-    try {
-      const keyPair = await RSA.generateKeys(4096); // Generate a 2048-bit key pair
-      const privateKey = keyPair.private; // Private key in PEM format
-      const publicKey = keyPair.public; // Public key in PEM format
-
-      // Convert the public key to base64
-      const publicKeyBase64 = Buffer.from(publicKey).toString('base64');
-      return { publicKeyBase64, privateKey };
-    } catch (error) {
-      // error in genrating keys
-    }
-  };
-
   const verifyOTP = async (num: number) => {
-    const OTPVerificationUrl = `/v1/cards/${currentCardProvider}/card/${card?.cardId}/${triggerOTPParam}`;
-    if (currentCardProvider === CardProviders.REAP_CARD) {
-      const key = await generateKeys();
-      const payload = {
-        otp: +num,
-        stylesheetUrl: 'https://public.cypherd.io/css/cardRevealMobile4.css',
-        publicKey: key?.publicKeyBase64,
-      };
-      setVerifyingOTP(true);
-      try {
-        const response = await postWithAuth(OTPVerificationUrl, payload);
-        if (!response.isError) {
-          setVerifyingOTP(false);
-          onSuccess(
-            {
-              base64Message: response.data.token,
-              privateKey: key?.privateKey,
-            },
-            currentCardProvider,
-          );
-          navigation.goBack();
-        } else {
-          showModal('state', {
-            type: 'error',
-            title: t('VERIFICATION_FAILED'),
-            description: t('INVALID_OTP'),
-            onSuccess: () => onModalHide(),
-            onFailure: () => onModalHide(),
-          });
-        }
-      } catch (e: any) {
-        showModal('state', {
-          type: 'error',
-          title: t('VERIFICATION_FAILED'),
-          description: t('INVALID_OTP'),
-          onSuccess: () => onModalHide(),
-          onFailure: () => onModalHide(),
-        });
-        Sentry.captureException(e);
-      }
-    } else if (currentCardProvider === CardProviders.PAYCADDY) {
-      setVerifyingOTP(true);
-      const payload = {
-        otp: +num,
-        ...(verifyOTPPayload || {}),
-      };
-      try {
-        const response = await postWithAuth(OTPVerificationUrl, payload);
-        if (!response.isError) {
-          setVerifyingOTP(false);
-          onSuccess(response.data, currentCardProvider);
-          navigation.goBack();
-        } else {
-          showModal('state', {
-            type: 'error',
-            title: t('VERIFICATION_FAILED'),
-            description: t('INVALID_OTP'),
-            onSuccess: () => onModalHide(),
-            onFailure: () => onModalHide(),
-          });
-        }
-      } catch (e: any) {
-        showModal('state', {
-          type: 'error',
-          title: t('VERIFICATION_FAILED'),
-          description: t('INVALID_OTP'),
-          onSuccess: () => onModalHide(),
-          onFailure: () => onModalHide(),
-        });
-        Sentry.captureException(e);
-      }
+    setVerifyingOTP(true);
+    const response = await patchWithAuth(
+      `/v1/cards/${currentCardProvider}/card/${cardId}/status`,
+      { status: CardStatus.ACTIVE, otp: num },
+    );
+
+    if (!response.isError) {
+      setVerifyingOTP(false);
+      onSuccess();
+      navigation.goBack();
+    } else {
+      showModal('state', {
+        type: 'error',
+        title: t('VERIFICATION_FAILED'),
+        description: response.error.message ?? t('INVALID_OTP'),
+        onSuccess: () => onModalHide(),
+        onFailure: () => onModalHide(),
+      });
     }
   };
 
@@ -191,11 +126,7 @@ export default function CardRevealAuthScreen(props: {
           {t<string>('ENTER_AUTHENTICATION_CODE')}
         </CyDText>
         <CyDText className={'text-[15px] font-bold'}>
-          {t<string>(
-            currentCardProvider === CardProviders.REAP_CARD
-              ? 'CARD_SENT_OTP_EMAIL_AND_TELEGRAM'
-              : 'CARD_SENT_OTP',
-          )}
+          {t<string>('CARD_SENT_OTP_EMAIL_AND_TELEGRAM')}
         </CyDText>
       </CyDView>
     );

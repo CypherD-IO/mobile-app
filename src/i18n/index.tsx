@@ -1109,6 +1109,15 @@ const resources = {
       SHOW_MORE_WALLET_ADDRESS_TEXT: "not the wallet you're looking for?",
       SHOW_MORE: 'Show More',
       EXPORT_AS: 'Export as',
+      LOCKDOWN_MODE: 'Lockdown Mode',
+      LOCKDOWN_MODE_DESC_TEXT_1:
+        'Lockdown mode provides the highest level of security for your card account by blocking all transactions and card loads',
+      LOCKDOWN_MODE_DESC_TEXT_2:
+        ' Enabling this mode does not affect your unsettled transactions or pending refunds',
+      LOCKDOWN_MODE_DESC_TEXT_3:
+        'Activate this mode only if you are facing a cyber attack.',
+      TURN_ON_LOCKDOWN: 'Turn On Lockdown',
+      SECURE_ACCOUNT: 'Secure Account',
     },
   },
 };

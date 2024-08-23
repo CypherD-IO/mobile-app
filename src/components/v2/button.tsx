@@ -88,7 +88,7 @@ export default function Button({
           'bg-white border-[1px] border-greyButtonBackgroundColor':
             ButtonType.GREY === type,
           'bg-n20': ButtonType.GREY_FILL === type,
-          'bg-redColor': ButtonType.RED === type,
+          'bg-r300': ButtonType.RED === type,
           'bg-black': ButtonType.DARK === type,
           'bg-[#CFCFCF]': disabled,
         },

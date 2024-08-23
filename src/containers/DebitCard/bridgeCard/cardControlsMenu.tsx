@@ -10,7 +10,7 @@ import {
 import AppImages from '../../../../assets/images/appImages';
 import { screenTitle } from '../../../constants';
 import { transactionType } from 'viem';
-import { CardControlTypes } from '../../../constants/enum';
+import { CARD_LIMIT_TYPE, CardControlTypes } from '../../../constants/enum';
 import { ProgressCircle } from 'react-native-svg-charts';
 import useAxios from '../../../core/HttpRequest';
 import { get } from 'lodash';
@@ -18,6 +18,7 @@ import { useGlobalModalContext } from '../../../components/v2/GlobalModal';
 import LottieView from 'lottie-react-native';
 import { GlobalContext } from '../../../core/globalContext';
 import { CardProfile } from '../../../models/cardProfile.model';
+import { useIsFocused } from '@react-navigation/native';
 
 export default function CardControlsMenu({ route, navigation }) {
   const globalContext = useContext<any>(GlobalContext);
@@ -26,48 +27,12 @@ export default function CardControlsMenu({ route, navigation }) {
   const [limits, setLimits] = useState();
   const [limitApplicable, setLimitApplicable] = useState('planLimit');
   const [loading, setLoading] = useState(true);
-  const { getWithAuth, postWithAuth } = useAxios();
-  const [loading3DSecure, setLoading3DSecure] = useState(false);
-  const [is3DSecureSet, setIs3DSecureSet] = useState<boolean>(
-    get(card, 'is3dsEnabled', false),
-  );
-  const { showModal, hideModal } = useGlobalModalContext();
-
-  const toggle3DSecure = async () => {
-    setLoading3DSecure(true);
-    const response = await postWithAuth(
-      `/v1/cards/${currentCardProvider}/card/${card.cardId}/update3ds`,
-      { status: !is3DSecureSet },
-    );
-    setLoading3DSecure(false);
-    if (!response.isError) {
-      const current3DSecureValue = is3DSecureSet;
-      setIs3DSecureSet(!current3DSecureValue);
-      showModal('state', {
-        type: 'success',
-        title: !current3DSecureValue
-          ? '3D Secure has been setup successfully'
-          : '3D Secure Toggle successfull',
-        description: !current3DSecureValue
-          ? get(cardProfile, ['cardNotification', 'isTelegramAllowed'], false)
-            ? "You'll receive 3Ds notifications through Telegram & Email."
-            : "You'll receive 3Ds notifications through Cypher Wallet App notifications & Email"
-          : '3D Secure has been turned off successfully',
-        onSuccess: hideModal,
-        onFailure: hideModal,
-      });
-    } else {
-      showModal('state', {
-        type: 'error',
-        title: t('3D Secure Toggle Successfull'),
-        description:
-          response.error.errors[0].message ??
-          'Could not toggle 3D secure. Please contact support.',
-        onSuccess: hideModal,
-        onFailure: hideModal,
-      });
-    }
-  };
+  const [
+    isInternationalTransactionEnabled,
+    setIsInternationalTransactionEnabled,
+  ] = useState(false);
+  const { getWithAuth } = useAxios();
+  const isFocused = useIsFocused();
 
   const getCardLimits = async () => {
     setLoading(true);
@@ -85,13 +50,22 @@ export default function CardControlsMenu({ route, navigation }) {
       } else {
         setLimitApplicable('planLimit');
       }
+      setIsInternationalTransactionEnabled(
+        !get(
+          limitValue,
+          ['cusL', CardControlTypes.INTERNATIONAL, CARD_LIMIT_TYPE.DISABLED],
+          true,
+        ),
+      );
     }
     setLoading(false);
   };
 
   useEffect(() => {
-    void getCardLimits();
-  }, []);
+    if (isFocused) {
+      void getCardLimits();
+    }
+  }, [isFocused]);
 
   const getMonthlyLimitPercentage = () => {
     const percentage =
@@ -119,24 +93,24 @@ export default function CardControlsMenu({ route, navigation }) {
               />
               <CyDView className='absolute top-[10px] left-0 right-0 bottom-0 flex items-center justify-center text-center'>
                 <CyDText className='text-[16px] font-bold'>{`$${get(limits, ['sSt', 'm'], 0)}`}</CyDText>
-                <CyDText className='text-[10px] font-[500]'>
+                <CyDText className='text-[14px] font-[500]'>
                   {'This Month'}
                 </CyDText>
               </CyDView>
             </CyDView>
             <CyDView className='mt-[24px] ml-[24px]'>
-              <CyDText className='font-[500] text-n200 text-[10px]'>
+              <CyDText className='font-[500] text-n200 text-[14px]'>
                 {'Limit per month'}
               </CyDText>
               <CyDText className='font-[500] text-[16px] '>{`$${get(limits, [limitApplicable, 'm'], 0)}`}</CyDText>
-              <CyDText className='font-[500] text-n200 text-[10px] mt-[12px]'>
+              <CyDText className='font-[500] text-n200 text-[14px] mt-[12px]'>
                 {'Limit per day'}
               </CyDText>
               <CyDText className='font-[500] text-[16px]'>{`$${get(limits, [limitApplicable, 'd'], 0)}`}</CyDText>
             </CyDView>
           </CyDView>
         </CyDView>
-        <CyDText className='text-[12px] text-n200 mt-[16px] font-[600]'>
+        <CyDText className='text-[14px] text-n200 mt-[16px] font-[600]'>
           Spend Category
         </CyDText>
         <CyDTouchView
@@ -157,9 +131,13 @@ export default function CardControlsMenu({ route, navigation }) {
               Domestic Transactions
             </CyDText>
           </CyDView>
-          <CyDImage
-            source={AppImages.RIGHT_ARROW}
-            className='w-[12px] h-[12px]'></CyDImage>
+          <CyDView className='flex flex-row items-center'>
+            <CyDText className='text-[14px] text-b150'>{'Enabled'}</CyDText>
+            <CyDImage
+              source={AppImages.RIGHT_ARROW}
+              className='w-[12px] h-[12px] ml-[8px]'
+            />
+          </CyDView>
         </CyDTouchView>
         <CyDTouchView
           className='flex flex-row mt-[12px] bg-white rounded-[10px] px-[12px] py-[16px] justify-between items-center'
@@ -179,11 +157,17 @@ export default function CardControlsMenu({ route, navigation }) {
               International Transactions
             </CyDText>
           </CyDView>
-          <CyDImage
-            source={AppImages.RIGHT_ARROW}
-            className='w-[12px] h-[12px]'></CyDImage>
+          <CyDView className='flex flex-row items-center'>
+            <CyDText className='text-[14px] text-b150'>
+              {isInternationalTransactionEnabled ? 'Enabled' : 'Disabled'}
+            </CyDText>
+            <CyDImage
+              source={AppImages.RIGHT_ARROW}
+              className='w-[12px] h-[12px] ml-[8px]'
+            />
+          </CyDView>
         </CyDTouchView>
-        <CyDText className='text-[12px] text-n200 mt-[16px] font-[600]'>
+        <CyDText className='text-[14px] text-n200 mt-[16px] font-[600]'>
           Security
         </CyDText>
         <CyDTouchView
@@ -193,7 +177,7 @@ export default function CardControlsMenu({ route, navigation }) {
               card,
             });
           }}
-          className='flex flex-row items-center justify-between m-[2px] py-[15px] px-[12px] bg-white rounded-[6px]'>
+          className='flex flex-row items-center justify-between m-[2px] py-[15px] px-[12px] bg-white rounded-[6px] mt-[8px]'>
           <CyDView className='flex flex-row'>
             <CyDImage
               source={AppImages.THREE_D_SECURE}

@@ -30,11 +30,11 @@ export default function ThreeDSecure({ route, navigation }) {
       />
       <CyDSafeAreaView className={'h-full bg-cardBgFrom pt-[10px]'}>
         <CyDView className='mx-[16px] mt-[16px]'>
-          <CyDText className='text-[12px] text-n200 mt-[16px] font-[600]'>
-            3D Secure notification
+          <CyDText className='text-[14px] text-n200 mt-[16px] font-[600]'>
+            3D Secure Notification
           </CyDText>
           <CyDTouchView
-            className='flex flex-row mt-[12px] bg-white rounded-[10px] px-[12px] py-[16px] justify-between items-center'
+            className='flex flex-row mt-[8px] bg-white rounded-[10px] px-[12px] py-[16px] justify-between items-center'
             onPress={() => {
               setShowModal(true);
             }}>
@@ -53,7 +53,7 @@ export default function ThreeDSecure({ route, navigation }) {
               />
             </CyDView>
           </CyDTouchView>
-          <CyDText className='text-n200 text-[10px] text-[500] mx-[20px] mt-[6px]'>
+          <CyDText className='text-n200 text-[14px] text-[500] mx-[20px] mt-[6px]'>
             {
               "Choose where you'd like to receive the online payment verification code."
             }
