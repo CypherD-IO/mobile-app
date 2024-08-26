@@ -136,7 +136,7 @@ dependencies {
             strictly '1.6.1'
         }
     }
-
+    implementation 'com.facebook.soloader:soloader:0.9.0+'
     debugImplementation("com.facebook.flipper:flipper:${FLIPPER_VERSION}")
     debugImplementation("com.facebook.flipper:flipper-network-plugin:${FLIPPER_VERSION}") {
         exclude group:'com.squareup.okhttp3', module:'okhttp'
