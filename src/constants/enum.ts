@@ -333,3 +333,8 @@ export enum CARD_LIMIT_TYPE {
   ONLINE = 'ecom',
   MOBILE_WALLET = 'wal',
 }
+
+export enum ACCOUNT_STATUS {
+  ACTIVE = 'active',
+  INACTIVE = 'inactive',
+}

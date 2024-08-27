@@ -431,6 +431,12 @@ const INTERNATIONAL_ICON = {
 };
 const RC_PHYSICAL = require('./rcPhysical.png');
 const RC_VIRTUAL = require('./rcVirtual.png');
+const LOCKDOWN_MODE_ICON = {
+  uri: `${S3_BUCKET_URL_ICONS}/lockdownModeIcon.png`,
+};
+const LOCKDOWN_MODE_IMAGE = {
+  uri: `${S3_BUCKET_URL_ICONS}/lockdownModeImage.png`,
+};
 
 const AppImages = {
   CYPHER_TELEGRAM_BOT_LOGO,
@@ -807,5 +813,7 @@ const AppImages = {
   INTERNATIONAL_ICON,
   RC_PHYSICAL,
   RC_VIRTUAL,
+  LOCKDOWN_MODE_ICON,
+  LOCKDOWN_MODE_IMAGE,
 };
 export default AppImages;
