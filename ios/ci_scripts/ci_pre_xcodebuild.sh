@@ -7,6 +7,7 @@ echo "Starting ci_pre_xcodebuild.sh"
 
 # Add logging for Crashlytics
 echo "Checking Crashlytics setup:"
+export PODS_ROOT="/Volumes/workspace/repository/ios/Pods"
 echo "PODS_ROOT: ${PODS_ROOT}"
 ls -l "${PODS_ROOT}/FirebaseCrashlytics"
 
