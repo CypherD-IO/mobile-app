@@ -84,8 +84,8 @@ android {
         applicationId "com.cypherd.androidwallet"
         minSdkVersion rootProject.ext.minSdkVersion
         targetSdkVersion rootProject.ext.targetSdkVersion
-        versionCode 419
-        versionName "4.17"
+        versionCode 422
+        versionName "4.18"
         missingDimensionStrategy 'react-native-camera', 'general'
         buildConfigField "String", "INTERCOM_APP_KEY", "\"${System.getenv('INTERCOM_APP_KEY') ?: ''}\""
     }
