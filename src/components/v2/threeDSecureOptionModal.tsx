@@ -15,6 +15,7 @@ import { t } from 'i18next';
 import { useGlobalModalContext } from './GlobalModal';
 import AppImages from '../../../assets/images/appImages';
 import { useIsFocused } from '@react-navigation/native';
+import { showToast } from '../../containers/utilities/toastUtility';
 
 export default function ThreeDSecureOptionModal({
   isModalVisible,
@@ -28,7 +29,6 @@ export default function ThreeDSecureOptionModal({
     useState<boolean>(isTelegramEnabled);
   const [loading3DSecure, setLoading3DSecure] = useState(false);
   const { postWithAuth } = useAxios();
-  const { showModal, hideModal } = useGlobalModalContext();
 
   const set3DSecureNotificationOption = async () => {
     setLoading3DSecure(true);
@@ -40,15 +40,13 @@ export default function ThreeDSecureOptionModal({
     if (!response.isError) {
       setIsTelegramEnabled(isTelegramSelected);
       setModalVisible(false);
+      showToast(
+        isTelegramSelected
+          ? 'Alerts sent through Telegram & Email'
+          : 'Verification code sent through SMS',
+      );
     } else {
-      showModal('state', {
-        type: 'error',
-        title: "Couldn't update 3D secure notification option",
-        description:
-          response.error.errors[0].message ?? 'Please contact support.',
-        onSuccess: hideModal,
-        onFailure: hideModal,
-      });
+      showToast('Failed to update. Contact Support', 'error');
     }
   };
 
@@ -106,7 +104,7 @@ export default function ThreeDSecureOptionModal({
           onPress={() => {
             setIsTelegramSelected(true);
           }}>
-          <CyDText className='text-[18px] font-[500]'>Telegram</CyDText>
+          <CyDText className='text-[18px] font-[500]'>Telegram & Email</CyDText>
           <CyDView
             className={
               'h-[22px] w-[22px] rounded-[11px] border-[1.5px] border-borderColor flex flex-row justify-center items-center'

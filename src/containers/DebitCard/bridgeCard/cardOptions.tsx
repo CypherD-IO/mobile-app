@@ -112,6 +112,21 @@ export default function CardOptionsModal({
         setShowModal(false);
       },
     },
+    ...(cardProvider === CardProviders.REAP_CARD
+      ? [
+          {
+            title: 'Lockdown Mode',
+            description: 'Secure account by blocking all Card Functionalities',
+            image: AppImages.LOCKDOWN_MODE_ICON,
+            action: () => {
+              navigation.navigate(screenTitle.LOCKDOWN_MODE, {
+                currentCardProvider: cardProvider,
+              });
+              setShowModal(false);
+            },
+          },
+        ]
+      : []),
   ];
 
   return (

@@ -164,7 +164,11 @@ export default function LinkWalletAuth(props: {
               </CyDTouchView>
             </CyDView>
           )}
-          {verifyingOTP && <Loading />}
+          {verifyingOTP && (
+            <CyDView className='mt-[-200px]'>
+              <Loading />
+            </CyDView>
+          )}
         </CyDView>
       </CyDView>
     </CyDSafeAreaView>

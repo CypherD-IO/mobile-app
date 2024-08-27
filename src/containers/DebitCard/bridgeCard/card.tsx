@@ -34,6 +34,7 @@ import {
   CardType,
   CardStatus,
   GlobalContextType,
+  ACCOUNT_STATUS,
 } from '../../../constants/enum';
 import { useGlobalModalContext } from '../../../components/v2/GlobalModal';
 import AppImages from '../../../../assets/images/appImages';
@@ -347,6 +348,22 @@ const RenderCardActions = ({
       ? '100'
       : ((lifetimeLoadUSD / physicalCardEligibilityLimit) * 100).toFixed(2);
 
+  const isLockdownModeEnabled = get(
+    cardProfile,
+    ['accountStatus'],
+    ACCOUNT_STATUS.ACTIVE,
+  );
+
+  const shouldBlockAction = () => {
+    if (
+      isLockdownModeEnabled === ACCOUNT_STATUS.INACTIVE &&
+      cardProvider === CardProviders.REAP_CARD
+    ) {
+      return true;
+    }
+    return false;
+  };
+
   // physical card upgrade only shown for paycaddy pc cards
   const isUpgradeToPhysicalCardStatusShown =
     cardProvider === CardProviders.PAYCADDY &&
@@ -533,6 +550,23 @@ const RenderCardActions = ({
         onFailure: hideModal,
       });
     }
+  };
+
+  const verifyCardUnlock = () => {
+    hideModal();
+    navigation.navigate(screenTitle.CARD_UNLOCK_AUTH, {
+      onSuccess: () => {
+        showModal('state', {
+          type: 'success',
+          title: t('CHANGE_CARD_STATUS_SUCCESS'),
+          description: `Successfully unlocked your card!`,
+          onSuccess: hideModal,
+          onFailure: hideModal,
+        });
+      },
+      currentCardProvider: cardProvider,
+      cardId,
+    });
   };
 
   const onCardStatusChange = async () => {
@@ -810,10 +844,12 @@ const RenderCardActions = ({
       <CyDView className='flex flex-row justify-around items-center'>
         <CyDTouchView
           className='flex flex-col justify-center items-center'
+          disabled={shouldBlockAction()}
           onPress={() => {
             void validateReuseToken();
           }}>
-          <CyDView className='bg-appColor h-[52px] w-[52px] items-center justify-center rounded-[50px]'>
+          <CyDView
+            className={`${shouldBlockAction() ? 'bg-n60' : 'bg-appColor'} h-[52px] w-[52px] items-center justify-center rounded-[50px]`}>
             {isFetchingCardDetails ? (
               <LottieView source={AppImages.LOADER_TRANSPARENT} autoPlay loop />
             ) : (
@@ -830,10 +866,16 @@ const RenderCardActions = ({
         </CyDTouchView>
         <CyDTouchView
           className='flex flex-col justify-center items-center'
+          disabled={shouldBlockAction()}
           onPress={() => {
-            toggleCardStatus();
+            if (status === CardStatus.ACTIVE) {
+              toggleCardStatus();
+            } else {
+              verifyCardUnlock();
+            }
           }}>
-          <CyDView className='bg-appColor h-[52px] w-[52px] items-center justify-center rounded-[50px]'>
+          <CyDView
+            className={`${shouldBlockAction() ? 'bg-n60' : 'bg-appColor'} h-[52px] w-[52px] items-center justify-center rounded-[50px]`}>
             {isStatusLoading ? (
               <LottieView source={AppImages.LOADER_TRANSPARENT} autoPlay loop />
             ) : (
@@ -856,10 +898,12 @@ const RenderCardActions = ({
         </CyDTouchView>
         <CyDTouchView
           className='flex lfex-col justify-center items-center'
+          disabled={shouldBlockAction()}
           onPress={() => {
             setShowOptionsModal(true);
           }}>
-          <CyDView className='bg-appColor p-[12px] rounded-[50px]'>
+          <CyDView
+            className={`${shouldBlockAction() ? 'bg-n60' : 'bg-appColor'} p-[12px] rounded-[50px]`}>
             <CyDImage
               source={AppImages.MORE}
               className='h-[26px] w-[26px] accent-black rotate-90'

@@ -106,6 +106,9 @@ import BridgeSkipApi from '../containers/Bridge.Skip/bridge.skip';
 import CardControlsMenu from '../containers/DebitCard/bridgeCard/cardControlsMenu';
 import CardControlsSettings from '../containers/DebitCard/bridgeCard/cardControlsSettings';
 import ThreeDSecure from '../containers/DebitCard/bridgeCard/threeDSecure';
+import LockdownMode from '../containers/DebitCard/bridgeCard/lockdownMode';
+import LockdownModeAuth from '../containers/DebitCard/bridgeCard/lockdownModeAuth';
+import CardUnlockAuth from '../containers/DebitCard/bridgeCard/cardUnlockAuth';
 
 const { DynamicImage, DynamicButton } = require('../styles');
 
@@ -821,6 +824,44 @@ export function DebitCardStackScreen({ navigation }) {
           headerShadowVisible: false,
           title: 'Card Controls',
           headerTitleAlign: 'left',
+          headerTitleStyle: portfolioStackScreenHeaderTitleStyles,
+          headerTintColor: Colors.primaryTextColor,
+          headerBackTitleVisible: false,
+          headerLeft: props => defaultHeaderLeft(navigation),
+        })}
+      />
+
+      <FundCardStack.Screen
+        name={screenTitle.LOCKDOWN_MODE}
+        component={LockdownMode}
+        options={({ navigation, route }) => ({
+          headerShown: false,
+        })}
+      />
+
+      <FundCardStack.Screen
+        name={screenTitle.LOCKDOWN_MODE_AUTH}
+        component={LockdownModeAuth}
+        options={({ navigation }) => ({
+          headerTransparent: false,
+          headerShadowVisible: false,
+          title: '',
+          headerTitleAlign: 'center',
+          headerTitleStyle: portfolioStackScreenHeaderTitleStyles,
+          headerTintColor: Colors.primaryTextColor,
+          headerBackTitleVisible: false,
+          headerLeft: props => defaultHeaderLeft(navigation),
+        })}
+      />
+
+      <FundCardStack.Screen
+        name={screenTitle.CARD_UNLOCK_AUTH}
+        component={CardUnlockAuth}
+        options={({ navigation }) => ({
+          headerTransparent: false,
+          headerShadowVisible: false,
+          title: '',
+          headerTitleAlign: 'center',
           headerTitleStyle: portfolioStackScreenHeaderTitleStyles,
           headerTintColor: Colors.primaryTextColor,
           headerBackTitleVisible: false,

@@ -127,7 +127,6 @@ const Loader = () => {
         text={`${t('LOADING_DATA')}...`}
         image={AppImages.LOADING_IMAGE}
         buyVisible={false}
-        marginTop={50}
         isLottie={true}
       />
     </CyDView>

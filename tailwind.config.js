@@ -133,7 +133,10 @@ module.exports = {
       b150: '#666666',
       n20: '#F5F6F7',
       b400: '#C2C7D0',
-      n900: '#505F79'
+      n900: '#505F79',
+      r300: '#BE1818',
+      r20: '#F9DEDE',
+      n60: '#B3B9C4'
     },
     columns: {
       auto: 'auto',
