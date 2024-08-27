@@ -33,7 +33,7 @@ echo "WALLET_CONNECT_PROJECTID=${WALLET_CONNECT_PROJECTID}" >> $ENV_FILE
 echo "Updated .env with environment variables"
 
 # Path to the sentry.properties file
-SENTRY_FILE="${SRCROOT}/ios/sentry.properties"
+SENTRY_FILE="/Volumes/workspace/repository/ios/sentry.properties"
 echo "defaults.url=https://sentry.io/" > $SENTRY_FILE
 echo "defaults.org=${SENTRY_ORG}" >> $SENTRY_FILE
 echo "defaults.project=${SENTRY_PROJECT}" >> $SENTRY_FILE
@@ -42,7 +42,7 @@ echo "auth.token=${SENTRY_TOKEN}" >> $SENTRY_FILE
 echo "Updated sentry.properties with environment variables"
 
 # Path to the GoogleService-Info.plist file
-PLIST_PATH="${SRCROOT}/ios/CypherD/GoogleService-Info.plist"
+PLIST_PATH="/Volumes/workspace/repository/ios/CypherD/GoogleService-Info.plist"
 
 # Update GoogleService-Info.plist with environment variables
 /usr/libexec/PlistBuddy -c "Set :CLIENT_ID ${GOOGLE_CLIENT_ID}" "$PLIST_PATH"
