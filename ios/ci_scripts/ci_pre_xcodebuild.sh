@@ -44,14 +44,26 @@ echo "Updated sentry.properties with environment variables"
 # Path to the GoogleService-Info.plist file
 PLIST_PATH="/Volumes/workspace/repository/ios/CypherD/GoogleService-Info.plist"
 
-# Update GoogleService-Info.plist with environment variables
-/usr/libexec/PlistBuddy -c "Set :CLIENT_ID ${GOOGLE_CLIENT_ID}" "$PLIST_PATH"
-/usr/libexec/PlistBuddy -c "Set :REVERSED_CLIENT_ID ${GOOGLE_REVERSED_CLIENT_ID}" "$PLIST_PATH"
-/usr/libexec/PlistBuddy -c "Set :API_KEY ${GOOGLE_API_KEY}" "$PLIST_PATH"
-/usr/libexec/PlistBuddy -c "Set :GCM_SENDER_ID ${GOOGLE_GCM_SENDER_ID}" "$PLIST_PATH"
-/usr/libexec/PlistBuddy -c "Set :BUNDLE_ID ${GOOGLE_BUNDLE_ID}" "$PLIST_PATH"
-/usr/libexec/PlistBuddy -c "Set :PROJECT_ID ${GOOGLE_PROJECT_ID}" "$PLIST_PATH"
-/usr/libexec/PlistBuddy -c "Set :STORAGE_BUCKET ${GOOGLE_STORAGE_BUCKET}" "$PLIST_PATH"
-/usr/libexec/PlistBuddy -c "Set :GOOGLE_APP_ID ${GOOGLE_APP_ID}" "$PLIST_PATH"
+# Create the plist file if it doesn't exist
+if [ ! -f "$PLIST_PATH" ]; then
+  echo "Creating GoogleService-Info.plist"
+  /usr/libexec/PlistBuddy -c "Save" "$PLIST_PATH"
+fi
+
+# Create or update keys in the plist
+/usr/libexec/PlistBuddy -c "Add :CLIENT_ID string ${GOOGLE_CLIENT_ID}" "$PLIST_PATH"
+/usr/libexec/PlistBuddy -c "Add :REVERSED_CLIENT_ID string ${GOOGLE_REVERSED_CLIENT_ID}" "$PLIST_PATH"
+/usr/libexec/PlistBuddy -c "Add :API_KEY string ${GOOGLE_API_KEY}" "$PLIST_PATH"
+/usr/libexec/PlistBuddy -c "Add :GCM_SENDER_ID string ${GOOGLE_GCM_SENDER_ID}" "$PLIST_PATH"
+/usr/libexec/PlistBuddy -c "Add :PLIST_VERSION string 1" "$PLIST_PATH"
+/usr/libexec/PlistBuddy -c "Add :BUNDLE_ID string ${GOOGLE_BUNDLE_ID}" "$PLIST_PATH"
+/usr/libexec/PlistBuddy -c "Add :PROJECT_ID string ${GOOGLE_PROJECT_ID}" "$PLIST_PATH"
+/usr/libexec/PlistBuddy -c "Add :STORAGE_BUCKET string ${GOOGLE_STORAGE_BUCKET}" "$PLIST_PATH"
+/usr/libexec/PlistBuddy -c "Add :IS_ADS_ENABLED bool false" "$PLIST_PATH"
+/usr/libexec/PlistBuddy -c "Add :IS_ANALYTICS_ENABLED bool false" "$PLIST_PATH"
+/usr/libexec/PlistBuddy -c "Add :IS_APPINVITE_ENABLED bool true" "$PLIST_PATH"
+/usr/libexec/PlistBuddy -c "Add :IS_GCM_ENABLED bool true" "$PLIST_PATH"
+/usr/libexec/PlistBuddy -c "Add :IS_SIGNIN_ENABLED bool true" "$PLIST_PATH"
+/usr/libexec/PlistBuddy -c "Add :GOOGLE_APP_ID string ${GOOGLE_APP_ID}" "$PLIST_PATH"
 
 echo "Updated GoogleService-Info.plist with environment variables"
