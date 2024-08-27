@@ -1,6 +1,31 @@
 #!/bin/sh
 set -e
 
+echo "Starting ci_pre_xcodebuild.sh"
+
+# Your existing script content here
+
+# Add logging for Crashlytics
+echo "Checking Crashlytics setup:"
+echo "PODS_ROOT: ${PODS_ROOT}"
+ls -l "${PODS_ROOT}/FirebaseCrashlytics"
+
+if [ -f "${PODS_ROOT}/FirebaseCrashlytics/run" ]; then
+  echo "Crashlytics run script found"
+  chmod +x "${PODS_ROOT}/FirebaseCrashlytics/run"
+else
+  echo "Crashlytics run script not found"
+fi
+
+if [ -f "${PODS_ROOT}/FirebaseCrashlytics/upload-symbols" ]; then
+  echo "Crashlytics upload-symbols script found"
+  chmod +x "${PODS_ROOT}/FirebaseCrashlytics/upload-symbols"
+else
+  echo "Crashlytics upload-symbols script not found"
+fi
+
+echo "Finished ci_pre_xcodebuild.sh"
+
 # Use a more reliable path for the workspace
 WORKSPACE_DIR="/Volumes/workspace/repository"
 IOS_DIR="${WORKSPACE_DIR}/ios"
