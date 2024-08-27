@@ -14,6 +14,7 @@ BUILD_NUMBER=$(/usr/libexec/PlistBuddy -c "Print CFBundleVersion" "$INFO_PLIST_P
 /usr/libexec/PlistBuddy -c "Set :CFBundleVersion $BUILD_NUMBER" "$INFO_PLIST_PATH"
 
 echo "Updated Info.plist with version $VERSION and build number $BUILD_NUMBER"
+echo "File modified: $INFO_PLIST_PATH"
 
 # adding the sentry.properties .env and GoogleService-Info.plist
 echo "updating the sentry.properties, .env and GoogleService-Info.plist files"
@@ -31,6 +32,7 @@ echo "INTERCOM_APP_KEY=${INTERCOM_APP_KEY}" >> $ENV_FILE
 echo "WALLET_CONNECT_PROJECTID=${WALLET_CONNECT_PROJECTID}" >> $ENV_FILE
 
 echo "Updated .env with environment variables"
+echo "File modified: $ENV_FILE"
 
 # Path to the sentry.properties file
 SENTRY_FILE="/Volumes/workspace/repository/ios/sentry.properties"
@@ -40,6 +42,7 @@ echo "defaults.project=${SENTRY_PROJECT}" >> $SENTRY_FILE
 echo "auth.token=${SENTRY_TOKEN}" >> $SENTRY_FILE
 
 echo "Updated sentry.properties with environment variables"
+echo "File modified: $SENTRY_FILE"
 
 # Path to the GoogleService-Info.plist file
 PLIST_PATH="/Volumes/workspace/repository/ios/CypherD/GoogleService-Info.plist"
@@ -67,3 +70,22 @@ fi
 /usr/libexec/PlistBuddy -c "Add :GOOGLE_APP_ID string ${GOOGLE_APP_ID}" "$PLIST_PATH"
 
 echo "Updated GoogleService-Info.plist with environment variables"
+echo "File modified: $PLIST_PATH"
+
+# Log all modified files
+echo "All files modified:"
+echo "1. $INFO_PLIST_PATH"
+echo "2. $ENV_FILE"
+echo "3. $SENTRY_FILE"
+echo "4. $PLIST_PATH"
+
+# Display content of modified files for debugging
+echo "Contents of modified files:"
+echo "1. Info.plist:"
+/usr/libexec/PlistBuddy -c "Print" "$INFO_PLIST_PATH"
+echo "2. .env:"
+cat "$ENV_FILE"
+echo "3. sentry.properties:"
+cat "$SENTRY_FILE"
+echo "4. GoogleService-Info.plist:"
+/usr/libexec/PlistBuddy -c "Print" "$PLIST_PATH"
