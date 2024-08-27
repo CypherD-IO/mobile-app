@@ -49,20 +49,8 @@ echo "${GOOGLE_SERVICE_INFO_PLIST}" > "${PLIST_PATH}"
 echo "Created/Updated GoogleService-Info.plist"
 echo "File modified: ${PLIST_PATH}"
 
-# Log all modified files
-echo "All files modified:"
-echo "1. ${INFO_PLIST_PATH}"
-echo "2. ${ENV_FILE}"
-echo "3. ${SENTRY_FILE}"
-echo "4. ${PLIST_PATH}"
-
 # Display content of modified files for debugging
-echo "Contents of modified files:"
-echo "1. Info.plist:"
-/usr/libexec/PlistBuddy -c "Print" "${INFO_PLIST_PATH}"
-echo "2. .env:"
-cat "${ENV_FILE}"
-echo "3. sentry.properties:"
+echo "1. sentry.properties:"
 cat "${SENTRY_FILE}"
-echo "4. GoogleService-Info.plist:"
+echo "2. GoogleService-Info.plist:"
 /usr/libexec/PlistBuddy -c "Print" "${PLIST_PATH}"
