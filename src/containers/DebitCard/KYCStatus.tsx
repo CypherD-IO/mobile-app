@@ -1,5 +1,5 @@
 /* eslint-disable no-prototype-builtins */
-/* eslint-disable @typescript-eslint/restrict-plus-operands */
+
 /* eslint-disable @typescript-eslint/no-misused-promises */
 import React, {
   useCallback,
@@ -40,7 +40,6 @@ import { get } from 'lodash';
 import Button from '../../components/v2/button';
 import LottieView from 'lottie-react-native';
 import { CardProfile } from '../../models/cardProfile.model';
-import SwitchView from '../../components/v2/switchView';
 import CardProviderSwitch from '../../components/cardProviderSwitch';
 import useCardUtilities from '../../hooks/useCardUtilities';
 
@@ -122,7 +121,6 @@ export default function CardKYCStatusScreen({ navigation }) {
       case CardApplicationStatus.KYC_PENDING:
       case CardApplicationStatus.KYC_SUCCESSFUL:
       case CardApplicationStatus.SUBMITTED:
-      case CardApplicationStatus.COMPLETION_PENDING:
         setError(false);
         setFillIndex(indexStatusMapping[applicationStatus]);
         break;
@@ -130,6 +128,7 @@ export default function CardKYCStatusScreen({ navigation }) {
         setError(true);
         setFillIndex(indexStatusMapping[applicationStatus]);
         break;
+      case CardApplicationStatus.COMPLETION_PENDING:
       case CardApplicationStatus.DECLINED:
         setError(true);
         clearInterval(latestKycStatus.current);

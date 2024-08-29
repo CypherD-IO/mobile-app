@@ -265,9 +265,20 @@ export default function CardSignupScreen({ navigation, route }) {
   }, []);
 
   const getCountryData = async () => {
+    const isRcEnabled = await checkIsRCEnabled();
+    // card application created with reap if user has isRcUpgradable or has isRcEnabled else created with paycaddy
+    const provider = get(
+      cardProfile,
+      [CardProviders.PAYCADDY, 'isRcUpgradable'],
+      false,
+    )
+      ? CardProviders.REAP_CARD
+      : isRcEnabled
+        ? CardProviders.REAP_CARD
+        : CardProviders.PAYCADDY;
     try {
       const response = await axios.get(
-        `https://public.cypherd.io/js/countryMaster.js?${String(new Date())}`,
+        `https://public.cypherd.io/js/${provider === CardProviders.REAP_CARD ? 'rcSupportedCountries' : 'countryMaster'}.js?${String(new Date())}`,
       );
       if (response?.data) {
         setCopyCountriesWithFlagAndDialcodes(response.data);
@@ -1213,8 +1224,8 @@ export default function CardSignupScreen({ navigation, route }) {
                 }}
                 className='w-[30px] pl-[12px]'>
                 <CyDImage
-                  source={AppImages.LEFT_ARROW}
-                  className='h-[20px] w-[20px]'
+                  source={AppImages.BACK_ARROW_CIRCLE}
+                  className='h-[32px] w-[32px]'
                 />
               </CyDTouchView>
             }

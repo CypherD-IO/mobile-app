@@ -31,7 +31,7 @@ import {
   CyDView,
 } from '../../../styles/tailwindStyles';
 import * as Sentry from '@sentry/react-native';
-import { GlobalContext } from '../../../core/globalContext';
+import { GlobalContext, GlobalContextDef } from '../../../core/globalContext';
 import Web3 from 'web3';
 import { useGlobalModalContext } from '../../../components/v2/GlobalModal';
 import { CHOOSE_TOKEN_MODAL_TIMEOUT } from '../../../constants/timeOuts';
@@ -48,7 +48,11 @@ import ChooseTokenModal from '../../../components/v2/chooseTokenModal';
 import CyDTokenAmount from '../../../components/v2/tokenAmount';
 import useAxios from '../../../core/HttpRequest';
 import { divide, floor, get, random } from 'lodash';
-import { ButtonType, CardProviders } from '../../../constants/enum';
+import {
+  ButtonType,
+  CardProviders,
+  CypherPlanId,
+} from '../../../constants/enum';
 import clsx from 'clsx';
 import { CardQuoteResponse } from '../../../models/card.model';
 import useGasService from '../../../hooks/useGasService';
@@ -69,13 +73,25 @@ export default function BridgeFundCardScreen({ route }: { route: any }) {
   } = route.params;
   const portfolioState = useContext<any>(PortfolioContext);
   const hdWallet = useContext<any>(HdWalletContext);
-  const globalContext = useContext<any>(GlobalContext);
+  const globalContext = useContext(GlobalContext) as GlobalContextDef;
   const ethereum = hdWallet.state.wallet.ethereum;
   const wallet = hdWallet.state.wallet;
   const globalStateContext = useContext<any>(GlobalContext);
   const cardProfile = globalContext.globalState.cardProfile;
+  const planData = globalContext.globalState.planInfo;
+  let planCost = get(
+    planData,
+    [
+      'default',
+      cardProfile?.planInfo?.optedPlanId ?? CypherPlanId.BASIC_PLAN,
+      'cost',
+    ],
+    0,
+  );
   const cards = get(cardProfile, currentCardProvider)?.cards;
   const cardId: string = get(cards, currentCardIndex)?.cardId;
+
+  planCost = cardId === 'hidden' ? planCost : 0;
   const { postWithAuth } = useAxios();
 
   const cosmos = hdWallet.state.wallet.cosmos;
@@ -101,11 +117,11 @@ export default function BridgeFundCardScreen({ route }: { route: any }) {
     cosmos: globalStateContext.globalState.rpcEndpoints.COSMOS.primary,
     osmosis: globalStateContext.globalState.rpcEndpoints.OSMOSIS.primary,
     juno: globalStateContext.globalState.rpcEndpoints.JUNO.primary,
-    stargaze: globalContext.globalState.rpcEndpoints.STARGAZE.primary,
-    noble: globalContext.globalState.rpcEndpoints.NOBLE.primary,
-    coreum: globalContext.globalState.rpcEndpoints.COREUM.primary,
-    kujira: globalContext.globalState.rpcEndpoints.KUJIRA.primary,
-    solana: globalContext.globalState.rpcEndpoints.SOLANA.primary,
+    stargaze: globalContext.globalState.rpcEndpoints?.STARGAZE.primary,
+    noble: globalContext.globalState.rpcEndpoints?.NOBLE.primary,
+    coreum: globalContext.globalState.rpcEndpoints?.COREUM.primary,
+    kujira: globalContext.globalState.rpcEndpoints?.KUJIRA.primary,
+    solana: globalContext.globalState.rpcEndpoints?.SOLANA.primary,
   };
 
   const [isChooseTokenVisible, setIsChooseTokenVisible] =
@@ -116,8 +132,8 @@ export default function BridgeFundCardScreen({ route }: { route: any }) {
   const [cryptoAmount, setCryptoAmount] = useState('');
   const [loading, setLoading] = useState<boolean>(false);
   const [isMaxLoading, setIsMaxLoading] = useState<boolean>(false);
-  const minTokenValueLimit = 10;
-  const minTokenValueEth = 50;
+  const minTokenValueLimit = 10 + Number(planCost);
+  const minTokenValueEth = 50 + Number(planCost);
   const [selectedToken, setSelectedToken] = useState<Holding>();
   const [nativeTokenBalance, setNativeTokenBalance] = useState<number>(0);
   const { t } = useTranslation();
@@ -899,18 +915,18 @@ export default function BridgeFundCardScreen({ route }: { route: any }) {
           backendName === CHAIN_ETH.backendName &&
           Number(usdAmount) < MINIMUM_TRANSFER_AMOUNT_ETH
         ) {
-          errorMessage = t('MINIMUM_AMOUNT_ETH');
+          errorMessage = `${t<string>('MINIMUM_AMOUNT_ETH')} $${String(minTokenValueLimit)} ${planCost > 0 ? '(including plan cost)' : ''}`;
         } else if (!usdAmount || Number(usdAmount) < minTokenValueLimit) {
           if (backendName === CHAIN_ETH.backendName) {
             errorMessage = t('MINIMUM_AMOUNT_ETH');
           } else {
-            errorMessage = t<string>('CARD_LOAD_MIN_AMOUNT');
+            errorMessage = `${t<string>('CARD_LOAD_MIN_AMOUNT')} $${String(minTokenValueLimit)} ${planCost > 0 ? '(including plan cost)' : ''}`;
           }
         }
 
         return (
           <CyDView className='my-[8px]'>
-            <CyDText className='text-center text-redColor font-medium'>
+            <CyDText className='text-center text-redColor font-medium text-wrap'>
               {errorMessage}
             </CyDText>
           </CyDView>
@@ -1011,7 +1027,7 @@ export default function BridgeFundCardScreen({ route }: { route: any }) {
       <ChooseTokenModal
         isChooseTokenModalVisible={isChooseTokenVisible}
         tokenList={portfolioState.statePortfolio.tokenPortfolio.totalHoldings}
-        minTokenValueLimit={minTokenValueLimit}
+        minTokenValueLimit={minTokenValueLimit - Number(planCost)}
         onSelectingToken={token => {
           setIsChooseTokenVisible(false);
           onSelectingToken(token as Holding);
@@ -1182,7 +1198,7 @@ export default function BridgeFundCardScreen({ route }: { route: any }) {
                 }
               }}
               type={ButtonType.PRIMARY}
-              disabled={isLoadCardDisabled()}
+              // disabled={isLoadCardDisabled()}
               title={t('QUOTE')}
               style={'h-[60px] w-[45%] mb-[18px] py-[10px]'}
               loading={loading}

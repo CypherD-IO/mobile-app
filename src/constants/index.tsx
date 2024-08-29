@@ -35,7 +35,7 @@ export const screenTitle = {
   SHORTCUTS: 'Shortcuts',
   SHORTCUTS_SCREEN: 'ShortcutsScreen',
   BRIDGE_TOKEN_SCREEN: 'BridgeTokenScreen',
-  DEBIT_CARD_SCREEN: 'DebitCardScreen',
+  DEBIT_CARD_SCREEN: 'Card',
   LEGAL_AGREEMENT_SCREEN: 'LegalAgreementScreen',
   INFO_SCREEN: 'InfoScreen',
   OTP_SCREEN: 'OTPScreen',
@@ -63,7 +63,6 @@ export const screenTitle = {
   CB_PAY: 'CoinbasePay',
   ON_META: 'OnMeta',
   QR_CODE_SCANNER: 'QRCodeScanner',
-  DEBIT_CARD: 'Card',
   APP_SETTINGS: 'AppSettings',
   ADVANCED_SETTINGS: 'AdvancedSettings',
   TOKEN_OVERVIEW: 'TokenOverview',
@@ -129,6 +128,11 @@ export const screenTitle = {
   LOCKDOWN_MODE: 'LockdownMode',
   LOCKDOWN_MODE_AUTH: 'LockdownModeAuth',
   CARD_UNLOCK_AUTH: 'CardUnlockAuth',
+  GET_CARD_V2: 'Cards',
+  SELECT_PLAN: 'SelectPlan',
+  GET_YOUR_CARD: 'GetYourCard',
+  CARD_V2_WELCOME_SCREEN: 'welcomeScreen',
+  CARD_APPLICATION_V2: 'cardApplicationv2',
 };
 
 export const fontsName = {

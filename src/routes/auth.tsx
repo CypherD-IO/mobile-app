@@ -1,5 +1,8 @@
 import * as React from 'react';
-import { createNativeStackNavigator } from '@react-navigation/native-stack';
+import {
+  createNativeStackNavigator,
+  NativeStackNavigationOptions,
+} from '@react-navigation/native-stack';
 import BrowserScreen from '../containers/Browser/Browser';
 import ActivityScreen from '../containers/Activities/activity';
 import ActivityFilter from '../containers/Activities/activityFilter';
@@ -31,7 +34,6 @@ import NotificationSettings from '../containers/Options/NotificationSettings';
 import ManageWallet from '../containers/Options/ManageWallet';
 import SecurityPrivacy from '../containers/Options/SecurityPrivacy';
 import SeedPhrase from '../containers/Options/SeedPhrase';
-import Bridge from '../containers/Bridge/bridge';
 import IBC from '../containers/IBC';
 import OpenLegalScreen from '../containers/InfoScreen/openLegalDoc';
 import SocialMediaScreen from '../containers/SocialMedia/socialMedia';
@@ -109,6 +111,12 @@ import ThreeDSecure from '../containers/DebitCard/bridgeCard/threeDSecure';
 import LockdownMode from '../containers/DebitCard/bridgeCard/lockdownMode';
 import LockdownModeAuth from '../containers/DebitCard/bridgeCard/lockdownModeAuth';
 import CardUnlockAuth from '../containers/DebitCard/bridgeCard/cardUnlockAuth';
+import GetCardLanding from '../containers/DebitCard/CardV2/signup/getCardLanding';
+import SelectPlan from '../containers/DebitCard/CardV2/signup/selectPlan';
+import { NavigationProp, ParamListBase } from '@react-navigation/native';
+import GetYourCardInfo from '../containers/DebitCard/CardV2/signup/getYourCardInfo';
+import CardApplicationV2 from '../containers/DebitCard/CardV2/signup/application';
+import WelcomeSceens from '../containers/DebitCard/CardV2/signup/welcomeScreens';
 
 const { DynamicImage, DynamicButton } = require('../styles');
 
@@ -135,9 +143,9 @@ const defaultHeaderLeft = navigation => {
         }
       }}>
       <CyDFastImage
-        className={'h-[20px] w-[20px]'}
+        className={'h-[32px] w-[32px]'}
         resizeMode='cover'
-        source={AppImages.BACK}
+        source={AppImages.BACK_ARROW_CIRCLE}
       />
     </CyDTouchView>
   );
@@ -798,10 +806,11 @@ export function PortfolioStackScreen({ navigation, route }) {
   );
 }
 
-export function DebitCardStackScreen({ navigation }) {
+export function DebitCardStackScreen() {
   const portfolioStackScreenHeaderTitleStyles: StyleProp<
     Pick<TextStyle, 'fontFamily' | 'fontSize' | 'fontWeight'> & {
       color?: string | undefined;
+      backgroundColor?: string | undefined;
     }
   > = {
     fontFamily: C.fontsName.FONT_BLACK,
@@ -938,7 +947,11 @@ export function DebitCardStackScreen({ navigation }) {
       <FundCardStack.Screen
         name={screenTitle.CARD_SIGNUP_CONFIRMATION}
         component={CardSignupConfirmation}
-        options={({ navigation }) => ({
+        options={({
+          navigation,
+        }: {
+          navigation: NavigationProp<ParamListBase>;
+        }) => ({
           headerShown: true,
           headerTransparent: false,
           headerShadowVisible: false,
@@ -956,31 +969,31 @@ export function DebitCardStackScreen({ navigation }) {
       <FundCardStack.Screen
         name={screenTitle.CARD_SIGNUP_SCREEN}
         component={CardSignupScreen}
-        options={({ navigation, route }) => ({ headerShown: false })}
+        options={() => ({ headerShown: false })}
       />
 
       <FundCardStack.Screen
         name={screenTitle.CARD_SIGNUP_COMPLETE_SCREEN}
         component={CardSignupCompleteScreen}
-        options={({ navigation }) => ({ headerShown: false })}
+        options={() => ({ headerShown: false })}
       />
 
       <FundCardStack.Screen
         name={screenTitle.CARD_KYC_STATUS_SCREEN}
         component={CardKYCStatusScreen}
-        options={({ navigation }) => ({ headerShown: false })}
+        options={() => ({ headerShown: false })}
       />
 
       <FundCardStack.Screen
         name={screenTitle.SEND_INVITE_CODE_SCREEN}
         component={SendInviteCode}
-        options={({ navigation }) => ({ headerShown: false })}
+        options={() => ({ headerShown: false })}
       />
 
       <FundCardStack.Screen
         name={screenTitle.CARD_SIGNUP_OTP_VERIFICATION_SCREEN}
         component={OTPVerificationScreen}
-        options={({ navigation }) => ({ headerShown: false })}
+        options={() => ({ headerShown: false })}
       />
 
       <FundCardStack.Screen
@@ -1333,13 +1346,75 @@ export function DebitCardStackScreen({ navigation }) {
           headerBackTitleVisible: false,
         }}
       />
+
+      <FundCardStack.Screen
+        name={screenTitle.CARD_V2_WELCOME_SCREEN}
+        component={WelcomeSceens}
+        options={{
+          headerShown: false,
+        }}
+      />
+      <FundCardStack.Screen
+        name={screenTitle.GET_CARD_V2}
+        component={GetCardLanding}
+        options={{
+          headerTransparent: false,
+          headerShadowVisible: false,
+          headerTitleAlign: 'center',
+          headerTitleStyle: portfolioStackScreenHeaderTitleStyles,
+          headerTintColor: Colors.primaryTextColor,
+          headerBackTitleVisible: false,
+        }}
+      />
+
+      <FundCardStack.Screen
+        name={screenTitle.SELECT_PLAN}
+        component={SelectPlan}
+        options={({ navigation }): NativeStackNavigationOptions => ({
+          headerShown: false,
+          // headerTransparent: true,
+          // headerShadowVisible: false,
+          // headerTitle: '',
+          // headerTintColor: Colors.primaryTextColor,
+          // headerBackTitleVisible: false,
+          // headerLeft: props => defaultHeaderLeft(navigation),
+        })}
+      />
+
+      <FundCardStack.Screen
+        name={screenTitle.GET_YOUR_CARD}
+        component={GetYourCardInfo}
+        options={({ navigation }): NativeStackNavigationOptions => ({
+          headerTransparent: true,
+          headerShadowVisible: false,
+          headerTitle: '',
+          headerTintColor: Colors.primaryTextColor,
+          headerBackTitleVisible: false,
+          headerLeft: props => defaultHeaderLeft(navigation),
+        })}
+      />
+
+      <FundCardStack.Screen
+        name={screenTitle.CARD_APPLICATION_V2}
+        component={CardApplicationV2}
+        options={({ navigation }): NativeStackNavigationOptions => ({
+          headerTransparent: true,
+          headerShadowVisible: false,
+          headerTitle: '',
+          headerTintColor: Colors.primaryTextColor,
+          headerBackTitleVisible: false,
+          headerLeft: props => defaultHeaderLeft(navigation),
+        })}
+      />
     </FundCardStack.Navigator>
   );
 }
 
-export function BrowserStackScreen({ navigation, route }) {
-  const { t } = useTranslation();
-
+export function BrowserStackScreen({
+  navigation,
+}: {
+  navigation: NavigationProp<ParamListBase>;
+}) {
   let backPressCount = 0;
   const handleBackButton = () => {
     navigation.navigate(screenTitle.PORTFOLIO);

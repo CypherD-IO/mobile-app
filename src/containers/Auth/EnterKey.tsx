@@ -2,77 +2,60 @@
  * @format
  * @flow
  */
+import Clipboard from '@react-native-clipboard/clipboard';
+import { useIsFocused } from '@react-navigation/native';
+import clsx from 'clsx';
+import { Mnemonic } from 'ethers';
+import { debounce } from 'lodash';
 import React, {
+  useCallback,
   useContext,
   useEffect,
-  useState,
   useLayoutEffect,
   useRef,
-  useCallback,
+  useState,
 } from 'react';
 import { useTranslation } from 'react-i18next';
 import {
-  CyDText,
-  CyDTouchView,
-  CyDView,
-  CyDImage,
-  CyDTouchableWithoutFeedback,
-  CyDSafeAreaView,
-  CyDTextInput,
-  CyDScrollView,
-  CyDKeyboardAwareScrollView,
-  CyDKeyboardAvoidingView,
-} from '../../styles/tailwindStyles';
-import {
   BackHandler,
-  Keyboard,
-  NativeModules,
   Dimensions,
-  StatusBar,
-  SafeAreaView,
-  StyleSheet,
   FlatList,
-  TouchableOpacity,
-  LayoutAnimation,
+  NativeModules,
+  SafeAreaView,
+  StatusBar,
+  StyleSheet,
 } from 'react-native';
-import * as C from '../../constants/index';
-import {
-  ActivityContext,
-  HdWalletContext,
-  PortfolioContext,
-  sleepFor,
-} from '../../core/util';
-import { importWallet } from '../../core/HdWallet';
-import { PORTFOLIO_LOADING } from '../../reducers/portfolio_reducer';
 import AppImages from '../../../assets/images/appImages';
-import Clipboard from '@react-native-clipboard/clipboard';
-import { QRScannerScreens } from '../../constants/server';
-import { ActivityContextDef } from '../../reducers/activity_reducer';
-import { screenTitle } from '../../constants/index';
-import Loading from '../../components/v2/loading';
-import { getReadOnlyWalletData } from '../../core/asyncStorage';
-import useAxios from '../../core/HttpRequest';
-import clsx from 'clsx';
-import { fetchTokenData } from '../../core/Portfolio';
-import { IMPORT_WALLET_TIMEOUT } from '../../constants/timeOuts';
-import { useIsFocused } from '@react-navigation/native';
-import { isAndroid } from '../../misc/checkers';
-import { Colors } from '../../constants/theme';
+import ChooseWalletIndexComponent from '../../components/ChooseWalletIndexComponent';
 import Button from '../../components/v2/button';
-import {
-  ButtonType,
-  ConnectionTypes,
-  ImagePosition,
-} from '../../constants/enum';
+import Loading from '../../components/v2/loading';
+import { bip32Words } from '../../constants/bip32Words';
+import { ButtonType, ImagePosition } from '../../constants/enum';
+import * as C from '../../constants/index';
+import { screenTitle } from '../../constants/index';
+import { QRScannerScreens } from '../../constants/server';
+import { Colors } from '../../constants/theme';
+import { IMPORT_WALLET_TIMEOUT } from '../../constants/timeOuts';
 import {
   generateEthAddressFromSeedPhrase,
   generateMultipleWalletAddressesFromSeedPhrase,
 } from '../../core/Address';
+import { getReadOnlyWalletData } from '../../core/asyncStorage';
+import { importWallet } from '../../core/HdWallet';
+import useAxios from '../../core/HttpRequest';
+import { fetchTokenData } from '../../core/Portfolio';
+import { HdWalletContext, PortfolioContext, sleepFor } from '../../core/util';
+import { isAndroid } from '../../misc/checkers';
 import { HdWalletContextDef } from '../../reducers/hdwallet_reducer';
-import { Mnemonic } from 'ethers';
-import { bip32Words } from '../../constants/bip32Words';
-import { debounce, last } from 'lodash';
-import ChooseWalletIndexComponent from '../../components/ChooseWalletIndexComponent';
+import { PORTFOLIO_LOADING } from '../../reducers/portfolio_reducer';
+import {
+  CyDImage,
+  CyDKeyboardAvoidingView,
+  CyDText,
+  CyDTextInput,
+  CyDTouchView,
+  CyDView,
+} from '../../styles/tailwindStyles';
 
 export default function Login(props) {
   // NOTE: DEFINE VARIABLE 🍎🍎🍎🍎🍎🍎
@@ -90,7 +73,7 @@ export default function Login(props) {
   const portfolioState = useContext(PortfolioContext);
   const { deleteWithAuth } = useAxios();
   const [disableSubmit, setDisableSubmit] = useState(true);
-  const [filteredSuggestions, setFilteredSuggestions] = useState<String[]>([]);
+  const [filteredSuggestions, setFilteredSuggestions] = useState<string[]>([]);
   const inputRef = useRef(null);
   const [firstIndexAddress, setFirstIndexAddress] = useState();
 
@@ -254,7 +237,7 @@ export default function Login(props) {
           />
         </SafeAreaView>
       ) : (
-        <SafeAreaView className='flex-1 bg-white h-full'>
+        <SafeAreaView className='flex-1 bg-cardBg h-full'>
           <CyDView
             className='flex-1 h-full'
             keyboardShouldPersistTaps='handled'>

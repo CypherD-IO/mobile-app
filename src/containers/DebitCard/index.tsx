@@ -18,20 +18,19 @@ import {
   CyDImageBackground,
   CyDSafeAreaView,
   CyDText,
-  CyDView,
 } from '../../styles/tailwindStyles';
 import AppImages from '../../../assets/images/appImages';
 import { useTranslation } from 'react-i18next';
 import { BackHandler } from 'react-native';
 import { get, has } from 'lodash';
-import CardWailtList from './cardWaitList';
 import useAxios from '../../core/HttpRequest';
 import * as Sentry from '@sentry/react-native';
 import useCardUtilities from '../../hooks/useCardUtilities';
 import CardProviderSwitch from '../../components/cardProviderSwitch';
+import SelectPlan from './CardV2/signup/selectPlan';
 export interface RouteProps {
   navigation: {
-    navigate: (screen: string, params?: any) => void;
+    navigate: (screen: string, params?: any, route?: any) => void;
     reset: (options: {
       index: number;
       routes: Array<{ name: string; params?: any }>;
@@ -86,6 +85,7 @@ export default function DebitCardScreen(props: RouteProps) {
         const cardApplicationStatus =
           get(cardProfile, provider as CardProviders)?.applicationStatus ===
           CardApplicationStatus.COMPLETED;
+
         if (cardApplicationStatus) {
           props.navigation.reset({
             index: 0,
@@ -132,9 +132,9 @@ export default function DebitCardScreen(props: RouteProps) {
     );
   };
 
-  const checkApplication = async (provider: CardProviders) => {
+  const checkApplication = async (_provider: CardProviders) => {
     try {
-      const response = await getWithAuth(`/v1/cards/${provider}/application`);
+      const response = await getWithAuth(`/v1/cards/${_provider}/application`);
       if (!response.isError) {
         const { data } = response;
         if (
@@ -174,7 +174,8 @@ export default function DebitCardScreen(props: RouteProps) {
           </CyDText>
         </CyDImageBackground>
       ) : (
-        <CardWailtList navigation={props.navigation} />
+        // <CardWailtList navigation={props.navigation} />
+        <SelectPlan />
       )}
     </CyDSafeAreaView>
   );

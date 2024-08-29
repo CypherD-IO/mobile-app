@@ -1,26 +1,48 @@
 import React, {
-  Dispatch,
-  SetStateAction,
   useCallback,
   useContext,
   useEffect,
   useMemo,
   useState,
 } from 'react';
-import { GlobalContext } from '../../../core/globalContext';
+import { useIsFocused } from '@react-navigation/native';
+import * as Sentry from '@sentry/react-native';
+import clsx from 'clsx';
+import crypto from 'crypto';
+import { get, has, isEmpty, isUndefined, orderBy, some } from 'lodash';
+import LottieView from 'lottie-react-native';
+import { useTranslation } from 'react-i18next';
+import { StyleSheet, useWindowDimensions } from 'react-native';
+import Carousel from 'react-native-reanimated-carousel';
+import WebView from 'react-native-webview';
+import AppImages from '../../../../assets/images/appImages';
+import Button from '../../../components/v2/button';
+import CardDetailsModal from '../../../components/v2/card/cardDetailsModal';
+import { useGlobalModalContext } from '../../../components/v2/GlobalModal';
+import CyDModalLayout from '../../../components/v2/modal';
 import { screenTitle } from '../../../constants';
+import {
+  ACCOUNT_STATUS,
+  CardProviders,
+  CardStatus,
+  CardType,
+  GlobalContextType,
+} from '../../../constants/enum';
+import {
+  getCardRevealReuseToken,
+  setCardRevealReuseToken,
+} from '../../../core/asyncStorage';
+import { GlobalContext } from '../../../core/globalContext';
+import axios from '../../../core/Http';
+import useAxios from '../../../core/HttpRequest';
 import {
   copyToClipboard,
   limitDecimalPlaces,
   sleepFor,
-  stripPemHeaders,
 } from '../../../core/util';
-import { useTranslation } from 'react-i18next';
-import {
-  setCardRevealReuseToken,
-  getCardRevealReuseToken,
-} from '../../../core/asyncStorage';
-import axios from '../../../core/Http';
+import { Card } from '../../../models/card.model';
+import { CardProfile } from '../../../models/cardProfile.model';
+import { UserCardDetails } from '../../../models/userCardDetails.interface';
 import {
   CyDImage,
   CyDImageBackground,
@@ -28,34 +50,8 @@ import {
   CyDTouchView,
   CyDView,
 } from '../../../styles/tailwindStyles';
-import useAxios from '../../../core/HttpRequest';
-import {
-  CardProviders,
-  CardType,
-  CardStatus,
-  GlobalContextType,
-  ACCOUNT_STATUS,
-} from '../../../constants/enum';
-import { useGlobalModalContext } from '../../../components/v2/GlobalModal';
-import AppImages from '../../../../assets/images/appImages';
-import clsx from 'clsx';
-import { Card } from '../../../models/card.model';
-import { get, has, isEmpty, isUndefined, orderBy, some } from 'lodash';
-import { UserCardDetails } from '../../../models/userCardDetails.interface';
-import { CardProfile } from '../../../models/cardProfile.model';
-import { useIsFocused } from '@react-navigation/native';
-import CardDetailsModal from '../../../components/v2/card/cardDetailsModal';
-import * as Sentry from '@sentry/react-native';
-import LottieView from 'lottie-react-native';
-import CardOptionsModal from './cardOptions';
-import Carousel from 'react-native-reanimated-carousel';
-import { useWindowDimensions, StyleSheet } from 'react-native';
-import Button from '../../../components/v2/button';
 import { showToast } from '../../utilities/toastUtility';
-import { HIDDEN_CARD_ID } from '../../../constants/data';
-import WebView from 'react-native-webview';
-import CyDModalLayout from '../../../components/v2/modal';
-import crypto from 'crypto';
+import CardOptionsModal from './cardOptions';
 
 interface CardSecrets {
   cvv: string;
@@ -776,7 +772,9 @@ const RenderCardActions = ({
               type: GlobalContextType.CARD_PROFILE,
               cardProfile: tempProfile,
             });
-            navigation.navigate(screenTitle.CARD_SIGNUP_SCREEN);
+            navigation.navigate(screenTitle.SELECT_PLAN, {
+              fromPage: screenTitle.BRIDGE_CARD_SCREEN,
+            });
           }}
         />
       </CyDView>

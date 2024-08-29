@@ -1,5 +1,6 @@
 /* eslint-disable @typescript-eslint/no-var-requires */
 const S3_BUCKET_URL_ICONS = 'https://public.cypherd.io/icons';
+const S3_BUCKET_URL_IMAGES = 'https://public.cypherd.io/images';
 
 const PLUS = require('./plus.png');
 const ARROW = require('./arrow.png');
@@ -316,6 +317,9 @@ const MAIL = require('./mail.png');
 const PAUSE = require('./pause.png');
 const RESUME = require('./resume.png');
 const SOLANA_LOGO = require('./solana.png');
+const CARD_ONBOARDING_1 = require('./cardOnBoarding1.png');
+const CARD_ONBOARDING_2 = require('./cardOnBoarding2.png');
+const CARD_ONBOARDING_3 = require('./cardOnBoarding3.png');
 
 // ICONS FROM S3
 const SWAP = { uri: `${S3_BUCKET_URL_ICONS}/swap.png` };
@@ -437,8 +441,69 @@ const LOCKDOWN_MODE_ICON = {
 const LOCKDOWN_MODE_IMAGE = {
   uri: `${S3_BUCKET_URL_ICONS}/lockdownModeImage.png`,
 };
+const APPLE_AND_GOOGLE_PAY = {
+  uri: `${S3_BUCKET_URL_ICONS}/appleAndGoogleIcons.png`,
+};
+const ATM_FEE = {
+  uri: `${S3_BUCKET_URL_ICONS}/atmFeeIcon.png`,
+};
+const CHARGE_BACK = {
+  uri: `${S3_BUCKET_URL_ICONS}/chargeBackIcon.png`,
+};
+const CRYPTO_COINS = {
+  uri: `${S3_BUCKET_URL_ICONS}/coinsIcon.png`,
+};
+const CORRECT_BLACK = {
+  uri: `${S3_BUCKET_URL_ICONS}/correctBlack.png`,
+};
+const COUPON = {
+  uri: `${S3_BUCKET_URL_ICONS}/couponIcon.png`,
+};
+const FOREX_FEE = {
+  uri: `${S3_BUCKET_URL_ICONS}/forexFeeIcon.png`,
+};
+
+const AT_ICON = {
+  uri: `${S3_BUCKET_URL_ICONS}/atIcon.png`,
+};
+
+const COUNTRIES_ICON = {
+  uri: `${S3_BUCKET_URL_ICONS}/countriesIcon.png`,
+};
+
+const PROFILE_ICON = {
+  uri: `${S3_BUCKET_URL_ICONS}/profileIcon.png`,
+};
+
+const TELEGRAM_ICON_BLACK = {
+  uri: `${S3_BUCKET_URL_ICONS}/telegramIconWhite.png`,
+};
+
+const RADIO_CHECK = {
+  uri: `${S3_BUCKET_URL_ICONS}/radioCheck.png`,
+};
+
+const RADIO_UNCHECK = {
+  uri: `${S3_BUCKET_URL_ICONS}/radioUncheck.png`,
+};
 
 const AppImages = {
+  CARD_ONBOARDING_1,
+  CARD_ONBOARDING_2,
+  CARD_ONBOARDING_3,
+  RADIO_UNCHECK,
+  RADIO_CHECK,
+  AT_ICON,
+  COUNTRIES_ICON,
+  PROFILE_ICON,
+  TELEGRAM_ICON_BLACK,
+  APPLE_AND_GOOGLE_PAY,
+  ATM_FEE,
+  FOREX_FEE,
+  CHARGE_BACK,
+  COUPON,
+  CRYPTO_COINS,
+  CORRECT_BLACK,
   CYPHER_TELEGRAM_BOT_LOGO,
   PLUS,
   ARROW,
