@@ -1198,7 +1198,7 @@ export default function BridgeFundCardScreen({ route }: { route: any }) {
                 }
               }}
               type={ButtonType.PRIMARY}
-              // disabled={isLoadCardDisabled()}
+              disabled={isLoadCardDisabled()}
               title={t('QUOTE')}
               style={'h-[60px] w-[45%] mb-[18px] py-[10px]'}
               loading={loading}
