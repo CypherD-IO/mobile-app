@@ -161,21 +161,31 @@ export default function CardScreen({
     }
   }, [currentCardProvider, isFocused, cardProfile]);
 
+  const getCardImage = (card: Card) => {
+    if (currentCardProvider === CardProviders.REAP_CARD) {
+      if (card.type === CardType.PHYSICAL) {
+        return AppImages.RC_PHYSICAL;
+      } else {
+        return AppImages.RC_VIRTUAL;
+      }
+    } else {
+      if (card.status === 'rcUpgradable') {
+        return AppImages.RC_VIRTUAL;
+      } else if (card.type === CardType.PHYSICAL) {
+        return AppImages.PHYSICAL_CARD_MASTER;
+      } else {
+        return AppImages.VIRTUAL_CARD_MASTER;
+      }
+    }
+  };
+
   const renderItem = ({ item }: { item: Card }) => {
     const card = item;
     return (
       <CyDImageBackground
         className='flex flex-row justify-center items-center h-[190px] w-[300px] self-center'
         resizeMode='stretch'
-        source={
-          currentCardProvider === CardProviders.REAP_CARD
-            ? card.type === CardType.VIRTUAL
-              ? AppImages.RC_VIRTUAL
-              : AppImages.RC_PHYSICAL
-            : card.type === CardType.VIRTUAL
-              ? AppImages.VIRTUAL_CARD_MASTER
-              : AppImages.PHYSICAL_CARD_MASTER
-        }>
+        source={getCardImage(card)}>
         {card.status === CardStatus.IN_ACTIVE && (
           <CyDView className='flex flex-row items-center bg-cardBg px-[12px] py-[6px] rounded-[6px]'>
             <CyDImage
@@ -444,12 +454,20 @@ const RenderCardActions = ({
         const verifyReuseTokenUrl = `/v1/cards/${cardProvider}/card/${String(
           cardId,
         )}/verify/reuse-token`;
-        const payload = { reuseToken: cardRevealReuseToken };
+        const payload = {
+          reuseToken: cardRevealReuseToken,
+          stylesheetUrl: 'https://public.cypherd.io/css/cardRevealMobile.css',
+        };
         try {
           const response = await postWithAuth(verifyReuseTokenUrl, payload);
           setIsFetchingCardDetails(false);
           if (!response.isError) {
-            void sendCardDetails(response.data);
+            if (cardProvider === CardProviders.REAP_CARD) {
+              setWebviewUrl(response.data.token);
+              setShowRCCardDetailsModal(true);
+            } else {
+              void sendCardDetails(response.data);
+            }
           } else {
             verifyWithOTP();
           }
@@ -487,8 +505,11 @@ const RenderCardActions = ({
     });
   };
 
-  const decryptMessage = ({ privateKey, base64Message }) => {
+  const decryptMessage = async ({ privateKey, base64Message, reuseToken }) => {
     try {
+      if (reuseToken) {
+        await setCardRevealReuseToken(cardId, reuseToken);
+      }
       const buffer = Buffer.from(base64Message, 'base64');
 
       const decrypted = crypto.privateDecrypt(
@@ -846,7 +867,16 @@ const RenderCardActions = ({
           className='flex flex-col justify-center items-center'
           disabled={shouldBlockAction()}
           onPress={() => {
-            void validateReuseToken();
+            if (status === CardStatus.IN_ACTIVE) {
+              showModal('state', {
+                type: 'error',
+                title: t('UNLOCK_CARD_TO_REVEAL_CARD_DETAILS'),
+                onSuccess: hideModal,
+                onFailure: hideModal,
+              });
+            } else {
+              void validateReuseToken();
+            }
           }}>
           <CyDView
             className={`${shouldBlockAction() ? 'bg-n60' : 'bg-appColor'} h-[52px] w-[52px] items-center justify-center rounded-[50px]`}>
@@ -892,7 +922,7 @@ const RenderCardActions = ({
           </CyDView>
           <CyDView className='mt-[4px]'>
             <CyDText className='font-semibold'>
-              {status === CardStatus.ACTIVE ? 'Lock' : 'Unlock'}
+              {status === CardStatus.ACTIVE ? 'Lock Card' : 'Unlock Card'}
             </CyDText>
           </CyDView>
         </CyDTouchView>
@@ -911,7 +941,7 @@ const RenderCardActions = ({
             />
           </CyDView>
           <CyDView className='mt-[4px]'>
-            <CyDText className='font-semibold'>{'Options'}</CyDText>
+            <CyDText className='font-semibold'>{'Card Options'}</CyDText>
           </CyDView>
         </CyDTouchView>
       </CyDView>

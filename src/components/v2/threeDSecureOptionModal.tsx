@@ -42,8 +42,8 @@ export default function ThreeDSecureOptionModal({
       setModalVisible(false);
       showToast(
         isTelegramSelected
-          ? 'Alerts sent through Telegram & Email'
-          : 'Verification code sent through SMS',
+          ? 'Alerts will be sent through Telegram & Email'
+          : 'Verification will be code sent through SMS',
       );
     } else {
       showToast('Failed to update. Contact Support', 'error');
@@ -67,7 +67,7 @@ export default function ThreeDSecureOptionModal({
         <CyDView className='flex flex-row justify-between items-center mb-[24px]'>
           <CyDView className='flex-1 justify-center items-center'>
             <CyDText className='text-[18px] font-[600] ml-[24px]'>
-              3D Secure Notification
+              Online Payment Authentication
             </CyDText>
           </CyDView>
           <CyDTouchView

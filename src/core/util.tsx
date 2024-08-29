@@ -74,6 +74,7 @@ import { isInjectiveAddress } from '../containers/utilities/injectiveUtilities';
 import { isKujiraAddress } from '../containers/utilities/kujiraUtilities';
 import moment from 'moment';
 import { isSolanaAddress } from '../containers/utilities/solanaUtilities';
+import { RSA } from 'react-native-rsa-native';
 // const {showModal, hideModal} = useGlobalModalContext()
 
 export const HdWalletContext = React.createContext<HdWalletContextDef | null>(
@@ -1086,4 +1087,18 @@ export const stripPemHeaders = (pem: string) => {
   const pemHeaderFooterRegex =
     /-----BEGIN [A-Z ]+-----|-----END [A-Z ]+-----|\s+/g;
   return pem.replace(pemHeaderFooterRegex, '');
+};
+
+export const generateKeys = async () => {
+  try {
+    const keyPair = await RSA.generateKeys(4096); // Generate a 2048-bit key pair
+    const privateKey = keyPair.private; // Private key in PEM format
+    const publicKey = keyPair.public; // Public key in PEM format
+
+    // Convert the public key to base64
+    const publicKeyBase64 = Buffer.from(publicKey).toString('base64');
+    return { publicKeyBase64, privateKey };
+  } catch (error) {
+    // error in genrating keys
+  }
 };

@@ -42,7 +42,6 @@ interface CardTransactionScreenProps {
   navigation: any;
   route: {
     params: {
-      hasBothProviders: boolean;
       cardProvider: CardProviders;
       currentCardIndex: number;
     };
@@ -171,10 +170,9 @@ export default function CardTransactions({
     if (pullToRefresh) {
       txnRetrievalOffset.current = undefined;
     }
-
     let txnURL = `/v1/cards/${cardProvider}/card/${String(
       cardId,
-    )}/transactions?newRoute=true&limit=20`;
+    )}/transactions?newRoute=true&limit=15`;
     if (txnRetrievalOffset.current) {
       txnURL += `&offset=${txnRetrievalOffset.current}`;
     }
@@ -194,7 +192,7 @@ export default function CardTransactions({
           setTransactions(txnsToSet);
           spliceTransactions(txnsToSet);
         } else {
-          setTransactions([...transactions, ...txnsToSet]);
+          setTransactions([...txnsToSet]);
           spliceTransactions([...transactions, ...txnsToSet]);
         }
 
@@ -276,7 +274,7 @@ export default function CardTransactions({
   };
 
   return (
-    <CyDView>
+    <CyDView className='h-full'>
       <CyDModalLayout
         isModalVisible={exportOptionOpen}
         setModalVisible={setExportOptionOpen}
@@ -352,7 +350,7 @@ export default function CardTransactions({
           </CyDTouchView>
         </CyDView>
       </CyDView>
-      <CyDView className='pb-[120px]'>
+      <CyDView className='flex-1'>
         <CyDFlatList
           data={filteredTransactions}
           renderItem={renderTransaction as any}
@@ -363,7 +361,7 @@ export default function CardTransactions({
               className={clsx({ 'bg-white': isIOS() })}
               refreshing={refreshing}
               onRefresh={() => {
-                void fetchTransactions();
+                void fetchTransactions(true);
               }}
               progressViewOffset={0}
             />
@@ -379,6 +377,7 @@ export default function CardTransactions({
               style={styles.infiniteScrollFooterLoaderStyle}
             />
           }
+          className='flex-1'
         />
       </CyDView>
     </CyDView>
