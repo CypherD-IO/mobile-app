@@ -1058,7 +1058,7 @@ export function DebitCardStackScreen() {
       <FundCardStack.Screen
         name={screenTitle.BRIDGE_CARD_TRANSACTION_DETAILS_SCREEN}
         component={TransactionDetails}
-        options={{
+        options={({ navigation }) => ({
           headerTransparent: false,
           headerShadowVisible: false,
           title: '',
@@ -1067,7 +1067,7 @@ export function DebitCardStackScreen() {
           headerTintColor: Colors.primaryTextColor,
           headerBackTitleVisible: false,
           headerLeft: props => defaultHeaderLeft(navigation),
-        }}
+        })}
       />
 
       <FundCardStack.Screen
