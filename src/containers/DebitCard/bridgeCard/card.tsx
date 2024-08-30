@@ -51,10 +51,6 @@ import {
   CyDView,
 } from '../../../styles/tailwindStyles';
 import { showToast } from '../../utilities/toastUtility';
-import { HIDDEN_CARD_ID } from '../../../constants/data';
-import WebView from 'react-native-webview';
-import CyDModalLayout from '../../../components/v2/modal';
-import crypto from 'crypto';
 import CardOptionsModal from './cardOptions';
 import useCardUtilities from '../../../hooks/useCardUtilities';
 
