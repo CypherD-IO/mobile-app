@@ -607,7 +607,7 @@ export default function SelectPlan(_navigation: any) {
 
                 <CyDView className='flex flex-row mt-[20px] items-end'>
                   <CyDText className='font-bold text-[20px] '>
-                    {t('$200')}
+                    {`$${proPlanData?.cost}`}
                   </CyDText>
                   <CyDText className='font-semibold text-[10px] text-base100 ml-[4px]'>
                     {t('PAID_ANNNUALLY')}
