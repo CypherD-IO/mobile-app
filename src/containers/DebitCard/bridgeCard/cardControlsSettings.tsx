@@ -540,17 +540,6 @@ export default function CardControlsSettings({ route, navigation }) {
                   {get(limitsByControlType, CARD_LIMIT_TYPE.CONTACTLESS, 0) >
                     0 && (
                     <>
-                      <CyDView className='flex flex-row mt-[12px]'>
-                        <CyDImage
-                          source={AppImages.INFO_CIRCLE}
-                          className='h-[14px] w-[14px] mr-[6px]'
-                        />
-                        <CyDText className='text-[10px] text-n200'>
-                          {
-                            'Maximum limit per contactless transaction is limited to $100'
-                          }
-                        </CyDText>
-                      </CyDView>
                       <CyDView className='flex flex-row mt-[12px] justify-between items-center'>
                         <CyDView>
                           <CyDText className='text-[10px] font-normal'>
@@ -646,43 +635,41 @@ export default function CardControlsSettings({ route, navigation }) {
                   <CyDText className='text-[16px] font-semibold mt-[4px]'>
                     {'Mobile Wallets'}
                   </CyDText>
+                  <CyDView className='flex flex-row mt-[12px]'>
+                    <CyDImage
+                      source={AppImages.INFO_CIRCLE}
+                      className='h-[14px] w-[14px] mr-[6px]'
+                    />
+                    <CyDText className='text-[10px] text-n200'>
+                      {
+                        'Limit transactions through mobile wallets like Apple Pay, Google Pay, etc.'
+                      }
+                    </CyDText>
+                  </CyDView>
                   {get(limitsByControlType, CARD_LIMIT_TYPE.MOBILE_WALLET, 0) >
                     0 && (
-                    <>
-                      <CyDView className='flex flex-row mt-[12px]'>
-                        <CyDImage
-                          source={AppImages.INFO_CIRCLE}
-                          className='h-[14px] w-[14px] mr-[6px]'
-                        />
-                        <CyDText className='text-[10px] text-n200'>
-                          {
-                            'Limit payments through mobile wallets like Apple Pay, Google Pay, etc.'
-                          }
+                    <CyDView className='flex flex-row justify-between items-center mt-[12px]'>
+                      <CyDView>
+                        <CyDText className='text-[10px] font-normal'>
+                          {'Limit per transactions'}
+                        </CyDText>
+                        <CyDText className='text-[16px] font-bold'>
+                          {`$${get(limitsByControlType, CARD_LIMIT_TYPE.MOBILE_WALLET, 0)}`}
                         </CyDText>
                       </CyDView>
-                      <CyDView className='flex flex-row justify-between items-center mt-[12px]'>
-                        <CyDView>
-                          <CyDText className='text-[10px] font-normal'>
-                            {'Limit per transactions'}
-                          </CyDText>
-                          <CyDText className='text-[16px] font-bold'>
-                            {`$${get(limitsByControlType, CARD_LIMIT_TYPE.MOBILE_WALLET, 0)}`}
-                          </CyDText>
-                        </CyDView>
-                        <Button
-                          title={'Change'}
-                          onPress={() => {
-                            openEditLimitModal(CARD_LIMIT_TYPE.MOBILE_WALLET);
-                          }}
-                          imagePosition={ImagePosition.LEFT}
-                          paddingY={6}
-                          image={AppImages.CHANGE_ICON}
-                          type={ButtonType.GREY_FILL}
-                          imageStyle={'h-[16px] w-[16px] mr-[6px]'}
-                          titleStyle={'text-[12px]'}
-                        />
-                      </CyDView>
-                    </>
+                      <Button
+                        title={'Change'}
+                        onPress={() => {
+                          openEditLimitModal(CARD_LIMIT_TYPE.MOBILE_WALLET);
+                        }}
+                        imagePosition={ImagePosition.LEFT}
+                        paddingY={6}
+                        image={AppImages.CHANGE_ICON}
+                        type={ButtonType.GREY_FILL}
+                        imageStyle={'h-[16px] w-[16px] mr-[6px]'}
+                        titleStyle={'text-[12px]'}
+                      />
+                    </CyDView>
                   )}
                 </CyDView>
               </>
