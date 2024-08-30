@@ -19,17 +19,20 @@ import {
 import ChooseMultipleCountryModal from '../../../components/v2/chooseMultipleCountryModal';
 import { ICountry } from '../../../models/cardApplication.model';
 import useAxios from '../../../core/HttpRequest';
-import { compact, get } from 'lodash';
+import { compact, get, omit } from 'lodash';
 import EditLimitModal from './editLimitModal';
 import { Loader } from '../../../components/v2/walletConnectV2Views/SigningModals/SigningModalComponents';
 import { t } from 'i18next';
 import axios from '../../../core/Http';
+import { useGlobalModalContext } from '../../../components/v2/GlobalModal';
+import ChooseCountryModal from '../../../components/v2/ChooseCountryModal';
 
 export default function CardControlsSettings({ route, navigation }) {
   const { cardControlType, currentCardProvider, card } = route.params;
   const [countryModalVisible, setCountryModalVisible] = useState(false);
   const [countries, setCountries] = useState([]);
   const [allowedCountries, setAllowedCountries] = useState([]);
+  const [selectedAllowedCountries, setSelectedAllowedCountries] = useState([]);
   const { getWithAuth, patchWithAuth, getWithoutAuth } = useAxios();
   const [limits, setLimits] = useState();
   const [limitsByControlType, setLimitsByControlType] = useState({
@@ -46,7 +49,15 @@ export default function CardControlsSettings({ route, navigation }) {
     limitType: CARD_LIMIT_TYPE.ATM,
     limit: 0,
   });
-
+  const [
+    isChooseDomesticCountryModalVisible,
+    setIsChooseDomesticCountryModalVisible,
+  ] = useState(false);
+  const [domesticCountry, setDomesticCountry] = useState({});
+  const [selectedDomesticCountry, setSelectedDomesticCountry] = useState({});
+  const { showModal, hideModal } = useGlobalModalContext();
+  const [domesticCountryLoading, setDomesticCountryLoading] = useState(false);
+  const [allowedCountryLoading, setAllowedCountryLoading] = useState(false);
   const defaultAtmLimit = 2000;
 
   useEffect(() => {
@@ -71,15 +82,19 @@ export default function CardControlsSettings({ route, navigation }) {
         return tempCountryList.includes(country.Iso2);
       });
       setAllowedCountries(tempAllowedCountries);
+      setSelectedAllowedCountries(tempAllowedCountries);
     }
   }, [limits, countries]);
 
   useEffect(() => {
-    if (allowedCountries.length) {
+    if (!countryModalVisible && selectedAllowedCountries.length) {
+      setAllowedCountryLoading(true);
       const postData = async () => {
         try {
           void updateAllowedCountries();
-        } catch (error) {}
+        } catch (error) {
+          setAllowedCountryLoading(false);
+        }
       };
 
       // Debounce the API call
@@ -90,10 +105,10 @@ export default function CardControlsSettings({ route, navigation }) {
       // Cleanup previous timer
       return () => clearTimeout(timer);
     }
-  }, [allowedCountries]);
+  }, [selectedAllowedCountries, countryModalVisible]);
 
   const updateAllowedCountries = async () => {
-    const countryList = allowedCountries?.map((country, index) => {
+    const countryList = selectedAllowedCountries?.map((country, index) => {
       return country.Iso2;
     });
 
@@ -110,11 +125,17 @@ export default function CardControlsSettings({ route, navigation }) {
       `/v1/cards/${currentCardProvider}/card/${card.cardId}/limits`,
       payload,
     );
+    setAllowedCountryLoading(false);
     if (response.isError) {
-      await errorModal({
-        titleText:
-          response.error.message ?? 'Error while updating allowed cuntries',
+      showModal('state', {
+        type: 'error',
+        title: t('UNABLE_TO_UPDATE_ALLOWED_COUNTRIES'),
+        description: t('PLEASE_CONTACT_SUPPORT'),
+        onSuccess: hideModal,
+        onFailure: hideModal,
       });
+    } else {
+      setAllowedCountries(selectedAllowedCountries);
     }
   };
 
@@ -156,6 +177,15 @@ export default function CardControlsSettings({ route, navigation }) {
     );
     if (!response.isError) {
       void getCardLimits();
+    } else {
+      setLoading(false);
+      showModal('state', {
+        type: 'error',
+        title: t('UNABLE_TO_UPDATE_CARD_LIMIT'),
+        description: response.error.message ?? t('PLEASE_CONTACT_SUPPORT'),
+        onSuccess: hideModal,
+        onFailure: hideModal,
+      });
     }
   };
 
@@ -164,9 +194,16 @@ export default function CardControlsSettings({ route, navigation }) {
     const response = await getWithAuth(
       `/v1/cards/${currentCardProvider}/card/${card.cardId}/limits`,
     );
-
     if (!response.isError) {
       setLimits(response.data);
+    } else {
+      showModal('state', {
+        type: 'error',
+        title: t('UNABLE_TO_FETCH_CARD_LIMIT'),
+        description: t('PLEASE_CONTACT_SUPPORT'),
+        onSuccess: hideModal,
+        onFailure: hideModal,
+      });
     }
     setLoading(false);
   };
@@ -198,6 +235,33 @@ export default function CardControlsSettings({ route, navigation }) {
     }
   };
 
+  const updateDomesticCountry = async () => {
+    setDomesticCountryLoading(true);
+    const payload = {
+      ...limits,
+      cCode: selectedDomesticCountry?.Iso2,
+    };
+
+    const response = await patchWithAuth(
+      `/v1/cards/${currentCardProvider}/card/${card.cardId}/limits`,
+      omit(payload, ['planLimit', 'currentLimit', 'sSt']),
+    );
+
+    setDomesticCountryLoading(false);
+
+    if (response.isError) {
+      showModal('state', {
+        type: 'error',
+        title: t('UNABLE_TO_UPDATE_DOMESTIC_COUNTRIES'),
+        description: t('PLEASE_CONTACT_SUPPORT'),
+        onSuccess: hideModal,
+        onFailure: hideModal,
+      });
+    } else {
+      setDomesticCountry(selectedDomesticCountry);
+    }
+  };
+
   useEffect(() => {
     setLimitsByControlType({
       dis: get(
@@ -219,7 +283,19 @@ export default function CardControlsSettings({ route, navigation }) {
       ),
       ecom: get(limits, ['cusL', cardControlType, CARD_LIMIT_TYPE.ONLINE], 0),
     });
+    for (const country of countries) {
+      if (country.Iso2 === get(limits, 'cCode', '')) {
+        setDomesticCountry(country);
+        setSelectedDomesticCountry(country);
+      }
+    }
   }, [limits]);
+
+  useEffect(() => {
+    if (domesticCountry.Iso2 && !isChooseDomesticCountryModalVisible) {
+      void updateDomesticCountry();
+    }
+  }, [selectedDomesticCountry]);
 
   return loading ? (
     <Loader />
@@ -229,7 +305,20 @@ export default function CardControlsSettings({ route, navigation }) {
         <ChooseMultipleCountryModal
           isModalVisible={countryModalVisible}
           setModalVisible={setCountryModalVisible}
-          selectedCountryState={[allowedCountries, setAllowedCountries]}
+          selectedCountryState={[
+            selectedAllowedCountries,
+            setSelectedAllowedCountries,
+          ]}
+        />
+        <ChooseCountryModal
+          isModalVisible={isChooseDomesticCountryModalVisible}
+          setModalVisible={setIsChooseDomesticCountryModalVisible}
+          selectedCountryState={[
+            selectedDomesticCountry,
+            setSelectedDomesticCountry,
+          ]}
+          showDialCode={false}
+          showRadioButton={true}
         />
         <EditLimitModal
           isModalVisible={editModalData.isEditLimitModalVisible}
@@ -252,6 +341,44 @@ export default function CardControlsSettings({ route, navigation }) {
 
         <CyDScrollView>
           <CyDView className='mx-[16px] mt-[16px]'>
+            {cardControlType === CardControlTypes.DOMESTIC && (
+              <>
+                <CyDView className='bg-white flex flex-col px-[12px] py-[12px] mb-[12px] rounded-[8px]'>
+                  <CyDText className='text-[16px] font-semibold mt-[4px]'>
+                    {'Domestic Country'}
+                  </CyDText>
+                  <CyDView className='flex-1 flex-row justify-between items-center mt-[4px]'>
+                    <CyDView className={'flex flex-row items-center'}>
+                      <CyDText className={'text-[36px]'}>
+                        {domesticCountry.unicode_flag ?? domesticCountry.flag}
+                      </CyDText>
+                      <CyDText
+                        className={'ml-[10px] font-semibold text-[16px]'}>
+                        {domesticCountry.name}
+                      </CyDText>
+                    </CyDView>
+                    <Button
+                      title={'Change'}
+                      onPress={() => {
+                        setIsChooseDomesticCountryModalVisible(true);
+                      }}
+                      imagePosition={ImagePosition.LEFT}
+                      paddingY={6}
+                      loading={domesticCountryLoading}
+                      loaderStyle={{
+                        height: 15,
+                        width: 15,
+                      }}
+                      style='w-[84.5px] h-[30px]'
+                      image={AppImages.CHANGE_ICON}
+                      type={ButtonType.GREY_FILL}
+                      imageStyle={'h-[16px] w-[16px] mr-[6px]'}
+                      titleStyle={'text-[12px]'}
+                    />
+                  </CyDView>
+                </CyDView>
+              </>
+            )}
             {cardControlType === CardControlTypes.INTERNATIONAL && (
               <>
                 <CyDView className='bg-white flex flex-col px-[12px] py-[12px] mb-[12px] rounded-[8px]'>
@@ -304,7 +431,7 @@ export default function CardControlsSettings({ route, navigation }) {
                     </CyDView>
                     <CyDView className='felx flex-row items-center justify-between mt-[12px]'>
                       <CyDText className='text-[12px] text-n200'>
-                        {'Selected Countries'}
+                        {'Allowed Countries'}
                       </CyDText>
                       <CyDText className='text-[12px] text-n200'>{`Total Countries: ${countries.length}`}</CyDText>
                     </CyDView>
@@ -314,7 +441,11 @@ export default function CardControlsSettings({ route, navigation }) {
                         setCountryModalVisible(true);
                       }}>
                       <CyDView>
-                        <CyDText>{getAllowedCountiesText()}</CyDText>
+                        <CyDText>
+                          {allowedCountryLoading
+                            ? 'Updating ...'
+                            : getAllowedCountiesText()}
+                        </CyDText>
                       </CyDView>
                       <CyDImage
                         source={AppImages.DOWN_ARROW}

@@ -20,6 +20,7 @@ import { sendFirebaseEvent } from '../../utilities/analyticsUtility';
 import {
   TransactionFilterTypes,
   CardTransactionTypes,
+  CardProviders,
 } from '../../../constants/enum';
 import clsx from 'clsx';
 import { screenTitle } from '../../../constants';
@@ -27,6 +28,9 @@ import { useNavigation } from '@react-navigation/native';
 import { GlobalContext } from '../../../core/globalContext';
 import { ICardTransaction } from '../../../models/card.model';
 import { capitalize } from 'lodash';
+import { t } from 'i18next';
+import useCardUtilities from '../../../hooks/useCardUtilities';
+import { CardProfile } from '../../../models/cardProfile.model';
 
 const formatDate = (date: Date) => {
   return moment(date).format('MMM DD YYYY, h:mm a');
@@ -100,6 +104,7 @@ const DetailItem = ({
 
 const TransactionDetail = ({
   item,
+  isSettled,
 }: {
   item: {
     icon: any;
@@ -109,6 +114,7 @@ const TransactionDetail = ({
       value: any;
     }>;
   };
+  isSettled: boolean;
 }) => {
   return (
     <CyDView className='pb-[5px] rounded-[7px] mt-[25px] bg-lightGrey'>
@@ -127,6 +133,14 @@ const TransactionDetail = ({
             return <DetailItem item={detailItem} key={index} />;
           }
         })}
+        {!isSettled && item.title === t('TRANSACTION_DETAILS') && (
+          <CyDView>
+            <CyDText className='pl-[12px]'>
+              <CyDText className='font-bold underline'>Note:</CyDText>
+              {' ' + t('TRANSACTION_YET_TO_BE_SETTLED')}
+            </CyDText>
+          </CyDView>
+        )}
       </CyDView>
     </CyDView>
   );
@@ -149,6 +163,8 @@ export default function TransactionDetails({
   } = transaction;
   const hdWalletContext = useContext<any>(HdWalletContext);
   const globalContext = useContext(GlobalContext);
+  const cardProfile: CardProfile = globalContext.globalState.cardProfile;
+  const provider = cardProfile.provider ?? CardProviders.REAP_CARD;
   const transactionDetails: Array<{
     icon: any;
     title: string;
@@ -281,29 +297,29 @@ export default function TransactionDetails({
           </CyDText>
           <CyDText>{formatDate(transaction.date)}</CyDText>
         </CyDView>
-        {!transaction.isSettled && (
-          <CyDView className='mb-[-20px] mt-[12px]'>
-            <CyDText className='pl-[12px]'>
-              <CyDText className='font-bold underline'>Note:</CyDText>
-              {' ' + t('TRANSACTION_YET_TO_BE_SETTLED')}
-            </CyDText>
-          </CyDView>
-        )}
         {transactionDetails.map((item, index) => {
           if (
             !(fxCurrencySymbol === 'USD' && index === 2) &&
             !(transaction.type === CardTransactionTypes.REFUND && index === 2)
           ) {
-            return <TransactionDetail item={item} key={index} />;
+            return (
+              <TransactionDetail
+                item={item}
+                key={index}
+                isSettled={transaction.isSettled}
+              />
+            );
           }
         })}
-        {!transaction.isSettled && fxCurrencySymbol !== 'USD' && (
-          <CyDView className='bg-lightGrey'>
-            <CyDText className='px-[12px] pb-[12px] mt-[-15px]'>
-              {t('TRANSACTION_SETTLEMENT_AMOUNT')}
-            </CyDText>
-          </CyDView>
-        )}
+        {!transaction.isSettled &&
+          fxCurrencySymbol !== 'USD' &&
+          !(provider === CardProviders.REAP_CARD) && (
+            <CyDView className='bg-lightGrey'>
+              <CyDText className='px-[12px] pb-[12px] mt-[-15px]'>
+                {t('TRANSACTION_SETTLEMENT_AMOUNT')}
+              </CyDText>
+            </CyDView>
+          )}
         <CyDTouchView
           onPress={() => {
             void Intercom.present();

@@ -28,12 +28,16 @@ interface Props {
     ICountry | undefined,
     React.Dispatch<React.SetStateAction<ICountry | undefined>>,
   ];
+  showDialCode?: boolean;
+  showRadioButton?: boolean;
 }
 
 const ChooseCountryModal = ({
   isModalVisible,
   setModalVisible,
   selectedCountryState,
+  showDialCode = true,
+  showRadioButton = false,
 }: Props) => {
   const [selectedCountry, setSelectedCountry] = selectedCountryState;
 
@@ -157,14 +161,30 @@ const ChooseCountryModal = ({
                           {country.name}
                         </CyDText>
                       </CyDView>
-                      <CyDView className={'flex flex-row justify-end'}>
-                        <CyDText
+                      {showDialCode && (
+                        <CyDView className={'flex flex-row justify-end'}>
+                          <CyDText
+                            className={
+                              'text-[14px] font-extrabold text-subTextColor'
+                            }>
+                            {country.dial_code}
+                          </CyDText>
+                        </CyDView>
+                      )}
+                      {showRadioButton && (
+                        <CyDView
                           className={
-                            'text-[14px] font-extrabold text-subTextColor'
+                            'h-[22px] w-[22px] rounded-[11px] border-[1.5px] border-borderColor flex flex-row justify-center items-center'
                           }>
-                          {country.dial_code}
-                        </CyDText>
-                      </CyDView>
+                          {country.name === selectedCountry?.name ? (
+                            <CyDView
+                              className={
+                                'h-[10px] w-[10px] rounded-[5px] bg-appColor'
+                              }
+                            />
+                          ) : null}
+                        </CyDView>
+                      )}
                     </CyDTouchView>
                   );
                 })}

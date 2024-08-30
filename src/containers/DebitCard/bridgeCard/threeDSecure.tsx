@@ -12,10 +12,8 @@ import AppImages from '../../../../assets/images/appImages';
 import ThreeDSecureOptionModal from '../../../components/v2/threeDSecureOptionModal';
 
 export default function ThreeDSecure({ route, navigation }) {
-  const { currentCardProvider, card } = route.params;
-  const [isTelegramEnabled, setIsTelegramEnabled] = useState(
-    get(card, 'is3dsEnabled', false),
-  );
+  const { currentCardProvider, card, isTelegramEnabled, setIsTelegramEnabled } =
+    route.params;
   const [showModal, setShowModal] = useState(false);
 
   return (

@@ -1,10 +1,10 @@
 import clsx from 'clsx';
 import Fuse from 'fuse.js';
-import React, { useEffect, useState } from 'react';
+import React, { useContext, useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Dimensions, Keyboard, StyleSheet } from 'react-native';
 import AppImages from '../../../assets/images/appImages';
-import { TokenModalType } from '../../constants/enum';
+import { CardProviders, TokenModalType } from '../../constants/enum';
 import {
   CyDFastImage,
   CyDFlatList,
@@ -25,6 +25,8 @@ import { copyToClipboard, isNativeToken } from '../../core/util';
 import Toast from 'react-native-toast-message';
 import { toastConfig } from './toast';
 import { AUTO_LOAD_SUPPORTED_CHAINS } from '../../constants/server';
+import { GlobalContext } from '../../core/globalContext';
+import { CardProfile } from '../../models/cardProfile.model';
 
 interface TokenModal {
   tokenList: Holding[];
@@ -39,6 +41,9 @@ interface TokenModal {
 
 export default function ChooseTokenModal(props: TokenModal) {
   const { t } = useTranslation();
+  const globalContext = useContext(GlobalContext);
+  const cardProfile: CardProfile = globalContext.globalState.cardProfile;
+  const provider = cardProfile.provider ?? CardProviders.REAP_CARD;
   const {
     isChooseTokenModalVisible,
     tokenList,
@@ -223,6 +228,7 @@ export default function ChooseTokenModal(props: TokenModal) {
                   renderPage,
                   isTokenDisabled,
                   onSelectingToken,
+                  provider,
                 })
               }
               showsVerticalScrollIndicator={true}
@@ -259,12 +265,14 @@ const TokenItem = ({
   renderPage,
   isTokenDisabled,
   onSelectingToken,
+  provider,
 }: {
   item: Holding | SwapToken;
   type: TokenModalType;
   renderPage: string;
   isTokenDisabled: (arg1: number, arg2: boolean, arg3: boolean) => boolean;
   onSelectingToken: (arg: Holding | SwapToken) => void;
+  provider: CardProviders;
 }) => {
   const copyContractAddress = (contractAddress: string) => {
     copyToClipboard(contractAddress);
@@ -324,7 +332,9 @@ const TokenItem = ({
                 <CyDText className={'font-extrabold text-[16px]'}>
                   {name}{' '}
                 </CyDText>
-                {isZeroFeeCardFunding && renderPage === 'fundCardPage' ? (
+                {!(provider === CardProviders.REAP_CARD) &&
+                isZeroFeeCardFunding &&
+                renderPage === 'fundCardPage' ? (
                   <CyDView className='h-[20px] bg-privacyMessageBackgroundColor rounded-[8px] mx-[4px] px-[8px] flex justify-center items-center'>
                     <CyDText className={'font-black text-[10px]'}>
                       {'ZERO FEE ✨'}
