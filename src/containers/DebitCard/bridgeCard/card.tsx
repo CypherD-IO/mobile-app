@@ -555,6 +555,7 @@ const RenderCardActions = ({
     userName,
   }) => {
     try {
+      setIsFetchingCardDetails(true);
       if (reuseToken) {
         await setCardRevealReuseToken(cardId, reuseToken);
       }
@@ -568,6 +569,7 @@ const RenderCardActions = ({
         buffer,
       );
       const decryptedBuffer = decrypted.toString('utf8');
+      setIsFetchingCardDetails(false);
       setWebviewUrl(decryptedBuffer);
       setUserName(userName);
       setShowRCCardDetailsModal(true);
@@ -851,7 +853,7 @@ const RenderCardActions = ({
           animationInTiming={300}
           animationOutTiming={300}
           style={styles.modalLayout}>
-          <CyDView className='bg-cardBgTo py-[8px] mb-[12px] h-[310px] w-[90%] rounded-[16px]'>
+          <CyDView className='bg-cardBgTo py-[8px] mb-[12px] h-[400px] w-[90%] rounded-[16px]'>
             <CyDTouchView onPress={() => setShowRCCardDetailsModal(false)}>
               <CyDImage
                 source={AppImages.CLOSE_CIRCLE}
@@ -864,37 +866,23 @@ const RenderCardActions = ({
                 Details will be hidden in {hideTimer} sec
               </CyDText>
             </CyDView>
+            <CyDView className='bg-white rounded-[8px] mx-[12px] px-[12px] py-[10px]'>
+              <CyDText className='font-[900] text-[16px]'>Name:</CyDText>
+              <CyDText className='mt-[4px] font-bold text-[16px]'>
+                {userName}
+              </CyDText>
+            </CyDView>
             <WebView
               source={{
                 html: `<!DOCTYPE html>
                   <html lang="en">
-                    <head>
-                      <meta charset="UTF-8">
-                      <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=2.0, user-scalable=yes">
-                      <link href='https://fonts.googleapis.com/css?family=Manrope' rel='stylesheet'>
-                      <style>
-                        .container {
-                            position: relative;
-                            width: 350px;
-                            height: 242px;
-                        }
-                        .name {
-                            position: absolute;
-                            bottom: 35px;
-                            left: 20px;
-                            color: black;
-                            font-size: 16px;
-                            font-weight: 900;
-                            font-family: 'Manrope'
-                        }
-                      </style>
+                  <head>
+                    <meta charset="UTF-8">
+                    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=2.0, user-scalable=yes">
+
                     </head>
-                    <body style="background: url('https://public.cypherd.io/icons/rcPlainVirtual.png') no-repeat center center;background-size: cover;margin:0;padding:0;overflow:hidden">
-                      <div class="container">
-                        <iframe scrolling="no" src=${webviewUrl} allow="clipboard-read; clipboard-write" style="height:242px;overflow:hidden;width:350px;margin:0;padding:0;border:none;border-radius:16px"></iframe>
-                        <div class="name">${userName}</div>
-                      </div>
-                    </body>
+                  <body style="background:#EBEDF0;overflow:hidden">
+                  <iframe scrolling="no" src=${webviewUrl} allow="clipboard-read; clipboard-write" style="height:250px;overflow:hidden;width:100%;margin:0;padding:0;border:none;background:#EBEDF0;border-radius:16px"></iframe></body>
                   </html>
                 `,
                 // html: htmlContent
@@ -904,12 +892,11 @@ const RenderCardActions = ({
               // }}
               scalesPageToFit={true}
               style={{
-                height: '242px',
-                weight: '350px',
+                height: '100%',
+                weight: '100%',
                 background: '#EBEDF0',
                 padding: 0,
                 margin: 0,
-                marginHorizontal: 10,
                 borderRadius: 16,
               }}
               javaScriptEnabled={true}

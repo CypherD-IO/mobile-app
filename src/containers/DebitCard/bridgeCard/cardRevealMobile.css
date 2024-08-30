@@ -1,15 +1,37 @@
+html,
+body {
+  margin: 0;
+  padding: 0;
+  height: 450px;
+  width: 100%;
+  border: none;
+  background-color: #ebedf0;
+}
+
+iframe {
+  height: 450px;
+  width: 100%;
+  border: none;
+  transform: scale(1.3); /* Adjust the scale value as needed */
+  transform-origin: 0 0; /* Ensure scaling happens from the top left corner */
+}
+
 #card-data {
   border: none;
-  margin: 0px;
+  margin: -8px;
   padding: 12px;
-  width: 95%;
+  width: 98%;
+  height: 450px;
+  background: #ebedf0;
 }
 
 #pan-div {
-  padding-left: 6px;
-  padding-right: 6px;
+  padding-left: 10px;
+  padding-right: 10px;
   padding-top: 12px;
   padding-bottom: 12px;
+  border-radius: 8px;
+  background: #ffffff;
 }
 
 #pan-p {
@@ -20,18 +42,18 @@
 #pan-value {
   display: block;
   margin-top: 6px;
-  font-size: 16px;
+  font-size: 14px;
   color: #000000;
 }
 
 #expiry-div {
-  margin-top: 12px;
-  padding-left: 6px;
-  padding-right: 6px;
+  margin-top: 16px;
+  padding-left: 10px;
+  padding-right: 10px;
   padding-top: 12px;
   padding-bottom: 12px;
-  width: 50%;
-  display: inline-block;
+  border-radius: 8px;
+  background: #ffffff;
 }
 
 #expiry-p {
@@ -42,21 +64,21 @@
 #expiry-value {
   display: block;
   margin-top: 6px;
-  font-size: 16px;
+  font-size: 14px;
   color: #000000;
 }
 
 #cvv-div {
-  margin-top: 12px;
-  padding-left: 6px;
-  padding-right: 6px;
+  margin-top: 16px;
+  padding-left: 10px;
+  padding-right: 10px;
   padding-top: 12px;
   padding-bottom: 12px;
-  display: inline-block;
+  border-radius: 8px;
+  background: #ffffff;
 }
 
 #cvv-p {
-  font-size: 14px;
   margin: 0px;
   color: #000000;
 }
@@ -64,7 +86,7 @@
 #cvv-value {
   display: block;
   margin-top: 6px;
-  font-size: 16px;
+  font-size: 14px;
   color: #000000;
 }
 
