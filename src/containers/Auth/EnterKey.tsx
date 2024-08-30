@@ -253,8 +253,8 @@ export default function Login(props) {
                         props.navigation.goBack();
                       }}>
                       <CyDImage
-                        source={AppImages.BACK_ARROW_CIRCLE}
-                        className='w-[24px] h-[24px]'
+                        source={AppImages.BACK_ARROW_GRAY}
+                        className='w-[32px] h-[32px]'
                       />
                     </CyDTouchView>
                     <CyDText className='font-semibold text-black text-[20px]'>

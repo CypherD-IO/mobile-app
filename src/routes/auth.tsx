@@ -143,9 +143,9 @@ const defaultHeaderLeft = navigation => {
         }
       }}>
       <CyDFastImage
-        className={'h-[32px] w-[32px]'}
+        className={'w-[32px] h-[32px]'}
         resizeMode='cover'
-        source={AppImages.BACK_ARROW_CIRCLE}
+        source={AppImages.BACK_ARROW_GRAY}
       />
     </CyDTouchView>
   );

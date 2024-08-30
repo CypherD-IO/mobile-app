@@ -1224,8 +1224,8 @@ export default function CardSignupScreen({ navigation, route }) {
                 }}
                 className='w-[30px] pl-[12px]'>
                 <CyDImage
-                  source={AppImages.BACK_ARROW_CIRCLE}
-                  className='h-[24px] w-[24px]'
+                  source={AppImages.BACK_ARROW_GRAY}
+                  className='w-[32px] h-[32px]'
                 />
               </CyDTouchView>
             }

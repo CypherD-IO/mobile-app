@@ -200,8 +200,8 @@ export default function ReferralRewards(props: {
             navigation.goBack();
           }}>
           <CyDFastImage
-            source={AppImages.BACK_ARROW_CIRCLE}
-            className={'h-[24px] w-[24px] mx-[20px] mt-[60px]'}
+            source={AppImages.BACK_ARROW_GRAY}
+            className={'w-[32px] h-[32px] mx-[20px] mt-[60px]'}
           />
         </CyDTouchView>
         <CyDFastImage

@@ -56,7 +56,7 @@ export default function OpenLegalScreen(props) {
           height={20}
           width={20}
           resizemode='contain'
-          source={AppImages.BACK_ARROW_CIRCLE}
+          source={AppImages.BACK_ARROW_GRAY}
           style={{ tintColor: 'black' }}
         />
       </DynamicTouchView>

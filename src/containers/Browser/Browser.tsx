@@ -584,7 +584,7 @@ export default function Browser({ route, navigation }: any) {
               height={28}
               width={28}
               resizemode='contain'
-              source={AppImages.BACK_ARROW_CIRCLE}
+              source={AppImages.BACK_ARROW_GRAY}
               style={{ tintColor: canGoBack ? 'black' : 'gray' }}
             />
           </DynamicTouchView>
@@ -607,7 +607,7 @@ export default function Browser({ route, navigation }: any) {
               height={28}
               width={28}
               resizemode='contain'
-              source={AppImages.BACK_ARROW_CIRCLE}
+              source={AppImages.BACK_ARROW_GRAY}
               style={{
                 tintColor: canGoForward ? 'black' : 'gray',
                 transform: [{ rotate: '180deg' }],

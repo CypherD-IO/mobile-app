@@ -106,7 +106,7 @@ function CreateSeedPhrase({ route, navigation }) {
           }}>
           <CyDImage
             className={'h-[20px] w-[20px]'}
-            source={AppImages.BACK_ARROW_CIRCLE}
+            source={AppImages.BACK_ARROW_GRAY}
           />
         </CyDTouchView>
       ),
