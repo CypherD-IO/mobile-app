@@ -555,6 +555,7 @@ const RenderCardActions = ({
     userName,
   }) => {
     try {
+      setIsFetchingCardDetails(true);
       if (reuseToken) {
         await setCardRevealReuseToken(cardId, reuseToken);
       }
@@ -568,6 +569,7 @@ const RenderCardActions = ({
         buffer,
       );
       const decryptedBuffer = decrypted.toString('utf8');
+      setIsFetchingCardDetails(false);
       setWebviewUrl(decryptedBuffer);
       setUserName(userName);
       setShowRCCardDetailsModal(true);

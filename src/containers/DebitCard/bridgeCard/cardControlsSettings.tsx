@@ -63,6 +63,7 @@ export default function CardControlsSettings({ route, navigation }) {
   const defaultAtmLimit = 2000;
   const [limitApplicable, setLimitApplicable] = useState('planLimit');
   const isFocused = useIsFocused();
+  const [isDetailsChanged, setIsDetailsChanged] = useState(false);
 
   useEffect(() => {
     setEditedLimits(limits);
@@ -279,6 +280,18 @@ export default function CardControlsSettings({ route, navigation }) {
       ),
     });
   }, [editedLimits]);
+
+  useEffect(() => {
+    if (
+      !isEqual(selectedAllowedCountries, allowedCountries) ||
+      !isEqual(selectedDomesticCountry, domesticCountry) ||
+      !isEqual(editedLimits, limits)
+    ) {
+      setIsDetailsChanged(true);
+    } else {
+      setIsDetailsChanged(false);
+    }
+  }, [editedLimits, selectedDomesticCountry, selectedAllowedCountries]);
 
   return loading ? (
     <Loader />
@@ -685,9 +698,10 @@ export default function CardControlsSettings({ route, navigation }) {
             void saveLimits();
           }}
           paddingY={12}
-          style='mx-[26px] rounded-[12px] mt-[10px]'
+          style='mx-[26px] rounded-[12px] mt-[10px] mb-[20px]'
           titleStyle='text-[18px]'
           loading={loading}
+          disabled={!isDetailsChanged}
           loaderStyle={{ height: 25, width: 25 }}
         />
       </CyDSafeAreaView>
