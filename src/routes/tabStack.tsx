@@ -55,6 +55,7 @@ function TabStack() {
     screenTitle.CARD_KYC_STATUS_SCREEN,
     screenTitle.DEBIT_CARD_SCREEN,
     screenTitle.BRIDGE_CARD_SCREEN,
+    screenTitle.SELECT_PLAN,
     screenTitle.ON_META,
     screenTitle.SEND_INVITE_CODE_SCREEN,
   ];
@@ -271,7 +272,7 @@ function TabStack() {
               iconName = focused
                 ? AppImages.OPTION_SEL
                 : AppImages.OPTION_UNSEL;
-            } else if (route.name === screenTitle.DEBIT_CARD) {
+            } else if (route.name === screenTitle.DEBIT_CARD_SCREEN) {
               iconName = focused ? AppImages.CARD_SEL : AppImages.CARD_UNSEL;
             }
 
@@ -296,7 +297,7 @@ function TabStack() {
           component={PortfolioStackScreen}
         />
         <Tab.Screen
-          name={screenTitle.DEBIT_CARD}
+          name={screenTitle.DEBIT_CARD_SCREEN}
           component={DebitCardStackScreen}
         />
         <Tab.Screen

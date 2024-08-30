@@ -3,6 +3,7 @@ import React, { type Dispatch } from 'react';
 import { GlobalContextType } from '../constants/enum';
 import { ChainBackendNames } from '../constants/server';
 import { CardProfile } from '../models/cardProfile.model';
+import { IPlanData } from '../models/planData.interface';
 
 export type RpcResponseDetail = {
   [key in ChainBackendNames]: RPCDetail;
@@ -13,6 +14,7 @@ export interface GlobalStateDef {
   cardProfile?: CardProfile;
   ibc?: boolean;
   isAuthenticated?: boolean;
+  planInfo: IPlanData;
 }
 
 export interface RPCDetail {
@@ -180,9 +182,34 @@ export const initialGlobalState: GlobalStateDef = {
       primary: 'https://rpc-kujira-ia.cosmosia.notional.ventures/',
       secondaryList: 'https://rpc-kujira.whispernode.com:443',
     },
+    SOLANA: {
+      primary: 'https://api.mainnet-beta.solana.com',
+      secondaryList: 'https://api.mainnet-beta.solana.com',
+    },
   },
   token: '',
   isAuthenticated: false,
+  planInfo: {
+    default: {
+      basic_plan_v1: {
+        usdcFee: 0.5,
+        nonUsdcFee: 0.5,
+        fxFeePc: 1.4,
+        physicalCardFee: 50,
+        chargeBackLimit: 0,
+        cost: 0,
+      },
+      pro_plan_v1: {
+        usdcFee: 0,
+        nonUsdcFee: 0.25,
+        fxFeePc: 0.5,
+        physicalCardFee: 0,
+        chargeBackLimit: 300,
+        cost: 200,
+      },
+    },
+    custom: {},
+  },
 };
 
 interface GlobalReducerInput {
@@ -190,11 +217,15 @@ interface GlobalReducerInput {
     | GlobalContextType.RPC_UPDATE
     | GlobalContextType.SIGN_IN
     | GlobalContextType.CARD_PROFILE
+    | GlobalContextType.IS_APP_AUTHENTICATED
+    | GlobalContextType.PLAN_INFO
     | GlobalContextType.IBC;
   rpc?: RpcResponseDetail;
   sessionToken?: string;
   cardProfile?: CardProfile;
   ibc?: boolean;
+  isAuthenticated?: boolean;
+  planInfo?: IPlanData;
 }
 
 export const gloabalContextReducer = (
@@ -202,19 +233,28 @@ export const gloabalContextReducer = (
   input: GlobalReducerInput,
 ): GlobalStateDef => {
   if (input) {
-    const { type, rpc, sessionToken, cardProfile, ibc, isAuthenticated } =
-      input;
+    const {
+      type,
+      rpc,
+      sessionToken,
+      cardProfile,
+      ibc,
+      isAuthenticated,
+      planInfo,
+    } = input;
 
     if (type === GlobalContextType.RPC_UPDATE && rpc) {
       return { ...state, rpcEndpoints: rpc };
     } else if (type === GlobalContextType.SIGN_IN) {
-      return { ...state, token: sessionToken };
+      return { ...state, token: sessionToken ?? '' };
     } else if (type === GlobalContextType.CARD_PROFILE) {
       return { ...state, cardProfile };
     } else if (type === GlobalContextType.IBC) {
       return { ...state, ibc };
     } else if (type === GlobalContextType.IS_APP_AUTHENTICATED) {
       return { ...state, isAuthenticated };
+    } else if (type === GlobalContextType.PLAN_INFO) {
+      return { ...state, planInfo: planInfo ?? initialGlobalState.planInfo };
     }
   }
   return state;

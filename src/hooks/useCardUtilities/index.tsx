@@ -62,6 +62,25 @@ export default function useCardUtilities() {
     }
   };
 
+  const getPlanData = async (token: string) => {
+    const ARCH_HOST: string = hostWorker.getHost('ARCH_HOST');
+    const profileUrl = `${ARCH_HOST}/v1/cards/plan-data`;
+    const config = {
+      headers: { Authorization: `Bearer ${String(token)}` },
+    };
+    try {
+      const response = await axios.get(profileUrl, config);
+      if (response.data) {
+        const { data } = response;
+        const planDetails = data;
+        return planDetails;
+      }
+    } catch (e) {
+      Sentry.captureException(e);
+      return e;
+    }
+  };
+
   const checkIsRCEnabled = async () => {
     const isDevMode = await getDeveloperMode();
     const isRcEnabledInAsync = await getIsRcEnabled();
@@ -86,5 +105,6 @@ export default function useCardUtilities() {
     cardProfileModal,
     getWalletProfile,
     checkIsRCEnabled,
+    getPlanData,
   };
 }

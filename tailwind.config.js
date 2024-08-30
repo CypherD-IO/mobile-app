@@ -128,15 +128,25 @@ module.exports = {
       cardBgFrom: '#F5F6F7',
       cardBgTo: '#EBEDF0',
       mandarin: '#FFB900',
+      n0: '#FFFFFF',
+      n20: '#F5F6F7',
+      n30: '#EBEDF0',
+      n50: '#C2C7D0',
       n200: '#6B788E',
       b200: '#444444',
       b150: '#666666',
-      n20: '#F5F6F7',
       b400: '#C2C7D0',
       n900: '#505F79',
       r300: '#BE1818',
       r20: '#F9DEDE',
-      n60: '#B3B9C4'
+      n60: '#B3B9C4',
+      base100: '#999999',
+      base150: '#666666',
+      base400: '#000000',
+      successGreen400: '#006A31',
+      p10: '#FDF3D8',
+      p200: '#ECAB00'
+
     },
     columns: {
       auto: 'auto',
@@ -440,6 +450,7 @@ module.exports = {
     },
     fontFamily: {
       nunito: ['Nunito'],
+      manrope: ['Manrope-Regular', 'sans-serif'],
       sans: [
         'ui-sans-serif',
         'system-ui',

@@ -1,4 +1,4 @@
-import { ApplicationName } from './enum';
+import { ApplicationName, CypherPlanId } from './enum';
 import { ChainBackendNames } from './server';
 
 export const INJECTED_WEB3_CDN =
@@ -905,4 +905,9 @@ export const Bech32Prefixes = {
   OSMOSIS: 'osmo',
   COREUM: 'core',
   INJECTIVE: 'inj',
+};
+
+export const CYPHER_PLAN_ID_NAME_MAPPING: Record<CypherPlanId, string> = {
+  [CypherPlanId.BASIC_PLAN]: 'Cypher Free Plan',
+  [CypherPlanId.PRO_PLAN]: 'Cypher Pro Plan',
 };

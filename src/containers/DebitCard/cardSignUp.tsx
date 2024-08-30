@@ -265,9 +265,20 @@ export default function CardSignupScreen({ navigation, route }) {
   }, []);
 
   const getCountryData = async () => {
+    const isRcEnabled = await checkIsRCEnabled();
+    // card application created with reap if user has isRcUpgradable or has isRcEnabled else created with paycaddy
+    const provider = get(
+      cardProfile,
+      [CardProviders.PAYCADDY, 'isRcUpgradable'],
+      false,
+    )
+      ? CardProviders.REAP_CARD
+      : isRcEnabled
+        ? CardProviders.REAP_CARD
+        : CardProviders.PAYCADDY;
     try {
       const response = await axios.get(
-        `https://public.cypherd.io/js/countryMaster.js?${String(new Date())}`,
+        `https://public.cypherd.io/js/${provider === CardProviders.REAP_CARD ? 'rcSupportedCountries' : 'countryMaster'}.js?${String(new Date())}`,
       );
       if (response?.data) {
         setCopyCountriesWithFlagAndDialcodes(response.data);
@@ -647,7 +658,7 @@ export default function CardSignupScreen({ navigation, route }) {
               <CyDView className={'mt-[20px] flex flex-row justify-center'}>
                 <CyDTextInput
                   className={clsx(
-                    'ml-[4px] border-[1px] border-inputBorderColor rounded-[5px] p-[12px] text-[18px] font-nunito text-primaryTextColor w-full',
+                    'border-[1px] border-inputBorderColor rounded-[5px] p-[12px] text-[18px] font-nunito text-primaryTextColor w-full',
                     {
                       'border-redOffColor':
                         formProps.touched.email && formProps.errors.email,
@@ -1213,8 +1224,8 @@ export default function CardSignupScreen({ navigation, route }) {
                 }}
                 className='w-[30px] pl-[12px]'>
                 <CyDImage
-                  source={AppImages.LEFT_ARROW}
-                  className='h-[20px] w-[20px]'
+                  source={AppImages.BACK_ARROW_GRAY}
+                  className='w-[32px] h-[32px]'
                 />
               </CyDTouchView>
             }

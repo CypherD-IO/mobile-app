@@ -112,7 +112,6 @@ export default function ReferralRewards(props: {
           {props.tabDetails.description}
         </CyDText>
         {props.tabDetails.actionSteps.map((item, index) => (
-          // eslint-disable-next-line react-native/no-raw-text
           <CyDText
             className={
               'text-[#1F1F1F] text-[16px] font-normal mt-[15px] ml-[15px]'
@@ -201,8 +200,8 @@ export default function ReferralRewards(props: {
             navigation.goBack();
           }}>
           <CyDFastImage
-            source={AppImages.BACK}
-            className={'h-[20px] w-[20px] mx-[20px] mt-[60px]'}
+            source={AppImages.BACK_ARROW_GRAY}
+            className={'w-[32px] h-[32px] mx-[20px] mt-[60px]'}
           />
         </CyDTouchView>
         <CyDFastImage

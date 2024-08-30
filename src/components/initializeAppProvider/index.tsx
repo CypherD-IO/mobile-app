@@ -29,7 +29,6 @@ import Intercom from '@intercom/intercom-react-native';
 import RNExitApp from 'react-native-exit-app';
 import { HdWalletContextDef } from '../../reducers/hdwallet_reducer';
 import Loading from '../../containers/Loading';
-import { isEmpty } from 'lodash';
 
 export const InitializeAppProvider: React.FC<JSX.Element> = ({ children }) => {
   const {

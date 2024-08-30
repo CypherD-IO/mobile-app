@@ -2,6 +2,7 @@ import {
   CardApplicationStatus,
   CardProviders,
   CardStatus,
+  CypherPlanId,
 } from '../constants/enum';
 
 export interface CardProfile {
@@ -70,4 +71,10 @@ export interface CardProfile {
   physicalCardEligibilityLimit: number;
   children?: Array<{ address: string; label: string }>;
   child?: string;
+  planInfo: {
+    planId: CypherPlanId;
+    optedPlanId: CypherPlanId;
+    updatedOn: number;
+    expiresOn: number;
+  };
 }

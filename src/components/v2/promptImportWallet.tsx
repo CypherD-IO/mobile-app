@@ -141,8 +141,8 @@ const PromptImportWallet: React.FC<PromptImportWalletDef> = (
                 store.onCancel();
               }}>
               <CyDImage
-                source={AppImages.BACK}
-                className='h-[22px] w-[25px]'
+                source={AppImages.BACK_ARROW_GRAY}
+                className='w-[32px] h-[32px]'
                 resizeMode='contain'
               />
             </CyDTouchView>

@@ -17,13 +17,17 @@ import {
   GlobalContextType,
 } from '../../../constants/enum';
 import CardScreen from '../bridgeCard/card';
-import { useIsFocused } from '@react-navigation/native';
+import {
+  NavigationProp,
+  ParamListBase,
+  useIsFocused,
+} from '@react-navigation/native';
 import { useTranslation } from 'react-i18next';
 import Button from '../../../components/v2/button';
 import { screenTitle } from '../../../constants';
 import { GlobalContext } from '../../../core/globalContext';
 import { CardProfile } from '../../../models/cardProfile.model';
-import { get, has } from 'lodash';
+import { get } from 'lodash';
 import useAxios from '../../../core/HttpRequest';
 import * as Sentry from '@sentry/react-native';
 import CardTransactionItem from '../../../components/v2/CardTransactionItem';
@@ -48,7 +52,7 @@ import CardProviderSwitch from '../../../components/cardProviderSwitch';
 import useCardUtilities from '../../../hooks/useCardUtilities';
 
 interface CypherCardScreenProps {
-  navigation: any;
+  navigation: NavigationProp<ParamListBase>;
   route: { params: { cardProvider: CardProviders } };
 }
 
@@ -59,7 +63,7 @@ export default function CypherCardScreen({
   const { cardProvider } = route.params;
   const isFocused = useIsFocused();
   const { t } = useTranslation();
-  const { getWithAuth } = useAxios();
+  const { getWithAuth, patchWithAuth } = useAxios();
   const { showModal, hideModal } = useGlobalModalContext();
   const globalContext = useContext<any>(GlobalContext);
   const cardProfile: CardProfile = globalContext.globalState.cardProfile;
@@ -265,6 +269,18 @@ export default function CypherCardScreen({
     return false;
   };
 
+  // const onPressUp = async () => {
+  //   const { isError, data, error } = await patchWithAuth(
+  //     '/v1/cards/rc/plan/deduct',
+  //     {
+  //       planId: 'basic_plan_v1',
+  //     },
+  //   );
+  //   console.log('🚀 ~ onPressUp ~ error:', error);
+  //   console.log('🚀 ~ onPressUp ~ data:', data);
+  //   console.log('🚀 ~ onPressUp ~ isError:', isError);
+  // };
+
   return isLayoutRendered ? (
     <CyDSafeAreaView className='flex-1 bg-gradient-to-b from-cardBgFrom to-cardBgTo mt-[20px] mb-[75px]'>
       <CardProviderSwitch />
@@ -366,6 +382,7 @@ export default function CypherCardScreen({
         />
       </CyDView>
 
+      {/* <Button title='upgrade' onPress={onPressUp} /> */}
       <CyDScrollView>
         {shouldBlockAction() && (
           <CyDView className='rounded-[16px] bg-r20 border-[1px] border-r300 p-[14px] m-[16px]'>

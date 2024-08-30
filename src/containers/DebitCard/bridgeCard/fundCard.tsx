@@ -25,19 +25,19 @@ import {
 import {
   CyDFastImage,
   CyDImage,
-  CyDSafeAreaView,
   CyDText,
   CyDTouchView,
   CyDView,
 } from '../../../styles/tailwindStyles';
 import * as Sentry from '@sentry/react-native';
-import { GlobalContext } from '../../../core/globalContext';
+import { GlobalContext, GlobalContextDef } from '../../../core/globalContext';
 import Web3 from 'web3';
 import { useGlobalModalContext } from '../../../components/v2/GlobalModal';
 import { CHOOSE_TOKEN_MODAL_TIMEOUT } from '../../../constants/timeOuts';
 import { screenTitle } from '../../../constants';
 import { useIsFocused } from '@react-navigation/native';
 import {
+  CYPHER_PLAN_ID_NAME_MAPPING,
   CardFeePercentage,
   GAS_BUFFER_FACTOR_FOR_LOAD_MAX,
   MINIMUM_TRANSFER_AMOUNT_ETH,
@@ -48,7 +48,11 @@ import ChooseTokenModal from '../../../components/v2/chooseTokenModal';
 import CyDTokenAmount from '../../../components/v2/tokenAmount';
 import useAxios from '../../../core/HttpRequest';
 import { divide, floor, get, random } from 'lodash';
-import { ButtonType, CardProviders } from '../../../constants/enum';
+import {
+  ButtonType,
+  CardProviders,
+  CypherPlanId,
+} from '../../../constants/enum';
 import clsx from 'clsx';
 import { CardQuoteResponse } from '../../../models/card.model';
 import useGasService from '../../../hooks/useGasService';
@@ -69,14 +73,25 @@ export default function BridgeFundCardScreen({ route }: { route: any }) {
   } = route.params;
   const portfolioState = useContext<any>(PortfolioContext);
   const hdWallet = useContext<any>(HdWalletContext);
-  const globalContext = useContext<any>(GlobalContext);
+  const globalContext = useContext(GlobalContext) as GlobalContextDef;
   const ethereum = hdWallet.state.wallet.ethereum;
   const wallet = hdWallet.state.wallet;
   const globalStateContext = useContext<any>(GlobalContext);
   const cardProfile = globalContext.globalState.cardProfile;
+  const planData = globalContext.globalState.planInfo;
+  let planCost = get(
+    planData,
+    [
+      'default',
+      cardProfile?.planInfo?.optedPlanId ?? CypherPlanId.BASIC_PLAN,
+      'cost',
+    ],
+    0,
+  );
   const cards = get(cardProfile, currentCardProvider)?.cards;
   const cardId: string = get(cards, currentCardIndex)?.cardId;
-  const { postWithAuth } = useAxios();
+  const fistLoad = cardId === 'hidden';
+  planCost = fistLoad ? planCost : 0;
 
   const cosmos = hdWallet.state.wallet.cosmos;
   const osmosis = hdWallet.state.wallet.osmosis;
@@ -101,11 +116,11 @@ export default function BridgeFundCardScreen({ route }: { route: any }) {
     cosmos: globalStateContext.globalState.rpcEndpoints.COSMOS.primary,
     osmosis: globalStateContext.globalState.rpcEndpoints.OSMOSIS.primary,
     juno: globalStateContext.globalState.rpcEndpoints.JUNO.primary,
-    stargaze: globalContext.globalState.rpcEndpoints.STARGAZE.primary,
-    noble: globalContext.globalState.rpcEndpoints.NOBLE.primary,
-    coreum: globalContext.globalState.rpcEndpoints.COREUM.primary,
-    kujira: globalContext.globalState.rpcEndpoints.KUJIRA.primary,
-    solana: globalContext.globalState.rpcEndpoints.SOLANA.primary,
+    stargaze: globalContext.globalState.rpcEndpoints?.STARGAZE.primary,
+    noble: globalContext.globalState.rpcEndpoints?.NOBLE.primary,
+    coreum: globalContext.globalState.rpcEndpoints?.COREUM.primary,
+    kujira: globalContext.globalState.rpcEndpoints?.KUJIRA.primary,
+    solana: globalContext.globalState.rpcEndpoints?.SOLANA.primary,
   };
 
   const [isChooseTokenVisible, setIsChooseTokenVisible] =
@@ -116,12 +131,13 @@ export default function BridgeFundCardScreen({ route }: { route: any }) {
   const [cryptoAmount, setCryptoAmount] = useState('');
   const [loading, setLoading] = useState<boolean>(false);
   const [isMaxLoading, setIsMaxLoading] = useState<boolean>(false);
-  const minTokenValueLimit = 10;
-  const minTokenValueEth = 50;
+  const minTokenValueLimit = 10 + Number(planCost);
+  const minTokenValueEth = 50 + Number(planCost);
   const [selectedToken, setSelectedToken] = useState<Holding>();
   const [nativeTokenBalance, setNativeTokenBalance] = useState<number>(0);
   const { t } = useTranslation();
   const { showModal, hideModal } = useGlobalModalContext();
+  const { postWithAuth } = useAxios();
   const isFocused = useIsFocused();
   const { estimateGasForEvm, estimateGasForEvmosIBC, estimateGasForSolana } =
     useGasService();
@@ -899,18 +915,18 @@ export default function BridgeFundCardScreen({ route }: { route: any }) {
           backendName === CHAIN_ETH.backendName &&
           Number(usdAmount) < MINIMUM_TRANSFER_AMOUNT_ETH
         ) {
-          errorMessage = t('MINIMUM_AMOUNT_ETH');
+          errorMessage = `${t<string>('MINIMUM_AMOUNT_ETH')} $${String(minTokenValueLimit)} ${planCost > 0 ? '(including plan cost)' : ''}`;
         } else if (!usdAmount || Number(usdAmount) < minTokenValueLimit) {
           if (backendName === CHAIN_ETH.backendName) {
             errorMessage = t('MINIMUM_AMOUNT_ETH');
           } else {
-            errorMessage = t<string>('CARD_LOAD_MIN_AMOUNT');
+            errorMessage = `${t<string>('CARD_LOAD_MIN_AMOUNT')} $${String(minTokenValueLimit)} ${planCost > 0 ? '(including plan cost)' : ''}`;
           }
         }
 
         return (
           <CyDView className='my-[8px]'>
-            <CyDText className='text-center text-redColor font-medium'>
+            <CyDText className='text-center text-redColor font-medium text-wrap'>
               {errorMessage}
             </CyDText>
           </CyDView>
@@ -1006,12 +1022,12 @@ export default function BridgeFundCardScreen({ route }: { route: any }) {
   };
 
   return (
-    <CyDSafeAreaView className='h-full bg-white'>
+    <CyDView className='h-full bg-n20'>
       {isMaxLoading && <Loading blurBg={true} />}
       <ChooseTokenModal
         isChooseTokenModalVisible={isChooseTokenVisible}
         tokenList={portfolioState.statePortfolio.tokenPortfolio.totalHoldings}
-        minTokenValueLimit={minTokenValueLimit}
+        minTokenValueLimit={minTokenValueLimit - Number(planCost)}
         onSelectingToken={token => {
           setIsChooseTokenVisible(false);
           onSelectingToken(token as Holding);
@@ -1164,33 +1180,70 @@ export default function BridgeFundCardScreen({ route }: { route: any }) {
             value={amount}
             setValue={(amt: string) => onEnterAmount(amt)}
           />
-          <CyDView className='flex flex-row justify-around items-center mx-[16px]'>
-            <Button
-              onPress={() => {
-                navigation.navigate(screenTitle.AUTO_LOAD_SCREEN);
-              }}
-              type={ButtonType.TERNARY}
-              title={t('SETUP_AUTO_LOAD')}
-              style={clsx('h-[60px] w-[45%] mb-[18px] py-[10px]', {
-                'py-[8px]': loading,
-              })}
-            />
-            <Button
-              onPress={() => {
-                if (validateAmount(amount)) {
-                  void fundCard();
-                }
-              }}
-              type={ButtonType.PRIMARY}
-              disabled={isLoadCardDisabled()}
-              title={t('QUOTE')}
-              style={'h-[60px] w-[45%] mb-[18px] py-[10px]'}
-              loading={loading}
-            />
+          <CyDView className=' pt-[16px] bg-white px-[16px] pb-[24px] rounded-t-[16px]'>
+            {fistLoad && (
+              <CyDView className='flex flex-row justify-between items-center mb-[16px]'>
+                <CyDTouchView
+                  className='flex flex-row items-center '
+                  onPress={() => {
+                    navigation.navigate(screenTitle.SELECT_PLAN, {
+                      fromPage: screenTitle.BRIDGE_FUND_CARD_SCREEN,
+                    });
+                  }}>
+                  <CyDText className='font-bold text-[14px]'>
+                    {fistLoad
+                      ? get(
+                          CYPHER_PLAN_ID_NAME_MAPPING,
+                          cardProfile?.planInfo?.optedPlanId ??
+                            CypherPlanId.BASIC_PLAN,
+                        )
+                      : get(
+                          CYPHER_PLAN_ID_NAME_MAPPING,
+                          cardProfile?.planInfo?.planId ??
+                            CypherPlanId.BASIC_PLAN,
+                        )}
+                  </CyDText>
+
+                  <CyDImage
+                    source={AppImages.EDIT}
+                    className='w-[20px] h-[20px]'
+                  />
+                </CyDTouchView>
+                <CyDView>
+                  <CyDText className='font-bold text-[14px]'>
+                    {`$${planCost}`}
+                  </CyDText>
+                </CyDView>
+              </CyDView>
+            )}
+            <CyDView className='flex flex-row justify-between items-center'>
+              <Button
+                onPress={() => {
+                  navigation.navigate(screenTitle.AUTO_LOAD_SCREEN);
+                }}
+                type={ButtonType.TERNARY}
+                title={t('SETUP_AUTO_LOAD')}
+                style={clsx('h-[60px] w-[45%] mb-[18px] py-[10px]', {
+                  'py-[8px]': loading,
+                })}
+              />
+              <Button
+                onPress={() => {
+                  if (validateAmount(amount)) {
+                    void fundCard();
+                  }
+                }}
+                type={ButtonType.PRIMARY}
+                disabled={isLoadCardDisabled()}
+                title={t('QUOTE')}
+                style={'h-[60px] w-[45%] mb-[18px] py-[10px]'}
+                loading={loading}
+              />
+            </CyDView>
           </CyDView>
         </CyDView>
       </CyDView>
       {/* </CyDKeyboardAwareScrollView> */}
-    </CyDSafeAreaView>
+    </CyDView>
   );
 }

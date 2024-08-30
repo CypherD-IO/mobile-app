@@ -16,7 +16,6 @@ import { screenTitle } from '../../constants';
 import { HdWalletContext } from '../../core/util';
 import {
   CyDImageBackground,
-  CyDSafeAreaView,
   CyDText,
   CyDView,
 } from '../../styles/tailwindStyles';
@@ -24,14 +23,15 @@ import AppImages from '../../../assets/images/appImages';
 import { useTranslation } from 'react-i18next';
 import { BackHandler } from 'react-native';
 import { get, has } from 'lodash';
-import CardWailtList from './cardWaitList';
 import useAxios from '../../core/HttpRequest';
 import * as Sentry from '@sentry/react-native';
 import useCardUtilities from '../../hooks/useCardUtilities';
 import CardProviderSwitch from '../../components/cardProviderSwitch';
+import SelectPlan from './CardV2/signup/selectPlan';
+import CardWailtList from './cardWaitList';
 export interface RouteProps {
   navigation: {
-    navigate: (screen: string, params?: any) => void;
+    navigate: (screen: string, params?: any, route?: any) => void;
     reset: (options: {
       index: number;
       routes: Array<{ name: string; params?: any }>;
@@ -46,9 +46,13 @@ export default function DebitCardScreen(props: RouteProps) {
   const globalContext = useContext<any>(GlobalContext);
   const hdWalletContext = useContext<any>(HdWalletContext);
   const { isReadOnlyWallet } = hdWalletContext.state;
-  const { getWalletProfile } = useCardUtilities();
+  const { getWalletProfile, checkIsRCEnabled } = useCardUtilities();
 
   const [loading, setLoading] = useState<boolean>(true);
+  const [currentCardProvider, setCurrentCardProvider] = useState(
+    CardProviders.PAYCADDY,
+  );
+
   const { getWithAuth } = useAxios();
 
   const handleBackButton = () => {
@@ -74,18 +78,27 @@ export default function DebitCardScreen(props: RouteProps) {
   const cardProfile: CardProfile = globalContext.globalState.cardProfile;
   const provider = cardProfile?.provider;
 
+  const setCardProvider = async () => {
+    const isRcEnabled = await checkIsRCEnabled();
+    if (isRcEnabled) {
+      setCurrentCardProvider(CardProviders.REAP_CARD);
+    } else {
+      setCurrentCardProvider(CardProviders.PAYCADDY);
+    }
+  };
+
   useEffect(() => {
     if (!isReadOnlyWallet && isFocused) {
       setLoading(true);
-      if (cardProfile) {
-        setLoading(false);
-      } else {
+      if (!cardProfile) {
         void refreshProfile();
       }
-      if (has(cardProfile, provider as CardProviders)) {
+      if (has(cardProfile, provider as string)) {
+        setLoading(false);
         const cardApplicationStatus =
-          get(cardProfile, provider as CardProviders)?.applicationStatus ===
+          get(cardProfile, provider)?.applicationStatus ===
           CardApplicationStatus.COMPLETED;
+
         if (cardApplicationStatus) {
           props.navigation.reset({
             index: 0,
@@ -99,7 +112,7 @@ export default function DebitCardScreen(props: RouteProps) {
             ],
           });
         } else if (shouldCheckApplication()) {
-          void checkApplication(provider as CardProviders);
+          void checkApplication(provider);
         } else {
           props.navigation.reset({
             index: 0,
@@ -110,11 +123,14 @@ export default function DebitCardScreen(props: RouteProps) {
             ],
           });
         }
+      } else {
+        void setCardProvider();
+        setLoading(false);
       }
     } else {
       setLoading(false);
     }
-  }, [isFocused, cardProfile, provider]);
+  }, [isFocused, globalContext.globalState.cardProfile, provider]);
 
   const shouldCheckApplication = () => {
     if (provider === CardProviders.REAP_CARD) {
@@ -132,9 +148,9 @@ export default function DebitCardScreen(props: RouteProps) {
     );
   };
 
-  const checkApplication = async (provider: CardProviders) => {
+  const checkApplication = async (_provider: CardProviders) => {
     try {
-      const response = await getWithAuth(`/v1/cards/${provider}/application`);
+      const response = await getWithAuth(`/v1/cards/${_provider}/application`);
       if (!response.isError) {
         const { data } = response;
         if (
@@ -163,9 +179,9 @@ export default function DebitCardScreen(props: RouteProps) {
   }
 
   return (
-    <CyDSafeAreaView className='flex-1 bg-white'>
+    <CyDView className='flex-1'>
       <CardProviderSwitch />
-      {isReadOnlyWallet ? (
+      {isReadOnlyWallet && (
         <CyDImageBackground
           source={AppImages.READ_ONLY_CARD_BACKGROUND}
           className='h-full items-center justify-center'>
@@ -173,9 +189,13 @@ export default function DebitCardScreen(props: RouteProps) {
             {t<string>('TRACK_WALLET_CYPHER_CARD')}
           </CyDText>
         </CyDImageBackground>
-      ) : (
+      )}
+      {!isReadOnlyWallet && currentCardProvider === CardProviders.PAYCADDY && (
         <CardWailtList navigation={props.navigation} />
       )}
-    </CyDSafeAreaView>
+      {!isReadOnlyWallet && currentCardProvider === CardProviders.REAP_CARD && (
+        <SelectPlan _navigation={props.navigation} />
+      )}
+    </CyDView>
   );
 }

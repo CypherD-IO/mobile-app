@@ -80,6 +80,7 @@ export enum GlobalContextType {
   CARD_PROFILE = 'CARD_PROFILE',
   IBC = 'IBC',
   IS_APP_AUTHENTICATED = 'IS_APP_AUTHENTICATED',
+  PLAN_INFO = 'PLAN_INFO',
 }
 
 export enum TransactionFilterTypes {
@@ -337,4 +338,9 @@ export enum CARD_LIMIT_TYPE {
 export enum ACCOUNT_STATUS {
   ACTIVE = 'active',
   INACTIVE = 'inactive',
+}
+
+export enum CypherPlanId {
+  BASIC_PLAN = 'basic_plan_v1',
+  PRO_PLAN = 'pro_plan_v1',
 }
