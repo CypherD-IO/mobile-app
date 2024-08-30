@@ -10,6 +10,7 @@ import {
 import { StyleSheet } from 'react-native';
 import AppImages from '../../../../assets/images/appImages';
 import Button from '../../../components/v2/button';
+import { number } from 'yup';
 
 export default function EditLimitModal({
   isModalVisible,
@@ -17,15 +18,17 @@ export default function EditLimitModal({
   title,
   currentLimit,
   onChangeLimit,
+  maxLimit,
 }: {
   isModalVisible: boolean;
   setShowModal: (arg1: boolean) => void;
   title: string;
   currentLimit: number;
   onChangeLimit: (arg1: number) => void;
+  maxLimit: number;
 }) {
   const [limit, setLimit] = useState<number>(currentLimit);
-
+  const [isError, setIsError] = useState<boolean>(false);
   useEffect(() => {
     if (isModalVisible) {
       setLimit(currentLimit);
@@ -63,19 +66,31 @@ export default function EditLimitModal({
             </CyDText>
             <CyDTextInput
               onChangeText={text => {
-                setLimit(Number(text));
+                setLimit(text);
               }}
+              keyboardType={'numeric'}
               value={limit.toString()}
               placeholder='Enter Desired Limit'
               className={
                 'border-[1px] border-n200 rounded-[8px] p-[10px] text-[14px] w-[100%] font-nunito text-primaryTextColor'
               }
+              onFocus={() => setIsError(false)}
             />
+            {isError && (
+              <CyDText className='mt-[4px] text-red-600 text-[14px]'>
+                {`** Max Limit allowed for your current plan is $${maxLimit}`}
+              </CyDText>
+            )}
             <CyDView className='mt-[24px]'>
               <Button
                 title={'Set Limit'}
                 onPress={() => {
-                  onChangeLimit(limit);
+                  if (limit > maxLimit) {
+                    setIsError(true);
+                    setLimit(maxLimit);
+                  } else {
+                    onChangeLimit(Number(limit));
+                  }
                 }}
               />
             </CyDView>

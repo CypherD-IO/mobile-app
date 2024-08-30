@@ -15,13 +15,15 @@ export default function useCardUtilities() {
   const cardProfile: CardProfile = globalContext.globalState.cardProfile;
   const provider = cardProfile?.provider;
 
-  const getProvider = (profile: CardProfile) => {
+  const getProvider = async (profile: CardProfile) => {
     if (hasBothProviders(profile)) {
       return provider ?? CardProviders.REAP_CARD;
     } else if (has(profile, CardProviders.PAYCADDY)) {
+      const isRcEnabled = await checkIsRCEnabled();
       if (
         !get(profile, [CardProviders.PAYCADDY, 'cards']) &&
-        get(profile, [CardProviders.PAYCADDY, 'isRcUpgradable'])
+        (isRcEnabled ||
+          get(profile, [CardProviders.PAYCADDY, 'isRcUpgradable']))
       ) {
         return CardProviders.REAP_CARD;
       }
@@ -38,8 +40,8 @@ export default function useCardUtilities() {
     );
   };
 
-  const cardProfileModal = (profile: CardProfile) => {
-    profile.provider = getProvider(profile);
+  const cardProfileModal = async (profile: CardProfile) => {
+    profile.provider = await getProvider(profile);
     return profile;
   };
 
@@ -53,7 +55,7 @@ export default function useCardUtilities() {
       const response = await axios.get(profileUrl, config);
       if (response.data) {
         const { data } = response;
-        const tempProfile = cardProfileModal(data);
+        const tempProfile = await cardProfileModal(data);
         return tempProfile;
       }
     } catch (e) {

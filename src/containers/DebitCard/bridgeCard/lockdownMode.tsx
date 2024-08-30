@@ -22,7 +22,7 @@ export default function LockdownMode(props) {
   const handleClickLockDownMode = async () => {
     const resp = await postWithAuth(
       `/v1/cards/${currentCardProvider}/account-status`,
-      { status: ACCOUNT_STATUS.INACTIVE },
+      { status: ACCOUNT_STATUS.LOCKED },
     );
 
     setLoading(false);
@@ -30,7 +30,10 @@ export default function LockdownMode(props) {
       showModal('state', {
         type: 'success',
         title: t('Lockdown mode enabled'),
-        onSuccess: hideModal,
+        onSuccess: () => {
+          hideModal();
+          props.navigation.goBack();
+        },
         onFailure: hideModal,
       });
     } else {

@@ -11,6 +11,7 @@ import { useTranslation } from 'react-i18next';
 import {
   TransactionFilterTypes,
   CardTransactionTypes,
+  ReapTxnStatus,
 } from '../../constants/enum';
 import clsx from 'clsx';
 import AppImages from '../../../assets/images/appImages';
@@ -54,7 +55,7 @@ const getTransactionSign = (type: string) => {
 const CardTransactionItem = ({ item }: CardTransactionItemProps) => {
   const { t } = useTranslation();
   const navigation = useNavigation();
-  const { iconUrl, type, createdAt, title, amount, isSettled } = item;
+  const { iconUrl, type, createdAt, title, amount, isSettled, tStatus } = item;
   return (
     <>
       {/* <CyDView className='absolute bottom-[-930px] h-[1000px] w-full bg-white border-x border-sepratorColor' /> */}
@@ -62,6 +63,7 @@ const CardTransactionItem = ({ item }: CardTransactionItemProps) => {
         key={item.id}
         className={clsx(
           'h-[70px] flex flex-row justify-between items-center bg-white px-[10px] border-b border-x border-sepratorColor',
+          { 'bg-gray-100 opacity-50': tStatus === ReapTxnStatus.DECLINED },
         )}
         onPress={() => {
           void intercomAnalyticsLog('card_transaction_info_clicked');
@@ -104,6 +106,7 @@ const CardTransactionItem = ({ item }: CardTransactionItemProps) => {
               'text-successTextGreen': type === CardTransactionTypes.CREDIT,
               'text-darkYellow': type === CardTransactionTypes.REFUND,
               'text-black': !isSettled,
+              'text-gray-600': tStatus === ReapTxnStatus.DECLINED,
             })}>
             {getTransactionSign(type)}
             {limitDecimalPlaces(amount, 2)} {t<string>('USD')}

@@ -13,13 +13,15 @@ import { transactionType } from 'viem';
 import { CARD_LIMIT_TYPE, CardControlTypes } from '../../../constants/enum';
 import { ProgressCircle } from 'react-native-svg-charts';
 import useAxios from '../../../core/HttpRequest';
-import { get } from 'lodash';
+import { find, get } from 'lodash';
 import { useGlobalModalContext } from '../../../components/v2/GlobalModal';
 import LottieView from 'lottie-react-native';
 import { GlobalContext } from '../../../core/globalContext';
 import { CardProfile } from '../../../models/cardProfile.model';
 import { useIsFocused } from '@react-navigation/native';
 import ThreeDSecureOptionModal from '../../../components/v2/threeDSecureOptionModal';
+import axios from 'axios';
+import countryMaster from '../../../../assets/datasets/countryMaster';
 
 export default function CardControlsMenu({ route, navigation }) {
   const globalContext = useContext<any>(GlobalContext);
@@ -38,6 +40,7 @@ export default function CardControlsMenu({ route, navigation }) {
     get(card, 'is3dsEnabled', false),
   );
   const [show3DsModal, setShow3DsModal] = useState(false);
+  const [domesticCountry, setDomesticCountry] = useState({});
 
   const getCardLimits = async () => {
     setLoading(true);
@@ -61,6 +64,9 @@ export default function CardControlsMenu({ route, navigation }) {
           ['cusL', CardControlTypes.INTERNATIONAL, CARD_LIMIT_TYPE.DISABLED],
           true,
         ),
+      );
+      setDomesticCountry(
+        find(countryMaster, { Iso2: get(limitValue, 'cCode', '') }),
       );
     }
     setLoading(false);
@@ -91,7 +97,19 @@ export default function CardControlsMenu({ route, navigation }) {
       <CyDSafeAreaView className={'h-full bg-cardBgFrom pt-[10px]'}>
         <CyDView className='mx-[16px] mt-[16px]'>
           <CyDView className='p-[12px] rounded-[10px] bg-white relative'>
-            <CyDText className='font-bold text-[16px]'>{'Card Limit'}</CyDText>
+            <CyDView className='flex flex-row justify-start items-center mb-[4px] rounded-[6px] px-[12px] py-[4px]'>
+              <CyDText className='font-bold text-[16px]'>
+                {'Card Limit  -'}
+              </CyDText>
+
+              {/* <CyDImage
+                source={AppImages.MANAGE_CARD}
+                className='h-[28px] w-[28px] ml-[8px]'
+              /> */}
+              <CyDText className='text-[14px] font-semibold ml-[4px]'>
+                {'xxxx ' + card.last4}
+              </CyDText>
+            </CyDView>
             <CyDImage
               source={AppImages.GOLD_LINE_MEMBER}
               className='absolute right-0 top-0 h-[75px] w-[83px]'
@@ -138,10 +156,16 @@ export default function CardControlsMenu({ route, navigation }) {
               });
             }}>
             <CyDView className='flex flex-row items-center'>
-              <CyDImage
-                className='w-[24px] h-[24px] mr-[8px]'
-                source={AppImages.DOMESTIC_ICON}
-              />
+              {!domesticCountry.unicode_flag ? (
+                <CyDImage
+                  className='w-[24px] h-[24px] mr-[8px]'
+                  source={AppImages.DOMESTIC_ICON}
+                />
+              ) : (
+                <CyDText className='text-[18px] mr-[8px]'>
+                  {domesticCountry.unicode_flag}
+                </CyDText>
+              )}
               <CyDText className='text-[18px] font-[500] '>
                 Domestic Transactions
               </CyDText>
