@@ -21,6 +21,7 @@ import {
   TransactionFilterTypes,
   CardTransactionTypes,
   CardProviders,
+  ReapTxnStatus,
 } from '../../../constants/enum';
 import clsx from 'clsx';
 import { screenTitle } from '../../../constants';
@@ -105,6 +106,8 @@ const DetailItem = ({
 const TransactionDetail = ({
   item,
   isSettled,
+  isDeclined = false,
+  cDReason = '',
 }: {
   item: {
     icon: any;
@@ -115,6 +118,8 @@ const TransactionDetail = ({
     }>;
   };
   isSettled: boolean;
+  isDeclined?: boolean;
+  cDReason?: string;
 }) => {
   return (
     <CyDView className='pb-[5px] rounded-[7px] mt-[25px] bg-lightGrey'>
@@ -137,7 +142,8 @@ const TransactionDetail = ({
           <CyDView>
             <CyDText className='pl-[12px]'>
               <CyDText className='font-bold underline'>Note:</CyDText>
-              {' ' + t('TRANSACTION_YET_TO_BE_SETTLED')}
+              {' ' +
+                (isDeclined ? cDReason : t('TRANSACTION_YET_TO_BE_SETTLED'))}
             </CyDText>
           </CyDView>
         )}
@@ -199,7 +205,12 @@ export default function TransactionDetails({
           { label: t('TYPE'), value: transaction.type },
           {
             label: t('STATUS'),
-            value: transaction.isSettled ? t('SETTLED') : t('PENDING'),
+            value:
+              transaction.tStatus === ReapTxnStatus.DECLINED
+                ? t('DECLINED')
+                : transaction.isSettled
+                  ? t('SETTLED')
+                  : t('PENDING'),
           },
         ],
       },
@@ -307,6 +318,8 @@ export default function TransactionDetails({
                 item={item}
                 key={index}
                 isSettled={transaction.isSettled}
+                isDeclined={transaction.tStatus === ReapTxnStatus.DECLINED}
+                cDReason={transaction.cDReason}
               />
             );
           }

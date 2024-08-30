@@ -111,6 +111,14 @@ export enum CardType {
 export enum CardTransactionStatuses {
   SETTLED = 'Settled',
   PENDING = 'Pending',
+  DECLINED = 'Declined',
+}
+
+export enum ReapTxnStatus {
+  DECLINED = 'DECLINED',
+  PENDING = 'PENDING',
+  CLEARED = 'CLEARED',
+  VOID = 'VOID',
 }
 
 export enum TransactionFilterByDateTypes {
@@ -337,7 +345,7 @@ export enum CARD_LIMIT_TYPE {
 
 export enum ACCOUNT_STATUS {
   ACTIVE = 'active',
-  INACTIVE = 'inactive',
+  LOCKED = 'locked',
 }
 
 export enum CypherPlanId {

@@ -1187,6 +1187,13 @@ const resources = {
       UNABLE_TO_UPDATE_DOMESTIC_COUNTRIES:
         'Unable to update domestic countries',
       PLAN_COST: 'Premium Fee',
+      SAVE_CHANGES: 'Save Changes',
+      UNABLE_TO_UPDATE_DETAILS: 'Unable to update details',
+      DETAILS_UPDATED_SUCESSFULLY: 'Details updated successfully',
+      DOMESTIC_COUNTRY_UPDATED_SUCESSFULLY:
+        'Domestic country updated successfully',
+      INTERNATIONAL_COUNTRY_LIST_UPDATED_SUCESSFULLY:
+        'International country list updated successfully',
     },
   },
 };

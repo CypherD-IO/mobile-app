@@ -138,10 +138,10 @@ export default function CardOptionsModal({
       animationInTiming={300}
       animationOutTiming={300}
       style={styles.modalLayout}>
-      <CyDView className='bg-cardBgTo px-[12px] py-[24px] m-[2px] mb-[6px] rounded-[16px]'>
-        <CyDView className='flex flex-row justify-between items-center mb-[24px]'>
+      <CyDView className='bg-cardBgTo px-[12px] py-[24px] m-[2px] mb-[6px] rounded-[16px] flex items-center'>
+        <CyDView className='flex flex-row justify-between items-center '>
           <CyDView className='flex-1 justify-center items-center'>
-            <CyDText className='text-[22px] font-semibold ml-[24px]'>
+            <CyDText className='text-[22px] font-semibold ml-[28px]'>
               Card Options
             </CyDText>
           </CyDView>
@@ -153,6 +153,15 @@ export default function CardOptionsModal({
             />
           </CyDTouchView>
         </CyDView>
+        {/* <CyDView className='flex flex-row justify-center items-center mb-[8px] rounded-[6px] px-[12px] py-[4px]'>
+          <CyDImage
+            source={AppImages.MANAGE_CARD}
+            className='h-[28px] w-[28px]'
+          />
+          <CyDText className='text-[14px] font-semibold ml-[8px]'>
+            {'xxxx' + card.last4}
+          </CyDText>
+        </CyDView> */}
         {!isPhoneVerified && (
           <CyDTouchView
             onPress={() => {
@@ -164,7 +173,7 @@ export default function CardOptionsModal({
               );
               setShowModal(false);
             }}
-            className='flex flex-row items-center m-[2px] py-[15px] bg-white rounded-[6px]'>
+            className='flex flex-row items-center m-[2px] py-[15px] bg-white w-full rounded-[6px]'>
             <CyDImage
               source={AppImages.UPGRADE_TO_PHYSICAL_CARD_ARROW}
               className={'h-[24px] w-[24px] mx-[12px]'}
