@@ -249,7 +249,7 @@ export default function CypherCardScreen({
       onSuccess: () => {
         showModal('state', {
           type: 'success',
-          title: t('Lockdown mode enabled'),
+          title: t('Lockdown mode disabled'),
           onSuccess: hideModal,
           onFailure: hideModal,
         });
@@ -261,7 +261,7 @@ export default function CypherCardScreen({
 
   const shouldBlockAction = () => {
     if (
-      isLockdownModeEnabled === ACCOUNT_STATUS.INACTIVE &&
+      isLockdownModeEnabled === ACCOUNT_STATUS.LOCKED &&
       cardProvider === CardProviders.REAP_CARD
     ) {
       return true;

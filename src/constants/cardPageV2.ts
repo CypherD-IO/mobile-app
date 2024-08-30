@@ -10,6 +10,7 @@ export const TYPES = [
 export const STATUSES = [
   CardTransactionStatuses.PENDING,
   CardTransactionStatuses.SETTLED,
+  CardTransactionStatuses.DECLINED,
 ];
 
 export type CardSectionHeights = 270 | 420;

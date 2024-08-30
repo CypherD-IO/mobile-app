@@ -19,13 +19,14 @@ import {
 import ChooseMultipleCountryModal from '../../../components/v2/chooseMultipleCountryModal';
 import { ICountry } from '../../../models/cardApplication.model';
 import useAxios from '../../../core/HttpRequest';
-import { compact, get, omit } from 'lodash';
+import { compact, get, isEqual, omit } from 'lodash';
 import EditLimitModal from './editLimitModal';
 import { Loader } from '../../../components/v2/walletConnectV2Views/SigningModals/SigningModalComponents';
 import { t } from 'i18next';
 import axios from '../../../core/Http';
 import { useGlobalModalContext } from '../../../components/v2/GlobalModal';
 import ChooseCountryModal from '../../../components/v2/ChooseCountryModal';
+import { useIsFocused } from '@react-navigation/native';
 
 export default function CardControlsSettings({ route, navigation }) {
   const { cardControlType, currentCardProvider, card } = route.params;
@@ -34,7 +35,8 @@ export default function CardControlsSettings({ route, navigation }) {
   const [allowedCountries, setAllowedCountries] = useState([]);
   const [selectedAllowedCountries, setSelectedAllowedCountries] = useState([]);
   const { getWithAuth, patchWithAuth, getWithoutAuth } = useAxios();
-  const [limits, setLimits] = useState();
+  const [limits, setLimits] = useState({});
+  const [editedLimits, setEditedLimits] = useState({});
   const [limitsByControlType, setLimitsByControlType] = useState({
     dis: true,
     pos: 0,
@@ -59,6 +61,12 @@ export default function CardControlsSettings({ route, navigation }) {
   const [domesticCountryLoading, setDomesticCountryLoading] = useState(false);
   const [allowedCountryLoading, setAllowedCountryLoading] = useState(false);
   const defaultAtmLimit = 2000;
+  const [limitApplicable, setLimitApplicable] = useState('planLimit');
+  const isFocused = useIsFocused();
+
+  useEffect(() => {
+    setEditedLimits(limits);
+  }, [isFocused]);
 
   useEffect(() => {
     void fetchCountriesList();
@@ -75,77 +83,12 @@ export default function CardControlsSettings({ route, navigation }) {
     }
   };
 
-  useEffect(() => {
-    const tempCountryList = get(limits, ['cusL', cardControlType, 'cLs'], []);
-    if (tempCountryList.length) {
-      const tempAllowedCountries = countries.filter(country => {
-        return tempCountryList.includes(country.Iso2);
-      });
-      setAllowedCountries(tempAllowedCountries);
-      setSelectedAllowedCountries(tempAllowedCountries);
-    }
-  }, [limits, countries]);
-
-  useEffect(() => {
-    if (!countryModalVisible && selectedAllowedCountries.length) {
-      setAllowedCountryLoading(true);
-      const postData = async () => {
-        try {
-          void updateAllowedCountries();
-        } catch (error) {
-          setAllowedCountryLoading(false);
-        }
-      };
-
-      // Debounce the API call
-      const timer = setTimeout(() => {
-        void postData();
-      }, 2000);
-
-      // Cleanup previous timer
-      return () => clearTimeout(timer);
-    }
-  }, [selectedAllowedCountries, countryModalVisible]);
-
-  const updateAllowedCountries = async () => {
-    const countryList = selectedAllowedCountries?.map((country, index) => {
-      return country.Iso2;
-    });
-
-    const payload = {
-      cusL: {
-        ...get(limits, 'cusL'),
-        intl: {
-          ...get(limits, ['cusL', cardControlType]),
-          cLs: compact(countryList),
-        },
-      },
-    };
-    const response = await patchWithAuth(
-      `/v1/cards/${currentCardProvider}/card/${card.cardId}/limits`,
-      payload,
-    );
-    setAllowedCountryLoading(false);
-    if (response.isError) {
-      showModal('state', {
-        type: 'error',
-        title: t('UNABLE_TO_UPDATE_ALLOWED_COUNTRIES'),
-        description: t('PLEASE_CONTACT_SUPPORT'),
-        onSuccess: hideModal,
-        onFailure: hideModal,
-      });
-    } else {
-      setAllowedCountries(selectedAllowedCountries);
-    }
-  };
-
   const initiateEditLimit = (limitType: string) => {
-    setLoading(true);
     if (get(limitsByControlType, limitType) === 0) {
       if (limitType === CARD_LIMIT_TYPE.ATM) {
         void editLimit(limitType, defaultAtmLimit);
       } else {
-        void editLimit(limitType, get(limits, ['planLimit', 'd'], 0));
+        void editLimit(limitType, get(editedLimits, ['planLimit', 'd'], 0));
       }
     } else {
       void editLimit(limitType, 0);
@@ -160,28 +103,56 @@ export default function CardControlsSettings({ route, navigation }) {
     });
   };
 
-  const editLimit = async (limitType: string, newLimit: number | boolean) => {
-    setLoading(true);
-    const payload = {
-      cusL: {
-        ...get(limits, 'cusL'),
-        [cardControlType]: {
-          ...get(limits, ['cusL', cardControlType]),
-          [limitType]: newLimit,
+  const saveLimits = async () => {
+    let payload = editedLimits;
+    if (
+      cardControlType === CardControlTypes.DOMESTIC &&
+      !isEqual(selectedDomesticCountry, domesticCountry)
+    ) {
+      payload = {
+        ...payload,
+        cCode: selectedDomesticCountry?.Iso2,
+      };
+    }
+    if (
+      cardControlType === CardControlTypes.INTERNATIONAL &&
+      (selectedAllowedCountries.length < 1 ||
+        !isEqual(selectedAllowedCountries, allowedCountries))
+    ) {
+      const countryList = selectedAllowedCountries?.map((country, index) => {
+        return country.Iso2;
+      });
+
+      payload = {
+        ...payload,
+        cusL: {
+          ...get(payload, 'cusL'),
+          intl: {
+            ...get(payload, ['cusL', cardControlType]),
+            cLs: compact(countryList),
+          },
         },
-      },
-    };
+      };
+    }
     const response = await patchWithAuth(
       `/v1/cards/${currentCardProvider}/card/${card.cardId}/limits`,
-      payload,
+      omit(payload, ['planLimit', 'currentLimit', 'sSt']),
     );
+
     if (!response.isError) {
       void getCardLimits();
+
+      showModal('state', {
+        type: 'success',
+        title: t('DETAILS_UPDATED_SUCESSFULLY'),
+        onSuccess: hideModal,
+        onFailure: hideModal,
+      });
     } else {
       setLoading(false);
       showModal('state', {
         type: 'error',
-        title: t('UNABLE_TO_UPDATE_CARD_LIMIT'),
+        title: t('UNABLE_TO_UPDATE_DETAILS'),
         description: response.error.message ?? t('PLEASE_CONTACT_SUPPORT'),
         onSuccess: hideModal,
         onFailure: hideModal,
@@ -189,18 +160,41 @@ export default function CardControlsSettings({ route, navigation }) {
     }
   };
 
+  const editLimit = async (limitType: string, newLimit: number | boolean) => {
+    const tempLimit = {
+      ...editedLimits,
+      cusL: {
+        ...get(editedLimits, 'cusL'),
+        [cardControlType]: {
+          ...get(editedLimits, ['cusL', cardControlType]),
+          [limitType]: newLimit,
+        },
+      },
+    };
+    setEditedLimits(tempLimit);
+  };
+
   const getCardLimits = async () => {
     setLoading(true);
     const response = await getWithAuth(
       `/v1/cards/${currentCardProvider}/card/${card.cardId}/limits`,
     );
+
     if (!response.isError) {
-      setLimits(response.data);
+      const limitValue = response.data;
+      setLimits(limitValue);
+      if (get(limitValue, 'cydL')) {
+        setLimitApplicable('cydL');
+      } else if (get(limitValue, 'advL')) {
+        setLimitApplicable('advL');
+      } else {
+        setLimitApplicable('planLimit');
+      }
     } else {
       showModal('state', {
         type: 'error',
         title: t('UNABLE_TO_FETCH_CARD_LIMIT'),
-        description: t('PLEASE_CONTACT_SUPPORT'),
+        description: response.error.message ?? t('PLEASE_CONTACT_SUPPORT'),
         onSuccess: hideModal,
         onFailure: hideModal,
       });
@@ -224,78 +218,67 @@ export default function CardControlsSettings({ route, navigation }) {
   };
 
   const getAllowedCountiesText = () => {
-    if (allowedCountries.length > 2) {
-      return `${allowedCountries[0].name}, ${allowedCountries[1].name} + ${allowedCountries.length - 2}`;
-    } else if (allowedCountries.length === 2) {
-      return `${allowedCountries[0].name}, ${allowedCountries[1].name}`;
-    } else if (allowedCountries.length === 1) {
-      return `${allowedCountries[0].name}`;
+    if (selectedAllowedCountries.length > 2) {
+      return `${selectedAllowedCountries[0].name}, ${selectedAllowedCountries[1].name} + ${selectedAllowedCountries.length - 2}`;
+    } else if (selectedAllowedCountries.length === 2) {
+      return `${selectedAllowedCountries[0].name}, ${selectedAllowedCountries[1].name}`;
+    } else if (selectedAllowedCountries.length === 1) {
+      return `${selectedAllowedCountries[0].name}`;
     } else {
-      return 'All Countries';
-    }
-  };
-
-  const updateDomesticCountry = async () => {
-    setDomesticCountryLoading(true);
-    const payload = {
-      ...limits,
-      cCode: selectedDomesticCountry?.Iso2,
-    };
-
-    const response = await patchWithAuth(
-      `/v1/cards/${currentCardProvider}/card/${card.cardId}/limits`,
-      omit(payload, ['planLimit', 'currentLimit', 'sSt']),
-    );
-
-    setDomesticCountryLoading(false);
-
-    if (response.isError) {
-      showModal('state', {
-        type: 'error',
-        title: t('UNABLE_TO_UPDATE_DOMESTIC_COUNTRIES'),
-        description: t('PLEASE_CONTACT_SUPPORT'),
-        onSuccess: hideModal,
-        onFailure: hideModal,
-      });
-    } else {
-      setDomesticCountry(selectedDomesticCountry);
+      return 'Choose a country';
     }
   };
 
   useEffect(() => {
-    setLimitsByControlType({
-      dis: get(
-        limits,
-        ['cusL', cardControlType, CARD_LIMIT_TYPE.DISABLED],
-        true,
-      ),
-      pos: get(limits, ['cusL', cardControlType, CARD_LIMIT_TYPE.CARD_PIN], 0),
-      tap: get(
-        limits,
-        ['cusL', cardControlType, CARD_LIMIT_TYPE.CONTACTLESS],
-        0,
-      ),
-      atm: get(limits, ['cusL', cardControlType, CARD_LIMIT_TYPE.ATM], 0),
-      wal: get(
-        limits,
-        ['cusL', cardControlType, CARD_LIMIT_TYPE.MOBILE_WALLET],
-        0,
-      ),
-      ecom: get(limits, ['cusL', cardControlType, CARD_LIMIT_TYPE.ONLINE], 0),
-    });
+    setEditedLimits(limits);
+
     for (const country of countries) {
       if (country.Iso2 === get(limits, 'cCode', '')) {
         setDomesticCountry(country);
         setSelectedDomesticCountry(country);
       }
     }
+    const tempCountryList = get(limits, ['cusL', cardControlType, 'cLs'], []);
+
+    if (tempCountryList.length) {
+      const tempAllowedCountries = countries.filter(country => {
+        return tempCountryList.includes(country.Iso2);
+      });
+      setAllowedCountries(tempAllowedCountries);
+      setSelectedAllowedCountries(tempAllowedCountries);
+    }
   }, [limits]);
 
   useEffect(() => {
-    if (domesticCountry.Iso2 && !isChooseDomesticCountryModalVisible) {
-      void updateDomesticCountry();
-    }
-  }, [selectedDomesticCountry]);
+    setLimitsByControlType({
+      dis: get(
+        editedLimits,
+        ['cusL', cardControlType, CARD_LIMIT_TYPE.DISABLED],
+        true,
+      ),
+      pos: get(
+        editedLimits,
+        ['cusL', cardControlType, CARD_LIMIT_TYPE.CARD_PIN],
+        0,
+      ),
+      tap: get(
+        editedLimits,
+        ['cusL', cardControlType, CARD_LIMIT_TYPE.CONTACTLESS],
+        0,
+      ),
+      atm: get(editedLimits, ['cusL', cardControlType, CARD_LIMIT_TYPE.ATM], 0),
+      wal: get(
+        editedLimits,
+        ['cusL', cardControlType, CARD_LIMIT_TYPE.MOBILE_WALLET],
+        0,
+      ),
+      ecom: get(
+        editedLimits,
+        ['cusL', cardControlType, CARD_LIMIT_TYPE.ONLINE],
+        0,
+      ),
+    });
+  }, [editedLimits]);
 
   return loading ? (
     <Loader />
@@ -330,6 +313,7 @@ export default function CardControlsSettings({ route, navigation }) {
           }}
           title={getEditModalTitleByLimitType()}
           currentLimit={editModalData.limit}
+          maxLimit={get(limits, [limitApplicable, 'd'], 0)}
           onChangeLimit={(newLimit: number) => {
             setEditModalData({
               ...editModalData,
@@ -339,22 +323,22 @@ export default function CardControlsSettings({ route, navigation }) {
           }}
         />
 
-        <CyDScrollView>
+        <CyDScrollView className='flex-1'>
           <CyDView className='mx-[16px] mt-[16px]'>
             {cardControlType === CardControlTypes.DOMESTIC && (
               <>
-                <CyDView className='bg-white flex flex-col px-[12px] py-[12px] mb-[12px] rounded-[8px]'>
+                <CyDView className='bg-white flex-1 flex-col px-[12px] py-[12px] mb-[12px] rounded-[8px]'>
                   <CyDText className='text-[16px] font-semibold mt-[4px]'>
-                    {'Domestic Country'}
+                    {'Country'}
                   </CyDText>
                   <CyDView className='flex-1 flex-row justify-between items-center mt-[4px]'>
                     <CyDView className={'flex flex-row items-center'}>
                       <CyDText className={'text-[36px]'}>
-                        {domesticCountry.unicode_flag ?? domesticCountry.flag}
+                        {selectedDomesticCountry.unicode_flag}
                       </CyDText>
                       <CyDText
                         className={'ml-[10px] font-semibold text-[16px]'}>
-                        {domesticCountry.name}
+                        {selectedDomesticCountry.name}
                       </CyDText>
                     </CyDView>
                     <Button
@@ -364,7 +348,6 @@ export default function CardControlsSettings({ route, navigation }) {
                       }}
                       imagePosition={ImagePosition.LEFT}
                       paddingY={6}
-                      loading={domesticCountryLoading}
                       loaderStyle={{
                         height: 15,
                         width: 15,
@@ -491,7 +474,7 @@ export default function CardControlsSettings({ route, navigation }) {
                     />
                   </CyDView>
                   <CyDText className='text-[16px] font-semibold mt-[4px]'>
-                    {'Online Transactions'}
+                    {'Online Payment'}
                   </CyDText>
                   {get(limitsByControlType, CARD_LIMIT_TYPE.ONLINE, 0) > 0 && (
                     <CyDView className='flex flex-row justify-between items-center mt-[12px]'>
@@ -539,7 +522,7 @@ export default function CardControlsSettings({ route, navigation }) {
                     />
                   </CyDView>
                   <CyDText className='text-[16px] font-semibold mt-[4px]'>
-                    {'Contactless Transactions'}
+                    {'Tap and Pay'}
                   </CyDText>
                   {get(limitsByControlType, CARD_LIMIT_TYPE.CONTACTLESS, 0) >
                     0 && (
@@ -598,7 +581,7 @@ export default function CardControlsSettings({ route, navigation }) {
                     />
                   </CyDView>
                   <CyDText className='text-[16px] font-semibold mt-[4px]'>
-                    {'Card and PIN Transactions'}
+                    {'Offline Payments'}
                   </CyDText>
                   {get(limitsByControlType, CARD_LIMIT_TYPE.CARD_PIN, 0) >
                     0 && (
@@ -652,34 +635,61 @@ export default function CardControlsSettings({ route, navigation }) {
                   </CyDText>
                   {get(limitsByControlType, CARD_LIMIT_TYPE.MOBILE_WALLET, 0) >
                     0 && (
-                    <CyDView className='flex flex-row justify-between items-center mt-[12px]'>
-                      <CyDView>
-                        <CyDText className='text-[10px] font-normal'>
-                          {'Limit per transactions'}
-                        </CyDText>
-                        <CyDText className='text-[16px] font-bold'>
-                          {`$${get(limitsByControlType, CARD_LIMIT_TYPE.MOBILE_WALLET, 0)}`}
+                    <>
+                      <CyDView className='flex flex-row mt-[12px]'>
+                        <CyDImage
+                          source={AppImages.INFO_CIRCLE}
+                          className='h-[14px] w-[14px] mr-[6px]'
+                        />
+                        <CyDText className='text-[10px] text-n200'>
+                          {
+                            'Limit payments through mobile wallets like Apple Pay, Google Pay, etc.'
+                          }
                         </CyDText>
                       </CyDView>
-                      <Button
-                        title={'Change'}
-                        onPress={() => {
-                          openEditLimitModal(CARD_LIMIT_TYPE.MOBILE_WALLET);
-                        }}
-                        imagePosition={ImagePosition.LEFT}
-                        paddingY={6}
-                        image={AppImages.CHANGE_ICON}
-                        type={ButtonType.GREY_FILL}
-                        imageStyle={'h-[16px] w-[16px] mr-[6px]'}
-                        titleStyle={'text-[12px]'}
-                      />
-                    </CyDView>
+                      <CyDView className='flex flex-row justify-between items-center mt-[12px]'>
+                        <CyDView>
+                          <CyDText className='text-[10px] font-normal'>
+                            {'Limit per transactions'}
+                          </CyDText>
+                          <CyDText className='text-[16px] font-bold'>
+                            {`$${get(limitsByControlType, CARD_LIMIT_TYPE.MOBILE_WALLET, 0)}`}
+                          </CyDText>
+                        </CyDView>
+                        <Button
+                          title={'Change'}
+                          onPress={() => {
+                            openEditLimitModal(CARD_LIMIT_TYPE.MOBILE_WALLET);
+                          }}
+                          imagePosition={ImagePosition.LEFT}
+                          paddingY={6}
+                          image={AppImages.CHANGE_ICON}
+                          type={ButtonType.GREY_FILL}
+                          imageStyle={'h-[16px] w-[16px] mr-[6px]'}
+                          titleStyle={'text-[12px]'}
+                        />
+                      </CyDView>
+                    </>
                   )}
                 </CyDView>
               </>
             )}
           </CyDView>
         </CyDScrollView>
+        {/* <CyDView className='absolute bottom-0 left-0 right-0 bg-white pt-[10px]'> */}
+        <Button
+          type={ButtonType.PRIMARY}
+          title={t('SAVE_CHANGES')}
+          onPress={() => {
+            setLoading(true);
+            void saveLimits();
+          }}
+          paddingY={12}
+          style='mx-[26px] rounded-[12px] mt-[10px]'
+          titleStyle='text-[18px]'
+          loading={loading}
+          loaderStyle={{ height: 25, width: 25 }}
+        />
       </CyDSafeAreaView>
     </>
   );

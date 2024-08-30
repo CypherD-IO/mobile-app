@@ -489,6 +489,9 @@ const RADIO_CHECK = {
 const RADIO_UNCHECK = {
   uri: `${S3_BUCKET_URL_ICONS}/radioUncheck.png`,
 };
+const RC_PLAIN_VIRTUAL_CARD = {
+  uri: `${S3_BUCKET_URL_ICONS}/rcPlainVirtualCard.png`,
+};
 
 const AppImages = {
   BACK_ARROW_GRAY,
@@ -886,5 +889,6 @@ const AppImages = {
   RC_VIRTUAL,
   LOCKDOWN_MODE_ICON,
   LOCKDOWN_MODE_IMAGE,
+  RC_PLAIN_VIRTUAL_CARD,
 };
 export default AppImages;

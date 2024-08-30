@@ -52,6 +52,7 @@ import {
 } from '../../../styles/tailwindStyles';
 import { showToast } from '../../utilities/toastUtility';
 import CardOptionsModal from './cardOptions';
+import useCardUtilities from '../../../hooks/useCardUtilities';
 
 interface CardSecrets {
   cvv: string;
@@ -109,6 +110,8 @@ export default function CardScreen({
   });
   const [currentCardIndex, setCurrentCardIndex] = useState<number>(0);
   const [trackingDetails, setTrackingDetails] = useState({});
+  const [isRcUpgradableCardShown, setIsRcUpgradableCardShown] = useState(false);
+  const { checkIsRCEnabled } = useCardUtilities();
 
   const isHiddenCard = () => {
     return some(userCardDetails?.cards, { status: CardStatus.HIDDEN });
@@ -127,12 +130,18 @@ export default function CardScreen({
     setCurrentCardIndex(index);
   };
 
-  // rc card upgrade shown for pc card profiles with isRcUpgradable true
-  const isRcUpgradableCardShown =
-    !has(cardProfile, CardProviders.REAP_CARD) &&
-    get(cardProfile, [CardProviders.PAYCADDY, 'isRcUpgradable']);
-
   useEffect(() => {
+    const checkIsRcUpgradableCardShown = async () => {
+      const isRcEnabled = await checkIsRCEnabled();
+      setIsRcUpgradableCardShown(
+        !has(cardProfile, CardProviders.REAP_CARD) &&
+          (isRcEnabled ||
+            get(cardProfile, [CardProviders.PAYCADDY, 'isRcUpgradable'])),
+      );
+    };
+
+    void checkIsRcUpgradableCardShown();
+
     if (isFocused && !isEmpty(currentCardProvider)) {
       const cardConfig = get(cardProfile, currentCardProvider);
       if (cardConfig?.cards) {
@@ -341,6 +350,7 @@ const RenderCardActions = ({
   const isFocused = useIsFocused();
   const [showRCCardDetailsModal, setShowRCCardDetailsModal] = useState(false);
   const [webviewUrl, setWebviewUrl] = useState('');
+  const [userName, setUserName] = useState('');
   const {
     lifetimeAmountUsd: lifetimeLoadUSD,
     pc: { isPhysicalCardEligible: upgradeToPhysicalAvailable = false } = {},
@@ -353,6 +363,36 @@ const RenderCardActions = ({
     ) > 100
       ? '100'
       : ((lifetimeLoadUSD / physicalCardEligibilityLimit) * 100).toFixed(2);
+  const [hideTimer, setHideTimer] = useState(0);
+  const [hideInterval, setHideInterval] = useState<NodeJS.Timeout>();
+  const detailsAutoCloseTime = 120;
+  const [isRcUpgradableCardShown, setIsRcUpgradableCardShown] = useState(false);
+  const { checkIsRCEnabled } = useCardUtilities();
+
+  useEffect(() => {
+    if (showRCCardDetailsModal) {
+      let hideTime = detailsAutoCloseTime;
+      setHideInterval(
+        setInterval(() => {
+          hideTime--;
+          setHideTimer(hideTime);
+        }, 1000),
+      );
+    }
+    if (!showRCCardDetailsModal) {
+      clearInterval(hideInterval);
+    }
+    return () => {
+      clearInterval(hideInterval);
+    };
+  }, [showRCCardDetailsModal]);
+
+  useEffect(() => {
+    if (hideTimer === 0) {
+      clearInterval(hideInterval);
+      setShowRCCardDetailsModal(false);
+    }
+  }, [hideTimer]);
 
   const isLockdownModeEnabled = get(
     cardProfile,
@@ -362,7 +402,7 @@ const RenderCardActions = ({
 
   const shouldBlockAction = () => {
     if (
-      isLockdownModeEnabled === ACCOUNT_STATUS.INACTIVE &&
+      isLockdownModeEnabled === ACCOUNT_STATUS.LOCKED &&
       cardProvider === CardProviders.REAP_CARD
     ) {
       return true;
@@ -378,12 +418,18 @@ const RenderCardActions = ({
       ?.map(card => card.type)
       .includes(CardType.PHYSICAL);
 
-  // rc card upgrade shown for pc card profiles with isRcUpgradable true
-  const isRcUpgradableCardShown =
-    !has(cardProfile, CardProviders.REAP_CARD) &&
-    get(cardProfile, [CardProviders.PAYCADDY, 'isRcUpgradable']);
-
   useEffect(() => {
+    const checkIsRcUpgradableCardShown = async () => {
+      const isRcEnabled = await checkIsRCEnabled();
+      setIsRcUpgradableCardShown(
+        !has(cardProfile, CardProviders.REAP_CARD) &&
+          (isRcEnabled ||
+            get(cardProfile, [CardProviders.PAYCADDY, 'isRcUpgradable'])),
+      );
+    };
+
+    void checkIsRcUpgradableCardShown();
+
     if (isFocused && isFetchingCardDetails) {
       setIsFetchingCardDetails(false);
     }
@@ -460,6 +506,7 @@ const RenderCardActions = ({
           if (!response.isError) {
             if (cardProvider === CardProviders.REAP_CARD) {
               setWebviewUrl(response.data.token);
+              setUserName(response.data.userName);
               setShowRCCardDetailsModal(true);
             } else {
               void sendCardDetails(response.data);
@@ -501,7 +548,12 @@ const RenderCardActions = ({
     });
   };
 
-  const decryptMessage = async ({ privateKey, base64Message, reuseToken }) => {
+  const decryptMessage = async ({
+    privateKey,
+    base64Message,
+    reuseToken,
+    userName,
+  }) => {
     try {
       if (reuseToken) {
         await setCardRevealReuseToken(cardId, reuseToken);
@@ -517,6 +569,7 @@ const RenderCardActions = ({
       );
       const decryptedBuffer = decrypted.toString('utf8');
       setWebviewUrl(decryptedBuffer);
+      setUserName(userName);
       setShowRCCardDetailsModal(true);
       return decryptedBuffer;
     } catch (error) {
@@ -798,7 +851,7 @@ const RenderCardActions = ({
           animationInTiming={300}
           animationOutTiming={300}
           style={styles.modalLayout}>
-          <CyDView className='bg-cardBgTo py-[8px] mb-[12px] h-[305px] w-[90%] rounded-[16px]'>
+          <CyDView className='bg-cardBgTo py-[8px] mb-[12px] h-[310px] w-[90%] rounded-[16px]'>
             <CyDTouchView onPress={() => setShowRCCardDetailsModal(false)}>
               <CyDImage
                 source={AppImages.CLOSE_CIRCLE}
@@ -806,17 +859,42 @@ const RenderCardActions = ({
                 resizeMode='contain'
               />
             </CyDTouchView>
+            <CyDView className='flex flex-row justify-between items-center w-full mb-[12px]'>
+              <CyDText className='text-center text-[14px] text-lightThemeGrayText w-full'>
+                Details will be hidden in {hideTimer} sec
+              </CyDText>
+            </CyDView>
             <WebView
               source={{
                 html: `<!DOCTYPE html>
                   <html lang="en">
-                  <head>
-                    <meta charset="UTF-8">
-                    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=2.0, user-scalable=yes">
-
+                    <head>
+                      <meta charset="UTF-8">
+                      <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=2.0, user-scalable=yes">
+                      <link href='https://fonts.googleapis.com/css?family=Manrope' rel='stylesheet'>
+                      <style>
+                        .container {
+                            position: relative;
+                            width: 350px;
+                            height: 242px;
+                        }
+                        .name {
+                            position: absolute;
+                            bottom: 35px;
+                            left: 20px;
+                            color: black;
+                            font-size: 16px;
+                            font-weight: 900;
+                            font-family: 'Manrope'
+                        }
+                      </style>
                     </head>
-                  <body style="background:#EBEDF0;overflow:hidden">
-                  <iframe scrolling="no" src=${webviewUrl} allow="clipboard-read; clipboard-write" style="height:250px;overflow:hidden;width:100%;margin:0;padding:0;border:none;background:#EBEDF0;border-radius:16px"></iframe></body>
+                    <body style="background: url('https://public.cypherd.io/icons/rcPlainVirtual.png') no-repeat center center;background-size: cover;margin:0;padding:0;overflow:hidden">
+                      <div class="container">
+                        <iframe scrolling="no" src=${webviewUrl} allow="clipboard-read; clipboard-write" style="height:242px;overflow:hidden;width:350px;margin:0;padding:0;border:none;border-radius:16px"></iframe>
+                        <div class="name">${userName}</div>
+                      </div>
+                    </body>
                   </html>
                 `,
                 // html: htmlContent
@@ -826,11 +904,12 @@ const RenderCardActions = ({
               // }}
               scalesPageToFit={true}
               style={{
-                height: '100%',
-                weight: '100%',
+                height: '242px',
+                weight: '350px',
                 background: '#EBEDF0',
                 padding: 0,
                 margin: 0,
+                marginHorizontal: 10,
                 borderRadius: 16,
               }}
               javaScriptEnabled={true}

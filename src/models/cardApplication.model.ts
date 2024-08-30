@@ -22,6 +22,7 @@ export interface ICountry {
   Iso2: string;
   Iso3: string;
   currency: string;
+  unicode_flag?: string;
 }
 
 export interface IState {

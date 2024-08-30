@@ -5,6 +5,7 @@ import {
   CardProviders,
   CardTransactionStatuses,
   CardTransactionTypes,
+  ReapTxnStatus,
 } from '../../../constants/enum';
 import { get } from 'lodash';
 import { ICardTransaction } from '../../../models/card.model';
@@ -98,9 +99,12 @@ export default function CardTransactions({
 
     const filteredTxns = txnsToSplice.filter(txn => {
       const isIncludedType = filter.types.includes(txn.type); // FILTERING THE TYPE
-      const statusString = txn.isSettled
-        ? CardTransactionStatuses.SETTLED
-        : CardTransactionStatuses.PENDING;
+      const statusString =
+        txn.tStatus === ReapTxnStatus.DECLINED
+          ? CardTransactionStatuses.DECLINED
+          : txn.isSettled
+            ? CardTransactionStatuses.SETTLED
+            : CardTransactionStatuses.PENDING;
       const isIncludedStatus = filter.statuses.includes(statusString); // FILTERING THE STATUS
       // FILTERING THE DATERANGE
       const isIncludedInDateRange = moment

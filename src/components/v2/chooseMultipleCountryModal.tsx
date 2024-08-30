@@ -130,12 +130,7 @@ const ChooseMultipleCountryModal = ({
               placeholder='Search Country'
               placeholderTextColor={Colors.subTextColor}
             />
-            <CyDText className='my-[8px] mx-[5%]'>
-              ** All countries are enabled by default. Selecting a specific
-              country will disable all others, leaving only the chosen country
-              enabled.
-            </CyDText>
-            <CyDView className='h-[4px] bg-[#DFE2E6]' />
+            <CyDView className='h-[1px] bg-[#DFE2E6] mt-[8px]' />
             <CyDScrollView>
               <CyDView className='mb-[100px]'>
                 {origCountriesWithFlagAndDialcodes.map(country => {

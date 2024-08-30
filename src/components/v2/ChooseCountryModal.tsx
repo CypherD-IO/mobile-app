@@ -142,6 +142,7 @@ const ChooseCountryModal = ({
                           Iso2: country.Iso2 ?? '',
                           Iso3: country.Iso3 ?? '',
                           currency: country.currency ?? '',
+                          unicode_flag: country.unicode_flag ?? '',
                         });
                         setModalVisible(false);
                       }}
