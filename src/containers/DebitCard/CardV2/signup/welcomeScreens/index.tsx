@@ -20,8 +20,16 @@ export default function WelcomeSceens() {
 
   const onPressNext = () => {
     if (index === 3) {
-      navigation.navigate(screenTitle.SELECT_PLAN, {
-        fromPage: screenTitle.CARD_V2_WELCOME_SCREEN,
+      navigation.reset({
+        index: 0,
+        routes: [
+          {
+            name: screenTitle.SELECT_PLAN,
+            params: {
+              fromPage: screenTitle.CARD_V2_WELCOME_SCREEN,
+            },
+          },
+        ],
       });
     } else setIndex(prev => prev + 1);
   };

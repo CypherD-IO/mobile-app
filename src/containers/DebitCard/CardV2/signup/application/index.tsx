@@ -81,7 +81,6 @@ export default function CardApplicationV2() {
 
         // setSupportedCountries(response.data);
       } else {
-        console.log(' --- failed to fetch ---');
         setSupportedCountries(rcSupportedCountries as any);
       }
     } catch (err) {

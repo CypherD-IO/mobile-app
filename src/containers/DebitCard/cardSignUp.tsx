@@ -658,7 +658,7 @@ export default function CardSignupScreen({ navigation, route }) {
               <CyDView className={'mt-[20px] flex flex-row justify-center'}>
                 <CyDTextInput
                   className={clsx(
-                    'ml-[4px] border-[1px] border-inputBorderColor rounded-[5px] p-[12px] text-[18px] font-nunito text-primaryTextColor w-full',
+                    'border-[1px] border-inputBorderColor rounded-[5px] p-[12px] text-[18px] font-nunito text-primaryTextColor w-full',
                     {
                       'border-redOffColor':
                         formProps.touched.email && formProps.errors.email,

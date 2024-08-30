@@ -16,8 +16,8 @@ import { screenTitle } from '../../constants';
 import { HdWalletContext } from '../../core/util';
 import {
   CyDImageBackground,
-  CyDSafeAreaView,
   CyDText,
+  CyDView,
 } from '../../styles/tailwindStyles';
 import AppImages from '../../../assets/images/appImages';
 import { useTranslation } from 'react-i18next';
@@ -50,7 +50,7 @@ export default function DebitCardScreen(props: RouteProps) {
 
   const [loading, setLoading] = useState<boolean>(true);
   const [currentCardProvider, setCurrentCardProvider] = useState(
-    CardProviders.REAP_CARD,
+    CardProviders.PAYCADDY,
   );
 
   const { getWithAuth } = useAxios();
@@ -80,25 +80,21 @@ export default function DebitCardScreen(props: RouteProps) {
 
   const setCardProvider = async () => {
     const isRcEnabled = await checkIsRCEnabled();
-    if (
-      !isRcEnabled &&
-      !get(cardProfile, [CardProviders.PAYCADDY, 'isRcUpgradable'], false)
-    ) {
-      setCurrentCardProvider(CardProviders.PAYCADDY);
-    } else {
+    if (isRcEnabled) {
       setCurrentCardProvider(CardProviders.REAP_CARD);
+    } else {
+      setCurrentCardProvider(CardProviders.PAYCADDY);
     }
   };
 
   useEffect(() => {
     if (!isReadOnlyWallet && isFocused) {
       setLoading(true);
-      if (cardProfile) {
-        setLoading(false);
-      } else {
+      if (!cardProfile) {
         void refreshProfile();
       }
-      if (has(cardProfile, provider)) {
+      if (has(cardProfile, provider as string)) {
+        setLoading(false);
         const cardApplicationStatus =
           get(cardProfile, provider)?.applicationStatus ===
           CardApplicationStatus.COMPLETED;
@@ -129,13 +125,12 @@ export default function DebitCardScreen(props: RouteProps) {
         }
       } else {
         void setCardProvider();
+        setLoading(false);
       }
     } else {
       setLoading(false);
     }
-  }, [isFocused, cardProfile, provider]);
-
-  useEffect(() => {}, []);
+  }, [isFocused, globalContext.globalState.cardProfile, provider]);
 
   const shouldCheckApplication = () => {
     if (provider === CardProviders.REAP_CARD) {
@@ -184,7 +179,7 @@ export default function DebitCardScreen(props: RouteProps) {
   }
 
   return (
-    <CyDSafeAreaView className='flex-1 bg-white'>
+    <CyDView className='flex-1'>
       <CardProviderSwitch />
       {isReadOnlyWallet && (
         <CyDImageBackground
@@ -201,6 +196,6 @@ export default function DebitCardScreen(props: RouteProps) {
       {!isReadOnlyWallet && currentCardProvider === CardProviders.REAP_CARD && (
         <SelectPlan _navigation={props.navigation} />
       )}
-    </CyDSafeAreaView>
+    </CyDView>
   );
 }

@@ -320,7 +320,9 @@ const SOLANA_LOGO = require('./solana.png');
 const CARD_ONBOARDING_1 = require('./cardOnBoarding1.png');
 const CARD_ONBOARDING_2 = require('./cardOnBoarding2.png');
 const CARD_ONBOARDING_3 = require('./cardOnBoarding3.png');
+const CARD_ONBOARDING_4 = require('./cardOnBoarding4.png');
 const BACK_ARROW_GRAY = require('./backArrowGray.png');
+// const CARD_ONBOARDING_VIDEO = require('./cardOnBaordingVideo.mp4');
 
 // ICONS FROM S3
 const SWAP = { uri: `${S3_BUCKET_URL_ICONS}/swap.png` };
@@ -493,6 +495,8 @@ const AppImages = {
   CARD_ONBOARDING_1,
   CARD_ONBOARDING_2,
   CARD_ONBOARDING_3,
+  CARD_ONBOARDING_4,
+  // CARD_ONBOARDING_VIDEO,
   RADIO_UNCHECK,
   RADIO_CHECK,
   AT_ICON,

@@ -11,24 +11,23 @@ export default function WelcomeSceen() {
   const { t } = useTranslation();
 
   return (
-    <CyDView className='flex flex-col justify-evenly h-full px-[16px] mt-[40px] bg-black'>
+    <CyDView className='flex flex-col items-center justify-evenly h-full px-[16px] mt-[40px] bg-black'>
       <CyDView className='flex flex-col justify-center items-center w-full'>
         <CyDImage
-          // width='350'
-          // height='214'
-          className='w-[286px] h-[241px]'
+          className='w-[286px] h-[425px]'
           source={AppImages.CARD_ONBOARDING_2}
         />
       </CyDView>
-      <CyDView>
-        <CyDText className='font-bold text-[30px] text-white'>
-          {t('Use With')}
+      <CyDView className='w-[320px]'>
+        <CyDText className='font-bold text-[34px] text-white text-center'>
+          {t('Go Virtual & Spend Immediately')}
         </CyDText>
-        <CyDText className='font-bold text-[30px] text-white'>
-          {t('Apple Pay & Google Pay')}
+        <CyDText className='font-semibold text-[18px] text-white mt-[12px] text-center'>
+          {t(
+            'Activate your virtual Cypher Card in few easy steps and start spending globally with your phone. takes just 5 min',
+          )}
         </CyDText>
       </CyDView>
-      {/* <CyDImage source={AppImages.RC_VIRTUAL} /> */}
     </CyDView>
   );
 }
