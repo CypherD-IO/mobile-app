@@ -19,11 +19,14 @@ export default function WelcomeSceen4() {
           source={AppImages.CARD_ONBOARDING_4}
         />
       </CyDView>
-      <CyDView className='px-[16px] flex flex-col items-center'>
-        <CyDText className='font-bold text-[34px] text-white text-center w-[263px]'>
-          {t('Your Money is Always safe')}
+      <CyDView className='px-[16px] flex flex-col items-center mt-[40px]'>
+        <CyDText className='font-extrabold text-[40px] text-white text-center font-manrope'>
+          {t('Your Money')}
         </CyDText>
-        <CyDText className='font-semibold text-[18px] text-white mt-[14px] text-center w-[320px]'>
+        <CyDText className='font-extrabold text-[40px] text-white text-center font-manrope'>
+          {t('is Always safe')}
+        </CyDText>
+        <CyDText className='font-semibold text-[18px] text-white mt-[14px] text-center w-[320px] font-manrope'>
           {t(
             'Your money is always secure with Cypher. Enjoy extra protection with features like Freeze and Lockdown mode.',
           )}

@@ -450,7 +450,7 @@ module.exports = {
     },
     fontFamily: {
       nunito: ['Nunito'],
-      manrope: ['Manrope'],
+      manrope: ['Manrope-Regular', 'sans-serif'],
       sans: [
         'ui-sans-serif',
         'system-ui',

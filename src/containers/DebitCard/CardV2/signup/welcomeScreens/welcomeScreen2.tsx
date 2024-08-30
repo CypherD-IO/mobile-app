@@ -18,11 +18,11 @@ export default function WelcomeSceen() {
           source={AppImages.CARD_ONBOARDING_2}
         />
       </CyDView>
-      <CyDView className='w-[320px]'>
-        <CyDText className='font-bold text-[34px] text-white text-center'>
+      <CyDView className=''>
+        <CyDText className='font-extrabold text-[34px] text-white text-center font-manrope'>
           {t('Go Virtual & Spend Immediately')}
         </CyDText>
-        <CyDText className='font-semibold text-[18px] text-white mt-[12px] text-center'>
+        <CyDText className='font-semibold text-[18px] text-white mt-[12px] text-center font-manrope w-[320px]'>
           {t(
             'Activate your virtual Cypher Card in few easy steps and start spending globally with your phone. takes just 5 min',
           )}

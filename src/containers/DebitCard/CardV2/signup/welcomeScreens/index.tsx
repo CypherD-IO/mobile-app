@@ -43,7 +43,10 @@ export default function WelcomeSceens() {
         {index === 3 && <WelcomeSceen4 />}
       </CyDView>
       <CyDView className='pb-[40px] w-full px-[16px]'>
-        <Button onPress={onPressNext} title={t('CONTINUE')} />
+        <Button
+          onPress={onPressNext}
+          title={index === 3 ? t('GET_STARTED') : t('CONTINUE')}
+        />
       </CyDView>
     </CyDView>
   );
