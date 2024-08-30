@@ -94,8 +94,8 @@ export default function ChooseWalletIndexComponent({
                 navigation.navigate(screenTitle.ENTER_KEY);
               }}>
               <CyDImage
-                source={AppImages.BACK_ARROW_CIRCLE}
-                className='w-[24px] h-[24px]'
+                source={AppImages.BACK_ARROW_GRAY}
+                className='w-[32px] h-[32px]'
               />
             </CyDTouchView>
           )}

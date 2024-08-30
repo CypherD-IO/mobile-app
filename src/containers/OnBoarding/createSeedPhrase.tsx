@@ -104,7 +104,10 @@ function CreateSeedPhrase({ route, navigation }) {
           onPress={() => {
             handleBackButton();
           }}>
-          <CyDImage className={'h-[20px] w-[20px]'} source={AppImages.BACK} />
+          <CyDImage
+            className={'h-[20px] w-[20px]'}
+            source={AppImages.BACK_ARROW_GRAY}
+          />
         </CyDTouchView>
       ),
     });

@@ -12,11 +12,10 @@ import useAxios from '../core/HttpRequest';
 export default function CardProviderSwitch() {
   const globalContext = useContext<any>(GlobalContext);
   const cardProfile: CardProfile = globalContext.globalState.cardProfile;
-  const provider = cardProfile.provider;
+  const provider = cardProfile?.provider;
   const { hasBothProviders } = useCardUtilities();
   const [twoProviders, setTwoProviders] = useState(false);
   const navigation = useNavigation();
-  const { getWithoutAuth } = useAxios();
 
   useEffect(() => {
     void setTwoProviders(hasBothProviders(cardProfile));
