@@ -1186,6 +1186,7 @@ const resources = {
       UNLOCK_CARD_TO_REVEAL_CARD_DETAILS: 'Unlock Card to reveal Card Details',
       UNABLE_TO_UPDATE_DOMESTIC_COUNTRIES:
         'Unable to update domestic countries',
+      PLAN_COST: 'Premium Fee',
     },
   },
 };

@@ -206,10 +206,11 @@ export default function BridgeFundCardScreen({ route }: { route: any }) {
             hasSufficientBalanceAndGasFee: false,
             cardProvider: currentCardProvider,
             cardId,
+            planCost,
             tokenSendParams: {
               chain: chainDetails.backendName,
               amountInCrypto: String(actualTokensRequired),
-              amountInFiat: String(quote.amount),
+              amountInFiat: String(quote.amount - Number(planCost)),
               symbol: selectedTokenSymbol,
               toAddress: targetWalletAddress,
               gasFeeInCrypto: '0',

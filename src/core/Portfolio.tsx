@@ -928,7 +928,7 @@ export async function fetchTokenData(
     const payload = {
       chains: PORTFOLIO_CHAINS_BACKEND_NAMES,
       addresses,
-      allowTestNets: true,
+      allowTestNets: false,
       isVerified: isVerifyCoinChecked,
     };
     const archBackend = await axios.post(portfolioUrl, payload);

@@ -90,6 +90,7 @@ export interface PayTokenModalParams {
   hasSufficientBalanceAndGasFee: boolean;
   cardProvider: CardProviders;
   cardId: string;
+  planCost: number;
   tokenSendParams: {
     chain: ChainBackendNames;
     amountInCrypto: string;
