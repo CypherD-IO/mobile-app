@@ -49,14 +49,14 @@ import useCardUtilities from '../../../hooks/useCardUtilities';
 
 interface CypherCardScreenProps {
   navigation: any;
-  route: { params: { hasBothProviders: boolean; cardProvider: CardProviders } };
+  route: { params: { cardProvider: CardProviders } };
 }
 
 export default function CypherCardScreen({
   navigation,
   route,
 }: CypherCardScreenProps) {
-  const { hasBothProviders, cardProvider } = route.params;
+  const { cardProvider } = route.params;
   const isFocused = useIsFocused();
   const { t } = useTranslation();
   const { getWithAuth } = useAxios();
@@ -107,6 +107,7 @@ export default function CypherCardScreen({
   const { getWalletProfile } = useCardUtilities();
   const [lockdownModeLoading, setLockdownModeLoading] = useState(false);
   const { postWithAuth } = useAxios();
+  const { hasBothProviders } = useCardUtilities();
 
   const onRefresh = async () => {
     void refreshProfile();
@@ -304,12 +305,14 @@ export default function CypherCardScreen({
         filterState={[filter, setFilter]}
       />
       {/* TXN FILTER MODAL */}
-      <CyDView className='ml-[18px] mb-[4px]'>
-        <CyDText className='font-extrabold text-[26px]'>Cards</CyDText>
-      </CyDView>
+      {!hasBothProviders(cardProfile) && (
+        <CyDView className='ml-[18px]'>
+          <CyDText className='font-extrabold text-[26px]'>Cards</CyDText>
+        </CyDView>
+      )}
       <CyDView
         className={
-          'h-[50px] flex flex-row justify-between items-center py-[5px] px-[10px] mx-[12px] mb-[8px] mt-[8px]'
+          'h-[50px] flex flex-row justify-between items-center py-[5px] px-[10px] mx-[12px] mb-[8px] mt-[16px]'
         }>
         {cardId !== HIDDEN_CARD_ID ? (
           <CyDView>
@@ -440,7 +443,6 @@ export default function CypherCardScreen({
                   onPress={() =>
                     navigation.navigate(screenTitle.CARD_TRANSACTIONS_SCREEN, {
                       navigation,
-                      hasBothProviders,
                       cardProvider,
                       currentCardIndex,
                     })

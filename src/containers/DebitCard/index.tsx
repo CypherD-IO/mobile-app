@@ -140,7 +140,7 @@ export default function DebitCardScreen(props: RouteProps) {
         if (
           (!(provider === CardProviders.REAP_CARD) && !data.phoneVerified) ||
           !data.emailVerfied ||
-          (!(provider === CardProviders.REAP_CARD) &&
+          (provider === CardProviders.REAP_CARD &&
             !get(cardProfile, ['cardNotification', 'isTelegramAllowed'], false))
         ) {
           props.navigation.reset({

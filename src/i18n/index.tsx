@@ -1118,6 +1118,13 @@ const resources = {
         'Activate this mode only if you are facing a cyber attack.',
       TURN_ON_LOCKDOWN: 'Turn On Lockdown',
       SECURE_ACCOUNT: 'Secure Account',
+      UNABLE_TO_FETCH_CARD_LIMIT: 'Unable to fetch card limit',
+      UNABLE_TO_UPDATE_CARD_LIMIT: 'Unable to update card limit',
+      PLEASE_CONTACT_SUPPORT: 'Please contact support.',
+      UNABLE_TO_UPDATE_ALLOWED_COUNTRIES: 'Unable to update allowed countries',
+      UNLOCK_CARD_TO_REVEAL_CARD_DETAILS: 'Unlock Card to reveal Card Details',
+      UNABLE_TO_UPDATE_DOMESTIC_COUNTRIES:
+        'Unable to update domestic countries',
     },
   },
 };
