@@ -555,6 +555,7 @@ const RenderCardActions = ({
     userName,
   }) => {
     try {
+      await sleepFor(1000);
       setIsFetchingCardDetails(true);
       if (reuseToken) {
         await setCardRevealReuseToken(cardId, reuseToken);
@@ -853,7 +854,7 @@ const RenderCardActions = ({
           animationInTiming={300}
           animationOutTiming={300}
           style={styles.modalLayout}>
-          <CyDView className='bg-cardBgTo py-[8px] mb-[12px] h-[400px] w-[90%] rounded-[16px]'>
+          <CyDView className='bg-cardBgTo py-[8px] mb-[12px] h-[412px] w-[90%] rounded-[16px]'>
             <CyDTouchView onPress={() => setShowRCCardDetailsModal(false)}>
               <CyDImage
                 source={AppImages.CLOSE_CIRCLE}
@@ -866,34 +867,62 @@ const RenderCardActions = ({
                 Details will be hidden in {hideTimer} sec
               </CyDText>
             </CyDView>
-            <CyDView className='bg-white rounded-[8px] mx-[12px] px-[12px] py-[10px]'>
-              <CyDText className='font-[900] text-[16px]'>Name:</CyDText>
-              <CyDText className='mt-[4px] font-bold text-[16px]'>
-                {userName}
-              </CyDText>
-            </CyDView>
             <WebView
               source={{
-                html: `<!DOCTYPE html>
-                  <html lang="en">
+                html: `
+                <!DOCTYPE html>
+                <html lang="en">
                   <head>
                     <meta charset="UTF-8">
                     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=2.0, user-scalable=yes">
-
-                    </head>
+                    <link href='https://fonts.googleapis.com/css?family=Manrope' rel='stylesheet'>
+                    <style>
+                      #nameDiv {
+                        display: none;
+                        background-color: white;
+                        border-radius: 8px;
+                        font-family: 'Manrope';
+                        margin: 6px;
+                        padding: 12px;
+                        margin-bottom: 12px;
+                      }
+                      #nameTitle {
+                        font-weight: 900;
+                        font-size: 16px;
+                      }
+                      #nameValue {
+                        margin-top: 4px;
+                        font-weight: bold;
+                        font-size: 16px;
+                      }
+                    </style>
+                  </head>
                   <body style="background:#EBEDF0;overflow:hidden">
-                  <iframe scrolling="no" src=${webviewUrl} allow="clipboard-read; clipboard-write" style="height:250px;overflow:hidden;width:100%;margin:0;padding:0;border:none;background:#EBEDF0;border-radius:16px"></iframe></body>
-                  </html>
-                `,
-                // html: htmlContent
+                    <div id="nameDiv">
+                      <div id="nameTitle">Name:</div>
+                      <div id="nameValue">${userName}</div>
+                    </div>
+                    <iframe 
+                      id="contentFrame"
+                      scrolling="no" 
+                      src="${webviewUrl}" 
+                      allow="clipboard-read; clipboard-write" 
+                      style="height:250px;overflow:hidden;width:100%;margin:0;padding:0;border:none;background:#EBEDF0;border-radius:16px"
+                      onload="document.getElementById('nameDiv').style.display = 'block';"
+                    ></iframe>
+                    <script>
+                      document.getElementById('contentFrame').onload = function() {
+                        document.getElementById('nameDiv').style.display = 'block';
+                      }
+                    </script>
+                  </body>
+                </html>
+              `,
               }}
-              // source={{
-              //   uri: encodeURIComponent(encodeURIComponent(webviewUrl)),
-              // }}
               scalesPageToFit={true}
               style={{
                 height: '100%',
-                weight: '100%',
+                width: '100%',
                 background: '#EBEDF0',
                 padding: 0,
                 margin: 0,
