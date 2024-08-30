@@ -130,8 +130,8 @@ export default function ChooseChainModal({
             onPress={onPressBack}
             className={'absolute z-[50] top-[20px] left-[24px]'}>
             <CyDImage
-              source={AppImages.BACK}
-              className={' w-[20px] h-[20px] '}
+              source={AppImages.BACK_ARROW_CIRCLE}
+              className={' w-[24px] h-[24px] '}
             />
           </CyDTouchView>
         )}

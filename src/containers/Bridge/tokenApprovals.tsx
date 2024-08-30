@@ -377,7 +377,7 @@ export default function TokenApprovals(props) {
                 height={18}
                 width={14}
                 resizemode='cover'
-                source={AppImages.BACK}
+                source={AppImages.BACK_ARROW_CIRCLE}
               />
             </DynamicTouchView>
             <DynamicTouchView

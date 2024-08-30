@@ -273,7 +273,7 @@ export default function CypherCardScreen({
   //   const { isError, data, error } = await patchWithAuth(
   //     '/v1/cards/rc/plan/deduct',
   //     {
-  //       planId: 'pro_plan_v1',
+  //       planId: 'basic_plan_v1',
   //     },
   //   );
   //   console.log('🚀 ~ onPressUp ~ error:', error);

@@ -1174,6 +1174,7 @@ const resources = {
       BASIC_DETAILS: 'Basic Details',
       DELIVERY_ADDRESS: 'Your Delivery Address',
       SELECT_COUNTRY: 'Select Country',
+      PLAN_UPDATE_FAILED: 'Plan update failed',
       UNABLE_TO_FETCH_CARD_LIMIT: 'Unable to fetch card limit',
       UNABLE_TO_UPDATE_CARD_LIMIT: 'Unable to update card limit',
       PLEASE_CONTACT_SUPPORT: 'Please contact support.',

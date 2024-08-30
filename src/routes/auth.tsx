@@ -1071,7 +1071,12 @@ export function DebitCardStackScreen() {
           headerShadowVisible: false,
           title: 'Load card',
           headerTitleAlign: 'center',
-          headerTitleStyle: portfolioStackScreenHeaderTitleStyles,
+          headerTitleStyle: {
+            ...portfolioStackScreenHeaderTitleStyles,
+          },
+          headerStyle: {
+            backgroundColor: '#F5F6F7',
+          },
           headerTintColor: Colors.primaryTextColor,
           headerBackTitleVisible: false,
           headerLeft: props => defaultHeaderLeft(navigation),

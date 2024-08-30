@@ -29,18 +29,19 @@ import {
 import { get } from 'lodash';
 import Loading from '../../../../components/v2/loading';
 import AsyncStorage from '@react-native-async-storage/async-storage';
+import { useGlobalModalContext } from '../../../../components/v2/GlobalModal';
+import * as Sentry from '@sentry/react-native';
 
-export default function SelectPlan(props: {
-  route: { params?: { fromPage: string } };
-}) {
+export default function SelectPlan(_navigation: any) {
   const { t } = useTranslation();
   const routeIndexindex = useNavigationState(state => state.index);
   const navigation = useNavigation<NavigationProp<ParamListBase>>();
   const { globalState } = useContext<any>(GlobalContext) as GlobalContextDef;
   const { patchWithAuth } = useAxios();
   const isFocused = useIsFocused();
+  const { showModal, hideModal } = useGlobalModalContext();
 
-  const fromPage = props.route?.params?.fromPage ?? '';
+  const fromPage = _navigation?.props?.route?.params?.fromPage ?? '';
 
   const [showComparision, setShowComparision] = useState(false);
   const [loading, setLoading] = useState({
@@ -55,7 +56,7 @@ export default function SelectPlan(props: {
   const proPlanData = get(planData, ['default', CypherPlanId.PRO_PLAN]);
 
   const onSelectPlan = async (optedPlan: CypherPlanId) => {
-    const { isError, error, data } = await patchWithAuth(`/v1/cards/rc/plan`, {
+    const { isError, error } = await patchWithAuth(`/v1/cards/rc/plan`, {
       optedPlanId: optedPlan,
     });
     if (!isError) {
@@ -65,10 +66,18 @@ export default function SelectPlan(props: {
         routeIndexindex === 0
       )
         navigation.navigate(screenTitle.CARD_SIGNUP_SCREEN);
-      else if (fromPage === screenTitle.BRIDGE_FUND_CARD_SCREEN)
-        navigation.navigate(screenTitle.BRIDGE_FUND_CARD_SCREEN);
+      else if (fromPage === screenTitle.BRIDGE_FUND_CARD_SCREEN) {
+        navigation.goBack();
+      }
     } else {
-      console.log('onSelectPlan ~ error: ', error);
+      showModal('state', {
+        type: 'error',
+        title: t('PLAN_UPDATE_FAILED'),
+        description: t('CONTACT_CYPHERD_SUPPORT'),
+        onSuccess: hideModal,
+        onFailure: hideModal,
+      });
+      Sentry.captureException(error);
     }
   };
 
@@ -111,7 +120,7 @@ export default function SelectPlan(props: {
             ) : (
               <CyDImage
                 source={AppImages.BACK_ARROW_CIRCLE}
-                className='w-[32px] h-[32px] '
+                className='w-[24px] h-[24px] '
               />
             )}
           </CyDTouchView>
@@ -552,6 +561,7 @@ export default function SelectPlan(props: {
                     void onSelectPlan(CypherPlanId.BASIC_PLAN);
                     setLoading({ ...loading, basicPlanLoading: false });
                   }}
+                  loading={loading.basicPlanLoading}
                 />
               </CyDView>
             </CyDView>
@@ -670,6 +680,7 @@ export default function SelectPlan(props: {
                     void onSelectPlan(CypherPlanId.PRO_PLAN);
                     setLoading({ ...loading, proPlanLoading: false });
                   }}
+                  loading={loading.proPlanLoading}
                 />
               </CyDView>
             </CyDView>

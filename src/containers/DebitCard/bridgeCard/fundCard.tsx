@@ -25,7 +25,6 @@ import {
 import {
   CyDFastImage,
   CyDImage,
-  CyDSafeAreaView,
   CyDText,
   CyDTouchView,
   CyDView,
@@ -38,6 +37,7 @@ import { CHOOSE_TOKEN_MODAL_TIMEOUT } from '../../../constants/timeOuts';
 import { screenTitle } from '../../../constants';
 import { useIsFocused } from '@react-navigation/native';
 import {
+  CYPHER_PLAN_ID_NAME_MAPPING,
   CardFeePercentage,
   GAS_BUFFER_FACTOR_FOR_LOAD_MAX,
   MINIMUM_TRANSFER_AMOUNT_ETH,
@@ -90,9 +90,8 @@ export default function BridgeFundCardScreen({ route }: { route: any }) {
   );
   const cards = get(cardProfile, currentCardProvider)?.cards;
   const cardId: string = get(cards, currentCardIndex)?.cardId;
-
-  planCost = cardId === 'hidden' ? planCost : 0;
-  const { postWithAuth } = useAxios();
+  const fistLoad = cardId === 'hidden';
+  planCost = fistLoad ? planCost : 0;
 
   const cosmos = hdWallet.state.wallet.cosmos;
   const osmosis = hdWallet.state.wallet.osmosis;
@@ -138,6 +137,7 @@ export default function BridgeFundCardScreen({ route }: { route: any }) {
   const [nativeTokenBalance, setNativeTokenBalance] = useState<number>(0);
   const { t } = useTranslation();
   const { showModal, hideModal } = useGlobalModalContext();
+  const { postWithAuth } = useAxios();
   const isFocused = useIsFocused();
   const { estimateGasForEvm, estimateGasForEvmosIBC, estimateGasForSolana } =
     useGasService();
@@ -1022,7 +1022,7 @@ export default function BridgeFundCardScreen({ route }: { route: any }) {
   };
 
   return (
-    <CyDSafeAreaView className='h-full bg-white'>
+    <CyDView className='h-full bg-n20'>
       {isMaxLoading && <Loading blurBg={true} />}
       <ChooseTokenModal
         isChooseTokenModalVisible={isChooseTokenVisible}
@@ -1180,33 +1180,70 @@ export default function BridgeFundCardScreen({ route }: { route: any }) {
             value={amount}
             setValue={(amt: string) => onEnterAmount(amt)}
           />
-          <CyDView className='flex flex-row justify-around items-center mx-[16px]'>
-            <Button
-              onPress={() => {
-                navigation.navigate(screenTitle.AUTO_LOAD_SCREEN);
-              }}
-              type={ButtonType.TERNARY}
-              title={t('SETUP_AUTO_LOAD')}
-              style={clsx('h-[60px] w-[45%] mb-[18px] py-[10px]', {
-                'py-[8px]': loading,
-              })}
-            />
-            <Button
-              onPress={() => {
-                if (validateAmount(amount)) {
-                  void fundCard();
-                }
-              }}
-              type={ButtonType.PRIMARY}
-              disabled={isLoadCardDisabled()}
-              title={t('QUOTE')}
-              style={'h-[60px] w-[45%] mb-[18px] py-[10px]'}
-              loading={loading}
-            />
+          <CyDView className=' pt-[16px] bg-white px-[16px] pb-[24px] rounded-t-[16px]'>
+            {fistLoad && (
+              <CyDView className='flex flex-row justify-between mb-[16px]'>
+                <CyDTouchView
+                  className='flex flex-row'
+                  onPress={() => {
+                    navigation.navigate(screenTitle.SELECT_PLAN, {
+                      fromPage: screenTitle.BRIDGE_FUND_CARD_SCREEN,
+                    });
+                  }}>
+                  <CyDText className='font-bold text-[14px]'>
+                    {fistLoad
+                      ? get(
+                          CYPHER_PLAN_ID_NAME_MAPPING,
+                          cardProfile?.planInfo?.optedPlanId ??
+                            CypherPlanId.BASIC_PLAN,
+                        )
+                      : get(
+                          CYPHER_PLAN_ID_NAME_MAPPING,
+                          cardProfile?.planInfo?.planId ??
+                            CypherPlanId.BASIC_PLAN,
+                        )}
+                  </CyDText>
+
+                  <CyDImage
+                    source={AppImages.EDIT}
+                    className='w-[20px] h-[20px]'
+                  />
+                </CyDTouchView>
+                <CyDView>
+                  <CyDText className='font-bold text-[14px]'>
+                    {`$${planCost}`}
+                  </CyDText>
+                </CyDView>
+              </CyDView>
+            )}
+            <CyDView className='flex flex-row justify-between items-center'>
+              <Button
+                onPress={() => {
+                  navigation.navigate(screenTitle.AUTO_LOAD_SCREEN);
+                }}
+                type={ButtonType.TERNARY}
+                title={t('SETUP_AUTO_LOAD')}
+                style={clsx('h-[60px] w-[45%] mb-[18px] py-[10px]', {
+                  'py-[8px]': loading,
+                })}
+              />
+              <Button
+                onPress={() => {
+                  if (validateAmount(amount)) {
+                    void fundCard();
+                  }
+                }}
+                type={ButtonType.PRIMARY}
+                disabled={isLoadCardDisabled()}
+                title={t('QUOTE')}
+                style={'h-[60px] w-[45%] mb-[18px] py-[10px]'}
+                loading={loading}
+              />
+            </CyDView>
           </CyDView>
         </CyDView>
       </CyDView>
       {/* </CyDKeyboardAwareScrollView> */}
-    </CyDSafeAreaView>
+    </CyDView>
   );
 }

@@ -774,8 +774,8 @@ export default function ShortcutsModal({ navigationRef }) {
               }}
               className={''}>
               <CyDImage
-                source={AppImages.BACK}
-                className={'w-[20px] h-[20px]'}
+                source={AppImages.BACK_ARROW_CIRCLE}
+                className={'w-[24px] h-[24px]'}
               />
             </CyDTouchView>
             <CyDView className={'flex flex-row'}>
@@ -823,8 +823,8 @@ export default function ShortcutsModal({ navigationRef }) {
               }}
               className={''}>
               <CyDImage
-                source={AppImages.BACK}
-                className={'w-[20px] h-[20px]'}
+                source={AppImages.BACK_ARROW_CIRCLE}
+                className={'w-[24px] h-[24px]'}
               />
             </CyDTouchView>
             <CyDView className={'flex flex-row'}>

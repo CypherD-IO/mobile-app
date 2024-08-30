@@ -82,8 +82,8 @@ export function AddressBook({ route, navigation }) {
               navigation.goBack();
             }}>
             <CyDImage
-              source={AppImages.BACK}
-              className={' w-[20px] h-[20px] mt-[10px]'}
+              source={AppImages.BACK_ARROW_CIRCLE}
+              className={' w-[24px] h-[24px] mt-[10px]'}
             />
           </CyDTouchView>
           <CyDView className='flex-1 items-center mr-[20px]'>

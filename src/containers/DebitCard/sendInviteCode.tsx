@@ -190,8 +190,8 @@ export default function SendInviteCode({ route, navigation }: Props) {
                     handleBack();
                   }}>
                   <CyDImage
-                    source={AppImages.BACK}
-                    className='h-[22px] w-[25px]'
+                    source={AppImages.BACK_ARROW_CIRCLE}
+                    className='h-[24px] w-[24px]'
                     resizeMode='contain'
                   />
                 </CyDTouchView>
