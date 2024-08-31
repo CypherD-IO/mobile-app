@@ -63,7 +63,7 @@ export default function CypherCardScreen({
   const { cardProvider } = route.params;
   const isFocused = useIsFocused();
   const { t } = useTranslation();
-  const { getWithAuth, patchWithAuth } = useAxios();
+  const { getWithAuth } = useAxios();
   const { showModal, hideModal } = useGlobalModalContext();
   const globalContext = useContext<any>(GlobalContext);
   const cardProfile: CardProfile = globalContext.globalState.cardProfile;
@@ -269,17 +269,13 @@ export default function CypherCardScreen({
     return false;
   };
 
-  // const onPressUp = async () => {
-  //   const { isError, data, error } = await patchWithAuth(
-  //     '/v1/cards/rc/plan/deduct',
-  //     {
-  //       planId: 'basic_plan_v1',
-  //     },
-  //   );
-  //   console.log('🚀 ~ onPressUp ~ error:', error);
-  //   console.log('🚀 ~ onPressUp ~ data:', data);
-  //   console.log('🚀 ~ onPressUp ~ isError:', isError);
-  // };
+  const onPressPlanChange = () => {
+    navigation.navigate(screenTitle.SELECT_PLAN, {
+      toPage: screenTitle.BRIDGE_CARD_SCREEN,
+      deductAmountNow: true,
+      cardBalance,
+    });
+  };
 
   return isLayoutRendered ? (
     <CyDSafeAreaView className='flex-1 bg-gradient-to-b from-cardBgFrom to-cardBgTo mt-[20px] mb-[75px]'>
@@ -443,6 +439,7 @@ export default function CypherCardScreen({
             refreshProfile={() => {
               void refreshProfile();
             }}
+            onPressPlanChange={onPressPlanChange}
           />
         </CyDView>
         <CyDView className='w-full bg-white mt-[12px] pb-[120px]'>

@@ -1178,7 +1178,7 @@ const resources = {
       ADD_ON_CARDS: 'Add on Cards',
       NON_USDC_TXN: 'Non USD Transactions',
       USDC_TXN: 'USD Transaction',
-      // PLAN_UPATE_MESSAGE: 'Plan update ',
+      CHANGE_PLAN: 'Change plan ',
       UNABLE_TO_FETCH_CARD_LIMIT: 'Unable to fetch card limit',
       UNABLE_TO_UPDATE_CARD_LIMIT: 'Unable to update card limit',
       PLEASE_CONTACT_SUPPORT: 'Please contact support.',

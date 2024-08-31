@@ -74,12 +74,14 @@ export default function CardScreen({
   onPressUpgradeNow,
   onPressActivateCard,
   refreshProfile,
+  onPressPlanChange,
 }: {
   navigation: any;
   currentCardProvider: CardProviders;
   onPressUpgradeNow: () => void;
   onPressActivateCard: (card: any) => void;
   refreshProfile: () => void;
+  onPressPlanChange: () => void;
 }) {
   const globalContext = useContext<any>(GlobalContext);
   const cardProfile: CardProfile = globalContext.globalState.cardProfile;
@@ -310,6 +312,7 @@ export default function CardScreen({
           onPressActivateCard={onPressActivateCard}
           cardProfile={cardProfile}
           trackingDetails={trackingDetails}
+          onPressPlanChange={onPressPlanChange}
         />
       )}
     </CyDView>
@@ -325,6 +328,7 @@ const RenderCardActions = ({
   onPressActivateCard,
   cardProfile,
   trackingDetails,
+  onPressPlanChange,
 }: {
   card: Card;
   cardProvider: CardProviders;
@@ -334,6 +338,7 @@ const RenderCardActions = ({
   onPressActivateCard: (card: Card) => void;
   cardProfile: CardProfile;
   trackingDetails: any;
+  onPressPlanChange: () => void;
 }) => {
   const { t } = useTranslation();
   const { postWithAuth, patchWithAuth } = useAxios();
@@ -829,7 +834,8 @@ const RenderCardActions = ({
               cardProfile: tempProfile,
             });
             navigation.navigate(screenTitle.SELECT_PLAN, {
-              fromPage: screenTitle.BRIDGE_CARD_SCREEN,
+              deductAmountNow: false,
+              toPage: screenTitle.CARD_SIGNUP_SCREEN,
             });
           }}
         />
@@ -945,6 +951,7 @@ const RenderCardActions = ({
         cardProvider={cardProvider}
         card={card}
         navigation={navigation}
+        onPressPlanChange={onPressPlanChange}
       />
 
       <CyDView className='flex flex-row justify-center items-center mb-[14px] mt-[-42px]'>

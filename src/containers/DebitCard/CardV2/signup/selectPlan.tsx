@@ -46,7 +46,9 @@ export default function SelectPlan(_navigation: any) {
   const { showModal, hideModal } = useGlobalModalContext();
   const { getWalletProfile } = useCardUtilities();
 
-  const fromPage = _navigation?.route?.params?.fromPage ?? '';
+  const toPage = _navigation?.route?.params?.toPage ?? '';
+  const deductAmountNow = _navigation?.route?.params?.deductAmountNow ?? false;
+  const cardBalance = _navigation?.route?.params?.cardBalance ?? 0;
 
   const [showComparision, setShowComparision] = useState(false);
   const [loading, setLoading] = useState({
@@ -65,58 +67,123 @@ export default function SelectPlan(_navigation: any) {
       setLoading({ ...loading, proPlanLoading: true });
     } else setLoading({ ...loading, basicPlanLoading: true });
 
-    try {
-      const { isError, error } = await patchWithAuth(`/v1/cards/rc/plan`, {
-        optedPlanId: optedPlan,
-      });
-      const resp = await getWalletProfile(globalState.token);
-      globalDispatch({
-        type: GlobalContextType.CARD_PROFILE,
-        cardProfile: resp,
-      });
-
-      if (optedPlan === CypherPlanId.PRO_PLAN) {
-        setLoading({ ...loading, proPlanLoading: false });
-      } else setLoading({ ...loading, basicPlanLoading: false });
-      if (!isError) {
-        showModal('state', {
-          type: 'success',
-          title: `You have opted for ${get(CYPHER_PLAN_ID_NAME_MAPPING, optedPlan)}`,
-          description: 'You can change your plan anytime in future',
-          onSuccess: () => {
-            if (
-              fromPage === screenTitle.CARD_V2_WELCOME_SCREEN ||
-              fromPage === screenTitle.BRIDGE_CARD_SCREEN ||
-              routeIndexindex === 0
-            )
-              navigation.navigate(screenTitle.CARD_SIGNUP_SCREEN);
-            else {
-              navigation.goBack();
-            }
-            hideModal();
-          },
-          onFailure: hideModal,
+    if (!deductAmountNow) {
+      try {
+        const { isError, error } = await patchWithAuth(`/v1/cards/rc/plan`, {
+          optedPlanId: optedPlan,
         });
-      } else {
+        const resp = await getWalletProfile(globalState.token);
+        globalDispatch({
+          type: GlobalContextType.CARD_PROFILE,
+          cardProfile: resp,
+        });
+
+        if (optedPlan === CypherPlanId.PRO_PLAN) {
+          setLoading({ ...loading, proPlanLoading: false });
+        } else setLoading({ ...loading, basicPlanLoading: false });
+        if (!isError) {
+          showModal('state', {
+            type: 'success',
+            title: `You have opted for ${get(CYPHER_PLAN_ID_NAME_MAPPING, optedPlan)}`,
+            description: 'You can change your plan anytime in future',
+            onSuccess: () => {
+              if (toPage) navigation.navigate(toPage);
+              else {
+                navigation.goBack();
+              }
+              hideModal();
+            },
+            onFailure: hideModal,
+          });
+        } else {
+          showModal('state', {
+            type: 'error',
+            title: t('PLAN_UPDATE_FAILED'),
+            description: t('CONTACT_CYPHERD_SUPPORT'),
+            onSuccess: hideModal,
+            onFailure: hideModal,
+          });
+          Sentry.captureException(error);
+        }
+      } catch (err: any) {
         showModal('state', {
           type: 'error',
           title: t('PLAN_UPDATE_FAILED'),
-          description: t('CONTACT_CYPHERD_SUPPORT'),
+          description: JSON.stringify(err?.message),
           onSuccess: hideModal,
           onFailure: hideModal,
         });
-        Sentry.captureException(error);
-      }
-    } catch (err: any) {
-      showModal('state', {
-        type: 'error',
-        title: t('PLAN_UPDATE_FAILED'),
-        description: JSON.stringify(err?.message),
-        onSuccess: hideModal,
-        onFailure: hideModal,
-      });
 
-      Sentry.captureException(err);
+        Sentry.captureException(err);
+      }
+    } else {
+      const planCost = get(planData, ['default', optedPlan ?? '', 'cost'], '');
+
+      if (planCost !== '') {
+        if (Number(cardBalance) < Number(Number(planCost))) {
+          if (optedPlan === CypherPlanId.PRO_PLAN) {
+            setLoading({ ...loading, proPlanLoading: false });
+          } else setLoading({ ...loading, basicPlanLoading: false });
+          showModal('state', {
+            type: 'error',
+            title: t('INSUFFICIENT_FUNDS'),
+            description: `You do not have $${Number(planCost)} balance to change your plan. Please load now to upgrade`,
+            onSuccess: hideModal,
+            onFailure: hideModal,
+          });
+        } else {
+          const { isError, error } = await patchWithAuth(
+            '/v1/cards/rc/plan/deduct',
+            {
+              planId: optedPlan,
+            },
+          );
+          const resp = await getWalletProfile(globalState.token);
+          globalDispatch({
+            type: GlobalContextType.CARD_PROFILE,
+            cardProfile: resp,
+          });
+          if (optedPlan === CypherPlanId.PRO_PLAN) {
+            setLoading({ ...loading, proPlanLoading: false });
+          } else setLoading({ ...loading, basicPlanLoading: false });
+
+          if (!isError) {
+            showModal('state', {
+              type: 'success',
+              title: `Your plan has been changed to ${get(CYPHER_PLAN_ID_NAME_MAPPING, optedPlan)} successfully`,
+              description: 'You can change your plan anytime in future',
+              onSuccess: () => {
+                if (toPage) navigation.navigate(toPage);
+                else {
+                  navigation.goBack();
+                }
+                hideModal();
+              },
+              onFailure: hideModal,
+            });
+          } else {
+            showModal('state', {
+              type: 'error',
+              title: t('PLAN_UPDATE_FAILED'),
+              description: error?.message ?? error,
+              onSuccess: hideModal,
+              onFailure: hideModal,
+            });
+            Sentry.captureException(error);
+          }
+        }
+      } else {
+        if (optedPlan === CypherPlanId.PRO_PLAN) {
+          setLoading({ ...loading, proPlanLoading: false });
+        } else setLoading({ ...loading, basicPlanLoading: false });
+        showModal('state', {
+          type: 'error',
+          title: t('CONTACT_CYPHER_SUPPORT'),
+          description: t('UNEXCPECTED_ERROR'),
+          onSuccess: hideModal,
+          onFailure: hideModal,
+        });
+      }
     }
   };
 
@@ -152,8 +219,7 @@ export default function SelectPlan(_navigation: any) {
         {!showOnboarding && (
           <CyDView>
             <CyDTouchView className='px-[16px] mb-[12px]' onPress={onPressBack}>
-              {fromPage === screenTitle.CARD_V2_WELCOME_SCREEN ||
-              routeIndexindex === 0 ? (
+              {routeIndexindex === 0 ? (
                 <CyDView className='w-[32px] h-[32px] ' />
               ) : (
                 <CyDImage
