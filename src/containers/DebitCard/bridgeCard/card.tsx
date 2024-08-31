@@ -9,7 +9,7 @@ import { useIsFocused } from '@react-navigation/native';
 import * as Sentry from '@sentry/react-native';
 import clsx from 'clsx';
 import crypto from 'crypto';
-import { get, has, isEmpty, isUndefined, orderBy, some } from 'lodash';
+import { get, has, isEmpty, isUndefined, orderBy, some, trim } from 'lodash';
 import LottieView from 'lottie-react-native';
 import { useTranslation } from 'react-i18next';
 import { StyleSheet, useWindowDimensions } from 'react-native';
@@ -510,7 +510,7 @@ const RenderCardActions = ({
           setIsFetchingCardDetails(false);
           if (!response.isError) {
             if (cardProvider === CardProviders.REAP_CARD) {
-              setWebviewUrl(response.data.token);
+              setWebviewUrl(trim(response.data.token, '"'));
               setUserName(response.data.userName);
               setShowRCCardDetailsModal(true);
             } else {
@@ -557,7 +557,7 @@ const RenderCardActions = ({
     privateKey,
     base64Message,
     reuseToken,
-    userName,
+    userNameValue,
   }) => {
     try {
       await sleepFor(1000);
@@ -575,10 +575,10 @@ const RenderCardActions = ({
         buffer,
       );
       const decryptedBuffer = decrypted.toString('utf8');
-      setIsFetchingCardDetails(false);
-      setWebviewUrl(decryptedBuffer);
-      setUserName(userName);
+      setWebviewUrl(trim(decryptedBuffer, '"'));
+      setUserName(userNameValue);
       setShowRCCardDetailsModal(true);
+      setIsFetchingCardDetails(false);
       return decryptedBuffer;
     } catch (error) {
       console.error('Decryption error:', error);
