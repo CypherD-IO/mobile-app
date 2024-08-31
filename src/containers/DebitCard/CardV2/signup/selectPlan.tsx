@@ -58,6 +58,7 @@ export default function SelectPlan(_navigation: any) {
   });
   const [showOnboarding, setShowOnboarding] = useState(false);
 
+  const profile = globalState.cardProfile;
   const planData = globalState.planInfo;
   const freePlanData = get(planData, ['default', CypherPlanId.BASIC_PLAN]);
   const proPlanData = get(planData, ['default', CypherPlanId.PRO_PLAN]);
@@ -192,14 +193,19 @@ export default function SelectPlan(_navigation: any) {
   };
 
   const getFirstRender = async () => {
+    const rcProfile = profile?.rc;
     const data = await AsyncStorage.getItem('firstViewCardSignup');
     if (!data) {
       await AsyncStorage.setItem('firstViewCardSignup', 'old');
-      setShowOnboarding(true);
-      navigation.reset({
-        index: 0,
-        routes: [{ name: screenTitle.CARD_V2_WELCOME_SCREEN }],
-      });
+      if (!rcProfile) {
+        setShowOnboarding(true);
+        navigation.reset({
+          index: 0,
+          routes: [{ name: screenTitle.CARD_V2_WELCOME_SCREEN }],
+        });
+      } else {
+        setShowOnboarding(false);
+      }
     } else {
       setShowOnboarding(false);
     }
@@ -209,7 +215,7 @@ export default function SelectPlan(_navigation: any) {
     setLoading({ ...loading, pageLoading: true });
     void getFirstRender();
     setLoading({ ...loading, pageLoading: false });
-  }, [isFocused]);
+  }, [isFocused, profile]);
 
   if (loading.pageLoading || !planData) return <Loading />;
 
