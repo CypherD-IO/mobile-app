@@ -1187,9 +1187,7 @@ export default function BridgeFundCardScreen({ route }: { route: any }) {
                 <CyDTouchView
                   className='flex flex-row items-center '
                   onPress={() => {
-                    navigation.navigate(screenTitle.SELECT_PLAN, {
-                      fromPage: screenTitle.BRIDGE_FUND_CARD_SCREEN,
-                    });
+                    navigation.navigate(screenTitle.SELECT_PLAN);
                   }}>
                   <CyDText className='font-bold text-[14px]'>
                     {fistLoad

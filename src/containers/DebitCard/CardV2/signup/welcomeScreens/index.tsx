@@ -26,7 +26,8 @@ export default function WelcomeSceens() {
           {
             name: screenTitle.SELECT_PLAN,
             params: {
-              fromPage: screenTitle.CARD_V2_WELCOME_SCREEN,
+              deductAmountNow: false,
+              toPage: screenTitle.CARD_SIGNUP_SCREEN,
             },
           },
         ],
