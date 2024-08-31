@@ -445,7 +445,7 @@ export default function SelectPlan(_navigation: any) {
                         </CyDText>
                         {/* metal card */}
                         <CyDText className='text-[12px] font-medium mt-[10px] text-black pl-[12px] h-[18px]'>
-                          {'✅ (1)'}
+                          {'✅ Free *'}
                         </CyDText>
                         <CyDView className='w-full h-[1px] bg-n30 mt-[16px]' />
                         {/* gpay and apple pay */}
@@ -564,11 +564,11 @@ export default function SelectPlan(_navigation: any) {
                         <CyDView className='mt-[16px] pl-[12px] h-[32px]' />
                         {/* daily limit */}
                         <CyDText className='text-[12px] font-medium text-black text-center mt-[10px] h-[18px]'>
-                          {'$5000'}
+                          {'$2000'}
                         </CyDText>
                         {/* montly limit */}
                         <CyDText className='text-[12px] font-medium text-black pl-[12px] text-center  mt-[10px] h-[18px]'>
-                          {'20K'}
+                          {'$5000'}
                         </CyDText>
                         {/* higher limit */}
                         <CyDText className='text-[12px] font-medium mt-[10px] text-black text-center pl-[12px] h-[18px]'>
@@ -601,11 +601,11 @@ export default function SelectPlan(_navigation: any) {
                         <CyDView className='mt-[16px] pl-[12px] h-[32px]' />
                         {/* daily limit */}
                         <CyDText className='text-[12px] font-medium text-black pl-[12px] text-center mt-[10px] h-[18px]'>
-                          {'20K'}
+                          {'$7000'}
                         </CyDText>
                         {/* montly limit */}
                         <CyDText className='text-[12px] font-medium text-black pl-[12px] text-center mt-[10px] h-[18px]'>
-                          {'50K'}
+                          {'$20k'}
                         </CyDText>
                         {/* higher limit */}
                         <CyDText className='text-[12px] font-medium mt-[10px] text-black text-center pl-[12px] h-[18px]'>
@@ -627,8 +627,8 @@ export default function SelectPlan(_navigation: any) {
                         </CyDView>
                         <CyDView className='w-full h-[1px] bg-n30 mt-[16px]' />
                         {/* add ons */}
-                        <CyDView className='my-[16px] h-[32px] flex flex-col justify-center items-start pl-[12px]'>
-                          <CyDText className='text-[12px] font-medium text-black text-center pl-[12px]'>
+                        <CyDView className='my-[16px] h-[42px] flex flex-col justify-center items-start pl-[12px]'>
+                          <CyDText className='text-[12px] font-medium text-black text-center pl-[12px] text-wrap '>
                             {'Upto 3 cards'}
                           </CyDText>
                         </CyDView>
@@ -751,6 +751,16 @@ export default function SelectPlan(_navigation: any) {
                     </CyDText>
                     <CyDText className='font-medium text-[14px] ml-[8px]'>
                       {t('PHYSICAL_CARD')}
+                    </CyDText>
+                  </CyDView>
+                </CyDView>
+                <CyDView className='mt-[16px]'>
+                  <CyDView className=' flex flex-row items-center'>
+                    <CyDText className='font-bold text-[14px] ml-[8px]'>
+                      {`${proPlanData?.physicalCardFee === 0 ? 'FREE' : `$${proPlanData?.usdcFee}`} `}
+                    </CyDText>
+                    <CyDText className='font-medium text-[14px] ml-[8px] text-wrap'>
+                      {t('METAL_CARD') + '  (offer till 31st Oct)'}
                     </CyDText>
                   </CyDView>
                 </CyDView>
