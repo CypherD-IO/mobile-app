@@ -265,9 +265,9 @@ export default function QRCodeGenerator(props) {
       } else if (walletAddressType === FundWalletAddressType.INJECTIVE) {
         setSelectedChain(data[22]);
       } else if (walletAddressType === FundWalletAddressType.KUJIRA) {
-        setSelectedChain(data[22]);
-      } else if (walletAddressType === FundWalletAddressType.SOLANA) {
         setSelectedChain(data[23]);
+      } else if (walletAddressType === FundWalletAddressType.SOLANA) {
+        setSelectedChain(data[24]);
       }
     }
 

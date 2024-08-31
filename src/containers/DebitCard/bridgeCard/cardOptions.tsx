@@ -21,12 +21,14 @@ export default function CardOptionsModal({
   cardProvider,
   card,
   navigation,
+  onPressPlanChange,
 }: {
   isModalVisible: boolean;
   setShowModal: (arg1: boolean) => void;
   cardProvider: CardProviders;
   card: Card;
   navigation: any;
+  onPressPlanChange: () => void;
 }) {
   const globalContext = useContext<any>(GlobalContext);
   const cardProfile: CardProfile = globalContext.globalState.cardProfile;
@@ -47,6 +49,15 @@ export default function CardOptionsModal({
                 card,
               });
               setShowModal(false);
+            },
+          },
+          {
+            title: t<string>('CHANGE_PLAN'),
+            description: 'Change your plan',
+            image: AppImages.UPGRADE_TO_PHYSICAL_CARD_ARROW,
+            action: () => {
+              setShowModal(false);
+              onPressPlanChange();
             },
           },
         ]
