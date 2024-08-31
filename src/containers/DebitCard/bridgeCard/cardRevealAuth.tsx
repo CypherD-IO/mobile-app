@@ -115,7 +115,7 @@ export default function CardRevealAuthScreen(props: {
               base64Message: response.data.token,
               privateKey: key?.privateKey,
               reuseToken: response.data.reuseToken,
-              userName: response.data.userName,
+              userNameValue: response.data.userName,
             },
             currentCardProvider,
           );
