@@ -103,7 +103,7 @@ export default function CardKYCStatusScreen({ navigation }) {
   const refreshProfile = async () => {
     const response = await getWithAuth('/v1/authentication/profile');
     if (!response.isError) {
-      const tempProfile = cardProfileModal(response.data);
+      const tempProfile = await cardProfileModal(response.data);
       globalContext.globalDispatch({
         type: GlobalContextType.CARD_PROFILE,
         cardProfile: tempProfile,
@@ -154,7 +154,7 @@ export default function CardKYCStatusScreen({ navigation }) {
     try {
       const response = await getWithAuth('/v1/authentication/profile');
       if (!response.isError) {
-        const tempProfile = cardProfileModal(response.data);
+        const tempProfile = await cardProfileModal(response.data);
         const tempProvider = get(tempProfile, 'provider', 'rc');
         const tempApplicationStatus = get(
           tempProfile,
