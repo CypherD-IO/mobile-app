@@ -240,7 +240,8 @@ export default function CardScreen({
         )}
         {card.status !== CardStatus.IN_ACTIVE &&
           card.status !== CardStatus.HIDDEN &&
-          card.status !== 'rcUpgradable' && (
+          card.status !== 'rcUpgradable' &&
+          cardProfile.provider === CardProviders.REAP_CARD && (
             <CyDView className='ml-[12px] mb-[12px]'>
               <CyDText className='font-bold text-[24px]'>
                 {' xxxx ' + card.last4}
@@ -306,7 +307,7 @@ export default function CardScreen({
       <Carousel
         loop={false}
         width={width}
-        height={210}
+        height={cardProfile.provider === CardProviders.REAP_CARD ? 210 : 250}
         autoPlay={false}
         data={cardsWithUpgrade}
         snapEnabled={true}
@@ -971,6 +972,19 @@ const RenderCardActions = ({
         navigation={navigation}
         onPressPlanChange={onPressPlanChange}
       />
+
+      {cardProfile.provider === CardProviders.PAYCADDY && (
+        <CyDView className='flex flex-row justify-center items-center mb-[14px] mt-[-42px]'>
+          <CyDText className='font-bold text-[18px]'>
+            {t<string>(
+              type === CardType.VIRTUAL ? 'VIRTUAL_CARD' : 'PHYSICAL_CARD',
+            )}
+          </CyDText>
+          <CyDText className='font-bold text-[18px]'>
+            {' xxxx ' + last4}
+          </CyDText>
+        </CyDView>
+      )}
 
       <CyDView className='flex flex-row justify-around items-center'>
         <CyDTouchView

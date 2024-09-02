@@ -367,15 +367,18 @@ export default function CypherCardScreen({
         )}
 
         <CyDView className='w-[40%]'>
-          <CyDView className='flex flex-row items-center'>
-            <CyDText className='ml-[4px] text-[14px] font-bold text-left'>
-              {get(
-                CYPHER_PLAN_ID_NAME_MAPPING,
-                cardProfile.planInfo?.planId,
-                '',
-              )}
-            </CyDText>
-          </CyDView>
+          {cardProfile.planInfo?.planId &&
+            cardProfile.provider === CardProviders.REAP_CARD && (
+              <CyDView className='flex flex-row items-center'>
+                <CyDText className='ml-[4px] text-[14px] font-bold text-left'>
+                  {get(
+                    CYPHER_PLAN_ID_NAME_MAPPING,
+                    cardProfile.planInfo?.planId,
+                    '',
+                  )}
+                </CyDText>
+              </CyDView>
+            )}
           <Button
             image={AppImages.LOAD_CARD_LOTTIE}
             isLottie={true}

@@ -63,7 +63,7 @@ export default function SelectPlan(_navigation: any) {
   const [showOnboarding, setShowOnboarding] = useState(false);
 
   const profile = globalState.cardProfile;
-  const planId = profile?.planInfo.planId;
+  const planId = profile?.planInfo?.planId;
   const planData = globalState.planInfo;
   const freePlanData = get(planData, ['default', CypherPlanId.BASIC_PLAN]);
   const proPlanData = get(planData, ['default', CypherPlanId.PRO_PLAN]);
