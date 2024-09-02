@@ -32,7 +32,10 @@ import AsyncStorage from '@react-native-async-storage/async-storage';
 import { useGlobalModalContext } from '../../../../components/v2/GlobalModal';
 import * as Sentry from '@sentry/react-native';
 import useCardUtilities from '../../../../hooks/useCardUtilities';
-import { CYPHER_PLAN_ID_NAME_MAPPING } from '../../../../constants/data';
+import {
+  CYPHER_PLAN_ID_NAME_MAPPING,
+  PlanIdPriority,
+} from '../../../../constants/data';
 
 export default function SelectPlan(_navigation: any) {
   const { t } = useTranslation();
@@ -59,6 +62,7 @@ export default function SelectPlan(_navigation: any) {
   const [showOnboarding, setShowOnboarding] = useState(false);
 
   const profile = globalState.cardProfile;
+  const planId = profile?.planInfo.planId;
   const planData = globalState.planInfo;
   const freePlanData = get(planData, ['default', CypherPlanId.BASIC_PLAN]);
   const proPlanData = get(planData, ['default', CypherPlanId.PRO_PLAN]);
@@ -413,10 +417,9 @@ export default function SelectPlan(_navigation: any) {
                         </CyDText>
                         {/* ATM fee */}
                         <CyDView className='w-full h-[1px] bg-n30 mt-[16px]' />
-                        {/* --------------------- todo dynamically ---------------------  */}
                         <CyDView className='mt-[16px] h-[32px] flex flex-col justify-center'>
                           <CyDText className='text-[12px] font-medium text-black pl-[12px]'>
-                            {'3%'}
+                            {`${freePlanData?.atmFee}%`}
                             {/* {`${freePlanData?.fxFeePc === 0 ? 'FREE' : `${freePlanData?.fxFeePc}%`} `} */}
                           </CyDText>
                         </CyDView>
@@ -480,7 +483,7 @@ export default function SelectPlan(_navigation: any) {
                         {/* atm fee */}
                         <CyDView className='mt-[16px] h-[32px] flex flex-col justify-center pl-[12px]'>
                           <CyDText className='text-[12px] font-medium text-black pl-[12px]'>
-                            {'3%'}
+                            {`${proPlanData?.atmFee}%`}
                             {/* {`${proPlanData?.fxFeePc === 0 ? '✅ Free' : `${proPlanData?.fxFeePc}%`} `} */}
                           </CyDText>
                         </CyDView>
@@ -564,11 +567,11 @@ export default function SelectPlan(_navigation: any) {
                         <CyDView className='mt-[16px] pl-[12px] h-[32px]' />
                         {/* daily limit */}
                         <CyDText className='text-[12px] font-medium text-black text-center mt-[10px] h-[18px]'>
-                          {'$2000'}
+                          {`$${freePlanData?.dailyLimit}`}
                         </CyDText>
                         {/* montly limit */}
                         <CyDText className='text-[12px] font-medium text-black pl-[12px] text-center  mt-[10px] h-[18px]'>
-                          {'$5000'}
+                          {`$${freePlanData?.monthlyLimit}`}
                         </CyDText>
                         {/* higher limit */}
                         <CyDText className='text-[12px] font-medium mt-[10px] text-black text-center pl-[12px] h-[18px]'>
@@ -601,11 +604,11 @@ export default function SelectPlan(_navigation: any) {
                         <CyDView className='mt-[16px] pl-[12px] h-[32px]' />
                         {/* daily limit */}
                         <CyDText className='text-[12px] font-medium text-black pl-[12px] text-center mt-[10px] h-[18px]'>
-                          {'$7000'}
+                          {`$${proPlanData?.dailyLimit}`}
                         </CyDText>
                         {/* montly limit */}
                         <CyDText className='text-[12px] font-medium text-black pl-[12px] text-center mt-[10px] h-[18px]'>
-                          {'$20k'}
+                          {`$${proPlanData?.monthlyLimit}`}
                         </CyDText>
                         {/* higher limit */}
                         <CyDText className='text-[12px] font-medium mt-[10px] text-black text-center pl-[12px] h-[18px]'>
@@ -661,6 +664,21 @@ export default function SelectPlan(_navigation: any) {
                   </CyDText>
                 </CyDTouchView>
               </CyDView>
+
+              {/* current plan */}
+              {planId && deductAmountNow && (
+                <CyDView className='flex flex-row items-center mb-[16px]'>
+                  <CyDText className='font-medium text-[14px]'>
+                    {t('CURRENT_PLAN') + ': '}
+                  </CyDText>
+                  <CyDView className=''>
+                    <CyDText className='font-extrabold text-[16px] text-center'>
+                      {get(CYPHER_PLAN_ID_NAME_MAPPING, planId)}
+                    </CyDText>
+                  </CyDView>
+                </CyDView>
+              )}
+
               {/* pro plan */}
               <CyDView className='bg-white p-[16px] border-[1px] border-n50 rounded-[16px]'>
                 <CyDView className='flex flex-row justify-between items-center'>
@@ -779,13 +797,18 @@ export default function SelectPlan(_navigation: any) {
 
                 <CyDView className='mt-[16px]'>
                   <Button
-                    title={t('GET_STARTED')}
+                    title={deductAmountNow ? t('UPGRADE') : t('GET_STARTED')}
                     onPress={() => {
                       void onSelectPlan(CypherPlanId.PRO_PLAN);
                     }}
                     loading={loading.proPlanLoading}
                     style='h-[52px]'
                     loaderStyle={styles.buttonStyle}
+                    disabled={
+                      deductAmountNow &&
+                      get(PlanIdPriority, planId ?? '', 0) >=
+                        get(PlanIdPriority, CypherPlanId.PRO_PLAN)
+                    }
                   />
                 </CyDView>
               </CyDView>
@@ -875,30 +898,27 @@ export default function SelectPlan(_navigation: any) {
                   </CyDView>
                 </CyDView>
 
-                {/* atm card fee */}
-                {/* ----------------- todo --------------------- */}
-                {/* <CyDView className='mt-[16px]'>
-            <CyDView className=' flex flex-row items-center'>
-              <CyDText className='font-bold text-[14px] ml-[8px]'>
-                {`$${freePlanData?.atmFee}`}
-              </CyDText>
-              <CyDText className='font-medium text-[14px] ml-[8px]'>
-                {t('ATM_FEE')}
-              </CyDText>
-            </CyDView>
-          </CyDView> */}
-
                 <CyDView className='mt-[16px]'>
                   <Button
-                    title={t('GET_STARTED')}
+                    title={deductAmountNow ? t('DOWNGRADE') : t('GET_STARTED')}
                     onPress={() => {
                       void onSelectPlan(CypherPlanId.BASIC_PLAN);
                     }}
                     style='h-[52px]'
                     loaderStyle={styles.buttonStyle}
                     loading={loading.basicPlanLoading}
+                    disabled={
+                      deductAmountNow &&
+                      get(PlanIdPriority, planId ?? '', 0) >=
+                        get(PlanIdPriority, CypherPlanId.BASIC_PLAN)
+                    }
                   />
                 </CyDView>
+                {deductAmountNow &&
+                  get(PlanIdPriority, planId ?? '', 0) >=
+                    get(PlanIdPriority, CypherPlanId.BASIC_PLAN) && (
+                    <CyDText className='mt-[8px] text-[12px]'>{`* Please contact support to downgrade`}</CyDText>
+                  )}
               </CyDView>
 
               {/* offers */}

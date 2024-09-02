@@ -1194,6 +1194,8 @@ const resources = {
         'Domestic country updated successfully',
       INTERNATIONAL_COUNTRY_LIST_UPDATED_SUCESSFULLY:
         'International country list updated successfully',
+      CURRENT_PLAN: 'Current Plan',
+      DOWNGRADE: 'DOWNGRADE',
     },
   },
 };

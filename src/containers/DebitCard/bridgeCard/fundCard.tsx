@@ -1042,7 +1042,6 @@ export default function BridgeFundCardScreen({ route }: { route: any }) {
         noTokensAvailableMessage={t<string>('CARD_INSUFFICIENT_FUNDS')}
         renderPage={'fundCardPage'}
       />
-      {/* <CyDKeyboardAwareScrollView> */}
       <CyDView
         className={clsx('flex flex-1 flex-col justify-between h-full', {
           '': loading,
@@ -1122,7 +1121,6 @@ export default function BridgeFundCardScreen({ route }: { route: any }) {
               </CyDTouchView>
             </CyDView>
           </CyDView>
-          {/* <RenderWarningMessage /> */}
         </CyDView>
         <CyDView>
           <CyDView className='flex flex-row justify-evenly items-center'>
@@ -1190,17 +1188,11 @@ export default function BridgeFundCardScreen({ route }: { route: any }) {
                     navigation.navigate(screenTitle.SELECT_PLAN);
                   }}>
                   <CyDText className='font-bold text-[14px]'>
-                    {fistLoad
-                      ? get(
-                          CYPHER_PLAN_ID_NAME_MAPPING,
-                          cardProfile?.planInfo?.optedPlanId ??
-                            CypherPlanId.BASIC_PLAN,
-                        )
-                      : get(
-                          CYPHER_PLAN_ID_NAME_MAPPING,
-                          cardProfile?.planInfo?.planId ??
-                            CypherPlanId.BASIC_PLAN,
-                        )}
+                    {get(
+                      CYPHER_PLAN_ID_NAME_MAPPING,
+                      cardProfile?.planInfo?.optedPlanId ??
+                        CypherPlanId.BASIC_PLAN,
+                    )}
                   </CyDText>
 
                   <CyDImage
@@ -1242,7 +1234,6 @@ export default function BridgeFundCardScreen({ route }: { route: any }) {
           </CyDView>
         </CyDView>
       </CyDView>
-      {/* </CyDKeyboardAwareScrollView> */}
     </CyDView>
   );
 }
