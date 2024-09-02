@@ -45,7 +45,10 @@ import ShippingFeeConsentModal from '../../../components/v2/shippingFeeConsentMo
 import CardActivationConsentModal from '../../../components/v2/CardActivationConsentModal';
 import Loading from '../../../components/v2/loading';
 import AutoLoadOptionsModal from '../bridgeCard/autoLoadOptions';
-import { HIDDEN_CARD_ID } from '../../../constants/data';
+import {
+  CYPHER_PLAN_ID_NAME_MAPPING,
+  HIDDEN_CARD_ID,
+} from '../../../constants/data';
 import LottieView from 'lottie-react-native';
 import { StyleSheet } from 'react-native';
 import CardProviderSwitch from '../../../components/cardProviderSwitch';
@@ -324,7 +327,7 @@ export default function CypherCardScreen({
       )}
       <CyDView
         className={
-          'h-[50px] flex flex-row justify-between items-center py-[5px] px-[10px] mx-[12px] mb-[8px] mt-[16px]'
+          'h-[60px] flex flex-row justify-between items-center py-[5px] px-[10px] mx-[12px] mb-[18px] mt-[16px]'
         }>
         {cardId !== HIDDEN_CARD_ID ? (
           <CyDView>
@@ -363,22 +366,32 @@ export default function CypherCardScreen({
           </CyDView>
         )}
 
-        <Button
-          image={AppImages.LOAD_CARD_LOTTIE}
-          isLottie={true}
-          disabled={shouldBlockAction()}
-          onPress={() => {
-            onPressFundCard();
-          }}
-          style={
-            'pr-[7%] pl-[5%] py-[0px] w-[40%] flex flex-row items-center justify-center rounded-[8px] h-[44px]'
-          }
-          title={t('LOAD_CARD_CAPS')}
-          titleStyle={'text-[14px]'}
-        />
+        <CyDView className='w-[40%]'>
+          <CyDView className='flex flex-row items-center'>
+            <CyDText className='ml-[4px] text-[14px] font-bold text-left'>
+              {get(
+                CYPHER_PLAN_ID_NAME_MAPPING,
+                cardProfile.planInfo?.planId,
+                '',
+              )}
+            </CyDText>
+          </CyDView>
+          <Button
+            image={AppImages.LOAD_CARD_LOTTIE}
+            isLottie={true}
+            disabled={shouldBlockAction()}
+            onPress={() => {
+              onPressFundCard();
+            }}
+            style={
+              'pr-[7%] pl-[5%] py-[0px] w-full flex flex-row items-center justify-center rounded-[8px] h-[44px]'
+            }
+            title={t('LOAD_CARD_CAPS')}
+            titleStyle={'text-[14px]'}
+          />
+        </CyDView>
       </CyDView>
 
-      {/* <Button title='upgrade' onPress={onPressUp} /> */}
       <CyDScrollView>
         {shouldBlockAction() && (
           <CyDView className='rounded-[16px] bg-r20 border-[1px] border-r300 p-[14px] m-[16px]'>

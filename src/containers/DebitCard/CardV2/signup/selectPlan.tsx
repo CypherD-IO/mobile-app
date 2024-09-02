@@ -36,6 +36,7 @@ import {
   CYPHER_PLAN_ID_NAME_MAPPING,
   PlanIdPriority,
 } from '../../../../constants/data';
+import clsx from 'clsx';
 
 export default function SelectPlan(_navigation: any) {
   const { t } = useTranslation();
@@ -680,7 +681,14 @@ export default function SelectPlan(_navigation: any) {
               )}
 
               {/* pro plan */}
-              <CyDView className='bg-white p-[16px] border-[1px] border-n50 rounded-[16px]'>
+              <CyDView
+                className={clsx(
+                  'bg-white p-[16px] border-[1px] border-n50 rounded-[16px]',
+                  {
+                    'border-[3px] border-appColor':
+                      deductAmountNow && planId === CypherPlanId.PRO_PLAN,
+                  },
+                )}>
                 <CyDView className='flex flex-row justify-between items-center'>
                   <CyDText className='font-bold text-[28px] mb-[8px]'>
                     {t('PREMIUM')}
@@ -797,7 +805,13 @@ export default function SelectPlan(_navigation: any) {
 
                 <CyDView className='mt-[16px]'>
                   <Button
-                    title={deductAmountNow ? t('UPGRADE') : t('GET_STARTED')}
+                    title={
+                      deductAmountNow
+                        ? planId === CypherPlanId.PRO_PLAN
+                          ? t('CURRENT')
+                          : t('DOWNGRADE')
+                        : t('GET_STARTED')
+                    }
                     onPress={() => {
                       void onSelectPlan(CypherPlanId.PRO_PLAN);
                     }}
@@ -813,7 +827,14 @@ export default function SelectPlan(_navigation: any) {
                 </CyDView>
               </CyDView>
               {/* standard plan */}
-              <CyDView className='bg-white mt-[16px] p-[16px] border-[1px] border-n50 rounded-[16px]'>
+              <CyDView
+                className={clsx(
+                  'bg-white mt-[16px] p-[16px] border-[1px] border-n50 rounded-[16px]',
+                  {
+                    'border-[3px] border-appColor':
+                      deductAmountNow && planId === CypherPlanId.BASIC_PLAN,
+                  },
+                )}>
                 <CyDText className='font-bold text-[28px] mb-[8px]'>
                   {t('STANDARD')}
                 </CyDText>
@@ -900,7 +921,13 @@ export default function SelectPlan(_navigation: any) {
 
                 <CyDView className='mt-[16px]'>
                   <Button
-                    title={deductAmountNow ? t('DOWNGRADE') : t('GET_STARTED')}
+                    title={
+                      deductAmountNow
+                        ? planId === CypherPlanId.BASIC_PLAN
+                          ? t('CURRENT')
+                          : t('DOWNGRADE')
+                        : t('GET_STARTED')
+                    }
                     onPress={() => {
                       void onSelectPlan(CypherPlanId.BASIC_PLAN);
                     }}

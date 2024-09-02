@@ -190,7 +190,16 @@ export default function CardScreen({
     const card = item;
     return (
       <CyDImageBackground
-        className='flex flex-row justify-center items-center h-[190px] w-[300px] self-center'
+        className={clsx('flex flex-col h-[190px] w-[300px] self-center', {
+          'justify-center items-center':
+            card.status === CardStatus.IN_ACTIVE ||
+            card.status === CardStatus.HIDDEN ||
+            card.status === 'rcUpgradable',
+          'justify-end items-start':
+            card.status !== CardStatus.IN_ACTIVE &&
+            card.status !== CardStatus.HIDDEN &&
+            card.status !== 'rcUpgradable',
+        })}
         resizeMode='stretch'
         source={getCardImage(card)}>
         {card.status === CardStatus.IN_ACTIVE && (
@@ -229,6 +238,15 @@ export default function CardScreen({
             </CyDText>
           </CyDView>
         )}
+        {card.status !== CardStatus.IN_ACTIVE &&
+          card.status !== CardStatus.HIDDEN &&
+          card.status !== 'rcUpgradable' && (
+            <CyDView className='ml-[12px] mb-[12px]'>
+              <CyDText className='font-bold text-[24px]'>
+                {' xxxx ' + card.last4}
+              </CyDText>
+            </CyDView>
+          )}
       </CyDImageBackground>
     );
   };
@@ -288,7 +306,7 @@ export default function CardScreen({
       <Carousel
         loop={false}
         width={width}
-        height={250}
+        height={210}
         autoPlay={false}
         data={cardsWithUpgrade}
         snapEnabled={true}
@@ -954,14 +972,6 @@ const RenderCardActions = ({
         onPressPlanChange={onPressPlanChange}
       />
 
-      <CyDView className='flex flex-row justify-center items-center mb-[14px] mt-[-42px]'>
-        <CyDText className='font-bold text-[18px]'>
-          {t<string>(
-            type === CardType.VIRTUAL ? 'VIRTUAL_CARD' : 'PHYSICAL_CARD',
-          )}
-        </CyDText>
-        <CyDText className='font-bold text-[18px]'>{' xxxx ' + last4}</CyDText>
-      </CyDView>
       <CyDView className='flex flex-row justify-around items-center'>
         <CyDTouchView
           className='flex flex-col justify-center items-center'
