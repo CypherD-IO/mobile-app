@@ -36,7 +36,7 @@ export function LinkedWallets({
 
   const refreshProfile = async () => {
     const response = await getWithAuth('/v1/authentication/profile');
-    const tempProfile = cardProfileModal(response.data);
+    const tempProfile = await cardProfileModal(response.data);
     if (!response.isError) {
       globalContext.globalDispatch({
         type: GlobalContextType.CARD_PROFILE,
