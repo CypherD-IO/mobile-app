@@ -13,11 +13,7 @@ import Button from '../../../../components/v2/button';
 import CyDModalLayout from '../../../../components/v2/modal';
 import { StyleSheet } from 'react-native';
 import useAxios from '../../../../core/HttpRequest';
-import {
-  ButtonType,
-  CypherPlanId,
-  GlobalContextType,
-} from '../../../../constants/enum';
+import { CypherPlanId, GlobalContextType } from '../../../../constants/enum';
 import {
   NavigationProp,
   ParamListBase,
@@ -714,7 +710,7 @@ export default function SelectPlan(_navigation: any) {
                             />
                           )}
                         </CyDTouchView>
-                        <CyDView className=' w-[90%] ml-[12px]'>
+                        <CyDView className='w-[95%] ml-[12px] relative'>
                           <CyDText className='px-[12px] text-[12px]'>
                             {selectedPlan === CypherPlanId.BASIC_PLAN
                               ? t('DOWNGRADE_PLAN_CONSENT')
@@ -725,7 +721,7 @@ export default function SelectPlan(_navigation: any) {
                                 setShowConsent(false);
                                 navigation.navigate(screenTitle.LEGAL_SCREEN);
                               }}>
-                              <CyDText className='text-[12px] font-bold'>
+                              <CyDText className='text-[12px] font-bold underline text-center'>
                                 {'terms and conditions.'}
                               </CyDText>
                             </CyDTouchView>

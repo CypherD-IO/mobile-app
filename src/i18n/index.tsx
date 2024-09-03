@@ -1197,7 +1197,7 @@ const resources = {
       CURRENT_PLAN: 'Current Plan',
       DOWNGRADE: 'DOWNGRADE',
       UPGRADE_PLAN_CONSENT:
-        'I acknowledge and authorize the deduction from my card, agree to the mentioned amount, and accept the ',
+        'I acknowledge and authorize the deduction of the above mentioned amount from my card and agree to the ',
       DOWNGRADE_PLAN_CONSENT:
         'I understand that downgrading will revoke all my premium feature access, and accept the ',
     },
