@@ -74,7 +74,11 @@ jobs:
           git config --local user.name "GitHub Action"
           git add app/version.properties
           git commit -m "Increment version code for beta release"
-          git push
+          if [ "${{ github.event_name }}" = "pull_request" ]; then
+            git push origin HEAD:${{ github.head_ref }}
+          else
+            git push origin HEAD:beta
+          fi
 
       - name: Gradle clean
         id: clean
