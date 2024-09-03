@@ -4,15 +4,20 @@ on:
   push:
     branches:
       - main
+      - beta
   pull_request:
     types:
+      - opened
+      - synchronize
+      - reopened
       - closed
     branches:
       - main
+      - beta
 
 jobs:
   build-and-deploy:
-    if: github.event.pull_request.merged == true || github.event_name == 'push'
+    if: github.event_name == 'push' || github.event_name == 'pull_request'
     runs-on: ubuntu-latest
     env:
       SENTRY_DSN: ${{secrets.SENTRY_DSN}}
@@ -41,6 +46,30 @@ jobs:
           echo "//npm.pkg.github.com/:_authToken=${NPM_TOKEN}" >> .npmrc
         env:
           NPM_TOKEN: ${{ secrets.NPM_TOKEN }}
+
+      - name: Update version name and code (main)
+        if: (github.event_name == 'pull_request' && github.event.pull_request.merged == true && github.event.pull_request.base.ref == 'main' && github.event.pull_request.head.ref == 'beta') || (github.event_name == 'push' && github.ref == 'refs/heads/main')
+        run: |
+          cd android
+          ./gradlew incrementVersionMain
+          git config --local user.email "action@github.com"
+          git config --local user.name "GitHub Action"
+          git add app/version.properties
+          git commit -m "Increment version for release"
+          git push
+
+      - name: Update version code (beta)
+        if: |
+          (github.event_name == 'pull_request' && github.event.pull_request.base.ref == 'beta') ||
+          (github.event_name == 'push' && github.ref == 'refs/heads/beta')
+        run: |
+          cd android
+          ./gradlew incrementVersionCodeBeta
+          git config --local user.email "action@github.com"
+          git config --local user.name "GitHub Action"
+          git add app/version.properties
+          git commit -m "Increment version code for beta release"
+          git push
 
       - name: Clean Install Packages
         run: npm ci --legacy-peer-deps
