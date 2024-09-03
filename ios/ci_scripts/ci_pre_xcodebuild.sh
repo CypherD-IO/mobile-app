@@ -3,8 +3,6 @@ set -e
 
 echo "Starting ci_pre_xcodebuild.sh"
 
-# Your existing script content here
-
 # Add logging for Crashlytics
 echo "Checking Crashlytics setup:"
 export PODS_ROOT="/Volumes/workspace/repository/ios/Pods"
