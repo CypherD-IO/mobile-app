@@ -19,11 +19,6 @@ jobs:
     env:
       SENTRY_DSN: ${{secrets.SENTRY_DSN}}
       ENVIROINMENT: ${{secrets.ENVIROINMENT}}
-      AF_DEVKEY: ${{secrets.AF_DEVKEY}}
-      AF_APPID: ${{secrets.AF_APPID}}
-      AF_BARNDED_DOMAINS: ${{secrets.AF_BARNDED_DOMAINS}}
-      AF_ONE_LINK_ID: ${{secrets.AF_ONE_LINK_ID}}
-      AF_USER_INVITE_CHANNEL: ${{secrets.AF_USER_INVITE_CHANNEL}}
       INTERCOM_APP_KEY: ${{secrets.INTERCOM_APP_KEY}}
       WALLET_CONNECT_PROJECTID: ${{secrets.WALLET_CONNECT_PROJECTID}}
       SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK_URL }}
