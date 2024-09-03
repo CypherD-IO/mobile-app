@@ -5,4 +5,7 @@ export interface IPlanDetails {
   physicalCardFee: number;
   chargeBackLimit: number;
   cost: number;
+  atmFee: number;
+  dailyLimit: number;
+  monthlyLimit: number;
 }

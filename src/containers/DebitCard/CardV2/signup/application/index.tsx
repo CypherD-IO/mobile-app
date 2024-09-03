@@ -110,7 +110,6 @@ export default function CardApplicationV2() {
 
   const _handleSubmit = async (values: FormInitalValues) => {
     setLoading(true);
-    console.log('Form submitted:', values);
     const payload = {
       dateOfBirth: values.dateOfBirth,
       firstName: values.lastName,

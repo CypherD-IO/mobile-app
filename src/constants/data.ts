@@ -908,6 +908,11 @@ export const Bech32Prefixes = {
 };
 
 export const CYPHER_PLAN_ID_NAME_MAPPING: Record<CypherPlanId, string> = {
-  [CypherPlanId.BASIC_PLAN]: 'Cypher Free Plan',
-  [CypherPlanId.PRO_PLAN]: 'Cypher Premium Plan',
+  [CypherPlanId.BASIC_PLAN]: 'Standard Plan',
+  [CypherPlanId.PRO_PLAN]: 'Premium Plan',
+};
+
+export const PlanIdPriority = {
+  [CypherPlanId.BASIC_PLAN]: 0,
+  [CypherPlanId.PRO_PLAN]: 10,
 };

@@ -1194,6 +1194,12 @@ const resources = {
         'Domestic country updated successfully',
       INTERNATIONAL_COUNTRY_LIST_UPDATED_SUCESSFULLY:
         'International country list updated successfully',
+      CURRENT_PLAN: 'Current Plan',
+      DOWNGRADE: 'DOWNGRADE',
+      UPGRADE_PLAN_CONSENT:
+        'I acknowledge and authorize the deduction of the above mentioned amount from my card and agree to the ',
+      DOWNGRADE_PLAN_CONSENT:
+        'I understand that downgrading will revoke all my premium feature access, and accept the ',
     },
   },
 };

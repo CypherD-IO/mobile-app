@@ -32,7 +32,11 @@ import AsyncStorage from '@react-native-async-storage/async-storage';
 import { useGlobalModalContext } from '../../../../components/v2/GlobalModal';
 import * as Sentry from '@sentry/react-native';
 import useCardUtilities from '../../../../hooks/useCardUtilities';
-import { CYPHER_PLAN_ID_NAME_MAPPING } from '../../../../constants/data';
+import {
+  CYPHER_PLAN_ID_NAME_MAPPING,
+  PlanIdPriority,
+} from '../../../../constants/data';
+import clsx from 'clsx';
 
 export default function SelectPlan(_navigation: any) {
   const { t } = useTranslation();
@@ -51,14 +55,20 @@ export default function SelectPlan(_navigation: any) {
   const cardBalance = _navigation?.route?.params?.cardBalance ?? 0;
 
   const [showComparision, setShowComparision] = useState(false);
+  const [showConsent, setShowConsent] = useState(false);
+  const [hasConsent, setHasConsent] = useState(false);
   const [loading, setLoading] = useState({
     pageLoading: false,
     basicPlanLoading: false,
     proPlanLoading: false,
   });
   const [showOnboarding, setShowOnboarding] = useState(false);
+  const [selectedPlan, setSelectedPlan] = useState<CypherPlanId>(
+    CypherPlanId.BASIC_PLAN,
+  );
 
   const profile = globalState.cardProfile;
+  const planId = profile?.planInfo?.planId;
   const planData = globalState.planInfo;
   const freePlanData = get(planData, ['default', CypherPlanId.BASIC_PLAN]);
   const proPlanData = get(planData, ['default', CypherPlanId.PRO_PLAN]);
@@ -125,13 +135,15 @@ export default function SelectPlan(_navigation: any) {
           if (optedPlan === CypherPlanId.PRO_PLAN) {
             setLoading({ ...loading, proPlanLoading: false });
           } else setLoading({ ...loading, basicPlanLoading: false });
-          showModal('state', {
-            type: 'error',
-            title: t('INSUFFICIENT_FUNDS'),
-            description: `You do not have $${Number(planCost)} balance to change your plan. Please load now to upgrade`,
-            onSuccess: hideModal,
-            onFailure: hideModal,
-          });
+          setTimeout(() => {
+            showModal('state', {
+              type: 'error',
+              title: t('INSUFFICIENT_FUNDS'),
+              description: `You do not have $${Number(planCost)} balance to change your plan. Please load now to upgrade`,
+              onSuccess: hideModal,
+              onFailure: hideModal,
+            });
+          }, 500);
         } else {
           const { isError, error } = await patchWithAuth(
             '/v1/cards/rc/plan/deduct',
@@ -413,10 +425,9 @@ export default function SelectPlan(_navigation: any) {
                         </CyDText>
                         {/* ATM fee */}
                         <CyDView className='w-full h-[1px] bg-n30 mt-[16px]' />
-                        {/* --------------------- todo dynamically ---------------------  */}
                         <CyDView className='mt-[16px] h-[32px] flex flex-col justify-center'>
                           <CyDText className='text-[12px] font-medium text-black pl-[12px]'>
-                            {'3%'}
+                            {`${freePlanData?.atmFee}%`}
                             {/* {`${freePlanData?.fxFeePc === 0 ? 'FREE' : `${freePlanData?.fxFeePc}%`} `} */}
                           </CyDText>
                         </CyDView>
@@ -480,7 +491,7 @@ export default function SelectPlan(_navigation: any) {
                         {/* atm fee */}
                         <CyDView className='mt-[16px] h-[32px] flex flex-col justify-center pl-[12px]'>
                           <CyDText className='text-[12px] font-medium text-black pl-[12px]'>
-                            {'3%'}
+                            {`${proPlanData?.atmFee}%`}
                             {/* {`${proPlanData?.fxFeePc === 0 ? '✅ Free' : `${proPlanData?.fxFeePc}%`} `} */}
                           </CyDText>
                         </CyDView>
@@ -564,11 +575,11 @@ export default function SelectPlan(_navigation: any) {
                         <CyDView className='mt-[16px] pl-[12px] h-[32px]' />
                         {/* daily limit */}
                         <CyDText className='text-[12px] font-medium text-black text-center mt-[10px] h-[18px]'>
-                          {'$2000'}
+                          {`$${freePlanData?.dailyLimit}`}
                         </CyDText>
                         {/* montly limit */}
                         <CyDText className='text-[12px] font-medium text-black pl-[12px] text-center  mt-[10px] h-[18px]'>
-                          {'$5000'}
+                          {`$${freePlanData?.monthlyLimit}`}
                         </CyDText>
                         {/* higher limit */}
                         <CyDText className='text-[12px] font-medium mt-[10px] text-black text-center pl-[12px] h-[18px]'>
@@ -601,11 +612,11 @@ export default function SelectPlan(_navigation: any) {
                         <CyDView className='mt-[16px] pl-[12px] h-[32px]' />
                         {/* daily limit */}
                         <CyDText className='text-[12px] font-medium text-black pl-[12px] text-center mt-[10px] h-[18px]'>
-                          {'$7000'}
+                          {`$${proPlanData?.dailyLimit}`}
                         </CyDText>
                         {/* montly limit */}
                         <CyDText className='text-[12px] font-medium text-black pl-[12px] text-center mt-[10px] h-[18px]'>
-                          {'$20k'}
+                          {`$${proPlanData?.monthlyLimit}`}
                         </CyDText>
                         {/* higher limit */}
                         <CyDText className='text-[12px] font-medium mt-[10px] text-black text-center pl-[12px] h-[18px]'>
@@ -646,6 +657,93 @@ export default function SelectPlan(_navigation: any) {
                 </CyDView>
               </CyDModalLayout>
 
+              <CyDModalLayout
+                isModalVisible={showConsent}
+                style={styles.modalLayout}
+                setModalVisible={setShowConsent}>
+                <CyDView
+                  className={'bg-white rounded-t-[20px] p-[16px] pb-[40px]'}>
+                  <CyDView
+                    className={'flex flex-row justify-between items-center'}>
+                    <CyDText className='text-[28px] font-bold'>
+                      {t('CHANGE_PLAN')}
+                    </CyDText>
+                    <CyDTouchView
+                      onPress={() => {
+                        setShowConsent(false);
+                      }}
+                      className={'text-black'}>
+                      <CyDView className='w-[24px] h-[24px] z-[50]'>
+                        <CyDImage
+                          source={AppImages.CLOSE}
+                          className={'w-[16px] h-[16px]'}
+                        />
+                      </CyDView>
+                    </CyDTouchView>
+                  </CyDView>
+                  <CyDView>
+                    <CyDView className='flex flex-row justify-center my-[24px]'>
+                      <CyDImage source={AppImages.CYPHER_INFO} className='' />
+                    </CyDView>
+                    <CyDText className='text-[16px] font-bold text-center flex flex-row self-center w-[75%]'>
+                      {selectedPlan === CypherPlanId.BASIC_PLAN
+                        ? 'No fee will be deducted from your card balance for the downgrade'
+                        : `Premium plan fee of $${proPlanData?.cost ?? 200} will be deducted from your card balance`}
+                    </CyDText>
+                    <CyDView className='p-[8px] border-[1px] rounded-[8px] border-gray-300 mt-[24px]'>
+                      <CyDView className='flex flex-row items-center '>
+                        <CyDTouchView
+                          className={clsx(
+                            'h-[20px] w-[20px] border-[1px] rounded-[4px]',
+                            {
+                              'bg-black': hasConsent,
+                            },
+                          )}
+                          onPress={() => {
+                            setHasConsent(!hasConsent);
+                          }}>
+                          {true && (
+                            <CyDImage
+                              source={AppImages.CORRECT}
+                              className='h-[15px] w-[15px] ml-[2px]'
+                              resizeMode='contain'
+                            />
+                          )}
+                        </CyDTouchView>
+                        <CyDView className='w-[95%] ml-[12px] relative'>
+                          <CyDText className='px-[12px] text-[12px]'>
+                            {selectedPlan === CypherPlanId.BASIC_PLAN
+                              ? t('DOWNGRADE_PLAN_CONSENT')
+                              : t('UPGRADE_PLAN_CONSENT')}
+                            <CyDTouchView
+                              className='pl-[12px]'
+                              onPress={() => {
+                                setShowConsent(false);
+                                navigation.navigate(screenTitle.LEGAL_SCREEN);
+                              }}>
+                              <CyDText className='text-[12px] font-bold underline text-center'>
+                                {'terms and conditions.'}
+                              </CyDText>
+                            </CyDTouchView>
+                          </CyDText>
+                        </CyDView>
+                      </CyDView>
+                    </CyDView>
+
+                    <CyDView className='mt-[18px]'>
+                      <Button
+                        disabled={!hasConsent}
+                        title={t('CONTINUE_ALL_CAPS')}
+                        onPress={() => {
+                          void onSelectPlan(selectedPlan);
+                          setShowConsent(false);
+                        }}
+                      />
+                    </CyDView>
+                  </CyDView>
+                </CyDView>
+              </CyDModalLayout>
+
               {/* title */}
               <CyDView className='flex flex-row justify-between items-center mb-[16px]'>
                 <CyDText className='font-bold text-[28px]'>
@@ -661,8 +759,30 @@ export default function SelectPlan(_navigation: any) {
                   </CyDText>
                 </CyDTouchView>
               </CyDView>
+
+              {/* current plan */}
+              {planId && deductAmountNow && (
+                <CyDView className='flex flex-row items-center mb-[16px]'>
+                  <CyDText className='font-medium text-[14px]'>
+                    {t('CURRENT_PLAN') + ': '}
+                  </CyDText>
+                  <CyDView className=''>
+                    <CyDText className='font-extrabold text-[16px] text-center'>
+                      {get(CYPHER_PLAN_ID_NAME_MAPPING, planId)}
+                    </CyDText>
+                  </CyDView>
+                </CyDView>
+              )}
+
               {/* pro plan */}
-              <CyDView className='bg-white p-[16px] border-[1px] border-n50 rounded-[16px]'>
+              <CyDView
+                className={clsx(
+                  'bg-white p-[16px] border-[1px] border-n50 rounded-[16px]',
+                  {
+                    'border-[3px] border-appColor':
+                      deductAmountNow && planId === CypherPlanId.PRO_PLAN,
+                  },
+                )}>
                 <CyDView className='flex flex-row justify-between items-center'>
                   <CyDText className='font-bold text-[28px] mb-[8px]'>
                     {t('PREMIUM')}
@@ -779,18 +899,41 @@ export default function SelectPlan(_navigation: any) {
 
                 <CyDView className='mt-[16px]'>
                   <Button
-                    title={t('GET_STARTED')}
+                    title={
+                      deductAmountNow
+                        ? planId === CypherPlanId.PRO_PLAN
+                          ? t('CURRENT')
+                          : t('UPGRADE')
+                        : t('GET_STARTED')
+                    }
                     onPress={() => {
-                      void onSelectPlan(CypherPlanId.PRO_PLAN);
+                      if (deductAmountNow) {
+                        setSelectedPlan(CypherPlanId.PRO_PLAN);
+                        setShowConsent(true);
+                      } else {
+                        void onSelectPlan(CypherPlanId.PRO_PLAN);
+                      }
                     }}
                     loading={loading.proPlanLoading}
                     style='h-[52px]'
                     loaderStyle={styles.buttonStyle}
+                    disabled={
+                      deductAmountNow &&
+                      get(PlanIdPriority, planId ?? '', 0) >=
+                        get(PlanIdPriority, CypherPlanId.PRO_PLAN)
+                    }
                   />
                 </CyDView>
               </CyDView>
               {/* standard plan */}
-              <CyDView className='bg-white mt-[16px] p-[16px] border-[1px] border-n50 rounded-[16px]'>
+              <CyDView
+                className={clsx(
+                  'bg-white mt-[16px] p-[16px] border-[1px] border-n50 rounded-[16px]',
+                  {
+                    'border-[3px] border-appColor':
+                      deductAmountNow && planId === CypherPlanId.BASIC_PLAN,
+                  },
+                )}>
                 <CyDText className='font-bold text-[28px] mb-[8px]'>
                   {t('STANDARD')}
                 </CyDText>
@@ -875,30 +1018,38 @@ export default function SelectPlan(_navigation: any) {
                   </CyDView>
                 </CyDView>
 
-                {/* atm card fee */}
-                {/* ----------------- todo --------------------- */}
-                {/* <CyDView className='mt-[16px]'>
-            <CyDView className=' flex flex-row items-center'>
-              <CyDText className='font-bold text-[14px] ml-[8px]'>
-                {`$${freePlanData?.atmFee}`}
-              </CyDText>
-              <CyDText className='font-medium text-[14px] ml-[8px]'>
-                {t('ATM_FEE')}
-              </CyDText>
-            </CyDView>
-          </CyDView> */}
-
                 <CyDView className='mt-[16px]'>
                   <Button
-                    title={t('GET_STARTED')}
+                    title={
+                      deductAmountNow
+                        ? planId === CypherPlanId.BASIC_PLAN
+                          ? t('CURRENT')
+                          : t('DOWNGRADE')
+                        : t('GET_STARTED')
+                    }
                     onPress={() => {
-                      void onSelectPlan(CypherPlanId.BASIC_PLAN);
+                      if (deductAmountNow) {
+                        setSelectedPlan(CypherPlanId.BASIC_PLAN);
+                        setShowConsent(true);
+                      } else {
+                        void onSelectPlan(CypherPlanId.BASIC_PLAN);
+                      }
                     }}
                     style='h-[52px]'
                     loaderStyle={styles.buttonStyle}
                     loading={loading.basicPlanLoading}
+                    disabled={
+                      deductAmountNow &&
+                      get(PlanIdPriority, planId ?? '', 0) >=
+                        get(PlanIdPriority, CypherPlanId.BASIC_PLAN)
+                    }
                   />
                 </CyDView>
+                {deductAmountNow &&
+                  get(PlanIdPriority, planId ?? '', 0) >=
+                    get(PlanIdPriority, CypherPlanId.BASIC_PLAN) && (
+                    <CyDText className='mt-[8px] text-[12px]'>{`* Please contact support to downgrade`}</CyDText>
+                  )}
               </CyDView>
 
               {/* offers */}
