@@ -1085,7 +1085,7 @@ export default function BridgeFundCardScreen({ route }: { route: any }) {
                     placeholder='0.00'
                     placeholderTextColor={'#FFB900'}
                     value={amount}
-                    keyboardType='number-pad'
+                    keyboardType='decimal-pad'
                     returnKeyType='done'
                   />
                 </CyDView>
@@ -1118,7 +1118,7 @@ export default function BridgeFundCardScreen({ route }: { route: any }) {
                   }}
                   placeholderTextColor={'#FFB900'}
                   placeholder='0.00'
-                  keyboardType='number-pad'
+                  keyboardType='decimal-pad'
                   returnKeyType='done'
                 />
               )}
