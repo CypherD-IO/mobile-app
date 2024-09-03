@@ -1276,7 +1276,7 @@ export function DebitCardStackScreen() {
       <FundCardStack.Screen
         name={screenTitle.LEGAL_SCREEN}
         component={LegalScreen}
-        options={{
+        options={({ navigation }) => ({
           headerTransparent: false,
           headerShadowVisible: false,
           title: t('TERMS_AND_CONDITIONS'),
@@ -1286,7 +1286,7 @@ export function DebitCardStackScreen() {
           headerTintColor: Colors.primaryTextColor,
           headerBackTitleVisible: false,
           headerLeft: props => defaultHeaderLeft(navigation),
-        }}
+        })}
       />
 
       <FundCardStack.Screen
@@ -1298,7 +1298,7 @@ export function DebitCardStackScreen() {
       <FundCardStack.Screen
         name={screenTitle.FUND_CARD_SCREEN}
         component={FundCardScreen}
-        options={{
+        options={({ navigation }) => ({
           headerTransparent: false,
           headerShadowVisible: false,
           title: 'Cypher Card',
@@ -1307,7 +1307,7 @@ export function DebitCardStackScreen() {
           headerTintColor: Colors.primaryTextColor,
           headerBackTitleVisible: false,
           headerLeft: props => defaultHeaderLeft(navigation),
-        }}
+        })}
       />
       <FundCardStack.Screen
         name={screenTitle.TRANS_DETAIL}
@@ -1354,7 +1354,7 @@ export function DebitCardStackScreen() {
       <FundCardStack.Screen
         name={screenTitle.SOCIAL_MEDIA_SCREEN}
         component={SocialMediaScreen}
-        options={{
+        options={({ navigation }) => ({
           headerTransparent: false,
           headerShadowVisible: false,
           headerTitleAlign: 'center',
@@ -1362,7 +1362,7 @@ export function DebitCardStackScreen() {
           headerTintColor: Colors.primaryTextColor,
           headerBackTitleVisible: false,
           headerLeft: props => defaultHeaderLeft(navigation),
-        }}
+        })}
       />
 
       <FundCardStack.Screen
@@ -1375,7 +1375,7 @@ export function DebitCardStackScreen() {
       <FundCardStack.Screen
         name={screenTitle.GET_CARD_V2}
         component={GetCardLanding}
-        options={{
+        options={({ navigation }) => ({
           headerTransparent: false,
           headerShadowVisible: false,
           headerTitleAlign: 'center',
@@ -1383,7 +1383,7 @@ export function DebitCardStackScreen() {
           headerTintColor: Colors.primaryTextColor,
           headerBackTitleVisible: false,
           headerLeft: props => defaultHeaderLeft(navigation),
-        }}
+        })}
       />
 
       <FundCardStack.Screen
