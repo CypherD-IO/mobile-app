@@ -11,6 +11,7 @@ import {
 import { has } from 'lodash';
 import { t } from 'i18next';
 import { signIn } from './Keychain';
+import { useGlobalModalContext } from '../components/v2/GlobalModal';
 type RequestMethod =
   | 'GET'
   | 'GET_WITHOUT_AUTH'
@@ -32,6 +33,7 @@ interface IHttpResponse {
 export default function useAxios() {
   const globalContext = useContext<any>(GlobalContext);
   const hdWalletContext = useContext<any>(HdWalletContext);
+  const { showModal, hideModal } = useGlobalModalContext();
   const ethereum = hdWalletContext.state.wallet.ethereum;
   let token = globalContext.globalState.token;
 
@@ -147,7 +149,8 @@ export default function useAxios() {
         }
         return response;
       } catch (error: any) {
-        if (error?.response?.status === 401) {
+        const errorCode = error?.response?.status;
+        if (errorCode === 401) {
           try {
             const signInResponse = await signIn(ethereum, hdWalletContext);
             if (
@@ -164,6 +167,16 @@ export default function useAxios() {
             Sentry.captureException(e.message);
           }
           shouldRetry += 1;
+        } else if (errorCode === 444 || errorCode === 403) {
+          shouldRetry = 2;
+          showModal('state', {
+            type: 'error',
+            title: '',
+            description:
+              'Unable to access cypher services. Contact support at support@cypherhq.io',
+            onSuccess: hideModal,
+            onFailure: hideModal,
+          });
         } else {
           shouldRetry = 2;
           Sentry.captureException(error);

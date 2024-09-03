@@ -663,11 +663,12 @@ export default function SelectPlan(_navigation: any) {
                 setModalVisible={setShowConsent}>
                 <CyDView
                   className={'bg-white rounded-t-[20px] p-[16px] pb-[40px]'}>
-                  <CyDView
-                    className={'flex flex-row justify-between items-center'}>
-                    <CyDText className='text-[28px] font-bold'>
-                      {t('CHANGE_PLAN')}
-                    </CyDText>
+                  <CyDView className={'flex flex-row items-center'}>
+                    <CyDView className='flex-1'>
+                      <CyDText className='text-[24px] pl-[16px] font-bold text-center'>
+                        {t('CHANGE_PLAN')}
+                      </CyDText>
+                    </CyDView>
                     <CyDTouchView
                       onPress={() => {
                         setShowConsent(false);
@@ -683,9 +684,13 @@ export default function SelectPlan(_navigation: any) {
                   </CyDView>
                   <CyDView>
                     <CyDView className='flex flex-row justify-center my-[24px]'>
-                      <CyDImage source={AppImages.CYPHER_INFO} className='' />
+                      <CyDImage
+                        source={AppImages.CYPHER_INFO}
+                        className='h-[100px] w-[160px]'
+                        resizeMode='contain'
+                      />
                     </CyDView>
-                    <CyDText className='text-[16px] font-bold text-center flex flex-row self-center w-[75%]'>
+                    <CyDText className='text-[16px] font-bold text-center self-center w-[95%]'>
                       {selectedPlan === CypherPlanId.BASIC_PLAN
                         ? 'No fee will be deducted from your card balance for the downgrade'
                         : `Premium plan fee of $${proPlanData?.cost ?? 200} will be deducted from your card balance`}
@@ -715,16 +720,14 @@ export default function SelectPlan(_navigation: any) {
                             {selectedPlan === CypherPlanId.BASIC_PLAN
                               ? t('DOWNGRADE_PLAN_CONSENT')
                               : t('UPGRADE_PLAN_CONSENT')}
-                            <CyDTouchView
-                              className='pl-[12px]'
+                            <CyDText
                               onPress={() => {
                                 setShowConsent(false);
                                 navigation.navigate(screenTitle.LEGAL_SCREEN);
-                              }}>
-                              <CyDText className='text-[12px] font-bold underline text-center'>
-                                {'terms and conditions.'}
-                              </CyDText>
-                            </CyDTouchView>
+                              }}
+                              className='text-[12px] font-bold underline text-center'>
+                              {'terms and conditions.'}
+                            </CyDText>
                           </CyDText>
                         </CyDView>
                       </CyDView>
