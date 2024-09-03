@@ -13,7 +13,11 @@ import Button from '../../../../components/v2/button';
 import CyDModalLayout from '../../../../components/v2/modal';
 import { StyleSheet } from 'react-native';
 import useAxios from '../../../../core/HttpRequest';
-import { CypherPlanId, GlobalContextType } from '../../../../constants/enum';
+import {
+  ButtonType,
+  CypherPlanId,
+  GlobalContextType,
+} from '../../../../constants/enum';
 import {
   NavigationProp,
   ParamListBase,
@@ -55,12 +59,17 @@ export default function SelectPlan(_navigation: any) {
   const cardBalance = _navigation?.route?.params?.cardBalance ?? 0;
 
   const [showComparision, setShowComparision] = useState(false);
+  const [showConsent, setShowConsent] = useState(false);
+  const [hasConsent, setHasConsent] = useState(false);
   const [loading, setLoading] = useState({
     pageLoading: false,
     basicPlanLoading: false,
     proPlanLoading: false,
   });
   const [showOnboarding, setShowOnboarding] = useState(false);
+  const [selectedPlan, setSelectedPlan] = useState<CypherPlanId>(
+    CypherPlanId.BASIC_PLAN,
+  );
 
   const profile = globalState.cardProfile;
   const planId = profile?.planInfo?.planId;
@@ -127,16 +136,19 @@ export default function SelectPlan(_navigation: any) {
 
       if (planCost !== '') {
         if (Number(cardBalance) < Number(Number(planCost))) {
+          console.log('🚀 ~ onSelectPlan ~ cardBalance:', cardBalance);
           if (optedPlan === CypherPlanId.PRO_PLAN) {
             setLoading({ ...loading, proPlanLoading: false });
           } else setLoading({ ...loading, basicPlanLoading: false });
-          showModal('state', {
-            type: 'error',
-            title: t('INSUFFICIENT_FUNDS'),
-            description: `You do not have $${Number(planCost)} balance to change your plan. Please load now to upgrade`,
-            onSuccess: hideModal,
-            onFailure: hideModal,
-          });
+          setTimeout(() => {
+            showModal('state', {
+              type: 'error',
+              title: t('INSUFFICIENT_FUNDS'),
+              description: `You do not have $${Number(planCost)} balance to change your plan. Please load now to upgrade`,
+              onSuccess: hideModal,
+              onFailure: hideModal,
+            });
+          }, 500);
         } else {
           const { isError, error } = await patchWithAuth(
             '/v1/cards/rc/plan/deduct',
@@ -650,6 +662,79 @@ export default function SelectPlan(_navigation: any) {
                 </CyDView>
               </CyDModalLayout>
 
+              <CyDModalLayout
+                isModalVisible={showConsent}
+                style={styles.modalLayout}
+                setModalVisible={setShowConsent}>
+                <CyDView
+                  className={'bg-n30 rounded-t-[20px] p-[16px] pb-[40px]'}>
+                  <CyDView
+                    className={'flex flex-row justify-between items-center'}>
+                    <CyDView />
+                    <CyDText className='text-[28px] font-bold'>
+                      {t('CHANGE_PLAN')}
+                    </CyDText>
+                    <CyDTouchView
+                      onPress={() => {
+                        setShowConsent(false);
+                      }}
+                      className={'text-black'}>
+                      <CyDView className='w-[24px] h-[24px] z-[50]'>
+                        <CyDImage
+                          source={AppImages.CLOSE}
+                          className={'w-[16px] h-[16px]'}
+                        />
+                      </CyDView>
+                    </CyDTouchView>
+                  </CyDView>
+                  <CyDView>
+                    <CyDView className='flex flex-row items-center mt-[24px]'>
+                      <CyDTouchView
+                        className={clsx(
+                          'h-[20px] w-[20px] border-[1px] rounded-[4px]',
+                          {
+                            'bg-black': hasConsent,
+                          },
+                        )}
+                        onPress={() => {
+                          setHasConsent(!hasConsent);
+                        }}>
+                        {true && (
+                          <CyDImage
+                            source={AppImages.CORRECT}
+                            className='h-[15px] w-[15px] ml-[2px]'
+                            resizeMode='contain'
+                          />
+                        )}
+                      </CyDTouchView>
+                      <CyDText className='px-[12px] text-[12px]'>
+                        {selectedPlan === CypherPlanId.BASIC_PLAN
+                          ? t('DOWNGRADE_PLAN_CONSENT')
+                          : t('UPGRADE_PLAN_CONSENT')}
+                      </CyDText>
+                    </CyDView>
+                    <CyDView className='mt-[18px]'>
+                      <Button
+                        disabled={!hasConsent}
+                        title={t('CONTINUE_ALL_CAPS')}
+                        onPress={() => {
+                          void onSelectPlan(selectedPlan);
+                          setShowConsent(false);
+                        }}
+                      />
+                      <Button
+                        style='mt-[12px]'
+                        type={ButtonType.SECONDARY}
+                        title={t('CANCEL')}
+                        onPress={() => {
+                          setShowConsent(false);
+                        }}
+                      />
+                    </CyDView>
+                  </CyDView>
+                </CyDView>
+              </CyDModalLayout>
+
               {/* title */}
               <CyDView className='flex flex-row justify-between items-center mb-[16px]'>
                 <CyDText className='font-bold text-[28px]'>
@@ -809,11 +894,16 @@ export default function SelectPlan(_navigation: any) {
                       deductAmountNow
                         ? planId === CypherPlanId.PRO_PLAN
                           ? t('CURRENT')
-                          : t('DOWNGRADE')
+                          : t('UPGRADE')
                         : t('GET_STARTED')
                     }
                     onPress={() => {
-                      void onSelectPlan(CypherPlanId.PRO_PLAN);
+                      if (deductAmountNow) {
+                        setSelectedPlan(CypherPlanId.PRO_PLAN);
+                        setShowConsent(true);
+                      } else {
+                        void onSelectPlan(CypherPlanId.PRO_PLAN);
+                      }
                     }}
                     loading={loading.proPlanLoading}
                     style='h-[52px]'
@@ -929,7 +1019,12 @@ export default function SelectPlan(_navigation: any) {
                         : t('GET_STARTED')
                     }
                     onPress={() => {
-                      void onSelectPlan(CypherPlanId.BASIC_PLAN);
+                      if (deductAmountNow) {
+                        setSelectedPlan(CypherPlanId.BASIC_PLAN);
+                        setShowConsent(true);
+                      } else {
+                        void onSelectPlan(CypherPlanId.BASIC_PLAN);
+                      }
                     }}
                     style='h-[52px]'
                     loaderStyle={styles.buttonStyle}

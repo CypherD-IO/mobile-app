@@ -1196,6 +1196,10 @@ const resources = {
         'International country list updated successfully',
       CURRENT_PLAN: 'Current Plan',
       DOWNGRADE: 'DOWNGRADE',
+      UPGRADE_PLAN_CONSENT:
+        'I hereby acknowledge and consent to upgrading my plan from the Standard tier to the Premium tier. I understand that this change will incur additional costs. By selecting "Continue," I confirm that I fully comprehend and accept these plan changes',
+      DOWNGRADE_PLAN_CONSENT:
+        'I hereby acknowledge and consent to downgrading my plan from the Premium tier to the Standard tier. I understand that this change will result in the loss of all perks and benefits associated with the Premium plan. By replying selecting "Continue," I confirm that I fully comprehend and accept these plan changes',
     },
   },
 };
