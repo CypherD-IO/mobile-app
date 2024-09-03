@@ -13,7 +13,7 @@ export default function useCardUtilities() {
   const { getWithoutAuth } = useAxios();
   const globalContext = useContext<any>(GlobalContext);
   const cardProfile: CardProfile = globalContext.globalState.cardProfile;
-  const provider = cardProfile?.provider;
+  const provider = cardProfile?.provider ?? CardProviders.REAP_CARD;
 
   const getProvider = async (profile: CardProfile) => {
     if (hasBothProviders(profile)) {

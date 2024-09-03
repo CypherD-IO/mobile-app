@@ -76,7 +76,7 @@ export default function DebitCardScreen(props: RouteProps) {
   };
 
   const cardProfile: CardProfile = globalContext.globalState.cardProfile;
-  const provider = cardProfile?.provider;
+  const provider = cardProfile?.provider ?? CardProviders.REAP_CARD;
 
   const setCardProvider = async () => {
     const isRcEnabled = await checkIsRCEnabled();
