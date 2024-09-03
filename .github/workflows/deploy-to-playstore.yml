@@ -47,8 +47,13 @@ jobs:
         env:
           NPM_TOKEN: ${{ secrets.NPM_TOKEN }}
 
+      - name: Install dependencies
+        run: npm ci --legacy-peer-deps
+        env:
+          NPM_TOKEN: ${{ secrets.NPM_TOKEN }}
+
       - name: Update version name and code (main)
-        if: (github.event_name == 'pull_request' && github.event.pull_request.merged == true && github.event.pull_request.base.ref == 'main' && github.event.pull_request.head.ref == 'beta') || (github.event_name == 'push' && github.ref == 'refs/heads/main')
+        if: github.event.pull_request.merged == true && github.event.pull_request.base.ref == 'main' && github.event.pull_request.head.ref == 'beta' || github.event_name == 'push' && github.ref == 'refs/heads/main'
         run: |
           cd android
           ./gradlew incrementVersionMain
@@ -70,11 +75,6 @@ jobs:
           git add app/version.properties
           git commit -m "Increment version code for beta release"
           git push
-
-      - name: Clean Install Packages
-        run: npm ci --legacy-peer-deps
-        env:
-          NPM_TOKEN: ${{ secrets.NPM_TOKEN }}
 
       - name: Gradle clean
         id: clean
