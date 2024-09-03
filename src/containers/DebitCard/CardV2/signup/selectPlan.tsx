@@ -136,7 +136,6 @@ export default function SelectPlan(_navigation: any) {
 
       if (planCost !== '') {
         if (Number(cardBalance) < Number(Number(planCost))) {
-          console.log('🚀 ~ onSelectPlan ~ cardBalance:', cardBalance);
           if (optedPlan === CypherPlanId.PRO_PLAN) {
             setLoading({ ...loading, proPlanLoading: false });
           } else setLoading({ ...loading, basicPlanLoading: false });
