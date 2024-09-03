@@ -41,6 +41,7 @@ export const InitializeAppProvider: React.FC<JSX.Element> = ({ children }) => {
     loadExistingWallet,
     getHosts,
     checkForUpdatesAndShowModal,
+    checkAPIAccessibility,
   } = useInitializer();
   const globalContext = useContext(GlobalContext) as GlobalContextDef;
   const [pinAuthentication, setPinAuthentication] = useState(false);
@@ -60,23 +61,26 @@ export const InitializeAppProvider: React.FC<JSX.Element> = ({ children }) => {
   useEffect(() => {
     const initializeApp = async () => {
       initializeSentry();
-      await exitIfJailBroken();
-      await fetchRPCEndpointsFromServer(globalContext.globalDispatch);
-      await checkForUpdatesAndShowModal(setUpdateModal);
-      await loadActivitiesFromAsyncStorage();
+      const isAPIAccessible = await checkAPIAccessibility();
+      if (isAPIAccessible) {
+        await exitIfJailBroken();
+        void fetchRPCEndpointsFromServer(globalContext.globalDispatch);
+        void checkForUpdatesAndShowModal(setUpdateModal);
+        void loadActivitiesFromAsyncStorage();
 
-      if (Platform.OS === 'ios') {
-        registerForRemoteMessages();
-      } else {
-        onMessage();
+        if (Platform.OS === 'ios') {
+          registerForRemoteMessages();
+        } else {
+          onMessage();
+        }
+
+        setTimeout(() => {
+          SplashScreen.hide();
+        }, SPLASH_SCREEN_TIMEOUT);
+
+        setPinAuthentication(await setPinAuthenticationStateValue());
+        setPinPresent(await setPinPresentStateValue());
       }
-
-      setTimeout(() => {
-        SplashScreen.hide();
-      }, SPLASH_SCREEN_TIMEOUT);
-
-      setPinAuthentication(await setPinAuthenticationStateValue());
-      setPinPresent(await setPinPresentStateValue());
     };
     void initializeApp();
   }, []);

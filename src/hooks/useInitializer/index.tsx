@@ -145,6 +145,11 @@ export default function useInitializer() {
     });
   };
 
+  const checkAPIAccessibility = async () => {
+    const response = await getWithoutAuth('/health');
+    return !response.isError;
+  };
+
   async function registerIntercomUser(walletAddresses: {
     [key: string]: string;
   }) {
@@ -523,5 +528,6 @@ export default function useInitializer() {
     loadExistingWallet,
     getHosts,
     checkForUpdatesAndShowModal,
+    checkAPIAccessibility,
   };
 }
