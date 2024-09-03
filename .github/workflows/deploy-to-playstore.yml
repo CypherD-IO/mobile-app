@@ -1,0 +1,113 @@
+name: Deploy Android App to PlayStore
+
+on:
+  push:
+    branches:
+      - main
+      - beta
+  pull_request:
+    types:
+      - closed
+    branches:
+      - main
+      - beta
+
+jobs:
+  build-and-deploy:
+    if: github.event.pull_request.merged == true || github.event_name == 'push'
+    runs-on: ubuntu-latest
+    env:
+      SENTRY_DSN: ${{secrets.SENTRY_DSN}}
+      ENVIROINMENT: ${{secrets.ENVIROINMENT}}
+      AF_DEVKEY: ${{secrets.AF_DEVKEY}}
+      AF_APPID: ${{secrets.AF_APPID}}
+      AF_BARNDED_DOMAINS: ${{secrets.AF_BARNDED_DOMAINS}}
+      AF_ONE_LINK_ID: ${{secrets.AF_ONE_LINK_ID}}
+      AF_USER_INVITE_CHANNEL: ${{secrets.AF_USER_INVITE_CHANNEL}}
+      INTERCOM_APP_KEY: ${{secrets.INTERCOM_APP_KEY}}
+      WALLET_CONNECT_PROJECTID: ${{secrets.WALLET_CONNECT_PROJECTID}}
+      SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK_URL }}
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v2
+
+      - name: Set up JDK 11
+        uses: actions/setup-java@v2
+        with:
+          java-version: '11'
+          distribution: 'adopt'
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v2
+        with:
+          node-version: '18.16.0'
+
+      - name: Configure npm
+        run: |
+          echo "@cypherd-io:registry=https://npm.pkg.github.com/" > .npmrc
+          echo "//npm.pkg.github.com/:_authToken=${NPM_TOKEN}" >> .npmrc
+        env:
+          NPM_TOKEN: ${{ secrets.NPM_TOKEN }}
+
+      - name: Clean Install Packages
+        run: npm ci --legacy-peer-deps
+        env:
+          NPM_TOKEN: ${{ secrets.NPM_TOKEN }}
+
+      - name: Gradle clean
+        id: clean
+        run: cd android && ./gradlew clean
+
+      - name: Create Sentry properties file
+        run: |
+          cat << EOF > android/sentry.properties
+          defaults.url=https://sentry.io/
+          defaults.org=${{ secrets.SENTRY_ORG }}
+          defaults.project=${{ secrets.SENTRY_PROJECT }}
+          auth.token=${{ secrets.SENTRY_AUTH_TOKEN }}
+          EOF
+        shell: bash
+
+      - name: Create Google Services JSON file
+        run: |
+          echo '${{ secrets.GOOGLE_SERVICES_JSON }}' > android/app/google-services.json
+      - name: Build Release AAB
+        id: buildRelease
+        run: cd android && ./gradlew bundleRelease
+
+      - name: Clean up Sentry properties
+        if: always()
+        run: rm -f android/sentry.properties
+
+      - name: Remove Google Services JSON file
+        if: always()
+        run: rm -f android/app/google-services.json
+
+      - name: Sign AAB
+        id: sign
+        uses: r0adkll/sign-android-release@v1
+        with:
+          releaseDirectory: android/app/build/outputs/bundle/release
+          signingKeyBase64: ${{secrets.SIGNING_KEY}}
+          alias: ${{secrets.ALIAS}}
+          keyStorePassword: ${{secrets.KEY_STORE_PASSWORD}}
+          keyPassword: ${{secrets.KEY_PASSWORD}}
+
+      - name: Deploy to Play Store internal testing
+        id: deploy
+        uses: r0adkll/upload-google-play@v1
+        with:
+          serviceAccountJsonPlainText: ${{secrets.SERVICE_ACCOUNT_JSON}}
+          packageName: com.cypherd.androidwallet
+          releaseFiles: android/app/build/outputs/bundle/release/app-release.aab
+          track: internal
+          status: completed
+          changesNotSentForReview: false
+          whatsNewDirectory: android/whatsnew
+
+      - name: Notify on Slack
+        uses: act10ns/slack@v1
+        with:
+          status: ${{ job.status }}
+          steps: ${{ toJson(steps) }}
+        if: always()
