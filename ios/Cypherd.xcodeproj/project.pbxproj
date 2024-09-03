@@ -312,6 +312,7 @@
 				851CF83F13D7DD435F7045AB /* [CP-User] [RNFB] Core Configuration */,
 				94D2024F17B73CE975A7437F /* [CP-User] [RNFB] Crashlytics Configuration */,
 				B43D053C1F1140DA9F6BC3B9 /* Upload Debug Symbols to Sentry */,
+				43A896232C75C62E003CF114 /* Run Script */,
 			);
 			buildRules = (
 			);
@@ -457,6 +458,24 @@
 			shellScript = "diff \"${PODS_PODFILE_DIR_PATH}/Podfile.lock\" \"${PODS_ROOT}/Manifest.lock\" > /dev/null\nif [ $? != 0 ] ; then\n    # print error to STDERR\n    echo \"error: The sandbox is not in sync with the Podfile.lock. Run 'pod install' or update your CocoaPods installation.\" >&2\n    exit 1\nfi\n# This output is used by Xcode 'outputs' to avoid re-running this script phase.\necho \"SUCCESS\" > \"${SCRIPT_OUTPUT_FILE_0}\"\n";
 			showEnvVarsInLog = 0;
 		};
+		43A896232C75C62E003CF114 /* Run Script */ = {
+			isa = PBXShellScriptBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			inputFileListPaths = (
+			);
+			inputPaths = (
+			);
+			name = "Run Script";
+			outputFileListPaths = (
+			);
+			outputPaths = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+			shellPath = /bin/sh;
+			shellScript = "# Type a script or drag a script file from your workspace to insert its path.\n\"${SRCROOT}/scripts/version-script.sh\"\n";
+		};
 		470F8C25E5107429BB25EEF9 /* [CP] Embed Pods Frameworks */ = {
 			isa = PBXShellScriptBuildPhase;
 			buildActionMask = 2147483647;
@@ -516,7 +535,7 @@
 			name = "[CP-User] [RNFB] Crashlytics Configuration";
 			runOnlyForDeploymentPostprocessing = 0;
 			shellPath = /bin/sh;
-			shellScript = "#!/usr/bin/env bash\n#\n# Copyright (c) 2016-present Invertase Limited & Contributors\n#\n# Licensed under the Apache License, Version 2.0 (the \"License\");\n# you may not use this library except in compliance with the License.\n# You may obtain a copy of the License at\n#\n#   http://www.apache.org/licenses/LICENSE-2.0\n#\n# Unless required by applicable law or agreed to in writing, software\n# distributed under the License is distributed on an \"AS IS\" BASIS,\n# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.\n# See the License for the specific language governing permissions and\n# limitations under the License.\n#\nset -e\n\nif [[ ${PODS_ROOT} ]]; then\n  echo \"info: Exec FirebaseCrashlytics Run from Pods\"\n  \"${PODS_ROOT}/FirebaseCrashlytics/run\"\nelse\n  echo \"info: Exec FirebaseCrashlytics Run from framework\"\n  \"${PROJECT_DIR}/FirebaseCrashlytics.framework/run\"\nfi\n";
+			shellScript = "#!/usr/bin/env bash\n#\n# Copyright (c) 2016-present Invertase Limited & Contributors\n#\n# Licensed under the Apache License, Version 2.0 (the \"License\");\n# you may not use this library except in compliance with the License.\n# You may obtain a copy of the License at\n#\n#   http://www.apache.org/licenses/LICENSE-2.0\n#\n# Unless required by applicable law or agreed to in writing, software\n# distributed under the License is distributed on an \"AS IS\" BASIS,\n# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.\n# See the License for the specific language governing permissions and\n# limitations under the License.\n#\n\nset -x  # Enable debug mode\necho \"Starting Crashlytics script\"\necho \"PODS_ROOT: ${PODS_ROOT}\"\necho \"PROJECT_DIR: ${PROJECT_DIR}\"\necho \"DWARF_DSYM_FOLDER_PATH: ${DWARF_DSYM_FOLDER_PATH}\"\necho \"DWARF_DSYM_FILE_NAME: ${DWARF_DSYM_FILE_NAME}\"\n\nif [ -f \"${PODS_ROOT}/FirebaseCrashlytics/run\" ]; then\n  echo \"Crashlytics run script found\"\nelse\n  echo \"Crashlytics run script not found\"\n  exit 1\nfi\n\nif [ -f \"${PROJECT_DIR}/GoogleService-Info.plist\" ]; then\n  echo \"GoogleService-Info.plist found\"\nelse\n  echo \"GoogleService-Info.plist not found\"\n  exit 1\nfi\n\n\"${PODS_ROOT}/FirebaseCrashlytics/run\" --debug > /tmp/crashlytics_log.txt 2>&1\ncat /tmp/crashlytics_log.txt\n\necho \"Finished Crashlytics script\"\n\nset -e\n\nif [[ ${PODS_ROOT} ]]; then\n  echo \"info: Exec FirebaseCrashlytics Run from Pods\"\n  \"${PODS_ROOT}/FirebaseCrashlytics/run\"\nelse\n  echo \"info: Exec FirebaseCrashlytics Run from framework\"\n  \"${PROJECT_DIR}/FirebaseCrashlytics.framework/run\"\nfi\n";
 		};
 		B43D053C1F1140DA9F6BC3B9 /* Upload Debug Symbols to Sentry */ = {
 			isa = PBXShellScriptBuildPhase;
@@ -684,9 +703,13 @@
 				ASSETCATALOG_COMPILER_INCLUDE_ALL_APPICON_ASSETS = NO;
 				CLANG_ENABLE_MODULES = YES;
 				CODE_SIGN_ENTITLEMENTS = Cypherd/Cypherd.entitlements;
+				CODE_SIGN_IDENTITY = "Apple Development";
+				"CODE_SIGN_IDENTITY[sdk=iphoneos*]" = "iPhone Distribution";
+				CODE_SIGN_STYLE = Manual;
 				CURRENT_PROJECT_VERSION = 4;
 				DEFINES_MODULE = YES;
-				DEVELOPMENT_TEAM = 7FZT7KSBXD;
+				DEVELOPMENT_TEAM = "";
+				"DEVELOPMENT_TEAM[sdk=iphoneos*]" = 7FZT7KSBXD;
 				ENABLE_BITCODE = NO;
 				INFOPLIST_FILE = Cypherd/Info.plist;
 				INFOPLIST_KEY_CFBundleDisplayName = "Cypher Wallet";
@@ -704,6 +727,8 @@
 				);
 				PRODUCT_BUNDLE_IDENTIFIER = com.cypherd.ioswalletv1;
 				PRODUCT_NAME = Cypherd;
+				PROVISIONING_PROFILE_SPECIFIER = "";
+				"PROVISIONING_PROFILE_SPECIFIER[sdk=iphoneos*]" = "AppStore distribution Xcode Cloud";
 				SWIFT_OBJC_BRIDGING_HEADER = "Cypherd-Bridging-Header.h";
 				SWIFT_OPTIMIZATION_LEVEL = "-Onone";
 				SWIFT_VERSION = 5.0;
@@ -719,9 +744,13 @@
 				ASSETCATALOG_COMPILER_INCLUDE_ALL_APPICON_ASSETS = NO;
 				CLANG_ENABLE_MODULES = YES;
 				CODE_SIGN_ENTITLEMENTS = Cypherd/Cypherd.entitlements;
+				CODE_SIGN_IDENTITY = "Apple Distribution: CypherD Wallet Inc (7FZT7KSBXD)";
+				"CODE_SIGN_IDENTITY[sdk=iphoneos*]" = "Apple Distribution: CypherD Wallet Inc (7FZT7KSBXD)";
+				CODE_SIGN_STYLE = Manual;
 				CURRENT_PROJECT_VERSION = 4;
 				DEFINES_MODULE = YES;
-				DEVELOPMENT_TEAM = 7FZT7KSBXD;
+				DEVELOPMENT_TEAM = "";
+				"DEVELOPMENT_TEAM[sdk=iphoneos*]" = 7FZT7KSBXD;
 				INFOPLIST_FILE = Cypherd/Info.plist;
 				INFOPLIST_KEY_CFBundleDisplayName = "Cypher Wallet";
 				INFOPLIST_KEY_LSApplicationCategoryType = "public.app-category.finance";
@@ -738,6 +767,8 @@
 				);
 				PRODUCT_BUNDLE_IDENTIFIER = com.cypherd.ioswalletv1;
 				PRODUCT_NAME = Cypherd;
+				PROVISIONING_PROFILE_SPECIFIER = "";
+				"PROVISIONING_PROFILE_SPECIFIER[sdk=iphoneos*]" = "AppStore distribution Xcode Cloud";
 				SWIFT_OBJC_BRIDGING_HEADER = "Cypherd-Bridging-Header.h";
 				SWIFT_VERSION = 5.0;
 				VERSIONING_SYSTEM = "apple-generic";
@@ -773,7 +804,8 @@
 				CLANG_WARN_SUSPICIOUS_MOVE = YES;
 				CLANG_WARN_UNREACHABLE_CODE = YES;
 				CLANG_WARN__DUPLICATE_METHOD_MATCH = YES;
-				"CODE_SIGN_IDENTITY[sdk=iphoneos*]" = "iPhone Developer";
+				CODE_SIGN_IDENTITY = "Apple Development: Mohanram JS (CY794PN9ZK)";
+				"CODE_SIGN_IDENTITY[sdk=iphoneos*]" = "Apple Development: Mohanram JS (CY794PN9ZK)";
 				COPY_PHASE_STRIP = NO;
 				DEFINES_MODULE = YES;
 				ENABLE_STRICT_OBJC_MSGSEND = YES;
@@ -844,7 +876,8 @@
 				CLANG_WARN_SUSPICIOUS_MOVE = YES;
 				CLANG_WARN_UNREACHABLE_CODE = YES;
 				CLANG_WARN__DUPLICATE_METHOD_MATCH = YES;
-				"CODE_SIGN_IDENTITY[sdk=iphoneos*]" = "iPhone Developer";
+				CODE_SIGN_IDENTITY = "Apple Distribution: CypherD Wallet Inc (7FZT7KSBXD)";
+				"CODE_SIGN_IDENTITY[sdk=iphoneos*]" = "Apple Distribution: CypherD Wallet Inc (7FZT7KSBXD)";
 				COPY_PHASE_STRIP = YES;
 				DEFINES_MODULE = YES;
 				ENABLE_NS_ASSERTIONS = NO;
