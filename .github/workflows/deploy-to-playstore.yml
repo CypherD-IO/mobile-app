@@ -114,7 +114,10 @@ jobs:
           echo '${{ secrets.GOOGLE_SERVICES_JSON }}' > android/app/google-services.json
       - name: Build Release AAB
         id: buildRelease
-        run: cd android && ./gradlew bundleRelease
+        run: |
+          cd android
+          ./gradlew clean
+          ./gradlew bundleRelease
 
       - name: Clean up Sentry properties
         if: always()
