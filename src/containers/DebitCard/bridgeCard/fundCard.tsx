@@ -1,6 +1,6 @@
 import React, { useCallback, useContext, useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import { Keyboard } from 'react-native';
+import { Keyboard, useWindowDimensions } from 'react-native';
 import AppImages from '../../../../assets/images/appImages';
 import Button from '../../../components/v2/button';
 import {
@@ -26,6 +26,7 @@ import {
   CyDFastImage,
   CyDImage,
   CyDText,
+  CyDTextInput,
   CyDTouchView,
   CyDView,
 } from '../../../styles/tailwindStyles';
@@ -144,6 +145,8 @@ export default function BridgeFundCardScreen({ route }: { route: any }) {
   const [suggestedAmounts, setSuggestedAmounts] = useState<
     Record<string, string>
   >({ low: '', med: '', high: '' });
+  const { height } = useWindowDimensions();
+  const isSmallScreenMobile = height <= 750;
 
   useEffect(() => {
     if (isFocused) {
@@ -1023,7 +1026,10 @@ export default function BridgeFundCardScreen({ route }: { route: any }) {
   };
 
   return (
-    <CyDView className='h-full bg-n20'>
+    <CyDView
+      className={clsx('bg-n20 flex flex-1 flex-col justify-between h-full', {
+        '': loading,
+      })}>
       {isMaxLoading && <Loading blurBg={true} />}
       <ChooseTokenModal
         isChooseTokenModalVisible={isChooseTokenVisible}
@@ -1042,17 +1048,23 @@ export default function BridgeFundCardScreen({ route }: { route: any }) {
         noTokensAvailableMessage={t<string>('CARD_INSUFFICIENT_FUNDS')}
         renderPage={'fundCardPage'}
       />
-      {/* <CyDKeyboardAwareScrollView> */}
-      <CyDView
-        className={clsx('flex flex-1 flex-col justify-between h-full', {
-          '': loading,
-        })}>
-        <CyDView>
-          <RenderSelectedToken />
-          <CyDView className='flex flex-row rounded-[8px] px-[20px] justify-between items-center'>
-            <CyDView className={'w-full items-center'}>
-              <CyDView className={'flex flex-row justify-center items-center'}>
-                {!isCrpytoInput && (
+      <CyDView>
+        <RenderSelectedToken />
+        <CyDView className='flex flex-row rounded-[8px] px-[20px] justify-between items-center'>
+          <CyDView className={'w-full items-center'}>
+            <CyDView className={'flex flex-row justify-center items-center'}>
+              {!isCrpytoInput && !isSmallScreenMobile && (
+                <CyDText
+                  className={clsx('text-mandarin font-bold', {
+                    'text-[32px]': amount.length <= 15,
+                    'text-[60px]': amount.length <= 7,
+                    'text-[75px]': amount.length <= 5,
+                  })}>
+                  {`$${amount === '' ? '0.00' : amount}`}
+                </CyDText>
+              )}
+              {!isCrpytoInput && isSmallScreenMobile && (
+                <CyDView className='flex flex-row self-center'>
                   <CyDText
                     className={clsx('text-mandarin font-bold', {
                       'text-[32px]': amount.length <= 15,
@@ -1061,7 +1073,24 @@ export default function BridgeFundCardScreen({ route }: { route: any }) {
                     })}>
                     {'$'}
                   </CyDText>
-                )}
+                  <CyDTextInput
+                    className={clsx('text-mandarin font-bold', {
+                      'text-[32px]': amount.length <= 15,
+                      'text-[60px]': amount.length <= 7,
+                      'text-[75px]': amount.length <= 5,
+                    })}
+                    onChangeText={text => {
+                      onEnterAmount(text);
+                    }}
+                    placeholder='0.00'
+                    placeholderTextColor={'#FFB900'}
+                    value={amount}
+                    keyboardType='number-pad'
+                    returnKeyType='done'
+                  />
+                </CyDView>
+              )}
+              {isCrpytoInput && !isSmallScreenMobile && (
                 <CyDText
                   className={clsx(
                     'font-extrabold text-center text-mandarin font-nunito ml-[4px]',
@@ -1073,31 +1102,49 @@ export default function BridgeFundCardScreen({ route }: { route: any }) {
                   )}>
                   {amount === '' ? '0.00' : amount}
                 </CyDText>
-                {isCrpytoInput && (
-                  <CyDView>
-                    <CyDText className='font-extrabold mt-[26px] text-[16px] ml-[4px]'>
-                      {selectedToken?.symbol}
-                    </CyDText>
-                  </CyDView>
-                )}
-              </CyDView>
-              <CyDText
-                className={clsx(
-                  'text-center text-primaryTextColor text-[16px]',
-                )}>
-                {'~' +
-                  (isCrpytoInput
-                    ? (!isNaN(parseFloat(usdAmount))
-                        ? formatAmount(usdAmount).toString()
-                        : '0.00') + ' USD'
-                    : (!isNaN(parseFloat(cryptoAmount))
-                        ? formatAmount(cryptoAmount).toString()
-                        : '0.00') +
-                      ' ' +
-                      (selectedToken?.symbol ?? ' '))}
-              </CyDText>
-              <RenderWarningMessage />
-              {/* {(!usdAmount || Number(usdAmount) < minTokenValueLimit) && (
+              )}
+              {isCrpytoInput && isSmallScreenMobile && (
+                <CyDTextInput
+                  className={clsx(
+                    'font-extrabold text-center text-mandarin font-nunito ml-[4px]',
+                    {
+                      'text-[32px]': amount.length <= 15,
+                      'text-[60px]': amount.length <= 7,
+                      'text-[75px]': amount.length <= 5,
+                    },
+                  )}
+                  onChangeText={text => {
+                    onEnterAmount(text);
+                  }}
+                  placeholderTextColor={'#FFB900'}
+                  placeholder='0.00'
+                  keyboardType='number-pad'
+                  returnKeyType='done'
+                />
+              )}
+              {isCrpytoInput && (
+                <CyDView>
+                  <CyDText className='font-extrabold mt-[26px] text-[16px] ml-[4px]'>
+                    {selectedToken?.symbol}
+                  </CyDText>
+                </CyDView>
+              )}
+            </CyDView>
+            <CyDText
+              className={clsx('text-center text-primaryTextColor text-[16px]')}>
+              {'~' +
+                (isCrpytoInput
+                  ? (!isNaN(parseFloat(usdAmount))
+                      ? formatAmount(usdAmount).toString()
+                      : '0.00') + ' USD'
+                  : (!isNaN(parseFloat(cryptoAmount))
+                      ? formatAmount(cryptoAmount).toString()
+                      : '0.00') +
+                    ' ' +
+                    (selectedToken?.symbol ?? ' '))}
+            </CyDText>
+            <RenderWarningMessage />
+            {/* {(!usdAmount || Number(usdAmount) < minTokenValueLimit) && (
                 <CyDView className='mb-[2px]'>
                   <CyDText className='text-center font-semibold'>
                     {t<string>('CARD_LOAD_MIN_AMOUNT')}
@@ -1105,144 +1152,137 @@ export default function BridgeFundCardScreen({ route }: { route: any }) {
                 </CyDView>
               )}
               <RenderWarningMessage /> */}
-            </CyDView>
-            <CyDView className={'p-[4px] ml-[-45px]'}>
-              <CyDTouchView
-                onPress={() => {
-                  onPressToggle();
-                }}
-                className={clsx(
-                  'border border-inputBorderColor bg-cardBg rounded-full h-[40px] w-[40px] flex justify-center items-center p-[4px]',
-                )}>
-                <CyDFastImage
-                  className='h-[16px] w-[16px]'
-                  source={AppImages.TOGGLE_ICON}
-                  resizeMode='contain'
-                />
-              </CyDTouchView>
-            </CyDView>
           </CyDView>
-          {/* <RenderWarningMessage /> */}
-        </CyDView>
-        <CyDView>
-          <CyDView className='flex flex-row justify-evenly items-center'>
+          <CyDView className={'p-[4px] ml-[-45px]'}>
             <CyDTouchView
               onPress={() => {
-                onEnterAmount(suggestedAmounts.low);
+                onPressToggle();
+              }}
+              className={clsx(
+                'border border-inputBorderColor bg-cardBg rounded-full h-[40px] w-[40px] flex justify-center items-center p-[4px]',
+              )}>
+              <CyDFastImage
+                className='h-[16px] w-[16px]'
+                source={AppImages.TOGGLE_ICON}
+                resizeMode='contain'
+              />
+            </CyDTouchView>
+          </CyDView>
+        </CyDView>
+        <CyDView className='flex flex-row justify-evenly items-center'>
+          <CyDTouchView
+            onPress={() => {
+              onEnterAmount(suggestedAmounts.low);
+            }}
+            disabled={loading}
+            className={clsx(
+              'bg-secondaryBackgroundColor border border-inputBorderColor rounded-[4px] h-[40px] w-[50px] flex justify-center items-center',
+            )}>
+            <CyDText className='font-extrabold'>
+              {'$' + suggestedAmounts.low}
+            </CyDText>
+          </CyDTouchView>
+          {suggestedAmounts.low !== suggestedAmounts.med && (
+            <CyDTouchView
+              onPress={() => {
+                onEnterAmount(suggestedAmounts.med);
               }}
               disabled={loading}
               className={clsx(
                 'bg-secondaryBackgroundColor border border-inputBorderColor rounded-[4px] h-[40px] w-[50px] flex justify-center items-center',
               )}>
               <CyDText className='font-extrabold'>
-                {'$' + suggestedAmounts.low}
+                {'$' + suggestedAmounts.med}
               </CyDText>
             </CyDTouchView>
-            {suggestedAmounts.low !== suggestedAmounts.med && (
-              <CyDTouchView
-                onPress={() => {
-                  onEnterAmount(suggestedAmounts.med);
-                }}
-                disabled={loading}
-                className={clsx(
-                  'bg-secondaryBackgroundColor border border-inputBorderColor rounded-[4px] h-[40px] w-[50px] flex justify-center items-center',
-                )}>
-                <CyDText className='font-extrabold'>
-                  {'$' + suggestedAmounts.med}
-                </CyDText>
-              </CyDTouchView>
-            )}
-            {suggestedAmounts.low !== suggestedAmounts.high && (
-              <CyDTouchView
-                onPress={() => {
-                  onEnterAmount(suggestedAmounts.high);
-                }}
-                disabled={loading}
-                className={clsx(
-                  'bg-secondaryBackgroundColor border border-inputBorderColor rounded-[4px] h-[40px] w-[50px] flex justify-center items-center',
-                )}>
-                <CyDText className='font-extrabold'>
-                  {'$' + suggestedAmounts.high}
-                </CyDText>
-              </CyDTouchView>
-            )}
+          )}
+          {suggestedAmounts.low !== suggestedAmounts.high && (
             <CyDTouchView
               onPress={() => {
-                void onMax();
+                onEnterAmount(suggestedAmounts.high);
               }}
               disabled={loading}
               className={clsx(
-                'bg-white border border-appColor rounded-[4px] h-[40px] w-[50px] flex justify-center items-center',
+                'bg-secondaryBackgroundColor border border-inputBorderColor rounded-[4px] h-[40px] w-[50px] flex justify-center items-center',
               )}>
-              <CyDText className='font-extrabold'>{t('MAX')}</CyDText>
+              <CyDText className='font-extrabold'>
+                {'$' + suggestedAmounts.high}
+              </CyDText>
             </CyDTouchView>
-          </CyDView>
+          )}
+          <CyDTouchView
+            onPress={() => {
+              void onMax();
+            }}
+            disabled={loading}
+            className={clsx(
+              'bg-white border border-appColor rounded-[4px] h-[40px] w-[50px] flex justify-center items-center',
+            )}>
+            <CyDText className='font-extrabold'>{t('MAX')}</CyDText>
+          </CyDTouchView>
+        </CyDView>
+        {!isSmallScreenMobile && (
           <CyDNumberPad
             value={amount}
             setValue={(amt: string) => onEnterAmount(amt)}
           />
-          <CyDView className=' pt-[16px] bg-white px-[16px] pb-[24px] rounded-t-[16px]'>
-            {fistLoad && (
-              <CyDView className='flex flex-row justify-between items-center mb-[16px]'>
-                <CyDTouchView
-                  className='flex flex-row items-center '
-                  onPress={() => {
-                    navigation.navigate(screenTitle.SELECT_PLAN);
-                  }}>
-                  <CyDText className='font-bold text-[14px]'>
-                    {fistLoad
-                      ? get(
-                          CYPHER_PLAN_ID_NAME_MAPPING,
-                          cardProfile?.planInfo?.optedPlanId ??
-                            CypherPlanId.BASIC_PLAN,
-                        )
-                      : get(
-                          CYPHER_PLAN_ID_NAME_MAPPING,
-                          cardProfile?.planInfo?.planId ??
-                            CypherPlanId.BASIC_PLAN,
-                        )}
-                  </CyDText>
+        )}
+      </CyDView>
+      <CyDView>
+        <CyDView className=' pt-[16px] bg-white px-[16px] pb-[24px] rounded-t-[16px]'>
+          {fistLoad && (
+            <CyDView className='flex flex-row justify-between items-center mb-[16px]'>
+              <CyDTouchView
+                className='flex flex-row items-center '
+                onPress={() => {
+                  navigation.navigate(screenTitle.SELECT_PLAN);
+                }}>
+                <CyDText className='font-bold text-[14px]'>
+                  {get(
+                    CYPHER_PLAN_ID_NAME_MAPPING,
+                    cardProfile?.planInfo?.optedPlanId ??
+                      CypherPlanId.BASIC_PLAN,
+                  )}
+                </CyDText>
 
-                  <CyDImage
-                    source={AppImages.EDIT}
-                    className='w-[20px] h-[20px]'
-                  />
-                </CyDTouchView>
-                <CyDView>
-                  <CyDText className='font-bold text-[14px]'>
-                    {`$${planCost}`}
-                  </CyDText>
-                </CyDView>
+                <CyDImage
+                  source={AppImages.EDIT}
+                  className='w-[20px] h-[20px]'
+                />
+              </CyDTouchView>
+              <CyDView>
+                <CyDText className='font-bold text-[14px]'>
+                  {`$${planCost}`}
+                </CyDText>
               </CyDView>
-            )}
-            <CyDView className='flex flex-row justify-between items-center'>
-              <Button
-                onPress={() => {
-                  navigation.navigate(screenTitle.AUTO_LOAD_SCREEN);
-                }}
-                type={ButtonType.TERNARY}
-                title={t('SETUP_AUTO_LOAD')}
-                style={clsx('h-[60px] w-[45%] mb-[18px] py-[10px]', {
-                  'py-[8px]': loading,
-                })}
-              />
-              <Button
-                onPress={() => {
-                  if (validateAmount(amount)) {
-                    void fundCard();
-                  }
-                }}
-                type={ButtonType.PRIMARY}
-                disabled={isLoadCardDisabled()}
-                title={t('QUOTE')}
-                style={'h-[60px] w-[45%] mb-[18px] py-[10px]'}
-                loading={loading}
-              />
             </CyDView>
+          )}
+          <CyDView className='flex flex-row justify-between items-center'>
+            <Button
+              onPress={() => {
+                navigation.navigate(screenTitle.AUTO_LOAD_SCREEN);
+              }}
+              type={ButtonType.TERNARY}
+              title={t('SETUP_AUTO_LOAD')}
+              style={clsx('h-[60px] w-[45%] mb-[18px] py-[10px]', {
+                'py-[8px]': loading,
+              })}
+            />
+            <Button
+              onPress={() => {
+                if (validateAmount(amount)) {
+                  void fundCard();
+                }
+              }}
+              type={ButtonType.PRIMARY}
+              disabled={isLoadCardDisabled()}
+              title={t('QUOTE')}
+              style={'h-[60px] w-[45%] mb-[18px] py-[10px]'}
+              loading={loading}
+            />
           </CyDView>
         </CyDView>
       </CyDView>
-      {/* </CyDKeyboardAwareScrollView> */}
     </CyDView>
   );
 }
