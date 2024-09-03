@@ -666,10 +666,9 @@ export default function SelectPlan(_navigation: any) {
                 style={styles.modalLayout}
                 setModalVisible={setShowConsent}>
                 <CyDView
-                  className={'bg-n30 rounded-t-[20px] p-[16px] pb-[40px]'}>
+                  className={'bg-white rounded-t-[20px] p-[16px] pb-[40px]'}>
                   <CyDView
                     className={'flex flex-row justify-between items-center'}>
-                    <CyDView />
                     <CyDText className='text-[28px] font-bold'>
                       {t('CHANGE_PLAN')}
                     </CyDText>
@@ -687,45 +686,60 @@ export default function SelectPlan(_navigation: any) {
                     </CyDTouchView>
                   </CyDView>
                   <CyDView>
-                    <CyDView className='flex flex-row items-center mt-[24px]'>
-                      <CyDTouchView
-                        className={clsx(
-                          'h-[20px] w-[20px] border-[1px] rounded-[4px]',
-                          {
-                            'bg-black': hasConsent,
-                          },
-                        )}
-                        onPress={() => {
-                          setHasConsent(!hasConsent);
-                        }}>
-                        {true && (
-                          <CyDImage
-                            source={AppImages.CORRECT}
-                            className='h-[15px] w-[15px] ml-[2px]'
-                            resizeMode='contain'
-                          />
-                        )}
-                      </CyDTouchView>
-                      <CyDText className='px-[12px] text-[12px]'>
-                        {selectedPlan === CypherPlanId.BASIC_PLAN
-                          ? t('DOWNGRADE_PLAN_CONSENT')
-                          : t('UPGRADE_PLAN_CONSENT')}
-                      </CyDText>
+                    <CyDView className='flex flex-row justify-center my-[24px]'>
+                      <CyDImage source={AppImages.CYPHER_INFO} className='' />
                     </CyDView>
+                    <CyDText className='text-[16px] font-bold text-center flex flex-row self-center w-[75%]'>
+                      {selectedPlan === CypherPlanId.BASIC_PLAN
+                        ? 'No fee will be deducted from your card balance for the downgrade'
+                        : `Premium plan fee of $${proPlanData?.cost ?? 200} will be deducted from your card balance`}
+                    </CyDText>
+                    <CyDView className='p-[8px] border-[1px] rounded-[8px] border-gray-300 mt-[24px]'>
+                      <CyDView className='flex flex-row items-center '>
+                        <CyDTouchView
+                          className={clsx(
+                            'h-[20px] w-[20px] border-[1px] rounded-[4px]',
+                            {
+                              'bg-black': hasConsent,
+                            },
+                          )}
+                          onPress={() => {
+                            setHasConsent(!hasConsent);
+                          }}>
+                          {true && (
+                            <CyDImage
+                              source={AppImages.CORRECT}
+                              className='h-[15px] w-[15px] ml-[2px]'
+                              resizeMode='contain'
+                            />
+                          )}
+                        </CyDTouchView>
+                        <CyDView className=' w-[90%] ml-[12px]'>
+                          <CyDText className='px-[12px] text-[12px]'>
+                            {selectedPlan === CypherPlanId.BASIC_PLAN
+                              ? t('DOWNGRADE_PLAN_CONSENT')
+                              : t('UPGRADE_PLAN_CONSENT')}
+                            <CyDTouchView
+                              className='pl-[12px]'
+                              onPress={() => {
+                                setShowConsent(false);
+                                navigation.navigate(screenTitle.LEGAL_SCREEN);
+                              }}>
+                              <CyDText className='text-[12px] font-bold'>
+                                {'terms and conditions.'}
+                              </CyDText>
+                            </CyDTouchView>
+                          </CyDText>
+                        </CyDView>
+                      </CyDView>
+                    </CyDView>
+
                     <CyDView className='mt-[18px]'>
                       <Button
                         disabled={!hasConsent}
                         title={t('CONTINUE_ALL_CAPS')}
                         onPress={() => {
                           void onSelectPlan(selectedPlan);
-                          setShowConsent(false);
-                        }}
-                      />
-                      <Button
-                        style='mt-[12px]'
-                        type={ButtonType.SECONDARY}
-                        title={t('CANCEL')}
-                        onPress={() => {
                           setShowConsent(false);
                         }}
                       />

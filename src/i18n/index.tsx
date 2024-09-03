@@ -1197,9 +1197,9 @@ const resources = {
       CURRENT_PLAN: 'Current Plan',
       DOWNGRADE: 'DOWNGRADE',
       UPGRADE_PLAN_CONSENT:
-        'I hereby acknowledge and consent to upgrading my plan from the Standard tier to the Premium tier. I understand that this change will incur additional costs. By selecting "Continue," I confirm that I fully comprehend and accept these plan changes',
+        'I acknowledge and authorize the deduction from my card, agree to the mentioned amount, and accept the ',
       DOWNGRADE_PLAN_CONSENT:
-        'I hereby acknowledge and consent to downgrading my plan from the Premium tier to the Standard tier. I understand that this change will result in the loss of all perks and benefits associated with the Premium plan. By replying selecting "Continue," I confirm that I fully comprehend and accept these plan changes',
+        'I understand that downgrading will revoke all my premium feature access, and accept the ',
     },
   },
 };

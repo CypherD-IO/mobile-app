@@ -213,7 +213,7 @@ export function PortfolioStackScreen({ navigation, route }) {
       <PortfolioStack.Screen
         name={screenTitle.NFT_OVERVIEW_SCREEN}
         component={NFTOverviewScreen}
-        options={{
+        options={({ navigation }) => ({
           headerTransparent: false,
           headerShadowVisible: false,
           title: '',
@@ -226,7 +226,7 @@ export function PortfolioStackScreen({ navigation, route }) {
           headerTintColor: Colors.primaryTextColor,
           headerBackTitleVisible: false,
           headerLeft: props => defaultHeaderLeft(navigation),
-        }}
+        })}
       />
 
       <PortfolioStack.Screen
@@ -674,7 +674,7 @@ export function PortfolioStackScreen({ navigation, route }) {
       <PortfolioStack.Screen
         name={screenTitle.BRIDGE_SKIP_API_SCREEN}
         component={BridgeSkipApi}
-        options={{
+        options={({ navigation }) => ({
           headerTransparent: false,
           headerShadowVisible: false,
           headerTitleAlign: 'center',
@@ -687,7 +687,7 @@ export function PortfolioStackScreen({ navigation, route }) {
           headerTintColor: Colors.primaryTextColor,
           headerBackTitleVisible: false,
           headerLeft: props => defaultHeaderLeft(navigation),
-        }}
+        })}
       />
 
       {/* <PortfolioStack.Screen
@@ -713,7 +713,7 @@ export function PortfolioStackScreen({ navigation, route }) {
       <PortfolioStack.Screen
         name={screenTitle.BRIDGE_STATUS}
         component={BridgeStatus}
-        options={{
+        options={({ navigation }) => ({
           headerTransparent: false,
           headerShadowVisible: false,
           title: 'Bridge status',
@@ -723,7 +723,7 @@ export function PortfolioStackScreen({ navigation, route }) {
           headerTintColor: Colors.primaryTextColor,
           headerBackTitleVisible: false,
           headerLeft: props => defaultHeaderLeft(navigation),
-        }}
+        })}
       />
 
       <PortfolioStack.Screen
@@ -797,7 +797,7 @@ export function PortfolioStackScreen({ navigation, route }) {
       <PortfolioStack.Screen
         name={screenTitle.SOCIAL_MEDIA_SCREEN}
         component={SocialMediaScreen}
-        options={{
+        options={({ navigation }) => ({
           headerTransparent: false,
           headerShadowVisible: false,
           headerTitleAlign: 'center',
@@ -806,7 +806,7 @@ export function PortfolioStackScreen({ navigation, route }) {
           headerTintColor: Colors.primaryTextColor,
           headerBackTitleVisible: false,
           headerLeft: props => defaultHeaderLeft(navigation),
-        }}
+        })}
       />
     </PortfolioStack.Navigator>
   );
@@ -1276,7 +1276,7 @@ export function DebitCardStackScreen() {
       <FundCardStack.Screen
         name={screenTitle.LEGAL_SCREEN}
         component={LegalScreen}
-        options={{
+        options={({ navigation }) => ({
           headerTransparent: false,
           headerShadowVisible: false,
           title: t('TERMS_AND_CONDITIONS'),
@@ -1286,7 +1286,7 @@ export function DebitCardStackScreen() {
           headerTintColor: Colors.primaryTextColor,
           headerBackTitleVisible: false,
           headerLeft: props => defaultHeaderLeft(navigation),
-        }}
+        })}
       />
 
       <FundCardStack.Screen
@@ -1298,7 +1298,7 @@ export function DebitCardStackScreen() {
       <FundCardStack.Screen
         name={screenTitle.FUND_CARD_SCREEN}
         component={FundCardScreen}
-        options={{
+        options={({ navigation }) => ({
           headerTransparent: false,
           headerShadowVisible: false,
           title: 'Cypher Card',
@@ -1307,7 +1307,7 @@ export function DebitCardStackScreen() {
           headerTintColor: Colors.primaryTextColor,
           headerBackTitleVisible: false,
           headerLeft: props => defaultHeaderLeft(navigation),
-        }}
+        })}
       />
       <FundCardStack.Screen
         name={screenTitle.TRANS_DETAIL}
@@ -1354,7 +1354,7 @@ export function DebitCardStackScreen() {
       <FundCardStack.Screen
         name={screenTitle.SOCIAL_MEDIA_SCREEN}
         component={SocialMediaScreen}
-        options={{
+        options={({ navigation }) => ({
           headerTransparent: false,
           headerShadowVisible: false,
           headerTitleAlign: 'center',
@@ -1362,7 +1362,7 @@ export function DebitCardStackScreen() {
           headerTintColor: Colors.primaryTextColor,
           headerBackTitleVisible: false,
           headerLeft: props => defaultHeaderLeft(navigation),
-        }}
+        })}
       />
 
       <FundCardStack.Screen
@@ -1375,7 +1375,7 @@ export function DebitCardStackScreen() {
       <FundCardStack.Screen
         name={screenTitle.GET_CARD_V2}
         component={GetCardLanding}
-        options={{
+        options={({ navigation }) => ({
           headerTransparent: false,
           headerShadowVisible: false,
           headerTitleAlign: 'center',
@@ -1383,7 +1383,7 @@ export function DebitCardStackScreen() {
           headerTintColor: Colors.primaryTextColor,
           headerBackTitleVisible: false,
           headerLeft: props => defaultHeaderLeft(navigation),
-        }}
+        })}
       />
 
       <FundCardStack.Screen
@@ -1391,12 +1391,6 @@ export function DebitCardStackScreen() {
         component={SelectPlan}
         options={({ navigation }): NativeStackNavigationOptions => ({
           headerShown: false,
-          // headerTransparent: true,
-          // headerShadowVisible: false,
-          // headerTitle: '',
-          // headerTintColor: Colors.primaryTextColor,
-          // headerBackTitleVisible: false,
-          // headerLeft: props => defaultHeaderLeft(navigation),
         })}
       />
 
@@ -1564,7 +1558,7 @@ export function SwapStackScreen({ navigation }) {
       <SwapStack.Screen
         name={screenTitle.BRIDGE_SKIP_API_SCREEN}
         component={BridgeSkipApi}
-        options={{
+        options={({ navigation }) => ({
           headerTransparent: false,
           headerShadowVisible: false,
           headerTitleAlign: 'center',
@@ -1577,7 +1571,7 @@ export function SwapStackScreen({ navigation }) {
           headerTintColor: Colors.primaryTextColor,
           headerBackTitleVisible: false,
           headerLeft: props => defaultHeaderLeft(navigation),
-        }}
+        })}
       />
     </SwapStack.Navigator>
   );
@@ -1786,7 +1780,7 @@ export function OptionsStackScreen({ navigation, route }) {
       <OptionsStack.Screen
         name={screenTitle.ADVANCED_SETTINGS}
         component={AdvancedSettings}
-        options={() => ({
+        options={({ navigation }) => ({
           headerTransparent: false,
           headerShadowVisible: false,
           title: t('ADVANCED_SETTINGS'),
@@ -1797,7 +1791,7 @@ export function OptionsStackScreen({ navigation, route }) {
           },
           headerTintColor: Colors.primaryTextColor,
           headerBackTitleVisible: false,
-          // headerLeft: props => defaultHeaderLeft(navigation),
+          headerLeft: props => defaultHeaderLeft(navigation),
         })}
       />
       <OptionsStack.Screen
@@ -2072,7 +2066,7 @@ export function OptionsStackScreen({ navigation, route }) {
       <OptionsStack.Screen
         name={screenTitle.SOCIAL_MEDIA_SCREEN}
         component={SocialMediaScreen}
-        options={{
+        options={({ navigation }) => ({
           headerTransparent: false,
           headerShadowVisible: false,
           headerTitleAlign: 'center',
@@ -2081,12 +2075,12 @@ export function OptionsStackScreen({ navigation, route }) {
           headerTintColor: Colors.primaryTextColor,
           headerBackTitleVisible: false,
           headerLeft: props => defaultHeaderLeft(navigation),
-        }}
+        })}
       />
       <OptionsStack.Screen
         name={screenTitle.BROWSER}
         component={BrowserStackScreen}
-        options={{
+        options={({ navigation }) => ({
           headerTransparent: false,
           headerShadowVisible: false,
           title: 'Browser',
@@ -2095,7 +2089,7 @@ export function OptionsStackScreen({ navigation, route }) {
           headerTintColor: Colors.primaryTextColor,
           headerBackTitleVisible: false,
           headerLeft: props => defaultHeaderLeft(navigation),
-        }}
+        })}
       />
     </OptionsStack.Navigator>
   );
