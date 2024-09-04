@@ -88,6 +88,15 @@ android {
         versionName "4.17"
         missingDimensionStrategy 'react-native-camera', 'general'
         buildConfigField "String", "INTERCOM_APP_KEY", "\"${System.getenv('INTERCOM_APP_KEY') ?: ''}\""
+        def versionPropsFile = file('version.properties')
+        if (versionPropsFile.canRead()) {
+            def versionProps = new Properties()
+            versionProps.load(new FileInputStream(versionPropsFile))
+            versionCode versionProps['VERSION_CODE'].toInteger()
+            versionName versionProps['VERSION_NAME']
+        } else {
+            throw new FileNotFoundException("Could not read version.properties!")
+        }
     }
     signingConfigs {
         release {
