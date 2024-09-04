@@ -135,10 +135,10 @@ export default function DebitCardScreen(props: RouteProps) {
   const shouldCheckApplication = () => {
     if (provider === CardProviders.REAP_CARD) {
       return (
-        (get(cardProfile, provider as CardProviders)?.applicationStatus ===
+        get(cardProfile, provider as CardProviders)?.applicationStatus ===
           CardApplicationStatus.CREATED ||
-          get(cardProfile, provider as CardProviders)?.applicationStatus ===
-            CardApplicationStatus.KYC_INITIATED) &&
+        get(cardProfile, provider as CardProviders)?.applicationStatus ===
+          CardApplicationStatus.KYC_INITIATED ||
         !get(cardProfile, ['cardNotification', 'isTelegramAllowed'], false)
       );
     }
