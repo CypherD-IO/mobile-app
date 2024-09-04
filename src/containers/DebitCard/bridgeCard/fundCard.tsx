@@ -225,8 +225,7 @@ export default function BridgeFundCardScreen({ route }: { route: any }) {
         }
       } else if (
         COSMOS_CHAINS.includes(chainDetails.chainName) &&
-        chainDetails.chainName !== ChainNames.OSMOSIS &&
-        chainDetails.chainName !== ChainNames.EVMOS
+        chainDetails.chainName !== ChainNames.OSMOSIS
       ) {
         gasDetails = {
           gasFeeInCrypto: parseFloat(String(random(0.01, 0.1, true))).toFixed(
@@ -239,14 +238,6 @@ export default function BridgeFundCardScreen({ route }: { route: any }) {
             4,
           ),
         };
-      } else if (chainDetails.chainName === ChainNames.EVMOS) {
-        gasDetails = await estimateGasForEvmosIBC({
-          toAddress: quote.targetAddress,
-          toChain: CHAIN_OSMOSIS,
-          amount,
-          denom,
-          contractDecimals,
-        });
       } else if (chainDetails.chainName === ChainNames.SOLANA) {
         gasDetails = await estimateGasForSolana({
           fromAddress: solana.address,
