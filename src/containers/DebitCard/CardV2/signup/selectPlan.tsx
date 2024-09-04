@@ -38,7 +38,13 @@ import {
 } from '../../../../constants/data';
 import clsx from 'clsx';
 
-export default function SelectPlan(_navigation: any) {
+export default function SelectPlan({
+  _navigation,
+  _toPage,
+}: {
+  _navigation: any;
+  _toPage: string | undefined;
+}) {
   const { t } = useTranslation();
   const routeIndexindex = useNavigationState(state => state.index);
   const navigation = useNavigation<NavigationProp<ParamListBase>>();
@@ -50,7 +56,7 @@ export default function SelectPlan(_navigation: any) {
   const { showModal, hideModal } = useGlobalModalContext();
   const { getWalletProfile } = useCardUtilities();
 
-  const toPage = _navigation?.route?.params?.toPage ?? '';
+  const toPage = _toPage ?? _navigation?.route?.params?.toPage ?? '';
   const deductAmountNow = _navigation?.route?.params?.deductAmountNow ?? false;
   const cardBalance = _navigation?.route?.params?.cardBalance ?? 0;
 
@@ -100,7 +106,8 @@ export default function SelectPlan(_navigation: any) {
             onSuccess: () => {
               if (toPage) navigation.navigate(toPage);
               else {
-                navigation.goBack();
+                navigation.navigate(screenTitle.CARD_SIGNUP_SCREEN);
+                // navigation.goBack();
               }
               hideModal();
             },

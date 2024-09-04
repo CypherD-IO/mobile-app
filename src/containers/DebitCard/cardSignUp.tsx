@@ -378,7 +378,6 @@ export default function CardSignupScreen({ navigation, route }) {
       );
       if (!response.isError) {
         const data = await getWalletProfile(globalContext.globalState.token);
-        data.provider = provider;
         globalContext.globalDispatch({
           type: GlobalContextType.CARD_PROFILE,
           cardProfile: data,
