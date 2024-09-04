@@ -58,7 +58,6 @@ export default function HostsAndRPCScreen({ navigation }) {
     ethereum: globalContext.globalState.rpcEndpoints.ETH.primary,
     polygon: globalContext.globalState.rpcEndpoints.POLYGON.primary,
     avalanche: globalContext.globalState.rpcEndpoints.AVALANCHE.primary,
-    fantom: globalContext.globalState.rpcEndpoints.FANTOM.primary,
     arbitrum: globalContext.globalState.rpcEndpoints.ARBITRUM.primary,
     optimism: globalContext.globalState.rpcEndpoints.OPTIMISM.primary,
     bsc: globalContext.globalState.rpcEndpoints.BSC.primary,
@@ -168,7 +167,6 @@ export default function HostsAndRPCScreen({ navigation }) {
     tempRPCEndpoints.ETH.primary = rpcEndpoints.ethereum;
     tempRPCEndpoints.POLYGON.primary = rpcEndpoints.polygon;
     tempRPCEndpoints.AVALANCHE.primary = rpcEndpoints.avalanche;
-    tempRPCEndpoints.FANTOM.primary = rpcEndpoints.fantom;
     tempRPCEndpoints.ARBITRUM.primary = rpcEndpoints.arbitrum;
     tempRPCEndpoints.OPTIMISM.primary = rpcEndpoints.optimism;
     tempRPCEndpoints.BSC.primary = rpcEndpoints.bsc;
@@ -394,26 +392,6 @@ export default function HostsAndRPCScreen({ navigation }) {
             key='avalanche'
             onChangeText={value => {
               setRPCEndpoints({ ...rpcEndpoints, avalanche: value });
-            }}
-            autoCorrect={false}
-            placeholderTextColor={'#C5C5C5'}
-            placeholder=''
-          />
-        </CyDView>
-        <CyDView className={'mt-[25px]'}>
-          <CyDText className={'text-[16px] font-black'}>
-            {ChainBackendNames.FANTOM}
-          </CyDText>
-          <CyDTextInput
-            className={clsx(
-              'mt-[10px] border-[1px] border-inputBorderColor rounded-[5px] p-[12px] text-[18px] font-nunito text-primaryTextColor',
-            )}
-            value={maskString(rpcEndpoints.fantom)}
-            editable={devMode}
-            autoCapitalize='none'
-            key='fantom'
-            onChangeText={value => {
-              setRPCEndpoints({ ...rpcEndpoints, fantom: value });
             }}
             autoCorrect={false}
             placeholderTextColor={'#C5C5C5'}

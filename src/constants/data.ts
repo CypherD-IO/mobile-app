@@ -15,7 +15,6 @@ export const gasFeeReservation: Record<ChainBackendNames, number> = {
   POLYGON: 0.02,
   BSC: 0.0002,
   AVALANCHE: 0.002,
-  FANTOM: 0.005,
   OPTIMISM: 0.00001,
   ARBITRUM: 0.00001,
   COSMOS: 0.1,
@@ -43,7 +42,6 @@ export const nativeTokenMapping: Record<ChainBackendNames, string> = {
   [ChainBackendNames.ETH]: 'Ethereum',
   [ChainBackendNames.POLYGON]: 'Matic',
   [ChainBackendNames.AVALANCHE]: 'Avalanche',
-  [ChainBackendNames.FANTOM]: 'Fantom',
   [ChainBackendNames.ARBITRUM]: 'Ethereum',
   [ChainBackendNames.OPTIMISM]: 'Ethereum',
   [ChainBackendNames.BSC]: 'Binance',
@@ -790,7 +788,6 @@ export const GAS_BUFFER_FACTOR_FOR_LOAD_MAX = 1.5;
 export const CardFeePercentage = {
   POLYGON: 0.5,
   AVALANCHE: 0.5,
-  FANTOM: 0.5,
   ETH: 0.5,
   ETH_GOERLI: 0.5,
   POLYGON_MUMBAI: 0.5,
@@ -821,7 +818,6 @@ export const CardFeePercentage = {
 export const SlippageFactor = {
   POLYGON: 0.003,
   AVALANCHE: 0.003,
-  FANTOM: 0.003,
   ETH: 0.003,
   ETH_GOERLI: 0.003,
   POLYGON_MUMBAI: 0.003,

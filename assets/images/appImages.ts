@@ -43,7 +43,6 @@ const POLYGON = require('./polygon.png');
 const SHARDEUM = require('./shardeum.png');
 const BIANCE = require('./binace.png');
 const AVALANCHE = require('./avalanche.png');
-const FANTOM = require('./fantom.png');
 const ARBITRUM = require('./arbitrum.png');
 const COSMOS = require('./cosmos_hub.png');
 const OPTIMISM = require('./optimism.png');
@@ -577,7 +576,6 @@ const AppImages = {
   SHARDEUM,
   BIANCE,
   AVALANCHE,
-  FANTOM,
   ARBITRUM,
   COSMOS,
   OPTIMISM,

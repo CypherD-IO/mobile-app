@@ -100,7 +100,6 @@ module.exports = {
       polygon: '#f5efff',
       binance: '#fff7e3',
       avalanche: '#fff6f5',
-      fantom: '#f4fbff',
       arbitrum: '#f1f4fa',
       optimism: '#fff0f0',
       shardeum: '#fff0f0',

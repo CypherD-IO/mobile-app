@@ -325,7 +325,6 @@ export default function SendTo(props: { navigation?: any; route?: any }) {
       binance: {},
       polygon: {},
       avalanche: {},
-      fantom: {},
       optimism: {},
       arbitrum: {},
       shardeum: {},

@@ -20,7 +20,6 @@ import {
   ChainBackendNames,
   CHAIN_POLYGON,
   CHAIN_ARBITRUM,
-  CHAIN_FTM,
   CHAIN_BSC,
 } from '../../constants/server';
 import ChooseChainModal from '../../components/v2/chooseChainModal';
@@ -203,7 +202,6 @@ export default function ShortcutsModal({ navigationRef }) {
         CHAIN_AVALANCHE,
         CHAIN_POLYGON,
         CHAIN_ARBITRUM,
-        CHAIN_FTM,
         CHAIN_BSC,
       ],
       currencyType: CurrencyTypes.INR,
@@ -240,7 +238,6 @@ export default function ShortcutsModal({ navigationRef }) {
         CHAIN_AVALANCHE,
         CHAIN_POLYGON,
         CHAIN_ARBITRUM,
-        CHAIN_FTM,
         CHAIN_BSC,
       ],
       currencyType: CurrencyTypes.FIAT,
@@ -561,9 +558,6 @@ export default function ShortcutsModal({ navigationRef }) {
           break;
         case ChainBackendNames.AVALANCHE:
           addressTypeQRCode = FundWalletAddressType.AVALANCHE;
-          break;
-        case ChainBackendNames.FANTOM:
-          addressTypeQRCode = FundWalletAddressType.FANTOM;
           break;
         case ChainBackendNames.ARBITRUM:
           addressTypeQRCode = FundWalletAddressType.ARBITRUM;

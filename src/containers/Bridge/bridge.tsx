@@ -255,8 +255,6 @@ export default function Bridge(props: { navigation?: any; route?: any }) {
         return 'https://www.covalenthq.com/static/images/icons/display-icons/avalanche-avax-logo.png';
       case ChainBackendNames.BSC:
         return 'https://www.covalenthq.com/static/images/icons/display-icons/binance-coin-bnb-logo.png';
-      case ChainBackendNames.FANTOM:
-        return 'https://www.covalenthq.com/static/images/icons/display-icons/fantom-ftm-logo.png';
       case ChainBackendNames.OPTIMISM:
         return 'https://www.covalenthq.com/static/images/icons/display-icons/ethereum-eth-logo.png';
       case ChainBackendNames.EVMOS:

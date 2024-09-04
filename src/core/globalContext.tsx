@@ -76,9 +76,6 @@ export const initialGlobalState: GlobalStateDef = {
       },
       primary: 'https://evmos-json-rpc.stakely.io',
     },
-    FANTOM: {
-      primary: 'https://rpc.ankr.com/fantom',
-    },
     JUNO: {
       otherUrls: {
         balance:

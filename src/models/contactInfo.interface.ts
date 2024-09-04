@@ -9,7 +9,6 @@ export interface ContactInfo {
   binance?: string[];
   polygon?: string[];
   avalanche?: string[];
-  fantom?: string[];
   optimism?: string[];
   arbitrum?: string[];
   noble?: string[];

@@ -27,7 +27,6 @@ import {
   CHAIN_POLYGON,
   CHAIN_AVALANCHE,
   CHAIN_BSC,
-  CHAIN_FTM,
   CHAIN_ARBITRUM,
   CHAIN_OPTIMISM,
   CHAIN_STARGAZE,
@@ -80,7 +79,6 @@ export default function QRCodeGenerator(props) {
       ...CHAIN_AVALANCHE,
       address: hdWalletContext.state.wallet.ethereum.address,
     },
-    { ...CHAIN_FTM, address: hdWalletContext.state.wallet.ethereum.address },
     {
       ...CHAIN_ARBITRUM,
       address: hdWalletContext.state.wallet.ethereum.address,
@@ -228,8 +226,6 @@ export default function QRCodeGenerator(props) {
         setSelectedChain(data[2]);
       } else if (walletAddressType === FundWalletAddressType.AVALANCHE) {
         setSelectedChain(data[3]);
-      } else if (walletAddressType === FundWalletAddressType.FANTOM) {
-        setSelectedChain(data[4]);
       } else if (walletAddressType === FundWalletAddressType.ARBITRUM) {
         setSelectedChain(data[5]);
       } else if (walletAddressType === FundWalletAddressType.OPTIMISM) {
@@ -370,7 +366,7 @@ export default function QRCodeGenerator(props) {
               </CyDText>
               <CyDText className={'text-[14px] text-center font-bold'}>
                 {selectedChain.chainName === 'ethereum'
-                  ? 'Ethereum, Polygon, Binance Smart Chain, zkSync Era, Base, Polygon zkEVM, Avalanche, Fantom, Optimism, Arbitrum, Evmos, Aurora, Moonbeam, Moonriver, Shardeum'
+                  ? 'Ethereum, Polygon, Binance Smart Chain, zkSync Era, Base, Polygon zkEVM, Avalanche, Optimism, Arbitrum, Evmos, Aurora, Moonbeam, Moonriver, Shardeum'
                   : selectedChain.name}
               </CyDText>
             </CyDView>

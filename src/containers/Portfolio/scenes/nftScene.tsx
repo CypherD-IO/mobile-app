@@ -5,10 +5,24 @@ import {
   FlatList,
   ScrollView,
   RefreshControl,
-  BackHandler
+  BackHandler,
 } from 'react-native';
-import Animated, { Extrapolate, SharedValue, interpolate, useAnimatedStyle, useSharedValue, withTiming } from 'react-native-reanimated';
-import { CyDAnimatedView, CyDFastImage, CyDImage, CyDText, CyDTouchView, CyDView } from '../../../styles/tailwindStyles';
+import Animated, {
+  Extrapolate,
+  SharedValue,
+  interpolate,
+  useAnimatedStyle,
+  useSharedValue,
+  withTiming,
+} from 'react-native-reanimated';
+import {
+  CyDAnimatedView,
+  CyDFastImage,
+  CyDImage,
+  CyDText,
+  CyDTouchView,
+  CyDView,
+} from '../../../styles/tailwindStyles';
 import { AnimatedTabView } from '../animatedComponents';
 import Loading from '../../../components/v2/loading';
 import clsx from 'clsx';
@@ -32,18 +46,18 @@ import { PortfolioBannerHeights } from '../../../hooks/useScrollManager';
 type ScrollEvent = NativeSyntheticEvent<NativeScrollEvent>;
 
 interface NFTSceneProps {
-  routeKey: string
-  scrollY: SharedValue<number>
-  trackRef: (key: string, ref: FlatList<any> | ScrollView) => void
-  onMomentumScrollBegin: (e: ScrollEvent) => void
-  onMomentumScrollEnd: (e: ScrollEvent) => void
-  onScrollEndDrag: (e: ScrollEvent) => void
-  selectedChain: string
+  routeKey: string;
+  scrollY: SharedValue<number>;
+  trackRef: (key: string, ref: FlatList<any> | ScrollView) => void;
+  onMomentumScrollBegin: (e: ScrollEvent) => void;
+  onMomentumScrollEnd: (e: ScrollEvent) => void;
+  onScrollEndDrag: (e: ScrollEvent) => void;
+  selectedChain: string;
   navigation: {
-    goBack: () => void
-    setOptions: ({ title }: { title: string }) => void
-    navigate: (screen: string, params?: {}) => void
-  }
+    goBack: () => void;
+    setOptions: ({ title }: { title: string }) => void;
+    navigate: (screen: string, params?: {}) => void;
+  };
   bannerHeight: PortfolioBannerHeights;
 }
 
@@ -56,12 +70,14 @@ const NFTScene = ({
   onScrollEndDrag,
   navigation,
   bannerHeight,
-  selectedChain
+  selectedChain,
 }: NFTSceneProps) => {
   const { t } = useTranslation();
   const { getWithAuth } = useAxios();
 
-  const hdWalletContext = useContext<HdWalletContextDef | null>(HdWalletContext);
+  const hdWalletContext = useContext<HdWalletContextDef | null>(
+    HdWalletContext,
+  );
   const ethereum = hdWalletContext?.state.wallet?.ethereum;
   const stargaze = hdWalletContext?.state.wallet?.stargaze;
 
@@ -96,7 +112,7 @@ const NFTScene = ({
         scrollViewRef.current.scrollTo({
           y: Math.max(
             Math.min(scrollY.value, OFFSET_TABVIEW + bannerHeight),
-            OFFSET_TABVIEW
+            OFFSET_TABVIEW,
           ),
           animated: false,
         });
@@ -133,53 +149,123 @@ const NFTScene = ({
   };
 
   const animatedStyle = useAnimatedStyle(() => {
-    const rotate = interpolate(rotateAnimation.value, [0, 1], [0, 90], Extrapolate.CLAMP);
+    const rotate = interpolate(
+      rotateAnimation.value,
+      [0, 1],
+      [0, 90],
+      Extrapolate.CLAMP,
+    );
     return {
-      transform: [{ rotate: `${rotate}deg` }]
+      transform: [{ rotate: `${rotate}deg` }],
     };
   });
 
   const handleAnimation = (toValue: number) => {
     rotateAnimation.value = withTiming(toValue, {
-      duration: 300
+      duration: 300,
     });
   };
 
-  const renderHeader = (section: { name: string, content: NFTHolding[] }, index: number, isActive: boolean) => {
+  const renderHeader = (
+    section: { name: string; content: NFTHolding[] },
+    index: number,
+    isActive: boolean,
+  ) => {
     const [firstNFTInCollection] = section.content;
     return (
-      <CyDView className={clsx('py-[15px]', { 'border-b-[1px] border-sepratorColor': !isActive })}>
-        <CyDView className={'flex flex-row justify-between items-center w-full'}>
+      <CyDView
+        className={clsx('py-[15px]', {
+          'border-b-[1px] border-sepratorColor': !isActive,
+        })}>
+        <CyDView
+          className={'flex flex-row justify-between items-center w-full'}>
           <CyDView className='flex flex-row w-[90%]'>
             <CyDView className={'items-start flex flex-col mr-[10px]'}>
-              <CyDFastImage defaultSource={AppImages.DEFAULT_NFT} source={{ uri: firstNFTInCollection.imageUrl }} className={'h-[50px] w-[50px] rounded-[50px] border-[1px] border-sepratorColor'} resizeMode='contain' />
-              <CyDFastImage className={'absolute w-[18px] h-[18px] right-0 bottom-0 bg-white rounded-[50px]'} source={renderChainImage(firstNFTInCollection.blockchain)} />
+              <CyDFastImage
+                defaultSource={AppImages.DEFAULT_NFT}
+                source={{ uri: firstNFTInCollection.imageUrl }}
+                className={
+                  'h-[50px] w-[50px] rounded-[50px] border-[1px] border-sepratorColor'
+                }
+                resizeMode='contain'
+              />
+              <CyDFastImage
+                className={
+                  'absolute w-[18px] h-[18px] right-0 bottom-0 bg-white rounded-[50px]'
+                }
+                source={renderChainImage(firstNFTInCollection.blockchain)}
+              />
             </CyDView>
             <CyDView className={'items-start flex flex-col justify-center'}>
               <CyDView className={'flex flex-col justify-start'}>
-                <CyDText className={'text-[16px] font-bold'}>{section.name}</CyDText>
+                <CyDText className={'text-[16px] font-bold'}>
+                  {section.name}
+                </CyDText>
                 <CyDText>{section.content.length}</CyDText>
               </CyDView>
             </CyDView>
           </CyDView>
           <CyDView className='flex items-end w-[10%]'>
-            {isActive && <CyDAnimatedView style={animatedStyle}><CyDFastImage className='h-[12px] w-[12px]' source={AppImages.OPTIONS_ARROW} resizeMode='contain' /></CyDAnimatedView>}
-            {!isActive && <CyDFastImage className={'h-[12px] w-[12px] opacity-70'} source={AppImages.OPTIONS_ARROW} />}
+            {isActive && (
+              <CyDAnimatedView style={animatedStyle}>
+                <CyDFastImage
+                  className='h-[12px] w-[12px]'
+                  source={AppImages.OPTIONS_ARROW}
+                  resizeMode='contain'
+                />
+              </CyDAnimatedView>
+            )}
+            {!isActive && (
+              <CyDFastImage
+                className={'h-[12px] w-[12px] opacity-70'}
+                source={AppImages.OPTIONS_ARROW}
+              />
+            )}
           </CyDView>
         </CyDView>
       </CyDView>
     );
   };
 
-  const renderContent = (section: { name: string, content: NFTHolding[] }, index: number, isActive: boolean) => {
+  const renderContent = (
+    section: { name: string; content: NFTHolding[] },
+    index: number,
+    isActive: boolean,
+  ) => {
     return (
-      <CyDView className={clsx('flex flex-row flex-wrap py-[25px] w-full', { 'border-b-[1px] border-sepratorColor': isActive, 'justify-around': section.content.length > 1 })}>
+      <CyDView
+        className={clsx('flex flex-row flex-wrap py-[25px] w-full', {
+          'border-b-[1px] border-sepratorColor': isActive,
+          'justify-around': section.content.length > 1,
+        })}>
         {section.content.map((holding: NFTHolding, index) => {
           return (
-            <CyDTouchView onPress={() => navigation.navigate(screenTitle.NFT_OVERVIEW_SCREEN, { nftHolding: holding })} className={'mx-[2px] mb-[15px]'} key={index}>
-              <CyDFastImage defaultSource={AppImages.DEFAULT_NFT} source={{ uri: holding.imageUrl }} className={'h-[150px] w-[150px] border-[1px] border-sepratorColor rounded-[12px]'} />
-              <CyDFastImage className={'absolute w-[30px] h-[30px] right-[8px] bottom-[30px] bg-white rounded-[50px]'} source={renderChainImage(holding.blockchain)} />
-              <CyDText className='ml-[5px] mt-[5px] font-bold text-center'>{holding.name !== '' ? `${holding.name.substring(0, 10)}...` : `${holding.tokenId.substring(0, 10)}...`}</CyDText>
+            <CyDTouchView
+              onPress={() =>
+                navigation.navigate(screenTitle.NFT_OVERVIEW_SCREEN, {
+                  nftHolding: holding,
+                })
+              }
+              className={'mx-[2px] mb-[15px]'}
+              key={index}>
+              <CyDFastImage
+                defaultSource={AppImages.DEFAULT_NFT}
+                source={{ uri: holding.imageUrl }}
+                className={
+                  'h-[150px] w-[150px] border-[1px] border-sepratorColor rounded-[12px]'
+                }
+              />
+              <CyDFastImage
+                className={
+                  'absolute w-[30px] h-[30px] right-[8px] bottom-[30px] bg-white rounded-[50px]'
+                }
+                source={renderChainImage(holding.blockchain)}
+              />
+              <CyDText className='ml-[5px] mt-[5px] font-bold text-center'>
+                {holding.name !== ''
+                  ? `${holding.name.substring(0, 10)}...`
+                  : `${holding.tokenId.substring(0, 10)}...`}
+              </CyDText>
             </CyDTouchView>
           );
         })}
@@ -222,7 +308,6 @@ const NFTScene = ({
           ETH: [],
           POLYGON: [],
           AVALANCHE: [],
-          FANTOM: [],
           ARBITRUM: [],
           OPTIMISM: [],
           BSC: [],
@@ -233,19 +318,22 @@ const NFTScene = ({
           OSMOSIS: [],
           JUNO: [],
           STARGAZE: [],
-          NOBLE: []
+          NOBLE: [],
         };
         if (selectedChain === 'STARS' || selectedChain === 'STARGAZE') {
           if (has(origNFTHoldings, 'STARGAZE')) {
-            tempFilter[selectedChain as ALL_CHAINS_TYPE] = origNFTHoldings.STARGAZE;
+            tempFilter[selectedChain as ALL_CHAINS_TYPE] =
+              origNFTHoldings.STARGAZE;
           }
         } else if (selectedChain === 'MATIC' || selectedChain === 'POLYGON') {
           if (has(origNFTHoldings, 'POLYGON')) {
-            tempFilter[selectedChain as ALL_CHAINS_TYPE] = origNFTHoldings.POLYGON;
+            tempFilter[selectedChain as ALL_CHAINS_TYPE] =
+              origNFTHoldings.POLYGON;
           }
         } else {
           if (has(origNFTHoldings, selectedChain)) {
-            tempFilter[selectedChain as ALL_CHAINS_TYPE] = origNFTHoldings[selectedChain as ALL_CHAINS_TYPE];
+            tempFilter[selectedChain as ALL_CHAINS_TYPE] =
+              origNFTHoldings[selectedChain as ALL_CHAINS_TYPE];
           }
         }
         setNFTHoldings(tempFilter);
@@ -255,7 +343,6 @@ const NFTScene = ({
         ETH: [],
         POLYGON: [],
         AVALANCHE: [],
-        FANTOM: [],
         ARBITRUM: [],
         OPTIMISM: [],
         BSC: [],
@@ -266,7 +353,7 @@ const NFTScene = ({
         OSMOSIS: [],
         JUNO: [],
         STARGAZE: [],
-        NOBLE: []
+        NOBLE: [],
       });
     }
   };
@@ -281,42 +368,72 @@ const NFTScene = ({
       });
     });
     const holdingsGrouped = groupBy(holdings, 'contractAddress');
-    const holdingsSections: Array<{ name: string, content: NFTHolding[] }> = [];
-    Object.keys(holdingsGrouped).forEach((group) => {
+    const holdingsSections: Array<{ name: string; content: NFTHolding[] }> = [];
+    Object.keys(holdingsGrouped).forEach(group => {
       const [firstNFTInGrouped] = holdingsGrouped[group];
       if (firstNFTInGrouped) {
-        holdingsSections.push({ name: renderCollectionName(firstNFTInGrouped), content: holdingsGrouped[group] });
+        holdingsSections.push({
+          name: renderCollectionName(firstNFTInGrouped),
+          content: holdingsGrouped[group],
+        });
       }
     });
     return (
       <CyDView className='mx-[20px]'>
         <CyDView>
-          {viewType === RenderViewType.LIST_VIEW && <CyDView>
-            <Accordion
-              sections={holdingsSections}
-              activeSections={activeSections}
-              renderHeader={renderHeader}
-              renderContent={renderContent}
-              onChange={updateSections}
-              underlayColor={'transparent'}
-            />
-          </CyDView>}
-          {viewType === RenderViewType.GRID_VIEW && <CyDView className={'flex flex-row flex-wrap flex-1 justify-around'}>
-            {holdingsSections.map((section, index) => {
-              const [firstNFTInSection] = section.content;
-              return (
-                <CyDView className={'my-[8px] bg-privacyMessageBackgroundColor rounded-[8px] p-[8px]'} key={index}>
-                  <CyDTouchView onPress={() => navigation.navigate(screenTitle.NFT_HOLDINGS_SCREEN, { nftHoldings: section.content })}>
-                    <CyDFastImage defaultSource={AppImages.DEFAULT_NFT} source={{ uri: firstNFTInSection?.imageUrl }} className={'h-[140px] w-[140px] rounded-[8px] border-[1px] border-sepratorColor'} />
-                    <CyDFastImage className={'absolute w-[30px] h-[30px] right-[8px] bottom-[8px] bg-white rounded-[50px]'} source={renderChainImage(firstNFTInSection?.blockchain)} />
-                  </CyDTouchView>
-                  <CyDView>
-                    <CyDText className={'font-bold text-center mt-[6px]'}>{renderCollectionName(firstNFTInSection)}</CyDText>
+          {viewType === RenderViewType.LIST_VIEW && (
+            <CyDView>
+              <Accordion
+                sections={holdingsSections}
+                activeSections={activeSections}
+                renderHeader={renderHeader}
+                renderContent={renderContent}
+                onChange={updateSections}
+                underlayColor={'transparent'}
+              />
+            </CyDView>
+          )}
+          {viewType === RenderViewType.GRID_VIEW && (
+            <CyDView
+              className={'flex flex-row flex-wrap flex-1 justify-around'}>
+              {holdingsSections.map((section, index) => {
+                const [firstNFTInSection] = section.content;
+                return (
+                  <CyDView
+                    className={
+                      'my-[8px] bg-privacyMessageBackgroundColor rounded-[8px] p-[8px]'
+                    }
+                    key={index}>
+                    <CyDTouchView
+                      onPress={() =>
+                        navigation.navigate(screenTitle.NFT_HOLDINGS_SCREEN, {
+                          nftHoldings: section.content,
+                        })
+                      }>
+                      <CyDFastImage
+                        defaultSource={AppImages.DEFAULT_NFT}
+                        source={{ uri: firstNFTInSection?.imageUrl }}
+                        className={
+                          'h-[140px] w-[140px] rounded-[8px] border-[1px] border-sepratorColor'
+                        }
+                      />
+                      <CyDFastImage
+                        className={
+                          'absolute w-[30px] h-[30px] right-[8px] bottom-[8px] bg-white rounded-[50px]'
+                        }
+                        source={renderChainImage(firstNFTInSection?.blockchain)}
+                      />
+                    </CyDTouchView>
+                    <CyDView>
+                      <CyDText className={'font-bold text-center mt-[6px]'}>
+                        {renderCollectionName(firstNFTInSection)}
+                      </CyDText>
+                    </CyDView>
                   </CyDView>
-                </CyDView>
-              );
-            })}
-          </CyDView>}
+                );
+              })}
+            </CyDView>
+          )}
         </CyDView>
       </CyDView>
     );
@@ -331,36 +448,76 @@ const NFTScene = ({
         onMomentumScrollEnd={onMomentumScrollEnd}
         onScrollEndDrag={onScrollEndDrag}
         onRef={scrollViewRef}
-        refreshControl={<RefreshControl refreshing={refreshing} onRefresh={onRefresh} progressViewOffset={bannerHeight} />}
-      >
-        {loading
-          ?
+        refreshControl={
+          <RefreshControl
+            refreshing={refreshing}
+            onRefresh={onRefresh}
+            progressViewOffset={bannerHeight}
+          />
+        }>
+        {loading ? (
           <CyDView className='w-full absolute top-[50px]'>
             <Loading />
           </CyDView>
-          : <CyDView className='border border-sepratorColor rounded-t-[24px]'>
-            {isEmpty(NFTHoldings) &&
+        ) : (
+          <CyDView className='border border-sepratorColor rounded-t-[24px]'>
+            {isEmpty(NFTHoldings) && (
               <CyDView className={'mt-[50%] flex items-center'}>
-                <CyDImage className={'h-[120px] w-[240px]'} source={AppImages.NFT_EMPTY_ILLUSTATION} />
-                <CyDText className={'text-center text-[24px] mt-[20px]'}>{t<string>('NO_NFTS_YET')}</CyDText>
-                <CyDText className={'text-center'}>{t<string>('PULL_DOWN_TO_REFRESH_PASCAL_CASE')}</CyDText>
-              </CyDView>}
-            {!isEmpty(NFTHoldings) &&
+                <CyDImage
+                  className={'h-[120px] w-[240px]'}
+                  source={AppImages.NFT_EMPTY_ILLUSTATION}
+                />
+                <CyDText className={'text-center text-[24px] mt-[20px]'}>
+                  {t<string>('NO_NFTS_YET')}
+                </CyDText>
+                <CyDText className={'text-center'}>
+                  {t<string>('PULL_DOWN_TO_REFRESH_PASCAL_CASE')}
+                </CyDText>
+              </CyDView>
+            )}
+            {!isEmpty(NFTHoldings) && (
               <CyDView>
-                <CyDView className={'flex flex-row my-[12px] justify-between items-center mx-[20px] w-[90%]'}>
+                <CyDView
+                  className={
+                    'flex flex-row my-[12px] justify-between items-center mx-[20px] w-[90%]'
+                  }>
                   <CyDView>
-                    <CyDText className={'text-[24px] font-extrabold'}>{t('MY_COLLECTIONS')}</CyDText>
+                    <CyDText className={'text-[24px] font-extrabold'}>
+                      {t('MY_COLLECTIONS')}
+                    </CyDText>
                   </CyDView>
                   <CyDView className={'flex flex-row'}>
-                    <CyDTouchView className={clsx('p-[10px]', { 'border-[1px] border-gray-500 rounded-[6px]': viewType === RenderViewType.GRID_VIEW })} onPress={() => setViewType(RenderViewType.GRID_VIEW)}><CyDFastImage className={'h-[15px] w-[15px]'} source={AppImages.GRID_ICON} /></CyDTouchView>
-                    <CyDTouchView className={clsx('p-[10px]', { 'border-[1px] border-gray-500 rounded-[6px]': viewType === RenderViewType.LIST_VIEW })} onPress={() => setViewType(RenderViewType.LIST_VIEW)}><CyDFastImage className={'h-[15px] w-[15px]'} source={AppImages.LIST_ICON} /></CyDTouchView>
+                    <CyDTouchView
+                      className={clsx('p-[10px]', {
+                        'border-[1px] border-gray-500 rounded-[6px]':
+                          viewType === RenderViewType.GRID_VIEW,
+                      })}
+                      onPress={() => setViewType(RenderViewType.GRID_VIEW)}>
+                      <CyDFastImage
+                        className={'h-[15px] w-[15px]'}
+                        source={AppImages.GRID_ICON}
+                      />
+                    </CyDTouchView>
+                    <CyDTouchView
+                      className={clsx('p-[10px]', {
+                        'border-[1px] border-gray-500 rounded-[6px]':
+                          viewType === RenderViewType.LIST_VIEW,
+                      })}
+                      onPress={() => setViewType(RenderViewType.LIST_VIEW)}>
+                      <CyDFastImage
+                        className={'h-[15px] w-[15px]'}
+                        source={AppImages.LIST_ICON}
+                      />
+                    </CyDTouchView>
                   </CyDView>
                 </CyDView>
                 <CyDView>
                   <RenderNFTHoldings />
                 </CyDView>
-              </CyDView>}
-          </CyDView>}
+              </CyDView>
+            )}
+          </CyDView>
+        )}
       </AnimatedTabView>
     </CyDView>
   );

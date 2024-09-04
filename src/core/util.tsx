@@ -6,7 +6,6 @@ import {
   CHAIN_AVALANCHE,
   CHAIN_POLYGON,
   CHAIN_BSC,
-  CHAIN_FTM,
   CHAIN_EVMOS,
   CHAIN_OPTIMISM,
   Chain,
@@ -136,8 +135,6 @@ export function getExplorerUrlFromBackendNames(chain: string, hash: string) {
       return `https://moonbeam.moonscan.io/tx/${hash}`;
     case ChainBackendNames.MOONRIVER:
       return `https://moonriver.moonscan.io/tx/${hash}`;
-    case ChainBackendNames.FANTOM:
-      return `https://ftmscan.com/tx/${hash}`;
     case ChainBackendNames.EVMOS:
       return `https://escan.live/tx/${hash}`;
     case ChainBackendNames.COSMOS:
@@ -188,8 +185,6 @@ export function getExplorerUrl(
       return `https://bscscan.com/tx/${hash}`;
     case CHAIN_POLYGON.symbol:
       return `https://polygonscan.com/tx/${hash}`;
-    case CHAIN_FTM.symbol:
-      return `https://ftmscan.com/tx/${hash}`;
     case CHAIN_MOONBEAM.symbol:
       return `https://moonbeam.moonscan.io/tx/${hash}`;
     case CHAIN_MOONRIVER.symbol:
@@ -237,8 +232,6 @@ export function getNftExplorerUrl(
       return `https://bscscan.com/address/${contractAddress}`;
     case CHAIN_ARBITRUM.backendName:
       return `https://arbitrum.nftscan.com/${contractAddress}`;
-    case CHAIN_FTM.backendName:
-      return `https://ftmscan.com/address/${contractAddress}`;
     case CHAIN_OPTIMISM.backendName:
       return `https://optimistic.etherscan.io/address/${contractAddress}`;
     case CHAIN_STARGAZE.backendName:
@@ -745,9 +738,6 @@ export const getChain = (chain: string): Chain => {
       break;
     case 'avalanche':
       blockchain = CHAIN_AVALANCHE;
-      break;
-    case 'fantom':
-      blockchain = CHAIN_FTM;
       break;
     case 'arbitrum':
       blockchain = CHAIN_ARBITRUM;

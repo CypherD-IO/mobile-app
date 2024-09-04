@@ -10,7 +10,6 @@ import {
   CHAIN_COSMOS,
   CHAIN_ETH,
   CHAIN_EVMOS,
-  CHAIN_FTM,
   CHAIN_JUNO,
   CHAIN_OPTIMISM,
   CHAIN_OSMOSIS,
@@ -233,15 +232,6 @@ export function AddressBook({ route, navigation }) {
                 bGC={'#fff6f5'}
                 navigation={navigation}
                 addressTypeQRCode={FundWalletAddressType.AVALANCHE}
-              />
-
-              <AddressBookContainer
-                chain={CHAIN_FTM.name}
-                wallet={ethereum}
-                logo={AppImages.FANTOM}
-                bGC={'#f4fbff'}
-                navigation={navigation}
-                addressTypeQRCode={FundWalletAddressType.FANTOM}
               />
 
               <AddressBookContainer

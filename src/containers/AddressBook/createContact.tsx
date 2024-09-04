@@ -147,11 +147,6 @@ export const CreateContact = ({ route, navigation }: RouteProps) => {
       placeHolder: t('ETHEREUM_ADDRESS_PLACEHOLDER'),
       logo: AppImages.AVALANCHE,
     },
-    fantom: {
-      label: t(`${ChainNames.FANTOM.toUpperCase()} ADDRESS`),
-      placeHolder: t('ETHEREUM_ADDRESS_PLACEHOLDER'),
-      logo: AppImages.FANTOM,
-    },
     optimism: {
       label: t(`${ChainNames.OPTIMISM.toUpperCase()} ADDRESS`),
       placeHolder: t('ETHEREUM_ADDRESS_PLACEHOLDER'),
@@ -411,18 +406,6 @@ export const CreateContact = ({ route, navigation }: RouteProps) => {
           .string()
           .test('isValidAddress', t('INVALID_ADDRESS'), avalanche =>
             validateAddress(avalanche, isEthereumAddress),
-          ),
-      )
-      .test('isDuplicate', t('DUPLICATE_FOUND'), addressList =>
-        checkForDuplicates(addressList),
-      ),
-    fantom: yup
-      .array()
-      .of(
-        yup
-          .string()
-          .test('isValidAddress', t('INVALID_ADDRESS'), fantom =>
-            validateAddress(fantom, isEthereumAddress),
           ),
       )
       .test('isDuplicate', t('DUPLICATE_FOUND'), addressList =>

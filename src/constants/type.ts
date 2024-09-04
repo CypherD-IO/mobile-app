@@ -4,7 +4,6 @@ export type EVM_ONLY_CHAINS_TYPE =
   | 'ETH'
   | 'POLYGON'
   | 'AVALANCHE'
-  | 'FANTOM'
   | 'ARBITRUM'
   | 'OPTIMISM'
   | 'BSC'
