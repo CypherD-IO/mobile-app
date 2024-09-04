@@ -21,9 +21,8 @@ export default function useCardUtilities() {
     } else if (has(profile, CardProviders.PAYCADDY)) {
       const isRcEnabled = await checkIsRCEnabled();
       if (
-        !get(profile, [CardProviders.PAYCADDY, 'cards']) &&
-        (isRcEnabled ||
-          get(profile, [CardProviders.PAYCADDY, 'isRcUpgradable']))
+        isRcEnabled ||
+        get(profile, [CardProviders.PAYCADDY, 'isRcUpgradable'])
       ) {
         return CardProviders.REAP_CARD;
       }
