@@ -687,24 +687,13 @@ export default function BridgeFundCardScreen({ route }: { route: any }) {
         !GASLESS_CHAINS.includes(chainDetails.backendName)
       ) {
         try {
-          let gasDetails;
-          if (chainDetails.chainName === ChainNames.EVMOS) {
-            gasDetails = await estimateGasForEvmosIBC({
-              toAddress: get(cosmosAddresses, ChainNames.OSMOSIS),
-              toChain: CHAIN_OSMOSIS,
-              amount,
-              denom,
-              contractDecimals,
-            });
-          } else {
-            gasDetails = {
-              gasFeeInCrypto: get(
-                gasFeeReservation,
-                [chainDetails.chainName, 'backendName'],
-                0.1,
-              ),
-            };
-          }
+          const gasDetails = {
+            gasFeeInCrypto: get(
+              gasFeeReservation,
+              [chainDetails.chainName, 'backendName'],
+              0.1,
+            ),
+          };
 
           if (gasDetails) {
             const gasFeeEstimationForTxn = String(gasDetails.gasFeeInCrypto);
