@@ -135,11 +135,11 @@ export default function DebitCardScreen(props: RouteProps) {
   const shouldCheckApplication = () => {
     if (provider === CardProviders.REAP_CARD) {
       return (
-        (get(cardProfile, provider as CardProviders)?.applicationStatus ===
+        get(cardProfile, provider as CardProviders)?.applicationStatus ===
           CardApplicationStatus.CREATED ||
-          get(cardProfile, provider as CardProviders)?.applicationStatus ===
-            CardApplicationStatus.KYC_INITIATED) &&
-        !get(cardProfile, ['cardNotification', 'isTelegramAllowed'], false)
+        (get(cardProfile, provider as CardProviders)?.applicationStatus ===
+          CardApplicationStatus.KYC_INITIATED &&
+          !get(cardProfile, ['cardNotification', 'isTelegramAllowed'], false))
       );
     }
     return (
@@ -194,7 +194,10 @@ export default function DebitCardScreen(props: RouteProps) {
         <CardWailtList navigation={props.navigation} />
       )}
       {!isReadOnlyWallet && currentCardProvider === CardProviders.REAP_CARD && (
-        <SelectPlan _navigation={props.navigation} />
+        <SelectPlan
+          _navigation={props.navigation}
+          _toPage={screenTitle.CARD_SIGNUP_SCREEN}
+        />
       )}
     </CyDView>
   );
