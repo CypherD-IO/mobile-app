@@ -23,7 +23,6 @@ import Backup from '../containers/Auth/Backup';
 import BridgeTokenScreen from '../containers/Bridge/bridgeToken';
 import EnterAmount from '../containers/SendTo/enterAmount';
 import SendTo from '../containers/SendTo';
-import StakingValidators from '../containers/Staking/stakingValidators';
 import StakingDelegation from '../containers/Staking/delegation';
 import StakingReDelegate from '../containers/Staking/reDelegate';
 import ReStake from '../containers/Staking/reStake';

@@ -96,7 +96,6 @@ module.exports = {
       juno: '#ebebeb',
       stargaze: '#ebebeb',
       noble: '#ebebeb',
-      evmos: '#fef3f1',
       polygon: '#f5efff',
       binance: '#fff7e3',
       avalanche: '#fff6f5',

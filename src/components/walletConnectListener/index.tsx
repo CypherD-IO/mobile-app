@@ -15,7 +15,6 @@ import {
   setConnectionType,
   setRefreshToken,
 } from '../../core/asyncStorage';
-import { ethToEvmos } from '@tharsis/address-converter';
 import { hostWorker } from '../../global';
 import useValidSessionToken from '../../hooks/useValidSessionToken';
 import { useAccount, useDisconnect, useSignMessage } from 'wagmi';
@@ -115,17 +114,6 @@ export const WalletConnectListener: React.FC = ({ children }) => {
         address,
         // privateKey: _NO_CYPHERD_CREDENTIAL_AVAILABLE_,
         chain: 'ethereum',
-        publicKey: '',
-        rawAddress: '',
-        algo: '',
-      },
-    });
-    hdWalletContext.dispatch({
-      type: 'LOAD_WALLET',
-      value: {
-        address: ethToEvmos(String(address)),
-        // privateKey: _NO_CYPHERD_CREDENTIAL_AVAILABLE_,
-        chain: 'evmos',
         publicKey: '',
         rawAddress: '',
         algo: '',

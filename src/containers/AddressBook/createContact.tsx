@@ -24,7 +24,6 @@ import { Formik } from 'formik';
 import * as yup from 'yup';
 import clsx from 'clsx';
 import { setContactBookData } from '../../core/asyncStorage';
-import { isEvmosAddress } from '../utilities/evmosSendUtility';
 import { isCosmosAddress } from '../utilities/cosmosSendUtility';
 import { isJunoAddress } from '../utilities/junoSendUtility';
 import { isOsmosisAddress } from '../utilities/osmosisSendUtility';
@@ -106,11 +105,6 @@ export const CreateContact = ({ route, navigation }: RouteProps) => {
       label: t(`${ChainNames.COSMOS.toUpperCase()} ADDRESS`),
       placeHolder: t('COSMOS_ADDRESS_PLACEHOLDER'),
       logo: AppImages.COSMOS_LOGO,
-    },
-    evmos: {
-      label: t(`${ChainNames.EVMOS.toUpperCase()} ADDRESS`),
-      placeHolder: t('EVMOS_ADDRESS_PLACEHOLDER'),
-      logo: AppImages.EVMOS_LOGO,
     },
     juno: {
       label: t(`${ChainNames.JUNO.toUpperCase()} ADDRESS`),
@@ -274,18 +268,6 @@ export const CreateContact = ({ route, navigation }: RouteProps) => {
           .string()
           .test('isValidAddress', t('INVALID_ADDRESS'), cosmos =>
             validateAddress(cosmos, isCosmosAddress),
-          ),
-      )
-      .test('isDuplicate', t('DUPLICATE_FOUND'), addressList =>
-        checkForDuplicates(addressList),
-      ),
-    evmos: yup
-      .array()
-      .of(
-        yup
-          .string()
-          .test('isValidAddress', t('INVALID_ADDRESS'), evmos =>
-            validateAddress(evmos, isEvmosAddress),
           ),
       )
       .test('isDuplicate', t('DUPLICATE_FOUND'), addressList =>

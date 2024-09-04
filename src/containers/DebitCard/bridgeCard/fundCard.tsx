@@ -140,8 +140,7 @@ export default function BridgeFundCardScreen({ route }: { route: any }) {
   const { showModal, hideModal } = useGlobalModalContext();
   const { postWithAuth } = useAxios();
   const isFocused = useIsFocused();
-  const { estimateGasForEvm, estimateGasForEvmosIBC, estimateGasForSolana } =
-    useGasService();
+  const { estimateGasForEvm, estimateGasForSolana } = useGasService();
   const [suggestedAmounts, setSuggestedAmounts] = useState<
     Record<string, string>
   >({ low: '', med: '', high: '' });

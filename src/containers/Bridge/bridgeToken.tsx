@@ -260,10 +260,7 @@ export default function BridgeTokebScreen(props) {
       to_address: walletaddress,
       from_chain: chainSelected.backendName,
       to_chain: toValueItem_final.backendName,
-      from_token_address:
-        chainSelected.backendName === 'EVMOS' && fromTokenItem.name == 'Evmos'
-          ? '0xeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee'
-          : fromTokenItem.contractAddress,
+      from_token_address: fromTokenItem.contractAddress,
       to_token_address: toToken_final[0].contract_address,
       from_token_decimal: fromTokenItem.contractDecimals,
       to_token_decimal: toToken_final[0].contract_decimals,
@@ -1026,8 +1023,6 @@ function getChainLogo(chain) {
       return AppImages.OPTIMISM;
     case 'Arbitrum':
       return AppImages.ARBITRUM;
-    case 'Evmos':
-      return AppImages.USDC_EVMOS;
     case 'Cosmos':
       return AppImages.COSMOS;
     case 'Shardeum':

@@ -7,7 +7,6 @@ import {
   arbitrum,
   avalanche,
   bsc,
-  evmos,
   zkSync,
   base,
   polygonZkEvm,
@@ -38,7 +37,6 @@ export enum ChainBackendNames {
   ARBITRUM = 'ARBITRUM',
   OPTIMISM = 'OPTIMISM',
   BSC = 'BSC',
-  EVMOS = 'EVMOS',
   COSMOS = 'COSMOS',
   OSMOSIS = 'OSMOSIS',
   JUNO = 'JUNO',
@@ -59,7 +57,6 @@ export enum ChainBackendNames {
 }
 
 export enum CosmosStakingTokens {
-  EVMOS = 'evmos',
   COSMOS = 'atom',
   OSMOSIS = 'osmosis',
   JUNO = 'juno',
@@ -69,7 +66,6 @@ export enum CosmosStakingTokens {
 
 export enum FundWalletAddressType {
   EVM = 'EVM',
-  EVMOS = 'EVMOS',
   COSMOS = 'COSMOS',
   OSMOSIS = 'OSMOSIS',
   JUNO = 'JUNO',
@@ -160,21 +156,6 @@ export const CHAIN_COLLECTION: Chain = {
   chain_id: '',
   native_token_address: '',
   chainIdNumber: 0,
-};
-
-export const CHAIN_EVMOS: Chain = {
-  chainName: 'evmos',
-  name: 'Evmos',
-  symbol: 'EVMOS',
-  id: 6,
-  logo_url: AppImages.EVMOS_LOGO,
-  backendName: ChainBackendNames.EVMOS,
-  chain_id: '0x2329',
-  native_token_address: '0xeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee',
-  secondaryAddress: '0x93581991f68dbae1ea105233b67f7fa0d6bdee7b',
-  nativeTokenLogoUrl:
-    'https://public.cypherd.io/assets/blockchains/evmos/info/logo.png',
-  chainIdNumber: 9001,
 };
 
 export const CHAIN_ARBITRUM: Chain = {
@@ -467,7 +448,6 @@ export const SUPPORTED_EVM_CHAINS = [
 ];
 export const CHAIN_NAMES = [
   'ethereum',
-  'evmos',
   'cosmos',
   'osmosis',
   'juno',
@@ -480,7 +460,6 @@ export const CHAIN_NAMES = [
 ];
 export const COSMOS_CHAINS = [
   'cosmos',
-  'evmos',
   'osmosis',
   'juno',
   'stargaze',
@@ -506,7 +485,6 @@ export const ALL_CHAINS: Chain[] = [
   CHAIN_AVALANCHE,
   CHAIN_OPTIMISM,
   CHAIN_ARBITRUM,
-  CHAIN_EVMOS,
   CHAIN_COSMOS,
   CHAIN_OSMOSIS,
   CHAIN_JUNO,
@@ -578,7 +556,6 @@ export const chainIdNumberMapping: Record<number, Chain> = {
   43114: CHAIN_AVALANCHE,
   10: CHAIN_OPTIMISM,
   42161: CHAIN_ARBITRUM,
-  9001: CHAIN_EVMOS,
   324: CHAIN_ZKSYNC_ERA,
   8453: CHAIN_BASE,
   1101: CHAIN_POLYGON_ZKEVM,
@@ -593,7 +570,6 @@ export const EVM_CHAINS_BACKEND_NAMES: ChainBackendNames[] = [
   ChainBackendNames.AVALANCHE,
   ChainBackendNames.OPTIMISM,
   ChainBackendNames.ARBITRUM,
-  ChainBackendNames.EVMOS,
   ChainBackendNames.SHARDEUM,
   ChainBackendNames.SHARDEUM_SPHINX,
   ChainBackendNames.ZKSYNC_ERA,
@@ -611,10 +587,8 @@ export const PORTFOLIO_CHAINS_BACKEND_NAMES = [
   ChainBackendNames.AVALANCHE,
   ChainBackendNames.OPTIMISM,
   ChainBackendNames.ARBITRUM,
-  ChainBackendNames.EVMOS,
   // ChainBackendNames.SHARDEUM,
   ChainBackendNames.SHARDEUM_SPHINX,
-  // ChainBackendNames.EVMOS,
   ChainBackendNames.COSMOS,
   ChainBackendNames.JUNO,
   ChainBackendNames.NOBLE,
@@ -639,7 +613,6 @@ export const CARD_CHAINS: Chain[] = [
   CHAIN_AVALANCHE,
   CHAIN_OPTIMISM,
   CHAIN_ARBITRUM,
-  CHAIN_EVMOS,
   CHAIN_COSMOS,
   CHAIN_OSMOSIS,
   CHAIN_JUNO,
@@ -658,7 +631,6 @@ export const CARD_CHAINS: Chain[] = [
 ];
 
 export const IBC_CHAINS: Chain[] = [
-  CHAIN_EVMOS,
   CHAIN_COSMOS,
   CHAIN_OSMOSIS,
   CHAIN_JUNO,
@@ -673,7 +645,6 @@ export const ALL_CHAINS_WITH_COLLECTION = [CHAIN_COLLECTION, ...ALL_CHAINS];
 
 export enum ChainNames {
   ETH = 'ethereum',
-  EVMOS = 'evmos',
   COSMOS = 'cosmos',
   OSMOSIS = 'osmosis',
   JUNO = 'juno',
@@ -703,7 +674,6 @@ export enum ChainNameMapping {
   ETH = 'eth',
   POLYGON = 'polygon',
   AVALANCHE = 'avalanche',
-  EVMOS = 'evmos',
   OPTIMISM = 'optimism',
   ARBITRUM = 'arbitrum',
   COSMOS = 'cosmos',
@@ -733,7 +703,6 @@ export const ChainConfigMapping = {
   ethereum: CHAIN_ETH,
   polygon: CHAIN_POLYGON,
   avalanche: CHAIN_AVALANCHE,
-  evmos: CHAIN_EVMOS,
   optimism: CHAIN_OPTIMISM,
   arbitrum: CHAIN_ARBITRUM,
   cosmos: CHAIN_COSMOS,
@@ -764,7 +733,6 @@ export enum QRScannerScreens {
 
 export enum NotificationEvents {
   BEEFY_FINANCE = 'BEEFY_FINANCE',
-  EVMOS_STAKING = 'EVMOS_STAKING',
   COSMOS_STAKING = 'COSMOS_STAKING',
   OSMOSIS_STAKING = 'OSMOSIS_STAKING',
   JUNO_STAKING = 'JUNO_STAKING',
@@ -783,7 +751,6 @@ export const ChainNameToContactsChainNameMapping = {
   Polygon: 'polygon',
   'Binance Smart Chain': 'binance',
   Avalanche: 'avalanche',
-  Evmos: 'evmos',
   'Arbitrum One': 'arbitrum',
   'Shardeum Liberty 2.0': 'shardeum',
   'Shardeum Sphinx': 'shardeum_sphinx',
@@ -881,12 +848,6 @@ export const deFiPositionTypes = [
 ];
 
 export const OP_ETH_ADDRESS = '0xdeaddeaddeaddeaddeaddeaddeaddeaddead0000';
-export const ACCOUNT_DETAILS_INFO =
-  'https://api-evmos-ia.cosmosia.notional.ventures/cosmos/auth/v1beta1/accounts';
-export const SIMULATION_ENDPOINT =
-  'https://api-evmos-ia.cosmosia.notional.ventures/cosmos/tx/v1beta1/simulate';
-export const TRANSACTION_ENDPOINT =
-  'https://api-evmos-ia.cosmosia.notional.ventures/cosmos/tx/v1beta1/txs';
 
 export interface NetworkInterface {
   [key: string]: any;
@@ -981,18 +942,6 @@ export const walletConnectChainData: Record<string, NetworkInterface> = {
     rpcUrls: ['https://mainnet.optimism.io'],
     blockExplorerUrls: ['https://optimistic.etherscan.io/'],
     chainConfig: optimism,
-  },
-  EVMOS: {
-    chainId: `0x${Number(9001).toString(16)}`,
-    chainName: 'Evmos',
-    nativeCurrency: {
-      name: 'Evmos',
-      symbol: 'EVMOS',
-      decimals: 18,
-    },
-    rpcUrls: ['https://eth.bd.evmos.org:8545'],
-    blockExplorerUrls: ['https://evm.evmos.org'],
-    chainConfig: evmos,
   },
   ZKSYNC_ERA: {
     chainId: '0x144',
@@ -1343,19 +1292,6 @@ export const STABLE_TOKEN_CHAIN_MAP = new Map([
         name: 'Dai',
         coingeckoId: 'dai',
         logo: 'https://assets.coingecko.com/coins/images/9956/large/Badge_Dai.png?1687143508',
-      },
-    ],
-  ],
-  [
-    'EVMOS',
-    [
-      {
-        contractAddress: '0x51e44ffad5c2b122c8b635671fcc8139dc636e82',
-        decimal: 18,
-        symbol: 'USDC',
-        name: 'USD Coin',
-        coingeckoId: 'usd-coin',
-        logo: 'https://assets.coingecko.com/coins/images/6319/large/USD_Coin_icon.png?1547042389',
       },
     ],
   ],
