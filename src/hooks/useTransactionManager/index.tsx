@@ -425,7 +425,7 @@ export default function useTransactionManager() {
           signer,
         })) as any;
 
-        const rpc = getCosmosRpc(backendName, true);
+        const rpc = getCosmosRpc(backendName as ChainBackendNames);
 
         const signingClient = await getCosmosSigningClient(
           fromChain,
@@ -473,6 +473,7 @@ export default function useTransactionManager() {
         };
       }
     } catch (e) {
+      console.log('🚀 ~ e:', e);
       return { isError: true, hash: '', error: e };
     }
   };
@@ -1345,6 +1346,7 @@ export default function useTransactionManager() {
             resolve({ isError: false, hash });
           }
         } catch (e: any) {
+          console.log('🚀 ~ void ~ e:', e);
           resolve({ isError: true, error: e });
         }
       })();

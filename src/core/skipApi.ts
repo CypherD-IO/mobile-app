@@ -275,7 +275,10 @@ export default function useSkipApiBridge() {
             });
 
             if (approvalResp.isError) {
-              return { isError: true, error: 'Error approving allowance' };
+              return {
+                isError: true,
+                error: approvalResp.error,
+              };
             }
           } else {
             return { isError: true, error: 'Token approvel rejected by user' };
