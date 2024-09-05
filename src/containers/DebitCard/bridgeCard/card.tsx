@@ -243,7 +243,7 @@ export default function CardScreen({
           card.status !== 'rcUpgradable' &&
           cardProfile.provider === CardProviders.REAP_CARD && (
             <CyDView className='ml-[12px] mb-[12px]'>
-              <CyDText className='font-bold text-[24px]'>
+              <CyDText className='font-semibold text-[18px]'>
                 {' xxxx ' + card.last4}
               </CyDText>
             </CyDView>
