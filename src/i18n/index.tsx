@@ -1056,6 +1056,9 @@ const resources = {
       CONTACT_CYPHER_SUPPORT: 'Contact Cypher Support',
       VERIFY_LATER: 'Verify Later',
       CYPHER_CARD_REFERRALS: 'Card Referrals',
+      CYPHER_CARD_REWARDS: 'Cypher Rewards',
+      CHECK_SPAM_FOLDER:
+        "Can't find the OTP? Remember to check your spam folder too.",
       TELEGRAM_NOTIFICATION: 'Telegram',
       TOGGLE_TELEGRAM_NOTIFICATION_SUCCESS:
         'Telegram Notification Status Update Success',
@@ -1160,6 +1163,7 @@ const resources = {
         '(1) There is currently a waiting list for metal cards. To join, please contact support.',
       COMPARISION_NOTE_2:
         '(2) Users can request a higher spending limit. If you have specific requirements, reach out to support increasing your limit.',
+      COMPARISION_NOTE_3: '(3) Shipping Charges Apply for add on cards',
       GET_YOUR_CARD: 'Get your Card',
       GET_YOUR_CARD_SUB: 'Here is  what you need to do next',
       ENTER_BASIC_DETAILS: 'Enter your Basic Details',
@@ -1200,6 +1204,7 @@ const resources = {
         'I acknowledge and authorize the deduction of the above mentioned amount from my card and agree to the ',
       DOWNGRADE_PLAN_CONSENT:
         'I understand that downgrading will revoke all my premium feature access, and accept the ',
+      ZERO_RESTRICTION_MODE_TITLE: 'Zero Restriction Mode',
     },
   },
 };

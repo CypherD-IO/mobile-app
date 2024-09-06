@@ -421,6 +421,31 @@ export default function Options(props: {
               )} */}
 
               {!isReadOnlyWallet && (
+                <>
+                  <OptionsContainer
+                    sentryLabel={'referrals'}
+                    onPress={() => {
+                      props.navigation.navigate(C.screenTitle.REWARDS, {
+                        fromOptionsStack: true,
+                      });
+                    }}
+                    title={t('CYPHER_CARD_REWARDS')}
+                    logo={AppImages.REWARDS_ICON}
+                    iW={150}
+                    imageStyle={'-ml-[4px]'}
+                  />
+                  <DynamicView
+                    dynamic
+                    dynamicWidth
+                    dynamicHeightFix
+                    height={1}
+                    width={88}
+                    bGC={Colors.portfolioBorderColor}
+                  />
+                </>
+              )}
+
+              {!isReadOnlyWallet && (
                 <OptionsContainer
                   sentryLabel={'referrals'}
                   onPress={() => {

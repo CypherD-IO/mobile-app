@@ -28,7 +28,7 @@ import { screenTitle } from '../../../constants';
 import { useNavigation } from '@react-navigation/native';
 import { GlobalContext } from '../../../core/globalContext';
 import { ICardTransaction } from '../../../models/card.model';
-import { capitalize } from 'lodash';
+import { capitalize, split } from 'lodash';
 import { t } from 'i18next';
 import useCardUtilities from '../../../hooks/useCardUtilities';
 import { CardProfile } from '../../../models/cardProfile.model';
@@ -193,9 +193,7 @@ export default function TransactionDetails({
         }
       }, 'XXXX') ?? 'XXXX';
     const transactionId =
-      transaction.id && String(transaction.id)?.length <= 10
-        ? transaction.id
-        : String(transaction.id).substring(String(transaction.id).length - 10);
+      (transaction.id && split(transaction.id, ':')[1]) || transaction.id;
     const debitOrRefundDetails = [
       {
         icon: AppImages.PAYMENT_DETAILS,
@@ -258,7 +256,9 @@ export default function TransactionDetails({
   } else if (transaction.type === CardTransactionTypes.CREDIT) {
     const dataIsAvailable = transaction.tokenData !== undefined;
     const type = transaction.type;
-    const id = dataIsAvailable ? transaction.id : 'N/A';
+    const id = dataIsAvailable
+      ? (transaction.id && split(transaction.id, ':')[1]) || transaction.id
+      : 'N/A';
     const chain = dataIsAvailable ? transaction.tokenData.chain : 'N/A';
     const hash = dataIsAvailable ? transaction.tokenData.hash : 'N/A';
     const tokenNos = dataIsAvailable ? transaction.tokenData.tokenNos : 'N/A';

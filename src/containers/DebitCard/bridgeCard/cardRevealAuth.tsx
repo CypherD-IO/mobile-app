@@ -186,6 +186,9 @@ export default function CardRevealAuthScreen(props: {
               : 'CARD_SENT_OTP',
           )}
         </CyDText>
+        <CyDText className='text-[12px] mt-[12px]'>
+          {t<string>('CHECK_SPAM_FOLDER')}
+        </CyDText>
       </CyDView>
     );
   };

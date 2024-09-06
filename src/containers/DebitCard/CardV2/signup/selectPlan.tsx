@@ -647,7 +647,7 @@ export default function SelectPlan({
                         {/* add ons */}
                         <CyDView className='my-[16px] h-[42px] flex flex-col justify-center items-start pl-[12px]'>
                           <CyDText className='text-[12px] font-medium text-black text-center pl-[12px] text-wrap '>
-                            {'Upto 3 cards'}
+                            {'Upto 3 cards *'}
                           </CyDText>
                         </CyDView>
                       </CyDView>
@@ -659,6 +659,9 @@ export default function SelectPlan({
                     </CyDText>
                     <CyDText className='text-n200 text-[12px] font-normal mt-[10px]'>
                       {t('COMPARISION_NOTE_2')}
+                    </CyDText>
+                    <CyDText className='text-n200 text-[12px] font-normal mt-[10px]'>
+                      {t('COMPARISION_NOTE_3')}
                     </CyDText>
                   </CyDScrollView>
                 </CyDView>
@@ -755,17 +758,38 @@ export default function SelectPlan({
               </CyDModalLayout>
 
               {/* title */}
-              <CyDView className='flex flex-row justify-between items-center mb-[16px]'>
+              <CyDView className='flex flex-row justify-between items-center mb-[8px]'>
                 <CyDText className='font-bold text-[28px]'>
                   {t('PICK_PLAN')}
                 </CyDText>
                 <CyDTouchView
-                  className='p-[6px] rounded-[6px] bg-n0 '
+                  className='p-[6px] rounded-[6px] bg-n0 border-[1px] border-n50'
                   onPress={() => {
                     setShowComparision(true);
                   }}>
                   <CyDText className='font-bold text-[12px] text-center'>
                     {t('COMPARE_PLANS')}
+                  </CyDText>
+                </CyDTouchView>
+              </CyDView>
+              <CyDView className='flex flex-row justify-between items-center mb-[12px]'>
+                <CyDView className='flex-1 mr-[12px]'>
+                  <CyDText className='text-[12px] flex-wrap'>
+                    {
+                      'Maximize your savings by choosing a plan based on unique spending habbits.'
+                    }
+                  </CyDText>
+                </CyDView>
+                <CyDTouchView
+                  className='px-[6px] py-[4px] rounded-[6px] bg-n10 border-[1px] border-n50 w-[96.7px]'
+                  onPress={() => {
+                    navigation.navigate(screenTitle.SOCIAL_MEDIA_SCREEN, {
+                      title: 'Plan Suggestion',
+                      uri: 'https://www.cypherwallet.io/card/#plan-suggestion',
+                    });
+                  }}>
+                  <CyDText className='font-bold text-n100 text-[12px] text-center'>
+                    {t('Suggest Plan')}
                   </CyDText>
                 </CyDTouchView>
               </CyDView>

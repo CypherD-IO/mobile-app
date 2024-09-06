@@ -145,8 +145,11 @@ module.exports = {
       base400: '#000000',
       successGreen400: '#006A31',
       p10: '#FDF3D8',
-      p200: '#ECAB00'
-
+      p200: '#ECAB00',
+      n300: '#6B788E',
+      rewardsBlue: '#0057FF',
+      rewardsYellow: '#ffb800',
+      n90: '#8993A4'
     },
     columns: {
       auto: 'auto',
