@@ -73,7 +73,6 @@ export default function IBC({
   const hdWallet = useContext<any>(HdWalletContext);
   const cosmos = hdWallet.state.wallet.cosmos;
   const osmosis = hdWallet.state.wallet.osmosis;
-  const evmos = hdWallet.state.wallet.evmos;
   const juno = hdWallet.state.wallet.juno;
   const stargaze = hdWallet.state.wallet.stargaze;
   const noble = hdWallet.state.wallet.noble;
@@ -106,8 +105,7 @@ export default function IBC({
   const activityContext = useContext<any>(ActivityContext);
   const activityRef = useRef<IBCTransaction | null>(null);
   const { showModal, hideModal } = useGlobalModalContext();
-  const { estimateGasForEvmosIBC } = useGasService();
-  const { interCosmosIBC, evmosIBC } = useTransactionManager();
+  const { interCosmosIBC } = useTransactionManager();
   const handleBackButton = () => {
     navigation.goBack();
     return true;
@@ -146,8 +144,6 @@ export default function IBC({
         return cosmos.address;
       case ChainBackendNames.OSMOSIS:
         return osmosis.address;
-      case ChainBackendNames.EVMOS:
-        return evmos.address;
       case ChainBackendNames.JUNO:
         return juno.address;
       case ChainBackendNames.STARGAZE:

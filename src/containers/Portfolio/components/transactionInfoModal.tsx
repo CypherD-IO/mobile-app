@@ -29,7 +29,6 @@ export const chainExplorerMapping: Record<string, string> = {
   AVALANCHE: 'https://explorer.avax.network/tx/',
   ARBITRUM: 'https://arbiscan.io/tx/',
   OPTIMISM: 'https://optimistic.etherscan.io/tx/',
-  EVMOS: 'https://escan.live/tx/',
   COSMOS: 'https://www.mintscan.io/cosmos/txs/',
   OSMOSIS: 'https://www.mintscan.io/osmosis/txs/',
   JUNO: 'https://www.mintscan.io/juno/txs/',

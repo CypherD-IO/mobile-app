@@ -61,7 +61,6 @@ export default function HostsAndRPCScreen({ navigation }) {
     arbitrum: globalContext.globalState.rpcEndpoints.ARBITRUM.primary,
     optimism: globalContext.globalState.rpcEndpoints.OPTIMISM.primary,
     bsc: globalContext.globalState.rpcEndpoints.BSC.primary,
-    evmos: globalContext.globalState.rpcEndpoints.EVMOS.primary,
     osmosis: globalContext.globalState.rpcEndpoints.OSMOSIS.primary,
     cosmos: globalContext.globalState.rpcEndpoints.COSMOS.primary,
     juno: globalContext.globalState.rpcEndpoints.JUNO.primary,
@@ -170,7 +169,6 @@ export default function HostsAndRPCScreen({ navigation }) {
     tempRPCEndpoints.ARBITRUM.primary = rpcEndpoints.arbitrum;
     tempRPCEndpoints.OPTIMISM.primary = rpcEndpoints.optimism;
     tempRPCEndpoints.BSC.primary = rpcEndpoints.bsc;
-    tempRPCEndpoints.EVMOS.primary = rpcEndpoints.evmos;
     tempRPCEndpoints.OSMOSIS.primary = rpcEndpoints.osmosis;
     tempRPCEndpoints.COSMOS.primary = rpcEndpoints.cosmos;
     tempRPCEndpoints.JUNO.primary = rpcEndpoints.juno;
@@ -452,26 +450,6 @@ export default function HostsAndRPCScreen({ navigation }) {
             key='bsc'
             onChangeText={value => {
               setRPCEndpoints({ ...rpcEndpoints, bsc: value });
-            }}
-            autoCorrect={false}
-            placeholderTextColor={'#C5C5C5'}
-            placeholder=''
-          />
-        </CyDView>
-        <CyDView className={'mt-[25px]'}>
-          <CyDText className={'text-[16px] font-black'}>
-            {ChainBackendNames.EVMOS}
-          </CyDText>
-          <CyDTextInput
-            className={clsx(
-              'mt-[10px] border-[1px] border-inputBorderColor rounded-[5px] p-[12px] text-[18px] font-nunito text-primaryTextColor',
-            )}
-            value={maskString(rpcEndpoints.evmos)}
-            editable={devMode}
-            autoCapitalize='none'
-            key='evmos'
-            onChangeText={value => {
-              setRPCEndpoints({ ...rpcEndpoints, evmos: value });
             }}
             autoCorrect={false}
             placeholderTextColor={'#C5C5C5'}
