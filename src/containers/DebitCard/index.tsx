@@ -2,7 +2,7 @@
  * @format
  * @flow
  */
-import React, { useContext, useEffect, useState } from 'react';
+import React, { useCallback, useContext, useEffect, useState } from 'react';
 import { GlobalContext } from '../../core/globalContext';
 import { CardProfile } from '../../models/cardProfile.model';
 import {
@@ -11,7 +11,7 @@ import {
   GlobalContextType,
 } from '../../constants/enum';
 import Loading from '../../components/v2/loading';
-import { useIsFocused } from '@react-navigation/native';
+import { useFocusEffect, useIsFocused } from '@react-navigation/native';
 import { screenTitle } from '../../constants';
 import { HdWalletContext } from '../../core/util';
 import {
@@ -29,6 +29,7 @@ import useCardUtilities from '../../hooks/useCardUtilities';
 import CardProviderSwitch from '../../components/cardProviderSwitch';
 import CardWailtList from './cardWaitList';
 import { getReferralCode } from '../../core/asyncStorage';
+import { e } from '@tanstack/query-core/build/legacy/hydration-BZ2M_xzi';
 export interface RouteProps {
   navigation: {
     navigate: (screen: string, params?: any, route?: any) => void;
@@ -215,14 +216,10 @@ export default function DebitCardScreen(props: RouteProps) {
   const checkApplication = async (_provider: CardProviders) => {
     try {
       const response = await getWithAuth(`/v1/cards/${_provider}/application`);
+
       if (!response.isError) {
         const { data } = response;
-        if (
-          (!(provider === CardProviders.REAP_CARD) && !data.phoneVerified) ||
-          !data.emailVerfied ||
-          (provider === CardProviders.REAP_CARD &&
-            !get(cardProfile, ['cardNotification', 'isTelegramAllowed'], false))
-        ) {
+        if (!(provider === CardProviders.REAP_CARD) && !data.phoneVerified) {
           props.navigation.reset({
             index: 0,
             routes: [
@@ -231,10 +228,30 @@ export default function DebitCardScreen(props: RouteProps) {
               },
             ],
           });
-        }
+        } else if (provider === CardProviders.REAP_CARD && !data.emailVerfied) {
+          props.navigation.reset({
+            index: 0,
+            routes: [
+              {
+                name: screenTitle.OTP_VERIFICATION_V2,
+              },
+            ],
+          });
+        } else if (
+          provider === CardProviders.REAP_CARD &&
+          !get(cardProfile, ['isTelegramSetup'], false)
+        )
+          props.navigation.reset({
+            index: 0,
+            routes: [
+              {
+                name: screenTitle.TELEGRAM_SETUP_V2,
+              },
+            ],
+          });
       }
-    } catch (e) {
-      Sentry.captureException(e);
+    } catch (err) {
+      Sentry.captureException(err);
     }
   };
 

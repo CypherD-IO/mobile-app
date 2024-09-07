@@ -33,11 +33,7 @@ export default function TelegramSetupSettings() {
     email: get(cardProfile, ['cardNotification', 'isEmailAllowed'], true),
     sms: get(cardProfile, ['cardNotification', 'isSmsAllowed'], true),
     fcm: get(cardProfile, ['cardNotification', 'isFcmAllowed'], true),
-    telegram: get(
-      cardProfile,
-      ['cardNotification', 'isTelegramAllowed'],
-      false,
-    ),
+    telegram: get(cardProfile, ['isTelegramSetup'], false),
   });
   const [isLoading, setIsLoading] = useState(false);
   const { getWalletProfile } = useCardUtilities();
@@ -53,21 +49,13 @@ export default function TelegramSetupSettings() {
       email: get(cardProfile, ['cardNotification', 'isEmailAllowed'], true),
       sms: get(cardProfile, ['cardNotification', 'isSmsAllowed'], true),
       fcm: get(cardProfile, ['cardNotification', 'isFcmAllowed'], true),
-      telegram: get(
-        cardProfile,
-        ['cardNotification', 'isTelegramAllowed'],
-        false,
-      ),
+      telegram: get(cardProfile, ['isTelegramSetup'], false),
     });
   }, [globalContext]);
 
   const refreshProfile = async () => {
     const data = await getWalletProfile(globalContext.globalState.token);
-    const telegramChanged = get(
-      data,
-      ['cardNotification', 'isTelegramAllowed'],
-      false,
-    );
+    const telegramChanged = get(data, ['isTelegramSetup'], false);
     globalContext.globalDispatch({
       type: GlobalContextType.CARD_PROFILE,
       cardProfile: data,

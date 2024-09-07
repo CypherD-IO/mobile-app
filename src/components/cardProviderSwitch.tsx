@@ -5,9 +5,12 @@ import { CardProviders, GlobalContextType } from '../constants/enum';
 import { CardProfile } from '../models/cardProfile.model';
 import { CyDView } from '../styles/tailwindStyles';
 import SwitchView from './v2/switchView';
-import { useNavigation } from '@react-navigation/native';
+import {
+  NavigationProp,
+  ParamListBase,
+  useNavigation,
+} from '@react-navigation/native';
 import { screenTitle } from '../constants';
-import useAxios from '../core/HttpRequest';
 
 export default function CardProviderSwitch() {
   const globalContext = useContext<any>(GlobalContext);
@@ -15,7 +18,7 @@ export default function CardProviderSwitch() {
   const provider = cardProfile?.provider ?? CardProviders.REAP_CARD;
   const { hasBothProviders } = useCardUtilities();
   const [twoProviders, setTwoProviders] = useState(false);
-  const navigation = useNavigation();
+  const navigation = useNavigation<NavigationProp<ParamListBase>>();
 
   useEffect(() => {
     void setTwoProviders(hasBothProviders(cardProfile));

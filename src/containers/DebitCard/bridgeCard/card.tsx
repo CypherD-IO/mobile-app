@@ -880,7 +880,7 @@ const RenderCardActions = ({
             });
             navigation.navigate(screenTitle.SELECT_PLAN, {
               deductAmountNow: false,
-              toPage: screenTitle.CARD_SIGNUP_SCREEN,
+              toPage: screenTitle.CARD_APPLICATION_V2,
             });
           }}
         />

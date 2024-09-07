@@ -27,7 +27,7 @@ export default function WelcomeSceens() {
             name: screenTitle.CARD_V2_SIGNUP_LANDING_SCREEN,
             params: {
               deductAmountNow: false,
-              toPage: screenTitle.CARD_SIGNUP_SCREEN,
+              toPage: screenTitle.CARD_APPLICATION_V2,
             },
           },
         ],

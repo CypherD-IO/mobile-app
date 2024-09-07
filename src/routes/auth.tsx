@@ -104,6 +104,9 @@ import GetYourCardInfo from '../containers/DebitCard/CardV2/signup/getYourCardIn
 import CardApplicationV2 from '../containers/DebitCard/CardV2/signup/application';
 import WelcomeSceens from '../containers/DebitCard/CardV2/signup/welcomeScreens';
 import Rewards from '../containers/Options/rewards';
+import OTPVerification from '../containers/DebitCard/CardV2/signup/otpVerification';
+import TelegramSetup from '../containers/DebitCard/CardV2/signup/telegramSetup';
+import KYCVerficicationV2 from '../containers/DebitCard/CardV2/signup/kycVerification';
 import MigratePCFunds from '../containers/DebitCard/CardV2/migrateFunds';
 import Bridge from '../containers/Bridge';
 import Referrals from '../containers/Options/referrals';
@@ -829,6 +832,12 @@ export function DebitCardStackScreen() {
       />
 
       <FundCardStack.Screen
+        name={screenTitle.KYC_VERIFICATION_V2}
+        component={KYCVerficicationV2}
+        options={() => ({ headerShown: false })}
+      />
+
+      <FundCardStack.Screen
         name={screenTitle.CARD_SIGNUP_OTP_VERIFICATION_SCREEN}
         component={OTPVerificationScreen}
         options={() => ({ headerShown: false })}
@@ -1251,6 +1260,38 @@ export function DebitCardStackScreen() {
           headerTintColor: Colors.primaryTextColor,
           headerBackTitleVisible: false,
           headerLeft: () => defaultHeaderLeft(navigation, keyboardHeight),
+        })}
+      />
+
+      <FundCardStack.Screen
+        name={screenTitle.OTP_VERIFICATION_V2}
+        component={OTPVerification}
+        options={({ navigation }) => ({
+          headerShown: false,
+        })}
+      />
+
+      <FundCardStack.Screen
+        name={screenTitle.TELEGRAM_SETUP_V2}
+        component={TelegramSetup}
+        options={({ navigation }) => ({
+          headerShown: false,
+        })}
+      />
+
+      <FundCardStack.Screen
+        name={screenTitle.OTP_VERIFICATION_V2}
+        component={OTPVerification}
+        options={({ navigation }) => ({
+          headerShown: false,
+        })}
+      />
+
+      <FundCardStack.Screen
+        name={screenTitle.TELEGRAM_SETUP_V2}
+        component={TelegramSetup}
+        options={({ navigation }) => ({
+          headerShown: false,
         })}
       />
 

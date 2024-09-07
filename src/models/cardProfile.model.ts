@@ -77,4 +77,5 @@ export interface CardProfile {
     updatedOn: number;
     expiresOn: number;
   };
+  telegramId: string | null;
 }

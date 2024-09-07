@@ -1,29 +1,60 @@
-import React, { useEffect, useState } from 'react';
-import { useSafeAreaInsets } from 'react-native-safe-area-context';
-import { CyDView } from '../../../../../styles/tailwindStyles';
-import { useTranslation } from 'react-i18next';
+import React, { useCallback, useContext, useEffect, useState } from 'react';
+import {
+  CyDFastImage,
+  CyDSafeAreaView,
+  CyDTouchView,
+  CyDView,
+} from '../../../../../styles/tailwindStyles';
 import {
   NavigationProp,
   ParamListBase,
+  useFocusEffect,
   useNavigation,
 } from '@react-navigation/native';
 import BasicDetails from './basicDetails';
 import * as Yup from 'yup';
-import { Formik } from 'formik';
-import BillingAddress from './billingDetails';
+import { Formik, FormikHelpers } from 'formik';
+import BillingAddress from './billingAddress';
 import Button from '../../../../../components/v2/button';
 import useAxios from '../../../../../core/HttpRequest';
 import axios from 'axios';
 import * as Sentry from '@sentry/react-native';
 import { rcSupportedCountries } from '../../../../../../assets/datasets/rcSupportedCountries';
 import Loading from '../../../../../components/v2/loading';
-import { CardProviders } from '../../../../../constants/enum';
+import {
+  CardProviders,
+  GlobalContextType,
+} from '../../../../../constants/enum';
+import { t } from 'i18next';
+import AppImages from '../../../../../../assets/images/appImages';
+import useCardUtilities from '../../../../../hooks/useCardUtilities';
+import {
+  GlobalContext,
+  GlobalContextDef,
+} from '../../../../../core/globalContext';
+import { screenTitle } from '../../../../../constants';
+import { useGlobalModalContext } from '../../../../../components/v2/GlobalModal';
+import { CardProfile } from '../../../../../models/cardProfile.model';
+import { StyleSheet } from 'react-native';
+import { isEqual, isUndefined, omitBy } from 'lodash';
+import CardProviderSwitch from '../../../../../components/cardProviderSwitch';
+
+// Add this type definition
+interface SupportedCountry {
+  name: string;
+  Iso2: string;
+  Iso3: string;
+  currency: string;
+  unicode_flag: string;
+  flag: string;
+  dial_code: string;
+}
 
 export interface FormInitalValues {
   firstName: string;
   lastName: string;
   email: string;
-  dateOfBirth: string;
+  dateOfBirth: Date;
   line1: string;
   line2: string;
   postalCode: string;
@@ -35,112 +66,233 @@ export interface FormInitalValues {
 }
 
 const validationSchema = Yup.object().shape({
-  firstName: Yup.string().required('First name is required'),
-  lastName: Yup.string().required('Last name is required'),
+  firstName: Yup.string()
+    .required('First name is required')
+    .matches(/^\S*$/, 'No space allowed'),
+  lastName: Yup.string()
+    .required('Last name is required')
+    .matches(/^\S*$/, 'No space allowed'),
   email: Yup.string().email('Invalid email').required('Email is required'),
-  dateOfBirth: Yup.string().required('Date of birth is required'),
-  line1: Yup.string().required('Address line 1 is required'),
-  line2: Yup.string().required('Address line 1is required'),
-  postalCode: Yup.string().required('postal code is required'),
+  dateOfBirth: Yup.string()
+    .required(t('DOB_REQUIRED'))
+    .test('isValidAge', t('AGE_SHOULD_GT_18'), dateOfBirth => {
+      if (!dateOfBirth) return false;
+
+      const today = new Date();
+      const birthDate = new Date(dateOfBirth);
+      let age = today.getFullYear() - birthDate.getFullYear();
+      const monthDiff = today.getMonth() - birthDate.getMonth();
+
+      if (
+        monthDiff < 0 ||
+        (monthDiff === 0 && today.getDate() < birthDate.getDate())
+      ) {
+        age--;
+      }
+
+      return age >= 18;
+    }),
+  line1: Yup.string().required(t('LINE1_REQUIRED')),
+  // line2: Yup.string().required('Address line 1is required'),
+  postalCode: Yup.string().required(t('POSTAL_CODE_REQUIRED')),
   country: Yup.string().required('Country is required'),
-  city: Yup.string().required('City is required'),
+  city: Yup.string().required(t('CITY_REQUIRED')),
   state: Yup.string().required('State is required'),
-  phone: Yup.string().required('Phone number required'),
+  phone: Yup.string()
+    .required(t('PHONE_NUMBER_REQUIRED'))
+    .test('isValidPhoneNumber', t('INVALID_PHONE_NUMBER'), phoneNumber => {
+      return phoneNumber !== undefined ? /^\d+$/.test(phoneNumber) : false;
+    }),
   dialCode: Yup.string().required(''),
 });
 
 export default function CardApplicationV2() {
   const navigation = useNavigation<NavigationProp<ParamListBase>>();
-  const { t } = useTranslation();
-  const insets = useSafeAreaInsets();
-  const { postWithAuth } = useAxios();
+  const { globalDispatch, globalState } = useContext(
+    GlobalContext,
+  ) as GlobalContextDef;
+  const { postWithAuth, patchWithAuth, getWithAuth } = useAxios();
+  const { getWalletProfile } = useCardUtilities();
+  const { showModal, hideModal } = useGlobalModalContext();
 
-  const [index, setIndex] = useState<number>(1);
+  const [index, setIndex] = useState<number>(0);
   const [supportedCountries, setSupportedCountries] = useState<
-    Array<{
-      name: string;
-      Iso2: string;
-      Iso3: string;
-      currency: string;
-      unicode_flag: string;
-      flag: string;
-      dial_code: string;
-    }>
+    SupportedCountry[]
   >([]);
   const [loading, setLoading] = useState(false);
+  const [applicationData, setApplicationData] =
+    useState<FormInitalValues | null>(null);
+
+  const cardProfile = globalState.cardProfile as CardProfile;
+  const provider = cardProfile.provider ?? CardProviders.REAP_CARD;
+
+  useFocusEffect(
+    useCallback(() => {
+      setLoading(true);
+      void getCountriesData();
+      setLoading(false);
+    }, []),
+  );
+
+  useEffect(() => {
+    setLoading(true);
+    void fetchApplicationData();
+    setLoading(false);
+  }, []);
 
   const getCountriesData = async () => {
-    setLoading(true);
     try {
       const response = await axios.get(
         `https://public.cypherd.io/js/rcSupportedCountries.js?${String(new Date())}`,
       );
       if (response?.data) {
-        // remove later
-        setSupportedCountries(rcSupportedCountries as any);
-
-        // setSupportedCountries(response.data);
+        // Ensure rcSupportedCountries is of type SupportedCountry[]
+        setSupportedCountries(rcSupportedCountries as SupportedCountry[]);
       } else {
-        setSupportedCountries(rcSupportedCountries as any);
+        setSupportedCountries(rcSupportedCountries as SupportedCountry[]);
       }
     } catch (err) {
       Sentry.captureException(err);
     }
-    setLoading(false);
   };
 
-  useEffect(() => {
-    void getCountriesData();
-  }, []);
+  const fetchApplicationData = async () => {
+    const { isError, data } = await getWithAuth(
+      `/v1/cards/${provider}/application`,
+    );
 
-  const initialValues = {
-    firstName: '',
-    lastName: '',
-    email: '',
-    dateOfBirth: '',
-    line1: '',
-    line2: '',
-    postalCode: '',
-    country: '',
-    city: '',
-    state: '',
-    phone: '',
-    dialCode: '',
+    if (!isError && data) {
+      const countryData = supportedCountries.find(
+        country => country.Iso2 === data.country,
+      );
+      const dialCode = countryData?.dial_code ?? '';
+
+      setApplicationData({
+        firstName: data.firstName || '',
+        lastName: data.lastName || '',
+        email: data.email || '',
+        dateOfBirth: data.dateOfBirth ? new Date(data.dateOfBirth) : new Date(),
+        line1: data.line1 || '',
+        line2: data.line2 || '',
+        postalCode: data.postalCode || '',
+        country: data.country || '',
+        city: data.city || '',
+        state: data.state || '',
+        phone: data.phone ? data.phone.replace(dialCode, '') : '',
+        dialCode,
+      });
+    }
   };
 
-  const _handleSubmit = async (values: FormInitalValues) => {
-    setLoading(true);
+  const _handleSubmit = async (
+    values: FormInitalValues,
+    { setSubmitting, setFieldError }: FormikHelpers<FormInitalValues>,
+  ) => {
+    setSubmitting(true);
+
+    // Use Lodash to compare values and return only changed fields
+    const changedFields = applicationData
+      ? omitBy(values, (value, key) =>
+          isEqual(value, applicationData[key as keyof FormInitalValues]),
+        )
+      : values;
+
     const payload = {
-      dateOfBirth: values.dateOfBirth,
-      firstName: values.lastName,
-      lastName: values.lastName,
-      phone: values.dialCode + values.phone,
-      email: values.email,
-      line1: values.line1,
-      line2: values.line2,
-      city: values.city,
-      state: values.state,
-      postalCode: values.postalCode,
-      country: values.country,
-      // pep: PEP_OPTIONS[userBasicDetails.pep].value,
-      // ...latestBillingAddress,
-      // country: userBasicDetails.Iso2,
-      // ...(inviteCode ? { inviteCode } : {}),
+      ...changedFields,
+      phone: changedFields.phone
+        ? values.dialCode + changedFields.phone
+        : undefined,
+      dateOfBirth: changedFields.dateOfBirth ?? undefined,
     };
 
-    const { isError, error, data } = await postWithAuth(
-      `/v1/cards/${CardProviders.REAP_CARD}/application`,
+    // Remove undefined fields and dialCode
+    const cleanPayload = omitBy(
       payload,
+      (value, key) => isUndefined(value) || key === 'dialCode',
     );
+
+    const { isError, error } = applicationData
+      ? await patchWithAuth(`/v1/cards/${provider}/application`, cleanPayload)
+      : await postWithAuth(`/v1/cards/${provider}/application`, cleanPayload);
+
+    if (isError) {
+      if (error.field) {
+        setFieldError(error.field, error.message);
+
+        // Check which page contains the error and update index if necessary
+        const firstPageFields = [
+          'firstName',
+          'lastName',
+          'email',
+          'dateOfBirth',
+        ];
+        if (firstPageFields.includes(error.field) && index === 1) {
+          setIndex(0);
+        }
+      } else {
+        showModal('state', {
+          type: 'error',
+          title: t('INVALID_USER_DETAILS'),
+          description: error ?? 'Error in submitting your application',
+          onSuccess: hideModal,
+          onFailure: hideModal,
+        });
+      }
+    } else {
+      const data = await getWalletProfile(globalState.token);
+      globalDispatch({
+        type: GlobalContextType.CARD_PROFILE,
+        cardProfile: data,
+      });
+      applicationData
+        ? navigation.goBack()
+        : navigation.navigate(screenTitle.OTP_VERIFICATION_V2);
+    }
+
+    setSubmitting(false);
   };
 
   if (loading) return <Loading />;
 
   return (
-    <CyDView style={{ paddingTop: insets.top + 50 }}>
+    <CyDSafeAreaView className='mb-[24px]'>
+      {/* remove the CardProviderSwitch after sunsetting PC */}
+      <CyDTouchView
+        className='w-[60px] ml-[16px] mb-[10px]'
+        onPress={() => {
+          if (index === 0) {
+            navigation.reset({
+              index: 0,
+              routes: [{ name: screenTitle.PORTFOLIO }],
+            });
+          } else setIndex(0);
+        }}>
+        <CyDFastImage
+          className={'w-[32px] h-[32px]'}
+          resizeMode='cover'
+          source={AppImages.BACK_ARROW_GRAY}
+        />
+      </CyDTouchView>
+
       <Formik
-        initialValues={initialValues}
+        initialValues={
+          applicationData ?? {
+            firstName: '',
+            lastName: '',
+            email: '',
+            dateOfBirth: new Date(),
+            line1: '',
+            line2: '',
+            postalCode: '',
+            country: '',
+            city: '',
+            state: '',
+            phone: '',
+            dialCode: '',
+          }
+        }
         validationSchema={validationSchema}
+        enableReinitialize={!!applicationData}
         onSubmit={_handleSubmit}>
         {({
           handleSubmit,
@@ -148,12 +300,13 @@ export default function CardApplicationV2() {
           setFieldTouched,
           setFieldValue,
           values,
+          isSubmitting,
+          errors,
         }) => (
-          <CyDView className='bg-[#F1F0F5] flex flex-col justify-between h-[100%]'>
+          <CyDView className='bg-[#F1F0F5] flex flex-col justify-between h-full'>
             {index === 0 && <BasicDetails setIndex={setIndex} />}
             {index === 1 && (
               <BillingAddress
-                setIndex={setIndex}
                 supportedCountries={supportedCountries}
                 setFieldValue={setFieldValue}
                 values={values}
@@ -165,13 +318,16 @@ export default function CardApplicationV2() {
                   title={t('NEXT')}
                   onPress={() => {
                     void setFieldTouched('lastName', true);
-                    void setFieldTouched('fristName', true);
+                    void setFieldTouched('firstName', true);
                     void setFieldTouched('email', true);
                     void setFieldTouched('dateOfBirth', true);
-                    void validateForm().then(errors => {
+                    void validateForm().then(_errors => {
                       if (
-                        Object.keys(errors).length === 0 ||
-                        (!errors.lastName && !errors.firstName && !errors.email)
+                        Object.keys(_errors).length === 0 ||
+                        (!_errors.lastName &&
+                          !_errors.firstName &&
+                          !_errors.email &&
+                          !_errors.dateOfBirth)
                       ) {
                         setIndex(1);
                       }
@@ -182,12 +338,24 @@ export default function CardApplicationV2() {
             )}
             {index === 1 && (
               <CyDView className='bg-white px-[16px] w-full pt-[16px] pb-[60px]'>
-                <Button title={t('CONTINUE')} onPress={handleSubmit} />
+                <Button
+                  title={t('CONTINUE')}
+                  onPress={handleSubmit}
+                  loaderStyle={styles.loading}
+                  loading={isSubmitting}
+                />
               </CyDView>
             )}
           </CyDView>
         )}
       </Formik>
-    </CyDView>
+    </CyDSafeAreaView>
   );
 }
+
+const styles = StyleSheet.create({
+  loading: {
+    height: 22,
+    width: 22,
+  },
+});

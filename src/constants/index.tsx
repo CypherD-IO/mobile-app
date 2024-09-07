@@ -150,6 +150,9 @@ export const screenTitle = {
   WITHDRAW_SUCCESS: 'withdrawSuccess',
   WITHDRAW_HISTORY: 'withdrawHistory',
   GLOBAL_CARD_OPTIONS: 'globalCardOptions',
+  OTP_VERIFICATION_V2: 'otpVerificationV2',
+  TELEGRAM_SETUP_V2: 'telegramSetupV2',
+  KYC_VERIFICATION_V2: 'kycVerificationV2',
 };
 
 export const fontsName = {
