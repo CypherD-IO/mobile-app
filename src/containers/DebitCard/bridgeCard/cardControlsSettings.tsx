@@ -19,7 +19,7 @@ import {
 import ChooseMultipleCountryModal from '../../../components/v2/chooseMultipleCountryModal';
 import { ICountry } from '../../../models/cardApplication.model';
 import useAxios from '../../../core/HttpRequest';
-import { compact, get, isEqual, omit } from 'lodash';
+import { compact, get, isEqual, pick } from 'lodash';
 import EditLimitModal from './editLimitModal';
 import { Loader } from '../../../components/v2/walletConnectV2Views/SigningModals/SigningModalComponents';
 import { t } from 'i18next';
@@ -149,7 +149,7 @@ export default function CardControlsSettings({ route, navigation }) {
     }
     const response = await patchWithAuth(
       `/v1/cards/${currentCardProvider}/card/${card.cardId}/limits`,
-      omit(payload, ['planLimit', 'currentLimit', 'sSt', 'godm']),
+      pick(payload, ['cusL', 'cCode']),
     );
 
     if (!response.isError) {

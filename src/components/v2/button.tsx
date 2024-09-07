@@ -90,7 +90,7 @@ export default function Button({
           'bg-n20': ButtonType.GREY_FILL === type,
           'bg-r300': ButtonType.RED === type,
           'bg-black': ButtonType.DARK === type,
-          'bg-[#CFCFCF]': disabled,
+          'bg-n40': disabled,
         },
       )}>
       {loading && (
