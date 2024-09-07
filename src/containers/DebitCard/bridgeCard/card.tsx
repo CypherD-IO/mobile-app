@@ -997,7 +997,7 @@ const RenderCardActions = ({
             }
           }}>
           <CyDView
-            className={`${shouldBlockAction() ? 'bg-n60' : 'bg-appColor'} h-[52px] w-[52px] items-center justify-center rounded-[50px]`}>
+            className={`${shouldBlockAction() ? 'bg-n40' : 'bg-appColor'} h-[52px] w-[52px] items-center justify-center rounded-[50px]`}>
             {isFetchingCardDetails ? (
               <LottieView source={AppImages.LOADER_TRANSPARENT} autoPlay loop />
             ) : (
@@ -1023,7 +1023,7 @@ const RenderCardActions = ({
             }
           }}>
           <CyDView
-            className={`${shouldBlockAction() ? 'bg-n60' : 'bg-appColor'} h-[52px] w-[52px] items-center justify-center rounded-[50px]`}>
+            className={`${shouldBlockAction() ? 'bg-n40' : 'bg-appColor'} h-[52px] w-[52px] items-center justify-center rounded-[50px]`}>
             {isStatusLoading ? (
               <LottieView source={AppImages.LOADER_TRANSPARENT} autoPlay loop />
             ) : (
@@ -1051,7 +1051,7 @@ const RenderCardActions = ({
             setShowOptionsModal(true);
           }}>
           <CyDView
-            className={`${shouldBlockAction() ? 'bg-n60' : 'bg-appColor'} p-[12px] rounded-[50px]`}>
+            className={`${shouldBlockAction() ? 'bg-n40' : 'bg-appColor'} p-[12px] rounded-[50px]`}>
             <CyDImage
               source={AppImages.MORE}
               className='h-[26px] w-[26px] accent-black rotate-90'
