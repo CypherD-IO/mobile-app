@@ -816,11 +816,7 @@ export default function SelectPlan() {
               {/* pro plan */}
               <CyDView
                 className={clsx(
-                  'bg-white p-[16px] border-[1px] border-n50 rounded-[16px]',
-                  {
-                    'border-[3px] border-appColor':
-                      deductAmountNow && planId === CypherPlanId.PRO_PLAN,
-                  },
+                  'bg-white p-[16px] border-[1px] border-n50 rounded-[16px] border-[3px] border-appColor',
                 )}>
                 <CyDView className='flex flex-row justify-between items-center'>
                   <CyDText className='font-bold text-[28px] mb-[8px]'>
@@ -968,10 +964,6 @@ export default function SelectPlan() {
               <CyDView
                 className={clsx(
                   'bg-white mt-[16px] p-[16px] border-[1px] border-n50 rounded-[16px]',
-                  {
-                    'border-[3px] border-appColor':
-                      deductAmountNow && planId === CypherPlanId.BASIC_PLAN,
-                  },
                 )}>
                 <CyDText className='font-bold text-[28px] mb-[8px]'>
                   {t('STANDARD')}
