@@ -816,7 +816,7 @@ export default function SelectPlan() {
               {/* pro plan */}
               <CyDView
                 className={clsx(
-                  'bg-white p-[16px] border-[1px] border-n50 rounded-[16px] border-[3px] border-appColor',
+                  'bg-white p-[16px] border-[1px] border-n50 rounded-[16px] border-[2px] border-appColor',
                 )}>
                 <CyDView className='flex flex-row justify-between items-center'>
                   <CyDText className='font-bold text-[28px] mb-[8px]'>
