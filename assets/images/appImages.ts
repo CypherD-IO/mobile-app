@@ -322,6 +322,7 @@ const CARD_ONBOARDING_2 = require('./cardOnBoarding2.png');
 const CARD_ONBOARDING_3 = require('./cardOnBoarding3.png');
 const CARD_ONBOARDING_4 = require('./cardOnBoarding4.png');
 const BACK_ARROW_GRAY = require('./backArrowGray.png');
+const REWARDS_ICON = { uri: `${S3_BUCKET_URL_ICONS}/rewardsIcon.png` };
 // const CARD_ONBOARDING_VIDEO = require('./cardOnBaordingVideo.mp4');
 
 // ICONS FROM S3
@@ -491,6 +492,21 @@ const RADIO_UNCHECK = {
 };
 const RC_PLAIN_VIRTUAL_CARD = {
   uri: `${S3_BUCKET_URL_ICONS}/rcPlainVirtualCard.png`,
+};
+const REWARDS_YELLOW_STAR = {
+  uri: `${S3_BUCKET_URL_ICONS}/rewardsYellowStar.png`,
+};
+const CARDS_AND_COINS = {
+  uri: `${S3_BUCKET_URL_ICONS}/cardsAndCoins.png`,
+};
+const MAN_WITH_PHONE = {
+  uri: `${S3_BUCKET_URL_ICONS}/manWithPhone.png`,
+};
+const COMING_SOON = {
+  uri: `${S3_BUCKET_URL_ICONS}/comingSoon.png`,
+};
+const ZERO_RESTRICTION_MODE_ICON = {
+  uri: `${S3_BUCKET_URL_ICONS}/zeroRestrictionModeIcon.png`,
 };
 
 const AppImages = {
@@ -890,5 +906,11 @@ const AppImages = {
   LOCKDOWN_MODE_ICON,
   LOCKDOWN_MODE_IMAGE,
   RC_PLAIN_VIRTUAL_CARD,
+  REWARDS_ICON,
+  REWARDS_YELLOW_STAR,
+  CARDS_AND_COINS,
+  MAN_WITH_PHONE,
+  COMING_SOON,
+  ZERO_RESTRICTION_MODE_ICON,
 };
 export default AppImages;

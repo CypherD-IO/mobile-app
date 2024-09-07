@@ -128,6 +128,9 @@ export default function CardUnlockAuth(props: {
         <CyDText className={'text-[15px] font-bold'}>
           {t<string>('CARD_SENT_OTP_EMAIL_AND_TELEGRAM')}
         </CyDText>
+        <CyDText className='text-[12px] mt-[12px]'>
+          {t<string>('CHECK_SPAM_FOLDER')}
+        </CyDText>
       </CyDView>
     );
   };

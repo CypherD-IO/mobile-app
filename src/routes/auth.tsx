@@ -117,6 +117,7 @@ import { NavigationProp, ParamListBase } from '@react-navigation/native';
 import GetYourCardInfo from '../containers/DebitCard/CardV2/signup/getYourCardInfo';
 import CardApplicationV2 from '../containers/DebitCard/CardV2/signup/application';
 import WelcomeSceens from '../containers/DebitCard/CardV2/signup/welcomeScreens';
+import Rewards from '../containers/Options/rewards';
 
 const { DynamicImage, DynamicButton } = require('../styles');
 
@@ -1632,6 +1633,14 @@ export function OptionsStackScreen({ navigation, route }) {
           headerTintColor: Colors.primaryTextColor,
           headerBackTitleVisible: false,
           headerLeft: props => defaultHeaderLeft(navigation),
+        })}
+      />
+
+      <OptionsStack.Screen
+        name={screenTitle.REWARDS}
+        component={Rewards}
+        options={({ navigation, route }) => ({
+          headerShown: false,
         })}
       />
 

@@ -133,6 +133,7 @@ export const screenTitle = {
   GET_YOUR_CARD: 'GetYourCard',
   CARD_V2_WELCOME_SCREEN: 'welcomeScreen',
   CARD_APPLICATION_V2: 'cardApplicationv2',
+  REWARDS: 'Rewards',
 };
 
 export const fontsName = {

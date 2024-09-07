@@ -223,6 +223,9 @@ const ShippingDetailsOTPScreen = ({ navigation, route }: Props) => {
         <CyDText className={'text-[15px] font-bold'}>
           {t<string>('CARD_SENT_OTP')}
         </CyDText>
+        <CyDText className='text-[12px] mt-[12px]'>
+          {t<string>('CHECK_SPAM_FOLDER')}
+        </CyDText>
         <CyDView>
           {!isSubmitting && (
             <CyDView className={'mt-[15%]'}>
