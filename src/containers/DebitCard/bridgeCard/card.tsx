@@ -113,7 +113,6 @@ export default function CardScreen({
   const [currentCardIndex, setCurrentCardIndex] = useState<number>(0);
   const [trackingDetails, setTrackingDetails] = useState({});
   const [isRcUpgradableCardShown, setIsRcUpgradableCardShown] = useState(false);
-  const { checkIsRCEnabled } = useCardUtilities();
 
   const isHiddenCard = () => {
     return some(userCardDetails?.cards, { status: CardStatus.HIDDEN });
@@ -134,11 +133,9 @@ export default function CardScreen({
 
   useEffect(() => {
     const checkIsRcUpgradableCardShown = async () => {
-      const isRcEnabled = await checkIsRCEnabled();
       setIsRcUpgradableCardShown(
         !has(cardProfile, CardProviders.REAP_CARD) &&
-          (isRcEnabled ||
-            get(cardProfile, [CardProviders.PAYCADDY, 'isRcUpgradable'])),
+          has(cardProfile, CardProviders.PAYCADDY),
       );
     };
 
@@ -391,7 +388,6 @@ const RenderCardActions = ({
   const [hideInterval, setHideInterval] = useState<NodeJS.Timeout>();
   const detailsAutoCloseTime = 120;
   const [isRcUpgradableCardShown, setIsRcUpgradableCardShown] = useState(false);
-  const { checkIsRCEnabled } = useCardUtilities();
 
   useEffect(() => {
     if (showRCCardDetailsModal) {
@@ -444,11 +440,9 @@ const RenderCardActions = ({
 
   useEffect(() => {
     const checkIsRcUpgradableCardShown = async () => {
-      const isRcEnabled = await checkIsRCEnabled();
       setIsRcUpgradableCardShown(
         !has(cardProfile, CardProviders.REAP_CARD) &&
-          (isRcEnabled ||
-            get(cardProfile, [CardProviders.PAYCADDY, 'isRcUpgradable'])),
+          has(cardProfile, CardProviders.PAYCADDY),
       );
     };
 

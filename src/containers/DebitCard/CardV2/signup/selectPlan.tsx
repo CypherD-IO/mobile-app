@@ -20,6 +20,8 @@ import {
   useIsFocused,
   useNavigation,
   useNavigationState,
+  useRoute,
+  RouteProp,
 } from '@react-navigation/native';
 import { screenTitle } from '../../../../constants';
 import {
@@ -38,13 +40,13 @@ import {
 } from '../../../../constants/data';
 import clsx from 'clsx';
 
-export default function SelectPlan({
-  _navigation,
-  _toPage,
-}: {
-  _navigation: any;
-  _toPage: string | undefined;
-}) {
+interface RouteParams {
+  deductAmountNow?: boolean;
+  toPage?: string;
+  cardBalance?: number;
+}
+
+export default function SelectPlan() {
   const { t } = useTranslation();
   const routeIndexindex = useNavigationState(state => state.index);
   const navigation = useNavigation<NavigationProp<ParamListBase>>();
@@ -55,10 +57,13 @@ export default function SelectPlan({
   const isFocused = useIsFocused();
   const { showModal, hideModal } = useGlobalModalContext();
   const { getWalletProfile } = useCardUtilities();
+  const route = useRoute<RouteProp<Record<string, RouteParams>, string>>();
 
-  const toPage = _toPage ?? _navigation?.route?.params?.toPage ?? '';
-  const deductAmountNow = _navigation?.route?.params?.deductAmountNow ?? false;
-  const cardBalance = _navigation?.route?.params?.cardBalance ?? 0;
+  const {
+    deductAmountNow = false,
+    toPage = '',
+    cardBalance = 0,
+  } = route.params;
 
   const [showComparision, setShowComparision] = useState(false);
   const [showConsent, setShowConsent] = useState(false);

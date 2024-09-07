@@ -1,7 +1,7 @@
 import * as Sentry from '@sentry/react-native';
 import axios from '../../core/Http';
 import { hostWorker } from '../../global';
-import { get, has } from 'lodash';
+import { has } from 'lodash';
 import { CardProviders } from '../../constants/enum';
 import { CardProfile } from '../../models/cardProfile.model';
 import { GlobalContext } from '../../core/globalContext';
@@ -13,22 +13,16 @@ export default function useCardUtilities() {
   const { getWithoutAuth } = useAxios();
   const globalContext = useContext<any>(GlobalContext);
   const cardProfile: CardProfile = globalContext.globalState.cardProfile;
-  const provider = cardProfile?.provider ?? CardProviders.REAP_CARD;
+  const provider = cardProfile?.provider;
 
   const getProvider = async (profile: CardProfile) => {
     if (hasBothProviders(profile)) {
       return provider ?? CardProviders.REAP_CARD;
     } else if (has(profile, CardProviders.PAYCADDY)) {
-      const isRcEnabled = await checkIsRCEnabled();
-      if (
-        isRcEnabled ||
-        get(profile, [CardProviders.PAYCADDY, 'isRcUpgradable'])
-      ) {
-        return CardProviders.REAP_CARD;
-      }
       return CardProviders.PAYCADDY;
+    } else if (has(profile, CardProviders.REAP_CARD)) {
+      return CardProviders.REAP_CARD;
     }
-    return CardProviders.REAP_CARD;
   };
 
   // returns true if only pc object is there because we need to display apply card for rc
