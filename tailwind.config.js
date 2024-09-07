@@ -149,7 +149,8 @@ module.exports = {
       n300: '#6B788E',
       rewardsBlue: '#0057FF',
       rewardsYellow: '#ffb800',
-      n90: '#8993A4'
+      n90: '#8993A4',
+      n40: '#CFCFCF'
     },
     columns: {
       auto: 'auto',

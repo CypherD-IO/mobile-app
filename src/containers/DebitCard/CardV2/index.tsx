@@ -416,7 +416,7 @@ export default function CypherCardScreen({
 
         {cardId !== HIDDEN_CARD_ID && (
           <CyDTouchView
-            className={`flex flex-row justify-center items-center self-center py-[4px] px-[12px] border-[0.2px] border-black rounded-[26px] mt-[4px] mb-[4px]  ${shouldBlockAction() ? 'bg-n60' : 'bg-white'}`}
+            className={`flex flex-row justify-center items-center self-center py-[4px] px-[12px] border-[0.2px] border-black rounded-[26px] mt-[4px] mb-[4px]  ${shouldBlockAction() ? 'bg-n40' : 'bg-white'}`}
             disabled={shouldBlockAction()}
             onPress={() => {
               cardProfile.isAutoloadConfigured

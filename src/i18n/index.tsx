@@ -1128,7 +1128,7 @@ const resources = {
       GET_CYPHER_CARD: 'Get Cypher Card',
       PICK_PLAN: 'Pick your plan',
       COMPARE_PLANS: 'Compare Plans',
-      FREE_FOREVER: 'Free Forver',
+      FREE_FOREVER: 'Free Forever',
       THATS_OUR_PROMISE: 'thats our promise',
       STANDARD: 'Standard',
       STANDARD_PLAN_SUB:
