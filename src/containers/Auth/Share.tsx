@@ -248,6 +248,8 @@ export const OptionsContainer = ({
   mT = 0,
   bH = 60,
   iW = 100,
+  imageHeight = 20,
+  imageStyle = '',
 }) => {
   return (
     <DynamicTouchView
@@ -279,9 +281,10 @@ export const OptionsContainer = ({
             <DynamicImage
               dynamic
               dynamicWidth
-              height={20}
+              height={imageHeight}
               width={iW}
               source={logo}
+              className={imageStyle}
             />
           </DynamicView>
         </DynamicView>

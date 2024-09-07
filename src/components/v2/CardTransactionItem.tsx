@@ -102,11 +102,12 @@ const CardTransactionItem = ({ item }: CardTransactionItemProps) => {
             className={clsx('font-bold text-[16px] mr-[5px]', {
               'text-redCyD':
                 type === CardTransactionTypes.DEBIT ||
-                type === CardTransactionTypes.WITHDRAWAL,
-              'text-successTextGreen': type === CardTransactionTypes.CREDIT,
-              'text-darkYellow': type === CardTransactionTypes.REFUND,
-              'text-black': !isSettled,
-              'text-gray-600': tStatus === ReapTxnStatus.DECLINED,
+                type === CardTransactionTypes.WITHDRAWAL ||
+                tStatus === ReapTxnStatus.DECLINED ||
+                !isSettled,
+              'text-successTextGreen':
+                type === CardTransactionTypes.CREDIT ||
+                type === CardTransactionTypes.REFUND,
             })}>
             {getTransactionSign(type)}
             {limitDecimalPlaces(amount, 2)} {t<string>('USD')}
