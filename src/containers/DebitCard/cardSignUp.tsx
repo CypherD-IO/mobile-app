@@ -265,20 +265,9 @@ export default function CardSignupScreen({ navigation, route }) {
   }, []);
 
   const getCountryData = async () => {
-    const isRcEnabled = await checkIsRCEnabled();
-    // card application created with reap if user has isRcUpgradable or has isRcEnabled else created with paycaddy
-    const provider = get(
-      cardProfile,
-      [CardProviders.PAYCADDY, 'isRcUpgradable'],
-      false,
-    )
-      ? CardProviders.REAP_CARD
-      : isRcEnabled
-        ? CardProviders.REAP_CARD
-        : CardProviders.PAYCADDY;
     try {
       const response = await axios.get(
-        `https://public.cypherd.io/js/${provider === CardProviders.REAP_CARD ? 'rcSupportedCountries' : 'countryMaster'}.js?${String(new Date())}`,
+        `https://public.cypherd.io/js/rcSupportedCountries.js?${String(new Date())}`,
       );
       if (response?.data) {
         setCopyCountriesWithFlagAndDialcodes(response.data);
@@ -361,23 +350,13 @@ export default function CardSignupScreen({ navigation, route }) {
       ...(inviteCode ? { inviteCode } : {}),
     };
     try {
-      const isRcEnabled = await checkIsRCEnabled();
-      // card application created with reap if user has isRcUpgradable or has isRcEnabled else created with paycaddy
-      const provider = get(
-        cardProfile,
-        [CardProviders.PAYCADDY, 'isRcUpgradable'],
-        false,
-      )
-        ? CardProviders.REAP_CARD
-        : isRcEnabled
-          ? CardProviders.REAP_CARD
-          : CardProviders.PAYCADDY;
       const response = await postWithAuth(
-        `/v1/cards/${provider}/application`,
+        `/v1/cards/${CardProviders.REAP_CARD}/application`,
         payload,
       );
       if (!response.isError) {
         const data = await getWalletProfile(globalContext.globalState.token);
+        data.provider = CardProviders.REAP_CARD;
         globalContext.globalDispatch({
           type: GlobalContextType.CARD_PROFILE,
           cardProfile: data,
