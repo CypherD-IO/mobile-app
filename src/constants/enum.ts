@@ -183,6 +183,7 @@ export enum ButtonType {
   RED = 'red',
   DARK = 'dark',
   GREY_FILL = 'greyFill',
+  WHITE_FILL = 'whiteFill',
 }
 
 export enum ImagePosition {

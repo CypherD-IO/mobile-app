@@ -43,6 +43,7 @@ export default function CardProviderSwitch() {
         setIndexChange={(index: number) => {
           onSwitchProviders(index);
         }}
+        fontSize={'14px'}
       />
     </CyDView>
   ) : (
