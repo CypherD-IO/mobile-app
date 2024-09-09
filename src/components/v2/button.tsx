@@ -126,7 +126,7 @@ export default function Button({
       {!loading && (
         <CyDText
           className={clsx(
-            `text-[#525252] font-nunito font-extrabold text-center ${titleStyle}`,
+            `text-[#525252] font-manrope font-extrabold text-center ${titleStyle}`,
             { 'ml-[5px]': isLocked },
           )}>
           {title}

@@ -467,7 +467,7 @@ const RenderSwapTransactionSignModal = ({
                   />
                   <CyDText
                     className={
-                      'my-[6px] mx-[2px] text-black text-[14px] text-center font-semibold flex flex-row justify-center font-nunito'
+                      'my-[6px] mx-[2px] text-black text-[14px] text-center font-semibold flex flex-row justify-center font-manrope'
                     }>
                     {sendToken.name}
                   </CyDText>
@@ -481,7 +481,7 @@ const RenderSwapTransactionSignModal = ({
                     />
                     <CyDText
                       className={
-                        'ml-[6px] font-nunito font-normal text-black  text-[12px]'
+                        'ml-[6px] font-manrope font-normal text-black  text-[12px]'
                       }>
                       {chain.name}
                     </CyDText>
@@ -506,7 +506,7 @@ const RenderSwapTransactionSignModal = ({
                   />
                   <CyDText
                     className={
-                      'my-[6px] mx-[2px] text-black text-[14px] text-center font-semibold flex flex-row justify-center font-nunito'
+                      'my-[6px] mx-[2px] text-black text-[14px] text-center font-semibold flex flex-row justify-center font-manrope'
                     }>
                     {receiveToken.name}
                   </CyDText>
@@ -520,7 +520,7 @@ const RenderSwapTransactionSignModal = ({
                     />
                     <CyDText
                       className={
-                        'ml-[6px] font-nunito text-black font-normal text-[12px]'
+                        'ml-[6px] font-manrope text-black font-normal text-[12px]'
                       }>
                       {chain.name}
                     </CyDText>

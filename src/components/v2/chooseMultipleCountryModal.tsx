@@ -121,7 +121,7 @@ const ChooseMultipleCountryModal = ({
             </CyDView>
             <CyDTextInput
               className={
-                'border-[1px] border-inputBorderColor rounded-[8px] p-[10px] mt-[10px] text-[14px] ml-[5%] w-[90%] font-nunito text-primaryTextColor'
+                'border-[1px] border-inputBorderColor rounded-[8px] p-[10px] mt-[10px] text-[14px] ml-[5%] w-[90%] font-manrope text-primaryTextColor'
               }
               value={countryFilterText}
               autoCapitalize='none'

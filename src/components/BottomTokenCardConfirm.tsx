@@ -116,7 +116,7 @@ export default function BottomCardConfirm({
             className={'w-[18px] h-[18px] top-[20px] right-[20px] '}
           />
         </CyDTouchView>
-        <CyDText className='text-[18px] font-nunito font-bold'>
+        <CyDText className='text-[18px] font-manrope font-bold'>
           {t('LOAD_CARD')}
         </CyDText>
         <CyDView className={'mx-[16px]'}>
@@ -193,7 +193,7 @@ export default function BottomCardConfirm({
             <CyDView className={'flex flex-row justify-between items-center'}>
               <CyDText
                 className={
-                  'font-nunito font-[16px] text-black font-bold ml-[12px]'
+                  'font-manrope font-[16px] text-black font-bold ml-[12px]'
                 }>
                 ~ 4 mins
               </CyDText>

@@ -353,7 +353,7 @@ export default function IBC({
           <CyDView className={'px-[40px]'}>
             <CyDText
               className={
-                'text-center font-nunito text-[24px] font-bold   mt-[20px]'
+                'text-center font-manrope text-[24px] font-bold   mt-[20px]'
               }>
               {'Transfer tokens '}
             </CyDText>
@@ -368,7 +368,7 @@ export default function IBC({
                 />
                 <CyDText
                   className={
-                    'my-[6px] mx-[2px] text-black text-[14px] font-semibold flex flex-row justify-center font-nunito'
+                    'my-[6px] mx-[2px] text-black text-[14px] font-semibold flex flex-row justify-center font-manrope'
                   }>
                   {tokenData.name}
                 </CyDText>
@@ -382,7 +382,7 @@ export default function IBC({
                   />
                   <CyDText
                     className={
-                      'ml-[6px] font-nunito font-normal text-black  text-[12px]'
+                      'ml-[6px] font-manrope font-normal text-black  text-[12px]'
                     }>
                     {tokenData.chainDetails.name}
                   </CyDText>
@@ -400,7 +400,7 @@ export default function IBC({
                 />
                 <CyDText
                   className={
-                    'my-[6px] mx-[2px] text-black text-[14px] font-semibold flex flex-row justify-center font-nunito'
+                    'my-[6px] mx-[2px] text-black text-[14px] font-semibold flex flex-row justify-center font-manrope'
                   }>
                   {tokenData.name}
                 </CyDText>
@@ -414,7 +414,7 @@ export default function IBC({
                   />
                   <CyDText
                     className={
-                      'ml-[6px] font-nunito text-black font-normal text-[12px]'
+                      'ml-[6px] font-manrope text-black font-normal text-[12px]'
                     }>
                     {chain.name}
                   </CyDText>
@@ -425,14 +425,14 @@ export default function IBC({
             <CyDView className={'flex flex-row justify-between mb-[14px]'}>
               <CyDText
                 className={
-                  'font-[#434343] font-nunito font-[16px] text-medium'
+                  'font-[#434343] font-manrope font-[16px] text-medium'
                 }>
                 {t('TO_ADDRESS')}
               </CyDText>
               <CyDView className={'mr-[6%] flex flex-col items-end'}>
                 <CyDText
                   className={
-                    'font-nunito font-[16px] text-black font-bold underline'
+                    'font-manrope font-[16px] text-black font-bold underline'
                   }>
                   {receiverAddress.substring(0, 8) +
                     '...' +
@@ -444,18 +444,18 @@ export default function IBC({
             <CyDView className={'flex flex-row justify-between mb-[14px]'}>
               <CyDText
                 className={
-                  'font-[#434343] font-nunito font-[16px] text-medium'
+                  'font-[#434343] font-manrope font-[16px] text-medium'
                 }>
                 {t('SENT_AMOUNT')}
               </CyDText>
               <CyDView className={'mr-[6%] flex flex-col items-end'}>
                 <CyDText
-                  className={'font-nunito font-[16px] text-black font-bold'}>
+                  className={'font-manrope font-[16px] text-black font-bold'}>
                   {`${parseFloat(amount).toFixed(3)} ${tokenData.name}`}
                 </CyDText>
                 <CyDText
                   className={
-                    'font-nunito font-[12px] text-[#929292] font-bold'
+                    'font-manrope font-[12px] text-[#929292] font-bold'
                   }>
                   {(tokenData.price * parseFloat(amount)).toFixed(3) + ' USD'}
                 </CyDText>
@@ -465,20 +465,20 @@ export default function IBC({
             <CyDView className={'flex flex-row justify-between mb-[14px]'}>
               <CyDText
                 className={
-                  'font-[#434343] font-nunito font-[16px] text-medium'
+                  'font-[#434343] font-manrope font-[16px] text-medium'
                 }>
                 {t('TOTAL_GAS')}
               </CyDText>
               <CyDView className={'mr-[6%] flex flex-col items-end'}>
                 <CyDText
-                  className={'font-nunito font-[16px] text-black font-bold'}>
+                  className={'font-manrope font-[16px] text-black font-bold'}>
                   {String(formatAmount(Number(gasFee))) +
                     ' ' +
                     String(nativeToken?.symbol)}
                 </CyDText>
                 <CyDText
                   className={
-                    'font-nunito font-[12px] text-[#929292] font-bold'
+                    'font-manrope font-[12px] text-[#929292] font-bold'
                   }>
                   {String(
                     formatAmount(Number(nativeToken.price) * Number(gasFee)),
@@ -547,7 +547,7 @@ export default function IBC({
                     />
                     <CyDText
                       className={
-                        'text-center text-black font-nunito text-[16px] ml-[20px]'
+                        'text-center text-black font-manrope text-[16px] ml-[20px]'
                       }>
                       {tokenData.chainDetails.name}
                     </CyDText>
@@ -586,7 +586,7 @@ export default function IBC({
                     />
                     <CyDText
                       className={
-                        'text-center text-black font-nunito text-[16px] ml-[20px]'
+                        'text-center text-black font-manrope text-[16px] ml-[20px]'
                       }>
                       {tokenData.name}
                     </CyDText>
@@ -626,7 +626,7 @@ export default function IBC({
                     />
                     <CyDText
                       className={
-                        'text-center text-black font-nunito text-[16px] ml-[8px] ml-[20px]'
+                        'text-center text-black font-manrope text-[16px] ml-[8px] ml-[20px]'
                       }>
                       {chain?.name}
                     </CyDText>
@@ -642,7 +642,7 @@ export default function IBC({
               }>
               <CyDTextInput
                 className={clsx(
-                  'font-medium text-left text-black font-nunito text-[16px] w-[90%] mr-[10px]',
+                  'font-medium text-left text-black font-manrope text-[16px] w-[90%] mr-[10px]',
                 )}
                 onChangeText={text => {
                   setReceiverAddress(text);
@@ -681,7 +681,7 @@ export default function IBC({
               }>
               <CyDTextInput
                 className={clsx(
-                  'font-medium text-left text-black font-nunito text-[16px] w-[90%] mr-[10px]',
+                  'font-medium text-left text-black font-manrope text-[16px] w-[90%] mr-[10px]',
                 )}
                 onChangeText={text => {
                   setMemo(text);
@@ -717,7 +717,7 @@ export default function IBC({
               />
               <CyDText
                 className={
-                  'my-[6px] mx-[2px] text-black text-[14px] font-semibold flex flex-row justify-center font-nunito'
+                  'my-[6px] mx-[2px] text-black text-[14px] font-semibold flex flex-row justify-center font-manrope'
                 }>
                 {tokenData.name}
               </CyDText>
@@ -731,7 +731,7 @@ export default function IBC({
                 />
                 <CyDText
                   className={
-                    'ml-[6px] font-nunito text-black font-normal text-[12px]'
+                    'ml-[6px] font-manrope text-black font-normal text-[12px]'
                   }>
                   {tokenData.chainDetails.name}
                 </CyDText>
@@ -753,7 +753,7 @@ export default function IBC({
               />
               <CyDText
                 className={
-                  'my-[6px] mx-[2px] text-black text-[14px] font-semibold flex flex-row justify-center font-nunito'
+                  'my-[6px] mx-[2px] text-black text-[14px] font-semibold flex flex-row justify-center font-manrope'
                 }>
                 {tokenData.name}
               </CyDText>
@@ -767,7 +767,7 @@ export default function IBC({
                 />
                 <CyDText
                   className={
-                    'ml-[6px] font-nunito text-black font-normal text-[12px]'
+                    'ml-[6px] font-manrope text-black font-normal text-[12px]'
                   }>
                   {chain?.name}
                 </CyDText>
@@ -786,14 +786,14 @@ export default function IBC({
           }}>
           <CyDText
             className={
-              'font-extrabold text-[22px] text-center mt-[20px] font-nunito text-black'
+              'font-extrabold text-[22px] text-center mt-[20px] font-manrope text-black'
             }>
             {'Enter Amount'}
           </CyDText>
 
           <CyDText
             className={
-              'font-extrabold text-[20px] text-center mt-[10px] font-nunito bottom-0 text-black '
+              'font-extrabold text-[20px] text-center mt-[10px] font-manrope bottom-0 text-black '
             }>
             {tokenData.name}
           </CyDText>
@@ -802,7 +802,7 @@ export default function IBC({
             {!showMerged && (
               <CyDText
                 className={clsx(
-                  'font-bold text-[70px] h-[80px] text-justify font-nunito text-black ',
+                  'font-bold text-[70px] h-[80px] text-justify font-manrope text-black ',
                 )}>
                 {parseFloat(amount).toFixed(2)}
               </CyDText>
@@ -831,13 +831,13 @@ export default function IBC({
                     'absolute bg-white rounded-full h-[40px] w-[40px] flex justify-center items-center ' +
                       'p-[4px] left-[-14%]',
                   )}>
-                  <CyDText className={'font-nunito text-black '}>
+                  <CyDText className={'font-manrope text-black '}>
                     {'MAX'}
                   </CyDText>
                 </CyDTouchView>
                 <CyDTextInput
                   className={clsx(
-                    'font-bold text-center text-black h-[80px] font-nunito w-8/12 pt-[16px]',
+                    'font-bold text-center text-black h-[80px] font-manrope w-8/12 pt-[16px]',
                     {
                       'text-[70px]': amount.length <= 5,
                       'text-[40px]': amount.length > 5,
@@ -856,7 +856,7 @@ export default function IBC({
           <CyDView className='flex flex-row flex-wrap justify-center items-center'>
             <CyDText
               className={
-                'font-semibold text-[14px] text-center text-[#929292] font-nunito mt-[8px]'
+                'font-semibold text-[14px] text-center text-[#929292] font-manrope mt-[8px]'
               }>{`${tokenData.name} balance`}</CyDText>
             <CyDTokenAmount className='ml-[10px]' decimalPlaces={6}>
               {tokenData.actualBalance}

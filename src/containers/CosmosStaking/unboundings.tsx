@@ -83,11 +83,11 @@ export default function CosmosUnboundings({ route, navigation }) {
           <CyDView className={'flex flex-row justify-between'}>
             <CyDText
               className={
-                'text-[16px] font-nunito font-bold text-primaryTextColor'
+                'text-[16px] font-manrope font-bold text-primaryTextColor'
               }>{`${convertFromUnitAmount(item.balance.toString(), tokenData.contractDecimals)} ${tokenData.name}`}</CyDText>
             <CyDText
               className={
-                'text-[16px] font-nunito font-semibold text-subTextColor'
+                'text-[16px] font-manrope font-semibold text-subTextColor'
               }>
               {convertDate(item.completionTime)}
             </CyDText>
@@ -96,7 +96,7 @@ export default function CosmosUnboundings({ route, navigation }) {
           <CyDView className={'mt-[6px] mb-[12px]'}>
             <CyDText
               className={
-                'text-[16px] font-nunito font-semibold text-subTextColor'
+                'text-[16px] font-manrope font-semibold text-subTextColor'
               }>{`${daysRemaining(item.completionTime)}${t(' days remaining')}`}</CyDText>
           </CyDView>
         </CyDView>

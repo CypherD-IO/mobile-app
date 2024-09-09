@@ -14,7 +14,7 @@ export default function Loading({ loadingText }: { loadingText?: string }) {
     <CyDSafeAreaView className='h-full'>
       <CyDView className='flex flex-1 flex-col h-full w-[70%] justify-center self-center'>
         <ActivityIndicator size='large' color={Colors.appColor} />
-        <CyDText className='text-center font-nunito text-[14px] mt-[10px]'>
+        <CyDText className='text-center font-manrope text-[14px] mt-[10px]'>
           {loadingText ?? t('LOADING_TEXT')}
         </CyDText>
       </CyDView>

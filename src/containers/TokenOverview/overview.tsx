@@ -559,10 +559,10 @@ export default function Overview({
         )} ${tokenData.name}`}</CyDText>
         <CyDView>
           <HTML
-            systemFonts={['Nunito']}
+            systemFonts={['Manrope']}
             baseStyle={{
               fontSize: '14px',
-              fontFamily: 'Nunito',
+              fontFamily: 'Manrope',
               color: Colors.primaryTextColor,
               lineHeight: 22,
             }}

@@ -350,7 +350,7 @@ export default function OTPVerificationScreen({ navigation }) {
                 <CyDView className={'flex flex-row items-center'}>
                   <CyDTextInput
                     className={clsx(
-                      'text-center text-black font-nunito text-[16px] ml-[8px]',
+                      'text-center text-black font-manrope text-[16px] ml-[8px]',
                       { 'mt-[-8px]': isAndroid() },
                     )}
                     value={formData.updatedPhoneNumber}
@@ -414,7 +414,7 @@ export default function OTPVerificationScreen({ navigation }) {
             <CyDView className={'mt-[20px] flex flex-row justify-center'}>
               <CyDTextInput
                 className={
-                  'ml-[4px] border-[1px] border-inputBorderColor rounded-[5px] p-[12px] text-[18px] w-[85%] font-nunito text-primaryTextColor'
+                  'ml-[4px] border-[1px] border-inputBorderColor rounded-[5px] p-[12px] text-[18px] w-[85%] font-manrope text-primaryTextColor'
                 }
                 value={formData.updatedEmail}
                 autoCapitalize='none'
@@ -446,7 +446,7 @@ export default function OTPVerificationScreen({ navigation }) {
       ) : (
         <CyDSafeAreaView className={'h-full bg-white '}>
           <CardProviderSwitch />
-          <CyDText className='font-extrabold font-nunito text-[20px] mt-[10px] text-center'>
+          <CyDText className='font-extrabold font-manrope text-[20px] mt-[10px] text-center'>
             {'Verify OTP'}
           </CyDText>
           <CyDView className={'flex flex-row mt-[30px]'}>

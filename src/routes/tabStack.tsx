@@ -286,7 +286,7 @@ function TabStack() {
             );
           },
           tabBarLabelStyle: {
-            fontFamily: 'Nunito',
+            fontFamily: 'Manrope',
           },
           tabBarActiveTintColor: 'black',
           tabBarInactiveTintColor: 'gray',

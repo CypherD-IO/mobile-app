@@ -1289,7 +1289,7 @@ export default function Bridge(props: { navigation?: any; route?: any }) {
         />
         <CyDText
           className={
-            'mt-[20px] font-normal font-nunito text-black text-[20px]'
+            'mt-[20px] font-normal font-manrope text-black text-[20px]'
           }>
           {t<string>('FUND_WALLET_ACCESS_BRIDGE').toString()}
         </CyDText>
@@ -1493,7 +1493,7 @@ export default function Bridge(props: { navigation?: any; route?: any }) {
         <CyDView className={'px-[20px]'}>
           <CyDText
             className={
-              'text-center font-nunito text-[24px] font-bold font-[#434343] mt-[20px]'
+              'text-center font-manrope text-[24px] font-bold font-[#434343] mt-[20px]'
             }>
             {t<string>('HELP_US_UNDERSTAND')}
           </CyDText>
@@ -1503,7 +1503,7 @@ export default function Bridge(props: { navigation?: any; route?: any }) {
           <CyDView className={'mt-[17px] px-[15px]'}>
             <CyDText
               className={
-                'font-nunito text-[14px] font-semibold font-[#434343] ml-[10px] mb-[5px]'
+                'font-manrope text-[14px] font-semibold font-[#434343] ml-[10px] mb-[5px]'
               }>
               {t<string>('ADDITIONAL_COMMENTS')}
             </CyDText>
@@ -2176,7 +2176,7 @@ export default function Bridge(props: { navigation?: any; route?: any }) {
                       />
                       <CyDText
                         className={
-                          'my-[6px] mx-[2px] text-black text-[14px] text-center font-semibold flex flex-row justify-center font-nunito'
+                          'my-[6px] mx-[2px] text-black text-[14px] text-center font-semibold flex flex-row justify-center font-manrope'
                         }>
                         {fromToken?.name}
                       </CyDText>
@@ -2190,7 +2190,7 @@ export default function Bridge(props: { navigation?: any; route?: any }) {
                         />
                         <CyDText
                           className={
-                            'ml-[6px] font-nunito font-normal text-black  text-[12px]'
+                            'ml-[6px] font-manrope font-normal text-black  text-[12px]'
                           }>
                           {fromChain.name}
                         </CyDText>
@@ -2225,7 +2225,7 @@ export default function Bridge(props: { navigation?: any; route?: any }) {
                       />
                       <CyDText
                         className={
-                          'my-[6px] mx-[2px] text-black text-[14px] text-center font-semibold flex flex-row justify-center font-nunito'
+                          'my-[6px] mx-[2px] text-black text-[14px] text-center font-semibold flex flex-row justify-center font-manrope'
                         }>
                         {toToken?.name}
                       </CyDText>
@@ -2239,7 +2239,7 @@ export default function Bridge(props: { navigation?: any; route?: any }) {
                         />
                         <CyDText
                           className={
-                            'ml-[6px] font-nunito text-black font-normal text-[12px]'
+                            'ml-[6px] font-manrope text-black font-normal text-[12px]'
                           }>
                           {toChain.name}
                         </CyDText>
@@ -2250,14 +2250,14 @@ export default function Bridge(props: { navigation?: any; route?: any }) {
                 <CyDView className={'flex flex-row justify-between'}>
                   <CyDText
                     className={
-                      'font-[#434343] font-nunito text-black font-[16px] text-medium'
+                      'font-[#434343] font-manrope text-black font-[16px] text-medium'
                     }>
                     {t<string>('SENT_AMOUNT')}
                   </CyDText>
                   <CyDView className={'mr-[10px] flex flex-col items-end'}>
                     <CyDText
                       className={
-                        'font-nunito font-[16px] text-black font-bold max-w-[150px]'
+                        'font-manrope font-[16px] text-black font-bold max-w-[150px]'
                       }
                       numberOfLines={1}>
                       {isSwap()
@@ -2268,7 +2268,7 @@ export default function Bridge(props: { navigation?: any; route?: any }) {
                     </CyDText>
                     <CyDText
                       className={
-                        'font-nunito font-[12px] text-[#929292] font-bold'
+                        'font-manrope font-[12px] text-[#929292] font-bold'
                       }>
                       {isSwap()
                         ? (
@@ -2285,14 +2285,14 @@ export default function Bridge(props: { navigation?: any; route?: any }) {
                   }>
                   <CyDText
                     className={
-                      'text-[#434343] font-nunito font-[16px] text-medium'
+                      'text-[#434343] font-manrope font-[16px] text-medium'
                     }>
                     {t<string>('TOTAL_RECEIVED')}
                   </CyDText>
                   <CyDView className={'flex flex-col items-end'}>
                     <CyDText
                       className={
-                        'font-nunito font-[16px] text-black font-bold max-w-[150px]'
+                        'font-manrope font-[16px] text-black font-bold max-w-[150px]'
                       }
                       numberOfLines={1}>
                       {isSwap()
@@ -2303,7 +2303,7 @@ export default function Bridge(props: { navigation?: any; route?: any }) {
                     </CyDText>
                     <CyDText
                       className={
-                        'font-nunito font-[12px] text-[#929292] font-bold'
+                        'font-manrope font-[12px] text-[#929292] font-bold'
                       }>
                       {isSwap()
                         ? Number(swapParams?.quoteData?.value).toFixed(4)
@@ -2333,7 +2333,7 @@ export default function Bridge(props: { navigation?: any; route?: any }) {
                       className={'flex flex-row justify-between items-center'}>
                       <CyDText
                         className={
-                          'font-nunito font-[16px] text-black font-bold ml-[12px]'
+                          'font-manrope font-[16px] text-black font-bold ml-[12px]'
                         }>
                         {[
                           ChainBackendNames.COSMOS,
@@ -2415,7 +2415,7 @@ export default function Bridge(props: { navigation?: any; route?: any }) {
               style={styles.shadowProp}>
               <CyDText
                 className={
-                  'font-extrabold text-[16px] mt-[1px] ml-[3px] font-nunito text-black '
+                  'font-extrabold text-[16px] mt-[1px] ml-[3px] font-manrope text-black '
                 }>
                 {t<string>('FROM')}
               </CyDText>
@@ -2448,7 +2448,7 @@ export default function Bridge(props: { navigation?: any; route?: any }) {
                     />
                     <CyDText
                       className={
-                        'text-center text-black font-nunito text-[16px] ml-[8px]'
+                        'text-center text-black font-manrope text-[16px] ml-[8px]'
                       }>
                       {toChain?.name}
                     </CyDText>
@@ -2473,7 +2473,7 @@ export default function Bridge(props: { navigation?: any; route?: any }) {
                     />
                     <CyDText
                       className={
-                        'text-center text-black font-nunito text-[16px] ml-[8px]'
+                        'text-center text-black font-manrope text-[16px] ml-[8px]'
                       }>
                       {fromChain.name}
                     </CyDText>
@@ -2510,7 +2510,7 @@ export default function Bridge(props: { navigation?: any; route?: any }) {
                       />
                       <CyDText
                         className={
-                          'text-center text-black font-nunito text-[16px] ml-[8px] max-w-[70%]'
+                          'text-center text-black font-manrope text-[16px] ml-[8px] max-w-[70%]'
                         }
                         numberOfLines={1}>
                         {fromToken?.name}
@@ -2554,7 +2554,7 @@ export default function Bridge(props: { navigation?: any; route?: any }) {
                       />
                       <CyDText
                         className={
-                          'text-center text-black font-nunito text-[16px] ml-[8px] max-w-[70%]'
+                          'text-center text-black font-manrope text-[16px] ml-[8px] max-w-[70%]'
                         }
                         numberOfLines={1}>
                         {toToken?.name}
@@ -2583,7 +2583,7 @@ export default function Bridge(props: { navigation?: any; route?: any }) {
               />
               <CyDText
                 className={
-                  'my-[6px] mx-[2px] text-black text-center text-[14px] font-semibold flex flex-row justify-center font-nunito'
+                  'my-[6px] mx-[2px] text-black text-center text-[14px] font-semibold flex flex-row justify-center font-manrope'
                 }>
                 {fromToken?.name}
               </CyDText>
@@ -2597,7 +2597,7 @@ export default function Bridge(props: { navigation?: any; route?: any }) {
                 />
                 <CyDText
                   className={
-                    'ml-[6px] font-nunito text-black font-normal text-[12px]'
+                    'ml-[6px] font-manrope text-black font-normal text-[12px]'
                   }>
                   {fromChain.name}
                 </CyDText>
@@ -2627,7 +2627,7 @@ export default function Bridge(props: { navigation?: any; route?: any }) {
               />
               <CyDText
                 className={
-                  'my-[6px] mx-[2px] text-black text-center text-[14px] font-semibold flex flex-row justify-center font-nunito'
+                  'my-[6px] mx-[2px] text-black text-center text-[14px] font-semibold flex flex-row justify-center font-manrope'
                 }>
                 {toToken?.name}
               </CyDText>
@@ -2641,7 +2641,7 @@ export default function Bridge(props: { navigation?: any; route?: any }) {
                 />
                 <CyDText
                   className={
-                    'ml-[6px] font-nunito text-black font-normal text-[12px]'
+                    'ml-[6px] font-manrope text-black font-normal text-[12px]'
                   }>
                   {toChain.name}
                 </CyDText>
@@ -2661,14 +2661,14 @@ export default function Bridge(props: { navigation?: any; route?: any }) {
           }}>
           <CyDText
             className={
-              'font-extrabold text-[22px] text-center mt-[20px] font-nunito text-primaryTextColor'
+              'font-extrabold text-[22px] text-center mt-[20px] font-manrope text-primaryTextColor'
             }>
             {t<string>('ENTER_AMOUNT')}
           </CyDText>
 
           <CyDText
             className={
-              'font-extrabold text-[20px] text-center mt-[10px] font-nunito bottom-0 text-primaryTextColor'
+              'font-extrabold text-[20px] text-center mt-[10px] font-manrope bottom-0 text-primaryTextColor'
             }>
             {enterCryptoAmount ? fromToken?.name : 'USD'}
           </CyDText>
@@ -2677,7 +2677,7 @@ export default function Bridge(props: { navigation?: any; route?: any }) {
             {showDropDown && (
               <CyDText
                 className={clsx(
-                  'font-bold text-[70px] h-[80px] text-justify font-nunito mt-[10px] text-primaryTextColor',
+                  'font-bold text-[70px] h-[80px] text-justify font-manrope mt-[10px] text-primaryTextColor',
                   {
                     'text-[50px]': fromToken?.name === 'Ether',
                   },
@@ -2696,14 +2696,14 @@ export default function Bridge(props: { navigation?: any; route?: any }) {
                   className={clsx(
                     'bg-white rounded-full h-[40px] w-[40px] flex justify-center items-center p-[4px]',
                   )}>
-                  <CyDText className={'font-nunito text-black '}>
+                  <CyDText className={'font-manrope text-black '}>
                     {t<string>('MAX')}
                   </CyDText>
                 </CyDTouchView>
                 <CyDView className={'flex-col w-8/12 mx-[6px] items-center'}>
                   <CyDTextInput
                     className={clsx(
-                      'font-bold text-center text-primaryTextColor h-[85px] font-nunito',
+                      'font-bold text-center text-primaryTextColor h-[85px] font-manrope',
                       {
                         'text-[70px]': amount.length <= 5,
                         'text-[40px]': amount.length > 5,
@@ -2783,7 +2783,7 @@ export default function Bridge(props: { navigation?: any; route?: any }) {
             {!isSwap() && (
               <CyDText
                 className={
-                  'font-semibold text-[14px] text-center text-primaryTextColor font-nunito'
+                  'font-semibold text-[14px] text-center text-primaryTextColor font-manrope'
                 }>
                 {t<string>('ENTER_AMOUNT_GREATER') +
                   '' +
@@ -2795,7 +2795,7 @@ export default function Bridge(props: { navigation?: any; route?: any }) {
 
             <CyDText
               className={
-                'font-semibold text-[14px] text-center text-primaryTextColor font-nunito mt-[8px]'
+                'font-semibold text-[14px] text-center text-primaryTextColor font-manrope mt-[8px]'
               }>
               {String(fromToken?.name) +
                 ' ' +

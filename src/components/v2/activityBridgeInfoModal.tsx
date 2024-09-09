@@ -99,7 +99,7 @@ export default function ActivityBridgeInfoModal({
               />
             )}
             <CyDView className='flex mt-[5%] justify-center items-center '>
-              <CyDText className='text-center font-nunito text-[20px] font-extrabold font-primaryTextColor'>
+              <CyDText className='text-center font-manrope text-[20px] font-extrabold font-primaryTextColor'>
                 {t<string>(
                   type === ActivityType.BRIDGE
                     ? 'BRIDGE_TRANSACTION'
@@ -108,7 +108,7 @@ export default function ActivityBridgeInfoModal({
               </CyDText>
               <CyDText
                 className={clsx(
-                  'text-center font-nunito text-[12px] font-extrabold ',
+                  'text-center font-manrope text-[12px] font-extrabold ',
                   {
                     'text-successTextGreen':
                       status === ActivityStatus.SUCCESS ||
@@ -122,36 +122,36 @@ export default function ActivityBridgeInfoModal({
           </CyDView>
           <CyDView className='flex flex-col px-[40px]'>
             <CyDView className='flex flex-row mt-[10%] justify-start items-center'>
-              <CyDText className='font-nunito text-[16px] mt-[3px] w-[50%] font-primaryTextColor'>
+              <CyDText className='font-manrope text-[16px] mt-[3px] w-[50%] font-primaryTextColor'>
                 {t<string>('DATE')}
               </CyDText>
-              <CyDText className='text-center font-nunito text-[14px] font-bold font-primaryTextColor'>
+              <CyDText className='text-center font-manrope text-[14px] font-bold font-primaryTextColor'>
                 {moment(new Date()).format('MMM DD, h:mm a')}
               </CyDText>
             </CyDView>
             <CyDView className='flex flex-row mt-[10%] justify-start items-center'>
-              <CyDText className='font-nunito text-[16px] mt-[3px] w-[50%] font-primaryTextColor'>
+              <CyDText className='font-manrope text-[16px] mt-[3px] w-[50%] font-primaryTextColor'>
                 {t<string>('SENT')}
               </CyDText>
               <CyDView className='flex items-start'>
-                <CyDText className='text-center font-nunito text-[14px] font-bold font-primaryTextColor'>{`${fromTokenAmount} ${fromSymbol}`}</CyDText>
-                <CyDText className='text-center font-nunito text-[13px] font-primaryTextColor'>{`${String(quoteData.fromAmountUsd).slice(0, String(quoteData.fromAmountUsd).indexOf('.') + 4)} USD`}</CyDText>
+                <CyDText className='text-center font-manrope text-[14px] font-bold font-primaryTextColor'>{`${fromTokenAmount} ${fromSymbol}`}</CyDText>
+                <CyDText className='text-center font-manrope text-[13px] font-primaryTextColor'>{`${String(quoteData.fromAmountUsd).slice(0, String(quoteData.fromAmountUsd).indexOf('.') + 4)} USD`}</CyDText>
               </CyDView>
             </CyDView>
             <CyDView className='flex flex-row mt-[10%] justify-start'>
-              <CyDText className='font-nunito text-[16px] mt-[3px] w-[50%] font-primaryTextColor'>
+              <CyDText className='font-manrope text-[16px] mt-[3px] w-[50%] font-primaryTextColor'>
                 {t<string>('RECEIVED')}
               </CyDText>
               <CyDView className='flex items-start'>
-                <CyDText className='text-center font-nunito text-[14px] font-bold font-primaryTextColor'>{`${round(parseFloat(toTokenAmount))} ${toSymbol}`}</CyDText>
-                <CyDText className='text-center font-nunito text-[13px] font-primaryTextColor'>{`${String(quoteData.toAmountUsd).slice(0, String(quoteData.toAmountUsd).indexOf('.') + 4)} USD`}</CyDText>
+                <CyDText className='text-center font-manrope text-[14px] font-bold font-primaryTextColor'>{`${round(parseFloat(toTokenAmount))} ${toSymbol}`}</CyDText>
+                <CyDText className='text-center font-manrope text-[13px] font-primaryTextColor'>{`${String(quoteData.toAmountUsd).slice(0, String(quoteData.toAmountUsd).indexOf('.') + 4)} USD`}</CyDText>
               </CyDView>
             </CyDView>
             <CyDView className='flex flex-row mt-[10%] justify-start'>
-              <CyDText className='font-nunito text-[16px] mt-[3px] w-[50%] font-primaryTextColor'>
+              <CyDText className='font-manrope text-[16px] mt-[3px] w-[50%] font-primaryTextColor'>
                 {t<string>('GAS_FEE')}
               </CyDText>
-              <CyDText className='text-center font-nunito text-[14px] font-bold mt-[3px] font-primaryTextColor'>
+              <CyDText className='text-center font-manrope text-[14px] font-bold mt-[3px] font-primaryTextColor'>
                 {quoteData.gasFee
                   ? `${round(parseFloat(quoteData.gasFee), 6)} USD`
                   : ''}
@@ -164,11 +164,11 @@ export default function ActivityBridgeInfoModal({
             />
             <CyDText
               className={
-                'text-center font-nunito font-extrabold text-[20px] mt-[10px]'
+                'text-center font-manrope font-extrabold text-[20px] mt-[10px]'
               }>
               {t<string>('LOVE_CYPHERD_APP')}
             </CyDText>
-            <CyDText className={'text-center font-nunito mt-[10px]'}>
+            <CyDText className={'text-center font-manrope mt-[10px]'}>
               {t<string>('SHARE_WITH_FRIENDS')}
             </CyDText>
 
