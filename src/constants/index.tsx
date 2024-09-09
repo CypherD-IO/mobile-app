@@ -137,9 +137,9 @@ export const screenTitle = {
 };
 
 export const fontsName = {
-  FONT_BLACK: 'Nunito',
-  FONT_BOLD: 'Nunito',
-  FONT_SEMI_BOLD: 'Nunito',
-  FONT_EXTRA_BOLD: 'Nunito',
-  FONT_REGULAR: 'Nunito',
+  FONT_BLACK: 'Manrope',
+  FONT_BOLD: 'Manrope',
+  FONT_SEMI_BOLD: 'Manrope',
+  FONT_EXTRA_BOLD: 'Manrope',
+  FONT_REGULAR: 'Manrope',
 };

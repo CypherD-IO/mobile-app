@@ -84,7 +84,7 @@ export default function CosmosSelectReValidator({ route, navigation }) {
             <CyDView className={'flex flex-row justify-between'}>
               <CyDText
                 className={
-                  'text-[16px] font-bold text-secondaryTextColor font-nunito w-1/2'
+                  'text-[16px] font-bold text-secondaryTextColor font-manrope w-1/2'
                 }
                 numberOfLines={2}>
                 {item.name}
@@ -92,7 +92,7 @@ export default function CosmosSelectReValidator({ route, navigation }) {
               {item.balance.toString() !== '0' && (
                 <CyDText
                   className={
-                    'ml-[10px] text-[16px] font-bold text-secondaryTextColor font-nunito'
+                    'ml-[10px] text-[16px] font-bold text-secondaryTextColor font-manrope'
                   }>{`${convertFromUnitAmount(item.balance.toString(), tokenData.contractDecimals)} ${tokenData.name}`}</CyDText>
               )}
             </CyDView>
@@ -106,14 +106,14 @@ export default function CosmosSelectReValidator({ route, navigation }) {
               {item.apr !== '0.00' && (
                 <CyDText
                   className={
-                    'ml-[4px] font-nunito text-subTextColor'
+                    'ml-[4px] font-manrope text-subTextColor'
                   }>{`APR ${item.apr}`}</CyDText>
               )}
               <CyDImage
                 source={AppImages.COINS}
                 className={'ml-[20px] w-[20px] h-[16px]'}
               />
-              <CyDText className={'ml-[4px] font-nunito text-subTextColor'}>
+              <CyDText className={'ml-[4px] font-manrope text-subTextColor'}>
                 {convertNumberToShortHandNotation(
                   parseFloat(
                     convertFromUnitAmount(
@@ -142,7 +142,7 @@ export default function CosmosSelectReValidator({ route, navigation }) {
         }>
         <CyDTextInput
           className={
-            'ml-[4px] bg-[#F6F6F6] text-[20px] h-[40px] w-[55%] font-nunito'
+            'ml-[4px] bg-[#F6F6F6] text-[20px] h-[40px] w-[55%] font-manrope'
           }
           keyboardType={'numeric'}
           onChangeText={text => handleSearch(text)}

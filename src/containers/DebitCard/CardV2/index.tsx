@@ -331,7 +331,7 @@ export default function CypherCardScreen({
         }>
         {cardId !== HIDDEN_CARD_ID ? (
           <CyDView>
-            <CyDText className={'font-bold text-subTextColor text-[12px]'}>
+            <CyDText className={'font-semibold text-[10px]'}>
               {t<string>('TOTAL_BALANCE') + ' (USD)'}
             </CyDText>
             {!balanceLoading ? (

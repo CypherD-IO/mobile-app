@@ -528,7 +528,7 @@ export default function CardQuote({
           <CyDView className={'flex flex-row justify-between items-center'}>
             <CyDText
               className={
-                'font-nunito font-[16px] text-black font-bold ml-[12px]'
+                'font-manrope font-[16px] text-black font-bold ml-[12px]'
               }>
               ~ 4 mins
             </CyDText>

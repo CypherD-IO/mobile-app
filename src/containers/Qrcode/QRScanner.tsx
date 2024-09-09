@@ -80,7 +80,7 @@ export default function QRScanner(props: {
                 }>
                 <CyDText
                   className={
-                    'font-nunito text-center text-[20px] color-white mt-[24%]'
+                    'font-manrope text-center text-[20px] color-white mt-[24%]'
                   }>
                   {renderText()}
                 </CyDText>

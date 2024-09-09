@@ -1,23 +1,34 @@
-import { CyDFlatList, CyDImage, CyDText, CyDView } from '../../styles/tailwindStyles';
+import {
+  CyDFlatList,
+  CyDImage,
+  CyDText,
+  CyDView,
+} from '../../styles/tailwindStyles';
 import React, { ReactElement } from 'react';
 import clsx from 'clsx';
 import AppImages from '../../../assets/images/appImages';
 import LottieView from 'lottie-react-native';
 
 interface props {
-  header?: ReactElement
-  footer?: ReactElement
-  fillIndex: number
-  data: string[]
-  error: boolean
+  header?: ReactElement;
+  footer?: ReactElement;
+  fillIndex: number;
+  data: string[];
+  error: boolean;
 }
 
 interface timeLineItem {
-  item: string
-  index: number
+  item: string;
+  index: number;
 }
 
-export default function Timeline ({ header, footer, fillIndex, data, error }: props) {
+export default function Timeline({
+  header,
+  footer,
+  fillIndex,
+  data,
+  error,
+}: props) {
   const renderTimeLine = ({ item, index }: timeLineItem) => {
     return (
       <CyDView className={'flex flex-col'}>
@@ -27,10 +38,9 @@ export default function Timeline ({ header, footer, fillIndex, data, error }: pr
               'w-[28px] h-[28px]  rounded-full flex flex-row items-center justify-center',
               {
                 'bg-[#FFDE59]': index > fillIndex,
-                'bg-[#61C9A8]': index <= fillIndex
-              }
-            )}
-          >
+                'bg-[#61C9A8]': index <= fillIndex,
+              },
+            )}>
             {index <= fillIndex && (
               <CyDImage
                 className={'w-[14px] h-[10px]'}
@@ -59,13 +69,12 @@ export default function Timeline ({ header, footer, fillIndex, data, error }: pr
           <CyDView>
             <CyDText
               className={
-                'font-[#434343] font-semibold font-nunito text-[18px] ml-[16px]'
-              }
-            >
+                'font-[#434343] font-semibold font-manrope text-[18px] ml-[16px]'
+              }>
               {item}
             </CyDText>
             {/* <CyDText */}
-            {/*  className={"font-[#434343] font-nunito text-[16px] ml-[16px]"} */}
+            {/*  className={"font-[#434343] font-manrope text-[16px] ml-[16px]"} */}
             {/* > */}
             {/*  {item} */}
             {/* </CyDText> */}
@@ -76,9 +85,8 @@ export default function Timeline ({ header, footer, fillIndex, data, error }: pr
           <CyDView
             className={clsx('w-[3px] h-[35px]  rounded-full ml-[12px]', {
               'bg-[#F3F3F3]': index >= fillIndex,
-              'bg-[#808080]': index < fillIndex
-            })}
-          ></CyDView>
+              'bg-[#808080]': index < fillIndex,
+            })}></CyDView>
         )}
       </CyDView>
     );
@@ -87,10 +95,10 @@ export default function Timeline ({ header, footer, fillIndex, data, error }: pr
     <CyDView>
       <CyDFlatList
         ListHeaderComponent={() => {
-          return (header != null) ? header : <></>;
+          return header != null ? header : <></>;
         }}
         ListFooterComponent={() => {
-          return (footer != null) ? footer : <></>;
+          return footer != null ? footer : <></>;
         }}
         data={data}
         renderItem={renderTimeLine}

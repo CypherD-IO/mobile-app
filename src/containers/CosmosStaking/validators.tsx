@@ -93,7 +93,7 @@ export default function CosmosValidators({ route, navigation }) {
           <CyDView className='w-[70%]'>
             <CyDText
               className={
-                'text-[16px] font-bold text-secondaryTextColor font-nunito'
+                'text-[16px] font-bold text-secondaryTextColor font-manrope'
               }>
               {item.name}
             </CyDText>
@@ -107,13 +107,13 @@ export default function CosmosValidators({ route, navigation }) {
                 />
                 <CyDText
                   className={
-                    'ml-[10px] text-[16px] font-medium text-primaryTextColor font-nunito'
+                    'ml-[10px] text-[16px] font-medium text-primaryTextColor font-manrope'
                   }>
                   {'Staked'}
                 </CyDText>
                 <CyDText
                   className={
-                    'ml-[10px] text-[16px] font-bold text-secondaryTextColor font-nunito'
+                    'ml-[10px] text-[16px] font-bold text-secondaryTextColor font-manrope'
                   }>
                   {convertFromUnitAmount(
                     item.balance.toString(),
@@ -132,14 +132,14 @@ export default function CosmosValidators({ route, navigation }) {
               {item.apr !== '0.00' && (
                 <CyDText
                   className={
-                    'ml-[4px] font-nunito text-subTextColor'
+                    'ml-[4px] font-manrope text-subTextColor'
                   }>{`APR ${item.apr}%`}</CyDText>
               )}
               <CyDImage
                 source={AppImages.COINS}
                 className={'ml-[10px] w-[20px] h-[16px]'}
               />
-              <CyDText className={'ml-[4px] font-nunito text-subTextColor'}>
+              <CyDText className={'ml-[4px] font-manrope text-subTextColor'}>
                 {convert(
                   parseFloat(
                     convertFromUnitAmount(
