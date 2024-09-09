@@ -11,6 +11,7 @@ import {
 import AppImages from '../../../../assets/images/appImages';
 import {
   ACCOUNT_STATUS,
+  ButtonType,
   CardProviders,
   CardTransactionStatuses,
   CardTransactionTypes,
@@ -327,7 +328,7 @@ export default function CypherCardScreen({
       )}
       <CyDView
         className={
-          'h-[60px] flex flex-row justify-between items-center py-[5px] px-[10px] mx-[12px] mb-[18px] mt-[16px]'
+          'h-[60px] flex flex-row justify-between items-center py-[5px] px-[10px] mx-[12px] mb-[12px] mt-[24px]'
         }>
         {cardId !== HIDDEN_CARD_ID ? (
           <CyDView>
@@ -337,7 +338,7 @@ export default function CypherCardScreen({
             {!balanceLoading ? (
               <CyDTouchView onPress={() => fetchCardBalance().catch}>
                 <CyDView className='flex flex-row items-center justify-start gap-x-[8px]'>
-                  <CyDText className={'font-bold text-[28px]'}>
+                  <CyDText className={'font-bold text-[28px] tracking-tight'}>
                     {(cardBalance !== 'NA' ? '$ ' : '') + cardBalance}
                   </CyDText>
                   <CyDImage
@@ -365,22 +366,6 @@ export default function CypherCardScreen({
             </CyDText>
           </CyDView>
         )}
-
-        <CyDView className='w-[40%]'>
-          <Button
-            image={AppImages.LOAD_CARD_LOTTIE}
-            isLottie={true}
-            disabled={shouldBlockAction()}
-            onPress={() => {
-              onPressFundCard();
-            }}
-            style={
-              'pr-[7%] pl-[5%] py-[0px] w-full flex flex-row items-center justify-center rounded-[8px] h-[44px]'
-            }
-            title={t('LOAD_CARD_CAPS')}
-            titleStyle={'text-[14px]'}
-          />
-        </CyDView>
       </CyDView>
 
       <CyDScrollView>
@@ -414,27 +399,41 @@ export default function CypherCardScreen({
           </CyDView>
         )}
 
-        {cardId !== HIDDEN_CARD_ID && (
-          <CyDTouchView
-            className={`flex flex-row justify-center items-center self-center py-[4px] px-[12px] border-[0.2px] border-black rounded-[26px] mt-[4px] mb-[4px]  ${shouldBlockAction() ? 'bg-n40' : 'bg-white'}`}
+        <CyDView className='flex flex-row w-full justify-between items-center px-[5%]'>
+          <Button
+            image={AppImages.PLUS_ICON}
             disabled={shouldBlockAction()}
             onPress={() => {
-              cardProfile.isAutoloadConfigured
-                ? setIsAutoLoadOptionsVisible(true)
-                : navigation.navigate(screenTitle.AUTO_LOAD_SCREEN);
-            }}>
-            <CyDImage
-              source={AppImages.AUTOLOAD}
-              className={`h-[28px] w-[28px]`}
-              resizeMode='contain'
+              onPressFundCard();
+            }}
+            imageStyle={'w-[12px] h-[12px] mr-[8px]'}
+            style={'h-[36px] w-[44%]'}
+            paddingY={9}
+            title={t('Load Card')}
+            titleStyle={'text-[12px] text-black font-[500]'}
+          />
+          {cardId !== HIDDEN_CARD_ID && (
+            <Button
+              image={AppImages.AUTOLOAD}
+              disabled={shouldBlockAction()}
+              onPress={() => {
+                cardProfile.isAutoloadConfigured
+                  ? setIsAutoLoadOptionsVisible(true)
+                  : navigation.navigate(screenTitle.AUTO_LOAD_SCREEN);
+              }}
+              style={'h-[36px] w-[47%]'}
+              title={
+                (cardProfile.isAutoloadConfigured ? 'Manage' : 'Setup') +
+                ' Auto Deposit'
+              }
+              paddingY={9}
+              type={ButtonType.WHITE_FILL}
+              titleStyle={'text-[12px] text-black font-[500]'}
             />
-            <CyDText className='ml-[4px] text-[16px]'>
-              {(cardProfile.isAutoloadConfigured ? 'Manage' : 'Setup') +
-                ' Auto Load'}
-            </CyDText>
-          </CyDTouchView>
-        )}
-        <CyDView className='mt-[2px]'>
+          )}
+        </CyDView>
+
+        <CyDView className='mt-[22px]'>
           <CardScreen
             navigation={navigation}
             currentCardProvider={cardProvider}
@@ -446,9 +445,9 @@ export default function CypherCardScreen({
             onPressPlanChange={onPressPlanChange}
           />
         </CyDView>
-        <CyDView className='w-full bg-white mt-[12px] pb-[120px]'>
+        <CyDView className='w-full bg-white mt-[26px] pb-[120px]'>
           <CyDView className='mx-[12px] my-[12px]'>
-            <CyDText className='text-[18px] font-bold ml-[4px] mb-[4px]'>
+            <CyDText className='text-[14px] font-bold ml-[4px] mb-[8px]'>
               {t<string>('RECENT_TRANSACTIONS')}
             </CyDText>
             {recentTransactions.length ? (
@@ -495,6 +494,6 @@ export default function CypherCardScreen({
 
 const style = StyleSheet.create({
   loaderStyle: {
-    height: 40,
+    height: 38,
   },
 });

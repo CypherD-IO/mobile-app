@@ -504,6 +504,9 @@ const COMING_SOON = {
 const ZERO_RESTRICTION_MODE_ICON = {
   uri: `${S3_BUCKET_URL_ICONS}/zeroRestrictionModeIcon.png`,
 };
+const PLUS_ICON = {
+  uri: `${S3_BUCKET_URL_ICONS}/plusIcon.png`,
+};
 
 const AppImages = {
   BACK_ARROW_GRAY,
@@ -904,5 +907,6 @@ const AppImages = {
   MAN_WITH_PHONE,
   COMING_SOON,
   ZERO_RESTRICTION_MODE_ICON,
+  PLUS_ICON,
 };
 export default AppImages;
