@@ -5,7 +5,6 @@ import { getInjectiveAddress } from '@injectivelabs/sdk-ts';
 import { Mnemonic, PrivKeySecp256k1 } from '@keplr-wallet/crypto';
 import analytics from '@react-native-firebase/analytics';
 import { Keypair } from '@solana/web3.js';
-import { ethToEvmos } from '@tharsis/address-converter';
 import * as bip39 from 'bip39';
 import * as bs58 from 'bs58';
 import CryptoJS from 'crypto-js';
@@ -35,7 +34,6 @@ function sendFirebaseEvent(walletaddress: string, trkEvent: string) {
 
 export type AddressChainNames =
   | 'ethereum'
-  | 'evmos'
   | 'cosmos'
   | 'osmosis'
   | 'juno'
@@ -210,11 +208,6 @@ export const generateWalletFromMnemonic = async (
         publicKey: coreumPubKey,
       },
       {
-        name: 'evmos',
-        address: ethToEvmos(ethAddress).toLowerCase(),
-        publicKey: ethPubKey,
-      },
-      {
         name: 'solana',
         address: solanaAddress,
         publicKey: solanaAddress,
@@ -301,34 +294,6 @@ export const generateCosmosWallet = async (
   };
 };
 
-export const generateEvmosWallet = (
-  ethereumAddress: string,
-  chainConfig: IIBCData,
-  mnemonic: string,
-  bip44HDPath: {
-    account: number;
-    change: number;
-    addressIndex: number;
-  },
-): IAccountDetailWithChain => {
-  const masterSeed = Mnemonic.generateMasterSeedFromMnemonic(mnemonic);
-  const path = `m/44'/${chainConfig.coinType}'/${bip44HDPath.account}'/${bip44HDPath.change}/${bip44HDPath.addressIndex}`;
-  const privateKey = Mnemonic.generatePrivateKeyFromMasterSeed(
-    masterSeed,
-    path,
-  );
-  const address = ethToEvmos(ethereumAddress);
-
-  const privKeyInstance = new PrivKeySecp256k1(privateKey);
-  const publicKey = privKeyInstance.getPubKey().toBytes();
-  return {
-    name: 'evmos',
-    address,
-    // privateKey: uintToHex(privateKey),
-    publicKey: uintToHex(publicKey),
-  };
-};
-
 export const generateInjectiveWallet = (
   ethereumAddress: string,
   chainConfig: IIBCData,
@@ -390,14 +355,7 @@ export const generateWalletFromPrivateKey = async (privateKey: string) => {
     publicKey: ethersWallet.publicKey,
   };
 
-  const evmosWallet = {
-    name: 'evmos',
-    address: ethToEvmos(ethersWallet.address),
-    privateKey: addHexPrefix(privateKey),
-    publicKey: ethersWallet.publicKey,
-  };
-
-  const accounts: IAccountDetailWithChain[] = [ethereumWallet, evmosWallet];
+  const accounts: IAccountDetailWithChain[] = [ethereumWallet];
   // emit event to firebase
   sendFirebaseEvent(ethereumWallet.address, 'import_wallet_private_key');
   // Register FCM

@@ -16,13 +16,6 @@ export interface DecodeTxnRequestBody {
   maxPriorityFeePerGas?: string;
 }
 
-export interface IEvmosTxnMessage {
-  from: string;
-  to: string;
-  data?: string;
-  gas?: string;
-}
-
 export interface IModalPayload {
   resolve: (value: boolean) => void;
   reject: (value: boolean) => void;

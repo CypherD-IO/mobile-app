@@ -23,10 +23,6 @@ import Backup from '../containers/Auth/Backup';
 import BridgeTokenScreen from '../containers/Bridge/bridgeToken';
 import EnterAmount from '../containers/SendTo/enterAmount';
 import SendTo from '../containers/SendTo';
-import StakingDelegation from '../containers/Staking/delegation';
-import StakingReDelegate from '../containers/Staking/reDelegate';
-import ReStake from '../containers/Staking/reStake';
-import Unboundings from '../containers/Staking/unboundings';
 import OptionsScreen from '../containers/Options/index';
 import ImportAnotherWallet from '../containers/Options/ImportAnotherWallet';
 import NotificationSettings from '../containers/Options/NotificationSettings';
@@ -278,101 +274,6 @@ export function PortfolioStackScreen({ navigation, route }) {
           navigationOptions: {
             tabBarVisible: false,
           },
-          headerTintColor: Colors.primaryTextColor,
-          headerBackTitleVisible: false,
-          headerLeft: props => defaultHeaderLeft(navigation),
-        })}
-      />
-
-      <PortfolioStack.Screen
-        name={screenTitle.STAKING_VALIDATORS}
-        component={StakingValidators}
-        options={({ navigation, route }) => ({
-          headerTransparent: false,
-          headerShadowVisible: false,
-          title: '',
-          headerTitleAlign: 'center',
-          headerTitleStyle: portfolioStackScreenHeaderTitleStyles,
-          navigationOptions: {
-            tabBarVisible: false,
-          },
-
-          headerTintColor: Colors.primaryTextColor,
-          headerBackTitleVisible: false,
-          headerLeft: props => defaultHeaderLeft(navigation),
-        })}
-      />
-
-      <PortfolioStack.Screen
-        name={screenTitle.STAKING_MANAGEMENT}
-        component={StakingDelegation}
-        options={({ navigation, route }) => ({
-          headerTransparent: false,
-          headerShadowVisible: false,
-          title: '',
-          headerTitleAlign: 'center',
-          headerTitleStyle: portfolioStackScreenHeaderTitleStyles,
-          navigationOptions: {
-            tabBarVisible: false,
-          },
-
-          headerTintColor: Colors.primaryTextColor,
-          headerBackTitleVisible: false,
-          headerLeft: props => defaultHeaderLeft(navigation),
-        })}
-      />
-
-      <PortfolioStack.Screen
-        name={screenTitle.STAKING_REDELEGATE}
-        component={StakingReDelegate}
-        options={({ navigation, route }) => ({
-          headerTransparent: false,
-          headerShadowVisible: false,
-          title: '',
-          headerTitleAlign: 'center',
-          headerTitleStyle: portfolioStackScreenHeaderTitleStyles,
-          navigationOptions: {
-            tabBarVisible: false,
-          },
-
-          headerTintColor: Colors.primaryTextColor,
-          headerBackTitleVisible: false,
-          headerLeft: props => defaultHeaderLeft(navigation),
-        })}
-      />
-
-      <PortfolioStack.Screen
-        name={screenTitle.RESTAKE}
-        component={ReStake}
-        options={({ navigation, route }) => ({
-          headerTransparent: false,
-          headerShadowVisible: false,
-          title: 'Restake to',
-          headerTitleAlign: 'center',
-          headerTitleStyle: portfolioStackScreenHeaderTitleStyles,
-          navigationOptions: {
-            tabBarVisible: false,
-          },
-
-          headerTintColor: Colors.primaryTextColor,
-          headerBackTitleVisible: false,
-          headerLeft: props => defaultHeaderLeft(navigation),
-        })}
-      />
-
-      <PortfolioStack.Screen
-        name={screenTitle.UNBOUNDING}
-        component={Unboundings}
-        options={({ navigation, route }) => ({
-          headerTransparent: false,
-          headerShadowVisible: false,
-          title: 'Unboundings',
-          headerTitleAlign: 'center',
-          headerTitleStyle: portfolioStackScreenHeaderTitleStyles,
-          navigationOptions: {
-            tabBarVisible: false,
-          },
-
           headerTintColor: Colors.primaryTextColor,
           headerBackTitleVisible: false,
           headerLeft: props => defaultHeaderLeft(navigation),

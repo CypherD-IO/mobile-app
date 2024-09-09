@@ -12,7 +12,6 @@ import {
   isBasicCosmosChain,
   StakingContext,
   convertFromUnitAmount,
-  convertToEvmosFromAevmos,
   isABasicCosmosStakingToken,
   isCosmosStakingToken,
 } from '../../core/util';
@@ -39,10 +38,7 @@ export default function TokenOverviewToolBar({
   const { isBridgeable, isSwapable } = tokenData;
   const canShowIBC =
     globalStateContext.globalState.ibc &&
-    (isBasicCosmosChain(tokenData.chainDetails.backendName) ||
-      (tokenData.chainDetails.backendName === ChainBackendNames.EVMOS &&
-        (tokenData.name === CosmosStakingTokens.EVMOS ||
-          tokenData.name.includes('IBC'))));
+    isBasicCosmosChain(tokenData.chainDetails.backendName);
 
   const userBalance = () => {
     if (isABasicCosmosStakingToken(tokenData)) {
@@ -56,15 +52,6 @@ export default function TokenOverviewToolBar({
             ).toString(),
             tokenData.contractDecimals,
           ),
-        )
-      );
-    } else if (isCosmosStakingToken('EVMOS', tokenData)) {
-      return (
-        Number(tokenData.price) *
-        convertToEvmosFromAevmos(
-          Number(stakingValidators.stateStaking.totalStakedBalance) +
-            Number(stakingValidators.stateStaking.unStakedBalance) +
-            Number(stakingValidators.stateStaking.unBoundingTotal),
         )
       );
     } else {
@@ -190,10 +177,6 @@ export default function TokenOverviewToolBar({
               tokenData.chainDetails.backendName === ChainBackendNames.OSMOSIS
             ) {
               addressTypeQRCode = FundWalletAddressType.OSMOSIS;
-            } else if (
-              tokenData.chainDetails.backendName === ChainBackendNames.EVMOS
-            ) {
-              addressTypeQRCode = FundWalletAddressType.EVMOS;
             } else if (
               tokenData.chainDetails.backendName === ChainBackendNames.ETH
             ) {

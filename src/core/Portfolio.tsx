@@ -6,7 +6,6 @@ import {
   CHAIN_COLLECTION,
   CHAIN_COSMOS,
   CHAIN_ETH,
-  CHAIN_EVMOS,
   CHAIN_OSMOSIS,
   CHAIN_POLYGON,
   CHAIN_JUNO,
@@ -92,7 +91,6 @@ export interface WalletHoldings {
   avalanche: ChainHoldings | undefined;
   arbitrum: ChainHoldings | undefined;
   optimism: ChainHoldings | undefined;
-  evmos: ChainHoldings | undefined;
   cosmos: ChainHoldings | undefined;
   osmosis: ChainHoldings | undefined;
   juno: ChainHoldings | undefined;
@@ -136,7 +134,6 @@ export interface NftHoldings {
   BNB: ChainNftHoldings[] | undefined;
   AVAX: ChainNftHoldings[] | undefined;
   ARBITRUM: ChainNftHoldings[] | undefined;
-  EVMOS: ChainNftHoldings[] | undefined;
   OPTIMISM: ChainNftHoldings[] | undefined;
   COSMOS: ChainNftHoldings[] | undefined;
   OSMO: ChainNftHoldings[] | undefined;
@@ -167,8 +164,6 @@ export function getCurrentChainHoldings(
       return portfolio.totalHoldings;
     case CHAIN_ARBITRUM.backendName:
       return portfolio.arbitrum;
-    case CHAIN_EVMOS.backendName:
-      return portfolio.evmos;
     case CHAIN_OPTIMISM.backendName:
       return portfolio.optimism;
     case CHAIN_COSMOS.backendName:
@@ -222,7 +217,6 @@ export async function fetchNftDatav2(
     AVAX: [],
     ARBITRUM: [],
     OPTIMISM: [],
-    EVMOS: [],
     COSMOS: [],
     OSMO: [],
     JUNO: [],
@@ -356,9 +350,6 @@ export async function fetchNftDatav2(
       case CHAIN_OPTIMISM.backendName:
         allChainNftHoldings.OPTIMISM = chainNftData;
         break;
-      case CHAIN_EVMOS.backendName:
-        allChainNftHoldings.EVMOS = chainNftData;
-        break;
       case CHAIN_STARGAZE.backendName:
         allChainNftHoldings.STARS = chainNftData;
         break;
@@ -408,7 +399,6 @@ export async function getPortfolioModel(
   let maticHoldings;
   let bscHoldings;
   let avaxHoldings;
-  let evmosHoldings;
   let cosmosHoldings;
   let osmosisHoldings;
   let junoHoldings;
@@ -434,7 +424,6 @@ export async function getPortfolioModel(
     CHAIN_BSC.backendName,
     CHAIN_COSMOS.backendName,
     CHAIN_ETH.backendName,
-    CHAIN_EVMOS.backendName,
     CHAIN_ARBITRUM.backendName,
     CHAIN_OSMOSIS.backendName,
     CHAIN_JUNO.backendName,
@@ -522,9 +511,6 @@ export async function getPortfolioModel(
           break;
         case CHAIN_OPTIMISM.backendName:
           tokenHolding.chainDetails = CHAIN_OPTIMISM;
-          break;
-        case CHAIN_EVMOS.backendName:
-          tokenHolding.chainDetails = CHAIN_EVMOS;
           break;
         case CHAIN_COSMOS.backendName:
           tokenHolding.chainDetails = CHAIN_COSMOS;
@@ -634,9 +620,6 @@ export async function getPortfolioModel(
       case CHAIN_OPTIMISM.backendName:
         optimismHoldings = chainHoldings;
         break;
-      case CHAIN_EVMOS.backendName:
-        evmosHoldings = chainHoldings;
-        break;
       case CHAIN_COSMOS.backendName:
         cosmosHoldings = chainHoldings;
         break;
@@ -740,9 +723,6 @@ export async function getPortfolioModel(
         case CHAIN_OPTIMISM.backendName:
           optimismHoldings = chainHoldings;
           break;
-        case CHAIN_EVMOS.backendName:
-          evmosHoldings = chainHoldings;
-          break;
         case CHAIN_COSMOS.backendName:
           cosmosHoldings = chainHoldings;
           break;
@@ -809,7 +789,6 @@ export async function getPortfolioModel(
     polygon: maticHoldings,
     bsc: bscHoldings,
     avalanche: avaxHoldings,
-    evmos: evmosHoldings,
     cosmos: cosmosHoldings,
     osmosis: osmosisHoldings,
     juno: junoHoldings,

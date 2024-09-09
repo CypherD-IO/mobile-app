@@ -51,15 +51,10 @@ export function TokenTransactions({
   const [pageNumber, setPageNumber] = useState<number>(0);
   const { cosmos, osmosis, juno, stargaze, noble, coreum, injective, kujira } =
     hdWallet.state.wallet;
-  const evmos = hdWallet.state.wallet.evmos;
   const [refreshing, setRefreshing] = useState<boolean>(false);
 
   useEffect(() => {
-    if (
-      (tokenData.chainDetails.backendName === ChainBackendNames.EVMOS &&
-        !tokenData.name.includes('IBC')) ||
-      tokenData.chainDetails.chainName === ChainNames.ETH
-    ) {
+    if (tokenData.chainDetails.chainName === ChainNames.ETH) {
       setLoading(true);
       void analytics().logEvent('visited_transactions_page');
       void fetchData();
@@ -131,9 +126,6 @@ export function TokenTransactions({
         break;
       case ChainBackendNames.JUNO:
         uri = `https://www.mintscan.io/juno/account/${juno.wallets[juno.currentIndex].address}`;
-        break;
-      case ChainBackendNames.EVMOS:
-        uri = `https://www.mintscan.io/evmos/account/${evmos.address}`;
         break;
       case ChainBackendNames.STARGAZE:
         uri = `https://www.mintscan.io/stargaze/account/${stargaze.address}`;

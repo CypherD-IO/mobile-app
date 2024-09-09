@@ -565,9 +565,6 @@ export default function ShortcutsModal({ navigationRef }) {
         case ChainBackendNames.OPTIMISM:
           addressTypeQRCode = FundWalletAddressType.OPTIMISM;
           break;
-        case ChainBackendNames.EVMOS:
-          addressTypeQRCode = FundWalletAddressType.EVMOS;
-          break;
         case ChainBackendNames.COSMOS:
           addressTypeQRCode = FundWalletAddressType.COSMOS;
           break;
