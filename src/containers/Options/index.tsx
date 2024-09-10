@@ -22,7 +22,6 @@ import { Colors } from '../../constants/theme';
 import { sendFirebaseEvent } from '../../containers/utilities/analyticsUtility';
 import { showToast } from '../../containers/utilities/toastUtility';
 import { setDeveloperMode } from '../../core/asyncStorage';
-import { getWalletProfile } from '../../core/card';
 import { GlobalContext } from '../../core/globalContext';
 import {
   ActivityContext,
@@ -48,6 +47,7 @@ import useConnectionManager from '../../hooks/useConnectionManager';
 import { get } from 'lodash';
 import { CHAIN_ETH } from '../../constants/server';
 import { logAnalytics } from '../../core/analytics';
+import useCardUtilities from '../../hooks/useCardUtilities';
 
 const { DynamicView, CText, DynamicImage } = require('../../styles');
 
@@ -116,6 +116,7 @@ export default function Options(props: {
   const [connectionTypeValue, setConnectionTypeValue] =
     useState(connectionType);
   const resolveDomain = useEns()[1];
+  const { getWalletProfile } = useCardUtilities();
 
   useEffect(() => {
     setConnectionTypeValue(connectionType);
@@ -418,6 +419,31 @@ export default function Options(props: {
                   logo={AppImages.REFER_OUTLINE}
                 />
               )} */}
+
+              {!isReadOnlyWallet && (
+                <>
+                  <OptionsContainer
+                    sentryLabel={'referrals'}
+                    onPress={() => {
+                      props.navigation.navigate(C.screenTitle.REWARDS, {
+                        fromOptionsStack: true,
+                      });
+                    }}
+                    title={t('CYPHER_CARD_REWARDS')}
+                    logo={AppImages.REWARDS_ICON}
+                    iW={150}
+                    imageStyle={'-ml-[4px]'}
+                  />
+                  <DynamicView
+                    dynamic
+                    dynamicWidth
+                    dynamicHeightFix
+                    height={1}
+                    width={88}
+                    bGC={Colors.portfolioBorderColor}
+                  />
+                </>
+              )}
 
               {!isReadOnlyWallet && (
                 <OptionsContainer

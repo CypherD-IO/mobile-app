@@ -3,9 +3,9 @@ import { CyDView } from '../../styles/tailwindStyles';
 import WebView from 'react-native-webview';
 import { BackHandler } from 'react-native';
 
-const uri = 'https://cypherwallet.io/legal/';
+const uri = 'https://cypherhq.io/legal/';
 
-export default function LegalScreen ({ navigation }) {
+export default function LegalScreen({ navigation }) {
   const handleBackButton = () => {
     navigation.goBack();
     return true;
@@ -18,10 +18,8 @@ export default function LegalScreen ({ navigation }) {
     };
   }, []);
   return (
-      <CyDView className={'h-full w-full'}>
-          <WebView
-              source={{ uri }}
-          />
-      </CyDView>
+    <CyDView className={'h-full w-full'}>
+      <WebView source={{ uri }} />
+    </CyDView>
   );
 }

@@ -2,6 +2,7 @@ import * as React from 'react';
 import { Formik } from 'formik';
 import {
   CyDImage,
+  CyDKeyboardAwareScrollView,
   CyDScrollView,
   CyDText,
   CyDTextInput,
@@ -20,12 +21,14 @@ import { useGlobalModalContext } from '../../../components/v2/GlobalModal';
 import useAxios from '../../../core/HttpRequest';
 import { MODAL_HIDE_TIMEOUT } from '../../../core/Http';
 import { GlobalContext } from '../../../core/globalContext';
-import { GlobalContextType } from '../../../constants/enum';
+import { CardProviders, GlobalContextType } from '../../../constants/enum';
 import OtpInput from '../../../components/v2/OTPInput';
 import LottieView from 'lottie-react-native';
 import * as Sentry from '@sentry/react-native';
 import { StyleSheet } from 'react-native';
 import { getChainNameFromAddress, trimWhitespace } from '../../../core/util';
+import { CardProfile } from '../../../models/cardProfile.model';
+import useCardUtilities from '../../../hooks/useCardUtilities';
 
 export default function LinkAnotherWallet({ navigation }) {
   const [formValues, setFormValues] = useState({
@@ -40,6 +43,9 @@ export default function LinkAnotherWallet({ navigation }) {
   const { postWithAuth, patchWithAuth, getWithAuth } = useAxios();
   const { showModal, hideModal } = useGlobalModalContext();
   const globalContext = useContext<any>(GlobalContext);
+  const cardProfile: CardProfile = globalContext.globalState.cardProfile;
+  const provider = cardProfile.provider ?? CardProviders.REAP_CARD;
+  const { cardProfileModal } = useCardUtilities();
 
   const RESENT_OTP_TIME = 30;
 
@@ -110,10 +116,11 @@ export default function LinkAnotherWallet({ navigation }) {
 
   const refreshProfile = async () => {
     const response = await getWithAuth('/v1/authentication/profile');
+    const tempProfile = await cardProfileModal(response.data);
     if (!response.isError) {
       globalContext.globalDispatch({
         type: GlobalContextType.CARD_PROFILE,
-        cardProfile: response.data,
+        cardProfile: tempProfile,
       });
       return true;
     }
@@ -195,109 +202,113 @@ export default function LinkAnotherWallet({ navigation }) {
         {formProps => (
           <CyDView className='flex flex-1 h-full'>
             <CyDScrollView className='flex flex-col w-full'>
-              <CyDView className='flex flex-1 h-full'>
-                {Object.keys(formValues).map((field, index) => {
-                  return (
-                    <CyDView
-                      className='flex-1 mt-[25px] self-center w-[87%]'
-                      key={index}>
-                      <CyDView className='flex flex-row justify-start gap-[10px]'>
-                        <CyDText className='font-bold text-primaryTextColor'>
-                          {labels[field].label}
-                        </CyDText>
-                      </CyDView>
-                      <CyDView className='flex flex-row justify-between items-center w-[100%]'>
-                        <CyDTextInput
-                          className={clsx(
-                            'mt-[5px] w-[100%] border-[1px] border-inputBorderColor rounded-[10px] p-[12px] pr-[38px] text-[16px] font-nunito text-primaryTextColor',
-                            {
-                              'border-redOffColor':
-                                formProps.touched[field] &&
-                                formProps.errors[field],
-                            },
-                          )}
-                          value={formProps.values[field]}
-                          autoCapitalize='none'
-                          key={index}
-                          autoCorrect={false}
-                          onChangeText={text => {
-                            handleTextChange(
-                              text,
-                              formProps.handleChange,
-                              field,
-                              0,
-                            );
-                          }}
-                          placeholderTextColor={'#C5C5C5'}
-                          placeholder={labels[field].placeHolder}
-                        />
-                        {formProps.values[field] !== '' ? (
-                          <CyDTouchView
-                            className='left-[-32px]'
-                            onPress={() => {
-                              formProps.setFieldValue(`${field}`, '');
-                            }}>
-                            <CyDImage source={AppImages.CLOSE_CIRCLE} />
-                          </CyDTouchView>
-                        ) : (
-                          <></>
-                        )}
-                      </CyDView>
-                      {formProps.touched[field] && formProps.errors[field] && (
-                        <CyDView className={'ml-[5px] mt-[6px] mb-[-11px]'}>
-                          <CyDText className={'text-redOffColor font-semibold'}>
-                            {formProps.errors[field]}
+              <CyDKeyboardAwareScrollView>
+                <CyDView className='flex flex-1 h-full'>
+                  {Object.keys(formValues).map((field, index) => {
+                    return (
+                      <CyDView
+                        className='flex-1 mt-[25px] self-center w-[87%]'
+                        key={index}>
+                        <CyDView className='flex flex-row justify-start gap-[10px]'>
+                          <CyDText className='font-bold text-primaryTextColor'>
+                            {labels[field].label}
                           </CyDText>
                         </CyDView>
-                      )}
-                    </CyDView>
-                  );
-                })}
-              </CyDView>
-              <CyDView className={'bg-white pt-[10px] self-center w-[87%]'}>
-                <CyDView>
-                  {isOTPTriggered && (
-                    <CyDView className={'mt-[20px]'}>
-                      <CyDText className={'text-[15px] mb-[12px] font-bold'}>
-                        {t<string>('UPDATE_CARD_DETAILS_OTP')}
-                      </CyDText>
-                      <OtpInput
-                        pinCount={4}
-                        getOtp={otp => {
-                          void onOTPEntry(otp);
-                        }}
-                        placeholder={t('ENTER_OTP')}
-                      />
-                      <CyDTouchView
-                        className={'flex flex-row items-center mt-[18px]'}
-                        disabled={sendingOTP || resendInterval !== 0}
-                        onPress={() => {
-                          void resendOTP();
-                        }}>
-                        <CyDText
-                          className={
-                            'font-bold underline decoration-solid underline-offset-4'
-                          }>
-                          {t<string>('RESEND_CODE_INIT_CAPS')}
-                        </CyDText>
-                        {sendingOTP && (
-                          <LottieView
-                            source={AppImages.LOADER_TRANSPARENT}
-                            autoPlay
-                            loop
-                            style={styles.lottie}
+                        <CyDView className='flex flex-row justify-between items-center w-[100%]'>
+                          <CyDTextInput
+                            className={clsx(
+                              'mt-[5px] w-[100%] border-[1px] border-inputBorderColor rounded-[10px] p-[12px] pr-[38px] text-[16px] font-nunito text-primaryTextColor',
+                              {
+                                'border-redOffColor':
+                                  formProps.touched[field] &&
+                                  formProps.errors[field],
+                              },
+                            )}
+                            value={formProps.values[field]}
+                            autoCapitalize='none'
+                            key={index}
+                            autoCorrect={false}
+                            onChangeText={text => {
+                              handleTextChange(
+                                text,
+                                formProps.handleChange,
+                                field,
+                                0,
+                              );
+                            }}
+                            placeholderTextColor={'#C5C5C5'}
+                            placeholder={labels[field].placeHolder}
                           />
-                        )}
-                        {resendInterval !== 0 && (
-                          <CyDText>
-                            {String(` in ${resendInterval} sec`)}
-                          </CyDText>
-                        )}
-                      </CyDTouchView>
-                    </CyDView>
-                  )}
+                          {formProps.values[field] !== '' ? (
+                            <CyDTouchView
+                              className='left-[-32px]'
+                              onPress={() => {
+                                formProps.setFieldValue(`${field}`, '');
+                              }}>
+                              <CyDImage source={AppImages.CLOSE_CIRCLE} />
+                            </CyDTouchView>
+                          ) : (
+                            <></>
+                          )}
+                        </CyDView>
+                        {formProps.touched[field] &&
+                          formProps.errors[field] && (
+                            <CyDView className={'ml-[5px] mt-[6px] mb-[-11px]'}>
+                              <CyDText
+                                className={'text-redOffColor font-semibold'}>
+                                {formProps.errors[field]}
+                              </CyDText>
+                            </CyDView>
+                          )}
+                      </CyDView>
+                    );
+                  })}
                 </CyDView>
-              </CyDView>
+                <CyDView className={'bg-white pt-[10px] self-center w-[87%]'}>
+                  <CyDView>
+                    {isOTPTriggered && (
+                      <CyDView className={'mt-[20px]'}>
+                        <CyDText className={'text-[15px] mb-[12px] font-bold'}>
+                          {t<string>('UPDATE_CARD_DETAILS_OTP')}
+                        </CyDText>
+                        <OtpInput
+                          pinCount={4}
+                          getOtp={otp => {
+                            void onOTPEntry(otp);
+                          }}
+                          placeholder={t('ENTER_OTP')}
+                        />
+                        <CyDTouchView
+                          className={'flex flex-row items-center mt-[18px]'}
+                          disabled={sendingOTP || resendInterval !== 0}
+                          onPress={() => {
+                            void resendOTP();
+                          }}>
+                          <CyDText
+                            className={
+                              'font-bold underline decoration-solid underline-offset-4'
+                            }>
+                            {t<string>('RESEND_CODE_INIT_CAPS')}
+                          </CyDText>
+                          {sendingOTP && (
+                            <LottieView
+                              source={AppImages.LOADER_TRANSPARENT}
+                              autoPlay
+                              loop
+                              style={styles.lottie}
+                            />
+                          )}
+                          {resendInterval !== 0 && (
+                            <CyDText>
+                              {String(` in ${resendInterval} sec`)}
+                            </CyDText>
+                          )}
+                        </CyDTouchView>
+                      </CyDView>
+                    )}
+                  </CyDView>
+                </CyDView>
+              </CyDKeyboardAwareScrollView>
             </CyDScrollView>
             <CyDView className='w-full px-[24px] items-center mb-[20px]'>
               <Button

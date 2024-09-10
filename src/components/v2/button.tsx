@@ -26,6 +26,7 @@ interface IButton {
   imageStyle?: any;
   imagePosition?: string;
   isPrivateKeyDependent?: boolean;
+  paddingY?: number;
 }
 export default function Button({
   onPress,
@@ -41,6 +42,7 @@ export default function Button({
   imageStyle = 'h-[20px] w-[20px] mt-[1px] mr-[10px]',
   imagePosition = ImagePosition.LEFT,
   isPrivateKeyDependent = false,
+  paddingY,
 }: IButton) {
   const [appState, setAppState] = useState<string>('');
   const [animation, setAnimation] = useState();
@@ -76,7 +78,7 @@ export default function Button({
       }}
       disabled={disabled || loading}
       className={clsx(
-        `rounded-[8px] py-[15px] flex flex-row items-center justify-center ${style}`,
+        `rounded-[8px] py-[${paddingY ?? 15}px] flex flex-row items-center justify-center ${style}`,
         {
           'bg-buttonColor': ButtonType.PRIMARY === type,
           'bg-white border-[1px]  border-greyButtonBackgroundColor':
@@ -85,9 +87,10 @@ export default function Button({
             ButtonType.TERNARY === type,
           'bg-white border-[1px] border-greyButtonBackgroundColor':
             ButtonType.GREY === type,
-          'bg-redColor': ButtonType.RED === type,
+          'bg-n20': ButtonType.GREY_FILL === type,
+          'bg-r300': ButtonType.RED === type,
           'bg-black': ButtonType.DARK === type,
-          'bg-[#CFCFCF]': disabled,
+          'bg-n40': disabled,
         },
       )}>
       {loading && (

@@ -15,6 +15,7 @@ import Loading from '../../../components/v2/loading';
 import { StyleSheet } from 'react-native';
 import useAxios from '../../../core/HttpRequest';
 import { CardProviders } from '../../../constants/enum';
+import { generateKeys } from '../../../core/util';
 
 export default function CardRevealAuthScreen(props: {
   navigation: any;
@@ -96,18 +97,39 @@ export default function CardRevealAuthScreen(props: {
 
   const verifyOTP = async (num: number) => {
     const OTPVerificationUrl = `/v1/cards/${currentCardProvider}/card/${card?.cardId}/${triggerOTPParam}`;
-    setVerifyingOTP(true);
-    const payload = {
-      otp: +num,
-      ...(verifyOTPPayload || {}),
-    };
-    try {
-      const response = await postWithAuth(OTPVerificationUrl, payload);
-      if (!response.isError) {
-        setVerifyingOTP(false);
-        onSuccess(response.data, currentCardProvider);
-        navigation.goBack();
-      } else {
+    if (currentCardProvider === CardProviders.REAP_CARD) {
+      const key = await generateKeys();
+      const payload = {
+        otp: +num,
+        stylesheetUrl: 'https://public.cypherd.io/css/cardRevealMobile.css',
+        publicKey: key?.publicKeyBase64,
+        ...(verifyOTPPayload || {}),
+      };
+      setVerifyingOTP(true);
+      try {
+        const response = await postWithAuth(OTPVerificationUrl, payload);
+        if (!response.isError) {
+          setVerifyingOTP(false);
+          onSuccess(
+            {
+              base64Message: response.data.token,
+              privateKey: key?.privateKey,
+              reuseToken: response.data.reuseToken,
+              userNameValue: response.data.userName,
+            },
+            currentCardProvider,
+          );
+          navigation.goBack();
+        } else {
+          showModal('state', {
+            type: 'error',
+            title: t('VERIFICATION_FAILED'),
+            description: t('INVALID_OTP'),
+            onSuccess: () => onModalHide(),
+            onFailure: () => onModalHide(),
+          });
+        }
+      } catch (e: any) {
         showModal('state', {
           type: 'error',
           title: t('VERIFICATION_FAILED'),
@@ -115,16 +137,39 @@ export default function CardRevealAuthScreen(props: {
           onSuccess: () => onModalHide(),
           onFailure: () => onModalHide(),
         });
+        Sentry.captureException(e);
       }
-    } catch (e: any) {
-      showModal('state', {
-        type: 'error',
-        title: t('VERIFICATION_FAILED'),
-        description: t('INVALID_OTP'),
-        onSuccess: () => onModalHide(),
-        onFailure: () => onModalHide(),
-      });
-      Sentry.captureException(e);
+    } else if (currentCardProvider === CardProviders.PAYCADDY) {
+      setVerifyingOTP(true);
+      const payload = {
+        otp: +num,
+        ...(verifyOTPPayload || {}),
+      };
+      try {
+        const response = await postWithAuth(OTPVerificationUrl, payload);
+        if (!response.isError) {
+          setVerifyingOTP(false);
+          onSuccess(response.data, currentCardProvider);
+          navigation.goBack();
+        } else {
+          showModal('state', {
+            type: 'error',
+            title: t('VERIFICATION_FAILED'),
+            description: t('INVALID_OTP'),
+            onSuccess: () => onModalHide(),
+            onFailure: () => onModalHide(),
+          });
+        }
+      } catch (e: any) {
+        showModal('state', {
+          type: 'error',
+          title: t('VERIFICATION_FAILED'),
+          description: t('INVALID_OTP'),
+          onSuccess: () => onModalHide(),
+          onFailure: () => onModalHide(),
+        });
+        Sentry.captureException(e);
+      }
     }
   };
 
@@ -135,7 +180,14 @@ export default function CardRevealAuthScreen(props: {
           {t<string>('ENTER_AUTHENTICATION_CODE')}
         </CyDText>
         <CyDText className={'text-[15px] font-bold'}>
-          {t<string>('CARD_SENT_OTP')}
+          {t<string>(
+            currentCardProvider === CardProviders.REAP_CARD
+              ? 'CARD_SENT_OTP_EMAIL_AND_TELEGRAM'
+              : 'CARD_SENT_OTP',
+          )}
+        </CyDText>
+        <CyDText className='text-[12px] mt-[12px]'>
+          {t<string>('CHECK_SPAM_FOLDER')}
         </CyDText>
       </CyDView>
     );
@@ -181,7 +233,11 @@ export default function CardRevealAuthScreen(props: {
               </CyDTouchView>
             </CyDView>
           )}
-          {verifyingOTP && <Loading />}
+          {verifyingOTP && (
+            <CyDView className='mt-[-200px]'>
+              <Loading />
+            </CyDView>
+          )}
         </CyDView>
       </CyDView>
     </CyDSafeAreaView>

@@ -51,9 +51,11 @@ import { ethToEvmos } from '@tharsis/address-converter';
 import Intercom from '@intercom/intercom-react-native';
 import analytics from '@react-native-firebase/analytics';
 import DeviceInfo, { getVersion } from 'react-native-device-info';
-import { getWalletProfile } from '../../core/card';
+import useCardUtilities from '../useCardUtilities';
 import SpInAppUpdates from 'sp-react-native-in-app-updates';
 import useValidSessionToken from '../useValidSessionToken';
+import { IPlanDetails } from '../../models/planDetails.interface';
+import { CardProfile } from '../../models/cardProfile.model';
 
 export default function useInitializer() {
   const SENSITIVE_DATA_KEYS = ['password', 'seed', 'creditCardNumber'];
@@ -67,6 +69,7 @@ export default function useInitializer() {
     false, // isDebug
   );
   const { verifySessionToken } = useValidSessionToken();
+  const { getWalletProfile, getPlanData } = useCardUtilities();
 
   const scrubData = (key: string, value: any): any => {
     if (SENSITIVE_DATA_KEYS.includes(key)) {
@@ -140,6 +143,11 @@ export default function useInitializer() {
         return breadcrumb;
       },
     });
+  };
+
+  const checkAPIAccessibility = async () => {
+    const response = await getWithoutAuth('/health');
+    return !response.isError;
   };
 
   async function registerIntercomUser(walletAddresses: {
@@ -340,7 +348,7 @@ export default function useInitializer() {
           );
         });
         await getToken(
-          get(attributes, 'ethereumAddress'),
+          get(attributes, 'ethereumAddress', ''),
           get(attributes, 'cosmosAddress'),
           get(attributes, 'osmosisAddress'),
           get(attributes, 'junoAddress'),
@@ -406,10 +414,16 @@ export default function useInitializer() {
   };
 
   const getProfile = async (token: string) => {
-    const data = await getWalletProfile(token);
+    const data = (await getWalletProfile(token)) as CardProfile;
     globalContext.globalDispatch({
       type: GlobalContextType.CARD_PROFILE,
       cardProfile: data,
+    });
+
+    const pData: IPlanDetails = await getPlanData(token);
+    globalContext.globalDispatch({
+      type: GlobalContextType.PLAN_INFO,
+      planInfo: pData,
     });
   };
 
@@ -441,6 +455,10 @@ export default function useInitializer() {
               type: GlobalContextType.SIGN_IN,
               sessionToken: signInResponse?.token,
             });
+            globalContext.globalDispatch({
+              type: GlobalContextType.IS_APP_AUTHENTICATED,
+              isAuthenticated: true,
+            });
             await setAuthToken(signInResponse?.token);
             if (has(signInResponse, 'refreshToken')) {
               await setRefreshToken(signInResponse?.refreshToken);
@@ -468,10 +486,10 @@ export default function useInitializer() {
           );
         }
         authToken = JSON.parse(String(authToken));
-        void getProfile(authToken);
+        void getProfile(authToken ?? '');
         globalContext.globalDispatch({
-          type: GlobalContextType.SIGN_IN,
-          sessionToken: authToken,
+          type: GlobalContextType.IS_APP_AUTHENTICATED,
+          isAuthenticated: true,
         });
       }
     }
@@ -510,5 +528,6 @@ export default function useInitializer() {
     loadExistingWallet,
     getHosts,
     checkForUpdatesAndShowModal,
+    checkAPIAccessibility,
   };
 }

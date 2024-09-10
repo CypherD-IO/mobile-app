@@ -22,7 +22,6 @@ import { t } from 'i18next';
 import AppImages from '../../../../assets/images/appImages';
 import { Linking, StyleSheet } from 'react-native';
 import LottieView from 'lottie-react-native';
-import { getWalletProfile } from '../../../core/card';
 import OtpInput from '../../../components/v2/OTPInput';
 import * as Sentry from '@sentry/react-native';
 import CyDModalLayout from '../../../components/v2/modal';
@@ -30,6 +29,7 @@ import { copyToClipboard } from '../../../core/util';
 import Button from '../../../components/v2/button';
 import { showToast } from '../../utilities/toastUtility';
 import { screenTitle } from '../../../constants';
+import useCardUtilities from '../../../hooks/useCardUtilities';
 
 export default function CardNotificationSettings(props: {
   route: {
@@ -41,6 +41,7 @@ export default function CardNotificationSettings(props: {
   navigation: any;
 }) {
   const RESENT_OTP_TIME = 30;
+  const { currentCardProvider, card } = props.route.params;
   const globalContext = useContext(GlobalContext) as GlobalContextDef;
   const cardProfile = globalContext.globalState.cardProfile;
   const { showModal, hideModal } = useGlobalModalContext();
@@ -63,6 +64,7 @@ export default function CardNotificationSettings(props: {
   const [sendingOTP, setSendingOTP] = useState(false);
   const [resendInterval, setResendInterval] = useState(0);
   const [timer, setTimer] = useState<NodeJS.Timer>();
+  const { getWalletProfile } = useCardUtilities();
 
   useEffect(() => {
     setCurrentNotificationOption({
@@ -362,28 +364,30 @@ export default function CardNotificationSettings(props: {
               />
             )}
           </CyDView>
-          <CyDView className='flex flex-row justify-between align-center mt-[20px] mx-[20px] pb-[15px] border-b-[1px] border-sepratorColor'>
-            <CyDView>
-              <CyDText className='text-[16px] font-bold'>
-                {t<string>('SMS_NOTIFICATION')}
-              </CyDText>
+          {currentCardProvider === CardProviders.PAYCADDY && (
+            <CyDView className='flex flex-row justify-between align-center mt-[20px] mx-[20px] pb-[15px] border-b-[1px] border-sepratorColor'>
+              <CyDView>
+                <CyDText className='text-[16px] font-bold'>
+                  {t<string>('SMS_NOTIFICATION')}
+                </CyDText>
+              </CyDView>
+              {smsSwitchLoading ? (
+                <LottieView
+                  style={styles.loader}
+                  autoPlay
+                  loop
+                  source={AppImages.LOADER_TRANSPARENT}
+                />
+              ) : (
+                <CyDSwitch
+                  onValueChange={() => {
+                    void handleToggleNotifications(CARD_NOTIFICATION_TYPES.SMS);
+                  }}
+                  value={currentNotificationOption.sms}
+                />
+              )}
             </CyDView>
-            {smsSwitchLoading ? (
-              <LottieView
-                style={styles.loader}
-                autoPlay
-                loop
-                source={AppImages.LOADER_TRANSPARENT}
-              />
-            ) : (
-              <CyDSwitch
-                onValueChange={() => {
-                  void handleToggleNotifications(CARD_NOTIFICATION_TYPES.SMS);
-                }}
-                value={currentNotificationOption.sms}
-              />
-            )}
-          </CyDView>
+          )}
           <CyDView className='flex flex-row justify-between align-center mt-[20px] mx-[20px] pb-[15px] border-b-[1px] border-sepratorColor'>
             <CyDView>
               <CyDText className='text-[16px] font-bold'>

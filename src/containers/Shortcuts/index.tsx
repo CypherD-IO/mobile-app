@@ -598,11 +598,14 @@ export default function ShortcutsModal({ navigationRef }) {
         case ChainBackendNames.COREUM:
           addressTypeQRCode = FundWalletAddressType.COREUM;
           break;
-        // case ChainBackendNames.INJECTIVE:
-        //   addressTypeQRCode = FundWalletAddressType.INJECTIVE;
-        //   break;
+        case ChainBackendNames.INJECTIVE:
+          addressTypeQRCode = FundWalletAddressType.INJECTIVE;
+          break;
         case ChainBackendNames.KUJIRA:
           addressTypeQRCode = FundWalletAddressType.KUJIRA;
+          break;
+        case ChainBackendNames.SOLANA:
+          addressTypeQRCode = FundWalletAddressType.SOLANA;
           break;
       }
       setChooseChainModal(false);
@@ -771,8 +774,8 @@ export default function ShortcutsModal({ navigationRef }) {
               }}
               className={''}>
               <CyDImage
-                source={AppImages.BACK}
-                className={'w-[20px] h-[20px]'}
+                source={AppImages.BACK_ARROW_GRAY}
+                className={'w-[32px] h-[32px]'}
               />
             </CyDTouchView>
             <CyDView className={'flex flex-row'}>
@@ -820,8 +823,8 @@ export default function ShortcutsModal({ navigationRef }) {
               }}
               className={''}>
               <CyDImage
-                source={AppImages.BACK}
-                className={'w-[20px] h-[20px]'}
+                source={AppImages.BACK_ARROW_GRAY}
+                className={'w-[32px] h-[32px]'}
               />
             </CyDTouchView>
             <CyDView className={'flex flex-row'}>

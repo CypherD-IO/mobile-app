@@ -22,7 +22,7 @@ export interface Chain {
   symbol: string;
   id: number;
   logo_url: any;
-  backendName: ChainBackendNames;
+  backendName: ChainBackendNames | 'ALL';
   chain_id: string;
   native_token_address: string;
   secondaryAddress?: string;
@@ -57,6 +57,7 @@ export enum ChainBackendNames {
   AURORA = 'AURORA',
   MOONBEAM = 'MOONBEAM',
   MOONRIVER = 'MOONRIVER',
+  SOLANA = 'SOLANA',
 }
 
 export enum CosmosStakingTokens {
@@ -93,6 +94,7 @@ export enum FundWalletAddressType {
   AURORA = 'AURORA',
   MOONBEAM = 'MOONBEAM',
   MOONRIVER = 'MOONRIVER',
+  SOLANA = 'SOLANA',
 }
 
 export const CHAIN_ETH: Chain = {
@@ -455,6 +457,18 @@ export const CHAIN_MOONRIVER: Chain = {
   nativeTokenLogoUrl: AppImages.MOONRIVER_LOGO,
   chainIdNumber: 1285,
 };
+export const CHAIN_SOLANA: Chain = {
+  chainName: 'solana',
+  name: 'Solana',
+  symbol: 'SOL',
+  id: 25,
+  logo_url: AppImages.SOLANA_LOGO,
+  backendName: ChainBackendNames.SOLANA,
+  chain_id: 'solana',
+  native_token_address: 'solana-native',
+  chainIdNumber: 101,
+  coinGeckoId: 'solana',
+};
 
 export const EnsCoinTypes: Record<string, string> = {
   [ChainBackendNames.ETH]: '60',
@@ -481,6 +495,7 @@ export const CHAIN_NAMES = [
   'coreum',
   'injective',
   'kujira',
+  'solana',
 ];
 export const COSMOS_CHAINS = [
   'cosmos',
@@ -527,6 +542,7 @@ export const ALL_CHAINS: Chain[] = [
   CHAIN_MOONRIVER,
   CHAIN_SHARDEUM,
   CHAIN_SHARDEUM_SPHINX,
+  CHAIN_SOLANA,
 ];
 
 export const EVM_CHAINS: Chain[] = [
@@ -546,6 +562,8 @@ export const EVM_CHAINS: Chain[] = [
   CHAIN_MOONBEAM,
   CHAIN_MOONRIVER,
 ];
+
+export const SOLANA_CHAINS: Chain[] = [CHAIN_SOLANA];
 
 export const COSMOS_CHAINS_LIST: Chain[] = [
   CHAIN_COSMOS,
@@ -615,13 +633,13 @@ export const PORTFOLIO_CHAINS_BACKEND_NAMES = [
   ChainBackendNames.POLYGON,
   ChainBackendNames.BSC,
   ChainBackendNames.AVALANCHE,
-  ChainBackendNames.FANTOM,
+  // ChainBackendNames.FANTOM,
   ChainBackendNames.OPTIMISM,
   ChainBackendNames.ARBITRUM,
   ChainBackendNames.EVMOS,
   // ChainBackendNames.SHARDEUM,
   ChainBackendNames.SHARDEUM_SPHINX,
-  ChainBackendNames.EVMOS,
+  // ChainBackendNames.EVMOS,
   ChainBackendNames.COSMOS,
   ChainBackendNames.JUNO,
   ChainBackendNames.NOBLE,
@@ -636,6 +654,7 @@ export const PORTFOLIO_CHAINS_BACKEND_NAMES = [
   ChainBackendNames.AURORA,
   ChainBackendNames.MOONBEAM,
   ChainBackendNames.MOONRIVER,
+  ChainBackendNames.SOLANA,
 ];
 
 export const CARD_CHAINS: Chain[] = [
@@ -651,7 +670,7 @@ export const CARD_CHAINS: Chain[] = [
   CHAIN_OSMOSIS,
   CHAIN_JUNO,
   CHAIN_COREUM,
-  // CHAIN_INJECTIVE,
+  CHAIN_INJECTIVE,
   CHAIN_KUJIRA,
   CHAIN_SHARDEUM,
   CHAIN_SHARDEUM_SPHINX,
@@ -661,6 +680,7 @@ export const CARD_CHAINS: Chain[] = [
   CHAIN_AURORA,
   CHAIN_MOONBEAM,
   CHAIN_MOONRIVER,
+  CHAIN_SOLANA,
 ];
 
 export const IBC_CHAINS: Chain[] = [
@@ -671,7 +691,7 @@ export const IBC_CHAINS: Chain[] = [
   CHAIN_STARGAZE,
   CHAIN_NOBLE,
   CHAIN_COREUM,
-  // CHAIN_INJECTIVE,
+  CHAIN_INJECTIVE,
   CHAIN_KUJIRA,
 ];
 
@@ -702,6 +722,7 @@ export enum ChainNames {
   AURORA = 'aurora',
   MOONBEAM = 'moonbeam',
   MOONRIVER = 'moonriver',
+  SOLANA = 'solana',
 }
 
 export enum ChainNameMapping {
@@ -729,6 +750,7 @@ export enum ChainNameMapping {
   AURORA = 'aurora',
   MOONBEAM = 'moonbeam',
   MOONRIVER = 'moonriver',
+  SOLANA = 'solana',
   ALL = 'All',
 }
 
@@ -759,6 +781,7 @@ export const ChainConfigMapping = {
   aurora: CHAIN_AURORA,
   moonbeam: CHAIN_MOONBEAM,
   moonriver: CHAIN_MOONRIVER,
+  solana: CHAIN_SOLANA,
 };
 
 export enum QRScannerScreens {
@@ -809,11 +832,13 @@ export const ChainNameToContactsChainNameMapping = {
   Aurora: 'aurora',
   Moonbeam: 'moonbeam',
   Moonriver: 'moonriver',
+  Solana: 'solana',
 };
 
 export enum NativeTokenMapping {
   COSMOS = 'ATOM',
   NOBLE = 'USDC',
+  SOLANA = 'solana-native',
 }
 
 export const GASLESS_CHAINS: ChainBackendNames[] = []; // Add any cosmos gasless chain backend names in this array
@@ -1448,6 +1473,19 @@ export const STABLE_TOKEN_CHAIN_MAP = new Map([
         name: 'Tether',
         coingeckoId: 'tether',
         logo: 'https://assets.coingecko.com/coins/images/325/large/Tether-logo.png?1598003707',
+      },
+    ],
+  ],
+  [
+    'SOLANA',
+    [
+      {
+        contractAddress: 'EPjFWdd5AufqSSqeM2qN1xzybapC8G4wEGGkZwyTDt1v',
+        decimal: 6,
+        symbol: 'USDC',
+        name: 'USD Coin',
+        coingeckoId: 'usd-coin',
+        logo: 'https://raw.githubusercontent.com/solana-labs/token-list/main/assets/mainnet/EPjFWdd5AufqSSqeM2qN1xzybapC8G4wEGGkZwyTDt1v/logo.png',
       },
     ],
   ],

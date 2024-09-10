@@ -9,6 +9,7 @@ import { ethers } from 'ethers';
 import {
   CyDFastImage,
   CyDImage,
+  CyDScrollView,
   CyDText,
   CyDTouchView,
   CyDView,
@@ -42,11 +43,11 @@ export default function RoutePreview({
   setIndex: Dispatch<SetStateAction<number>>;
   routeResponse: SkipApiRouteResponse | null;
   chainInfo: SkipApiChainInterface[] | null;
-  tokenData: Record<string, { assets: SkipApiToken[] }>;
+  tokenData: Record<string, SkipApiToken[]>;
   loading: boolean;
   onGetMSg: () => Promise<void>;
   statusResponse: SkipApiStatus[];
-  onBridgeSuccess: () => Promise<void>;
+  onBridgeSuccess: (status: 'success' | 'falied') => Promise<void>;
 }) {
   if (!routeResponse) return <Loading />;
 
@@ -56,7 +57,7 @@ export default function RoutePreview({
       : '';
 
   return (
-    <CyDView className={'px-[20px] font-nunito pt-[40px]'}>
+    <CyDScrollView className={'px-[20px] font-nunito pt-[40px]'}>
       <CyDView
         className={
           'bg-white pb-[40px] rounded-[8px] flex flex-col items-center justify-center relative'
@@ -97,7 +98,7 @@ export default function RoutePreview({
             const chainId = data
               ? get(data, 'from_chain_id')
               : routeResponse.dest_asset_chain_id;
-            const chainData = get(tokenData, [chainId, 'assets']);
+            const chainData = get(tokenData, [chainId]);
 
             const token = chainData.find(chainItem => {
               const denom = data
@@ -121,9 +122,7 @@ export default function RoutePreview({
                   <CyDView className='flex flex-col items-center '>
                     <CyDView className='relative'>
                       {endsWith(currentChain?.logo_uri, '.svg') ? (
-                        <SvgUri
-                          width='64'
-                          height='64'
+                        <CyDView
                           className={clsx(
                             'h-[64px] w-[64px] p-[4px] rounded-full border-[8px] border-gray-200',
                             {
@@ -147,9 +146,13 @@ export default function RoutePreview({
                                 bridgeDoneStatus ===
                                   TxnStatus.STATE_COMPLETED_ERROR,
                             },
-                          )}
-                          uri={currentChain?.logo_uri ?? ''}
-                        />
+                          )}>
+                          <SvgUri
+                            width='38'
+                            height='38'
+                            uri={currentChain?.logo_uri ?? ''}
+                          />
+                        </CyDView>
                       ) : (
                         <CyDFastImage
                           source={{
@@ -308,33 +311,37 @@ export default function RoutePreview({
         <CyDView className='mt-[32px] flex flex-col items-center justify-center'>
           <CyDImage source={AppImages.CYPHER_SUCCESS} />
           <CyDText className='text-center'>{t('BRIDGE_SUCCESS')}</CyDText>
-          <Button
-            onPress={() => {
-              setIndex(0);
-              onBridgeSuccess();
-            }}
-            title={'Create new swap'}
-            disabled={isEmpty(routeResponse)}
-            loading={loading}
-          />
+          <CyDView>
+            <Button
+              onPress={() => {
+                setIndex(0);
+                void onBridgeSuccess('success');
+              }}
+              title={'Create new swap'}
+              disabled={isEmpty(routeResponse)}
+              loading={loading}
+            />
+          </CyDView>
         </CyDView>
       )}
       {bridgeDoneStatus === TxnStatus.STATE_COMPLETED_ERROR && (
         <CyDView className='mt-[32px] flex flex-col items-center justify-center'>
           <CyDImage source={AppImages.CYPHER_ERROR} />
           <CyDText className='text-center'>{t('BRIDGE_FAILURE')}</CyDText>
-          <Button
-            onPress={() => {
-              setIndex(0);
-              onBridgeSuccess();
-            }}
-            title={'Create new swap'}
-            disabled={isEmpty(routeResponse)}
-            loading={loading}
-          />
+          <CyDView>
+            <Button
+              onPress={() => {
+                setIndex(0);
+                void onBridgeSuccess('falied');
+              }}
+              title={'Create new swap'}
+              disabled={isEmpty(routeResponse)}
+              loading={loading}
+            />
+          </CyDView>
         </CyDView>
       )}
-    </CyDView>
+    </CyDScrollView>
   );
 }
 

@@ -29,7 +29,6 @@ import Intercom from '@intercom/intercom-react-native';
 import RNExitApp from 'react-native-exit-app';
 import { HdWalletContextDef } from '../../reducers/hdwallet_reducer';
 import Loading from '../../containers/Loading';
-import { isEmpty } from 'lodash';
 
 export const InitializeAppProvider: React.FC<JSX.Element> = ({ children }) => {
   const {
@@ -42,6 +41,7 @@ export const InitializeAppProvider: React.FC<JSX.Element> = ({ children }) => {
     loadExistingWallet,
     getHosts,
     checkForUpdatesAndShowModal,
+    checkAPIAccessibility,
   } = useInitializer();
   const globalContext = useContext(GlobalContext) as GlobalContextDef;
   const [pinAuthentication, setPinAuthentication] = useState(false);
@@ -56,28 +56,31 @@ export const InitializeAppProvider: React.FC<JSX.Element> = ({ children }) => {
     useState<boolean>(false);
   const { isReadOnlyWallet } = hdWallet.state;
   const { ethereum } = hdWallet.state.wallet;
-  const authToken = globalContext.globalState.token;
+  const isAuthenticated = globalContext.globalState.isAuthenticated;
 
   useEffect(() => {
     const initializeApp = async () => {
       initializeSentry();
-      await exitIfJailBroken();
-      await fetchRPCEndpointsFromServer(globalContext.globalDispatch);
-      await checkForUpdatesAndShowModal(setUpdateModal);
-      await loadActivitiesFromAsyncStorage();
+      const isAPIAccessible = await checkAPIAccessibility();
+      if (isAPIAccessible) {
+        await exitIfJailBroken();
+        void fetchRPCEndpointsFromServer(globalContext.globalDispatch);
+        void checkForUpdatesAndShowModal(setUpdateModal);
+        void loadActivitiesFromAsyncStorage();
 
-      if (Platform.OS === 'ios') {
-        registerForRemoteMessages();
-      } else {
-        onMessage();
+        if (Platform.OS === 'ios') {
+          registerForRemoteMessages();
+        } else {
+          onMessage();
+        }
+
+        setTimeout(() => {
+          SplashScreen.hide();
+        }, SPLASH_SCREEN_TIMEOUT);
+
+        setPinAuthentication(await setPinAuthenticationStateValue());
+        setPinPresent(await setPinPresentStateValue());
       }
-
-      setTimeout(() => {
-        SplashScreen.hide();
-      }, SPLASH_SCREEN_TIMEOUT);
-
-      setPinAuthentication(await setPinAuthenticationStateValue());
-      setPinPresent(await setPinPresentStateValue());
     };
     void initializeApp();
   }, []);
@@ -199,7 +202,10 @@ export const InitializeAppProvider: React.FC<JSX.Element> = ({ children }) => {
         <DefaultAuthRemoveModal isModalVisible={showDefaultAuthRemoveModal} />
         {ethereum.address === undefined ? (
           pinAuthentication || pinPresent === PinPresentStates.NOTSET ? (
-            <Loading loadingText={t('LOADING_TEXT_WALLET_CREATION')} />
+            // reomve in the next build
+            <Loading
+              loadingText={t('INJECTIVE_UPDATE_LOADING_TEXT_WALLET_CREATION')}
+            />
           ) : (
             <PinAuthRoute
               setPinAuthentication={setPinAuthentication}
@@ -216,7 +222,7 @@ export const InitializeAppProvider: React.FC<JSX.Element> = ({ children }) => {
           ) : (
             <OnBoardingStack />
           )
-        ) : !isReadOnlyWallet && isEmpty(authToken) ? (
+        ) : !isReadOnlyWallet && !isAuthenticated ? (
           <Loading />
         ) : (
           children

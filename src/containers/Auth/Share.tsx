@@ -1,5 +1,5 @@
 import React, { useContext } from 'react';
-import { ActivityIndicator } from 'react-native';
+import { ActivityIndicator, StyleSheet } from 'react-native';
 import * as C from '../../constants/index';
 import { Colors } from '../../constants/theme';
 import Clipboard from '@react-native-clipboard/clipboard';
@@ -8,12 +8,14 @@ import AppImages from '../../../assets/images/appImages';
 import { HdWalletContext } from '../../core/util';
 import { showToast } from '../../containers/utilities/toastUtility';
 import { sendFirebaseEvent } from '../../containers/utilities/analyticsUtility';
+import LottieView from 'lottie-react-native';
 import {
   CyDImage,
   CyDText,
   CyDTouchView,
   CyDView,
 } from '../../styles/tailwindStyles';
+import { ChainBackendNames } from '../../constants/server';
 const {
   CText,
   DynamicView,
@@ -194,6 +196,14 @@ export const AddressBookContainer = ({
           )}
         </CyDView>
       </CyDView>
+      {chain.toUpperCase() === ChainBackendNames.SOLANA.toUpperCase() && (
+        <LottieView
+          source={AppImages.NEW}
+          autoPlay
+          loop
+          style={styles.lottieViewWidth}
+        />
+      )}
       <CyDView className='flex flex-row justify-between items-center w-[16%]'>
         {wallet?.address !== '' && (
           <CyDTouchView
@@ -238,6 +248,8 @@ export const OptionsContainer = ({
   mT = 0,
   bH = 60,
   iW = 100,
+  imageHeight = 20,
+  imageStyle = '',
 }) => {
   return (
     <DynamicTouchView
@@ -269,9 +281,10 @@ export const OptionsContainer = ({
             <DynamicImage
               dynamic
               dynamicWidth
-              height={20}
+              height={imageHeight}
               width={iW}
               source={logo}
+              className={imageStyle}
             />
           </DynamicView>
         </DynamicView>
@@ -363,3 +376,11 @@ export const AppButton = ({
     </DynamicButton>
   );
 };
+
+const styles = StyleSheet.create({
+  lottieViewWidth: {
+    width: 34,
+    marginTop: 5,
+    marginLeft: -30,
+  },
+});

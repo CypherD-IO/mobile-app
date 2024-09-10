@@ -17,10 +17,10 @@ import Loading from '../../../components/v2/loading';
 import LottieView from 'lottie-react-native';
 import { MODAL_HIDE_TIMEOUT_250 } from '../../../core/Http';
 import { screenTitle } from '../../../constants';
-import { getWalletProfile } from '../../../core/card';
 import { GlobalContext } from '../../../core/globalContext';
 import { GlobalContextType } from '../../../constants/enum';
 import { CardProfile } from '../../../models/cardProfile.model';
+import useCardUtilities from '../../../hooks/useCardUtilities';
 
 interface Props {
   navigation: any;
@@ -55,6 +55,7 @@ const ShippingDetailsOTPScreen = ({ navigation, route }: Props) => {
   const [sendingOTP, setSendingOTP] = useState(false);
   const [resendInterval, setResendInterval] = useState(0);
   const [timer, setTimer] = useState<NodeJS.Timer>();
+  const { getWalletProfile } = useCardUtilities();
 
   useEffect(() => {
     void triggerOtp();
@@ -221,6 +222,9 @@ const ShippingDetailsOTPScreen = ({ navigation, route }: Props) => {
         </CyDText>
         <CyDText className={'text-[15px] font-bold'}>
           {t<string>('CARD_SENT_OTP')}
+        </CyDText>
+        <CyDText className='text-[12px] mt-[12px]'>
+          {t<string>('CHECK_SPAM_FOLDER')}
         </CyDText>
         <CyDView>
           {!isSubmitting && (

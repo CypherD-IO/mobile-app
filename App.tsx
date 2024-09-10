@@ -8,13 +8,7 @@ import { useEffect, useReducer, useState } from 'react';
 import Toast from 'react-native-toast-message';
 import { NavigationContainer } from '@react-navigation/native';
 import './src/i18n';
-import {
-  BackHandler,
-  Keyboard,
-  KeyboardAvoidingView,
-  Platform,
-  StatusBar,
-} from 'react-native';
+import { BackHandler, Keyboard, Platform, StatusBar } from 'react-native';
 import {
   HdWalletContext,
   PortfolioContext,
@@ -72,6 +66,12 @@ import {
 } from './src/reducers/modalReducer';
 import { InitializeAppProvider } from './src/components/initializeAppProvider';
 import { toastConfig } from './src/components/v2/toast';
+import { CyDView } from './src/styles/tailwindStyles';
+import {
+  BridgeContext,
+  bridgeContextInitialState,
+  bridgeReducer,
+} from './src/reducers/bridge.reducer';
 
 const routingInstrumentation = new Sentry.ReactNavigationInstrumentation();
 
@@ -110,6 +110,11 @@ function App() {
   const [modalState, modalDispatch] = useReducer(
     modalReducer,
     modalContextInitialState,
+  );
+
+  const [bridgeState, bridgeDispatch] = useReducer(
+    bridgeReducer,
+    bridgeContextInitialState,
   );
 
   const ethereum = state.wallet.ethereum;
@@ -219,11 +224,7 @@ function App() {
   }, []);
 
   return (
-    <KeyboardAvoidingView
-      style={{ flex: 1, backgroundColor: 'white' }}
-      enabled
-      behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
-      keyboardVerticalOffset={0}>
+    <CyDView style={{ flex: 1, backgroundColor: 'white' }}>
       <GestureHandlerRootView style={{ flex: 1 }}>
         <Sentry.TouchEventBoundary>
           <WalletConnectContext.Provider
@@ -253,64 +254,73 @@ function App() {
                             state: modalState,
                             dispatch: modalDispatch,
                           }}>
-                          <NavigationContainer /* theme={scheme === 'dark' ? darkTheme : lightTheme} */
-                            ref={navigationRef}
-                            linking={linking}
-                            onReady={() => {
-                              routeNameRef.current =
-                                navigationRef?.current?.getCurrentRoute()?.name;
-                              routingInstrumentation.registerNavigationContainer(
-                                navigationRef,
-                              );
-                            }}
-                            onStateChange={async () => {
-                              const previousRouteName = routeNameRef.current;
-                              const currentRouteName =
-                                navigationRef.current?.getCurrentRoute()?.name;
-                              if (previousRouteName !== currentRouteName) {
-                                // Keyboard.dismiss();
-                                // eslint-disable-next-line @typescript-eslint/no-unused-expressions
-                                async () =>
-                                  await analytics().logScreenView({
-                                    screen_name: currentRouteName,
-                                    screen_class: currentRouteName,
-                                  });
-                              }
-                              routeNameRef.current = currentRouteName;
+                          <BridgeContext.Provider
+                            value={{
+                              state: bridgeState,
+                              dispatch: bridgeDispatch,
                             }}>
-                            <GlobalModal>
-                              <InitializeAppProvider>
-                                <TabStack />
-                                <Toast
-                                  config={toastConfig}
-                                  position={'bottom'}
-                                  bottomOffset={140}
-                                />
-                                {<ConfirmationModals />}
-                                <WalletConnectModal
-                                  walletConnectModalVisible={
-                                    walletConnectModalData.displayWalletConnectModal
-                                  }
-                                  setWalletConnectModalVisible={
-                                    setWalletConnectModalVisible
-                                  }
-                                  renderContent={
-                                    walletConnectModalData.renderContent
-                                  }
-                                  walletConnectApproveRequest={
-                                    walletConnectApproveRequest
-                                  }
-                                  walletConnectRejectRequest={
-                                    walletConnectRejectRequest
-                                  }
-                                  dispatchActivity={dispatchActivity}
-                                  params={walletConnectModalData.params}
-                                  request={request}
-                                  walletConnectDispatch={walletConnectDispatch}
-                                />
-                              </InitializeAppProvider>
-                            </GlobalModal>
-                          </NavigationContainer>
+                            <NavigationContainer /* theme={scheme === 'dark' ? darkTheme : lightTheme} */
+                              ref={navigationRef}
+                              linking={linking}
+                              onReady={() => {
+                                routeNameRef.current =
+                                  navigationRef?.current?.getCurrentRoute()?.name;
+                                routingInstrumentation.registerNavigationContainer(
+                                  navigationRef,
+                                );
+                              }}
+                              onStateChange={async () => {
+                                const previousRouteName = routeNameRef.current;
+                                const currentRouteName =
+                                  navigationRef.current?.getCurrentRoute()
+                                    ?.name;
+                                if (previousRouteName !== currentRouteName) {
+                                  // Keyboard.dismiss();
+                                  // eslint-disable-next-line @typescript-eslint/no-unused-expressions
+                                  async () =>
+                                    await analytics().logScreenView({
+                                      screen_name: currentRouteName,
+                                      screen_class: currentRouteName,
+                                    });
+                                }
+                                routeNameRef.current = currentRouteName;
+                              }}>
+                              <GlobalModal>
+                                <InitializeAppProvider>
+                                  <TabStack />
+                                  <Toast
+                                    config={toastConfig}
+                                    position={'bottom'}
+                                    bottomOffset={140}
+                                  />
+                                  {<ConfirmationModals />}
+                                  <WalletConnectModal
+                                    walletConnectModalVisible={
+                                      walletConnectModalData.displayWalletConnectModal
+                                    }
+                                    setWalletConnectModalVisible={
+                                      setWalletConnectModalVisible
+                                    }
+                                    renderContent={
+                                      walletConnectModalData.renderContent
+                                    }
+                                    walletConnectApproveRequest={
+                                      walletConnectApproveRequest
+                                    }
+                                    walletConnectRejectRequest={
+                                      walletConnectRejectRequest
+                                    }
+                                    dispatchActivity={dispatchActivity}
+                                    params={walletConnectModalData.params}
+                                    request={request}
+                                    walletConnectDispatch={
+                                      walletConnectDispatch
+                                    }
+                                  />
+                                </InitializeAppProvider>
+                              </GlobalModal>
+                            </NavigationContainer>
+                          </BridgeContext.Provider>
                         </ModalContext.Provider>
                       </ActivityContext.Provider>
                     </CosmosStakingContext.Provider>
@@ -321,7 +331,7 @@ function App() {
           </WalletConnectContext.Provider>
         </Sentry.TouchEventBoundary>
       </GestureHandlerRootView>
-    </KeyboardAvoidingView>
+    </CyDView>
   );
 }
 

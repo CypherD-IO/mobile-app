@@ -1,4 +1,4 @@
-import { IState } from "../../src/models/cardApplication.model";
+import { IState } from '../../src/models/cardApplication.model';
 
 export const stateMaster: IState[] = [
   {
@@ -55847,5 +55847,16 @@ export const stateMaster: IState[] = [
     type: null,
     latitude: '-19.05520090',
     longitude: '29.60354950',
+  },
+  {
+    id: 1243,
+    name: 'Faroe Islands',
+    country_id: 62,
+    country_code: 'FO',
+    country_name: 'Faroe Islands',
+    state_code: 'FO',
+    type: null,
+    latitude: '61.89263500',
+    longitude: '-6.91180500',
   },
 ];

@@ -7,7 +7,7 @@ import React, {
 } from 'react';
 import { Keyboard, StyleSheet } from 'react-native';
 import AppImages from '../../../assets/images/appImages';
-import { RouteProp, useIsFocused } from '@react-navigation/native';
+import { useIsFocused } from '@react-navigation/native';
 import {
   CyDImage,
   CyDText,
@@ -17,6 +17,7 @@ import {
   CyDSafeAreaView,
   CyDTouchView,
   CyDKeyboardAvoidingView,
+  CyDKeyboardAwareScrollView,
 } from '../../styles/tailwindStyles';
 import clsx from 'clsx';
 import { Formik } from 'formik';
@@ -33,7 +34,6 @@ import Loading from '../../components/v2/loading';
 import { GlobalContext } from '../../core/globalContext';
 import axios from '../../core/Http';
 import { useGlobalModalContext } from '../../components/v2/GlobalModal';
-import { getWalletProfile } from '../../core/card';
 import { CardProviders, GlobalContextType } from '../../constants/enum';
 import { countryMaster } from '../../../assets/datasets/countryMaster';
 import { Colors } from '../../constants/theme';
@@ -47,6 +47,9 @@ import ChooseCountryModal from '../../components/v2/ChooseCountryModal';
 import RadioButtons from '../../components/radioButtons';
 import Tooltip from 'react-native-walkthrough-tooltip';
 import { PEP_OPTIONS } from '../../constants/data';
+import { CardProfile } from '../../models/cardProfile.model';
+import useCardUtilities from '../../hooks/useCardUtilities';
+import { get } from 'lodash';
 
 export default function CardSignupScreen({ navigation, route }) {
   const globalContext = useContext<any>(GlobalContext);
@@ -105,6 +108,8 @@ export default function CardSignupScreen({ navigation, route }) {
       Iso3: 'USA',
       currency: 'USD',
     });
+  const cardProfile: CardProfile = globalContext.globalState.cardProfile;
+  const { getWalletProfile, checkIsRCEnabled } = useCardUtilities();
 
   const selectedCountryStates = useMemo(() => {
     return stateMaster.filter(
@@ -262,7 +267,7 @@ export default function CardSignupScreen({ navigation, route }) {
   const getCountryData = async () => {
     try {
       const response = await axios.get(
-        `https://public.cypherd.io/js/countryMaster.js?${String(new Date())}`,
+        `https://public.cypherd.io/js/rcSupportedCountries.js?${String(new Date())}`,
       );
       if (response?.data) {
         setCopyCountriesWithFlagAndDialcodes(response.data);
@@ -342,15 +347,16 @@ export default function CardSignupScreen({ navigation, route }) {
       pep: PEP_OPTIONS[userBasicDetails.pep].value,
       ...latestBillingAddress,
       country: userBasicDetails.Iso2,
-      inviteCode,
+      ...(inviteCode ? { inviteCode } : {}),
     };
     try {
       const response = await postWithAuth(
-        `/v1/cards/${CardProviders.PAYCADDY}/application`,
+        `/v1/cards/${CardProviders.REAP_CARD}/application`,
         payload,
       );
       if (!response.isError) {
         const data = await getWalletProfile(globalContext.globalState.token);
+        data.provider = CardProviders.REAP_CARD;
         globalContext.globalDispatch({
           type: GlobalContextType.CARD_PROFILE,
           cardProfile: data,
@@ -449,7 +455,7 @@ export default function CardSignupScreen({ navigation, route }) {
             proceedToNextScreen('USER_BASIC_DETAILS', values)
           }>
           {formProps => (
-            <CyDView className='mx-[9%]'>
+            <CyDKeyboardAwareScrollView className='mx-[9%]'>
               <DatePickerModal
                 isVisible={isDOBModalVisible}
                 mode='date'
@@ -631,7 +637,7 @@ export default function CardSignupScreen({ navigation, route }) {
               <CyDView className={'mt-[20px] flex flex-row justify-center'}>
                 <CyDTextInput
                   className={clsx(
-                    'ml-[4px] border-[1px] border-inputBorderColor rounded-[5px] p-[12px] text-[18px] font-nunito text-primaryTextColor w-full',
+                    'border-[1px] border-inputBorderColor rounded-[5px] p-[12px] text-[18px] font-nunito text-primaryTextColor w-full',
                     {
                       'border-redOffColor':
                         formProps.touched.email && formProps.errors.email,
@@ -717,7 +723,7 @@ export default function CardSignupScreen({ navigation, route }) {
                 style='h-[55px] mt-[20px] mx-auto justify-center items-center px-[55px] w-full'
                 isPrivateKeyDependent={false}
               />
-            </CyDView>
+            </CyDKeyboardAwareScrollView>
           )}
         </Formik>
       </CyDScrollView>
@@ -1197,8 +1203,8 @@ export default function CardSignupScreen({ navigation, route }) {
                 }}
                 className='w-[30px] pl-[12px]'>
                 <CyDImage
-                  source={AppImages.LEFT_ARROW}
-                  className='h-[20px] w-[20px]'
+                  source={AppImages.BACK_ARROW_GRAY}
+                  className='w-[32px] h-[32px]'
                 />
               </CyDTouchView>
             }
@@ -1217,11 +1223,11 @@ export default function CardSignupScreen({ navigation, route }) {
               })}
             </CyDView>
           </CyDView>
-          <CyDView className={'h-full flex grow-1'}>
+          <CyDKeyboardAwareScrollView className={'h-full flex grow-1'}>
             <CyDScrollView className='mb-[45px]'>
               {screens[screenIndex].component}
             </CyDScrollView>
-          </CyDView>
+          </CyDKeyboardAwareScrollView>
         </>
       )}
     </CyDSafeAreaView>

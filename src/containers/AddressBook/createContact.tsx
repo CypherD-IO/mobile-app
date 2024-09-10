@@ -45,6 +45,7 @@ import { showToast } from '../utilities/toastUtility';
 import { isCoreumAddress } from '../utilities/coreumUtilities';
 import { isInjectiveAddress } from '../utilities/injectiveUtilities';
 import { isKujiraAddress } from '../utilities/kujiraUtilities';
+import { isSolanaAddress } from '../utilities/solanaUtilities';
 
 interface RouteProps {
   route: {
@@ -206,15 +207,20 @@ export const CreateContact = ({ route, navigation }: RouteProps) => {
       placeHolder: t('ETHEREUM_ADDRESS_PLACEHOLDER'),
       logo: AppImages.COREUM_LOGO,
     },
-    // injective: {
-    //   label: t(`${ChainNames.INJECTIVE.toUpperCase()} ADDRESS`),
-    //   placeHolder: t('ETHEREUM_ADDRESS_PLACEHOLDER'),
-    //   logo: AppImages.INJECTIVE_LOGO,
-    // },
+    injective: {
+      label: t(`${ChainNames.INJECTIVE.toUpperCase()} ADDRESS`),
+      placeHolder: t('ETHEREUM_ADDRESS_PLACEHOLDER'),
+      logo: AppImages.INJECTIVE_LOGO,
+    },
     kujira: {
       label: t(`${ChainNames.KUJIRA.toUpperCase()} ADDRESS`),
       placeHolder: t('ETHEREUM_ADDRESS_PLACEHOLDER'),
       logo: AppImages.KUJIRA_LOGO,
+    },
+    solana: {
+      label: t(`${ChainNames.SOLANA.toUpperCase()} ADDRESS`),
+      placeHolder: t('ETHEREUM_ADDRESS_PLACEHOLDER'),
+      logo: AppImages.SOLANA_LOGO,
     },
   };
 
@@ -259,8 +265,8 @@ export const CreateContact = ({ route, navigation }: RouteProps) => {
       .of(
         yup
           .string()
-          .test('isValidAddress', t('INVALID_ADDRESS'), cosmos =>
-            validateAddress(cosmos, isEthereumAddress),
+          .test('isValidAddress', t('INVALID_ADDRESS'), eth =>
+            validateAddress(eth, isEthereumAddress),
           ),
       )
       .test('isDuplicate', t('DUPLICATE_FOUND'), addressList =>
@@ -379,8 +385,8 @@ export const CreateContact = ({ route, navigation }: RouteProps) => {
       .of(
         yup
           .string()
-          .test('isValidAddress', t('INVALID_ADDRESS'), cosmos =>
-            validateAddress(cosmos, isEthereumAddress),
+          .test('isValidAddress', t('INVALID_ADDRESS'), binance =>
+            validateAddress(binance, isEthereumAddress),
           ),
       )
       .test('isDuplicate', t('DUPLICATE_FOUND'), addressList =>
@@ -391,8 +397,8 @@ export const CreateContact = ({ route, navigation }: RouteProps) => {
       .of(
         yup
           .string()
-          .test('isValidAddress', t('INVALID_ADDRESS'), cosmos =>
-            validateAddress(cosmos, isEthereumAddress),
+          .test('isValidAddress', t('INVALID_ADDRESS'), polygon =>
+            validateAddress(polygon, isEthereumAddress),
           ),
       )
       .test('isDuplicate', t('DUPLICATE_FOUND'), addressList =>
@@ -403,8 +409,8 @@ export const CreateContact = ({ route, navigation }: RouteProps) => {
       .of(
         yup
           .string()
-          .test('isValidAddress', t('INVALID_ADDRESS'), cosmos =>
-            validateAddress(cosmos, isEthereumAddress),
+          .test('isValidAddress', t('INVALID_ADDRESS'), avalanche =>
+            validateAddress(avalanche, isEthereumAddress),
           ),
       )
       .test('isDuplicate', t('DUPLICATE_FOUND'), addressList =>
@@ -415,8 +421,8 @@ export const CreateContact = ({ route, navigation }: RouteProps) => {
       .of(
         yup
           .string()
-          .test('isValidAddress', t('INVALID_ADDRESS'), cosmos =>
-            validateAddress(cosmos, isEthereumAddress),
+          .test('isValidAddress', t('INVALID_ADDRESS'), fantom =>
+            validateAddress(fantom, isEthereumAddress),
           ),
       )
       .test('isDuplicate', t('DUPLICATE_FOUND'), addressList =>
@@ -427,8 +433,8 @@ export const CreateContact = ({ route, navigation }: RouteProps) => {
       .of(
         yup
           .string()
-          .test('isValidAddress', t('INVALID_ADDRESS'), cosmos =>
-            validateAddress(cosmos, isEthereumAddress),
+          .test('isValidAddress', t('INVALID_ADDRESS'), optimism =>
+            validateAddress(optimism, isEthereumAddress),
           ),
       )
       .test('isDuplicate', t('DUPLICATE_FOUND'), addressList =>
@@ -439,8 +445,8 @@ export const CreateContact = ({ route, navigation }: RouteProps) => {
       .of(
         yup
           .string()
-          .test('isValidAddress', t('INVALID_ADDRESS'), cosmos =>
-            validateAddress(cosmos, isEthereumAddress),
+          .test('isValidAddress', t('INVALID_ADDRESS'), arbitrum =>
+            validateAddress(arbitrum, isEthereumAddress),
           ),
       )
       .test('isDuplicate', t('DUPLICATE_FOUND'), addressList =>
@@ -451,8 +457,8 @@ export const CreateContact = ({ route, navigation }: RouteProps) => {
       .of(
         yup
           .string()
-          .test('isValidAddress', t('INVALID_ADDRESS'), cosmos =>
-            validateAddress(cosmos, isEthereumAddress),
+          .test('isValidAddress', t('INVALID_ADDRESS'), shardeum =>
+            validateAddress(shardeum, isEthereumAddress),
           ),
       )
       .test('isDuplicate', t('DUPLICATE_FOUND'), addressList =>
@@ -463,8 +469,8 @@ export const CreateContact = ({ route, navigation }: RouteProps) => {
       .of(
         yup
           .string()
-          .test('isValidAddress', t('INVALID_ADDRESS'), cosmos =>
-            validateAddress(cosmos, isEthereumAddress),
+          .test('isValidAddress', t('INVALID_ADDRESS'), zksync_era =>
+            validateAddress(zksync_era, isEthereumAddress),
           ),
       )
       .test('isDuplicate', t('DUPLICATE_FOUND'), addressList =>
@@ -475,8 +481,8 @@ export const CreateContact = ({ route, navigation }: RouteProps) => {
       .of(
         yup
           .string()
-          .test('isValidAddress', t('INVALID_ADDRESS'), cosmos =>
-            validateAddress(cosmos, isEthereumAddress),
+          .test('isValidAddress', t('INVALID_ADDRESS'), polygon_zkevm =>
+            validateAddress(polygon_zkevm, isEthereumAddress),
           ),
       )
       .test('isDuplicate', t('DUPLICATE_FOUND'), addressList =>
@@ -487,8 +493,8 @@ export const CreateContact = ({ route, navigation }: RouteProps) => {
       .of(
         yup
           .string()
-          .test('isValidAddress', t('INVALID_ADDRESS'), cosmos =>
-            validateAddress(cosmos, isEthereumAddress),
+          .test('isValidAddress', t('INVALID_ADDRESS'), base =>
+            validateAddress(base, isEthereumAddress),
           ),
       )
       .test('isDuplicate', t('DUPLICATE_FOUND'), addressList =>
@@ -499,8 +505,8 @@ export const CreateContact = ({ route, navigation }: RouteProps) => {
       .of(
         yup
           .string()
-          .test('isValidAddress', t('INVALID_ADDRESS'), cosmos =>
-            validateAddress(cosmos, isEthereumAddress),
+          .test('isValidAddress', t('INVALID_ADDRESS'), aurora =>
+            validateAddress(aurora, isEthereumAddress),
           ),
       )
       .test('isDuplicate', t('DUPLICATE_FOUND'), addressList =>
@@ -511,8 +517,8 @@ export const CreateContact = ({ route, navigation }: RouteProps) => {
       .of(
         yup
           .string()
-          .test('isValidAddress', t('INVALID_ADDRESS'), cosmos =>
-            validateAddress(cosmos, isEthereumAddress),
+          .test('isValidAddress', t('INVALID_ADDRESS'), moonbeam =>
+            validateAddress(moonbeam, isEthereumAddress),
           ),
       )
       .test('isDuplicate', t('DUPLICATE_FOUND'), addressList =>
@@ -523,8 +529,20 @@ export const CreateContact = ({ route, navigation }: RouteProps) => {
       .of(
         yup
           .string()
-          .test('isValidAddress', t('INVALID_ADDRESS'), cosmos =>
-            validateAddress(cosmos, isEthereumAddress),
+          .test('isValidAddress', t('INVALID_ADDRESS'), moonriver =>
+            validateAddress(moonriver, isEthereumAddress),
+          ),
+      )
+      .test('isDuplicate', t('DUPLICATE_FOUND'), addressList =>
+        checkForDuplicates(addressList),
+      ),
+    solana: yup
+      .array()
+      .of(
+        yup
+          .string()
+          .test('isValidAddress', t('INVALID_ADDRESS'), solana =>
+            validateAddress(solana, isSolanaAddress),
           ),
       )
       .test('isDuplicate', t('DUPLICATE_FOUND'), addressList =>

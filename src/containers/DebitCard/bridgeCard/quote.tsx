@@ -23,6 +23,7 @@ import {
   ChainConfigMapping,
   ChainNameMapping,
   ChainNames,
+  COSMOS_CHAINS,
   PURE_COSMOS_CHAINS,
 } from '../../../constants/server';
 import { useTranslation } from 'react-i18next';
@@ -58,6 +59,7 @@ export default function CardQuote({
     tokenSendParams,
     cardProvider,
     cardId,
+    planCost,
   } = route.params;
   const {
     chain,
@@ -80,8 +82,13 @@ export default function CardQuote({
   const ethereum = hdWallet.state.wallet.ethereum;
   const activityContext = useContext<any>(ActivityContext);
   const activityRef = useRef<DebitCardTransaction | null>(null);
-  const { sendEvmToken, sendCosmosToken, interCosmosIBC, evmosIBC } =
-    useTransactionManager();
+  const {
+    sendEvmToken,
+    sendCosmosToken,
+    interCosmosIBC,
+    evmosIBC,
+    sendSolanaTokens,
+  } = useTransactionManager();
   const { showModal, hideModal } = useGlobalModalContext();
   const { postWithAuth } = useAxios();
 
@@ -306,8 +313,9 @@ export default function CardQuote({
               symbol: selectedToken.symbol,
             });
           } else if (
-            PURE_COSMOS_CHAINS.includes(chainName) &&
-            chainName !== ChainNames.OSMOSIS
+            COSMOS_CHAINS.includes(chainName) &&
+            chainName !== ChainNames.OSMOSIS &&
+            chainName !== ChainNames.EVMOS
           ) {
             response = await interCosmosIBC({
               fromChain: chainDetails,
@@ -326,6 +334,13 @@ export default function CardQuote({
               fromAddress: get(cosmosAddresses, chainDetails.chainName),
               toAddress: tokenQuote.targetAddress,
               contractDecimals,
+            });
+          } else if (chainName === ChainNames.SOLANA) {
+            response = await sendSolanaTokens({
+              amountToSend: actualTokensRequired,
+              toAddress: tokenQuote.targetAddress,
+              contractDecimals,
+              contractAddress,
             });
           } else {
             response = await evmosIBC({
@@ -473,6 +488,7 @@ export default function CardQuote({
             </CyDText>
           </CyDView>
         </CyDView>
+
         <CyDView
           className={'flex flex-row justify-between items-center py-[16px]'}>
           <CyDText className={'font-bold text-[14px]'}>
@@ -530,6 +546,21 @@ export default function CardQuote({
             </CyDText>
           </CyDView>
         </CyDView>
+
+        {planCost > 0 && (
+          <CyDView
+            className={'flex flex-row justify-between items-center py-[16px]'}>
+            <CyDText className={'font-bold text-[14px]'}>
+              {t('PLAN_COST')}
+            </CyDText>
+            <CyDView className={''}>
+              <CyDText
+                className={'font-medium text-[14px] text-primaryTextColor'}>
+                {'$' + String(planCost)}
+              </CyDText>
+            </CyDView>
+          </CyDView>
+        )}
       </CyDView>
       {!hasSufficientBalanceAndGasFee ? (
         <CyDView className='flex flex-row items-center rounded-[8px] justify-center py-[15px] mt-[20px] mb-[10px] bg-warningRedBg'>

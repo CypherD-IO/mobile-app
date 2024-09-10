@@ -1,5 +1,5 @@
 /* eslint-disable no-prototype-builtins */
-/* eslint-disable @typescript-eslint/restrict-plus-operands */
+
 /* eslint-disable @typescript-eslint/no-misused-promises */
 import React, {
   useCallback,
@@ -39,6 +39,9 @@ import { useGlobalModalContext } from '../../components/v2/GlobalModal';
 import { get } from 'lodash';
 import Button from '../../components/v2/button';
 import LottieView from 'lottie-react-native';
+import { CardProfile } from '../../models/cardProfile.model';
+import CardProviderSwitch from '../../components/cardProviderSwitch';
+import useCardUtilities from '../../hooks/useCardUtilities';
 
 const indexStatusMapping: Record<string, number> = {
   created: 0,
@@ -62,7 +65,8 @@ export default function CardKYCStatusScreen({ navigation }) {
   const [loading, setLoading] = useState<boolean>(false);
   const [fillIndex, setFillIndex] = useState<number>(1);
   const [error, setError] = useState<boolean>(false);
-  const provider = 'pc';
+  const { cardProfileModal } = useCardUtilities();
+  // const provider = 'pc';
   const data = [
     t('APPLICATION_SUBMITTED'),
     t('KYC_INITITATED'),
@@ -78,7 +82,8 @@ export default function CardKYCStatusScreen({ navigation }) {
   const latestKycStatus = useRef<NodeJS.Timeout>();
   const { getWithAuth } = useAxios();
   const { showModal, hideModal } = useGlobalModalContext();
-
+  const cardProfile: CardProfile = globalContext.globalState.cardProfile;
+  const provider = cardProfile.provider ?? CardProviders.REAP_CARD;
   useEffect(() => {
     if (isFocused) {
       latestKycStatus.current = setInterval(() => {
@@ -98,9 +103,10 @@ export default function CardKYCStatusScreen({ navigation }) {
   const refreshProfile = async () => {
     const response = await getWithAuth('/v1/authentication/profile');
     if (!response.isError) {
+      const tempProfile = await cardProfileModal(response.data);
       globalContext.globalDispatch({
         type: GlobalContextType.CARD_PROFILE,
-        cardProfile: response.data,
+        cardProfile: tempProfile,
       });
       setTimeout(() => {
         navigation.navigate(screenTitle.DEBIT_CARD_SCREEN);
@@ -115,7 +121,6 @@ export default function CardKYCStatusScreen({ navigation }) {
       case CardApplicationStatus.KYC_PENDING:
       case CardApplicationStatus.KYC_SUCCESSFUL:
       case CardApplicationStatus.SUBMITTED:
-      case CardApplicationStatus.COMPLETION_PENDING:
         setError(false);
         setFillIndex(indexStatusMapping[applicationStatus]);
         break;
@@ -123,6 +128,7 @@ export default function CardKYCStatusScreen({ navigation }) {
         setError(true);
         setFillIndex(indexStatusMapping[applicationStatus]);
         break;
+      case CardApplicationStatus.COMPLETION_PENDING:
       case CardApplicationStatus.DECLINED:
         setError(true);
         clearInterval(latestKycStatus.current);
@@ -148,39 +154,34 @@ export default function CardKYCStatusScreen({ navigation }) {
     try {
       const response = await getWithAuth('/v1/authentication/profile');
       if (!response.isError) {
+        const tempProfile = await cardProfileModal(response.data);
+        const tempProvider = get(tempProfile, 'provider', 'rc');
         const tempApplicationStatus = get(
-          response,
-          ['data', provider, 'applicationStatus'],
+          tempProfile,
+          [tempProvider, 'applicationStatus'],
           '',
         );
-        const cardProfile = response.data;
-        const { kyc } = get(cardProfile, provider);
+        const { kyc } = get(tempProfile, tempProvider);
         if (kyc) {
           setKYC(kyc);
         }
         if (tempApplicationStatus !== applicationStatus) {
           globalContext.globalDispatch({
             type: GlobalContextType.CARD_PROFILE,
-            cardProfile: response.data,
+            cardProfile: tempProfile,
           });
         }
-        const bcApplicationStatus =
-          get(cardProfile, CardProviders.BRIDGE_CARD)?.applicationStatus ===
+        const cardApplicationStatus =
+          get(tempProfile, tempProvider)?.applicationStatus ===
           CardApplicationStatus.COMPLETED;
-        const pcApplicationStatus =
-          get(cardProfile, CardProviders.PAYCADDY)?.applicationStatus ===
-          CardApplicationStatus.COMPLETED;
-        if (bcApplicationStatus || pcApplicationStatus) {
+        if (cardApplicationStatus) {
           navigation.reset({
             index: 0,
             routes: [
               {
                 name: screenTitle.BRIDGE_CARD_SCREEN,
                 params: {
-                  hasBothProviders: bcApplicationStatus && pcApplicationStatus,
-                  cardProvider: bcApplicationStatus
-                    ? CardProviders.BRIDGE_CARD
-                    : CardProviders.PAYCADDY,
+                  cardProvider: tempProvider,
                 },
               },
             ],
@@ -196,8 +197,9 @@ export default function CardKYCStatusScreen({ navigation }) {
 
   const getKyc = async () => {
     const { isError, data, error } = await getWithAuth(
-      `/v1/cards/${CardProviders.PAYCADDY}/application/kyc`,
+      `/v1/cards/${provider}/application/kyc`,
     );
+
     if (isError) {
       if (error?.hasOwnProperty('message')) {
         showModal('state', {
@@ -381,6 +383,18 @@ export default function CardKYCStatusScreen({ navigation }) {
   ) : (
     <CyDSafeAreaView className={'h-full bg-white'}>
       <CyDView className='h-[90%]'>
+        <CardProviderSwitch />
+        <CyDView className='flex flex-row  mt-[10px] mb-[10px] items-center justify-center'>
+          <CyDText className='font-extrabold font-nunito text-[20px] text-center'>
+            {'Application Status'}
+          </CyDText>
+          <CyDTouchView onPress={checkKYC}>
+            <CyDImage
+              className='h-[16px] w-[16px] ml-[8px]'
+              source={AppImages.REFRESH}
+            />
+          </CyDTouchView>
+        </CyDView>
         <CyDScrollView>
           <CyDImage
             source={AppImages.CARD_KYC_BACKGROUND}
@@ -397,7 +411,7 @@ export default function CardKYCStatusScreen({ navigation }) {
             sendFirebaseEvent(hdWalletContext, 'support');
           }}
           className={
-            'w-[95%] self-center flex flex-row justify-center py-[7px] my-[20px] border-[2px] rounded-[7px] border-sepratorColor'
+            'w-[95%] self-center flex flex-row justify-center py-[7px] my-[5px] border-[2px] rounded-[7px] border-sepratorColor'
           }>
           <CyDText className='font-extrabold'>{t<string>('NEED_HELP')}</CyDText>
         </CyDTouchView>

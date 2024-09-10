@@ -132,17 +132,16 @@ const RenderRightActions = (navigation: any, tokenData: any) => {
             onPress={() => {
               navigation.navigate(screenTitle.BRIDGE_SKIP_API_SCREEN, {
                 fromChainData: tokenData,
-                title: t('BRIDGE_TITLE'),
-                // renderPage: 'swapPage',
+                title: t('SWAP_TITLE'),
               });
             }}>
             <CyDImage
-              source={AppImages.BRIDGE_SHORTCUT}
+              source={AppImages.SWAP_SHORTCUT}
               className={'w-[30px] h-[30px]'}
             />
           </CyDTouchView>
           <CyDText className={'text-center mt-[5px] text-[12px] font-bold'}>
-            {t<string>('BRIDGE_TITLE')}
+            {t<string>('SWAP_TITLE')}
           </CyDText>
         </CyDView>
       )}
@@ -193,16 +192,18 @@ const RenderRightActions = (navigation: any, tokenData: any) => {
               tokenData.chainDetails.backendName === ChainBackendNames.COREUM
             ) {
               addressTypeQRCode = FundWalletAddressType.COREUM;
-            }
-            // else if (
-            //   tokenData.chainDetails.backendName === ChainBackendNames.INJECTIVE
-            // ) {
-            //   addressTypeQRCode = FundWalletAddressType.INJECTIVE;
-            // }
-            else if (
+            } else if (
+              tokenData.chainDetails.backendName === ChainBackendNames.INJECTIVE
+            ) {
+              addressTypeQRCode = FundWalletAddressType.INJECTIVE;
+            } else if (
               tokenData.chainDetails.backendName === ChainBackendNames.KUJIRA
             ) {
               addressTypeQRCode = FundWalletAddressType.KUJIRA;
+            } else if (
+              tokenData.chainDetails.backendName === ChainBackendNames.SOLANA
+            ) {
+              addressTypeQRCode = FundWalletAddressType.SOLANA;
             }
             navigation.navigate(screenTitle.QRCODE, {
               addressType: addressTypeQRCode,

@@ -27,6 +27,7 @@ import {
   CHAIN_COREUM,
   CHAIN_INJECTIVE,
   CHAIN_KUJIRA,
+  CHAIN_SOLANA,
 } from '../constants/server';
 import {
   PORTFOLIO_EMPTY,
@@ -37,7 +38,6 @@ import Toast from 'react-native-toast-message';
 import { getPortfolioData, storePortfolioData } from './asyncStorage';
 import axios from '../core/Http';
 import * as Sentry from '@sentry/react-native';
-import qs from 'qs';
 import { hostWorker } from '../global';
 import { get, has } from 'lodash';
 
@@ -109,8 +109,9 @@ export interface WalletHoldings {
   moonbeam: ChainHoldings | undefined;
   moonriver: ChainHoldings | undefined;
   coreum: ChainHoldings | undefined;
-  // injective: ChainHoldings | undefined;
+  injective: ChainHoldings | undefined;
   kujira: ChainHoldings | undefined;
+  solana: ChainHoldings | undefined;
   totalHoldings: Holding[];
 }
 
@@ -203,10 +204,14 @@ export function getCurrentChainHoldings(
       return portfolio.moonriver;
     case CHAIN_COREUM.backendName:
       return portfolio.coreum;
-    // case CHAIN_INJECTIVE.backendName:
-    //   return portfolio.injective;
+    case CHAIN_INJECTIVE.backendName:
+      return portfolio.injective;
     case CHAIN_KUJIRA.backendName:
       return portfolio.kujira;
+    case CHAIN_SOLANA.backendName:
+      return portfolio.solana;
+    default:
+      return portfolio;
   }
 }
 
@@ -419,7 +424,7 @@ export async function getPortfolioModel(
   let stargazeHoldings;
   let nobleHoldings;
   let coreumHoldings;
-  // let injectiveHoldings;
+  let injectiveHoldings;
   let kujiraHoldings;
   let shardeumHoldings;
   let shardeumSphinxHoldings;
@@ -433,6 +438,7 @@ export async function getPortfolioModel(
   let auroraHoldings;
   let moonbeamHoldings;
   let moonriverHoldings;
+  let solanaHoldings;
   const allChains = new Set([
     CHAIN_AVALANCHE.backendName,
     CHAIN_BSC.backendName,
@@ -455,8 +461,9 @@ export async function getPortfolioModel(
     CHAIN_MOONBEAM.backendName,
     CHAIN_MOONRIVER.backendName,
     CHAIN_COREUM.backendName,
-    // CHAIN_INJECTIVE.backendName,
+    CHAIN_INJECTIVE.backendName,
     CHAIN_KUJIRA.backendName,
+    CHAIN_SOLANA.backendName,
   ]);
 
   const fetchedChains = new Set<ChainBackendNames | 'ALL'>();
@@ -578,9 +585,12 @@ export async function getPortfolioModel(
         case CHAIN_KUJIRA.backendName:
           tokenHolding.chainDetails = CHAIN_KUJIRA;
           break;
-        // case CHAIN_INJECTIVE.backendName:
-        //   tokenHolding.chainDetails = chainHoldings;
-        //   break;
+        case CHAIN_INJECTIVE.backendName:
+          tokenHolding.chainDetails = CHAIN_INJECTIVE;
+          break;
+        case CHAIN_SOLANA.backendName:
+          tokenHolding.chainDetails = CHAIN_SOLANA;
+          break;
       }
       if (has(tokenHolding, 'chainDetails')) {
         tokenHoldings.push(tokenHolding);
@@ -689,15 +699,16 @@ export async function getPortfolioModel(
       case CHAIN_KUJIRA.backendName:
         kujiraHoldings = chainHoldings;
         break;
-      // case CHAIN_INJECTIVE.backendName:
-      //   injectiveHoldings = chainHoldings;
-      //   break;
+      case CHAIN_INJECTIVE.backendName:
+        injectiveHoldings = chainHoldings;
+        break;
+      case CHAIN_SOLANA.backendName:
+        solanaHoldings = chainHoldings;
+        break;
     }
   }
   const remainingChains = new Set(
-    [...allChains].filter(
-      x => !fetchedChains.has(x as ChainBackendNames | 'ALL'),
-    ),
+    [...allChains].filter(x => !fetchedChains.has(x)),
   );
 
   if (remainingChains.size > 0 && portfolioState.statePortfolio.developerMode) {
@@ -797,9 +808,12 @@ export async function getPortfolioModel(
         case CHAIN_KUJIRA.backendName:
           kujiraHoldings = chainHoldings;
           break;
-        // case CHAIN_INJECTIVE.backendName:
-        //   injectiveHoldings = chainHoldings;
-        //   break;
+        case CHAIN_INJECTIVE.backendName:
+          injectiveHoldings = chainHoldings;
+          break;
+        case CHAIN_SOLANA.backendName:
+          solanaHoldings = chainHoldings;
+          break;
       }
     }
   }
@@ -833,8 +847,9 @@ export async function getPortfolioModel(
     moonbeam: moonbeamHoldings,
     moonriver: moonriverHoldings,
     coreum: coreumHoldings,
-    // injective: injectiveHoldings,
+    injective: injectiveHoldings,
     kujira: kujiraHoldings,
+    solana: solanaHoldings,
     totalHoldings,
   };
   await storePortfolioData(portfolio, ethereum, portfolioState);
@@ -856,8 +871,9 @@ export async function fetchTokenData(
     noble,
     ethereum,
     coreum,
-    // injective,
+    injective,
     kujira,
+    solana,
   } = hdWalletState.state.wallet;
   if (ethereum.address !== 'null') {
     const localPortfolio = await getPortfolioData(ethereum, portfolioState);
@@ -904,14 +920,15 @@ export async function fetchTokenData(
       stargaze?.address,
       noble?.address,
       coreum?.address,
-      // injective?.address,
+      injective?.address,
       kujira?.address,
       ethereum.address,
+      solana.address,
     ].filter(address => address !== undefined);
     const payload = {
       chains: PORTFOLIO_CHAINS_BACKEND_NAMES,
       addresses,
-      allowTestNets: true,
+      allowTestNets: false,
       isVerified: isVerifyCoinChecked,
     };
     const archBackend = await axios.post(portfolioUrl, payload);

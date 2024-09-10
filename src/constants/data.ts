@@ -1,4 +1,4 @@
-import { ApplicationName } from './enum';
+import { ApplicationName, CypherPlanId } from './enum';
 import { ChainBackendNames } from './server';
 
 export const INJECTED_WEB3_CDN =
@@ -25,7 +25,7 @@ export const gasFeeReservation: Record<ChainBackendNames, number> = {
   STARGAZE: 0.1,
   NOBLE: 0.1,
   COREUM: 0.1,
-  INJECTIVE: 0.1,
+  INJECTIVE: 0.001,
   KUJIRA: 0.1,
   SHARDEUM: 0.1,
   SHARDEUM_SPHINX: 0.01,
@@ -35,6 +35,7 @@ export const gasFeeReservation: Record<ChainBackendNames, number> = {
   AURORA: 0.0006, // TODO
   MOONBEAM: 0.0006, // TODO
   MOONRIVER: 0.0006, // TODO
+  SOLANA: 0.001,
   ALL: 0.0,
 };
 
@@ -64,6 +65,7 @@ export const nativeTokenMapping: Record<ChainBackendNames, string> = {
   [ChainBackendNames.MOONBEAM]: 'Glimmer',
   [ChainBackendNames.MOONRIVER]: 'Moonriver',
   [ChainBackendNames.ALL]: '',
+  [ChainBackendNames.SOLANA]: 'Solana',
 };
 
 export const MINIMUM_TRANSFER_AMOUNT_ETH = 50;
@@ -873,6 +875,7 @@ export const ChainIdNameMapping = {
   'coreum-mainnet-1': 'coreum',
   'injective-1': 'injective',
   'kaiyo-1': 'kujira',
+  solana: 'solana',
 };
 
 export const ChainBackendNameMapping = {
@@ -884,4 +887,32 @@ export const ChainBackendNameMapping = {
   coreum: [ChainBackendNames.COREUM],
   injective: [ChainBackendNames.INJECTIVE],
   kujira: [ChainBackendNames.KUJIRA],
+};
+
+export const AddressDerivationPath = {
+  ETH: "m/44'/60'/0'/0/",
+  COSMOS: "m/44'/118'/0'/0/",
+  SOLANA: "m/44'/501'/0'/0'",
+  COREUM: "m/44'/990'/0'/0/",
+};
+
+export const Bech32Prefixes = {
+  COSMOS: 'cosmos',
+  JUNO: 'juno',
+  STARGAZE: 'stars',
+  NOBLE: 'noble',
+  KUJIRA: 'kujira',
+  OSMOSIS: 'osmo',
+  COREUM: 'core',
+  INJECTIVE: 'inj',
+};
+
+export const CYPHER_PLAN_ID_NAME_MAPPING: Record<CypherPlanId, string> = {
+  [CypherPlanId.BASIC_PLAN]: 'Standard Plan',
+  [CypherPlanId.PRO_PLAN]: 'Premium Plan',
+};
+
+export const PlanIdPriority = {
+  [CypherPlanId.BASIC_PLAN]: 0,
+  [CypherPlanId.PRO_PLAN]: 10,
 };

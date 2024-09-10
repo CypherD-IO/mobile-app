@@ -16,7 +16,13 @@ import { capitalize, endsWith, get, isString } from 'lodash';
 import { SvgUri } from 'react-native-svg';
 import AppImages from '../../../assets/images/appImages';
 import CyDModalLayout from '../../components/v2/modal';
-import { Animated, StyleSheet, TouchableOpacity } from 'react-native';
+import {
+  Animated,
+  Dimensions,
+  Keyboard,
+  StyleSheet,
+  TouchableOpacity,
+} from 'react-native';
 import { Colors } from '../../constants/theme';
 import Fuse from 'fuse.js';
 import Loading from '../../components/v2/loading';
@@ -249,9 +255,16 @@ function ChooseTokenModal({
     );
   };
   const renderContent = () => {
+    const { width, height } = Dimensions.get('window');
     return (
       <CyDScrollView className='h-[240px]'>
-        <CyDView className='flex flex-row py-[24px] px-[6px] flex-wrap gap-[12px] items-center justify-between  '>
+        <CyDView
+          className={clsx(
+            'flex flex-wrap flex-row justify-start items-start py-[24px] px-[8px] gap-[8px]',
+            {
+              'px-[10px] gap-[20px]': width >= 428 && height >= 926,
+            },
+          )}>
           {chainData.map((item, index) => {
             if (endsWith(item?.logo_uri, '.svg'))
               return (
@@ -268,8 +281,8 @@ function ChooseTokenModal({
                     },
                   )}>
                   <SvgUri
-                    width='32'
-                    height='32'
+                    width='50'
+                    height='24'
                     uri={item.logo_uri ?? ''}
                     className='rounded-full'
                   />
@@ -422,6 +435,7 @@ export default function TokenSelection({
   setCryptoAmount,
   amountOut,
   usdAmountOut,
+  setToggling,
 }: {
   selectedFromChain: SkipApiChainInterface | null;
   setSelectedFromChain: Dispatch<SetStateAction<SkipApiChainInterface | null>>;
@@ -440,6 +454,7 @@ export default function TokenSelection({
   setCryptoAmount: Dispatch<SetStateAction<string>>;
   amountOut: string;
   usdAmountOut: string;
+  setToggling: Dispatch<SetStateAction<boolean>>;
 }) {
   const [fromTokenModalVisible, setFromTokenModalVisible] =
     useState<boolean>(false);
@@ -447,6 +462,7 @@ export default function TokenSelection({
     useState<boolean>(false);
 
   const onToggle = () => {
+    setToggling(true);
     const oldFromChain = selectedFromChain;
     const oldFromToken = selectedFromToken;
     const oldToChain = selectedToChain;
@@ -494,6 +510,11 @@ export default function TokenSelection({
       />
 
       <CyDView className='mt-[24px]'>
+        <CyDView className='mx-[16px] bg-white rounded-[8px] p-[12px]'>
+          <CyDText className='text-center font-medium'>
+            {t('BIRDGE_SWAP_AVAILABLE')}{' '}
+          </CyDText>
+        </CyDView>
         <CyDView className='m-[16px] bg-white rounded-[8px] p-[12px]'>
           <CyDView className='flex flex-row justify-between items-center mb-[12px]'>
             <CyDText className='text-[14px] font-medium'>{t('FROM')}</CyDText>
@@ -503,18 +524,22 @@ export default function TokenSelection({
           </CyDView>
 
           <CyDView className='flex flex-row justify-between items-center'>
-            <CyDView className='flex flex-col items-start'>
+            <CyDView className='flex flex-col items-start w-[60%]'>
               <CyDTextInput
                 className={clsx(
-                  'font-semibold text-center text-primaryTextColor font-nunito text-[20px]',
+                  'font-semibold text-start text-primaryTextColor font-nunito text-[30px] w-[100%] p-[4px] ',
                 )}
                 keyboardType='numeric'
                 onChangeText={text => {
                   setCryptoAmount(text);
                 }}
-                // placeholder='0.0'
+                returnKeyType='done'
+                placeholder='0.0'
                 value={cryptoAmount}
                 autoFocus={true}
+                onSubmitEditing={() => {
+                  Keyboard.dismiss();
+                }}
               />
               <CyDText
                 className={clsx(
@@ -524,25 +549,26 @@ export default function TokenSelection({
               </CyDText>
             </CyDView>
             <CyDTouchView
+              className='w-[40%]'
               onPress={() => {
                 setFromTokenModalVisible(true);
               }}>
-              <CyDView className='flex flex-row items-center'>
+              <CyDView className='flex flex-row items-center justify-end'>
                 <CyDView className={' relative'}>
                   <CyDView className={'flex flex-row items-center'}>
-                    {endsWith(selectedFromChain?.logo_uri, '.svg') ? (
+                    {endsWith(selectedFromToken?.logo_uri, '.svg') ? (
                       <SvgUri
-                        width='48'
-                        height='48'
+                        width='40'
+                        height='40'
                         className='mr-[18px] rounded-full'
-                        uri={selectedFromChain?.logo_uri ?? ''}
+                        uri={selectedFromToken?.logo_uri ?? ''}
                       />
                     ) : (
                       <CyDFastImage
                         source={
-                          isString(selectedFromChain?.logo_uri)
-                            ? { uri: selectedFromChain.logo_uri ?? '' }
-                            : selectedFromChain?.logo_uri
+                          isString(selectedFromToken?.logo_uri)
+                            ? { uri: selectedFromToken.logo_uri ?? '' }
+                            : selectedFromToken?.logo_uri
                         }
                         className={'w-[48px] h-[48px] mr-[18px] rounded-full'}
                       />
@@ -550,19 +576,19 @@ export default function TokenSelection({
                   </CyDView>
                   <CyDView className='absolute right-[8px] bottom-0 '>
                     <CyDView className={'flex flex-row items-center '}>
-                      {endsWith(selectedFromToken?.logo_uri, '.svg') ? (
+                      {endsWith(selectedFromChain?.logo_uri, '.svg') ? (
                         <SvgUri
                           width='20'
                           height='20'
                           className='mr-[8px] border border-white rounded-full'
-                          uri={selectedFromToken?.logo_uri ?? ''}
+                          uri={selectedFromChain?.logo_uri ?? ''}
                         />
                       ) : (
                         <CyDFastImage
                           source={
-                            isString(selectedFromToken?.logo_uri)
-                              ? { uri: selectedFromToken.logo_uri ?? '' }
-                              : selectedFromToken?.logo_uri
+                            isString(selectedFromChain?.logo_uri)
+                              ? { uri: selectedFromChain.logo_uri ?? '' }
+                              : selectedFromChain?.logo_uri
                           }
                           className={
                             'w-[20px] h-[20px] mr-[8px] border border-white rounded-full'
@@ -596,7 +622,7 @@ export default function TokenSelection({
             <CyDView className='flex flex-col items-start'>
               <CyDText
                 className={clsx(
-                  'font-semibold text-center text-primaryTextColor font-nunito text-[20px]',
+                  'font-semibold text-center text-primaryTextColor font-nunito text-[30px]',
                 )}>
                 {amountOut}
               </CyDText>
@@ -614,30 +640,11 @@ export default function TokenSelection({
               <CyDView className='flex flex-row items-center'>
                 <CyDView className={' relative'}>
                   <CyDView className={'flex flex-row items-center'}>
-                    {endsWith(selectedToChain?.logo_uri, '.svg') ? (
-                      <SvgUri
-                        width='48'
-                        height='48'
-                        className='mr-[18px] rounded-full'
-                        uri={selectedToChain?.logo_uri ?? ''}
-                      />
-                    ) : (
-                      <CyDFastImage
-                        source={
-                          isString(selectedToChain?.logo_uri)
-                            ? { uri: selectedToChain.logo_uri ?? '' }
-                            : selectedToChain?.logo_uri
-                        }
-                        className={'w-[48px] h-[48px] mr-[18px] rounded-full'}
-                      />
-                    )}
-                  </CyDView>
-                  <CyDView className='absolute right-[8px] bottom-0'>
                     {endsWith(selectedToToken?.logo_uri, '.svg') ? (
                       <SvgUri
-                        width='20'
-                        height='20'
-                        className='mr-[8px] border border-white rounded-full'
+                        width='40'
+                        height='40'
+                        className='mr-[18px] rounded-full'
                         uri={selectedToToken?.logo_uri ?? ''}
                       />
                     ) : (
@@ -646,6 +653,25 @@ export default function TokenSelection({
                           isString(selectedToToken?.logo_uri)
                             ? { uri: selectedToToken.logo_uri ?? '' }
                             : selectedToToken?.logo_uri
+                        }
+                        className={'w-[48px] h-[48px] mr-[18px] rounded-full'}
+                      />
+                    )}
+                  </CyDView>
+                  <CyDView className='absolute right-[8px] bottom-0'>
+                    {endsWith(selectedToChain?.logo_uri, '.svg') ? (
+                      <SvgUri
+                        width='20'
+                        height='20'
+                        className='mr-[8px] border border-white rounded-full'
+                        uri={selectedToChain?.logo_uri ?? ''}
+                      />
+                    ) : (
+                      <CyDFastImage
+                        source={
+                          isString(selectedToChain?.logo_uri)
+                            ? { uri: selectedToChain.logo_uri ?? '' }
+                            : selectedToChain?.logo_uri
                         }
                         className={
                           'w-[20px] h-[20px] mr-[8px] border border-white rounded-full'

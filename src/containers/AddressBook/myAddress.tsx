@@ -28,6 +28,7 @@ import {
   CHAIN_COREUM,
   CHAIN_INJECTIVE,
   CHAIN_KUJIRA,
+  CHAIN_SOLANA,
 } from '../../constants/server';
 import { HdWalletContext } from '../../core/util';
 import {
@@ -56,6 +57,7 @@ export function AddressBook({ route, navigation }) {
     coreum,
     injective,
     kujira,
+    solana,
   } = hdWalletContext.state.wallet;
 
   const handleBackButton = () => {
@@ -80,8 +82,8 @@ export function AddressBook({ route, navigation }) {
               navigation.goBack();
             }}>
             <CyDImage
-              source={AppImages.BACK}
-              className={' w-[20px] h-[20px] mt-[10px]'}
+              source={AppImages.BACK_ARROW_GRAY}
+              className={'w-[32px] h-[32px] mt-[10px]'}
             />
           </CyDTouchView>
           <CyDView className='flex-1 items-center mr-[20px]'>
@@ -105,6 +107,15 @@ export function AddressBook({ route, navigation }) {
                 navigation={navigation}
                 addressTypeQRCode={FundWalletAddressType.EVM}
                 bGC={'#f6f6f9'}
+              />
+
+              <AddressBookContainer
+                chain={CHAIN_SOLANA.name}
+                wallet={solana}
+                logo={AppImages.SOLANA_LOGO}
+                bGC={'#f1f4fa'}
+                navigation={navigation}
+                addressTypeQRCode={FundWalletAddressType.SOLANA}
               />
 
               <AddressBookContainer
@@ -161,14 +172,14 @@ export function AddressBook({ route, navigation }) {
                 addressTypeQRCode={FundWalletAddressType.COREUM}
               />
 
-              {/* <AddressBookContainer
+              <AddressBookContainer
                 chain={CHAIN_INJECTIVE.name}
                 wallet={injective.wallets[injective.currentIndex]}
                 logo={AppImages.INJECTIVE_LOGO}
                 bGC={'#f1f4fa'}
                 navigation={navigation}
                 addressTypeQRCode={FundWalletAddressType.INJECTIVE}
-              /> */}
+              />
 
               <AddressBookContainer
                 chain={CHAIN_KUJIRA.name}

@@ -33,6 +33,7 @@ import {
   CHAIN_COREUM,
   CHAIN_INJECTIVE,
   CHAIN_KUJIRA,
+  CHAIN_SOLANA,
 } from '../constants/server';
 import {
   GlobalStateDef,
@@ -65,7 +66,6 @@ import { ANALYTICS_ERROR_URL, ANALYTICS_SUCCESS_URL } from '../constants/data';
 import DeviceInfo from 'react-native-device-info';
 import axios from './Http';
 import { Holding } from './Portfolio';
-import { TokenMeta } from '../models/tokenMetaData.model';
 import Long from 'long';
 
 import { Wallet } from 'ethers';
@@ -73,6 +73,8 @@ import { isCoreumAddress } from '../containers/utilities/coreumUtilities';
 import { isInjectiveAddress } from '../containers/utilities/injectiveUtilities';
 import { isKujiraAddress } from '../containers/utilities/kujiraUtilities';
 import moment from 'moment';
+import { isSolanaAddress } from '../containers/utilities/solanaUtilities';
+import { RSA } from 'react-native-rsa-native';
 // const {showModal, hideModal} = useGlobalModalContext()
 
 export const HdWalletContext = React.createContext<HdWalletContextDef | null>(
@@ -607,6 +609,8 @@ export function SendToAddressValidator(
         return isInjectiveAddress(address);
       case CHAIN_KUJIRA.chainName:
         return isKujiraAddress(address);
+      case CHAIN_SOLANA.chainName:
+        return isSolanaAddress(address);
       default:
         return false;
     }
@@ -924,18 +928,23 @@ export function isValidPrivateKey(privateKey: string): boolean {
 export function getAvailableChains(hdWallet: HdWalletContextDef): Chain[] {
   const {
     ethereum,
+    solana,
     cosmos,
     osmosis,
     juno,
     stargaze,
     noble,
     coreum,
-    // injective,
+    injective,
     kujira,
   } = hdWallet.state.wallet;
   let availableChains: Chain[] = [];
   if (get(ethereum.wallets, ethereum.currentIndex)?.address) {
     availableChains = [CHAIN_COLLECTION, ...EVM_CHAINS, CHAIN_EVMOS];
+  }
+  // add Solana to the 2nd postion of the array to show it after Ethereum
+  if (get(solana.wallets, solana.currentIndex)?.address) {
+    availableChains.splice(2, 0, CHAIN_SOLANA);
   }
   if (get(cosmos.wallets, cosmos.currentIndex)?.address) {
     availableChains.push(CHAIN_COSMOS);
@@ -955,9 +964,9 @@ export function getAvailableChains(hdWallet: HdWalletContextDef): Chain[] {
   if (get(coreum.wallets, coreum.currentIndex)?.address) {
     availableChains.push(CHAIN_COREUM);
   }
-  // if (get(injective.wallets, injective.currentIndex)?.address) {
-  //   availableChains.push(CHAIN_INJECTIVE);
-  // }
+  if (get(injective.wallets, injective.currentIndex)?.address) {
+    availableChains.push(CHAIN_INJECTIVE);
+  }
   if (get(kujira.wallets, kujira.currentIndex)?.address) {
     availableChains.push(CHAIN_KUJIRA);
   }
@@ -1073,3 +1082,23 @@ export async function setTimeOutNSec<T>(
     }, timeOutDuration);
   });
 }
+
+export const stripPemHeaders = (pem: string) => {
+  const pemHeaderFooterRegex =
+    /-----BEGIN [A-Z ]+-----|-----END [A-Z ]+-----|\s+/g;
+  return pem.replace(pemHeaderFooterRegex, '');
+};
+
+export const generateKeys = async () => {
+  try {
+    const keyPair = await RSA.generateKeys(4096); // Generate a 2048-bit key pair
+    const privateKey = keyPair.private; // Private key in PEM format
+    const publicKey = keyPair.public; // Public key in PEM format
+
+    // Convert the public key to base64
+    const publicKeyBase64 = Buffer.from(publicKey).toString('base64');
+    return { publicKeyBase64, privateKey };
+  } catch (error) {
+    // error in genrating keys
+  }
+};

@@ -1,4 +1,8 @@
-import { CardProviders, CardTransactionTypes } from '../constants/enum';
+import {
+  CardProviders,
+  CardTransactionTypes,
+  ReapTxnStatus,
+} from '../constants/enum';
 import { ChainBackendNames } from '../constants/server';
 import { Holding } from '../core/Portfolio';
 
@@ -64,6 +68,8 @@ export interface ICardTransaction {
   userId?: string;
   label?: string;
   isSettled?: boolean;
+  cDReason?: string;
+  tStatus?: ReapTxnStatus;
 }
 
 export interface CardQuoteResponse {
@@ -90,6 +96,7 @@ export interface PayTokenModalParams {
   hasSufficientBalanceAndGasFee: boolean;
   cardProvider: CardProviders;
   cardId: string;
+  planCost: number;
   tokenSendParams: {
     chain: ChainBackendNames;
     amountInCrypto: string;

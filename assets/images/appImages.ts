@@ -1,5 +1,6 @@
 /* eslint-disable @typescript-eslint/no-var-requires */
 const S3_BUCKET_URL_ICONS = 'https://public.cypherd.io/icons';
+const S3_BUCKET_URL_IMAGES = 'https://public.cypherd.io/images';
 
 const PLUS = require('./plus.png');
 const ARROW = require('./arrow.png');
@@ -315,6 +316,14 @@ const VIRTUAL_TO_PHYSICAL = require('./virtualToPhysical.png');
 const MAIL = require('./mail.png');
 const PAUSE = require('./pause.png');
 const RESUME = require('./resume.png');
+const SOLANA_LOGO = require('./solana.png');
+const CARD_ONBOARDING_1 = require('./cardOnBoarding1.png');
+const CARD_ONBOARDING_2 = require('./cardOnBoarding2.png');
+const CARD_ONBOARDING_3 = require('./cardOnBoarding3.png');
+const CARD_ONBOARDING_4 = require('./cardOnBoarding4.png');
+const BACK_ARROW_GRAY = require('./backArrowGray.png');
+const REWARDS_ICON = { uri: `${S3_BUCKET_URL_ICONS}/rewardsIcon.png` };
+// const CARD_ONBOARDING_VIDEO = require('./cardOnBaordingVideo.mp4');
 
 // ICONS FROM S3
 const SWAP = { uri: `${S3_BUCKET_URL_ICONS}/swap.png` };
@@ -368,12 +377,158 @@ const NOTIFICATION_BELL = {
 const DOCUMENT = {
   uri: `${S3_BUCKET_URL_ICONS}/document.png`,
 };
-
 const AUTOLOAD = {
   uri: `${S3_BUCKET_URL_ICONS}/autoLoad.png`,
 };
+const COUNTRIES = {
+  uri: `${S3_BUCKET_URL_ICONS}/countries.png`,
+};
+const MOBILE_WALLETS = {
+  uri: `${S3_BUCKET_URL_ICONS}/mobileWallets.png`,
+};
+const CARD_AND_PIN_TRANSACTIONS = {
+  uri: `${S3_BUCKET_URL_ICONS}/cardAndPinTransactions.png`,
+};
+const CONTACTLESS_TRANSACTIONS = {
+  uri: `${S3_BUCKET_URL_ICONS}/contactlessTransactions.png`,
+};
+const ONLINE_TRANSACTIONS = {
+  uri: `${S3_BUCKET_URL_ICONS}/onlineTransactions.png`,
+};
+const ATM_WITHDRAWALS = {
+  uri: `${S3_BUCKET_URL_ICONS}/atmWithdrawals.png`,
+};
+const CHANGE_ICON = {
+  uri: `${S3_BUCKET_URL_ICONS}/changeIcon.png`,
+};
+const THREE_D_SECURE = {
+  uri: `${S3_BUCKET_URL_ICONS}/3DSecure.png`,
+};
+const CARD_CONTROLS = {
+  uri: `${S3_BUCKET_URL_ICONS}/cardControls.png`,
+};
+const WHITE_CHECK_MARK = {
+  uri: `${S3_BUCKET_URL_ICONS}/whiteCheckMark.png`,
+};
+const GOLD_LINE_MEMBER = {
+  uri: `${S3_BUCKET_URL_ICONS}/goldLineMember.png`,
+};
+const UPGRADE_CARD_TIMELINE = {
+  uri: `${S3_BUCKET_URL_ICONS}/upgradeCardTimeline.png`,
+};
+const BACK_ARROW_CIRCLE = {
+  uri: `${S3_BUCKET_URL_ICONS}/backArrowCircle.png`,
+};
+const QR_CODE_V2 = {
+  uri: `${S3_BUCKET_URL_ICONS}/qrScanner.png`,
+};
+const PASTE_FILL = {
+  uri: `${S3_BUCKET_URL_ICONS}/pasteFill.png`,
+};
+const AUDIT_ICON = {
+  uri: `${S3_BUCKET_URL_ICONS}/auditIcon.png`,
+};
+const CANCEL_ICON = {
+  uri: `${S3_BUCKET_URL_ICONS}/cancelIcon.png`,
+};
+const DOMESTIC_ICON = {
+  uri: `${S3_BUCKET_URL_ICONS}/domesticIcon.png`,
+};
+const INTERNATIONAL_ICON = {
+  uri: `${S3_BUCKET_URL_ICONS}/internationalIcon.png`,
+};
+const RC_PHYSICAL = require('./rcPhysical.png');
+const RC_VIRTUAL = require('./rcVirtual.png');
+const LOCKDOWN_MODE_ICON = {
+  uri: `${S3_BUCKET_URL_ICONS}/lockdownModeIcon.png`,
+};
+const LOCKDOWN_MODE_IMAGE = {
+  uri: `${S3_BUCKET_URL_ICONS}/lockdownModeImage.png`,
+};
+const APPLE_AND_GOOGLE_PAY = {
+  uri: `${S3_BUCKET_URL_ICONS}/appleAndGoogleIcons.png`,
+};
+const ATM_FEE = {
+  uri: `${S3_BUCKET_URL_ICONS}/atmFeeIcon.png`,
+};
+const CHARGE_BACK = {
+  uri: `${S3_BUCKET_URL_ICONS}/chargeBackIcon.png`,
+};
+const CRYPTO_COINS = {
+  uri: `${S3_BUCKET_URL_ICONS}/coinsIcon.png`,
+};
+const CORRECT_BLACK = {
+  uri: `${S3_BUCKET_URL_ICONS}/correctBlack.png`,
+};
+const COUPON = {
+  uri: `${S3_BUCKET_URL_ICONS}/couponIcon.png`,
+};
+const FOREX_FEE = {
+  uri: `${S3_BUCKET_URL_ICONS}/forexFeeIcon.png`,
+};
+
+const AT_ICON = {
+  uri: `${S3_BUCKET_URL_ICONS}/atIcon.png`,
+};
+
+const COUNTRIES_ICON = {
+  uri: `${S3_BUCKET_URL_ICONS}/countriesIcon.png`,
+};
+
+const PROFILE_ICON = {
+  uri: `${S3_BUCKET_URL_ICONS}/profileIcon.png`,
+};
+
+const TELEGRAM_ICON_BLACK = {
+  uri: `${S3_BUCKET_URL_ICONS}/telegramIconWhite.png`,
+};
+
+const RADIO_CHECK = {
+  uri: `${S3_BUCKET_URL_ICONS}/radioCheck.png`,
+};
+
+const RADIO_UNCHECK = {
+  uri: `${S3_BUCKET_URL_ICONS}/radioUncheck.png`,
+};
+const RC_PLAIN_VIRTUAL_CARD = {
+  uri: `${S3_BUCKET_URL_ICONS}/rcPlainVirtualCard.png`,
+};
+const REWARDS_YELLOW_STAR = {
+  uri: `${S3_BUCKET_URL_ICONS}/rewardsYellowStar.png`,
+};
+const CARDS_AND_COINS = {
+  uri: `${S3_BUCKET_URL_ICONS}/cardsAndCoins.png`,
+};
+const MAN_WITH_PHONE = {
+  uri: `${S3_BUCKET_URL_ICONS}/manWithPhone.png`,
+};
+const COMING_SOON = {
+  uri: `${S3_BUCKET_URL_ICONS}/comingSoon.png`,
+};
+const ZERO_RESTRICTION_MODE_ICON = {
+  uri: `${S3_BUCKET_URL_ICONS}/zeroRestrictionModeIcon.png`,
+};
 
 const AppImages = {
+  BACK_ARROW_GRAY,
+  CARD_ONBOARDING_1,
+  CARD_ONBOARDING_2,
+  CARD_ONBOARDING_3,
+  CARD_ONBOARDING_4,
+  // CARD_ONBOARDING_VIDEO,
+  RADIO_UNCHECK,
+  RADIO_CHECK,
+  AT_ICON,
+  COUNTRIES_ICON,
+  PROFILE_ICON,
+  TELEGRAM_ICON_BLACK,
+  APPLE_AND_GOOGLE_PAY,
+  ATM_FEE,
+  FOREX_FEE,
+  CHARGE_BACK,
+  COUPON,
+  CRYPTO_COINS,
+  CORRECT_BLACK,
   CYPHER_TELEGRAM_BOT_LOGO,
   PLUS,
   ARROW,
@@ -726,5 +881,36 @@ const AppImages = {
   AUTOLOAD,
   PAUSE,
   RESUME,
+  SOLANA_LOGO,
+  COUNTRIES,
+  MOBILE_WALLETS,
+  CARD_AND_PIN_TRANSACTIONS,
+  CONTACTLESS_TRANSACTIONS,
+  ONLINE_TRANSACTIONS,
+  ATM_WITHDRAWALS,
+  CHANGE_ICON,
+  THREE_D_SECURE,
+  CARD_CONTROLS,
+  WHITE_CHECK_MARK,
+  GOLD_LINE_MEMBER,
+  UPGRADE_CARD_TIMELINE,
+  BACK_ARROW_CIRCLE,
+  QR_CODE_V2,
+  PASTE_FILL,
+  AUDIT_ICON,
+  CANCEL_ICON,
+  DOMESTIC_ICON,
+  INTERNATIONAL_ICON,
+  RC_PHYSICAL,
+  RC_VIRTUAL,
+  LOCKDOWN_MODE_ICON,
+  LOCKDOWN_MODE_IMAGE,
+  RC_PLAIN_VIRTUAL_CARD,
+  REWARDS_ICON,
+  REWARDS_YELLOW_STAR,
+  CARDS_AND_COINS,
+  MAN_WITH_PHONE,
+  COMING_SOON,
+  ZERO_RESTRICTION_MODE_ICON,
 };
 export default AppImages;

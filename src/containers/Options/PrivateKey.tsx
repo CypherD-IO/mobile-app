@@ -35,6 +35,7 @@ import {
   FundWalletAddressType,
   COSMOS_CHAINS,
   ChainNames,
+  CHAIN_SOLANA,
 } from '../../constants/server';
 import ChooseChainModal from '../../components/v2/chooseChainModal';
 import { useIsFocused } from '@react-navigation/native';
@@ -44,7 +45,10 @@ import {
   loadPrivateKeyFromKeyChain,
   loadRecoveryPhraseFromKeyChain,
 } from '../../core/Keychain';
-import { generateCosmosPrivateKey } from '../../core/Address';
+import {
+  generateCosmosPrivateKey,
+  generateSolanaPrivateKey,
+} from '../../core/Address';
 import { cosmosConfig } from '../../constants/cosmosConfig';
 import useConnectionManager from '../../hooks/useConnectionManager';
 import { ConnectionTypes } from '../../constants/enum';
@@ -86,9 +90,9 @@ export default function PrivateKey(props) {
     {
       ...CHAIN_EVMOS,
     },
-    // {
-    //   ...CHAIN_INJECTIVE,
-    // },
+    {
+      ...CHAIN_INJECTIVE,
+    },
   ];
 
   if (connectionTypeValue === ConnectionTypes.SEED_PHRASE) {
@@ -114,6 +118,9 @@ export default function PrivateKey(props) {
       },
       {
         ...CHAIN_KUJIRA,
+      },
+      {
+        ...CHAIN_SOLANA,
       },
     ];
   }
@@ -147,6 +154,19 @@ export default function PrivateKey(props) {
             mnemonic,
             bip44HDPath,
           );
+          if (privKey && privKey !== _NO_CYPHERD_CREDENTIAL_AVAILABLE_) {
+            setPrivateKey(privKey);
+          }
+        }
+      } else if (get(selectedChain, ['chainName']) === ChainNames.SOLANA) {
+        const mnemonic = await loadRecoveryPhraseFromKeyChain(
+          false,
+          hdWalletContext.pinValue,
+        );
+        if (mnemonic && mnemonic !== _NO_CYPHERD_CREDENTIAL_AVAILABLE_) {
+          const path = `m/44'/501'/0'/${String(hdWalletContext.state.choosenWalletIndex === -1 ? 0 : hdWalletContext.state.choosenWalletIndex)}'`;
+
+          const privKey = await generateSolanaPrivateKey(mnemonic, path);
           if (privKey && privKey !== _NO_CYPHERD_CREDENTIAL_AVAILABLE_) {
             setPrivateKey(privKey);
           }
@@ -190,14 +210,16 @@ export default function PrivateKey(props) {
         setSelectedChain(data[3]);
       } else if (walletAddressType === FundWalletAddressType.JUNO) {
         setSelectedChain(data[4]);
-      } else if (walletAddressType === FundWalletAddressType.COREUM) {
+      } else if (walletAddressType === FundWalletAddressType.STARGAZE) {
         setSelectedChain(data[5]);
-      }
-      // else if (walletAddressType === FundWalletAddressType.INJECTIVE) {
-      //   setSelectedChain(data[6]);
-      // }
-      else if (walletAddressType === FundWalletAddressType.KUJIRA) {
+      } else if (walletAddressType === FundWalletAddressType.COREUM) {
+        setSelectedChain(data[6]);
+      } else if (walletAddressType === FundWalletAddressType.INJECTIVE) {
         setSelectedChain(data[7]);
+      } else if (walletAddressType === FundWalletAddressType.KUJIRA) {
+        setSelectedChain(data[8]);
+      } else if (walletAddressType === FundWalletAddressType.SOLANA) {
+        setSelectedChain(data[9]);
       }
     } else {
       if (isAndroid()) NativeModules.PreventScreenshotModule.allow();

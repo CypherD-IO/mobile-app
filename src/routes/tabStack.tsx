@@ -55,6 +55,7 @@ function TabStack() {
     screenTitle.CARD_KYC_STATUS_SCREEN,
     screenTitle.DEBIT_CARD_SCREEN,
     screenTitle.BRIDGE_CARD_SCREEN,
+    screenTitle.SELECT_PLAN,
     screenTitle.ON_META,
     screenTitle.SEND_INVITE_CODE_SCREEN,
   ];
@@ -215,7 +216,7 @@ function TabStack() {
               // TO REDO : TABBAR ANIMATION
               layout={Layout.easing(Easing.ease).delay(50)}
               className={clsx(
-                'rounded-t-[24px] pb-[20px] shadow absolute bottom-[-20px] w-full',
+                'rounded-t-[24px] pb-[20px] bg-white shadow absolute bottom-[-20px] w-full',
                 {
                   'bottom-[-110px]': !showTabBar,
                   'bottom-[-350px]': keyboardHeight,
@@ -265,13 +266,13 @@ function TabStack() {
               iconName = focused
                 ? AppImages.PORTFOLIO_SEL
                 : AppImages.PORTFOLIO_UNSEL;
-            } else if (route.name === screenTitle.BRIDGE) {
-              iconName = focused ? AppImages.APP_SEL : AppImages.APP_UNSEL;
+            } else if (route.name === screenTitle.SWAP) {
+              iconName = focused ? AppImages.SWAP_SEL : AppImages.SWAP_UNSEL;
             } else if (route.name === screenTitle.OPTIONS) {
               iconName = focused
                 ? AppImages.OPTION_SEL
                 : AppImages.OPTION_UNSEL;
-            } else if (route.name === screenTitle.DEBIT_CARD) {
+            } else if (route.name === screenTitle.DEBIT_CARD_SCREEN) {
               iconName = focused ? AppImages.CARD_SEL : AppImages.CARD_UNSEL;
             }
 
@@ -296,7 +297,7 @@ function TabStack() {
           component={PortfolioStackScreen}
         />
         <Tab.Screen
-          name={screenTitle.DEBIT_CARD}
+          name={screenTitle.DEBIT_CARD_SCREEN}
           component={DebitCardStackScreen}
         />
         <Tab.Screen
@@ -313,7 +314,7 @@ function TabStack() {
             ),
           })}
         />
-        <Tab.Screen name={screenTitle.BRIDGE} component={SwapStackScreen} />
+        <Tab.Screen name={screenTitle.SWAP} component={SwapStackScreen} />
         <Tab.Screen
           name={screenTitle.OPTIONS}
           component={OptionsStackScreen}

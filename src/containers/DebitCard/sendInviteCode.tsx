@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useContext, useEffect, useState } from 'react';
 import AppImages from '../../../assets/images/appImages';
 import Button from '../../components/v2/button';
 import { useGlobalModalContext } from '../../components/v2/GlobalModal';
@@ -6,6 +6,7 @@ import { isAndroid } from '../../misc/checkers';
 import {
   CyDImage,
   CyDImageBackground,
+  CyDKeyboardAwareScrollView,
   CyDSafeAreaView,
   CyDScrollView,
   CyDText,
@@ -27,6 +28,8 @@ import { CardProviders, CardReferralStatus } from '../../constants/enum';
 import { IReferredUser } from '../../models/referredUser.interface';
 import { showToast } from '../utilities/toastUtility';
 import { onShare } from '../utilities/socialShareUtility';
+import { GlobalContext } from '../../core/globalContext';
+import { CardProfile } from '../../models/cardProfile.model';
 
 interface Props {
   navigation: any;
@@ -34,6 +37,7 @@ interface Props {
 }
 
 export default function SendInviteCode({ route, navigation }: Props) {
+  const globalContext = useContext<any>(GlobalContext);
   const { showModal, hideModal } = useGlobalModalContext();
   const { fromOptionsStack } = route.params;
   const { t } = useTranslation();
@@ -47,15 +51,15 @@ export default function SendInviteCode({ route, navigation }: Props) {
   >();
   const { postWithAuth, getWithAuth } = useAxios();
   const { keyboardHeight } = useKeyboard();
+  const cardProfile: CardProfile = globalContext.globalState.cardProfile;
+  const provider = cardProfile.provider ?? CardProviders.REAP_CARD;
 
   useEffect(() => {
     void getReferralData();
   }, []);
 
   const getReferralData = async () => {
-    const response = await getWithAuth(
-      `/v1/cards/${CardProviders.PAYCADDY}/referrals`,
-    );
+    const response = await getWithAuth(`/v1/cards/${provider}/referrals`);
     if (!response.isError) {
       if (response.data.referralData) {
         setReferralData(response.data.referralData);
@@ -174,132 +178,135 @@ export default function SendInviteCode({ route, navigation }: Props) {
         className={clsx('mb-[72px] bg-secondaryBackgroundColor', {
           'pb-[75px]': isAndroid(),
         })}>
-        <CyDImageBackground
-          source={AppImages.SEND_INVITE_CODE_BG}
-          className='h-[260px] w-full rounded-b-[200px]'
-          resizeMode='contain'>
-          <CyDSafeAreaView>
-            <CyDView className='px-[10px]'>
-              <CyDTouchView
-                onPress={() => {
-                  handleBack();
-                }}>
-                <CyDImage
-                  source={AppImages.BACK}
-                  className='h-[22px] w-[25px]'
-                  resizeMode='contain'
-                />
-              </CyDTouchView>
-            </CyDView>
-            <CyDView className='flex flex-col w-[70%] p-[22px]'>
-              <CyDView>
-                <CyDText className='font-extrabold text-[24px]'>
-                  {t<string>('SEND_INVITE_CODE_TITLE')}
+        <CyDKeyboardAwareScrollView>
+          <CyDImageBackground
+            source={AppImages.SEND_INVITE_CODE_BG}
+            className='h-[260px] w-full rounded-b-[200px]'
+            resizeMode='contain'>
+            <CyDSafeAreaView>
+              <CyDView className='px-[10px]'>
+                <CyDTouchView
+                  onPress={() => {
+                    handleBack();
+                  }}>
+                  <CyDImage
+                    source={AppImages.BACK_ARROW_GRAY}
+                    className='w-[32px] h-[32px]]'
+                    resizeMode='contain'
+                  />
+                </CyDTouchView>
+              </CyDView>
+              <CyDView className='flex flex-col w-[70%] p-[22px]'>
+                <CyDView>
+                  <CyDText className='font-extrabold text-[24px]'>
+                    {t<string>('SEND_INVITE_CODE_TITLE')}
+                  </CyDText>
+                </CyDView>
+                <CyDText className='font-semibold mt-[12px]'>
+                  {t('SEND_INVITE_CODE_DESC')}
                 </CyDText>
               </CyDView>
-              <CyDText className='font-semibold mt-[12px]'>
-                {t('SEND_INVITE_CODE_DESC')}
-              </CyDText>
-            </CyDView>
-          </CyDSafeAreaView>
-        </CyDImageBackground>
+            </CyDSafeAreaView>
+          </CyDImageBackground>
 
-        <CyDView className='py-[12px] bg-secondaryBackgroundColor'>
-          <ChooseCountryModal
-            isModalVisible={isModalVisible}
-            setModalVisible={setModalVisible}
-            selectedCountryState={[selectedCountry, setSelectedCountry]}
-          />
-          <CyDView className={'w-screen'}>
-            <CyDView>
-              <CyDText className='ml-[18px] mb-[6px] font-semibold text-[18px]'>
-                {t('INVITE_A_FRIEND')}
-              </CyDText>
-              <CyDView
-                className={'flex justify-center items-center text-center'}>
-                <CyDView className={'p-[8px] w-[94%] bg-white rounded-[18px]'}>
-                  <CyDTouchView
-                    className={
-                      'my-[8px] border-[1px] bg-white border-inputBorderColor py-[12px] px-[10px] rounded-[8px] flex w-[100%]'
-                    }
-                    onPress={() => setModalVisible(true)}>
-                    <CyDView
-                      className={clsx(
-                        'flex flex-row justify-between items-center',
-                        { 'border-redOffColor': !selectedCountry },
-                      )}>
-                      <CyDView className={'flex flex-row items-center'}>
-                        <CyDText className='text-center text-[18px] ml-[8px]'>
-                          {selectedCountry?.flag ?? ''}
-                        </CyDText>
-                        <CyDText className='text-center text-[16px] ml-[2px]'>
-                          {selectedCountry?.name ?? "Select Friend's Country"}
-                        </CyDText>
+          <CyDView className='py-[12px] bg-secondaryBackgroundColor'>
+            <ChooseCountryModal
+              isModalVisible={isModalVisible}
+              setModalVisible={setModalVisible}
+              selectedCountryState={[selectedCountry, setSelectedCountry]}
+            />
+            <CyDView className={'w-screen'}>
+              <CyDView>
+                <CyDText className='ml-[18px] mb-[6px] font-semibold text-[18px]'>
+                  {t('INVITE_A_FRIEND')}
+                </CyDText>
+                <CyDView
+                  className={'flex justify-center items-center text-center'}>
+                  <CyDView
+                    className={'p-[8px] w-[94%] bg-white rounded-[18px]'}>
+                    <CyDTouchView
+                      className={
+                        'my-[8px] border-[1px] bg-white border-inputBorderColor py-[12px] px-[10px] rounded-[8px] flex w-[100%]'
+                      }
+                      onPress={() => setModalVisible(true)}>
+                      <CyDView
+                        className={clsx(
+                          'flex flex-row justify-between items-center',
+                          { 'border-redOffColor': !selectedCountry },
+                        )}>
+                        <CyDView className={'flex flex-row items-center'}>
+                          <CyDText className='text-center text-[18px] ml-[8px]'>
+                            {selectedCountry?.flag ?? ''}
+                          </CyDText>
+                          <CyDText className='text-center text-[16px] ml-[2px]'>
+                            {selectedCountry?.name ?? "Select Friend's Country"}
+                          </CyDText>
+                        </CyDView>
+                        <CyDImage source={AppImages.DOWN_ARROW} />
                       </CyDView>
-                      <CyDImage source={AppImages.DOWN_ARROW} />
-                    </CyDView>
-                  </CyDTouchView>
-                  <CyDTextInput
-                    value={name}
-                    textContentType='name'
-                    autoFocus={true}
-                    keyboardType='default'
-                    autoCapitalize='none'
-                    autoCorrect={false}
-                    onChangeText={(text: string) => {
-                      setName(text);
-                    }}
-                    placeholderTextColor={'#C5C5C5'}
-                    className={clsx(
-                      'border-[1px] border-[#C5C5C5] bg-white h-[50px] rounded-[8px] pl-[20px] text-left text-black',
-                      {
-                        'pb-[10px]': isAndroid(),
-                      },
-                    )}
-                    placeholder={"Friend's name"}
-                  />
-                  <CyDTextInput
-                    value={userEmail}
-                    textContentType='emailAddress'
-                    autoFocus={true}
-                    keyboardType='email-address'
-                    autoCapitalize='none'
-                    autoCorrect={false}
-                    onChangeText={(text: string) => {
-                      setUserEmail(text);
-                    }}
-                    placeholderTextColor={'#C5C5C5'}
-                    className={clsx(
-                      'border-[1px] my-[8px] border-[#C5C5C5] bg-white h-[50px] pl-[20px] rounded-[8px] text-left text-black',
-                      {
-                        'pb-[10px]': isAndroid(),
-                      },
-                    )}
-                    placeholder={"Friend's email"}
-                  />
-                  <Button
-                    onPress={() => {
-                      void joinWaitlist();
-                    }}
-                    loading={joiningWaitlist}
-                    style={'rounded-[8px] h-[50px] mt-[10px] mb-[8px]'}
-                    title={t<string>('SEND_INVITE_CODE')}
-                  />
-                </CyDView>
-                {referralData.length !== 0 && (
-                  <CyDView className='w-[94%] mt-[32px]'>
-                    <CyDText className='ml-[6px] mb-[12px] font-semibold text-[18px]'>
-                      {t('INVITED_FRIENDS')}
-                    </CyDText>
-                    <CyDView className={'p-[6px] bg-white rounded-[18px]'}>
-                      <RenderReferrals referralData={referralData} />
-                    </CyDView>
+                    </CyDTouchView>
+                    <CyDTextInput
+                      value={name}
+                      textContentType='name'
+                      autoFocus={true}
+                      keyboardType='default'
+                      autoCapitalize='none'
+                      autoCorrect={false}
+                      onChangeText={(text: string) => {
+                        setName(text);
+                      }}
+                      placeholderTextColor={'#C5C5C5'}
+                      className={clsx(
+                        'border-[1px] border-[#C5C5C5] bg-white h-[50px] rounded-[8px] pl-[20px] text-left text-black',
+                        {
+                          'pb-[10px]': isAndroid(),
+                        },
+                      )}
+                      placeholder={"Friend's name"}
+                    />
+                    <CyDTextInput
+                      value={userEmail}
+                      textContentType='emailAddress'
+                      autoFocus={true}
+                      keyboardType='email-address'
+                      autoCapitalize='none'
+                      autoCorrect={false}
+                      onChangeText={(text: string) => {
+                        setUserEmail(text);
+                      }}
+                      placeholderTextColor={'#C5C5C5'}
+                      className={clsx(
+                        'border-[1px] my-[8px] border-[#C5C5C5] bg-white h-[50px] pl-[20px] rounded-[8px] text-left text-black',
+                        {
+                          'pb-[10px]': isAndroid(),
+                        },
+                      )}
+                      placeholder={"Friend's email"}
+                    />
+                    <Button
+                      onPress={() => {
+                        void joinWaitlist();
+                      }}
+                      loading={joiningWaitlist}
+                      style={'rounded-[8px] h-[50px] mt-[10px] mb-[8px]'}
+                      title={t<string>('SEND_INVITE_CODE')}
+                    />
                   </CyDView>
-                )}
+                  {referralData.length !== 0 && (
+                    <CyDView className='w-[94%] mt-[32px]'>
+                      <CyDText className='ml-[6px] mb-[12px] font-semibold text-[18px]'>
+                        {t('INVITED_FRIENDS')}
+                      </CyDText>
+                      <CyDView className={'p-[6px] bg-white rounded-[18px]'}>
+                        <RenderReferrals referralData={referralData} />
+                      </CyDView>
+                    </CyDView>
+                  )}
+                </CyDView>
               </CyDView>
             </CyDView>
           </CyDView>
-        </CyDView>
+        </CyDKeyboardAwareScrollView>
       </CyDScrollView>
     </CyDView>
   );

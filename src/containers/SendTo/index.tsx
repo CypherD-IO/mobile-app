@@ -9,7 +9,10 @@
  */
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import Clipboard from '@react-native-clipboard/clipboard';
+import { useIsFocused } from '@react-navigation/native';
 import * as Sentry from '@sentry/react-native';
+import clsx from 'clsx';
+import Fuse from 'fuse.js';
 import { get, random } from 'lodash';
 import React, { useContext, useEffect, useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
@@ -18,20 +21,21 @@ import { BarCodeReadEvent } from 'react-native-camera';
 import Web3 from 'web3';
 import AppImages from '../../../assets/images/appImages';
 import EmptyView from '../../components/EmptyView';
+import Button from '../../components/v2/button';
 import { useGlobalModalContext } from '../../components/v2/GlobalModal';
 import { SuccessTransaction } from '../../components/v2/StateModal';
-import { nativeTokenMapping } from '../../constants/data';
+import TokenSendConfirmationModal from '../../components/v2/tokenSendConfirmationModal';
+import { AnalyticsType, ButtonType } from '../../constants/enum';
 import * as C from '../../constants/index';
 import {
-  ChainNames,
+  Chain,
   CHAIN_ETH,
   CHAIN_EVMOS,
-  EnsCoinTypes,
-  QRScannerScreens,
+  ChainNames,
   ChainNameToContactsChainNameMapping,
+  EnsCoinTypes,
   EVM_CHAINS_FOR_ADDRESS_DIR,
-  ChainNameMapping,
-  Chain,
+  QRScannerScreens,
 } from '../../constants/server';
 import { Colors } from '../../constants/theme';
 import { GlobalContext } from '../../core/globalContext';
@@ -41,7 +45,6 @@ import {
   ActivityContext,
   formatAmount,
   getMaskedAddress,
-  getNativeToken,
   getSendAddressFieldPlaceholder,
   getWeb3Endpoint,
   HdWalletContext,
@@ -49,10 +52,13 @@ import {
   limitDecimalPlaces,
   logAnalytics,
   parseErrorMessage,
-  PortfolioContext,
   SendToAddressValidator,
 } from '../../core/util';
 import useEns from '../../hooks/useEns';
+import useGasService from '../../hooks/useGasService';
+import { useKeyboard } from '../../hooks/useKeyboard';
+import useTransactionManager from '../../hooks/useTransactionManager';
+import { TokenSendConfirmationParams } from '../../models/tokenSendConfirmationParams.interface';
 import {
   ActivityReducerAction,
   ActivityStatus,
@@ -68,33 +74,24 @@ import {
   CyDTouchView,
   CyDView,
 } from '../../styles/tailwindStyles';
-import { genId } from '../utilities/activityUtilities';
-import { isCosmosAddress } from '../utilities/cosmosSendUtility';
-import { isEvmosAddress } from '../utilities/evmosSendUtility';
-import { isJunoAddress } from '../utilities/junoSendUtility';
-import { isOsmosisAddress } from '../utilities/osmosisSendUtility';
-import { isStargazeAddress } from '../utilities/stargazeSendUtility';
-import { isNobleAddress } from '../utilities/nobleSendUtility';
-import { useIsFocused } from '@react-navigation/native';
-import Fuse from 'fuse.js';
 import AddressProfile from '../AddressBook/addressProfile';
-import { AnalyticsType, ButtonType } from '../../constants/enum';
-import useIsSignable from '../../hooks/useIsSignable';
-import clsx from 'clsx';
-import Button from '../../components/v2/button';
+import { genId } from '../utilities/activityUtilities';
+import { intercomAnalyticsLog } from '../utilities/analyticsUtility';
 import {
   Contact,
   getContactBookWithMultipleAddress,
 } from '../utilities/contactBookUtility';
-import { intercomAnalyticsLog } from '../utilities/analyticsUtility';
-import { useKeyboard } from '../../hooks/useKeyboard';
-import useGasService from '../../hooks/useGasService';
-import { TokenSendConfirmationParams } from '../../models/tokenSendConfirmationParams.interface';
-import useTransactionManager from '../../hooks/useTransactionManager';
-import TokenSendConfirmationModal from '../../components/v2/tokenSendConfirmationModal';
 import { isCoreumAddress } from '../utilities/coreumUtilities';
+import { isCosmosAddress } from '../utilities/cosmosSendUtility';
+import { isEvmosAddress } from '../utilities/evmosSendUtility';
 import { isInjectiveAddress } from '../utilities/injectiveUtilities';
+import { isJunoAddress } from '../utilities/junoSendUtility';
 import { isKujiraAddress } from '../utilities/kujiraUtilities';
+import { isNobleAddress } from '../utilities/nobleSendUtility';
+import { isOsmosisAddress } from '../utilities/osmosisSendUtility';
+import { isSolanaAddress } from '../utilities/solanaUtilities';
+import { isStargazeAddress } from '../utilities/stargazeSendUtility';
+import { evmosToEth } from '@tharsis/address-converter';
 
 export default function SendTo(props: { navigation?: any; route?: any }) {
   const { t } = useTranslation();
@@ -102,12 +99,14 @@ export default function SendTo(props: { navigation?: any; route?: any }) {
   const {
     valueForUsd,
     tokenData,
+    sendAddress = '',
   }: {
     valueForUsd: string;
     tokenData: Holding;
+    sendAddress: string;
   } = route.params;
   const [Data, setData] = useState<string[]>([]);
-  const [addressText, setAddressText] = useState<string>('');
+  const [addressText, setAddressText] = useState<string>(sendAddress);
   const addressRef = useRef('');
   const ensRef = useRef<string | null>(null);
   const [isAddressValid, setIsAddressValid] = useState(true);
@@ -151,13 +150,14 @@ export default function SendTo(props: { navigation?: any; route?: any }) {
   };
   const fuseByNames = new Fuse(Object.keys(contactBook), searchOptions);
   const { estimateGasForEvm, estimateGasForEvmos } = useGasService();
-  const { sendEvmToken, sendEvmosToken, sendCosmosToken } =
+  const { sendEvmToken, sendEvmosToken, sendCosmosToken, sendSolanaTokens } =
     useTransactionManager();
+
   let fuseByAddresses: Fuse<string>;
   if (Object.keys(addressDirectory).length) {
     if (
       EVM_CHAINS_FOR_ADDRESS_DIR.includes(
-        get(ChainNameToContactsChainNameMapping, 'chainDetails.name', ''),
+        get(ChainNameToContactsChainNameMapping, [chainDetails.name], ''),
       )
     ) {
       fuseByAddresses = new Fuse(Object.keys(addressDirectory.evmAddresses));
@@ -166,7 +166,7 @@ export default function SendTo(props: { navigation?: any; route?: any }) {
         Object.keys(
           get(
             addressDirectory,
-            get(ChainNameToContactsChainNameMapping, 'chainDetails.name', ''),
+            get(ChainNameToContactsChainNameMapping, [chainDetails.name], ''),
             '',
           ),
         ),
@@ -199,7 +199,7 @@ export default function SendTo(props: { navigation?: any; route?: any }) {
             EVM_CHAINS_FOR_ADDRESS_DIR.includes(
               get(
                 ChainNameToContactsChainNameMapping,
-                'tokenData.chainDetails.name',
+                [tokenData.chainDetails.name],
                 '',
               ),
             )
@@ -212,7 +212,7 @@ export default function SendTo(props: { navigation?: any; route?: any }) {
         .map(address => {
           if (
             EVM_CHAINS_FOR_ADDRESS_DIR.includes(
-              get(ChainNameToContactsChainNameMapping, 'chainDetails.name', ''),
+              get(ChainNameToContactsChainNameMapping, [chainDetails.name], ''),
             )
           ) {
             return addressDirectory.evmAddresses[address];
@@ -220,7 +220,7 @@ export default function SendTo(props: { navigation?: any; route?: any }) {
           return addressDirectory[
             get(
               ChainNameToContactsChainNameMapping,
-              'tokenData.chainDetails.name',
+              [tokenData.chainDetails.name],
               '',
             )
           ][address];
@@ -253,8 +253,17 @@ export default function SendTo(props: { navigation?: any; route?: any }) {
   };
 
   const activityRef = useRef<SendTransactionActivity | null>(null);
-  const { cosmos, osmosis, juno, stargaze, noble, coreum, injective, kujira } =
-    hdWalletContext.state.wallet;
+  const {
+    cosmos,
+    osmosis,
+    juno,
+    stargaze,
+    noble,
+    coreum,
+    injective,
+    kujira,
+    solana,
+  } = hdWalletContext.state.wallet;
   const senderAddress: Record<string, string> = {
     cosmos: cosmos.address,
     osmosis: osmosis.address,
@@ -327,6 +336,7 @@ export default function SendTo(props: { navigation?: any; route?: any }) {
       aurora: {},
       moonbeam: {},
       moonriver: {},
+      solana: {},
     };
     if (tempContactBook) {
       setContactBook(tempContactBook);
@@ -493,7 +503,7 @@ export default function SendTo(props: { navigation?: any; route?: any }) {
       tokenData.contractDecimals,
     );
 
-    const randomGas = random(0.01, 0.1, true);
+    const randomGas = random(0.001, 0.01, true);
 
     setTokenSendConfirmationParams({
       isModalVisible: true,
@@ -612,6 +622,11 @@ export default function SendTo(props: { navigation?: any; route?: any }) {
         isKujiraAddress(addressRef.current)
       ) {
         activityData.fromAddress = kujira.address;
+      } else if (
+        chainDetails?.chainName === ChainNames.SOLANA &&
+        isSolanaAddress(addressRef.current)
+      ) {
+        activityData.fromAddress = solana.address;
       } else {
         error = true;
         showModal('state', {
@@ -703,6 +718,13 @@ export default function SendTo(props: { navigation?: any; route?: any }) {
         toAddress: addressRef.current,
         amountToSend,
       });
+    } else if (chainDetails?.chainName === ChainNames.SOLANA) {
+      response = await sendSolanaTokens({
+        amountToSend,
+        toAddress: addressRef.current,
+        contractAddress: tokenData.contractAddress,
+        contractDecimals: tokenData.contractDecimals,
+      });
     } else {
       fromAddress = get(senderAddress, chainDetails.chainName, '');
       response = await sendCosmosToken({
@@ -733,18 +755,23 @@ export default function SendTo(props: { navigation?: any; route?: any }) {
           ]
         );
       }
-      const finalArray = Data;
-      const toAddrBook = ensRef.current
-        ? `${ensRef.current}:${addressRef.current}`
-        : addressRef.current;
-      if (!finalArray.includes(toAddrBook)) {
-        finalArray.push(toAddrBook);
+      try {
+        const finalArray = Data;
+        const toAddrBook = ensRef.current
+          ? `${ensRef.current}:${addressRef.current}`
+          : addressRef.current;
+        if (!finalArray.includes(toAddrBook)) {
+          finalArray.push(toAddrBook);
+        }
+        const chainName = tokenData.chainDetails.chainName;
+        if (chainName) {
+          const key = `address_book_${chainName}`;
+          const valueToStore = JSON.stringify(finalArray);
+          await AsyncStorage.setItem(key, valueToStore);
+        }
+      } catch (error) {
+        console.error('Error in onConfirmConfirmationModal:', error);
       }
-      chainDetails?.chainName &&
-        (await AsyncStorage.setItem(
-          `address_book_${tokenData.chainDetails.chainName}`,
-          JSON.stringify(finalArray),
-        ));
 
       activityContext.dispatch({
         type: ActivityReducerAction.POST,
@@ -798,13 +825,13 @@ export default function SendTo(props: { navigation?: any; route?: any }) {
     } else {
       setLoading(false);
       // monitoring api
-      void logAnalytics({
-        type: AnalyticsType.ERROR,
-        chain: chainDetails?.chainName ?? '',
-        message: parseErrorMessage(response.error),
-        screen: route.name,
-        address: fromAddress,
-      });
+      // void logAnalytics({
+      //   type: AnalyticsType.ERROR,
+      //   chain: chainDetails?.chainName ?? '',
+      //   message: parseErrorMessage(response.error),
+      //   screen: route.name,
+      //   address: fromAddress,
+      // });
       activityContext.dispatch({
         type: ActivityReducerAction.POST,
         value: {
@@ -824,7 +851,11 @@ export default function SendTo(props: { navigation?: any; route?: any }) {
   };
 
   const showGasQuote = async () => {
-    addressRef.current = addressText;
+    if (isEvmosAddress(addressText)) {
+      addressRef.current = evmosToEth(addressText);
+    } else {
+      addressRef.current = addressText;
+    }
     if (
       chainDetails?.chainName === ChainNames.ETH ||
       chainDetails.chainName === ChainNames.EVMOS
@@ -893,7 +924,7 @@ export default function SendTo(props: { navigation?: any; route?: any }) {
           web3,
           chain: chainBackendName,
           fromAddress: ethereum?.address,
-          toAddress: addressText,
+          toAddress: addressRef.current,
           amountToSend,
           contractAddress:
             tokenData.contractAddress ??
@@ -1080,6 +1111,18 @@ export default function SendTo(props: { navigation?: any; route?: any }) {
             });
           }
           break;
+        case ChainNames.SOLANA:
+          if (!isSolanaAddress(address)) {
+            error = true;
+            showModal('state', {
+              type: 'error',
+              title: t('INVALID_ADDRESS'),
+              description: t('NOT_VALID_NOBLE_ADDRESS'),
+              onSuccess: hideModal,
+              onFailure: hideModal,
+            });
+          }
+          break;
       }
       if (!error) {
         addressRef.current = address;
@@ -1253,7 +1296,9 @@ export default function SendTo(props: { navigation?: any; route?: any }) {
             <Button
               title={t('SEND')}
               onPress={() => {
-                void (async () => await showGasQuote())();
+                void (async () => {
+                  await showGasQuote();
+                })();
               }}
               type={ButtonType.PRIMARY}
               disabled={!isAddressValid || addressText === ''}

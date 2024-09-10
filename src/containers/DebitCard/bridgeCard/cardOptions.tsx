@@ -4,6 +4,7 @@ import { StyleSheet } from 'react-native';
 import { GlobalContext } from '../../../core/globalContext';
 import {
   CyDImage,
+  CyDScrollView,
   CyDText,
   CyDTouchView,
   CyDView,
@@ -21,18 +22,47 @@ export default function CardOptionsModal({
   cardProvider,
   card,
   navigation,
+  onPressPlanChange,
 }: {
   isModalVisible: boolean;
   setShowModal: (arg1: boolean) => void;
   cardProvider: CardProviders;
   card: Card;
   navigation: any;
+  onPressPlanChange: () => void;
 }) {
   const globalContext = useContext<any>(GlobalContext);
   const cardProfile: CardProfile = globalContext.globalState.cardProfile;
-  const isPhoneVerified = cardProfile.pc?.phoneVerified ?? false;
+  const isPhoneVerified =
+    cardProvider === CardProviders.REAP_CARD ||
+    (cardProfile.pc?.phoneVerified ?? false);
 
   const cardOptions = [
+    ...(cardProvider === CardProviders.REAP_CARD
+      ? [
+          {
+            title: 'Card Controls',
+            description: "Edit your card's limit and behaviour",
+            image: AppImages.CARD_CONTROLS,
+            action: () => {
+              navigation.navigate(screenTitle.CARD_CONTROLS_MENU, {
+                currentCardProvider: cardProvider,
+                card,
+              });
+              setShowModal(false);
+            },
+          },
+          {
+            title: t<string>('CHANGE_PLAN'),
+            description: 'Change your plan',
+            image: AppImages.UPGRADE_TO_PHYSICAL_CARD_ARROW,
+            action: () => {
+              setShowModal(false);
+              onPressPlanChange();
+            },
+          },
+        ]
+      : []),
     ...(card.type === CardType.PHYSICAL
       ? [
           {
@@ -94,6 +124,21 @@ export default function CardOptionsModal({
         setShowModal(false);
       },
     },
+    ...(cardProvider === CardProviders.REAP_CARD
+      ? [
+          {
+            title: 'Lockdown Mode',
+            description: 'Secure account by blocking all Card Functionalities',
+            image: AppImages.LOCKDOWN_MODE_ICON,
+            action: () => {
+              navigation.navigate(screenTitle.LOCKDOWN_MODE, {
+                currentCardProvider: cardProvider,
+              });
+              setShowModal(false);
+            },
+          },
+        ]
+      : []),
   ];
 
   return (
@@ -105,68 +150,71 @@ export default function CardOptionsModal({
       animationInTiming={300}
       animationOutTiming={300}
       style={styles.modalLayout}>
-      <CyDView className='bg-cardBgTo px-[12px] py-[24px] m-[2px] mb-[6px] rounded-[16px]'>
-        <CyDView className='flex flex-row justify-between items-center mb-[24px]'>
-          <CyDView className='flex-1 justify-center items-center'>
-            <CyDText className='text-[22px] font-semibold ml-[24px]'>
-              Card Options
-            </CyDText>
-          </CyDView>
-          <CyDTouchView onPress={() => setShowModal(false)}>
-            <CyDImage
-              source={AppImages.CLOSE_CIRCLE}
-              className='h-[28px] w-[28px]'
-              resizeMode='contain'
-            />
-          </CyDTouchView>
-        </CyDView>
-        {!isPhoneVerified && (
-          <CyDTouchView
-            onPress={() =>
-              navigation.navigate(
-                screenTitle.PHONE_NUMBER_VERIFICATION_SCREEN,
-                {
-                  phoneNumber: cardProfile?.phone,
-                },
-              )
-            }
-            className='flex flex-row items-center m-[2px] py-[15px] bg-white rounded-[6px]'>
-            <CyDImage
-              source={AppImages.UPGRADE_TO_PHYSICAL_CARD_ARROW}
-              className={'h-[24px] w-[24px] mx-[12px]'}
-              resizeMode={'contain'}
-            />
-            <CyDView className='flex flex-col justify-between'>
-              <CyDText className='text-[16px] font-bold'>
-                {t<string>('VERIFY_PHONE_NUMBER_INIT_CAPS')}
-              </CyDText>
-              <CyDText className='text-[12px] font-semibold'>
-                {'Verify now to unlock all features'}
+      <CyDView className='bg-cardBgTo px-[12px] py-[24px] m-[2px] mb-[6px] rounded-[16px] max-h-[80%] '>
+        <CyDScrollView className='flex flex-col'>
+          <CyDView className='flex flex-row justify-between items-center '>
+            <CyDView className='flex-1 justify-center items-center'>
+              <CyDText className='text-[22px] font-semibold ml-[28px]'>
+                Card Options
               </CyDText>
             </CyDView>
-          </CyDTouchView>
-        )}
-        {cardOptions.map((option, index) => {
-          const { image, title, description, action } = option;
-          return (
-            <CyDTouchView
-              key={index}
-              onPress={action}
-              className='flex flex-row items-center mt-[12px] py-[15px] bg-white rounded-[6px]'>
+            <CyDTouchView onPress={() => setShowModal(false)}>
               <CyDImage
-                source={image}
+                source={AppImages.CLOSE_CIRCLE}
+                className='h-[28px] w-[28px]'
+                resizeMode='contain'
+              />
+            </CyDTouchView>
+          </CyDView>
+          {!isPhoneVerified && (
+            <CyDTouchView
+              onPress={() => {
+                navigation.navigate(
+                  screenTitle.PHONE_NUMBER_VERIFICATION_SCREEN,
+                  {
+                    phoneNumber: cardProfile?.phone,
+                  },
+                );
+                setShowModal(false);
+              }}
+              className='flex flex-row items-center m-[2px] py-[15px] bg-white w-full rounded-[6px]'>
+              <CyDImage
+                source={AppImages.UPGRADE_TO_PHYSICAL_CARD_ARROW}
                 className={'h-[24px] w-[24px] mx-[12px]'}
                 resizeMode={'contain'}
               />
               <CyDView className='flex flex-col justify-between'>
-                <CyDText className='text-[16px] font-bold'>{title}</CyDText>
+                <CyDText className='text-[16px] font-bold'>
+                  {t<string>('VERIFY_PHONE_NUMBER_INIT_CAPS')}
+                </CyDText>
                 <CyDText className='text-[12px] font-semibold'>
-                  {description}
+                  {'Verify now to unlock all features'}
                 </CyDText>
               </CyDView>
             </CyDTouchView>
-          );
-        })}
+          )}
+          {cardOptions.map((option, index) => {
+            const { image, title, description, action } = option;
+            return (
+              <CyDTouchView
+                key={index}
+                onPress={action}
+                className='flex flex-row items-center mt-[12px] py-[15px] bg-white rounded-[6px]'>
+                <CyDImage
+                  source={image}
+                  className={'h-[24px] w-[24px] mx-[12px]'}
+                  resizeMode={'contain'}
+                />
+                <CyDView className='flex flex-col justify-between flex-1 px-[6px]'>
+                  <CyDText className='text-[16px] font-bold'>{title}</CyDText>
+                  <CyDText className='text-[12px] font-semibold flex-wrap'>
+                    {description}
+                  </CyDText>
+                </CyDView>
+              </CyDTouchView>
+            );
+          })}
+        </CyDScrollView>
       </CyDView>
     </CyDModalLayout>
   );
@@ -174,7 +222,7 @@ export default function CardOptionsModal({
 
 const styles = StyleSheet.create({
   modalLayout: {
-    marginBottom: 50,
+    marginBottom: 20,
     justifyContent: 'flex-end',
   },
 });

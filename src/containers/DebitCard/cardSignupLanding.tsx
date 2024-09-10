@@ -9,6 +9,7 @@ import {
   CyDImageBackground,
   CyDTextInput,
   CyDScrollView,
+  CyDKeyboardAwareScrollView,
 } from '../../styles/tailwindStyles';
 import clsx from 'clsx';
 import { screenTitle } from '../../constants';
@@ -99,85 +100,87 @@ export default function CardSignupLandingScreen(props: {
       })}>
       {/* <StatusBar backgroundColor={Colors.appColor} barStyle='light-content' /> */}
       <CyDScrollView className='bg-appColor'>
-        <CyDImageBackground
-          className={'h-[70%] pt-[10px]'}
-          source={AppImages.CARD_SIGNUP_BACKGROUND}
-          resizeMode={'cover'}>
-          <CyDView className={'flex flex-row justify-center'}>
-            <CyDImage
-              className='h-[180px] w-[90%]'
-              source={AppImages.VIRTUAL_SAMPLE_CARD}
-              resizeMode='contain'
-            />
-          </CyDView>
-          <CyDView className={' flex flex-row justify-center mt-[45px]'}>
-            <CyDText
-              className={'text-[22px] text-center px-[32px] font-extrabold'}>
-              {t<string>('CARD_SIGNUP_WELCOME_TEXT')}
-            </CyDText>
-          </CyDView>
-          <CyDView className='bg-white w-[75%] mt-[16px] self-center border rounded-[6px] h-[55px] justify-center items-center'>
-            {!loadersAndValidators.isInviteCodeVerifying &&
-              !loadersAndValidators.inviteCodeVerified && (
-                <CyDTextInput
-                  onChangeText={async value => {
-                    if (loadersAndValidators.isInvalidInviteCode) {
-                      setLoadersAndValidators({
-                        ...loadersAndValidators,
-                        isInvalidInviteCode: false,
-                      });
+        <CyDKeyboardAwareScrollView>
+          <CyDImageBackground
+            className={'h-[70%] pt-[10px]'}
+            source={AppImages.CARD_SIGNUP_BACKGROUND}
+            resizeMode={'cover'}>
+            <CyDView className={'flex flex-row justify-center'}>
+              <CyDImage
+                className='h-[180px] w-[90%]'
+                source={AppImages.VIRTUAL_SAMPLE_CARD}
+                resizeMode='contain'
+              />
+            </CyDView>
+            <CyDView className={' flex flex-row justify-center mt-[45px]'}>
+              <CyDText
+                className={'text-[22px] text-center px-[32px] font-extrabold'}>
+                {t<string>('CARD_SIGNUP_WELCOME_TEXT')}
+              </CyDText>
+            </CyDView>
+            <CyDView className='bg-white w-[75%] mt-[16px] self-center border rounded-[6px] h-[55px] justify-center items-center'>
+              {!loadersAndValidators.isInviteCodeVerifying &&
+                !loadersAndValidators.inviteCodeVerified && (
+                  <CyDTextInput
+                    onChangeText={async value => {
+                      if (loadersAndValidators.isInvalidInviteCode) {
+                        setLoadersAndValidators({
+                          ...loadersAndValidators,
+                          isInvalidInviteCode: false,
+                        });
+                      }
+                      setInviteCode(value);
+                    }}
+                    value={inviteCode}
+                    placeholder={
+                      isInviteCodeOptional ? t('OPTIONAL') : t('INVITE_CODE')
                     }
-                    setInviteCode(value);
-                  }}
-                  value={inviteCode}
-                  placeholder={
-                    isInviteCodeOptional ? t('OPTIONAL') : t('INVITE_CODE')
-                  }
-                  placeholderTextColor={Colors.subTextColor}
-                  className={'text-[18px] text-center p-[0px]'}
-                />
-              )}
-            {loadersAndValidators.isInviteCodeVerifying && (
-              <CyDView className={'flex items-center justify-between'}>
-                <LottieView
-                  source={AppImages.LOADER_TRANSPARENT}
-                  autoPlay
-                  loop
-                  style={{ height: 25 }}
-                />
-              </CyDView>
-            )}
-            {loadersAndValidators.inviteCodeVerified && (
-              <>
-                <CyDView
-                  className={'flex flex-row items-center justify-center'}>
-                  <CyDText className={'text-[18px] font-extrabold'}>
-                    {t<string>('CODE_VERFIED')}
-                  </CyDText>
-                  <CyDImage
-                    className={'h-[22px] w-[22px] ml-[10px]'}
-                    source={AppImages.DARK_GREEN_BACKGROUND_TICK}
+                    placeholderTextColor={Colors.subTextColor}
+                    className={'text-[18px] text-center p-[0px]'}
+                  />
+                )}
+              {loadersAndValidators.isInviteCodeVerifying && (
+                <CyDView className={'flex items-center justify-between'}>
+                  <LottieView
+                    source={AppImages.LOADER_TRANSPARENT}
+                    autoPlay
+                    loop
+                    style={{ height: 25 }}
                   />
                 </CyDView>
-              </>
+              )}
+              {loadersAndValidators.inviteCodeVerified && (
+                <>
+                  <CyDView
+                    className={'flex flex-row items-center justify-center'}>
+                    <CyDText className={'text-[18px] font-extrabold'}>
+                      {t<string>('CODE_VERFIED')}
+                    </CyDText>
+                    <CyDImage
+                      className={'h-[22px] w-[22px] ml-[10px]'}
+                      source={AppImages.DARK_GREEN_BACKGROUND_TICK}
+                    />
+                  </CyDView>
+                </>
+              )}
+            </CyDView>
+            {loadersAndValidators.isInvalidInviteCode && (
+              <CyDText className={'text-center text-red-600 font-bold'}>
+                {t<string>('INVALID_CODE')}
+              </CyDText>
             )}
-          </CyDView>
-          {loadersAndValidators.isInvalidInviteCode && (
-            <CyDText className={'text-center text-red-600 font-bold'}>
-              {t<string>('INVALID_CODE')}
-            </CyDText>
-          )}
-          <Button
-            title={t<string>('NEXT')}
-            style='mt-[24px] w-[72%] self-center border-[1px]'
-            titleStyle={isButtonEnabled() ? 'text-white' : ''}
-            type={ButtonType.DARK}
-            disabled={!isButtonEnabled()}
-            onPress={() => {
-              void verifyInviteCode(inviteCode);
-            }}
-          />
-        </CyDImageBackground>
+            <Button
+              title={t<string>('NEXT')}
+              style='mt-[24px] w-[72%] self-center border-[1px]'
+              titleStyle={isButtonEnabled() ? 'text-white' : ''}
+              type={ButtonType.DARK}
+              disabled={!isButtonEnabled()}
+              onPress={() => {
+                void verifyInviteCode(inviteCode);
+              }}
+            />
+          </CyDImageBackground>
+        </CyDKeyboardAwareScrollView>
       </CyDScrollView>
     </CyDView>
   );
