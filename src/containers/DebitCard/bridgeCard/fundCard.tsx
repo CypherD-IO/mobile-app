@@ -814,12 +814,9 @@ export default function BridgeFundCardScreen({ route }: { route: any }) {
               />
               <CyDView className='flex flex-col justify-start items-start ml-[8px]'>
                 <CyDText
-                  className={clsx(
-                    'text-black font-manrope font-extrabold text-[16px]',
-                    {
-                      'text-[14px]': selectedToken.isZeroFeeCardFunding,
-                    },
-                  )}>
+                  className={clsx('text-black  font-extrabold text-[16px]', {
+                    'text-[14px]': selectedToken.isZeroFeeCardFunding,
+                  })}>
                   {selectedToken.name}
                 </CyDText>
                 {/* {selectedToken.isZeroFeeCardFunding ? (
@@ -1072,7 +1069,7 @@ export default function BridgeFundCardScreen({ route }: { route: any }) {
               {isCrpytoInput && !isSmallScreenMobile && (
                 <CyDText
                   className={clsx(
-                    'font-extrabold text-center text-mandarin font-manrope ml-[4px]',
+                    'font-extrabold text-center text-mandarin  ml-[4px]',
                     {
                       'text-[32px]': amount.length <= 15,
                       'text-[60px]': amount.length <= 7,
@@ -1085,7 +1082,7 @@ export default function BridgeFundCardScreen({ route }: { route: any }) {
               {isCrpytoInput && isSmallScreenMobile && (
                 <CyDTextInput
                   className={clsx(
-                    'font-extrabold text-center text-mandarin font-manrope ml-[4px]',
+                    'font-extrabold text-center text-mandarin  ml-[4px]',
                     {
                       'text-[32px]': amount.length <= 15,
                       'text-[60px]': amount.length <= 7,

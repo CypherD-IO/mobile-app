@@ -28,14 +28,10 @@ const renderSeedPhrase = (text: string, index: number) => {
       className={
         'flex flex-row items-center h-[50px] w-[31%] border-[1px] border-[#CCCCCC] rounded-[3px] px-[10px] mt-[10px]'
       }>
-      <CyDText
-        className={'text-[17px] text-center text-[#929292] font-manrope'}>
+      <CyDText className={'text-[17px] text-center text-[#929292] '}>
         {++index}
       </CyDText>
-      <CyDText
-        className={
-          'text-[17px] text-center text-[#434343] font-manrope ml-[5px]'
-        }>
+      <CyDText className={'text-[17px] text-center text-[#434343]  ml-[5px]'}>
         {text}
       </CyDText>
     </CyDView>
@@ -109,8 +105,7 @@ export default function SeedPhrase(props) {
             className={
               'bg-[#F8F8F8] rounded-[18px] mt-[20px] mx-[20px] px-[20px] py-[15px]'
             }>
-            <CyDText
-              className={'text-[15px] text-center text-[#434343] font-manrope'}>
+            <CyDText className={'text-[15px] text-center text-[#434343] '}>
               {t('SEED_PHRASE_SUBTITLE')}
             </CyDText>
           </CyDView>

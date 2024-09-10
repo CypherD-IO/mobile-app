@@ -352,12 +352,9 @@ export default function CardKYCStatusScreen({ navigation }) {
                 </CyDView>
                 <CyDView>
                   <CyDText
-                    className={clsx(
-                      'font-bold font-manrope text-[16px] ml-[16px]',
-                      {
-                        'text-redColor': error && index === fillIndex,
-                      },
-                    )}>
+                    className={clsx('font-bold  text-[16px] ml-[16px]', {
+                      'text-redColor': error && index === fillIndex,
+                    })}>
                     {item}
                   </CyDText>
                 </CyDView>
@@ -385,7 +382,7 @@ export default function CardKYCStatusScreen({ navigation }) {
       <CyDView className='h-[90%]'>
         <CardProviderSwitch />
         <CyDView className='flex flex-row  mt-[10px] mb-[10px] items-center justify-center'>
-          <CyDText className='font-extrabold font-manrope text-[20px] text-center'>
+          <CyDText className='font-extrabold  text-[20px] text-center'>
             {'Application Status'}
           </CyDText>
           <CyDTouchView onPress={checkKYC}>
