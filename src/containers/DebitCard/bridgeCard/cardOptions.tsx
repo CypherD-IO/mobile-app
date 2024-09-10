@@ -63,11 +63,12 @@ export default function CardOptionsModal({
           },
         ]
       : []),
-    ...(card.type === CardType.PHYSICAL
+    ...(cardProvider === CardProviders.REAP_CARD ||
+    card.type === CardType.PHYSICAL
       ? [
           {
             title: 'Set New Pin',
-            description: 'Change pin for your physical card',
+            description: 'Change pin for your card',
             image: AppImages.CIRCLE_WITH_DOTS,
             action: () => {
               navigation.navigate(screenTitle.CARD_SET_PIN_SCREEN, {

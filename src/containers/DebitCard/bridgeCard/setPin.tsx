@@ -17,6 +17,8 @@ import Button from '../../../components/v2/button';
 import { MODAL_HIDE_TIMEOUT } from '../../../core/Http';
 import { screenTitle } from '../../../constants';
 import { useKeyboard } from '../../../hooks/useKeyboard';
+import * as yup from 'yup';
+import { useFormik } from 'formik';
 
 export default function SetPin(props: {
   navigation: any;
@@ -31,8 +33,6 @@ export default function SetPin(props: {
   const { showModal, hideModal } = useGlobalModalContext();
   const { navigation, route } = props;
   const { currentCardProvider, card } = route.params;
-  const [pin, setPin] = useState<string>('');
-  const [confirmPin, setConfirmPin] = useState<string>('');
   const [loading, setLoading] = useState<boolean>(false);
   const { keyboardHeight } = useKeyboard();
 
@@ -64,7 +64,7 @@ export default function SetPin(props: {
       currentCardProvider,
       card,
       triggerOTPParam: 'set-pin',
-      verifyOTPPayload: { pin },
+      verifyOTPPayload: { pin: changePinFormik.values.pin },
     });
   };
 
@@ -90,6 +90,99 @@ export default function SetPin(props: {
     },
   });
 
+  const cardValidationSchema = yup.object({
+    pin: yup
+      .string()
+      .required('Pin Required')
+      .matches(/^[0-9]+$/, 'Must be only digits')
+      .min(4, 'Must be exactly 4 digits')
+      .max(4, 'Must be exactly 4 digits'),
+    confirmPin: yup
+      .string()
+      .matches(/^[0-9]+$/, 'Must be only digits')
+      .min(4, 'Must be exactly 4 digits')
+      .max(4, 'Must be exactly 4 digits')
+      .test('pins-match', 'Pins must match', function (value) {
+        return this.parent.pin === value;
+      }),
+  });
+
+  const cardValidationSchemaRc = yup.object({
+    pin: yup
+      .string()
+      .matches(/^\d{4,12}$/, 'Only 4-12 digits accepted')
+      .test(
+        'two-consecutive-numbers',
+        'Only two consecutive numbers accepted at most',
+        value => {
+          if (value) {
+            const digits = value.split('').map(Number);
+            let consecutiveCount = 0;
+            for (let i = 1; i < digits.length; i++) {
+              if (digits[i] === digits[i - 1] + 1) {
+                consecutiveCount++;
+              }
+              if (consecutiveCount > 1) return false;
+            }
+            return true;
+          }
+          return false;
+        },
+      )
+      .test(
+        'two-repeated-numbers',
+        'Only two repeated numbers in a row accepted at most',
+        value => {
+          return value ? !/(\d)\1{2,}/.test(value) : false;
+        },
+      ),
+    confirmPin: yup
+      .string()
+      .matches(/^\d{4,12}$/, 'Only 4-12 digits accepted')
+      .test(
+        'two-consecutive-numbers',
+        'Only two consecutive numbers accepted at most',
+        value => {
+          if (value) {
+            const digits = value.split('').map(Number);
+            let consecutiveCount = 0;
+            for (let i = 1; i < digits.length; i++) {
+              if (digits[i] === digits[i - 1] + 1) {
+                consecutiveCount++;
+              }
+              if (consecutiveCount > 1) return false;
+            }
+            return true;
+          }
+          return false;
+        },
+      )
+      .test(
+        'two-repeated-numbers',
+        'Only two repeated numbers in a row accepted at most',
+        value => {
+          return value ? !/(\d)\1{2,}/.test(value) : false;
+        },
+      )
+      .test('pins-match', 'Pins must match', function (value) {
+        return this.parent.pin === value;
+      }),
+  });
+
+  const changePinFormik = useFormik({
+    initialValues: {
+      pin: '',
+      confirmPin: '',
+    },
+    validationSchema:
+      currentCardProvider === CardProviders.REAP_CARD
+        ? cardValidationSchemaRc
+        : cardValidationSchema,
+    onSubmit: values => {
+      verifyWithOTP();
+    },
+  });
+
   return (
     <CyDSafeAreaView style={{ height: keyboardHeight || '100%' }}>
       <CyDScrollView
@@ -103,29 +196,38 @@ export default function SetPin(props: {
                 <CyDText className={'text-[18px] font-extrabold'}>
                   {t<string>('CARD_SET_PIN')}
                 </CyDText>
-                <CyDView className={'mt-[5px] mb-[20px]'}>
+                <CyDView className={'mt-[5px]'}>
                   <CyDTextInput
                     className={clsx(
                       'h-[55px] text-center w-[100%] tracking-[2px] rounded-[5px] border-[1px] border-inputBorderColor',
                       {
                         'pl-[1px] pt-[2px]': isAndroid(),
-                        'tracking-[15px]': pin !== '',
-                        'border-redCyD': pin !== '' && pin.length !== 4,
+                        'tracking-[15px]': changePinFormik.values.pin !== '',
+                        'border-redCyD': !!(
+                          changePinFormik.errors.pin &&
+                          changePinFormik.touched.pin
+                        ),
                       },
                     )}
                     keyboardType='numeric'
                     placeholder='Enter Pin'
                     placeholderTextColor={'#C5C5C5'}
-                    onChangeText={(num: string) => setPin(num)}
-                    value={pin}
-                    maxLength={4}
+                    onChangeText={changePinFormik.handleChange('pin')}
+                    value={changePinFormik.values.pin}
                     secureTextEntry={true}
                   />
                 </CyDView>
+                {!!(
+                  changePinFormik.errors.pin && changePinFormik.touched.pin
+                ) && (
+                  <CyDText className='text-redCyD'>
+                    {changePinFormik.errors.pin}
+                  </CyDText>
+                )}
               </CyDView>
 
               <CyDView>
-                <CyDText className={'text-[18px] font-extrabold'}>
+                <CyDText className={'text-[18px] font-extrabold mt-[20px]'}>
                   {t<string>('CARD_CONFIRM_PIN')}
                 </CyDText>
                 <CyDView className={'mt-[5px]'}>
@@ -134,43 +236,60 @@ export default function SetPin(props: {
                       'h-[55px] text-center w-[100%] tracking-[2px] rounded-[5px] border-[1px] border-inputBorderColor',
                       {
                         'pl-[1px] pt-[2px]': isAndroid(),
-                        'tracking-[15px]': confirmPin !== '',
-                        'border-redCyD':
-                          confirmPin !== '' &&
-                          confirmPin.length !== 4 &&
-                          pin !== confirmPin,
+                        'tracking-[15px]':
+                          changePinFormik.values.confirmPin !== '',
+                        'border-redCyD': !!(
+                          changePinFormik.errors.confirmPin &&
+                          changePinFormik.touched.confirmPin
+                        ),
                       },
                     )}
                     keyboardType='numeric'
                     placeholder='Re-enter Pin'
                     placeholderTextColor={'#C5C5C5'}
-                    onChangeText={(num: string) => setConfirmPin(num)}
-                    value={confirmPin}
-                    maxLength={4}
+                    onChangeText={changePinFormik.handleChange('confirmPin')}
+                    value={changePinFormik.values.confirmPin}
                     secureTextEntry={true}
                   />
-                  <CyDText className='text-redCyD mt-[5px]'>
-                    {confirmPin !== '' && confirmPin !== pin
-                      ? "Pin doesn't match"
-                      : ''}
-                  </CyDText>
+                  {!!(
+                    changePinFormik.errors.confirmPin &&
+                    changePinFormik.touched.confirmPin
+                  ) && (
+                    <CyDText className='text-redCyD'>
+                      {changePinFormik.errors.confirmPin}
+                    </CyDText>
+                  )}
                 </CyDView>
               </CyDView>
+
+              {currentCardProvider === CardProviders.REAP_CARD && (
+                <CyDView className='w-full mb-[4px] mt-[12px] items-center'>
+                  <CyDText className='text-[12px]'>
+                    Only 4-12 digits accepted.{'\n'}
+                    Only two consecutive numbers accepted at most (eg: 124758){' '}
+                    {'\n'}
+                    Only two repeated numbers in a row accepted at most
+                    (eg:112331)
+                  </CyDText>
+                </CyDView>
+              )}
+              {currentCardProvider === CardProviders.PAYCADDY && (
+                <CyDView className='w-full mb-[4px] mt-[12px] items-center'>
+                  <CyDText className='text-[12px]'>
+                    Only 4 digits accepted.
+                  </CyDText>
+                </CyDView>
+              )}
             </CyDView>
           </CyDView>
           <CyDView className='w-full mb-[4px] mt-[12px] items-center'>
             <Button
               title={t('CONFIRM')}
               disabled={
-                !confirmPin ||
-                !pin ||
-                confirmPin.length !== 4 ||
-                pin.length !== 4 ||
-                confirmPin !== pin
+                changePinFormik.values.pin === '' ||
+                changePinFormik.values.confirmPin === ''
               }
-              onPress={() => {
-                verifyWithOTP();
-              }}
+              onPress={changePinFormik.handleSubmit}
               type={ButtonType.PRIMARY}
               loading={loading}
               style='h-[60px] w-[90%]'
