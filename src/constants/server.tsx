@@ -6,9 +6,7 @@ import {
   optimism,
   arbitrum,
   avalanche,
-  fantom,
   bsc,
-  evmos,
   zkSync,
   base,
   polygonZkEvm,
@@ -36,11 +34,9 @@ export enum ChainBackendNames {
   ETH = 'ETH',
   POLYGON = 'POLYGON',
   AVALANCHE = 'AVALANCHE',
-  FANTOM = 'FANTOM',
   ARBITRUM = 'ARBITRUM',
   OPTIMISM = 'OPTIMISM',
   BSC = 'BSC',
-  EVMOS = 'EVMOS',
   COSMOS = 'COSMOS',
   OSMOSIS = 'OSMOSIS',
   JUNO = 'JUNO',
@@ -61,7 +57,6 @@ export enum ChainBackendNames {
 }
 
 export enum CosmosStakingTokens {
-  EVMOS = 'evmos',
   COSMOS = 'atom',
   OSMOSIS = 'osmosis',
   JUNO = 'juno',
@@ -71,7 +66,6 @@ export enum CosmosStakingTokens {
 
 export enum FundWalletAddressType {
   EVM = 'EVM',
-  EVMOS = 'EVMOS',
   COSMOS = 'COSMOS',
   OSMOSIS = 'OSMOSIS',
   JUNO = 'JUNO',
@@ -82,7 +76,6 @@ export enum FundWalletAddressType {
   KUJIRA = 'KUJIRA',
   POLYGON = 'POLYGON',
   AVALANCHE = 'AVALANCHE',
-  FANTOM = 'FANTOM',
   ARBITRUM = 'ARBITRUM',
   OPTIMISM = 'OPTIMISM',
   BSC = 'BSC',
@@ -165,35 +158,6 @@ export const CHAIN_COLLECTION: Chain = {
   chainIdNumber: 0,
 };
 
-export const CHAIN_FTM: Chain = {
-  chainName: 'ethereum',
-  name: 'Fantom',
-  symbol: 'FTM',
-  id: 5,
-  logo_url: AppImages.FANTOM,
-  backendName: ChainBackendNames.FANTOM,
-  chain_id: '0xfa',
-  native_token_address: '0xeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee',
-  nativeTokenLogoUrl:
-    'https://www.covalenthq.com/static/images/icons/display-icons/fantom-ftm-logo.png',
-  chainIdNumber: 250,
-};
-
-export const CHAIN_EVMOS: Chain = {
-  chainName: 'evmos',
-  name: 'Evmos',
-  symbol: 'EVMOS',
-  id: 6,
-  logo_url: AppImages.EVMOS_LOGO,
-  backendName: ChainBackendNames.EVMOS,
-  chain_id: '0x2329',
-  native_token_address: '0xeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee',
-  secondaryAddress: '0x93581991f68dbae1ea105233b67f7fa0d6bdee7b',
-  nativeTokenLogoUrl:
-    'https://public.cypherd.io/assets/blockchains/evmos/info/logo.png',
-  chainIdNumber: 9001,
-};
-
 export const CHAIN_ARBITRUM: Chain = {
   chainName: 'ethereum',
   name: 'Arbitrum One',
@@ -241,7 +205,6 @@ export const OwlracleChainCodes = {
   Polygon: 'poly',
   'Binance Smart Chain': 'bsc',
   Avalanche: 'avax',
-  Fantom: 'ftm',
   Arbitrum: 'arb',
   Optimism: 'opt',
 };
@@ -473,7 +436,6 @@ export const CHAIN_SOLANA: Chain = {
 export const EnsCoinTypes: Record<string, string> = {
   [ChainBackendNames.ETH]: '60',
   [ChainBackendNames.AVALANCHE]: '2147526762',
-  [ChainBackendNames.FANTOM]: '2147483898',
   [ChainBackendNames.BSC]: '2147483704',
   [ChainBackendNames.POLYGON]: '2147483785',
   [ChainBackendNames.SHARDEUM]: 'dummy',
@@ -486,7 +448,6 @@ export const SUPPORTED_EVM_CHAINS = [
 ];
 export const CHAIN_NAMES = [
   'ethereum',
-  'evmos',
   'cosmos',
   'osmosis',
   'juno',
@@ -499,7 +460,6 @@ export const CHAIN_NAMES = [
 ];
 export const COSMOS_CHAINS = [
   'cosmos',
-  'evmos',
   'osmosis',
   'juno',
   'stargaze',
@@ -523,10 +483,8 @@ export const ALL_CHAINS: Chain[] = [
   CHAIN_STARGAZE,
   CHAIN_NOBLE,
   CHAIN_AVALANCHE,
-  CHAIN_FTM,
   CHAIN_OPTIMISM,
   CHAIN_ARBITRUM,
-  CHAIN_EVMOS,
   CHAIN_COSMOS,
   CHAIN_OSMOSIS,
   CHAIN_JUNO,
@@ -550,7 +508,6 @@ export const EVM_CHAINS: Chain[] = [
   CHAIN_POLYGON,
   CHAIN_BSC,
   CHAIN_AVALANCHE,
-  CHAIN_FTM,
   CHAIN_OPTIMISM,
   CHAIN_ARBITRUM,
   CHAIN_SHARDEUM,
@@ -580,7 +537,6 @@ export const EVM_CHAINS_FOR_ADDRESS_DIR = [
   'polygon',
   'binance',
   'avalanche',
-  'fantom',
   'optimism',
   'arbitrum',
   'shardeum',
@@ -598,10 +554,8 @@ export const chainIdNumberMapping: Record<number, Chain> = {
   137: CHAIN_POLYGON,
   56: CHAIN_BSC,
   43114: CHAIN_AVALANCHE,
-  250: CHAIN_FTM,
   10: CHAIN_OPTIMISM,
   42161: CHAIN_ARBITRUM,
-  9001: CHAIN_EVMOS,
   324: CHAIN_ZKSYNC_ERA,
   8453: CHAIN_BASE,
   1101: CHAIN_POLYGON_ZKEVM,
@@ -614,10 +568,8 @@ export const EVM_CHAINS_BACKEND_NAMES: ChainBackendNames[] = [
   ChainBackendNames.POLYGON,
   ChainBackendNames.BSC,
   ChainBackendNames.AVALANCHE,
-  ChainBackendNames.FANTOM,
   ChainBackendNames.OPTIMISM,
   ChainBackendNames.ARBITRUM,
-  ChainBackendNames.EVMOS,
   ChainBackendNames.SHARDEUM,
   ChainBackendNames.SHARDEUM_SPHINX,
   ChainBackendNames.ZKSYNC_ERA,
@@ -633,13 +585,10 @@ export const PORTFOLIO_CHAINS_BACKEND_NAMES = [
   ChainBackendNames.POLYGON,
   ChainBackendNames.BSC,
   ChainBackendNames.AVALANCHE,
-  // ChainBackendNames.FANTOM,
   ChainBackendNames.OPTIMISM,
   ChainBackendNames.ARBITRUM,
-  ChainBackendNames.EVMOS,
   // ChainBackendNames.SHARDEUM,
   ChainBackendNames.SHARDEUM_SPHINX,
-  // ChainBackendNames.EVMOS,
   ChainBackendNames.COSMOS,
   ChainBackendNames.JUNO,
   ChainBackendNames.NOBLE,
@@ -662,10 +611,8 @@ export const CARD_CHAINS: Chain[] = [
   CHAIN_POLYGON,
   CHAIN_BSC,
   CHAIN_AVALANCHE,
-  CHAIN_FTM,
   CHAIN_OPTIMISM,
   CHAIN_ARBITRUM,
-  CHAIN_EVMOS,
   CHAIN_COSMOS,
   CHAIN_OSMOSIS,
   CHAIN_JUNO,
@@ -684,7 +631,6 @@ export const CARD_CHAINS: Chain[] = [
 ];
 
 export const IBC_CHAINS: Chain[] = [
-  CHAIN_EVMOS,
   CHAIN_COSMOS,
   CHAIN_OSMOSIS,
   CHAIN_JUNO,
@@ -699,7 +645,6 @@ export const ALL_CHAINS_WITH_COLLECTION = [CHAIN_COLLECTION, ...ALL_CHAINS];
 
 export enum ChainNames {
   ETH = 'ethereum',
-  EVMOS = 'evmos',
   COSMOS = 'cosmos',
   OSMOSIS = 'osmosis',
   JUNO = 'juno',
@@ -711,7 +656,6 @@ export enum ChainNames {
   BSC = 'binance',
   POLYGON = 'polygon',
   AVALANCHE = 'avalanche',
-  FANTOM = 'fantom',
   OPTIMISM = 'optimism',
   ARBITRUM = 'arbitrum',
   SHARDEUM = 'shardeum',
@@ -730,8 +674,6 @@ export enum ChainNameMapping {
   ETH = 'eth',
   POLYGON = 'polygon',
   AVALANCHE = 'avalanche',
-  EVMOS = 'evmos',
-  FANTOM = 'fantom',
   OPTIMISM = 'optimism',
   ARBITRUM = 'arbitrum',
   COSMOS = 'cosmos',
@@ -761,8 +703,6 @@ export const ChainConfigMapping = {
   ethereum: CHAIN_ETH,
   polygon: CHAIN_POLYGON,
   avalanche: CHAIN_AVALANCHE,
-  evmos: CHAIN_EVMOS,
-  fantom: CHAIN_FTM,
   optimism: CHAIN_OPTIMISM,
   arbitrum: CHAIN_ARBITRUM,
   cosmos: CHAIN_COSMOS,
@@ -793,7 +733,6 @@ export enum QRScannerScreens {
 
 export enum NotificationEvents {
   BEEFY_FINANCE = 'BEEFY_FINANCE',
-  EVMOS_STAKING = 'EVMOS_STAKING',
   COSMOS_STAKING = 'COSMOS_STAKING',
   OSMOSIS_STAKING = 'OSMOSIS_STAKING',
   JUNO_STAKING = 'JUNO_STAKING',
@@ -812,8 +751,6 @@ export const ChainNameToContactsChainNameMapping = {
   Polygon: 'polygon',
   'Binance Smart Chain': 'binance',
   Avalanche: 'avalanche',
-  Fantom: 'fantom',
-  Evmos: 'evmos',
   'Arbitrum One': 'arbitrum',
   'Shardeum Liberty 2.0': 'shardeum',
   'Shardeum Sphinx': 'shardeum_sphinx',
@@ -911,12 +848,6 @@ export const deFiPositionTypes = [
 ];
 
 export const OP_ETH_ADDRESS = '0xdeaddeaddeaddeaddeaddeaddeaddeaddead0000';
-export const ACCOUNT_DETAILS_INFO =
-  'https://api-evmos-ia.cosmosia.notional.ventures/cosmos/auth/v1beta1/accounts';
-export const SIMULATION_ENDPOINT =
-  'https://api-evmos-ia.cosmosia.notional.ventures/cosmos/tx/v1beta1/simulate';
-export const TRANSACTION_ENDPOINT =
-  'https://api-evmos-ia.cosmosia.notional.ventures/cosmos/tx/v1beta1/txs';
 
 export interface NetworkInterface {
   [key: string]: any;
@@ -988,20 +919,6 @@ export const walletConnectChainData: Record<string, NetworkInterface> = {
     blockExplorerUrls: ['https://snowtrace.io'],
     chainConfig: avalanche,
   },
-  FANTOM: {
-    chainId: `0x${Number(250).toString(16)}`,
-    chainName: 'Fantom Opera',
-    nativeCurrency: {
-      name: 'Fantom',
-      symbol: 'FTM',
-      decimals: 18,
-    },
-    rpcUrls: [
-      'https://fantom-mainnet.gateway.pokt.network/v1/lb/62759259ea1b320039c9e7ac',
-    ],
-    blockExplorerUrls: ['https://ftmscan.com'],
-    chainConfig: fantom,
-  },
   ARBITRUM: {
     chainId: `0x${Number(42161).toString(16)}`,
     chainName: 'Arbitrum One',
@@ -1025,18 +942,6 @@ export const walletConnectChainData: Record<string, NetworkInterface> = {
     rpcUrls: ['https://mainnet.optimism.io'],
     blockExplorerUrls: ['https://optimistic.etherscan.io/'],
     chainConfig: optimism,
-  },
-  EVMOS: {
-    chainId: `0x${Number(9001).toString(16)}`,
-    chainName: 'Evmos',
-    nativeCurrency: {
-      name: 'Evmos',
-      symbol: 'EVMOS',
-      decimals: 18,
-    },
-    rpcUrls: ['https://eth.bd.evmos.org:8545'],
-    blockExplorerUrls: ['https://evm.evmos.org'],
-    chainConfig: evmos,
   },
   ZKSYNC_ERA: {
     chainId: '0x144',
@@ -1246,35 +1151,6 @@ export const STABLE_TOKEN_CHAIN_MAP = new Map([
     ],
   ], // [usdc, usdt, dai]
   [
-    'FANTOM',
-    [
-      {
-        contractAddress: '0x1b6382dbdea11d97f24495c9a90b7c88469134a4',
-        decimal: 6,
-        symbol: 'axlUSDC',
-        name: 'Bridged USD Coin (Axelar)',
-        coingeckoId: 'axlusdc',
-        logo: 'https://assets.coingecko.com/coins/images/26476/large/axlUSDC.png?1658207579',
-      },
-      {
-        contractAddress: '0x049d68029688eabf473097a2fc38ef61633a3c7a',
-        decimal: 6,
-        symbol: 'USDT',
-        name: 'Tether',
-        coingeckoId: 'tether',
-        logo: 'https://assets.coingecko.com/coins/images/325/large/Tether.png?1668148663',
-      },
-      {
-        contractAddress: '0x8d11ec38a3eb5e956b052f67da8bdc9bef8abf3e',
-        decimal: 18,
-        symbol: 'DAI',
-        name: 'Dai',
-        coingeckoId: 'dai',
-        logo: 'https://assets.coingecko.com/coins/images/9956/large/Badge_Dai.png?1687143508',
-      },
-    ],
-  ], // [axlusdc, mulusdc, usdt, dai]
-  [
     'ARBITRUM',
     [
       {
@@ -1416,19 +1292,6 @@ export const STABLE_TOKEN_CHAIN_MAP = new Map([
         name: 'Dai',
         coingeckoId: 'dai',
         logo: 'https://assets.coingecko.com/coins/images/9956/large/Badge_Dai.png?1687143508',
-      },
-    ],
-  ],
-  [
-    'EVMOS',
-    [
-      {
-        contractAddress: '0x51e44ffad5c2b122c8b635671fcc8139dc636e82',
-        decimal: 18,
-        symbol: 'USDC',
-        name: 'USD Coin',
-        coingeckoId: 'usd-coin',
-        logo: 'https://assets.coingecko.com/coins/images/6319/large/USD_Coin_icon.png?1547042389',
       },
     ],
   ],

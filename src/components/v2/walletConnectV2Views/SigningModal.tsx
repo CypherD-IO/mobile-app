@@ -33,7 +33,6 @@ import { GlobalContext } from '../../../core/globalContext';
 import {
   DecodeTxnRequestBody,
   IDAppInfo,
-  IEvmosTxnMessage,
   IExtendedDecodedTxnResponse,
   ISendTxnData,
   SessionSigningModalProps,
@@ -63,9 +62,8 @@ export default function SigningModal({
   const [nativeSendTxnData, setNativeSendTxnData] =
     useState<ISendTxnData | null>(null);
   const hdWalletContext = useContext<any>(HdWalletContext);
-  const [decodedABIData, setDecodedABIData] = useState<
-    IExtendedDecodedTxnResponse | IEvmosTxnMessage | null
-  >(null);
+  const [decodedABIData, setDecodedABIData] =
+    useState<IExtendedDecodedTxnResponse | null>(null);
   const globalContext = useContext<any>(GlobalContext);
 
   let id: number,
@@ -140,36 +138,20 @@ export default function SigningModal({
     let decodeTxnRequestBody: DecodeTxnRequestBody;
     const decodeTxnRequest = async () => {
       try {
-        if (decodeTxnRequestBody.chainId !== 9001) {
-          const { data, error, isError } = await postWithAuth(
-            '/v1/txn/decode',
-            decodeTxnRequestBody,
-          );
-          if (!isError) {
-            if (data.isDecoded) {
-              setDecodedABIData({
-                ...data,
-                from_addr: decodeTxnRequestBody.from,
-              });
-              setDataIsReady(true);
-            } else {
-              const errorObject = {
-                message: 'isDecoded was false when decoding. Showing raw data.',
-                error,
-                decodeTxnRequestBody,
-              };
-              Sentry.captureException(errorObject);
-              setDecodedABIData({
-                from: decodeTxnRequestBody.from,
-                to: decodeTxnRequestBody.to,
-                data: decodeTxnRequestBody.data,
-                gas: decodeTxnRequestBody.gas,
-              });
-              setDataIsReady(true);
-            }
+        const { data, error, isError } = await postWithAuth(
+          '/v1/txn/decode',
+          decodeTxnRequestBody,
+        );
+        if (!isError) {
+          if (data.isDecoded) {
+            setDecodedABIData({
+              ...data,
+              from_addr: decodeTxnRequestBody.from,
+            });
+            setDataIsReady(true);
           } else {
             const errorObject = {
-              message: 'Decoding response isError is true. Showing raw data.',
+              message: 'isDecoded was false when decoding. Showing raw data.',
               error,
               decodeTxnRequestBody,
             };
@@ -183,7 +165,12 @@ export default function SigningModal({
             setDataIsReady(true);
           }
         } else {
-          // Setting the data as it is for EVMOS
+          const errorObject = {
+            message: 'Decoding response isError is true. Showing raw data.',
+            error,
+            decodeTxnRequestBody,
+          };
+          Sentry.captureException(errorObject);
           setDecodedABIData({
             from: decodeTxnRequestBody.from,
             to: decodeTxnRequestBody.to,

@@ -12,17 +12,24 @@ import { t } from 'i18next';
 import { StyleSheet } from 'react-native';
 import { TransfiRampReactNativeSdkView } from 'transfi-ramp-react-native-sdk';
 
-export default function TransFiScreen ({ route, navigation }: { route: any, navigation: any }) {
+export default function TransFiScreen({
+  route,
+  navigation,
+}: {
+  route: any;
+  navigation: any;
+}) {
   const hdWalletContext = useContext<any>(HdWalletContext);
   const isFocused = useIsFocused();
   const { getWithAuth } = useAxios();
   const [state, setState] = useState({
     loading: true,
     isError: false,
-    transFiApiKey: ''
+    transFiApiKey: '',
   });
   const { ethereum } = hdWalletContext.state.wallet;
-  const { operation, url: chain }: { operation: string, url: string } = route.params;
+  const { operation, url: chain }: { operation: string; url: string } =
+    route.params;
   const { address: ethAddress } = ethereum;
   // const ethAddress = '2N3oefVeg6stiTb5Kh3ozCSkaqmx91FDbsm'; // Sandbox address
   const currency = 'USD';
@@ -33,8 +40,7 @@ export default function TransFiScreen ({ route, navigation }: { route: any, navi
     OPTIMISM: 'Optimism',
     POLYGON: 'Polygon',
     BSC: 'BEP20',
-    AVALANCHE: 'C-Chain'
-    // FANTOM: ''
+    AVALANCHE: 'C-Chain',
     // COSMOS: 'Cosmos'
   };
   const transFiCryptoTickerMapping = {
@@ -43,8 +49,7 @@ export default function TransFiScreen ({ route, navigation }: { route: any, navi
     OPTIMISM: 'ETH',
     POLYGON: 'MATIC',
     BSC: 'BNB',
-    AVALANCHE: 'AVAX'
-    // FANTOM: 'FTM'
+    AVALANCHE: 'AVAX',
     // COSMOS: 'ATOM'
   };
 
@@ -56,9 +61,15 @@ export default function TransFiScreen ({ route, navigation }: { route: any, navi
     return (
       <CyDView className={'mt-[60%]'}>
         <CyDView className={'flex flex-row justify-center'}>
-          <CyDImage className={'h-[120px] w-[240px]'} source={AppImages.CYPHER_ERROR} resizeMode='contain' />
+          <CyDImage
+            className={'h-[120px] w-[240px]'}
+            source={AppImages.CYPHER_ERROR}
+            resizeMode='contain'
+          />
         </CyDView>
-        <CyDText className={'text-center text-[24px] mt-[20px]'}>{t<string>('WARNING_TITLE')}</CyDText>
+        <CyDText className={'text-center text-[24px] mt-[20px]'}>
+          {t<string>('WARNING_TITLE')}
+        </CyDText>
       </CyDView>
     );
   };
@@ -79,33 +90,35 @@ export default function TransFiScreen ({ route, navigation }: { route: any, navi
   };
 
   return (
-  // <CyDView className={'h-full w-full bg-white'}>
-  //   {state.loading && <Loading />}
-  //   {!state.isError && state.transFiApiKey !== '' && <CyDView className={'h-[100%] w-[100%] overflow-scroll'}>
-  //     <WebView
-  //       onLoadEnd={() => setState({ ...state, loading: false })}
-  //       source={{ uri: `https://buy.transfi.com?fiatTicker=${currency}&product=${operation}&country=${country}&cryptoNetwork=${transFiCryptoNetworkMapping[chain]}&cryptoTicker=${transFiCryptoTickerMapping[chain]}&walletAddress=${ethAddress}&apiKey=${state.transFiApiKey}` }}
-  //     />
-  //   </CyDView>}
-  //   {state.isError && <ErrorScreen />}
-  // </CyDView>
+    // <CyDView className={'h-full w-full bg-white'}>
+    //   {state.loading && <Loading />}
+    //   {!state.isError && state.transFiApiKey !== '' && <CyDView className={'h-[100%] w-[100%] overflow-scroll'}>
+    //     <WebView
+    //       onLoadEnd={() => setState({ ...state, loading: false })}
+    //       source={{ uri: `https://buy.transfi.com?fiatTicker=${currency}&product=${operation}&country=${country}&cryptoNetwork=${transFiCryptoNetworkMapping[chain]}&cryptoTicker=${transFiCryptoTickerMapping[chain]}&walletAddress=${ethAddress}&apiKey=${state.transFiApiKey}` }}
+    //     />
+    //   </CyDView>}
+    //   {state.isError && <ErrorScreen />}
+    // </CyDView>
 
-  <TransfiRampReactNativeSdkView
-    style={styles.sdkContainer}
-    source={{ uri: `https://buy.transfi.com?product=${operation}&country=${country}&cryptoNetwork=${transFiCryptoNetworkMapping[chain]}&cryptoTicker=${transFiCryptoTickerMapping[chain]}&walletAddress=${ethAddress}&apiKey=${state.transFiApiKey}` }}
-    javaScriptEnabled={true}
-    messagingEnabled={true}
-    domStorageEnabled={true}
-    onMessage={(event: any) => {
-      console.log('event', event?.nativeEvent?.data);
-    }}
-  />
+    <TransfiRampReactNativeSdkView
+      style={styles.sdkContainer}
+      source={{
+        uri: `https://buy.transfi.com?product=${operation}&country=${country}&cryptoNetwork=${transFiCryptoNetworkMapping[chain]}&cryptoTicker=${transFiCryptoTickerMapping[chain]}&walletAddress=${ethAddress}&apiKey=${state.transFiApiKey}`,
+      }}
+      javaScriptEnabled={true}
+      messagingEnabled={true}
+      domStorageEnabled={true}
+      onMessage={(event: any) => {
+        console.log('event', event?.nativeEvent?.data);
+      }}
+    />
   );
 }
 
 const styles = StyleSheet.create({
   sdkContainer: {
     height: '100%',
-    width: '100%'
-  }
+    width: '100%',
+  },
 });

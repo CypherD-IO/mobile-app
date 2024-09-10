@@ -33,7 +33,6 @@ import { useGlobalModalContext } from '../../components/v2/GlobalModal';
 import useEns from '../../hooks/useEns';
 import firebase from '@react-native-firebase/app';
 import { intercomAnalyticsLog } from '../utilities/analyticsUtility';
-import { ethToEvmos } from '@tharsis/address-converter';
 
 export default function TrackWallet({
   navigation,
@@ -83,16 +82,6 @@ export default function TrackWallet({
               value: {
                 address: ethAddress,
                 chain: 'ethereum',
-                publicKey: '',
-                rawAddress: '',
-                algo: '',
-              },
-            });
-            hdWalletContext.dispatch({
-              type: 'LOAD_WALLET',
-              value: {
-                address: ethToEvmos(ethAddress),
-                chain: 'evmos',
                 publicKey: '',
                 rawAddress: '',
                 algo: '',

@@ -160,10 +160,6 @@ const RenderRightActions = (navigation: any, tokenData: any) => {
             ) {
               addressTypeQRCode = FundWalletAddressType.OSMOSIS;
             } else if (
-              tokenData.chainDetails.backendName === ChainBackendNames.EVMOS
-            ) {
-              addressTypeQRCode = FundWalletAddressType.EVMOS;
-            } else if (
               tokenData.chainDetails.backendName === ChainBackendNames.ETH
             ) {
               addressTypeQRCode = FundWalletAddressType.EVM;

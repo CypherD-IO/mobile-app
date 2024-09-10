@@ -30,7 +30,6 @@ import * as C from '../../constants/index';
 import {
   Chain,
   CHAIN_ETH,
-  CHAIN_EVMOS,
   ChainNames,
   ChainNameToContactsChainNameMapping,
   EnsCoinTypes,
@@ -83,7 +82,6 @@ import {
 } from '../utilities/contactBookUtility';
 import { isCoreumAddress } from '../utilities/coreumUtilities';
 import { isCosmosAddress } from '../utilities/cosmosSendUtility';
-import { isEvmosAddress } from '../utilities/evmosSendUtility';
 import { isInjectiveAddress } from '../utilities/injectiveUtilities';
 import { isJunoAddress } from '../utilities/junoSendUtility';
 import { isKujiraAddress } from '../utilities/kujiraUtilities';
@@ -91,7 +89,6 @@ import { isNobleAddress } from '../utilities/nobleSendUtility';
 import { isOsmosisAddress } from '../utilities/osmosisSendUtility';
 import { isSolanaAddress } from '../utilities/solanaUtilities';
 import { isStargazeAddress } from '../utilities/stargazeSendUtility';
-import { evmosToEth } from '@tharsis/address-converter';
 
 export default function SendTo(props: { navigation?: any; route?: any }) {
   const { t } = useTranslation();
@@ -149,8 +146,8 @@ export default function SendTo(props: { navigation?: any; route?: any }) {
     threshold: 0.1,
   };
   const fuseByNames = new Fuse(Object.keys(contactBook), searchOptions);
-  const { estimateGasForEvm, estimateGasForEvmos } = useGasService();
-  const { sendEvmToken, sendEvmosToken, sendCosmosToken, sendSolanaTokens } =
+  const { estimateGasForEvm } = useGasService();
+  const { sendEvmToken, sendCosmosToken, sendSolanaTokens } =
     useTransactionManager();
 
   let fuseByAddresses: Fuse<string>;
@@ -187,12 +184,6 @@ export default function SendTo(props: { navigation?: any; route?: any }) {
             chains = Object.keys(contactBook[contact].addresses);
           } else {
             chains = [];
-          }
-          if (chainDetails?.chainName === CHAIN_EVMOS.chainName) {
-            return (
-              chains.includes(chainDetails?.chainName) ||
-              chains.includes(CHAIN_ETH.chainName)
-            );
           }
           return (
             chains.includes(chainDetails?.chainName) ||
@@ -314,7 +305,6 @@ export default function SendTo(props: { navigation?: any; route?: any }) {
       evmAddresses: {},
       ethereum: {},
       cosmos: {},
-      evmos: {},
       juno: {},
       osmosis: {},
       stargaze: {},
@@ -325,7 +315,6 @@ export default function SendTo(props: { navigation?: any; route?: any }) {
       binance: {},
       polygon: {},
       avalanche: {},
-      fantom: {},
       optimism: {},
       arbitrum: {},
       shardeum: {},
@@ -692,31 +681,16 @@ export default function SendTo(props: { navigation?: any; route?: any }) {
       gasFeeInCrypto?: string | undefined;
       contractData?: string;
     };
-    if (
-      chainDetails?.chainName === ChainNames.ETH ||
-      (chainDetails?.chainName === ChainNames.EVMOS &&
-        !isEvmosAddress(addressRef.current))
-    ) {
+    if (chainDetails?.chainName === ChainNames.ETH) {
       const ethereum = hdWalletContext.state.wallet.ethereum;
       fromAddress = ethereum.address;
       response = await sendEvmToken({
         chain: tokenData.chainDetails.backendName,
         amountToSend,
         toAddress: addressRef.current,
-        contractAddress:
-          tokenData.contractAddress ??
-          (chainDetails?.chainName === ChainNames.EVMOS
-            ? CHAIN_EVMOS.native_token_address
-            : ''),
+        contractAddress: tokenData.contractAddress,
         contractDecimals: tokenData.contractDecimals,
         symbol: tokenData.symbol,
-      });
-    } else if (chainDetails?.chainName === ChainNames.EVMOS) {
-      const ethereum = hdWalletContext.state.wallet.ethereum;
-      fromAddress = ethereum.address;
-      response = await sendEvmosToken({
-        toAddress: addressRef.current,
-        amountToSend,
       });
     } else if (chainDetails?.chainName === ChainNames.SOLANA) {
       response = await sendSolanaTokens({
@@ -851,15 +825,8 @@ export default function SendTo(props: { navigation?: any; route?: any }) {
   };
 
   const showGasQuote = async () => {
-    if (isEvmosAddress(addressText)) {
-      addressRef.current = evmosToEth(addressText);
-    } else {
-      addressRef.current = addressText;
-    }
-    if (
-      chainDetails?.chainName === ChainNames.ETH ||
-      chainDetails.chainName === ChainNames.EVMOS
-    ) {
+    addressRef.current = addressText;
+    if (chainDetails?.chainName === ChainNames.ETH) {
       if (
         chainDetails?.chainName === ChainNames.ETH &&
         Object.keys(EnsCoinTypes).includes(
@@ -915,32 +882,18 @@ export default function SendTo(props: { navigation?: any; route?: any }) {
       };
       activityRef.current = activityData;
       let gasDetails;
-      if (
-        chainDetails?.chainName === ChainNames.ETH ||
-        (chainDetails?.chainName === ChainNames.EVMOS &&
-          !isEvmosAddress(addressRef.current))
-      ) {
-        gasDetails = await estimateGasForEvm({
-          web3,
-          chain: chainBackendName,
-          fromAddress: ethereum?.address,
-          toAddress: addressRef.current,
-          amountToSend,
-          contractAddress:
-            tokenData.contractAddress ??
-            (chainDetails?.chainName === ChainNames.EVMOS
-              ? CHAIN_EVMOS.native_token_address
-              : ''),
-          contractDecimals: tokenData.contractDecimals,
-        });
-        setLoading(false);
-      } else if (chainDetails?.chainName === ChainNames.EVMOS) {
-        gasDetails = await estimateGasForEvmos({
-          toAddress: addressRef.current,
-          amountToSend,
-        });
-        setLoading(false);
-      }
+
+      gasDetails = await estimateGasForEvm({
+        web3,
+        chain: chainBackendName,
+        fromAddress: ethereum?.address,
+        toAddress: addressRef.current,
+        amountToSend,
+        contractAddress: tokenData.contractAddress,
+        contractDecimals: tokenData.contractDecimals,
+      });
+      setLoading(false);
+
       activityRef.current.gasAmount = String(
         formatAmount(
           Number(gasDetails?.gasFeeInCrypto) * Number(tokenData?.price ?? 0),
@@ -991,18 +944,6 @@ export default function SendTo(props: { navigation?: any; route?: any }) {
         getWeb3Endpoint(tokenData?.chainDetails ?? CHAIN_ETH, globalContext),
       );
       switch (chainDetails?.chainName) {
-        case ChainNames.EVMOS:
-          if (!isEvmosAddress(address) && !web3.utils.isAddress(address)) {
-            error = true;
-            showModal('state', {
-              type: 'error',
-              title: t('INVALID_ADDRESS'),
-              description: t('NOT_VALID_EVMOS_ADDRESS'),
-              onSuccess: hideModal,
-              onFailure: hideModal,
-            });
-          }
-          break;
         case ChainNames.COSMOS:
           if (!isCosmosAddress(address)) {
             error = true;
@@ -1169,9 +1110,7 @@ export default function SendTo(props: { navigation?: any; route?: any }) {
             )}>
             <CyDTextInput
               className={clsx('max-w-[90%] pr-[0px]', {
-                'py-[12px]': ![ChainNames.ETH, ChainNames.EVMOS].includes(
-                  chainDetails?.chainName as ChainNames,
-                ),
+                'py-[12px]': !(chainDetails?.chainName === ChainNames.ETH),
               })}
               value={addressText}
               autoCapitalize='none'

@@ -140,8 +140,7 @@ export default function BridgeFundCardScreen({ route }: { route: any }) {
   const { showModal, hideModal } = useGlobalModalContext();
   const { postWithAuth } = useAxios();
   const isFocused = useIsFocused();
-  const { estimateGasForEvm, estimateGasForEvmosIBC, estimateGasForSolana } =
-    useGasService();
+  const { estimateGasForEvm, estimateGasForSolana } = useGasService();
   const [suggestedAmounts, setSuggestedAmounts] = useState<
     Record<string, string>
   >({ low: '', med: '', high: '' });
@@ -226,8 +225,7 @@ export default function BridgeFundCardScreen({ route }: { route: any }) {
         }
       } else if (
         COSMOS_CHAINS.includes(chainDetails.chainName) &&
-        chainDetails.chainName !== ChainNames.OSMOSIS &&
-        chainDetails.chainName !== ChainNames.EVMOS
+        chainDetails.chainName !== ChainNames.OSMOSIS
       ) {
         gasDetails = {
           gasFeeInCrypto: parseFloat(String(random(0.01, 0.1, true))).toFixed(
@@ -240,14 +238,6 @@ export default function BridgeFundCardScreen({ route }: { route: any }) {
             4,
           ),
         };
-      } else if (chainDetails.chainName === ChainNames.EVMOS) {
-        gasDetails = await estimateGasForEvmosIBC({
-          toAddress: quote.targetAddress,
-          toChain: CHAIN_OSMOSIS,
-          amount,
-          denom,
-          contractDecimals,
-        });
       } else if (chainDetails.chainName === ChainNames.SOLANA) {
         gasDetails = await estimateGasForSolana({
           fromAddress: solana.address,
@@ -697,24 +687,13 @@ export default function BridgeFundCardScreen({ route }: { route: any }) {
         !GASLESS_CHAINS.includes(chainDetails.backendName)
       ) {
         try {
-          let gasDetails;
-          if (chainDetails.chainName === ChainNames.EVMOS) {
-            gasDetails = await estimateGasForEvmosIBC({
-              toAddress: get(cosmosAddresses, ChainNames.OSMOSIS),
-              toChain: CHAIN_OSMOSIS,
-              amount,
-              denom,
-              contractDecimals,
-            });
-          } else {
-            gasDetails = {
-              gasFeeInCrypto: get(
-                gasFeeReservation,
-                [chainDetails.chainName, 'backendName'],
-                0.1,
-              ),
-            };
-          }
+          const gasDetails = {
+            gasFeeInCrypto: get(
+              gasFeeReservation,
+              [chainDetails.chainName, 'backendName'],
+              0.1,
+            ),
+          };
 
           if (gasDetails) {
             const gasFeeEstimationForTxn = String(gasDetails.gasFeeInCrypto);

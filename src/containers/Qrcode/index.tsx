@@ -20,14 +20,12 @@ import { QRCode } from 'react-native-custom-qr-codes';
 import {
   CHAIN_COSMOS,
   CHAIN_ETH,
-  CHAIN_EVMOS,
   CHAIN_OSMOSIS,
   CHAIN_JUNO,
   FundWalletAddressType,
   CHAIN_POLYGON,
   CHAIN_AVALANCHE,
   CHAIN_BSC,
-  CHAIN_FTM,
   CHAIN_ARBITRUM,
   CHAIN_OPTIMISM,
   CHAIN_STARGAZE,
@@ -80,7 +78,6 @@ export default function QRCodeGenerator(props) {
       ...CHAIN_AVALANCHE,
       address: hdWalletContext.state.wallet.ethereum.address,
     },
-    { ...CHAIN_FTM, address: hdWalletContext.state.wallet.ethereum.address },
     {
       ...CHAIN_ARBITRUM,
       address: hdWalletContext.state.wallet.ethereum.address,
@@ -88,10 +85,6 @@ export default function QRCodeGenerator(props) {
     {
       ...CHAIN_OPTIMISM,
       address: hdWalletContext.state.wallet.ethereum.address,
-    },
-    {
-      ...CHAIN_EVMOS,
-      address: hdWalletContext.state.wallet.evmos?.wallets[0]?.address,
     },
     {
       ...CHAIN_COSMOS,
@@ -220,54 +213,50 @@ export default function QRCodeGenerator(props) {
   useEffect(() => {
     if (routeParams) {
       const walletAddressType = routeParams.addressType;
-      if (walletAddressType === FundWalletAddressType.EVMOS) {
-        setSelectedChain(data[7]);
-      } else if (walletAddressType === FundWalletAddressType.POLYGON) {
+      if (walletAddressType === FundWalletAddressType.POLYGON) {
         setSelectedChain(data[1]);
       } else if (walletAddressType === FundWalletAddressType.BSC) {
         setSelectedChain(data[2]);
       } else if (walletAddressType === FundWalletAddressType.AVALANCHE) {
         setSelectedChain(data[3]);
-      } else if (walletAddressType === FundWalletAddressType.FANTOM) {
-        setSelectedChain(data[4]);
       } else if (walletAddressType === FundWalletAddressType.ARBITRUM) {
         setSelectedChain(data[5]);
       } else if (walletAddressType === FundWalletAddressType.OPTIMISM) {
         setSelectedChain(data[6]);
       } else if (walletAddressType === FundWalletAddressType.COSMOS) {
-        setSelectedChain(data[8]);
+        setSelectedChain(data[7]);
       } else if (walletAddressType === FundWalletAddressType.OSMOSIS) {
-        setSelectedChain(data[9]);
+        setSelectedChain(data[8]);
       } else if (walletAddressType === FundWalletAddressType.JUNO) {
-        setSelectedChain(data[10]);
+        setSelectedChain(data[9]);
       } else if (walletAddressType === FundWalletAddressType.STARGAZE) {
-        setSelectedChain(data[11]);
+        setSelectedChain(data[10]);
       } else if (walletAddressType === FundWalletAddressType.NOBLE) {
-        setSelectedChain(data[12]);
+        setSelectedChain(data[11]);
       } else if (walletAddressType === FundWalletAddressType.ZKSYNC_ERA) {
-        setSelectedChain(data[13]);
+        setSelectedChain(data[12]);
       } else if (walletAddressType === FundWalletAddressType.BASE) {
-        setSelectedChain(data[14]);
+        setSelectedChain(data[13]);
       } else if (walletAddressType === FundWalletAddressType.POLYGON_ZKEVM) {
-        setSelectedChain(data[15]);
+        setSelectedChain(data[14]);
       } else if (walletAddressType === FundWalletAddressType.AURORA) {
-        setSelectedChain(data[16]);
+        setSelectedChain(data[15]);
       } else if (walletAddressType === FundWalletAddressType.MOONBEAM) {
-        setSelectedChain(data[17]);
+        setSelectedChain(data[16]);
       } else if (walletAddressType === FundWalletAddressType.MOONRIVER) {
-        setSelectedChain(data[18]);
+        setSelectedChain(data[17]);
       } else if (walletAddressType === FundWalletAddressType.SHARDEUM) {
-        setSelectedChain(data[19]);
+        setSelectedChain(data[18]);
       } else if (walletAddressType === FundWalletAddressType.SHARDEUM_SPHINX) {
-        setSelectedChain(data[20]);
+        setSelectedChain(data[19]);
       } else if (walletAddressType === FundWalletAddressType.COREUM) {
-        setSelectedChain(data[21]);
+        setSelectedChain(data[20]);
       } else if (walletAddressType === FundWalletAddressType.INJECTIVE) {
-        setSelectedChain(data[22]);
+        setSelectedChain(data[21]);
       } else if (walletAddressType === FundWalletAddressType.KUJIRA) {
-        setSelectedChain(data[23]);
+        setSelectedChain(data[22]);
       } else if (walletAddressType === FundWalletAddressType.SOLANA) {
-        setSelectedChain(data[24]);
+        setSelectedChain(data[23]);
       }
     }
 
@@ -370,7 +359,7 @@ export default function QRCodeGenerator(props) {
               </CyDText>
               <CyDText className={'text-[14px] text-center font-bold'}>
                 {selectedChain.chainName === 'ethereum'
-                  ? 'Ethereum, Polygon, Binance Smart Chain, zkSync Era, Base, Polygon zkEVM, Avalanche, Fantom, Optimism, Arbitrum, Evmos, Aurora, Moonbeam, Moonriver, Shardeum'
+                  ? 'Ethereum, Polygon, Binance Smart Chain, zkSync Era, Base, Polygon zkEVM, Avalanche, Optimism, Arbitrum, Aurora, Moonbeam, Moonriver, Shardeum'
                   : selectedChain.name}
               </CyDText>
             </CyDView>

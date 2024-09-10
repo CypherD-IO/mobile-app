@@ -24,7 +24,6 @@ import { QRCode } from 'react-native-custom-qr-codes';
 import {
   CHAIN_COSMOS,
   CHAIN_ETH,
-  CHAIN_EVMOS,
   CHAIN_OSMOSIS,
   CHAIN_JUNO,
   CHAIN_STARGAZE,
@@ -86,9 +85,6 @@ export default function PrivateKey(props) {
   let data: UserChain[] = [
     {
       ...CHAIN_ETH,
-    },
-    {
-      ...CHAIN_EVMOS,
     },
     {
       ...CHAIN_INJECTIVE,
@@ -202,9 +198,7 @@ export default function PrivateKey(props) {
       if (isAndroid()) NativeModules.PreventScreenshotModule.forbid();
       const walletAddressType =
         portfolioState.statePortfolio.selectedChain.backendName;
-      if (walletAddressType === FundWalletAddressType.EVMOS) {
-        setSelectedChain(data[1]);
-      } else if (walletAddressType === FundWalletAddressType.COSMOS) {
+      if (walletAddressType === FundWalletAddressType.COSMOS) {
         setSelectedChain(data[2]);
       } else if (walletAddressType === FundWalletAddressType.OSMOSIS) {
         setSelectedChain(data[3]);

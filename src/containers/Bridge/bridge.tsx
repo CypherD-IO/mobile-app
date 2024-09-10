@@ -46,7 +46,6 @@ import { BackHandler, StyleSheet } from 'react-native';
 import LottieView from 'lottie-react-native';
 import SignatureModal from '../../components/v2/signatureModal';
 import {
-  evmosIbc,
   interCosmosIbc,
   sendCosmosTokens,
   sendInCosmosChain,
@@ -131,7 +130,6 @@ export default function Bridge(props: { navigation?: any; route?: any }) {
   const hdWallet = useContext<any>(HdWalletContext);
   const activityContext = useContext<any>(ActivityContext);
   const ethereum = hdWallet.state.wallet.ethereum;
-  const evmos = hdWallet.state.wallet.evmos;
   const { isReadOnlyWallet } = hdWallet.state;
   const globalStateContext = useContext<GlobalContextDef>(GlobalContext);
   const route = useRoute();
@@ -255,12 +253,8 @@ export default function Bridge(props: { navigation?: any; route?: any }) {
         return 'https://www.covalenthq.com/static/images/icons/display-icons/avalanche-avax-logo.png';
       case ChainBackendNames.BSC:
         return 'https://www.covalenthq.com/static/images/icons/display-icons/binance-coin-bnb-logo.png';
-      case ChainBackendNames.FANTOM:
-        return 'https://www.covalenthq.com/static/images/icons/display-icons/fantom-ftm-logo.png';
       case ChainBackendNames.OPTIMISM:
         return 'https://www.covalenthq.com/static/images/icons/display-icons/ethereum-eth-logo.png';
-      case ChainBackendNames.EVMOS:
-        return 'https://assets.coingecko.com/coins/images/24023/large/evmos.png?1653958927';
       case ChainBackendNames.ARBITRUM:
         return 'https://www.covalenthq.com/static/images/icons/display-icons/ethereum-eth-logo.png';
       case ChainBackendNames.COSMOS:
@@ -310,7 +304,6 @@ export default function Bridge(props: { navigation?: any; route?: any }) {
       [
         ChainBackendNames.COSMOS,
         ChainBackendNames.OSMOSIS,
-        ChainBackendNames.EVMOS,
         ChainBackendNames.JUNO,
         ChainBackendNames.STARGAZE,
         ChainBackendNames.NOBLE,
@@ -637,7 +630,6 @@ export default function Bridge(props: { navigation?: any; route?: any }) {
         ChainBackendNames.COSMOS,
         ChainBackendNames.OSMOSIS,
         ChainBackendNames.JUNO,
-        ChainBackendNames.EVMOS,
         ChainBackendNames.STARGAZE,
         ChainBackendNames.NOBLE,
       ].includes(fromChain.backendName) &&
@@ -645,7 +637,6 @@ export default function Bridge(props: { navigation?: any; route?: any }) {
         ChainBackendNames.COSMOS,
         ChainBackendNames.OSMOSIS,
         ChainBackendNames.JUNO,
-        ChainBackendNames.EVMOS,
         ChainBackendNames.STARGAZE,
         ChainBackendNames.NOBLE,
       ].includes(toChain.backendName)
@@ -733,11 +724,7 @@ export default function Bridge(props: { navigation?: any; route?: any }) {
             : ethereumAddress,
         fromChain: fromChain.backendName,
         toChain: toChain.backendName,
-        fromTokenAddress:
-          fromChain.backendName === ChainBackendNames.EVMOS &&
-          fromToken?.chainDetails.backendName === ChainBackendNames.EVMOS
-            ? '0xeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee'
-            : fromToken?.contractAddress,
+        fromTokenAddress: fromToken?.contractAddress,
         toTokenAddress: toToken.contractAddress.toLowerCase(),
         fromTokenDecimal: fromToken?.contractDecimals,
         toTokenDecimal: toToken.contractDecimals,
@@ -881,7 +868,6 @@ export default function Bridge(props: { navigation?: any; route?: any }) {
         ChainBackendNames.COSMOS,
         ChainBackendNames.OSMOSIS,
         ChainBackendNames.JUNO,
-        ChainBackendNames.EVMOS,
         ChainBackendNames.STARGAZE,
         ChainBackendNames.NOBLE,
       ].includes(toChain.backendName)
@@ -984,101 +970,6 @@ export default function Bridge(props: { navigation?: any; route?: any }) {
           },
         });
         setBridgeLoading(false);
-      }
-      setBridgeLoading(false);
-    } else if (
-      fromChain.backendName === ChainBackendNames.EVMOS &&
-      [
-        ChainBackendNames.COSMOS,
-        ChainBackendNames.OSMOSIS,
-        ChainBackendNames.JUNO,
-        ChainBackendNames.STARGAZE,
-        ChainBackendNames.NOBLE,
-      ].includes(toChain.backendName)
-    ) {
-      setBridgeLoading(true);
-      setSignModalVisible(false);
-
-      try {
-        const evmosAddress = evmos.wallets[evmos.currentIndex].address;
-        const { transactionHash, gasFee }: any = await evmosIbc(
-          evmosAddress,
-          hdWallet,
-          quoteData.receiverAddress,
-          cryptoAmount,
-        );
-        if (transactionHash && gasFee) {
-          const data = {
-            ...cosmosBridgeData,
-            transactionHash,
-            quoteId: quoteData.quoteId,
-            minimumAmountReceived: quoteData.minimumAmountReceived,
-            sequenceNumber: '0',
-            cypherdBridgeFee: quoteData.cypherdBridgeFee,
-          };
-
-          await postWithAuth('/v1/bridge/txn/cosmos', data);
-          const gasFeeUsd = computeGasFeeInUsd(gasFee);
-          activityContext.dispatch({
-            type: ActivityReducerAction.PATCH,
-            value: {
-              id: activityId.current,
-              status: ActivityStatus.INPROCESS,
-              quoteData: {
-                ...quoteData,
-                gasFee: gasFeeUsd,
-              },
-            },
-          });
-          // monitoring api
-          void logAnalytics({
-            type: AnalyticsType.SUCCESS,
-            txnHash: transactionHash,
-            chain: fromChain.chainName,
-          });
-          props.navigation.navigate(C.screenTitle.BRIDGE_STATUS, {
-            fromChain,
-            fromToken,
-            toChain,
-            toToken,
-            sentAmount: cryptoAmount,
-            receivedAmount: quoteData.minimumAmountReceived,
-            quoteId: quoteData.quoteId,
-          });
-        } else {
-          // monitoring api
-          void logAnalytics({
-            type: AnalyticsType.ERROR,
-            chain: fromChain.chainName,
-            message: 'IBC failed',
-            screen: route.name,
-          });
-          activityContext.dispatch({
-            type: ActivityReducerAction.PATCH,
-            value: {
-              id: activityId.current,
-              status: ActivityStatus.FAILED,
-              reason: 'IBC failed',
-            },
-          });
-        }
-      } catch (e) {
-        // monitoring api
-        void logAnalytics({
-          type: AnalyticsType.ERROR,
-          chain: fromChain.chainName,
-          message: parseErrorMessage(e),
-          screen: route.name,
-        });
-        activityContext.dispatch({
-          type: ActivityReducerAction.PATCH,
-          value: {
-            id: activityId.current,
-            status: ActivityStatus.FAILED,
-            reason: e.message,
-          },
-        });
-        Sentry.captureException(e);
       }
       setBridgeLoading(false);
     } else {
@@ -2448,13 +2339,11 @@ export default function Bridge(props: { navigation?: any; route?: any }) {
                           ChainBackendNames.COSMOS,
                           ChainBackendNames.OSMOSIS,
                           ChainBackendNames.JUNO,
-                          ChainBackendNames.EVMOS,
                         ].includes(fromChain.backendName) &&
                         [
                           ChainBackendNames.COSMOS,
                           ChainBackendNames.OSMOSIS,
                           ChainBackendNames.JUNO,
-                          ChainBackendNames.EVMOS,
                         ].includes(toChain?.backendName as ChainBackendNames)
                           ? '~ 7 mins'
                           : '~ 15 mins'}

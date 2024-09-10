@@ -30,85 +30,10 @@ export enum TypeOfTransaction {
   TRANSACTION = 'transaction',
 }
 
-const ACCOUNT_DETAILS_INFO =
-  'https://api-evmos-ia.cosmosia.notional.ventures/cosmos/auth/v1beta1/accounts/';
-const SIMULATION_ENDPOINT =
-  'https://api-evmos-ia.cosmosia.notional.ventures/cosmos/tx/v1beta1/simulate';
-const TRANSACTION_ENDPOINT =
-  'https://api-evmos-ia.cosmosia.notional.ventures/cosmos/tx/v1beta1/txs';
 const getTimeOutTime = () => {
   return Long.fromNumber(Math.floor(Date.now() / 1000) + 60).multiply(
     1000000000,
   );
-};
-
-const evmosToCosmosSignatureContent = async (
-  senderEvmosAddress: string,
-  receiverAddress: string,
-  inputAmount: string,
-  userAccountData: any,
-  hdWallet: any,
-  amount = '14000000000000000',
-  gas = '450000',
-) => {
-  const chainData = {
-    chainId: 9001,
-    cosmosChainId: 'evmos_9001-2',
-  };
-  const accountData = userAccountData.data.account.base_account;
-
-  const sender = {
-    accountAddress: senderEvmosAddress,
-    sequence: accountData.sequence,
-    accountNumber: accountData.account_number,
-    pubkey: accountData.pub_key.key,
-  };
-
-  const fee = {
-    amount,
-    denom: cosmosConfig.evmos.denom,
-    gas,
-  };
-
-  const params = {
-    receiver: receiverAddress,
-    denom: cosmosConfig.evmos.denom,
-    amount: ethers
-      .parseUnits(convertAmountOfContractDecimal(inputAmount, 18), 18)
-      .toString(),
-    sourcePort: 'transfer',
-    sourceChannel: cosmosConfig.evmos.channel.osmosis,
-    revisionNumber: Long.fromNumber(456),
-    revisionHeight: Long.fromNumber(123),
-    timeoutTimestamp: (1e9 * (Math.floor(Date.now() / 1e3) + 1200)).toString(),
-  };
-
-  const msg: any = createTxIBCMsgTransfer(chainData, sender, fee, '', params);
-
-  const privateKey = await loadPrivateKeyFromKeyChain(
-    false,
-    hdWallet.state.pinValue,
-  );
-  if (privateKey && privateKey !== _NO_CYPHERD_CREDENTIAL_AVAILABLE_) {
-    const privateKeyBuffer = Buffer.from(privateKey.substring(2), 'hex');
-
-    const signature = signTypedData({
-      privateKey: privateKeyBuffer,
-      data: msg.eipToSign,
-      version: SignTypedDataVersion.V4,
-    });
-
-    const extension = signatureToWeb3Extension(chainData, sender, signature);
-
-    const rawTx = createTxRawEIP712(
-      msg.legacyAmino.body,
-      msg.legacyAmino.authInfo,
-      extension,
-    );
-
-    const body = generatePostBodyBroadcast(rawTx);
-    return body;
-  }
 };
 
 export const sendInCosmosChain = async (
@@ -287,57 +212,6 @@ export const interCosmosIbc = async (
 
       return ibcRepsonse;
     }
-  } catch (e) {
-    Sentry.captureException(e);
-  }
-};
-
-export const evmosIbc = async (
-  evmosAddress: string,
-  hdWallet: any,
-  receiverAddress: string,
-  transferAmount: string,
-) => {
-  try {
-    const accountInfoResponse = await axios.get(
-      `${ACCOUNT_DETAILS_INFO}${evmosAddress}`,
-      {
-        timeout: 2000,
-      },
-    );
-
-    let ibcTransferBody = await evmosToCosmosSignatureContent(
-      evmosAddress,
-      receiverAddress,
-      transferAmount,
-      accountInfoResponse,
-      hdWallet,
-    );
-
-    const response = await axios.post(SIMULATION_ENDPOINT, ibcTransferBody);
-
-    const simulatedGasInfo = response.data.gas_info
-      ? response.data.gas_info
-      : 0;
-    const gasWanted = simulatedGasInfo.gas_used ? simulatedGasInfo.gas_used : 0;
-
-    ibcTransferBody = await evmosToCosmosSignatureContent(
-      evmosAddress,
-      receiverAddress,
-      transferAmount,
-      accountInfoResponse,
-      hdWallet,
-      ethers
-        .parseUnits((cosmosConfig.evmos.gasPrice * gasWanted).toString(), '18')
-        .toString(),
-      Math.floor(gasWanted * 1.3).toString(),
-    );
-
-    const resp: any = await axios.post(TRANSACTION_ENDPOINT, ibcTransferBody);
-    return {
-      transactionHash: resp.data.tx_response.txhash,
-      gasFee: gasWanted,
-    };
   } catch (e) {
     Sentry.captureException(e);
   }

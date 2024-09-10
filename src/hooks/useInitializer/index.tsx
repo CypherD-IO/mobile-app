@@ -47,7 +47,6 @@ import {
   getPlatformVersion,
 } from '../../core/util';
 import { getToken } from '../../core/push';
-import { ethToEvmos } from '@tharsis/address-converter';
 import Intercom from '@intercom/intercom-react-native';
 import analytics from '@react-native-firebase/analytics';
 import DeviceInfo, { getVersion } from 'react-native-device-info';
@@ -377,17 +376,6 @@ export default function useInitializer() {
                 publicKey: '',
                 algo: '',
                 rawAddress: undefined,
-              },
-            });
-            dispatch({
-              type: 'ADD_ADDRESS',
-              value: {
-                address: ethToEvmos(ethereum.address),
-                // privateKey: _NO_CYPHERD_CREDENTIAL_AVAILABLE_,
-                chain: 'evmos',
-                publicKey: '',
-                rawAddress: undefined,
-                algo: '',
               },
             });
             Intercom.loginUserWithUserAttributes({

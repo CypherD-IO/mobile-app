@@ -25,7 +25,6 @@ import {
   Chain,
   chainIdNumberMapping,
   ChainNameMapping,
-  CHAIN_EVMOS,
   EVM_CHAINS,
 } from '../constants/server';
 import { find } from 'lodash';
@@ -284,7 +283,7 @@ export default function WalletConnectModal(props) {
               {t('CHOOSE_CHAIN')}
             </CyDText>
             <FlatList
-              data={[...EVM_CHAINS, CHAIN_EVMOS]}
+              data={[...EVM_CHAINS]}
               renderItem={item => renderChainListItem(item)}
               style={stylesheet.chainList}
               showsVerticalScrollIndicator={true}
