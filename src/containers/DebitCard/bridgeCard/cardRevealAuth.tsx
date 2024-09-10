@@ -97,7 +97,7 @@ export default function CardRevealAuthScreen(props: {
 
   const verifyOTP = async (num: number) => {
     const OTPVerificationUrl = `/v1/cards/${currentCardProvider}/card/${card?.cardId}/${triggerOTPParam}`;
-    if (currentCardProvider === CardProviders.REAP_CARD) {
+    if (triggerOTPParam === 'show-token') {
       const key = await generateKeys();
       const payload = {
         otp: +num,
@@ -139,7 +139,7 @@ export default function CardRevealAuthScreen(props: {
         });
         Sentry.captureException(e);
       }
-    } else if (currentCardProvider === CardProviders.PAYCADDY) {
+    } else if (triggerOTPParam === 'set-pin') {
       setVerifyingOTP(true);
       const payload = {
         otp: +num,
