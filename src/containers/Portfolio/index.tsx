@@ -342,12 +342,6 @@ export default function Portfolio({ navigation }: PortfolioProps) {
 
   const constructTokenMeta = (localPortfolio: any, event: string) => {
     switch (event) {
-      case NotificationEvents.EVMOS_STAKING: {
-        const [tokenData] = localPortfolio.data.evmos.holdings.filter(
-          (holding: TokenMeta) => holding.name === 'Evmos',
-        );
-        return tokenData;
-      }
       case NotificationEvents.COSMOS_STAKING: {
         const [tokenData] = localPortfolio.data.cosmos.holdings.filter(
           (holding: TokenMeta) => holding.name === 'ATOM',
@@ -408,21 +402,6 @@ export default function Portfolio({ navigation }: PortfolioProps) {
                 url: remoteMessage.data.url ?? 'https://app.beefy.com/',
               },
               screen: C.screenTitle.BROWSER_SCREEN,
-            });
-            break;
-          }
-          case NotificationEvents.EVMOS_STAKING: {
-            void analytics().logEvent('evmos_staking_cta', {
-              from: [ethereum.address, hdWallet.state.wallet.evmos.address],
-              chain: 'EVMOS',
-            });
-            const tknData = constructTokenMeta(
-              localPortfolio,
-              NotificationEvents.EVMOS_STAKING,
-            );
-            navigation.navigate(C.screenTitle.TOKEN_OVERVIEW, {
-              tokenData: tknData,
-              navigateTo: TokenOverviewTabIndices.STAKING,
             });
             break;
           }

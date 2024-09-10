@@ -43,7 +43,6 @@ const POLYGON = require('./polygon.png');
 const SHARDEUM = require('./shardeum.png');
 const BIANCE = require('./binace.png');
 const AVALANCHE = require('./avalanche.png');
-const FANTOM = require('./fantom.png');
 const ARBITRUM = require('./arbitrum.png');
 const COSMOS = require('./cosmos_hub.png');
 const OPTIMISM = require('./optimism.png');
@@ -91,8 +90,6 @@ const PURPLE_COIN = require('./coinPurple.png');
 const CYAN_COIN = require('./coinCyan.png');
 const PINK_COIN = require('./coinPink.png');
 const BLUE_COIN = require('./coinBlue.png');
-const EVMOS_LOGO = require('./evmos_circle_logo.webp');
-const EVMOS_LOGO_TRANSPARENT = require('./evmo_logo.png');
 const GIFT_BOX = require('./giftBox.json');
 const STARS_LEFT = require('./stars_left.png');
 const STARS_RIGHT = require('./star_right.png');
@@ -104,7 +101,6 @@ const GAS_STATION = require('./gasStation.png');
 const GIFT_BOX_PNG = require('./giftBox.png');
 const LINK = require('./link.png');
 const LINK_WHITE = require('./link_white.png');
-const USDC_EVMOS = require('./nUSDC.png');
 const DELETE = require('./delete_bin.png');
 const ADDRESS_COPY = require('./address-copy.png');
 const OPTIONS_ARROW = require('./options-arrow.png');
@@ -577,7 +573,6 @@ const AppImages = {
   SHARDEUM,
   BIANCE,
   AVALANCHE,
-  FANTOM,
   ARBITRUM,
   COSMOS,
   OPTIMISM,
@@ -621,7 +616,6 @@ const AppImages = {
   CYAN_COIN,
   GREEN_COIN,
   PINK_COIN,
-  EVMOS_LOGO,
   GIFT_BOX,
   STARS_LEFT,
   STARS_RIGHT,
@@ -631,10 +625,8 @@ const AppImages = {
   NEW,
   GAS_STATION,
   GIFT_BOX_PNG,
-  EVMOS_LOGO_TRANSPARENT,
   LINK,
   LINK_WHITE,
-  USDC_EVMOS,
   DELETE,
   ADDRESS_COPY,
   OPTIONS_ARROW,

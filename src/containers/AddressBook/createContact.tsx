@@ -24,7 +24,6 @@ import { Formik } from 'formik';
 import * as yup from 'yup';
 import clsx from 'clsx';
 import { setContactBookData } from '../../core/asyncStorage';
-import { isEvmosAddress } from '../utilities/evmosSendUtility';
 import { isCosmosAddress } from '../utilities/cosmosSendUtility';
 import { isJunoAddress } from '../utilities/junoSendUtility';
 import { isOsmosisAddress } from '../utilities/osmosisSendUtility';
@@ -107,11 +106,6 @@ export const CreateContact = ({ route, navigation }: RouteProps) => {
       placeHolder: t('COSMOS_ADDRESS_PLACEHOLDER'),
       logo: AppImages.COSMOS_LOGO,
     },
-    evmos: {
-      label: t(`${ChainNames.EVMOS.toUpperCase()} ADDRESS`),
-      placeHolder: t('EVMOS_ADDRESS_PLACEHOLDER'),
-      logo: AppImages.EVMOS_LOGO,
-    },
     juno: {
       label: t(`${ChainNames.JUNO.toUpperCase()} ADDRESS`),
       placeHolder: t('JUNO_ADDRESS_PLACEHOLDER'),
@@ -146,11 +140,6 @@ export const CreateContact = ({ route, navigation }: RouteProps) => {
       label: t(`${ChainNames.AVALANCHE.toUpperCase()} ADDRESS`),
       placeHolder: t('ETHEREUM_ADDRESS_PLACEHOLDER'),
       logo: AppImages.AVALANCHE,
-    },
-    fantom: {
-      label: t(`${ChainNames.FANTOM.toUpperCase()} ADDRESS`),
-      placeHolder: t('ETHEREUM_ADDRESS_PLACEHOLDER'),
-      logo: AppImages.FANTOM,
     },
     optimism: {
       label: t(`${ChainNames.OPTIMISM.toUpperCase()} ADDRESS`),
@@ -284,18 +273,6 @@ export const CreateContact = ({ route, navigation }: RouteProps) => {
       .test('isDuplicate', t('DUPLICATE_FOUND'), addressList =>
         checkForDuplicates(addressList),
       ),
-    evmos: yup
-      .array()
-      .of(
-        yup
-          .string()
-          .test('isValidAddress', t('INVALID_ADDRESS'), evmos =>
-            validateAddress(evmos, isEvmosAddress),
-          ),
-      )
-      .test('isDuplicate', t('DUPLICATE_FOUND'), addressList =>
-        checkForDuplicates(addressList),
-      ),
     juno: yup
       .array()
       .of(
@@ -411,18 +388,6 @@ export const CreateContact = ({ route, navigation }: RouteProps) => {
           .string()
           .test('isValidAddress', t('INVALID_ADDRESS'), avalanche =>
             validateAddress(avalanche, isEthereumAddress),
-          ),
-      )
-      .test('isDuplicate', t('DUPLICATE_FOUND'), addressList =>
-        checkForDuplicates(addressList),
-      ),
-    fantom: yup
-      .array()
-      .of(
-        yup
-          .string()
-          .test('isValidAddress', t('INVALID_ADDRESS'), fantom =>
-            validateAddress(fantom, isEthereumAddress),
           ),
       )
       .test('isDuplicate', t('DUPLICATE_FOUND'), addressList =>

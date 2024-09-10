@@ -131,10 +131,6 @@ export default function Onmeta({ route }) {
         chainId = 56;
         break;
       }
-      case ChainBackendNames.FANTOM: {
-        chainId = 250;
-        break;
-      }
       case ChainBackendNames.ARBITRUM: {
         chainId = 42161;
         break;

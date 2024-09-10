@@ -73,7 +73,6 @@ export default function IBC({
   const hdWallet = useContext<any>(HdWalletContext);
   const cosmos = hdWallet.state.wallet.cosmos;
   const osmosis = hdWallet.state.wallet.osmosis;
-  const evmos = hdWallet.state.wallet.evmos;
   const juno = hdWallet.state.wallet.juno;
   const stargaze = hdWallet.state.wallet.stargaze;
   const noble = hdWallet.state.wallet.noble;
@@ -106,8 +105,7 @@ export default function IBC({
   const activityContext = useContext<any>(ActivityContext);
   const activityRef = useRef<IBCTransaction | null>(null);
   const { showModal, hideModal } = useGlobalModalContext();
-  const { estimateGasForEvmosIBC } = useGasService();
-  const { interCosmosIBC, evmosIBC } = useTransactionManager();
+  const { interCosmosIBC } = useTransactionManager();
   const handleBackButton = () => {
     navigation.goBack();
     return true;
@@ -146,8 +144,6 @@ export default function IBC({
         return cosmos.address;
       case ChainBackendNames.OSMOSIS:
         return osmosis.address;
-      case ChainBackendNames.EVMOS:
-        return evmos.address;
       case ChainBackendNames.JUNO:
         return juno.address;
       case ChainBackendNames.STARGAZE:
@@ -311,83 +307,6 @@ export default function IBC({
       }
 
       setLoading(false);
-    } else {
-      setLoading(true);
-      if (type === 'simulation') {
-        const gasDetails = await estimateGasForEvmosIBC({
-          toAddress: receiverAddress,
-          toChain: chain,
-          amount,
-          denom: tokenData.denom,
-          contractDecimals: tokenData.contractDecimals,
-        });
-
-        setGasFee(gasDetails.gasFeeInCrypto);
-        setLoading(false);
-        setSignModalVisible(true);
-      } else if (type === 'txn') {
-        const transaction = await evmosIBC({
-          toAddress: receiverAddress,
-          toChain: chain,
-          amount,
-          denom: tokenData.denom,
-          contractDecimals: tokenData.contractDecimals,
-        });
-        setLoading(false);
-        setSignModalVisible(false);
-        if (!transaction.isError) {
-          activityRef.current &&
-            activityContext.dispatch({
-              type: ActivityReducerAction.PATCH,
-              value: {
-                id: activityRef.current.id,
-                status: ActivityStatus.SUCCESS,
-                transactionHash: transaction.hash,
-              },
-            });
-          setTimeout(() => {
-            showModal('state', {
-              type: t<string>('TOAST_TYPE_SUCCESS'),
-              title: t<string>('IBC_SUCCESS'),
-              description: renderSuccessTransaction(transaction.hash),
-              onSuccess: onModalHide,
-              onFailure: onModalHide,
-            });
-          }, MODAL_HIDE_TIMEOUT_250);
-          // monitoring api
-          void logAnalytics({
-            type: AnalyticsType.SUCCESS,
-            txnHash: transaction.hash,
-            chain: tokenData.chainDetails?.chainName ?? '',
-          });
-        } else {
-          activityRef.current &&
-            activityContext.dispatch({
-              type: ActivityReducerAction.PATCH,
-              value: {
-                id: activityRef.current.id,
-                status: ActivityStatus.FAILED,
-              },
-            });
-          // monitoring api
-          void logAnalytics({
-            type: AnalyticsType.ERROR,
-            chain: tokenData.chainDetails?.chainName ?? '',
-            message: parseErrorMessage(transaction.error),
-            screen: route.name,
-          });
-          Sentry.captureException(transaction.error);
-          setTimeout(() => {
-            showModal('state', {
-              type: t<string>('TOAST_TYPE_ERROR'),
-              title: 'Transaction failed',
-              description: '',
-              onSuccess: hideModal,
-              onFailure: onModalHide,
-            });
-          }, MODAL_HIDE_TIMEOUT_250);
-        }
-      }
     }
   };
 

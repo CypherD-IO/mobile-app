@@ -12,7 +12,6 @@ import { TokenMeta } from '../../models/tokenMetaData.model';
 import {
   beautifyPriceWithUSDDenom,
   convertFromUnitAmount,
-  convertToEvmosFromAevmos,
   copyToClipboard,
   HdWalletContext,
   isABasicCosmosStakingToken,
@@ -66,7 +65,6 @@ import Loading from '../../components/v2/loading';
 import { has } from 'lodash';
 import Tooltip from 'react-native-walkthrough-tooltip';
 import { getDateFormatBasedOnLocaleForTimestamp } from '../../core/locale';
-import getValidatorsForUSer from '../../core/Staking';
 import { getCosmosStakingData } from '../../core/cosmosStaking';
 import { GlobalContext } from '../../core/globalContext';
 import { showToast } from '../utilities/toastUtility';
@@ -129,7 +127,6 @@ export default function Overview({
   const stakingValidators = useContext<any>(StakingContext);
   const hdWalletContext = useContext<any>(HdWalletContext);
   const globalStateContext = useContext<any>(GlobalContext);
-  const evmos = hdWalletContext.state.wallet.evmos;
   const chain = hdWalletContext.state.wallet[tokenData.chainDetails.chainName];
   const { width: SIZE } = Dimensions.get('window');
   const [loadMoreAbout, setLoadMoreAbout] = useState<boolean>(true);
@@ -333,15 +330,7 @@ export default function Overview({
   };
 
   const getStakingMetaData = async () => {
-    if (isABasicCosmosStakingToken(tokenData)) {
-      await getStakingData();
-    } else if (isCosmosStakingToken('EVMOS', tokenData)) {
-      await getValidatorsForUSer(
-        evmos?.wallets[evmos.currentIndex]?.address,
-        stakingValidators,
-        globalStateContext,
-      );
-    }
+    await getStakingData();
   };
 
   const getStakingData = async () => {
@@ -379,16 +368,6 @@ export default function Overview({
           tokenData.contractDecimals,
         )}`,
       );
-    } else if (isCosmosStakingToken('EVMOS', tokenData)) {
-      setTotalValue(
-        `${convertToEvmosFromAevmos(
-          Number(stakingValidators.stateStaking.totalStakedBalance) +
-            Number(stakingValidators.stateStaking.unStakedBalance) +
-            Number(stakingValidators.stateStaking.unBoundingTotal),
-        )
-          .toFixed(6)
-          .toString()}`,
-      );
     } else {
       setTotalValue(`${tokenData.actualBalance}`);
     }
@@ -405,17 +384,6 @@ export default function Overview({
               Number(cosmosStaking.cosmosStakingState.stakedBalance)
             ).toString(),
             tokenData.contractDecimals,
-          )
-        }`,
-      );
-    } else if (isCosmosStakingToken('EVMOS', tokenData)) {
-      return setTotalAmountInValue(
-        `${
-          Number(tokenData.price) *
-          convertToEvmosFromAevmos(
-            Number(stakingValidators.stateStaking.totalStakedBalance) +
-              Number(stakingValidators.stateStaking.unStakedBalance) +
-              Number(stakingValidators.stateStaking.unBoundingTotal),
           )
         }`,
       );

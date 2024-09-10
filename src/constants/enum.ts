@@ -275,7 +275,6 @@ export enum ApplicationName {
   _0X_EXCHANGE = '0x Exchange',
   QUICK_SWAP = 'QuickSwap',
   LIFI = 'Lifi',
-  WRAPPED_EVMOS = 'Wrapped Evmos',
   WRAPPED_MATIC = 'Wrapped Matic',
   SPIRIT_SWAP = 'SpiritSwap',
   DIFFUSION = 'Diffusion',

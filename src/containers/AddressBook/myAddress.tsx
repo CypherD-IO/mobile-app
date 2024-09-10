@@ -9,8 +9,6 @@ import {
   CHAIN_BSC,
   CHAIN_COSMOS,
   CHAIN_ETH,
-  CHAIN_EVMOS,
-  CHAIN_FTM,
   CHAIN_JUNO,
   CHAIN_OPTIMISM,
   CHAIN_OSMOSIS,
@@ -49,7 +47,6 @@ export function AddressBook({ route, navigation }) {
   const {
     ethereum,
     stargaze,
-    evmos,
     cosmos,
     osmosis,
     juno,
@@ -191,24 +188,6 @@ export function AddressBook({ route, navigation }) {
               />
 
               <AddressBookContainer
-                chain={CHAIN_EVMOS.name}
-                wallet={evmos.wallets[evmos.currentIndex]}
-                logo={AppImages.EVMOS_LOGO_TRANSPARENT}
-                bGC={'#fef3f1'}
-                navigation={navigation}
-                addressTypeQRCode={FundWalletAddressType.EVMOS}
-              />
-
-              <AddressBookContainer
-                chain={CHAIN_EVMOS.name}
-                wallet={ethereum}
-                logo={AppImages.EVMOS_LOGO_TRANSPARENT}
-                bGC={'#fef3f1'}
-                navigation={navigation}
-                addressTypeQRCode={FundWalletAddressType.EVMOS}
-              />
-
-              <AddressBookContainer
                 chain={CHAIN_POLYGON.name}
                 wallet={ethereum}
                 logo={AppImages.POLYGON}
@@ -233,15 +212,6 @@ export function AddressBook({ route, navigation }) {
                 bGC={'#fff6f5'}
                 navigation={navigation}
                 addressTypeQRCode={FundWalletAddressType.AVALANCHE}
-              />
-
-              <AddressBookContainer
-                chain={CHAIN_FTM.name}
-                wallet={ethereum}
-                logo={AppImages.FANTOM}
-                bGC={'#f4fbff'}
-                navigation={navigation}
-                addressTypeQRCode={FundWalletAddressType.FANTOM}
               />
 
               <AddressBookContainer

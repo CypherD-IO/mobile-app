@@ -9,8 +9,6 @@ import {
   CHAIN_COREUM,
   CHAIN_COSMOS,
   CHAIN_ETH,
-  CHAIN_EVMOS,
-  CHAIN_FTM,
   CHAIN_INJECTIVE,
   CHAIN_JUNO,
   CHAIN_KUJIRA,
@@ -52,10 +50,6 @@ export function getChainLogo(chainName: ChainBackendNames) {
       return CHAIN_BSC.logo_url;
     case ChainBackendNames.COSMOS:
       return CHAIN_COSMOS.logo_url;
-    case ChainBackendNames.EVMOS:
-      return CHAIN_EVMOS.logo_url;
-    case ChainBackendNames.FANTOM:
-      return CHAIN_FTM.logo_url;
     case ChainBackendNames.JUNO:
       return CHAIN_JUNO.logo_url;
     case ChainBackendNames.NOBLE:
