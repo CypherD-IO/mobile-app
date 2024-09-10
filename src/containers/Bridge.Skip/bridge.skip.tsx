@@ -2049,7 +2049,7 @@ export default function BridgeSkipApi(props: {
 
                     <CyDText
                       className={
-                        'my-[6px] mx-[2px] text-black text-[14px] text-center font-semibold flex flex-row justify-center font-manrope'
+                        'my-[6px] mx-[2px] text-black text-[14px] text-center font-semibold flex flex-row justify-center '
                       }>
                       {selectedFromToken?.name}
                     </CyDText>
@@ -2072,7 +2072,7 @@ export default function BridgeSkipApi(props: {
                       )}
                       <CyDText
                         className={
-                          'ml-[6px] font-manrope font-normal text-black  text-[12px]'
+                          'ml-[6px]  font-normal text-black  text-[12px]'
                         }>
                         {selectedFromChain?.chain_name}
                       </CyDText>
@@ -2108,7 +2108,7 @@ export default function BridgeSkipApi(props: {
                     )}
                     <CyDText
                       className={
-                        'my-[6px] mx-[2px] text-black text-[14px] text-center font-semibold flex flex-row justify-center font-manrope'
+                        'my-[6px] mx-[2px] text-black text-[14px] text-center font-semibold flex flex-row justify-center '
                       }>
                       {selectedToToken?.name}
                     </CyDText>
@@ -2131,7 +2131,7 @@ export default function BridgeSkipApi(props: {
                       )}
                       <CyDText
                         className={
-                          'ml-[6px] font-manrope text-black font-normal text-[12px]'
+                          'ml-[6px]  text-black font-normal text-[12px]'
                         }>
                         {selectedToChain?.chain_name}
                       </CyDText>
@@ -2140,26 +2140,20 @@ export default function BridgeSkipApi(props: {
                 </CyDView>
               </CyDView>
               <CyDView className={'flex flex-row justify-between'}>
-                <CyDText
-                  className={
-                    'text-[#434343] font-manrope font-[16px] text-medium'
-                  }>
+                <CyDText className={'text-[#434343]  font-[16px] text-medium'}>
                   {t<string>('SENT_AMOUNT')}
                 </CyDText>
                 <CyDView className={'mr-[10px] flex flex-col items-end'}>
                   <CyDText
                     className={
-                      'font-manrope font-[16px] text-black font-bold max-w-[150px]'
+                      ' font-[16px] text-black font-bold max-w-[150px]'
                     }
                     numberOfLines={1}>
                     {formatAmount(swapParams?.amount).toString() +
                       ' ' +
                       String(selectedFromToken?.name)}
                   </CyDText>
-                  <CyDText
-                    className={
-                      'font-manrope font-[12px] text-[#929292] font-bold'
-                    }>
+                  <CyDText className={' font-[12px] text-[#929292] font-bold'}>
                     {(
                       Number(swapParams.amount) *
                       Number(selectedFromToken?.price)
@@ -2170,16 +2164,13 @@ export default function BridgeSkipApi(props: {
 
               <CyDView
                 className={'mr-[10px] flex flex-row justify-between mt-[20px]'}>
-                <CyDText
-                  className={
-                    'text-[#434343] font-manrope font-[16px] text-medium'
-                  }>
+                <CyDText className={'text-[#434343]  font-[16px] text-medium'}>
                   {t<string>('TOTAL_RECEIVED')}
                 </CyDText>
                 <CyDView className={'flex flex-col items-end'}>
                   <CyDText
                     className={
-                      'font-manrope font-[16px] text-black font-bold max-w-[150px]'
+                      ' font-[16px] text-black font-bold max-w-[150px]'
                     }
                     numberOfLines={1}>
                     {formatAmount(
@@ -2188,10 +2179,7 @@ export default function BridgeSkipApi(props: {
                       ' ' +
                       String(selectedToToken?.name)}
                   </CyDText>
-                  <CyDText
-                    className={
-                      'font-manrope font-[12px] text-[#929292] font-bold'
-                    }>
+                  <CyDText className={' font-[12px] text-[#929292] font-bold'}>
                     {Number(swapParams?.quoteData?.value).toFixed(4) + ' USD'}
                   </CyDText>
                 </CyDView>
@@ -2320,15 +2308,13 @@ export default function BridgeSkipApi(props: {
               <CyDView className={'px-[20px]'}>
                 <CyDView className={'flex flex-row justify-between'}>
                   <CyDText
-                    className={
-                      'text-[#434343] font-manrope font-[16px] text-medium'
-                    }>
+                    className={'text-[#434343]  font-[16px] text-medium'}>
                     {t<string>('SENT_AMOUNT')}
                   </CyDText>
                   <CyDView className={'mr-[10px] flex flex-col items-end'}>
                     <CyDText
                       className={
-                        'font-manrope font-[16px] text-black font-bold max-w-[150px]'
+                        ' font-[16px] text-black font-bold max-w-[150px]'
                       }
                       numberOfLines={1}>
                       {formatAmount(cryptoAmount).toString() +
@@ -2336,9 +2322,7 @@ export default function BridgeSkipApi(props: {
                         String(selectedFromToken?.name)}
                     </CyDText>
                     <CyDText
-                      className={
-                        'font-manrope font-[12px] text-[#929292] font-bold'
-                      }>
+                      className={' font-[12px] text-[#929292] font-bold'}>
                       {(
                         Number(cryptoAmount) * Number(selectedFromToken?.price)
                       ).toFixed(4) + ' USD'}
@@ -2351,15 +2335,13 @@ export default function BridgeSkipApi(props: {
                     'mr-[10px] flex flex-row justify-between mt-[20px]'
                   }>
                   <CyDText
-                    className={
-                      'text-[#434343] font-manrope font-[16px] text-medium'
-                    }>
+                    className={'text-[#434343]  font-[16px] text-medium'}>
                     {t<string>('TOTAL_RECEIVED')}
                   </CyDText>
                   <CyDView className={'flex flex-col items-end'}>
                     <CyDText
                       className={
-                        'font-manrope font-[16px] text-black font-bold max-w-[150px]'
+                        ' font-[16px] text-black font-bold max-w-[150px]'
                       }
                       numberOfLines={1}>
                       {loading
@@ -2369,9 +2351,7 @@ export default function BridgeSkipApi(props: {
                           String(selectedToToken?.name)}
                     </CyDText>
                     <CyDText
-                      className={
-                        'font-manrope font-[12px] text-[#929292] font-bold'
-                      }>
+                      className={' font-[12px] text-[#929292] font-bold'}>
                       {loading
                         ? 'Fetching data'
                         : Number(quoteData?.value).toFixed(4) + ' USD'}

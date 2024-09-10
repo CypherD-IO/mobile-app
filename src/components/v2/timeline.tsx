@@ -68,13 +68,11 @@ export default function Timeline({
           </CyDView>
           <CyDView>
             <CyDText
-              className={
-                'font-[#434343] font-semibold font-manrope text-[18px] ml-[16px]'
-              }>
+              className={'font-[#434343] font-semibold  text-[18px] ml-[16px]'}>
               {item}
             </CyDText>
             {/* <CyDText */}
-            {/*  className={"font-[#434343] font-manrope text-[16px] ml-[16px]"} */}
+            {/*  className={"font-[#434343]  text-[16px] ml-[16px]"} */}
             {/* > */}
             {/*  {item} */}
             {/* </CyDText> */}

@@ -51,14 +51,14 @@ export default function BottomConfirmCosmos(props: {
           />
         </CyDTouchView>
 
-        <CyDText className='text-center font-manrope text-[19px] font-bold'>
+        <CyDText className='text-center text-[19px] font-bold'>
           Confirm Sign
         </CyDText>
-        <CyDText className='text-center font-manrope text-[19px] mt-[10px] font-bold  '>
+        <CyDText className='text-center text-[19px] mt-[10px] font-bold  '>
           {chain.charAt(0).toUpperCase() + chain.slice(1)}
         </CyDText>
 
-        <CyDText className='text-left font-manrope pr-[73%] mt-[20px] text-[16px] mb-[10px] font-bold'>
+        <CyDText className='text-left pr-[73%] mt-[20px] text-[16px] mb-[10px] font-bold'>
           Payload
         </CyDText>
 
@@ -66,7 +66,7 @@ export default function BottomConfirmCosmos(props: {
           className={
             'bg-backLight border-2 border-portfolioBorderColor h-[35%] w-[90%] py-[10px] px-[10px] rounded-[10px]'
           }>
-          <CyDText className='text-left front-manrope text-[13px] font-regular  '>
+          <CyDText className='text-left text-[13px] font-regular  '>
             {JSON.stringify(payload, undefined, 8)}
           </CyDText>
         </CyDScrollView>

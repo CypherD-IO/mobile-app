@@ -132,10 +132,10 @@ export default function ActivitySendInfoModal({
           </CyDTouchView>
           {!isCapturingDetails && (
             <CyDView className='flex mt-[5%] justify-center items-center '>
-              <CyDText className='text-center font-manrope text-[20px] font-extrabold text-activityFontColor'>
+              <CyDText className='text-center  text-[20px] font-extrabold text-activityFontColor'>
                 {t<string>('SEND')}
               </CyDText>
-              <CyDText className='text-center font-manrope text-[12px] ml-[5px] font-extrabold text-successTextGreen'>
+              <CyDText className='text-center  text-[12px] ml-[5px] font-extrabold text-successTextGreen'>
                 {t<string>('SUCCESSFUL')}
               </CyDText>
             </CyDView>
@@ -165,13 +165,13 @@ export default function ActivitySendInfoModal({
                       />
                     )}
                     {tokenName && (
-                      <CyDText className='font-manrope text-[16px] ml-[10px] mt-[2px] font-bold text-activityFontColor'>
+                      <CyDText className=' text-[16px] ml-[10px] mt-[2px] font-bold text-activityFontColor'>
                         {tokenName.toUpperCase()}
                       </CyDText>
                     )}
                   </CyDView>
                   {isCapturingDetails && (
-                    <CyDText className='font-manrope text-[16px] mt-[2px] ml-[5px] font-bold  text-successTextGreen'>
+                    <CyDText className=' text-[16px] mt-[2px] ml-[5px] font-bold  text-successTextGreen'>
                       {t<string>('TRANSACTION_SUCCESS')}
                     </CyDText>
                   )}
@@ -181,7 +181,7 @@ export default function ActivitySendInfoModal({
                     'justify-start w-[100%] mt-[15px]': !isCapturingDetails,
                     'justify-center mt-[10px]': isCapturingDetails,
                   })}>
-                  <CyDText className='font-manrope text-[12px]'>
+                  <CyDText className=' text-[12px]'>
                     {t<string>('SENT_ON')}
                   </CyDText>
                   {chainLogo && (
@@ -191,7 +191,7 @@ export default function ActivitySendInfoModal({
                     />
                   )}
                   {chainName && (
-                    <CyDText className='font-manrope text-[12px]'>
+                    <CyDText className=' text-[12px]'>
                       {chainName.toUpperCase()}
                     </CyDText>
                   )}
@@ -202,23 +202,23 @@ export default function ActivitySendInfoModal({
               className={
                 'flex flex-row mt-[10%] justify-start items-center pb-[12px] border-b-[1px] border-sepratorColor'
               }>
-              <CyDText className='font-manrope text-[16px] mt-[1px] w-[30%] text-activityFontColor'>
+              <CyDText className=' text-[16px] mt-[1px] w-[30%] text-activityFontColor'>
                 {t<string>('DATE')}
               </CyDText>
-              <CyDText className='font-manrope text-[14px] font-bold text-activityFontColor'>
+              <CyDText className=' text-[14px] font-bold text-activityFontColor'>
                 {moment(datetime).format('MMM DD, h:mm a')}
               </CyDText>
             </CyDView>
             <CyDView className='flex flex-row h-[60px] justify-start items-center border-b-[1px] border-sepratorColor'>
-              <CyDText className='font-manrope text-[16px] w-[30%] text-activityFontColor'>
+              <CyDText className=' text-[16px] w-[30%] text-activityFontColor'>
                 {t<string>('VALUE')}
               </CyDText>
               <CyDText
                 numberOfLines={1}
-                className='w-[70%] font-manrope text-[14px] font-bold text-activityFontColor'>{`${amount} ${tokenName}`}</CyDText>
+                className='w-[70%]  text-[14px] font-bold text-activityFontColor'>{`${amount} ${tokenName}`}</CyDText>
             </CyDView>
             <CyDView className='flex flex-row h-[60px] justify-start items-center border-b-[1px] border-sepratorColor'>
-              <CyDText className='font-manrope text-[16px] w-[30%] text-activityFontColor'>
+              <CyDText className=' text-[16px] w-[30%] text-activityFontColor'>
                 {t<string>('HASH')}
               </CyDText>
               <CyDText
@@ -228,7 +228,7 @@ export default function ActivitySendInfoModal({
                     url: getExplorerUrl(symbol, chainName, transactionHash),
                   });
                 }}
-                className='font-manrope text-[14px] w-[65%] text-blue-500 underline font-bold '>
+                className=' text-[14px] w-[65%] text-blue-500 underline font-bold '>
                 {getMaskedAddress(transactionHash)}
               </CyDText>
               <CyDTouchView
@@ -241,26 +241,26 @@ export default function ActivitySendInfoModal({
               </CyDTouchView>
             </CyDView>
             <CyDView className='flex flex-row h-[60px] justify-start items-center border-b-[1px] border-sepratorColor'>
-              <CyDText className='font-manrope text-[16px] w-[30%] text-activityFontColor'>
+              <CyDText className=' text-[16px] w-[30%] text-activityFontColor'>
                 {t<string>('SENDER')}
               </CyDText>
-              <CyDText className='font-manrope text-[16px] font-bold text-activityFontColor'>
+              <CyDText className=' text-[16px] font-bold text-activityFontColor'>
                 {getMaskedAddress(fromAddress)}
               </CyDText>
             </CyDView>
             <CyDView className='flex flex-row h-[60px] justify-start items-center border-b-[1px] border-sepratorColor'>
-              <CyDText className='font-manrope text-[16px] w-[30%] text-activityFontColor'>
+              <CyDText className=' text-[16px] w-[30%] text-activityFontColor'>
                 {t<string>('RECEIVER')}
               </CyDText>
-              <CyDText className='font-manrope text-[16px] font-bold text-activityFontColor'>
+              <CyDText className=' text-[16px] font-bold text-activityFontColor'>
                 {getMaskedAddress(toAddress)}
               </CyDText>
             </CyDView>
             <CyDView className='flex flex-row h-[50px] justify-start items-center'>
-              <CyDText className='font-manrope text-[16px] mt-[1px] w-[30%] text-activityFontColor'>
+              <CyDText className=' text-[16px] mt-[1px] w-[30%] text-activityFontColor'>
                 {t<string>('GAS_FEE')}
               </CyDText>
-              <CyDText className='font-manrope text-[14px] font-bold mt-[3px] text-activityFontColor'>{`${gasAmount} ${gasAmount === 'Not Available' ? '' : 'USD'}`}</CyDText>
+              <CyDText className=' text-[14px] font-bold mt-[3px] text-activityFontColor'>{`${gasAmount} ${gasAmount === 'Not Available' ? '' : 'USD'}`}</CyDText>
             </CyDView>
             {!isCapturingDetails && (
               <CyDView className='w-[100%] mt-[10%]'>

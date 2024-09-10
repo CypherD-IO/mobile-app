@@ -7,7 +7,7 @@ export default function Empty() {
     <CyDView
       className={'h-full w-full bg-white flex items-center justify-center'}>
       <CyDImage source={AppImages.EMPTY} />
-      <CyDText className={'mt-[24px] text-[24px] font-manrope'}>
+      <CyDText className={'mt-[24px] text-[24px] '}>
         {'Oops is empty !'}
       </CyDText>
     </CyDView>

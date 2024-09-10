@@ -172,7 +172,7 @@ export default function ChooseTokenModal(props: TokenModal) {
           />
         </CyDTouchView>
         <CyDView>
-          <CyDText className='text-center font-manrope text-[22px] font-extrabold  '>
+          <CyDText className='text-center  text-[22px] font-extrabold  '>
             {t<string>('CHOOSE_TOKEN')}
           </CyDText>
         </CyDView>
@@ -209,7 +209,7 @@ export default function ChooseTokenModal(props: TokenModal) {
             )}
           </CyDView>
           <CyDView className={'mt-[10px]'}>
-            <CyDText className='text-center font-manrope text-[12px] font-semibold text-redColor'>
+            <CyDText className='text-center  text-[12px] font-semibold text-redColor'>
               {renderPage === 'fundCardPage' &&
                 t<string>('SUPPORTED_TOKENS_TEXT')}
               {renderPage === 'autoLoad' &&

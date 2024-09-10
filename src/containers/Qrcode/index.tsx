@@ -367,7 +367,7 @@ export default function QRCodeGenerator(props) {
             {isCapturingDetails && (
               <CyDText
                 className={
-                  'text-[15px] text-center font-bold font-manrope items-end mb-[15px]'
+                  'text-[15px] text-center font-bold items-end mb-[15px]'
                 }>
                 {t('SHARE_QR_TEXT')}
               </CyDText>

@@ -21,20 +21,15 @@ export default function ReadOnlySeedPhraseBlock({
         { 'justify-center': index === 0 },
       )}>
       {index !== 0 && (
-        <CyDText className={'text-[12px] font-manrope font-semibold'}>
-          {index}.
-        </CyDText>
+        <CyDText className={'text-[12px]  font-semibold'}>{index}.</CyDText>
       )}
       <CyDText
-        className={clsx(
-          'text-[14px] font-manrope ml-[5px] font-bold h-[21px]',
-          {
-            'pt-[4px]': content.includes('****') && isIOS(),
-            'pt-[3px]': !content.includes('****') && isAndroid(),
-            'pt-[5px]': content.includes('****') && isAndroid(),
-            'ml-[-1px]': index === 0,
-          },
-        )}>
+        className={clsx('text-[14px]  ml-[5px] font-bold h-[21px]', {
+          'pt-[4px]': content.includes('****') && isIOS(),
+          'pt-[3px]': !content.includes('****') && isAndroid(),
+          'pt-[5px]': content.includes('****') && isAndroid(),
+          'ml-[-1px]': index === 0,
+        })}>
         {content}
       </CyDText>
     </CyDTouchView>

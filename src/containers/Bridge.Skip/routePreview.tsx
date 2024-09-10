@@ -57,7 +57,7 @@ export default function RoutePreview({
       : '';
 
   return (
-    <CyDScrollView className={'px-[20px] font-manrope pt-[40px]'}>
+    <CyDScrollView className={'px-[20px]  pt-[40px]'}>
       <CyDView
         className={
           'bg-white pb-[40px] rounded-[8px] flex flex-col items-center justify-center relative'
