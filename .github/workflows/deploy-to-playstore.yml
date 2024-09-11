@@ -78,12 +78,14 @@ jobs:
           git commit -m "Increment version code for beta release"
           if [ "${{ github.event_name }}" = "pull_request" ]; then
             git fetch origin ${{ github.head_ref }}
-            git checkout -b ${{ github.head_ref }} origin/${{ github.head_ref }}
+            git checkout ${{ github.head_ref }} || git checkout -b ${{ github.head_ref }} origin/${{ github.head_ref }}
+            git pull origin ${{ github.head_ref }}
             git cherry-pick HEAD@{1}
             git push origin ${{ github.head_ref }}
           else
             git fetch origin beta
-            git checkout -b beta origin/beta
+            git checkout beta
+            git pull origin beta
             git cherry-pick HEAD@{1}
             git push origin beta
           fi
