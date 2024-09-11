@@ -10,7 +10,11 @@ import {
 import AppImages from '../../../../assets/images/appImages';
 import { screenTitle } from '../../../constants';
 import { transactionType } from 'viem';
-import { CARD_LIMIT_TYPE, CardControlTypes } from '../../../constants/enum';
+import {
+  CARD_LIMIT_TYPE,
+  CardControlTypes,
+  CardOperationsAuthType,
+} from '../../../constants/enum';
 import { ProgressCircle } from 'react-native-svg-charts';
 import useAxios from '../../../core/HttpRequest';
 import { find, get, omit } from 'lodash';
@@ -109,30 +113,48 @@ export default function CardControlsMenu({ route, navigation }) {
     const payload = {
       godm: value,
     };
-    const response = await patchWithAuth(
-      `/v1/cards/${currentCardProvider}/card/${card.cardId}/limits`,
-      payload,
-    );
-    if (!response.isError) {
-      void getCardLimits();
-      showModal('state', {
-        type: 'success',
-        title: `Success, Zero Restriction Mode ${value ? 'Enabled' : 'Disabled'}!`,
-        description: value
-          ? 'Zero Restriction Mode will be enbled for 15 mins.'
-          : 'All the configured limits will be applied now.',
-        onSuccess: hideModal,
-        onFailure: hideModal,
+    if (value) {
+      navigation.navigate(screenTitle.CARD_UNLOCK_AUTH, {
+        onSuccess: () => {
+          void getCardLimits();
+          showModal('state', {
+            type: 'success',
+            title: `Success, Zero Restriction Mode Enabled!`,
+            description: 'Zero Restriction Mode will be enbled for 15 mins.',
+            onSuccess: hideModal,
+            onFailure: hideModal,
+          });
+        },
+        currentCardProvider: currentCardProvider,
+        card,
+        authType: CardOperationsAuthType.ZERO_RESTRICTION_MODE_ON,
       });
     } else {
-      showModal('state', {
-        type: 'error',
-        title: 'Error toggling Zero Restriction Mode',
-        description:
-          'Failed to toggle Zero Restriction Mode. Please contact customer support.',
-        onSuccess: hideModal,
-        onFailure: hideModal,
-      });
+      const response = await patchWithAuth(
+        `/v1/cards/${currentCardProvider}/card/${card.cardId}/god-mode`,
+        payload,
+      );
+      if (!response.isError) {
+        void getCardLimits();
+        showModal('state', {
+          type: 'success',
+          title: `Success, Zero Restriction Mode ${value ? 'Enabled' : 'Disabled'}!`,
+          description: value
+            ? 'Zero Restriction Mode will be enbled for 15 mins.'
+            : 'All the configured limits will be applied now.',
+          onSuccess: hideModal,
+          onFailure: hideModal,
+        });
+      } else {
+        showModal('state', {
+          type: 'error',
+          title: 'Error toggling Zero Restriction Mode',
+          description:
+            'Failed to toggle Zero Restriction Mode. Please contact customer support.',
+          onSuccess: hideModal,
+          onFailure: hideModal,
+        });
+      }
     }
     setIsZeroRestrictionModeLoading(false);
   };

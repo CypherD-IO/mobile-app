@@ -23,6 +23,7 @@ import CyDModalLayout from '../../../components/v2/modal';
 import { screenTitle } from '../../../constants';
 import {
   ACCOUNT_STATUS,
+  CardOperationsAuthType,
   CardProviders,
   CardStatus,
   CardType,
@@ -659,6 +660,10 @@ const RenderCardActions = ({
       },
       currentCardProvider: cardProvider,
       card,
+      authType:
+        card.status === CardStatus.BLOCKED
+          ? CardOperationsAuthType.UNBLOCK
+          : CardOperationsAuthType.UNLOCK,
     });
   };
 
