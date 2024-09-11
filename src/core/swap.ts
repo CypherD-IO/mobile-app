@@ -155,7 +155,7 @@ export const checkAllowance = async ({
             data: resp,
           });
           const gasFeeResponse = await getGasPriceFor(
-            fromToken?.chainDetails as any,
+            fromToken?.chainDetails,
             web3,
           );
           resolve({

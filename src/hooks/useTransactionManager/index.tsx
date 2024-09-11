@@ -367,7 +367,7 @@ export default function useTransactionManager() {
           signer,
         })) as any;
 
-        const rpc = getCosmosRpc(backendName, true);
+        const rpc = getCosmosRpc(backendName);
 
         const signingClient = await getCosmosSigningClient(
           fromChain,
@@ -445,7 +445,7 @@ export default function useTransactionManager() {
       const signer = await getCosmosSignerClient(chainName);
 
       if (signer) {
-        const rpc = getCosmosRpc(backendName, true);
+        const rpc = getCosmosRpc(backendName);
         const signingClient = await getCosmosSigningClient(
           fromChain,
           rpc,
@@ -542,7 +542,7 @@ export default function useTransactionManager() {
           });
 
           if (gasDetails) {
-            const rpc = getCosmosRpc(backendName, true);
+            const rpc = getCosmosRpc(backendName);
 
             const signingClient = await getCosmosSigningClient(
               chain,
@@ -633,7 +633,7 @@ export default function useTransactionManager() {
           });
 
           if (gasDetails) {
-            const rpc = getCosmosRpc(backendName, true);
+            const rpc = getCosmosRpc(backendName);
 
             const signingClient = await getCosmosSigningClient(
               chain,
@@ -720,7 +720,7 @@ export default function useTransactionManager() {
           });
 
           if (gasFeeDetails) {
-            const rpc = getCosmosRpc(backendName, true);
+            const rpc = getCosmosRpc(backendName);
             const signingClient = await getCosmosSigningClient(
               chain,
               rpc,
@@ -813,7 +813,7 @@ export default function useTransactionManager() {
           });
 
           if (gasDetails) {
-            const rpc = getCosmosRpc(backendName, true);
+            const rpc = getCosmosRpc(backendName);
 
             const signingClient = await getCosmosSigningClient(
               chain,
@@ -1074,7 +1074,7 @@ export default function useTransactionManager() {
 
         const signer = await getCosmosSignerClient(chainName);
         if (signer) {
-          const rpc = getCosmosRpc(backendName, true);
+          const rpc = getCosmosRpc(backendName);
 
           const signingClient = await getCosmosSigningClient(
             chain,
@@ -1176,7 +1176,7 @@ export default function useTransactionManager() {
         };
         const signer = await getCosmosSignerClient(chainName);
         if (signer) {
-          const rpc = getCosmosRpc(backendName, true);
+          const rpc = getCosmosRpc(backendName);
 
           const signingClient = await getCosmosSigningClient(
             chain,
@@ -1220,38 +1220,36 @@ export default function useTransactionManager() {
   const swapTokens = async ({
     web3,
     fromToken,
-    amount,
     routerAddress,
-    quoteData,
-    hdWallet,
+    contractData,
     gasLimit,
     gasFeeResponse,
+    chainDetails,
   }: SwapMetaData) => {
     return await new Promise((resolve, reject) => {
       void (async () => {
         try {
-          const nativeTokenSymbol =
-            NativeTokenMapping[fromToken?.chainDetails?.symbol] ||
-            fromToken.chainDetails.symbol;
+          const isNative = fromToken?.isNative;
 
-          const isNative = fromToken.symbol === nativeTokenSymbol;
-
-          const { ethereum } = hdWallet.state.wallet;
           const tx = {
-            from: ethereum.address,
+            chainId: fromToken?.chainId,
+            value: isNative ? contractData?.value : '0x0',
             to: routerAddress,
-            value: isNative ? get(quoteData, ['data', 'value']) : '0x0',
+            data: contractData.data,
             gas: web3.utils.toHex(2 * Number(gasLimit)),
-            data: quoteData.data.data,
+            gasPrice: web3.utils.toWei(
+              String(gasFeeResponse.gasPrice.toFixed(9)),
+              'gwei',
+            ),
           };
           const hash = await signEthTransaction({
             web3,
-            sendChain: fromToken?.chainDetails.backendName,
+            sendChain: chainDetails,
             transactionToBeSigned: tx,
           });
           resolve({ isError: false, receipt: hash });
         } catch (e: any) {
-          resolve({ isError: true, error: e });
+          reject(e);
         }
       })();
     });

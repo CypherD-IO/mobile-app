@@ -149,8 +149,8 @@ export default function TokenOverviewToolBar({
             className={'flex items-center justify-center mx-[15px]'}
             onPress={() => {
               navigation.navigate(screenTitle.BRIDGE_SKIP_API_SCREEN, {
-                fromChainData: tokenData,
-                title: t('SWAP_TITLE'),
+                tokenData,
+                backVisible: true,
               });
             }}>
             <CyDImage

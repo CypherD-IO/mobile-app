@@ -1,25 +1,21 @@
-import React, { Dispatch, SetStateAction } from 'react';
+import React, { Dispatch, SetStateAction, useEffect, useState } from 'react';
 import { SkipApiRouteResponse } from '../../models/skipApiRouteResponse.interface';
-import { SkipApiChainInterface } from '../../models/skipApiChains.interface';
-import { SkipApiToken } from '../../models/skipApiTokens.interface';
 import { SkipApiStatus } from '../../models/skipApiStatus.interface';
 import Loading from '../../components/v2/loading';
-import { capitalize, endsWith, find, get, isEmpty } from 'lodash';
+import { capitalize, endsWith, find, get, isEmpty, isNumber } from 'lodash';
 import { ethers } from 'ethers';
 import {
   CyDFastImage,
-  CyDImage,
   CyDScrollView,
   CyDText,
-  CyDTouchView,
   CyDView,
 } from '../../styles/tailwindStyles';
 import clsx from 'clsx';
 import { SvgUri } from 'react-native-svg';
 import Button from '../../components/v2/button';
-import AppImages from '../../../assets/images/appImages';
-import { StyleSheet } from 'react-native';
+import { StyleSheet, Animated, Easing } from 'react-native'; // Added Easing import
 import { t } from 'i18next';
+import { SwapBridgeChainData, SwapBridgeTokenData } from '.';
 
 enum TxnStatus {
   STATE_SUBMITTED = 'STATE_SUBMITTED',
@@ -30,52 +26,95 @@ enum TxnStatus {
   STATE_PENDING_ERROR = 'STATE_PENDING_ERROR',
 }
 
-export default function RoutePreview({
-  setIndex,
+export default function BridgeRoutePreview({
   routeResponse,
   chainInfo,
   tokenData,
   loading,
   onGetMSg,
   statusResponse,
-  onBridgeSuccess,
 }: {
-  setIndex: Dispatch<SetStateAction<number>>;
   routeResponse: SkipApiRouteResponse | null;
-  chainInfo: SkipApiChainInterface[] | null;
-  tokenData: Record<string, SkipApiToken[]>;
+  chainInfo: SwapBridgeChainData[] | null;
+  tokenData: Record<string, SwapBridgeTokenData[]>;
   loading: boolean;
   onGetMSg: () => Promise<void>;
   statusResponse: SkipApiStatus[];
-  onBridgeSuccess: (status: 'success' | 'falied') => Promise<void>;
 }) {
+  const pulseAnimation = new Animated.Value(1);
+  let timer: NodeJS.Timeout;
+  const [countdown, setCountdown] = useState<number | null>(
+    isNumber(routeResponse?.estimated_route_duration_seconds)
+      ? routeResponse.estimated_route_duration_seconds + 30
+      : null,
+  );
+
+  // Function to start the pulse animation
+  const startPulse = () => {
+    pulseAnimation.setValue(0.1); // Start at 10% opacity
+    Animated.loop(
+      // Use Animated.loop for continuous animation
+      Animated.timing(pulseAnimation, {
+        toValue: 1, // End at 100% opacity
+        duration: 1000,
+        useNativeDriver: true,
+        easing: Easing.linear,
+      }),
+    ).start();
+  };
+  startPulse();
+
+  const handleBridgePress = async () => {
+    if (countdown !== null) {
+      setCountdown(prev => prev); // Keep the initial value
+      startCountdown(); // Start the countdown
+    }
+    await onGetMSg();
+  };
+
+  const startCountdown = () => {
+    if (countdown !== null && countdown > 0) {
+      timer = setInterval(() => {
+        setCountdown(prev => (prev ? prev - 1 : 0));
+      }, 1000);
+    }
+    return () => clearInterval(timer);
+  };
+
+  useEffect(() => {
+    return () => clearInterval(timer);
+  }, []);
+
   if (!routeResponse) return <Loading />;
 
   const bridgeDoneStatus =
-    statusResponse.length === routeResponse?.chain_ids.length - 1
+    statusResponse.length === routeResponse?.chain_ids?.length - 1
       ? get(statusResponse, [statusResponse.length - 1, 'state'])
       : '';
 
   return (
-    <CyDScrollView className={'px-[20px]  pt-[40px]'}>
+    <CyDView className={'px-[20px] font-nunito mb-[55px]'}>
+      {isNumber(routeResponse?.estimated_route_duration_seconds) && (
+        <CyDView className='bg-white p-[12px] rounded-[8px] flex flex-row justify-between items-center mb-[12px]'>
+          <CyDText>{t('ESTIMATED_TIME')}</CyDText>
+          <CyDText>
+            {countdown !== null && countdown > 0
+              ? countdown > 60 // Check if countdown exceeds 60 seconds
+                ? `${Math.floor(countdown / 60)}m ${countdown % 60}s` // Convert to minutes and seconds
+                : `${countdown}s` // Display seconds
+              : t('LONGER_THAN_USUAL')}
+          </CyDText>
+        </CyDView>
+      )}
       <CyDView
         className={
-          'bg-white pb-[40px] rounded-[8px] flex flex-col items-center justify-center relative'
+          'bg-white py-[40px] rounded-[8px] flex flex-col items-center justify-center relative'
         }>
-        <CyDTouchView
-          className='flex justify-between w-full ml-[24px] mt-[24px]'
-          onPress={() => {
-            setIndex(0);
-          }}>
-          <CyDImage source={AppImages.LEFT_ARROW} className='w-[]' />
-          <CyDView />
-        </CyDTouchView>
-
         <CyDView className=''>
           {routeResponse?.chain_ids.map((item: any, index: number) => {
             const currentChain = chainInfo?.find(
               chain =>
-                chain.chain_id === get(routeResponse, ['chain_ids', index]),
+                chain.chainId === get(routeResponse, ['chain_ids', index]),
             );
 
             const operationsList = get(routeResponse, 'operations');
@@ -96,32 +135,32 @@ export default function RoutePreview({
               constant => constant !== null,
             );
             const chainId = data
-              ? get(data, 'from_chain_id')
-              : routeResponse.dest_asset_chain_id;
+              ? get(data, 'from_chain_id', '')
+              : routeResponse?.dest_asset_chain_id;
             const chainData = get(tokenData, [chainId]);
 
-            const token = chainData.find(chainItem => {
+            const token = chainData?.find(chainItem => {
               const denom = data
                 ? data.denom_in
-                : routeResponse.dest_asset_denom;
+                : routeResponse?.dest_asset_denom;
               return chainItem.denom === denom;
             });
 
-            const tokenOut = chainData.find(chainItem => {
+            const tokenOut = chainData?.find(chainItem => {
               const denom = data
                 ? data.denom_out
                 : routeResponse.dest_asset_denom;
               return chainItem.denom === denom;
             });
 
-            const currentState = get(statusResponse, [index, 'state']);
+            const currentState = get(statusResponse, [index, 'state'], '');
 
             return (
               <CyDView key={index}>
                 <CyDView className='flex flex-row gap-x-[16px] items-start'>
                   <CyDView className='flex flex-col items-center '>
                     <CyDView className='relative'>
-                      {endsWith(currentChain?.logo_uri, '.svg') ? (
+                      {endsWith(currentChain?.logoUrl, '.svg') ? (
                         <CyDView
                           className={clsx(
                             'h-[64px] w-[64px] p-[4px] rounded-full border-[8px] border-gray-200',
@@ -150,13 +189,13 @@ export default function RoutePreview({
                           <SvgUri
                             width='38'
                             height='38'
-                            uri={currentChain?.logo_uri ?? ''}
+                            uri={currentChain?.logoUrl ?? ''}
                           />
                         </CyDView>
                       ) : (
                         <CyDFastImage
                           source={{
-                            uri: currentChain ? currentChain?.logo_uri : '',
+                            uri: currentChain ? currentChain?.logoUrl : '',
                           }}
                           className={clsx(
                             'h-[64px] w-[64px] p-[4px] rounded-full border-[6px] border-gray-200',
@@ -184,14 +223,12 @@ export default function RoutePreview({
                           )}
                         />
                       )}
-                      {index < operationsList.length &&
-                        get(operationsList, [index - 1, 'tx_index']) !==
-                          get(operationsList, [index, 'tx_index']) && (
-                          <CyDView className='absolute right-0 bottom-0 bg-red-500 rounded-full w-[12px] h-[12px] p-[2px]' />
-                        )}
                     </CyDView>
                     {index !== routeResponse?.chain_ids.length - 1 && (
-                      <CyDView
+                      <Animated.View // Change CyDView to Animated.View
+                        style={{
+                          transform: [{ scale: pulseAnimation }], // Apply pulse animation
+                        }}
                         className={clsx('w-[4px] h-[48px] ', {
                           'bg-neutral-200': !currentState,
                           'bg-[#ffdc61]':
@@ -216,15 +253,11 @@ export default function RoutePreview({
                             token?.decimals,
                           )}
                         </CyDText>
-                        {endsWith(token?.logo_uri, '.svg') ? (
-                          <SvgUri
-                            width='16'
-                            height='16'
-                            uri={token?.logo_uri}
-                          />
+                        {endsWith(token?.logoUrl, '.svg') ? (
+                          <SvgUri width='16' height='16' uri={token?.logoUrl} />
                         ) : (
                           <CyDFastImage
-                            source={{ uri: token?.logo_uri ?? '' }}
+                            source={{ uri: token?.logoUrl ?? '' }}
                             className='w-[16px] h-[16px]'
                           />
                         )}
@@ -243,15 +276,15 @@ export default function RoutePreview({
                             ),
                           ).toFixed(4)}
                         </CyDText>
-                        {endsWith(tokenOut?.logo_uri, '.svg') ? (
+                        {endsWith(tokenOut?.logoUrl, '.svg') ? (
                           <SvgUri
                             width='16'
                             height='16'
-                            uri={tokenOut?.logo_uri}
+                            uri={tokenOut?.logoUrl}
                           />
                         ) : (
                           <CyDFastImage
-                            source={{ uri: tokenOut?.logo_uri ?? '' }}
+                            source={{ uri: tokenOut?.logoUrl ?? '' }}
                             className='w-[16px] h-[16px]'
                           />
                         )}
@@ -266,15 +299,15 @@ export default function RoutePreview({
                           <CyDText className='text-[18px] font-bold'>
                             {ethers.formatUnits(routeResponse.amount_out, 6)}
                           </CyDText>
-                          {endsWith(tokenOut?.logo_uri, '.svg') ? (
+                          {endsWith(tokenOut?.logoUrl, '.svg') ? (
                             <SvgUri
                               width='16'
                               height='16'
-                              uri={token?.logo_uri ?? ''}
+                              uri={token?.logoUrl ?? ''}
                             />
                           ) : (
                             <CyDFastImage
-                              source={{ uri: token?.logo_uri ?? '' }}
+                              source={{ uri: token?.logoUrl ?? '' }}
                               className='w-[16px] h-[16px]'
                             />
                           )}
@@ -284,7 +317,7 @@ export default function RoutePreview({
                         </CyDView>
                       )}
                     <CyDText className='text-[14px] font-medium'>
-                      {capitalize(currentChain?.chain_name)}
+                      {capitalize(currentChain?.chainName)}
                     </CyDText>
                   </CyDView>
                 </CyDView>
@@ -298,8 +331,8 @@ export default function RoutePreview({
         <CyDView className='mt-[32px]'>
           <Button
             onPress={() => {
-              void onGetMSg();
-            }}
+              void handleBridgePress();
+            }} // Updated to use handleBridgePress
             title={'Bridge'}
             disabled={isEmpty(routeResponse)}
             loading={loading}
@@ -307,41 +340,7 @@ export default function RoutePreview({
           />
         </CyDView>
       )}
-      {bridgeDoneStatus === TxnStatus.STATE_COMPLETED_SUCCESS && (
-        <CyDView className='mt-[32px] flex flex-col items-center justify-center'>
-          <CyDImage source={AppImages.CYPHER_SUCCESS} />
-          <CyDText className='text-center'>{t('BRIDGE_SUCCESS')}</CyDText>
-          <CyDView>
-            <Button
-              onPress={() => {
-                setIndex(0);
-                void onBridgeSuccess('success');
-              }}
-              title={'Create new swap'}
-              disabled={isEmpty(routeResponse)}
-              loading={loading}
-            />
-          </CyDView>
-        </CyDView>
-      )}
-      {bridgeDoneStatus === TxnStatus.STATE_COMPLETED_ERROR && (
-        <CyDView className='mt-[32px] flex flex-col items-center justify-center'>
-          <CyDImage source={AppImages.CYPHER_ERROR} />
-          <CyDText className='text-center'>{t('BRIDGE_FAILURE')}</CyDText>
-          <CyDView>
-            <Button
-              onPress={() => {
-                setIndex(0);
-                void onBridgeSuccess('falied');
-              }}
-              title={'Create new swap'}
-              disabled={isEmpty(routeResponse)}
-              loading={loading}
-            />
-          </CyDView>
-        </CyDView>
-      )}
-    </CyDScrollView>
+    </CyDView>
   );
 }
 
