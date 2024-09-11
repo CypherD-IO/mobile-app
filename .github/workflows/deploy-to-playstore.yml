@@ -61,7 +61,7 @@ jobs:
           git config --local user.name "github-actions[bot]"
           git add app/version.properties
           git commit -m "Increment version for release"
-          git push origin main
+          git push origin HEAD:main
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
@@ -74,7 +74,7 @@ jobs:
           git config --local user.name "github-actions[bot]"
           git add app/version.properties
           git commit -m "Increment version code for beta release"
-          git push origin beta
+          git push origin HEAD:beta
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
