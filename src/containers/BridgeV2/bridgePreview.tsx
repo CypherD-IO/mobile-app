@@ -163,7 +163,7 @@ export default function BridgeRoutePreview({
                       {endsWith(currentChain?.logoUrl, '.svg') ? (
                         <CyDView
                           className={clsx(
-                            'h-[64px] w-[64px] p-[4px] rounded-full border-[8px] border-gray-200',
+                            'h-[64px] w-[64px] p-[4px] rounded-full border-[4px] border-gray-200',
                             {
                               'border-green-400':
                                 currentState ===
@@ -198,7 +198,7 @@ export default function BridgeRoutePreview({
                             uri: currentChain ? currentChain?.logoUrl : '',
                           }}
                           className={clsx(
-                            'h-[64px] w-[64px] p-[4px] rounded-full border-[6px] border-gray-200',
+                            'h-[64px] w-[64px] p-[4px] rounded-full border-[4px] border-gray-200',
                             {
                               'border-green-400':
                                 currentState ===

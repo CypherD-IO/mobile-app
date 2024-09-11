@@ -440,6 +440,7 @@ export default function TokenSelectionV2({
   amountOut,
   usdAmountOut,
   onClickMax,
+  onToggle,
 }: {
   selectedFromChain: SwapBridgeChainData | null;
   setSelectedFromChain: Dispatch<SetStateAction<SwapBridgeChainData | null>>;
@@ -460,25 +461,12 @@ export default function TokenSelectionV2({
   amountOut: string;
   usdAmountOut: string;
   onClickMax: () => void;
+  onToggle: () => void;
 }) {
   const [fromTokenModalVisible, setFromTokenModalVisible] =
     useState<boolean>(false);
   const [toTokenModalVisible, setToTokenModalVisible] =
     useState<boolean>(false);
-
-  const onToggle = () => {
-    const oldFromChain = selectedFromChain;
-    const oldFromToken = selectedFromToken;
-    const oldToChain = selectedToChain;
-    const oldToToken = selectedToToken;
-
-    setSelectedFromToken(oldToToken);
-    setSelectedToToken(oldFromToken);
-    setSelectedFromChain(oldToChain);
-    setSelectedToChain(oldFromChain);
-    setCryptoAmount('');
-    setUsdAmount('');
-  };
 
   return (
     <CyDView className={''}>

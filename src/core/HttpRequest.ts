@@ -131,22 +131,24 @@ export default function useAxios() {
           response.data = data;
           response.status = status;
         } else if (method === 'GET_FROM_OTHER_SOURCE') {
-          const config = {
+          const _config = {
+            ...config,
             headers: {
               accept: 'application/json',
             },
           };
 
-          const { data } = await axios.get(endpoint, config);
+          const { data } = await axios.get(endpoint, _config);
           response.data = data;
         } else if (method === 'POST_TO_OTHER_SOURCE') {
-          const config = {
+          const _config = {
+            ...config,
             headers: {
               accept: 'application/json',
             },
           };
 
-          const { data } = await axios.post(endpoint, body, config);
+          const { data } = await axios.post(endpoint, body, _config);
           response.data = data;
         }
         return response;

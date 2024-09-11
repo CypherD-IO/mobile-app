@@ -87,6 +87,7 @@ import {
 } from '../../reducers/bridge.reducer';
 import { DEFAULT_AXIOS_TIMEOUT } from '../../core/Http';
 import clsx from 'clsx';
+import { v4 as uuidv4 } from 'uuid';
 
 export interface SwapBridgeChainData {
   chainName: string;
@@ -671,7 +672,7 @@ const BridgeV2: React.FC = () => {
       id,
       status: ActivityStatus.PENDING,
       type: ActivityType.BRIDGE,
-      quoteId: id,
+      quoteId: uuidv4(),
       fromChain: selectedFromChain.chainName,
       toChain: selectedToChain.chainName,
       fromToken: selectedFromToken?.name,
@@ -1061,6 +1062,7 @@ const BridgeV2: React.FC = () => {
         parseFloat(cryptoAmount) > selectedFromToken.balance ||
         isNil(quoteData) ||
         !isEmpty(error);
+
       return temp;
     } else {
       return true;
@@ -1249,7 +1251,7 @@ const BridgeV2: React.FC = () => {
           id,
           status: ActivityStatus.PENDING,
           type: ActivityType.SWAP,
-          quoteId: id,
+          quoteId: uuidv4(),
           fromChain: selectedFromChain.chainName,
           toChain: selectedToChain.chainName,
           fromToken: selectedFromToken?.name,
@@ -1359,6 +1361,21 @@ const BridgeV2: React.FC = () => {
     }
   };
 
+  const onToggle = () => {
+    const oldFromChain = selectedFromChain;
+    const oldFromToken = selectedFromToken;
+    const oldToChain = selectedToChain;
+    const oldToToken = selectedToToken;
+
+    setSelectedFromToken(oldToToken);
+    setSelectedToToken(oldFromToken);
+    setSelectedFromChain(oldToChain);
+    setSelectedToChain(oldFromChain);
+    setCryptoAmount('');
+    setUsdAmount('');
+    resetValues();
+  };
+
   if (loading.pageLoading || bridgeState.status === BridgeStatus.FETCHING) {
     return <Loading />;
   }
@@ -1386,7 +1403,7 @@ const BridgeV2: React.FC = () => {
             </CyDTouchView>
           )}
           <CyDText className='text-black font-extrabold text-[28px] font-manrope'>
-            {index === 1 ? 'Route Preview' : 'Token Selection'}
+            {index === 1 ? 'Route Preview' : 'Bridge'}
           </CyDText>
           <CyDView />
         </CyDView>
@@ -1400,21 +1417,23 @@ const BridgeV2: React.FC = () => {
           }}>
           {approveParams && selectedFromToken ? (
             <CyDView className='mb-[30px] pl-[30px] pr-[30px]'>
-              <CyDView className='flex flex-row justify-center'>
-                <CyDImage
-                  source={AppImages.APP_LOGO}
-                  className='h-[60px] w-[60px]'
-                  resizeMode='contain'
-                />
-              </CyDView>
               <CyDText className='text-center font-bold text-[22px] mt-[10px]'>
                 {t('TOKEN_ALLOWANCE_APPROVE')}
               </CyDText>
               <CyDView className=' my-[12px]'>
                 <CyDView className='flex flex-row justify-between items-center'>
-                  <CyDView className='flex flex-row items-center'>
-                    <CyDText className=' py-[10px] ml-[15px] font-medium text-center text-[18px]'>
-                      {`You are granting permission to ${approveParams.contractAddress} to spend up to ${ethers.formatUnits(approveParams.tokens, selectedFromToken?.decimals)} tokens of your ${selectedFromChain?.chainName ?? ''} ${selectedFromToken?.symbol ?? ''}`}
+                  <CyDView className=''>
+                    <CyDText className=' pt-[10px] ml-[15px] font-medium text-left text-[12px]'>
+                      {`You are granting permission to `}
+                    </CyDText>
+                    <CyDText className=' ml-[15px] font-semibold text-left text-[14px]'>
+                      {`${approveParams.contractAddress} `}
+                    </CyDText>
+                    <CyDText className=' pt-[10px] ml-[15px] font-medium text-left text-[12px]'>
+                      {`to spend up to`}
+                    </CyDText>
+                    <CyDText className=' ml-[15px] font-bold text-left text-[14px]'>
+                      {`${ethers.formatUnits(approveParams.tokens, selectedFromToken?.decimals)} ${selectedFromChain?.chainName ?? ''} ${selectedFromToken?.symbol ?? ''} tokens`}
                     </CyDText>
                   </CyDView>
                 </CyDView>
@@ -1881,6 +1900,7 @@ const BridgeV2: React.FC = () => {
             amountOut={amountOut}
             usdAmountOut={usdAmountOut}
             onClickMax={onClickMax}
+            onToggle={onToggle}
           />
         )}
         {!isOdosSwap() && index === 1 && (
@@ -1893,8 +1913,9 @@ const BridgeV2: React.FC = () => {
             statusResponse={skipApiStatusResponse}
           />
         )}
-        {(!isEmpty(error) ||
-          parseFloat(cryptoAmount) > (selectedFromToken?.balance ?? 0)) &&
+        {index === 0 &&
+          (!isEmpty(error) ||
+            parseFloat(cryptoAmount) > (selectedFromToken?.balance ?? 0)) &&
           !loading.quoteLoading && (
             <CyDView className=' bg-red-100 rounded-[8px] p-[12px] flex flex-row gap-x-[12px] mx-[16px] mt-[16px] justify-between items-center'>
               <CyDFastImage
