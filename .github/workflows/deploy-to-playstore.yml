@@ -7,7 +7,9 @@ on:
       - beta
   pull_request:
     types:
-      - [opened, synchronize, reopened]
+      - opened
+      - synchronize
+      - reopened
     branches:
       - main
       - beta
