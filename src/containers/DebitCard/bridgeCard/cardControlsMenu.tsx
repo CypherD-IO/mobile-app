@@ -354,18 +354,11 @@ export default function CardControlsMenu({ route, navigation }) {
             </CyDText>
             <CyDTouchView
               onPress={() => {
-                if (!disableOptions) {
-                  setShow3DsModal(true);
-                } else {
-                  showToast(
-                    'Disable Zero Restriction Mode to access this feature',
-                    'error',
-                  );
-                }
+                setShow3DsModal(true);
               }}
-              className={`flex flex-row items-center justify-between m-[2px] py-[15px] px-[12px] bg-white rounded-[6px] mt-[8px] ${
-                disableOptions ? 'opacity-50' : ''
-              }`}>
+              className={
+                'flex flex-row items-center justify-between m-[2px] py-[15px] px-[12px] bg-white rounded-[6px] mt-[8px]'
+              }>
               <CyDView className='flex flex-row flex-1 items-center'>
                 <CyDImage
                   source={AppImages.THREE_D_SECURE}
