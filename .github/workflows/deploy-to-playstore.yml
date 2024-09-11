@@ -1,15 +1,9 @@
 name: Deploy Android App to PlayStore
 
 on:
-  push:
-    branches:
-      - main
-      - beta
   pull_request:
     types:
-      - opened
-      - synchronize
-      - reopened
+      - closed
     branches:
       - main
       - beta
@@ -18,6 +12,7 @@ jobs:
   build-and-deploy:
     permissions:
       contents: write
+    if: github.event.pull_request.merged == true
     runs-on: ubuntu-latest
     env:
       SENTRY_DSN: ${{secrets.SENTRY_DSN}}
@@ -53,7 +48,7 @@ jobs:
           NPM_TOKEN: ${{ secrets.NPM_TOKEN }}
 
       - name: Update version name and code (main)
-        if: github.event.pull_request.merged == true && github.event.pull_request.base.ref == 'main' && github.event.pull_request.head.ref == 'beta' || github.event_name == 'push' && github.ref == 'refs/heads/main'
+        if: github.event.pull_request.merged == true && github.event.pull_request.base.ref == 'main' && github.event.pull_request.head.ref == 'beta'
         run: |
           cd android
           ./gradlew incrementVersionMain
@@ -66,7 +61,7 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
       - name: Update version code (beta)
-        if: (github.event_name == 'pull_request' && github.event.pull_request.base.ref == 'beta') || (github.event_name == 'push' && github.ref == 'refs/heads/beta')
+        if: github.event.pull_request.merged == true && github.event.pull_request.base.ref == 'beta'
         run: |
           cd android
           ./gradlew incrementVersionCodeBeta
