@@ -72,7 +72,7 @@ export default function EditLimitModal({
               value={limit.toString()}
               placeholder='Enter Desired Limit'
               className={
-                'border-[1px] border-n200 rounded-[8px] p-[10px] text-[14px] w-[100%] font-nunito text-primaryTextColor'
+                'border-[1px] border-n200 rounded-[8px] p-[10px] text-[14px] w-[100%]  text-primaryTextColor'
               }
               onFocus={() => setIsError(false)}
             />

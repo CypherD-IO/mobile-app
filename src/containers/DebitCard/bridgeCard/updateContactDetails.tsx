@@ -300,7 +300,7 @@ export default function UpdateCardContactDetails({
                       <CyDView className={'flex flex-row items-center'}>
                         <CyDTextInput
                           className={clsx(
-                            'text-black font-nunito text-[16px] ml-[8px] w-[100%]',
+                            'text-black  text-[16px] ml-[8px] w-[100%]',
                             { 'mt-[-8px]': isAndroid() },
                           )}
                           value={formProps.values.phoneNumber}
@@ -332,7 +332,7 @@ export default function UpdateCardContactDetails({
                   </CyDText>
                   <CyDTextInput
                     className={clsx(
-                      ' border-[1px] border-inputBorderColor mt-[8px] rounded-[5px] p-[12px] text-[18px] font-nunito text-primaryTextColor',
+                      ' border-[1px] border-inputBorderColor mt-[8px] rounded-[5px] p-[12px] text-[18px]  text-primaryTextColor',
                       {
                         'border-redOffColor':
                           formProps.touched.email && formProps.errors.email,

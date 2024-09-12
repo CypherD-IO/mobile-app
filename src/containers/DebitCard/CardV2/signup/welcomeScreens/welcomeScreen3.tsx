@@ -19,10 +19,10 @@ export default function WelcomeSceen3() {
         />
       </CyDView>
       <CyDView className='w-[263px]'>
-        <CyDText className='font-extrabold text-[40px] text-white text-center font-manrope'>
+        <CyDText className='font-extrabold text-[40px] text-white text-center '>
           {t('Pay Online, Securely')}
         </CyDText>
-        <CyDText className='font-semibold text-[18px] text-white mt-[12px] text-center font-manrope'>
+        <CyDText className='font-semibold text-[18px] text-white mt-[12px] text-center '>
           {t(
             'Authenticate online payments with OTP, Telegram approval, or a simple swipe to pay.',
           )}

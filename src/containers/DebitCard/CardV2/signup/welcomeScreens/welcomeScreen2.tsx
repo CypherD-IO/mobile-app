@@ -19,10 +19,10 @@ export default function WelcomeSceen() {
         />
       </CyDView>
       <CyDView className=''>
-        <CyDText className='font-extrabold text-[34px] text-white text-center font-manrope'>
+        <CyDText className='font-extrabold text-[34px] text-white text-center '>
           {t('Go Virtual & Spend Immediately')}
         </CyDText>
-        <CyDText className='font-semibold text-[18px] text-white mt-[12px] text-center font-manrope w-[320px]'>
+        <CyDText className='font-semibold text-[18px] text-white mt-[12px] text-center  w-[320px]'>
           {t(
             'Activate your virtual Cypher Card in few easy steps and start spending globally with your phone. takes just 5 min',
           )}

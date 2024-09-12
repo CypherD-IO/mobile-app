@@ -362,7 +362,7 @@ const UpgradeToPhysicalCardScreen = ({ navigation, route }: Props) => {
                     <CyDView className={'flex flex-row items-center'}>
                       <CyDText
                         className={
-                          'text-center text-black font-nunito text-[18px] ml-[8px]'
+                          'text-center text-black  text-[18px] ml-[8px]'
                         }>
                         {selectedState.name}
                       </CyDText>

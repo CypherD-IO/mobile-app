@@ -91,6 +91,7 @@ export default function Button({
           'bg-r300': ButtonType.RED === type,
           'bg-black': ButtonType.DARK === type,
           'bg-n40': disabled,
+          'bg-white': ButtonType.WHITE_FILL === type,
         },
       )}>
       {loading && (
@@ -126,7 +127,7 @@ export default function Button({
       {!loading && (
         <CyDText
           className={clsx(
-            `text-[#525252] font-nunito font-extrabold text-center ${titleStyle}`,
+            `text-[#525252]  font-extrabold text-center ${titleStyle}`,
             { 'ml-[5px]': isLocked },
           )}>
           {title}
