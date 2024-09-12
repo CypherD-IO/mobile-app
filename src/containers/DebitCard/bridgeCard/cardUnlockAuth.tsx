@@ -17,9 +17,11 @@ import useAxios from '../../../core/HttpRequest';
 import { useIsFocused } from '@react-navigation/native';
 import {
   ACCOUNT_STATUS,
+  CardOperationsAuthType,
   CardProviders,
   CardStatus,
 } from '../../../constants/enum';
+import { Card } from '../../../models/card.model';
 
 export default function CardUnlockAuth(props: {
   navigation: any;
@@ -27,7 +29,8 @@ export default function CardUnlockAuth(props: {
     params: {
       onSuccess: () => void;
       currentCardProvider: CardProviders;
-      cardId: string;
+      card: Card;
+      authType: CardOperationsAuthType;
     };
   };
 }) {
@@ -36,7 +39,7 @@ export default function CardUnlockAuth(props: {
   const [sendingOTP, setSendingOTP] = useState<boolean>(false);
   const [verifyingOTP, setVerifyingOTP] = useState<boolean>(false);
   const { navigation, route } = props;
-  const { currentCardProvider, cardId } = route.params;
+  const { currentCardProvider, card, authType } = route.params;
   const onSuccess = route.params.onSuccess;
   const resendOtpTime = 30;
   const [resendInterval, setResendInterval] = useState(0);
@@ -58,7 +61,7 @@ export default function CardUnlockAuth(props: {
   }, [resendInterval]);
 
   const triggerOTP = async () => {
-    const triggerOTPUrl = `/v1/cards/${currentCardProvider}/card/${cardId}/trigger/status`;
+    const triggerOTPUrl = `/v1/cards/${currentCardProvider}/card/${card.cardId}/trigger/${authType}`;
 
     const response = await postWithAuth(triggerOTPUrl, {});
 
@@ -97,11 +100,23 @@ export default function CardUnlockAuth(props: {
     setVerifyingOTP(false);
   };
 
+  const getVerifyOTPPayload = (num: number) => {
+    return {
+      ...(authType === CardOperationsAuthType.UNBLOCK
+        ? {}
+        : authType === CardOperationsAuthType.ZERO_RESTRICTION_MODE_ON
+          ? { godm: true }
+          : { status: CardStatus.ACTIVE }),
+      otp: num,
+    };
+  };
+
   const verifyOTP = async (num: number) => {
     setVerifyingOTP(true);
+    const payload = getVerifyOTPPayload(num);
     const response = await patchWithAuth(
-      `/v1/cards/${currentCardProvider}/card/${cardId}/status`,
-      { status: CardStatus.ACTIVE, otp: num },
+      `/v1/cards/${currentCardProvider}/card/${card.cardId}/${authType}`,
+      payload,
     );
 
     if (!response.isError) {

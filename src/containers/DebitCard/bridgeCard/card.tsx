@@ -23,6 +23,7 @@ import CyDModalLayout from '../../../components/v2/modal';
 import { screenTitle } from '../../../constants';
 import {
   ACCOUNT_STATUS,
+  CardOperationsAuthType,
   CardProviders,
   CardStatus,
   CardType,
@@ -191,15 +192,18 @@ export default function CardScreen({
           'justify-center items-center':
             card.status === CardStatus.IN_ACTIVE ||
             card.status === CardStatus.HIDDEN ||
+            card.status === CardStatus.BLOCKED ||
             card.status === 'rcUpgradable',
-          'justify-end items-start':
+          'justify-end':
             card.status !== CardStatus.IN_ACTIVE &&
             card.status !== CardStatus.HIDDEN &&
+            card.status !== CardStatus.BLOCKED &&
             card.status !== 'rcUpgradable',
         })}
         resizeMode='stretch'
         source={getCardImage(card)}>
-        {card.status === CardStatus.IN_ACTIVE && (
+        {(card.status === CardStatus.IN_ACTIVE ||
+          card.status === CardStatus.BLOCKED) && (
           <CyDView className='flex flex-row items-center bg-cardBg px-[12px] py-[6px] rounded-[6px]'>
             <CyDImage
               source={AppImages.CYPHER_LOCKED}
@@ -235,11 +239,10 @@ export default function CardScreen({
             </CyDText>
           </CyDView>
         )}
-        {card.status !== CardStatus.IN_ACTIVE &&
-          card.status !== CardStatus.HIDDEN &&
+        {card.status !== CardStatus.HIDDEN &&
           card.status !== 'rcUpgradable' &&
           cardProfile.provider === CardProviders.REAP_CARD && (
-            <CyDView className='ml-[12px] mb-[12px]'>
+            <CyDView className='absolute bottom-[12px] left-[12px]'>
               <CyDText className='font-semibold text-[18px]'>
                 {' xxxx ' + card.last4}
               </CyDText>
@@ -656,7 +659,11 @@ const RenderCardActions = ({
         });
       },
       currentCardProvider: cardProvider,
-      cardId,
+      card,
+      authType:
+        card.status === CardStatus.BLOCKED
+          ? CardOperationsAuthType.UNBLOCK
+          : CardOperationsAuthType.UNLOCK,
     });
   };
 
