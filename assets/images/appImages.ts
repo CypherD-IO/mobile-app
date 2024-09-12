@@ -515,6 +515,45 @@ const PLUS_ICON = {
 const SUCCESS_TICK_GREEN_BG = {
   uri: `${S3_BUCKET_URL_ICONS}/successTickGreenBg.png`,
 };
+const REFERRALS_HERO_IMG = {
+  uri: `${S3_BUCKET_URL_ICONS}/referralsHeroImg.png`,
+};
+const CIRCULAR_PLUS = {
+  uri: `${S3_BUCKET_URL_ICONS}/circularPlus.png`,
+};
+const QR_CODE_ICON = {
+  uri: `${S3_BUCKET_URL_ICONS}/qrIcon.png`,
+};
+const WHATSAPP_ICON = {
+  uri: `${S3_BUCKET_URL_ICONS}/whatsappIcon.png`,
+};
+const TELEGRAM_ICON = {
+  uri: `${S3_BUCKET_URL_ICONS}/telegramIcon.png`,
+};
+const X_ICON = {
+  uri: `${S3_BUCKET_URL_ICONS}/xIcon.png`,
+};
+const SHARE_ICON = {
+  uri: `${S3_BUCKET_URL_ICONS}/shareIcon.png`,
+};
+const REFERRAL_STAR = {
+  uri: `${S3_BUCKET_URL_ICONS}/referralStar.png`,
+};
+const HOW_IT_WORKS_1 = {
+  uri: `${S3_BUCKET_URL_ICONS}/howItWorks1.png`,
+};
+const HOW_IT_WORKS_2 = {
+  uri: `${S3_BUCKET_URL_ICONS}/howItWorks2.png`,
+};
+const HOW_IT_WORKS_3 = {
+  uri: `${S3_BUCKET_URL_ICONS}/howItWorks3.png`,
+};
+const HOW_IT_WORKS_4 = {
+  uri: `${S3_BUCKET_URL_ICONS}/howItWorks4.png`,
+};
+const HOW_IT_WORKS_5 = {
+  uri: `${S3_BUCKET_URL_ICONS}/howItWorks5.png`,
+};
 
 const AppImages = {
   SUCCESS_TICK_GREEN_BG,
@@ -919,5 +958,18 @@ const AppImages = {
   COMING_SOON,
   ZERO_RESTRICTION_MODE_ICON,
   PLUS_ICON,
+  REFERRALS_HERO_IMG,
+  CIRCULAR_PLUS,
+  QR_CODE_ICON,
+  WHATSAPP_ICON,
+  TELEGRAM_ICON,
+  X_ICON,
+  SHARE_ICON,
+  REFERRAL_STAR,
+  HOW_IT_WORKS_1,
+  HOW_IT_WORKS_2,
+  HOW_IT_WORKS_3,
+  HOW_IT_WORKS_4,
+  HOW_IT_WORKS_5,
 };
 export default AppImages;

@@ -1216,6 +1216,23 @@ const resources = {
       TOKEN_ALLOWANCE_APPROVE: 'Token Allowance Approval',
       LONGER_THAN_USUAL: 'Talking longer than usual',
       ESTIMATED_NETWORK_FEE: 'Estimated Network Fee',
+      REFERRALS: 'Referrals',
+      REFER_VIA: 'Refer Via',
+      NEW_CODE: 'New code',
+      LINK: 'Link',
+      CODE: 'Code',
+      POINTS_EARNED: 'Points Earned',
+      HOW_IT_WORKS: 'How it works',
+      HOW_IT_WORKS_1:
+        'The user shares their unique invite code with a friend or family member',
+      HOW_IT_WORKS_2:
+        'The referred user signs up on the platform using the invite code / link during the registration process',
+      HOW_IT_WORKS_3:
+        'For every $10 the referred user spends, the referrer earns 1 reward point automatically',
+      HOW_IT_WORKS_4:
+        'Referrer can track their accumulated reward points through their account, under rewards section',
+      HOW_IT_WORKS_5:
+        'There is no limit to how many reward points a referrer can earn, as long as the referred user continues to spend with their Cypher card.',
     },
   },
 };

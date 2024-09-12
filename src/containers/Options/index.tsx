@@ -434,10 +434,9 @@ export default function Options(props: {
                 <OptionsContainer
                   sentryLabel={'referrals'}
                   onPress={() => {
-                    props.navigation.navigate(
-                      C.screenTitle.SEND_INVITE_CODE_SCREEN,
-                      { fromOptionsStack: true },
-                    );
+                    props.navigation.navigate(C.screenTitle.REFERRALS, {
+                      fromOptionsStack: true,
+                    });
                   }}
                   title={t('CYPHER_CARD_REFERRALS')}
                   logo={AppImages.REFER_OUTLINE}
