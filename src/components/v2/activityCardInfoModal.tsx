@@ -86,40 +86,40 @@ export default function ActivityInfoModal({
               className={'w-[21px] h-[21px] right-[9px]'}
             />
             <CyDView className='flex mt-[5%] justify-center items-center '>
-              <CyDText className='text-center font-nunito text-[20px] font-extrabold  '>
+              <CyDText className='text-center  text-[20px] font-extrabold  '>
                 {t<string>('DEBIT_CARD_TRANSACTION')}
               </CyDText>
-              <CyDText className='text-center font-nunito text-[12px] font-extrabold text-successTextGreen'>
+              <CyDText className='text-center  text-[12px] font-extrabold text-successTextGreen'>
                 {t<string>('SUCCESSFUL')}
               </CyDText>
             </CyDView>
           </CyDView>
           <CyDScrollView className='flex flex-col px-[40px]'>
             <CyDView className='flex flex-row mt-[10%] justify-start items-center'>
-              <CyDText className='font-nunito text-[16px] mt-[3px] w-[30%]  '>
+              <CyDText className=' text-[16px] mt-[3px] w-[30%]  '>
                 {t<string>('DATE')}
               </CyDText>
-              <CyDText className='text-center font-nunito text-[14px] mt-[4.5px] font-bold  '>
+              <CyDText className='text-center  text-[14px] mt-[4.5px] font-bold  '>
                 {moment(datetime).format('MMM DD, h:mm a')}
               </CyDText>
             </CyDView>
             <CyDView className='flex flex-row mt-[10%] justify-start'>
-              <CyDText className='font-nunito text-[16px] mt-[3px] w-[30%]  '>
+              <CyDText className=' text-[16px] mt-[3px] w-[30%]  '>
                 {t<string>('WITHDRAWN')}
               </CyDText>
-              <CyDText className='text-center font-nunito text-[14px] mt-[5px] font-bold  '>{`${amount} ${symbol}`}</CyDText>
+              <CyDText className='text-center  text-[14px] mt-[5px] font-bold  '>{`${amount} ${symbol}`}</CyDText>
             </CyDView>
             <CyDView className='flex flex-row mt-[10%] justify-start'>
-              <CyDText className='font-nunito text-[16px] mt-[3px] w-[30%]  '>
+              <CyDText className=' text-[16px] mt-[3px] w-[30%]  '>
                 {t<string>('RECEIVED')}
               </CyDText>
-              <CyDText className='text-center font-nunito text-[14px] mt-[5px] font-bold mt-[5px]  '>{`$${amountInUsd}`}</CyDText>
+              <CyDText className='text-center  text-[14px] mt-[5px] font-bold mt-[5px]  '>{`$${amountInUsd}`}</CyDText>
             </CyDView>
             <CyDView className='flex flex-row mt-[10%] justify-start'>
-              <CyDText className='font-nunito text-[16px] mt-[3px] w-[30%]  '>
+              <CyDText className=' text-[16px] mt-[3px] w-[30%]  '>
                 {t<string>('GAS_FEE')}
               </CyDText>
-              <CyDText className='text-center font-nunito text-[14px] mt-[5px] font-bold mt-[5px]  '>{`${gasAmount} ${gasAmount === 'Not Available' ? '' : 'USD'}`}</CyDText>
+              <CyDText className='text-center  text-[14px] mt-[5px] font-bold mt-[5px]  '>{`${gasAmount} ${gasAmount === 'Not Available' ? '' : 'USD'}`}</CyDText>
             </CyDView>
             <CyDTouchView
               className='flex flex-row mt-[10%] justify-start'
@@ -127,10 +127,10 @@ export default function ActivityInfoModal({
                 copyToClipboard(txnHash);
                 showToast(t('SEED_PHARSE_COPY'));
               }}>
-              <CyDText className='font-nunito text-[16px] mt-[3px] w-[30%]  '>
+              <CyDText className=' text-[16px] mt-[3px] w-[30%]  '>
                 {t<string>('TRANSACTION_HASH')}
               </CyDText>
-              <CyDText className='text-center font-nunito text-[14px] mt-[5px] font-bold mt-[3px]  '>
+              <CyDText className='text-center  text-[14px] mt-[5px] font-bold mt-[3px]  '>
                 {txnHash
                   ? `${txnHash.substring(0, 8)}...${txnHash.substring(txnHash.length - 6, txnHash.length)}\t`
                   : 'TBD\t'}
@@ -147,10 +147,10 @@ export default function ActivityInfoModal({
                   copyToClipboard(quoteId);
                   showToast(t('QUOTE_ID_COPY'));
                 }}>
-                <CyDText className='font-nunito text-[16px] mt-[3px] w-[30%]  '>
+                <CyDText className=' text-[16px] mt-[3px] w-[30%]  '>
                   {t<string>('QUOTE_UUID')}
                 </CyDText>
-                <CyDText className='text-center font-nunito text-[14px] mt-[5px] font-bold mt-[3px]  '>
+                <CyDText className='text-center  text-[14px] mt-[5px] font-bold mt-[3px]  '>
                   {`${quoteId.substring(0, 8)}...${quoteId.substring(quoteId.length - 6, quoteId.length)}      `}
                   <CyDImage
                     source={AppImages.COPY}
@@ -161,10 +161,10 @@ export default function ActivityInfoModal({
             )}
 
             <CyDView className='flex flex-row mt-[10%] justify-start'>
-              <CyDText className='font-nunito text-[16px] mt-[3px] w-[30%]  '>
+              <CyDText className=' text-[16px] mt-[3px] w-[30%]  '>
                 {t<string>('EXCHANGE_RATE')}
               </CyDText>
-              <CyDText className='text-center font-nunito text-[14px] mt-[3px] font-bold mt-[5px]  '>{`${String(round((parseFloat(amountInUsd) - parseFloat(gasAmount === 'Not Available' ? '0' : gasAmount)) / parseFloat(amount), 6))} USD`}</CyDText>
+              <CyDText className='text-center  text-[14px] mt-[3px] font-bold mt-[5px]  '>{`${String(round((parseFloat(amountInUsd) - parseFloat(gasAmount === 'Not Available' ? '0' : gasAmount)) / parseFloat(amount), 6))} USD`}</CyDText>
             </CyDView>
 
             <CyDImage
@@ -172,12 +172,10 @@ export default function ActivityInfoModal({
               className={'w-[98%] h-[90px] mt-[15px]'}
             />
             <CyDText
-              className={
-                'text-center font-nunito font-extrabold text-[20px] mt-[10px]'
-              }>
+              className={'text-center  font-extrabold text-[20px] mt-[10px]'}>
               {t<string>('LOVE_CYPHERD_APP')}
             </CyDText>
-            <CyDText className={'text-center font-nunito mt-[10px]'}>
+            <CyDText className={'text-center  mt-[10px]'}>
               {t<string>('SHARE_WITH_FRIENDS')}
             </CyDText>
 

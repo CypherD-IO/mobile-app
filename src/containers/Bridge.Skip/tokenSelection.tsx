@@ -79,8 +79,7 @@ function RenderToken({
               className={'w-[28px] h-[28px] mr-[18px]'}
             />
           )}
-          <CyDText
-            className={'text-black text-[18px] font-nunito font-regular'}>
+          <CyDText className={'text-black text-[18px]  font-regular'}>
             {item.recommended_symbol}
           </CyDText>
         </CyDView>
@@ -346,7 +345,7 @@ function ChooseTokenModal({
         </CyDTouchView>
         <CyDText
           className={
-            'text-center pt-[24px] pb-[14px] text-[22px] font-nunito font-bold text-primaryTextColor'
+            'text-center pt-[24px] pb-[14px] text-[22px]  font-bold text-primaryTextColor'
           }>
           {'Select Token'}
         </CyDText>
@@ -527,7 +526,7 @@ export default function TokenSelection({
             <CyDView className='flex flex-col items-start w-[60%]'>
               <CyDTextInput
                 className={clsx(
-                  'font-semibold text-start text-primaryTextColor font-nunito text-[30px] w-[100%] p-[4px] ',
+                  'font-semibold text-start text-primaryTextColor  text-[30px] w-[100%] p-[4px] ',
                 )}
                 keyboardType='numeric'
                 onChangeText={text => {
@@ -543,7 +542,7 @@ export default function TokenSelection({
               />
               <CyDText
                 className={clsx(
-                  'font-semibold text-center text-primaryTextColor font-nunito text-[12px]',
+                  'font-semibold text-center text-primaryTextColor  text-[12px]',
                 )}>
                 {`$${usdAmount}`}
               </CyDText>
@@ -622,13 +621,13 @@ export default function TokenSelection({
             <CyDView className='flex flex-col items-start'>
               <CyDText
                 className={clsx(
-                  'font-semibold text-center text-primaryTextColor font-nunito text-[30px]',
+                  'font-semibold text-center text-primaryTextColor  text-[30px]',
                 )}>
                 {amountOut}
               </CyDText>
               <CyDText
                 className={clsx(
-                  'font-semibold text-center text-primaryTextColor font-nunito text-[12px]',
+                  'font-semibold text-center text-primaryTextColor  text-[12px]',
                 )}>
                 {`$${usdAmountOut}`}
               </CyDText>

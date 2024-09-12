@@ -16,7 +16,7 @@ export default function WelcomeSceen1() {
   const { t } = useTranslation();
 
   return (
-    <CyDView className='font-manrope flex flex-col items-center justify-evenly h-full px-[16px] mt-[40px] bg-black'>
+    <CyDView className=' flex flex-col items-center justify-evenly h-full px-[16px] mt-[40px] bg-black'>
       <CyDView className='flex flex-col justify-center items-center w-full'>
         <CyDImage
           className='w-[314px] h-[269px]'
@@ -24,13 +24,13 @@ export default function WelcomeSceen1() {
         />
       </CyDView>
       <CyDView className='w-[314px]'>
-        <CyDText className='font-extrabold text-[40px] text-white text-center font-manrope'>
+        <CyDText className='font-extrabold text-[40px] text-white text-center '>
           {t('Go Global,')}
         </CyDText>
-        <CyDText className='font-extrabold text-[40px] text-white text-center font-manrope'>
+        <CyDText className='font-extrabold text-[40px] text-white text-center '>
           {t('Pay Local,')}
         </CyDText>
-        <CyDText className='font-semibold text-[18px] text-white mt-[12px] text-center font-manrope'>
+        <CyDText className='font-semibold text-[18px] text-white mt-[12px] text-center '>
           {t(
             'with amazing acceptance, you do the spending, we will do the Converting',
           )}
@@ -63,7 +63,7 @@ export default function WelcomeSceen1() {
   //           source={AppImages.CARD_ONBOARDING_1}
   //           className='w-[314px] h-[269px]'
   //         />
-  //         <CyDText className='font-extrabold text-[40px] text-white text-center font-manrope'>
+  //         <CyDText className='font-extrabold text-[40px] text-white text-center '>
   //           {t('Go Global,')}
   //         </CyDText>
   //         <CyDText className='font-extrabold text-[40px] text-white text-center'>

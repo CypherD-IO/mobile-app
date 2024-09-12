@@ -198,7 +198,7 @@ export default function ChooseContactModal(props: ContactModalProps) {
           />
         </CyDTouchView>
         <CyDView>
-          <CyDText className='text-center font-nunito text-[22px] font-extrabold'>
+          <CyDText className='text-center  text-[22px] font-extrabold'>
             {t<string>('CHOOSE_CONTACT')}
           </CyDText>
         </CyDView>

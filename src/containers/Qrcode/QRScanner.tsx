@@ -79,9 +79,7 @@ export default function QRScanner(props: {
                   'flex items-center justify-center h-1/2 w-10/12 pt-[10px]'
                 }>
                 <CyDText
-                  className={
-                    'font-nunito text-center text-[20px] color-white mt-[24%]'
-                  }>
+                  className={' text-center text-[20px] color-white mt-[24%]'}>
                   {renderText()}
                 </CyDText>
                 {fromPage === QRScannerScreens.WALLET_CONNECT && (
