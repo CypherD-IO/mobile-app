@@ -88,6 +88,7 @@ import {
 import { DEFAULT_AXIOS_TIMEOUT } from '../../core/Http';
 import clsx from 'clsx';
 import { v4 as uuidv4 } from 'uuid';
+import analytics from '@react-native-firebase/analytics';
 
 export interface SwapBridgeChainData {
   chainName: string;
@@ -611,13 +612,11 @@ const BridgeV2: React.FC = () => {
           ) {
             setQuoteData(null);
             setError(quoteError.message);
-            void logAnalytics({
-              type: AnalyticsType.ERROR,
-              chain: selectedFromChain?.chainName ?? '',
-              message: `Bridge Quote error: ${String(quoteError)}`,
-              screen: route.name,
-            });
           } else {
+            void analytics().logEvent('BRIDGE_QUOTE_ERROR', {
+              error: quoteError,
+            });
+            Sentry.captureException(quoteError);
             showModal('state', {
               type: 'error',
               title: t('QUOTE_ERROR'),
@@ -644,6 +643,10 @@ const BridgeV2: React.FC = () => {
           onSuccess: hideModal,
           onFailure: hideModal,
         });
+        void analytics().logEvent('BRIDGE_QUOTE_ERROR', {
+          error: e,
+        });
+        Sentry.captureException(e);
       }
     }
   };
@@ -721,6 +724,13 @@ const BridgeV2: React.FC = () => {
       );
 
       if (isError) {
+        Sentry.captureException(fetchError);
+        void logAnalytics({
+          type: AnalyticsType.ERROR,
+          chain: selectedFromChain.chainName,
+          message: parseErrorMessage(fetchError),
+          screen: route.name,
+        });
         showModal('state', {
           type: 'error',
           title: t('FETCH_SKIP_API_ERROR'),
@@ -762,7 +772,8 @@ const BridgeV2: React.FC = () => {
         txnHash: hash,
         chain: selectedFromChain.chainName,
       });
-    } catch (e: any) {
+      void analytics().logEvent('BRIDGE_SUCCESS');
+    } catch (e: unknown) {
       activityData.status = ActivityStatus.FAILED;
       activityContext.dispatch({
         type: ActivityReducerAction.POST,
@@ -776,6 +787,10 @@ const BridgeV2: React.FC = () => {
         onSuccess: navigateToPortfolio,
         onFailure: navigateToPortfolio,
       });
+      void analytics().logEvent('BRIDGE_ERROR', {
+        error: e,
+      });
+      Sentry.captureException(e);
       // monitoring api
       void logAnalytics({
         type: AnalyticsType.ERROR,
@@ -1128,6 +1143,10 @@ const BridgeV2: React.FC = () => {
           onSuccess: hideModal,
           onFailure: hideModal,
         });
+        void analytics().logEvent('SWAP_QUOTE_ERROR', {
+          error: e,
+        });
+        Sentry.captureException(e);
       }
     }
   };
@@ -1230,6 +1249,7 @@ const BridgeV2: React.FC = () => {
           onSuccess: navigateToPortfolio,
           onFailure: navigateToPortfolio,
         });
+        Sentry.captureException(e);
       }
     }
   };
@@ -1316,6 +1336,7 @@ const BridgeV2: React.FC = () => {
             txnHash: response.receipt.transactionHash,
             chain: selectedFromChain.chainName,
           });
+          void analytics().logEvent('SWAP_SUCCESS');
         } else {
           activityData.status = ActivityStatus.FAILED;
           activityContext.dispatch({
@@ -1338,6 +1359,10 @@ const BridgeV2: React.FC = () => {
             message: parseErrorMessage(response.error),
             screen: route.name,
           });
+          void analytics().logEvent('SWAP_ERROR', {
+            error: response.error,
+          });
+          Sentry.captureException(response.error);
         }
       } else {
         throw new Error('Chain details not found');
@@ -1358,6 +1383,10 @@ const BridgeV2: React.FC = () => {
         message: parseErrorMessage(e),
         screen: route.name,
       });
+      void analytics().logEvent('SWAP_ERROR', {
+        error: e,
+      });
+      Sentry.captureException(e);
     }
   };
 
@@ -1371,8 +1400,6 @@ const BridgeV2: React.FC = () => {
     setSelectedToToken(oldFromToken);
     setSelectedFromChain(oldToChain);
     setSelectedToChain(oldFromChain);
-    setCryptoAmount('');
-    setUsdAmount('');
     resetValues();
   };
 
@@ -1403,7 +1430,7 @@ const BridgeV2: React.FC = () => {
             </CyDTouchView>
           )}
           <CyDText className='text-black font-extrabold text-[28px] font-manrope'>
-            {index === 1 ? 'Route Preview' : 'Bridge'}
+            {index === 1 ? 'Preview' : 'Bridge'}
           </CyDText>
           <CyDView />
         </CyDView>
@@ -1988,7 +2015,7 @@ const BridgeV2: React.FC = () => {
                   setIndex(1);
                 }
               }}
-              title={isOdosSwap() ? 'Swap' : 'Preview'}
+              title={'Preview'}
               disabled={isPreviewDisabled()}
               loading={
                 loading.acceptSwapLoading ||

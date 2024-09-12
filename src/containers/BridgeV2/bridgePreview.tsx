@@ -332,8 +332,8 @@ export default function BridgeRoutePreview({
           <Button
             onPress={() => {
               void handleBridgePress();
-            }} // Updated to use handleBridgePress
-            title={'Bridge'}
+            }}
+            title={'Accept'}
             disabled={isEmpty(routeResponse)}
             loading={loading}
             loaderStyle={styles.loaderStyle}
