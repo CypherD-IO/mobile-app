@@ -351,3 +351,9 @@ export enum CypherPlanId {
   BASIC_PLAN = 'basic_plan_v1',
   PRO_PLAN = 'pro_plan_v1',
 }
+
+export enum CardOperationsAuthType {
+  UNLOCK = 'status',
+  UNBLOCK = 'unblock',
+  ZERO_RESTRICTION_MODE_ON = 'god-mode',
+}
