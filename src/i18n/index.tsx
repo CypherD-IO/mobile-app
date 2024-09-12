@@ -1233,6 +1233,26 @@ const resources = {
         'Referrer can track their accumulated reward points through their account, under rewards section',
       HOW_IT_WORKS_5:
         'There is no limit to how many reward points a referrer can earn, as long as the referred user continues to spend with their Cypher card.',
+      CREATE_REFERRAL_CODE: 'Create New Referral Code',
+      CREATE_REFERRAL_CODE_SUB:
+        'You can create personalized invite codes that you can share with friends, family, or on social media.',
+      REFERRAL_CODE: 'Referral Code',
+      REFERRAL_CODE_CREATED: 'Referral Code Created',
+      REFERRAL_CODE_CREATED_MESSAGE:
+        'Your referral code has been created successfully',
+      REFERRAL_CODE_CREATION_FAILED: 'Referral Code Creation Failed',
+      REFERRAL_CODE_CREATION_FAILED_MESSAGE:
+        'Unable to create referral code. Please try again later.',
+      REFERRAL_CODE_FETCH_FAILED: 'Referral Information Fetch Failed',
+      REFERRAL_CODE_FETCH_FAILED_MESSAGE:
+        'Unable to fetch your referral information. Please contact support.',
+      REFERRAL_CODE_LENGTH_INFO:
+        '* Referral code must be at least 6 characters',
+      REFERRAL_CODE_QR_SUB: 'Scan the QR code to share your referral link',
+      REFERRAL_NOT_AVAILABLE: 'Referral Not Available',
+      REFERRAL_NOT_AVAILABLE_MESSAGE:
+        'Get your card to start referring friends',
+      NO_REFERRALS_YET_MESSAGE: 'Your friends have not signed up yet',
     },
   },
 };

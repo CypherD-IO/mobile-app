@@ -154,7 +154,7 @@ export default function Rewards({ route, navigation }) {
                 <CyDTouchView
                   className='w-1/2 flex-shrink-0 flex-col h-[228px] p-[12px] bg-rewardsYellow rounded-[16px]'
                   onPress={() => {
-                    navigation.navigate(screenTitle.SEND_INVITE_CODE_SCREEN, {
+                    navigation.navigate(screenTitle.REFERRALS, {
                       fromOptionsStack: true,
                     });
                   }}>

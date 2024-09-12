@@ -1,5 +1,11 @@
 import React, { useEffect, useState } from 'react';
-import { SafeAreaView, ScrollView, Linking, Share } from 'react-native';
+import {
+  SafeAreaView,
+  ScrollView,
+  Linking,
+  Share,
+  Clipboard,
+} from 'react-native';
 import {
   CyDImage,
   CyDText,
@@ -12,19 +18,29 @@ import useAxios from '../../core/HttpRequest';
 import LottieView from 'lottie-react-native';
 import { t } from 'i18next';
 import Button from '../../components/v2/button';
-import { ButtonType } from '../../constants/enum';
+import { ButtonType, CardApplicationStatus } from '../../constants/enum';
+import NewReferralCodeModal from '../../components/v2/newReferralCodeModal';
+import { useGlobalModalContext } from '../../components/v2/GlobalModal';
+import { showToast } from '../../containers/utilities/toastUtility';
+import ShowQRCodeModal from '../../components/v2/showQRCodeModal';
+
+const copyToClipboard = (text: string) => {
+  Clipboard.setString(text);
+  showToast('Copied to clipboard');
+};
 
 const ShareVia = ({ referralLink }: { referralLink: string }) => {
-  const shareUrlText = `Hey! I've been using the Cypher Card, and it's a game-changer for crypto spending. Check it out:
+  const [isQrModalVisible, setIsQrModalVisible] = useState(false);
+  const shareUrlText = `🚀 Revolutionize your crypto spending with Cypher Card! I'm loving it, and here's why:
 
-    ✅ Seamless Google Pay and Apple Pay support
-    ✅ Incredibly low forex fees (just 0.5% on the premium plan!)
-    ✅ Spend your crypto easily anywhere cards are accepted
+    💳 Google Pay & Apple Pay support
+    💰 0.5% forex fee on premium plan
+    🌍 Use your crypto anywhere, just like a regular card
 
-    Here's my referral link: ${referralLink}
+  🎁 Use my referral link to join and we'll both earn rewards! :
+  ${referralLink}
 
-    By using this link, you can get started with Cypher Card and we'll both earn amazing rewards.
-  `;
+  Learn more about Cypher Card at https://cypherhq.io/card/`;
 
   const shareOptions = [
     {
@@ -68,8 +84,7 @@ const ShareVia = ({ referralLink }: { referralLink: string }) => {
         });
       }
     } else if (option.name === 'QR Code') {
-      // Implement QR code generation logic here
-      console.log('QR Code generation not implemented');
+      setIsQrModalVisible(true);
     } else if (option.name === 'Share') {
       try {
         await Share.share({
@@ -82,20 +97,27 @@ const ShareVia = ({ referralLink }: { referralLink: string }) => {
   };
 
   return (
-    <CyDView className='p-[16px]'>
-      <CyDText className='text-sm font-medium'>Share via</CyDText>
-      <CyDView className='flex-row justify-between mt-[12px]'>
-        {shareOptions.map((option, index) => (
-          <CyDTouchView
-            key={index}
-            className='items-center w-[58px] h-[58px]'
-            onPress={() => void handleShare(option)}>
-            <CyDImage source={option.icon} className='w-[36px] h-[36px]' />
-            <CyDText className='text-[10px] mt-[6px]'>{option.name}</CyDText>
-          </CyDTouchView>
-        ))}
+    <>
+      <ShowQRCodeModal
+        isModalVisible={isQrModalVisible}
+        setIsModalVisible={setIsQrModalVisible}
+        referralUrl={referralLink}
+      />
+      <CyDView className='p-[16px]'>
+        <CyDText className='text-sm font-medium'>Share via</CyDText>
+        <CyDView className='flex-row justify-between mt-[12px]'>
+          {shareOptions.map((option, index) => (
+            <CyDTouchView
+              key={index}
+              className='items-center w-[58px] h-[58px]'
+              onPress={() => void handleShare(option)}>
+              <CyDImage source={option.icon} className='w-[36px] h-[36px]' />
+              <CyDText className='text-[10px] mt-[6px]'>{option.name}</CyDText>
+            </CyDTouchView>
+          ))}
+        </CyDView>
       </CyDView>
-    </CyDView>
+    </>
   );
 };
 
@@ -111,10 +133,12 @@ const ReferralInfo = ({
       <CyDText className='font-[500]'>{t('LINK')}</CyDText>
       <CyDView className='flex flex-row items-center'>
         <CyDText className='text-[12px]'>{referralLink}</CyDText>
-        <CyDImage
-          source={AppImages.COPY_DARK}
-          className='w-[24px] h-[24px] ml-[8px]'
-        />
+        <CyDTouchView onPress={() => copyToClipboard(referralLink)}>
+          <CyDImage
+            source={AppImages.COPY_DARK}
+            className='w-[24px] h-[24px] ml-[8px]'
+          />
+        </CyDTouchView>
       </CyDView>
     </CyDView>
     <CyDView className='h-[1px] bg-cardBg'></CyDView>
@@ -122,10 +146,12 @@ const ReferralInfo = ({
       <CyDText className='font-[500]'>{t('CODE')}</CyDText>
       <CyDView className='flex flex-row items-center'>
         <CyDText className='font-bold'>{referralCode}</CyDText>
-        <CyDImage
-          source={AppImages.COPY_DARK}
-          className='w-[24px] h-[24px] ml-[8px]'
-        />
+        <CyDTouchView onPress={() => copyToClipboard(referralCode)}>
+          <CyDImage
+            source={AppImages.COPY_DARK}
+            className='w-[24px] h-[24px] ml-[8px]'
+          />
+        </CyDTouchView>
       </CyDView>
     </CyDView>
     <CyDView className='h-[1px] bg-cardBg'></CyDView>
@@ -134,35 +160,86 @@ const ReferralInfo = ({
 );
 
 const PointsInfo = ({
-  referredAddress,
-  points,
+  referral,
 }: {
-  referredAddress: string;
-  points: number;
+  referral: {
+    masterAddress: string;
+    referralCode: string;
+    applicationStatus: string;
+    rewardContribution: number;
+    createdAt: string;
+  };
 }) => {
-  const trimmedAddress = `${referredAddress.slice(0, 4)}......${referredAddress.slice(-4)}`;
+  const {
+    masterAddress,
+    referralCode,
+    applicationStatus,
+    rewardContribution,
+    createdAt,
+  } = referral;
+  const trimmedAddress = `${masterAddress.slice(0, 4)}......${masterAddress.slice(-4)}`;
+  const formattedDate = createdAt
+    ? new Date(createdAt).toLocaleDateString('en-GB', {
+        day: 'numeric',
+        month: 'short',
+        year: 'numeric',
+      })
+    : '';
+  const referralStatus = getReferralStatus(applicationStatus);
 
   return (
-    <CyDView className='mt-[24px]'>
-      <CyDText className='text-[16px] font-[500] text-black'>
-        {t('POINTS_EARNED')}
-      </CyDText>
-      <CyDView className='flex flex-col text-black bg-white rounded-[8px] mt-[6px]'>
-        <CyDView className='flex flex-row items-center justify-between p-[16px]'>
-          <CyDText className='font-[500] font-[500] '>{trimmedAddress}</CyDText>
+    <>
+      <CyDView className='flex flex-row items-center justify-between p-[16px]'>
+        <CyDText className='font-[500] font-[500] '>{trimmedAddress}</CyDText>
+
+        {applicationStatus !== CardApplicationStatus.COMPLETED && (
+          <>
+            <CyDText>{formattedDate}</CyDText>
+            <CyDView className='flex flex-row items-center'>
+              <CyDView
+                className={`w-[10px] h-[10px] rounded-full mr-[8px] ${referralStatus === 'KYC Failed' ? 'bg-red-500' : 'bg-yellow-400'}`}
+              />
+              <CyDText className='font-[600]'>{referralStatus}</CyDText>
+            </CyDView>
+          </>
+        )}
+        {applicationStatus === CardApplicationStatus.COMPLETED && (
           <CyDView className='flex flex-row items-center'>
             <CyDImage
               source={AppImages.REFERRAL_STAR}
               className='w-[18px] h-[18px] mr-[4px]'
             />
             <CyDText className='font-[600]'>
-              {points.toLocaleString('en-US')}
+              {rewardContribution.toLocaleString('en-US')}
             </CyDText>
           </CyDView>
-        </CyDView>
+        )}
       </CyDView>
-    </CyDView>
+      <CyDView className='h-[1px] bg-cardBg' />
+    </>
   );
+};
+
+const getReferralStatus = (applicationStatus: string) => {
+  switch (applicationStatus) {
+    case CardApplicationStatus.CREATED ||
+      CardApplicationStatus.VERIFICATION_COMPLETE ||
+      CardApplicationStatus.VERIFICATION_PENDING ||
+      CardApplicationStatus.KYC_INITIATED ||
+      CardApplicationStatus.KYC_PENDING ||
+      CardApplicationStatus.KYC_SUCCESSFUL ||
+      CardApplicationStatus.SUBMITTED ||
+      CardApplicationStatus.COMPLETION_PENDING:
+      return 'Signed up';
+    case CardApplicationStatus.KYC_FAILED ||
+      CardApplicationStatus.KYC_EXPIRED ||
+      CardApplicationStatus.DECLINED:
+      return 'KYC Failed';
+    case CardApplicationStatus.COMPLETED:
+      return 'Completed';
+    default:
+      return 'Signed up';
+  }
 };
 
 const HowItWorks = () => {
@@ -222,16 +299,96 @@ const HowItWorks = () => {
   );
 };
 export default function Referrals({ route, navigation }) {
-  const [loading, setLoading] = useState<boolean>(false);
-  const { getWithAuth } = useAxios();
+  const [isModalVisible, setIsModalVisible] = useState(false);
+  const { postWithAuth, getWithAuth } = useAxios();
+  const { showModal, hideModal } = useGlobalModalContext();
+  const [code, setCode] = useState('');
+  const [createReferralCodeLoading, setCreateReferralCodeLoading] =
+    useState(false);
+  const [referralData, setReferralData] = useState(null);
+  const [referralDataLoading, setReferralDataLoading] = useState(false);
+
+  useEffect(() => {
+    void getReferralData();
+  }, []);
+
+  const getReferralData = async () => {
+    setReferralDataLoading(true);
+    const response = await getWithAuth('/v1/cards/referral-v2');
+    setReferralDataLoading(false);
+
+    if (!response.isError) {
+      if (response.data.referralCodes.length === 0) {
+        showModal('state', {
+          type: 'warning',
+          title: t('REFERRAL_NOT_AVAILABLE'),
+          description: t('REFERRAL_NOT_AVAILABLE_MESSAGE'),
+          onSuccess: () => {
+            navigation.goBack();
+            hideModal();
+          },
+          onFailure: () => {
+            navigation.goBack();
+            hideModal();
+          },
+        });
+      } else {
+        setReferralData(response.data);
+      }
+    } else {
+      showModal('state', {
+        type: 'error',
+        title: t('REFERRAL_CODE_FETCH_FAILED'),
+        description: t('REFERRAL_CODE_FETCH_FAILED_MESSAGE'),
+        onSuccess: hideModal,
+        onFailure: hideModal,
+      });
+    }
+  };
+
+  const createReferralCode = async () => {
+    setIsModalVisible(false);
+    setCreateReferralCodeLoading(true);
+    const response = await postWithAuth('/v1/cards/referral-v2', {
+      referralCode: code,
+    });
+    setCreateReferralCodeLoading(false);
+    if (!response.isError) {
+      showModal('state', {
+        type: 'success',
+        title: t('REFERRAL_CODE_CREATED'),
+        description: t('REFERRAL_CODE_CREATED_MESSAGE'),
+        onSuccess: () => {
+          hideModal();
+          void getReferralData();
+        },
+        onFailure: hideModal,
+      });
+    } else {
+      showModal('state', {
+        type: 'error',
+        title: t('REFERRAL_CODE_CREATION_FAILED'),
+        description:
+          response.error.message ?? t('REFERRAL_CODE_CREATION_FAILED_MESSAGE'),
+        onSuccess: hideModal,
+        onFailure: hideModal,
+      });
+    }
+  };
 
   return (
     <>
       <SafeAreaView className='flex bg-cardBg h-full'>
+        <NewReferralCodeModal
+          isModalVisible={isModalVisible}
+          setIsModalVisible={setIsModalVisible}
+          createReferralCode={createReferralCode}
+          code={code}
+          setCode={setCode}
+        />
         <CyDView className='flex-row items-center justify-between mx-[16px]'>
           <CyDTouchView
             onPress={() => {
-              console.log('back');
               navigation.goBack();
             }}
             className='w-[36px] h-[36px]'>
@@ -270,18 +427,57 @@ export default function Referrals({ route, navigation }) {
                 title={t('NEW_CODE')}
                 image={AppImages.CIRCULAR_PLUS}
                 imageStyle='w-[16px] h-[16px] mr-[4px]'
-                onPress={() => {}}
-                style='p-[8px]'
+                onPress={() => {
+                  setIsModalVisible(true);
+                }}
+                style='p-[8px] w-[113px]'
+                loading={createReferralCodeLoading}
+                loaderStyle={{
+                  height: 22,
+                  width: 22,
+                }}
               />
             </CyDView>
-            <ReferralInfo
-              referralLink='https://cypherhq.io/refer/A8CQ3737'
-              referralCode='A8CQ3737'
-            />
-            <PointsInfo
-              referredAddress='0x1940821a0875867d32de4d6da184574cafbdc491'
-              points={100000000}
-            />
+            {!referralDataLoading &&
+              referralData?.referralCodes.map((code, index) => (
+                <ReferralInfo
+                  key={index}
+                  referralLink={`https://cypherhq.io/refer/${code}`}
+                  referralCode={code}
+                />
+              ))}
+            {referralDataLoading && (
+              <CyDView className='flex flex-col text-black bg-white rounded-[8px] mt-[6px] p-[8px] items-center justify-center'>
+                <LottieView
+                  source={AppImages.LOADER_TRANSPARENT}
+                  autoPlay
+                  loop
+                  style={{
+                    width: 30,
+                    height: 30,
+                  }}
+                />
+              </CyDView>
+            )}
+            {!referralDataLoading && (
+              <CyDView className='mt-[24px]'>
+                <CyDText className='text-[16px] font-[500] text-black'>
+                  {t('POINTS_EARNED')}
+                </CyDText>
+
+                <CyDView className='flex flex-col text-black bg-white rounded-[8px] mt-[6px]'>
+                  {referralData?.referrals.length > 0 ? (
+                    referralData?.referrals.map((referral, key) => (
+                      <PointsInfo key={key} referral={referral} />
+                    ))
+                  ) : (
+                    <CyDText className='text-[14px] font-[500] m-[16px] text-center'>
+                      {t('NO_REFERRALS_YET_MESSAGE')}
+                    </CyDText>
+                  )}
+                </CyDView>
+              </CyDView>
+            )}
             <HowItWorks />
           </CyDView>
         </ScrollView>

@@ -554,6 +554,9 @@ const HOW_IT_WORKS_4 = {
 const HOW_IT_WORKS_5 = {
   uri: `${S3_BUCKET_URL_ICONS}/howItWorks5.png`,
 };
+const BLACK_CLOSE = {
+  uri: `${S3_BUCKET_URL_ICONS}/blackClose.png`,
+};
 
 const AppImages = {
   SUCCESS_TICK_GREEN_BG,
@@ -971,5 +974,6 @@ const AppImages = {
   HOW_IT_WORKS_3,
   HOW_IT_WORKS_4,
   HOW_IT_WORKS_5,
+  BLACK_CLOSE,
 };
 export default AppImages;
