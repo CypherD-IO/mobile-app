@@ -431,6 +431,7 @@ export default function Referrals({ route, navigation }) {
                   setIsModalVisible(true);
                 }}
                 style='p-[8px] w-[113px]'
+                titleStyle='text-black'
                 loading={createReferralCodeLoading}
                 loaderStyle={{
                   height: 22,
