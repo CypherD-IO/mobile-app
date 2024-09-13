@@ -1208,6 +1208,11 @@ const resources = {
       DOWNGRADE_PLAN_CONSENT:
         'I understand that downgrading will revoke all my premium feature access, and accept the ',
       ZERO_RESTRICTION_MODE_TITLE: 'Zero Restriction Mode',
+      ADD_FUND: 'Add Fund',
+      MOVE_FUNDS_TO_NEW_CARD: 'Move funds to your new card',
+      MANAGE_TOP_UP: 'Manage top up',
+      MIGRATION_ERROR: 'Migration Error.',
+      MIGRATION_ERROR_DESCRIPTION: 'Please contact support for more details.',
       TOKEN_ALLOWANCE_APPROVE: 'Token Allowance Approval',
       LONGER_THAN_USUAL: 'Talking longer than usual',
       ESTIMATED_NETWORK_FEE: 'Estimated Network Fee',
