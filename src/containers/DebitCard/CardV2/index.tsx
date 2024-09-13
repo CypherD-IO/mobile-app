@@ -348,7 +348,6 @@ export default function CypherCardScreen({
 
       <AutoLoadOptionsModal
         isModalVisible={isAutoLoadOptionsvisible}
-        a
         setShowModal={setIsAutoLoadOptionsVisible}
         navigation={navigation}
       />
