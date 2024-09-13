@@ -63,7 +63,7 @@ export default function SelectPlan() {
     deductAmountNow = false,
     toPage = '',
     cardBalance = 0,
-  } = route.params;
+  } = route.params ?? {};
 
   const [showComparision, setShowComparision] = useState(false);
   const [showConsent, setShowConsent] = useState(false);
@@ -722,7 +722,7 @@ export default function SelectPlan() {
                           onPress={() => {
                             setHasConsent(!hasConsent);
                           }}>
-                          {true && (
+                          {hasConsent && (
                             <CyDImage
                               source={AppImages.CORRECT}
                               className='h-[15px] w-[15px] ml-[2px]'

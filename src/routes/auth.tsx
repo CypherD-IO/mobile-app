@@ -112,6 +112,7 @@ import GetYourCardInfo from '../containers/DebitCard/CardV2/signup/getYourCardIn
 import CardApplicationV2 from '../containers/DebitCard/CardV2/signup/application';
 import WelcomeSceens from '../containers/DebitCard/CardV2/signup/welcomeScreens';
 import Rewards from '../containers/Options/rewards';
+import MigratePCFunds from '../containers/DebitCard/CardV2/migrateFunds';
 import BridgeV2 from '../containers/BridgeV2';
 
 const { DynamicImage, DynamicButton } = require('../styles');
@@ -1318,6 +1319,22 @@ export function DebitCardStackScreen() {
           headerTitle: '',
           headerTintColor: Colors.primaryTextColor,
           headerBackTitleVisible: false,
+          headerLeft: props => defaultHeaderLeft(navigation),
+        })}
+      />
+      <FundCardStack.Screen
+        name={screenTitle.MIGRATE_FUNDS}
+        component={MigratePCFunds}
+        options={({ navigation }): NativeStackNavigationOptions => ({
+          headerTransparent: true,
+          headerShadowVisible: false,
+          headerTitle: 'Move funds',
+          headerTintColor: '#000000', // Corrected color code
+          headerTitleStyle: {
+            fontSize: 28, // Set the font size for the title
+            textAlign: 'center', // Set the text alignment for the title
+            fontWeight: 'bold', // Set the font weight for the title
+          },
           headerLeft: props => defaultHeaderLeft(navigation),
         })}
       />

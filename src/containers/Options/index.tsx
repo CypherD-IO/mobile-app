@@ -321,21 +321,6 @@ export default function Options(props: {
                   />
                 )}
 
-              {/* <OptionsContainer
-                            sentryLabel={'debit-card'}
-                            onPress={() => {
-                              analytics().logEvent('shortcut_card', { from: ethereum.address });
-                              props.navigation.navigate(C.screenTitle.DEBIT_CARD_SCREEN, {
-                                params: { url: 'https://app.cypherd.io?source=app&address=' + ethereum.address }
-                              });
-                            }}
-                            title={'Manage Card'}
-                            logo={AppImages.MANAGE_CARD}
-                            iW={90}
-                            ></OptionsContainer>
-                            
-                          <DynamicView dynamic dynamicWidth dynamicHeightFix height={1} width={88} bGC={Colors.portfolioBorderColor} /> */}
-
               <OptionsContainer
                 sentryLabel={'security-privacy'}
                 onPress={() => {
