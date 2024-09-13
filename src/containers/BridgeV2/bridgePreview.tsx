@@ -1,15 +1,10 @@
-import React, { Dispatch, SetStateAction, useEffect, useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { SkipApiRouteResponse } from '../../models/skipApiRouteResponse.interface';
 import { SkipApiStatus } from '../../models/skipApiStatus.interface';
 import Loading from '../../components/v2/loading';
 import { capitalize, endsWith, find, get, isEmpty, isNumber } from 'lodash';
 import { ethers } from 'ethers';
-import {
-  CyDFastImage,
-  CyDScrollView,
-  CyDText,
-  CyDView,
-} from '../../styles/tailwindStyles';
+import { CyDFastImage, CyDText, CyDView } from '../../styles/tailwindStyles';
 import clsx from 'clsx';
 import { SvgUri } from 'react-native-svg';
 import Button from '../../components/v2/button';
@@ -45,7 +40,7 @@ export default function BridgeRoutePreview({
   let timer: NodeJS.Timeout;
   const [countdown, setCountdown] = useState<number | null>(
     isNumber(routeResponse?.estimated_route_duration_seconds)
-      ? routeResponse.estimated_route_duration_seconds + 30
+      ? Number(routeResponse.estimated_route_duration_seconds) + 30
       : null,
   );
 
