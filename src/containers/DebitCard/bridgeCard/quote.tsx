@@ -94,6 +94,7 @@ export default function CardQuote({
   const noble = hdWallet.state.wallet.noble;
   const coreum = hdWallet.state.wallet.coreum;
   const kujira = hdWallet.state.wallet.kujira;
+  const injective = hdWallet.state.wallet.injective;
 
   const cosmosAddresses = {
     cosmos: cosmos.address,
@@ -103,6 +104,7 @@ export default function CardQuote({
     noble: noble.address,
     coreum: coreum.address,
     kujira: kujira.address,
+    injective: injective.address,
   };
 
   const chainLogo = get(
