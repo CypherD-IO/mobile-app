@@ -1212,6 +1212,7 @@ const resources = {
       MOVE_FUNDS_TO_NEW_CARD: 'Move funds to your new card',
       MIGRATION_ERROR: 'Migration Error.',
       MIGRATION_ERROR_DESCRIPTION: 'Please contact support for more details.',
+      MIGRATE_FUNDS: 'Migrate Funds',
       TOKEN_ALLOWANCE_APPROVE: 'Token Allowance Approval',
       LONGER_THAN_USUAL: 'Talking longer than usual',
       ESTIMATED_NETWORK_FEE: 'Estimated Network Fee',

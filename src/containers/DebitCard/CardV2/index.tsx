@@ -125,16 +125,7 @@ export default function CypherCardScreen({
       status: ActivityStatus;
       createdAt: number;
     }>
-  >([
-    {
-      requestId: '123',
-      amount: 100,
-      isCompleteMigration: false,
-      batchId: '123',
-      status: ActivityStatus.SUCCESS,
-      createdAt: 1234567890,
-    },
-  ]);
+  >([]);
   const onRefresh = async () => {
     void refreshProfile();
     setCardBalance('');
@@ -301,7 +292,7 @@ export default function CypherCardScreen({
   const getMigrationData = async () => {
     const { data, isError } = await getWithAuth('/v1/cards/migration');
     if (!isError) {
-      // setMigrationData(data);
+      setMigrationData(data);
     }
   };
 
@@ -365,7 +356,7 @@ export default function CypherCardScreen({
             {!balanceLoading ? (
               <CyDTouchView onPress={() => fetchCardBalance().catch}>
                 <CyDView className='flex flex-row items-center justify-start gap-x-[8px]'>
-                  <CyDText className={'font-bold text-[28px] tracking-tight'}>
+                  <CyDText className={'font-bold text-[28px]'}>
                     {(cardBalance !== 'NA' ? '$ ' : '') + cardBalance}
                   </CyDText>
                   <CyDImage
@@ -395,91 +386,91 @@ export default function CypherCardScreen({
         )}
       </CyDView>
 
-      {/* migration amount  */}
-      {migrationData.length > 0 &&
-        cardId !== HIDDEN_CARD_ID &&
-        cardProvider === CardProviders.REAP_CARD && (
-          <CyDView className='flex flex-row items-center mx-[16px] mb-[12px]'>
-            <CyDImage
-              source={AppImages.CLOCK_OUTLINE}
-              className='w-[24px] h-[24px] mr-[8px]'
-            />
-            <CyDText className='text-[10px] font-medium w-[80%]'>
-              {'Your old balance '}
-              <CyDText className='text-[12px] font-bold'>
-                {`“$${sumBy(migrationData, 'amount')}“`}
+      <CyDScrollView>
+        {/* migration amount  */}
+        {migrationData.length > 0 &&
+          cardId !== HIDDEN_CARD_ID &&
+          cardProvider === CardProviders.REAP_CARD && (
+            <CyDView className='flex flex-row items-center mx-[16px] mb-[12px]'>
+              <CyDImage
+                source={AppImages.CLOCK_OUTLINE}
+                className='w-[24px] h-[24px] mr-[8px]'
+              />
+              <CyDText className='text-[10px] font-medium w-[80%]'>
+                {'Your old balance '}
+                <CyDText className='text-[12px] font-bold'>
+                  {`“$${sumBy(migrationData, 'amount')}“`}
+                </CyDText>
+                {' will be transferred within 3 to 5 business days.'}
               </CyDText>
-              {' will be transferred within 3 to 5 business days.'}
-            </CyDText>
+            </CyDView>
+          )}
+
+        {cardId !== HIDDEN_CARD_ID && (
+          <CyDView className='flex flex-row justify-between items-center mx-[16px]'>
+            {cardProvider === CardProviders.PAYCADDY && (
+              <CyDView className='w-[70%] mr-[12px]'>
+                <Button
+                  disabled={shouldBlockAction() || !cardBalance}
+                  onPress={() => {
+                    navigation.navigate(screenTitle.MIGRATE_FUNDS, {
+                      cardBalance,
+                      migrationData,
+                    });
+                  }}
+                  image={AppImages.MIGRATE_FUNDS_ICON}
+                  style={'p-[9px] rounded-[6px] border-[0px]'}
+                  imageStyle={'mr-[3px] h-[14px] w-[24px]'}
+                  title={t('MOVE_FUNDS_TO_NEW_CARD')}
+                  titleStyle={'text-[12px] font-semibold'}
+                  type={ButtonType.SECONDARY}
+                />
+              </CyDView>
+            )}
+
+            <CyDView
+              className={clsx('h-[36px]', {
+                'w-[48%]': cardProvider === CardProviders.REAP_CARD,
+                'w-[25%] mr-[16px]': cardProvider === CardProviders.PAYCADDY,
+              })}>
+              <Button
+                image={AppImages.PLUS}
+                disabled={shouldBlockAction()}
+                onPress={() => {
+                  onPressFundCard();
+                }}
+                style={'p-[9px] rounded-[6px]'}
+                imageStyle={'mr-[3px] h-[12px] w-[12px]'}
+                title={t('ADD_FUND')}
+                titleStyle={'text-[12px] font-bold'}
+              />
+            </CyDView>
+
+            {cardProvider === CardProviders.REAP_CARD && (
+              <CyDView className='w-[48%]'>
+                <Button
+                  disabled={shouldBlockAction()}
+                  onPress={() => {
+                    cardProfile?.isAutoloadConfigured
+                      ? setIsAutoLoadOptionsVisible(true)
+                      : navigation.navigate(screenTitle.AUTO_LOAD_SCREEN);
+                  }}
+                  image={AppImages.AUTOLOAD}
+                  style={'p-[9px] rounded-[6px] border-[0px] h-[36px]'}
+                  imageStyle={'mr-[3px] h-[24px] w-[24px]'}
+                  // title={t('MANAGE_TOP_UP')}
+                  title={
+                    (cardProfile?.isAutoloadConfigured ? 'Manage' : 'Setup') +
+                    ' Auto Deposit'
+                  }
+                  titleStyle={'text-[12px] font-semibold'}
+                  type={ButtonType.SECONDARY}
+                />
+              </CyDView>
+            )}
           </CyDView>
         )}
 
-      {cardId !== HIDDEN_CARD_ID && (
-        <CyDView className='flex flex-row justify-between items-center mx-[16px]'>
-          {cardProvider === CardProviders.PAYCADDY && (
-            <CyDView className='w-[70%] mr-[12px]'>
-              <Button
-                disabled={shouldBlockAction() || !cardBalance}
-                onPress={() => {
-                  navigation.navigate(screenTitle.MIGRATE_FUNDS, {
-                    cardBalance,
-                    migrationData,
-                  });
-                }}
-                image={AppImages.MIGRATE_FUNDS_ICON}
-                style={'p-[9px] rounded-[6px] border-[0px]'}
-                imageStyle={'mr-[3px] h-[14px] w-[24px]'}
-                title={t('MOVE_FUNDS_TO_NEW_CARD')}
-                titleStyle={'text-[12px] font-semibold'}
-                type={ButtonType.SECONDARY}
-              />
-            </CyDView>
-          )}
-
-          <CyDView
-            className={clsx('h-[36px]', {
-              'w-[48%]': cardProvider === CardProviders.REAP_CARD,
-              'w-[25%] mr-[16px]': cardProvider === CardProviders.PAYCADDY,
-            })}>
-            <Button
-              image={AppImages.PLUS}
-              disabled={shouldBlockAction()}
-              onPress={() => {
-                onPressFundCard();
-              }}
-              style={'p-[9px] rounded-[6px]'}
-              imageStyle={'mr-[3px] h-[12px] w-[12px]'}
-              title={t('ADD_FUND')}
-              titleStyle={'text-[12px] font-bold'}
-            />
-          </CyDView>
-
-          {cardProvider === CardProviders.REAP_CARD && (
-            <CyDView className='w-[48%]'>
-              <Button
-                disabled={shouldBlockAction()}
-                onPress={() => {
-                  cardProfile?.isAutoloadConfigured
-                    ? setIsAutoLoadOptionsVisible(true)
-                    : navigation.navigate(screenTitle.AUTO_LOAD_SCREEN);
-                }}
-                image={AppImages.AUTOLOAD}
-                style={'p-[9px] rounded-[6px] border-[0px] h-[36px]'}
-                imageStyle={'mr-[3px] h-[24px] w-[24px]'}
-                // title={t('MANAGE_TOP_UP')}
-                title={
-                  (cardProfile?.isAutoloadConfigured ? 'Manage' : 'Setup') +
-                  ' Auto Deposit'
-                }
-                titleStyle={'text-[12px] font-semibold'}
-                type={ButtonType.SECONDARY}
-              />
-            </CyDView>
-          )}
-        </CyDView>
-      )}
-
-      <CyDScrollView>
         {shouldBlockAction() && (
           <CyDView className='rounded-[16px] bg-r20 border-[1px] border-r300 p-[14px] m-[16px]'>
             <CyDText className='text-[18px] font-[700] text-r300'>

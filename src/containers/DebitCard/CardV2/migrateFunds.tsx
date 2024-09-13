@@ -1,4 +1,4 @@
-import React, { useCallback, useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import {
   CyDImage,
   CyDKeyboardAwareScrollView,
@@ -6,21 +6,22 @@ import {
   CyDTextInput,
   CyDTouchView,
   CyDView,
-} from '../../../../styles/tailwindStyles';
-import { RouteProp, useFocusEffect, useRoute } from '@react-navigation/native';
-import AppImages from '../../../../../assets/images/appImages';
+} from '../../../styles/tailwindStyles';
+import { RouteProp, useRoute } from '@react-navigation/native';
+import AppImages from '../../../../assets/images/appImages';
 import clsx from 'clsx';
 import { v4 as uuidv4 } from 'uuid';
-import useAxios from '../../../../core/HttpRequest';
-import { useGlobalModalContext } from '../../../../components/v2/GlobalModal';
+import useAxios from '../../../core/HttpRequest';
+import { useGlobalModalContext } from '../../../components/v2/GlobalModal';
 import { t } from 'i18next';
-import { parseErrorMessage } from '../../../../core/util';
-import Button from '../../../../components/v2/button';
+import { parseErrorMessage } from '../../../core/util';
+import Button from '../../../components/v2/button';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { StyleSheet } from 'react-native';
-import { ActivityStatus } from '../../../../reducers/activity_reducer';
+import { ActivityStatus } from '../../../reducers/activity_reducer';
 import moment from 'moment';
 import { get } from 'lodash';
+import CyDModalLayout from '../../../components/v2/modal';
 
 interface MoveFundsPost {
   idempotencyKey: string;
@@ -35,47 +36,61 @@ interface RouteParams {
     amount: number;
     isCompleteMigration: boolean;
     batchId: string;
-    status: ActivityStatus;
+    status: 'IN_PROGRESS' | 'PENDING' | 'SUCCESS' | 'FAILED';
     createdAt: number;
   }>;
 }
 
 const statuses: Record<string, string> = {
-  [ActivityStatus.PENDING]: 'PENDING',
-  [ActivityStatus.SUCCESS]: 'SUCCESS',
-  [ActivityStatus.FAILED]: 'FAILED',
-  [ActivityStatus.INPROCESS]: 'IN PROCESS',
-  [ActivityStatus.DELAYED]: 'DELAYED',
+  PENDING: 'Pending',
+  SUCCESS: 'Succcess',
+  FAILED: 'Failed',
+  DELAYED: 'Delayed',
+  IN_PROGRESS: 'In Progress',
 };
 
 export default function MigratePCFunds() {
   const insets = useSafeAreaInsets();
-  const { postWithAuth } = useAxios();
+  const { postWithAuth, getWithAuth } = useAxios();
   const { showModal, hideModal } = useGlobalModalContext();
   const route = useRoute<RouteProp<Record<string, RouteParams>, string>>();
   const [moveCustomAmount, setMoveCustomAmount] = useState(false);
   const [inputValue, setInputValue] = useState('');
   const [isLoading, setIsLoading] = useState(false);
-  // const [migrationData, setMigrationData] = useState<
-  //   Array<{
-  //     requestId: string;
-  //     amount: number;
-  //     isCompleteMigration: boolean;
-  //     batchId: string;
-  //     status: ActivityStatus;
-  //     updatedAt: number;
-  //   }>
-  // >([]);
   const [showSuccess, setShowSuccess] = useState(false);
+  const [showConsentModal, setShowConsentModal] = useState(false);
+  const [gaveConsent, setGaveConsent] = useState(false);
+  const [migrationData, setMigrationData] = useState<
+    Array<{
+      requestId: string;
+      amount: number;
+      isCompleteMigration: boolean;
+      batchId: string;
+      status: 'IN_PROGRESS' | 'PENDING' | 'SUCCESS' | 'FAILED';
+      createdAt: number;
+    }>
+  >([]);
 
-  const { cardBalance = 0, migrationData = [] } = route.params;
+  const { cardBalance = 0, migrationData: _migrationData = [] } =
+    route.params ?? {};
+
+  const getMigrationData = async () => {
+    const { isError, data } = await getWithAuth('/v1/cards/migration');
+    if (!isError && data) {
+      setMigrationData(data);
+    }
+  };
+
+  useEffect(() => {
+    setMigrationData(_migrationData);
+  }, [_migrationData]);
 
   const handleMoveFunds = async () => {
     setIsLoading(true);
     const postData: MoveFundsPost = {
       idempotencyKey: uuidv4(),
       amount: moveCustomAmount ? Number(inputValue) : cardBalance,
-      isCompleteMigration: true,
+      isCompleteMigration: false,
     };
     const { isError, error } = await postWithAuth(
       '/v1/cards/migration',
@@ -93,6 +108,7 @@ export default function MigratePCFunds() {
       });
     } else {
       setShowSuccess(true);
+      await getMigrationData();
       setTimeout(() => {
         setShowSuccess(false);
       }, 2000);
@@ -106,6 +122,87 @@ export default function MigratePCFunds() {
       className={clsx('h-full flex flex-col justify-between', {
         'justify-center': showSuccess,
       })}>
+      <CyDModalLayout
+        isModalVisible={showConsentModal}
+        style={styles.modalLayout}
+        setModalVisible={setShowConsentModal}>
+        <CyDView className={'bg-white rounded-t-[20px] p-[16px] pb-[40px]'}>
+          <CyDView className={'flex flex-row items-center'}>
+            <CyDView className='flex-1'>
+              <CyDText className='text-[24px] pl-[16px] font-bold text-center'>
+                {t('MIGRATE_FUNDS')}
+              </CyDText>
+            </CyDView>
+            <CyDTouchView
+              onPress={() => {
+                setShowConsentModal(false);
+              }}
+              className={'text-black'}>
+              <CyDView className='w-[24px] h-[24px] z-[50]'>
+                <CyDImage
+                  source={AppImages.CLOSE}
+                  className={'w-[16px] h-[16px]'}
+                />
+              </CyDView>
+            </CyDTouchView>
+          </CyDView>
+          <CyDView>
+            <CyDView className='flex flex-row justify-center my-[24px]'>
+              <CyDImage
+                source={AppImages.CYPHER_INFO}
+                className='h-[100px] w-[160px]'
+                resizeMode='contain'
+              />
+            </CyDView>
+            <CyDText className='text-[12px] font-medium text-center self-center w-[75%]'>
+              {`You are about to migrate `}
+              <CyDText className='text-[14px] font-bold text-center'>{`”$${moveCustomAmount ? inputValue : cardBalance}”`}</CyDText>
+              {' of your funds to a new VISA® card account.'}
+            </CyDText>
+            <CyDView className='p-[8px] mt-[24px]'>
+              <CyDView className='flex flex-row items-center '>
+                <CyDTouchView
+                  className={clsx(
+                    'h-[20px] w-[20px] border-[1px] rounded-[4px]',
+                    {
+                      'bg-black': gaveConsent,
+                    },
+                  )}
+                  onPress={() => {
+                    setGaveConsent(!gaveConsent);
+                  }}>
+                  {gaveConsent && (
+                    <CyDImage
+                      source={AppImages.CORRECT}
+                      className='h-[15px] w-[15px] ml-[2px]'
+                      resizeMode='contain'
+                    />
+                  )}
+                </CyDTouchView>
+                <CyDView className='w-[95%] ml-[12px] relative'>
+                  <CyDText className='px-[12px] text-[12px]'>
+                    {
+                      'I agree that this action cannot be undone and give my consent to migrate the funds'
+                    }
+                  </CyDText>
+                </CyDView>
+              </CyDView>
+            </CyDView>
+
+            <CyDView className='mt-[18px]'>
+              <Button
+                disabled={!gaveConsent}
+                title={t('CONTINUE_ALL_CAPS')}
+                onPress={() => {
+                  setShowConsentModal(false);
+                  void handleMoveFunds();
+                }}
+              />
+            </CyDView>
+          </CyDView>
+        </CyDView>
+      </CyDModalLayout>
+
       {!showSuccess && (
         <CyDKeyboardAwareScrollView className=''>
           <CyDView className='mx-[16px] mb-[25px]'>
@@ -213,7 +310,7 @@ export default function MigratePCFunds() {
                   {'Funds to move'}
                 </CyDText>
                 <CyDText
-                  className={clsx('text-[12px] font-light text-black', {
+                  className={clsx('text-[12px] font-semibold text-black', {
                     'opacity-50': !moveCustomAmount,
                   })}>
                   {`BAL: $${cardBalance}`}
@@ -267,14 +364,15 @@ export default function MigratePCFunds() {
                   <CyDText className='text-black font-medium text-[10px]'>
                     {moment.unix(item.createdAt).format('DD/MM/YYYY HH:mm')}
                   </CyDText>
+                  {console.log(item.status)}
+                  {console.log(ActivityStatus.IN_PROGRESS)}
                   <CyDText
                     className={clsx('text-black font-regular text-[12px]', {
                       'text-orange-400':
-                        ActivityStatus.INPROCESS === item.status ||
-                        ActivityStatus.PENDING === item.status,
-                      'text-red-500': ActivityStatus.FAILED === item.status,
-                      'text-emerald-700':
-                        ActivityStatus.SUCCESS === item.status,
+                        item.status === 'IN_PROGRESS' ||
+                        item.status === 'PENDING',
+                      'text-red-500': item.status === 'FAILED',
+                      'text-emerald-700': item.status === 'SUCCESS',
                     })}>
                     {get(statuses, item.status, '')}
                   </CyDText>
@@ -284,11 +382,12 @@ export default function MigratePCFunds() {
           </CyDView>
         </CyDKeyboardAwareScrollView>
       )}
+
       {showSuccess && (
         <CyDView className=' mx-[25px]'>
           <CyDImage
-            source={AppImages.CYPHER_SUCCESS}
-            className='w-[72px h-[72px] self-center'
+            source={AppImages.SUCCESS_TICK_GREEN_BG}
+            className='w-[72px] h-[72px] self-center'
           />
           <CyDText className='text-base400 text-[16px] font-bold mt-[16px] text-center'>
             {'Your request has been placed'}
@@ -303,7 +402,7 @@ export default function MigratePCFunds() {
           <Button
             title={t('CONTINUE')}
             onPress={() => {
-              void handleMoveFunds();
+              setShowConsentModal(true);
             }}
             disabled={!inputValue && moveCustomAmount}
             style='w-full'
@@ -320,5 +419,9 @@ const styles = StyleSheet.create({
   loading: {
     height: 22,
     width: 22,
+  },
+  modalLayout: {
+    margin: 0,
+    justifyContent: 'flex-end',
   },
 });

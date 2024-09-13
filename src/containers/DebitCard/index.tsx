@@ -134,6 +134,7 @@ export default function DebitCardScreen(props: RouteProps) {
             {
               name: screenTitle.SELECT_PLAN,
               params: {
+                deductAmountNow: false,
                 toPage: screenTitle.CARD_SIGNUP_SCREEN,
               },
             },
