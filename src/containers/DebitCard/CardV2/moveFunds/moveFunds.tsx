@@ -30,6 +30,14 @@ interface MoveFundsPost {
 
 interface RouteParams {
   cardBalance?: number;
+  migrationData?: Array<{
+    requestId: string;
+    amount: number;
+    isCompleteMigration: boolean;
+    batchId: string;
+    status: ActivityStatus;
+    createdAt: number;
+  }>;
 }
 
 const statuses: Record<string, string> = {
@@ -42,25 +50,25 @@ const statuses: Record<string, string> = {
 
 export default function MigratePCFunds() {
   const insets = useSafeAreaInsets();
-  const { postWithAuth, getWithAuth } = useAxios();
+  const { postWithAuth } = useAxios();
   const { showModal, hideModal } = useGlobalModalContext();
   const route = useRoute<RouteProp<Record<string, RouteParams>, string>>();
   const [moveCustomAmount, setMoveCustomAmount] = useState(false);
   const [inputValue, setInputValue] = useState('');
   const [isLoading, setIsLoading] = useState(false);
-  const [migrationData, setMigrationData] = useState<
-    Array<{
-      requestId: string;
-      amount: number;
-      isCompleteMigration: boolean;
-      batchId: string;
-      status: ActivityStatus;
-      updatedAt: number;
-    }>
-  >([]);
+  // const [migrationData, setMigrationData] = useState<
+  //   Array<{
+  //     requestId: string;
+  //     amount: number;
+  //     isCompleteMigration: boolean;
+  //     batchId: string;
+  //     status: ActivityStatus;
+  //     updatedAt: number;
+  //   }>
+  // >([]);
   const [showSuccess, setShowSuccess] = useState(false);
 
-  const { cardBalance = 0 } = route.params;
+  const { cardBalance = 0, migrationData = [] } = route.params;
 
   const handleMoveFunds = async () => {
     setIsLoading(true);
@@ -92,19 +100,6 @@ export default function MigratePCFunds() {
     setIsLoading(false);
   };
 
-  const getMigrationData = async () => {
-    const { data, isError } = await getWithAuth('/v1/cards/migration');
-    if (!isError) {
-      setMigrationData(data);
-    }
-  };
-
-  useFocusEffect(
-    useCallback(() => {
-      void getMigrationData();
-    }, []),
-  );
-
   return (
     <CyDView
       style={{ paddingTop: insets.top + 50 }}
@@ -127,7 +122,7 @@ export default function MigratePCFunds() {
                 setMoveCustomAmount(false);
               }}>
               <CyDView className='flex flex-row items-start justify-between'>
-                <CyDText className='font-bold text-[18px] text-black w-[300px]'>
+                <CyDText className='font-bold text-[18px] text-black w-[300px] font-manrope'>
                   {'Move all the funds to new VISA® card account'}
                 </CyDText>
                 <CyDImage
@@ -270,7 +265,7 @@ export default function MigratePCFunds() {
                     {`$${item.amount.toLocaleString()}`}
                   </CyDText>
                   <CyDText className='text-black font-medium text-[10px]'>
-                    {moment(item.updatedAt).format('DD/MM/YYYY HH:mm')}
+                    {moment.unix(item.createdAt).format('DD/MM/YYYY HH:mm')}
                   </CyDText>
                   <CyDText
                     className={clsx('text-black font-regular text-[12px]', {

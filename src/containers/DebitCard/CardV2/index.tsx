@@ -123,9 +123,18 @@ export default function CypherCardScreen({
       isCompleteMigration: boolean;
       batchId: string;
       status: ActivityStatus;
-      updatedAt: number;
+      createdAt: number;
     }>
-  >([]);
+  >([
+    {
+      requestId: '123',
+      amount: 100,
+      isCompleteMigration: false,
+      batchId: '123',
+      status: ActivityStatus.SUCCESS,
+      createdAt: 1234567890,
+    },
+  ]);
   const onRefresh = async () => {
     void refreshProfile();
     setCardBalance('');
@@ -292,7 +301,7 @@ export default function CypherCardScreen({
   const getMigrationData = async () => {
     const { data, isError } = await getWithAuth('/v1/cards/migration');
     if (!isError) {
-      setMigrationData(data);
+      // setMigrationData(data);
     }
   };
 
@@ -414,6 +423,7 @@ export default function CypherCardScreen({
                 onPress={() => {
                   navigation.navigate(screenTitle.MIGRATE_FUNDS, {
                     cardBalance,
+                    migrationData,
                   });
                 }}
                 image={AppImages.MIGRATE_FUNDS_ICON}
