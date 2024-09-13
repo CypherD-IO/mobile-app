@@ -512,8 +512,12 @@ const CLOCK_OUTLINE = {
 const PLUS_ICON = {
   uri: `${S3_BUCKET_URL_ICONS}/plusIcon.png`,
 };
+const SUCCESS_TICK_GREEN_BG = {
+  uri: `${S3_BUCKET_URL_ICONS}/successTickGreenBg.png`,
+};
 
 const AppImages = {
+  SUCCESS_TICK_GREEN_BG,
   CLOCK_OUTLINE,
   MIGRATE_FUNDS_ICON,
   BACK_ARROW_GRAY,

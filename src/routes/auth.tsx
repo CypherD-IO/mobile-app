@@ -112,7 +112,7 @@ import GetYourCardInfo from '../containers/DebitCard/CardV2/signup/getYourCardIn
 import CardApplicationV2 from '../containers/DebitCard/CardV2/signup/application';
 import WelcomeSceens from '../containers/DebitCard/CardV2/signup/welcomeScreens';
 import Rewards from '../containers/Options/rewards';
-import MigratePCFunds from '../containers/DebitCard/CardV2/moveFunds/moveFunds';
+import MigratePCFunds from '../containers/DebitCard/CardV2/migrateFunds';
 import BridgeV2 from '../containers/BridgeV2';
 
 const { DynamicImage, DynamicButton } = require('../styles');
