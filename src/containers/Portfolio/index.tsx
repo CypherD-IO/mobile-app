@@ -86,6 +86,7 @@ import {
 } from '../../reducers/bridge.reducer';
 import useAxios from '../../core/HttpRequest';
 import { SkipApiChainInterface } from '../../models/skipApiChains.interface';
+import { SwapBridgeChainData, SwapBridgeTokenData } from '../BridgeV2';
 
 export interface PortfolioProps {
   navigation: any;
@@ -294,13 +295,13 @@ export default function Portfolio({ navigation }: PortfolioProps) {
       isError: isFetchChainError,
       data: fetchChainData,
       error: fetchChainDataError,
-    } = await getWithAuth('/v1/swap/chains');
+    } = await getWithAuth('/v1/swap/chains?newData=true');
 
     const {
       isError: isFetchTokenError,
       data: fethcTokenData,
       error: fetchTokenDataError,
-    } = await getWithAuth('/v1/swap/tokens');
+    } = await getWithAuth('/v1/swap/tokens?newData=true');
 
     if (isFetchChainError || isFetchTokenError) {
       bridgeDispatch({
@@ -310,27 +311,14 @@ export default function Portfolio({ navigation }: PortfolioProps) {
       else if (fetchTokenDataError)
         Sentry.captureException(fetchTokenDataError);
     } else {
-      const skipApiChains: SkipApiChainInterface[] = get(
-        fetchChainData,
-        'skipSupportedChains',
-        [],
-      );
-      const odosChains: number[] = get(
-        fetchChainData,
-        'odosSupportedChains',
-        [],
-      );
-
-      const tokenDataSkipApi = get(fethcTokenData, 'skipTokens', {});
-      const tokenDataOdosApi = get(fethcTokenData, 'odosTokens', {});
+      const chainData: SwapBridgeChainData[] = fetchChainData;
+      const tokenData: Record<string, SwapBridgeTokenData[]> = fethcTokenData;
 
       bridgeDispatch({
         type: BridgeReducerAction.SUCCESS,
         payload: {
-          odosChainData: odosChains,
-          odosTokenData: tokenDataOdosApi,
-          skipApiChaindata: skipApiChains,
-          skipApiTokenData: tokenDataSkipApi,
+          chainData,
+          tokenData,
         },
       });
     }

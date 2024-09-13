@@ -99,7 +99,6 @@ import TelegramSetupSettings from '../containers/DebitCard/bridgeCard/cardTelegr
 import CardQuote from '../containers/DebitCard/bridgeCard/quote';
 import AutoLoad from '../containers/DebitCard/bridgeCard/autoLoad';
 import PreviewAutoLoad from '../containers/DebitCard/bridgeCard/previewAutoLoad';
-import BridgeSkipApi from '../containers/Bridge.Skip/bridge.skip';
 import CardControlsMenu from '../containers/DebitCard/bridgeCard/cardControlsMenu';
 import CardControlsSettings from '../containers/DebitCard/bridgeCard/cardControlsSettings';
 import ThreeDSecure from '../containers/DebitCard/bridgeCard/threeDSecure';
@@ -113,6 +112,7 @@ import GetYourCardInfo from '../containers/DebitCard/CardV2/signup/getYourCardIn
 import CardApplicationV2 from '../containers/DebitCard/CardV2/signup/application';
 import WelcomeSceens from '../containers/DebitCard/CardV2/signup/welcomeScreens';
 import Rewards from '../containers/Options/rewards';
+import BridgeV2 from '../containers/BridgeV2';
 
 const { DynamicImage, DynamicButton } = require('../styles');
 
@@ -574,20 +574,21 @@ export function PortfolioStackScreen({ navigation, route }) {
 
       <PortfolioStack.Screen
         name={screenTitle.BRIDGE_SKIP_API_SCREEN}
-        component={BridgeSkipApi}
-        options={({ navigation }) => ({
-          headerTransparent: false,
-          headerShadowVisible: false,
-          headerTitleAlign: 'center',
-          headerTitleStyle: {
-            fontFamily: C.fontsName.FONT_BLACK,
-            fontSize: 18,
-            fontWeight: '800',
-          },
-          title: t('SWAP_TITLE'),
-          headerTintColor: Colors.primaryTextColor,
-          headerBackTitleVisible: false,
-          headerLeft: props => defaultHeaderLeft(navigation),
+        component={BridgeV2}
+        options={() => ({
+          headerShown: false,
+          // headerTransparent: false,
+          // headerShadowVisible: false,
+          // headerTitleAlign: 'center',
+          // headerTitleStyle: {
+          //   fontFamily: C.fontsName.FONT_BLACK,
+          //   fontSize: 18,
+          //   fontWeight: '800',
+          // },
+          // title: t('SWAP_TITLE'),
+          // headerTintColor: Colors.primaryTextColor,
+          // headerBackTitleVisible: false,
+          // headerLeft: props => defaultHeaderLeft(navigation),
         })}
       />
 
@@ -1458,20 +1459,21 @@ export function SwapStackScreen({ navigation }) {
     <SwapStack.Navigator initialRouteName={screenTitle.BRIDGE_SKIP_API_SCREEN}>
       <SwapStack.Screen
         name={screenTitle.BRIDGE_SKIP_API_SCREEN}
-        component={BridgeSkipApi}
-        options={({ navigation }) => ({
-          headerTransparent: false,
-          headerShadowVisible: false,
-          headerTitleAlign: 'center',
-          headerTitleStyle: {
-            fontFamily: C.fontsName.FONT_BLACK,
-            fontSize: 18,
-            fontWeight: '800',
-          },
-          title: t('SWAP_TITLE'),
-          headerTintColor: Colors.primaryTextColor,
-          headerBackTitleVisible: false,
-          headerLeft: props => defaultHeaderLeft(navigation),
+        component={BridgeV2}
+        options={() => ({
+          headerShown: false,
+          // headerTransparent: false,
+          // headerShadowVisible: false,
+          // headerTitleAlign: 'center',
+          // headerTitleStyle: {
+          //   fontFamily: C.fontsName.FONT_BLACK,
+          //   fontSize: 18,
+          //   fontWeight: '800',
+          // },
+          // title: t('SWAP_TITLE'),
+          // headerTintColor: Colors.primaryTextColor,
+          // headerBackTitleVisible: false,
+          // headerLeft: undefined,
         })}
       />
     </SwapStack.Navigator>
