@@ -67,7 +67,6 @@ import {
   getOrCreateAssociatedTokenAccount,
   createTransferInstruction,
 } from '@solana/spl-token';
-import { decodeBase64 } from 'tweetnacl-util';
 
 export interface TransactionServiceResult {
   isError: boolean;
@@ -105,7 +104,7 @@ export default function useTransactionManager() {
         signer,
       );
     } else {
-      return await SigningStargateClient.connectWithSigner(rpc, signer);
+      return await SigningCosmWasmClient.connectWithSigner(rpc, signer);
     }
   }
 
