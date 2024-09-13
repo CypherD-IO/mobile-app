@@ -177,7 +177,7 @@ const resources = {
       IBC_ERROR:
         "Transaction Error !\n Don't worry your funds are safe, it has been transferred to your osmosis chain via IBC, you can transfer it back via IBC. Sorry for the inconvenience",
       SWAP_ERROR:
-        "Transaction Error !\n Don't worry your funds are safe, it has been transferred to your osmosis chain via IBC and is been available as your to token to after swapping you can transfer it back to your to chain chain via IBC. Sorry for the inconvenience",
+        "Transaction Error !\n Don't worry your funds are safe. Sorry for the inconvenience",
       IBC: 'IBC',
       SENT_AMOUNT: 'Sent Amount ',
       TO_ADDRESS: 'To address : ',
@@ -493,6 +493,9 @@ const resources = {
       CHOOSE_TOKEN: 'Choose Token',
       CHOOSE_CONTACT: 'Choose Contact',
       QUOTE_EXPIRED: 'Quote Expired',
+      QUOTE_ERROR: 'Quote Error',
+      QUOTE_ERROR_DESCRIPTION:
+        'Unable to fetch qoute for the pair now, try again later',
       QUOTE_EXPIRED_DESCRIPTION:
         'Your quote has been expired. Please retry initiating your transaction',
       QUOTE_EXPIRES_IN: 'Quote expires in',
@@ -1095,7 +1098,7 @@ const resources = {
       TOKEN: 'Token',
       AMOUNT_APPROVED: 'Your are approving',
       BRIDGE_SUCCESS: 'Bridging Done',
-      BRIDGE_FAILURE: 'Bridging Failed',
+      BRIDGE_ERROR: 'Bridging Failed',
       BRIDGE_SUCCESS_DESCRIPTION: 'Your tokens have been successfully bridged',
       BRIDGE_ERROR_DESCRIPTION: 'Bridge Error. Please try again later',
       ONLINE_TRANSACTIONS: 'Online Transactions',
@@ -1205,6 +1208,9 @@ const resources = {
       DOWNGRADE_PLAN_CONSENT:
         'I understand that downgrading will revoke all my premium feature access, and accept the ',
       ZERO_RESTRICTION_MODE_TITLE: 'Zero Restriction Mode',
+      TOKEN_ALLOWANCE_APPROVE: 'Token Allowance Approval',
+      LONGER_THAN_USUAL: 'Talking longer than usual',
+      ESTIMATED_NETWORK_FEE: 'Estimated Network Fee',
     },
   },
 };

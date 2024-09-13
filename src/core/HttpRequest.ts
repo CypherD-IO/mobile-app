@@ -12,6 +12,7 @@ import { has } from 'lodash';
 import { t } from 'i18next';
 import { signIn } from './Keychain';
 import { useGlobalModalContext } from '../components/v2/GlobalModal';
+import { AxiosRequestConfig } from 'axios';
 type RequestMethod =
   | 'GET'
   | 'GET_WITHOUT_AUTH'
@@ -85,6 +86,7 @@ export default function useAxios() {
     endpoint = '',
     timeout: number,
     body = {},
+    config?: AxiosRequestConfig<object> | undefined,
   ): Promise<IHttpResponse> {
     let shouldRetry = 0;
 
@@ -129,22 +131,24 @@ export default function useAxios() {
           response.data = data;
           response.status = status;
         } else if (method === 'GET_FROM_OTHER_SOURCE') {
-          const config = {
+          const _config = {
+            ...config,
             headers: {
               accept: 'application/json',
             },
           };
 
-          const { data } = await axios.get(endpoint, config);
+          const { data } = await axios.get(endpoint, _config);
           response.data = data;
         } else if (method === 'POST_TO_OTHER_SOURCE') {
-          const config = {
+          const _config = {
+            ...config,
             headers: {
               accept: 'application/json',
             },
           };
 
-          const { data } = await axios.post(endpoint, body, config);
+          const { data } = await axios.post(endpoint, body, _config);
           response.data = data;
         }
         return response;
@@ -195,68 +199,93 @@ export default function useAxios() {
     return { isError: true };
   }
 
-  async function getWithAuth(url: string, timeout = DEFAULT_AXIOS_TIMEOUT) {
-    return await request('GET', url, timeout);
+  async function getWithAuth(
+    url: string,
+    config?: AxiosRequestConfig<object> | undefined,
+    timeout = DEFAULT_AXIOS_TIMEOUT,
+  ) {
+    return await request('GET', url, timeout, undefined, config);
   }
   async function getWithoutAuth(
     url: string,
     data?: any,
     timeout = DEFAULT_AXIOS_TIMEOUT,
+    config?: AxiosRequestConfig<object> | undefined,
   ) {
-    return await request('GET_WITHOUT_AUTH', url, timeout, data);
+    return await request('GET_WITHOUT_AUTH', url, timeout, data, config);
   }
   async function postWithAuth(
     url: string,
     data: any,
     timeout = DEFAULT_AXIOS_TIMEOUT,
+    config?: AxiosRequestConfig<object> | undefined,
   ) {
-    return await request('POST', url, timeout, data);
+    return await request('POST', url, timeout, data, config);
   }
   async function postWithoutAuth(
     url: string,
     data: any,
     timeout = DEFAULT_AXIOS_TIMEOUT,
+    config?: AxiosRequestConfig<object> | undefined,
   ) {
-    return await request('POST_WITHOUT_AUTH', url, timeout, data);
+    return await request('POST_WITHOUT_AUTH', url, timeout, data, config);
   }
   const putWithAuth = async (
     url: string,
     data: any,
     timeout = DEFAULT_AXIOS_TIMEOUT,
+    config?: AxiosRequestConfig<object> | undefined,
   ) => {
-    return await request('PUT', url, timeout, data);
+    return await request('PUT', url, timeout, data, config);
   };
   const patchWithAuth = async (
     url: string,
     data: any,
     timeout = DEFAULT_AXIOS_TIMEOUT,
+    config?: AxiosRequestConfig<object> | undefined,
   ) => {
-    return await request('PATCH', url, timeout, data);
+    return await request('PATCH', url, timeout, data, config);
   };
   const deleteWithAuth = async (
     url: string,
     timeout = DEFAULT_AXIOS_TIMEOUT,
+    config?: AxiosRequestConfig<object> | undefined,
   ) => {
-    return await request('DELETE', url, timeout);
+    return await request('DELETE', url, timeout, undefined, config);
   };
   const deleteWithoutAuth = async (
     url: string,
     timeout = DEFAULT_AXIOS_TIMEOUT,
+    config?: AxiosRequestConfig<object> | undefined,
   ) => {
-    return await request('DELETE_WITHOUT_AUTH', url, timeout);
+    return await request(
+      'DELETE_WITHOUT_AUTH',
+      url,
+      timeout,
+      undefined,
+      config,
+    );
   };
   const getFromOtherSource = async (
     url: string,
     timeout = DEFAULT_AXIOS_TIMEOUT,
+    config?: AxiosRequestConfig<object> | undefined,
   ) => {
-    return await request('GET_FROM_OTHER_SOURCE', url, timeout);
+    return await request(
+      'GET_FROM_OTHER_SOURCE',
+      url,
+      timeout,
+      undefined,
+      config,
+    );
   };
   const postToOtherSource = async (
     url: string,
     data: any,
     timeout = DEFAULT_AXIOS_TIMEOUT,
+    config?: AxiosRequestConfig<object> | undefined,
   ) => {
-    return await request('POST_TO_OTHER_SOURCE', url, timeout, data);
+    return await request('POST_TO_OTHER_SOURCE', url, timeout, data, config);
   };
 
   return {

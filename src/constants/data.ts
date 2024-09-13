@@ -907,3 +907,27 @@ export const PlanIdPriority = {
   [CypherPlanId.BASIC_PLAN]: 0,
   [CypherPlanId.PRO_PLAN]: 10,
 };
+
+export const ChainIdToBackendNameMapping = {
+  '1': ChainBackendNames.ETH,
+  '137': ChainBackendNames.POLYGON,
+  '56': ChainBackendNames.BSC,
+  '43114': ChainBackendNames.AVALANCHE,
+  '42161': ChainBackendNames.ARBITRUM,
+  '10': ChainBackendNames.OPTIMISM,
+  '324': ChainBackendNames.ZKSYNC_ERA,
+  '8453': ChainBackendNames.BASE,
+  '1101': ChainBackendNames.POLYGON_ZKEVM,
+  '1313161554': ChainBackendNames.AURORA,
+  '1284': ChainBackendNames.MOONBEAM,
+  '1285': ChainBackendNames.MOONRIVER,
+  'cosmoshub-4': ChainBackendNames.COSMOS,
+  'osmosis-1': ChainBackendNames.OSMOSIS,
+  'juno-1': ChainBackendNames.JUNO,
+  'stargaze-1': ChainBackendNames.STARGAZE,
+  'noble-1': ChainBackendNames.NOBLE,
+  'coreum-mainnet-1': ChainBackendNames.COREUM,
+  'injective-1': ChainBackendNames.INJECTIVE,
+  'kaiyo-1': ChainBackendNames.KUJIRA,
+  solana: ChainBackendNames.SOLANA,
+};

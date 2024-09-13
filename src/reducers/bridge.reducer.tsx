@@ -1,7 +1,8 @@
 import React, { Dispatch } from 'react';
-import { SkipApiChainInterface } from '../models/skipApiChains.interface';
-import { SkipApiToken } from '../models/skipApiTokens.interface';
-import { OdosToken } from '../models/odosTokens.interface';
+import {
+  SwapBridgeChainData,
+  SwapBridgeTokenData,
+} from '../containers/BridgeV2';
 
 export enum BridgeStatus {
   FETCHING = 'FETCHING',
@@ -19,10 +20,8 @@ type BridgeAction =
   | {
       type: BridgeReducerAction.SUCCESS;
       payload: {
-        odosChainData: number[];
-        odosTokenData: Record<string, OdosToken[]>;
-        skipApiChaindata: SkipApiChainInterface[];
-        skipApiTokenData: Record<string, SkipApiToken[]>;
+        tokenData?: Record<string, SwapBridgeTokenData[]>;
+        chainData?: SwapBridgeChainData[];
       };
     }
   | { type: BridgeReducerAction.FETCHING; payload: null | undefined }
@@ -30,10 +29,8 @@ type BridgeAction =
 
 export interface BridgeState {
   status: BridgeStatus;
-  odosChainData: number[];
-  odosTokenData: Record<string, OdosToken[]>;
-  skipApiChaindata: SkipApiChainInterface[];
-  skipApiTokenData: Record<string, SkipApiToken[]>;
+  tokenData: Record<string, SwapBridgeTokenData[]>;
+  chainData: SwapBridgeChainData[];
 }
 
 export interface BridgeContextDef {
@@ -43,10 +40,8 @@ export interface BridgeContextDef {
 
 export const bridgeContextInitialState = {
   status: BridgeStatus.FETCHING,
-  odosChainData: [],
-  odosTokenData: {},
-  skipApiChaindata: [],
-  skipApiTokenData: {},
+  tokenData: {},
+  chainData: [],
 };
 
 export function bridgeReducer(
@@ -58,10 +53,8 @@ export function bridgeReducer(
       return {
         ...state,
         status: BridgeStatus.SUCCESS,
-        odosChainData: action.payload.odosChainData,
-        odosTokenData: action.payload.odosTokenData,
-        skipApiChaindata: action.payload.skipApiChaindata,
-        skipApiTokenData: action.payload.skipApiTokenData,
+        chainData: action.payload.chainData,
+        tokenData: action.payload.tokenData,
       };
     }
     case BridgeReducerAction.FETCHING: {
@@ -74,10 +67,8 @@ export function bridgeReducer(
       return {
         ...state,
         status: BridgeStatus.ERROR,
-        odosChainData: bridgeContextInitialState.odosChainData,
-        odosTokenData: bridgeContextInitialState.odosTokenData,
-        skipApiChaindata: bridgeContextInitialState.skipApiChaindata,
-        skipApiTokenData: bridgeContextInitialState.skipApiTokenData,
+        chainData: bridgeContextInitialState.chainData,
+        tokenData: bridgeContextInitialState.tokenData,
       };
     }
     default:

@@ -14,6 +14,7 @@ import {
   TouchableWithoutFeedback,
   TouchableHighlight,
   KeyboardAvoidingView,
+  InputAccessoryView,
 } from 'react-native';
 import { styled } from 'nativewind';
 import FastImage from 'react-native-fast-image';
@@ -40,3 +41,4 @@ export const CyDKeyboardAvoidingView = styled(KeyboardAvoidingView);
 export const CyDDropDown = styled(Dropdown);
 export const CyDAnimatedView = styled(Animated.View);
 export const CyDKeyboardAwareScrollView = styled(KeyboardAwareScrollView);
+export const CyDInputAccessoryView = styled(InputAccessoryView);

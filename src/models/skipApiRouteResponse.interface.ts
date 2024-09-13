@@ -99,4 +99,5 @@ export interface SkipApiRouteResponse {
   chain_id: string;
   tx_index: number;
   operation_index?: number;
+  estimated_route_duration_seconds: number;
 }

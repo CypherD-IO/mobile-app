@@ -93,6 +93,8 @@ export interface ExchangeTransaction {
   quoteData?: any;
   reason?: string;
   delayDuration?: string;
+  fromChainLogoUrl: string;
+  toChainLogoUrl: string;
 }
 
 export interface DebitCardTransaction {
