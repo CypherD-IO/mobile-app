@@ -134,6 +134,7 @@ export const screenTitle = {
   CARD_V2_WELCOME_SCREEN: 'welcomeScreen',
   CARD_APPLICATION_V2: 'cardApplicationv2',
   REWARDS: 'Rewards',
+  MIGRATE_FUNDS: 'migrateFunds',
 };
 
 export const fontsName = {

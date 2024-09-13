@@ -1,6 +1,5 @@
 /* eslint-disable @typescript-eslint/no-var-requires */
 const S3_BUCKET_URL_ICONS = 'https://public.cypherd.io/icons';
-const S3_BUCKET_URL_IMAGES = 'https://public.cypherd.io/images';
 
 const PLUS = require('./plus.png');
 const ARROW = require('./arrow.png');
@@ -504,11 +503,19 @@ const COMING_SOON = {
 const ZERO_RESTRICTION_MODE_ICON = {
   uri: `${S3_BUCKET_URL_ICONS}/zeroRestrictionModeIcon.png`,
 };
+const MIGRATE_FUNDS_ICON = {
+  uri: `${S3_BUCKET_URL_ICONS}/migrateFundsICon.png`,
+};
+const CLOCK_OUTLINE = {
+  uri: `${S3_BUCKET_URL_ICONS}/clockOutline.png`,
+};
 const PLUS_ICON = {
   uri: `${S3_BUCKET_URL_ICONS}/plusIcon.png`,
 };
 
 const AppImages = {
+  CLOCK_OUTLINE,
+  MIGRATE_FUNDS_ICON,
   BACK_ARROW_GRAY,
   CARD_ONBOARDING_1,
   CARD_ONBOARDING_2,
