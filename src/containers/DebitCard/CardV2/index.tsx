@@ -125,24 +125,7 @@ export default function CypherCardScreen({
       status: ActivityStatus;
       updatedAt: number;
     }>
-  >([
-    {
-      requestId: '123',
-      amount: 100,
-      isCompleteMigration: false,
-      batchId: '123',
-      status: ActivityStatus.INPROCESS,
-      updatedAt: 1234567890,
-    },
-    {
-      requestId: '143',
-      amount: 100,
-      isCompleteMigration: false,
-      batchId: '123',
-      status: ActivityStatus.INPROCESS,
-      updatedAt: 1234567890,
-    },
-  ]);
+  >([]);
   const onRefresh = async () => {
     void refreshProfile();
     setCardBalance('');
@@ -315,7 +298,7 @@ export default function CypherCardScreen({
 
   useFocusEffect(
     useCallback(() => {
-      // void getMigrationData();
+      void getMigrationData();
     }, []),
   );
 
@@ -364,8 +347,7 @@ export default function CypherCardScreen({
           <CyDText className='font-extrabold text-[26px]'>Cards</CyDText>
         </CyDView>
       )}
-      <CyDView
-        className={'h-[60px] py-[5px] px-[10px] mx-[12px] mb-[12px] mt-[24px]'}>
+      <CyDView className={'h-[60px] py-[5px] px-[10px] mx-[12px] mt-[24px]'}>
         {cardId !== HIDDEN_CARD_ID ? (
           <CyDView>
             <CyDText className={'font-semibold text-[10px]'}>
@@ -413,7 +395,7 @@ export default function CypherCardScreen({
               source={AppImages.CLOCK_OUTLINE}
               className='w-[24px] h-[24px] mr-[8px]'
             />
-            <CyDText className='text-[10px] font-bold w-[80%]'>
+            <CyDText className='text-[10px] font-medium w-[80%]'>
               {'Your old balance '}
               <CyDText className='text-[12px] font-bold'>
                 {`“$${sumBy(migrationData, 'amount')}“`}
@@ -467,14 +449,18 @@ export default function CypherCardScreen({
               <Button
                 disabled={shouldBlockAction()}
                 onPress={() => {
-                  cardProfile.isAutoloadConfigured
+                  cardProfile?.isAutoloadConfigured
                     ? setIsAutoLoadOptionsVisible(true)
                     : navigation.navigate(screenTitle.AUTO_LOAD_SCREEN);
                 }}
                 image={AppImages.AUTOLOAD}
                 style={'p-[9px] rounded-[6px] border-[0px] h-[36px]'}
                 imageStyle={'mr-[3px] h-[24px] w-[24px]'}
-                title={t('MANAGE_TOP_UP')}
+                // title={t('MANAGE_TOP_UP')}
+                title={
+                  (cardProfile?.isAutoloadConfigured ? 'Manage' : 'Setup') +
+                  ' Auto Deposit'
+                }
                 titleStyle={'text-[12px] font-semibold'}
                 type={ButtonType.SECONDARY}
               />
@@ -482,27 +468,6 @@ export default function CypherCardScreen({
           )}
         </CyDView>
       )}
-
-      {/* {cardId !== HIDDEN_CARD_ID && (
-        <CyDTouchView
-          className={`flex flex-row justify-center items-center self-center py-[4px] px-[12px] border-[0.2px] border-black rounded-[26px] mt-[4px] mb-[4px]  ${shouldBlockAction() ? 'bg-n40' : 'bg-white'}`}
-          disabled={shouldBlockAction()}
-          onPress={() => {
-            cardProfile.isAutoloadConfigured
-              ? setIsAutoLoadOptionsVisible(true)
-              : navigation.navigate(screenTitle.AUTO_LOAD_SCREEN);
-          }}>
-          <CyDImage
-            source={AppImages.AUTOLOAD}
-            className={`h-[28px] w-[28px]`}
-            resizeMode='contain'
-          />
-          <CyDText className='ml-[4px] text-[16px]'>
-            {(cardProfile.isAutoloadConfigured ? 'Manage' : 'Setup') +
-              ' Auto Load'}
-          </CyDText>
-        </CyDTouchView>
-      )} */}
 
       <CyDScrollView>
         {shouldBlockAction() && (
@@ -528,7 +493,7 @@ export default function CypherCardScreen({
                   source={AppImages.LOADER_TRANSPARENT}
                   autoPlay
                   loop
-                  style={{ height: 25 }}
+                  style={style.lottieStyle}
                 />
               )}
             </CyDTouchView>
@@ -597,5 +562,8 @@ export default function CypherCardScreen({
 const style = StyleSheet.create({
   loaderStyle: {
     height: 38,
+  },
+  lottieStyle: {
+    height: 25,
   },
 });

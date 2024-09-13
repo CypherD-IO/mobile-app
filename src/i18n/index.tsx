@@ -1210,7 +1210,6 @@ const resources = {
       ZERO_RESTRICTION_MODE_TITLE: 'Zero Restriction Mode',
       ADD_FUND: 'Add Fund',
       MOVE_FUNDS_TO_NEW_CARD: 'Move funds to your new card',
-      MANAGE_TOP_UP: 'Manage top up',
       MIGRATION_ERROR: 'Migration Error.',
       MIGRATION_ERROR_DESCRIPTION: 'Please contact support for more details.',
       TOKEN_ALLOWANCE_APPROVE: 'Token Allowance Approval',
