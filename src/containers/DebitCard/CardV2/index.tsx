@@ -415,7 +415,7 @@ export default function CypherCardScreen({
                 <Button
                   disabled={
                     shouldBlockAction() ||
-                    (!isEmpty(cardBalance) && cardBalance !== 'NA') ||
+                    (!isEmpty(cardBalance) && cardBalance === 'NA') ||
                     rcApplicationStatus !== CardApplicationStatus.COMPLETED
                   }
                   onPress={() => {

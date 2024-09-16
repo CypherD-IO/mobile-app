@@ -42,7 +42,7 @@ module.exports = {
       rose: colors.rose,
       darkYellow: '#F5C400',
       paleGrey: '#EFEFEF',
-      primaryTextColor: '#434343',
+      primaryTextColor: '#00000',
       secondaryTextColor: '#000000',
       whiteColor: '#FFFFFF',
       redColor: '#FD1A1A',
