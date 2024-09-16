@@ -12,6 +12,7 @@ import AppImages from '../../../../assets/images/appImages';
 import {
   ACCOUNT_STATUS,
   ButtonType,
+  CardApplicationStatus,
   CardProviders,
   CardTransactionStatuses,
   CardTransactionTypes,
@@ -109,6 +110,7 @@ export default function CypherCardScreen({
     ['accountStatus'],
     ACCOUNT_STATUS.ACTIVE,
   );
+  const rcApplicationStatus = get(cardProfile, ['rc', 'applicationStatus'], '');
   const [isLayoutRendered, setIsLayoutRendered] = useState(false);
   const [isAutoLoadOptionsvisible, setIsAutoLoadOptionsVisible] =
     useState<boolean>(false);
@@ -411,7 +413,11 @@ export default function CypherCardScreen({
             {cardProvider === CardProviders.PAYCADDY && (
               <CyDView className='w-[70%] mr-[12px]'>
                 <Button
-                  disabled={shouldBlockAction() || !cardBalance}
+                  disabled={
+                    shouldBlockAction() ||
+                    !cardBalance ||
+                    rcApplicationStatus !== CardApplicationStatus.COMPLETED
+                  }
                   onPress={() => {
                     navigation.navigate(screenTitle.MIGRATE_FUNDS, {
                       cardBalance,
