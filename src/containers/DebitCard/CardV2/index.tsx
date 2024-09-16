@@ -30,7 +30,7 @@ import Button from '../../../components/v2/button';
 import { screenTitle } from '../../../constants';
 import { GlobalContext, GlobalContextDef } from '../../../core/globalContext';
 import { CardProfile } from '../../../models/cardProfile.model';
-import { get, sumBy } from 'lodash';
+import { get, isEmpty, sumBy } from 'lodash';
 import useAxios from '../../../core/HttpRequest';
 import * as Sentry from '@sentry/react-native';
 import CardTransactionItem from '../../../components/v2/CardTransactionItem';
@@ -415,7 +415,7 @@ export default function CypherCardScreen({
                 <Button
                   disabled={
                     shouldBlockAction() ||
-                    !cardBalance ||
+                    (!isEmpty(cardBalance) && cardBalance !== 'NA') ||
                     rcApplicationStatus !== CardApplicationStatus.COMPLETED
                   }
                   onPress={() => {
