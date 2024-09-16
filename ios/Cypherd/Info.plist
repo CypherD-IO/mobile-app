@@ -17,7 +17,7 @@
 	<key>CFBundlePackageType</key>
 	<string>APPL</string>
 	<key>CFBundleShortVersionString</key>
-	<string>2.66.0</string>
+	<string>2.71.0</string>
 	<key>CFBundleSignature</key>
 	<string>????</string>
 	<key>CFBundleURLTypes</key>
@@ -26,25 +26,29 @@
 			<key>CFBundleTypeRole</key>
 			<string>Editor</string>
 			<key>CFBundleURLName</key>
-			<string>cypherwallet</string>
+			<string>com.cypherd.ioswalletv1</string>
 			<key>CFBundleURLSchemes</key>
 			<array>
 				<string>cypherwallet</string>
 			</array>
 		</dict>
-		<dict>
-			<key>CFBundleTypeRole</key>
-			<string>Editor</string>
-			<key>CFBundleURLName</key>
-			<string>cypherwallet</string>
-			<key>CFBundleURLSchemes</key>
-			<array>
-				<string>wc</string>
-			</array>
-		</dict>
+			<dict>
+				<key>CFBundleTypeRole</key>
+				<string>Editor</string>
+				<key>CFBundleURLName</key>
+				<string>com.cypherd.ioswalletv1.walletconnect</string>
+				<key>CFBundleURLSchemes</key>
+				<array>
+					<string>wc</string>
+				</array>
+			</dict>
+	</array>
+	<key>com.apple.developer.associated-domains</key>
+	<array>
+		<string>applinks:app.cypherhq.io</string>
 	</array>
 	<key>CFBundleVersion</key>
-	<string>1</string>
+	<string>4</string>
 	<key>ITSAppUsesNonExemptEncryption</key>
 	<false/>
 	<key>LSApplicationQueriesSchemes</key>
@@ -64,6 +68,13 @@
 			<key>localhost</key>
 			<dict>
 				<key>NSExceptionAllowsInsecureHTTPLoads</key>
+				<true/>
+			</dict>
+			<key>app.cypherhq.io</key>
+			<dict>
+				<key>NSExceptionAllowsInsecureHTTPLoads</key>
+				<false/>
+				<key>NSIncludesSubdomains</key>
 				<true/>
 			</dict>
 		</dict>

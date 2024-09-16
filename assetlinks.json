@@ -1,0 +1,12 @@
+[
+  {
+    "relation": ["delegate_permission/common.handle_all_urls"],
+    "target": {
+      "namespace": "android_app",
+      "package_name": "com.cypherd.androidwallet",
+      "sha256_cert_fingerprints": [
+        "05:69:AB:E8:CC:AD:63:B7:2C:3E:DB:BF:D4:CD:AE:2C:B0:09:0B:78:FB:7F:8A:66:72:25:B9:5C:86:A6:6D:81"
+      ]
+    }
+  }
+]

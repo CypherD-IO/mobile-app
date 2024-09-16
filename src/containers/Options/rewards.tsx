@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { SafeAreaView, ScrollView } from 'react-native';
+import { SafeAreaView, ScrollView, StatusBar } from 'react-native';
 import {
   CyDImage,
   CyDText,
@@ -71,6 +71,7 @@ export default function Rewards({ route, navigation }) {
   return (
     <>
       <SafeAreaView className='flex bg-cardBg h-full'>
+        <StatusBar barStyle='dark-content' backgroundColor={'#EBEDF0'} />
         <CyDView>
           <CyDTouchView
             onPress={() => {

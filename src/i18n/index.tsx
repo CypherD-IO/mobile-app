@@ -1253,6 +1253,14 @@ const resources = {
       REFERRAL_NOT_AVAILABLE_MESSAGE:
         'Get your card to start referring friends',
       NO_REFERRALS_YET_MESSAGE: 'Your friends have not signed up yet',
+      HOW_REFERRAL_WORKS: 'How Referral Works',
+      ENTER_REFERRAL_CODE: 'Enter Referral Code',
+      INVALID_REFERRAL_CODE: 'Invalid Referral Code',
+      INVALID_REFERRAL_CODE_DESCRIPTION: 'Please enter a valid referral code',
+      REFERRAL_CODE_APPLIED_SUCCESSFULLY: 'Referral Code Applied Successfully',
+      REFERRAL_CODE_APPLIED_SUCCESSFULLY_DESCRIPTION:
+        "You've earned 50 reward points for applying the referral code. Continue to application.",
+      ERROR_IN_APPLYING_REFERRAL_CODE: 'Error in applying referral code',
     },
   },
 };

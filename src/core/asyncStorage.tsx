@@ -585,3 +585,29 @@ export const removeIsRcEnabled = async () => {
     Sentry.captureException(e);
   }
 };
+
+export const setReferralCodeAsync = async (code: string) => {
+  try {
+    await AsyncStorage.setItem('REFERRAL_CODE', code);
+  } catch (error) {
+    Sentry.captureException(error);
+  }
+};
+
+export const getReferralCode = async () => {
+  try {
+    const referralCode = await AsyncStorage.getItem('REFERRAL_CODE');
+    return referralCode;
+  } catch (error) {
+    Sentry.captureException(error);
+    return null;
+  }
+};
+
+export const removeReferralCode = async () => {
+  try {
+    await AsyncStorage.removeItem('REFERRAL_CODE');
+  } catch (error) {
+    Sentry.captureException(error);
+  }
+};

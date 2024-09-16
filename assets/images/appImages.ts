@@ -557,6 +557,33 @@ const HOW_IT_WORKS_5 = {
 const BLACK_CLOSE = {
   uri: `${S3_BUCKET_URL_ICONS}/blackClose.png`,
 };
+const GIFT_IN_HANDS = {
+  uri: `${S3_BUCKET_URL_ICONS}/giftInHands.png`,
+};
+const VISA_CARDS_GROUP = {
+  uri: `${S3_BUCKET_URL_ICONS}/visaCardsGroup.png`,
+};
+const USER_OUTLINE_ICON = {
+  uri: `${S3_BUCKET_URL_ICONS}/userOutlineIcon.png`,
+};
+const HOUSE_OUTLINE_ICON = {
+  uri: `${S3_BUCKET_URL_ICONS}/houseOutlineIcon.png`,
+};
+const EMAIL_OUTLINE_ICON = {
+  uri: `${S3_BUCKET_URL_ICONS}/emailOutlineIcon.png`,
+};
+const TELEGRAM_OUTLINE_ICON = {
+  uri: `${S3_BUCKET_URL_ICONS}/telegramOutlineIcon.png`,
+};
+const ID_CARD_OUTLINE_ICON = {
+  uri: `${S3_BUCKET_URL_ICONS}/idCardOutlineIcon.png`,
+};
+const GLOBE_OUTLINE_ICON = {
+  uri: `${S3_BUCKET_URL_ICONS}/globeOutlineIcon.png`,
+};
+const CASH_OUTLINE_ICON = {
+  uri: `${S3_BUCKET_URL_ICONS}/cashOutlineIcon.png`,
+};
 
 const AppImages = {
   SUCCESS_TICK_GREEN_BG,
@@ -975,5 +1002,14 @@ const AppImages = {
   HOW_IT_WORKS_4,
   HOW_IT_WORKS_5,
   BLACK_CLOSE,
+  GIFT_IN_HANDS,
+  VISA_CARDS_GROUP,
+  USER_OUTLINE_ICON,
+  ID_CARD_OUTLINE_ICON,
+  TELEGRAM_OUTLINE_ICON,
+  GLOBE_OUTLINE_ICON,
+  EMAIL_OUTLINE_ICON,
+  CASH_OUTLINE_ICON,
+  HOUSE_OUTLINE_ICON,
 };
 export default AppImages;

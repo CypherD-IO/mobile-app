@@ -50,6 +50,7 @@ import { PEP_OPTIONS } from '../../constants/data';
 import { CardProfile } from '../../models/cardProfile.model';
 import useCardUtilities from '../../hooks/useCardUtilities';
 import { get } from 'lodash';
+import { getReferralCode, removeReferralCode } from '../../core/asyncStorage';
 
 export default function CardSignupScreen({ navigation, route }) {
   const globalContext = useContext<any>(GlobalContext);
@@ -110,6 +111,7 @@ export default function CardSignupScreen({ navigation, route }) {
     });
   const cardProfile: CardProfile = globalContext.globalState.cardProfile;
   const { getWalletProfile, checkIsRCEnabled } = useCardUtilities();
+  const [referralCode, setReferralCode] = useState<string | null>(null);
 
   const selectedCountryStates = useMemo(() => {
     return stateMaster.filter(
@@ -260,6 +262,15 @@ export default function CardSignupScreen({ navigation, route }) {
   }, [countryFilterText]);
 
   useEffect(() => {
+    const applyReferralCode = async () => {
+      const referralCode = await getReferralCode();
+      console.log('🚀 ~ applyReferralCode ~ referralCode:', referralCode);
+      if (referralCode) {
+        setReferralCode(referralCode);
+      }
+    };
+
+    void applyReferralCode();
     void getCountryData();
     void getStateMaster();
   }, []);
@@ -348,6 +359,7 @@ export default function CardSignupScreen({ navigation, route }) {
       ...latestBillingAddress,
       country: userBasicDetails.Iso2,
       ...(inviteCode ? { inviteCode } : {}),
+      ...(referralCode ? { referralCodeV2: referralCode } : {}),
     };
     try {
       const response = await postWithAuth(
@@ -363,6 +375,7 @@ export default function CardSignupScreen({ navigation, route }) {
         });
         navigation.navigate(screenTitle.CARD_SIGNUP_OTP_VERIFICATION_SCREEN);
         setLoading(false);
+        await removeReferralCode();
       } else {
         showModal('state', {
           type: 'error',

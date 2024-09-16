@@ -5,6 +5,7 @@ import {
   Linking,
   Share,
   Clipboard,
+  StatusBar,
 } from 'react-native';
 import {
   CyDImage,
@@ -38,9 +39,7 @@ const ShareVia = ({ referralLink }: { referralLink: string }) => {
     🌍 Use your crypto anywhere, just like a regular card
 
   🎁 Use my referral link to join and we'll both earn rewards! :
-  ${referralLink}
-
-  Learn more about Cypher Card at https://cypherhq.io/card/`;
+  ${referralLink}`;
 
   const shareOptions = [
     {
@@ -104,7 +103,7 @@ const ShareVia = ({ referralLink }: { referralLink: string }) => {
         referralUrl={referralLink}
       />
       <CyDView className='p-[16px]'>
-        <CyDText className='text-sm font-medium'>Share via</CyDText>
+        <CyDText className='text-[14px] font-medium'>Share via</CyDText>
         <CyDView className='flex-row justify-between mt-[12px]'>
           {shareOptions.map((option, index) => (
             <CyDTouchView
@@ -177,7 +176,7 @@ const PointsInfo = ({
     rewardContribution,
     createdAt,
   } = referral;
-  const trimmedAddress = `${masterAddress.slice(0, 4)}......${masterAddress.slice(-4)}`;
+  const trimmedAddress = `${masterAddress.slice(0, 6)}......${masterAddress.slice(-4)}`;
   const formattedDate = createdAt
     ? new Date(createdAt).toLocaleDateString('en-GB', {
         day: 'numeric',
@@ -190,7 +189,22 @@ const PointsInfo = ({
   return (
     <>
       <CyDView className='flex flex-row items-center justify-between p-[16px]'>
-        <CyDText className='font-[500] font-[500] '>{trimmedAddress}</CyDText>
+        <CyDView>
+          <CyDView className='flex-row items-center'>
+            <CyDText className='font-[500] font-[500]'>
+              {trimmedAddress}
+            </CyDText>
+            <CyDTouchView
+              onPress={() => copyToClipboard(masterAddress)}
+              className='ml-[8px]'>
+              <CyDImage
+                source={AppImages.COPY_DARK}
+                className='w-[16px] h-[16px]'
+              />
+            </CyDTouchView>
+          </CyDView>
+          <CyDText className='text-[10px] font-[600]'>{referralCode}</CyDText>
+        </CyDView>
 
         {applicationStatus !== CardApplicationStatus.COMPLETED && (
           <>
@@ -379,6 +393,7 @@ export default function Referrals({ route, navigation }) {
   return (
     <>
       <SafeAreaView className='flex bg-cardBg h-full'>
+        <StatusBar barStyle='dark-content' backgroundColor={'#EBEDF0'} />
         <NewReferralCodeModal
           isModalVisible={isModalVisible}
           setIsModalVisible={setIsModalVisible}

@@ -115,6 +115,8 @@ import Rewards from '../containers/Options/rewards';
 import MigratePCFunds from '../containers/DebitCard/CardV2/migrateFunds';
 import BridgeV2 from '../containers/BridgeV2';
 import Referrals from '../containers/Options/referrals';
+import CardSignupLandingScreenV2 from '../containers/DebitCard/CardV2/signup/cardSignupLandingScreenV2';
+import IHaveReferralCodeScreen from '../containers/DebitCard/CardV2/signup/iHaveReferralCodeScreen';
 
 const { DynamicImage, DynamicButton } = require('../styles');
 
@@ -833,7 +835,7 @@ export function DebitCardStackScreen() {
         })}
       />
 
-      <FundCardStack.Screen
+      {/* <FundCardStack.Screen
         name={screenTitle.CARD_SIGNUP_LANDING_SCREEN}
         component={CardSignupLandingScreen}
         options={({ navigation }) => ({
@@ -852,7 +854,7 @@ export function DebitCardStackScreen() {
           headerBackVisible: false,
           headerLeft: props => defaultHeaderLeft(navigation),
         })}
-      />
+      /> */}
 
       <FundCardStack.Screen
         name={screenTitle.CARD_SIGNUP_CONFIRMATION}
@@ -1296,6 +1298,22 @@ export function DebitCardStackScreen() {
         options={({ navigation }): NativeStackNavigationOptions => ({
           headerShown: false,
         })}
+      />
+
+      <FundCardStack.Screen
+        name={screenTitle.CARD_V2_SIGNUP_LANDING_SCREEN}
+        component={CardSignupLandingScreenV2}
+        options={{
+          headerShown: false,
+        }}
+      />
+
+      <FundCardStack.Screen
+        name={screenTitle.I_HAVE_REFERRAL_CODE_SCREEN}
+        component={IHaveReferralCodeScreen}
+        options={{
+          headerShown: false,
+        }}
       />
 
       <FundCardStack.Screen

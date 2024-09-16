@@ -32,6 +32,12 @@
         <data android:host="cypherwallet.com"/>
         <data android:scheme="wc"/>
       </intent-filter>
+      <intent-filter android:autoVerify="true">
+        <action android:name="android.intent.action.VIEW" />
+        <category android:name="android.intent.category.DEFAULT" />
+        <category android:name="android.intent.category.BROWSABLE" />
+        <data android:scheme="https" android:host="do1u9fw2zie02.cloudfront.net" />
+      </intent-filter>
     </activity>
   </application>
 </manifest>

@@ -72,6 +72,8 @@ import {
   bridgeContextInitialState,
   bridgeReducer,
 } from './src/reducers/bridge.reducer';
+import { LinkingOptions } from '@react-navigation/native';
+import { screenTitle } from './src/constants';
 
 const routingInstrumentation = new Sentry.ReactNavigationInstrumentation();
 
@@ -133,8 +135,14 @@ function App() {
 
   let params = {};
   let renderContent: any = {};
-  const linking = {
-    prefixes: ['cypherwallet://', 'https://cypherwallet.com/'],
+  const linking: LinkingOptions<ReactNavigation.RootParamList> = {
+    prefixes: ['https://do1u9fw2zie02.cloudfront.net', 'cypherwallet://'],
+    config: {
+      screens: {
+        [screenTitle.PORTFOLIO]: '*',
+        [screenTitle.I_HAVE_REFERRAL_CODE_SCREEN]: 'card/:referralCode',
+      },
+    },
   };
 
   useEffect(() => {

@@ -7,6 +7,8 @@
 	<key>com.apple.developer.associated-domains</key>
 	<array>
 		<string>webcredentials:cypherwallet.com</string>
+		<string>applinks:app.cypherhq.io</string>
+		<string>applinks:do1u9fw2zie02.cloudfront.net</string>
 	</array>
 </dict>
 </plist>
