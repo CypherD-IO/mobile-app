@@ -414,13 +414,13 @@ export default function CypherCardScreen({
               {rcApplicationStatus !== CardApplicationStatus.COMPLETED ? (
                 <CyDText>
                   {
-                    'Important: Complete KYC, get your new VISA card, and migrate your funds from your MASTER card by November to avoid losing access to your funds.'
+                    'Important: Complete KYC, get your new VISA card, and migrate funds from your MASTER card by end of November to avoid losing access to your funds.'
                   }
                 </CyDText>
               ) : (
                 <CyDText>
                   {
-                    'Important: Migrate your funds from your MASTER card by November to avoid losing access to your funds.'
+                    'Important: Migrate funds from your MASTER card by end of November to avoid losing access to your funds.'
                   }
                 </CyDText>
               )}
