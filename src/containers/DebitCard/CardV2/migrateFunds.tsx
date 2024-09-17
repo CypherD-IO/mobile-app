@@ -364,8 +364,6 @@ export default function MigratePCFunds() {
                   <CyDText className='text-black font-medium text-[10px]'>
                     {moment.unix(item.createdAt).format('DD/MM/YYYY HH:mm')}
                   </CyDText>
-                  {console.log(item.status)}
-                  {console.log(ActivityStatus.IN_PROGRESS)}
                   <CyDText
                     className={clsx('text-black font-regular text-[12px]', {
                       'text-orange-400':
