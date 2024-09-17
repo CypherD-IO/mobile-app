@@ -135,6 +135,21 @@ export default function SetPin(props: {
         value => {
           return value ? !/(\d)\1{2,}/.test(value) : false;
         },
+      )
+      .test(
+        'no-more-than-two-repeated-digits',
+        'No more than two repeated digits allowed',
+        value => {
+          if (value) {
+            const digitCounts = {};
+            for (const digit of value) {
+              digitCounts[digit] = (digitCounts[digit] || 0) + 1;
+              if (digitCounts[digit] > 2) return false;
+            }
+            return true;
+          }
+          return false;
+        },
       ),
     confirmPin: yup
       .string()
@@ -164,6 +179,21 @@ export default function SetPin(props: {
           return value ? !/(\d)\1{2,}/.test(value) : false;
         },
       )
+      .test(
+        'no-more-than-two-repeated-digits',
+        'No more than two repeated digits allowed',
+        value => {
+          if (value) {
+            const digitCounts = {};
+            for (const digit of value) {
+              digitCounts[digit] = (digitCounts[digit] || 0) + 1;
+              if (digitCounts[digit] > 2) return false;
+            }
+            return true;
+          }
+          return false;
+        },
+      )
       .test('pins-match', 'Pins must match', function (value) {
         return this.parent.pin === value;
       }),
@@ -174,10 +204,7 @@ export default function SetPin(props: {
       pin: '',
       confirmPin: '',
     },
-    validationSchema:
-      currentCardProvider === CardProviders.REAP_CARD
-        ? cardValidationSchemaRc
-        : cardValidationSchema,
+    validationSchema: cardValidationSchemaRc,
     onSubmit: values => {
       verifyWithOTP();
     },
@@ -262,24 +289,15 @@ export default function SetPin(props: {
                 </CyDView>
               </CyDView>
 
-              {currentCardProvider === CardProviders.REAP_CARD && (
-                <CyDView className='w-full mb-[4px] mt-[12px] items-center'>
-                  <CyDText className='text-[12px]'>
-                    Only 4-12 digits accepted.{'\n'}
-                    Only two consecutive numbers accepted at most (eg: 124758){' '}
-                    {'\n'}
-                    Only two repeated numbers in a row accepted at most
-                    (eg:112331)
-                  </CyDText>
-                </CyDView>
-              )}
-              {currentCardProvider === CardProviders.PAYCADDY && (
-                <CyDView className='w-full mb-[4px] mt-[12px] items-center'>
-                  <CyDText className='text-[12px]'>
-                    Only 4 digits accepted.
-                  </CyDText>
-                </CyDView>
-              )}
+              <CyDView className='w-full mb-[4px] mt-[12px] items-center'>
+                <CyDText className='text-[12px]'>
+                  Only 4-12 digits accepted.{'\n'}
+                  Only two consecutive numbers accepted at most (eg: 124758){' '}
+                  {'\n'}
+                  Only two repeated numbers in a row accepted at most
+                  (eg:112331)
+                </CyDText>
+              </CyDView>
             </CyDView>
           </CyDView>
           <CyDView className='w-full mb-[4px] mt-[12px] items-center'>

@@ -1216,6 +1216,50 @@ const resources = {
       TOKEN_ALLOWANCE_APPROVE: 'Token Allowance Approval',
       LONGER_THAN_USUAL: 'Talking longer than usual',
       ESTIMATED_NETWORK_FEE: 'Estimated Network Fee',
+      REFERRALS: 'Referrals',
+      REFER_VIA: 'Refer Via',
+      NEW_CODE: 'New code',
+      LINK: 'Link',
+      CODE: 'Code',
+      POINTS_EARNED: 'Points Earned',
+      HOW_IT_WORKS: 'How it works',
+      HOW_IT_WORKS_1:
+        'Share your unique referral code with a friend or family member.',
+      HOW_IT_WORKS_2:
+        'Whomever you refer will get 50 points instantly when they signup using your referral code.',
+      HOW_IT_WORKS_3: `You'll earn 10% of your friend's spending as bonus points for a year. If they upgrade to premium, both of you will get 200 points each.`,
+      HOW_IT_WORKS_4:
+        'You can track the accumulated reward points through your referrals under rewards section.',
+      HOW_IT_WORKS_5:
+        'You can create customised referral codes and share it on your socials to earn more reward points',
+      CREATE_REFERRAL_CODE: 'Create New Referral Code',
+      CREATE_REFERRAL_CODE_SUB:
+        'You can create personalized invite codes that you can share with friends, family, or on social media.',
+      REFERRAL_CODE: 'Referral Code',
+      REFERRAL_CODE_CREATED: 'Referral Code Created',
+      REFERRAL_CODE_CREATED_MESSAGE:
+        'Your referral code has been created successfully',
+      REFERRAL_CODE_CREATION_FAILED: 'Referral Code Creation Failed',
+      REFERRAL_CODE_CREATION_FAILED_MESSAGE:
+        'Unable to create referral code. Please try again later.',
+      REFERRAL_CODE_FETCH_FAILED: 'Referral Information Fetch Failed',
+      REFERRAL_CODE_FETCH_FAILED_MESSAGE:
+        'Unable to fetch your referral information. Please contact support.',
+      REFERRAL_CODE_LENGTH_INFO:
+        '* Referral code must be at least 6 characters',
+      REFERRAL_CODE_QR_SUB: 'Scan the QR code to share your referral link',
+      REFERRAL_NOT_AVAILABLE: 'Referral Not Available',
+      REFERRAL_NOT_AVAILABLE_MESSAGE:
+        'Get your card to start referring friends',
+      NO_REFERRALS_YET_MESSAGE: 'Your friends have not signed up yet',
+      HOW_REFERRAL_WORKS: 'How Referral Works',
+      ENTER_REFERRAL_CODE: 'Enter Referral Code',
+      INVALID_REFERRAL_CODE: 'Invalid Referral Code',
+      INVALID_REFERRAL_CODE_DESCRIPTION: 'Please enter a valid referral code',
+      REFERRAL_CODE_APPLIED_SUCCESSFULLY: 'Referral Code Applied Successfully',
+      REFERRAL_CODE_APPLIED_SUCCESSFULLY_DESCRIPTION:
+        "You've earned 50 reward points for applying the referral code. Continue to application.",
+      ERROR_IN_APPLYING_REFERRAL_CODE: 'Error in applying referral code',
     },
   },
 };

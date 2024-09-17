@@ -269,6 +269,29 @@ export default function Options(props: {
                 bGC={Colors.portfolioBorderColor}
               />
 
+              {!isReadOnlyWallet && (
+                <>
+                  <OptionsContainer
+                    sentryLabel={'referrals'}
+                    onPress={() => {
+                      props.navigation.navigate(C.screenTitle.REFERRALS, {
+                        fromOptionsStack: true,
+                      });
+                    }}
+                    title={t('CYPHER_CARD_REFERRALS')}
+                    logo={AppImages.REFER_OUTLINE}
+                  />
+                  <DynamicView
+                    dynamic
+                    dynamicWidth
+                    dynamicHeightFix
+                    height={1}
+                    width={88}
+                    bGC={Colors.portfolioBorderColor}
+                  />
+                </>
+              )}
+
               <OptionsContainer
                 sentryLabel={'activities'}
                 onPress={() => {
@@ -429,29 +452,6 @@ export default function Options(props: {
                   />
                 </>
               )}
-
-              {!isReadOnlyWallet && (
-                <OptionsContainer
-                  sentryLabel={'referrals'}
-                  onPress={() => {
-                    props.navigation.navigate(
-                      C.screenTitle.SEND_INVITE_CODE_SCREEN,
-                      { fromOptionsStack: true },
-                    );
-                  }}
-                  title={t('CYPHER_CARD_REFERRALS')}
-                  logo={AppImages.REFER_OUTLINE}
-                />
-              )}
-
-              <DynamicView
-                dynamic
-                dynamicWidth
-                dynamicHeightFix
-                height={1}
-                width={88}
-                bGC={Colors.portfolioBorderColor}
-              />
 
               <OptionsContainer
                 sentryLabel={'browser'}
