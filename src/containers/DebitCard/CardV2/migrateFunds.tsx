@@ -211,7 +211,7 @@ export default function MigratePCFunds() {
               {'Choose your preferred option'}
             </CyDText>
             <CyDTouchView
-              className={clsx('bg-white rounded-[16px] p-[16px] mt-[26px]', {
+              className={clsx('bg-white rounded-[16px] p-[16px] mt-[16px]', {
                 'border-[1px] border-[#FFBF15]': !moveCustomAmount,
                 'border-[1px] border-white': moveCustomAmount,
               })}
@@ -364,8 +364,6 @@ export default function MigratePCFunds() {
                   <CyDText className='text-black font-medium text-[10px]'>
                     {moment.unix(item.createdAt).format('DD/MM/YYYY HH:mm')}
                   </CyDText>
-                  {console.log(item.status)}
-                  {console.log(ActivityStatus.IN_PROGRESS)}
                   <CyDText
                     className={clsx('text-black font-regular text-[12px]', {
                       'text-orange-400':
@@ -404,7 +402,9 @@ export default function MigratePCFunds() {
             onPress={() => {
               setShowConsentModal(true);
             }}
-            disabled={!inputValue && moveCustomAmount}
+            disabled={
+              (!inputValue && moveCustomAmount) || Number(cardBalance) === 0
+            }
             style='w-full'
             loading={isLoading}
             loaderStyle={styles.loading}
