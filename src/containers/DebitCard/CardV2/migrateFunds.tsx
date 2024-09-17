@@ -210,17 +210,6 @@ export default function MigratePCFunds() {
               className={'font-semibold text-[14px] text-base100 mt-[12px]'}>
               {'Choose your preferred option'}
             </CyDText>
-            <CyDView
-              className={clsx(
-                'bg-white rounded-[16px] p-[16px] mt-[16px]',
-                {},
-              )}>
-              <CyDText>
-                {
-                  'Please note: If you do not migrate your funds to your new VISA card by November, your existing MASTER card funds may become inaccessible.'
-                }
-              </CyDText>
-            </CyDView>
             <CyDTouchView
               className={clsx('bg-white rounded-[16px] p-[16px] mt-[16px]', {
                 'border-[1px] border-[#FFBF15]': !moveCustomAmount,
@@ -415,7 +404,9 @@ export default function MigratePCFunds() {
             onPress={() => {
               setShowConsentModal(true);
             }}
-            disabled={!inputValue && moveCustomAmount}
+            disabled={
+              (!inputValue && moveCustomAmount) || Number(cardBalance) === 0
+            }
             style='w-full'
             loading={isLoading}
             loaderStyle={styles.loading}
