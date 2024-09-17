@@ -408,6 +408,25 @@ export default function CypherCardScreen({
             </CyDView>
           )}
 
+        {cardId !== HIDDEN_CARD_ID &&
+          cardProvider === CardProviders.PAYCADDY && (
+            <CyDView className='mx-[16px] mb-[12px] bg-white rounded-[16px] p-[8px]'>
+              {rcApplicationStatus !== CardApplicationStatus.COMPLETED ? (
+                <CyDText>
+                  {
+                    'Important: Complete KYC, get your new VISA card, and migrate funds from your MASTER card by end of November to avoid losing access to your funds.'
+                  }
+                </CyDText>
+              ) : (
+                <CyDText>
+                  {
+                    'Important: Migrate funds from your MASTER card by end of November to avoid losing access to your funds.'
+                  }
+                </CyDText>
+              )}
+            </CyDView>
+          )}
+
         {cardId !== HIDDEN_CARD_ID && (
           <CyDView className='flex flex-row justify-between items-center mx-[16px]'>
             {cardProvider === CardProviders.PAYCADDY && (
@@ -415,7 +434,7 @@ export default function CypherCardScreen({
                 <Button
                   disabled={
                     shouldBlockAction() ||
-                    (!isEmpty(cardBalance) && cardBalance !== 'NA') ||
+                    (!isEmpty(cardBalance) && cardBalance === 'NA') ||
                     rcApplicationStatus !== CardApplicationStatus.COMPLETED
                   }
                   onPress={() => {
