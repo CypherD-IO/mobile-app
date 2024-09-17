@@ -20,6 +20,7 @@ import {
   PortfolioContext,
   StakingContext,
   ActivityContext,
+  referralLinkAnalytics,
 } from './src/core/util';
 import {
   hdWalletStateReducer,
@@ -143,6 +144,7 @@ function App() {
 
   let params = {};
   let renderContent: any = {};
+
   const linking: LinkingOptions<ReactNavigation.RootParamList> = {
     prefixes: ['https://app.cypherhq.io', 'cypherwallet://'],
     config: {
@@ -161,6 +163,7 @@ function App() {
             screen: screenTitle.I_HAVE_REFERRAL_CODE_SCREEN,
             params: { referralCodeFromLink: referralCode },
           });
+          void referralLinkAnalytics(referralCode);
         }
       }
       return null;
