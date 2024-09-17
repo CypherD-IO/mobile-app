@@ -72,8 +72,10 @@ import { isKujiraAddress } from '../containers/utilities/kujiraUtilities';
 import moment from 'moment';
 import { isSolanaAddress } from '../containers/utilities/solanaUtilities';
 import { RSA } from 'react-native-rsa-native';
-// const {showModal, hideModal} = useGlobalModalContext()
+import { hostWorker } from '../global';
+import { v4 as uuidv4 } from 'uuid';
 
+const ARCH_HOST: string = hostWorker.getHost('ARCH_HOST');
 export const HdWalletContext = React.createContext<HdWalletContextDef | null>(
   null,
 );
@@ -1051,5 +1053,17 @@ export const generateKeys = async () => {
     return { publicKeyBase64, privateKey };
   } catch (error) {
     // error in genrating keys
+  }
+};
+
+export const referralLinkAnalytics = async (referralCode: string) => {
+  try {
+    const payload = {
+      referralCode,
+      trackId: uuidv4(),
+    };
+    await axios.post(`${ARCH_HOST}/v1/cards/referral-v2/click`, payload);
+  } catch (e) {
+    Sentry.captureException(e);
   }
 };
