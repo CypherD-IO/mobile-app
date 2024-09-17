@@ -19,7 +19,7 @@ const CardSignupLandingScreenV2 = ({ navigation, route }) => {
     deductAmountNow = false,
     toPage = '',
     cardBalance = 0,
-  } = route.params;
+  } = route.params ?? {};
   const [showOnboarding, setShowOnboarding] = useState(false);
   const isFocused = useIsFocused();
   const [loading, setLoading] = useState(false);
@@ -126,6 +126,7 @@ const CardSignupLandingScreenV2 = ({ navigation, route }) => {
                   deductAmountNow,
                   toPage,
                   cardBalance,
+                  referralCodeFromLink: '',
                 })
               }
               style='mb-[12px] p-[16px] w-full'

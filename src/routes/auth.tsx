@@ -835,27 +835,6 @@ export function DebitCardStackScreen() {
         })}
       />
 
-      {/* <FundCardStack.Screen
-        name={screenTitle.CARD_SIGNUP_LANDING_SCREEN}
-        component={CardSignupLandingScreen}
-        options={({ navigation }) => ({
-          headerShown: true,
-          headerTransparent: false,
-          headerShadowVisible: false,
-          title: 'Cypher Card Signup',
-          headerStyle: {
-            backgroundColor: Colors.appColor,
-          },
-          navigationOptions: {
-            tabBarVisible: false,
-          },
-          headerTitleAlign: 'center',
-          headerTitleStyle: portfolioStackScreenHeaderTitleStyles,
-          headerBackVisible: false,
-          headerLeft: props => defaultHeaderLeft(navigation),
-        })}
-      /> */}
-
       <FundCardStack.Screen
         name={screenTitle.CARD_SIGNUP_CONFIRMATION}
         component={CardSignupConfirmation}

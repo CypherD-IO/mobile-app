@@ -15,7 +15,7 @@ import Loading from '../../../components/v2/loading';
 import { StyleSheet } from 'react-native';
 import useAxios from '../../../core/HttpRequest';
 import { CardProviders } from '../../../constants/enum';
-import { generateKeys } from '../../../core/util';
+import { generateKeys, parseErrorMessage } from '../../../core/util';
 
 export default function CardRevealAuthScreen(props: {
   navigation: any;
@@ -66,7 +66,7 @@ export default function CardRevealAuthScreen(props: {
       showModal('state', {
         type: 'error',
         title: t('OTP_TRIGGER_FAILED'),
-        description: response?.error?.message ?? '',
+        description: parseErrorMessage(''),
         onSuccess: hideModal,
         onFailure: hideModal,
       });
@@ -124,7 +124,7 @@ export default function CardRevealAuthScreen(props: {
           showModal('state', {
             type: 'error',
             title: t('VERIFICATION_FAILED'),
-            description: response?.error?.message ?? t('INVALID_OTP'),
+            description: parseErrorMessage(t('INVALID_OTP')),
             onSuccess: () => onModalHide(),
             onFailure: () => onModalHide(),
           });
@@ -155,7 +155,7 @@ export default function CardRevealAuthScreen(props: {
           showModal('state', {
             type: 'error',
             title: t('VERIFICATION_FAILED'),
-            description: response?.error?.message ?? t('INVALID_OTP'),
+            description: parseErrorMessage(t('INVALID_OTP')),
             onSuccess: () => onModalHide(),
             onFailure: () => onModalHide(),
           });

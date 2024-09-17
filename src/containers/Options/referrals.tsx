@@ -224,7 +224,7 @@ const PointsInfo = ({
               className='w-[18px] h-[18px] mr-[4px]'
             />
             <CyDText className='font-[600]'>
-              {rewardContribution.toLocaleString('en-US')}
+              {rewardContribution.toLocaleString()}
             </CyDText>
           </CyDView>
         )}

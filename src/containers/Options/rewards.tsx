@@ -97,7 +97,7 @@ export default function Rewards({ route, navigation }) {
                 <CyDView className='mt-[10px]'>
                   <CyDText className='font-bold text-[28px]'>
                     <LoaderWithText
-                      value={rewardPoints.total.toLocaleString('en-US')}
+                      value={rewardPoints.total.toLocaleString()}
                       loaderSize={33}
                     />
                   </CyDText>
@@ -109,7 +109,7 @@ export default function Rewards({ route, navigation }) {
                   <CyDView>
                     <CyDText className='text-[14px] font-bold text-n300'>
                       <LoaderWithText
-                        value={rewardPoints.spend.toLocaleString('en-US')}
+                        value={rewardPoints.spend.toLocaleString()}
                         loaderSize={15}
                       />
                     </CyDText>
@@ -120,7 +120,7 @@ export default function Rewards({ route, navigation }) {
                   <CyDView>
                     <CyDText className='text-[14px] font-bold text-n300'>
                       <LoaderWithText
-                        value={rewardPoints.invites.toLocaleString('en-US')}
+                        value={rewardPoints.invites.toLocaleString()}
                         loaderSize={15}
                       />
                     </CyDText>

@@ -24,7 +24,7 @@ const IHaveReferralCodeScreen = ({ navigation, route }) => {
     toPage = '',
     cardBalance = 0,
     referralCodeFromLink = '',
-  } = route.params;
+  } = route.params ?? {};
   const [referralCode, setReferralCode] = useState(referralCodeFromLink || '');
   const [isModalVisible, setIsModalVisible] = useState(false);
   const [loading, setLoading] = useState(false);
