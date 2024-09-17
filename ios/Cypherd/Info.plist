@@ -45,7 +45,7 @@
 	</array>
 	<key>com.apple.developer.associated-domains</key>
 	<array>
-		<string>applinks:app.cypherhq.io</string>
+    <string>applinks:app.cypherhq.io</string>
 	</array>
 	<key>CFBundleVersion</key>
 	<string>4</string>

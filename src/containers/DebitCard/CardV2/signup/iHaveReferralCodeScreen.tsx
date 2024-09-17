@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { SafeAreaView, ScrollView, StatusBar, TextInput } from 'react-native';
 import {
   CyDImage,
@@ -22,12 +22,19 @@ const IHaveReferralCodeScreen = ({ navigation, route }) => {
     deductAmountNow = false,
     toPage = '',
     cardBalance = 0,
+    referralCodeFromLink = '',
   } = route.params;
-  const [referralCode, setReferralCode] = useState('');
+  const [referralCode, setReferralCode] = useState(referralCodeFromLink || '');
   const [isModalVisible, setIsModalVisible] = useState(false);
   const [loading, setLoading] = useState(false);
   const { postWithAuth } = useAxios();
   const { showModal, hideModal } = useGlobalModalContext();
+
+  useEffect(() => {
+    if (referralCodeFromLink) {
+      void onSubmitInviteCode();
+    }
+  }, [referralCodeFromLink]);
 
   const onSubmitInviteCode = async () => {
     setLoading(true);

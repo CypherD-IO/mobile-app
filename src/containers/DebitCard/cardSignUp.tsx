@@ -264,7 +264,6 @@ export default function CardSignupScreen({ navigation, route }) {
   useEffect(() => {
     const applyReferralCode = async () => {
       const referralCode = await getReferralCode();
-      console.log('🚀 ~ applyReferralCode ~ referralCode:', referralCode);
       if (referralCode) {
         setReferralCode(referralCode);
       }
