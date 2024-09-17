@@ -198,7 +198,7 @@ const BannerCarouselItem = ({
           <>
             <CyDView>
               <CyDView className='flex flex-row justify-center items-end gap-[3px]'>
-                <CyDTokenValue className='text-[20px] font-extrabold text-primaryTextColor'>
+                <CyDTokenValue className='text-[20px] font-extrabold '>
                   {amountInUsd}
                 </CyDTokenValue>
               </CyDView>

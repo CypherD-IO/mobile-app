@@ -593,9 +593,7 @@ const NoTxnsFound = () => {
           source={AppImages.NO_TRANSACTIONS}
           resizeMode='contain'
         />
-        <CyDText className='mt-2 text-primaryTextColor'>
-          {t('EMPTY_TRANSCATION_DETAIL_MSG')}
-        </CyDText>
+        <CyDText className='mt-2 '>{t('EMPTY_TRANSCATION_DETAIL_MSG')}</CyDText>
       </CyDView>
     </CyDView>
   );

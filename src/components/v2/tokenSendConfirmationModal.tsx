@@ -60,10 +60,7 @@ export default function TokenSendConfirmationModal(
         </CyDText>
         <CyDView className={'p-[10px]'}>
           <CyDView className={'flex flex-row mt-[40px] pb-[15px]'}>
-            <CyDText
-              className={
-                'font-bold text-[16px] ml-[5px] text-primaryTextColor'
-              }>
+            <CyDText className={'font-bold text-[16px] ml-[5px]'}>
               {t('SEND_ON')}
             </CyDText>
             <CyDView className={'flex flex-row pl-[15px]'}>
@@ -71,50 +68,38 @@ export default function TokenSendConfirmationModal(
                 source={chainLogo}
                 className={'w-[16px] h-[16px] mt-[3px]'}
               />
-              <CyDText
-                className={
-                  ' font-medium text-[15px] ml-[5px] text-primaryTextColor'
-                }>
+              <CyDText className={' font-medium text-[15px] ml-[5px] '}>
                 {chain.backendName}
               </CyDText>
             </CyDView>
           </CyDView>
           <SepraterView className={'w-[100%]'} dynamic />
           <CyDView className={'flex flex-row mt-[20px] w-[95%] pb-[15px]'}>
-            <CyDText
-              className={
-                ' font-bold text-[16px] ml-[5px] text-primaryTextColor'
-              }>
+            <CyDText className={' font-bold text-[16px] ml-[5px] '}>
               {t('VALUE')}
             </CyDText>
             <CyDView
               className={
                 'flex flex-row flex-wrap justify-between w-[90%]  pl-[35px]'
               }>
-              <CyDText
-                className={' font-medium text-[15px] text-primaryTextColor'}>
+              <CyDText className={' font-medium text-[15px] '}>
                 {String(formatAmount(amountInCrypto)) + ' ' + symbol}
               </CyDText>
-              <CyDText
-                className={' font-medium text-[14px] text-primaryTextColor'}>
+              <CyDText className={' font-medium text-[14px] '}>
                 {'$' + amountInFiat}
               </CyDText>
             </CyDView>
           </CyDView>
           <SepraterView className={'w-[100%]'} dynamic />
           <CyDView className={'flex flex-row mt-[20px] pb-[15px]'}>
-            <CyDText
-              className={
-                ' font-bold text-[16px] ml-[5px] text-primaryTextColor'
-              }>
+            <CyDText className={' font-bold text-[16px] ml-[5px] '}>
               {t('SEND_TO')}
             </CyDText>
             <CyDView
               className={
                 'flex flex-row flex-wrap justify-between w-[80%] pl-[18px]'
               }>
-              <CyDText
-                className={' font-medium text-[16px] text-primaryTextColor'}>
+              <CyDText className={' font-medium text-[16px] '}>
                 {toAddress}
               </CyDText>
             </CyDView>
@@ -122,22 +107,17 @@ export default function TokenSendConfirmationModal(
           <SepraterView className={'w-[100%]'} dynamic />
 
           <CyDView className={'flex flex-row mt-[20px] w-[95%] pb-[15px]'}>
-            <CyDText
-              className={
-                ' font-bold text-[16px] ml-[5px] text-primaryTextColor'
-              }>
+            <CyDText className={' font-bold text-[16px] ml-[5px] '}>
               {t('GAS')}
             </CyDText>
             <CyDView
               className={
                 'flex flex-row flex-wrap justify-between w-[95%] pl-[50px]'
               }>
-              <CyDText
-                className={' font-medium text-[15px] text-primaryTextColor'}>
+              <CyDText className={' font-medium text-[15px] '}>
                 {gasFeeInCrypto + ' ' + nativeTokenSymbol}
               </CyDText>
-              <CyDText
-                className={' font-medium text-[14px] text-primaryTextColor'}>
+              <CyDText className={' font-medium text-[14px] '}>
                 {'$' + String(formatAmount(gasFeeInFiat))}
               </CyDText>
             </CyDView>

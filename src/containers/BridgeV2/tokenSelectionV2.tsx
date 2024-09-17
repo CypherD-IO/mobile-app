@@ -349,7 +349,7 @@ function ChooseTokenModal({
         </CyDTouchView>
         <CyDText
           className={
-            'text-center pt-[24px] pb-[14px] text-[22px] font-nunito font-bold text-primaryTextColor'
+            'text-center pt-[24px] pb-[14px] text-[22px] font-nunito font-bold '
           }>
           {'Select Token'}
         </CyDText>
@@ -526,7 +526,7 @@ export default function TokenSelectionV2({
             <CyDView className='flex flex-col items-start w-[60%]'>
               <CyDTextInput
                 className={clsx(
-                  'font-semibold text-start text-primaryTextColor font-nunito text-[30px] w-[100%] p-[4px] ',
+                  'font-semibold text-start  font-nunito text-[30px] w-[100%] p-[4px] ',
                 )}
                 keyboardType='numeric'
                 onChangeText={text => {
@@ -545,7 +545,7 @@ export default function TokenSelectionV2({
               />
               <CyDText
                 className={clsx(
-                  'font-semibold text-center text-primaryTextColor font-nunito text-[12px]',
+                  'font-semibold text-center  font-nunito text-[12px]',
                 )}>
                 {`$${Number(usdAmount).toFixed(6)}`}
               </CyDText>
@@ -624,13 +624,13 @@ export default function TokenSelectionV2({
             <CyDView className='flex flex-col items-start'>
               <CyDText
                 className={clsx(
-                  'font-semibold text-center text-primaryTextColor font-nunito text-[30px]',
+                  'font-semibold text-center  font-nunito text-[30px]',
                 )}>
                 {Number(amountOut).toFixed(6)}
               </CyDText>
               <CyDText
                 className={clsx(
-                  'font-semibold text-center text-primaryTextColor font-nunito text-[12px]',
+                  'font-semibold text-center  font-nunito text-[12px]',
                 )}>
                 {`$${Number(usdAmountOut).toFixed(6)}`}
               </CyDText>

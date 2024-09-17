@@ -284,7 +284,7 @@ export default function CardControlsMenu({ route, navigation }) {
             </CyDTouchView>
             <CyDText className='text-n200 text-[12px] text-[500] mx-[20px] mt-[6px]'>
               {
-                'Enable unrestricted international transactions across all countries and bypass all configured limits.'
+                'Enable unrestricted international transactions across all countries and bypass all configured controls.'
               }
             </CyDText>
             <CyDText className='text-[14px] text-n200 mt-[16px] font-[600]'>
@@ -315,11 +315,11 @@ export default function CardControlsMenu({ route, navigation }) {
                     source={AppImages.DOMESTIC_ICON}
                   />
                 ) : (
-                  <CyDText className='text-[18px] mr-[8px]'>
+                  <CyDText className='text-[18px] mr-[12px]'>
                     {domesticCountry.unicode_flag}
                   </CyDText>
                 )}
-                <CyDText className='text-[18px] font-[500] '>
+                <CyDText className='text-[16px] font-[600] '>
                   Domestic Transactions
                 </CyDText>
               </CyDView>
@@ -351,12 +351,12 @@ export default function CardControlsMenu({ route, navigation }) {
               }}>
               <CyDView className='flex-1 flex-row items-center'>
                 <CyDImage
-                  className='w-[24px] h-[24px] mr-[8px] mt-[2px]'
+                  className='w-[24px] h-[24px] mr-[12px] mt-[2px]'
                   source={AppImages.INTERNATIONAL_ICON}
                 />
-                <CyDView className='flex-1'>
-                  <CyDText className='text-[18px] font-[500] flex-wrap'>
-                    International Transactions
+                <CyDView className='flex-1 flex-col justify-between mr-[6px]'>
+                  <CyDText className='text-[16px] font-semibold flex-wrap'>
+                    {'International Transactions'}
                   </CyDText>
                 </CyDView>
               </CyDView>

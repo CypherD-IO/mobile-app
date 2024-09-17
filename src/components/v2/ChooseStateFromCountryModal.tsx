@@ -67,7 +67,7 @@ const ChooseStateFromCountryModal = ({
             className={'flex flex-row mt-[20px] justify-center items-center'}>
             <CyDTextInput
               className={
-                'border-[1px] border-inputBorderColor rounded-[8px] p-[10px] text-[14px] w-[80%]  text-primaryTextColor'
+                'border-[1px] border-inputBorderColor rounded-[8px] p-[10px] text-[14px] w-[80%]'
               }
               value={stateFilterText}
               autoCapitalize='none'

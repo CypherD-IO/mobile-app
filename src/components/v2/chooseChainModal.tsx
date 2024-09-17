@@ -118,9 +118,7 @@ export default function ChooseChainModal({
           />
         </CyDTouchView>
         <CyDText
-          className={
-            'text-center pt-[24px] pb-[14px] text-[22px]  font-bold text-primaryTextColor'
-          }>
+          className={'text-center pt-[24px] pb-[14px] text-[22px]  font-bold'}>
           {title}
         </CyDText>
 

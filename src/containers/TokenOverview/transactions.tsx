@@ -230,10 +230,7 @@ export function TokenTransactions({
               className={
                 'w-[140px] h-[54px] items-start flex flex-column justify-center px-[8px] mt-[-8px]'
               }>
-              <CyDText
-                className={
-                  'w-[100px] font-bold text-[15px] text-primaryTextColor'
-                }>
+              <CyDText className={'w-[100px] font-bold text-[15px] '}>
                 {item?.txnHash?.substring(0, 3) +
                   '...' +
                   item?.txnHash?.substring(
@@ -254,8 +251,7 @@ export function TokenTransactions({
               }>
               <CyDText
                 className={clsx('text-right font-semibold text-[18px]', {
-                  'text-primaryTextColor':
-                    item?.status && item?.direction === 'TO',
+                  '': item?.status && item?.direction === 'TO',
                   'text-toastColor': item?.status && item?.direction === 'TO',
                   'text-pinkCyD': !item?.status,
                 })}>
