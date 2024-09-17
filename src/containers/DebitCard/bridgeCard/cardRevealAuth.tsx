@@ -35,7 +35,7 @@ export default function CardRevealAuthScreen(props: {
   const [verifyingOTP, setVerifyingOTP] = useState<boolean>(false);
   const { navigation, route } = props;
   const { currentCardProvider, card, verifyOTPPayload } = route.params;
-  const triggerOTPParam = route.params.triggerOTPParam ?? 'show-token';
+  const triggerOTPParam = route.params.triggerOTPParam ?? 'verify/show-token';
   const onSuccess = route.params.onSuccess;
   const resendOtpTime = 30;
   const [resendInterval, setResendInterval] = useState(0);
@@ -97,7 +97,7 @@ export default function CardRevealAuthScreen(props: {
 
   const verifyOTP = async (num: number) => {
     const OTPVerificationUrl = `/v1/cards/${currentCardProvider}/card/${card?.cardId}/${triggerOTPParam}`;
-    if (triggerOTPParam === 'show-token') {
+    if (triggerOTPParam === 'verify/show-token') {
       const key = await generateKeys();
       const payload = {
         otp: +num,
