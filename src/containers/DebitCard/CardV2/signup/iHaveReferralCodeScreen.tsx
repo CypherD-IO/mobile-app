@@ -16,6 +16,7 @@ import useAxios from '../../../../core/HttpRequest';
 import { screenTitle } from '../../../../constants';
 import { useGlobalModalContext } from '../../../../components/v2/GlobalModal';
 import { setReferralCodeAsync } from '../../../../core/asyncStorage';
+import { isEmpty } from 'lodash';
 
 const IHaveReferralCodeScreen = ({ navigation, route }) => {
   const {
@@ -124,6 +125,7 @@ const IHaveReferralCodeScreen = ({ navigation, route }) => {
                 onPress={() => {
                   void onSubmitInviteCode();
                 }}
+                disabled={isEmpty(referralCode)}
                 loaderStyle={{ height: 22, width: 22 }}
                 loading={loading}
                 type={ButtonType.WHITE_FILL}
@@ -170,6 +172,7 @@ const IHaveReferralCodeScreen = ({ navigation, route }) => {
               onPress={() => {
                 void onSubmitInviteCode();
               }}
+              disabled={isEmpty(referralCode)}
               loading={loading}
               loaderStyle={{ height: 22, width: 22 }}
               style='mt-[24px] p-[16px] mb-[42px] w-full'

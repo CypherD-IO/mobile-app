@@ -1224,15 +1224,14 @@ const resources = {
       POINTS_EARNED: 'Points Earned',
       HOW_IT_WORKS: 'How it works',
       HOW_IT_WORKS_1:
-        'The user shares their unique invite code with a friend or family member',
+        'Share your unique referral code with a friend or family member.',
       HOW_IT_WORKS_2:
-        'The referred user signs up on the platform using the invite code / link during the registration process',
-      HOW_IT_WORKS_3:
-        'For every $10 the referred user spends, the referrer earns 1 reward point automatically',
+        'Whomever you refer will get 50 points instantly when they signup using your referral code.',
+      HOW_IT_WORKS_3: `You'll earn 10% of your friend's spending as bonus points for a year. If they upgrade to premium, both of you will get 200 points each.`,
       HOW_IT_WORKS_4:
-        'Referrer can track their accumulated reward points through their account, under rewards section',
+        'You can track the accumulated reward points through your referrals under rewards section.',
       HOW_IT_WORKS_5:
-        'There is no limit to how many reward points a referrer can earn, as long as the referred user continues to spend with their Cypher card.',
+        'You can create customised referral codes and share it on your socials to earn more reward points',
       CREATE_REFERRAL_CODE: 'Create New Referral Code',
       CREATE_REFERRAL_CODE_SUB:
         'You can create personalized invite codes that you can share with friends, family, or on social media.',
