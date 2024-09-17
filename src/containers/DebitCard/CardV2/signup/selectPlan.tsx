@@ -42,7 +42,6 @@ interface RouteParams {
   deductAmountNow?: boolean;
   toPage?: string;
   cardBalance?: number;
-  referralCode?: string;
 }
 
 export default function SelectPlan() {
