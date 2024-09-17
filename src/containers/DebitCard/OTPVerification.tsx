@@ -414,7 +414,7 @@ export default function OTPVerificationScreen({ navigation }) {
             <CyDView className={'mt-[20px] flex flex-row justify-center'}>
               <CyDTextInput
                 className={
-                  'ml-[4px] border-[1px] border-inputBorderColor rounded-[5px] p-[12px] text-[18px] w-[85%]  text-primaryTextColor'
+                  'ml-[4px] border-[1px] border-inputBorderColor rounded-[5px] p-[12px] text-[18px] w-[85%]  '
                 }
                 value={formData.updatedEmail}
                 autoCapitalize='none'

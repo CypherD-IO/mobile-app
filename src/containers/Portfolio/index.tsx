@@ -808,7 +808,7 @@ export default function Portfolio({ navigation }: PortfolioProps) {
           <HeaderBar
             navigation={navigation}
             renderTitleComponent={
-              <CyDTokenValue className='text-[24px] font-extrabold text-primaryTextColor'>
+              <CyDTokenValue className='text-[24px] font-extrabold '>
                 {checkAll(portfolioState)}
               </CyDTokenValue>
             }

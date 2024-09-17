@@ -210,14 +210,14 @@ export default function LinkAnotherWallet({ navigation }) {
                         className='flex-1 mt-[25px] self-center w-[87%]'
                         key={index}>
                         <CyDView className='flex flex-row justify-start gap-[10px]'>
-                          <CyDText className='font-bold text-primaryTextColor'>
+                          <CyDText className='font-bold '>
                             {labels[field].label}
                           </CyDText>
                         </CyDView>
                         <CyDView className='flex flex-row justify-between items-center w-[100%]'>
                           <CyDTextInput
                             className={clsx(
-                              'mt-[5px] w-[100%] border-[1px] border-inputBorderColor rounded-[10px] p-[12px] pr-[38px] text-[16px]  text-primaryTextColor',
+                              'mt-[5px] w-[100%] border-[1px] border-inputBorderColor rounded-[10px] p-[12px] pr-[38px] text-[16px]  ',
                               {
                                 'border-redOffColor':
                                   formProps.touched[field] &&
