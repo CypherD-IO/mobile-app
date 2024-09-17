@@ -576,7 +576,7 @@ export default function CardSignupScreen({ navigation, route }) {
               <CyDView className={'mt-[20px] flex flex-row justify-center'}>
                 <CyDTextInput
                   className={clsx(
-                    'border-[1px] border-inputBorderColor w-full rounded-[5px] p-[12px] text-[18px]  text-primaryTextColor',
+                    'border-[1px] border-inputBorderColor w-full rounded-[5px] p-[12px] text-[18px]  ',
                     {
                       'border-redOffColor':
                         formProps.touched.fullName && formProps.errors.fullName,
@@ -646,7 +646,7 @@ export default function CardSignupScreen({ navigation, route }) {
               <CyDView className={'mt-[20px] flex flex-row justify-center'}>
                 <CyDTextInput
                   className={clsx(
-                    'border-[1px] border-inputBorderColor rounded-[5px] p-[12px] text-[18px]  text-primaryTextColor w-full',
+                    'border-[1px] border-inputBorderColor rounded-[5px] p-[12px] text-[18px]   w-full',
                     {
                       'border-redOffColor':
                         formProps.touched.email && formProps.errors.email,
@@ -767,7 +767,7 @@ export default function CardSignupScreen({ navigation, route }) {
               <CyDView className={'mt-[20px] flex flex-row justify-center'}>
                 <CyDTextInput
                   className={clsx(
-                    'ml-[4px] border-[1px] border-inputBorderColor rounded-[5px] p-[12px] text-[18px] w-full  text-primaryTextColor',
+                    'ml-[4px] border-[1px] border-inputBorderColor rounded-[5px] p-[12px] text-[18px] w-full  ',
                     {
                       'border-redOffColor':
                         formProps.touched.line1 && formProps.errors.line1,
@@ -792,7 +792,7 @@ export default function CardSignupScreen({ navigation, route }) {
               <CyDView className={'mt-[20px] flex flex-row justify-center'}>
                 <CyDTextInput
                   className={clsx(
-                    'ml-[4px] border-[1px] border-inputBorderColor rounded-[5px] p-[12px] text-[18px] w-full  text-primaryTextColor',
+                    'ml-[4px] border-[1px] border-inputBorderColor rounded-[5px] p-[12px] text-[18px] w-full  ',
                   )}
                   value={formProps.values.line2}
                   autoCapitalize='none'
@@ -805,7 +805,7 @@ export default function CardSignupScreen({ navigation, route }) {
               <CyDView className={'mt-[20px] flex flex-row justify-center'}>
                 <CyDTextInput
                   className={clsx(
-                    'ml-[4px] border-[1px] border-inputBorderColor rounded-[5px] p-[12px] text-[18px] w-full  text-primaryTextColor',
+                    'ml-[4px] border-[1px] border-inputBorderColor rounded-[5px] p-[12px] text-[18px] w-full  ',
                     {
                       'border-redOffColor':
                         formProps.touched.city && formProps.errors.city,
@@ -835,7 +835,7 @@ export default function CardSignupScreen({ navigation, route }) {
                 }}>
                 <CyDView
                   className={clsx(
-                    'ml-[4px] border-[1px] border-inputBorderColor rounded-[5px] p-[12px] text-[18px] w-full  text-primaryTextColor',
+                    'ml-[4px] border-[1px] border-inputBorderColor rounded-[5px] p-[12px] text-[18px] w-full  ',
                     {
                       'border-redOffColor':
                         formProps.touched.state && formProps.errors.state,
@@ -856,7 +856,7 @@ export default function CardSignupScreen({ navigation, route }) {
               <CyDView className={'mt-[20px] flex flex-row justify-center'}>
                 <CyDTextInput
                   className={clsx(
-                    'ml-[4px] border-[1px] border-inputBorderColor rounded-[5px] p-[12px] text-[18px] w-full  text-primaryTextColor',
+                    'ml-[4px] border-[1px] border-inputBorderColor rounded-[5px] p-[12px] text-[18px] w-full  ',
                     {
                       'border-redOffColor':
                         formProps.touched.postalCode &&
@@ -943,7 +943,7 @@ export default function CardSignupScreen({ navigation, route }) {
                 }>
                 <CyDTextInput
                   className={
-                    'border-[1px] border-inputBorderColor rounded-[50px] p-[10px] text-[14px] w-[80%]  text-primaryTextColor'
+                    'border-[1px] border-inputBorderColor rounded-[50px] p-[10px] text-[14px] w-[80%]  '
                   }
                   value={countryFilterText}
                   autoCapitalize='none'
@@ -1167,7 +1167,7 @@ export default function CardSignupScreen({ navigation, route }) {
           <CyDView className={'mt-[20px] flex flex-row justify-center'}>
             <CyDTextInput
               className={
-                'ml-[4px] border-[1px] border-inputBorderColor rounded-[5px] p-[12px] text-[18px] w-[85%]  text-primaryTextColor'
+                'ml-[4px] border-[1px] border-inputBorderColor rounded-[5px] p-[12px] text-[18px] w-[85%]  '
               }
               value={updatedEmail}
               autoCapitalize='none'

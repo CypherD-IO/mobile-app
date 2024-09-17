@@ -539,9 +539,7 @@ export default function Overview({
             <CyDView>
               {/* <CyDTokenValue className={'text-center text-[18px] font-bold'}>{getTotalValue()}</CyDTokenValue> */}
               <CyDTokenValue
-                className={
-                  'text-center text-[18px] font-extrabold text-primaryTextColor'
-                }>
+                className={'text-center text-[18px] font-extrabold '}>
                 {totalValueInAmount}
               </CyDTokenValue>
             </CyDView>

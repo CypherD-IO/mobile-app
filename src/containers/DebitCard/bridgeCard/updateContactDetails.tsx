@@ -332,7 +332,7 @@ export default function UpdateCardContactDetails({
                   </CyDText>
                   <CyDTextInput
                     className={clsx(
-                      ' border-[1px] border-inputBorderColor mt-[8px] rounded-[5px] p-[12px] text-[18px]  text-primaryTextColor',
+                      ' border-[1px] border-inputBorderColor mt-[8px] rounded-[5px] p-[12px] text-[18px]  ',
                       {
                         'border-redOffColor':
                           formProps.touched.email && formProps.errors.email,

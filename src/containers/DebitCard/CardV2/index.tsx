@@ -453,24 +453,6 @@ export default function CypherCardScreen({
               </CyDView>
             )}
 
-            <CyDView
-              className={clsx('h-[36px]', {
-                'w-[48%]': cardProvider === CardProviders.REAP_CARD,
-                'w-[25%] mr-[16px]': cardProvider === CardProviders.PAYCADDY,
-              })}>
-              <Button
-                image={AppImages.PLUS}
-                disabled={shouldBlockAction()}
-                onPress={() => {
-                  onPressFundCard();
-                }}
-                style={'p-[9px] rounded-[6px]'}
-                imageStyle={'mr-[3px] h-[12px] w-[12px]'}
-                title={t('ADD_FUND')}
-                titleStyle={'text-[12px] font-bold'}
-              />
-            </CyDView>
-
             {cardProvider === CardProviders.REAP_CARD && (
               <CyDView className='w-[48%]'>
                 <Button
@@ -493,6 +475,24 @@ export default function CypherCardScreen({
                 />
               </CyDView>
             )}
+
+            <CyDView
+              className={clsx('h-[36px]', {
+                'w-[48%]': cardProvider === CardProviders.REAP_CARD,
+                'w-[25%] mr-[16px]': cardProvider === CardProviders.PAYCADDY,
+              })}>
+              <Button
+                image={AppImages.PLUS}
+                disabled={shouldBlockAction()}
+                onPress={() => {
+                  onPressFundCard();
+                }}
+                style={'p-[9px] rounded-[6px]'}
+                imageStyle={'mr-[3px] h-[12px] w-[12px]'}
+                title={t('ADD_FUND')}
+                titleStyle={'text-[12px] font-bold'}
+              />
+            </CyDView>
           </CyDView>
         )}
 

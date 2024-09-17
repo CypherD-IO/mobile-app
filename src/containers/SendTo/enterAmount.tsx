@@ -262,7 +262,7 @@ export default function EnterAmount(props: any) {
                   className={'w-[14px] h-[16px]'}
                 />
               </CyDTouchView>
-              <CyDText className=' text-[15px] font-bold text-primaryTextColor'>
+              <CyDText className=' text-[15px] font-bold '>
                 {enterCryptoAmount ? tokenData.symbol : 'USD'}
               </CyDText>
               <CyDView className={'flex-col w-8/12 mx-[6px] items-center'}>

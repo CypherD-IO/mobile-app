@@ -1106,8 +1106,7 @@ export default function BridgeFundCardScreen({ route }: { route: any }) {
                 </CyDView>
               )}
             </CyDView>
-            <CyDText
-              className={clsx('text-center text-primaryTextColor text-[16px]')}>
+            <CyDText className={clsx('text-center  text-[16px]')}>
               {'~' +
                 (isCrpytoInput
                   ? (!isNaN(parseFloat(usdAmount))

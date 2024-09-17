@@ -35,7 +35,8 @@ const ShareVia = ({ referralLink }: { referralLink: string }) => {
   const shareUrlText = `🚀 Revolutionize your crypto spending with Cypher Card! I'm loving it, and here's why:
 
     💳 Google Pay & Apple Pay support
-    💰 0.5% forex fee on premium plan
+    💰 Lowest ever 0.5% Forex Fee
+    💲 0% Loading Fee for USDC 
     🌍 Use your crypto anywhere, just like a regular card
 
   🎁 Use my referral link to join and we'll both earn rewards! :
@@ -49,7 +50,7 @@ const ShareVia = ({ referralLink }: { referralLink: string }) => {
     },
     {
       name: 'Telegram',
-      icon: AppImages.TELEGRAM_ICON,
+      icon: AppImages.TELEGRAM_BLUE_ICON,
       url: `tg://msg?text=${encodeURIComponent(shareUrlText)}`,
     },
     {
@@ -458,7 +459,7 @@ export default function Referrals({ route, navigation }) {
               referralData?.referralCodes.map((code, index) => (
                 <ReferralInfo
                   key={index}
-                  referralLink={`https://app.cypherhq.io/refer/${code}`}
+                  referralLink={`https://app.cypherhq.io/card/referral/${code}`}
                   referralCode={code}
                 />
               ))}

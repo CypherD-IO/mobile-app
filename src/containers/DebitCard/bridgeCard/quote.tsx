@@ -486,8 +486,7 @@ export default function CardQuote({
           </CyDText>
           <CyDView
             className={'flex flex-col flex-wrap justify-between items-end'}>
-            <CyDText
-              className={' font-medium text-[16px] text-primaryTextColor'}>
+            <CyDText className={' font-medium text-[16px] '}>
               {String(formatAmount(amountInCrypto)) + ' ' + symbol}
             </CyDText>
             <CyDText className={' font-medium text-[16px]'}>
@@ -503,8 +502,7 @@ export default function CardQuote({
           </CyDText>
           <CyDView
             className={'flex flex-col flex-wrap justify-between items-end'}>
-            <CyDText
-              className={'font-medium text-[14px] text-primaryTextColor'}>
+            <CyDText className={'font-medium text-[14px] '}>
               {String(gasFeeInCrypto) + ' ' + nativeTokenSymbol}
             </CyDText>
             <CyDText className={'font-medium text-[14px]'}>
@@ -541,8 +539,7 @@ export default function CardQuote({
               {t('PLAN_COST')}
             </CyDText>
             <CyDView className={''}>
-              <CyDText
-                className={'font-medium text-[14px] text-primaryTextColor'}>
+              <CyDText className={'font-medium text-[14px] '}>
                 {'$' + String(planCost)}
               </CyDText>
             </CyDView>

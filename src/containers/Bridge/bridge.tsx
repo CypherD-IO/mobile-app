@@ -2647,15 +2647,13 @@ export default function Bridge(props: { navigation?: any; route?: any }) {
             setShowDropDown(false);
           }}>
           <CyDText
-            className={
-              'font-extrabold text-[22px] text-center mt-[20px]  text-primaryTextColor'
-            }>
+            className={'font-extrabold text-[22px] text-center mt-[20px]  '}>
             {t<string>('ENTER_AMOUNT')}
           </CyDText>
 
           <CyDText
             className={
-              'font-extrabold text-[20px] text-center mt-[10px]  bottom-0 text-primaryTextColor'
+              'font-extrabold text-[20px] text-center mt-[10px]  bottom-0 '
             }>
             {enterCryptoAmount ? fromToken?.name : 'USD'}
           </CyDText>
@@ -2664,7 +2662,7 @@ export default function Bridge(props: { navigation?: any; route?: any }) {
             {showDropDown && (
               <CyDText
                 className={clsx(
-                  'font-bold text-[70px] h-[80px] text-justify  mt-[10px] text-primaryTextColor',
+                  'font-bold text-[70px] h-[80px] text-justify  mt-[10px] ',
                   {
                     'text-[50px]': fromToken?.name === 'Ether',
                   },
@@ -2689,13 +2687,10 @@ export default function Bridge(props: { navigation?: any; route?: any }) {
                 </CyDTouchView>
                 <CyDView className={'flex-col w-8/12 mx-[6px] items-center'}>
                   <CyDTextInput
-                    className={clsx(
-                      'font-bold text-center text-primaryTextColor h-[85px] ',
-                      {
-                        'text-[70px]': amount.length <= 5,
-                        'text-[40px]': amount.length > 5,
-                      },
-                    )}
+                    className={clsx('font-bold text-center  h-[85px] ', {
+                      'text-[70px]': amount.length <= 5,
+                      'text-[40px]': amount.length > 5,
+                    })}
                     keyboardType='numeric'
                     onChangeText={text => {
                       setAmount(text);
@@ -2723,7 +2718,7 @@ export default function Bridge(props: { navigation?: any; route?: any }) {
                   />
                   <CyDText
                     className={clsx(
-                      'flex items-center justify-center text-primaryTextColor font-bol h-[50px] text-[24px]',
+                      'flex items-center justify-center  font-bol h-[50px] text-[24px]',
                     )}>
                     {enterCryptoAmount
                       ? (!isNaN(parseFloat(usdAmount))
@@ -2768,10 +2763,7 @@ export default function Bridge(props: { navigation?: any; route?: any }) {
             )}
 
             {!isSwap() && (
-              <CyDText
-                className={
-                  'font-semibold text-[14px] text-center text-primaryTextColor '
-                }>
+              <CyDText className={'font-semibold text-[14px] text-center  '}>
                 {t<string>('ENTER_AMOUNT_GREATER') +
                   '' +
                   minimumAmount.toFixed(3) +
@@ -2781,16 +2773,12 @@ export default function Bridge(props: { navigation?: any; route?: any }) {
             )}
 
             <CyDText
-              className={
-                'font-semibold text-[14px] text-center text-primaryTextColor  mt-[8px]'
-              }>
+              className={'font-semibold text-[14px] text-center   mt-[8px]'}>
               {String(fromToken?.name) +
                 ' ' +
                 t<string>('BALANCE_CAPITAL_FIRST_LETTER') +
                 ' '}
-              <CyDTokenAmount
-                className='text-primaryTextColor'
-                decimalPlaces={6}>
+              <CyDTokenAmount className='' decimalPlaces={6}>
                 {parseFloat(String(fromToken?.actualBalance))}
               </CyDTokenAmount>
             </CyDText>

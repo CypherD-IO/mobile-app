@@ -18,7 +18,7 @@ import { StyleSheet } from 'react-native';
 import { PortfolioBannerHeights } from '../../../hooks/useScrollManager';
 
 interface BannerProps {
-  bannerHeight: PortfolioBannerHeights
+  bannerHeight: PortfolioBannerHeights;
   checkAllBalance: number | string;
 }
 
@@ -30,7 +30,9 @@ export const Banner = ({ bannerHeight, checkAllBalance }: BannerProps) => {
 
   const hideBalances = async () => {
     showToast(
-      hideBalance ? t<string>('PRIVACY_MODE_OFF') : t<string>('PRIVACY_MODE_ON')
+      hideBalance
+        ? t<string>('PRIVACY_MODE_OFF')
+        : t<string>('PRIVACY_MODE_ON'),
     );
     await setHideBalanceStatus(!hideBalance);
     hdWallet.dispatch({
@@ -46,53 +48,52 @@ export const Banner = ({ bannerHeight, checkAllBalance }: BannerProps) => {
         }
         source={AppImages.PORTFOLIO_BG_S3}
         resizeMode='cover'
-        imageStyle={styles.imageBGStyle}
-      >
-        <CyDView
-          className='mx-[14px] justify-center items-start'
-        >
+        imageStyle={styles.imageBGStyle}>
+        <CyDView className='mx-[14px] justify-center items-start'>
           {getCurrentChainHoldings(
             portfolioState.statePortfolio.tokenPortfolio,
-            portfolioState.statePortfolio.selectedChain
+            portfolioState.statePortfolio.selectedChain,
           ) && (
-              <CyDView className='h-full'>
-                <CyDView>
-                  <CyDText>{t('TOTAL_BALANCE')}</CyDText>
-                  <CyDView className='flex flex-row items-center py-[3px]'>
-                    <CyDTokenValue className='text-[32px] font-extrabold text-primaryTextColor'>
-                      {checkAllBalance}
-                    </CyDTokenValue>
-                    <CyDTouchView
-                      onPress={() => {
-                        void hideBalances();
-                      }}
-                      className={clsx(
-                        'h-[32px] flex flex-row items-center pl-[10px] gap-[5px]'
-                      )}
-                    >
-                      <CyDFastImage
-                        source={
-                          hideBalance
-                            ? AppImages.CYPHER_HIDE
-                            : AppImages.CYPHER_SHOW
-                        }
-                        className='h-[16px] w-[16px] ml-[15px]'
-                        resizeMode='contain'
-                      />
-                      <CyDText className='text-[12px]'>
-                        {hideBalance ? t('SHOW') : t('HIDE')}
-                      </CyDText>
-                    </CyDTouchView>
-                  </CyDView>
-                </CyDView>
-                <CyDView className={clsx('flex flex-row justify-center items-center bg-privacyMessageBackgroundColor rounded-[8px] px-[10px] py-[5px] my-[5px]',
-                  { 'opacity-0': !hideBalance })}>
-                  <CyDText className='text-[12px]'>
-                    {t('ALL_BALANCES_HIDDEN')}
-                  </CyDText>
+            <CyDView className='h-full'>
+              <CyDView>
+                <CyDText>{t('TOTAL_BALANCE')}</CyDText>
+                <CyDView className='flex flex-row items-center py-[3px]'>
+                  <CyDTokenValue className='text-[32px] font-extrabold'>
+                    {checkAllBalance}
+                  </CyDTokenValue>
+                  <CyDTouchView
+                    onPress={() => {
+                      void hideBalances();
+                    }}
+                    className={clsx(
+                      'h-[32px] flex flex-row items-center pl-[10px] gap-[5px]',
+                    )}>
+                    <CyDFastImage
+                      source={
+                        hideBalance
+                          ? AppImages.CYPHER_HIDE
+                          : AppImages.CYPHER_SHOW
+                      }
+                      className='h-[16px] w-[16px] ml-[15px]'
+                      resizeMode='contain'
+                    />
+                    <CyDText className='text-[12px]'>
+                      {hideBalance ? t('SHOW') : t('HIDE')}
+                    </CyDText>
+                  </CyDTouchView>
                 </CyDView>
               </CyDView>
-            )}
+              <CyDView
+                className={clsx(
+                  'flex flex-row justify-center items-center bg-privacyMessageBackgroundColor rounded-[8px] px-[10px] py-[5px] my-[5px]',
+                  { 'opacity-0': !hideBalance },
+                )}>
+                <CyDText className='text-[12px]'>
+                  {t('ALL_BALANCES_HIDDEN')}
+                </CyDText>
+              </CyDView>
+            </CyDView>
+          )}
         </CyDView>
       </CyDImageBackground>
     </CyDView>
@@ -101,6 +102,6 @@ export const Banner = ({ bannerHeight, checkAllBalance }: BannerProps) => {
 
 const styles = StyleSheet.create({
   imageBGStyle: {
-    top: -70
+    top: -70,
   },
 });

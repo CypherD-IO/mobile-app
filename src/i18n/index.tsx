@@ -1058,8 +1058,8 @@ const resources = {
         'If you are facing any trouble with verifying your phone number',
       CONTACT_CYPHER_SUPPORT: 'Contact Cypher Support',
       VERIFY_LATER: 'Verify Later',
-      CYPHER_CARD_REFERRALS: 'Card Referrals',
-      CYPHER_CARD_REWARDS: 'Cypher Rewards',
+      CYPHER_CARD_REFERRALS: 'Referrals',
+      CYPHER_CARD_REWARDS: 'Rewards',
       CHECK_SPAM_FOLDER:
         "Can't find the OTP? Remember to check your spam folder too.",
       TELEGRAM_NOTIFICATION: 'Telegram',

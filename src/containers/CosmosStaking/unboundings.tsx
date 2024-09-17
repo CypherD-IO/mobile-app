@@ -83,7 +83,7 @@ export default function CosmosUnboundings({ route, navigation }) {
           <CyDView className={'flex flex-row justify-between'}>
             <CyDText
               className={
-                'text-[16px]  font-bold text-primaryTextColor'
+                'text-[16px]  font-bold '
               }>{`${convertFromUnitAmount(item.balance.toString(), tokenData.contractDecimals)} ${tokenData.name}`}</CyDText>
             <CyDText className={'text-[16px]  font-semibold text-subTextColor'}>
               {convertDate(item.completionTime)}

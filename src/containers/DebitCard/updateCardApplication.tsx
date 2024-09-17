@@ -467,7 +467,7 @@ export default function UpdateCardApplicationScreen({ navigation }) {
                           className={'mt-[20px] flex flex-row justify-center'}>
                           <CyDTextInput
                             className={clsx(
-                              'ml-[4px] border-[1px] border-inputBorderColor rounded-[5px] p-[12px] text-[18px] w-full  text-primaryTextColor',
+                              'ml-[4px] border-[1px] border-inputBorderColor rounded-[5px] p-[12px] text-[18px] w-full  ',
                               {
                                 'border-redOffColor':
                                   formProps.touched.fullName &&
@@ -555,7 +555,7 @@ export default function UpdateCardApplicationScreen({ navigation }) {
                           className={'mt-[20px] flex flex-row justify-center'}>
                           <CyDTextInput
                             className={clsx(
-                              'ml-[4px] border-[1px] border-inputBorderColor rounded-[5px] p-[12px] text-[18px] w-full  text-primaryTextColor',
+                              'ml-[4px] border-[1px] border-inputBorderColor rounded-[5px] p-[12px] text-[18px] w-full  ',
                               {
                                 'border-redOffColor':
                                   formProps.touched.email &&
@@ -597,7 +597,7 @@ export default function UpdateCardApplicationScreen({ navigation }) {
                             }>
                             <CyDTextInput
                               className={clsx(
-                                'ml-[4px] border-[1px] border-inputBorderColor rounded-[5px] p-[12px] text-[18px] w-full  text-primaryTextColor',
+                                'ml-[4px] border-[1px] border-inputBorderColor rounded-[5px] p-[12px] text-[18px] w-full  ',
                                 {
                                   'border-redOffColor':
                                     formProps.touched.line1 &&
@@ -628,7 +628,7 @@ export default function UpdateCardApplicationScreen({ navigation }) {
                             }>
                             <CyDTextInput
                               className={clsx(
-                                'ml-[4px] border-[1px] border-inputBorderColor rounded-[5px] p-[12px] text-[18px] w-full  text-primaryTextColor',
+                                'ml-[4px] border-[1px] border-inputBorderColor rounded-[5px] p-[12px] text-[18px] w-full  ',
                               )}
                               value={formProps.values.line2}
                               autoCapitalize='none'
@@ -644,7 +644,7 @@ export default function UpdateCardApplicationScreen({ navigation }) {
                             }>
                             <CyDTextInput
                               className={clsx(
-                                'ml-[4px] border-[1px] border-inputBorderColor rounded-[5px] p-[12px] text-[18px] w-full  text-primaryTextColor',
+                                'ml-[4px] border-[1px] border-inputBorderColor rounded-[5px] p-[12px] text-[18px] w-full  ',
                                 {
                                   'border-redOffColor':
                                     formProps.touched.city &&
@@ -675,7 +675,7 @@ export default function UpdateCardApplicationScreen({ navigation }) {
                             }}>
                             <CyDView
                               className={clsx(
-                                'ml-[4px] border-[1px] border-inputBorderColor rounded-[5px] p-[12px] text-[18px] w-full  text-primaryTextColor',
+                                'ml-[4px] border-[1px] border-inputBorderColor rounded-[5px] p-[12px] text-[18px] w-full  ',
                                 {
                                   'border-redOffColor':
                                     formProps.touched.state &&
@@ -702,7 +702,7 @@ export default function UpdateCardApplicationScreen({ navigation }) {
                             }>
                             <CyDTextInput
                               className={clsx(
-                                'ml-[4px] border-[1px] border-inputBorderColor rounded-[5px] p-[12px] text-[18px] w-full  text-primaryTextColor',
+                                'ml-[4px] border-[1px] border-inputBorderColor rounded-[5px] p-[12px] text-[18px] w-full  ',
                                 {
                                   'border-redOffColor':
                                     formProps.touched.postalCode &&

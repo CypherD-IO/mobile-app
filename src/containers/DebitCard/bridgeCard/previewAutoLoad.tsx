@@ -164,8 +164,7 @@ export default function PreviewAutoLoad({
           </CyDText>
           <CyDView
             className={'flex flex-col flex-wrap justify-between items-end'}>
-            <CyDText
-              className={' font-medium text-[16px] text-primaryTextColor'}>
+            <CyDText className={' font-medium text-[16px] '}>
               {moment.utc(expiryDate).local().format('MMMM DD, YYYY')}
             </CyDText>
           </CyDView>
@@ -183,8 +182,7 @@ export default function PreviewAutoLoad({
           </CyDView>
           <CyDView
             className={'flex flex-col flex-wrap justify-between items-end'}>
-            <CyDText
-              className={'font-medium text-[16px] text-primaryTextColor'}>
+            <CyDText className={'font-medium text-[16px] '}>
               {repeatFor}
             </CyDText>
           </CyDView>

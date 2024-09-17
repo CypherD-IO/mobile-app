@@ -260,16 +260,10 @@ export default function LegalAgreementScreen(props) {
         }
         width={0.8}>
         <DialogContent>
-          <CyDText
-            className={
-              'font-bold text-[16px] text-primaryTextColor mt-[20px] text-center'
-            }>
+          <CyDText className={'font-bold text-[16px]  mt-[20px] text-center'}>
             {t<string>('SOMETHING_WENT_WRONG')}
           </CyDText>
-          <CyDText
-            className={
-              'font-bold text-[13px] text-primaryTextColor mt-[20px] text-center'
-            }>
+          <CyDText className={'font-bold text-[13px]  mt-[20px] text-center'}>
             {t<string>('CONTACT_CYPHERD_SUPPORT')}
           </CyDText>
         </DialogContent>

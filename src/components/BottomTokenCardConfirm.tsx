@@ -145,8 +145,7 @@ export default function BottomCardConfirm({
               className={
                 'w-[70%] flex flex-row flex-wrap justify-between items-center'
               }>
-              <CyDText
-                className={' font-medium text-[14px] text-primaryTextColor'}>
+              <CyDText className={' font-medium text-[14px]'}>
                 {String(formatAmount(amountInCrypto)) + ' ' + symbol}
               </CyDText>
               <CyDText className={' font-medium text-[14px]'}>
@@ -164,8 +163,7 @@ export default function BottomCardConfirm({
               className={
                 'flex flex-row flex-wrap justify-between items-center w-[70%]'
               }>
-              <CyDText
-                className={'font-medium text-[14px] text-primaryTextColor'}>
+              <CyDText className={'font-medium text-[14px]'}>
                 {String(gasFeeInCrypto) + ' ' + nativeTokenSymbol}
               </CyDText>
               <CyDText className={'font-medium text-[14px]'}>
