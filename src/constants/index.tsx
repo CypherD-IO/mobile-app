@@ -135,6 +135,9 @@ export const screenTitle = {
   CARD_APPLICATION_V2: 'cardApplicationv2',
   REWARDS: 'Rewards',
   MIGRATE_FUNDS: 'migrateFunds',
+  REFERRALS: 'Referrals',
+  CARD_V2_SIGNUP_LANDING_SCREEN: 'CardV2SignupLandingScreen',
+  I_HAVE_REFERRAL_CODE_SCREEN: 'IHaveReferralCodeScreen',
 };
 
 export const fontsName = {

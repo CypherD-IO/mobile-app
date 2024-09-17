@@ -37,7 +37,7 @@ import { useKeyboard } from '../hooks/useKeyboardVisibily';
 
 const Tab = createBottomTabNavigator();
 
-function TabStack() {
+function TabStack(props) {
   const navigationRef = useNavigationContainerRef();
   const activityContext = useContext<any>(ActivityContext);
   const hdWalletContext = useContext<any>(HdWalletContext);
@@ -45,6 +45,7 @@ function TabStack() {
   const inAppUpdates = new SpInAppUpdates(
     false, // isDebug
   );
+  const { deepLinkData, setDeepLinkData } = props;
   const screensToHaveNavBar = [
     screenTitle.PORTFOLIO_SCREEN,
     screenTitle.BROWSER_SCREEN,
@@ -124,6 +125,25 @@ function TabStack() {
 
     void isBadgeAvailable();
   }, [activityContext.state]);
+
+  useEffect(() => {
+    if (deepLinkData?.screen) {
+      let tabName;
+      if (deepLinkData.screen === 'IHaveReferralCodeScreen') {
+        tabName = screenTitle.DEBIT_CARD_SCREEN;
+      }
+      if (tabName) {
+        navigationRef.current?.navigate(tabName, {
+          screen: deepLinkData.screen,
+          params: deepLinkData.params,
+        });
+      } else {
+        console.warn(`Unable to find tab for screen: ${deepLinkData.screen}`);
+      }
+
+      setDeepLinkData(null);
+    }
+  }, [deepLinkData, setDeepLinkData]);
 
   function MyTabBar({ state, descriptors, navigation }) {
     return (

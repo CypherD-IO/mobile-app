@@ -114,6 +114,9 @@ import WelcomeSceens from '../containers/DebitCard/CardV2/signup/welcomeScreens'
 import Rewards from '../containers/Options/rewards';
 import MigratePCFunds from '../containers/DebitCard/CardV2/migrateFunds';
 import BridgeV2 from '../containers/BridgeV2';
+import Referrals from '../containers/Options/referrals';
+import CardSignupLandingScreenV2 from '../containers/DebitCard/CardV2/signup/cardSignupLandingScreenV2';
+import IHaveReferralCodeScreen from '../containers/DebitCard/CardV2/signup/iHaveReferralCodeScreen';
 
 const { DynamicImage, DynamicButton } = require('../styles');
 
@@ -833,27 +836,6 @@ export function DebitCardStackScreen() {
       />
 
       <FundCardStack.Screen
-        name={screenTitle.CARD_SIGNUP_LANDING_SCREEN}
-        component={CardSignupLandingScreen}
-        options={({ navigation }) => ({
-          headerShown: true,
-          headerTransparent: false,
-          headerShadowVisible: false,
-          title: 'Cypher Card Signup',
-          headerStyle: {
-            backgroundColor: Colors.appColor,
-          },
-          navigationOptions: {
-            tabBarVisible: false,
-          },
-          headerTitleAlign: 'center',
-          headerTitleStyle: portfolioStackScreenHeaderTitleStyles,
-          headerBackVisible: false,
-          headerLeft: props => defaultHeaderLeft(navigation),
-        })}
-      />
-
-      <FundCardStack.Screen
         name={screenTitle.CARD_SIGNUP_CONFIRMATION}
         component={CardSignupConfirmation}
         options={({
@@ -1298,6 +1280,22 @@ export function DebitCardStackScreen() {
       />
 
       <FundCardStack.Screen
+        name={screenTitle.CARD_V2_SIGNUP_LANDING_SCREEN}
+        component={CardSignupLandingScreenV2}
+        options={{
+          headerShown: false,
+        }}
+      />
+
+      <FundCardStack.Screen
+        name={screenTitle.I_HAVE_REFERRAL_CODE_SCREEN}
+        component={IHaveReferralCodeScreen}
+        options={{
+          headerShown: false,
+        }}
+      />
+
+      <FundCardStack.Screen
         name={screenTitle.GET_YOUR_CARD}
         component={GetYourCardInfo}
         options={({ navigation }): NativeStackNavigationOptions => ({
@@ -1558,6 +1556,14 @@ export function OptionsStackScreen({ navigation, route }) {
       <OptionsStack.Screen
         name={screenTitle.REWARDS}
         component={Rewards}
+        options={({ navigation, route }) => ({
+          headerShown: false,
+        })}
+      />
+
+      <OptionsStack.Screen
+        name={screenTitle.REFERRALS}
+        component={Referrals}
         options={({ navigation, route }) => ({
           headerShown: false,
         })}
