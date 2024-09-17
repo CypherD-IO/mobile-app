@@ -1,14 +1,6 @@
 import React, { memo, useCallback, useRef, useState } from 'react';
-import {
-  FlatList,
-  Platform,
-  StyleSheet,
-  useWindowDimensions,
-  ViewToken,
-} from 'react-native';
+import { FlatList, Platform, StyleSheet, ViewToken } from 'react-native';
 import { SharedValue, useSharedValue } from 'react-native-reanimated';
-import Carousel from 'react-native-reanimated-carousel';
-import { CyDView } from '../../styles/tailwindStyles';
 
 /* 
 It is looks nice to have some sort of scaling animation in the carousel items, like such:

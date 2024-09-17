@@ -18,8 +18,10 @@ import { hostWorker } from '../../../../global';
 import axios from '../../../../core/Http';
 import {
   getDismissedActivityCardIDs,
+  getDismissedMigrationCardIDs,
   getDismissedStaticCardIDs,
   setDismissedActivityCardIDs,
+  setDismissedMigrationCardIDs,
   setDismissedStaticCardIDs,
 } from '../../../../core/asyncStorage';
 import { showToast } from '../../../utilities/toastUtility';
@@ -28,6 +30,8 @@ import { CyDView } from '../../../../styles/tailwindStyles';
 import CardCarousel from '../../../../components/v2/CardCarousel';
 import { SharedValue } from 'react-native-reanimated';
 import { PortfolioBannerHeights } from '../../../../hooks/useScrollManager';
+import { get } from 'lodash';
+import { MigrationData } from '../../../../models/migrationData.interface';
 
 const ARCH_HOST = hostWorker.getHost('ARCH_HOST');
 
@@ -49,11 +53,16 @@ const BannerCarousel = ({ setBannerHeight }: BannerCarouselProps) => {
   const [dismissedStaticCards, setDismissedStaticCards] = useState<string[]>(
     [],
   );
+  const [dismissedMigrationCards, setDismissedMigrationCards] = useState<
+    string[]
+  >([]);
   const [dismissedStaticIDsReady, setDismissedStaticIDsReady] = useState(false);
   const [activityCards, setActivityCards] = useState<BridgeOrCardActivity[]>(
     [],
   );
   const [staticCards, setStaticCards] = useState<BannerRecord[]>([]);
+  const [migrationCard, setMigrationCard] = useState<MigrationData[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
 
   const ethereumAddress = hdWallet?.state.wallet.ethereum.address;
 
@@ -123,19 +132,41 @@ const BannerCarousel = ({ setBannerHeight }: BannerCarouselProps) => {
     return [];
   };
 
+  const getMigrationCard = async () => {
+    try {
+      const { isError, data } = await getWithAuth('/v1/cards/migration');
+      if (!isError && data) {
+        return data;
+      }
+      return [];
+    } catch (e) {
+      const errorObject = {
+        e,
+        message: 'Error occured during the migration card call.',
+      };
+      Sentry.captureException(errorObject);
+    }
+  };
+
   // useEffect to update the height of the banner when the no. of cards change.
   useEffect(() => {
-    if (activityCards.length + staticCards.length) {
+    if (activityCards.length + staticCards.length + migrationCard.length) {
       setBannerHeight(300);
     } else {
       setBannerHeight(160);
     }
-  }, [activityCards.length, staticCards.length, setBannerHeight]);
+  }, [
+    activityCards.length,
+    staticCards.length,
+    migrationCard.length,
+    setBannerHeight,
+  ]);
 
-  // useEffect to check for static cards
+  // useEffect to check for static cards and migration data from backend
   useEffect(() => {
     const checkStaticCards = async () => {
       const availableStaticCards = await getStaticCards();
+
       const filteredStaticCards = availableStaticCards?.filter(
         sc => !dismissedStaticCards.includes(sc.id),
       );
@@ -154,10 +185,53 @@ const BannerCarousel = ({ setBannerHeight }: BannerCarouselProps) => {
         }
       }
     };
+
+    const checkMigrationCard = async () => {
+      const availableMigrationCard = await getMigrationCard();
+      const statusDescriptions: Record<string, string> = {
+        PENDING: 'Your fund migration is under processing',
+        SUCCESS: 'Your funds have been migrated successfully',
+        FAILED: 'Your fund migration failed, please contact support',
+        DELAYED: 'Your fund migration is delayed, please contact support',
+        IN_PROGRESS:
+          'Your fund migration is in progress, we appreciate your patience',
+      };
+      const statusTitle: Record<string, string> = {
+        PENDING: 'Pending',
+        SUCCESS: 'Success full',
+        FAILED: 'Failed',
+        DELAYED: 'Delayed',
+        IN_PROGRESS: 'In Progress',
+      };
+      const updatedData: MigrationData[] = availableMigrationCard.map(item => {
+        return {
+          ...item,
+          title: `$${Number(item.amount) ?? ''} Migration - ${get(statusTitle, item?.status, '')}`,
+          description: get(statusDescriptions, item?.status, ''),
+          priority: 'HIGHEST',
+          type: ActivityType.MIGRATE_FUND,
+          isClosable: item?.status === 'SUCCESS',
+        };
+      });
+      const filteredMigrationCards = updatedData?.filter(
+        mc => !dismissedMigrationCards.includes(mc?.requestId),
+      );
+      if (filteredMigrationCards) {
+        if (filteredMigrationCards.length === 0) {
+          setMigrationCard([]);
+        } else {
+          setMigrationCard(filteredMigrationCards);
+        }
+      }
+    };
+
     if (dismissedStaticIDsReady) {
+      setIsLoading(true);
       void checkStaticCards();
+      void checkMigrationCard();
+      setIsLoading(false);
     }
-  }, [dismissedStaticIDsReady, dismissedStaticCards]);
+  }, [dismissedStaticIDsReady, dismissedStaticCards, dismissedMigrationCards]);
 
   // util to get respective ActivityStatus
   const _getUpdatedActivityStatus = (status: string) => {
@@ -266,6 +340,12 @@ const BannerCarousel = ({ setBannerHeight }: BannerCarouselProps) => {
         );
         void setDismissedStaticCardIDs(newDismissedStatics);
       }
+      const dismissedMigration = await getDismissedMigrationCardIDs();
+      if (dismissedMigration) {
+        const parsedMigration: string[] = JSON.parse(dismissedMigration);
+
+        void setDismissedMigrationCardIDs(parsedMigration);
+      }
       setDismissedStaticIDsReady(true);
     };
     void loadDismissedIDsAndRefreshStore();
@@ -329,6 +409,7 @@ const BannerCarousel = ({ setBannerHeight }: BannerCarouselProps) => {
           panX={panX}
           setDismissedActivityCards={setDismissedActivityCards}
           setDismissedStaticCards={setDismissedStaticCards}
+          setDismissedMigrationCards={setDismissedMigrationCards}
         />
       </CyDView>
     );
@@ -343,10 +424,19 @@ const BannerCarousel = ({ setBannerHeight }: BannerCarouselProps) => {
     const otherCards = staticCards.filter(
       staticCard => staticCard.priority !== 'HIGHEST',
     );
-    return [...highestPriorityCards, ...activityCards, ...otherCards];
+    return [
+      ...migrationCard,
+      ...highestPriorityCards,
+      ...activityCards,
+      ...otherCards,
+    ];
   };
 
   const cards = makeCards();
+
+  if (isLoading) {
+    return <></>;
+  }
 
   return (
     <CardCarousel
