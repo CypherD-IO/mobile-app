@@ -13,6 +13,7 @@ import { screenTitle } from '../../../../constants';
 import { useIsFocused } from '@react-navigation/native';
 import Loading from '../../../../components/v2/loading';
 import AsyncStorage from '@react-native-async-storage/async-storage';
+import { removeReferralCode } from '../../../../core/asyncStorage';
 
 const CardSignupLandingScreenV2 = ({ navigation, route }) => {
   const {
@@ -74,7 +75,7 @@ const CardSignupLandingScreenV2 = ({ navigation, route }) => {
           <ScrollView className='px-[16px] pt-[16px]'>
             <CyDView>
               <CyDTouchView
-                onPress={() => navigation.goBack()}
+                onPress={() => navigation.navigate(screenTitle.PORTFOLIO)}
                 className='w-[36px] h-[36px]'>
                 <CyDImage
                   source={AppImages.BACK_ARROW_GRAY}
@@ -136,6 +137,7 @@ const CardSignupLandingScreenV2 = ({ navigation, route }) => {
               type={ButtonType.PRIMARY}
               title={'Continue'}
               onPress={() => {
+                void removeReferralCode();
                 navigation.navigate(screenTitle.SELECT_PLAN, {
                   deductAmountNow,
                   toPage,

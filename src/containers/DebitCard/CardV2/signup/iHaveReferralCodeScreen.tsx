@@ -15,27 +15,35 @@ import HowReferralWorksModal from '../../../../components/v2/howReferralWorksMod
 import useAxios from '../../../../core/HttpRequest';
 import { screenTitle } from '../../../../constants';
 import { useGlobalModalContext } from '../../../../components/v2/GlobalModal';
-import { setReferralCodeAsync } from '../../../../core/asyncStorage';
+import {
+  getReferralCode,
+  setReferralCodeAsync,
+} from '../../../../core/asyncStorage';
 import { isEmpty } from 'lodash';
+import { useIsFocused } from '@react-navigation/native';
 
 const IHaveReferralCodeScreen = ({ navigation, route }) => {
   const {
     deductAmountNow = false,
     toPage = '',
     cardBalance = 0,
-    referralCodeFromLink = '',
   } = route.params ?? {};
-  const [referralCode, setReferralCode] = useState(referralCodeFromLink || '');
+  const [referralCode, setReferralCode] = useState('');
   const [isModalVisible, setIsModalVisible] = useState(false);
   const [loading, setLoading] = useState(false);
   const { postWithAuth } = useAxios();
   const { showModal, hideModal } = useGlobalModalContext();
+  const isFocused = useIsFocused();
 
   useEffect(() => {
-    if (referralCodeFromLink) {
-      void onSubmitInviteCode();
-    }
-  }, [referralCodeFromLink]);
+    const setReferralCodeFromAsync = async () => {
+      const referralCodeFromAsync = await getReferralCode();
+      if (referralCodeFromAsync) {
+        setReferralCode(referralCodeFromAsync);
+      }
+    };
+    void setReferralCodeFromAsync();
+  }, [isFocused]);
 
   const onSubmitInviteCode = async () => {
     setLoading(true);
@@ -93,7 +101,11 @@ const IHaveReferralCodeScreen = ({ navigation, route }) => {
           <CyDView>
             <CyDTouchView
               onPress={() => {
-                navigation.goBack();
+                navigation.navigate(screenTitle.CARD_V2_SIGNUP_LANDING_SCREEN, {
+                  deductAmountNow,
+                  toPage,
+                  cardBalance,
+                });
               }}
               className='w-[36px] h-[36px]'>
               <CyDImage

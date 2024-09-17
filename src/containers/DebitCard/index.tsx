@@ -28,6 +28,7 @@ import * as Sentry from '@sentry/react-native';
 import useCardUtilities from '../../hooks/useCardUtilities';
 import CardProviderSwitch from '../../components/cardProviderSwitch';
 import CardWailtList from './cardWaitList';
+import { getReferralCode } from '../../core/asyncStorage';
 export interface RouteProps {
   navigation: {
     navigate: (screen: string, params?: any, route?: any) => void;
@@ -91,59 +92,74 @@ export default function DebitCardScreen(props: RouteProps) {
   setCardProvider();
 
   useEffect(() => {
-    if (!isReadOnlyWallet && isFocused) {
-      setLoading(true);
-      if (!cardProfile) {
-        void refreshProfile();
-      }
+    const checkCardApplicationStatus = async () => {
+      if (!isReadOnlyWallet && isFocused) {
+        setLoading(true);
+        if (!cardProfile) {
+          await refreshProfile();
+        }
 
-      if (has(cardProfile, provider as string)) {
-        setLoading(false);
-        const cardApplicationStatus =
-          get(cardProfile, provider)?.applicationStatus ===
-          CardApplicationStatus.COMPLETED;
+        if (has(cardProfile, provider as string)) {
+          setLoading(false);
+          const cardApplicationStatus =
+            get(cardProfile, provider)?.applicationStatus ===
+            CardApplicationStatus.COMPLETED;
 
-        if (cardApplicationStatus) {
-          props.navigation.reset({
-            index: 0,
-            routes: [
-              {
-                name: screenTitle.BRIDGE_CARD_SCREEN,
-                params: {
-                  cardProvider: provider,
+          if (cardApplicationStatus) {
+            props.navigation.reset({
+              index: 0,
+              routes: [
+                {
+                  name: screenTitle.BRIDGE_CARD_SCREEN,
+                  params: {
+                    cardProvider: provider,
+                  },
                 },
-              },
-            ],
-          });
-        } else if (shouldCheckApplication()) {
-          void checkApplication(provider);
+              ],
+            });
+          } else if (shouldCheckApplication()) {
+            await checkApplication(provider);
+          } else {
+            props.navigation.reset({
+              index: 0,
+              routes: [
+                {
+                  name: screenTitle.CARD_KYC_STATUS_SCREEN,
+                },
+              ],
+            });
+          }
         } else {
-          props.navigation.reset({
-            index: 0,
-            routes: [
-              {
-                name: screenTitle.CARD_KYC_STATUS_SCREEN,
-              },
-            ],
-          });
+          const isReferralCodeApplied = await getReferralCode();
+          if (isReferralCodeApplied) {
+            props.navigation.reset({
+              index: 0,
+              routes: [
+                {
+                  name: screenTitle.I_HAVE_REFERRAL_CODE_SCREEN,
+                },
+              ],
+            });
+          } else {
+            props.navigation.reset({
+              index: 0,
+              routes: [
+                {
+                  name: screenTitle.CARD_V2_SIGNUP_LANDING_SCREEN,
+                  params: {
+                    deductAmountNow: false,
+                    toPage: screenTitle.CARD_SIGNUP_SCREEN,
+                  },
+                },
+              ],
+            });
+          }
         }
       } else {
-        props.navigation.reset({
-          index: 0,
-          routes: [
-            {
-              name: screenTitle.CARD_V2_SIGNUP_LANDING_SCREEN,
-              params: {
-                deductAmountNow: false,
-                toPage: screenTitle.CARD_SIGNUP_SCREEN,
-              },
-            },
-          ],
-        });
+        setLoading(false);
       }
-    } else {
-      setLoading(false);
-    }
+    };
+    void checkCardApplicationStatus();
   }, [isFocused, globalContext.globalState.cardProfile, provider]);
 
   const shouldCheckApplication = () => {

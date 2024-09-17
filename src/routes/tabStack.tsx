@@ -127,18 +127,22 @@ function TabStack(props) {
   }, [activityContext.state]);
 
   useEffect(() => {
-    if (deepLinkData?.screen) {
+    if (deepLinkData?.screenToNavigate) {
       let tabName;
-      if (deepLinkData.screen === 'IHaveReferralCodeScreen') {
+      if (
+        deepLinkData.screenToNavigate ===
+        screenTitle.I_HAVE_REFERRAL_CODE_SCREEN
+      ) {
         tabName = screenTitle.DEBIT_CARD_SCREEN;
       }
       if (tabName) {
         navigationRef.current?.navigate(tabName, {
-          screen: deepLinkData.screen,
-          params: deepLinkData.params,
+          screenToNavigate: deepLinkData.screenToNavigate,
         });
       } else {
-        console.warn(`Unable to find tab for screen: ${deepLinkData.screen}`);
+        console.warn(
+          `Unable to find tab for screen: ${deepLinkData.screenToNavigate}`,
+        );
       }
 
       setDeepLinkData(null);
