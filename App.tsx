@@ -49,7 +49,10 @@ import {
   ActivityStateReducer,
   initialActivityState,
 } from './src/reducers/activity_reducer';
-import { getConnectWalletData } from './src/core/asyncStorage';
+import {
+  getConnectWalletData,
+  setReferralCodeAsync,
+} from './src/core/asyncStorage';
 import {
   WalletConnectContext,
   walletConnectInitialState,
@@ -150,8 +153,6 @@ function App() {
     config: {
       screens: {
         [screenTitle.PORTFOLIO]: '*',
-        [screenTitle.I_HAVE_REFERRAL_CODE_SCREEN]:
-          'card/referral/:referralCode',
       },
     },
     async getInitialURL() {
@@ -159,9 +160,9 @@ function App() {
       if (url != null) {
         if (url.includes('/card/referral/')) {
           const referralCode = url.split('/card/referral/')[1];
+          await setReferralCodeAsync(referralCode);
           setDeepLinkData({
-            screen: screenTitle.I_HAVE_REFERRAL_CODE_SCREEN,
-            params: { referralCodeFromLink: referralCode },
+            screenToNavigate: screenTitle.I_HAVE_REFERRAL_CODE_SCREEN,
           });
           void referralLinkAnalytics(referralCode);
         }
