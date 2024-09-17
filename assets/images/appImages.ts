@@ -584,6 +584,9 @@ const GLOBE_OUTLINE_ICON = {
 const CASH_OUTLINE_ICON = {
   uri: `${S3_BUCKET_URL_ICONS}/cashOutlineIcon.png`,
 };
+const TELEGRAM_BLUE_ICON = {
+  uri: `${S3_BUCKET_URL_ICONS}/telegramBlueIcon.png`,
+};
 
 const AppImages = {
   SUCCESS_TICK_GREEN_BG,
@@ -1011,5 +1014,6 @@ const AppImages = {
   EMAIL_OUTLINE_ICON,
   CASH_OUTLINE_ICON,
   HOUSE_OUTLINE_ICON,
+  TELEGRAM_BLUE_ICON,
 };
 export default AppImages;
