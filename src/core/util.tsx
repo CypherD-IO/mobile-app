@@ -1057,9 +1057,13 @@ export const generateKeys = async () => {
 };
 
 export const referralLinkAnalytics = async (referralCode: string) => {
-  const payload = {
-    referralCode,
-    trackId: uuidv4(),
-  };
-  await axios.post(`${ARCH_HOST}/v1/cards/referral-v2/click`, payload);
+  try {
+    const payload = {
+      referralCode,
+      trackId: uuidv4(),
+    };
+    await axios.post(`${ARCH_HOST}/v1/cards/referral-v2/click`, payload);
+  } catch (e) {
+    Sentry.captureException(e);
+  }
 };
