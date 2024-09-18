@@ -108,7 +108,7 @@ export function AddressBook({ route, navigation }) {
 
               <AddressBookContainer
                 chain={CHAIN_SOLANA.name}
-                wallet={solana}
+                wallet={solana.wallets[solana.currentIndex]}
                 logo={AppImages.SOLANA_LOGO}
                 bGC={'#f1f4fa'}
                 navigation={navigation}

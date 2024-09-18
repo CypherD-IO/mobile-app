@@ -427,54 +427,60 @@ export default function CypherCardScreen({
             </CyDView>
           )}
 
-        {cardId !== HIDDEN_CARD_ID && (
-          <CyDView className='flex flex-row justify-between items-center mx-[16px]'>
-            {cardProvider === CardProviders.PAYCADDY && (
-              <CyDView className='w-[70%] mr-[12px]'>
-                <Button
-                  disabled={
-                    shouldBlockAction() ||
-                    (!isEmpty(cardBalance) && cardBalance === 'NA') ||
-                    rcApplicationStatus !== CardApplicationStatus.COMPLETED
-                  }
-                  onPress={() => {
-                    navigation.navigate(screenTitle.MIGRATE_FUNDS, {
-                      cardBalance,
-                      migrationData,
-                    });
-                  }}
-                  image={AppImages.MIGRATE_FUNDS_ICON}
-                  style={'p-[9px] rounded-[6px] border-[0px]'}
-                  imageStyle={'mr-[3px] h-[14px] w-[24px]'}
-                  title={t('MOVE_FUNDS_TO_NEW_CARD')}
-                  titleStyle={'text-[12px] font-semibold'}
-                  type={ButtonType.SECONDARY}
-                />
-              </CyDView>
-            )}
+        {
+          <CyDView
+            className={clsx('flex flex-row  items-center mx-[16px]', {
+              'justify-between': cardId !== HIDDEN_CARD_ID,
+              'justify-end': cardId === HIDDEN_CARD_ID,
+            })}>
+            {cardId !== HIDDEN_CARD_ID &&
+              cardProvider === CardProviders.PAYCADDY && (
+                <CyDView className='w-[70%] mr-[12px]'>
+                  <Button
+                    disabled={
+                      shouldBlockAction() ||
+                      (!isEmpty(cardBalance) && cardBalance === 'NA') ||
+                      rcApplicationStatus !== CardApplicationStatus.COMPLETED
+                    }
+                    onPress={() => {
+                      navigation.navigate(screenTitle.MIGRATE_FUNDS, {
+                        cardBalance,
+                        migrationData,
+                      });
+                    }}
+                    image={AppImages.MIGRATE_FUNDS_ICON}
+                    style={'p-[9px] rounded-[6px] border-[0px]'}
+                    imageStyle={'mr-[3px] h-[14px] w-[24px]'}
+                    title={t('MOVE_FUNDS_TO_NEW_CARD')}
+                    titleStyle={'text-[12px] font-semibold'}
+                    type={ButtonType.SECONDARY}
+                  />
+                </CyDView>
+              )}
 
-            {cardProvider === CardProviders.REAP_CARD && (
-              <CyDView className='w-[48%]'>
-                <Button
-                  disabled={shouldBlockAction()}
-                  onPress={() => {
-                    cardProfile?.isAutoloadConfigured
-                      ? setIsAutoLoadOptionsVisible(true)
-                      : navigation.navigate(screenTitle.AUTO_LOAD_SCREEN);
-                  }}
-                  image={AppImages.AUTOLOAD}
-                  style={'p-[9px] rounded-[6px] border-[0px] h-[36px]'}
-                  imageStyle={'mr-[3px] h-[24px] w-[24px]'}
-                  // title={t('MANAGE_TOP_UP')}
-                  title={
-                    (cardProfile?.isAutoloadConfigured ? 'Manage' : 'Setup') +
-                    ' Auto Deposit'
-                  }
-                  titleStyle={'text-[12px] font-semibold'}
-                  type={ButtonType.SECONDARY}
-                />
-              </CyDView>
-            )}
+            {cardId !== HIDDEN_CARD_ID &&
+              cardProvider === CardProviders.REAP_CARD && (
+                <CyDView className='w-[48%]'>
+                  <Button
+                    disabled={shouldBlockAction()}
+                    onPress={() => {
+                      cardProfile?.isAutoloadConfigured
+                        ? setIsAutoLoadOptionsVisible(true)
+                        : navigation.navigate(screenTitle.AUTO_LOAD_SCREEN);
+                    }}
+                    image={AppImages.AUTOLOAD}
+                    style={'p-[9px] rounded-[6px] border-[0px] h-[36px]'}
+                    imageStyle={'mr-[3px] h-[24px] w-[24px]'}
+                    // title={t('MANAGE_TOP_UP')}
+                    title={
+                      (cardProfile?.isAutoloadConfigured ? 'Manage' : 'Setup') +
+                      ' Auto Deposit'
+                    }
+                    titleStyle={'text-[12px] font-semibold'}
+                    type={ButtonType.SECONDARY}
+                  />
+                </CyDView>
+              )}
 
             <CyDView
               className={clsx('h-[36px]', {
@@ -494,7 +500,7 @@ export default function CypherCardScreen({
               />
             </CyDView>
           </CyDView>
-        )}
+        }
 
         {shouldBlockAction() && (
           <CyDView className='rounded-[16px] bg-r20 border-[1px] border-r300 p-[14px] m-[16px]'>
