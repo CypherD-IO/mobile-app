@@ -363,7 +363,6 @@ export default function useTransactionManager() {
         })) as any;
 
         const rpc = getCosmosRpc(backendName);
-        console.log('🚀 ~ rpc:', rpc);
 
         const signingClient = await getCosmosSigningClient(
           fromChain,
