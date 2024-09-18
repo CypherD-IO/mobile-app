@@ -103,7 +103,7 @@ export default function CypherCardScreen({
     'cardId',
   ]);
   const {
-    pc: { physicalCardUpgradationFee } = { physicalCardUpgradationFee: 50 },
+    rc: { physicalCardUpgradationFee } = { physicalCardUpgradationFee: 50 },
   } = cardProfile;
   const isLockdownModeEnabled = get(
     cardProfile,
@@ -239,7 +239,7 @@ export default function CypherCardScreen({
       showModal('state', {
         type: 'error',
         title: t('INSUFFICIENT_FUNDS'),
-        description: `You do not have $  ${physicalCardUpgradationFee} balance to upgrade to physical card. Please load now to upgrade`,
+        description: `You do not have $${physicalCardUpgradationFee} balance to upgrade to physical card. Please load now to upgrade`,
         onSuccess: onModalHide,
         onFailure: hideModal,
       });

@@ -88,7 +88,7 @@ export default function CardScreen({
   const cardProfile: CardProfile = globalContext.globalState.cardProfile;
   const {
     lifetimeAmountUsd: lifetimeLoadUSD,
-    pc: { isPhysicalCardEligible: upgradeToPhysicalAvailable = false } = {},
+    rc: { isPhysicalCardEligible: upgradeToPhysicalAvailable = false } = {},
     physicalCardEligibilityLimit,
   } = cardProfile;
 
@@ -254,12 +254,12 @@ export default function CardScreen({
 
   const cardsWithUpgrade = useMemo(() => {
     const actualCards = userCardDetails.cards.map(card => card);
-    if (upgradeToPhysicalAvailable) {
+    if (upgradeToPhysicalAvailable && !isHiddenCard()) {
       actualCards.unshift({
         cardId: '',
         bin: '',
         last4: '',
-        network: 'pc',
+        network: 'rc',
         status: 'upgradeAvailable',
         type: CardType.PHYSICAL,
       });
@@ -268,7 +268,7 @@ export default function CardScreen({
         cardId: '',
         bin: '',
         last4: '',
-        network: 'pc',
+        network: 'rc',
         status: 'upgradeAvailable',
         type: CardType.PHYSICAL,
       });
@@ -377,7 +377,7 @@ const RenderCardActions = ({
   const [userName, setUserName] = useState('');
   const {
     lifetimeAmountUsd: lifetimeLoadUSD,
-    pc: { isPhysicalCardEligible: upgradeToPhysicalAvailable = false } = {},
+    rc: { isPhysicalCardEligible: upgradeToPhysicalAvailable = false } = {},
     physicalCardEligibilityLimit,
   } = cardProfile;
   const globalContext = useContext<any>(GlobalContext);
@@ -734,7 +734,7 @@ const RenderCardActions = ({
   } else if (card.status === 'upgradeAvailable') {
     if (upgradeToPhysicalAvailable) {
       return (
-        <CyDView className='flex flex-col justify-center items-center mx-[20px] mt-[-42px]'>
+        <CyDView className='flex flex-col justify-center items-center mx-[20px] mt-[-20px]'>
           <CyDText className='text-[22px] font-bold'>Get Physical Card</CyDText>
           <CyDText className='text-[14px] font-semibold text-center mb-[12px] mt-[6px]'>
             Obtain a Physical card and enjoy the convenience of making purchases
@@ -801,7 +801,7 @@ const RenderCardActions = ({
     }
   } else if (status === CardStatus.PENDING_ACTIVATION) {
     return (
-      <CyDView className='flex flex-col justify-center items-center mx-[20px] mt-[-32px]'>
+      <CyDView className='flex flex-col justify-center items-center mx-[20px] mt-[-20px]'>
         {get(trackingDetails, cardId) ? (
           <RenderTrackingItem />
         ) : (
