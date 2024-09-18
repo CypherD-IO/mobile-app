@@ -1,11 +1,8 @@
 import React, { Dispatch, SetStateAction, useEffect, useState } from 'react';
-import { SkipApiChainInterface } from '../../models/skipApiChains.interface';
-import { SkipApiToken } from '../../models/skipApiTokens.interface';
 import {
   CyDFastImage,
   CyDFlatList,
   CyDImage,
-  CyDInputAccessoryView,
   CyDScrollView,
   CyDText,
   CyDTextInput,
@@ -20,7 +17,6 @@ import CyDModalLayout from '../../components/v2/modal';
 import {
   Animated,
   Dimensions,
-  InputAccessoryView,
   Keyboard,
   StyleSheet,
   TouchableOpacity,
@@ -32,7 +28,6 @@ import { t } from 'i18next';
 import { verticalScale } from 'react-native-size-matters';
 import Accordion from 'react-native-collapsible/Accordion';
 import { SwapBridgeChainData, SwapBridgeTokenData } from '.';
-import { gasFeeReservation } from '../../constants/data';
 
 const currencyFormatter = new Intl.NumberFormat('en-US', {
   style: 'currency',
