@@ -410,7 +410,6 @@ export default function useTransactionManager() {
         };
       }
     } catch (e) {
-      console.log('🚀 ~ e:', e);
       return { isError: true, hash: '', error: e };
     }
   };
