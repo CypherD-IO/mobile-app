@@ -1,8 +1,7 @@
 import Web3 from 'web3';
 import { HdWalletContextDef } from '../reducers/hdwallet_reducer';
-import { TokenMeta } from './tokenMetaData.model';
 import { Chain } from '../constants/server';
-import { SwapBridgeTokenData } from '../containers/BridgeV2';
+import { SwapBridgeTokenData } from '../containers/Bridge';
 
 export interface SwapMetaData {
   web3: Web3;
