@@ -77,7 +77,7 @@ import FilterBar from './components/FilterBar';
 import BannerCarousel from './components/BannerCarousel';
 import { DeFiFilterRefreshBar } from '../../components/deFiRefreshFilterBar';
 import { DeFiFilter, protocolOptionType } from '../../models/defi.interface';
-import { get, isEmpty, isNil } from 'lodash';
+import { isEmpty, isNil } from 'lodash';
 import {
   BridgeContext,
   BridgeContextDef,
@@ -85,8 +85,7 @@ import {
   BridgeStatus,
 } from '../../reducers/bridge.reducer';
 import useAxios from '../../core/HttpRequest';
-import { SkipApiChainInterface } from '../../models/skipApiChains.interface';
-import { SwapBridgeChainData, SwapBridgeTokenData } from '../BridgeV2';
+import { SwapBridgeChainData, SwapBridgeTokenData } from '../Bridge';
 
 export interface PortfolioProps {
   navigation: any;

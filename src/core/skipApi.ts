@@ -8,10 +8,7 @@ import { HdWalletContextDef } from '../reducers/hdwallet_reducer';
 import { ethers } from 'ethers';
 import useTransactionManager from '../hooks/useTransactionManager';
 import useCosmosSigner from '../hooks/useCosmosSigner';
-import {
-  SigningStargateClient,
-  defaultRegistryTypes as defaultStargateTypes,
-} from '@cosmjs/stargate';
+import { defaultRegistryTypes as defaultStargateTypes } from '@cosmjs/stargate';
 import { SigningCosmWasmClient } from '@cosmjs/cosmwasm-stargate';
 import {
   GeneratedType,
@@ -33,7 +30,7 @@ import { Dispatch, SetStateAction } from 'react';
 import { GasPriceDetail } from './types';
 import useSolanaSigner from '../hooks/useSolana';
 import { Transaction } from '@solana/web3.js';
-import { SwapBridgeTokenData } from '../containers/BridgeV2';
+import { SwapBridgeTokenData } from '../containers/Bridge';
 import {
   MsgClearAdmin,
   MsgExecuteContract,
