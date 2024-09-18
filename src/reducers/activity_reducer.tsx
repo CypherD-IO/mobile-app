@@ -25,6 +25,7 @@ export enum ActivityType {
   TRACKWALLET = 'trackWallet',
   BUY = 'buy',
   SELL = 'sell',
+  MIGRATE_FUND = 'migrateFund',
 }
 
 export interface BrowserTransaction {

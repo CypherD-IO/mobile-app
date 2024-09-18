@@ -467,6 +467,29 @@ export const setDismissedStaticCardIDs = async (
   }
 };
 
+export const getDismissedMigrationCardIDs = async () => {
+  try {
+    const dismissedCardIDs =
+      (await AsyncStorage.getItem('DISMISSED_MIGRATION_CARD_IDS')) ?? '[]';
+    return dismissedCardIDs;
+  } catch (error) {
+    Sentry.captureException(error);
+  }
+};
+
+export const setDismissedMigrationCardIDs = async (
+  newDismissedCardIDs: string[],
+) => {
+  try {
+    await AsyncStorage.setItem(
+      'DISMISSED_MIGRATION_CARD_IDS',
+      JSON.stringify(newDismissedCardIDs),
+    );
+  } catch (error) {
+    Sentry.captureException(error);
+  }
+};
+
 export const setAuthToken = async (token: string) => {
   try {
     await AsyncStorage.setItem('AUTH_TOKEN', JSON.stringify(token));
