@@ -10,11 +10,9 @@ import { MsgTransfer } from 'cosmjs-types/ibc/applications/transfer/v1/tx';
 import { ceil, get, map, set } from 'lodash';
 import Long from 'long';
 import { useContext } from 'react';
-import Toast from 'react-native-toast-message';
 import Web3 from 'web3';
 import { cosmosConfig } from '../../constants/cosmosConfig';
 import {
-  ACCOUNT_DETAILS_INFO,
   CHAIN_OPTIMISM,
   CHAIN_SHARDEUM,
   CHAIN_SHARDEUM_SPHINX,
@@ -24,10 +22,7 @@ import {
   ChainConfigMapping,
   ChainNameMapping,
   EVM_CHAINS,
-  NativeTokenMapping,
-  TRANSACTION_ENDPOINT,
 } from '../../constants/server';
-import axios from '../../core/Http';
 import { decideGasLimitBasedOnTypeOfToAddress } from '../../core/NativeTransactionHandler';
 import { GlobalContext } from '../../core/globalContext';
 import {
@@ -67,6 +62,7 @@ import {
   getOrCreateAssociatedTokenAccount,
   createTransferInstruction,
 } from '@solana/spl-token';
+import { SigningCosmWasmClient } from '@cosmjs/cosmwasm-stargate';
 
 export interface TransactionServiceResult {
   isError: boolean;
@@ -367,6 +363,7 @@ export default function useTransactionManager() {
         })) as any;
 
         const rpc = getCosmosRpc(backendName);
+        console.log('🚀 ~ rpc:', rpc);
 
         const signingClient = await getCosmosSigningClient(
           fromChain,
@@ -414,6 +411,7 @@ export default function useTransactionManager() {
         };
       }
     } catch (e) {
+      console.log('🚀 ~ e:', e);
       return { isError: true, hash: '', error: e };
     }
   };
