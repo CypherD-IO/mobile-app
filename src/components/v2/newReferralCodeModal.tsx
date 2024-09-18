@@ -69,7 +69,7 @@ export default function NewReferralCodeModal({
         style={styles.keyboardAvoidingView}>
         <CyDView className='bg-cardBg px-[16px] py-[24px] rounded-t-[16px]'>
           <CyDView className='flex flex-row items-center justify-between'>
-            <CyDText className='font-semibold text-[18px] tracking-tight'>
+            <CyDText className='font-semibold text-[18px]'>
               {t('CREATE_REFERRAL_CODE')}
             </CyDText>
             <CyDTouchView onPress={() => setIsModalVisible(false)}>

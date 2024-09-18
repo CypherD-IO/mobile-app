@@ -35,7 +35,7 @@ export default function HowReferralWorksModal({
       }}>
       <CyDView className='bg-cardBg px-[20px] pt-[24px] pb-[36px] rounded-t-[16px]'>
         <CyDView className='flex flex-row items-center justify-between'>
-          <CyDText className='font-semibold text-[18px] tracking-tight'>
+          <CyDText className='font-semibold text-[18px]'>
             {t('HOW_REFERRAL_WORKS')}
           </CyDText>
           <CyDTouchView onPress={() => setIsModalVisible(false)}>
