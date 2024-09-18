@@ -587,8 +587,24 @@ const CASH_OUTLINE_ICON = {
 const TELEGRAM_BLUE_ICON = {
   uri: `${S3_BUCKET_URL_ICONS}/telegramBlueIcon.png`,
 };
+const MIGRATION_BANNER_BG = {
+  uri: `${S3_BUCKET_URL_ICONS}/migrateBannerBg.png`,
+};
+const MIGRATION_PENDING = {
+  uri: `${S3_BUCKET_URL_ICONS}/migrationPending.png`,
+};
+const MIGRATION_PENDING_GIF = {
+  uri: `${S3_BUCKET_URL_ICONS}/migrationPendingGif.gif`,
+};
+const MIGRATION_SUCCESS = {
+  uri: `${S3_BUCKET_URL_ICONS}/migrationSuccess.png`,
+};
 
 const AppImages = {
+  MIGRATION_PENDING_GIF,
+  MIGRATION_SUCCESS,
+  MIGRATION_PENDING,
+  MIGRATION_BANNER_BG,
   SUCCESS_TICK_GREEN_BG,
   CLOCK_OUTLINE,
   MIGRATE_FUNDS_ICON,
