@@ -1,6 +1,5 @@
 import { ethers } from 'ethers';
 import {
-  ACCOUNT_DETAILS_INFO,
   CHAIN_BSC,
   CHAIN_ETH,
   CHAIN_OPTIMISM,
@@ -10,7 +9,6 @@ import {
   GASLESS_CHAINS,
   NativeTokenMapping,
   OP_ETH_ADDRESS,
-  SIMULATION_ENDPOINT,
 } from '../../constants/server';
 import useAxios from '../../core/HttpRequest';
 import Web3 from 'web3';
@@ -19,15 +17,12 @@ import { GasPriceDetail } from '../../core/types';
 import * as Sentry from '@sentry/react-native';
 import analytics from '@react-native-firebase/analytics';
 import { EvmGasInterface } from '../../models/evmGas.interface';
-import axios from '../../core/Http';
 import { cosmosConfig } from '../../constants/cosmosConfig';
 import { useContext } from 'react';
 import {
-  HdWalletContext,
   PortfolioContext,
   getNativeToken,
   getTimeOutTime,
-  limitDecimalPlaces,
 } from '../../core/util';
 import useCosmosSigner from '../useCosmosSigner';
 import {
@@ -37,7 +32,6 @@ import {
   SigningStargateClient,
 } from '@cosmjs/stargate';
 import { ceil, get } from 'lodash';
-import { HdWalletContextDef } from '../../reducers/hdwallet_reducer';
 import { MsgTransfer } from 'cosmjs-types/ibc/applications/transfer/v1/tx';
 import Long from 'long';
 import { InjectiveStargate } from '@injectivelabs/sdk-ts';
@@ -76,7 +70,6 @@ export default function useGasService() {
   const minimumGasFee = '20';
   const { getCosmosRpc } = useCosmosSigner();
   const { getSolanaRpc } = useSolanaSigner();
-  const hdWalletContext = useContext(HdWalletContext) as HdWalletContextDef;
   const portfolioState = useContext<any>(PortfolioContext);
 
   async function getCosmosSigningClient(

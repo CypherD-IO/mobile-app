@@ -12,7 +12,7 @@ import {
 import AppImages from '../../../../assets/images/appImages';
 import { useTranslation } from 'react-i18next';
 import moment from 'moment';
-import { Holding } from '../../../core/Portfolio';
+import { Holding } from '../../../core/portfolio';
 import {
   AUTO_LOAD_SUPPORTED_CHAINS,
   COSMOS_CHAINS_LIST,

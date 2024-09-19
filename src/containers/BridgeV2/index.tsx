@@ -27,7 +27,7 @@ import {
   useNavigation,
   useRoute,
 } from '@react-navigation/native';
-import TokenSelectionV2 from './tokenSelection';
+import TokenSelectionV2 from './tokenSelectionV2';
 import { SkipApiRouteResponse } from '../../models/skipApiRouteResponse.interface';
 import BridgeRoutePreview from './bridgePreview';
 import { SkipApiStatus } from '../../models/skipApiStatus.interface';
@@ -135,7 +135,7 @@ interface RouteParams {
   backVisible?: boolean;
 }
 
-const Bridge: React.FC = () => {
+const BridgeV2: React.FC = () => {
   const { t } = useTranslation();
 
   const [loading, setLoading] = useState({
@@ -2031,7 +2031,7 @@ const Bridge: React.FC = () => {
   );
 };
 
-export default Bridge;
+export default BridgeV2;
 
 const styles = StyleSheet.create({
   loaderStyle: {

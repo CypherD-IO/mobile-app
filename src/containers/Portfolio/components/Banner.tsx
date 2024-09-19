@@ -1,7 +1,7 @@
 import React, { useContext } from 'react';
 import { useTranslation } from 'react-i18next';
 import { HdWalletContext, PortfolioContext } from '../../../core/util';
-import { getCurrentChainHoldings } from '../../../core/Portfolio';
+import { getCurrentChainHoldings } from '../../../core/portfolio';
 import { showToast } from '../../utilities/toastUtility';
 import { setHideBalanceStatus } from '../../../core/asyncStorage';
 import {

@@ -2,7 +2,7 @@
 
 /* eslint-disable @typescript-eslint/no-misused-promises */
 import analytics from '@react-native-firebase/analytics';
-import { useIsFocused, useRoute } from '@react-navigation/native';
+import { useRoute } from '@react-navigation/native';
 import * as Sentry from '@sentry/react-native';
 import { ethers } from 'ethers';
 import { t } from 'i18next';
@@ -18,27 +18,21 @@ import Loading from '../../components/v2/loading';
 import CyDModalLayout from '../../components/v2/modal';
 import CyDTokenAmount from '../../components/v2/tokenAmount';
 import { screenTitle } from '../../constants';
-import { AnalyticsType, TokenOverviewTabIndices } from '../../constants/enum';
-import { ChainBackendNames, CosmosStakingTokens } from '../../constants/server';
+import { AnalyticsType } from '../../constants/enum';
+import { ChainBackendNames } from '../../constants/server';
 import { MODAL_HIDE_TIMEOUT_250, TIMEOUT } from '../../core/Http';
 import { getCosmosStakingData } from '../../core/cosmosStaking';
 import { GlobalContext } from '../../core/globalContext';
 import {
   HdWalletContext,
-  PortfolioContext,
   StakingContext,
   convertFromUnitAmount,
-  getTimeForDate,
-  isABasicCosmosStakingToken,
   isBasicCosmosChain,
-  isBigIntZero,
-  isCosmosStakingToken,
   logAnalytics,
   parseErrorMessage,
 } from '../../core/util';
 import useIsSignable from '../../hooks/useIsSignable';
 import useTransactionManager from '../../hooks/useTransactionManager';
-import { isIOS } from '../../misc/checkers';
 import { TokenMeta } from '../../models/tokenMetaData.model';
 import { ActivityType } from '../../reducers/activity_reducer';
 import {
@@ -46,11 +40,6 @@ import {
   CosmosActionType,
   CosmosStakingContext,
 } from '../../reducers/cosmosStakingReducer';
-import { PORTFOLIO_REFRESH } from '../../reducers/portfolio_reducer';
-import {
-  STAKING_EMPTY,
-  STAKING_NOT_EMPTY,
-} from '../../reducers/stakingReducer';
 import {
   CyDImage,
   CyDSafeAreaView,
@@ -86,8 +75,6 @@ export default function TokenStaking({
 }) {
   const globalStateContext = useContext<any>(GlobalContext);
   const hdWalletContext = useContext<any>(HdWalletContext);
-  const portfolioState = useContext<any>(PortfolioContext);
-  const isFocused = useIsFocused();
   const [loading, setLoading] = useState<boolean>(false);
   const [claimModal, setClaimModal] = useState<boolean>(false);
   const [signModalVisible, setSignModalVisible] = useState<boolean>(false);

@@ -57,7 +57,7 @@ import {
 import clsx from 'clsx';
 import { CardQuoteResponse } from '../../../models/card.model';
 import useGasService from '../../../hooks/useGasService';
-import { Holding } from '../../../core/Portfolio';
+import { Holding } from '../../../core/portfolio';
 import CyDNumberPad from '../../../components/v2/numberpad';
 import CyDTokenValue from '../../../components/v2/tokenValue';
 import Loading from '../../../components/v2/loading';

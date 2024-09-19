@@ -1,4 +1,4 @@
-import { fetchTokenData, WalletHoldings } from '../core/Portfolio';
+import { fetchTokenData, WalletHoldings } from '../core/portfolio';
 import { Chain, CHAIN_COLLECTION } from '../constants/server';
 import {
   advancedSettingsInitialState,

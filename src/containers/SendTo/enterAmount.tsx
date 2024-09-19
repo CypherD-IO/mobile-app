@@ -16,7 +16,7 @@ import {
   NativeTokenMapping,
 } from '../../constants/server';
 import { Colors } from '../../constants/theme';
-import { Holding } from '../../core/Portfolio';
+import { Holding } from '../../core/portfolio';
 import {
   getNativeToken,
   PortfolioContext,

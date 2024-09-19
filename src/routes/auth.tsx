@@ -1131,20 +1131,6 @@ export function DebitCardStackScreen() {
       />
 
       <FundCardStack.Screen
-        name={screenTitle.FUND_CARD_SCREEN}
-        component={FundCardScreen}
-        options={({ navigation }) => ({
-          headerTransparent: false,
-          headerShadowVisible: false,
-          title: 'Cypher Card',
-          headerTitleAlign: 'center',
-          headerTitleStyle: portfolioStackScreenHeaderTitleStyles,
-          headerTintColor: Colors.primaryTextColor,
-          headerBackTitleVisible: false,
-          headerLeft: props => defaultHeaderLeft(navigation, keyboardHeight),
-        })}
-      />
-      <FundCardStack.Screen
         name={screenTitle.TRANS_DETAIL}
         component={TransDetail}
         options={({ navigation, route }) => ({

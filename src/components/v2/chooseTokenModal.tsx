@@ -18,7 +18,7 @@ import CyDModalLayout from './modal';
 import CyDTokenAmount from './tokenAmount';
 import CyDTokenValue from './tokenValue';
 import { get } from 'lodash';
-import { Holding } from '../../core/Portfolio';
+import { Holding } from '../../core/portfolio';
 import { SwapToken } from '../../models/swapToken.interface';
 import FastImage from 'react-native-fast-image';
 import { copyToClipboard, isNativeToken } from '../../core/util';

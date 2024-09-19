@@ -34,7 +34,7 @@ import {
 } from '../reducers/portfolio_reducer';
 import Toast from 'react-native-toast-message';
 import { getPortfolioData, storePortfolioData } from './asyncStorage';
-import axios from '../core/Http';
+import axios from './Http';
 import * as Sentry from '@sentry/react-native';
 import { hostWorker } from '../global';
 import { get, has } from 'lodash';
@@ -835,6 +835,7 @@ export async function fetchTokenData(
   } = hdWalletState.state.wallet;
   if (ethereum.address !== 'null') {
     const localPortfolio = await getPortfolioData(ethereum, portfolioState);
+    console.log(localPortfolio);
     const portfolio: WalletHoldings | null = localPortfolio
       ? (localPortfolio.data as unknown as WalletHoldings)
       : null;

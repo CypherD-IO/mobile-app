@@ -641,13 +641,6 @@ export default function ShortcutsModal({ navigationRef }) {
     };
   }, [appState]);
 
-  useEffect(() => {
-    if (portfolioState.statePortfolio.buyButtonClicked === true) {
-      portfolioState.dispatchPortfolio({ value: { buyButtonClicked: false } });
-      setTimeout(() => setBuyModalVisible(true), 1000);
-    }
-  }, [portfolioState.statePortfolio.buyButtonClicked]);
-
   return (
     <CyDTouchView
       onPress={async () => {

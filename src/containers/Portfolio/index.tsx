@@ -30,7 +30,7 @@ import {
   fetchTokenData,
   getCurrentChainHoldings,
   WalletHoldings,
-} from '../../core/Portfolio';
+} from '../../core/portfolio';
 import messaging, {
   FirebaseMessagingTypes,
 } from '@react-native-firebase/messaging';

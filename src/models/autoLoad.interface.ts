@@ -1,6 +1,6 @@
 import { CardProviders } from '../constants/enum';
 import { ALL_CHAINS_TYPE } from '../constants/type';
-import { Holding } from '../core/Portfolio';
+import { Holding } from '../core/portfolio';
 
 export interface AutoLoad {
   threshold: string;

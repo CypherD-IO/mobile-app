@@ -31,7 +31,7 @@ import {
   WalletHoldings,
   fetchTokenData,
   getCurrentChainHoldings,
-} from '../../../core/Portfolio';
+} from '../../../core/portfolio';
 import EmptyView from '../../../components/EmptyView';
 import AppImages from '../../../../assets/images/appImages';
 import { Swipeable } from 'react-native-gesture-handler';

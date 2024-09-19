@@ -43,7 +43,7 @@ import {
 import { getReadOnlyWalletData } from '../../core/asyncStorage';
 import { importWallet } from '../../core/HdWallet';
 import useAxios from '../../core/HttpRequest';
-import { fetchTokenData } from '../../core/Portfolio';
+import { fetchTokenData } from '../../core/portfolio';
 import { HdWalletContext, PortfolioContext, sleepFor } from '../../core/util';
 import { isAndroid } from '../../misc/checkers';
 import { HdWalletContextDef } from '../../reducers/hdwallet_reducer';
