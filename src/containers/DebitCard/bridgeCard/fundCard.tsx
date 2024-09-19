@@ -6,17 +6,14 @@ import Button from '../../../components/v2/button';
 import {
   ChainNames,
   COSMOS_CHAINS,
-  ChainNameMapping,
   NativeTokenMapping,
   CHAIN_ETH,
   GASLESS_CHAINS,
-  CHAIN_OSMOSIS,
+  ChainBackendNames,
 } from '../../../constants/server';
 import {
   getWeb3Endpoint,
   HdWalletContext,
-  PortfolioContext,
-  getNativeToken,
   formatAmount,
   validateAmount,
   limitDecimalPlaces,
@@ -61,6 +58,7 @@ import { Holding } from '../../../core/portfolio';
 import CyDNumberPad from '../../../components/v2/numberpad';
 import CyDTokenValue from '../../../components/v2/tokenValue';
 import Loading from '../../../components/v2/loading';
+import usePortfolio from '../../../hooks/usePortfolio';
 
 export default function BridgeFundCardScreen({ route }: { route: any }) {
   const {
@@ -72,12 +70,10 @@ export default function BridgeFundCardScreen({ route }: { route: any }) {
     currentCardProvider: CardProviders;
     currentCardIndex: number;
   } = route.params;
-  const portfolioState = useContext<any>(PortfolioContext);
   const hdWallet = useContext<any>(HdWalletContext);
   const globalContext = useContext(GlobalContext) as GlobalContextDef;
   const ethereum = hdWallet.state.wallet.ethereum;
   const wallet = hdWallet.state.wallet;
-  const globalStateContext = useContext<any>(GlobalContext);
   const cardProfile = globalContext.globalState.cardProfile;
   const planData = globalContext.globalState.planInfo;
   let planCost = get(
@@ -94,35 +90,7 @@ export default function BridgeFundCardScreen({ route }: { route: any }) {
   const fistLoad = cardId === 'hidden';
   planCost = fistLoad ? planCost : 0;
 
-  const cosmos = hdWallet.state.wallet.cosmos;
-  const osmosis = hdWallet.state.wallet.osmosis;
-  const juno = hdWallet.state.wallet.juno;
-  const stargaze = hdWallet.state.wallet.stargaze;
-  const noble = hdWallet.state.wallet.noble;
-  const coreum = hdWallet.state.wallet.coreum;
-  const kujira = hdWallet.state.wallet.kujira;
   const solana = hdWallet.state.wallet.solana;
-
-  const cosmosAddresses = {
-    cosmos: cosmos.address,
-    osmosis: osmosis.address,
-    juno: juno.address,
-    stargaze: stargaze.address,
-    noble: noble.address,
-    coreum: coreum.address,
-    kujira: kujira.address,
-  };
-
-  const rpc = {
-    cosmos: globalStateContext.globalState.rpcEndpoints.COSMOS.primary,
-    osmosis: globalStateContext.globalState.rpcEndpoints.OSMOSIS.primary,
-    juno: globalStateContext.globalState.rpcEndpoints.JUNO.primary,
-    stargaze: globalContext.globalState.rpcEndpoints?.STARGAZE.primary,
-    noble: globalContext.globalState.rpcEndpoints?.NOBLE.primary,
-    coreum: globalContext.globalState.rpcEndpoints?.COREUM.primary,
-    kujira: globalContext.globalState.rpcEndpoints?.KUJIRA.primary,
-    solana: globalContext.globalState.rpcEndpoints?.SOLANA.primary,
-  };
 
   const [isChooseTokenVisible, setIsChooseTokenVisible] =
     useState<boolean>(false);
@@ -136,6 +104,7 @@ export default function BridgeFundCardScreen({ route }: { route: any }) {
   const minTokenValueEth = 50 + Number(planCost);
   const [selectedToken, setSelectedToken] = useState<Holding>();
   const [nativeTokenBalance, setNativeTokenBalance] = useState<number>(0);
+  const { getNativeToken } = usePortfolio();
   const { t } = useTranslation();
   const { showModal, hideModal } = useGlobalModalContext();
   const { postWithAuth } = useAxios();
@@ -177,12 +146,7 @@ export default function BridgeFundCardScreen({ route }: { route: any }) {
       contractDecimals,
       denom,
     } = selectedToken as Holding;
-    const nativeToken = getNativeToken(
-      get(NativeTokenMapping, chainDetails.symbol) || chainDetails.symbol,
-      portfolioState.statePortfolio.tokenPortfolio[
-        get(ChainNameMapping, chainDetails.backendName)
-      ].holdings,
-    );
+    const nativeToken = await getNativeToken(chainDetails.backendName);
     const actualTokensRequired = parseFloat(
       limitDecimalPlaces(quote.tokensRequired, contractDecimals),
     );
@@ -297,7 +261,6 @@ export default function BridgeFundCardScreen({ route }: { route: any }) {
         isMaxQuote,
         actualBalance,
         actualTokensRequired,
-        rpc,
       };
       Sentry.captureException(errorObject);
       setLoading(false);
@@ -520,18 +483,13 @@ export default function BridgeFundCardScreen({ route }: { route: any }) {
     return true;
   };
 
-  const onSelectingToken = (item: Holding) => {
+  const onSelectingToken = async (item: Holding) => {
     setSelectedToken(item);
     setIsChooseTokenVisible(false);
-    setNativeTokenBalance(
-      getNativeToken(
-        get(NativeTokenMapping, item.chainDetails.symbol) ||
-          item.chainDetails.symbol,
-        portfolioState.statePortfolio.tokenPortfolio[
-          get(ChainNameMapping, item.chainDetails.backendName)
-        ].holdings,
-      )?.actualBalance ?? 0,
+    const nativeToken = await getNativeToken(
+      item.chainDetails.backendName as ChainBackendNames,
     );
+    setNativeTokenBalance(nativeToken.actualBalance);
     setIsCryptoInput(false);
     const tempMinTokenValue =
       item.chainDetails.backendName === CHAIN_ETH.backendName
@@ -895,7 +853,7 @@ export default function BridgeFundCardScreen({ route }: { route: any }) {
           backendName === CHAIN_ETH.backendName &&
           Number(usdAmount) < MINIMUM_TRANSFER_AMOUNT_ETH
         ) {
-          errorMessage = `${t<string>('MINIMUM_AMOUNT_ETH')} $${String(minTokenValueLimit)} ${planCost > 0 ? '(including plan cost)' : ''}`;
+          errorMessage = `${t<string>('MINIMUM_AMOUNT_ETH')} $${MINIMUM_TRANSFER_AMOUNT_ETH} ${planCost > 0 ? '(including plan cost)' : ''}`;
         } else if (!usdAmount || Number(usdAmount) < minTokenValueLimit) {
           if (backendName === CHAIN_ETH.backendName) {
             errorMessage = t('MINIMUM_AMOUNT_ETH');
@@ -1009,7 +967,6 @@ export default function BridgeFundCardScreen({ route }: { route: any }) {
       {isMaxLoading && <Loading blurBg={true} />}
       <ChooseTokenModal
         isChooseTokenModalVisible={isChooseTokenVisible}
-        tokenList={portfolioState.statePortfolio.tokenPortfolio.totalHoldings}
         minTokenValueLimit={minTokenValueLimit - Number(planCost)}
         onSelectingToken={token => {
           setIsChooseTokenVisible(false);

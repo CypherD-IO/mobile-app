@@ -14,6 +14,7 @@ import {
   moonbeam,
   moonriver,
 } from 'wagmi/chains';
+import { AllChainsEnum } from './enum';
 export interface Chain {
   chainName: string;
   name: string;
@@ -772,12 +773,31 @@ export const ChainNameToContactsChainNameMapping = {
   Solana: 'solana',
 };
 
-export enum NativeTokenMapping {
-  COSMOS = 'ATOM',
-  NOBLE = 'USDC',
-  SOLANA = 'solana-native',
-}
-
+export const NativeTokenMapping: Record<AllChainsEnum, string> = {
+  ETH: 'ETH',
+  POLYGON: 'MATIC',
+  AVALANCHE: 'AVAX',
+  ARBITRUM: 'ETH',
+  OPTIMISM: 'ETH',
+  BSC: 'BNB',
+  EVMOS: 'EVMOS',
+  COSMOS: 'ATOM',
+  OSMOSIS: 'OSMO',
+  JUNO: 'JUNO',
+  STARGAZE: 'STARS',
+  NOBLE: 'USDC',
+  COREUM: 'COREUM',
+  INJECTIVE: 'INJ',
+  KUJIRA: 'KUJI',
+  ZKSYNC_ERA: 'ETH',
+  BASE: 'ETH',
+  POLYGON_ZKEVM: 'ETH',
+  AURORA: 'ETH',
+  MOONBEAM: 'GLMR',
+  MOONRIVER: 'MOVR',
+  SOLANA: 'SOLANA',
+  TRON: 'TRX',
+};
 export const GASLESS_CHAINS: ChainBackendNames[] = []; // Add any cosmos gasless chain backend names in this array
 
 // DeFi Data

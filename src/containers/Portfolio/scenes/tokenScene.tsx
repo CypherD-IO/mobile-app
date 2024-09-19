@@ -1,12 +1,4 @@
-import React, {
-  memo,
-  useCallback,
-  useContext,
-  useEffect,
-  useMemo,
-  useRef,
-  useState,
-} from 'react';
+import React, { useCallback, useEffect, useRef } from 'react';
 import {
   RefreshControl,
   NativeSyntheticEvent,
@@ -25,23 +17,15 @@ import Animated, {
 import LottieView from 'lottie-react-native';
 import { CyDText, CyDTouchView, CyDView } from '../../../styles/tailwindStyles';
 import { useTranslation } from 'react-i18next';
-import { HdWalletContext, PortfolioContext } from '../../../core/util';
-import {
-  Holding,
-  WalletHoldings,
-  fetchTokenData,
-  getCurrentChainHoldings,
-} from '../../../core/portfolio';
+import { Holding } from '../../../core/portfolio';
 import EmptyView from '../../../components/EmptyView';
 import AppImages from '../../../../assets/images/appImages';
 import { Swipeable } from 'react-native-gesture-handler';
 import PortfolioTokenItem from '../../../components/v2/portfolioTokenItem';
-import { PORTFOLIO_EMPTY } from '../../../reducers/portfolio_reducer';
 import Button from '../../../components/v2/button';
 import { screenTitle } from '../../../constants';
-import { CHAIN_COLLECTION, Chain } from '../../../constants/server';
 import { TokenMeta } from '../../../models/tokenMetaData.model';
-import { get, groupBy, isEmpty, isEqual, sortBy } from 'lodash';
+import { isEmpty } from 'lodash';
 import Loading from '../../../components/v2/loading';
 import { PortfolioBannerHeights } from '../../../hooks/useScrollManager';
 
@@ -57,18 +41,9 @@ interface TokenSceneProps {
   navigation: any;
   bannerHeight: PortfolioBannerHeights;
   isVerifyCoinChecked: boolean;
-  getAllChainBalance: (portfolioState: {
-    statePortfolio: {
-      selectedChain: Chain;
-      tokenPortfolio: WalletHoldings;
-    };
-  }) => number;
-  setRefreshData: React.Dispatch<
-    React.SetStateAction<{
-      isRefreshing: boolean;
-      shouldRefreshAssets: boolean;
-    }>
-  >;
+  tokenHoldings: Holding[];
+  isPortfolioRefreshing: boolean;
+  onRefresh: () => void;
 }
 
 const TokenScene = ({
@@ -82,19 +57,17 @@ const TokenScene = ({
   navigation,
   bannerHeight,
   isVerifyCoinChecked,
-  getAllChainBalance,
-  setRefreshData,
+  tokenHoldings,
+  isPortfolioRefreshing,
+  onRefresh,
 }: TokenSceneProps) => {
-  const { t } = useTranslation();
-  const hdWallet = useContext<any>(HdWalletContext);
-  const portfolioState = useContext<any>(PortfolioContext);
-  const [isPortfolioRefreshing, setIsPortfolioRefreshing] = useState({
-    isRefreshing: false,
-    shouldRefreshAssets: false,
-  });
-  const [holdingsByCoinGeckoId, setHoldingsByCoinGeckoId] = useState<string[]>(
-    [],
-  );
+  // const [isPortfolioRefreshing, setIsPortfolioRefreshing] = useState({
+  //   isRefreshing: false,
+  //   shouldRefreshAssets: false,
+  // });
+  // const [holdingsByCoinGeckoId, setHoldingsByCoinGeckoId] = useState<string[]>(
+  //   [],
+  // );
 
   const flatListRef = useRef<FlatList<any>>(null);
 
@@ -105,89 +78,89 @@ const TokenScene = ({
     }
   }, [flatListRef.current]);
 
-  useEffect(() => {
-    void onRefresh(false);
-  }, [isVerifyCoinChecked]);
+  // useEffect(() => {
+  //   void onRefresh(false);
+  // }, [isVerifyCoinChecked]);
 
-  const onRefresh = async (pullToRefresh = true) => {
-    setRefreshData({ isRefreshing: true, shouldRefreshAssets: pullToRefresh });
-    setIsPortfolioRefreshing({
-      isRefreshing: true,
-      shouldRefreshAssets: pullToRefresh,
-    });
-    await fetchTokenData(hdWallet, portfolioState, isVerifyCoinChecked);
-    setRefreshData({ isRefreshing: false, shouldRefreshAssets: false });
-    setIsPortfolioRefreshing({
-      isRefreshing: false,
-      shouldRefreshAssets: false,
-    });
-  };
+  // const onRefresh = async (pullToRefresh = true) => {
+  //   setRefreshData({ isRefreshing: true, shouldRefreshAssets: pullToRefresh });
+  //   setIsPortfolioRefreshing({
+  //     isRefreshing: true,
+  //     shouldRefreshAssets: pullToRefresh,
+  //   });
+  //   await fetchTokenData(hdWallet, portfolioState, isVerifyCoinChecked);
+  //   setRefreshData({ isRefreshing: false, shouldRefreshAssets: false });
+  //   setIsPortfolioRefreshing({
+  //     isRefreshing: false,
+  //     shouldRefreshAssets: false,
+  //   });
+  // };
 
-  const getIndexedData = (data: any) => {
-    if (data) {
-      let holdings = [];
-      if ('holdings' in data) {
-        holdings = data.holdings;
-      } else {
-        holdings = data;
-      }
-      let tempHoldingsData: { [key: string]: Holding } = {};
-      holdings.forEach((holding: Holding) => {
-        return (tempHoldingsData = {
-          ...tempHoldingsData,
-          [holding.coinGeckoId +
-          ':' +
-          String(holding.chainDetails?.chainIdNumber) +
-          holding.chainDetails?.backendName +
-          holding.name +
-          holding.symbol]: holding,
-        });
-      });
+  // const getIndexedData = (data: any) => {
+  //   if (data) {
+  //     let holdings = [];
+  //     if ('holdings' in data) {
+  //       holdings = data.holdings;
+  //     } else {
+  //       holdings = data;
+  //     }
+  //     let tempHoldingsData: { [key: string]: Holding } = {};
+  //     holdings.forEach((holding: Holding) => {
+  //       return (tempHoldingsData = {
+  //         ...tempHoldingsData,
+  //         [holding.coinGeckoId +
+  //         ':' +
+  //         String(holding.chainDetails?.chainIdNumber) +
+  //         holding.chainDetails?.backendName +
+  //         holding.name +
+  //         holding.symbol]: holding,
+  //       });
+  //     });
 
-      return tempHoldingsData;
-    } else {
-      return {};
-    }
-  };
+  //     return tempHoldingsData;
+  //   } else {
+  //     return {};
+  //   }
+  // };
 
-  const holdingsData = useMemo(() => {
-    const data = getCurrentChainHoldings(
-      portfolioState.statePortfolio.tokenPortfolio,
-      CHAIN_COLLECTION,
-    );
-    return getIndexedData(data);
-  }, [portfolioState.statePortfolio.tokenPortfolio]);
+  // const holdingsData = useMemo(() => {
+  //   const data = getCurrentChainHoldings(
+  //     portfolioState.statePortfolio.tokenPortfolio,
+  //     CHAIN_COLLECTION,
+  //   );
+  //   return getIndexedData(data);
+  // }, [portfolioState.statePortfolio.tokenPortfolio]);
 
-  useEffect(() => {
-    const data = getCurrentChainHoldings(
-      portfolioState.statePortfolio.tokenPortfolio,
-      portfolioState.statePortfolio.selectedChain,
-    );
-    const tempHoldingsData = getIndexedData(data);
-    const newHoldingsByCoingeckoId = Object.keys(tempHoldingsData);
-    const tempSortedHoldingsByCoinGeckoId = sortBy(newHoldingsByCoingeckoId, [
-      function (holding) {
-        const { totalValue, actualStakedBalance, actualUnbondingBalance } = get(
-          tempHoldingsData,
-          holding,
-        );
-        return -(
-          totalValue +
-          actualStakedBalance +
-          Number(actualUnbondingBalance)
-        );
-      },
-    ]);
-    if (
-      holdingsByCoinGeckoId.length !== tempSortedHoldingsByCoinGeckoId.length ||
-      !isEqual(holdingsByCoinGeckoId, tempSortedHoldingsByCoinGeckoId)
-    ) {
-      setHoldingsByCoinGeckoId(tempSortedHoldingsByCoinGeckoId);
-    }
-  }, [
-    portfolioState.statePortfolio.tokenPortfolio,
-    portfolioState.statePortfolio.selectedChain,
-  ]);
+  // useEffect(() => {
+  //   const data = getCurrentChainHoldings(
+  //     portfolioState.statePortfolio.tokenPortfolio,
+  //     portfolioState.statePortfolio.selectedChain,
+  //   );
+  //   const tempHoldingsData = getIndexedData(data);
+  //   const newHoldingsByCoingeckoId = Object.keys(tempHoldingsData);
+  //   const tempSortedHoldingsByCoinGeckoId = sortBy(newHoldingsByCoingeckoId, [
+  //     function (holding) {
+  //       const { totalValue, actualStakedBalance, actualUnbondingBalance } = get(
+  //         tempHoldingsData,
+  //         holding,
+  //       );
+  //       return -(
+  //         totalValue +
+  //         actualStakedBalance +
+  //         Number(actualUnbondingBalance)
+  //       );
+  //     },
+  //   ]);
+  //   if (
+  //     holdingsByCoinGeckoId.length !== tempSortedHoldingsByCoinGeckoId.length ||
+  //     !isEqual(holdingsByCoinGeckoId, tempSortedHoldingsByCoinGeckoId)
+  //   ) {
+  //     setHoldingsByCoinGeckoId(tempSortedHoldingsByCoinGeckoId);
+  //   }
+  // }, [
+  //   portfolioState.statePortfolio.tokenPortfolio,
+  //   portfolioState.statePortfolio.selectedChain,
+  // ]);
 
   const swipeableRefs: Array<Swipeable | null> = [];
   let previousOpenedSwipeableRef: Swipeable | null;
@@ -236,40 +209,100 @@ const TokenScene = ({
     [isVerifyCoinChecked],
   );
 
-  const tokensGroupedByCoinGeckoId = useMemo(() => {
-    return groupBy(
-      holdingsByCoinGeckoId,
-      currentKey => currentKey.split(':')[0],
-    );
-  }, [holdingsByCoinGeckoId]);
+  // const tokensGroupedByCoinGeckoId = useMemo(() => {
+  //   return groupBy(
+  //     holdingsByCoinGeckoId,
+  //     currentKey => currentKey.split(':')[0],
+  //   );
+  // }, [holdingsByCoinGeckoId]);
 
+  // return (
+  //   <CyDView className='flex-1 h-full mx-[10px]'>
+  //     {!isEmpty(holdingsData) ? (
+  //       <AnimatedTabView
+  //         bannerHeight={bannerHeight}
+  //         data={
+  //           getAllChainBalance(portfolioState) > 0 ? holdingsByCoinGeckoId : []
+  //         }
+  //         extraData={{ isVerifyCoinChecked }}
+  //         keyExtractor={item => item}
+  //         refreshControl={
+  //           <RefreshControl
+  //             refreshing={isPortfolioRefreshing.shouldRefreshAssets}
+  //             onRefresh={() => {
+  //               void onRefresh();
+  //             }}
+  //             progressViewOffset={bannerHeight}
+  //           />
+  //         }
+  //         renderItem={({ item, index, viewableItems }) =>
+  //           renderItem({
+  //             item: get(holdingsData, item),
+  //             index,
+  //             otherChainsWithToken: get(
+  //               tokensGroupedByCoinGeckoId,
+  //               item.split(':')[0],
+  //             ).map(otherChain => get(holdingsData, otherChain)),
+  //             viewableItems,
+  //           })
+  //         }
+  //         onRef={flatListRef}
+  //         scrollY={scrollY}
+  //         onScrollEndDrag={onScrollEndDrag}
+  //         onMomentumScrollBegin={onMomentumScrollBegin}
+  //         onMomentumScrollEnd={onMomentumScrollEnd}
+  //         ListEmptyComponent={
+  //           <TokenListEmptyComponent
+  //             navigation={navigation}
+  //             isPortfolioEmpty={
+  //               portfolioState.statePortfolio.portfolioState === PORTFOLIO_EMPTY
+  //             }
+  //             onRefresh={onRefresh}
+  //           />
+  //         }
+  //       />
+  //     ) : (
+  //       <CyDView className='w-full absolute bottom-[100px]'>
+  //         <Loading />
+  //       </CyDView>
+  //     )}
+  //   </CyDView>
+  // );
   return (
     <CyDView className='flex-1 h-full mx-[10px]'>
-      {!isEmpty(holdingsData) ? (
+      {!isEmpty(tokenHoldings) ? (
         <AnimatedTabView
           bannerHeight={bannerHeight}
-          data={
-            getAllChainBalance(portfolioState) > 0 ? holdingsByCoinGeckoId : []
+          data={tokenHoldings}
+          keyExtractor={(item: Holding) =>
+            String(item.chainDetails.chain_id) + item.symbol
           }
-          extraData={{ isVerifyCoinChecked }}
-          keyExtractor={item => item}
           refreshControl={
             <RefreshControl
-              refreshing={isPortfolioRefreshing.shouldRefreshAssets}
+              refreshing={isPortfolioRefreshing}
               onRefresh={() => {
                 void onRefresh();
               }}
               progressViewOffset={bannerHeight}
             />
           }
-          renderItem={({ item, index, viewableItems }) =>
+          renderItem={({
+            item,
+            index,
+            viewableItems,
+          }: {
+            item: Holding;
+            index: number;
+            viewableItems: Holding[];
+          }) =>
             renderItem({
-              item: get(holdingsData, item),
+              item, // get(holdingsData, item),
               index,
-              otherChainsWithToken: get(
-                tokensGroupedByCoinGeckoId,
-                item.split(':')[0],
-              ).map(otherChain => get(holdingsData, otherChain)),
+              // otherChainsWithToken: get(
+              //   tokensGroupedByCoinGeckoId,
+              //   item.split(':')[0],
+              // ).map(otherChain => get(holdingsData, otherChain)),
+              otherChainsWithToken: [],
               viewableItems,
             })
           }
@@ -281,9 +314,7 @@ const TokenScene = ({
           ListEmptyComponent={
             <TokenListEmptyComponent
               navigation={navigation}
-              isPortfolioEmpty={
-                portfolioState.statePortfolio.portfolioState === PORTFOLIO_EMPTY
-              }
+              isPortfolioEmpty={isEmpty(tokenHoldings)}
               onRefresh={onRefresh}
             />
           }
@@ -300,7 +331,7 @@ const TokenScene = ({
 interface TokenListEmptyComponentProps {
   navigation: any;
   isPortfolioEmpty: boolean;
-  onRefresh: (pullToRefresh?: boolean) => Promise<void>;
+  onRefresh: () => void;
 }
 
 const TokenListEmptyComponent = ({
@@ -389,4 +420,4 @@ const styles = StyleSheet.create({
   },
 });
 
-export default memo(TokenScene);
+export default TokenScene;

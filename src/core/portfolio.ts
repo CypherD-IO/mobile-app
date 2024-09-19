@@ -72,11 +72,11 @@ export interface Holding {
 }
 
 export interface ChainHoldings {
-  chainTotalBalance: number;
-  chainUnVerifiedBalance: number;
-  chainStakedBalance: number;
-  chainUnbondingBalance: number;
-  holdings: Holding[];
+  totalBalance: number;
+  totalUnverifiedBalance: number;
+  totalStakedBalance: number;
+  totalUnbondingBalance: number;
+  totalHoldings: Holding[];
   timestamp: string;
 }
 
@@ -148,9 +148,6 @@ export function getCurrentChainHoldings(
   portfolio: WalletHoldings,
   chain: Chain,
 ) {
-  if (!portfolio) {
-    return undefined;
-  }
   switch (chain.backendName) {
     case CHAIN_ETH.backendName:
       return portfolio.eth;
@@ -161,7 +158,7 @@ export function getCurrentChainHoldings(
     case CHAIN_AVALANCHE.backendName:
       return portfolio.avalanche;
     case CHAIN_COLLECTION.backendName:
-      return portfolio.totalHoldings;
+      return portfolio;
     case CHAIN_ARBITRUM.backendName:
       return portfolio.arbitrum;
     case CHAIN_OPTIMISM.backendName:
@@ -385,11 +382,7 @@ export function sortDesc(a: any, b: any) {
   return 0;
 }
 
-export async function getPortfolioModel(
-  ethereum: any,
-  portfolioState: any,
-  archCall: any,
-): Promise<WalletHoldings> {
+export function getPortfolioModel(portfolioFromAPI: any): WalletHoldings {
   let id = 1;
   let totalUnverifiedBalance = 0;
   let totalBalance = 0;
@@ -409,7 +402,6 @@ export async function getPortfolioModel(
   let kujiraHoldings;
   let shardeumHoldings;
   let shardeumSphinxHoldings;
-  let totalHoldings: Holding[] = [];
   let arbitrumHoldings;
   let optimismHoldings;
   let zksyncEraHoldings;
@@ -419,34 +411,9 @@ export async function getPortfolioModel(
   let moonbeamHoldings;
   let moonriverHoldings;
   let solanaHoldings;
-  const allChains = new Set([
-    CHAIN_AVALANCHE.backendName,
-    CHAIN_BSC.backendName,
-    CHAIN_COSMOS.backendName,
-    CHAIN_ETH.backendName,
-    CHAIN_ARBITRUM.backendName,
-    CHAIN_OSMOSIS.backendName,
-    CHAIN_JUNO.backendName,
-    CHAIN_POLYGON.backendName,
-    CHAIN_OPTIMISM.backendName,
-    CHAIN_NOBLE.backendName,
-    CHAIN_SHARDEUM.backendName,
-    CHAIN_SHARDEUM_SPHINX.backendName,
-    CHAIN_ZKSYNC_ERA.backendName,
-    CHAIN_BASE.backendName,
-    CHAIN_POLYGON_ZKEVM.backendName,
-    CHAIN_AURORA.backendName,
-    CHAIN_MOONBEAM.backendName,
-    CHAIN_MOONRIVER.backendName,
-    CHAIN_COREUM.backendName,
-    CHAIN_INJECTIVE.backendName,
-    CHAIN_KUJIRA.backendName,
-    CHAIN_SOLANA.backendName,
-  ]);
 
-  const fetchedChains = new Set<ChainBackendNames | 'ALL'>();
-
-  const tokenHoldings = archCall.data.chainPortfolios;
+  const totalHoldings: Holding[] = [];
+  const tokenHoldings = portfolioFromAPI.chainPortfolios;
   let allholdings;
   if (tokenHoldings) {
     allholdings = tokenHoldings;
@@ -579,11 +546,11 @@ export async function getPortfolioModel(
       ? parseFloat(allholdings[i]?.unverifiedTotalValue)
       : 0;
     const chainHoldings: ChainHoldings = {
-      chainUnVerifiedBalance,
-      chainTotalBalance,
-      chainStakedBalance,
-      chainUnbondingBalance,
-      holdings: tokenHoldings,
+      totalUnverifiedBalance: chainUnVerifiedBalance,
+      totalBalance: chainTotalBalance,
+      totalStakedBalance: chainStakedBalance,
+      totalUnbondingBalance: chainUnbondingBalance,
+      totalHoldings: tokenHoldings,
       timestamp: new Date().toISOString(),
     };
     totalBalance += chainTotalBalance;
@@ -591,15 +558,7 @@ export async function getPortfolioModel(
     totalStakedBalance += chainStakedBalance;
     totalUnbondingBalance += chainUnbondingBalance;
 
-    fetchedChains.add(allholdings[i]?.chain);
-    await storePortfolioData(
-      chainHoldings,
-      ethereum,
-      portfolioState,
-      allholdings[i]?.chain,
-    );
-
-    chainHoldings.holdings.sort(sortDesc);
+    chainHoldings.totalHoldings.sort(sortDesc);
 
     switch (allholdings[i]?.chain) {
       case CHAIN_ETH.backendName:
@@ -673,110 +632,6 @@ export async function getPortfolioModel(
         break;
     }
   }
-  const remainingChains = new Set(
-    [...allChains].filter(x => !fetchedChains.has(x)),
-  );
-
-  if (remainingChains.size > 0 && portfolioState.statePortfolio.developerMode) {
-    // showModal('state', {type: 'info', title: `Not refreshed : ${[...remainingChains].join(' ')}`, description: 'Try refreshing in a while!', onSuccess: hideModal, onFailure: hideModal});
-    Toast.show({
-      type: 'info',
-      text1: `Not refreshed : ${[...remainingChains].join(' ')}`,
-      text2: 'Try refreshing in a while!',
-      position: 'bottom',
-    });
-  }
-
-  for (const chain of remainingChains) {
-    const chainData = await getPortfolioData(ethereum, portfolioState, chain);
-    if (chainData?.data) {
-      const chainHoldings = chainData.data || [];
-      for (const cHoldings of chainHoldings.holdings) {
-        cHoldings.id = id++; // Replacing id global id to avoid overlapping
-      }
-      if (totalHoldings && chainHoldings.holdings) {
-        totalHoldings = totalHoldings.concat(chainHoldings.holdings);
-      } else totalHoldings = totalHoldings || chainHoldings.holdings;
-
-      totalBalance += parseFloat(chainHoldings.chainTotalBalance);
-      totalUnverifiedBalance += parseFloat(
-        chainHoldings.chainUnVerifiedBalance,
-      );
-
-      chainHoldings.holdings.sort(sortDesc);
-      switch (chain) {
-        case CHAIN_ETH.backendName:
-          ethHoldings = chainHoldings;
-          break;
-        case CHAIN_POLYGON.backendName:
-          maticHoldings = chainHoldings;
-          break;
-        case CHAIN_BSC.backendName:
-          bscHoldings = chainHoldings;
-          break;
-        case CHAIN_AVALANCHE.backendName:
-          avaxHoldings = chainHoldings;
-          break;
-        case CHAIN_ARBITRUM.backendName:
-          arbitrumHoldings = chainHoldings;
-          break;
-        case CHAIN_OPTIMISM.backendName:
-          optimismHoldings = chainHoldings;
-          break;
-        case CHAIN_COSMOS.backendName:
-          cosmosHoldings = chainHoldings;
-          break;
-        case CHAIN_OSMOSIS.backendName:
-          osmosisHoldings = chainHoldings;
-          break;
-        case CHAIN_JUNO.backendName:
-          junoHoldings = chainHoldings;
-          break;
-        case CHAIN_STARGAZE.backendName:
-          stargazeHoldings = chainHoldings;
-          break;
-        case CHAIN_NOBLE.backendName:
-          nobleHoldings = chainHoldings;
-          break;
-        case CHAIN_SHARDEUM.backendName:
-          shardeumHoldings = chainHoldings;
-          break;
-        case CHAIN_SHARDEUM_SPHINX.backendName:
-          shardeumSphinxHoldings = chainHoldings;
-          break;
-        case CHAIN_POLYGON_ZKEVM.backendName:
-          polygonZkevmHoldings = chainHoldings;
-          break;
-        case CHAIN_ZKSYNC_ERA.backendName:
-          zksyncEraHoldings = chainHoldings;
-          break;
-        case CHAIN_BASE.backendName:
-          baseHoldings = chainHoldings;
-          break;
-        case CHAIN_AURORA.backendName:
-          auroraHoldings = chainHoldings;
-          break;
-        case CHAIN_MOONBEAM.backendName:
-          moonbeamHoldings = chainHoldings;
-          break;
-        case CHAIN_MOONRIVER.backendName:
-          moonriverHoldings = chainHoldings;
-          break;
-        case CHAIN_COREUM.backendName:
-          coreumHoldings = chainHoldings;
-          break;
-        case CHAIN_KUJIRA.backendName:
-          kujiraHoldings = chainHoldings;
-          break;
-        case CHAIN_INJECTIVE.backendName:
-          injectiveHoldings = chainHoldings;
-          break;
-        case CHAIN_SOLANA.backendName:
-          solanaHoldings = chainHoldings;
-          break;
-      }
-    }
-  }
 
   totalHoldings.sort(sortDesc);
 
@@ -810,7 +665,6 @@ export async function getPortfolioModel(
     solana: solanaHoldings,
     totalHoldings,
   };
-  await storePortfolioData(portfolio, ethereum, portfolioState);
   return portfolio;
 }
 
@@ -894,11 +748,7 @@ export async function fetchTokenData(
     if (archBackend && archBackend?.status === 201) {
       let newPortfolio = portfolio;
       if (archBackend.data.chainPortfolios.length > 0) {
-        newPortfolio = await getPortfolioModel(
-          ethereum,
-          portfolioState,
-          archBackend,
-        );
+        newPortfolio = await getPortfolioModel(archBackend.data);
       }
 
       if (

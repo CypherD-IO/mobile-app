@@ -1,5 +1,4 @@
-import React, { useContext, useEffect, useState } from 'react';
-import { PortfolioContext } from '../../../core/util';
+import React, { useEffect, useState } from 'react';
 import moment from 'moment';
 import {
   CyDFastImage,
@@ -15,15 +14,16 @@ const TIME_UPDATE_RUNNER_INTERVAL = 1000;
 
 export const RefreshTimerBar = (props: {
   isRefreshing: boolean;
-  isVerifiedCoinCheckedState: [
-    boolean,
-    React.Dispatch<React.SetStateAction<boolean>>,
-  ];
+  isVerifyCoinChecked: boolean;
+  setIsVerifyCoinChecked: React.Dispatch<React.SetStateAction<boolean>>;
+  lastUpdatedAt: string;
 }) => {
-  const { isRefreshing, isVerifiedCoinCheckedState } = props;
-  const [isVerifyCoinChecked, setIsVerifyCoinChecked] =
-    isVerifiedCoinCheckedState;
-  const portfolioState = useContext<any>(PortfolioContext);
+  const {
+    isRefreshing,
+    isVerifyCoinChecked,
+    setIsVerifyCoinChecked,
+    lastUpdatedAt,
+  } = props;
   const { t } = useTranslation();
   const [time, setTime] = useState(`${t('RETRIEVING')}...`);
   moment.updateLocale('en', {
@@ -52,13 +52,7 @@ export const RefreshTimerBar = (props: {
   useEffect(() => {
     const timeUpdateRunner = setInterval(function time() {
       if (!isRefreshing) {
-        const chainName =
-          portfolioState.statePortfolio.selectedChain.backendName.toLowerCase();
-        const currTimestamp =
-          portfolioState.statePortfolio.selectedChain.backendName !== 'ALL'
-            ? getCurrentChainRefreshTime(chainName) // use the time for individual chain
-            : portfolioState.statePortfolio.rtimestamp; // use rtimestamp for all chain data
-        setTime(calculateTimeDiff(currTimestamp));
+        setTime(calculateTimeDiff(lastUpdatedAt));
       } else {
         setTime(`${t('RETRIEVING')}...`);
       }
@@ -67,18 +61,7 @@ export const RefreshTimerBar = (props: {
     return () => {
       clearInterval(timeUpdateRunner);
     };
-
-    function getCurrentChainRefreshTime(chainName: any) {
-      return (
-        portfolioState?.statePortfolio?.tokenPortfolio[chainName]?.timestamp ||
-        new Date().toISOString()
-      );
-    }
-  }, [
-    portfolioState.statePortfolio.rtimestamp,
-    portfolioState.statePortfolio.selectedChain,
-    isRefreshing,
-  ]);
+  }, [isRefreshing, lastUpdatedAt]);
 
   return (
     <CyDView className='bg-white flex flex-row justify-between rounded-t-[24px] border border-sepratorColor py-[10px] px-[10px] mx-[10px]'>

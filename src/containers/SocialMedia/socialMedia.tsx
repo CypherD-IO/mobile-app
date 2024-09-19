@@ -3,17 +3,17 @@ import { BackHandler } from 'react-native';
 import { CyDView } from '../../styles/tailwindStyles';
 import WebView from 'react-native-webview';
 
-export default function SocialMediaScreen (props: {
+export default function SocialMediaScreen(props: {
   route: {
     params: {
-      uri: string
-      title: string
-    }
-  }
+      uri: string;
+      title: string;
+    };
+  };
   navigation: {
-    goBack: () => void
-    setOptions: ({ title }: {title: string}) => void
-  }
+    goBack: () => void;
+    setOptions: ({ title }: { title: string }) => void;
+  };
 }) {
   const { route, navigation } = props;
   const { uri, title } = route.params;
@@ -32,15 +32,13 @@ export default function SocialMediaScreen (props: {
 
   useLayoutEffect(() => {
     navigation.setOptions({
-      title
+      title,
     });
   }, []);
 
   return (
     <CyDView className={'h-full w-full'}>
-      <WebView
-        source={{ uri }}
-      />
+      <WebView source={{ uri }} />
     </CyDView>
   );
 }

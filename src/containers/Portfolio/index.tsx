@@ -26,7 +26,6 @@ import {
 } from '../../constants/server';
 import CopytoKeyModal from '../../components/ShowPharseModal';
 import {
-  ChainHoldings,
   fetchTokenData,
   getCurrentChainHoldings,
   WalletHoldings,
@@ -34,14 +33,8 @@ import {
 import messaging, {
   FirebaseMessagingTypes,
 } from '@react-native-firebase/messaging';
-import {
-  PORTFOLIO_ERROR,
-  PORTFOLIO_NEW_LOAD,
-  PORTFOLIO_LOADING,
-} from '../../reducers/portfolio_reducer';
 import * as Sentry from '@sentry/react-native';
 import {
-  getDeveloperMode,
   getPortfolioData,
   getIBC,
   getHideBalanceStatus,
@@ -77,7 +70,7 @@ import FilterBar from './components/FilterBar';
 import BannerCarousel from './components/BannerCarousel';
 import { DeFiFilterRefreshBar } from '../../components/deFiRefreshFilterBar';
 import { DeFiFilter, protocolOptionType } from '../../models/defi.interface';
-import { isEmpty, isNil } from 'lodash';
+import { isNil } from 'lodash';
 import {
   BridgeContext,
   BridgeContextDef,
@@ -86,6 +79,8 @@ import {
 } from '../../reducers/bridge.reducer';
 import useAxios from '../../core/HttpRequest';
 import { SwapBridgeChainData, SwapBridgeTokenData } from '../Bridge';
+import usePortfolio from '../../hooks/usePortfolio';
+import { IPortfolioData } from '../../models/portfolioData.interface';
 
 export interface PortfolioProps {
   navigation: any;
@@ -97,6 +92,12 @@ export default function Portfolio({ navigation }: PortfolioProps) {
   const globalStateContext = useContext(GlobalContext);
   const hdWallet = useContext(HdWalletContext);
   const portfolioState = useContext(PortfolioContext);
+  const [isPortfolioLoading, setIsPortfolioLoading] = useState<boolean>();
+  const [isPortfolioRefreshing, setIsPortfolioRefreshing] =
+    useState<boolean>(false);
+  const [portfolioData, setPortfolioData] = useState<IPortfolioData>();
+  const [portfolioBalance, setPortfolioBalance] = useState<number | string>('');
+  const [selectedChain, setSelectedChain] = useState<Chain>(CHAIN_COLLECTION);
   const { showModal, hideModal } = useGlobalModalContext();
   const { state: bridgeState, dispatch: bridgeDispatch } = useContext(
     BridgeContext,
@@ -126,6 +127,7 @@ export default function Portfolio({ navigation }: PortfolioProps) {
   const [deFiLoading, setDeFiLoading] = useState<boolean>(true);
   const [deFiFilterVisible, setDeFiFilterVisible] = useState<boolean>(false);
   const [userProtocols, setUserProtocls] = useState<protocolOptionType[]>([]);
+  const { fetchPortfolio } = usePortfolio();
   const tabs = [
     { key: 'token', title: t('TOKENS') },
     { key: 'defi', title: t('DEFI') },
@@ -191,40 +193,19 @@ export default function Portfolio({ navigation }: PortfolioProps) {
     };
   }, []);
 
-  useEffect(() => {
-    const data = getCurrentChainHoldings(
-      portfolioState.statePortfolio.tokenPortfolio,
-      CHAIN_COLLECTION,
-    );
-    if (!isEmpty(data)) {
-      setHoldingsEmpty(false);
-    }
-  }, [portfolioState.statePortfolio.tokenPortfolio]);
+  // useEffect(() => {
+  //   const data = getCurrentChainHoldings(
+  //     portfolioState.statePortfolio.tokenPortfolio,
+  //     CHAIN_COLLECTION,
+  //   );
+  //   if (!isEmpty(data)) {
+  //     setHoldingsEmpty(false);
+  //   }
+  // }, [portfolioState.statePortfolio.tokenPortfolio]);
 
   useEffect(() => {
     if (isFocused) {
-      if (portfolioState.statePortfolio.portfolioState === PORTFOLIO_ERROR) {
-        void analytics().logEvent('portfolio_load_error', {
-          from: ethereum?.address,
-        });
-        showModal('state', {
-          type: 'error',
-          title: t('NETWORK_ERROR'),
-          description: t('UNABLE_TO_LOAD_WALLET'),
-          onSuccess: () => {
-            hideModal();
-            void refresh();
-          },
-          onFailure: () => {
-            hideModal();
-            void refresh();
-          },
-        });
-      } else if (
-        portfolioState.statePortfolio.portfolioState === PORTFOLIO_NEW_LOAD
-      ) {
-        void refresh();
-      }
+      void fetchPortfolioData();
       void getHideBalanceStatus().then(resp => {
         if (resp && resp === 'true') {
           hdWallet?.dispatch({
@@ -239,23 +220,53 @@ export default function Portfolio({ navigation }: PortfolioProps) {
         }
       });
     }
-  }, [portfolioState.statePortfolio.portfolioState]);
+  }, []);
+
+  const fetchPortfolioData = async () => {
+    setIsPortfolioRefreshing(true);
+    const response = await fetchPortfolio();
+    if (response && !response?.isError) {
+      setHoldingsEmpty(response.isPortfolioEmpty);
+      if (response.data) {
+        setPortfolioBalance(calculatePortfolioBalance(response.data));
+      }
+      setPortfolioData({
+        portfolio: response.data,
+        isError: response.isError,
+        isPortfolioEmpty: response.isPortfolioEmpty,
+        lastUpdatedAt: new Date().toISOString(),
+      });
+    }
+    setIsPortfolioRefreshing(false);
+  };
+
+  const calculatePortfolioBalance = (portfolio: WalletHoldings) => {
+    const {
+      totalBalance,
+      totalStakedBalance,
+      totalUnverifiedBalance,
+      totalUnbondingBalance,
+    } = getCurrentChainHoldings(portfolio, selectedChain) ?? {};
+    if (isVerifyCoinChecked) {
+      return (
+        Number(totalBalance) +
+        Number(totalStakedBalance) +
+        Number(totalUnbondingBalance)
+      );
+    } else {
+      return (
+        Number(totalUnverifiedBalance) +
+        Number(totalStakedBalance) +
+        Number(totalUnbondingBalance)
+      );
+    }
+  };
 
   useEffect(() => {
     if (isFocused) {
       messaging().onNotificationOpenedApp(handlePushNotification);
 
       void messaging().getInitialNotification().then(handlePushNotification);
-
-      getDeveloperMode()
-        .then((developerMode: boolean) => {
-          if (portfolioState?.statePortfolio?.developerMode !== developerMode)
-            portfolioState.dispatchPortfolio({ value: { developerMode } });
-        })
-        .catch(e => {
-          Sentry.captureException(e.message);
-        });
-
       const getIBCStatus = async () => {
         const data = await getIBC();
         let IBCStatus = false;
@@ -278,13 +289,15 @@ export default function Portfolio({ navigation }: PortfolioProps) {
   }, [isFocused]);
 
   useEffect(() => {
-    if (portfolioState) {
-      const selectedChain =
-        portfolioState?.statePortfolio.selectedChain.backendName;
-      if (deFiFilters.chain !== selectedChain)
-        setDeFiFilters(prev => ({ ...prev, chain: selectedChain }));
+    if (deFiFilters.chain !== selectedChain.backendName)
+      setDeFiFilters({
+        ...deFiFilters,
+        chain: selectedChain.backendName as ChainBackendNames,
+      });
+    if (portfolioData?.portfolio) {
+      setPortfolioBalance(calculatePortfolioBalance(portfolioData?.portfolio));
     }
-  }, [portfolioState.statePortfolio.selectedChain.symbol]);
+  }, [selectedChain]);
 
   const getBridgeData = async () => {
     bridgeDispatch({
@@ -367,7 +380,7 @@ export default function Portfolio({ navigation }: PortfolioProps) {
   ) {
     //   'Notification caused app to open from background state:',
     if (ethereum) {
-      const localPortfolio = await getPortfolioData(ethereum, portfolioState);
+      const localPortfolio = await getPortfolioData(ethereum);
       if (remoteMessage?.data) {
         switch (remoteMessage.data.title) {
           case NotificationEvents.DAPP_BROWSER_OPEN: {
@@ -522,114 +535,20 @@ export default function Portfolio({ navigation }: PortfolioProps) {
     }
   }
 
-  async function refresh() {
-    if (hdWallet) {
-      await fetchTokenData(hdWallet, portfolioState, isVerifyCoinChecked);
-    }
-  }
-
-  const onRefresh = useCallback(
-    async (pullToRefresh = true) => {
-      if (hdWallet) {
-        setRefreshData({
-          isRefreshing: true,
-          shouldRefreshAssets: pullToRefresh,
-        });
-        await fetchTokenData(hdWallet, portfolioState, isVerifyCoinChecked);
-        setRefreshData({ isRefreshing: false, shouldRefreshAssets: false });
-      }
-    },
-    [isVerifyCoinChecked],
-  );
-
   useEffect(() => {
-    const currTimestamp =
-      portfolioState.statePortfolio.selectedChain.backendName !== 'ALL'
-        ? portfolioState?.statePortfolio?.tokenPortfolio[
-            portfolioState.statePortfolio.selectedChain.backendName.toLowerCase()
-          ]?.timestamp || new Date().toISOString() // use the time for individual chain
-        : portfolioState.statePortfolio.rtimestamp;
-
+    const currTimestamp = portfolioData?.lastUpdatedAt;
     const oneMinuteHasPassed =
       moment().diff(moment(currTimestamp), 'minutes') >= 1;
-    if (
-      isFocused &&
-      (portfolioState?.statePortfolio?.tokenPortfolio === undefined ||
-        oneMinuteHasPassed)
-    ) {
-      void onRefresh(false);
+    if (isFocused && oneMinuteHasPassed) {
+      void fetchPortfolioData();
     }
   }, [isFocused]);
 
-  const getAllChainBalance = (portfolioState: {
-    statePortfolio: { selectedChain: Chain; tokenPortfolio: WalletHoldings };
-  }): number => {
-    const {
-      totalBalance,
-      totalStakedBalance,
-      totalUnverifiedBalance,
-      totalUnbondingBalance,
-    } = portfolioState?.statePortfolio?.tokenPortfolio ?? {};
-    if (isVerifyCoinChecked) {
-      return (
-        Number(totalBalance) +
-        Number(totalStakedBalance) +
-        Number(totalUnbondingBalance)
-      );
-    } else {
-      return (
-        Number(totalUnverifiedBalance) +
-        Number(totalStakedBalance) +
-        Number(totalUnbondingBalance)
-      );
-    }
-  };
-
-  const checkAll = (portfolioState: {
-    statePortfolio: { selectedChain: Chain; tokenPortfolio: WalletHoldings };
-  }) => {
-    if (portfolioState.statePortfolio.selectedChain.backendName !== 'ALL') {
-      const currentChainHoldings = getCurrentChainHoldings(
-        portfolioState.statePortfolio.tokenPortfolio,
-        portfolioState.statePortfolio.selectedChain,
-      );
-      if (currentChainHoldings) {
-        const {
-          chainTotalBalance,
-          chainStakedBalance,
-          chainUnbondingBalance,
-          chainUnVerifiedBalance,
-        } = currentChainHoldings as ChainHoldings; // Type-assertion (currentChainHoldings can only be of type ChainHoldings if selectedChain.backendName !== 'ALL')
-        return isVerifyCoinChecked
-          ? Number(chainTotalBalance) +
-              Number(chainStakedBalance) +
-              Number(chainUnbondingBalance)
-          : Number(chainUnVerifiedBalance) +
-              Number(chainStakedBalance) +
-              Number(chainUnbondingBalance);
-      } else {
-        return '...';
-      }
-    } else {
-      return getAllChainBalance(portfolioState);
-    }
-  };
-
   const onWCSuccess = (e: BarCodeReadEvent) => {
     const link = e.data;
-    portfolioState.dispatchPortfolio({ value: { walletConnectURI: link } });
-    navigation.navigate(C.screenTitle.WALLET_CONNECT);
-  };
-
-  const isPortfolioLoading = () => {
-    return (
-      portfolioState.statePortfolio.portfolioState === PORTFOLIO_NEW_LOAD ||
-      portfolioState.statePortfolio.portfolioState === PORTFOLIO_LOADING
-    );
-  };
-
-  const isPortfolioError = () => {
-    return portfolioState.statePortfolio.portfolioState === PORTFOLIO_ERROR;
+    navigation.navigate(C.screenTitle.WALLET_CONNECT, {
+      walletConnectURI: link,
+    });
   };
 
   const renderScene = useCallback(
@@ -648,8 +567,18 @@ export default function Portfolio({ navigation }: PortfolioProps) {
                 navigation={navigation}
                 bannerHeight={bannerHeight}
                 isVerifyCoinChecked={isVerifyCoinChecked}
-                getAllChainBalance={getAllChainBalance}
-                setRefreshData={setRefreshData}
+                tokenHoldings={
+                  portfolioData?.portfolio
+                    ? getCurrentChainHoldings(
+                        portfolioData?.portfolio,
+                        selectedChain,
+                      )?.totalHoldings ?? []
+                    : []
+                }
+                isPortfolioRefreshing={isPortfolioRefreshing}
+                onRefresh={() => {
+                  void fetchPortfolioData();
+                }}
               />
             </CyDView>
           );
@@ -690,9 +619,7 @@ export default function Portfolio({ navigation }: PortfolioProps) {
                 scrollY={scrollY}
                 navigation={navigation}
                 bannerHeight={bannerHeight}
-                selectedChain={
-                  portfolioState.statePortfolio.selectedChain.symbol
-                }
+                selectedChain={selectedChain.symbol}
               />
             </CyDView>
           );
@@ -719,7 +646,7 @@ export default function Portfolio({ navigation }: PortfolioProps) {
           return null;
       }
     },
-    [getRefForKey, isVerifyCoinChecked, scrollY],
+    [getRefForKey, isVerifyCoinChecked, scrollY, portfolioData, selectedChain],
   );
 
   const renderTabBarFooter = useCallback(
@@ -728,11 +655,10 @@ export default function Portfolio({ navigation }: PortfolioProps) {
         case 'token':
           return (
             <RefreshTimerBar
-              isRefreshing={refreshData.isRefreshing}
-              isVerifiedCoinCheckedState={[
-                isVerifyCoinChecked,
-                setIsVerifyCoinChecked,
-              ]}
+              isRefreshing={isPortfolioRefreshing}
+              isVerifyCoinChecked={isVerifyCoinChecked}
+              setIsVerifyCoinChecked={setIsVerifyCoinChecked}
+              lastUpdatedAt={portfolioData?.lastUpdatedAt ?? ''}
             />
           );
         case 'defi':
@@ -750,19 +676,19 @@ export default function Portfolio({ navigation }: PortfolioProps) {
             />
           );
         case 'nft':
-          return null;
+          return <></>;
         case 'txn':
           return <FilterBar setFilterModalVisible={setFilterModalVisible} />;
         default:
-          return null;
+          return <></>;
       }
     },
-    [getRefForKey, tabs, refreshData.isRefreshing],
+    [getRefForKey, tabs, isPortfolioRefreshing],
   );
 
   return (
     <CyDSafeAreaView className='flex-1 bg-white'>
-      {isPortfolioLoading() && (
+      {isPortfolioLoading && (
         <CyDView className='justify-center items-center'>
           <EmptyView
             text={'Loading..'}
@@ -774,7 +700,7 @@ export default function Portfolio({ navigation }: PortfolioProps) {
         </CyDView>
       )}
 
-      {isPortfolioError() && (
+      {portfolioData?.isError && (
         <CyDView className='h-full justify-center items-center'>
           <CyDImage
             source={AppImages.NETWORK_ERROR}
@@ -784,19 +710,21 @@ export default function Portfolio({ navigation }: PortfolioProps) {
           <Button
             title='Retry'
             onPress={() => {
-              void onRefresh();
+              void fetchPortfolioData();
             }}
             style='px-[45px] mt-[20px]'
           />
         </CyDView>
       )}
-      {!holdingsEmpty ? (
+      {!portfolioData?.isPortfolioEmpty ? (
         <>
           <ChooseChainModal
             isModalVisible={chooseChain}
             onPress={() => {
               setChooseChain(false);
             }}
+            selectedChain={selectedChain}
+            setSelectedChain={setSelectedChain}
             where={WHERE_PORTFOLIO}
           />
           <CopytoKeyModal
@@ -808,7 +736,7 @@ export default function Portfolio({ navigation }: PortfolioProps) {
             navigation={navigation}
             renderTitleComponent={
               <CyDTokenValue className='text-[24px] font-extrabold '>
-                {checkAll(portfolioState)}
+                {portfolioBalance}
               </CyDTokenValue>
             }
             setChooseChain={setChooseChain}
@@ -819,7 +747,7 @@ export default function Portfolio({ navigation }: PortfolioProps) {
           <AnimatedBanner scrollY={scrollY} bannerHeight={bannerHeight}>
             <Banner
               bannerHeight={bannerHeight}
-              checkAllBalance={checkAll(portfolioState)}
+              portfolioBalance={portfolioBalance}
             />
             {jwtToken !== undefined ? (
               <BannerCarousel setBannerHeight={setBannerHeight} />
