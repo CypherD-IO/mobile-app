@@ -3,7 +3,15 @@
  * @flow
  */
 import React, { useCallback, useContext, useEffect, useState } from 'react';
-import { AppState, BackHandler, useWindowDimensions } from 'react-native';
+import {
+  AppState,
+  BackHandler,
+  FlatList,
+  SectionList,
+  StatusBar,
+  useWindowDimensions,
+  View,
+} from 'react-native';
 import analytics from '@react-native-firebase/analytics';
 import * as C from '../../constants/index';
 import { useTranslation } from 'react-i18next';
@@ -17,6 +25,9 @@ import {
   CyDImage,
   CyDView,
   CyDSafeAreaView,
+  CyDFlatList,
+  CyDText,
+  CyDTouchView,
 } from '../../styles/tailwindStyles';
 import {
   CHAIN_COLLECTION,
@@ -77,6 +88,9 @@ import useAxios from '../../core/HttpRequest';
 import { SwapBridgeChainData, SwapBridgeTokenData } from '../Bridge';
 import usePortfolio from '../../hooks/usePortfolio';
 import { IPortfolioData } from '../../models/portfolioData.interface';
+import PortfolioTokenItem from '../../components/v2/portfolioTokenItem';
+import { SceneMap, TabView } from 'react-native-tab-view';
+import { StyleSheet } from 'react-native';
 
 export interface PortfolioProps {
   navigation: any;
@@ -183,7 +197,11 @@ export default function Portfolio({ navigation }: PortfolioProps) {
   }, []);
 
   useEffect(() => {
-    if (isFocused) {
+    const currTimestamp = portfolioData?.lastUpdatedAt;
+    const oneMinuteHasPassed = currTimestamp
+      ? moment().diff(moment(currTimestamp), 'minutes') >= 1
+      : true;
+    if (isFocused && (oneMinuteHasPassed || !portfolioData?.portfolio)) {
       void fetchPortfolioData();
       void getHideBalanceStatus().then(resp => {
         if (resp && resp === 'true') {
@@ -199,7 +217,7 @@ export default function Portfolio({ navigation }: PortfolioProps) {
         }
       });
     }
-  }, []);
+  }, [isFocused]);
 
   const fetchPortfolioData = async () => {
     if (isEmpty(portfolioData?.portfolio)) {
@@ -211,7 +229,7 @@ export default function Portfolio({ navigation }: PortfolioProps) {
       setPortfolioData({
         portfolio: localPortfolio,
         isError: false,
-        isPortfolioEmpty: Boolean(localPortfolio?.totalHoldings?.length),
+        isPortfolioEmpty: !localPortfolio?.totalHoldings?.length,
         lastUpdatedAt: new Date().toISOString(),
       });
       setIsPortfolioLoading(false);
@@ -528,20 +546,25 @@ export default function Portfolio({ navigation }: PortfolioProps) {
     }
   }
 
-  useEffect(() => {
-    const currTimestamp = portfolioData?.lastUpdatedAt;
-    const oneMinuteHasPassed =
-      moment().diff(moment(currTimestamp), 'minutes') >= 1;
-    if (isFocused && oneMinuteHasPassed) {
-      void fetchPortfolioData();
-    }
-  }, [isFocused]);
-
   const onWCSuccess = (e: BarCodeReadEvent) => {
     const link = e.data;
     navigation.navigate(C.screenTitle.WALLET_CONNECT, {
       walletConnectURI: link,
     });
+  };
+
+  const renderPortfolioItem = ({ item, index }) => {
+    return (
+      <PortfolioTokenItem
+        item={item}
+        index={index}
+        isVerifyCoinChecked={false}
+        otherChainsWithToken={[]}
+        navigation={navigation}
+        onSwipe={() => {}}
+        setSwipeableRefs={() => {}}
+      />
+    );
   };
 
   const renderScene = useCallback(
@@ -553,6 +576,10 @@ export default function Portfolio({ navigation }: PortfolioProps) {
               <AnimatedTabBar scrollY={scrollY} bannerHeight={bannerHeight}>
                 {renderTabBarFooter(tab.key)}
               </AnimatedTabBar>
+              {/* <CyDFlatList
+                data={portfolioData?.portfolio?.totalHoldings.slice(0, 5)}
+                renderItem={renderPortfolioItem}
+              /> */}
               <TokenScene
                 {...sceneProps}
                 routeKey={'token'}
@@ -767,4 +794,167 @@ export default function Portfolio({ navigation }: PortfolioProps) {
       ) : null}
     </CyDSafeAreaView>
   );
+
+  // const [tabViewPosition, setTabViewPosition] = useState(0);
+  // const [isTabViewAtTop, setIsTabViewAtTop] = useState(false);
+  // const [tabIndex, setTabIndex] = useState(0); // Tab index state
+  // const [routes] = useState([
+  //   { key: 'first', title: 'Tab 1' },
+  //   { key: 'second', title: 'Tab 2' },
+  // ]);
+
+  // // Sample data for FlatLists
+  // const data = Array.from({ length: 20 }, (_, i) => `Item ${i + 1}`);
+
+  // // Render FlatList for each tab
+  // const FirstTab = () => (
+  //   <FlatList
+  //     data={data}
+  //     keyExtractor={(item, index) => index.toString()}
+  //     renderItem={({ item }) => (
+  //       <View
+  //         style={{ padding: 20, backgroundColor: '#f0f0f0', marginBottom: 10 }}>
+  //         <CyDText>{item}</CyDText>
+  //       </View>
+  //     )}
+  //     scrollEnabled={isTabViewAtTop} // Enable scrolling only when TabView reaches the top
+  //   />
+  // );
+
+  // const SecondTab = () => (
+  //   <FlatList
+  //     data={data}
+  //     keyExtractor={(item, index) => index.toString()}
+  //     renderItem={({ item }) => (
+  //       <View
+  //         style={{ padding: 20, backgroundColor: '#d0f0d0', marginBottom: 10 }}>
+  //         <CyDText>{item}</CyDText>
+  //       </View>
+  //     )}
+  //     scrollEnabled={isTabViewAtTop}
+  //   />
+  // );
+
+  // // TabView Scene Map
+  // const renderTabScene = SceneMap({
+  //   first: FirstTab,
+  //   second: SecondTab,
+  // });
+
+  // // Static sections for SectionList
+  // const sections = [
+  //   {
+  //     title: 'StaticView1',
+  //     data: ['StaticView1'],
+  //     renderItem: () => (
+  //       <View style={{ height: 100, backgroundColor: 'red' }} />
+  //     ),
+  //   },
+  //   {
+  //     title: 'StaticView2',
+  //     data: ['StaticView2'],
+  //     renderItem: () => (
+  //       <View style={{ height: 100, backgroundColor: 'blue' }} />
+  //     ),
+  //   },
+  //   {
+  //     title: 'TabViewSection',
+  //     data: [''],
+  //     renderItem: () => (
+  //       <CyDFlatList
+  //         data={portfolioData?.portfolio?.totalHoldings}
+  //         renderItem={renderPortfolioItem}
+  //       />
+  //     ),
+  //   },
+  // ];
+
+  // const onTabViewLayout = event => {
+  //   const { y } = event.nativeEvent.layout;
+  //   setTabViewPosition(y);
+  // };
+
+  // const handleScroll = event => {
+  //   const scrollY = event.nativeEvent.contentOffset.y;
+  //   // Enable TabView FlatList scrolling when TabView reaches the top
+  //   // console.log(scrollY, tabViewPosition);
+  //   setIsTabViewAtTop(scrollY >= 200);
+  // };
+
+  // const DATA = [
+  //   {
+  //     title: 'Main dishes',
+  //     data: ['Pizza', 'Burger', 'Risotto'],
+  //   },
+  //   {
+  //     title: 'Sides',
+  //     data: ['French Fries', 'Onion Rings', 'Fried Shrimps'],
+  //   },
+  //   {
+  //     title: 'Drinks',
+  //     data: ['Water', 'Coke', 'Beer'],
+  //   },
+  //   {
+  //     title: 'Desserts',
+  //     data: ['Cheese Cake', 'Ice Cream'],
+  //   },
+  // ];
+
+  // return (
+  //   <CyDSafeAreaView>
+  //     {/* <SectionList
+  //     sections={sections}
+  //     keyExtractor={(item, index) => index.toString()}
+  //     renderItem={({ item, section }) => section.renderItem()} // Use section-specific renderers
+  //     stickySectionHeadersEnabled={true} // Enable sticky headers for sections
+  //   /> */}
+  //     <SectionList
+  //       sections={sections}
+  //       keyExtractor={(item, index) => index.toString()}
+  //       renderItem={({ item, section }) => section.renderItem()}
+  //       stickySectionHeadersEnabled={true}
+  //       onScroll={handleScroll}
+  //       nestedScrollEnabled={true}
+  //       renderSectionHeader={({ section: { title } }) =>
+  //         title === 'TabViewSection' ? (
+  //           <CyDView className='flex flex-row justify-evenly items-center py-[12px]'>
+  //             {tabs.map((tab, index) => {
+  //               return (
+  //                 <CyDTouchView
+  //                   key={index}
+  //                   onPress={() => {
+  //                     setIndex(index);
+  //                   }}>
+  //                   <CyDText>{tab.title}</CyDText>
+  //                 </CyDTouchView>
+  //               );
+  //             })}
+  //           </CyDView>
+  //         ) : (
+  //           <></>
+  //         )
+  //       }
+  //     />
+  //   </CyDSafeAreaView>
+  // );
 }
+
+const styles = StyleSheet.create({
+  container: {
+    flex: 1,
+    paddingTop: StatusBar.currentHeight,
+    marginHorizontal: 16,
+  },
+  item: {
+    backgroundColor: '#f9c2ff',
+    padding: 20,
+    marginVertical: 8,
+  },
+  header: {
+    fontSize: 32,
+    backgroundColor: '#fff',
+  },
+  title: {
+    fontSize: 24,
+  },
+});

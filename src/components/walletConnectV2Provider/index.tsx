@@ -24,7 +24,7 @@ const walletConnectInitialValue = {
   initialized: false,
 };
 
-export const WalletConnectContext = createContext(walletConnectInitialValue);
+// export const WalletConnectContext = createContext(walletConnectInitialValue);
 
 export const WalletConnectV2Provider: React.FC<any> = ({ children }) => {
   // Step 1 - Initialize wallets and wallet connect client
@@ -99,9 +99,9 @@ export const WalletConnectV2Provider: React.FC<any> = ({ children }) => {
   }, [initialUrl, isWeb3WalletInitialized, ethereum.wallets.length]);
 
   return (
-    <WalletConnectContext.Provider
-      value={{ initialized: isWeb3WalletInitialized }}>
-      <WagmiConfigBuilder>{children}</WagmiConfigBuilder>
-    </WalletConnectContext.Provider>
+    // <WalletConnectContext.Provider
+    //   value={{ initialized: isWeb3WalletInitialized }}>
+    <WagmiConfigBuilder>{children}</WagmiConfigBuilder>
+    // </WalletConnectContext.Provider>
   );
 };

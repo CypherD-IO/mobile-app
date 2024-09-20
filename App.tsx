@@ -14,12 +14,7 @@ import {
   ActivityContext,
   referralLinkAnalytics,
 } from './src/core/util';
-import {
-  hdWalletStateReducer,
-  initialHdWalletState,
-  initialValidatorState,
-  ValidatorsListReducer,
-} from './src/reducers';
+import { hdWalletStateReducer, initialHdWalletState } from './src/reducers';
 import analytics from '@react-native-firebase/analytics';
 import '@react-native-firebase/messaging';
 import * as Sentry from '@sentry/react-native';
@@ -87,10 +82,6 @@ function App() {
   const [state, dispatch] = useReducer(
     hdWalletStateReducer,
     initialHdWalletState,
-  );
-  const [stateStaking, dispatchStaking] = useReducer(
-    ValidatorsListReducer,
-    initialValidatorState,
   );
   const [stateActivity, dispatchActivity] = useReducer(
     ActivityStateReducer,

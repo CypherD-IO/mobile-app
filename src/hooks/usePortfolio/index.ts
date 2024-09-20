@@ -87,10 +87,11 @@ export default function usePortfolio() {
     return nativeToken;
   }
 
-  async function getLocalPortfolio(): Promise<WalletHoldings> {
+  async function getLocalPortfolio(): Promise<WalletHoldings | null> {
     const { ethereum } = hdWallet.state.wallet;
     const localPortfolio = await getPortfolioData(ethereum);
-    return localPortfolio.data;
+    if (localPortfolio) return localPortfolio.data;
+    return null;
   }
 
   return { fetchPortfolio, getNativeToken, getLocalPortfolio };

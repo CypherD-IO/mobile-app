@@ -30,10 +30,10 @@ export interface AnimatedTabViewProps
   bannerHeight: PortfolioBannerHeights;
   data?: any[];
   renderItem?:
-  | ListRenderItem<any>
-  | Animated.Node<ListRenderItem<any> | null | undefined>
-  | null
-  | undefined;
+    | ListRenderItem<any>
+    | Animated.Node<ListRenderItem<any> | null | undefined>
+    | null
+    | undefined;
   onRef: Animated.FlatList<any> | Animated.ScrollView | null;
   scrollY: SharedValue<number>;
   refreshControl?: ReactElement;
@@ -60,7 +60,7 @@ const AnimatedTabViewWithoutMemo = ({
   extraData,
   ListHeaderComponent,
 }: AnimatedTabViewProps) => {
-  const handleScroll = useAnimatedScrollHandler((event) => {
+  const handleScroll = useAnimatedScrollHandler(event => {
     scrollY.value = event.contentOffset.y;
   });
 
@@ -120,8 +120,7 @@ const AnimatedTabViewWithoutMemo = ({
     return (
       <Animated.ScrollView
         {...commonProps}
-        ref={onRef as LegacyRef<Animated.ScrollView>}
-      >
+        ref={onRef as LegacyRef<Animated.ScrollView>}>
         {children}
       </Animated.ScrollView>
     );
@@ -148,5 +147,5 @@ const AnimatedTabViewWithoutMemo = ({
 };
 
 export const AnimatedTabView = memo(
-  AnimatedTabViewWithoutMemo
+  AnimatedTabViewWithoutMemo,
 ) as typeof AnimatedTabViewWithoutMemo;
