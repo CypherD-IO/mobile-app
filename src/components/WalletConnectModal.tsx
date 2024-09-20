@@ -19,12 +19,11 @@ import { GlobalContext } from '../core/globalContext';
 import useWeb3 from '../hooks/useWeb3';
 import { Web3Origin } from '../constants/enum';
 import { useGlobalModalContext } from './v2/GlobalModal';
-import { getNativeToken, PortfolioContext } from '../core/util';
 import {
   ALL_CHAINS,
   Chain,
+  ChainBackendNames,
   chainIdNumberMapping,
-  ChainNameMapping,
   EVM_CHAINS,
 } from '../constants/server';
 import { find } from 'lodash';
@@ -35,12 +34,12 @@ import CyDModalLayout from './v2/modal';
 import * as C from '../constants/index';
 import { EIP155_SIGNING_METHODS } from '../constants/EIP155Data';
 import Web3 from 'web3';
+import usePortfolio from '../hooks/usePortfolio';
 
 export default function WalletConnectModal(props) {
   const globalContext = useContext<any>(GlobalContext);
   const [handleWeb3] = useWeb3(Web3Origin.WALLETCONNECT);
   const [chooseChain, setChooseChain] = useState<boolean>(false);
-  const portfolioState = useContext<any>(PortfolioContext);
   const { showModal, hideModal } = useGlobalModalContext();
   const {
     walletConnectModalVisible,
@@ -59,13 +58,15 @@ export default function WalletConnectModal(props) {
   let currentChain: Chain;
   const { payload } = request;
   const { params: requestParams, method } = payload;
+  const { getNativeToken } = usePortfolio();
+
   if (paramsKeyInPayload) {
     const [paramsFirstChild] = paramsKeyInPayload;
     const { chainId } = paramsFirstChild;
     currentChain = chainIdNumberMapping[chainId];
   }
 
-  const checkGasFee = () => {
+  const checkGasFee = async () => {
     const item = find(ALL_CHAINS, {
       chainIdNumber: Number(params?.payload?.params[0]?.chainId),
     });
@@ -73,20 +74,18 @@ export default function WalletConnectModal(props) {
       // Quick fix for PERSONAL_SIGN broken in Wallet Connect Flow. Ideally we should detect and skip checkGasFee() for sign transactions like PERSONAL_SIGN and SIGN_TYPED_DATA
       return;
     }
-    const chain =
-      portfolioState.statePortfolio.tokenPortfolio[
-        ChainNameMapping[item.backendName]
-      ];
-    const nativeTokenSymbol: string = chain?.holdings[0]?.symbol;
+    const nativeToken = await getNativeToken(
+      item.backendName as ChainBackendNames,
+    );
     if (
-      !getNativeToken(nativeTokenSymbol, chain.holdings)?.actualBalance &&
+      nativeToken?.actualBalance &&
       renderContent?.dAppInfo?.name !== 'Cypher Wallet DApp'
     ) {
       setTimeout(() => {
         showModal('state', {
           type: 'error',
           title: t('INSUFFICIENT_FUNDS'),
-          description: `You don't have sufficient ${nativeTokenSymbol} to pay gas fee. But you can still continue accessing the DAPP`,
+          description: `You don't have sufficient ${nativeToken?.symbol} to pay gas fee. But you can still continue accessing the DAPP`,
           onSuccess: hideModal,
           onFailure: hideModal,
         });

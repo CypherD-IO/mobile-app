@@ -9,7 +9,6 @@ import AppImages from '../../../../assets/images/appImages';
 import { useTranslation } from 'react-i18next';
 import {
   HdWalletContext,
-  PortfolioContext,
   formatAmount,
   getMaskedAddress,
 } from '../../../core/util';
@@ -38,12 +37,14 @@ import TxnFilterModal, {
 import { TransactionType } from '../../../constants/enum';
 import { TransactionObj } from '../../../models/transaction.model';
 import {
+  Chain,
   CHAIN_COLLECTION,
   ChainConfigMapping,
 } from '../../../constants/server';
 import clsx from 'clsx';
 import { isIOS } from '../../../misc/checkers';
 import { PortfolioBannerHeights } from '../../../hooks/useScrollManager';
+import { get } from 'lodash';
 
 interface TxnItemProps {
   activity: TransactionObj;
@@ -59,6 +60,7 @@ interface TxnSceneProps {
   onMomentumScrollBegin: (e: ScrollEvent) => void;
   onMomentumScrollEnd: (e: ScrollEvent) => void;
   onScrollEndDrag: (e: ScrollEvent) => void;
+  selectedChain: Chain;
   navigation: any;
   bannerHeight: PortfolioBannerHeights;
   filterModalVisibilityState: [
@@ -252,6 +254,7 @@ const TxnScene = ({
   onMomentumScrollBegin,
   onMomentumScrollEnd,
   onScrollEndDrag,
+  selectedChain,
   navigation,
   bannerHeight,
   filterModalVisibilityState,
@@ -260,7 +263,6 @@ const TxnScene = ({
 
   const isFocused = useIsFocused();
   const hdWalletContext = useContext<any>(HdWalletContext);
-  const portfolioContext = useContext(PortfolioContext);
   const { address: ethereumAddress }: { address: string } =
     hdWalletContext.state.wallet.ethereum;
   const getTransactionsUrl = `${ARCH_HOST}/v1/txn/transactions/${ethereumAddress}?descOrder=true`;
@@ -344,7 +346,7 @@ const TxnScene = ({
     if (!isLoading) {
       spliceTransactions(); // Process transaction when isLoading is false
     }
-  }, [isLoading, filter, portfolioContext.statePortfolio.selectedChain]);
+  }, [isLoading, filter, selectedChain]);
 
   const getIsIncludedStatus = (status: string) => {
     if (filter.status === TXN_FILTER_STATUSES[2].id) {
@@ -366,9 +368,8 @@ const TxnScene = ({
     const filteredActivities = transaction.filter(activity => {
       const chain = activity.blockchain.toLowerCase();
       const isChainSelected =
-        portfolioContext.statePortfolio.selectedChain === CHAIN_COLLECTION ||
-        portfolioContext.statePortfolio.selectedChain ===
-          ChainConfigMapping[chain];
+        selectedChain === CHAIN_COLLECTION ||
+        selectedChain === get(ChainConfigMapping, chain);
       const isIncludedType = filter.types.includes(activity.type);
       const isOtherType = !TRANSACTION_TYPES.includes(activity.type);
       const isIncludedStatus = getIsIncludedStatus(activity.status);

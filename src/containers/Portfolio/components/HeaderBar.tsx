@@ -1,12 +1,11 @@
-import React, { ReactNode, useContext, useEffect, useState } from 'react';
+import React, { ReactNode, useEffect, useState } from 'react';
 import {
   CyDAnimatedView,
   CyDFastImage,
   CyDTouchView,
   CyDView,
 } from '../../../styles/tailwindStyles';
-import { PortfolioContext } from '../../../core/util';
-import { QRScannerScreens } from '../../../constants/server';
+import { Chain, QRScannerScreens } from '../../../constants/server';
 import AppImages from '../../../../assets/images/appImages';
 import { screenTitle } from '../../../constants';
 import { BarCodeReadEvent } from 'react-native-camera';
@@ -22,7 +21,8 @@ import useConnectionManager from '../../../hooks/useConnectionManager';
 
 interface HeaderBarProps {
   navigation: any;
-  setChooseChain: Function;
+  setChooseChain: (arg: boolean) => void;
+  selectedChain: Chain;
   bannerHeight: PortfolioBannerHeights;
   scrollY: SharedValue<number>;
   onWCSuccess: (e: BarCodeReadEvent) => void;
@@ -32,12 +32,12 @@ interface HeaderBarProps {
 export const HeaderBar = ({
   navigation,
   setChooseChain,
+  selectedChain,
   bannerHeight,
   scrollY,
   onWCSuccess,
   renderTitleComponent,
 }: HeaderBarProps) => {
-  const portfolioState = useContext<any>(PortfolioContext);
   const { connectionType } = useConnectionManager();
   const [connectionTypeValue, setConnectionTypeValue] =
     useState(connectionType);
@@ -71,7 +71,7 @@ export const HeaderBar = ({
         }>
         <CyDFastImage
           className={'h-[22px] w-[22px]'}
-          source={portfolioState.statePortfolio.selectedChain.logo_url}
+          source={selectedChain.logo_url}
         />
         <CyDFastImage className={'h-[8px] w-[8px]'} source={AppImages.DOWN} />
       </CyDTouchView>

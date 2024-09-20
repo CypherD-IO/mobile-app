@@ -3,31 +3,24 @@
  * @flow
  */
 import clsx from 'clsx';
-import React, { useContext, useEffect, useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import { BackHandler, Keyboard, StyleSheet } from 'react-native';
+import { BackHandler, StyleSheet } from 'react-native';
 import AppImages from '../../../assets/images/appImages';
 import { useGlobalModalContext } from '../../components/v2/GlobalModal';
 import { gasFeeReservation } from '../../constants/data';
 import * as C from '../../constants/index';
 import {
   ChainBackendNames,
-  ChainNameMapping,
   GASLESS_CHAINS,
   NativeTokenMapping,
 } from '../../constants/server';
 import { Colors } from '../../constants/theme';
-import { Holding } from '../../core/portfolio';
-import {
-  PortfolioContext,
-  formatAmount,
-  limitDecimalPlaces,
-} from '../../core/util';
+import { formatAmount, limitDecimalPlaces } from '../../core/util';
 import {
   CyDFastImage,
   CyDImage,
   CyDSafeAreaView,
-  CyDScrollView,
   CyDText,
   CyDTextInput,
   CyDTouchView,
@@ -43,7 +36,6 @@ import { CHOOSE_TOKEN_MODAL_TIMEOUT } from '../../constants/timeOuts';
 import { TokenMeta } from '../../models/tokenMetaData.model';
 import { get } from 'lodash';
 import usePortfolio from '../../hooks/usePortfolio';
-import BigNumber from 'bignumber.js';
 
 const { CText, DynamicView, DynamicImage } = require('../../styles');
 
@@ -52,8 +44,9 @@ export default function EnterAmount(props: any) {
   const { t } = useTranslation();
   const { route, navigation } = props;
   const { sendAddress = '' } = route.params ?? {};
-  const portfolioState = useContext<any>(PortfolioContext);
-  const [tokenData, setTokenData] = useState<TokenMeta>();
+  const [tokenData, setTokenData] = useState<TokenMeta>(
+    props?.route?.params?.tokenData,
+  );
   // const { tokenData }: { tokenData: Holding } = route.params;
   const [valueForUsd, setValueForUsd] = useState('0.00'); // native token amount
   const [usdValue, setUsdValue] = useState<string>('0.00');
@@ -371,7 +364,7 @@ export default function EnterAmount(props: any) {
           disabled={parseFloat(valueForUsd) <= 0 || valueForUsd === ''}
           onPress={() => {
             if (valueForUsd.length > 0) {
-              _validateValueForUsd();
+              void _validateValueForUsd();
             }
           }}
           type={ButtonType.PRIMARY}

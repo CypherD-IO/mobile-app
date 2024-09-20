@@ -5,9 +5,7 @@ import {
   CHAIN_OPTIMISM,
   Chain,
   ChainBackendNames,
-  ChainNameMapping,
   GASLESS_CHAINS,
-  NativeTokenMapping,
   OP_ETH_ADDRESS,
 } from '../../constants/server';
 import useAxios from '../../core/HttpRequest';
@@ -18,12 +16,7 @@ import * as Sentry from '@sentry/react-native';
 import analytics from '@react-native-firebase/analytics';
 import { EvmGasInterface } from '../../models/evmGas.interface';
 import { cosmosConfig } from '../../constants/cosmosConfig';
-import { useContext } from 'react';
-import {
-  PortfolioContext,
-  getNativeToken,
-  getTimeOutTime,
-} from '../../core/util';
+import { getTimeOutTime } from '../../core/util';
 import useCosmosSigner from '../useCosmosSigner';
 import {
   Coin,
@@ -51,6 +44,7 @@ import {
   getAssociatedTokenAddress,
   TOKEN_PROGRAM_ID,
 } from '@solana/spl-token';
+import usePortfolio from '../usePortfolio';
 
 export interface GasServiceResult {
   gasFeeInCrypto: string;
@@ -70,7 +64,7 @@ export default function useGasService() {
   const minimumGasFee = '20';
   const { getCosmosRpc } = useCosmosSigner();
   const { getSolanaRpc } = useSolanaSigner();
-  const portfolioState = useContext<any>(PortfolioContext);
+  const { getNativeToken } = usePortfolio();
 
   async function getCosmosSigningClient(
     chain: Chain,
@@ -269,7 +263,7 @@ export default function useGasService() {
   }): Promise<GasServiceResult | undefined> => {
     const { chainName, backendName, symbol } = chain;
     if (signer) {
-      const rpc = getCosmosRpc(backendName);
+      const rpc = getCosmosRpc(backendName as ChainBackendNames);
       const signingClient = await getCosmosSigningClient(chain, rpc, signer);
       const contractDecimal = get(cosmosConfig, chainName).contractDecimal;
       const amountToSend = ethers
@@ -296,12 +290,8 @@ export default function useGasService() {
         '',
       );
 
-      const nativeToken = getNativeToken(
-        get(NativeTokenMapping, symbol) || symbol,
-        get(
-          portfolioState.statePortfolio.tokenPortfolio,
-          ChainNameMapping[backendName],
-        ).holdings,
+      const nativeToken = await getNativeToken(
+        backendName as ChainBackendNames,
       );
 
       const gasPrice = cosmosConfig[chainName].gasPrice;
@@ -311,7 +301,7 @@ export default function useGasService() {
         amount: [
           {
             denom: nativeToken?.denom ?? denom,
-            amount: GASLESS_CHAINS.includes(backendName)
+            amount: GASLESS_CHAINS.includes(backendName as ChainBackendNames)
               ? '0'
               : Math.floor(gasFee).toString(),
           },
@@ -346,7 +336,7 @@ export default function useGasService() {
     signer: OfflineDirectSigner;
   }): Promise<GasServiceResult | undefined> => {
     const { chainName, backendName, symbol } = fromChain;
-    const rpc = getCosmosRpc(backendName);
+    const rpc = getCosmosRpc(backendName as ChainBackendNames);
     if (signer) {
       const signingClient = await getCosmosSigningClient(
         fromChain,
@@ -390,12 +380,8 @@ export default function useGasService() {
         '',
       );
 
-      const nativeToken = getNativeToken(
-        get(NativeTokenMapping, symbol) || symbol,
-        get(
-          portfolioState.statePortfolio.tokenPortfolio,
-          ChainNameMapping[backendName],
-        ).holdings,
+      const nativeToken = await getNativeToken(
+        backendName as ChainBackendNames,
       );
 
       const gasPrice = cosmosConfig[chainName].gasPrice;
@@ -407,7 +393,7 @@ export default function useGasService() {
         amount: [
           {
             denom: nativeToken?.denom ?? denom,
-            amount: GASLESS_CHAINS.includes(backendName)
+            amount: GASLESS_CHAINS.includes(backendName as ChainBackendNames)
               ? '0'
               : Math.floor(gasFee).toString(),
           },
@@ -439,7 +425,7 @@ export default function useGasService() {
   }): Promise<GasServiceResult | undefined> => {
     const { chainName, backendName } = chain;
     if (signer) {
-      const rpc = getCosmosRpc(backendName);
+      const rpc = getCosmosRpc(backendName as ChainBackendNames);
       const contractDecimal = get(cosmosConfig, chainName).contractDecimal;
 
       const msgList: Array<{
@@ -513,7 +499,7 @@ export default function useGasService() {
         .parseUnits(amountToDelegate, contractDecimal)
         .toString();
 
-      const rpc = getCosmosRpc(backendName);
+      const rpc = getCosmosRpc(backendName as ChainBackendNames);
       const signingClient = await getCosmosSigningClient(chain, rpc, signer);
 
       const msg = {
@@ -583,7 +569,7 @@ export default function useGasService() {
         .parseUnits(amountToUndelegate, contractDecimal)
         .toString();
 
-      const rpc = getCosmosRpc(backendName);
+      const rpc = getCosmosRpc(backendName as ChainBackendNames);
       const signingClient = await getCosmosSigningClient(chain, rpc, signer);
 
       const msg = {
@@ -654,7 +640,7 @@ export default function useGasService() {
         .parseUnits(amountToRedelegate, contractDecimal)
         .toString();
 
-      const rpc = getCosmosRpc(backendName);
+      const rpc = getCosmosRpc(backendName as ChainBackendNames);
       const signingClient = await getCosmosSigningClient(chain, rpc, signer);
 
       const msg = {

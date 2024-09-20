@@ -25,11 +25,7 @@ import {
   NotificationEvents,
 } from '../../constants/server';
 import CopytoKeyModal from '../../components/ShowPharseModal';
-import {
-  fetchTokenData,
-  getCurrentChainHoldings,
-  WalletHoldings,
-} from '../../core/portfolio';
+import { getCurrentChainHoldings, WalletHoldings } from '../../core/portfolio';
 import messaging, {
   FirebaseMessagingTypes,
 } from '@react-native-firebase/messaging';
@@ -41,7 +37,7 @@ import {
 } from '../../core/asyncStorage';
 import { useIsFocused } from '@react-navigation/native';
 import { GlobalContext } from '../../core/globalContext';
-import { HdWalletContext, PortfolioContext } from '../../core/util';
+import { HdWalletContext } from '../../core/util';
 import { useGlobalModalContext } from '../../components/v2/GlobalModal';
 import {
   GlobalContextType,
@@ -91,7 +87,6 @@ export default function Portfolio({ navigation }: PortfolioProps) {
   const isFocused = useIsFocused();
   const globalStateContext = useContext(GlobalContext);
   const hdWallet = useContext(HdWalletContext);
-  const portfolioState = useContext(PortfolioContext);
   const [isPortfolioLoading, setIsPortfolioLoading] = useState<boolean>();
   const [isPortfolioRefreshing, setIsPortfolioRefreshing] =
     useState<boolean>(false);
@@ -634,6 +629,7 @@ export default function Portfolio({ navigation }: PortfolioProps) {
                 routeKey={tab.key}
                 scrollY={scrollY}
                 navigation={navigation}
+                selectedChain={selectedChain}
                 bannerHeight={bannerHeight}
                 filterModalVisibilityState={[
                   filterModalVisible,
@@ -740,6 +736,7 @@ export default function Portfolio({ navigation }: PortfolioProps) {
               </CyDTokenValue>
             }
             setChooseChain={setChooseChain}
+            selectedChain={selectedChain}
             scrollY={scrollY}
             bannerHeight={bannerHeight}
             onWCSuccess={onWCSuccess}

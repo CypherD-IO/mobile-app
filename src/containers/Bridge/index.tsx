@@ -41,7 +41,6 @@ import {
   HdWalletContext,
   logAnalytics,
   parseErrorMessage,
-  PortfolioContext,
   setTimeOutNSec,
 } from '../../core/util';
 import { HdWalletContextDef } from '../../reducers/hdwallet_reducer';
@@ -89,6 +88,7 @@ import { DEFAULT_AXIOS_TIMEOUT } from '../../core/Http';
 import clsx from 'clsx';
 import { v4 as uuidv4 } from 'uuid';
 import analytics from '@react-native-firebase/analytics';
+import usePortfolio from '../../hooks/usePortfolio';
 
 export interface SwapBridgeChainData {
   chainName: string;
@@ -162,7 +162,6 @@ const Bridge: React.FC = () => {
   } = useSkipApiBridge();
   const { getApproval, swapTokens } = useTransactionManager();
   const globalStateContext = useContext(GlobalContext) as GlobalContextDef;
-  const portfolioState = useContext(PortfolioContext) as any;
   const { state: bridgeState, dispatch: bridgeDispatch } = useContext(
     BridgeContext,
   ) as BridgeContextDef;
@@ -229,10 +228,9 @@ const Bridge: React.FC = () => {
   >(null);
   const [error, setError] = useState<string>('');
   const abortControllerRef = useRef<AbortController | null>(null); // Ref to store the AbortController
-  const totalHoldings: Holding[] =
-    portfolioState?.statePortfolio?.tokenPortfolio?.totalHoldings;
   const routeParamsTokenData = route?.params?.tokenData;
   const routeParamsBackVisible = route?.params?.backVisible;
+  const { getLocalPortfolio } = usePortfolio();
 
   const navigateToPortfolio = () => {
     hideModal();
@@ -334,74 +332,80 @@ const Bridge: React.FC = () => {
   // need to only show tokens supported by skip api
   useEffect(() => {
     if (selectedFromChain) {
-      const currentChain = ALL_CHAINS.find(
-        chain => chain.chainIdNumber === Number(selectedFromChain.chainId),
-      );
-      setFromChainDetails(currentChain as Chain);
-
-      // Filter tokens based on totalHoldings
-      let filteredTokens = tokenData[selectedFromChain.chainId]
-        ?.map(token => {
-          const matchingHolding = totalHoldings.find(
-            holding =>
-              holding.coinGeckoId === token.coingeckoId &&
-              (holding.chainDetails.chainIdNumber ===
-                Number(selectedFromChain?.chainId) ||
-                holding.chainDetails.chain_id === selectedFromChain?.chainId),
-          );
-          return {
-            ...token,
-            balance: matchingHolding?.actualBalance ?? 0,
-            balanceInNumbers: matchingHolding?.totalValue ?? 0,
-          };
-        })
-        .sort((a, b) => b.balanceInNumbers - a.balanceInNumbers);
-
-      if (selectedToChain) {
-        filteredTokens = filteredTokens?.filter(item => {
-          // Check if both chains are Odos
-          // if both chains are same and isOdos true for the chain, then the tokens shown in from token data should be odos tokens,
-
-          if (
-            selectedFromChain.isOdos &&
-            selectedToChain.isOdos &&
-            selectedFromChain.chainId === selectedToChain.chainId
-          ) {
-            return item.isOdos;
-          }
-          // Check if both chains are Skip
-          // if the chains are different then it should be only skip supported tokend for bridging.
-          if (selectedFromChain.isSkip && selectedToChain.isSkip) {
-            return item.isSkip;
-          }
-          return true;
-        });
-      }
-
-      setFromTokenData(filteredTokens);
-      if (
-        !filteredTokens?.find(
-          token => token.tokenContract === selectedFromToken?.tokenContract,
-        )
-      ) {
-        if (routeParamsTokenData?.token) {
-          const routeToken = filteredTokens.find(
-            token => token.denom === routeParamsTokenData.token.denom,
-          );
-          setSelectedFromToken(routeToken ?? filteredTokens[0]);
-        } else {
-          setSelectedFromToken(filteredTokens[0]);
-        }
-        setUsdAmount(
-          parseFloat(cryptoAmount) > 0
-            ? String(Number(cryptoAmount) * Number(selectedFromToken?.price))
-            : '0',
-        );
-      }
-
-      if (!selectedToChain) setSelectedToChain(selectedFromChain);
+      void setFromTokenAndTokenData();
     }
-  }, [selectedFromChain, tokenData, totalHoldings, selectedToChain]);
+  }, [selectedFromChain, tokenData, selectedToChain]);
+
+  const setFromTokenAndTokenData = async () => {
+    const currentChain = ALL_CHAINS.find(
+      chain => chain.chainIdNumber === Number(selectedFromChain.chainId),
+    );
+    setFromChainDetails(currentChain as Chain);
+
+    // Filter tokens based on totalHoldings
+    const localPortfolio = await getLocalPortfolio();
+    const totalHoldings = localPortfolio.totalHoldings;
+    let filteredTokens = tokenData[selectedFromChain.chainId]
+      ?.map(token => {
+        const matchingHolding = totalHoldings.find(
+          holding =>
+            holding.coinGeckoId === token.coingeckoId &&
+            (holding.chainDetails.chainIdNumber ===
+              Number(selectedFromChain?.chainId) ||
+              holding.chainDetails.chain_id === selectedFromChain?.chainId),
+        );
+        return {
+          ...token,
+          balance: matchingHolding?.actualBalance ?? 0,
+          balanceInNumbers: matchingHolding?.totalValue ?? 0,
+        };
+      })
+      .sort((a, b) => b.balanceInNumbers - a.balanceInNumbers);
+
+    if (selectedToChain) {
+      filteredTokens = filteredTokens?.filter(item => {
+        // Check if both chains are Odos
+        // if both chains are same and isOdos true for the chain, then the tokens shown in from token data should be odos tokens,
+
+        if (
+          selectedFromChain.isOdos &&
+          selectedToChain.isOdos &&
+          selectedFromChain.chainId === selectedToChain.chainId
+        ) {
+          return item.isOdos;
+        }
+        // Check if both chains are Skip
+        // if the chains are different then it should be only skip supported tokend for bridging.
+        if (selectedFromChain.isSkip && selectedToChain.isSkip) {
+          return item.isSkip;
+        }
+        return true;
+      });
+    }
+
+    setFromTokenData(filteredTokens);
+    if (
+      !filteredTokens?.find(
+        token => token.tokenContract === selectedFromToken?.tokenContract,
+      )
+    ) {
+      if (routeParamsTokenData?.token) {
+        const routeToken = filteredTokens.find(
+          token => token.denom === routeParamsTokenData.token.denom,
+        );
+        setSelectedFromToken(routeToken ?? filteredTokens[0]);
+      } else {
+        setSelectedFromToken(filteredTokens[0]);
+      }
+      setUsdAmount(
+        parseFloat(cryptoAmount) > 0
+          ? String(Number(cryptoAmount) * Number(selectedFromToken?.price))
+          : '0',
+      );
+    }
+
+    if (!selectedToChain) setSelectedToChain(selectedFromChain);
+  };
 
   useEffect(() => {
     if (selectedToChain) {
