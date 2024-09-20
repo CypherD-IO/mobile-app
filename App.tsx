@@ -11,7 +11,6 @@ import './src/i18n';
 import { BackHandler, Keyboard, Linking } from 'react-native';
 import {
   HdWalletContext,
-  StakingContext,
   ActivityContext,
   referralLinkAnalytics,
 } from './src/core/util';
@@ -274,65 +273,62 @@ function App() {
               value={{ walletConnectState, walletConnectDispatch }}>
               <GlobalContext.Provider value={{ globalState, globalDispatch }}>
                 <HdWalletContext.Provider value={{ state, dispatch }}>
-                  <StakingContext.Provider
-                    value={{ stateStaking, dispatchStaking }}>
-                    <CosmosStakingContext.Provider
-                      value={{ cosmosStakingState, cosmosStakingDispatch }}>
-                      <ActivityContext.Provider
+                  <CosmosStakingContext.Provider
+                    value={{ cosmosStakingState, cosmosStakingDispatch }}>
+                    <ActivityContext.Provider
+                      value={{
+                        state: stateActivity,
+                        dispatch: dispatchActivity,
+                      }}>
+                      <ModalContext.Provider
                         value={{
-                          state: stateActivity,
-                          dispatch: dispatchActivity,
+                          state: modalState,
+                          dispatch: modalDispatch,
                         }}>
-                        <ModalContext.Provider
+                        <BridgeContext.Provider
                           value={{
-                            state: modalState,
-                            dispatch: modalDispatch,
+                            state: bridgeState,
+                            dispatch: bridgeDispatch,
                           }}>
-                          <BridgeContext.Provider
-                            value={{
-                              state: bridgeState,
-                              dispatch: bridgeDispatch,
-                            }}>
-                            <GlobalModal>
-                              <InitializeAppProvider>
-                                <TabStack
-                                  deepLinkData={deepLinkData}
-                                  setDeepLinkData={setDeepLinkData}
-                                />
-                                <Toast
-                                  config={toastConfig}
-                                  position={'bottom'}
-                                  bottomOffset={140}
-                                />
-                                {<ConfirmationModals />}
-                                <WalletConnectModal
-                                  walletConnectModalVisible={
-                                    walletConnectModalData.displayWalletConnectModal
-                                  }
-                                  setWalletConnectModalVisible={
-                                    setWalletConnectModalVisible
-                                  }
-                                  renderContent={
-                                    walletConnectModalData.renderContent
-                                  }
-                                  walletConnectApproveRequest={
-                                    walletConnectApproveRequest
-                                  }
-                                  walletConnectRejectRequest={
-                                    walletConnectRejectRequest
-                                  }
-                                  dispatchActivity={dispatchActivity}
-                                  params={walletConnectModalData.params}
-                                  request={request}
-                                  walletConnectDispatch={walletConnectDispatch}
-                                />
-                              </InitializeAppProvider>
-                            </GlobalModal>
-                          </BridgeContext.Provider>
-                        </ModalContext.Provider>
-                      </ActivityContext.Provider>
-                    </CosmosStakingContext.Provider>
-                  </StakingContext.Provider>
+                          <GlobalModal>
+                            <InitializeAppProvider>
+                              <TabStack
+                                deepLinkData={deepLinkData}
+                                setDeepLinkData={setDeepLinkData}
+                              />
+                              <Toast
+                                config={toastConfig}
+                                position={'bottom'}
+                                bottomOffset={140}
+                              />
+                              {<ConfirmationModals />}
+                              <WalletConnectModal
+                                walletConnectModalVisible={
+                                  walletConnectModalData.displayWalletConnectModal
+                                }
+                                setWalletConnectModalVisible={
+                                  setWalletConnectModalVisible
+                                }
+                                renderContent={
+                                  walletConnectModalData.renderContent
+                                }
+                                walletConnectApproveRequest={
+                                  walletConnectApproveRequest
+                                }
+                                walletConnectRejectRequest={
+                                  walletConnectRejectRequest
+                                }
+                                dispatchActivity={dispatchActivity}
+                                params={walletConnectModalData.params}
+                                request={request}
+                                walletConnectDispatch={walletConnectDispatch}
+                              />
+                            </InitializeAppProvider>
+                          </GlobalModal>
+                        </BridgeContext.Provider>
+                      </ModalContext.Provider>
+                    </ActivityContext.Provider>
+                  </CosmosStakingContext.Provider>
                 </HdWalletContext.Provider>
               </GlobalContext.Provider>
             </WalletConnectContext.Provider>
