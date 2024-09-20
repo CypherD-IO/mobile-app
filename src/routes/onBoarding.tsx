@@ -16,9 +16,16 @@ import { t } from 'i18next';
 const Stack = createNativeStackNavigator();
 
 function OnBoardingStack(props: any) {
-  const initialScreen = props.initialScreen ?? screenTitle.ENTER_KEY;
+  const initialScreen = props.initialScreen ?? screenTitle.ONBOARDING;
   return (
     <Stack.Navigator initialRouteName={initialScreen}>
+      <Stack.Screen
+        name={screenTitle.ONBOARDING}
+        component={OnBoarding}
+        options={{
+          headerShown: false,
+        }}
+      />
       <Stack.Screen
         name={screenTitle.ENTER_KEY}
         component={EnterKeyScreen}

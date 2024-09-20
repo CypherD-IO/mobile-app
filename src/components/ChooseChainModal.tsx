@@ -31,14 +31,11 @@ export function ChooseChainModal(props: {
   const hdWallet = useContext(HdWalletContext);
 
   const onChainSelection = (chain: Chain) => {
-    if (where === WHERE_BROWSER) {
-      hdWallet?.dispatch({
-        type: 'CHOOSE_CHAIN',
-        value: { selectedChain: chain },
-      });
-    } else {
-      setSelectedChain(chain);
-    }
+    hdWallet?.dispatch({
+      type: 'CHOOSE_CHAIN',
+      value: { selectedChain: chain },
+    });
+    setSelectedChain(chain);
     onPress();
   };
 

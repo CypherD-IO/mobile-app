@@ -1,19 +1,11 @@
-import { useNavigation } from '@react-navigation/native';
 import React, { useContext, useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { StyleSheet } from 'react-native';
 import AppImages from '../../../assets/images/appImages';
 import { ButtonType } from '../../constants/enum';
 import Login from '../../containers/Auth/EnterKey';
-import { HdWalletContext, PortfolioContext } from '../../core/util';
+import { HdWalletContext } from '../../core/util';
 import { PromptImportWalletDef } from '../../models/globalModal.interface';
-import {
-  PORTFOLIO_EMPTY,
-  PORTFOLIO_ERROR,
-  PORTFOLIO_LOADING,
-  PORTFOLIO_NEW_LOAD,
-  PORTFOLIO_NOT_EMPTY,
-} from '../../reducers/portfolio_reducer';
 import {
   CyDImage,
   CyDSafeAreaView,
@@ -31,10 +23,8 @@ const PromptImportWallet: React.FC<PromptImportWalletDef> = (
   const { t } = useTranslation();
   const [showEnterKey, setShowEnterKey] = useState(false);
   const hdWalletContext = useContext<any>(HdWalletContext);
-  const portfolioState = useContext<any>(PortfolioContext);
   const { ethereum } = hdWalletContext.state.wallet;
   const [loading, setLoading] = useState(false);
-  const [isportfolioLoadStarted, setIsPortfolioLoadStarted] = useState(false);
 
   function onSuccess() {
     if (typeof store.onSuccess === 'undefined') {
@@ -53,32 +43,17 @@ const PromptImportWallet: React.FC<PromptImportWalletDef> = (
   }
 
   useEffect(() => {
-    if (portfolioState.statePortfolio.portfolioState === PORTFOLIO_LOADING) {
+    if (hdWalletContext.state.choosenWalletIndex === -1) {
       setLoading(true);
-    } else if (
-      loading &&
-      portfolioState.statePortfolio.portfolioState === PORTFOLIO_NEW_LOAD
-    ) {
-      setIsPortfolioLoadStarted(true);
-    } else if (
-      loading &&
-      isportfolioLoadStarted &&
-      portfolioState.statePortfolio.portfolioState === PORTFOLIO_NOT_EMPTY
-    ) {
-      setLoading(false);
+    } else {
       if (store.address === ethereum.address) {
         onSuccess();
       } else {
         onFailure();
       }
-    } else if (
-      loading &&
-      (portfolioState.statePortfolio.portfolioState === PORTFOLIO_EMPTY ||
-        portfolioState.statePortfolio.portfolioState === PORTFOLIO_ERROR)
-    ) {
-      onFailure();
+      setLoading(false);
     }
-  }, [portfolioState.statePortfolio.portfolioState]);
+  }, [hdWalletContext.state.choosenWalletIndex]);
 
   const RenderContent = () => {
     if (showEnterKey) {

@@ -1,6 +1,5 @@
 import {
   Chain,
-  ChainBackendNames,
   CHAIN_AVALANCHE,
   CHAIN_BSC,
   CHAIN_COLLECTION,
@@ -18,7 +17,6 @@ import {
   CHAIN_ZKSYNC_ERA,
   CHAIN_BASE,
   CHAIN_POLYGON_ZKEVM,
-  PORTFOLIO_CHAINS_BACKEND_NAMES,
   CHAIN_AURORA,
   CHAIN_MOONBEAM,
   CHAIN_MOONRIVER,
@@ -27,15 +25,7 @@ import {
   CHAIN_KUJIRA,
   CHAIN_SOLANA,
 } from '../constants/server';
-import {
-  PORTFOLIO_EMPTY,
-  PORTFOLIO_ERROR,
-  PORTFOLIO_NOT_EMPTY,
-} from '../reducers/portfolio_reducer';
-import Toast from 'react-native-toast-message';
-import { getPortfolioData, storePortfolioData } from './asyncStorage';
 import axios from './Http';
-import * as Sentry from '@sentry/react-native';
 import { hostWorker } from '../global';
 import { get, has } from 'lodash';
 
@@ -202,178 +192,13 @@ export function getCurrentChainHoldings(
   }
 }
 
-export async function fetchNftDatav2(
-  portfolioState: any,
-  ethereum: any,
-  stargaze: any,
-) {
-  const allChainNftHoldings: NftHoldings = {
-    ETH: [],
-    MATIC: [],
-    BNB: [],
-    AVAX: [],
-    ARBITRUM: [],
-    OPTIMISM: [],
-    COSMOS: [],
-    OSMO: [],
-    JUNO: [],
-    STARS: [],
-    NOBLE: [],
-    SHM: [],
-    'ALL CHAINS': [],
-  };
-  const cursor = '';
-  const PORTFOLIO_HOST: string = hostWorker.getHost('PORTFOLIO_HOST');
-  const ARCH_HOST: string = hostWorker.getHost('ARCH_HOST');
-  const getNfturl = `${PORTFOLIO_HOST}/v1/userholdings/nfts`;
-  const getNftStargazeURL = `${ARCH_HOST}/v1/portfolio/stargaze/nft`;
-  const promiseArray: Array<Promise<any>> = [];
-  for (const chains in ChainBackendNames) {
-    // build promiseArray for all chains
-    if (['COSMOS', 'OSMOSIS', 'JUNO', 'NOBLE'].includes(chains)) {
-      continue;
-    }
-    let temp;
-    if (chains !== ChainBackendNames.STARGAZE) {
-      temp = axios.get(getNfturl, {
-        params: {
-          address: ethereum.address,
-          chain: chains,
-          cursor,
-          is_cursor_pagination: true,
-        },
-      });
-    } else {
-      temp = axios.get(getNftStargazeURL, {
-        params: {
-          address: stargaze.address,
-        },
-      });
-    }
-    promiseArray.push(temp);
-  }
-  let allChainNftBackend;
-  try {
-    allChainNftBackend = await Promise.all(promiseArray);
-  } catch (e) {
-    // showModal('state', {type: 'error', title: 'Network Timeout Error', description: 'NFT portfolio has not loaded yet try refreshing in a while!', onSuccess: hideModal, onFailure: hideModal});
-    Toast.show({
-      type: 'error',
-      text1: 'Network Timeout Error',
-      text2: 'NFT portfolio has not loaded yet try refreshing in a while!',
-      position: 'bottom',
-    });
-    Sentry.captureException('nft_portfolio_network_error');
-    return null;
-  }
-  let index = 0;
-  let collectionId = 0;
-  for (const chains in ChainBackendNames) {
-    if (['COSMOS', 'OSMOSIS', 'JUNO'].includes(chains)) {
-      continue;
-    }
-    const chainData = allChainNftBackend
-      ? allChainNftBackend[index++].data.holdings
-      : '';
-    const tempCollections: Map<string, any> = new Map();
-    for (const holding of chainData) {
-      if (tempCollections.has(holding.token_address)) {
-        const data = tempCollections.get(holding.token_address);
-        if (holding.image) {
-          data.collections.push({
-            image: holding.image,
-            id: data.count,
-            address: holding.token_address,
-            tokenId: holding.token_id,
-            symbol: data.collections[0].symbol,
-          });
-        }
-        tempCollections.set(holding.token_address, {
-          name: holding.name,
-          id: data.id,
-          count: Number(data.count) + 1,
-          collections: data.collections,
-          description: holding.description,
-          timestamp: new Date().toISOString(),
-        });
-      } else {
-        tempCollections.set(holding.token_address, {
-          name: holding.name,
-          id: collectionId,
-          count: 1,
-          collections: [
-            {
-              image: holding.image,
-              id: 0,
-              address: holding.token_address,
-              tokenId: holding.token_id,
-              symbol: chains,
-            },
-          ],
-          description: holding.description,
-          timestamp: new Date().toISOString(),
-        });
-        collectionId++;
-      }
-    }
-
-    const chainNftData: ChainNftHoldings[] = [];
-    tempCollections.forEach(value => {
-      chainNftData.push(value);
-    });
-    if (allChainNftHoldings['ALL CHAINS'] && chainNftData) {
-      allChainNftHoldings['ALL CHAINS'] =
-        allChainNftHoldings['ALL CHAINS'].concat(chainNftData);
-    } else
-      allChainNftHoldings['ALL CHAINS'] =
-        allChainNftHoldings['ALL CHAINS'] || chainNftData;
-
-    switch (chains) {
-      case CHAIN_ETH.backendName:
-        allChainNftHoldings.ETH = chainNftData;
-        break;
-      case CHAIN_POLYGON.backendName:
-        allChainNftHoldings.MATIC = chainNftData;
-        break;
-      case CHAIN_BSC.backendName:
-        allChainNftHoldings.BNB = chainNftData;
-        break;
-      case CHAIN_AVALANCHE.backendName:
-        allChainNftHoldings.AVAX = chainNftData;
-        break;
-      case CHAIN_ARBITRUM.backendName:
-        allChainNftHoldings.ARBITRUM = chainNftData;
-        break;
-      case CHAIN_OPTIMISM.backendName:
-        allChainNftHoldings.OPTIMISM = chainNftData;
-        break;
-      case CHAIN_STARGAZE.backendName:
-        allChainNftHoldings.STARS = chainNftData;
-        break;
-      case CHAIN_NOBLE.backendName:
-        allChainNftHoldings.NOBLE = chainNftData;
-        break;
-      case CHAIN_SHARDEUM.backendName:
-        allChainNftHoldings.SHM = chainNftData;
-        break;
-    }
-  }
-  await storePortfolioData(
-    allChainNftHoldings,
-    ethereum,
-    portfolioState,
-    'ALL_NFT',
-  );
-  return allChainNftHoldings;
-}
-
-export function sortDesc(a: any, b: any) {
+export function sortDesc(a: Holding, b: Holding) {
   const first =
-    parseFloat(get(a, 'totalValue', 0)) +
-    parseFloat(get(a, 'actualStakedBalance', 0));
+    parseFloat(String(get(a, 'totalValue', 0))) +
+    parseFloat(String(get(a, 'actualStakedBalance', 0)));
   const second =
-    parseFloat(get(b, 'totalValue', 0)) +
-    parseFloat(get(b, 'actualStakedBalance', 0));
+    parseFloat(String(get(b, 'totalValue', 0))) +
+    parseFloat(String(get(b, 'actualStakedBalance', 0)));
   if (first < second) {
     return 1;
   } else if (first > second) {
@@ -453,6 +278,8 @@ export function getPortfolioModel(portfolioFromAPI: any): WalletHoldings {
         isSwapable: flags.swapable,
         isStakeable: flags.stakeable ?? false,
         isZeroFeeCardFunding: flags.zeroFeeToken ?? false,
+        chainDetails: CHAIN_ETH,
+        denom: '',
       };
       if (has(holding, 'isMainnet')) {
         tokenHolding.isMainnet = holding.isMainnet;
@@ -666,137 +493,6 @@ export function getPortfolioModel(portfolioFromAPI: any): WalletHoldings {
     totalHoldings,
   };
   return portfolio;
-}
-
-export async function fetchTokenData(
-  hdWalletState: { state: { wallet: any; isReadOnlyWallet: boolean } },
-  portfolioState: any,
-  isVerifyCoinChecked = true,
-) {
-  const ARCH_HOST: string = hostWorker.getHost('ARCH_HOST');
-  const portfolioUrl = `${ARCH_HOST}/v1/portfolio/balances`;
-  const {
-    cosmos,
-    osmosis,
-    juno,
-    stargaze,
-    noble,
-    ethereum,
-    coreum,
-    injective,
-    kujira,
-    solana,
-  } = hdWalletState.state.wallet;
-  if (ethereum.address !== 'null') {
-    const localPortfolio = await getPortfolioData(ethereum, portfolioState);
-    console.log(localPortfolio);
-    const portfolio: WalletHoldings | null = localPortfolio
-      ? (localPortfolio.data as unknown as WalletHoldings)
-      : null;
-
-    const updatedTime =
-      localPortfolio !== null
-        ? localPortfolio.timestamp
-        : new Date().toISOString();
-
-    if (
-      portfolio &&
-      portfolioState.statePortfolio.tokenPortfolio === undefined
-    ) {
-      if (
-        portfolio?.totalUnverifiedBalance +
-          portfolio?.totalBalance +
-          portfolio?.totalStakedBalance >
-        0
-      ) {
-        portfolioState.dispatchPortfolio({
-          value: {
-            tokenPortfolio: portfolio,
-            portfolioState: PORTFOLIO_NOT_EMPTY,
-            rtimestamp: updatedTime,
-          },
-        });
-      } else {
-        portfolioState.dispatchPortfolio({
-          value: {
-            tokenPortfolio: portfolio,
-            portfolioState: PORTFOLIO_EMPTY,
-            rtimestamp: updatedTime,
-          },
-        });
-      }
-    }
-    const addresses = [
-      cosmos?.wallets[cosmos?.currentIndex]?.address,
-      osmosis?.wallets[osmosis?.currentIndex]?.address,
-      juno?.wallets[juno?.currentIndex]?.address,
-      stargaze?.address,
-      noble?.address,
-      coreum?.address,
-      injective?.address,
-      kujira?.address,
-      ethereum.address,
-      solana.address,
-    ].filter(address => address !== undefined);
-    const payload = {
-      chains: PORTFOLIO_CHAINS_BACKEND_NAMES,
-      addresses,
-      allowTestNets: false,
-      isVerified: isVerifyCoinChecked,
-    };
-    const archBackend = await axios.post(portfolioUrl, payload);
-    if (archBackend && archBackend?.status === 201) {
-      let newPortfolio = portfolio;
-      if (archBackend.data.chainPortfolios.length > 0) {
-        newPortfolio = await getPortfolioModel(archBackend.data);
-      }
-
-      if (
-        newPortfolio &&
-        newPortfolio?.totalUnverifiedBalance +
-          newPortfolio?.totalBalance +
-          newPortfolio?.totalStakedBalance >
-          0
-      ) {
-        portfolioState.dispatchPortfolio({
-          value: {
-            tokenPortfolio: newPortfolio,
-            portfolioState: PORTFOLIO_NOT_EMPTY,
-            rtimestamp: new Date().toISOString(),
-          },
-        });
-      } else {
-        portfolioState.dispatchPortfolio({
-          value: {
-            tokenPortfolio: newPortfolio,
-            portfolioState: PORTFOLIO_EMPTY,
-            rtimestamp: new Date().toISOString(),
-          },
-        });
-        // portfolioState.dispatchPortfolio({ value: { portfolioState: PORTFOLIO_EMPTY } });
-      }
-    } else if (portfolio) {
-      // showModal('state', {: 'error', title: 'Network Timeout Error', description: 'Try refreshing in a while!', onSuccess: hideModal, onFailure: hideModal});
-      Toast.show({
-        type: 'error',
-        text1: 'Network Timeout Error',
-        text2: 'Try refreshing in a while!',
-        position: 'bottom',
-      });
-    } else {
-      portfolioState.dispatchPortfolio({
-        value: { portfolioState: PORTFOLIO_ERROR },
-      });
-      // showModal('state', {type: 'error', title: 'Portfolio not loaded', description: 'Try restarting the app! Check network status', onSuccess: hideModal, onFailure: hideModal});
-      Toast.show({
-        type: 'error',
-        text1: 'Portfolio not loaded',
-        text2: 'Try restarting the app! Check network status.',
-        position: 'bottom',
-      });
-      Sentry.captureException('portfolio_not_load_edgecase');
-    }
-  }
 }
 
 export async function fetchRequiredTokenData(

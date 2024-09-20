@@ -1,5 +1,6 @@
 // NOTE: SCREEN TITLE 🍎🍎🍎🍎
 export const screenTitle = {
+  ONBOARDING: 'OnBoarding',
   ACTIVITYFILTER: 'ACTIVITYFILTER',
   ACTIVITIES: 'Activities',
   REFERRAL_REWARDS: 'ReferralRewards',

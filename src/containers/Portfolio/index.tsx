@@ -66,7 +66,7 @@ import FilterBar from './components/FilterBar';
 import BannerCarousel from './components/BannerCarousel';
 import { DeFiFilterRefreshBar } from '../../components/deFiRefreshFilterBar';
 import { DeFiFilter, protocolOptionType } from '../../models/defi.interface';
-import { isNil } from 'lodash';
+import { isEmpty, isNil } from 'lodash';
 import {
   BridgeContext,
   BridgeContextDef,
@@ -93,7 +93,6 @@ export default function Portfolio({ navigation }: PortfolioProps) {
   const [portfolioData, setPortfolioData] = useState<IPortfolioData>();
   const [portfolioBalance, setPortfolioBalance] = useState<number | string>('');
   const [selectedChain, setSelectedChain] = useState<Chain>(CHAIN_COLLECTION);
-  const { showModal, hideModal } = useGlobalModalContext();
   const { state: bridgeState, dispatch: bridgeDispatch } = useContext(
     BridgeContext,
   ) as BridgeContextDef;
@@ -103,12 +102,7 @@ export default function Portfolio({ navigation }: PortfolioProps) {
   const [isVerifyCoinChecked, setIsVerifyCoinChecked] = useState<boolean>(true);
   const [copyToClipBoard, setCopyToClipBoard] = useState<boolean>(false);
   const [appState, setAppState] = useState<string>('');
-  const [refreshData, setRefreshData] = useState({
-    isRefreshing: false,
-    shouldRefreshAssets: false,
-  });
   const [filterModalVisible, setFilterModalVisible] = useState(false);
-  const [holdingsEmpty, setHoldingsEmpty] = useState(true);
   const [deFiRefreshActivity, setDeFiRefreshActivity] = useState<{
     isRefreshing: boolean;
     lastRefresh: string;
@@ -122,7 +116,7 @@ export default function Portfolio({ navigation }: PortfolioProps) {
   const [deFiLoading, setDeFiLoading] = useState<boolean>(true);
   const [deFiFilterVisible, setDeFiFilterVisible] = useState<boolean>(false);
   const [userProtocols, setUserProtocls] = useState<protocolOptionType[]>([]);
-  const { fetchPortfolio } = usePortfolio();
+  const { fetchPortfolio, getLocalPortfolio } = usePortfolio();
   const tabs = [
     { key: 'token', title: t('TOKENS') },
     { key: 'defi', title: t('DEFI') },
@@ -188,16 +182,6 @@ export default function Portfolio({ navigation }: PortfolioProps) {
     };
   }, []);
 
-  // useEffect(() => {
-  //   const data = getCurrentChainHoldings(
-  //     portfolioState.statePortfolio.tokenPortfolio,
-  //     CHAIN_COLLECTION,
-  //   );
-  //   if (!isEmpty(data)) {
-  //     setHoldingsEmpty(false);
-  //   }
-  // }, [portfolioState.statePortfolio.tokenPortfolio]);
-
   useEffect(() => {
     if (isFocused) {
       void fetchPortfolioData();
@@ -218,10 +202,23 @@ export default function Portfolio({ navigation }: PortfolioProps) {
   }, []);
 
   const fetchPortfolioData = async () => {
+    if (isEmpty(portfolioData?.portfolio)) {
+      setIsPortfolioLoading(true);
+    }
+    const localPortfolio = await getLocalPortfolio();
+    if (localPortfolio) {
+      setPortfolioBalance(calculatePortfolioBalance(localPortfolio));
+      setPortfolioData({
+        portfolio: localPortfolio,
+        isError: false,
+        isPortfolioEmpty: Boolean(localPortfolio?.totalHoldings?.length),
+        lastUpdatedAt: new Date().toISOString(),
+      });
+      setIsPortfolioLoading(false);
+    }
     setIsPortfolioRefreshing(true);
     const response = await fetchPortfolio();
     if (response && !response?.isError) {
-      setHoldingsEmpty(response.isPortfolioEmpty);
       if (response.data) {
         setPortfolioBalance(calculatePortfolioBalance(response.data));
       }
@@ -232,6 +229,7 @@ export default function Portfolio({ navigation }: PortfolioProps) {
         lastUpdatedAt: new Date().toISOString(),
       });
     }
+    setIsPortfolioLoading(false);
     setIsPortfolioRefreshing(false);
   };
 
@@ -712,7 +710,7 @@ export default function Portfolio({ navigation }: PortfolioProps) {
           />
         </CyDView>
       )}
-      {!portfolioData?.isPortfolioEmpty ? (
+      {!portfolioData?.isPortfolioEmpty && !isPortfolioLoading ? (
         <>
           <ChooseChainModal
             isModalVisible={chooseChain}

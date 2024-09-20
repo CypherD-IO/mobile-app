@@ -79,7 +79,6 @@ const ARCH_HOST: string = hostWorker.getHost('ARCH_HOST');
 export const HdWalletContext = React.createContext<HdWalletContextDef | null>(
   null,
 );
-export const PortfolioContext = React.createContext(null);
 export const StakingContext = React.createContext(null);
 export const ActivityContext = React.createContext<ActivityContextDef | null>(
   null,

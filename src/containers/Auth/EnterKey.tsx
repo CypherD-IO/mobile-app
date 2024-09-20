@@ -43,11 +43,9 @@ import {
 import { getReadOnlyWalletData } from '../../core/asyncStorage';
 import { importWallet } from '../../core/HdWallet';
 import useAxios from '../../core/HttpRequest';
-import { fetchTokenData } from '../../core/portfolio';
-import { HdWalletContext, PortfolioContext, sleepFor } from '../../core/util';
+import { HdWalletContext, sleepFor } from '../../core/util';
 import { isAndroid } from '../../misc/checkers';
 import { HdWalletContextDef } from '../../reducers/hdwallet_reducer';
-import { PORTFOLIO_LOADING } from '../../reducers/portfolio_reducer';
 import {
   CyDImage,
   CyDKeyboardAvoidingView,
@@ -70,12 +68,11 @@ export default function Login(props) {
 
   // NOTE: DEFINE HOOKS 🍎🍎🍎🍎🍎🍎
   const hdWalletContext = useContext(HdWalletContext) as HdWalletContextDef;
-  const portfolioState = useContext(PortfolioContext);
   const { deleteWithAuth } = useAxios();
   const [disableSubmit, setDisableSubmit] = useState(true);
   const [filteredSuggestions, setFilteredSuggestions] = useState<string[]>([]);
   const inputRef = useRef(null);
-  const [firstIndexAddress, setFirstIndexAddress] = useState();
+  const [firstIndexAddress, setFirstIndexAddress] = useState<string>();
 
   const fetchCopiedText = async () => {
     const text = await Clipboard.getString();
@@ -126,10 +123,7 @@ export default function Login(props) {
       setTimeout(() => {
         const keyValue = seedPhraseTextValue.trim().split(/\s+/);
         const mnemonic = keyValue.join(' ');
-        void importWallet(hdWalletContext, portfolioState, mnemonic);
-        portfolioState.dispatchPortfolio({
-          value: { portfolioState: PORTFOLIO_LOADING },
-        });
+        void importWallet(hdWalletContext, mnemonic);
         onChangeseedPhraseTextValue('');
         if (props && props.navigation) {
           const getCurrentRoute = props.navigation.getState().routes[0].name;
@@ -137,7 +131,7 @@ export default function Login(props) {
             props.navigation.navigate(C.screenTitle.PORTFOLIO_SCREEN);
           else setCreateWalletLoading(true);
         } else {
-          void fetchTokenData(hdWalletContext, portfolioState, true);
+          props.navigation.navigate(C.screenTitle.PORTFOLIO_SCREEN);
         }
       }, IMPORT_WALLET_TIMEOUT);
     }
