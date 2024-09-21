@@ -75,30 +75,31 @@ export interface WalletHoldings {
   totalUnverifiedBalance: number;
   totalStakedBalance: number;
   totalUnbondingBalance: number;
-  eth: ChainHoldings | undefined;
-  polygon: ChainHoldings | undefined;
-  bsc: ChainHoldings | undefined;
-  avalanche: ChainHoldings | undefined;
-  arbitrum: ChainHoldings | undefined;
-  optimism: ChainHoldings | undefined;
-  cosmos: ChainHoldings | undefined;
-  osmosis: ChainHoldings | undefined;
-  juno: ChainHoldings | undefined;
-  stargaze: ChainHoldings | undefined;
-  noble: ChainHoldings | undefined;
-  shardeum: ChainHoldings | undefined;
-  shardeum_sphinx: ChainHoldings | undefined;
-  zksync_era: ChainHoldings | undefined;
-  base: ChainHoldings | undefined;
-  polygon_zkevm: ChainHoldings | undefined;
-  aurora: ChainHoldings | undefined;
-  moonbeam: ChainHoldings | undefined;
-  moonriver: ChainHoldings | undefined;
-  coreum: ChainHoldings | undefined;
-  injective: ChainHoldings | undefined;
-  kujira: ChainHoldings | undefined;
-  solana: ChainHoldings | undefined;
+  eth: ChainHoldings;
+  polygon: ChainHoldings;
+  bsc: ChainHoldings;
+  avalanche: ChainHoldings;
+  arbitrum: ChainHoldings;
+  optimism: ChainHoldings;
+  cosmos: ChainHoldings;
+  osmosis: ChainHoldings;
+  juno: ChainHoldings;
+  stargaze: ChainHoldings;
+  noble: ChainHoldings;
+  shardeum: ChainHoldings;
+  shardeum_sphinx: ChainHoldings;
+  zksync_era: ChainHoldings;
+  base: ChainHoldings;
+  polygon_zkevm: ChainHoldings;
+  aurora: ChainHoldings;
+  moonbeam: ChainHoldings;
+  moonriver: ChainHoldings;
+  coreum: ChainHoldings;
+  injective: ChainHoldings;
+  kujira: ChainHoldings;
+  solana: ChainHoldings;
   totalHoldings: Holding[];
+  timestamp: string;
 }
 
 export interface NftHolding {
@@ -137,7 +138,7 @@ export interface NftHoldings {
 export function getCurrentChainHoldings(
   portfolio: WalletHoldings,
   chain: Chain,
-) {
+): ChainHoldings {
   switch (chain.backendName) {
     case CHAIN_ETH.backendName:
       return portfolio.eth;
@@ -467,30 +468,31 @@ export function getPortfolioModel(portfolioFromAPI: any): WalletHoldings {
     totalUnverifiedBalance,
     totalStakedBalance,
     totalUnbondingBalance,
-    eth: ethHoldings,
-    polygon: maticHoldings,
-    bsc: bscHoldings,
-    avalanche: avaxHoldings,
-    cosmos: cosmosHoldings,
-    osmosis: osmosisHoldings,
-    juno: junoHoldings,
-    stargaze: stargazeHoldings,
-    noble: nobleHoldings,
-    optimism: optimismHoldings,
-    arbitrum: arbitrumHoldings,
-    shardeum: shardeumHoldings,
-    shardeum_sphinx: shardeumSphinxHoldings,
-    zksync_era: zksyncEraHoldings,
-    base: baseHoldings,
-    polygon_zkevm: polygonZkevmHoldings,
-    aurora: auroraHoldings,
-    moonbeam: moonbeamHoldings,
-    moonriver: moonriverHoldings,
-    coreum: coreumHoldings,
-    injective: injectiveHoldings,
-    kujira: kujiraHoldings,
-    solana: solanaHoldings,
+    eth: ethHoldings as ChainHoldings,
+    polygon: maticHoldings as ChainHoldings,
+    bsc: bscHoldings as ChainHoldings,
+    avalanche: avaxHoldings as ChainHoldings,
+    cosmos: cosmosHoldings as ChainHoldings,
+    osmosis: osmosisHoldings as ChainHoldings,
+    juno: junoHoldings as ChainHoldings,
+    stargaze: stargazeHoldings as ChainHoldings,
+    noble: nobleHoldings as ChainHoldings,
+    optimism: optimismHoldings as ChainHoldings,
+    arbitrum: arbitrumHoldings as ChainHoldings,
+    shardeum: shardeumHoldings as ChainHoldings,
+    shardeum_sphinx: shardeumSphinxHoldings as ChainHoldings,
+    zksync_era: zksyncEraHoldings as ChainHoldings,
+    base: baseHoldings as ChainHoldings,
+    polygon_zkevm: polygonZkevmHoldings as ChainHoldings,
+    aurora: auroraHoldings as ChainHoldings,
+    moonbeam: moonbeamHoldings as ChainHoldings,
+    moonriver: moonriverHoldings as ChainHoldings,
+    coreum: coreumHoldings as ChainHoldings,
+    injective: injectiveHoldings as ChainHoldings,
+    kujira: kujiraHoldings as ChainHoldings,
+    solana: solanaHoldings as ChainHoldings,
     totalHoldings,
+    timestamp: '',
   };
   return portfolio;
 }

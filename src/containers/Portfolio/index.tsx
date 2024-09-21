@@ -2,15 +2,21 @@
  * @format
  * @flow
  */
-import React, { useCallback, useContext, useEffect, useState } from 'react';
+import React, {
+  useCallback,
+  useContext,
+  useEffect,
+  useRef,
+  useState,
+} from 'react';
 import {
   AppState,
   BackHandler,
   FlatList,
+  ListRenderItem,
   SectionList,
-  StatusBar,
   useWindowDimensions,
-  View,
+  StyleSheet,
 } from 'react-native';
 import analytics from '@react-native-firebase/analytics';
 import * as C from '../../constants/index';
@@ -36,7 +42,11 @@ import {
   NotificationEvents,
 } from '../../constants/server';
 import CopytoKeyModal from '../../components/ShowPharseModal';
-import { getCurrentChainHoldings, WalletHoldings } from '../../core/portfolio';
+import {
+  getCurrentChainHoldings,
+  Holding,
+  WalletHoldings,
+} from '../../core/portfolio';
 import messaging, {
   FirebaseMessagingTypes,
 } from '@react-native-firebase/messaging';
@@ -49,48 +59,33 @@ import {
 import { useIsFocused } from '@react-navigation/native';
 import { GlobalContext } from '../../core/globalContext';
 import { HdWalletContext } from '../../core/util';
-import { useGlobalModalContext } from '../../components/v2/GlobalModal';
 import {
   GlobalContextType,
-  ScrollableType,
   TokenOverviewTabIndices,
 } from '../../constants/enum';
-import { TokenMeta } from '../../models/tokenMetaData.model';
 import Button from '../../components/v2/button';
-import {
-  HeaderBar,
-  Banner,
-  PortfolioTabView,
-  TabBar,
-  TabRoute,
-  RefreshTimerBar,
-} from './components';
+import { HeaderBar, Banner, RefreshTimerBar } from './components';
 import { BarCodeReadEvent } from 'react-native-camera';
-import { AnimatedBanner, AnimatedTabBar } from './animatedComponents';
-import { useScrollManager } from '../../hooks/useScrollManager';
-import { DeFiScene, NFTScene, TokenScene, TXNScene } from './scenes';
+import { DeFiScene, NFTScene, TXNScene } from './scenes';
 import CyDTokenValue from '../../components/v2/tokenValue';
 import moment from 'moment';
 import clsx from 'clsx';
-import { isIOS } from '../../misc/checkers';
 import FilterBar from './components/FilterBar';
 import BannerCarousel from './components/BannerCarousel';
-import { DeFiFilterRefreshBar } from '../../components/deFiRefreshFilterBar';
 import { DeFiFilter, protocolOptionType } from '../../models/defi.interface';
-import { isEmpty, isNil } from 'lodash';
+import { isEmpty } from 'lodash';
 import {
   BridgeContext,
   BridgeContextDef,
   BridgeReducerAction,
-  BridgeStatus,
 } from '../../reducers/bridge.reducer';
 import useAxios from '../../core/HttpRequest';
 import { SwapBridgeChainData, SwapBridgeTokenData } from '../Bridge';
 import usePortfolio from '../../hooks/usePortfolio';
 import { IPortfolioData } from '../../models/portfolioData.interface';
 import PortfolioTokenItem from '../../components/v2/portfolioTokenItem';
-import { SceneMap, TabView } from 'react-native-tab-view';
-import { StyleSheet } from 'react-native';
+import { Swipeable } from 'react-native-gesture-handler';
+import LottieView from 'lottie-react-native';
 
 export interface PortfolioProps {
   navigation: any;
@@ -107,7 +102,7 @@ export default function Portfolio({ navigation }: PortfolioProps) {
   const [portfolioData, setPortfolioData] = useState<IPortfolioData>();
   const [portfolioBalance, setPortfolioBalance] = useState<number | string>('');
   const [selectedChain, setSelectedChain] = useState<Chain>(CHAIN_COLLECTION);
-  const { state: bridgeState, dispatch: bridgeDispatch } = useContext(
+  const { dispatch: bridgeDispatch } = useContext(
     BridgeContext,
   ) as BridgeContextDef;
   const { getWithAuth } = useAxios();
@@ -117,17 +112,14 @@ export default function Portfolio({ navigation }: PortfolioProps) {
   const [copyToClipBoard, setCopyToClipBoard] = useState<boolean>(false);
   const [appState, setAppState] = useState<string>('');
   const [filterModalVisible, setFilterModalVisible] = useState(false);
-  const [deFiRefreshActivity, setDeFiRefreshActivity] = useState<{
-    isRefreshing: boolean;
-    lastRefresh: string;
-  }>({ isRefreshing: false, lastRefresh: 'Retrieving...' });
+
   const [deFiFilters, setDeFiFilters] = useState<DeFiFilter>({
     chain: ChainBackendNames.ALL,
     positionTypes: [],
     protocols: [],
     activePositionsOnly: 'No',
   });
-  const [deFiLoading, setDeFiLoading] = useState<boolean>(true);
+
   const [deFiFilterVisible, setDeFiFilterVisible] = useState<boolean>(false);
   const [userProtocols, setUserProtocls] = useState<protocolOptionType[]>([]);
   const { fetchPortfolio, getLocalPortfolio } = usePortfolio();
@@ -137,28 +129,26 @@ export default function Portfolio({ navigation }: PortfolioProps) {
     { key: 'nft', title: t('NFTS') },
     { key: 'txn', title: t('TXNS') },
   ];
+  const [tabIndex, setTabIndex] = useState<number>(0);
+  const horrizontalFlatListRef = useRef<FlatList>(null);
 
-  // not mentioning the scrollableType correctly will result in errors.
-  const tabsWithScrollableType = [
-    {
-      key: 'token',
-      title: t('TOKENS'),
-      scrollableType: ScrollableType.FLATLIST,
-    },
-    { key: 'defi', title: t('DEFI'), scrollableType: ScrollableType.FLATLIST },
-    { key: 'nft', title: t('NFTS'), scrollableType: ScrollableType.SCROLLVIEW },
-    { key: 'txn', title: t('TXNS'), scrollableType: ScrollableType.FLATLIST },
-  ];
+  const swipeableRefs: Array<Swipeable | null> = [];
+  let previousOpenedSwipeableRef: Swipeable | null;
 
-  const {
-    scrollY,
-    index,
-    setIndex,
-    bannerHeight,
-    setBannerHeight,
-    getRefForKey,
-    ...sceneProps
-  } = useScrollManager(tabsWithScrollableType);
+  const onSwipe = (key: number) => {
+    if (
+      previousOpenedSwipeableRef &&
+      previousOpenedSwipeableRef !== swipeableRefs[key]
+    ) {
+      previousOpenedSwipeableRef.close();
+    }
+    previousOpenedSwipeableRef = swipeableRefs[key];
+  };
+
+  const setSwipeableRefs = (index: number, ref: Swipeable | null) => {
+    swipeableRefs[index] = ref;
+    ref?.close();
+  };
 
   const jwtToken = globalStateContext?.globalState.token;
   const ethereum = hdWallet?.state.wallet.ethereum;
@@ -169,7 +159,7 @@ export default function Portfolio({ navigation }: PortfolioProps) {
     return true;
   };
 
-  const appHandler = (changeType: any) => {
+  const appHandler = (changeType: string) => {
     if (changeType === 'active' || changeType === 'background') {
       if (hdWallet?.state.pinValue) {
         setAppState(() => changeType);
@@ -219,7 +209,9 @@ export default function Portfolio({ navigation }: PortfolioProps) {
     }
   }, [isFocused]);
 
-  const fetchPortfolioData = async () => {
+  const fetchPortfolioData = async (
+    tempIsVerifiedCoinChecked = isVerifyCoinChecked,
+  ) => {
     if (isEmpty(portfolioData?.portfolio)) {
       setIsPortfolioLoading(true);
     }
@@ -235,7 +227,7 @@ export default function Portfolio({ navigation }: PortfolioProps) {
       setIsPortfolioLoading(false);
     }
     setIsPortfolioRefreshing(true);
-    const response = await fetchPortfolio();
+    const response = await fetchPortfolio(tempIsVerifiedCoinChecked);
     if (response && !response?.isError) {
       if (response.data) {
         setPortfolioBalance(calculatePortfolioBalance(response.data));
@@ -274,32 +266,29 @@ export default function Portfolio({ navigation }: PortfolioProps) {
   };
 
   useEffect(() => {
-    if (isFocused) {
-      messaging().onNotificationOpenedApp(handlePushNotification);
+    messaging().onNotificationOpenedApp(handlePushNotification);
 
-      void messaging().getInitialNotification().then(handlePushNotification);
-      const getIBCStatus = async () => {
-        const data = await getIBC();
-        let IBCStatus = false;
-        if (data === 'true') IBCStatus = true;
-        if (globalStateContext?.globalState?.ibc !== IBCStatus)
-          globalStateContext?.globalDispatch({
-            type: GlobalContextType.IBC,
-            ibc: IBCStatus,
-          });
-      };
+    void messaging().getInitialNotification().then(handlePushNotification);
+    const getIBCStatus = async () => {
+      const data = await getIBC();
+      let IBCStatus = false;
+      if (data === 'true') IBCStatus = true;
+      if (globalStateContext?.globalState?.ibc !== IBCStatus)
+        globalStateContext?.globalDispatch({
+          type: GlobalContextType.IBC,
+          ibc: IBCStatus,
+        });
+    };
 
-      getIBCStatus().catch(error => {
-        Sentry.captureException(error.message);
-      });
+    getIBCStatus().catch(error => {
+      Sentry.captureException(error.message);
+    });
 
-      if (isNil(bridgeState) || bridgeState.status === BridgeStatus.ERROR) {
-        void getBridgeData().catch;
-      }
-    }
-  }, [isFocused]);
+    void getBridgeData().catch;
+  }, []);
 
   useEffect(() => {
+    console.log('useEffect chain');
     if (deFiFilters.chain !== selectedChain.backendName)
       setDeFiFilters({
         ...deFiFilters,
@@ -311,6 +300,7 @@ export default function Portfolio({ navigation }: PortfolioProps) {
   }, [selectedChain]);
 
   const getBridgeData = async () => {
+    console.log('getBridgeData');
     bridgeDispatch({
       type: BridgeReducerAction.FETCHING,
     });
@@ -347,39 +337,38 @@ export default function Portfolio({ navigation }: PortfolioProps) {
     }
   };
 
-  useEffect(() => {
-    void getBridgeData().catch;
-  }, []);
-
-  const constructTokenMeta = (localPortfolio: any, event: string) => {
+  const constructTokenMeta = (
+    localPortfolio: { data: WalletHoldings },
+    event: string,
+  ) => {
     switch (event) {
       case NotificationEvents.COSMOS_STAKING: {
-        const [tokenData] = localPortfolio.data.cosmos.holdings.filter(
-          (holding: TokenMeta) => holding.name === 'ATOM',
+        const [tokenData] = localPortfolio.data.cosmos.totalHoldings.filter(
+          (holding: Holding) => holding.name === 'ATOM',
         );
         return tokenData;
       }
       case NotificationEvents.OSMOSIS_STAKING: {
-        const [tokenData] = localPortfolio.data.osmosis.holdings.filter(
-          (holding: TokenMeta) => holding.name === 'Osmosis',
+        const [tokenData] = localPortfolio.data.osmosis.totalHoldings.filter(
+          (holding: Holding) => holding.name === 'Osmosis',
         );
         return tokenData;
       }
       case NotificationEvents.JUNO_STAKING: {
-        const [tokenData] = localPortfolio.data.juno.holdings.filter(
-          (holding: TokenMeta) => holding.name === 'Juno',
+        const [tokenData] = localPortfolio.data.juno.totalHoldings.filter(
+          (holding: Holding) => holding.name === 'Juno',
         );
         return tokenData;
       }
       case NotificationEvents.STARGAZE_STAKING: {
-        const [tokenData] = localPortfolio.data.stargaze.holdings.filter(
-          (holding: TokenMeta) => holding.name === 'Stargaze',
+        const [tokenData] = localPortfolio.data.stargaze.totalHoldings.filter(
+          (holding: Holding) => holding.name === 'Stargaze',
         );
         return tokenData;
       }
       case NotificationEvents.NOBLE_STAKING: {
-        const [tokenData] = localPortfolio.data.noble.holdings.filter(
-          (holding: TokenMeta) => holding.name === 'Noble',
+        const [tokenData] = localPortfolio.data.noble.totalHoldings.filter(
+          (holding: Holding) => holding.name === 'Noble',
         );
         return tokenData;
       }
@@ -553,162 +542,187 @@ export default function Portfolio({ navigation }: PortfolioProps) {
     });
   };
 
-  const renderPortfolioItem = ({ item, index }) => {
+  const renderPortfolioItem: ListRenderItem<Holding> = ({ item, index }) => {
     return (
-      <PortfolioTokenItem
-        item={item}
-        index={index}
-        isVerifyCoinChecked={false}
-        otherChainsWithToken={[]}
-        navigation={navigation}
-        onSwipe={() => {}}
-        setSwipeableRefs={() => {}}
-      />
+      <CyDView className='mx-[10px]'>
+        <PortfolioTokenItem
+          item={item}
+          index={index}
+          isVerifyCoinChecked={false}
+          otherChainsWithToken={[]} // To Do
+          navigation={navigation}
+          onSwipe={onSwipe}
+          setSwipeableRefs={setSwipeableRefs}
+        />
+      </CyDView>
     );
   };
 
-  const renderScene = useCallback(
-    ({ route: tab }: { route: TabRoute }) => {
-      switch (tab.key) {
-        case 'token':
-          return (
-            <CyDView className='flex-1 h-full'>
-              <AnimatedTabBar scrollY={scrollY} bannerHeight={bannerHeight}>
-                {renderTabBarFooter(tab.key)}
-              </AnimatedTabBar>
-              {/* <CyDFlatList
-                data={portfolioData?.portfolio?.totalHoldings.slice(0, 5)}
-                renderItem={renderPortfolioItem}
-              /> */}
-              <TokenScene
-                {...sceneProps}
-                routeKey={'token'}
-                scrollY={scrollY}
-                navigation={navigation}
-                bannerHeight={bannerHeight}
-                isVerifyCoinChecked={isVerifyCoinChecked}
-                tokenHoldings={
-                  portfolioData?.portfolio
-                    ? getCurrentChainHoldings(
-                        portfolioData?.portfolio,
-                        selectedChain,
-                      )?.totalHoldings ?? []
-                    : []
-                }
-                isPortfolioRefreshing={isPortfolioRefreshing}
-                onRefresh={() => {
-                  void fetchPortfolioData();
-                }}
-              />
-            </CyDView>
-          );
-        case 'defi':
-          return (
-            <CyDView className='flex-1 h-full'>
-              <AnimatedTabBar scrollY={scrollY} bannerHeight={bannerHeight}>
-                {renderTabBarFooter(tab.key)}
-              </AnimatedTabBar>
-              <DeFiScene
-                {...sceneProps}
-                routeKey={tab.key}
-                scrollY={scrollY}
-                navigation={navigation}
-                bannerHeight={bannerHeight}
-                setRefreshActivity={setDeFiRefreshActivity}
-                refreshActivity={deFiRefreshActivity}
-                filters={deFiFilters}
-                setFilters={setDeFiFilters}
-                userProtocols={userProtocols}
-                setUserProtocols={setUserProtocls}
-                filterVisible={deFiFilterVisible}
-                setFilterVisible={setDeFiFilterVisible}
-                loading={deFiLoading}
-                setLoading={setDeFiLoading}
-              />
-            </CyDView>
-          );
-        case 'nft':
-          return (
-            <CyDView className='flex-1 h-full'>
-              <AnimatedTabBar scrollY={scrollY} bannerHeight={bannerHeight}>
-                {renderTabBarFooter(tab.key)}
-              </AnimatedTabBar>
-              <NFTScene
-                {...sceneProps}
-                routeKey={tab.key}
-                scrollY={scrollY}
-                navigation={navigation}
-                bannerHeight={bannerHeight}
-                selectedChain={selectedChain.symbol}
-              />
-            </CyDView>
-          );
-        case 'txn':
-          return (
-            <CyDView className='flex-1 h-full mx-[10px]'>
-              <AnimatedTabBar scrollY={scrollY} bannerHeight={bannerHeight}>
-                {renderTabBarFooter(tab.key)}
-              </AnimatedTabBar>
-              <TXNScene
-                {...sceneProps}
-                routeKey={tab.key}
-                scrollY={scrollY}
-                navigation={navigation}
-                selectedChain={selectedChain}
-                bannerHeight={bannerHeight}
-                filterModalVisibilityState={[
-                  filterModalVisible,
-                  setFilterModalVisible,
-                ]}
-              />
-            </CyDView>
-          );
-        default:
-          return null;
-      }
-    },
-    [getRefForKey, isVerifyCoinChecked, scrollY, portfolioData, selectedChain],
-  );
+  const RenderPortfolioTokens = useCallback(() => {
+    return (
+      <CyDView style={{ width: windowWidth }}>
+        <RefreshTimerBar
+          isRefreshing={isPortfolioRefreshing}
+          isVerifyCoinChecked={isVerifyCoinChecked}
+          setIsVerifyCoinChecked={(isVerified: boolean) => {
+            void fetchPortfolioData(isVerified);
+            setIsVerifyCoinChecked(isVerified);
+          }}
+          lastUpdatedAt={portfolioData?.lastUpdatedAt ?? ''}
+        />
+        <CyDFlatList
+          data={
+            portfolioData?.portfolio
+              ? getCurrentChainHoldings(portfolioData?.portfolio, selectedChain)
+                  ?.totalHoldings
+              : []
+          }
+          scrollEnabled={false}
+          renderItem={renderPortfolioItem}
+          refreshing={isPortfolioRefreshing}
+          onRefresh={() => {
+            void fetchPortfolioData();
+          }}
+          ListEmptyComponent={
+            <TokenListEmptyComponent
+              navigation={navigation}
+              isPortfolioEmpty={portfolioData?.isPortfolioEmpty ?? true}
+              onRefresh={() => {
+                void fetchPortfolioData();
+              }}
+            />
+          }
+        />
+      </CyDView>
+    );
+  }, [
+    isPortfolioRefreshing,
+    isVerifyCoinChecked,
+    portfolioData?.portfolio?.totalHoldings,
+    selectedChain,
+  ]);
 
-  const renderTabBarFooter = useCallback(
-    (tabKey: string) => {
-      switch (tabKey) {
-        case 'token':
-          return (
-            <RefreshTimerBar
-              isRefreshing={isPortfolioRefreshing}
-              isVerifyCoinChecked={isVerifyCoinChecked}
-              setIsVerifyCoinChecked={setIsVerifyCoinChecked}
-              lastUpdatedAt={portfolioData?.lastUpdatedAt ?? ''}
-            />
-          );
-        case 'defi':
-          return (
-            <DeFiFilterRefreshBar
-              isRefreshing={deFiRefreshActivity.isRefreshing}
-              lastRefreshed={deFiRefreshActivity.lastRefresh}
-              filters={deFiFilters}
-              setFilters={setDeFiFilters}
-              isFilterVisible={deFiFilterVisible}
-              setFilterVisible={setDeFiFilterVisible}
-              userProtocols={userProtocols}
-              isLoading={deFiLoading}
-              setLoading={setDeFiLoading}
-            />
-          );
-        case 'nft':
-          return <></>;
-        case 'txn':
-          return <FilterBar setFilterModalVisible={setFilterModalVisible} />;
-        default:
-          return <></>;
-      }
+  const RenderDefiScene = useCallback(() => {
+    return (
+      <CyDView style={{ width: windowWidth }}>
+        {/* To DO */}
+        {/* <DeFiFilterRefreshBar
+          isRefreshing={deFiRefreshActivity.isRefreshing}
+          lastRefreshed={deFiRefreshActivity.lastRefresh}
+          filters={deFiFilters}
+          setFilters={setDeFiFilters}
+          isFilterVisible={deFiFilterVisible}
+          setFilterVisible={setDeFiFilterVisible}
+          userProtocols={userProtocols}
+          isLoading={deFiLoading}
+          setLoading={setDeFiLoading}
+        /> */}
+        <DeFiScene
+          navigation={navigation}
+          filters={deFiFilters}
+          setFilters={setDeFiFilters}
+          userProtocols={userProtocols}
+          setUserProtocols={setUserProtocls}
+          filterVisible={deFiFilterVisible}
+          setFilterVisible={setDeFiFilterVisible}
+        />
+      </CyDView>
+    );
+  }, [deFiFilters, deFiFilterVisible, userProtocols]);
+
+  const RenderNftScene = useCallback(() => {
+    return (
+      <CyDView style={{ width: windowWidth }}>
+        <NFTScene
+          navigation={navigation}
+          selectedChain={selectedChain.symbol}
+        />
+      </CyDView>
+    );
+  }, [selectedChain]);
+
+  const RenderTxnHistoryScene = useCallback(() => {
+    return (
+      <CyDView style={{ width: windowWidth }}>
+        <FilterBar setFilterModalVisible={setFilterModalVisible} />
+        <TXNScene
+          navigation={navigation}
+          selectedChain={selectedChain}
+          filterModalVisibilityState={[
+            filterModalVisible,
+            setFilterModalVisible,
+          ]}
+        />
+      </CyDView>
+    );
+  }, [selectedChain, filterModalVisible, setFilterModalVisible]);
+
+  const scenesData = [
+    {
+      title: 'tokens',
+      scene: <RenderPortfolioTokens />,
     },
-    [getRefForKey, tabs, isPortfolioRefreshing],
-  );
+    {
+      title: 'defi',
+      scene: <RenderDefiScene />,
+    },
+    {
+      title: 'nft',
+      scene: <RenderNftScene />,
+    },
+    { title: 'txnHistory', scene: <RenderTxnHistoryScene /> },
+  ];
+
+  // Sections for SectionList
+  const sections = [
+    {
+      title: 'balance',
+      data: ['StaticView1'],
+      renderItem: () => <Banner portfolioBalance={portfolioBalance} />,
+    },
+    {
+      title: 'banners',
+      data: ['StaticView2'],
+      renderItem: () => (jwtToken !== undefined ? <BannerCarousel /> : <></>),
+    },
+    {
+      title: 'scenes',
+      data: [''],
+      renderItem: () => {
+        return (
+          <CyDFlatList
+            ref={horrizontalFlatListRef}
+            data={scenesData}
+            horizontal={true}
+            initialNumToRender={1}
+            maxToRenderPerBatch={1}
+            windowSize={1}
+            snapToAlignment='center' // Snap to center of each item
+            snapToInterval={windowWidth} // Define the width of each item
+            decelerationRate='fast' // Faster snapping effect
+            showsHorizontalScrollIndicator={false}
+            nestedScrollEnabled={true}
+            getItemLayout={(data, index) => ({
+              length: windowWidth,
+              offset: windowWidth * index,
+              index,
+            })}
+            onMomentumScrollEnd={event => {
+              const contentOffsetX = event.nativeEvent.contentOffset.x;
+              const snappedIndex = Math.round(contentOffsetX / windowWidth);
+              setTabIndex(snappedIndex);
+            }}
+            renderItem={({ item, index }) => {
+              return item.scene;
+            }}
+          />
+        );
+      },
+    },
+  ];
 
   return (
-    <CyDSafeAreaView className='flex-1 bg-white'>
+    <CyDSafeAreaView className='flex-1 bg-white mb-[75px]'>
       {isPortfolioLoading && (
         <CyDView className='justify-center items-center'>
           <EmptyView
@@ -762,199 +776,114 @@ export default function Portfolio({ navigation }: PortfolioProps) {
             }
             setChooseChain={setChooseChain}
             selectedChain={selectedChain}
-            scrollY={scrollY}
-            bannerHeight={bannerHeight}
             onWCSuccess={onWCSuccess}
           />
-          <AnimatedBanner scrollY={scrollY} bannerHeight={bannerHeight}>
-            <Banner
-              bannerHeight={bannerHeight}
-              portfolioBalance={portfolioBalance}
-            />
-            {jwtToken !== undefined ? (
-              <BannerCarousel setBannerHeight={setBannerHeight} />
-            ) : null}
-          </AnimatedBanner>
-          <CyDView
-            className={clsx('flex-1 pb-[40px]', { 'pb-[75px]': !isIOS() })}>
-            <PortfolioTabView
-              index={index}
-              setIndex={setIndex}
-              routes={tabs}
-              width={windowWidth}
-              renderTabBar={p => (
-                <AnimatedTabBar bannerHeight={bannerHeight} scrollY={scrollY}>
-                  <TabBar {...p} />
-                </AnimatedTabBar>
-              )}
-              renderScene={renderScene}
-            />
-          </CyDView>
+          <SectionList
+            sections={sections}
+            keyExtractor={(item, index) => index.toString()}
+            renderItem={({ item, section }) => section.renderItem()}
+            showsVerticalScrollIndicator={false}
+            stickySectionHeadersEnabled={true}
+            renderSectionHeader={({ section: { title } }) =>
+              title === 'scenes' ? (
+                <CyDView className='flex flex-row justify-start items-center py-[12px] pl-[20px] bg-white'>
+                  {tabs.map((tab, index) => {
+                    return (
+                      <CyDTouchView
+                        className={clsx(
+                          'mr-[16px] px-[12px] py-[2px] rounded-[6px]',
+                          {
+                            'bg-privacyMessageBackgroundColor':
+                              index === tabIndex,
+                          },
+                        )}
+                        key={index}
+                        onPress={() => {
+                          horrizontalFlatListRef?.current?.scrollToIndex({
+                            index,
+                            animated: true, // Scroll smoothly
+                          });
+                          setTabIndex(index);
+                        }}>
+                        <CyDText
+                          className={clsx('', {
+                            'font-semibold': index === tabIndex,
+                          })}>
+                          {tab.title}
+                        </CyDText>
+                      </CyDTouchView>
+                    );
+                  })}
+                </CyDView>
+              ) : (
+                <></>
+              )
+            }
+          />
         </>
       ) : null}
     </CyDSafeAreaView>
   );
-
-  // const [tabViewPosition, setTabViewPosition] = useState(0);
-  // const [isTabViewAtTop, setIsTabViewAtTop] = useState(false);
-  // const [tabIndex, setTabIndex] = useState(0); // Tab index state
-  // const [routes] = useState([
-  //   { key: 'first', title: 'Tab 1' },
-  //   { key: 'second', title: 'Tab 2' },
-  // ]);
-
-  // // Sample data for FlatLists
-  // const data = Array.from({ length: 20 }, (_, i) => `Item ${i + 1}`);
-
-  // // Render FlatList for each tab
-  // const FirstTab = () => (
-  //   <FlatList
-  //     data={data}
-  //     keyExtractor={(item, index) => index.toString()}
-  //     renderItem={({ item }) => (
-  //       <View
-  //         style={{ padding: 20, backgroundColor: '#f0f0f0', marginBottom: 10 }}>
-  //         <CyDText>{item}</CyDText>
-  //       </View>
-  //     )}
-  //     scrollEnabled={isTabViewAtTop} // Enable scrolling only when TabView reaches the top
-  //   />
-  // );
-
-  // const SecondTab = () => (
-  //   <FlatList
-  //     data={data}
-  //     keyExtractor={(item, index) => index.toString()}
-  //     renderItem={({ item }) => (
-  //       <View
-  //         style={{ padding: 20, backgroundColor: '#d0f0d0', marginBottom: 10 }}>
-  //         <CyDText>{item}</CyDText>
-  //       </View>
-  //     )}
-  //     scrollEnabled={isTabViewAtTop}
-  //   />
-  // );
-
-  // // TabView Scene Map
-  // const renderTabScene = SceneMap({
-  //   first: FirstTab,
-  //   second: SecondTab,
-  // });
-
-  // // Static sections for SectionList
-  // const sections = [
-  //   {
-  //     title: 'StaticView1',
-  //     data: ['StaticView1'],
-  //     renderItem: () => (
-  //       <View style={{ height: 100, backgroundColor: 'red' }} />
-  //     ),
-  //   },
-  //   {
-  //     title: 'StaticView2',
-  //     data: ['StaticView2'],
-  //     renderItem: () => (
-  //       <View style={{ height: 100, backgroundColor: 'blue' }} />
-  //     ),
-  //   },
-  //   {
-  //     title: 'TabViewSection',
-  //     data: [''],
-  //     renderItem: () => (
-  //       <CyDFlatList
-  //         data={portfolioData?.portfolio?.totalHoldings}
-  //         renderItem={renderPortfolioItem}
-  //       />
-  //     ),
-  //   },
-  // ];
-
-  // const onTabViewLayout = event => {
-  //   const { y } = event.nativeEvent.layout;
-  //   setTabViewPosition(y);
-  // };
-
-  // const handleScroll = event => {
-  //   const scrollY = event.nativeEvent.contentOffset.y;
-  //   // Enable TabView FlatList scrolling when TabView reaches the top
-  //   // console.log(scrollY, tabViewPosition);
-  //   setIsTabViewAtTop(scrollY >= 200);
-  // };
-
-  // const DATA = [
-  //   {
-  //     title: 'Main dishes',
-  //     data: ['Pizza', 'Burger', 'Risotto'],
-  //   },
-  //   {
-  //     title: 'Sides',
-  //     data: ['French Fries', 'Onion Rings', 'Fried Shrimps'],
-  //   },
-  //   {
-  //     title: 'Drinks',
-  //     data: ['Water', 'Coke', 'Beer'],
-  //   },
-  //   {
-  //     title: 'Desserts',
-  //     data: ['Cheese Cake', 'Ice Cream'],
-  //   },
-  // ];
-
-  // return (
-  //   <CyDSafeAreaView>
-  //     {/* <SectionList
-  //     sections={sections}
-  //     keyExtractor={(item, index) => index.toString()}
-  //     renderItem={({ item, section }) => section.renderItem()} // Use section-specific renderers
-  //     stickySectionHeadersEnabled={true} // Enable sticky headers for sections
-  //   /> */}
-  //     <SectionList
-  //       sections={sections}
-  //       keyExtractor={(item, index) => index.toString()}
-  //       renderItem={({ item, section }) => section.renderItem()}
-  //       stickySectionHeadersEnabled={true}
-  //       onScroll={handleScroll}
-  //       nestedScrollEnabled={true}
-  //       renderSectionHeader={({ section: { title } }) =>
-  //         title === 'TabViewSection' ? (
-  //           <CyDView className='flex flex-row justify-evenly items-center py-[12px]'>
-  //             {tabs.map((tab, index) => {
-  //               return (
-  //                 <CyDTouchView
-  //                   key={index}
-  //                   onPress={() => {
-  //                     setIndex(index);
-  //                   }}>
-  //                   <CyDText>{tab.title}</CyDText>
-  //                 </CyDTouchView>
-  //               );
-  //             })}
-  //           </CyDView>
-  //         ) : (
-  //           <></>
-  //         )
-  //       }
-  //     />
-  //   </CyDSafeAreaView>
-  // );
 }
 
+interface TokenListEmptyComponentProps {
+  navigation: any;
+  isPortfolioEmpty: boolean;
+  onRefresh: () => void;
+}
+
+const TokenListEmptyComponent = ({
+  navigation,
+  isPortfolioEmpty,
+  onRefresh,
+}: TokenListEmptyComponentProps) => {
+  const { t } = useTranslation();
+  if (isPortfolioEmpty) {
+    return (
+      <CyDView className={'flex h-full justify-start items-center mt-[5px]'}>
+        <LottieView
+          source={AppImages.PORTFOLIO_EMPTY}
+          autoPlay
+          loop
+          style={styles.lottieView}
+        />
+        <Button
+          title={t('FUND_WALLET')}
+          onPress={() => {
+            navigation.navigate(C.screenTitle.QRCODE);
+          }}
+          style='mt-[-40px] px-[20px] h-[40px] py-[0px]'
+          titleStyle='text-[14px]'
+          image={AppImages.RECEIVE}
+          imageStyle='h-[12px] w-[12px] mr-[15px]'
+        />
+        <CyDTouchView
+          className='mt-[20px]'
+          onPress={() => {
+            void onRefresh();
+          }}>
+          <CyDText className='text-center text-blue-500 underline'>
+            {t<string>('CLICK_TO_REFRESH')}
+          </CyDText>
+        </CyDTouchView>
+      </CyDView>
+    );
+  } else {
+    return (
+      <CyDView className='flex flex-col justify-start items-center'>
+        <EmptyView
+          text={t('NO_CURRENT_HOLDINGS')}
+          image={AppImages.EMPTY}
+          buyVisible={false}
+          marginTop={30}
+        />
+      </CyDView>
+    );
+  }
+};
+
 const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    paddingTop: StatusBar.currentHeight,
-    marginHorizontal: 16,
-  },
-  item: {
-    backgroundColor: '#f9c2ff',
-    padding: 20,
-    marginVertical: 8,
-  },
-  header: {
-    fontSize: 32,
-    backgroundColor: '#fff',
-  },
-  title: {
-    fontSize: 24,
+  lottieView: {
+    width: '60%',
   },
 });

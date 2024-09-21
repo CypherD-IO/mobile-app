@@ -15,7 +15,7 @@ const TIME_UPDATE_RUNNER_INTERVAL = 1000;
 export const RefreshTimerBar = (props: {
   isRefreshing: boolean;
   isVerifyCoinChecked: boolean;
-  setIsVerifyCoinChecked: React.Dispatch<React.SetStateAction<boolean>>;
+  setIsVerifyCoinChecked: (arg: boolean) => void;
   lastUpdatedAt: string;
 }) => {
   const {

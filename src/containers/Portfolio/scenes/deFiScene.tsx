@@ -13,29 +13,12 @@ import {
   CyDText,
   CyDFastImage,
   CyDTouchView,
+  CyDFlatList,
 } from '../../../styles/tailwindStyles';
 import { t } from 'i18next';
-import {
-  Extrapolate,
-  SharedValue,
-  interpolate,
-  useAnimatedStyle,
-  useSharedValue,
-  withTiming,
-} from 'react-native-reanimated';
-import {
-  BackHandler,
-  FlatList,
-  NativeScrollEvent,
-  NativeSyntheticEvent,
-  RefreshControl,
-  ScrollView,
-} from 'react-native';
+import { BackHandler, FlatList, RefreshControl } from 'react-native';
 import { intercomAnalyticsLog } from '../../utilities/analyticsUtility';
-import { isIOS } from '../../../misc/checkers';
 import Loading from '../../../components/v2/loading';
-import { AnimatedTabView } from '../animatedComponents';
-import { PortfolioBannerHeights } from '../../../hooks/useScrollManager';
 import useAxios from '../../../core/HttpRequest';
 import { DEFI_URL } from '../../../constants/server';
 import { HdWalletContextDef } from '../../../reducers/hdwallet_reducer';
@@ -61,30 +44,16 @@ import CyDTokenValue from '../../../components/v2/tokenValue';
 import { screenTitle } from '../../../constants';
 import EmptyView from '../../../components/EmptyView';
 
-type ScrollEvent = NativeSyntheticEvent<NativeScrollEvent>;
 const MAX_CHAIN_COUNT = 3;
 
 interface DeFiSceneProps {
-  routeKey: string;
-  scrollY: SharedValue<number>;
-  trackRef: (key: string, ref: FlatList<any> | ScrollView) => void;
-  onMomentumScrollBegin: (e: ScrollEvent) => void;
-  onMomentumScrollEnd: (e: ScrollEvent) => void;
-  onScrollEndDrag: (e: ScrollEvent) => void;
   navigation: any;
-  bannerHeight: PortfolioBannerHeights;
-  refreshActivity: { isRefreshing: boolean; lastRefresh: string };
-  setRefreshActivity: React.Dispatch<
-    React.SetStateAction<{ isRefreshing: boolean; lastRefresh: string }>
-  >;
   filters: DeFiFilter;
   setFilters: Dispatch<SetStateAction<DeFiFilter>>;
   userProtocols: protocolOptionType[];
   setUserProtocols: Dispatch<SetStateAction<protocolOptionType[]>>;
   filterVisible: boolean;
   setFilterVisible: Dispatch<SetStateAction<boolean>>;
-  loading: boolean;
-  setLoading: Dispatch<SetStateAction<boolean>>;
 }
 
 const DeFiTotal = ({
@@ -186,33 +155,25 @@ const DeFiTotal = ({
 };
 
 const DeFiScene = ({
-  routeKey,
-  scrollY,
-  trackRef,
-  onMomentumScrollBegin,
-  onMomentumScrollEnd,
-  onScrollEndDrag,
   navigation,
-  bannerHeight,
-  refreshActivity,
-  setRefreshActivity,
   filters,
   setFilters,
   userProtocols,
   setUserProtocols,
   filterVisible,
   setFilterVisible,
-  loading,
-  setLoading,
 }: DeFiSceneProps) => {
   const flatListRef = useRef<FlatList<any>>(null);
-  const OFFSET_TABVIEW = isIOS() ? -bannerHeight : 0;
-  const rotateAnimation = useSharedValue(0);
   const { getWithoutAuth } = useAxios();
   const hdWalletContext = useContext<HdWalletContextDef | null>(
     HdWalletContext,
   );
   const ethereum = hdWalletContext?.state.wallet?.ethereum;
+  const [refreshActivity, setRefreshActivity] = useState<{
+    isRefreshing: boolean;
+    lastRefresh: string;
+  }>({ isRefreshing: false, lastRefresh: 'Retrieving...' });
+  const [loading, setLoading] = useState<boolean>(true);
   const [deFiData, setDeFiData] = useState<{
     iat: string;
     rawData: DefiResponse;
@@ -223,25 +184,25 @@ const DeFiScene = ({
     filteredData: {} as DefiData,
   });
 
-  useEffect(() => {
-    if (flatListRef.current) {
-      if (scrollY.value <= OFFSET_TABVIEW + bannerHeight) {
-        flatListRef.current.scrollToOffset({
-          offset: Math.max(
-            Math.min(scrollY.value, OFFSET_TABVIEW + bannerHeight),
-            OFFSET_TABVIEW,
-          ),
-          animated: false,
-        });
-      } else {
-        flatListRef.current.scrollToOffset({
-          offset: OFFSET_TABVIEW + bannerHeight,
-          animated: false,
-        });
-      }
-      trackRef(routeKey, flatListRef.current);
-    }
-  }, [flatListRef.current, loading]);
+  // useEffect(() => {
+  //   if (flatListRef.current) {
+  //     if (scrollY.value <= OFFSET_TABVIEW + bannerHeight) {
+  //       flatListRef.current.scrollToOffset({
+  //         offset: Math.max(
+  //           Math.min(scrollY.value, OFFSET_TABVIEW + bannerHeight),
+  //           OFFSET_TABVIEW,
+  //         ),
+  //         animated: false,
+  //       });
+  //     } else {
+  //       flatListRef.current.scrollToOffset({
+  //         offset: OFFSET_TABVIEW + bannerHeight,
+  //         animated: false,
+  //       });
+  //     }
+  //     trackRef(routeKey, flatListRef.current);
+  //   }
+  // }, [flatListRef.current, loading]);
 
   useEffect(() => {
     if (!_.isEmpty(deFiData.rawData)) {
@@ -432,23 +393,6 @@ const DeFiScene = ({
   const onRefresh = () => {
     void getDeFiHoldings(true);
   };
-  const animatedStyle = useAnimatedStyle(() => {
-    const rotate = interpolate(
-      rotateAnimation.value,
-      [0, 1],
-      [0, 90],
-      Extrapolate.CLAMP,
-    );
-    return {
-      transform: [{ rotate: `${rotate}deg` }],
-    };
-  });
-
-  const handleAnimation = (toValue: number) => {
-    rotateAnimation.value = withTiming(toValue, {
-      duration: 300,
-    });
-  };
 
   return (
     <CyDView className='flex-1 mx-[10px]'>
@@ -461,7 +405,7 @@ const DeFiScene = ({
         protocols={userProtocols}
       />
       {!loading ? (
-        <AnimatedTabView
+        <CyDFlatList
           data={
             !_.isEmpty(deFiData.filteredData)
               ? Object.values(deFiData.filteredData.protocols).sort(
@@ -469,15 +413,11 @@ const DeFiScene = ({
                 )
               : []
           }
+          scrollEnabled={false}
           renderItem={({ item, index }) => (
             <RenderProtocolRow protocol={item} index={index} />
           )}
           keyExtractor={(item: defiProtocolData) => item.protocolName}
-          bannerHeight={bannerHeight}
-          scrollY={scrollY}
-          onMomentumScrollBegin={onMomentumScrollBegin}
-          onMomentumScrollEnd={onMomentumScrollEnd}
-          onScrollEndDrag={onScrollEndDrag}
           onRef={flatListRef}
           refreshControl={
             <RefreshControl
@@ -485,7 +425,6 @@ const DeFiScene = ({
               onRefresh={() => {
                 void onRefresh();
               }}
-              progressViewOffset={bannerHeight}
             />
           }
           ListHeaderComponent={

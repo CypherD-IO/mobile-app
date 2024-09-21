@@ -1,6 +1,5 @@
 import React, { ReactNode, useEffect, useState } from 'react';
 import {
-  CyDAnimatedView,
   CyDFastImage,
   CyDTouchView,
   CyDView,
@@ -9,13 +8,6 @@ import { Chain, QRScannerScreens } from '../../../constants/server';
 import AppImages from '../../../../assets/images/appImages';
 import { screenTitle } from '../../../constants';
 import { BarCodeReadEvent } from 'react-native-camera';
-import {
-  SharedValue,
-  useAnimatedStyle,
-  withTiming,
-} from 'react-native-reanimated';
-import { isIOS } from '../../../misc/checkers';
-import { PortfolioBannerHeights } from '../../../hooks/useScrollManager';
 import { ConnectionTypes } from '../../../constants/enum';
 import useConnectionManager from '../../../hooks/useConnectionManager';
 
@@ -23,8 +15,6 @@ interface HeaderBarProps {
   navigation: any;
   setChooseChain: (arg: boolean) => void;
   selectedChain: Chain;
-  bannerHeight: PortfolioBannerHeights;
-  scrollY: SharedValue<number>;
   onWCSuccess: (e: BarCodeReadEvent) => void;
   renderTitleComponent?: ReactNode;
 }
@@ -33,8 +23,6 @@ export const HeaderBar = ({
   navigation,
   setChooseChain,
   selectedChain,
-  bannerHeight,
-  scrollY,
   onWCSuccess,
   renderTitleComponent,
 }: HeaderBarProps) => {
@@ -45,18 +33,6 @@ export const HeaderBar = ({
   useEffect(() => {
     setConnectionTypeValue(connectionType);
   }, [connectionType]);
-
-  const OFFSET_TABVIEW = isIOS() ? -bannerHeight : 0;
-  const opacity = useAnimatedStyle(() => {
-    return {
-      opacity: withTiming(
-        scrollY.value > OFFSET_TABVIEW + 0.6 * bannerHeight ? 1 : 0,
-        {
-          duration: 300,
-        },
-      ),
-    };
-  });
 
   const onSuccess = onWCSuccess;
   return (
@@ -75,7 +51,7 @@ export const HeaderBar = ({
         />
         <CyDFastImage className={'h-[8px] w-[8px]'} source={AppImages.DOWN} />
       </CyDTouchView>
-      <CyDAnimatedView style={opacity}>{renderTitleComponent}</CyDAnimatedView>
+      {/* <CyDAnimatedView style={opacity}>{renderTitleComponent}</CyDAnimatedView> */}
       {connectionTypeValue !== ConnectionTypes.WALLET_CONNECT && (
         <CyDTouchView
           className={'pl-[8px] rounded-[18px]'}

@@ -1,15 +1,7 @@
-import React, { memo, useContext, useEffect, useRef, useState } from 'react';
+import React, { memo, useContext, useEffect, useState } from 'react';
+import { ScrollView, RefreshControl, BackHandler } from 'react-native';
 import {
-  NativeSyntheticEvent,
-  NativeScrollEvent,
-  FlatList,
-  ScrollView,
-  RefreshControl,
-  BackHandler,
-} from 'react-native';
-import Animated, {
   Extrapolate,
-  SharedValue,
   interpolate,
   useAnimatedStyle,
   useSharedValue,
@@ -23,7 +15,6 @@ import {
   CyDTouchView,
   CyDView,
 } from '../../../styles/tailwindStyles';
-import { AnimatedTabView } from '../animatedComponents';
 import Loading from '../../../components/v2/loading';
 import clsx from 'clsx';
 import { RenderViewType } from '../../../constants/enum';
@@ -40,38 +31,17 @@ import { screenTitle } from '../../../constants';
 import { Chain } from '../../../constants/server';
 import { intercomAnalyticsLog } from '../../utilities/analyticsUtility';
 import { ALL_CHAINS_TYPE } from '../../../constants/type';
-import { isIOS } from '../../../misc/checkers';
-import { PortfolioBannerHeights } from '../../../hooks/useScrollManager';
-
-type ScrollEvent = NativeSyntheticEvent<NativeScrollEvent>;
 
 interface NFTSceneProps {
-  routeKey: string;
-  scrollY: SharedValue<number>;
-  trackRef: (key: string, ref: FlatList<any> | ScrollView) => void;
-  onMomentumScrollBegin: (e: ScrollEvent) => void;
-  onMomentumScrollEnd: (e: ScrollEvent) => void;
-  onScrollEndDrag: (e: ScrollEvent) => void;
   selectedChain: string;
   navigation: {
     goBack: () => void;
     setOptions: ({ title }: { title: string }) => void;
     navigate: (screen: string, params?: {}) => void;
   };
-  bannerHeight: PortfolioBannerHeights;
 }
 
-const NFTScene = ({
-  routeKey,
-  scrollY,
-  trackRef,
-  onMomentumScrollBegin,
-  onMomentumScrollEnd,
-  onScrollEndDrag,
-  navigation,
-  bannerHeight,
-  selectedChain,
-}: NFTSceneProps) => {
+const NFTScene = ({ navigation, selectedChain }: NFTSceneProps) => {
   const { t } = useTranslation();
   const { getWithAuth } = useAxios();
 
@@ -81,8 +51,6 @@ const NFTScene = ({
   const ethereum = hdWalletContext?.state.wallet?.ethereum;
   const stargaze = hdWalletContext?.state.wallet?.stargaze;
 
-  const OFFSET_TABVIEW = isIOS() ? -bannerHeight : 0;
-
   const [loading, setLoading] = useState<boolean>(true);
   const [viewType, setViewType] = useState<string>(RenderViewType.GRID_VIEW);
   const [refreshing, setRefreshing] = useState<boolean>(false);
@@ -91,7 +59,6 @@ const NFTScene = ({
   const [activeSections, setActiveSection] = useState<number[]>([]);
 
   const rotateAnimation = useSharedValue(0);
-  const scrollViewRef = useRef<Animated.ScrollView>(null);
 
   useEffect(() => {
     void intercomAnalyticsLog('visited_nft_homescreen');
@@ -106,25 +73,25 @@ const NFTScene = ({
     void filterNFTHoldingsByChain();
   }, [selectedChain, origNFTHoldings]);
 
-  useEffect(() => {
-    if (scrollViewRef.current) {
-      if (scrollY.value <= OFFSET_TABVIEW + bannerHeight) {
-        scrollViewRef.current.scrollTo({
-          y: Math.max(
-            Math.min(scrollY.value, OFFSET_TABVIEW + bannerHeight),
-            OFFSET_TABVIEW,
-          ),
-          animated: false,
-        });
-      } else {
-        scrollViewRef.current.scrollTo({
-          y: OFFSET_TABVIEW + bannerHeight,
-          animated: false,
-        });
-      }
-      trackRef(routeKey, scrollViewRef.current);
-    }
-  }, [scrollViewRef.current, loading]);
+  // useEffect(() => {
+  //   if (scrollViewRef.current) {
+  //     if (scrollY.value <= OFFSET_TABVIEW + bannerHeight) {
+  //       scrollViewRef.current.scrollTo({
+  //         y: Math.max(
+  //           Math.min(scrollY.value, OFFSET_TABVIEW + bannerHeight),
+  //           OFFSET_TABVIEW,
+  //         ),
+  //         animated: false,
+  //       });
+  //     } else {
+  //       scrollViewRef.current.scrollTo({
+  //         y: OFFSET_TABVIEW + bannerHeight,
+  //         animated: false,
+  //       });
+  //     }
+  //     trackRef(routeKey, scrollViewRef.current);
+  //   }
+  // }, [scrollViewRef.current, loading]);
 
   const getNFTHoldings = async () => {
     setLoading(true);
@@ -439,19 +406,10 @@ const NFTScene = ({
 
   return (
     <CyDView className='flex-1 mx-[10px]'>
-      <AnimatedTabView
-        bannerHeight={bannerHeight}
-        scrollY={scrollY}
-        onMomentumScrollBegin={onMomentumScrollBegin}
-        onMomentumScrollEnd={onMomentumScrollEnd}
-        onScrollEndDrag={onScrollEndDrag}
-        onRef={scrollViewRef}
+      <ScrollView
+        scrollEnabled={false}
         refreshControl={
-          <RefreshControl
-            refreshing={refreshing}
-            onRefresh={onRefresh}
-            progressViewOffset={bannerHeight}
-          />
+          <RefreshControl refreshing={refreshing} onRefresh={onRefresh} />
         }>
         {loading ? (
           <CyDView className='w-full absolute top-[50px]'>
@@ -516,7 +474,7 @@ const NFTScene = ({
             )}
           </CyDView>
         )}
-      </AnimatedTabView>
+      </ScrollView>
     </CyDView>
   );
 };

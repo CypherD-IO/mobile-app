@@ -18,11 +18,10 @@ import { PortfolioBannerHeights } from '../../../hooks/useScrollManager';
 import { HdWalletContextDef } from '../../../reducers/hdwallet_reducer';
 
 interface BannerProps {
-  bannerHeight: PortfolioBannerHeights;
   portfolioBalance: number | string;
 }
 
-export const Banner = ({ bannerHeight, portfolioBalance }: BannerProps) => {
+export const Banner = ({ portfolioBalance }: BannerProps) => {
   const { t } = useTranslation();
   const hdWallet = useContext(HdWalletContext) as HdWalletContextDef;
   const { hideBalance } = hdWallet.state;
@@ -40,7 +39,7 @@ export const Banner = ({ bannerHeight, portfolioBalance }: BannerProps) => {
     });
   };
   return (
-    <CyDView className={clsx('px-[10px]', { 'h-[55%]': bannerHeight === 300 })}>
+    <CyDView className={'h-[160px] px-[10px]'}>
       <CyDImageBackground
         className={
           'w-full border mt-[4px] pt-[46px] rounded-[24px] border-sepratorColor overflow-hidden'

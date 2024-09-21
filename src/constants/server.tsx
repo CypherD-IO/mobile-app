@@ -795,7 +795,7 @@ export const NativeTokenMapping: Record<AllChainsEnum, string> = {
   AURORA: 'ETH',
   MOONBEAM: 'GLMR',
   MOONRIVER: 'MOVR',
-  SOLANA: 'SOLANA',
+  SOLANA: 'SOL',
   TRON: 'TRX',
 };
 export const GASLESS_CHAINS: ChainBackendNames[] = []; // Add any cosmos gasless chain backend names in this array
