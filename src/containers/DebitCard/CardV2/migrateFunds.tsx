@@ -18,7 +18,6 @@ import { parseErrorMessage } from '../../../core/util';
 import Button from '../../../components/v2/button';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { StyleSheet } from 'react-native';
-import { ActivityStatus } from '../../../reducers/activity_reducer';
 import moment from 'moment';
 import { get } from 'lodash';
 import CyDModalLayout from '../../../components/v2/modal';
@@ -101,8 +100,7 @@ export default function MigratePCFunds() {
       showModal('state', {
         type: 'error',
         title: t('MIGRATION_ERROR'),
-        description:
-          parseErrorMessage(error) ?? t('MIGRATION_ERROR_DESCRIPTION'),
+        description: parseErrorMessage(error) ?? t('CONTACT_SUPPORT'),
         onSuccess: hideModal,
         onFailure: hideModal,
       });

@@ -27,7 +27,6 @@ const OPTION_SEL = require('./option_sel.png');
 const EMPTY = require('./emptyImg.png');
 const DOWN_ARROW = require('./downArrow.png');
 const UP_ARROW = require('./upArrow.png');
-const RIGHT_ARROW = require('./rightArrow.png');
 const LEFT_ARROW = require('./leftArrow.png');
 const HOMEICON = require('./homeIcon.png');
 const MORE = require('./more.png');
@@ -599,8 +598,31 @@ const MIGRATION_PENDING_GIF = {
 const MIGRATION_SUCCESS = {
   uri: `${S3_BUCKET_URL_ICONS}/migrationSuccess.png`,
 };
+const SETTINGS_TOOLS_ICON = {
+  uri: `${S3_BUCKET_URL_ICONS}/settingsTools.png`,
+};
+const CRYPTO_WITHDRAWAL = {
+  uri: `${S3_BUCKET_URL_ICONS}/cryptoWithdrawal.png`,
+};
+const RIGHT_ARROW = {
+  uri: `${S3_BUCKET_URL_ICONS}/rightArrow.png`,
+};
+const LEFT_ARROW_LONG = {
+  uri: `${S3_BUCKET_URL_ICONS}/leftBackArrowLong.png`,
+};
+const PREMIUM_TEXT_GRADIENT = {
+  uri: `${S3_BUCKET_URL_ICONS}/premiumGradient.png`,
+};
+const WITHDRAW_CRYPTO_SUCCESS = {
+  uri: `${S3_BUCKET_URL_ICONS}/withdrawCryptoSuccess.png`,
+};
 
 const AppImages = {
+  WITHDRAW_CRYPTO_SUCCESS,
+  PREMIUM_TEXT_GRADIENT,
+  LEFT_ARROW_LONG,
+  CRYPTO_WITHDRAWAL,
+  SETTINGS_TOOLS_ICON,
   MIGRATION_PENDING_GIF,
   MIGRATION_SUCCESS,
   MIGRATION_PENDING,

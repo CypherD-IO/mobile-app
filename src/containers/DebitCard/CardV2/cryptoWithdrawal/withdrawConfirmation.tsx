@@ -1,0 +1,242 @@
+import React, { useContext, useState } from 'react';
+import {
+  CyDFastImage,
+  CyDKeyboardAwareScrollView,
+  CyDText,
+  CyDTouchView,
+  CyDView,
+} from '../../../../styles/tailwindStyles';
+import {
+  NavigationProp,
+  ParamListBase,
+  RouteProp,
+  useNavigation,
+  useRoute,
+} from '@react-navigation/native';
+import useAxios from '../../../../core/HttpRequest';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
+import AppImages from '../../../../../assets/images/appImages';
+import { t } from 'i18next';
+import Button from '../../../../components/v2/button';
+import { screenTitle } from '../../../../constants';
+import { CypherPlanId } from '../../../../constants/enum';
+import {
+  GlobalContext,
+  GlobalContextDef,
+} from '../../../../core/globalContext';
+import { capitalize, get } from 'lodash';
+import { toWords } from 'number-to-words'; // Add this import
+import { HdWalletContext, parseErrorMessage } from '../../../../core/util';
+import { HdWalletContextDef } from '../../../../reducers/hdwallet_reducer';
+import { v4 as uuidv4 } from 'uuid';
+import { ChainBackendNames } from '../../../../constants/server';
+import { useGlobalModalContext } from '../../../../components/v2/GlobalModal';
+
+interface RouteParams {
+  amount: string;
+  cardBalance: string;
+}
+
+interface WithdrawPost {
+  idempotencyKey: string;
+  amount: number;
+  chain: ChainBackendNames;
+  toAddress: string;
+  isCharged: boolean;
+}
+
+export default function WithdrawConfirmation() {
+  const navigation = useNavigation<NavigationProp<ParamListBase>>();
+  const route = useRoute<RouteProp<{ params: RouteParams }, 'params'>>();
+  const { postWithAuth } = useAxios();
+  const insets = useSafeAreaInsets();
+  const { globalState } = useContext(GlobalContext) as GlobalContextDef;
+  const hdWallet = useContext(HdWalletContext) as HdWalletContextDef;
+  const { showModal, hideModal } = useGlobalModalContext();
+
+  const { amount, cardBalance } = route.params ?? {};
+  const profile = globalState.cardProfile;
+  const planId = profile?.planInfo?.planId;
+  const planData = globalState.planInfo;
+  const proPlanData = get(planData, ['default', CypherPlanId.PRO_PLAN]);
+  const ethereumAddress = hdWallet?.state?.wallet?.ethereum?.address ?? '';
+
+  const finalAmount = (parseFloat(amount) - parseFloat(amount) * 0.005).toFixed(
+    2,
+  );
+  const cypherFee = (parseFloat(amount) * 0.005).toFixed(2);
+  const dollars = Math.floor(Number(amount));
+  const cents = Math.round((Number(amount) % 1) * 100);
+
+  const [loading, setLoading] = useState(false);
+
+  const postWithdrawal = async () => {
+    setLoading(true);
+    const postBody: WithdrawPost = {
+      idempotencyKey: uuidv4(),
+      amount: parseFloat(amount),
+      chain: ChainBackendNames.BASE,
+      toAddress: ethereumAddress,
+      isCharged: true,
+    };
+    const { isError, error } = await postWithAuth(
+      '/v1/cards/crypto-withdrawal',
+      postBody,
+    );
+    if (isError) {
+      showModal('state', {
+        type: 'error',
+        title: t('WITHDRAW_ERROR'),
+        description: parseErrorMessage(error) ?? t('CONTACT_SUPPORT'),
+        onSuccess: hideModal,
+        onFailure: hideModal,
+      });
+    } else {
+      navigation.navigate(screenTitle.WITHDRAW_SUCCESS, {
+        amount,
+      });
+    }
+    setLoading(false);
+  };
+
+  return (
+    <CyDView
+      className='flex flex-col justify-between h-full bg-n30'
+      style={{ paddingTop: insets.top }}>
+      <CyDView className='flex-1  px-[16px]'>
+        <CyDTouchView
+          className=''
+          onPress={() => {
+            navigation.goBack();
+          }}>
+          <CyDFastImage
+            source={AppImages.BACK_ARROW_GRAY}
+            className='w-[32px] h-[32px]'
+          />
+        </CyDTouchView>
+
+        <CyDKeyboardAwareScrollView className='flex-1 bg-n30 mt-[12px]'>
+          <CyDText className='font-bold text-[28px] text-base400 '>
+            {'Does Everything look right ?'}
+          </CyDText>
+          <CyDView className='mt-[24px]'>
+            <CyDText className='font-medium text-[12px] text-n100'>
+              {'Your are withdrawing '}
+            </CyDText>
+            <CyDView className='bg-n10 rounded-[8px] mt-[4px] p-[12px]'>
+              <CyDText className='font-bold text-[20px] text-base400 flex flex-row items-end'>
+                {`$ ${amount}`}
+                <CyDText className='font-medium text-[12px] text-base400'>
+                  {' United States Dollars'}
+                </CyDText>
+              </CyDText>
+            </CyDView>
+            <CyDText className='font-medium text-[12px] text-n200 mt-[4px]'>
+              {cents > 0
+                ? `${String(capitalize(toWords(dollars)))} dollars and ${String(toWords(cents))} cents`
+                : `${String(capitalize(toWords(dollars)))} dollars`}
+            </CyDText>
+          </CyDView>
+          <CyDView className='mt-[24px]'>
+            <CyDText className='font-medium text-[12px] text-n100'>
+              {'Conversion Rate'}
+            </CyDText>
+            <CyDView className='bg-n10 rounded-[8px] mt-[4px] p-[12px]'>
+              <CyDText className='font-bold text-[17px] text-n200'>
+                {`$ ${cypherFee}`}
+              </CyDText>
+            </CyDView>
+          </CyDView>
+          <CyDView className='mt-[24px]'>
+            <CyDText className='font-medium text-[12px] text-n100'>
+              {'To'}
+            </CyDText>
+            <CyDView className='bg-n10 rounded-[8px] mt-[4px] p-[16px]'>
+              <CyDText className='font-medium text-[12px] text-n200'>
+                {ethereumAddress}
+              </CyDText>
+            </CyDView>
+          </CyDView>
+          <CyDView className='mt-[24px]'>
+            <CyDText className='font-medium text-[12px] text-n100'>
+              {'Asset value'}
+            </CyDText>
+            <CyDView className='bg-n10 rounded-[8px] mt-[4px] p-[12px] flex flex-row justify-between'>
+              <CyDText className='font-bold text-[16px] text-base400'>
+                {`$ ${finalAmount}`}
+              </CyDText>
+              <CyDView className='flex flex-row items-center'>
+                <CyDView className='relative mr-[2px]'>
+                  <CyDFastImage
+                    source={AppImages.BASE_LOGO}
+                    className='w-[18px] h-[18px] '
+                  />
+                  <CyDFastImage
+                    source={AppImages.BASE_LOGO}
+                    className='w-[8px] h-[8px] absolute bottom-[0px] right-[0px]'
+                  />
+                </CyDView>
+                <CyDText className='text-[14px] text-base400 font-bold'>
+                  {' BASE X USDC'}
+                </CyDText>
+              </CyDView>
+            </CyDView>
+            <CyDText className='font-medium text-[12px] text-n200 mt-[4px]'>
+              {'It will take up to 24 hours to credit in your wallet '}
+            </CyDText>
+          </CyDView>
+        </CyDKeyboardAwareScrollView>
+      </CyDView>
+
+      <CyDView className='bg-n0 px-[16px] pb-[32px] pt-[24px] rounded-t-[16px]'>
+        {planId === CypherPlanId.BASIC_PLAN && (
+          <CyDView className='mb-[17px]'>
+            <CyDView className='flex flex-row justify-between items-center'>
+              <CyDText className='text-[12px] font-bold text-base400 w-[65%]'>
+                {t(
+                  'Get 200% lesser conversion rate by upgrading to Premium plan',
+                )}
+              </CyDText>
+              <CyDTouchView
+                className='bg-n0 rounded-full px-[12px] py-[8px] flex flex-row items-center justify-center'
+                // eslint-disable-next-line react-native/no-inline-styles
+                style={{
+                  shadowColor: 'rgba(0, 0, 0, 0.1)',
+                  shadowOffset: { width: 0, height: 1 },
+                  shadowOpacity: 1,
+                  shadowRadius: 8,
+                  elevation: 3,
+                }}
+                onPress={() => {
+                  navigation.navigate(screenTitle.SELECT_PLAN, {
+                    toPage: '',
+                    cardBalance,
+                    deductAmountNow: true,
+                  });
+                }}>
+                <CyDText className=' text-[14px] font-extrabold text-base400 text-center '>
+                  {'Get '}
+                </CyDText>
+                <CyDFastImage
+                  source={AppImages.PREMIUM_TEXT_GRADIENT}
+                  className='w-[65px] h-[11.5px] ml-[2px]'
+                />
+              </CyDTouchView>
+            </CyDView>
+
+            <CyDText className='text-[12px] text-n200 font-bold mt-[12px] text-center'>
+              {`Get premium for just $${proPlanData?.cost ?? 199}/- today`}
+            </CyDText>
+          </CyDView>
+        )}
+        <Button
+          title={t('CONTINUE')}
+          loading={loading}
+          onPress={() => {
+            void postWithdrawal();
+          }}
+        />
+      </CyDView>
+    </CyDView>
+  );
+}

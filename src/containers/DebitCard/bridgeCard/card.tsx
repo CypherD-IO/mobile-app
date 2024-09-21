@@ -54,6 +54,7 @@ import {
 import { showToast } from '../../utilities/toastUtility';
 import CardOptionsModal from './cardOptions';
 import useCardUtilities from '../../../hooks/useCardUtilities';
+import CardGlobalOptionsModal from './cardGlobalOptions';
 
 interface CardSecrets {
   cvv: string;

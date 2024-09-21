@@ -1211,7 +1211,7 @@ const resources = {
       ADD_FUND: 'Add Fund',
       MOVE_FUNDS_TO_NEW_CARD: 'Move funds to your new card',
       MIGRATION_ERROR: 'Migration Error.',
-      MIGRATION_ERROR_DESCRIPTION: 'Please contact support for more details.',
+      CONTACT_SUPPORT: 'Please contact support for more details.',
       MIGRATE_FUNDS: 'Migrate Funds',
       TOKEN_ALLOWANCE_APPROVE: 'Token Allowance Approval',
       LONGER_THAN_USUAL: 'Talking longer than usual',
@@ -1260,6 +1260,9 @@ const resources = {
       REFERRAL_CODE_APPLIED_SUCCESSFULLY_DESCRIPTION:
         "You've earned 50 reward points for applying the referral code. Continue to application.",
       ERROR_IN_APPLYING_REFERRAL_CODE: 'Error in applying referral code',
+      WITHDRAW_CRYPTO: 'Withdraw Crypto',
+      AMOUNT_TO_BE_WITHDRAWN: 'Amount to be withdrawn',
+      WITHDRAW_ERROR: 'Withdrawal Error',
     },
   },
 };
