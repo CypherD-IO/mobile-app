@@ -211,12 +211,12 @@ export default function CypherCardScreen({
     if (isShippingFeeConsentModalVisible) {
       setIsShippingFeeConsentModalVisible(false);
       setTimeout(() => {
-        navigation.navigate(screenTitle.UPGRADE_TO_PHYSICAL_CARD_SCREEN, {
+        navigation.navigate(screenTitle.ORDER_STEPS_SCREEN, {
           currentCardProvider: cardProvider,
         });
       }, MODAL_HIDE_TIMEOUT);
     } else {
-      navigation.navigate(screenTitle.UPGRADE_TO_PHYSICAL_CARD_SCREEN, {
+      navigation.navigate(screenTitle.ORDER_STEPS_SCREEN, {
         currentCardProvider: cardProvider,
       });
     }
@@ -238,21 +238,22 @@ export default function CypherCardScreen({
   };
 
   const onPressUpgradeNow = () => {
-    if (Number(cardBalance) < Number(physicalCardUpgradationFee)) {
-      showModal('state', {
-        type: 'error',
-        title: t('INSUFFICIENT_FUNDS'),
-        description: `You do not have $${physicalCardUpgradationFee} balance to upgrade to physical card. Please load now to upgrade`,
-        onSuccess: onModalHide,
-        onFailure: hideModal,
-      });
-    } else {
-      if (Number(physicalCardUpgradationFee) > 0) {
-        setIsShippingFeeConsentModalVisible(true);
-      } else {
-        onShippingConfirmation();
-      }
-    }
+    onShippingConfirmation();
+    // if (Number(cardBalance) < Number(physicalCardUpgradationFee)) {
+    //   showModal('state', {
+    //     type: 'error',
+    //     title: t('INSUFFICIENT_FUNDS'),
+    //     description: `You do not have $${physicalCardUpgradationFee} balance to upgrade to physical card. Please load now to upgrade`,
+    //     onSuccess: onModalHide,
+    //     onFailure: hideModal,
+    //   });
+    // } else {
+    //   if (Number(physicalCardUpgradationFee) > 0) {
+    //     setIsShippingFeeConsentModalVisible(true);
+    //   } else {
+    //     onShippingConfirmation();
+    //   }
+    // }
   };
 
   const onPressActivateCard = (card: any) => {

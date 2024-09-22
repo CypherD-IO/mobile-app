@@ -28,7 +28,6 @@ const EMPTY = require('./emptyImg.png');
 const DOWN_ARROW = require('./downArrow.png');
 const UP_ARROW = require('./upArrow.png');
 const LEFT_ARROW = require('./leftArrow.png');
-const HOMEICON = require('./homeIcon.png');
 const MORE = require('./more.png');
 const CYPHERD = require('./cypherD.png');
 const CYPHER_TEXT = require('./Cypher-text.png');
@@ -115,7 +114,6 @@ const UNLOCK = require('./unlock.png');
 const BELL = require('./bell.png');
 const SUPPORT = require('./online-support.png');
 const BG_SETTINGS = require('./bg_settings.png');
-const MANAGE_CARD = require('./manage_card.png');
 const LOCK_BROWSER = require('./lock_secure.png');
 const BOOKMARK_BROWSER = require('./bookmark_browser.png');
 const BOOKMARK_FILLED = require('./bookmark_filled.png');
@@ -625,6 +623,19 @@ const LIST_HAMBURGER = {
 const USDC_TOKEN = {
   uri: `${S3_BUCKET_URL_ICONS}/usdc.png`,
 };
+const HOMEICON = {
+  uri: `${S3_BUCKET_URL_ICONS}/home.png`,
+};
+const MANAGE_CARD = {
+  uri: `${S3_BUCKET_URL_ICONS}/sampleCard.png`,
+};
+const BASIC_DETAILS = {
+  uri: `${S3_BUCKET_URL_ICONS}/basicDetails.png`,
+};
+
+const ENVELOPE = {
+  uri: `${S3_BUCKET_URL_ICONS}/envelope.png`,
+};
 
 const AppImages = {
   USDC_TOKEN,
@@ -1065,5 +1076,7 @@ const AppImages = {
   CASH_OUTLINE_ICON,
   HOUSE_OUTLINE_ICON,
   TELEGRAM_BLUE_ICON,
+  BASIC_DETAILS,
+  ENVELOPE,
 };
 export default AppImages;

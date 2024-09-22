@@ -435,9 +435,6 @@ const resources = {
       EMAIL_REQUIRED: 'Email is required',
       PHONE_NUMBER_REQUIRED: 'Phone Number is required',
       LINE1_REQUIRED: 'Line 1 is required',
-      CITY_REQUIRED: 'City is required',
-      STATE_REQUIRED: 'State is required',
-      POSTAL_CODE_REQUIRED: 'Postal Code is required',
       DOB_REQUIRED: 'Date Of Birth is required',
       SSN_REQUIRED: 'SSN is required',
       PASSPORT_NUMBER_REQUIRED: 'Passport number is required',
@@ -1266,6 +1263,43 @@ const resources = {
       TRANSACTION_FETCH_ERROR: 'Error fetching transactions',
       WITHDRAW_HISTORY: 'Withdrawal History',
       REFRESHING: 'Refreshing',
+      ORDER_YOUR_PHYSICAL_CARD: 'Order your Physical Card',
+      HERE_IS_WHAT_YOU_NEED_TO_DO_NEXT: 'Here is what you need to do next',
+      VERIFY_SHIPPING_ADDRESS: 'Verify shipping address',
+      VERIFY_SHIPPING_ADDRESS_SUB:
+        'Your new physical card will be shipped to the below address',
+      SHIP_TO_DIFFERENT_ADDRESS: 'Ship to a different address ?',
+      SHIPPING_ADDRESS: 'Shipping Address',
+      ENTER_NEW_DELIVERY_ADDRESS: 'Enter new delivery address',
+      ADD_DELIVERY_ADDRESS: 'Add Delivery Address',
+      ADDRESS_LINE_1_REQUIRED: 'Address Line 1 is required',
+      ADDRESS_LINE_1_TOO_LONG: 'Address Line 1 must be 50 characters or less',
+      ADDRESS_LINE_1_INVALID_CHARACTERS:
+        'Address Line 1 contains invalid characters',
+
+      ADDRESS_LINE_2_INVALID_CHARACTERS:
+        'Address Line 2 contains invalid characters',
+      CITY_REQUIRED: 'City is required',
+      CITY_TOO_LONG: 'City name must be 20 characters or less',
+      CITY_INVALID_CHARACTERS: 'City name contains invalid characters',
+      POSTAL_CODE_REQUIRED: 'Postal code is required',
+      POSTAL_CODE_TOO_LONG: 'Postal code must be 10 characters or less',
+      POSTAL_CODE_INVALID_CHARACTERS: 'Postal code contains invalid characters',
+
+      STATE_REQUIRED: 'State is required',
+      STATE_TOO_LONG: 'State name must be 20 characters or less',
+      STATE_INVALID_CHARACTERS: 'State name contains invalid characters',
+      SPECIAL_CHARACTERS_NOT_ALLOWED: `Special characters ;:!?<>~'%^@{}[] are not allowed`,
+      NAME_ON_CARD: 'Name on Card',
+      CUSTOMISE_NAME_ON_CARD: 'Customise how your name appears on your card',
+      WANT_DIFFERENT_NAME_ON_CARD: 'Want a different name on your card?',
+      PREFERRED_NAME: 'Preferred Name',
+      PREFERRED_NAME_SUB:
+        'Your preferred name will be printed on the card, while your legal name from your KYC document will be used for billing purposes.',
+      PHYSICAL_CARD_CONFIRMATION: 'Physical Card Confirmation',
+      PHYSICAL_CARD_CONFIRMATION_SUB:
+        'Please review your card details. Once confirmed, the details cannot be changed.',
+      SHIPPING_CHARGES: 'Shipping Charges',
     },
   },
 };
