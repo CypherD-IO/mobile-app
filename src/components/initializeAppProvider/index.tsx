@@ -1,4 +1,4 @@
-import React, { useContext, useEffect, useState } from 'react';
+import React, { useCallback, useContext, useEffect, useState } from 'react';
 import useInitializer from '../../hooks/useInitializer';
 import { GlobalContext, GlobalContextDef } from '../../core/globalContext';
 import { Linking, Platform } from 'react-native';
@@ -102,6 +102,74 @@ export const InitializeAppProvider: React.FC<JSX.Element> = ({ children }) => {
     }
   }, [pinAuthentication]);
 
+  const RenderNavStack = useCallback(() => {
+    if (ethereum.address === undefined) {
+      if (pinAuthentication || pinPresent === PinPresentStates.NOTSET) {
+        return (
+          <Loading
+            loadingText={t('INJECTIVE_UPDATE_LOADING_TEXT_WALLET_CREATION')}
+          />
+        );
+      } else {
+        return (
+          <PinAuthRoute
+            setPinAuthentication={setPinAuthentication}
+            initialScreen={
+              pinPresent === PinPresentStates.TRUE
+                ? C.screenTitle.PIN_VALIDATION
+                : C.screenTitle.SET_PIN
+            }
+          />
+        );
+      }
+    } else {
+      if (ethereum.address === _NO_CYPHERD_CREDENTIAL_AVAILABLE_) {
+        return <OnBoardingStack />;
+      } else {
+        if (!isReadOnlyWallet && !isAuthenticated) {
+          return <Loading />;
+        }
+        return children;
+      }
+    }
+    // {
+    //   ethereum.address === undefined ? (
+    //     pinAuthentication || pinPresent === PinPresentStates.NOTSET ? (
+    //       // reomve in the next build
+    //       <Loading
+    //         loadingText={t('INJECTIVE_UPDATE_LOADING_TEXT_WALLET_CREATION')}
+    //       />
+    //     ) : (
+    //       <PinAuthRoute
+    //         setPinAuthentication={setPinAuthentication}
+    //         initialScreen={
+    //           pinPresent === PinPresentStates.TRUE
+    //             ? C.screenTitle.PIN_VALIDATION
+    //             : C.screenTitle.SET_PIN
+    //         }
+    //       />
+    //     )
+    //   ) : ethereum.address === _NO_CYPHERD_CREDENTIAL_AVAILABLE_ ? (
+    //     hdWallet.state.reset ? (
+    //       <OnBoardingStack initialScreen={C.screenTitle.ENTER_KEY} />
+    //     ) : (
+    //       <OnBoardingStack />
+    //     )
+    //   ) : !isReadOnlyWallet && !isAuthenticated ? (
+    //     <Loading />
+    //   ) : (
+    //     children
+    //   );
+    // }
+  }, [
+    ethereum.address,
+    pinAuthentication,
+    pinPresent,
+    hdWallet.state.reset,
+    isReadOnlyWallet,
+    isAuthenticated,
+  ]);
+
   return (
     <>
       <Dialog
@@ -188,33 +256,7 @@ export const InitializeAppProvider: React.FC<JSX.Element> = ({ children }) => {
 
       <WalletConnectV2Provider>
         <DefaultAuthRemoveModal isModalVisible={showDefaultAuthRemoveModal} />
-        {ethereum.address === undefined ? (
-          pinAuthentication || pinPresent === PinPresentStates.NOTSET ? (
-            // reomve in the next build
-            <Loading
-              loadingText={t('INJECTIVE_UPDATE_LOADING_TEXT_WALLET_CREATION')}
-            />
-          ) : (
-            <PinAuthRoute
-              setPinAuthentication={setPinAuthentication}
-              initialScreen={
-                pinPresent === PinPresentStates.TRUE
-                  ? C.screenTitle.PIN_VALIDATION
-                  : C.screenTitle.SET_PIN
-              }
-            />
-          )
-        ) : ethereum.address === _NO_CYPHERD_CREDENTIAL_AVAILABLE_ ? (
-          hdWallet.state.reset ? (
-            <OnBoardingStack initialScreen={C.screenTitle.ENTER_KEY} />
-          ) : (
-            <OnBoardingStack />
-          )
-        ) : !isReadOnlyWallet && !isAuthenticated ? (
-          <Loading />
-        ) : (
-          children
-        )}
+        <RenderNavStack />
       </WalletConnectV2Provider>
     </>
   );

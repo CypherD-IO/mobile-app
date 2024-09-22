@@ -6,13 +6,7 @@ import * as C from '../constants/index';
 import { Colors } from '../constants/theme';
 import { ButtonWithOutImage } from '../containers/Auth/Share';
 import { DynamicTouchView } from '../styles/viewStyle';
-import { deleteThisWallet } from '../containers/Options/ImportAnotherWallet';
-import {
-  AUTHORIZE_WALLET_DELETION,
-  ActivityContext,
-  HdWalletContext,
-  PortfolioContext,
-} from '../core/util';
+import { AUTHORIZE_WALLET_DELETION, HdWalletContext } from '../core/util';
 import axios from '../core/Http';
 import * as Sentry from '@sentry/react-native';
 import analytics from '@react-native-firebase/analytics';
@@ -54,8 +48,6 @@ export default function RemoveWalletModal(props) {
   const [selectAcc, setSelectAcc] = useState(false);
   const globalContext = useContext<any>(GlobalContext);
   const hdWalletContext = useContext<any>(HdWalletContext);
-  const activityContext = useContext<any>(ActivityContext);
-  const portfolioContext = useContext<any>(PortfolioContext);
   const { deleteWallet } = useConnectionManager();
 
   const cosmosAddress =
@@ -119,11 +111,6 @@ export default function RemoveWalletModal(props) {
 
   const ResetReducers = async () => {
     try {
-      // await deleteThisWallet(
-      //   hdWalletContext,
-      //   activityContext,
-      //   portfolioContext,
-      // );
       await deleteWallet();
       if (importNewWallet) {
         navigation.navigate(C.screenTitle.ENTER_KEY);

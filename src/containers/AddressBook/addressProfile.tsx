@@ -1,8 +1,8 @@
-import React, { useContext, useEffect, useState, useMemo } from 'react';
+import React, { useEffect, useState, useMemo } from 'react';
 import { Animated, TouchableOpacity, StyleSheet } from 'react-native';
 import { Colors } from '../../constants/theme';
 import AppImages from '../../../assets/images/appImages';
-import { copyToClipboard, PortfolioContext } from '../../core/util';
+import { copyToClipboard } from '../../core/util';
 import Accordion from 'react-native-collapsible/Accordion';
 import { verticalScale } from 'react-native-size-matters';
 import {
@@ -16,7 +16,6 @@ import {
   ChainBackendNames,
   ChainConfigMapping,
   ChainNames,
-  CHAIN_ETH,
   EVM_CHAINS_BACKEND_NAMES,
   EVM_CHAINS_FOR_ADDRESS_DIR,
 } from '../../constants/server';
@@ -29,7 +28,6 @@ import ChooseTokenModal from '../../components/v2/chooseTokenModal';
 import _ from 'lodash';
 import getTransactionType from '../utilities/transactionTypeUtility';
 import { useGlobalModalContext } from '../../components/v2/GlobalModal';
-import { use } from 'i18next';
 import { getContactBookWithMultipleAddress } from '../utilities/contactBookUtility';
 import { intercomAnalyticsLog } from '../utilities/analyticsUtility';
 
@@ -50,10 +48,6 @@ const AddressProfile = props => {
   const [loading, setLoading] = useState(false);
   const [chooseTokenModal, setChooseTokenModal] = useState(false);
   const [selectedChain, setSelectedChain] = useState({});
-  const [totalHoldings, setTotalHoldings] = useState([]);
-  const [tokenData, setTokenData] = useState<any>([]);
-  const portfolioState = useContext<any>(PortfolioContext);
-  const [navigationPath, setNavigationPath] = useState<string>('');
   const [sendAddress, setSendAddress] = useState<string>('');
   const [nonEOAExists, setNonEOAExists] = useState<boolean>(false);
   const [isRadioButtonPressed, setIsRadioButtonPressed] = useState('');
@@ -146,43 +140,6 @@ const AddressProfile = props => {
       void processAddresses();
     }
   }, [fullContactBook]);
-
-  useEffect(() => {
-    if (
-      portfolioState.statePortfolio.tokenPortfolio &&
-      portfolioState.statePortfolio.tokenPortfolio.totalHoldings
-    ) {
-      setTotalHoldings(
-        portfolioState.statePortfolio.tokenPortfolio.totalHoldings,
-      );
-    }
-  }, [portfolioState.statePortfolio.tokenPortfolio]);
-
-  useEffect(() => {
-    if (!_.isEmpty(selectedChain)) {
-      const oldTokenholding =
-        portfolioState.statePortfolio.tokenPortfolio.totalHoldings;
-      const newTotalHolding: any = [];
-      for (let i = 0; i < oldTokenholding.length; i++) {
-        if (
-          selectedChain.backendName === CHAIN_ETH.backendName &&
-          EVM_CHAINS_BACKEND_NAMES.includes(
-            oldTokenholding[i].chainDetails.backendName,
-          )
-        ) {
-          newTotalHolding.push(oldTokenholding[i]);
-        } else if (
-          oldTokenholding[i].chainDetails.backendName ===
-          selectedChain.backendName
-        ) {
-          newTotalHolding.push(oldTokenholding[i]);
-        }
-      }
-      if (newTotalHolding) {
-        setTotalHoldings(newTotalHolding);
-      }
-    }
-  }, [selectedChain]);
 
   const interpolateRotating = rotateAnimation.interpolate({
     inputRange: [0, 1],
@@ -369,7 +326,6 @@ const AddressProfile = props => {
       <CyDView className='py-[15px]' key={index}>
         <ChooseTokenModal
           isChooseTokenModalVisible={chooseTokenModal}
-          tokenList={totalHoldings.length ? totalHoldings : []}
           onSelectingToken={token => {
             setChooseTokenModal(false);
             onChooseToken(token);

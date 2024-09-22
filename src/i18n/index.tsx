@@ -1260,6 +1260,7 @@ const resources = {
       REFERRAL_CODE_APPLIED_SUCCESSFULLY_DESCRIPTION:
         "You've earned 50 reward points for applying the referral code. Continue to application.",
       ERROR_IN_APPLYING_REFERRAL_CODE: 'Error in applying referral code',
+      REFRESHING: 'Refreshing',
     },
   },
 };

@@ -4,12 +4,10 @@ import {
   generateWalletFromMnemonic,
   generateWalletFromPrivateKey,
 } from './Address';
-import { ActivityReducerAction } from '../reducers/activity_reducer';
 import { SECRET_TYPES } from '../constants/enum';
 
 export const _generateWalletFromMnemonic = async (
   hdWalletContext,
-  portfolioState,
   mnemonic,
   trk_event: string,
 ) => {
@@ -18,47 +16,27 @@ export const _generateWalletFromMnemonic = async (
     trk_event,
     hdWalletContext.state.choosenWalletIndex,
   );
-  saveCredentialsToKeychain(
-    hdWalletContext,
-    portfolioState,
-    wallet,
-    SECRET_TYPES.MENEMONIC,
-  );
+  saveCredentialsToKeychain(hdWalletContext, wallet, SECRET_TYPES.MENEMONIC);
 };
 
-export const createWallet = (hdWalletContext, portfolioState) => {
-  bip39.generateMnemonic().then(mnemonic => {
-    _generateWalletFromMnemonic(
+export const createWallet = hdWalletContext => {
+  bip39.generateMnemonic().then(async mnemonic => {
+    await _generateWalletFromMnemonic(
       hdWalletContext,
-      portfolioState,
       mnemonic,
       'create_wallet',
     );
   });
 };
 
-export const importWallet = async (
-  hdWalletContext,
-  portfolioState,
-  mnemonic,
-) => {
-  await _generateWalletFromMnemonic(
-    hdWalletContext,
-    portfolioState,
-    mnemonic,
-    'import_wallet',
-  );
+export const importWallet = async (hdWalletContext, mnemonic) => {
+  await _generateWalletFromMnemonic(hdWalletContext, mnemonic, 'import_wallet');
 };
 
-export const importWalletPrivateKey = async (
-  hdWalletContext,
-  portfolioState,
-  privateKey,
-) => {
+export const importWalletPrivateKey = async (hdWalletContext, privateKey) => {
   const wallet = await generateWalletFromPrivateKey(privateKey);
   await saveCredentialsToKeychain(
     hdWalletContext,
-    portfolioState,
     wallet,
     SECRET_TYPES.PRIVATE_KEY,
   );

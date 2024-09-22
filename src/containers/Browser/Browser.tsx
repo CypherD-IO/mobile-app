@@ -33,18 +33,15 @@ import { Web3Origin } from '../../constants/enum';
 import { useGlobalModalContext } from '../../components/v2/GlobalModal';
 import * as C from '../../constants/index';
 import {
-  ChainNameMapping,
   CHAIN_ETH,
   PURE_COSMOS_CHAINS,
+  Chain,
+  ChainBackendNames,
 } from '../../constants/server';
 import { Colors } from '../../constants/theme';
 import { CommunicationEvents } from '../../constants/web3';
 import { showToast } from '../../containers/utilities/toastUtility';
-import {
-  getNativeToken,
-  HdWalletContext,
-  PortfolioContext,
-} from '../../core/util';
+import { HdWalletContext } from '../../core/util';
 import useWeb3 from '../../hooks/useWeb3';
 import { DynamicScrollView } from '../../styles/viewStyle';
 import {
@@ -60,6 +57,7 @@ import { screenTitle } from '../../constants/index';
 import { CyDSafeAreaView, CyDText, CyDView } from '../../styles/tailwindStyles';
 import clsx from 'clsx';
 import { isIOS } from '../../misc/checkers';
+import usePortfolio from '../../hooks/usePortfolio';
 
 const {
   CText,
@@ -107,6 +105,7 @@ export default function Browser({ route, navigation }: any) {
   const hdWalletContext = useContext<any>(HdWalletContext);
   const [injectedCode, setInjectedCode] = useState('');
   const { getWithAuth } = useAxios();
+  const { getNativeToken } = usePortfolio();
 
   const urlMappings: Record<string, string> = {
     home: '',
@@ -146,7 +145,6 @@ export default function Browser({ route, navigation }: any) {
   const [inbuildPage, setInbuiltPage] = useState<PageType>('home');
   const [browserErrorCode, setBrowserErrorCode] = useState('');
   const ethereum = hdWalletContext.state.wallet.ethereum;
-  const portfolioState = useContext<any>(PortfolioContext);
   const { showModal, hideModal } = useGlobalModalContext();
   const [selectedDappChain, setSelectedDappChain] = useState();
 
@@ -306,25 +304,7 @@ export default function Browser({ route, navigation }: any) {
     if (selectedDappChain && selectedDappChain !== selectedChain) {
       setSelectedDappChain(selectedChain);
       if (isFocused) {
-        const chain =
-          portfolioState.statePortfolio.tokenPortfolio[
-            ChainNameMapping[selectedChain.backendName]
-          ];
-        const nativeTokenSymbol: string = chain?.holdings[0]?.symbol;
-        if (
-          !getNativeToken(nativeTokenSymbol, chain.holdings)?.actualBalance &&
-          websiteInfo.url !== ''
-        ) {
-          setTimeout(() => {
-            showModal('state', {
-              type: 'error',
-              title: t('INSUFFICIENT_FUNDS'),
-              description: `You don't have sufficient ${nativeTokenSymbol} to pay gas fee`,
-              onSuccess: hideModal,
-              onFailure: hideModal,
-            });
-          }, MODAL_SHOW_TIMEOUT);
-        }
+        void checkNativeTokenBalance(selectedChain);
       }
     }
     if (webviewRef.current?.postMessage) {
@@ -336,6 +316,23 @@ export default function Browser({ route, navigation }: any) {
       );
     }
   }, [hdWalletContext.state.selectedChain, isFocused]);
+
+  const checkNativeTokenBalance = async (selectedChain: Chain) => {
+    const nativeToken = await getNativeToken(
+      selectedChain.backendName as ChainBackendNames,
+    );
+    if (nativeToken?.actualBalance && websiteInfo.url !== '') {
+      setTimeout(() => {
+        showModal('state', {
+          type: 'error',
+          title: t('INSUFFICIENT_FUNDS'),
+          description: `You don't have sufficient ${nativeToken.symbol} to pay gas fee`,
+          onSuccess: hideModal,
+          onFailure: hideModal,
+        });
+      }, MODAL_SHOW_TIMEOUT);
+    }
+  };
 
   const injectWeb3FromCDN = async () => {
     try {

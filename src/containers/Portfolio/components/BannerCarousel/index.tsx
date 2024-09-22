@@ -29,18 +29,14 @@ import { ACTIVITIES_REFRESH_TIMEOUT } from '../../../../constants/timeOuts';
 import { CyDView } from '../../../../styles/tailwindStyles';
 import CardCarousel from '../../../../components/v2/CardCarousel';
 import { SharedValue } from 'react-native-reanimated';
-import { PortfolioBannerHeights } from '../../../../hooks/useScrollManager';
 import { get } from 'lodash';
 import { MigrationData } from '../../../../models/migrationData.interface';
 
 const ARCH_HOST = hostWorker.getHost('ARCH_HOST');
 
 export type BridgeOrCardActivity = ExchangeTransaction | DebitCardTransaction;
-interface BannerCarouselProps {
-  setBannerHeight: React.Dispatch<React.SetStateAction<PortfolioBannerHeights>>;
-}
 
-const BannerCarousel = ({ setBannerHeight }: BannerCarouselProps) => {
+const BannerCarousel = () => {
   const { getWithAuth } = useAxios();
   const isFocused = useIsFocused();
 
@@ -147,20 +143,6 @@ const BannerCarousel = ({ setBannerHeight }: BannerCarouselProps) => {
       Sentry.captureException(errorObject);
     }
   };
-
-  // useEffect to update the height of the banner when the no. of cards change.
-  useEffect(() => {
-    if (activityCards.length + staticCards.length + migrationCard.length) {
-      setBannerHeight(300);
-    } else {
-      setBannerHeight(160);
-    }
-  }, [
-    activityCards.length,
-    staticCards.length,
-    migrationCard.length,
-    setBannerHeight,
-  ]);
 
   // useEffect to check for static cards and migration data from backend
   useEffect(() => {

@@ -39,7 +39,7 @@ import {
 import { Colors } from '../../constants/theme';
 import { GlobalContext } from '../../core/globalContext';
 import { MODAL_HIDE_TIMEOUT_250 } from '../../core/Http';
-import { Holding } from '../../core/Portfolio';
+import { Holding } from '../../core/portfolio';
 import {
   ActivityContext,
   formatAmount,

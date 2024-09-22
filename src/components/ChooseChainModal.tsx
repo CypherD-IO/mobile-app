@@ -2,11 +2,7 @@ import React, { useContext } from 'react';
 import { FlatList, StyleSheet } from 'react-native';
 import { useTranslation } from 'react-i18next';
 import AppImages from '../../assets/images/appImages';
-import {
-  HdWalletContext,
-  PortfolioContext,
-  getAvailableChains,
-} from '../core/util';
+import { HdWalletContext, getAvailableChains } from '../core/util';
 import { ALL_CHAINS, Chain, ChainBackendNames } from '../constants/server';
 import { Colors } from '../constants/theme';
 import {
@@ -26,23 +22,20 @@ export function ChooseChainModal(props: {
   isModalVisible: boolean;
   onPress: () => void;
   where: string;
+  selectedChain: Chain;
+  setSelectedChain: React.Dispatch<React.SetStateAction<Chain>>;
 }) {
-  const { isModalVisible, onPress, where } = props;
+  const { isModalVisible, onPress, where, selectedChain, setSelectedChain } =
+    props;
   const { t } = useTranslation();
   const hdWallet = useContext(HdWalletContext);
-  const portfolioState = useContext<any>(PortfolioContext);
 
   const onChainSelection = (chain: Chain) => {
-    if (where === WHERE_BROWSER) {
-      hdWallet?.dispatch({
-        type: 'CHOOSE_CHAIN',
-        value: { selectedChain: chain },
-      });
-    } else {
-      portfolioState.dispatchPortfolio({
-        value: { selectedChain: chain },
-      });
-    }
+    hdWallet?.dispatch({
+      type: 'CHOOSE_CHAIN',
+      value: { selectedChain: chain },
+    });
+    setSelectedChain(chain);
     onPress();
   };
 
@@ -51,7 +44,7 @@ export function ChooseChainModal(props: {
     const selectedChainId =
       where === WHERE_BROWSER
         ? hdWallet?.state.selectedChain.id
-        : portfolioState.statePortfolio.selectedChain.id;
+        : selectedChain.id;
     const isSelected = item.id === selectedChainId;
     return (
       <CyDTouchView

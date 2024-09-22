@@ -17,18 +17,10 @@ import {
   limitDecimalPlaces,
   logAnalytics,
   parseErrorMessage,
-  getNativeToken,
-  PortfolioContext,
   formatAmount,
 } from '../../core/util';
 import clsx from 'clsx';
-import {
-  Chain,
-  ChainBackendNames,
-  ChainNameMapping,
-  IBC_CHAINS,
-  NativeTokenMapping,
-} from '../../constants/server';
+import { Chain, ChainBackendNames, IBC_CHAINS } from '../../constants/server';
 import { gasFeeReservation } from '../../constants/data';
 import * as Sentry from '@sentry/react-native';
 import SignatureModal from '../../components/v2/signatureModal';
@@ -50,8 +42,9 @@ import { SuccessTransaction } from '../../components/v2/StateModal';
 import CyDTokenAmount from '../../components/v2/tokenAmount';
 import { AnalyticsType, ButtonType } from '../../constants/enum';
 import { get, random } from 'lodash';
-import useGasService from '../../hooks/useGasService';
 import useTransactionManager from '../../hooks/useTransactionManager';
+import { Holding } from '../../core/portfolio';
+import usePortfolio from '../../hooks/usePortfolio';
 
 export default function IBC({
   route,
@@ -61,14 +54,6 @@ export default function IBC({
   navigation: any;
 }) {
   const { tokenData } = route.params;
-  const portfolioState = useContext<any>(PortfolioContext);
-  const nativeToken = getNativeToken(
-    get(NativeTokenMapping, tokenData?.chainDetails.symbol) ||
-      tokenData?.chainDetails.symbol,
-    portfolioState.statePortfolio.tokenPortfolio[
-      get(ChainNameMapping, tokenData?.chainDetails.backendName)
-    ].holdings,
-  );
   const { t } = useTranslation();
   const hdWallet = useContext<any>(HdWalletContext);
   const cosmos = hdWallet.state.wallet.cosmos;
@@ -101,11 +86,13 @@ export default function IBC({
   const [memo, setMemo] = useState<string>('');
   const [senderAddress, setSenderAddress] = useState<string>('');
   const [signModalVisible, setSignModalVisible] = useState<boolean>(false);
+  const [nativeToken, setNativeToken] = useState<Holding>();
   const [gasFee, setGasFee] = useState<string | number>(0);
   const activityContext = useContext<any>(ActivityContext);
   const activityRef = useRef<IBCTransaction | null>(null);
   const { showModal, hideModal } = useGlobalModalContext();
   const { interCosmosIBC } = useTransactionManager();
+  const { getNativeToken } = usePortfolio();
   const handleBackButton = () => {
     navigation.goBack();
     return true;
@@ -136,7 +123,15 @@ export default function IBC({
 
     setChainData(temp);
     setChain(temp[0]);
+    void fetchNativeToken();
   }, []);
+
+  const fetchNativeToken = async () => {
+    const tempNativeToken = await getNativeToken(
+      tokenData?.chainDetails?.backendName,
+    );
+    setNativeToken(tempNativeToken);
+  };
 
   const getAddress = () => {
     switch (chain.backendName) {
@@ -456,7 +451,7 @@ export default function IBC({
                 </CyDText>
                 <CyDText className={' font-[12px] text-[#929292] font-bold'}>
                   {String(
-                    formatAmount(Number(nativeToken.price) * Number(gasFee)),
+                    formatAmount(Number(nativeToken?.price) * Number(gasFee)),
                   ) + ' USD'}
                 </CyDText>
               </CyDView>

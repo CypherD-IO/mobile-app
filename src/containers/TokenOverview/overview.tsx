@@ -15,9 +15,7 @@ import {
   copyToClipboard,
   HdWalletContext,
   isABasicCosmosStakingToken,
-  isCosmosStakingToken,
   isNativeToken,
-  StakingContext,
 } from '../../core/util';
 import {
   COSMOS_STAKING_LOADING,
@@ -124,7 +122,6 @@ export default function Overview({
   const { getWithAuth } = useAxios();
   const cosmosStaking = useContext<any>(CosmosStakingContext);
   const cosmosStakingContextStatus = cosmosStaking.cosmosStakingState.status;
-  const stakingValidators = useContext<any>(StakingContext);
   const hdWalletContext = useContext<any>(HdWalletContext);
   const globalStateContext = useContext<any>(GlobalContext);
   const chain = hdWalletContext.state.wallet[tokenData.chainDetails.chainName];

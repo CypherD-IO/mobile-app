@@ -27,7 +27,7 @@ import {
   useNavigation,
   useRoute,
 } from '@react-navigation/native';
-import TokenSelectionV2 from './tokenSelection';
+import TokenSelectionV2 from './tokenSelectionV2';
 import { SkipApiRouteResponse } from '../../models/skipApiRouteResponse.interface';
 import BridgeRoutePreview from './bridgePreview';
 import { SkipApiStatus } from '../../models/skipApiStatus.interface';
@@ -75,7 +75,6 @@ import useTransactionManager from '../../hooks/useTransactionManager';
 import { ODOS_SWAP_QUOTE_GASLIMIT_MULTIPLICATION_FACTOR } from '../Portfolio/constants';
 import { StyleSheet } from 'react-native';
 import { genId } from '../utilities/activityUtilities';
-import { Holding } from '../../core/portfolio';
 import { GasPriceDetail } from '../../core/types';
 import { screenTitle } from '../../constants';
 import {
@@ -135,7 +134,7 @@ interface RouteParams {
   backVisible?: boolean;
 }
 
-const Bridge: React.FC = () => {
+const BridgeV2: React.FC = () => {
   const { t } = useTranslation();
 
   const [loading, setLoading] = useState({
@@ -332,11 +331,11 @@ const Bridge: React.FC = () => {
   // need to only show tokens supported by skip api
   useEffect(() => {
     if (selectedFromChain) {
-      void setFromTokenAndTokenData();
+      void setTokenDataAndToken();
     }
   }, [selectedFromChain, tokenData, selectedToChain]);
 
-  const setFromTokenAndTokenData = async () => {
+  const setTokenDataAndToken = async () => {
     const currentChain = ALL_CHAINS.find(
       chain => chain.chainIdNumber === Number(selectedFromChain.chainId),
     );
@@ -671,8 +670,6 @@ const Bridge: React.FC = () => {
     const requiredAddresses = getAddress(
       routeResponse.required_chain_addresses,
     );
-
-    console.log('🚀 ~ onGetMsg ~ requiredAddresses:', requiredAddresses);
 
     const _quoteData = quoteData as SkipApiRouteResponse;
 
@@ -2037,7 +2034,7 @@ const Bridge: React.FC = () => {
   );
 };
 
-export default Bridge;
+export default BridgeV2;
 
 const styles = StyleSheet.create({
   loaderStyle: {

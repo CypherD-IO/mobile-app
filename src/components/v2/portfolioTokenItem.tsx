@@ -17,7 +17,7 @@ import {
 } from '../../styles/tailwindStyles';
 import CyDTokenAmount from './tokenAmount';
 import CyDTokenValue from './tokenValue';
-import { Holding } from '../../core/Portfolio';
+import { Holding } from '../../core/portfolio';
 import { limitDecimalPlaces } from '../../core/util';
 
 interface PortfolioTokenItemProps {

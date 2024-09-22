@@ -2,7 +2,7 @@
 
 /* eslint-disable @typescript-eslint/no-misused-promises */
 import analytics from '@react-native-firebase/analytics';
-import { useIsFocused, useRoute } from '@react-navigation/native';
+import { useRoute } from '@react-navigation/native';
 import * as Sentry from '@sentry/react-native';
 import { ethers } from 'ethers';
 import { t } from 'i18next';
@@ -18,27 +18,20 @@ import Loading from '../../components/v2/loading';
 import CyDModalLayout from '../../components/v2/modal';
 import CyDTokenAmount from '../../components/v2/tokenAmount';
 import { screenTitle } from '../../constants';
-import { AnalyticsType, TokenOverviewTabIndices } from '../../constants/enum';
-import { ChainBackendNames, CosmosStakingTokens } from '../../constants/server';
+import { AnalyticsType } from '../../constants/enum';
+import { ChainBackendNames } from '../../constants/server';
 import { MODAL_HIDE_TIMEOUT_250, TIMEOUT } from '../../core/Http';
 import { getCosmosStakingData } from '../../core/cosmosStaking';
 import { GlobalContext } from '../../core/globalContext';
 import {
   HdWalletContext,
-  PortfolioContext,
-  StakingContext,
   convertFromUnitAmount,
-  getTimeForDate,
-  isABasicCosmosStakingToken,
   isBasicCosmosChain,
-  isBigIntZero,
-  isCosmosStakingToken,
   logAnalytics,
   parseErrorMessage,
 } from '../../core/util';
 import useIsSignable from '../../hooks/useIsSignable';
 import useTransactionManager from '../../hooks/useTransactionManager';
-import { isIOS } from '../../misc/checkers';
 import { TokenMeta } from '../../models/tokenMetaData.model';
 import { ActivityType } from '../../reducers/activity_reducer';
 import {
@@ -46,11 +39,6 @@ import {
   CosmosActionType,
   CosmosStakingContext,
 } from '../../reducers/cosmosStakingReducer';
-import { PORTFOLIO_REFRESH } from '../../reducers/portfolio_reducer';
-import {
-  STAKING_EMPTY,
-  STAKING_NOT_EMPTY,
-} from '../../reducers/stakingReducer';
 import {
   CyDImage,
   CyDSafeAreaView,
@@ -86,8 +74,6 @@ export default function TokenStaking({
 }) {
   const globalStateContext = useContext<any>(GlobalContext);
   const hdWalletContext = useContext<any>(HdWalletContext);
-  const portfolioState = useContext<any>(PortfolioContext);
-  const isFocused = useIsFocused();
   const [loading, setLoading] = useState<boolean>(false);
   const [claimModal, setClaimModal] = useState<boolean>(false);
   const [signModalVisible, setSignModalVisible] = useState<boolean>(false);
@@ -100,7 +86,6 @@ export default function TokenStaking({
     CosmosActionType.CLAIM,
   );
   const cosmosStaking = useContext<any>(CosmosStakingContext);
-  const stakingValidators = useContext<any>(StakingContext);
   const [time, setTime] = useState({ hours: '0', min: '0', sec: '0' });
   const [method, setMethod] = useState<string>('');
   const initialStakeVariables = {
@@ -206,7 +191,7 @@ export default function TokenStaking({
         setPageLoading(false);
       }, TIMEOUT);
     }
-  }, [cosmosStaking, stakingValidators]);
+  }, [cosmosStaking]);
 
   useEffect(() => {
     void analytics().logEvent('visited_staking_page');
@@ -247,38 +232,6 @@ export default function TokenStaking({
   const onRefresh = () => {
     setRefreshing(true);
     void getStakingMetaData();
-  };
-
-  const txnSimulation = async (method: string) => {
-    setLoading(true);
-    setMethod(method);
-    setReward(stakingValidators.stateStaking.totalReward);
-
-    try {
-      setLoading(false);
-      setGasFee(random(0.01, 0.1, true));
-      setClaimModal(false);
-      setTimeout(() => setSignModalVisible(true), MODAL_HIDE_TIMEOUT_250);
-    } catch (error: any) {
-      setLoading(false);
-      // monitoring api
-      void logAnalytics({
-        type: AnalyticsType.ERROR,
-        chain: tokenData?.chainDetails?.chainName ?? 'Chain-Missing',
-        message: parseErrorMessage(error),
-        screen: route.name,
-      });
-      Toast.show({
-        type: t('TOAST_TYPE_ERROR'),
-        text1: t('TRANSACTION_FAILED'),
-        text2: error.toString(),
-        position: 'bottom',
-      });
-      Sentry.captureException(error);
-      void analytics().logEvent('staking_error', {
-        from: `error while ${stakingValidators.stateStaking.typeOfDelegation} in staking/index.tsx`,
-      });
-    }
   };
 
   const showNoGasFeeModal = () => {

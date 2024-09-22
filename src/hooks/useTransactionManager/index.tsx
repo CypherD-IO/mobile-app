@@ -44,7 +44,7 @@ import { SendAuthorization } from 'cosmjs-types/cosmos/bank/v1beta1/authz';
 import { IAutoLoadResponse } from '../../models/autoLoadResponse.interface';
 import { MsgRevoke } from 'cosmjs-types/cosmos/authz/v1beta1/tx';
 import { allowanceApprovalContractABI } from '../../core/swap';
-import { Holding } from '../../core/Portfolio';
+import { Holding } from '../../core/portfolio';
 import { getGasPriceFor } from '../../containers/Browser/gasHelper';
 import { SwapMetaData } from '../../models/swapMetaData';
 import {

@@ -1,5 +1,6 @@
 // NOTE: SCREEN TITLE 🍎🍎🍎🍎
 export const screenTitle = {
+  ONBOARDING: 'OnBoarding',
   ACTIVITYFILTER: 'ACTIVITYFILTER',
   ACTIVITIES: 'Activities',
   REFERRAL_REWARDS: 'ReferralRewards',
@@ -31,7 +32,6 @@ export const screenTitle = {
   ENTER_AMOUNT: 'enterAmount',
   SEND_TO: 'sendto',
   WALLET_CONNECT: 'WalletConnect',
-  AUTO_CREATE: 'AutoCreate',
   SHORTCUTS: 'Shortcuts',
   SHORTCUTS_SCREEN: 'ShortcutsScreen',
   BRIDGE_TOKEN_SCREEN: 'BridgeTokenScreen',

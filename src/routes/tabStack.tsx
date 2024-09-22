@@ -319,10 +319,12 @@ function TabStack(props) {
         <Tab.Screen
           name={screenTitle.PORTFOLIO}
           component={PortfolioStackScreen}
+          options={{ lazy: true }}
         />
         <Tab.Screen
           name={screenTitle.DEBIT_CARD_SCREEN}
           component={DebitCardStackScreen}
+          options={{ lazy: true }}
         />
         <Tab.Screen
           name={screenTitle.SHORTCUTS}

@@ -26,7 +26,6 @@ import {
 } from './util';
 import DeviceInfo from 'react-native-device-info';
 import RNExitApp from 'react-native-exit-app';
-import { PORTFOLIO_NEW_LOAD } from '../reducers/portfolio_reducer';
 import * as Sentry from '@sentry/react-native';
 import {
   AddressChainNames,
@@ -76,7 +75,6 @@ const currentSchemaVersion = 10;
 
 export async function saveCredentialsToKeychain(
   hdWalletContext: HdWalletContextDef,
-  portfolioState: any,
   wallet: any,
   secretType: SECRET_TYPES,
 ) {
@@ -130,9 +128,6 @@ export async function saveCredentialsToKeychain(
         algo: account.algo,
       },
     });
-  });
-  portfolioState.dispatchPortfolio({
-    value: { tokenPortfolio: null, portfolioState: PORTFOLIO_NEW_LOAD },
   });
 }
 

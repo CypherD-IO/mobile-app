@@ -8,7 +8,7 @@ import * as C from '../../constants/index';
 import { Colors } from '../../constants/theme';
 import { ButtonWithImage } from './Share';
 import AppImages from '../../../assets/images/appImages';
-import { PortfolioContext, HdWalletContext } from '../../core/util';
+import { HdWalletContext } from '../../core/util';
 import { createWallet } from '../../core/HdWallet';
 import { ifIphoneX } from 'react-native-iphone-x-helper';
 const {
@@ -25,7 +25,6 @@ export default function Login(props) {
 
   // NOTE: DEFINE HOOKS 🍎🍎🍎🍎🍎🍎
   const hdWalletContext = useContext(HdWalletContext);
-  const portfolioState = useContext<any>(PortfolioContext);
 
   // NOTE: LIFE CYCLE METHOD 🍎🍎🍎🍎🍎
 
@@ -70,7 +69,7 @@ export default function Login(props) {
           onPress={() => {
             setLoading(true);
             setTimeout(() => {
-              createWallet(hdWalletContext, portfolioState);
+              createWallet(hdWalletContext);
             }, 50);
           }}
         />
