@@ -1,10 +1,10 @@
 import clsx from 'clsx';
 import Fuse from 'fuse.js';
-import React, { useContext, useEffect, useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Dimensions, Keyboard, StyleSheet } from 'react-native';
 import AppImages from '../../../assets/images/appImages';
-import { CardProviders, TokenModalType } from '../../constants/enum';
+import { TokenModalType } from '../../constants/enum';
 import {
   CyDFastImage,
   CyDFlatList,
@@ -18,18 +18,17 @@ import CyDModalLayout from './modal';
 import CyDTokenAmount from './tokenAmount';
 import CyDTokenValue from './tokenValue';
 import { get } from 'lodash';
-import { Holding } from '../../core/Portfolio';
+import { Holding } from '../../core/portfolio';
 import { SwapToken } from '../../models/swapToken.interface';
 import FastImage from 'react-native-fast-image';
 import { copyToClipboard, isNativeToken } from '../../core/util';
 import Toast from 'react-native-toast-message';
 import { toastConfig } from './toast';
 import { AUTO_LOAD_SUPPORTED_CHAINS } from '../../constants/server';
-import { GlobalContext } from '../../core/globalContext';
-import { CardProfile } from '../../models/cardProfile.model';
+import usePortfolio from '../../hooks/usePortfolio';
 
 interface TokenModal {
-  tokenList: Holding[];
+  tokenList?: Holding[];
   isChooseTokenModalVisible: boolean;
   minTokenValueLimit?: number;
   onSelectingToken: (token: Holding | SwapToken) => void;
@@ -41,9 +40,6 @@ interface TokenModal {
 
 export default function ChooseTokenModal(props: TokenModal) {
   const { t } = useTranslation();
-  const globalContext = useContext(GlobalContext);
-  const cardProfile: CardProfile = globalContext.globalState.cardProfile;
-  const provider = cardProfile.provider ?? CardProviders.REAP_CARD;
   const {
     isChooseTokenModalVisible,
     tokenList,
@@ -54,6 +50,7 @@ export default function ChooseTokenModal(props: TokenModal) {
     type = TokenModalType.PORTFOLIO,
     renderPage = '',
   } = props;
+  const { getLocalPortfolio } = usePortfolio();
   const [searchText, setSearchText] = useState<string>('');
   const [totalHoldings, setTotalHoldings] = useState<Record<string, Holding[]>>(
     {
@@ -71,8 +68,19 @@ export default function ChooseTokenModal(props: TokenModal) {
   const fuse = new Fuse(totalHoldings.originalHoldings, searchOptions);
 
   useEffect(() => {
-    if (tokenList?.length && type === TokenModalType.PORTFOLIO) {
-      const valuedTokens = tokenList.filter(token => token.isVerified);
+    if (isChooseTokenModalVisible) {
+      void fetchTotalHoldings();
+    }
+  }, [isChooseTokenModalVisible, tokenList]);
+
+  const fetchTotalHoldings = async () => {
+    if (!tokenList) {
+      const localPortfolio = await getLocalPortfolio();
+      console.log(localPortfolio.totalHoldings);
+      const valuedTokens = localPortfolio.totalHoldings.filter(
+        token => token.isVerified,
+      );
+      console.log('valuedTokens:', valuedTokens);
       valuedTokens.sort(sortDescTokenData);
       setTotalHoldings({
         originalHoldings: valuedTokens,
@@ -84,7 +92,7 @@ export default function ChooseTokenModal(props: TokenModal) {
         filteredHoldings: tokenList,
       });
     }
-  }, [tokenList]);
+  };
 
   const sortDescTokenData = (tokenA: Holding, tokenB: Holding) => {
     const totalValueA = get(tokenA, 'totalValue');
@@ -228,7 +236,6 @@ export default function ChooseTokenModal(props: TokenModal) {
                   renderPage,
                   isTokenDisabled,
                   onSelectingToken,
-                  provider,
                 })
               }
               showsVerticalScrollIndicator={true}
@@ -265,14 +272,12 @@ const TokenItem = ({
   renderPage,
   isTokenDisabled,
   onSelectingToken,
-  provider,
 }: {
   item: Holding | SwapToken;
   type: TokenModalType;
   renderPage: string;
   isTokenDisabled: (arg1: number, arg2: boolean, arg3: boolean) => boolean;
   onSelectingToken: (arg: Holding | SwapToken) => void;
-  provider: CardProviders;
 }) => {
   const copyContractAddress = (contractAddress: string) => {
     copyToClipboard(contractAddress);

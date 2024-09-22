@@ -4,16 +4,13 @@ import AppImages from '../../../assets/images/appImages';
 import { screenTitle } from '../../constants';
 import {
   ChainBackendNames,
-  CosmosStakingTokens,
   FundWalletAddressType,
 } from '../../constants/server';
 import { GlobalContext } from '../../core/globalContext';
 import {
   isBasicCosmosChain,
-  StakingContext,
   convertFromUnitAmount,
   isABasicCosmosStakingToken,
-  isCosmosStakingToken,
 } from '../../core/util';
 import { TokenMeta } from '../../models/tokenMetaData.model';
 import { CosmosStakingContext } from '../../reducers/cosmosStakingReducer';
@@ -34,7 +31,6 @@ export default function TokenOverviewToolBar({
 }) {
   const globalStateContext = useContext<any>(GlobalContext);
   const cosmosStaking = useContext<any>(CosmosStakingContext);
-  const stakingValidators = useContext<any>(StakingContext);
   const { isBridgeable, isSwapable } = tokenData;
   const canShowIBC =
     globalStateContext.globalState.ibc &&

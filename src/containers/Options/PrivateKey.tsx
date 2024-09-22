@@ -14,7 +14,6 @@ import { useTranslation } from 'react-i18next';
 import AppImages from '../../../assets/images/appImages';
 import {
   HdWalletContext,
-  PortfolioContext,
   _NO_CYPHERD_CREDENTIAL_AVAILABLE_,
 } from '../../core/util';
 import { showToast } from '../../containers/utilities/toastUtility';
@@ -68,7 +67,6 @@ export default function PrivateKey(props) {
   const { t } = useTranslation();
   const isFocused = useIsFocused();
   const hdWalletContext = useContext<any>(HdWalletContext);
-  const portfolioState = useContext<any>(PortfolioContext);
   const [showChainModal, setShowChainModal] = useState<boolean>(false);
   const [showPrivateKey, setShowPrivateKey] = useState<boolean>(false);
   const [privateKey, setPrivateKey] = useState<string>(
@@ -197,7 +195,7 @@ export default function PrivateKey(props) {
     if (isFocused) {
       if (isAndroid()) NativeModules.PreventScreenshotModule.forbid();
       const walletAddressType =
-        portfolioState.statePortfolio.selectedChain.backendName;
+        hdWalletContext?.state.selectedChain.backendName;
       if (walletAddressType === FundWalletAddressType.COSMOS) {
         setSelectedChain(data[2]);
       } else if (walletAddressType === FundWalletAddressType.OSMOSIS) {

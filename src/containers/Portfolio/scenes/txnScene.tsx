@@ -1,6 +1,7 @@
-import React, { memo, useContext, useEffect, useRef, useState } from 'react';
+import React, { memo, useContext, useEffect, useState } from 'react';
 import {
   CyDFastImage,
+  CyDFlatList,
   CyDText,
   CyDTouchView,
   CyDView,
@@ -9,7 +10,6 @@ import AppImages from '../../../../assets/images/appImages';
 import { useTranslation } from 'react-i18next';
 import {
   HdWalletContext,
-  PortfolioContext,
   formatAmount,
   getMaskedAddress,
 } from '../../../core/util';
@@ -21,46 +21,30 @@ import moment from 'moment';
 import { useIsFocused } from '@react-navigation/native';
 import Loading from '../../../components/v2/loading';
 import TransactionInfoModal from '../components/transactionInfoModal';
-import {
-  FlatList,
-  NativeScrollEvent,
-  NativeSyntheticEvent,
-  RefreshControl,
-  ScrollView,
-} from 'react-native';
+import { RefreshControl } from 'react-native';
 import axios from '../../../core/Http';
 import { hostWorker } from '../../../global';
-import { AnimatedTabView } from '../animatedComponents';
-import { SharedValue } from 'react-native-reanimated';
 import TxnFilterModal, {
   TRANSACTION_TYPES,
 } from '../components/TxnFilterModal';
 import { TransactionType } from '../../../constants/enum';
 import { TransactionObj } from '../../../models/transaction.model';
 import {
+  Chain,
   CHAIN_COLLECTION,
   ChainConfigMapping,
 } from '../../../constants/server';
 import clsx from 'clsx';
-import { isIOS } from '../../../misc/checkers';
-import { PortfolioBannerHeights } from '../../../hooks/useScrollManager';
+import { get } from 'lodash';
 
 interface TxnItemProps {
   activity: TransactionObj;
   setTransactionInfoParams: (activity: TransactionObj) => void;
 }
 
-type ScrollEvent = NativeSyntheticEvent<NativeScrollEvent>;
-
 interface TxnSceneProps {
-  routeKey: string;
-  scrollY: SharedValue<number>;
-  trackRef: (key: string, ref: FlatList<any> | ScrollView) => void;
-  onMomentumScrollBegin: (e: ScrollEvent) => void;
-  onMomentumScrollEnd: (e: ScrollEvent) => void;
-  onScrollEndDrag: (e: ScrollEvent) => void;
+  selectedChain: Chain;
   navigation: any;
-  bannerHeight: PortfolioBannerHeights;
   filterModalVisibilityState: [
     boolean,
     React.Dispatch<React.SetStateAction<boolean>>,
@@ -246,21 +230,12 @@ const getTransactionItemAmountDetails = (
 };
 
 const TxnScene = ({
-  routeKey,
-  scrollY,
-  trackRef,
-  onMomentumScrollBegin,
-  onMomentumScrollEnd,
-  onScrollEndDrag,
+  selectedChain,
   navigation,
-  bannerHeight,
   filterModalVisibilityState,
 }: TxnSceneProps) => {
-  const OFFSET_TABVIEW = isIOS() ? -bannerHeight : 0;
-
   const isFocused = useIsFocused();
   const hdWalletContext = useContext<any>(HdWalletContext);
-  const portfolioContext = useContext(PortfolioContext);
   const { address: ethereumAddress }: { address: string } =
     hdWalletContext.state.wallet.ethereum;
   const getTransactionsUrl = `${ARCH_HOST}/v1/txn/transactions/${ethereumAddress}?descOrder=true`;
@@ -292,7 +267,6 @@ const TxnScene = ({
   const [transaction, setTransaction] = useState<any>([]);
   const [isLoading, setIsLoading] = useState(true); // Add isLoading state
   const [isRefreshing, setIsRefreshing] = useState(false);
-  const flatListRef = useRef<FlatList<any>>(null);
 
   const fetchTxn = async (forceRefresh = false) => {
     try {
@@ -314,26 +288,6 @@ const TxnScene = ({
   };
 
   useEffect(() => {
-    if (flatListRef.current) {
-      if (scrollY.value <= OFFSET_TABVIEW + bannerHeight) {
-        flatListRef.current.scrollToOffset({
-          offset: Math.max(
-            Math.min(scrollY.value, OFFSET_TABVIEW + bannerHeight),
-            OFFSET_TABVIEW,
-          ),
-          animated: false,
-        });
-      } else {
-        flatListRef.current.scrollToOffset({
-          offset: OFFSET_TABVIEW + bannerHeight,
-          animated: false,
-        });
-      }
-      trackRef(routeKey, flatListRef.current);
-    }
-  }, [flatListRef.current, isLoading]);
-
-  useEffect(() => {
     if (isFocused) {
       setIsLoading(true); // Start loading when the component is focused
       void fetchTxn(); // Set isLoading to false after the data is fetched or in case of an error
@@ -344,7 +298,7 @@ const TxnScene = ({
     if (!isLoading) {
       spliceTransactions(); // Process transaction when isLoading is false
     }
-  }, [isLoading, filter, portfolioContext.statePortfolio.selectedChain]);
+  }, [isLoading, filter, selectedChain]);
 
   const getIsIncludedStatus = (status: string) => {
     if (filter.status === TXN_FILTER_STATUSES[2].id) {
@@ -366,9 +320,8 @@ const TxnScene = ({
     const filteredActivities = transaction.filter(activity => {
       const chain = activity.blockchain.toLowerCase();
       const isChainSelected =
-        portfolioContext.statePortfolio.selectedChain === CHAIN_COLLECTION ||
-        portfolioContext.statePortfolio.selectedChain ===
-          ChainConfigMapping[chain];
+        selectedChain === CHAIN_COLLECTION ||
+        selectedChain === get(ChainConfigMapping, chain);
       const isIncludedType = filter.types.includes(activity.type);
       const isOtherType = !TRANSACTION_TYPES.includes(activity.type);
       const isIncludedStatus = getIsIncludedStatus(activity.status);
@@ -548,16 +501,15 @@ const TxnScene = ({
           modalVisibilityState={filterModalVisibilityState}
           filterState={[filter, setFilter]}
         />
-        <AnimatedTabView
-          onRef={flatListRef}
+        <CyDFlatList
           data={transaction}
+          scrollEnabled={false}
           refreshControl={
             <RefreshControl
               refreshing={isRefreshing}
               onRefresh={() => {
                 void onRefresh();
               }}
-              progressViewOffset={bannerHeight}
             />
           }
           keyExtractor={(item, index) => index.toString()}
@@ -572,11 +524,6 @@ const TxnScene = ({
             );
           }}
           ListEmptyComponent={<NoTxnsFound />}
-          bannerHeight={bannerHeight}
-          scrollY={scrollY}
-          onScrollEndDrag={onScrollEndDrag}
-          onMomentumScrollBegin={onMomentumScrollBegin}
-          onMomentumScrollEnd={onMomentumScrollEnd}
         />
       </CyDView>
     );

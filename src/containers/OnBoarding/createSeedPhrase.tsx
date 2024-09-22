@@ -19,11 +19,7 @@ import { generateWalletFromMnemonic } from '../../core/Address';
 import Loading from '../../components/v2/loading';
 import { useIsFocused } from '@react-navigation/native';
 import { isAndroid } from '../../misc/checkers';
-import {
-  HdWalletContext,
-  PortfolioContext,
-  shuffleSeedPhrase,
-} from '../../core/util';
+import { HdWalletContext, shuffleSeedPhrase } from '../../core/util';
 import Toast from 'react-native-toast-message';
 import { INFO_WAITING_TIMEOUT } from '../../core/Http';
 import { saveCredentialsToKeychain } from '../../core/Keychain';
@@ -63,7 +59,6 @@ function CreateSeedPhrase({ route, navigation }) {
   const [origSeedPhrase, setOrigSeedPhrase] = useState<string>('');
   const [randomPositions, setRandomPositions] = useState<number[]>([]);
   const hdWalletContext = useContext<any>(HdWalletContext);
-  const portfolioState = useContext<any>(PortfolioContext);
   const noOfRandomPositionsToPrompt = 6;
 
   const generateMnemonic = async () => {
@@ -354,7 +349,6 @@ function CreateSeedPhrase({ route, navigation }) {
   const proceedToPortfolio = async () => {
     void saveCredentialsToKeychain(
       hdWalletContext,
-      portfolioState,
       wallet,
       SECRET_TYPES.MENEMONIC,
     );

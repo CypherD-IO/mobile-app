@@ -25,14 +25,9 @@ import {
 import ChooseChainModal from '../../components/v2/chooseChainModal';
 import {
   HdWalletContext,
-  PortfolioContext,
   getAvailableChains,
   sortJSONArrayByKey,
 } from '../../core/util';
-import {
-  PORTFOLIO_EMPTY,
-  PORTFOLIO_NEW_LOAD,
-} from '../../reducers/portfolio_reducer';
 import LottieView from 'lottie-react-native';
 import analytics from '@react-native-firebase/analytics';
 import { useTranslation } from 'react-i18next';
@@ -113,7 +108,6 @@ export default function ShortcutsModal({ navigationRef }) {
     IShortcutsData[]
   >([]);
   const [isSignableTransaction] = useIsSignable();
-  const portfolioState = useContext<any>(PortfolioContext);
 
   const emptyWalletShortcutsData: IShortcutsData[] = [
     {
@@ -625,12 +619,7 @@ export default function ShortcutsModal({ navigationRef }) {
   };
 
   useEffect(() => {
-    let data =
-      portfolioState.statePortfolio.portfolioState === PORTFOLIO_EMPTY
-        ? emptyWalletShortcutsData
-        : shortcutsData;
-    data = sortJSONArrayByKey(data, 'index');
-    setSortedShortcutsData(data);
+    void populateShortcutsData();
     const appStateChangeListener = AppState.addEventListener(
       'change',
       handleAppStateChange,
@@ -641,22 +630,17 @@ export default function ShortcutsModal({ navigationRef }) {
     };
   }, [appState]);
 
-  useEffect(() => {
-    if (portfolioState.statePortfolio.buyButtonClicked === true) {
-      portfolioState.dispatchPortfolio({ value: { buyButtonClicked: false } });
-      setTimeout(() => setBuyModalVisible(true), 1000);
-    }
-  }, [portfolioState.statePortfolio.buyButtonClicked]);
+  const populateShortcutsData = () => {
+    const data = sortJSONArrayByKey(shortcutsData, 'index');
+    setSortedShortcutsData(data);
+  };
 
   return (
     <CyDTouchView
       onPress={async () => {
         setShortcutsModalVisible(true);
         await analytics().logEvent('shortcuts_button_click');
-      }}
-      disabled={
-        portfolioState.statePortfolio.portfolioState === PORTFOLIO_NEW_LOAD
-      }>
+      }}>
       {/* shortcuts modal */}
       <CyDModalLayout
         isModalVisible={shortcutsModalVisible}
