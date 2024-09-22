@@ -1,4 +1,4 @@
-import React, { useContext, useEffect, useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import {
   CyDFastImage,
   CyDKeyboardAwareScrollView,
@@ -21,13 +21,8 @@ import Button from '../../../../components/v2/button';
 import useAxios from '../../../../core/HttpRequest';
 import { Card } from '../../../../models/card.model';
 import * as Sentry from '@sentry/react-native';
-import { get, isEmpty } from 'lodash';
+import { isEmpty } from 'lodash';
 import Loading from '../../../../components/v2/loading';
-import {
-  GlobalContext,
-  GlobalContextDef,
-} from '../../../../core/globalContext';
-import { CypherPlanId } from '../../../../constants/enum';
 import { screenTitle } from '../../../../constants';
 
 interface RouteParams {
@@ -41,16 +36,10 @@ export default function CryptoWithdrawal() {
   const { currentCardProvider, card } = route.params ?? {};
   const { getWithAuth } = useAxios();
   const insets = useSafeAreaInsets();
-  const { globalState } = useContext(GlobalContext) as GlobalContextDef;
 
   const [amount, setAmount] = useState('');
   const [cardBalance, setCardBalance] = useState('');
   const [balanceLoading, setBalanceLoading] = useState(false);
-
-  const profile = globalState.cardProfile;
-  const planId = profile?.planInfo?.planId;
-  const planData = globalState.planInfo;
-  const proPlanData = get(planData, ['default', CypherPlanId.PRO_PLAN]);
 
   const fetchCardBalance = async () => {
     setBalanceLoading(true);
@@ -103,10 +92,10 @@ export default function CryptoWithdrawal() {
             onPress={() => {
               navigation.goBack();
             }}>
-            <CyDFastImage
+            {/* <CyDFastImage
               source={AppImages.HISTORY_BROWSER}
               className='w-[32px] h-[32px]'
-            />
+            /> */}
           </CyDTouchView>
         </CyDView>
         <CyDKeyboardAwareScrollView className='flex-1 bg-n30 px-[16px]'>
@@ -229,46 +218,6 @@ export default function CryptoWithdrawal() {
       </CyDView>
 
       <CyDView className='bg-n0 px-[16px] pb-[32px] pt-[24px] rounded-t-[16px]'>
-        {planId === CypherPlanId.BASIC_PLAN && (
-          <CyDView className='mb-[17px]'>
-            <CyDView className='flex flex-row justify-between items-center'>
-              <CyDText className='text-[12px] font-bold text-base400 w-[65%]'>
-                {t(
-                  'Get 200% lesser conversion rate by upgrading to Premium plan',
-                )}
-              </CyDText>
-              <CyDTouchView
-                className='bg-n0 rounded-full px-[12px] py-[8px] flex flex-row items-center justify-center'
-                // eslint-disable-next-line react-native/no-inline-styles
-                style={{
-                  shadowColor: 'rgba(0, 0, 0, 0.1)',
-                  shadowOffset: { width: 0, height: 1 },
-                  shadowOpacity: 1,
-                  shadowRadius: 8,
-                  elevation: 3,
-                }}
-                onPress={() => {
-                  navigation.navigate(screenTitle.SELECT_PLAN, {
-                    toPage: '',
-                    cardBalance,
-                    deductAmountNow: true,
-                  });
-                }}>
-                <CyDText className=' text-[14px] font-extrabold text-base400 text-center '>
-                  {'Get '}
-                </CyDText>
-                <CyDFastImage
-                  source={AppImages.PREMIUM_TEXT_GRADIENT}
-                  className='w-[65px] h-[11.5px] ml-[2px]'
-                />
-              </CyDTouchView>
-            </CyDView>
-
-            <CyDText className='text-[12px] text-n200 font-bold mt-[12px] text-center'>
-              {`Get premium for just $${proPlanData?.cost ?? 199}/- today`}
-            </CyDText>
-          </CyDView>
-        )}
         <Button
           title={t('CONTINUE')}
           disabled={
