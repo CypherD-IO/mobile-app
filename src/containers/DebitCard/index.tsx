@@ -28,6 +28,7 @@ import * as Sentry from '@sentry/react-native';
 import useCardUtilities from '../../hooks/useCardUtilities';
 import CardProviderSwitch from '../../components/cardProviderSwitch';
 import CardWailtList from './cardWaitList';
+import { getReferralCode } from '../../core/asyncStorage';
 export interface RouteProps {
   navigation: {
     navigate: (screen: string, params?: any, route?: any) => void;
@@ -65,10 +66,16 @@ export default function DebitCardScreen(props: RouteProps) {
 
   const refreshProfile = async () => {
     const data = await getWalletProfile(globalContext.globalState.token);
-    globalContext.globalDispatch({
-      type: GlobalContextType.CARD_PROFILE,
-      cardProfile: data,
-    });
+
+    if (data) {
+      globalContext.globalDispatch({
+        type: GlobalContextType.CARD_PROFILE,
+        cardProfile: data,
+      });
+      return data;
+    } else {
+      return null;
+    }
   };
 
   const cardProfile: CardProfile = globalContext.globalState.cardProfile;
@@ -91,72 +98,116 @@ export default function DebitCardScreen(props: RouteProps) {
   setCardProvider();
 
   useEffect(() => {
-    if (!isReadOnlyWallet && isFocused) {
-      setLoading(true);
-      if (!cardProfile) {
-        void refreshProfile();
-      }
+    let isMounted = true;
+    let isLoading = false;
 
-      if (has(cardProfile, provider as string)) {
-        setLoading(false);
-        const cardApplicationStatus =
-          get(cardProfile, provider)?.applicationStatus ===
-          CardApplicationStatus.COMPLETED;
+    const checkCardApplicationStatus = async () => {
+      if (isLoading || !isMounted) return;
 
-        if (cardApplicationStatus) {
-          props.navigation.reset({
-            index: 0,
-            routes: [
-              {
-                name: screenTitle.BRIDGE_CARD_SCREEN,
-                params: {
-                  cardProvider: provider,
-                },
-              },
-            ],
-          });
-        } else if (shouldCheckApplication()) {
-          void checkApplication(provider);
-        } else {
-          props.navigation.reset({
-            index: 0,
-            routes: [
-              {
-                name: screenTitle.CARD_KYC_STATUS_SCREEN,
-              },
-            ],
-          });
+      if (!isReadOnlyWallet && isFocused) {
+        try {
+          isLoading = true;
+          setLoading(true);
+
+          let currentCardProfile = cardProfile;
+          if (!currentCardProfile) {
+            currentCardProfile = await refreshProfile();
+          }
+
+          if (
+            currentCardProfile &&
+            has(currentCardProfile, provider as string)
+          ) {
+            const cardApplicationStatus =
+              get(currentCardProfile, provider)?.applicationStatus ===
+              CardApplicationStatus.COMPLETED;
+
+            if (cardApplicationStatus) {
+              props.navigation.reset({
+                index: 0,
+                routes: [
+                  {
+                    name: screenTitle.BRIDGE_CARD_SCREEN,
+                    params: {
+                      cardProvider: provider,
+                    },
+                  },
+                ],
+              });
+            } else if (shouldCheckApplication(currentCardProfile)) {
+              await checkApplication(provider);
+            } else {
+              props.navigation.reset({
+                index: 0,
+                routes: [
+                  {
+                    name: screenTitle.CARD_KYC_STATUS_SCREEN,
+                  },
+                ],
+              });
+            }
+          } else {
+            const isReferralCodeApplied = await getReferralCode();
+            if (isReferralCodeApplied) {
+              props.navigation.reset({
+                index: 0,
+                routes: [
+                  {
+                    name: screenTitle.I_HAVE_REFERRAL_CODE_SCREEN,
+                  },
+                ],
+              });
+            } else {
+              props.navigation.reset({
+                index: 0,
+                routes: [
+                  {
+                    name: screenTitle.CARD_V2_SIGNUP_LANDING_SCREEN,
+                    params: {
+                      deductAmountNow: false,
+                      toPage: screenTitle.CARD_SIGNUP_SCREEN,
+                    },
+                  },
+                ],
+              });
+            }
+          }
+        } catch (error) {
+          Sentry.captureException(error);
+        } finally {
+          if (isMounted) {
+            setLoading(false);
+            isLoading = false;
+          }
         }
       } else {
-        props.navigation.reset({
-          index: 0,
-          routes: [
-            {
-              name: screenTitle.SELECT_PLAN,
-              params: {
-                toPage: screenTitle.CARD_SIGNUP_SCREEN,
-              },
-            },
-          ],
-        });
+        setLoading(false);
       }
-    } else {
-      setLoading(false);
-    }
+    };
+
+    void checkCardApplicationStatus();
+
+    return () => {
+      isMounted = false;
+    };
   }, [isFocused, globalContext.globalState.cardProfile, provider]);
 
-  const shouldCheckApplication = () => {
+  const shouldCheckApplication = (currentCardProfile: CardProfile) => {
     if (provider === CardProviders.REAP_CARD) {
       return (
-        get(cardProfile, provider as CardProviders)?.applicationStatus ===
-          CardApplicationStatus.CREATED ||
-        (get(cardProfile, provider as CardProviders)?.applicationStatus ===
-          CardApplicationStatus.KYC_INITIATED &&
-          !get(cardProfile, ['cardNotification', 'isTelegramAllowed'], false))
+        get(currentCardProfile, provider as CardProviders)
+          ?.applicationStatus === CardApplicationStatus.CREATED ||
+        (get(currentCardProfile, provider as CardProviders)
+          ?.applicationStatus === CardApplicationStatus.KYC_INITIATED &&
+          !get(
+            currentCardProfile,
+            ['cardNotification', 'isTelegramAllowed'],
+            false,
+          ))
       );
     }
     return (
-      get(cardProfile, provider)?.applicationStatus ===
+      get(currentCardProfile, provider)?.applicationStatus ===
       CardApplicationStatus.CREATED
     );
   };

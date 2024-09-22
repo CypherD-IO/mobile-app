@@ -23,6 +23,7 @@ import CyDModalLayout from '../../../components/v2/modal';
 import { screenTitle } from '../../../constants';
 import {
   ACCOUNT_STATUS,
+  CardOperationsAuthType,
   CardProviders,
   CardStatus,
   CardType,
@@ -87,7 +88,7 @@ export default function CardScreen({
   const cardProfile: CardProfile = globalContext.globalState.cardProfile;
   const {
     lifetimeAmountUsd: lifetimeLoadUSD,
-    pc: { isPhysicalCardEligible: upgradeToPhysicalAvailable = false } = {},
+    rc: { isPhysicalCardEligible: upgradeToPhysicalAvailable = false } = {},
     physicalCardEligibilityLimit,
   } = cardProfile;
 
@@ -191,15 +192,18 @@ export default function CardScreen({
           'justify-center items-center':
             card.status === CardStatus.IN_ACTIVE ||
             card.status === CardStatus.HIDDEN ||
+            card.status === CardStatus.BLOCKED ||
             card.status === 'rcUpgradable',
-          'justify-end items-start':
+          'justify-end':
             card.status !== CardStatus.IN_ACTIVE &&
             card.status !== CardStatus.HIDDEN &&
+            card.status !== CardStatus.BLOCKED &&
             card.status !== 'rcUpgradable',
         })}
         resizeMode='stretch'
         source={getCardImage(card)}>
-        {card.status === CardStatus.IN_ACTIVE && (
+        {(card.status === CardStatus.IN_ACTIVE ||
+          card.status === CardStatus.BLOCKED) && (
           <CyDView className='flex flex-row items-center bg-cardBg px-[12px] py-[6px] rounded-[6px]'>
             <CyDImage
               source={AppImages.CYPHER_LOCKED}
@@ -235,11 +239,10 @@ export default function CardScreen({
             </CyDText>
           </CyDView>
         )}
-        {card.status !== CardStatus.IN_ACTIVE &&
-          card.status !== CardStatus.HIDDEN &&
+        {card.status !== CardStatus.HIDDEN &&
           card.status !== 'rcUpgradable' &&
           cardProfile.provider === CardProviders.REAP_CARD && (
-            <CyDView className='ml-[12px] mb-[12px]'>
+            <CyDView className='absolute bottom-[12px] left-[12px]'>
               <CyDText className='font-semibold text-[18px]'>
                 {' xxxx ' + card.last4}
               </CyDText>
@@ -251,12 +254,12 @@ export default function CardScreen({
 
   const cardsWithUpgrade = useMemo(() => {
     const actualCards = userCardDetails.cards.map(card => card);
-    if (upgradeToPhysicalAvailable) {
+    if (upgradeToPhysicalAvailable && !isHiddenCard()) {
       actualCards.unshift({
         cardId: '',
         bin: '',
         last4: '',
-        network: 'pc',
+        network: 'rc',
         status: 'upgradeAvailable',
         type: CardType.PHYSICAL,
       });
@@ -265,7 +268,7 @@ export default function CardScreen({
         cardId: '',
         bin: '',
         last4: '',
-        network: 'pc',
+        network: 'rc',
         status: 'upgradeAvailable',
         type: CardType.PHYSICAL,
       });
@@ -374,7 +377,7 @@ const RenderCardActions = ({
   const [userName, setUserName] = useState('');
   const {
     lifetimeAmountUsd: lifetimeLoadUSD,
-    pc: { isPhysicalCardEligible: upgradeToPhysicalAvailable = false } = {},
+    rc: { isPhysicalCardEligible: upgradeToPhysicalAvailable = false } = {},
     physicalCardEligibilityLimit,
   } = cardProfile;
   const globalContext = useContext<any>(GlobalContext);
@@ -656,7 +659,11 @@ const RenderCardActions = ({
         });
       },
       currentCardProvider: cardProvider,
-      cardId,
+      card,
+      authType:
+        card.status === CardStatus.BLOCKED
+          ? CardOperationsAuthType.UNBLOCK
+          : CardOperationsAuthType.UNLOCK,
     });
   };
 
@@ -727,7 +734,7 @@ const RenderCardActions = ({
   } else if (card.status === 'upgradeAvailable') {
     if (upgradeToPhysicalAvailable) {
       return (
-        <CyDView className='flex flex-col justify-center items-center mx-[20px] mt-[-42px]'>
+        <CyDView className='flex flex-col justify-center items-center mx-[20px] mt-[-20px]'>
           <CyDText className='text-[22px] font-bold'>Get Physical Card</CyDText>
           <CyDText className='text-[14px] font-semibold text-center mb-[12px] mt-[6px]'>
             Obtain a Physical card and enjoy the convenience of making purchases
@@ -794,7 +801,7 @@ const RenderCardActions = ({
     }
   } else if (status === CardStatus.PENDING_ACTIVATION) {
     return (
-      <CyDView className='flex flex-col justify-center items-center mx-[20px] mt-[-32px]'>
+      <CyDView className='flex flex-col justify-center items-center mx-[20px] mt-[-20px]'>
         {get(trackingDetails, cardId) ? (
           <RenderTrackingItem />
         ) : (
@@ -969,20 +976,20 @@ const RenderCardActions = ({
 
       {cardProfile.provider === CardProviders.PAYCADDY && (
         <CyDView className='flex flex-row justify-center items-center mb-[14px] mt-[-42px]'>
-          <CyDText className='font-bold text-[18px]'>
+          <CyDText className='font-bold text-[14px]'>
             {t<string>(
               type === CardType.VIRTUAL ? 'VIRTUAL_CARD' : 'PHYSICAL_CARD',
             )}
           </CyDText>
-          <CyDText className='font-bold text-[18px]'>
+          <CyDText className='font-bold text-[14px]'>
             {' xxxx ' + last4}
           </CyDText>
         </CyDView>
       )}
 
-      <CyDView className='flex flex-row justify-around items-center'>
+      <CyDView className='flex flex-row justify-center items-center'>
         <CyDTouchView
-          className='flex flex-col justify-center items-center'
+          className='flex flex-col justify-center items-center w-[72px]'
           disabled={shouldBlockAction()}
           onPress={() => {
             if (status === CardStatus.IN_ACTIVE) {
@@ -1003,17 +1010,19 @@ const RenderCardActions = ({
             ) : (
               <CyDImage
                 source={AppImages.MANAGE_CARD}
-                className='h-[26px] w-[26px]'
+                className='h-[24px] w-[24px]'
                 resizeMode='contain'
               />
             )}
           </CyDView>
-          <CyDView className='mt-[4px]'>
-            <CyDText className='font-semibold'>{'Reveal Card'}</CyDText>
+          <CyDView className='mt-[6px]'>
+            <CyDText className='font-semibold text-[12px]'>
+              {'Reveal Card'}
+            </CyDText>
           </CyDView>
         </CyDTouchView>
         <CyDTouchView
-          className='flex flex-col justify-center items-center'
+          className='flex flex-col justify-center items-center w-[72px]  ml-[24px] mr-[21px]'
           disabled={shouldBlockAction()}
           onPress={() => {
             if (status === CardStatus.ACTIVE) {
@@ -1033,19 +1042,19 @@ const RenderCardActions = ({
                     ? AppImages.CYPHER_LOCKED
                     : AppImages.UNLOCK
                 }
-                className='h-[26px] w-[26px]'
+                className='h-[24px] w-[24px]'
                 resizeMode='contain'
               />
             )}
           </CyDView>
-          <CyDView className='mt-[4px]'>
-            <CyDText className='font-semibold'>
+          <CyDView className='mt-[6px]'>
+            <CyDText className='font-semibold text-[12px]'>
               {status === CardStatus.ACTIVE ? 'Lock Card' : 'Unlock Card'}
             </CyDText>
           </CyDView>
         </CyDTouchView>
         <CyDTouchView
-          className='flex lfex-col justify-center items-center'
+          className='flex flex-col justify-center items-center'
           disabled={shouldBlockAction()}
           onPress={() => {
             setShowOptionsModal(true);
@@ -1054,12 +1063,14 @@ const RenderCardActions = ({
             className={`${shouldBlockAction() ? 'bg-n40' : 'bg-appColor'} p-[12px] rounded-[50px]`}>
             <CyDImage
               source={AppImages.MORE}
-              className='h-[26px] w-[26px] accent-black rotate-90'
+              className='h-[24px] w-[24px] accent-black rotate-90'
               resizeMode='contain'
             />
           </CyDView>
-          <CyDView className='mt-[4px]'>
-            <CyDText className='font-semibold'>{'Card Options'}</CyDText>
+          <CyDView className='mt-[6px]'>
+            <CyDText className='font-semibold text-[12px]'>
+              {'Card Options'}
+            </CyDText>
           </CyDView>
         </CyDTouchView>
       </CyDView>

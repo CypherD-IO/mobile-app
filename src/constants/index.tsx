@@ -134,12 +134,16 @@ export const screenTitle = {
   CARD_V2_WELCOME_SCREEN: 'welcomeScreen',
   CARD_APPLICATION_V2: 'cardApplicationv2',
   REWARDS: 'Rewards',
+  MIGRATE_FUNDS: 'migrateFunds',
+  REFERRALS: 'Referrals',
+  CARD_V2_SIGNUP_LANDING_SCREEN: 'CardV2SignupLandingScreen',
+  I_HAVE_REFERRAL_CODE_SCREEN: 'IHaveReferralCodeScreen',
 };
 
 export const fontsName = {
-  FONT_BLACK: 'Nunito',
-  FONT_BOLD: 'Nunito',
-  FONT_SEMI_BOLD: 'Nunito',
-  FONT_EXTRA_BOLD: 'Nunito',
-  FONT_REGULAR: 'Nunito',
+  FONT_BLACK: 'Manrope',
+  FONT_BOLD: 'Manrope',
+  FONT_SEMI_BOLD: 'Manrope',
+  FONT_EXTRA_BOLD: 'Manrope',
+  FONT_REGULAR: 'Manrope',
 };

@@ -183,6 +183,7 @@ export enum ButtonType {
   RED = 'red',
   DARK = 'dark',
   GREY_FILL = 'greyFill',
+  WHITE_FILL = 'whiteFill',
 }
 
 export enum ImagePosition {
@@ -275,7 +276,6 @@ export enum ApplicationName {
   _0X_EXCHANGE = '0x Exchange',
   QUICK_SWAP = 'QuickSwap',
   LIFI = 'Lifi',
-  WRAPPED_EVMOS = 'Wrapped Evmos',
   WRAPPED_MATIC = 'Wrapped Matic',
   SPIRIT_SWAP = 'SpiritSwap',
   DIFFUSION = 'Diffusion',
@@ -351,4 +351,10 @@ export enum ACCOUNT_STATUS {
 export enum CypherPlanId {
   BASIC_PLAN = 'basic_plan_v1',
   PRO_PLAN = 'pro_plan_v1',
+}
+
+export enum CardOperationsAuthType {
+  UNLOCK = 'status',
+  UNBLOCK = 'unblock',
+  ZERO_RESTRICTION_MODE_ON = 'god-mode',
 }

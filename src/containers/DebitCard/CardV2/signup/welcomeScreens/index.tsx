@@ -24,7 +24,7 @@ export default function WelcomeSceens() {
         index: 0,
         routes: [
           {
-            name: screenTitle.SELECT_PLAN,
+            name: screenTitle.CARD_V2_SIGNUP_LANDING_SCREEN,
             params: {
               deductAmountNow: false,
               toPage: screenTitle.CARD_SIGNUP_SCREEN,

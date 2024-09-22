@@ -21,7 +21,6 @@ import { screenTitle } from '../../constants';
 import { AnalyticsType, TokenOverviewTabIndices } from '../../constants/enum';
 import { ChainBackendNames, CosmosStakingTokens } from '../../constants/server';
 import { MODAL_HIDE_TIMEOUT_250, TIMEOUT } from '../../core/Http';
-import getValidatorsForUSer from '../../core/Staking';
 import { getCosmosStakingData } from '../../core/cosmosStaking';
 import { GlobalContext } from '../../core/globalContext';
 import {
@@ -29,7 +28,6 @@ import {
   PortfolioContext,
   StakingContext,
   convertFromUnitAmount,
-  convertToEvmosFromAevmos,
   getTimeForDate,
   isABasicCosmosStakingToken,
   isBasicCosmosChain,
@@ -102,7 +100,6 @@ export default function TokenStaking({
     CosmosActionType.CLAIM,
   );
   const cosmosStaking = useContext<any>(CosmosStakingContext);
-  const evmos = hdWalletContext.state.wallet.evmos;
   const stakingValidators = useContext<any>(StakingContext);
   const [time, setTime] = useState({ hours: '0', min: '0', sec: '0' });
   const [method, setMethod] = useState<string>('');
@@ -122,18 +119,15 @@ export default function TokenStaking({
   let claimTryCount = 0;
 
   const { showModal, hideModal } = useGlobalModalContext();
-  const { claimCosmosReward, delegateCosmosToken, claimEvmosRewards } =
-    useTransactionManager();
+  const { claimCosmosReward, delegateCosmosToken } = useTransactionManager();
   const route = useRoute();
   const isCOSMOSEcoSystem = [
     ChainBackendNames.COSMOS,
     ChainBackendNames.OSMOSIS,
     ChainBackendNames.JUNO,
-    ChainBackendNames.EVMOS,
     ChainBackendNames.STARGAZE,
     ChainBackendNames.NOBLE,
   ].includes(tokenData.chainDetails.backendName);
-  let evmosRewardTimer: ReturnType<typeof setInterval>;
   const [isSignableTransaction] = useIsSignable();
 
   const isStakingDataEmpty = () => {
@@ -148,18 +142,14 @@ export default function TokenStaking({
 
   const isStakingContextDispatched = (): boolean => {
     return (
-      (tokenData.chainDetails.backendName !== ChainBackendNames.EVMOS &&
-        cosmosStaking.cosmosStakingState.allValidatorsListState !==
-          COSMOS_STAKING_EMPTY) ||
-      (tokenData.chainDetails.backendName === ChainBackendNames.EVMOS &&
-        stakingValidators.stateStaking.allValidatorsListState !== STAKING_EMPTY)
+      cosmosStaking.cosmosStakingState.allValidatorsListState !==
+      COSMOS_STAKING_EMPTY
     );
   };
 
   useEffect(() => {
     if (isStakingContextDispatched()) {
       const defaultUnboundingPeriod =
-        tokenData.chainDetails.backendName === ChainBackendNames.EVMOS ||
         tokenData.chainDetails.backendName === ChainBackendNames.STARGAZE ||
         tokenData.chainDetails.backendName === ChainBackendNames.NOBLE
           ? 14
@@ -170,67 +160,41 @@ export default function TokenStaking({
         currentlyStaked: '0',
         totalUnboundings: '0',
       };
-      if (tokenData.chainDetails.backendName !== ChainBackendNames.EVMOS) {
-        setUnboundingPeriodInDays(
-          cosmosStaking.unboundingPeriodInDays ?? defaultUnboundingPeriod,
-        );
-        if (
-          cosmosStaking.cosmosStakingState.reward.toString() !== '0' ||
-          cosmosStaking.cosmosStakingState.userValidators.size > 0
-        ) {
-          variables.totalClaimableRewards = `${convertFromUnitAmount(
-            cosmosStaking.cosmosStakingState.reward.toString(),
-            tokenData.contractDecimals,
-            6,
-          )}`;
-        }
-        if (cosmosStaking.cosmosStakingState.balance.toString() !== '0') {
-          variables.availableToStake = `${convertFromUnitAmount(
-            cosmosStaking.cosmosStakingState.balance.toString(),
-            tokenData.contractDecimals,
-            6,
-          )}`;
-        }
-        if (cosmosStaking.cosmosStakingState.stakedBalance.toString() !== '0') {
-          variables.currentlyStaked = `${convertFromUnitAmount(
-            cosmosStaking.cosmosStakingState.stakedBalance.toString(),
-            tokenData.contractDecimals,
-            6,
-          )}`;
-        }
-        if (
-          cosmosStaking.cosmosStakingState.unBoundingBalance.toString() !== '0'
-        ) {
-          variables.totalUnboundings = `${convertFromUnitAmount(
-            cosmosStaking.cosmosStakingState.unBoundingBalance.toString(),
-            tokenData.contractDecimals,
-            6,
-          )}`;
-        }
-      } else {
-        setUnboundingPeriodInDays(
-          stakingValidators.unboundingPeriodIndDays ?? defaultUnboundingPeriod,
-        );
-        if (!isBigIntZero(stakingValidators.stateStaking.totalReward)) {
-          variables.totalClaimableRewards = `${convertToEvmosFromAevmos(
-            stakingValidators.stateStaking.totalReward,
-          ).toFixed(6)}`;
-        }
-        if (!isBigIntZero(stakingValidators.stateStaking.unStakedBalance)) {
-          variables.availableToStake = `${convertToEvmosFromAevmos(
-            stakingValidators.stateStaking.unStakedBalance,
-          ).toFixed(6)}`;
-        }
-        if (!isBigIntZero(stakingValidators.stateStaking.totalStakedBalance)) {
-          variables.currentlyStaked = `${convertToEvmosFromAevmos(
-            stakingValidators.stateStaking.totalStakedBalance,
-          ).toFixed(6)}`;
-        }
-        if (!isBigIntZero(stakingValidators.stateStaking.unBoundingTotal)) {
-          variables.totalUnboundings = `${convertToEvmosFromAevmos(
-            stakingValidators.stateStaking.unBoundingTotal,
-          ).toFixed(6)}`;
-        }
+      setUnboundingPeriodInDays(
+        cosmosStaking.unboundingPeriodInDays ?? defaultUnboundingPeriod,
+      );
+      if (
+        cosmosStaking.cosmosStakingState.reward.toString() !== '0' ||
+        cosmosStaking.cosmosStakingState.userValidators.size > 0
+      ) {
+        variables.totalClaimableRewards = `${convertFromUnitAmount(
+          cosmosStaking.cosmosStakingState.reward.toString(),
+          tokenData.contractDecimals,
+          6,
+        )}`;
+      }
+      if (cosmosStaking.cosmosStakingState.balance.toString() !== '0') {
+        variables.availableToStake = `${convertFromUnitAmount(
+          cosmosStaking.cosmosStakingState.balance.toString(),
+          tokenData.contractDecimals,
+          6,
+        )}`;
+      }
+      if (cosmosStaking.cosmosStakingState.stakedBalance.toString() !== '0') {
+        variables.currentlyStaked = `${convertFromUnitAmount(
+          cosmosStaking.cosmosStakingState.stakedBalance.toString(),
+          tokenData.contractDecimals,
+          6,
+        )}`;
+      }
+      if (
+        cosmosStaking.cosmosStakingState.unBoundingBalance.toString() !== '0'
+      ) {
+        variables.totalUnboundings = `${convertFromUnitAmount(
+          cosmosStaking.cosmosStakingState.unBoundingBalance.toString(),
+          tokenData.contractDecimals,
+          6,
+        )}`;
       }
       setStakingVariables({ ...variables });
       setPageLoading(false);
@@ -252,39 +216,13 @@ export default function TokenStaking({
   }, []);
 
   useEffect(() => {
-    if (isFocused) {
-      if (!isStakingDataEmpty()) {
-        evmosRewardTimer = setInterval(function time() {
-          const d = new Date();
-          const timeForDate = getTimeForDate(d);
-          const hours = timeForDate.hours;
-          const min = timeForDate.minutes;
-          const sec = timeForDate.seconds;
-          setTime({ ...time, hours, min, sec });
-        }, 1000);
-      }
-    }
-    return () => {
-      clearInterval(evmosRewardTimer);
-    };
-  }, [isFocused, isStakingDataEmpty()]);
-
-  useEffect(() => {
     if (validator.name !== '') {
       void onReStake(CosmosActionType.SIMULATION);
     }
   }, [validator]);
 
   const getStakingMetaData = async () => {
-    if (isABasicCosmosStakingToken(tokenData)) {
-      await getStakingData();
-    } else if (isCosmosStakingToken('EVMOS', tokenData)) {
-      await getValidatorsForUSer(
-        evmos?.wallets[evmos.currentIndex]?.address,
-        stakingValidators,
-        globalStateContext,
-      );
-    }
+    await getStakingData();
   };
 
   const getStakingData = async () => {
@@ -299,21 +237,11 @@ export default function TokenStaking({
 
   const reloadPage = () => {
     setLoading(true);
-    if (tokenData.chainDetails.backendName !== ChainBackendNames.EVMOS) {
-      setTimeout(() => {
-        cosmosStaking.cosmosStakingDispatch({
-          allValidatorsListState: COSMOS_STAKING_EMPTY,
-        });
-      }, MODAL_HIDE_TIMEOUT_250);
-    } else {
-      setTimeout(() => {
-        stakingValidators.dispatchStaking({
-          value: {
-            allValidatorsListState: STAKING_EMPTY,
-          },
-        });
-      }, MODAL_HIDE_TIMEOUT_250);
-    }
+    setTimeout(() => {
+      cosmosStaking.cosmosStakingDispatch({
+        allValidatorsListState: COSMOS_STAKING_EMPTY,
+      });
+    }, MODAL_HIDE_TIMEOUT_250);
   };
 
   const onRefresh = () => {
@@ -347,8 +275,8 @@ export default function TokenStaking({
         position: 'bottom',
       });
       Sentry.captureException(error);
-      void analytics().logEvent('evmos_staking_error', {
-        from: `error while ${stakingValidators.stateStaking.typeOfDelegation} in evmos staking/index.tsx`,
+      void analytics().logEvent('staking_error', {
+        from: `error while ${stakingValidators.stateStaking.typeOfDelegation} in staking/index.tsx`,
       });
     }
   };
@@ -363,110 +291,6 @@ export default function TokenStaking({
         onFailure: hideModal,
       });
     }, MODAL_HIDE_TIMEOUT_250);
-  };
-
-  const finalTxn = async () => {
-    setSignModalVisible(false);
-    if (
-      parseFloat(gasFee.toFixed(6)) >
-      parseFloat(stakingVariables.availableToStake)
-    ) {
-      showNoGasFeeModal();
-    } else {
-      try {
-        setPageLoading(true);
-
-        const validatorAddresses: string[] = [];
-        stakingValidators.stateStaking.myValidators.forEach(
-          (val: { address: string }) => {
-            validatorAddresses.push(val.address);
-          },
-        );
-        const txnResponse = await claimEvmosRewards({
-          validatorAddresses,
-        });
-
-        if (!txnResponse?.isError) {
-          void analytics().logEvent('evmos_reward_claim_success');
-          // monitoring api
-          void logAnalytics({
-            type: AnalyticsType.SUCCESS,
-            txnHash: txnResponse?.hash,
-            chain: tokenData?.chainDetails?.chainName ?? '',
-          });
-          Toast.show({
-            type: t('TOAST_TYPE_SUCCESS'),
-            text1: t('TRANSACTION_SUCCESS'),
-            text2: txnResponse?.hash,
-            position: 'bottom',
-          });
-          if (method === CosmosActionType.CLAIM) {
-            navigation.navigate(screenTitle.TOKEN_OVERVIEW, {
-              tokenData,
-              navigateTo: TokenOverviewTabIndices.STAKING,
-            });
-            setTimeout(() => {
-              portfolioState.dispatchPortfolio({
-                type: PORTFOLIO_REFRESH,
-                value: {
-                  hdWallet: hdWalletContext,
-                  portfolioState,
-                },
-              });
-            }, TIMEOUT);
-            reloadPage();
-          } else if (method === CosmosActionType.RESTAKE) {
-            navigation.navigate(screenTitle.RESTAKE, {
-              tokenData,
-              reward,
-            });
-          }
-        } else {
-          if (claimTryCount === 0) {
-            claimTryCount += 1;
-            void txnSimulation(method);
-          } else {
-            Toast.show({
-              type: t('TOAST_TYPE_ERROR'),
-              text1: t('TRANSACTION_FAILED'),
-              position: 'bottom',
-            });
-            setPageLoading(false);
-            // monitoring api
-            void logAnalytics({
-              type: AnalyticsType.ERROR,
-              chain: tokenData?.chainDetails?.chainName ?? '',
-              message: `EVMOS staking Error: error while broadcasting the transaction in evmos staking/index.tsx ${txnResponse.data.tx_response.raw_log}`,
-              screen: route.name,
-            });
-            Sentry.captureException(txnResponse);
-            void analytics().logEvent('evmos_staking_error', {
-              from: `error while broadcasting the transaction in evmos staking/index.tsx ${txnResponse.data.tx_response.raw_log}`,
-            });
-          }
-        }
-        setPageLoading(false);
-      } catch (error: any) {
-        setPageLoading(false);
-        // monitoring api
-        void logAnalytics({
-          type: AnalyticsType.ERROR,
-          chain: tokenData?.chainDetails?.chainName ?? '',
-          message: parseErrorMessage(error),
-          screen: route.name,
-        });
-        Toast.show({
-          type: t('TOAST_TYPE_ERROR'),
-          text1: t('TRANSACTION_FAILED'),
-          text2: error.toString(),
-          position: 'bottom',
-        });
-        Sentry.captureException(error);
-        void analytics().logEvent('evmos_staking_error', {
-          from: 'error while broadcasting the transaction in evmos staking/index.tsx',
-        });
-      }
-    }
   };
 
   const onPressClaim = async (type: CosmosActionType): Promise<void> => {
@@ -661,31 +485,17 @@ export default function TokenStaking({
   };
 
   const onStake = () => {
-    if (isBasicCosmosChain(tokenData.chainDetails.backendName)) {
-      navigation.navigate(screenTitle.COSMOS_VALIDATORS, {
-        tokenData,
-        from: CosmosActionType.STAKE,
-      });
-    } else if (tokenData.chainDetails.backendName === ChainBackendNames.EVMOS) {
-      navigation.navigate(screenTitle.STAKING_VALIDATORS, {
-        tokenData,
-        typeOfAction: CosmosActionType.STAKE,
-      });
-    }
+    navigation.navigate(screenTitle.COSMOS_VALIDATORS, {
+      tokenData,
+      from: CosmosActionType.STAKE,
+    });
   };
 
   const onUnstake = () => {
-    if (isBasicCosmosChain(tokenData.chainDetails.backendName)) {
-      navigation.navigate(screenTitle.COSMOS_VALIDATORS, {
-        tokenData,
-        from: CosmosActionType.UNSTAKE,
-      });
-    } else if (tokenData.chainDetails.backendName === ChainBackendNames.EVMOS) {
-      navigation.navigate(screenTitle.STAKING_VALIDATORS, {
-        tokenData,
-        typeOfAction: CosmosActionType.UNSTAKE,
-      });
-    }
+    navigation.navigate(screenTitle.COSMOS_VALIDATORS, {
+      tokenData,
+      from: CosmosActionType.UNSTAKE,
+    });
   };
 
   return (
@@ -754,32 +564,6 @@ export default function TokenStaking({
                 />
               </CyDView>
             )}
-            {tokenData.chainDetails.backendName === ChainBackendNames.EVMOS && (
-              <CyDView className={'flex flex-col mt-[24px] w-[100%]'}>
-                <Button
-                  onPress={async () => {
-                    setActionType(CosmosActionType.RESTAKE);
-                    await txnSimulation(CosmosActionType.RESTAKE);
-                  }}
-                  title={t<string>('RESTAKE')}
-                  style={'py-[5%]'}
-                  loading={actionType === CosmosActionType.RESTAKE && loading}
-                  loaderStyle={styles.loaderStyle}
-                />
-                <Button
-                  onPress={async () => {
-                    // setClaimModal(false);
-                    setActionType(CosmosActionType.CLAIM);
-                    await txnSimulation(CosmosActionType.CLAIM);
-                  }}
-                  title={t<string>('CLAIM')}
-                  type={'secondary'}
-                  style={'py-[5%] mt-[15px]'}
-                  loading={actionType === CosmosActionType.CLAIM && loading}
-                  loaderStyle={styles.loaderStyle}
-                />
-              </CyDView>
-            )}
           </CyDView>
         </CyDView>
       </CyDModalLayout>
@@ -808,10 +592,7 @@ export default function TokenStaking({
           <CyDView className={'flex flex-row mt-[40px]'}>
             <CyDImage source={AppImages.MONEY_BAG} />
             <CyDView className={' flex flex-row mt-[3px]'}>
-              <CyDText
-                className={
-                  ' font-medium text-[16px] ml-[5px] text-primaryTextColor'
-                }>
+              <CyDText className={' font-medium text-[16px] ml-[5px] '}>
                 {t<string>('CLAIMABLE_REWARD')}
               </CyDText>
               <CyDText
@@ -830,10 +611,7 @@ export default function TokenStaking({
               resizeMode='contain'
             />
             <CyDView className={' flex flex-row mt-[3px]'}>
-              <CyDText
-                className={
-                  ' font-medium text-[16px] ml-[10px] text-primaryTextColor'
-                }>
+              <CyDText className={' font-medium text-[16px] ml-[10px] '}>
                 {t<string>('GAS_FEE')}
               </CyDText>
               <CyDText
@@ -846,9 +624,7 @@ export default function TokenStaking({
           <CyDView className={'flex flex-col mt-[30px] w-[100%]'}>
             <Button
               onPress={async () => {
-                isBasicCosmosChain(tokenData.chainDetails.backendName)
-                  ? await onPressClaim(CosmosActionType.TRANSACTION)
-                  : await finalTxn();
+                await onPressClaim(CosmosActionType.TRANSACTION);
               }}
               title={t<string>('APPROVE')}
               style={'py-[5%]'}
@@ -910,10 +686,7 @@ export default function TokenStaking({
               resizeMode='contain'
             />
             <CyDView className={' flex flex-row mt-[3px]'}>
-              <CyDText
-                className={
-                  ' font-medium text-[16px] ml-[10px] text-primaryTextColor'
-                }>
+              <CyDText className={' font-medium text-[16px] ml-[10px] '}>
                 {t<string>('GAS_FEE')}
               </CyDText>
               <CyDText
@@ -957,29 +730,6 @@ export default function TokenStaking({
               onRefresh={onRefresh}
             />
           }>
-          {tokenData.chainDetails.backendName === ChainBackendNames.EVMOS &&
-            tokenData.name === CosmosStakingTokens.EVMOS &&
-            stakingValidators.stateStaking.myValidatorsListState ===
-              STAKING_NOT_EMPTY && (
-              <CyDView
-                className={
-                  'flex flex-row justify-center items-center w-screen bg-babyPink mt-[10px] py-[10px]'
-                }>
-                <LottieView
-                  source={AppImages.GIFT_BOX}
-                  autoPlay
-                  loop
-                  resizeMode='cover'
-                  style={isIOS() ? styles.IOSStyle : styles.androidStyle}
-                />
-                <CyDText>
-                  {t<string>('NEXT_REWARD_DISTRIBUTION_AT')}
-                  <CyDText className={'text-maroon font-black'}>
-                    {'  ' + time.hours + ':' + time.min + ':' + time.sec}
-                  </CyDText>
-                </CyDText>
-              </CyDView>
-            )}
           {stakingVariables.totalClaimableRewards !== '0' && (
             <CyDView>
               <CyDView
@@ -993,14 +743,11 @@ export default function TokenStaking({
                   </CyDText>
                   <CyDView className='flex flex-row flex-wrap items-center'>
                     <CyDTokenAmount
-                      className={'text-primaryTextColor font-bold text-[18px]'}
+                      className={' font-bold text-[18px]'}
                       decimalPlaces={5}>
                       {stakingVariables.totalClaimableRewards}
                     </CyDTokenAmount>
-                    <CyDText
-                      className={
-                        'text-primaryTextColor font-bold text-[18px] ml-[5px]'
-                      }>
+                    <CyDText className={' font-bold text-[18px] ml-[5px]'}>
                       {tokenData.name}
                     </CyDText>
                   </CyDView>
@@ -1010,13 +757,7 @@ export default function TokenStaking({
                     isSignableTransaction(ActivityType.CLAIM, onClaim);
                   }}
                   disabled={
-                    tokenData.chainDetails.backendName ===
-                    ChainBackendNames.EVMOS
-                      ? convertToEvmosFromAevmos(
-                          stakingValidators.stateStaking.totalReward,
-                        ) < 0.0001
-                      : cosmosStaking.cosmosStakingState.reward.toString() ===
-                        '0'
+                    cosmosStaking.cosmosStakingState.reward.toString() === '0'
                   }
                   title={'CLAIM'}
                   isPrivateKeyDependent={true}
@@ -1045,16 +786,11 @@ export default function TokenStaking({
                     </CyDText>
                     <CyDView className='flex flex-row flex-wrap items-center'>
                       <CyDTokenAmount
-                        className={
-                          'text-primaryTextColor font-bold text-[18px]'
-                        }
+                        className={' font-bold text-[18px]'}
                         decimalPlaces={5}>
                         {stakingVariables.availableToStake}
                       </CyDTokenAmount>
-                      <CyDText
-                        className={
-                          'text-primaryTextColor font-bold text-[18px] ml-[5px]'
-                        }>
+                      <CyDText className={' font-bold text-[18px] ml-[5px]'}>
                         {tokenData.name}
                       </CyDText>
                     </CyDView>
@@ -1085,14 +821,11 @@ export default function TokenStaking({
                   </CyDText>
                   <CyDView className='flex flex-row flex-wrap items-center'>
                     <CyDTokenAmount
-                      className={'text-primaryTextColor font-bold text-[18px]'}
+                      className={' font-bold text-[18px]'}
                       decimalPlaces={5}>
                       {stakingVariables.currentlyStaked}
                     </CyDTokenAmount>
-                    <CyDText
-                      className={
-                        'text-primaryTextColor font-bold text-[18px] ml-[5px]'
-                      }>
+                    <CyDText className={' font-bold text-[18px] ml-[5px]'}>
                       {tokenData.name}
                     </CyDText>
                   </CyDView>
@@ -1124,32 +857,20 @@ export default function TokenStaking({
                   </CyDText>
                   <CyDView className='flex flex-row flex-wrap items-center'>
                     <CyDTokenAmount
-                      className={'text-primaryTextColor font-bold text-[18px]'}
+                      className={' font-bold text-[18px]'}
                       decimalPlaces={5}>
                       {stakingVariables.totalUnboundings}
                     </CyDTokenAmount>
-                    <CyDText
-                      className={
-                        'text-primaryTextColor font-bold text-[18px] ml-[5px]'
-                      }>
+                    <CyDText className={' font-bold text-[18px] ml-[5px]'}>
                       {tokenData.name}
                     </CyDText>
                   </CyDView>
                 </CyDView>
                 <Button
                   onPress={() => {
-                    if (
-                      isBasicCosmosChain(tokenData.chainDetails.backendName)
-                    ) {
-                      navigation.navigate(screenTitle.COSMOS_UNBOUNDINGS, {
-                        tokenData,
-                      });
-                    } else if (
-                      tokenData.chainDetails.backendName ===
-                      ChainBackendNames.EVMOS
-                    ) {
-                      navigation.navigate(screenTitle.UNBOUNDING);
-                    }
+                    navigation.navigate(screenTitle.COSMOS_UNBOUNDINGS, {
+                      tokenData,
+                    });
                   }}
                   title={t<string>('VIEW')}
                   style={'w-4/12 p-[4%]'}
@@ -1192,16 +913,11 @@ export default function TokenStaking({
                         'text-subTextColor  font-medium text-[15.5px]'
                       }>{`${t<string>('AVAILABLE_TO_STAKE')}: `}</CyDText>
                     <CyDTokenAmount
-                      className={
-                        'text-primaryTextColor font-bold text-[15.5px] ml-[2px]'
-                      }
+                      className={' font-bold text-[15.5px] ml-[2px]'}
                       decimalPlaces={5}>
                       {stakingVariables.availableToStake}
                     </CyDTokenAmount>
-                    <CyDText
-                      className={
-                        'text-primaryTextColor font-bold text-[15.5px] ml-[5px]'
-                      }>
+                    <CyDText className={' font-bold text-[15.5px] ml-[5px]'}>
                       {tokenData.name}
                     </CyDText>
                   </CyDView>
@@ -1235,22 +951,6 @@ export default function TokenStaking({
                 />
               </CyDView>
 
-              {tokenData.chainDetails.backendName ===
-                ChainBackendNames.EVMOS && (
-                <CyDView className={'flex flex-row mt-[12px] '}>
-                  <CyDText
-                    className={
-                      'mr-[6px] font-[14px] text-subTextColor font-semibold '
-                    }>
-                    {t<string>('STAKING_REWARDS_DISTRIBUTED_AT')}
-                  </CyDText>
-                  <CyDText
-                    className={'font-[16px] text-primaryTextColor font-bold '}>
-                    19:00 UTC
-                  </CyDText>
-                </CyDView>
-              )}
-
               <CyDView className={'flex flex-row mt-[12px] '}>
                 <CyDText
                   className={
@@ -1258,8 +958,7 @@ export default function TokenStaking({
                   }>
                   {t<string>('UNBOUNDING_PERIOD_IS')}
                 </CyDText>
-                <CyDText
-                  className={'font-[16px] text-primaryTextColor font-bold '}>
+                <CyDText className={'font-[16px]  font-bold '}>
                   {unboundingPeriodInDays} {t('DAYS')}
                 </CyDText>
               </CyDView>

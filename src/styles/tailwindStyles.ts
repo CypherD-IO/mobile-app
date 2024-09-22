@@ -14,6 +14,7 @@ import {
   TouchableWithoutFeedback,
   TouchableHighlight,
   KeyboardAvoidingView,
+  InputAccessoryView,
 } from 'react-native';
 import { styled } from 'nativewind';
 import FastImage from 'react-native-fast-image';
@@ -21,7 +22,7 @@ import { Dropdown } from 'react-native-element-dropdown';
 import Animated from 'react-native-reanimated';
 import { KeyboardAwareScrollView } from 'react-native-keyboard-aware-scroll-view';
 
-export const CyDText = styled(Text, 'text-[#434343] font-nunito');
+export const CyDText = styled(Text, 'text font-nunito text-black');
 export const CyDTextInput = styled(TextInput, 'pb-[0px] text-[#434343] ');
 export const CyDView = styled(View);
 export const CyDTouchView = styled(TouchableOpacity);
@@ -40,3 +41,4 @@ export const CyDKeyboardAvoidingView = styled(KeyboardAvoidingView);
 export const CyDDropDown = styled(Dropdown);
 export const CyDAnimatedView = styled(Animated.View);
 export const CyDKeyboardAwareScrollView = styled(KeyboardAwareScrollView);
+export const CyDInputAccessoryView = styled(InputAccessoryView);

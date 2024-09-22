@@ -92,9 +92,7 @@ export default function CosmosValidators({ route, navigation }) {
           }>
           <CyDView className='w-[70%]'>
             <CyDText
-              className={
-                'text-[16px] font-bold text-secondaryTextColor font-nunito'
-              }>
+              className={'text-[16px] font-bold text-secondaryTextColor '}>
               {item.name}
             </CyDText>
             {item.balance.toString() !== '0' && (
@@ -105,15 +103,12 @@ export default function CosmosValidators({ route, navigation }) {
                   }
                   className={'w-[16px] h-[16px]'}
                 />
-                <CyDText
-                  className={
-                    'ml-[10px] text-[16px] font-medium text-primaryTextColor font-nunito'
-                  }>
+                <CyDText className={'ml-[10px] text-[16px] font-medium  '}>
                   {'Staked'}
                 </CyDText>
                 <CyDText
                   className={
-                    'ml-[10px] text-[16px] font-bold text-secondaryTextColor font-nunito'
+                    'ml-[10px] text-[16px] font-bold text-secondaryTextColor '
                   }>
                   {convertFromUnitAmount(
                     item.balance.toString(),
@@ -132,14 +127,14 @@ export default function CosmosValidators({ route, navigation }) {
               {item.apr !== '0.00' && (
                 <CyDText
                   className={
-                    'ml-[4px] font-nunito text-subTextColor'
+                    'ml-[4px]  text-subTextColor'
                   }>{`APR ${item.apr}%`}</CyDText>
               )}
               <CyDImage
                 source={AppImages.COINS}
                 className={'ml-[10px] w-[20px] h-[16px]'}
               />
-              <CyDText className={'ml-[4px] font-nunito text-subTextColor'}>
+              <CyDText className={'ml-[4px]  text-subTextColor'}>
                 {convert(
                   parseFloat(
                     convertFromUnitAmount(
@@ -243,7 +238,7 @@ export default function CosmosValidators({ route, navigation }) {
               {validatorData.apr !== '0.00' && (
                 <CyDText
                   className={
-                    'font-medium text-[20px] ml-[4px] text-primaryTextColor'
+                    'font-medium text-[20px] ml-[4px] '
                   }>{`APR ${validatorData.apr}`}</CyDText>
               )}
             </CyDView>
@@ -257,7 +252,7 @@ export default function CosmosValidators({ route, navigation }) {
             <CyDView className={' flex flex-row'}>
               <CyDText
                 className={
-                  ' font-medium text-[20px] ml-[10px] text-primaryTextColor'
+                  ' font-medium text-[20px] ml-[10px] '
                 }>{`Voting Power ${convert(convertFromUnitAmount(validatorData.tokens, tokenData.contractDecimals))} ${tokenData.symbol}`}</CyDText>
             </CyDView>
           </CyDView>

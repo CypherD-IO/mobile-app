@@ -25,6 +25,7 @@ export enum ActivityType {
   TRACKWALLET = 'trackWallet',
   BUY = 'buy',
   SELL = 'sell',
+  MIGRATE_FUND = 'migrateFund',
 }
 
 export interface BrowserTransaction {
@@ -93,6 +94,8 @@ export interface ExchangeTransaction {
   quoteData?: any;
   reason?: string;
   delayDuration?: string;
+  fromChainLogoUrl: string;
+  toChainLogoUrl: string;
 }
 
 export interface DebitCardTransaction {

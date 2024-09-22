@@ -103,9 +103,7 @@ export default function ReferralRewards(props: {
     return (
       <CyDView className={'mb-[10px]'}>
         <CyDText
-          className={
-            'text-[#434343] text-[27px] font-nunito font-extrabold mt-[20px]'
-          }>
+          className={'text-[#434343] text-[27px]  font-extrabold mt-[20px]'}>
           {props.tabDetails.title}
         </CyDText>
         <CyDText className={'text-[#1F1F1F] text-[18px] font-normal mt-[12px]'}>

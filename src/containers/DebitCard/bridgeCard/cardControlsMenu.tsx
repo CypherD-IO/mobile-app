@@ -10,7 +10,11 @@ import {
 import AppImages from '../../../../assets/images/appImages';
 import { screenTitle } from '../../../constants';
 import { transactionType } from 'viem';
-import { CARD_LIMIT_TYPE, CardControlTypes } from '../../../constants/enum';
+import {
+  CARD_LIMIT_TYPE,
+  CardControlTypes,
+  CardOperationsAuthType,
+} from '../../../constants/enum';
 import { ProgressCircle } from 'react-native-svg-charts';
 import useAxios from '../../../core/HttpRequest';
 import { find, get, omit } from 'lodash';
@@ -109,30 +113,48 @@ export default function CardControlsMenu({ route, navigation }) {
     const payload = {
       godm: value,
     };
-    const response = await patchWithAuth(
-      `/v1/cards/${currentCardProvider}/card/${card.cardId}/limits`,
-      payload,
-    );
-    if (!response.isError) {
-      void getCardLimits();
-      showModal('state', {
-        type: 'success',
-        title: `Success, Zero Restriction Mode ${value ? 'Enabled' : 'Disabled'}!`,
-        description: value
-          ? 'Zero Restriction Mode will be enbled for 15 mins.'
-          : 'All the configured limits will be applied now.',
-        onSuccess: hideModal,
-        onFailure: hideModal,
+    if (value) {
+      navigation.navigate(screenTitle.CARD_UNLOCK_AUTH, {
+        onSuccess: () => {
+          void getCardLimits();
+          showModal('state', {
+            type: 'success',
+            title: `Success, Zero Restriction Mode Enabled!`,
+            description: 'Zero Restriction Mode will be enbled for 15 mins.',
+            onSuccess: hideModal,
+            onFailure: hideModal,
+          });
+        },
+        currentCardProvider: currentCardProvider,
+        card,
+        authType: CardOperationsAuthType.ZERO_RESTRICTION_MODE_ON,
       });
     } else {
-      showModal('state', {
-        type: 'error',
-        title: 'Error toggling Zero Restriction Mode',
-        description:
-          'Failed to toggle Zero Restriction Mode. Please contact customer support.',
-        onSuccess: hideModal,
-        onFailure: hideModal,
-      });
+      const response = await patchWithAuth(
+        `/v1/cards/${currentCardProvider}/card/${card.cardId}/god-mode`,
+        payload,
+      );
+      if (!response.isError) {
+        void getCardLimits();
+        showModal('state', {
+          type: 'success',
+          title: `Success, Zero Restriction Mode ${value ? 'Enabled' : 'Disabled'}!`,
+          description: value
+            ? 'Zero Restriction Mode will be enbled for 15 mins.'
+            : 'All the configured limits will be applied now.',
+          onSuccess: hideModal,
+          onFailure: hideModal,
+        });
+      } else {
+        showModal('state', {
+          type: 'error',
+          title: 'Error toggling Zero Restriction Mode',
+          description:
+            'Failed to toggle Zero Restriction Mode. Please contact customer support.',
+          onSuccess: hideModal,
+          onFailure: hideModal,
+        });
+      }
     }
     setIsZeroRestrictionModeLoading(false);
   };
@@ -262,7 +284,7 @@ export default function CardControlsMenu({ route, navigation }) {
             </CyDTouchView>
             <CyDText className='text-n200 text-[12px] text-[500] mx-[20px] mt-[6px]'>
               {
-                'Enable unrestricted international transactions across all countries and bypass all configured limits.'
+                'Enable unrestricted international transactions across all countries and bypass all configured controls.'
               }
             </CyDText>
             <CyDText className='text-[14px] text-n200 mt-[16px] font-[600]'>
@@ -293,11 +315,11 @@ export default function CardControlsMenu({ route, navigation }) {
                     source={AppImages.DOMESTIC_ICON}
                   />
                 ) : (
-                  <CyDText className='text-[18px] mr-[8px]'>
+                  <CyDText className='text-[18px] mr-[12px]'>
                     {domesticCountry.unicode_flag}
                   </CyDText>
                 )}
-                <CyDText className='text-[18px] font-[500] '>
+                <CyDText className='text-[16px] font-[600] '>
                   Domestic Transactions
                 </CyDText>
               </CyDView>
@@ -329,12 +351,12 @@ export default function CardControlsMenu({ route, navigation }) {
               }}>
               <CyDView className='flex-1 flex-row items-center'>
                 <CyDImage
-                  className='w-[24px] h-[24px] mr-[8px] mt-[2px]'
+                  className='w-[24px] h-[24px] mr-[12px] mt-[2px]'
                   source={AppImages.INTERNATIONAL_ICON}
                 />
-                <CyDView className='flex-1'>
-                  <CyDText className='text-[18px] font-[500] flex-wrap'>
-                    International Transactions
+                <CyDView className='flex-1 flex-col justify-between mr-[6px]'>
+                  <CyDText className='text-[16px] font-semibold flex-wrap'>
+                    {'International Transactions'}
                   </CyDText>
                 </CyDView>
               </CyDView>
@@ -354,18 +376,11 @@ export default function CardControlsMenu({ route, navigation }) {
             </CyDText>
             <CyDTouchView
               onPress={() => {
-                if (!disableOptions) {
-                  setShow3DsModal(true);
-                } else {
-                  showToast(
-                    'Disable Zero Restriction Mode to access this feature',
-                    'error',
-                  );
-                }
+                setShow3DsModal(true);
               }}
-              className={`flex flex-row items-center justify-between m-[2px] py-[15px] px-[12px] bg-white rounded-[6px] mt-[8px] ${
-                disableOptions ? 'opacity-50' : ''
-              }`}>
+              className={
+                'flex flex-row items-center justify-between m-[2px] py-[15px] px-[12px] bg-white rounded-[6px] mt-[8px]'
+              }>
               <CyDView className='flex flex-row flex-1 items-center'>
                 <CyDImage
                   source={AppImages.THREE_D_SECURE}

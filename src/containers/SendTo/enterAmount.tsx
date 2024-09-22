@@ -237,9 +237,7 @@ export default function EnterAmount(props: any) {
                   'absolute left-[10%] bottom-[60%] bg-white rounded-full h-[40px] w-[40px] flex justify-center items-center p-[4px]',
                 )}
                 style={styles.roundButtonContainer}>
-                <CyDText className={'font-nunito text-black '}>
-                  {t<string>('MAX')}
-                </CyDText>
+                <CyDText className={' text-black '}>{t<string>('MAX')}</CyDText>
               </CyDTouchView>
               <CyDTouchView
                 onPress={() => {
@@ -264,13 +262,13 @@ export default function EnterAmount(props: any) {
                   className={'w-[14px] h-[16px]'}
                 />
               </CyDTouchView>
-              <CyDText className='font-nunito text-[15px] font-bold text-primaryTextColor'>
+              <CyDText className=' text-[15px] font-bold '>
                 {enterCryptoAmount ? tokenData.symbol : 'USD'}
               </CyDText>
               <CyDView className={'flex-col w-8/12 mx-[6px] items-center'}>
                 <CyDTextInput
                   className={clsx(
-                    'font-bold text-center text-black h-[85px] font-nunito',
+                    'font-bold text-center text-black h-[85px] ',
                     {
                       'text-[70px]': valueForUsd.length <= 5,
                       'text-[40px]': valueForUsd.length > 5,

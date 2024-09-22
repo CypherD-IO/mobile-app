@@ -8,7 +8,6 @@ import {
   IExtendedDecodedTxnResponse,
   ISwapTxnData,
   IApproveTokenData,
-  IEvmosTxnMessage,
 } from '../../../../models/signingModalData.interface';
 import { formatAmount, getMaskedAddress } from '../../../../core/util';
 import {
@@ -36,7 +35,7 @@ export const RenderTransactionSignModal = ({
   dAppInfo: IDAppInfo | undefined;
   chain: Chain;
   method: string;
-  data: IExtendedDecodedTxnResponse | IEvmosTxnMessage | null;
+  data: IExtendedDecodedTxnResponse | null;
   nativeSendTxnData: ISendTxnData | null;
 }) => {
   if (!nativeSendTxnData) {
@@ -60,10 +59,9 @@ export const RenderTransactionSignModal = ({
             data?.gas.gas_limit *
             gasPriceInWei *
             10 ** -data?.native_token.decimals;
-          const gasAndUSDAppx = `${formatAmount(gasInTokens)} ${data
-            ?.native_token.symbol} ≈ $${formatAmount(
-            gasInTokens * data?.native_token.price,
-          )} USD`;
+          const gasAndUSDAppx = `${formatAmount(gasInTokens)} ${
+            data?.native_token.symbol
+          } ≈ $${formatAmount(gasInTokens * data?.native_token.price)} USD`;
           const availableBalance = `${formatAmount(data.native_token.amount)} ${
             data.native_token.symbol
           }`;
@@ -127,10 +125,9 @@ export const RenderTransactionSignModal = ({
                 name: data.type_token_approval.spender_protocol_name,
               },
             },
-            gasWithUSDAppx: `${formatAmount(gasInTokens)} ${data?.native_token
-              .symbol} ≈ $${formatAmount(
-              gasInTokens * data?.native_token.price,
-            )} USD`,
+            gasWithUSDAppx: `${formatAmount(gasInTokens)} ${
+              data?.native_token.symbol
+            } ≈ $${formatAmount(gasInTokens * data?.native_token.price)} USD`,
             availableBalance: `${formatAmount(data.native_token.amount)} ${
               data.native_token.symbol
             }`,
@@ -200,8 +197,9 @@ export const RenderTransactionSignModal = ({
                 )} USD`,
               },
               gas: {
-                inTokensWithSymbol: `${formatAmount(gasInTokens)} ${data
-                  ?.native_token.symbol}`,
+                inTokensWithSymbol: `${formatAmount(gasInTokens)} ${
+                  data?.native_token.symbol
+                }`,
                 inUSDWithSymbol: `${formatAmount(
                   gasInTokens * data?.native_token.price,
                 )} USD`,
@@ -469,7 +467,7 @@ const RenderSwapTransactionSignModal = ({
                   />
                   <CyDText
                     className={
-                      'my-[6px] mx-[2px] text-black text-[14px] text-center font-semibold flex flex-row justify-center font-nunito'
+                      'my-[6px] mx-[2px] text-black text-[14px] text-center font-semibold flex flex-row justify-center '
                     }>
                     {sendToken.name}
                   </CyDText>
@@ -483,7 +481,7 @@ const RenderSwapTransactionSignModal = ({
                     />
                     <CyDText
                       className={
-                        'ml-[6px] font-nunito font-normal text-black  text-[12px]'
+                        'ml-[6px]  font-normal text-black  text-[12px]'
                       }>
                       {chain.name}
                     </CyDText>
@@ -508,7 +506,7 @@ const RenderSwapTransactionSignModal = ({
                   />
                   <CyDText
                     className={
-                      'my-[6px] mx-[2px] text-black text-[14px] text-center font-semibold flex flex-row justify-center font-nunito'
+                      'my-[6px] mx-[2px] text-black text-[14px] text-center font-semibold flex flex-row justify-center '
                     }>
                     {receiveToken.name}
                   </CyDText>
@@ -522,7 +520,7 @@ const RenderSwapTransactionSignModal = ({
                     />
                     <CyDText
                       className={
-                        'ml-[6px] font-nunito text-black font-normal text-[12px]'
+                        'ml-[6px]  text-black font-normal text-[12px]'
                       }>
                       {chain.name}
                     </CyDText>

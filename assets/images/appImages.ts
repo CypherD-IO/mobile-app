@@ -1,6 +1,5 @@
 /* eslint-disable @typescript-eslint/no-var-requires */
 const S3_BUCKET_URL_ICONS = 'https://public.cypherd.io/icons';
-const S3_BUCKET_URL_IMAGES = 'https://public.cypherd.io/images';
 
 const PLUS = require('./plus.png');
 const ARROW = require('./arrow.png');
@@ -43,7 +42,6 @@ const POLYGON = require('./polygon.png');
 const SHARDEUM = require('./shardeum.png');
 const BIANCE = require('./binace.png');
 const AVALANCHE = require('./avalanche.png');
-const FANTOM = require('./fantom.png');
 const ARBITRUM = require('./arbitrum.png');
 const COSMOS = require('./cosmos_hub.png');
 const OPTIMISM = require('./optimism.png');
@@ -91,8 +89,6 @@ const PURPLE_COIN = require('./coinPurple.png');
 const CYAN_COIN = require('./coinCyan.png');
 const PINK_COIN = require('./coinPink.png');
 const BLUE_COIN = require('./coinBlue.png');
-const EVMOS_LOGO = require('./evmos_circle_logo.webp');
-const EVMOS_LOGO_TRANSPARENT = require('./evmo_logo.png');
 const GIFT_BOX = require('./giftBox.json');
 const STARS_LEFT = require('./stars_left.png');
 const STARS_RIGHT = require('./star_right.png');
@@ -104,7 +100,6 @@ const GAS_STATION = require('./gasStation.png');
 const GIFT_BOX_PNG = require('./giftBox.png');
 const LINK = require('./link.png');
 const LINK_WHITE = require('./link_white.png');
-const USDC_EVMOS = require('./nUSDC.png');
 const DELETE = require('./delete_bin.png');
 const ADDRESS_COPY = require('./address-copy.png');
 const OPTIONS_ARROW = require('./options-arrow.png');
@@ -508,8 +503,111 @@ const COMING_SOON = {
 const ZERO_RESTRICTION_MODE_ICON = {
   uri: `${S3_BUCKET_URL_ICONS}/zeroRestrictionModeIcon.png`,
 };
+const MIGRATE_FUNDS_ICON = {
+  uri: `${S3_BUCKET_URL_ICONS}/migrateFundsICon.png`,
+};
+const CLOCK_OUTLINE = {
+  uri: `${S3_BUCKET_URL_ICONS}/clockOutline.png`,
+};
+const PLUS_ICON = {
+  uri: `${S3_BUCKET_URL_ICONS}/plusIcon.png`,
+};
+const SUCCESS_TICK_GREEN_BG = {
+  uri: `${S3_BUCKET_URL_ICONS}/successTickGreenBg.png`,
+};
+const REFERRALS_HERO_IMG = {
+  uri: `${S3_BUCKET_URL_ICONS}/referralsHeroImg.png`,
+};
+const CIRCULAR_PLUS = {
+  uri: `${S3_BUCKET_URL_ICONS}/circularPlus.png`,
+};
+const QR_CODE_ICON = {
+  uri: `${S3_BUCKET_URL_ICONS}/qrIcon.png`,
+};
+const WHATSAPP_ICON = {
+  uri: `${S3_BUCKET_URL_ICONS}/whatsappIcon.png`,
+};
+const TELEGRAM_ICON = {
+  uri: `${S3_BUCKET_URL_ICONS}/telegramIcon.png`,
+};
+const X_ICON = {
+  uri: `${S3_BUCKET_URL_ICONS}/xIcon.png`,
+};
+const SHARE_ICON = {
+  uri: `${S3_BUCKET_URL_ICONS}/shareIcon.png`,
+};
+const REFERRAL_STAR = {
+  uri: `${S3_BUCKET_URL_ICONS}/referralStar.png`,
+};
+const HOW_IT_WORKS_1 = {
+  uri: `${S3_BUCKET_URL_ICONS}/howItWorks1.png`,
+};
+const HOW_IT_WORKS_2 = {
+  uri: `${S3_BUCKET_URL_ICONS}/howItWorks2.png`,
+};
+const HOW_IT_WORKS_3 = {
+  uri: `${S3_BUCKET_URL_ICONS}/howItWorks3.png`,
+};
+const HOW_IT_WORKS_4 = {
+  uri: `${S3_BUCKET_URL_ICONS}/howItWorks4.png`,
+};
+const HOW_IT_WORKS_5 = {
+  uri: `${S3_BUCKET_URL_ICONS}/howItWorks5.png`,
+};
+const BLACK_CLOSE = {
+  uri: `${S3_BUCKET_URL_ICONS}/blackClose.png`,
+};
+const GIFT_IN_HANDS = {
+  uri: `${S3_BUCKET_URL_ICONS}/giftInHands.png`,
+};
+const VISA_CARDS_GROUP = {
+  uri: `${S3_BUCKET_URL_ICONS}/visaCardsGroup.png`,
+};
+const USER_OUTLINE_ICON = {
+  uri: `${S3_BUCKET_URL_ICONS}/userOutlineIcon.png`,
+};
+const HOUSE_OUTLINE_ICON = {
+  uri: `${S3_BUCKET_URL_ICONS}/houseOutlineIcon.png`,
+};
+const EMAIL_OUTLINE_ICON = {
+  uri: `${S3_BUCKET_URL_ICONS}/emailOutlineIcon.png`,
+};
+const TELEGRAM_OUTLINE_ICON = {
+  uri: `${S3_BUCKET_URL_ICONS}/telegramOutlineIcon.png`,
+};
+const ID_CARD_OUTLINE_ICON = {
+  uri: `${S3_BUCKET_URL_ICONS}/idCardOutlineIcon.png`,
+};
+const GLOBE_OUTLINE_ICON = {
+  uri: `${S3_BUCKET_URL_ICONS}/globeOutlineIcon.png`,
+};
+const CASH_OUTLINE_ICON = {
+  uri: `${S3_BUCKET_URL_ICONS}/cashOutlineIcon.png`,
+};
+const TELEGRAM_BLUE_ICON = {
+  uri: `${S3_BUCKET_URL_ICONS}/telegramBlueIcon.png`,
+};
+const MIGRATION_BANNER_BG = {
+  uri: `${S3_BUCKET_URL_ICONS}/migrateBannerBg.png`,
+};
+const MIGRATION_PENDING = {
+  uri: `${S3_BUCKET_URL_ICONS}/migrationPending.png`,
+};
+const MIGRATION_PENDING_GIF = {
+  uri: `${S3_BUCKET_URL_ICONS}/migrationPendingGif.gif`,
+};
+const MIGRATION_SUCCESS = {
+  uri: `${S3_BUCKET_URL_ICONS}/migrationSuccess.png`,
+};
 
 const AppImages = {
+  MIGRATION_PENDING_GIF,
+  MIGRATION_SUCCESS,
+  MIGRATION_PENDING,
+  MIGRATION_BANNER_BG,
+  SUCCESS_TICK_GREEN_BG,
+  CLOCK_OUTLINE,
+  MIGRATE_FUNDS_ICON,
   BACK_ARROW_GRAY,
   CARD_ONBOARDING_1,
   CARD_ONBOARDING_2,
@@ -577,7 +675,6 @@ const AppImages = {
   SHARDEUM,
   BIANCE,
   AVALANCHE,
-  FANTOM,
   ARBITRUM,
   COSMOS,
   OPTIMISM,
@@ -621,7 +718,6 @@ const AppImages = {
   CYAN_COIN,
   GREEN_COIN,
   PINK_COIN,
-  EVMOS_LOGO,
   GIFT_BOX,
   STARS_LEFT,
   STARS_RIGHT,
@@ -631,10 +727,8 @@ const AppImages = {
   NEW,
   GAS_STATION,
   GIFT_BOX_PNG,
-  EVMOS_LOGO_TRANSPARENT,
   LINK,
   LINK_WHITE,
-  USDC_EVMOS,
   DELETE,
   ADDRESS_COPY,
   OPTIONS_ARROW,
@@ -912,5 +1006,30 @@ const AppImages = {
   MAN_WITH_PHONE,
   COMING_SOON,
   ZERO_RESTRICTION_MODE_ICON,
+  PLUS_ICON,
+  REFERRALS_HERO_IMG,
+  CIRCULAR_PLUS,
+  QR_CODE_ICON,
+  WHATSAPP_ICON,
+  TELEGRAM_ICON,
+  X_ICON,
+  SHARE_ICON,
+  REFERRAL_STAR,
+  HOW_IT_WORKS_1,
+  HOW_IT_WORKS_2,
+  HOW_IT_WORKS_3,
+  HOW_IT_WORKS_4,
+  HOW_IT_WORKS_5,
+  BLACK_CLOSE,
+  GIFT_IN_HANDS,
+  VISA_CARDS_GROUP,
+  USER_OUTLINE_ICON,
+  ID_CARD_OUTLINE_ICON,
+  TELEGRAM_OUTLINE_ICON,
+  GLOBE_OUTLINE_ICON,
+  EMAIL_OUTLINE_ICON,
+  CASH_OUTLINE_ICON,
+  HOUSE_OUTLINE_ICON,
+  TELEGRAM_BLUE_ICON,
 };
 export default AppImages;

@@ -131,8 +131,8 @@ const RenderRightActions = (navigation: any, tokenData: any) => {
             className={'flex items-center justify-center mx-[15px]'}
             onPress={() => {
               navigation.navigate(screenTitle.BRIDGE_SKIP_API_SCREEN, {
-                fromChainData: tokenData,
-                title: t('SWAP_TITLE'),
+                tokenData,
+                backVisible: true,
               });
             }}>
             <CyDImage
@@ -151,60 +151,82 @@ const RenderRightActions = (navigation: any, tokenData: any) => {
           className={'flex items-center justify-center mx-[15px]'}
           onPress={() => {
             let addressTypeQRCode;
-            if (
-              tokenData.chainDetails.backendName === ChainBackendNames.COSMOS
-            ) {
-              addressTypeQRCode = FundWalletAddressType.COSMOS;
-            } else if (
-              tokenData.chainDetails.backendName === ChainBackendNames.OSMOSIS
-            ) {
-              addressTypeQRCode = FundWalletAddressType.OSMOSIS;
-            } else if (
-              tokenData.chainDetails.backendName === ChainBackendNames.EVMOS
-            ) {
-              addressTypeQRCode = FundWalletAddressType.EVMOS;
-            } else if (
-              tokenData.chainDetails.backendName === ChainBackendNames.ETH
-            ) {
-              addressTypeQRCode = FundWalletAddressType.EVM;
-            } else if (
-              tokenData.chainDetails.backendName === ChainBackendNames.JUNO
-            ) {
-              addressTypeQRCode = FundWalletAddressType.JUNO;
-            } else if (
-              tokenData.chainDetails.backendName === ChainBackendNames.STARGAZE
-            ) {
-              addressTypeQRCode = FundWalletAddressType.STARGAZE;
-            } else if (
-              tokenData.chainDetails.backendName === ChainBackendNames.NOBLE
-            ) {
-              addressTypeQRCode = FundWalletAddressType.NOBLE;
-            } else if (
-              tokenData.chainDetails.backendName === ChainBackendNames.SHARDEUM
-            ) {
-              addressTypeQRCode = FundWalletAddressType.SHARDEUM;
-            } else if (
-              tokenData.chainDetails.backendName ===
-              ChainBackendNames.SHARDEUM_SPHINX
-            ) {
-              addressTypeQRCode = FundWalletAddressType.SHARDEUM_SPHINX;
-            } else if (
-              tokenData.chainDetails.backendName === ChainBackendNames.COREUM
-            ) {
-              addressTypeQRCode = FundWalletAddressType.COREUM;
-            } else if (
-              tokenData.chainDetails.backendName === ChainBackendNames.INJECTIVE
-            ) {
-              addressTypeQRCode = FundWalletAddressType.INJECTIVE;
-            } else if (
-              tokenData.chainDetails.backendName === ChainBackendNames.KUJIRA
-            ) {
-              addressTypeQRCode = FundWalletAddressType.KUJIRA;
-            } else if (
-              tokenData.chainDetails.backendName === ChainBackendNames.SOLANA
-            ) {
-              addressTypeQRCode = FundWalletAddressType.SOLANA;
+
+            switch (tokenData.chainDetails.backendName) {
+              case ChainBackendNames.COSMOS:
+                addressTypeQRCode = FundWalletAddressType.COSMOS;
+                break;
+              case ChainBackendNames.OSMOSIS:
+                addressTypeQRCode = FundWalletAddressType.OSMOSIS;
+                break;
+              case ChainBackendNames.JUNO:
+                addressTypeQRCode = FundWalletAddressType.JUNO;
+                break;
+              case ChainBackendNames.STARGAZE:
+                addressTypeQRCode = FundWalletAddressType.STARGAZE;
+                break;
+              case ChainBackendNames.NOBLE:
+                addressTypeQRCode = FundWalletAddressType.NOBLE;
+                break;
+              case ChainBackendNames.COREUM:
+                addressTypeQRCode = FundWalletAddressType.COREUM;
+                break;
+              case ChainBackendNames.INJECTIVE:
+                addressTypeQRCode = FundWalletAddressType.INJECTIVE;
+                break;
+              case ChainBackendNames.KUJIRA:
+                addressTypeQRCode = FundWalletAddressType.KUJIRA;
+                break;
+              case ChainBackendNames.SOLANA:
+                addressTypeQRCode = FundWalletAddressType.SOLANA;
+                break;
+              case ChainBackendNames.SHARDEUM:
+                addressTypeQRCode = FundWalletAddressType.SHARDEUM;
+                break;
+              case ChainBackendNames.SHARDEUM_SPHINX:
+                addressTypeQRCode = FundWalletAddressType.SHARDEUM_SPHINX;
+                break;
+              case ChainBackendNames.ZKSYNC_ERA:
+                addressTypeQRCode = FundWalletAddressType.ZKSYNC_ERA;
+                break;
+              case ChainBackendNames.BASE:
+                addressTypeQRCode = FundWalletAddressType.BASE;
+                break;
+              case ChainBackendNames.POLYGON_ZKEVM:
+                addressTypeQRCode = FundWalletAddressType.POLYGON_ZKEVM;
+                break;
+              case ChainBackendNames.AURORA:
+                addressTypeQRCode = FundWalletAddressType.AURORA;
+                break;
+              case ChainBackendNames.MOONBEAM:
+                addressTypeQRCode = FundWalletAddressType.MOONBEAM;
+                break;
+              case ChainBackendNames.MOONRIVER:
+                addressTypeQRCode = FundWalletAddressType.MOONRIVER;
+                break;
+              case ChainBackendNames.POLYGON:
+                addressTypeQRCode = FundWalletAddressType.POLYGON;
+                break;
+              case ChainBackendNames.AVALANCHE:
+                addressTypeQRCode = FundWalletAddressType.AVALANCHE;
+                break;
+              case ChainBackendNames.ARBITRUM:
+                addressTypeQRCode = FundWalletAddressType.ARBITRUM;
+                break;
+              case ChainBackendNames.OPTIMISM:
+                addressTypeQRCode = FundWalletAddressType.OPTIMISM;
+                break;
+              case ChainBackendNames.BSC:
+                addressTypeQRCode = FundWalletAddressType.BSC;
+                break;
+              case ChainBackendNames.ETH:
+                addressTypeQRCode = FundWalletAddressType.EVM;
+                break;
+              default:
+                addressTypeQRCode = FundWalletAddressType.EVM;
+                break;
             }
+
             navigation.navigate(screenTitle.QRCODE, {
               addressType: addressTypeQRCode,
             });

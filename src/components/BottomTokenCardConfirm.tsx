@@ -116,9 +116,7 @@ export default function BottomCardConfirm({
             className={'w-[18px] h-[18px] top-[20px] right-[20px] '}
           />
         </CyDTouchView>
-        <CyDText className='text-[18px] font-nunito font-bold'>
-          {t('LOAD_CARD')}
-        </CyDText>
+        <CyDText className='text-[18px] font-bold'>{t('LOAD_CARD')}</CyDText>
         <CyDView className={'mx-[16px]'}>
           <CyDView
             className={
@@ -147,8 +145,7 @@ export default function BottomCardConfirm({
               className={
                 'w-[70%] flex flex-row flex-wrap justify-between items-center'
               }>
-              <CyDText
-                className={' font-medium text-[14px] text-primaryTextColor'}>
+              <CyDText className={' font-medium text-[14px]'}>
                 {String(formatAmount(amountInCrypto)) + ' ' + symbol}
               </CyDText>
               <CyDText className={' font-medium text-[14px]'}>
@@ -166,8 +163,7 @@ export default function BottomCardConfirm({
               className={
                 'flex flex-row flex-wrap justify-between items-center w-[70%]'
               }>
-              <CyDText
-                className={'font-medium text-[14px] text-primaryTextColor'}>
+              <CyDText className={'font-medium text-[14px]'}>
                 {String(gasFeeInCrypto) + ' ' + nativeTokenSymbol}
               </CyDText>
               <CyDText className={'font-medium text-[14px]'}>
@@ -191,10 +187,7 @@ export default function BottomCardConfirm({
             </CyDView>
 
             <CyDView className={'flex flex-row justify-between items-center'}>
-              <CyDText
-                className={
-                  'font-nunito font-[16px] text-black font-bold ml-[12px]'
-                }>
+              <CyDText className={'font-[16px] text-black font-bold ml-[12px]'}>
                 ~ 4 mins
               </CyDText>
             </CyDView>

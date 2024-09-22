@@ -58,11 +58,9 @@ export default function HostsAndRPCScreen({ navigation }) {
     ethereum: globalContext.globalState.rpcEndpoints.ETH.primary,
     polygon: globalContext.globalState.rpcEndpoints.POLYGON.primary,
     avalanche: globalContext.globalState.rpcEndpoints.AVALANCHE.primary,
-    fantom: globalContext.globalState.rpcEndpoints.FANTOM.primary,
     arbitrum: globalContext.globalState.rpcEndpoints.ARBITRUM.primary,
     optimism: globalContext.globalState.rpcEndpoints.OPTIMISM.primary,
     bsc: globalContext.globalState.rpcEndpoints.BSC.primary,
-    evmos: globalContext.globalState.rpcEndpoints.EVMOS.primary,
     osmosis: globalContext.globalState.rpcEndpoints.OSMOSIS.primary,
     cosmos: globalContext.globalState.rpcEndpoints.COSMOS.primary,
     juno: globalContext.globalState.rpcEndpoints.JUNO.primary,
@@ -168,11 +166,9 @@ export default function HostsAndRPCScreen({ navigation }) {
     tempRPCEndpoints.ETH.primary = rpcEndpoints.ethereum;
     tempRPCEndpoints.POLYGON.primary = rpcEndpoints.polygon;
     tempRPCEndpoints.AVALANCHE.primary = rpcEndpoints.avalanche;
-    tempRPCEndpoints.FANTOM.primary = rpcEndpoints.fantom;
     tempRPCEndpoints.ARBITRUM.primary = rpcEndpoints.arbitrum;
     tempRPCEndpoints.OPTIMISM.primary = rpcEndpoints.optimism;
     tempRPCEndpoints.BSC.primary = rpcEndpoints.bsc;
-    tempRPCEndpoints.EVMOS.primary = rpcEndpoints.evmos;
     tempRPCEndpoints.OSMOSIS.primary = rpcEndpoints.osmosis;
     tempRPCEndpoints.COSMOS.primary = rpcEndpoints.cosmos;
     tempRPCEndpoints.JUNO.primary = rpcEndpoints.juno;
@@ -226,7 +222,7 @@ export default function HostsAndRPCScreen({ navigation }) {
               <CyDView className={'flex flex-row justify-between items-center'}>
                 <CyDTextInput
                   className={clsx(
-                    'mt-[10px] border-[1px] border-inputBorderColor rounded-[5px] p-[12px] text-[18px] font-nunito text-primaryTextColor  w-[90%]',
+                    'mt-[10px] border-[1px] border-inputBorderColor rounded-[5px] p-[12px] text-[18px]    w-[90%]',
                   )}
                   editable={false}
                   value={globalContext.globalState.token}
@@ -267,7 +263,7 @@ export default function HostsAndRPCScreen({ navigation }) {
           </CyDText>
           <CyDTextInput
             className={clsx(
-              'mt-[10px] border-[1px] border-inputBorderColor rounded-[5px] p-[12px] text-[18px] font-nunito text-primaryTextColor',
+              'mt-[10px] border-[1px] border-inputBorderColor rounded-[5px] p-[12px] text-[18px]  ',
             )}
             editable={devMode}
             value={maskString(hosts.archHost)}
@@ -287,7 +283,7 @@ export default function HostsAndRPCScreen({ navigation }) {
           </CyDText>
           <CyDTextInput
             className={clsx(
-              'mt-[10px] border-[1px] border-inputBorderColor rounded-[5px] p-[12px] text-[18px] font-nunito text-primaryTextColor',
+              'mt-[10px] border-[1px] border-inputBorderColor rounded-[5px] p-[12px] text-[18px]  ',
             )}
             value={maskString(hosts.portfolioHost)}
             editable={devMode}
@@ -307,7 +303,7 @@ export default function HostsAndRPCScreen({ navigation }) {
           </CyDText>
           <CyDTextInput
             className={clsx(
-              'mt-[10px] border-[1px] border-inputBorderColor rounded-[5px] p-[12px] text-[18px] font-nunito text-primaryTextColor',
+              'mt-[10px] border-[1px] border-inputBorderColor rounded-[5px] p-[12px] text-[18px]  ',
             )}
             value={maskString(hosts.owlracleHost)}
             editable={devMode}
@@ -346,7 +342,7 @@ export default function HostsAndRPCScreen({ navigation }) {
           </CyDText>
           <CyDTextInput
             className={clsx(
-              'mt-[10px] border-[1px] border-inputBorderColor rounded-[5px] p-[12px] text-[18px] font-nunito text-primaryTextColor',
+              'mt-[10px] border-[1px] border-inputBorderColor rounded-[5px] p-[12px] text-[18px]  ',
             )}
             editable={devMode}
             value={maskString(rpcEndpoints.ethereum)}
@@ -366,7 +362,7 @@ export default function HostsAndRPCScreen({ navigation }) {
           </CyDText>
           <CyDTextInput
             className={clsx(
-              'mt-[10px] border-[1px] border-inputBorderColor rounded-[5px] p-[12px] text-[18px] font-nunito text-primaryTextColor',
+              'mt-[10px] border-[1px] border-inputBorderColor rounded-[5px] p-[12px] text-[18px]  ',
             )}
             value={maskString(rpcEndpoints.polygon)}
             editable={devMode}
@@ -386,7 +382,7 @@ export default function HostsAndRPCScreen({ navigation }) {
           </CyDText>
           <CyDTextInput
             className={clsx(
-              'mt-[10px] border-[1px] border-inputBorderColor rounded-[5px] p-[12px] text-[18px] font-nunito text-primaryTextColor',
+              'mt-[10px] border-[1px] border-inputBorderColor rounded-[5px] p-[12px] text-[18px]  ',
             )}
             value={maskString(rpcEndpoints.avalanche)}
             editable={devMode}
@@ -402,31 +398,11 @@ export default function HostsAndRPCScreen({ navigation }) {
         </CyDView>
         <CyDView className={'mt-[25px]'}>
           <CyDText className={'text-[16px] font-black'}>
-            {ChainBackendNames.FANTOM}
-          </CyDText>
-          <CyDTextInput
-            className={clsx(
-              'mt-[10px] border-[1px] border-inputBorderColor rounded-[5px] p-[12px] text-[18px] font-nunito text-primaryTextColor',
-            )}
-            value={maskString(rpcEndpoints.fantom)}
-            editable={devMode}
-            autoCapitalize='none'
-            key='fantom'
-            onChangeText={value => {
-              setRPCEndpoints({ ...rpcEndpoints, fantom: value });
-            }}
-            autoCorrect={false}
-            placeholderTextColor={'#C5C5C5'}
-            placeholder=''
-          />
-        </CyDView>
-        <CyDView className={'mt-[25px]'}>
-          <CyDText className={'text-[16px] font-black'}>
             {ChainBackendNames.ARBITRUM}
           </CyDText>
           <CyDTextInput
             className={clsx(
-              'mt-[10px] border-[1px] border-inputBorderColor rounded-[5px] p-[12px] text-[18px] font-nunito text-primaryTextColor',
+              'mt-[10px] border-[1px] border-inputBorderColor rounded-[5px] p-[12px] text-[18px]  ',
             )}
             value={maskString(rpcEndpoints.arbitrum)}
             editable={devMode}
@@ -446,7 +422,7 @@ export default function HostsAndRPCScreen({ navigation }) {
           </CyDText>
           <CyDTextInput
             className={clsx(
-              'mt-[10px] border-[1px] border-inputBorderColor rounded-[5px] p-[12px] text-[18px] font-nunito text-primaryTextColor',
+              'mt-[10px] border-[1px] border-inputBorderColor rounded-[5px] p-[12px] text-[18px]  ',
             )}
             value={maskString(rpcEndpoints.optimism)}
             editable={devMode}
@@ -466,7 +442,7 @@ export default function HostsAndRPCScreen({ navigation }) {
           </CyDText>
           <CyDTextInput
             className={clsx(
-              'mt-[10px] border-[1px] border-inputBorderColor rounded-[5px] p-[12px] text-[18px] font-nunito text-primaryTextColor',
+              'mt-[10px] border-[1px] border-inputBorderColor rounded-[5px] p-[12px] text-[18px]  ',
             )}
             value={maskString(rpcEndpoints.bsc)}
             editable={devMode}
@@ -482,31 +458,11 @@ export default function HostsAndRPCScreen({ navigation }) {
         </CyDView>
         <CyDView className={'mt-[25px]'}>
           <CyDText className={'text-[16px] font-black'}>
-            {ChainBackendNames.EVMOS}
-          </CyDText>
-          <CyDTextInput
-            className={clsx(
-              'mt-[10px] border-[1px] border-inputBorderColor rounded-[5px] p-[12px] text-[18px] font-nunito text-primaryTextColor',
-            )}
-            value={maskString(rpcEndpoints.evmos)}
-            editable={devMode}
-            autoCapitalize='none'
-            key='evmos'
-            onChangeText={value => {
-              setRPCEndpoints({ ...rpcEndpoints, evmos: value });
-            }}
-            autoCorrect={false}
-            placeholderTextColor={'#C5C5C5'}
-            placeholder=''
-          />
-        </CyDView>
-        <CyDView className={'mt-[25px]'}>
-          <CyDText className={'text-[16px] font-black'}>
             {ChainBackendNames.OSMOSIS}
           </CyDText>
           <CyDTextInput
             className={clsx(
-              'mt-[10px] border-[1px] border-inputBorderColor rounded-[5px] p-[12px] text-[18px] font-nunito text-primaryTextColor',
+              'mt-[10px] border-[1px] border-inputBorderColor rounded-[5px] p-[12px] text-[18px]  ',
             )}
             value={maskString(rpcEndpoints.osmosis)}
             editable={devMode}
@@ -526,7 +482,7 @@ export default function HostsAndRPCScreen({ navigation }) {
           </CyDText>
           <CyDTextInput
             className={clsx(
-              'mt-[10px] border-[1px] border-inputBorderColor rounded-[5px] p-[12px] text-[18px] font-nunito text-primaryTextColor',
+              'mt-[10px] border-[1px] border-inputBorderColor rounded-[5px] p-[12px] text-[18px]  ',
             )}
             value={maskString(rpcEndpoints.cosmos)}
             editable={devMode}
@@ -546,7 +502,7 @@ export default function HostsAndRPCScreen({ navigation }) {
           </CyDText>
           <CyDTextInput
             className={clsx(
-              'mt-[10px] border-[1px] border-inputBorderColor rounded-[5px] p-[12px] text-[18px] font-nunito text-primaryTextColor',
+              'mt-[10px] border-[1px] border-inputBorderColor rounded-[5px] p-[12px] text-[18px]  ',
             )}
             value={maskString(rpcEndpoints.juno)}
             editable={devMode}
@@ -567,7 +523,7 @@ export default function HostsAndRPCScreen({ navigation }) {
             </CyDText>
             <CyDTextInput
               className={clsx(
-                'mt-[10px] border-[1px] border-inputBorderColor rounded-[5px] p-[12px] text-[18px] font-nunito text-primaryTextColor',
+                'mt-[10px] border-[1px] border-inputBorderColor rounded-[5px] p-[12px] text-[18px]  ',
               )}
               value={maskString(rpcEndpoints.noble)}
               editable={devMode}
@@ -591,7 +547,7 @@ export default function HostsAndRPCScreen({ navigation }) {
             </CyDText>
             <CyDTextInput
               className={clsx(
-                'mt-[10px] border-[1px] border-inputBorderColor rounded-[5px] p-[12px] text-[18px] font-nunito text-primaryTextColor',
+                'mt-[10px] border-[1px] border-inputBorderColor rounded-[5px] p-[12px] text-[18px]  ',
               )}
               value={maskString(rpcEndpoints.shardeum)}
               editable={devMode}
@@ -616,7 +572,7 @@ export default function HostsAndRPCScreen({ navigation }) {
             </CyDText>
             <CyDTextInput
               className={clsx(
-                'mt-[10px] border-[1px] border-inputBorderColor rounded-[5px] p-[12px] text-[18px] font-nunito text-primaryTextColor',
+                'mt-[10px] border-[1px] border-inputBorderColor rounded-[5px] p-[12px] text-[18px]  ',
               )}
               value={maskString(rpcEndpoints.shardeum_sphinx)}
               editable={devMode}
@@ -640,7 +596,7 @@ export default function HostsAndRPCScreen({ navigation }) {
             </CyDText>
             <CyDTextInput
               className={clsx(
-                'mt-[10px] border-[1px] border-inputBorderColor rounded-[5px] p-[12px] text-[18px] font-nunito text-primaryTextColor',
+                'mt-[10px] border-[1px] border-inputBorderColor rounded-[5px] p-[12px] text-[18px]  ',
               )}
               value={maskString(rpcEndpoints.zksync_era)}
               editable={devMode}
@@ -664,7 +620,7 @@ export default function HostsAndRPCScreen({ navigation }) {
             </CyDText>
             <CyDTextInput
               className={clsx(
-                'mt-[10px] border-[1px] border-inputBorderColor rounded-[5px] p-[12px] text-[18px] font-nunito text-primaryTextColor',
+                'mt-[10px] border-[1px] border-inputBorderColor rounded-[5px] p-[12px] text-[18px]  ',
               )}
               value={maskString(rpcEndpoints.base)}
               editable={devMode}
@@ -688,7 +644,7 @@ export default function HostsAndRPCScreen({ navigation }) {
             </CyDText>
             <CyDTextInput
               className={clsx(
-                'mt-[10px] border-[1px] border-inputBorderColor rounded-[5px] p-[12px] text-[18px] font-nunito text-primaryTextColor',
+                'mt-[10px] border-[1px] border-inputBorderColor rounded-[5px] p-[12px] text-[18px]  ',
               )}
               value={maskString(rpcEndpoints.polygon_zkevm)}
               editable={devMode}
@@ -712,7 +668,7 @@ export default function HostsAndRPCScreen({ navigation }) {
             </CyDText>
             <CyDTextInput
               className={clsx(
-                'mt-[10px] border-[1px] border-inputBorderColor rounded-[5px] p-[12px] text-[18px] font-nunito text-primaryTextColor',
+                'mt-[10px] border-[1px] border-inputBorderColor rounded-[5px] p-[12px] text-[18px]  ',
               )}
               value={maskString(rpcEndpoints.aurora)}
               editable={devMode}
@@ -736,7 +692,7 @@ export default function HostsAndRPCScreen({ navigation }) {
             </CyDText>
             <CyDTextInput
               className={clsx(
-                'mt-[10px] border-[1px] border-inputBorderColor rounded-[5px] p-[12px] text-[18px] font-nunito text-primaryTextColor',
+                'mt-[10px] border-[1px] border-inputBorderColor rounded-[5px] p-[12px] text-[18px]  ',
               )}
               value={maskString(rpcEndpoints.moonbeam)}
               editable={devMode}
@@ -760,7 +716,7 @@ export default function HostsAndRPCScreen({ navigation }) {
             </CyDText>
             <CyDTextInput
               className={clsx(
-                'mt-[10px] border-[1px] border-inputBorderColor rounded-[5px] p-[12px] text-[18px] font-nunito text-primaryTextColor',
+                'mt-[10px] border-[1px] border-inputBorderColor rounded-[5px] p-[12px] text-[18px]  ',
               )}
               value={maskString(rpcEndpoints.moonriver)}
               editable={devMode}
@@ -784,7 +740,7 @@ export default function HostsAndRPCScreen({ navigation }) {
             </CyDText>
             <CyDTextInput
               className={clsx(
-                'mt-[10px] border-[1px] border-inputBorderColor rounded-[5px] p-[12px] text-[18px] font-nunito text-primaryTextColor',
+                'mt-[10px] border-[1px] border-inputBorderColor rounded-[5px] p-[12px] text-[18px]  ',
               )}
               value={maskString(rpcEndpoints.moonriver)}
               editable={devMode}
@@ -808,7 +764,7 @@ export default function HostsAndRPCScreen({ navigation }) {
             </CyDText>
             <CyDTextInput
               className={clsx(
-                'mt-[10px] border-[1px] border-inputBorderColor rounded-[5px] p-[12px] text-[18px] font-nunito text-primaryTextColor',
+                'mt-[10px] border-[1px] border-inputBorderColor rounded-[5px] p-[12px] text-[18px]  ',
               )}
               value={maskString(rpcEndpoints.injective)}
               editable={devMode}
@@ -832,7 +788,7 @@ export default function HostsAndRPCScreen({ navigation }) {
             </CyDText>
             <CyDTextInput
               className={clsx(
-                'mt-[10px] border-[1px] border-inputBorderColor rounded-[5px] p-[12px] text-[18px] font-nunito text-primaryTextColor',
+                'mt-[10px] border-[1px] border-inputBorderColor rounded-[5px] p-[12px] text-[18px]  ',
               )}
               value={maskString(rpcEndpoints.kujira)}
               editable={devMode}

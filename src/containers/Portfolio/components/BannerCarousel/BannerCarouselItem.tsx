@@ -32,20 +32,24 @@ import { screenTitle } from '../../../../constants';
 import clsx from 'clsx';
 import {
   getDismissedActivityCardIDs,
+  getDismissedMigrationCardIDs,
   getDismissedStaticCardIDs,
   setDismissedActivityCardIDs,
+  setDismissedMigrationCardIDs,
   setDismissedStaticCardIDs,
 } from '../../../../core/asyncStorage';
 import { cloneDeep, get } from 'lodash';
+import { MigrationData } from '../../../../models/migrationData.interface';
 
 interface BannerCarouselItemProps {
-  item: BannerRecord | BridgeOrCardActivity;
+  item: BannerRecord | BridgeOrCardActivity | MigrationData;
   index: number;
   boxWidth: number;
   halfBoxDistance: number;
   panX: SharedValue<number>;
   setDismissedActivityCards: React.Dispatch<React.SetStateAction<string[]>>;
   setDismissedStaticCards: React.Dispatch<React.SetStateAction<string[]>>;
+  setDismissedMigrationCards: React.Dispatch<React.SetStateAction<string[]>>;
 }
 const BannerCarouselItem = ({
   item,
@@ -55,6 +59,7 @@ const BannerCarouselItem = ({
   panX,
   setDismissedActivityCards,
   setDismissedStaticCards,
+  setDismissedMigrationCards,
 }: BannerCarouselItemProps) => {
   const isActivity = item ? 'transactionHash' in item : false;
   const { t } = useTranslation();
@@ -121,6 +126,18 @@ const BannerCarouselItem = ({
         (dismissedID: string) => dismissedID.split('|')[0],
       ),
     );
+  };
+
+  const onMigrationCardDismissal = async () => {
+    const { requestId } = item as MigrationData;
+    const dismissedIDs = await getDismissedMigrationCardIDs();
+    const parsedIDs = dismissedIDs ? JSON.parse(dismissedIDs) : [];
+    const updatedDismissedIDs = !parsedIDs.includes(requestId)
+      ? [...parsedIDs, requestId]
+      : parsedIDs;
+
+    await setDismissedMigrationCardIDs(updatedDismissedIDs);
+    setDismissedMigrationCards(updatedDismissedIDs);
   };
 
   const ItemBody = useMemo(() => {
@@ -198,7 +215,7 @@ const BannerCarouselItem = ({
           <>
             <CyDView>
               <CyDView className='flex flex-row justify-center items-end gap-[3px]'>
-                <CyDTokenValue className='text-[20px] font-extrabold text-primaryTextColor'>
+                <CyDTokenValue className='text-[20px] font-extrabold '>
                   {amountInUsd}
                 </CyDTokenValue>
               </CyDView>
@@ -227,8 +244,41 @@ const BannerCarouselItem = ({
         return null;
       }
     } else {
-      const { title, description, bgImageURI } = item;
-      if (bgImageURI) {
+      const {
+        title,
+        description,
+        bgImageURI,
+        type = '',
+        status = '',
+      } = item as MigrationData;
+      if (type === ActivityType.MIGRATE_FUND) {
+        return (
+          <CyDImageBackground
+            className='w-full h-full flex flex-row items-center'
+            source={AppImages.MIGRATION_BANNER_BG}
+            resizeMode='cover'>
+            <CyDFastImage
+              source={
+                status === 'SUCCESS'
+                  ? AppImages.MIGRATION_SUCCESS
+                  : AppImages.MIGRATION_PENDING_GIF
+              }
+              className={clsx('w-[122px] h-[122px]', {
+                'w-[99px] h-[93px]': status === 'SUCCESS',
+              })}
+            />
+
+            <CyDView className='ml-[8px]'>
+              <CyDText className='text-[14px] font-extrabold  w-[65%]'>
+                {title}
+              </CyDText>
+              <CyDText className='text-[10px] text-[#091E42] font-medium mt-[3px]  w-[65%]'>
+                {description}
+              </CyDText>
+            </CyDView>
+          </CyDImageBackground>
+        );
+      } else if (bgImageURI) {
         return (
           <CyDImageBackground
             className='w-full items-end'
@@ -266,7 +316,7 @@ const BannerCarouselItem = ({
           uri: redirectURI,
         });
       } else if (appCta) {
-        //appCta = 'DEBIT_CARD/CARD_INVITE/CARD_SIGNUP';
+        // appCta = 'DEBIT_CARD/CARD_INVITE/CARD_SIGNUP';
         const screens = appCta.split('/');
         if (Object.keys(screenTitle).includes(screens[0])) {
           let routeObj = {};
@@ -329,6 +379,10 @@ const BannerCarouselItem = ({
             onPress={() => {
               if (isActivity) {
                 void onActivityCardDismissal();
+              } else if (
+                (item as MigrationData)?.type === ActivityType.MIGRATE_FUND
+              ) {
+                void onMigrationCardDismissal();
               } else {
                 void onStaticCardDismissal();
               }

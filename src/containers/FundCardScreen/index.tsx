@@ -15,7 +15,6 @@ import {
   ActivityContext,
   PortfolioContext,
   TARGET_CARD_COSMOS_WALLET_ADDRESS,
-  TARGET_CARD_EVMOS_WALLET_CORRESPONDING_EVM_ADDRESS,
   TARGET_CARD_EVM_WALLET_ADDRESS,
   TARGET_CARD_OSMOSIS_WALLET_ADDRESS,
   TARGET_CARD_JUNO_WALLET_ADDRESS,
@@ -387,10 +386,7 @@ export default function FundCardScreen(props) {
         },
       });
     if (chainSelected != null) {
-      if (
-        chainSelected.chainName === ChainNames.ETH ||
-        chainSelected.chainName === ChainNames.EVMOS
-      ) {
+      if (chainSelected.chainName === ChainNames.ETH) {
         void analytics().logEvent('send_token_for_card', {
           from: ethereum.address,
           dollar: chainSelected,
@@ -407,9 +403,7 @@ export default function FundCardScreen(props) {
           fromTokenItem.contractDecimals,
           tokenQuote.quote_uuid,
           handleBridgeTransactionResult,
-          chainSelected.chainName === ChainNames.ETH
-            ? TARGET_CARD_EVM_WALLET_ADDRESS
-            : TARGET_CARD_EVMOS_WALLET_CORRESPONDING_EVM_ADDRESS,
+          TARGET_CARD_EVM_WALLET_ADDRESS,
           payTokenModalParamsLocal.finalGasPrice,
           payTokenModalParamsLocal.gasLimit,
           globalContext,
@@ -468,10 +462,7 @@ export default function FundCardScreen(props) {
       return;
     }
     setLoading(true);
-    if (
-      chainSelected?.chainName === ChainNames.ETH ||
-      chainSelected?.chainName === ChainNames.EVMOS
-    ) {
+    if (chainSelected?.chainName === ChainNames.ETH) {
       const getQuoteUrl = `${PORTFOLIO_HOST}/v1/card/mobile/quote`;
       axios
         .post(getQuoteUrl, {

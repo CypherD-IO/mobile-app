@@ -297,6 +297,54 @@ export default function Options(props: {
                 />
               )}
 
+              {!isReadOnlyWallet && (
+                <>
+                  <OptionsContainer
+                    sentryLabel={'referrals'}
+                    onPress={() => {
+                      props.navigation.navigate(C.screenTitle.REFERRALS, {
+                        fromOptionsStack: true,
+                      });
+                    }}
+                    title={t('CYPHER_CARD_REFERRALS')}
+                    logo={AppImages.REFER_OUTLINE}
+                  />
+                  <DynamicView
+                    dynamic
+                    dynamicWidth
+                    dynamicHeightFix
+                    height={1}
+                    width={88}
+                    bGC={Colors.portfolioBorderColor}
+                  />
+                </>
+              )}
+
+              {!isReadOnlyWallet && (
+                <>
+                  <OptionsContainer
+                    sentryLabel={'referrals'}
+                    onPress={() => {
+                      props.navigation.navigate(C.screenTitle.REWARDS, {
+                        fromOptionsStack: true,
+                      });
+                    }}
+                    title={t('CYPHER_CARD_REWARDS')}
+                    logo={AppImages.REWARDS_ICON}
+                    iW={150}
+                    imageStyle={'-ml-[4px]'}
+                  />
+                  <DynamicView
+                    dynamic
+                    dynamicWidth
+                    dynamicHeightFix
+                    height={1}
+                    width={88}
+                    bGC={Colors.portfolioBorderColor}
+                  />
+                </>
+              )}
+
               {!isReadOnlyWallet &&
                 connectionTypeValue !== ConnectionTypes.WALLET_CONNECT && (
                   <OptionsContainer
@@ -320,21 +368,6 @@ export default function Options(props: {
                     bGC={Colors.portfolioBorderColor}
                   />
                 )}
-
-              {/* <OptionsContainer
-                            sentryLabel={'debit-card'}
-                            onPress={() => {
-                              analytics().logEvent('shortcut_card', { from: ethereum.address });
-                              props.navigation.navigate(C.screenTitle.DEBIT_CARD_SCREEN, {
-                                params: { url: 'https://app.cypherd.io?source=app&address=' + ethereum.address }
-                              });
-                            }}
-                            title={'Manage Card'}
-                            logo={AppImages.MANAGE_CARD}
-                            iW={90}
-                            ></OptionsContainer>
-                            
-                          <DynamicView dynamic dynamicWidth dynamicHeightFix height={1} width={88} bGC={Colors.portfolioBorderColor} /> */}
 
               <OptionsContainer
                 sentryLabel={'security-privacy'}
@@ -419,54 +452,6 @@ export default function Options(props: {
                   logo={AppImages.REFER_OUTLINE}
                 />
               )} */}
-
-              {!isReadOnlyWallet && (
-                <>
-                  <OptionsContainer
-                    sentryLabel={'referrals'}
-                    onPress={() => {
-                      props.navigation.navigate(C.screenTitle.REWARDS, {
-                        fromOptionsStack: true,
-                      });
-                    }}
-                    title={t('CYPHER_CARD_REWARDS')}
-                    logo={AppImages.REWARDS_ICON}
-                    iW={150}
-                    imageStyle={'-ml-[4px]'}
-                  />
-                  <DynamicView
-                    dynamic
-                    dynamicWidth
-                    dynamicHeightFix
-                    height={1}
-                    width={88}
-                    bGC={Colors.portfolioBorderColor}
-                  />
-                </>
-              )}
-
-              {!isReadOnlyWallet && (
-                <OptionsContainer
-                  sentryLabel={'referrals'}
-                  onPress={() => {
-                    props.navigation.navigate(
-                      C.screenTitle.SEND_INVITE_CODE_SCREEN,
-                      { fromOptionsStack: true },
-                    );
-                  }}
-                  title={t('CYPHER_CARD_REFERRALS')}
-                  logo={AppImages.REFER_OUTLINE}
-                />
-              )}
-
-              <DynamicView
-                dynamic
-                dynamicWidth
-                dynamicHeightFix
-                height={1}
-                width={88}
-                bGC={Colors.portfolioBorderColor}
-              />
 
               <OptionsContainer
                 sentryLabel={'browser'}

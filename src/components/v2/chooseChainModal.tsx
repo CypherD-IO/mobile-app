@@ -60,8 +60,7 @@ export default function ChooseChainModal({
               }
               className={'w-[28px] h-[28px] mr-[18px]'}
             />
-            <CyDText
-              className={'text-black text-[18px] font-nunito font-regular'}>
+            <CyDText className={'text-black text-[18px]  font-regular'}>
               {item.item.name}
             </CyDText>
           </CyDView>
@@ -119,9 +118,7 @@ export default function ChooseChainModal({
           />
         </CyDTouchView>
         <CyDText
-          className={
-            'text-center pt-[24px] pb-[14px] text-[22px] font-nunito font-bold text-primaryTextColor'
-          }>
+          className={'text-center pt-[24px] pb-[14px] text-[22px]  font-bold'}>
           {title}
         </CyDText>
 

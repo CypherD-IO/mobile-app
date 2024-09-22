@@ -6,8 +6,6 @@ import {
   CHAIN_AVALANCHE,
   CHAIN_POLYGON,
   CHAIN_BSC,
-  CHAIN_FTM,
-  CHAIN_EVMOS,
   CHAIN_OPTIMISM,
   Chain,
   CHAIN_ARBITRUM,
@@ -55,7 +53,6 @@ import { isNobleAddress } from '../containers/utilities/nobleSendUtility';
 
 import { ActivityContextDef } from '../reducers/activity_reducer';
 import { HdWalletContextDef } from '../reducers/hdwallet_reducer';
-import { isEvmosAddress } from '../containers/utilities/evmosSendUtility';
 import { t } from 'i18next';
 import { AnalyticsType, SignMessageValidationType } from '../constants/enum';
 import {
@@ -75,8 +72,10 @@ import { isKujiraAddress } from '../containers/utilities/kujiraUtilities';
 import moment from 'moment';
 import { isSolanaAddress } from '../containers/utilities/solanaUtilities';
 import { RSA } from 'react-native-rsa-native';
-// const {showModal, hideModal} = useGlobalModalContext()
+import { hostWorker } from '../global';
+import { v4 as uuidv4 } from 'uuid';
 
+const ARCH_HOST: string = hostWorker.getHost('ARCH_HOST');
 export const HdWalletContext = React.createContext<HdWalletContextDef | null>(
   null,
 );
@@ -136,10 +135,6 @@ export function getExplorerUrlFromBackendNames(chain: string, hash: string) {
       return `https://moonbeam.moonscan.io/tx/${hash}`;
     case ChainBackendNames.MOONRIVER:
       return `https://moonriver.moonscan.io/tx/${hash}`;
-    case ChainBackendNames.FANTOM:
-      return `https://ftmscan.com/tx/${hash}`;
-    case ChainBackendNames.EVMOS:
-      return `https://escan.live/tx/${hash}`;
     case ChainBackendNames.COSMOS:
       return `https://www.mintscan.io/cosmos/txs/${hash}`;
     case ChainBackendNames.OSMOSIS:
@@ -188,14 +183,10 @@ export function getExplorerUrl(
       return `https://bscscan.com/tx/${hash}`;
     case CHAIN_POLYGON.symbol:
       return `https://polygonscan.com/tx/${hash}`;
-    case CHAIN_FTM.symbol:
-      return `https://ftmscan.com/tx/${hash}`;
     case CHAIN_MOONBEAM.symbol:
       return `https://moonbeam.moonscan.io/tx/${hash}`;
     case CHAIN_MOONRIVER.symbol:
       return `https://moonriver.moonscan.io/tx/${hash}`;
-    case CHAIN_EVMOS.symbol:
-      return `https://escan.live/tx/${hash}`;
     case CHAIN_COSMOS.symbol:
     case NativeTokenMapping.COSMOS:
       return `https://www.mintscan.io/cosmos/txs/${hash}`;
@@ -229,16 +220,12 @@ export function getNftExplorerUrl(
       return `https://opensea.io/assets/ethereum/${contractAddress}/${id}`;
     case CHAIN_POLYGON.backendName:
       return `https://opensea.io/assets/matic/${contractAddress}/${id}`;
-    case CHAIN_EVMOS.backendName:
-      return `https://www.orbitmarket.io/nft/${contractAddress}/${id}`;
     case CHAIN_AVALANCHE.backendName:
       return `https://explorer.avax.network/address/${contractAddress}`;
     case CHAIN_BSC.backendName:
       return `https://bscscan.com/address/${contractAddress}`;
     case CHAIN_ARBITRUM.backendName:
       return `https://arbitrum.nftscan.com/${contractAddress}`;
-    case CHAIN_FTM.backendName:
-      return `https://ftmscan.com/address/${contractAddress}`;
     case CHAIN_OPTIMISM.backendName:
       return `https://optimistic.etherscan.io/address/${contractAddress}`;
     case CHAIN_STARGAZE.backendName:
@@ -258,10 +245,6 @@ export const TARGET_CARD_EVM_WALLET_ADDRESS =
   '0x43ea3262A6a208470AA686254bE9673F97CbCeD9';
 export const TARGET_CARD_COSMOS_WALLET_ADDRESS =
   'cosmos15fm4ycvl6skw4h5v76tqt2zg36nzxl4mklkr8j';
-export const TARGET_CARD_EVMOS_WALLET_ADDRESS =
-  'evmos10kzxayr90fn8t569rj6ancp2nwdgn70g02kxq0';
-export const TARGET_CARD_EVMOS_WALLET_CORRESPONDING_EVM_ADDRESS =
-  '0x7D846e90657A6675d3451cB5d9E02A9b9A89F9e8';
 export const TARGET_CARD_OSMOSIS_WALLET_ADDRESS =
   'osmo15fm4ycvl6skw4h5v76tqt2zg36nzxl4m7y9n3q';
 export const TARGET_CARD_JUNO_WALLET_ADDRESS =
@@ -277,8 +260,6 @@ export const TARGET_BRIDGE_COSMOS_WALLET_ADDRESS =
   'cosmos1e6khhgeyut7y0qxw2glrdl4al3acavdf9mypt9';
 export const TARGET_BRIDGE_OSMOSIS_WALEET_ADDRESS =
   'osmo1e6khhgeyut7y0qxw2glrdl4al3acavdfdqh3ah';
-export const TARGET_BRIDGE_EVMOS_WALLET_ADDRESS =
-  'evmos152syssnd6w95jffgxgctl20tec4tfsphxv4quv';
 export const TARGET_BRIDGE_JUNO_WALLET_ADDRESS =
   'juno1e6khhgeyut7y0qxw2glrdl4al3acavdfnf86ve';
 export const TARGET_BRIDGE_STARGAZE_WALLET_ADDRESS =
@@ -382,10 +363,6 @@ export const isValidPassportNumber = (ppn: string): boolean => {
   const PP_REGEX = /^[a-zA-Z0-9]*$/;
   ppn = ppn.trim();
   return PP_REGEX.test(ppn);
-};
-
-export const convertToEvmosFromAevmos = aevmos => {
-  return parseFloat(aevmos) * 10 ** -18;
 };
 
 export const isBigIntZero = (num: bigint): boolean => {
@@ -532,10 +509,6 @@ export function getSendAddressFieldPlaceholder(
     return Object.keys(EnsCoinTypes).includes(backendName)
       ? t('SEND_ETHEREUM_PLACEHOLDER_WITH_ENS')
       : t('SEND_ETHEREUM_PLACEHOLDER');
-  } else if (chainName === 'evmos') {
-    return Object.keys(EnsCoinTypes).includes(ChainBackendNames.ETH)
-      ? t('SEND_EVMOS_PLACEHOLDER_WITH_ENS')
-      : t('SEND_EVMOS_PLACEHOLDER');
   } else {
     return `${t('ENTER_CONTACT_NAME')} / ${chainName} ${t(
       'ADDRESS_ALL_SMALL',
@@ -586,13 +559,6 @@ export function SendToAddressValidator(
         return Object.keys(EnsCoinTypes).includes(backendName)
           ? Web3.utils.isAddress(address) || isValidEns(address)
           : Web3.utils.isAddress(address);
-      case CHAIN_EVMOS.chainName:
-        return (
-          isEvmosAddress(address) ||
-          (Object.keys(EnsCoinTypes).includes(ChainBackendNames.ETH)
-            ? Web3.utils.isAddress(address) || isValidEns(address)
-            : Web3.utils.isAddress(address))
-        );
       case CHAIN_COSMOS.chainName:
         return isCosmosAddress(address);
       case CHAIN_OSMOSIS.chainName:
@@ -620,7 +586,6 @@ export function SendToAddressValidator(
 
 export function findChainOfAddress(address: string) {
   if (address) {
-    if (isEvmosAddress(address)) return 'evmos';
     if (isCosmosAddress(address)) return 'cosmos';
     if (isOsmosisAddress(address)) return 'osmosis';
     if (isJunoAddress(address)) return 'juno';
@@ -664,11 +629,8 @@ export const isBasicCosmosChain = (backendName: string) =>
     ChainBackendNames.KUJIRA,
   ].includes(backendName);
 
-export const isEvmosChain = (backendName: string) =>
-  ChainBackendNames.EVMOS === backendName;
-
 export const isCosmosChain = (backendName: string) =>
-  isBasicCosmosChain(backendName) || isEvmosChain(backendName);
+  isBasicCosmosChain(backendName);
 
 export const isCosmosStakingToken = (chain: string, tokenData: any) =>
   tokenData.chainDetails.backendName ===
@@ -681,7 +643,6 @@ export const isACosmosStakingToken = (tokenData: any) =>
     ChainBackendNames.OSMOSIS,
     ChainBackendNames.COSMOS,
     ChainBackendNames.JUNO,
-    ChainBackendNames.EVMOS,
     ChainBackendNames.STARGAZE,
   ].some(chain => isCosmosStakingToken(chain as string, tokenData));
 
@@ -746,9 +707,6 @@ export const getChain = (chain: string): Chain => {
     case 'avalanche':
       blockchain = CHAIN_AVALANCHE;
       break;
-    case 'fantom':
-      blockchain = CHAIN_FTM;
-      break;
     case 'arbitrum':
       blockchain = CHAIN_ARBITRUM;
       break;
@@ -781,9 +739,6 @@ export const getChain = (chain: string): Chain => {
       break;
     case 'kujira':
       blockchain = CHAIN_KUJIRA;
-      break;
-    case 'evmos':
-      blockchain = CHAIN_EVMOS;
       break;
     case 'shardeum':
       blockchain = CHAIN_SHARDEUM;
@@ -877,8 +832,6 @@ export const isEnglish = (value: string) => {
 export function getChainNameFromAddress(address: string) {
   if (Web3.utils.isAddress(address)) {
     return ChainBackendNames.ETH;
-  } else if (isEvmosAddress(address)) {
-    return ChainBackendNames.EVMOS;
   } else if (isCosmosAddress(address)) {
     return ChainBackendNames.COSMOS;
   } else if (isOsmosisAddress(address)) {
@@ -940,7 +893,7 @@ export function getAvailableChains(hdWallet: HdWalletContextDef): Chain[] {
   } = hdWallet.state.wallet;
   let availableChains: Chain[] = [];
   if (get(ethereum.wallets, ethereum.currentIndex)?.address) {
-    availableChains = [CHAIN_COLLECTION, ...EVM_CHAINS, CHAIN_EVMOS];
+    availableChains = [CHAIN_COLLECTION, ...EVM_CHAINS];
   }
   // add Solana to the 2nd postion of the array to show it after Ethereum
   if (get(solana.wallets, solana.currentIndex)?.address) {
@@ -1100,5 +1053,17 @@ export const generateKeys = async () => {
     return { publicKeyBase64, privateKey };
   } catch (error) {
     // error in genrating keys
+  }
+};
+
+export const referralLinkAnalytics = async (referralCode: string) => {
+  try {
+    const payload = {
+      referralCode,
+      trackId: uuidv4(),
+    };
+    await axios.post(`${ARCH_HOST}/v1/cards/referral-v2/click`, payload);
+  } catch (e) {
+    Sentry.captureException(e);
   }
 };

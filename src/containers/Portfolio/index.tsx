@@ -77,7 +77,7 @@ import FilterBar from './components/FilterBar';
 import BannerCarousel from './components/BannerCarousel';
 import { DeFiFilterRefreshBar } from '../../components/deFiRefreshFilterBar';
 import { DeFiFilter, protocolOptionType } from '../../models/defi.interface';
-import { get, isEmpty, isNil } from 'lodash';
+import { isEmpty, isNil } from 'lodash';
 import {
   BridgeContext,
   BridgeContextDef,
@@ -85,7 +85,7 @@ import {
   BridgeStatus,
 } from '../../reducers/bridge.reducer';
 import useAxios from '../../core/HttpRequest';
-import { SkipApiChainInterface } from '../../models/skipApiChains.interface';
+import { SwapBridgeChainData, SwapBridgeTokenData } from '../Bridge';
 
 export interface PortfolioProps {
   navigation: any;
@@ -294,13 +294,13 @@ export default function Portfolio({ navigation }: PortfolioProps) {
       isError: isFetchChainError,
       data: fetchChainData,
       error: fetchChainDataError,
-    } = await getWithAuth('/v1/swap/chains');
+    } = await getWithAuth('/v1/swap/chains?newData=true');
 
     const {
       isError: isFetchTokenError,
       data: fethcTokenData,
       error: fetchTokenDataError,
-    } = await getWithAuth('/v1/swap/tokens');
+    } = await getWithAuth('/v1/swap/tokens?newData=true');
 
     if (isFetchChainError || isFetchTokenError) {
       bridgeDispatch({
@@ -310,27 +310,14 @@ export default function Portfolio({ navigation }: PortfolioProps) {
       else if (fetchTokenDataError)
         Sentry.captureException(fetchTokenDataError);
     } else {
-      const skipApiChains: SkipApiChainInterface[] = get(
-        fetchChainData,
-        'skipSupportedChains',
-        [],
-      );
-      const odosChains: number[] = get(
-        fetchChainData,
-        'odosSupportedChains',
-        [],
-      );
-
-      const tokenDataSkipApi = get(fethcTokenData, 'skipTokens', {});
-      const tokenDataOdosApi = get(fethcTokenData, 'odosTokens', {});
+      const chainData: SwapBridgeChainData[] = fetchChainData;
+      const tokenData: Record<string, SwapBridgeTokenData[]> = fethcTokenData;
 
       bridgeDispatch({
         type: BridgeReducerAction.SUCCESS,
         payload: {
-          odosChainData: odosChains,
-          odosTokenData: tokenDataOdosApi,
-          skipApiChaindata: skipApiChains,
-          skipApiTokenData: tokenDataSkipApi,
+          chainData,
+          tokenData,
         },
       });
     }
@@ -342,12 +329,6 @@ export default function Portfolio({ navigation }: PortfolioProps) {
 
   const constructTokenMeta = (localPortfolio: any, event: string) => {
     switch (event) {
-      case NotificationEvents.EVMOS_STAKING: {
-        const [tokenData] = localPortfolio.data.evmos.holdings.filter(
-          (holding: TokenMeta) => holding.name === 'Evmos',
-        );
-        return tokenData;
-      }
       case NotificationEvents.COSMOS_STAKING: {
         const [tokenData] = localPortfolio.data.cosmos.holdings.filter(
           (holding: TokenMeta) => holding.name === 'ATOM',
@@ -408,21 +389,6 @@ export default function Portfolio({ navigation }: PortfolioProps) {
                 url: remoteMessage.data.url ?? 'https://app.beefy.com/',
               },
               screen: C.screenTitle.BROWSER_SCREEN,
-            });
-            break;
-          }
-          case NotificationEvents.EVMOS_STAKING: {
-            void analytics().logEvent('evmos_staking_cta', {
-              from: [ethereum.address, hdWallet.state.wallet.evmos.address],
-              chain: 'EVMOS',
-            });
-            const tknData = constructTokenMeta(
-              localPortfolio,
-              NotificationEvents.EVMOS_STAKING,
-            );
-            navigation.navigate(C.screenTitle.TOKEN_OVERVIEW, {
-              tokenData: tknData,
-              navigateTo: TokenOverviewTabIndices.STAKING,
             });
             break;
           }
@@ -841,7 +807,7 @@ export default function Portfolio({ navigation }: PortfolioProps) {
           <HeaderBar
             navigation={navigation}
             renderTitleComponent={
-              <CyDTokenValue className='text-[24px] font-extrabold text-primaryTextColor'>
+              <CyDTokenValue className='text-[24px] font-extrabold '>
                 {checkAll(portfolioState)}
               </CyDTokenValue>
             }

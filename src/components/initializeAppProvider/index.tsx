@@ -148,16 +148,10 @@ export const InitializeAppProvider: React.FC<JSX.Element> = ({ children }) => {
           !forcedUpdate && setUpdateModal(false);
         }}>
         <DialogContent>
-          <CyDText
-            className={
-              'font-bold text-[16px] text-primaryTextColor mt-[20px] text-center'
-            }>
+          <CyDText className={'font-bold text-[16px] mt-[20px] text-center'}>
             {t<string>('NEW_UPDATE')}
           </CyDText>
-          <CyDText
-            className={
-              'font-bold text-[13px] text-primaryTextColor mt-[20px] text-center'
-            }>
+          <CyDText className={'font-bold text-[13px] mt-[20px] text-center'}>
             {!forcedUpdate ? t('NEW_UPDATE_MSG') : t('NEW_MUST_UPDATE_MSG')}
           </CyDText>
         </DialogContent>
@@ -183,16 +177,10 @@ export const InitializeAppProvider: React.FC<JSX.Element> = ({ children }) => {
         }
         width={0.8}>
         <DialogContent>
-          <CyDText
-            className={
-              'font-bold text-[16px] text-primaryTextColor mt-[20px] text-center'
-            }>
+          <CyDText className={'font-bold text-[16px] mt-[20px] text-center'}>
             {t<string>('SOMETHING_WENT_WRONG')}
           </CyDText>
-          <CyDText
-            className={
-              'font-bold text-[13px] text-primaryTextColor mt-[20px] text-center'
-            }>
+          <CyDText className={'font-bold text-[13px] mt-[20px] text-center'}>
             {t<string>('CONTACT_CYPHERD_SUPPORT')}
           </CyDText>
         </DialogContent>

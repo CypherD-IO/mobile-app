@@ -1,12 +1,12 @@
 import Web3 from 'web3';
 import { HdWalletContextDef } from '../reducers/hdwallet_reducer';
-import { TokenMeta } from './tokenMetaData.model';
 import { Chain } from '../constants/server';
+import { SwapBridgeTokenData } from '../containers/Bridge';
 
 export interface SwapMetaData {
   web3: Web3;
-  fromToken?: TokenMeta;
-  toToken?: TokenMeta;
+  fromToken?: SwapBridgeTokenData;
+  toToken?: SwapBridgeTokenData;
   amount?: string | number;
   routerAddress?: string;
   quoteData?: any;
@@ -17,7 +17,7 @@ export interface SwapMetaData {
   contractData?: any;
   overrideAllowanceCheck?: boolean;
   overrideAmountCheck?: boolean;
-  chainDetails?: Chain | undefined;
+  chainDetails: Chain;
 }
 
 export interface AllowanceParams {

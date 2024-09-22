@@ -37,7 +37,7 @@ import { useKeyboard } from '../hooks/useKeyboardVisibily';
 
 const Tab = createBottomTabNavigator();
 
-function TabStack() {
+function TabStack(props) {
   const navigationRef = useNavigationContainerRef();
   const activityContext = useContext<any>(ActivityContext);
   const hdWalletContext = useContext<any>(HdWalletContext);
@@ -45,6 +45,7 @@ function TabStack() {
   const inAppUpdates = new SpInAppUpdates(
     false, // isDebug
   );
+  const { deepLinkData, setDeepLinkData } = props;
   const screensToHaveNavBar = [
     screenTitle.PORTFOLIO_SCREEN,
     screenTitle.BROWSER_SCREEN,
@@ -124,6 +125,29 @@ function TabStack() {
 
     void isBadgeAvailable();
   }, [activityContext.state]);
+
+  useEffect(() => {
+    if (deepLinkData?.screenToNavigate) {
+      let tabName;
+      if (
+        deepLinkData.screenToNavigate ===
+        screenTitle.I_HAVE_REFERRAL_CODE_SCREEN
+      ) {
+        tabName = screenTitle.DEBIT_CARD_SCREEN;
+      }
+      if (tabName) {
+        navigationRef.current?.navigate(tabName, {
+          screenToNavigate: deepLinkData.screenToNavigate,
+        });
+      } else {
+        console.warn(
+          `Unable to find tab for screen: ${deepLinkData.screenToNavigate}`,
+        );
+      }
+
+      setDeepLinkData(null);
+    }
+  }, [deepLinkData, setDeepLinkData]);
 
   function MyTabBar({ state, descriptors, navigation }) {
     return (
@@ -286,7 +310,7 @@ function TabStack() {
             );
           },
           tabBarLabelStyle: {
-            fontFamily: 'Nunito',
+            fontFamily: 'Manrope',
           },
           tabBarActiveTintColor: 'black',
           tabBarInactiveTintColor: 'gray',

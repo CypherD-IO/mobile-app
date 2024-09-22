@@ -232,7 +232,7 @@ export default function CosmosAction({
               <CyDView className={' flex flex-row'}>
                 <CyDText
                   className={
-                    ' font-bold text-[16px] ml-[5px] text-primaryTextColor'
+                    ' font-bold text-[16px] ml-[5px] '
                   }>{`${parseFloat(amount).toFixed(2)} ${
                   tokenData.name
                 }`}</CyDText>
@@ -245,10 +245,7 @@ export default function CosmosAction({
                 className={'w-[16px] h-[16px] mt-[3px]'}
               />
               <CyDView className={' flex flex-row'}>
-                <CyDText
-                  className={
-                    ' font-medium text-[16px] ml-[10px] text-primaryTextColor'
-                  }>
+                <CyDText className={' font-medium text-[16px] ml-[10px] '}>
                   {t('GAS_FEE_LABEL')}{' '}
                   {`${gasFee.toFixed(6)} ${tokenData.name}`}
                 </CyDText>
@@ -279,7 +276,7 @@ export default function CosmosAction({
 
         <CyDText
           className={
-            'text-[24px] mt-[24px] font-nunito text-secondaryTextColor font-extrabold text-start'
+            'text-[24px] mt-[24px]  text-secondaryTextColor font-extrabold text-start'
           }>
           {validatorData.name}
         </CyDText>
@@ -290,14 +287,12 @@ export default function CosmosAction({
             className={'w-[20px] h-[20px]'}
           />
           <CyDText
-            className={
-              'ml-[12px] text-[14px] font-nunito text-primaryTextColor font-medium text-center'
-            }>
+            className={'ml-[12px] text-[14px]   font-medium text-center'}>
             {t('Commision rate ')}
           </CyDText>
           <CyDText
             className={
-              'ml-[4px] text-[14px] font-nunito text-secondaryTextColor font-bold text-center'
+              'ml-[4px] text-[14px]  text-secondaryTextColor font-bold text-center'
             }>{`${parseFloat(validatorData.commissionRate) * 100}% `}</CyDText>
         </CyDView>
         <CyDView
@@ -311,14 +306,12 @@ export default function CosmosAction({
           />
 
           <CyDText
-            className={
-              'ml-[12px] text-[14px] font-nunito text-primaryTextColor font-medium text-center'
-            }>
+            className={'ml-[12px] text-[14px]   font-medium text-center'}>
             {t('Voting Power of ')}
           </CyDText>
           <CyDText
             className={
-              'ml-[4px] text-[14px] font-nunito ttext-secondaryTextColor font-bold text-center'
+              'ml-[4px] text-[14px]  ttext-secondaryTextColor font-bold text-center'
             }>{`${convertNumberToShortHandNotation(
             convertFromUnitAmount(
               validatorData.tokens,
@@ -340,19 +333,17 @@ export default function CosmosAction({
           />
           <CyDText
             className={
-              'ml-[16px] font-nunito text-[13px] text-primaryTextColor w-10/12 font-semibold'
+              'ml-[16px]  text-[13px]  w-10/12 font-semibold'
             }>{`${t('Once you undelegate your staked')} ${tokenData.name}${t(
             ', you will need to wait 21 days for your tokens to be liquid',
           )}`}</CyDText>
         </CyDView>
 
         <CyDView className={'flex flex-row justify-between items-center'}>
-          <CyDText className={'font-nunito text-[16px] text-primaryTextColor'}>
-            {'My delegation'}
-          </CyDText>
+          <CyDText className={' text-[16px] '}>{'My delegation'}</CyDText>
           <CyDText
             className={
-              'font-nunito text-[18px] font-bold text-secondaryTextColor'
+              ' text-[18px] font-bold text-secondaryTextColor'
             }>{`${convertFromUnitAmount(
             validatorData.balance.toString(),
             tokenData.contractDecimals,
@@ -364,13 +355,12 @@ export default function CosmosAction({
             className={
               'mt-[20px] mb-[40px] flex flex-row justify-between items-center'
             }>
-            <CyDText
-              className={' font-nunito text-[16px] text-primaryTextColor'}>
+            <CyDText className={'  text-[16px] '}>
               {t('Available balance')}
             </CyDText>
             <CyDText
               className={
-                'font-nunito text-[18px] font-bold text-secondaryTextColor'
+                ' text-[18px] font-bold text-secondaryTextColor'
               }>{`${convertFromUnitAmount(
               cosmosStaking.cosmosStakingState.balance.toString(),
               tokenData.contractDecimals,
@@ -379,14 +369,11 @@ export default function CosmosAction({
         )}
 
         {/* {from === CosmosActionType.DELEGATE && <CyDText
-        className={'mt-[4px] font-nunito text-[12px] font-medium text-primaryTextColor'}>{`${t('0.2')} ${tokenData.name}${t(' reserved on MAX')}`}</CyDText>
+        className={'mt-[4px]  text-[12px] font-medium '}>{`${t('0.2')} ${tokenData.name}${t(' reserved on MAX')}`}</CyDText>
       } */}
         {from === CosmosActionType.REDELEGATE && (
           <>
-            <CyDText
-              className={
-                'font-nunito text-[16px] mt-[10px] text-primaryTextColor'
-              }>
+            <CyDText className={' text-[16px] mt-[10px] '}>
               {t('Validator to Redelegate')}
             </CyDText>
             <CyDTouchView
@@ -401,10 +388,7 @@ export default function CosmosAction({
                   from: CosmosActionType.REDELEGATE,
                 });
               }}>
-              <CyDText
-                className={
-                  'ml-[4px] bg-[#F6F6F6] text-[16px] w-11/12 font-nunito'
-                }>
+              <CyDText className={'ml-[4px] bg-[#F6F6F6] text-[16px] w-11/12 '}>
                 {reValidator.name}
               </CyDText>
               <CyDImage
@@ -416,7 +400,7 @@ export default function CosmosAction({
         )}
         <CyDText
           className={
-            'mt-[20px] font-nunito text-[16px] text-primaryTextColor'
+            'mt-[20px]  text-[16px] '
           }>{`${t('Amount to ')}${from}`}</CyDText>
 
         <CyDView
@@ -424,9 +408,7 @@ export default function CosmosAction({
             'bg-inputBackgroundColor p-[8px] mt-[10px] h-[60px] rounded-[8px] flex flex-row items-center'
           }>
           <CyDTextInput
-            className={
-              'ml-[4px] bg-inputBackgroundColor text-[16px] w-[63%] font-nunito text-primaryTextColor'
-            }
+            className={'ml-[4px] bg-inputBackgroundColor text-[16px] w-[63%]  '}
             keyboardType={'numeric'}
             onChangeText={text => {
               setAmount(text);
@@ -481,22 +463,17 @@ export default function CosmosAction({
         {from === CosmosActionType.DELEGATE && (
           <CyDText
             className={
-              'mt-[4px] font-nunito text-[12px] font-medium text-primaryTextColor'
+              'mt-[4px]  text-[12px] font-medium '
             }>{`${t('0.2')} ${tokenData.name}${t(' reserved on MAX')}`}</CyDText>
         )}
 
-        <CyDText
-          className={'font-nunito text-[16px] my-[10px] text-primaryTextColor'}>
-          {t('Memo')}
-        </CyDText>
+        <CyDText className={' text-[16px] my-[10px] '}>{t('Memo')}</CyDText>
         <CyDView
           className={
             'bg-inputBackgroundColor p-[10px] h-[60px] rounded-[8px] flex flex-row items-center'
           }>
           <CyDTextInput
-            className={
-              'ml-[4px] bg-inputBackgroundColor text-[16px] w-7/12 font-nunito'
-            }
+            className={'ml-[4px] bg-inputBackgroundColor text-[16px] w-7/12 '}
             onChangeText={text => {
               setMemo(text);
             }}

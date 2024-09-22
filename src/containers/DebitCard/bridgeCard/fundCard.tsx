@@ -140,8 +140,7 @@ export default function BridgeFundCardScreen({ route }: { route: any }) {
   const { showModal, hideModal } = useGlobalModalContext();
   const { postWithAuth } = useAxios();
   const isFocused = useIsFocused();
-  const { estimateGasForEvm, estimateGasForEvmosIBC, estimateGasForSolana } =
-    useGasService();
+  const { estimateGasForEvm, estimateGasForSolana } = useGasService();
   const [suggestedAmounts, setSuggestedAmounts] = useState<
     Record<string, string>
   >({ low: '', med: '', high: '' });
@@ -226,8 +225,7 @@ export default function BridgeFundCardScreen({ route }: { route: any }) {
         }
       } else if (
         COSMOS_CHAINS.includes(chainDetails.chainName) &&
-        chainDetails.chainName !== ChainNames.OSMOSIS &&
-        chainDetails.chainName !== ChainNames.EVMOS
+        chainDetails.chainName !== ChainNames.OSMOSIS
       ) {
         gasDetails = {
           gasFeeInCrypto: parseFloat(String(random(0.01, 0.1, true))).toFixed(
@@ -240,14 +238,6 @@ export default function BridgeFundCardScreen({ route }: { route: any }) {
             4,
           ),
         };
-      } else if (chainDetails.chainName === ChainNames.EVMOS) {
-        gasDetails = await estimateGasForEvmosIBC({
-          toAddress: quote.targetAddress,
-          toChain: CHAIN_OSMOSIS,
-          amount,
-          denom,
-          contractDecimals,
-        });
       } else if (chainDetails.chainName === ChainNames.SOLANA) {
         gasDetails = await estimateGasForSolana({
           fromAddress: solana.address,
@@ -697,24 +687,13 @@ export default function BridgeFundCardScreen({ route }: { route: any }) {
         !GASLESS_CHAINS.includes(chainDetails.backendName)
       ) {
         try {
-          let gasDetails;
-          if (chainDetails.chainName === ChainNames.EVMOS) {
-            gasDetails = await estimateGasForEvmosIBC({
-              toAddress: get(cosmosAddresses, ChainNames.OSMOSIS),
-              toChain: CHAIN_OSMOSIS,
-              amount,
-              denom,
-              contractDecimals,
-            });
-          } else {
-            gasDetails = {
-              gasFeeInCrypto: get(
-                gasFeeReservation,
-                [chainDetails.chainName, 'backendName'],
-                0.1,
-              ),
-            };
-          }
+          const gasDetails = {
+            gasFeeInCrypto: get(
+              gasFeeReservation,
+              [chainDetails.chainName, 'backendName'],
+              0.1,
+            ),
+          };
 
           if (gasDetails) {
             const gasFeeEstimationForTxn = String(gasDetails.gasFeeInCrypto);
@@ -835,12 +814,9 @@ export default function BridgeFundCardScreen({ route }: { route: any }) {
               />
               <CyDView className='flex flex-col justify-start items-start ml-[8px]'>
                 <CyDText
-                  className={clsx(
-                    'text-black font-nunito font-extrabold text-[16px]',
-                    {
-                      'text-[14px]': selectedToken.isZeroFeeCardFunding,
-                    },
-                  )}>
+                  className={clsx('text-black  font-extrabold text-[16px]', {
+                    'text-[14px]': selectedToken.isZeroFeeCardFunding,
+                  })}>
                   {selectedToken.name}
                 </CyDText>
                 {/* {selectedToken.isZeroFeeCardFunding ? (
@@ -1093,7 +1069,7 @@ export default function BridgeFundCardScreen({ route }: { route: any }) {
               {isCrpytoInput && !isSmallScreenMobile && (
                 <CyDText
                   className={clsx(
-                    'font-extrabold text-center text-mandarin font-nunito ml-[4px]',
+                    'font-extrabold text-center text-mandarin  ml-[4px]',
                     {
                       'text-[32px]': amount.length <= 15,
                       'text-[60px]': amount.length <= 7,
@@ -1106,7 +1082,7 @@ export default function BridgeFundCardScreen({ route }: { route: any }) {
               {isCrpytoInput && isSmallScreenMobile && (
                 <CyDTextInput
                   className={clsx(
-                    'font-extrabold text-center text-mandarin font-nunito ml-[4px]',
+                    'font-extrabold text-center text-mandarin  ml-[4px]',
                     {
                       'text-[32px]': amount.length <= 15,
                       'text-[60px]': amount.length <= 7,
@@ -1130,8 +1106,7 @@ export default function BridgeFundCardScreen({ route }: { route: any }) {
                 </CyDView>
               )}
             </CyDView>
-            <CyDText
-              className={clsx('text-center text-primaryTextColor text-[16px]')}>
+            <CyDText className={clsx('text-center  text-[16px]')}>
               {'~' +
                 (isCrpytoInput
                   ? (!isNaN(parseFloat(usdAmount))

@@ -82,13 +82,8 @@ export default function CardQuote({
   const ethereum = hdWallet.state.wallet.ethereum;
   const activityContext = useContext<any>(ActivityContext);
   const activityRef = useRef<DebitCardTransaction | null>(null);
-  const {
-    sendEvmToken,
-    sendCosmosToken,
-    interCosmosIBC,
-    evmosIBC,
-    sendSolanaTokens,
-  } = useTransactionManager();
+  const { sendEvmToken, sendCosmosToken, interCosmosIBC, sendSolanaTokens } =
+    useTransactionManager();
   const { showModal, hideModal } = useGlobalModalContext();
   const { postWithAuth } = useAxios();
 
@@ -99,6 +94,7 @@ export default function CardQuote({
   const noble = hdWallet.state.wallet.noble;
   const coreum = hdWallet.state.wallet.coreum;
   const kujira = hdWallet.state.wallet.kujira;
+  const injective = hdWallet.state.wallet.injective;
 
   const cosmosAddresses = {
     cosmos: cosmos.address,
@@ -108,6 +104,7 @@ export default function CardQuote({
     noble: noble.address,
     coreum: coreum.address,
     kujira: kujira.address,
+    injective: injective.address,
   };
 
   const chainLogo = get(
@@ -314,8 +311,7 @@ export default function CardQuote({
             });
           } else if (
             COSMOS_CHAINS.includes(chainName) &&
-            chainName !== ChainNames.OSMOSIS &&
-            chainName !== ChainNames.EVMOS
+            chainName !== ChainNames.OSMOSIS
           ) {
             response = await interCosmosIBC({
               fromChain: chainDetails,
@@ -342,73 +338,67 @@ export default function CardQuote({
               contractDecimals,
               contractAddress,
             });
-          } else {
-            response = await evmosIBC({
-              toAddress: tokenQuote.targetAddress,
-              toChain: CHAIN_OSMOSIS,
-              amount: actualTokensRequired,
-              denom,
-              contractDecimals,
-            });
           }
-          const { hash, isError, error } = response;
-          if (!isError) {
-            void logAnalytics({
-              type: AnalyticsType.SUCCESS,
-              txnHash: hash,
-              chain: selectedToken?.chainDetails?.chainName ?? '',
-              ...(response?.contractData
-                ? { contractData: response?.contractData }
-                : ''),
-              address: PURE_COSMOS_CHAINS.includes(
-                selectedToken?.chainDetails?.chainName,
-              )
-                ? get(
-                    cosmosAddresses,
-                    selectedToken?.chainDetails?.chainName,
-                    '',
-                  )
-                : get(ethereum, 'address', ''),
-            });
-            void transferSentQuote(
-              tokenQuote.fromAddress,
-              tokenQuote.quoteId,
-              hash,
-            );
-          } else {
-            void logAnalytics({
-              type: AnalyticsType.ERROR,
-              chain: selectedToken?.chainDetails?.chainName ?? '',
-              message: parseErrorMessage(error),
-              screen: route.name,
-              address: PURE_COSMOS_CHAINS.includes(
-                selectedToken?.chainDetails?.chainName,
-              )
-                ? get(
-                    cosmosAddresses,
-                    selectedToken?.chainDetails?.chainName,
-                    '',
-                  )
-                : get(ethereum, 'address', ''),
-            });
-            activityRef.current &&
-              activityContext.dispatch({
-                type: ActivityReducerAction.PATCH,
-                value: {
-                  id: activityRef.current.id,
-                  status: ActivityStatus.FAILED,
-                  quoteId: tokenQuote.quoteId,
-                  reason: error,
-                },
+          if (response) {
+            const { hash, isError, error } = response;
+            if (!isError) {
+              void logAnalytics({
+                type: AnalyticsType.SUCCESS,
+                txnHash: hash,
+                chain: selectedToken?.chainDetails?.chainName ?? '',
+                ...(response?.contractData
+                  ? { contractData: response?.contractData }
+                  : ''),
+                address: PURE_COSMOS_CHAINS.includes(
+                  selectedToken?.chainDetails?.chainName,
+                )
+                  ? get(
+                      cosmosAddresses,
+                      selectedToken?.chainDetails?.chainName,
+                      '',
+                    )
+                  : get(ethereum, 'address', ''),
               });
-            setLoading(false);
-            showModal('state', {
-              type: 'error',
-              title: 'Transaction Failed',
-              description: `${String(error)}. Please contact customer support with the quote_id: ${tokenQuote.quoteId}`,
-              onSuccess: hideModal,
-              onFailure: hideModal,
-            });
+              void transferSentQuote(
+                tokenQuote.fromAddress,
+                tokenQuote.quoteId,
+                hash,
+              );
+            } else {
+              void logAnalytics({
+                type: AnalyticsType.ERROR,
+                chain: selectedToken?.chainDetails?.chainName ?? '',
+                message: parseErrorMessage(error),
+                screen: route.name,
+                address: PURE_COSMOS_CHAINS.includes(
+                  selectedToken?.chainDetails?.chainName,
+                )
+                  ? get(
+                      cosmosAddresses,
+                      selectedToken?.chainDetails?.chainName,
+                      '',
+                    )
+                  : get(ethereum, 'address', ''),
+              });
+              activityRef.current &&
+                activityContext.dispatch({
+                  type: ActivityReducerAction.PATCH,
+                  value: {
+                    id: activityRef.current.id,
+                    status: ActivityStatus.FAILED,
+                    quoteId: tokenQuote.quoteId,
+                    reason: error,
+                  },
+                });
+              setLoading(false);
+              showModal('state', {
+                type: 'error',
+                title: 'Transaction Failed',
+                description: `${String(error)}. Please contact customer support with the quote_id: ${tokenQuote.quoteId}`,
+                onSuccess: hideModal,
+                onFailure: hideModal,
+              });
+            }
           }
         }
       } else {
@@ -496,8 +486,7 @@ export default function CardQuote({
           </CyDText>
           <CyDView
             className={'flex flex-col flex-wrap justify-between items-end'}>
-            <CyDText
-              className={' font-medium text-[16px] text-primaryTextColor'}>
+            <CyDText className={' font-medium text-[16px] '}>
               {String(formatAmount(amountInCrypto)) + ' ' + symbol}
             </CyDText>
             <CyDText className={' font-medium text-[16px]'}>
@@ -513,8 +502,7 @@ export default function CardQuote({
           </CyDText>
           <CyDView
             className={'flex flex-col flex-wrap justify-between items-end'}>
-            <CyDText
-              className={'font-medium text-[14px] text-primaryTextColor'}>
+            <CyDText className={'font-medium text-[14px] '}>
               {String(gasFeeInCrypto) + ' ' + nativeTokenSymbol}
             </CyDText>
             <CyDText className={'font-medium text-[14px]'}>
@@ -538,10 +526,7 @@ export default function CardQuote({
           </CyDView>
 
           <CyDView className={'flex flex-row justify-between items-center'}>
-            <CyDText
-              className={
-                'font-nunito font-[16px] text-black font-bold ml-[12px]'
-              }>
+            <CyDText className={' font-[16px] text-black font-bold ml-[12px]'}>
               ~ 4 mins
             </CyDText>
           </CyDView>
@@ -554,8 +539,7 @@ export default function CardQuote({
               {t('PLAN_COST')}
             </CyDText>
             <CyDView className={''}>
-              <CyDText
-                className={'font-medium text-[14px] text-primaryTextColor'}>
+              <CyDText className={'font-medium text-[14px] '}>
                 {'$' + String(planCost)}
               </CyDText>
             </CyDView>

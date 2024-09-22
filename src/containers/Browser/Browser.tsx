@@ -1351,7 +1351,7 @@ export default function Browser({ route, navigation }: any) {
             </DynamicView>
           ) : (
             <>
-              <CyDText className='font-nunito text-left ml-[22px] mt-[10px] text-[15px] text-primaryTextColor font-bold'>
+              <CyDText className=' text-left ml-[22px] mt-[10px] text-[15px]  font-bold'>
                 {'history'.toLocaleUpperCase()}
               </CyDText>
               {spliceHistoryByTime().map(historybt => (

@@ -1,10 +1,6 @@
 name: Deploy Android App to PlayStore
 
 on:
-  push:
-    branches:
-      - main
-      - beta
   pull_request:
     types:
       - closed
@@ -16,7 +12,7 @@ jobs:
   build-and-deploy:
     permissions:
       contents: write
-    if: github.event.pull_request.merged == true || github.event_name == 'push'
+    if: github.event.pull_request.merged == true
     runs-on: ubuntu-latest
     env:
       SENTRY_DSN: ${{secrets.SENTRY_DSN}}
@@ -52,7 +48,7 @@ jobs:
           NPM_TOKEN: ${{ secrets.NPM_TOKEN }}
 
       - name: Update version name and code (main)
-        if: github.event.pull_request.merged == true && github.event.pull_request.base.ref == 'main' && github.event.pull_request.head.ref == 'beta' || github.event_name == 'push' && github.ref == 'refs/heads/main'
+        if: github.event.pull_request.merged == true && github.event.pull_request.base.ref == 'main' && github.event.pull_request.head.ref == 'beta'
         run: |
           cd android
           ./gradlew incrementVersionMain
@@ -60,15 +56,12 @@ jobs:
           git config --local user.name "github-actions[bot]"
           git add app/version.properties
           git commit -m "Increment version for release"
-          git fetch origin main
-          git checkout -b main origin/main
-          git cherry-pick HEAD@{1}
-          git push origin main
+          git push https://${{ secrets.PAT_GITHUB }}@github.com/${{ github.repository }}.git HEAD:main
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
       - name: Update version code (beta)
-        if: github.event.pull_request.merged == true && github.event.pull_request.base.ref == 'beta' || github.event_name == 'push' && github.ref == 'refs/heads/beta'
+        if: github.event.pull_request.merged == true && github.event.pull_request.base.ref == 'beta'
         run: |
           cd android
           ./gradlew incrementVersionCodeBeta
@@ -76,17 +69,7 @@ jobs:
           git config --local user.name "github-actions[bot]"
           git add app/version.properties
           git commit -m "Increment version code for beta release"
-          if [ "${{ github.event_name }}" = "pull_request" ]; then
-            git fetch origin ${{ github.head_ref }}
-            git checkout -b ${{ github.head_ref }} origin/${{ github.head_ref }}
-            git cherry-pick HEAD@{1}
-            git push origin ${{ github.head_ref }}
-          else
-            git fetch origin beta
-            git checkout -b beta origin/beta
-            git cherry-pick HEAD@{1}
-            git push origin beta
-          fi
+          git push https://${{ secrets.PAT_GITHUB }}@github.com/${{ github.repository }}.git HEAD:beta
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 

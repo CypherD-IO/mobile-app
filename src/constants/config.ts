@@ -724,11 +724,6 @@ export const EmbedChainInfos: CypherDCosmosChainInfo[] = [
 //         coinDecimals: 18,
 //       },
 //       {
-//         coinDenom: "Fantom",
-//         coinMinimalDenom: "cftm",
-//         coinDecimals: 18,
-//       },
-//       {
 //         coinDenom: "sUSD",
 //         coinMinimalDenom: "csusd",
 //         coinDecimals: 18,

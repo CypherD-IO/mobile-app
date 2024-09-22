@@ -4,31 +4,20 @@ TBD: Next step is to prototype the interaction between React Native app back to 
 
 ## <B> Steps to run the project locally </B>
 
-### Configure 
-  1. Sentry in sentry.properties file 
-  2. GoogleService in plist file
+### Configure
+
+1. Sentry in sentry.properties file
+2. GoogleService in plist file
 
 [React Native MAC Setup Guide](https://reactnative.dev/docs/environment-setup)
-
 
 ```
 npm install (from the root folder)
 npx pod-install (from the root folder)
 ```
-Okay, one more step to get it working on ios. Basically, when installing the pods we got some duplicates and xcode doesn’t like this. 
-0. Open XCode and goto our repo -> ios -> Cypherd.xcworkspace
-1. Let’s go to the project navigation tab (the folder icon at the top left)
-2.Go to Pods (then all of the pods should appear on the right)
-scroll down to “TcpSockets”
-3. Click on “Build Phases” (in the middle of the screen)
-4. Then expand “Compile Sources”
-5. Click on “GCDAsyncSocket.m”
-6. Click on the “-” button to remove it
-![screenshot](./misc/dep-removal.png "Duplicate Removal")
-The final step is to do the exact same thing to the “react-native-udp” Pod. Don’t forget to do this. After you remove the GCDAsyncSocket.m reference in both Pods, they should have 3 Compile sources.
-
 
 To run:
+
 ```
 npm install <package-name>
 npx pod-install (from the root folder)
@@ -39,15 +28,15 @@ npx react-native run-ios
 
 To clear the cache:
 If you are sure the module exists, try these steps:
- 1. Clear watchman watches: `watchman watch-del-all`
- 2. Delete node_modules and `run yarn install`
- 3. Reset Metro's cache: `yarn start --reset-cache`
- 4. Remove the cache: `rm -rf /tmp/metro-*`
+
+1.  Clear watchman watches: `watchman watch-del-all`
+2.  Delete node_modules and `run yarn install`
+3.  Reset Metro's cache: `yarn start --reset-cache`
+4.  Remove the cache: `rm -rf /tmp/metro-*`
 
 To close the app:
 
 Shift+Command+H twice to open all apps, swipe up to close the app
-
 
 <B>Introduction</B>
 </BR>
@@ -70,8 +59,8 @@ Highlight from the above article
 Final Step
 Each time you add a new npm package, you will need to hack the node modules again, to automate this, simply add this to your package.json:
 "scripts": {
-    ...
-    "postinstall": "./node_modules/.bin/rn-nodeify --install 'crypto,buffer,react-native-randombytes,vm,stream,http,https,os,url,net,fs' --hack"
+...
+"postinstall": "./node_modules/.bin/rn-nodeify --install 'crypto,buffer,react-native-randombytes,vm,stream,http,https,os,url,net,fs' --hack"
 },
 
 <B> Setup Instructions: </B>
@@ -79,12 +68,14 @@ https://reactnative.dev/docs/next/environment-setup
 
 <B> Note: </B>
 Once in a while, run the below command to clear the cache.
-* Please make sure to run "watchman watch-del-all" and "npm start --reset-cache" before running the app.
+
+- Please make sure to run "watchman watch-del-all" and "npm start --reset-cache" before running the app.
 
 M1 Specific instruction
+
 ```
 sudo arch -x86_64 gem install ffi
 arch -x86_64 pod install -- for pod install
 ```
 
-![Alt](https://repobeats.axiom.co/api/embed/6b56a18d1d04f0be2d12cef997469095a3e92039.svg "Repobeats analytics image")
+![Alt](https://repobeats.axiom.co/api/embed/6b56a18d1d04f0be2d12cef997469095a3e92039.svg 'Repobeats analytics image')

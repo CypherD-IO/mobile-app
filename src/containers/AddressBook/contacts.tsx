@@ -136,7 +136,7 @@ export function Contacts({ route, navigation }) {
         <CyDView className={'flex flex-row justify-around mx-[15px]'}>
           <CyDTextInput
             className={clsx(
-              ' w-[80%] border-[1px] border-inputBorderColor rounded-[8px] p-[12px] pr-[38px] text-[16px] font-nunito text-primaryTextColor',
+              ' w-[80%] border-[1px] border-inputBorderColor rounded-[8px] p-[12px] pr-[38px] text-[16px]',
               { 'border-redOffColor': false },
             )}
             value={name}

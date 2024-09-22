@@ -55,30 +55,6 @@ export const initialGlobalState: GlobalStateDef = {
     ETH: {
       primary: 'https://rpc.ankr.com/eth',
     },
-    EVMOS: {
-      otherUrls: {
-        accountDetails:
-          'https://api-evmos-ia.cosmosia.notional.ventures/cosmos/auth/v1beta1/accounts/address',
-        allValidators:
-          'https://api-evmos-ia.cosmosia.notional.ventures/cosmos/staking/v1beta1/validators?status=BOND_STATUS_BONDED&pagination.limit=1000',
-        balance:
-          'https://evmos-api.lavenderfive.com:443/cosmos/bank/v1beta1/balances/address',
-        delegationInformation:
-          'https://api-evmos-ia.cosmosia.notional.ventures/cosmos/staking/v1beta1/delegations/address',
-        reward:
-          'https://api-evmos-ia.cosmosia.notional.ventures/cosmos/distribution/v1beta1/delegators/address/rewards',
-        simulate:
-          'https://api-evmos-ia.cosmosia.notional.ventures/cosmos/tx/v1beta1/simulate',
-        transact:
-          'https://api-evmos-ia.cosmosia.notional.ventures/cosmos/tx/v1beta1/txs',
-        unboundings:
-          'https://api-evmos-ia.cosmosia.notional.ventures/cosmos/staking/v1beta1/delegators/address/unbonding_delegations',
-      },
-      primary: 'https://evmos-json-rpc.stakely.io',
-    },
-    FANTOM: {
-      primary: 'https://rpc.ankr.com/fantom',
-    },
     JUNO: {
       otherUrls: {
         balance:

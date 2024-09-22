@@ -467,6 +467,29 @@ export const setDismissedStaticCardIDs = async (
   }
 };
 
+export const getDismissedMigrationCardIDs = async () => {
+  try {
+    const dismissedCardIDs =
+      (await AsyncStorage.getItem('DISMISSED_MIGRATION_CARD_IDS')) ?? '[]';
+    return dismissedCardIDs;
+  } catch (error) {
+    Sentry.captureException(error);
+  }
+};
+
+export const setDismissedMigrationCardIDs = async (
+  newDismissedCardIDs: string[],
+) => {
+  try {
+    await AsyncStorage.setItem(
+      'DISMISSED_MIGRATION_CARD_IDS',
+      JSON.stringify(newDismissedCardIDs),
+    );
+  } catch (error) {
+    Sentry.captureException(error);
+  }
+};
+
 export const setAuthToken = async (token: string) => {
   try {
     await AsyncStorage.setItem('AUTH_TOKEN', JSON.stringify(token));
@@ -583,5 +606,31 @@ export const removeIsRcEnabled = async () => {
     await AsyncStorage.removeItem('isRcEnabled');
   } catch (e) {
     Sentry.captureException(e);
+  }
+};
+
+export const setReferralCodeAsync = async (code: string) => {
+  try {
+    await AsyncStorage.setItem('REFERRAL_CODE', code);
+  } catch (error) {
+    Sentry.captureException(error);
+  }
+};
+
+export const getReferralCode = async () => {
+  try {
+    const referralCode = await AsyncStorage.getItem('REFERRAL_CODE');
+    return referralCode;
+  } catch (error) {
+    Sentry.captureException(error);
+    return null;
+  }
+};
+
+export const removeReferralCode = async () => {
+  try {
+    await AsyncStorage.removeItem('REFERRAL_CODE');
+  } catch (error) {
+    Sentry.captureException(error);
   }
 };

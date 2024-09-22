@@ -8,12 +8,19 @@ import { useEffect, useReducer, useState } from 'react';
 import Toast from 'react-native-toast-message';
 import { NavigationContainer } from '@react-navigation/native';
 import './src/i18n';
-import { BackHandler, Keyboard, Platform, StatusBar } from 'react-native';
+import {
+  BackHandler,
+  Keyboard,
+  Linking,
+  Platform,
+  StatusBar,
+} from 'react-native';
 import {
   HdWalletContext,
   PortfolioContext,
   StakingContext,
   ActivityContext,
+  referralLinkAnalytics,
 } from './src/core/util';
 import {
   hdWalletStateReducer,
@@ -42,7 +49,10 @@ import {
   ActivityStateReducer,
   initialActivityState,
 } from './src/reducers/activity_reducer';
-import { getConnectWalletData } from './src/core/asyncStorage';
+import {
+  getConnectWalletData,
+  setReferralCodeAsync,
+} from './src/core/asyncStorage';
 import {
   WalletConnectContext,
   walletConnectInitialState,
@@ -72,6 +82,8 @@ import {
   bridgeContextInitialState,
   bridgeReducer,
 } from './src/reducers/bridge.reducer';
+import { LinkingOptions } from '@react-navigation/native';
+import { screenTitle } from './src/constants';
 
 const routingInstrumentation = new Sentry.ReactNavigationInstrumentation();
 
@@ -131,10 +143,32 @@ function App() {
     event: '',
   });
 
+  const [deepLinkData, setDeepLinkData] = useState(null);
+
   let params = {};
   let renderContent: any = {};
-  const linking = {
-    prefixes: ['cypherwallet://', 'https://cypherwallet.com/'],
+
+  const linking: LinkingOptions<ReactNavigation.RootParamList> = {
+    prefixes: ['https://app.cypherhq.io', 'cypherwallet://'],
+    config: {
+      screens: {
+        [screenTitle.PORTFOLIO]: '*',
+      },
+    },
+    async getInitialURL() {
+      const url = await Linking.getInitialURL();
+      if (url != null) {
+        if (url.includes('/card/referral/')) {
+          const referralCode = url.split('/card/referral/')[1];
+          await setReferralCodeAsync(referralCode);
+          setDeepLinkData({
+            screenToNavigate: screenTitle.I_HAVE_REFERRAL_CODE_SCREEN,
+          });
+          void referralLinkAnalytics(referralCode);
+        }
+      }
+      return null;
+    },
   };
 
   useEffect(() => {
@@ -287,7 +321,10 @@ function App() {
                               }}>
                               <GlobalModal>
                                 <InitializeAppProvider>
-                                  <TabStack />
+                                  <TabStack
+                                    deepLinkData={deepLinkData}
+                                    setDeepLinkData={setDeepLinkData}
+                                  />
                                   <Toast
                                     config={toastConfig}
                                     position={'bottom'}

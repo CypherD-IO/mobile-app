@@ -20,13 +20,13 @@ export default function WelcomeSceen4() {
         />
       </CyDView>
       <CyDView className='px-[16px] flex flex-col items-center mt-[40px]'>
-        <CyDText className='font-extrabold text-[40px] text-white text-center font-manrope'>
+        <CyDText className='font-extrabold text-[40px] text-white text-center '>
           {t('Your Money')}
         </CyDText>
-        <CyDText className='font-extrabold text-[40px] text-white text-center font-manrope'>
+        <CyDText className='font-extrabold text-[40px] text-white text-center '>
           {t('is Always safe')}
         </CyDText>
-        <CyDText className='font-semibold text-[18px] text-white mt-[14px] text-center w-[320px] font-manrope'>
+        <CyDText className='font-semibold text-[18px] text-white mt-[14px] text-center w-[320px] '>
           {t(
             'Your money is always secure with Cypher. Enjoy extra protection with features like Freeze and Lockdown mode.',
           )}

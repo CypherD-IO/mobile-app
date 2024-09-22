@@ -15,7 +15,7 @@ import Loading from '../../../components/v2/loading';
 import { StyleSheet } from 'react-native';
 import useAxios from '../../../core/HttpRequest';
 import { CardProviders } from '../../../constants/enum';
-import { generateKeys } from '../../../core/util';
+import { generateKeys, parseErrorMessage } from '../../../core/util';
 
 export default function CardRevealAuthScreen(props: {
   navigation: any;
@@ -35,7 +35,7 @@ export default function CardRevealAuthScreen(props: {
   const [verifyingOTP, setVerifyingOTP] = useState<boolean>(false);
   const { navigation, route } = props;
   const { currentCardProvider, card, verifyOTPPayload } = route.params;
-  const triggerOTPParam = route.params.triggerOTPParam ?? 'show-token';
+  const triggerOTPParam = route.params.triggerOTPParam ?? 'verify/show-token';
   const onSuccess = route.params.onSuccess;
   const resendOtpTime = 30;
   const [resendInterval, setResendInterval] = useState(0);
@@ -66,7 +66,7 @@ export default function CardRevealAuthScreen(props: {
       showModal('state', {
         type: 'error',
         title: t('OTP_TRIGGER_FAILED'),
-        description: response?.error?.message ?? '',
+        description: parseErrorMessage(''),
         onSuccess: hideModal,
         onFailure: hideModal,
       });
@@ -97,7 +97,10 @@ export default function CardRevealAuthScreen(props: {
 
   const verifyOTP = async (num: number) => {
     const OTPVerificationUrl = `/v1/cards/${currentCardProvider}/card/${card?.cardId}/${triggerOTPParam}`;
-    if (currentCardProvider === CardProviders.REAP_CARD) {
+    if (
+      currentCardProvider === CardProviders.REAP_CARD &&
+      triggerOTPParam === 'verify/show-token'
+    ) {
       const key = await generateKeys();
       const payload = {
         otp: +num,
@@ -124,7 +127,7 @@ export default function CardRevealAuthScreen(props: {
           showModal('state', {
             type: 'error',
             title: t('VERIFICATION_FAILED'),
-            description: t('INVALID_OTP'),
+            description: parseErrorMessage(t('INVALID_OTP')),
             onSuccess: () => onModalHide(),
             onFailure: () => onModalHide(),
           });
@@ -139,7 +142,11 @@ export default function CardRevealAuthScreen(props: {
         });
         Sentry.captureException(e);
       }
-    } else if (currentCardProvider === CardProviders.PAYCADDY) {
+    } else if (
+      triggerOTPParam === 'set-pin' ||
+      (currentCardProvider === CardProviders.PAYCADDY &&
+        triggerOTPParam === 'verify/show-token')
+    ) {
       setVerifyingOTP(true);
       const payload = {
         otp: +num,
@@ -155,7 +162,7 @@ export default function CardRevealAuthScreen(props: {
           showModal('state', {
             type: 'error',
             title: t('VERIFICATION_FAILED'),
-            description: t('INVALID_OTP'),
+            description: parseErrorMessage(t('INVALID_OTP')),
             onSuccess: () => onModalHide(),
             onFailure: () => onModalHide(),
           });
