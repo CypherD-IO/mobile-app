@@ -51,11 +51,7 @@ export const RefreshTimerBar = (props: {
 
   useEffect(() => {
     const timeUpdateRunner = setInterval(function time() {
-      if (!isRefreshing) {
-        setTime(calculateTimeDiff(lastUpdatedAt));
-      } else {
-        setTime(`${t('RETRIEVING')}...`);
-      }
+      setTime(calculateTimeDiff(lastUpdatedAt));
     }, TIME_UPDATE_RUNNER_INTERVAL);
 
     return () => {
@@ -71,7 +67,9 @@ export const RefreshTimerBar = (props: {
           className='h-[16px] w-[16px]'
           resizeMode='contain'
         />
-        <CyDText className='ml-[10px]'>{time}</CyDText>
+        <CyDText className='ml-[10px]'>
+          {isRefreshing ? t('REFRESHING') : time}
+        </CyDText>
       </CyDView>
       <CyDTouchView
         className={clsx('flex flex-row items-center', {

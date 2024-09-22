@@ -6,6 +6,7 @@ import React, {
   useCallback,
   useContext,
   useEffect,
+  useMemo,
   useRef,
   useState,
 } from 'react';
@@ -542,23 +543,30 @@ export default function Portfolio({ navigation }: PortfolioProps) {
     });
   };
 
-  const renderPortfolioItem: ListRenderItem<Holding> = ({ item, index }) => {
-    return (
-      <CyDView className='mx-[10px]'>
-        <PortfolioTokenItem
-          item={item}
-          index={index}
-          isVerifyCoinChecked={false}
-          otherChainsWithToken={[]} // To Do
-          navigation={navigation}
-          onSwipe={onSwipe}
-          setSwipeableRefs={setSwipeableRefs}
-        />
-      </CyDView>
-    );
-  };
+  const renderPortfolioItem: ListRenderItem<Holding> = useCallback(
+    ({ item, index }) => {
+      return (
+        <CyDView className='mx-[10px]'>
+          <PortfolioTokenItem
+            item={item}
+            index={index}
+            isVerifyCoinChecked={false}
+            otherChainsWithToken={[]} // To Do
+            navigation={navigation}
+            onSwipe={onSwipe}
+            setSwipeableRefs={setSwipeableRefs}
+          />
+        </CyDView>
+      );
+    },
+    [portfolioBalance],
+  );
 
-  const RenderPortfolioTokens = useCallback(() => {
+  const RenderPortfolioTokens = useMemo(() => {
+    const tempTotalHoldings = portfolioData?.portfolio
+      ? getCurrentChainHoldings(portfolioData?.portfolio, selectedChain)
+          ?.totalHoldings
+      : [];
     return (
       <CyDView style={{ width: windowWidth }}>
         <RefreshTimerBar
@@ -571,22 +579,22 @@ export default function Portfolio({ navigation }: PortfolioProps) {
           lastUpdatedAt={portfolioData?.lastUpdatedAt ?? ''}
         />
         <CyDFlatList
-          data={
-            portfolioData?.portfolio
-              ? getCurrentChainHoldings(portfolioData?.portfolio, selectedChain)
-                  ?.totalHoldings
-              : []
-          }
+          data={tempTotalHoldings}
           scrollEnabled={false}
           renderItem={renderPortfolioItem}
-          refreshing={isPortfolioRefreshing}
-          onRefresh={() => {
-            void fetchPortfolioData();
-          }}
+          // refreshing={isPortfolioRefreshing}
+          // onRefresh={() => {
+          //   void fetchPortfolioData();
+          // }}
+          getItemLayout={(data, index) => ({
+            length: 60,
+            offset: 60 * index,
+            index,
+          })}
           ListEmptyComponent={
             <TokenListEmptyComponent
               navigation={navigation}
-              isPortfolioEmpty={portfolioData?.isPortfolioEmpty ?? true}
+              isPortfolioEmpty={portfolioData?.isPortfolioEmpty ?? false}
               onRefresh={() => {
                 void fetchPortfolioData();
               }}
@@ -596,13 +604,13 @@ export default function Portfolio({ navigation }: PortfolioProps) {
       </CyDView>
     );
   }, [
+    portfolioData,
+    portfolioBalance,
     isPortfolioRefreshing,
     isVerifyCoinChecked,
-    portfolioData?.portfolio?.totalHoldings,
-    selectedChain,
   ]);
 
-  const RenderDefiScene = useCallback(() => {
+  const RenderDefiScene = useMemo(() => {
     return (
       <CyDView style={{ width: windowWidth }}>
         {/* To DO */}
@@ -630,7 +638,7 @@ export default function Portfolio({ navigation }: PortfolioProps) {
     );
   }, [deFiFilters, deFiFilterVisible, userProtocols]);
 
-  const RenderNftScene = useCallback(() => {
+  const RenderNftScene = useMemo(() => {
     return (
       <CyDView style={{ width: windowWidth }}>
         <NFTScene
@@ -641,7 +649,7 @@ export default function Portfolio({ navigation }: PortfolioProps) {
     );
   }, [selectedChain]);
 
-  const RenderTxnHistoryScene = useCallback(() => {
+  const RenderTxnHistoryScene = useMemo(() => {
     return (
       <CyDView style={{ width: windowWidth }}>
         <FilterBar setFilterModalVisible={setFilterModalVisible} />
@@ -660,17 +668,17 @@ export default function Portfolio({ navigation }: PortfolioProps) {
   const scenesData = [
     {
       title: 'tokens',
-      scene: <RenderPortfolioTokens />,
+      scene: RenderPortfolioTokens,
     },
     {
       title: 'defi',
-      scene: <RenderDefiScene />,
+      scene: RenderDefiScene,
     },
     {
       title: 'nft',
-      scene: <RenderNftScene />,
+      scene: RenderNftScene,
     },
-    { title: 'txnHistory', scene: <RenderTxnHistoryScene /> },
+    { title: 'txnHistory', scene: RenderTxnHistoryScene },
   ];
 
   // Sections for SectionList
@@ -751,7 +759,7 @@ export default function Portfolio({ navigation }: PortfolioProps) {
           />
         </CyDView>
       )}
-      {!portfolioData?.isPortfolioEmpty && !isPortfolioLoading ? (
+      {!isPortfolioLoading ? (
         <>
           <ChooseChainModal
             isModalVisible={chooseChain}
