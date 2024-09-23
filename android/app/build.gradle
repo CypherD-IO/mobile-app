@@ -84,23 +84,13 @@ android {
         applicationId "com.cypherd.androidwallet"
         minSdkVersion rootProject.ext.minSdkVersion
         targetSdkVersion rootProject.ext.targetSdkVersion
-        versionCode 419
-        versionName "4.17"
+        versionCode System.getenv('VERSION_CODE') ? System.getenv('VERSION_CODE').toInteger() : 431
+        versionName System.getenv('VERSION_NAME') ?: "4.20"
         missingDimensionStrategy 'react-native-camera', 'general'
         
         // Only set INTERCOM_APP_KEY if running in GitHub Actions
         if (System.getenv('GITHUB_ACTIONS') == 'true') {
             buildConfigField "String", "INTERCOM_APP_KEY", "\"${System.getenv('INTERCOM_APP_KEY') ?: ''}\""
-        }
-        
-        def versionPropsFile = file('version.properties')
-        if (versionPropsFile.canRead()) {
-            def versionProps = new Properties()
-            versionProps.load(new FileInputStream(versionPropsFile))
-            versionCode versionProps['VERSION_CODE'].toInteger()
-            versionName versionProps['VERSION_NAME']
-        } else {
-            throw new FileNotFoundException("Could not read version.properties!")
         }
     }
     signingConfigs {
@@ -169,44 +159,3 @@ dependencies {
 
 apply plugin: 'com.google.gms.google-services' // Do not remove. This is to support psuh notifications in android
 apply from: file("../../node_modules/@react-native-community/cli-platform-android/native_modules.gradle"); applyNativeModulesAppBuildGradle(project)
-
-task incrementVersionMain {
-    doLast {
-        def versionPropsFile = file('version.properties')
-        def versionProps = new Properties()
-
-        if (versionPropsFile.canRead()) {
-            versionProps.load(new FileInputStream(versionPropsFile))
-        }
-        
-        def code = versionProps['VERSION_CODE'].toInteger() + 1
-        def name = versionProps['VERSION_NAME']
-        def (major, minor) = name.tokenize('.')
-        minor = minor.toInteger() + 1
-        if (minor > 99) {
-            major = major.toInteger() + 1
-            minor = 0
-        }
-        name = "${major}.${minor}"
-
-        versionProps['VERSION_NAME'] = name
-        versionProps['VERSION_CODE'] = code.toString()
-        versionProps.store(versionPropsFile.newWriter(), null)
-    }
-}
-
-task incrementVersionCodeBeta {
-    doLast {
-        def versionPropsFile = file('version.properties')
-        def versionProps = new Properties()
-
-        if (versionPropsFile.canRead()) {
-            versionProps.load(new FileInputStream(versionPropsFile))
-        }
-
-        def code = versionProps['VERSION_CODE'].toInteger() + 1
-
-        versionProps['VERSION_CODE'] = code.toString()
-        versionProps.store(versionPropsFile.newWriter(), null)
-    }
-}
