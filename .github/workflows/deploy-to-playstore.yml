@@ -50,28 +50,36 @@ jobs:
       - name: Update version name and code (main)
         if: github.event.pull_request.merged == true && github.event.pull_request.base.ref == 'main' && github.event.pull_request.head.ref == 'beta'
         run: |
-          cd android
-          ./gradlew incrementVersionMain
-          git config --local user.email "github-actions[bot]@users.noreply.github.com"
-          git config --local user.name "github-actions[bot]"
-          git add app/version.properties
-          git commit -m "Increment version for release"
-          git push https://${{ secrets.PAT_GITHUB }}@github.com/${{ github.repository }}.git HEAD:main
+          # Increment version name and code
+          NEW_VERSION_CODE=$((VERSION_CODE + 1))
+          IFS='.' read -ra VERSION_PARTS <<< "$VERSION_NAME"
+          MAJOR=${VERSION_PARTS[0]}
+          MINOR=$((VERSION_PARTS[1] + 1))
+          if [ $MINOR -gt 99 ]; then
+            MAJOR=$((MAJOR + 1))
+            MINOR=0
+          fi
+          NEW_VERSION_NAME="$MAJOR.$MINOR"
+
+          # Update GitHub variables
+          gh variable set VERSION_CODE $NEW_VERSION_CODE -R ${{ github.repository }}
+          gh variable set VERSION_NAME $NEW_VERSION_NAME -R ${{ github.repository }}
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          VERSION_CODE: ${{ vars.VERSION_CODE }}
+          VERSION_NAME: ${{ vars.VERSION_NAME }}
 
       - name: Update version code (beta)
         if: github.event.pull_request.merged == true && github.event.pull_request.base.ref == 'beta'
         run: |
-          cd android
-          ./gradlew incrementVersionCodeBeta
-          git config --local user.email "github-actions[bot]@users.noreply.github.com"
-          git config --local user.name "github-actions[bot]"
-          git add app/version.properties
-          git commit -m "Increment version code for beta release"
-          git push https://${{ secrets.PAT_GITHUB }}@github.com/${{ github.repository }}.git HEAD:beta
+          # Increment version code
+          NEW_VERSION_CODE=$((VERSION_CODE + 1))
+
+          # Update GitHub variable
+          gh variable set VERSION_CODE $NEW_VERSION_CODE -R ${{ github.repository }}
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          VERSION_CODE: ${{ vars.VERSION_CODE }}
 
       - name: Gradle clean
         id: clean
@@ -96,6 +104,9 @@ jobs:
           cd android
           ./gradlew clean
           ./gradlew bundleRelease
+        env:
+          VERSION_CODE: ${{ vars.VERSION_CODE }}
+          VERSION_NAME: ${{ vars.VERSION_NAME }}
 
       - name: Clean up Sentry properties
         if: always()
