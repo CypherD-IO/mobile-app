@@ -4,7 +4,6 @@ on:
   pull_request:
     types:
       - closed
-      - opened
     branches:
       - main
       - beta
@@ -13,6 +12,7 @@ jobs:
   build-and-deploy:
     permissions:
       contents: write
+    if: github.event.pull_request.merged == true
     runs-on: ubuntu-latest
     env:
       SENTRY_DSN: ${{secrets.SENTRY_DSN}}
@@ -48,8 +48,8 @@ jobs:
         env:
           NPM_TOKEN: ${{ secrets.NPM_TOKEN }}
 
-      - name: Update version name and code (beta) check
-        if: github.event.pull_request.base.ref == 'beta'
+      - name: Update version name and code (main)
+        if: github.event.pull_request.merged == true && github.event.pull_request.base.ref == 'main' && github.event.pull_request.head.ref == 'beta'
         run: |
           # Increment version name and code
           NEW_VERSION_CODE=$((VERSION_CODE + 1))
