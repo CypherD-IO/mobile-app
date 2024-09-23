@@ -4,6 +4,7 @@ on:
   pull_request:
     types:
       - closed
+      - opened
     branches:
       - main
       - beta
@@ -70,7 +71,7 @@ jobs:
           VERSION_NAME: ${{ vars.VERSION_NAME }}
 
       - name: Update version code (beta)
-        if: github.event.pull_request.merged == true && github.event.pull_request.base.ref == 'beta'
+        if: github.event.pull_request.base.ref == 'beta'
         run: |
           # Increment version code
           NEW_VERSION_CODE=$((VERSION_CODE + 1))
