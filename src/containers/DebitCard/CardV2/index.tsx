@@ -309,7 +309,7 @@ export default function CypherCardScreen({
   );
 
   return isLayoutRendered ? (
-    <CyDSafeAreaView className='flex-1 bg-gradient-to-b from-cardBgFrom to-cardBgTo mt-[20px] mb-[75px]'>
+    <CyDSafeAreaView className='flex-1 bg-gradient-to-b from-cardBgFrom to-cardBgTo mb-[75px]'>
       <CardProviderSwitch />
       <ShippingFeeConsentModal
         isModalVisible={isShippingFeeConsentModalVisible}
@@ -361,8 +361,7 @@ export default function CypherCardScreen({
           <CyDText className='font-extrabold text-[26px]'>Cards</CyDText>
         </CyDView>
       )}
-      <CyDView
-        className={'h-[60px] py-[5px] px-[10px] mx-[12px] mt-[24px] mb-[12px]'}>
+      <CyDView className={'h-[60px] py-[5px] px-[10px] mx-[12px] mt-[12px]'}>
         {cardId !== HIDDEN_CARD_ID ? (
           <CyDView>
             <CyDText className={'font-semibold text-[10px]'}>
@@ -424,9 +423,9 @@ export default function CypherCardScreen({
             <CyDView className='flex flex-row items-center mx-[16px] mb-[12px]'>
               <CyDImage
                 source={AppImages.CLOCK_OUTLINE}
-                className='w-[16px] h-[16px] mr-[8px]'
+                className='w-[22px] h-[22px] mr-[8px]'
               />
-              <CyDText className='text-[10px] font-medium w-[90%]'>
+              <CyDText className='text-[12px] font-medium w-[90%]'>
                 {'Your old balance '}
                 <CyDText className='text-[12px] font-bold'>
                   {`“$${sumBy(migrationData, 'amount')}“`}
@@ -523,7 +522,7 @@ export default function CypherCardScreen({
                 }}
                 style={'p-[9px] rounded-[6px]'}
                 imageStyle={'mr-[3px] h-[12px] w-[12px]'}
-                title={t('ADD_FUND')}
+                title={t('ADD_FUNDS')}
                 titleStyle={'text-[12px] font-bold'}
               />
             </CyDView>

@@ -108,6 +108,7 @@ export const screenTitle = {
   ADD_DELIVERY_ADDRESS_SCREEN: 'AddDeliveryAddressScreen',
   NAME_ON_CARD_SCREEN: 'NameOnCardScreen',
   SHIPPING_CHECKOUT_SCREEN: 'ShippingCheckoutScreen',
+  SHIPPING_CONFIRMATION_SCREEN: 'ShippingConfirmationScreen',
   UPGRADE_TO_PHYSICAL_CARD_SCREEN: 'UpgradeToPhysicalCardScreen',
   SHIPPING_DETAILS_OTP_SCREEN: 'ShippingDetailsOTPScreen',
   CARD_SIGNUP_CONFIRMATION: 'CardSignupConfirmation',

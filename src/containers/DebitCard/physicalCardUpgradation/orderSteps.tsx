@@ -19,6 +19,8 @@ import { useTranslation } from 'react-i18next';
 import Button from '../../../components/v2/button';
 import { ButtonType, CardProviders } from '../../../constants/enum';
 import { screenTitle } from '../../../constants';
+import { isIOS } from '../../../misc/checkers';
+import clsx from 'clsx';
 
 interface RouteParams {
   currentCardProvider: CardProviders;
@@ -88,7 +90,13 @@ export default function OrderSteps() {
             ))}
           </CyDView>
         </CyDView>
-        <CyDView className='bg-white py-[32px] px-[16px]'>
+        <CyDView
+          className={clsx(
+            'absolute w-full bottom-[0px] bg-white py-[32px] px-[16px]',
+            {
+              'bottom-[-32px]': isIOS(),
+            },
+          )}>
           <Button
             onPress={() => {
               navigation.navigate(screenTitle.VERIFY_SHIPPING_ADDRESS_SCREEN, {

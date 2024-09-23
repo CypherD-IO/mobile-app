@@ -637,6 +637,10 @@ const ENVELOPE = {
   uri: `${S3_BUCKET_URL_ICONS}/envelope.png`,
 };
 
+const CARD_SHIPMENT_ENVELOPE = {
+  uri: `${S3_BUCKET_URL_ICONS}/cardShipmentEnvelope.png`,
+};
+
 const AppImages = {
   USDC_TOKEN,
   LIST_HAMBURGER,
@@ -1078,5 +1082,6 @@ const AppImages = {
   TELEGRAM_BLUE_ICON,
   BASIC_DETAILS,
   ENVELOPE,
+  CARD_SHIPMENT_ENVELOPE,
 };
 export default AppImages;

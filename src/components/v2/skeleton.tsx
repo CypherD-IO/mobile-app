@@ -10,6 +10,7 @@ interface SkeletonLoaderProps {
   style?: ViewStyle;
   value: any;
   children?: React.ReactNode;
+  className?: string;
 }
 
 const CyDSkeleton: React.FC<SkeletonLoaderProps> = ({
@@ -19,6 +20,7 @@ const CyDSkeleton: React.FC<SkeletonLoaderProps> = ({
   style,
   value,
   children,
+  className,
 }) => {
   const animatedValue = useRef(new Animated.Value(0)).current;
 
@@ -47,7 +49,7 @@ const CyDSkeleton: React.FC<SkeletonLoaderProps> = ({
   });
 
   if (value) {
-    return <CyDView>{children}</CyDView>;
+    return <CyDView className={className}>{children}</CyDView>;
   }
 
   return (
@@ -56,7 +58,8 @@ const CyDSkeleton: React.FC<SkeletonLoaderProps> = ({
         styles.container,
         { height, width, borderRadius: rounded },
         style,
-      ]}>
+      ]}
+      className={className}>
       <CyDView style={StyleSheet.absoluteFillObject}>
         <Animated.View style={{ transform: [{ translateX }] }}>
           <LinearGradient

@@ -120,7 +120,7 @@ import OrderSteps from '../containers/DebitCard/physicalCardUpgradation/orderSte
 import VerifyShippingAddress from '../containers/DebitCard/physicalCardUpgradation/verifyShippingAddress';
 import AddDeliveryAddress from '../containers/DebitCard/physicalCardUpgradation/addDeliveryAddress';
 import NameOnCard from '../containers/DebitCard/physicalCardUpgradation/nameOnCard';
-import ShippingConfirmation from '../containers/DebitCard/physicalCardUpgradation/shippingConfirmation';
+import ShippingConfirmation from '../containers/DebitCard/physicalCardUpgradation/confirmation';
 import ShippingCheckout from '../containers/DebitCard/physicalCardUpgradation/ckeckout';
 
 const PortfolioStack = createNativeStackNavigator();
@@ -1185,6 +1185,13 @@ export function DebitCardStackScreen() {
       <FundCardStack.Screen
         name={screenTitle.SHIPPING_CHECKOUT_SCREEN}
         component={ShippingCheckout}
+        options={({ navigation }) => ({
+          headerShown: false,
+        })}
+      />
+      <FundCardStack.Screen
+        name={screenTitle.SHIPPING_CONFIRMATION_SCREEN}
+        component={ShippingConfirmation}
         options={({ navigation }) => ({
           headerShown: false,
         })}

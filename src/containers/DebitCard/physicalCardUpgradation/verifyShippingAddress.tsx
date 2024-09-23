@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { StatusBar } from 'react-native';
+import { StatusBar, useWindowDimensions } from 'react-native';
 import {
   CyDView,
   CyDText,
@@ -24,6 +24,10 @@ import { IKycPersonDetail } from '../../../models/kycPersonal.interface';
 import useAxios from '../../../core/HttpRequest';
 import { capitalize } from 'lodash';
 import { getCountryNameFromISO2 } from '../../../core/locale';
+import CyDSkeleton from '../../../components/v2/skeleton';
+import { getCountryNameById } from '../../../core/util';
+import clsx from 'clsx';
+import { isIOS } from '../../../misc/checkers';
 
 interface RouteParams {
   currentCardProvider: CardProviders;
@@ -40,7 +44,7 @@ export default function VerifyShippingAddress() {
     state: '',
   });
   const [shippingAddressLoading, setShippingAddressLoading] =
-    useState<boolean>(false);
+    useState<boolean>(true);
   const [userData, setUserData] = useState<IKycPersonDetail>();
   const navigation = useNavigation<NavigationProp<ParamListBase>>();
   const route = useRoute<RouteProp<Record<string, RouteParams>, string>>();
@@ -114,27 +118,61 @@ export default function VerifyShippingAddress() {
                 </CyDText>
               </CyDView>
               <CyDView>
-                <CyDText className='text-[16px] font-medium'>3 Weeks</CyDText>
+                <CyDSkeleton
+                  height={12}
+                  width={80}
+                  value={!shippingAddressLoading}>
+                  <CyDText className='text-[16px] font-medium'>3 Weeks</CyDText>
+                </CyDSkeleton>
               </CyDView>
             </CyDView>
             <CyDView>
-              <CyDText className='text-[16px] font-medium'>
-                {`${capitalize(userData?.firstName)} ${capitalize(userData?.lastName)}`}
-              </CyDText>
-              <CyDText className='text-[14px] my-[2px]'>
-                {shippingAddress?.line1}
-              </CyDText>
-              <CyDText className='text-[14px] my-[2px]'>
-                {`${shippingAddress?.line2 ? `${shippingAddress.line2}, ` : ''}${shippingAddress?.city}`}
-              </CyDText>
-              <CyDText className='text-[14px] my-[2px]'>
-                {`${shippingAddress?.state}, ${getCountryNameFromISO2(shippingAddress?.country || '')} ${
-                  shippingAddress?.postalCode
-                }`}
-              </CyDText>
-              <CyDText className='text-[14px] my-[2px]'>
-                {shippingAddress?.phoneNumber}
-              </CyDText>
+              <CyDSkeleton
+                height={12}
+                width={200}
+                value={!shippingAddressLoading}>
+                <CyDText className='text-[16px] font-medium'>
+                  {`${capitalize(userData?.firstName)} ${capitalize(userData?.lastName)}`}
+                </CyDText>
+              </CyDSkeleton>
+              <CyDSkeleton
+                height={12}
+                width={160}
+                value={!shippingAddressLoading}
+                className='my-[2px]'>
+                <CyDText className='text-[14px]'>
+                  {shippingAddress?.line1}
+                </CyDText>
+              </CyDSkeleton>
+              <CyDSkeleton
+                height={12}
+                width={120}
+                value={!shippingAddressLoading}
+                className='my-[2px]'>
+                <CyDText className='text-[14px] my-[2px]'>
+                  {`${shippingAddress?.line2 ? `${shippingAddress.line2}, ` : ''}${shippingAddress?.city}`}
+                </CyDText>
+              </CyDSkeleton>
+              <CyDSkeleton
+                height={12}
+                width={80}
+                value={!shippingAddressLoading}
+                className='my-[2px]'>
+                <CyDText className='text-[14px] my-[2px]'>
+                  {`${shippingAddress?.state}, ${String(getCountryNameById(shippingAddress?.country ?? ''))} ${
+                    shippingAddress?.postalCode
+                  }`}
+                </CyDText>
+              </CyDSkeleton>
+              <CyDSkeleton
+                height={12}
+                width={120}
+                value={!shippingAddressLoading}
+                className='my-[2px]'>
+                <CyDText className='text-[14px] my-[2px]'>
+                  {shippingAddress?.phoneNumber}
+                </CyDText>
+              </CyDSkeleton>
             </CyDView>
           </CyDView>
           <CyDView className='mt-[24px]'>
@@ -160,7 +198,13 @@ export default function VerifyShippingAddress() {
             </CyDTouchView>
           </CyDView>
         </CyDView>
-        <CyDView className='bg-white py-[32px] px-[16px]'>
+        <CyDView
+          className={clsx(
+            'absolute w-full bottom-[0px] bg-white py-[32px] px-[16px]',
+            {
+              'bottom-[-32px]': isIOS(),
+            },
+          )}>
           <Button
             onPress={() => {
               navigation.navigate(screenTitle.NAME_ON_CARD_SCREEN, {
@@ -169,6 +213,7 @@ export default function VerifyShippingAddress() {
                 currentCardProvider,
               });
             }}
+            disabled={shippingAddressLoading}
             type={ButtonType.PRIMARY}
             title={t('CONTINUE')}
             style={'h-[60px] w-full py-[10px]'}

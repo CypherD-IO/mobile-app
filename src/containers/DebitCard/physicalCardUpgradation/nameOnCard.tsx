@@ -24,6 +24,8 @@ import { IKycPersonDetail } from '../../../models/kycPersonal.interface';
 import useAxios from '../../../core/HttpRequest';
 import { capitalize } from 'lodash';
 import PreferredNameModal from './preferredNameModal';
+import { isIOS } from '../../../misc/checkers';
+import clsx from 'clsx';
 
 interface RouteParams {
   userData: IKycPersonDetail;
@@ -57,8 +59,13 @@ export default function NameOnCard() {
         isModalVisible={isPreferredNameModalVisible}
         setShowModal={setIsPreferredNameModalVisible}
         onSetPreferredName={(name: string) => {
-          setSelectedName(name);
           setIsPreferredNameModalVisible(false);
+          navigation.navigate(screenTitle.SHIPPING_CHECKOUT_SCREEN, {
+            userData,
+            shippingAddress,
+            preferredName: name,
+            currentCardProvider,
+          });
         }}
       />
       <CyDView className='flex flex-col justify-between h-full bg-transparent'>
@@ -118,7 +125,13 @@ export default function NameOnCard() {
             </CyDTouchView>
           </CyDView>
         </CyDView>
-        <CyDView className='bg-white py-[32px] px-[16px]'>
+        <CyDView
+          className={clsx(
+            'absolute w-full bottom-[0px] bg-white py-[32px] px-[16px]',
+            {
+              'bottom-[-32px]': isIOS(),
+            },
+          )}>
           <Button
             onPress={() => {
               navigation.navigate(screenTitle.SHIPPING_CHECKOUT_SCREEN, {
@@ -128,6 +141,7 @@ export default function NameOnCard() {
                 currentCardProvider,
               });
             }}
+            disabled={selectedName === ''}
             type={ButtonType.PRIMARY}
             title={t('CONTINUE')}
             style={'h-[60px] w-full py-[10px]'}

@@ -128,19 +128,17 @@ export default function AddDeliveryAddress() {
     <CyDSafeAreaView className='flex flex-1 bg-n20 h-full'>
       <StatusBar barStyle='dark-content' backgroundColor={'#EBEDF0'} />
       <ChooseCountryModal
-        isModalVisible={
-          selectCountryModalVisible || selectCountryModalForDialCodeVisible
-        }
-        setModalVisible={
-          selectCountryModalVisible
-            ? setSelectCountryModalVisible
-            : setSelectCountryModalForDialCodeVisible
-        }
-        selectedCountryState={
-          selectCountryModalVisible
-            ? [selectedCountry, setSelectedCountry]
-            : [selectedCountryForDialCode, setSelectedCountryForDialCode]
-        }
+        isModalVisible={selectCountryModalVisible}
+        setModalVisible={setSelectCountryModalVisible}
+        selectedCountryState={[selectedCountry, setSelectedCountry]}
+      />
+      <ChooseCountryModal
+        isModalVisible={selectCountryModalForDialCodeVisible}
+        setModalVisible={setSelectCountryModalForDialCodeVisible}
+        selectedCountryState={[
+          selectedCountryForDialCode,
+          setSelectedCountryForDialCode,
+        ]}
       />
       <CyDView className='flex flex-col justify-between h-full bg-transparent'>
         <CyDView className='h-full'>
@@ -166,6 +164,7 @@ export default function AddDeliveryAddress() {
             {({ values, errors, handleBlur, handleChange, handleSubmit }) => (
               <CyDKeyboardAwareScrollView
                 className='mt-[24px]'
+                enableOnAndroid={true}
                 showsVerticalScrollIndicator={false}>
                 <CyDView className='mx-[16px]'>
                   <CyDText className='text-[16px] font-semibold'>
@@ -358,9 +357,9 @@ export default function AddDeliveryAddress() {
                     </CyDView>
                   </CyDView>
                 </CyDView>
-                <CyDView className='w-full bg-white py-[22px] px-[16px] mt-[12px]'>
+                <CyDView className='w-full py-[22px] px-[16px] mt-[12px]'>
                   <Button
-                    onPress={() => {}}
+                    onPress={handleSubmit}
                     type={ButtonType.PRIMARY}
                     title={t('CONTINUE')}
                     style={'h-[60px] w-full py-[10px]'}

@@ -1036,9 +1036,9 @@ const resources = {
       CARD_ON_WAY: 'Your card is on its way',
       CARD_SHIP_DESCRIPTION_SUB1: 'Your physical card ending with ',
       CARD_SHIP_DESCRIPTION_SUB2: ' has been dispatched and is in transit',
-      CARD_PRINTING_DESCRIPTION_SUB1: 'Your physical card ending with ',
+      CARD_PRINTING_DESCRIPTION_SUB1: 'Your card ',
       CARD_PRINTING_DESCRIPTION_SUB2:
-        ' is being printed and will be dispatched shortly.',
+        ' is being printed and will be dispatched shortly',
       FEDEX_TRACKING_NO: 'Fedex Tracking No:',
       INVITE_SENT_NOT_USED:
         'Your friend might have missed or unnoticed your invitation to use Cypher Card. Try sending it again.',
@@ -1058,7 +1058,7 @@ const resources = {
       CYPHER_CARD_REFERRALS: 'Referrals',
       CYPHER_CARD_REWARDS: 'Rewards',
       CHECK_SPAM_FOLDER:
-        "Can't find the OTP? Remember to check your spam folder too.",
+        "*Please check your spam folder if you haven't received it",
       TELEGRAM_NOTIFICATION: 'Telegram',
       TOGGLE_TELEGRAM_NOTIFICATION_SUCCESS:
         'Telegram Notification Status Update Success',
@@ -1205,7 +1205,7 @@ const resources = {
       DOWNGRADE_PLAN_CONSENT:
         'I understand that downgrading will revoke all my premium feature access, and accept the ',
       ZERO_RESTRICTION_MODE_TITLE: 'Zero Restriction Mode',
-      ADD_FUND: 'Add Fund',
+      ADD_FUNDS: 'Add Funds',
       MOVE_FUNDS_TO_NEW_CARD: 'Move funds to your new card',
       MIGRATION_ERROR: 'Migration Error.',
       CONTACT_SUPPORT: 'Please contact support for more details.',
@@ -1300,6 +1300,19 @@ const resources = {
       PHYSICAL_CARD_CONFIRMATION_SUB:
         'Please review your card details. Once confirmed, the details cannot be changed.',
       SHIPPING_CHARGES: 'Shipping Charges',
+      TOTAL_AMOUNT: 'Total Amount',
+      DELIVERING_TO: 'Delivering to',
+      PAYING_FROM: 'Paying from',
+      CYPHER_CARD_BALANCE: 'Cypher Card Balance',
+      CYPHER_CARD_BALANCE_SUB: 'i.e card spending balance',
+      YOU_ARE_ALL_SET: "You're All Set!",
+      YOU_ARE_ALL_SET_SUB:
+        'Your request for a physical card has been successfully placed and confirmed. You will receive an email with tracking information when the card is shipped',
+      DELIVERING_IN: 'Delivering in',
+      DELIVERING_IN_SUB1: '18 to 24 Business days',
+      DELIVERING_IN_SUB2:
+        "You'll receive tracking details as soon as your card is printed and shipped",
+      GO_TO_CARDS: 'Go to Cards',
     },
   },
 };
