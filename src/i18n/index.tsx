@@ -1298,7 +1298,7 @@ const resources = {
         'Your preferred name will be printed on the card, while your legal name from your KYC document will be used for billing purposes.',
       PHYSICAL_CARD_CONFIRMATION: 'Physical Card Confirmation',
       PHYSICAL_CARD_CONFIRMATION_SUB:
-        'Please review your card details. Once confirmed, the details cannot be changed.',
+        'Please review your shipping details. Once confirmed, the details cannot be changed.',
       SHIPPING_CHARGES: 'Shipping Charges',
       TOTAL_AMOUNT: 'Total Amount',
       DELIVERING_TO: 'Delivering to',
