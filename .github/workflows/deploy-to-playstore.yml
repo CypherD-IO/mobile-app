@@ -62,8 +62,8 @@ jobs:
           NEW_VERSION_NAME="$MAJOR.$MINOR"
 
           # Update GitHub variables
-          gh variable set VERSION_CODE $NEW_VERSION_CODE -R ${{ github.repository }}
-          gh variable set VERSION_NAME $NEW_VERSION_NAME -R ${{ github.repository }}
+          gh variable set VERSION_CODE --body "$NEW_VERSION_CODE" -R ${{ github.repository }}
+          gh variable set VERSION_NAME --body "$NEW_VERSION_NAME" -R ${{ github.repository }}
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           VERSION_CODE: ${{ vars.VERSION_CODE }}
@@ -76,7 +76,7 @@ jobs:
           NEW_VERSION_CODE=$((VERSION_CODE + 1))
 
           # Update GitHub variable
-          gh variable set VERSION_CODE $NEW_VERSION_CODE -R ${{ github.repository }}
+          gh variable set VERSION_CODE --body "$NEW_VERSION_CODE" -R ${{ github.repository }}
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           VERSION_CODE: ${{ vars.VERSION_CODE }}
