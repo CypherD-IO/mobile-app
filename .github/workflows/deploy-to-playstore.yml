@@ -13,7 +13,6 @@ jobs:
   build-and-deploy:
     permissions:
       contents: write
-    if: github.event.pull_request.merged == true
     runs-on: ubuntu-latest
     env:
       SENTRY_DSN: ${{secrets.SENTRY_DSN}}
