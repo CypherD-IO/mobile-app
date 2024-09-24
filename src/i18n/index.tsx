@@ -1018,7 +1018,7 @@ const resources = {
       SHIPPING_FEE_SUB2:
         ' will be debited from your Cypher Card balance to facilitate the transition to a physical card upgrade.',
       SHIPPING_FEE_ACC:
-        'I acknowledge and authorize the deduction of the above mentioned amount from my account',
+        'I acknowledge and authorize the deduction of the above mentioned amount from my card balance',
       PROCEED_TO_PAY: 'PROCEED TO PAY',
       UPGRADE_PHYSICAL_CARD: 'Upgrade to Physical Card',
       BALANCE_CAPITAL_FIRST_LETTER: 'Balance',

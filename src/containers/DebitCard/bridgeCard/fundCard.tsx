@@ -872,7 +872,7 @@ export default function BridgeFundCardScreen({ route }: { route: any }) {
       }
     }
     return null;
-  }, [selectedToken, cryptoAmount]);
+  }, [selectedToken, cryptoAmount, nativeTokenBalance]);
 
   const onPressToggle = () => {
     const tempIsCryproInput = !isCrpytoInput;
