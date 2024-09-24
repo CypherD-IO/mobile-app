@@ -289,7 +289,6 @@ export default function Portfolio({ navigation }: PortfolioProps) {
   }, []);
 
   useEffect(() => {
-    console.log('useEffect chain');
     if (deFiFilters.chain !== selectedChain.backendName)
       setDeFiFilters({
         ...deFiFilters,
@@ -301,7 +300,6 @@ export default function Portfolio({ navigation }: PortfolioProps) {
   }, [selectedChain]);
 
   const getBridgeData = async () => {
-    console.log('getBridgeData');
     bridgeDispatch({
       type: BridgeReducerAction.FETCHING,
     });

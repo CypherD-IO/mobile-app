@@ -88,38 +88,31 @@ export default function ShippingCheckout() {
     };
     setIsOTPModalVisible(false);
     setIsVerifyingOTP(false);
-    console.log('payload', payload);
-    navigation.navigate(screenTitle.SHIPPING_CONFIRMATION_SCREEN, {
-      userData,
-      shippingAddress,
-      currentCardProvider,
-      preferredName,
-    });
-    // const response = await postWithAuth(
-    //   `/v1/cards/${currentCardProvider}/generate/physical`,
-    //   payload,
-    // );
-    // setIsVerifyingOTP(false);
-    // if (!response.isError) {
-    //   navigation.navigate(screenTitle.SHIPPING_CONFIRMATION_SCREEN, {
-    //     userData,
-    //     shippingAddress,
-    //     currentCardProvider,
-    //     preferredName,
-    //   });
-    // } else {
-    //   showModal('state', {
-    //     type: 'error',
-    //     title: '',
-    //     description:
-    //       response.error.errors?.[0].message ??
-    //       response?.error?.message ??
-    //       'Error while placing your order. Contact cypher support',
-    //     onSuccess: hideModal,
-    //     onFailure: hideModal,
-    //   });
-    //   Sentry.captureException(response.error);
-    // }
+    const response = await postWithAuth(
+      `/v1/cards/${currentCardProvider}/generate/physical`,
+      payload,
+    );
+    setIsVerifyingOTP(false);
+    if (!response.isError) {
+      navigation.navigate(screenTitle.SHIPPING_CONFIRMATION_SCREEN, {
+        userData,
+        shippingAddress,
+        currentCardProvider,
+        preferredName,
+      });
+    } else {
+      showModal('state', {
+        type: 'error',
+        title: '',
+        description:
+          response.error.errors?.[0].message ??
+          response?.error?.message ??
+          'Error while placing your order. Contact cypher support',
+        onSuccess: hideModal,
+        onFailure: hideModal,
+      });
+      Sentry.captureException(response.error);
+    }
   };
 
   const RenderShippingAddress = useCallback(() => {
