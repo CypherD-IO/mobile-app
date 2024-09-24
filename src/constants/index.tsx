@@ -78,6 +78,7 @@ export const screenTitle = {
   CARD_KYC_STATUS_SCREEN: 'CardKYCStatusScreen',
   BRIDGE_CARD_SCREEN: 'BridgeCardScreen',
   BRIDGE_CARD_REVEAL_AUTH_SCREEN: 'BridgeCardRevealAuthScreen',
+  CARD_ACTIVATION_CONSENT_SCREEN: 'CardActivationConsentScreen',
   CARD_ACTIAVTION_SCREEN: 'CardActivationScreen',
   CARD_SET_PIN_SCREEN: 'CardSetPinScreen',
   BRIDGE_FUND_CARD_SCREEN: 'BridgeFundCardScreen',

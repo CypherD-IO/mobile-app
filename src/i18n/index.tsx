@@ -1029,10 +1029,13 @@ const resources = {
       VIRTUAL_CARD_CANCEL:
         "Once you receive and activate your physical card, you won't be able to use or access the virtual card anymore.",
       PLEASE_BE_AWARE: 'Please be aware of the following:',
+      ACTIVATE_PHYSICAL_CARD: 'Activate Physical Card',
       ACTIVATE_PHYSICAL_CARD_SUB:
-        "Please be informed that once you activate your physical card, you won't be able to use or access the virtual card anymore.",
+        'Once you activate physical card your current virtual card will be deactivated ',
       ACTIVATE_PHYSICAL_CARD_CONSENT:
         'I understand and agree to permanently terminate/close my virtual card',
+      REPLACE_VIRTUAL_CARD_SUB:
+        'Your physical card will replace the existing virtual card as part of the standard plan',
       CARD_ON_WAY: 'Your card is on its way',
       CARD_SHIP_DESCRIPTION_SUB1: 'Your physical card ending with ',
       CARD_SHIP_DESCRIPTION_SUB2: ' has been dispatched and is in transit',
@@ -1313,6 +1316,24 @@ const resources = {
       DELIVERING_IN_SUB2:
         "You'll receive tracking details as soon as your card is printed and shipped",
       GO_TO_CARDS: 'Go to Cards',
+      VIRTUAL_CARD_REPLACEMENT_INFO_TITLE_1: 'Quick Setup',
+      VIRTUAL_CARD_REPLACEMENT_INFO_DESC_1:
+        'Once activated, you can quickly add your physical card to Apple Pay or Google Pay, just like your virtual card.',
+      VIRTUAL_CARD_REPLACEMENT_INFO_TITLE_2: 'Seamless Transition',
+      VIRTUAL_CARD_REPLACEMENT_INFO_DESC_2:
+        'Replace your virtual card with the physical one across all platforms without any hassle.',
+      VIRTUAL_CARD_REPLACEMENT_INFO_TITLE_3: 'Uninterrupted Shopping',
+      VIRTUAL_CARD_REPLACEMENT_INFO_DESC_3:
+        'Enjoy hassle-free shopping with physical card from your favourite chains',
+      GET_MULTIPLE_CARDS_PREMIUM:
+        'Get add on physical cards with the premium plan',
+      PREMIUM_SAVINGS:
+        'Go premium and maximize your savings with the lowest forex fee and free card load with USDC',
+      I_UNDERSTAND_AND_AGREE: 'I Understand & Agree',
+      VIRTUAL_CARD_CANCEL_ACC:
+        'I understand and agree to permanently terminate/cancel my virtual card',
+      BILLED_AMOUNT: 'Billed Amount',
+      TRANSACTION_AMOUNT: 'Transaction Amount',
     },
   },
 };

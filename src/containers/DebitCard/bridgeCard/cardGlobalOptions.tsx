@@ -1,5 +1,5 @@
 import { t } from 'i18next';
-import React from 'react';
+import React, { useState } from 'react';
 import { StyleSheet } from 'react-native';
 import {
   CyDImage,
@@ -12,6 +12,7 @@ import AppImages from '../../../../assets/images/appImages';
 import { CardProviders } from '../../../constants/enum';
 import { screenTitle } from '../../../constants';
 import CyDModalLayout from '../../../components/v2/modal';
+import AutoLoadOptionsModal from './autoLoadOptions';
 
 export default function CardGlobalOptionsModal({
   isModalVisible,
@@ -26,7 +27,21 @@ export default function CardGlobalOptionsModal({
   navigation: any;
   onPressPlanChange: () => void;
 }) {
+  const [isAutoLoadOptionsvisible, setIsAutoLoadOptionsVisible] =
+    useState(false);
   const cardGlobalOptions = [
+    {
+      title: 'Auto Load',
+      description: 'Manage auto load',
+      image: AppImages.AUTOLOAD,
+      action: () => {
+        // navigation.navigate(screenTitle.LINKED_WALLETS, {
+        //   currentCardProvider: cardProvider,
+        // });
+        setIsAutoLoadOptionsVisible(true);
+        //setShowModal(false);
+      },
+    },
     ...(cardProvider === CardProviders.REAP_CARD
       ? [
           {
@@ -94,6 +109,15 @@ export default function CardGlobalOptionsModal({
       animationInTiming={300}
       animationOutTiming={300}
       style={styles.modalLayout}>
+      <AutoLoadOptionsModal
+        isModalVisible={isAutoLoadOptionsvisible}
+        setShowModal={setIsAutoLoadOptionsVisible}
+        onPressUpdateAutoLoad={() => {
+          setIsAutoLoadOptionsVisible(false);
+          setShowModal(false);
+          navigation.navigate(screenTitle.AUTO_LOAD_SCREEN);
+        }}
+      />
       <CyDView className='bg-cardBgTo mb-[6px] rounded-[16px] max-h-[80%] pb-[32px]'>
         <CyDScrollView className='flex flex-col'>
           <CyDView className='flex flex-row justify-between items-center rounded-t-[16px] bg-white px-[16px] pb-[16px] pt-[32px]'>

@@ -132,7 +132,7 @@ export default function ActivateCard(props: {
     const payload = {
       otp: +otp,
       last4,
-      shouldCancelVirtualCard: true,
+      shouldCancelVirtualCard: false,
     };
     setLoading(true);
     Keyboard.dismiss();
@@ -180,18 +180,18 @@ export default function ActivateCard(props: {
           ...styles.contentContainerStyle,
           ...(!keyboardHeight && { flex: 1 }),
         }}>
-        <CyDKeyboardAwareScrollView>
+        <CyDKeyboardAwareScrollView enableOnAndroid>
           <CyDView>
             <CyDView className='px-[20px]'>
-              <CyDText className={'text-[25px] font-extrabold'}>
+              <CyDText className={'text-[25px] font-bold'}>
                 {t<string>('CARD_ACTIVATION_HEADER')}
               </CyDText>
-              <CyDText className={'text-[15px] font-bold'}>
+              <CyDText className={'text-[16px] text-subTextColor'}>
                 {t<string>('CARD_ACTIVATION_DESCRIPTION')}
               </CyDText>
             </CyDView>
             <CyDView className={' px-[24px] pt-[10px] mt-[14px]'}>
-              <CyDText className={'text-[18px] font-extrabold'}>
+              <CyDText className={'text-[18px] font-semibold'}>
                 {t<string>('Last 4 digits of card number')}
               </CyDText>
               <CyDView>
@@ -217,7 +217,7 @@ export default function ActivateCard(props: {
               </CyDView>
             </CyDView>
             <CyDView className={'px-[20px] mt-[30px]'}>
-              <CyDText className={'text-[18px] font-extrabold'}>
+              <CyDText className={'text-[18px] font-semibold'}>
                 {t<string>('OTP')}
               </CyDText>
               <CyDView>
@@ -259,7 +259,7 @@ export default function ActivateCard(props: {
               </CyDView>
             </CyDView>
           </CyDView>
-          <CyDView className='w-full mb-[4px] mt-[12px] items-center'>
+          <CyDView className='w-full mb-[4px] mt-[22px] items-center'>
             <Button
               title={t('ACTIVATE')}
               disabled={

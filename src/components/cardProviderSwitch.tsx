@@ -39,6 +39,7 @@ export default function CardProviderSwitch() {
     <CyDView className='flex items-center'>
       <SwitchView
         titles={['New Card', 'Legacy Card']}
+        className={'w-full'}
         index={provider === CardProviders.REAP_CARD ? 0 : 1}
         setIndexChange={(index: number) => {
           onSwitchProviders(index);

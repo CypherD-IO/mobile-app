@@ -7,6 +7,7 @@ import {
   HdWalletContext,
   formatAmount,
   getExplorerUrlFromBackendNames,
+  limitDecimalPlaces,
 } from '../../../core/util';
 import {
   CyDFastImage,
@@ -227,7 +228,7 @@ export default function TransactionDetails({
         title: t('CURRENCY_CONVERSION_DETAILS'),
         data: [
           {
-            label: t('AMOUNT_SPENT'),
+            label: t('BILLED_AMOUNT'),
             value: '$ ' + String(transaction.amount),
           },
           {
@@ -238,7 +239,7 @@ export default function TransactionDetails({
             value: formatAmount(fxConversionPrice),
           },
           {
-            label: t('DOMESTIC_CURRENCY_SPENT'),
+            label: t('TRANSACTION_AMOUNT'),
             value: String(fxCurrencyValue) + ' ' + String(fxCurrencySymbol),
           },
         ],
@@ -303,8 +304,12 @@ export default function TransactionDetails({
           />
           <CyDText className='font-extrabold text-[45px] mt-[5px]'>
             {getTransactionSign(transaction.type) +
-              '$' +
-              String(transaction.amount)}
+              limitDecimalPlaces(
+                transaction.fxCurrencyValue ?? transaction.amount,
+                2,
+              ) +
+              ' ' +
+              (transaction.fxCurrencySymbol ?? 'USD')}
           </CyDText>
           <CyDText>{formatDate(transaction.date)}</CyDText>
         </CyDView>

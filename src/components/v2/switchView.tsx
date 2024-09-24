@@ -8,7 +8,7 @@ export default function SwitchView(props) {
   return (
     <CyDView
       className={clsx(
-        'flex flex-row justify-between items-center mt-[10px] px-[6px] pb-[5px] pt-[5px] bg-switchColor h-[42px] rounded-[8px]',
+        'flex flex-row justify-between items-center mt-[10px] px-[6px] pb-[5px] pt-[5px] bg-n10 h-[42px] rounded-[8px]',
         {},
       )}>
       {titles.map((item, itemIndex) => (
@@ -16,14 +16,14 @@ export default function SwitchView(props) {
           onPress={() => {
             setIndexChange(itemIndex);
           }}
-          className={clsx({
+          className={clsx('flex justify-center items-center h-[32px]', {
             'bg-buttonColor': index === itemIndex,
             'rounded-[8px]': index === itemIndex,
             'px-[8px]': index === itemIndex,
             'z-[10]': index === itemIndex,
           })}
           key={itemIndex}>
-          <CyDText className={'px-[15px] py-[8px] font-bold'}>{item}</CyDText>
+          <CyDText className={'px-[15px] font-bold'}>{item}</CyDText>
         </CyDTouchView>
       ))}
     </CyDView>
