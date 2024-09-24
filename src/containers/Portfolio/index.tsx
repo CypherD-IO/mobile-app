@@ -217,7 +217,7 @@ export default function Portfolio({ navigation }: PortfolioProps) {
       setIsPortfolioLoading(true);
     }
     const localPortfolio = await getLocalPortfolio();
-    if (localPortfolio) {
+    if (localPortfolio && isEmpty(portfolioData?.portfolio)) {
       setPortfolioBalance(calculatePortfolioBalance(localPortfolio));
       setPortfolioData({
         portfolio: localPortfolio,
@@ -289,7 +289,6 @@ export default function Portfolio({ navigation }: PortfolioProps) {
   }, []);
 
   useEffect(() => {
-    console.log('useEffect chain');
     if (deFiFilters.chain !== selectedChain.backendName)
       setDeFiFilters({
         ...deFiFilters,
@@ -301,7 +300,6 @@ export default function Portfolio({ navigation }: PortfolioProps) {
   }, [selectedChain]);
 
   const getBridgeData = async () => {
-    console.log('getBridgeData');
     bridgeDispatch({
       type: BridgeReducerAction.FETCHING,
     });
@@ -543,30 +541,55 @@ export default function Portfolio({ navigation }: PortfolioProps) {
     });
   };
 
-  const renderPortfolioItem: ListRenderItem<Holding> = useCallback(
-    ({ item, index }) => {
-      return (
-        <CyDView className='mx-[10px]'>
-          <PortfolioTokenItem
-            item={item}
-            index={index}
-            isVerifyCoinChecked={false}
-            otherChainsWithToken={[]} // To Do
-            navigation={navigation}
-            onSwipe={onSwipe}
-            setSwipeableRefs={setSwipeableRefs}
-          />
-        </CyDView>
-      );
-    },
-    [portfolioBalance],
-  );
+  const renderPortfolioItem: ListRenderItem<Holding> = ({ item, index }) => {
+    return (
+      <CyDView className='mx-[10px]'>
+        <PortfolioTokenItem
+          item={item}
+          index={index}
+          isVerifyCoinChecked={false}
+          otherChainsWithToken={[]} // To Do
+          navigation={navigation}
+          onSwipe={onSwipe}
+          setSwipeableRefs={setSwipeableRefs}
+        />
+      </CyDView>
+    );
+  };
 
-  const RenderPortfolioTokens = useMemo(() => {
+  const RenderPortfolioTokensList = useCallback(() => {
     const tempTotalHoldings = portfolioData?.portfolio
       ? getCurrentChainHoldings(portfolioData?.portfolio, selectedChain)
           ?.totalHoldings
       : [];
+    return (
+      <CyDFlatList
+        data={tempTotalHoldings}
+        scrollEnabled={true}
+        renderItem={renderPortfolioItem}
+        // refreshing={isPortfolioRefreshing}
+        // onRefresh={() => {
+        //   void fetchPortfolioData();
+        // }}
+        getItemLayout={(data, index) => ({
+          length: 60,
+          offset: 60 * index,
+          index,
+        })}
+        ListEmptyComponent={
+          <TokenListEmptyComponent
+            navigation={navigation}
+            isPortfolioEmpty={portfolioData?.isPortfolioEmpty ?? false}
+            onRefresh={() => {
+              void fetchPortfolioData();
+            }}
+          />
+        }
+      />
+    );
+  }, [portfolioData]);
+
+  const RenderPortfolioTokens = useMemo(() => {
     return (
       <CyDView style={{ width: windowWidth }}>
         <RefreshTimerBar
@@ -578,29 +601,7 @@ export default function Portfolio({ navigation }: PortfolioProps) {
           }}
           lastUpdatedAt={portfolioData?.lastUpdatedAt ?? ''}
         />
-        <CyDFlatList
-          data={tempTotalHoldings}
-          scrollEnabled={false}
-          renderItem={renderPortfolioItem}
-          // refreshing={isPortfolioRefreshing}
-          // onRefresh={() => {
-          //   void fetchPortfolioData();
-          // }}
-          getItemLayout={(data, index) => ({
-            length: 60,
-            offset: 60 * index,
-            index,
-          })}
-          ListEmptyComponent={
-            <TokenListEmptyComponent
-              navigation={navigation}
-              isPortfolioEmpty={portfolioData?.isPortfolioEmpty ?? false}
-              onRefresh={() => {
-                void fetchPortfolioData();
-              }}
-            />
-          }
-        />
+        <RenderPortfolioTokensList />
       </CyDView>
     );
   }, [
@@ -791,6 +792,12 @@ export default function Portfolio({ navigation }: PortfolioProps) {
             keyExtractor={(item, index) => index.toString()}
             renderItem={({ item, section }) => section.renderItem()}
             showsVerticalScrollIndicator={false}
+            refreshing={false}
+            onRefresh={() => {
+              if (tabIndex === 0) {
+                void fetchPortfolioData();
+              }
+            }}
             stickySectionHeadersEnabled={true}
             renderSectionHeader={({ section: { title } }) =>
               title === 'scenes' ? (

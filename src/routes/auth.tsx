@@ -116,6 +116,12 @@ import CryptoWithdrawal from '../containers/DebitCard/CardV2/cryptoWithdrawal/cr
 import WithdrawConfirmation from '../containers/DebitCard/CardV2/cryptoWithdrawal/withdrawConfirmation';
 import WithDrawSuccess from '../containers/DebitCard/CardV2/cryptoWithdrawal/withDrawSuccess';
 import WithdrawHistory from '../containers/DebitCard/CardV2/cryptoWithdrawal/withdrawHistory';
+import OrderSteps from '../containers/DebitCard/physicalCardUpgradation/orderSteps';
+import VerifyShippingAddress from '../containers/DebitCard/physicalCardUpgradation/verifyShippingAddress';
+import AddDeliveryAddress from '../containers/DebitCard/physicalCardUpgradation/addDeliveryAddress';
+import NameOnCard from '../containers/DebitCard/physicalCardUpgradation/nameOnCard';
+import ShippingConfirmation from '../containers/DebitCard/physicalCardUpgradation/confirmation';
+import ShippingCheckout from '../containers/DebitCard/physicalCardUpgradation/ckeckout';
 
 const PortfolioStack = createNativeStackNavigator();
 const BrowserStack = createNativeStackNavigator();
@@ -1146,6 +1152,48 @@ export function DebitCardStackScreen() {
           headerTintColor: Colors.primaryTextColor,
           headerBackTitleVisible: false,
           headerLeft: props => defaultHeaderLeft(navigation, keyboardHeight),
+        })}
+      />
+      <FundCardStack.Screen
+        name={screenTitle.ORDER_STEPS_SCREEN}
+        component={OrderSteps}
+        options={({ navigation }) => ({
+          headerShown: false,
+        })}
+      />
+      <FundCardStack.Screen
+        name={screenTitle.VERIFY_SHIPPING_ADDRESS_SCREEN}
+        component={VerifyShippingAddress}
+        options={({ navigation }) => ({
+          headerShown: false,
+        })}
+      />
+      <FundCardStack.Screen
+        name={screenTitle.NAME_ON_CARD_SCREEN}
+        component={NameOnCard}
+        options={({ navigation }) => ({
+          headerShown: false,
+        })}
+      />
+      <FundCardStack.Screen
+        name={screenTitle.ADD_DELIVERY_ADDRESS_SCREEN}
+        component={AddDeliveryAddress}
+        options={({ navigation }) => ({
+          headerShown: false,
+        })}
+      />
+      <FundCardStack.Screen
+        name={screenTitle.SHIPPING_CHECKOUT_SCREEN}
+        component={ShippingCheckout}
+        options={({ navigation }) => ({
+          headerShown: false,
+        })}
+      />
+      <FundCardStack.Screen
+        name={screenTitle.SHIPPING_CONFIRMATION_SCREEN}
+        component={ShippingConfirmation}
+        options={({ navigation }) => ({
+          headerShown: false,
         })}
       />
       <FundCardStack.Screen

@@ -23,6 +23,7 @@ import CyDModalLayout from '../../../components/v2/modal';
 import { screenTitle } from '../../../constants';
 import {
   ACCOUNT_STATUS,
+  ButtonType,
   CardOperationsAuthType,
   CardProviders,
   CardStatus,
@@ -45,6 +46,7 @@ import { Card } from '../../../models/card.model';
 import { CardProfile } from '../../../models/cardProfile.model';
 import { UserCardDetails } from '../../../models/userCardDetails.interface';
 import {
+  CyDFastImage,
   CyDImage,
   CyDImageBackground,
   CyDText,
@@ -88,9 +90,7 @@ export default function CardScreen({
   const globalContext = useContext<any>(GlobalContext);
   const cardProfile: CardProfile = globalContext.globalState.cardProfile;
   const {
-    lifetimeAmountUsd: lifetimeLoadUSD,
     rc: { isPhysicalCardEligible: upgradeToPhysicalAvailable = false } = {},
-    physicalCardEligibilityLimit,
   } = cardProfile;
 
   const { width } = useWindowDimensions();
@@ -119,15 +119,6 @@ export default function CardScreen({
   const isHiddenCard = () => {
     return some(userCardDetails?.cards, { status: CardStatus.HIDDEN });
   };
-
-  // physical card upgrade only shown for paycaddy pc cards
-  const isUpgradeToPhysicalCardStatusShown =
-    currentCardProvider === CardProviders.PAYCADDY &&
-    lifetimeLoadUSD < physicalCardEligibilityLimit &&
-    !cardProfile[currentCardProvider]?.cards
-      ?.map(card => card.type)
-      .includes(CardType.PHYSICAL) &&
-    !isHiddenCard();
 
   const setUpgradeCorrectedCardIndex = (index: number) => {
     setCurrentCardIndex(index);
@@ -255,16 +246,11 @@ export default function CardScreen({
 
   const cardsWithUpgrade = useMemo(() => {
     const actualCards = userCardDetails.cards.map(card => card);
-    if (upgradeToPhysicalAvailable && !isHiddenCard()) {
-      actualCards.unshift({
-        cardId: '',
-        bin: '',
-        last4: '',
-        network: 'rc',
-        status: 'upgradeAvailable',
-        type: CardType.PHYSICAL,
-      });
-    } else if (isUpgradeToPhysicalCardStatusShown) {
+    if (
+      upgradeToPhysicalAvailable &&
+      !isHiddenCard() &&
+      currentCardProvider === CardProviders.REAP_CARD
+    ) {
       actualCards.unshift({
         cardId: '',
         bin: '',
@@ -466,47 +452,85 @@ const RenderCardActions = ({
     const physicalCard = get(trackingDetails, cardId);
     const trackingNumber = get(trackingDetails, cardId)?.trackingId;
     return (
-      <CyDView className='flex flex-row items-start w-[350px] mx-[20px] px-[10px] mb-[12px] bg-highlightBg rounded-[12px] self-center'>
-        <CyDView className='py-[10px]'>
-          <CyDImage source={AppImages.MAIL} className='h-[32px] w-[32px]' />
-        </CyDView>
-        <CyDView className='py-[10px] flex justify-center ml-[12px] w-[90%]'>
-          <CyDView className='flex flex-row items-center'>
-            <CyDText className='font-bold text-[16px]'>
-              {t('CARD_ON_WAY')}
-            </CyDText>
-            <CyDImage
-              source={AppImages.CELEBRATE}
-              className='h-[24px] w-[24px] ml-[8px]'
-            />
-          </CyDView>
-          <CyDText className='mt-[6px]'>
-            {trackingDetails &&
-            isUndefined(get(trackingDetails, physicalCard.cardId)?.trackingId)
-              ? t('CARD_PRINTING_DESCRIPTION_SUB1') +
-                String(physicalCard.last4) +
-                t('CARD_PRINTING_DESCRIPTION_SUB2')
-              : t('CARD_SHIP_DESCRIPTION_SUB1') +
-                String(physicalCard.last4) +
-                t('CARD_SHIP_DESCRIPTION_SUB2')}
+      <CyDView className='flex flex-row bg-white self-center items-center w-[320px] mx-[20px] my-[12px] pt-[16px] rounded-[12px]'>
+        <CyDFastImage
+          source={AppImages.CARD_SHIPMENT_ENVELOPE}
+          className='h-[84px] w-[84px] rounded-bl-[12px]'
+        />
+        <CyDView className='w-[64%] ml-[12px]'>
+          <CyDText className='font-bold text-[16px]'>
+            {t('CARD_ON_WAY')}
           </CyDText>
-          {trackingNumber && (
-            <CyDView className='flex flex-row items-center mt-[6px]'>
-              <CyDText className=''>{t('FEDEX_TRACKING_NO')}</CyDText>
-              <CyDText className='max-w-[50%] text-highlightText ml-[8px]'>
-                {trackingNumber}
+          {trackingDetails &&
+          isUndefined(get(trackingDetails, physicalCard.cardId)?.trackingId) ? (
+            <CyDView>
+              <CyDText className='mt-[6px]'>
+                {t('CARD_PRINTING_DESCRIPTION_SUB1') +
+                  String(physicalCard.last4) +
+                  t('CARD_PRINTING_DESCRIPTION_SUB2')}
               </CyDText>
-              <CyDTouchView onPress={() => copyTrackingNumber(trackingNumber)}>
-                <CyDImage
-                  source={AppImages.COPY}
-                  className='h-[14px] w-[14px] ml-[12px]'
-                  resizeMode='contain'
-                />
-              </CyDTouchView>
+            </CyDView>
+          ) : (
+            <CyDView className='mt-[6px] pb-[16px]'>
+              <CyDText className=''>{t('FEDEX_TRACKING_NO')}</CyDText>
+              <CyDView className='flex flex-row items-center'>
+                <CyDText className='max-w-[50%] text-highlightText mt-[4px]'>
+                  {trackingNumber}
+                </CyDText>
+                <CyDTouchView
+                  onPress={() => copyTrackingNumber(trackingNumber)}>
+                  <CyDImage
+                    source={AppImages.COPY}
+                    className='h-[14px] w-[14px] ml-[12px]'
+                    resizeMode='contain'
+                  />
+                </CyDTouchView>
+              </CyDView>
             </CyDView>
           )}
         </CyDView>
       </CyDView>
+      // <CyDView className='flex flex-row items-start w-[350px] mx-[20px] px-[10px] mb-[12px] bg-highlightBg rounded-[12px] self-center'>
+      //   <CyDView className='py-[10px]'>
+      //     <CyDImage source={AppImages.MAIL} className='h-[32px] w-[32px]' />
+      //   </CyDView>
+      //   <CyDView className='py-[10px] flex justify-center ml-[12px] w-[90%]'>
+      //     <CyDView className='flex flex-row items-center'>
+      // <CyDText className='font-bold text-[16px]'>
+      //   {t('CARD_ON_WAY')}
+      // </CyDText>
+      //       <CyDImage
+      //         source={AppImages.CELEBRATE}
+      //         className='h-[24px] w-[24px] ml-[8px]'
+      //       />
+      //     </CyDView>
+      // <CyDText className='mt-[6px]'>
+      //   {trackingDetails &&
+      //   isUndefined(get(trackingDetails, physicalCard.cardId)?.trackingId)
+      //     ? t('CARD_PRINTING_DESCRIPTION_SUB1') +
+      //       String(physicalCard.last4) +
+      //       t('CARD_PRINTING_DESCRIPTION_SUB2')
+      //     : t('CARD_SHIP_DESCRIPTION_SUB1') +
+      //       String(physicalCard.last4) +
+      //       t('CARD_SHIP_DESCRIPTION_SUB2')}
+      // </CyDText>
+      //     {trackingNumber && (
+      // <CyDView className='flex flex-row items-center mt-[6px]'>
+      //   <CyDText className=''>{t('FEDEX_TRACKING_NO')}</CyDText>
+      //   <CyDText className='max-w-[50%] text-highlightText ml-[8px]'>
+      //     {trackingNumber}
+      //   </CyDText>
+      //   <CyDTouchView onPress={() => copyTrackingNumber(trackingNumber)}>
+      //     <CyDImage
+      //       source={AppImages.COPY}
+      //       className='h-[14px] w-[14px] ml-[12px]'
+      //       resizeMode='contain'
+      //     />
+      //   </CyDTouchView>
+      // </CyDView>
+      //     )}
+      //   </CyDView>
+      // </CyDView>
     );
   }, [trackingDetails, cardId]);
 
@@ -806,7 +830,7 @@ const RenderCardActions = ({
         {get(trackingDetails, cardId) ? (
           <RenderTrackingItem />
         ) : (
-          <CyDView className='flex lfex-col justify-center items-center'>
+          <CyDView className='flex flex-col justify-center items-center'>
             <CyDText className='text-[22px] font-bold'>
               Activate Physical Card
             </CyDText>
@@ -817,8 +841,9 @@ const RenderCardActions = ({
           </CyDView>
         )}
         <Button
-          title='ACTIVATE PHYSICAL CARD'
-          style='px-[28px]'
+          title='Activate Card'
+          type={ButtonType.PRIMARY}
+          style='px-[28px] w-[320px] mt-[12px]'
           onPress={() => {
             void onPressActivateCard(card);
           }}
