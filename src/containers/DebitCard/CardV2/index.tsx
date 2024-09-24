@@ -16,6 +16,7 @@ import {
   CardProviders,
   CardTransactionStatuses,
   CardTransactionTypes,
+  CypherPlanId,
   GlobalContextType,
 } from '../../../constants/enum';
 import CardScreen from '../bridgeCard/card';
@@ -30,12 +31,12 @@ import Button from '../../../components/v2/button';
 import { screenTitle } from '../../../constants';
 import { GlobalContext, GlobalContextDef } from '../../../core/globalContext';
 import { CardProfile } from '../../../models/cardProfile.model';
-import { get, isEmpty, sumBy } from 'lodash';
+import { get, isEmpty } from 'lodash';
 import useAxios from '../../../core/HttpRequest';
 import * as Sentry from '@sentry/react-native';
 import CardTransactionItem from '../../../components/v2/CardTransactionItem';
 import CardTxnFilterModal from './CardTxnFilterModal';
-import { ICardTransaction } from '../../../models/card.model';
+import { Card, ICardTransaction } from '../../../models/card.model';
 import { useGlobalModalContext } from '../../../components/v2/GlobalModal';
 import {
   DateRange,
@@ -211,18 +212,18 @@ export default function CypherCardScreen({
     if (isShippingFeeConsentModalVisible) {
       setIsShippingFeeConsentModalVisible(false);
       setTimeout(() => {
-        navigation.navigate(screenTitle.UPGRADE_TO_PHYSICAL_CARD_SCREEN, {
+        navigation.navigate(screenTitle.ORDER_STEPS_SCREEN, {
           currentCardProvider: cardProvider,
         });
       }, MODAL_HIDE_TIMEOUT);
     } else {
-      navigation.navigate(screenTitle.UPGRADE_TO_PHYSICAL_CARD_SCREEN, {
+      navigation.navigate(screenTitle.ORDER_STEPS_SCREEN, {
         currentCardProvider: cardProvider,
       });
     }
   };
 
-  const onCardActivationConfirmation = () => {
+  const onCardActivationConfirmation = (card: Card) => {
     if (cardActivationDetails.isConsentModalVisible) {
       setCardActivationDetails({
         ...cardActivationDetails,
@@ -234,6 +235,11 @@ export default function CypherCardScreen({
           card: cardActivationDetails.cardToBeActivated,
         });
       }, MODAL_HIDE_TIMEOUT);
+    } else {
+      navigation.navigate(screenTitle.CARD_ACTIAVTION_SCREEN, {
+        currentCardProvider: cardProvider,
+        card,
+      });
     }
   };
 
@@ -242,7 +248,7 @@ export default function CypherCardScreen({
       showModal('state', {
         type: 'error',
         title: t('INSUFFICIENT_FUNDS'),
-        description: `You do not have $${physicalCardUpgradationFee} balance to upgrade to physical card. Please load now to upgrade`,
+        description: `You do not have $${String(physicalCardUpgradationFee)} balance to upgrade to physical card. Please load now to upgrade`,
         onSuccess: onModalHide,
         onFailure: hideModal,
       });
@@ -256,10 +262,17 @@ export default function CypherCardScreen({
   };
 
   const onPressActivateCard = (card: any) => {
-    setCardActivationDetails({
-      isConsentModalVisible: true,
-      cardToBeActivated: card,
-    });
+    if (
+      get(cardProfile, ['planInfo', 'planId'], CypherPlanId.BASIC_PLAN) ===
+      CypherPlanId.BASIC_PLAN
+    ) {
+      setCardActivationDetails({
+        isConsentModalVisible: true,
+        cardToBeActivated: card,
+      });
+    } else {
+      onCardActivationConfirmation(card);
+    }
   };
 
   const verifyWithOTP = () => {
@@ -308,11 +321,15 @@ export default function CypherCardScreen({
   );
 
   return isLayoutRendered ? (
-    <CyDSafeAreaView className='flex-1 bg-gradient-to-b from-cardBgFrom to-cardBgTo mt-[20px] mb-[75px]'>
+    <CyDSafeAreaView className='flex-1 bg-gradient-to-b from-cardBgFrom to-cardBgTo mb-[75px]'>
       <CardProviderSwitch />
       <ShippingFeeConsentModal
         isModalVisible={isShippingFeeConsentModalVisible}
         feeAmount={String(physicalCardUpgradationFee)}
+        shouldCancelVirtualCard={
+          get(cardProfile, ['planInfo', 'planId'], CypherPlanId.BASIC_PLAN) ===
+          CypherPlanId.BASIC_PLAN
+        }
         onSuccess={() => {
           onShippingConfirmation();
         }}
@@ -320,7 +337,6 @@ export default function CypherCardScreen({
           setIsShippingFeeConsentModalVisible(false);
         }}
       />
-
       <CardActivationConsentModal
         isModalVisible={cardActivationDetails.isConsentModalVisible}
         onSuccess={() => {
@@ -360,8 +376,7 @@ export default function CypherCardScreen({
           <CyDText className='font-extrabold text-[26px]'>Cards</CyDText>
         </CyDView>
       )}
-      <CyDView
-        className={'h-[60px] py-[5px] px-[10px] mx-[12px] mt-[24px] mb-[12px]'}>
+      <CyDView className={'h-[60px] py-[5px] px-[10px] mx-[12px] mt-[12px]'}>
         {cardId !== HIDDEN_CARD_ID ? (
           <CyDView>
             <CyDText className={'font-semibold text-[10px]'}>
@@ -416,25 +431,6 @@ export default function CypherCardScreen({
       </CyDView>
 
       <CyDScrollView>
-        {/* migration amount  */}
-        {migrationData.length > 0 &&
-          cardId !== HIDDEN_CARD_ID &&
-          cardProvider === CardProviders.REAP_CARD && (
-            <CyDView className='flex flex-row items-center mx-[16px] mb-[12px]'>
-              <CyDImage
-                source={AppImages.CLOCK_OUTLINE}
-                className='w-[16px] h-[16px] mr-[8px]'
-              />
-              <CyDText className='text-[10px] font-medium w-[90%]'>
-                {'Your old balance '}
-                <CyDText className='text-[12px] font-bold'>
-                  {`“$${sumBy(migrationData, 'amount')}“`}
-                </CyDText>
-                {' will be transferred within 3 to 5 business days.'}
-              </CyDText>
-            </CyDView>
-          )}
-
         {cardId !== HIDDEN_CARD_ID &&
           cardProvider === CardProviders.PAYCADDY && (
             <CyDView className='mx-[16px] mb-[12px] bg-white rounded-[16px] p-[8px]'>
@@ -522,7 +518,7 @@ export default function CypherCardScreen({
                 }}
                 style={'p-[9px] rounded-[6px]'}
                 imageStyle={'mr-[3px] h-[12px] w-[12px]'}
-                title={t('ADD_FUND')}
+                title={t('ADD_FUNDS')}
                 titleStyle={'text-[12px] font-bold'}
               />
             </CyDView>

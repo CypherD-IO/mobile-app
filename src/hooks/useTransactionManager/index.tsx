@@ -30,6 +30,7 @@ import {
   getTimeOutTime,
   getWeb3Endpoint,
   limitDecimalPlaces,
+  parseErrorMessage,
 } from '../../core/util';
 import {
   SendInEvmInterface,
@@ -308,7 +309,7 @@ export default function useTransactionManager() {
         return { hash: String(hash), isError: false };
       } catch (error) {
         Sentry.captureException(error);
-        return { hash: '', isError: true, error: error?.message ?? error };
+        return { hash: '', isError: true, error: parseErrorMessage(error) };
       }
     } else {
       try {
@@ -324,7 +325,7 @@ export default function useTransactionManager() {
         return { hash: String(hash), contractData, isError: false };
       } catch (error: any) {
         Sentry.captureException(error);
-        return { hash: '', isError: true, error: error?.message ?? error };
+        return { hash: '', isError: true, error: parseErrorMessage(error) };
       }
     }
   };

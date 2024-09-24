@@ -435,9 +435,6 @@ const resources = {
       EMAIL_REQUIRED: 'Email is required',
       PHONE_NUMBER_REQUIRED: 'Phone Number is required',
       LINE1_REQUIRED: 'Line 1 is required',
-      CITY_REQUIRED: 'City is required',
-      STATE_REQUIRED: 'State is required',
-      POSTAL_CODE_REQUIRED: 'Postal Code is required',
       DOB_REQUIRED: 'Date Of Birth is required',
       SSN_REQUIRED: 'SSN is required',
       PASSPORT_NUMBER_REQUIRED: 'Passport number is required',
@@ -1021,7 +1018,7 @@ const resources = {
       SHIPPING_FEE_SUB2:
         ' will be debited from your Cypher Card balance to facilitate the transition to a physical card upgrade.',
       SHIPPING_FEE_ACC:
-        'I acknowledge and authorize the deduction of the above mentioned amount from my account',
+        'I acknowledge and authorize the deduction of the above mentioned amount from my card balance',
       PROCEED_TO_PAY: 'PROCEED TO PAY',
       UPGRADE_PHYSICAL_CARD: 'Upgrade to Physical Card',
       BALANCE_CAPITAL_FIRST_LETTER: 'Balance',
@@ -1039,9 +1036,9 @@ const resources = {
       CARD_ON_WAY: 'Your card is on its way',
       CARD_SHIP_DESCRIPTION_SUB1: 'Your physical card ending with ',
       CARD_SHIP_DESCRIPTION_SUB2: ' has been dispatched and is in transit',
-      CARD_PRINTING_DESCRIPTION_SUB1: 'Your physical card ending with ',
+      CARD_PRINTING_DESCRIPTION_SUB1: 'Your card ',
       CARD_PRINTING_DESCRIPTION_SUB2:
-        ' is being printed and will be dispatched shortly.',
+        ' is being printed and will be dispatched shortly',
       FEDEX_TRACKING_NO: 'Fedex Tracking No:',
       INVITE_SENT_NOT_USED:
         'Your friend might have missed or unnoticed your invitation to use Cypher Card. Try sending it again.',
@@ -1061,7 +1058,7 @@ const resources = {
       CYPHER_CARD_REFERRALS: 'Referrals',
       CYPHER_CARD_REWARDS: 'Rewards',
       CHECK_SPAM_FOLDER:
-        "Can't find the OTP? Remember to check your spam folder too.",
+        "*Please check your spam folder if you haven't received it",
       TELEGRAM_NOTIFICATION: 'Telegram',
       TOGGLE_TELEGRAM_NOTIFICATION_SUCCESS:
         'Telegram Notification Status Update Success',
@@ -1208,7 +1205,7 @@ const resources = {
       DOWNGRADE_PLAN_CONSENT:
         'I understand that downgrading will revoke all my premium feature access, and accept the ',
       ZERO_RESTRICTION_MODE_TITLE: 'Zero Restriction Mode',
-      ADD_FUND: 'Add Fund',
+      ADD_FUNDS: 'Add Funds',
       MOVE_FUNDS_TO_NEW_CARD: 'Move funds to your new card',
       MIGRATION_ERROR: 'Migration Error.',
       CONTACT_SUPPORT: 'Please contact support for more details.',
@@ -1266,6 +1263,56 @@ const resources = {
       TRANSACTION_FETCH_ERROR: 'Error fetching transactions',
       WITHDRAW_HISTORY: 'Withdrawal History',
       REFRESHING: 'Refreshing',
+      ORDER_YOUR_PHYSICAL_CARD: 'Order your Physical Card',
+      HERE_IS_WHAT_YOU_NEED_TO_DO_NEXT: 'Here is what you need to do next',
+      VERIFY_SHIPPING_ADDRESS: 'Verify shipping address',
+      VERIFY_SHIPPING_ADDRESS_SUB:
+        'Your new physical card will be shipped to the below address',
+      SHIP_TO_DIFFERENT_ADDRESS: 'Ship to a different address ?',
+      SHIPPING_ADDRESS: 'Shipping Address',
+      ENTER_NEW_DELIVERY_ADDRESS: 'Enter new delivery address',
+      ADD_DELIVERY_ADDRESS: 'Add Delivery Address',
+      ADDRESS_LINE_1_REQUIRED: 'Address Line 1 is required',
+      ADDRESS_LINE_1_TOO_LONG: 'Address Line 1 must be 50 characters or less',
+      ADDRESS_LINE_1_INVALID_CHARACTERS:
+        'Address Line 1 contains invalid characters',
+
+      ADDRESS_LINE_2_INVALID_CHARACTERS:
+        'Address Line 2 contains invalid characters',
+      CITY_REQUIRED: 'City is required',
+      CITY_TOO_LONG: 'City name must be 20 characters or less',
+      CITY_INVALID_CHARACTERS: 'City name contains invalid characters',
+      POSTAL_CODE_REQUIRED: 'Postal code is required',
+      POSTAL_CODE_TOO_LONG: 'Postal code must be 10 characters or less',
+      POSTAL_CODE_INVALID_CHARACTERS: 'Postal code contains invalid characters',
+
+      STATE_REQUIRED: 'State is required',
+      STATE_TOO_LONG: 'State name must be 20 characters or less',
+      STATE_INVALID_CHARACTERS: 'State name contains invalid characters',
+      SPECIAL_CHARACTERS_NOT_ALLOWED: `Special characters ;:!?<>~'%^@{}[] are not allowed`,
+      NAME_ON_CARD: 'Name on Card',
+      CUSTOMISE_NAME_ON_CARD: 'Customise how your name appears on your card',
+      WANT_DIFFERENT_NAME_ON_CARD: 'Want a different name on your card?',
+      PREFERRED_NAME: 'Preferred Name',
+      PREFERRED_NAME_SUB:
+        'Your preferred name will be printed on the card, while your legal name from your KYC document will be used for billing purposes.',
+      PHYSICAL_CARD_CONFIRMATION: 'Physical Card Confirmation',
+      PHYSICAL_CARD_CONFIRMATION_SUB:
+        'Please review your shipping details. Once confirmed, the details cannot be changed.',
+      SHIPPING_CHARGES: 'Shipping Charges',
+      TOTAL_AMOUNT: 'Total Amount',
+      DELIVERING_TO: 'Delivering to',
+      PAYING_FROM: 'Paying from',
+      CYPHER_CARD_BALANCE: 'Cypher Card Balance',
+      CYPHER_CARD_BALANCE_SUB: 'i.e card spending balance',
+      YOU_ARE_ALL_SET: "You're All Set!",
+      YOU_ARE_ALL_SET_SUB:
+        'Your request for a physical card has been successfully placed and confirmed. You will receive an email with tracking information when the card is shipped',
+      DELIVERING_IN: 'Delivering in',
+      DELIVERING_IN_SUB1: '18 to 24 Business days',
+      DELIVERING_IN_SUB2:
+        "You'll receive tracking details as soon as your card is printed and shipped",
+      GO_TO_CARDS: 'Go to Cards',
     },
   },
 };

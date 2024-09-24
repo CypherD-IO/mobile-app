@@ -37,7 +37,7 @@ import { TokenMeta } from '../../models/tokenMetaData.model';
 import { get } from 'lodash';
 import usePortfolio from '../../hooks/usePortfolio';
 
-const { CText, DynamicView, DynamicImage } = require('../../styles');
+const { CText } = require('../../styles');
 
 export default function EnterAmount(props: any) {
   // NOTE: DEFINE VARIABLE 🍎🍎🍎🍎🍎🍎

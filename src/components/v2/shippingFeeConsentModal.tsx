@@ -15,11 +15,13 @@ import clsx from 'clsx';
 export default function ShippingFeeConsentModal({
   isModalVisible,
   feeAmount,
+  shouldCancelVirtualCard,
   onSuccess,
   onFailure,
 }: {
   isModalVisible: boolean;
   feeAmount: string;
+  shouldCancelVirtualCard: boolean;
   onSuccess: () => void;
   onFailure: () => void;
 }) {
@@ -33,17 +35,19 @@ export default function ShippingFeeConsentModal({
         <CyDText className='mt-[42px] text-[16px] font-bold'>
           {t('PLEASE_BE_AWARE')}
         </CyDText>
-        <CyDView className={'flex flex-row my-[18px]'}>
-          <CyDImage
-            className={'mt-[6px] h-[12px] w-[12px]'}
-            source={AppImages.RIGHT_ARROW_BULLET}
-            resizeMode='contain'
-          />
-          <CyDText className={'ml-[10px] font-semibold'}>
-            {t('VIRTUAL_CARD_CANCEL')}
-          </CyDText>
-        </CyDView>
-        <CyDView className={'flex flex-row mt-[4px]'}>
+        {shouldCancelVirtualCard && (
+          <CyDView className={'flex flex-row mt-[18px]'}>
+            <CyDImage
+              className={'mt-[6px] h-[12px] w-[12px]'}
+              source={AppImages.RIGHT_ARROW_BULLET}
+              resizeMode='contain'
+            />
+            <CyDText className={'ml-[10px] font-semibold'}>
+              {t('VIRTUAL_CARD_CANCEL')}
+            </CyDText>
+          </CyDView>
+        )}
+        <CyDView className={'flex flex-row mt-[18px]'}>
           <CyDImage
             className={'mt-[6px] h-[12px] w-[12px]'}
             source={AppImages.RIGHT_ARROW_BULLET}

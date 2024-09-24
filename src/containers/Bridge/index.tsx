@@ -672,8 +672,6 @@ const Bridge: React.FC = () => {
       routeResponse.required_chain_addresses,
     );
 
-    console.log('🚀 ~ onGetMsg ~ requiredAddresses:', requiredAddresses);
-
     const _quoteData = quoteData as SkipApiRouteResponse;
 
     const id = genId();

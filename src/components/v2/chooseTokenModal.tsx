@@ -76,11 +76,9 @@ export default function ChooseTokenModal(props: TokenModal) {
   const fetchTotalHoldings = async () => {
     if (!tokenList) {
       const localPortfolio = await getLocalPortfolio();
-      console.log(localPortfolio.totalHoldings);
       const valuedTokens = localPortfolio.totalHoldings.filter(
         token => token.isVerified,
       );
-      console.log('valuedTokens:', valuedTokens);
       valuedTokens.sort(sortDescTokenData);
       setTotalHoldings({
         originalHoldings: valuedTokens,

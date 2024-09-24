@@ -310,6 +310,7 @@ export default StateModal;
 const styles = StyleSheet.create({
   modalContainer: {
     margin: 0,
+    zIndex: 1000,
     display: 'flex',
     flexDirection: 'column',
     justifyContent: 'flex-end',
