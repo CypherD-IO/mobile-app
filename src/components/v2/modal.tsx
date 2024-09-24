@@ -187,7 +187,9 @@ export default function CyDModalLayout({
       animationInTiming={animationInTiming}
       animationOutTiming={animationOutTiming}
       onModalHide={onModalHide}
-      style={style}>
+      style={style}
+      swipeDirection={['down']}
+      onSwipeComplete={() => setModalVisible(false)}>
       {children}
     </Modal>
   );

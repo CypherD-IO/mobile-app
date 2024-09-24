@@ -55,6 +55,7 @@ import CardProviderSwitch from '../../../components/cardProviderSwitch';
 import useCardUtilities from '../../../hooks/useCardUtilities';
 import clsx from 'clsx';
 import { ActivityStatus } from '../../../reducers/activity_reducer';
+import CardGlobalOptionsModal from '../bridgeCard/cardGlobalOptions';
 
 interface CypherCardScreenProps {
   navigation: NavigationProp<ParamListBase>;
@@ -113,6 +114,8 @@ export default function CypherCardScreen({
   const rcApplicationStatus = get(cardProfile, ['rc', 'applicationStatus'], '');
   const [isLayoutRendered, setIsLayoutRendered] = useState(false);
   const [isAutoLoadOptionsvisible, setIsAutoLoadOptionsVisible] =
+    useState<boolean>(false);
+  const [showGlobalOptionsModal, setShowGlobalOptionsModal] =
     useState<boolean>(false);
   const [balanceLoading, setBalanceLoading] = useState(false);
   const { getWalletProfile } = useCardUtilities();
@@ -337,6 +340,14 @@ export default function CypherCardScreen({
         navigation={navigation}
       />
 
+      <CardGlobalOptionsModal
+        isModalVisible={showGlobalOptionsModal}
+        setShowModal={setShowGlobalOptionsModal}
+        cardProvider={cardProvider}
+        navigation={navigation}
+        onPressPlanChange={onPressPlanChange}
+      />
+
       {/* TXN FILTER MODAL */}
       <CardTxnFilterModal
         navigation={navigation}
@@ -349,32 +360,48 @@ export default function CypherCardScreen({
           <CyDText className='font-extrabold text-[26px]'>Cards</CyDText>
         </CyDView>
       )}
-      <CyDView className={'h-[60px] py-[5px] px-[10px] mx-[12px] mt-[24px]'}>
+      <CyDView
+        className={'h-[60px] py-[5px] px-[10px] mx-[12px] mt-[24px] mb-[12px]'}>
         {cardId !== HIDDEN_CARD_ID ? (
           <CyDView>
             <CyDText className={'font-semibold text-[10px]'}>
               {t<string>('TOTAL_BALANCE') + ' (USD)'}
             </CyDText>
-            {!balanceLoading ? (
-              <CyDTouchView onPress={() => fetchCardBalance().catch}>
-                <CyDView className='flex flex-row items-center justify-start gap-x-[8px]'>
-                  <CyDText className={'font-bold text-[28px]'}>
-                    {(cardBalance !== 'NA' ? '$ ' : '') + cardBalance}
-                  </CyDText>
-                  <CyDImage
-                    source={AppImages.REFRESH_BROWSER}
-                    className='w-[24px] h-[24px]'
-                  />
-                </CyDView>
+            <CyDView className='flex flex-row justify-between'>
+              {!balanceLoading ? (
+                <CyDTouchView onPress={() => fetchCardBalance().catch}>
+                  <CyDView className='flex flex-row items-center justify-start gap-x-[8px]'>
+                    <CyDText className={'font-bold text-[28px]'}>
+                      {(cardBalance !== 'NA' ? '$ ' : '') + cardBalance}
+                    </CyDText>
+                    <CyDImage
+                      source={AppImages.REFRESH_BROWSER}
+                      className='w-[24px] h-[24px]'
+                    />
+                  </CyDView>
+                </CyDTouchView>
+              ) : (
+                <LottieView
+                  source={AppImages.LOADER_TRANSPARENT}
+                  autoPlay
+                  loop
+                  style={style.loaderStyle}
+                />
+              )}
+              <CyDTouchView
+                className='bg-white rounded-full p-[8px] flex flex-row items-center'
+                onPress={() => {
+                  setShowGlobalOptionsModal(true);
+                }}>
+                <CyDImage
+                  source={AppImages.SETTINGS_TOOLS_ICON}
+                  className='w-[14px] h-[14px]'
+                />
+                <CyDText className='font-bold text-[12px] text-base400 ml-[7px]'>
+                  {t('OPTIONS')}
+                </CyDText>
               </CyDTouchView>
-            ) : (
-              <LottieView
-                source={AppImages.LOADER_TRANSPARENT}
-                autoPlay
-                loop
-                style={style.loaderStyle}
-              />
-            )}
+            </CyDView>
           </CyDView>
         ) : (
           <CyDView>
@@ -396,9 +423,9 @@ export default function CypherCardScreen({
             <CyDView className='flex flex-row items-center mx-[16px] mb-[12px]'>
               <CyDImage
                 source={AppImages.CLOCK_OUTLINE}
-                className='w-[24px] h-[24px] mr-[8px]'
+                className='w-[16px] h-[16px] mr-[8px]'
               />
-              <CyDText className='text-[10px] font-medium w-[80%]'>
+              <CyDText className='text-[10px] font-medium w-[90%]'>
                 {'Your old balance '}
                 <CyDText className='text-[12px] font-bold'>
                   {`“$${sumBy(migrationData, 'amount')}“`}
@@ -414,13 +441,13 @@ export default function CypherCardScreen({
               {rcApplicationStatus !== CardApplicationStatus.COMPLETED ? (
                 <CyDText>
                   {
-                    'Important: Complete KYC, get your new VISA card, and migrate funds from your MASTER card by end of November to avoid losing access to your funds.'
+                    'Important: Complete KYC, get your new VISA card, and transfer funds from your Legacy card to your VISA card by November to avoid losing your balance.'
                   }
                 </CyDText>
               ) : (
                 <CyDText>
                   {
-                    'Important: Migrate funds from your MASTER card by end of November to avoid losing access to your funds.'
+                    'Important: Transfer funds from your Legacy card to your VISA card by November to avoid losing your balance.'
                   }
                 </CyDText>
               )}
@@ -444,8 +471,8 @@ export default function CypherCardScreen({
                     }
                     onPress={() => {
                       navigation.navigate(screenTitle.MIGRATE_FUNDS, {
-                        cardBalance,
-                        migrationData,
+                        cardId,
+                        currentCardProvider: cardProvider,
                       });
                     }}
                     image={AppImages.MIGRATE_FUNDS_ICON}
@@ -488,7 +515,7 @@ export default function CypherCardScreen({
                 'w-[25%] mr-[16px]': cardProvider === CardProviders.PAYCADDY,
               })}>
               <Button
-                image={AppImages.PLUS}
+                image={AppImages.PLUS_ICON}
                 disabled={shouldBlockAction()}
                 onPress={() => {
                   onPressFundCard();

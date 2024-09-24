@@ -1,4 +1,13 @@
 import React, { useContext, useEffect, useState } from 'react';
+import * as Sentry from '@sentry/react-native';
+import { t } from 'i18next';
+import { get } from 'lodash';
+import LottieView from 'lottie-react-native';
+import { StyleSheet } from 'react-native';
+import AppImages from '../../../../assets/images/appImages';
+import { useGlobalModalContext } from '../../../components/v2/GlobalModal';
+import OtpInput from '../../../components/v2/OTPInput';
+import { screenTitle } from '../../../constants';
 import {
   CARD_ALERT_TYPES,
   CARD_NOTIFICATION_TYPES,
@@ -6,30 +15,14 @@ import {
   GlobalContextType,
 } from '../../../constants/enum';
 import { GlobalContext, GlobalContextDef } from '../../../core/globalContext';
-import { useGlobalModalContext } from '../../../components/v2/GlobalModal';
 import useAxios from '../../../core/HttpRequest';
-import { get } from 'lodash';
+import useCardUtilities from '../../../hooks/useCardUtilities';
 import {
-  CyDFastImage,
-  CyDImage,
-  CyDSafeAreaView,
   CyDSwitch,
   CyDText,
   CyDTouchView,
   CyDView,
 } from '../../../styles/tailwindStyles';
-import { t } from 'i18next';
-import AppImages from '../../../../assets/images/appImages';
-import { Linking, StyleSheet } from 'react-native';
-import LottieView from 'lottie-react-native';
-import OtpInput from '../../../components/v2/OTPInput';
-import * as Sentry from '@sentry/react-native';
-import CyDModalLayout from '../../../components/v2/modal';
-import { copyToClipboard } from '../../../core/util';
-import Button from '../../../components/v2/button';
-import { showToast } from '../../utilities/toastUtility';
-import { screenTitle } from '../../../constants';
-import useCardUtilities from '../../../hooks/useCardUtilities';
 
 export default function CardNotificationSettings(props: {
   route: {
@@ -41,7 +34,7 @@ export default function CardNotificationSettings(props: {
   navigation: any;
 }) {
   const RESENT_OTP_TIME = 30;
-  const { currentCardProvider, card } = props.route.params;
+  const { currentCardProvider } = props.route.params;
   const globalContext = useContext(GlobalContext) as GlobalContextDef;
   const cardProfile = globalContext.globalState.cardProfile;
   const { showModal, hideModal } = useGlobalModalContext();
