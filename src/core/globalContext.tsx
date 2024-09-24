@@ -169,19 +169,31 @@ export const initialGlobalState: GlobalStateDef = {
     default: {
       basic_plan_v1: {
         usdcFee: 0.5,
-        nonUsdcFee: 0.5,
-        fxFeePc: 1.4,
+        nonUsdcFee: 1,
+        fxFeePc: 1.5,
         physicalCardFee: 50,
         chargeBackLimit: 0,
         cost: 0,
+        dailyLimit: 2000,
+        monthlyLimit: 7000,
+        atmFee: 3,
+        maxPhysicalCards: 1,
+        extraPhysicalCardFee: 50,
+        extraVirtualCardFee: 10,
       },
       pro_plan_v1: {
         usdcFee: 0,
-        nonUsdcFee: 0.25,
+        nonUsdcFee: 0.5,
         fxFeePc: 0.5,
         physicalCardFee: 0,
         chargeBackLimit: 300,
-        cost: 200,
+        cost: 199,
+        dailyLimit: 5000,
+        monthlyLimit: 20000,
+        atmFee: 3,
+        maxPhysicalCards: 4, // 1 + 3 physical cards
+        extraPhysicalCardFee: 50, // fee for any kind of extra physical card
+        extraVirtualCardFee: 10, // fee for any kind of extra virtual card
       },
     },
     custom: {},

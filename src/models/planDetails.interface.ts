@@ -8,4 +8,7 @@ export interface IPlanDetails {
   atmFee: number;
   dailyLimit: number;
   monthlyLimit: number;
+  maxPhysicalCards: number;
+  extraPhysicalCardFee: number;
+  extraVirtualCardFee: number;
 }

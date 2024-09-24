@@ -112,6 +112,10 @@ import Bridge from '../containers/Bridge';
 import Referrals from '../containers/Options/referrals';
 import CardSignupLandingScreenV2 from '../containers/DebitCard/CardV2/signup/cardSignupLandingScreenV2';
 import IHaveReferralCodeScreen from '../containers/DebitCard/CardV2/signup/iHaveReferralCodeScreen';
+import CryptoWithdrawal from '../containers/DebitCard/CardV2/cryptoWithdrawal/cryptoWithdrawal';
+import WithdrawConfirmation from '../containers/DebitCard/CardV2/cryptoWithdrawal/withdrawConfirmation';
+import WithDrawSuccess from '../containers/DebitCard/CardV2/cryptoWithdrawal/withDrawSuccess';
+import WithdrawHistory from '../containers/DebitCard/CardV2/cryptoWithdrawal/withdrawHistory';
 
 const PortfolioStack = createNativeStackNavigator();
 const BrowserStack = createNativeStackNavigator();
@@ -1263,13 +1267,41 @@ export function DebitCardStackScreen() {
           headerTransparent: true,
           headerShadowVisible: false,
           headerTitle: 'Move funds',
-          headerTintColor: '#000000', // Corrected color code
+          headerTintColor: '#000000',
           headerTitleStyle: {
-            fontSize: 28, // Set the font size for the title
-            textAlign: 'center', // Set the text alignment for the title
-            fontWeight: 'bold', // Set the font weight for the title
+            fontSize: 28,
+            textAlign: 'center',
+            fontWeight: 'bold',
           },
           headerLeft: props => defaultHeaderLeft(navigation, keyboardHeight),
+        })}
+      />
+      <FundCardStack.Screen
+        name={screenTitle.CRYPTO_WITHDRAWAL}
+        component={CryptoWithdrawal}
+        options={({ navigation }): NativeStackNavigationOptions => ({
+          headerShown: false,
+        })}
+      />
+      <FundCardStack.Screen
+        name={screenTitle.WITHDRAW_CONFIRMATION}
+        component={WithdrawConfirmation}
+        options={({ navigation }): NativeStackNavigationOptions => ({
+          headerShown: false,
+        })}
+      />
+      <FundCardStack.Screen
+        name={screenTitle.WITHDRAW_SUCCESS}
+        component={WithDrawSuccess}
+        options={({ navigation }): NativeStackNavigationOptions => ({
+          headerShown: false,
+        })}
+      />
+      <FundCardStack.Screen
+        name={screenTitle.WITHDRAW_HISTORY}
+        component={WithdrawHistory}
+        options={({ navigation }): NativeStackNavigationOptions => ({
+          headerShown: false,
         })}
       />
     </FundCardStack.Navigator>
