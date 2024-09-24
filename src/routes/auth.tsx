@@ -702,14 +702,15 @@ export function DebitCardStackScreen() {
         name={screenTitle.CARD_CONTROLS_MENU}
         component={CardControlsMenu}
         options={({ navigation, route }) => ({
-          headerTransparent: false,
-          headerShadowVisible: false,
-          title: 'Card Controls',
-          headerTitleAlign: 'left',
-          headerTitleStyle: portfolioStackScreenHeaderTitleStyles,
-          headerTintColor: Colors.primaryTextColor,
-          headerBackTitleVisible: false,
-          headerLeft: props => defaultHeaderLeft(navigation, keyboardHeight),
+          headerShown: false,
+          // headerTransparent: false,
+          // headerShadowVisible: false,
+          // title: 'Card Controls',
+          // headerTitleAlign: 'left',
+          // headerTitleStyle: portfolioStackScreenHeaderTitleStyles,
+          // headerTintColor: Colors.primaryTextColor,
+          // headerBackTitleVisible: false,
+          // headerLeft: props => defaultHeaderLeft(navigation, keyboardHeight),
         })}
       />
 

@@ -970,6 +970,7 @@ const RenderCardActions = ({
               `,
               }}
               scalesPageToFit={true}
+              // eslint-disable-next-line react-native/no-inline-styles
               style={{
                 height: '100%',
                 width: '100%',

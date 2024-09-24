@@ -632,13 +632,14 @@ const MANAGE_CARD = {
 const BASIC_DETAILS = {
   uri: `${S3_BUCKET_URL_ICONS}/basicDetails.png`,
 };
-
 const ENVELOPE = {
   uri: `${S3_BUCKET_URL_ICONS}/envelope.png`,
 };
-
 const CARD_SHIPMENT_ENVELOPE = {
   uri: `${S3_BUCKET_URL_ICONS}/cardShipmentEnvelope.png`,
+};
+const SWITCH_OFF = {
+  uri: `${S3_BUCKET_URL_ICONS}/switchOffIcon.png`,
 };
 
 const REPLACE_VIRTUAL_CARD = {
@@ -653,6 +654,7 @@ const PREMIUM_LABEL = {
 };
 
 const AppImages = {
+  SWITCH_OFF,
   USDC_TOKEN,
   LIST_HAMBURGER,
   FLYING_MONEY,
