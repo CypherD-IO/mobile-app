@@ -441,13 +441,13 @@ export default function CypherCardScreen({
               {rcApplicationStatus !== CardApplicationStatus.COMPLETED ? (
                 <CyDText>
                   {
-                    'Important: Complete KYC, get your new VISA card, and migrate funds from your MASTER card by end of November to avoid losing access to your funds.'
+                    'Important: Complete KYC, get your new VISA card, and transfer funds from your Legacy card to your VISA card by November to avoid losing your balance.'
                   }
                 </CyDText>
               ) : (
                 <CyDText>
                   {
-                    'Important: Migrate funds from your MASTER card by end of November to avoid losing access to your funds.'
+                    'Important: Transfer funds from your Legacy card to your VISA card by November to avoid losing your balance.'
                   }
                 </CyDText>
               )}
@@ -471,8 +471,8 @@ export default function CypherCardScreen({
                     }
                     onPress={() => {
                       navigation.navigate(screenTitle.MIGRATE_FUNDS, {
-                        cardBalance,
-                        migrationData,
+                        cardId,
+                        currentCardProvider: cardProvider,
                       });
                     }}
                     image={AppImages.MIGRATE_FUNDS_ICON}
@@ -515,7 +515,7 @@ export default function CypherCardScreen({
                 'w-[25%] mr-[16px]': cardProvider === CardProviders.PAYCADDY,
               })}>
               <Button
-                image={AppImages.PLUS}
+                image={AppImages.PLUS_ICON}
                 disabled={shouldBlockAction()}
                 onPress={() => {
                   onPressFundCard();

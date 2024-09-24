@@ -52,18 +52,6 @@ export default function CardOptionsModal({
               setShowModal(false);
             },
           },
-          {
-            title: 'Withdraw Crypto',
-            description: 'Convert your card balance to crypto',
-            image: AppImages.CRYPTO_WITHDRAWAL,
-            action: () => {
-              navigation.navigate(screenTitle.CRYPTO_WITHDRAWAL, {
-                currentCardProvider: cardProvider,
-                card,
-              });
-              setShowModal(false);
-            },
-          },
         ]
       : []),
     ...(cardProvider === CardProviders.REAP_CARD ||
@@ -98,6 +86,18 @@ export default function CardOptionsModal({
           },
         ]
       : []),
+    {
+      title: 'Withdraw Crypto',
+      description: 'Convert your card balance to crypto',
+      image: AppImages.CRYPTO_WITHDRAWAL,
+      action: () => {
+        navigation.navigate(screenTitle.CRYPTO_WITHDRAWAL, {
+          currentCardProvider: cardProvider,
+          card,
+        });
+        setShowModal(false);
+      },
+    },
   ];
 
   return (

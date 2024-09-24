@@ -616,8 +616,20 @@ const PREMIUM_TEXT_GRADIENT = {
 const WITHDRAW_CRYPTO_SUCCESS = {
   uri: `${S3_BUCKET_URL_ICONS}/withdrawCryptoSuccess.png`,
 };
+const FLYING_MONEY = {
+  uri: `${S3_BUCKET_URL_ICONS}/flyingMoney.png`,
+};
+const LIST_HAMBURGER = {
+  uri: `${S3_BUCKET_URL_ICONS}/listHamburger.png`,
+};
+const USDC_TOKEN = {
+  uri: `${S3_BUCKET_URL_ICONS}/usdc.png`,
+};
 
 const AppImages = {
+  USDC_TOKEN,
+  LIST_HAMBURGER,
+  FLYING_MONEY,
   WITHDRAW_CRYPTO_SUCCESS,
   PREMIUM_TEXT_GRADIENT,
   LEFT_ARROW_LONG,

@@ -141,6 +141,7 @@ export const screenTitle = {
   CRYPTO_WITHDRAWAL: 'cryptoWithdrawal',
   WITHDRAW_CONFIRMATION: 'withdrawConfirmation',
   WITHDRAW_SUCCESS: 'withdrawSuccess',
+  WITHDRAW_HISTORY: 'withdrawHistory',
 };
 
 export const fontsName = {

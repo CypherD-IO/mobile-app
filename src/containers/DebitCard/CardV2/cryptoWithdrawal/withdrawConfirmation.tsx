@@ -19,16 +19,20 @@ import AppImages from '../../../../../assets/images/appImages';
 import { t } from 'i18next';
 import Button from '../../../../components/v2/button';
 import { screenTitle } from '../../../../constants';
-import { capitalize } from 'lodash';
+import { capitalize, ceil } from 'lodash';
 import { toWords } from 'number-to-words';
 import { HdWalletContext, parseErrorMessage } from '../../../../core/util';
 import { HdWalletContextDef } from '../../../../reducers/hdwallet_reducer';
 import { v4 as uuidv4 } from 'uuid';
 import { ChainBackendNames } from '../../../../constants/server';
 import { useGlobalModalContext } from '../../../../components/v2/GlobalModal';
+import { StyleSheet } from 'react-native';
+import { Card } from '../../../../models/card.model';
 
 interface RouteParams {
   amount: string;
+  currentCardProvider: string;
+  card: Card;
   cardBalance: string;
 }
 
@@ -48,15 +52,16 @@ export default function WithdrawConfirmation() {
   const hdWallet = useContext(HdWalletContext) as HdWalletContextDef;
   const { showModal, hideModal } = useGlobalModalContext();
 
-  const { amount } = route.params ?? {};
+  const { amount, card, currentCardProvider } = route.params ?? {};
   const ethereumAddress = hdWallet?.state?.wallet?.ethereum?.address ?? '';
 
-  const finalAmount = (parseFloat(amount) - parseFloat(amount) * 0.005).toFixed(
-    2,
-  );
-  const cypherFee = (parseFloat(amount) * 0.005).toFixed(2);
+  const finalAmount =
+    ceil(parseFloat(amount || '0'), 2) -
+    ceil(parseFloat(amount || '0') * 0.005, 2);
+  const cypherFee = ceil(parseFloat(amount || '0') * 0.005, 2);
+
   const dollars = Math.floor(Number(amount));
-  const cents = Math.round((Number(amount) % 1) * 100);
+  const cents = Math.round((Number(amount) % 1) * 10000) / 100;
 
   const [loading, setLoading] = useState(false);
 
@@ -64,7 +69,7 @@ export default function WithdrawConfirmation() {
     setLoading(true);
     const postBody: WithdrawPost = {
       idempotencyKey: uuidv4(),
-      amount: parseFloat(amount),
+      amount: ceil(parseFloat(amount || '0'), 2),
       chain: ChainBackendNames.BASE,
       toAddress: ethereumAddress,
       isCharged: true,
@@ -84,6 +89,8 @@ export default function WithdrawConfirmation() {
     } else {
       navigation.navigate(screenTitle.WITHDRAW_SUCCESS, {
         amount,
+        card,
+        currentCardProvider,
       });
     }
     setLoading(false);
@@ -158,7 +165,7 @@ export default function WithdrawConfirmation() {
               <CyDView className='flex flex-row items-center'>
                 <CyDView className='relative mr-[2px]'>
                   <CyDFastImage
-                    source={AppImages.BASE_LOGO}
+                    source={AppImages.USDC_TOKEN}
                     className='w-[18px] h-[18px] '
                   />
                   <CyDFastImage
@@ -180,7 +187,8 @@ export default function WithdrawConfirmation() {
 
       <CyDView className='bg-n0 px-[16px] pb-[32px] pt-[24px] rounded-t-[16px]'>
         <Button
-          title={t('CONTINUE')}
+          title={t('ACCEPT')}
+          loaderStyle={styles.loader}
           loading={loading}
           onPress={() => {
             void postWithdrawal();
@@ -190,3 +198,10 @@ export default function WithdrawConfirmation() {
     </CyDView>
   );
 }
+
+const styles = StyleSheet.create({
+  loader: {
+    height: 20,
+    width: 20,
+  },
+});

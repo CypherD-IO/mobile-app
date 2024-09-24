@@ -1263,6 +1263,8 @@ const resources = {
       WITHDRAW_CRYPTO: 'Withdraw Crypto',
       AMOUNT_TO_BE_WITHDRAWN: 'Amount to be withdrawn',
       WITHDRAW_ERROR: 'Withdrawal Error',
+      TRANSACTION_FETCH_ERROR: 'Error fetching transactions',
+      WITHDRAW_HISTORY: 'Withdrawal History',
     },
   },
 };

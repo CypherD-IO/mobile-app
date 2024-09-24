@@ -15,16 +15,19 @@ import {
   RouteProp,
 } from '@react-navigation/native';
 import { screenTitle } from '../../../../constants';
+import { Card } from '../../../../models/card.model';
 
 interface RouteParams {
   amount: string;
+  card: Card;
+  currentCardProvider: string;
 }
 
 export default function WithDrawSuccess() {
   const navigation = useNavigation<NavigationProp<ParamListBase>>();
   const route = useRoute<RouteProp<{ params: RouteParams }, 'params'>>();
 
-  const { amount } = route.params ?? {};
+  const { amount, card, currentCardProvider } = route.params ?? {};
 
   return (
     <CyDView className='bg-n30 flex flex-col justify-between h-full'>
@@ -51,7 +54,10 @@ export default function WithDrawSuccess() {
         <Button
           title={t('DONE')}
           onPress={() => {
-            navigation.navigate(screenTitle.DEBIT_CARD_SCREEN);
+            navigation.navigate(screenTitle.WITHDRAW_HISTORY, {
+              card,
+              currentCardProvider,
+            });
           }}
         />
       </CyDView>

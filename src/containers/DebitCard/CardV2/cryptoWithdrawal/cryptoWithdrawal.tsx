@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useState, useCallback } from 'react';
 import {
   CyDFastImage,
   CyDKeyboardAwareScrollView,
@@ -13,6 +13,7 @@ import {
   RouteProp,
   useNavigation,
   useRoute,
+  useFocusEffect,
 } from '@react-navigation/native';
 import AppImages from '../../../../../assets/images/appImages';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
@@ -21,7 +22,7 @@ import Button from '../../../../components/v2/button';
 import useAxios from '../../../../core/HttpRequest';
 import { Card } from '../../../../models/card.model';
 import * as Sentry from '@sentry/react-native';
-import { isEmpty } from 'lodash';
+import { ceil, isEmpty } from 'lodash';
 import Loading from '../../../../components/v2/loading';
 import { screenTitle } from '../../../../constants';
 
@@ -41,7 +42,7 @@ export default function CryptoWithdrawal() {
   const [cardBalance, setCardBalance] = useState('');
   const [balanceLoading, setBalanceLoading] = useState(false);
 
-  const fetchCardBalance = async () => {
+  const fetchCardBalance = useCallback(async () => {
     setBalanceLoading(true);
     const url = `/v1/cards/${currentCardProvider}/card/${String(card.cardId)}/balance`;
     try {
@@ -51,16 +52,19 @@ export default function CryptoWithdrawal() {
       } else {
         setCardBalance('');
       }
+      setBalanceLoading(false);
     } catch (error) {
       Sentry.captureException(error);
       setCardBalance('');
     }
     setBalanceLoading(false);
-  };
+  }, [currentCardProvider, card]);
 
-  useEffect(() => {
-    void fetchCardBalance();
-  }, []);
+  useFocusEffect(
+    useCallback(() => {
+      void fetchCardBalance();
+    }, []),
+  );
 
   if (balanceLoading) {
     return <Loading />;
@@ -90,12 +94,15 @@ export default function CryptoWithdrawal() {
           <CyDTouchView
             className='pr-[16px]'
             onPress={() => {
-              navigation.goBack();
+              navigation.navigate(screenTitle.WITHDRAW_HISTORY, {
+                card,
+                currentCardProvider,
+              });
             }}>
-            {/* <CyDFastImage
-              source={AppImages.HISTORY_BROWSER}
+            <CyDFastImage
+              source={AppImages.LIST_HAMBURGER}
               className='w-[32px] h-[32px]'
-            /> */}
+            />
           </CyDTouchView>
         </CyDView>
         <CyDKeyboardAwareScrollView className='flex-1 bg-n30 px-[16px]'>
@@ -124,7 +131,7 @@ export default function CryptoWithdrawal() {
                 <CyDTouchView
                   className='px-[10px] py-[6px] bg-n30 rounded-[4px]'
                   onPress={() => {
-                    setAmount((parseFloat(cardBalance) * 0.005).toFixed(2));
+                    setAmount(ceil(Number(cardBalance) * 0.05, 2).toString());
                   }}>
                   <CyDText className='text-[14px] font-bold text-base400'>
                     {'5%'}
@@ -133,7 +140,7 @@ export default function CryptoWithdrawal() {
                 <CyDTouchView
                   className='px-[10px] py-[6px] bg-n30 rounded-[4px]'
                   onPress={() => {
-                    setAmount((parseFloat(cardBalance) * 0.1).toFixed(2));
+                    setAmount(ceil(Number(cardBalance) * 0.1, 2).toString());
                   }}>
                   <CyDText className='text-[14px] font-bold text-base400'>
                     {'10%'}
@@ -142,7 +149,7 @@ export default function CryptoWithdrawal() {
                 <CyDTouchView
                   className='px-[10px] py-[6px] bg-n30 rounded-[4px]'
                   onPress={() => {
-                    setAmount((parseFloat(cardBalance) * 0.2).toFixed(2));
+                    setAmount(ceil(Number(cardBalance) * 0.2, 2).toString());
                   }}>
                   <CyDText className='text-[14px] font-bold text-base400'>
                     {'20%'}
@@ -151,7 +158,7 @@ export default function CryptoWithdrawal() {
                 <CyDTouchView
                   className='px-[10px] py-[6px] bg-n30 rounded-[4px]'
                   onPress={() => {
-                    setAmount((parseFloat(cardBalance) * 0.3).toFixed(2));
+                    setAmount(ceil(Number(cardBalance) * 0.3, 2).toString());
                   }}>
                   <CyDText className='text-[14px] font-bold text-base400'>
                     {'30%'}
@@ -160,7 +167,7 @@ export default function CryptoWithdrawal() {
                 <CyDTouchView
                   className='px-[10px] py-[6px] bg-n30 rounded-[4px]'
                   onPress={() => {
-                    setAmount((parseFloat(cardBalance) * 0.5).toFixed(2));
+                    setAmount(ceil(Number(cardBalance) * 0.5, 2).toString());
                   }}>
                   <CyDText className='text-[14px] font-bold text-base400'>
                     {'50%'}
@@ -191,7 +198,7 @@ export default function CryptoWithdrawal() {
                   </CyDText>
                 </CyDView>
                 <CyDText className='text-[14px] font-bold text-base400'>
-                  {`$ ${!isEmpty(amount) ? (parseFloat(amount) * 0.005).toFixed(2) : '0'}`}
+                  {`$ ${ceil(parseFloat(amount || '0') * 0.005, 2)}`}
                 </CyDText>
               </CyDView>
               <CyDText className='text-[12px] font-medium text-base400'>
@@ -206,7 +213,7 @@ export default function CryptoWithdrawal() {
                   </CyDText>
                 </CyDView>
                 <CyDText className='text-[14px] font-bold text-base400'>
-                  {`$ ${!isEmpty(amount) ? (parseFloat(amount) - parseFloat(amount) * 0.005).toFixed(2) : '0'}`}
+                  {`$ ${ceil(ceil(parseFloat(amount || '0'), 2) - ceil(parseFloat(amount || '0') * 0.005, 2), 2)}`}
                 </CyDText>
               </CyDView>
               <CyDText className='text-[12px] font-medium text-base400'>
@@ -227,6 +234,8 @@ export default function CryptoWithdrawal() {
             navigation.navigate(screenTitle.WITHDRAW_CONFIRMATION, {
               amount,
               cardBalance,
+              currentCardProvider,
+              card,
             });
           }}
         />

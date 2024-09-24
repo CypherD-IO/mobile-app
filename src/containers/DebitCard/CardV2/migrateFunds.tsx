@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useCallback, useEffect, useState } from 'react';
 import {
   CyDImage,
   CyDKeyboardAwareScrollView,
@@ -7,7 +7,7 @@ import {
   CyDTouchView,
   CyDView,
 } from '../../../styles/tailwindStyles';
-import { RouteProp, useRoute } from '@react-navigation/native';
+import { RouteProp, useFocusEffect, useRoute } from '@react-navigation/native';
 import AppImages from '../../../../assets/images/appImages';
 import clsx from 'clsx';
 import { v4 as uuidv4 } from 'uuid';
@@ -19,8 +19,10 @@ import Button from '../../../components/v2/button';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { StyleSheet } from 'react-native';
 import moment from 'moment';
-import { get } from 'lodash';
+import { get, isEmpty } from 'lodash';
 import CyDModalLayout from '../../../components/v2/modal';
+import * as Sentry from '@sentry/react-native';
+import Loading from '../../../components/v2/loading';
 
 interface MoveFundsPost {
   idempotencyKey: string;
@@ -28,16 +30,18 @@ interface MoveFundsPost {
   isCompleteMigration: boolean;
 }
 
+interface MigrationData {
+  requestId: string;
+  amount: number;
+  isCompleteMigration: boolean;
+  batchId: string;
+  status: 'IN_PROGRESS' | 'PENDING' | 'SUCCESS' | 'FAILED';
+  createdAt: number;
+}
+
 interface RouteParams {
-  cardBalance?: number;
-  migrationData?: Array<{
-    requestId: string;
-    amount: number;
-    isCompleteMigration: boolean;
-    batchId: string;
-    status: 'IN_PROGRESS' | 'PENDING' | 'SUCCESS' | 'FAILED';
-    createdAt: number;
-  }>;
+  currentCardProvider: string;
+  cardId: string;
 }
 
 const statuses: Record<string, string> = {
@@ -59,30 +63,47 @@ export default function MigratePCFunds() {
   const [showSuccess, setShowSuccess] = useState(false);
   const [showConsentModal, setShowConsentModal] = useState(false);
   const [gaveConsent, setGaveConsent] = useState(false);
-  const [migrationData, setMigrationData] = useState<
-    Array<{
-      requestId: string;
-      amount: number;
-      isCompleteMigration: boolean;
-      batchId: string;
-      status: 'IN_PROGRESS' | 'PENDING' | 'SUCCESS' | 'FAILED';
-      createdAt: number;
-    }>
-  >([]);
+  const [migrationData, setMigrationData] = useState<MigrationData[]>([]);
 
-  const { cardBalance = 0, migrationData: _migrationData = [] } =
-    route.params ?? {};
+  const { cardId, currentCardProvider } = route.params ?? {};
+  const [cardBalance, setCardBalance] = useState(0);
+  const [balanceLoading, setBalanceLoading] = useState(false);
 
   const getMigrationData = async () => {
     const { isError, data } = await getWithAuth('/v1/cards/migration');
     if (!isError && data) {
-      setMigrationData(data);
+      setMigrationData(
+        data.sort(
+          (a: MigrationData, b: MigrationData) => b.createdAt - a.createdAt,
+        ),
+      );
     }
   };
 
-  useEffect(() => {
-    setMigrationData(_migrationData);
-  }, [_migrationData]);
+  const fetchCardBalance = useCallback(async () => {
+    setBalanceLoading(true);
+    const url = `/v1/cards/${currentCardProvider}/card/${String(cardId)}/balance`;
+    try {
+      const response = await getWithAuth(url);
+      if (!response.isError && response?.data && response.data.balance) {
+        setCardBalance(Number(response.data.balance));
+      } else {
+        setCardBalance(0);
+      }
+      setBalanceLoading(false);
+    } catch (error) {
+      Sentry.captureException(error);
+      setCardBalance(0);
+    }
+    setBalanceLoading(false);
+  }, [currentCardProvider, cardId]);
+
+  useFocusEffect(
+    useCallback(() => {
+      void fetchCardBalance();
+      void getMigrationData();
+    }, []),
+  );
 
   const handleMoveFunds = async () => {
     setIsLoading(true);
@@ -109,10 +130,16 @@ export default function MigratePCFunds() {
       await getMigrationData();
       setTimeout(() => {
         setShowSuccess(false);
+        if (!isEmpty(inputValue)) setInputValue('');
+        void fetchCardBalance();
       }, 2000);
     }
     setIsLoading(false);
   };
+
+  if (balanceLoading) {
+    return <Loading />;
+  }
 
   return (
     <CyDView
@@ -154,7 +181,7 @@ export default function MigratePCFunds() {
             </CyDView>
             <CyDText className='text-[12px] font-medium text-center self-center w-[75%]'>
               {`You are about to migrate `}
-              <CyDText className='text-[14px] font-bold text-center'>{`”$${moveCustomAmount ? inputValue : cardBalance}”`}</CyDText>
+              <CyDText className='text-[14px] font-bold text-center'>{`"$${moveCustomAmount ? inputValue : cardBalance}"`}</CyDText>
               {' of your funds to a new VISA® card account.'}
             </CyDText>
             <CyDView className='p-[8px] mt-[24px]'>
@@ -248,19 +275,12 @@ export default function MigratePCFunds() {
                   className='w-[24px] h-[24px] mr-[12px]'
                 />
                 <CyDView className='w-[90%]'>
-                  <CyDText className='font-semibold text-[14px] text-base200 '>
-                    {'Your '}
-                    <CyDText className='font-bold'>{'existing card'}</CyDText>
-                    {' will be '}
-                    <CyDText className='font-bold'>
-                      {'instantly blocked'}
-                    </CyDText>
-                    {'.'}
-                  </CyDText>
                   <CyDText className='font-semibold text-[14px] text-base200 w-[90%]'>
-                    {"You'll be able to spend with the new card as soon as the"}
+                    {
+                      "You'll be able to spend your funds with the new card as soon as the "
+                    }
                     <CyDText className='font-bold'>
-                      {'funds are transferred.'}
+                      {' funds are transferred.'}
                     </CyDText>
                   </CyDText>
                 </CyDView>

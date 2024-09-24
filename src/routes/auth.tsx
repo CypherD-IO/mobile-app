@@ -115,6 +115,7 @@ import IHaveReferralCodeScreen from '../containers/DebitCard/CardV2/signup/iHave
 import CryptoWithdrawal from '../containers/DebitCard/CardV2/cryptoWithdrawal/cryptoWithdrawal';
 import WithdrawConfirmation from '../containers/DebitCard/CardV2/cryptoWithdrawal/withdrawConfirmation';
 import WithDrawSuccess from '../containers/DebitCard/CardV2/cryptoWithdrawal/withDrawSuccess';
+import WithdrawHistory from '../containers/DebitCard/CardV2/cryptoWithdrawal/withdrawHistory';
 
 const PortfolioStack = createNativeStackNavigator();
 const BrowserStack = createNativeStackNavigator();
@@ -1306,6 +1307,13 @@ export function DebitCardStackScreen() {
       <FundCardStack.Screen
         name={screenTitle.WITHDRAW_SUCCESS}
         component={WithDrawSuccess}
+        options={({ navigation }): NativeStackNavigationOptions => ({
+          headerShown: false,
+        })}
+      />
+      <FundCardStack.Screen
+        name={screenTitle.WITHDRAW_HISTORY}
+        component={WithdrawHistory}
         options={({ navigation }): NativeStackNavigationOptions => ({
           headerShown: false,
         })}

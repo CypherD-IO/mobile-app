@@ -22,7 +22,7 @@ import { Dropdown } from 'react-native-element-dropdown';
 import Animated from 'react-native-reanimated';
 import { KeyboardAwareScrollView } from 'react-native-keyboard-aware-scroll-view';
 
-export const CyDText = styled(Text, 'font-manrope text-black');
+export const CyDText = styled(Text, 'font-manrope text-base400');
 export const CyDTextInput = styled(TextInput, 'pb-[0px] text-[#434343] ');
 export const CyDView = styled(View);
 export const CyDTouchView = styled(TouchableOpacity);
