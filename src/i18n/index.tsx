@@ -1265,6 +1265,7 @@ const resources = {
       WITHDRAW_ERROR: 'Withdrawal Error',
       TRANSACTION_FETCH_ERROR: 'Error fetching transactions',
       WITHDRAW_HISTORY: 'Withdrawal History',
+      REFRESHING: 'Refreshing',
     },
   },
 };

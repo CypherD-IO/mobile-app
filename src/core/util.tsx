@@ -62,7 +62,7 @@ import {
 import { ANALYTICS_ERROR_URL, ANALYTICS_SUCCESS_URL } from '../constants/data';
 import DeviceInfo from 'react-native-device-info';
 import axios from './Http';
-import { Holding } from './Portfolio';
+import { Holding } from './portfolio';
 import Long from 'long';
 
 import { Wallet } from 'ethers';
@@ -79,8 +79,6 @@ const ARCH_HOST: string = hostWorker.getHost('ARCH_HOST');
 export const HdWalletContext = React.createContext<HdWalletContextDef | null>(
   null,
 );
-export const PortfolioContext = React.createContext(null);
-export const StakingContext = React.createContext(null);
 export const ActivityContext = React.createContext<ActivityContextDef | null>(
   null,
 );

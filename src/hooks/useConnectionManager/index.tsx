@@ -15,7 +15,6 @@ import {
   AUTHORIZE_WALLET_DELETION,
   ActivityContext,
   HdWalletContext,
-  PortfolioContext,
 } from '../../core/util';
 import { screenTitle } from '../../constants';
 import { GlobalContext } from '../../core/globalContext';
@@ -35,7 +34,6 @@ export default function useConnectionManager() {
     useWalletConnectMobile();
   const hdWalletContext = useContext<any>(HdWalletContext);
   const activityContext = useContext<any>(ActivityContext);
-  const portfolioContext = useContext<any>(PortfolioContext);
   const globalContext = useContext<any>(GlobalContext);
   const cosmosAddress =
     hdWalletContext.state.wallet.cosmos?.wallets[0]?.address;
@@ -60,7 +58,6 @@ export default function useConnectionManager() {
     await clearAllData();
     hdWalletContext.dispatch({ type: 'RESET_WALLET' });
     activityContext.dispatch({ type: ActivityReducerAction.RESET });
-    portfolioContext.dispatchPortfolio({ type: 'RESET' });
     return true;
   };
 

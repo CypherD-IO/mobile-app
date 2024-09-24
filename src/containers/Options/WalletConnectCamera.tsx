@@ -20,7 +20,7 @@ import { storeConnectWalletData } from '../../core/asyncStorage';
 import LoadingStack from '../../routes/loading';
 import analytics from '@react-native-firebase/analytics';
 import { BackHandler, FlatList } from 'react-native';
-import { HdWalletContext, PortfolioContext } from '../../core/util';
+import { HdWalletContext } from '../../core/util';
 import {
   CyDText,
   CyDSafeAreaView,
@@ -49,16 +49,21 @@ import { useGlobalModalContext } from '../../components/v2/GlobalModal';
 import { WALLET_CONNECT_PROPOSAL_LISTENER } from '../../constants/timeOuts';
 import * as Sentry from '@sentry/react-native';
 
-export default function WalletConnectCamera(props) {
+export default function WalletConnectCamera(props: {
+  route: { params: { walletConnectURI: string } };
+  navigation: any;
+}) {
+  const { route } = props;
   const { walletConnectState, walletConnectDispatch } =
     useContext<walletConnectContextDef>(WalletConnectContext);
 
   const hdWalletContext = useContext<any>(HdWalletContext);
-  const portfolioState = useContext<any>(PortfolioContext);
   const ethereum = hdWalletContext.state.wallet.ethereum;
   const { t } = useTranslation();
 
-  const [walletConnectURI, setWalletConnectURI] = useState('');
+  const [walletConnectURI, setWalletConnectURI] = useState(
+    route.params.walletConnectURI ?? '',
+  );
 
   const [selectedPairingTopic, setSelectedPairingTopic] = useState<string>('');
   const [sessionsForAPairing, setSessionsForAPairing] = useState<any>([]);
@@ -140,7 +145,6 @@ export default function WalletConnectCamera(props) {
   };
 
   const onSuccess = e => {
-    props.navigation.navigate(C.screenTitle.WALLET_CONNECT);
     const link = e.data;
     if (link.startsWith('wc')) {
       loading.current = true;
@@ -187,17 +191,16 @@ export default function WalletConnectCamera(props) {
     };
   }, []);
 
-  useEffect(() => {
-    const link = portfolioState.statePortfolio.walletConnectURI;
-    if (link.startsWith('wc')) {
-      portfolioState.dispatchPortfolio({ value: { walletConnectURI: '' } });
-      loading.current = true;
-      void connectWallet(link);
-      void analytics().logEvent('wallet_connect_url_scan', {
-        fromEthAddress: ethereum.address,
-      });
-    }
-  }, [portfolioState.statePortfolio.walletConnectURI]);
+  // useEffect(() => {
+  //   const link = walletConnectURI;
+  //   if (link.startsWith('wc')) {
+  //     loading.current = true;
+  //     void connectWallet(link);
+  //     void analytics().logEvent('wallet_connect_url_scan', {
+  //       fromEthAddress: ethereum.address,
+  //     });
+  //   }
+  // }, [portfolioState.statePortfolio.walletConnectURI]);
 
   const buildWalletConnectDataFromAsync = async () => {
     let data;

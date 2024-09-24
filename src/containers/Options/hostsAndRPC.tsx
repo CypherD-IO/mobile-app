@@ -10,7 +10,7 @@ import {
   CyDSwitch,
   CyDKeyboardAwareScrollView,
 } from '../../styles/tailwindStyles';
-import { copyToClipboard, PortfolioContext } from '../../core/util';
+import { copyToClipboard } from '../../core/util';
 import { GlobalContext } from '../../core/globalContext';
 import clsx from 'clsx';
 import { t } from 'i18next';
@@ -23,6 +23,7 @@ import {
   getRpcPreference,
   getIsRcEnabled,
   setIsRcEnabled,
+  getDeveloperMode,
 } from '../../core/asyncStorage';
 import { hostWorker } from '../../global';
 import { ChainBackendNames } from '../../constants/server';
@@ -35,10 +36,9 @@ import { BackHandler, Keyboard } from 'react-native';
 import useCardUtilities from '../../hooks/useCardUtilities';
 
 export default function HostsAndRPCScreen({ navigation }) {
-  const portfolioState = useContext<any>(PortfolioContext);
   const globalContext = useContext<any>(GlobalContext);
   const { showModal, hideModal } = useGlobalModalContext();
-  const devMode = portfolioState.statePortfolio.developerMode;
+  const [devMode, setDevMode] = useState<boolean>(false);
   const { getHost, setHost } = hostWorker;
   const [rpcPreference, setRPCPreference] = useState<
     string | null | undefined
@@ -111,10 +111,15 @@ export default function HostsAndRPCScreen({ navigation }) {
         setIsRcEnabledValue(isRcEnabledInDB);
       }
     };
-
+    void fetchDevMode();
     void getRPCPreference();
     void checkIsRCEnabledValue();
   }, []);
+
+  const fetchDevMode = async () => {
+    const tempDevMode = await getDeveloperMode();
+    setDevMode(tempDevMode);
+  };
 
   const maskString = (endpoint: string) => {
     if (!devMode) {

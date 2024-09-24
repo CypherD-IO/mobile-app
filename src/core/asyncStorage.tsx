@@ -7,14 +7,12 @@ import {
 } from '../containers/Options/advancedSettings';
 import { DefiData, DefiResponse } from '../models/defi.interface';
 import { CYPHERD_ROOT_DATA } from './util';
+import { WalletHoldings } from './portfolio';
 
 export const storePortfolioData = async (
-  value: any,
+  value: WalletHoldings,
   ethereum: { address: any },
-  portfolioState: {
-    dispatchPortfolio: (arg0: { value: { portfolioState: string } }) => void;
-  },
-  key = '',
+  key = 'v2',
 ) => {
   try {
     const jsonValue = JSON.stringify({
@@ -23,17 +21,13 @@ export const storePortfolioData = async (
     });
     await AsyncStorage.setItem(String(ethereum.address) + key, jsonValue);
   } catch (error) {
-    portfolioState.dispatchPortfolio({
-      value: { portfolioState: PORTFOLIO_EMPTY },
-    });
     Sentry.captureException(error);
   }
 };
 
 export const getPortfolioData = async (
   ethereum: { address: any },
-  portfolioState: { dispatchPortfolio: any },
-  key = '',
+  key = 'v2',
 ) => {
   try {
     const jsonValue = await AsyncStorage.getItem(
@@ -41,9 +35,6 @@ export const getPortfolioData = async (
     );
     return jsonValue != null ? JSON.parse(jsonValue) : null;
   } catch (error) {
-    portfolioState.dispatchPortfolio({
-      value: { portfolioState: PORTFOLIO_EMPTY },
-    });
     Sentry.captureException(error);
   }
 };
@@ -116,7 +107,7 @@ export const setDeveloperMode = async (enabled: boolean) => {
 };
 
 export const getDeveloperMode = async (): Promise<boolean> => {
-  let enabled;
+  let enabled = false;
   try {
     const developerMode = await AsyncStorage.getItem('developerMode');
     enabled = developerMode != null ? JSON.parse(developerMode) : false;
