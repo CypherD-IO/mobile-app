@@ -55,7 +55,17 @@ const getTransactionSign = (type: string) => {
 const CardTransactionItem = ({ item }: CardTransactionItemProps) => {
   const { t } = useTranslation();
   const navigation = useNavigation();
-  const { iconUrl, type, createdAt, title, amount, isSettled, tStatus } = item;
+  const {
+    iconUrl,
+    type,
+    createdAt,
+    title,
+    amount,
+    isSettled,
+    tStatus,
+    fxCurrencyValue,
+    fxCurrencySymbol,
+  } = item;
   return (
     <>
       {/* <CyDView className='absolute bottom-[-930px] h-[1000px] w-full bg-white border-x border-sepratorColor' /> */}
@@ -110,7 +120,8 @@ const CardTransactionItem = ({ item }: CardTransactionItemProps) => {
                 type === CardTransactionTypes.REFUND,
             })}>
             {getTransactionSign(type)}
-            {limitDecimalPlaces(amount, 2)} {t<string>('USD')}
+            {limitDecimalPlaces(fxCurrencyValue ?? amount, 2)}{' '}
+            {t<string>(fxCurrencySymbol ?? 'USD')}
           </CyDText>
         </CyDView>
       </CyDTouchView>

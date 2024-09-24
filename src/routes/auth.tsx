@@ -122,6 +122,7 @@ import AddDeliveryAddress from '../containers/DebitCard/physicalCardUpgradation/
 import NameOnCard from '../containers/DebitCard/physicalCardUpgradation/nameOnCard';
 import ShippingConfirmation from '../containers/DebitCard/physicalCardUpgradation/confirmation';
 import ShippingCheckout from '../containers/DebitCard/physicalCardUpgradation/ckeckout';
+import CardActivationConsent from '../containers/DebitCard/bridgeCard/cardActivationConsent';
 
 const PortfolioStack = createNativeStackNavigator();
 const BrowserStack = createNativeStackNavigator();
@@ -992,6 +993,14 @@ export function DebitCardStackScreen() {
           headerTintColor: Colors.primaryTextColor,
           headerBackTitleVisible: false,
           headerLeft: props => defaultHeaderLeft(navigation, keyboardHeight),
+        })}
+      />
+
+      <FundCardStack.Screen
+        name={screenTitle.CARD_ACTIVATION_CONSENT_SCREEN}
+        component={CardActivationConsent}
+        options={({ navigation }) => ({
+          headerShown: false,
         })}
       />
 

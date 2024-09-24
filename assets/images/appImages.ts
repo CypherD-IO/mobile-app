@@ -641,6 +641,17 @@ const CARD_SHIPMENT_ENVELOPE = {
   uri: `${S3_BUCKET_URL_ICONS}/cardShipmentEnvelope.png`,
 };
 
+const REPLACE_VIRTUAL_CARD = {
+  uri: `${S3_BUCKET_URL_ICONS}/replaceVirtualCard.png`,
+};
+
+const MULTIPLE_CARDS = {
+  uri: `${S3_BUCKET_URL_ICONS}/multipleCards.png`,
+};
+const PREMIUM_LABEL = {
+  uri: `${S3_BUCKET_URL_ICONS}/premiumLabel.png`,
+};
+
 const AppImages = {
   USDC_TOKEN,
   LIST_HAMBURGER,
@@ -1083,5 +1094,8 @@ const AppImages = {
   BASIC_DETAILS,
   ENVELOPE,
   CARD_SHIPMENT_ENVELOPE,
+  REPLACE_VIRTUAL_CARD,
+  MULTIPLE_CARDS,
+  PREMIUM_LABEL,
 };
 export default AppImages;

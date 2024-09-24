@@ -30,7 +30,7 @@ import OtpVerificationModal from '../../../components/v2/card/otpVerification';
 import { useGlobalModalContext } from '../../../components/v2/GlobalModal';
 import * as Sentry from '@sentry/react-native';
 import { screenTitle } from '../../../constants';
-import { isIOS } from '../../../misc/checkers';
+import { isAndroid, isIOS } from '../../../misc/checkers';
 import clsx from 'clsx';
 import { getCountryNameById } from '../../../core/util';
 
@@ -83,11 +83,10 @@ export default function ShippingCheckout() {
     setIsVerifyingOTP(true);
     const payload = {
       ...shippingAddress,
-      preferredName,
+      preferredCardName: preferredName,
       otp: Number(otp),
     };
     setIsOTPModalVisible(false);
-    setIsVerifyingOTP(false);
     const response = await postWithAuth(
       `/v1/cards/${currentCardProvider}/generate/physical`,
       payload,
@@ -298,7 +297,7 @@ export default function ShippingCheckout() {
             </CyDTouchView>
           </CyDView>
           <CyDScrollView
-            className='flex-1 pb-[22px]'
+            className={clsx('flex-1', { 'mb-[22px]': isAndroid() })}
             showsVerticalScrollIndicator={false}>
             <CyDView className='my-[12px]'>
               <CyDText className='text-[26px] font-bold'>
@@ -315,7 +314,7 @@ export default function ShippingCheckout() {
             <CyDView className='mt-[24px]'>
               <RenderShippingAddress />
             </CyDView>
-            <CyDView className='mt-[24px] mb-[24px]'>
+            <CyDView className='mt-[24px] mb-[32px]'>
               <RenderPaymentMethod />
             </CyDView>
           </CyDScrollView>

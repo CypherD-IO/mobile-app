@@ -37,7 +37,7 @@ export default function PreferredNameModal({
       style={styles.modalLayout}>
       <CyDKeyboardAvoidingView
         behavior={isAndroid() ? 'height' : 'padding'}
-        className='flex flex-col justify-end'>
+        className='flex flex-1 flex-col justify-end'>
         <CyDView className='bg-n20 p-[16px] rounded-t-[24px]'>
           <CyDView className='flex flex-row justify-between items-center'>
             <CyDView className=''>

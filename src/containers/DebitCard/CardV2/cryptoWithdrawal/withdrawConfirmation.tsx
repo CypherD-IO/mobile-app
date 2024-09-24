@@ -123,9 +123,6 @@ export default function WithdrawConfirmation() {
             <CyDView className='bg-n10 rounded-[8px] mt-[4px] p-[12px]'>
               <CyDText className='font-bold text-[20px] text-base400 flex flex-row items-end'>
                 {`$ ${amount}`}
-                <CyDText className='font-medium text-[12px] text-base400'>
-                  {' United States Dollars'}
-                </CyDText>
               </CyDText>
             </CyDView>
             <CyDText className='font-medium text-[12px] text-n200 mt-[4px]'>
