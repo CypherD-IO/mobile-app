@@ -13,7 +13,7 @@ export interface MigrationData {
   batchId: string;
   createdAt: number;
   isCompleteMigration: false;
-  status: 'IN_PROGRESS' | 'COMPLETED' | 'FAILED' | 'PENDING' | 'DELAYED';
+  status: 'IN_PROGRESS' | 'SUCCESS' | 'FAILED' | 'PENDING' | 'DELAYED';
   type: ActivityType.MIGRATE_FUND;
   isClosable: boolean;
 }
