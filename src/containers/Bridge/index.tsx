@@ -514,6 +514,8 @@ const Bridge: React.FC = () => {
       : get(selectedFromToken, 'balance', 0)?.toString();
     setCryptoAmount(bal);
     setUsdAmount(String(Number(bal) * Number(selectedFromToken?.price)));
+    resetValues();
+    void fetchQuote();
   };
 
   const handleApprove = () => {
@@ -736,12 +738,6 @@ const Bridge: React.FC = () => {
         return;
       }
 
-      activityData.status = ActivityStatus.INPROCESS;
-      activityContext.dispatch({
-        type: ActivityReducerAction.PATCH,
-        value: activityData,
-      });
-
       await evmTxnMsg(data);
       await cosmosTxnMsg(data);
       await solanaTxnMsg(data);
@@ -753,7 +749,7 @@ const Bridge: React.FC = () => {
         onSuccess: () => {
           activityData.status = ActivityStatus.SUCCESS;
           activityContext.dispatch({
-            type: ActivityReducerAction.PATCH,
+            type: ActivityReducerAction.POST,
             value: activityData,
           });
           navigateToPortfolio();
