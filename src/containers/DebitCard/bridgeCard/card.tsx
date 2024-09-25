@@ -12,7 +12,7 @@ import crypto from 'crypto';
 import { get, has, isEmpty, isUndefined, orderBy, some, trim } from 'lodash';
 import LottieView from 'lottie-react-native';
 import { useTranslation } from 'react-i18next';
-import { StyleSheet, useWindowDimensions } from 'react-native';
+import { PixelRatio, StyleSheet, useWindowDimensions } from 'react-native';
 import Carousel from 'react-native-reanimated-carousel';
 import WebView from 'react-native-webview';
 import AppImages from '../../../../assets/images/appImages';
@@ -54,6 +54,7 @@ import {
   CyDView,
 } from '../../../styles/tailwindStyles';
 import { showToast } from '../../utilities/toastUtility';
+import { isAndroid } from '../../../misc/checkers';
 
 interface CardSecrets {
   cvv: string;
@@ -89,6 +90,8 @@ export default function CardScreen({
   } = cardProfile;
 
   const { width } = useWindowDimensions();
+  const pixelDensity = PixelRatio.get();
+  const fontScaleFactor = PixelRatio.getFontScale();
   const { t } = useTranslation();
   const isFocused = useIsFocused();
   const { getWithAuth } = useAxios();
@@ -175,8 +178,8 @@ export default function CardScreen({
     const card = item;
     return (
       <CyDImageBackground
-        style={{ width: width - 90 }}
-        className={clsx('flex flex-col h-[190px] self-center', {
+        style={{ width: 300, height: 190 }}
+        className={clsx('flex flex-col self-center', {
           'justify-center items-center':
             card.status === CardStatus.IN_ACTIVE ||
             card.status === CardStatus.HIDDEN ||
@@ -188,7 +191,7 @@ export default function CardScreen({
             card.status !== CardStatus.BLOCKED &&
             card.status !== 'rcUpgradable',
         })}
-        resizeMode='stretch'
+        resizeMode='contain'
         source={getCardImage(card)}>
         {(card.status === CardStatus.IN_ACTIVE ||
           card.status === CardStatus.BLOCKED) && (
@@ -298,7 +301,9 @@ export default function CardScreen({
         mode='parallax'
         modeConfig={{
           parallaxScrollingScale: 0.92,
-          parallaxScrollingOffset: 124,
+          parallaxScrollingOffset: isAndroid()
+            ? width / (pixelDensity * fontScaleFactor)
+            : width * 0.31,
           parallaxAdjacentItemScale: 0.74,
         }}
         scrollAnimationDuration={0}
