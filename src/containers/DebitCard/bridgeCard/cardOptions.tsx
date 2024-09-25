@@ -165,7 +165,7 @@ export default function CardOptionsModal({
                       resizeMode={'contain'}
                     />
                     <CyDView className='flex flex-col justify-between flex-1 px-[6px]'>
-                      <CyDText className='text-[16px] font-medium text-b400'>
+                      <CyDText className='text-[16px] font-medium text-base400'>
                         {title}
                       </CyDText>
                       <CyDText className='text-[12px] font-medium text-n50 flex-wrap'>

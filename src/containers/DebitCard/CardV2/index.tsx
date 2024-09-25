@@ -459,8 +459,8 @@ export default function CypherCardScreen({
         </CyDView>
 
         {shouldBlockAction() && (
-          <CyDView className='rounded-[16px] bg-r20 border-[1px] border-r300 p-[14px] m-[16px]'>
-            <CyDText className='text-[18px] font-[700] text-r300'>
+          <CyDView className='rounded-[16px] bg-red20 border-[1px] border-red300 p-[14px] m-[16px]'>
+            <CyDText className='text-[18px] font-[700] text-red300'>
               {'Your account has been locked'}
             </CyDText>
             <CyDText className='text-[14px] font-[500] mt-[6px]'>
