@@ -310,6 +310,7 @@ const Bridge: React.FC = () => {
     useCallback(() => {
       if (bridgeState.status === BridgeStatus.ERROR) void fetchData();
       else {
+        setIndex(0);
         setChainData(bridgeState.chainData);
         setTokenData(bridgeState.tokenData);
         setChainData(bridgeState.chainData);
@@ -822,7 +823,6 @@ const Bridge: React.FC = () => {
             ) {
               setSignaturesRequired(prev => prev - 1);
               await trackSign(evmResponse.hash, evmResponse.chainId);
-              return evmResponse?.hash;
             } else {
               throw new Error(
                 evmResponse?.error ?? 'Error processing Evm transaction',
@@ -861,7 +861,6 @@ const Bridge: React.FC = () => {
           ) {
             setSignaturesRequired(prev => prev - 1);
             await trackSign(cosmosResponse.hash, cosmosResponse.chainId);
-            return cosmosResponse?.hash;
           } else {
             throw new Error(cosmosResponse.error);
           }
@@ -894,11 +893,7 @@ const Bridge: React.FC = () => {
             solanaResponse.chainId
           ) {
             setSignaturesRequired(prev => prev - 1);
-            const hash = await submitSign(
-              solanaResponse.txn,
-              solanaResponse.chainId,
-            );
-            return hash;
+            await submitSign(solanaResponse.txn, solanaResponse.chainId);
           } else {
             throw new Error(solanaResponse.error);
           }
@@ -1972,6 +1967,7 @@ const Bridge: React.FC = () => {
             onClickMax={onClickMax}
             onToggle={onToggle}
             fetchQuote={() => {
+              resetValues();
               void fetchQuote();
             }}
           />
