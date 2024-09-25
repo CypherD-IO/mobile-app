@@ -180,7 +180,8 @@ export default function CardScreen({
     const card = item;
     return (
       <CyDImageBackground
-        className={clsx('flex flex-col h-[190px] w-[300px] self-center', {
+        style={{ width: width - 90 }}
+        className={clsx('flex flex-col h-[190px] self-center', {
           'justify-center items-center':
             card.status === CardStatus.IN_ACTIVE ||
             card.status === CardStatus.HIDDEN ||
@@ -302,7 +303,7 @@ export default function CardScreen({
         mode='parallax'
         modeConfig={{
           parallaxScrollingScale: 0.92,
-          parallaxScrollingOffset: 132,
+          parallaxScrollingOffset: 124,
           parallaxAdjacentItemScale: 0.74,
         }}
         scrollAnimationDuration={0}
@@ -453,13 +454,13 @@ const RenderCardActions = ({
     const physicalCard = get(trackingDetails, cardId);
     const trackingNumber = get(trackingDetails, cardId)?.trackingId;
     return (
-      <CyDView className='flex flex-row bg-white self-center items-center w-[300px] mx-[20px] my-[12px] pt-[16px] pr-[12px] rounded-[12px]'>
+      <CyDView className='flex flex-row bg-white self-center items-center w-[300px] mx-[20px] my-[12px] pt-[12px] pr-[12px] rounded-[12px]'>
         <CyDFastImage
           source={AppImages.CARD_SHIPMENT_ENVELOPE}
-          className='h-[84px] w-[84px] rounded-bl-[12px]'
+          className='h-[64px] w-[64px] rounded-bl-[12px]'
         />
-        <CyDView className='w-[72%] ml-[12px]'>
-          <CyDText className='font-bold text-[16px]'>
+        <CyDView className='w-[72%] ml-[12px] pb-[4px]'>
+          <CyDText className='font-bold text-[14px]'>
             {t('CARD_ON_WAY')}
           </CyDText>
           {trackingDetails &&
@@ -472,7 +473,7 @@ const RenderCardActions = ({
               </CyDText>
             </CyDView>
           ) : (
-            <CyDView className='mt-[6px] pb-[16px]'>
+            <CyDView className='mt-[6px]'>
               <CyDText className=''>{t('FEDEX_TRACKING_NO')}</CyDText>
               <CyDView className='flex flex-row items-center'>
                 <CyDText className='max-w-[50%] text-highlightText mt-[4px]'>

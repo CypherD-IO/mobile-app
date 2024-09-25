@@ -441,7 +441,7 @@ export default function CardControlsSettings({ route, navigation }) {
                       <CyDText className='text-[12px] text-n200'>{`Total Countries: ${countries.length}`}</CyDText>
                     </CyDView>
                     <CyDTouchView
-                      className='flex flex-row justify-between items-center rounded-[8px] border-[1px] border-b400 p-[12px] mt-[6px]'
+                      className='flex flex-row justify-between items-center rounded-[8px] border-[1px] border-base400 p-[12px] mt-[6px]'
                       onPress={() => {
                         !disableOptions && setCountryModalVisible(true);
                       }}
