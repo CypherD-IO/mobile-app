@@ -1334,6 +1334,7 @@ const resources = {
         'I understand and agree to permanently terminate/cancel my virtual card',
       BILLED_AMOUNT: 'Billed Amount',
       TRANSACTION_AMOUNT: 'Transaction Amount',
+      ACCOUNT_OPTIONS: 'Account Options',
     },
   },
 };

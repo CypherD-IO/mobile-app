@@ -54,9 +54,6 @@ import {
   CyDView,
 } from '../../../styles/tailwindStyles';
 import { showToast } from '../../utilities/toastUtility';
-import CardOptionsModal from './cardOptions';
-import useCardUtilities from '../../../hooks/useCardUtilities';
-import CardGlobalOptionsModal from './cardGlobalOptions';
 
 interface CardSecrets {
   cvv: string;
@@ -78,14 +75,12 @@ export default function CardScreen({
   onPressUpgradeNow,
   onPressActivateCard,
   refreshProfile,
-  onPressPlanChange,
 }: {
   navigation: any;
   currentCardProvider: CardProviders;
   onPressUpgradeNow: () => void;
   onPressActivateCard: (card: any) => void;
   refreshProfile: () => void;
-  onPressPlanChange: () => void;
 }) {
   const globalContext = useContext<any>(GlobalContext);
   const cardProfile: CardProfile = globalContext.globalState.cardProfile;
@@ -320,7 +315,6 @@ export default function CardScreen({
           onPressActivateCard={onPressActivateCard}
           cardProfile={cardProfile}
           trackingDetails={trackingDetails}
-          onPressPlanChange={onPressPlanChange}
         />
       )}
     </CyDView>
@@ -336,7 +330,6 @@ const RenderCardActions = ({
   onPressActivateCard,
   cardProfile,
   trackingDetails,
-  onPressPlanChange,
 }: {
   card: Card;
   cardProvider: CardProviders;
@@ -346,7 +339,6 @@ const RenderCardActions = ({
   onPressActivateCard: (card: Card) => void;
   cardProfile: CardProfile;
   trackingDetails: any;
-  onPressPlanChange: () => void;
 }) => {
   const { t } = useTranslation();
   const { postWithAuth, patchWithAuth } = useAxios();
@@ -354,7 +346,6 @@ const RenderCardActions = ({
     useState<CardSecrets>(initialCardDetails);
   const [showCardDetailsModal, setShowCardDetailsModal] =
     useState<boolean>(false);
-  const [showOptionsModal, setShowOptionsModal] = useState<boolean>(false);
   const { showModal, hideModal } = useGlobalModalContext();
   const [isFetchingCardDetails, setIsFetchingCardDetails] =
     useState<boolean>(false);
@@ -990,15 +981,6 @@ const RenderCardActions = ({
         </CyDModalLayout>
       )}
 
-      <CardOptionsModal
-        isModalVisible={showOptionsModal}
-        setShowModal={setShowOptionsModal}
-        cardProvider={cardProvider}
-        card={card}
-        navigation={navigation}
-        onPressPlanChange={onPressPlanChange}
-      />
-
       {cardProfile.provider === CardProviders.PAYCADDY && (
         <CyDView className='flex flex-row justify-center items-center mb-[14px] mt-[-42px]'>
           <CyDText className='font-bold text-[14px]'>
@@ -1082,7 +1064,10 @@ const RenderCardActions = ({
           className='flex flex-col justify-center items-center'
           disabled={shouldBlockAction()}
           onPress={() => {
-            setShowOptionsModal(true);
+            navigation.navigate(screenTitle.CARD_CONTROLS_MENU, {
+              currentCardProvider: cardProvider,
+              card,
+            });
           }}>
           <CyDView
             className={`${shouldBlockAction() ? 'bg-n40' : 'bg-appColor'} h-[54px] w-[54px] items-center justify-center rounded-[50px]`}>

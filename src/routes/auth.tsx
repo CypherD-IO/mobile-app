@@ -123,6 +123,7 @@ import NameOnCard from '../containers/DebitCard/physicalCardUpgradation/nameOnCa
 import ShippingConfirmation from '../containers/DebitCard/physicalCardUpgradation/confirmation';
 import ShippingCheckout from '../containers/DebitCard/physicalCardUpgradation/ckeckout';
 import CardActivationConsent from '../containers/DebitCard/bridgeCard/cardActivationConsent';
+import GlobalOptions from '../containers/DebitCard/CardV2/globalOptions';
 
 const PortfolioStack = createNativeStackNavigator();
 const BrowserStack = createNativeStackNavigator();
@@ -703,14 +704,6 @@ export function DebitCardStackScreen() {
         component={CardControlsMenu}
         options={({ navigation, route }) => ({
           headerShown: false,
-          // headerTransparent: false,
-          // headerShadowVisible: false,
-          // title: 'Card Controls',
-          // headerTitleAlign: 'left',
-          // headerTitleStyle: portfolioStackScreenHeaderTitleStyles,
-          // headerTintColor: Colors.primaryTextColor,
-          // headerBackTitleVisible: false,
-          // headerLeft: props => defaultHeaderLeft(navigation, keyboardHeight),
         })}
       />
 
@@ -1358,6 +1351,13 @@ export function DebitCardStackScreen() {
       <FundCardStack.Screen
         name={screenTitle.WITHDRAW_HISTORY}
         component={WithdrawHistory}
+        options={({ navigation }): NativeStackNavigationOptions => ({
+          headerShown: false,
+        })}
+      />
+      <FundCardStack.Screen
+        name={screenTitle.GLOBAL_CARD_OPTIONS}
+        component={GlobalOptions}
         options={({ navigation }): NativeStackNavigationOptions => ({
           headerShown: false,
         })}

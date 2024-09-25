@@ -1,4 +1,4 @@
-import React, { useCallback, useContext, useEffect, useState } from 'react';
+import React, { useContext, useEffect, useState } from 'react';
 import {
   CyDFastImage,
   CyDImage,
@@ -16,14 +16,12 @@ import {
   CardProviders,
   CardTransactionStatuses,
   CardTransactionTypes,
-  CypherPlanId,
   GlobalContextType,
 } from '../../../constants/enum';
 import CardScreen from '../bridgeCard/card';
 import {
   NavigationProp,
   ParamListBase,
-  useFocusEffect,
   useIsFocused,
 } from '@react-navigation/native';
 import { useTranslation } from 'react-i18next';
@@ -46,17 +44,13 @@ import {
 } from '../../../constants/cardPageV2';
 import { MODAL_HIDE_TIMEOUT } from '../../../core/Http';
 import ShippingFeeConsentModal from '../../../components/v2/shippingFeeConsentModal';
-import CardActivationConsentModal from '../../../components/v2/CardActivationConsentModal';
 import Loading from '../../../components/v2/loading';
-import AutoLoadOptionsModal from '../bridgeCard/autoLoadOptions';
 import { HIDDEN_CARD_ID } from '../../../constants/data';
 import LottieView from 'lottie-react-native';
 import { StyleSheet } from 'react-native';
 import CardProviderSwitch from '../../../components/cardProviderSwitch';
 import useCardUtilities from '../../../hooks/useCardUtilities';
 import clsx from 'clsx';
-import { ActivityStatus } from '../../../reducers/activity_reducer';
-import CardGlobalOptionsModal from '../bridgeCard/cardGlobalOptions';
 
 interface CypherCardScreenProps {
   navigation: NavigationProp<ParamListBase>;
@@ -110,24 +104,9 @@ export default function CypherCardScreen({
   );
   const rcApplicationStatus = get(cardProfile, ['rc', 'applicationStatus'], '');
   const [isLayoutRendered, setIsLayoutRendered] = useState(false);
-  const [isAutoLoadOptionsvisible, setIsAutoLoadOptionsVisible] =
-    useState<boolean>(false);
-  const [showGlobalOptionsModal, setShowGlobalOptionsModal] =
-    useState<boolean>(false);
   const [balanceLoading, setBalanceLoading] = useState(false);
   const { getWalletProfile } = useCardUtilities();
-  const [lockdownModeLoading, setLockdownModeLoading] = useState(false);
   const { hasBothProviders } = useCardUtilities();
-  const [migrationData, setMigrationData] = useState<
-    Array<{
-      requestId: string;
-      amount: number;
-      isCompleteMigration: boolean;
-      batchId: string;
-      status: ActivityStatus;
-      createdAt: number;
-    }>
-  >([]);
   const onRefresh = async () => {
     void refreshProfile();
     setCardBalance('');
@@ -280,18 +259,6 @@ export default function CypherCardScreen({
       cardBalance,
     });
   };
-  const getMigrationData = async () => {
-    const { data, isError } = await getWithAuth('/v1/cards/migration');
-    if (!isError) {
-      setMigrationData(data);
-    }
-  };
-
-  useFocusEffect(
-    useCallback(() => {
-      void getMigrationData();
-    }, []),
-  );
 
   return isLayoutRendered ? (
     <CyDSafeAreaView className='flex-1 bg-gradient-to-b from-cardBgFrom to-cardBgTo mb-[75px]'>
@@ -302,7 +269,11 @@ export default function CypherCardScreen({
         <CyDTouchView
           className='bg-white rounded-full p-[8px] flex flex-row items-center'
           onPress={() => {
-            setShowGlobalOptionsModal(true);
+            navigation.navigate(screenTitle.GLOBAL_CARD_OPTIONS, {
+              cardProvider,
+              onPressPlanChange,
+              card: get(cardProfile, [cardProvider, 'cards', 0]),
+            });
           }}>
           <CyDImage
             source={AppImages.SETTINGS_TOOLS_ICON}
@@ -323,20 +294,6 @@ export default function CypherCardScreen({
         onFailure={() => {
           setIsShippingFeeConsentModalVisible(false);
         }}
-      />
-
-      <AutoLoadOptionsModal
-        isModalVisible={isAutoLoadOptionsvisible}
-        setShowModal={setIsAutoLoadOptionsVisible}
-        navigation={navigation}
-      />
-
-      <CardGlobalOptionsModal
-        isModalVisible={showGlobalOptionsModal}
-        setShowModal={setShowGlobalOptionsModal}
-        cardProvider={cardProvider}
-        navigation={navigation}
-        onPressPlanChange={onPressPlanChange}
       />
 
       {/* TXN FILTER MODAL */}
@@ -472,18 +429,9 @@ export default function CypherCardScreen({
               onPress={() => {
                 void verifyWithOTP();
               }}>
-              {!lockdownModeLoading ? (
-                <CyDText className='underline font-[700] text-[14px] mt-[6px]'>
-                  Disable lockdown mode
-                </CyDText>
-              ) : (
-                <LottieView
-                  source={AppImages.LOADER_TRANSPARENT}
-                  autoPlay
-                  loop
-                  style={style.lottieStyle}
-                />
-              )}
+              <CyDText className='underline font-[700] text-[14px] mt-[6px]'>
+                Disable lockdown mode
+              </CyDText>
             </CyDTouchView>
           </CyDView>
         )}
@@ -497,7 +445,6 @@ export default function CypherCardScreen({
             refreshProfile={() => {
               void refreshProfile();
             }}
-            onPressPlanChange={onPressPlanChange}
           />
         </CyDView>
         <CyDView className='w-full bg-white mt-[26px] pb-[120px]'>
@@ -550,8 +497,5 @@ export default function CypherCardScreen({
 const style = StyleSheet.create({
   loaderStyle: {
     height: 38,
-  },
-  lottieStyle: {
-    height: 25,
   },
 });
