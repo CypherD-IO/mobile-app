@@ -11,6 +11,8 @@ import Button from '../../components/v2/button';
 import { StyleSheet, Animated, Easing } from 'react-native'; // Added Easing import
 import { t } from 'i18next';
 import { SwapBridgeChainData, SwapBridgeTokenData } from '.';
+import AppImages from '../../../assets/images/appImages';
+import { ChainIdNameMapping } from '../../constants/data';
 
 enum TxnStatus {
   STATE_SUBMITTED = 'STATE_SUBMITTED',
@@ -28,6 +30,7 @@ export default function BridgeRoutePreview({
   loading,
   onGetMSg,
   statusResponse,
+  signaturesRequired,
 }: {
   routeResponse: SkipApiRouteResponse | null;
   chainInfo: SwapBridgeChainData[] | null;
@@ -35,6 +38,7 @@ export default function BridgeRoutePreview({
   loading: boolean;
   onGetMSg: () => Promise<void>;
   statusResponse: SkipApiStatus[];
+  signaturesRequired: number;
 }) {
   const pulseAnimation = new Animated.Value(1);
   let timer: NodeJS.Timeout;
@@ -99,6 +103,27 @@ export default function BridgeRoutePreview({
                 : `${countdown}s` // Display seconds
               : t('LONGER_THAN_USUAL')}
           </CyDText>
+        </CyDView>
+      )}
+
+      {(loading || !isEmpty(statusResponse)) && signaturesRequired > 0 && (
+        <CyDView className='flex flex-row items-center bg-orange-100 rounded-[8px] p-[8px] mb-[12px]'>
+          <CyDFastImage
+            source={AppImages.WARNING}
+            className='w-[20px] h-[20px] mr-[10px]'
+          />
+          <CyDText className='text-[12px] font-medium w-[85%]'>
+            {`Please do not move out of this page or go back as ${signaturesRequired} more ${signaturesRequired > 1 ? 'signatures are' : 'signature is'}  required to complete your bridge`}
+          </CyDText>
+        </CyDView>
+      )}
+      {(loading || !isEmpty(statusResponse)) && signaturesRequired === 0 && (
+        <CyDView className='flex flex-row items-center bg-emerald-100 rounded-[8px] p-[8px] mb-[12px]'>
+          <CyDFastImage
+            source={AppImages.SUCCESS_TICK_GREEN_BG}
+            className='w-[20px] h-[20px] mr-[10px]'
+          />
+          <CyDText className='text-[12px] font-medium w-[88%]'>{`Uour funds will be transferred to your ${ChainIdNameMapping[routeResponse?.dest_asset_chain_id as keyof typeof ChainIdNameMapping]} chain in sometime, please stay on the page till your transaction is complete`}</CyDText>
         </CyDView>
       )}
       <CyDView

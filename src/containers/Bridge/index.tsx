@@ -75,7 +75,6 @@ import useTransactionManager from '../../hooks/useTransactionManager';
 import { ODOS_SWAP_QUOTE_GASLIMIT_MULTIPLICATION_FACTOR } from '../Portfolio/constants';
 import { StyleSheet } from 'react-native';
 import { genId } from '../utilities/activityUtilities';
-import { Holding } from '../../core/portfolio';
 import { GasPriceDetail } from '../../core/types';
 import { screenTitle } from '../../constants';
 import {
@@ -131,7 +130,7 @@ enum TxnStatus {
 }
 
 interface RouteParams {
-  tokenData?: any; // Specify the expected type instead of any if possible
+  tokenData?: any;
   backVisible?: boolean;
 }
 
@@ -227,10 +226,10 @@ const Bridge: React.FC = () => {
     SkipApiRouteResponse | OdosSwapQuoteResponse | null
   >(null);
   const [error, setError] = useState<string>('');
-  const abortControllerRef = useRef<AbortController | null>(null); // Ref to store the AbortController
   const routeParamsTokenData = route?.params?.tokenData;
   const routeParamsBackVisible = route?.params?.backVisible;
   const { getLocalPortfolio } = usePortfolio();
+  const [signaturesRequired, setSignaturesRequired] = useState<number>(0);
 
   const navigateToPortfolio = () => {
     hideModal();
@@ -344,10 +343,10 @@ const Bridge: React.FC = () => {
 
     // Filter tokens based on totalHoldings
     const localPortfolio = await getLocalPortfolio();
-    const totalHoldings = localPortfolio.totalHoldings;
-    let filteredTokens = tokenData[selectedFromChain.chainId]
+    const totalHoldings = localPortfolio?.totalHoldings;
+    let filteredTokens = tokenData[selectedFromChain?.chainId]
       ?.map(token => {
-        const matchingHolding = totalHoldings.find(
+        const matchingHolding = totalHoldings?.find(
           holding =>
             holding.coinGeckoId === token.coingeckoId &&
             (holding.chainDetails.chainIdNumber ===
@@ -362,7 +361,7 @@ const Bridge: React.FC = () => {
       })
       .sort((a, b) => b.balanceInNumbers - a.balanceInNumbers);
 
-    if (selectedToChain) {
+    if (selectedToChain && selectedFromChain) {
       filteredTokens = filteredTokens?.filter(item => {
         // Check if both chains are Odos
         // if both chains are same and isOdos true for the chain, then the tokens shown in from token data should be odos tokens,
@@ -476,51 +475,38 @@ const Bridge: React.FC = () => {
     setAmountOut('');
   };
 
-  useEffect(() => {
-    const fetchQuote = async () => {
-      if (
-        selectedFromChain &&
-        selectedToChain &&
-        selectedFromToken &&
-        selectedToToken &&
-        parseFloat(cryptoAmount) > 0
-      ) {
-        abortControllerRef.current = new AbortController();
-        const { signal } = abortControllerRef.current;
-
-        setLoading({ ...loading, quoteLoading: true });
-        try {
-          if (isOdosSwap()) {
-            await getSwapQuote(signal);
-          } else {
-            await getBridgeQuote(signal);
-          }
-        } finally {
-          setLoading({ ...loading, quoteLoading: false });
+  const fetchQuote = async () => {
+    if (
+      selectedFromChain &&
+      selectedToChain &&
+      selectedFromToken &&
+      selectedToToken &&
+      parseFloat(cryptoAmount) > 0
+    ) {
+      setLoading({ ...loading, quoteLoading: true });
+      try {
+        if (isOdosSwap()) {
+          await getSwapQuote();
+        } else {
+          await getBridgeQuote();
         }
+      } finally {
+        setLoading({ ...loading, quoteLoading: false });
       }
-    };
+    }
+  };
 
-    const timeoutId = setTimeout(() => {
-      // Only call fetchQuote if the input is stable
-      resetValues();
-      if (cryptoAmount) {
-        void fetchQuote();
-      }
-    }, 400);
-
-    return () => {
-      clearTimeout(timeoutId); // Clear the timeout on cleanup
-      if (abortControllerRef.current) {
-        abortControllerRef.current.abort(); // Abort the ongoing fetch call
-      }
-    };
+  useEffect(() => {
+    resetValues();
+    if (cryptoAmount) {
+      void fetchQuote();
+    }
   }, [
     selectedFromChain,
     selectedToChain,
     selectedFromToken,
     selectedToToken,
-    cryptoAmount,
+    // cryptoAmount,
   ]);
 
   const onClickMax = () => {
@@ -544,6 +530,16 @@ const Bridge: React.FC = () => {
   };
 
   const handleReject = () => {
+    setApproveModalVisible(false);
+    setLoading({
+      ...loading,
+      pageLoading: false,
+      quoteLoading: false,
+      acceptSwapLoading: false,
+      swapLoading: false,
+      bridgeGetMsg: false,
+      approvalLoading: false,
+    });
     if (modalPromiseResolver) {
       modalPromiseResolver(false);
       setModalPromiseResolver(null);
@@ -566,7 +562,7 @@ const Bridge: React.FC = () => {
     return addressList;
   };
 
-  const getBridgeQuote = async (signal: AbortSignal) => {
+  const getBridgeQuote = async () => {
     try {
       if (
         selectedFromToken &&
@@ -592,7 +588,6 @@ const Bridge: React.FC = () => {
           '/v1/swap/bridge/quote',
           routeBody,
           DEFAULT_AXIOS_TIMEOUT,
-          { signal },
         );
 
         if (!isError) {
@@ -607,6 +602,7 @@ const Bridge: React.FC = () => {
             ),
           );
           setUsdAmountOut(responseQuoteData?.usd_amount_out);
+          setSignaturesRequired(responseQuoteData?.txs_required);
           setLoading({ ...loading, quoteLoading: false });
         } else {
           setLoading({ ...loading, quoteLoading: false });
@@ -751,11 +747,9 @@ const Bridge: React.FC = () => {
         value: activityData,
       });
 
-      let hash;
-
-      hash = await evmTxnMsg(data);
-      hash = await cosmosTxnMsg(data);
-      hash = await solanaTxnMsg(data);
+      await evmTxnMsg(data);
+      await cosmosTxnMsg(data);
+      await solanaTxnMsg(data);
       setLoading({ ...loading, bridgeGetMsg: false });
       showModal('state', {
         type: 'success',
@@ -771,13 +765,10 @@ const Bridge: React.FC = () => {
         },
         onFailure: navigateToPortfolio,
       });
-      void logAnalytics({
-        type: AnalyticsType.SUCCESS,
-        txnHash: hash,
-        chain: selectedFromChain.chainName,
-      });
+
       void analytics().logEvent('BRIDGE_SUCCESS');
     } catch (e: unknown) {
+      const errMsg = parseErrorMessage(e);
       activityData.status = ActivityStatus.FAILED;
       activityContext.dispatch({
         type: ActivityReducerAction.POST,
@@ -791,17 +782,20 @@ const Bridge: React.FC = () => {
         onSuccess: navigateToPortfolio,
         onFailure: navigateToPortfolio,
       });
-      void analytics().logEvent('BRIDGE_ERROR', {
-        error: e,
-      });
-      Sentry.captureException(e);
-      // monitoring api
-      void logAnalytics({
-        type: AnalyticsType.ERROR,
-        chain: selectedFromChain.chainName,
-        message: parseErrorMessage(e),
-        screen: route.name,
-      });
+
+      if (!errMsg.includes('reject')) {
+        void analytics().logEvent('BRIDGE_ERROR', {
+          error: e,
+        });
+        Sentry.captureException(e);
+        // monitoring api
+        void logAnalytics({
+          type: AnalyticsType.ERROR,
+          chain: selectedFromChain.chainName,
+          message: parseErrorMessage(e),
+          screen: route.name,
+        });
+      }
     }
   };
 
@@ -832,6 +826,7 @@ const Bridge: React.FC = () => {
               evmResponse?.hash &&
               evmResponse.chainId
             ) {
+              setSignaturesRequired(prev => prev - 1);
               await trackSign(evmResponse.hash, evmResponse.chainId);
               return evmResponse?.hash;
             } else {
@@ -870,20 +865,18 @@ const Bridge: React.FC = () => {
             cosmosResponse?.hash &&
             cosmosResponse.chainId
           ) {
+            setSignaturesRequired(prev => prev - 1);
             await trackSign(cosmosResponse.hash, cosmosResponse.chainId);
             return cosmosResponse?.hash;
           } else {
             throw new Error(cosmosResponse.error);
           }
         } catch (e: unknown) {
-          if (
-            e instanceof Error &&
-            !e.message.includes('User denied transaction signature.')
-          ) {
+          const errMsg = parseErrorMessage(e);
+          if (e instanceof Error && !errMsg.includes('reject')) {
             Sentry.captureException(e);
-            throw new Error(e?.message ?? JSON.stringify(e));
           }
-          throw new Error(t('UNEXPECTED_ERROR'));
+          throw new Error(errMsg);
         }
       }
     }
@@ -906,6 +899,7 @@ const Bridge: React.FC = () => {
             solanaResponse?.txn &&
             solanaResponse.chainId
           ) {
+            setSignaturesRequired(prev => prev - 1);
             const hash = await submitSign(
               solanaResponse.txn,
               solanaResponse.chainId,
@@ -999,57 +993,71 @@ const Bridge: React.FC = () => {
     chainID: string,
     append: boolean,
   ) => {
-    const {
-      isError,
-      error: fetchError,
-      data,
-    } = await getFromOtherSource(
-      `https://api.skip.money/v2/tx/status?tx_hash=${hash}&chain_id=${chainID}`,
-    );
-    if (isError) {
-      showModal('state', {
-        type: 'error',
-        title: t('FETCH_SKIP_API_ERROR'),
-        description: JSON.stringify(fetchError),
-        onSuccess: navigateToPortfolio,
-        onFailure: navigateToPortfolio,
-      });
-    } else {
-      let tempData;
-      if (data.transfer_sequence.length > 0) {
-        tempData = data.transfer_sequence.map((item: any) => {
-          return { state: data.state, transfer_sequence: item };
+    try {
+      const {
+        isError,
+        error: fetchError,
+        data,
+      } = await getFromOtherSource(
+        `https://api.skip.money/v2/tx/status?tx_hash=${hash}&chain_id=${chainID}`,
+        DEFAULT_AXIOS_TIMEOUT,
+      );
+
+      if (isError) {
+        showModal('state', {
+          type: 'error',
+          title: t('FETCH_SKIP_API_ERROR'),
+          description: JSON.stringify(fetchError),
+          onSuccess: navigateToPortfolio,
+          onFailure: navigateToPortfolio,
         });
       } else {
-        tempData = [{ state: data.state, transfer_sequence: null }];
+        let tempData;
+        if (data.transfer_sequence.length > 0) {
+          tempData = data.transfer_sequence.map((item: any) => {
+            return { state: data.state, transfer_sequence: item };
+          });
+        } else {
+          tempData = [{ state: data.state, transfer_sequence: null }];
+        }
+        if (data && append) {
+          setSkipApiStatusResponse(prevResp => [...prevResp, ...tempData]);
+        } else {
+          setSkipApiStatusResponse(prevResp => {
+            const arrayLength = prevResp.length;
+            const tempDataLength = prevResp.filter(
+              item =>
+                item.state === TxnStatus.STATE_PENDING ||
+                item.state === TxnStatus.STATE_SUBMITTED,
+            ).length;
+            if (arrayLength > 0) {
+              return [
+                ...prevResp.slice(0, arrayLength - tempDataLength),
+                ...tempData,
+              ];
+            } else {
+              return [...tempData];
+            }
+          });
+        }
+        if (
+          data?.state &&
+          (data.state === TxnStatus.STATE_PENDING ||
+            data.state === TxnStatus.STATE_SUBMITTED)
+        ) {
+          await setTimeOutNSec(2000);
+          await trackStatus(hash, chainID, false);
+        }
       }
-      if (data && append) {
-        setSkipApiStatusResponse(prevResp => [...prevResp, ...tempData]);
-      } else {
-        setSkipApiStatusResponse(prevResp => {
-          const arrayLength = prevResp.length;
-          const tempDataLength = prevResp.filter(
-            item =>
-              item.state === TxnStatus.STATE_PENDING ||
-              item.state === TxnStatus.STATE_SUBMITTED,
-          ).length;
-          if (arrayLength > 0) {
-            return [
-              ...prevResp.slice(0, arrayLength - tempDataLength),
-              ...tempData,
-            ];
-          } else {
-            return [...tempData];
-          }
+    } catch (e: any) {
+      if (e.name !== 'AbortError') {
+        showModal('state', {
+          type: 'error',
+          title: t('UNEXCPECTED_ERROR'),
+          description: e?.message ?? JSON.stringify(e),
+          onSuccess: navigateToPortfolio,
+          onFailure: navigateToPortfolio,
         });
-      }
-      if (
-        data?.state &&
-        (data.state === TxnStatus.STATE_PENDING ||
-          data.state === TxnStatus.STATE_SUBMITTED)
-      ) {
-        await setTimeOutNSec(2000);
-        await trackStatus(hash, chainID, false);
       }
     }
   };
@@ -1088,7 +1096,7 @@ const Bridge: React.FC = () => {
     }
   };
 
-  const getSwapQuote = async (signal: AbortSignal) => {
+  const getSwapQuote = async () => {
     try {
       if (
         selectedToToken &&
@@ -1117,7 +1125,6 @@ const Bridge: React.FC = () => {
           `/v1/swap/evm/chains/${selectedFromChain?.chainId ?? ''}/quote`,
           payload,
           DEFAULT_AXIOS_TIMEOUT,
-          { signal },
         );
 
         if (!response.isError) {
@@ -1244,7 +1251,7 @@ const Bridge: React.FC = () => {
         } else {
           throw new Error('Invalid chain');
         }
-      } catch (e: any) {
+      } catch (e: unknown) {
         setLoading({ ...loading, acceptSwapLoading: false });
         showModal('state', {
           type: 'error',
@@ -1371,7 +1378,7 @@ const Bridge: React.FC = () => {
       } else {
         throw new Error('Chain details not found');
       }
-    } catch (e: any) {
+    } catch (e: unknown) {
       setLoading({ ...loading, swapLoading: false });
       showModal('state', {
         type: 'error',
@@ -1407,6 +1414,26 @@ const Bridge: React.FC = () => {
     resetValues();
   };
 
+  const resetAndSetIndex = () => {
+    setIndex(0);
+    setSkipApiStatusResponse([]);
+    setCryptoAmount('');
+    setUsdAmount('');
+    setAmountOut('');
+    setUsdAmountOut('');
+    setEvmTxnParams(null);
+    setCosmosTxnParams(null);
+    setSolanaTxnParams(null);
+    setApproveParams(null);
+    setSwapParams({
+      gasFeeETH: '0',
+      gasFeeDollar: '0',
+    });
+    setQuoteData(null);
+    setError('');
+    setSignaturesRequired(0);
+  };
+
   if (loading.pageLoading || bridgeState.status === BridgeStatus.FETCHING) {
     return <Loading />;
   }
@@ -1425,7 +1452,9 @@ const Bridge: React.FC = () => {
             <CyDTouchView
               className=''
               onPress={() => {
-                routeParamsBackVisible ? navigation.goBack() : setIndex(0);
+                routeParamsBackVisible
+                  ? navigation.goBack()
+                  : resetAndSetIndex();
               }}>
               <CyDImage
                 source={AppImages.BACK_ARROW_GRAY}
@@ -1932,6 +1961,9 @@ const Bridge: React.FC = () => {
             usdAmountOut={usdAmountOut}
             onClickMax={onClickMax}
             onToggle={onToggle}
+            fetchQuote={() => {
+              void fetchQuote();
+            }}
           />
         )}
         {!isOdosSwap() && index === 1 && (
@@ -1942,6 +1974,7 @@ const Bridge: React.FC = () => {
             loading={loading.bridgeGetMsg}
             onGetMSg={onGetMsg}
             statusResponse={skipApiStatusResponse}
+            signaturesRequired={signaturesRequired}
           />
         )}
         {index === 0 &&
@@ -1990,7 +2023,7 @@ const Bridge: React.FC = () => {
 
               {!isOdosSwap() && (
                 <CyDView className='flex flex-row justify-between items-center w-[95%] mt-[12px]'>
-                  <CyDText className='text-[14px] font-semibold font-manrope w-[50%]'>{`${(quoteData as SkipApiRouteResponse)?.txs_required} signature required`}</CyDText>
+                  <CyDText className='text-[14px] font-semibold font-manrope w-[50%]'>{`${signaturesRequired} signature required`}</CyDText>
                   <CyDView className='flex flex-row items-center w-[50%] justify-end'>
                     <CyDImage
                       className='w-[20px] h-[20px] mr-[4px]'

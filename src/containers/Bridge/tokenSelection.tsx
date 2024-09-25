@@ -436,6 +436,7 @@ export default function TokenSelectionV2({
   usdAmountOut,
   onClickMax,
   onToggle,
+  fetchQuote,
 }: {
   selectedFromChain: SwapBridgeChainData | null;
   setSelectedFromChain: Dispatch<SetStateAction<SwapBridgeChainData | null>>;
@@ -457,6 +458,7 @@ export default function TokenSelectionV2({
   usdAmountOut: string;
   onClickMax: () => void;
   onToggle: () => void;
+  fetchQuote: () => void;
 }) {
   const [fromTokenModalVisible, setFromTokenModalVisible] =
     useState<boolean>(false);
@@ -536,6 +538,9 @@ export default function TokenSelectionV2({
                 autoFocus={true}
                 onSubmitEditing={() => {
                   Keyboard.dismiss();
+                }}
+                onBlur={() => {
+                  fetchQuote();
                 }}
               />
               <CyDText
