@@ -180,7 +180,7 @@ const BannerCarousel = () => {
       };
       const statusTitle: Record<string, string> = {
         PENDING: 'Pending',
-        SUCCESS: 'Success full',
+        SUCCESS: 'Success',
         FAILED: 'Failed',
         DELAYED: 'Delayed',
         IN_PROGRESS: 'In Progress',
@@ -188,7 +188,7 @@ const BannerCarousel = () => {
       const updatedData: MigrationData[] = availableMigrationCard.map(item => {
         return {
           ...item,
-          title: `$${Number(item.amount) ?? ''} Migration - ${get(statusTitle, item?.status, '')}`,
+          title: `$${Number(item.amount) ?? ''} Migration ${get(statusTitle, item?.status, '')}`,
           description: get(statusDescriptions, item?.status, ''),
           priority: 'HIGHEST',
           type: ActivityType.MIGRATE_FUND,
