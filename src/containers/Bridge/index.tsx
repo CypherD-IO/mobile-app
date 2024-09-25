@@ -310,6 +310,7 @@ const Bridge: React.FC = () => {
     useCallback(() => {
       if (bridgeState.status === BridgeStatus.ERROR) void fetchData();
       else {
+        setIndex(0);
         setChainData(bridgeState.chainData);
         setTokenData(bridgeState.tokenData);
         setChainData(bridgeState.chainData);
@@ -501,13 +502,7 @@ const Bridge: React.FC = () => {
     if (cryptoAmount) {
       void fetchQuote();
     }
-  }, [
-    selectedFromChain,
-    selectedToChain,
-    selectedFromToken,
-    selectedToToken,
-    // cryptoAmount,
-  ]);
+  }, [selectedFromChain, selectedToChain, selectedFromToken, selectedToToken]);
 
   const onClickMax = () => {
     const isNativeToken = selectedFromToken?.isNative ?? false;
@@ -828,7 +823,6 @@ const Bridge: React.FC = () => {
             ) {
               setSignaturesRequired(prev => prev - 1);
               await trackSign(evmResponse.hash, evmResponse.chainId);
-              return evmResponse?.hash;
             } else {
               throw new Error(
                 evmResponse?.error ?? 'Error processing Evm transaction',
@@ -867,7 +861,6 @@ const Bridge: React.FC = () => {
           ) {
             setSignaturesRequired(prev => prev - 1);
             await trackSign(cosmosResponse.hash, cosmosResponse.chainId);
-            return cosmosResponse?.hash;
           } else {
             throw new Error(cosmosResponse.error);
           }
@@ -900,11 +893,7 @@ const Bridge: React.FC = () => {
             solanaResponse.chainId
           ) {
             setSignaturesRequired(prev => prev - 1);
-            const hash = await submitSign(
-              solanaResponse.txn,
-              solanaResponse.chainId,
-            );
-            return hash;
+            await submitSign(solanaResponse.txn, solanaResponse.chainId);
           } else {
             throw new Error(solanaResponse.error);
           }
@@ -1072,6 +1061,22 @@ const Bridge: React.FC = () => {
       selectedToChain.isOdos &&
       selectedFromToken?.isOdos &&
       selectedToToken?.isOdos
+    ) {
+      return true;
+    }
+    return false;
+  };
+
+  const isSkipSwap = () => {
+    if (
+      selectedFromChain &&
+      selectedToChain &&
+      selectedFromChain.chainId === selectedToChain.chainId &&
+      selectedFromChain.chainName === selectedToChain.chainName &&
+      selectedFromChain.isSkip &&
+      selectedToChain.isSkip &&
+      selectedFromToken?.isSkip &&
+      selectedToToken?.isSkip
     ) {
       return true;
     }
@@ -1962,6 +1967,7 @@ const Bridge: React.FC = () => {
             onClickMax={onClickMax}
             onToggle={onToggle}
             fetchQuote={() => {
+              resetValues();
               void fetchQuote();
             }}
           />
@@ -1996,7 +2002,12 @@ const Bridge: React.FC = () => {
                 {parseFloat(usdAmount) > (selectedFromToken?.balance ?? 0) && (
                   <CyDView className='flex flex-row gap-x-[8px]'>
                     <CyDText>{'\u2022'}</CyDText>
-                    <CyDText>{t('INSUFFICIENT_BALANCE_BRIDGE')}</CyDText>
+                    {!isOdosSwap() && !isSkipSwap() && (
+                      <CyDText>{t('INSUFFICIENT_BALANCE_BRIDGE')}</CyDText>
+                    )}
+                    {(isOdosSwap() || isSkipSwap()) && (
+                      <CyDText>{t('INSUFFICIENT_BALANCE_SWAP')}</CyDText>
+                    )}
                   </CyDView>
                 )}
               </CyDView>

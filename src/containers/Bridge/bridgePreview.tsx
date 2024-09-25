@@ -12,7 +12,7 @@ import { StyleSheet, Animated, Easing } from 'react-native'; // Added Easing imp
 import { t } from 'i18next';
 import { SwapBridgeChainData, SwapBridgeTokenData } from '.';
 import AppImages from '../../../assets/images/appImages';
-import { ChainIdNameMapping } from '../../constants/data';
+import { ChainIdToBackendNameMapping } from '../../constants/data';
 
 enum TxnStatus {
   STATE_SUBMITTED = 'STATE_SUBMITTED',
@@ -123,7 +123,7 @@ export default function BridgeRoutePreview({
             source={AppImages.SUCCESS_TICK_GREEN_BG}
             className='w-[20px] h-[20px] mr-[10px]'
           />
-          <CyDText className='text-[12px] font-medium w-[88%]'>{`Uour funds will be transferred to your ${ChainIdNameMapping[routeResponse?.dest_asset_chain_id as keyof typeof ChainIdNameMapping]} chain in sometime, please stay on the page till your transaction is complete`}</CyDText>
+          <CyDText className='text-[12px] font-medium w-[88%]'>{`Your funds will be transferred to your ${ChainIdToBackendNameMapping[routeResponse?.dest_asset_chain_id as keyof typeof ChainIdToBackendNameMapping]} chain in sometime, please stay on the page till your transaction is complete`}</CyDText>
         </CyDView>
       )}
       <CyDView
