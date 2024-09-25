@@ -48,6 +48,7 @@ export default function CardOptionsModal({
               navigation.navigate(screenTitle.CARD_CONTROLS_MENU, {
                 currentCardProvider: cardProvider,
                 card,
+                onPressPlanChange,
               });
               setShowModal(false);
             },

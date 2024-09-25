@@ -269,7 +269,7 @@ const BannerCarouselItem = ({
             />
 
             <CyDView className='ml-[8px]'>
-              <CyDText className='text-[14px] font-extrabold  w-[65%]'>
+              <CyDText className='text-[14px] font-extrabold  w-[75%]'>
                 {title}
               </CyDText>
               <CyDText className='text-[10px] text-[#091E42] font-medium mt-[3px]  w-[65%]'>
