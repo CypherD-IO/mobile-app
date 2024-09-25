@@ -738,7 +738,7 @@ const Bridge: React.FC = () => {
 
       activityData.status = ActivityStatus.INPROCESS;
       activityContext.dispatch({
-        type: ActivityReducerAction.POST,
+        type: ActivityReducerAction.PATCH,
         value: activityData,
       });
 
@@ -753,7 +753,7 @@ const Bridge: React.FC = () => {
         onSuccess: () => {
           activityData.status = ActivityStatus.SUCCESS;
           activityContext.dispatch({
-            type: ActivityReducerAction.POST,
+            type: ActivityReducerAction.PATCH,
             value: activityData,
           });
           navigateToPortfolio();
