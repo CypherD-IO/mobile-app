@@ -501,13 +501,7 @@ const Bridge: React.FC = () => {
     if (cryptoAmount) {
       void fetchQuote();
     }
-  }, [
-    selectedFromChain,
-    selectedToChain,
-    selectedFromToken,
-    selectedToToken,
-    // cryptoAmount,
-  ]);
+  }, [selectedFromChain, selectedToChain, selectedFromToken, selectedToToken]);
 
   const onClickMax = () => {
     const isNativeToken = selectedFromToken?.isNative ?? false;
@@ -1072,6 +1066,22 @@ const Bridge: React.FC = () => {
       selectedToChain.isOdos &&
       selectedFromToken?.isOdos &&
       selectedToToken?.isOdos
+    ) {
+      return true;
+    }
+    return false;
+  };
+
+  const isSkipSwap = () => {
+    if (
+      selectedFromChain &&
+      selectedToChain &&
+      selectedFromChain.chainId === selectedToChain.chainId &&
+      selectedFromChain.chainName === selectedToChain.chainName &&
+      selectedFromChain.isSkip &&
+      selectedToChain.isSkip &&
+      selectedFromToken?.isSkip &&
+      selectedToToken?.isSkip
     ) {
       return true;
     }
@@ -1996,7 +2006,12 @@ const Bridge: React.FC = () => {
                 {parseFloat(usdAmount) > (selectedFromToken?.balance ?? 0) && (
                   <CyDView className='flex flex-row gap-x-[8px]'>
                     <CyDText>{'\u2022'}</CyDText>
-                    <CyDText>{t('INSUFFICIENT_BALANCE_BRIDGE')}</CyDText>
+                    {!isOdosSwap() && !isSkipSwap() && (
+                      <CyDText>{t('INSUFFICIENT_BALANCE_BRIDGE')}</CyDText>
+                    )}
+                    {(isOdosSwap() || isSkipSwap()) && (
+                      <CyDText>{t('INSUFFICIENT_BALANCE_SWAP')}</CyDText>
+                    )}
                   </CyDView>
                 )}
               </CyDView>

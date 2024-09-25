@@ -327,6 +327,7 @@ const BannerCarousel = () => {
         const parsedMigration: string[] = JSON.parse(dismissedMigration);
 
         void setDismissedMigrationCardIDs(parsedMigration);
+        setDismissedMigrationCards(parsedMigration);
       }
       setDismissedStaticIDsReady(true);
     };
