@@ -565,7 +565,7 @@ export default function Portfolio({ navigation }: PortfolioProps) {
     return (
       <CyDFlatList
         data={tempTotalHoldings}
-        scrollEnabled={true}
+        scrollEnabled={false}
         renderItem={renderPortfolioItem}
         // refreshing={isPortfolioRefreshing}
         // onRefresh={() => {
@@ -587,7 +587,7 @@ export default function Portfolio({ navigation }: PortfolioProps) {
         }
       />
     );
-  }, [portfolioData]);
+  }, [portfolioData, selectedChain]);
 
   const RenderPortfolioTokens = useMemo(() => {
     return (

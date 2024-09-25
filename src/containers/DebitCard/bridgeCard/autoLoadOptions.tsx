@@ -208,7 +208,7 @@ export default function AutoLoadOptionsModal({
               )}
 
               <CyDView className='flex flex-col justify-between'>
-                <CyDText className='text-[16px] font-medium text-b400'>
+                <CyDText className='text-[16px] font-medium text-base400'>
                   {title}
                 </CyDText>
                 <CyDText className='text-[12px] font-medium text-n50 flex-wrap'>
