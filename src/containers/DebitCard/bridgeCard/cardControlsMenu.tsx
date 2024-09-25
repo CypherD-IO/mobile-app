@@ -1,5 +1,7 @@
 import React, { useContext, useEffect, useRef, useState } from 'react';
 import {
+  NavigationProp,
+  ParamListBase,
   RouteProp,
   useIsFocused,
   useNavigation,
@@ -26,7 +28,6 @@ import useAxios from '../../../core/HttpRequest';
 import {
   CyDFastImage,
   CyDImage,
-  CyDSafeAreaView,
   CyDText,
   CyDTouchView,
   CyDView,
@@ -44,7 +45,7 @@ interface RouteParams {
 }
 
 export default function CardControlsMenu() {
-  const navigation = useNavigation();
+  const navigation = useNavigation<NavigationProp<ParamListBase>>();
   const route = useRoute<RouteProp<{ params: RouteParams }, 'params'>>();
   const { globalState } = useContext(GlobalContext) as GlobalContextDef;
   const { getWithAuth, patchWithAuth } = useAxios();
@@ -552,6 +553,35 @@ export default function CardControlsMenu() {
             <CyDText className='text-[14px] text-n200 mt-[16px] font-[600]'>
               Security
             </CyDText>
+            <CyDTouchView
+              onPress={() => {
+                navigation.navigate(screenTitle.CARD_SET_PIN_SCREEN, {
+                  currentCardProvider,
+                  card,
+                });
+              }}
+              className={
+                'flex flex-row items-center justify-between m-[2px] py-[15px] px-[12px] bg-white rounded-[6px] mt-[8px]'
+              }>
+              <CyDView className='flex flex-row flex-1 items-center'>
+                <CyDImage
+                  source={AppImages.CIRCLE_WITH_DOTS}
+                  className={'h-[24px] w-[24px] mr-[12px]'}
+                  resizeMode={'contain'}
+                />
+                <CyDView className='flex-1 flex-col justify-between mr-[6px]'>
+                  <CyDText className='text-[16px] font-semibold flex-wrap'>
+                    {'Set Pin'}
+                  </CyDText>
+                </CyDView>
+              </CyDView>
+              <CyDView className='flex flex-row items-center'>
+                <CyDImage
+                  source={AppImages.RIGHT_ARROW}
+                  className='w-[12px] h-[12px] ml-[8px]'
+                />
+              </CyDView>
+            </CyDTouchView>
             <CyDTouchView
               onPress={() => {
                 setShow3DsModal(true);

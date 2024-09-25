@@ -149,6 +149,7 @@ export const screenTitle = {
   WITHDRAW_CONFIRMATION: 'withdrawConfirmation',
   WITHDRAW_SUCCESS: 'withdrawSuccess',
   WITHDRAW_HISTORY: 'withdrawHistory',
+  GLOBAL_CARD_OPTIONS: 'globalCardOptions',
 };
 
 export const fontsName = {

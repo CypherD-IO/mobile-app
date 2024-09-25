@@ -1,10 +1,8 @@
 import React, { useContext, useEffect, useMemo, useState } from 'react';
-import { CardProviders, GlobalContextType } from '../../../constants/enum';
-import { Card } from '../../../models/card.model';
+import { GlobalContextType } from '../../../constants/enum';
 import { GlobalContext } from '../../../core/globalContext';
 import { CardProfile } from '../../../models/cardProfile.model';
 import AppImages from '../../../../assets/images/appImages';
-import { screenTitle } from '../../../constants';
 import CyDModalLayout from '../../../components/v2/modal';
 import {
   CyDImage,
