@@ -303,11 +303,6 @@ export default function CypherCardScreen({
         filterState={[filter, setFilter]}
       />
       {/* TXN FILTER MODAL */}
-      {!hasBothProviders(cardProfile) && (
-        <CyDView className='ml-[18px]'>
-          <CyDText className='font-extrabold text-[26px]'>Cards</CyDText>
-        </CyDView>
-      )}
       <CyDView className={'h-[60px] px-[10px] mx-[12px] mt-[24px]'}>
         {cardId !== HIDDEN_CARD_ID ? (
           <CyDView className='flex flex-row justify-between items-center'>
@@ -353,13 +348,29 @@ export default function CypherCardScreen({
             </CyDView>
           </CyDView>
         ) : (
-          <CyDView>
-            <CyDText className={'font-bold  text-[18px]'}>
-              {t<string>('ACTIVATE_CARD')}
-            </CyDText>
-            <CyDText className={'font-bold text-subTextColor text-[12px]'}>
-              {t<string>('LOAD_YOUR_CARD_TO_ACTIVATE_IT')}
-            </CyDText>
+          <CyDView className='flex flex-row justify-between items-center'>
+            <CyDView>
+              <CyDText className={'font-bold  text-[18px]'}>
+                {t<string>('ACTIVATE_CARD')}
+              </CyDText>
+              <CyDText
+                className={'font-bold text-subTextColor text-[12px] mt-[2px]'}>
+                {t<string>('LOAD_YOUR_CARD_TO_ACTIVATE_IT')}
+              </CyDText>
+            </CyDView>
+            <CyDView className={'h-[36px] w-[42%]'}>
+              <Button
+                image={AppImages.PLUS_ICON}
+                disabled={shouldBlockAction()}
+                onPress={() => {
+                  onPressFundCard();
+                }}
+                style='h-[42px] py-[8px] px-[12px] rounded-[6px]'
+                imageStyle={'mr-[3px] h-[12px] w-[12px]'}
+                title={t('ADD_FUNDS')}
+                titleStyle='text-[14px] font-extrabold'
+              />
+            </CyDView>
           </CyDView>
         )}
       </CyDView>
