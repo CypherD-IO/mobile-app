@@ -135,7 +135,8 @@ export default function CardScreen({
     if (isFocused && !isEmpty(currentCardProvider)) {
       const cardConfig = get(cardProfile, currentCardProvider);
       if (cardConfig?.cards) {
-        const { type }: { last4: string; type: string } = cardConfig.cards[0];
+        const { type }: { last4: string; type: string } =
+          cardConfig?.cards?.[0];
         setUserCardDetails({
           ...userCardDetails,
           hideCardDetails: true,
