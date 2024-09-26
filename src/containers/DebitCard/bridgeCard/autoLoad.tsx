@@ -304,7 +304,7 @@ export default function AutoLoad({ navigation }: { navigation: any }) {
         <Button
           type={ButtonType.PRIMARY}
           title={t('PREVIEW')}
-          style={'mx-[16px] h-[54px] mt-[16px] mb-[75px]'}
+          style={'mx-[16px] h-[54px] mt-[16px]'}
           onPress={() => {
             navigation.navigate(screenTitle.PREVIEW_AUTO_LOAD_SCREEN, {
               threshold,
