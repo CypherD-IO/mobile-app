@@ -40,6 +40,7 @@ import {
   ParamListBase,
   useNavigation,
 } from '@react-navigation/native';
+import clsx from 'clsx';
 
 interface IShortcutsData {
   index: number;
@@ -135,20 +136,6 @@ export default function ShortcutsModal() {
 
   const shortcutsData: IShortcutsData[] = [
     ...emptyWalletShortcutsData,
-    // {
-    //   index: 1,
-    //   title: ShortcutsTitle.BRIDGE,
-    //   logo: AppImages.BRIDGE_SHORTCUT,
-    //   subTitle: t('EXCHANGE_SHORTCUTS_SUBTITLE'),
-    //   screenTitle: screenTitle.BRIDGE_SKIP_API_SCREEN,
-    // },
-    // {
-    //   index: 2,
-    //   title: ShortcutsTitle.SWAP,
-    //   logo: AppImages.SWAP_SHORTCUT,
-    //   subTitle: t('SWAP_SHORTCUTS_SUBTITLE'),
-    //   screenTitle: screenTitle.BRIDGE_SCREEN,
-    // },
     {
       index: 3,
       title: ShortcutsTitle.SEND,
@@ -164,34 +151,9 @@ export default function ShortcutsModal() {
       screenTitle: '',
       isPrivateKeyDependent: true,
     },
-    // {
-    //   index: 4,
-    //   title: ShortcutsTitle.FUND_CARD,
-    //   logo: AppImages.FUND_CARD_SHORTCUT,
-    //   subTitle: t('FUND_CARD_SHORTCUTS_SUBTITLE'),
-    //   screenTitle: screenTitle.DEBIT_CARD
-    // }
-    // {
-    //   index: 5,
-    //   title: ShortcutsTitle.IBC,
-    //   subTitle: t('IBC_SHORTCUTS_SUBTITLE'),
-    //   logo: AppImages.IBC_SHORTCUT,
-    //   screenTitle: screenTitle.IBC_SCREEN
-    // }
   ];
 
   const buyOptionsData: IBuyOptionsData[] = [
-    // {
-    //   index: 3,
-    //   title: BuyOptions.TRANSFI,
-    //   displayTitle: t('TRANSFI_BUY'),
-    //   logo: AppImages.TRANSFI_LOGO,
-    //   supportedChains: [CHAIN_ETH, CHAIN_ARBITRUM, CHAIN_OPTIMISM, CHAIN_POLYGON, CHAIN_BSC, CHAIN_AVALANCHE],
-    //   currencyType: CurrencyTypes.USD,
-    //   screenTitle: screenTitle.TRANSFI_SCREEN,
-    //   supportedPaymentModes: '',
-    //   isVisibileInUI: true
-    // },
     {
       index: 0,
       title: BuyOptions.ONMETA,
@@ -245,19 +207,7 @@ export default function ShortcutsModal() {
       supportedPaymentModes: 'Instant Bank Deposit using IMPS',
       isVisibileInUI: true,
     },
-    // {
-    //   index: 1,
-    //   title: SellOptions.TRANSFI,
-    //   displayTitle: t('TRANSFI_SELL'),
-    //   logo: AppImages.TRANSFI_LOGO,
-    //   supportedChains: [CHAIN_ETH, CHAIN_ARBITRUM, CHAIN_OPTIMISM, CHAIN_POLYGON],
-    //   currencyType: CurrencyTypes.USD,
-    //   screenTitle: screenTitle.TRANSFI_SCREEN,
-    //   supportedPaymentModes: '',
-    //   isVisibileInUI: true
-    // }
   ];
-  // hdWallet.state.card
 
   const [shortcutsModalVisible, setShortcutsModalVisible] =
     useState<boolean>(false);
@@ -623,6 +573,10 @@ export default function ShortcutsModal() {
 
   return (
     <CyDTouchView
+      disabled={isReadOnlyWallet}
+      className={clsx({
+        'opacity-50': isReadOnlyWallet,
+      })}
       onPress={async () => {
         setShortcutsModalVisible(true);
         await analytics().logEvent('shortcuts_button_click');

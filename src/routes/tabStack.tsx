@@ -1,44 +1,34 @@
-import { screenTitle } from '../constants';
-import { BackHandler, ToastAndroid, StyleSheet, Image } from 'react-native';
-import * as React from 'react';
+import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
 import {
-  DebitCardStackScreen,
-  OptionsStackScreen,
-  PortfolioStackScreen,
-  SwapStackScreen,
-} from './auth';
-import {
-  BottomTabBarProps,
-  createBottomTabNavigator,
-} from '@react-navigation/bottom-tabs';
-import AppImages from '../../assets/images/appImages';
-import ShortcutsModal from '../containers/Shortcuts';
-import {
+  getRootState,
   NavigationContainer,
   NavigationProp,
   ParamListBase,
   useNavigation,
   useNavigationContainerRef,
 } from '@react-navigation/native';
-import { useContext, useEffect, useState } from 'react';
-import { ActivityContext, HdWalletContext } from '../core/util';
-import SpInAppUpdates from 'sp-react-native-in-app-updates';
-import {
-  CyDAnimatedView,
-  CyDFastImage,
-  CyDImage,
-  CyDText,
-  CyDTouchView,
-  CyDView,
-} from '../styles/tailwindStyles';
-import { t } from 'i18next';
 import clsx from 'clsx';
+import React, {
+  useCallback,
+  useContext,
+  useEffect,
+  useMemo,
+  useState,
+} from 'react';
+import { BackHandler, StyleSheet, ToastAndroid, Animated } from 'react-native';
+import AppImages from '../../assets/images/appImages';
+import { screenTitle } from '../constants';
+import ShortcutsModal from '../containers/Shortcuts';
+import { HdWalletContext } from '../core/util';
 import { isIOS } from '../misc/checkers';
-import { Easing, Layout } from 'react-native-reanimated';
-import { Colors } from '../constants/theme';
-import { useKeyboard } from '../hooks/useKeyboardVisibily';
 import { HdWalletContextDef } from '../reducers/hdwallet_reducer';
-import { ActivityContextDef } from '../reducers/activity_reducer';
+import { CyDFastImage, CyDView } from '../styles/tailwindStyles';
+import {
+  DebitCardStackScreen,
+  OptionsStackScreen,
+  PortfolioStackScreen,
+  SwapStackScreen,
+} from './auth';
 
 const Tab = createBottomTabNavigator();
 
@@ -54,9 +44,13 @@ interface TabStackProps {
 }
 
 const screensToHaveNavBar = [
+  screenTitle.PORTFOLIO,
+  screenTitle.OPTIONS,
   screenTitle.PORTFOLIO_SCREEN,
-  screenTitle.BROWSER_SCREEN,
+  screenTitle.DEBIT_CARD_SCREEN,
   screenTitle.OPTIONS_SCREEN,
+  screenTitle.SWAP,
+  screenTitle.BRIDGE_SKIP_API_SCREEN,
   screenTitle.CARD_SIGNUP_LANDING_SCREEN,
   screenTitle.CARD_SIGNUP_CONFIRMATION,
   screenTitle.CARD_SIGNUP_SCREEN,
@@ -73,10 +67,8 @@ function TabStack(props: TabStackProps) {
   const hdWalletContext = useContext(HdWalletContext) as HdWalletContextDef;
   const { isReadOnlyWallet } = hdWalletContext.state;
   const { deepLinkData, setDeepLinkData } = props;
-
-  const [isTabBarVisible, setIsTabBarVisible] = useState(true);
-
-  const { keyboardHeight } = useKeyboard();
+  const [showTabBar, setShowTabBar] = useState(true);
+  const tabBarAnimation = useState(new Animated.Value(1))[0];
 
   let backPressCount = 0;
 
@@ -125,85 +117,77 @@ function TabStack(props: TabStackProps) {
     }
   }, [deepLinkData, navigation, setDeepLinkData]);
 
-  // function MyTabBar({ state, descriptors, navigation }) {
-  //   return (
-  //     <CyDView
-  //       className={clsx('flex flex-row justify-start items-center px-[10px]', {
-  //         'pb-[6px]': isIOS(),
-  //       })}>
-  //       {state.routes.map((route, index) => {
-  //         const { options } = descriptors[route.key];
-  //         const label =
-  //           options.tabBarLabel !== undefined
-  //             ? options.tabBarLabel
-  //             : options.title !== undefined
-  //               ? options.title
-  //               : route.name;
+  // Use useNavigationContainerRef to get access to the navigation ref
+  const navigationRef = useNavigationContainerRef();
+  // Determine if the tab bar should be shown
 
-  //         const isFocused = state.index === index;
-  //         const TabBarIcon = options.tabBarIcon;
-  //         const TabBarButton = options.tabBarButton;
-  //         const onPress = () => {
-  //           const event = navigation.emit({
-  //             type: 'tabPress',
-  //             target: route.key,
-  //             canPreventDefault: true,
-  //           });
+  // Memoize the tab bar style
+  useEffect(() => {
+    Animated.timing(tabBarAnimation, {
+      toValue: showTabBar ? 1 : 0,
+      duration: 300,
+      useNativeDriver: true,
+    }).start();
+  }, [showTabBar, tabBarAnimation]);
 
-  //           if (!isFocused && !event.defaultPrevented) {
-  //             // The `merge: true` option makes sure that the params inside the tab screen are preserved
-  //             navigation.navigate({ name: route.name, merge: true });
-  //           }
-  //         };
+  const tabBarStyle = useMemo(
+    () => ({
+      ...styles.elevatedBackground,
+      transform: [
+        {
+          translateY: tabBarAnimation.interpolate({
+            inputRange: [0, 1],
+            outputRange: [100, 0],
+          }),
+        },
+      ],
+      opacity: tabBarAnimation,
+      backgroundColor: 'white',
+      position: 'absolute',
+      bottom: 0,
+      left: 0,
+      right: 0,
+    }),
+    [tabBarAnimation],
+  );
 
-  //         const onLongPress = () => {
-  //           navigation.emit({
-  //             type: 'tabLongPress',
-  //             target: route.key,
-  //           });
-  //         };
+  const getActiveRouteName = useCallback((state: any): string => {
+    const route = state.routes[state.index];
+    if (!route.state) {
+      return route.name;
+    }
 
-  //         return (
-  //           <CyDTouchView
-  //             key={index}
-  //             accessibilityRole='button'
-  //             accessibilityState={isFocused ? { selected: true } : {}}
-  //             accessibilityLabel={options.tabBarAccessibilityLabel}
-  //             testID={options.tabBarTestID}
-  //             onPress={onPress}
-  //             onLongPress={onLongPress}
-  //             className='flex flex-1 flex-row items-center'>
-  //             <CyDView
-  //               className={clsx(
-  //                 'flex flex-1 flex-col items-center bg-transparent',
-  //                 {
-  //                   'mt-[10px] bg-transparent':
-  //                     route.name === screenTitle.SHORTCUTS,
-  //                 },
-  //               )}>
-  //               {route.name === screenTitle.SHORTCUTS ? (
-  //                 <TabBarButton />
-  //               ) : (
-  //                 <TabBarIcon focused={isFocused} color='' size='' />
-  //               )}
-  //               <CyDText
-  //                 className={clsx('text-[12px]', { 'font-bold': isFocused })}>
-  //                 {route.name !== screenTitle.SHORTCUTS && label}
-  //               </CyDText>
-  //             </CyDView>
-  //           </CyDTouchView>
-  //         );
-  //       })}
-  //     </CyDView>
-  //   );
-  // }
+    // Dive into nested navigators
+    return getActiveRouteName(route.state);
+  }, []);
+
+  const getCurrentRouteName = useCallback(() => {
+    if (navigationRef.current) {
+      const state = navigationRef.current.getRootState();
+      return getActiveRouteName(state);
+    }
+    return undefined;
+  }, [getActiveRouteName]);
+
+  useEffect(() => {
+    const unsubscribe = navigationRef.current?.addListener('state', () => {
+      const currentRouteName = getCurrentRouteName();
+      setShowTabBar(screensToHaveNavBar.includes(currentRouteName ?? ''));
+    });
+
+    return () => {
+      if (unsubscribe) {
+        unsubscribe();
+      }
+    };
+  }, [getCurrentRouteName]);
 
   return (
-    <NavigationContainer independent={true}>
+    <NavigationContainer independent={true} ref={navigationRef}>
       <Tab.Navigator
         screenOptions={({ route }) => ({
           headerShown: false,
-          tabBarIcon: ({ focused, size }) => {
+          tabBarIcon: ({ focused }) => {
             let iconSource;
             if (route.name === screenTitle.PORTFOLIO) {
               iconSource = focused
@@ -219,12 +203,18 @@ function TabStack(props: TabStackProps) {
                 : AppImages.OPTION_UNSEL;
             }
             return (
-              <Image
+              <CyDFastImage
                 source={iconSource}
-                style={{ width: size, height: size }}
+                className={clsx('w-[32px] h-[32px]', {
+                  'opacity-30':
+                    isReadOnlyWallet &&
+                    (route.name === screenTitle.DEBIT_CARD_SCREEN ||
+                      route.name === screenTitle.SWAP),
+                })}
               />
             );
           },
+          tabBarHideOnKeyboard: true,
           tabBarInactiveTintColor: '#7A8699',
           tabBarActiveTintColor: '#000000',
           tabBarLabelStyle: {
@@ -232,16 +222,9 @@ function TabStack(props: TabStackProps) {
             fontWeight: '400' as const,
             fontFamily: 'Manrope',
           },
-          tabBarStyle: {
-            ...styles.elevatedBackground,
-            backgroundColor: 'white',
-            position: 'absolute',
-            bottom: 0,
-            left: 0,
-            right: 0,
-          },
+          tabBarStyle,
           tabBarBackground: () => (
-            <CyDView className='absolute inset-0 bg-n0 rounded-t-[32px] shadow shadow-gray-400' />
+            <CyDView className='absolute inset-0 bg-n0 rounded-t-[22px] shadow-xl shadow-gray-400' />
           ),
         })}
         initialRouteName={screenTitle.PORTFOLIO}>
@@ -258,6 +241,13 @@ function TabStack(props: TabStackProps) {
           options={{
             lazy: true,
             headerShown: false,
+          }}
+          listeners={{
+            tabPress: e => {
+              if (isReadOnlyWallet) {
+                e.preventDefault();
+              }
+            },
           }}
         />
         <Tab.Screen
@@ -278,6 +268,13 @@ function TabStack(props: TabStackProps) {
           options={{
             lazy: true,
             headerShown: false,
+          }}
+          listeners={{
+            tabPress: e => {
+              if (isReadOnlyWallet) {
+                e.preventDefault();
+              }
+            },
           }}
         />
         <Tab.Screen
@@ -303,8 +300,8 @@ const styles = StyleSheet.create({
     paddingHorizontal: 21,
     borderWidth: 1,
     borderColor: '#EBEDF0',
-    borderTopLeftRadius: 22,
-    borderTopRightRadius: 22,
+    borderTopLeftRadius: 26,
+    borderTopRightRadius: 26,
     elevation: 24, // For Android
   },
 });
