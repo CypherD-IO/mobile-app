@@ -257,7 +257,7 @@ export default function CardControlsMenu() {
 
   const onPressPlanChange = (openComparePlans: boolean) => {
     navigation.navigate(screenTitle.SELECT_PLAN, {
-      toPage: '',
+      toPage: screenTitle.DEBIT_CARD_SCREEN,
       deductAmountNow: true,
       cardBalance,
       openComparePlans,

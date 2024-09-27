@@ -110,7 +110,6 @@ export default function SelectPlan() {
               if (toPage) navigation.navigate(toPage);
               else {
                 navigation.navigate(screenTitle.CARD_SIGNUP_SCREEN);
-                // navigation.goBack();
               }
               hideModal();
             },
