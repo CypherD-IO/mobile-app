@@ -1,6 +1,8 @@
-import React, { ReactNode, useEffect, useState } from 'react';
+import React, { ReactNode, useContext, useEffect, useState } from 'react';
 import {
   CyDFastImage,
+  CyDImage,
+  CyDText,
   CyDTouchView,
   CyDView,
 } from '../../../styles/tailwindStyles';
@@ -10,6 +12,9 @@ import { screenTitle } from '../../../constants';
 import { BarCodeReadEvent } from 'react-native-camera';
 import { ConnectionTypes } from '../../../constants/enum';
 import useConnectionManager from '../../../hooks/useConnectionManager';
+import { HdWalletContext } from '../../../core/util';
+import { HdWalletContextDef } from '../../../reducers/hdwallet_reducer';
+import { t } from 'i18next';
 
 interface HeaderBarProps {
   navigation: any;
@@ -26,6 +31,8 @@ export const HeaderBar = ({
   onWCSuccess,
   renderTitleComponent,
 }: HeaderBarProps) => {
+  const hdWalletContext = useContext(HdWalletContext) as HdWalletContextDef;
+  const { isReadOnlyWallet } = hdWalletContext.state;
   const { connectionType } = useConnectionManager();
   const [connectionTypeValue, setConnectionTypeValue] =
     useState(connectionType);
@@ -51,7 +58,18 @@ export const HeaderBar = ({
         />
         <CyDFastImage className={'h-[8px] w-[8px]'} source={AppImages.DOWN} />
       </CyDTouchView>
-      {/* <CyDAnimatedView style={opacity}>{renderTitleComponent}</CyDAnimatedView> */}
+      {isReadOnlyWallet && (
+        <CyDView className='flex flex-row items-center p-[6px] bg-p20 rounded-[8px]'>
+          <CyDFastImage
+            source={AppImages.LOCK_BROWSER}
+            className={'h-[14px] w-[14px] mr-[5px] '}
+            resizeMode='contain'
+          />
+          <CyDText className='text-[14px] font-medium'>
+            {t('READ_ONLY_MODE')}
+          </CyDText>
+        </CyDView>
+      )}
       {connectionTypeValue !== ConnectionTypes.WALLET_CONNECT && (
         <CyDTouchView
           className={'pl-[8px] rounded-[18px]'}

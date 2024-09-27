@@ -1,4 +1,3 @@
-/* eslint-disable react-native/no-raw-text */
 import React, { useState } from 'react';
 import {
   CyDImage,
@@ -27,7 +26,7 @@ export default function CardSignupConfirmation(props: {
   const [acknowledgement, setAcknowledgment] = useState<boolean>(false);
 
   return (
-    <CyDSafeAreaView className='flex-1 bg-white mb-[75px]'>
+    <CyDSafeAreaView className='flex-1 bg-white'>
       <CyDImageBackground
         className='flex h-full'
         resizeMode='cover'

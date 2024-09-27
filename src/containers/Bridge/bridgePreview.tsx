@@ -13,6 +13,8 @@ import { t } from 'i18next';
 import { SwapBridgeChainData, SwapBridgeTokenData } from '.';
 import AppImages from '../../../assets/images/appImages';
 import { ChainIdToBackendNameMapping } from '../../constants/data';
+import { ActivityType } from '../../reducers/activity_reducer';
+import useIsSignable from '../../hooks/useIsSignable';
 
 enum TxnStatus {
   STATE_SUBMITTED = 'STATE_SUBMITTED',
@@ -40,6 +42,7 @@ export default function BridgeRoutePreview({
   statusResponse: SkipApiStatus[];
   signaturesRequired: number;
 }) {
+  const [isSignableTransaction] = useIsSignable();
   const pulseAnimation = new Animated.Value(1);
   let timer: NodeJS.Timeout;
   const [countdown, setCountdown] = useState<number | null>(
@@ -351,7 +354,9 @@ export default function BridgeRoutePreview({
         <CyDView className='mt-[32px]'>
           <Button
             onPress={() => {
-              void handleBridgePress();
+              isSignableTransaction(ActivityType.BRIDGE, () => {
+                void handleBridgePress();
+              });
             }}
             title={'Accept'}
             disabled={isEmpty(routeResponse)}
