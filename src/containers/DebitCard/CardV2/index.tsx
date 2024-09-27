@@ -261,7 +261,7 @@ export default function CypherCardScreen({
   };
 
   return isLayoutRendered ? (
-    <CyDSafeAreaView className='flex-1 bg-gradient-to-b from-cardBgFrom to-cardBgTo mb-[75px]'>
+    <CyDSafeAreaView className='flex-1 bg-gradient-to-b from-cardBgFrom to-cardBgTo'>
       <CyDView className='flex flex-row justify-between items-center mx-[16px] mt-[4px]'>
         <CyDView>
           <CyDText className='font-extrabold text-[26px]'>Cards</CyDText>

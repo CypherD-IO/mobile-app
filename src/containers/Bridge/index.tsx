@@ -88,6 +88,7 @@ import clsx from 'clsx';
 import { v4 as uuidv4 } from 'uuid';
 import analytics from '@react-native-firebase/analytics';
 import usePortfolio from '../../hooks/usePortfolio';
+import useIsSignable from '../../hooks/useIsSignable';
 
 export interface SwapBridgeChainData {
   chainName: string;
@@ -166,6 +167,7 @@ const Bridge: React.FC = () => {
   ) as BridgeContextDef;
   const activityContext = useContext(ActivityContext) as ActivityContextDef;
   const activityId = useRef<string>('id');
+  const [isSignableTransaction] = useIsSignable();
 
   const slippage = 0.4;
   const ethereum = hdWallet.state.wallet.ethereum;
@@ -2053,7 +2055,9 @@ const Bridge: React.FC = () => {
             <Button
               onPress={() => {
                 if (isOdosSwap()) {
-                  void onAcceptSwap();
+                  isSignableTransaction(ActivityType.SWAP, () => {
+                    void onAcceptSwap();
+                  });
                 } else {
                   setSkipApiStatusResponse([]);
                   setIndex(1);
@@ -2066,6 +2070,7 @@ const Bridge: React.FC = () => {
                 loading.quoteLoading ||
                 loading.swapLoading
               }
+              isPrivateKeyDependent={true}
               loaderStyle={styles.loaderStyle}
             />
           </CyDView>

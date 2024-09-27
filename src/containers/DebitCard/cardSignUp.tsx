@@ -923,7 +923,7 @@ export default function CardSignupScreen({ navigation, route }) {
   };
 
   return (
-    <CyDSafeAreaView className={'flex-1 bg-white mb-[75px]'}>
+    <CyDSafeAreaView className={'flex-1 bg-white'}>
       <CyDModalLayout
         setModalVisible={setModalVisible}
         isModalVisible={isModalVisible}
