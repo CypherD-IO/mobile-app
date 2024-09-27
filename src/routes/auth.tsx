@@ -35,7 +35,6 @@ import CosmosAction from '../containers/CosmosStaking/action';
 import CosmosSelectReValidator from '../containers/CosmosStaking/reValidator';
 import CoinbasePay from '../containers/FundCardScreen/cbpay';
 import QRScanner from '../containers/Qrcode/QRScanner';
-import FundCardScreen from '../containers/FundCardScreen';
 import AppSettings from '../containers/Options/appSettings';
 import AdvancedSettings from '../containers/Options/advancedSettings';
 import WalletConnectCamera from '../containers/Options/WalletConnectCamera';

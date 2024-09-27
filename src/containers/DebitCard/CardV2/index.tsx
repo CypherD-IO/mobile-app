@@ -61,7 +61,7 @@ export default function CypherCardScreen({
   navigation,
   route,
 }: CypherCardScreenProps) {
-  const { cardProvider } = route.params;
+  const { cardProvider } = route?.params ?? {};
   const isFocused = useIsFocused();
   const { t } = useTranslation();
   const { getWithAuth } = useAxios();
@@ -254,7 +254,7 @@ export default function CypherCardScreen({
 
   const onPressPlanChange = () => {
     navigation.navigate(screenTitle.SELECT_PLAN, {
-      toPage: screenTitle.BRIDGE_CARD_SCREEN,
+      toPage: screenTitle.DEBIT_CARD_SCREEN,
       deductAmountNow: true,
       cardBalance,
     });
@@ -458,7 +458,7 @@ export default function CypherCardScreen({
             }}
           />
         </CyDView>
-        <CyDView className='w-full bg-white mt-[26px] pb-[120px]'>
+        <CyDView className='w-full bg-green-500 mt-[26px] pb-[120px]'>
           <CyDView className='mx-[12px] my-[12px]'>
             <CyDText className='text-[14px] font-bold ml-[4px] mb-[8px]'>
               {t<string>('RECENT_TRANSACTIONS')}
