@@ -459,7 +459,7 @@ export default function CypherCardScreen() {
             }}
           />
         </CyDView>
-        <CyDView className='w-full bg-green-500 mt-[26px] pb-[120px]'>
+        <CyDView className='w-full bg-white mt-[26px] pb-[120px]'>
           <CyDView className='mx-[12px] my-[12px]'>
             <CyDText className='text-[14px] font-bold ml-[4px] mb-[8px]'>
               {t<string>('RECENT_TRANSACTIONS')}

@@ -1070,22 +1070,33 @@ const RenderCardActions = ({
           className='flex flex-col justify-center items-center'
           disabled={shouldBlockAction()}
           onPress={() => {
-            navigation.navigate(screenTitle.CARD_CONTROLS_MENU, {
-              currentCardProvider: cardProvider,
-              card,
-            });
+            cardProvider === CardProviders.REAP_CARD
+              ? navigation.navigate(screenTitle.CARD_CONTROLS_MENU, {
+                  currentCardProvider: cardProvider,
+                  card,
+                })
+              : navigation.navigate(screenTitle.CARD_SET_PIN_SCREEN, {
+                  currentCardProvider: cardProvider,
+                  card,
+                });
           }}>
           <CyDView
             className={`${shouldBlockAction() ? 'bg-n40' : 'bg-appColor'} h-[54px] w-[54px] items-center justify-center rounded-[50px]`}>
             <CyDImage
-              source={AppImages.SETTINGS}
-              className='h-[22px] w-[22px] accent-black rotate-90'
+              source={
+                cardProvider === CardProviders.REAP_CARD
+                  ? AppImages.SETTINGS
+                  : AppImages.MORE
+              }
+              className='h-[22px] w-[22px] accent-black'
               resizeMode='contain'
             />
           </CyDView>
           <CyDView className='mt-[6px]'>
             <CyDText className='font-semibold text-[12px]'>
-              {'Controls'}
+              {cardProvider === CardProviders.REAP_CARD
+                ? 'Controls'
+                : 'Set Pin'}
             </CyDText>
           </CyDView>
         </CyDTouchView>
