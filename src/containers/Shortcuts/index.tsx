@@ -110,7 +110,6 @@ export default function ShortcutsModal() {
   const navigation = useNavigation<NavigationProp<ParamListBase>>();
   const { t } = useTranslation();
   const hdWallet = useContext<any>(HdWalletContext);
-  const { isReadOnlyWallet } = hdWallet.state;
   const [sortedShortcutsData, setSortedShortcutsData] = useState<
     IShortcutsData[]
   >([]);
@@ -573,10 +572,6 @@ export default function ShortcutsModal() {
 
   return (
     <CyDTouchView
-      disabled={isReadOnlyWallet}
-      className={clsx({
-        'opacity-50': isReadOnlyWallet,
-      })}
       onPress={async () => {
         setShortcutsModalVisible(true);
         await analytics().logEvent('shortcuts_button_click');

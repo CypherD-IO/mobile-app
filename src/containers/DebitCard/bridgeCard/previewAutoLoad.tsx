@@ -149,7 +149,7 @@ export default function PreviewAutoLoad({
           <CyDView
             className={'flex flex-row justify-center items-center pl-[25px]'}>
             <CyDFastImage
-              source={{ uri: selectedToken.logoUrl }}
+              source={{ uri: selectedToken?.logoUrl ?? '' }}
               className={'w-[18px] h-[18px]'}
             />
             <CyDText className={'text-[16px] ml-[4px]'}>

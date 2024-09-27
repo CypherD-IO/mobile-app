@@ -1,27 +1,17 @@
+import React, { useCallback, useEffect, useMemo, useState } from 'react';
 import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
 import {
-  getRootState,
   NavigationContainer,
   NavigationProp,
   ParamListBase,
   useNavigation,
   useNavigationContainerRef,
 } from '@react-navigation/native';
-import clsx from 'clsx';
-import React, {
-  useCallback,
-  useContext,
-  useEffect,
-  useMemo,
-  useState,
-} from 'react';
-import { BackHandler, StyleSheet, ToastAndroid, Animated } from 'react-native';
+import { Animated, BackHandler, StyleSheet, ToastAndroid } from 'react-native';
 import AppImages from '../../assets/images/appImages';
 import { screenTitle } from '../constants';
 import ShortcutsModal from '../containers/Shortcuts';
-import { HdWalletContext } from '../core/util';
 import { isIOS } from '../misc/checkers';
-import { HdWalletContextDef } from '../reducers/hdwallet_reducer';
 import { CyDFastImage, CyDView } from '../styles/tailwindStyles';
 import {
   DebitCardStackScreen,
@@ -64,8 +54,6 @@ const screensToHaveNavBar = [
 
 function TabStack(props: TabStackProps) {
   const navigation = useNavigation<NavigationProp<ParamListBase>>();
-  const hdWalletContext = useContext(HdWalletContext) as HdWalletContextDef;
-  const { isReadOnlyWallet } = hdWalletContext.state;
   const { deepLinkData, setDeepLinkData } = props;
   const [showTabBar, setShowTabBar] = useState(true);
   const tabBarAnimation = useState(new Animated.Value(1))[0];
@@ -205,12 +193,7 @@ function TabStack(props: TabStackProps) {
             return (
               <CyDFastImage
                 source={iconSource}
-                className={clsx('w-[32px] h-[32px]', {
-                  'opacity-30':
-                    isReadOnlyWallet &&
-                    (route.name === screenTitle.DEBIT_CARD_SCREEN ||
-                      route.name === screenTitle.SWAP),
-                })}
+                className={'w-[32px] h-[32px]'}
               />
             );
           },
@@ -242,21 +225,13 @@ function TabStack(props: TabStackProps) {
             lazy: true,
             headerShown: false,
           }}
-          listeners={{
-            tabPress: e => {
-              if (isReadOnlyWallet) {
-                e.preventDefault();
-              }
-            },
-          }}
         />
         <Tab.Screen
           name={screenTitle.SHORTCUTS}
           component={PortfolioStackScreen}
           options={({ route }) => ({
             tabBarButton: () => (
-              <CyDView
-                className={clsx('scale-110 shadow shadow-yellow-200', {})}>
+              <CyDView className={'scale-110 shadow shadow-yellow-200'}>
                 <ShortcutsModal />
               </CyDView>
             ),
@@ -268,13 +243,6 @@ function TabStack(props: TabStackProps) {
           options={{
             lazy: true,
             headerShown: false,
-          }}
-          listeners={{
-            tabPress: e => {
-              if (isReadOnlyWallet) {
-                e.preventDefault();
-              }
-            },
           }}
         />
         <Tab.Screen
