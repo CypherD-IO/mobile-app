@@ -21,28 +21,25 @@ import { showToast } from '../utilities/toastUtility';
 import Loading from '../../components/v2/loading';
 import { onShare } from '../utilities/socialShareUtility';
 import { BackHandler } from 'react-native';
+import {
+  NavigationProp,
+  ParamListBase,
+  useNavigation,
+} from '@react-navigation/native';
 
-export default function ReferralRewards(props: {
-  navigation: any;
-  route: {
-    params: { filter: { types: string[]; time: string; statuses: string[] } };
-  };
-}) {
-  const { navigation } = props;
+export default function ReferralRewards() {
+  const navigation = useNavigation<NavigationProp<ParamListBase>>();
 
   const { t } = useTranslation();
   const hdWalletContext = useContext<any>(HdWalletContext);
   const { showModal, hideModal } = useGlobalModalContext();
-  const [loading, setLoading] = useState<boolean>(false);
   const [referralData, setReferralData] = useState<any>({});
-  const [error, setError] = useState<boolean>(false);
-  const [errorMessage, setErrorMessage] = useState<string>('');
   const [index, setIndex] = useState<number>(0);
   const [switchTitle, setSwitchTitle] = useState<string[]>([]);
   const [referralInviteLink, setReferralInviteLink] = useState<string>('');
   const { getWithAuth } = useAxios();
   const handleBackButton = () => {
-    props.navigation.goBack();
+    navigation.goBack();
     return true;
   };
 
@@ -65,9 +62,6 @@ export default function ReferralRewards(props: {
           ];
           setSwitchTitle([...data]);
         }
-        const {
-          ethereum: { address },
-        } = hdWalletContext.state.wallet;
         const inviteLink = generateUserInviteLink();
         setReferralInviteLink(inviteLink);
       } else {
@@ -135,15 +129,6 @@ export default function ReferralRewards(props: {
       <CyDView>
         <TabStaticContent tabDetails={referralData.inviteCodeTab} />
 
-        {error && (
-          <CyDText
-            className={
-              'text-[#EE4D30] text-[12px] font-medium mt-[10px] ml-[4px]'
-            }>
-            {errorMessage}
-          </CyDText>
-        )}
-
         <CyDView className={'flex flex-row mt-[18px]'}>
           <Button
             onPress={() => {
@@ -155,7 +140,6 @@ export default function ReferralRewards(props: {
             }}
             title={t<string>('SHARE')}
             style={'h-[50px] w-6/12 mr-[25px]'}
-            loading={loading}
             isLottie={false}
           />
 

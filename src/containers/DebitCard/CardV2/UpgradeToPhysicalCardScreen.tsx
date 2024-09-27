@@ -24,6 +24,13 @@ import ChooseStateFromCountryModal from '../../../components/v2/ChooseStateFromC
 import axios from '../../../core/Http';
 import Loading from '../../../components/v2/loading';
 import { screenTitle } from '../../../constants';
+import {
+  NavigationProp,
+  ParamListBase,
+  RouteProp,
+  useNavigation,
+  useRoute,
+} from '@react-navigation/native';
 
 const ShippingDetailsValidationSchema = yup.object().shape({
   phoneNumber: yup.string().required('Phone number is required'),
@@ -49,15 +56,12 @@ const initialValues = {
   postalCode: '',
 };
 
-interface Props {
-  navigation: any;
-  route: {
-    params: {
-      currentCardProvider: string;
-    };
-  };
+interface RouteParams {
+  currentCardProvider: string;
 }
-const UpgradeToPhysicalCardScreen = ({ navigation, route }: Props) => {
+const UpgradeToPhysicalCardScreen = () => {
+  const navigation = useNavigation<NavigationProp<ParamListBase>>();
+  const route = useRoute<RouteProp<{ params: RouteParams }, 'params'>>();
   const { currentCardProvider } = route.params;
 
   const { t } = useTranslation();

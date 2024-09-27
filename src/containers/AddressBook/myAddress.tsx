@@ -39,8 +39,20 @@ import {
 import { AddressBookContainer } from '../Auth/Share';
 import { Contacts } from './contacts';
 import { BackHandler } from 'react-native';
+import {
+  NavigationProp,
+  ParamListBase,
+  RouteProp,
+  useNavigation,
+  useRoute,
+} from '@react-navigation/native';
 
-export function AddressBook({ route, navigation }) {
+interface RouteParams {
+  indexValue: number;
+}
+export function AddressBook() {
+  const navigation = useNavigation<NavigationProp<ParamListBase>>();
+  const route = useRoute<RouteProp<{ params: RouteParams }, 'params'>>();
   const { indexValue = 0 } = route.params;
   const [index, setIndex] = useState(indexValue);
   const hdWalletContext = useContext<any>(HdWalletContext);
@@ -88,8 +100,8 @@ export function AddressBook({ route, navigation }) {
               titles={AddressFunctionalityList}
               index={index}
               length={81}
-              setIndexChange={index => {
-                setIndex(index);
+              setIndexChange={(_index: number) => {
+                setIndex(_index);
               }}
             />
           </CyDView>

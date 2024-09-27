@@ -16,24 +16,29 @@ import { StyleSheet } from 'react-native';
 import useAxios from '../../../core/HttpRequest';
 import { CardProviders } from '../../../constants/enum';
 import { generateKeys, parseErrorMessage } from '../../../core/util';
+import {
+  NavigationProp,
+  ParamListBase,
+  RouteProp,
+  useNavigation,
+  useRoute,
+} from '@react-navigation/native';
 
-export default function CardRevealAuthScreen(props: {
-  navigation: any;
-  route: {
-    params: {
-      onSuccess: (data: any, provider: CardProviders) => {};
-      currentCardProvider: CardProviders;
-      card: { cardId: string };
-      triggerOTPParam?: string;
-      verifyOTPPayload?: any;
-    };
-  };
-}) {
+interface RouteParams {
+  onSuccess: (data: any, provider: CardProviders) => {};
+  currentCardProvider: CardProviders;
+  card: { cardId: string };
+  triggerOTPParam?: string;
+  verifyOTPPayload?: any;
+}
+
+export default function CardRevealAuthScreen() {
+  const navigation = useNavigation<NavigationProp<ParamListBase>>();
+  const route = useRoute<RouteProp<{ params: RouteParams }, 'params'>>();
   const { t } = useTranslation();
   const { showModal, hideModal } = useGlobalModalContext();
   const [sendingOTP, setSendingOTP] = useState<boolean>(false);
   const [verifyingOTP, setVerifyingOTP] = useState<boolean>(false);
-  const { navigation, route } = props;
   const { currentCardProvider, card, verifyOTPPayload } = route.params;
   const triggerOTPParam = route.params.triggerOTPParam ?? 'verify/show-token';
   const onSuccess = route.params.onSuccess;

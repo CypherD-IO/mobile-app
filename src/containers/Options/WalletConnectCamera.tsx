@@ -1,11 +1,3 @@
-/* eslint-disable react/prop-types */
-/* eslint-disable react-native/no-raw-text */
-/* eslint-disable @typescript-eslint/restrict-template-expressions */
-/**
- * @format
- * @flow
- */
-
 import React, {
   useEffect,
   useState,
@@ -48,6 +40,7 @@ import { ButtonType } from '../../constants/enum';
 import { useGlobalModalContext } from '../../components/v2/GlobalModal';
 import { WALLET_CONNECT_PROPOSAL_LISTENER } from '../../constants/timeOuts';
 import * as Sentry from '@sentry/react-native';
+import { t } from 'i18next';
 
 export default function WalletConnectCamera(props: {
   route: { params: { walletConnectURI: string } };
@@ -59,7 +52,6 @@ export default function WalletConnectCamera(props: {
 
   const hdWalletContext = useContext<any>(HdWalletContext);
   const ethereum = hdWalletContext.state.wallet.ethereum;
-  const { t } = useTranslation();
 
   const [walletConnectURI, setWalletConnectURI] = useState(
     route?.params?.walletConnectURI ?? '',

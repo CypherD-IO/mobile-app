@@ -21,28 +21,32 @@ import { GlobalContext } from '../../../core/globalContext';
 import { GlobalContextType } from '../../../constants/enum';
 import { CardProfile } from '../../../models/cardProfile.model';
 import useCardUtilities from '../../../hooks/useCardUtilities';
+import {
+  NavigationProp,
+  ParamListBase,
+  RouteProp,
+  useNavigation,
+  useRoute,
+} from '@react-navigation/native';
 
-interface Props {
-  navigation: any;
-  route: {
-    params: {
-      currentCardProvider: string;
-      shippingDetails: {
-        country: string;
-        phoneNumber: string;
-        line1: string;
-        line2: string;
-        city: string;
-        state: string;
-        postalCode: string;
-      };
-    };
+interface RouteParams {
+  currentCardProvider: string;
+  shippingDetails: {
+    country: string;
+    phoneNumber: string;
+    line1: string;
+    line2: string;
+    city: string;
+    state: string;
+    postalCode: string;
   };
 }
 
 const RESENT_OTP_TIME = 30;
 
-const ShippingDetailsOTPScreen = ({ navigation, route }: Props) => {
+const ShippingDetailsOTPScreen = () => {
+  const navigation = useNavigation<NavigationProp<ParamListBase>>();
+  const route = useRoute<RouteProp<{ params: RouteParams }, 'params'>>();
   const { currentCardProvider, shippingDetails } = route.params;
 
   const { postWithAuth } = useAxios();
@@ -151,9 +155,9 @@ const ShippingDetailsOTPScreen = ({ navigation, route }: Props) => {
       );
       if (!response.isError) {
         if (globalContext?.globalState.token) {
-          const cardProfile: CardProfile = await getWalletProfile(
+          const cardProfile: CardProfile = (await getWalletProfile(
             globalContext.globalState.token,
-          );
+          )) as CardProfile;
           globalContext.globalDispatch({
             type: GlobalContextType.CARD_PROFILE,
             cardProfile,

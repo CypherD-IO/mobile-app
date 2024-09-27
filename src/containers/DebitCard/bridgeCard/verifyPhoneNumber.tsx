@@ -21,12 +21,14 @@ import Intercom from '@intercom/intercom-react-native';
 import { useTranslation } from 'react-i18next';
 import { GlobalContext } from '../../../core/globalContext';
 import { CardProfile } from '../../../models/cardProfile.model';
+import { RouteProp, useRoute } from '@react-navigation/native';
 
-export default function PhoneNumberVerificationScreen({
-  route,
-}: {
-  route: { params: { phoneNumber: string } };
-}) {
+interface RouteParams {
+  phoneNumber: string;
+}
+
+export default function PhoneNumberVerificationScreen() {
+  const route = useRoute<RouteProp<{ params: RouteParams }, 'params'>>();
   const globalContext = useContext<any>(GlobalContext);
   const { phoneNumber } = route.params;
   const { showModal, hideModal } = useGlobalModalContext();
@@ -273,10 +275,6 @@ const ManualVerification = () => {
 };
 
 const styles = StyleSheet.create({
-  modalLayout: {
-    margin: 0,
-    justifyContent: 'flex-end',
-  },
   lottie25: { height: 25 },
   lottie40: { height: 40 },
 });

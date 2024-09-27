@@ -17,16 +17,14 @@ import Button from '../../../components/v2/button';
 import { Linking } from 'react-native';
 import Toast from 'react-native-toast-message';
 import useCardUtilities from '../../../hooks/useCardUtilities';
+import {
+  NavigationProp,
+  ParamListBase,
+  useNavigation,
+} from '@react-navigation/native';
 
-export default function TelegramSetupSettings(props: {
-  route: {
-    params: {
-      currentCardProvider: CardProviders;
-      card: { cardId: string; status: string; type: string };
-    };
-  };
-  navigation: any;
-}) {
+export default function TelegramSetupSettings() {
+  const navigation = useNavigation<NavigationProp<ParamListBase>>();
   const globalContext = useContext(GlobalContext) as GlobalContextDef;
   const cardProfile = globalContext.globalState.cardProfile;
   const { getWithAuth } = useAxios();
@@ -82,7 +80,7 @@ export default function TelegramSetupSettings(props: {
       });
     } else {
       showToast(t('Successfully Connected'));
-      props.navigation.goBack();
+      navigation.goBack();
     }
   };
 

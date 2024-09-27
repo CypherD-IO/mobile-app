@@ -24,6 +24,11 @@ import NewReferralCodeModal from '../../components/v2/newReferralCodeModal';
 import { useGlobalModalContext } from '../../components/v2/GlobalModal';
 import { showToast } from '../../containers/utilities/toastUtility';
 import ShowQRCodeModal from '../../components/v2/showQRCodeModal';
+import {
+  NavigationProp,
+  ParamListBase,
+  useNavigation,
+} from '@react-navigation/native';
 
 const copyToClipboard = (text: string) => {
   Clipboard.setString(text);
@@ -141,7 +146,7 @@ const ReferralInfo = ({
         </CyDTouchView>
       </CyDView>
     </CyDView>
-    <CyDView className='h-[1px] bg-cardBg'></CyDView>
+    <CyDView className='h-[1px] bg-cardBg' />
     <CyDView className='flex flex-row items-center justify-between p-[16px]'>
       <CyDText className='font-[500]'>{t('CODE')}</CyDText>
       <CyDView className='flex flex-row items-center'>
@@ -154,7 +159,7 @@ const ReferralInfo = ({
         </CyDTouchView>
       </CyDView>
     </CyDView>
-    <CyDView className='h-[1px] bg-cardBg'></CyDView>
+    <CyDView className='h-[1px] bg-cardBg' />
     <ShareVia referralLink={referralLink} />
   </CyDView>
 );
@@ -313,7 +318,8 @@ const HowItWorks = () => {
     </CyDView>
   );
 };
-export default function Referrals({ route, navigation }) {
+export default function Referrals() {
+  const navigation = useNavigation<NavigationProp<ParamListBase>>();
   const [isModalVisible, setIsModalVisible] = useState(false);
   const { postWithAuth, getWithAuth } = useAxios();
   const { showModal, hideModal } = useGlobalModalContext();

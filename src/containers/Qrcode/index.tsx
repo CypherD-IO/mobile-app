@@ -48,6 +48,14 @@ import Share from 'react-native-share';
 import { SHARE_QR_TIMEOUT } from '../../constants/timeOuts';
 import { isAndroid } from '../../misc/checkers';
 import Button from '../../components/v2/button';
+import {
+  NavigationProp,
+  ParamListBase,
+  RouteProp,
+  useNavigation,
+  useRoute,
+} from '@react-navigation/native';
+import { HdWalletContextDef } from '../../reducers/hdwallet_reducer';
 
 function copyToClipboard(text: string) {
   Clipboard.setString(text);
@@ -62,10 +70,16 @@ export interface UserChain {
   backendName: string;
 }
 
-export default function QRCodeGenerator(props) {
+interface RouteParams {
+  addressType: FundWalletAddressType;
+}
+
+export default function QRCodeGenerator() {
   const { t } = useTranslation();
-  const routeParams = props?.route?.params;
-  const hdWalletContext = useContext<any>(HdWalletContext);
+  const navigation = useNavigation<NavigationProp<ParamListBase>>();
+  const route = useRoute<RouteProp<{ params: RouteParams }, 'params'>>();
+  const routeParams = route?.params;
+  const hdWalletContext = useContext(HdWalletContext) as HdWalletContextDef;
 
   const getChainDataWithAddress = (
     walletAddressType: FundWalletAddressType,
@@ -203,7 +217,7 @@ export default function QRCodeGenerator(props) {
   const [isCapturingDetails, setIsCapturingDetails] = useState<boolean>(false);
 
   const handleBackButton = () => {
-    props.navigation.goBack();
+    navigation.goBack();
     return true;
   };
 

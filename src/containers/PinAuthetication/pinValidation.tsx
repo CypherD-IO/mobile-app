@@ -1,5 +1,10 @@
 import React, { useContext, useState } from 'react';
-import { isBiometricEnabled, removeCredentialsFromKeychain, removePin, validatePin } from '../../core/Keychain';
+import {
+  isBiometricEnabled,
+  removeCredentialsFromKeychain,
+  removePin,
+  validatePin,
+} from '../../core/Keychain';
 import { HdWalletContext } from '../../core/util';
 import { t } from 'i18next';
 import { CyDView, CyDText, CyDSafeAreaView } from '../../styles/tailwindStyles';
@@ -7,9 +12,30 @@ import OtpInput from '../../components/v2/OTPInput';
 import { clearAllData } from '../../core/asyncStorage';
 import { useGlobalModalContext } from '../../components/v2/GlobalModal';
 import { screenTitle } from '../../constants';
+import {
+  NavigationProp,
+  ParamListBase,
+  RouteProp,
+  useNavigation,
+  useRoute,
+} from '@react-navigation/native';
 
-export default function PinValidation ({ route, navigation }) {
-  const { title = `${t<string>('ENTER_PIN')}`, setPinAuthentication = (value) => {}, lockScreen = false, callback } = route.params;
+interface RouteParams {
+  title: string;
+  setPinAuthentication: (value: any) => {};
+  lockScreen: boolean;
+  callback: any;
+}
+
+export default function PinValidation() {
+  const navigation = useNavigation<NavigationProp<ParamListBase>>();
+  const route = useRoute<RouteProp<{ params: RouteParams }, 'params'>>();
+  const {
+    title = `${t<string>('ENTER_PIN')}`,
+    setPinAuthentication = value => {},
+    lockScreen = false,
+    callback,
+  } = route.params;
   const retryCount = 10;
   const [retries, setRetries] = useState(retryCount);
   const [wrongPin, setWrongPin] = useState(false); // state to show or hide the Wrong Pin text
@@ -20,7 +46,10 @@ export default function PinValidation ({ route, navigation }) {
     return (
       <>
         <CyDView>
-          <CyDText className={'text-[30px] font-extrabold text-center pt-[60px]'}>{title}</CyDText>
+          <CyDText
+            className={'text-[30px] font-extrabold text-center pt-[60px]'}>
+            {title}
+          </CyDText>
         </CyDView>
       </>
     );
@@ -86,46 +115,53 @@ export default function PinValidation ({ route, navigation }) {
           />
         </CyDView>
 
-        {retries <= 3 && <CyDText className={'text-[15px] mt-[25px] text-center'}>
-          {t<string>('RETRIES_LEFT')}{retries}
-        </CyDText>}
+        {retries <= 3 && (
+          <CyDText className={'text-[15px] mt-[25px] text-center'}>
+            {t<string>('RETRIES_LEFT')}
+            {retries}
+          </CyDText>
+        )}
 
-        {wrongPin &&
+        {wrongPin && (
           <CyDText className={'text-[15px] mt-[25px] text-center text-red-500'}>
             {t<string>('WRONG_PIN')}
           </CyDText>
-        }
+        )}
 
-        {retries === 0 &&
+        {retries === 0 && (
           <CyDText
             className={'text-[20px] text-center mt-[10px] underline'}
             // eslint-disable-next-line @typescript-eslint/no-misused-promises
             onPress={async () => {
-              showModal('state', { type: 'info', title: t<string>('RESETING_PIN'), description: t<string>('RESET_PIN_DESCRIPTION'), onSuccess: onSuccessFunctionality });
+              showModal('state', {
+                type: 'info',
+                title: t<string>('RESETING_PIN'),
+                description: t<string>('RESET_PIN_DESCRIPTION'),
+                onSuccess: onSuccessFunctionality,
+              });
               await removeCredentialsFromKeychain();
               await clearAllData();
               setRetries(retryCount);
               hdWallet.dispatch({
                 type: 'RESET_PIN_AUTHENTICATION',
                 value: {
-                  isReset: true
-                }
+                  isReset: true,
+                },
               });
             }}>
-              {t<string>('RESET_PIN')}
+            {t<string>('RESET_PIN')}
           </CyDText>
-        }
-
-    </CyDView>
+        )}
+      </CyDView>
     );
   };
 
   return (
-      <CyDSafeAreaView>
-        <CyDView className={'h-full bg-white px-[20px] pt-[10px]'}>
-          <PINHeader/>
-          <PIN/>
-        </CyDView>
-      </CyDSafeAreaView>
+    <CyDSafeAreaView>
+      <CyDView className={'h-full bg-white px-[20px] pt-[10px]'}>
+        <PINHeader />
+        <PIN />
+      </CyDView>
+    </CyDSafeAreaView>
   );
 }

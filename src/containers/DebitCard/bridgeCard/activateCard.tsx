@@ -29,20 +29,24 @@ import useCardUtilities from '../../../hooks/useCardUtilities';
 import { GlobalContext } from '../../../core/globalContext';
 import { screenTitle } from '../../../constants';
 import { useKeyboard } from '../../../hooks/useKeyboard';
+import {
+  NavigationProp,
+  ParamListBase,
+  RouteProp,
+  useNavigation,
+  useRoute,
+} from '@react-navigation/native';
 
-export default function ActivateCard(props: {
-  navigation: any;
-  route: {
-    params: {
-      currentCardProvider: CardProviders;
-      card: { cardId: string };
-    };
-  };
-}) {
+interface RouteParams {
+  currentCardProvider: CardProviders;
+  card: { cardId: string };
+}
+export default function ActivateCard() {
+  const navigation = useNavigation<NavigationProp<ParamListBase>>();
+  const route = useRoute<RouteProp<{ params: RouteParams }, 'params'>>();
   const { t } = useTranslation();
   const { showModal, hideModal } = useGlobalModalContext();
   const [sendingOTP, setSendingOTP] = useState<boolean>(false);
-  const { navigation, route } = props;
   const { currentCardProvider, card } = route.params;
   const resendOtpTime = 30;
   const [resendInterval, setResendInterval] = useState(0);

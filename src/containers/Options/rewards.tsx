@@ -10,8 +10,14 @@ import AppImages from '../../../assets/images/appImages';
 import { screenTitle } from '../../constants';
 import useAxios from '../../core/HttpRequest';
 import LottieView from 'lottie-react-native';
+import {
+  NavigationProp,
+  ParamListBase,
+  useNavigation,
+} from '@react-navigation/native';
 
-export default function Rewards({ route, navigation }) {
+export default function Rewards() {
+  const navigation = useNavigation<NavigationProp<ParamListBase>>();
   const [loading, setLoading] = useState<boolean>(false);
   const { getWithAuth } = useAxios();
   const [rewardPoints, setRewardPoints] = useState({

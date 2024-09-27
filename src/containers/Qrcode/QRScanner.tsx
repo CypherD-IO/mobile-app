@@ -12,20 +12,26 @@ import { QRScannerScreens } from '../../constants/server';
 import { BarCodeReadEvent } from 'react-native-camera';
 import AppImages from '../../../assets/images/appImages';
 import * as C from '../../constants/index';
+import {
+  NavigationProp,
+  ParamListBase,
+  RouteProp,
+  useRoute,
+  useNavigation,
+} from '@react-navigation/native';
 
 const SCREEN_HEIGHT = Dimensions.get('window').height;
 
-export default function QRScanner(props: {
-  route: {
-    params: {
-      fromPage: string | (() => string);
-      onSuccess: (e: BarCodeReadEvent) => void;
-    };
-  };
-  navigation: { goBack: () => void };
-}) {
+interface RouteParams {
+  fromPage: string | (() => string);
+  onSuccess: (e: BarCodeReadEvent) => void;
+}
+
+export default function QRScanner() {
+  const navigation = useNavigation<NavigationProp<ParamListBase>>();
+  const route = useRoute<RouteProp<{ params: RouteParams }, 'params'>>();
   const { t } = useTranslation();
-  const [fromPage] = useState<string>(props.route.params.fromPage);
+  const [fromPage] = useState<string>(route.params.fromPage);
 
   const renderText = () => {
     switch (fromPage) {
@@ -43,7 +49,7 @@ export default function QRScanner(props: {
   };
 
   const handleBackButton = () => {
-    props?.navigation?.goBack();
+    navigation?.goBack();
     return true;
   };
 
@@ -60,8 +66,8 @@ export default function QRScanner(props: {
         showMarker
         fadeIn={false}
         onRead={e => {
-          props?.navigation?.goBack();
-          props?.route?.params?.onSuccess(e);
+          navigation?.goBack();
+          route?.params?.onSuccess(e);
         }}
         cameraStyle={{ height: SCREEN_HEIGHT }}
         customMarker={
@@ -88,7 +94,7 @@ export default function QRScanner(props: {
                       'flex items-center justify-center mt-[40px] h-[60px] w-2/3 border-[1px] border-[#8E8E8E] rounded-[12px]'
                     }
                     onPress={() =>
-                      props.navigation.navigate(C.screenTitle.WALLET_CONNECT)
+                      navigation.navigate(C.screenTitle.WALLET_CONNECT)
                     }>
                     <CyDText
                       className={'text-white text-[15px] font-extrabold'}>

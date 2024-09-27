@@ -1,8 +1,10 @@
-/* eslint-disable no-empty-pattern */
-
 /* eslint-disable @typescript-eslint/no-misused-promises */
 import analytics from '@react-native-firebase/analytics';
-import { useRoute } from '@react-navigation/native';
+import {
+  NavigationProp,
+  ParamListBase,
+  useRoute,
+} from '@react-navigation/native';
 import * as Sentry from '@sentry/react-native';
 import { ethers } from 'ethers';
 import { t } from 'i18next';
@@ -70,7 +72,7 @@ export default function TokenStaking({
   navigation,
 }: {
   tokenData: TokenMeta;
-  navigation: { navigate: (screen: string, {}: unknown) => void };
+  navigation: NavigationProp<ParamListBase>;
 }) {
   const globalStateContext = useContext<any>(GlobalContext);
   const hdWalletContext = useContext<any>(HdWalletContext);
@@ -86,8 +88,6 @@ export default function TokenStaking({
     CosmosActionType.CLAIM,
   );
   const cosmosStaking = useContext<any>(CosmosStakingContext);
-  const [time, setTime] = useState({ hours: '0', min: '0', sec: '0' });
-  const [method, setMethod] = useState<string>('');
   const initialStakeVariables = {
     totalClaimableRewards: '0',
     availableToStake: '0',
@@ -101,7 +101,7 @@ export default function TokenStaking({
     useState<number>(14);
   const chain = hdWalletContext.state.wallet[tokenData.chainDetails.chainName];
   const [pageLoading, setPageLoading] = useState<boolean>(true);
-  let claimTryCount = 0;
+  const claimTryCount = 0;
 
   const { showModal, hideModal } = useGlobalModalContext();
   const { claimCosmosReward, delegateCosmosToken } = useTransactionManager();

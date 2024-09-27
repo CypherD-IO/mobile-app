@@ -14,8 +14,23 @@ import AppImages from '../../../assets/images/appImages';
 import { screenTitle } from '../../constants';
 import Toast from 'react-native-toast-message';
 import { BackHandler } from 'react-native';
+import {
+  NavigationProp,
+  ParamListBase,
+  RouteProp,
+  useNavigation,
+  useRoute,
+} from '@react-navigation/native';
 
-export default function ConfirmPin({ route, navigation }) {
+interface RouteParams {
+  setPinAuthentication: (value: any) => {};
+  pin: string;
+  backButton: boolean;
+  changePinValue: boolean;
+}
+export default function ConfirmPin() {
+  const navigation = useNavigation<NavigationProp<ParamListBase>>();
+  const route = useRoute<RouteProp<{ params: RouteParams }, 'params'>>();
   const {
     setPinAuthentication = value => {},
     pin,

@@ -49,7 +49,14 @@ import {
 } from '../../styles/tailwindStyles';
 import { genId } from '../utilities/activityUtilities';
 import { ACTIVITY_TYPES, STATUSES } from './activityFilter';
-import { useIsFocused } from '@react-navigation/native';
+import {
+  NavigationProp,
+  ParamListBase,
+  RouteProp,
+  useIsFocused,
+  useNavigation,
+  useRoute,
+} from '@react-navigation/native';
 import { TIME_GAPS } from '../../constants/data';
 import { get, round } from 'lodash';
 
@@ -783,20 +790,19 @@ function OnmetaPayItem(props: any) {
   );
 }
 
-export default function Activites(props: {
-  navigation: any;
-  route: {
-    params: { filter: { types: string[]; time: string; statuses: string[] } };
-  };
-}) {
+interface RouteParams {
+  filter: { types: string[]; time: string; statuses: string[] };
+}
+
+export default function Activites() {
+  const navigation = useNavigation<NavigationProp<ParamListBase>>();
+  const route = useRoute<RouteProp<{ params: RouteParams }, 'params'>>();
   const ARCH_HOST: string = hostWorker.getHost('ARCH_HOST');
-  const { navigation, route } = props;
   const filter = route?.params?.filter ?? {
     time: TIME_GAPS[0].value,
     types: ACTIVITY_TYPES,
     statuses: STATUSES,
   };
-  const { t } = useTranslation();
   const activityContext = useContext<any>(ActivityContext);
   const hdWalletContext = useContext<any>(HdWalletContext);
   const [showCardInfo, setShowCardInfo] = useState(false);
@@ -832,7 +838,7 @@ export default function Activites(props: {
   const isFocussed = useIsFocused();
 
   const handleBackButton = () => {
-    props.navigation.goBack();
+    navigation.goBack();
     return true;
   };
 

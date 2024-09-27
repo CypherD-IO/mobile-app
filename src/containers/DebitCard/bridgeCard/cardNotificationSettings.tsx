@@ -23,18 +23,25 @@ import {
   CyDTouchView,
   CyDView,
 } from '../../../styles/tailwindStyles';
+import {
+  NavigationProp,
+  ParamListBase,
+  RouteProp,
+  useNavigation,
+  useRoute,
+} from '@react-navigation/native';
 
-export default function CardNotificationSettings(props: {
-  route: {
-    params: {
-      currentCardProvider: CardProviders;
-      card: { cardId: string; status: string; type: string };
-    };
-  };
-  navigation: any;
-}) {
+interface RouteParams {
+  currentCardProvider: CardProviders;
+  card: { cardId: string; status: string; type: string };
+}
+
+export default function CardNotificationSettings() {
+  const navigation = useNavigation<NavigationProp<ParamListBase>>();
+  const route = useRoute<RouteProp<{ params: RouteParams }, 'params'>>();
+
   const RESENT_OTP_TIME = 30;
-  const { currentCardProvider } = props.route.params;
+  const { currentCardProvider } = route.params;
   const globalContext = useContext(GlobalContext) as GlobalContextDef;
   const cardProfile = globalContext.globalState.cardProfile;
   const { showModal, hideModal } = useGlobalModalContext();
@@ -289,7 +296,7 @@ export default function CardNotificationSettings(props: {
     } else {
       switch (cardNotificationType) {
         case CARD_NOTIFICATION_TYPES.TELEGRAM:
-          props.navigation.navigate(screenTitle.TELEGRAM_SETUP_SETTINGS, {});
+          navigation.navigate(screenTitle.TELEGRAM_SETUP_SETTINGS, {});
           break;
         case CARD_NOTIFICATION_TYPES.EMAIL:
           void toggleEmailNotifiction();

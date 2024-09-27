@@ -33,19 +33,19 @@ import Animated, {
   useSharedValue,
   withTiming,
 } from 'react-native-reanimated';
+import {
+  NavigationProp,
+  ParamListBase,
+  RouteProp,
+  useNavigation,
+  useRoute,
+} from '@react-navigation/native';
+import { HdWalletContextDef } from '../../reducers/hdwallet_reducer';
 
-interface RouteProps {
-  route: {
-    params: {
-      protocol: defiProtocolData;
-    };
-  };
-  navigation: {
-    goBack: () => void;
-    setOptions: ({ title }: { title: string }) => void;
-    navigate: (screen: string, params?: {}) => void;
-  };
+interface RouteParams {
+  protocol: defiProtocolData;
 }
+
 const MAX_CHAIN_COUNT = 3;
 
 const RenderDetail = ({
@@ -184,12 +184,15 @@ const RenderType = ({ type }: { type: PositionTypeData }) => {
     </CyDView>
   );
 };
-export function DEFIOverviewScreen({ route, navigation }: RouteProps) {
+export function DEFIOverviewScreen() {
+  const navigation = useNavigation<NavigationProp<ParamListBase>>();
+  const route = useRoute<RouteProp<{ params: RouteParams }, 'params'>>();
+
   const { protocol } = route.params;
   const [imageZoomIn, setImageZoomIn] = useState<boolean>(false);
   const scrollY = useSharedValue(0);
   const isVisible = useSharedValue(true);
-  const hdWalletContext = useContext(HdWalletContext);
+  const hdWalletContext = useContext(HdWalletContext) as HdWalletContextDef;
   const { isReadOnlyWallet } = hdWalletContext.state;
   const { ethereum } = hdWalletContext.state.wallet;
   const { showModal, hideModal } = useGlobalModalContext();

@@ -5,7 +5,6 @@ import {
   CyDTouchView,
   CyDView,
 } from '../../../styles/tailwindStyles';
-import { useTranslation } from 'react-i18next';
 import OtpInput from '../../../components/v2/OTPInput';
 import AppImages from '../../../../assets/images/appImages';
 import { useGlobalModalContext } from '../../../components/v2/GlobalModal';
@@ -14,31 +13,51 @@ import LottieView from 'lottie-react-native';
 import Loading from '../../../components/v2/loading';
 import { StyleSheet } from 'react-native';
 import useAxios from '../../../core/HttpRequest';
-import { useIsFocused } from '@react-navigation/native';
 import {
-  ACCOUNT_STATUS,
+  NavigationProp,
+  ParamListBase,
+  RouteProp,
+  useIsFocused,
+  useNavigation,
+  useRoute,
+} from '@react-navigation/native';
+import {
   CardOperationsAuthType,
   CardProviders,
   CardStatus,
 } from '../../../constants/enum';
 import { Card } from '../../../models/card.model';
+import { t } from 'i18next';
 
-export default function CardUnlockAuth(props: {
-  navigation: any;
-  route: {
-    params: {
-      onSuccess: () => void;
-      currentCardProvider: CardProviders;
-      card: Card;
-      authType: CardOperationsAuthType;
-    };
-  };
-}) {
-  const { t } = useTranslation();
+interface RouteParams {
+  onSuccess: () => void;
+  currentCardProvider: CardProviders;
+  card: Card;
+  authType: CardOperationsAuthType;
+}
+
+const OTPHeader = () => {
+  return (
+    <CyDView>
+      <CyDText className={'text-[25px] font-extrabold'}>
+        {t<string>('ENTER_AUTHENTICATION_CODE')}
+      </CyDText>
+      <CyDText className={'text-[15px] font-bold'}>
+        {t<string>('CARD_SENT_OTP_EMAIL_AND_TELEGRAM')}
+      </CyDText>
+      <CyDText className='text-[12px] mt-[12px]'>
+        {t<string>('CHECK_SPAM_FOLDER')}
+      </CyDText>
+    </CyDView>
+  );
+};
+
+export default function CardUnlockAuth() {
+  const navigation = useNavigation<NavigationProp<ParamListBase>>();
+  const route = useRoute<RouteProp<{ params: RouteParams }, 'params'>>();
   const { showModal, hideModal } = useGlobalModalContext();
   const [sendingOTP, setSendingOTP] = useState<boolean>(false);
   const [verifyingOTP, setVerifyingOTP] = useState<boolean>(false);
-  const { navigation, route } = props;
   const { currentCardProvider, card, authType } = route.params;
   const onSuccess = route.params.onSuccess;
   const resendOtpTime = 30;
@@ -132,22 +151,6 @@ export default function CardUnlockAuth(props: {
         onFailure: () => onModalHide(),
       });
     }
-  };
-
-  const OTPHeader = () => {
-    return (
-      <CyDView>
-        <CyDText className={'text-[25px] font-extrabold'}>
-          {t<string>('ENTER_AUTHENTICATION_CODE')}
-        </CyDText>
-        <CyDText className={'text-[15px] font-bold'}>
-          {t<string>('CARD_SENT_OTP_EMAIL_AND_TELEGRAM')}
-        </CyDText>
-        <CyDText className='text-[12px] mt-[12px]'>
-          {t<string>('CHECK_SPAM_FOLDER')}
-        </CyDText>
-      </CyDView>
-    );
   };
 
   return (
