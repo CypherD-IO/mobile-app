@@ -62,7 +62,7 @@ export default function WalletConnectCamera(props: {
   const { t } = useTranslation();
 
   const [walletConnectURI, setWalletConnectURI] = useState(
-    route.params.walletConnectURI ?? '',
+    route?.params?.walletConnectURI ?? '',
   );
 
   const [selectedPairingTopic, setSelectedPairingTopic] = useState<string>('');
@@ -103,6 +103,7 @@ export default function WalletConnectCamera(props: {
             }
           }, WALLET_CONNECT_PROPOSAL_LISTENER);
           web3wallet?.on('session_proposal', () => {
+            setWalletConnectURI('');
             loading.current = false;
             clearTimeout(sessionProposalListener.current);
           });
@@ -229,16 +230,14 @@ export default function WalletConnectCamera(props: {
   }, [walletConnectState]);
 
   useEffect(() => {
-    if (loading.current !== isLoadingConnections) {
-      setIsLoadingConnections(loading.current);
-    }
-    if (loading.current && walletConnectURI.startsWith('wc')) {
+    if (walletConnectURI.startsWith('wc')) {
       void connectWallet(walletConnectURI);
     }
-  }, [loading.current, walletConnectURI]);
+  }, [walletConnectURI]);
 
   const getv2Sessions = () => {
     if (web3wallet?.getActiveSessions()) {
+      setIsLoadingConnections(true);
       const sessions = Object.values(web3wallet.getActiveSessions());
       if (sessions) {
         setTotalSessions(sessions);
@@ -265,6 +264,7 @@ export default function WalletConnectCamera(props: {
           });
         }
       }
+      setIsLoadingConnections(false);
     }
   };
 
