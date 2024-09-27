@@ -26,8 +26,8 @@ import {
 } from '../../../constants/enum';
 import clsx from 'clsx';
 import { screenTitle } from '../../../constants';
-import { useNavigation } from '@react-navigation/native';
-import { GlobalContext } from '../../../core/globalContext';
+import { RouteProp, useNavigation, useRoute } from '@react-navigation/native';
+import { GlobalContext, GlobalContextDef } from '../../../core/globalContext';
 import { ICardTransaction } from '../../../models/card.model';
 import { capitalize, split } from 'lodash';
 import { t } from 'i18next';
@@ -153,14 +153,11 @@ const TransactionDetail = ({
   );
 };
 
-export default function TransactionDetails({
-  navigation,
-  route,
-}: {
-  navigation: any;
-  route: { params: any };
-}) {
-  const { t } = useTranslation();
+interface RouteParams {
+  transaction: ICardTransaction;
+}
+export default function TransactionDetails() {
+  const route = useRoute<RouteProp<{ params: RouteParams }, 'params'>>();
   const { transaction }: { transaction: ICardTransaction } = route.params;
   const {
     fxCurrencySymbol,
@@ -169,9 +166,10 @@ export default function TransactionDetails({
     title: merchantName,
   } = transaction;
   const hdWalletContext = useContext<any>(HdWalletContext);
-  const globalContext = useContext(GlobalContext);
-  const cardProfile: CardProfile = globalContext.globalState.cardProfile;
-  const provider = cardProfile.provider ?? CardProviders.REAP_CARD;
+  const globalContext = useContext(GlobalContext) as GlobalContextDef;
+  const cardProfile: CardProfile | undefined =
+    globalContext.globalState.cardProfile;
+  const provider = cardProfile?.provider ?? CardProviders.REAP_CARD;
   const transactionDetails: Array<{
     icon: any;
     title: string;

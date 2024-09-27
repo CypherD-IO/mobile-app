@@ -22,7 +22,10 @@ import CardScreen from '../bridgeCard/card';
 import {
   NavigationProp,
   ParamListBase,
+  RouteProp,
   useIsFocused,
+  useNavigation,
+  useRoute,
 } from '@react-navigation/native';
 import { useTranslation } from 'react-i18next';
 import Button from '../../../components/v2/button';
@@ -52,15 +55,13 @@ import CardProviderSwitch from '../../../components/cardProviderSwitch';
 import useCardUtilities from '../../../hooks/useCardUtilities';
 import clsx from 'clsx';
 
-interface CypherCardScreenProps {
-  navigation: NavigationProp<ParamListBase>;
-  route: { params: { cardProvider: CardProviders } };
+interface RouteParams {
+  cardProvider: CardProviders;
 }
 
-export default function CypherCardScreen({
-  navigation,
-  route,
-}: CypherCardScreenProps) {
+export default function CypherCardScreen() {
+  const navigation = useNavigation<NavigationProp<ParamListBase>>();
+  const route = useRoute<RouteProp<{ params: RouteParams }, 'params'>>();
   const { cardProvider } = route?.params ?? {};
   const isFocused = useIsFocused();
   const { t } = useTranslation();
