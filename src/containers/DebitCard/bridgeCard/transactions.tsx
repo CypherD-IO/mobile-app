@@ -1,5 +1,5 @@
 import React, { useContext, useEffect, useRef, useState } from 'react';
-import { GlobalContext, GlobalContextDef } from '../../../core/globalContext';
+import { GlobalContext } from '../../../core/globalContext';
 import { CardProfile } from '../../../models/cardProfile.model';
 import {
   CardProviders,
@@ -38,21 +38,23 @@ import CardTxnFilterModal from '../CardV2/CardTxnFilterModal';
 import { parseMonthYear } from '../../../core/util';
 import CyDModalLayout from '../../../components/v2/modal';
 import Button from '../../../components/v2/button';
+import {
+  NavigationProp,
+  ParamListBase,
+  RouteProp,
+  useNavigation,
+  useRoute,
+} from '@react-navigation/native';
 
-interface CardTransactionScreenProps {
-  navigation: any;
-  route: {
-    params: {
-      cardProvider: CardProviders;
-      currentCardIndex: number;
-    };
-  };
+interface RouteParams {
+  cardProvider: CardProviders;
+  currentCardIndex: number;
 }
 
-export default function CardTransactions({
-  navigation,
-  route,
-}: CardTransactionScreenProps) {
+export default function CardTransactions() {
+  const navigation = useNavigation<NavigationProp<ParamListBase>>();
+  const route = useRoute<RouteProp<{ params: RouteParams }, 'params'>>();
+
   const { cardProvider, currentCardIndex } = route.params;
   const { getWithAuth, postWithAuth } = useAxios();
   const globalContext = useContext<any>(GlobalContext);

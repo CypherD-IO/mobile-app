@@ -19,19 +19,24 @@ import { screenTitle } from '../../../constants';
 import { useKeyboard } from '../../../hooks/useKeyboard';
 import * as yup from 'yup';
 import { useFormik } from 'formik';
+import {
+  NavigationProp,
+  ParamListBase,
+  RouteProp,
+  useNavigation,
+  useRoute,
+} from '@react-navigation/native';
 
-export default function SetPin(props: {
-  navigation: any;
-  route: {
-    params: {
-      currentCardProvider: CardProviders;
-      card: { cardId: string };
-    };
-  };
-}) {
+interface RouteParams {
+  currentCardProvider: CardProviders;
+  card: { cardId: string };
+}
+
+export default function SetPin() {
+  const navigation = useNavigation<NavigationProp<ParamListBase>>();
+  const route = useRoute<RouteProp<{ params: RouteParams }, 'params'>>();
   const { t } = useTranslation();
   const { showModal, hideModal } = useGlobalModalContext();
-  const { navigation, route } = props;
   const { currentCardProvider, card } = route.params;
   const [loading, setLoading] = useState<boolean>(false);
   const { keyboardHeight } = useKeyboard();

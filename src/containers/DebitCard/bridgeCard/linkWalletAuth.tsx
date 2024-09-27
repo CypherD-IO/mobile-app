@@ -14,24 +14,28 @@ import LottieView from 'lottie-react-native';
 import Loading from '../../../components/v2/loading';
 import { StyleSheet } from 'react-native';
 import useAxios from '../../../core/HttpRequest';
-import { useIsFocused } from '@react-navigation/native';
+import {
+  NavigationProp,
+  ParamListBase,
+  RouteProp,
+  useIsFocused,
+  useNavigation,
+  useRoute,
+} from '@react-navigation/native';
 
-export default function LinkWalletAuth(props: {
-  navigation: any;
-  route: {
-    params: {
-      onSuccess: () => void;
-      linkedWalletToDelete: string;
-    };
-  };
-}) {
+interface RouteParams {
+  onSuccess: () => void;
+  linkedWalletToDelete: string;
+}
+export default function LinkWalletAuth() {
+  const navigation = useNavigation<NavigationProp<ParamListBase>>();
+  const route = useRoute<RouteProp<{ params: RouteParams }, 'params'>>();
+
   const { t } = useTranslation();
   const { showModal, hideModal } = useGlobalModalContext();
   const [sendingOTP, setSendingOTP] = useState<boolean>(false);
   const [verifyingOTP, setVerifyingOTP] = useState<boolean>(false);
-  const { navigation, route } = props;
-  const { linkedWalletToDelete } = route.params;
-  const onSuccess = route.params.onSuccess;
+  const { linkedWalletToDelete, onSuccess } = route.params;
   const resendOtpTime = 30;
   const [resendInterval, setResendInterval] = useState(0);
   const [timer, setTimer] = useState<NodeJS.Timer>();

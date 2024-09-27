@@ -8,10 +8,9 @@ import {
 import clsx from 'clsx';
 import LottieView from 'lottie-react-native';
 import AppImages from '../../../assets/images/appImages';
-import { AppState, Keyboard } from 'react-native';
+import { AppState, Keyboard, StyleSheet } from 'react-native';
 import { ButtonType, ImagePosition } from '../../constants/enum';
 import { HdWalletContext } from '../../core/util';
-
 interface IButton {
   onPress: () => void;
   loading?: boolean;
@@ -110,7 +109,7 @@ export default function Button({
         imagePosition === ImagePosition.LEFT && (
           <CyDImage
             source={image}
-            className={`${imageStyle}`}
+            className={imageStyle}
             resizeMode='contain'
           />
         )}
@@ -121,7 +120,7 @@ export default function Button({
           resizeMode={'contain'}
           autoPlay
           loop
-          style={{ width: 18, marginRight: 5 }}
+          style={styles.lottie}
         />
       )}
       {!loading && (
@@ -139,10 +138,18 @@ export default function Button({
         imagePosition === ImagePosition.RIGHT && (
           <CyDImage
             source={image}
-            className={`${imageStyle}`}
+            className={imageStyle}
             resizeMode='contain'
           />
         )}
     </CyDTouchView>
   );
 }
+
+const styles = StyleSheet.create({
+  lottie: {
+    width: 22,
+    height: 22,
+    marginRight: 5,
+  },
+});

@@ -15,14 +15,18 @@ import { screenTitle } from '../../../constants';
 import { MODAL_HIDE_TIMEOUT } from '../../../core/Http';
 import { GlobalContext } from '../../../core/globalContext';
 import { CardProfile } from '../../../models/cardProfile.model';
+import {
+  NavigationProp,
+  ParamListBase,
+  RouteProp,
+  useNavigation,
+  useRoute,
+} from '@react-navigation/native';
 
-export default function PreviewAutoLoad({
-  navigation,
-  route,
-}: {
-  navigation: any;
-  route: { params: AutoLoad };
-}) {
+export default function PreviewAutoLoad() {
+  const navigation = useNavigation<NavigationProp<ParamListBase>>();
+  const route = useRoute<RouteProp<{ params: AutoLoad }, 'params'>>();
+
   const {
     threshold,
     amountToLoad,

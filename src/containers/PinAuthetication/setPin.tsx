@@ -4,16 +4,38 @@ import { CyDView, CyDText, CyDSafeAreaView } from '../../styles/tailwindStyles';
 import OtpInput from '../../components/v2/OTPInput';
 import { screenTitle } from '../../constants';
 import { BackHandler } from 'react-native';
+import {
+  NavigationProp,
+  ParamListBase,
+  RouteProp,
+  useNavigation,
+  useRoute,
+} from '@react-navigation/native';
 
-export default function SetPin ({ route, navigation }) {
-  const { setPinAuthentication = (value) => {}, changePinValue = false } = route.params;
+interface RouteParams {
+  setPinAuthentication: (value: any) => {};
+  changePinValue: boolean;
+}
+
+export default function SetPin() {
+  const navigation = useNavigation<NavigationProp<ParamListBase>>();
+  const route = useRoute<RouteProp<{ params: RouteParams }, 'params'>>();
+  const { setPinAuthentication = value => {}, changePinValue = false } =
+    route.params;
 
   let setPin = (pin: string) => {
-    navigation.navigate(screenTitle.CONFIRM_PIN, { setPinAuthentication, pin, backButton: true });
+    navigation.navigate(screenTitle.CONFIRM_PIN, {
+      setPinAuthentication,
+      pin,
+      backButton: true,
+    });
   };
   if (changePinValue) {
     setPin = (pin: string) => {
-      navigation.navigate(screenTitle.CONFIRM_CHANGE_PIN, { pin, changePinValue: true });
+      navigation.navigate(screenTitle.CONFIRM_CHANGE_PIN, {
+        pin,
+        changePinValue: true,
+      });
     };
   }
 
@@ -21,7 +43,12 @@ export default function SetPin ({ route, navigation }) {
     return (
       <>
         <CyDView>
-          <CyDText className={'text-[30px] font-extrabold text-center pt-[60px]'}>{changePinValue ? t<string>('SET_CHANGE_PIN_TITLE') : t<string>('SET_PIN_TITLE')}</CyDText>
+          <CyDText
+            className={'text-[30px] font-extrabold text-center pt-[60px]'}>
+            {changePinValue
+              ? t<string>('SET_CHANGE_PIN_TITLE')
+              : t<string>('SET_PIN_TITLE')}
+          </CyDText>
         </CyDView>
       </>
     );
@@ -55,11 +82,11 @@ export default function SetPin ({ route, navigation }) {
   }, []);
 
   return (
-      <CyDSafeAreaView>
-        <CyDView className={'h-full bg-white px-[20px] pt-[10px]'}>
-          <PINHeader/>
-          <PIN/>
-        </CyDView>
-      </CyDSafeAreaView>
+    <CyDSafeAreaView>
+      <CyDView className={'h-full bg-white px-[20px] pt-[10px]'}>
+        <PINHeader />
+        <PIN />
+      </CyDView>
+    </CyDSafeAreaView>
   );
 }

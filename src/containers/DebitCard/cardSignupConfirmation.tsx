@@ -15,14 +15,25 @@ import clsx from 'clsx';
 import { screenTitle } from '../../constants';
 import { ICountry } from '../../models/cardApplication.model';
 import { ButtonType } from '../../constants/enum';
+import {
+  NavigationProp,
+  ParamListBase,
+  RouteProp,
+  useNavigation,
+  useRoute,
+} from '@react-navigation/native';
 
-export default function CardSignupConfirmation(props: {
-  navigation: any;
-  route: { params: { inviteCode: string; selectedCountry?: ICountry } };
-}) {
+interface RouteParams {
+  inviteCode: string;
+  selectedCountry?: ICountry;
+}
+
+export default function CardSignupConfirmation() {
+  const navigation = useNavigation<NavigationProp<ParamListBase>>();
+  const route = useRoute<RouteProp<{ params: RouteParams }, 'params'>>();
+
   const { t } = useTranslation();
-  const { navigation } = props;
-  const { inviteCode, selectedCountry } = props.route.params;
+  const { inviteCode, selectedCountry } = route.params;
   const [acknowledgement, setAcknowledgment] = useState<boolean>(false);
 
   return (
