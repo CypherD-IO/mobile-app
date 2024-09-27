@@ -253,15 +253,14 @@ export default function TransactionDetails() {
       transactionDetails.push(detail);
     });
   } else if (transaction.type === CardTransactionTypes.CREDIT) {
-    const dataIsAvailable = transaction.tokenData !== undefined;
     const type = transaction.type;
-    const id = dataIsAvailable
-      ? (transaction.id && split(transaction.id, ':')[1]) || transaction.id
+    const id = transaction.id
+      ? split(transaction.id, ':')[1] || transaction.id
       : 'N/A';
-    const chain = dataIsAvailable ? transaction.tokenData.chain : 'N/A';
-    const hash = dataIsAvailable ? transaction.tokenData.hash : 'N/A';
-    const tokenNos = dataIsAvailable ? transaction.tokenData.tokenNos : 'N/A';
-    const symbol = dataIsAvailable ? transaction.tokenData.symbol : '';
+    const chain = transaction?.tokenData?.chain ?? 'N/A';
+    const hash = transaction?.tokenData?.hash ?? 'N/A';
+    const tokenNos = transaction?.tokenData?.tokenNos ?? 'N/A';
+    const symbol = transaction?.tokenData?.symbol ?? '';
     const creditDetails = [
       {
         icon: AppImages.PAYMENT_DETAILS,
@@ -271,20 +270,24 @@ export default function TransactionDetails() {
           { label: t('TYPE'), value: type },
         ],
       },
-      {
-        icon: AppImages.CARD_SEL,
-        title: t('TOKEN_DETAILS'),
-        data: [
-          { label: t('CHAIN'), value: chain },
-          {
-            label: t('LOADED_AMOUNT'),
-            value: `${String(formatAmount(tokenNos, 2))} ${String(
-              symbol.toUpperCase(),
-            )}`,
-          },
-          { label: t('HASH'), value: { hash, chain } },
-        ],
-      },
+      ...(transaction.tokenData
+        ? [
+            {
+              icon: AppImages.CARD_SEL,
+              title: t('TOKEN_DETAILS'),
+              data: [
+                { label: t('CHAIN'), value: chain },
+                {
+                  label: t('LOADED_AMOUNT'),
+                  value: `${String(formatAmount(tokenNos, 2))} ${String(
+                    symbol.toUpperCase(),
+                  )}`,
+                },
+                { label: t('HASH'), value: { hash, chain } },
+              ],
+            },
+          ]
+        : []),
     ];
     creditDetails.forEach(detail => {
       transactionDetails.push(detail);
