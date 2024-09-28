@@ -3,8 +3,9 @@ import {
   waitForTransactionReceipt,
   getChainId,
   switchChain,
+  sendTransaction,
 } from '@wagmi/core';
-import { useWalletInfo } from '@web3modal/wagmi-react-native';
+import { useWalletInfo } from '@reown/appkit-wagmi-react-native';
 import { get } from 'lodash';
 import { useContext } from 'react';
 import Toast from 'react-native-toast-message';
@@ -29,11 +30,12 @@ import { useGlobalModalContext } from '../../components/v2/GlobalModal';
 import { MODAL_HIDE_TIMEOUT_250 } from '../../core/Http';
 import { useNavigation } from '@react-navigation/native';
 import { Linking, Platform } from 'react-native';
+import { polygon } from '@wagmi/core/chains';
 
 export default function useEthSigner() {
   const hdWalletContext = useContext<any>(HdWalletContext);
   const { switchChainAsync } = useSwitchChain();
-  const { sendTransactionAsync } = useSendTransaction();
+  // const { sendTransactionAsync } = useSendTransaction();
   const { writeContractAsync } = useWriteContract();
   const { walletInfo } = useWalletInfo();
   const { showModal, hideModal } = useGlobalModalContext();
@@ -73,16 +75,30 @@ export default function useEthSigner() {
     transactionToBeSigned: EthTransaction;
     chainId: number;
   }) {
-    const response = await sendTransactionAsync({
-      account: transactionToBeSigned.from as `0x${string}`,
-      to: transactionToBeSigned.to as `0x${string}`,
-      chainId,
-      value: BigInt(transactionToBeSigned.value),
-      ...(transactionToBeSigned?.data
-        ? { data: transactionToBeSigned?.data }
-        : {}),
-    });
-    return response;
+    console.log('Inside sendNativeCoin', { transactionToBeSigned, chainId });
+    try {
+      const txParams = {
+        account: transactionToBeSigned.from as `0x${string}`,
+        to: transactionToBeSigned.to as `0x${string}`,
+        chainId: polygon.id,
+        gas: BigInt(21000),
+        value: BigInt(transactionToBeSigned.value),
+        ...(transactionToBeSigned?.data
+          ? { data: transactionToBeSigned?.data }
+          : {}),
+      };
+      console.log('Transaction params:', txParams);
+
+      const response = await sendTransaction(wagmiConfig, txParams);
+      console.log('sendTransactionAsync response:', response);
+      return response;
+    } catch (error) {
+      console.error('Error in sendNativeCoin:', error);
+      Sentry.captureException(error);
+      throw new Error(
+        `Failed to send native coin: ${parseErrorMessage(error)}`,
+      );
+    }
   }
 
   async function sendToken({
@@ -240,6 +256,7 @@ export default function useEthSigner() {
     try {
       const connectionType = await getConnectionType();
       const connectedChain = getChainId(wagmiConfig);
+      console.log('🚀 ~ useEthSigner ~ connectedChain:', connectedChain);
       if (connectionType === ConnectionTypes.WALLET_CONNECT) {
         const chainConfig = get(walletConnectChainData, sendChain).chainConfig;
         if (
@@ -309,15 +326,19 @@ export default function useEthSigner() {
           }, 2000);
         }
         if (transactionToBeSigned.contractParams) {
+          console.log('send erc20 token');
           hash = await sendToken({
             transactionToBeSigned,
             chainId: chainConfig.id,
           });
         } else {
+          console.log('send native coin');
+          console.log('transactionToBeSigned : ', transactionToBeSigned);
           hash = await sendNativeCoin({
             transactionToBeSigned,
             chainId: chainConfig.id,
           });
+          console.log('hash from signEthTransaction : ', hash);
         }
         hideModal();
         return hash;
@@ -395,6 +416,7 @@ export default function useEthSigner() {
         }
       }
     } catch (e: any) {
+      console.log('useEthSigner Error in signEthTransaction : ', e);
       throw new Error(e);
     }
   };

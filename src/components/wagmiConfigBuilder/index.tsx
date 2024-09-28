@@ -1,7 +1,8 @@
-import React from 'react';
+import '@walletconnect/react-native-compat';
+import React, { Component, ErrorInfo } from 'react';
+import Loading from '../../components/v2/loading';
 import { WalletConnectListener } from '../walletConnectListener';
 import { WagmiProvider } from 'wagmi';
-import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import {
   mainnet,
   polygon,
@@ -9,19 +10,20 @@ import {
   arbitrum,
   avalanche,
   bsc,
-  zkSync,
   base,
   polygonZkEvm,
   aurora,
   moonbeam,
   moonriver,
-} from 'viem/chains';
+} from '@wagmi/core/chains';
+import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import {
-  createWeb3Modal,
+  createAppKit,
   defaultWagmiConfig,
-} from '@web3modal/wagmi-react-native';
+} from '@reown/appkit-wagmi-react-native';
 import { Config } from 'react-native-config';
-import Loading from '../v2/loading';
+
+const queryClient = new QueryClient();
 
 const chains = [
   mainnet,
@@ -30,7 +32,6 @@ const chains = [
   arbitrum,
   avalanche,
   bsc,
-  zkSync,
   base,
   polygonZkEvm,
   aurora,
@@ -55,17 +56,72 @@ export const wagmiConfig = defaultWagmiConfig({
   },
 });
 
-export const WagmiConfigBuilder: React.FC = ({ children }) => {
-  createWeb3Modal({
-    projectId,
-    wagmiConfig,
-  });
+class ErrorBoundary extends Component<
+  { children: React.ReactNode },
+  { hasError: boolean }
+> {
+  constructor(props: any) {
+    super(props);
+    this.state = { hasError: false };
+  }
 
-  const queryClient = new QueryClient();
+  static getDerivedStateFromError(error: Error) {
+    return { hasError: true };
+  }
+
+  componentDidCatch(error: Error, errorInfo: ErrorInfo) {
+    console.error('Error caught by ErrorBoundary:', error, errorInfo);
+  }
+
+  render() {
+    if (this.state.hasError) {
+      return <Loading />;
+    }
+
+    return this.props.children;
+  }
+}
+
+// export const wagmiConfig = createConfig({
+//   chains,
+//   connectors: [injected(), walletConnect({ projectId }), metaMask(), safe()],
+//   transports: {
+//     [mainnet.id]: http(),
+//     [polygon.id]: http(),
+//     [optimism.id]: http(),
+//     [arbitrum.id]: http(),
+//     [avalanche.id]: http(),
+//     [bsc.id]: http('https://bsc.rpc.blxrbdn.com	'),
+//     [zkSync.id]: http(),
+//     [base.id]: http(),
+//     [polygonZkEvm.id]: http(),
+//     [aurora.id]: http(),
+//     [moonbeam.id]: http(),
+//     [moonriver.id]: http(),
+//   },
+// });
+
+console.log('Creating AppKit with projectId:', projectId);
+console.log('Using wagmiConfig:', wagmiConfig);
+
+createAppKit({
+  projectId: String(Config.WALLET_CONNECT_PROJECTID),
+  wagmiConfig,
+});
+
+console.log('wagmiConfig:', wagmiConfig);
+
+export const WagmiConfigBuilder = ({
+  children,
+}: {
+  children: React.ReactNode;
+}) => {
   return wagmiConfig ? (
     <WagmiProvider config={wagmiConfig}>
       <QueryClientProvider client={queryClient}>
-        <WalletConnectListener>{children}</WalletConnectListener>
+        <WalletConnectListener>
+          <ErrorBoundary>{children}</ErrorBoundary>
+        </WalletConnectListener>
       </QueryClientProvider>
     </WagmiProvider>
   ) : (

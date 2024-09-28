@@ -58,6 +58,11 @@
 		<string>whatsapp</string>
 		<string>tg</string>
 		<string>twitter</string>
+		<string>metamask</string>
+		<string>trust</string>
+		<string>safe</string>
+		<string>rainbow</string>
+		<string>uniswap</string>
 	</array>
 	<key>LSRequiresIPhoneOS</key>
 	<true/>

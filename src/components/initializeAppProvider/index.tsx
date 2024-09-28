@@ -1,4 +1,10 @@
-import React, { useCallback, useContext, useEffect, useState } from 'react';
+import React, {
+  useCallback,
+  useContext,
+  useEffect,
+  useState,
+  ReactElement,
+} from 'react';
 import useInitializer from '../../hooks/useInitializer';
 import { GlobalContext, GlobalContextDef } from '../../core/globalContext';
 import { Linking, Platform } from 'react-native';
@@ -29,6 +35,8 @@ import Intercom from '@intercom/intercom-react-native';
 import RNExitApp from 'react-native-exit-app';
 import { HdWalletContextDef } from '../../reducers/hdwallet_reducer';
 import Loading from '../../containers/Loading';
+import { WagmiConfigBuilder } from '../wagmiConfigBuilder';
+import { AppKit } from '@reown/appkit-wagmi-react-native';
 
 export const InitializeAppProvider: React.FC<JSX.Element> = ({ children }) => {
   const {
@@ -102,7 +110,7 @@ export const InitializeAppProvider: React.FC<JSX.Element> = ({ children }) => {
     }
   }, [pinAuthentication]);
 
-  const RenderNavStack = useCallback(() => {
+  const RenderNavStack = useCallback((): ReactElement => {
     if (ethereum.address === undefined) {
       if (pinAuthentication || pinPresent === PinPresentStates.NOTSET) {
         return (
@@ -129,43 +137,13 @@ export const InitializeAppProvider: React.FC<JSX.Element> = ({ children }) => {
         if (!isReadOnlyWallet && !isAuthenticated) {
           return <Loading />;
         }
-        return children;
+        return <>{children}</>;
       }
     }
-    // {
-    //   ethereum.address === undefined ? (
-    //     pinAuthentication || pinPresent === PinPresentStates.NOTSET ? (
-    //       // reomve in the next build
-    //       <Loading
-    //         loadingText={t('INJECTIVE_UPDATE_LOADING_TEXT_WALLET_CREATION')}
-    //       />
-    //     ) : (
-    //       <PinAuthRoute
-    //         setPinAuthentication={setPinAuthentication}
-    //         initialScreen={
-    //           pinPresent === PinPresentStates.TRUE
-    //             ? C.screenTitle.PIN_VALIDATION
-    //             : C.screenTitle.SET_PIN
-    //         }
-    //       />
-    //     )
-    //   ) : ethereum.address === _NO_CYPHERD_CREDENTIAL_AVAILABLE_ ? (
-    //     hdWallet.state.reset ? (
-    //       <OnBoardingStack initialScreen={C.screenTitle.ENTER_KEY} />
-    //     ) : (
-    //       <OnBoardingStack />
-    //     )
-    //   ) : !isReadOnlyWallet && !isAuthenticated ? (
-    //     <Loading />
-    //   ) : (
-    //     children
-    //   );
-    // }
   }, [
     ethereum.address,
     pinAuthentication,
     pinPresent,
-    hdWallet.state.reset,
     isReadOnlyWallet,
     isAuthenticated,
   ]);
@@ -254,10 +232,15 @@ export const InitializeAppProvider: React.FC<JSX.Element> = ({ children }) => {
         </DialogContent>
       </Dialog>
 
-      <WalletConnectV2Provider>
-        <DefaultAuthRemoveModal isModalVisible={showDefaultAuthRemoveModal} />
-        <RenderNavStack />
-      </WalletConnectV2Provider>
+      {/* <WalletConnectV2Provider> */}
+      <WagmiConfigBuilder>
+        <>
+          <DefaultAuthRemoveModal isModalVisible={showDefaultAuthRemoveModal} />
+          {RenderNavStack()}
+          <AppKit />
+        </>
+      </WagmiConfigBuilder>
+      {/* </WalletConnectV2Provider> */}
     </>
   );
 };

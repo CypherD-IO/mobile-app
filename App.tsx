@@ -175,6 +175,14 @@ function App() {
         displayWalletConnectModal: walletConnectModalVisible,
       });
     } else {
+      console.log('walletConnectModalData');
+      console.log(
+        'walletConnectModalData :::::::::::: ',
+        walletConnectModalData,
+      );
+      console.log('walletConnectModalData :::::::::::: ', {
+        ...walletConnectModalData,
+      });
       setWalletConnectModalData({
         ...walletConnectModalData,
         displayWalletConnectModal: walletConnectModalVisible,

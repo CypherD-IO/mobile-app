@@ -5,7 +5,7 @@ import {
 } from '../../core/util';
 import useAxios from '../../core/HttpRequest';
 import { GlobalContext } from '../../core/globalContext';
-import { Web3Modal, useWalletInfo } from '@web3modal/wagmi-react-native';
+import { useWalletInfo, AppKit } from '@reown/appkit-wagmi-react-native';
 import axios from '../../core/Http';
 import { ConnectionTypes, GlobalContextType } from '../../constants/enum';
 import {
@@ -172,15 +172,12 @@ export const WalletConnectListener: React.FC = ({ children }) => {
       const msg = response?.data?.message;
       const signMsgResponse = await signMessageAsync({ message: msg });
       void analytics().logEvent('sign_wallet_connect_msg', {
-        from: walletInfo.name,
+        from: walletInfo?.name,
       });
     }
   };
 
   return (
-    <CyDView className='flex-1'>
-      {loading ? <Loading /> : children}
-      <Web3Modal />
-    </CyDView>
+    <CyDView className='flex-1'>{loading ? <Loading /> : children}</CyDView>
   );
 };

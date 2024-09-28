@@ -160,14 +160,16 @@ export default function useTransactionManager() {
           web3.utils.toWei(priorityFee.toFixed(9), 'gwei'),
         );
       }
-
+      console.log('tx : ', tx);
       const hash = await signEthTransaction({
         web3,
         sendChain: chain,
         transactionToBeSigned: tx,
       });
+      console.log('hash : ', hash);
       return hash;
     } catch (err: any) {
+      console.log('inside catch Error in sendNativeToken : ', err);
       throw new Error(err);
     }
     // }
@@ -308,6 +310,7 @@ export default function useTransactionManager() {
         });
         return { hash: String(hash), isError: false };
       } catch (error) {
+        console.log('Error in sendNativeToken : ', error);
         Sentry.captureException(error);
         return { hash: '', isError: true, error: parseErrorMessage(error) };
       }
