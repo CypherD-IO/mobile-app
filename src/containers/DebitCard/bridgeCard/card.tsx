@@ -141,7 +141,11 @@ export default function CardScreen({
           ...userCardDetails,
           hideCardDetails: true,
           showCVVAndExpiry: false,
-          cards: orderBy(cardConfig.cards, 'type', 'asc'),
+          cards: orderBy(
+            cardConfig?.cards,
+            card => (card.status === CardStatus.ACTIVE ? 0 : 1),
+            'asc',
+          ),
           personId: cardConfig.personId,
           currentCardRevealedDetails: {
             cardNumber: 'XXXX XXXX XXXX ',
