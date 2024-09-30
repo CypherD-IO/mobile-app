@@ -65,6 +65,7 @@ const PENDING = 'PENDING';
 const COMPLETED = 'COMPLETED';
 const FAILED = 'FAILED';
 const DELAYED = 'DELAYED';
+const NOT_FOUND = 'NOT_FOUND';
 
 const statuses: Record<string, string> = {
   [ActivityStatus.PENDING]: 'PENDING',
@@ -972,11 +973,7 @@ export default function Activites() {
     });
 
     activities.forEach((activity, index) => {
-      if (
-        [ActivityType.BRIDGE, ActivityType.SWAP, ActivityType.CARD].includes(
-          activity.type,
-        )
-      ) {
+      if ([ActivityType.SWAP, ActivityType.CARD].includes(activity.type)) {
         if (
           [
             ActivityStatus.DELAYED,
@@ -1094,6 +1091,16 @@ export default function Activites() {
                 });
               }
             }
+          } else if (
+            quoteId === activity.quoteId &&
+            [NOT_FOUND].includes(status)
+          ) {
+            activityContext.dispatch({
+              type: ActivityReducerAction.DELETE,
+              value: {
+                id: activity.id,
+              },
+            });
           } else {
             throw new Error(
               `Received invalid status: ${status} for quoteId:${quoteId}`,

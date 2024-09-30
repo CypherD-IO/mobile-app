@@ -204,8 +204,10 @@ export default function CardControlsMenu() {
     void fetchData();
     showModal('state', {
       type: 'success',
-      title: `Success, Zero Restriction Mode Enabled!`,
-      description: 'Zero Restriction Mode will be enbled for 15 mins.',
+      title: `Success, Zero Restriction Mode ${isZeroRestrictionModeEnabled ? 'Disabled' : 'Enabled'}!`,
+      description: isZeroRestrictionModeEnabled
+        ? 'Zero Restriction Mode has been disabled'
+        : 'Zero Restriction Mode will be enbled for 15 mins.',
       onSuccess: hideModal,
       onFailure: hideModal,
     });
@@ -439,19 +441,38 @@ export default function CardControlsMenu() {
                           </CyDTouchView>
                         )}
                         {isZeroRestrictionModeEnabled && (
-                          <CyDView
-                            className='bg-n0 rounded-full px-[6px] py-[12px] w-[50px] h-[50px] flex flex-col items-center justify-center border border-p200'
-                            // eslint-disable-next-line react-native/no-inline-styles
-                            style={{
-                              shadowColor: '#000',
-                              shadowOffset: { width: 0, height: 2 },
-                              shadowOpacity: 0.15,
-                              shadowRadius: 8,
-                              elevation: 4, // for Android
-                            }}>
-                            <CyDText className='font-extrabold text-[12px] text-base400 '>
-                              {formatTime(timer ?? 0)}
-                            </CyDText>
+                          <CyDView className='flex flex-row items-center'>
+                            <CyDView
+                              className='bg-n0 rounded-full px-[6px] py-[12px] w-[50px] h-[50px] flex flex-col items-center justify-center border border-p200 mr-[12px]'
+                              // eslint-disable-next-line react-native/no-inline-styles
+                              style={{
+                                shadowColor: '#000',
+                                shadowOffset: { width: 0, height: 2 },
+                                shadowOpacity: 0.15,
+                                shadowRadius: 8,
+                                elevation: 4, // for Android
+                              }}>
+                              <CyDText className='font-extrabold text-[12px] text-base400 '>
+                                {formatTime(timer ?? 0)}
+                              </CyDText>
+                            </CyDView>
+                            <CyDTouchView
+                              onPress={() => {
+                                void handleZeroRestionModeToggle();
+                              }}
+                              className='px-[10px] py-[6px] bg-n0 rounded-full h-[32px]'
+                              // eslint-disable-next-line react-native/no-inline-styles
+                              style={{
+                                shadowColor: '#000',
+                                shadowOffset: { width: 0, height: 2 },
+                                shadowOpacity: 0.15,
+                                shadowRadius: 8,
+                                elevation: 4, // for Android
+                              }}>
+                              <CyDText className='text-[14px] font-semibold text-n700'>
+                                {'Disable'}
+                              </CyDText>
+                            </CyDTouchView>
                           </CyDView>
                         )}
                       </>
