@@ -34,13 +34,17 @@ import {
   CyDView,
 } from '../../styles/tailwindStyles';
 import { OptionsContainer } from '../Auth/Share';
-import { onShare } from '../utilities/socialShareUtility';
 import { screenTitle } from '../../constants/index';
 import useConnectionManager from '../../hooks/useConnectionManager';
 import { get } from 'lodash';
 import { CHAIN_ETH } from '../../constants/server';
 import { logAnalytics } from '../../core/analytics';
 import useCardUtilities from '../../hooks/useCardUtilities';
+import {
+  NavigationProp,
+  ParamListBase,
+  useNavigation,
+} from '@react-navigation/native';
 
 const { DynamicView, CText, DynamicImage } = require('../../styles');
 
@@ -78,13 +82,8 @@ const SocialMedia = ({
   );
 };
 
-export default function Options(props: {
-  navigation: {
-    goBack: () => void;
-    popToTop: () => void;
-    navigate: (arg0: string, arg1?: any) => void;
-  };
-}) {
+export default function Options() {
+  const navigation = useNavigation<NavigationProp<ParamListBase>>();
   const { t } = useTranslation();
 
   const [clickCount, setClickCount] = useState(0);
@@ -118,7 +117,7 @@ export default function Options(props: {
   };
 
   const handleBackButton = () => {
-    props.navigation.navigate(screenTitle.PORTFOLIO);
+    navigation.navigate(screenTitle.PORTFOLIO);
     return true;
   };
 
@@ -216,7 +215,7 @@ export default function Options(props: {
               <OptionsContainer
                 sentryLabel={'address-book'}
                 onPress={() => {
-                  props.navigation.navigate(C.screenTitle.MY_ADDRESS, {
+                  navigation.navigate(C.screenTitle.MY_ADDRESS, {
                     indexValue: 0,
                   });
                 }}
@@ -237,7 +236,7 @@ export default function Options(props: {
               <OptionsContainer
                 sentryLabel={'activities'}
                 onPress={() => {
-                  props.navigation.navigate(C.screenTitle.ACTIVITIES);
+                  navigation.navigate(C.screenTitle.ACTIVITIES);
                   activityContext.dispatch({
                     type: ActivityReducerAction.UPDATEVISITED,
                     value: { lastVisited: new Date() },
@@ -267,7 +266,7 @@ export default function Options(props: {
                   <OptionsContainer
                     sentryLabel={'referrals'}
                     onPress={() => {
-                      props.navigation.navigate(C.screenTitle.REFERRALS, {
+                      navigation.navigate(C.screenTitle.REFERRALS, {
                         fromOptionsStack: true,
                       });
                     }}
@@ -290,7 +289,7 @@ export default function Options(props: {
                   <OptionsContainer
                     sentryLabel={'referrals'}
                     onPress={() => {
-                      props.navigation.navigate(C.screenTitle.REWARDS, {
+                      navigation.navigate(C.screenTitle.REWARDS, {
                         fromOptionsStack: true,
                       });
                     }}
@@ -315,7 +314,7 @@ export default function Options(props: {
                   <OptionsContainer
                     sentryLabel={'wallet-connect'}
                     onPress={() => {
-                      props.navigation.navigate(C.screenTitle.WALLET_CONNECT);
+                      navigation.navigate(C.screenTitle.WALLET_CONNECT);
                     }}
                     title={'Wallet Connect'}
                     logo={AppImages.WALLET_CONNECT_LOGO}
@@ -337,7 +336,7 @@ export default function Options(props: {
               <OptionsContainer
                 sentryLabel={'security-privacy'}
                 onPress={() => {
-                  props.navigation.navigate(C.screenTitle.SECURITY_PRIVACY);
+                  navigation.navigate(C.screenTitle.SECURITY_PRIVACY);
                 }}
                 title={'Security & Privacy'}
                 logo={AppImages.CYPHER_LOCKED}
@@ -355,7 +354,7 @@ export default function Options(props: {
               <OptionsContainer
                 sentryLabel={'manage-wallet'}
                 onPress={() => {
-                  props.navigation.navigate(C.screenTitle.MANAGE_WALLET);
+                  navigation.navigate(C.screenTitle.MANAGE_WALLET);
                 }}
                 title={'Manage Wallet'}
                 logo={AppImages.WALLET}
@@ -373,7 +372,7 @@ export default function Options(props: {
               <OptionsContainer
                 sentryLabel={'app-settings'}
                 onPress={() => {
-                  props.navigation.navigate(C.screenTitle.APP_SETTINGS);
+                  navigation.navigate(C.screenTitle.APP_SETTINGS);
                 }}
                 title={'App Settings'}
                 logo={AppImages.SETTINGS}
@@ -422,7 +421,7 @@ export default function Options(props: {
                 sentryLabel={'browser'}
                 onPress={() => {
                   logAnalytics('broswerClick', {});
-                  props.navigation.navigate(C.screenTitle.BROWSER);
+                  navigation.navigate(C.screenTitle.BROWSER);
                 }}
                 title={t('BROWSER')}
                 logo={AppImages.BROWSER_UNSEL}
@@ -440,7 +439,7 @@ export default function Options(props: {
               <OptionsContainer
                 sentryLabel={'terms-and-conditions-button'}
                 onPress={() => {
-                  props.navigation.navigate(C.screenTitle.LEGAL_SCREEN);
+                  navigation.navigate(C.screenTitle.LEGAL_SCREEN);
                 }}
                 title={t('LEGAL')}
                 logo={AppImages.TERMS_AND_CONDITIONS}
@@ -528,35 +527,36 @@ export default function Options(props: {
                   uri={'https://cypherhq.io/discord'}
                   screenTitle={C.screenTitle.SOCIAL_MEDIA_SCREEN}
                   imageUri={'https://public.cypherd.io/icons/discord.png'}
-                  navigationRef={props.navigation}
+                  navigationRef={navigation}
                 />
                 <SocialMedia
                   title={t('TWITTER')}
                   uri={'https://cypherhq.io/twitter'}
                   screenTitle={C.screenTitle.SOCIAL_MEDIA_SCREEN}
                   imageUri={'https://public.cypherd.io/icons/twitter.png'}
-                  navigationRef={props.navigation}
+                  navigationRef={navigation}
                 />
                 <SocialMedia
                   title={t('REDDIT')}
                   uri={'https://cypherhq.io/reddit'}
                   screenTitle={C.screenTitle.SOCIAL_MEDIA_SCREEN}
                   imageUri={'https://public.cypherd.io/icons/reddit.png'}
-                  navigationRef={props.navigation}
+                  navigationRef={navigation}
                 />
                 <SocialMedia
                   title={t('MEDIUM')}
                   uri={'https://cypherhq.io/medium'}
                   screenTitle={C.screenTitle.SOCIAL_MEDIA_SCREEN}
                   imageUri={'https://public.cypherd.io/icons/medium.png'}
-                  navigationRef={props.navigation}
+                  navigationRef={navigation}
                 />
                 <SocialMedia
                   title={t('YOUTUBE')}
                   uri={'https://cypherhq.io/youtube'}
                   screenTitle={C.screenTitle.SOCIAL_MEDIA_SCREEN}
                   imageUri={'https://public.cypherd.io/icons/youtube.png'}
-                  navigationRef={props.navigation}
+                  navigationRef={navigation}
+                  navigationRef={navigation}
                 />
               </CyDView>
             </DynamicView>
