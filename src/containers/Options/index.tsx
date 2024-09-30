@@ -8,27 +8,20 @@
 import Intercom from '@intercom/intercom-react-native';
 import analytics from '@react-native-firebase/analytics';
 import * as Sentry from '@sentry/react-native';
-import axios from 'axios';
 import React, { useContext, useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { BackHandler, ImageBackground, Linking } from 'react-native';
 import DeviceInfo from 'react-native-device-info';
-import Toast from 'react-native-toast-message';
 import SpInAppUpdates from 'sp-react-native-in-app-updates';
 import AppImages from '../../../assets/images/appImages';
-import { ConnectionTypes, GlobalContextType } from '../../constants/enum';
+import { ConnectionTypes } from '../../constants/enum';
 import * as C from '../../constants/index';
 import { Colors } from '../../constants/theme';
 import { sendFirebaseEvent } from '../../containers/utilities/analyticsUtility';
 import { showToast } from '../../containers/utilities/toastUtility';
-import { setDeveloperMode } from '../../core/asyncStorage';
+import { getDeveloperMode, setDeveloperMode } from '../../core/asyncStorage';
 import { GlobalContext } from '../../core/globalContext';
-import {
-  ActivityContext,
-  HdWalletContext,
-  PortfolioContext,
-} from '../../core/util';
-import { hostWorker } from '../../global';
+import { ActivityContext, HdWalletContext } from '../../core/util';
 import useEns from '../../hooks/useEns';
 import { isAndroid } from '../../misc/checkers';
 import { ActivityReducerAction } from '../../reducers/activity_reducer';
@@ -97,18 +90,14 @@ export default function Options(props: {
   const [clickCount, setClickCount] = useState(0);
   const [title, setTitle] = useState('');
   const [ens, setEns] = useState(false);
-  const ARCH_HOST: string = hostWorker.getHost('ARCH_HOST');
   const globalContext = useContext<any>(GlobalContext);
   const hdWalletContext = useContext<any>(HdWalletContext);
-  const portfolioState = useContext<any>(PortfolioContext);
   const ethereum = hdWalletContext.state.wallet.ethereum;
   const { isReadOnlyWallet }: { isReadOnlyWallet: boolean } =
     hdWalletContext.state;
   const activityContext = useContext<any>(ActivityContext);
   const [updateModal, setUpdateModal] = useState<boolean>(false);
-  const [devMode, setDevMode] = useState<boolean>(
-    portfolioState.statePortfolio.developerMode,
-  );
+  const [devMode, setDevMode] = useState<boolean>(false);
   const inAppUpdates = new SpInAppUpdates(
     false, // isDebug
   );
@@ -120,7 +109,13 @@ export default function Options(props: {
 
   useEffect(() => {
     setConnectionTypeValue(connectionType);
+    void fetchDevMode();
   }, [connectionType]);
+
+  const fetchDevMode = async () => {
+    const tempDevMode = await getDeveloperMode();
+    setDevMode(tempDevMode);
+  };
 
   const handleBackButton = () => {
     props.navigation.navigate(screenTitle.PORTFOLIO);
@@ -147,36 +142,6 @@ export default function Options(props: {
     return sortedAsc[sortedAsc.length - 1].datetime > lastVisited;
   };
 
-  const deleteSolidCredentials = async () => {
-    const deleteSolidDetailsUrl = `${ARCH_HOST}/v1/cards/application`;
-    const config = {
-      headers: {
-        Authorization: `Bearer ${String(globalContext.globalState.token)}`,
-      },
-    };
-    try {
-      await axios.delete(deleteSolidDetailsUrl, config);
-      const data = await getWalletProfile(globalContext.globalState.token);
-      globalContext.globalDispatch({
-        type: GlobalContextType.CARD_PROFILE,
-        cardProfile: data,
-      });
-      Toast.show({
-        type: t('TOAST_TYPE_SUCCESS'),
-        text1: t('REMOVED_SOLID_CREDENTIALS'),
-        position: 'bottom',
-      });
-    } catch (e) {
-      Sentry.captureException(e);
-      Toast.show({
-        type: t('TOAST_TYPE_ERROR'),
-        text1: 'Solid Credentials',
-        text2: e.response.data.message,
-        position: 'bottom',
-      });
-    }
-  };
-
   useEffect(() => {
     const getTitleValue = async () => {
       const profileData = await getWalletProfile(
@@ -197,16 +162,16 @@ export default function Options(props: {
     void getTitleValue();
   });
 
-  const referToFriend = () => {
-    onShare(t('RECOMMEND_TITLE'), t('RECOMMEND_MESSAGE'), t('RECOMMEND_URL'))
-      .then(() => {})
-      .catch(error => {});
-  };
+  // const referToFriend = () => {
+  //   onShare(t('RECOMMEND_TITLE'), t('RECOMMEND_MESSAGE'), t('RECOMMEND_URL'))
+  //     .then(() => {})
+  //     .catch(error => {});
+  // };
 
   // NOTE: LIFE CYCLE METHOD 🍎🍎🍎🍎
   return (
     <CyDView className='flex-1 bg-white'>
-      <CyDScrollView className={'bg-white w-full relative mb-[75px]'}>
+      <CyDScrollView className={'bg-white w-full relative'}>
         <ImageBackground
           source={AppImages.BG_SETTINGS}
           resizeMode='cover'
@@ -529,20 +494,13 @@ export default function Options(props: {
                 onPress={async () => {
                   setClickCount(clickCount + 1);
                   if (clickCount === 4) {
-                    const developerMode: boolean =
-                      portfolioState.statePortfolio.developerMode;
-                    portfolioState.dispatchPortfolio({
-                      value: { developerMode: !developerMode },
-                    });
-                    await setDeveloperMode(!developerMode);
-                    developerMode
+                    devMode
                       ? showToast('Developer Mode OFF')
                       : showToast('Developer Mode ON');
-                    setDevMode(!developerMode);
+                    await setDeveloperMode(!devMode);
+                    setDevMode(!devMode);
                     setClickCount(0);
-                    await analytics().setAnalyticsCollectionEnabled(
-                      !developerMode,
-                    );
+                    await analytics().setAnalyticsCollectionEnabled(!devMode);
                   }
                 }}>
                 <DynamicImage

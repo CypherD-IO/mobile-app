@@ -40,6 +40,7 @@ import {
   MsgUpdateAdmin,
 } from 'cosmjs-types/cosmwasm/wasm/v1/tx';
 import { toUtf8 } from '@cosmjs/encoding';
+import { parseErrorMessage } from './util';
 
 // Contract ABI for allowance and approval
 const contractABI = [
@@ -177,9 +178,7 @@ export default function useSkipApiBridge() {
 
             const allowance = response;
             if (Number(amount) > Number(allowance)) {
-              const tokens = ethers
-                .parseUnits(String(Number(amount)), fromToken.decimals)
-                .toString();
+              const tokens = amount;
               const resp = contract.methods
                 .approve(routerAddress, tokens)
                 .encodeABI();
@@ -204,10 +203,10 @@ export default function useSkipApiBridge() {
               resolve({ isError: false, isAllowanceEnough: true });
             }
           } else {
-            resolve({ isError: true, error: 'Chain not found' });
+            reject(new Error('Chain details not found'));
           }
-        } catch (e) {
-          resolve({ isError: true, error: e });
+        } catch (e: unknown) {
+          reject(new Error(parseErrorMessage(e)));
         }
       })();
     });
@@ -296,8 +295,7 @@ export default function useSkipApiBridge() {
             } else {
               return {
                 isError: true,
-                error:
-                  'Token approvel rejected by user/chain detials not found',
+                error: 'Token approvel rejected by user',
               };
             }
           }
@@ -376,13 +374,18 @@ export default function useSkipApiBridge() {
 
   async function getGasPrice(chain: string) {
     try {
-      const defaultGasPrice = get(cosmosConfig, [chain, 'gasPrice']);
+      const defaultGasPrice = get(cosmosConfig, [
+        chain.toLowerCase(),
+        'gasPrice',
+      ]);
       const { isError, data: gasPriceInfo } = await getWithoutAuth(
         `/v1/prices/gas/cosmos/${chain}`,
       );
-      if (isError) throw new Error('Error: In fetching gasPrice');
+
+      if (isError) throw new Error('Error fetching gasPrice');
       return {
         gasPrice: get<number>(gasPriceInfo, 'gasPrice', defaultGasPrice),
+
         gasLimitMultiplier: get<number>(
           gasPriceInfo,
           'gasLimitMultiplier',
@@ -409,7 +412,7 @@ export default function useSkipApiBridge() {
     const approveSend = await showModalAndGetResponse(setCosmosModalVisible);
     if (approveSend) {
       const chainName = get(ChainIdNameMapping, chain, '');
-      const chainBackendName = get(ChainBackendNameMapping, chainName, '');
+      const chainBackendName = get(ChainBackendNameMapping, [chainName, 0], '');
 
       const signer = await getCosmosSignerClient(chainName);
       if (signer) {
@@ -439,7 +442,8 @@ export default function useSkipApiBridge() {
           transferMsg,
           'cypher skip transfer',
         );
-        const { gasPrice, gasLimitMultiplier } = await getGasPrice(chainName);
+        const { gasPrice, gasLimitMultiplier } =
+          await getGasPrice(chainBackendName);
         const gasFee = simulation * 3 * gasPrice;
         const fee = {
           gas: Math.floor(simulation * gasLimitMultiplier).toString(),
@@ -465,7 +469,7 @@ export default function useSkipApiBridge() {
         return { isError: true, error: 'Unable to fetch the signer' };
       }
     } else {
-      return { isError: true, error: 'User reject token transfer' };
+      return { isError: true, error: 'User rejected token transfer' };
     }
   };
 
@@ -506,7 +510,7 @@ export default function useSkipApiBridge() {
           chainId: svmTx.chain_id,
         };
       } else {
-        return { isError: true, error: 'User reject token transfer' };
+        return { isError: true, error: 'User rejected token transfer' };
       }
     } else {
       return { isError: true, error: 'Unable to generate user solana wallet' };

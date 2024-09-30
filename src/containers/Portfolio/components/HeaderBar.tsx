@@ -1,30 +1,25 @@
 import React, { ReactNode, useContext, useEffect, useState } from 'react';
 import {
-  CyDAnimatedView,
   CyDFastImage,
+  CyDImage,
+  CyDText,
   CyDTouchView,
   CyDView,
 } from '../../../styles/tailwindStyles';
-import { PortfolioContext } from '../../../core/util';
-import { QRScannerScreens } from '../../../constants/server';
+import { Chain, QRScannerScreens } from '../../../constants/server';
 import AppImages from '../../../../assets/images/appImages';
 import { screenTitle } from '../../../constants';
 import { BarCodeReadEvent } from 'react-native-camera';
-import {
-  SharedValue,
-  useAnimatedStyle,
-  withTiming,
-} from 'react-native-reanimated';
-import { isIOS } from '../../../misc/checkers';
-import { PortfolioBannerHeights } from '../../../hooks/useScrollManager';
 import { ConnectionTypes } from '../../../constants/enum';
 import useConnectionManager from '../../../hooks/useConnectionManager';
+import { HdWalletContext } from '../../../core/util';
+import { HdWalletContextDef } from '../../../reducers/hdwallet_reducer';
+import { t } from 'i18next';
 
 interface HeaderBarProps {
   navigation: any;
-  setChooseChain: Function;
-  bannerHeight: PortfolioBannerHeights;
-  scrollY: SharedValue<number>;
+  setChooseChain: (arg: boolean) => void;
+  selectedChain: Chain;
   onWCSuccess: (e: BarCodeReadEvent) => void;
   renderTitleComponent?: ReactNode;
 }
@@ -32,12 +27,12 @@ interface HeaderBarProps {
 export const HeaderBar = ({
   navigation,
   setChooseChain,
-  bannerHeight,
-  scrollY,
+  selectedChain,
   onWCSuccess,
   renderTitleComponent,
 }: HeaderBarProps) => {
-  const portfolioState = useContext<any>(PortfolioContext);
+  const hdWalletContext = useContext(HdWalletContext) as HdWalletContextDef;
+  const { isReadOnlyWallet } = hdWalletContext.state;
   const { connectionType } = useConnectionManager();
   const [connectionTypeValue, setConnectionTypeValue] =
     useState(connectionType);
@@ -45,18 +40,6 @@ export const HeaderBar = ({
   useEffect(() => {
     setConnectionTypeValue(connectionType);
   }, [connectionType]);
-
-  const OFFSET_TABVIEW = isIOS() ? -bannerHeight : 0;
-  const opacity = useAnimatedStyle(() => {
-    return {
-      opacity: withTiming(
-        scrollY.value > OFFSET_TABVIEW + 0.6 * bannerHeight ? 1 : 0,
-        {
-          duration: 300,
-        },
-      ),
-    };
-  });
 
   const onSuccess = onWCSuccess;
   return (
@@ -71,11 +54,22 @@ export const HeaderBar = ({
         }>
         <CyDFastImage
           className={'h-[22px] w-[22px]'}
-          source={portfolioState.statePortfolio.selectedChain.logo_url}
+          source={selectedChain.logo_url}
         />
         <CyDFastImage className={'h-[8px] w-[8px]'} source={AppImages.DOWN} />
       </CyDTouchView>
-      <CyDAnimatedView style={opacity}>{renderTitleComponent}</CyDAnimatedView>
+      {isReadOnlyWallet && (
+        <CyDView className='flex flex-row items-center p-[6px] bg-p20 rounded-[8px]'>
+          <CyDFastImage
+            source={AppImages.LOCK_BROWSER}
+            className={'h-[14px] w-[14px] mr-[5px] '}
+            resizeMode='contain'
+          />
+          <CyDText className='text-[14px] font-medium'>
+            {t('READ_ONLY_MODE')}
+          </CyDText>
+        </CyDView>
+      )}
       {connectionTypeValue !== ConnectionTypes.WALLET_CONNECT && (
         <CyDTouchView
           className={'pl-[8px] rounded-[18px]'}

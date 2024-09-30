@@ -13,7 +13,14 @@ import {
   TokenOverviewTabs,
 } from '../../constants/enum';
 import { useEffect, useState } from 'react';
-import { useIsFocused } from '@react-navigation/native';
+import {
+  useIsFocused,
+  NavigationProp,
+  ParamListBase,
+  RouteProp,
+  useNavigation,
+  useRoute,
+} from '@react-navigation/native';
 import Loading from '../../components/v2/loading';
 import { TokenTransactions } from './transactions';
 import TokenOverviewToolBar from './toolbar';
@@ -24,27 +31,15 @@ import { isAndroid, isIOS } from '../../misc/checkers';
 import { Layout } from 'react-native-reanimated';
 import { Colors } from '../../constants/theme';
 
-interface RouteProps {
-  route: {
-    params: {
-      tokenData: TokenMeta;
-      otherChainsWithToken: any[];
-      navigateTo?: string;
-    };
-  };
-  navigation: {
-    goBack: () => void;
-    setOptions: ({ title }: { title: string }) => void;
-    setParams: (arg0: { tokenData: any; otherChainsWithToken: any[] }) => void;
-    navigate: (screen: string, params?: object) => void;
-    reset: (arg0: {
-      index: number;
-      routes: Array<{ name: string; params?: object }>;
-    }) => void;
-  };
+interface RouteParams {
+  tokenData: TokenMeta;
+  otherChainsWithToken: any[];
+  navigateTo?: string;
 }
 
-function TokenOverviewV2({ route, navigation }: RouteProps) {
+function TokenOverviewV2() {
+  const navigation = useNavigation<NavigationProp<ParamListBase>>();
+  const route = useRoute<RouteProp<{ params: RouteParams }, 'params'>>();
   const isFocused = useIsFocused();
   const { tokenData, otherChainsWithToken } = route.params;
   const [tokenTabs, setTokenTabs] = useState([

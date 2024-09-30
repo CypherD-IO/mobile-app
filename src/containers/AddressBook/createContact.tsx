@@ -45,28 +45,26 @@ import { isCoreumAddress } from '../utilities/coreumUtilities';
 import { isInjectiveAddress } from '../utilities/injectiveUtilities';
 import { isKujiraAddress } from '../utilities/kujiraUtilities';
 import { isSolanaAddress } from '../utilities/solanaUtilities';
+import {
+  NavigationProp,
+  ParamListBase,
+  RouteProp,
+  useNavigation,
+  useRoute,
+} from '@react-navigation/native';
 
-interface RouteProps {
-  route: {
-    params: {
-      editContact: boolean;
-      editContactName: string;
-      contactBook: {};
-      additionalAddress: {
-        chain: string;
-        toAddress: string;
-      };
-    };
-  };
-  navigation: {
-    goBack: () => void;
-    navigate: (screen: string, params?: {}) => void;
-    push: (screen: string, params?: {}) => void;
-    popToTop: () => void;
+interface RouteParams {
+  editContact: boolean;
+  editContactName: string;
+  contactBook: {};
+  additionalAddress: {
+    chain: string;
+    toAddress: string;
   };
 }
-
-export const CreateContact = ({ route, navigation }: RouteProps) => {
+export const CreateContact = () => {
+  const navigation = useNavigation<NavigationProp<ParamListBase>>();
+  const route = useRoute<RouteProp<{ params: RouteParams }, 'params'>>();
   const editContact = route.params ? route.params.editContact : false;
   const editContactName = route.params ? route.params.editContactName : '';
   const additionalAddress = route.params

@@ -17,7 +17,6 @@ import {
   ImagePosition,
 } from '../../../constants/enum';
 import ChooseMultipleCountryModal from '../../../components/v2/chooseMultipleCountryModal';
-import { ICountry } from '../../../models/cardApplication.model';
 import useAxios from '../../../core/HttpRequest';
 import { compact, get, isEqual, pick } from 'lodash';
 import EditLimitModal from './editLimitModal';
@@ -58,7 +57,6 @@ export default function CardControlsSettings({ route, navigation }) {
   const [domesticCountry, setDomesticCountry] = useState({});
   const [selectedDomesticCountry, setSelectedDomesticCountry] = useState({});
   const { showModal, hideModal } = useGlobalModalContext();
-  const [domesticCountryLoading, setDomesticCountryLoading] = useState(false);
   const [allowedCountryLoading, setAllowedCountryLoading] = useState(false);
   const defaultAtmLimit = 2000;
   const [limitApplicable, setLimitApplicable] = useState('planLimit');
@@ -441,7 +439,7 @@ export default function CardControlsSettings({ route, navigation }) {
                       <CyDText className='text-[12px] text-n200'>{`Total Countries: ${countries.length}`}</CyDText>
                     </CyDView>
                     <CyDTouchView
-                      className='flex flex-row justify-between items-center rounded-[8px] border-[1px] border-b400 p-[12px] mt-[6px]'
+                      className='flex flex-row justify-between items-center rounded-[8px] border-[1px] border-base400 p-[12px] mt-[6px]'
                       onPress={() => {
                         !disableOptions && setCountryModalVisible(true);
                       }}

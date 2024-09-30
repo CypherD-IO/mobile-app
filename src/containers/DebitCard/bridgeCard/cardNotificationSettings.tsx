@@ -1,4 +1,13 @@
 import React, { useContext, useEffect, useState } from 'react';
+import * as Sentry from '@sentry/react-native';
+import { t } from 'i18next';
+import { get } from 'lodash';
+import LottieView from 'lottie-react-native';
+import { StyleSheet } from 'react-native';
+import AppImages from '../../../../assets/images/appImages';
+import { useGlobalModalContext } from '../../../components/v2/GlobalModal';
+import OtpInput from '../../../components/v2/OTPInput';
+import { screenTitle } from '../../../constants';
 import {
   CARD_ALERT_TYPES,
   CARD_NOTIFICATION_TYPES,
@@ -6,42 +15,33 @@ import {
   GlobalContextType,
 } from '../../../constants/enum';
 import { GlobalContext, GlobalContextDef } from '../../../core/globalContext';
-import { useGlobalModalContext } from '../../../components/v2/GlobalModal';
 import useAxios from '../../../core/HttpRequest';
-import { get } from 'lodash';
+import useCardUtilities from '../../../hooks/useCardUtilities';
 import {
-  CyDFastImage,
-  CyDImage,
-  CyDSafeAreaView,
   CyDSwitch,
   CyDText,
   CyDTouchView,
   CyDView,
 } from '../../../styles/tailwindStyles';
-import { t } from 'i18next';
-import AppImages from '../../../../assets/images/appImages';
-import { Linking, StyleSheet } from 'react-native';
-import LottieView from 'lottie-react-native';
-import OtpInput from '../../../components/v2/OTPInput';
-import * as Sentry from '@sentry/react-native';
-import CyDModalLayout from '../../../components/v2/modal';
-import { copyToClipboard } from '../../../core/util';
-import Button from '../../../components/v2/button';
-import { showToast } from '../../utilities/toastUtility';
-import { screenTitle } from '../../../constants';
-import useCardUtilities from '../../../hooks/useCardUtilities';
+import {
+  NavigationProp,
+  ParamListBase,
+  RouteProp,
+  useNavigation,
+  useRoute,
+} from '@react-navigation/native';
 
-export default function CardNotificationSettings(props: {
-  route: {
-    params: {
-      currentCardProvider: CardProviders;
-      card: { cardId: string; status: string; type: string };
-    };
-  };
-  navigation: any;
-}) {
+interface RouteParams {
+  currentCardProvider: CardProviders;
+  card: { cardId: string; status: string; type: string };
+}
+
+export default function CardNotificationSettings() {
+  const navigation = useNavigation<NavigationProp<ParamListBase>>();
+  const route = useRoute<RouteProp<{ params: RouteParams }, 'params'>>();
+
   const RESENT_OTP_TIME = 30;
-  const { currentCardProvider, card } = props.route.params;
+  const { currentCardProvider } = route.params;
   const globalContext = useContext(GlobalContext) as GlobalContextDef;
   const cardProfile = globalContext.globalState.cardProfile;
   const { showModal, hideModal } = useGlobalModalContext();
@@ -296,7 +296,7 @@ export default function CardNotificationSettings(props: {
     } else {
       switch (cardNotificationType) {
         case CARD_NOTIFICATION_TYPES.TELEGRAM:
-          props.navigation.navigate(screenTitle.TELEGRAM_SETUP_SETTINGS, {});
+          navigation.navigate(screenTitle.TELEGRAM_SETUP_SETTINGS, {});
           break;
         case CARD_NOTIFICATION_TYPES.EMAIL:
           void toggleEmailNotifiction();

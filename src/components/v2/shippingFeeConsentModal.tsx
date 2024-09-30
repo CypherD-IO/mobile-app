@@ -31,19 +31,9 @@ export default function ShippingFeeConsentModal({
     return (
       <CyDView className='pr-[12px]'>
         <CyDText className='mt-[42px] text-[16px] font-bold'>
-          {t('PLEASE_BE_AWARE')}
+          Please Note:
         </CyDText>
-        <CyDView className={'flex flex-row my-[18px]'}>
-          <CyDImage
-            className={'mt-[6px] h-[12px] w-[12px]'}
-            source={AppImages.RIGHT_ARROW_BULLET}
-            resizeMode='contain'
-          />
-          <CyDText className={'ml-[10px] font-semibold'}>
-            {t('VIRTUAL_CARD_CANCEL')}
-          </CyDText>
-        </CyDView>
-        <CyDView className={'flex flex-row mt-[4px]'}>
+        <CyDView className={'flex flex-row mt-[18px]'}>
           <CyDImage
             className={'mt-[6px] h-[12px] w-[12px]'}
             source={AppImages.RIGHT_ARROW_BULLET}

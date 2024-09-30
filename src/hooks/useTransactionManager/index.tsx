@@ -30,6 +30,7 @@ import {
   getTimeOutTime,
   getWeb3Endpoint,
   limitDecimalPlaces,
+  parseErrorMessage,
 } from '../../core/util';
 import {
   SendInEvmInterface,
@@ -44,7 +45,7 @@ import { SendAuthorization } from 'cosmjs-types/cosmos/bank/v1beta1/authz';
 import { IAutoLoadResponse } from '../../models/autoLoadResponse.interface';
 import { MsgRevoke } from 'cosmjs-types/cosmos/authz/v1beta1/tx';
 import { allowanceApprovalContractABI } from '../../core/swap';
-import { Holding } from '../../core/Portfolio';
+import { Holding } from '../../core/portfolio';
 import { getGasPriceFor } from '../../containers/Browser/gasHelper';
 import { SwapMetaData } from '../../models/swapMetaData';
 import {
@@ -308,7 +309,7 @@ export default function useTransactionManager() {
         return { hash: String(hash), isError: false };
       } catch (error) {
         Sentry.captureException(error);
-        return { hash: '', isError: true, error: error?.message ?? error };
+        return { hash: '', isError: true, error: parseErrorMessage(error) };
       }
     } else {
       try {
@@ -324,7 +325,7 @@ export default function useTransactionManager() {
         return { hash: String(hash), contractData, isError: false };
       } catch (error: any) {
         Sentry.captureException(error);
-        return { hash: '', isError: true, error: error?.message ?? error };
+        return { hash: '', isError: true, error: parseErrorMessage(error) };
       }
     }
   };

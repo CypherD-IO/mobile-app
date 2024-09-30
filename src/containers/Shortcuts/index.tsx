@@ -25,14 +25,9 @@ import {
 import ChooseChainModal from '../../components/v2/chooseChainModal';
 import {
   HdWalletContext,
-  PortfolioContext,
   getAvailableChains,
   sortJSONArrayByKey,
 } from '../../core/util';
-import {
-  PORTFOLIO_EMPTY,
-  PORTFOLIO_NEW_LOAD,
-} from '../../reducers/portfolio_reducer';
 import LottieView from 'lottie-react-native';
 import analytics from '@react-native-firebase/analytics';
 import { useTranslation } from 'react-i18next';
@@ -40,6 +35,12 @@ import { AppState } from 'react-native';
 import useIsSignable from '../../hooks/useIsSignable';
 import { ActivityType } from '../../reducers/activity_reducer';
 import { isIOS } from '../../misc/checkers';
+import {
+  NavigationProp,
+  ParamListBase,
+  useNavigation,
+} from '@react-navigation/native';
+import clsx from 'clsx';
 
 interface IShortcutsData {
   index: number;
@@ -105,15 +106,14 @@ enum SellOptions {
   TRANSFI = 'TRANSFI',
 }
 
-export default function ShortcutsModal({ navigationRef }) {
+export default function ShortcutsModal() {
+  const navigation = useNavigation<NavigationProp<ParamListBase>>();
   const { t } = useTranslation();
   const hdWallet = useContext<any>(HdWalletContext);
-  const { isReadOnlyWallet } = hdWallet.state;
   const [sortedShortcutsData, setSortedShortcutsData] = useState<
     IShortcutsData[]
   >([]);
   const [isSignableTransaction] = useIsSignable();
-  const portfolioState = useContext<any>(PortfolioContext);
 
   const emptyWalletShortcutsData: IShortcutsData[] = [
     {
@@ -135,20 +135,6 @@ export default function ShortcutsModal({ navigationRef }) {
 
   const shortcutsData: IShortcutsData[] = [
     ...emptyWalletShortcutsData,
-    // {
-    //   index: 1,
-    //   title: ShortcutsTitle.BRIDGE,
-    //   logo: AppImages.BRIDGE_SHORTCUT,
-    //   subTitle: t('EXCHANGE_SHORTCUTS_SUBTITLE'),
-    //   screenTitle: screenTitle.BRIDGE_SKIP_API_SCREEN,
-    // },
-    // {
-    //   index: 2,
-    //   title: ShortcutsTitle.SWAP,
-    //   logo: AppImages.SWAP_SHORTCUT,
-    //   subTitle: t('SWAP_SHORTCUTS_SUBTITLE'),
-    //   screenTitle: screenTitle.BRIDGE_SCREEN,
-    // },
     {
       index: 3,
       title: ShortcutsTitle.SEND,
@@ -164,34 +150,9 @@ export default function ShortcutsModal({ navigationRef }) {
       screenTitle: '',
       isPrivateKeyDependent: true,
     },
-    // {
-    //   index: 4,
-    //   title: ShortcutsTitle.FUND_CARD,
-    //   logo: AppImages.FUND_CARD_SHORTCUT,
-    //   subTitle: t('FUND_CARD_SHORTCUTS_SUBTITLE'),
-    //   screenTitle: screenTitle.DEBIT_CARD
-    // }
-    // {
-    //   index: 5,
-    //   title: ShortcutsTitle.IBC,
-    //   subTitle: t('IBC_SHORTCUTS_SUBTITLE'),
-    //   logo: AppImages.IBC_SHORTCUT,
-    //   screenTitle: screenTitle.IBC_SCREEN
-    // }
   ];
 
   const buyOptionsData: IBuyOptionsData[] = [
-    // {
-    //   index: 3,
-    //   title: BuyOptions.TRANSFI,
-    //   displayTitle: t('TRANSFI_BUY'),
-    //   logo: AppImages.TRANSFI_LOGO,
-    //   supportedChains: [CHAIN_ETH, CHAIN_ARBITRUM, CHAIN_OPTIMISM, CHAIN_POLYGON, CHAIN_BSC, CHAIN_AVALANCHE],
-    //   currencyType: CurrencyTypes.USD,
-    //   screenTitle: screenTitle.TRANSFI_SCREEN,
-    //   supportedPaymentModes: '',
-    //   isVisibileInUI: true
-    // },
     {
       index: 0,
       title: BuyOptions.ONMETA,
@@ -245,19 +206,7 @@ export default function ShortcutsModal({ navigationRef }) {
       supportedPaymentModes: 'Instant Bank Deposit using IMPS',
       isVisibileInUI: true,
     },
-    // {
-    //   index: 1,
-    //   title: SellOptions.TRANSFI,
-    //   displayTitle: t('TRANSFI_SELL'),
-    //   logo: AppImages.TRANSFI_LOGO,
-    //   supportedChains: [CHAIN_ETH, CHAIN_ARBITRUM, CHAIN_OPTIMISM, CHAIN_POLYGON],
-    //   currencyType: CurrencyTypes.USD,
-    //   screenTitle: screenTitle.TRANSFI_SCREEN,
-    //   supportedPaymentModes: '',
-    //   isVisibileInUI: true
-    // }
   ];
-  // hdWallet.state.card
 
   const [shortcutsModalVisible, setShortcutsModalVisible] =
     useState<boolean>(false);
@@ -292,40 +241,23 @@ export default function ShortcutsModal({ navigationRef }) {
         setTimeout(() => setSellModalVisible(true), 250);
         break;
       case ShortcutsTitle.SEND:
-        navigationRef.navigate(item.screenTitle);
+        navigation.navigate(item.screenTitle);
         break;
       case ShortcutsTitle.RECEIVE:
         setChainData(getAvailableChains(hdWallet));
         setTimeout(() => setChooseChainModal(true), 250);
         break;
-      case ShortcutsTitle.FUND_CARD:
-        hdWallet.state.card
-          ? navigationRef.navigate(screenTitle.DEBIT_CARD, {
-              screen: screenTitle.FUND_CARD_SCREEN,
-            })
-          : navigationRef.navigate(screenTitle.DEBIT_CARD, {
-              screen: screenTitle.DEBIT_CARD_SCREEN,
-              params: {
-                toScreen: screenTitle.FUND_CARD_SCREEN,
-              },
-            });
-        break;
-      case ShortcutsTitle.BRIDGE:
-        navigationRef.navigate(screenTitle.BRIDGE_SKIP_API_SCREEN);
-        break;
-      case ShortcutsTitle.SWAP:
-        navigationRef.navigate(screenTitle.BRIDGE_SKIP_API_SCREEN);
-        break;
+
       default:
         item?.navigationProps
           ? setTimeout(
               () =>
-                navigationRef.navigate(item.screenTitle, {
+                navigation.navigate(item.screenTitle, {
                   ...item.navigationProps,
                 }),
               250,
             )
-          : navigationRef.navigate(item.screenTitle);
+          : navigation.navigate(item.screenTitle);
     }
   };
 
@@ -340,7 +272,7 @@ export default function ShortcutsModal({ navigationRef }) {
     }
   };
 
-  const renderShortcutsItem = (item: IShortcutsData, navigationRef: any) => {
+  const renderShortcutsItem = (item: IShortcutsData) => {
     return (
       <CyDTouchView
         className={''}
@@ -366,7 +298,7 @@ export default function ShortcutsModal({ navigationRef }) {
     );
   };
 
-  const renderBuyPlatformItem = (item: IBuyOptionsData, navigationRef: any) => {
+  const renderBuyPlatformItem = (item: IBuyOptionsData) => {
     return (
       item.isVisibileInUI && (
         <CyDTouchView
@@ -424,10 +356,7 @@ export default function ShortcutsModal({ navigationRef }) {
     );
   };
 
-  const renderSellPlatformItem = (
-    item: ISellOptionsData,
-    navigationRef: any,
-  ) => {
+  const renderSellPlatformItem = (item: ISellOptionsData, navigation: any) => {
     return (
       item.isVisibileInUI && (
         <CyDTouchView
@@ -486,13 +415,13 @@ export default function ShortcutsModal({ navigationRef }) {
     );
   };
 
-  const renderChainItem = (item: Chain, navigationRef: any) => {
+  const renderChainItem = (item: Chain, navigation: any) => {
     return (
       <CyDTouchView
         className={'p-[20px] bg-[#FAFAFA] rounded-[18px] mb-[10px]'}
         onPress={() => {
           setBuyChooseChainModalVisible(false);
-          navigationRef.navigate(buyType.screenTitle, {
+          navigation.navigate(buyType.screenTitle, {
             url: item.backendName,
             operation: 'buy',
           });
@@ -516,13 +445,13 @@ export default function ShortcutsModal({ navigationRef }) {
     );
   };
 
-  const renderSellChainItem = (item: Chain, navigationRef: any) => {
+  const renderSellChainItem = (item: Chain, navigation: any) => {
     return (
       <CyDTouchView
         className={'p-[20px] bg-[#FAFAFA] rounded-[18px] mb-[10px]'}
         onPress={() => {
           setSellChooseChainModalVisible(false);
-          navigationRef.navigate(sellType.screenTitle, {
+          navigation.navigate(sellType.screenTitle, {
             url: item.backendName,
             operation: 'sell',
           });
@@ -602,7 +531,7 @@ export default function ShortcutsModal({ navigationRef }) {
       setChooseChainModal(false);
       setTimeout(
         () =>
-          navigationRef.navigate(screenTitle.QRCODE, {
+          navigation.navigate(screenTitle.QRCODE, {
             addressType: addressTypeQRCode,
           }),
         70,
@@ -625,12 +554,7 @@ export default function ShortcutsModal({ navigationRef }) {
   };
 
   useEffect(() => {
-    let data =
-      portfolioState.statePortfolio.portfolioState === PORTFOLIO_EMPTY
-        ? emptyWalletShortcutsData
-        : shortcutsData;
-    data = sortJSONArrayByKey(data, 'index');
-    setSortedShortcutsData(data);
+    void populateShortcutsData();
     const appStateChangeListener = AppState.addEventListener(
       'change',
       handleAppStateChange,
@@ -641,22 +565,17 @@ export default function ShortcutsModal({ navigationRef }) {
     };
   }, [appState]);
 
-  useEffect(() => {
-    if (portfolioState.statePortfolio.buyButtonClicked === true) {
-      portfolioState.dispatchPortfolio({ value: { buyButtonClicked: false } });
-      setTimeout(() => setBuyModalVisible(true), 1000);
-    }
-  }, [portfolioState.statePortfolio.buyButtonClicked]);
+  const populateShortcutsData = () => {
+    const data = sortJSONArrayByKey(shortcutsData, 'index');
+    setSortedShortcutsData(data);
+  };
 
   return (
     <CyDTouchView
       onPress={async () => {
         setShortcutsModalVisible(true);
         await analytics().logEvent('shortcuts_button_click');
-      }}
-      disabled={
-        portfolioState.statePortfolio.portfolioState === PORTFOLIO_NEW_LOAD
-      }>
+      }}>
       {/* shortcuts modal */}
       <CyDModalLayout
         isModalVisible={shortcutsModalVisible}
@@ -676,7 +595,7 @@ export default function ShortcutsModal({ navigationRef }) {
           </CyDTouchView>
           <CyDFlatList
             data={sortedShortcutsData}
-            renderItem={({ item }) => renderShortcutsItem(item, navigationRef)}
+            renderItem={({ item }) => renderShortcutsItem(item, navigation)}
             key={({ item }) => item.index}
             className={''}
             showsVerticalScrollIndicator={true}
@@ -708,9 +627,7 @@ export default function ShortcutsModal({ navigationRef }) {
           </CyDText>
           <CyDFlatList
             data={buyOptionsData}
-            renderItem={({ item }) =>
-              renderBuyPlatformItem(item, navigationRef)
-            }
+            renderItem={({ item }) => renderBuyPlatformItem(item, navigation)}
             key={({ item }) => item.index}
             showsVerticalScrollIndicator={true}
           />
@@ -739,9 +656,7 @@ export default function ShortcutsModal({ navigationRef }) {
           </CyDText>
           <CyDFlatList
             data={sellOptionsData}
-            renderItem={({ item }) =>
-              renderSellPlatformItem(item, navigationRef)
-            }
+            renderItem={({ item }) => renderSellPlatformItem(item, navigation)}
             key={({ item }) => item.index}
             showsVerticalScrollIndicator={true}
           />
@@ -789,7 +704,7 @@ export default function ShortcutsModal({ navigationRef }) {
           </CyDText>
           <CyDFlatList
             data={chainData}
-            renderItem={({ item }) => renderChainItem(item, navigationRef)}
+            renderItem={({ item }) => renderChainItem(item, navigation)}
             key={({ item }) => item.index}
             className={''}
             showsVerticalScrollIndicator={true}
@@ -841,7 +756,7 @@ export default function ShortcutsModal({ navigationRef }) {
           </CyDText>
           <CyDFlatList
             data={chainData}
-            renderItem={({ item }) => renderSellChainItem(item, navigationRef)}
+            renderItem={({ item }) => renderSellChainItem(item, navigation)}
             key={({ item }) => item.index}
             className={''}
             showsVerticalScrollIndicator={true}

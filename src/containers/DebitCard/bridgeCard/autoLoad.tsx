@@ -12,7 +12,7 @@ import {
 import AppImages from '../../../../assets/images/appImages';
 import { useTranslation } from 'react-i18next';
 import moment from 'moment';
-import { Holding } from '../../../core/Portfolio';
+import { Holding } from '../../../core/portfolio';
 import {
   AUTO_LOAD_SUPPORTED_CHAINS,
   COSMOS_CHAINS_LIST,
@@ -21,7 +21,6 @@ import {
 } from '../../../constants/server';
 import useAxios from '../../../core/HttpRequest';
 import ChooseTokenModal from '../../../components/v2/chooseTokenModal';
-import { PortfolioContext } from '../../../core/util';
 import DatePickerModal from 'react-native-modal-datetime-picker';
 import Button from '../../../components/v2/button';
 import { ButtonType } from '../../../constants/enum';
@@ -30,6 +29,7 @@ import { GlobalContext } from '../../../core/globalContext';
 import { CardProfile } from '../../../models/cardProfile.model';
 import { EVM_CHAINS_TYPE } from '../../../constants/type';
 import { map } from 'lodash';
+import usePortfolio from '../../../hooks/usePortfolio';
 
 export default function AutoLoad({ navigation }: { navigation: any }) {
   const [threshold, setThreshold] = useState('100');
@@ -39,7 +39,6 @@ export default function AutoLoad({ navigation }: { navigation: any }) {
   );
   const [autoLoadExpiry, setAutoLoadExpiry] = useState<boolean>(false);
   const [repeatFor, setRepeatFor] = useState('40');
-  const portfolioState = useContext<any>(PortfolioContext);
   const [isDatePickerVisible, setIsDatePickerVisible] =
     useState<boolean>(false);
   const [isChooseTokenVisible, setIsChooseTokenVisible] =
@@ -48,8 +47,24 @@ export default function AutoLoad({ navigation }: { navigation: any }) {
   const { getWithAuth } = useAxios();
   const globalContext = useContext<any>(GlobalContext);
   const cardProfile: CardProfile = globalContext.globalState.cardProfile;
-  const supportedTokens =
-    portfolioState.statePortfolio.tokenPortfolio.totalHoldings.filter(token => {
+  const [supportedTokens, setSupportedTokens] = useState<Holding[]>();
+  const [selectedToken, setSelectedToken] = useState<Holding>();
+  const { getLocalPortfolio } = usePortfolio();
+
+  useEffect(() => {
+    if (cardProfile.isAutoloadConfigured && supportedTokens?.length) {
+      void getAutoLoadConfig();
+    }
+  }, []);
+
+  useEffect(() => {
+    void getSupportedTokens();
+  }, []);
+
+  const getSupportedTokens = async () => {
+    const localPortfolio = await getLocalPortfolio();
+    const totalHoldings = localPortfolio.totalHoldings;
+    const tempSupportedTokens = totalHoldings.filter(token => {
       const { backendName: chain } = token.chainDetails;
       const stableTokens = STABLE_TOKEN_CHAIN_MAP.get(chain as EVM_CHAINS_TYPE);
       if (
@@ -66,22 +81,16 @@ export default function AutoLoad({ navigation }: { navigation: any }) {
       }
       return false;
     });
-  const [selectedToken, setSelectedToken] = useState<Holding>(
-    supportedTokens?.length ? supportedTokens[0] : {},
-  );
-
-  useEffect(() => {
-    if (cardProfile.isAutoloadConfigured) {
-      void getAutoLoadConfig();
-    }
-  }, []);
+    setSupportedTokens(tempSupportedTokens);
+    setSelectedToken(tempSupportedTokens?.[0]);
+  };
 
   const getAutoLoadConfig = async () => {
     const response = await getWithAuth('/v1/cards/autoLoad');
     if (!response.isError) {
       const { chain, assetId, threshold, amountToBeLoaded, expiry, repeatFor } =
         response.data;
-      const tempSelectedToken = supportedTokens.find(
+      const tempSelectedToken = supportedTokens?.find(
         (token: Holding) =>
           token.chainDetails.backendName === chain && token.denom === assetId,
       );
@@ -206,12 +215,12 @@ export default function AutoLoad({ navigation }: { navigation: any }) {
               <CyDView className='flex flex-row justify-between items-center mt-[6px]'>
                 <CyDView className='flex flex-row items-center'>
                   <CyDImage
-                    source={{ uri: selectedToken.logoUrl }}
+                    source={{ uri: selectedToken?.logoUrl }}
                     className='h-[18px] w-[18px]'
                     resizeMode='contain'
                   />
                   <CyDText className='font-bold ml-[4px] text-[16px]'>
-                    {selectedToken.name}
+                    {selectedToken?.name}
                   </CyDText>
                 </CyDView>
                 <CyDTouchView
@@ -295,7 +304,7 @@ export default function AutoLoad({ navigation }: { navigation: any }) {
         <Button
           type={ButtonType.PRIMARY}
           title={t('PREVIEW')}
-          style={'mx-[16px] h-[54px] mt-[16px] mb-[75px]'}
+          style={'mx-[16px] h-[54px] mt-[16px]'}
           onPress={() => {
             navigation.navigate(screenTitle.PREVIEW_AUTO_LOAD_SCREEN, {
               threshold,

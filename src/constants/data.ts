@@ -37,33 +37,6 @@ export const gasFeeReservation: Record<ChainBackendNames, number> = {
   ALL: 0.0,
 };
 
-export const nativeTokenMapping: Record<ChainBackendNames, string> = {
-  [ChainBackendNames.ETH]: 'Ethereum',
-  [ChainBackendNames.POLYGON]: 'Matic',
-  [ChainBackendNames.AVALANCHE]: 'Avalanche',
-  [ChainBackendNames.ARBITRUM]: 'Ethereum',
-  [ChainBackendNames.OPTIMISM]: 'Ethereum',
-  [ChainBackendNames.BSC]: 'Binance',
-  [ChainBackendNames.COSMOS]: 'Atom',
-  [ChainBackendNames.OSMOSIS]: 'Osmo',
-  [ChainBackendNames.JUNO]: 'Juno',
-  [ChainBackendNames.STARGAZE]: 'Stargaze',
-  [ChainBackendNames.NOBLE]: 'Noble',
-  [ChainBackendNames.COREUM]: 'Coreum',
-  [ChainBackendNames.INJECTIVE]: 'Injective',
-  [ChainBackendNames.KUJIRA]: 'Kujira',
-  [ChainBackendNames.SHARDEUM]: 'Shm',
-  [ChainBackendNames.SHARDEUM_SPHINX]: 'Shm',
-  [ChainBackendNames.ZKSYNC_ERA]: 'Ethereum',
-  [ChainBackendNames.BASE]: 'Ethereum',
-  [ChainBackendNames.POLYGON_ZKEVM]: 'Ethereum',
-  [ChainBackendNames.AURORA]: 'Ethereum',
-  [ChainBackendNames.MOONBEAM]: 'Glimmer',
-  [ChainBackendNames.MOONRIVER]: 'Moonriver',
-  [ChainBackendNames.ALL]: '',
-  [ChainBackendNames.SOLANA]: 'Solana',
-};
-
 export const MINIMUM_TRANSFER_AMOUNT_ETH = 50;
 
 export const months = [

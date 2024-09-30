@@ -435,9 +435,6 @@ const resources = {
       EMAIL_REQUIRED: 'Email is required',
       PHONE_NUMBER_REQUIRED: 'Phone Number is required',
       LINE1_REQUIRED: 'Line 1 is required',
-      CITY_REQUIRED: 'City is required',
-      STATE_REQUIRED: 'State is required',
-      POSTAL_CODE_REQUIRED: 'Postal Code is required',
       DOB_REQUIRED: 'Date Of Birth is required',
       SSN_REQUIRED: 'SSN is required',
       PASSPORT_NUMBER_REQUIRED: 'Passport number is required',
@@ -1021,7 +1018,7 @@ const resources = {
       SHIPPING_FEE_SUB2:
         ' will be debited from your Cypher Card balance to facilitate the transition to a physical card upgrade.',
       SHIPPING_FEE_ACC:
-        'I acknowledge and authorize the deduction of the above mentioned amount from my account',
+        'I acknowledge and authorize the deduction of the above mentioned amount from my card balance',
       PROCEED_TO_PAY: 'PROCEED TO PAY',
       UPGRADE_PHYSICAL_CARD: 'Upgrade to Physical Card',
       BALANCE_CAPITAL_FIRST_LETTER: 'Balance',
@@ -1032,16 +1029,19 @@ const resources = {
       VIRTUAL_CARD_CANCEL:
         "Once you receive and activate your physical card, you won't be able to use or access the virtual card anymore.",
       PLEASE_BE_AWARE: 'Please be aware of the following:',
+      ACTIVATE_PHYSICAL_CARD: 'Activate Physical Card',
       ACTIVATE_PHYSICAL_CARD_SUB:
-        "Please be informed that once you activate your physical card, you won't be able to use or access the virtual card anymore.",
+        'Once you activate physical card your current virtual card will be deactivated ',
       ACTIVATE_PHYSICAL_CARD_CONSENT:
         'I understand and agree to permanently terminate/close my virtual card',
+      REPLACE_VIRTUAL_CARD_SUB:
+        'Your physical card will replace the existing virtual card as part of the standard plan',
       CARD_ON_WAY: 'Your card is on its way',
       CARD_SHIP_DESCRIPTION_SUB1: 'Your physical card ending with ',
       CARD_SHIP_DESCRIPTION_SUB2: ' has been dispatched and is in transit',
-      CARD_PRINTING_DESCRIPTION_SUB1: 'Your physical card ending with ',
+      CARD_PRINTING_DESCRIPTION_SUB1: 'Your card ',
       CARD_PRINTING_DESCRIPTION_SUB2:
-        ' is being printed and will be dispatched shortly.',
+        ' is being printed and will be dispatched shortly',
       FEDEX_TRACKING_NO: 'Fedex Tracking No:',
       INVITE_SENT_NOT_USED:
         'Your friend might have missed or unnoticed your invitation to use Cypher Card. Try sending it again.',
@@ -1061,7 +1061,7 @@ const resources = {
       CYPHER_CARD_REFERRALS: 'Referrals',
       CYPHER_CARD_REWARDS: 'Rewards',
       CHECK_SPAM_FOLDER:
-        "Can't find the OTP? Remember to check your spam folder too.",
+        "*Please check your spam folder if you haven't received it",
       TELEGRAM_NOTIFICATION: 'Telegram',
       TOGGLE_TELEGRAM_NOTIFICATION_SUCCESS:
         'Telegram Notification Status Update Success',
@@ -1208,10 +1208,10 @@ const resources = {
       DOWNGRADE_PLAN_CONSENT:
         'I understand that downgrading will revoke all my premium feature access, and accept the ',
       ZERO_RESTRICTION_MODE_TITLE: 'Zero Restriction Mode',
-      ADD_FUND: 'Add Fund',
+      ADD_FUNDS: 'Add Funds',
       MOVE_FUNDS_TO_NEW_CARD: 'Move funds to your new card',
       MIGRATION_ERROR: 'Migration Error.',
-      MIGRATION_ERROR_DESCRIPTION: 'Please contact support for more details.',
+      CONTACT_SUPPORT: 'Please contact support for more details.',
       MIGRATE_FUNDS: 'Migrate Funds',
       TOKEN_ALLOWANCE_APPROVE: 'Token Allowance Approval',
       LONGER_THAN_USUAL: 'Talking longer than usual',
@@ -1260,6 +1260,81 @@ const resources = {
       REFERRAL_CODE_APPLIED_SUCCESSFULLY_DESCRIPTION:
         "You've earned 50 reward points for applying the referral code. Continue to application.",
       ERROR_IN_APPLYING_REFERRAL_CODE: 'Error in applying referral code',
+      WITHDRAW_CRYPTO: 'Withdraw Crypto',
+      AMOUNT_TO_BE_WITHDRAWN: 'Amount to be withdrawn',
+      WITHDRAW_ERROR: 'Withdrawal Error',
+      TRANSACTION_FETCH_ERROR: 'Error fetching transactions',
+      WITHDRAW_HISTORY: 'Withdrawal History',
+      REFRESHING: 'Refreshing',
+      ORDER_YOUR_PHYSICAL_CARD: 'Order your Physical Card',
+      HERE_IS_WHAT_YOU_NEED_TO_DO_NEXT: 'Here is what you need to do next',
+      VERIFY_SHIPPING_ADDRESS: 'Verify shipping address',
+      VERIFY_SHIPPING_ADDRESS_SUB:
+        'Your new physical card will be shipped to the below address',
+      SHIP_TO_DIFFERENT_ADDRESS: 'Ship to a different address ?',
+      SHIPPING_ADDRESS: 'Shipping Address',
+      ENTER_NEW_DELIVERY_ADDRESS: 'Enter new delivery address',
+      ADD_DELIVERY_ADDRESS: 'Add Delivery Address',
+      ADDRESS_LINE_1_REQUIRED: 'Address Line 1 is required',
+      ADDRESS_LINE_1_TOO_LONG: 'Address Line 1 must be 50 characters or less',
+      ADDRESS_LINE_1_INVALID_CHARACTERS:
+        'Address Line 1 contains invalid characters',
+
+      ADDRESS_LINE_2_INVALID_CHARACTERS:
+        'Address Line 2 contains invalid characters',
+      CITY_REQUIRED: 'City is required',
+      CITY_TOO_LONG: 'City name must be 20 characters or less',
+      CITY_INVALID_CHARACTERS: 'City name contains invalid characters',
+      POSTAL_CODE_REQUIRED: 'Postal code is required',
+      POSTAL_CODE_TOO_LONG: 'Postal code must be 10 characters or less',
+      POSTAL_CODE_INVALID_CHARACTERS: 'Postal code contains invalid characters',
+
+      STATE_REQUIRED: 'State is required',
+      STATE_TOO_LONG: 'State name must be 20 characters or less',
+      STATE_INVALID_CHARACTERS: 'State name contains invalid characters',
+      SPECIAL_CHARACTERS_NOT_ALLOWED: `Special characters ;:!?<>~'%^@{}[] are not allowed`,
+      NAME_ON_CARD: 'Name on Card',
+      CUSTOMISE_NAME_ON_CARD: 'Customise how your name appears on your card',
+      WANT_DIFFERENT_NAME_ON_CARD: 'Want a different name on your card?',
+      PREFERRED_NAME: 'Preferred Name',
+      PREFERRED_NAME_SUB:
+        'Your preferred name will be printed on the card, while your legal name from your KYC document will be used for billing purposes.',
+      PHYSICAL_CARD_CONFIRMATION: 'Physical Card Confirmation',
+      PHYSICAL_CARD_CONFIRMATION_SUB:
+        'Please review your shipping details. Once confirmed, the details cannot be changed.',
+      SHIPPING_CHARGES: 'Shipping Charges',
+      TOTAL_AMOUNT: 'Total Amount',
+      DELIVERING_TO: 'Delivering to',
+      PAYING_FROM: 'Paying from',
+      CYPHER_CARD_BALANCE: 'Cypher Card Balance',
+      CYPHER_CARD_BALANCE_SUB: 'i.e card spending balance',
+      YOU_ARE_ALL_SET: "You're All Set!",
+      YOU_ARE_ALL_SET_SUB:
+        'Your request for a physical card has been successfully placed and confirmed. You will receive an email with tracking information when the card is shipped',
+      DELIVERING_IN: 'Delivering in',
+      DELIVERING_IN_SUB1: '18 to 24 Business days',
+      DELIVERING_IN_SUB2:
+        "You'll receive tracking details as soon as your card is printed and shipped",
+      GO_TO_CARDS: 'Go to Cards',
+      VIRTUAL_CARD_REPLACEMENT_INFO_TITLE_1: 'Quick Setup',
+      VIRTUAL_CARD_REPLACEMENT_INFO_DESC_1:
+        'Once activated, you can quickly add your physical card to Apple Pay or Google Pay, just like your virtual card.',
+      VIRTUAL_CARD_REPLACEMENT_INFO_TITLE_2: 'Seamless Transition',
+      VIRTUAL_CARD_REPLACEMENT_INFO_DESC_2:
+        'Replace your virtual card with the physical one across all platforms without any hassle.',
+      VIRTUAL_CARD_REPLACEMENT_INFO_TITLE_3: 'Uninterrupted Shopping',
+      VIRTUAL_CARD_REPLACEMENT_INFO_DESC_3:
+        'Enjoy hassle-free shopping with physical card from your favourite chains',
+      GET_MULTIPLE_CARDS_PREMIUM:
+        'Get add on physical cards with the premium plan',
+      PREMIUM_SAVINGS:
+        'Go premium and maximize your savings with the lowest forex fee and free card load with USDC',
+      I_UNDERSTAND_AND_AGREE: 'I Understand & Agree',
+      VIRTUAL_CARD_CANCEL_ACC:
+        'I understand and agree to permanently terminate/cancel my virtual card',
+      BILLED_AMOUNT: 'Billed Amount',
+      TRANSACTION_AMOUNT: 'Transaction Amount',
+      ACCOUNT_OPTIONS: 'Account Options',
     },
   },
 };

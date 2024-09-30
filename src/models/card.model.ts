@@ -4,7 +4,7 @@ import {
   ReapTxnStatus,
 } from '../constants/enum';
 import { ChainBackendNames } from '../constants/server';
-import { Holding } from '../core/Portfolio';
+import { Holding } from '../core/portfolio';
 
 export interface Card {
   bin: string;

@@ -15,16 +15,21 @@ import {
   copyToClipboard,
   HdWalletContext,
   isABasicCosmosStakingToken,
-  isCosmosStakingToken,
   isNativeToken,
-  StakingContext,
 } from '../../core/util';
 import {
   COSMOS_STAKING_LOADING,
   CosmosStakingContext,
 } from '../../reducers/cosmosStakingReducer';
 import React, { useContext, useEffect, useState, useRef, useMemo } from 'react';
-import { useIsFocused } from '@react-navigation/native';
+import {
+  useIsFocused,
+  NavigationProp,
+  ParamListBase,
+  RouteProp,
+  useNavigation,
+  useRoute,
+} from '@react-navigation/native';
 import {
   Dimensions,
   RefreshControl,
@@ -109,22 +114,12 @@ export default function Overview({
 }: {
   tokenData: TokenMeta;
   otherChainsWithToken: any[];
-  navigation: {
-    goBack: () => void;
-    setOptions: ({ title }: { title: string }) => void;
-    setParams: (arg0: { tokenData: any; otherChainsWithToken: any[] }) => void;
-    navigate: (screen: string, params?: object) => void;
-    reset: (arg0: {
-      index: number;
-      routes: Array<{ name: string; params?: object }>;
-    }) => void;
-  };
+  navigation: NavigationProp<ParamListBase>;
 }) {
   const isFocused = useIsFocused();
   const { getWithAuth } = useAxios();
   const cosmosStaking = useContext<any>(CosmosStakingContext);
   const cosmosStakingContextStatus = cosmosStaking.cosmosStakingState.status;
-  const stakingValidators = useContext<any>(StakingContext);
   const hdWalletContext = useContext<any>(HdWalletContext);
   const globalStateContext = useContext<any>(GlobalContext);
   const chain = hdWalletContext.state.wallet[tokenData.chainDetails.chainName];

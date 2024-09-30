@@ -27,9 +27,7 @@ const OPTION_SEL = require('./option_sel.png');
 const EMPTY = require('./emptyImg.png');
 const DOWN_ARROW = require('./downArrow.png');
 const UP_ARROW = require('./upArrow.png');
-const RIGHT_ARROW = require('./rightArrow.png');
 const LEFT_ARROW = require('./leftArrow.png');
-const HOMEICON = require('./homeIcon.png');
 const MORE = require('./more.png');
 const CYPHERD = require('./cypherD.png');
 const CYPHER_TEXT = require('./Cypher-text.png');
@@ -116,7 +114,6 @@ const UNLOCK = require('./unlock.png');
 const BELL = require('./bell.png');
 const SUPPORT = require('./online-support.png');
 const BG_SETTINGS = require('./bg_settings.png');
-const MANAGE_CARD = require('./manage_card.png');
 const LOCK_BROWSER = require('./lock_secure.png');
 const BOOKMARK_BROWSER = require('./bookmark_browser.png');
 const BOOKMARK_FILLED = require('./bookmark_filled.png');
@@ -599,8 +596,73 @@ const MIGRATION_PENDING_GIF = {
 const MIGRATION_SUCCESS = {
   uri: `${S3_BUCKET_URL_ICONS}/migrationSuccess.png`,
 };
+const SETTINGS_TOOLS_ICON = {
+  uri: `${S3_BUCKET_URL_ICONS}/settingsTools.png`,
+};
+const CRYPTO_WITHDRAWAL = {
+  uri: `${S3_BUCKET_URL_ICONS}/cryptoWithdrawal.png`,
+};
+const RIGHT_ARROW = {
+  uri: `${S3_BUCKET_URL_ICONS}/rightArrow.png`,
+};
+const LEFT_ARROW_LONG = {
+  uri: `${S3_BUCKET_URL_ICONS}/leftBackArrowLong.png`,
+};
+const PREMIUM_TEXT_GRADIENT = {
+  uri: `${S3_BUCKET_URL_ICONS}/premiumGradient.png`,
+};
+const WITHDRAW_CRYPTO_SUCCESS = {
+  uri: `${S3_BUCKET_URL_ICONS}/withdrawCryptoSuccess.png`,
+};
+const FLYING_MONEY = {
+  uri: `${S3_BUCKET_URL_ICONS}/flyingMoney.png`,
+};
+const LIST_HAMBURGER = {
+  uri: `${S3_BUCKET_URL_ICONS}/listHamburger.png`,
+};
+const USDC_TOKEN = {
+  uri: `${S3_BUCKET_URL_ICONS}/usdc.png`,
+};
+const HOMEICON = {
+  uri: `${S3_BUCKET_URL_ICONS}/home.png`,
+};
+const MANAGE_CARD = {
+  uri: `${S3_BUCKET_URL_ICONS}/sampleCard.png`,
+};
+const BASIC_DETAILS = {
+  uri: `${S3_BUCKET_URL_ICONS}/basicDetails.png`,
+};
+const ENVELOPE = {
+  uri: `${S3_BUCKET_URL_ICONS}/envelope.png`,
+};
+const CARD_SHIPMENT_ENVELOPE = {
+  uri: `${S3_BUCKET_URL_ICONS}/cardShipmentEnvelope.png`,
+};
+const SWITCH_OFF = {
+  uri: `${S3_BUCKET_URL_ICONS}/switchOffIcon.png`,
+};
+
+const REPLACE_VIRTUAL_CARD = {
+  uri: `${S3_BUCKET_URL_ICONS}/replaceVirtualCard.png`,
+};
+
+const MULTIPLE_CARDS = {
+  uri: `${S3_BUCKET_URL_ICONS}/multipleCards.png`,
+};
+const PREMIUM_LABEL = {
+  uri: `${S3_BUCKET_URL_ICONS}/premiumLabel.png`,
+};
 
 const AppImages = {
+  SWITCH_OFF,
+  USDC_TOKEN,
+  LIST_HAMBURGER,
+  FLYING_MONEY,
+  WITHDRAW_CRYPTO_SUCCESS,
+  PREMIUM_TEXT_GRADIENT,
+  LEFT_ARROW_LONG,
+  CRYPTO_WITHDRAWAL,
+  SETTINGS_TOOLS_ICON,
   MIGRATION_PENDING_GIF,
   MIGRATION_SUCCESS,
   MIGRATION_PENDING,
@@ -1031,5 +1093,11 @@ const AppImages = {
   CASH_OUTLINE_ICON,
   HOUSE_OUTLINE_ICON,
   TELEGRAM_BLUE_ICON,
+  BASIC_DETAILS,
+  ENVELOPE,
+  CARD_SHIPMENT_ENVELOPE,
+  REPLACE_VIRTUAL_CARD,
+  MULTIPLE_CARDS,
+  PREMIUM_LABEL,
 };
 export default AppImages;

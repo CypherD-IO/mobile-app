@@ -29,18 +29,14 @@ import { ACTIVITIES_REFRESH_TIMEOUT } from '../../../../constants/timeOuts';
 import { CyDView } from '../../../../styles/tailwindStyles';
 import CardCarousel from '../../../../components/v2/CardCarousel';
 import { SharedValue } from 'react-native-reanimated';
-import { PortfolioBannerHeights } from '../../../../hooks/useScrollManager';
 import { get } from 'lodash';
 import { MigrationData } from '../../../../models/migrationData.interface';
 
 const ARCH_HOST = hostWorker.getHost('ARCH_HOST');
 
 export type BridgeOrCardActivity = ExchangeTransaction | DebitCardTransaction;
-interface BannerCarouselProps {
-  setBannerHeight: React.Dispatch<React.SetStateAction<PortfolioBannerHeights>>;
-}
 
-const BannerCarousel = ({ setBannerHeight }: BannerCarouselProps) => {
+const BannerCarousel = () => {
   const { getWithAuth } = useAxios();
   const isFocused = useIsFocused();
 
@@ -148,20 +144,6 @@ const BannerCarousel = ({ setBannerHeight }: BannerCarouselProps) => {
     }
   };
 
-  // useEffect to update the height of the banner when the no. of cards change.
-  useEffect(() => {
-    if (activityCards.length + staticCards.length + migrationCard.length) {
-      setBannerHeight(300);
-    } else {
-      setBannerHeight(160);
-    }
-  }, [
-    activityCards.length,
-    staticCards.length,
-    migrationCard.length,
-    setBannerHeight,
-  ]);
-
   // useEffect to check for static cards and migration data from backend
   useEffect(() => {
     const checkStaticCards = async () => {
@@ -198,7 +180,7 @@ const BannerCarousel = ({ setBannerHeight }: BannerCarouselProps) => {
       };
       const statusTitle: Record<string, string> = {
         PENDING: 'Pending',
-        SUCCESS: 'Success full',
+        SUCCESS: 'Success',
         FAILED: 'Failed',
         DELAYED: 'Delayed',
         IN_PROGRESS: 'In Progress',
@@ -206,7 +188,7 @@ const BannerCarousel = ({ setBannerHeight }: BannerCarouselProps) => {
       const updatedData: MigrationData[] = availableMigrationCard.map(item => {
         return {
           ...item,
-          title: `$${Number(item.amount) ?? ''} Migration - ${get(statusTitle, item?.status, '')}`,
+          title: `$${Number(item.amount) ?? ''} Migration ${get(statusTitle, item?.status, '')}`,
           description: get(statusDescriptions, item?.status, ''),
           priority: 'HIGHEST',
           type: ActivityType.MIGRATE_FUND,
@@ -345,6 +327,7 @@ const BannerCarousel = ({ setBannerHeight }: BannerCarouselProps) => {
         const parsedMigration: string[] = JSON.parse(dismissedMigration);
 
         void setDismissedMigrationCardIDs(parsedMigration);
+        setDismissedMigrationCards(parsedMigration);
       }
       setDismissedStaticIDsReady(true);
     };

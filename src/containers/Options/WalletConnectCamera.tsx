@@ -1,11 +1,3 @@
-/* eslint-disable react/prop-types */
-/* eslint-disable react-native/no-raw-text */
-/* eslint-disable @typescript-eslint/restrict-template-expressions */
-/**
- * @format
- * @flow
- */
-
 import React, {
   useEffect,
   useState,
@@ -20,7 +12,7 @@ import { storeConnectWalletData } from '../../core/asyncStorage';
 import LoadingStack from '../../routes/loading';
 import analytics from '@react-native-firebase/analytics';
 import { BackHandler, FlatList } from 'react-native';
-import { HdWalletContext, PortfolioContext } from '../../core/util';
+import { HdWalletContext } from '../../core/util';
 import {
   CyDText,
   CyDSafeAreaView,
@@ -48,17 +40,22 @@ import { ButtonType } from '../../constants/enum';
 import { useGlobalModalContext } from '../../components/v2/GlobalModal';
 import { WALLET_CONNECT_PROPOSAL_LISTENER } from '../../constants/timeOuts';
 import * as Sentry from '@sentry/react-native';
+import { t } from 'i18next';
 
-export default function WalletConnectCamera(props) {
+export default function WalletConnectCamera(props: {
+  route: { params: { walletConnectURI: string } };
+  navigation: any;
+}) {
+  const { route } = props;
   const { walletConnectState, walletConnectDispatch } =
     useContext<walletConnectContextDef>(WalletConnectContext);
 
   const hdWalletContext = useContext<any>(HdWalletContext);
-  const portfolioState = useContext<any>(PortfolioContext);
   const ethereum = hdWalletContext.state.wallet.ethereum;
-  const { t } = useTranslation();
 
-  const [walletConnectURI, setWalletConnectURI] = useState('');
+  const [walletConnectURI, setWalletConnectURI] = useState(
+    route?.params?.walletConnectURI ?? '',
+  );
 
   const [selectedPairingTopic, setSelectedPairingTopic] = useState<string>('');
   const [sessionsForAPairing, setSessionsForAPairing] = useState<any>([]);
@@ -98,6 +95,7 @@ export default function WalletConnectCamera(props) {
             }
           }, WALLET_CONNECT_PROPOSAL_LISTENER);
           web3wallet?.on('session_proposal', () => {
+            setWalletConnectURI('');
             loading.current = false;
             clearTimeout(sessionProposalListener.current);
           });
@@ -140,7 +138,6 @@ export default function WalletConnectCamera(props) {
   };
 
   const onSuccess = e => {
-    props.navigation.navigate(C.screenTitle.WALLET_CONNECT);
     const link = e.data;
     if (link.startsWith('wc')) {
       loading.current = true;
@@ -187,17 +184,16 @@ export default function WalletConnectCamera(props) {
     };
   }, []);
 
-  useEffect(() => {
-    const link = portfolioState.statePortfolio.walletConnectURI;
-    if (link.startsWith('wc')) {
-      portfolioState.dispatchPortfolio({ value: { walletConnectURI: '' } });
-      loading.current = true;
-      void connectWallet(link);
-      void analytics().logEvent('wallet_connect_url_scan', {
-        fromEthAddress: ethereum.address,
-      });
-    }
-  }, [portfolioState.statePortfolio.walletConnectURI]);
+  // useEffect(() => {
+  //   const link = walletConnectURI;
+  //   if (link.startsWith('wc')) {
+  //     loading.current = true;
+  //     void connectWallet(link);
+  //     void analytics().logEvent('wallet_connect_url_scan', {
+  //       fromEthAddress: ethereum.address,
+  //     });
+  //   }
+  // }, [portfolioState.statePortfolio.walletConnectURI]);
 
   const buildWalletConnectDataFromAsync = async () => {
     let data;
@@ -226,16 +222,14 @@ export default function WalletConnectCamera(props) {
   }, [walletConnectState]);
 
   useEffect(() => {
-    if (loading.current !== isLoadingConnections) {
-      setIsLoadingConnections(loading.current);
-    }
-    if (loading.current && walletConnectURI.startsWith('wc')) {
+    if (walletConnectURI.startsWith('wc')) {
       void connectWallet(walletConnectURI);
     }
-  }, [loading.current, walletConnectURI]);
+  }, [walletConnectURI]);
 
   const getv2Sessions = () => {
     if (web3wallet?.getActiveSessions()) {
+      setIsLoadingConnections(true);
       const sessions = Object.values(web3wallet.getActiveSessions());
       if (sessions) {
         setTotalSessions(sessions);
@@ -262,6 +256,7 @@ export default function WalletConnectCamera(props) {
           });
         }
       }
+      setIsLoadingConnections(false);
     }
   };
 

@@ -1,5 +1,6 @@
 // NOTE: SCREEN TITLE 🍎🍎🍎🍎
 export const screenTitle = {
+  ONBOARDING: 'OnBoarding',
   ACTIVITYFILTER: 'ACTIVITYFILTER',
   ACTIVITIES: 'Activities',
   REFERRAL_REWARDS: 'ReferralRewards',
@@ -31,7 +32,6 @@ export const screenTitle = {
   ENTER_AMOUNT: 'enterAmount',
   SEND_TO: 'sendto',
   WALLET_CONNECT: 'WalletConnect',
-  AUTO_CREATE: 'AutoCreate',
   SHORTCUTS: 'Shortcuts',
   SHORTCUTS_SCREEN: 'ShortcutsScreen',
   BRIDGE_TOKEN_SCREEN: 'BridgeTokenScreen',
@@ -78,6 +78,7 @@ export const screenTitle = {
   CARD_KYC_STATUS_SCREEN: 'CardKYCStatusScreen',
   BRIDGE_CARD_SCREEN: 'BridgeCardScreen',
   BRIDGE_CARD_REVEAL_AUTH_SCREEN: 'BridgeCardRevealAuthScreen',
+  CARD_ACTIVATION_CONSENT_SCREEN: 'CardActivationConsentScreen',
   CARD_ACTIAVTION_SCREEN: 'CardActivationScreen',
   CARD_SET_PIN_SCREEN: 'CardSetPinScreen',
   BRIDGE_FUND_CARD_SCREEN: 'BridgeFundCardScreen',
@@ -103,6 +104,12 @@ export const screenTitle = {
   TRANSACTIONS_SCREEN: 'Transactions',
   TRANSACTION_FILTER: 'TransactionFilter',
   DEFI_PROTOCOL_OVERVIEW_SCREEN: 'Protocol Overview',
+  ORDER_STEPS_SCREEN: 'OrderStepsScreen',
+  VERIFY_SHIPPING_ADDRESS_SCREEN: 'VerifyShippingAddressScreen',
+  ADD_DELIVERY_ADDRESS_SCREEN: 'AddDeliveryAddressScreen',
+  NAME_ON_CARD_SCREEN: 'NameOnCardScreen',
+  SHIPPING_CHECKOUT_SCREEN: 'ShippingCheckoutScreen',
+  SHIPPING_CONFIRMATION_SCREEN: 'ShippingConfirmationScreen',
   UPGRADE_TO_PHYSICAL_CARD_SCREEN: 'UpgradeToPhysicalCardScreen',
   SHIPPING_DETAILS_OTP_SCREEN: 'ShippingDetailsOTPScreen',
   CARD_SIGNUP_CONFIRMATION: 'CardSignupConfirmation',
@@ -138,6 +145,11 @@ export const screenTitle = {
   REFERRALS: 'Referrals',
   CARD_V2_SIGNUP_LANDING_SCREEN: 'CardV2SignupLandingScreen',
   I_HAVE_REFERRAL_CODE_SCREEN: 'IHaveReferralCodeScreen',
+  CRYPTO_WITHDRAWAL: 'cryptoWithdrawal',
+  WITHDRAW_CONFIRMATION: 'withdrawConfirmation',
+  WITHDRAW_SUCCESS: 'withdrawSuccess',
+  WITHDRAW_HISTORY: 'withdrawHistory',
+  GLOBAL_CARD_OPTIONS: 'globalCardOptions',
 };
 
 export const fontsName = {

@@ -269,7 +269,7 @@ const BannerCarouselItem = ({
             />
 
             <CyDView className='ml-[8px]'>
-              <CyDText className='text-[14px] font-extrabold  w-[65%]'>
+              <CyDText className='text-[14px] font-extrabold  w-[75%]'>
                 {title}
               </CyDText>
               <CyDText className='text-[10px] text-[#091E42] font-medium mt-[3px]  w-[65%]'>
@@ -337,7 +337,7 @@ const BannerCarouselItem = ({
     <CyDAnimatedView
       className={'flex justify-center items-center'}
       style={[animatedStyle, { width: boxWidth }]}>
-      <CyDView className='flex flex-row h-full w-full'>
+      <CyDView className='flex flex-row h-[120px] w-full'>
         <CyDTouchView
           className='h-full border border-sepratorColor overflow-hidden rounded-[16px]'
           disabled={

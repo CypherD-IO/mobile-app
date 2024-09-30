@@ -18,7 +18,12 @@ import { QRCode } from 'react-native-custom-qr-codes';
 import { showToast } from '../../containers/utilities/toastUtility';
 import { sendFirebaseEvent } from '../../containers/utilities/analyticsUtility';
 import { isAndroid } from '../../misc/checkers';
-import { useIsFocused } from '@react-navigation/native';
+import {
+  NavigationProp,
+  ParamListBase,
+  useIsFocused,
+  useNavigation,
+} from '@react-navigation/native';
 import { loadRecoveryPhraseFromKeyChain } from '../../core/Keychain';
 
 const renderSeedPhrase = (text: string, index: number) => {
@@ -38,7 +43,8 @@ const renderSeedPhrase = (text: string, index: number) => {
   );
 };
 
-export default function SeedPhrase(props) {
+export default function SeedPhrase() {
+  const navigation = useNavigation<NavigationProp<ParamListBase>>();
   const { t } = useTranslation();
   const isFocused = useIsFocused();
 
@@ -58,7 +64,7 @@ export default function SeedPhrase(props) {
   };
 
   const handleBackButton = () => {
-    props.navigation.goBack();
+    navigation.goBack();
     return true;
   };
 
@@ -73,12 +79,12 @@ export default function SeedPhrase(props) {
           setSeedPhrase(mnenmonic);
         } else {
           showToast(t('SEED_PHARSE_FETCH_FAILED'));
-          props.navigation.goBack();
+          navigation.goBack();
         }
       })
       .catch(_err => {
         showToast(t('SEED_PHARSE_FETCH_FAILED'));
-        props.navigation.goBack();
+        navigation.goBack();
       });
   };
 

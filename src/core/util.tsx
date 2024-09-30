@@ -62,7 +62,7 @@ import {
 import { ANALYTICS_ERROR_URL, ANALYTICS_SUCCESS_URL } from '../constants/data';
 import DeviceInfo from 'react-native-device-info';
 import axios from './Http';
-import { Holding } from './Portfolio';
+import { Holding } from './portfolio';
 import Long from 'long';
 
 import { Wallet } from 'ethers';
@@ -74,13 +74,12 @@ import { isSolanaAddress } from '../containers/utilities/solanaUtilities';
 import { RSA } from 'react-native-rsa-native';
 import { hostWorker } from '../global';
 import { v4 as uuidv4 } from 'uuid';
+import { ICountry } from '../models/cardApplication.model';
 
 const ARCH_HOST: string = hostWorker.getHost('ARCH_HOST');
 export const HdWalletContext = React.createContext<HdWalletContextDef | null>(
   null,
 );
-export const PortfolioContext = React.createContext(null);
-export const StakingContext = React.createContext(null);
 export const ActivityContext = React.createContext<ActivityContextDef | null>(
   null,
 );
@@ -1067,3 +1066,17 @@ export const referralLinkAnalytics = async (referralCode: string) => {
     Sentry.captureException(e);
   }
 };
+
+export function getCountryObjectById(countryId: string): ICountry | undefined {
+  const country = countryMaster.find(
+    c =>
+      c?.Iso2?.toLowerCase() === countryId.toLowerCase() ||
+      c?.Iso3?.toLowerCase() === countryId.toLowerCase(),
+  );
+  return country;
+}
+
+export function getCountryNameById(countryId: string): string | undefined {
+  const country = getCountryObjectById(countryId);
+  return country?.name ?? '';
+}

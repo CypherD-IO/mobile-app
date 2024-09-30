@@ -1,10 +1,8 @@
 import React, { useContext, useEffect, useMemo, useState } from 'react';
-import { CardProviders, GlobalContextType } from '../../../constants/enum';
-import { Card } from '../../../models/card.model';
+import { GlobalContextType } from '../../../constants/enum';
 import { GlobalContext } from '../../../core/globalContext';
 import { CardProfile } from '../../../models/cardProfile.model';
 import AppImages from '../../../../assets/images/appImages';
-import { screenTitle } from '../../../constants';
 import CyDModalLayout from '../../../components/v2/modal';
 import {
   CyDImage,
@@ -29,11 +27,11 @@ import useCardUtilities from '../../../hooks/useCardUtilities';
 export default function AutoLoadOptionsModal({
   isModalVisible,
   setShowModal,
-  navigation,
+  onPressUpdateAutoLoad,
 }: {
   isModalVisible: boolean;
   setShowModal: (arg1: boolean) => void;
-  navigation: any;
+  onPressUpdateAutoLoad: () => void;
 }) {
   const globalContext = useContext<any>(GlobalContext);
   const cardProfile: CardProfile = globalContext.globalState.cardProfile;
@@ -139,8 +137,7 @@ export default function AutoLoadOptionsModal({
         description: 'Update auto load configuration',
         image: AppImages.CIRCLE_WITH_DOTS,
         action: () => {
-          navigation.navigate(screenTitle.AUTO_LOAD_SCREEN);
-          setShowModal(false);
+          onPressUpdateAutoLoad();
         },
       },
       {
@@ -171,13 +168,11 @@ export default function AutoLoadOptionsModal({
       animationInTiming={300}
       animationOutTiming={300}
       style={styles.modalLayout}>
-      <CyDView className='bg-cardBgTo px-[12px] py-[24px] m-[2px] mb-[6px] rounded-[16px]'>
-        <CyDView className='flex flex-row justify-between items-center mb-[24px]'>
-          <CyDView className='flex-1 justify-center items-center'>
-            <CyDText className='text-[22px] font-semibold ml-[24px]'>
-              Auto Load
-            </CyDText>
-          </CyDView>
+      <CyDView className='bg-cardBgTo mb-[6px] rounded-[16px] max-h-[80%] pb-[32px]'>
+        <CyDView className='flex flex-row justify-between items-center rounded-t-[16px] bg-white px-[16px] pb-[16px] pt-[32px]'>
+          <CyDText className='text-[16px] font-semibold font-manrope'>
+            Auto Load
+          </CyDText>
           <CyDTouchView onPress={() => setShowModal(false)}>
             <CyDImage
               source={AppImages.CLOSE_CIRCLE}
@@ -192,7 +187,7 @@ export default function AutoLoadOptionsModal({
             <CyDTouchView
               key={index}
               onPress={action}
-              className='flex flex-row justify-start items-center mt-[12px] py-[15px] bg-white rounded-[6px]'>
+              className='flex flex-row justify-start items-center mt-[12px] py-[15px] bg-white rounded-[6px] mx-[12px]'>
               {(index === 1 && isToggling) || (index === 2 && isCancelling) ? (
                 <CyDView className='relative w-[48px]'>
                   <LottieView
@@ -211,8 +206,10 @@ export default function AutoLoadOptionsModal({
               )}
 
               <CyDView className='flex flex-col justify-between'>
-                <CyDText className='text-[16px] font-bold'>{title}</CyDText>
-                <CyDText className='text-[12px] font-semibold'>
+                <CyDText className='text-[16px] font-medium text-base400'>
+                  {title}
+                </CyDText>
+                <CyDText className='text-[12px] font-medium text-n50 flex-wrap'>
                   {description}
                 </CyDText>
               </CyDView>
@@ -226,7 +223,7 @@ export default function AutoLoadOptionsModal({
 
 const styles = StyleSheet.create({
   modalLayout: {
-    marginBottom: 50,
+    margin: 0,
     justifyContent: 'flex-end',
   },
   loaderStyle: {

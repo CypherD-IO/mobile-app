@@ -2,27 +2,33 @@
  * @format
  * @flow
  */
-import React, { useEffect, useState } from 'react';
+import React, { useEffect } from 'react';
 import { useTranslation } from 'react-i18next';
 import { BackHandler } from 'react-native';
 import WebView from 'react-native-webview';
 import AppImages from '../../../assets/images/appImages';
-const {
-  SafeAreaView,
-  DynamicView,
-  DynamicImage,
-  CText,
-  DynamicTouchView,
-} = require('../../styles');
+import {
+  NavigationProp,
+  ParamListBase,
+  RouteProp,
+  useNavigation,
+  useRoute,
+} from '@react-navigation/native';
+import { CyDSafeAreaView, CyDTouchView } from '../../styles/tailwindStyles';
+const { DynamicImage } = require('../../styles');
 
-export default function OpenLegalScreen(props) {
+interface RouteParams {
+  url: string;
+}
+export default function OpenLegalScreen() {
+  const navigation = useNavigation<NavigationProp<ParamListBase>>();
+  const route = useRoute<RouteProp<{ params: RouteParams }, 'params'>>();
   // NOTE: DEFINE VARIABLE 🍎🍎🍎🍎🍎🍎
   const { t } = useTranslation();
-  const { route } = props;
   // NOTE: LIFE CYCLE METHOD 🍎🍎🍎🍎
 
   const handleBackButton = () => {
-    props.navigation.goBack();
+    navigation.goBack();
     return true;
   };
 
@@ -34,7 +40,7 @@ export default function OpenLegalScreen(props) {
   }, []);
   // set a cookie
   return (
-    <SafeAreaView dynamic>
+    <CyDSafeAreaView>
       <WebView
         source={{
           uri: route.params.url,
@@ -44,11 +50,10 @@ export default function OpenLegalScreen(props) {
         }}
         sharedCookiesEnabled={true}
       />
-      <DynamicTouchView
+      <CyDTouchView
         sentry-label='legal-back'
-        dynamic
-        style={{ position: 'absolute', top: 50, left: 30 }}
-        onPress={() => props.navigation.goBack()}>
+        className='absolute top-[50px] left-[30px]'
+        onPress={() => navigation.goBack()}>
         <DynamicImage
           dynamic
           dynamicWidthFix
@@ -59,7 +64,7 @@ export default function OpenLegalScreen(props) {
           source={AppImages.BACK_ARROW_GRAY}
           style={{ tintColor: 'black' }}
         />
-      </DynamicTouchView>
-    </SafeAreaView>
+      </CyDTouchView>
+    </CyDSafeAreaView>
   );
 }

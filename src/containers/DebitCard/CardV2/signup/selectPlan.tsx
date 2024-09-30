@@ -1,4 +1,4 @@
-import React, { useContext, useEffect, useState } from 'react';
+import React, { useContext, useState } from 'react';
 import {
   CyDImage,
   CyDSafeAreaView,
@@ -42,6 +42,7 @@ interface RouteParams {
   deductAmountNow?: boolean;
   toPage?: string;
   cardBalance?: number;
+  openComparePlans?: boolean;
 }
 
 export default function SelectPlan() {
@@ -60,9 +61,10 @@ export default function SelectPlan() {
     deductAmountNow = false,
     toPage = '',
     cardBalance = 0,
+    openComparePlans = false,
   } = route.params ?? {};
 
-  const [showComparision, setShowComparision] = useState(false);
+  const [showComparision, setShowComparision] = useState(openComparePlans);
   const [showConsent, setShowConsent] = useState(false);
   const [hasConsent, setHasConsent] = useState(false);
   const [loading, setLoading] = useState({
@@ -108,7 +110,6 @@ export default function SelectPlan() {
               if (toPage) navigation.navigate(toPage);
               else {
                 navigation.navigate(screenTitle.CARD_SIGNUP_SCREEN);
-                // navigation.goBack();
               }
               hideModal();
             },

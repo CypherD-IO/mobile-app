@@ -7,6 +7,7 @@ import {
   HdWalletContext,
   formatAmount,
   getExplorerUrlFromBackendNames,
+  limitDecimalPlaces,
 } from '../../../core/util';
 import {
   CyDFastImage,
@@ -25,8 +26,8 @@ import {
 } from '../../../constants/enum';
 import clsx from 'clsx';
 import { screenTitle } from '../../../constants';
-import { useNavigation } from '@react-navigation/native';
-import { GlobalContext } from '../../../core/globalContext';
+import { RouteProp, useNavigation, useRoute } from '@react-navigation/native';
+import { GlobalContext, GlobalContextDef } from '../../../core/globalContext';
 import { ICardTransaction } from '../../../models/card.model';
 import { capitalize, split } from 'lodash';
 import { t } from 'i18next';
@@ -152,14 +153,11 @@ const TransactionDetail = ({
   );
 };
 
-export default function TransactionDetails({
-  navigation,
-  route,
-}: {
-  navigation: any;
-  route: { params: any };
-}) {
-  const { t } = useTranslation();
+interface RouteParams {
+  transaction: ICardTransaction;
+}
+export default function TransactionDetails() {
+  const route = useRoute<RouteProp<{ params: RouteParams }, 'params'>>();
   const { transaction }: { transaction: ICardTransaction } = route.params;
   const {
     fxCurrencySymbol,
@@ -168,9 +166,10 @@ export default function TransactionDetails({
     title: merchantName,
   } = transaction;
   const hdWalletContext = useContext<any>(HdWalletContext);
-  const globalContext = useContext(GlobalContext);
-  const cardProfile: CardProfile = globalContext.globalState.cardProfile;
-  const provider = cardProfile.provider ?? CardProviders.REAP_CARD;
+  const globalContext = useContext(GlobalContext) as GlobalContextDef;
+  const cardProfile: CardProfile | undefined =
+    globalContext.globalState.cardProfile;
+  const provider = cardProfile?.provider ?? CardProviders.REAP_CARD;
   const transactionDetails: Array<{
     icon: any;
     title: string;
@@ -227,7 +226,7 @@ export default function TransactionDetails({
         title: t('CURRENCY_CONVERSION_DETAILS'),
         data: [
           {
-            label: t('AMOUNT_SPENT'),
+            label: t('BILLED_AMOUNT'),
             value: '$ ' + String(transaction.amount),
           },
           {
@@ -238,7 +237,7 @@ export default function TransactionDetails({
             value: formatAmount(fxConversionPrice),
           },
           {
-            label: t('DOMESTIC_CURRENCY_SPENT'),
+            label: t('TRANSACTION_AMOUNT'),
             value: String(fxCurrencyValue) + ' ' + String(fxCurrencySymbol),
           },
         ],
@@ -254,15 +253,14 @@ export default function TransactionDetails({
       transactionDetails.push(detail);
     });
   } else if (transaction.type === CardTransactionTypes.CREDIT) {
-    const dataIsAvailable = transaction.tokenData !== undefined;
     const type = transaction.type;
-    const id = dataIsAvailable
-      ? (transaction.id && split(transaction.id, ':')[1]) || transaction.id
+    const id = transaction.id
+      ? split(transaction.id, ':')[1] || transaction.id
       : 'N/A';
-    const chain = dataIsAvailable ? transaction.tokenData.chain : 'N/A';
-    const hash = dataIsAvailable ? transaction.tokenData.hash : 'N/A';
-    const tokenNos = dataIsAvailable ? transaction.tokenData.tokenNos : 'N/A';
-    const symbol = dataIsAvailable ? transaction.tokenData.symbol : '';
+    const chain = transaction?.tokenData?.chain ?? 'N/A';
+    const hash = transaction?.tokenData?.hash ?? 'N/A';
+    const tokenNos = transaction?.tokenData?.tokenNos ?? 'N/A';
+    const symbol = transaction?.tokenData?.symbol ?? '';
     const creditDetails = [
       {
         icon: AppImages.PAYMENT_DETAILS,
@@ -272,20 +270,24 @@ export default function TransactionDetails({
           { label: t('TYPE'), value: type },
         ],
       },
-      {
-        icon: AppImages.CARD_SEL,
-        title: t('TOKEN_DETAILS'),
-        data: [
-          { label: t('CHAIN'), value: chain },
-          {
-            label: t('LOADED_AMOUNT'),
-            value: `${String(formatAmount(tokenNos, 2))} ${String(
-              symbol.toUpperCase(),
-            )}`,
-          },
-          { label: t('HASH'), value: { hash, chain } },
-        ],
-      },
+      ...(transaction.tokenData
+        ? [
+            {
+              icon: AppImages.CARD_SEL,
+              title: t('TOKEN_DETAILS'),
+              data: [
+                { label: t('CHAIN'), value: chain },
+                {
+                  label: t('LOADED_AMOUNT'),
+                  value: `${String(formatAmount(tokenNos, 2))} ${String(
+                    symbol.toUpperCase(),
+                  )}`,
+                },
+                { label: t('HASH'), value: { hash, chain } },
+              ],
+            },
+          ]
+        : []),
     ];
     creditDetails.forEach(detail => {
       transactionDetails.push(detail);
@@ -303,8 +305,12 @@ export default function TransactionDetails({
           />
           <CyDText className='font-extrabold text-[45px] mt-[5px]'>
             {getTransactionSign(transaction.type) +
-              '$' +
-              String(transaction.amount)}
+              limitDecimalPlaces(
+                transaction.fxCurrencyValue ?? transaction.amount,
+                2,
+              ) +
+              ' ' +
+              (transaction.fxCurrencySymbol ?? 'USD')}
           </CyDText>
           <CyDText>{formatDate(transaction.date)}</CyDText>
         </CyDView>

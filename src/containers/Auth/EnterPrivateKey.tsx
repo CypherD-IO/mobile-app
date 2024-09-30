@@ -12,19 +12,11 @@ import {
 } from '../../styles/tailwindStyles';
 import { BackHandler, Keyboard, NativeModules } from 'react-native';
 import * as C from '../../constants/index';
-import {
-  ActivityContext,
-  HdWalletContext,
-  PortfolioContext,
-  isValidPrivateKey,
-} from '../../core/util';
-import { importWallet, importWalletPrivateKey } from '../../core/HdWallet';
-import { PORTFOLIO_LOADING } from '../../reducers/portfolio_reducer';
+import { HdWalletContext, isValidPrivateKey } from '../../core/util';
+import { importWalletPrivateKey } from '../../core/HdWallet';
 import AppImages from '../../../assets/images/appImages';
 import Clipboard from '@react-native-clipboard/clipboard';
 import { QRScannerScreens } from '../../constants/server';
-import LottieView from 'lottie-react-native';
-import { ActivityReducerAction } from '../../reducers/activity_reducer';
 import { screenTitle } from '../../constants/index';
 import Loading from '../../components/v2/loading';
 import {
@@ -33,7 +25,6 @@ import {
 } from '../../core/asyncStorage';
 import useAxios from '../../core/HttpRequest';
 import clsx from 'clsx';
-import { fetchTokenData } from '../../core/Portfolio';
 import { IMPORT_WALLET_TIMEOUT } from '../../constants/timeOuts';
 import { useIsFocused } from '@react-navigation/native';
 import { isAndroid } from '../../misc/checkers';
@@ -51,8 +42,6 @@ export default function Login(props) {
     useState<boolean>(false);
 
   const hdWalletContext = useContext<any>(HdWalletContext);
-  const portfolioState = useContext<any>(PortfolioContext);
-  const activityContext = useContext<any>(ActivityContext);
   const { deleteWithAuth } = useAxios();
 
   const fetchCopiedText = async () => {
@@ -85,10 +74,7 @@ export default function Login(props) {
         }
       }
       setTimeout(() => {
-        void importWalletPrivateKey(hdWalletContext, portfolioState, textValue);
-        portfolioState.dispatchPortfolio({
-          value: { portfolioState: PORTFOLIO_LOADING },
-        });
+        void importWalletPrivateKey(hdWalletContext, textValue);
         setLoading(false);
         setPrivateKey('');
         void setConnectionType(ConnectionTypes.PRIVATE_KEY);
@@ -98,7 +84,7 @@ export default function Login(props) {
             props.navigation.navigate(C.screenTitle.PORTFOLIO_SCREEN);
           } else setCreateWalletLoading(true);
         } else {
-          void fetchTokenData(hdWalletContext, portfolioState, true);
+          props.navigation.navigate(C.screenTitle.PORTFOLIO_SCREEN);
         }
       }, IMPORT_WALLET_TIMEOUT);
     } else {

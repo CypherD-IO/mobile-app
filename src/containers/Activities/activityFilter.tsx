@@ -16,6 +16,11 @@ import { BackHandler } from 'react-native';
 import Button from '../../components/v2/button';
 import { useTranslation } from 'react-i18next';
 import { TIME_GAPS } from '../../constants/data';
+import {
+  NavigationProp,
+  ParamListBase,
+  useNavigation,
+} from '@react-navigation/native';
 
 export const FILTERS = ['Type', 'Time', 'Status'];
 export const ACTIVITY_TYPES = [
@@ -36,9 +41,10 @@ export const STATUSES = [
   'DELAYED',
 ];
 
-export default function ActivitesFilter(props: any) {
+export default function ActivitesFilter() {
+  const navigation = useNavigation<NavigationProp<ParamListBase>>();
   const { t } = useTranslation();
-  const { navigation } = props;
+
   const [index, setIndex] = useState<number>(0);
   const [selectedTypes, setSelectedTypes] = useState<string[]>([]);
   const [selectedStatuses, setSelectedStatuses] = useState<string[]>([]);
@@ -47,7 +53,7 @@ export default function ActivitesFilter(props: any) {
   );
 
   const handleBackButton = () => {
-    props.navigation.goBack();
+    navigation.goBack();
     return true;
   };
 
@@ -73,7 +79,7 @@ export default function ActivitesFilter(props: any) {
         </CyDTouchView>
       ),
     });
-  }, [props.navigation]);
+  }, [navigation]);
 
   function onApply() {
     const data = {

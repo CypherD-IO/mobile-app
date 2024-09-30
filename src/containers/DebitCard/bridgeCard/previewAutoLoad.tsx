@@ -15,14 +15,18 @@ import { screenTitle } from '../../../constants';
 import { MODAL_HIDE_TIMEOUT } from '../../../core/Http';
 import { GlobalContext } from '../../../core/globalContext';
 import { CardProfile } from '../../../models/cardProfile.model';
+import {
+  NavigationProp,
+  ParamListBase,
+  RouteProp,
+  useNavigation,
+  useRoute,
+} from '@react-navigation/native';
 
-export default function PreviewAutoLoad({
-  navigation,
-  route,
-}: {
-  navigation: any;
-  route: { params: AutoLoad };
-}) {
+export default function PreviewAutoLoad() {
+  const navigation = useNavigation<NavigationProp<ParamListBase>>();
+  const route = useRoute<RouteProp<{ params: AutoLoad }, 'params'>>();
+
   const {
     threshold,
     amountToLoad,
@@ -149,7 +153,7 @@ export default function PreviewAutoLoad({
           <CyDView
             className={'flex flex-row justify-center items-center pl-[25px]'}>
             <CyDFastImage
-              source={{ uri: selectedToken.logoUrl }}
+              source={{ uri: selectedToken?.logoUrl ?? '' }}
               className={'w-[18px] h-[18px]'}
             />
             <CyDText className={'text-[16px] ml-[4px]'}>

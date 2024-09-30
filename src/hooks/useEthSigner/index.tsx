@@ -333,69 +333,64 @@ export default function useEthSigner() {
           );
           let txHash: string;
 
-          let hash;
-          try {
-            hash = await new Promise((resolve, reject) => {
-              void web3.eth
-                .sendSignedTransaction(String(signedTransaction.rawTransaction))
-                .once('transactionHash', function (_hash: string) {
-                  txHash = _hash;
-                  Toast.show({
-                    type: 'info',
-                    text1: 'Transaction Hash',
-                    text2: _hash,
-                    position: 'bottom',
-                  });
-                })
-                .once('receipt', function (receipt: any) {
-                  resolve(receipt.transactionHash);
-                })
-                .on('confirmation', () => {
-                  // expression expected
-                })
-                .on('error', function (error: any) {
-                  if (!txHash) {
-                    reject(error);
-                  } else {
-                    setTimeout(() => {
-                      void (async () => {
-                        const receipt =
-                          await web3.eth.getTransactionReceipt(txHash);
-                        if (receipt?.status) {
-                          Toast.show({
-                            type: 'success',
-                            text1: 'Transaction',
-                            text2: 'Transaction Receipt Received',
-                            position: 'bottom',
-                          });
-                          resolve(receipt.transactionHash);
-                        } else {
-                          Sentry.captureException(error.message ?? error);
-                          Toast.show({
-                            type: 'error',
-                            text1: 'Transaction Error',
-                            text2: error.message,
-                            position: 'bottom',
-                          });
-                          reject(error);
-                        }
-                      })();
-                    }, 5000);
-                  }
-                })
-                .then(async function (receipt: { transactionHash: string }) {
-                  Toast.show({
-                    type: 'success',
-                    text1: 'Transaction',
-                    text2: 'Transaction Receipt Received',
-                    position: 'bottom',
-                  });
-                  resolve(receipt.transactionHash);
+          const hash = await new Promise((resolve, reject) => {
+            void web3.eth
+              .sendSignedTransaction(String(signedTransaction.rawTransaction))
+              .once('transactionHash', function (_hash: string) {
+                txHash = _hash;
+                Toast.show({
+                  type: 'info',
+                  text1: 'Transaction Hash',
+                  text2: _hash,
+                  position: 'bottom',
                 });
-            });
-          } catch (error) {
-            return parseErrorMessage(error);
-          }
+              })
+              .once('receipt', function (receipt: any) {
+                resolve(receipt.transactionHash);
+              })
+              .on('confirmation', () => {
+                // expression expected
+              })
+              .on('error', function (error: any) {
+                if (!txHash) {
+                  reject(error);
+                } else {
+                  setTimeout(() => {
+                    void (async () => {
+                      const receipt =
+                        await web3.eth.getTransactionReceipt(txHash);
+                      if (receipt?.status) {
+                        Toast.show({
+                          type: 'success',
+                          text1: 'Transaction',
+                          text2: 'Transaction Receipt Received',
+                          position: 'bottom',
+                        });
+                        resolve(receipt.transactionHash);
+                      } else {
+                        Sentry.captureException(error.message ?? error);
+                        Toast.show({
+                          type: 'error',
+                          text1: 'Transaction Error',
+                          text2: error.message,
+                          position: 'bottom',
+                        });
+                        reject(error);
+                      }
+                    })();
+                  }, 5000);
+                }
+              })
+              .then(async function (receipt: { transactionHash: string }) {
+                Toast.show({
+                  type: 'success',
+                  text1: 'Transaction',
+                  text2: 'Transaction Receipt Received',
+                  position: 'bottom',
+                });
+                resolve(receipt.transactionHash);
+              });
+          });
           return hash;
         }
       }
