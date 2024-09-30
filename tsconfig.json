@@ -1,6 +1,12 @@
 {
   "compilerOptions": {
     "jsx": "react-jsx",
+    "paths": {
+      "*": [
+        "./node_modules/*",
+        "./node_modules/@reown/appkit-core-react-native/node_modules/*"
+      ]
+    },
 
     /* Visit https://aka.ms/tsconfig to read more about this file */
 

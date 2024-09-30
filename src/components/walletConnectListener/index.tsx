@@ -1,11 +1,11 @@
-import React, { useContext, useEffect, useState } from 'react';
+import React, { useContext, useEffect, useState, useCallback } from 'react';
 import {
   HdWalletContext,
   _NO_CYPHERD_CREDENTIAL_AVAILABLE_,
 } from '../../core/util';
 import useAxios from '../../core/HttpRequest';
 import { GlobalContext } from '../../core/globalContext';
-import { Web3Modal, useWalletInfo } from '@web3modal/wagmi-react-native';
+import { AppKit, useWalletInfo } from '@reown/appkit-wagmi-react-native';
 import axios from '../../core/Http';
 import { ConnectionTypes, GlobalContextType } from '../../constants/enum';
 import {
@@ -135,29 +135,40 @@ export const WalletConnectListener: React.FC = ({ children }) => {
     }
   };
 
-  const verifySessionTokenAndSign = async () => {
+  const verifySessionTokenAndSign = useCallback(async () => {
     setLoading(true);
-    const token = await getToken(String(address));
-    void setConnectionType(ConnectionTypes.WALLET_CONNECT_WITHOUT_SIGN);
-    const isSessionTokenValid = await verifySessionToken();
-    if (!isSessionTokenValid) {
-      void signConnectionMessage();
-    } else {
-      let authToken = await getAuthToken();
-      authToken = JSON.parse(String(authToken));
-      const profileData = await getWalletProfile(authToken);
-      globalContext.globalDispatch({
-        type: GlobalContextType.SIGN_IN,
-        sessionToken: authToken,
-      });
-      globalContext.globalDispatch({
-        type: GlobalContextType.CARD_PROFILE,
-        cardProfile: profileData,
-      });
-      void loadHdWallet();
+    try {
+      const token = await getToken(String(address));
+      await setConnectionType(ConnectionTypes.WALLET_CONNECT_WITHOUT_SIGN);
+      const isSessionTokenValid = await verifySessionToken();
+      if (!isSessionTokenValid) {
+        await signConnectionMessage();
+      } else {
+        let authToken = await getAuthToken();
+        authToken = JSON.parse(String(authToken));
+        const profileData = await getWalletProfile(authToken);
+        globalContext.globalDispatch({
+          type: GlobalContextType.SIGN_IN,
+          sessionToken: authToken,
+        });
+        globalContext.globalDispatch({
+          type: GlobalContextType.CARD_PROFILE,
+          cardProfile: profileData,
+        });
+        await loadHdWallet();
+      }
+    } catch (error) {
+      console.error('Error in verifySessionTokenAndSign:', error);
+    } finally {
+      setLoading(false);
     }
-    setLoading(false);
-  };
+  }, [
+    address,
+    verifySessionToken,
+    signConnectionMessage,
+    getWalletProfile,
+    loadHdWallet,
+  ]);
 
   const signConnectionMessage = async () => {
     const provider = await connector?.getProvider();
@@ -172,7 +183,7 @@ export const WalletConnectListener: React.FC = ({ children }) => {
       const msg = response?.data?.message;
       const signMsgResponse = await signMessageAsync({ message: msg });
       void analytics().logEvent('sign_wallet_connect_msg', {
-        from: walletInfo.name,
+        from: walletInfo?.name,
       });
     }
   };
@@ -180,7 +191,7 @@ export const WalletConnectListener: React.FC = ({ children }) => {
   return (
     <CyDView className='flex-1'>
       {loading ? <Loading /> : children}
-      <Web3Modal />
+      <AppKit />
     </CyDView>
   );
 };
