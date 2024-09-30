@@ -234,7 +234,9 @@ const BannerCarousel = () => {
   };
 
   // function to update the status for an Activity
-  const updateStatusFCardOrBridge = async (activity: BridgeOrCardActivity) => {
+  const updateStatusForCardOrBridge = async (
+    activity: BridgeOrCardActivity,
+  ) => {
     const currentActivityStatus = activity.status;
     const activityQuoteId = activity.quoteId;
     if (
