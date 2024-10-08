@@ -1,5 +1,8 @@
 import React, { SetStateAction, Dispatch } from 'react';
-import { CyDText, CyDView } from '../../../../../styles/tailwindStyles';
+import {
+  CyDKeyboardAwareScrollView,
+  CyDText,
+} from '../../../../../styles/tailwindStyles';
 import { useTranslation } from 'react-i18next';
 
 import FormikTextInput from '../../../../../components/v2/formikInput';
@@ -13,7 +16,7 @@ export default function BasicDetails({
   const { t } = useTranslation();
 
   return (
-    <CyDView className='px-[16px]'>
+    <CyDKeyboardAwareScrollView className='px-[16px]'>
       <CyDText className='font-bold text-[28px] mb-[24px]'>
         {t('BASIC_DETAILS')}
       </CyDText>
@@ -45,6 +48,6 @@ export default function BasicDetails({
           'An email address is necessary for verification, updates and further communication',
         )}
       </CyDText>
-    </CyDView>
+    </CyDKeyboardAwareScrollView>
   );
 }

@@ -198,6 +198,7 @@ export const initialGlobalState: GlobalStateDef = {
     },
     custom: {},
   },
+  cardProfile: undefined,
 };
 
 interface GlobalReducerInput {
@@ -207,7 +208,8 @@ interface GlobalReducerInput {
     | GlobalContextType.CARD_PROFILE
     | GlobalContextType.IS_APP_AUTHENTICATED
     | GlobalContextType.PLAN_INFO
-    | GlobalContextType.IBC;
+    | GlobalContextType.IBC
+    | GlobalContextType.RESET_GLOBAL_STATE;
   rpc?: RpcResponseDetail;
   sessionToken?: string;
   cardProfile?: CardProfile;
@@ -243,6 +245,8 @@ export const gloabalContextReducer = (
       return { ...state, isAuthenticated };
     } else if (type === GlobalContextType.PLAN_INFO) {
       return { ...state, planInfo: planInfo ?? initialGlobalState.planInfo };
+    } else if (type === GlobalContextType.RESET_GLOBAL_STATE) {
+      return initialGlobalState;
     }
   }
   return state;

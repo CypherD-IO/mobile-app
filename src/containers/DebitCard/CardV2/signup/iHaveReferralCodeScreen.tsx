@@ -101,7 +101,7 @@ const IHaveReferralCodeScreen = ({ navigation, route }) => {
           <CyDView>
             <CyDTouchView
               onPress={() => {
-                navigation.navigate(screenTitle.CARD_V2_SIGNUP_LANDING_SCREEN, {
+                navigation.navigate(screenTitle.GET_YOUR_CARD, {
                   deductAmountNow,
                   toPage,
                   cardBalance,

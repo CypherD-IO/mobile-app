@@ -1,4 +1,4 @@
-import React, { Dispatch, SetStateAction, useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import FormikTextInput from '../../../../../components/v2/formikInput';
 import {
@@ -6,24 +6,23 @@ import {
   CyDKeyboardAwareScrollView,
   CyDScrollView,
   CyDText,
+  CyDTextInput,
   CyDTouchView,
   CyDView,
 } from '../../../../../styles/tailwindStyles';
 import CyDModalLayout from '../../../../../components/v2/modal';
 import AppImages from '../../../../../../assets/images/appImages';
 import { StyleSheet } from 'react-native';
-import { FormikErrors } from 'formik';
+import { FormikHelpers } from 'formik';
 import Loading from '../../../../../components/v2/loading';
 import { FormInitalValues } from '.';
+import { Colors } from '../../../../../constants/theme';
 
 export default function BillingAddress({
-  setIndex,
   supportedCountries,
   setFieldValue,
   values,
 }: {
-  setIndex: Dispatch<SetStateAction<number>>;
-  values: FormInitalValues;
   supportedCountries: Array<{
     name: string;
     Iso2: string;
@@ -33,23 +32,34 @@ export default function BillingAddress({
     flag: string;
     dial_code: string;
   }>;
-  setFieldValue: (
-    field: string,
-    value: any,
-    shouldValidate?: boolean,
-  ) => Promise<FormikErrors<FormInitalValues>> | Promise<void>;
+  setFieldValue: FormikHelpers<FormInitalValues>['setFieldValue'];
+  values: FormInitalValues;
 }) {
   const { t } = useTranslation();
   const [showCountries, setShowCountries] = useState(false);
+  const [countryFilterText, setCountryFilter] = useState('');
+  const [countryList, setCountryList] = useState(supportedCountries);
+  const [country, setCountry] = useState(values.country);
+
+  useEffect(() => {
+    if (countryFilterText === '') {
+      setCountryList(supportedCountries);
+    } else {
+      const filteredCountries = supportedCountries.filter(country =>
+        country.name.toLowerCase().includes(countryFilterText.toLowerCase()),
+      );
+      setCountryList(filteredCountries);
+    }
+  }, [supportedCountries, countryFilterText]);
 
   if (supportedCountries.length === 0) return <Loading />;
   return (
-    <CyDView className='px-[16px] h-[86%]'>
+    <CyDKeyboardAwareScrollView className='px-[16px] h-[86%]'>
       <CyDModalLayout
         style={styles.modalLayout}
         isModalVisible={showCountries}
         setModalVisible={setShowCountries}>
-        <CyDView className={'bg-n30 h-[70%] rounded-t-[20px] p-[16px]'}>
+        <CyDView className={'bg-white h-[70%] rounded-t-[20px] p-[16px]'}>
           <CyDView className={'flex flex-row justify-between items-center'}>
             <CyDText className='text-[18px] font-bold'>
               {t('SELECT_COUNTRY')}
@@ -67,25 +77,40 @@ export default function BillingAddress({
               </CyDView>
             </CyDTouchView>
           </CyDView>
+          <CyDView
+            className={'flex flex-row mt-[20px] justify-center items-center'}>
+            <CyDTextInput
+              className={
+                'border-[1px] border-inputBorderColor rounded-[8px] p-[10px] text-[14px] w-[95%] font-nunito text-primaryTextColor'
+              }
+              value={countryFilterText}
+              autoCapitalize='none'
+              autoCorrect={false}
+              onChangeText={text => setCountryFilter(text)}
+              placeholder='Search Country'
+              placeholderTextColor={Colors.subTextColor}
+            />
+          </CyDView>
           <CyDScrollView className='my-[16px]'>
-            {supportedCountries.map(country => {
+            {countryList.map(_country => {
               return (
                 <CyDTouchView
-                  key={country.Iso2 + country.name}
+                  key={_country.Iso2 + _country.name}
                   onPress={() => {
-                    void setFieldValue('country', country.name);
-                    void setFieldValue('dialCode', country.dial_code);
+                    setCountry(_country.unicode_flag + _country.name);
+                    void setFieldValue('country', _country.Iso2);
+                    void setFieldValue('dialCode', _country.dial_code);
                     setShowCountries(false);
                   }}
-                  className='flex flex-row justify-between p-[12px] rounded-[8px] my-[4px] border-b border-n50'>
+                  className='flex flex-row justify-between p-[12px] rounded-[8px] my-[4px] border-b border-n30'>
                   <CyDText className='text-[16px] font-semibold '>
-                    {country.unicode_flag} {country.name}
+                    {_country.unicode_flag} {_country.name}
                   </CyDText>
                   <CyDView>
                     <CyDImage
                       className='w-[24px] h-[24px]'
                       source={
-                        values.country === country.name
+                        values.country === _country.Iso2
                           ? AppImages.RADIO_CHECK
                           : AppImages.RADIO_UNCHECK
                       }
@@ -99,7 +124,7 @@ export default function BillingAddress({
       </CyDModalLayout>
       <CyDKeyboardAwareScrollView>
         <CyDText className='font-bold text-[28px] mb-[24px]'>
-          {t('DELIVERY_ADDRESS')}
+          {t('BILLING_ADDRESS_TITLE')}
         </CyDText>
         <FormikTextInput
           name='line1'
@@ -109,6 +134,7 @@ export default function BillingAddress({
         <FormikTextInput
           name='line2'
           label='Address Line 2'
+          placeholder='(optional)'
           containerClassName='mb-[17px]'
         />
         <FormikTextInput
@@ -123,6 +149,7 @@ export default function BillingAddress({
             containerClassName='mb-[17px]'
             editable={false}
             pointerEvents='none'
+            value={country}
           />
         </CyDTouchView>
         <FormikTextInput
@@ -152,7 +179,7 @@ export default function BillingAddress({
           />
         </CyDView>
       </CyDKeyboardAwareScrollView>
-    </CyDView>
+    </CyDKeyboardAwareScrollView>
   );
 }
 

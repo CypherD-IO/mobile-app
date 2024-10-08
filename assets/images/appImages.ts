@@ -652,8 +652,20 @@ const MULTIPLE_CARDS = {
 const PREMIUM_LABEL = {
   uri: `${S3_BUCKET_URL_ICONS}/premiumLabel.png`,
 };
+const KYC_VERIFICATION_PENDING = {
+  uri: `${S3_BUCKET_URL_ICONS}/kycVerificationPending.png`,
+};
+const KYC_VERIFICATION_FAILED = {
+  uri: `${S3_BUCKET_URL_ICONS}/kycVerificationFailed.png`,
+};
+const KYC_VERIFICATION_DELAYED = {
+  uri: `${S3_BUCKET_URL_ICONS}/kycVerificationDelayed.png`,
+};
 
 const AppImages = {
+  KYC_VERIFICATION_FAILED,
+  KYC_VERIFICATION_DELAYED,
+  KYC_VERIFICATION_PENDING,
   SWITCH_OFF,
   USDC_TOKEN,
   LIST_HAMBURGER,

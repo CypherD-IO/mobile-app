@@ -107,6 +107,7 @@ export enum GlobalContextType {
   IBC = 'IBC',
   IS_APP_AUTHENTICATED = 'IS_APP_AUTHENTICATED',
   PLAN_INFO = 'PLAN_INFO',
+  RESET_GLOBAL_STATE = 'RESET_GLOBAL_STATE',
 }
 
 export enum TransactionFilterTypes {
