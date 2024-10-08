@@ -1,3 +1,4 @@
+import '@walletconnect/react-native-compat';
 import React from 'react';
 import { WalletConnectListener } from '../walletConnectListener';
 import { WagmiProvider } from 'wagmi';
@@ -9,17 +10,17 @@ import {
   arbitrum,
   avalanche,
   bsc,
-  zkSync,
   base,
   polygonZkEvm,
   aurora,
   moonbeam,
   moonriver,
-} from 'viem/chains';
+} from '@wagmi/core/chains';
 import {
-  createWeb3Modal,
+  AppKit,
+  createAppKit,
   defaultWagmiConfig,
-} from '@web3modal/wagmi-react-native';
+} from '@reown/appkit-wagmi-react-native';
 import { Config } from 'react-native-config';
 import Loading from '../v2/loading';
 
@@ -30,7 +31,6 @@ const chains = [
   arbitrum,
   avalanche,
   bsc,
-  zkSync,
   base,
   polygonZkEvm,
   aurora,
@@ -39,26 +39,32 @@ const chains = [
 ] as const;
 
 const projectId = String(Config.WALLET_CONNECT_PROJECTID);
+// const projectId = '4e9c9ddc1f90598f0dce25a8b6ccc742';
+// console.log('projectId', projectId);
+
+const metadata = {
+  name: 'Cypher Wallet',
+  description: 'Cypher Wallet',
+  url: 'https://cypherwallet.io',
+  icons: ['https://avatars.githubusercontent.com/u/37784886'],
+  redirect: {
+    native: 'cypherwallet://',
+    universal: 'https://app.cypherhq.io',
+  },
+};
 
 export const wagmiConfig = defaultWagmiConfig({
   chains,
-  projectId: String(Config.WALLET_CONNECT_PROJECTID),
-  metadata: {
-    name: 'Cypher Wallet',
-    description: 'Cypher Wallet',
-    url: 'https://cypherwallet.io',
-    icons: ['https://avatars.githubusercontent.com/u/37784886'],
-    redirect: {
-      native: 'cypherwallet://',
-      universal: 'YOUR_APP_UNIVERSAL_LINK.com',
-    },
-  },
+  projectId,
+  metadata,
 });
 
 export const WagmiConfigBuilder: React.FC = ({ children }) => {
-  createWeb3Modal({
+  createAppKit({
     projectId,
     wagmiConfig,
+    defaultChain: mainnet, // Optional
+    enableAnalytics: true, // Optional - defaults to your Cloud configuration
   });
 
   const queryClient = new QueryClient();

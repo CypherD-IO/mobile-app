@@ -128,6 +128,7 @@ export default function useTransactionManager() {
     const fromAddress = ethereum.address;
     try {
       const code = await web3.eth.getCode(toAddress);
+      // console.log('code : ', code);
       let { gasLimit, gasPrice, priorityFee, isEIP1599Supported } =
         await estimateGasForEvm({
           web3,
@@ -145,6 +146,7 @@ export default function useTransactionManager() {
         chain,
         contractAddress,
       );
+      // console.log('gasLimit : ', gasLimit);
       const tx = {
         from: ethereum.address,
         to: toAddress,
@@ -160,14 +162,16 @@ export default function useTransactionManager() {
           web3.utils.toWei(priorityFee.toFixed(9), 'gwei'),
         );
       }
-
+      // console.log('tx : ', tx);
       const hash = await signEthTransaction({
         web3,
         sendChain: chain,
         transactionToBeSigned: tx,
       });
+      // console.log('hash in sendNativeToken : ', hash);
       return hash;
     } catch (err: any) {
+      // console.log('err in sendNativeToken : ', err);
       throw new Error(err);
     }
     // }

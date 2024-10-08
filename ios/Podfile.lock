@@ -523,7 +523,7 @@ PODS:
     - MMKV (>= 1.3.3)
     - RCT-Folly (= 2021.07.22.00)
     - React-Core
-  - react-native-netinfo (11.3.1):
+  - react-native-netinfo (11.4.1):
     - React-Core
   - react-native-pager-view (7.0.0-rc.0):
     - React-Core
@@ -660,7 +660,7 @@ PODS:
     - React-perflogger (= 0.72.14)
   - rn-fetch-blob (0.12.0):
     - React-Core
-  - RNCAsyncStorage (1.23.1):
+  - RNCAsyncStorage (1.24.0):
     - React-Core
   - RNCClipboard (1.14.1):
     - React-Core
@@ -742,7 +742,7 @@ PODS:
     - Sentry/HybridSDK (= 8.36.0)
   - RNShare (7.9.1):
     - React-Core
-  - RNSVG (15.3.0):
+  - RNSVG (15.7.1):
     - React-Core
   - RNVectorIcons (9.2.0):
     - React-Core
@@ -1168,7 +1168,7 @@ SPEC CHECKSUMS:
   react-native-get-random-values: 21325b2244dfa6b58878f51f9aa42821e7ba3d06
   react-native-lottie-splash-screen: 4e1b1fd9d6633f9cd2106d6877eb5ba0147f3e2b
   react-native-mmkv: e2d73a7d37f23918066a4b985a94c9fafc3f20c1
-  react-native-netinfo: bdb108d340cdb41875c9ced535977cac6d2ff321
+  react-native-netinfo: f0a9899081c185db1de5bb2fdc1c88c202a059ac
   react-native-pager-view: 563a43b511eea680f803ab4fb20bd7525fbde2cc
   react-native-randombytes: 421f1c7d48c0af8dbcd471b0324393ebf8fe7846
   react-native-render-html: 984dfe2294163d04bf5fe25d7c9f122e60e05ebe
@@ -1198,7 +1198,7 @@ SPEC CHECKSUMS:
   React-utils: 22a77b05da25ce49c744faa82e73856dcae1734e
   ReactCommon: 07937a01c967f2023d6f2d07114315f099b4b436
   rn-fetch-blob: f065bb7ab7fb48dd002629f8bdcb0336602d3cba
-  RNCAsyncStorage: 826b603ae9c0f88b5ac4e956801f755109fa4d5c
+  RNCAsyncStorage: ec53e44dc3e75b44aa2a9f37618a49c3bc080a7a
   RNCClipboard: 0a720adef5ec193aa0e3de24c3977222c7e52a37
   RNCPushNotificationIOS: 64218f3c776c03d7408284a819b2abfda1834bc8
   RNDateTimePicker: 65e1d202799460b286ff5e741d8baf54695e8abd
@@ -1219,7 +1219,7 @@ SPEC CHECKSUMS:
   RNScreens: 284fcee9d8d4648851fdb85dd0e200daebedcc14
   RNSentry: d84b9265d0c7379104a5fb3c80aa451029e1ace0
   RNShare: a5dc3b9c53ddc73e155b8cd9a94c70c91913c43c
-  RNSVG: a48668fd382115bc89761ce291a81c4ca5f2fd2e
+  RNSVG: 4590aa95758149fa27c5c83e54a6a466349a1688
   RNVectorIcons: fcc2f6cb32f5735b586e66d14103a74ce6ad61f8
   SDWebImage: a7f831e1a65eb5e285e3fb046a23fcfbf08e696d
   SDWebImageWebPCoder: 908b83b6adda48effe7667cd2b7f78c897e5111d
