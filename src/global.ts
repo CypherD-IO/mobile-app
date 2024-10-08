@@ -7,7 +7,8 @@ import {
   setOwlracleHost,
 } from './core/asyncStorage';
 
-let ARCH_HOST = 'https://arch.cypherd.io';
+// let ARCH_HOST = 'https://arch.cypherd.io';
+let ARCH_HOST = 'http://localhost:9090';
 let PORTFOLIO_HOST = 'https://api.cypherd.io';
 let OWLRACLE_HOST = 'https://api.owlracle.info';
 

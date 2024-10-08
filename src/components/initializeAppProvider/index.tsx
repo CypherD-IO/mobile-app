@@ -29,6 +29,7 @@ import Intercom from '@intercom/intercom-react-native';
 import RNExitApp from 'react-native-exit-app';
 import { HdWalletContextDef } from '../../reducers/hdwallet_reducer';
 import Loading from '../../containers/Loading';
+import { WagmiConfigBuilder } from '../wagmiConfigBuilder';
 
 export const InitializeAppProvider: React.FC<JSX.Element> = ({ children }) => {
   const {
@@ -103,6 +104,12 @@ export const InitializeAppProvider: React.FC<JSX.Element> = ({ children }) => {
   }, [pinAuthentication]);
 
   const RenderNavStack = useCallback(() => {
+    console.log('ethereum.address', ethereum.address);
+    console.log('pinAuthentication', pinAuthentication);
+    console.log('pinPresent', pinPresent);
+    console.log('hdWallet.state.reset', hdWallet.state.reset);
+    console.log('isReadOnlyWallet', isReadOnlyWallet);
+    console.log('isAuthenticated', isAuthenticated);
     if (ethereum.address === undefined) {
       if (pinAuthentication || pinPresent === PinPresentStates.NOTSET) {
         return (
@@ -127,8 +134,10 @@ export const InitializeAppProvider: React.FC<JSX.Element> = ({ children }) => {
         return <OnBoardingStack />;
       } else {
         if (!isReadOnlyWallet && !isAuthenticated) {
-          return <Loading />;
+          return <Loading loadingText='App stack loading' />;
         }
+        console.log('rendering children : ', children);
+
         return children;
       }
     }
@@ -255,8 +264,10 @@ export const InitializeAppProvider: React.FC<JSX.Element> = ({ children }) => {
       </Dialog>
 
       <WalletConnectV2Provider>
-        <DefaultAuthRemoveModal isModalVisible={showDefaultAuthRemoveModal} />
-        <RenderNavStack />
+        <WagmiConfigBuilder>
+          <DefaultAuthRemoveModal isModalVisible={showDefaultAuthRemoveModal} />
+          {RenderNavStack()}
+        </WagmiConfigBuilder>
       </WalletConnectV2Provider>
     </>
   );

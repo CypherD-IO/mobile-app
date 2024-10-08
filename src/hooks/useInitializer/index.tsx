@@ -403,6 +403,7 @@ export default function useInitializer() {
 
   const getProfile = async (token: string) => {
     const data = (await getWalletProfile(token)) as CardProfile;
+    console.log('data :::::::::::::', data);
     globalContext.globalDispatch({
       type: GlobalContextType.CARD_PROFILE,
       cardProfile: data,
@@ -426,6 +427,7 @@ export default function useInitializer() {
       // && ethereum?.privateKey !== _NO_CYPHERD_CREDENTIAL_AVAILABLE_
     ) {
       const isSessionTokenValid = await verifySessionToken();
+      console.log('isSessionTokenValid ::::', isSessionTokenValid);
       if (!isSessionTokenValid) {
         const signInResponse = await signIn(
           ethereum,
@@ -467,6 +469,8 @@ export default function useInitializer() {
       } else {
         let authToken = await getAuthToken();
         const connectionType = await getConnectionType();
+        console.log('authToken', authToken);
+        console.log('connectionType', connectionType);
         // don't ask for authentication in case of wallet connect
         if (!(connectionType === ConnectionTypes.WALLET_CONNECT)) {
           await loadFromKeyChain(DUMMY_AUTH, true, () =>

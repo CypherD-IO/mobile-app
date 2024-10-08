@@ -205,6 +205,7 @@
     "vm-browserify": "^0.0.4",
     "wagmi": "^2.12.16",
     "web3": "1.10.2",
+    "whatwg-fetch": "^3.6.20",
     "yup": "^0.32.11"
   },
   "devDependencies": {

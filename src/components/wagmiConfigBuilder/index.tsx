@@ -17,6 +17,7 @@ import {
   moonriver,
 } from '@wagmi/core/chains';
 import {
+  AppKit,
   createAppKit,
   defaultWagmiConfig,
 } from '@reown/appkit-wagmi-react-native';
@@ -38,6 +39,8 @@ const chains = [
 ] as const;
 
 const projectId = String(Config.WALLET_CONNECT_PROJECTID);
+// const projectId = '4e9c9ddc1f90598f0dce25a8b6ccc742';
+// console.log('projectId', projectId);
 
 const metadata = {
   name: 'Cypher Wallet',
@@ -68,7 +71,10 @@ export const WagmiConfigBuilder: React.FC = ({ children }) => {
   return wagmiConfig ? (
     <WagmiProvider config={wagmiConfig}>
       <QueryClientProvider client={queryClient}>
-        <WalletConnectListener>{children}</WalletConnectListener>
+        <WalletConnectListener>
+          {children}
+          {/* <AppKit /> */}
+        </WalletConnectListener>
       </QueryClientProvider>
     </WagmiProvider>
   ) : (

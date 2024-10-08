@@ -1,6 +1,7 @@
 /**
  * @format
  */
+import 'whatwg-fetch';
 import './shim';
 import { AppRegistry } from 'react-native';
 import messaging from '@react-native-firebase/messaging';
