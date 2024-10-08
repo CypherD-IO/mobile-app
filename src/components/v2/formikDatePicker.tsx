@@ -4,6 +4,8 @@ import DateTimePicker from '@react-native-community/datetimepicker';
 import { useField } from 'formik';
 import { CyDText, CyDTextInput, CyDView } from '../../styles/tailwindStyles';
 import clsx from 'clsx';
+import DatePickerModal from 'react-native-modal-datetime-picker';
+import moment from 'moment';
 
 interface FormikDateInputProps {
   name: string;
@@ -27,14 +29,14 @@ const FormikDateInput: React.FC<FormikDateInputProps> = ({
   const [field, meta, helpers] = useField(name);
   const [show, setShow] = useState(false);
 
-  const onChangeDate = (event: any, selectedDate?: Date) => {
+  const onChangeDate = (selectedDate?: Date) => {
     const currentDate = selectedDate ?? field.value;
-    setShow(Platform.OS === 'ios');
 
     // Handle the Promise returned by setValue
     helpers
       .setValue(currentDate)
       .catch(error => console.error('Error setting date value:', error));
+    setShow(false);
   };
 
   const showDatepicker = () => {
@@ -49,7 +51,13 @@ const FormikDateInput: React.FC<FormikDateInputProps> = ({
         <CyDTextInput
           placeholder={placeholder}
           onChangeText={field.onChange(name)}
-          value={field.value ? field.value.toLocaleDateString() : ''}
+          value={
+            field.value && field.value instanceof Date
+              ? field.value.toLocaleDateString()
+              : field.value
+                ? new Date(field.value).toLocaleDateString()
+                : ''
+          }
           className={clsx(inputClassName, {
             'text-black border-white': !meta.error,
             'text-red-500 border-red-500': meta.touched && meta.error,
@@ -58,48 +66,20 @@ const FormikDateInput: React.FC<FormikDateInputProps> = ({
           showSoftInputOnFocus={false}
           placeholderTextColor={'#A6AEBB'}
         />
-        {meta.touched && meta.error && (
-          <CyDText className={errorClassName}>{meta.error}</CyDText>
-        )}
       </CyDView>
-      {Platform.OS === 'ios' && show && (
-        <Modal
-          transparent={true}
-          animationType='slide'
-          visible={show}
-          onRequestClose={() => setShow(false)}>
-          <CyDView className='flex flex-col h-full justify-end'>
-            <CyDView className='bg-white p-[10px] rounded-t-p[10px]'>
-              <CyDView className='flex flex-row justify-end'>
-                <Button
-                  title='Done'
-                  onPress={() => {
-                    setShow(false);
-                  }}
-                />
-              </CyDView>
-              <DateTimePicker
-                testID='dateTimePicker'
-                value={field.value || new Date()}
-                mode='date'
-                display='spinner'
-                onChange={onChangeDate}
-              />
-            </CyDView>
-          </CyDView>
-        </Modal>
-      )}
-      {Platform.OS === 'android' && show && (
-        <DateTimePicker
-          testID='dateTimePicker'
-          value={field.value || new Date()}
-          mode='date'
-          display='default'
-          onChange={onChangeDate}
-        />
-      )}
+      <DatePickerModal
+        isVisible={show}
+        mode='date'
+        date={field.value ? new Date(field.value) : new Date()}
+        onConfirm={onChangeDate}
+        onCancel={() => setShow(false)}
+      />
       {meta.touched && meta.error && (
-        <CyDText className='text-red-500 text-[10px] mt-[2px] text-end w-full'>
+        <CyDText
+          className={clsx(
+            'text-red-500 text-[10px] mt-[2px] text-end w-full',
+            errorClassName,
+          )}>
           {meta.error}
         </CyDText>
       )}

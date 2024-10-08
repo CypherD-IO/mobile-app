@@ -4,7 +4,11 @@ import {
   getConnectionType,
   getReadOnlyWalletData,
 } from '../../core/asyncStorage';
-import { ConnectionTypes, GlobalModalType } from '../../constants/enum';
+import {
+  ConnectionTypes,
+  GlobalContextType,
+  GlobalModalType,
+} from '../../constants/enum';
 import {
   isPinAuthenticated,
   loadFromKeyChain,
@@ -58,6 +62,7 @@ export default function useConnectionManager() {
     await clearAllData();
     hdWalletContext.dispatch({ type: 'RESET_WALLET' });
     activityContext.dispatch({ type: ActivityReducerAction.RESET });
+    globalContext.dispatch({ type: GlobalContextType.RESET_GLOBAL_STATE });
     return true;
   };
 
