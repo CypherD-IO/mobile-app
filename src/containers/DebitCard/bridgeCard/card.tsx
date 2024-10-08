@@ -878,9 +878,9 @@ const RenderCardActions = ({
               type: GlobalContextType.CARD_PROFILE,
               cardProfile: tempProfile,
             });
-            navigation.navigate(screenTitle.SELECT_PLAN, {
+            navigation.navigate(screenTitle.GET_YOUR_CARD, {
               deductAmountNow: false,
-              toPage: screenTitle.CARD_APPLICATION_V2,
+              toPage: screenTitle.CARD_APPLICATION,
             });
           }}
         />

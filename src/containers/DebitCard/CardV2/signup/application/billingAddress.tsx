@@ -39,6 +39,7 @@ export default function BillingAddress({
   const [showCountries, setShowCountries] = useState(false);
   const [countryFilterText, setCountryFilter] = useState('');
   const [countryList, setCountryList] = useState(supportedCountries);
+  const [country, setCountry] = useState(values.country);
 
   useEffect(() => {
     if (countryFilterText === '') {
@@ -91,24 +92,25 @@ export default function BillingAddress({
             />
           </CyDView>
           <CyDScrollView className='my-[16px]'>
-            {countryList.map(country => {
+            {countryList.map(_country => {
               return (
                 <CyDTouchView
-                  key={country.Iso2 + country.name}
+                  key={_country.Iso2 + _country.name}
                   onPress={() => {
-                    void setFieldValue('country', country.Iso2);
-                    void setFieldValue('dialCode', country.dial_code);
+                    setCountry(_country.unicode_flag + _country.name);
+                    void setFieldValue('country', _country.Iso2);
+                    void setFieldValue('dialCode', _country.dial_code);
                     setShowCountries(false);
                   }}
                   className='flex flex-row justify-between p-[12px] rounded-[8px] my-[4px] border-b border-n30'>
                   <CyDText className='text-[16px] font-semibold '>
-                    {country.unicode_flag} {country.name}
+                    {_country.unicode_flag} {_country.name}
                   </CyDText>
                   <CyDView>
                     <CyDImage
                       className='w-[24px] h-[24px]'
                       source={
-                        values.country === country.Iso2
+                        values.country === _country.Iso2
                           ? AppImages.RADIO_CHECK
                           : AppImages.RADIO_UNCHECK
                       }
@@ -132,6 +134,7 @@ export default function BillingAddress({
         <FormikTextInput
           name='line2'
           label='Address Line 2'
+          placeholder='(optional)'
           containerClassName='mb-[17px]'
         />
         <FormikTextInput
@@ -146,6 +149,7 @@ export default function BillingAddress({
             containerClassName='mb-[17px]'
             editable={false}
             pointerEvents='none'
+            value={country}
           />
         </CyDTouchView>
         <FormikTextInput

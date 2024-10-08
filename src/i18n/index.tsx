@@ -1171,7 +1171,7 @@ const resources = {
       GET_YOUR_CARD_SUB: 'Here is  what you need to do next',
       ENTER_BASIC_DETAILS: 'Enter your Basic Details',
       CHECK_COUNTRY_SUPPORTED: 'Check if your country is supported',
-      ENTER_DELIVERY_ADDRESS: 'Enter your delivery Address',
+      ENTER_BILLING_ADDRESS: 'Enter your billing Address',
       EMAIL_VERIFICATION: 'Email verification',
       TELEGRAM_SETUP: 'Setup Telegram',
       UPDATE_INDENTITY: 'Update your Identity',
@@ -1376,6 +1376,7 @@ const resources = {
       REASON: 'Reason',
       KYC_SUCCESSFUL: 'KYC Successful',
       BILLING_ADDRESS_TITLE: 'Billing Address',
+      SETUP_LATER: 'Setup later',
     },
   },
 };

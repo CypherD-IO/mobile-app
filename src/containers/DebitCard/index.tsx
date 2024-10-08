@@ -2,7 +2,7 @@
  * @format
  * @flow
  */
-import React, { useCallback, useContext, useEffect, useState } from 'react';
+import React, { useCallback, useContext, useState } from 'react';
 import { GlobalContext } from '../../core/globalContext';
 import { CardProfile } from '../../models/cardProfile.model';
 import {
@@ -11,7 +11,6 @@ import {
   GlobalContextType,
 } from '../../constants/enum';
 import Loading from '../../components/v2/loading';
-import { useFocusEffect, useIsFocused } from '@react-navigation/native';
 import { screenTitle } from '../../constants';
 import { HdWalletContext } from '../../core/util';
 import {
@@ -29,7 +28,8 @@ import useCardUtilities from '../../hooks/useCardUtilities';
 import CardProviderSwitch from '../../components/cardProviderSwitch';
 import CardWailtList from './cardWaitList';
 import { getReferralCode } from '../../core/asyncStorage';
-import { e } from '@tanstack/query-core/build/legacy/hydration-BZ2M_xzi';
+import { useFocusEffect } from '@react-navigation/native';
+
 export interface RouteProps {
   navigation: {
     navigate: (screen: string, params?: any, route?: any) => void;
@@ -42,7 +42,6 @@ export interface RouteProps {
 
 export default function DebitCardScreen(props: RouteProps) {
   const { t } = useTranslation();
-  const isFocused = useIsFocused();
 
   const globalContext = useContext<any>(GlobalContext);
   const hdWalletContext = useContext<any>(HdWalletContext);
@@ -86,129 +85,123 @@ export default function DebitCardScreen(props: RouteProps) {
     const hasPc = has(cardProfile, CardProviders.PAYCADDY);
     const hasRc = has(cardProfile, CardProviders.REAP_CARD);
 
-    if (!provider) {
-      if (!hasPc && !hasRc) {
-        provider = CardProviders.REAP_CARD;
-      } else if (hasRc) {
-        provider = CardProviders.REAP_CARD;
-      } else if (hasPc) {
-        provider = CardProviders.PAYCADDY;
-      }
+    if (!hasPc && !hasRc) {
+      provider = CardProviders.REAP_CARD;
+    } else if (hasRc && !hasPc) {
+      provider = CardProviders.REAP_CARD;
+    } else if (hasPc && !hasRc) {
+      provider = CardProviders.PAYCADDY;
     }
   };
   setCardProvider();
 
-  useEffect(() => {
-    let isMounted = true;
-    let isLoading = false;
+  useFocusEffect(
+    useCallback(() => {
+      let isMounted = true;
+      let isLoading = false;
 
-    const checkCardApplicationStatus = async () => {
-      if (isLoading || !isMounted) return;
+      const checkCardApplicationStatus = async () => {
+        if (isLoading || !isMounted) return;
 
-      if (!isReadOnlyWallet && isFocused) {
-        try {
-          isLoading = true;
-          setLoading(true);
+        if (!isReadOnlyWallet) {
+          try {
+            isLoading = true;
+            setLoading(true);
 
-          let currentCardProfile = cardProfile;
-          if (!currentCardProfile) {
-            currentCardProfile = await refreshProfile();
-          }
+            let currentCardProfile = cardProfile;
 
-          if (
-            currentCardProfile &&
-            has(currentCardProfile, provider as string)
-          ) {
-            const cardApplicationStatus =
-              get(currentCardProfile, provider)?.applicationStatus ===
-              CardApplicationStatus.COMPLETED;
-
-            if (cardApplicationStatus) {
-              props.navigation.reset({
-                index: 0,
-                routes: [
-                  {
-                    name: screenTitle.BRIDGE_CARD_SCREEN,
-                    params: {
-                      cardProvider: provider,
-                    },
-                  },
-                ],
-              });
-            } else if (shouldCheckApplication(currentCardProfile)) {
-              await checkApplication(provider);
-            } else {
-              props.navigation.reset({
-                index: 0,
-                routes: [
-                  {
-                    name: screenTitle.CARD_KYC_STATUS_SCREEN,
-                  },
-                ],
-              });
+            if (!currentCardProfile) {
+              currentCardProfile = await refreshProfile();
             }
-          } else {
-            const isReferralCodeApplied = await getReferralCode();
-            if (isReferralCodeApplied) {
-              props.navigation.reset({
-                index: 0,
-                routes: [
-                  {
-                    name: screenTitle.I_HAVE_REFERRAL_CODE_SCREEN,
-                  },
-                ],
-              });
-            } else {
-              props.navigation.reset({
-                index: 0,
-                routes: [
-                  {
-                    name: screenTitle.CARD_V2_SIGNUP_LANDING_SCREEN,
-                    params: {
-                      deductAmountNow: false,
-                      toPage: screenTitle.CARD_SIGNUP_SCREEN,
+
+            if (
+              currentCardProfile &&
+              has(currentCardProfile, provider as string)
+            ) {
+              const cardApplicationStatus =
+                get(currentCardProfile, provider)?.applicationStatus ===
+                CardApplicationStatus.COMPLETED;
+
+              if (cardApplicationStatus) {
+                props.navigation.reset({
+                  index: 0,
+                  routes: [
+                    {
+                      name: screenTitle.BRIDGE_CARD_SCREEN,
+                      params: {
+                        cardProvider: provider,
+                      },
                     },
-                  },
-                ],
-              });
+                  ],
+                });
+              } else if (shouldCheckApplication(currentCardProfile)) {
+                await checkApplication(provider as CardProviders);
+              } else {
+                props.navigation.reset({
+                  index: 0,
+                  routes: [
+                    {
+                      name: screenTitle.KYC_VERIFICATION,
+                    },
+                  ],
+                });
+              }
+            } else {
+              const isReferralCodeApplied = await getReferralCode();
+              if (isReferralCodeApplied) {
+                props.navigation.reset({
+                  index: 0,
+                  routes: [
+                    {
+                      name: screenTitle.I_HAVE_REFERRAL_CODE_SCREEN,
+                    },
+                  ],
+                });
+              } else {
+                props.navigation.reset({
+                  index: 0,
+                  routes: [
+                    {
+                      name: screenTitle.GET_YOUR_CARD,
+                      params: {
+                        deductAmountNow: false,
+                        toPage: screenTitle.CARD_APPLICATION_V2,
+                      },
+                    },
+                  ],
+                });
+              }
+            }
+          } catch (error) {
+            Sentry.captureException(error);
+          } finally {
+            if (isMounted) {
+              setLoading(false);
+              isLoading = false;
             }
           }
-        } catch (error) {
-          Sentry.captureException(error);
-        } finally {
-          if (isMounted) {
-            setLoading(false);
-            isLoading = false;
-          }
+        } else {
+          setLoading(false);
         }
-      } else {
-        setLoading(false);
-      }
-    };
+      };
 
-    void checkCardApplicationStatus();
+      void checkCardApplicationStatus();
 
-    return () => {
-      isMounted = false;
-    };
-  }, [isFocused, globalContext.globalState.cardProfile, provider]);
+      return () => {
+        isMounted = false;
+      };
+    }, [isReadOnlyWallet, globalContext.globalState.cardProfile]),
+  );
 
   const shouldCheckApplication = (currentCardProfile: CardProfile) => {
     if (provider === CardProviders.REAP_CARD) {
       return (
         get(currentCardProfile, provider as CardProviders)
-          ?.applicationStatus === CardApplicationStatus.CREATED ||
-        (get(currentCardProfile, provider as CardProviders)
-          ?.applicationStatus === CardApplicationStatus.KYC_INITIATED &&
-          !get(
-            currentCardProfile,
-            ['cardNotification', 'isTelegramAllowed'],
-            false,
-          ))
+          ?.applicationStatus === CardApplicationStatus.CREATED
       );
     }
     return (
-      get(currentCardProfile, provider)?.applicationStatus ===
+      get(currentCardProfile, provider as CardProviders)?.applicationStatus ===
       CardApplicationStatus.CREATED
     );
   };
@@ -216,42 +209,21 @@ export default function DebitCardScreen(props: RouteProps) {
   const checkApplication = async (_provider: CardProviders) => {
     try {
       const response = await getWithAuth(`/v1/cards/${_provider}/application`);
-
       if (!response.isError) {
         const { data } = response;
-        if (!(provider === CardProviders.REAP_CARD) && !data.phoneVerified) {
+        if (!data.emailVerfied) {
           props.navigation.reset({
             index: 0,
             routes: [
               {
-                name: screenTitle.CARD_SIGNUP_OTP_VERIFICATION_SCREEN,
+                name: screenTitle.CARD_SIGNUP_OTP_VERIFICATION,
               },
             ],
           });
-        } else if (provider === CardProviders.REAP_CARD && !data.emailVerfied) {
-          props.navigation.reset({
-            index: 0,
-            routes: [
-              {
-                name: screenTitle.OTP_VERIFICATION_V2,
-              },
-            ],
-          });
-        } else if (
-          provider === CardProviders.REAP_CARD &&
-          !get(cardProfile, ['isTelegramSetup'], false)
-        )
-          props.navigation.reset({
-            index: 0,
-            routes: [
-              {
-                name: screenTitle.TELEGRAM_SETUP_V2,
-              },
-            ],
-          });
+        }
       }
-    } catch (err) {
-      Sentry.captureException(err);
+    } catch (e) {
+      Sentry.captureException(e);
     }
   };
 

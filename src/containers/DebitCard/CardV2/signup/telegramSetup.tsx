@@ -1,4 +1,4 @@
-import React, { useContext, useEffect, useState } from 'react';
+import React, { useContext, useState } from 'react';
 import { t } from 'i18next';
 import { Linking, StyleSheet } from 'react-native';
 import AppImages from '../../../../../assets/images/appImages';
@@ -26,8 +26,7 @@ import {
 import * as Sentry from '@sentry/react-native';
 import { screenTitle } from '../../../../constants';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
-import { GlobalContextType } from '../../../../constants/enum';
-import Toast from 'react-native-toast-message';
+import { ButtonType, GlobalContextType } from '../../../../constants/enum';
 import { get } from 'lodash';
 import useCardUtilities from '../../../../hooks/useCardUtilities';
 import LottieView from 'lottie-react-native';
@@ -50,20 +49,13 @@ export default function TelegramSetup() {
   const refreshProfile = async () => {
     setIsLoading(true);
     const data = await getWalletProfile(globalState.token);
-    console.log('🚀 ~ refreshProfile ~ data:', data);
     const telegramChanged = get(data, ['isTelegramSetup'], false);
-    console.log('🚀 ~ refreshProfile ~ telegramChanged:', telegramChanged);
     globalDispatch({
       type: GlobalContextType.CARD_PROFILE,
       cardProfile: data,
     });
     setIsLoading(false);
     setIsTelegramConnected(telegramChanged);
-    if (!telegramChanged) {
-      showToast('Not yet connected, try again or reach support', 'error');
-    } else {
-      showToast(t('Successfully Connected'), 'success');
-    }
   };
 
   const getNewTelegramConnectionId = async () => {
@@ -185,16 +177,25 @@ export default function TelegramSetup() {
           </CyDTouchView>
         </CyDView>
       </CyDView>
-      <CyDView className='px-[16px] pb-[48px] bg-white rounded-t-[16px]'>
+      <CyDView className='px-[16px] pb-[40px] bg-white rounded-t-[16px]'>
         {/* <CyDText className='mt-[14px] text-[12px] font-bold font-manrope'>
           {'Verify Telegram'}
         </CyDText> */}
-        <CyDView className='pt-[14px]'>
+        <CyDView className='pt-[14px] flex flex-row w-full justify-between'>
+          <Button
+            type={ButtonType.SECONDARY}
+            title={t('SETUP_LATER')}
+            onPress={() => {
+              navigation.navigate(screenTitle.KYC_VERIFICATION);
+            }}
+            style='w-[48%]'
+          />
           <Button
             title={t('CONTINUE')}
             onPress={() => {
-              navigation.navigate(screenTitle.KYC_VERIFICATION_V2);
+              navigation.navigate(screenTitle.KYC_VERIFICATION);
             }}
+            style='p-[3%] w-[48%]'
             disabled={!isTelegramConnected}
           />
         </CyDView>

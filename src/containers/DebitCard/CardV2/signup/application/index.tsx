@@ -36,7 +36,7 @@ import { screenTitle } from '../../../../../constants';
 import { useGlobalModalContext } from '../../../../../components/v2/GlobalModal';
 import { CardProfile } from '../../../../../models/cardProfile.model';
 import { StyleSheet } from 'react-native';
-import { isEqual, isUndefined, omitBy } from 'lodash';
+import { isEqual, isUndefined, omitBy, set } from 'lodash';
 import CardProviderSwitch from '../../../../../components/cardProviderSwitch';
 
 // Add this type definition
@@ -93,7 +93,7 @@ const validationSchema = Yup.object().shape({
       return age >= 18;
     }),
   line1: Yup.string().required(t('LINE1_REQUIRED')),
-  // line2: Yup.string().required('Address line 1is required'),
+  // line2: Yup.string().required('Address line 2 is required'),
   postalCode: Yup.string().required(t('POSTAL_CODE_REQUIRED')),
   country: Yup.string().required('Country is required'),
   city: Yup.string().required(t('CITY_REQUIRED')),
@@ -138,7 +138,7 @@ export default function CardApplicationV2() {
     setLoading(true);
     void fetchApplicationData();
     setLoading(false);
-  }, []);
+  }, [supportedCountries]);
 
   const getCountriesData = async () => {
     try {
@@ -157,30 +157,34 @@ export default function CardApplicationV2() {
   };
 
   const fetchApplicationData = async () => {
-    const { isError, data } = await getWithAuth(
-      `/v1/cards/${provider}/application`,
-    );
-
-    if (!isError && data) {
-      const countryData = supportedCountries.find(
-        country => country.Iso2 === data.country,
+    if (provider) {
+      const { isError, data } = await getWithAuth(
+        `/v1/cards/${provider}/application`,
       );
-      const dialCode = countryData?.dial_code ?? '';
 
-      setApplicationData({
-        firstName: data.firstName || '',
-        lastName: data.lastName || '',
-        email: data.email || '',
-        dateOfBirth: data.dateOfBirth ? new Date(data.dateOfBirth) : new Date(),
-        line1: data.line1 || '',
-        line2: data.line2 || '',
-        postalCode: data.postalCode || '',
-        country: data.country || '',
-        city: data.city || '',
-        state: data.state || '',
-        phone: data.phone ? data.phone.replace(dialCode, '') : '',
-        dialCode,
-      });
+      if (!isError && data) {
+        const countryData = supportedCountries.find(
+          country => country.Iso2 === data.country,
+        );
+        const dialCode = countryData?.dial_code ?? '';
+
+        setApplicationData({
+          firstName: data.firstName || '',
+          lastName: data.lastName || '',
+          email: data.email || '',
+          dateOfBirth: data.dateOfBirth
+            ? new Date(data.dateOfBirth)
+            : new Date(),
+          line1: data.line1 || '',
+          line2: data.line2 || '',
+          postalCode: data.postalCode || '',
+          country: data.country || '',
+          city: data.city || '',
+          state: data.state || '',
+          phone: data.phone ? data.phone.replace(dialCode, '') : '',
+          dialCode,
+        });
+      }
     }
   };
 
@@ -188,68 +192,76 @@ export default function CardApplicationV2() {
     values: FormInitalValues,
     { setSubmitting, setFieldError }: FormikHelpers<FormInitalValues>,
   ) => {
-    setSubmitting(true);
+    if (provider) {
+      setSubmitting(true);
 
-    // Use Lodash to compare values and return only changed fields
-    const changedFields = applicationData
-      ? omitBy(values, (value, key) =>
-          isEqual(value, applicationData[key as keyof FormInitalValues]),
-        )
-      : values;
+      // Use Lodash to compare values and return only changed fields
+      const changedFields = applicationData
+        ? omitBy(values, (value, key) =>
+            isEqual(value, applicationData[key as keyof FormInitalValues]),
+          )
+        : values;
 
-    const payload = {
-      ...changedFields,
-      phone: changedFields.phone
-        ? values.dialCode + changedFields.phone
-        : undefined,
-      dateOfBirth: changedFields.dateOfBirth ?? undefined,
-    };
+      const payload = {
+        ...changedFields,
+        phone: changedFields.phone
+          ? values.dialCode + changedFields.phone
+          : undefined,
+        dateOfBirth: changedFields.dateOfBirth ?? undefined,
+      };
+      // Remove undefined fields and dialCode
+      const cleanPayload = omitBy(
+        payload,
+        (value, key) => isUndefined(value) || key === 'dialCode',
+      );
 
-    // Remove undefined fields and dialCode
-    const cleanPayload = omitBy(
-      payload,
-      (value, key) => isUndefined(value) || key === 'dialCode',
-    );
+      const { isError, error } = applicationData
+        ? await patchWithAuth(
+            `/v1/cards/${CardProviders.REAP_CARD}/application`,
+            cleanPayload,
+          )
+        : await postWithAuth(
+            `/v1/cards/${CardProviders.REAP_CARD}/application`,
+            cleanPayload,
+          );
 
-    const { isError, error } = applicationData
-      ? await patchWithAuth(`/v1/cards/${provider}/application`, cleanPayload)
-      : await postWithAuth(`/v1/cards/${provider}/application`, cleanPayload);
+      if (isError) {
+        if (error.field) {
+          setFieldError(error.field, error.message);
 
-    if (isError) {
-      if (error.field) {
-        setFieldError(error.field, error.message);
-
-        // Check which page contains the error and update index if necessary
-        const firstPageFields = [
-          'firstName',
-          'lastName',
-          'email',
-          'dateOfBirth',
-        ];
-        if (firstPageFields.includes(error.field) && index === 1) {
-          setIndex(0);
+          // Check which page contains the error and update index if necessary
+          const firstPageFields = [
+            'firstName',
+            'lastName',
+            'email',
+            'dateOfBirth',
+          ];
+          if (firstPageFields.includes(error.field) && index === 1) {
+            setIndex(0);
+          }
+        } else {
+          showModal('state', {
+            type: 'error',
+            title: t('INVALID_USER_DETAILS'),
+            description: error ?? 'Error in submitting your application',
+            onSuccess: hideModal,
+            onFailure: hideModal,
+          });
         }
       } else {
-        showModal('state', {
-          type: 'error',
-          title: t('INVALID_USER_DETAILS'),
-          description: error ?? 'Error in submitting your application',
-          onSuccess: hideModal,
-          onFailure: hideModal,
+        const data = await getWalletProfile(globalState.token);
+        set(data as CardProfile, 'provider', CardProviders.REAP_CARD);
+        globalDispatch({
+          type: GlobalContextType.CARD_PROFILE,
+          cardProfile: data,
         });
+        applicationData
+          ? navigation.goBack()
+          : navigation.navigate(screenTitle.CARD_SIGNUP_OTP_VERIFICATION);
       }
-    } else {
-      const data = await getWalletProfile(globalState.token);
-      globalDispatch({
-        type: GlobalContextType.CARD_PROFILE,
-        cardProfile: data,
-      });
-      applicationData
-        ? navigation.goBack()
-        : navigation.navigate(screenTitle.OTP_VERIFICATION_V2);
-    }
 
-    setSubmitting(false);
+      setSubmitting(false);
+    }
   };
 
   if (loading) return <Loading />;
@@ -261,10 +273,11 @@ export default function CardApplicationV2() {
         className='w-[60px] ml-[16px] mb-[10px]'
         onPress={() => {
           if (index === 0) {
-            navigation.reset({
-              index: 0,
-              routes: [{ name: screenTitle.PORTFOLIO }],
-            });
+            // navigation.reset({
+            //   index: 0,
+            //   routes: [{ name: screenTitle.PORTFOLIO }],
+            // });
+            navigation.goBack();
           } else setIndex(0);
         }}>
         <CyDFastImage
@@ -301,7 +314,6 @@ export default function CardApplicationV2() {
           setFieldValue,
           values,
           isSubmitting,
-          errors,
         }) => (
           <CyDView className='bg-[#F1F0F5] flex flex-col justify-between h-full'>
             {index === 0 && <BasicDetails setIndex={setIndex} />}

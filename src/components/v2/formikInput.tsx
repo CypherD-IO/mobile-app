@@ -5,6 +5,7 @@ import clsx from 'clsx';
 
 interface FormikTextInputProps {
   name: string;
+  value?: string;
   placeholder?: string;
   label: string;
   secureTextEntry?: boolean;
@@ -26,6 +27,7 @@ interface FormikTextInputProps {
 
 const FormikTextInput: React.FC<FormikTextInputProps> = ({
   name,
+  value,
   containerClassName = '',
   labelClassName = 'text-[12px] font-bold text-black',
   inputClassName = 'p-[16px] rounded-[8px] bg-white font-semibold border-[1px] border-white mt-[2px]',
@@ -43,12 +45,13 @@ const FormikTextInput: React.FC<FormikTextInputProps> = ({
         pointerEvents={pointerEvents}
         onChangeText={field.onChange(name)}
         onBlur={field.onBlur(name)}
-        value={field.value}
+        value={value ?? field.value}
         className={clsx(inputClassName, {
           'text-black border-white': !meta.error,
           'text-red-500 border-red-500': meta.touched && meta.error,
         })}
         placeholderTextColor={'#A6AEBB'}
+        returnKeyType='done'
       />
       {meta.touched && meta.error && (
         <CyDText className={errorClassName}>{meta.error}</CyDText>

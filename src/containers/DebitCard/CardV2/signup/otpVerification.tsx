@@ -12,6 +12,7 @@ import {
   CyDFastImage,
   CyDImage,
   CyDTextInput,
+  CyDScrollView,
 } from '../../../../styles/tailwindStyles';
 import AppImages from '../../../../../assets/images/appImages';
 import OTPInput from '../../../../components/v2/otpBox';
@@ -110,7 +111,7 @@ export default function OTPVerification(): JSX.Element {
     });
     setLoading({ ...loading, otpLoading: false });
     if (!response.isError) {
-      navigation.navigate(screenTitle.TELEGRAM_SETUP_V2);
+      navigation.navigate(screenTitle.TELEGRAM_SETUP);
     } else {
       showModal('state', {
         type: 'error',
@@ -167,6 +168,12 @@ export default function OTPVerification(): JSX.Element {
       await getApplication();
     })();
   }, []);
+
+  useEffect(() => {
+    if (otp.length === 4) {
+      void handleVerifyOTP();
+    }
+  }, [otp]);
 
   if (loading.pageLoading) {
     return <Loading />;
@@ -241,52 +248,54 @@ export default function OTPVerification(): JSX.Element {
           <CyDView />
         </CyDView>
 
-        <CyDText className='text-[28px] font-bold my-[12px]'>
-          {t('VERIFY_EMAIL_ID_HEADING')}
-        </CyDText>
+        <CyDScrollView>
+          <CyDText className='text-[28px] font-bold my-[12px]'>
+            {t('VERIFY_EMAIL_ID_HEADING')}
+          </CyDText>
 
-        <CyDText className='text-[12px] text-n200 font-regular mb-6 font-manrope'>
-          {`OTP has been sent to "${email}" not your email id `}
+          <CyDText className='text-[12px] text-n200 font-regular mb-6 font-manrope'>
+            {`OTP has been sent to "${email}" not your email id `}
+            <CyDTouchView
+              onPress={() => {
+                setIsEditEmailModalVisible(true);
+              }}>
+              <CyDText className='text-blue300 font-manrope'>Edit mail</CyDText>
+            </CyDTouchView>
+          </CyDText>
+
+          <CyDView className='mt-[24px] mb-[8px]'>
+            <OTPInput
+              pinCount={4}
+              onOTPFilled={value => setOtp(value)}
+              value={otp}
+            />
+          </CyDView>
+
           <CyDTouchView
             onPress={() => {
-              setIsEditEmailModalVisible(true);
-            }}>
-            <CyDText className='text-blue300 font-manrope'>Edit mail</CyDText>
-          </CyDTouchView>
-        </CyDText>
-
-        <CyDView className='mt-[24px] mb-[8px]'>
-          <OTPInput
-            pinCount={4}
-            onOTPFilled={value => setOtp(value)}
-            value={otp}
-          />
-        </CyDView>
-
-        <CyDTouchView
-          onPress={() => {
-            void handleResendOTP();
-          }}
-          className='mt-4 flex-row items-center'
-          disabled={sendingOTP}>
-          <CyDText className='text-n200 font-manrope'>
-            {t('DIDNT_RECEIVE_OTP')}
-            {!sendingOTP && (
-              <CyDText className='text-blue300 font-manrope'>
-                {' '}
-                {t('RESEND_CODE_INIT_CAPS')}
-              </CyDText>
+              void handleResendOTP();
+            }}
+            className='mt-4 flex-row items-center'
+            disabled={sendingOTP}>
+            <CyDText className='text-n200 font-manrope'>
+              {t('DIDNT_RECEIVE_OTP')}
+              {!sendingOTP && (
+                <CyDText className='text-blue300 font-manrope'>
+                  {' '}
+                  {t('RESEND_CODE_INIT_CAPS')}
+                </CyDText>
+              )}
+            </CyDText>
+            {sendingOTP && (
+              <LottieView
+                source={AppImages.LOADER_TRANSPARENT}
+                autoPlay
+                loop
+                style={styles.lottie}
+              />
             )}
-          </CyDText>
-          {sendingOTP && (
-            <LottieView
-              source={AppImages.LOADER_TRANSPARENT}
-              autoPlay
-              loop
-              style={styles.lottie}
-            />
-          )}
-        </CyDTouchView>
+          </CyDTouchView>
+        </CyDScrollView>
       </CyDView>
 
       <CyDView className='px-[16px] pb-[48px] bg-white rounded-t-[16px]'>

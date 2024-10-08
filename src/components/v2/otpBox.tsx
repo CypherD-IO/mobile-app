@@ -70,11 +70,6 @@ const OTPInput: React.FC<OTPVerificationProps> = ({
     }
   };
 
-  const handleFocus = async (index: number) => {
-    const clipboardContent = await Clipboard.getString();
-    handlePaste(clipboardContent, index);
-  };
-
   return (
     <CyDView className='flex flex-col items-center'>
       <CyDView className='flex flex-row items-center'>
@@ -88,9 +83,6 @@ const OTPInput: React.FC<OTPVerificationProps> = ({
             onKeyPress={e => handleKeyPress(e, index)}
             onSelectionChange={() => {
               void handleSelectionChange(index);
-            }}
-            onFocus={() => {
-              void handleFocus(index);
             }}
             keyboardType='numeric'
             maxLength={1}
