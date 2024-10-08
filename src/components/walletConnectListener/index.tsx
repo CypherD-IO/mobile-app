@@ -39,35 +39,26 @@ export const WalletConnectListener: React.FC = ({ children }) => {
   const { verifySessionToken } = useValidSessionToken();
   const { getWithoutAuth } = useAxios();
   const { connectionType } = useConnectionManager();
-  // const [loading, setLoading] = useState<boolean>(
-  //   connectionType === ConnectionTypes.WALLET_CONNECT,
-  // );
-  // const [loading, setLoading] = useState<boolean>(false);
+  const [loading, setLoading] = useState<boolean>(
+    connectionType === ConnectionTypes.WALLET_CONNECT,
+  );
   const { walletInfo } = useWalletInfo();
   const { getWalletProfile } = useCardUtilities();
 
-  // useEffect(() => {
-  //   console.log('connectionType in walletConnectListener : ', connectionType);
-  //   setLoading(connectionType === ConnectionTypes.WALLET_CONNECT);
-  // }, [connectionType]);
+  useEffect(() => {
+    console.log('connectionType in walletConnectListener : ', connectionType);
+    setLoading(connectionType === ConnectionTypes.WALLET_CONNECT);
+  }, [connectionType]);
 
   const { signMessageAsync } = useSignMessage({
     mutation: {
-      onSuccess: async (data, variables) => {
-        console.log('Signed message:', variables.message);
-        console.log('Signature:', data);
-
-        // Extract the address from the signature
-        const recoveredAddress = ethers.verifyMessage(variables.message, data);
-        console.log('Recovered address:', recoveredAddress);
-
+      async onSuccess(data) {
         const verifyMessageResponse = await axios.post(
           `${ARCH_HOST}/v1/authentication/verify-message/${address?.toLowerCase()}?format=ERC-4361`,
           {
             signature: data,
           },
         );
-        console.log('verifyMessageResponse', verifyMessageResponse);
         if (verifyMessageResponse?.data.token) {
           const { token, refreshToken } = verifyMessageResponse.data;
           globalContext.globalDispatch({
@@ -84,25 +75,14 @@ export const WalletConnectListener: React.FC = ({ children }) => {
   });
 
   useEffect(() => {
-    let isMounted = true;
-
-    const handleConnection = async () => {
-      if (isMounted && isConnected && address) {
-        try {
-          await verifySessionTokenAndSign();
-        } catch (error) {
-          console.error('Error in verifySessionTokenAndSign:', error);
-        }
-      }
-    };
-
-    void handleConnection();
-
-    return () => {
-      isMounted = false;
-      // Clean up any listeners or timers here
-    };
-  }, [isConnected, address]);
+    if (
+      isConnected &&
+      address &&
+      ethereum.address === _NO_CYPHERD_CREDENTIAL_AVAILABLE_
+    ) {
+      void verifySessionTokenAndSign();
+    }
+  }, [isConnected, address, ethereum.address]);
 
   // useEffect(() => {
   //   console.log(
@@ -164,11 +144,35 @@ export const WalletConnectListener: React.FC = ({ children }) => {
     }
   };
 
+  const verifySessionTokenAndSign = async () => {
+    setLoading(true);
+    const token = await getToken(String(address));
+    void setConnectionType(ConnectionTypes.WALLET_CONNECT_WITHOUT_SIGN);
+    const isSessionTokenValid = await verifySessionToken();
+    if (!isSessionTokenValid) {
+      void signConnectionMessage();
+    } else {
+      let authToken = await getAuthToken();
+      authToken = JSON.parse(String(authToken));
+      const profileData = await getWalletProfile(authToken);
+      globalContext.globalDispatch({
+        type: GlobalContextType.SIGN_IN,
+        sessionToken: authToken,
+      });
+      globalContext.globalDispatch({
+        type: GlobalContextType.CARD_PROFILE,
+        cardProfile: profileData,
+      });
+      void loadHdWallet();
+    }
+    setLoading(false);
+  };
+
   const signConnectionMessage = async () => {
-    console.log('in signConnectionMessage function');
+    // console.log('in signConnectionMessage function');
     const provider = await connector?.getProvider();
-    console.log('... provider in signConnectionMessage : ', provider);
-    console.log('... address in signConnectionMessage : ', address);
+    // console.log('... provider in signConnectionMessage : ', provider);
+    // console.log('... address in signConnectionMessage : ', address);
     if (!provider) {
       throw new Error('web3Provider not connected');
     }
@@ -176,63 +180,21 @@ export const WalletConnectListener: React.FC = ({ children }) => {
       `/v1/authentication/sign-message/${String(address)}`,
       { format: 'ERC-4361' },
     );
-    console.log('response in signConnectionMessage : ', response);
+    // console.log('response in signConnectionMessage : ', response);
     if (!response.isError) {
       const msg = response?.data?.message;
-      console.log('Message to be signed:', msg);
+      // console.log('Message to be signed:', msg);
       const signMsgResponse = await signMessageAsync({ message: msg });
-      console.log('signMsgResponse:', signMsgResponse);
+      // console.log('signMsgResponse:', signMsgResponse);
       void analytics().logEvent('sign_wallet_connect_msg', {
         from: walletInfo?.name,
       });
     }
   };
 
-  const verifySessionTokenAndSign = useCallback(async () => {
-    // setLoading(true);
-    try {
-      console.log('in verifySessionTokenAndSign');
-      // const token = await getToken(String(address));
-      await setConnectionType(ConnectionTypes.WALLET_CONNECT_WITHOUT_SIGN);
-      const isSessionTokenValid = await verifySessionToken();
-      console.log('isSessionTokenValid', isSessionTokenValid);
-      if (!isSessionTokenValid) {
-        await signConnectionMessage();
-      } else {
-        let authToken = await getAuthToken();
-        authToken = JSON.parse(String(authToken));
-        const profileData = await getWalletProfile(authToken);
-        globalContext.globalDispatch({
-          type: GlobalContextType.SIGN_IN,
-          sessionToken: authToken,
-        });
-        globalContext.globalDispatch({
-          type: GlobalContextType.CARD_PROFILE,
-          cardProfile: profileData,
-        });
-        await loadHdWallet();
-      }
-      // setLoading(false);
-    } catch (error) {
-      // setLoading(false);
-      console.error('Error in verifySessionTokenAndSign:', error);
-    }
-    // finally {
-    //   console.log('... finally set loading to false ...');
-    //   setLoading(false);
-    // }
-  }, [
-    address,
-    verifySessionToken,
-    signConnectionMessage,
-    getWalletProfile,
-    loadHdWallet,
-  ]);
-
   return (
     <CyDView className='flex-1'>
-      {/* {loading ? <Loading loadingText='Loading Wallet Connect' /> : children} */}
-      {children}
+      {loading ? <Loading loadingText='Loading Wallet Connect' /> : children}
       <AppKit />
     </CyDView>
   );

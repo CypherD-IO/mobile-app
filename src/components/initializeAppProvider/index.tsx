@@ -104,12 +104,12 @@ export const InitializeAppProvider: React.FC<JSX.Element> = ({ children }) => {
   }, [pinAuthentication]);
 
   const RenderNavStack = useCallback(() => {
-    console.log('ethereum.address', ethereum.address);
-    console.log('pinAuthentication', pinAuthentication);
-    console.log('pinPresent', pinPresent);
-    console.log('hdWallet.state.reset', hdWallet.state.reset);
-    console.log('isReadOnlyWallet', isReadOnlyWallet);
-    console.log('isAuthenticated', isAuthenticated);
+    // console.log('ethereum.address', ethereum.address);
+    // console.log('pinAuthentication', pinAuthentication);
+    // console.log('pinPresent', pinPresent);
+    // console.log('hdWallet.state.reset', hdWallet.state.reset);
+    // console.log('isReadOnlyWallet', isReadOnlyWallet);
+    // console.log('isAuthenticated', isAuthenticated);
     if (ethereum.address === undefined) {
       if (pinAuthentication || pinPresent === PinPresentStates.NOTSET) {
         return (
@@ -136,7 +136,7 @@ export const InitializeAppProvider: React.FC<JSX.Element> = ({ children }) => {
         if (!isReadOnlyWallet && !isAuthenticated) {
           return <Loading loadingText='App stack loading' />;
         }
-        console.log('rendering children : ', children);
+        // console.log('rendering children : ', children);
 
         return children;
       }
@@ -264,10 +264,8 @@ export const InitializeAppProvider: React.FC<JSX.Element> = ({ children }) => {
       </Dialog>
 
       <WalletConnectV2Provider>
-        <WagmiConfigBuilder>
-          <DefaultAuthRemoveModal isModalVisible={showDefaultAuthRemoveModal} />
-          {RenderNavStack()}
-        </WagmiConfigBuilder>
+        <DefaultAuthRemoveModal isModalVisible={showDefaultAuthRemoveModal} />
+        <RenderNavStack />
       </WalletConnectV2Provider>
     </>
   );

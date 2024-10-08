@@ -73,16 +73,25 @@ export default function useEthSigner() {
     transactionToBeSigned: EthTransaction;
     chainId: number;
   }) {
-    const response = await sendTransactionAsync({
-      account: transactionToBeSigned.from as `0x${string}`,
-      to: transactionToBeSigned.to as `0x${string}`,
-      chainId,
-      value: BigInt(transactionToBeSigned.value),
-      ...(transactionToBeSigned?.data
-        ? { data: transactionToBeSigned?.data }
-        : {}),
-    });
-    return response;
+    try {
+      console.log(
+        'sendNativeCoin transactionToBeSigned : ',
+        transactionToBeSigned,
+      );
+      const response = await sendTransactionAsync({
+        account: transactionToBeSigned.from as `0x${string}`,
+        to: transactionToBeSigned.to as `0x${string}`,
+        chainId,
+        value: BigInt(transactionToBeSigned.value),
+        ...(transactionToBeSigned?.data
+          ? { data: transactionToBeSigned?.data }
+          : {}),
+      });
+      console.log('sendNativeCoin response : ', response);
+      return response;
+    } catch (e) {
+      console.log('error in sendNativeCoin : ', e);
+    }
   }
 
   async function sendToken({
@@ -240,8 +249,11 @@ export default function useEthSigner() {
     try {
       const connectionType = await getConnectionType();
       const connectedChain = getChainId(wagmiConfig);
+      console.log('connectedChain : ', connectedChain);
+      console.log('connectionType : ', connectionType);
       if (connectionType === ConnectionTypes.WALLET_CONNECT) {
         const chainConfig = get(walletConnectChainData, sendChain).chainConfig;
+        console.log('chainConfig : ', chainConfig);
         if (
           walletInfo?.name === 'MetaMask Wallet' &&
           connectedChain !== chainConfig.id
@@ -314,10 +326,12 @@ export default function useEthSigner() {
             chainId: chainConfig.id,
           });
         } else {
+          console.log('in signEthTransaction sendNativeCoin');
           hash = await sendNativeCoin({
             transactionToBeSigned,
             chainId: chainConfig.id,
           });
+          console.log('hash in signEthTransaction sendNativeCoin : ', hash);
         }
         hideModal();
         return hash;

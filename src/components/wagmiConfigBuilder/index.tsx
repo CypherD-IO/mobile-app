@@ -71,10 +71,7 @@ export const WagmiConfigBuilder: React.FC = ({ children }) => {
   return wagmiConfig ? (
     <WagmiProvider config={wagmiConfig}>
       <QueryClientProvider client={queryClient}>
-        <WalletConnectListener>
-          {children}
-          {/* <AppKit /> */}
-        </WalletConnectListener>
+        <WalletConnectListener>{children}</WalletConnectListener>
       </QueryClientProvider>
     </WagmiProvider>
   ) : (
