@@ -976,8 +976,7 @@ export default function BridgeFundCardScreen({ route }: { route: any }) {
       {isMaxLoading && <Loading blurBg={true} />}
       <ChooseTokenModal
         isChooseTokenModalVisible={isChooseTokenVisible}
-        // minTokenValueLimit={minTokenValueLimit - Number(planCost)}
-        minTokenValueLimit={0}
+        minTokenValueLimit={minTokenValueLimit - Number(planCost)}
         onSelectingToken={token => {
           setIsChooseTokenVisible(false);
           void onSelectingToken(token as Holding);
@@ -1219,7 +1218,7 @@ export default function BridgeFundCardScreen({ route }: { route: any }) {
                 }
               }}
               type={ButtonType.PRIMARY}
-              // disabled={isLoadCardDisabled()}
+              disabled={isLoadCardDisabled()}
               title={t('QUOTE')}
               style={'h-[60px] w-[45%] mb-[18px] py-[10px]'}
               loading={loading}
