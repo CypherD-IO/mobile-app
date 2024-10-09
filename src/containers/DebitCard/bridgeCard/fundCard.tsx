@@ -91,6 +91,7 @@ export default function BridgeFundCardScreen({ route }: { route: any }) {
     get(cardProfile, ['planInfo', 'planId']) !==
     get(cardProfile, ['planInfo', 'optedPlanId']);
   planCost = shouldUpgradePlan ? planCost : 0;
+  planCost = currentCardProvider === CardProviders.PAYCADDY ? 0 : planCost;
 
   const solana = hdWallet.state.wallet.solana;
 
@@ -975,7 +976,8 @@ export default function BridgeFundCardScreen({ route }: { route: any }) {
       {isMaxLoading && <Loading blurBg={true} />}
       <ChooseTokenModal
         isChooseTokenModalVisible={isChooseTokenVisible}
-        minTokenValueLimit={minTokenValueLimit - Number(planCost)}
+        // minTokenValueLimit={minTokenValueLimit - Number(planCost)}
+        minTokenValueLimit={0}
         onSelectingToken={token => {
           setIsChooseTokenVisible(false);
           void onSelectingToken(token as Holding);
@@ -1217,7 +1219,7 @@ export default function BridgeFundCardScreen({ route }: { route: any }) {
                 }
               }}
               type={ButtonType.PRIMARY}
-              disabled={isLoadCardDisabled()}
+              // disabled={isLoadCardDisabled()}
               title={t('QUOTE')}
               style={'h-[60px] w-[45%] mb-[18px] py-[10px]'}
               loading={loading}

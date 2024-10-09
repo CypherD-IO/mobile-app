@@ -1188,7 +1188,9 @@ const Bridge: React.FC = () => {
               web3,
               fromToken: selectedFromToken,
               routerAddress,
-              amount: cryptoAmount,
+              amount: ethers
+                .parseUnits(cryptoAmount, selectedFromToken?.decimals)
+                .toString(),
               hdWallet,
             });
 
@@ -1330,6 +1332,7 @@ const Bridge: React.FC = () => {
         });
 
         if (!response.isError) {
+          resetAndSetIndex();
           setLoading({ ...loading, swapLoading: false });
           showModal('state', {
             type: 'success',
