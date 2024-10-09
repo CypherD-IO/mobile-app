@@ -170,7 +170,7 @@ export default function Options() {
   // NOTE: LIFE CYCLE METHOD 🍎🍎🍎🍎
   return (
     <CyDView className='flex-1 bg-white'>
-      <CyDScrollView className={'bg-white w-full relative'}>
+      <CyDScrollView className={'bg-white w-full relative mb-[100px]'}>
         <ImageBackground
           source={AppImages.BG_SETTINGS}
           resizeMode='cover'
@@ -520,7 +520,7 @@ export default function Options() {
               </CyDTouchView>
               <CyDView
                 className={
-                  'flex flex-row items-center justify-between mt-[10px] mb-[30px]'
+                  'flex flex-row items-center justify-between mt-[10px]'
                 }>
                 <SocialMedia
                   title={t('DISCORD')}
@@ -555,7 +555,6 @@ export default function Options() {
                   uri={'https://cypherhq.io/youtube'}
                   screenTitle={C.screenTitle.SOCIAL_MEDIA_SCREEN}
                   imageUri={'https://public.cypherd.io/icons/youtube.png'}
-                  navigationRef={navigation}
                   navigationRef={navigation}
                 />
               </CyDView>

@@ -91,6 +91,7 @@ export default function BridgeFundCardScreen({ route }: { route: any }) {
     get(cardProfile, ['planInfo', 'planId']) !==
     get(cardProfile, ['planInfo', 'optedPlanId']);
   planCost = shouldUpgradePlan ? planCost : 0;
+  planCost = currentCardProvider === CardProviders.PAYCADDY ? 0 : planCost;
 
   const solana = hdWallet.state.wallet.solana;
 
