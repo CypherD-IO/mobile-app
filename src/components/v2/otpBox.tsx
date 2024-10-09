@@ -86,6 +86,7 @@ const OTPInput: React.FC<OTPVerificationProps> = ({
             }}
             keyboardType='numeric'
             maxLength={1}
+            returnKeyType='done'
             selectTextOnFocus
           />
         ))}

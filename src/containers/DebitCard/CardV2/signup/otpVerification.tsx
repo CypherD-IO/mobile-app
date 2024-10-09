@@ -28,7 +28,7 @@ import { useGlobalModalContext } from '../../../../components/v2/GlobalModal';
 import * as Sentry from '@sentry/react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import CyDModalLayout from '../../../../components/v2/modal';
-import { StyleSheet } from 'react-native';
+import { Keyboard, StyleSheet } from 'react-native';
 import { showToast } from '../../../utilities/toastUtility';
 import LottieView from 'lottie-react-native';
 import { screenTitle } from '../../../../constants';
@@ -171,6 +171,7 @@ export default function OTPVerification(): JSX.Element {
 
   useEffect(() => {
     if (otp.length === 4) {
+      Keyboard.dismiss();
       void handleVerifyOTP();
     }
   }, [otp]);

@@ -173,7 +173,7 @@ export default function KYCVerficicationV2() {
           </CyDText>
         );
       default:
-        return <CyDText>{t('KYC_STATUS_UNKNOWN')}</CyDText>;
+        return <CyDText>{t('KYC_INITIATED')}</CyDText>;
     }
   };
 
@@ -224,6 +224,13 @@ export default function KYCVerficicationV2() {
         return (
           <CyDText className='text-[14px] font-regular text-base400 text-center mx-[26px]'>
             {t('COMPLETION_PENDING_DESCRIPTION')}
+          </CyDText>
+        );
+
+      default:
+        return (
+          <CyDText className='text-[14px] font-regular text-base400 text-center mx-[26px]'>
+            {t('KYC_INITIATED_DESCRIPTION')}
           </CyDText>
         );
     }
