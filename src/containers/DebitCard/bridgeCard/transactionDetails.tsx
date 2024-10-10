@@ -5,12 +5,14 @@ import { useTranslation } from 'react-i18next';
 import AppImages from '../../../../assets/images/appImages';
 import {
   HdWalletContext,
+  copyToClipboard,
   formatAmount,
   getExplorerUrlFromBackendNames,
   limitDecimalPlaces,
 } from '../../../core/util';
 import {
   CyDFastImage,
+  CyDImage,
   CyDSafeAreaView,
   CyDScrollView,
   CyDText,
@@ -33,6 +35,7 @@ import { capitalize, split } from 'lodash';
 import { t } from 'i18next';
 import useCardUtilities from '../../../hooks/useCardUtilities';
 import { CardProfile } from '../../../models/cardProfile.model';
+import Toast from 'react-native-toast-message';
 
 const formatDate = (date: Date) => {
   return moment(date).format('MMM DD YYYY, h:mm a');
@@ -92,13 +95,30 @@ const DetailItem = ({
             url: getExplorerUrlFromBackendNames(chainString, item.value.hash),
           });
         }}
-        className='w-[60%] pl-[10px] justify-center items-start'>
+        className='w-[60%] pl-[10px] justify-center items-start flex flex-row'>
         <CyDText
           className={clsx('font-bold', {
             'text-blue-500 underline': isHash && hashIsValid,
+            'text-red-500': item.label === t('STATUS') && value === 'DECLINED',
           })}>
           {value}
         </CyDText>
+        {item.label === t('TRANSACTION_ID') && (
+          <CyDTouchView
+            onPress={() => {
+              copyToClipboard(value);
+              Toast.show({
+                type: 'success',
+                text1: t('TRANSACTION_ID_COPIED'),
+              });
+            }}>
+            <CyDImage
+              source={AppImages.COPY}
+              className='h-[16px] w-[16px] ml-[8px]'
+              resizeMode='contain'
+            />
+          </CyDTouchView>
+        )}
       </CyDTouchView>
     </CyDView>
   );
@@ -142,7 +162,9 @@ const TransactionDetail = ({
         {!isSettled && item.title === t('TRANSACTION_DETAILS') && (
           <CyDView>
             <CyDText className='pl-[12px]'>
-              <CyDText className='font-bold underline'>Note:</CyDText>
+              <CyDText className='font-bold underline'>
+                {isDeclined ? 'Reason:' : 'Note:'}
+              </CyDText>
               {' ' +
                 (isDeclined ? cDReason : t('TRANSACTION_YET_TO_BE_SETTLED'))}
             </CyDText>
