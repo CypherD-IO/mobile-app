@@ -1,13 +1,12 @@
 import React, { useState, useRef, useEffect } from 'react';
 import {
   TextInput,
-  StyleSheet,
   NativeSyntheticEvent,
   TextInputKeyPressEventData,
   Platform,
 } from 'react-native';
 import Clipboard from '@react-native-clipboard/clipboard';
-import { CyDView } from '../../styles/tailwindStyles';
+import { CyDTextInput, CyDView } from '../../styles/tailwindStyles';
 
 interface OTPVerificationProps {
   pinCount?: number;
@@ -71,13 +70,14 @@ const OTPInput: React.FC<OTPVerificationProps> = ({
   };
 
   return (
-    <CyDView className='flex flex-col items-center'>
+    <CyDView className='flex flex-col items-center font-manrop'>
       <CyDView className='flex flex-row items-center'>
         {otp.map((digit, index) => (
-          <TextInput
+          <CyDTextInput
             key={index}
             ref={ref => ref && (inputRefs.current[index] = ref)}
-            style={styles.input}
+            // style={styles.input}
+            className='w-[50px] h-[64px] text-center align-center border-[1px] border-[#C2C7D0] text-[24px] font-bold mr-[6px] rounded-[8px]'
             value={digit}
             onChangeText={text => handleChange(text, index)}
             onKeyPress={e => handleKeyPress(e, index)}
@@ -94,20 +94,5 @@ const OTPInput: React.FC<OTPVerificationProps> = ({
     </CyDView>
   );
 };
-
-const styles = StyleSheet.create({
-  input: {
-    width: 50,
-    height: 64,
-    borderWidth: 1,
-    borderRadius: 8,
-    borderColor: '#C2C7D0',
-    textAlign: 'center',
-    fontSize: 22,
-    padding: 12,
-    fontWeight: 'bold',
-    marginRight: 6,
-  },
-});
 
 export default OTPInput;
