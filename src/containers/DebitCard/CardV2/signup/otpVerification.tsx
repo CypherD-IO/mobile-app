@@ -254,15 +254,16 @@ export default function OTPVerification(): JSX.Element {
             {t('VERIFY_EMAIL_ID_HEADING')}
           </CyDText>
 
-          <CyDText className='text-[12px] text-n200 font-regular mb-6 font-manrope'>
-            {`OTP has been sent to "${email}" not your email id `}
-            <CyDTouchView
-              onPress={() => {
-                setIsEditEmailModalVisible(true);
-              }}>
+          <CyDTouchView
+            onPress={() => {
+              setIsEditEmailModalVisible(true);
+            }}>
+            <CyDText className='text-[12px] text-n200 font-regular mb-6 font-manrope'>
+              {`OTP has been sent to "${email}" not your email id `}
+
               <CyDText className='text-blue300 font-manrope'>Edit mail</CyDText>
-            </CyDTouchView>
-          </CyDText>
+            </CyDText>
+          </CyDTouchView>
 
           <CyDView className='mt-[24px] mb-[8px]'>
             <OTPInput

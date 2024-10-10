@@ -267,7 +267,7 @@ export default function CardApplicationV2() {
   if (loading) return <Loading />;
 
   return (
-    <CyDSafeAreaView className='mb-[24px]'>
+    <CyDSafeAreaView className='my-[40px] '>
       {/* remove the CardProviderSwitch after sunsetting PC */}
       <CyDTouchView
         className='w-[60px] ml-[16px] mb-[10px]'
