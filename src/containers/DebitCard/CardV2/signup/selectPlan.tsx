@@ -109,7 +109,7 @@ export default function SelectPlan() {
             onSuccess: () => {
               if (toPage) navigation.navigate(toPage);
               else {
-                navigation.navigate(screenTitle.CARD_SIGNUP_SCREEN);
+                navigation.navigate(screenTitle.CARD_APPLICATION);
               }
               hideModal();
             },

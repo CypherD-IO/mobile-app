@@ -77,7 +77,9 @@ export default function TelegramSetup() {
       const botCommand = `/link ${telegramConnectionId}`;
       copyToClipboard(botCommand);
       showToast(t('Bot Command Copied'));
-      await Linking.openURL('https://t.me/CypherHQBot');
+      await Linking.openURL(
+        `https://t.me/CypherHQBot?start=${encodeURIComponent(botCommand)}`,
+      );
     } catch (err) {
       console.error('Failed to open Telegram:', err);
       Sentry.captureException(err);
@@ -90,23 +92,8 @@ export default function TelegramSetup() {
       style={{ paddingTop: insets.top }}>
       <CyDView className='p-[16px]'>
         {/* remove the CardProviderSwitch after sunsetting PC */}
-        <CyDView className='flex-row justify-between items-center'>
-          <CyDTouchView
-            className=''
-            onPress={() => {
-              navigation.reset({
-                index: 0,
-                routes: [{ name: screenTitle.PORTFOLIO }],
-              });
-            }}>
-            <CyDFastImage
-              className={'w-[32px] h-[32px]'}
-              resizeMode='cover'
-              source={AppImages.BACK_ARROW_GRAY}
-            />
-          </CyDTouchView>
+        <CyDView className='flex-row justify-center items-center'>
           <CardProviderSwitch />
-          <CyDView />
         </CyDView>
 
         <CyDText className='text-[28px] font-bold mt-[12px] mb-[16px] font-manrope'>
