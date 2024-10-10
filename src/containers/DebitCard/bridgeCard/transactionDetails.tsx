@@ -101,7 +101,9 @@ const DetailItem = ({
             'text-blue-500 underline': isHash && hashIsValid,
             'text-red-500': item.label === t('STATUS') && value === 'DECLINED',
           })}>
-          {value}
+          {item.label === t('TRANSACTION_ID') && value.length > 20
+            ? `${value.slice(0, 10)}....${value.slice(-4)}`
+            : value}
         </CyDText>
         {item.label === t('TRANSACTION_ID') && (
           <CyDTouchView
