@@ -1022,8 +1022,7 @@ const resources = {
       PROCEED_TO_PAY: 'PROCEED TO PAY',
       UPGRADE_PHYSICAL_CARD: 'Upgrade to Physical Card',
       BALANCE_CAPITAL_FIRST_LETTER: 'Balance',
-      TRANSACTION_YET_TO_BE_SETTLED:
-        'This transaction is yet to be settled on the merchant side',
+      TRANSACTION_YET_TO_BE_SETTLED: 'Pending settlement',
       TRANSACTION_SETTLEMENT_AMOUNT:
         '*The transaction amount is subject to adjustment based on fluctuations in forex rates at the time of final settlement',
       VIRTUAL_CARD_CANCEL:
@@ -1377,6 +1376,7 @@ const resources = {
       KYC_SUCCESSFUL: 'KYC Successful',
       BILLING_ADDRESS_TITLE: 'Billing Address',
       SETUP_LATER: 'Setup later',
+      TRANSACTION_ID_COPIED: 'Transaction ID copied',
     },
   },
 };
