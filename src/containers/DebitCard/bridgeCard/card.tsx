@@ -255,7 +255,7 @@ export default function CardScreen({
       !isHiddenCard() &&
       currentCardProvider === CardProviders.REAP_CARD
     ) {
-      actualCards.unshift({
+      actualCards.push({
         cardId: '',
         bin: '',
         last4: '',
