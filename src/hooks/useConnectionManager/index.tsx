@@ -146,5 +146,6 @@ export default function useConnectionManager() {
     disconnectWalletConnect,
     deleteWallet,
     getConnectedType,
+    deleteWalletConfig,
   };
 }

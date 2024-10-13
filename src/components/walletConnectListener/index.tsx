@@ -1,4 +1,10 @@
-import React, { useContext, useEffect, useState, useCallback } from 'react';
+import React, {
+  useContext,
+  useEffect,
+  useState,
+  useCallback,
+  useRef,
+} from 'react';
 import {
   HdWalletContext,
   _NO_CYPHERD_CREDENTIAL_AVAILABLE_,
@@ -11,6 +17,7 @@ import { ConnectionTypes, GlobalContextType } from '../../constants/enum';
 import {
   getAuthToken,
   getConnectionType,
+  removeConnectionType,
   setAuthToken,
   setConnectionType,
   setRefreshToken,
@@ -33,20 +40,21 @@ export const WalletConnectListener: React.FC = ({ children }) => {
   const hdWalletContext = useContext<any>(HdWalletContext);
   const globalContext = useContext<any>(GlobalContext);
   const ethereum = hdWalletContext.state.wallet.ethereum;
-  const { isConnected, address, connector, isConnecting } = useAccount();
+  const { isConnected, address, connector } = useAccount();
   const { disconnectAsync } = useDisconnect();
   const ARCH_HOST: string = hostWorker.getHost('ARCH_HOST');
   const { verifySessionToken } = useValidSessionToken();
   const { getWithoutAuth } = useAxios();
-  const { connectionType } = useConnectionManager();
+  const { connectionType, deleteWalletConfig } = useConnectionManager();
   const [loading, setLoading] = useState<boolean>(
     connectionType === ConnectionTypes.WALLET_CONNECT,
   );
   const { walletInfo } = useWalletInfo();
   const { getWalletProfile } = useCardUtilities();
+  const [isInitializing, setIsInitializing] = useState(true);
+  const initTimeoutRef = useRef<NodeJS.Timeout | null>(null);
 
   useEffect(() => {
-    console.log('connectionType in walletConnectListener : ', connectionType);
     setLoading(connectionType === ConnectionTypes.WALLET_CONNECT);
   }, [connectionType]);
 
@@ -75,21 +83,38 @@ export const WalletConnectListener: React.FC = ({ children }) => {
   });
 
   useEffect(() => {
+    // Set a timeout to allow for connection initialization
+    initTimeoutRef.current = setTimeout(() => {
+      setIsInitializing(false);
+    }, 3000); // Adjust this timeout as needed
+
+    return () => {
+      if (initTimeoutRef.current) {
+        clearTimeout(initTimeoutRef.current);
+      }
+    };
+  }, []);
+
+  useEffect(() => {
+    if (isInitializing) {
+      return; // Don't perform any checks while initializing
+    }
+
     if (
       isConnected &&
       address &&
-      ethereum.address === _NO_CYPHERD_CREDENTIAL_AVAILABLE_
+      (!ethereum.address ||
+        ethereum.address === _NO_CYPHERD_CREDENTIAL_AVAILABLE_)
     ) {
       void verifySessionTokenAndSign();
+    } else if (
+      connectionType === ConnectionTypes.WALLET_CONNECT &&
+      !isConnected &&
+      !address
+    ) {
+      void handleDisconnect();
     }
-  }, [isConnected, address, ethereum.address]);
-
-  // useEffect(() => {
-  //   console.log(
-  //     'loading in walletConnectListener :::::::::::::::::::::: ',
-  //     loading,
-  //   );
-  // }, [loading]);
+  }, [isConnected, address, ethereum.address, connectionType, isInitializing]);
 
   const dispatchProfileData = async (token: string) => {
     const profileData = await getWalletProfile(token);
@@ -131,6 +156,12 @@ export const WalletConnectListener: React.FC = ({ children }) => {
     registerIntercomUser();
   };
 
+  const handleDisconnect = async () => {
+    void deleteWalletConfig();
+    await removeConnectionType();
+    setLoading(false);
+  };
+
   const validateStaleConnection = async () => {
     const connectionType = await getConnectionType();
     if (
@@ -169,10 +200,7 @@ export const WalletConnectListener: React.FC = ({ children }) => {
   };
 
   const signConnectionMessage = async () => {
-    // console.log('in signConnectionMessage function');
     const provider = await connector?.getProvider();
-    // console.log('... provider in signConnectionMessage : ', provider);
-    // console.log('... address in signConnectionMessage : ', address);
     if (!provider) {
       throw new Error('web3Provider not connected');
     }
@@ -180,12 +208,9 @@ export const WalletConnectListener: React.FC = ({ children }) => {
       `/v1/authentication/sign-message/${String(address)}`,
       { format: 'ERC-4361' },
     );
-    // console.log('response in signConnectionMessage : ', response);
     if (!response.isError) {
       const msg = response?.data?.message;
-      // console.log('Message to be signed:', msg);
       const signMsgResponse = await signMessageAsync({ message: msg });
-      // console.log('signMsgResponse:', signMsgResponse);
       void analytics().logEvent('sign_wallet_connect_msg', {
         from: walletInfo?.name,
       });

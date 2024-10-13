@@ -18,9 +18,7 @@ export default function useValidSessionToken() {
   const ARCH_HOST: string = hostWorker.getHost('ARCH_HOST');
   const globalContext = useContext<any>(GlobalContext);
   const verifySessionToken = async () => {
-    // console.log('in verifySessionToken');
     const authToken: string = await getAuthToken();
-    // console.log('authToken in useValidSessionToken : ', authToken);
     if (authToken) {
       const refreshToken = await getRefreshToken();
       const baseUrl: string = ARCH_HOST;
@@ -40,7 +38,6 @@ export default function useValidSessionToken() {
           {},
           config,
         );
-        // console.log('resp in useValidSessionToken : ', resp);
         if (resp?.data) {
           const { token, refreshToken } = resp.data;
           void setAuthToken(token);

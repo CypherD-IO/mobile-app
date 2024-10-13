@@ -23,6 +23,7 @@ import {
 } from '@reown/appkit-wagmi-react-native';
 import { Config } from 'react-native-config';
 import Loading from '../v2/loading';
+import { createWalletClient, http } from 'viem';
 
 const chains = [
   mainnet,
@@ -39,8 +40,6 @@ const chains = [
 ] as const;
 
 const projectId = String(Config.WALLET_CONNECT_PROJECTID);
-// const projectId = '4e9c9ddc1f90598f0dce25a8b6ccc742';
-// console.log('projectId', projectId);
 
 const metadata = {
   name: 'Cypher Wallet',
@@ -57,6 +56,11 @@ export const wagmiConfig = defaultWagmiConfig({
   chains,
   projectId,
   metadata,
+});
+
+export const walletClient = createWalletClient({
+  chain: mainnet,
+  transport: http(),
 });
 
 export const WagmiConfigBuilder: React.FC = ({ children }) => {

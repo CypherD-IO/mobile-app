@@ -104,12 +104,6 @@ export const InitializeAppProvider: React.FC<JSX.Element> = ({ children }) => {
   }, [pinAuthentication]);
 
   const RenderNavStack = useCallback(() => {
-    // console.log('ethereum.address', ethereum.address);
-    // console.log('pinAuthentication', pinAuthentication);
-    // console.log('pinPresent', pinPresent);
-    // console.log('hdWallet.state.reset', hdWallet.state.reset);
-    // console.log('isReadOnlyWallet', isReadOnlyWallet);
-    // console.log('isAuthenticated', isAuthenticated);
     if (ethereum.address === undefined) {
       if (pinAuthentication || pinPresent === PinPresentStates.NOTSET) {
         return (
@@ -136,40 +130,9 @@ export const InitializeAppProvider: React.FC<JSX.Element> = ({ children }) => {
         if (!isReadOnlyWallet && !isAuthenticated) {
           return <Loading loadingText='App stack loading' />;
         }
-        // console.log('rendering children : ', children);
-
         return children;
       }
     }
-    // {
-    //   ethereum.address === undefined ? (
-    //     pinAuthentication || pinPresent === PinPresentStates.NOTSET ? (
-    //       // reomve in the next build
-    //       <Loading
-    //         loadingText={t('INJECTIVE_UPDATE_LOADING_TEXT_WALLET_CREATION')}
-    //       />
-    //     ) : (
-    //       <PinAuthRoute
-    //         setPinAuthentication={setPinAuthentication}
-    //         initialScreen={
-    //           pinPresent === PinPresentStates.TRUE
-    //             ? C.screenTitle.PIN_VALIDATION
-    //             : C.screenTitle.SET_PIN
-    //         }
-    //       />
-    //     )
-    //   ) : ethereum.address === _NO_CYPHERD_CREDENTIAL_AVAILABLE_ ? (
-    //     hdWallet.state.reset ? (
-    //       <OnBoardingStack initialScreen={C.screenTitle.ENTER_KEY} />
-    //     ) : (
-    //       <OnBoardingStack />
-    //     )
-    //   ) : !isReadOnlyWallet && !isAuthenticated ? (
-    //     <Loading />
-    //   ) : (
-    //     children
-    //   );
-    // }
   }, [
     ethereum.address,
     pinAuthentication,
