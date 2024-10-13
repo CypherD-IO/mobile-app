@@ -219,7 +219,11 @@ export const WalletConnectListener: React.FC = ({ children }) => {
 
   return (
     <CyDView className='flex-1'>
-      {loading ? <Loading loadingText='Loading Wallet Connect' /> : children}
+      {loading ? (
+        <Loading loadingText='Loading Connected Wallet ...' />
+      ) : (
+        children
+      )}
       <AppKit />
     </CyDView>
   );

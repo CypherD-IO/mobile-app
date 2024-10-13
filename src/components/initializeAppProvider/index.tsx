@@ -128,7 +128,7 @@ export const InitializeAppProvider: React.FC<JSX.Element> = ({ children }) => {
         return <OnBoardingStack />;
       } else {
         if (!isReadOnlyWallet && !isAuthenticated) {
-          return <Loading loadingText='App stack loading' />;
+          return <Loading />;
         }
         return children;
       }
