@@ -20,11 +20,14 @@ import { Card } from '../../../models/card.model';
 import { screenTitle } from '../../../constants';
 import { CardProviders } from '../../../constants/enum';
 import AutoLoadOptionsModal from '../bridgeCard/autoLoadOptions';
+import { get } from 'lodash';
+import { CardProfile } from '../../../models/cardProfile.model';
 
 interface RouteParams {
   cardProvider: string;
   card: Card;
   onPressPlanChange: () => void;
+  profile: CardProfile;
 }
 
 export default function GlobalOptions() {
@@ -34,7 +37,7 @@ export default function GlobalOptions() {
   const [isAutoLoadOptionsvisible, setIsAutoLoadOptionsVisible] =
     useState<boolean>(false);
 
-  const { cardProvider, onPressPlanChange, card } = route.params;
+  const { cardProvider, onPressPlanChange, card, profile } = route.params;
 
   const cardGlobalOptions = [
     ...(cardProvider === CardProviders.REAP_CARD
@@ -84,6 +87,18 @@ export default function GlobalOptions() {
               });
             },
           },
+          ...(!get(profile, ['cardNotification', 'isTelegramAllowed'], false)
+            ? [
+                {
+                  title: 'Setup Telegram Pin',
+                  description: 'Access card functionalities from Telegram',
+                  image: AppImages.TELEGRAM_OUTLINE_ICON,
+                  action: () => {
+                    navigation.navigate(screenTitle.TELEGRAM_PIN_SETUP);
+                  },
+                },
+              ]
+            : []),
         ]
       : []),
     {

@@ -32,6 +32,44 @@ interface RouteParams {
   verifyOTPPayload?: any;
 }
 
+const getTriggerOTPUrl = (
+  currentCardProvider = '',
+  cardId = '',
+  triggerOTPParam: string,
+): string => {
+  const baseUrl = `/v1/cards/${currentCardProvider}/card/${cardId}/trigger/`;
+
+  switch (triggerOTPParam) {
+    case 'verify/show-token':
+      return `${baseUrl}show-token`;
+    case 'set-pin':
+      return `${baseUrl}set-pin`;
+    case 'tg-set-pin':
+      return '/v1/cards/tg/set-pin/trigger';
+    default:
+      return `${baseUrl}${triggerOTPParam}`;
+  }
+};
+
+const getOTPVerificationUrl = (
+  currentCardProvider: CardProviders,
+  cardId: string,
+  triggerOTPParam: string,
+): string => {
+  const baseUrl = `/v1/cards/${currentCardProvider}/card/${cardId}/`;
+
+  switch (triggerOTPParam) {
+    case 'verify/show-token':
+      return `${baseUrl}verify/show-token`;
+    case 'set-pin':
+      return `${baseUrl}set-pin`;
+    case 'tg-set-pin':
+      return '/v1/cards/tg/set-pin';
+    default:
+      return `${baseUrl}${triggerOTPParam}`;
+  }
+};
+
 export default function CardRevealAuthScreen() {
   const navigation = useNavigation<NavigationProp<ParamListBase>>();
   const route = useRoute<RouteProp<{ params: RouteParams }, 'params'>>();
@@ -58,13 +96,12 @@ export default function CardRevealAuthScreen() {
   }, [resendInterval]);
 
   const triggerOTP = async () => {
-    const triggerOTPUrl = `/v1/cards/${currentCardProvider}/card/${
-      card.cardId
-    }/trigger/${
-      triggerOTPParam === 'verify/show-token' ? 'show-token' : triggerOTPParam
-    }`;
+    const triggerOTPUrl = getTriggerOTPUrl(
+      currentCardProvider,
+      card?.cardId,
+      triggerOTPParam,
+    );
     const response = await postWithAuth(triggerOTPUrl, {});
-
     if (!response.isError) {
       return true;
     } else {
@@ -101,7 +138,11 @@ export default function CardRevealAuthScreen() {
   };
 
   const verifyOTP = async (num: number) => {
-    const OTPVerificationUrl = `/v1/cards/${currentCardProvider}/card/${card?.cardId}/${triggerOTPParam}`;
+    const OTPVerificationUrl = getOTPVerificationUrl(
+      currentCardProvider,
+      card?.cardId,
+      triggerOTPParam,
+    );
     if (
       currentCardProvider === CardProviders.REAP_CARD &&
       triggerOTPParam === 'verify/show-token'
@@ -149,6 +190,7 @@ export default function CardRevealAuthScreen() {
       }
     } else if (
       triggerOTPParam === 'set-pin' ||
+      triggerOTPParam === 'tg-set-pin' ||
       (currentCardProvider === CardProviders.PAYCADDY &&
         triggerOTPParam === 'verify/show-token')
     ) {

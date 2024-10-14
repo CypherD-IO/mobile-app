@@ -538,7 +538,10 @@ const RenderCardActions = ({
   }, [trackingDetails, cardId]);
 
   const validateReuseToken = async () => {
-    if (card.type === CardType.VIRTUAL) {
+    if (
+      cardProvider === CardProviders.REAP_CARD ||
+      card.type === CardType.VIRTUAL
+    ) {
       setIsFetchingCardDetails(true);
       const cardRevealReuseToken = await getCardRevealReuseToken(cardId);
       if (cardProfile.provider && cardRevealReuseToken) {

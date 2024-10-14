@@ -1377,6 +1377,9 @@ const resources = {
       BILLING_ADDRESS_TITLE: 'Billing Address',
       SETUP_LATER: 'Setup later',
       TRANSACTION_ID_COPIED: 'Transaction ID copied',
+      LOAD_FEE: 'Load Fee',
+      SET_TELEGRAM_PIN: 'Set Telegram Pin',
+      SET_TELEGRAM_PIN_DESCRIPTION: 'Access card functionalities via Telegram',
     },
   },
 };
