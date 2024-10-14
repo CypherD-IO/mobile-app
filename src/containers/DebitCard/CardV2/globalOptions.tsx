@@ -90,7 +90,7 @@ export default function GlobalOptions() {
           ...(!get(profile, ['cardNotification', 'isTelegramAllowed'], false)
             ? [
                 {
-                  title: 'Setup Telegram Pin',
+                  title: 'Set New Telegram Pin',
                   description: 'Access card functionalities from Telegram',
                   image: AppImages.TELEGRAM_OUTLINE_ICON,
                   action: () => {
