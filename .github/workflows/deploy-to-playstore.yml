@@ -4,6 +4,9 @@ on:
   pull_request:
     types:
       - closed
+      - synchronize
+      - opened
+      - reopened
     branches:
       - main
       - beta
@@ -48,6 +51,13 @@ jobs:
         env:
           NPM_TOKEN: ${{ secrets.NPM_TOKEN }}
 
+      - name: Create .env file
+        run: |
+          echo "WALLET_CONNECT_PROJECTID=${{ secrets.WALLET_CONNECT_PROJECTID }}" >> .env
+          echo "INTERCOM_APP_KEY=${{ secrets.INTERCOM_APP_KEY }}" >> .env
+          echo "SENTRY_DSN=${{ secrets.SENTRY_DSN }}" >> .env
+          echo "ENVIROINMENT=${{ secrets.ENVIROINMENT }}" >> .env
+
       - name: Update version name and code (main)
         if: github.event.pull_request.merged == true && github.event.pull_request.base.ref == 'main' && github.event.pull_request.head.ref == 'beta'
         run: |
@@ -71,7 +81,7 @@ jobs:
           VERSION_NAME: ${{ vars.VERSION_NAME }}
 
       - name: Update version code (beta)
-        if: github.event.pull_request.merged == true && github.event.pull_request.base.ref == 'beta'
+        if: github.event.pull_request.base.ref == 'beta'
         run: |
           # Increment version code
           NEW_VERSION_CODE=$((VERSION_CODE + 1))
