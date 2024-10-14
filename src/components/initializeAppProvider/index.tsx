@@ -29,6 +29,7 @@ import Intercom from '@intercom/intercom-react-native';
 import RNExitApp from 'react-native-exit-app';
 import { HdWalletContextDef } from '../../reducers/hdwallet_reducer';
 import Loading from '../../containers/Loading';
+import { WagmiConfigBuilder } from '../wagmiConfigBuilder';
 
 export const InitializeAppProvider: React.FC<JSX.Element> = ({ children }) => {
   const {
@@ -132,35 +133,6 @@ export const InitializeAppProvider: React.FC<JSX.Element> = ({ children }) => {
         return children;
       }
     }
-    // {
-    //   ethereum.address === undefined ? (
-    //     pinAuthentication || pinPresent === PinPresentStates.NOTSET ? (
-    //       // reomve in the next build
-    //       <Loading
-    //         loadingText={t('INJECTIVE_UPDATE_LOADING_TEXT_WALLET_CREATION')}
-    //       />
-    //     ) : (
-    //       <PinAuthRoute
-    //         setPinAuthentication={setPinAuthentication}
-    //         initialScreen={
-    //           pinPresent === PinPresentStates.TRUE
-    //             ? C.screenTitle.PIN_VALIDATION
-    //             : C.screenTitle.SET_PIN
-    //         }
-    //       />
-    //     )
-    //   ) : ethereum.address === _NO_CYPHERD_CREDENTIAL_AVAILABLE_ ? (
-    //     hdWallet.state.reset ? (
-    //       <OnBoardingStack initialScreen={C.screenTitle.ENTER_KEY} />
-    //     ) : (
-    //       <OnBoardingStack />
-    //     )
-    //   ) : !isReadOnlyWallet && !isAuthenticated ? (
-    //     <Loading />
-    //   ) : (
-    //     children
-    //   );
-    // }
   }, [
     ethereum.address,
     pinAuthentication,

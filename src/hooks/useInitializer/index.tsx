@@ -421,10 +421,7 @@ export default function useInitializer() {
     setUpdateModal: Dispatch<SetStateAction<boolean>>,
     setShowDefaultAuthRemoveModal: Dispatch<SetStateAction<boolean>> = () => {},
   ) => {
-    if (
-      ethereum?.address
-      // && ethereum?.privateKey !== _NO_CYPHERD_CREDENTIAL_AVAILABLE_
-    ) {
+    if (ethereum?.address) {
       const isSessionTokenValid = await verifySessionToken();
       if (!isSessionTokenValid) {
         const signInResponse = await signIn(
