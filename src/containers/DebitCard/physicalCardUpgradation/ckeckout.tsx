@@ -81,9 +81,10 @@ export default function ShippingCheckout() {
 
   const onConfirm = async (otp: string) => {
     setIsVerifyingOTP(true);
+    const { line2, ...restShippingAddress } = shippingAddress;
     const payload = {
-      ...shippingAddress,
-      ...(shippingAddress.line2 && { line2: shippingAddress.line2 }),
+      ...restShippingAddress,
+      ...(line2 ? { line2 } : {}),
       preferredCardName: preferredName,
       otp: Number(otp),
     };
