@@ -3,10 +3,10 @@ name: Deploy Android App to PlayStore
 on:
   pull_request:
     types:
-      - closed
-      - synchronize
       - opened
+      - synchronize
       - reopened
+      - closed
     branches:
       - main
       - beta
@@ -15,7 +15,6 @@ jobs:
   build-and-deploy:
     permissions:
       contents: write
-    if: github.event.pull_request.merged == true
     runs-on: ubuntu-latest
     env:
       SENTRY_DSN: ${{secrets.SENTRY_DSN}}
