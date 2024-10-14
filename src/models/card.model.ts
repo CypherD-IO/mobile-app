@@ -88,6 +88,10 @@ export interface CardQuoteResponse {
   expiry: number;
   estimatedTime: number;
   version: 2;
+  fees: {
+    fee: number;
+    percentage: number;
+  };
 }
 
 export interface PayTokenModalParams {
@@ -108,5 +112,9 @@ export interface PayTokenModalParams {
     nativeTokenSymbol: string;
     selectedToken: Holding;
     tokenQuote: CardQuoteResponse;
+    fees: {
+      fee: number;
+      percentage: number;
+    };
   };
 }

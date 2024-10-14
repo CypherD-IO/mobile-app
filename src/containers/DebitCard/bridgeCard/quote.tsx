@@ -490,7 +490,11 @@ export default function CardQuote({
               {String(formatAmount(amountInCrypto)) + ' ' + symbol}
             </CyDText>
             <CyDText className={' font-medium text-[16px]'}>
-              {'$' + limitDecimalPlaces(amountInFiat, 4)}
+              {'$' +
+                limitDecimalPlaces(
+                  Number(amountInFiat) + Number(tokenQuote.fees?.fee ?? 0),
+                  4,
+                )}
             </CyDText>
           </CyDView>
         </CyDView>
@@ -507,6 +511,17 @@ export default function CardQuote({
             </CyDText>
             <CyDText className={'font-medium text-[14px]'}>
               {'$' + String(formatAmount(gasFeeInFiat))}
+            </CyDText>
+          </CyDView>
+        </CyDView>
+
+        <CyDView
+          className={'flex flex-row justify-between items-center py-[16px]'}>
+          <CyDText className={'font-bold text-[14px]'}>{t('LOAD_FEE')}</CyDText>
+          <CyDView
+            className={'flex flex-col flex-wrap justify-between items-end'}>
+            <CyDText className={'font-medium text-[14px]'}>
+              {'$' + String(formatAmount(tokenQuote?.fees?.fee ?? 0))}
             </CyDText>
           </CyDView>
         </CyDView>
