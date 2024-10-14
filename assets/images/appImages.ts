@@ -429,8 +429,8 @@ const DOMESTIC_ICON = {
 const INTERNATIONAL_ICON = {
   uri: `${S3_BUCKET_URL_ICONS}/internationalIcon.png`,
 };
-const RC_PHYSICAL = require('./rcPhysical.png');
-const RC_VIRTUAL = require('./rcVirtual.png');
+const RC_PHYSICAL = require('./rcPhysicalCard.png');
+const RC_VIRTUAL = require('./rcVirtualCard.png');
 const LOCKDOWN_MODE_ICON = {
   uri: `${S3_BUCKET_URL_ICONS}/lockdownModeIcon.png`,
 };
