@@ -26,12 +26,6 @@ export default function BasicDetails({
         containerClassName='mb-[17px]'
       />
       <FormikTextInput
-        name='middleName'
-        label='Middle Name'
-        containerClassName='mb-[17px]'
-        placeholder='Middle Name (optional)'
-      />
-      <FormikTextInput
         name='lastName'
         label='Last Name'
         containerClassName='mb-[17px]'
