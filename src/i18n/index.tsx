@@ -1381,6 +1381,10 @@ const resources = {
       SET_TELEGRAM_PIN: 'Set New Telegram Pin',
       SET_TELEGRAM_PIN_DESCRIPTION: 'Access card functionalities via Telegram',
       DISABLE_LOCKDOWN: 'Disable Lockdown',
+      WITHDRAWAL_REASONS: 'Withdrawal Reasons',
+      CRYPTO_WITHDRAWAL: 'Crypto Withdrawal',
+      LIMITATIONS_AROUND_CRYPTO_WITHDRAWAL:
+        'Limitations around crypto withdrawal',
     },
   },
 };

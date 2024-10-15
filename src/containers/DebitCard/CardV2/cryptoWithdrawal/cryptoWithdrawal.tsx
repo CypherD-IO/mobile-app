@@ -25,6 +25,7 @@ import * as Sentry from '@sentry/react-native';
 import { ceil, isEmpty } from 'lodash';
 import Loading from '../../../../components/v2/loading';
 import { screenTitle } from '../../../../constants';
+import WithdrawalReasonsModal from '../../../../components/v2/withdrawalReasonsModal';
 
 interface RouteParams {
   currentCardProvider: string;
@@ -39,34 +40,40 @@ export default function CryptoWithdrawal() {
   const insets = useSafeAreaInsets();
 
   const [amount, setAmount] = useState('');
-  const [cardBalance, setCardBalance] = useState('');
-  const [balanceLoading, setBalanceLoading] = useState(false);
+  const [availableAmountLoading, setAvailableAmountLoading] = useState(false);
+  const [availableAmount, setAvailableAmount] = useState('');
+  const [reason, setReason] = useState([]);
+  const [isModalVisible, setIsModalVisible] = useState(false);
 
-  const fetchCardBalance = useCallback(async () => {
-    setBalanceLoading(true);
-    const url = `/v1/cards/${currentCardProvider}/card/${String(card.cardId)}/balance`;
+  const getAvailableAmount = async () => {
+    setAvailableAmountLoading(true);
+    const url = `/v1/cards/crypto-withdrawal/eligibility`;
     try {
       const response = await getWithAuth(url);
-      if (!response.isError && response?.data && response.data.balance) {
-        setCardBalance(String(response.data.balance));
+      if (
+        !response.isError &&
+        response?.data &&
+        response.data.withdrawableAmount
+      ) {
+        setAvailableAmount(String(response.data.withdrawableAmount));
+        setReason(response.data.reasons);
       } else {
-        setCardBalance('');
+        setAvailableAmount('');
       }
-      setBalanceLoading(false);
     } catch (error) {
       Sentry.captureException(error);
-      setCardBalance('');
+      setAvailableAmount('');
     }
-    setBalanceLoading(false);
-  }, [currentCardProvider, card]);
+    setAvailableAmountLoading(false);
+  };
 
   useFocusEffect(
     useCallback(() => {
-      void fetchCardBalance();
+      void getAvailableAmount();
     }, []),
   );
 
-  if (balanceLoading) {
+  if (availableAmountLoading) {
     return <Loading />;
   }
 
@@ -74,6 +81,11 @@ export default function CryptoWithdrawal() {
     <CyDView
       className='flex flex-col justify-between h-full bg-n0'
       style={{ paddingTop: insets.top }}>
+      <WithdrawalReasonsModal
+        isModalVisible={isModalVisible}
+        setIsModalVisible={setIsModalVisible}
+        reason={reason}
+      />
       <CyDView className='flex-1'>
         <CyDView className='flex flex-row items-center justify-between py-[16px] px-[16px] '>
           <CyDView className='flex flex-row items-center justify-start'>
@@ -118,61 +130,43 @@ export default function CryptoWithdrawal() {
                 placeholder='$0'
                 returnKeyType='done'
               />
-              {!isEmpty(cardBalance) && (
+              {!isEmpty(availableAmount) && (
                 <CyDText className='text-[12px] text-n200 font-medium mt-[8px]'>
                   {' You have '}
                   <CyDText className='font-bold text-base400'>
-                    {`$${cardBalance}`}
+                    {`$${availableAmount}`}
                   </CyDText>
-                  {' balance in your card'}
+                  {' available for withdrawal.'}
+                  {reason.length > 0 && (
+                    <CyDTouchView
+                      onPress={() => {
+                        setIsModalVisible(true);
+                      }}>
+                      <CyDText className='text-[#0061A7] underline font-medium text-[11px] ml-[4px] mt-[4px]'>
+                        {'Learn more'}
+                      </CyDText>
+                    </CyDTouchView>
+                  )}
                 </CyDText>
               )}
               <CyDView className='mt-[16px] flex flex-row justify-evenly'>
-                <CyDTouchView
-                  className='px-[10px] py-[6px] bg-n30 rounded-[4px]'
-                  onPress={() => {
-                    setAmount(ceil(Number(cardBalance) * 0.05, 2).toString());
-                  }}>
-                  <CyDText className='text-[14px] font-bold text-base400'>
-                    {'5%'}
-                  </CyDText>
-                </CyDTouchView>
-                <CyDTouchView
-                  className='px-[10px] py-[6px] bg-n30 rounded-[4px]'
-                  onPress={() => {
-                    setAmount(ceil(Number(cardBalance) * 0.1, 2).toString());
-                  }}>
-                  <CyDText className='text-[14px] font-bold text-base400'>
-                    {'10%'}
-                  </CyDText>
-                </CyDTouchView>
-                <CyDTouchView
-                  className='px-[10px] py-[6px] bg-n30 rounded-[4px]'
-                  onPress={() => {
-                    setAmount(ceil(Number(cardBalance) * 0.2, 2).toString());
-                  }}>
-                  <CyDText className='text-[14px] font-bold text-base400'>
-                    {'20%'}
-                  </CyDText>
-                </CyDTouchView>
-                <CyDTouchView
-                  className='px-[10px] py-[6px] bg-n30 rounded-[4px]'
-                  onPress={() => {
-                    setAmount(ceil(Number(cardBalance) * 0.3, 2).toString());
-                  }}>
-                  <CyDText className='text-[14px] font-bold text-base400'>
-                    {'30%'}
-                  </CyDText>
-                </CyDTouchView>
-                <CyDTouchView
-                  className='px-[10px] py-[6px] bg-n30 rounded-[4px]'
-                  onPress={() => {
-                    setAmount(ceil(Number(cardBalance) * 0.5, 2).toString());
-                  }}>
-                  <CyDText className='text-[14px] font-bold text-base400'>
-                    {'50%'}
-                  </CyDText>
-                </CyDTouchView>
+                {[0.05, 0.1, 0.2, 0.3, 0.5].map(percentage => (
+                  <CyDTouchView
+                    key={percentage}
+                    className='px-[10px] py-[6px] bg-n30 rounded-[4px]'
+                    onPress={() => {
+                      setAmount(
+                        ceil(
+                          Number(availableAmount) * percentage,
+                          2,
+                        ).toString(),
+                      );
+                    }}>
+                    <CyDText className='text-[14px] font-bold text-base400'>
+                      {`${percentage * 100}%`}
+                    </CyDText>
+                  </CyDTouchView>
+                ))}
               </CyDView>
             </CyDView>
             <CyDView className='flex flex-row justify-between items-center mt-[24px]'>
@@ -228,12 +222,12 @@ export default function CryptoWithdrawal() {
         <Button
           title={t('CONTINUE')}
           disabled={
-            isEmpty(amount) || parseFloat(amount) > parseFloat(cardBalance)
+            isEmpty(amount) || parseFloat(amount) > parseFloat(availableAmount)
           }
           onPress={() => {
             navigation.navigate(screenTitle.WITHDRAW_CONFIRMATION, {
               amount,
-              cardBalance,
+              availableAmount,
               currentCardProvider,
               card,
             });

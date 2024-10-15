@@ -107,7 +107,7 @@ export default function CardRevealAuthScreen() {
     } else {
       showModal('state', {
         type: 'error',
-        title: t('OTP_TRIGGER_FAILED'),
+        title: response.error.message ?? t('OTP_TRIGGER_FAILED'),
         description: parseErrorMessage(''),
         onSuccess: hideModal,
         onFailure: hideModal,
