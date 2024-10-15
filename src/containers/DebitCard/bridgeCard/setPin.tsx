@@ -26,6 +26,7 @@ import {
   useNavigation,
   useRoute,
 } from '@react-navigation/native';
+import { countBy } from 'lodash';
 
 interface RouteParams {
   currentCardProvider: CardProviders;
@@ -146,12 +147,10 @@ export default function SetPin() {
         'No more than two repeated digits allowed',
         value => {
           if (value) {
-            const digitCounts = {};
-            for (const digit of value) {
-              digitCounts[digit] = (digitCounts[digit] || 0) + 1;
-              if (digitCounts[digit] > 2) return false;
-            }
-            return true;
+            const digitCounts = countBy(value);
+            return Object.values(digitCounts).every(
+              (count: number) => count <= 2,
+            );
           }
           return false;
         },
@@ -189,12 +188,10 @@ export default function SetPin() {
         'No more than two repeated digits allowed',
         value => {
           if (value) {
-            const digitCounts = {};
-            for (const digit of value) {
-              digitCounts[digit] = (digitCounts[digit] || 0) + 1;
-              if (digitCounts[digit] > 2) return false;
-            }
-            return true;
+            const digitCounts = countBy(value);
+            return Object.values(digitCounts).every(
+              (count: number) => count <= 2,
+            );
           }
           return false;
         },
