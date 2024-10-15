@@ -274,6 +274,7 @@ export default function CypherCardScreen() {
               cardProvider,
               onPressPlanChange,
               card: get(cardProfile, [cardProvider, 'cards', 0]),
+              profile: cardProfile,
             });
           }}>
           <CyDImage

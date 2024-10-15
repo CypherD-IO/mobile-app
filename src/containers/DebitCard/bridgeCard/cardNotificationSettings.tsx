@@ -54,7 +54,11 @@ export default function CardNotificationSettings() {
     email: get(cardProfile, ['cardNotification', 'isEmailAllowed'], true),
     sms: get(cardProfile, ['cardNotification', 'isSmsAllowed'], true),
     fcm: get(cardProfile, ['cardNotification', 'isFcmAllowed'], true),
-    telegram: get(cardProfile, ['isTelegramSetup'], false),
+    telegram: get(
+      cardProfile,
+      ['cardNotification', 'isTelegramAllowed'],
+      false,
+    ),
   });
   const [isOTPTriggered, setIsOTPTriggered] = useState<boolean>(false);
   const [sendingOTP, setSendingOTP] = useState(false);
@@ -67,7 +71,11 @@ export default function CardNotificationSettings() {
       email: get(cardProfile, ['cardNotification', 'isEmailAllowed'], true),
       sms: get(cardProfile, ['cardNotification', 'isSmsAllowed'], true),
       fcm: get(cardProfile, ['cardNotification', 'isFcmAllowed'], true),
-      telegram: get(cardProfile, ['isTelegramSetup'], false),
+      telegram: get(
+        cardProfile,
+        ['cardNotification', 'isTelegramAllowed'],
+        false,
+      ),
     });
   }, [globalContext]);
 

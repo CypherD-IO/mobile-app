@@ -1,11 +1,13 @@
 import React, { useState } from 'react';
 import { StyleSheet } from 'react-native';
 import {
+  CyDImage,
   CyDKeyboardAwareScrollView,
   CyDSafeAreaView,
   CyDScrollView,
   CyDText,
   CyDTextInput,
+  CyDTouchView,
   CyDView,
 } from '../../../styles/tailwindStyles';
 import { useTranslation } from 'react-i18next';
@@ -26,6 +28,7 @@ import {
   useNavigation,
   useRoute,
 } from '@react-navigation/native';
+import AppImages from '../../../../assets/images/appImages';
 import { countBy } from 'lodash';
 
 interface RouteParams {
@@ -33,12 +36,10 @@ interface RouteParams {
   card: { cardId: string };
 }
 
-export default function SetPin() {
+export default function SetTelegramPin() {
   const navigation = useNavigation<NavigationProp<ParamListBase>>();
-  const route = useRoute<RouteProp<{ params: RouteParams }, 'params'>>();
   const { t } = useTranslation();
   const { showModal, hideModal } = useGlobalModalContext();
-  const { currentCardProvider, card } = route.params;
   const [loading, setLoading] = useState<boolean>(false);
   const { keyboardHeight } = useKeyboard();
 
@@ -67,21 +68,16 @@ export default function SetPin() {
       onSuccess: (data: any, cardProvider: CardProviders) => {
         void onPinSet();
       },
-      currentCardProvider,
-      card,
-      triggerOTPParam: 'set-pin',
+      triggerOTPParam: 'tg-set-pin',
       verifyOTPPayload: { pin: changePinFormik.values.pin },
     });
   };
 
   const ActivateCardHeader = () => {
     return (
-      <CyDView className='px-[20px]'>
-        <CyDText className={'text-[25px] font-extrabold'}>
-          {t<string>('CARD_SET_NEW_PIN')}
-        </CyDText>
+      <CyDView className='px-[20px] mt-[16px]'>
         <CyDText className={'text-[15px] font-bold mt-[3px]'}>
-          {t<string>('CARD_SET_PIN_TO_USE_CARD')}
+          {t<string>('SET_TELEGRAM_PIN_DESCRIPTION')}
         </CyDText>
       </CyDView>
     );
@@ -96,27 +92,10 @@ export default function SetPin() {
     },
   });
 
-  const cardValidationSchema = yup.object({
-    pin: yup
-      .string()
-      .required('Pin Required')
-      .matches(/^[0-9]+$/, 'Must be only digits')
-      .min(4, 'Must be exactly 4 digits')
-      .max(4, 'Must be exactly 4 digits'),
-    confirmPin: yup
-      .string()
-      .matches(/^[0-9]+$/, 'Must be only digits')
-      .min(4, 'Must be exactly 4 digits')
-      .max(4, 'Must be exactly 4 digits')
-      .test('pins-match', 'Pins must match', function (value) {
-        return this.parent.pin === value;
-      }),
-  });
-
   const cardValidationSchemaRc = yup.object({
     pin: yup
       .string()
-      .matches(/^\d{4,12}$/, 'Only 4-12 digits accepted')
+      .matches(/^\d{6}$/, 'Only 6 digits accepted')
       .test(
         'two-consecutive-numbers',
         'Only two consecutive numbers accepted at most',
@@ -157,7 +136,7 @@ export default function SetPin() {
       ),
     confirmPin: yup
       .string()
-      .matches(/^\d{4,12}$/, 'Only 4-12 digits accepted')
+      .matches(/^\d{6}$/, 'Only 6 digits accepted')
       .test(
         'two-consecutive-numbers',
         'Only two consecutive numbers accepted at most',
@@ -214,9 +193,23 @@ export default function SetPin() {
 
   return (
     <CyDSafeAreaView style={{ height: keyboardHeight || '100%' }}>
-      <CyDScrollView
-        className=' bg-white pb-[12px]'
-        contentContainerStyle={styles.contentContainerStyle}>
+      <CyDView className='pb-[12px]'>
+        <CyDView className='flex flex-row mx-[20px]'>
+          <CyDTouchView
+            onPress={() => {
+              navigation.goBack();
+            }}>
+            <CyDImage
+              source={AppImages.BACK_ARROW_GRAY}
+              className='w-[32px] h-[32px]'
+            />
+          </CyDTouchView>
+          <CyDView className='w-[calc(100% - 40px)] mx-auto'>
+            <CyDText className='font-semibold text-black text-center -ml-[24px] text-[20px]'>
+              {t('SET_TELEGRAM_PIN')}
+            </CyDText>
+          </CyDView>
+        </CyDView>
         <CyDKeyboardAwareScrollView>
           <CyDView>
             <ActivateCardHeader />
@@ -293,7 +286,7 @@ export default function SetPin() {
 
               <CyDView className='w-full mb-[4px] mt-[12px] items-center'>
                 <CyDText className='text-[12px]'>
-                  Only 4-12 digits accepted.{'\n'}
+                  Only 6 digits accepted.{'\n'}
                   Only two consecutive numbers accepted at most (eg: 124758){' '}
                   {'\n'}
                   Only two repeated numbers in a row accepted at most
@@ -316,7 +309,7 @@ export default function SetPin() {
             />
           </CyDView>
         </CyDKeyboardAwareScrollView>
-      </CyDScrollView>
+      </CyDView>
     </CyDSafeAreaView>
   );
 }
