@@ -116,6 +116,7 @@ import ShippingConfirmation from '../containers/DebitCard/physicalCardUpgradatio
 import ShippingCheckout from '../containers/DebitCard/physicalCardUpgradation/ckeckout';
 import CardActivationConsent from '../containers/DebitCard/bridgeCard/cardActivationConsent';
 import GlobalOptions from '../containers/DebitCard/CardV2/globalOptions';
+import SetTelegramPin from '../containers/DebitCard/bridgeCard/setTelegramPin';
 
 const PortfolioStack = createNativeStackNavigator();
 const BrowserStack = createNativeStackNavigator();
@@ -704,6 +705,14 @@ export function DebitCardStackScreen() {
         name={screenTitle.LOCKDOWN_MODE}
         component={LockdownMode}
         options={({ navigation, route }) => ({
+          headerShown: false,
+        })}
+      />
+
+      <FundCardStack.Screen
+        name={screenTitle.TELEGRAM_PIN_SETUP}
+        component={SetTelegramPin}
+        options={() => ({
           headerShown: false,
         })}
       />

@@ -85,6 +85,8 @@ export enum CardStatus {
   CANCELLED = 'cancelled',
   EXPIRED = 'expired',
   OTHER = 'other',
+  COMING_SOON = 'coming-soon',
+  RC_UPGRADABLE = 'rcUpgradable',
 }
 
 export enum OTPType {

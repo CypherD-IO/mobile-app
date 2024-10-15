@@ -143,6 +143,7 @@ export const screenTitle = {
   CARD_SIGNUP_OTP_VERIFICATION: 'cardSignupOtpVerification',
   TELEGRAM_SETUP: 'telegramSetup',
   KYC_VERIFICATION: 'kycVerification',
+  TELEGRAM_PIN_SETUP: 'telegramPinSetup',
 };
 
 export const fontsName = {
