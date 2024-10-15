@@ -1380,6 +1380,7 @@ const resources = {
       LOAD_FEE: 'Load Fee',
       SET_TELEGRAM_PIN: 'Set New Telegram Pin',
       SET_TELEGRAM_PIN_DESCRIPTION: 'Access card functionalities via Telegram',
+      DISABLE_LOCKDOWN: 'Disable Lockdown',
     },
   },
 };

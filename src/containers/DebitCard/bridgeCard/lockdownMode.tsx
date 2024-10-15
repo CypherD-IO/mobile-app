@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useContext, useEffect, useState } from 'react';
 import { SafeAreaView, StatusBar, StyleSheet } from 'react-native';
 import {
   CyDImage,
@@ -9,21 +9,67 @@ import {
 import AppImages from '../../../../assets/images/appImages';
 import { t } from 'i18next';
 import Button from '../../../components/v2/button';
-import { ACCOUNT_STATUS, ButtonType } from '../../../constants/enum';
+import {
+  ACCOUNT_STATUS,
+  ButtonType,
+  GlobalContextType,
+} from '../../../constants/enum';
 import useAxios from '../../../core/HttpRequest';
 import { useGlobalModalContext } from '../../../components/v2/GlobalModal';
+import { get } from 'lodash';
+import { GlobalContext, GlobalContextDef } from '../../../core/globalContext';
+import { CardProfile } from '../../../models/cardProfile.model';
+import useCardUtilities from '../../../hooks/useCardUtilities';
+import {
+  NavigationProp,
+  ParamListBase,
+  useIsFocused,
+  useNavigation,
+} from '@react-navigation/native';
+import { screenTitle } from '../../../constants';
 
 export default function LockdownMode(props) {
+  const navigation = useNavigation<NavigationProp<ParamListBase>>();
   const { showModal, hideModal } = useGlobalModalContext();
   const { postWithAuth } = useAxios();
   const [loading, setLoading] = useState(false);
   const { currentCardProvider } = props.route.params;
+  const globalContext = useContext(GlobalContext) as GlobalContextDef;
+  const cardProfile: CardProfile | undefined =
+    globalContext?.globalState?.cardProfile;
+  const { getWalletProfile } = useCardUtilities();
+  const isFocused = useIsFocused();
+  const [isLockdownModeEnabled, setIsLockdownModeEnabled] = useState(
+    get(cardProfile, ['accountStatus'], ACCOUNT_STATUS.ACTIVE),
+  );
+
+  const refreshProfile = async () => {
+    const data = await getWalletProfile(globalContext.globalState.token);
+    setIsLockdownModeEnabled(
+      get(data, ['accountStatus'], ACCOUNT_STATUS.ACTIVE),
+    );
+    globalContext.globalDispatch({
+      type: GlobalContextType.CARD_PROFILE,
+      cardProfile: data,
+    });
+  };
+
+  const onRefresh = async () => {
+    void refreshProfile();
+  };
+
+  useEffect(() => {
+    if (isFocused) {
+      void onRefresh();
+    }
+  }, [isFocused]);
 
   const handleClickLockDownMode = async () => {
     const resp = await postWithAuth(
       `/v1/cards/${currentCardProvider}/account-status`,
       { status: ACCOUNT_STATUS.LOCKED },
     );
+    void onRefresh();
 
     setLoading(false);
     if (!resp.isError) {
@@ -44,6 +90,25 @@ export default function LockdownMode(props) {
         onFailure: hideModal,
       });
     }
+  };
+
+  const verifyWithOTP = () => {
+    navigation.navigate(screenTitle.LOCKDOWN_MODE_AUTH, {
+      onSuccess: () => {
+        showModal('state', {
+          type: 'success',
+          title: t('Lockdown mode disabled'),
+          onSuccess: () => {
+            hideModal();
+            setLoading(false);
+            void onRefresh();
+          },
+          onFailure: hideModal,
+        });
+      },
+      currentCardProvider: currentCardProvider,
+      accountStatus: ACCOUNT_STATUS.ACTIVE,
+    });
   };
 
   return (
@@ -82,29 +147,44 @@ export default function LockdownMode(props) {
               <CyDText className='text-[12px] mt-[24px] mx-[4px] text-center text-yellow-600'>
                 **{t('LOCKDOWN_MODE_DESC_TEXT_2')}
               </CyDText>
-              <Button
-                type={ButtonType.RED}
-                title={t('TURN_ON_LOCKDOWN')}
-                titleStyle='text-white text-[18px]'
-                style='w-full mt-[6px] rounded-[12px]'
-                loading={loading}
-                loaderStyle={{ height: 25, width: 25 }}
-                onPress={() => {
-                  setLoading(true);
-                  showModal('state', {
-                    type: 'warning',
-                    title: t('Are you sure ?'),
-                    description: t(
-                      'Enabling lockdown mode will block all the card functionalitites',
-                    ),
-                    onSuccess: () => {
-                      hideModal();
-                      void handleClickLockDownMode();
-                    },
-                    onFailure: hideModal,
-                  });
-                }}
-              />
+              {isLockdownModeEnabled === ACCOUNT_STATUS.ACTIVE ? (
+                <Button
+                  type={ButtonType.RED}
+                  title={t('TURN_ON_LOCKDOWN')}
+                  titleStyle='text-white text-[18px]'
+                  style='w-full mt-[6px] rounded-[12px]'
+                  loading={loading}
+                  loaderStyle={{ height: 25, width: 25 }}
+                  onPress={() => {
+                    setLoading(true);
+                    showModal('state', {
+                      type: 'warning',
+                      title: t('Are you sure ?'),
+                      description: t(
+                        'Enabling lockdown mode will block all the card functionalitites',
+                      ),
+                      onSuccess: () => {
+                        hideModal();
+                        void handleClickLockDownMode();
+                      },
+                      onFailure: hideModal,
+                    });
+                  }}
+                />
+              ) : (
+                <Button
+                  type={ButtonType.PRIMARY}
+                  title={t('DISABLE_LOCKDOWN')}
+                  titleStyle='text-black text-[18px]'
+                  style='w-full mt-[6px] rounded-[12px]'
+                  loading={loading}
+                  loaderStyle={{ height: 25, width: 25 }}
+                  onPress={() => {
+                    setLoading(true);
+                    void verifyWithOTP();
+                  }}
+                />
+              )}
             </CyDView>
           </CyDView>
         </CyDView>
