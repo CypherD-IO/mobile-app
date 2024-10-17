@@ -87,7 +87,7 @@ export default function GlobalOptions() {
               });
             },
           },
-          ...(!get(profile, ['cardNotification', 'isTelegramAllowed'], false)
+          ...(get(profile, ['cardNotification', 'isTelegramAllowed'], false)
             ? [
                 {
                   title: 'Set New Telegram Pin',
