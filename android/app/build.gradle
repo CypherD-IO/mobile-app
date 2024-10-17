@@ -87,11 +87,6 @@ android {
         versionCode System.getenv('VERSION_CODE') ? System.getenv('VERSION_CODE').toInteger() : 431
         versionName System.getenv('VERSION_NAME') ?: "4.20"
         missingDimensionStrategy 'react-native-camera', 'general'
-        
-        // Only set INTERCOM_APP_KEY if running in GitHub Actions
-        // if (System.getenv('GITHUB_ACTIONS') == 'true') {
-        //     buildConfigField "String", "INTERCOM_APP_KEY", "\"${System.getenv('INTERCOM_APP_KEY') ?: ''}\""
-        // }
     }
     signingConfigs {
         release {

@@ -3,9 +3,6 @@ name: Deploy Android App to PlayStore
 on:
   pull_request:
     types:
-      - opened
-      - synchronize
-      - reopened
       - closed
     branches:
       - main
@@ -15,6 +12,7 @@ jobs:
   build-and-deploy:
     permissions:
       contents: write
+    if: github.event.pull_request.merged == true
     runs-on: ubuntu-latest
     env:
       SENTRY_DSN: ${{secrets.SENTRY_DSN}}
@@ -80,7 +78,7 @@ jobs:
           VERSION_NAME: ${{ vars.VERSION_NAME }}
 
       - name: Update version code (beta)
-        if: github.event.pull_request.base.ref == 'beta'
+        if: github.event.pull_request.merged == true && github.event.pull_request.base.ref == 'beta'
         run: |
           # Increment version code
           NEW_VERSION_CODE=$((VERSION_CODE + 1))
@@ -125,6 +123,10 @@ jobs:
       - name: Remove Google Services JSON file
         if: always()
         run: rm -f android/app/google-services.json
+
+      - name: Remove .env file
+        if: always()
+        run: rm -f .env
 
       - name: Sign AAB
         id: sign
