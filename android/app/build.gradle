@@ -89,9 +89,9 @@ android {
         missingDimensionStrategy 'react-native-camera', 'general'
         
         // Only set INTERCOM_APP_KEY if running in GitHub Actions
-        if (System.getenv('GITHUB_ACTIONS') == 'true') {
-            buildConfigField "String", "INTERCOM_APP_KEY", "\"${System.getenv('INTERCOM_APP_KEY') ?: ''}\""
-        }
+        // if (System.getenv('GITHUB_ACTIONS') == 'true') {
+        //     buildConfigField "String", "INTERCOM_APP_KEY", "\"${System.getenv('INTERCOM_APP_KEY') ?: ''}\""
+        // }
     }
     signingConfigs {
         release {
