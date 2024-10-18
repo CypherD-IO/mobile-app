@@ -263,7 +263,7 @@ export default function CardRevealAuthScreen() {
 
   return (
     <CyDSafeAreaView>
-      <CyDView className={'h-full bg-white px-[20px] pt-[10px]'}>
+      <CyDView className={'h-full bg-[#F1F0F5] px-[20px] pt-[10px]'}>
         <OTPHeader />
         <CyDView>
           {!verifyingOTP && (

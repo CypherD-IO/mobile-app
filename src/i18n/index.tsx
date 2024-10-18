@@ -1378,7 +1378,7 @@ const resources = {
       SETUP_LATER: 'Setup later',
       TRANSACTION_ID_COPIED: 'Transaction ID copied',
       LOAD_FEE: 'Load Fee',
-      SET_TELEGRAM_PIN: 'Set New Telegram Pin',
+      SET_TELEGRAM_PIN: 'Set Telegram PIN',
       SET_TELEGRAM_PIN_DESCRIPTION:
         'This PIN will be used to authorise your activities on telegram for Eg-Revealing card details',
       DISABLE_LOCKDOWN: 'Disable Lockdown',
@@ -1386,6 +1386,8 @@ const resources = {
       CRYPTO_WITHDRAWAL: 'Crypto Withdrawal',
       LIMITATIONS_AROUND_CRYPTO_WITHDRAWAL:
         'Limitations around crypto withdrawal',
+      NEW_PIN: 'New PIN',
+      CONFIRM_PIN_TELEGRAM: 'Confirm PIN',
     },
   },
 };

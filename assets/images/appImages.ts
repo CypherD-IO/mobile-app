@@ -662,6 +662,9 @@ const KYC_VERIFICATION_DELAYED = {
   uri: `${S3_BUCKET_URL_ICONS}/kycVerificationDelayed.png`,
 };
 const RC_PHYSICAL_METAL = require('./cypherMetalCard.png');
+const LOCKED_ICON_BLACK = {
+  uri: `${S3_BUCKET_URL_ICONS}/lockedIconBlack.png`,
+};
 
 const AppImages = {
   KYC_VERIFICATION_FAILED,
@@ -1113,5 +1116,6 @@ const AppImages = {
   MULTIPLE_CARDS,
   PREMIUM_LABEL,
   RC_PHYSICAL_METAL,
+  LOCKED_ICON_BLACK,
 };
 export default AppImages;

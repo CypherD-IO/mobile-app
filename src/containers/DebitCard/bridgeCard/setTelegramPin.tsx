@@ -77,7 +77,7 @@ export default function SetTelegramPin() {
 
   const ActivateCardHeader = () => {
     return (
-      <CyDView className='px-[20px] mt-[32px]'>
+      <CyDView className='mt-[6px]'>
         <CyDText className={'text-[14px] font-medium text-[#6B788E]'}>
           {t<string>('SET_TELEGRAM_PIN_DESCRIPTION')}
         </CyDText>
@@ -241,11 +241,18 @@ export default function SetTelegramPin() {
         <CyDKeyboardAwareScrollView
           contentContainerStyle={styles.contentContainerStyle}>
           <CyDView>
-            <ActivateCardHeader />
             <CyDView className={' px-[24px] pt-[10px] mt-[14px]'}>
-              <CyDView>
+              <CyDImage
+                source={AppImages.LOCKED_ICON_BLACK}
+                className='w-[32px] h-[32px]'
+              />
+              <CyDText className='text-black mt-[6px] font-bold text-[28px]'>
+                {t('SET_TELEGRAM_PIN')}
+              </CyDText>
+              <ActivateCardHeader />
+              <CyDView className='mt-[24px]'>
                 <CyDText className={'text-[12px] text-[#6B788E]'}>
-                  {t<string>('CARD_SET_PIN')}
+                  {t<string>('NEW_PIN')}
                 </CyDText>
                 <CyDView className={'mt-[5px]'}>
                   <PinInput
@@ -276,7 +283,7 @@ export default function SetTelegramPin() {
 
               <CyDView>
                 <CyDText className={'text-[12px] mt-[20px] text-[#6B788E]'}>
-                  {t<string>('CARD_CONFIRM_PIN')}
+                  {t<string>('CONFIRM_PIN_TELEGRAM')}
                 </CyDText>
                 <CyDView className={'mt-[5px]'}>
                   <PinInput

@@ -21,25 +21,32 @@ export const PinInput = ({
     inputRefs.current = inputRefs.current.slice(0, length);
   }, [length]);
 
-  const handleChange = (index: number, digit: string) => {
-    if (/^\d$/.test(digit) || digit === '') {
+  const handleKeyPress = (index: number, e: any) => {
+    const key = e.nativeEvent.key;
+
+    if (/^\d$/.test(key)) {
       const newValue = [...value];
-      newValue[index] = digit;
-      onChange(newValue);
 
-      if (digit !== '' && index < length - 1) {
+      // If current box is not empty and not the last box, move to next box
+      if (newValue[index] !== '' && index < length - 1) {
+        newValue[index + 1] = key;
+        onChange(newValue);
         inputRefs.current[index + 1].focus();
+      } else {
+        newValue[index] = key;
+        onChange(newValue);
+        // Move to the next box if not the last one
+        if (index < length - 1) {
+          inputRefs.current[index + 1].focus();
+        }
       }
-    }
-  };
-
-  const handleKeyDown = (index: number, e: any) => {
-    if (e.nativeEvent.key === 'Backspace') {
+    } else if (key === 'Backspace') {
       const newValue = [...value];
       newValue[index] = '';
       onChange(newValue);
 
-      if ((value[index] === '' || value[index] === undefined) && index > 0) {
+      // Move to the previous box if not the first one
+      if (index > 0) {
         inputRefs.current[index - 1].focus();
       }
     }
@@ -52,7 +59,7 @@ export const PinInput = ({
           key={index}
           ref={el => (inputRefs.current[index] = el)}
           className={clsx(
-            'h-[64px] w-[50px] text-center rounded-[5px] border-[1px] border-inputBorderColor bg-white',
+            'h-[64px] w-[50px] text-[22px] font-bold text-center rounded-[8px] border-[1px] border-[#C2C7D0] bg-white',
             'mx-[6px]',
             {
               'border-redCyD': error,
@@ -61,8 +68,7 @@ export const PinInput = ({
           keyboardType='numeric'
           maxLength={1}
           value={value[index] || ''}
-          onChangeText={digit => handleChange(index, digit)}
-          onKeyPress={e => handleKeyDown(index, e)}
+          onKeyPress={e => handleKeyPress(index, e)}
           secureTextEntry={false}
           onBlur={onBlur}
         />
