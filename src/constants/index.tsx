@@ -42,7 +42,7 @@ export const screenTitle = {
   PERSONAL_SCREEN: 'PersonalDetailScreen',
   OPEN_LEGAL_SCREEN: 'OPENLegalScreen',
   FUND_CARD_SCREEN: 'fundCardScreen',
-  FUND_CARD: 'Fund Card',
+  FUND_CARD: 'FundCard',
   TOKEN_APPROVALS_SCREEN: 'TokenApprovalsScreen',
   TOKEN_APPROVALS_INFO_SCREEN: 'TokenApprovalsInfoScreen',
   TOKEN_APPROVALS_DETAILS_SCREEN: 'TokenApprovalsDetailsScreen',

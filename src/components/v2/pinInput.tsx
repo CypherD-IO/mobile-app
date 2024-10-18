@@ -60,7 +60,7 @@ export const PinInput = ({
           ref={el => (inputRefs.current[index] = el)}
           className={clsx(
             'h-[64px] w-[50px] text-[22px] font-bold text-center rounded-[8px] border-[1px] border-[#C2C7D0] bg-white',
-            'mx-[6px]',
+            'mx-[4px]',
             {
               'border-redCyD': error,
             },

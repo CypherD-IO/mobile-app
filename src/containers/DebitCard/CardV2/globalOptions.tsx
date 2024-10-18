@@ -233,8 +233,8 @@ export default function GlobalOptions() {
               {t('ACCOUNT_OPTIONS')}
             </CyDText>
           </CyDView>
-          <CyDKeyboardAwareScrollView className='flex-1 bg-n30'>
-            <CyDView className='px-[12px]'>
+          <CyDKeyboardAwareScrollView className='flex-1 bg-n30 pb-[16px]'>
+            <CyDView className='px-[12px] mb-[22px]'>
               {cardGlobalOptions.map((option, index) => {
                 const { image, title, description, action } = option;
 

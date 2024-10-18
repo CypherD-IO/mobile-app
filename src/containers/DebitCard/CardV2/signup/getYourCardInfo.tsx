@@ -87,7 +87,7 @@ export default function GetYourCardInfo() {
                 onPress={() => {
                   globalState?.cardProfile?.pc
                     ? navigation.navigate(screenTitle.DEBIT_CARD_SCREEN)
-                    : navigation.goBack();
+                    : navigation.navigate(screenTitle.PORTFOLIO_SCREEN);
                 }}
                 className='w-[36px] h-[36px] my-[16px]'>
                 <CyDImage
