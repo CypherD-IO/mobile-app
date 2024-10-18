@@ -20,8 +20,10 @@ import { copyToClipboard } from '../../../../core/util';
 import {
   NavigationProp,
   ParamListBase,
+  RouteProp,
   useFocusEffect,
   useNavigation,
+  useRoute,
 } from '@react-navigation/native';
 import * as Sentry from '@sentry/react-native';
 import { screenTitle } from '../../../../constants';
@@ -33,11 +35,18 @@ import LottieView from 'lottie-react-native';
 import clsx from 'clsx';
 import CardProviderSwitch from '../../../../components/cardProviderSwitch';
 
+interface RouteParams {
+  showSetupLaterOption?: boolean;
+  navigateTo?: string;
+}
+
 export default function TelegramSetup() {
   const { globalState, globalDispatch } = useContext(
     GlobalContext,
   ) as GlobalContextDef;
   const navigation = useNavigation<NavigationProp<ParamListBase>>();
+  const route = useRoute<RouteProp<Record<string, RouteParams>, string>>();
+  const { showSetupLaterOption = true, navigateTo } = route.params ?? {};
   const { getWithAuth } = useAxios();
   const insets = useSafeAreaInsets();
   const { getWalletProfile } = useCardUtilities();
@@ -49,7 +58,9 @@ export default function TelegramSetup() {
   const refreshProfile = async () => {
     setIsLoading(true);
     const data = await getWalletProfile(globalState.token);
-    const telegramChanged = get(data, ['isTelegramSetup'], false);
+    const telegramChanged =
+      get(data, ['isTelegramSetup'], false) &&
+      get(data, ['cardNotification', 'isTelegramAllowed'], false);
     globalDispatch({
       type: GlobalContextType.CARD_PROFILE,
       cardProfile: data,
@@ -169,20 +180,26 @@ export default function TelegramSetup() {
           {'Verify Telegram'}
         </CyDText> */}
         <CyDView className='pt-[14px] flex flex-row w-full justify-between'>
-          <Button
-            type={ButtonType.SECONDARY}
-            title={t('SETUP_LATER')}
-            onPress={() => {
-              navigation.navigate(screenTitle.KYC_VERIFICATION);
-            }}
-            style='w-[48%]'
-          />
+          {showSetupLaterOption && (
+            <Button
+              type={ButtonType.SECONDARY}
+              title={t('SETUP_LATER')}
+              onPress={() => {
+                if (navigateTo) {
+                  navigation.navigate(navigateTo);
+                }
+              }}
+              style='w-[48%]'
+            />
+          )}
           <Button
             title={t('CONTINUE')}
             onPress={() => {
-              navigation.navigate(screenTitle.KYC_VERIFICATION);
+              if (navigateTo) {
+                navigation.navigate(navigateTo);
+              }
             }}
-            style='p-[3%] w-[48%]'
+            style={clsx('p-[3%]', showSetupLaterOption ? 'w-[48%]' : 'w-full')}
             disabled={!isTelegramConnected}
           />
         </CyDView>

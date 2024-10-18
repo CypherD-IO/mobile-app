@@ -1065,7 +1065,7 @@ const resources = {
       TOGGLE_TELEGRAM_NOTIFICATION_SUCCESS:
         'Telegram Notification Status Update Success',
       TELEGRAM_NOTIFICATION_TURNED_ON:
-        'Authentication Successful. CypherHQBot is added to your telegram',
+        'Telegram Notifications turned on Successfully',
       TELEGRAM_NOTIFICATION_TURNED_OFF:
         'Telegram Notifications turned off Successfully',
       ERROR_IN_TOGGLE_TELEGRAM: 'Telegram Notification Status Update Failed',
@@ -1378,13 +1378,16 @@ const resources = {
       SETUP_LATER: 'Setup later',
       TRANSACTION_ID_COPIED: 'Transaction ID copied',
       LOAD_FEE: 'Load Fee',
-      SET_TELEGRAM_PIN: 'Set New Telegram Pin',
-      SET_TELEGRAM_PIN_DESCRIPTION: 'Access card functionalities via Telegram',
+      SET_TELEGRAM_PIN: 'Set Telegram PIN',
+      SET_TELEGRAM_PIN_DESCRIPTION:
+        'This PIN will be used to authorise your activities on telegram for Eg-Revealing card details',
       DISABLE_LOCKDOWN: 'Disable Lockdown',
       WITHDRAWAL_REASONS: 'Withdrawal Reasons',
       CRYPTO_WITHDRAWAL: 'Crypto Withdrawal',
       LIMITATIONS_AROUND_CRYPTO_WITHDRAWAL:
         'Limitations around crypto withdrawal',
+      NEW_PIN: 'New PIN',
+      CONFIRM_PIN_TELEGRAM: 'Confirm PIN',
     },
   },
 };
