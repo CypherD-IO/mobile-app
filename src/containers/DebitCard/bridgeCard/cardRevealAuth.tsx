@@ -6,7 +6,7 @@ import {
   CyDView,
 } from '../../../styles/tailwindStyles';
 import { useTranslation } from 'react-i18next';
-import OtpInput from '../../../components/v2/OTPInput';
+import { PinInput } from '../../../components/v2/pinInput';
 import AppImages from '../../../../assets/images/appImages';
 import { useGlobalModalContext } from '../../../components/v2/GlobalModal';
 import * as Sentry from '@sentry/react-native';
@@ -84,6 +84,8 @@ export default function CardRevealAuthScreen() {
   const [resendInterval, setResendInterval] = useState(0);
   const [timer, setTimer] = useState<NodeJS.Timer>();
   const { postWithAuth } = useAxios();
+  const [otpValue, setOtpValue] = useState<string[]>(Array(4).fill(''));
+  const [otpError, setOtpError] = useState<boolean>(false);
 
   useEffect(() => {
     void triggerOTP();
@@ -247,6 +249,18 @@ export default function CardRevealAuthScreen() {
     );
   };
 
+  const handleOtpChange = (value: string[]) => {
+    setOtpValue(value);
+    setOtpError(false);
+    if (value.every(digit => digit !== '')) {
+      void verifyOTP(parseInt(value.join(''), 10));
+    }
+  };
+
+  const handleOtpBlur = () => {
+    // You can add any additional logic here if needed when the OTP input loses focus
+  };
+
   return (
     <CyDSafeAreaView>
       <CyDView className={'h-full bg-white px-[20px] pt-[10px]'}>
@@ -254,12 +268,12 @@ export default function CardRevealAuthScreen() {
         <CyDView>
           {!verifyingOTP && (
             <CyDView className={'mt-[15%]'}>
-              <OtpInput
-                pinCount={4}
-                getOtp={otp => {
-                  void verifyOTP(Number(otp));
-                }}
-                placeholder={t('ENTER_OTP')}
+              <PinInput
+                value={otpValue}
+                onChange={handleOtpChange}
+                error={otpError}
+                onBlur={handleOtpBlur}
+                length={4}
               />
               <CyDTouchView
                 className={'flex flex-row items-center mt-[15%]'}

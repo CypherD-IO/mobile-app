@@ -111,7 +111,9 @@ export default function OTPVerification(): JSX.Element {
     });
     setLoading({ ...loading, otpLoading: false });
     if (!response.isError) {
-      navigation.navigate(screenTitle.TELEGRAM_SETUP);
+      navigation.navigate(screenTitle.TELEGRAM_SETUP, {
+        navigateTo: screenTitle.KYC_VERIFICATION,
+      });
     } else {
       showModal('state', {
         type: 'error',

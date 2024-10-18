@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useContext, useEffect, useState } from 'react';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import {
   CyDFastImage,
@@ -13,21 +13,26 @@ import {
   NavigationProp,
   ParamListBase,
   RouteProp,
+  useIsFocused,
   useNavigation,
   useRoute,
 } from '@react-navigation/native';
 import { Card } from '../../../models/card.model';
 import { screenTitle } from '../../../constants';
-import { CardProviders } from '../../../constants/enum';
+import { CardProviders, GlobalContextType } from '../../../constants/enum';
 import AutoLoadOptionsModal from '../bridgeCard/autoLoadOptions';
-import { get } from 'lodash';
+import { get, isEqual } from 'lodash';
 import { CardProfile } from '../../../models/cardProfile.model';
+import useCardUtilities from '../../../hooks/useCardUtilities';
+import { GlobalContext, GlobalContextDef } from '../../../core/globalContext';
+import useAxios from '../../../core/HttpRequest';
+import { showToast } from '../../utilities/toastUtility';
+import { useGlobalModalContext } from '../../../components/v2/GlobalModal';
 
 interface RouteParams {
   cardProvider: string;
   card: Card;
   onPressPlanChange: () => void;
-  profile: CardProfile;
 }
 
 export default function GlobalOptions() {
@@ -37,7 +42,63 @@ export default function GlobalOptions() {
   const [isAutoLoadOptionsvisible, setIsAutoLoadOptionsVisible] =
     useState<boolean>(false);
 
-  const { cardProvider, onPressPlanChange, card, profile } = route.params;
+  const { cardProvider, onPressPlanChange, card } = route.params;
+  const globalContext = useContext(GlobalContext) as GlobalContextDef;
+  const cardProfile: CardProfile | undefined =
+    globalContext?.globalState?.cardProfile;
+  const { cardProfileModal } = useCardUtilities();
+  const isFocused = useIsFocused();
+  const [isTelegramLinked, setIsTelegramLinked] = useState<boolean>(
+    get(cardProfile, ['isTelegramSetup'], false),
+  );
+  const { deleteWithAuth, postWithAuth, getWithAuth } = useAxios();
+  const { showModal, hideModal } = useGlobalModalContext();
+
+  const refreshProfile = async () => {
+    const response = await getWithAuth('/v1/authentication/profile');
+    if (!response.isError) {
+      const tempProfile = await cardProfileModal(response.data);
+      setIsTelegramLinked(get(tempProfile, ['isTelegramSetup'], false));
+
+      // Compare the new profile with the existing one
+      if (!isEqual(tempProfile, globalContext.globalState.cardProfile)) {
+        globalContext.globalDispatch({
+          type: GlobalContextType.CARD_PROFILE,
+          cardProfile: tempProfile,
+        });
+      }
+      return true;
+    }
+    return false;
+  };
+
+  const onRefresh = async () => {
+    await refreshProfile();
+  };
+
+  useEffect(() => {
+    if (isFocused) {
+      void onRefresh();
+    }
+  }, [isFocused]);
+
+  const disconnectTelegram = async () => {
+    const response = await deleteWithAuth('/v1/cards/tg');
+    if (!response.isError) {
+      showToast('Telegram disconnected successfully', 'success');
+      await onRefresh();
+    } else {
+      showModal('state', {
+        type: 'error',
+        title: 'Unable to disconnect Telegram',
+        description:
+          response.error?.message ||
+          'Could not disconnect from Telegram. Please contact support',
+        onSuccess: hideModal,
+        onFailure: hideModal,
+      });
+    }
+  };
 
   const cardGlobalOptions = [
     ...(cardProvider === CardProviders.REAP_CARD
@@ -87,18 +148,17 @@ export default function GlobalOptions() {
               });
             },
           },
-          ...(get(profile, ['cardNotification', 'isTelegramAllowed'], false)
-            ? [
-                {
-                  title: 'Set New Telegram Pin',
-                  description: 'Access card functionalities from Telegram',
-                  image: AppImages.TELEGRAM_OUTLINE_ICON,
-                  action: () => {
-                    navigation.navigate(screenTitle.TELEGRAM_PIN_SETUP);
-                  },
-                },
-              ]
-            : []),
+          {
+            title: 'Telegram Bot',
+            description: 'Manage your account with telegram',
+            image: AppImages.TELEGRAM_OUTLINE_ICON,
+            action: () => {
+              navigation.navigate(screenTitle.TELEGRAM_SETUP, {
+                navigateTo: screenTitle.TELEGRAM_PIN_SETUP,
+                showSetupLaterOption: false,
+              });
+            },
+          },
         ]
       : []),
     {
@@ -112,14 +172,6 @@ export default function GlobalOptions() {
       },
     },
     {
-      title: 'Personal Information',
-      description: 'Update personal information for your account',
-      image: AppImages.PERSON,
-      action: () => {
-        navigation.navigate(screenTitle.CARD_UPDATE_CONTACT_DETAILS_SCREEN);
-      },
-    },
-    {
       title: 'Notification Settings',
       description: 'Set how you want to get notified',
       image: AppImages.NOTIFICATION_BELL,
@@ -127,6 +179,14 @@ export default function GlobalOptions() {
         navigation.navigate(screenTitle.CARD_NOTIFICATION_SETTINGS, {
           currentCardProvider: cardProvider,
         });
+      },
+    },
+    {
+      title: 'Personal Information',
+      description: 'Update personal information for your account',
+      image: AppImages.PERSON,
+      action: () => {
+        navigation.navigate(screenTitle.CARD_UPDATE_CONTACT_DETAILS_SCREEN);
       },
     },
     {
@@ -177,6 +237,83 @@ export default function GlobalOptions() {
             <CyDView className='px-[12px]'>
               {cardGlobalOptions.map((option, index) => {
                 const { image, title, description, action } = option;
+
+                if (title === 'Telegram Bot') {
+                  return (
+                    <CyDView
+                      key={index}
+                      className='bg-white rounded-[8px] mt-[16px]'>
+                      <CyDTouchView
+                        onPress={() => {
+                          if (!isTelegramLinked) {
+                            void action();
+                          }
+                        }}
+                        className='flex flex-row justify-between items-center m-[12px]'>
+                        <CyDView className='flex flex-row items-center w-[90%]'>
+                          <CyDFastImage
+                            source={image}
+                            className={'h-[24px] w-[24px] mr-[8px]'}
+                            resizeMode={'contain'}
+                          />
+                          <CyDView className='flex flex-col justify-between flex-1 px-[6px]'>
+                            <CyDText className='text-[16px] font-medium text-base400'>
+                              {title}
+                            </CyDText>
+                            <CyDText className='text-[12px] font-medium text-n50 flex-wrap'>
+                              {description}
+                            </CyDText>
+                          </CyDView>
+                        </CyDView>
+                        {!isTelegramLinked && (
+                          <CyDView>
+                            <CyDText className='font-semibold text-blue-700 text-[12px]'>
+                              {'Setup'}
+                            </CyDText>
+                          </CyDView>
+                        )}
+                      </CyDTouchView>
+                      {isTelegramLinked && (
+                        <>
+                          <CyDTouchView
+                            onPress={() => {
+                              navigation.navigate(
+                                screenTitle.TELEGRAM_PIN_SETUP,
+                              );
+                            }}
+                            className='flex flex-row justify-between items-center border-t border-n30 p-[12px]'>
+                            <CyDView className='flex flex-row items-center w-[90%]'>
+                              <CyDView className='flex flex-col justify-between flex-1 px-[6px]'>
+                                <CyDText className='text-[16px] font-medium text-base400'>
+                                  {'Reset Telegram Pin'}
+                                </CyDText>
+                              </CyDView>
+                            </CyDView>
+                            <CyDFastImage
+                              source={AppImages.RIGHT_ARROW}
+                              className='h-[24px] w-[24px] mr-[8px]'
+                              resizeMode={'contain'}
+                            />
+                          </CyDTouchView>
+                          <CyDTouchView
+                            onPress={() => {
+                              void disconnectTelegram();
+                            }}
+                            className='flex flex-row justify-between items-center border-t border-n30 p-[12px]'>
+                            <CyDView className='flex flex-row items-center w-[90%]'>
+                              <CyDView className='flex flex-col justify-between flex-1 px-[6px]'>
+                                <CyDText className='text-[16px] font-medium text-red-700'>
+                                  {'Disconnect Telegram'}
+                                </CyDText>
+                              </CyDView>
+                            </CyDView>
+                          </CyDTouchView>
+                        </>
+                      )}
+                    </CyDView>
+                  );
+                }
+
                 return (
                   <CyDTouchView
                     key={index}
