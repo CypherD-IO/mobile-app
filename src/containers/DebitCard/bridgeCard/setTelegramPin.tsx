@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useRef, useEffect } from 'react';
 import { StyleSheet } from 'react-native';
 import {
   CyDImage,
@@ -30,6 +30,7 @@ import {
 } from '@react-navigation/native';
 import AppImages from '../../../../assets/images/appImages';
 import { countBy } from 'lodash';
+import { PinInput } from '../../../components/v2/pinInput';
 
 interface RouteParams {
   currentCardProvider: CardProviders;
@@ -42,6 +43,7 @@ export default function SetTelegramPin() {
   const { showModal, hideModal } = useGlobalModalContext();
   const [loading, setLoading] = useState<boolean>(false);
   const { keyboardHeight } = useKeyboard();
+  const [showErrors, setShowErrors] = useState(false);
 
   const onModalHide = (type = '') => {
     hideModal();
@@ -69,14 +71,14 @@ export default function SetTelegramPin() {
         void onPinSet();
       },
       triggerOTPParam: 'tg-set-pin',
-      verifyOTPPayload: { pin: changePinFormik.values.pin },
+      verifyOTPPayload: { pin: changePinFormik.values.pin.join('') },
     });
   };
 
   const ActivateCardHeader = () => {
     return (
-      <CyDView className='px-[20px] mt-[16px]'>
-        <CyDText className={'text-[15px] font-bold mt-[3px]'}>
+      <CyDView className='mt-[6px]'>
+        <CyDText className={'text-[14px] font-medium text-[#6B788E]'}>
           {t<string>('SET_TELEGRAM_PIN_DESCRIPTION')}
         </CyDText>
       </CyDView>
@@ -94,14 +96,15 @@ export default function SetTelegramPin() {
 
   const cardValidationSchemaRc = yup.object({
     pin: yup
-      .string()
-      .matches(/^\d{6}$/, 'Only 6 digits accepted')
+      .array()
+      .of(yup.string().matches(/^\d$/, 'Only digits accepted'))
+      .length(6, 'Must be exactly 6 digits')
       .test(
         'two-consecutive-numbers',
         'Only two consecutive numbers accepted at most',
         value => {
           if (value) {
-            const digits = value.split('').map(Number);
+            const digits = value.map(Number);
             let consecutiveCount = 0;
             for (let i = 1; i < digits.length; i++) {
               if (digits[i] === digits[i - 1] + 1) {
@@ -118,7 +121,7 @@ export default function SetTelegramPin() {
         'two-repeated-numbers',
         'Only two repeated numbers in a row accepted at most',
         value => {
-          return value ? !/(\d)\1{2,}/.test(value) : false;
+          return value ? !/(\d)\1{2,}/.test(value.join('')) : false;
         },
       )
       .test(
@@ -135,14 +138,15 @@ export default function SetTelegramPin() {
         },
       ),
     confirmPin: yup
-      .string()
-      .matches(/^\d{6}$/, 'Only 6 digits accepted')
+      .array()
+      .of(yup.string().matches(/^\d$/, 'Only digits accepted'))
+      .length(6, 'Must be exactly 6 digits')
       .test(
         'two-consecutive-numbers',
         'Only two consecutive numbers accepted at most',
         value => {
           if (value) {
-            const digits = value.split('').map(Number);
+            const digits = value.map(Number);
             let consecutiveCount = 0;
             for (let i = 1; i < digits.length; i++) {
               if (digits[i] === digits[i - 1] + 1) {
@@ -159,7 +163,7 @@ export default function SetTelegramPin() {
         'two-repeated-numbers',
         'Only two repeated numbers in a row accepted at most',
         value => {
-          return value ? !/(\d)\1{2,}/.test(value) : false;
+          return value ? !/(\d)\1{2,}/.test(value.join('')) : false;
         },
       )
       .test(
@@ -176,25 +180,51 @@ export default function SetTelegramPin() {
         },
       )
       .test('pins-match', 'Pins must match', function (value) {
-        return this.parent.pin === value;
+        return JSON.stringify(this.parent.pin) === JSON.stringify(value);
       }),
   });
 
   const changePinFormik = useFormik({
     initialValues: {
-      pin: '',
-      confirmPin: '',
+      pin: ['', '', '', '', '', ''],
+      confirmPin: ['', '', '', '', '', ''],
     },
     validationSchema: cardValidationSchemaRc,
     onSubmit: values => {
+      const joinedPin = values.pin.join('');
       verifyWithOTP();
+    },
+    validate: values => {
+      const errors: { pin?: string; confirmPin?: string } = {};
+      const isValidPin = (pin: string[]) => {
+        return pin.every(digit => /^\d$/.test(digit)) && pin.length === 6;
+      };
+
+      if (!isValidPin(values.pin)) {
+        errors.pin = 'The pin must be 6 digits';
+      }
+      if (!isValidPin(values.confirmPin)) {
+        errors.confirmPin = 'The pin must be 6 digits';
+      }
+      return errors;
     },
   });
 
+  const handleConfirmPress = () => {
+    setShowErrors(true);
+    changePinFormik.setTouched({
+      pin: true,
+      confirmPin: true,
+    });
+    if (changePinFormik.isValid) {
+      changePinFormik.handleSubmit();
+    }
+  };
+
   return (
-    <CyDSafeAreaView style={{ height: keyboardHeight || '100%' }}>
-      <CyDView className='pb-[12px]'>
-        <CyDView className='flex flex-row mx-[20px]'>
+    <CyDSafeAreaView style={{ flex: 1 }}>
+      <CyDView className='flex-1 pb-[12px] bg-[#F1F0F5]'>
+        <CyDView className='flex flex-row items-center mx-[20px]'>
           <CyDTouchView
             onPress={() => {
               navigation.goBack();
@@ -204,76 +234,78 @@ export default function SetTelegramPin() {
               className='w-[32px] h-[32px]'
             />
           </CyDTouchView>
-          <CyDView className='w-[calc(100% - 40px)] mx-auto'>
-            <CyDText className='font-semibold text-black text-center -ml-[24px] text-[20px]'>
-              {t('SET_TELEGRAM_PIN')}
-            </CyDText>
-          </CyDView>
+          <CyDText className='text-black ml-[12px] text-[18px]'>
+            {t('SET_TELEGRAM_PIN')}
+          </CyDText>
         </CyDView>
-        <CyDKeyboardAwareScrollView>
+        <CyDKeyboardAwareScrollView
+          contentContainerStyle={styles.contentContainerStyle}>
           <CyDView>
-            <ActivateCardHeader />
             <CyDView className={' px-[24px] pt-[10px] mt-[14px]'}>
-              <CyDView>
-                <CyDText className={'text-[18px] font-extrabold'}>
-                  {t<string>('CARD_SET_PIN')}
+              <CyDImage
+                source={AppImages.LOCKED_ICON_BLACK}
+                className='w-[32px] h-[32px]'
+              />
+              <CyDText className='text-black mt-[6px] font-bold text-[28px]'>
+                {t('SET_TELEGRAM_PIN')}
+              </CyDText>
+              <ActivateCardHeader />
+              <CyDView className='mt-[24px]'>
+                <CyDText className={'text-[12px] text-[#6B788E]'}>
+                  {t<string>('NEW_PIN')}
                 </CyDText>
                 <CyDView className={'mt-[5px]'}>
-                  <CyDTextInput
-                    className={clsx(
-                      'h-[55px] text-center w-[100%] tracking-[2px] rounded-[5px] border-[1px] border-inputBorderColor',
-                      {
-                        'pl-[1px] pt-[2px]': isAndroid(),
-                        'tracking-[15px]': changePinFormik.values.pin !== '',
-                        'border-redCyD': !!(
-                          changePinFormik.errors.pin &&
-                          changePinFormik.touched.pin
-                        ),
-                      },
-                    )}
-                    keyboardType='numeric'
-                    placeholder='Enter Pin'
-                    placeholderTextColor={'#C5C5C5'}
-                    onChangeText={changePinFormik.handleChange('pin')}
+                  <PinInput
                     value={changePinFormik.values.pin}
-                    secureTextEntry={true}
+                    onChange={value =>
+                      changePinFormik.setFieldValue('pin', value)
+                    }
+                    error={
+                      showErrors &&
+                      !!(
+                        changePinFormik.errors.pin &&
+                        changePinFormik.touched.pin
+                      )
+                    }
+                    onBlur={() => changePinFormik.setFieldTouched('pin', true)}
+                    length={6}
                   />
                 </CyDView>
-                {!!(
-                  changePinFormik.errors.pin && changePinFormik.touched.pin
-                ) && (
-                  <CyDText className='text-redCyD'>
-                    {changePinFormik.errors.pin}
-                  </CyDText>
-                )}
+                {showErrors &&
+                  !!(
+                    changePinFormik.errors.pin && changePinFormik.touched.pin
+                  ) && (
+                    <CyDText className='text-redCyD'>
+                      {changePinFormik.errors.pin}
+                    </CyDText>
+                  )}
               </CyDView>
 
               <CyDView>
-                <CyDText className={'text-[18px] font-extrabold mt-[20px]'}>
-                  {t<string>('CARD_CONFIRM_PIN')}
+                <CyDText className={'text-[12px] mt-[20px] text-[#6B788E]'}>
+                  {t<string>('CONFIRM_PIN_TELEGRAM')}
                 </CyDText>
                 <CyDView className={'mt-[5px]'}>
-                  <CyDTextInput
-                    className={clsx(
-                      'h-[55px] text-center w-[100%] tracking-[2px] rounded-[5px] border-[1px] border-inputBorderColor',
-                      {
-                        'pl-[1px] pt-[2px]': isAndroid(),
-                        'tracking-[15px]':
-                          changePinFormik.values.confirmPin !== '',
-                        'border-redCyD': !!(
-                          changePinFormik.errors.confirmPin &&
-                          changePinFormik.touched.confirmPin
-                        ),
-                      },
-                    )}
-                    keyboardType='numeric'
-                    placeholder='Re-enter Pin'
-                    placeholderTextColor={'#C5C5C5'}
-                    onChangeText={changePinFormik.handleChange('confirmPin')}
+                  <PinInput
                     value={changePinFormik.values.confirmPin}
-                    secureTextEntry={true}
+                    onChange={value =>
+                      changePinFormik.setFieldValue('confirmPin', value)
+                    }
+                    error={
+                      showErrors &&
+                      !!(
+                        changePinFormik.errors.confirmPin &&
+                        changePinFormik.touched.confirmPin
+                      )
+                    }
+                    onBlur={() =>
+                      changePinFormik.setFieldTouched('confirmPin', true)
+                    }
+                    length={6}
                   />
-                  {!!(
+                </CyDView>
+                {showErrors &&
+                  !!(
                     changePinFormik.errors.confirmPin &&
                     changePinFormik.touched.confirmPin
                   ) && (
@@ -281,34 +313,30 @@ export default function SetTelegramPin() {
                       {changePinFormik.errors.confirmPin}
                     </CyDText>
                   )}
-                </CyDView>
               </CyDView>
 
               <CyDView className='w-full mb-[4px] mt-[12px] items-center'>
-                <CyDText className='text-[12px]'>
+                <CyDText className='text-[12px] mt-[16px] text-[#6B788E]'>
                   Only 6 digits accepted.{'\n'}
                   Only two consecutive numbers accepted at most (eg: 124758){' '}
                   {'\n'}
                   Only two repeated numbers in a row accepted at most
-                  (eg:112331)
+                  (eg:115337)
                 </CyDText>
               </CyDView>
             </CyDView>
           </CyDView>
-          <CyDView className='w-full mb-[4px] mt-[12px] items-center'>
-            <Button
-              title={t('CONFIRM')}
-              disabled={
-                changePinFormik.values.pin === '' ||
-                changePinFormik.values.confirmPin === ''
-              }
-              onPress={changePinFormik.handleSubmit}
-              type={ButtonType.PRIMARY}
-              loading={loading}
-              style='h-[60px] w-[90%]'
-            />
-          </CyDView>
         </CyDKeyboardAwareScrollView>
+        <CyDView className='w-full mb-[4px] mt-[12px] px-[20px]'>
+          <Button
+            title={t('CONFIRM')}
+            disabled={showErrors && !changePinFormik.isValid}
+            onPress={handleConfirmPress}
+            type={ButtonType.PRIMARY}
+            loading={loading}
+            style='h-[60px] w-full'
+          />
+        </CyDView>
       </CyDView>
     </CyDSafeAreaView>
   );

@@ -1,5 +1,6 @@
+import React, { useRef, useState, useEffect } from 'react';
+import { TextInput, StyleSheet } from 'react-native';
 import clsx from 'clsx';
-import React, { useEffect, useState } from 'react';
 import { isAndroid } from '../../misc/checkers';
 import { t } from 'i18next';
 import {
@@ -11,7 +12,7 @@ import {
 import { OTP_CALLBACK_TIMEOUT } from '../../constants/timeOuts';
 import AppImages from '../../../assets/images/appImages';
 import Button from '../../components/v2/button';
-import { StyleSheet } from 'react-native';
+
 interface InputProps {
   pinCount: number;
   getOtp: (code: string) => void;
@@ -34,20 +35,22 @@ function OtpInput({
   const [otp, setOTP] = useState<string>('');
   const [securedEntry, setSecuredEntry] = useState<boolean>(true);
   const [isLoading, setIsLoading] = useState(false);
+  const inputRef = useRef<TextInput>(null);
 
   useEffect(() => {
-    if (!showButton) {
-      if (otp?.length === pinCount) {
-        setTimeout(() => {
-          getOtp(otp);
-        }, OTP_CALLBACK_TIMEOUT);
-      }
+    if (!showButton && otp.length === pinCount) {
+      setTimeout(() => {
+        getOtp(otp);
+      }, OTP_CALLBACK_TIMEOUT);
     }
-  }, [otp]);
+  }, [otp, pinCount, showButton, getOtp]);
 
   const toggleSecuredEntry = () => {
-    const securedEntryStatus = securedEntry;
-    setSecuredEntry(!securedEntryStatus);
+    setSecuredEntry(!securedEntry);
+  };
+
+  const handleChange = (text: string) => {
+    setOTP(text);
   };
 
   return (
@@ -55,9 +58,9 @@ function OtpInput({
       <CyDView
         className={
           'flex flex-row justify-between items-center rounded-[5px] border-[1px] border-inputBorderColor'
-        }
-      >
+        }>
         <CyDTextInput
+          ref={inputRef}
           className={clsx('h-[55px] text-center w-[100%] tracking-[5px]', {
             'pl-[1px] pt-[2px]': isAndroid(),
             'tracking-[15px]': otp !== '',
@@ -67,43 +70,25 @@ function OtpInput({
           placeholder={placeholder}
           placeholderTextColor={'#C5C5C5'}
           secureTextEntry={showSecuredEntryToggle && securedEntry}
-          onChangeText={(num) => setOTP(num)}
+          onChangeText={handleChange}
           value={otp}
           maxLength={pinCount}
         />
         {showSecuredEntryToggle && (
           <CyDView className={'items-end'}>
-            {securedEntry && (
-              <CyDTouchView
-                onPress={() => {
-                  toggleSecuredEntry();
-                }}
-              >
-                <CyDImage
-                  source={AppImages.EYE_OPEN}
-                  className={'w-[27px] h-[18px] mr-[12px]'}
-                />
-              </CyDTouchView>
-            )}
-            {!securedEntry && (
-              <CyDTouchView
-                onPress={() => {
-                  toggleSecuredEntry();
-                }}
-              >
-                <CyDImage
-                  source={AppImages.EYE_CLOSE}
-                  className={'w-[27px] h-[20px] mr-[12px]'}
-                />
-              </CyDTouchView>
-            )}
+            <CyDTouchView onPress={toggleSecuredEntry}>
+              <CyDImage
+                source={securedEntry ? AppImages.EYE_OPEN : AppImages.EYE_CLOSE}
+                className={'w-[27px] h-[18px] mr-[12px]'}
+              />
+            </CyDTouchView>
           </CyDView>
         )}
       </CyDView>
       {showButton && (
         <CyDView>
           <Button
-            disabled={otp?.length !== pinCount}
+            disabled={otp.length !== pinCount}
             onPress={() => {
               setIsLoading(loader);
               getOtp(otp);

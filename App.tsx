@@ -142,6 +142,10 @@ function App() {
             screenToNavigate: screenTitle.I_HAVE_REFERRAL_CODE_SCREEN,
           });
           void referralLinkAnalytics(referralCode);
+        } else if (url.includes('/card/telegramPinSetup')) {
+          setDeepLinkData({
+            screenToNavigate: screenTitle.TELEGRAM_PIN_SETUP,
+          });
         }
       }
       return null;

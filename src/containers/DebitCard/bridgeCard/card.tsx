@@ -187,7 +187,7 @@ export default function CardScreen({
     return (
       <CyDImageBackground
         style={{ width: 300, height: 190 }}
-        className={clsx('flex flex-col self-center', {
+        className={clsx('flex flex-col self-center shadow-md', {
           'justify-center items-center': [
             CardStatus.IN_ACTIVE,
             CardStatus.HIDDEN,
@@ -258,7 +258,7 @@ export default function CardScreen({
           card.status !== CardStatus.RC_UPGRADABLE &&
           card.status !== CardStatus.COMING_SOON &&
           cardProfile.provider === CardProviders.REAP_CARD && (
-            <CyDView className='absolute bottom-[24px] left-[24px]'>
+            <CyDView className='absolute bottom-[14px] left-[14px]'>
               <CyDText className='font-semibold text-[14px]'>
                 {' xxxx ' + card.last4}
               </CyDText>
