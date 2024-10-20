@@ -3,13 +3,22 @@ import {
   waitForTransactionReceipt,
   getChainId,
   switchChain,
+  estimateGas,
+  getGasPrice,
+  getWalletClient,
 } from '@wagmi/core';
-import { useWalletInfo } from '@web3modal/wagmi-react-native';
+import { useWalletInfo } from '@reown/appkit-wagmi-react-native';
 import { get } from 'lodash';
 import { useContext } from 'react';
 import Toast from 'react-native-toast-message';
-import { useSendTransaction, useSwitchChain, useWriteContract } from 'wagmi';
-import { wagmiConfig } from '../../components/wagmiConfigBuilder';
+import {
+  useEstimateGas,
+  useSendTransaction,
+  useSwitchChain,
+  useWriteContract,
+  useWalletClient,
+} from 'wagmi';
+import { wagmiConfig, walletClient } from '../../components/wagmiConfigBuilder';
 import { ConnectionTypes } from '../../constants/enum';
 import { walletConnectChainData } from '../../constants/server';
 import { getConnectionType } from '../../core/asyncStorage';
@@ -29,16 +38,30 @@ import { useGlobalModalContext } from '../../components/v2/GlobalModal';
 import { MODAL_HIDE_TIMEOUT_250 } from '../../core/Http';
 import { useNavigation } from '@react-navigation/native';
 import { Linking, Platform } from 'react-native';
+import {
+  mainnet,
+  polygon,
+  optimism,
+  arbitrum,
+  avalanche,
+  bsc,
+  base,
+  polygonZkEvm,
+  aurora,
+  moonbeam,
+  moonriver,
+} from 'viem/chains';
+import { TransactionResponse } from '@ethersproject/abstract-provider';
+import { createWalletClient, http } from 'viem';
 
 export default function useEthSigner() {
   const hdWalletContext = useContext<any>(HdWalletContext);
   const { switchChainAsync } = useSwitchChain();
-  const { sendTransactionAsync } = useSendTransaction();
+  const { sendTransactionAsync, sendTransaction } = useSendTransaction();
   const { writeContractAsync } = useWriteContract();
   const { walletInfo } = useWalletInfo();
   const { showModal, hideModal } = useGlobalModalContext();
   const navigation = useNavigation();
-
   const getTransactionReceipt = async (
     hash: `0x${string}`,
     chain: number,
@@ -65,24 +88,26 @@ export default function useEthSigner() {
     );
   };
 
-  // used To Send NativeCoins and to make any contact execution with contract data
   async function sendNativeCoin({
     transactionToBeSigned,
     chainId,
   }: {
     transactionToBeSigned: EthTransaction;
     chainId: number;
-  }) {
-    const response = await sendTransactionAsync({
-      account: transactionToBeSigned.from as `0x${string}`,
-      to: transactionToBeSigned.to as `0x${string}`,
-      chainId,
-      value: BigInt(transactionToBeSigned.value),
-      ...(transactionToBeSigned?.data
-        ? { data: transactionToBeSigned?.data }
-        : {}),
-    });
-    return response;
+  }): Promise<TransactionResponse> {
+    try {
+      const response = await sendTransactionAsync({
+        account: transactionToBeSigned.from as `0x${string}`, // eg: 0x1940821a0875867d32de4d6da184574cafbdc491
+        to: transactionToBeSigned.to as `0x${string}`, // eg: 0x1940821a0875867d32de4d6da184574cafbdc491
+        chainId: chainId, // eg: 137
+        value: BigInt(transactionToBeSigned.value), // eg: 1000000000000000
+        data: transactionToBeSigned?.data ?? '0x', // eg: 0x
+      });
+      return response;
+    } catch (e) {
+      console.log('error in sendNativeCoin : ', e);
+      throw e;
+    }
   }
 
   async function sendToken({
@@ -308,6 +333,15 @@ export default function useEthSigner() {
             });
           }, 2000);
         }
+        // else {
+        //   setTimeout(() => {
+        //     showModal('state', {
+        //       type: 'info',
+        //       title: `Navigate to ${walletInfo?.name} to sign the transaction`,
+        //       onSuccess: hideModal,
+        //     });
+        //   }, 2000);
+        // }
         if (transactionToBeSigned.contractParams) {
           hash = await sendToken({
             transactionToBeSigned,

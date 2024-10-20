@@ -160,7 +160,6 @@ export default function useTransactionManager() {
           web3.utils.toWei(priorityFee.toFixed(9), 'gwei'),
         );
       }
-
       const hash = await signEthTransaction({
         web3,
         sendChain: chain,
