@@ -280,8 +280,13 @@ export default function BridgeFundCardScreen({ route }: { route: any }) {
   };
 
   const fundCard = async () => {
-    const { contractAddress, coinGeckoId, contractDecimals, chainDetails } =
-      selectedToken as Holding;
+    const {
+      contractAddress,
+      coinGeckoId,
+      contractDecimals,
+      chainDetails,
+      denom,
+    } = selectedToken as Holding;
     setLoading(true);
     Keyboard.dismiss();
     if (chainDetails.chainName === ChainNames.ETH) {
@@ -351,6 +356,7 @@ export default function BridgeFundCardScreen({ route }: { route: any }) {
           chain: chainDetails.backendName,
           amount: Number(amountToQuote),
           coinId: coinGeckoId,
+          tokenAddress: denom,
           amountInCrypto: isCrpytoInput,
         };
         const response = await postWithAuth(
