@@ -673,7 +673,7 @@ export function PortfolioStackScreen() {
   );
 }
 
-export function DebitCardStackScreen() {
+export function DebitCardStackScreen({ route }) {
   const { keyboardHeight } = useKeyboard();
   const portfolioStackScreenHeaderTitleStyles: StyleProp<
     Pick<TextStyle, 'fontFamily' | 'fontSize' | 'fontWeight'> & {
@@ -685,8 +685,11 @@ export function DebitCardStackScreen() {
     fontSize: 20,
     fontWeight: '800',
   };
+  const initialRouteName =
+    route.params?.screenToNavigate || screenTitle.DEBIT_CARD_SCREEN;
+
   return (
-    <FundCardStack.Navigator initialRouteName={screenTitle.DEBIT_CARD_SCREEN}>
+    <FundCardStack.Navigator initialRouteName={initialRouteName}>
       <FundCardStack.Screen
         name={screenTitle.DEBIT_CARD_SCREEN}
         component={DebitCardScreen}
@@ -905,14 +908,7 @@ export function DebitCardStackScreen() {
         name={screenTitle.BRIDGE_CARD_REVEAL_AUTH_SCREEN}
         component={CardRevealAuthScreen}
         options={({ navigation }) => ({
-          headerTransparent: false,
-          headerShadowVisible: false,
-          title: '',
-          headerTitleAlign: 'center',
-          headerTitleStyle: portfolioStackScreenHeaderTitleStyles,
-          headerTintColor: Colors.primaryTextColor,
-          headerBackTitleVisible: false,
-          headerLeft: () => defaultHeaderLeft(navigation, keyboardHeight),
+          headerShown: false,
         })}
       />
 

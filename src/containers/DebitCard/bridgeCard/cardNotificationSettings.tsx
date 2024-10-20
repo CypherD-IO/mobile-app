@@ -30,6 +30,7 @@ import {
   useNavigation,
   useRoute,
 } from '@react-navigation/native';
+import clsx from 'clsx';
 
 interface RouteParams {
   currentCardProvider: CardProviders;
@@ -54,29 +55,29 @@ export default function CardNotificationSettings() {
     email: get(cardProfile, ['cardNotification', 'isEmailAllowed'], true),
     sms: get(cardProfile, ['cardNotification', 'isSmsAllowed'], true),
     fcm: get(cardProfile, ['cardNotification', 'isFcmAllowed'], true),
-    telegram: get(
-      cardProfile,
-      ['cardNotification', 'isTelegramAllowed'],
-      false,
-    ),
+    telegram:
+      get(cardProfile, ['isTelegramSetup'], false) &&
+      get(cardProfile, ['cardNotification', 'isTelegramAllowed'], false),
   });
   const [isOTPTriggered, setIsOTPTriggered] = useState<boolean>(false);
   const [sendingOTP, setSendingOTP] = useState(false);
   const [resendInterval, setResendInterval] = useState(0);
   const [timer, setTimer] = useState<NodeJS.Timer>();
   const { getWalletProfile } = useCardUtilities();
+  const [isTelegramSetup, setIsTelegramSetup] = useState(
+    get(cardProfile, ['isTelegramSetup'], false),
+  );
 
   useEffect(() => {
     setCurrentNotificationOption({
       email: get(cardProfile, ['cardNotification', 'isEmailAllowed'], true),
       sms: get(cardProfile, ['cardNotification', 'isSmsAllowed'], true),
       fcm: get(cardProfile, ['cardNotification', 'isFcmAllowed'], true),
-      telegram: get(
-        cardProfile,
-        ['cardNotification', 'isTelegramAllowed'],
-        false,
-      ),
+      telegram:
+        get(cardProfile, ['isTelegramSetup'], false) &&
+        get(cardProfile, ['cardNotification', 'isTelegramAllowed'], false),
     });
+    setIsTelegramSetup(get(cardProfile, ['isTelegramSetup'], false));
   }, [globalContext]);
 
   useEffect(() => {
@@ -296,7 +297,7 @@ export default function CardNotificationSettings() {
     } else {
       switch (cardNotificationType) {
         case CARD_NOTIFICATION_TYPES.TELEGRAM:
-          navigation.navigate(screenTitle.TELEGRAM_SETUP_SETTINGS, {});
+          void toggleTelegramNotifiction();
           break;
         case CARD_NOTIFICATION_TYPES.EMAIL:
           void toggleEmailNotifiction();
@@ -316,7 +317,11 @@ export default function CardNotificationSettings() {
     <CyDView className='h-full bg-white pt-[30px]'>
       {!isOTPTriggered && (
         <>
-          <CyDView className='flex flex-row justify-between align-center mx-[20px] pb-[15px] border-b-[1px] border-sepratorColor'>
+          <CyDView
+            className={clsx(
+              'flex flex-row justify-between align-center mx-[20px] pb-[15px] border-b-[1px] border-sepratorColor',
+              !isTelegramSetup && 'opacity-50',
+            )}>
             <CyDView>
               <CyDText className='text-[16px] font-bold'>
                 {t<string>('TELEGRAM_NOTIFICATION')}
@@ -332,11 +337,14 @@ export default function CardNotificationSettings() {
             ) : (
               <CyDSwitch
                 onValueChange={() => {
-                  void handleToggleNotifications(
-                    CARD_NOTIFICATION_TYPES.TELEGRAM,
-                  );
+                  if (isTelegramSetup) {
+                    void handleToggleNotifications(
+                      CARD_NOTIFICATION_TYPES.TELEGRAM,
+                    );
+                  }
                 }}
                 value={currentNotificationOption.telegram}
+                disabled={!isTelegramSetup}
               />
             )}
           </CyDView>
