@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import {
+  CyDImage,
   CyDSafeAreaView,
   CyDText,
   CyDTouchView,
@@ -231,7 +232,7 @@ export default function CardRevealAuthScreen() {
 
   const OTPHeader = () => {
     return (
-      <CyDView>
+      <CyDView className='mt-[16px]'>
         <CyDText className={'text-[25px] font-extrabold'}>
           {t<string>('ENTER_AUTHENTICATION_CODE')}
         </CyDText>
@@ -264,6 +265,15 @@ export default function CardRevealAuthScreen() {
   return (
     <CyDSafeAreaView>
       <CyDView className={'h-full bg-[#F1F0F5] px-[20px] pt-[10px]'}>
+        <CyDTouchView
+          onPress={() => {
+            navigation.goBack();
+          }}>
+          <CyDImage
+            source={AppImages.BACK_ARROW_GRAY}
+            className='w-[32px] h-[32px]'
+          />
+        </CyDTouchView>
         <OTPHeader />
         <CyDView>
           {!verifyingOTP && (
