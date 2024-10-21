@@ -1022,8 +1022,7 @@ const resources = {
       PROCEED_TO_PAY: 'PROCEED TO PAY',
       UPGRADE_PHYSICAL_CARD: 'Upgrade to Physical Card',
       BALANCE_CAPITAL_FIRST_LETTER: 'Balance',
-      TRANSACTION_YET_TO_BE_SETTLED:
-        'This transaction is yet to be settled on the merchant side',
+      TRANSACTION_YET_TO_BE_SETTLED: 'Pending settlement',
       TRANSACTION_SETTLEMENT_AMOUNT:
         '*The transaction amount is subject to adjustment based on fluctuations in forex rates at the time of final settlement',
       VIRTUAL_CARD_CANCEL:
@@ -1066,7 +1065,7 @@ const resources = {
       TOGGLE_TELEGRAM_NOTIFICATION_SUCCESS:
         'Telegram Notification Status Update Success',
       TELEGRAM_NOTIFICATION_TURNED_ON:
-        'Authentication Successful. CypherHQBot is added to your telegram',
+        'Telegram Notifications turned on Successfully',
       TELEGRAM_NOTIFICATION_TURNED_OFF:
         'Telegram Notifications turned off Successfully',
       ERROR_IN_TOGGLE_TELEGRAM: 'Telegram Notification Status Update Failed',
@@ -1171,7 +1170,7 @@ const resources = {
       GET_YOUR_CARD_SUB: 'Here is  what you need to do next',
       ENTER_BASIC_DETAILS: 'Enter your Basic Details',
       CHECK_COUNTRY_SUPPORTED: 'Check if your country is supported',
-      ENTER_DELIVERY_ADDRESS: 'Enter your delivery Address',
+      ENTER_BILLING_ADDRESS: 'Enter your billing Address',
       EMAIL_VERIFICATION: 'Email verification',
       TELEGRAM_SETUP: 'Setup Telegram',
       UPDATE_INDENTITY: 'Update your Identity',
@@ -1335,6 +1334,60 @@ const resources = {
       BILLED_AMOUNT: 'Billed Amount',
       TRANSACTION_AMOUNT: 'Transaction Amount',
       ACCOUNT_OPTIONS: 'Account Options',
+      DIDNT_RECEIVE_OTP: "Didn't received the OTP? Try",
+      VERIFY_OTP: 'Verify OTP',
+      CHANGE_EMAIL: 'Change Email',
+      ENTER_NEW_EMAIL: 'Enter new email',
+      UPDATE_EMAIL: 'Update Email',
+      EMAIL_UPDATE_SUCCESS: 'Email updated successfully',
+      EMAIL_UPDATE_FAILED: 'Unable to update email',
+      TELEGRAM_DESCRIPTION:
+        'Telegram is required for setting up your Cypher card, as all communications, including transaction alerts and 3D Secure OTPs, will be sent through the app.',
+      CONNECTION_STATUS: 'Connection Status',
+      CONNECTED: 'Connected',
+      NOT_CONNECTED: 'Not Connected',
+      REFRESH: 'Refresh',
+      OTP_VERIFICATION_FAILED: 'OTP Verification Failed',
+      IDENTITY_VERIFICATION: 'Identity Verification',
+      KYC_INITIATED: 'Verification Pending',
+      KYC_PENDING: 'Verification In-Progress',
+      KYC_STATUS_UNKNOWN: 'Verification Status Unknown',
+      COMPLETION_PENDING: 'Contact support',
+      KYC_INITIATED_DESCRIPTION:
+        'To initiate your application, please tap the button below and you will be redirected to the KYC page, if you are not redirected automatically you can verify using the link sent to your registered email.',
+      KYC_PENDING_DESCRIPTION:
+        'We are still reviewing your application. Please wait for our team to review it.',
+      KYC_SUCCESSFUL_DESCRIPTION:
+        'Your application has been approved. You can now proceed to the next step.',
+      KYC_FAILED_DESCRIPTION:
+        'KYC verification failed due to mismatched information, unclear document scans, or missing details.',
+      COMPLETION_PENDING_DESCRIPTION:
+        'There is a delay in processing your application. You can reach out to our support team for more details.',
+      KYC_CONTACT_SUPPORT:
+        ' Contact support at support@cypherhq.io with the error message, to proceed with your KYC.',
+      VERIFICATION_STATUS: 'Verification Status',
+      IN_PROGRESS: 'In Progress',
+      EDIT_APPLICATION: 'Edit Application',
+      EDIT_APPLICATION_DESCRIPTION:
+        'You can edit your application details before initiating the KYC process.',
+      EDIT_APPLICATION_DESCRIPTION_RETRY:
+        'You can edit your application details and retry the KYC process.',
+      REASON: 'Reason',
+      KYC_SUCCESSFUL: 'KYC Successful',
+      BILLING_ADDRESS_TITLE: 'Billing Address',
+      SETUP_LATER: 'Setup later',
+      TRANSACTION_ID_COPIED: 'Transaction ID copied',
+      LOAD_FEE: 'Load Fee',
+      SET_TELEGRAM_PIN: 'Set Telegram PIN',
+      SET_TELEGRAM_PIN_DESCRIPTION:
+        'This PIN will be used to authorise your activities on telegram for Eg-Revealing card details',
+      DISABLE_LOCKDOWN: 'Disable Lockdown',
+      WITHDRAWAL_REASONS: 'Withdrawal Reasons',
+      CRYPTO_WITHDRAWAL: 'Crypto Withdrawal',
+      LIMITATIONS_AROUND_CRYPTO_WITHDRAWAL:
+        'Limitations around crypto withdrawal',
+      NEW_PIN: 'New PIN',
+      CONFIRM_PIN_TELEGRAM: 'Confirm PIN',
     },
   },
 };

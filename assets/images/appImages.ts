@@ -429,8 +429,8 @@ const DOMESTIC_ICON = {
 const INTERNATIONAL_ICON = {
   uri: `${S3_BUCKET_URL_ICONS}/internationalIcon.png`,
 };
-const RC_PHYSICAL = require('./rcPhysical.png');
-const RC_VIRTUAL = require('./rcVirtual.png');
+const RC_PHYSICAL = require('./rcPhysicalCard.png');
+const RC_VIRTUAL = require('./rcVirtualCard.png');
 const LOCKDOWN_MODE_ICON = {
   uri: `${S3_BUCKET_URL_ICONS}/lockdownModeIcon.png`,
 };
@@ -652,8 +652,24 @@ const MULTIPLE_CARDS = {
 const PREMIUM_LABEL = {
   uri: `${S3_BUCKET_URL_ICONS}/premiumLabel.png`,
 };
+const KYC_VERIFICATION_PENDING = {
+  uri: `${S3_BUCKET_URL_ICONS}/kycVerificationPending.png`,
+};
+const KYC_VERIFICATION_FAILED = {
+  uri: `${S3_BUCKET_URL_ICONS}/kycVerificationFailed.png`,
+};
+const KYC_VERIFICATION_DELAYED = {
+  uri: `${S3_BUCKET_URL_ICONS}/kycVerificationDelayed.png`,
+};
+const RC_PHYSICAL_METAL = require('./cypherMetalCard.png');
+const LOCKED_ICON_BLACK = {
+  uri: `${S3_BUCKET_URL_ICONS}/lockedIconBlack.png`,
+};
 
 const AppImages = {
+  KYC_VERIFICATION_FAILED,
+  KYC_VERIFICATION_DELAYED,
+  KYC_VERIFICATION_PENDING,
   SWITCH_OFF,
   USDC_TOKEN,
   LIST_HAMBURGER,
@@ -1099,5 +1115,7 @@ const AppImages = {
   REPLACE_VIRTUAL_CARD,
   MULTIPLE_CARDS,
   PREMIUM_LABEL,
+  RC_PHYSICAL_METAL,
+  LOCKED_ICON_BLACK,
 };
 export default AppImages;

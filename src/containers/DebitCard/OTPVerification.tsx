@@ -287,7 +287,7 @@ export default function OTPVerificationScreen({ navigation }) {
   };
 
   const isTelegramSetup = () => {
-    return get(cardProfile, ['cardNotification', 'isTelegramAllowed'], false);
+    return get(cardProfile, ['isTelegramSetup'], false);
   };
 
   const showProceedButton = () => {

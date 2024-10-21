@@ -81,8 +81,10 @@ export default function ShippingCheckout() {
 
   const onConfirm = async (otp: string) => {
     setIsVerifyingOTP(true);
+    const { line2, ...restShippingAddress } = shippingAddress;
     const payload = {
-      ...shippingAddress,
+      ...restShippingAddress,
+      ...(line2 ? { line2 } : {}),
       preferredCardName: preferredName,
       otp: Number(otp),
     };
@@ -331,6 +333,7 @@ export default function ShippingCheckout() {
             onPress={() => {
               setIsOTPModalVisible(true);
             }}
+            loading={isVerifyingOTP}
             type={ButtonType.PRIMARY}
             title={t('CONTINUE')}
             style={'h-[60px] w-full py-[10px]'}

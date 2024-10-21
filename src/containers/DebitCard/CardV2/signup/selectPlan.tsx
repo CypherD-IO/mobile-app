@@ -105,11 +105,11 @@ export default function SelectPlan() {
           showModal('state', {
             type: 'success',
             title: `You have opted for ${get(CYPHER_PLAN_ID_NAME_MAPPING, optedPlan)}`,
-            description: 'You can change your plan anytime in future',
+            description: 'You can change your plan anytime in the future',
             onSuccess: () => {
               if (toPage) navigation.navigate(toPage);
               else {
-                navigation.navigate(screenTitle.CARD_SIGNUP_SCREEN);
+                navigation.navigate(screenTitle.CARD_APPLICATION);
               }
               hideModal();
             },
@@ -173,7 +173,7 @@ export default function SelectPlan() {
             showModal('state', {
               type: 'success',
               title: `Your plan has been changed to ${get(CYPHER_PLAN_ID_NAME_MAPPING, optedPlan)} successfully`,
-              description: 'You can change your plan anytime in future',
+              description: 'You can change your plan anytime in the future',
               onSuccess: () => {
                 if (toPage) navigation.navigate(toPage);
                 else {

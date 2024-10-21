@@ -86,9 +86,12 @@ export default function BridgeFundCardScreen({ route }: { route: any }) {
     0,
   );
   const cards = get(cardProfile, currentCardProvider)?.cards;
-  const cardId: string = get(cards, currentCardIndex)?.cardId;
-  const fistLoad = cardId === 'hidden';
-  planCost = fistLoad ? planCost : 0;
+  const cardId: string = get(cards, currentCardIndex, { cardId: '' })?.cardId;
+  const shouldUpgradePlan =
+    get(cardProfile, ['planInfo', 'planId']) !==
+    get(cardProfile, ['planInfo', 'optedPlanId']);
+  planCost = shouldUpgradePlan ? planCost : 0;
+  planCost = currentCardProvider === CardProviders.PAYCADDY ? 0 : planCost;
 
   const solana = hdWallet.state.wallet.solana;
 
@@ -100,8 +103,8 @@ export default function BridgeFundCardScreen({ route }: { route: any }) {
   const [cryptoAmount, setCryptoAmount] = useState('');
   const [loading, setLoading] = useState<boolean>(false);
   const [isMaxLoading, setIsMaxLoading] = useState<boolean>(false);
-  const minTokenValueLimit = 10 + Number(planCost);
-  const minTokenValueEth = 50 + Number(planCost);
+  const minTokenValueLimit = Math.max(10, Number(planCost));
+  const minTokenValueEth = Math.max(50, Number(planCost));
   const [selectedToken, setSelectedToken] = useState<Holding>();
   const [nativeTokenBalance, setNativeTokenBalance] = useState<number>(0);
   const { getNativeToken } = usePortfolio();
@@ -144,9 +147,10 @@ export default function BridgeFundCardScreen({ route }: { route: any }) {
       symbol: selectedTokenSymbol,
       contractAddress,
       contractDecimals,
-      denom,
     } = selectedToken as Holding;
-    const nativeToken = await getNativeToken(chainDetails.backendName);
+    const nativeToken = await getNativeToken(
+      chainDetails.backendName as ChainBackendNames,
+    );
     const actualTokensRequired = parseFloat(
       limitDecimalPlaces(quote.tokensRequired, contractDecimals),
     );
@@ -158,7 +162,7 @@ export default function BridgeFundCardScreen({ route }: { route: any }) {
         if (actualTokensRequired <= actualBalance) {
           gasDetails = await estimateGasForEvm({
             web3,
-            chain: chainDetails.backendName,
+            chain: chainDetails.backendName as ChainBackendNames,
             fromAddress: ethereum.address,
             toAddress: targetWalletAddress,
             amountToSend: String(actualTokensRequired),
@@ -276,8 +280,13 @@ export default function BridgeFundCardScreen({ route }: { route: any }) {
   };
 
   const fundCard = async () => {
-    const { contractAddress, coinGeckoId, contractDecimals, chainDetails } =
-      selectedToken as Holding;
+    const {
+      contractAddress,
+      coinGeckoId,
+      contractDecimals,
+      chainDetails,
+      denom,
+    } = selectedToken as Holding;
     setLoading(true);
     Keyboard.dismiss();
     if (chainDetails.chainName === ChainNames.ETH) {
@@ -347,6 +356,7 @@ export default function BridgeFundCardScreen({ route }: { route: any }) {
           chain: chainDetails.backendName,
           amount: Number(amountToQuote),
           coinId: coinGeckoId,
+          tokenAddress: denom,
           amountInCrypto: isCrpytoInput,
         };
         const response = await postWithAuth(
@@ -462,13 +472,15 @@ export default function BridgeFundCardScreen({ route }: { route: any }) {
       const { symbol, backendName } = selectedToken.chainDetails;
       const nativeTokenSymbol = get(NativeTokenMapping, symbol) || symbol;
       const hasInSufficientGas =
-        (!GASLESS_CHAINS.includes(backendName) &&
-          nativeTokenBalance <= get(gasFeeReservation, backendName)) ||
+        (!GASLESS_CHAINS.includes(backendName as ChainBackendNames) &&
+          nativeTokenBalance <=
+            get(gasFeeReservation, backendName as ChainBackendNames)) ||
         (selectedToken?.symbol === nativeTokenSymbol &&
           Number(cryptoAmount) >
             Number(
               (
-                nativeTokenBalance - get(gasFeeReservation, backendName)
+                nativeTokenBalance -
+                get(gasFeeReservation, backendName as ChainBackendNames)
               ).toFixed(6),
             ));
       return (
@@ -519,7 +531,6 @@ export default function BridgeFundCardScreen({ route }: { route: any }) {
       chainDetails,
       actualBalance,
       symbol: selectedTokenSymbol,
-      denom,
     } = selectedToken as Holding;
 
     const nativeTokenSymbol =
@@ -533,12 +544,14 @@ export default function BridgeFundCardScreen({ route }: { route: any }) {
         // Reserving gas for the txn if the selected token is a native token.
         if (
           selectedTokenSymbol === nativeTokenSymbol &&
-          !GASLESS_CHAINS.includes(chainDetails.backendName)
+          !GASLESS_CHAINS.includes(
+            chainDetails.backendName as ChainBackendNames,
+          )
         ) {
           // Estimate the gasFee for the transaction
           const gasDetails = await estimateGasForEvm({
             web3,
-            chain: chainDetails.backendName,
+            chain: chainDetails.backendName as ChainBackendNames,
             fromAddress: ethereum.address,
             toAddress: ethereum.address,
             amountToSend: String(actualBalance),
@@ -642,7 +655,7 @@ export default function BridgeFundCardScreen({ route }: { route: any }) {
       setIsMaxLoading(true);
       if (
         selectedTokenSymbol === nativeTokenSymbol &&
-        !GASLESS_CHAINS.includes(chainDetails.backendName)
+        !GASLESS_CHAINS.includes(chainDetails.backendName as ChainBackendNames)
       ) {
         try {
           const gasDetails = {
@@ -832,8 +845,9 @@ export default function BridgeFundCardScreen({ route }: { route: any }) {
         if (Number(cryptoAmount) > Number(selectedToken?.actualBalance)) {
           errorMessage = t('INSUFFICIENT_FUNDS');
         } else if (
-          !GASLESS_CHAINS.includes(backendName) &&
-          nativeTokenBalance <= get(gasFeeReservation, backendName)
+          !GASLESS_CHAINS.includes(backendName as ChainBackendNames) &&
+          nativeTokenBalance <=
+            get(gasFeeReservation, backendName as ChainBackendNames)
         ) {
           errorMessage = String(
             `Insufficient ${String(nativeTokenSymbol)} to pay gas fee`,
@@ -843,7 +857,8 @@ export default function BridgeFundCardScreen({ route }: { route: any }) {
           Number(cryptoAmount) >
             Number(
               (
-                nativeTokenBalance - get(gasFeeReservation, backendName)
+                nativeTokenBalance -
+                get(gasFeeReservation, backendName as ChainBackendNames)
               ).toFixed(6),
             )
         ) {
@@ -970,7 +985,7 @@ export default function BridgeFundCardScreen({ route }: { route: any }) {
         minTokenValueLimit={minTokenValueLimit - Number(planCost)}
         onSelectingToken={token => {
           setIsChooseTokenVisible(false);
-          onSelectingToken(token as Holding);
+          void onSelectingToken(token as Holding);
         }}
         onCancel={() => {
           setIsChooseTokenVisible(false);
@@ -1162,12 +1177,14 @@ export default function BridgeFundCardScreen({ route }: { route: any }) {
       </CyDView>
       <CyDView>
         <CyDView className=' pt-[16px] bg-white px-[16px] pb-[24px] rounded-t-[16px]'>
-          {fistLoad && (
+          {shouldUpgradePlan && (
             <CyDView className='flex flex-row justify-between items-center mb-[16px]'>
               <CyDTouchView
                 className='flex flex-row items-center '
                 onPress={() => {
-                  navigation.navigate(screenTitle.SELECT_PLAN);
+                  navigation.navigate(screenTitle.SELECT_PLAN, {
+                    toPage: screenTitle.DEBIT_CARD_SCREEN,
+                  });
                 }}>
                 <CyDText className='font-bold text-[14px]'>
                   {get(

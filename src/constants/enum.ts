@@ -85,6 +85,8 @@ export enum CardStatus {
   CANCELLED = 'cancelled',
   EXPIRED = 'expired',
   OTHER = 'other',
+  COMING_SOON = 'coming-soon',
+  RC_UPGRADABLE = 'rcUpgradable',
 }
 
 export enum OTPType {
@@ -107,6 +109,7 @@ export enum GlobalContextType {
   IBC = 'IBC',
   IS_APP_AUTHENTICATED = 'IS_APP_AUTHENTICATED',
   PLAN_INFO = 'PLAN_INFO',
+  RESET_GLOBAL_STATE = 'RESET_GLOBAL_STATE',
 }
 
 export enum TransactionFilterTypes {

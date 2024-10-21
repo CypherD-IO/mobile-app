@@ -39,12 +39,9 @@ import AdvancedSettings from '../containers/Options/advancedSettings';
 import WalletConnectCamera from '../containers/Options/WalletConnectCamera';
 import PrivateKey from '../containers/Options/PrivateKey';
 import Onmeta from '../containers/FundCardScreen/onmeta';
-import CardSignupScreen from '../containers/DebitCard/cardSignUp';
 import LegalScreen from '../containers/legalDocs/legal';
 import { t } from 'i18next';
 import OTPVerificationScreen from '../containers/DebitCard/OTPVerification';
-import CardSignupCompleteScreen from '../containers/DebitCard/signUpComplete';
-import CardKYCStatusScreen from '../containers/DebitCard/KYCStatus';
 import CypherCardScreen from '../containers/DebitCard/CardV2';
 import CardRevealAuthScreen from '../containers/DebitCard/bridgeCard/cardRevealAuth';
 import BridgeFundCardScreen from '../containers/DebitCard/bridgeCard/fundCard';
@@ -52,7 +49,6 @@ import ChangePin from '../containers/PinAuthetication/changePin';
 import ConfirmPin from '../containers/PinAuthetication/confirmPin';
 import SetPin from '../containers/PinAuthetication/setPin';
 import PinValidation from '../containers/PinAuthetication/pinValidation';
-import UpdateCardApplicationScreen from '../containers/DebitCard/updateCardApplication';
 import HostsAndRPCScreen from '../containers/Options/hostsAndRPC';
 import { CyDFastImage, CyDTouchView } from '../styles/tailwindStyles';
 import TransactionDetails from '../containers/DebitCard/bridgeCard/transactionDetails';
@@ -76,7 +72,6 @@ import SetPinScreen from '../containers/DebitCard/bridgeCard/setPin';
 import { useKeyboard } from '../hooks/useKeyboard';
 import { DEFIOverviewScreen } from '../containers/DeFi/DEFIOverview';
 import ShippingDetailsOTPScreen from '../containers/DebitCard/CardV2/ShippingDetailsOTPScreen';
-import CardSignupConfirmation from '../containers/DebitCard/cardSignupConfirmation';
 import UpdateCardContactDetails from '../containers/DebitCard/bridgeCard/updateContactDetails';
 import { LinkedWallets } from '../containers/DebitCard/bridgeCard/linkedWallets';
 import LinkAnotherWallet from '../containers/DebitCard/bridgeCard/linkAnotherWallet';
@@ -85,7 +80,6 @@ import ImportWalletOptions from '../containers/Options/importWalletOptions';
 import CardNotificationSettings from '../containers/DebitCard/bridgeCard/cardNotificationSettings';
 import EnterPrivateKey from '../containers/Auth/EnterPrivateKey';
 import { ChooseWalletIndex } from '../containers/Auth/ChooseWalletIndex';
-import PhoneNumberVerificationScreen from '../containers/DebitCard/bridgeCard/verifyPhoneNumber';
 import CardTransactions from '../containers/DebitCard/bridgeCard/transactions';
 import TelegramSetupSettings from '../containers/DebitCard/bridgeCard/cardTelegramSetup';
 import CardQuote from '../containers/DebitCard/bridgeCard/quote';
@@ -97,17 +91,18 @@ import ThreeDSecure from '../containers/DebitCard/bridgeCard/threeDSecure';
 import LockdownMode from '../containers/DebitCard/bridgeCard/lockdownMode';
 import LockdownModeAuth from '../containers/DebitCard/bridgeCard/lockdownModeAuth';
 import CardUnlockAuth from '../containers/DebitCard/bridgeCard/cardUnlockAuth';
-import GetCardLanding from '../containers/DebitCard/CardV2/signup/getCardLanding';
 import SelectPlan from '../containers/DebitCard/CardV2/signup/selectPlan';
 import { NavigationProp, ParamListBase } from '@react-navigation/native';
 import GetYourCardInfo from '../containers/DebitCard/CardV2/signup/getYourCardInfo';
 import CardApplicationV2 from '../containers/DebitCard/CardV2/signup/application';
 import WelcomeSceens from '../containers/DebitCard/CardV2/signup/welcomeScreens';
 import Rewards from '../containers/Options/rewards';
+import OTPVerification from '../containers/DebitCard/CardV2/signup/otpVerification';
+import TelegramSetup from '../containers/DebitCard/CardV2/signup/telegramSetup';
+import KYCVerficicationV2 from '../containers/DebitCard/CardV2/signup/kycVerification';
 import MigratePCFunds from '../containers/DebitCard/CardV2/migrateFunds';
 import Bridge from '../containers/Bridge';
 import Referrals from '../containers/Options/referrals';
-import CardSignupLandingScreenV2 from '../containers/DebitCard/CardV2/signup/cardSignupLandingScreenV2';
 import IHaveReferralCodeScreen from '../containers/DebitCard/CardV2/signup/iHaveReferralCodeScreen';
 import CryptoWithdrawal from '../containers/DebitCard/CardV2/cryptoWithdrawal/cryptoWithdrawal';
 import WithdrawConfirmation from '../containers/DebitCard/CardV2/cryptoWithdrawal/withdrawConfirmation';
@@ -121,6 +116,7 @@ import ShippingConfirmation from '../containers/DebitCard/physicalCardUpgradatio
 import ShippingCheckout from '../containers/DebitCard/physicalCardUpgradation/ckeckout';
 import CardActivationConsent from '../containers/DebitCard/bridgeCard/cardActivationConsent';
 import GlobalOptions from '../containers/DebitCard/CardV2/globalOptions';
+import SetTelegramPin from '../containers/DebitCard/bridgeCard/setTelegramPin';
 
 const PortfolioStack = createNativeStackNavigator();
 const BrowserStack = createNativeStackNavigator();
@@ -677,7 +673,7 @@ export function PortfolioStackScreen() {
   );
 }
 
-export function DebitCardStackScreen() {
+export function DebitCardStackScreen({ route }) {
   const { keyboardHeight } = useKeyboard();
   const portfolioStackScreenHeaderTitleStyles: StyleProp<
     Pick<TextStyle, 'fontFamily' | 'fontSize' | 'fontWeight'> & {
@@ -689,8 +685,11 @@ export function DebitCardStackScreen() {
     fontSize: 20,
     fontWeight: '800',
   };
+  const initialRouteName =
+    route.params?.screenToNavigate || screenTitle.DEBIT_CARD_SCREEN;
+
   return (
-    <FundCardStack.Navigator initialRouteName={screenTitle.DEBIT_CARD_SCREEN}>
+    <FundCardStack.Navigator initialRouteName={initialRouteName}>
       <FundCardStack.Screen
         name={screenTitle.DEBIT_CARD_SCREEN}
         component={DebitCardScreen}
@@ -709,6 +708,14 @@ export function DebitCardStackScreen() {
         name={screenTitle.LOCKDOWN_MODE}
         component={LockdownMode}
         options={({ navigation, route }) => ({
+          headerShown: false,
+        })}
+      />
+
+      <FundCardStack.Screen
+        name={screenTitle.TELEGRAM_PIN_SETUP}
+        component={SetTelegramPin}
+        options={() => ({
           headerShown: false,
         })}
       />
@@ -789,79 +796,9 @@ export function DebitCardStackScreen() {
       />
 
       <FundCardStack.Screen
-        name={screenTitle.CARD_SIGNUP_CONFIRMATION}
-        component={CardSignupConfirmation}
-        options={({
-          navigation,
-        }: {
-          navigation: NavigationProp<ParamListBase>;
-        }) => ({
-          headerShown: true,
-          headerTransparent: false,
-          headerShadowVisible: false,
-          title: 'Cypher Card Signup',
-          navigationOptions: {
-            tabBarVisible: false,
-          },
-          headerTitleAlign: 'center',
-          headerTitleStyle: portfolioStackScreenHeaderTitleStyles,
-          headerBackVisible: false,
-          headerLeft: () => defaultHeaderLeft(navigation, keyboardHeight),
-        })}
-      />
-
-      <FundCardStack.Screen
-        name={screenTitle.CARD_SIGNUP_SCREEN}
-        component={CardSignupScreen}
+        name={screenTitle.KYC_VERIFICATION}
+        component={KYCVerficicationV2}
         options={() => ({ headerShown: false })}
-      />
-
-      <FundCardStack.Screen
-        name={screenTitle.CARD_SIGNUP_COMPLETE_SCREEN}
-        component={CardSignupCompleteScreen}
-        options={() => ({ headerShown: false })}
-      />
-
-      <FundCardStack.Screen
-        name={screenTitle.CARD_KYC_STATUS_SCREEN}
-        component={CardKYCStatusScreen}
-        options={() => ({ headerShown: false })}
-      />
-
-      <FundCardStack.Screen
-        name={screenTitle.CARD_SIGNUP_OTP_VERIFICATION_SCREEN}
-        component={OTPVerificationScreen}
-        options={() => ({ headerShown: false })}
-      />
-
-      <FundCardStack.Screen
-        name={screenTitle.PHONE_NUMBER_VERIFICATION_SCREEN}
-        component={PhoneNumberVerificationScreen}
-        options={({ navigation }) => ({
-          headerTransparent: false,
-          headerShadowVisible: false,
-          title: 'Verify Phone Number',
-          headerTitleAlign: 'center',
-          headerTitleStyle: portfolioStackScreenHeaderTitleStyles,
-          headerTintColor: Colors.primaryTextColor,
-          headerBackTitleVisible: false,
-          headerLeft: () => defaultHeaderLeft(navigation, keyboardHeight),
-        })}
-      />
-
-      <FundCardStack.Screen
-        name={screenTitle.UPDATE_CARD_APPLICATION_SCREEN}
-        component={UpdateCardApplicationScreen}
-        options={({ navigation }) => ({
-          headerTransparent: false,
-          headerShadowVisible: false,
-          title: 'Update Application',
-          headerTitleAlign: 'center',
-          headerTitleStyle: portfolioStackScreenHeaderTitleStyles,
-          headerTintColor: Colors.primaryTextColor,
-          headerBackTitleVisible: false,
-          headerLeft: () => defaultHeaderLeft(navigation, keyboardHeight),
-        })}
       />
 
       <FundCardStack.Screen
@@ -971,14 +908,7 @@ export function DebitCardStackScreen() {
         name={screenTitle.BRIDGE_CARD_REVEAL_AUTH_SCREEN}
         component={CardRevealAuthScreen}
         options={({ navigation }) => ({
-          headerTransparent: false,
-          headerShadowVisible: false,
-          title: '',
-          headerTitleAlign: 'center',
-          headerTitleStyle: portfolioStackScreenHeaderTitleStyles,
-          headerTintColor: Colors.primaryTextColor,
-          headerBackTitleVisible: false,
-          headerLeft: () => defaultHeaderLeft(navigation, keyboardHeight),
+          headerShown: false,
         })}
       />
 
@@ -1234,23 +1164,42 @@ export function DebitCardStackScreen() {
       />
 
       <FundCardStack.Screen
-        name={screenTitle.CARD_V2_WELCOME_SCREEN}
+        name={screenTitle.CARD_WELCOME_SCREEN}
         component={WelcomeSceens}
         options={{
           headerShown: false,
         }}
       />
+
       <FundCardStack.Screen
-        name={screenTitle.GET_CARD_V2}
-        component={GetCardLanding}
+        name={screenTitle.CARD_SIGNUP_OTP_VERIFICATION}
+        component={OTPVerification}
         options={({ navigation }) => ({
-          headerTransparent: false,
-          headerShadowVisible: false,
-          headerTitleAlign: 'center',
-          headerTitleStyle: portfolioStackScreenHeaderTitleStyles,
-          headerTintColor: Colors.primaryTextColor,
-          headerBackTitleVisible: false,
-          headerLeft: () => defaultHeaderLeft(navigation, keyboardHeight),
+          headerShown: false,
+        })}
+      />
+
+      <FundCardStack.Screen
+        name={screenTitle.TELEGRAM_SETUP}
+        component={TelegramSetup}
+        options={({ navigation }) => ({
+          headerShown: false,
+        })}
+      />
+
+      <FundCardStack.Screen
+        name={screenTitle.GET_YOUR_CARD}
+        component={GetYourCardInfo}
+        options={({ navigation }) => ({
+          headerShown: false,
+        })}
+      />
+
+      <FundCardStack.Screen
+        name={screenTitle.CARD_APPLICATION}
+        component={CardApplicationV2}
+        options={({ navigation }): NativeStackNavigationOptions => ({
+          headerShown: false,
         })}
       />
 
@@ -1263,14 +1212,6 @@ export function DebitCardStackScreen() {
       />
 
       <FundCardStack.Screen
-        name={screenTitle.CARD_V2_SIGNUP_LANDING_SCREEN}
-        component={CardSignupLandingScreenV2}
-        options={{
-          headerShown: false,
-        }}
-      />
-
-      <FundCardStack.Screen
         name={screenTitle.I_HAVE_REFERRAL_CODE_SCREEN}
         component={IHaveReferralCodeScreen}
         options={{
@@ -1278,31 +1219,6 @@ export function DebitCardStackScreen() {
         }}
       />
 
-      <FundCardStack.Screen
-        name={screenTitle.GET_YOUR_CARD}
-        component={GetYourCardInfo}
-        options={({ navigation }): NativeStackNavigationOptions => ({
-          headerTransparent: true,
-          headerShadowVisible: false,
-          headerTitle: '',
-          headerTintColor: Colors.primaryTextColor,
-          headerBackTitleVisible: false,
-          headerLeft: () => defaultHeaderLeft(navigation, keyboardHeight),
-        })}
-      />
-
-      <FundCardStack.Screen
-        name={screenTitle.CARD_APPLICATION_V2}
-        component={CardApplicationV2}
-        options={({ navigation }): NativeStackNavigationOptions => ({
-          headerTransparent: true,
-          headerShadowVisible: false,
-          headerTitle: '',
-          headerTintColor: Colors.primaryTextColor,
-          headerBackTitleVisible: false,
-          headerLeft: () => defaultHeaderLeft(navigation, keyboardHeight),
-        })}
-      />
       <FundCardStack.Screen
         name={screenTitle.MIGRATE_FUNDS}
         component={MigratePCFunds}
@@ -1318,6 +1234,7 @@ export function DebitCardStackScreen() {
           headerLeft: () => defaultHeaderLeft(navigation, keyboardHeight),
         })}
       />
+
       <FundCardStack.Screen
         name={screenTitle.CRYPTO_WITHDRAWAL}
         component={CryptoWithdrawal}

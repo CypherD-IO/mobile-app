@@ -41,10 +41,6 @@ const screensToHaveNavBar = [
   screenTitle.OPTIONS_SCREEN,
   screenTitle.SWAP,
   screenTitle.BRIDGE_SKIP_API_SCREEN,
-  screenTitle.CARD_SIGNUP_LANDING_SCREEN,
-  screenTitle.CARD_SIGNUP_CONFIRMATION,
-  screenTitle.CARD_SIGNUP_SCREEN,
-  screenTitle.CARD_KYC_STATUS_SCREEN,
   screenTitle.DEBIT_CARD_SCREEN,
   screenTitle.BRIDGE_CARD_SCREEN,
   screenTitle.SELECT_PLAN,
@@ -53,12 +49,15 @@ const screensToHaveNavBar = [
 ];
 
 function TabStack(props: TabStackProps) {
-  const navigation = useNavigation<NavigationProp<ParamListBase>>();
   const { deepLinkData, setDeepLinkData } = props;
   const [showTabBar, setShowTabBar] = useState(true);
   const tabBarAnimation = useState(new Animated.Value(1))[0];
 
   let backPressCount = 0;
+
+  // Use useNavigationContainerRef to get access to the navigation ref
+  const navigationRef = useNavigationContainerRef();
+  // Determine if the tab bar should be shown
 
   const handleBackButton = () => {
     if (backPressCount === 0) {
@@ -88,26 +87,26 @@ function TabStack(props: TabStackProps) {
         case screenTitle.I_HAVE_REFERRAL_CODE_SCREEN:
           tabName = screenTitle.DEBIT_CARD_SCREEN;
           break;
+        case screenTitle.TELEGRAM_PIN_SETUP:
+          tabName = screenTitle.DEBIT_CARD_SCREEN;
+          break;
         // Add more cases here for other deep link scenarios
         default:
-          console.warn(
-            `Unable to find tab for screen: ${deepLinkData.screenToNavigate}`,
-          );
+          tabName = screenTitle.PORTFOLIO_SCREEN;
       }
-
       if (tabName) {
-        navigation.navigate(tabName, {
-          screen: deepLinkData.screenToNavigate,
+        navigationRef.current?.navigate(tabName, {
+          screenToNavigate: deepLinkData.screenToNavigate,
         });
+      } else {
+        console.warn(
+          `Unable to find tab for screen: ${deepLinkData.screenToNavigate}`,
+        );
       }
 
       setDeepLinkData(null);
     }
-  }, [deepLinkData, navigation, setDeepLinkData]);
-
-  // Use useNavigationContainerRef to get access to the navigation ref
-  const navigationRef = useNavigationContainerRef();
-  // Determine if the tab bar should be shown
+  }, [deepLinkData, setDeepLinkData]);
 
   // Memoize the tab bar style
   useEffect(() => {

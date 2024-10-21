@@ -4,6 +4,7 @@ import {
   CardStatus,
   CypherPlanId,
 } from '../constants/enum';
+import { Card } from './card.model';
 
 export interface CardProfile {
   primaryEthAddress: string;
@@ -13,59 +14,40 @@ export interface CardProfile {
   apto?: {
     cardHolderId: string;
     status: CardStatus;
+    cards?: Card[];
   };
   provider?: CardProviders;
-  bc?: {
+  [CardProviders.BRIDGE_CARD]?: {
     personId?: string;
     applicationStatus: CardApplicationStatus;
-    cards?: [
-      {
-        last4: string;
-        type: string;
-        cardId: string;
-        status: CardStatus;
-      },
-    ];
+    cards?: Card[];
   };
   isAutoloadConfigured: boolean;
-  pc?: {
+  [CardProviders.PAYCADDY]?: {
     personId?: string;
     applicationStatus: CardApplicationStatus;
     phoneVerified: boolean;
     emailVerified: boolean;
-    cards?: [
-      {
-        last4: string;
-        type: string;
-        cardId: string;
-        status: CardStatus;
-      },
-    ];
+    cards?: Card[];
     isPhysicalCardEligible: boolean;
     physicalCardUpgradationFee: number | string;
     isRcUpgradable?: boolean;
   };
-  rc?: {
+  [CardProviders.REAP_CARD]?: {
     personId?: string;
     applicationStatus: CardApplicationStatus;
     phoneVerified: boolean;
     emailVerified: boolean;
-    cards?: [
-      {
-        last4: string;
-        type: string;
-        cardId: string;
-        status: CardStatus;
-      },
-    ];
+    cards?: Card[];
     isPhysicalCardEligible: boolean;
     physicalCardUpgradationFee: number | string;
     isRcUpgradable?: boolean;
   };
-  solid?: {
+  [CardProviders.SOLID]?: {
     applicationStatus: CardApplicationStatus;
     cardStatus?: CardStatus;
     personId: string;
+    cards?: Card[];
   };
   lifetimeAmountUsd: number;
   physicalCardEligibilityLimit: number;
@@ -77,4 +59,5 @@ export interface CardProfile {
     updatedOn: number;
     expiresOn: number;
   };
+  telegramId: string | null;
 }

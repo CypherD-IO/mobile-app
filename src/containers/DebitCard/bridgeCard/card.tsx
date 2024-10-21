@@ -141,7 +141,11 @@ export default function CardScreen({
           ...userCardDetails,
           hideCardDetails: true,
           showCVVAndExpiry: false,
-          cards: orderBy(cardConfig.cards, 'type', 'asc'),
+          cards: orderBy(
+            cardConfig?.cards,
+            card => (card.status === CardStatus.ACTIVE ? 0 : 1),
+            'asc',
+          ),
           personId: cardConfig.personId,
           currentCardRevealedDetails: {
             cardNumber: 'XXXX XXXX XXXX ',
@@ -160,12 +164,15 @@ export default function CardScreen({
   const getCardImage = (card: Card) => {
     if (currentCardProvider === CardProviders.REAP_CARD) {
       if (card.type === CardType.PHYSICAL) {
+        if (card.cardId === 'metal-card') {
+          return AppImages.RC_PHYSICAL_METAL;
+        }
         return AppImages.RC_PHYSICAL;
       } else {
         return AppImages.RC_VIRTUAL;
       }
     } else {
-      if (card.status === 'rcUpgradable') {
+      if (card.status === CardStatus.RC_UPGRADABLE) {
         return AppImages.RC_VIRTUAL;
       } else if (card.type === CardType.PHYSICAL) {
         return AppImages.PHYSICAL_CARD_MASTER;
@@ -180,17 +187,21 @@ export default function CardScreen({
     return (
       <CyDImageBackground
         style={{ width: 300, height: 190 }}
-        className={clsx('flex flex-col self-center', {
-          'justify-center items-center':
-            card.status === CardStatus.IN_ACTIVE ||
-            card.status === CardStatus.HIDDEN ||
-            card.status === CardStatus.BLOCKED ||
-            card.status === 'rcUpgradable',
-          'justify-end':
-            card.status !== CardStatus.IN_ACTIVE &&
-            card.status !== CardStatus.HIDDEN &&
-            card.status !== CardStatus.BLOCKED &&
-            card.status !== 'rcUpgradable',
+        className={clsx('flex flex-col self-center shadow-md', {
+          'justify-center items-center': [
+            CardStatus.IN_ACTIVE,
+            CardStatus.HIDDEN,
+            CardStatus.BLOCKED,
+            CardStatus.RC_UPGRADABLE,
+            CardStatus.COMING_SOON,
+          ].includes(card.status),
+          'justify-end': ![
+            CardStatus.IN_ACTIVE,
+            CardStatus.HIDDEN,
+            CardStatus.BLOCKED,
+            CardStatus.RC_UPGRADABLE,
+            CardStatus.COMING_SOON,
+          ].includes(card.status),
         })}
         resizeMode='contain'
         source={getCardImage(card)}>
@@ -219,7 +230,7 @@ export default function CardScreen({
             </CyDText>
           </CyDView>
         )}
-        {card.status === 'rcUpgradable' && (
+        {card.status === CardStatus.RC_UPGRADABLE && (
           <CyDView className='flex flex-row items-center bg-cardBg px-[12px] py-[6px] rounded-[6px]'>
             <CyDImage
               source={AppImages.UPGRADE_TO_PHYSICAL_CARD_ARROW}
@@ -231,10 +242,23 @@ export default function CardScreen({
             </CyDText>
           </CyDView>
         )}
+        {card.status === CardStatus.COMING_SOON && (
+          <CyDView className='flex flex-row items-center bg-cardBg px-[12px] py-[6px] rounded-[6px]'>
+            <CyDImage
+              source={AppImages.UPGRADE_TO_PHYSICAL_CARD_ARROW}
+              className='h-[24px] w-[24px]'
+              resizeMode='contain'
+            />
+            <CyDText className='font-extrabold mt-[1px] ml-[2px]'>
+              {'Coming Soon'}
+            </CyDText>
+          </CyDView>
+        )}
         {card.status !== CardStatus.HIDDEN &&
-          card.status !== 'rcUpgradable' &&
+          card.status !== CardStatus.RC_UPGRADABLE &&
+          card.status !== CardStatus.COMING_SOON &&
           cardProfile.provider === CardProviders.REAP_CARD && (
-            <CyDView className='absolute bottom-[12px] left-[12px]'>
+            <CyDView className='absolute bottom-[14px] left-[14px]'>
               <CyDText className='font-semibold text-[14px]'>
                 {' xxxx ' + card.last4}
               </CyDText>
@@ -251,7 +275,7 @@ export default function CardScreen({
       !isHiddenCard() &&
       currentCardProvider === CardProviders.REAP_CARD
     ) {
-      actualCards.unshift({
+      actualCards.push({
         cardId: '',
         bin: '',
         last4: '',
@@ -266,7 +290,7 @@ export default function CardScreen({
         bin: '',
         last4: '',
         network: 'pc',
-        status: 'rcUpgradable',
+        status: CardStatus.RC_UPGRADABLE,
         type: CardType.VIRTUAL,
       });
     }
@@ -534,7 +558,10 @@ const RenderCardActions = ({
   }, [trackingDetails, cardId]);
 
   const validateReuseToken = async () => {
-    if (card.type === CardType.VIRTUAL) {
+    if (
+      cardProvider === CardProviders.REAP_CARD ||
+      card.type === CardType.VIRTUAL
+    ) {
       setIsFetchingCardDetails(true);
       const cardRevealReuseToken = await getCardRevealReuseToken(cardId);
       if (cardProfile.provider && cardRevealReuseToken) {
@@ -874,12 +901,23 @@ const RenderCardActions = ({
               type: GlobalContextType.CARD_PROFILE,
               cardProfile: tempProfile,
             });
-            navigation.navigate(screenTitle.SELECT_PLAN, {
+            navigation.navigate(screenTitle.GET_YOUR_CARD, {
               deductAmountNow: false,
-              toPage: screenTitle.CARD_SIGNUP_SCREEN,
+              toPage: screenTitle.CARD_APPLICATION,
             });
           }}
         />
+      </CyDView>
+    );
+  } else if (card.status === CardStatus.COMING_SOON) {
+    return (
+      <CyDView className='flex flex-col justify-center items-center mx-[20px] mt-[-32px]'>
+        <CyDText className='text-[18px] font-bold text-center mt-[24px]'>
+          {'Metal Card'}
+        </CyDText>
+        <CyDText className='text-[12px] font-bold text-center mt-[8px] mb-[12px]'>
+          {'Stay tuned for your Premium Metal Card'}
+        </CyDText>
       </CyDView>
     );
   }
