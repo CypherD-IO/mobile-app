@@ -19,7 +19,7 @@ import {
 import { showToast } from '../../containers/utilities/toastUtility';
 import Clipboard from '@react-native-clipboard/clipboard';
 import { BackHandler, NativeModules } from 'react-native';
-import { QRCode } from 'react-native-custom-qr-codes';
+import QRCode from 'react-native-qrcode-svg';
 import {
   CHAIN_COSMOS,
   CHAIN_ETH,
@@ -183,10 +183,13 @@ export default function PrivateKey(props) {
   const RenderQRCode = (chain: { item: UserChain }) => {
     return selectedChain.backendName === chain.item.backendName ? (
       <QRCode
-        content={privateKey}
-        codeStyle='dot'
+        value={privateKey}
         logo={AppImages.QR_LOGO}
-        logoSize={60}
+        logoSize={40}
+        size={200}
+        logoBorderRadius={5}
+        logoBackgroundColor='transparent'
+        logoMargin={3}
       />
     ) : null;
   };

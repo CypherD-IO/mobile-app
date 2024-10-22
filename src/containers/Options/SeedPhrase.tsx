@@ -14,7 +14,7 @@ import {
   _NO_CYPHERD_CREDENTIAL_AVAILABLE_,
 } from '../../core/util';
 import AppImages from '../../../assets/images/appImages';
-import { QRCode } from 'react-native-custom-qr-codes';
+import QRCode from 'react-native-qrcode-svg';
 import { showToast } from '../../containers/utilities/toastUtility';
 import { sendFirebaseEvent } from '../../containers/utilities/analyticsUtility';
 import { isAndroid } from '../../misc/checkers';
@@ -117,10 +117,13 @@ export default function SeedPhrase() {
           </CyDView>
           <CyDView className={'flex justify-center items-center my-[20px]'}>
             <QRCode
-              content={seedPhrase}
-              codeStyle='dot'
+              value={seedPhrase}
               logo={AppImages.QR_LOGO}
-              logoSize={60}
+              logoSize={40}
+              size={200}
+              logoBorderRadius={5}
+              logoBackgroundColor='transparent'
+              logoMargin={3}
             />
           </CyDView>
           <CyDTouchView

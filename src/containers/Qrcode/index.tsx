@@ -16,7 +16,7 @@ import { showToast } from '../../containers/utilities/toastUtility';
 import Clipboard from '@react-native-clipboard/clipboard';
 
 import { BackHandler } from 'react-native';
-import { QRCode } from 'react-native-custom-qr-codes';
+import QRCode from 'react-native-qrcode-svg';
 import {
   CHAIN_COSMOS,
   CHAIN_ETH,
@@ -262,10 +262,13 @@ export default function QRCodeGenerator() {
     return selectedChain.backendName === chain.item.backendName &&
       chain.item.address ? (
       <QRCode
-        content={chain.item.address}
-        codeStyle='dot'
+        value={chain.item.address}
         logo={AppImages.QR_LOGO}
-        logoSize={60}
+        logoSize={40}
+        size={200}
+        logoBorderRadius={5}
+        logoBackgroundColor='transparent'
+        logoMargin={3}
       />
     ) : null;
   };

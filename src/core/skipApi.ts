@@ -25,7 +25,7 @@ import Web3 from 'web3';
 import { getGasPriceFor } from '../containers/Browser/gasHelper';
 import { ALL_CHAINS, ChainBackendNames } from '../constants/server';
 import { ChainBackendNameMapping, ChainIdNameMapping } from '../constants/data';
-import { InjectiveStargate } from '@injectivelabs/sdk-ts';
+import { InjectiveSigningStargateClient } from '@injectivelabs/sdk-ts/dist/esm/exports';
 import { Dispatch, SetStateAction } from 'react';
 import { GasPriceDetail } from './types';
 import useSolanaSigner from '../hooks/useSolana';
@@ -117,13 +117,9 @@ async function getCosmosSigningClient(
   options?: any,
 ) {
   if (chain === ChainBackendNames.INJECTIVE) {
-    return await InjectiveStargate.InjectiveSigningStargateClient.connectWithSigner(
-      rpc,
-      signer,
-      {
-        ...options,
-      },
-    );
+    return await InjectiveSigningStargateClient.connectWithSigner(rpc, signer, {
+      ...options,
+    });
   } else {
     return await SigningCosmWasmClient.connectWithSigner(rpc, signer, {
       ...options,
