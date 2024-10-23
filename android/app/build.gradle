@@ -1,4 +1,4 @@
-apply plugin: "com.android.application"
+apply plugin: 'com.android.application' 
 apply plugin: 'com.google.gms.google-services'
 apply plugin: 'com.google.firebase.crashlytics'
 apply plugin: 'com.google.firebase.firebase-perf'
@@ -87,6 +87,10 @@ android {
         versionCode System.getenv('VERSION_CODE') ? System.getenv('VERSION_CODE').toInteger() : 431
         versionName System.getenv('VERSION_NAME') ?: "4.20"
         missingDimensionStrategy 'react-native-camera', 'general'
+    }
+    compileOptions {
+        sourceCompatibility JavaVersion.VERSION_14
+        targetCompatibility JavaVersion.VERSION_14
     }
     signingConfigs {
         release {

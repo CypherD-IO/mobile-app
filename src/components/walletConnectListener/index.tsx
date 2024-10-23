@@ -1,13 +1,13 @@
+import Intercom from '@intercom/intercom-react-native';
+import analytics from '@react-native-firebase/analytics';
+import { AppKit, useWalletInfo } from '@reown/appkit-wagmi-react-native';
 import React, { useContext, useEffect, useState } from 'react';
-import {
-  HdWalletContext,
-  _NO_CYPHERD_CREDENTIAL_AVAILABLE_,
-} from '../../core/util';
-import useAxios from '../../core/HttpRequest';
-import { GlobalContext } from '../../core/globalContext';
-import { Web3Modal, useWalletInfo } from '@web3modal/wagmi-react-native';
-import axios from '../../core/Http';
+import DeviceInfo from 'react-native-device-info';
+import { useAccount, useDisconnect, useSignMessage } from 'wagmi';
 import { ConnectionTypes, GlobalContextType } from '../../constants/enum';
+import Loading from '../../containers/Loading';
+import axios from '../../core/Http';
+import useAxios from '../../core/HttpRequest';
 import {
   getAuthToken,
   getConnectionType,
@@ -15,18 +15,17 @@ import {
   setConnectionType,
   setRefreshToken,
 } from '../../core/asyncStorage';
-import { hostWorker } from '../../global';
-import useValidSessionToken from '../../hooks/useValidSessionToken';
-import { useAccount, useDisconnect, useSignMessage } from 'wagmi';
-import useCardUtilities from '../../hooks/useCardUtilities';
-import Loading from '../../containers/Loading';
-import { CyDView } from '../../styles/tailwindStyles';
-import useConnectionManager from '../../hooks/useConnectionManager';
-import Intercom from '@intercom/intercom-react-native';
-import * as Sentry from '@sentry/react-native';
-import DeviceInfo from 'react-native-device-info';
+import { GlobalContext } from '../../core/globalContext';
 import { getToken } from '../../core/push';
-import analytics from '@react-native-firebase/analytics';
+import {
+  HdWalletContext,
+  _NO_CYPHERD_CREDENTIAL_AVAILABLE_,
+} from '../../core/util';
+import { hostWorker } from '../../global';
+import useCardUtilities from '../../hooks/useCardUtilities';
+import useConnectionManager from '../../hooks/useConnectionManager';
+import useValidSessionToken from '../../hooks/useValidSessionToken';
+import { CyDView } from '../../styles/tailwindStyles';
 
 export const WalletConnectListener: React.FC = ({ children }) => {
   const hdWalletContext = useContext<any>(HdWalletContext);
@@ -180,7 +179,7 @@ export const WalletConnectListener: React.FC = ({ children }) => {
   return (
     <CyDView className='flex-1'>
       {loading ? <Loading /> : children}
-      <Web3Modal />
+      <AppKit />
     </CyDView>
   );
 };

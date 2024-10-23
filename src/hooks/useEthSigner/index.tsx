@@ -4,7 +4,7 @@ import {
   getChainId,
   switchChain,
 } from '@wagmi/core';
-import { useWalletInfo } from '@web3modal/wagmi-react-native';
+import { useWalletInfo } from '@reown/appkit-wagmi-react-native';
 import { get } from 'lodash';
 import { useContext } from 'react';
 import Toast from 'react-native-toast-message';

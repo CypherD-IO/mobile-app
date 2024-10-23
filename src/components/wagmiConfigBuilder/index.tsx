@@ -17,9 +17,9 @@ import {
   moonriver,
 } from 'viem/chains';
 import {
-  createWeb3Modal,
+  createAppKit,
   defaultWagmiConfig,
-} from '@web3modal/wagmi-react-native';
+} from '@reown/appkit-wagmi-react-native';
 import { Config } from 'react-native-config';
 import Loading from '../v2/loading';
 
@@ -56,7 +56,7 @@ export const wagmiConfig = defaultWagmiConfig({
 });
 
 export const WagmiConfigBuilder: React.FC = ({ children }) => {
-  createWeb3Modal({
+  createAppKit({
     projectId,
     wagmiConfig,
   });

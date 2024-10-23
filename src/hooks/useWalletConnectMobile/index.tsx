@@ -1,9 +1,9 @@
-import { useWeb3Modal, useWeb3ModalState } from '@web3modal/wagmi-react-native';
+import { useAppKit } from '@reown/appkit-wagmi-react-native';
 import { useAccount, useDisconnect } from 'wagmi';
 
 export default function useWalletConnectMobile() {
-  const { open } = useWeb3Modal();
-  const { isConnected, connector, address } = useAccount();
+  const { open } = useAppKit();
+  const { isConnected } = useAccount();
   const { disconnectAsync } = useDisconnect();
 
   const openWalletConnectModal = async () => {
