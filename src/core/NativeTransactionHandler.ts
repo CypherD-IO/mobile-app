@@ -10,18 +10,17 @@ import 'react-native-get-random-values';
 // Import the the ethers shims (**BEFORE** ethers)
 // import '@ethersproject/shims';
 // Import the ethers library
-import { ethers } from 'ethers';
-import Toast from 'react-native-toast-message';
+import { OfflineDirectSigner } from '@cosmjs/proto-signing';
+import { MsgSendEncodeObject, SigningStargateClient } from '@cosmjs/stargate';
+import { InjectiveSigningStargateClient } from '@injectivelabs/sdk-ts/dist/esm/exports';
 import analytics from '@react-native-firebase/analytics';
-import {
-  TARGET_CARD_EVM_WALLET_ADDRESS,
-  TARGET_BRIDGE_EVM_WALLET_ADDRESS,
-  getWeb3Endpoint,
-  convertAmountOfContractDecimal,
-  formatAmount,
-  getNativeToken,
-  _NO_CYPHERD_CREDENTIAL_AVAILABLE_,
-} from './util';
+import * as Sentry from '@sentry/react-native';
+import { ethers } from 'ethers';
+import { t } from 'i18next';
+import { get } from 'lodash';
+import Toast from 'react-native-toast-message';
+import Web3 from 'web3';
+import { cosmosConfig } from '../constants/cosmosConfig';
 import {
   Chain,
   CHAIN_OPTIMISM,
@@ -33,35 +32,22 @@ import {
   GASLESS_CHAINS,
   NativeTokenMapping,
 } from '../constants/server';
-import * as Sentry from '@sentry/react-native';
-import { GasPriceDetail } from './types';
-import Web3 from 'web3';
 import {
   microAtomToAtom,
   microAtomToUsd,
 } from '../containers/utilities/cosmosSendUtility';
-import { OfflineDirectSigner } from '@cosmjs/proto-signing';
-import { getSignerClient, loadPrivateKeyFromKeyChain } from './Keychain';
-import { MsgSendEncodeObject, SigningStargateClient } from '@cosmjs/stargate';
-import { cosmosConfig } from '../constants/cosmosConfig';
-import { t } from 'i18next';
-import { initialHdWalletState } from '../reducers';
-import {
-  createMessageSend,
-  createTxRawEIP712,
-  signatureToWeb3Extension,
-} from '@tharsis/transactions';
-import {
-  personalSign,
-  signTypedData,
-  SignTypedDataVersion,
-} from '@metamask/eth-sig-util';
-import { generatePostBodyBroadcast } from '@tharsis/provider';
-import axios from './Http';
-import { signatureToPubkey } from '@hanchon/signature-to-pubkey';
-import { get } from 'lodash';
 import { TokenMeta } from '../models/tokenMetaData.model';
-import { InjectiveStargate } from '@injectivelabs/sdk-ts';
+import { initialHdWalletState } from '../reducers';
+import { getSignerClient, loadPrivateKeyFromKeyChain } from './Keychain';
+import { GasPriceDetail } from './types';
+import {
+  _NO_CYPHERD_CREDENTIAL_AVAILABLE_,
+  formatAmount,
+  getNativeToken,
+  getWeb3Endpoint,
+  TARGET_BRIDGE_EVM_WALLET_ADDRESS,
+  TARGET_CARD_EVM_WALLET_ADDRESS,
+} from './util';
 
 // const {showModal, hideModal} = useGlobalModalContext()
 // ETH in Optimims chain's contract address
@@ -784,10 +770,7 @@ export async function getCosmosSigningClient(
   signer: OfflineDirectSigner,
 ) {
   if (chain.backendName === ChainBackendNames.INJECTIVE) {
-    return await InjectiveStargate.InjectiveSigningStargateClient.connectWithSigner(
-      rpc,
-      signer,
-    );
+    return await InjectiveSigningStargateClient.connectWithSigner(rpc, signer);
   } else {
     return await SigningStargateClient.connectWithSigner(rpc, signer);
   }

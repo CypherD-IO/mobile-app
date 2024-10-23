@@ -27,7 +27,7 @@ import {
 import { ceil, get } from 'lodash';
 import { MsgTransfer } from 'cosmjs-types/ibc/applications/transfer/v1/tx';
 import Long from 'long';
-import { InjectiveStargate } from '@injectivelabs/sdk-ts';
+import { InjectiveSigningStargateClient } from '@injectivelabs/sdk-ts/dist/esm/exports';
 import { OfflineDirectSigner } from '@cosmjs/proto-signing';
 import { IReward } from '../../reducers/cosmosStakingReducer';
 import {
@@ -72,10 +72,7 @@ export default function useGasService() {
     signer: OfflineDirectSigner,
   ) {
     if (chain.backendName === ChainBackendNames.INJECTIVE) {
-      return await InjectiveStargate.InjectiveSigningStargateClient.connectWithSigner(
-        rpc,
-        signer,
-      );
+      return InjectiveSigningStargateClient.connectWithSigner(rpc, signer);
     } else {
       return await SigningStargateClient.connectWithSigner(rpc, signer);
     }
