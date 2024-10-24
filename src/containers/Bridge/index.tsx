@@ -1,13 +1,37 @@
 import React, {
-  useState,
-  useEffect,
   useCallback,
   useContext,
+  useEffect,
   useRef,
+  useState,
 } from 'react';
 import { useTranslation } from 'react-i18next';
 
+import {
+  NavigationProp,
+  ParamListBase,
+  RouteProp,
+  useFocusEffect,
+  useNavigation,
+  useRoute,
+} from '@react-navigation/native';
+import { debounce, endsWith, floor, get, isEmpty, isNil, isNull } from 'lodash';
+import { useGlobalModalContext } from '../../components/v2/GlobalModal';
 import Loading from '../../components/v2/loading';
+import { ChainIdNameMapping, gasFeeReservation } from '../../constants/data';
+import useAxios from '../../core/HttpRequest';
+import {
+  ActivityContext,
+  formatAmount,
+  getWeb3Endpoint,
+  HdWalletContext,
+  logAnalytics,
+  parseErrorMessage,
+  setTimeOutNSec,
+} from '../../core/util';
+import { SkipApiRouteResponse } from '../../models/skipApiRouteResponse.interface';
+import { SkipApiStatus } from '../../models/skipApiStatus.interface';
+import { HdWalletContextDef } from '../../reducers/hdwallet_reducer';
 import {
   CyDFastImage,
   CyDImage,
@@ -18,51 +42,38 @@ import {
   CyDTouchView,
   CyDView,
 } from '../../styles/tailwindStyles';
-import useAxios from '../../core/HttpRequest';
-import {
-  NavigationProp,
-  ParamListBase,
-  RouteProp,
-  useFocusEffect,
-  useNavigation,
-  useRoute,
-} from '@react-navigation/native';
-import TokenSelectionV2 from './tokenSelection';
-import { SkipApiRouteResponse } from '../../models/skipApiRouteResponse.interface';
 import BridgeRoutePreview from './bridgePreview';
-import { SkipApiStatus } from '../../models/skipApiStatus.interface';
-import { useGlobalModalContext } from '../../components/v2/GlobalModal';
-import { debounce, endsWith, floor, get, isEmpty, isNil } from 'lodash';
-import { ChainIdNameMapping, gasFeeReservation } from '../../constants/data';
-import {
-  ActivityContext,
-  formatAmount,
-  getWeb3Endpoint,
-  HdWalletContext,
-  logAnalytics,
-  parseErrorMessage,
-  setTimeOutNSec,
-} from '../../core/util';
-import { HdWalletContextDef } from '../../reducers/hdwallet_reducer';
+import TokenSelectionV2 from './tokenSelection';
 
+import analytics from '@react-native-firebase/analytics';
+import * as Sentry from '@sentry/react-native';
+import { Transaction } from '@solana/web3.js';
+import clsx from 'clsx';
+import { ethers } from 'ethers';
+import { StyleSheet } from 'react-native';
+import JSONTree from 'react-native-json-tree';
+import { SvgUri } from 'react-native-svg';
+import { v4 as uuidv4 } from 'uuid';
+import Web3 from 'web3';
+import AppImages from '../../../assets/images/appImages';
+import Button from '../../components/v2/button';
+import SignatureModal from '../../components/v2/signatureModal';
+import { screenTitle } from '../../constants';
 import { AnalyticsType, ButtonType } from '../../constants/enum';
+import { ALL_CHAINS, Chain } from '../../constants/server';
+import { GlobalContext, GlobalContextDef } from '../../core/globalContext';
+import { DEFAULT_AXIOS_TIMEOUT } from '../../core/Http';
+import useSkipApiBridge from '../../core/skipApi';
+import { GasPriceDetail } from '../../core/types';
+import useIsSignable from '../../hooks/useIsSignable';
+import usePortfolio from '../../hooks/usePortfolio';
+import useTransactionManager from '../../hooks/useTransactionManager';
+import { OdosSwapQuoteResponse } from '../../models/osdoQuote.interface';
 import {
   SkipApiCosmosTxn,
   SkipAPiEvmTx,
   SkipApiSignMsg,
 } from '../../models/skipApiSingMsg.interface';
-import Web3 from 'web3';
-import useSkipApiBridge from '../../core/skipApi';
-import { GlobalContext, GlobalContextDef } from '../../core/globalContext';
-import * as Sentry from '@sentry/react-native';
-import { Transaction } from '@solana/web3.js';
-import SignatureModal from '../../components/v2/signatureModal';
-import AppImages from '../../../assets/images/appImages';
-import { SvgUri } from 'react-native-svg';
-import { ethers } from 'ethers';
-import Button from '../../components/v2/button';
-import JSONTree from 'react-native-json-tree';
-import { ALL_CHAINS, Chain } from '../../constants/server';
 import {
   ActivityContextDef,
   ActivityReducerAction,
@@ -70,25 +81,14 @@ import {
   ActivityType,
   ExchangeTransaction,
 } from '../../reducers/activity_reducer';
-import { OdosSwapQuoteResponse } from '../../models/osdoQuote.interface';
-import useTransactionManager from '../../hooks/useTransactionManager';
-import { ODOS_SWAP_QUOTE_GASLIMIT_MULTIPLICATION_FACTOR } from '../Portfolio/constants';
-import { StyleSheet } from 'react-native';
-import { genId } from '../utilities/activityUtilities';
-import { GasPriceDetail } from '../../core/types';
-import { screenTitle } from '../../constants';
 import {
   BridgeContext,
   BridgeContextDef,
   BridgeReducerAction,
   BridgeStatus,
 } from '../../reducers/bridge.reducer';
-import { DEFAULT_AXIOS_TIMEOUT } from '../../core/Http';
-import clsx from 'clsx';
-import { v4 as uuidv4 } from 'uuid';
-import analytics from '@react-native-firebase/analytics';
-import usePortfolio from '../../hooks/usePortfolio';
-import useIsSignable from '../../hooks/useIsSignable';
+import { ODOS_SWAP_QUOTE_GASLIMIT_MULTIPLICATION_FACTOR } from '../Portfolio/constants';
+import { genId } from '../utilities/activityUtilities';
 
 export interface SwapBridgeChainData {
   chainName: string;
@@ -234,6 +234,7 @@ const Bridge: React.FC = () => {
   const [signaturesRequired, setSignaturesRequired] = useState<number>(0);
   const [abortController, setAbortController] =
     useState<AbortController | null>(null);
+  const [toggle, setToggle] = useState<boolean>(false);
 
   const navigateToPortfolio = () => {
     hideModal();
@@ -396,8 +397,6 @@ const Bridge: React.FC = () => {
 
     setFromTokenData(filteredTokens);
 
-    console.log('🚀 ~ selectedFromToken:', selectedFromToken);
-
     if (
       !filteredTokens?.find(
         token =>
@@ -419,16 +418,20 @@ const Bridge: React.FC = () => {
         _selectedFromToken = filteredTokens[0];
         setSelectedFromToken(_selectedFromToken);
       }
-      console.log(
-        '🚀 ~ setFromTokenAndTokenData ~ _selectedFromToken:',
-        _selectedFromToken,
-      );
 
       setUsdAmount(
         parseFloat(cryptoAmount) > 0
           ? String(Number(cryptoAmount) * Number(_selectedFromToken))
           : '0',
       );
+    } else if (toggle) {
+      const _selectedFromToken = filteredTokens.find(
+        token =>
+          token.tokenContract === selectedFromToken?.tokenContract ||
+          token.denom === selectedFromToken?.denom,
+      );
+      setSelectedFromToken(_selectedFromToken);
+      setToggle(false);
     }
 
     if (!selectedToChain) setSelectedToChain(selectedFromChain);
@@ -736,6 +739,8 @@ const Bridge: React.FC = () => {
       quoteId: uuidv4(),
       fromChain: selectedFromChain.chainName,
       toChain: selectedToChain.chainName,
+      fromChainId: selectedFromChain.chainId,
+      toChainId: selectedToChain.chainId,
       fromToken: selectedFromToken?.name,
       toToken: selectedToToken?.name,
       fromSymbol: selectedFromToken?.symbol,
@@ -759,6 +764,7 @@ const Bridge: React.FC = () => {
       },
     };
     activityId.current = id;
+    let transactionHash = '';
 
     try {
       const body = {
@@ -805,9 +811,15 @@ const Bridge: React.FC = () => {
         value: activityData,
       });
 
-      await evmTxnMsg(data);
-      await cosmosTxnMsg(data);
-      await solanaTxnMsg(data);
+      const txnFunctions = [evmTxnMsg, cosmosTxnMsg, solanaTxnMsg];
+
+      for (const txnFunc of txnFunctions) {
+        const hash = await txnFunc(data);
+        if ((isEmpty(transactionHash) || isNil(transactionHash)) && hash) {
+          transactionHash = hash;
+        }
+      }
+
       setLoading({ ...loading, bridgeGetMsg: false });
       showModal('state', {
         type: 'success',
@@ -819,6 +831,7 @@ const Bridge: React.FC = () => {
             value: {
               id: activityData.id,
               status: ActivityStatus.SUCCESS,
+              transactionHash,
             },
           });
           navigateToPortfolio();
@@ -870,6 +883,8 @@ const Bridge: React.FC = () => {
           getWeb3Endpoint(fromChainDetails, globalStateContext),
         );
         const txs = data.txs;
+        let firstHash = null;
+
         for (const tx of txs) {
           const evmTx = get(tx, 'evm_tx');
           if (evmTx) {
@@ -891,6 +906,9 @@ const Bridge: React.FC = () => {
             ) {
               setSignaturesRequired(prev => prev - 1);
               await trackSign(evmResponse.hash, evmResponse.chainId);
+              if (firstHash === null) {
+                firstHash = evmResponse.hash;
+              }
             } else {
               throw new Error(
                 evmResponse?.error ?? 'Error processing Evm transaction',
@@ -898,6 +916,8 @@ const Bridge: React.FC = () => {
             }
           }
         }
+
+        return firstHash;
       } catch (e: any) {
         if (!e.message.includes('User denied transaction signature.')) {
           Sentry.captureException(e);
@@ -910,6 +930,7 @@ const Bridge: React.FC = () => {
   // bridge
   const cosmosTxnMsg = async (data: SkipApiSignMsg) => {
     const txs = data.txs;
+    let hash = null;
     for (const tx of txs) {
       const cosmosTx = get(tx, 'cosmos_tx');
       if (cosmosTx) {
@@ -929,6 +950,9 @@ const Bridge: React.FC = () => {
           ) {
             setSignaturesRequired(prev => prev - 1);
             await trackSign(cosmosResponse.hash, cosmosResponse.chainId);
+            if (hash === null) {
+              hash = cosmosResponse.hash;
+            }
           } else {
             throw new Error(cosmosResponse.error);
           }
@@ -941,10 +965,13 @@ const Bridge: React.FC = () => {
         }
       }
     }
+
+    return hash;
   };
 
   const solanaTxnMsg = async (data: SkipApiSignMsg) => {
     const txs = data.txs;
+    let hash = null;
     for (const tx of txs) {
       const svmTx = get(tx, 'svm_tx');
       if (svmTx) {
@@ -961,7 +988,13 @@ const Bridge: React.FC = () => {
             solanaResponse.chainId
           ) {
             setSignaturesRequired(prev => prev - 1);
-            await submitSign(solanaResponse.txn, solanaResponse.chainId);
+            const solanaHash = await submitSign(
+              solanaResponse.txn,
+              solanaResponse.chainId,
+            );
+            if (hash === null) {
+              hash = solanaHash;
+            }
           } else {
             throw new Error(solanaResponse.error);
           }
@@ -973,6 +1006,8 @@ const Bridge: React.FC = () => {
         }
       }
     }
+
+    return hash;
   };
 
   const submitSign = async (txn: string, chainID: string) => {
@@ -1361,6 +1396,8 @@ const Bridge: React.FC = () => {
           quoteId: uuidv4(),
           fromChain: selectedFromChain.chainName,
           toChain: selectedToChain.chainName,
+          fromChainId: selectedFromChain.chainId,
+          toChainId: selectedToChain.chainId,
           fromToken: selectedFromToken?.name,
           toToken: selectedToToken?.name,
           fromSymbol: selectedFromToken?.symbol,
@@ -1391,6 +1428,11 @@ const Bridge: React.FC = () => {
         );
         setSignModalVisible(false);
 
+        activityContext.dispatch({
+          type: ActivityReducerAction.POST,
+          value: activityData,
+        });
+
         const response: any = await swapTokens({
           web3,
           fromToken: selectedFromToken,
@@ -1410,10 +1452,13 @@ const Bridge: React.FC = () => {
             title: t('SWAP_SUCCESS'),
             description: t('SWAP_SUCCESS_DESCRIPTION'),
             onSuccess: () => {
-              activityData.status = ActivityStatus.SUCCESS;
               activityContext.dispatch({
-                type: ActivityReducerAction.POST,
-                value: activityData,
+                type: ActivityReducerAction.PATCH,
+                value: {
+                  id: activityData.id,
+                  transactionHash: response?.receipt ?? '',
+                  status: ActivityStatus.SUCCESS,
+                },
               });
               navigateToPortfolio();
             },
@@ -1426,10 +1471,12 @@ const Bridge: React.FC = () => {
           });
           void analytics().logEvent('SWAP_SUCCESS');
         } else {
-          activityData.status = ActivityStatus.FAILED;
           activityContext.dispatch({
-            type: ActivityReducerAction.POST,
-            value: activityData,
+            type: ActivityReducerAction.PATCH,
+            value: {
+              id: activityData.id,
+              status: ActivityStatus.FAILED,
+            },
           });
           setLoading({ ...loading, swapLoading: false });
           showModal('state', {
@@ -1479,8 +1526,8 @@ const Bridge: React.FC = () => {
   };
 
   const onToggle = () => {
+    setToggle(true);
     resetValues();
-
     const oldFromChain = selectedFromChain;
     const oldFromToken = selectedFromToken;
     const oldToChain = selectedToChain;
@@ -1490,7 +1537,6 @@ const Bridge: React.FC = () => {
     setSelectedToToken(oldFromToken);
     setSelectedFromChain(oldToChain);
     setSelectedToChain(oldFromChain);
-    resetValues();
   };
 
   const resetAndSetIndex = () => {

@@ -1,11 +1,10 @@
-import React, { useState } from 'react';
-import { Button, Keyboard, Modal, Platform } from 'react-native';
-import DateTimePicker from '@react-native-community/datetimepicker';
-import { useField } from 'formik';
-import { CyDText, CyDTextInput, CyDView } from '../../styles/tailwindStyles';
+import * as Sentry from '@sentry/react-native';
 import clsx from 'clsx';
+import { useField } from 'formik';
+import React, { useState } from 'react';
+import { Keyboard } from 'react-native';
 import DatePickerModal from 'react-native-modal-datetime-picker';
-import moment from 'moment';
+import { CyDText, CyDTextInput, CyDView } from '../../styles/tailwindStyles';
 
 interface FormikDateInputProps {
   name: string;
@@ -35,7 +34,7 @@ const FormikDateInput: React.FC<FormikDateInputProps> = ({
     // Handle the Promise returned by setValue
     helpers
       .setValue(currentDate)
-      .catch(error => console.error('Error setting date value:', error));
+      .catch(error => Sentry.captureException(error));
     setShow(false);
   };
 

@@ -1,6 +1,21 @@
-import React from 'react';
+import clsx from 'clsx';
+import { t } from 'i18next';
+import { capitalize, round } from 'lodash';
+import moment from 'moment';
+import React, { useRef, useState } from 'react';
 import { StyleSheet } from 'react-native';
-import CyDModalLayout from './modal';
+import Share from 'react-native-share';
+import Toast from 'react-native-toast-message';
+import { captureRef } from 'react-native-view-shot';
+import { SHARE_TRANSACTION_TIMEOUT } from '../../core/Http';
+import {
+  copyToClipboard,
+  getExplorerUrl,
+  getExplorerUrlFromChainId,
+  getMaskedAddress,
+} from '../../core/util';
+import { isAndroid } from '../../misc/checkers';
+import { ActivityStatus, ActivityType } from '../../reducers/activity_reducer';
 import {
   CyDFastImage,
   CyDImage,
@@ -10,13 +25,8 @@ import {
 } from '../../styles/tailwindStyles';
 import AppImages from './../../../assets/images/appImages';
 import Button from './button';
-import moment from 'moment';
-import { t } from 'i18next';
-import { onShare } from '../../containers/utilities/socialShareUtility';
-import { ActivityStatus, ActivityType } from '../../reducers/activity_reducer';
-import clsx from 'clsx';
-import { round } from 'lodash';
-import { generateUserInviteLink } from '../../core/util';
+import CyDModalLayout from './modal';
+import { screenTitle } from '../../constants';
 
 const statuses: Record<string, string> = {
   [ActivityStatus.PENDING]: 'PENDING',
@@ -30,33 +40,80 @@ export default function ActivityBridgeInfoModal({
   isModalVisible,
   setModalVisible,
   params,
+  navigationRef,
 }: {
   isModalVisible: boolean;
   setModalVisible: React.Dispatch<React.SetStateAction<boolean>>;
   params: any;
+  navigationRef: any;
 }) {
-  async function referFriend() {
+  const viewRef = useRef();
+  const [isCapturingDetails, setIsCapturingDetails] = useState<boolean>(false);
+
+  async function shareTransactionImage() {
     try {
-      const referralInviteLink = generateUserInviteLink();
-      void onShare(
-        t('RECOMMEND_TITLE'),
-        t('RECOMMEND_MESSAGE'),
-        referralInviteLink,
-      );
+      // Check if viewRef.current exists
+      if (!viewRef.current) {
+        return;
+      }
+
+      const url = await captureRef(viewRef.current, {
+        format: 'png',
+        quality: 0.7,
+        result: 'base64',
+      });
+
+      const shareImage = {
+        title: t('SHARE_TITLE'),
+        message: params?.transactionHash,
+        subject: t('SHARE_TITLE'),
+        url: `data:image/jpeg;base64,${url}`,
+      };
+
+      if (!isAndroid()) {
+        delete shareImage.message;
+      }
+
+      await Share.open(shareImage)
+        .then(res => {
+          return res;
+        })
+        .catch(err => {
+          return err;
+        });
+      setIsCapturingDetails(false);
+      setModalVisible(false);
     } catch (error) {
-      // Ignore if the link generation fails
+      setIsCapturingDetails(false);
+      setModalVisible(false);
     }
   }
+
+  async function referFriend() {
+    setIsCapturingDetails(true);
+    setTimeout(() => {
+      void shareTransactionImage();
+    }, SHARE_TRANSACTION_TIMEOUT);
+  }
+
+  const copyHash = (url: string) => {
+    copyToClipboard(url);
+    Toast.show(t('COPIED_TO_CLIPBOARD'));
+  };
 
   if (params) {
     const {
       fromTokenAmount,
       toTokenAmount,
       quoteData,
+      fromChain,
       fromSymbol,
+      toChain,
       toSymbol,
       status,
       type,
+      transactionHash,
+      fromChainId,
     } = params;
     return (
       <CyDModalLayout
@@ -65,37 +122,55 @@ export default function ActivityBridgeInfoModal({
         style={styles.modalLayout}
         animationIn={'slideInUp'}
         animationOut={'slideOutDown'}>
-        <CyDView className={'bg-white pb-[30px] rounded-t-[20px]'}>
+        <CyDView
+          className={'bg-white pb-[30px] rounded-t-[20px]'}
+          ref={viewRef}>
           <CyDTouchView
             className={'flex flex-row justify-end z-10'}
             onPress={() => {
               setModalVisible(false);
             }}>
-            <CyDImage
-              source={AppImages.CLOSE}
-              className={'w-[16px] h-[16px] top-[20px] right-[20px] '}
-            />
-          </CyDTouchView>
-          <CyDView className='flex mt-[5%] flex-row justify-center items-center '>
-            {type === ActivityType.BRIDGE ? (
-              <CyDFastImage
-                source={
-                  status === ActivityStatus.SUCCESS ||
-                  status === ActivityStatus.INPROCESS
-                    ? AppImages.BRIDGE_SUCCESS
-                    : AppImages.BRIDGE_PENDING
-                }
-                className={'w-[22px] h-[22px] right-[9px]'}
+            {!isCapturingDetails && (
+              <CyDImage
+                source={AppImages.CLOSE}
+                className={'w-[16px] h-[16px] top-[20px] right-[20px] '}
               />
-            ) : (
-              <CyDFastImage
-                source={
-                  status === ActivityStatus.SUCCESS ||
-                  status === ActivityStatus.INPROCESS
-                    ? AppImages.SWAP_SUCCESS
-                    : AppImages.SWAP_PENDING
-                }
-                className='w-[22px] h-[22px] right-[9px]'
+            )}
+          </CyDTouchView>
+          <CyDView
+            className={clsx('flex mt-[5%] justify-center items-center ', {
+              'flex-row': !isCapturingDetails,
+              'flex-col': isCapturingDetails,
+            })}>
+            {!isCapturingDetails && (
+              <CyDView>
+                {type === ActivityType.BRIDGE ? (
+                  <CyDFastImage
+                    source={
+                      status === ActivityStatus.SUCCESS ||
+                      status === ActivityStatus.INPROCESS
+                        ? AppImages.BRIDGE_SUCCESS
+                        : AppImages.BRIDGE_PENDING
+                    }
+                    className={'w-[22px] h-[22px] right-[9px]'}
+                  />
+                ) : (
+                  <CyDFastImage
+                    source={
+                      status === ActivityStatus.SUCCESS ||
+                      status === ActivityStatus.INPROCESS
+                        ? AppImages.SWAP_SUCCESS
+                        : AppImages.SWAP_PENDING
+                    }
+                    className='w-[22px] h-[22px] right-[9px]'
+                  />
+                )}
+              </CyDView>
+            )}
+            {isCapturingDetails && (
+              <CyDImage
+                source={AppImages.CYPHERD}
+                className={'w-[80px] h-[80px] top-[10px] self-center'}
               />
             )}
             <CyDView className='flex mt-[5%] justify-center items-center '>
@@ -131,8 +206,8 @@ export default function ActivityBridgeInfoModal({
                 {t<string>('SENT')}
               </CyDText>
               <CyDView className='flex items-start'>
-                <CyDText className='text-center  text-[14px] font-bold font-primaryTextColor'>{`${fromTokenAmount} ${fromSymbol}`}</CyDText>
-                <CyDText className='text-center  text-[13px] font-primaryTextColor'>{`${String(quoteData.fromAmountUsd).slice(0, String(quoteData.fromAmountUsd).indexOf('.') + 4)} USD`}</CyDText>
+                <CyDText className='text-center  text-[14px] font-bold font-primaryTextColor'>{`${round(parseFloat(fromTokenAmount), 3)} ${String(fromSymbol)} (${capitalize(fromChain)})`}</CyDText>
+                <CyDText className='text-center  text-[13px] font-primaryTextColor'>{`${round(parseFloat(quoteData.fromAmountUsd), 3)} USD`}</CyDText>
               </CyDView>
             </CyDView>
             <CyDView className='flex flex-row mt-[10%] justify-start'>
@@ -140,21 +215,52 @@ export default function ActivityBridgeInfoModal({
                 {t<string>('RECEIVED')}
               </CyDText>
               <CyDView className='flex items-start'>
-                <CyDText className='text-center  text-[14px] font-bold font-primaryTextColor'>{`${round(parseFloat(toTokenAmount))} ${toSymbol}`}</CyDText>
-                <CyDText className='text-center  text-[13px] font-primaryTextColor'>{`${String(quoteData.toAmountUsd).slice(0, String(quoteData.toAmountUsd).indexOf('.') + 4)} USD`}</CyDText>
+                <CyDText className='text-center  text-[14px] font-bold font-primaryTextColor'>{`${round(parseFloat(toTokenAmount), 3)} ${String(toSymbol)} (${capitalize(toChain)})`}</CyDText>
+                <CyDText className='text-center  text-[13px] font-primaryTextColor'>{`${round(parseFloat(quoteData.toAmountUsd), 3)} USD`}</CyDText>
               </CyDView>
             </CyDView>
-            <CyDView className='flex flex-row mt-[10%] justify-start'>
-              <CyDText className=' text-[16px] mt-[3px] w-[50%] font-primaryTextColor'>
-                {t<string>('GAS_FEE')}
-              </CyDText>
-              <CyDText className='text-center  text-[14px] font-bold mt-[3px] font-primaryTextColor'>
-                {quoteData.gasFee
-                  ? `${round(parseFloat(quoteData.gasFee), 6)} USD`
-                  : ''}
-              </CyDText>
-            </CyDView>
-
+            {quoteData.gasFee && (
+              <CyDView className='flex flex-row mt-[10%] justify-start'>
+                <CyDText className=' text-[16px] mt-[3px] w-[50%] font-primaryTextColor'>
+                  {t<string>('GAS_FEE')}
+                </CyDText>
+                <CyDText className='text-center  text-[14px] font-bold mt-[3px] font-primaryTextColor'>
+                  {quoteData.gasFee
+                    ? `${round(parseFloat(quoteData.gasFee), 6)} USD`
+                    : ''}
+                </CyDText>
+              </CyDView>
+            )}
+            {transactionHash && (
+              <CyDView className='flex flex-row mt-[10%] justify-star items-center'>
+                <CyDText className=' text-[16px] w-[50%] text-activityFontColor'>
+                  {t<string>('HASH')}
+                </CyDText>
+                <CyDText
+                  onPress={() => {
+                    setModalVisible(false);
+                    navigationRef.navigate(screenTitle.TRANS_DETAIL, {
+                      url: getExplorerUrlFromChainId(
+                        fromChainId,
+                        transactionHash,
+                      ),
+                    });
+                  }}
+                  className=' text-[14px] w-[40%] text-blue-500 underline font-bold '>
+                  {getMaskedAddress(transactionHash)}
+                </CyDText>
+                <CyDTouchView
+                  onPress={() =>
+                    copyHash(
+                      String(
+                        getExplorerUrlFromChainId(fromChainId, transactionHash),
+                      ),
+                    )
+                  }>
+                  <CyDImage source={AppImages.COPY} />
+                </CyDTouchView>
+              </CyDView>
+            )}
             <CyDImage
               source={AppImages.CYPHER_LOVE}
               className={'w-[98%] h-[90px] mt-[15px]'}
@@ -166,18 +272,20 @@ export default function ActivityBridgeInfoModal({
             <CyDText className={'text-center  mt-[10px]'}>
               {t<string>('SHARE_WITH_FRIENDS')}
             </CyDText>
-
-            <CyDView className='w-[100%] mt-[10%]'>
-              <Button
-                onPress={() => {
-                  void referFriend();
-                }}
-                style={'py-[5%] mx-[0px]'}
-                image={AppImages.REFER}
-                title={t('RECOMMEND_FRIEND')}
-                titleStyle={'text-[14px]'}
-              />
-            </CyDView>
+            {!isCapturingDetails && (
+              <CyDView className='w-[100%] mt-[10%]'>
+                <Button
+                  onPress={() => {
+                    void referFriend();
+                  }}
+                  style={'py-[5%] mx-[0px]'}
+                  image={AppImages.SHARE}
+                  imageStyle='h-[18px] w-[18px] mt-[3px] mr-[10px]'
+                  title={t('SHARE_DETAILS')}
+                  titleStyle='text-[14px]'
+                />
+              </CyDView>
+            )}
           </CyDView>
         </CyDView>
       </CyDModalLayout>

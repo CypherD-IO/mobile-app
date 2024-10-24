@@ -14,7 +14,6 @@ import {
   CyDView,
 } from '../../styles/tailwindStyles';
 import AppImages from '../../../assets/images/appImages';
-import { screenTitle } from '../../constants';
 import useAxios from '../../core/HttpRequest';
 import LottieView from 'lottie-react-native';
 import { t } from 'i18next';
@@ -83,7 +82,6 @@ const ShareVia = ({ referralLink }: { referralLink: string }) => {
           });
         }
       } catch (error) {
-        console.error('An error occurred', error);
         await Share.share({
           message: shareUrlText,
         });
@@ -95,9 +93,7 @@ const ShareVia = ({ referralLink }: { referralLink: string }) => {
         await Share.share({
           message: shareUrlText,
         });
-      } catch (error) {
-        console.error(error);
-      }
+      } catch (error) {}
     }
   };
 

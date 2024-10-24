@@ -14,7 +14,7 @@ import * as Sentry from '@sentry/react-native';
 import clsx from 'clsx';
 import Fuse from 'fuse.js';
 import { get, random } from 'lodash';
-import React, { useContext, useEffect, useRef, useState } from 'react';
+import { useContext, useEffect, useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { BackHandler } from 'react-native';
 import { BarCodeReadEvent } from 'react-native-camera';
@@ -743,9 +743,7 @@ export default function SendTo(props: { navigation?: any; route?: any }) {
           const valueToStore = JSON.stringify(finalArray);
           await AsyncStorage.setItem(key, valueToStore);
         }
-      } catch (error) {
-        console.error('Error in onConfirmConfirmationModal:', error);
-      }
+      } catch (error) {}
 
       activityContext.dispatch({
         type: ActivityReducerAction.POST,

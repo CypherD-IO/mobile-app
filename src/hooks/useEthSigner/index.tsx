@@ -1,34 +1,33 @@
+import { useNavigation } from '@react-navigation/native';
 import * as Sentry from '@sentry/react-native';
 import {
-  waitForTransactionReceipt,
   getChainId,
   switchChain,
+  waitForTransactionReceipt,
 } from '@wagmi/core';
 import { useWalletInfo } from '@web3modal/wagmi-react-native';
 import { get } from 'lodash';
 import { useContext } from 'react';
+import { Linking, Platform } from 'react-native';
 import Toast from 'react-native-toast-message';
 import { useSendTransaction, useSwitchChain, useWriteContract } from 'wagmi';
+import { useGlobalModalContext } from '../../components/v2/GlobalModal';
 import { wagmiConfig } from '../../components/wagmiConfigBuilder';
 import { ConnectionTypes } from '../../constants/enum';
 import { walletConnectChainData } from '../../constants/server';
 import { getConnectionType } from '../../core/asyncStorage';
+import { MODAL_HIDE_TIMEOUT_250 } from '../../core/Http';
 import { loadPrivateKeyFromKeyChain } from '../../core/Keychain';
 import { allowanceApprovalContractABI } from '../../core/swap';
 import {
   HdWalletContext,
   _NO_CYPHERD_CREDENTIAL_AVAILABLE_,
-  parseErrorMessage,
   sleepFor,
 } from '../../core/util';
 import {
   EthTransaction,
   RawTransaction,
 } from '../../models/ethSigner.interface';
-import { useGlobalModalContext } from '../../components/v2/GlobalModal';
-import { MODAL_HIDE_TIMEOUT_250 } from '../../core/Http';
-import { useNavigation } from '@react-navigation/native';
-import { Linking, Platform } from 'react-native';
 
 export default function useEthSigner() {
   const hdWalletContext = useContext<any>(HdWalletContext);
@@ -61,7 +60,7 @@ export default function useEthSigner() {
   const redirectToMetaMask = () => {
     const metamaskDeepLink = 'metamask://';
     Linking.openURL(metamaskDeepLink).catch(err =>
-      console.error('An error occurred', err),
+      Sentry.captureException(err),
     );
   };
 
