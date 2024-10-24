@@ -58,7 +58,8 @@ import {
   useRoute,
 } from '@react-navigation/native';
 import { TIME_GAPS } from '../../constants/data';
-import { get, round } from 'lodash';
+import { endsWith, get, round } from 'lodash';
+import { SvgUri } from 'react-native-svg';
 
 const IN_PROGRESS = 'IN_PROGRESS';
 const PENDING = 'PENDING';
@@ -183,15 +184,17 @@ function BridgeItem(props: any) {
     toSymbol,
     status,
     type,
+    transactionHash,
+    fromChain,
+    fromChainId,
+    toChain,
+    fromTokenLogoUrl,
+    toTokenLogoUrl,
+    fromChainLogoUrl,
+    toChainLogoUrl,
   } = activity;
   const { setBridgeInfoParams } = props;
 
-  const fromChainlogo = ALL_CHAINS.find(
-    chain => chain.name === activity.fromChain,
-  )?.logo_url;
-  const toChainlogo = ALL_CHAINS.find(
-    chain => chain.name === activity.toChain,
-  )?.logo_url;
   const statusColor =
     activity.status === ActivityStatus.FAILED
       ? Colors.activityFailed
@@ -241,6 +244,10 @@ function BridgeItem(props: any) {
         fromSymbol,
         toSymbol,
         status,
+        transactionHash,
+        fromChain,
+        fromChainId,
+        toChain,
       });
     } else {
       activity.reason
@@ -305,20 +312,28 @@ function BridgeItem(props: any) {
           </CyDView>
           <CyDView className='flex flex-row mt-[10px] justify-center items-center'>
             <CyDView>
-              <CyDFastImage
-                className={'h-[35px] w-[35px]'}
-                source={{
-                  uri: activity.fromTokenLogoUrl,
-                }}
-              />
-              <CyDView className='absolute top-[20px] right-[-7px]'>
+              {endsWith(fromTokenLogoUrl, '.svg') ? (
+                <SvgUri width='38' height='38' uri={fromTokenLogoUrl ?? ''} />
+              ) : (
                 <CyDFastImage
-                  className={
-                    'h-[18px] w-[18px] rounded-[50px] border-[1px] border-white bg-white'
-                  }
-                  source={fromChainlogo}
-                  resizeMode={FastImage.resizeMode.contain}
+                  className={'h-[35px] w-[35px]'}
+                  source={{
+                    uri: fromTokenLogoUrl,
+                  }}
                 />
+              )}
+              <CyDView className='absolute top-[20px] right-[-7px]'>
+                {endsWith(fromChainLogoUrl, '.svg') ? (
+                  <SvgUri width='38' height='38' uri={fromChainLogoUrl ?? ''} />
+                ) : (
+                  <CyDFastImage
+                    className={
+                      'h-[18px] w-[18px] rounded-[50px] border-[1px] border-white bg-white'
+                    }
+                    source={{ uri: fromChainLogoUrl }}
+                    resizeMode={FastImage.resizeMode.contain}
+                  />
+                )}
               </CyDView>
             </CyDView>
             <CyDView className='px-[15px]'>
@@ -352,20 +367,29 @@ function BridgeItem(props: any) {
           </CyDView>
           <CyDView className='flex flex-row mt-[10px] justify-center items-center'>
             <CyDView>
-              <CyDFastImage
-                className={'h-[35px] w-[35px]'}
-                source={{
-                  uri: activity.toTokenLogoUrl,
-                }}
-              />
-              <CyDView className='absolute top-[20px] right-[-7px]'>
+              {endsWith(toTokenLogoUrl, '.svg') ? (
+                <SvgUri width='38' height='38' uri={toTokenLogoUrl ?? ''} />
+              ) : (
                 <CyDFastImage
-                  className={
-                    'h-[18px] w-[18px] rounded-[50px] border-[1px] border-white bg-white'
-                  }
-                  source={toChainlogo}
-                  resizeMode={FastImage.resizeMode.contain}
+                  className={'h-[35px] w-[35px]'}
+                  source={{
+                    uri: toTokenLogoUrl,
+                  }}
                 />
+              )}
+
+              <CyDView className='absolute top-[20px] right-[-7px]'>
+                {endsWith(fromChainLogoUrl, '.svg') ? (
+                  <SvgUri width='38' height='38' uri={toChainLogoUrl ?? ''} />
+                ) : (
+                  <CyDFastImage
+                    className={
+                      'h-[18px] w-[18px] rounded-[50px] border-[1px] border-white bg-white'
+                    }
+                    source={{ uri: toChainLogoUrl }}
+                    resizeMode={FastImage.resizeMode.contain}
+                  />
+                )}
               </CyDView>
             </CyDView>
             <CyDView className='px-[15px]'>
@@ -1201,6 +1225,7 @@ export default function Activites() {
           setModalVisible={setShowBridgeInfo}
           isModalVisible={showBridgeInfo}
           params={bridgeInfoParams}
+          navigationRef={navigation}
         />
         <ActivitySendInfoModal
           setModalVisible={setShowSendInfo}
