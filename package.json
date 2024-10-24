@@ -186,6 +186,7 @@
     "readable-stream": "^1.0.33",
     "rn-fetch-blob": "^0.12.0",
     "rxjs": "^7.8.1",
+    "secp256k1": "^5.0.1",
     "share": "^0.7.40",
     "sp-react-native-in-app-updates": "^1.1.7",
     "stream-browserify": "^1.0.0",
@@ -298,5 +299,8 @@
     "vm": "vm-browserify",
     "tls": false,
     "crypto": "react-native-crypto"
+  },
+  "overrides": {
+    "secp256k1": "^5.0.1"
   }
 }
