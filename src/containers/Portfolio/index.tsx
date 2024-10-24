@@ -566,7 +566,7 @@ export default function Portfolio({ navigation }: PortfolioProps) {
       <CyDFlatList
         data={tempTotalHoldings}
         scrollEnabled={false}
-        renderItem={renderPortfolioItem}
+        renderItem={renderPortfolioItem as ListRenderItem<unknown>}
         // refreshing={isPortfolioRefreshing}
         // onRefresh={() => {
         //   void fetchPortfolioData();
