@@ -32,7 +32,7 @@ import { SkipApiRouteResponse } from '../../models/skipApiRouteResponse.interfac
 import BridgeRoutePreview from './bridgePreview';
 import { SkipApiStatus } from '../../models/skipApiStatus.interface';
 import { useGlobalModalContext } from '../../components/v2/GlobalModal';
-import { endsWith, floor, get, isEmpty, isNil } from 'lodash';
+import { debounce, endsWith, floor, get, isEmpty, isNil } from 'lodash';
 import { ChainIdNameMapping, gasFeeReservation } from '../../constants/data';
 import {
   ActivityContext,
@@ -232,6 +232,8 @@ const Bridge: React.FC = () => {
   const routeParamsBackVisible = route?.params?.backVisible;
   const { getLocalPortfolio } = usePortfolio();
   const [signaturesRequired, setSignaturesRequired] = useState<number>(0);
+  const [abortController, setAbortController] =
+    useState<AbortController | null>(null);
 
   const navigateToPortfolio = () => {
     hideModal();
@@ -319,7 +321,9 @@ const Bridge: React.FC = () => {
         if (routeParamsTokenData?.chainDetails) {
           const selectedChain = bridgeState.chainData.find(
             chain =>
-              chain.chainId === routeParamsTokenData.chainDetails.chain_id,
+              chain.chainId === routeParamsTokenData.chainDetails.chain_id ||
+              Number(chain.chainId) ===
+                Number(routeParamsTokenData.chainDetails.chainIdNumber),
           );
           setSelectedFromChain(selectedChain ?? bridgeState.chainData[0]);
         } else {
@@ -338,15 +342,20 @@ const Bridge: React.FC = () => {
     }
   }, [selectedFromChain, tokenData, selectedToChain]);
 
+  const setUpdataTemp = filteredTokens => {};
+
   const setFromTokenAndTokenData = async () => {
     const currentChain = ALL_CHAINS.find(
-      chain => chain.chainIdNumber === Number(selectedFromChain.chainId),
+      chain =>
+        chain.chainIdNumber === Number(selectedFromChain?.chainId) ||
+        chain.chain_id === selectedFromChain?.chainId,
     );
     setFromChainDetails(currentChain as Chain);
 
     // Filter tokens based on totalHoldings
     const localPortfolio = await getLocalPortfolio();
     const totalHoldings = localPortfolio?.totalHoldings;
+
     let filteredTokens = tokenData[selectedFromChain?.chainId]
       ?.map(token => {
         const matchingHolding = totalHoldings?.find(
@@ -386,22 +395,38 @@ const Bridge: React.FC = () => {
     }
 
     setFromTokenData(filteredTokens);
+
+    console.log('🚀 ~ selectedFromToken:', selectedFromToken);
+
     if (
       !filteredTokens?.find(
-        token => token.tokenContract === selectedFromToken?.tokenContract,
+        token =>
+          token.tokenContract === selectedFromToken?.tokenContract ||
+          token.denom === selectedFromToken?.denom,
       )
     ) {
-      if (routeParamsTokenData?.token) {
+      let _selectedFromToken;
+      if (routeParamsTokenData) {
         const routeToken = filteredTokens.find(
-          token => token.denom === routeParamsTokenData.token.denom,
+          token =>
+            token.denom === routeParamsTokenData.denom ||
+            token.tokenContract === routeParamsTokenData.contractAddress,
         );
-        setSelectedFromToken(routeToken ?? filteredTokens[0]);
+        _selectedFromToken = routeToken ?? filteredTokens[0];
+
+        setSelectedFromToken(_selectedFromToken);
       } else {
-        setSelectedFromToken(filteredTokens[0]);
+        _selectedFromToken = filteredTokens[0];
+        setSelectedFromToken(_selectedFromToken);
       }
+      console.log(
+        '🚀 ~ setFromTokenAndTokenData ~ _selectedFromToken:',
+        _selectedFromToken,
+      );
+
       setUsdAmount(
         parseFloat(cryptoAmount) > 0
-          ? String(Number(cryptoAmount) * Number(selectedFromToken?.price))
+          ? String(Number(cryptoAmount) * Number(_selectedFromToken))
           : '0',
       );
     }
@@ -478,46 +503,77 @@ const Bridge: React.FC = () => {
     setAmountOut('');
   };
 
-  const fetchQuote = async () => {
-    if (
-      selectedFromChain &&
-      selectedToChain &&
-      selectedFromToken &&
-      selectedToToken &&
-      parseFloat(cryptoAmount) > 0
-    ) {
-      setLoading({ ...loading, quoteLoading: true });
-      try {
-        if (isOdosSwap()) {
-          await getSwapQuote();
-        } else {
-          await getBridgeQuote();
-        }
-      } finally {
-        setLoading({ ...loading, quoteLoading: false });
+  const fetchQuote = async (): Promise<void> => {
+    // Cancel any ongoing request
+    if (abortController?.abort) {
+      abortController?.abort();
+    }
+
+    // Create a new AbortController for this request
+    const newAbortController = new AbortController();
+    setAbortController(newAbortController);
+
+    setLoading(prevLoading => ({ ...prevLoading, quoteLoading: true }));
+
+    try {
+      if (isOdosSwap()) {
+        await getSwapQuote(newAbortController.signal);
+      } else {
+        await getBridgeQuote(newAbortController.signal);
       }
+    } finally {
+      setLoading(prevLoading => ({ ...prevLoading, quoteLoading: false }));
     }
   };
 
+  const debouncedFetchQuote = useCallback(
+    debounce((amount: string) => {
+      if (
+        Number(amount) > 0 &&
+        selectedFromChain &&
+        selectedToChain &&
+        selectedFromToken &&
+        selectedToToken
+      ) {
+        resetValues();
+        void fetchQuote();
+      }
+    }, 1000),
+    [cryptoAmount, selectedFromToken, selectedToToken],
+  );
+
   useEffect(() => {
-    resetValues();
-    if (cryptoAmount) {
-      void fetchQuote();
+    if (Number(cryptoAmount) > 0) {
+      setLoading(prevLoading => ({ ...prevLoading, quoteLoading: true }));
+      debouncedFetchQuote(cryptoAmount);
+    } else {
+      setLoading(prevLoading => ({ ...prevLoading, quoteLoading: false }));
     }
-  }, [selectedFromChain, selectedToChain, selectedFromToken, selectedToToken]);
+
+    return () => {
+      debouncedFetchQuote.cancel();
+      if (abortController) {
+        abortController.abort();
+      }
+    };
+  }, [cryptoAmount, selectedFromToken, selectedToToken]);
 
   const onClickMax = () => {
     const isNativeToken = selectedFromToken?.isNative ?? false;
+
     const bal = isNativeToken
       ? (
           get(selectedFromToken, 'balance', 0) -
           get(gasFeeReservation, [fromChainDetails?.backendName ?? ''], 0)
         )?.toString()
       : get(selectedFromToken, 'balance', 0)?.toString();
-    setCryptoAmount(bal);
-    setUsdAmount(String(Number(bal) * Number(selectedFromToken?.price)));
-    resetValues();
-    void fetchQuote();
+
+    if (Number(bal) > 0) {
+      setCryptoAmount(bal);
+      setUsdAmount(String(Number(bal) * Number(selectedFromToken?.price)));
+    } else {
+      setError('Insufficient balance for gas fee');
+    }
   };
 
   const handleApprove = () => {
@@ -561,7 +617,7 @@ const Bridge: React.FC = () => {
     return addressList;
   };
 
-  const getBridgeQuote = async () => {
+  const getBridgeQuote = async (signal: AbortSignal) => {
     try {
       if (
         selectedFromToken &&
@@ -587,6 +643,7 @@ const Bridge: React.FC = () => {
           '/v1/swap/bridge/quote',
           routeBody,
           DEFAULT_AXIOS_TIMEOUT,
+          { signal },
         );
 
         if (!isError) {
@@ -607,11 +664,13 @@ const Bridge: React.FC = () => {
           setLoading({ ...loading, quoteLoading: false });
           if (
             quoteError?.message.includes('no routes') ||
-            quoteError?.message.includes('transfer across')
+            quoteError?.message.includes('transfer across') ||
+            quoteError?.message.includes('bridge relay')
           ) {
             setQuoteData(null);
-            setError(quoteError.message);
+            setError(quoteError?.message);
           } else {
+            setError(quoteError?.message);
             void analytics().logEvent('BRIDGE_QUOTE_ERROR', {
               error: quoteError,
             });
@@ -740,6 +799,12 @@ const Bridge: React.FC = () => {
         return;
       }
 
+      activityData.status = ActivityStatus.INPROCESS;
+      activityContext.dispatch({
+        type: ActivityReducerAction.POST,
+        value: activityData,
+      });
+
       await evmTxnMsg(data);
       await cosmosTxnMsg(data);
       await solanaTxnMsg(data);
@@ -749,10 +814,12 @@ const Bridge: React.FC = () => {
         title: t('BRIDGE_SUCCESS'),
         description: t('BRIDGE_SUCCESS_DESCRIPTION'),
         onSuccess: () => {
-          activityData.status = ActivityStatus.SUCCESS;
           activityContext.dispatch({
-            type: ActivityReducerAction.POST,
-            value: activityData,
+            type: ActivityReducerAction.PATCH,
+            value: {
+              id: activityData.id,
+              status: ActivityStatus.SUCCESS,
+            },
           });
           navigateToPortfolio();
         },
@@ -762,10 +829,13 @@ const Bridge: React.FC = () => {
       void analytics().logEvent('BRIDGE_SUCCESS');
     } catch (e: unknown) {
       const errMsg = parseErrorMessage(e);
-      activityData.status = ActivityStatus.FAILED;
       activityContext.dispatch({
-        type: ActivityReducerAction.POST,
-        value: activityData,
+        type: ActivityReducerAction.PATCH,
+        value: {
+          id: activityData.id,
+          status: ActivityStatus.FAILED,
+          reason: JSON.stringify(errMsg),
+        },
       });
       setLoading({ ...loading, bridgeGetMsg: false });
       showModal('state', {
@@ -1036,12 +1106,12 @@ const Bridge: React.FC = () => {
           await trackStatus(hash, chainID, false);
         }
       }
-    } catch (e: any) {
-      if (e.name !== 'AbortError') {
+    } catch (err: any) {
+      if (err.name !== 'AbortError') {
         showModal('state', {
           type: 'error',
           title: t('UNEXCPECTED_ERROR'),
-          description: e?.message ?? JSON.stringify(e),
+          description: err?.message ?? JSON.stringify(err),
           onSuccess: navigateToPortfolio,
           onFailure: navigateToPortfolio,
         });
@@ -1099,7 +1169,7 @@ const Bridge: React.FC = () => {
     }
   };
 
-  const getSwapQuote = async () => {
+  const getSwapQuote = async (signal: AbortSignal) => {
     try {
       if (
         selectedToToken &&
@@ -1128,6 +1198,7 @@ const Bridge: React.FC = () => {
           `/v1/swap/evm/chains/${selectedFromChain?.chainId ?? ''}/quote`,
           payload,
           DEFAULT_AXIOS_TIMEOUT,
+          { signal },
         );
 
         if (!response.isError) {
@@ -1139,7 +1210,7 @@ const Bridge: React.FC = () => {
             ).toString(),
           );
           setAmountOut(responseQuoteData?.toToken?.amount.toString());
-          setUsdAmountOut(responseQuoteData?.value?.toString());
+          setUsdAmountOut(responseQuoteData?.value.toString());
           setQuoteData(responseQuoteData);
           setLoading({ ...loading, quoteLoading: false });
         } else {
@@ -1147,20 +1218,20 @@ const Bridge: React.FC = () => {
           setError(response.error);
         }
       }
-    } catch (e: unknown) {
-      if (e instanceof Error && e.name !== 'AbortError') {
+    } catch (err: unknown) {
+      if (err instanceof Error && err.name !== 'AbortError') {
         setQuoteData(null);
         showModal('state', {
           type: 'error',
           title: t('QUOTE_ERROR'),
-          description: parseErrorMessage(e) ?? t('UNEXPECTED_ERROR'),
+          description: parseErrorMessage(err) ?? t('UNEXPECTED_ERROR'),
           onSuccess: hideModal,
           onFailure: hideModal,
         });
         void analytics().logEvent('SWAP_QUOTE_ERROR', {
-          error: e,
+          error: err,
         });
-        Sentry.captureException(e);
+        Sentry.captureException(err);
       }
     }
   };
@@ -1256,16 +1327,16 @@ const Bridge: React.FC = () => {
         } else {
           throw new Error('Invalid chain');
         }
-      } catch (e: unknown) {
+      } catch (err: unknown) {
         setLoading({ ...loading, acceptSwapLoading: false });
         showModal('state', {
           type: 'error',
           title: t('UNEXCPECTED_ERROR'),
-          description: parseErrorMessage(e) ?? JSON.stringify(e),
+          description: parseErrorMessage(err) ?? JSON.stringify(err),
           onSuccess: navigateToPortfolio,
           onFailure: navigateToPortfolio,
         });
-        Sentry.captureException(e);
+        Sentry.captureException(err);
       }
     }
   };
@@ -1384,12 +1455,12 @@ const Bridge: React.FC = () => {
       } else {
         throw new Error('Chain details not found');
       }
-    } catch (e: unknown) {
+    } catch (err: unknown) {
       setLoading({ ...loading, swapLoading: false });
       showModal('state', {
         type: 'error',
         title: t('SWAP_ERROR'),
-        description: parseErrorMessage(e) ?? t('SWAP_ERROR_DESCRIPTION'),
+        description: parseErrorMessage(err) ?? t('SWAP_ERROR_DESCRIPTION'),
         onSuccess: navigateToPortfolio,
         onFailure: navigateToPortfolio,
       });
@@ -1397,17 +1468,19 @@ const Bridge: React.FC = () => {
       void logAnalytics({
         type: AnalyticsType.ERROR,
         chain: selectedFromChain?.chainName ?? '',
-        message: parseErrorMessage(e),
+        message: parseErrorMessage(err),
         screen: route.name,
       });
       void analytics().logEvent('SWAP_ERROR', {
-        error: e,
+        error: err,
       });
-      Sentry.captureException(e);
+      Sentry.captureException(err);
     }
   };
 
   const onToggle = () => {
+    resetValues();
+
     const oldFromChain = selectedFromChain;
     const oldFromToken = selectedFromToken;
     const oldToChain = selectedToChain;
@@ -1458,7 +1531,7 @@ const Bridge: React.FC = () => {
             <CyDTouchView
               className=''
               onPress={() => {
-                routeParamsBackVisible
+                routeParamsBackVisible && index === 0
                   ? navigation.goBack()
                   : resetAndSetIndex();
               }}>
@@ -1967,10 +2040,11 @@ const Bridge: React.FC = () => {
             usdAmountOut={usdAmountOut}
             onClickMax={onClickMax}
             onToggle={onToggle}
-            fetchQuote={() => {
-              resetValues();
-              void fetchQuote();
-            }}
+            loading={loading.quoteLoading || loading.pageLoading}
+            // fetchQuote={() => {
+            //   resetValues();
+            //   void fetchQuote();
+            // }}
           />
         )}
         {!isOdosSwap() && index === 1 && (
