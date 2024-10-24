@@ -80,6 +80,8 @@ export interface ExchangeTransaction {
   type: ActivityType;
   transactionHash: string;
   quoteId: string;
+  fromChainId: string;
+  toChainId: string;
   fromChain: string;
   toChain: string;
   fromToken: string;

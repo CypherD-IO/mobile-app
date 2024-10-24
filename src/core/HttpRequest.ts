@@ -86,7 +86,7 @@ export default function useAxios() {
     endpoint = '',
     timeout: number,
     body = {},
-    config?: AxiosRequestConfig<object> | undefined,
+    config?: AxiosRequestConfig,
   ): Promise<IHttpResponse> {
     let shouldRetry = 0;
 
@@ -115,7 +115,9 @@ export default function useAxios() {
           response.data = data;
           response.status = status;
         } else if (method === 'POST') {
-          const { data, status } = await axiosInstance.post(url, reqBody);
+          const { data, status } = await axiosInstance.post(url, reqBody, {
+            ...config,
+          });
           response.data = data;
           response.status = status;
         } else if (method === 'POST_WITHOUT_AUTH') {
@@ -218,7 +220,7 @@ export default function useAxios() {
     url: string,
     data: any,
     timeout = DEFAULT_AXIOS_TIMEOUT,
-    config?: AxiosRequestConfig<object> | undefined,
+    config?: AxiosRequestConfig,
   ) {
     return await request('POST', url, timeout, data, config);
   }

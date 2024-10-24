@@ -401,13 +401,7 @@ export default function Overview({
 
   const TokenSummary = () => {
     return (
-      <CyDView
-        className='flex flex-row items-center mt-[12px] mx-[12px] border-[1px] rounded-[8px] border-fadedGrey'
-        onPress={() => {
-          navigation.navigate(screenTitle.TOKEN_OVERVIEW, {
-            tokenData,
-          });
-        }}>
+      <CyDView className='flex flex-row items-center mt-[12px] mx-[12px] border-[1px] rounded-[8px] border-fadedGrey'>
         <CyDView className='flex flex-row h-full mb-[10px] items-center rounded-r-[20px] self-center px-[10px]'>
           <CyDFastImage
             className={'h-[35px] w-[35px] rounded-[50px]'}

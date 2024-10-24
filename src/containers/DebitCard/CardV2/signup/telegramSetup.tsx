@@ -92,7 +92,6 @@ export default function TelegramSetup() {
         `https://t.me/CypherHQBot?start=${encodeURIComponent(botCommand)}`,
       );
     } catch (err) {
-      console.error('Failed to open Telegram:', err);
       Sentry.captureException(err);
     }
   };

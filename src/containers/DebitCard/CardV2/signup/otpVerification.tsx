@@ -86,7 +86,6 @@ export default function OTPVerification(): JSX.Element {
         setEmail(response.data.email);
       }
     } catch (e) {
-      console.error(e);
       showToast(t('UNEXPECTED_ERROR'), 'error');
     } finally {
       setLoading({ ...loading, emailLoading: false });

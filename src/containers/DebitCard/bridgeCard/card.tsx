@@ -647,9 +647,7 @@ const RenderCardActions = ({
       setShowRCCardDetailsModal(true);
       setIsFetchingCardDetails(false);
       return decryptedBuffer;
-    } catch (error) {
-      console.error('Decryption error:', error);
-    }
+    } catch (error) {}
   };
 
   const sendCardDetails = async ({

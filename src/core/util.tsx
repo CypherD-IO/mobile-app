@@ -155,6 +155,57 @@ export function getExplorerUrlFromBackendNames(chain: string, hash: string) {
   }
 }
 
+export function getExplorerUrlFromChainId(chainId: string, hash: string) {
+  switch (chainId) {
+    case CHAIN_ETH.chainIdNumber.toString():
+      return `https://etherscan.io/tx/${hash}`;
+    case CHAIN_AVALANCHE.chainIdNumber.toString():
+      return `https://snowtrace.io/tx/${hash}`;
+    case CHAIN_BSC.chainIdNumber.toString():
+      return `https://bscscan.com/tx/${hash}`;
+    case CHAIN_POLYGON.chainIdNumber.toString():
+      return `https://polygonscan.com/tx/${hash}`;
+    case CHAIN_SHARDEUM.chainIdNumber.toString():
+      return `https://explorer-dapps.shardeum.org/transaction/${hash}`;
+    case CHAIN_SHARDEUM_SPHINX.chainIdNumber.toString():
+      return `https://explorer-sphinx.shardeum.org/transaction/${hash}`;
+    case CHAIN_ARBITRUM.chainIdNumber.toString():
+      return `https://arbiscan.io/tx/${hash}`;
+    case CHAIN_OPTIMISM.chainIdNumber.toString():
+      return `https://optimistic.etherscan.io/tx/${hash}`;
+    case CHAIN_BASE.chainIdNumber.toString():
+      return `https://basescan.org/tx/${hash}`;
+    case CHAIN_POLYGON_ZKEVM.chainIdNumber.toString():
+      return `https://zkevm.polygonscan.com/tx/${hash}`;
+    case CHAIN_ZKSYNC_ERA.chainIdNumber.toString():
+      return `https://www.oklink.com/zksync/tx/${hash}`;
+    case CHAIN_AURORA.chainIdNumber.toString():
+      return `https://explorer.aurora.dev/tx/${hash}`;
+    case CHAIN_MOONBEAM.chainIdNumber.toString():
+      return `https://moonbeam.moonscan.io/tx/${hash}`;
+    case CHAIN_MOONRIVER.chainIdNumber.toString():
+      return `https://moonriver.moonscan.io/tx/${hash}`;
+    case CHAIN_COSMOS.chain_id:
+      return `https://www.mintscan.io/cosmos/txs/${hash}`;
+    case CHAIN_OSMOSIS.chain_id:
+      return `https://www.mintscan.io/osmosis/txs/${hash}`;
+    case CHAIN_JUNO.chain_id:
+      return `https://www.mintscan.io/juno/txs/${hash}`;
+    case CHAIN_STARGAZE.chain_id:
+      return `https://www.mintscan.io/stargaze/txs/${hash}`;
+    case CHAIN_NOBLE.chain_id:
+      return `https://www.mintscan.io/noble/txs/${hash}`;
+    case CHAIN_COREUM.chain_id:
+      return `https://www.mintscan.io/coreum/txs/${hash}`;
+    case CHAIN_INJECTIVE.chain_id:
+      return `https://www.mintscan.io/injective/txs/${hash}`;
+    case CHAIN_KUJIRA.chain_id:
+      return `https://atomscan.com/kujira/transactions/${hash}`;
+    default:
+      return '';
+  }
+}
+
 export function getExplorerUrl(
   chainSymbol: string,
   chainName: string,

@@ -1,12 +1,9 @@
-import React, { useCallback, useEffect, useMemo, useState } from 'react';
 import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
 import {
   NavigationContainer,
-  NavigationProp,
-  ParamListBase,
-  useNavigation,
   useNavigationContainerRef,
 } from '@react-navigation/native';
+import React, { useCallback, useEffect, useMemo, useState } from 'react';
 import { Animated, BackHandler, StyleSheet, ToastAndroid } from 'react-native';
 import AppImages from '../../assets/images/appImages';
 import { screenTitle } from '../constants';
@@ -98,10 +95,6 @@ function TabStack(props: TabStackProps) {
         navigationRef.current?.navigate(tabName, {
           screenToNavigate: deepLinkData.screenToNavigate,
         });
-      } else {
-        console.warn(
-          `Unable to find tab for screen: ${deepLinkData.screenToNavigate}`,
-        );
       }
 
       setDeepLinkData(null);

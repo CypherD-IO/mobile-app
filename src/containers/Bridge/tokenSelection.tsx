@@ -28,6 +28,7 @@ import { t } from 'i18next';
 import { verticalScale } from 'react-native-size-matters';
 import Accordion from 'react-native-collapsible/Accordion';
 import { SwapBridgeChainData, SwapBridgeTokenData } from '.';
+import CyDSkeleton from '../../components/v2/skeleton';
 
 const currencyFormatter = new Intl.NumberFormat('en-US', {
   style: 'currency',
@@ -59,6 +60,7 @@ function RenderToken({
       )}
       onPress={() => {
         setModalVisible(false);
+
         setSelected(item);
       }}>
       <CyDView className={'flex flex-row items-center'}>
@@ -436,7 +438,7 @@ export default function TokenSelectionV2({
   usdAmountOut,
   onClickMax,
   onToggle,
-  fetchQuote,
+  loading,
 }: {
   selectedFromChain: SwapBridgeChainData | null;
   setSelectedFromChain: Dispatch<SetStateAction<SwapBridgeChainData | null>>;
@@ -458,7 +460,7 @@ export default function TokenSelectionV2({
   usdAmountOut: string;
   onClickMax: () => void;
   onToggle: () => void;
-  fetchQuote: () => void;
+  loading: boolean;
 }) {
   const [fromTokenModalVisible, setFromTokenModalVisible] =
     useState<boolean>(false);
@@ -539,10 +541,8 @@ export default function TokenSelectionV2({
                 onSubmitEditing={() => {
                   Keyboard.dismiss();
                 }}
-                onBlur={() => {
-                  fetchQuote();
-                }}
               />
+
               <CyDText
                 className={clsx(
                   'font-semibold text-center  font-nunito text-[12px]',
@@ -621,20 +621,22 @@ export default function TokenSelectionV2({
           </CyDView>
 
           <CyDView className='flex flex-row justify-between items-center'>
-            <CyDView className='flex flex-col items-start'>
-              <CyDText
-                className={clsx(
-                  'font-semibold text-center  font-nunito text-[30px]',
-                )}>
-                {Number(amountOut).toFixed(6)}
-              </CyDText>
-              <CyDText
-                className={clsx(
-                  'font-semibold text-center  font-nunito text-[12px]',
-                )}>
-                {`$${Number(usdAmountOut).toFixed(6)}`}
-              </CyDText>
-            </CyDView>
+            <CyDSkeleton width={100} height={30} value={!loading}>
+              <CyDView className='flex flex-col items-start'>
+                <CyDText
+                  className={clsx(
+                    'font-semibold text-center  font-nunito text-[30px]',
+                  )}>
+                  {Number(amountOut).toFixed(6)}
+                </CyDText>
+                <CyDText
+                  className={clsx(
+                    'font-semibold text-center  font-nunito text-[12px]',
+                  )}>
+                  {`$${Number(usdAmountOut).toFixed(6)}`}
+                </CyDText>
+              </CyDView>
+            </CyDSkeleton>
             <CyDTouchView
               onPress={() => {
                 setToTokenModalVisible(true);

@@ -275,9 +275,7 @@ const TxnScene = ({
         : getTransactionsUrl;
       const response = await axios.get(txnURL);
       setTransactions(response.data.transactions);
-    } catch (error) {
-      console.error('Error fetching transactions:', error);
-    }
+    } catch (error) {}
     setIsLoading(false);
   };
 
