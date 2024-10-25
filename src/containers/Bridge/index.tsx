@@ -15,7 +15,16 @@ import {
   useNavigation,
   useRoute,
 } from '@react-navigation/native';
-import { debounce, endsWith, floor, get, isEmpty, isNil, isNull } from 'lodash';
+import {
+  debounce,
+  endsWith,
+  floor,
+  get,
+  isEmpty,
+  isNil,
+  min,
+  round,
+} from 'lodash';
 import { useGlobalModalContext } from '../../components/v2/GlobalModal';
 import Loading from '../../components/v2/loading';
 import { ChainIdNameMapping, gasFeeReservation } from '../../constants/data';
@@ -421,7 +430,7 @@ const Bridge: React.FC = () => {
 
       setUsdAmount(
         parseFloat(cryptoAmount) > 0
-          ? String(Number(cryptoAmount) * Number(_selectedFromToken))
+          ? String(Number(cryptoAmount) * Number(_selectedFromToken?.price))
           : '0',
       );
     } else if (toggle) {
@@ -507,23 +516,16 @@ const Bridge: React.FC = () => {
   };
 
   const fetchQuote = async (): Promise<void> => {
-    // Cancel any ongoing request
-    if (abortController?.abort) {
-      abortController?.abort();
-    }
-
-    // Create a new AbortController for this request
-    const newAbortController = new AbortController();
-    setAbortController(newAbortController);
-
     setLoading(prevLoading => ({ ...prevLoading, quoteLoading: true }));
 
     try {
       if (isOdosSwap()) {
-        await getSwapQuote(newAbortController.signal);
+        await getSwapQuote();
       } else {
-        await getBridgeQuote(newAbortController.signal);
+        await getBridgeQuote();
       }
+    } catch (e) {
+      Sentry.captureException(e);
     } finally {
       setLoading(prevLoading => ({ ...prevLoading, quoteLoading: false }));
     }
@@ -547,6 +549,9 @@ const Bridge: React.FC = () => {
 
   useEffect(() => {
     if (Number(cryptoAmount) > 0) {
+      setUsdAmount(
+        (Number(cryptoAmount) * Number(selectedFromToken?.price)).toFixed(6),
+      );
       setLoading(prevLoading => ({ ...prevLoading, quoteLoading: true }));
       debouncedFetchQuote(cryptoAmount);
     } else {
@@ -565,14 +570,17 @@ const Bridge: React.FC = () => {
     const isNativeToken = selectedFromToken?.isNative ?? false;
 
     const bal = isNativeToken
-      ? (
-          get(selectedFromToken, 'balance', 0) -
-          get(gasFeeReservation, [fromChainDetails?.backendName ?? ''], 0)
+      ? round(
+          Number(get(selectedFromToken, 'balance', 0)) -
+            Number(
+              get(gasFeeReservation, [fromChainDetails?.backendName ?? ''], 0),
+            ),
+          min([10, selectedFromToken?.decimals ?? 0]),
         )?.toString()
-      : get(selectedFromToken, 'balance', 0)?.toString();
+      : Number(get(selectedFromToken, 'balance', 0))?.toString();
 
     if (Number(bal) > 0) {
-      setCryptoAmount(bal);
+      setCryptoAmount(bal.toString());
       setUsdAmount(String(Number(bal) * Number(selectedFromToken?.price)));
     } else {
       setError('Insufficient balance for gas fee');
@@ -620,7 +628,7 @@ const Bridge: React.FC = () => {
     return addressList;
   };
 
-  const getBridgeQuote = async (signal: AbortSignal) => {
+  const getBridgeQuote = async () => {
     try {
       if (
         selectedFromToken &&
@@ -630,7 +638,13 @@ const Bridge: React.FC = () => {
       ) {
         const routeBody = {
           amountIn: ethers
-            .parseUnits(cryptoAmount, selectedFromToken.decimals)
+            .parseUnits(
+              round(
+                Number(cryptoAmount),
+                selectedFromToken.decimals,
+              ).toString(),
+              min([10, selectedFromToken.decimals]),
+            )
             .toString(),
           sourceAssetDenom: selectedFromToken.denom,
           sourceAssetChainId: selectedFromToken.chainId,
@@ -646,12 +660,10 @@ const Bridge: React.FC = () => {
           '/v1/swap/bridge/quote',
           routeBody,
           DEFAULT_AXIOS_TIMEOUT,
-          { signal },
         );
 
         if (!isError) {
           const responseQuoteData = data as SkipApiRouteResponse;
-
           setQuoteData(responseQuoteData);
           setUsdAmount(responseQuoteData?.usd_amount_in);
           setAmountOut(
@@ -664,6 +676,10 @@ const Bridge: React.FC = () => {
           setSignaturesRequired(responseQuoteData?.txs_required);
           setLoading({ ...loading, quoteLoading: false });
         } else {
+          setQuoteData(null);
+          setAmountOut('');
+          setUsdAmountOut('');
+          setSignaturesRequired(0);
           setLoading({ ...loading, quoteLoading: false });
           if (
             quoteError?.message.includes('no routes') ||
@@ -671,7 +687,16 @@ const Bridge: React.FC = () => {
             quoteError?.message.includes('bridge relay')
           ) {
             setQuoteData(null);
-            setError(quoteError?.message);
+            if (
+              quoteError?.message.includes('no routes') &&
+              selectedFromToken.symbol.toLowerCase() !== 'usdc'
+            ) {
+              setError(
+                `Swap ${selectedFromToken.name} to USDC token and then bridge USDC to ${selectedToToken.name}`,
+              );
+            } else {
+              setError(quoteError?.message);
+            }
           } else {
             setError(quoteError?.message);
             void analytics().logEvent('BRIDGE_QUOTE_ERROR', {
@@ -1204,7 +1229,7 @@ const Bridge: React.FC = () => {
     }
   };
 
-  const getSwapQuote = async (signal: AbortSignal) => {
+  const getSwapQuote = async () => {
     try {
       if (
         selectedToToken &&
@@ -1219,7 +1244,10 @@ const Bridge: React.FC = () => {
               address: selectedFromToken?.isNative
                 ? '0x0000000000000000000000000000000000000000'
                 : selectedFromToken?.tokenContract,
-              amount: cryptoAmount.toString(),
+              amount: round(
+                Number(cryptoAmount),
+                min([10, selectedFromToken.decimals]),
+              ).toString(),
             },
           ],
           toToken: selectedToToken.isNative
@@ -1233,7 +1261,6 @@ const Bridge: React.FC = () => {
           `/v1/swap/evm/chains/${selectedFromChain?.chainId ?? ''}/quote`,
           payload,
           DEFAULT_AXIOS_TIMEOUT,
-          { signal },
         );
 
         if (!response.isError) {
@@ -2087,10 +2114,6 @@ const Bridge: React.FC = () => {
             onClickMax={onClickMax}
             onToggle={onToggle}
             loading={loading.quoteLoading || loading.pageLoading}
-            // fetchQuote={() => {
-            //   resetValues();
-            //   void fetchQuote();
-            // }}
           />
         )}
         {!isOdosSwap() && index === 1 && (
@@ -2120,7 +2143,8 @@ const Bridge: React.FC = () => {
                     <CyDText>{error}</CyDText>
                   </CyDView>
                 )}
-                {parseFloat(usdAmount) > (selectedFromToken?.balance ?? 0) && (
+                {parseFloat(cryptoAmount) >
+                  (selectedFromToken?.balance ?? 0) && (
                   <CyDView className='flex flex-row gap-x-[8px]'>
                     <CyDText>{'\u2022'}</CyDText>
                     {!isOdosSwap() && !isSkipSwap() && (
