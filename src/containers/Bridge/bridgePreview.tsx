@@ -2,19 +2,28 @@ import React, { useEffect, useState } from 'react';
 import { SkipApiRouteResponse } from '../../models/skipApiRouteResponse.interface';
 import { SkipApiStatus } from '../../models/skipApiStatus.interface';
 import Loading from '../../components/v2/loading';
-import { capitalize, endsWith, find, get, isEmpty, isNumber } from 'lodash';
+import {
+  capitalize,
+  endsWith,
+  find,
+  get,
+  isEmpty,
+  isNumber,
+  round,
+} from 'lodash';
 import { ethers } from 'ethers';
 import { CyDFastImage, CyDText, CyDView } from '../../styles/tailwindStyles';
 import clsx from 'clsx';
 import { SvgUri } from 'react-native-svg';
 import Button from '../../components/v2/button';
-import { StyleSheet, Animated, Easing } from 'react-native'; // Added Easing import
+import { StyleSheet, Animated, Easing } from 'react-native';
 import { t } from 'i18next';
 import { SwapBridgeChainData, SwapBridgeTokenData } from '.';
 import AppImages from '../../../assets/images/appImages';
 import { ChainIdToBackendNameMapping } from '../../constants/data';
 import { ActivityType } from '../../reducers/activity_reducer';
 import useIsSignable from '../../hooks/useIsSignable';
+import BackgroundTimer from 'react-native-background-timer';
 
 enum TxnStatus {
   STATE_SUBMITTED = 'STATE_SUBMITTED',
@@ -44,20 +53,17 @@ export default function BridgeRoutePreview({
 }) {
   const [isSignableTransaction] = useIsSignable();
   const pulseAnimation = new Animated.Value(1);
-  let timer: NodeJS.Timeout;
   const [countdown, setCountdown] = useState<number | null>(
     isNumber(routeResponse?.estimated_route_duration_seconds)
       ? Number(routeResponse.estimated_route_duration_seconds) + 30
       : null,
   );
 
-  // Function to start the pulse animation
   const startPulse = () => {
-    pulseAnimation.setValue(0.1); // Start at 10% opacity
+    pulseAnimation.setValue(0.1);
     Animated.loop(
-      // Use Animated.loop for continuous animation
       Animated.timing(pulseAnimation, {
-        toValue: 1, // End at 100% opacity
+        toValue: 1,
         duration: 1000,
         useNativeDriver: true,
         easing: Easing.linear,
@@ -76,15 +82,22 @@ export default function BridgeRoutePreview({
 
   const startCountdown = () => {
     if (countdown !== null && countdown > 0) {
-      timer = setInterval(() => {
-        setCountdown(prev => (prev ? prev - 1 : 0));
+      BackgroundTimer.runBackgroundTimer(() => {
+        setCountdown(prev => {
+          const newValue = prev ? prev - 1 : 0;
+          if (newValue <= 0) {
+            BackgroundTimer.stopBackgroundTimer();
+          }
+          return newValue;
+        });
       }, 1000);
     }
-    return () => clearInterval(timer);
   };
 
   useEffect(() => {
-    return () => clearInterval(timer);
+    return () => {
+      BackgroundTimer.stopBackgroundTimer();
+    };
   }, []);
 
   if (!routeResponse) return <Loading />;
@@ -271,9 +284,14 @@ export default function BridgeRoutePreview({
                     {currentOperation && token && (
                       <CyDView className='flex flex-row gap-x-[8px] items-center'>
                         <CyDText className='text-[18px] font-bold'>
-                          {ethers.formatUnits(
-                            currentOperation.amount_in,
-                            token?.decimals,
+                          {round(
+                            Number(
+                              ethers.formatUnits(
+                                currentOperation.amount_in,
+                                token?.decimals,
+                              ),
+                            ),
+                            6,
                           )}
                         </CyDText>
                         {endsWith(token?.logoUrl, '.svg') ? (

@@ -61,7 +61,6 @@ import usePortfolio from '../../hooks/usePortfolio';
 
 const {
   CText,
-  SafeAreaView,
   DynamicView,
   DynamicImage,
   DynamicTouchView,
@@ -146,7 +145,7 @@ export default function Browser({ route, navigation }: any) {
   const [browserErrorCode, setBrowserErrorCode] = useState('');
   const ethereum = hdWalletContext.state.wallet.ethereum;
   const { showModal, hideModal } = useGlobalModalContext();
-  const [selectedDappChain, setSelectedDappChain] = useState();
+  const [selectedDappChain, setSelectedDappChain] = useState<Chain>(CHAIN_ETH);
 
   const spliceHistoryByTime = (): Array<{
     entry: BrowserHistoryEntry[];
@@ -189,7 +188,7 @@ export default function Browser({ route, navigation }: any) {
   };
 
   useEffect(() => {
-    if (params) {
+    if (params?.url) {
       setInbuiltPage('webview');
       const url = new URL(params.url);
       setSearch(params.url);
@@ -285,7 +284,7 @@ export default function Browser({ route, navigation }: any) {
     const keyboardDidHideListener = Keyboard.addListener(
       'keyboardDidHide',
       () => {
-        setKeyboardVisible(false); // or some other action
+        setKeyboardVisible(false);
       },
     );
 
@@ -296,7 +295,6 @@ export default function Browser({ route, navigation }: any) {
   }, []);
 
   useEffect(() => {
-    // eslint-disable-next-line @typescript-eslint/naming-convention
     const {
       selectedChain: { chain_id },
       selectedChain,
@@ -533,6 +531,8 @@ export default function Browser({ route, navigation }: any) {
           setChooseChain(false);
         }}
         where={WHERE_BROWSER}
+        selectedChain={selectedDappChain ?? CHAIN_ETH}
+        setSelectedChain={setSelectedDappChain}
       />
       <MoreViewModal
         isModalVisible={moreView}
@@ -581,7 +581,7 @@ export default function Browser({ route, navigation }: any) {
               height={28}
               width={28}
               resizemode='contain'
-              source={AppImages.BACK_ARROW_GRAY}
+              source={AppImages.BACK}
               style={{ tintColor: canGoBack ? 'black' : 'gray' }}
             />
           </DynamicTouchView>
@@ -604,7 +604,7 @@ export default function Browser({ route, navigation }: any) {
               height={28}
               width={28}
               resizemode='contain'
-              source={AppImages.BACK_ARROW_GRAY}
+              source={AppImages.BACK}
               style={{
                 tintColor: canGoForward ? 'black' : 'gray',
                 transform: [{ rotate: '180deg' }],
