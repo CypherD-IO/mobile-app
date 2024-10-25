@@ -1388,6 +1388,10 @@ const resources = {
         'Limitations around crypto withdrawal',
       NEW_PIN: 'New PIN',
       CONFIRM_PIN_TELEGRAM: 'Confirm PIN',
+      SWIPE_TO_CONFIRM: 'Swipe to confirm',
+      CONFIRMED: 'Confirmed',
+      CYPHER_CARD: 'Cypher Card',
+      PAYMENT_VERIFICATION: 'Payment Verification',
     },
   },
 };

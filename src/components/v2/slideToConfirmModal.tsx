@@ -1,73 +1,57 @@
-import React, { useState } from 'react';
-import { View, Text, StyleSheet } from 'react-native';
+import clsx from 'clsx';
+import React, { useEffect, useState } from 'react';
+import { View, Text } from 'react-native';
 import { Swipeable } from 'react-native-gesture-handler';
+import { CyDImage, CyDView } from '../../styles/tailwindStyles';
+import AppImages from '../../../assets/images/appImages';
 
 const SlideToConfirm = () => {
   const [confirmed, setConfirmed] = useState(false);
+  // Add new state for tracking touch
+  const [isSwiping, setIsSwiping] = useState(false);
+
+  useEffect(() => {
+    console.log('isSwiping', isSwiping);
+  }, [isSwiping]);
 
   const renderLeftActions = () => (
-    <View style={styles.action}>
-      <Text style={styles.actionText}>Confirm</Text>
-    </View>
+    <CyDView className="justify-center items-center w-[240px] h-full bg-[#333] rounded-l-[25px]">
+      <Text className="text-white text-base ml-[60px]">Confirmed 🎉</Text>
+    </CyDView>
   );
 
   return (
-    <Swipeable
-      renderLeftActions={renderLeftActions}
-      onSwipeableLeftOpen={() => setConfirmed(true)}
-    >
-      <View style={styles.container}>
-        <View style={styles.slider}>
-          <Text style={styles.iconText}>{'>'}</Text>
-        </View>
-        <Text style={styles.text}>
-          {confirmed ? 'Confirmed' : 'Swipe to confirm'}
-        </Text>
-      </View>
-    </Swipeable>
+    <CyDView className="w-[300px] bg-[#333] h-[60px] rounded-[25px] overflow-hidden">
+      <Swipeable
+        renderLeftActions={renderLeftActions}
+        onSwipeableLeftOpen={() => setConfirmed(true)}
+        onActivated={() => setIsSwiping(true)}
+        onSwipeableWillClose={() => setIsSwiping(false)}
+      >
+        <CyDView className="w-[300px] h-[60px] bg-[#333] justify-center flex-row items-center px-[5px]">
+          <CyDView
+            className={clsx(
+              'w-[50px] h-[50px] bg-[#f0a500] rounded-full justify-center items-center',
+              confirmed && 'bg-green-500',
+            )}
+          >
+            <CyDImage
+              source={AppImages.RIGHT_ARROW}
+              className="w-[20px] h-[20px]"
+            />
+          </CyDView>
+          <Text
+            className={clsx(
+              'text-white text-base flex-1 text-center',
+              isSwiping && 'text-transparent',
+            )}
+          >
+            {'Swipe to confirm'}
+          </Text>
+        </CyDView>
+      </Swipeable>
+    </CyDView>
   );
 };
-
-const styles = StyleSheet.create({
-  container: {
-    width: 300,
-    height: 50,
-    backgroundColor: '#333',
-    borderRadius: 25,
-    justifyContent: 'center',
-    overflow: 'hidden',
-    flexDirection: 'row',
-    alignItems: 'center',
-  },
-  text: {
-    color: '#fff',
-    fontSize: 16,
-    flex: 1,
-    textAlign: 'center',
-  },
-  slider: {
-    width: 50,
-    height: 50,
-    backgroundColor: '#f0a500',
-    borderRadius: 25,
-    justifyContent: 'center',
-    alignItems: 'center',
-  },
-  iconText: {
-    color: '#333',
-    fontSize: 24,
-  },
-  action: {
-    backgroundColor: '#f0a500',
-    justifyContent: 'center',
-    alignItems: 'center',
-    width: 100,
-    height: '100%',
-  },
-  actionText: {
-    color: '#fff',
-    fontSize: 16,
-  },
-});
 
 export default SlideToConfirm;

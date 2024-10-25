@@ -54,9 +54,8 @@ export default function ThreeDSecureApprovalModal({
   }, [timer, timerEnd]);
 
   const formatTime = (milliseconds: number) => {
-    const minutes = Math.floor(milliseconds / 60000);
-    const seconds = Math.floor((milliseconds % 60000) / 1000);
-    return `${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}`;
+    const totalSeconds = Math.floor(milliseconds / 1000);
+    return totalSeconds.toString();
   };
 
   return (
@@ -65,6 +64,7 @@ export default function ThreeDSecureApprovalModal({
       style={styles.modalLayout}
       animationIn={'slideInUp'}
       animationOut={'slideOutDown'}
+      disableBackDropPress={true}
       setModalVisible={(_val: any) => {
         setIsModalVisible(_val);
       }}>
@@ -74,13 +74,13 @@ export default function ThreeDSecureApprovalModal({
             <CyDText className='font-bold text-white text-[18px]'>
               {t('CYPHER_CARD')}
             </CyDText>
-            <CyDText className='font-semibold text-white text-[10px]'>
+            <CyDText className='font-semibold text-white text-[11px]'>
               {t('PAYMENT_VERIFICATION')}
             </CyDText>
           </CyDView>
           <CyDView className='flex flex-row items-center'>
             <CyDView
-              className='bg-n0 rounded-full px-[6px] py-[12px] w-[50px] h-[50px] flex flex-col items-center justify-center border border-p200 mr-[12px]'
+              className='bg-black rounded-full w-[35px] h-[35px] flex flex-col items-center justify-center border-2 border-p200 mr-[12px]'
               // eslint-disable-next-line react-native/no-inline-styles
               style={{
                 shadowColor: '#000',
@@ -89,19 +89,19 @@ export default function ThreeDSecureApprovalModal({
                 shadowRadius: 8,
                 elevation: 4, // for Android
               }}>
-              <CyDText className='font-extrabold text-[12px] text-base400 '>
+              <CyDText className='font-extrabold text-white text-[10px]'>
                 {formatTime(timer ?? 0)}
               </CyDText>
             </CyDView>
-            <CyDTouchView onPress={() => setIsModalVisible(false)}>
+            {/* <CyDTouchView onPress={() => setIsModalVisible(false)}>
               <CyDImage
                 source={AppImages.BLACK_CLOSE}
                 className='h-[12px] w-[12px]'
               />
-            </CyDTouchView>
+            </CyDTouchView> */}
           </CyDView>
         </CyDView>
-        <CyDView className='mt-[24px]'>
+        <CyDView className='mt-[50px]'>
           <CyDView className='flex flex-col text-white items-center'>
             <CyDView className='flex flex-row items-center justify-center'>
               <CyDImage
@@ -118,7 +118,7 @@ export default function ThreeDSecureApprovalModal({
             <CyDText className='text-[10px] mt-[14px] text-white text-center'>
               {'Paying to'}
             </CyDText>
-            <CyDText className='text-[14px] mt-[2px] text-white font-bold text-center'>
+            <CyDText className='text-[14px] mt-[2px] mb-[56px] text-white font-bold text-center'>
               {'Bundle Tech Bangalore Pv..'}
             </CyDText>
             <SlideToConfirm />
