@@ -688,12 +688,15 @@ export function DebitCardStackScreen({ route }) {
   const initialRouteName =
     route.params?.screenToNavigate || screenTitle.DEBIT_CARD_SCREEN;
 
+  console.log('DebitCardStackScreen route params:', route.params);
+
   return (
     <FundCardStack.Navigator initialRouteName={initialRouteName}>
       <FundCardStack.Screen
         name={screenTitle.DEBIT_CARD_SCREEN}
         component={DebitCardScreen}
         options={{ headerShown: false }}
+        initialParams={route.params}
       />
 
       <FundCardStack.Screen

@@ -29,6 +29,7 @@ import CardProviderSwitch from '../../components/cardProviderSwitch';
 import CardWailtList from './cardWaitList';
 import { getReferralCode } from '../../core/asyncStorage';
 import { useFocusEffect } from '@react-navigation/native';
+import ThreeDSecureApprovalModal from '../../components/v2/threeDSecureApprovalModal';
 
 export interface RouteProps {
   navigation: {
@@ -37,6 +38,11 @@ export interface RouteProps {
       index: number;
       routes: Array<{ name: string; params?: any }>;
     }) => void;
+  };
+  route: {
+    params?: {
+      show3dsModal?: boolean;
+    };
   };
 }
 
@@ -47,6 +53,15 @@ export default function DebitCardScreen(props: RouteProps) {
   const hdWalletContext = useContext<any>(HdWalletContext);
   const { isReadOnlyWallet } = hdWalletContext.state;
   const { getWalletProfile } = useCardUtilities();
+
+  console.log('props in dbc ::::::::::::: ', props);
+
+  const show3dsModal = true;
+
+  // if (props?.route?.params) {
+  //   const { show3dsModal } = props.route.params;
+  //   console.log('show3dsModal ::::::::::::: ', show3dsModal);
+  // }
 
   const [loading, setLoading] = useState<boolean>(true);
 
@@ -123,6 +138,10 @@ export default function DebitCardScreen(props: RouteProps) {
                 CardApplicationStatus.COMPLETED;
 
               if (cardApplicationStatus) {
+                console.log(
+                  'show3dsModal ::::::::::::: passed in params : ',
+                  show3dsModal,
+                );
                 props.navigation.reset({
                   index: 0,
                   routes: [
@@ -130,6 +149,7 @@ export default function DebitCardScreen(props: RouteProps) {
                       name: screenTitle.BRIDGE_CARD_SCREEN,
                       params: {
                         cardProvider: provider,
+                        ...(show3dsModal && { show3dsModal: true }),
                       },
                     },
                   ],
@@ -232,18 +252,20 @@ export default function DebitCardScreen(props: RouteProps) {
   }
 
   return (
-    <CyDView className='flex-1'>
-      <CardProviderSwitch />
-      {isReadOnlyWallet && (
-        <CyDImageBackground
-          source={AppImages.READ_ONLY_CARD_BACKGROUND}
-          className='h-full items-center justify-center'>
-          <CyDText className='text-[20px] text-center font-bold mt-[30%]'>
-            {t<string>('TRACK_WALLET_CYPHER_CARD')}
-          </CyDText>
-        </CyDImageBackground>
-      )}
-      {!isReadOnlyWallet && <CardWailtList navigation={props.navigation} />}
-    </CyDView>
+    <>
+      <CyDView className='flex-1'>
+        <CardProviderSwitch />
+        {isReadOnlyWallet && (
+          <CyDImageBackground
+            source={AppImages.READ_ONLY_CARD_BACKGROUND}
+            className='h-full items-center justify-center'>
+            <CyDText className='text-[20px] text-center font-bold mt-[30%]'>
+              {t<string>('TRACK_WALLET_CYPHER_CARD')}
+            </CyDText>
+          </CyDImageBackground>
+        )}
+        {!isReadOnlyWallet && <CardWailtList navigation={props.navigation} />}
+      </CyDView>
+    </>
   );
 }

@@ -54,15 +54,18 @@ import { StyleSheet } from 'react-native';
 import CardProviderSwitch from '../../../components/cardProviderSwitch';
 import useCardUtilities from '../../../hooks/useCardUtilities';
 import clsx from 'clsx';
+import ThreeDSecureApprovalModal from '../../../components/v2/threeDSecureApprovalModal';
 
 interface RouteParams {
   cardProvider: CardProviders;
+  show3dsModal?: boolean;
 }
 
 export default function CypherCardScreen() {
   const navigation = useNavigation<NavigationProp<ParamListBase>>();
   const route = useRoute<RouteProp<{ params: RouteParams }, 'params'>>();
-  const { cardProvider } = route?.params ?? {};
+  const { cardProvider, show3dsModal = false } = route?.params ?? {};
+  console.log('show3dsModal ::::::::::::: ', show3dsModal);
   const isFocused = useIsFocused();
   const { t } = useTranslation();
   const { getWithAuth } = useAxios();
@@ -106,6 +109,15 @@ export default function CypherCardScreen() {
   const rcApplicationStatus = get(cardProfile, ['rc', 'applicationStatus'], '');
   const [isLayoutRendered, setIsLayoutRendered] = useState(false);
   const [balanceLoading, setBalanceLoading] = useState(false);
+  const [
+    isThreeDSecureApprovalModalVisible,
+    setIsThreeDSecureApprovalModalVisible,
+  ] = useState<boolean>(show3dsModal ?? false);
+
+  console.log(
+    'isThreeDSecureApprovalModalVisible ::::::::::::: ',
+    isThreeDSecureApprovalModalVisible,
+  );
   const { getWalletProfile } = useCardUtilities();
   const { hasBothProviders } = useCardUtilities();
   const onRefresh = async () => {
@@ -262,245 +274,258 @@ export default function CypherCardScreen() {
   };
 
   return isLayoutRendered ? (
-    <CyDSafeAreaView className='flex-1 bg-gradient-to-b from-cardBgFrom to-cardBgTo'>
-      <CyDView className='flex flex-row justify-between items-center mx-[16px] mt-[4px]'>
-        <CyDView>
-          <CyDText className='font-extrabold text-[26px]'>Cards</CyDText>
+    <>
+      <ThreeDSecureApprovalModal
+        isModalVisible={isThreeDSecureApprovalModalVisible}
+        setIsModalVisible={setIsThreeDSecureApprovalModalVisible}
+      />
+      <CyDSafeAreaView className='flex-1 bg-gradient-to-b from-cardBgFrom to-cardBgTo'>
+        <CyDView className='flex flex-row justify-between items-center mx-[16px] mt-[4px]'>
+          <CyDView>
+            <CyDText className='font-extrabold text-[26px]'>Cards</CyDText>
+          </CyDView>
+          <CyDTouchView
+            className='bg-white rounded-full p-[8px] flex flex-row items-center'
+            onPress={() => {
+              navigation.navigate(screenTitle.GLOBAL_CARD_OPTIONS, {
+                cardProvider,
+                onPressPlanChange,
+                card: get(cardProfile, [cardProvider, 'cards', 0]),
+              });
+            }}>
+            <CyDImage
+              source={AppImages.SETTINGS_TOOLS_ICON}
+              className='w-[14px] h-[14px]'
+            />
+            <CyDText className='font-bold text-[12px] text-base400 ml-[7px]'>
+              {t('OPTIONS')}
+            </CyDText>
+          </CyDTouchView>
         </CyDView>
-        <CyDTouchView
-          className='bg-white rounded-full p-[8px] flex flex-row items-center'
-          onPress={() => {
-            navigation.navigate(screenTitle.GLOBAL_CARD_OPTIONS, {
-              cardProvider,
-              onPressPlanChange,
-              card: get(cardProfile, [cardProvider, 'cards', 0]),
-            });
-          }}>
-          <CyDImage
-            source={AppImages.SETTINGS_TOOLS_ICON}
-            className='w-[14px] h-[14px]'
-          />
-          <CyDText className='font-bold text-[12px] text-base400 ml-[7px]'>
-            {t('OPTIONS')}
-          </CyDText>
-        </CyDTouchView>
-      </CyDView>
-      <CardProviderSwitch />
-      <ShippingFeeConsentModal
-        isModalVisible={isShippingFeeConsentModalVisible}
-        feeAmount={String(physicalCardUpgradationFee)}
-        onSuccess={() => {
-          onShippingConfirmation();
-        }}
-        onFailure={() => {
-          setIsShippingFeeConsentModalVisible(false);
-        }}
-      />
+        <CardProviderSwitch />
+        <ShippingFeeConsentModal
+          isModalVisible={isShippingFeeConsentModalVisible}
+          feeAmount={String(physicalCardUpgradationFee)}
+          onSuccess={() => {
+            onShippingConfirmation();
+          }}
+          onFailure={() => {
+            setIsShippingFeeConsentModalVisible(false);
+          }}
+        />
 
-      {/* TXN FILTER MODAL */}
-      <CardTxnFilterModal
-        navigation={navigation}
-        modalVisibilityState={[filterModalVisible, setFilterModalVisible]}
-        filterState={[filter, setFilter]}
-      />
-      {/* TXN FILTER MODAL */}
-      <CyDView className={'h-[60px] px-[10px] mx-[12px] mt-[24px]'}>
-        {cardId !== HIDDEN_CARD_ID ? (
-          <CyDView className='flex flex-row justify-between items-center'>
-            <CyDView>
-              <CyDText className={'font-semibold text-[10px]'}>
-                {t<string>('TOTAL_BALANCE') + ' (USD)'}
-              </CyDText>
-              <CyDView className='flex flex-row justify-between items-center'>
-                {!balanceLoading ? (
-                  <CyDTouchView onPress={() => fetchCardBalance().catch}>
-                    <CyDView className='flex flex-row items-center justify-start gap-x-[8px]'>
-                      <CyDText className={'font-bold text-[28px]'}>
-                        {(cardBalance !== 'NA' ? '$ ' : '') + cardBalance}
-                      </CyDText>
-                      <CyDImage
-                        source={AppImages.REFRESH_BROWSER}
-                        className='w-[24px] h-[24px]'
-                      />
-                    </CyDView>
-                  </CyDTouchView>
-                ) : (
-                  <LottieView
-                    source={AppImages.LOADER_TRANSPARENT}
-                    autoPlay
-                    loop
-                    style={style.loaderStyle}
-                  />
-                )}
+        {/* TXN FILTER MODAL */}
+        <CardTxnFilterModal
+          navigation={navigation}
+          modalVisibilityState={[filterModalVisible, setFilterModalVisible]}
+          filterState={[filter, setFilter]}
+        />
+        {/* TXN FILTER MODAL */}
+        <CyDView className={'h-[60px] px-[10px] mx-[12px] mt-[24px]'}>
+          {cardId !== HIDDEN_CARD_ID ? (
+            <CyDView className='flex flex-row justify-between items-center'>
+              <CyDView>
+                <CyDText className={'font-semibold text-[10px]'}>
+                  {t<string>('TOTAL_BALANCE') + ' (USD)'}
+                </CyDText>
+                <CyDView className='flex flex-row justify-between items-center'>
+                  {!balanceLoading ? (
+                    <CyDTouchView onPress={() => fetchCardBalance().catch}>
+                      <CyDView className='flex flex-row items-center justify-start gap-x-[8px]'>
+                        <CyDText className={'font-bold text-[28px]'}>
+                          {(cardBalance !== 'NA' ? '$ ' : '') + cardBalance}
+                        </CyDText>
+                        <CyDImage
+                          source={AppImages.REFRESH_BROWSER}
+                          className='w-[24px] h-[24px]'
+                        />
+                      </CyDView>
+                    </CyDTouchView>
+                  ) : (
+                    <LottieView
+                      source={AppImages.LOADER_TRANSPARENT}
+                      autoPlay
+                      loop
+                      style={style.loaderStyle}
+                    />
+                  )}
+                </CyDView>
+              </CyDView>
+              <CyDView className={'h-[36px] w-[42%]'}>
+                <Button
+                  image={AppImages.PLUS_ICON}
+                  disabled={shouldBlockAction()}
+                  onPress={() => {
+                    onPressFundCard();
+                  }}
+                  style='h-[42px] py-[8px] px-[12px] rounded-[6px]'
+                  imageStyle={'mr-[3px] h-[12px] w-[12px]'}
+                  title={t('ADD_FUNDS')}
+                  titleStyle='text-[14px] font-extrabold'
+                />
               </CyDView>
             </CyDView>
-            <CyDView className={'h-[36px] w-[42%]'}>
-              <Button
-                image={AppImages.PLUS_ICON}
-                disabled={shouldBlockAction()}
-                onPress={() => {
-                  onPressFundCard();
-                }}
-                style='h-[42px] py-[8px] px-[12px] rounded-[6px]'
-                imageStyle={'mr-[3px] h-[12px] w-[12px]'}
-                title={t('ADD_FUNDS')}
-                titleStyle='text-[14px] font-extrabold'
-              />
+          ) : (
+            <CyDView className='flex flex-row justify-between items-center'>
+              <CyDView>
+                <CyDText className={'font-bold  text-[18px]'}>
+                  {t<string>('ACTIVATE_CARD')}
+                </CyDText>
+                <CyDText
+                  className={
+                    'font-bold text-subTextColor text-[12px] mt-[2px]'
+                  }>
+                  {t<string>('LOAD_YOUR_CARD_TO_ACTIVATE_IT')}
+                </CyDText>
+              </CyDView>
+              <CyDView className={'h-[36px] w-[42%]'}>
+                <Button
+                  image={AppImages.PLUS_ICON}
+                  disabled={shouldBlockAction()}
+                  onPress={() => {
+                    onPressFundCard();
+                  }}
+                  style='h-[42px] py-[8px] px-[12px] rounded-[6px]'
+                  imageStyle={'mr-[3px] h-[12px] w-[12px]'}
+                  title={t('ADD_FUNDS')}
+                  titleStyle='text-[14px] font-extrabold'
+                />
+              </CyDView>
             </CyDView>
-          </CyDView>
-        ) : (
-          <CyDView className='flex flex-row justify-between items-center'>
-            <CyDView>
-              <CyDText className={'font-bold  text-[18px]'}>
-                {t<string>('ACTIVATE_CARD')}
-              </CyDText>
-              <CyDText
-                className={'font-bold text-subTextColor text-[12px] mt-[2px]'}>
-                {t<string>('LOAD_YOUR_CARD_TO_ACTIVATE_IT')}
-              </CyDText>
-            </CyDView>
-            <CyDView className={'h-[36px] w-[42%]'}>
-              <Button
-                image={AppImages.PLUS_ICON}
-                disabled={shouldBlockAction()}
-                onPress={() => {
-                  onPressFundCard();
-                }}
-                style='h-[42px] py-[8px] px-[12px] rounded-[6px]'
-                imageStyle={'mr-[3px] h-[12px] w-[12px]'}
-                title={t('ADD_FUNDS')}
-                titleStyle='text-[14px] font-extrabold'
-              />
-            </CyDView>
-          </CyDView>
-        )}
-      </CyDView>
+          )}
+        </CyDView>
 
-      <CyDScrollView showsVerticalScrollIndicator={false}>
-        {cardId !== HIDDEN_CARD_ID &&
-          cardProvider === CardProviders.PAYCADDY && (
-            <CyDView className='mx-[16px] my-[12px] bg-white rounded-[16px] p-[8px]'>
-              {rcApplicationStatus !== CardApplicationStatus.COMPLETED ? (
-                <CyDText className='text-[12px] font-medium'>
-                  {
-                    'Important: Complete KYC, get your new VISA card, and transfer funds from your Legacy card to your VISA card by November to avoid losing your balance.'
-                  }
-                </CyDText>
-              ) : (
-                <CyDText className='text-[12px] font-medium'>
-                  {
-                    'Important: Transfer funds from your Legacy card to your VISA card by November to avoid losing your balance.'
-                  }
-                </CyDText>
+        <CyDScrollView showsVerticalScrollIndicator={false}>
+          {cardId !== HIDDEN_CARD_ID &&
+            cardProvider === CardProviders.PAYCADDY && (
+              <CyDView className='mx-[16px] my-[12px] bg-white rounded-[16px] p-[8px]'>
+                {rcApplicationStatus !== CardApplicationStatus.COMPLETED ? (
+                  <CyDText className='text-[12px] font-medium'>
+                    {
+                      'Important: Complete KYC, get your new VISA card, and transfer funds from your Legacy card to your VISA card by November to avoid losing your balance.'
+                    }
+                  </CyDText>
+                ) : (
+                  <CyDText className='text-[12px] font-medium'>
+                    {
+                      'Important: Transfer funds from your Legacy card to your VISA card by November to avoid losing your balance.'
+                    }
+                  </CyDText>
+                )}
+              </CyDView>
+            )}
+
+          <CyDView
+            className={clsx('flex flex-row  items-center mx-[16px] mt-[12px]', {
+              'justify-between': cardId !== HIDDEN_CARD_ID,
+              'justify-end': cardId === HIDDEN_CARD_ID,
+            })}>
+            {cardId !== HIDDEN_CARD_ID &&
+              cardProvider === CardProviders.PAYCADDY && (
+                <CyDView className='flex flex-row justify-center items-center w-full'>
+                  <Button
+                    disabled={
+                      shouldBlockAction() ||
+                      (!isEmpty(cardBalance) && cardBalance === 'NA') ||
+                      rcApplicationStatus !== CardApplicationStatus.COMPLETED
+                    }
+                    onPress={() => {
+                      navigation.navigate(screenTitle.MIGRATE_FUNDS, {
+                        cardId,
+                        currentCardProvider: cardProvider,
+                      });
+                    }}
+                    image={AppImages.MIGRATE_FUNDS_ICON}
+                    style={'p-[9px] rounded-[6px] border-[0px]'}
+                    imageStyle={'mr-[3px] h-[14px] w-[24px]'}
+                    title={t('MOVE_FUNDS_TO_NEW_CARD')}
+                    titleStyle={'text-[12px] font-semibold'}
+                    type={ButtonType.SECONDARY}
+                  />
+                </CyDView>
               )}
+          </CyDView>
+
+          {shouldBlockAction() && (
+            <CyDView className='rounded-[16px] bg-red20 border-[1px] border-red300 p-[14px] m-[16px]'>
+              <CyDText className='text-[18px] font-[700] text-red300'>
+                {'Your account has been locked'}
+              </CyDText>
+              <CyDText className='text-[14px] font-[500] mt-[6px]'>
+                {
+                  'Since, you have enabled lockdown mode, your card load and transactions will be completely disabled '
+                }
+              </CyDText>
+              <CyDTouchView
+                onPress={() => {
+                  void verifyWithOTP();
+                }}>
+                <CyDText className='underline font-[700] text-[14px] mt-[6px]'>
+                  Disable lockdown mode
+                </CyDText>
+              </CyDTouchView>
             </CyDView>
           )}
 
-        <CyDView
-          className={clsx('flex flex-row  items-center mx-[16px] mt-[12px]', {
-            'justify-between': cardId !== HIDDEN_CARD_ID,
-            'justify-end': cardId === HIDDEN_CARD_ID,
-          })}>
-          {cardId !== HIDDEN_CARD_ID &&
-            cardProvider === CardProviders.PAYCADDY && (
-              <CyDView className='flex flex-row justify-center items-center w-full'>
-                <Button
-                  disabled={
-                    shouldBlockAction() ||
-                    (!isEmpty(cardBalance) && cardBalance === 'NA') ||
-                    rcApplicationStatus !== CardApplicationStatus.COMPLETED
-                  }
-                  onPress={() => {
-                    navigation.navigate(screenTitle.MIGRATE_FUNDS, {
-                      cardId,
-                      currentCardProvider: cardProvider,
-                    });
-                  }}
-                  image={AppImages.MIGRATE_FUNDS_ICON}
-                  style={'p-[9px] rounded-[6px] border-[0px]'}
-                  imageStyle={'mr-[3px] h-[14px] w-[24px]'}
-                  title={t('MOVE_FUNDS_TO_NEW_CARD')}
-                  titleStyle={'text-[12px] font-semibold'}
-                  type={ButtonType.SECONDARY}
-                />
-              </CyDView>
-            )}
-        </CyDView>
-
-        {shouldBlockAction() && (
-          <CyDView className='rounded-[16px] bg-red20 border-[1px] border-red300 p-[14px] m-[16px]'>
-            <CyDText className='text-[18px] font-[700] text-red300'>
-              {'Your account has been locked'}
-            </CyDText>
-            <CyDText className='text-[14px] font-[500] mt-[6px]'>
-              {
-                'Since, you have enabled lockdown mode, your card load and transactions will be completely disabled '
-              }
-            </CyDText>
-            <CyDTouchView
-              onPress={() => {
-                void verifyWithOTP();
-              }}>
-              <CyDText className='underline font-[700] text-[14px] mt-[6px]'>
-                Disable lockdown mode
-              </CyDText>
-            </CyDTouchView>
+          <CyDView className='mt-[2px]'>
+            <CardScreen
+              navigation={navigation}
+              currentCardProvider={cardProvider}
+              onPressUpgradeNow={onPressUpgradeNow}
+              onPressActivateCard={onPressActivateCard}
+              refreshProfile={() => {
+                void refreshProfile();
+              }}
+            />
           </CyDView>
-        )}
-
-        <CyDView className='mt-[2px]'>
-          <CardScreen
-            navigation={navigation}
-            currentCardProvider={cardProvider}
-            onPressUpgradeNow={onPressUpgradeNow}
-            onPressActivateCard={onPressActivateCard}
-            refreshProfile={() => {
-              void refreshProfile();
-            }}
-          />
-        </CyDView>
-        <CyDView className='w-full bg-white mt-[26px] pb-[120px]'>
-          <CyDView className='mx-[12px] my-[12px]'>
-            <CyDText className='text-[14px] font-bold ml-[4px] mb-[8px]'>
-              {t<string>('RECENT_TRANSACTIONS')}
-            </CyDText>
-            {recentTransactions.length ? (
-              <CyDView className='border-[1px] border-sepratorColor rounded-[22px] pt-[12px]'>
-                {recentTransactions.map((transaction, index) => {
-                  return <CardTransactionItem item={transaction} key={index} />;
-                })}
-                <CyDTouchView
-                  className='bg-cardBgTo flex flex-row justify-center items-center py-[22px] rounded-b-[22px]'
-                  onPress={() =>
-                    navigation.navigate(screenTitle.CARD_TRANSACTIONS_SCREEN, {
-                      navigation,
-                      cardProvider,
-                      currentCardIndex,
-                    })
-                  }>
-                  <CyDText className='text-[16px] font-bold'>
-                    {t<string>('VIEW_ALL_TRANSACTIONS')}
-                  </CyDText>
-                  <CyDImage
-                    source={AppImages.RIGHT_ARROW_LONG}
-                    className='h-[14px] w-[14px] ml-[4px] mt-[4px] accent-black'
+          <CyDView className='w-full bg-white mt-[26px] pb-[120px]'>
+            <CyDView className='mx-[12px] my-[12px]'>
+              <CyDText className='text-[14px] font-bold ml-[4px] mb-[8px]'>
+                {t<string>('RECENT_TRANSACTIONS')}
+              </CyDText>
+              {recentTransactions.length ? (
+                <CyDView className='border-[1px] border-sepratorColor rounded-[22px] pt-[12px]'>
+                  {recentTransactions.map((transaction, index) => {
+                    return (
+                      <CardTransactionItem item={transaction} key={index} />
+                    );
+                  })}
+                  <CyDTouchView
+                    className='bg-cardBgTo flex flex-row justify-center items-center py-[22px] rounded-b-[22px]'
+                    onPress={() =>
+                      navigation.navigate(
+                        screenTitle.CARD_TRANSACTIONS_SCREEN,
+                        {
+                          navigation,
+                          cardProvider,
+                          currentCardIndex,
+                        },
+                      )
+                    }>
+                    <CyDText className='text-[16px] font-bold'>
+                      {t<string>('VIEW_ALL_TRANSACTIONS')}
+                    </CyDText>
+                    <CyDImage
+                      source={AppImages.RIGHT_ARROW_LONG}
+                      className='h-[14px] w-[14px] ml-[4px] mt-[4px] accent-black'
+                      resizeMode='contain'
+                    />
+                  </CyDTouchView>
+                </CyDView>
+              ) : (
+                <CyDView className='h-full bg-white border-x border-sepratorColor w-full justify-start items-center py-[10%]'>
+                  <CyDFastImage
+                    source={AppImages.NO_TRANSACTIONS_YET}
+                    className='h-[150px] w-[150px]'
                     resizeMode='contain'
                   />
-                </CyDTouchView>
-              </CyDView>
-            ) : (
-              <CyDView className='h-full bg-white border-x border-sepratorColor w-full justify-start items-center py-[10%]'>
-                <CyDFastImage
-                  source={AppImages.NO_TRANSACTIONS_YET}
-                  className='h-[150px] w-[150px]'
-                  resizeMode='contain'
-                />
-              </CyDView>
-            )}
+                </CyDView>
+              )}
+            </CyDView>
           </CyDView>
-        </CyDView>
-      </CyDScrollView>
-    </CyDSafeAreaView>
+        </CyDScrollView>
+      </CyDSafeAreaView>
+    </>
   ) : (
     <Loading />
   );

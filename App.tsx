@@ -16,7 +16,6 @@ import {
 } from './src/core/util';
 import { hdWalletStateReducer, initialHdWalletState } from './src/reducers';
 import analytics from '@react-native-firebase/analytics';
-import '@react-native-firebase/messaging';
 import * as Sentry from '@sentry/react-native';
 import {
   gloabalContextReducer,
@@ -69,6 +68,7 @@ import {
 } from './src/reducers/bridge.reducer';
 import { LinkingOptions } from '@react-navigation/native';
 import { screenTitle } from './src/constants';
+import messaging from '@react-native-firebase/messaging';
 
 const routingInstrumentation = new Sentry.ReactNavigationInstrumentation();
 
@@ -125,6 +125,17 @@ function App() {
   let params = {};
   let renderContent: any = {};
 
+  const buildDeepLinkFromNotificationData = (data: any) => {
+    console.log('data ::::::::::::: ', data);
+    const title = data?.title;
+    switch (title) {
+      case '3Ds Approval Request':
+        return 'https://app.cypherhq.io/card/approve3ds';
+      default:
+        return 'https://app.cypherhq.io';
+    }
+  };
+
   const linking: LinkingOptions<ReactNavigation.RootParamList> = {
     prefixes: ['https://app.cypherhq.io', 'cypherwallet://'],
     config: {
@@ -134,21 +145,54 @@ function App() {
     },
     async getInitialURL() {
       const url = await Linking.getInitialURL();
-      if (url != null) {
-        if (url.includes('/card/referral/')) {
-          const referralCode = url.split('/card/referral/')[1];
+      const message = await messaging().getInitialNotification();
+      const deeplinkURL =
+        url !== null ? url : buildDeepLinkFromNotificationData(message?.data);
+      console.log('deeplinkURL :: ', deeplinkURL);
+      console.log('url :: ', url);
+      // if (typeof deeplinkURL === 'string') {
+      //   return deeplinkURL;
+      // }
+
+      if (deeplinkURL != null) {
+        if (deeplinkURL.includes('/card/referral/')) {
+          const referralCode = deeplinkURL.split('/card/referral/')[1];
           await setReferralCodeAsync(referralCode);
           setDeepLinkData({
             screenToNavigate: screenTitle.I_HAVE_REFERRAL_CODE_SCREEN,
           });
           void referralLinkAnalytics(referralCode);
-        } else if (url.includes('/card/telegramPinSetup')) {
+        } else if (deeplinkURL.includes('/card/telegramPinSetup')) {
           setDeepLinkData({
             screenToNavigate: screenTitle.TELEGRAM_PIN_SETUP,
+          });
+        } else if (deeplinkURL.includes('/card/approve3ds')) {
+          setDeepLinkData({
+            screenToNavigate: screenTitle.DEBIT_CARD_SCREEN,
           });
         }
       }
       return null;
+    },
+    subscribe(listener: (url: string) => void) {
+      const onReceiveURL = ({ url }: { url: string }) => listener(url);
+
+      // Listen to incoming links from deep linking
+      const linkingSubscription = Linking.addEventListener('url', onReceiveURL);
+
+      // onNotificationOpenedApp: When the application is running, but in the background.
+      const unsubscribe = messaging().onNotificationOpenedApp(remoteMessage => {
+        console.log('remoteMessage', remoteMessage);
+        const buildUrl = buildDeepLinkFromNotificationData(remoteMessage.data);
+        if (typeof buildUrl === 'string') {
+          listener(buildUrl);
+        }
+      });
+
+      return () => {
+        linkingSubscription.remove();
+        unsubscribe();
+      };
     },
   };
 

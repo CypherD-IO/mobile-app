@@ -2,7 +2,11 @@ import React, { useCallback, useContext, useEffect, useState } from 'react';
 import useInitializer from '../../hooks/useInitializer';
 import { GlobalContext, GlobalContextDef } from '../../core/globalContext';
 import { Linking, Platform } from 'react-native';
-import { onMessage, registerForRemoteMessages } from '../../core/push';
+import {
+  onMessage,
+  registerForRemoteMessages,
+  setCategories,
+} from '../../core/push';
 import { PinPresentStates } from '../../constants/enum';
 import PinAuthRoute from '../../routes/pinAuthRoute';
 import * as C from '../../../src/constants/index';
@@ -68,6 +72,7 @@ export const InitializeAppProvider: React.FC<JSX.Element> = ({ children }) => {
         void checkForUpdatesAndShowModal(setUpdateModal);
         void loadActivitiesFromAsyncStorage();
 
+        void setCategories();
         if (Platform.OS === 'ios') {
           registerForRemoteMessages();
         } else {

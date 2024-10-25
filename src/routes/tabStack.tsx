@@ -83,12 +83,20 @@ function TabStack(props: TabStackProps) {
   useEffect(() => {
     if (deepLinkData?.screenToNavigate) {
       let tabName;
+      let params;
       switch (deepLinkData.screenToNavigate) {
         case screenTitle.I_HAVE_REFERRAL_CODE_SCREEN:
           tabName = screenTitle.DEBIT_CARD_SCREEN;
           break;
         case screenTitle.TELEGRAM_PIN_SETUP:
           tabName = screenTitle.DEBIT_CARD_SCREEN;
+          break;
+        case screenTitle.DEBIT_CARD_SCREEN:
+          tabName = screenTitle.DEBIT_CARD_SCREEN;
+          params = {
+            show3dsModal: true,
+          };
+          console.log('params ::::::::::::: ', params);
           break;
         // Add more cases here for other deep link scenarios
         default:
@@ -97,6 +105,7 @@ function TabStack(props: TabStackProps) {
       if (tabName) {
         navigationRef.current?.navigate(tabName, {
           screenToNavigate: deepLinkData.screenToNavigate,
+          ...params,
         });
       } else {
         console.warn(

@@ -5,6 +5,7 @@ import PushNotification from 'react-native-push-notification';
 import { FirebaseMessagingTypes } from '@react-native-firebase/messaging';
 import { hostWorker } from '../global';
 import { isAddressSet } from './util';
+import notifee, { AndroidImportance, EventType } from '@notifee/react-native';
 
 export const getToken = async (
   walletAddress: string,
@@ -22,6 +23,7 @@ export const getToken = async (
       .messaging()
       .getToken()
       .then(fcmToken => {
+        console.log('fcmToken .........', fcmToken);
         if (isAddressSet(walletAddress)) {
           const registerURL = `${ARCH_HOST}/v1/configuration/device/register`;
           const payload = {
@@ -79,19 +81,59 @@ export const requestPermissions = () => {
     });
 };
 
-export const showNotification = (
+export const setCategories = async () => {
+  await notifee.setNotificationCategories([
+    {
+      id: 'notification',
+      actions: [
+        {
+          id: 'approve',
+          title: 'Approve Transaction',
+        },
+        {
+          id: 'reject',
+          title: 'Reject Transaction',
+        },
+      ],
+    },
+  ]);
+};
+
+export const showNotification = async (
   notification: FirebaseMessagingTypes.Notification | undefined,
 ) => {
+  const channelId = await notifee.createChannel({
+    id: 'default',
+    name: 'Default Channel',
+    importance: AndroidImportance.HIGH,
+  });
+
   if (notification?.body) {
-    PushNotification.localNotification({
+    await notifee.displayNotification({
       title: notification.title,
-      message: notification.body,
+      body: notification.body,
+      android: {
+        channelId,
+        actions: [
+          {
+            title: 'Approve Transaction',
+            pressAction: { id: 'approve' },
+          },
+          {
+            title: 'Reject Transaction',
+            pressAction: { id: 'reject' },
+          },
+        ],
+      },
+      ios: {
+        categoryId: 'notification',
+      },
     });
   }
 };
 
 export const onMessage = () => {
   firebase.messaging().onMessage(response => {
-    showNotification(response.notification);
+    void showNotification(response.notification);
   });
 };

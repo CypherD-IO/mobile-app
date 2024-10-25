@@ -665,6 +665,12 @@ const RC_PHYSICAL_METAL = require('./cypherMetalCard.png');
 const LOCKED_ICON_BLACK = {
   uri: `${S3_BUCKET_URL_ICONS}/lockedIconBlack.png`,
 };
+const CARD_ICON_WHITE = {
+  uri: `${S3_BUCKET_URL_ICONS}/cardIconWhite.png`,
+};
+const VERIFIED_BY_VISA_WHITE = {
+  uri: `${S3_BUCKET_URL_ICONS}/verifiedByVisaWhite.png`,
+};
 
 const AppImages = {
   KYC_VERIFICATION_FAILED,
@@ -1117,5 +1123,7 @@ const AppImages = {
   PREMIUM_LABEL,
   RC_PHYSICAL_METAL,
   LOCKED_ICON_BLACK,
+  CARD_ICON_WHITE,
+  VERIFIED_BY_VISA_WHITE,
 };
 export default AppImages;

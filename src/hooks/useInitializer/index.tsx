@@ -346,6 +346,7 @@ export default function useInitializer() {
             },
           );
         });
+        console.log('callong get tokens');
         await getToken(
           get(attributes, 'ethereumAddress', ''),
           get(attributes, 'cosmosAddress'),
