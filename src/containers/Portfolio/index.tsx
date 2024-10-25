@@ -74,7 +74,7 @@ import clsx from 'clsx';
 import FilterBar from './components/FilterBar';
 import BannerCarousel from './components/BannerCarousel';
 import { DeFiFilter, protocolOptionType } from '../../models/defi.interface';
-import { isEmpty } from 'lodash';
+import { get, groupBy, isEmpty } from 'lodash';
 import {
   BridgeContext,
   BridgeContextDef,
@@ -113,6 +113,9 @@ export default function Portfolio({ navigation }: PortfolioProps) {
   const [copyToClipBoard, setCopyToClipBoard] = useState<boolean>(false);
   const [appState, setAppState] = useState<string>('');
   const [filterModalVisible, setFilterModalVisible] = useState(false);
+  const [tokenHoldingsByCoinGeckoId, setTokenHoldingsByCoinGeckoId] = useState<
+    Record<string, Holding[]>
+  >({});
 
   const [deFiFilters, setDeFiFilters] = useState<DeFiFilter>({
     chain: ChainBackendNames.ALL,
@@ -210,6 +213,11 @@ export default function Portfolio({ navigation }: PortfolioProps) {
     }
   }, [isFocused]);
 
+  const groupTokenHoldingsByCoinGeckoId = (portfolio: WalletHoldings) => {
+    const holdings = groupBy(portfolio.totalHoldings, 'coinGeckoId');
+    setTokenHoldingsByCoinGeckoId(holdings);
+  };
+
   const fetchPortfolioData = async (
     tempIsVerifiedCoinChecked = isVerifyCoinChecked,
   ) => {
@@ -225,6 +233,7 @@ export default function Portfolio({ navigation }: PortfolioProps) {
         isPortfolioEmpty: !localPortfolio?.totalHoldings?.length,
         lastUpdatedAt: new Date().toISOString(),
       });
+      groupTokenHoldingsByCoinGeckoId(localPortfolio);
       setIsPortfolioLoading(false);
     }
     setIsPortfolioRefreshing(true);
@@ -239,6 +248,7 @@ export default function Portfolio({ navigation }: PortfolioProps) {
         isPortfolioEmpty: response.isPortfolioEmpty,
         lastUpdatedAt: new Date().toISOString(),
       });
+      groupTokenHoldingsByCoinGeckoId(response.data as WalletHoldings);
     }
     setIsPortfolioLoading(false);
     setIsPortfolioRefreshing(false);
@@ -548,7 +558,11 @@ export default function Portfolio({ navigation }: PortfolioProps) {
           item={item}
           index={index}
           isVerifyCoinChecked={false}
-          otherChainsWithToken={[]} // To Do
+          otherChainsWithToken={get(
+            tokenHoldingsByCoinGeckoId,
+            item.coinGeckoId,
+            [],
+          )} // To Do
           navigation={navigation}
           onSwipe={onSwipe}
           setSwipeableRefs={setSwipeableRefs}
