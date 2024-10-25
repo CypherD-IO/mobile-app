@@ -23,7 +23,6 @@ import { limitDecimalPlaces } from '../../core/util';
 interface PortfolioTokenItemProps {
   item: Holding;
   index: number;
-  otherChainsWithToken: any[];
   isVerifyCoinChecked: boolean;
   navigation: {
     goBack: () => void;
@@ -247,7 +246,6 @@ const RenderRightActions = (navigation: any, tokenData: any) => {
 const PortfolioTokenItem = ({
   item,
   index,
-  otherChainsWithToken,
   isVerifyCoinChecked,
   navigation,
   onSwipe,
@@ -270,7 +268,6 @@ const PortfolioTokenItem = ({
         onPress={() => {
           navigation.navigate(screenTitle.TOKEN_OVERVIEW, {
             tokenData: item,
-            otherChainsWithToken,
           });
         }}>
         <CyDView className='flex flex-row h-full mb-[10px] items-center rounded-r-[20px] self-center pl-[10px] pr-[10px]'>
