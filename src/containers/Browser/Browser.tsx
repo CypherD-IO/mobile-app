@@ -284,7 +284,7 @@ export default function Browser({ route, navigation }: any) {
     const keyboardDidHideListener = Keyboard.addListener(
       'keyboardDidHide',
       () => {
-        setKeyboardVisible(false); // or some other action
+        setKeyboardVisible(false);
       },
     );
 
