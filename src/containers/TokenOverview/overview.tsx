@@ -618,7 +618,6 @@ export default function Overview({
                           name: screenTitle.TOKEN_OVERVIEW,
                           params: {
                             tokenData: item,
-                            otherChainsWithToken,
                           },
                         },
                       ],
