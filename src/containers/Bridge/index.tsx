@@ -15,7 +15,16 @@ import {
   useNavigation,
   useRoute,
 } from '@react-navigation/native';
-import { debounce, endsWith, floor, get, isEmpty, isNil, isNull } from 'lodash';
+import {
+  debounce,
+  endsWith,
+  floor,
+  get,
+  isEmpty,
+  isNil,
+  isNull,
+  round,
+} from 'lodash';
 import { useGlobalModalContext } from '../../components/v2/GlobalModal';
 import Loading from '../../components/v2/loading';
 import { ChainIdNameMapping, gasFeeReservation } from '../../constants/data';
@@ -565,14 +574,17 @@ const Bridge: React.FC = () => {
     const isNativeToken = selectedFromToken?.isNative ?? false;
 
     const bal = isNativeToken
-      ? (
-          get(selectedFromToken, 'balance', 0) -
-          get(gasFeeReservation, [fromChainDetails?.backendName ?? ''], 0)
+      ? round(
+          Number(get(selectedFromToken, 'balance', 0)) -
+            Number(
+              get(gasFeeReservation, [fromChainDetails?.backendName ?? ''], 0),
+            ),
+          10,
         )?.toString()
-      : get(selectedFromToken, 'balance', 0)?.toString();
+      : Number(get(selectedFromToken, 'balance', 0))?.toString();
 
     if (Number(bal) > 0) {
-      setCryptoAmount(bal);
+      setCryptoAmount(bal.toString());
       setUsdAmount(String(Number(bal) * Number(selectedFromToken?.price)));
     } else {
       setError('Insufficient balance for gas fee');
@@ -671,7 +683,16 @@ const Bridge: React.FC = () => {
             quoteError?.message.includes('bridge relay')
           ) {
             setQuoteData(null);
-            setError(quoteError?.message);
+            if (
+              quoteError?.message.includes('no routes') &&
+              selectedFromToken.symbol.toLowerCase() !== 'usdc'
+            ) {
+              setError(
+                `Swap ${selectedFromToken.name} to USDC token and then bridge USDC to ${selectedToToken.name}`,
+              );
+            } else {
+              setError(quoteError?.message);
+            }
           } else {
             setError(quoteError?.message);
             void analytics().logEvent('BRIDGE_QUOTE_ERROR', {
@@ -2087,10 +2108,6 @@ const Bridge: React.FC = () => {
             onClickMax={onClickMax}
             onToggle={onToggle}
             loading={loading.quoteLoading || loading.pageLoading}
-            // fetchQuote={() => {
-            //   resetValues();
-            //   void fetchQuote();
-            // }}
           />
         )}
         {!isOdosSwap() && index === 1 && (
@@ -2120,7 +2137,8 @@ const Bridge: React.FC = () => {
                     <CyDText>{error}</CyDText>
                   </CyDView>
                 )}
-                {parseFloat(usdAmount) > (selectedFromToken?.balance ?? 0) && (
+                {parseFloat(cryptoAmount) >
+                  (selectedFromToken?.balance ?? 0) && (
                   <CyDView className='flex flex-row gap-x-[8px]'>
                     <CyDText>{'\u2022'}</CyDText>
                     {!isOdosSwap() && !isSkipSwap() && (
