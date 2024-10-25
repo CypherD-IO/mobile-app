@@ -1,7 +1,3 @@
-/**
- * @format
- * @flow
- */
 import React, {
   useCallback,
   useContext,
@@ -10,83 +6,83 @@ import React, {
   useRef,
   useState,
 } from 'react';
+import analytics from '@react-native-firebase/analytics';
+import messaging, {
+  FirebaseMessagingTypes,
+} from '@react-native-firebase/messaging';
+import { useIsFocused } from '@react-navigation/native';
+import * as Sentry from '@sentry/react-native';
+import clsx from 'clsx';
+import { isEmpty } from 'lodash';
+import LottieView from 'lottie-react-native';
+import moment from 'moment';
+import { useTranslation } from 'react-i18next';
 import {
   AppState,
   BackHandler,
   FlatList,
   ListRenderItem,
   SectionList,
-  useWindowDimensions,
   StyleSheet,
+  useWindowDimensions,
 } from 'react-native';
-import analytics from '@react-native-firebase/analytics';
-import * as C from '../../constants/index';
-import { useTranslation } from 'react-i18next';
+import { BarCodeReadEvent } from 'react-native-camera';
+import { Swipeable } from 'react-native-gesture-handler';
 import AppImages from '../../../assets/images/appImages';
 import {
   ChooseChainModal,
   WHERE_PORTFOLIO,
 } from '../../components/ChooseChainModal';
 import EmptyView from '../../components/EmptyView';
+import CopytoKeyModal from '../../components/ShowPharseModal';
+import Button from '../../components/v2/button';
+import PortfolioTokenItem from '../../components/v2/portfolioTokenItem';
+import CyDTokenValue from '../../components/v2/tokenValue';
 import {
-  CyDImage,
-  CyDView,
-  CyDSafeAreaView,
-  CyDFlatList,
-  CyDText,
-  CyDTouchView,
-} from '../../styles/tailwindStyles';
+  GlobalContextType,
+  TokenOverviewTabIndices,
+} from '../../constants/enum';
+import * as C from '../../constants/index';
 import {
-  CHAIN_COLLECTION,
   Chain,
+  CHAIN_COLLECTION,
   ChainBackendNames,
   NotificationEvents,
 } from '../../constants/server';
-import CopytoKeyModal from '../../components/ShowPharseModal';
+import {
+  getHideBalanceStatus,
+  getIBC,
+  getPortfolioData,
+} from '../../core/asyncStorage';
+import { GlobalContext } from '../../core/globalContext';
+import useAxios from '../../core/HttpRequest';
 import {
   getCurrentChainHoldings,
   Holding,
   WalletHoldings,
 } from '../../core/portfolio';
-import messaging, {
-  FirebaseMessagingTypes,
-} from '@react-native-firebase/messaging';
-import * as Sentry from '@sentry/react-native';
-import {
-  getPortfolioData,
-  getIBC,
-  getHideBalanceStatus,
-} from '../../core/asyncStorage';
-import { useIsFocused } from '@react-navigation/native';
-import { GlobalContext } from '../../core/globalContext';
 import { HdWalletContext } from '../../core/util';
-import {
-  GlobalContextType,
-  TokenOverviewTabIndices,
-} from '../../constants/enum';
-import Button from '../../components/v2/button';
-import { HeaderBar, Banner, RefreshTimerBar } from './components';
-import { BarCodeReadEvent } from 'react-native-camera';
-import { DeFiScene, NFTScene, TXNScene } from './scenes';
-import CyDTokenValue from '../../components/v2/tokenValue';
-import moment from 'moment';
-import clsx from 'clsx';
-import FilterBar from './components/FilterBar';
-import BannerCarousel from './components/BannerCarousel';
+import usePortfolio from '../../hooks/usePortfolio';
 import { DeFiFilter, protocolOptionType } from '../../models/defi.interface';
-import { isEmpty } from 'lodash';
+import { IPortfolioData } from '../../models/portfolioData.interface';
 import {
   BridgeContext,
   BridgeContextDef,
   BridgeReducerAction,
 } from '../../reducers/bridge.reducer';
-import useAxios from '../../core/HttpRequest';
+import {
+  CyDFlatList,
+  CyDImage,
+  CyDSafeAreaView,
+  CyDText,
+  CyDTouchView,
+  CyDView,
+} from '../../styles/tailwindStyles';
 import { SwapBridgeChainData, SwapBridgeTokenData } from '../Bridge';
-import usePortfolio from '../../hooks/usePortfolio';
-import { IPortfolioData } from '../../models/portfolioData.interface';
-import PortfolioTokenItem from '../../components/v2/portfolioTokenItem';
-import { Swipeable } from 'react-native-gesture-handler';
-import LottieView from 'lottie-react-native';
+import { Banner, HeaderBar, RefreshTimerBar } from './components';
+import BannerCarousel from './components/BannerCarousel';
+import FilterBar from './components/FilterBar';
+import { DeFiScene, NFTScene, TXNScene } from './scenes';
 
 export interface PortfolioProps {
   navigation: any;
@@ -548,7 +544,6 @@ export default function Portfolio({ navigation }: PortfolioProps) {
           item={item}
           index={index}
           isVerifyCoinChecked={false}
-          otherChainsWithToken={[]} // To Do
           navigation={navigation}
           onSwipe={onSwipe}
           setSwipeableRefs={setSwipeableRefs}

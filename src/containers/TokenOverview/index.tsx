@@ -30,24 +30,39 @@ import clsx from 'clsx';
 import { isAndroid, isIOS } from '../../misc/checkers';
 import { Layout } from 'react-native-reanimated';
 import { Colors } from '../../constants/theme';
+import usePortfolio from '../../hooks/usePortfolio';
+import { Holding } from '../../core/portfolio';
+import { get, groupBy } from 'lodash';
 
 interface RouteParams {
   tokenData: TokenMeta;
-  otherChainsWithToken: any[];
   navigateTo?: string;
 }
 
 function TokenOverviewV2() {
   const navigation = useNavigation<NavigationProp<ParamListBase>>();
+  const { getLocalPortfolio } = usePortfolio();
+
   const route = useRoute<RouteProp<{ params: RouteParams }, 'params'>>();
   const isFocused = useIsFocused();
-  const { tokenData, otherChainsWithToken } = route.params;
+  const { tokenData } = route.params;
   const [tokenTabs, setTokenTabs] = useState([
     TokenOverviewTabs.OVERVIEW,
     TokenOverviewTabs.TRANSACTIONS,
   ]);
   const [index, setIndex] = useState<number>(0);
   const [loading, setLoading] = useState<boolean>(true);
+  const [tokenHoldingsByCoinGeckoId, setTokenHoldingsByCoinGeckoId] = useState<
+    Record<string, Holding[]>
+  >({});
+
+  const getTokenHoldingsByCoinGeckoId = async () => {
+    const localPortfolio = await getLocalPortfolio();
+    if (localPortfolio) {
+      const holdings = groupBy(localPortfolio.totalHoldings, 'coinGeckoId');
+      setTokenHoldingsByCoinGeckoId(holdings);
+    }
+  };
 
   useEffect(() => {
     if (isFocused) {
@@ -60,6 +75,7 @@ function TokenOverviewV2() {
         ].includes(+route.params.navigateTo)
       ) {
         void analytics().logEvent('visited_token_overview_page');
+        void getTokenHoldingsByCoinGeckoId();
         setIndex(TokenOverviewTabIndices.OVERVIEW);
       } else {
         setIndex(+route.params.navigateTo);
@@ -108,7 +124,15 @@ function TokenOverviewV2() {
           {index === 0 && (
             <Overview
               tokenData={tokenData}
-              otherChainsWithToken={otherChainsWithToken}
+              otherChainsWithToken={get(
+                tokenHoldingsByCoinGeckoId,
+                tokenData.coinGeckoId,
+                [],
+              ).filter(
+                holding =>
+                  holding.chainDetails.backendName !==
+                  tokenData.chainDetails.backendName,
+              )}
               navigation={navigation}
             />
           )}
