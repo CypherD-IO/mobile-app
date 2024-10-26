@@ -28,7 +28,7 @@ export const gasFeeReservation: Record<ChainBackendNames, number> = {
   SHARDEUM: 0.1,
   SHARDEUM_SPHINX: 0.01,
   ZKSYNC_ERA: 0.0006, // TODO
-  BASE: 0.0006, // TODO
+  BASE: 0.000004,
   POLYGON_ZKEVM: 0.0006, // TODO
   AURORA: 0.0006, // TODO
   MOONBEAM: 0.0006, // TODO
