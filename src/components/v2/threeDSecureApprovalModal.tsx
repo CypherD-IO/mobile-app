@@ -93,12 +93,12 @@ export default function ThreeDSecureApprovalModal({
                 {formatTime(timer ?? 0)}
               </CyDText>
             </CyDView>
-            {/* <CyDTouchView onPress={() => setIsModalVisible(false)}>
+            <CyDTouchView onPress={() => setIsModalVisible(false)}>
               <CyDImage
                 source={AppImages.BLACK_CLOSE}
                 className='h-[12px] w-[12px]'
               />
-            </CyDTouchView> */}
+            </CyDTouchView>
           </CyDView>
         </CyDView>
         <CyDView className='mt-[50px]'>

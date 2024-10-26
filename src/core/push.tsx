@@ -102,6 +102,7 @@ export const setCategories = async () => {
 export const showNotification = async (
   notification: FirebaseMessagingTypes.Notification | undefined,
 ) => {
+  console.log('showNotification :::::::::: ', notification);
   const channelId = await notifee.createChannel({
     id: 'default',
     name: 'Default Channel',
@@ -109,9 +110,19 @@ export const showNotification = async (
   });
 
   if (notification?.body) {
+    // let body = notification.body;
+    // try {
+    //   const bodyData = JSON.parse(body);
+    //   body = bodyData.msg;
+    // } catch (e) {
+    //   console.log('Error parsing notification body:', e);
+    // }
+
     await notifee.displayNotification({
-      title: notification.title,
-      body: notification.body,
+      // title: notification.title,
+      // body: body,
+      title: 'hi',
+      body: 'hello',
       android: {
         channelId,
         actions: [
@@ -134,6 +145,7 @@ export const showNotification = async (
 
 export const onMessage = () => {
   firebase.messaging().onMessage(response => {
+    console.log('from onMessage :::::::::: ', response);
     void showNotification(response.notification);
   });
 };

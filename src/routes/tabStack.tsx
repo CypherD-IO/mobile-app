@@ -1,12 +1,6 @@
 import React, { useCallback, useEffect, useMemo, useState } from 'react';
 import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
-import {
-  NavigationContainer,
-  NavigationProp,
-  ParamListBase,
-  useNavigation,
-  useNavigationContainerRef,
-} from '@react-navigation/native';
+import { useNavigation } from '@react-navigation/native';
 import { Animated, BackHandler, StyleSheet, ToastAndroid } from 'react-native';
 import AppImages from '../../assets/images/appImages';
 import { screenTitle } from '../constants';
@@ -55,9 +49,7 @@ function TabStack(props: TabStackProps) {
 
   let backPressCount = 0;
 
-  // Use useNavigationContainerRef to get access to the navigation ref
-  const navigationRef = useNavigationContainerRef();
-  // Determine if the tab bar should be shown
+  const navigation = useNavigation();
 
   const handleBackButton = () => {
     if (backPressCount === 0) {
@@ -103,7 +95,7 @@ function TabStack(props: TabStackProps) {
           tabName = screenTitle.PORTFOLIO_SCREEN;
       }
       if (tabName) {
-        navigationRef.current?.navigate(tabName, {
+        navigation.navigate(tabName, {
           screenToNavigate: deepLinkData.screenToNavigate,
           ...params,
         });
@@ -158,111 +150,105 @@ function TabStack(props: TabStackProps) {
   }, []);
 
   const getCurrentRouteName = useCallback(() => {
-    if (navigationRef.current) {
-      const state = navigationRef.current.getRootState();
+    if (navigation) {
+      const state = navigation.getRootState();
       return getActiveRouteName(state);
     }
     return undefined;
   }, [getActiveRouteName]);
 
   useEffect(() => {
-    const unsubscribe = navigationRef.current?.addListener('state', () => {
+    const unsubscribe = navigation.addListener('state', () => {
       const currentRouteName = getCurrentRouteName();
       setShowTabBar(screensToHaveNavBar.includes(currentRouteName ?? ''));
     });
 
-    return () => {
-      if (unsubscribe) {
-        unsubscribe();
-      }
-    };
-  }, [getCurrentRouteName]);
+    return unsubscribe; // This is cleaner and ensures the listener is always removed
+  }, [getCurrentRouteName, navigation]);
 
   return (
-    <NavigationContainer independent={true} ref={navigationRef}>
-      <Tab.Navigator
-        screenOptions={({ route }) => ({
+    <Tab.Navigator
+      screenOptions={({ route }) => ({
+        headerShown: false,
+        tabBarIcon: ({ focused }) => {
+          let iconSource;
+          if (route.name === screenTitle.PORTFOLIO) {
+            iconSource = focused
+              ? AppImages.PORTFOLIO_SEL
+              : AppImages.PORTFOLIO_UNSEL;
+          } else if (route.name === screenTitle.DEBIT_CARD_SCREEN) {
+            iconSource = focused ? AppImages.CARD_SEL : AppImages.CARD_UNSEL;
+          } else if (route.name === screenTitle.SWAP) {
+            iconSource = focused ? AppImages.SWAP_SEL : AppImages.SWAP_UNSEL;
+          } else if (route.name === screenTitle.OPTIONS) {
+            iconSource = focused
+              ? AppImages.OPTION_SEL
+              : AppImages.OPTION_UNSEL;
+          }
+          return (
+            <CyDFastImage
+              source={iconSource}
+              className={'w-[32px] h-[32px]'}
+            />
+          );
+        },
+        tabBarHideOnKeyboard: true,
+        tabBarInactiveTintColor: '#7A8699',
+        tabBarActiveTintColor: '#000000',
+        tabBarLabelStyle: {
+          fontSize: 12,
+          fontWeight: '400' as const,
+          fontFamily: 'Manrope',
+        },
+        tabBarStyle,
+        tabBarBackground: () => (
+          <CyDView className='absolute inset-0 bg-n0 rounded-t-[22px] shadow-xl shadow-gray-400' />
+        ),
+      })}
+      initialRouteName={screenTitle.PORTFOLIO}>
+      <Tab.Screen
+        name={screenTitle.PORTFOLIO}
+        component={PortfolioStackScreen}
+        options={{
+          lazy: true,
+        }}
+      />
+      <Tab.Screen
+        name={screenTitle.DEBIT_CARD_SCREEN}
+        component={DebitCardStackScreen}
+        options={{
+          lazy: true,
           headerShown: false,
-          tabBarIcon: ({ focused }) => {
-            let iconSource;
-            if (route.name === screenTitle.PORTFOLIO) {
-              iconSource = focused
-                ? AppImages.PORTFOLIO_SEL
-                : AppImages.PORTFOLIO_UNSEL;
-            } else if (route.name === screenTitle.DEBIT_CARD_SCREEN) {
-              iconSource = focused ? AppImages.CARD_SEL : AppImages.CARD_UNSEL;
-            } else if (route.name === screenTitle.SWAP) {
-              iconSource = focused ? AppImages.SWAP_SEL : AppImages.SWAP_UNSEL;
-            } else if (route.name === screenTitle.OPTIONS) {
-              iconSource = focused
-                ? AppImages.OPTION_SEL
-                : AppImages.OPTION_UNSEL;
-            }
-            return (
-              <CyDFastImage
-                source={iconSource}
-                className={'w-[32px] h-[32px]'}
-              />
-            );
-          },
-          tabBarHideOnKeyboard: true,
-          tabBarInactiveTintColor: '#7A8699',
-          tabBarActiveTintColor: '#000000',
-          tabBarLabelStyle: {
-            fontSize: 12,
-            fontWeight: '400' as const,
-            fontFamily: 'Manrope',
-          },
-          tabBarStyle,
-          tabBarBackground: () => (
-            <CyDView className='absolute inset-0 bg-n0 rounded-t-[22px] shadow-xl shadow-gray-400' />
+        }}
+      />
+      <Tab.Screen
+        name={screenTitle.SHORTCUTS}
+        component={PortfolioStackScreen}
+        options={({ route }) => ({
+          tabBarButton: () => (
+            <CyDView className={'scale-110 shadow shadow-yellow-200'}>
+              <ShortcutsModal />
+            </CyDView>
           ),
         })}
-        initialRouteName={screenTitle.PORTFOLIO}>
-        <Tab.Screen
-          name={screenTitle.PORTFOLIO}
-          component={PortfolioStackScreen}
-          options={{
-            lazy: true,
-          }}
-        />
-        <Tab.Screen
-          name={screenTitle.DEBIT_CARD_SCREEN}
-          component={DebitCardStackScreen}
-          options={{
-            lazy: true,
-            headerShown: false,
-          }}
-        />
-        <Tab.Screen
-          name={screenTitle.SHORTCUTS}
-          component={PortfolioStackScreen}
-          options={({ route }) => ({
-            tabBarButton: () => (
-              <CyDView className={'scale-110 shadow shadow-yellow-200'}>
-                <ShortcutsModal />
-              </CyDView>
-            ),
-          })}
-        />
-        <Tab.Screen
-          name={screenTitle.SWAP}
-          component={SwapStackScreen}
-          options={{
-            lazy: true,
-            headerShown: false,
-          }}
-        />
-        <Tab.Screen
-          name={screenTitle.OPTIONS}
-          component={OptionsStackScreen}
-          options={{
-            lazy: true,
-            headerShown: false,
-          }}
-        />
-      </Tab.Navigator>
-    </NavigationContainer>
+      />
+      <Tab.Screen
+        name={screenTitle.SWAP}
+        component={SwapStackScreen}
+        options={{
+          lazy: true,
+          headerShown: false,
+        }}
+      />
+      <Tab.Screen
+        name={screenTitle.OPTIONS}
+        component={OptionsStackScreen}
+        options={{
+          lazy: true,
+          headerShown: false,
+        }}
+      />
+    </Tab.Navigator>
   );
 }
 

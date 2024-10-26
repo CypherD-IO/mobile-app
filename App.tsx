@@ -140,6 +140,9 @@ function App() {
     prefixes: ['https://app.cypherhq.io', 'cypherwallet://'],
     config: {
       screens: {
+        // [screenTitle.I_HAVE_REFERRAL_CODE_SCREEN]: 'card/referral/*',
+        [screenTitle.TELEGRAM_PIN_SETUP]: 'card/telegramPinSetup',
+        [screenTitle.DEBIT_CARD_SCREEN]: 'card/approve3ds',
         [screenTitle.PORTFOLIO]: '*',
       },
     },
@@ -190,8 +193,12 @@ function App() {
       });
 
       return () => {
-        linkingSubscription.remove();
-        unsubscribe();
+        if (linkingSubscription) {
+          linkingSubscription.remove();
+        }
+        if (unsubscribe) {
+          unsubscribe();
+        }
       };
     },
   };

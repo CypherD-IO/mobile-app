@@ -56,12 +56,11 @@ export default function DebitCardScreen(props: RouteProps) {
 
   console.log('props in dbc ::::::::::::: ', props);
 
-  const show3dsModal = true;
-
-  // if (props?.route?.params) {
-  //   const { show3dsModal } = props.route.params;
-  //   console.log('show3dsModal ::::::::::::: ', show3dsModal);
-  // }
+  let show3dsModal = false;
+  if (props?.route?.params) {
+    show3dsModal = props.route.params.show3dsModal;
+    console.log('show3dsModal ::::::::::::: ', show3dsModal);
+  }
 
   const [loading, setLoading] = useState<boolean>(true);
 
