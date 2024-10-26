@@ -669,6 +669,20 @@ export function PortfolioStackScreen() {
           headerLeft: () => defaultHeaderLeft(navigation, keyboardHeight),
         })}
       />
+      <PortfolioStack.Screen
+        name={screenTitle.BROWSER}
+        component={BrowserStackScreen}
+        options={({ navigation }) => ({
+          headerTransparent: false,
+          headerShadowVisible: false,
+          title: 'Browser',
+          headerTitleAlign: 'center',
+          headerTitleStyle: portfolioStackScreenHeaderTitleStyles,
+          headerTintColor: Colors.primaryTextColor,
+          headerBackTitleVisible: false,
+          headerLeft: () => defaultHeaderLeft(navigation, keyboardHeight),
+        })}
+      />
     </PortfolioStack.Navigator>
   );
 }
