@@ -5,6 +5,7 @@ import { Linking, Platform } from 'react-native';
 import {
   onMessage,
   registerForRemoteMessages,
+  requestUserPermission,
   setCategories,
 } from '../../core/push';
 import { PinPresentStates } from '../../constants/enum';
@@ -71,6 +72,8 @@ export const InitializeAppProvider: React.FC<JSX.Element> = ({ children }) => {
         void fetchRPCEndpointsFromServer(globalContext.globalDispatch);
         void checkForUpdatesAndShowModal(setUpdateModal);
         void loadActivitiesFromAsyncStorage();
+
+        // void requestUserPermission();
 
         void setCategories();
         if (Platform.OS === 'ios') {

@@ -100,16 +100,17 @@ export const setCategories = async () => {
 };
 
 export const showNotification = async (
-  notification: FirebaseMessagingTypes.Notification | undefined,
+  notification?: FirebaseMessagingTypes.Notification | undefined,
 ) => {
   console.log('showNotification :::::::::: ', notification);
+  await notifee.requestPermission();
   const channelId = await notifee.createChannel({
     id: 'default',
     name: 'Default Channel',
     importance: AndroidImportance.HIGH,
   });
 
-  if (notification?.body) {
+  // if (notification?.body) {
     // let body = notification.body;
     // try {
     //   const bodyData = JSON.parse(body);
@@ -117,35 +118,44 @@ export const showNotification = async (
     // } catch (e) {
     //   console.log('Error parsing notification body:', e);
     // }
-
-    await notifee.displayNotification({
-      // title: notification.title,
-      // body: body,
-      title: 'hi',
-      body: 'hello',
-      android: {
-        channelId,
-        actions: [
-          {
-            title: 'Approve Transaction',
-            pressAction: { id: 'approve' },
-          },
-          {
-            title: 'Reject Transaction',
-            pressAction: { id: 'reject' },
-          },
-        ],
-      },
-      ios: {
-        categoryId: 'notification',
-      },
-    });
-  }
+    try {
+      await notifee.displayNotification({
+        // title: notification.title,
+        // body: body,
+        title: 'hi',
+        body: 'hello',
+        android: {
+          channelId,
+          importance: AndroidImportance.HIGH,
+        },
+        ios: {
+          categoryId: 'notification',
+        },
+      });
+      console.log('Notification displayed successfully');
+    } catch (error) {
+      console.error('Error displaying notification:', error);
+    }
+  // }
 };
 
-export const onMessage = () => {
-  firebase.messaging().onMessage(response => {
-    console.log('from onMessage :::::::::: ', response);
-    void showNotification(response.notification);
-  });
+// export const onMessage = () => {
+//   firebase.messaging().onMessage(response => {
+//     console.log('from onMessage :::::::::: ', response);
+//     void showNotification(response.notification);
+//   });
+// };
+
+export const requestUserPermission = async () => {
+  // console.log('requestUserPermission :::::::::: ');
+  // const authStatus = await firebase.messaging().requestPermission();
+  // console.log('authStatus :::::::::: ', authStatus);
+  // const enabled =
+  //   authStatus === firebase.messaging.AuthorizationStatus.AUTHORIZED ||
+  //   authStatus === firebase.messaging.AuthorizationStatus.PROVISIONAL;
+  // console.log('enabled :::::::::: ', enabled);
+  // if (enabled) {
+  //   console.log('Authorization status:', authStatus);
+  // }
+    const settings = await notifee.requestPermission();
 };

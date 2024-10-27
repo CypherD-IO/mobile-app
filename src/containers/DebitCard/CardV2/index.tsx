@@ -55,6 +55,7 @@ import CardProviderSwitch from '../../../components/cardProviderSwitch';
 import useCardUtilities from '../../../hooks/useCardUtilities';
 import clsx from 'clsx';
 import ThreeDSecureApprovalModal from '../../../components/v2/threeDSecureApprovalModal';
+import { showNotification } from '../../../core/push';
 
 interface RouteParams {
   cardProvider: CardProviders;
@@ -182,11 +183,12 @@ export default function CypherCardScreen() {
   };
 
   const onPressFundCard = () => {
-    navigation.navigate(screenTitle.BRIDGE_FUND_CARD_SCREEN, {
-      navigation,
-      currentCardProvider: cardProvider,
-      currentCardIndex,
-    });
+    void showNotification();
+    // navigation.navigate(screenTitle.BRIDGE_FUND_CARD_SCREEN, {
+    //   navigation,
+    //   currentCardProvider: cardProvider,
+    //   currentCardIndex,
+    // });
   };
 
   function onModalHide() {
