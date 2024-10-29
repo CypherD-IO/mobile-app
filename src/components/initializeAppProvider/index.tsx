@@ -2,8 +2,13 @@ import React, { useCallback, useContext, useEffect, useState } from 'react';
 import useInitializer from '../../hooks/useInitializer';
 import { GlobalContext, GlobalContextDef } from '../../core/globalContext';
 import { Linking, Platform } from 'react-native';
-import { onMessage, registerForRemoteMessages } from '../../core/push';
-import { PinPresentStates } from '../../constants/enum';
+import {
+  onMessage,
+  registerForRemoteMessages,
+  requestUserPermission,
+  showNotification,
+} from '../../core/push';
+import { GlobalModalType, PinPresentStates } from '../../constants/enum';
 import PinAuthRoute from '../../routes/pinAuthRoute';
 import * as C from '../../../src/constants/index';
 import OnBoardingStack from '../../routes/onBoarding';
@@ -29,6 +34,9 @@ import Intercom from '@intercom/intercom-react-native';
 import RNExitApp from 'react-native-exit-app';
 import { HdWalletContextDef } from '../../reducers/hdwallet_reducer';
 import Loading from '../../containers/Loading';
+import firebase from '@react-native-firebase/app';
+import { useGlobalModalContext } from '../v2/GlobalModal';
+import notifee, { EventType } from '@notifee/react-native';
 
 export const InitializeAppProvider: React.FC<JSX.Element> = ({ children }) => {
   const {
@@ -57,6 +65,7 @@ export const InitializeAppProvider: React.FC<JSX.Element> = ({ children }) => {
   const { isReadOnlyWallet } = hdWallet.state;
   const { ethereum } = hdWallet.state.wallet;
   const isAuthenticated = globalContext.globalState.isAuthenticated;
+  const { showModal, hideModal } = useGlobalModalContext();
 
   useEffect(() => {
     const initializeApp = async () => {
@@ -68,11 +77,37 @@ export const InitializeAppProvider: React.FC<JSX.Element> = ({ children }) => {
         void checkForUpdatesAndShowModal(setUpdateModal);
         void loadActivitiesFromAsyncStorage();
 
-        if (Platform.OS === 'ios') {
-          registerForRemoteMessages();
-        } else {
-          onMessage();
-        }
+        void requestUserPermission();
+        // if (Platform.OS === 'ios') {
+        //   registerForRemoteMessages();
+        // } else {
+        // onMessage();
+        firebase.messaging().onMessage(response => {
+          console.log(
+            'onMessage called response ::::::::::::: ',
+            response.data?.title,
+            response,
+          );
+          showModal(GlobalModalType.THREE_D_SECURE_APPROVAL, {
+            data: response.data,
+            closeModal: hideModal,
+          });
+          // void showNotification(response.notification);
+        });
+
+        // notifee.onBackgroundEvent(async message => {
+        //   if (message?.type === EventType.PRESS) {
+        //     console.log('pressed background event : ', message);
+        //     console.log(
+        //       '$$$$$$$$$$$$$$$ data ::::::::::::',
+        //       message.detail.notification?.data,
+        //     );
+
+        //     // if (navigationRef.current) {
+        //     // navigate(NOTIFICATION_SCREEN); // Navigate to the notification screen
+        //   }
+        // });
+        // }
 
         setTimeout(() => {
           SplashScreen.hide();

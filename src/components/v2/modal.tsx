@@ -2,6 +2,8 @@ import * as React from 'react';
 import { StyleProp, ViewStyle } from 'react-native';
 import Modal from 'react-native-modal';
 import * as animatable from 'react-native-animatable';
+import { useGlobalModalContext } from './GlobalModal';
+import { GlobalModalType } from '../../constants/enum';
 
 interface CyDModalLayoutProps {
   isModalVisible: boolean;
@@ -167,6 +169,20 @@ export default function CyDModalLayout({
   avoidKeyboard = false,
   onModalHide = () => {},
 }: CyDModalLayoutProps) {
+  const { store, showModal } = useGlobalModalContext();
+
+  React.useEffect(() => {
+    // Automatically hide this modal if ThreeDSecureApprovalModal is shown,
+    // but do not hide the ThreeDSecureApprovalModal itself
+    if (
+      store?.modalType === GlobalModalType.THREE_D_SECURE_APPROVAL &&
+      isModalVisible
+    ) {
+      console.log('^^^^^^^^^ hide modal ^^^^^^^^^^');
+      setModalVisible(false);
+    }
+  }, [store]);
+
   return (
     <Modal
       avoidKeyboard={avoidKeyboard}

@@ -4,11 +4,12 @@
 import * as React from 'react';
 import '@walletconnect/react-native-compat';
 import 'fast-text-encoding';
+import { GestureHandlerRootView } from 'react-native-gesture-handler';
 import { useEffect, useReducer, useState } from 'react';
 import Toast from 'react-native-toast-message';
-import { NavigationContainer } from '@react-navigation/native';
+import { NavigationContainer, LinkingOptions } from '@react-navigation/native';
 import './src/i18n';
-import { BackHandler, Keyboard, Linking } from 'react-native';
+import { BackHandler, Keyboard, Linking, Platform } from 'react-native';
 import {
   HdWalletContext,
   ActivityContext,
@@ -52,7 +53,6 @@ import {
 } from './src/containers/utilities/walletConnectUtilities';
 import WalletConnectModal from './src/components/WalletConnectModal';
 import { GlobalModal } from './src/components/v2/GlobalModal';
-import { GestureHandlerRootView } from 'react-native-gesture-handler';
 import ConfirmationModals from './src/containers/Browser/ConfirmationModals';
 import {
   ModalContext,
@@ -67,8 +67,9 @@ import {
   bridgeContextInitialState,
   bridgeReducer,
 } from './src/reducers/bridge.reducer';
-import { LinkingOptions } from '@react-navigation/native';
 import { screenTitle } from './src/constants';
+import notifee, { EventType } from '@notifee/react-native';
+import { ThreeDSecureProvider } from './src/components/v2/threeDSecureApprovalModalContext';
 
 const routingInstrumentation = new Sentry.ReactNavigationInstrumentation();
 
@@ -238,6 +239,43 @@ function App() {
     };
   }, []);
 
+  // useEffect(() => {
+  //   return notifee.onForegroundEvent(event => {
+  //     console.log('event', event);
+  //     console.log(
+  //       'Remote notification info: ',
+  //       event.detail.notification?.remote,
+  //     );
+  //     switch (event.type) {
+  //       case EventType.DISMISSED:
+  //         console.log('User dismissed notification', event.detail.notification);
+  //         break;
+  //       case EventType.PRESS:
+  //         console.log(
+  //           'User pressed notification',
+  //           event.detail.notification,
+  //           event.detail.notification?.data,
+  //         );
+  //         break;
+  //     }
+  //   });
+  // }, []);
+
+  // useEffect(() => {
+  //   return notifee.onBackgroundEvent(async message => {
+  //     if (message?.type === EventType.PRESS) {
+  //       console.log('pressed background event : ', message);
+  //       console.log(
+  //         '$$$$$$$$$$$$$$$ data ::::::::::::',
+  //         message.detail.notification?.data,
+  //       );
+
+  //       // if (navigationRef.current) {
+  //       // navigate(NOTIFICATION_SCREEN); // Navigate to the notification screen
+  //     }
+  //   });
+  // }, []);
+
   return (
     <CyDView style={{ flex: 1, backgroundColor: 'white' }}>
       <GestureHandlerRootView style={{ flex: 1 }}>
@@ -286,39 +324,41 @@ function App() {
                             dispatch: bridgeDispatch,
                           }}>
                           <GlobalModal>
-                            <InitializeAppProvider>
-                              <TabStack
-                                deepLinkData={deepLinkData}
-                                setDeepLinkData={setDeepLinkData}
-                              />
-                              <Toast
-                                config={toastConfig}
-                                position={'bottom'}
-                                bottomOffset={140}
-                              />
-                              {<ConfirmationModals />}
-                              <WalletConnectModal
-                                walletConnectModalVisible={
-                                  walletConnectModalData.displayWalletConnectModal
-                                }
-                                setWalletConnectModalVisible={
-                                  setWalletConnectModalVisible
-                                }
-                                renderContent={
-                                  walletConnectModalData.renderContent
-                                }
-                                walletConnectApproveRequest={
-                                  walletConnectApproveRequest
-                                }
-                                walletConnectRejectRequest={
-                                  walletConnectRejectRequest
-                                }
-                                dispatchActivity={dispatchActivity}
-                                params={walletConnectModalData.params}
-                                request={request}
-                                walletConnectDispatch={walletConnectDispatch}
-                              />
-                            </InitializeAppProvider>
+                            <ThreeDSecureProvider>
+                              <InitializeAppProvider>
+                                <TabStack
+                                  deepLinkData={deepLinkData}
+                                  setDeepLinkData={setDeepLinkData}
+                                />
+                                <Toast
+                                  config={toastConfig}
+                                  position={'bottom'}
+                                  bottomOffset={140}
+                                />
+                                {<ConfirmationModals />}
+                                <WalletConnectModal
+                                  walletConnectModalVisible={
+                                    walletConnectModalData.displayWalletConnectModal
+                                  }
+                                  setWalletConnectModalVisible={
+                                    setWalletConnectModalVisible
+                                  }
+                                  renderContent={
+                                    walletConnectModalData.renderContent
+                                  }
+                                  walletConnectApproveRequest={
+                                    walletConnectApproveRequest
+                                  }
+                                  walletConnectRejectRequest={
+                                    walletConnectRejectRequest
+                                  }
+                                  dispatchActivity={dispatchActivity}
+                                  params={walletConnectModalData.params}
+                                  request={request}
+                                  walletConnectDispatch={walletConnectDispatch}
+                                />
+                              </InitializeAppProvider>
+                            </ThreeDSecureProvider>
                           </GlobalModal>
                         </BridgeContext.Provider>
                       </ModalContext.Provider>
