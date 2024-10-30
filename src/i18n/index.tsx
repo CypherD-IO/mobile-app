@@ -1388,6 +1388,7 @@ const resources = {
         'Limitations around crypto withdrawal',
       NEW_PIN: 'New PIN',
       CONFIRM_PIN_TELEGRAM: 'Confirm PIN',
+      SET_USAGE_LIMIT: 'Set Usage Limit',
     },
   },
 };

@@ -38,6 +38,8 @@ import { Card } from '../../../models/card.model';
 import AsyncStorage from '@react-native-async-storage/async-storage'; // Add this import
 import { CYPHER_PLAN_ID_NAME_MAPPING } from '../../../constants/data';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
+import { ICountry } from '../../../models/cardApplication.model';
+import { t } from 'i18next';
 
 interface RouteParams {
   card: Card;
@@ -67,7 +69,7 @@ export default function CardControlsMenu() {
     get(card, 'is3dsEnabled', false),
   );
   const [show3DsModal, setShow3DsModal] = useState(false);
-  const [domesticCountry, setDomesticCountry] = useState({});
+  const [domesticCountry, setDomesticCountry] = useState<ICountry>({});
   const [isZeroRestrictionModeEnabled, setIsZeroRestrictionModeEnabled] =
     useState(false);
   const [isZeroRestrictionModeLoading, setIsZeroRestrictionModeLoading] =
@@ -306,54 +308,72 @@ export default function CardControlsMenu() {
           <ScrollView className='bg-n20'>
             <CyDView className='mx-[16px] mt-[16px] mb-[24px]'>
               <CyDView className='bg-p10 rounded-[16px] border-[1px] border-n20'>
-                <CyDView className='p-[12px] rounded-[10px] bg-n0 relative'>
-                  {planInfo?.planId === CypherPlanId.BASIC_PLAN && (
-                    <CyDText className='font-bold text-[18px] text-base400'>
-                      {get(
-                        CYPHER_PLAN_ID_NAME_MAPPING,
-                        planInfo?.planId ?? CypherPlanId.BASIC_PLAN,
-                      )}
-                    </CyDText>
-                  )}
-                  {planInfo?.planId === CypherPlanId.PRO_PLAN && (
-                    <CyDView className='flex flex-row items-center'>
-                      <CyDFastImage
-                        className='h-[14px] w-[81px]'
-                        source={AppImages.PREMIUM_TEXT_GRADIENT}
-                      />
-                      <CyDText className='font-bold text-[18px] text-base400 ml-[4px]'>
-                        Plan
+                <CyDView className='rounded-[10px] bg-n0'>
+                  <CyDView className='p-[12px] relative'>
+                    {planInfo?.planId === CypherPlanId.BASIC_PLAN && (
+                      <CyDText className='font-bold text-[18px] text-base400'>
+                        {get(
+                          CYPHER_PLAN_ID_NAME_MAPPING,
+                          planInfo?.planId ?? CypherPlanId.BASIC_PLAN,
+                        )}
                       </CyDText>
-                    </CyDView>
-                  )}
-                  <CyDView className='flex flex-row'>
-                    <CyDView>
-                      <ProgressCircle
-                        className={'h-[130px] w-[130px] mt-[12px]'}
-                        progress={getMonthlyLimitPercentage()}
-                        strokeWidth={13}
-                        cornerRadius={30}
-                        progressColor={'#F7C645'}
-                      />
-                      <CyDView className='absolute top-[10px] left-0 right-0 bottom-0 flex items-center justify-center text-center'>
-                        <CyDText
-                          className={`${String(get(limits, ['sSt', 'm'], 0)).length < 7 ? 'text-[16px]' : 'text-[12px]'} font-bold`}>{`$${get(limits, ['sSt', 'm'], 0)}`}</CyDText>
-                        <CyDText className='text-[14px] font-[500]'>
-                          {'This Month'}
+                    )}
+                    {planInfo?.planId === CypherPlanId.PRO_PLAN && (
+                      <CyDView className='flex flex-row items-center'>
+                        <CyDFastImage
+                          className='h-[14px] w-[81px]'
+                          source={AppImages.PREMIUM_TEXT_GRADIENT}
+                        />
+                        <CyDText className='font-bold text-[18px] text-base400 ml-[4px]'>
+                          Plan
                         </CyDText>
                       </CyDView>
-                    </CyDView>
-                    <CyDView className='mt-[24px] ml-[24px]'>
-                      <CyDText className='font-[500] text-n200 text-[14px]'>
-                        {'Limit per month'}
-                      </CyDText>
-                      <CyDText className='font-[500] text-[16px] '>{`$${get(limits, [limitApplicable, 'm'], 0)}`}</CyDText>
-                      <CyDText className='font-[500] text-n200 text-[14px] mt-[12px]'>
-                        {'Limit per day'}
-                      </CyDText>
-                      <CyDText className='font-[500] text-[16px]'>{`$${get(limits, [limitApplicable, 'd'], 0)}`}</CyDText>
+                    )}
+                    <CyDView className='flex flex-row'>
+                      <CyDView>
+                        <ProgressCircle
+                          className={'h-[130px] w-[130px] mt-[12px]'}
+                          progress={getMonthlyLimitPercentage()}
+                          strokeWidth={13}
+                          cornerRadius={30}
+                          progressColor={'#F7C645'}
+                        />
+                        <CyDView className='absolute top-[10px] left-0 right-0 bottom-0 flex items-center justify-center text-center'>
+                          <CyDText
+                            className={`${String(get(limits, ['sSt', 'm'], 0)).length < 7 ? 'text-[16px]' : 'text-[12px]'} font-bold`}>{`$${get(limits, ['sSt', 'm'], 0)}`}</CyDText>
+                          <CyDText className='text-[14px] font-[500]'>
+                            {'This Month'}
+                          </CyDText>
+                        </CyDView>
+                      </CyDView>
+                      <CyDView className='mt-[24px] ml-[24px]'>
+                        <CyDText className='font-[500] text-n200 text-[14px]'>
+                          {'Limit per month'}
+                        </CyDText>
+                        <CyDText className='font-[500] text-[16px] '>{`$${get(limits, [limitApplicable, 'm'], 0)}`}</CyDText>
+                        <CyDText className='font-[500] text-n200 text-[14px] mt-[12px]'>
+                          {'Limit per day'}
+                        </CyDText>
+                        <CyDText className='font-[500] text-[16px]'>{`$${get(limits, [limitApplicable, 'd'], 0)}`}</CyDText>
+                      </CyDView>
                     </CyDView>
                   </CyDView>
+                  <CyDTouchView
+                    className='p-[12px] border-t border-[#EBEDF0] flex flex-row justify-between items-center'
+                    onPress={() => {
+                      navigation.navigate(screenTitle.EDIT_USAGE_LIMITS, {
+                        currentCardProvider,
+                        card,
+                      });
+                    }}>
+                    <CyDText className='text-[16px] font-semibold text-base400'>
+                      {t('SET_USAGE_LIMIT')}
+                    </CyDText>
+                    <CyDImage
+                      source={AppImages.RIGHT_ARROW}
+                      className='w-[20px] h-[20px]'
+                    />
+                  </CyDTouchView>
                 </CyDView>
                 {planInfo?.planId === CypherPlanId.BASIC_PLAN && (
                   <CyDView className='p-[12px]'>
