@@ -1,36 +1,30 @@
-import React, { useState, useRef, useEffect } from 'react';
+import {
+  NavigationProp,
+  ParamListBase,
+  useNavigation,
+} from '@react-navigation/native';
+import { useFormik } from 'formik';
+import { countBy } from 'lodash';
+import { useState } from 'react';
+import { useTranslation } from 'react-i18next';
 import { StyleSheet } from 'react-native';
+import * as yup from 'yup';
+import AppImages from '../../../../assets/images/appImages';
+import Button from '../../../components/v2/button';
+import { useGlobalModalContext } from '../../../components/v2/GlobalModal';
+import { PinInput } from '../../../components/v2/pinInput';
+import { screenTitle } from '../../../constants';
+import { ButtonType, CardProviders } from '../../../constants/enum';
+import { MODAL_HIDE_TIMEOUT } from '../../../core/Http';
+import { useKeyboard } from '../../../hooks/useKeyboard';
 import {
   CyDImage,
   CyDKeyboardAwareScrollView,
   CyDSafeAreaView,
-  CyDScrollView,
   CyDText,
-  CyDTextInput,
   CyDTouchView,
   CyDView,
 } from '../../../styles/tailwindStyles';
-import { useTranslation } from 'react-i18next';
-import { useGlobalModalContext } from '../../../components/v2/GlobalModal';
-import { ButtonType, CardProviders } from '../../../constants/enum';
-import clsx from 'clsx';
-import { isAndroid } from '../../../misc/checkers';
-import Button from '../../../components/v2/button';
-import { MODAL_HIDE_TIMEOUT } from '../../../core/Http';
-import { screenTitle } from '../../../constants';
-import { useKeyboard } from '../../../hooks/useKeyboard';
-import * as yup from 'yup';
-import { useFormik } from 'formik';
-import {
-  NavigationProp,
-  ParamListBase,
-  RouteProp,
-  useNavigation,
-  useRoute,
-} from '@react-navigation/native';
-import AppImages from '../../../../assets/images/appImages';
-import { countBy } from 'lodash';
-import { PinInput } from '../../../components/v2/pinInput';
 
 interface RouteParams {
   currentCardProvider: CardProviders;
@@ -257,8 +251,8 @@ export default function SetTelegramPin() {
                 <CyDView className={'mt-[5px]'}>
                   <PinInput
                     value={changePinFormik.values.pin}
-                    onChange={value =>
-                      changePinFormik.setFieldValue('pin', value)
+                    onChange={async value =>
+                      await changePinFormik.setFieldValue('pin', value)
                     }
                     error={
                       showErrors &&
@@ -267,7 +261,9 @@ export default function SetTelegramPin() {
                         changePinFormik.touched.pin
                       )
                     }
-                    onBlur={() => changePinFormik.setFieldTouched('pin', true)}
+                    onBlur={async () =>
+                      await changePinFormik.setFieldTouched('pin', true)
+                    }
                     length={6}
                   />
                 </CyDView>
@@ -288,8 +284,8 @@ export default function SetTelegramPin() {
                 <CyDView className={'mt-[5px]'}>
                   <PinInput
                     value={changePinFormik.values.confirmPin}
-                    onChange={value =>
-                      changePinFormik.setFieldValue('confirmPin', value)
+                    onChange={async value =>
+                      await changePinFormik.setFieldValue('confirmPin', value)
                     }
                     error={
                       showErrors &&
@@ -298,8 +294,8 @@ export default function SetTelegramPin() {
                         changePinFormik.touched.confirmPin
                       )
                     }
-                    onBlur={() =>
-                      changePinFormik.setFieldTouched('confirmPin', true)
+                    onBlur={async () =>
+                      await changePinFormik.setFieldTouched('confirmPin', true)
                     }
                     length={6}
                   />

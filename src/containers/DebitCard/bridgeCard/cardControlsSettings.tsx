@@ -1,4 +1,21 @@
+import { RouteProp, useIsFocused, useRoute } from '@react-navigation/native';
+import { t } from 'i18next';
+import { compact, get, isEqual, pick } from 'lodash';
 import React, { useEffect, useState } from 'react';
+import AppImages from '../../../../assets/images/appImages';
+import Button from '../../../components/v2/button';
+import ChooseCountryModal from '../../../components/v2/ChooseCountryModal';
+import ChooseMultipleCountryModal from '../../../components/v2/chooseMultipleCountryModal';
+import { useGlobalModalContext } from '../../../components/v2/GlobalModal';
+import { Loader } from '../../../components/v2/walletConnectV2Views/SigningModals/SigningModalComponents';
+import {
+  ButtonType,
+  CARD_LIMIT_TYPE,
+  CardControlTypes,
+  ImagePosition,
+} from '../../../constants/enum';
+import axios from '../../../core/Http';
+import useAxios from '../../../core/HttpRequest';
 import {
   CyDImage,
   CyDSafeAreaView,
@@ -8,32 +25,26 @@ import {
   CyDTouchView,
   CyDView,
 } from '../../../styles/tailwindStyles';
-import AppImages from '../../../../assets/images/appImages';
-import Button from '../../../components/v2/button';
-import {
-  ButtonType,
-  CARD_LIMIT_TYPE,
-  CardControlTypes,
-  ImagePosition,
-} from '../../../constants/enum';
-import ChooseMultipleCountryModal from '../../../components/v2/chooseMultipleCountryModal';
-import useAxios from '../../../core/HttpRequest';
-import { compact, get, isEqual, pick } from 'lodash';
 import EditLimitModal from './editLimitModal';
-import { Loader } from '../../../components/v2/walletConnectV2Views/SigningModals/SigningModalComponents';
-import { t } from 'i18next';
-import axios from '../../../core/Http';
-import { useGlobalModalContext } from '../../../components/v2/GlobalModal';
-import ChooseCountryModal from '../../../components/v2/ChooseCountryModal';
-import { useIsFocused } from '@react-navigation/native';
+import { Card } from '../../../models/card.model';
+import { ICountry } from '../../../models/cardApplication.model';
 
-export default function CardControlsSettings({ route, navigation }) {
+interface RouteParams {
+  cardControlType: string;
+  currentCardProvider: string;
+  card: Card;
+}
+
+export default function CardControlsSettings() {
+  const route = useRoute<RouteProp<{ params: RouteParams }, 'params'>>();
   const { cardControlType, currentCardProvider, card } = route.params;
   const [countryModalVisible, setCountryModalVisible] = useState(false);
-  const [countries, setCountries] = useState([]);
-  const [allowedCountries, setAllowedCountries] = useState([]);
-  const [selectedAllowedCountries, setSelectedAllowedCountries] = useState([]);
-  const { getWithAuth, patchWithAuth, getWithoutAuth } = useAxios();
+  const [countries, setCountries] = useState<ICountry[]>([]);
+  const [allowedCountries, setAllowedCountries] = useState<ICountry[]>([]);
+  const [selectedAllowedCountries, setSelectedAllowedCountries] = useState<
+    ICountry[]
+  >([]);
+  const { getWithAuth, patchWithAuth } = useAxios();
   const [limits, setLimits] = useState({});
   const [editedLimits, setEditedLimits] = useState({});
   const [limitsByControlType, setLimitsByControlType] = useState({
@@ -54,10 +65,10 @@ export default function CardControlsSettings({ route, navigation }) {
     isChooseDomesticCountryModalVisible,
     setIsChooseDomesticCountryModalVisible,
   ] = useState(false);
-  const [domesticCountry, setDomesticCountry] = useState({});
-  const [selectedDomesticCountry, setSelectedDomesticCountry] = useState({});
+  const [domesticCountry, setDomesticCountry] = useState<ICountry>({});
+  const [selectedDomesticCountry, setSelectedDomesticCountry] =
+    useState<ICountry>({});
   const { showModal, hideModal } = useGlobalModalContext();
-  const [allowedCountryLoading, setAllowedCountryLoading] = useState(false);
   const defaultAtmLimit = 2000;
   const [limitApplicable, setLimitApplicable] = useState('planLimit');
   const isFocused = useIsFocused();
@@ -110,7 +121,7 @@ export default function CardControlsSettings({ route, navigation }) {
     setEditModalData({
       isEditLimitModalVisible: true,
       limitType,
-      limit: get(limitsByControlType, limitType, 0),
+      limit: get(limitsByControlType, limitType, 0) as number,
     });
   };
 
@@ -445,11 +456,7 @@ export default function CardControlsSettings({ route, navigation }) {
                       }}
                       disabled={disableOptions}>
                       <CyDView>
-                        <CyDText>
-                          {allowedCountryLoading
-                            ? 'Updating ...'
-                            : getAllowedCountiesText()}
-                        </CyDText>
+                        <CyDText>{getAllowedCountiesText()}</CyDText>
                       </CyDView>
                       <CyDImage
                         source={AppImages.DOWN_ARROW}

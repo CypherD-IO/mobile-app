@@ -123,6 +123,7 @@ export const screenTitle = {
   CARD_CONTROLS_MENU: 'CardControls',
   DOMESTIC_CARD_CONTROLS: 'DomesticTransactions',
   INTERNATIONAL_CARD_CONTROLS: 'InternationalTransactions',
+  EDIT_USAGE_LIMITS: 'EditUsageLimits',
   THREE_D_SECURE: '3D Secure',
   LOCKDOWN_MODE: 'LockdownMode',
   LOCKDOWN_MODE_AUTH: 'LockdownModeAuth',
