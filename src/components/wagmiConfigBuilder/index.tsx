@@ -46,7 +46,7 @@ export const wagmiConfig = defaultWagmiConfig({
   metadata: {
     name: 'Cypher Wallet',
     description: 'Cypher Wallet',
-    url: 'https://cypherwallet.io',
+    url: 'https://cypherhq.io',
     icons: ['https://avatars.githubusercontent.com/u/37784886'],
     redirect: {
       native: 'cypherwallet://',

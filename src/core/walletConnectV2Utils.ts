@@ -20,7 +20,7 @@ export async function createWeb3Wallet(projectId: string) {
       metadata: {
         name: 'Cypher Wallet',
         description: 'Wallet for WalletConnect',
-        url: 'https://app.cypherwallet.io/',
+        url: 'https://app.cypherhq.io/',
         icons: ['https://public.cypherd.io/icons/appLogo.png'],
       },
     });

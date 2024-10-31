@@ -761,7 +761,7 @@ export default function SelectPlan() {
                 onPress={() => {
                   navigation.navigate(screenTitle.SOCIAL_MEDIA_SCREEN, {
                     title: 'Plan Suggestion',
-                    uri: 'https://www.cypherwallet.io/card/#plan-suggestion',
+                    uri: 'https://cypherhq.io/card/#plan-suggestion',
                   });
                 }}>
                 <CyDText className='font-bold text-n100 text-[12px] text-center'>
