@@ -124,10 +124,7 @@ export default function Browser({ route, navigation }: any) {
   const [browserError, setBrowserError] = useState('');
   const [isSslSecure, setIsSslSecure] = useState(true);
 
-  let homePageUrl = 'https://www.cypherwallet.io/';
-  if (Platform.OS === 'ios') {
-    homePageUrl = 'https://www.cypherwallet.io/';
-  }
+  const homePageUrl = 'https://cypherhq.io';
   const [search, setSearch] = useState(homePageUrl);
   const webviewRef = useRef<any>(null);
   // eslint-disable-next-line @typescript-eslint/no-unused-vars

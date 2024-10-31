@@ -196,7 +196,7 @@ export default function GlobalOptions() {
       action: () => {
         navigation.navigate(screenTitle.SOCIAL_MEDIA_SCREEN, {
           title: 'Card FAQ',
-          uri: 'https://www.cypherwallet.io/card#faq',
+          uri: 'https://cypherhq.io/card#faq',
         });
       },
     },
