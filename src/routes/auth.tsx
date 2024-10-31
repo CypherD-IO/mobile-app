@@ -117,6 +117,7 @@ import ShippingCheckout from '../containers/DebitCard/physicalCardUpgradation/ck
 import CardActivationConsent from '../containers/DebitCard/bridgeCard/cardActivationConsent';
 import GlobalOptions from '../containers/DebitCard/CardV2/globalOptions';
 import SetTelegramPin from '../containers/DebitCard/bridgeCard/setTelegramPin';
+import EditLimits from '../containers/DebitCard/bridgeCard/editlimits';
 
 const PortfolioStack = createNativeStackNavigator();
 const BrowserStack = createNativeStackNavigator();
@@ -797,7 +798,7 @@ export function DebitCardStackScreen({ route }) {
       <FundCardStack.Screen
         name={screenTitle.INTERNATIONAL_CARD_CONTROLS}
         component={CardControlsSettings}
-        options={({ navigation, route }) => ({
+        options={({ navigation }) => ({
           headerTransparent: false,
           headerShadowVisible: false,
           title: 'International Transactions',
@@ -806,6 +807,14 @@ export function DebitCardStackScreen({ route }) {
           headerTintColor: Colors.primaryTextColor,
           headerBackTitleVisible: false,
           headerLeft: () => defaultHeaderLeft(navigation, keyboardHeight),
+        })}
+      />
+
+      <FundCardStack.Screen
+        name={screenTitle.EDIT_USAGE_LIMITS}
+        component={EditLimits}
+        options={() => ({
+          headerShown: false,
         })}
       />
 
