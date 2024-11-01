@@ -44,6 +44,8 @@ import useAxios from '../../../core/HttpRequest';
 import { intercomAnalyticsLog } from '../../utilities/analyticsUtility';
 import * as Sentry from '@sentry/react-native';
 import { StyleSheet } from 'react-native';
+import analytics from '@react-native-firebase/analytics';
+import { getConnectionType } from '../../../core/asyncStorage';
 
 export default function CardQuote({
   navigation,
@@ -203,6 +205,13 @@ export default function CardQuote({
             }, MODAL_HIDE_TIMEOUT_250);
           },
           onFailure: hideModal,
+        });
+        const connectedType = await getConnectionType();
+        void analytics().logEvent('card_load', {
+          connectionType: connectedType,
+          chain: selectedToken.chainDetails.backendName,
+          token: selectedToken.symbol,
+          amountInUSD: tokenQuote.amount,
         });
       } else {
         activityRef.current &&
