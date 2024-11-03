@@ -150,6 +150,8 @@ export default function Portfolio({ navigation }: PortfolioProps) {
   const jwtToken = globalStateContext?.globalState.token;
   const ethereum = hdWallet?.state.wallet.ethereum;
   const windowWidth = useWindowDimensions().width;
+  //testChange
+  const [count, setCount] = useState(0);
 
   const handleBackButton = () => {
     navigation.popToTop();
@@ -163,6 +165,10 @@ export default function Portfolio({ navigation }: PortfolioProps) {
       }
     }
   };
+
+  useEffect(() => {
+    setCount(count + 1);
+  }, [count]);
 
   useEffect(() => {
     const subscription = AppState.addEventListener('change', appHandler);
