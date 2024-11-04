@@ -886,7 +886,7 @@ export default function SelectPlan() {
                     {`${proPlanData?.physicalCardFee === 0 ? 'FREE' : `$${proPlanData?.usdcFee}`} `}
                   </CyDText>
                   <CyDText className='font-medium text-[14px] ml-[8px] text-wrap'>
-                    {t('METAL_CARD') + '  (offer till 31st Oct)'}
+                    {t('METAL_CARD') + '  (offer till 31st Dec)'}
                   </CyDText>
                 </CyDView>
               </CyDView>
