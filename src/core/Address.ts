@@ -358,11 +358,5 @@ export const generateWalletFromPrivateKey = async (privateKey: string) => {
   const accounts: IAccountDetailWithChain[] = [ethereumWallet];
   // emit event to firebase
   sendFirebaseEvent(ethereumWallet.address, 'import_wallet_private_key');
-  // Register FCM
-  // if (isIOS()) {
-  //   registerForRemoteMessages();
-  // } else {
-  //   onMessage();
-  // }
   return { accounts, privateKey };
 };

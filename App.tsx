@@ -239,43 +239,6 @@ function App() {
     };
   }, []);
 
-  // useEffect(() => {
-  //   return notifee.onForegroundEvent(event => {
-  //     console.log('event', event);
-  //     console.log(
-  //       'Remote notification info: ',
-  //       event.detail.notification?.remote,
-  //     );
-  //     switch (event.type) {
-  //       case EventType.DISMISSED:
-  //         console.log('User dismissed notification', event.detail.notification);
-  //         break;
-  //       case EventType.PRESS:
-  //         console.log(
-  //           'User pressed notification',
-  //           event.detail.notification,
-  //           event.detail.notification?.data,
-  //         );
-  //         break;
-  //     }
-  //   });
-  // }, []);
-
-  // useEffect(() => {
-  //   return notifee.onBackgroundEvent(async message => {
-  //     if (message?.type === EventType.PRESS) {
-  //       console.log('pressed background event : ', message);
-  //       console.log(
-  //         '$$$$$$$$$$$$$$$ data ::::::::::::',
-  //         message.detail.notification?.data,
-  //       );
-
-  //       // if (navigationRef.current) {
-  //       // navigate(NOTIFICATION_SCREEN); // Navigate to the notification screen
-  //     }
-  //   });
-  // }, []);
-
   return (
     <CyDView style={{ flex: 1, backgroundColor: 'white' }}>
       <GestureHandlerRootView style={{ flex: 1 }}>

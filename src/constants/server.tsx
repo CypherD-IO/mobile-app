@@ -745,7 +745,7 @@ export enum NotificationEvents {
   CARD_APPLICATION_UPDATE = 'CARD_APPLICATION_UPDATE',
   CARD_TXN_UPDATE = 'CARD_TXN_UPDATE',
   DAPP_BROWSER_OPEN = 'DAPP_BROWSER_OPEN',
-  THREE_DS_APPROVE = 'THREE_DS_APPROVE',
+  THREE_DS_APPROVE = '3ds approval',
 }
 
 export const ChainNameToContactsChainNameMapping = {

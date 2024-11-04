@@ -1,5 +1,5 @@
 import clsx from 'clsx';
-import React, { useEffect, useState } from 'react';
+import React, { useState } from 'react';
 import { View, Text, ActivityIndicator } from 'react-native';
 import { Swipeable } from 'react-native-gesture-handler';
 import { CyDImage, CyDView } from '../../styles/tailwindStyles';
@@ -8,7 +8,13 @@ import { t } from 'i18next';
 import { useGlobalModalContext } from './GlobalModal';
 import useAxios from '../../core/HttpRequest';
 
-const SlideToConfirm = ({ approveUrl }: { approveUrl: string }) => {
+const SlideToConfirm = ({
+  approveUrl,
+  closeModal,
+}: {
+  approveUrl: string;
+  closeModal: () => void;
+}) => {
   const [confirmed, setConfirmed] = useState(false);
   const [isSwiping, setIsSwiping] = useState(false);
   const [acceptLoading, setAcceptLoading] = useState(false);
@@ -16,25 +22,20 @@ const SlideToConfirm = ({ approveUrl }: { approveUrl: string }) => {
   const { showModal, hideModal } = useGlobalModalContext();
   const { postWithAuth } = useAxios();
 
-  useEffect(() => {
-    console.log('isSwiping', isSwiping);
-  }, [isSwiping]);
-
-  useEffect(() => {
-    console.log('confirmed', confirmed);
-  }, [confirmed]);
-
   const handleAccept = async () => {
     setAcceptLoading(true);
     const response = await postWithAuth(approveUrl, {});
-    console.log('^^^^^^^^^^^^^^^ response from 3ds modal', response);
     setAcceptLoading(false);
     if (!response?.isError) {
       setIsError(false);
       setConfirmed(true);
+      closeModal();
     } else {
       setIsError(true);
       setConfirmed(true);
+      setTimeout(() => {
+        closeModal();
+      }, 500);
       setTimeout(() => {
         showModal('state', {
           type: 'error',
@@ -66,15 +67,17 @@ const SlideToConfirm = ({ approveUrl }: { approveUrl: string }) => {
       <View pointerEvents={confirmed ? 'none' : 'auto'}>
         <Swipeable
           renderLeftActions={renderLeftActions}
-          onSwipeableLeftOpen={handleAccept}
+          onSwipeableLeftOpen={() => {
+            void handleAccept();
+          }}
           onActivated={() => setIsSwiping(true)}
           onSwipeableWillClose={() => setIsSwiping(false)}>
           <CyDView className='w-[300px] h-[60px] bg-[#333] justify-center flex-row items-center px-[5px]'>
             <CyDView
               className={clsx(
                 'w-[50px] h-[50px] bg-[#f0a500] rounded-full justify-center items-center',
-                confirmed && !isError && 'bg-green-500',
-                confirmed && isError && 'bg-red-500',
+                confirmed && !isError && 'bg-green-600',
+                confirmed && isError && 'bg-red-600',
               )}>
               {acceptLoading ? (
                 <ActivityIndicator color='white' />

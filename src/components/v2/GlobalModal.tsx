@@ -17,13 +17,11 @@ interface GlobalModalContextInterface {
   hideModal: () => void;
   store: any;
 }
-
 const initalState: GlobalModalContextInterface = {
   showModal: () => {},
   hideModal: () => {},
   store: {},
 };
-
 const GlobalModalContext = createContext(initalState);
 export const useGlobalModalContext = () => useContext(GlobalModalContext);
 
@@ -32,6 +30,13 @@ export const GlobalModal: React.FC<any> = ({ children }) => {
   const [isTransitioning, setIsTransitioning] = useState(false);
 
   const showModal = (modalType: string, props: any = {}) => {
+    console.log(
+      'showModal :::::::::::::::::::::::::::::::::::::::::::::::::::',
+    );
+    console.log(
+      'isTransitioning ::::::::::::::::::::::::::::::::::::::::::::::::::: ',
+      isTransitioning,
+    );
     if (isTransitioning) return;
 
     if (store?.isModalVisible) {
@@ -86,7 +91,6 @@ export const GlobalModal: React.FC<any> = ({ children }) => {
     </GlobalModalContext.Provider>
   );
 };
-
 const CustomModalLayout = (store: CustomModalLayoutDef) => {
   return (
     <CyDModalLayout
@@ -103,7 +107,6 @@ const CustomModalLayout = (store: CustomModalLayoutDef) => {
     </CyDModalLayout>
   );
 };
-
 const styles = StyleSheet.create({
   modalLayout: {
     margin: 0,

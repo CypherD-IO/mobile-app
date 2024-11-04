@@ -57,32 +57,6 @@ export const getToken = async (
   });
 };
 
-// export const registerForRemoteMessages = () => {
-//   firebase
-//     .messaging()
-//     .registerDeviceForRemoteMessages()
-//     .then(() => {
-//       requestPermissions();
-//     })
-//     .catch(e => {
-//       Sentry.captureException(e);
-//     });
-// };
-
-// export const requestPermissions = () => {
-//   firebase
-//     .messaging()
-//     .requestPermission()
-//     .then(status => {
-//       if (status === 1) {
-//         onMessage();
-//       }
-//     })
-//     .catch(e => {
-//       Sentry.captureException(e);
-//     });
-// };
-
 async function createNotificationChannel() {
   const channelId = await notifee.createChannel({
     id: 'default',
@@ -96,17 +70,7 @@ export const showNotification = async (
   notification: FirebaseMessagingTypes.Notification | undefined,
 ) => {
   const channelId = await createNotificationChannel();
-  console.log(
-    'showNotification called notification ::::::::::::: ',
-    notification,
-  );
   if (notification?.body) {
-    const title = notification.title;
-    let body = notification.body;
-    if (title === 'Online Payment Authentication') {
-      body = JSON.parse(body).message;
-    }
-    console.log('notification.body : ', body);
     await notifee.displayNotification({
       title: notification.title,
       body: notification.body,
@@ -117,23 +81,6 @@ export const showNotification = async (
   }
 };
 
-// export const onMessage = () => {
-//   firebase.messaging().onMessage(response => {
-//     console.log(
-//       'onMessage called response ::::::::::::: ',
-//       response.data?.title,
-//       response,
-//     );
-//     void showNotification(response.notification);
-//   });
-// };
-
 export async function requestUserPermission() {
-  console.log('requestUserPermission called');
-  const settings = await notifee.requestPermission();
-  if (settings.authorizationStatus === AuthorizationStatus.AUTHORIZED) {
-    console.log('Notification permissions granted.');
-  } else {
-    console.log('Notification permissions denied.');
-  }
+  await notifee.requestPermission();
 }

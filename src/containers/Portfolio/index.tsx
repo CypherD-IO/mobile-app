@@ -39,9 +39,7 @@ import Button from '../../components/v2/button';
 import PortfolioTokenItem from '../../components/v2/portfolioTokenItem';
 import CyDTokenValue from '../../components/v2/tokenValue';
 import {
-  CardProviders,
   GlobalContextType,
-  GlobalModalType,
   TokenOverviewTabIndices,
 } from '../../constants/enum';
 import * as C from '../../constants/index';
@@ -85,7 +83,6 @@ import { Banner, HeaderBar, RefreshTimerBar } from './components';
 import BannerCarousel from './components/BannerCarousel';
 import FilterBar from './components/FilterBar';
 import { DeFiScene, NFTScene, TXNScene } from './scenes';
-import { useGlobalModalContext } from '../../components/v2/GlobalModal';
 import { use3DSecure } from '../../components/v2/threeDSecureApprovalModalContext';
 
 export interface PortfolioProps {
@@ -136,7 +133,6 @@ export default function Portfolio({ navigation }: PortfolioProps) {
   const swipeableRefs: Array<Swipeable | null> = [];
   let previousOpenedSwipeableRef: Swipeable | null;
 
-  const { showModal, hideModal } = useGlobalModalContext();
   const { show3DSecureModal } = use3DSecure();
 
   const onSwipe = (key: number) => {
@@ -380,12 +376,10 @@ export default function Portfolio({ navigation }: PortfolioProps) {
   async function handlePushNotification(
     remoteMessage: FirebaseMessagingTypes.RemoteMessage | null,
   ) {
-    console.log('remoteMessage ::: from portfolio :::', remoteMessage);
     //   'Notification caused app to open from background state:',
     if (ethereum) {
       const localPortfolio = await getPortfolioData(ethereum);
       if (remoteMessage?.data) {
-        console.log('#### title #####', remoteMessage.data.title);
         switch (remoteMessage.data.title) {
           case NotificationEvents.DAPP_BROWSER_OPEN: {
             void analytics().logEvent(`DAPP_${remoteMessage.data.title}`, {
@@ -540,17 +534,6 @@ export default function Portfolio({ navigation }: PortfolioProps) {
             });
             break;
           }
-          // default: {
-          // navigation.navigate(C.screenTitle.DEBIT_CARD_SCREEN, {
-          //   screen: C.screenTitle.BRIDGE_CARD_SCREEN,
-          //   params: {
-          //     cardProvider: CardProviders.REAP_CARD,
-          //     show3dsModal: true,
-          //     data: remoteMessage.data,
-          //   },
-          // });
-          // break;
-          // }
         }
       }
     }

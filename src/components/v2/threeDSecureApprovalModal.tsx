@@ -4,7 +4,6 @@ import {
   CyDText,
   CyDImage,
   CyDTouchView,
-  TouchableOpacity,
 } from '../../styles/tailwindStyles';
 import { t } from 'i18next';
 import AppImages from '../../../assets/images/appImages';
@@ -35,9 +34,7 @@ export default function ThreeDSecureApprovalModal({
   closeModal: () => void;
   data: any;
 }) {
-  console.log('^^^^^^^^^^^^^^^ data from 3ds modal', data);
-  console.log('%%%%%%%%%%%%%% closeModal', closeModal);
-  const seconds = 10;
+  const seconds = 120;
   const [timer, setTimer] = useState<number | null>(seconds * 1000); // 120 seconds in milliseconds
   const [timerEnd, setTimerEnd] = useState<number | null>(null);
   const [showCloseButton, setShowCloseButton] = useState(false);
@@ -81,7 +78,6 @@ export default function ThreeDSecureApprovalModal({
   const handleAccept = async () => {
     setAcceptLoading(true);
     const response = await postWithAuth(data?.approveUrl, {});
-    console.log('^^^^^^^^^^^^^^^ response from 3ds modal', response);
     setAcceptLoading(false);
     if (!response?.isError) {
       closeModal();
@@ -170,7 +166,6 @@ export default function ThreeDSecureApprovalModal({
               {showCloseButton && ( // Only show close button after timer ends
                 <CyDTouchView
                   onPress={() => {
-                    console.log('closing the modal');
                     closeModal();
                   }}>
                   <CyDImage
@@ -204,7 +199,10 @@ export default function ThreeDSecureApprovalModal({
                   : data?.merchantName}
               </CyDText>
               {Platform.OS === 'ios' ? (
-                <SlideToConfirm approveUrl={data?.approveUrl} />
+                <SlideToConfirm
+                  approveUrl={data?.approveUrl}
+                  closeModal={closeModal}
+                />
               ) : (
                 <CyDView className='flex flex-row gap-[16px] w-full px-[16px]'>
                   <CyDTouchView

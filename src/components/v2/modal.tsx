@@ -169,16 +169,14 @@ export default function CyDModalLayout({
   avoidKeyboard = false,
   onModalHide = () => {},
 }: CyDModalLayoutProps) {
-  const { store, showModal } = useGlobalModalContext();
+  const { store } = useGlobalModalContext();
 
   React.useEffect(() => {
     // Automatically hide this modal if ThreeDSecureApprovalModal is shown,
-    // but do not hide the ThreeDSecureApprovalModal itself
     if (
       store?.modalType === GlobalModalType.THREE_D_SECURE_APPROVAL &&
       isModalVisible
     ) {
-      console.log('^^^^^^^^^ hide modal ^^^^^^^^^^');
       setModalVisible(false);
     }
   }, [store]);
