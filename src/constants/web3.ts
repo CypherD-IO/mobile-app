@@ -1,4 +1,3 @@
-/* eslint-disable quote-props */
 export const Web3Method = {
   WALLET_PUSH_PERRMISSION: 'wallet_pushPermission',
   SEND_TRANSACTION: 'eth_sendTransaction',
