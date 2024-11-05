@@ -4,6 +4,11 @@ require_relative '../node_modules/@react-native-community/cli-platform-ios/nativ
 platform :ios, '15.0'
 
 target 'Cypherd' do
+  
+  pod 'Firebase/Core'
+
+  pod 'Firebase/Crashlytics'
+  
   config = use_native_modules!
   $RNFirebaseAnalyticsWithoutAdIdSupport = true
   use_react_native!(
@@ -30,10 +35,6 @@ target 'Cypherd' do
   pod 'react-native-view-shot', :path => '../node_modules/react-native-view-shot'
 
   pod 'RNLocalize', :path => '../node_modules/react-native-localize'
-
-  pod 'Firebase/Core'
-
-  pod 'Firebase/Crashlytics'
 
   target 'CypherdTests' do
     inherit! :complete

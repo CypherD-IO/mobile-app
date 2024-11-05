@@ -1,29 +1,31 @@
 #!/bin/sh
-set -e
+chmod +x ci_pre_xcodebuild.sh
+
+# set -e
 
 echo "Starting ci_pre_xcodebuild.sh"
 
-# Add logging for Crashlytics
-echo "Checking Crashlytics setup:"
-export PODS_ROOT="/Volumes/workspace/repository/ios/Pods"
-echo "PODS_ROOT: ${PODS_ROOT}"
-ls -l "${PODS_ROOT}/FirebaseCrashlytics"
+# # Add logging for Crashlytics
+# echo "Checking Crashlytics setup:"
+# export PODS_ROOT="/Volumes/workspace/repository/ios/Pods"
+# echo "PODS_ROOT: ${PODS_ROOT}"
+# ls -l "${PODS_ROOT}/FirebaseCrashlytics"
 
-if [ -f "${PODS_ROOT}/FirebaseCrashlytics/run" ]; then
-  echo "Crashlytics run script found"
-  chmod +x "${PODS_ROOT}/FirebaseCrashlytics/run"
-else
-  echo "Crashlytics run script not found"
-fi
+# if [ -f "${PODS_ROOT}/FirebaseCrashlytics/run" ]; then
+#   echo "Crashlytics run script found"
+#   chmod +x "${PODS_ROOT}/FirebaseCrashlytics/run"
+# else
+#   echo "Crashlytics run script not found"
+# fi
 
-if [ -f "${PODS_ROOT}/FirebaseCrashlytics/upload-symbols" ]; then
-  echo "Crashlytics upload-symbols script found"
-  chmod +x "${PODS_ROOT}/FirebaseCrashlytics/upload-symbols"
-else
-  echo "Crashlytics upload-symbols script not found"
-fi
+# if [ -f "${PODS_ROOT}/FirebaseCrashlytics/upload-symbols" ]; then
+#   echo "Crashlytics upload-symbols script found"
+#   chmod +x "${PODS_ROOT}/FirebaseCrashlytics/upload-symbols"
+# else
+#   echo "Crashlytics upload-symbols script not found"
+# fi
 
-echo "Finished ci_pre_xcodebuild.sh"
+# echo "Finished ci_pre_xcodebuild.sh"
 
 # Use a more reliable path for the workspace
 WORKSPACE_DIR="/Volumes/workspace/repository"
@@ -31,11 +33,11 @@ IOS_DIR="${WORKSPACE_DIR}/ios"
 CYPHERD_DIR="${IOS_DIR}/CypherD"
 
 # Create necessary directories if they don't exist
-mkdir -p "${IOS_DIR}"
-mkdir -p "${CYPHERD_DIR}"
+# mkdir -p "${IOS_DIR}"
+# mkdir -p "${CYPHERD_DIR}"
 
-echo "Workspace directory structure:"
-ls -R "${WORKSPACE_DIR}"
+# echo "Workspace directory structure:"
+# ls -R "${WORKSPACE_DIR}"
 
 # Path to the Info.plist file
 INFO_PLIST_PATH="${CYPHERD_DIR}/Info.plist"
