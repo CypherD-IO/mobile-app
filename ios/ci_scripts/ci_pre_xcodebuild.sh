@@ -94,8 +94,14 @@ log_message "Created/Updated sentry.properties file"
 PLIST_PATH="${CYPHERD_DIR}/GoogleService-Info.plist"
 
 # Write GoogleService-Info.plist with error checking
-if ! echo "${GOOGLE_SERVICE_INFO_PLIST}" > "${PLIST_PATH}"; then
+if ! printf "%s" "${GOOGLE_SERVICE_INFO_PLIST}" > "${PLIST_PATH}"; then
     log_message "ERROR: Failed to write GoogleService-Info.plist"
+    exit 1
+fi
+
+# Verify the plist is valid
+if ! plutil -lint "${PLIST_PATH}"; then
+    log_message "ERROR: Invalid plist file created"
     exit 1
 fi
 
@@ -111,5 +117,36 @@ log_message "1. sentry.properties:"
 cat "${SENTRY_FILE}"
 log_message "2. GoogleService-Info.plist:"
 /usr/libexec/PlistBuddy -c "Print" "${PLIST_PATH}"
+
+# Setup Firebase Crashlytics
+log_message "Setting up Firebase Crashlytics..."
+
+# Define Crashlytics paths
+PODS_ROOT="${IOS_DIR}/Pods"
+CRASHLYTICS_DIR="${PODS_ROOT}/FirebaseCrashlytics"
+
+# Create Crashlytics directory if it doesn't exist
+if [ ! -d "${CRASHLYTICS_DIR}" ]; then
+    log_message "Creating Crashlytics directory..."
+    mkdir -p "${CRASHLYTICS_DIR}"
+fi
+
+# Ensure Crashlytics run script exists and is executable
+CRASHLYTICS_RUN="${CRASHLYTICS_DIR}/run"
+if [ ! -f "${CRASHLYTICS_RUN}" ]; then
+    log_message "Creating Crashlytics run script..."
+    touch "${CRASHLYTICS_RUN}"
+fi
+chmod +x "${CRASHLYTICS_RUN}"
+
+# Ensure upload-symbols script exists and is executable
+UPLOAD_SYMBOLS="${CRASHLYTICS_DIR}/upload-symbols"
+if [ ! -f "${UPLOAD_SYMBOLS}" ]; then
+    log_message "Creating upload-symbols script..."
+    touch "${UPLOAD_SYMBOLS}"
+fi
+chmod +x "${UPLOAD_SYMBOLS}"
+
+log_message "Firebase Crashlytics setup completed"
 
 log_message "Script completed successfully"
