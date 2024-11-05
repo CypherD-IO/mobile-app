@@ -199,7 +199,6 @@ export default function useWeb3(origin: Web3Origin) {
         changeSelectedChainForCosmos(chainId);
 
         const chainInfo = getChainInfo(chainId);
-        const { name: chainName } = chainInfo;
 
         const privKey = await loadPrivateKeyFromKeyChain(
           false,
@@ -490,7 +489,6 @@ export default function useWeb3(origin: Web3Origin) {
               networkVersion: stateChainId,
             },
           };
-          break;
         }
         case Web3Method.SEND_TRANSACTION: {
           let [{ from, to, gasPrice, data, value, gas }] = params;
@@ -631,7 +629,6 @@ export default function useWeb3(origin: Web3Origin) {
           return {
             result: [address],
           };
-          break;
         }
         case Web3Method.GET_BALANCE: {
           const addressToFetch = params ? params[0] ?? address : address;
@@ -641,7 +638,6 @@ export default function useWeb3(origin: Web3Origin) {
           return {
             result: balanceInHex,
           };
-          break;
         }
         case Web3Method.BLOCK_NUMBER: {
           const blockNumber =
@@ -649,7 +645,6 @@ export default function useWeb3(origin: Web3Origin) {
           return {
             result: blockNumber,
           };
-          break;
         }
         case Web3Method.BLOCK_BY_NUMBER:
         case Web3Method.BLOCK_BY_HASH: {
@@ -666,7 +661,6 @@ export default function useWeb3(origin: Web3Origin) {
           return {
             result: blockByNumber,
           };
-          break;
         }
         case Web3Method.GAS_PRICE: {
           const gasPrice = await web3RPCEndpoint.current.eth.getGasPrice();
@@ -674,7 +668,6 @@ export default function useWeb3(origin: Web3Origin) {
           return {
             result: gasPrice,
           };
-          break;
         }
         case Web3Method.CHAINID:
         case Web3Method.CHAIN_ID: {
@@ -682,14 +675,12 @@ export default function useWeb3(origin: Web3Origin) {
           return {
             result: NumberToHex(chainId),
           };
-          break;
         }
         case Web3Method.NET_VERSION: {
           const chainId = await web3RPCEndpoint.current.eth.getChainId();
           return {
             result: chainId,
           };
-          break;
         }
         case Web3Method.GET_LOGS: {
           const [options] = params;
@@ -701,7 +692,6 @@ export default function useWeb3(origin: Web3Origin) {
           return {
             result: logs,
           };
-          break;
         }
         case Web3Method.ETH_CALL: {
           const [transactionConfig] = params;
@@ -715,7 +705,6 @@ export default function useWeb3(origin: Web3Origin) {
           return {
             result: callResult,
           };
-          break;
         }
         case Web3Method.GET_TRANSACTION_BY_HASH: {
           const [transactionHash] = params;
@@ -728,7 +717,6 @@ export default function useWeb3(origin: Web3Origin) {
           return {
             result: rawTx,
           };
-          break;
         }
         case Web3Method.GET_TRANSACTION_RECEIPT: {
           const [hash] = params;
@@ -744,7 +732,6 @@ export default function useWeb3(origin: Web3Origin) {
             };
           }
           return rawTx;
-          break;
         }
         case Web3Method.GET_TRANSACTION_COUNT: {
           const [addressToFetch] = params;
@@ -759,7 +746,6 @@ export default function useWeb3(origin: Web3Origin) {
           return {
             result: txnCount,
           };
-          break;
         }
         case Web3Method.PERSONAL_SIGN:
         case Web3Method.ETH_SIGN: {
@@ -789,7 +775,10 @@ export default function useWeb3(origin: Web3Origin) {
                 ? await SignTransactionModalFunc(modalContext, {
                     signMessage: messageToSign,
                     chainIdNumber: Number(
-                      messageToSign.match(/Chain ID: (\d+)/)[1],
+                      (messageToSign.match(/Chain ID: (\d+)/) || [
+                        null,
+                        '0',
+                      ])[1],
                     ),
                     payload,
                     signMessageTitle: 'Message',
@@ -831,7 +820,6 @@ export default function useWeb3(origin: Web3Origin) {
           return {
             result: gas,
           };
-          break;
         }
         case Web3Method.FEE_HISTORY: {
           const [blockCount, lastBlock, rewardPercentile] = params;
@@ -847,7 +835,6 @@ export default function useWeb3(origin: Web3Origin) {
           return {
             result: feeHistory,
           };
-          break;
         }
         case Web3Method.SIGN_TYPED_DATA:
         case Web3Method.SIGN_TYPED_DATA_V3:
@@ -961,7 +948,6 @@ export default function useWeb3(origin: Web3Origin) {
           return {
             result: WALLET_PERMISSIONS.ALLOW,
           };
-          break;
         }
         case Web3Method.PERSONAL_ECRECOVER: {
           const [msg, signature] = params;
