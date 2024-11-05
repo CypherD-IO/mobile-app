@@ -25,7 +25,6 @@ export const getToken = async (
       .messaging()
       .getToken()
       .then(fcmToken => {
-        console.log('fcmToken : ', fcmToken);
         if (isAddressSet(walletAddress)) {
           const registerURL = `${ARCH_HOST}/v1/configuration/device/register`;
           const payload = {
