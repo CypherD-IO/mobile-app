@@ -1389,6 +1389,15 @@ const resources = {
       NEW_PIN: 'New PIN',
       CONFIRM_PIN_TELEGRAM: 'Confirm PIN',
       SET_USAGE_LIMIT: 'Set Usage Limit',
+      CYPHER_CARD: 'Cypher Card',
+      PAYMENT_VERIFICATION: 'Payment Verification',
+      TRANSACTION_APPROVAL_FAILED: 'Transaction Approval Failed',
+      TRANSACTION_APPROVAL_FAILED_REASON_NA:
+        'Incase of repeated declines, please contact support',
+      TRANSACTION_DECLINED: 'Transaction Declined Successfully',
+      TRANSACTION_DECLINE_FAILED: 'Transaction Decline Failed',
+      TRANSACTION_DECLINATION_FAILED_REASON: 'Please contact support',
+      TRANSACTION_APPROVED_SUCCESS: 'Transaction Approved Successfully',
     },
   },
 };
