@@ -28,7 +28,7 @@ import { screenTitle } from '../../../constants';
 import { GlobalContext } from '../../../core/globalContext';
 import { CardProfile } from '../../../models/cardProfile.model';
 import { EVM_CHAINS_TYPE } from '../../../constants/type';
-import { map } from 'lodash';
+import { get, map } from 'lodash';
 import usePortfolio from '../../../hooks/usePortfolio';
 
 export default function AutoLoad({ navigation }: { navigation: any }) {
@@ -55,7 +55,7 @@ export default function AutoLoad({ navigation }: { navigation: any }) {
     if (cardProfile.isAutoloadConfigured && supportedTokens?.length) {
       void getAutoLoadConfig();
     }
-  }, []);
+  }, [supportedTokens]);
 
   useEffect(() => {
     void getSupportedTokens();
@@ -92,7 +92,13 @@ export default function AutoLoad({ navigation }: { navigation: any }) {
         response.data;
       const tempSelectedToken = supportedTokens?.find(
         (token: Holding) =>
-          token.chainDetails.backendName === chain && token.denom === assetId,
+          token.chainDetails.backendName === chain &&
+          get(
+            token,
+            map(EVM_CHAINS, 'backendName').includes(chain)
+              ? 'contractAddress'
+              : 'denom',
+          ) === assetId,
       );
       if (tempSelectedToken) {
         setSelectedToken(tempSelectedToken);
