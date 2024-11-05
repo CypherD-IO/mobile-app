@@ -11,7 +11,7 @@ brew install cocoapods
 echo "installing node@18"
 brew install node@18
 
-# link it to the path
+# linking it to the path
 echo "linking node@18"
 brew link node@18
 
