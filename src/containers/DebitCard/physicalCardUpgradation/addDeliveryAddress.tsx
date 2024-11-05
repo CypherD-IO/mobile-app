@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { StatusBar } from 'react-native';
 import {
   CyDView,
@@ -44,14 +44,7 @@ export default function AddDeliveryAddress() {
     selectCountryModalForDialCodeVisible,
     setSelectCountryModalForDialCodeVisible,
   ] = useState<boolean>(false);
-  const [selectedCountry, setSelectedCountry] = useState<ICountry>({
-    name: 'United States',
-    dialCode: '+1',
-    flag: '🇺🇸',
-    Iso2: 'US',
-    Iso3: 'USA',
-    currency: 'USD',
-  });
+  const [selectedCountry, setSelectedCountry] = useState<ICountry>();
   const [selectedCountryForDialCode, setSelectedCountryForDialCode] =
     useState<ICountry>({
       name: 'United States',
@@ -63,6 +56,12 @@ export default function AddDeliveryAddress() {
     });
   const { t } = useTranslation();
   const { currentCardProvider, userData } = route.params;
+
+  useEffect(() => {
+    if (selectedCountry) {
+      setSelectedCountryForDialCode(selectedCountry);
+    }
+  }, [selectedCountry]);
 
   const shippingDetailsValidationSchema = yup.object({
     addressLine1: yup
@@ -180,14 +179,20 @@ export default function AddDeliveryAddress() {
                         'flex flex-row justify-between items-center',
                         { 'border-redOffColor': !selectedCountry },
                       )}>
-                      <CyDView className={'flex flex-row items-center'}>
+                      {selectedCountry ? (
+                        <CyDView className={'flex flex-row items-center'}>
+                          <CyDText className='text-center text-[18px] ml-[8px]'>
+                            {selectedCountry?.flag}
+                          </CyDText>
+                          <CyDText className='text-center text-[18px] ml-[8px]'>
+                            {selectedCountry?.name}
+                          </CyDText>
+                        </CyDView>
+                      ) : (
                         <CyDText className='text-center text-[18px] ml-[8px]'>
-                          {selectedCountry.flag}
+                          {t('SELECT_COUNTRY')}
                         </CyDText>
-                        <CyDText className='text-center text-[18px] ml-[8px]'>
-                          {selectedCountry.name}
-                        </CyDText>
-                      </CyDView>
+                      )}
                     </CyDView>
                     <CyDFastImage
                       className='h-[12px] w-[12px]'
