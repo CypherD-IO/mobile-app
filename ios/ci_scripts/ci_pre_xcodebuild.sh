@@ -51,8 +51,9 @@ if [ -z "${SENTRY_ORG}" ] || [ -z "${SENTRY_PROJECT}" ] || [ -z "${SENTRY_TOKEN}
     exit 1
 fi
 
-if [ -z "${GOOGLE_SERVICE_INFO_PLIST}" ]; then
-    log_message "ERROR: GOOGLE_SERVICE_INFO_PLIST environment variable is empty"
+# Add this check after your other environment variable checks
+if [ -z "${FIREBASE_CLIENT_ID}" ] || [ -z "${FIREBASE_API_KEY}" ] || [ -z "${FIREBASE_GOOGLE_APP_ID}" ]; then
+    log_message "ERROR: Missing required Firebase configuration variables"
     exit 1
 fi
 
@@ -93,8 +94,44 @@ log_message "Created/Updated sentry.properties file"
 # Path to the GoogleService-Info.plist file
 PLIST_PATH="${CYPHERD_DIR}/GoogleService-Info.plist"
 
-# Write GoogleService-Info.plist with error checking
-if ! printf "%s" "${GOOGLE_SERVICE_INFO_PLIST}" > "${PLIST_PATH}"; then
+# Create GoogleService-Info.plist with values from secrets
+if ! cat << EOF > "${PLIST_PATH}"
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+    <key>CLIENT_ID</key>
+    <string>${FIREBASE_CLIENT_ID}</string>
+    <key>REVERSED_CLIENT_ID</key>
+    <string>${FIREBASE_REVERSED_CLIENT_ID}</string>
+    <key>API_KEY</key>
+    <string>${FIREBASE_API_KEY}</string>
+    <key>GCM_SENDER_ID</key>
+    <string>${FIREBASE_GCM_SENDER_ID}</string>
+    <key>PLIST_VERSION</key>
+    <string>1</string>
+    <key>BUNDLE_ID</key>
+    <string>${FIREBASE_BUNDLE_ID}</string>
+    <key>PROJECT_ID</key>
+    <string>${FIREBASE_PROJECT_ID}</string>
+    <key>STORAGE_BUCKET</key>
+    <string>${FIREBASE_STORAGE_BUCKET}</string>
+    <key>IS_ADS_ENABLED</key>
+    <false></false>
+    <key>IS_ANALYTICS_ENABLED</key>
+    <false></false>
+    <key>IS_APPINVITE_ENABLED</key>
+    <true></true>
+    <key>IS_GCM_ENABLED</key>
+    <true></true>
+    <key>IS_SIGNIN_ENABLED</key>
+    <true></true>
+    <key>GOOGLE_APP_ID</key>
+    <string>${FIREBASE_GOOGLE_APP_ID}</string>
+</dict>
+</plist>
+EOF
+then
     log_message "ERROR: Failed to write GoogleService-Info.plist"
     exit 1
 fi
