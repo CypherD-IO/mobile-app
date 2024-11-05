@@ -1,22 +1,3 @@
-import React, { useContext, useState } from 'react';
-import { t } from 'i18next';
-import { Linking, StyleSheet } from 'react-native';
-import AppImages from '../../../../../assets/images/appImages';
-import {
-  CyDView,
-  CyDTouchView,
-  CyDImage,
-  CyDText,
-  CyDFastImage,
-} from '../../../../styles/tailwindStyles';
-import Button from '../../../../components/v2/button';
-import { showToast } from '../../../utilities/toastUtility';
-import {
-  GlobalContext,
-  GlobalContextDef,
-} from '../../../../core/globalContext';
-import useAxios from '../../../../core/HttpRequest';
-import { copyToClipboard } from '../../../../core/util';
 import {
   NavigationProp,
   ParamListBase,
@@ -26,18 +7,36 @@ import {
   useRoute,
 } from '@react-navigation/native';
 import * as Sentry from '@sentry/react-native';
-import { screenTitle } from '../../../../constants';
-import { useSafeAreaInsets } from 'react-native-safe-area-context';
-import { ButtonType, GlobalContextType } from '../../../../constants/enum';
-import { get } from 'lodash';
-import useCardUtilities from '../../../../hooks/useCardUtilities';
-import LottieView from 'lottie-react-native';
 import clsx from 'clsx';
+import { t } from 'i18next';
+import { get } from 'lodash';
+import LottieView from 'lottie-react-native';
+import React, { useContext, useState } from 'react';
+import { Linking, StyleSheet } from 'react-native';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
+import AppImages from '../../../../../assets/images/appImages';
 import CardProviderSwitch from '../../../../components/cardProviderSwitch';
+import Button from '../../../../components/v2/button';
+import { ButtonType, GlobalContextType } from '../../../../constants/enum';
+import {
+  GlobalContext,
+  GlobalContextDef,
+} from '../../../../core/globalContext';
+import useAxios from '../../../../core/HttpRequest';
+import { copyToClipboard } from '../../../../core/util';
+import useCardUtilities from '../../../../hooks/useCardUtilities';
+import {
+  CyDImage,
+  CyDText,
+  CyDTouchView,
+  CyDView,
+} from '../../../../styles/tailwindStyles';
+import { showToast } from '../../../utilities/toastUtility';
 
 interface RouteParams {
   showSetupLaterOption?: boolean;
   navigateTo?: string;
+  enableBackButton?: boolean;
 }
 
 export default function TelegramSetup() {
@@ -46,7 +45,11 @@ export default function TelegramSetup() {
   ) as GlobalContextDef;
   const navigation = useNavigation<NavigationProp<ParamListBase>>();
   const route = useRoute<RouteProp<Record<string, RouteParams>, string>>();
-  const { showSetupLaterOption = true, navigateTo } = route.params ?? {};
+  const {
+    showSetupLaterOption = true,
+    navigateTo,
+    enableBackButton = false,
+  } = route.params ?? {};
   const { getWithAuth } = useAxios();
   const insets = useSafeAreaInsets();
   const { getWalletProfile } = useCardUtilities();
@@ -88,9 +91,7 @@ export default function TelegramSetup() {
       const botCommand = `/link ${telegramConnectionId}`;
       copyToClipboard(botCommand);
       showToast(t('Bot Command Copied'));
-      await Linking.openURL(
-        `https://t.me/CypherHQBot?start=${encodeURIComponent(botCommand)}`,
-      );
+      await Linking.openURL(`tg://msg?text=${encodeURIComponent(botCommand)}`);
     } catch (err) {
       Sentry.captureException(err);
     }
@@ -106,9 +107,23 @@ export default function TelegramSetup() {
           <CardProviderSwitch />
         </CyDView>
 
-        <CyDText className='text-[28px] font-bold mt-[12px] mb-[16px] font-manrope'>
-          {t('SETUP_TELEGRAM')}
-        </CyDText>
+        <CyDView className='flex-row items-center'>
+          {enableBackButton && (
+            <CyDTouchView
+              className=' mr-[10px]'
+              onPress={() => {
+                navigation.goBack();
+              }}>
+              <CyDImage
+                source={AppImages.LEFT_ARROW_LONG}
+                className='w-[20px] h-[14px]'
+              />
+            </CyDTouchView>
+          )}
+          <CyDText className='text-[28px] font-bold mt-[12px] mb-[16px] font-manrope'>
+            {t('SETUP_TELEGRAM')}
+          </CyDText>
+        </CyDView>
 
         <CyDView className='bg-white p-[12px] rounded-[16px]'>
           <CyDView className='flex-row items-start'>

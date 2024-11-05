@@ -1,26 +1,19 @@
 import AsyncStorage from '@react-native-async-storage/async-storage'; // Add this import
-import React, {
-  Dispatch,
-  SetStateAction,
-  useCallback,
-  useEffect,
-  useState,
-} from 'react';
+import React, { Dispatch, SetStateAction, useEffect, useState } from 'react';
 import { StyleSheet } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
-import AppImages from '../../../assets/images/appImages';
-import ZrmIntro from '../../containers/DebitCard/bridgeCard/zeroRestrictionMode/zrmIntro';
-import Loading from '../../containers/Loading';
+import AppImages from '../../../../../assets/images/appImages';
+import ZrmIntro from './zrmIntro';
+import Loading from '../../../Loading';
 import {
   CyDImage,
   CyDText,
   CyDTouchView,
   CyDView,
-} from '../../styles/tailwindStyles';
-import Button from './button';
-import CyDModalLayout from './modal';
-import CustomSlider from './slider';
-import { useFocusEffect } from '@react-navigation/native';
+} from '../../../../styles/tailwindStyles';
+import Button from '../../../../components/v2/button';
+import CyDModalLayout from '../../../../components/v2/modal';
+import CustomSlider from '../../../../components/v2/slider';
 
 const styles = StyleSheet.create({
   modalLayout: {
