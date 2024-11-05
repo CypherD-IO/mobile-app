@@ -1,16 +1,39 @@
 require_relative '../node_modules/react-native/scripts/react_native_pods'
 require_relative '../node_modules/@react-native-community/cli-platform-ios/native_modules'
 
-platform :ios, '15.0'
+platform :ios, min_ios_version_supported
+prepare_react_native_project!
+
+# If you are using a `react-native-flipper` your iOS build will fail when `NO_FLIPPER=1` is set.
+# because `react-native-flipper` depends on (FlipperKit,...) that will be excluded
+#
+# To fix this you can also exclude `react-native-flipper` using a `react-native.config.js`
+# ```js
+# module.exports = {
+#   dependencies: {
+#     ...(process.env.NO_FLIPPER ? { 'react-native-flipper': { platforms: { ios: null } } } : {}),
+# ```
+def flipper_config
+  if ENV['XCODE_CLOUD'] == "1" || ENV['CI'] == "1"
+    config = { 'Flipper' => { 'Enabled' => false } }
+  else
+    config = { 'Flipper' => { 'Enabled' => true } }
+  end
+  config
+end
 
 target 'Cypherd' do
-  config = use_native_modules!
-  $RNFirebaseAnalyticsWithoutAdIdSupport = true
+  config = flipper_config
   use_react_native!(
     :path => config[:reactNativePath],
-    # to enable hermes on iOS, change `false` to `true` and then install pods
-    :hermes_enabled => false
+    # Enables Flipper.
+    # Note that if you have use_frameworks! enabled, Flipper will not work and
+    # you should disable the next line.
+    :flipper_configuration => config['Flipper'],
   )
+
+  config = use_native_modules!
+  $RNFirebaseAnalyticsWithoutAdIdSupport = true
 
   permissions_path = '../node_modules/react-native-permissions/ios'
   pod 'Permission-Camera', :path => "#{permissions_path}/Camera"
@@ -35,12 +58,6 @@ target 'Cypherd' do
     inherit! :complete
     # Pods for testing
   end
-
-  # Enables Flipper.
-  #
-  # Note that if you have use_frameworks! enabled, Flipper will not work and
-  # you should disable the next line.
-  use_flipper!()
 
   post_install do |installer|
     react_native_post_install(installer)
