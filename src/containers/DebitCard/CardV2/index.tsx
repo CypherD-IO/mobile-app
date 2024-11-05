@@ -125,11 +125,9 @@ export default function CypherCardScreen() {
       void onRefresh();
     }
   }, [isFocused]);
-
   useEffect(() => {
     void onRefresh();
   }, [cardProvider]);
-
   const refreshProfile = async () => {
     const data = await getWalletProfile(globalContext.globalState.token);
     globalContext.globalDispatch({
@@ -154,7 +152,6 @@ export default function CypherCardScreen() {
     }
     setBalanceLoading(false);
   };
-
   const fetchRecentTransactions = async () => {
     const txnURL = `/v1/cards/${cardProvider}/card/${String(
       cardId,
@@ -168,7 +165,6 @@ export default function CypherCardScreen() {
       setRecentTransactions(txnsToSet);
     }
   };
-
   const onPressFundCard = () => {
     navigation.navigate(screenTitle.BRIDGE_FUND_CARD_SCREEN, {
       navigation,
@@ -176,14 +172,12 @@ export default function CypherCardScreen() {
       currentCardIndex,
     });
   };
-
   function onModalHide() {
     hideModal();
     setTimeout(() => {
       onPressFundCard();
     }, MODAL_HIDE_TIMEOUT);
   }
-
   const onShippingConfirmation = () => {
     if (isShippingFeeConsentModalVisible) {
       setIsShippingFeeConsentModalVisible(false);
@@ -198,14 +192,12 @@ export default function CypherCardScreen() {
       });
     }
   };
-
   const onCardActivationConfirmation = (card: Card) => {
     navigation.navigate(screenTitle.CARD_ACTIAVTION_SCREEN, {
       currentCardProvider: cardProvider,
       card,
     });
   };
-
   const onPressUpgradeNow = () => {
     if (Number(cardBalance) < Number(physicalCardUpgradationFee)) {
       showModal('state', {
@@ -223,11 +215,9 @@ export default function CypherCardScreen() {
       }
     }
   };
-
   const onPressActivateCard = (card: any) => {
     onCardActivationConfirmation(card);
   };
-
   const verifyWithOTP = () => {
     navigation.navigate(screenTitle.LOCKDOWN_MODE_AUTH, {
       onSuccess: () => {
@@ -242,7 +232,6 @@ export default function CypherCardScreen() {
       accountStatus: ACCOUNT_STATUS.ACTIVE,
     });
   };
-
   const shouldBlockAction = () => {
     if (
       isLockdownModeEnabled === ACCOUNT_STATUS.LOCKED &&
@@ -252,7 +241,6 @@ export default function CypherCardScreen() {
     }
     return false;
   };
-
   const onPressPlanChange = () => {
     navigation.navigate(screenTitle.SELECT_PLAN, {
       toPage: screenTitle.DEBIT_CARD_SCREEN,
@@ -505,7 +493,6 @@ export default function CypherCardScreen() {
     <Loading />
   );
 }
-
 const style = StyleSheet.create({
   loaderStyle: {
     height: 38,

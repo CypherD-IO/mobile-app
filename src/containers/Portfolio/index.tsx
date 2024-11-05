@@ -83,6 +83,7 @@ import { Banner, HeaderBar, RefreshTimerBar } from './components';
 import BannerCarousel from './components/BannerCarousel';
 import FilterBar from './components/FilterBar';
 import { DeFiScene, NFTScene, TXNScene } from './scenes';
+import { use3DSecure } from '../../components/v2/threeDSecureApprovalModalContext';
 
 export interface PortfolioProps {
   navigation: any;
@@ -131,6 +132,8 @@ export default function Portfolio({ navigation }: PortfolioProps) {
 
   const swipeableRefs: Array<Swipeable | null> = [];
   let previousOpenedSwipeableRef: Swipeable | null;
+
+  const { show3DSecureModal } = use3DSecure();
 
   const onSwipe = (key: number) => {
     if (
@@ -523,6 +526,12 @@ export default function Portfolio({ navigation }: PortfolioProps) {
             if (url) {
               navigation.navigate(C.screenTitle.DEBIT_CARD_SCREEN, { url });
             }
+            break;
+          }
+          case NotificationEvents.THREE_DS_APPROVE: {
+            show3DSecureModal({
+              data: remoteMessage.data,
+            });
             break;
           }
         }

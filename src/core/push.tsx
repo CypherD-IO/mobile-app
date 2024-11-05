@@ -1,10 +1,13 @@
 import firebase from '@react-native-firebase/app';
 import axios from './Http';
 import * as Sentry from '@sentry/react-native';
-import PushNotification from 'react-native-push-notification';
 import { FirebaseMessagingTypes } from '@react-native-firebase/messaging';
 import { hostWorker } from '../global';
 import { isAddressSet } from './util';
+import notifee, {
+  AndroidImportance,
+  AuthorizationStatus,
+} from '@notifee/react-native';
 
 export const getToken = async (
   walletAddress: string,
@@ -22,6 +25,7 @@ export const getToken = async (
       .messaging()
       .getToken()
       .then(fcmToken => {
+        console.log('fcmToken : ', fcmToken);
         if (isAddressSet(walletAddress)) {
           const registerURL = `${ARCH_HOST}/v1/configuration/device/register`;
           const payload = {
@@ -53,45 +57,30 @@ export const getToken = async (
   });
 };
 
-export const registerForRemoteMessages = () => {
-  firebase
-    .messaging()
-    .registerDeviceForRemoteMessages()
-    .then(() => {
-      requestPermissions();
-    })
-    .catch(e => {
-      Sentry.captureException(e);
-    });
-};
+async function createNotificationChannel() {
+  const channelId = await notifee.createChannel({
+    id: 'default',
+    name: 'Default Channel',
+    importance: AndroidImportance.HIGH,
+  });
+  return channelId;
+}
 
-export const requestPermissions = () => {
-  firebase
-    .messaging()
-    .requestPermission()
-    .then(status => {
-      if (status === 1) {
-        onMessage();
-      }
-    })
-    .catch(e => {
-      Sentry.captureException(e);
-    });
-};
-
-export const showNotification = (
+export const showNotification = async (
   notification: FirebaseMessagingTypes.Notification | undefined,
 ) => {
+  const channelId = await createNotificationChannel();
   if (notification?.body) {
-    PushNotification.localNotification({
+    await notifee.displayNotification({
       title: notification.title,
-      message: notification.body,
+      body: notification.body,
+      android: {
+        channelId,
+      },
     });
   }
 };
 
-export const onMessage = () => {
-  firebase.messaging().onMessage(response => {
-    showNotification(response.notification);
-  });
-};
+export async function requestUserPermission() {
+  await notifee.requestPermission();
+}
