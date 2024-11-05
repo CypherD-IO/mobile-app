@@ -81,11 +81,11 @@ const ImpactModal = ({
           {'Impact Information'}
         </CyDText>
         <CyDText className='text-[14px] mt-[15px] text-justify'>
-          {`Domestic and international transaction limits over `}
+          {`Your domestic and international transaction limits will be limited to `}
           <CyDText className='font-bold'>{`$${dailyLimit}`}</CyDText>
-          {` will now be capped at `}
-          <CyDText className='font-bold'>{`$${dailyLimit}`}</CyDText>
-          {` per transaction, based on your requested daily maximum limit of $100`}
+          {` per transaction based on your daily spending limit `}
+          <CyDText className='font-bold'>{`$${dailyLimit}.`}</CyDText>
+          {`  Please plan your spending accordingly!`}
         </CyDText>
         <CyDView className='my-[16px]'>
           <Button

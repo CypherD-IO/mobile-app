@@ -12,6 +12,10 @@ interface CyDModalLayoutProps {
   children: React.ReactNode;
   disableBackDropPress?: boolean;
   style?: StyleProp<ViewStyle>;
+  backdropOpacity?: number;
+  backdropTransitionInTiming?: number;
+  backdropTransitionOutTiming?: number;
+  hideModalContentWhileAnimating?: boolean;
   animationIn?:
     | 'bounce'
     | 'flash'
@@ -152,6 +156,7 @@ interface CyDModalLayoutProps {
   animationOutTiming?: number;
   avoidKeyboard?: boolean;
   onModalHide?: () => void;
+  useNativeDriver?: boolean;
 }
 
 export default function CyDModalLayout({
@@ -166,6 +171,11 @@ export default function CyDModalLayout({
   animationOutTiming = 200,
   avoidKeyboard = false,
   onModalHide = () => {},
+  backdropOpacity = 0.85,
+  backdropTransitionInTiming = 300,
+  backdropTransitionOutTiming = 300,
+  hideModalContentWhileAnimating = true,
+  useNativeDriver = true,
 }: CyDModalLayoutProps) {
   return (
     <Modal
@@ -179,14 +189,16 @@ export default function CyDModalLayout({
       }}
       backdropColor={'#000000'}
       propagateSwipe={true}
-      avoiKeyboardLikeIOS={true}
-      keyboardAvoidingBehavior='height'
-      backdropOpacity={0.85}
+      backdropOpacity={backdropOpacity}
+      backdropTransitionInTiming={backdropTransitionInTiming}
+      backdropTransitionOutTiming={backdropTransitionOutTiming}
+      hideModalContentWhileAnimating={hideModalContentWhileAnimating}
       animationIn={!animationIn ? 'zoomIn' : animationIn}
       animationOut={!animationOut ? 'zoomOut' : animationOut}
       animationInTiming={animationInTiming}
       animationOutTiming={animationOutTiming}
       onModalHide={onModalHide}
+      useNativeDriver={useNativeDriver}
       style={style}>
       {children}
     </Modal>
