@@ -1,82 +1,115 @@
-#!/bin/sh
+#!/bin/bash
 chmod +x ci_pre_xcodebuild.sh
+set -e  # Stop on any error
 
-# set -e
+# Function for logging
+log_message() {
+    echo "[$(date '+%Y-%m-%d %H:%M:%S')] $1"
+}
 
-echo "Starting ci_pre_xcodebuild.sh"
+# Function to check if a file exists and is readable
+check_file() {
+    if [ ! -f "$1" ]; then
+        log_message "ERROR: File not found: $1"
+        exit 1
+    elif [ ! -r "$1" ]; then
+        log_message "ERROR: File not readable: $1"
+        exit 1
+    fi
+}
 
-# # Add logging for Crashlytics
-# echo "Checking Crashlytics setup:"
-# export PODS_ROOT="/Volumes/workspace/repository/ios/Pods"
-# echo "PODS_ROOT: ${PODS_ROOT}"
-# ls -l "${PODS_ROOT}/FirebaseCrashlytics"
+# Function to check directory permissions
+check_directory() {
+    if [ ! -d "$1" ]; then
+        log_message "ERROR: Directory not found: $1"
+        exit 1
+    elif [ ! -w "$1" ]; then
+        log_message "ERROR: Directory not writable: $1"
+        exit 1
+    fi
+}
 
-# if [ -f "${PODS_ROOT}/FirebaseCrashlytics/run" ]; then
-#   echo "Crashlytics run script found"
-#   chmod +x "${PODS_ROOT}/FirebaseCrashlytics/run"
-# else
-#   echo "Crashlytics run script not found"
-# fi
-
-# if [ -f "${PODS_ROOT}/FirebaseCrashlytics/upload-symbols" ]; then
-#   echo "Crashlytics upload-symbols script found"
-#   chmod +x "${PODS_ROOT}/FirebaseCrashlytics/upload-symbols"
-# else
-#   echo "Crashlytics upload-symbols script not found"
-# fi
-
-# echo "Finished ci_pre_xcodebuild.sh"
+log_message "Starting ci_pre_xcodebuild.sh"
 
 # Use a more reliable path for the workspace
 WORKSPACE_DIR="/Volumes/workspace/repository"
 IOS_DIR="${WORKSPACE_DIR}/ios"
 CYPHERD_DIR="${IOS_DIR}/CypherD"
 
-# Create necessary directories if they don't exist
-# mkdir -p "${IOS_DIR}"
-# mkdir -p "${CYPHERD_DIR}"
-
-# echo "Workspace directory structure:"
-# ls -R "${WORKSPACE_DIR}"
+# Check directories exist and are writable
+check_directory "${WORKSPACE_DIR}"
+check_directory "${IOS_DIR}"
+check_directory "${CYPHERD_DIR}"
 
 # Path to the Info.plist file
 INFO_PLIST_PATH="${CYPHERD_DIR}/Info.plist"
+check_file "${INFO_PLIST_PATH}"
+
+# Verify environment variables
+if [ -z "${SENTRY_ORG}" ] || [ -z "${SENTRY_PROJECT}" ] || [ -z "${SENTRY_TOKEN}" ]; then
+    log_message "ERROR: Missing required Sentry environment variables"
+    exit 1
+fi
+
+if [ -z "${GOOGLE_SERVICE_INFO_PLIST}" ]; then
+    log_message "ERROR: GOOGLE_SERVICE_INFO_PLIST environment variable is empty"
+    exit 1
+fi
 
 # Extract the current version and build number
 VERSION=$(/usr/libexec/PlistBuddy -c "Print CFBundleShortVersionString" "${INFO_PLIST_PATH}" 2>/dev/null || echo "1.0")
 BUILD_NUMBER=$(/usr/libexec/PlistBuddy -c "Print CFBundleVersion" "${INFO_PLIST_PATH}" 2>/dev/null || echo "1")
 
 # Update the Info.plist with the new values
-/usr/libexec/PlistBuddy -c "Set :CFBundleShortVersionString ${VERSION}" "${INFO_PLIST_PATH}"
-/usr/libexec/PlistBuddy -c "Set :CFBundleVersion ${BUILD_NUMBER}" "${INFO_PLIST_PATH}"
+if ! /usr/libexec/PlistBuddy -c "Set :CFBundleShortVersionString ${VERSION}" "${INFO_PLIST_PATH}"; then
+    log_message "ERROR: Failed to update CFBundleShortVersionString"
+    exit 1
+fi
 
-echo "Updated Info.plist with version ${VERSION} and build number ${BUILD_NUMBER}"
-echo "File modified: ${INFO_PLIST_PATH}"
+if ! /usr/libexec/PlistBuddy -c "Set :CFBundleVersion ${BUILD_NUMBER}" "${INFO_PLIST_PATH}"; then
+    log_message "ERROR: Failed to update CFBundleVersion"
+    exit 1
+fi
+
+log_message "Updated Info.plist with version ${VERSION} and build number ${BUILD_NUMBER}"
 
 # Path to the sentry.properties file
 SENTRY_FILE="${IOS_DIR}/sentry.properties"
 
-# Create sentry.properties file
-cat << EOF > "${SENTRY_FILE}"
+# Create sentry.properties file with error checking
+if ! cat << EOF > "${SENTRY_FILE}"
 defaults.url=https://sentry.io/
 defaults.org=${SENTRY_ORG}
 defaults.project=${SENTRY_PROJECT}
 auth.token=${SENTRY_TOKEN}
 EOF
+then
+    log_message "ERROR: Failed to create sentry.properties file"
+    exit 1
+fi
 
-echo "Created/Updated sentry.properties file"
-echo "File modified: ${SENTRY_FILE}"
+log_message "Created/Updated sentry.properties file"
 
 # Path to the GoogleService-Info.plist file
 PLIST_PATH="${CYPHERD_DIR}/GoogleService-Info.plist"
 
-echo "${GOOGLE_SERVICE_INFO_PLIST}" > "${PLIST_PATH}"
+# Write GoogleService-Info.plist with error checking
+if ! echo "${GOOGLE_SERVICE_INFO_PLIST}" > "${PLIST_PATH}"; then
+    log_message "ERROR: Failed to write GoogleService-Info.plist"
+    exit 1
+fi
 
-echo "Created/Updated GoogleService-Info.plist"
-echo "File modified: ${PLIST_PATH}"
+log_message "Created/Updated GoogleService-Info.plist"
+
+# Verify the created files
+check_file "${SENTRY_FILE}"
+check_file "${PLIST_PATH}"
 
 # Display content of modified files for debugging
-echo "1. sentry.properties:"
+log_message "Verification of created files:"
+log_message "1. sentry.properties:"
 cat "${SENTRY_FILE}"
-echo "2. GoogleService-Info.plist:"
+log_message "2. GoogleService-Info.plist:"
 /usr/libexec/PlistBuddy -c "Print" "${PLIST_PATH}"
+
+log_message "Script completed successfully"
