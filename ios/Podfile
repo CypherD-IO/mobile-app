@@ -1,39 +1,16 @@
 require_relative '../node_modules/react-native/scripts/react_native_pods'
 require_relative '../node_modules/@react-native-community/cli-platform-ios/native_modules'
 
-platform :ios, min_ios_version_supported
-prepare_react_native_project!
-
-# If you are using a `react-native-flipper` your iOS build will fail when `NO_FLIPPER=1` is set.
-# because `react-native-flipper` depends on (FlipperKit,...) that will be excluded
-#
-# To fix this you can also exclude `react-native-flipper` using a `react-native.config.js`
-# ```js
-# module.exports = {
-#   dependencies: {
-#     ...(process.env.NO_FLIPPER ? { 'react-native-flipper': { platforms: { ios: null } } } : {}),
-# ```
-def flipper_config
-  if ENV['XCODE_CLOUD'] == "1" || ENV['CI'] == "1"
-    config = { 'Flipper' => { 'Enabled' => false } }
-  else
-    config = { 'Flipper' => { 'Enabled' => true } }
-  end
-  config
-end
+platform :ios, '15.0'
 
 target 'Cypherd' do
-  config = flipper_config
-  use_react_native!(
-    :path => config[:reactNativePath],
-    # Enables Flipper.
-    # Note that if you have use_frameworks! enabled, Flipper will not work and
-    # you should disable the next line.
-    :flipper_configuration => config['Flipper'],
-  )
-
   config = use_native_modules!
   $RNFirebaseAnalyticsWithoutAdIdSupport = true
+  use_react_native!(
+    :path => config[:reactNativePath],
+    # to enable hermes on iOS, change `false` to `true` and then install pods
+    :hermes_enabled => false
+  )
 
   permissions_path = '../node_modules/react-native-permissions/ios'
   pod 'Permission-Camera', :path => "#{permissions_path}/Camera"
@@ -54,14 +31,37 @@ target 'Cypherd' do
 
   pod 'RNLocalize', :path => '../node_modules/react-native-localize'
 
+  pod 'Firebase/Core'
+
+  pod 'Firebase/Crashlytics'
+
   target 'CypherdTests' do
     inherit! :complete
     # Pods for testing
   end
 
+  # Enables Flipper.
+  #
+  # Note that if you have use_frameworks! enabled, Flipper will not work and
+  # you should disable the next line.
+  # use_flipper!()
+
   post_install do |installer|
     react_native_post_install(installer)
     __apply_Xcode_12_5_M1_post_install_workaround(installer)
+    
+    installer.pods_project.targets.each do |target|
+      if target.name == 'Flipper'
+        file_path = 'Pods/Flipper/xplat/Flipper/FlipperTransportTypes.h'
+        contents = File.read(file_path)
+        unless contents.include?('#include <functional>')
+          File.chmod(0o755, file_path)  # Use octal prefix for permissions
+          File.open(file_path, 'w') do |file|
+            file.puts('#include <functional>')
+            file.puts(contents)
+          end
+        end
+      end
+    end
   end
 end
-
