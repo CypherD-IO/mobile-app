@@ -1038,11 +1038,14 @@ export const walletConnectChainData: Record<string, NetworkInterface> = {
 };
 
 export const AUTO_LOAD_SUPPORTED_CHAINS = [
-  CHAIN_OSMOSIS.backendName,
-  CHAIN_NOBLE.backendName,
+  CHAIN_ETH.backendName,
+  CHAIN_BASE.backendName,
   CHAIN_ARBITRUM.backendName,
   CHAIN_POLYGON.backendName,
   CHAIN_OPTIMISM.backendName,
+  CHAIN_BSC.backendName,
+  CHAIN_OSMOSIS.backendName,
+  CHAIN_NOBLE.backendName,
 ];
 
 export const STABLE_TOKEN_CHAIN_MAP = new Map([
@@ -1151,14 +1154,6 @@ export const STABLE_TOKEN_CHAIN_MAP = new Map([
         name: 'Tether',
         coingeckoId: 'tether',
         logo: 'https://assets.coingecko.com/coins/images/325/large/Tether-logo.png?1598003707',
-      },
-      {
-        contractAddress: '0x8ac76a51cc950d9822d68b83fe1ad97b32cd580d',
-        decimal: 18,
-        symbol: 'USDC',
-        name: 'USD Coin',
-        coingeckoId: 'usd-coin',
-        logo: 'https://assets.coingecko.com/coins/images/6319/large/USD_Coin_icon.png?1547042389',
       },
       {
         contractAddress: '0x1af3f329e8be154074d8769d1ffa4ee058b1dbc3',
@@ -1295,14 +1290,6 @@ export const STABLE_TOKEN_CHAIN_MAP = new Map([
         symbol: 'USDC',
         name: 'USD Coin',
         coingeckoId: 'usd-coin',
-        logo: 'https://assets.coingecko.com/coins/images/6319/large/USD_Coin_icon.png?1547042389',
-      },
-      {
-        contractAddress: '0xd9aaec86b65d86f6a7b5b1b0c42ffa531710b6ca',
-        decimal: 6,
-        symbol: 'USDBC',
-        name: 'Bridged USD Coin (Base)',
-        coingeckoId: 'bridged-usd-coin-base',
         logo: 'https://assets.coingecko.com/coins/images/6319/large/USD_Coin_icon.png?1547042389',
       },
       {
