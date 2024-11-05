@@ -556,7 +556,8 @@ PODS:
     - React-Core
   - react-native-view-shot (3.8.0):
     - React-Core
-  - react-native-webview (11.26.1):
+  - react-native-webview (13.12.3):
+    - RCT-Folly (= 2021.07.22.00)
     - React-Core
   - React-NativeModulesApple (0.72.14):
     - React-callinvoker
@@ -1192,7 +1193,7 @@ SPEC CHECKSUMS:
   react-native-version-check: 6cd36aad4e30b8e3216747e3b4ddeb09e0647af8
   react-native-video: caa2af4f0c6ba457f66861706dd4b0118302a804
   react-native-view-shot: 6b7ed61d77d88580fed10954d45fad0eb2d47688
-  react-native-webview: 9f111dfbcfc826084d6c507f569e5e03342ee1c1
+  react-native-webview: 670ee27ecc5d11a56e82ce6f03182896b368d37c
   React-NativeModulesApple: 9b58b8f5c1d8ea68d0a63f569a9e786d01281ea6
   React-perflogger: daabc494c6328efc1784a4b49b8b74fca305d11c
   React-RCTActionSheet: 0e0e64a7cf6c07f1de73d1f0a92d26a70262b256

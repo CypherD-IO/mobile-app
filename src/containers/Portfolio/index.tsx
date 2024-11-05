@@ -118,7 +118,7 @@ export default function Portfolio({ navigation }: PortfolioProps) {
   });
 
   const [deFiFilterVisible, setDeFiFilterVisible] = useState<boolean>(false);
-  const [userProtocols, setUserProtocls] = useState<protocolOptionType[]>([]);
+  const [userProtocols, setUserProtocols] = useState<protocolOptionType[]>([]);
   const { fetchPortfolio, getLocalPortfolio } = usePortfolio();
   const tabs = [
     { key: 'token', title: t('TOKENS') },
@@ -562,10 +562,6 @@ export default function Portfolio({ navigation }: PortfolioProps) {
         data={tempTotalHoldings}
         scrollEnabled={false}
         renderItem={renderPortfolioItem as ListRenderItem<unknown>}
-        // refreshing={isPortfolioRefreshing}
-        // onRefresh={() => {
-        //   void fetchPortfolioData();
-        // }}
         getItemLayout={(data, index) => ({
           length: 60,
           offset: 60 * index,
@@ -626,7 +622,7 @@ export default function Portfolio({ navigation }: PortfolioProps) {
           filters={deFiFilters}
           setFilters={setDeFiFilters}
           userProtocols={userProtocols}
-          setUserProtocols={setUserProtocls}
+          setUserProtocols={setUserProtocols}
           filterVisible={deFiFilterVisible}
           setFilterVisible={setDeFiFilterVisible}
         />

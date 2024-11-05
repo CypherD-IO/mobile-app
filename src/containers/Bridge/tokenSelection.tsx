@@ -1,4 +1,15 @@
+import clsx from 'clsx';
+import Fuse from 'fuse.js';
+import { t } from 'i18next';
+import { capitalize, endsWith, get, isString } from 'lodash';
 import React, { Dispatch, SetStateAction, useEffect, useState } from 'react';
+import { Dimensions, Keyboard, StyleSheet } from 'react-native';
+import { SvgUri } from 'react-native-svg';
+import { SwapBridgeChainData, SwapBridgeTokenData } from '.';
+import AppImages from '../../../assets/images/appImages';
+import Loading from '../../components/v2/loading';
+import CyDModalLayout from '../../components/v2/modal';
+import CyDSkeleton from '../../components/v2/skeleton';
 import {
   CyDFastImage,
   CyDFlatList,
@@ -9,26 +20,6 @@ import {
   CyDTouchView,
   CyDView,
 } from '../../styles/tailwindStyles';
-import clsx from 'clsx';
-import { capitalize, endsWith, get, isString } from 'lodash';
-import { SvgUri } from 'react-native-svg';
-import AppImages from '../../../assets/images/appImages';
-import CyDModalLayout from '../../components/v2/modal';
-import {
-  Animated,
-  Dimensions,
-  Keyboard,
-  StyleSheet,
-  TouchableOpacity,
-} from 'react-native';
-import { Colors } from '../../constants/theme';
-import Fuse from 'fuse.js';
-import Loading from '../../components/v2/loading';
-import { t } from 'i18next';
-import { verticalScale } from 'react-native-size-matters';
-import Accordion from 'react-native-collapsible/Accordion';
-import { SwapBridgeChainData, SwapBridgeTokenData } from '.';
-import CyDSkeleton from '../../components/v2/skeleton';
 
 const currencyFormatter = new Intl.NumberFormat('en-US', {
   style: 'currency',
@@ -77,23 +68,20 @@ function RenderToken({
               source={{
                 uri: item.logoUrl,
               }}
-              className={'w-[28px] h-[28px] mr-[18px]'}
+              className={'w-[40px] h-[40px] mr-[18px]'}
             />
           )}
-          <CyDText
-            className={'text-black text-[18px] font-nunito font-regular'}>
-            {item.recommendedSymbol}
-          </CyDText>
+          <CyDView className=''>
+            <CyDText
+              className={'text-base400 text-[16px] font-nunito font-semibold'}>
+              {item.recommendedSymbol}
+            </CyDText>
+            <CyDText
+              className={'text-n200 text-[12px] font-nunito font-regular'}>
+              {item.name}
+            </CyDText>
+          </CyDView>
         </CyDView>
-
-        {item.recommendedSymbol === selected?.recommendedSymbol && (
-          <CyDImage
-            source={AppImages.CORRECT}
-            className={'w-[16px] h-[12px] ml-[16px]'}
-            // eslint-disable-next-line react-native/no-inline-styles
-            style={{ tintColor: '#58ADAB' }}
-          />
-        )}
       </CyDView>
 
       {type === 'from' ? (
@@ -141,31 +129,17 @@ function ChooseTokenModal({
   chainData: SwapBridgeChainData[];
   type: 'from' | 'to';
 }) {
-  const [hasText, setHasText] = useState(false);
   const [searchText, setSearchText] = useState<string>('');
-  const [filteredData, setFilteredData] = useState<
-    SwapBridgeChainData[] | SwapBridgeTokenData[]
-  >(data);
-  const [rotateAnimation] = useState(new Animated.Value(0));
-  const [activeSections, setActiveSections] = useState([]);
+  const [filteredData, setFilteredData] = useState<SwapBridgeTokenData[]>(data);
+  const [chainModalVisible, setChainModalVisible] = useState(false);
 
-  const handleClearSearch = () => {
-    setSearchText('');
-    searchTokens('');
-    setHasText(false);
-  };
   const handleSearchTextChange = (text: string) => {
     setSearchText(text);
     searchTokens(text);
-    setHasText(text.trim().length > 0);
   };
 
   useEffect(() => {
     setFilteredData(data);
-
-    return () => {
-      handleClearSearch();
-    };
   }, [data]);
 
   if (!data || !chainData) return <Loading />;
@@ -181,7 +155,6 @@ function ChooseTokenModal({
 
   const searchTokens = (tokenName: string) => {
     if (tokenName.trim() !== '') {
-      // Ensure to trim whitespace
       const filteredTokens = fuse.search(tokenName).map(token => token.item);
       setFilteredData(filteredTokens);
     } else {
@@ -189,229 +162,218 @@ function ChooseTokenModal({
     }
   };
 
-  const interpolateRotating = rotateAnimation.interpolate({
-    inputRange: [0, 1],
-    outputRange: ['0deg', '180deg'],
-  });
-
-  const animatedStyle = {
-    transform: [
-      {
-        rotate: interpolateRotating,
-      },
-    ],
-    height: verticalScale(18),
-    width: 14,
-    resizeMode: 'contain',
-  };
-
-  const handleAnimation = (toValue: number) => {
-    Animated.timing(rotateAnimation, {
-      toValue,
-      duration: 200,
-      useNativeDriver: true,
-    }).start();
-  };
-
-  const setSections = (sections: any) => {
-    setActiveSections(sections.includes(undefined) ? [] : sections);
-    if (sections.length) handleAnimation(1);
-    else handleAnimation(0);
-  };
-
-  const renderHeader = (name: string, index: number, isActive: boolean) => {
-    return (
-      <CyDView
-        className={clsx(
-          'flex flex-row justify-between items-center w-[100%] p-[12px]',
-          { 'border-b-[1px] border-sepratorColor': isActive },
-        )}
-        key={index}>
-        <CyDView className='flex flex-row gap-x-[8px] items-center'>
-          {endsWith(selectedChain?.logoUrl, '.svg') ? (
-            <SvgUri
-              width='32'
-              height='32'
-              className='mr-[18px] rounded-full'
-              uri={selectedChain.logoUrl ?? ''}
-            />
-          ) : (
-            <CyDFastImage
-              source={
-                isString(selectedChain?.logoUrl)
-                  ? { uri: selectedChain?.logoUrl ?? '' }
-                  : selectedChain?.logoUrl
-              }
-              className='w-[32px] h-[32px] rounded-full'
-            />
-          )}
-          <CyDText>{capitalize(selectedChain?.chainName)}</CyDText>
-        </CyDView>
-        <Animated.Image
-          style={isActive ? (animatedStyle as any) : ''}
-          source={AppImages.UP_ARROW}
+  return (
+    <>
+      <CyDModalLayout
+        setModalVisible={setModalVisible}
+        isModalVisible={isModalVisible}
+        style={styles.modalLayout}>
+        <ChainSelectionModal
+          isModalVisible={chainModalVisible}
+          setModalVisible={setChainModalVisible}
+          chainData={chainData}
+          selectedChain={selectedChain}
+          setSelectedChain={setSelectedChain}
+          onChainSelect={() => {
+            // Any additional logic needed after chain selection
+          }}
         />
-      </CyDView>
-    );
-  };
-  const renderContent = () => {
-    const { width, height } = Dimensions.get('window');
-    return (
-      <CyDScrollView className='h-[240px]'>
-        <CyDView
-          className={clsx(
-            'flex flex-wrap flex-row items-start justify-between py-[24px] px-[8px] gap-[8px] w-full',
-            {
-              'px-[10px] gap-[20px]': width >= 428 && height >= 926,
-            },
-          )}>
-          {chainData?.map((item, index) => {
-            if (endsWith(item?.logoUrl, '.svg'))
-              return (
-                <CyDTouchView
-                  onPress={() => {
-                    setActiveSections([]);
-                    setSelectedChain(item);
-                  }}
-                  key={index}
-                  className={clsx(
-                    'border-[1px] border-[#E6E6E6] rounded-[12px] p-[12px] flex flex-col items-center justify-center',
-                    {
-                      'bg-appColor': selectedChain?.chainId === item.chainId,
-                    },
-                  )}>
-                  <SvgUri
-                    width='50'
-                    height='24'
-                    uri={item.logoUrl ?? ''}
-                    className='rounded-full'
-                  />
-                  <CyDText className='text-[10px] mt-[6px]'>
-                    {capitalize(item.chainName)}
-                  </CyDText>
-                </CyDTouchView>
-              );
-            else
-              return (
-                <CyDTouchView
-                  onPress={() => {
-                    setActiveSections([]);
-                    setSelectedChain(item);
-                  }}
-                  key={index}
-                  className={clsx(
-                    'border-[1px] border-[#E6E6E6] rounded-[12px] p-[8px] flex flex-col items-center justify-center w-[75px]',
-                    {
-                      'bg-appColor': selectedChain?.chainId === item.chainId,
-                    },
-                  )}>
-                  <CyDFastImage
-                    source={
-                      isString(item.logoUrl)
-                        ? { uri: item.logoUrl ?? '' }
-                        : item.logoUrl
-                    }
-                    className='w-[32px] h-[32px] rounded-full'
-                  />
-                  <CyDText className='text-[10px] mt-[6px]'>
-                    {capitalize(item.chainName)}
-                  </CyDText>
-                </CyDTouchView>
-              );
-          })}
-        </CyDView>
-      </CyDScrollView>
-    );
-  };
 
+        <CyDView className={'bg-[#F1F3F5] border-1 rounded-t-[16px] h-[80%]'}>
+          <CyDView className=''>
+            <CyDTouchView
+              onPress={() => {
+                setModalVisible(false);
+              }}
+              className={'absolute z-[50] top-[20px] right-[24px]'}>
+              <CyDImage
+                source={AppImages.CLOSE}
+                className={' w-[20px] h-[20px] '}
+              />
+            </CyDTouchView>
+            <CyDText
+              className={
+                'text-center pt-[24px] pb-[8px] text-[22px] font-nunito font-bold '
+              }>
+              {'Select Token'}
+            </CyDText>
+
+            <CyDView className='flex flex-row items-center justify-evenly py-[12px]'>
+              {(() => {
+                const displayChains = [...chainData];
+                const selectedIndex = displayChains.findIndex(
+                  chain => chain.chainId === selectedChain?.chainId,
+                );
+
+                if (selectedIndex >= 5) {
+                  const _selected = displayChains[selectedIndex];
+                  displayChains.splice(selectedIndex, 1);
+                  displayChains.unshift(_selected);
+                }
+
+                return displayChains.slice(0, 5).map((chain, index) => (
+                  <CyDTouchView
+                    onPress={() => setSelectedChain(chain)}
+                    key={chain.chainId}
+                    className={clsx('p-[10px] rounded-[8px] bg-n0', {
+                      'bg-p20': selectedChain?.chainId === chain.chainId,
+                    })}>
+                    {endsWith(chain.logoUrl, '.svg') ? (
+                      <SvgUri
+                        width='36'
+                        height='36'
+                        className='rounded-full'
+                        uri={chain.logoUrl ?? ''}
+                      />
+                    ) : (
+                      <CyDFastImage
+                        source={
+                          isString(chain.logoUrl)
+                            ? { uri: chain.logoUrl ?? '' }
+                            : chain.logoUrl
+                        }
+                        className='w-[36px] h-[36px] rounded-full'
+                      />
+                    )}
+                  </CyDTouchView>
+                ));
+              })()}
+
+              {chainData.length > 5 && (
+                <CyDTouchView
+                  onPress={() => setChainModalVisible(true)}
+                  className='p-[10px] rounded-[8px] bg-n0'>
+                  <CyDView className='w-[40px] h-[40px] rounded-full bg-[#E6E6E6] items-center justify-center'>
+                    <CyDText className='text-[12px] font-medium'>
+                      +{chainData.length - 5}
+                    </CyDText>
+                  </CyDView>
+                </CyDTouchView>
+              )}
+            </CyDView>
+          </CyDView>
+
+          <CyDView className='bg-n0 p-[12px] flex-1'>
+            <CyDView
+              className={clsx(
+                'my-[16px] flex flex-row justify-between items-center self-center border-[1px] w-full rounded-[8px] px-[12px] py-[0px] border-n50',
+              )}>
+              <CyDTextInput
+                className={clsx('self-center py-[12px] w-[95%] text-base400')}
+                value={searchText}
+                autoCapitalize='none'
+                autoCorrect={false}
+                onChangeText={handleSearchTextChange}
+                placeholderTextColor={'#6B788E'}
+                placeholder='Search Token'
+              />
+            </CyDView>
+
+            <CyDFlatList
+              data={filteredData}
+              renderItem={({ item }: any) => (
+                <RenderToken
+                  item={item}
+                  selected={selected}
+                  setSelected={setSelected}
+                  setModalVisible={setModalVisible}
+                  type={type}
+                />
+              )}
+              // className='mb-[150px]'
+              showsVerticalScrollIndicator={true}
+            />
+          </CyDView>
+        </CyDView>
+      </CyDModalLayout>
+    </>
+  );
+}
+
+interface ChainSelectionModalProps {
+  isModalVisible: boolean;
+  setModalVisible: (visible: boolean) => void;
+  chainData: SwapBridgeChainData[];
+  selectedChain: SwapBridgeChainData;
+  setSelectedChain: Dispatch<SetStateAction<SwapBridgeChainData>>;
+  onChainSelect: () => void;
+}
+
+function ChainSelectionModal({
+  isModalVisible,
+  setModalVisible,
+  chainData,
+  selectedChain,
+  setSelectedChain,
+  onChainSelect,
+}: ChainSelectionModalProps) {
   return (
     <CyDModalLayout
+      backdropOpacity={0.7}
+      backdropTransitionInTiming={300}
+      backdropTransitionOutTiming={300}
+      hideModalContentWhileAnimating={true}
+      useNativeDriver={true}
       setModalVisible={setModalVisible}
       isModalVisible={isModalVisible}
-      style={styles.modalLayout}>
-      <CyDView
-        className={
-          'bg-white border-1 rounded-t-[36px] border-[#E6E6E6] p-[12px] pb-[22px] h-[80%] relative'
-        }>
+      style={styles.chainModalLayout}>
+      <CyDView className='bg-[#F1F3F5] border-1 rounded-[16px] h-[72%] pb-[20px]'>
         <CyDTouchView
-          onPress={() => {
-            handleClearSearch();
-            setModalVisible(false);
-          }}
-          className={'absolute z-[50] top-[20px] right-[24px]'}>
-          <CyDImage
-            source={AppImages.CLOSE}
-            className={' w-[20px] h-[20px] '}
-          />
+          onPress={() => setModalVisible(false)}
+          className='absolute z-[50] top-[20px] right-[24px]'>
+          <CyDImage source={AppImages.CLOSE} className='w-[20px] h-[20px]' />
         </CyDTouchView>
-        <CyDText
-          className={
-            'text-center pt-[24px] pb-[14px] text-[22px] font-nunito font-bold '
-          }>
-          {'Select Token'}
+
+        <CyDText className='text-center pt-[24px] pb-[14px] text-[22px] font-nunito font-bold'>
+          Select Chain
         </CyDText>
 
-        <CyDView className='mb-0 mx-[8px]'>
-          <Accordion
-            align='bottom'
-            activeSections={activeSections}
-            sections={['']}
-            touchableComponent={TouchableOpacity}
-            expandMultiple={false}
-            renderHeader={renderHeader}
-            renderContent={renderContent}
-            duration={400}
-            onChange={setSections}
-            renderAsFlatList={false}
-            sectionContainerStyle={styles.sectionContainerSendTo}
-          />
-        </CyDView>
-
-        <CyDView
-          className={clsx(
-            'my-[16px] flex flex-row justify-between items-center self-center border-[0.5px] w-[353px] h-[60px] rounded-[8px] px-[20px] border-sepratorColor',
-            {
-              'border-[#434343]': hasText,
-            },
-          )}>
-          <CyDTextInput
+        <CyDScrollView className='rounded-[36px] px-[17px]'>
+          <CyDView
             className={clsx(
-              'self-center py-[15px] w-[95%] text-textInputBackground',
-              {
-                'text-textInputFocussedBackground': hasText,
-              },
-            )}
-            value={searchText}
-            autoCapitalize='none'
-            autoCorrect={false}
-            onChangeText={handleSearchTextChange}
-            onFocus={() => setHasText(searchText.trim().length > 0)} // Update hasText on focus
-            onBlur={() => setHasText(false)} // Reset hasText on blur
-            placeholderTextColor={hasText ? '#434343' : '#C5C5C5'}
-            placeholder='Search Token'
-          />
-          {hasText ? (
-            <CyDTouchView onPress={handleClearSearch}>
-              <CyDImage className={''} source={AppImages.CLOSE_CIRCLE} />
-            </CyDTouchView>
-          ) : (
-            <></>
-          )}
-        </CyDView>
-
-        <CyDFlatList
-          data={filteredData}
-          renderItem={({ item }: any) => (
-            <RenderToken
-              item={item}
-              selected={selected}
-              setSelected={setSelected}
-              setModalVisible={setModalVisible}
-              type={type}
-            />
-          )}
-          showsVerticalScrollIndicator={true}
-        />
+              'flex flex-wrap flex-row items-start justify-evenly',
+              {},
+            )}>
+            {chainData?.map((item, index) => (
+              <CyDTouchView
+                onPress={() => {
+                  setSelectedChain(item);
+                  onChainSelect();
+                  setModalVisible(false);
+                }}
+                key={index}
+                className={clsx(
+                  'border-[1px] border-[#E6E6E6] rounded-[6px] flex flex-col items-center justify-center bg-n0 h-[74px] w-[90px] mb-[12px]',
+                  {
+                    'bg-20': selectedChain?.chainId === item.chainId,
+                  },
+                )}>
+                <CyDView className='flex flex-col items-center h-[50px] w-[46px]'>
+                  {endsWith(item?.logoUrl, '.svg') ? (
+                    <SvgUri
+                      width='32'
+                      height='32'
+                      uri={item.logoUrl ?? ''}
+                      className='rounded-full'
+                    />
+                  ) : (
+                    <CyDFastImage
+                      source={
+                        isString(item.logoUrl)
+                          ? { uri: item.logoUrl ?? '' }
+                          : item.logoUrl
+                      }
+                      className='w-[32px] h-[32px] rounded-full'
+                    />
+                  )}
+                  <CyDText className='text-[10px] mt-[6px] font-normal text-center w-[60px]'>
+                    {capitalize(item.prettyName.split(' ')[0])}
+                  </CyDText>
+                </CyDView>
+              </CyDTouchView>
+            ))}
+          </CyDView>
+        </CyDScrollView>
       </CyDView>
     </CyDModalLayout>
   );
@@ -621,22 +583,28 @@ export default function TokenSelectionV2({
           </CyDView>
 
           <CyDView className='flex flex-row justify-between items-center'>
-            <CyDSkeleton width={100} height={30} value={!loading}>
-              <CyDView className='flex flex-col items-start'>
+            <CyDView className='flex flex-col items-start'>
+              <CyDSkeleton width={100} height={30} value={!loading}>
                 <CyDText
                   className={clsx(
-                    'font-semibold text-center  font-nunito text-[30px]',
+                    'font-semibold text-center font-nunito text-[30px]',
                   )}>
                   {Number(amountOut).toFixed(6)}
                 </CyDText>
+              </CyDSkeleton>
+              <CyDSkeleton
+                width={100}
+                height={20}
+                value={!loading}
+                className='mt-[8px]'>
                 <CyDText
                   className={clsx(
-                    'font-semibold text-center  font-nunito text-[12px]',
+                    'font-semibold text-center font-nunito text-[12px]',
                   )}>
                   {`$${Number(usdAmountOut).toFixed(6)}`}
                 </CyDText>
-              </CyDView>
-            </CyDSkeleton>
+              </CyDSkeleton>
+            </CyDView>
             <CyDTouchView
               onPress={() => {
                 setToTokenModalVisible(true);
@@ -699,12 +667,10 @@ const styles = StyleSheet.create({
     margin: 0,
     justifyContent: 'flex-end',
   },
-
-  sectionContainerSendTo: {
-    borderWidth: 1,
-    borderStyle: 'solid',
-    borderColor: Colors.sepratorColor,
-    borderRadius: 8,
-    marginBottom: 0,
+  chainModalLayout: {
+    marginBottom: 32,
+    marginHorizontal: 12,
+    zIndex: 1000,
+    justifyContent: 'flex-end',
   },
 });

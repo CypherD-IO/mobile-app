@@ -98,6 +98,7 @@ import {
 } from '../../reducers/bridge.reducer';
 import { ODOS_SWAP_QUOTE_GASLIMIT_MULTIPLICATION_FACTOR } from '../Portfolio/constants';
 import { genId } from '../utilities/activityUtilities';
+import CyDSkeleton from '../../components/v2/skeleton';
 
 export interface SwapBridgeChainData {
   chainName: string;
@@ -245,6 +246,12 @@ const Bridge: React.FC = () => {
     useState<AbortController | null>(null);
   const [toggle, setToggle] = useState<boolean>(false);
 
+  // Add new ref to store the interval
+  const quoteRefreshInterval = useRef<NodeJS.Timeout | null>(null);
+
+  // Add new state to track time until next refresh
+  const [timeUntilRefresh, setTimeUntilRefresh] = useState<number>(30);
+
   const navigateToPortfolio = () => {
     hideModal();
     navigation.reset({
@@ -366,22 +373,25 @@ const Bridge: React.FC = () => {
     const localPortfolio = await getLocalPortfolio();
     const totalHoldings = localPortfolio?.totalHoldings;
 
-    let filteredTokens = tokenData[selectedFromChain?.chainId]
-      ?.map(token => {
-        const matchingHolding = totalHoldings?.find(
-          holding =>
-            holding.coinGeckoId === token.coingeckoId &&
-            (holding.chainDetails.chainIdNumber ===
-              Number(selectedFromChain?.chainId) ||
-              holding.chainDetails.chain_id === selectedFromChain?.chainId),
-        );
-        return {
-          ...token,
-          balance: matchingHolding?.actualBalance ?? 0,
-          balanceInNumbers: matchingHolding?.totalValue ?? 0,
-        };
-      })
-      .sort((a, b) => b.balanceInNumbers - a.balanceInNumbers);
+    let filteredTokens =
+      tokenData[selectedFromChain?.chainId]
+        ?.map(token => {
+          const matchingHolding = totalHoldings?.find(
+            holding =>
+              holding.coinGeckoId === token.coingeckoId &&
+              (holding.chainDetails.chainIdNumber ===
+                Number(selectedFromChain?.chainId) ||
+                holding.chainDetails.chain_id === selectedFromChain?.chainId),
+          );
+          return {
+            ...token,
+            balance: matchingHolding?.actualBalance ?? 0,
+            balanceInNumbers: matchingHolding?.totalValue ?? 0,
+          };
+        })
+        .sort(
+          (a, b) => Number(b.balanceInNumbers) - Number(a.balanceInNumbers),
+        ) ?? [];
 
     if (selectedToChain && selectedFromChain) {
       filteredTokens = filteredTokens?.filter(item => {
@@ -420,11 +430,11 @@ const Bridge: React.FC = () => {
             token.denom === routeParamsTokenData.denom ||
             token.tokenContract === routeParamsTokenData.contractAddress,
         );
-        _selectedFromToken = routeToken ?? filteredTokens[0];
+        _selectedFromToken = routeToken ?? filteredTokens?.[0];
 
         setSelectedFromToken(_selectedFromToken);
       } else {
-        _selectedFromToken = filteredTokens[0];
+        _selectedFromToken = filteredTokens?.[0];
         setSelectedFromToken(_selectedFromToken);
       }
 
@@ -524,6 +534,7 @@ const Bridge: React.FC = () => {
       } else {
         await getBridgeQuote();
       }
+      setTimeUntilRefresh(30);
     } catch (e) {
       Sentry.captureException(e);
     } finally {
@@ -540,22 +551,81 @@ const Bridge: React.FC = () => {
         selectedFromToken &&
         selectedToToken
       ) {
-        resetValues();
         void fetchQuote();
       }
     }, 1000),
     [cryptoAmount, selectedFromToken, selectedToToken],
   );
 
-  useEffect(() => {
+  // Add new function for manual refresh
+  const manualRefreshQuote = useCallback(async () => {
     if (Number(cryptoAmount) > 0) {
-      setUsdAmount(
-        (Number(cryptoAmount) * Number(selectedFromToken?.price)).toFixed(6),
-      );
-      setLoading(prevLoading => ({ ...prevLoading, quoteLoading: true }));
-      debouncedFetchQuote(cryptoAmount);
-    } else {
-      setLoading(prevLoading => ({ ...prevLoading, quoteLoading: false }));
+      // Clear existing interval
+      if (quoteRefreshInterval.current) {
+        clearInterval(quoteRefreshInterval.current);
+        quoteRefreshInterval.current = null;
+      }
+
+      // Reset timer
+      // setTimeUntilRefresh(30);
+
+      // Fetch new quote
+      await fetchQuote();
+
+      // Start new interval
+      quoteRefreshInterval.current = setInterval(() => {
+        void fetchQuote();
+        // setTimeUntilRefresh(30);
+      }, 30000);
+    }
+  }, [cryptoAmount, selectedFromToken, selectedToToken]);
+
+  // Modify the useEffect to include timer updates
+  useEffect(() => {
+    const fetchAndUpdateQuote = () => {
+      if (Number(cryptoAmount) > 0) {
+        resetValues();
+        setUsdAmount(
+          (Number(cryptoAmount) * Number(selectedFromToken?.price)).toFixed(6),
+        );
+        setLoading(prevLoading => ({ ...prevLoading, quoteLoading: true }));
+        debouncedFetchQuote(cryptoAmount);
+      } else {
+        setLoading(prevLoading => ({ ...prevLoading, quoteLoading: false }));
+      }
+    };
+
+    // Initial fetch
+    fetchAndUpdateQuote();
+
+    // Set up auto-refresh interval if we have a valid amount
+    if (Number(cryptoAmount) > 0) {
+      // Clear any existing interval
+      if (quoteRefreshInterval.current) {
+        clearInterval(quoteRefreshInterval.current);
+      }
+
+      // Reset timer
+      setTimeUntilRefresh(30);
+
+      // Create new interval for quote refresh
+      quoteRefreshInterval.current = setInterval(() => {
+        void fetchQuote();
+        setTimeUntilRefresh(30);
+      }, 30000);
+
+      // Create interval for countdown timer
+      const timerInterval = setInterval(() => {
+        setTimeUntilRefresh(prev => Math.max(0, prev - 1));
+      }, 1000);
+
+      return () => {
+        clearInterval(timerInterval);
+        if (quoteRefreshInterval.current) {
+          clearInterval(quoteRefreshInterval.current);
+          quoteRefreshInterval.current = null;
+        }
+      };
     }
 
     return () => {
@@ -563,8 +633,22 @@ const Bridge: React.FC = () => {
       if (abortController) {
         abortController.abort();
       }
+      if (quoteRefreshInterval.current) {
+        clearInterval(quoteRefreshInterval.current);
+        quoteRefreshInterval.current = null;
+      }
     };
   }, [cryptoAmount, selectedFromToken, selectedToToken]);
+
+  // Also clear interval when component unmounts
+  useEffect(() => {
+    return () => {
+      if (quoteRefreshInterval.current) {
+        clearInterval(quoteRefreshInterval.current);
+        quoteRefreshInterval.current = null;
+      }
+    };
+  }, []);
 
   const onClickMax = () => {
     const isNativeToken = selectedFromToken?.isNative ?? false;
@@ -2158,42 +2242,104 @@ const Bridge: React.FC = () => {
               </CyDView>
             </CyDView>
           )}
-        {!isEmpty(quoteData) && index === 0 && (
+        {index === 0 && (
           <CyDView className='mx-[16px] mt-[16px] bg-white rounded-[8px] p-[12px] flex flex-row items-start '>
             <CyDImage
               className='w-[20px] h-[20px] mr-[4px]'
               source={AppImages.CURRENCY_DETAILS}
             />
-            <CyDView className=''>
-              {!isOdosSwap() && (
-                <CyDView className=' flex flex-row gap-x-[12px] justify-between items-center'>
-                  <CyDText className='text-[14px] font-semibold font-manrope'>{`$${(quoteData as SkipApiRouteResponse)?.estimated_fees?.[0]?.usd_amount ?? '0'}`}</CyDText>
+            <CyDView className='flex-1'>
+              <CyDView className='flex flex-row justify-between'>
+                <CyDView>
+                  {!isOdosSwap() && (
+                    <CyDSkeleton
+                      width={100}
+                      height={10}
+                      value={!loading.quoteLoading}>
+                      <CyDText className='text-[14px] font-semibold font-manrope'>{`$${(quoteData as SkipApiRouteResponse)?.estimated_fees?.[0]?.usd_amount ?? '0'}`}</CyDText>
+                    </CyDSkeleton>
+                  )}
+                  {isOdosSwap() && (
+                    <CyDSkeleton
+                      width={100}
+                      height={10}
+                      value={!loading.quoteLoading}>
+                      <CyDText className='text-[14px] font-semibold'>{`$${(quoteData as OdosSwapQuoteResponse)?.gasEstimateValue?.toFixed(4) ?? '0'}`}</CyDText>
+                    </CyDSkeleton>
+                  )}
                 </CyDView>
-              )}
-              {isOdosSwap() && (
-                <CyDText className='text-[14px] font-semibold'>{`$${(quoteData as OdosSwapQuoteResponse)?.gasEstimateValue?.toFixed(4)}`}</CyDText>
-              )}
-              <CyDText className='text-[10px] font-regular font-manrope'>
-                {t('ESTIMATED_NETWORK_FEE')}
-              </CyDText>
+                <CyDTouchView
+                  className='flex flex-row items-center bg-[#EBEDF0] rounded-[4px] py-[4px] px-[4px]'
+                  onPress={() => {
+                    void manualRefreshQuote();
+                  }}
+                  disabled={loading.quoteLoading}>
+                  <CyDImage
+                    source={AppImages.REFRESH}
+                    className={clsx('w-[12px] h-[12px] mr-[4px]', {
+                      'opacity-50': loading.quoteLoading,
+                    })}
+                  />
+                  <CyDText
+                    className={clsx('text-[10px] font-semibold', {
+                      'opacity-50': loading.quoteLoading,
+                    })}>
+                    Refresh
+                  </CyDText>
+                </CyDTouchView>
+              </CyDView>
 
+              <CyDSkeleton
+                width={100}
+                height={10}
+                value={!loading.quoteLoading}
+                className='mt-[6px] w-[50%]'>
+                <CyDText className='text-[10px] font-regular font-manrope'>
+                  {t('ESTIMATED_NETWORK_FEE')}
+                </CyDText>
+              </CyDSkeleton>
               {!isOdosSwap() && (
-                <CyDView className='flex flex-row justify-between items-center w-[95%] mt-[12px]'>
-                  <CyDText className='text-[14px] font-semibold font-manrope w-[50%]'>{`${signaturesRequired} signature required`}</CyDText>
+                <CyDView className='flex flex-row justify-between items-center w-full mt-[12px]'>
+                  <CyDSkeleton
+                    width={30}
+                    height={20}
+                    value={!loading.quoteLoading}
+                    className='text-[14px] font-semibold font-manrope w-[50%]'>
+                    <CyDText>{`${signaturesRequired} signature required`}</CyDText>
+                  </CyDSkeleton>
                   <CyDView className='flex flex-row items-center w-[50%] justify-end'>
                     <CyDImage
                       className='w-[20px] h-[20px] mr-[4px]'
                       source={AppImages.CLOCK}
                     />
-                    <CyDText className='text-[14px] font-semibold'>{`${
-                      (quoteData as SkipApiRouteResponse)
-                        ?.estimated_route_duration_seconds > 60
-                        ? `${Math.floor((quoteData as SkipApiRouteResponse)?.estimated_route_duration_seconds / 60)}m ${(quoteData as SkipApiRouteResponse)?.estimated_route_duration_seconds % 60}s` // Convert to minutes and seconds
-                        : `${(quoteData as SkipApiRouteResponse)?.estimated_route_duration_seconds}s`
-                    }`}</CyDText>
+                    <CyDSkeleton
+                      width={50}
+                      height={20}
+                      value={!loading.quoteLoading}>
+                      <CyDText className='text-[14px] font-semibold'>{`${
+                        (quoteData as SkipApiRouteResponse)
+                          ?.estimated_route_duration_seconds
+                          ? (quoteData as SkipApiRouteResponse)
+                              ?.estimated_route_duration_seconds > 60
+                            ? `${Math.floor((quoteData as SkipApiRouteResponse)?.estimated_route_duration_seconds / 60)}m ${(quoteData as SkipApiRouteResponse)?.estimated_route_duration_seconds % 60}s` // Convert to minutes and seconds
+                            : `${(quoteData as SkipApiRouteResponse)?.estimated_route_duration_seconds}s`
+                          : '0s'
+                      }`}</CyDText>
+                    </CyDSkeleton>
                   </CyDView>
                 </CyDView>
               )}
+
+              <CyDView className='flex flex-row justify-between items-center mt-[12px]'>
+                <CyDSkeleton
+                  width={100}
+                  height={10}
+                  value={!loading.quoteLoading}>
+                  <CyDText className='text-[10px] font-regular text-n200'>
+                    {`Quote will refresh in ${timeUntilRefresh}s`}
+                  </CyDText>
+                </CyDSkeleton>
+              </CyDView>
             </CyDView>
           </CyDView>
         )}
