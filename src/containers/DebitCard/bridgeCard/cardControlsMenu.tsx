@@ -80,6 +80,7 @@ export default function CardControlsMenu() {
   const [timer, setTimer] = useState<number | null>(null);
   const [timerEnd, setTimerEnd] = useState<number | null>(null);
   const [cardBalance, setCardBalance] = useState('');
+  // const [godmExpiryInMinutes, setGodmExpiryInMinutes] = useState(0);
 
   useEffect(() => {
     if (isZeroRestrictionModeEnabled) {
@@ -215,7 +216,10 @@ export default function CardControlsMenu() {
     });
   };
 
-  const toggleZeroRestrictionMode = async (value: boolean) => {
+  const toggleZeroRestrictionMode = async (
+    value: boolean,
+    godmExpiryInMinutes?: number,
+  ) => {
     setIsZeroRestrictionModeLoading(true);
     const payload = {
       godm: value,
@@ -229,6 +233,7 @@ export default function CardControlsMenu() {
         currentCardProvider,
         card,
         authType: CardOperationsAuthType.ZERO_RESTRICTION_MODE_ON,
+        godmExpiryInMinutes,
       });
     } else {
       const response = await patchWithAuth(
@@ -281,10 +286,10 @@ export default function CardControlsMenu() {
       <ZeroRestrictionModeConfirmationModal
         isModalVisible={showZeroRestrictionModeModal}
         setIsModalVisible={setShowZeroRestrictionModeModal}
-        onPressProceed={() => {
+        onPressProceed={(godmExpiryInMinutes: number) => {
           setIsZeroRestrictionModeLoading(true);
           setShowZeroRestrictionModeModal(false);
-          void toggleZeroRestrictionMode(true);
+          void toggleZeroRestrictionMode(true, godmExpiryInMinutes);
         }}
         setLoader={setIsZeroRestrictionModeLoading}
       />

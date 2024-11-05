@@ -1,44 +1,103 @@
-import React, { Dispatch, SetStateAction, useState } from 'react';
-import { useTranslation } from 'react-i18next';
-import { Dimensions, ScrollView, View, StyleSheet } from 'react-native';
-import CyDModalLayout from './modal';
+import AsyncStorage from '@react-native-async-storage/async-storage'; // Add this import
+import React, {
+  Dispatch,
+  SetStateAction,
+  useCallback,
+  useEffect,
+  useState,
+} from 'react';
+import { StyleSheet } from 'react-native';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
+import AppImages from '../../../assets/images/appImages';
+import ZrmIntro from '../../containers/DebitCard/bridgeCard/zeroRestrictionMode/zrmIntro';
+import Loading from '../../containers/Loading';
 import {
   CyDImage,
   CyDText,
   CyDTouchView,
   CyDView,
 } from '../../styles/tailwindStyles';
-import AppImages from '../../../assets/images/appImages';
-import CheckBoxes from '../checkBoxes';
-import { ButtonType } from '../../constants/enum';
 import Button from './button';
+import CyDModalLayout from './modal';
+import CustomSlider from './slider';
+import { useFocusEffect } from '@react-navigation/native';
 
 const styles = StyleSheet.create({
   modalLayout: {
     margin: 0,
     justifyContent: 'flex-end',
   },
-  modalContainer: {
-    maxHeight: '90%',
-    marginHorizontal: 2,
-  },
 });
+
+const sliderValueToMinutes = (value: number) => {
+  switch (value) {
+    case 0:
+      return 15;
+    case 1:
+      return 30;
+    case 2:
+      return 45;
+    case 3:
+      return 60;
+    case 4:
+      return 180;
+    case 5:
+      return 360;
+    case 6:
+      return 480;
+    case 7:
+      return 720;
+    case 8:
+      return 960;
+    case 9:
+      return 1200;
+    case 10:
+      return 1440;
+    default:
+      return value;
+  }
+};
 
 export default function ZeroRestrictionModeConfirmationModal(props: {
   isModalVisible: boolean;
   setIsModalVisible: Dispatch<SetStateAction<boolean>>;
-  onPressProceed: () => void;
+  onPressProceed: (godmExpiryInMinutes: number) => void;
   setLoader: Dispatch<SetStateAction<boolean>>;
 }) {
   const { isModalVisible, setIsModalVisible, setLoader, onPressProceed } =
     props;
-  const { t } = useTranslation();
+  const insets = useSafeAreaInsets();
+
   const [isChecked, setIsChecked] = useState(false);
+  const [isFirstZrmEnable, setIsFirstZrmEnable] = useState<boolean | null>(
+    null,
+  );
+  const [pageLoader, setPageLoader] = useState(false);
+  const [duration, setDuration] = useState(0);
 
   const handleProceedClick = async () => {
-    await onPressProceed();
+    await onPressProceed(sliderValueToMinutes(duration));
   };
 
+  useEffect(() => {
+    const checkFirstZrmEnable = async () => {
+      setPageLoader(true);
+      const firstTime = await AsyncStorage.getItem('isFirstZrmEnable');
+      if (firstTime === null) {
+        await AsyncStorage.setItem('isFirstZrmEnable', 'true');
+        setIsFirstZrmEnable(true);
+      } else {
+        setIsFirstZrmEnable(false);
+      }
+      setPageLoader(false);
+    };
+
+    void checkFirstZrmEnable();
+    setDuration(0);
+    setIsChecked(false);
+  }, [isModalVisible]);
+
+  if (pageLoader) return <Loading />;
   return (
     <CyDModalLayout
       isModalVisible={isModalVisible}
@@ -48,122 +107,126 @@ export default function ZeroRestrictionModeConfirmationModal(props: {
       setModalVisible={(_val: any) => {
         setIsModalVisible(_val);
       }}>
-      <View style={styles.modalContainer}>
-        <ScrollView bounces={false}>
-          <CyDView className='bg-white px-[16px] py-[24px] rounded-t-[16px]'>
-            <CyDView className='flex flex-row justify-between items-center mb-[12px]'>
-              <CyDView className='flex-1 justify-center items-center'>
-                <CyDText className='text-[18px] font-[600] ml-[24px]'>
-                  {t('ZERO_RESTRICTION_MODE_TITLE')}
-                </CyDText>
-              </CyDView>
-
+      {isFirstZrmEnable && (
+        <CyDView className='h-full'>
+          <ZrmIntro setIsFirstZrmEnable={setIsFirstZrmEnable} />
+        </CyDView>
+      )}
+      {!isFirstZrmEnable && (
+        <CyDView className='h-[100%] mx-[2px] bg-n20 flex flex-col justify-between'>
+          <CyDView>
+            <CyDView
+              className='bg-n0 flex flex-row justify-between p-[16px]'
+              style={{ paddingTop: insets.top }}>
+              <CyDText className='font-semibold text-[16px]'>
+                {'Zero Restriction'}
+              </CyDText>
               <CyDTouchView
                 onPress={() => {
-                  setIsModalVisible(false);
                   setLoader(false);
+                  setIsModalVisible(false);
                 }}>
                 <CyDImage
-                  source={AppImages.CLOSE_CIRCLE}
-                  className='h-[28px] w-[28px]'
-                  resizeMode='contain'
+                  source={AppImages.CLOSE}
+                  className='w-[24px] h-[24px]'
                 />
               </CyDTouchView>
             </CyDView>
-            <CyDText className='text-[14px] mb-[16px]'>
-              By enabling this option, you are activating a mode that bypasses
-              all configured limits and allows international transactions for
-              all countries. Please read the following information carefully:
-            </CyDText>
 
-            <CyDView className='space-y-2 mb-4'>
-              <CyDView className='flex-row mb-[8px]'>
-                <CyDText className='font-semibold mr-2 text-[14px]'>1]</CyDText>
-                <CyDText className='text-[14px] flex-1'>
-                  {' '}
-                  This mode should be only used when you are unsure of the
-                  reason for transaction failure or which specific country needs
-                  to be enabled for an international transaction.
+            <CyDView className='bg-n20 p-[16px]'>
+              <CyDText className='text-[16px] font-normal'>
+                {
+                  'This mode temporarily removes all limits, enabling international transactions worldwide for'
+                }
+              </CyDText>
+
+              <CyDView className='bg-n0 rounded-[10px] p-[16px] mt-[16px]'>
+                <CyDText className='text-[14px] font-normal text-center'>
+                  {'Zero restriction will be active for '}
+                </CyDText>
+                <CyDText className='text-[28px] font-bold text-center'>
+                  {sliderValueToMinutes(duration) >= 60
+                    ? `${Math.floor(sliderValueToMinutes(duration) / 60)} Hour`
+                    : `${sliderValueToMinutes(duration)} Minutes`}
+                </CyDText>
+                <CyDView className='mt-[24px]'>
+                  <CustomSlider
+                    maxValue={10}
+                    stopCount={10}
+                    onValueChange={(value: number) => {
+                      setDuration(value);
+                    }}
+                    initialValue={duration}
+                    minValue={0}
+                  />
+                </CyDView>
+              </CyDView>
+
+              <CyDView className='mt-[24px]'>
+                <CyDText className='font-bold text-[12px] text-base400'>
+                  {'Use with caution:'}
+                </CyDText>
+                <CyDText className='font-normal text-[12px] text-n200'>
+                  {
+                    "Only activate if you're unsure why a transaction failed or which country to enable."
+                  }
                 </CyDText>
               </CyDView>
-              <CyDView className='flex-row mb-[8px]'>
-                <CyDText className='font-semibold mr-2'>2]</CyDText>
-                <CyDText className='text-[14px]'>
-                  {' '}
-                  The unrestricted mode will be active for a{' '}
-                  <CyDText className='font-bold'>15-minute</CyDText> window
-                  only. During this time, you can turn it off at any moment by
-                  toggling this option off.
+
+              <CyDView className='mt-[16px]'>
+                <CyDText className='font-bold text-[12px] text-base400'>
+                  {'Stay alert:'}
+                </CyDText>
+                <CyDText className='font-normal text-[12px] text-n200'>
+                  {
+                    'Fraud risk is higher while this mode is active. Limited protection: Fraud protection won’t apply during this time.'
+                  }
                 </CyDText>
               </CyDView>
-              <CyDView className='flex-row mb-[8px]'>
-                <CyDText className='font-semibold mr-2'>3]</CyDText>
-                <CyDText className='text-[14px]'>
-                  {' '}
-                  While active, this mode may increase your exposure to
-                  potential{' '}
-                  <CyDText className='font-bold'>
-                    fraudulent activities.
-                  </CyDText>
+
+              <CyDView className='mt-[16px]'>
+                <CyDText className='font-bold text-[12px] text-base400'>
+                  {'Monitor closely:'}
                 </CyDText>
-              </CyDView>
-              <CyDView className='flex-row mb-[8px] text-[14px]'>
-                <CyDText className='font-semibold mr-2'>4]</CyDText>
-                <CyDText className='flex-1'>
-                  {' '}
-                  Please note the{' '}
-                  <CyDText className='font-bold'>
-                    fraud protection coverage
-                  </CyDText>{' '}
-                  will not be applicable for any incidents that occur when zero
-                  restriction mode is active{' '}
+                <CyDText className='font-normal text-[12px] text-n200'>
+                  {
+                    'Review your transactions immediately after use to ensure everything is in order.'
+                  }
                 </CyDText>
               </CyDView>
             </CyDView>
-            <CyDView className='flex flex-row justify-center items-start mx-[10px] mt-[12px]'>
+          </CyDView>
+          <CyDView className='bg-n0 pb-[28px] px-[16px] pt-[16px]'>
+            <CyDView className='flex flex-row mb-[16px] items-center'>
               <CyDTouchView
                 onPress={() => {
                   setIsChecked(!isChecked);
-                }}>
+                }}
+                className='mr-[6px] w-[24px] h-[24px] p-[3px]'>
                 <CyDView
-                  className={`h-[21px] w-[21px] mt-[4px] ${isChecked ? 'bg-appColor' : ''} rounded-[4px] border-[1.5px] border-borderColor flex flex-row justify-center items-center`}>
+                  className={`${isChecked ? 'bg-base400' : ''} h-[21px] w-[21px] rounded-[4px] border-[1.5px] border-borderColor flex flex-row justify-center items-center`}>
                   <CyDImage
                     source={AppImages.WHITE_CHECK_MARK}
-                    className='h-[18px] w-[18px]'
+                    className='h-[20px] w-[20px]'
                   />
                 </CyDView>
               </CyDTouchView>
-              <CyDText
-                className={
-                  'text-center ml-[8px] text-[12px] font-semibold text-left'
-                }>
+              <CyDText className='text-base400 text-[10px] font-medium w-[95%]'>
                 {
-                  'I understand the potential risks involved and choose to proceed with enabling this feature. I acknowledge that this may allow transactions that are usually limited for security purposes. I understand that the fraud protection coverage will not apply during this time window.'
+                  'I acknowledge that this may allow transactions that are usually limited for security purposes. I understand that the fraud protection coverage will not apply during this time window.'
                 }
               </CyDText>
             </CyDView>
             <Button
               title='Proceed'
+              disabled={!isChecked}
               onPress={() => {
                 void handleProceedClick();
               }}
-              titleStyle={isChecked ? 'text-white' : 'text-black'}
-              type={ButtonType.RED}
-              disabled={!isChecked}
-              style='mt-[20px]'
-            />
-            <Button
-              title='Cancel'
-              onPress={() => {
-                setIsModalVisible(false);
-                setLoader(false);
-              }}
-              type={ButtonType.GREY}
-              style='mt-[12px]'
             />
           </CyDView>
-        </ScrollView>
-      </View>
+        </CyDView>
+      )}
     </CyDModalLayout>
   );
 }
