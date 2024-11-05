@@ -1468,6 +1468,7 @@ export default function Browser({ route, navigation }: any) {
       <CyDView className={clsx('flex-1 pb-[50px]', { 'pb-[75px]': !isIOS() })}>
         <WebView
           key={webviewKey}
+          webviewDebuggingEnabled={true}
           source={{ uri: search }}
           ref={webviewRef}
           startInLoadingState

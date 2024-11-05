@@ -184,7 +184,7 @@
     "react-native-video": "^6.4.5",
     "react-native-view-shot": "^3.4.0",
     "react-native-walkthrough-tooltip": "^1.5.0",
-    "react-native-webview": "^11.26.1",
+    "react-native-webview": "^13.12.3",
     "readable-stream": "^1.0.33",
     "rn-fetch-blob": "^0.12.0",
     "rxjs": "^7.8.1",
