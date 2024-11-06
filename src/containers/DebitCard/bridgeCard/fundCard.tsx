@@ -1184,6 +1184,7 @@ export default function BridgeFundCardScreen({ route }: { route: any }) {
                 onPress={() => {
                   navigation.navigate(screenTitle.SELECT_PLAN, {
                     toPage: screenTitle.DEBIT_CARD_SCREEN,
+                    deductAmountNow: false,
                   });
                 }}>
                 <CyDText className='font-bold text-[14px]'>

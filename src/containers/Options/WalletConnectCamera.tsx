@@ -237,7 +237,7 @@ export default function WalletConnectCamera(props: {
           session => session.pairingTopic,
         );
         const staleConnectors: number[] = [];
-        const connectors = walletConnectState?.connectors.filter(
+        const connectors = walletConnectState?.connectors?.filter(
           (connector, index) => {
             if (activeSessionTopics.includes(connector?.topic)) {
               return true;
@@ -246,7 +246,7 @@ export default function WalletConnectCamera(props: {
             return false;
           },
         );
-        const dAppInfo = walletConnectState?.dAppInfo.filter(
+        const dAppInfo = walletConnectState?.dAppInfo?.filter(
           (dApp, index) => !staleConnectors.includes(index),
         );
         if (staleConnectors.length) {
@@ -261,7 +261,7 @@ export default function WalletConnectCamera(props: {
   };
 
   const getSessionsForAPairing = (pairingTopic: string) => {
-    const tempSessions = totalSessions.filter(
+    const tempSessions = totalSessions?.filter(
       (session: any) => session.pairingTopic === pairingTopic,
     );
     return tempSessions;

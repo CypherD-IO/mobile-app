@@ -156,6 +156,7 @@ export default function GlobalOptions() {
               navigation.navigate(screenTitle.TELEGRAM_SETUP, {
                 navigateTo: screenTitle.TELEGRAM_PIN_SETUP,
                 showSetupLaterOption: false,
+                enableBackButton: true,
               });
             },
           },

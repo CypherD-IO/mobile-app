@@ -15,7 +15,7 @@ import countryMaster from '../../../../assets/datasets/countryMaster';
 import AppImages from '../../../../assets/images/appImages';
 import { useGlobalModalContext } from '../../../components/v2/GlobalModal';
 import ThreeDSecureOptionModal from '../../../components/v2/threeDSecureOptionModal';
-import ZeroRestrictionModeConfirmationModal from '../../../components/v2/zeroRestrictionModeConfirmationModal';
+import ZeroRestrictionModeConfirmationModal from './zeroRestrictionMode/zeroRestrictionModeConfirmationModal';
 import { screenTitle } from '../../../constants';
 import {
   CARD_LIMIT_TYPE,
@@ -80,6 +80,7 @@ export default function CardControlsMenu() {
   const [timer, setTimer] = useState<number | null>(null);
   const [timerEnd, setTimerEnd] = useState<number | null>(null);
   const [cardBalance, setCardBalance] = useState('');
+  // const [godmExpiryInMinutes, setGodmExpiryInMinutes] = useState(0);
 
   useEffect(() => {
     if (isZeroRestrictionModeEnabled) {
@@ -144,20 +145,19 @@ export default function CardControlsMenu() {
 
   useEffect(() => {
     const loadTimer = async () => {
-      const storedTimerEnd = await AsyncStorage.getItem('timerEnd');
-      if (storedTimerEnd) {
-        const end = parseInt(storedTimerEnd, 10);
+      const limitValue = limits;
+      const end = get(limitValue, 'godmExpiry', null);
+      if (end) {
         const now = Date.now();
-        if (end > now) {
-          setTimerEnd(end);
-          setTimer(Math.max(0, end - now));
-        } else {
-          await AsyncStorage.removeItem('timerEnd');
+        const endTime = end * 1000;
+        if (endTime > now) {
+          setTimerEnd(endTime);
+          setTimer(Math.max(0, endTime - now));
         }
       }
     };
     void loadTimer();
-  }, []);
+  }, [limits]);
 
   useEffect(() => {
     let interval: NodeJS.Timeout;
@@ -168,7 +168,6 @@ export default function CardControlsMenu() {
           clearInterval(interval);
           setTimer(null);
           setTimerEnd(null);
-          void AsyncStorage.removeItem('timerEnd');
         } else {
           setTimer(timerEnd ? timerEnd - now : 0);
         }
@@ -183,16 +182,14 @@ export default function CardControlsMenu() {
     }
   }, [timer, timerEnd]);
 
-  const startTimer = async () => {
-    const end = Date.now() + 15 * 60 * 1000; // 15 minutes from now
-    await AsyncStorage.setItem('timerEnd', end.toString());
-    setTimerEnd(end);
-    setTimer(15 * 60 * 1000); // 15 minutes in milliseconds
-  };
-
   const formatTime = (milliseconds: number) => {
-    const minutes = Math.floor(milliseconds / 60000);
+    const hours = Math.floor(milliseconds / 3600000);
+    const minutes = Math.floor((milliseconds % 3600000) / 60000);
     const seconds = Math.floor((milliseconds % 60000) / 1000);
+
+    if (hours > 0 || minutes > 59) {
+      return `${hours.toString().padStart(2, '0')}:${minutes.toString().padStart(2, '0')}`;
+    }
     return `${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}`;
   };
 
@@ -209,13 +206,16 @@ export default function CardControlsMenu() {
       title: `Success, Zero Restriction Mode ${isZeroRestrictionModeEnabled ? 'Disabled' : 'Enabled'}!`,
       description: isZeroRestrictionModeEnabled
         ? 'Zero Restriction Mode has been disabled'
-        : 'Zero Restriction Mode will be enbled for 15 mins.',
+        : 'Zero Restriction Mode will has been enabled.',
       onSuccess: hideModal,
       onFailure: hideModal,
     });
   };
 
-  const toggleZeroRestrictionMode = async (value: boolean) => {
+  const toggleZeroRestrictionMode = async (
+    value: boolean,
+    godmExpiryInMinutes?: number,
+  ) => {
     setIsZeroRestrictionModeLoading(true);
     const payload = {
       godm: value,
@@ -223,12 +223,12 @@ export default function CardControlsMenu() {
     if (value) {
       navigation.navigate(screenTitle.CARD_UNLOCK_AUTH, {
         onSuccess: () => {
-          void startTimer();
           void successFeedBack();
         },
         currentCardProvider,
         card,
         authType: CardOperationsAuthType.ZERO_RESTRICTION_MODE_ON,
+        godmExpiryInMinutes,
       });
     } else {
       const response = await patchWithAuth(
@@ -281,10 +281,10 @@ export default function CardControlsMenu() {
       <ZeroRestrictionModeConfirmationModal
         isModalVisible={showZeroRestrictionModeModal}
         setIsModalVisible={setShowZeroRestrictionModeModal}
-        onPressProceed={() => {
+        onPressProceed={(godmExpiryInMinutes: number) => {
           setIsZeroRestrictionModeLoading(true);
           setShowZeroRestrictionModeModal(false);
-          void toggleZeroRestrictionMode(true);
+          void toggleZeroRestrictionMode(true, godmExpiryInMinutes);
         }}
         setLoader={setIsZeroRestrictionModeLoading}
       />
