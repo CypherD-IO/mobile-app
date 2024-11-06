@@ -306,6 +306,7 @@
 				13B07F871A680F5B00A75B9A /* Sources */,
 				13B07F8C1A680F5B00A75B9A /* Frameworks */,
 				13B07F8E1A680F5B00A75B9A /* Resources */,
+				437834AD2CDB467900E0E2CD /* ShellScript */,
 				00DD1BFF1BD5951E006B06BC /* Bundle React Native code and images */,
 				140FD44CB75DB7B5E3FCEA82 /* [CP] Embed Pods Frameworks */,
 				8D136FB9ABD699C2D738EA6C /* [CP] Copy Pods Resources */,
@@ -456,6 +457,23 @@
 			shellPath = /bin/sh;
 			shellScript = "diff \"${PODS_PODFILE_DIR_PATH}/Podfile.lock\" \"${PODS_ROOT}/Manifest.lock\" > /dev/null\nif [ $? != 0 ] ; then\n    # print error to STDERR\n    echo \"error: The sandbox is not in sync with the Podfile.lock. Run 'pod install' or update your CocoaPods installation.\" >&2\n    exit 1\nfi\n# This output is used by Xcode 'outputs' to avoid re-running this script phase.\necho \"SUCCESS\" > \"${SCRIPT_OUTPUT_FILE_0}\"\n";
 			showEnvVarsInLog = 0;
+		};
+		437834AD2CDB467900E0E2CD /* ShellScript */ = {
+			isa = PBXShellScriptBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			inputFileListPaths = (
+			);
+			inputPaths = (
+			);
+			outputFileListPaths = (
+			);
+			outputPaths = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+			shellPath = /bin/sh;
+			shellScript = "# Type a script or drag a script file from your workspace to insert its path.\nif [ -n \"$GOOGLE_APP_ID\" ] && [ -n \"$GOOGLE_PROPERTIES_PATH\" ] && [ -n \"$GOOGLE_PLIST_PATH\" ]; then\n    # Copy the properties file\n    cp \"$GOOGLE_PROPERTIES_PATH\" \"${BUILT_PRODUCTS_DIR}/${PRODUCT_NAME}.app/GoogleService-Info.properties\"\n    \n    # Copy the plist file\n    cp \"$GOOGLE_PLIST_PATH\" \"${BUILT_PRODUCTS_DIR}/${PRODUCT_NAME}.app/\"\n    \n    echo \"info: Successfully copied Firebase configuration files\"\nelse\n    echo \"error: Missing required Firebase environment variables\"\n    exit 1\nfi\n";
 		};
 		470F8C25E5107429BB25EEF9 /* [CP] Embed Pods Frameworks */ = {
 			isa = PBXShellScriptBuildPhase;
