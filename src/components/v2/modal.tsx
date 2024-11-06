@@ -159,6 +159,7 @@ interface CyDModalLayoutProps {
   avoidKeyboard?: boolean;
   onModalHide?: () => void;
   useNativeDriver?: boolean;
+  propagateSwipe?: boolean;
 }
 
 export default function CyDModalLayout({
@@ -178,6 +179,7 @@ export default function CyDModalLayout({
   backdropTransitionOutTiming = 300,
   hideModalContentWhileAnimating = true,
   useNativeDriver = true,
+  propagateSwipe = true,
 }: CyDModalLayoutProps) {
   const { store } = useGlobalModalContext();
 
@@ -202,7 +204,7 @@ export default function CyDModalLayout({
         setModalVisible(false);
       }}
       backdropColor={'#000000'}
-      propagateSwipe={true}
+      propagateSwipe={propagateSwipe}
       backdropOpacity={backdropOpacity}
       backdropTransitionInTiming={backdropTransitionInTiming}
       backdropTransitionOutTiming={backdropTransitionOutTiming}

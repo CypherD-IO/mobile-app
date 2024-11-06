@@ -10,14 +10,14 @@ import Animated, {
   useSharedValue,
   withSpring,
 } from 'react-native-reanimated';
-import { CyDView } from '../../styles/tailwindStyles';
+import { CyDTouchView, CyDView } from '../../styles/tailwindStyles';
 import React from 'react';
 
 const INITIAL_BOX_SIZE = 24;
-const TRACK_PADDING = 8;
+const TRACK_PADDING = 16;
 
 interface SliderProps {
-  minValue: number;
+  minValue?: number;
   maxValue: number;
   steps?: number;
   value?: number;
@@ -26,10 +26,10 @@ interface SliderProps {
 }
 
 const Slider = ({
-  minValue,
-  maxValue,
+  minValue = 0,
+  maxValue = 100,
   steps = 1,
-  value,
+  value = minValue,
   onValueChange,
   onSlidingComplete,
 }: SliderProps) => {
@@ -38,19 +38,18 @@ const Slider = ({
 
   const calculateOffset = (val: number, width: number) => {
     'worklet';
-    const availableWidth = width - INITIAL_BOX_SIZE - TRACK_PADDING * 2;
+    const availableWidth = width - TRACK_PADDING * 2;
     const percentage = (val - minValue) / (maxValue - minValue);
 
     if (steps && steps >= 2) {
-      // Calculate step size and nearest step value
-      const stepSize = (maxValue - minValue) / (steps - 1);
+      const stepSize = (maxValue - minValue) / steps;
       const nearestStepValue = Math.round(val / stepSize) * stepSize;
       const stepPercentage =
         (nearestStepValue - minValue) / (maxValue - minValue);
-      return stepPercentage * availableWidth;
+      return stepPercentage * availableWidth - INITIAL_BOX_SIZE / 2;
     }
 
-    return percentage * availableWidth;
+    return percentage * availableWidth - INITIAL_BOX_SIZE / 2;
   };
 
   React.useEffect(() => {
@@ -64,9 +63,12 @@ const Slider = ({
 
   const getStepPositions = (width: number) => {
     'worklet';
-    const availableWidth = width - INITIAL_BOX_SIZE - TRACK_PADDING * 2;
-    const stepWidth = availableWidth / (steps - 1);
-    return Array.from({ length: steps }, (_, i) => i * stepWidth);
+    const availableWidth = width - TRACK_PADDING * 2;
+    const stepWidth = availableWidth / steps;
+    return Array.from(
+      { length: steps + 1 },
+      (_, i) => i * stepWidth - INITIAL_BOX_SIZE / 2,
+    );
   };
 
   const findNearestStep = (_offset: number, stepPositions: number[]) => {
@@ -78,9 +80,9 @@ const Slider = ({
 
   const calculateValue = (newOffset: number) => {
     'worklet';
-    const availableWidth =
-      trackWidth.value - INITIAL_BOX_SIZE - TRACK_PADDING * 2;
-    const percentage = newOffset / availableWidth;
+    const adjustedOffset = newOffset + INITIAL_BOX_SIZE / 2;
+    const availableWidth = trackWidth.value - TRACK_PADDING * 2;
+    const percentage = adjustedOffset / availableWidth;
     const rawValue = minValue + (maxValue - minValue) * percentage;
 
     if (steps === 1) {
@@ -128,7 +130,6 @@ const Slider = ({
           runOnJS(onSlidingComplete)(finalValue);
         }
       } else {
-        // Handle case when steps is 1 or undefined
         if (onSlidingComplete) {
           const finalValue = calculateValue(currentOffset);
           runOnJS(onSlidingComplete)(finalValue);
@@ -154,13 +155,37 @@ const Slider = ({
     left: TRACK_PADDING,
   }));
 
+  const handleDotPress = (index: number) => {
+    const stepValue = minValue + (index * (maxValue - minValue)) / steps;
+    if (onValueChange) {
+      onValueChange(stepValue);
+    }
+    if (trackWidth.value > 0) {
+      const newOffset = calculateOffset(stepValue, trackWidth.value);
+      offset.value = withSpring(newOffset, {
+        damping: 20,
+        stiffness: 300,
+      });
+    }
+    if (onSlidingComplete) {
+      onSlidingComplete(stepValue);
+    }
+  };
+
   const renderSteps = () => {
     if (!steps || steps < 2) return null;
 
+    const numberOfDots = steps + 1;
+
     return (
-      <CyDView className=' flex flex-row justify-between items-center px-[16px]'>
-        {Array.from({ length: steps }).map((_, index) => (
-          <CyDView key={index} className='w-[4px] h-[4px] bg-n0 rounded-full' />
+      <CyDView className='flex flex-row justify-between items-center px-[16px]'>
+        {Array.from({ length: numberOfDots }).map((_, index) => (
+          <CyDTouchView
+            key={index}
+            className='w-[20px] h-[20px] items-center justify-center'
+            onPress={() => handleDotPress(index)}>
+            <CyDView className='w-[4px] h-[4px] bg-n0 rounded-full' />
+          </CyDTouchView>
         ))}
       </CyDView>
     );
@@ -200,6 +225,7 @@ const styles = StyleSheet.create({
   sliderHandle: {
     width: 24,
     height: 24,
+    zIndex: 1000,
     backgroundColor: 'white',
     borderRadius: 999,
     position: 'absolute',
