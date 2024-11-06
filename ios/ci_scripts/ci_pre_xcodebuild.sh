@@ -184,6 +184,13 @@ if [ ! -f "${UPLOAD_SYMBOLS}" ]; then
 fi
 chmod +x "${UPLOAD_SYMBOLS}"
 
+# Run Crashlytics configuration
+if [ -f "${PODS_ROOT}/FirebaseCrashlytics/run" ]; then
+    "${PODS_ROOT}/FirebaseCrashlytics/run" || true  # Add '|| true' to prevent script failure
+else
+    echo "Warning: Crashlytics run script not found, skipping..."
+fi
+
 log_message "Firebase Crashlytics setup completed"
 
 log_message "Script completed successfully"

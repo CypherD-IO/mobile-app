@@ -48,6 +48,25 @@ target 'Cypherd' do
   # use_flipper!()
 
   post_install do |installer|
+    installer.pods_project.targets.each do |target|
+      target.build_configurations.each do |config|
+        # Debug Information Format
+        config.build_settings['DEBUG_INFORMATION_FORMAT'] = 'dwarf-with-dsym'
+        
+        # Strip Debug Symbols During Copy
+        config.build_settings['STRIP_INSTALLED_PRODUCT'] = 'YES'
+        
+        # Strip Linked Product
+        if config.name == 'Release'
+          config.build_settings['STRIP_STYLE'] = 'all'
+        else
+          config.build_settings['STRIP_STYLE'] = 'debug'
+        end
+        
+        # Enable dSYM file generation
+        config.build_settings['DEBUG_INFORMATION_FORMAT'] = 'dwarf-with-dsym'
+      end
+    end
     react_native_post_install(installer)
     __apply_Xcode_12_5_M1_post_install_workaround(installer)
     

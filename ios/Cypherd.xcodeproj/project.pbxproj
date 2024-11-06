@@ -309,8 +309,8 @@
 				00DD1BFF1BD5951E006B06BC /* Bundle React Native code and images */,
 				140FD44CB75DB7B5E3FCEA82 /* [CP] Embed Pods Frameworks */,
 				8D136FB9ABD699C2D738EA6C /* [CP] Copy Pods Resources */,
-				851CF83F13D7DD435F7045AB /* [CP-User] [RNFB] Core Configuration */,
 				94D2024F17B73CE975A7437F /* [CP-User] [RNFB] Crashlytics Configuration */,
+				851CF83F13D7DD435F7045AB /* [CP-User] [RNFB] Core Configuration */,
 				B43D053C1F1140DA9F6BC3B9 /* Upload Debug Symbols to Sentry */,
 			);
 			buildRules = (
@@ -509,6 +509,11 @@
 			buildActionMask = 2147483647;
 			files = (
 			);
+			inputFileListPaths = (
+				"${DWARF_DSYM_FOLDER_PATH}/${DWARF_DSYM_FILE_NAME}/Contents/Resources/DWARF/${TARGET_NAME}",
+				"${BUILT_PRODUCTS_DIR}/${INFOPLIST_PATH}\n",
+				"${BUILT_PRODUCTS_DIR}/${PRODUCT_NAME}.app/GoogleService-Info.plist",
+			);
 			inputPaths = (
 				"${DWARF_DSYM_FOLDER_PATH}/${DWARF_DSYM_FILE_NAME}/Contents/Resources/DWARF/${TARGET_NAME}",
 				"$(SRCROOT)/$(BUILT_PRODUCTS_DIR)/$(INFOPLIST_PATH)",
@@ -516,7 +521,7 @@
 			name = "[CP-User] [RNFB] Crashlytics Configuration";
 			runOnlyForDeploymentPostprocessing = 0;
 			shellPath = /bin/sh;
-			shellScript = "#!/usr/bin/env bash\n#\n# Copyright (c) 2016-present Invertase Limited & Contributors\n#\n# Licensed under the Apache License, Version 2.0 (the \"License\");\n# you may not use this library except in compliance with the License.\n# You may obtain a copy of the License at\n#\n#   http://www.apache.org/licenses/LICENSE-2.0\n#\n# Unless required by applicable law or agreed to in writing, software\n# distributed under the License is distributed on an \"AS IS\" BASIS,\n# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.\n# See the License for the specific language governing permissions and\n# limitations under the License.\n#\nset -e\n\nif [[ ${PODS_ROOT} ]]; then\n  echo \"info: Exec FirebaseCrashlytics Run from Pods\"\n  \"${PODS_ROOT}/FirebaseCrashlytics/run\"\nelse\n  echo \"info: Exec FirebaseCrashlytics Run from framework\"\n  \"${PROJECT_DIR}/FirebaseCrashlytics.framework/run\"\nfi\n";
+			shellScript = "#!/usr/bin/env bash\n#\n# Copyright (c) 2016-present Invertase Limited & Contributors\n#\n# Licensed under the Apache License, Version 2.0 (the \"License\");\n# you may not use this library except in compliance with the License.\n# You may obtain a copy of the License at\n#\n#   http://www.apache.org/licenses/LICENSE-2.0\n#\n# Unless required by applicable law or agreed to in writing, software\n# distributed under the License is distributed on an \"AS IS\" BASIS,\n# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.\n# See the License for the specific language governing permissions and\n# limitations under the License.\n#\nset -e\n\nfunction run_crashlytics() {\n    # Ensure script is executable\n    chmod +x \"$1\"\n    \n    # Run the script\n    if ! \"$1\"; then\n        echo \"error: Failed to run Crashlytics script at $1\"\n        # Don't exit with error in CI to prevent build failures\n        if [[ \"${CI}\" == \"true\" ]]; then\n            echo \"warning: Continuing build despite Crashlytics error (CI environment)\"\n            return 0\n        fi\n        return 1\n    fi\n}\n\nif [[ ${PODS_ROOT} ]]; then\n    echo \"info: Setting up Crashlytics from Pods\"\n    CRASHLYTICS_SCRIPT=\"${PODS_ROOT}/FirebaseCrashlytics/run\"\n    \n    if [[ ! -f \"${CRASHLYTICS_SCRIPT}\" ]]; then\n        echo \"error: Crashlytics script not found at ${CRASHLYTICS_SCRIPT}\"\n        exit 1\n    fi\n    \n    run_crashlytics \"${CRASHLYTICS_SCRIPT}\"\nelse\n    echo \"info: Setting up Crashlytics from framework\"\n    CRASHLYTICS_SCRIPT=\"${PROJECT_DIR}/FirebaseCrashlytics.framework/run\"\n    \n    if [[ ! -f \"${CRASHLYTICS_SCRIPT}\" ]]; then\n        echo \"error: Crashlytics script not found at ${CRASHLYTICS_SCRIPT}\"\n        exit 1\n    fi\n    \n    run_crashlytics \"${CRASHLYTICS_SCRIPT}\"\nfi\n\necho \"info: Crashlytics setup completed successfully\"\n";
 		};
 		B43D053C1F1140DA9F6BC3B9 /* Upload Debug Symbols to Sentry */ = {
 			isa = PBXShellScriptBuildPhase;
@@ -684,6 +689,7 @@
 				ASSETCATALOG_COMPILER_INCLUDE_ALL_APPICON_ASSETS = NO;
 				CLANG_ENABLE_MODULES = YES;
 				CODE_SIGN_ENTITLEMENTS = Cypherd/Cypherd.entitlements;
+				COPY_PHASE_STRIP = YES;
 				CURRENT_PROJECT_VERSION = 2;
 				DEFINES_MODULE = YES;
 				DEVELOPMENT_TEAM = 7FZT7KSBXD;
