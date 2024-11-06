@@ -47,6 +47,7 @@ target 'Cypherd' do
   # you should disable the next line.
   # use_flipper!()
 
+  # setting xcode config in code
   post_install do |installer|
     installer.pods_project.targets.each do |target|
       target.build_configurations.each do |config|
