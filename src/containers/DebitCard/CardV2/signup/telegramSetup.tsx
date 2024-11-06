@@ -91,7 +91,9 @@ export default function TelegramSetup() {
       const botCommand = `/link ${telegramConnectionId}`;
       copyToClipboard(botCommand);
       showToast(t('Bot Command Copied'));
-      await Linking.openURL(`tg://msg?text=${encodeURIComponent(botCommand)}`);
+      await Linking.openURL(
+        `tg://openmessage?user_id=CypherHQBot&text=${encodeURIComponent(botCommand)}`,
+      );
     } catch (err) {
       Sentry.captureException(err);
     }
