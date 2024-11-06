@@ -155,6 +155,26 @@ cat "${SENTRY_FILE}"
 log_message "2. GoogleService-Info.plist:"
 /usr/libexec/PlistBuddy -c "Print" "${PLIST_PATH}"
 
+# Before setting up Firebase Crashlytics
+echo "[$(date '+%Y-%m-%d %H:%M:%S')] Setting up Firebase Crashlytics..."
+
+# Extract and export GOOGLE_APP_ID
+PLIST_PATH="${WORKSPACE_DIR}/ios/CypherD/GoogleService-Info.plist"
+if [ -f "$PLIST_PATH" ]; then
+    GOOGLE_APP_ID=$(/usr/libexec/PlistBuddy -c "Print :GOOGLE_APP_ID" "$PLIST_PATH")
+    export GOOGLE_APP_ID
+    echo "info: Exported GOOGLE_APP_ID=${GOOGLE_APP_ID}"
+    
+    # Also copy GoogleService-Info.plist to the build directory
+    BUILT_PRODUCTS_DIR="${WORKSPACE_DIR}/DerivedData/Build/Products/Debug-iphoneos"
+    mkdir -p "${BUILT_PRODUCTS_DIR}/${PRODUCT_NAME}.app"
+    cp "$PLIST_PATH" "${BUILT_PRODUCTS_DIR}/${PRODUCT_NAME}.app/"
+    echo "info: Copied GoogleService-Info.plist to build directory"
+else
+    echo "error: GoogleService-Info.plist not found at ${PLIST_PATH}"
+    exit 1
+fi
+
 # Setup Firebase Crashlytics
 log_message "Setting up Firebase Crashlytics..."
 
