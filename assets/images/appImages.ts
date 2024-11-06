@@ -315,6 +315,8 @@ const CARD_ONBOARDING_3 = require('./cardOnBoarding3.png');
 const CARD_ONBOARDING_4 = require('./cardOnBoarding4.png');
 const BACK_ARROW_GRAY = require('./backArrowGray.png');
 const SLIDER_KNOB = require('./sliderKnob.png');
+const ZRM_INTRO_1 = require('./zrmImage1.png');
+const ZRM_INTRO_2 = require('./zrmImage2.png');
 const REWARDS_ICON = { uri: `${S3_BUCKET_URL_ICONS}/rewardsIcon.png` };
 // const CARD_ONBOARDING_VIDEO = require('./cardOnBaordingVideo.mp4');
 
@@ -677,6 +679,8 @@ const WHITE_CLOSE_ICON = {
 };
 
 const AppImages = {
+  ZRM_INTRO_1,
+  ZRM_INTRO_2,
   SLIDER_KNOB,
   KYC_VERIFICATION_FAILED,
   KYC_VERIFICATION_DELAYED,

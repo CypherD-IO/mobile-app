@@ -1398,6 +1398,7 @@ const resources = {
       TRANSACTION_DECLINE_FAILED: 'Transaction Decline Failed',
       TRANSACTION_DECLINATION_FAILED_REASON: 'Please contact support',
       TRANSACTION_APPROVED_SUCCESS: 'Transaction Approved Successfully',
+      ENABLE_ZERO_RESTRICTION_MODE: 'Enable Zero Restriction Mode',
     },
   },
 };

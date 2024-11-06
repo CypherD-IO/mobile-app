@@ -1,13 +1,10 @@
+import notifee, { AndroidImportance } from '@notifee/react-native';
 import firebase from '@react-native-firebase/app';
-import axios from './Http';
-import * as Sentry from '@sentry/react-native';
 import { FirebaseMessagingTypes } from '@react-native-firebase/messaging';
+import * as Sentry from '@sentry/react-native';
 import { hostWorker } from '../global';
+import axios from './Http';
 import { isAddressSet } from './util';
-import notifee, {
-  AndroidImportance,
-  AuthorizationStatus,
-} from '@notifee/react-native';
 
 export const getToken = async (
   walletAddress: string,
@@ -25,7 +22,6 @@ export const getToken = async (
       .messaging()
       .getToken()
       .then(fcmToken => {
-        console.log('fcmToken : ', fcmToken);
         if (isAddressSet(walletAddress)) {
           const registerURL = `${ARCH_HOST}/v1/configuration/device/register`;
           const payload = {

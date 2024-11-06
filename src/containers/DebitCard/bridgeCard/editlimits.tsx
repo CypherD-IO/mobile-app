@@ -20,7 +20,7 @@ import Button from '../../../components/v2/button';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { Card } from '../../../models/card.model';
 import { CardProviders } from '../../../constants/enum';
-import { capitalize, round } from 'lodash';
+import { capitalize, get, round } from 'lodash';
 import useAxios from '../../../core/HttpRequest';
 import { useGlobalModalContext } from '../../../components/v2/GlobalModal';
 import CyDModalLayout from '../../../components/v2/modal';
@@ -80,7 +80,7 @@ const ImpactModal = ({
         <CyDText className='mt-[4px] font-bold text-[20px]'>
           {'Impact Information'}
         </CyDText>
-        <CyDText className='text-[14px] mt-[15px] text-justify'>
+        <CyDText className='text-[14px] mt-[15px]'>
           {`Your domestic and international transaction limits will be limited to `}
           <CyDText className='font-bold'>{`$${dailyLimit}`}</CyDText>
           {` per transaction based on your daily spending limit `}
@@ -125,8 +125,16 @@ export default function EditLimits() {
     setPageLoading(false);
     if (!isError) {
       setLimitsData(data);
-      setDailyUsageLimit(data?.currentLimit?.d);
-      setMonthlyUsageLimit(data?.currentLimit?.m);
+      if (get(data, 'cydL')) {
+        setDailyUsageLimit(get(data, ['cydL', 'd']));
+        setMonthlyUsageLimit(get(data, ['cydL', 'm']));
+      } else if (get(data, 'advL')) {
+        setDailyUsageLimit(get(data, ['advL', 'd']));
+        setMonthlyUsageLimit(get(data, ['advL', 'm']));
+      } else {
+        setDailyUsageLimit(get(data, ['planLimit', 'd']));
+        setMonthlyUsageLimit(get(data, ['planLimit', 'm']));
+      }
     } else {
       showModal('state', {
         type: 'error',

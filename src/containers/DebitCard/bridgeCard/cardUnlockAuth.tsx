@@ -34,6 +34,7 @@ interface RouteParams {
   currentCardProvider: CardProviders;
   card: Card;
   authType: CardOperationsAuthType;
+  godmExpiryInMinutes?: number;
 }
 
 const OTPHeader = () => {
@@ -58,7 +59,8 @@ export default function CardUnlockAuth() {
   const { showModal, hideModal } = useGlobalModalContext();
   const [sendingOTP, setSendingOTP] = useState<boolean>(false);
   const [verifyingOTP, setVerifyingOTP] = useState<boolean>(false);
-  const { currentCardProvider, card, authType } = route.params;
+  const { currentCardProvider, card, authType, godmExpiryInMinutes } =
+    route.params;
   const onSuccess = route.params.onSuccess;
   const resendOtpTime = 30;
   const [resendInterval, setResendInterval] = useState(0);
@@ -124,7 +126,7 @@ export default function CardUnlockAuth() {
       ...(authType === CardOperationsAuthType.UNBLOCK
         ? {}
         : authType === CardOperationsAuthType.ZERO_RESTRICTION_MODE_ON
-          ? { godm: true }
+          ? { godm: true, godmExpiryInMinutes }
           : { status: CardStatus.ACTIVE }),
       otp: num,
     };

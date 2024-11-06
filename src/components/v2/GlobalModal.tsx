@@ -30,13 +30,6 @@ export const GlobalModal: React.FC<any> = ({ children }) => {
   const [isTransitioning, setIsTransitioning] = useState(false);
 
   const showModal = (modalType: string, props: any = {}) => {
-    console.log(
-      'showModal :::::::::::::::::::::::::::::::::::::::::::::::::::',
-    );
-    console.log(
-      'isTransitioning ::::::::::::::::::::::::::::::::::::::::::::::::::: ',
-      isTransitioning,
-    );
     if (isTransitioning) return;
 
     if (store?.isModalVisible) {
