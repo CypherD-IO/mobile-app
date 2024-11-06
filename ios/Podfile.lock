@@ -701,7 +701,8 @@ PODS:
     - Firebase/Performance (= 8.15.0)
     - React-Core
     - RNFBApp
-  - RNGestureHandler (1.10.3):
+  - RNGestureHandler (2.20.2):
+    - RCT-Folly (= 2021.07.22.00)
     - React-Core
   - RNKeychain (8.1.1):
     - React-Core
@@ -1232,7 +1233,7 @@ SPEC CHECKSUMS:
   RNFBCrashlytics: 94e1f78e2a9aa9e02edbfb0d3f1f0921ce00094b
   RNFBMessaging: 40dac204b4197a2661dec5be964780c6ec39bf65
   RNFBPerf: b85b621a4d15905847e8627a6aa67ad894e8e166
-  RNGestureHandler: a479ebd5ed4221a810967000735517df0d2db211
+  RNGestureHandler: f31a57d2f2ccb5bd21bc03b4de0a5f917622641f
   RNKeychain: ff836453cba46938e0e9e4c22e43d43fa2c90333
   RNLocalize: d4b8af4e442d4bcca54e68fc687a2129b4d71a81
   RNNotifee: bc20a5e3d581f629db988075944fdd944d363dfe

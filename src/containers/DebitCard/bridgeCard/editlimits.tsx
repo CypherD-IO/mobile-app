@@ -23,11 +23,11 @@ import { CardProviders } from '../../../constants/enum';
 import { capitalize, round } from 'lodash';
 import useAxios from '../../../core/HttpRequest';
 import { useGlobalModalContext } from '../../../components/v2/GlobalModal';
-import CustomSlider from '../../../components/v2/slider';
 import CyDModalLayout from '../../../components/v2/modal';
 import { StyleSheet } from 'react-native';
 import Loading from '../../../components/v2/loading';
 
+import Slider from '../../../components/v2/slider';
 interface RouteParams {
   currentCardProvider: CardProviders;
   card: Card;
@@ -236,14 +236,15 @@ export default function EditLimits() {
               value={`$${dailyUsageLimit}`}
             />
 
-            <CyDView className='mt-[24px]'>
-              <CustomSlider
+            <CyDView className='mt-[24px] mb-[8px]'>
+              <Slider
+                minValue={0}
                 maxValue={limitsData?.maxLimit?.d ?? 1000}
-                stopCount={10}
-                onValueChange={value => {
+                steps={10}
+                onSlidingComplete={value => {
                   setDailyUsageLimit(value);
                 }}
-                initialValue={dailyUsageLimit}
+                value={dailyUsageLimit}
               />
             </CyDView>
           </CyDView>
@@ -281,14 +282,15 @@ export default function EditLimits() {
               value={`$${monthlyUsageLimit}`}
             />
 
-            <CyDView className='mt-[24px]'>
-              <CustomSlider
+            <CyDView className='mt-[24px] mb-[8px]'>
+              <Slider
+                minValue={0}
                 maxValue={limitsData?.maxLimit?.m ?? 1000}
-                stopCount={10}
+                steps={10}
                 onValueChange={value => {
                   setMonthlyUsageLimit(value);
                 }}
-                initialValue={monthlyUsageLimit}
+                value={monthlyUsageLimit}
               />
             </CyDView>
           </CyDView>
