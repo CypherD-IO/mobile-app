@@ -1,10 +1,18 @@
-import React, {
-  Dispatch,
-  SetStateAction,
-  memo,
-  useEffect,
-  useState,
-} from 'react';
+import { t } from 'i18next';
+import { get } from 'lodash';
+import React, { Dispatch, SetStateAction, memo, useState } from 'react';
+import { BackHandler, StyleSheet } from 'react-native';
+import AppImages from '../../../../assets/images/appImages';
+import DeFiCheckBox from '../../../components/deFiCheckBox';
+import RadioButtons from '../../../components/radioButtons';
+import CyDModalLayout from '../../../components/v2/modal';
+import { DEFI_FILTER_STATUSES } from '../../../constants/data';
+import { deFiPositionTypes } from '../../../constants/server';
+import {
+  DeFiFilter,
+  DeFiPositionTypes,
+  protocolOptionType,
+} from '../../../models/defi.interface';
 import {
   CyDFastImage,
   CyDSafeAreaView,
@@ -12,22 +20,6 @@ import {
   CyDTouchView,
   CyDView,
 } from '../../../styles/tailwindStyles';
-import {
-  DeFiFilter,
-  DeFiPositionTypes,
-  protocolOptionType,
-} from '../../../models/defi.interface';
-import CyDModalLayout from '../../../components/v2/modal';
-import { BackHandler, StyleSheet } from 'react-native';
-import AppImages from '../../../../assets/images/appImages';
-import { t } from 'i18next';
-import CheckBoxes from '../../../components/checkBoxes';
-import DeFiCheckBox from '../../../components/deFiCheckBox';
-import { deFiPositionTypes } from '../../../constants/server';
-import { sortProtocols } from '../../../core/defi';
-import RadioButtons from '../../../components/radioButtons';
-import { DEFI_FILTER_STATUSES } from '../../../constants/data';
-import { get } from 'lodash';
 
 interface DeFiFilterModalInterface {
   filters: DeFiFilter;

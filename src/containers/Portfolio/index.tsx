@@ -1,11 +1,3 @@
-import React, {
-  useCallback,
-  useContext,
-  useEffect,
-  useMemo,
-  useRef,
-  useState,
-} from 'react';
 import analytics from '@react-native-firebase/analytics';
 import messaging, {
   FirebaseMessagingTypes,
@@ -16,6 +8,14 @@ import clsx from 'clsx';
 import { isEmpty } from 'lodash';
 import LottieView from 'lottie-react-native';
 import moment from 'moment';
+import React, {
+  useCallback,
+  useContext,
+  useEffect,
+  useMemo,
+  useRef,
+  useState,
+} from 'react';
 import { useTranslation } from 'react-i18next';
 import {
   AppState,
@@ -37,6 +37,7 @@ import EmptyView from '../../components/EmptyView';
 import CopytoKeyModal from '../../components/ShowPharseModal';
 import Button from '../../components/v2/button';
 import PortfolioTokenItem from '../../components/v2/portfolioTokenItem';
+import { use3DSecure } from '../../components/v2/threeDSecureApprovalModalContext';
 import CyDTokenValue from '../../components/v2/tokenValue';
 import {
   GlobalContextType,
@@ -63,7 +64,7 @@ import {
 } from '../../core/portfolio';
 import { HdWalletContext } from '../../core/util';
 import usePortfolio from '../../hooks/usePortfolio';
-import { DeFiFilter, protocolOptionType } from '../../models/defi.interface';
+import { DeFiFilter } from '../../models/defi.interface';
 import { IPortfolioData } from '../../models/portfolioData.interface';
 import {
   BridgeContext,
@@ -83,7 +84,6 @@ import { Banner, HeaderBar, RefreshTimerBar } from './components';
 import BannerCarousel from './components/BannerCarousel';
 import FilterBar from './components/FilterBar';
 import { DeFiScene, NFTScene, TXNScene } from './scenes';
-import { use3DSecure } from '../../components/v2/threeDSecureApprovalModalContext';
 
 export interface PortfolioProps {
   navigation: any;
@@ -117,9 +117,7 @@ export default function Portfolio({ navigation }: PortfolioProps) {
     protocols: [],
     activePositionsOnly: 'No',
   });
-
-  const [deFiFilterVisible, setDeFiFilterVisible] = useState<boolean>(false);
-  const [userProtocols, setUserProtocols] = useState<protocolOptionType[]>([]);
+  const [fetchDefiData, setFetchDefiData] = useState<boolean>(false);
   const { fetchPortfolio, getLocalPortfolio } = usePortfolio();
   const tabs = [
     { key: 'token', title: t('TOKENS') },
@@ -614,30 +612,16 @@ export default function Portfolio({ navigation }: PortfolioProps) {
   const RenderDefiScene = useMemo(() => {
     return (
       <CyDView style={{ width: windowWidth }}>
-        {/* To DO */}
-        {/* <DeFiFilterRefreshBar
-          isRefreshing={deFiRefreshActivity.isRefreshing}
-          lastRefreshed={deFiRefreshActivity.lastRefresh}
-          filters={deFiFilters}
-          setFilters={setDeFiFilters}
-          isFilterVisible={deFiFilterVisible}
-          setFilterVisible={setDeFiFilterVisible}
-          userProtocols={userProtocols}
-          isLoading={deFiLoading}
-          setLoading={setDeFiLoading}
-        /> */}
         <DeFiScene
           navigation={navigation}
           filters={deFiFilters}
           setFilters={setDeFiFilters}
-          userProtocols={userProtocols}
-          setUserProtocols={setUserProtocols}
-          filterVisible={deFiFilterVisible}
-          setFilterVisible={setDeFiFilterVisible}
+          refreshDefiData={fetchDefiData}
+          setRefreshDefiData={setFetchDefiData}
         />
       </CyDView>
     );
-  }, [deFiFilters, deFiFilterVisible, userProtocols]);
+  }, [deFiFilters, fetchDefiData]);
 
   const RenderNftScene = useMemo(() => {
     return (
@@ -697,36 +681,7 @@ export default function Portfolio({ navigation }: PortfolioProps) {
     {
       title: 'scenes',
       data: [''],
-      renderItem: () => {
-        return (
-          <CyDFlatList
-            ref={horrizontalFlatListRef}
-            data={scenesData}
-            horizontal={true}
-            initialNumToRender={1}
-            maxToRenderPerBatch={1}
-            windowSize={1}
-            snapToAlignment='center' // Snap to center of each item
-            snapToInterval={windowWidth} // Define the width of each item
-            decelerationRate='fast' // Faster snapping effect
-            showsHorizontalScrollIndicator={false}
-            nestedScrollEnabled={true}
-            getItemLayout={(data, index) => ({
-              length: windowWidth,
-              offset: windowWidth * index,
-              index,
-            })}
-            onMomentumScrollEnd={event => {
-              const contentOffsetX = event.nativeEvent.contentOffset.x;
-              const snappedIndex = Math.round(contentOffsetX / windowWidth);
-              setTabIndex(snappedIndex);
-            }}
-            renderItem={({ item, index }) => {
-              return item.scene;
-            }}
-          />
-        );
-      },
+      renderItem: () => scenesData[tabIndex].scene,
     },
   ];
 
@@ -796,6 +751,8 @@ export default function Portfolio({ navigation }: PortfolioProps) {
             onRefresh={() => {
               if (tabIndex === 0) {
                 void fetchPortfolioData();
+              } else if (tabIndex === 1) {
+                setFetchDefiData(true);
               }
             }}
             stickySectionHeadersEnabled={true}
@@ -834,6 +791,7 @@ export default function Portfolio({ navigation }: PortfolioProps) {
                 <></>
               )
             }
+            contentContainerStyle={styles.sectionListContent}
           />
         </>
       ) : null}
@@ -900,5 +858,8 @@ const TokenListEmptyComponent = ({
 const styles = StyleSheet.create({
   lottieView: {
     width: '60%',
+  },
+  sectionListContent: {
+    paddingBottom: 80,
   },
 });

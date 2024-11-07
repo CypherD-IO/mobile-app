@@ -153,7 +153,7 @@ export default function ZeroRestrictionModeConfirmationModal(props: {
                         onSlidingComplete={(value: number) => {
                           setDuration(value);
                         }}
-                        value={0}
+                        value={duration}
                       />
                     </GestureHandlerRootView>
                   </CyDView>
