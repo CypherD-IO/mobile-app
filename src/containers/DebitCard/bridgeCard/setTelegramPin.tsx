@@ -5,7 +5,7 @@ import {
 } from '@react-navigation/native';
 import { useFormik } from 'formik';
 import { countBy } from 'lodash';
-import { useState } from 'react';
+import React, { useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { StyleSheet } from 'react-native';
 import * as yup from 'yup';
@@ -25,11 +25,6 @@ import {
   CyDTouchView,
   CyDView,
 } from '../../../styles/tailwindStyles';
-
-interface RouteParams {
-  currentCardProvider: CardProviders;
-  card: { cardId: string };
-}
 
 export default function SetTelegramPin() {
   const navigation = useNavigation<NavigationProp<ParamListBase>>();
@@ -265,6 +260,7 @@ export default function SetTelegramPin() {
                       await changePinFormik.setFieldTouched('pin', true)
                     }
                     length={6}
+                    isSecureTextEntry={true}
                   />
                 </CyDView>
                 {showErrors &&
@@ -298,6 +294,7 @@ export default function SetTelegramPin() {
                       await changePinFormik.setFieldTouched('confirmPin', true)
                     }
                     length={6}
+                    isSecureTextEntry={true}
                   />
                 </CyDView>
                 {showErrors &&

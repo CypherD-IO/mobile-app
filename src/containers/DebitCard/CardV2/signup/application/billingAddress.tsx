@@ -99,7 +99,6 @@ export default function BillingAddress({
                   onPress={() => {
                     setCountry(_country.unicode_flag + _country.name);
                     void setFieldValue('country', _country.Iso2);
-                    void setFieldValue('dialCode', _country.dial_code);
                     setShowCountries(false);
                   }}
                   className='flex flex-row justify-between p-[12px] rounded-[8px] my-[4px] border-b border-n30'>
@@ -168,7 +167,6 @@ export default function BillingAddress({
             label='Phone'
             containerClassName='mb-[17px] w-[20%]'
             placeholder=''
-            editable={false}
           />
           <FormikTextInput
             name='phone'

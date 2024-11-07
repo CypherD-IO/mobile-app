@@ -8,12 +8,14 @@ export const PinInput = ({
   error,
   onBlur,
   length,
+  isSecureTextEntry = false,
 }: {
   value: string[];
   onChange: (value: string[]) => void;
   error: boolean;
   onBlur: () => void;
   length: number;
+  isSecureTextEntry?: boolean;
 }) => {
   const inputRefs = useRef([]);
 
@@ -69,7 +71,7 @@ export const PinInput = ({
           maxLength={1}
           value={value[index] || ''}
           onKeyPress={e => handleKeyPress(index, e)}
-          secureTextEntry={false}
+          secureTextEntry={isSecureTextEntry}
           onBlur={onBlur}
         />
       ))}

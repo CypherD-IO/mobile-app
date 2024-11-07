@@ -1106,6 +1106,8 @@ const resources = {
       MOBILE_WALLETS: 'Mobile Wallets',
       BRIDGE_TITLE: 'Bridge',
       SETUP_TELEGRAM: 'Setup Telegram',
+      SETUP_TELEGRAM_BOT: 'Set up Telegram Bot',
+      CONNECT_TO_TELEGRAM: 'Connect to telegram',
       CONFIGURE_TELEGRAM: 'Configure Telegram',
       APPLY_NOW: 'APPLY NOW',
       BIRDGE_SWAP_AVAILABLE:
