@@ -225,7 +225,7 @@ export default function TelegramSetup() {
               </CyDView>
 
               <CyDText className='font-normal text-[14px] mt-[16px]'>
-                🎉 Hurray! your are connected the cypher bot successfully{' '}
+                🎉 Hurray! You are connected to the Cypher bot successfully
               </CyDText>
             </CyDView>
           </CyDView>
