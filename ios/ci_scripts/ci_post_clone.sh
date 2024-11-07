@@ -12,6 +12,7 @@ npm cache clean --force
 
 # Install dependencies you manage with CocoaPods.
 npm install --legacy-peer-deps
+rm -rf /Volumes/workspace/DerivedData
 pod deintegrate
 pod install --repo-update
 # the sed command from RN cant find the file... so we have to run it ourselves
