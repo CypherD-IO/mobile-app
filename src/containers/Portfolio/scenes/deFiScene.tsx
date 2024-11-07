@@ -1,3 +1,5 @@
+import { t } from 'i18next';
+import _ from 'lodash';
 import React, {
   Dispatch,
   SetStateAction,
@@ -5,23 +7,21 @@ import React, {
   useCallback,
   useContext,
   useEffect,
-  useRef,
   useState,
 } from 'react';
-import {
-  CyDView,
-  CyDText,
-  CyDFastImage,
-  CyDTouchView,
-  CyDFlatList,
-} from '../../../styles/tailwindStyles';
-import { t } from 'i18next';
-import { BackHandler, FlatList, RefreshControl } from 'react-native';
-import { intercomAnalyticsLog } from '../../utilities/analyticsUtility';
-import Loading from '../../../components/v2/loading';
-import useAxios from '../../../core/HttpRequest';
+import { BackHandler } from 'react-native';
+import AppImages from '../../../../assets/images/appImages';
+import { DeFiFilterRefreshBar } from '../../../components/deFiRefreshFilterBar';
+import CyDTokenValue from '../../../components/v2/tokenValue';
+import { screenTitle } from '../../../constants';
 import { DEFI_URL } from '../../../constants/server';
-import { HdWalletContextDef } from '../../../reducers/hdwallet_reducer';
+import useAxios from '../../../core/HttpRequest';
+import { getDeFiData, storeDeFiData } from '../../../core/asyncStorage';
+import {
+  getChainLogo,
+  parseDefiData,
+  sortDefiProtocolDesc,
+} from '../../../core/defi';
 import { HdWalletContext } from '../../../core/util';
 import {
   DeFiFilter,
@@ -31,18 +31,17 @@ import {
   defiProtocolData,
   protocolOptionType,
 } from '../../../models/defi.interface';
-import _ from 'lodash';
+import { HdWalletContextDef } from '../../../reducers/hdwallet_reducer';
 import {
-  getChainLogo,
-  parseDefiData,
-  sortDefiProtocolDesc,
-} from '../../../core/defi';
-import AppImages from '../../../../assets/images/appImages';
-import { getDeFiData, storeDeFiData } from '../../../core/asyncStorage';
+  CyDFastImage,
+  CyDScrollView,
+  CyDText,
+  CyDTouchView,
+  CyDView,
+} from '../../../styles/tailwindStyles';
+import { intercomAnalyticsLog } from '../../utilities/analyticsUtility';
 import DeFiFilterModal from '../components/deFiFilterModal';
-import CyDTokenValue from '../../../components/v2/tokenValue';
-import { screenTitle } from '../../../constants';
-import EmptyView from '../../../components/EmptyView';
+import Loading from '../../../components/v2/loading';
 
 const MAX_CHAIN_COUNT = 3;
 
@@ -50,10 +49,8 @@ interface DeFiSceneProps {
   navigation: any;
   filters: DeFiFilter;
   setFilters: Dispatch<SetStateAction<DeFiFilter>>;
-  userProtocols: protocolOptionType[];
-  setUserProtocols: Dispatch<SetStateAction<protocolOptionType[]>>;
-  filterVisible: boolean;
-  setFilterVisible: Dispatch<SetStateAction<boolean>>;
+  refreshDefiData: boolean;
+  setRefreshDefiData: Dispatch<SetStateAction<boolean>>;
 }
 
 const DeFiTotal = ({
@@ -152,18 +149,16 @@ const DeFiTotal = ({
         </CyDView>
       </CyDView>
     );
+  else return <></>;
 };
 
 const DeFiScene = ({
   navigation,
   filters,
   setFilters,
-  userProtocols,
-  setUserProtocols,
-  filterVisible,
-  setFilterVisible,
+  refreshDefiData,
+  setRefreshDefiData,
 }: DeFiSceneProps) => {
-  const flatListRef = useRef<FlatList<any>>(null);
   const { getWithoutAuth } = useAxios();
   const hdWalletContext = useContext<HdWalletContextDef | null>(
     HdWalletContext,
@@ -173,7 +168,6 @@ const DeFiScene = ({
     isRefreshing: boolean;
     lastRefresh: string;
   }>({ isRefreshing: false, lastRefresh: 'Retrieving...' });
-  const [loading, setLoading] = useState<boolean>(true);
   const [deFiData, setDeFiData] = useState<{
     iat: string;
     rawData: DefiResponse;
@@ -184,25 +178,9 @@ const DeFiScene = ({
     filteredData: {} as DefiData,
   });
 
-  // useEffect(() => {
-  //   if (flatListRef.current) {
-  //     if (scrollY.value <= OFFSET_TABVIEW + bannerHeight) {
-  //       flatListRef.current.scrollToOffset({
-  //         offset: Math.max(
-  //           Math.min(scrollY.value, OFFSET_TABVIEW + bannerHeight),
-  //           OFFSET_TABVIEW,
-  //         ),
-  //         animated: false,
-  //       });
-  //     } else {
-  //       flatListRef.current.scrollToOffset({
-  //         offset: OFFSET_TABVIEW + bannerHeight,
-  //         animated: false,
-  //       });
-  //     }
-  //     trackRef(routeKey, flatListRef.current);
-  //   }
-  // }, [flatListRef.current, loading]);
+  const [userProtocols, setUserProtocols] = useState<protocolOptionType[]>([]);
+  const [deFiFilterVisible, setDeFiFilterVisible] = useState<boolean>(false);
+  const [loading, setLoading] = useState<boolean>(false);
 
   useEffect(() => {
     if (!_.isEmpty(deFiData.rawData)) {
@@ -214,7 +192,6 @@ const DeFiScene = ({
     }
   }, [filters, deFiData.rawData]);
 
-  const [lastRefreshed, setLastRefreshed] = useState<string>('');
   useEffect(() => {
     void intercomAnalyticsLog('visited_defi_homescreen');
     void getDeFiHoldings();
@@ -223,6 +200,64 @@ const DeFiScene = ({
       return true;
     });
   }, []);
+
+  useEffect(() => {
+    if (refreshDefiData) {
+      void getDeFiHoldings(true);
+      setRefreshDefiData(false);
+    }
+  }, [refreshDefiData]);
+
+  const fetchDefiData = async (address: string, forceRefresh = false) => {
+    const url = forceRefresh
+      ? `${DEFI_URL}/${address}?forceRefresh=true`
+      : `${DEFI_URL}/${address}`;
+    const { isError, data: rawDeFiData } = await getWithoutAuth(url, {}, 40000);
+    if (!isError) {
+      if (!_.isEmpty(rawDeFiData?.protocols)) {
+        const protocols = rawDeFiData?.protocols;
+        const { defiData, defiOptionsData } = parseDefiData(
+          protocols as Protocol[],
+          filters,
+        );
+        if (userProtocols.length === 0) setUserProtocols(defiOptionsData);
+        const data = {
+          iat: rawDeFiData?.iat,
+          rawData: rawDeFiData,
+          filteredData: defiData,
+        };
+        setDeFiData(data);
+        await storeDeFiData(data);
+      }
+      setRefreshActivity({ isRefreshing: false, lastRefresh: rawDeFiData.iat });
+    } else {
+      setRefreshActivity({
+        isRefreshing: false,
+        lastRefresh: new Date().toLocaleString(),
+      });
+    }
+  };
+
+  const getDeFiHoldings = async (forceRefresh = false) => {
+    if (!forceRefresh) setLoading(true);
+
+    if (forceRefresh) {
+      setRefreshActivity(prev => ({ ...prev, isRefreshing: true }));
+      if (ethereum?.wallets[0].address) {
+        await fetchDefiData(ethereum?.wallets[0].address, true);
+      }
+    } else {
+      const data = await getDeFiData();
+      if (data !== null) {
+        setDeFiData(data);
+      }
+      if (ethereum?.wallets[0].address) {
+        await fetchDefiData(ethereum?.wallets[0].address);
+      }
+    }
+
+    if (!forceRefresh) setLoading(false);
+  };
 
   const RenderProtocolRow = useCallback(
     ({ protocol, index }: { protocol: defiProtocolData; index: number }) => {
@@ -340,132 +375,63 @@ const DeFiScene = ({
     [filters],
   );
 
-  const fetchDefiData = async (address: string, forceRefresh = false) => {
-    const url = forceRefresh
-      ? `${DEFI_URL}/${address}?forceRefresh=true`
-      : `${DEFI_URL}/${address}`;
-    const { isError, data: rawDeFiData } = await getWithoutAuth(url, {}, 40000);
-    if (!isError) {
-      if (!_.isEmpty(rawDeFiData?.protocols)) {
-        const protocols = rawDeFiData?.protocols;
-        const { defiData, defiOptionsData } = parseDefiData(
-          protocols as Protocol[],
-          filters,
-        );
-        if (userProtocols.length === 0) setUserProtocols(defiOptionsData);
-        const data = {
-          iat: rawDeFiData?.iat,
-          rawData: rawDeFiData,
-          filteredData: defiData,
-        };
-        setDeFiData(data);
-        await storeDeFiData(data);
-      }
-      setRefreshActivity({ isRefreshing: false, lastRefresh: rawDeFiData.iat });
-    } else {
-      setRefreshActivity({
-        isRefreshing: false,
-        lastRefresh: new Date().toLocaleString(),
-      });
-    }
-  };
-  const getDeFiHoldings = async (forceRefresh = false) => {
-    if (!forceRefresh) setLoading(true);
-
-    if (forceRefresh) {
-      setRefreshActivity(prev => ({ ...prev, isRefreshing: true }));
-      if (ethereum?.wallets[0].address) {
-        await fetchDefiData(ethereum?.wallets[0].address, true);
-      }
-    } else {
-      const data = await getDeFiData();
-      if (data !== null) {
-        setDeFiData(data);
-      }
-      if (ethereum?.wallets[0].address) {
-        await fetchDefiData(ethereum?.wallets[0].address);
-      }
-    }
-
-    if (!forceRefresh) setLoading(false);
-  };
-
-  const onRefresh = () => {
-    void getDeFiHoldings(true);
-  };
+  if (loading) return <Loading />;
 
   return (
     <CyDView className='flex-1 mx-[10px]'>
-      <DeFiFilterModal
-        navigation={navigation}
-        filters={filters}
-        setFilters={setFilters}
-        visible={filterVisible}
-        setVisible={setFilterVisible}
-        protocols={userProtocols}
-      />
-      {!loading ? (
-        <CyDFlatList
-          data={
+      <>
+        <DeFiFilterModal
+          navigation={navigation}
+          filters={filters}
+          setFilters={setFilters}
+          visible={deFiFilterVisible}
+          setVisible={setDeFiFilterVisible}
+          protocols={userProtocols}
+        />
+        <DeFiFilterRefreshBar
+          isRefreshing={refreshActivity.isRefreshing}
+          lastRefreshed={refreshActivity.lastRefresh}
+          filters={filters}
+          setFilters={setFilters}
+          isFilterVisible={deFiFilterVisible}
+          setFilterVisible={setDeFiFilterVisible}
+          userProtocols={userProtocols}
+        />
+        <DeFiTotal
+          value={
             !_.isEmpty(deFiData.filteredData)
-              ? Object.values(deFiData.filteredData.protocols).sort(
-                  sortDefiProtocolDesc,
-                )
-              : []
+              ? deFiData.filteredData.total.value
+              : 0
           }
-          scrollEnabled={false}
-          renderItem={({ item, index }) => (
-            <RenderProtocolRow protocol={item} index={index} />
-          )}
-          keyExtractor={(item: defiProtocolData) => item.protocolName}
-          onRef={flatListRef}
-          refreshControl={
-            <RefreshControl
-              refreshing={refreshActivity.isRefreshing}
-              onRefresh={() => {
-                void onRefresh();
-              }}
-            />
+          debt={
+            !_.isEmpty(deFiData.filteredData)
+              ? deFiData.filteredData.total.debt
+              : 0
           }
-          ListHeaderComponent={
-            <DeFiTotal
-              value={
-                !_.isEmpty(deFiData.filteredData)
-                  ? deFiData.filteredData.total.value
-                  : 0
-              }
-              debt={
-                !_.isEmpty(deFiData.filteredData)
-                  ? deFiData.filteredData.total.debt
-                  : 0
-              }
-              supply={
-                !_.isEmpty(deFiData.filteredData)
-                  ? deFiData.filteredData.total.supply
-                  : 0
-              }
-              claimable={
-                !_.isEmpty(deFiData.filteredData)
-                  ? deFiData.filteredData.total.claimable
-                  : 0
-              }
-            />
+          supply={
+            !_.isEmpty(deFiData.filteredData)
+              ? deFiData.filteredData.total.supply
+              : 0
           }
-          ListEmptyComponent={
-            <CyDView className='flex flex-col justify-start items-center'>
-              <EmptyView
-                text={t('NO_CURRENT_HOLDINGS')}
-                image={AppImages.EMPTY}
-                buyVisible={false}
-              />
-            </CyDView>
+          claimable={
+            !_.isEmpty(deFiData.filteredData)
+              ? deFiData.filteredData.total.claimable
+              : 0
           }
         />
-      ) : (
-        <CyDView className='w-full absolute bottom-[100px]'>
-          <Loading />
-        </CyDView>
-      )}
+        <CyDScrollView scrollEnabled={false}>
+          {!_.isEmpty(deFiData.filteredData) &&
+            Object.values(deFiData.filteredData.protocols)
+              .sort(sortDefiProtocolDesc)
+              .map((item, index) => (
+                <RenderProtocolRow
+                  protocol={item}
+                  index={index}
+                  key={item.protocolName}
+                />
+              ))}
+        </CyDScrollView>
+      </>
     </CyDView>
   );
 };
