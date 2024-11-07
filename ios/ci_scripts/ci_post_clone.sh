@@ -3,9 +3,12 @@
 export HOMEBREW_NO_INSTALL_CLEANUP=TRUE
 brew install cocoapods
 # have to add node yourself
-brew install node@16
+brew install node@18
 # link it to the path
-brew link node@16
+brew link node@18
+
+# Clear npm cache
+npm cache clean --force
 
 # Install dependencies you manage with CocoaPods.
 npm install --legacy-peer-deps
