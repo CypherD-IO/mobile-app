@@ -1,24 +1,19 @@
 #!/bin/sh
 
-# export HOMEBREW_NO_INSTALL_CLEANUP=TRUE
-brew isntall node
-cd ../..
-npm install --legacy-peer-deps
-cd ios
-pod install
+export HOMEBREW_NO_INSTALL_CLEANUP=TRUE
 brew install cocoapods
-pod install
 # have to add node yourself
 # brew install node@18
 # link it to the path
-# brew link node@18
+brew link node@18.16.0
 
 # Clear npm cache
-# npm cache clean --force
+npm cache clean --force
 
 # Install dependencies you manage with CocoaPods.
-# rm -rf /Volumes/workspace/DerivedData
-# pod deintegrate
-# pod install --repo-update
+npm install --legacy-peer-deps
+rm -rf /Volumes/workspace/DerivedData
+pod deintegrate
+pod install --repo-update
 # the sed command from RN cant find the file... so we have to run it ourselves
 # sed -i -e  $'s/ && (__IPHONE_OS_VERSION_MIN_REQUIRED < __IPHONE_10_0)//' /Volumes/workspace/repository/ios/Pods/RCT-Folly/folly/portability/Time.h
