@@ -1,6 +1,9 @@
 #!/bin/sh
 
-export HOMEBREW_NO_INSTALL_CLEANUP=TRUE
+echo $GOOGLE_SERVICE_INFO_PLIST | base64 --decode > /Volumes/workspace/repository/ios/GoogleService-Info.plist
+echo "GoogleService-Info.plist file created"
+
+# export HOMEBREW_NO_INSTALL_CLEANUP=TRUE
 brew install cocoapods
 # have to add node yourself
 brew install node@18.16.0
