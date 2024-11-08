@@ -8,7 +8,7 @@ import {
 import { t } from 'i18next';
 import AppImages from '../../../assets/images/appImages';
 import { Platform, StyleSheet, Modal } from 'react-native';
-import SlideToConfirm from './slideToConfirmModal';
+import SlideToConfirmV2 from './slideToConfirmModalV2';
 import useAxios from '../../core/HttpRequest';
 import LottieView from 'lottie-react-native';
 import { useGlobalModalContext } from './GlobalModal';
@@ -37,18 +37,18 @@ export default function ThreeDSecureApprovalModal({
   const seconds = 120;
   const [timer, setTimer] = useState<number | null>(seconds * 1000); // 120 seconds in milliseconds
   const [timerEnd, setTimerEnd] = useState<number | null>(null);
-  const [showCloseButton, setShowCloseButton] = useState(false);
-  const { postWithAuth } = useAxios();
+  const [callDeclineOnClose, setCallDeclineOnClose] = useState(true);
+  const { getWithAuth } = useAxios();
   const [acceptLoading, setAcceptLoading] = useState(false);
   const [declineLoading, setDeclineLoading] = useState(false);
   const { showModal, hideModal } = useGlobalModalContext();
 
   useEffect(() => {
     if (isModalVisible) {
-      const end = Date.now() + seconds * 1000; // 120 seconds from now
+      const end = Date.now() + seconds * 1000;
       setTimerEnd(end);
       setTimer(seconds * 1000);
-      setShowCloseButton(false);
+      setCallDeclineOnClose(true);
     }
   }, [isModalVisible]);
 
@@ -61,7 +61,7 @@ export default function ThreeDSecureApprovalModal({
           clearInterval(interval);
           setTimer(null);
           setTimerEnd(null);
-          setShowCloseButton(true); // Show close button when timer ends
+          setCallDeclineOnClose(false); // call decline on close before timer ends
         } else {
           setTimer(timerEnd ? timerEnd - now : 0);
         }
@@ -77,7 +77,7 @@ export default function ThreeDSecureApprovalModal({
 
   const handleAccept = async () => {
     setAcceptLoading(true);
-    const response = await postWithAuth(data?.approveUrl, {});
+    const response = await getWithAuth(data?.approveUrl);
     setAcceptLoading(false);
     if (!response?.isError) {
       closeModal();
@@ -108,7 +108,7 @@ export default function ThreeDSecureApprovalModal({
 
   const handleDecline = async () => {
     setDeclineLoading(true);
-    const response = await postWithAuth(data?.declineUrl, {});
+    const response = await getWithAuth(data?.declineUrl);
     setDeclineLoading(false);
     if (!response?.isError) {
       closeModal();
@@ -163,17 +163,18 @@ export default function ThreeDSecureApprovalModal({
                   </CyDText>
                 </CyDView>
               )}
-              {showCloseButton && ( // Only show close button after timer ends
-                <CyDTouchView
-                  onPress={() => {
-                    closeModal();
-                  }}>
-                  <CyDImage
-                    source={AppImages.WHITE_CLOSE_ICON}
-                    className='h-[24px] w-[24px]'
-                  />
-                </CyDTouchView>
-              )}
+              <CyDTouchView
+                onPress={() => {
+                  if (callDeclineOnClose) {
+                    void handleDecline();
+                  }
+                  closeModal();
+                }}>
+                <CyDImage
+                  source={AppImages.WHITE_CLOSE_ICON}
+                  className='h-[24px] w-[24px]'
+                />
+              </CyDTouchView>
             </CyDView>
           </CyDView>
           <CyDView className='mt-[50px]'>
@@ -198,47 +199,10 @@ export default function ThreeDSecureApprovalModal({
                   ? data?.merchantName?.substring(0, 24) + '...'
                   : data?.merchantName}
               </CyDText>
-              {Platform.OS === 'ios' ? (
-                <SlideToConfirm
-                  approveUrl={data?.approveUrl}
-                  closeModal={closeModal}
-                />
-              ) : (
-                <CyDView className='flex flex-row gap-[16px] w-full px-[16px]'>
-                  <CyDTouchView
-                    className='flex-1 bg-appColor p-[12px] rounded-[8px] items-center justify-center'
-                    onPress={handleAccept}>
-                    {acceptLoading ? (
-                      <LottieView
-                        source={AppImages.LOADER_TRANSPARENT}
-                        autoPlay
-                        loop
-                        style={{ width: 24, height: 24 }}
-                      />
-                    ) : (
-                      <CyDText className='text-black font-semibold'>
-                        {t('ACCEPT')}
-                      </CyDText>
-                    )}
-                  </CyDTouchView>
-                  <CyDTouchView
-                    className='flex-1 bg-transparent p-[12px] rounded-[8px] border border-red-500 items-center justify-center'
-                    onPress={handleDecline}>
-                    {declineLoading ? (
-                      <LottieView
-                        source={AppImages.LOADER_TRANSPARENT}
-                        autoPlay
-                        loop
-                        style={{ width: 24, height: 24 }}
-                      />
-                    ) : (
-                      <CyDText className='text-red-500 font-semibold'>
-                        {t('DECLINE')}
-                      </CyDText>
-                    )}
-                  </CyDTouchView>
-                </CyDView>
-              )}
+              <SlideToConfirmV2
+                approveUrl={data?.approveUrl}
+                closeModal={closeModal}
+              />
               <CyDImage
                 className='h-[28px] w-[53px] mt-[20px]'
                 source={AppImages.VERIFIED_BY_VISA_WHITE}

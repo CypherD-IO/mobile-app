@@ -2,7 +2,7 @@ import React, { useCallback, useContext, useEffect, useState } from 'react';
 import useInitializer from '../../hooks/useInitializer';
 import { GlobalContext, GlobalContextDef } from '../../core/globalContext';
 import { Linking, Platform } from 'react-native';
-import { requestUserPermission } from '../../core/push';
+import { requestUserPermission, showNotification } from '../../core/push';
 import { GlobalModalType, PinPresentStates } from '../../constants/enum';
 import PinAuthRoute from '../../routes/pinAuthRoute';
 import * as C from '../../../src/constants/index';
@@ -31,6 +31,7 @@ import { HdWalletContextDef } from '../../reducers/hdwallet_reducer';
 import Loading from '../../containers/Loading';
 import firebase from '@react-native-firebase/app';
 import { useGlobalModalContext } from '../v2/GlobalModal';
+import { NotificationEvents } from '../../constants/server';
 
 export const InitializeAppProvider: React.FC<JSX.Element> = ({ children }) => {
   const {
@@ -73,12 +74,18 @@ export const InitializeAppProvider: React.FC<JSX.Element> = ({ children }) => {
 
         void requestUserPermission();
         firebase.messaging().onMessage(response => {
-          setTimeout(() => {
-            showModal(GlobalModalType.THREE_D_SECURE_APPROVAL, {
-              data: response.data,
-              closeModal: hideModal,
-            });
-          }, 1000);
+          if (
+            response.data?.actionKey === NotificationEvents.THREE_DS_APPROVE
+          ) {
+            setTimeout(() => {
+              showModal(GlobalModalType.THREE_D_SECURE_APPROVAL, {
+                data: response.data,
+                closeModal: hideModal,
+              });
+            }, 1000);
+          } else {
+            void showNotification(response.notification);
+          }
         });
 
         setTimeout(() => {
