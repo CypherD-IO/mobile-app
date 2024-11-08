@@ -14,7 +14,7 @@ import clsx from 'clsx';
 import CryptoJS from 'crypto-js';
 import { min, round } from 'lodash';
 import moment from 'moment';
-import { useContext, useEffect, useRef, useState } from 'react';
+import React, { useContext, useEffect, useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import {
   ActivityIndicator,
@@ -59,6 +59,7 @@ import {
   SearchHistoryEntry,
   WebsiteInfo,
 } from '../../types/Browser';
+import Loading from '../../components/v2/loading';
 
 const {
   CText,
@@ -528,6 +529,8 @@ export default function Browser({ route, navigation }: any) {
   const isBookmarkedAlready = (url: string) => {
     return browserFavourites.filter(fav => fav.url === url).length > 0;
   };
+
+  if (fetchingInjection) return <Loading />;
 
   return (
     <CyDSafeAreaView className='bg-white flex-1'>
@@ -1463,18 +1466,17 @@ export default function Browser({ route, navigation }: any) {
           )}
         </DynamicScrollView>
       )}
-      {fetchingInjection ||
-        (loader && inbuildPage === 'webview' && (
-          <DynamicView
-            dynamic
-            dynamicWidth
-            dynamicHeight
-            height={95}
-            width={100}
-            jC='center'>
-            <ActivityIndicator size='large' color={Colors.black} />
-          </DynamicView>
-        ))}
+      {loader && inbuildPage === 'webview' && (
+        <DynamicView
+          dynamic
+          dynamicWidth
+          dynamicHeight
+          height={95}
+          width={100}
+          jC='center'>
+          <ActivityIndicator size='large' color={Colors.black} />
+        </DynamicView>
+      )}
       <CyDView className={clsx('flex-1 pb-[50px]', { 'pb-[75px]': !isIOS() })}>
         <WebView
           key={webviewKey}
