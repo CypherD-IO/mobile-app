@@ -4,9 +4,5 @@ echo $GOOGLE_SERVICE_INFO_PLIST | base64 --decode > /Volumes/workspace/repositor
 echo "GoogleService-Info.plist file created"
 
 # Create sentry.properties file
-cat << EOF > /Volumes/workspace/repository/ios/sentry.properties
-defaults.url=https://sentry.io/
-defaults.org=${SENTRY_ORG}
-defaults.project=${SENTRY_PROJECT}
-auth.token=${SENTRY_TOKEN}
-EOF
+echo $SENTRY_PROPERTIES | base64 --decode > /Volumes/workspace/repository/ios/sentry.properties
+echo "sentry.properties file created"
