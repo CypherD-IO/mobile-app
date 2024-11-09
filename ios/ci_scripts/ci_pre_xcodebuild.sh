@@ -1,5 +1,7 @@
 #!/bin/sh
 
+brew install getsentry/tools/sentry-cli
+
 export SENTRY_AUTH_TOKEN=$SENTRY_AUTH_TOKEN
 sentry-cli upload-dsym --auth-token $SENTRY_AUTH_TOKEN
 
