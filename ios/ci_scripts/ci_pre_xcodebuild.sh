@@ -1,7 +1,5 @@
 #!/bin/bash
 
-# Set working directory
-cd "${CI_WORKSPACE}/ios" || exit 1
 
 # Create required files first
 echo "$GOOGLE_SERVICE_INFO_PLIST" | base64 --decode > GoogleService-Info.plist
