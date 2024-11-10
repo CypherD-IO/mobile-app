@@ -14,9 +14,9 @@ if [ ! -f "sentry.properties" ]; then
     exit 1
 fi
 
-# Install sentry-cli
-HOMEBREW_NO_AUTO_UPDATE=1 brew tap getsentry/tools
-HOMEBREW_NO_AUTO_UPDATE=1 brew install getsentry-cli
+# # Install sentry-cli
+# HOMEBREW_NO_AUTO_UPDATE=1 brew tap getsentry/tools
+# HOMEBREW_NO_AUTO_UPDATE=1 brew install getsentry-cli
 
 # # Wait for dSYM generation
 # sleep 10
