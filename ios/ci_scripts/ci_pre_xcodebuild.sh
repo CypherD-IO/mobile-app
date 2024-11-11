@@ -18,9 +18,3 @@ if [ ! -f "../firebase.json" ]; then
       }
     }' > ../firebase.json
 fi
-
-# Ensure Crashlytics has proper permissions
-chmod +x "${PODS_ROOT}/FirebaseCrashlytics/run"
-chmod +x "${PODS_ROOT}/FirebaseCrashlytics/upload-symbols"
-
-# Rest of your existing script...
