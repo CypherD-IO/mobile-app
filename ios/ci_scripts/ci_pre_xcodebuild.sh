@@ -1,18 +1,18 @@
-#!/bin/bash
+# !/bin/bash
 
 
 # Create required files first
-echo "$GOOGLE_SERVICE_INFO_PLIST" | base64 --decode > GoogleService-Info.plist
-if [ ! -f "GoogleService-Info.plist" ]; then
-    echo "Error: Failed to create GoogleService-Info.plist"
-    exit 1
-fi
+# echo "$GOOGLE_SERVICE_INFO_PLIST" | base64 --decode > GoogleService-Info.plist
+# if [ ! -f "GoogleService-Info.plist" ]; then
+#     echo "Error: Failed to create GoogleService-Info.plist"
+#     exit 1
+# fi
 
-echo "$SENTRY_PROPERTIES" | base64 --decode > sentry.properties
-if [ ! -f "sentry.properties" ]; then
-    echo "Error: Failed to create sentry.properties"
-    exit 1
-fi
+# echo "$SENTRY_PROPERTIES" | base64 --decode > sentry.properties
+# if [ ! -f "sentry.properties" ]; then
+#     echo "Error: Failed to create sentry.properties"
+#     exit 1
+# fi
 
 # # Install sentry-cli
 # HOMEBREW_NO_AUTO_UPDATE=1 brew tap getsentry/tools
