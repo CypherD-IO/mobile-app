@@ -253,6 +253,7 @@ export default function EditLimits() {
                   setDailyUsageLimit(value);
                 }}
                 value={dailyUsageLimit}
+                showValues={true}
               />
             </CyDView>
           </CyDView>
@@ -299,6 +300,7 @@ export default function EditLimits() {
                   setMonthlyUsageLimit(value);
                 }}
                 value={monthlyUsageLimit}
+                showValues={true}
               />
             </CyDView>
           </CyDView>

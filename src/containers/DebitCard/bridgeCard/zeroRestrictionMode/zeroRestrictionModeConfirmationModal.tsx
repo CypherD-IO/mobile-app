@@ -26,27 +26,30 @@ const styles = StyleSheet.create({
 const sliderValueToMinutes = (value: number) => {
   switch (value) {
     case 0:
-      return 15;
-    case 1:
-      return 30;
-    case 2:
-      return 45;
-    case 3:
       return 60;
-    case 4:
-      return 180;
-    case 5:
-      return 360;
-    case 6:
-      return 480;
-    case 7:
+    case 1:
       return 720;
-    case 8:
-      return 960;
-    case 9:
-      return 1200;
-    case 10:
+    case 2:
       return 1440;
+    case 3:
+      return 10080;
+    case 4:
+    default:
+      return value;
+  }
+};
+
+const sliderValueToCustomValues = (value: number) => {
+  switch (value) {
+    case 0:
+      return '1 hour';
+    case 1:
+      return '12 hours';
+    case 2:
+      return '1 day';
+    case 3:
+      return '1 week';
+    case 4:
     default:
       return value;
   }
@@ -141,19 +144,20 @@ export default function ZeroRestrictionModeConfirmationModal(props: {
                     {'Zero restriction will be active for '}
                   </CyDText>
                   <CyDText className='text-[28px] font-bold text-center'>
-                    {sliderValueToMinutes(duration) >= 60
-                      ? `${Math.floor(sliderValueToMinutes(duration) / 60)} Hour`
-                      : `${sliderValueToMinutes(duration)} Minutes`}
+                    {sliderValueToCustomValues(duration)}
                   </CyDText>
                   <CyDView className='my-[24px]'>
                     <GestureHandlerRootView>
                       <Slider
-                        maxValue={10}
-                        steps={10}
+                        maxValue={3}
+                        steps={3}
+                        // minValue={1}
                         onSlidingComplete={(value: number) => {
                           setDuration(value);
                         }}
                         value={duration}
+                        showValues
+                        customValues={['1 hour', '12 hours', '1 day', '1 week']}
                       />
                     </GestureHandlerRootView>
                   </CyDView>

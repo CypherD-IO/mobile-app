@@ -717,6 +717,7 @@ const Bridge: React.FC = () => {
       if (
         selectedFromToken &&
         selectedToToken &&
+        selectedToChain &&
         parseFloat(cryptoAmount) > 0 &&
         !isOdosSwap()
       ) {
@@ -773,10 +774,11 @@ const Bridge: React.FC = () => {
             setQuoteData(null);
             if (
               quoteError?.message.includes('no routes') &&
-              selectedFromToken.symbol.toLowerCase() !== 'usdc'
+              selectedFromToken.symbol.toLowerCase() !== 'usdc' &&
+              selectedToToken.symbol.toLowerCase() !== 'usdc'
             ) {
               setError(
-                `Swap ${selectedFromToken.name} to USDC token and then bridge USDC to ${selectedToToken.name}`,
+                `Swap ${selectedFromToken.name} to USDC token and then bridge to USDC token in ${selectedToChain.chainName}`,
               );
             } else {
               setError(quoteError?.message);
