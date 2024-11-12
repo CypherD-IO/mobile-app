@@ -68,7 +68,6 @@ import {
   bridgeReducer,
 } from './src/reducers/bridge.reducer';
 import { screenTitle } from './src/constants';
-import notifee, { EventType } from '@notifee/react-native';
 import { ThreeDSecureProvider } from './src/components/v2/threeDSecureApprovalModalContext';
 
 const routingInstrumentation = new Sentry.ReactNavigationInstrumentation();
@@ -146,6 +145,10 @@ function App() {
         } else if (url.includes('/card/telegramPinSetup')) {
           setDeepLinkData({
             screenToNavigate: screenTitle.TELEGRAM_PIN_SETUP,
+          });
+        } else if (url.includes('/card/telegramSetup')) {
+          setDeepLinkData({
+            screenToNavigate: screenTitle.TELEGRAM_SETUP,
           });
         }
       }

@@ -388,3 +388,8 @@ export enum CardOperationsAuthType {
   UNBLOCK = 'unblock',
   ZERO_RESTRICTION_MODE_ON = 'god-mode',
 }
+
+export enum JoinDiscordStatus {
+  SUCCESS = 'success',
+  ERROR = 'error',
+}

@@ -677,6 +677,12 @@ const VERIFIED_BY_VISA_WHITE = {
 const WHITE_CLOSE_ICON = {
   uri: `${S3_BUCKET_URL_ICONS}/whiteCloseIcon.png`,
 };
+const CONNENCT_DISCORD_HERO = {
+  uri: `${S3_BUCKET_URL_ICONS}/connectDiscordHero.png`,
+};
+const RED_CROSS_IMG = {
+  uri: `${S3_BUCKET_URL_ICONS}/RedCrossImg.png`,
+};
 
 const AppImages = {
   ZRM_INTRO_1,
@@ -1135,5 +1141,7 @@ const AppImages = {
   CARD_ICON_WHITE,
   VERIFIED_BY_VISA_WHITE,
   WHITE_CLOSE_ICON,
+  CONNENCT_DISCORD_HERO,
+  RED_CROSS_IMG,
 };
 export default AppImages;
