@@ -150,5 +150,9 @@
 	<false/>
 	<key>LSMinimumSystemVersion</key>
 	<string>12.0</string>
+	<key>FirebaseCrashlyticsCollectionEnabled</key>
+	<true/>
+	<key>FirebaseDataCollectionDefaultEnabled</key>
+	<true/>
 </dict>
 </plist>
