@@ -36,8 +36,8 @@ target 'Cypherd' do
   pod 'GoogleUtilities', :modular_headers => true
   pod 'FirebaseCore', :modular_headers => true
 
-  pod 'FirebaseCrashlytics', '~> 10.19.0'
-  pod 'FirebaseAnalytics', '~> 10.19.0'
+  pod 'FirebaseCrashlytics', '~> 8.15.0'
+  pod 'FirebaseAnalytics', '~> 8.15.0'
 
   target 'CypherdTests' do
     inherit! :complete
