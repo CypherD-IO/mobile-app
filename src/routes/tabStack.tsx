@@ -90,10 +90,6 @@ function TabStack(props: TabStackProps) {
           break;
         case screenTitle.TELEGRAM_SETUP:
           tabName = screenTitle.DEBIT_CARD_SCREEN;
-          console.log(
-            'deepLinkData.screenToNavigate : ',
-            deepLinkData.screenToNavigate,
-          );
           navigationParams = {
             screen: deepLinkData.screenToNavigate,
             params: {
@@ -107,12 +103,6 @@ function TabStack(props: TabStackProps) {
           tabName = screenTitle.PORTFOLIO_SCREEN;
       }
       if (tabName) {
-        console.log(
-          'navigationParams : ',
-          navigationParams || {
-            screenToNavigate: deepLinkData.screenToNavigate,
-          },
-        );
         navigationRef.current?.navigate(
           tabName,
           navigationParams || {

@@ -160,7 +160,6 @@ export default function useEthSigner() {
         const receipt = await getTransactionReceipt(response, chainConfig.id);
         return receipt;
       } else {
-        console.log('inside else flow of signApprovalEthereum 2 : ');
         const privateKey = await loadPrivateKeyFromKeyChain(
           false,
           hdWalletContext.state.pinValue,
@@ -322,7 +321,6 @@ export default function useEthSigner() {
         hideModal();
         return hash;
       } else {
-        console.log('inside else flow of signEthTransaction : ');
         const privateKey = await loadPrivateKeyFromKeyChain(
           false,
           hdWalletContext.state.pinValue,

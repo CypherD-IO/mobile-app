@@ -121,7 +121,6 @@ function App() {
   });
 
   const [deepLinkData, setDeepLinkData] = useState(null);
-  const [discordToken, setDiscordToken] = useState<string>('');
 
   let params = {};
   let renderContent: any = {};
@@ -135,7 +134,6 @@ function App() {
     },
     async getInitialURL() {
       const url = await Linking.getInitialURL();
-      console.log('url for deeplinking : ', url);
       if (url != null) {
         if (url.includes('/card/referral/')) {
           const referralCode = url.split('/card/referral/')[1];
@@ -149,13 +147,9 @@ function App() {
             screenToNavigate: screenTitle.TELEGRAM_PIN_SETUP,
           });
         } else if (url.includes('/card/telegramSetup')) {
-          console.log('telegram setup : ', url);
           setDeepLinkData({
             screenToNavigate: screenTitle.TELEGRAM_SETUP,
           });
-        } else if (url.includes('discordToken')) {
-          setDiscordToken(url.split('discordToken=')[1]);
-          console.log('discordToken set in app.tsx : ', discordToken);
         }
       }
       return null;
@@ -297,8 +291,7 @@ function App() {
                           }}>
                           <GlobalModal>
                             <ThreeDSecureProvider>
-                              <InitializeAppProvider
-                                discordToken={discordToken}>
+                              <InitializeAppProvider>
                                 <TabStack
                                   deepLinkData={deepLinkData}
                                   setDeepLinkData={setDeepLinkData}
