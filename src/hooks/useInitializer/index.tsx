@@ -426,6 +426,7 @@ export default function useInitializer() {
       // && ethereum?.privateKey !== _NO_CYPHERD_CREDENTIAL_AVAILABLE_
     ) {
       const isSessionTokenValid = await verifySessionToken();
+      console.log('isSessionTokenValid : ', isSessionTokenValid);
       if (!isSessionTokenValid) {
         const signInResponse = await signIn(
           ethereum,
@@ -469,6 +470,7 @@ export default function useInitializer() {
         const connectionType = await getConnectionType();
         // don't ask for authentication in case of wallet connect
         if (!(connectionType === ConnectionTypes.WALLET_CONNECT)) {
+          console.log('get dummy auth');
           await loadFromKeyChain(DUMMY_AUTH, true, () =>
             setShowDefaultAuthRemoveModal(true),
           );

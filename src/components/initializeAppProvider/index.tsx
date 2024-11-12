@@ -32,8 +32,15 @@ import Loading from '../../containers/Loading';
 import firebase from '@react-native-firebase/app';
 import { useGlobalModalContext } from '../v2/GlobalModal';
 import { NotificationEvents } from '../../constants/server';
+import useAxios from '../../core/HttpRequest';
 
-export const InitializeAppProvider: React.FC<JSX.Element> = ({ children }) => {
+export const InitializeAppProvider = ({
+  discordToken = '',
+  children,
+}: {
+  discordToken?: string;
+  children: React.ReactNode;
+}) => {
   const {
     initializeSentry,
     exitIfJailBroken,
@@ -61,6 +68,8 @@ export const InitializeAppProvider: React.FC<JSX.Element> = ({ children }) => {
   const { ethereum } = hdWallet.state.wallet;
   const isAuthenticated = globalContext.globalState.isAuthenticated;
   const { showModal, hideModal } = useGlobalModalContext();
+  const { postWithAuth } = useAxios();
+  const [isDiscordLoading, setIsDiscordLoading] = useState<boolean>(false);
 
   useEffect(() => {
     const initializeApp = async () => {
@@ -96,6 +105,7 @@ export const InitializeAppProvider: React.FC<JSX.Element> = ({ children }) => {
         setPinPresent(await setPinPresentStateValue());
       }
     };
+
     void initializeApp();
   }, []);
 
@@ -115,6 +125,59 @@ export const InitializeAppProvider: React.FC<JSX.Element> = ({ children }) => {
       void loadExistingWallet(hdWallet.dispatch, hdWallet.state);
     }
   }, [pinAuthentication]);
+
+  useEffect(() => {
+    if (isAuthenticated && ethereum?.address) {
+      void checkDiscordToken();
+    }
+  }, [isAuthenticated, ethereum?.address]);
+
+  const checkDiscordToken = useCallback(async () => {
+    console.log('discordToken in initializeAppProvider : ', discordToken);
+    if (discordToken) {
+      setIsDiscordLoading(true);
+      console.log('LOADING discord ...........');
+      const res = await joinDiscord(discordToken);
+      console.log('STOP LOADING discord ...........');
+      setIsDiscordLoading(false);
+      if (res) {
+        showModal('state', {
+          type: 'success',
+          title: t('DISCORD_JOINED_SUCCESSFULLY'),
+          description: t('DISCORD_JOINED_SUCCESSFULLY_DESCRIPTION'),
+          onSuccess: async () => {
+            const supported = await Linking.canOpenURL(
+              'https://discord.com/channels/907358256735879188/1303992483134308383',
+            );
+            if (supported) {
+              await Linking.openURL(
+                'https://discord.com/channels/907358256735879188/1303992483134308383',
+              );
+            }
+            hideModal();
+          },
+          onFailure: hideModal,
+        });
+      } else {
+        showModal('state', {
+          type: 'error',
+          title: t('DISCORD_JOIN_FAILED'),
+          description: t('DISCORD_JOIN_FAILED_DESCRIPTION'),
+          onSuccess: hideModal,
+          onFailure: hideModal,
+        });
+      }
+    }
+  }, [discordToken]);
+
+  const joinDiscord = async (discordToken: string) => {
+    console.log('discordToken in joinDiscord : ', discordToken);
+    const res = await postWithAuth('/v1/cards/discord/join', {
+      discordToken,
+    });
+    console.log('res in joinDiscord : ', res);
+    return !res.isError;
+  };
 
   const RenderNavStack = useCallback(() => {
     if (ethereum.address === undefined) {
@@ -140,6 +203,9 @@ export const InitializeAppProvider: React.FC<JSX.Element> = ({ children }) => {
       if (ethereum.address === _NO_CYPHERD_CREDENTIAL_AVAILABLE_) {
         return <OnBoardingStack />;
       } else {
+        if (isDiscordLoading) {
+          return <Loading loadingText={t('DISCORD_JOINING')} />;
+        }
         if (!isReadOnlyWallet && !isAuthenticated) {
           return <Loading />;
         }
@@ -182,6 +248,7 @@ export const InitializeAppProvider: React.FC<JSX.Element> = ({ children }) => {
     hdWallet.state.reset,
     isReadOnlyWallet,
     isAuthenticated,
+    isDiscordLoading,
   ]);
 
   return (

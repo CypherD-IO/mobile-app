@@ -196,6 +196,7 @@ export async function loadFromKeyChain(
   showModal = () => {},
 ) {
   try {
+    console.log('loadFromKeyChain : ', key);
     // Retrieve the credentials
     let requestMessage = '';
     switch (key) {
@@ -322,6 +323,10 @@ export async function loadCyRootData(hdWallet: any) {
 
   // Specifically for BUILD 2.48 (remove in subsequent builds)
   if (await isPinAuthenticated()) {
+    console.log(
+      'inside isPinAuthenticated flow : ',
+      await isPinAuthenticated(),
+    );
     const privateKeyFromKeychain = await loadFromKeyChain(CYPHERD_PRIVATE_KEY);
     const privateKeyFromKeychainWithPinAuth = await loadPrivateKeyFromKeyChain(
       false,
@@ -650,12 +655,15 @@ export async function signIn(
   const web3 = new Web3();
   const ARCH_HOST: string = hostWorker.getHost('ARCH_HOST');
   try {
+    console.log('inside signIn flow ethreum address : ', ethereum.address);
     const { data } = await axios.get(
       `${ARCH_HOST}/v1/authentication/sign-message/${ethereum.address}`,
     );
     const verifyMessage = data.message;
+    console.log('666666 verifyMessage : ', verifyMessage);
     const validationResponse = isValidMessage(ethereum.address, verifyMessage);
     if (validationResponse.message === SignMessageValidationType.VALID) {
+      console.log('inside signIn flow : ');
       const privateKey = await loadPrivateKeyFromKeyChain(
         true,
         hdWallet.state.pinValue,

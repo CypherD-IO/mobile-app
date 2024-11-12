@@ -260,6 +260,7 @@ export interface GlobalContextDef {
 export const GlobalContext = React.createContext<GlobalContextDef | null>(null);
 
 export function isTokenValid(token: any) {
+  console.log('!!!!! token : ', token);
   if (token) {
     const jwtInfo = jwt_decode<JwtPayload>(token);
     if (jwtInfo.exp && Date.now() >= jwtInfo.exp * 1000) {

@@ -46,6 +46,7 @@ export default function TelegramSetup() {
   ) as GlobalContextDef;
   const navigation = useNavigation<NavigationProp<ParamListBase>>();
   const route = useRoute<RouteProp<Record<string, RouteParams>, string>>();
+  console.log('route.params : ', route.params);
   const {
     showSetupLaterOption = true,
     navigateTo,

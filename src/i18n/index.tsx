@@ -1401,6 +1401,13 @@ const resources = {
       TRANSACTION_DECLINATION_FAILED_REASON: 'Please contact support',
       TRANSACTION_APPROVED_SUCCESS: 'Transaction Approved Successfully',
       ENABLE_ZERO_RESTRICTION_MODE: 'Enable Zero Restriction Mode',
+      DISCORD_JOIN_FAILED_DESCRIPTION:
+        'Only premium members can join the Discord channel. If you are a premium member, please contact support.',
+      DISCORD_JOIN_FAILED: "Couldn't join Discord",
+      DISCORD_JOINED_SUCCESSFULLY: 'Joined Discord Successfully',
+      DISCORD_JOINED_SUCCESSFULLY_DESCRIPTION:
+        'You have successfully joined the Premium Lounge on Discord 🎉.',
+      DISCORD_JOINING: 'Joining Discord ...',
     },
   },
 };

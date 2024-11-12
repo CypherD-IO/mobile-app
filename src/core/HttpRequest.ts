@@ -37,6 +37,7 @@ export default function useAxios() {
   const { showModal, hideModal } = useGlobalModalContext();
   const ethereum = hdWalletContext.state.wallet.ethereum;
   let token = globalContext.globalState.token;
+  // console.log('::: token ::: ', token);
 
   const response: IHttpResponse = { isError: false };
 
@@ -53,6 +54,7 @@ export default function useAxios() {
 
   axiosInstance.interceptors.request.use(
     async (req: any) => {
+      console.log('isTokenValid : ', isTokenValid(token));
       if (!isTokenValid(token)) {
         try {
           const signInResponse = await signIn(ethereum, hdWalletContext);
