@@ -156,6 +156,7 @@ const CyDPicker: React.FC<PickerProps> = ({
           decelerationRate='fast'
           onScroll={handleScroll}
           scrollEventThrottle={16}
+          nestedScrollEnabled
           bounces={false}
           contentContainerStyle={{
             paddingVertical: PICKER_HEIGHT / 2 - ITEM_HEIGHT / 2,

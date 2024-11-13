@@ -26,9 +26,8 @@ import { useGlobalModalContext } from '../../../components/v2/GlobalModal';
 import CyDModalLayout from '../../../components/v2/modal';
 import { StyleSheet } from 'react-native';
 import Loading from '../../../components/v2/loading';
-
-import Slider from '../../../components/v2/slider';
 import CyDPicker from '../../../components/picker';
+
 interface RouteParams {
   currentCardProvider: CardProviders;
   card: Card;
