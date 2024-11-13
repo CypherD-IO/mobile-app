@@ -13,8 +13,8 @@ import {
 } from '../../../../styles/tailwindStyles';
 import Button from '../../../../components/v2/button';
 import CyDModalLayout from '../../../../components/v2/modal';
-import Slider from '../../../../components/v2/slider';
 import { GestureHandlerRootView } from 'react-native-gesture-handler';
+import CyDPicker from '../../../../components/picker';
 
 const styles = StyleSheet.create({
   modalLayout: {
@@ -22,38 +22,6 @@ const styles = StyleSheet.create({
     justifyContent: 'flex-end',
   },
 });
-
-const sliderValueToMinutes = (value: number) => {
-  switch (value) {
-    case 0:
-      return 60;
-    case 1:
-      return 720;
-    case 2:
-      return 1440;
-    case 3:
-      return 10080;
-    case 4:
-    default:
-      return value;
-  }
-};
-
-const sliderValueToCustomValues = (value: number) => {
-  switch (value) {
-    case 0:
-      return '1 hour';
-    case 1:
-      return '12 hours';
-    case 2:
-      return '1 day';
-    case 3:
-      return '1 week';
-    case 4:
-    default:
-      return value;
-  }
-};
 
 export default function ZeroRestrictionModeConfirmationModal(props: {
   isModalVisible: boolean;
@@ -70,10 +38,10 @@ export default function ZeroRestrictionModeConfirmationModal(props: {
     null,
   );
   const [pageLoader, setPageLoader] = useState(false);
-  const [duration, setDuration] = useState(0);
+  const [duration, setDuration] = useState(720);
 
   const handleProceedClick = async () => {
-    await onPressProceed(sliderValueToMinutes(duration));
+    await onPressProceed(duration);
   };
 
   useEffect(() => {
@@ -90,7 +58,6 @@ export default function ZeroRestrictionModeConfirmationModal(props: {
     };
 
     void checkFirstZrmEnable();
-    setDuration(0);
     setIsChecked(false);
   }, [isModalVisible]);
 
@@ -143,21 +110,20 @@ export default function ZeroRestrictionModeConfirmationModal(props: {
                   <CyDText className='text-[14px] font-normal text-center'>
                     {'Zero restriction will be active for '}
                   </CyDText>
-                  <CyDText className='text-[28px] font-bold text-center'>
-                    {sliderValueToCustomValues(duration)}
-                  </CyDText>
-                  <CyDView className='my-[24px]'>
+                  <CyDView className='mt-[4px]'>
                     <GestureHandlerRootView>
-                      <Slider
-                        maxValue={3}
-                        steps={3}
-                        // minValue={1}
-                        onSlidingComplete={(value: number) => {
-                          setDuration(value);
+                      <CyDPicker
+                        value={[
+                          { label: '30 mins', value: 30 },
+                          { label: '1 hour', value: 60 },
+                          { label: '12 hours', value: 720 },
+                          { label: '1 day', value: 1440 },
+                          { label: '1 week', value: 10080 },
+                        ]}
+                        onChange={selected => {
+                          setDuration(selected.value as number);
                         }}
-                        value={duration}
-                        showValues
-                        customValues={['1 hour', '12 hours', '1 day', '1 week']}
+                        initialValue={duration}
                       />
                     </GestureHandlerRootView>
                   </CyDView>
