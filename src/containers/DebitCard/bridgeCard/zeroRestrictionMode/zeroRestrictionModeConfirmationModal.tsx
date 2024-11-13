@@ -121,7 +121,6 @@ export default function ZeroRestrictionModeConfirmationModal(props: {
                           { label: '1 week', value: 10080 },
                         ]}
                         onChange={selected => {
-                          console.log('🚀 ~ selected:', selected);
                           setDuration(selected.value as number);
                         }}
                         initialValue={duration}
