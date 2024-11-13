@@ -479,53 +479,51 @@ const TxnScene = ({
     );
   }
 
-  if (isLoading) {
-    return (
-      <CyDView className='w-full absolute bottom-[100px]'>
+  return (
+    <>
+      {isLoading ? (
         <Loading />
-      </CyDView>
-    );
-  } else {
-    return (
-      <CyDView className='bg-white flex-1'>
-        <TransactionInfoModal
-          setModalVisible={setShowTransactionInfo}
-          isModalVisible={showTransactionInfo}
-          params={transactionInfoParams}
-          navigationRef={navigation}
-        />
-        <TxnFilterModal
-          navigation={navigation}
-          modalVisibilityState={filterModalVisibilityState}
-          filterState={[filter, setFilter]}
-        />
-        <CyDFlatList
-          data={transaction}
-          scrollEnabled={false}
-          refreshControl={
-            <RefreshControl
-              refreshing={isRefreshing}
-              onRefresh={() => {
-                void onRefresh();
-              }}
-            />
-          }
-          keyExtractor={(item, index) => index.toString()}
-          renderItem={({ item, index }) => {
-            return (
-              <TransactionItem
-                key={index}
-                index={index}
-                activity={item}
-                setTransactionInfoParams={showTransactionDetails}
+      ) : (
+        <CyDView className='bg-white flex-1'>
+          <TransactionInfoModal
+            setModalVisible={setShowTransactionInfo}
+            isModalVisible={showTransactionInfo}
+            params={transactionInfoParams}
+            navigationRef={navigation}
+          />
+          <TxnFilterModal
+            navigation={navigation}
+            modalVisibilityState={filterModalVisibilityState}
+            filterState={[filter, setFilter]}
+          />
+          <CyDFlatList
+            data={transaction}
+            scrollEnabled={false}
+            refreshControl={
+              <RefreshControl
+                refreshing={isRefreshing}
+                onRefresh={() => {
+                  void onRefresh();
+                }}
               />
-            );
-          }}
-          ListEmptyComponent={<NoTxnsFound />}
-        />
-      </CyDView>
-    );
-  }
+            }
+            keyExtractor={(item, index) => index.toString()}
+            renderItem={({ item, index }) => {
+              return (
+                <TransactionItem
+                  key={index}
+                  index={index}
+                  activity={item}
+                  setTransactionInfoParams={showTransactionDetails}
+                />
+              );
+            }}
+            ListEmptyComponent={<NoTxnsFound />}
+          />
+        </CyDView>
+      )}
+    </>
+  );
 };
 
 const NoTxnsFound = () => {
