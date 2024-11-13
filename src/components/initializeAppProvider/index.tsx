@@ -69,7 +69,7 @@ export const InitializeAppProvider = ({
   const { showModal, hideModal } = useGlobalModalContext();
   const [isJoinDiscordModalVisible, setIsJoinDiscordModalVisible] =
     useState<boolean>(false);
-  const { url: initialUrl } = useInitialIntentURL();
+  const { url: initialUrl, updateUrl } = useInitialIntentURL();
   const [discordToken, setDiscordToken] = useState<string>('');
   useEffect(() => {
     const initializeApp = async () => {
@@ -131,6 +131,7 @@ export const InitializeAppProvider = ({
     if (isAuthenticated && ethereum?.address && discordTokenFromUrl) {
       setDiscordToken(discordTokenFromUrl);
       setIsJoinDiscordModalVisible(true);
+      updateUrl('https://app.cypherhq.io');
     }
   }, [isAuthenticated, ethereum?.address, initialUrl]);
 
