@@ -244,15 +244,16 @@ export default function EditLimits() {
               value={`$${dailyUsageLimit}`}
             />
 
-            <CyDView className='mt-[24px] mb-[8px]'>
+            <CyDView className='mt-[4px] mb-[8px]'>
               <Slider
                 minValue={0}
                 maxValue={limitsData?.maxLimit?.d ?? 1000}
-                steps={10}
+                steps={4}
                 onSlidingComplete={value => {
                   setDailyUsageLimit(value);
                 }}
                 value={dailyUsageLimit}
+                showValues={true}
               />
             </CyDView>
           </CyDView>
@@ -290,15 +291,16 @@ export default function EditLimits() {
               value={`$${monthlyUsageLimit}`}
             />
 
-            <CyDView className='mt-[24px] mb-[8px]'>
+            <CyDView className='mt-[4px] mb-[8px]'>
               <Slider
                 minValue={0}
                 maxValue={limitsData?.maxLimit?.m ?? 1000}
-                steps={10}
+                steps={4}
                 onValueChange={value => {
                   setMonthlyUsageLimit(value);
                 }}
                 value={monthlyUsageLimit}
+                showValues={true}
               />
             </CyDView>
           </CyDView>
