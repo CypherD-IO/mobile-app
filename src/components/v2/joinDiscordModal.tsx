@@ -89,7 +89,7 @@ export default function JoinDiscordModal(props: {
       <CyDView className='h-[600px] rounded-t-[24px] mx-[2px] bg-n20 flex flex-col justify-between'>
         <CyDView className='w-full h-full flex flex-col justify-between'>
           <CyDView>
-            <CyDView className='flex flex-row rounded-t-[24px] justify-between p-[16px] mt-[16px]'>
+            <CyDView className='flex flex-row rounded-t-[24px] justify-between p-[16px]'>
               <CyDText className='font-semibold text-[16px]'>
                 {'Connect to Discord'}
               </CyDText>
