@@ -718,6 +718,7 @@ const Bridge: React.FC = () => {
         selectedFromToken &&
         selectedToToken &&
         selectedToChain &&
+        selectedFromChain &&
         parseFloat(cryptoAmount) > 0 &&
         !isOdosSwap()
       ) {
@@ -774,11 +775,27 @@ const Bridge: React.FC = () => {
             setQuoteData(null);
             if (
               quoteError?.message.includes('no routes') &&
+              selectedFromToken.symbol.toLowerCase() === 'usdc' &&
+              selectedToToken.symbol.toLowerCase() !== 'usdc'
+            ) {
+              setError(
+                `Try bridging to USDC token instead of ${selectedToToken.name}`,
+              );
+            } else if (
+              quoteError?.message.includes('no routes') &&
+              selectedToToken.symbol.toLowerCase() === 'usdc' &&
+              selectedFromToken.symbol.toLowerCase() !== 'usdc'
+            ) {
+              setError(
+                `Try bridging from USDC token instead of ${selectedFromToken.name}`,
+              );
+            } else if (
+              quoteError?.message.includes('no routes') &&
               selectedFromToken.symbol.toLowerCase() !== 'usdc' &&
               selectedToToken.symbol.toLowerCase() !== 'usdc'
             ) {
               setError(
-                `Swap ${selectedFromToken.name} to USDC token and then bridge to USDC token in ${selectedToChain.chainName}`,
+                `Try bridging from USDC token in ${selectedFromChain.chainName} to USDC token in ${selectedToChain.chainName}`,
               );
             } else {
               setError(quoteError?.message);
@@ -2217,16 +2234,16 @@ const Bridge: React.FC = () => {
           (!isEmpty(error) ||
             parseFloat(cryptoAmount) > (selectedFromToken?.balance ?? 0)) &&
           !loading.quoteLoading && (
-            <CyDView className=' bg-red-100 rounded-[8px] p-[12px] flex flex-row gap-x-[12px] mx-[16px] mt-[16px] justify-between items-center'>
+            <CyDView className=' bg-red-100 rounded-[8px] p-[12px] flex flex-row mx-[16px] mt-[16px] justify-between items-center'>
               <CyDFastImage
                 source={AppImages.CYPHER_WARNING_RED}
                 className='w-[32px] h-[32px]'
               />
-              <CyDView className='w-[80%]'>
+              <CyDView className='w-[87%]'>
                 {!isEmpty(error) && (
                   <CyDView className='flex flex-row gap-x-[8px]'>
                     <CyDText>{'\u2022'}</CyDText>
-                    <CyDText>{error}</CyDText>
+                    <CyDText className='w-[90%]'>{error}</CyDText>
                   </CyDView>
                 )}
                 {parseFloat(cryptoAmount) >
