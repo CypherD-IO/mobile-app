@@ -1,10 +1,10 @@
 #import "AppDelegate.h"
+#import <Firebase.h>
 
 #import <React/RCTBridge.h>
 #import <React/RCTBundleURLProvider.h>
 #import <React/RCTRootView.h>
 #import <IntercomModule.h>
-#import <Firebase.h>
 #import <RNSplashScreen.h>
 #import <Cypherd-Swift.h>
 #import <UserNotifications/UserNotifications.h>

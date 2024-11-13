@@ -49,11 +49,11 @@
     "@react-native-community/push-notification-ios": "^1.10.1",
     "@react-native-community/slider": "^4.5.5",
     "@react-native-cookies/cookies": "^6.2.1",
-    "@react-native-firebase/analytics": "^14.2.2",
-    "@react-native-firebase/app": "^14.12.0",
-    "@react-native-firebase/crashlytics": "^14.2.2",
-    "@react-native-firebase/messaging": "^14.12.0",
-    "@react-native-firebase/perf": "^14.2.2",
+    "@react-native-firebase/analytics": "^21.4.0",
+    "@react-native-firebase/app": "^21.4.0",
+    "@react-native-firebase/crashlytics": "^21.4.0",
+    "@react-native-firebase/messaging": "^21.4.0",
+    "@react-native-firebase/perf": "^21.4.0",
     "@react-navigation/bottom-tabs": "^6.0.9",
     "@react-navigation/drawer": "^6.1.8",
     "@react-navigation/native": "^6.0.6",
@@ -158,7 +158,7 @@
     "react-native-modal-datetime-picker": "^13.1.2",
     "react-native-os": "^1.2.6",
     "react-native-pager-view": "7.0.0-rc.0",
-    "react-native-permissions": "3.6.0",
+    "react-native-permissions": "^3.8.0",
     "react-native-popup-dialog": "^0.18.3",
     "react-native-progress": "^5.0.1",
     "react-native-push-notification": "^8.1.1",
@@ -304,7 +304,14 @@
     "tls": false,
     "crypto": "react-native-crypto"
   },
+  "resolutions": {
+    "react-native-permissions": "^3.8.0"
+  },
   "overrides": {
-    "secp256k1": "^5.0.1"
-  }
+    "secp256k1": "^5.0.1",
+    "react-native-permissions": "^3.8.0"
+  },
+  "reactNativePermissionsIOS": [
+    "Camera"
+  ]
 }
