@@ -9,7 +9,6 @@ import { SigningModalPayloadFrom } from '../../constants/enum';
 export default function ConfirmationModals() {
   const Cxt = useContext(ModalContext);
 
-  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   const { visible: ccmVisible, payload: ccmPayload } =
     Cxt.state[BrowserModal.ChooseChainModal];
   const { visible: stmVisible, payload: stmPayload } =

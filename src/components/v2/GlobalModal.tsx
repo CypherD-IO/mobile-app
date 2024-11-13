@@ -10,31 +10,46 @@ import CyDModalLayout from './modal';
 import { CyDView } from '../../styles/tailwindStyles';
 import { CustomModalLayoutDef } from '../../models/globalModal.interface';
 import RemoveWalletModal from './removeWalletModal';
+import ThreeDSecureApprovalModal from './threeDSecureApprovalModal';
 
 interface GlobalModalContextInterface {
   showModal: (modalType: string, params: any) => void;
   hideModal: () => void;
   store: any;
 }
-
 const initalState: GlobalModalContextInterface = {
   showModal: () => {},
   hideModal: () => {},
   store: {},
 };
-
 const GlobalModalContext = createContext(initalState);
 export const useGlobalModalContext = () => useContext(GlobalModalContext);
 
 export const GlobalModal: React.FC<any> = ({ children }) => {
   const [store, setStore] = useState<any>();
+  const [isTransitioning, setIsTransitioning] = useState(false);
+
   const showModal = (modalType: string, props: any = {}) => {
-    setStore({ ...props, modalType, isModalVisible: true });
-    Keyboard.dismiss();
+    if (isTransitioning) return;
+
+    if (store?.isModalVisible) {
+      setIsTransitioning(true);
+      setStore(prev => ({ ...prev, isModalVisible: false }));
+
+      setTimeout(() => {
+        setStore({ ...props, modalType, isModalVisible: true });
+        Keyboard.dismiss();
+        setIsTransitioning(false);
+      }, 1000);
+    } else {
+      setStore({ ...props, modalType, isModalVisible: true });
+      Keyboard.dismiss();
+    }
   };
 
   const hideModal = () => {
-    setStore({ ...store, isModalVisible: false });
+    if (isTransitioning) return;
+    setStore(prev => ({ ...prev, isModalVisible: false }));
   };
 
   return (
@@ -62,11 +77,13 @@ export const GlobalModal: React.FC<any> = ({ children }) => {
       {store?.modalType === GlobalModalType.CUSTOM_LAYOUT && (
         <CustomModalLayout {...store} />
       )}
+      {store?.modalType === GlobalModalType.THREE_D_SECURE_APPROVAL && (
+        <ThreeDSecureApprovalModal {...store} />
+      )}
       {children}
     </GlobalModalContext.Provider>
   );
 };
-
 const CustomModalLayout = (store: CustomModalLayoutDef) => {
   return (
     <CyDModalLayout
@@ -83,7 +100,6 @@ const CustomModalLayout = (store: CustomModalLayoutDef) => {
     </CyDModalLayout>
   );
 };
-
 const styles = StyleSheet.create({
   modalLayout: {
     margin: 0,

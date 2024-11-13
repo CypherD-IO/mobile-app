@@ -2,8 +2,8 @@ import React, { useCallback, useContext, useEffect, useState } from 'react';
 import useInitializer from '../../hooks/useInitializer';
 import { GlobalContext, GlobalContextDef } from '../../core/globalContext';
 import { Linking, Platform } from 'react-native';
-import { onMessage, registerForRemoteMessages } from '../../core/push';
-import { PinPresentStates } from '../../constants/enum';
+import { requestUserPermission, showNotification } from '../../core/push';
+import { GlobalModalType, PinPresentStates } from '../../constants/enum';
 import PinAuthRoute from '../../routes/pinAuthRoute';
 import * as C from '../../../src/constants/index';
 import OnBoardingStack from '../../routes/onBoarding';
@@ -29,8 +29,17 @@ import Intercom from '@intercom/intercom-react-native';
 import RNExitApp from 'react-native-exit-app';
 import { HdWalletContextDef } from '../../reducers/hdwallet_reducer';
 import Loading from '../../containers/Loading';
+import firebase from '@react-native-firebase/app';
+import { useGlobalModalContext } from '../v2/GlobalModal';
+import { NotificationEvents } from '../../constants/server';
+import JoinDiscordModal from '../v2/joinDiscordModal';
+import useInitialIntentURL from '../../hooks/useInitialIntentURL';
 
-export const InitializeAppProvider: React.FC<JSX.Element> = ({ children }) => {
+export const InitializeAppProvider = ({
+  children,
+}: {
+  children: React.ReactNode;
+}) => {
   const {
     initializeSentry,
     exitIfJailBroken,
@@ -57,7 +66,11 @@ export const InitializeAppProvider: React.FC<JSX.Element> = ({ children }) => {
   const { isReadOnlyWallet } = hdWallet.state;
   const { ethereum } = hdWallet.state.wallet;
   const isAuthenticated = globalContext.globalState.isAuthenticated;
-
+  const { showModal, hideModal } = useGlobalModalContext();
+  const [isJoinDiscordModalVisible, setIsJoinDiscordModalVisible] =
+    useState<boolean>(false);
+  const { url: initialUrl } = useInitialIntentURL();
+  const [discordToken, setDiscordToken] = useState<string>('');
   useEffect(() => {
     const initializeApp = async () => {
       initializeSentry();
@@ -68,11 +81,21 @@ export const InitializeAppProvider: React.FC<JSX.Element> = ({ children }) => {
         void checkForUpdatesAndShowModal(setUpdateModal);
         void loadActivitiesFromAsyncStorage();
 
-        if (Platform.OS === 'ios') {
-          registerForRemoteMessages();
-        } else {
-          onMessage();
-        }
+        void requestUserPermission();
+        firebase.messaging().onMessage(response => {
+          if (
+            response.data?.actionKey === NotificationEvents.THREE_DS_APPROVE
+          ) {
+            setTimeout(() => {
+              showModal(GlobalModalType.THREE_D_SECURE_APPROVAL, {
+                data: response.data,
+                closeModal: hideModal,
+              });
+            }, 1000);
+          } else {
+            void showNotification(response.notification);
+          }
+        });
 
         setTimeout(() => {
           SplashScreen.hide();
@@ -82,6 +105,7 @@ export const InitializeAppProvider: React.FC<JSX.Element> = ({ children }) => {
         setPinPresent(await setPinPresentStateValue());
       }
     };
+
     void initializeApp();
   }, []);
 
@@ -101,6 +125,14 @@ export const InitializeAppProvider: React.FC<JSX.Element> = ({ children }) => {
       void loadExistingWallet(hdWallet.dispatch, hdWallet.state);
     }
   }, [pinAuthentication]);
+
+  useEffect(() => {
+    const discordTokenFromUrl = initialUrl?.split('discordToken=')[1];
+    if (isAuthenticated && ethereum?.address && discordTokenFromUrl) {
+      setDiscordToken(discordTokenFromUrl);
+      setIsJoinDiscordModalVisible(true);
+    }
+  }, [isAuthenticated, ethereum?.address, initialUrl]);
 
   const RenderNavStack = useCallback(() => {
     if (ethereum.address === undefined) {
@@ -255,6 +287,11 @@ export const InitializeAppProvider: React.FC<JSX.Element> = ({ children }) => {
       </Dialog>
 
       <WalletConnectV2Provider>
+        <JoinDiscordModal
+          isModalVisible={isJoinDiscordModalVisible}
+          setIsModalVisible={setIsJoinDiscordModalVisible}
+          discordToken={discordToken}
+        />
         <DefaultAuthRemoveModal isModalVisible={showDefaultAuthRemoveModal} />
         <RenderNavStack />
       </WalletConnectV2Provider>

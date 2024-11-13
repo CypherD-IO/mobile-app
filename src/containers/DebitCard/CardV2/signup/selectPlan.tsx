@@ -761,7 +761,7 @@ export default function SelectPlan() {
                 onPress={() => {
                   navigation.navigate(screenTitle.SOCIAL_MEDIA_SCREEN, {
                     title: 'Plan Suggestion',
-                    uri: 'https://www.cypherwallet.io/card/#plan-suggestion',
+                    uri: 'https://cypherhq.io/card/#plan-suggestion',
                   });
                 }}>
                 <CyDText className='font-bold text-n100 text-[12px] text-center'>
@@ -886,7 +886,7 @@ export default function SelectPlan() {
                     {`${proPlanData?.physicalCardFee === 0 ? 'FREE' : `$${proPlanData?.usdcFee}`} `}
                   </CyDText>
                   <CyDText className='font-medium text-[14px] ml-[8px] text-wrap'>
-                    {t('METAL_CARD') + '  (offer till 31st Oct)'}
+                    {t('METAL_CARD') + '  (offer till 31st Dec)'}
                   </CyDText>
                 </CyDView>
               </CyDView>

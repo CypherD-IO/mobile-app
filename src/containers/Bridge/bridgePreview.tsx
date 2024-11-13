@@ -261,9 +261,9 @@ export default function BridgeRoutePreview({
                       )}
                     </CyDView>
                     {index !== routeResponse?.chain_ids.length - 1 && (
-                      <Animated.View // Change CyDView to Animated.View
+                      <Animated.View
                         style={{
-                          transform: [{ scale: pulseAnimation }], // Apply pulse animation
+                          transform: [{ scale: pulseAnimation }],
                         }}
                         className={clsx('w-[4px] h-[48px] ', {
                           'bg-neutral-200': !currentState,

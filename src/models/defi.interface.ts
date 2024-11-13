@@ -1,4 +1,4 @@
-import { ChainBackendNames } from "../constants/server";
+import { ChainBackendNames } from '../constants/server';
 
 export type DeFiPositionTypes =
   | 'liqudity'
@@ -137,7 +137,7 @@ export interface holdingsData extends Position {
 export interface PositionTypeData {
   value: DeFiPositionTypes;
   type: string;
-  typeLogo: {uri:string};
+  typeLogo: { uri: string };
   total: {
     value: number;
     debt: number;
@@ -150,7 +150,7 @@ export interface defiProtocolData {
   chains: ChainBackendNames[];
   protocolName: string;
   protocolURL: string;
-  protocolLogo: {uri:string};
+  protocolLogo: { uri: string };
   total: {
     supply: number;
     debt: number;
@@ -183,7 +183,7 @@ export interface DeFiFilter {
 }
 
 export interface protocolOptionType {
-  logo: {uri:string};
+  logo: { uri: string };
   label: string;
   value: string;
 }
@@ -202,19 +202,19 @@ export interface DefiAllocation {
   name: string;
   balance: number;
   value: number;
-  logo: {uri:string};
+  logo: { uri: string };
   length?: number;
   chainLogo?: string;
 }
 
 export interface DeFiContextDef {
-    state: {
-        iat: string;
-        filteredData: DefiData;
-        chainAllocation: DefiAllocation[];
-        typeAllocation: DefiAllocation[];
-      },
-    dispatch: any,
+  state: {
+    iat: string;
+    filteredData: DefiData;
+    chainAllocation: DefiAllocation[];
+    typeAllocation: DefiAllocation[];
+  };
+  dispatch: any;
 }
 // export interface DeFiRefreshFilterBar {
 

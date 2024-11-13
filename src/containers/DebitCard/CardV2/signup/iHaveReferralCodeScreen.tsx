@@ -1,5 +1,26 @@
-import React, { useState, useEffect } from 'react';
-import { SafeAreaView, ScrollView, StatusBar, TextInput } from 'react-native';
+import {
+  NavigationProp,
+  ParamListBase,
+  RouteProp,
+  useIsFocused,
+  useNavigation,
+  useRoute,
+} from '@react-navigation/native';
+import { t } from 'i18next';
+import { isEmpty } from 'lodash';
+import { useEffect, useState } from 'react';
+import { SafeAreaView, StatusBar, StyleSheet } from 'react-native';
+import AppImages from '../../../../../assets/images/appImages';
+import Button from '../../../../components/v2/button';
+import { useGlobalModalContext } from '../../../../components/v2/GlobalModal';
+import HowReferralWorksModal from '../../../../components/v2/howReferralWorksModal';
+import { screenTitle } from '../../../../constants';
+import { ButtonType } from '../../../../constants/enum';
+import {
+  getReferralCode,
+  setReferralCodeAsync,
+} from '../../../../core/asyncStorage';
+import useAxios from '../../../../core/HttpRequest';
 import {
   CyDImage,
   CyDText,
@@ -7,27 +28,22 @@ import {
   CyDTouchView,
   CyDView,
 } from '../../../../styles/tailwindStyles';
-import AppImages from '../../../../../assets/images/appImages';
-import { t } from 'i18next';
-import Button from '../../../../components/v2/button';
-import { ButtonType } from '../../../../constants/enum';
-import HowReferralWorksModal from '../../../../components/v2/howReferralWorksModal';
-import useAxios from '../../../../core/HttpRequest';
-import { screenTitle } from '../../../../constants';
-import { useGlobalModalContext } from '../../../../components/v2/GlobalModal';
-import {
-  getReferralCode,
-  setReferralCodeAsync,
-} from '../../../../core/asyncStorage';
-import { isEmpty } from 'lodash';
-import { useIsFocused } from '@react-navigation/native';
+interface RouteParams {
+  deductAmountNow?: boolean;
+  toPage?: string;
+  cardBalance?: number;
+}
 
-const IHaveReferralCodeScreen = ({ navigation, route }) => {
+const IHaveReferralCodeScreen = () => {
+  const navigation = useNavigation<NavigationProp<ParamListBase>>();
+  const route = useRoute<RouteProp<{ params: RouteParams }, 'params'>>();
+
   const {
     deductAmountNow = false,
     toPage = '',
     cardBalance = 0,
   } = route.params ?? {};
+
   const [referralCode, setReferralCode] = useState('');
   const [isModalVisible, setIsModalVisible] = useState(false);
   const [loading, setLoading] = useState(false);
@@ -138,7 +154,7 @@ const IHaveReferralCodeScreen = ({ navigation, route }) => {
                   void onSubmitInviteCode();
                 }}
                 disabled={isEmpty(referralCode)}
-                loaderStyle={{ height: 22, width: 22 }}
+                loaderStyle={styles.loaderStyle}
                 loading={loading}
                 type={ButtonType.WHITE_FILL}
                 style='px-[25px] py-[12px]'
@@ -160,8 +176,9 @@ const IHaveReferralCodeScreen = ({ navigation, route }) => {
                   Earn 50 Instant Reward Points
                 </CyDText>
                 <CyDText className='text-[12px] text-n200 mt-[4px]'>
-                  Enter referral code above, and you'll earn instant 50 reward
-                  points!
+                  {
+                    "Enter referral code above, and you'll earn instant 50 reward points!"
+                  }
                 </CyDText>
               </CyDView>
             </CyDView>
@@ -186,7 +203,7 @@ const IHaveReferralCodeScreen = ({ navigation, route }) => {
               }}
               disabled={isEmpty(referralCode)}
               loading={loading}
-              loaderStyle={{ height: 22, width: 22 }}
+              loaderStyle={styles.loaderStyle}
               style='mt-[24px] p-[16px] mb-[42px] w-full'
               titleStyle='text-[16px] font-bold'
             />
@@ -197,5 +214,12 @@ const IHaveReferralCodeScreen = ({ navigation, route }) => {
     </SafeAreaView>
   );
 };
+
+const styles = StyleSheet.create({
+  loaderStyle: {
+    height: 22,
+    width: 22,
+  },
+});
 
 export default IHaveReferralCodeScreen;

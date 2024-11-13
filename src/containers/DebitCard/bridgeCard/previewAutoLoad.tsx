@@ -7,7 +7,7 @@ import { CardProviders } from '../../../constants/enum';
 import { AutoLoad } from '../../../models/autoLoad.interface';
 import moment from 'moment';
 import useTransactionManager from '../../../hooks/useTransactionManager';
-import { HdWalletContext } from '../../../core/util';
+import { HdWalletContext, limitDecimalPlaces } from '../../../core/util';
 import { get } from 'lodash';
 import { COSMOS_CHAINS } from '../../../constants/server';
 import { useGlobalModalContext } from '../../../components/v2/GlobalModal';
@@ -22,6 +22,7 @@ import {
   useNavigation,
   useRoute,
 } from '@react-navigation/native';
+import { ethers } from 'ethers';
 
 export default function PreviewAutoLoad() {
   const navigation = useNavigation<NavigationProp<ParamListBase>>();
@@ -56,19 +57,24 @@ export default function PreviewAutoLoad() {
     setLoading(true);
     const chain = selectedToken.chainDetails;
     const response = await getWithAuth(
-      `/v1/cards/autoLoad/${chain.backendName}/grantee`,
+      `/v1/cards/${provider}/autoLoad/${chain.backendName}/grantee`,
     );
     if (!response.isError) {
       const granter = get(hdWallet.state.wallet, chain.chainName).address;
+      const amountWithContractDecimals = ethers.parseUnits(
+        limitDecimalPlaces(
+          (Number(amountToLoad) * Number(repeatFor)) /
+            Number(selectedToken.price),
+          selectedToken.contractDecimals,
+        ),
+        selectedToken.contractDecimals,
+      );
       const grantResponse = await grantAutoLoad({
         chain,
         granter,
         grantee: response.data.granteeAddress,
         allowList: response.data.allowList,
-        amount: String(
-          (Number(amountToLoad) * Number(repeatFor)) /
-            Number(selectedToken.price),
-        ),
+        amount: String(amountWithContractDecimals),
         denom: String(selectedToken.denom),
         expiry: expiryDate,
         selectedToken,

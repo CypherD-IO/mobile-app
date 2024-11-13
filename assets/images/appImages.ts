@@ -314,6 +314,9 @@ const CARD_ONBOARDING_2 = require('./cardOnBoarding2.png');
 const CARD_ONBOARDING_3 = require('./cardOnBoarding3.png');
 const CARD_ONBOARDING_4 = require('./cardOnBoarding4.png');
 const BACK_ARROW_GRAY = require('./backArrowGray.png');
+const SLIDER_KNOB = require('./sliderKnob.png');
+const ZRM_INTRO_1 = require('./zrmImage1.png');
+const ZRM_INTRO_2 = require('./zrmImage2.png');
 const REWARDS_ICON = { uri: `${S3_BUCKET_URL_ICONS}/rewardsIcon.png` };
 // const CARD_ONBOARDING_VIDEO = require('./cardOnBaordingVideo.mp4');
 
@@ -665,8 +668,26 @@ const RC_PHYSICAL_METAL = require('./cypherMetalCard.png');
 const LOCKED_ICON_BLACK = {
   uri: `${S3_BUCKET_URL_ICONS}/lockedIconBlack.png`,
 };
+const CARD_ICON_WHITE = {
+  uri: `${S3_BUCKET_URL_ICONS}/cardIconWhite.png`,
+};
+const VERIFIED_BY_VISA_WHITE = {
+  uri: `${S3_BUCKET_URL_ICONS}/verifiedByVisaWhite.png`,
+};
+const WHITE_CLOSE_ICON = {
+  uri: `${S3_BUCKET_URL_ICONS}/whiteCloseIcon.png`,
+};
+const CONNENCT_DISCORD_HERO = {
+  uri: `${S3_BUCKET_URL_ICONS}/connectDiscordHero.png`,
+};
+const RED_CROSS_IMG = {
+  uri: `${S3_BUCKET_URL_ICONS}/RedCrossImg.png`,
+};
 
 const AppImages = {
+  ZRM_INTRO_1,
+  ZRM_INTRO_2,
+  SLIDER_KNOB,
   KYC_VERIFICATION_FAILED,
   KYC_VERIFICATION_DELAYED,
   KYC_VERIFICATION_PENDING,
@@ -1117,5 +1138,10 @@ const AppImages = {
   PREMIUM_LABEL,
   RC_PHYSICAL_METAL,
   LOCKED_ICON_BLACK,
+  CARD_ICON_WHITE,
+  VERIFIED_BY_VISA_WHITE,
+  WHITE_CLOSE_ICON,
+  CONNENCT_DISCORD_HERO,
+  RED_CROSS_IMG,
 };
 export default AppImages;

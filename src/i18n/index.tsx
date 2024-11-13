@@ -1106,6 +1106,8 @@ const resources = {
       MOBILE_WALLETS: 'Mobile Wallets',
       BRIDGE_TITLE: 'Bridge',
       SETUP_TELEGRAM: 'Setup Telegram',
+      SETUP_TELEGRAM_BOT: 'Set up Telegram Bot',
+      CONNECT_TO_TELEGRAM: 'Connect to telegram',
       CONFIGURE_TELEGRAM: 'Configure Telegram',
       APPLY_NOW: 'APPLY NOW',
       BIRDGE_SWAP_AVAILABLE:
@@ -1388,6 +1390,24 @@ const resources = {
         'Limitations around crypto withdrawal',
       NEW_PIN: 'New PIN',
       CONFIRM_PIN_TELEGRAM: 'Confirm PIN',
+      SET_USAGE_LIMIT: 'Set Usage Limit',
+      CYPHER_CARD: 'Cypher Card',
+      PAYMENT_VERIFICATION: 'Payment Verification',
+      TRANSACTION_APPROVAL_FAILED: 'Transaction Approval Failed',
+      TRANSACTION_APPROVAL_FAILED_REASON_NA:
+        'Incase of repeated declines, please contact support',
+      TRANSACTION_DECLINED: 'Transaction Declined Successfully',
+      TRANSACTION_DECLINE_FAILED: 'Transaction Decline Failed',
+      TRANSACTION_DECLINATION_FAILED_REASON: 'Please contact support',
+      TRANSACTION_APPROVED_SUCCESS: 'Transaction Approved Successfully',
+      ENABLE_ZERO_RESTRICTION_MODE: 'Enable Zero Restriction Mode',
+      DISCORD_JOIN_FAILED_DESCRIPTION:
+        'Only premium members can join the Discord channel. If you are a premium member, please contact support.',
+      DISCORD_JOIN_FAILED: "Couldn't join Discord",
+      DISCORD_JOINED_SUCCESSFULLY: 'Joined Discord Successfully',
+      DISCORD_JOINED_SUCCESSFULLY_DESCRIPTION:
+        'You have successfully joined the Premium Lounge on Discord 🎉.',
+      DISCORD_JOINING: 'Joining Discord ...',
     },
   },
 };

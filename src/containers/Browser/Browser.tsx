@@ -10,6 +10,9 @@ import analytics from '@react-native-firebase/analytics';
 import { useIsFocused } from '@react-navigation/native';
 import * as Sentry from '@sentry/react-native';
 import axios from 'axios';
+import clsx from 'clsx';
+import CryptoJS from 'crypto-js';
+import { min, round } from 'lodash';
 import moment from 'moment';
 import React, { useContext, useEffect, useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
@@ -28,21 +31,27 @@ import {
   WHERE_BROWSER,
 } from '../../components/ChooseChainModal';
 import MoreViewModal from '../../components/MoreViewModal';
-import { INJECTED_WEB3_CDN } from '../../constants/data';
-import { Web3Origin } from '../../constants/enum';
 import { useGlobalModalContext } from '../../components/v2/GlobalModal';
+import { gasFeeReservation, INJECTED_WEB3_CDN } from '../../constants/data';
+import { Web3Origin } from '../../constants/enum';
 import * as C from '../../constants/index';
+import { screenTitle } from '../../constants/index';
 import {
-  CHAIN_ETH,
-  PURE_COSMOS_CHAINS,
   Chain,
+  CHAIN_ETH,
   ChainBackendNames,
+  PURE_COSMOS_CHAINS,
 } from '../../constants/server';
 import { Colors } from '../../constants/theme';
+import { MODAL_SHOW_TIMEOUT } from '../../constants/timeOuts';
 import { CommunicationEvents } from '../../constants/web3';
 import { showToast } from '../../containers/utilities/toastUtility';
+import useAxios from '../../core/HttpRequest';
 import { HdWalletContext } from '../../core/util';
+import usePortfolio from '../../hooks/usePortfolio';
 import useWeb3 from '../../hooks/useWeb3';
+import { isIOS } from '../../misc/checkers';
+import { CyDSafeAreaView, CyDText, CyDView } from '../../styles/tailwindStyles';
 import { DynamicScrollView } from '../../styles/viewStyle';
 import {
   BrowserHistoryEntry,
@@ -50,14 +59,7 @@ import {
   SearchHistoryEntry,
   WebsiteInfo,
 } from '../../types/Browser';
-import { MODAL_SHOW_TIMEOUT } from '../../constants/timeOuts';
-import CryptoJS from 'crypto-js';
-import useAxios from '../../core/HttpRequest';
-import { screenTitle } from '../../constants/index';
-import { CyDSafeAreaView, CyDText, CyDView } from '../../styles/tailwindStyles';
-import clsx from 'clsx';
-import { isIOS } from '../../misc/checkers';
-import usePortfolio from '../../hooks/usePortfolio';
+import Loading from '../../components/v2/loading';
 
 const {
   CText,
@@ -95,6 +97,7 @@ export default function Browser({ route, navigation }: any) {
   const [moreView, setMoreview] = useState<boolean>(false);
   const [onFocus, setFocus] = useState<boolean>(false);
   const [loader, setLoader] = useState<boolean>(false);
+  const [fetchingInjection, setFetchingInjection] = useState<boolean>(false);
   const [inputText, setInputText] = useState('');
   const [canGoBack, setCanGoBack] = useState<boolean>(false);
   const [canGoForward, setCanGoForward] = useState<boolean>(false);
@@ -124,10 +127,7 @@ export default function Browser({ route, navigation }: any) {
   const [browserError, setBrowserError] = useState('');
   const [isSslSecure, setIsSslSecure] = useState(true);
 
-  let homePageUrl = 'https://www.cypherwallet.io/';
-  if (Platform.OS === 'ios') {
-    homePageUrl = 'https://www.cypherwallet.io/';
-  }
+  const homePageUrl = 'https://cypherhq.io';
   const [search, setSearch] = useState(homePageUrl);
   const webviewRef = useRef<any>(null);
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
@@ -319,7 +319,13 @@ export default function Browser({ route, navigation }: any) {
     const nativeToken = await getNativeToken(
       selectedChain.backendName as ChainBackendNames,
     );
-    if (nativeToken?.actualBalance && websiteInfo.url !== '') {
+    const isGasEnough =
+      round(
+        nativeToken?.actualBalance -
+          gasFeeReservation[selectedChain.backendName],
+        min([10, nativeToken.contractDecimals]),
+      ) > 0;
+    if (!isGasEnough && websiteInfo.url !== '') {
       setTimeout(() => {
         showModal('state', {
           type: 'error',
@@ -334,6 +340,7 @@ export default function Browser({ route, navigation }: any) {
 
   const injectWeb3FromCDN = async () => {
     try {
+      setFetchingInjection(true);
       const response = await axios.get(INJECTED_WEB3_CDN);
       const hash = CryptoJS.SHA256(response.data);
       const hashForInjectedWeb3 = hash.toString(CryptoJS.enc.Hex);
@@ -345,6 +352,8 @@ export default function Browser({ route, navigation }: any) {
           setInjectedCode(response.data);
         }
       }
+
+      setFetchingInjection(false);
     } catch (e) {
       Sentry.captureException(e);
     }
@@ -464,8 +473,6 @@ export default function Browser({ route, navigation }: any) {
     }
   };
 
-  const onHome = () => {};
-
   const deleteHistory = (item: BrowserHistoryEntry) => {
     const history = browserHistory.filter(h => h !== item);
     if (history.length === 0) {
@@ -522,6 +529,8 @@ export default function Browser({ route, navigation }: any) {
   const isBookmarkedAlready = (url: string) => {
     return browserFavourites.filter(fav => fav.url === url).length > 0;
   };
+
+  if (fetchingInjection) return <Loading />;
 
   return (
     <CyDSafeAreaView className='bg-white flex-1'>
@@ -1471,6 +1480,7 @@ export default function Browser({ route, navigation }: any) {
       <CyDView className={clsx('flex-1 pb-[50px]', { 'pb-[75px]': !isIOS() })}>
         <WebView
           key={webviewKey}
+          webviewDebuggingEnabled={true}
           source={{ uri: search }}
           ref={webviewRef}
           startInLoadingState

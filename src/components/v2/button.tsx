@@ -35,7 +35,7 @@ export default function Button({
   title,
   style = 'p-[3%]',
   titleStyle = 'text-[16px]',
-  loaderStyle = { height: 40 },
+  loaderStyle = { height: 22 },
   image,
   isLottie = false,
   imageStyle = 'h-[20px] w-[20px] mt-[1px] mr-[10px]',

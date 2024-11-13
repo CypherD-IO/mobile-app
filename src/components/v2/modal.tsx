@@ -2,6 +2,8 @@ import * as React from 'react';
 import { StyleProp, ViewStyle } from 'react-native';
 import Modal from 'react-native-modal';
 import * as animatable from 'react-native-animatable';
+import { useGlobalModalContext } from './GlobalModal';
+import { GlobalModalType } from '../../constants/enum';
 
 interface CyDModalLayoutProps {
   isModalVisible: boolean;
@@ -12,6 +14,10 @@ interface CyDModalLayoutProps {
   children: React.ReactNode;
   disableBackDropPress?: boolean;
   style?: StyleProp<ViewStyle>;
+  backdropOpacity?: number;
+  backdropTransitionInTiming?: number;
+  backdropTransitionOutTiming?: number;
+  hideModalContentWhileAnimating?: boolean;
   animationIn?:
     | 'bounce'
     | 'flash'
@@ -152,6 +158,8 @@ interface CyDModalLayoutProps {
   animationOutTiming?: number;
   avoidKeyboard?: boolean;
   onModalHide?: () => void;
+  useNativeDriver?: boolean;
+  propagateSwipe?: boolean;
 }
 
 export default function CyDModalLayout({
@@ -166,7 +174,25 @@ export default function CyDModalLayout({
   animationOutTiming = 200,
   avoidKeyboard = false,
   onModalHide = () => {},
+  backdropOpacity = 0.85,
+  backdropTransitionInTiming = 300,
+  backdropTransitionOutTiming = 300,
+  hideModalContentWhileAnimating = true,
+  useNativeDriver = true,
+  propagateSwipe = true,
 }: CyDModalLayoutProps) {
+  const { store } = useGlobalModalContext();
+
+  React.useEffect(() => {
+    // Automatically hide this modal if ThreeDSecureApprovalModal is shown,
+    if (
+      store?.modalType === GlobalModalType.THREE_D_SECURE_APPROVAL &&
+      isModalVisible
+    ) {
+      setModalVisible(false);
+    }
+  }, [store]);
+
   return (
     <Modal
       avoidKeyboard={avoidKeyboard}
@@ -178,15 +204,17 @@ export default function CyDModalLayout({
         setModalVisible(false);
       }}
       backdropColor={'#000000'}
-      propagateSwipe={true}
-      avoiKeyboardLikeIOS={true}
-      keyboardAvoidingBehavior='height'
-      backdropOpacity={0.85}
+      propagateSwipe={propagateSwipe}
+      backdropOpacity={backdropOpacity}
+      backdropTransitionInTiming={backdropTransitionInTiming}
+      backdropTransitionOutTiming={backdropTransitionOutTiming}
+      hideModalContentWhileAnimating={hideModalContentWhileAnimating}
       animationIn={!animationIn ? 'zoomIn' : animationIn}
       animationOut={!animationOut ? 'zoomOut' : animationOut}
       animationInTiming={animationInTiming}
       animationOutTiming={animationOutTiming}
       onModalHide={onModalHide}
+      useNativeDriver={useNativeDriver}
       style={style}>
       {children}
     </Modal>

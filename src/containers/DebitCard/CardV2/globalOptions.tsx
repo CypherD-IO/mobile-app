@@ -156,6 +156,7 @@ export default function GlobalOptions() {
               navigation.navigate(screenTitle.TELEGRAM_SETUP, {
                 navigateTo: screenTitle.TELEGRAM_PIN_SETUP,
                 showSetupLaterOption: false,
+                enableBackButton: true,
               });
             },
           },
@@ -196,7 +197,7 @@ export default function GlobalOptions() {
       action: () => {
         navigation.navigate(screenTitle.SOCIAL_MEDIA_SCREEN, {
           title: 'Card FAQ',
-          uri: 'https://www.cypherwallet.io/card#faq',
+          uri: 'https://cypherhq.io/card#faq',
         });
       },
     },

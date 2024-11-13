@@ -15,7 +15,7 @@ import countryMaster from '../../../../assets/datasets/countryMaster';
 import AppImages from '../../../../assets/images/appImages';
 import { useGlobalModalContext } from '../../../components/v2/GlobalModal';
 import ThreeDSecureOptionModal from '../../../components/v2/threeDSecureOptionModal';
-import ZeroRestrictionModeConfirmationModal from '../../../components/v2/zeroRestrictionModeConfirmationModal';
+import ZeroRestrictionModeConfirmationModal from './zeroRestrictionMode/zeroRestrictionModeConfirmationModal';
 import { screenTitle } from '../../../constants';
 import {
   CARD_LIMIT_TYPE,
@@ -38,6 +38,8 @@ import { Card } from '../../../models/card.model';
 import AsyncStorage from '@react-native-async-storage/async-storage'; // Add this import
 import { CYPHER_PLAN_ID_NAME_MAPPING } from '../../../constants/data';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
+import { ICountry } from '../../../models/cardApplication.model';
+import { t } from 'i18next';
 
 interface RouteParams {
   card: Card;
@@ -67,7 +69,7 @@ export default function CardControlsMenu() {
     get(card, 'is3dsEnabled', false),
   );
   const [show3DsModal, setShow3DsModal] = useState(false);
-  const [domesticCountry, setDomesticCountry] = useState({});
+  const [domesticCountry, setDomesticCountry] = useState<ICountry>({});
   const [isZeroRestrictionModeEnabled, setIsZeroRestrictionModeEnabled] =
     useState(false);
   const [isZeroRestrictionModeLoading, setIsZeroRestrictionModeLoading] =
@@ -78,6 +80,7 @@ export default function CardControlsMenu() {
   const [timer, setTimer] = useState<number | null>(null);
   const [timerEnd, setTimerEnd] = useState<number | null>(null);
   const [cardBalance, setCardBalance] = useState('');
+  // const [godmExpiryInMinutes, setGodmExpiryInMinutes] = useState(0);
 
   useEffect(() => {
     if (isZeroRestrictionModeEnabled) {
@@ -142,20 +145,19 @@ export default function CardControlsMenu() {
 
   useEffect(() => {
     const loadTimer = async () => {
-      const storedTimerEnd = await AsyncStorage.getItem('timerEnd');
-      if (storedTimerEnd) {
-        const end = parseInt(storedTimerEnd, 10);
+      const limitValue = limits;
+      const end = get(limitValue, 'godmExpiry', null);
+      if (end) {
         const now = Date.now();
-        if (end > now) {
-          setTimerEnd(end);
-          setTimer(Math.max(0, end - now));
-        } else {
-          await AsyncStorage.removeItem('timerEnd');
+        const endTime = end * 1000;
+        if (endTime > now) {
+          setTimerEnd(endTime);
+          setTimer(Math.max(0, endTime - now));
         }
       }
     };
     void loadTimer();
-  }, []);
+  }, [limits]);
 
   useEffect(() => {
     let interval: NodeJS.Timeout;
@@ -166,7 +168,6 @@ export default function CardControlsMenu() {
           clearInterval(interval);
           setTimer(null);
           setTimerEnd(null);
-          void AsyncStorage.removeItem('timerEnd');
         } else {
           setTimer(timerEnd ? timerEnd - now : 0);
         }
@@ -181,16 +182,14 @@ export default function CardControlsMenu() {
     }
   }, [timer, timerEnd]);
 
-  const startTimer = async () => {
-    const end = Date.now() + 15 * 60 * 1000; // 15 minutes from now
-    await AsyncStorage.setItem('timerEnd', end.toString());
-    setTimerEnd(end);
-    setTimer(15 * 60 * 1000); // 15 minutes in milliseconds
-  };
-
   const formatTime = (milliseconds: number) => {
-    const minutes = Math.floor(milliseconds / 60000);
+    const hours = Math.floor(milliseconds / 3600000);
+    const minutes = Math.floor((milliseconds % 3600000) / 60000);
     const seconds = Math.floor((milliseconds % 60000) / 1000);
+
+    if (hours > 0 || minutes > 59) {
+      return `${hours.toString().padStart(2, '0')}:${minutes.toString().padStart(2, '0')}`;
+    }
     return `${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}`;
   };
 
@@ -207,13 +206,16 @@ export default function CardControlsMenu() {
       title: `Success, Zero Restriction Mode ${isZeroRestrictionModeEnabled ? 'Disabled' : 'Enabled'}!`,
       description: isZeroRestrictionModeEnabled
         ? 'Zero Restriction Mode has been disabled'
-        : 'Zero Restriction Mode will be enbled for 15 mins.',
+        : 'Zero Restriction Mode will has been enabled.',
       onSuccess: hideModal,
       onFailure: hideModal,
     });
   };
 
-  const toggleZeroRestrictionMode = async (value: boolean) => {
+  const toggleZeroRestrictionMode = async (
+    value: boolean,
+    godmExpiryInMinutes?: number,
+  ) => {
     setIsZeroRestrictionModeLoading(true);
     const payload = {
       godm: value,
@@ -221,12 +223,12 @@ export default function CardControlsMenu() {
     if (value) {
       navigation.navigate(screenTitle.CARD_UNLOCK_AUTH, {
         onSuccess: () => {
-          void startTimer();
           void successFeedBack();
         },
         currentCardProvider,
         card,
         authType: CardOperationsAuthType.ZERO_RESTRICTION_MODE_ON,
+        godmExpiryInMinutes,
       });
     } else {
       const response = await patchWithAuth(
@@ -279,10 +281,10 @@ export default function CardControlsMenu() {
       <ZeroRestrictionModeConfirmationModal
         isModalVisible={showZeroRestrictionModeModal}
         setIsModalVisible={setShowZeroRestrictionModeModal}
-        onPressProceed={() => {
+        onPressProceed={(godmExpiryInMinutes: number) => {
           setIsZeroRestrictionModeLoading(true);
           setShowZeroRestrictionModeModal(false);
-          void toggleZeroRestrictionMode(true);
+          void toggleZeroRestrictionMode(true, godmExpiryInMinutes);
         }}
         setLoader={setIsZeroRestrictionModeLoading}
       />
@@ -306,54 +308,72 @@ export default function CardControlsMenu() {
           <ScrollView className='bg-n20'>
             <CyDView className='mx-[16px] mt-[16px] mb-[24px]'>
               <CyDView className='bg-p10 rounded-[16px] border-[1px] border-n20'>
-                <CyDView className='p-[12px] rounded-[10px] bg-n0 relative'>
-                  {planInfo?.planId === CypherPlanId.BASIC_PLAN && (
-                    <CyDText className='font-bold text-[18px] text-base400'>
-                      {get(
-                        CYPHER_PLAN_ID_NAME_MAPPING,
-                        planInfo?.planId ?? CypherPlanId.BASIC_PLAN,
-                      )}
-                    </CyDText>
-                  )}
-                  {planInfo?.planId === CypherPlanId.PRO_PLAN && (
-                    <CyDView className='flex flex-row items-center'>
-                      <CyDFastImage
-                        className='h-[14px] w-[81px]'
-                        source={AppImages.PREMIUM_TEXT_GRADIENT}
-                      />
-                      <CyDText className='font-bold text-[18px] text-base400 ml-[4px]'>
-                        Plan
+                <CyDView className='rounded-[10px] bg-n0'>
+                  <CyDView className='p-[12px] relative'>
+                    {planInfo?.planId === CypherPlanId.BASIC_PLAN && (
+                      <CyDText className='font-bold text-[18px] text-base400'>
+                        {get(
+                          CYPHER_PLAN_ID_NAME_MAPPING,
+                          planInfo?.planId ?? CypherPlanId.BASIC_PLAN,
+                        )}
                       </CyDText>
-                    </CyDView>
-                  )}
-                  <CyDView className='flex flex-row'>
-                    <CyDView>
-                      <ProgressCircle
-                        className={'h-[130px] w-[130px] mt-[12px]'}
-                        progress={getMonthlyLimitPercentage()}
-                        strokeWidth={13}
-                        cornerRadius={30}
-                        progressColor={'#F7C645'}
-                      />
-                      <CyDView className='absolute top-[10px] left-0 right-0 bottom-0 flex items-center justify-center text-center'>
-                        <CyDText
-                          className={`${String(get(limits, ['sSt', 'm'], 0)).length < 7 ? 'text-[16px]' : 'text-[12px]'} font-bold`}>{`$${get(limits, ['sSt', 'm'], 0)}`}</CyDText>
-                        <CyDText className='text-[14px] font-[500]'>
-                          {'This Month'}
+                    )}
+                    {planInfo?.planId === CypherPlanId.PRO_PLAN && (
+                      <CyDView className='flex flex-row items-center'>
+                        <CyDFastImage
+                          className='h-[14px] w-[81px]'
+                          source={AppImages.PREMIUM_TEXT_GRADIENT}
+                        />
+                        <CyDText className='font-bold text-[18px] text-base400 ml-[4px]'>
+                          Plan
                         </CyDText>
                       </CyDView>
-                    </CyDView>
-                    <CyDView className='mt-[24px] ml-[24px]'>
-                      <CyDText className='font-[500] text-n200 text-[14px]'>
-                        {'Limit per month'}
-                      </CyDText>
-                      <CyDText className='font-[500] text-[16px] '>{`$${get(limits, [limitApplicable, 'm'], 0)}`}</CyDText>
-                      <CyDText className='font-[500] text-n200 text-[14px] mt-[12px]'>
-                        {'Limit per day'}
-                      </CyDText>
-                      <CyDText className='font-[500] text-[16px]'>{`$${get(limits, [limitApplicable, 'd'], 0)}`}</CyDText>
+                    )}
+                    <CyDView className='flex flex-row'>
+                      <CyDView>
+                        <ProgressCircle
+                          className={'h-[130px] w-[130px] mt-[12px]'}
+                          progress={getMonthlyLimitPercentage()}
+                          strokeWidth={13}
+                          cornerRadius={30}
+                          progressColor={'#F7C645'}
+                        />
+                        <CyDView className='absolute top-[10px] left-0 right-0 bottom-0 flex items-center justify-center text-center'>
+                          <CyDText
+                            className={`${String(get(limits, ['sSt', 'm'], 0)).length < 7 ? 'text-[16px]' : 'text-[12px]'} font-bold`}>{`$${get(limits, ['sSt', 'm'], 0)}`}</CyDText>
+                          <CyDText className='text-[14px] font-[500]'>
+                            {'This Month'}
+                          </CyDText>
+                        </CyDView>
+                      </CyDView>
+                      <CyDView className='mt-[24px] ml-[24px]'>
+                        <CyDText className='font-[500] text-n200 text-[14px]'>
+                          {'Limit per month'}
+                        </CyDText>
+                        <CyDText className='font-[500] text-[16px] '>{`$${get(limits, [limitApplicable, 'm'], 0)}`}</CyDText>
+                        <CyDText className='font-[500] text-n200 text-[14px] mt-[12px]'>
+                          {'Limit per day'}
+                        </CyDText>
+                        <CyDText className='font-[500] text-[16px]'>{`$${get(limits, [limitApplicable, 'd'], 0)}`}</CyDText>
+                      </CyDView>
                     </CyDView>
                   </CyDView>
+                  <CyDTouchView
+                    className='p-[12px] border-t border-[#EBEDF0] flex flex-row justify-between items-center'
+                    onPress={() => {
+                      navigation.navigate(screenTitle.EDIT_USAGE_LIMITS, {
+                        currentCardProvider,
+                        card,
+                      });
+                    }}>
+                    <CyDText className='text-[16px] font-semibold text-base400'>
+                      {t('SET_USAGE_LIMIT')}
+                    </CyDText>
+                    <CyDImage
+                      source={AppImages.RIGHT_ARROW}
+                      className='w-[20px] h-[20px]'
+                    />
+                  </CyDTouchView>
                 </CyDView>
                 {planInfo?.planId === CypherPlanId.BASIC_PLAN && (
                   <CyDView className='p-[12px]'>

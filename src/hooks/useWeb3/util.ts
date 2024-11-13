@@ -10,7 +10,7 @@ export const getChainInfo = (chainId: string) => {
   throw new Error(`There is no chain info for ${chainId}`);
 };
 
-function toHex (data: Uint8Array): string {
+function toHex(data: Uint8Array): string {
   let out = '';
   for (const byte of data) {
     out += ('0' + byte.toString(16)).slice(-2);
@@ -18,7 +18,7 @@ function toHex (data: Uint8Array): string {
   return out;
 }
 
-function fromHex (hexstring: string): Uint8Array {
+function fromHex(hexstring: string): Uint8Array {
   if (hexstring.length % 2 !== 0) {
     throw new Error('hex string length must be a multiple of 2');
   }
@@ -35,7 +35,7 @@ function fromHex (hexstring: string): Uint8Array {
 }
 
 export class JSONUint8Array {
-  static parse (text: string) {
+  static parse(text: string) {
     return JSON.parse(text, (key, value) => {
       // Prevent potential prototype poisoning.
       if (key === '__proto__') {
@@ -54,7 +54,7 @@ export class JSONUint8Array {
     });
   }
 
-  static stringify (obj: unknown): string {
+  static stringify(obj: unknown): string {
     return JSON.stringify(obj, (key, value) => {
       // Prevent potential prototype poisoning.
       if (key === '__proto__') {
@@ -80,22 +80,22 @@ export class JSONUint8Array {
     });
   }
 
-  static wrap (obj: any): any {
+  static wrap(obj: any): any {
     if (obj === undefined) return undefined;
 
     return JSON.parse(JSONUint8Array.stringify(obj));
   }
 
-  static unwrap (obj: any): any {
+  static unwrap(obj: any): any {
     if (obj === undefined) return undefined;
 
     return JSONUint8Array.parse(JSON.stringify(obj));
   }
 }
 
-export function checkAndValidateADR36AminoSignDoc (
+export function checkAndValidateADR36AminoSignDoc(
   signDoc: StdSignDoc,
-  bech32PrefixAccAddr?: string
+  bech32PrefixAccAddr?: string,
 ): boolean {
   const hasOnlyMsgSignData = (() => {
     if (
@@ -183,23 +183,30 @@ export const parseCosmosMessage = (msg: any) => {
   }
 
   const notSupportedMethods = ['version', 'mode', 'defaultOptions'];
-  const notAProxyRequest = ['getOfflineSigner', 'getOfflineSignerOnlyAmino', 'getOfflineSignerAuto', 'getEnigmaUtils'];
+  const notAProxyRequest = [
+    'getOfflineSigner',
+    'getOfflineSignerOnlyAmino',
+    'getOfflineSignerAuto',
+    'getEnigmaUtils',
+  ];
 
   if (notSupportedMethods.includes(message.method)) {
     throw new Error(`${message?.method as string} is not function`);
   }
 
   if (notAProxyRequest.includes(message.method)) {
-    throw new Error(`${message?.method as string} method can't be proxy request`);
+    throw new Error(
+      `${message?.method as string} method can't be proxy request`,
+    );
   }
 
   if (message.method === 'signDirect') {
     const [arg0, arg1, arg2, arg3] = JSONUint8Array.unwrap(message.args);
     const receivedSignDoc: {
-      bodyBytes?: Uint8Array | null
-      authInfoBytes?: Uint8Array | null
-      chainId?: string | null
-      accountNumber?: string | null
+      bodyBytes?: Uint8Array | null;
+      authInfoBytes?: Uint8Array | null;
+      chainId?: string | null;
+      accountNumber?: string | null;
     } = arg2;
 
     const preparedSingDoc = {
@@ -208,7 +215,7 @@ export const parseCosmosMessage = (msg: any) => {
       chainId: receivedSignDoc.chainId,
       accountNumber: receivedSignDoc.accountNumber
         ? Long.fromString(receivedSignDoc.accountNumber)
-        : null
+        : null,
     };
 
     return [arg0, arg1, preparedSingDoc, arg3];
