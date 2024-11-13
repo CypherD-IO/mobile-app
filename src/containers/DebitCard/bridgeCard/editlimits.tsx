@@ -26,8 +26,8 @@ import { useGlobalModalContext } from '../../../components/v2/GlobalModal';
 import CyDModalLayout from '../../../components/v2/modal';
 import { StyleSheet } from 'react-native';
 import Loading from '../../../components/v2/loading';
-import CyDPicker from '../../../components/picker';
 
+import Slider from '../../../components/v2/slider';
 interface RouteParams {
   currentCardProvider: CardProviders;
   card: Card;
@@ -110,9 +110,8 @@ export default function EditLimits() {
   const { showModal, hideModal } = useGlobalModalContext();
 
   const [limitsData, setLimitsData] = useState<any>({});
-  const [dailyUsageLimit, setDailyUsageLimit] = useState(3000);
+  const [dailyUsageLimit, setDailyUsageLimit] = useState(0);
   const [monthlyUsageLimit, setMonthlyUsageLimit] = useState(0);
-
   const [loading, setLoading] = useState(false);
   const [pageLoading, setPageLoading] = useState(false);
   const [showImpactModal, setShowImpactModal] = useState(false);
@@ -123,9 +122,9 @@ export default function EditLimits() {
       `/v1/cards/${currentCardProvider}/card/${card.cardId}/limits`,
     );
 
+    setPageLoading(false);
     if (!isError) {
       setLimitsData(data);
-
       if (get(data, 'cydL')) {
         setDailyUsageLimit(get(data, ['cydL', 'd']));
         setMonthlyUsageLimit(get(data, ['cydL', 'm']));
@@ -148,7 +147,6 @@ export default function EditLimits() {
         onFailure: hideModal,
       });
     }
-    setPageLoading(false);
   };
 
   useEffect(() => {
@@ -157,7 +155,6 @@ export default function EditLimits() {
 
   const changeLimits = async () => {
     setLoading(true);
-
     const { isError, error } = await patchWithAuth(
       `/v1/cards/${currentCardProvider}/card/${card.cardId}/limits`,
       {
@@ -247,20 +244,16 @@ export default function EditLimits() {
               value={`$${dailyUsageLimit}`}
             />
 
-            <CyDView className='my-[4px]'>
-              <CyDPicker
-                value={Array.from({ length: 10 }, (_, index) => {
-                  const step = (limitsData?.maxLimit?.d ?? 1000) / 10;
-                  const value = Math.round((index + 1) * step);
-                  return {
-                    label: `$${value}`,
-                    value,
-                  };
-                })}
-                onChange={selected => {
-                  setDailyUsageLimit(selected.value as number);
+            <CyDView className='mt-[4px] mb-[8px]'>
+              <Slider
+                minValue={0}
+                maxValue={limitsData?.maxLimit?.d ?? 1000}
+                steps={4}
+                onSlidingComplete={value => {
+                  setDailyUsageLimit(value);
                 }}
-                initialValue={dailyUsageLimit}
+                value={dailyUsageLimit}
+                showValues={true}
               />
             </CyDView>
           </CyDView>
@@ -278,7 +271,7 @@ export default function EditLimits() {
           </CyDView>
         </CyDView>
 
-        <CyDView className='mt-[16px] mb-[24px]'>
+        <CyDView className='mt-[16px]'>
           <CyDView className=' bg-n0 rounded-[10px] p-[16px]'>
             <CyDText className='text-[14px] font-bold text-center'>
               {t('Monthly Usage Limit')}
@@ -298,20 +291,16 @@ export default function EditLimits() {
               value={`$${monthlyUsageLimit}`}
             />
 
-            <CyDView className='my-[4px]'>
-              <CyDPicker
-                value={Array.from({ length: 10 }, (_, index) => {
-                  const step = (limitsData?.maxLimit?.m ?? 1000) / 10;
-                  const value = Math.round((index + 1) * step);
-                  return {
-                    label: `$${value}`,
-                    value,
-                  };
-                })}
-                onChange={selected => {
-                  setMonthlyUsageLimit(selected.value as number);
+            <CyDView className='mt-[4px] mb-[8px]'>
+              <Slider
+                minValue={0}
+                maxValue={limitsData?.maxLimit?.m ?? 1000}
+                steps={4}
+                onValueChange={value => {
+                  setMonthlyUsageLimit(value);
                 }}
-                initialValue={monthlyUsageLimit}
+                value={monthlyUsageLimit}
+                showValues={true}
               />
             </CyDView>
           </CyDView>

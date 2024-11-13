@@ -40,6 +40,7 @@ import { CYPHER_PLAN_ID_NAME_MAPPING } from '../../../constants/data';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { ICountry } from '../../../models/cardApplication.model';
 import { t } from 'i18next';
+import CyDPicker from '../../../components/picker';
 
 interface RouteParams {
   card: Card;
@@ -183,14 +184,28 @@ export default function CardControlsMenu() {
   }, [timer, timerEnd]);
 
   const formatTime = (milliseconds: number) => {
-    const hours = Math.floor(milliseconds / 3600000);
+    const weeks = Math.floor(milliseconds / (7 * 24 * 3600000));
+    const days = Math.floor(
+      (milliseconds % (7 * 24 * 3600000)) / (24 * 3600000),
+    );
+    const hours = Math.floor((milliseconds % (24 * 3600000)) / 3600000);
     const minutes = Math.floor((milliseconds % 3600000) / 60000);
     const seconds = Math.floor((milliseconds % 60000) / 1000);
 
-    if (hours > 0 || minutes > 59) {
-      return `${hours.toString().padStart(2, '0')}:${minutes.toString().padStart(2, '0')}`;
+    // 1 week
+    if (weeks > 0) {
+      return `${weeks}w ${days}d`;
     }
-    return `${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}`;
+    // 1 day
+    if (days > 0) {
+      return `${days}d ${hours}h`;
+    }
+    // 12 hours or 1 hour
+    if (hours > 0) {
+      return `${hours}h ${minutes}m`;
+    }
+    // 30 mins or less
+    return `${minutes}:${seconds.toString().padStart(2, '0')}`;
   };
 
   const getMonthlyLimitPercentage = () => {
@@ -463,7 +478,7 @@ export default function CardControlsMenu() {
                         {isZeroRestrictionModeEnabled && (
                           <CyDView className='flex flex-row items-center'>
                             <CyDView
-                              className='bg-n0 rounded-full px-[6px] py-[12px] w-[50px] h-[50px] flex flex-col items-center justify-center border border-p200 mr-[12px]'
+                              className='bg-n0 px-[6px] rounded-[10px] w-[70px] h-[30px] flex flex-col items-center justify-center border border-p200 mr-[12px]'
                               // eslint-disable-next-line react-native/no-inline-styles
                               style={{
                                 shadowColor: '#000',
@@ -472,7 +487,7 @@ export default function CardControlsMenu() {
                                 shadowRadius: 8,
                                 elevation: 4, // for Android
                               }}>
-                              <CyDText className='font-extrabold text-[12px] text-base400 '>
+                              <CyDText className='font-extrabold text-[12px] text-base400 text-center'>
                                 {formatTime(timer ?? 0)}
                               </CyDText>
                             </CyDView>

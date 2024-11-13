@@ -13,6 +13,7 @@ import Animated, {
 import { CyDText, CyDTouchView, CyDView } from '../../styles/tailwindStyles';
 import React from 'react';
 import clsx from 'clsx';
+import { round } from 'lodash';
 
 const TRACK_PADDING = 12;
 const HANDLE_WIDTH = 24;
@@ -173,13 +174,13 @@ const Slider = ({
     }
   };
 
-  const formatValue = (value: number | string) => {
+  const formatValue = (_value: number | string) => {
     'worklet';
-    if (typeof value === 'string') return value;
-    if (value >= 1000) {
-      return `${(value / 1000).toFixed(0)}k`;
+    if (typeof _value === 'string') return _value;
+    if (_value >= 1000) {
+      return `${round(_value / 1000, 1)}k`;
     }
-    return value.toString();
+    return _value.toString();
   };
 
   const renderSteps = () => {
@@ -214,7 +215,7 @@ const Slider = ({
               <CyDView
                 key={index}
                 className={clsx('h-[20px] items-center justify-center', {
-                  'w-[20px]': !customValues,
+                  'w-[24px]': !customValues,
                 })}>
                 <CyDText className='text-base400 text-[10px]'>
                   {formatValue(_value)}

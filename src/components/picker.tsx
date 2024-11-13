@@ -67,7 +67,7 @@ const PickerItem = React.memo(
       <Animated.View
         style={itemStyle}
         className='h-[40px] justify-center items-center'>
-        <CyDText className='text-[22px] font-medium text-[#3C3C4399]/60'>
+        <CyDText className='text-[22px] font-medium text-[#3C3C43]'>
           {item.label}
         </CyDText>
       </Animated.View>
@@ -110,10 +110,35 @@ const CyDPicker: React.FC<PickerProps> = ({
       scrollY.value = Math.max(0, Math.min(event.contentOffset.y, maxScroll));
     },
     onMomentumEnd: event => {
-      const offsetY = event.contentOffset.y;
+      'worklet';
       const maxScroll = (value.length - 1) * ITEM_HEIGHT;
+      const clampedOffset = Math.max(
+        0,
+        Math.min(event.contentOffset.y, maxScroll),
+      );
+      const index = Math.round(clampedOffset / ITEM_HEIGHT);
+      const safeIndex = Math.max(0, Math.min(index, value.length - 1));
+      const safeSnapToY = safeIndex * ITEM_HEIGHT;
 
-      const clampedOffset = Math.max(0, Math.min(offsetY, maxScroll));
+      scrollY.value = withSpring(safeSnapToY, {
+        damping: 20,
+        stiffness: 200,
+      });
+
+      if (onChange) {
+        runOnJS(onChange)({
+          label: value[safeIndex].label,
+          value: value[safeIndex].value,
+        });
+      }
+    },
+    onEndDrag: event => {
+      'worklet';
+      const maxScroll = (value.length - 1) * ITEM_HEIGHT;
+      const clampedOffset = Math.max(
+        0,
+        Math.min(event.contentOffset.y, maxScroll),
+      );
       const index = Math.round(clampedOffset / ITEM_HEIGHT);
       const safeIndex = Math.max(0, Math.min(index, value.length - 1));
       const safeSnapToY = safeIndex * ITEM_HEIGHT;
@@ -147,7 +172,7 @@ const CyDPicker: React.FC<PickerProps> = ({
   return (
     <GestureHandlerRootView>
       <CyDView className='relative'>
-        <CyDView className='absolute w-full h-[40px] bg-[#74748014]/5 top-[80px] rounded-[8px]' />
+        <CyDView className='absolute w-full h-[40px] bg-[#747480]/5 top-[80px] rounded-[8px]' />
         <Animated.ScrollView
           ref={scrollViewRef}
           className='h-[200px]'
@@ -155,8 +180,7 @@ const CyDPicker: React.FC<PickerProps> = ({
           snapToInterval={ITEM_HEIGHT}
           decelerationRate='fast'
           onScroll={handleScroll}
-          scrollEventThrottle={16}
-          nestedScrollEnabled
+          scrollEventThrottle={1}
           bounces={false}
           contentContainerStyle={{
             paddingVertical: PICKER_HEIGHT / 2 - ITEM_HEIGHT / 2,
