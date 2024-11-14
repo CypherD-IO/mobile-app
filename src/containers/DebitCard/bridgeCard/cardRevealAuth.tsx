@@ -6,7 +6,6 @@ import {
   CyDTouchView,
   CyDView,
 } from '../../../styles/tailwindStyles';
-import { useTranslation } from 'react-i18next';
 import { PinInput } from '../../../components/v2/pinInput';
 import AppImages from '../../../../assets/images/appImages';
 import { useGlobalModalContext } from '../../../components/v2/GlobalModal';
@@ -24,11 +23,14 @@ import {
   useNavigation,
   useRoute,
 } from '@react-navigation/native';
+import { t } from 'i18next';
+import { Card } from '../../../models/card.model';
+import { capitalize } from 'lodash';
 
 interface RouteParams {
   onSuccess: (data: any, provider: CardProviders) => {};
   currentCardProvider: CardProviders;
-  card: { cardId: string };
+  card: Card;
   triggerOTPParam?: string;
   verifyOTPPayload?: any;
 }
@@ -74,12 +76,15 @@ const getOTPVerificationUrl = (
 export default function CardRevealAuthScreen() {
   const navigation = useNavigation<NavigationProp<ParamListBase>>();
   const route = useRoute<RouteProp<{ params: RouteParams }, 'params'>>();
-  const { t } = useTranslation();
   const { showModal, hideModal } = useGlobalModalContext();
   const [sendingOTP, setSendingOTP] = useState<boolean>(false);
   const [verifyingOTP, setVerifyingOTP] = useState<boolean>(false);
-  const { currentCardProvider, card, verifyOTPPayload } = route.params;
-  const triggerOTPParam = route.params.triggerOTPParam ?? 'verify/show-token';
+  const {
+    currentCardProvider,
+    card,
+    verifyOTPPayload,
+    triggerOTPParam = 'verify/show-token',
+  } = route.params ?? {};
   const onSuccess = route.params.onSuccess;
   const resendOtpTime = 30;
   const [resendInterval, setResendInterval] = useState(0);
@@ -110,7 +115,7 @@ export default function CardRevealAuthScreen() {
     } else {
       showModal('state', {
         type: 'error',
-        title: response.error.message ?? t('OTP_TRIGGER_FAILED'),
+        title: response?.error?.message ?? t('OTP_TRIGGER_FAILED'),
         description: parseErrorMessage(''),
         onSuccess: hideModal,
         onFailure: hideModal,
@@ -230,26 +235,6 @@ export default function CardRevealAuthScreen() {
     }
   };
 
-  const OTPHeader = () => {
-    return (
-      <CyDView className='mt-[16px]'>
-        <CyDText className={'text-[25px] font-extrabold'}>
-          {t<string>('ENTER_AUTHENTICATION_CODE')}
-        </CyDText>
-        <CyDText className={'text-[15px] font-bold'}>
-          {t<string>(
-            currentCardProvider === CardProviders.REAP_CARD
-              ? 'CARD_SENT_OTP_EMAIL_AND_TELEGRAM'
-              : 'CARD_SENT_OTP',
-          )}
-        </CyDText>
-        <CyDText className='text-[12px] mt-[12px]'>
-          {t<string>('CHECK_SPAM_FOLDER')}
-        </CyDText>
-      </CyDView>
-    );
-  };
-
   const handleOtpChange = (value: string[]) => {
     setOtpValue(value);
     setOtpError(false);
@@ -262,10 +247,15 @@ export default function CardRevealAuthScreen() {
     // You can add any additional logic here if needed when the OTP input loses focus
   };
 
+  if (verifyingOTP) {
+    return <Loading />;
+  }
+
   return (
     <CyDSafeAreaView>
       <CyDView className={'h-full bg-[#F1F0F5] px-[20px] pt-[10px]'}>
         <CyDTouchView
+          className='flex-row items-center'
           onPress={() => {
             navigation.goBack();
           }}>
@@ -273,49 +263,64 @@ export default function CardRevealAuthScreen() {
             source={AppImages.BACK_ARROW_GRAY}
             className='w-[32px] h-[32px]'
           />
+          <CyDText className='ml-[12px] font-regular text-[18px]'>
+            {capitalize(card?.type)} {' card ** '} {card?.last4}
+          </CyDText>
         </CyDTouchView>
-        <OTPHeader />
-        <CyDView>
-          {!verifyingOTP && (
-            <CyDView className={'mt-[15%]'}>
-              <PinInput
-                value={otpValue}
-                onChange={handleOtpChange}
-                error={otpError}
-                onBlur={handleOtpBlur}
-                length={4}
+
+        <CyDImage
+          source={AppImages.SHIELD_FILLED}
+          className='mt-[24px] w-[32px] h-[32px]'
+        />
+
+        <CyDText className='mt-[6px] text-[28px] font-bold'>
+          {t<string>('OTP_VERIFICATION')}
+        </CyDText>
+
+        <CyDText className='mt-[6px] text-[14px] text-n200'>
+          {t<string>(
+            currentCardProvider === CardProviders.REAP_CARD
+              ? 'CARD_SENT_OTP_EMAIL_AND_TELEGRAM'
+              : 'CARD_SENT_OTP',
+          )}
+        </CyDText>
+
+        <CyDText className='text-[10px] mt-[6px] text-n200'>
+          {t<string>('CHECK_SPAM_FOLDER')}
+        </CyDText>
+
+        <CyDView className={'mt-[24px]'}>
+          <PinInput
+            value={otpValue}
+            onChange={handleOtpChange}
+            error={otpError}
+            onBlur={handleOtpBlur}
+            length={4}
+          />
+          <CyDTouchView
+            className={'flex flex-row items-center mt-[8px]'}
+            disabled={sendingOTP || resendInterval !== 0}
+            onPress={() => {
+              void resendOTP();
+            }}>
+            <CyDText className={'font-normal text-[12px] text-n200'}>
+              {"Didn't received the OTP? Try "}
+              <CyDText className='underline text-blue300 font-bold'>
+                {t<string>('RESEND_OTP')}
+              </CyDText>
+            </CyDText>
+            {sendingOTP && (
+              <LottieView
+                source={AppImages.LOADER_TRANSPARENT}
+                autoPlay
+                loop
+                style={styles.lottie}
               />
-              <CyDTouchView
-                className={'flex flex-row items-center mt-[15%]'}
-                disabled={sendingOTP || resendInterval !== 0}
-                onPress={() => {
-                  void resendOTP();
-                }}>
-                <CyDText
-                  className={
-                    'font-bold underline decoration-solid underline-offset-4'
-                  }>
-                  {t<string>('RESEND_CODE_INIT_CAPS')}
-                </CyDText>
-                {sendingOTP && (
-                  <LottieView
-                    source={AppImages.LOADER_TRANSPARENT}
-                    autoPlay
-                    loop
-                    style={styles.lottie}
-                  />
-                )}
-                {resendInterval !== 0 && (
-                  <CyDText>{String(` in ${resendInterval} sec`)}</CyDText>
-                )}
-              </CyDTouchView>
-            </CyDView>
-          )}
-          {verifyingOTP && (
-            <CyDView className='mt-[-200px]'>
-              <Loading />
-            </CyDView>
-          )}
+            )}
+            {resendInterval !== 0 && (
+              <CyDText>{String(` in ${resendInterval} sec`)}</CyDText>
+            )}
+          </CyDTouchView>
         </CyDView>
       </CyDView>
     </CyDSafeAreaView>

@@ -279,7 +279,7 @@ const AddressProfile = props => {
             </CyDView>
           ) : null}
           <Animated.Image
-            style={isActive ? animatedStyle : ''}
+            style={isActive ? animatedStyle : { height: 10, width: 14 }}
             source={AppImages.UP_ARROW}
           />
         </CyDView>
