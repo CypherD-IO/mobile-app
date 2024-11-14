@@ -201,7 +201,7 @@ PODS:
   - libwebp/sharpyuv (1.3.2)
   - libwebp/webp (1.3.2):
     - libwebp/sharpyuv
-  - lottie-ios (3.4.0)
+  - lottie-ios (3.4.4)
   - lottie-react-native (5.1.6):
     - lottie-ios (~> 3.4.0)
     - React-Core
@@ -527,7 +527,8 @@ PODS:
     - React-Core
   - react-native-netinfo (11.3.1):
     - React-Core
-  - react-native-pager-view (7.0.0-rc.0):
+  - react-native-pager-view (6.5.0):
+    - RCT-Folly (= 2021.07.22.00)
     - React-Core
   - react-native-randombytes (3.6.1):
     - React-Core
@@ -538,21 +539,6 @@ PODS:
   - react-native-rsa-native (2.0.5):
     - React
   - react-native-safe-area-context (3.4.1):
-    - React-Core
-  - react-native-slider (4.5.5):
-    - RCT-Folly (= 2021.07.22.00)
-    - React-Core
-  - react-native-tcp-socket (6.0.6):
-    - CocoaAsyncSocket
-    - React-Core
-  - react-native-version-check (3.4.7):
-    - React-Core
-  - react-native-video (6.4.5):
-    - RCT-Folly (= 2021.07.22.00)
-    - React-Core
-    - react-native-video/Video (= 6.4.5)
-  - react-native-video/Video (6.4.5):
-    - RCT-Folly (= 2021.07.22.00)
     - React-Core
   - react-native-view-shot (3.8.0):
     - React-Core
@@ -664,8 +650,6 @@ PODS:
     - React-jsi (= 0.72.14)
     - React-logger (= 0.72.14)
     - React-perflogger (= 0.72.14)
-  - rn-fetch-blob (0.12.0):
-    - React-Core
   - RNCAsyncStorage (1.23.1):
     - React-Core
   - RNCClipboard (1.14.1):
@@ -801,7 +785,6 @@ DEPENDENCIES:
   - glog (from `../node_modules/react-native/third-party-podspecs/glog.podspec`)
   - "intercom-react-native (from `../node_modules/@intercom/intercom-react-native`)"
   - jail-monkey (from `../node_modules/jail-monkey`)
-  - lottie-ios (from `../node_modules/lottie-ios`)
   - lottie-react-native (from `../node_modules/lottie-react-native`)
   - OpenSSL-Universal (= 1.1.1100)
   - Permission-Camera (from `../node_modules/react-native-permissions/ios/Camera`)
@@ -838,10 +821,6 @@ DEPENDENCIES:
   - react-native-restart (from `../node_modules/react-native-restart`)
   - react-native-rsa-native (from `../node_modules/react-native-rsa-native`)
   - react-native-safe-area-context (from `../node_modules/react-native-safe-area-context`)
-  - "react-native-slider (from `../node_modules/@react-native-community/slider`)"
-  - react-native-tcp-socket (from `../node_modules/react-native-tcp-socket`)
-  - react-native-version-check (from `../node_modules/react-native-version-check`)
-  - react-native-video (from `../node_modules/react-native-video`)
   - react-native-view-shot (from `../node_modules/react-native-view-shot`)
   - react-native-webview (from `../node_modules/react-native-webview`)
   - React-NativeModulesApple (from `../node_modules/react-native/ReactCommon/react/nativemodule/core/platform/ios`)
@@ -861,7 +840,6 @@ DEPENDENCIES:
   - React-runtimescheduler (from `../node_modules/react-native/ReactCommon/react/renderer/runtimescheduler`)
   - React-utils (from `../node_modules/react-native/ReactCommon/react/utils`)
   - ReactCommon/turbomodule/core (from `../node_modules/react-native/ReactCommon`)
-  - rn-fetch-blob (from `../node_modules/rn-fetch-blob`)
   - "RNCAsyncStorage (from `../node_modules/@react-native-async-storage/async-storage`)"
   - "RNCClipboard (from `../node_modules/@react-native-clipboard/clipboard`)"
   - "RNCPushNotificationIOS (from `../node_modules/@react-native-community/push-notification-ios`)"
@@ -917,6 +895,7 @@ SPEC REPOS:
     - Intercom
     - libevent
     - libwebp
+    - lottie-ios
     - MMKV
     - MMKVCore
     - nanopb
@@ -948,8 +927,6 @@ EXTERNAL SOURCES:
     :path: "../node_modules/@intercom/intercom-react-native"
   jail-monkey:
     :path: "../node_modules/jail-monkey"
-  lottie-ios:
-    :path: "../node_modules/lottie-ios"
   lottie-react-native:
     :path: "../node_modules/lottie-react-native"
   Permission-Camera:
@@ -1018,14 +995,6 @@ EXTERNAL SOURCES:
     :path: "../node_modules/react-native-rsa-native"
   react-native-safe-area-context:
     :path: "../node_modules/react-native-safe-area-context"
-  react-native-slider:
-    :path: "../node_modules/@react-native-community/slider"
-  react-native-tcp-socket:
-    :path: "../node_modules/react-native-tcp-socket"
-  react-native-version-check:
-    :path: "../node_modules/react-native-version-check"
-  react-native-video:
-    :path: "../node_modules/react-native-video"
   react-native-view-shot:
     :path: "../node_modules/react-native-view-shot"
   react-native-webview:
@@ -1064,8 +1033,6 @@ EXTERNAL SOURCES:
     :path: "../node_modules/react-native/ReactCommon/react/utils"
   ReactCommon:
     :path: "../node_modules/react-native/ReactCommon"
-  rn-fetch-blob:
-    :path: "../node_modules/rn-fetch-blob"
   RNCAsyncStorage:
     :path: "../node_modules/@react-native-async-storage/async-storage"
   RNCClipboard:
@@ -1154,7 +1121,7 @@ SPEC CHECKSUMS:
   jail-monkey: a71b35d482a70ecba844a90f002994012cf12a5d
   libevent: 4049cae6c81cdb3654a443be001fb9bdceff7913
   libwebp: 1786c9f4ff8a279e4dac1e8f385004d5fc253009
-  lottie-ios: 69495122151a378fdc7d1bb4c5930347e37baf1f
+  lottie-ios: 8f97d3271e155c2d688875c29cd3c74908aef5f8
   lottie-react-native: 8f9d4be452e23f6e5ca0fdc11669dc99ab52be81
   MMKV: f7d1d5945c8765f97f39c3d121f353d46735d801
   MMKVCore: c04b296010fcb1d1638f2c69405096aac12f6390
@@ -1190,16 +1157,12 @@ SPEC CHECKSUMS:
   react-native-lottie-splash-screen: 4e1b1fd9d6633f9cd2106d6877eb5ba0147f3e2b
   react-native-mmkv: e2d73a7d37f23918066a4b985a94c9fafc3f20c1
   react-native-netinfo: bdb108d340cdb41875c9ced535977cac6d2ff321
-  react-native-pager-view: 563a43b511eea680f803ab4fb20bd7525fbde2cc
+  react-native-pager-view: 08967443b0e4e3695a6a74257f56ad4c0b05e004
   react-native-randombytes: 421f1c7d48c0af8dbcd471b0324393ebf8fe7846
   react-native-render-html: 984dfe2294163d04bf5fe25d7c9f122e60e05ebe
   react-native-restart: 45c8dca02491980f2958595333cbccd6877cb57e
   react-native-rsa-native: 12132eb627797529fdb1f0d22fd0f8f9678df64a
   react-native-safe-area-context: 9e40fb181dac02619414ba1294d6c2a807056ab9
-  react-native-slider: f843c250dfb8f847e5b39746626355974a462717
-  react-native-tcp-socket: e724380c910c2e704816ec817ed28f1342246ff7
-  react-native-version-check: 6cd36aad4e30b8e3216747e3b4ddeb09e0647af8
-  react-native-video: caa2af4f0c6ba457f66861706dd4b0118302a804
   react-native-view-shot: 6b7ed61d77d88580fed10954d45fad0eb2d47688
   react-native-webview: 670ee27ecc5d11a56e82ce6f03182896b368d37c
   React-NativeModulesApple: 9b58b8f5c1d8ea68d0a63f569a9e786d01281ea6
@@ -1219,7 +1182,6 @@ SPEC CHECKSUMS:
   React-runtimescheduler: 5b3b73748021c7349f06fcd24181df17860b8fb6
   React-utils: 22a77b05da25ce49c744faa82e73856dcae1734e
   ReactCommon: 07937a01c967f2023d6f2d07114315f099b4b436
-  rn-fetch-blob: f065bb7ab7fb48dd002629f8bdcb0336602d3cba
   RNCAsyncStorage: 826b603ae9c0f88b5ac4e956801f755109fa4d5c
   RNCClipboard: 0a720adef5ec193aa0e3de24c3977222c7e52a37
   RNCPushNotificationIOS: 64218f3c776c03d7408284a819b2abfda1834bc8

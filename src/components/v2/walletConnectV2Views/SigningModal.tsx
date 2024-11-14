@@ -44,7 +44,6 @@ import {
   RenderTypedTransactionSignModal,
 } from './SigningModals/TxnModals';
 import { getGasPriceFor } from '../../../containers/Browser/gasHelper';
-import { decideGasLimitBasedOnTypeOfToAddress } from '../../../core/NativeTransactionHandler';
 
 export default function SigningModal({
   payloadFrom,
@@ -195,6 +194,28 @@ export default function SigningModal({
         setDataIsReady(true);
       }
     };
+
+    const decideGasLimitBasedOnTypeOfToAddress = (
+      code: string,
+      gasLimit: number,
+      chain: string,
+      contractAddress: string,
+    ): number => {
+      if (gasLimit > 21000) {
+        if (code !== '0x') {
+          return 2 * gasLimit;
+        }
+        return gasLimit;
+      } else if (
+        contractAddress.toLowerCase() === OP_ETH_ADDRESS &&
+        chain === CHAIN_OPTIMISM.backendName
+      ) {
+        return 21000 * 1.3;
+      } else {
+        return 21000;
+      }
+    };
+
     const getDataForNativeTxn = async () => {
       let paramsForDecoding: DecodeTxnRequestBody;
       if (

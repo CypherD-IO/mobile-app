@@ -23,7 +23,6 @@ import {
   ChainNameMapping,
   EVM_CHAINS,
 } from '../../constants/server';
-import { decideGasLimitBasedOnTypeOfToAddress } from '../../core/NativeTransactionHandler';
 import { GlobalContext } from '../../core/globalContext';
 import {
   HdWalletContext,
@@ -89,6 +88,27 @@ export default function useTransactionManager() {
   const { getCosmosSignerClient, getCosmosRpc } = useCosmosSigner();
   const { getSolanWallet, getSolanaRpc } = useSolanaSigner();
   const hdWallet = useContext<any>(HdWalletContext);
+
+  const decideGasLimitBasedOnTypeOfToAddress = (
+    code: string,
+    gasLimit: number,
+    chain: string,
+    contractAddress: string,
+  ): number => {
+    if (gasLimit > 21000) {
+      if (code !== '0x') {
+        return 2 * gasLimit;
+      }
+      return gasLimit;
+    } else if (
+      contractAddress.toLowerCase() === OP_ETH_ADDRESS &&
+      chain === CHAIN_OPTIMISM.backendName
+    ) {
+      return 21000 * 1.3;
+    } else {
+      return 21000;
+    }
+  };
 
   async function getCosmosSigningClient(
     chain: Chain,
