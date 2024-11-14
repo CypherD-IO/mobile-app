@@ -17,9 +17,9 @@ import {
 } from '../../core/util';
 import AppImages from '../../../assets/images/appImages';
 import { screenTitle } from '../../constants';
-import filter from 'lodash.filter';
 import { BackHandler } from 'react-native';
 import { TokenOverviewTabIndices } from '../../constants/enum';
+import { filter } from 'lodash';
 
 export default function CosmosSelectReValidator({ route, navigation }) {
   const { validatorData, tokenData, setReValidator, from } = route.params;
