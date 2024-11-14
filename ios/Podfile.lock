@@ -213,17 +213,10 @@ PODS:
     - nanopb/encode (= 2.30908.0)
   - nanopb/decode (2.30908.0)
   - nanopb/encode (2.30908.0)
-  - NWWebSocket (0.5.4)
   - OpenSSL-Universal (1.1.1100)
   - Permission-Camera (3.6.0):
     - RNPermissions
   - PromisesObjC (2.4.0)
-  - pusher-websocket-react-native (1.3.1):
-    - PusherSwift (~> 10.1.5)
-    - React
-  - PusherSwift (10.1.5):
-    - NWWebSocket (~> 0.5.4)
-    - TweetNacl (~> 1.0.0)
   - RCT-Folly (2021.07.22.00):
     - boost
     - DoubleConversion
@@ -527,8 +520,7 @@ PODS:
     - React-Core
   - react-native-netinfo (11.3.1):
     - React-Core
-  - react-native-pager-view (6.5.0):
-    - RCT-Folly (= 2021.07.22.00)
+  - react-native-pager-view (7.0.0-rc.0):
     - React-Core
   - react-native-randombytes (3.6.1):
     - React-Core
@@ -751,7 +743,6 @@ PODS:
   - SocketRocket (0.6.1)
   - transfi-ramp-react-native-sdk (0.1.8):
     - React-Core
-  - TweetNacl (1.0.2)
   - Yoga (1.14.0)
   - YogaKit (1.18.1):
     - Yoga (~> 1.14)
@@ -788,7 +779,6 @@ DEPENDENCIES:
   - lottie-react-native (from `../node_modules/lottie-react-native`)
   - OpenSSL-Universal (= 1.1.1100)
   - Permission-Camera (from `../node_modules/react-native-permissions/ios/Camera`)
-  - "pusher-websocket-react-native (from `../node_modules/@pusher/pusher-websocket-react-native`)"
   - RCT-Folly (from `../node_modules/react-native/third-party-podspecs/RCT-Folly.podspec`)
   - RCTRequired (from `../node_modules/react-native/Libraries/RCTRequired`)
   - RCTTypeSafety (from `../node_modules/react-native/Libraries/TypeSafety`)
@@ -899,15 +889,12 @@ SPEC REPOS:
     - MMKV
     - MMKVCore
     - nanopb
-    - NWWebSocket
     - OpenSSL-Universal
     - PromisesObjC
-    - PusherSwift
     - SDWebImage
     - SDWebImageWebPCoder
     - Sentry
     - SocketRocket
-    - TweetNacl
     - YogaKit
 
 EXTERNAL SOURCES:
@@ -931,8 +918,6 @@ EXTERNAL SOURCES:
     :path: "../node_modules/lottie-react-native"
   Permission-Camera:
     :path: "../node_modules/react-native-permissions/ios/Camera"
-  pusher-websocket-react-native:
-    :path: "../node_modules/@pusher/pusher-websocket-react-native"
   RCT-Folly:
     :podspec: "../node_modules/react-native/third-party-podspecs/RCT-Folly.podspec"
   RCTRequired:
@@ -1126,12 +1111,9 @@ SPEC CHECKSUMS:
   MMKV: f7d1d5945c8765f97f39c3d121f353d46735d801
   MMKVCore: c04b296010fcb1d1638f2c69405096aac12f6390
   nanopb: a0ba3315591a9ae0a16a309ee504766e90db0c96
-  NWWebSocket: 040d22f23438cc09aaeabf537beff67699c3c76d
   OpenSSL-Universal: ebc357f1e6bc71fa463ccb2fe676756aff50e88c
   Permission-Camera: 0a0fb4341f50ab242f496fb2f73380e0ec454fe7
   PromisesObjC: f5707f49cb48b9636751c5b2e7d227e43fba9f47
-  pusher-websocket-react-native: e40c49a1e4ec96d4157375aebcf44943f0f8f62f
-  PusherSwift: cad631bad86cfff4b8458dce1310a7774e469b1f
   RCT-Folly: 424b8c9a7a0b9ab2886ffe9c3b041ef628fd4fb1
   RCTRequired: 264adaca1d8b1a9c078761891898d4142df05313
   RCTTypeSafety: 279a89da7058a69899778a127be73fab38b84499
@@ -1157,7 +1139,7 @@ SPEC CHECKSUMS:
   react-native-lottie-splash-screen: 4e1b1fd9d6633f9cd2106d6877eb5ba0147f3e2b
   react-native-mmkv: e2d73a7d37f23918066a4b985a94c9fafc3f20c1
   react-native-netinfo: bdb108d340cdb41875c9ced535977cac6d2ff321
-  react-native-pager-view: 08967443b0e4e3695a6a74257f56ad4c0b05e004
+  react-native-pager-view: 563a43b511eea680f803ab4fb20bd7525fbde2cc
   react-native-randombytes: 421f1c7d48c0af8dbcd471b0324393ebf8fe7846
   react-native-render-html: 984dfe2294163d04bf5fe25d7c9f122e60e05ebe
   react-native-restart: 45c8dca02491980f2958595333cbccd6877cb57e
@@ -1211,7 +1193,6 @@ SPEC CHECKSUMS:
   Sentry: f8374b5415bc38dfb5645941b3ae31230fbeae57
   SocketRocket: f32cd54efbe0f095c4d7594881e52619cfe80b17
   transfi-ramp-react-native-sdk: 75063c233fff9f9eb04da96058103acb2c7262d4
-  TweetNacl: 3abf4d1d2082b0114e7a67410e300892448951e6
   Yoga: c32e0be1a17f8f1f0e633a3122f7666441f52c82
   YogaKit: f782866e155069a2cca2517aafea43200b01fd5a
 

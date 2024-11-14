@@ -1,9 +1,5 @@
 import { OfflineDirectSigner } from '@cosmjs/proto-signing';
-import {
-  Coin,
-  MsgTransferEncodeObject,
-  SigningStargateClient,
-} from '@cosmjs/stargate';
+import { Coin, MsgTransferEncodeObject } from '@cosmjs/stargate';
 import { InjectiveStargate } from '@injectivelabs/sdk-ts';
 import * as Sentry from '@sentry/react-native';
 import { MsgTransfer } from 'cosmjs-types/ibc/applications/transfer/v1/tx';
@@ -75,6 +71,9 @@ export default function useTransactionManager() {
   const globalContext = useContext<any>(GlobalContext);
   const hdWalletContext = useContext<any>(HdWalletContext);
   const OP_ETH_ADDRESS = '0xdeaddeaddeaddeaddeaddeaddeaddeaddead0000';
+  const BASE_GAS_LIMIT = 21000;
+  const OPTIMISM_GAS_MULTIPLIER = 1.3;
+  const CONTRACT_GAS_MULTIPLIER = 2;
   const {
     estimateGasForEvm,
     estimateGasForCosmos,
@@ -95,18 +94,18 @@ export default function useTransactionManager() {
     chain: string,
     contractAddress: string,
   ): number => {
-    if (gasLimit > 21000) {
+    if (gasLimit > BASE_GAS_LIMIT) {
       if (code !== '0x') {
-        return 2 * gasLimit;
+        return CONTRACT_GAS_MULTIPLIER * gasLimit;
       }
       return gasLimit;
     } else if (
       contractAddress.toLowerCase() === OP_ETH_ADDRESS &&
       chain === CHAIN_OPTIMISM.backendName
     ) {
-      return 21000 * 1.3;
+      return BASE_GAS_LIMIT * OPTIMISM_GAS_MULTIPLIER;
     } else {
-      return 21000;
+      return BASE_GAS_LIMIT;
     }
   };
 
