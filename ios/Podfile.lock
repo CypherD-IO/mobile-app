@@ -201,7 +201,7 @@ PODS:
   - libwebp/sharpyuv (1.3.2)
   - libwebp/webp (1.3.2):
     - libwebp/sharpyuv
-  - lottie-ios (3.4.0)
+  - lottie-ios (3.4.4)
   - lottie-react-native (5.1.6):
     - lottie-ios (~> 3.4.0)
     - React-Core
@@ -213,17 +213,10 @@ PODS:
     - nanopb/encode (= 2.30908.0)
   - nanopb/decode (2.30908.0)
   - nanopb/encode (2.30908.0)
-  - NWWebSocket (0.5.4)
   - OpenSSL-Universal (1.1.1100)
   - Permission-Camera (3.6.0):
     - RNPermissions
   - PromisesObjC (2.4.0)
-  - pusher-websocket-react-native (1.3.1):
-    - PusherSwift (~> 10.1.5)
-    - React
-  - PusherSwift (10.1.5):
-    - NWWebSocket (~> 0.5.4)
-    - TweetNacl (~> 1.0.0)
   - RCT-Folly (2021.07.22.00):
     - boost
     - DoubleConversion
@@ -539,21 +532,6 @@ PODS:
     - React
   - react-native-safe-area-context (3.4.1):
     - React-Core
-  - react-native-slider (4.5.5):
-    - RCT-Folly (= 2021.07.22.00)
-    - React-Core
-  - react-native-tcp-socket (6.0.6):
-    - CocoaAsyncSocket
-    - React-Core
-  - react-native-version-check (3.4.7):
-    - React-Core
-  - react-native-video (6.4.5):
-    - RCT-Folly (= 2021.07.22.00)
-    - React-Core
-    - react-native-video/Video (= 6.4.5)
-  - react-native-video/Video (6.4.5):
-    - RCT-Folly (= 2021.07.22.00)
-    - React-Core
   - react-native-view-shot (3.8.0):
     - React-Core
   - react-native-webview (13.12.3):
@@ -664,8 +642,6 @@ PODS:
     - React-jsi (= 0.72.14)
     - React-logger (= 0.72.14)
     - React-perflogger (= 0.72.14)
-  - rn-fetch-blob (0.12.0):
-    - React-Core
   - RNCAsyncStorage (1.23.1):
     - React-Core
   - RNCClipboard (1.14.1):
@@ -767,7 +743,6 @@ PODS:
   - SocketRocket (0.6.1)
   - transfi-ramp-react-native-sdk (0.1.8):
     - React-Core
-  - TweetNacl (1.0.2)
   - Yoga (1.14.0)
   - YogaKit (1.18.1):
     - Yoga (~> 1.14)
@@ -801,11 +776,9 @@ DEPENDENCIES:
   - glog (from `../node_modules/react-native/third-party-podspecs/glog.podspec`)
   - "intercom-react-native (from `../node_modules/@intercom/intercom-react-native`)"
   - jail-monkey (from `../node_modules/jail-monkey`)
-  - lottie-ios (from `../node_modules/lottie-ios`)
   - lottie-react-native (from `../node_modules/lottie-react-native`)
   - OpenSSL-Universal (= 1.1.1100)
   - Permission-Camera (from `../node_modules/react-native-permissions/ios/Camera`)
-  - "pusher-websocket-react-native (from `../node_modules/@pusher/pusher-websocket-react-native`)"
   - RCT-Folly (from `../node_modules/react-native/third-party-podspecs/RCT-Folly.podspec`)
   - RCTRequired (from `../node_modules/react-native/Libraries/RCTRequired`)
   - RCTTypeSafety (from `../node_modules/react-native/Libraries/TypeSafety`)
@@ -838,10 +811,6 @@ DEPENDENCIES:
   - react-native-restart (from `../node_modules/react-native-restart`)
   - react-native-rsa-native (from `../node_modules/react-native-rsa-native`)
   - react-native-safe-area-context (from `../node_modules/react-native-safe-area-context`)
-  - "react-native-slider (from `../node_modules/@react-native-community/slider`)"
-  - react-native-tcp-socket (from `../node_modules/react-native-tcp-socket`)
-  - react-native-version-check (from `../node_modules/react-native-version-check`)
-  - react-native-video (from `../node_modules/react-native-video`)
   - react-native-view-shot (from `../node_modules/react-native-view-shot`)
   - react-native-webview (from `../node_modules/react-native-webview`)
   - React-NativeModulesApple (from `../node_modules/react-native/ReactCommon/react/nativemodule/core/platform/ios`)
@@ -861,7 +830,6 @@ DEPENDENCIES:
   - React-runtimescheduler (from `../node_modules/react-native/ReactCommon/react/renderer/runtimescheduler`)
   - React-utils (from `../node_modules/react-native/ReactCommon/react/utils`)
   - ReactCommon/turbomodule/core (from `../node_modules/react-native/ReactCommon`)
-  - rn-fetch-blob (from `../node_modules/rn-fetch-blob`)
   - "RNCAsyncStorage (from `../node_modules/@react-native-async-storage/async-storage`)"
   - "RNCClipboard (from `../node_modules/@react-native-clipboard/clipboard`)"
   - "RNCPushNotificationIOS (from `../node_modules/@react-native-community/push-notification-ios`)"
@@ -917,18 +885,16 @@ SPEC REPOS:
     - Intercom
     - libevent
     - libwebp
+    - lottie-ios
     - MMKV
     - MMKVCore
     - nanopb
-    - NWWebSocket
     - OpenSSL-Universal
     - PromisesObjC
-    - PusherSwift
     - SDWebImage
     - SDWebImageWebPCoder
     - Sentry
     - SocketRocket
-    - TweetNacl
     - YogaKit
 
 EXTERNAL SOURCES:
@@ -948,14 +914,10 @@ EXTERNAL SOURCES:
     :path: "../node_modules/@intercom/intercom-react-native"
   jail-monkey:
     :path: "../node_modules/jail-monkey"
-  lottie-ios:
-    :path: "../node_modules/lottie-ios"
   lottie-react-native:
     :path: "../node_modules/lottie-react-native"
   Permission-Camera:
     :path: "../node_modules/react-native-permissions/ios/Camera"
-  pusher-websocket-react-native:
-    :path: "../node_modules/@pusher/pusher-websocket-react-native"
   RCT-Folly:
     :podspec: "../node_modules/react-native/third-party-podspecs/RCT-Folly.podspec"
   RCTRequired:
@@ -1018,14 +980,6 @@ EXTERNAL SOURCES:
     :path: "../node_modules/react-native-rsa-native"
   react-native-safe-area-context:
     :path: "../node_modules/react-native-safe-area-context"
-  react-native-slider:
-    :path: "../node_modules/@react-native-community/slider"
-  react-native-tcp-socket:
-    :path: "../node_modules/react-native-tcp-socket"
-  react-native-version-check:
-    :path: "../node_modules/react-native-version-check"
-  react-native-video:
-    :path: "../node_modules/react-native-video"
   react-native-view-shot:
     :path: "../node_modules/react-native-view-shot"
   react-native-webview:
@@ -1064,8 +1018,6 @@ EXTERNAL SOURCES:
     :path: "../node_modules/react-native/ReactCommon/react/utils"
   ReactCommon:
     :path: "../node_modules/react-native/ReactCommon"
-  rn-fetch-blob:
-    :path: "../node_modules/rn-fetch-blob"
   RNCAsyncStorage:
     :path: "../node_modules/@react-native-async-storage/async-storage"
   RNCClipboard:
@@ -1154,17 +1106,14 @@ SPEC CHECKSUMS:
   jail-monkey: a71b35d482a70ecba844a90f002994012cf12a5d
   libevent: 4049cae6c81cdb3654a443be001fb9bdceff7913
   libwebp: 1786c9f4ff8a279e4dac1e8f385004d5fc253009
-  lottie-ios: 69495122151a378fdc7d1bb4c5930347e37baf1f
+  lottie-ios: 8f97d3271e155c2d688875c29cd3c74908aef5f8
   lottie-react-native: 8f9d4be452e23f6e5ca0fdc11669dc99ab52be81
   MMKV: f7d1d5945c8765f97f39c3d121f353d46735d801
   MMKVCore: c04b296010fcb1d1638f2c69405096aac12f6390
   nanopb: a0ba3315591a9ae0a16a309ee504766e90db0c96
-  NWWebSocket: 040d22f23438cc09aaeabf537beff67699c3c76d
   OpenSSL-Universal: ebc357f1e6bc71fa463ccb2fe676756aff50e88c
   Permission-Camera: 0a0fb4341f50ab242f496fb2f73380e0ec454fe7
   PromisesObjC: f5707f49cb48b9636751c5b2e7d227e43fba9f47
-  pusher-websocket-react-native: e40c49a1e4ec96d4157375aebcf44943f0f8f62f
-  PusherSwift: cad631bad86cfff4b8458dce1310a7774e469b1f
   RCT-Folly: 424b8c9a7a0b9ab2886ffe9c3b041ef628fd4fb1
   RCTRequired: 264adaca1d8b1a9c078761891898d4142df05313
   RCTTypeSafety: 279a89da7058a69899778a127be73fab38b84499
@@ -1196,10 +1145,6 @@ SPEC CHECKSUMS:
   react-native-restart: 45c8dca02491980f2958595333cbccd6877cb57e
   react-native-rsa-native: 12132eb627797529fdb1f0d22fd0f8f9678df64a
   react-native-safe-area-context: 9e40fb181dac02619414ba1294d6c2a807056ab9
-  react-native-slider: f843c250dfb8f847e5b39746626355974a462717
-  react-native-tcp-socket: e724380c910c2e704816ec817ed28f1342246ff7
-  react-native-version-check: 6cd36aad4e30b8e3216747e3b4ddeb09e0647af8
-  react-native-video: caa2af4f0c6ba457f66861706dd4b0118302a804
   react-native-view-shot: 6b7ed61d77d88580fed10954d45fad0eb2d47688
   react-native-webview: 670ee27ecc5d11a56e82ce6f03182896b368d37c
   React-NativeModulesApple: 9b58b8f5c1d8ea68d0a63f569a9e786d01281ea6
@@ -1219,7 +1164,6 @@ SPEC CHECKSUMS:
   React-runtimescheduler: 5b3b73748021c7349f06fcd24181df17860b8fb6
   React-utils: 22a77b05da25ce49c744faa82e73856dcae1734e
   ReactCommon: 07937a01c967f2023d6f2d07114315f099b4b436
-  rn-fetch-blob: f065bb7ab7fb48dd002629f8bdcb0336602d3cba
   RNCAsyncStorage: 826b603ae9c0f88b5ac4e956801f755109fa4d5c
   RNCClipboard: 0a720adef5ec193aa0e3de24c3977222c7e52a37
   RNCPushNotificationIOS: 64218f3c776c03d7408284a819b2abfda1834bc8
@@ -1249,7 +1193,6 @@ SPEC CHECKSUMS:
   Sentry: f8374b5415bc38dfb5645941b3ae31230fbeae57
   SocketRocket: f32cd54efbe0f095c4d7594881e52619cfe80b17
   transfi-ramp-react-native-sdk: 75063c233fff9f9eb04da96058103acb2c7262d4
-  TweetNacl: 3abf4d1d2082b0114e7a67410e300892448951e6
   Yoga: c32e0be1a17f8f1f0e633a3122f7666441f52c82
   YogaKit: f782866e155069a2cca2517aafea43200b01fd5a
 
