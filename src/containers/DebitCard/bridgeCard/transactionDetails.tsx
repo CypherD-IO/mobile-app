@@ -33,7 +33,6 @@ import { GlobalContext, GlobalContextDef } from '../../../core/globalContext';
 import { ICardTransaction } from '../../../models/card.model';
 import { capitalize, split } from 'lodash';
 import { t } from 'i18next';
-import useCardUtilities from '../../../hooks/useCardUtilities';
 import { CardProfile } from '../../../models/cardProfile.model';
 import Toast from 'react-native-toast-message';
 
@@ -259,7 +258,7 @@ export default function TransactionDetails() {
               t('CONVERSION_RATE') +
               '\n' +
               `(USD to ${String(fxCurrencySymbol)})`,
-            value: formatAmount(fxConversionPrice),
+            value: formatAmount(fxConversionPrice ?? 0),
           },
           {
             label: t('TRANSACTION_AMOUNT'),
@@ -350,9 +349,11 @@ export default function TransactionDetails() {
                 key={index}
                 isSettled={transaction?.isSettled ?? false}
                 isDeclined={transaction.tStatus === ReapTxnStatus.DECLINED}
-                reason={transaction?.cDReason ?? transaction?.dReason ?? ''}
+                reason={transaction?.dReason ?? transaction?.cDReason ?? ''}
               />
             );
+          } else {
+            return null;
           }
         })}
         {!transaction.isSettled &&
