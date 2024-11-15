@@ -33,7 +33,6 @@ import { GlobalContext, GlobalContextDef } from '../../../core/globalContext';
 import { ICardTransaction } from '../../../models/card.model';
 import { capitalize, split } from 'lodash';
 import { t } from 'i18next';
-import useCardUtilities from '../../../hooks/useCardUtilities';
 import { CardProfile } from '../../../models/cardProfile.model';
 import Toast from 'react-native-toast-message';
 
@@ -130,7 +129,7 @@ const TransactionDetail = ({
   item,
   isSettled,
   isDeclined = false,
-  cDReason = '',
+  reason = '',
 }: {
   item: {
     icon: any;
@@ -142,7 +141,7 @@ const TransactionDetail = ({
   };
   isSettled: boolean;
   isDeclined?: boolean;
-  cDReason?: string;
+  reason?: string;
 }) => {
   return (
     <CyDView className='pb-[5px] rounded-[7px] mt-[25px] bg-lightGrey'>
@@ -159,6 +158,8 @@ const TransactionDetail = ({
           // Check to remove default as a item value.
           if (!(detailItem.value === 'default')) {
             return <DetailItem item={detailItem} key={index} />;
+          } else {
+            return null;
           }
         })}
         {!isSettled && item.title === t('TRANSACTION_DETAILS') && (
@@ -167,8 +168,7 @@ const TransactionDetail = ({
               <CyDText className='font-bold underline'>
                 {isDeclined ? 'Reason:' : 'Note:'}
               </CyDText>
-              {' ' +
-                (isDeclined ? cDReason : t('TRANSACTION_YET_TO_BE_SETTLED'))}
+              {' ' + (isDeclined ? reason : t('TRANSACTION_YET_TO_BE_SETTLED'))}
             </CyDText>
           </CyDView>
         )}
@@ -258,7 +258,7 @@ export default function TransactionDetails() {
               t('CONVERSION_RATE') +
               '\n' +
               `(USD to ${String(fxCurrencySymbol)})`,
-            value: formatAmount(fxConversionPrice),
+            value: formatAmount(fxConversionPrice ?? 0),
           },
           {
             label: t('TRANSACTION_AMOUNT'),
@@ -347,11 +347,13 @@ export default function TransactionDetails() {
               <TransactionDetail
                 item={item}
                 key={index}
-                isSettled={transaction.isSettled}
+                isSettled={transaction?.isSettled ?? false}
                 isDeclined={transaction.tStatus === ReapTxnStatus.DECLINED}
-                cDReason={transaction.cDReason}
+                reason={transaction?.dReason ?? transaction?.cDReason ?? ''}
               />
             );
+          } else {
+            return null;
           }
         })}
         {!transaction.isSettled &&

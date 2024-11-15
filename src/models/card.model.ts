@@ -69,6 +69,7 @@ export interface ICardTransaction {
   label?: string;
   isSettled?: boolean;
   cDReason?: string;
+  dReason?: string;
   tStatus?: ReapTxnStatus;
 }
 
