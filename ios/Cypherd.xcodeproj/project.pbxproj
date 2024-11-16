@@ -416,7 +416,7 @@
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 			shellPath = /bin/zsh;
-			shellScript = "export SENTRY_PROPERTIES=sentry.properties\nexport EXTRA_PACKAGER_ARGS=\"--sourcemap-output $DERIVED_FILE_DIR/main.jsbundle.map\"\nset -e\n\nexport PATH=/opt/homebrew/bin:$PATH\nexport NODE_BINARY=node\n../node_modules/react-native/scripts/react-native-xcode.sh\n\n\n";
+			shellScript = "export SENTRY_PROPERTIES=sentry.properties\nexport EXTRA_PACKAGER_ARGS=\"--sourcemap-output $DERIVED_FILE_DIR/main.jsbundle.map\"\nset -e\n\nexport NODE_BINARY=$NODE_BINARY\n../node_modules/react-native/scripts/react-native-xcode.sh\n\n\n";
 		};
 		2632CEDCDC0CBE37FD5EE17B /* [CP] Copy Pods Resources */ = {
 			isa = PBXShellScriptBuildPhase;

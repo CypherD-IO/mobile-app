@@ -18,3 +18,22 @@ if [ ! -f "$PLIST_PATH" ]; then
 fi 
 
 echo "Successfully created GoogleService-Info.plist file"
+
+if [ -z "$SENTRY_PROPERTIES" ]; then 
+    echo "Error: SENTRY_PROPERTIES environment variable is not set" 
+    exit 1 
+fi 
+
+SENTRY_PATH="./ios/sentry.properties"
+if ! echo "$SENTRY_PROPERTIES" | base64 --decode > "$SENTRY_PATH"; then 
+    echo "Error: Failed to decode sentry.properties" 
+    exit 1 
+fi 
+
+chmod 600 "$SENTRY_PATH"
+if [ ! -f "$SENTRY_PATH" ]; then 
+    echo "Error: Failed to create sentry.properties" 
+    exit 1 
+fi 
+
+echo "Successfully created sentry.properties file"

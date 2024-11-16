@@ -25,6 +25,16 @@ nvm alias default 18.17.0
 # Verify Node.js version
 node -v
 
+NODE_PATH=$(which node)
+
+# Print the Node.js path for debugging purposes
+echo "Node.js binary is located at: $NODE_PATH"
+
+# Export NODE_BINARY for Xcode to use
+export NODE_BINARY=$NODE_PATH
+
+
+
 # Install dependencies with npm, using legacy-peer-deps if needed
 npm install --legacy-peer-deps
 
