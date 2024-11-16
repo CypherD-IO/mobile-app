@@ -25,6 +25,8 @@ nvm alias default 18.17.0
 # Verify Node.js version
 node -v
 
+sudo ln -sf $(which node) /Users/local/.nvm/versions/node/v18.17.0/bin/node
+
 NODE_PATH=$(which node)
 
 # Print the Node.js path for debugging purposes
