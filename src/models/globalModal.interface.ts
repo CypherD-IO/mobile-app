@@ -4,7 +4,7 @@ import { ImageSourcePropType } from 'react-native';
 export interface State {
   type: string;
   title: string;
-  description: string | JSX.Element;
+  description: string | React.JSX.Element;
   isModalVisible: boolean;
   modalImage?: ImageSourcePropType;
   modalButtonText?: {
@@ -18,7 +18,7 @@ export interface State {
 export interface PromptImportWalletDef {
   type: string;
   address: string;
-  description: string | JSX.Element;
+  description: string | React.JSX.Element;
   isModalVisible: boolean;
   onSuccess: () => void;
   onFailure: () => void;
@@ -34,7 +34,7 @@ export interface SetPinModalDef {
 
 export interface CustomModalLayoutDef {
   isModalVisible: boolean;
-  customComponent: JSX.Element;
+  customComponent: React.JSX.Element;
   onSuccess: () => void;
   onFailure: () => void;
 }

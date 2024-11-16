@@ -1,7 +1,7 @@
-platform :ios, '15.0'
 require_relative '../node_modules/react-native/scripts/react_native_pods'
 require_relative '../node_modules/@react-native-community/cli-platform-ios/native_modules'
 
+platform :ios, '15.1'
 use_frameworks!
 $RNFirebaseAsStaticFramework = true
 $FirebaseSDKVersion = '11.4.0'
@@ -11,9 +11,6 @@ target 'Cypherd' do
   $RNFirebaseAnalyticsWithoutAdIdSupport = true
   use_react_native!(
     :path => config[:reactNativePath],
-    # to enable hermes on iOS, change `false` to `true` and then install pods
-    :hermes_enabled => false,
-    # :flipper_configuration => FlipperConfiguration.enabled
   )
 
   permissions_path = '../node_modules/react-native-permissions/ios'
@@ -74,14 +71,37 @@ target 'Cypherd' do
   
 
   post_install do |installer|
-    react_native_post_install(installer)
-    __apply_Xcode_12_5_M1_post_install_workaround(installer)
+    react_native_post_install(installer, config[:reactNativePath],
+    :mac_catalyst_enabled => false)
 
     installer.pods_project.targets.each do |target|
       target.build_configurations.each do |config|
         config.build_settings['ONLY_ACTIVE_ARCH'] = 'NO'
         config.build_settings['EXCLUDED_ARCHS[sdk=iphonesimulator*]'] = 'arm64'
         config.build_settings['IPHONEOS_DEPLOYMENT_TARGET'] = '15.0'
+      end
+    end
+
+    # Modify RCT-Folly Portability.h to disable coroutines
+    Dir.glob(installer.sandbox.root + "RCT-Folly/folly/Portability.h") do |file|
+      begin
+        # First try to make the file writable
+        system "chmod +w #{file}"
+        
+        contents = File.read(file)
+        modified_contents = contents.gsub(/#define FOLLY_HAS_COROUTINES 1/, '#define FOLLY_HAS_COROUTINES 0')
+        
+        # Try writing with elevated privileges if needed
+        if !File.writable?(file)
+          system "sudo chmod +w #{file}"
+        end
+        
+        File.write(file, modified_contents)
+        
+        # Optionally restore original permissions
+        system "chmod -w #{file}"
+      rescue => e
+        Pod::UI.warn "Failed to modify Portability.h: #{e.message}"
       end
     end
   end

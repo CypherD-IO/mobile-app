@@ -39,7 +39,7 @@ interface CardCarouselProps {
     boxWidth: number;
     halfBoxDistance: number;
     panX: SharedValue<number>;
-  }) => JSX.Element;
+  }) => React.JSX.Element;
   onCardChange?: (index: number) => void;
 }
 

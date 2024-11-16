@@ -35,7 +35,7 @@ import { screenTitle } from '../../../../constants';
 import Loading from '../../../../components/v2/loading';
 import CardProviderSwitch from '../../../../components/cardProviderSwitch';
 
-export default function OTPVerification(): JSX.Element {
+export default function OTPVerification(): React.JSX.Element {
   const { t } = useTranslation();
   const navigation = useNavigation<NavigationProp<ParamListBase>>();
   const { getWithAuth, postWithAuth, patchWithAuth } = useAxios();

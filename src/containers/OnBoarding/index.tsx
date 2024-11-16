@@ -45,7 +45,7 @@ export default function OnBoarding({ navigation }) {
     setCurrentCarouselIndex(index);
   };
 
-  const Screen1 = (): JSX.Element => {
+  const Screen1 = (): React.JSX.Element => {
     return (
       <CyDScrollView className={''} style={{ width }}>
         <CyDText
@@ -66,7 +66,7 @@ export default function OnBoarding({ navigation }) {
     );
   };
 
-  const Screen2 = (): JSX.Element => {
+  const Screen2 = (): React.JSX.Element => {
     return (
       <CyDScrollView className={''} style={{ width }}>
         <CyDText
@@ -87,7 +87,7 @@ export default function OnBoarding({ navigation }) {
     );
   };
 
-  const Screen3 = useCallback((): JSX.Element => {
+  const Screen3 = useCallback((): React.JSX.Element => {
     return (
       <CyDScrollView className={''} style={{ width }}>
         <CyDView className='bg-secondaryBackgroundColor py-[20px] rounded-[25px] m-[12px] px-[20px]'>
@@ -228,7 +228,7 @@ export default function OnBoarding({ navigation }) {
   };
 
   const Indicator = useCallback(
-    ({ scrollX }: { scrollX: any }): JSX.Element => {
+    ({ scrollX }: { scrollX: any }): React.JSX.Element => {
       return (
         <CyDView className={''}>
           {currentCarouselIndex !== onBoardingData.length - 1 && (

@@ -11,7 +11,7 @@ import { CardSectionHeights } from '.';
 
 export interface AnimatedToolBarProps {
   scrollY: SharedValue<number>;
-  children: JSX.Element;
+  children: React.JSX.Element;
   cardSectionHeight: CardSectionHeights;
 }
 

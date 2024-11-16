@@ -12,7 +12,7 @@ export default function CyDContainer({
   backgroundImage,
   accentColor,
 }: {
-  children: JSX.Element[];
+  children: React.JSX.Element[];
   backgroundImage?: ImageSourcePropType;
   accentColor?: string;
 }) {

@@ -9,7 +9,7 @@ module.exports = (api) => {
   return {
     comments: false,
     compact: true,
-    presets: [['module:metro-react-native-babel-preset', { useTransformReactJSXExperimental: true }],],
+    presets: [['module:@react-native/babel-preset', { useTransformReactJSXExperimental: true }],],
     plugins: [
       'react-native-reanimated/plugin',
       'nativewind/babel',
