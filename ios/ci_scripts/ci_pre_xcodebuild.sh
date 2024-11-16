@@ -24,7 +24,7 @@ if [ -z "$SENTRY_PROPERTIES" ]; then
     exit 1 
 fi 
 
-SENTRY_PATH="./ios/sentry.properties"
+SENTRY_PATH="./sentry.properties"
 if ! echo "$SENTRY_PROPERTIES" | base64 --decode > "$SENTRY_PATH"; then 
     echo "Error: Failed to decode sentry.properties" 
     exit 1 
