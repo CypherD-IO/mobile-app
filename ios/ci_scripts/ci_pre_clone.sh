@@ -17,4 +17,4 @@ if [ ! -f "$PLIST_PATH" ]; then
     exit 1 
 fi 
 
-echo "Successfully created GoogleService-Info.plist"
+echo "Successfully created GoogleService-Info.plist file"
