@@ -1,3 +1,4 @@
+use_modular_headers!
 require_relative '../node_modules/react-native/scripts/react_native_pods'
 require_relative '../node_modules/@react-native-community/cli-platform-ios/native_modules'
 
@@ -31,7 +32,7 @@ target 'Cypherd' do
 
   pod 'RNLocalize', :path => '../node_modules/react-native-localize'
 
-  pod 'Firebase/Crashlytics', '~> 11.4.0'
+  pod 'Firebase/Crashlytics'
 
   target 'CypherdTests' do
     inherit! :complete
