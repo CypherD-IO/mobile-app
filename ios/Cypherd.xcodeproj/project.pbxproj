@@ -688,6 +688,7 @@
 				DEFINES_MODULE = YES;
 				DEVELOPMENT_TEAM = 7FZT7KSBXD;
 				ENABLE_BITCODE = NO;
+				ENABLE_DEBUG_DYLIB = NO;
 				INFOPLIST_FILE = Cypherd/Info.plist;
 				INFOPLIST_KEY_CFBundleDisplayName = "Cypher Wallet";
 				INFOPLIST_KEY_LSApplicationCategoryType = "public.app-category.finance";
@@ -722,6 +723,7 @@
 				CURRENT_PROJECT_VERSION = 1;
 				DEFINES_MODULE = YES;
 				DEVELOPMENT_TEAM = 7FZT7KSBXD;
+				ENABLE_DEBUG_DYLIB = NO;
 				INFOPLIST_FILE = Cypherd/Info.plist;
 				INFOPLIST_KEY_CFBundleDisplayName = "Cypher Wallet";
 				INFOPLIST_KEY_LSApplicationCategoryType = "public.app-category.finance";
