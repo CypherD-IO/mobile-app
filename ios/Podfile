@@ -32,7 +32,7 @@ target 'Cypherd' do
 
   pod 'RNLocalize', :path => '../node_modules/react-native-localize'
 
-  pod 'Firebase/Crashlytics'
+  # pod 'Firebase/Crashlytics'
 
   target 'CypherdTests' do
     inherit! :complete
