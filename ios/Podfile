@@ -7,6 +7,8 @@ platform :ios, '15.0'
 target 'Cypherd' do
   config = use_native_modules!
   $RNFirebaseAnalyticsWithoutAdIdSupport = true
+  use_frameworks! :linkage => :static
+  $RNFirebaseAsStaticFramework = true
   use_react_native!(
     :path => config[:reactNativePath],
     # to enable hermes on iOS, change `false` to `true` and then install pods
