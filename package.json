@@ -65,6 +65,7 @@
     "axios": "^0.24.0",
     "axios-retry": "^3.2.5",
     "base-64": "^1.0.0",
+    "big-integer": "^1.6.52",
     "bignumber.js": "^9.1.0",
     "bip39": "^3.0.4",
     "browserify-zlib": "^0.1.4",

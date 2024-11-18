@@ -1,21 +1,18 @@
-/**
- * Metro configuration for React Native
- * https://github.com/facebook/react-native
- *
- * @format
- */
+const { getDefaultConfig } = require('@react-native/metro-config');
 
-const extraNodeModules = require('node-libs-browser');
 module.exports = {
   resolver: {
-    extraNodeModules
+    extraNodeModules: require('node-libs-browser'),
+    // Add any additional resolver options here
   },
   transformer: {
     getTransformOptions: async () => ({
       transform: {
         experimentalImportSupport: true,
-        inlineRequires: true
-      }
-    })
-  }
+        inlineRequires: true,
+      },
+    }),
+  },
+  ...getDefaultConfig(__dirname), // Extend the default Metro config
 };
+
