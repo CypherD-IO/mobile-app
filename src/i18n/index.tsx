@@ -419,6 +419,7 @@ const resources = {
       SENT_AUTHENTICATION_CODE_TO: 'We have sent authentication code to ',
       THIS_NUMBER: 'this number',
       RESEND_CODE_INIT_CAPS: 'Resend Otp',
+      RESEND_OTP: 'Resend OTP',
       SEND_OTP: 'Send OTP',
       CHANGE_NUMBER_INIT_CAPS: 'Change Number',
       CHANGE_EMAIL_INIT_CAPS: 'Change Email Id',
@@ -483,7 +484,7 @@ const resources = {
       CARD_SENT_OTP:
         'We have sent an authentication code to mobile number and email registered with this card.',
       CARD_SENT_OTP_EMAIL_AND_TELEGRAM:
-        'We have sent an authentication code to your telegram and email registered with this card.',
+        'Please check for OTP in your Email or Telegram.',
       MONTH: 'Month',
       TRANSACTIONS_NOT_FOUND: 'No Transactions Yet!!',
       USD: 'USD',
@@ -533,6 +534,11 @@ const resources = {
       CHANGE_PIN_TITLE: 'Enter your Old PIN',
       PIN_SET_SUCCESSFUL: 'PIN SUCCESSFULLY SET',
       PIN_SET_SUCCESSFUL_DESCRIPTION: 'Your new PIN has been set successfully.',
+      CREATE_PIN_SUCCESSFUL: 'You’ve Created your PIN',
+      CREATE_PIN_SUCCESSFUL_DESCRIPTION:
+        "PIN Protection is all set. You'll use this PIN to Authorise offline transaction across offline stores and ATMs ",
+      KEEP_PIN_SAFE:
+        'Keep your PIN private. Cypher will never ask customers PIN.',
       VERIFY_PIN: 'VERIFY PIN',
       SET_CHANGE_PIN_TITLE: 'Enter your New PIN',
       CONFIRM_PIN: 'CONFIRM PIN',
@@ -802,6 +808,7 @@ const resources = {
         'Enter last 4 digits of card number and otp to activate your card',
       ENTER_OTP: 'Enter OTP',
       ENTER_PIN_PLACEHOLDER: 'Enter PIN',
+      RE_ENTER_PIN_PLACEHOLDER: 'Re-enter PIN',
       ACTIVATE: 'ACTIVATE',
       INVALID_DETAILS: 'Please ensure that the details submitted are valid',
       ACTIVATE_PYHSICAL_CARD: 'Activate Physical Card',
@@ -814,7 +821,7 @@ const resources = {
       CARD_PIN_SET_HEADER: 'Your new pin has been set',
       CARD_PIN_SET_DESCRIPTION: 'Use your card with the new pin',
       CARD_SET_PIN_TO_USE_CARD:
-        'This pin will be used while making transactions with your card',
+        'This PIN will be used to authorise your offline transactions and ATM Withdrawals',
       INSUFFICIENT_BALANCE_CARD:
         'Amount that you are trying to load is higher than your actual balance or you might not have sufficient gas for it',
       MAYBE_LATER: 'Maybe later',
@@ -1349,6 +1356,7 @@ const resources = {
       CONNECTED: 'Connected',
       NOT_CONNECTED: 'Not Connected',
       REFRESH: 'Refresh',
+      OTP_VERIFICATION: 'OTP Verification',
       OTP_VERIFICATION_FAILED: 'OTP Verification Failed',
       IDENTITY_VERIFICATION: 'Identity Verification',
       KYC_INITIATED: 'Verification Pending',
@@ -1408,6 +1416,7 @@ const resources = {
       DISCORD_JOINED_SUCCESSFULLY_DESCRIPTION:
         'You have successfully joined the Premium Lounge on Discord 🎉.',
       DISCORD_JOINING: 'Joining Discord ...',
+      SET_CARD_PIN: 'Set Card PIN',
     },
   },
 };

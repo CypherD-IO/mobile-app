@@ -176,7 +176,7 @@ export default function WithdrawConfirmation() {
               </CyDView>
             </CyDView>
             <CyDText className='font-medium text-[12px] text-n200 mt-[4px]'>
-              {'It will take up to 24 hours to credit in your wallet '}
+              {'It will take up to 2-3 business days to credit in your wallet '}
             </CyDText>
           </CyDView>
         </CyDKeyboardAwareScrollView>
