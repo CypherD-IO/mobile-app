@@ -961,15 +961,8 @@ export function DebitCardStackScreen({ route }) {
       <FundCardStack.Screen
         name={screenTitle.CARD_SET_PIN_SCREEN}
         component={SetPinScreen}
-        options={({ navigation }) => ({
-          headerTransparent: false,
-          headerShadowVisible: false,
-          title: '',
-          headerTitleAlign: 'center',
-          headerTitleStyle: portfolioStackScreenHeaderTitleStyles,
-          headerTintColor: Colors.primaryTextColor,
-          headerBackTitleVisible: false,
-          headerLeft: () => defaultHeaderLeft(navigation, keyboardHeight),
+        options={() => ({
+          headerShown: false,
         })}
       />
 
