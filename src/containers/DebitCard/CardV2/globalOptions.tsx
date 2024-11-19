@@ -2,7 +2,7 @@ import React, { useContext, useEffect, useState } from 'react';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import {
   CyDFastImage,
-  CyDKeyboardAwareScrollView,
+  CyDScrollView,
   CyDText,
   CyDTouchView,
   CyDView,
@@ -19,7 +19,11 @@ import {
 } from '@react-navigation/native';
 import { Card } from '../../../models/card.model';
 import { screenTitle } from '../../../constants';
-import { CardProviders, GlobalContextType } from '../../../constants/enum';
+import {
+  CardProviders,
+  CypherPlanId,
+  GlobalContextType,
+} from '../../../constants/enum';
 import AutoLoadOptionsModal from '../bridgeCard/autoLoadOptions';
 import { get, isEqual } from 'lodash';
 import { CardProfile } from '../../../models/cardProfile.model';
@@ -28,11 +32,12 @@ import { GlobalContext, GlobalContextDef } from '../../../core/globalContext';
 import useAxios from '../../../core/HttpRequest';
 import { showToast } from '../../utilities/toastUtility';
 import { useGlobalModalContext } from '../../../components/v2/GlobalModal';
+import { StyleSheet } from 'react-native';
 
 interface RouteParams {
   cardProvider: string;
   card: Card;
-  onPressPlanChange: () => void;
+  onPressPlanChange: (openComparePlans: boolean) => void;
 }
 
 export default function GlobalOptions() {
@@ -51,7 +56,15 @@ export default function GlobalOptions() {
   const [isTelegramLinked, setIsTelegramLinked] = useState<boolean>(
     get(cardProfile, ['isTelegramSetup'], false),
   );
-  const { deleteWithAuth, postWithAuth, getWithAuth } = useAxios();
+  const [isAutoloadConfigured, setIsAutoloadConfigured] = useState<boolean>(
+    get(cardProfile, ['isAutoloadConfigured'], false),
+  );
+  const [isPremium, setIsPremium] = useState<boolean>(
+    get(cardProfile, ['planInfo', 'planId'], CypherPlanId.BASIC_PLAN) ===
+      CypherPlanId.PRO_PLAN,
+  );
+
+  const { deleteWithAuth, getWithAuth } = useAxios();
   const { showModal, hideModal } = useGlobalModalContext();
 
   const refreshProfile = async () => {
@@ -59,7 +72,13 @@ export default function GlobalOptions() {
     if (!response.isError) {
       const tempProfile = await cardProfileModal(response.data);
       setIsTelegramLinked(get(tempProfile, ['isTelegramSetup'], false));
-
+      setIsAutoloadConfigured(
+        get(tempProfile, ['isAutoloadConfigured'], false),
+      );
+      setIsPremium(
+        get(tempProfile, ['planInfo', 'planId'], CypherPlanId.BASIC_PLAN) ===
+          CypherPlanId.PRO_PLAN,
+      );
       // Compare the new profile with the existing one
       if (!isEqual(tempProfile, globalContext.globalState.cardProfile)) {
         globalContext.globalDispatch({
@@ -100,7 +119,7 @@ export default function GlobalOptions() {
     }
   };
 
-  const cardGlobalOptions = [
+  const accountSecurityOptions = [
     ...(cardProvider === CardProviders.REAP_CARD
       ? [
           {
@@ -111,18 +130,6 @@ export default function GlobalOptions() {
               navigation.navigate(screenTitle.LOCKDOWN_MODE, {
                 currentCardProvider: cardProvider,
               });
-            },
-          },
-        ]
-      : []),
-    ...(cardProvider === CardProviders.REAP_CARD
-      ? [
-          {
-            title: t<string>('CHANGE_PLAN'),
-            description: 'Change your plan',
-            image: AppImages.UPGRADE_TO_PHYSICAL_CARD_ARROW,
-            action: () => {
-              onPressPlanChange();
             },
           },
         ]
@@ -148,6 +155,23 @@ export default function GlobalOptions() {
               });
             },
           },
+        ]
+      : []),
+    {
+      title: 'Linked Wallets',
+      description: 'Link another wallet to card',
+      image: AppImages.WALLETS,
+      action: () => {
+        navigation.navigate(screenTitle.LINKED_WALLETS, {
+          currentCardProvider: cardProvider,
+        });
+      },
+    },
+  ];
+
+  const notificationPersonalInformationOptions = [
+    ...(cardProvider === CardProviders.REAP_CARD
+      ? [
           {
             title: 'Telegram Bot',
             description: 'Manage your account with telegram',
@@ -162,16 +186,6 @@ export default function GlobalOptions() {
           },
         ]
       : []),
-    {
-      title: 'Linked Wallets',
-      description: 'Link another wallet to card',
-      image: AppImages.WALLETS,
-      action: () => {
-        navigation.navigate(screenTitle.LINKED_WALLETS, {
-          currentCardProvider: cardProvider,
-        });
-      },
-    },
     {
       title: 'Notification Settings',
       description: 'Set how you want to get notified',
@@ -190,6 +204,9 @@ export default function GlobalOptions() {
         navigation.navigate(screenTitle.CARD_UPDATE_CONTACT_DETAILS_SCREEN);
       },
     },
+  ];
+
+  const othersOptions = [
     {
       title: 'Frequently Asked Questions',
       description: 'Clear your doubts',
@@ -218,135 +235,259 @@ export default function GlobalOptions() {
       <CyDView
         className='flex flex-col justify-between h-full bg-n0'
         style={{ paddingTop: insets.top }}>
-        <CyDView className='flex-1'>
-          <CyDView className='flex flex-row items-center py-[16px] px-[16px] '>
-            <CyDTouchView
-              className='pr-[16px]'
-              onPress={() => {
-                navigation.goBack();
-              }}>
-              <CyDFastImage
-                source={AppImages.LEFT_ARROW_LONG}
-                className='w-[20px] h-[16px]'
-              />
-            </CyDTouchView>
-            <CyDText className='text-[16px] font-bold text-base400'>
-              {t('ACCOUNT_OPTIONS')}
-            </CyDText>
-          </CyDView>
-          <CyDKeyboardAwareScrollView className='flex-1 bg-n30 pb-[16px]'>
-            <CyDView className='px-[12px] mb-[22px]'>
-              {cardGlobalOptions.map((option, index) => {
-                const { image, title, description, action } = option;
+        <CyDView className='flex flex-row items-center py-[16px] px-[16px] '>
+          <CyDTouchView
+            className='pr-[16px]'
+            onPress={() => {
+              navigation.goBack();
+            }}>
+            <CyDFastImage
+              source={AppImages.LEFT_ARROW_LONG}
+              className='w-[20px] h-[16px]'
+            />
+          </CyDTouchView>
+          <CyDText className='text-[16px] font-bold text-base400'>
+            {t('ACCOUNT_OPTIONS')}
+          </CyDText>
+        </CyDView>
+        <CyDScrollView className='flex-1 bg-n20 px-[16px]'>
+          {!isPremium && (
+            <CyDView
+              className='bg-p0 rounded-[16px] p-[16px] mt-[30px]'
+              style={styles.shadow}>
+              <CyDView className='p-[12px]'>
+                <CyDText className='text-[12px] font-medium text-center'>
+                  {'Go premium for just'}
+                  <CyDText className='font-extrabold'>{' $199/year'}</CyDText>
+                  {' and '}
+                  <CyDText className='font-extrabold'>
+                    {'Maximize Your Saving!'}
+                  </CyDText>
+                </CyDText>
+                <CyDView className='mt-[12px] flex flex-row justify-center items-center'>
+                  <CyDTouchView
+                    style={styles.buttonShadow}
+                    className='flex flex-row items-center bg-n0 px-[10px] py-[6px] rounded-full w-[105px] mr-[12px]'
+                    onPress={() => onPressPlanChange(false)}>
+                    <CyDText className='text-[14px] font-extrabold mr-[2px]'>
+                      {'Go'}
+                    </CyDText>
+                    <CyDFastImage
+                      source={AppImages.PREMIUM_TEXT_GRADIENT}
+                      className='w-[60px] h-[10px]'
+                    />
+                  </CyDTouchView>
+                  <CyDTouchView
+                    style={styles.buttonShadow}
+                    className=' bg-n0 px-[10px] py-[6px] rounded-full'
+                    onPress={() => onPressPlanChange(true)}>
+                    <CyDText className=' text-center text-[14px] font-semibold text-n700 mr-[2px]'>
+                      {'Compare plans'}
+                    </CyDText>
+                  </CyDTouchView>
+                </CyDView>
+              </CyDView>
+            </CyDView>
+          )}
 
+          <CyDView className='mt-[16px]'>
+            <CyDText className='text-n200 font-medium text-[12px]'>
+              Account& Security
+            </CyDText>
+            <CyDView className='mt-[6px] rounded-[6px] bg-n0'>
+              {accountSecurityOptions.map((option, index) => {
+                const { image, title, action } = option;
+                return (
+                  <CyDTouchView
+                    key={index}
+                    onPress={action}
+                    className='flex flex-row bg-n0 rounded-[8px] px-[16px] pt-[16px]'>
+                    <CyDFastImage
+                      source={image}
+                      className={'h-[24px] w-[24px] mr-[8px] pb-[16px]'}
+                      resizeMode={'contain'}
+                    />
+                    <CyDView className='flex flex-row items-center justify-between flex-1 border-b-[0.5px] border-n30 pb-[16px]'>
+                      <CyDText className='text-[16px] font-regular text-base400 border'>
+                        {title}
+                      </CyDText>
+                      {!isAutoloadConfigured && title === 'Auto Load' ? (
+                        <CyDText className='text-[14px] font-bold text-blue300'>
+                          {'Enable'}
+                        </CyDText>
+                      ) : (
+                        <CyDFastImage
+                          source={AppImages.RIGHT_ARROW}
+                          className='h-[20px] w-[20px]'
+                          resizeMode={'contain'}
+                        />
+                      )}
+                    </CyDView>
+                  </CyDTouchView>
+                );
+              })}
+            </CyDView>
+          </CyDView>
+
+          <CyDView className='mt-[16px]'>
+            <CyDText className='text-n200 font-medium text-[12px]'>
+              Notification & Personal Information
+            </CyDText>
+            <CyDView className='mt-[6px] rounded-[6px] bg-n0'>
+              {notificationPersonalInformationOptions.map((option, index) => {
+                const { image, title, action } = option;
                 if (title === 'Telegram Bot') {
                   return (
-                    <CyDView
-                      key={index}
-                      className='bg-white rounded-[8px] mt-[16px]'>
+                    <CyDView key={index} className=''>
                       <CyDTouchView
+                        key={index}
                         onPress={() => {
                           if (!isTelegramLinked) {
                             void action();
                           }
                         }}
-                        className='flex flex-row justify-between items-center m-[12px]'>
-                        <CyDView className='flex flex-row items-center w-[90%]'>
-                          <CyDFastImage
-                            source={image}
-                            className={'h-[24px] w-[24px] mr-[8px]'}
-                            resizeMode={'contain'}
-                          />
-                          <CyDView className='flex flex-col justify-between flex-1 px-[6px]'>
-                            <CyDText className='text-[16px] font-medium text-base400'>
-                              {title}
-                            </CyDText>
-                            <CyDText className='text-[12px] font-medium text-n50 flex-wrap'>
-                              {description}
-                            </CyDText>
-                          </CyDView>
-                        </CyDView>
-                        {!isTelegramLinked && (
-                          <CyDView>
-                            <CyDText className='font-semibold text-blue-700 text-[12px]'>
+                        className='flex flex-row bg-n0 rounded-[8px] px-[16px] pt-[16px]'>
+                        <CyDFastImage
+                          source={image}
+                          className={'h-[24px] w-[24px] mr-[8px] pb-[16px]'}
+                          resizeMode={'contain'}
+                        />
+                        <CyDView className='flex flex-row items-center justify-between flex-1 border-b-[0.5px] border-n30 pb-[16px]'>
+                          <CyDText className='text-[16px] font-regular text-base400 border'>
+                            {title}
+                          </CyDText>
+                          {!isTelegramLinked && (
+                            <CyDText className='text-[14px] font-bold text-blue300'>
                               {'Setup'}
                             </CyDText>
-                          </CyDView>
-                        )}
+                          )}
+                        </CyDView>
                       </CyDTouchView>
                       {isTelegramLinked && (
-                        <>
+                        <CyDView className='pl-[16px]'>
                           <CyDTouchView
                             onPress={() => {
                               navigation.navigate(
                                 screenTitle.TELEGRAM_PIN_SETUP,
                               );
                             }}
-                            className='flex flex-row justify-between items-center border-t border-n30 p-[12px]'>
-                            <CyDView className='flex flex-row items-center w-[90%]'>
-                              <CyDView className='flex flex-col justify-between flex-1 px-[6px]'>
-                                <CyDText className='text-[16px] font-medium text-base400'>
-                                  {'Reset Telegram Pin'}
-                                </CyDText>
-                              </CyDView>
-                            </CyDView>
-                            <CyDFastImage
-                              source={AppImages.RIGHT_ARROW}
-                              className='h-[24px] w-[24px] mr-[8px]'
-                              resizeMode={'contain'}
+                            className='flex flex-row bg-n0 rounded-[8px] px-[16px] pt-[16px]'>
+                            <CyDView
+                              className={'h-[24px] w-[24px] mr-[8px] pb-[16px]'}
                             />
+                            <CyDView className='flex flex-row items-center justify-between flex-1 border-b-[0.5px] border-n30 pb-[16px]'>
+                              <CyDText className='text-[16px] font-regular text-base400 border'>
+                                {'Reset Telegram Pin'}
+                              </CyDText>
+                              <CyDFastImage
+                                source={AppImages.RIGHT_ARROW}
+                                className='h-[20px] w-[20px]'
+                                resizeMode={'contain'}
+                              />
+                            </CyDView>
                           </CyDTouchView>
                           <CyDTouchView
                             onPress={() => {
                               void disconnectTelegram();
                             }}
-                            className='flex flex-row justify-between items-center border-t border-n30 p-[12px]'>
-                            <CyDView className='flex flex-row items-center w-[90%]'>
-                              <CyDView className='flex flex-col justify-between flex-1 px-[6px]'>
-                                <CyDText className='text-[16px] font-medium text-red-700'>
-                                  {'Disconnect Telegram'}
-                                </CyDText>
-                              </CyDView>
+                            className='flex flex-row bg-n0 rounded-[8px] px-[16px] pt-[16px]'>
+                            <CyDView
+                              className={'h-[24px] w-[24px] mr-[8px] pb-[16px]'}
+                            />
+                            <CyDView className='flex flex-row items-center justify-between flex-1 border-b-[0.5px] border-n30 pb-[16px]'>
+                              <CyDText className='text-[16px] font-regular text-red400 border'>
+                                {'Disconnect Telegram'}
+                              </CyDText>
                             </CyDView>
                           </CyDTouchView>
-                        </>
+                        </CyDView>
                       )}
                     </CyDView>
                   );
                 }
-
                 return (
                   <CyDTouchView
                     key={index}
                     onPress={action}
-                    className='flex flex-row justify-between items-center bg-white rounded-[8px] p-[12px] mt-[16px]'>
-                    <CyDView className='flex flex-row items-center w-[90%]'>
-                      <CyDFastImage
-                        source={image}
-                        className={'h-[24px] w-[24px] mr-[8px]'}
-                        resizeMode={'contain'}
-                      />
-                      <CyDView className='flex flex-col justify-between flex-1 px-[6px]'>
-                        <CyDText className='text-[16px] font-medium text-base400'>
-                          {title}
-                        </CyDText>
-                        <CyDText className='text-[12px] font-medium text-n50 flex-wrap'>
-                          {description}
-                        </CyDText>
-                      </CyDView>
-                    </CyDView>
+                    className='flex flex-row bg-n0 rounded-[8px] px-[16px] pt-[16px]'>
                     <CyDFastImage
-                      source={AppImages.RIGHT_ARROW}
-                      className='h-[24px] w-[24px] mr-[8px]'
+                      source={image}
+                      className={'h-[24px] w-[24px] mr-[8px] pb-[16px]'}
                       resizeMode={'contain'}
                     />
+                    <CyDView className='flex flex-row items-center justify-between flex-1 border-b-[0.5px] border-n30 pb-[16px]'>
+                      <CyDText className='text-[16px] font-regular text-base400 border'>
+                        {title}
+                      </CyDText>
+                      {!isAutoloadConfigured && title === 'Auto Load' ? (
+                        <CyDText className='text-[14px] font-bold text-blue300'>
+                          {'Enable'}
+                        </CyDText>
+                      ) : (
+                        <CyDFastImage
+                          source={AppImages.RIGHT_ARROW}
+                          className='h-[20px] w-[20px]'
+                          resizeMode={'contain'}
+                        />
+                      )}
+                    </CyDView>
                   </CyDTouchView>
                 );
               })}
             </CyDView>
-          </CyDKeyboardAwareScrollView>
-        </CyDView>
+          </CyDView>
+
+          <CyDView className='mt-[16px] mb-[44px]'>
+            <CyDText className='text-n200 font-medium text-[12px]'>
+              Others
+            </CyDText>
+            <CyDView className='mt-[6px] rounded-[6px] bg-n0'>
+              {othersOptions.map((option, index) => {
+                const { image, title, action } = option;
+                return (
+                  <CyDTouchView
+                    key={index}
+                    onPress={action}
+                    className='flex flex-row bg-n0 rounded-[8px] px-[16px] pt-[16px]'>
+                    <CyDFastImage
+                      source={image}
+                      className={'h-[24px] w-[24px] mr-[8px] pb-[16px]'}
+                      resizeMode={'contain'}
+                    />
+                    <CyDView className='flex flex-row items-center justify-between flex-1 border-b-[0.5px] border-n30 pb-[16px]'>
+                      <CyDText className='text-[16px] font-regular text-base400 border'>
+                        {title}
+                      </CyDText>
+                      <CyDFastImage
+                        source={AppImages.RIGHT_ARROW}
+                        className='h-[20px] w-[20px]'
+                        resizeMode={'contain'}
+                      />
+                    </CyDView>
+                  </CyDTouchView>
+                );
+              })}
+            </CyDView>
+          </CyDView>
+        </CyDScrollView>
       </CyDView>
     </>
   );
 }
+
+const styles = StyleSheet.create({
+  shadow: {
+    shadowColor: '#000000',
+    shadowOffset: { width: 0, height: 1 },
+    shadowOpacity: 0.12,
+    shadowRadius: 12,
+    elevation: 4,
+  },
+  buttonShadow: {
+    shadowColor: '#000000',
+    shadowOffset: { width: 0, height: 1 },
+    shadowOpacity: 0.1,
+    shadowRadius: 8,
+    elevation: 4,
+  },
+});

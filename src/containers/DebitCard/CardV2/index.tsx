@@ -241,11 +241,13 @@ export default function CypherCardScreen() {
     }
     return false;
   };
-  const onPressPlanChange = () => {
+
+  const onPressPlanChange = (openComparePlans: boolean) => {
     navigation.navigate(screenTitle.SELECT_PLAN, {
       toPage: screenTitle.DEBIT_CARD_SCREEN,
       deductAmountNow: true,
       cardBalance,
+      openComparePlans,
     });
   };
 
