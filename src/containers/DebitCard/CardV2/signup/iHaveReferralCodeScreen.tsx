@@ -76,8 +76,10 @@ const IHaveReferralCodeScreen = () => {
           title: t('REFERRAL_CODE_APPLIED_SUCCESSFULLY'),
           description: t('REFERRAL_CODE_APPLIED_SUCCESSFULLY_DESCRIPTION'),
           onSuccess: () => {
-            setPlanChangeModalVisible(true);
             hideModal();
+            setTimeout(() => {
+              setPlanChangeModalVisible(true);
+            }, 500);
           },
           onFailure: hideModal,
         });

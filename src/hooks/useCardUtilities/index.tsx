@@ -15,7 +15,7 @@ export default function useCardUtilities() {
   const cardProfile: CardProfile = globalContext.globalState.cardProfile;
   const provider = cardProfile?.provider;
 
-  const getProvider = async (profile: CardProfile) => {
+  const getProvider = (profile: CardProfile) => {
     if (hasBothProviders(profile)) {
       return provider ?? CardProviders.REAP_CARD;
     } else if (has(profile, CardProviders.PAYCADDY)) {
@@ -34,7 +34,7 @@ export default function useCardUtilities() {
   };
 
   const cardProfileModal = async (profile: CardProfile) => {
-    profile.provider = await getProvider(profile);
+    profile.provider = getProvider(profile);
     return profile;
   };
 

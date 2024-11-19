@@ -716,8 +716,12 @@ const POST_CARD = {
 const SHOPPING_WOMEN = {
   uri: `${S3_BUCKET_URL_ICONS}/shoppingWome.png`,
 };
+const BOOKMARK = {
+  uri: `${S3_BUCKET_URL_ICONS}/bookmark.png`,
+};
 
 const AppImages = {
+  BOOKMARK,
   CARD_SECURE,
   SHIELD_FILLED,
   SUCCESS_TICK_GREEN_BG_ROUNDED,

@@ -1418,6 +1418,8 @@ const resources = {
       DISCORD_JOINING: 'Joining Discord ...',
       SET_CARD_PIN: 'Set Card PIN',
       INVALID_PARAMETERS: 'Invalid Parameters',
+      MANAGE_SUBSCRIPTION: 'Manage Subscription',
+      MANAGE_PREMIUM: 'Manage Premium',
     },
   },
 };

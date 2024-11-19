@@ -31,6 +31,7 @@ import { CYPHER_PLAN_ID_NAME_MAPPING } from '../constants/data';
 import useAxios from '../core/HttpRequest';
 import * as Sentry from '@sentry/react-native';
 import { useGlobalModalContext } from './v2/GlobalModal';
+import { showToast } from '../containers/utilities/toastUtility';
 
 const styles = StyleSheet.create({
   modalLayout: {
@@ -133,8 +134,8 @@ export default function SelectPlanModal({
       const annualLoadUSDC = sliderValues.usdc * 12;
       const annualLoadNonUSDC = sliderValues.nonUsdc * 12;
 
-      let freePlanCost = 0;
-      let proPlanCost = 200; // Annual fee
+      let freePlanCost = get(freePlanData, 'cost', 0);
+      let proPlanCost = get(proPlanData, 'cost', 199);
 
       // Calculate costs for free plan
       freePlanCost += annualLoadUSDC * (freePlanData.usdcFee / 100);
@@ -149,39 +150,17 @@ export default function SelectPlanModal({
       // Calculate savings
       const savings = freePlanCost - proPlanCost;
       setTotalSavings(savings);
-      // Determine recommendation
-      // let recommendation = '';
       if (monthlySpendNonUSD > 7000) {
-        // recommendation =
-        //   'We strongly recommend the Premium Plan. Your monthly non-USD spend exceeds the $7,000 limit of the Standard Plan.';
         setRecommendedPlan(CypherPlanId.PRO_PLAN);
       } else if (isChecked.metalCard || isChecked.addonCard) {
-        // recommendation = `We recommend the Premium Plan. It's the only plan that offers ${
-        //   isChecked.metalCard ? 'metal cards' : ''
-        // } ${isChecked.addonCard && isChecked.metalCard ? ' and ' : ''} ${
-        //   isChecked.addonCard ? 'addon cards.' : ''
-        // }`;
         setRecommendedPlan(CypherPlanId.PRO_PLAN);
       } else if (savings > 0) {
-        // recommendation = `We recommend the Premium Plan. Your estimated annual savings with the Premium Plan is $${savings.toFixed(
-        //   2,
-        // )}.`;
-        // setRecommendedPlan(CypherPlanId.PRO_PLAN);
+        setRecommendedPlan(CypherPlanId.PRO_PLAN);
       } else {
-        // recommendation = `We recommend the Standard Plan. The Premium Plan would cost you an additional $${(-savings).toFixed(
-        //   2,
-        // )} per year.`;
         setRecommendedPlan(CypherPlanId.BASIC_PLAN);
       }
-
-      // setResult(
-      //   `${recommendation}\nStandard Plan cost: $${freePlanCost.toFixed(
-      //     2,
-      //   )} (per year)\nPremium Plan cost: $${proPlanCost.toFixed(2)} (per year)`,
-      // );
     } catch (error) {
       console.error('Error in calculation:', error);
-      // setResult('An error occurred during calculation. Please try again.');
       setRecommendedPlan(CypherPlanId.BASIC_PLAN);
     }
   };
@@ -212,6 +191,7 @@ export default function SelectPlanModal({
         const { isError, error } = await patchWithAuth(`/v1/cards/rc/plan`, {
           optedPlanId: optedPlan,
         });
+
         const resp = await getWalletProfile(globalState.token);
         globalDispatch({
           type: GlobalContextType.CARD_PROFILE,
@@ -219,37 +199,47 @@ export default function SelectPlanModal({
         });
 
         if (!isError) {
-          showModal('state', {
-            type: 'success',
-            title: `You have opted for ${get(CYPHER_PLAN_ID_NAME_MAPPING, optedPlan)}`,
-            description: 'You can change your plan anytime in the future',
-            onSuccess: () => {
-              hideModal();
-              setIsModalVisible(false);
-              if (onPlanChangeSuccess) {
-                onPlanChangeSuccess();
-              }
-            },
-            onFailure: hideModal,
-          });
+          setIsModalVisible(false);
+          setTimeout(() => {
+            showModal('state', {
+              type: 'success',
+              title: `You have opted for ${get(CYPHER_PLAN_ID_NAME_MAPPING, optedPlan)}`,
+              description: 'You can change your plan anytime in the future',
+              onSuccess: () => {
+                hideModal();
+                if (onPlanChangeSuccess) {
+                  setTimeout(() => {
+                    onPlanChangeSuccess();
+                  }, 500);
+                }
+              },
+              onFailure: hideModal,
+            });
+          }, 500);
         } else {
-          showModal('state', {
-            type: 'error',
-            title: t('PLAN_UPDATE_FAILED'),
-            description: t('CONTACT_CYPHERD_SUPPORT'),
-            onSuccess: hideModal,
-            onFailure: hideModal,
-          });
+          setIsModalVisible(false);
+          setTimeout(() => {
+            showModal('state', {
+              type: 'error',
+              title: t('PLAN_UPDATE_FAILED'),
+              description: t('CONTACT_CYPHERD_SUPPORT'),
+              onSuccess: hideModal,
+              onFailure: hideModal,
+            });
+          }, 500);
           Sentry.captureException(error);
         }
       } catch (err: any) {
-        showModal('state', {
-          type: 'error',
-          title: t('PLAN_UPDATE_FAILED'),
-          description: JSON.stringify(err?.message),
-          onSuccess: hideModal,
-          onFailure: hideModal,
-        });
+        setIsModalVisible(false);
+        setTimeout(() => {
+          showModal('state', {
+            type: 'error',
+            title: t('PLAN_UPDATE_FAILED'),
+            description: JSON.stringify(err?.message),
+            onSuccess: hideModal,
+            onFailure: hideModal,
+          });
+        }, 500);
 
         Sentry.captureException(err);
       }
@@ -259,7 +249,7 @@ export default function SelectPlanModal({
       if (planCost !== '' && cardProvider && cardId) {
         const cardBalance = await fetchCardBalance();
         if (Number(cardBalance) < Number(planCost)) {
-          console.log('INSUFFICIENT_FUNDS');
+          setIsModalVisible(false);
           setTimeout(() => {
             showModal('state', {
               type: 'error',
@@ -268,7 +258,7 @@ export default function SelectPlanModal({
               onSuccess: hideModal,
               onFailure: hideModal,
             });
-          }, 0);
+          }, 500);
         } else {
           const { isError, error } = await patchWithAuth(
             '/v1/cards/rc/plan/deduct',
@@ -283,38 +273,46 @@ export default function SelectPlanModal({
           });
 
           if (!isError) {
-            showModal('state', {
-              type: 'success',
-              title: `Your plan has been changed to ${get(CYPHER_PLAN_ID_NAME_MAPPING, optedPlan)} successfully`,
-              description: 'You can change your plan anytime in the future',
-              onSuccess: () => {
-                hideModal();
-                setIsModalVisible(false);
-                if (onPlanChangeSuccess) {
-                  onPlanChangeSuccess();
-                }
-              },
-              onFailure: hideModal,
-            });
+            setIsModalVisible(false);
+            setTimeout(() => {
+              showModal('state', {
+                type: 'success',
+                title: `Your plan has been changed to ${get(CYPHER_PLAN_ID_NAME_MAPPING, optedPlan)} successfully`,
+                description: 'You can change your plan anytime in the future',
+                onSuccess: () => {
+                  hideModal();
+                  if (onPlanChangeSuccess) {
+                    onPlanChangeSuccess();
+                  }
+                },
+                onFailure: hideModal,
+              });
+            }, 500);
           } else {
-            showModal('state', {
-              type: 'error',
-              title: t('PLAN_UPDATE_FAILED'),
-              description: error?.message ?? error,
-              onSuccess: hideModal,
-              onFailure: hideModal,
-            });
+            setIsModalVisible(false);
+            setTimeout(() => {
+              showModal('state', {
+                type: 'error',
+                title: t('PLAN_UPDATE_FAILED'),
+                description: error?.message ?? error,
+                onSuccess: hideModal,
+                onFailure: hideModal,
+              });
+            }, 500);
             Sentry.captureException(error);
           }
         }
       } else {
-        showModal('state', {
-          type: 'error',
-          title: t('CONTACT_CYPHER_SUPPORT'),
-          description: t('UNEXCPECTED_ERROR'),
-          onSuccess: hideModal,
-          onFailure: hideModal,
-        });
+        setIsModalVisible(false);
+        setTimeout(() => {
+          showModal('state', {
+            type: 'error',
+            title: t('CONTACT_CYPHER_SUPPORT'),
+            description: t('UNEXCPECTED_ERROR'),
+            onSuccess: hideModal,
+            onFailure: hideModal,
+          });
+        }, 500);
       }
     }
     setLoading(false);

@@ -59,10 +59,13 @@ export default function GlobalOptions() {
   const [isAutoloadConfigured, setIsAutoloadConfigured] = useState<boolean>(
     get(cardProfile, ['isAutoloadConfigured'], false),
   );
-  const [isPremium, setIsPremium] = useState<boolean>(
-    get(cardProfile, ['planInfo', 'planId'], CypherPlanId.BASIC_PLAN) ===
-      CypherPlanId.PRO_PLAN,
-  );
+  const [planInfo, setPlanInfo] = useState<{
+    expiresOn: number;
+    metalCardEligible: boolean;
+    optedPlanId: CypherPlanId;
+    planId: CypherPlanId;
+    updatedOn: number;
+  } | null>(get(cardProfile, ['planInfo'], null));
 
   const { deleteWithAuth, getWithAuth } = useAxios();
   const { showModal, hideModal } = useGlobalModalContext();
@@ -78,11 +81,7 @@ export default function GlobalOptions() {
       setIsAutoloadConfigured(
         get(tempProfile, ['isAutoloadConfigured'], false),
       );
-      setIsPremium(
-        get(tempProfile, ['planInfo', 'planId'], CypherPlanId.BASIC_PLAN) ===
-          CypherPlanId.PRO_PLAN,
-      );
-      // Compare the new profile with the existing one
+      setPlanInfo(get(tempProfile, ['planInfo'], null));
       if (!isEqual(tempProfile, globalContext.globalState.cardProfile)) {
         globalContext.globalDispatch({
           type: GlobalContextType.CARD_PROFILE,
@@ -170,6 +169,23 @@ export default function GlobalOptions() {
         });
       },
     },
+    ...(cardProvider === CardProviders.REAP_CARD &&
+    planInfo?.planId === CypherPlanId.PRO_PLAN
+      ? [
+          {
+            title: 'Manage subscription',
+            description: '',
+            image: AppImages.BOOKMARK,
+            action: () => {
+              navigation.navigate(screenTitle.MANAGE_SUBSCRIPTION, {
+                currentCardProvider: cardProvider,
+                card,
+                planInfo,
+              });
+            },
+          },
+        ]
+      : []),
   ];
 
   const notificationPersonalInformationOptions = [
@@ -262,7 +278,7 @@ export default function GlobalOptions() {
           </CyDText>
         </CyDView>
         <CyDScrollView className='flex-1 bg-n20 px-[16px]'>
-          {!isPremium && (
+          {planInfo?.planId !== CypherPlanId.PRO_PLAN && (
             <CyDView
               className='bg-p0 rounded-[16px] p-[16px] mt-[30px]'
               style={styles.shadow}>
