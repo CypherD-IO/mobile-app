@@ -69,7 +69,7 @@ export default function SetPin() {
   const cardValidationSchemaRc = yup.object({
     pin: yup
       .string()
-      .matches(/^\d{4,12}$/, 'Only 4-6 digits accepted')
+      .matches(/^\d{4,6}$/, 'Only 4-6 digits accepted')
       .test('valid-length', 'PIN must be between 4 and 6 digits', value => {
         const isValid = value ? value.length >= 4 && value.length <= 6 : false;
         setPinValidationState(prev => ({
