@@ -33,11 +33,11 @@ import useAxios from '../../../core/HttpRequest';
 import { showToast } from '../../utilities/toastUtility';
 import { useGlobalModalContext } from '../../../components/v2/GlobalModal';
 import { StyleSheet } from 'react-native';
+import SelectPlanModal from '../../../components/selectPlanModal';
 
 interface RouteParams {
   cardProvider: string;
   card: Card;
-  onPressPlanChange: (openComparePlans: boolean) => void;
 }
 
 export default function GlobalOptions() {
@@ -47,7 +47,7 @@ export default function GlobalOptions() {
   const [isAutoLoadOptionsvisible, setIsAutoLoadOptionsVisible] =
     useState<boolean>(false);
 
-  const { cardProvider, onPressPlanChange, card } = route.params;
+  const { cardProvider, card } = route.params;
   const globalContext = useContext(GlobalContext) as GlobalContextDef;
   const cardProfile: CardProfile | undefined =
     globalContext?.globalState?.cardProfile;
@@ -66,6 +66,9 @@ export default function GlobalOptions() {
 
   const { deleteWithAuth, getWithAuth } = useAxios();
   const { showModal, hideModal } = useGlobalModalContext();
+  const [planChangeModalVisible, setPlanChangeModalVisible] =
+    useState<boolean>(false);
+  const [openComparePlans, setOpenComparePlans] = useState<boolean>(false);
 
   const refreshProfile = async () => {
     const response = await getWithAuth('/v1/authentication/profile');
@@ -232,6 +235,14 @@ export default function GlobalOptions() {
         setShowModal={setIsAutoLoadOptionsVisible}
         onPressUpdateAutoLoad={onPressUpdateAutoLoad}
       />
+      <SelectPlanModal
+        isModalVisible={planChangeModalVisible}
+        setIsModalVisible={setPlanChangeModalVisible}
+        openComparePlans={openComparePlans}
+        deductAmountNow={true}
+        cardProvider={cardProvider}
+        cardId={card.cardId}
+      />
       <CyDView
         className='flex flex-col justify-between h-full bg-n0'
         style={{ paddingTop: insets.top }}>
@@ -268,7 +279,10 @@ export default function GlobalOptions() {
                   <CyDTouchView
                     style={styles.buttonShadow}
                     className='flex flex-row items-center bg-n0 px-[10px] py-[6px] rounded-full w-[105px] mr-[12px]'
-                    onPress={() => onPressPlanChange(false)}>
+                    onPress={() => {
+                      setOpenComparePlans(false);
+                      setPlanChangeModalVisible(true);
+                    }}>
                     <CyDText className='text-[14px] font-extrabold mr-[2px]'>
                       {'Go'}
                     </CyDText>
@@ -280,7 +294,10 @@ export default function GlobalOptions() {
                   <CyDTouchView
                     style={styles.buttonShadow}
                     className=' bg-n0 px-[10px] py-[6px] rounded-full'
-                    onPress={() => onPressPlanChange(true)}>
+                    onPress={() => {
+                      setOpenComparePlans(true);
+                      setPlanChangeModalVisible(true);
+                    }}>
                     <CyDText className=' text-center text-[14px] font-semibold text-n700 mr-[2px]'>
                       {'Compare plans'}
                     </CyDText>
@@ -292,7 +309,7 @@ export default function GlobalOptions() {
 
           <CyDView className='mt-[16px]'>
             <CyDText className='text-n200 font-medium text-[12px]'>
-              Account& Security
+              Account & Security
             </CyDText>
             <CyDView className='mt-[6px] rounded-[6px] bg-n0'>
               {accountSecurityOptions.map((option, index) => {

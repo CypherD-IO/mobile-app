@@ -59,6 +59,7 @@ import CyDNumberPad from '../../../components/v2/numberpad';
 import CyDTokenValue from '../../../components/v2/tokenValue';
 import Loading from '../../../components/v2/loading';
 import usePortfolio from '../../../hooks/usePortfolio';
+import SelectPlanModal from '../../../components/selectPlanModal';
 
 export default function BridgeFundCardScreen({ route }: { route: any }) {
   const {
@@ -116,6 +117,8 @@ export default function BridgeFundCardScreen({ route }: { route: any }) {
   const [suggestedAmounts, setSuggestedAmounts] = useState<
     Record<string, string>
   >({ low: '', med: '', high: '' });
+  const [planChangeModalVisible, setPlanChangeModalVisible] = useState(false);
+
   const { height } = useWindowDimensions();
   const isSmallScreenMobile = height <= 750;
 
@@ -996,6 +999,14 @@ export default function BridgeFundCardScreen({ route }: { route: any }) {
         noTokensAvailableMessage={t<string>('CARD_INSUFFICIENT_FUNDS')}
         renderPage={'fundCardPage'}
       />
+      <SelectPlanModal
+        isModalVisible={planChangeModalVisible}
+        setIsModalVisible={setPlanChangeModalVisible}
+        deductAmountNow={false}
+        onPlanChangeSuccess={() => {
+          navigation.navigate(screenTitle.DEBIT_CARD_SCREEN);
+        }}
+      />
       <CyDView>
         <RenderSelectedToken />
         <CyDView className='flex flex-row rounded-[8px] px-[20px] justify-between items-center'>
@@ -1182,10 +1193,7 @@ export default function BridgeFundCardScreen({ route }: { route: any }) {
               <CyDTouchView
                 className='flex flex-row items-center '
                 onPress={() => {
-                  navigation.navigate(screenTitle.SELECT_PLAN, {
-                    toPage: screenTitle.DEBIT_CARD_SCREEN,
-                    deductAmountNow: false,
-                  });
+                  setPlanChangeModalVisible(true);
                 }}>
                 <CyDText className='font-bold text-[14px]'>
                   {get(

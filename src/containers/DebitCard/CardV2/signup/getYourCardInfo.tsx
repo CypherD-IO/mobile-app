@@ -27,11 +27,11 @@ import {
   GlobalContext,
   GlobalContextDef,
 } from '../../../../core/globalContext';
+import SelectPlanModal from '../../../../components/selectPlanModal';
 
 interface RouteParams {
   deductAmountNow: boolean;
   toPage: string;
-  cardBalance: number;
 }
 
 export default function GetYourCardInfo() {
@@ -41,12 +41,9 @@ export default function GetYourCardInfo() {
   const route = useRoute<RouteProp<{ params: RouteParams }, 'params'>>();
   const [loading, setLoading] = useState(false);
   const [showOnboarding, setShowOnboarding] = useState(false);
+  const [planChangeModalVisible, setPlanChangeModalVisible] = useState(false);
 
-  const {
-    deductAmountNow = false,
-    toPage = '',
-    cardBalance = 0,
-  } = route.params ?? {};
+  const { deductAmountNow = false, toPage = '' } = route.params ?? {};
   const insets = useSafeAreaInsets();
 
   const handleLinkPress = async () => {
@@ -79,6 +76,16 @@ export default function GetYourCardInfo() {
 
   return (
     <CyDView style={{ paddingTop: insets.top }}>
+      <SelectPlanModal
+        isModalVisible={planChangeModalVisible}
+        setIsModalVisible={setPlanChangeModalVisible}
+        deductAmountNow={deductAmountNow}
+        onPlanChangeSuccess={() => {
+          if (toPage) {
+            navigation.navigate(toPage);
+          }
+        }}
+      />
       {!showOnboarding && (
         <CyDView className='bg-[#F1F0F5] flex flex-col justify-between h-full'>
           <CyDKeyboardAwareScrollView>
@@ -197,7 +204,6 @@ export default function GetYourCardInfo() {
                 navigation.navigate(screenTitle.I_HAVE_REFERRAL_CODE_SCREEN, {
                   deductAmountNow,
                   toPage,
-                  cardBalance,
                   referralCodeFromLink: '',
                 })
               }
@@ -207,11 +213,7 @@ export default function GetYourCardInfo() {
               title={t('CONTINUE')}
               onPress={() => {
                 void removeReferralCode();
-                navigation.navigate(screenTitle.SELECT_PLAN, {
-                  deductAmountNow,
-                  toPage,
-                  cardBalance,
-                });
+                setPlanChangeModalVisible(true);
               }}
             />
           </CyDView>

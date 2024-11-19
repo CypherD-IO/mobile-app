@@ -1220,14 +1220,6 @@ export function DebitCardStackScreen({ route }) {
       />
 
       <FundCardStack.Screen
-        name={screenTitle.SELECT_PLAN}
-        component={SelectPlan}
-        options={({ navigation }): NativeStackNavigationOptions => ({
-          headerShown: false,
-        })}
-      />
-
-      <FundCardStack.Screen
         name={screenTitle.I_HAVE_REFERRAL_CODE_SCREEN}
         component={IHaveReferralCodeScreen}
         options={{
