@@ -28,7 +28,7 @@ import { Card } from '../../../models/card.model';
 import { capitalize } from 'lodash';
 
 interface RouteParams {
-  onSuccess: (data: any, provider: CardProviders) => {};
+  onSuccess: (data: unknown, provider: CardProviders) => void;
   currentCardProvider: CardProviders;
   card: Card;
   triggerOTPParam?: string;

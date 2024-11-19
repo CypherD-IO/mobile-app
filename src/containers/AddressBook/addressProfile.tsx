@@ -279,7 +279,7 @@ const AddressProfile = props => {
             </CyDView>
           ) : null}
           <Animated.Image
-            style={isActive ? animatedStyle : { height: 10, width: 14 }}
+            style={isActive ? animatedStyle : styles.inactiveArrowStyle}
             source={AppImages.UP_ARROW}
           />
         </CyDView>
@@ -511,5 +511,9 @@ const styles = StyleSheet.create({
     borderRadius: 16,
     paddingHorizontal: 10,
     marginVertical: 10,
+  },
+  inactiveArrowStyle: {
+    height: verticalScale(12),
+    width: 14,
   },
 });

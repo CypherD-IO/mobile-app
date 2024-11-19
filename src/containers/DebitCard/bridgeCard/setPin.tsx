@@ -69,9 +69,9 @@ export default function SetPin() {
   const cardValidationSchemaRc = yup.object({
     pin: yup
       .string()
-      .matches(/^\d{4,12}$/, 'Only 4-12 digits accepted')
-      .test('valid-length', 'PIN must be between 4 and 12 digits', value => {
-        const isValid = value ? value.length >= 4 && value.length <= 12 : false;
+      .matches(/^\d{4,12}$/, 'Only 4-6 digits accepted')
+      .test('valid-length', 'PIN must be between 4 and 6 digits', value => {
+        const isValid = value ? value.length >= 4 && value.length <= 6 : false;
         setPinValidationState(prev => ({
           ...prev,
           validLength: isValid,
@@ -218,7 +218,7 @@ export default function SetPin() {
                   resizeMode='contain'
                 />
                 <CyDText className='ml-[4px] text-[12px] text-n200'>
-                  PIN must be between 4 and 12 digits
+                  PIN must be between 4 and 6 digits
                 </CyDText>
               </CyDView>
 
@@ -341,8 +341,7 @@ export default function SetPin() {
           title={t('CONTINUE')}
           disabled={
             !pinSetSuccess &&
-            (changePinFormik.values.pin === '' ||
-              changePinFormik.values.confirmPin === '')
+            (!changePinFormik.isValid || !changePinFormik.dirty)
           }
           onPress={
             pinSetSuccess
