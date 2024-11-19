@@ -525,14 +525,14 @@ const Bridge: React.FC = () => {
     setAmountOut('');
   };
 
-  const fetchQuote = async (): Promise<void> => {
+  const fetchQuote = async (amount: string): Promise<void> => {
     setLoading(prevLoading => ({ ...prevLoading, quoteLoading: true }));
 
     try {
       if (isOdosSwap()) {
-        await getSwapQuote();
+        await getSwapQuote(amount);
       } else {
-        await getBridgeQuote();
+        await getBridgeQuote(amount);
       }
       setTimeUntilRefresh(30);
     } catch (e) {
@@ -551,36 +551,27 @@ const Bridge: React.FC = () => {
         selectedFromToken &&
         selectedToToken
       ) {
-        void fetchQuote();
+        void fetchQuote(amount);
       }
-    }, 1000),
-    [cryptoAmount, selectedFromToken, selectedToToken],
+    }, 2500),
+    [selectedFromChain, selectedToChain, selectedFromToken, selectedToToken],
   );
 
-  // Add new function for manual refresh
   const manualRefreshQuote = useCallback(async () => {
     if (Number(cryptoAmount) > 0) {
-      // Clear existing interval
       if (quoteRefreshInterval.current) {
         clearInterval(quoteRefreshInterval.current);
         quoteRefreshInterval.current = null;
       }
 
-      // Reset timer
-      // setTimeUntilRefresh(30);
+      await fetchQuote(cryptoAmount);
 
-      // Fetch new quote
-      await fetchQuote();
-
-      // Start new interval
       quoteRefreshInterval.current = setInterval(() => {
-        void fetchQuote();
-        // setTimeUntilRefresh(30);
+        void fetchQuote(cryptoAmount);
       }, 30000);
     }
   }, [cryptoAmount, selectedFromToken, selectedToToken]);
 
-  // Modify the useEffect to include timer updates
   useEffect(() => {
     const fetchAndUpdateQuote = () => {
       if (Number(cryptoAmount) > 0) {
@@ -595,26 +586,19 @@ const Bridge: React.FC = () => {
       }
     };
 
-    // Initial fetch
     fetchAndUpdateQuote();
 
-    // Set up auto-refresh interval if we have a valid amount
     if (Number(cryptoAmount) > 0) {
-      // Clear any existing interval
       if (quoteRefreshInterval.current) {
         clearInterval(quoteRefreshInterval.current);
       }
 
-      // Reset timer
       setTimeUntilRefresh(30);
-
-      // Create new interval for quote refresh
       quoteRefreshInterval.current = setInterval(() => {
-        void fetchQuote();
+        void fetchQuote(cryptoAmount);
         setTimeUntilRefresh(30);
       }, 30000);
 
-      // Create interval for countdown timer
       const timerInterval = setInterval(() => {
         setTimeUntilRefresh(prev => Math.max(0, prev - 1));
       }, 1000);
@@ -633,12 +617,14 @@ const Bridge: React.FC = () => {
       if (abortController) {
         abortController.abort();
       }
-      if (quoteRefreshInterval.current) {
-        clearInterval(quoteRefreshInterval.current);
-        quoteRefreshInterval.current = null;
-      }
     };
-  }, [cryptoAmount, selectedFromToken, selectedToToken]);
+  }, [
+    cryptoAmount,
+    selectedFromToken,
+    selectedToToken,
+    selectedFromChain,
+    selectedToChain,
+  ]);
 
   // Also clear interval when component unmounts
   useEffect(() => {
@@ -712,23 +698,20 @@ const Bridge: React.FC = () => {
     return addressList;
   };
 
-  const getBridgeQuote = async () => {
+  const getBridgeQuote = async (amount: string) => {
     try {
       if (
         selectedFromToken &&
         selectedToToken &&
         selectedToChain &&
         selectedFromChain &&
-        parseFloat(cryptoAmount) > 0 &&
+        parseFloat(amount) > 0 &&
         !isOdosSwap()
       ) {
         const routeBody = {
           amountIn: ethers
             .parseUnits(
-              round(
-                Number(cryptoAmount),
-                selectedFromToken.decimals,
-              ).toString(),
+              round(Number(amount), selectedFromToken.decimals).toString(),
               min([10, selectedFromToken.decimals]),
             )
             .toString(),
@@ -760,6 +743,7 @@ const Bridge: React.FC = () => {
           );
           setUsdAmountOut(responseQuoteData?.usd_amount_out);
           setSignaturesRequired(responseQuoteData?.txs_required);
+          setError('');
           setLoading({ ...loading, quoteLoading: false });
         } else {
           setQuoteData(null);
@@ -1332,7 +1316,7 @@ const Bridge: React.FC = () => {
     }
   };
 
-  const getSwapQuote = async () => {
+  const getSwapQuote = async (amount: string) => {
     try {
       if (
         selectedToToken &&
@@ -1348,7 +1332,7 @@ const Bridge: React.FC = () => {
                 ? '0x0000000000000000000000000000000000000000'
                 : selectedFromToken?.tokenContract,
               amount: round(
-                Number(cryptoAmount),
+                Number(amount),
                 min([10, selectedFromToken.decimals]),
               ).toString(),
             },
@@ -1377,6 +1361,7 @@ const Bridge: React.FC = () => {
           setAmountOut(responseQuoteData?.toToken?.amount.toString());
           setUsdAmountOut(responseQuoteData?.value.toString());
           setQuoteData(responseQuoteData);
+          setError('');
           setLoading({ ...loading, quoteLoading: false });
         } else {
           setQuoteData(null);
