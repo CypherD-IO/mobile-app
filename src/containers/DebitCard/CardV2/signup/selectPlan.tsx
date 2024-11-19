@@ -37,6 +37,7 @@ import {
   PlanIdPriority,
 } from '../../../../constants/data';
 import clsx from 'clsx';
+import SelectPlanModal from '../../../../components/selectPlanModal';
 
 interface RouteParams {
   deductAmountNow?: boolean;
@@ -56,6 +57,9 @@ export default function SelectPlan() {
   const { showModal, hideModal } = useGlobalModalContext();
   const { getWalletProfile } = useCardUtilities();
   const route = useRoute<RouteProp<Record<string, RouteParams>, string>>();
+
+  const [isSelectedPlanModalVisible, setIsSelectedPlanModalVisible] =
+    useState<boolean>(true);
 
   const {
     deductAmountNow = false,
@@ -217,6 +221,10 @@ export default function SelectPlan() {
 
   return (
     <CyDSafeAreaView>
+      <SelectPlanModal
+        isModalVisible={isSelectedPlanModalVisible}
+        setIsModalVisible={setIsSelectedPlanModalVisible}
+      />
       <CyDScrollView className='bg-[#F1F0F5] h-[88%]'>
         <CyDView>
           <CyDTouchView className='px-[16px] mb-[12px]' onPress={onPressBack}>
