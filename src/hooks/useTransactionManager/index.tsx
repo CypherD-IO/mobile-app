@@ -59,6 +59,7 @@ import {
   createTransferInstruction,
 } from '@solana/spl-token';
 import { SigningCosmWasmClient } from '@cosmjs/cosmwasm-stargate';
+import { HdWalletContextDef } from '../../reducers/hdwallet_reducer';
 
 export interface TransactionServiceResult {
   isError: boolean;
@@ -86,7 +87,7 @@ export default function useTransactionManager() {
   const { signEthTransaction, signApprovalEthereum } = useEthSigner();
   const { getCosmosSignerClient, getCosmosRpc } = useCosmosSigner();
   const { getSolanWallet, getSolanaRpc } = useSolanaSigner();
-  const hdWallet = useContext<any>(HdWalletContext);
+  const hdWallet = useContext(HdWalletContext) as HdWalletContextDef;
 
   const decideGasLimitBasedOnTypeOfToAddress = (
     code: string,
@@ -1362,9 +1363,15 @@ export default function useTransactionManager() {
         }),
       );
 
-      const resp = await sendAndConfirmTransaction(connection, transaction, [
-        fromKeypair,
-      ]);
+      const resp = await sendAndConfirmTransaction(
+        connection,
+        transaction,
+        [fromKeypair],
+        {
+          commitment: 'finalized',
+          maxRetries: 15,
+        },
+      );
 
       return { hash: String(resp), isError: false };
     } else {
@@ -1449,9 +1456,15 @@ export default function useTransactionManager() {
         ),
       );
 
-      const resp = await sendAndConfirmTransaction(connection, transaction, [
-        fromKeypair,
-      ]);
+      const resp = await sendAndConfirmTransaction(
+        connection,
+        transaction,
+        [fromKeypair],
+        {
+          commitment: 'finalized',
+          maxRetries: 15,
+        },
+      );
       return {
         isError: false,
         hash: resp,
