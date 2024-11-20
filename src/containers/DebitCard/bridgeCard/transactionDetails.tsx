@@ -9,6 +9,7 @@ import {
   formatAmount,
   getExplorerUrlFromBackendNames,
   limitDecimalPlaces,
+  parseErrorMessage,
 } from '../../../core/util';
 import {
   CyDFastImage,
@@ -186,9 +187,10 @@ const TransactionDetail = ({
     }
   }, [isDeclined, item.title, metadata?.merchantCountry, cardId]);
 
-  const countryAlreadyAllowed = (
-    get(limits, ['cusL', 'intl', 'cLs']) ?? []
-  ).includes(metadata?.merchantCountry);
+  const countryList = get(limits, 'cusL.intl.cLs', []) as string[];
+  const countryAlreadyAllowed = countryList.includes(
+    metadata?.merchantCountry ?? '',
+  );
 
   return (
     <CyDView>
@@ -436,6 +438,13 @@ export default function TransactionDetails() {
         }
       } catch (error) {
         Sentry.captureException(error);
+        showModal('state', {
+          type: 'error',
+          title: t('UNEXCPECTED_ERROR'),
+          description: parseErrorMessage(error),
+          onSuccess: hideModal,
+          onFailure: hideModal,
+        });
       }
     }
   };
