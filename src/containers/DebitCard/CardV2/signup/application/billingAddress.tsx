@@ -37,20 +37,34 @@ export default function BillingAddress({
 }) {
   const { t } = useTranslation();
   const [showCountries, setShowCountries] = useState(false);
+  const [showDialCodeCountry, setShowDialCodeCountry] = useState(false);
   const [countryFilterText, setCountryFilter] = useState('');
+  const [dialCodeFilterText, setDialCodeFilter] = useState('');
   const [countryList, setCountryList] = useState(supportedCountries);
+  const [dialCodeList, setDialCodeList] = useState(supportedCountries);
   const [country, setCountry] = useState(values.country);
-
+  const [dialCode, setDialCode] = useState(values.dialCode);
   useEffect(() => {
     if (countryFilterText === '') {
       setCountryList(supportedCountries);
     } else {
-      const filteredCountries = supportedCountries.filter(country =>
-        country.name.toLowerCase().includes(countryFilterText.toLowerCase()),
+      const filteredCountries = supportedCountries.filter(_country =>
+        _country.name.toLowerCase().includes(countryFilterText.toLowerCase()),
       );
       setCountryList(filteredCountries);
     }
   }, [supportedCountries, countryFilterText]);
+
+  useEffect(() => {
+    if (dialCodeFilterText === '') {
+      setDialCodeList(supportedCountries);
+    } else {
+      const filteredDialCodes = supportedCountries.filter(_country =>
+        _country.name.toLowerCase().includes(dialCodeFilterText.toLowerCase()),
+      );
+      setDialCodeList(filteredDialCodes);
+    }
+  }, [supportedCountries, dialCodeFilterText]);
 
   if (supportedCountries.length === 0) return <Loading />;
   return (
@@ -98,7 +112,9 @@ export default function BillingAddress({
                   key={_country.Iso2 + _country.name}
                   onPress={() => {
                     setCountry(_country.unicode_flag + _country.name);
+                    setDialCode(_country.dial_code);
                     void setFieldValue('country', _country.Iso2);
+                    void setFieldValue('dialCode', _country.dial_code);
                     setShowCountries(false);
                   }}
                   className='flex flex-row justify-between p-[12px] rounded-[8px] my-[4px] border-b border-n30'>
@@ -110,6 +126,72 @@ export default function BillingAddress({
                       className='w-[24px] h-[24px]'
                       source={
                         values.country === _country.Iso2
+                          ? AppImages.RADIO_CHECK
+                          : AppImages.RADIO_UNCHECK
+                      }
+                    />
+                  </CyDView>
+                </CyDTouchView>
+              );
+            })}
+          </CyDScrollView>
+        </CyDView>
+      </CyDModalLayout>
+      <CyDModalLayout
+        style={styles.modalLayout}
+        isModalVisible={showDialCodeCountry}
+        setModalVisible={setShowDialCodeCountry}>
+        <CyDView className={'bg-white h-[70%] rounded-t-[20px] p-[16px]'}>
+          <CyDView className={'flex flex-row justify-between items-center'}>
+            <CyDText className='text-[18px] font-bold'>
+              {t('SELECT_COUNTRY')}
+            </CyDText>
+            <CyDTouchView
+              onPress={() => {
+                setShowDialCodeCountry(false);
+              }}
+              className={'text-black'}>
+              <CyDView className='w-[24px] h-[24px] z-[50]'>
+                <CyDImage
+                  source={AppImages.CLOSE}
+                  className={'w-[16px] h-[16px]'}
+                />
+              </CyDView>
+            </CyDTouchView>
+          </CyDView>
+          <CyDView
+            className={'flex flex-row mt-[20px] justify-center items-center'}>
+            <CyDTextInput
+              className={
+                'border-[1px] border-inputBorderColor rounded-[8px] p-[10px] text-[14px] w-[95%] font-nunito text-primaryTextColor'
+              }
+              value={dialCodeFilterText}
+              autoCapitalize='none'
+              autoCorrect={false}
+              onChangeText={text => setDialCodeFilter(text)}
+              placeholder='Search Country'
+              placeholderTextColor={Colors.subTextColor}
+            />
+          </CyDView>
+          <CyDScrollView className='my-[16px]'>
+            {dialCodeList.map(_country => {
+              return (
+                <CyDTouchView
+                  key={_country.Iso2 + _country.dial_code}
+                  onPress={() => {
+                    setDialCode(_country.dial_code);
+                    void setFieldValue('dialCode', _country.dial_code);
+                    setShowDialCodeCountry(false);
+                  }}
+                  className='flex flex-row justify-between p-[12px] rounded-[8px] my-[4px] border-b border-n30'>
+                  <CyDText className='text-[16px] font-semibold '>
+                    {_country.unicode_flag} {_country.name}
+                  </CyDText>
+                  <CyDView>
+                    <CyDImage
+                      className='w-[24px] h-[24px]'
+                      source={
+                        values.dialCode === _country.dial_code
                           ? AppImages.RADIO_CHECK
                           : AppImages.RADIO_UNCHECK
                       }
@@ -162,12 +244,19 @@ export default function BillingAddress({
           containerClassName='mb-[17px]'
         />
         <CyDView className='flex flex-row w-full'>
-          <FormikTextInput
-            name='dialCode'
-            label='Phone'
-            containerClassName='mb-[17px] w-[20%]'
-            placeholder=''
-          />
+          <CyDTouchView
+            className='w-[20%]'
+            onPress={() => setShowDialCodeCountry(true)}>
+            <FormikTextInput
+              name='dialCode'
+              label='Phone'
+              containerClassName='mb-[17px]'
+              placeholder=''
+              editable={false}
+              pointerEvents='none'
+              value={dialCode}
+            />
+          </CyDTouchView>
           <FormikTextInput
             name='phone'
             label=''
