@@ -15,18 +15,6 @@ const config = {
       crypto: require.resolve('react-native-crypto'),
     },
   },
-  transformer: {
-    getTransformOptions: async () => ({
-      transform: {
-        experimentalImportSupport: false,
-        inlineRequires: true,
-      },
-    }),
-  },
-  serializer: {
-    // Enable source maps
-    sourceMap: true,
-  },
 };
 
 module.exports = mergeConfig(getDefaultConfig(__dirname), config);
