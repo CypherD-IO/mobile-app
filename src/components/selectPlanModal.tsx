@@ -171,14 +171,18 @@ export default function SelectPlanModal({
       const url = `/v1/cards/${cardProvider}/card/${String(cardId)}/balance`;
       try {
         const response = await getWithAuth(url);
-        if (!response.isError && response?.data && response.data.balance) {
+        if (
+          !response.isError &&
+          response?.data &&
+          response.data.balance !== undefined
+        ) {
           return response.data.balance;
         } else {
-          return 'NA';
+          return 0;
         }
       } catch (error) {
         Sentry.captureException(error);
-        return 'NA';
+        return 0;
       }
     }
   };

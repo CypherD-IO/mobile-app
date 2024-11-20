@@ -22,6 +22,7 @@ import Intercom from '@intercom/intercom-react-native';
 import { sendFirebaseEvent } from '../../utilities/analyticsUtility';
 import { HdWalletContext } from '../../../core/util';
 import { HdWalletContextDef } from '../../../reducers/hdwallet_reducer';
+import * as Sentry from '@sentry/react-native';
 
 interface RouteParams {
   planInfo: {
@@ -88,12 +89,16 @@ export default function ManageSubscription() {
             </CyDView>
             <CyDView className='flex-row justify-between px-[16px] py-[18px]'>
               <CyDText className='font-medium text-[14px]'>
-                Cancel Suscription
+                Cancel Subscription
               </CyDText>
               <CyDTouchView
                 onPress={() => {
-                  void Intercom.present();
-                  sendFirebaseEvent(hdWalletContext, 'support');
+                  try {
+                    void Intercom.present();
+                    sendFirebaseEvent(hdWalletContext, 'support');
+                  } catch (e) {
+                    Sentry.captureException(e);
+                  }
                 }}>
                 <CyDText className='font-bold text-[14px] text-blue300'>
                   Contact Support

@@ -91,7 +91,6 @@ import ThreeDSecure from '../containers/DebitCard/bridgeCard/threeDSecure';
 import LockdownMode from '../containers/DebitCard/bridgeCard/lockdownMode';
 import LockdownModeAuth from '../containers/DebitCard/bridgeCard/lockdownModeAuth';
 import CardUnlockAuth from '../containers/DebitCard/bridgeCard/cardUnlockAuth';
-import SelectPlan from '../containers/DebitCard/CardV2/signup/selectPlan';
 import { NavigationProp, ParamListBase } from '@react-navigation/native';
 import GetYourCardInfo from '../containers/DebitCard/CardV2/signup/getYourCardInfo';
 import CardApplicationV2 from '../containers/DebitCard/CardV2/signup/application';

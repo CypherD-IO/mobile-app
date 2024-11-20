@@ -45,7 +45,8 @@ const IHaveReferralCodeScreen = () => {
     referralCodeFromLink = '',
   } = route.params ?? {};
 
-  const [referralCode, setReferralCode] = useState(referralCodeFromLink);
+  const [referralCode, setReferralCode] =
+    useState<string>(referralCodeFromLink);
   const [isModalVisible, setIsModalVisible] = useState(false);
   const [loading, setLoading] = useState(false);
   const { postWithAuth } = useAxios();
@@ -104,6 +105,12 @@ const IHaveReferralCodeScreen = () => {
     setLoading(false);
   };
 
+  const handleNavigation = () => {
+    if (toPage) {
+      navigation.navigate(toPage);
+    }
+  };
+
   return (
     <SafeAreaView className='flex bg-cardBg h-full'>
       <StatusBar barStyle='dark-content' backgroundColor={'#EBEDF0'} />
@@ -115,16 +122,8 @@ const IHaveReferralCodeScreen = () => {
         isModalVisible={planChangeModalVisible}
         setIsModalVisible={setPlanChangeModalVisible}
         deductAmountNow={deductAmountNow}
-        onPlanChangeSuccess={() => {
-          if (toPage) {
-            navigation.navigate(toPage);
-          }
-        }}
-        onClose={() => {
-          if (toPage) {
-            navigation.navigate(toPage);
-          }
-        }}
+        onPlanChangeSuccess={handleNavigation}
+        onClose={handleNavigation}
       />
       <CyDView className='flex flex-col justify-between h-full mb-[24px] '>
         <CyDView className='px-[16px]'>

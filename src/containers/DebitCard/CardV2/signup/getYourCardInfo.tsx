@@ -72,6 +72,17 @@ export default function GetYourCardInfo() {
     setLoading(false);
   }, []);
 
+  const handleNavigation = () => {
+    if (toPage) {
+      navigation.navigate(toPage);
+    }
+  };
+
+  const onPressContinue = async () => {
+    await removeReferralCode();
+    setPlanChangeModalVisible(true);
+  };
+
   if (loading) return <Loading />;
 
   return (
@@ -80,16 +91,8 @@ export default function GetYourCardInfo() {
         isModalVisible={planChangeModalVisible}
         setIsModalVisible={setPlanChangeModalVisible}
         deductAmountNow={deductAmountNow}
-        onPlanChangeSuccess={() => {
-          if (toPage) {
-            navigation.navigate(toPage);
-          }
-        }}
-        onClose={() => {
-          if (toPage) {
-            navigation.navigate(toPage);
-          }
-        }}
+        onPlanChangeSuccess={handleNavigation}
+        onClose={handleNavigation}
       />
       {!showOnboarding && (
         <CyDView className='bg-[#F1F0F5] flex flex-col justify-between h-full'>
@@ -217,8 +220,7 @@ export default function GetYourCardInfo() {
             <Button
               title={t('CONTINUE')}
               onPress={() => {
-                void removeReferralCode();
-                setPlanChangeModalVisible(true);
+                void onPressContinue();
               }}
             />
           </CyDView>
