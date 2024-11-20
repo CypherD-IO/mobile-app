@@ -982,7 +982,7 @@ export default function BridgeFundCardScreen({ route }: { route: any }) {
       {isMaxLoading && <Loading blurBg={true} />}
       <ChooseTokenModal
         isChooseTokenModalVisible={isChooseTokenVisible}
-        minTokenValueLimit={minTokenValueLimit - Number(planCost)}
+        minTokenValueLimit={minTokenValueLimit}
         onSelectingToken={token => {
           setIsChooseTokenVisible(false);
           void onSelectingToken(token as Holding);
