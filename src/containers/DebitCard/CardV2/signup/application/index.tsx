@@ -146,10 +146,15 @@ export default function CardApplicationV2() {
         `https://public.cypherd.io/js/rcSupportedCountries.js?${String(new Date())}`,
       );
       if (response?.data) {
-        // Ensure rcSupportedCountries is of type SupportedCountry[]
-        setSupportedCountries(rcSupportedCountries as SupportedCountry[]);
+        const sortedCountries = [...response.data].sort((a, b) =>
+          a.name.localeCompare(b.name),
+        );
+        setSupportedCountries(sortedCountries as SupportedCountry[]);
       } else {
-        setSupportedCountries(rcSupportedCountries as SupportedCountry[]);
+        const sortedCountries = [...rcSupportedCountries].sort((a, b) =>
+          a.name.localeCompare(b.name),
+        );
+        setSupportedCountries(sortedCountries as SupportedCountry[]);
       }
     } catch (err) {
       Sentry.captureException(err);
@@ -163,11 +168,11 @@ export default function CardApplicationV2() {
       );
 
       if (!isError && data) {
-        const countryData = supportedCountries.find(
-          country => country.Iso2 === data.country,
-        );
-        const dialCode = countryData?.dial_code ?? '';
+        const phoneCountry = supportedCountries
+          .filter(country => data.phone?.startsWith(country.dial_code))
+          .sort((a, b) => b.dial_code.length - a.dial_code.length)[0];
 
+        const dialCode = phoneCountry?.dial_code ?? '';
         setApplicationData({
           firstName: data.firstName || '',
           lastName: data.lastName || '',
@@ -204,9 +209,10 @@ export default function CardApplicationV2() {
 
       const payload = {
         ...changedFields,
-        phone: changedFields.phone
-          ? values.dialCode + changedFields.phone
-          : undefined,
+        phone:
+          changedFields.phone && changedFields.dialCode
+            ? changedFields.dialCode + changedFields.phone
+            : undefined,
         dateOfBirth: changedFields.dateOfBirth ?? undefined,
       };
       // Remove undefined fields and dialCode
