@@ -31,7 +31,6 @@ import { CYPHER_PLAN_ID_NAME_MAPPING } from '../constants/data';
 import useAxios from '../core/HttpRequest';
 import * as Sentry from '@sentry/react-native';
 import { useGlobalModalContext } from './v2/GlobalModal';
-import { showToast } from '../containers/utilities/toastUtility';
 
 const styles = StyleSheet.create({
   modalLayout: {
@@ -55,6 +54,7 @@ export default function SelectPlanModal({
   cardProvider,
   cardId,
   onPlanChangeSuccess,
+  onClose,
 }: {
   isModalVisible: boolean;
   setIsModalVisible: Dispatch<SetStateAction<boolean>>;
@@ -63,6 +63,7 @@ export default function SelectPlanModal({
   cardProvider?: string;
   cardId?: string;
   onPlanChangeSuccess?: () => void;
+  onClose?: () => void;
 }) {
   const insets = useSafeAreaInsets();
 
@@ -281,9 +282,7 @@ export default function SelectPlanModal({
                 description: 'You can change your plan anytime in the future',
                 onSuccess: () => {
                   hideModal();
-                  if (onPlanChangeSuccess) {
-                    onPlanChangeSuccess();
-                  }
+                  onPlanChangeSuccess?.();
                 },
                 onFailure: hideModal,
               });
@@ -755,6 +754,7 @@ export default function SelectPlanModal({
               <CyDTouchView
                 onPress={() => {
                   setIsModalVisible(false);
+                  onClose?.();
                 }}>
                 <CyDImage
                   source={AppImages.CLOSE}

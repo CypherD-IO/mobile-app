@@ -120,6 +120,11 @@ const IHaveReferralCodeScreen = () => {
             navigation.navigate(toPage);
           }
         }}
+        onClose={() => {
+          if (toPage) {
+            navigation.navigate(toPage);
+          }
+        }}
       />
       <CyDView className='flex flex-col justify-between h-full mb-[24px] '>
         <CyDView className='px-[16px]'>

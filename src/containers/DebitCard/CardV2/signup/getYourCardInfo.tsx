@@ -85,6 +85,11 @@ export default function GetYourCardInfo() {
             navigation.navigate(toPage);
           }
         }}
+        onClose={() => {
+          if (toPage) {
+            navigation.navigate(toPage);
+          }
+        }}
       />
       {!showOnboarding && (
         <CyDView className='bg-[#F1F0F5] flex flex-col justify-between h-full'>
