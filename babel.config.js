@@ -1,81 +1,42 @@
 module.exports = {
   presets: ['module:@react-native/babel-preset'],
 };
-
 // module.exports = {
-//   presets: ['module:@react-native/babel-preset'],
+//   presets: ['module:metro-react-native-babel-preset'],
 //   plugins: ['react-native-reanimated/plugin', 'nativewind/babel'],
 // };
-// const lazyImports = require('@react-native/babel-preset/src/configs/lazy-imports');
+// const lazyImports = require('metro-react-native-babel-preset/src/configs/lazy-imports');
 
 // module.exports = (api) => {
 //   api.cache(true);
 //   return {
 //     comments: false,
 //     compact: true,
-//     presets: [['module:@react-native/babel-preset', { useTransformReactJSXExperimental: true }],],
+//     presets: [
+//       ['module:@react-native/babel-preset', { useTransformReactJSXExperimental: true }],
+//     ],
 //     plugins: [
+      
+//       ['@babel/plugin-transform-private-methods', { loose: true }],
+//       ['@babel/plugin-transform-class-properties', { loose: true }],
+//       '@babel/plugin-syntax-dynamic-import',
+//       '@babel/plugin-syntax-export-default-from',
+//       ['@babel/plugin-transform-react-jsx', { runtime: 'automatic' }],
+//       '@babel/plugin-transform-sticky-regex',
+//       '@babel/plugin-transform-unicode-regex',
+//       '@babel/plugin-proposal-export-default-from',
+//       '@babel/plugin-transform-object-rest-spread',
+//       '@babel/plugin-transform-react-display-name',
+//       '@babel/plugin-transform-optional-chaining',
+//       '@babel/plugin-transform-nullish-coalescing-operator',
+//       ['@babel/plugin-transform-runtime', {
+//         helpers: true,
+//         regenerator: true,
+//       }],
 //       'react-native-reanimated/plugin',
 //       'nativewind/babel',
 //       '@babel/plugin-transform-flow-strip-types',
 //       '@babel/plugin-transform-optional-catch-binding',
-//       ['@babel/plugin-transform-private-methods', { loose: true }],
-//       // SUPPORTED BY DEFAULT: '@babel/plugin-transform-block-scoping',
-//       [
-//         '@babel/plugin-transform-class-properties',
-//         {
-//           loose: true,
-//         },
-//       ],
-//       '@babel/plugin-syntax-dynamic-import',
-//       '@babel/plugin-syntax-export-default-from',
-//       // SUPPORTED BY DEFAULT: '@babel/plugin-transform-computed-properties',
-//       // SUPPORTED BY DEFAULT: '@babel/plugin-transform-destructuring',
-//       // SUPPORTED BY DEFAULT: '@babel/plugin-transform-function-name',
-//       // SUPPORTED BY DEFAULT: '@babel/plugin-transform-literals',
-//       // SUPPORTED BY DEFAULT: '@babel/plugin-transform-parameters',
-//       // SUPPORTED BY DEFAULT: '@babel/plugin-transform-shorthand-properties',
-//       [
-//             '@babel/plugin-transform-react-jsx',
-//             {
-//                 runtime: 'automatic',
-//             },
-//         ],
-//       // SUPPORTED BY DEFAULT: '@babel/plugin-transform-regenerator',
-//       '@babel/plugin-transform-sticky-regex',
-//       '@babel/plugin-transform-unicode-regex',
-//       '@babel/plugin-proposal-export-default-from',
-//       [
-//         '@babel/plugin-transform-modules-commonjs',
-//         {
-//           strict: false,
-//           strictMode: false, // prevent "use strict" injections
-//           lazy: (importSpecifier) => lazyImports.has(importSpecifier),
-//           allowTopLevelThis: true, // dont rewrite global `this` -> `undefined`
-//         },
-//       ],
-//       // SUPPORTED BY DEFAULT: '@babel/plugin-transform-classes',
-//       // SUPPORTED BY DEFAULT: '@babel/plugin-transform-arrow-functions'
-//       // SUPPORTED BY DEFAULT: '@babel/plugin-transform-spread',
-//       '@babel/plugin-transform-object-rest-spread',
-//       // SUPPORTED BY DEFAULT: [
-//       // SUPPORTED BY DEFAULT:   '@babel/plugin-transform-template-literals',
-//       // SUPPORTED BY DEFAULT:   {loose: true}, // dont 'a'.concat('b'), just use 'a'+'b'
-//       // SUPPORTED BY DEFAULT: ],
-//       // SUPPORTED BY DEFAULT: '@babel/plugin-transform-exponentiation-operator',
-//       // SUPPORTED BY DEFAULT: '@babel/plugin-transform-object-assign',
-//       // SUPPORTED BY DEFAULT: ['@babel/plugin-transform-for-of', {loose: true}],
-//       // 'metro-react-native-babel-preset/src/transforms/transform-symbol-member',
-//       '@babel/plugin-transform-react-display-name',
-//       '@babel/plugin-transform-optional-chaining',
-//       '@babel/plugin-transform-nullish-coalescing-operator',
-//       [
-//         '@babel/plugin-transform-runtime',
-//         {
-//           helpers: true,
-//           regenerator: true,
-//         },
-//       ],
 //     ],
 //   };
-};
+// };

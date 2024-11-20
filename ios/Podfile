@@ -54,9 +54,9 @@ target 'Cypherd' do
   # you should disable the next line.
   # use_flipper!()
 
-  pre_install do |installer|
-    Pod::Installer::Xcode::TargetValidator.send(:define_method, :verify_no_static_framework_transitive_dependencies) {}
-  end
+  # pre_install do |installer|
+  #   Pod::Installer::Xcode::TargetValidator.send(:define_method, :verify_no_static_framework_transitive_dependencies) {}
+  # end
 
   post_install do |installer|
     react_native_post_install(
@@ -66,16 +66,16 @@ target 'Cypherd' do
       # :ccache_enabled => true
     )
 
-    installer.pods_project.targets.each do |target|
-      target.build_configurations.each do |config|
-        config.build_settings['ALWAYS_EMBED_SWIFT_STANDARD_LIBRARIES'] = 'NO'
-        config.build_settings['ENABLE_USER_SCRIPT_SANDBOXING'] = 'NO'
-        config.build_settings['CLANG_WARN_DOCUMENTATION_COMMENTS'] = 'NO'
-        config.build_settings['LD_RUNPATH_SEARCH_PATHS'] = [
-          '$(inherited)',
-          '@executable_path/Frameworks'
-        ]
-      end
-    end
+    # installer.pods_project.targets.each do |target|
+    #   target.build_configurations.each do |config|
+    #     config.build_settings['ALWAYS_EMBED_SWIFT_STANDARD_LIBRARIES'] = 'NO'
+    #     config.build_settings['ENABLE_USER_SCRIPT_SANDBOXING'] = 'NO'
+    #     config.build_settings['CLANG_WARN_DOCUMENTATION_COMMENTS'] = 'NO'
+    #     config.build_settings['LD_RUNPATH_SEARCH_PATHS'] = [
+    #       '$(inherited)',
+    #       '@executable_path/Frameworks'
+    #     ]
+    #   end
+    # end
   end
 end
