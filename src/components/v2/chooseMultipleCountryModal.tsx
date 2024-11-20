@@ -151,7 +151,7 @@ const ChooseMultipleCountryModal = ({
               <CyDView className='mb-[100px]'>
                 {origCountriesWithFlagAndDialcodes.map(country => {
                   return (
-                    <>
+                    <React.Fragment key={country.Iso2}>
                       <CyDTouchView
                         onPress={() => {
                           if (some(selectedCountry, { name: country.name })) {
@@ -209,8 +209,11 @@ const ChooseMultipleCountryModal = ({
                           </CyDTouchView>
                         </CyDView>
                       </CyDTouchView>
-                      <CyDView className='h-[1px] bg-[#DFE2E6]' />
-                    </>
+                      <CyDView
+                        key={`${country.Iso2}-divider`}
+                        className='h-[1px] bg-[#DFE2E6]'
+                      />
+                    </React.Fragment>
                   );
                 })}
               </CyDView>
