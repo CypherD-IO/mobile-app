@@ -9,7 +9,6 @@ import {
   formatAmount,
   getExplorerUrlFromBackendNames,
   limitDecimalPlaces,
-  parseErrorMessage,
 } from '../../../core/util';
 import {
   CyDFastImage,
@@ -42,13 +41,15 @@ import {
   ICardSubObjectMerchant,
   ICardTransaction,
 } from '../../../models/card.model';
-import { capitalize, get, isEmpty, pick, split } from 'lodash';
+import { capitalize, get, isEmpty, split } from 'lodash';
 import { t } from 'i18next';
 import { CardProfile } from '../../../models/cardProfile.model';
 import Toast from 'react-native-toast-message';
 import useAxios from '../../../core/HttpRequest';
 import { useGlobalModalContext } from '../../../components/v2/GlobalModal';
 import * as Sentry from '@sentry/react-native';
+
+const TRANSACTION_DETAILS_TITLE = t('TRANSACTION_DETAILS');
 
 const formatDate = (date: Date) => {
   return moment(date).format('MMM DD YYYY, h:mm a');
@@ -165,7 +166,7 @@ const TransactionDetail = ({
   reason?: string;
   metadata?: ICardSubObjectMerchant;
   getRequiredData: (cardId: string) => Promise<void>;
-  cardId?: string;
+  cardId: string;
   limits: any;
   provider: CardProviders;
   addIntlCountry: (iso2: string, cardId: string) => Promise<void>;
@@ -177,13 +178,13 @@ const TransactionDetail = ({
   useEffect(() => {
     if (
       isDeclined &&
-      item.title === t('TRANSACTION_DETAILS') &&
+      item.title === TRANSACTION_DETAILS_TITLE &&
       metadata?.merchantCountry &&
       cardId
     ) {
       void getRequiredData(cardId);
     }
-  }, []);
+  }, [isDeclined, item.title, metadata?.merchantCountry, cardId]);
 
   const countryAlreadyAllowed = (
     get(limits, ['cusL', 'intl', 'cLs']) ?? []
@@ -210,7 +211,7 @@ const TransactionDetail = ({
               return null;
             }
           })}
-          {!isSettled && item.title === t('TRANSACTION_DETAILS') && (
+          {!isSettled && item.title === TRANSACTION_DETAILS_TITLE && (
             <CyDView>
               <CyDText className='pl-[12px]'>
                 <CyDText className='font-bold underline'>
@@ -228,7 +229,7 @@ const TransactionDetail = ({
         metadata?.merchantCountry &&
         isCountryDisabled &&
         isDeclined &&
-        item.title === t('TRANSACTION_DETAILS') && (
+        item.title === TRANSACTION_DETAILS_TITLE && (
           <CyDView className='bg-n0 rounded-[12px] border border-[#E9EBF8] p-[12px] mt-[8px]'>
             <CyDView className='flex-row items-start'>
               <CyDImage
@@ -481,7 +482,7 @@ export default function TransactionDetails() {
         showModal('state', {
           type: 'error',
           title: t('UNABLE_TO_UPDATE_DETAILS'),
-          description: response.error.message ?? t('PLEASE_CONTACT_SUPPORT'),
+          description: response.error?.message ?? t('PLEASE_CONTACT_SUPPORT'),
           onSuccess: hideModal,
           onFailure: hideModal,
         });
@@ -523,7 +524,7 @@ export default function TransactionDetails() {
                 reason={transaction?.cDReason ?? transaction?.dReason ?? ''}
                 metadata={transaction?.metadata?.merchant}
                 getRequiredData={getRequiredData}
-                cardId={transaction?.cardId}
+                cardId={transaction?.cardId ?? ''}
                 limits={limits}
                 provider={provider}
                 addIntlCountry={addIntlCountry}

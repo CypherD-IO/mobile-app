@@ -101,7 +101,7 @@ const ChooseMultipleCountryModal = ({
       );
       setOrigCountryList(filteredCountries);
     }
-  }, [countryFilterText]);
+  }, [copyCountriesWithFlagAndDialcodes, countryFilterText]);
 
   return (
     <CyDModalLayout
@@ -170,7 +170,7 @@ const ChooseMultipleCountryModal = ({
                               country.name === selectedCountry?.name,
                           },
                         )}
-                        key={country.Iso2}>
+                        key={country.Iso2 + country.name}>
                         <CyDView className={'flex flex-row items-center'}>
                           <CyDText className={'text-[36px]'}>
                             {country.unicode_flag}
