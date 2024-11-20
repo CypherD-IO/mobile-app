@@ -1,35 +1,47 @@
+require Pod::Executable.execute_command('node', ['-p',
+  'require.resolve(
+    "react-native/scripts/react_native_pods.rb",
+    {paths: [process.argv[1]]},
+  )', __dir__]).strip
 require_relative '../node_modules/react-native/scripts/react_native_pods'
 require_relative '../node_modules/@react-native-community/cli-platform-ios/native_modules'
 
-platform :ios, '15.0'
+platform :ios, '15.1'
+prepare_react_native_project!
+
+linkage = ENV['USE_FRAMEWORKS']
+if linkage != nil
+  Pod::UI.puts "Configuring Pod with #{linkage}ally linked Frameworks".green
+  use_frameworks! :linkage => linkage.to_sym
+end
 
 target 'Cypherd' do
   config = use_native_modules!
   $RNFirebaseAnalyticsWithoutAdIdSupport = true
   use_react_native!(
     :path => config[:reactNativePath],
-    # to enable hermes on iOS, change `false` to `true` and then install pods
-    :hermes_enabled => false
+    # An absolute path to your application root.
+    :app_path => "#{Pod::Config.instance.installation_root}/.."
   )
-
+  
   permissions_path = '../node_modules/react-native-permissions/ios'
   pod 'Permission-Camera', :path => "#{permissions_path}/Camera"
 
-  pod 'RNVectorIcons', :path => '../node_modules/react-native-vector-icons'
+  # pod 'RNVectorIcons', :path => '../node_modules/react-native-vector-icons'
 
-  pod 'react-native-webview', :path => '../node_modules/react-native-webview'
+  # pod 'react-native-webview', :path => '../node_modules/react-native-webview'
 
-  pod 'react-native-randombytes', :path => '../node_modules/react-native-randombytes'
+  # pod 'react-native-randombytes', :path => '../node_modules/react-native-randombytes'
 
-  pod 'RNSentry', :path => '../node_modules/@sentry/react-native'
+  # pod 'RNSentry', :path => '../node_modules/@sentry/react-native'
 
-  pod 'react-native-camera', :path => '../node_modules/react-native-camera'
+  # pod 'react-native-camera', :path => '../node_modules/react-native-camera'
 
-  pod 'RNPermissions', :path => '../node_modules/react-native-permissions'
+  # pod 'RNPermissions', :path => '../node_modules/react-native-permissions'
 
-  pod 'react-native-view-shot', :path => '../node_modules/react-native-view-shot'
+  # pod 'react-native-view-shot', :path => '../node_modules/react-native-view-shot'
 
-  pod 'RNLocalize', :path => '../node_modules/react-native-localize'
+  # pod 'RNLocalize', :path => '../node_modules/react-native-localize'
 
   target 'CypherdTests' do
     inherit! :complete
@@ -40,11 +52,30 @@ target 'Cypherd' do
   #
   # Note that if you have use_frameworks! enabled, Flipper will not work and
   # you should disable the next line.
-  use_flipper!()
+  # use_flipper!()
+
+  pre_install do |installer|
+    Pod::Installer::Xcode::TargetValidator.send(:define_method, :verify_no_static_framework_transitive_dependencies) {}
+  end
 
   post_install do |installer|
-    react_native_post_install(installer)
-    __apply_Xcode_12_5_M1_post_install_workaround(installer)
+    react_native_post_install(
+      installer,
+      config[:reactNativePath],
+      :mac_catalyst_enabled => false,
+      # :ccache_enabled => true
+    )
+
+    installer.pods_project.targets.each do |target|
+      target.build_configurations.each do |config|
+        config.build_settings['ALWAYS_EMBED_SWIFT_STANDARD_LIBRARIES'] = 'NO'
+        config.build_settings['ENABLE_USER_SCRIPT_SANDBOXING'] = 'NO'
+        config.build_settings['CLANG_WARN_DOCUMENTATION_COMMENTS'] = 'NO'
+        config.build_settings['LD_RUNPATH_SEARCH_PATHS'] = [
+          '$(inherited)',
+          '@executable_path/Frameworks'
+        ]
+      end
+    end
   end
 end
-

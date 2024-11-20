@@ -35,7 +35,7 @@ static void InitializeFlipper(UIApplication *application) {
 
 - (BOOL)application:(UIApplication *)application didFinishLaunchingWithOptions:(NSDictionary *)launchOptions
 {
-  [FIRApp configure];
+    [FIRApp configure];
 #ifdef FB_SONARKIT_ENABLED
   InitializeFlipper(application);
 #endif
@@ -64,7 +64,7 @@ static void InitializeFlipper(UIApplication *application) {
 
   [RNSplashScreen showLottieSplash:animationUIView inRootView:rootView];
 
-  AnimationView *animationView = (AnimationView *) animationUIView;
+  LottieAnimationView *animationView = (LottieAnimationView *) animationUIView;
 
   [t playWithAnimationView:animationView];
 
@@ -80,7 +80,7 @@ static void InitializeFlipper(UIApplication *application) {
 //Called when a notification is delivered to a foreground app.
 -(void)userNotificationCenter:(UNUserNotificationCenter *)center willPresentNotification:(UNNotification *)notification withCompletionHandler:(void (^)(UNNotificationPresentationOptions options))completionHandler
 {
-  completionHandler(UNNotificationPresentationOptionSound | UNNotificationPresentationOptionAlert | UNNotificationPresentationOptionBadge);
+    completionHandler(UNNotificationPresentationOptionSound | UNNotificationPresentationOptionAlert | UNNotificationPresentationOptionBadge);
 }
 
 // Required for the register event.
@@ -108,6 +108,11 @@ didReceiveNotificationResponse:(UNNotificationResponse *)response
 }
 
 - (NSURL *)sourceURLForBridge:(RCTBridge *)bridge
+{
+  return [self bundleURL];
+}
+ 
+- (NSURL *)bundleURL
 {
 #if DEBUG
   return [[RCTBundleURLProvider sharedSettings] jsBundleURLForBundleRoot:@"index"];

@@ -61,7 +61,7 @@ export default function CosmosSelectReValidator({ route, navigation }) {
     setQuery(text);
   };
 
-  const Item = ({ item }): JSX.Element => (
+  const Item = ({ item }): React.JSX.Element => (
     <>
       {validatorData.name !== item.name && (
         <CyDTouchView

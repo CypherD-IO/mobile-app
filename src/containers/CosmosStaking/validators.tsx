@@ -83,7 +83,7 @@ export default function CosmosValidators({ route, navigation }) {
     if (n >= 1e12) return +(n / 1e12).toFixed(1) + 'T';
   };
 
-  const Item = ({ item }: { item: IAllValidators }): JSX.Element => {
+  const Item = ({ item }: { item: IAllValidators }): React.JSX.Element => {
     return (
       <CyDView className='w-full flex items-center justify-center '>
         <CyDView
