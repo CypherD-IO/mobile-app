@@ -30,11 +30,20 @@ const FormikDateInput: React.FC<FormikDateInputProps> = ({
 
   const onChangeDate = (selectedDate?: Date) => {
     const currentDate = selectedDate ?? field.value;
-    const formattedDate = currentDate.toISOString().split('T')[0];
+    const formattedDate =
+      currentDate instanceof Date
+        ? new Date(
+            currentDate.getFullYear(),
+            currentDate.getMonth(),
+            currentDate.getDate(),
+          )
+            .toISOString()
+            .split('T')[0]
+        : '';
 
     // Handle the Promise returned by setValue
     helpers
-      .setValue(formattedDate)
+      .setValue(formattedDate || null)
       .catch(error => Sentry.captureException(error));
     setShow(false);
   };

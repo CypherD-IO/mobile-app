@@ -210,7 +210,7 @@ export default function CardApplicationV2() {
       const payload = {
         ...changedFields,
         phone:
-          changedFields.phone && changedFields.dialCode
+          changedFields.phone?.trim() && changedFields.dialCode
             ? changedFields.dialCode + changedFields.phone
             : undefined,
         dateOfBirth: changedFields.dateOfBirth ?? undefined,
