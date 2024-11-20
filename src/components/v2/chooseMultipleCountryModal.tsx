@@ -14,14 +14,13 @@ import {
 } from '../../styles/tailwindStyles';
 import AppImages from '../../../assets/images/appImages';
 import axios from '../../core/Http';
-import { CountryCodesWithFlags } from '../../models/CountryCodesWithFlags.model';
 import countryMaster from '../../../assets/datasets/countryMaster';
 import { Colors } from '../../constants/theme';
 import { ICountry } from '../../models/cardApplication.model';
 import clsx from 'clsx';
 import { StyleSheet } from 'react-native';
 import { isAndroid } from '../../misc/checkers';
-import { reject, some, without } from 'lodash';
+import { reject, some } from 'lodash';
 
 interface Props {
   isModalVisible: boolean;
@@ -77,15 +76,35 @@ const ChooseMultipleCountryModal = ({
 
   useEffect(() => {
     if (countryFilterText === '') {
-      setOrigCountryList(copyCountriesWithFlagAndDialcodes);
-    } else {
-      const filteredCountries = copyCountriesWithFlagAndDialcodes.filter(
-        country =>
-          country.name.toLowerCase().includes(countryFilterText.toLowerCase()),
+      const sortedCountries = [...copyCountriesWithFlagAndDialcodes].sort(
+        (a, b) => {
+          const isASelected = some(selectedCountry, { name: a.name });
+          const isBSelected = some(selectedCountry, { name: b.name });
+
+          if (isASelected && !isBSelected) return -1;
+          if (!isASelected && isBSelected) return 1;
+          if (isASelected && isBSelected) return a.name.localeCompare(b.name);
+          return a.name.localeCompare(b.name);
+        },
       );
+      setOrigCountryList(sortedCountries);
+    } else {
+      const filteredCountries = copyCountriesWithFlagAndDialcodes
+        .filter(country =>
+          country.name.toLowerCase().includes(countryFilterText.toLowerCase()),
+        )
+        .sort((a, b) => {
+          const isASelected = some(selectedCountry, { name: a.name });
+          const isBSelected = some(selectedCountry, { name: b.name });
+
+          if (isASelected && !isBSelected) return -1;
+          if (!isASelected && isBSelected) return 1;
+          if (isASelected && isBSelected) return a.name.localeCompare(b.name);
+          return a.name.localeCompare(b.name);
+        });
       setOrigCountryList(filteredCountries);
     }
-  }, [copyCountriesWithFlagAndDialcodes, countryFilterText]);
+  }, [copyCountriesWithFlagAndDialcodes, countryFilterText, selectedCountry]);
 
   return (
     <CyDModalLayout
@@ -154,7 +173,7 @@ const ChooseMultipleCountryModal = ({
                               country.name === selectedCountry?.name,
                           },
                         )}
-                        key={country.name}>
+                        key={country.Iso2}>
                         <CyDView className={'flex flex-row items-center'}>
                           <CyDText className={'text-[36px]'}>
                             {country.unicode_flag}
@@ -166,7 +185,6 @@ const ChooseMultipleCountryModal = ({
                         </CyDView>
                         <CyDView className={'flex flex-row justify-end'}>
                           <CyDTouchView
-                            key={country.name}
                             onPress={() => {
                               if (
                                 some(selectedCountry, { name: country.name })
@@ -194,7 +212,7 @@ const ChooseMultipleCountryModal = ({
                           </CyDTouchView>
                         </CyDView>
                       </CyDTouchView>
-                      <CyDView className='h-[1px] bg-[#DFE2E6]'></CyDView>
+                      <CyDView className='h-[1px] bg-[#DFE2E6]' />
                     </>
                   );
                 })}

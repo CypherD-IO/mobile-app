@@ -1,6 +1,6 @@
 import Intercom from '@intercom/intercom-react-native';
 import moment from 'moment';
-import React, { useContext } from 'react';
+import React, { useContext, useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import AppImages from '../../../../assets/images/appImages';
 import {
@@ -9,6 +9,7 @@ import {
   formatAmount,
   getExplorerUrlFromBackendNames,
   limitDecimalPlaces,
+  parseErrorMessage,
 } from '../../../core/util';
 import {
   CyDFastImage,
@@ -25,16 +26,29 @@ import {
   CardTransactionTypes,
   CardProviders,
   ReapTxnStatus,
+  CardControlTypes,
 } from '../../../constants/enum';
 import clsx from 'clsx';
 import { screenTitle } from '../../../constants';
-import { RouteProp, useNavigation, useRoute } from '@react-navigation/native';
+import {
+  NavigationProp,
+  ParamListBase,
+  RouteProp,
+  useNavigation,
+  useRoute,
+} from '@react-navigation/native';
 import { GlobalContext, GlobalContextDef } from '../../../core/globalContext';
-import { ICardTransaction } from '../../../models/card.model';
-import { capitalize, split } from 'lodash';
+import {
+  ICardSubObjectMerchant,
+  ICardTransaction,
+} from '../../../models/card.model';
+import { capitalize, get, isEmpty, pick, split } from 'lodash';
 import { t } from 'i18next';
 import { CardProfile } from '../../../models/cardProfile.model';
 import Toast from 'react-native-toast-message';
+import useAxios from '../../../core/HttpRequest';
+import { useGlobalModalContext } from '../../../components/v2/GlobalModal';
+import * as Sentry from '@sentry/react-native';
 
 const formatDate = (date: Date) => {
   return moment(date).format('MMM DD YYYY, h:mm a');
@@ -81,7 +95,7 @@ const DetailItem = ({
   return (
     <CyDView
       className={
-        'flex flex-row justify-center items-center px-[8px] mb-[20px]'
+        'flex flex-row justify-between items-center px-[8px] mb-[20px]'
       }>
       <CyDView className={'w-[40%] justify-center items-start'}>
         <CyDText className={'text-[16px]'}>{item.label}</CyDText>
@@ -94,9 +108,9 @@ const DetailItem = ({
             url: getExplorerUrlFromBackendNames(chainString, item.value.hash),
           });
         }}
-        className='w-[60%] pl-[10px] justify-center items-start flex flex-row'>
+        className='w-[60%] pl-[10px] justify-end items-start flex flex-row'>
         <CyDText
-          className={clsx('font-bold', {
+          className={clsx('font-bold text-right', {
             'text-blue-500 underline': isHash && hashIsValid,
             'text-red-500': item.label === t('STATUS') && value === 'DECLINED',
           })}>
@@ -130,6 +144,13 @@ const TransactionDetail = ({
   isSettled,
   isDeclined = false,
   reason = '',
+  metadata,
+  getRequiredData,
+  cardId,
+  limits,
+  provider,
+  addIntlCountry,
+  navigation,
 }: {
   item: {
     icon: any;
@@ -142,37 +163,116 @@ const TransactionDetail = ({
   isSettled: boolean;
   isDeclined?: boolean;
   reason?: string;
+  metadata?: ICardSubObjectMerchant;
+  getRequiredData: (cardId: string) => Promise<void>;
+  cardId?: string;
+  limits: any;
+  provider: CardProviders;
+  addIntlCountry: (iso2: string, cardId: string) => Promise<void>;
+  navigation: NavigationProp<ParamListBase>;
 }) => {
+  const isCountryDisabled =
+    reason?.includes('International transactions are disabled') ||
+    reason?.includes('is not in the allow list');
+  useEffect(() => {
+    if (
+      isDeclined &&
+      item.title === t('TRANSACTION_DETAILS') &&
+      metadata?.merchantCountry &&
+      cardId
+    ) {
+      void getRequiredData(cardId);
+    }
+  }, []);
+
+  const countryAlreadyAllowed = (
+    get(limits, ['cusL', 'intl', 'cLs']) ?? []
+  ).includes(metadata?.merchantCountry);
+
   return (
-    <CyDView className='pb-[5px] rounded-[7px] mt-[25px] bg-lightGrey'>
-      <CyDView className='flex flex-row items-center px-[8px] pt-[15px] pb-[7px] border-b-[1px] border-sepratorColor'>
-        <CyDFastImage
-          className={'h-[20px] w-[20px] mr-[10px]'}
-          source={item.icon}
-          resizeMode={'contain'}
-        />
-        <CyDText className={'text-[18px] font-extrabold'}>{item.title}</CyDText>
-      </CyDView>
-      <CyDView className={'mt-[12px]'}>
-        {item.data.map((detailItem, index) => {
-          // Check to remove default as a item value.
-          if (!(detailItem.value === 'default')) {
-            return <DetailItem item={detailItem} key={index} />;
-          } else {
-            return null;
-          }
-        })}
-        {!isSettled && item.title === t('TRANSACTION_DETAILS') && (
-          <CyDView>
-            <CyDText className='pl-[12px]'>
-              <CyDText className='font-bold underline'>
-                {isDeclined ? 'Reason:' : 'Note:'}
+    <CyDView>
+      <CyDView className='pb-[5px] rounded-[7px] mt-[25px] bg-lightGrey'>
+        <CyDView className='flex flex-row items-center px-[8px] pt-[15px] pb-[7px] border-b-[1px] border-sepratorColor'>
+          <CyDFastImage
+            className={'h-[20px] w-[20px] mr-[10px]'}
+            source={item.icon}
+            resizeMode={'contain'}
+          />
+          <CyDText className={'text-[18px] font-extrabold'}>
+            {item.title}
+          </CyDText>
+        </CyDView>
+        <CyDView className={'mt-[12px]'}>
+          {item.data.map((detailItem, index) => {
+            if (!(detailItem.value === 'default')) {
+              return <DetailItem item={detailItem} key={index} />;
+            } else {
+              return null;
+            }
+          })}
+          {!isSettled && item.title === t('TRANSACTION_DETAILS') && (
+            <CyDView>
+              <CyDText className='pl-[12px]'>
+                <CyDText className='font-bold underline'>
+                  {isDeclined ? 'Reason:' : 'Note:'}
+                </CyDText>
+                {' ' +
+                  (isDeclined ? reason : t('TRANSACTION_YET_TO_BE_SETTLED'))}
               </CyDText>
-              {' ' + (isDeclined ? reason : t('TRANSACTION_YET_TO_BE_SETTLED'))}
-            </CyDText>
+            </CyDView>
+          )}
+        </CyDView>
+      </CyDView>
+
+      {!isEmpty(limits) &&
+        metadata?.merchantCountry &&
+        isCountryDisabled &&
+        isDeclined &&
+        item.title === t('TRANSACTION_DETAILS') && (
+          <CyDView className='bg-n0 rounded-[12px] border border-[#E9EBF8] p-[12px] mt-[8px]'>
+            <CyDView className='flex-row items-start'>
+              <CyDImage
+                source={AppImages.INFO_CIRCLE}
+                className='w-[24px] h-[24px]'
+              />
+
+              <CyDText className='text-[12px] font-medium ml-[8px] flex-1'>
+                {!countryAlreadyAllowed
+                  ? `Add ${metadata?.merchantCountry} to your allowed countries or update card settings to match your requirements.`
+                  : `International transactions are already enabled for ${metadata?.merchantCountry}. Retry your transaction.`}
+              </CyDText>
+            </CyDView>
+            <CyDView className='mt-[10px] flex-row items-center flex-1'>
+              <CyDTouchView
+                className='border border-[#DFE2E6] rounded-[4px] bg-[#FAFBFB] px-[8px] py-[6px] flex-1'
+                onPress={() => {
+                  navigation.navigate(screenTitle.CARD_CONTROLS_MENU, {
+                    cardId: cardId ?? '',
+                    currentCardProvider: provider,
+                  });
+                }}>
+                <CyDText className='text-center text-[14px] font-semibold'>
+                  {'Review Settings'}
+                </CyDText>
+              </CyDTouchView>
+              <CyDTouchView
+                className={clsx(
+                  'border border-p40 rounded-[4px] bg-p40 px-[8px] py-[6px] flex-1 ml-[10px]',
+                  {
+                    'opacity-50': countryAlreadyAllowed,
+                  },
+                )}
+                disabled={countryAlreadyAllowed}
+                onPress={() => {
+                  void addIntlCountry(metadata?.merchantCountry, cardId ?? '');
+                }}>
+                <CyDText className='text-center text-[14px] font-semibold'>
+                  {`Add ${metadata?.merchantCountry}`}
+                </CyDText>
+              </CyDTouchView>
+            </CyDView>
           </CyDView>
         )}
-      </CyDView>
     </CyDView>
   );
 };
@@ -191,6 +291,7 @@ export default function TransactionDetails() {
   } = transaction;
   const hdWalletContext = useContext<any>(HdWalletContext);
   const globalContext = useContext(GlobalContext) as GlobalContextDef;
+  const { getWithAuth, patchWithAuth } = useAxios();
   const cardProfile: CardProfile | undefined =
     globalContext.globalState.cardProfile;
   const provider = cardProfile?.provider ?? CardProviders.REAP_CARD;
@@ -202,6 +303,11 @@ export default function TransactionDetails() {
       value: any;
     }>;
   }> = [];
+  const { showModal, hideModal } = useGlobalModalContext();
+  const navigation = useNavigation<NavigationProp<ParamListBase>>();
+
+  const [limits, setLimits] = useState({});
+
   if (
     transaction.type === CardTransactionTypes.DEBIT ||
     transaction.type === CardTransactionTypes.REFUND ||
@@ -318,6 +424,71 @@ export default function TransactionDetails() {
     });
   }
 
+  const getRequiredData = async (cardId: string) => {
+    if (provider && cardId) {
+      try {
+        const { isError, data } = await getWithAuth(
+          `/v1/cards/${provider}/card/${cardId}/limits`,
+        );
+        if (!isError) {
+          setLimits(data);
+        }
+      } catch (error) {
+        Sentry.captureException(error);
+      }
+    }
+  };
+
+  const addIntlCountry = async (iso2: string, cardId?: string) => {
+    if (iso2 && cardId) {
+      const payload = {
+        cusL: {
+          ...get(limits, 'cusL'),
+          intl: {
+            ...get(limits, ['cusL', CardControlTypes.INTERNATIONAL]),
+            dis: false,
+            cLs: [
+              ...get(
+                limits,
+                ['cusL', CardControlTypes.INTERNATIONAL, 'cLs'],
+                [],
+              ),
+              iso2,
+            ],
+          },
+        },
+      };
+      const response = await patchWithAuth(
+        `/v1/cards/${provider}/card/${cardId}/limits`,
+        payload,
+      );
+
+      if (!response.isError) {
+        showModal('state', {
+          type: 'success',
+          title: `Added ${iso2} to your allowed countries`,
+          description: 'Please retry your transaction again.',
+          onSuccess: () => {
+            hideModal();
+            navigation.navigate(screenTitle.CARD_CONTROLS_MENU, {
+              cardId: cardId ?? '',
+              currentCardProvider: provider,
+            });
+          },
+          onFailure: hideModal,
+        });
+      } else {
+        showModal('state', {
+          type: 'error',
+          title: t('UNABLE_TO_UPDATE_DETAILS'),
+          description: response.error.message ?? t('PLEASE_CONTACT_SUPPORT'),
+          onSuccess: hideModal,
+          onFailure: hideModal,
+        });
+      }
+    }
+  };
+
   return (
     <CyDSafeAreaView className='flex-1 bg-white'>
       <CyDScrollView className='h-full bg-white px-[25px]'>
@@ -349,7 +520,14 @@ export default function TransactionDetails() {
                 key={index}
                 isSettled={transaction?.isSettled ?? false}
                 isDeclined={transaction.tStatus === ReapTxnStatus.DECLINED}
-                reason={transaction?.dReason ?? transaction?.cDReason ?? ''}
+                reason={transaction?.cDReason ?? transaction?.dReason ?? ''}
+                metadata={transaction?.metadata?.merchant}
+                getRequiredData={getRequiredData}
+                cardId={transaction?.cardId}
+                limits={limits}
+                provider={provider}
+                addIntlCountry={addIntlCountry}
+                navigation={navigation}
               />
             );
           } else {
