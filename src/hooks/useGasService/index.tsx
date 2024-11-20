@@ -744,7 +744,10 @@ export default function useGasService() {
       instructions: [transferInstruction],
     }).compileToV0Message();
     const transaction = new VersionedTransaction(message);
-    const simulation = await connection.simulateTransaction(transaction);
+    const simulation = await connection.simulateTransaction(transaction, {
+      replaceRecentBlockhash: true,
+      commitment: 'finalized',
+    });
     const unitsConsumed = simulation?.value?.unitsConsumed ?? 0;
     const lamportsPerSignature = 5000;
     const numSignatures = transaction.signatures.length;
