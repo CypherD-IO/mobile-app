@@ -75,7 +75,7 @@ const ChooseMultipleCountryModal = ({
   }, []);
 
   useEffect(() => {
-    if (countryFilterText === '') {
+    if (isModalVisible && copyCountriesWithFlagAndDialcodes.length > 0) {
       const sortedCountries = [...copyCountriesWithFlagAndDialcodes].sort(
         (a, b) => {
           const isASelected = some(selectedCountry, { name: a.name });
@@ -88,23 +88,20 @@ const ChooseMultipleCountryModal = ({
         },
       );
       setOrigCountryList(sortedCountries);
-    } else {
-      const filteredCountries = copyCountriesWithFlagAndDialcodes
-        .filter(country =>
-          country.name.toLowerCase().includes(countryFilterText.toLowerCase()),
-        )
-        .sort((a, b) => {
-          const isASelected = some(selectedCountry, { name: a.name });
-          const isBSelected = some(selectedCountry, { name: b.name });
+    }
+  }, [isModalVisible, copyCountriesWithFlagAndDialcodes]);
 
-          if (isASelected && !isBSelected) return -1;
-          if (!isASelected && isBSelected) return 1;
-          if (isASelected && isBSelected) return a.name.localeCompare(b.name);
-          return a.name.localeCompare(b.name);
-        });
+  useEffect(() => {
+    if (countryFilterText === '') {
+      setOrigCountryList(copyCountriesWithFlagAndDialcodes);
+    } else {
+      const filteredCountries = copyCountriesWithFlagAndDialcodes.filter(
+        country =>
+          country.name.toLowerCase().includes(countryFilterText.toLowerCase()),
+      );
       setOrigCountryList(filteredCountries);
     }
-  }, [copyCountriesWithFlagAndDialcodes, countryFilterText, selectedCountry]);
+  }, [countryFilterText]);
 
   return (
     <CyDModalLayout
