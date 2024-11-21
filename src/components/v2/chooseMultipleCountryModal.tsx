@@ -14,14 +14,13 @@ import {
 } from '../../styles/tailwindStyles';
 import AppImages from '../../../assets/images/appImages';
 import axios from '../../core/Http';
-import { CountryCodesWithFlags } from '../../models/CountryCodesWithFlags.model';
 import countryMaster from '../../../assets/datasets/countryMaster';
 import { Colors } from '../../constants/theme';
 import { ICountry } from '../../models/cardApplication.model';
 import clsx from 'clsx';
 import { StyleSheet } from 'react-native';
 import { isAndroid } from '../../misc/checkers';
-import { reject, some, without } from 'lodash';
+import { reject, some } from 'lodash';
 
 interface Props {
   isModalVisible: boolean;
@@ -74,6 +73,23 @@ const ChooseMultipleCountryModal = ({
   useEffect(() => {
     void getCountryData();
   }, []);
+
+  useEffect(() => {
+    if (isModalVisible && copyCountriesWithFlagAndDialcodes.length > 0) {
+      const sortedCountries = [...copyCountriesWithFlagAndDialcodes].sort(
+        (a, b) => {
+          const isASelected = some(selectedCountry, { name: a.name });
+          const isBSelected = some(selectedCountry, { name: b.name });
+
+          if (isASelected && !isBSelected) return -1;
+          if (!isASelected && isBSelected) return 1;
+          if (isASelected && isBSelected) return a.name.localeCompare(b.name);
+          return a.name.localeCompare(b.name);
+        },
+      );
+      setOrigCountryList(sortedCountries);
+    }
+  }, [isModalVisible, copyCountriesWithFlagAndDialcodes]);
 
   useEffect(() => {
     if (countryFilterText === '') {
@@ -135,7 +151,7 @@ const ChooseMultipleCountryModal = ({
               <CyDView className='mb-[100px]'>
                 {origCountriesWithFlagAndDialcodes.map(country => {
                   return (
-                    <>
+                    <React.Fragment key={country.Iso2}>
                       <CyDTouchView
                         onPress={() => {
                           if (some(selectedCountry, { name: country.name })) {
@@ -154,7 +170,7 @@ const ChooseMultipleCountryModal = ({
                               country.name === selectedCountry?.name,
                           },
                         )}
-                        key={country.name}>
+                        key={country.Iso2 + country.name}>
                         <CyDView className={'flex flex-row items-center'}>
                           <CyDText className={'text-[36px]'}>
                             {country.unicode_flag}
@@ -166,7 +182,6 @@ const ChooseMultipleCountryModal = ({
                         </CyDView>
                         <CyDView className={'flex flex-row justify-end'}>
                           <CyDTouchView
-                            key={country.name}
                             onPress={() => {
                               if (
                                 some(selectedCountry, { name: country.name })
@@ -194,8 +209,11 @@ const ChooseMultipleCountryModal = ({
                           </CyDTouchView>
                         </CyDView>
                       </CyDTouchView>
-                      <CyDView className='h-[1px] bg-[#DFE2E6]'></CyDView>
-                    </>
+                      <CyDView
+                        key={`${country.Iso2}-divider`}
+                        className='h-[1px] bg-[#DFE2E6]'
+                      />
+                    </React.Fragment>
                   );
                 })}
               </CyDView>

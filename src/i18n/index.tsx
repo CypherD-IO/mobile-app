@@ -1417,6 +1417,7 @@ const resources = {
         'You have successfully joined the Premium Lounge on Discord 🎉.',
       DISCORD_JOINING: 'Joining Discord ...',
       SET_CARD_PIN: 'Set Card PIN',
+      INVALID_PARAMETERS: 'Invalid Parameters',
     },
   },
 };
