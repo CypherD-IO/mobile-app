@@ -1109,7 +1109,7 @@ const RenderCardActions = ({
             cardProvider === CardProviders.REAP_CARD
               ? navigation.navigate(screenTitle.CARD_CONTROLS_MENU, {
                   currentCardProvider: cardProvider,
-                  card,
+                  cardId: card.cardId,
                 })
               : navigation.navigate(screenTitle.CARD_SET_PIN_SCREEN, {
                   currentCardProvider: cardProvider,

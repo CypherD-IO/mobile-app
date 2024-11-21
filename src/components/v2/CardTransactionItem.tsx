@@ -16,7 +16,11 @@ import {
 import clsx from 'clsx';
 import AppImages from '../../../assets/images/appImages';
 import moment from 'moment';
-import { useNavigation } from '@react-navigation/native';
+import {
+  NavigationProp,
+  ParamListBase,
+  useNavigation,
+} from '@react-navigation/native';
 import { ICardTransaction } from '../../models/card.model';
 import { formatToLocalDate, limitDecimalPlaces } from '../../core/util';
 
@@ -54,7 +58,7 @@ const getTransactionSign = (type: string) => {
 
 const CardTransactionItem = ({ item }: CardTransactionItemProps) => {
   const { t } = useTranslation();
-  const navigation = useNavigation();
+  const navigation = useNavigation<NavigationProp<ParamListBase>>();
   const {
     iconUrl,
     type,

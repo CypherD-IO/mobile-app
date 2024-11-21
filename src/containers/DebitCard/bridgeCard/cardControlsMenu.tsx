@@ -1,4 +1,3 @@
-import React, { useContext, useEffect, useRef, useState } from 'react';
 import {
   NavigationProp,
   ParamListBase,
@@ -7,16 +6,20 @@ import {
   useNavigation,
   useRoute,
 } from '@react-navigation/native';
+import { t } from 'i18next';
 import { find, get } from 'lodash';
 import LottieView from 'lottie-react-native';
+import React, { useContext, useEffect, useState } from 'react';
 import { ScrollView } from 'react-native-gesture-handler';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { ProgressCircle } from 'react-native-svg-charts';
 import countryMaster from '../../../../assets/datasets/countryMaster';
 import AppImages from '../../../../assets/images/appImages';
 import { useGlobalModalContext } from '../../../components/v2/GlobalModal';
+import Loading from '../../../components/v2/loading';
 import ThreeDSecureOptionModal from '../../../components/v2/threeDSecureOptionModal';
-import ZeroRestrictionModeConfirmationModal from './zeroRestrictionMode/zeroRestrictionModeConfirmationModal';
 import { screenTitle } from '../../../constants';
+import { CYPHER_PLAN_ID_NAME_MAPPING } from '../../../constants/data';
 import {
   CARD_LIMIT_TYPE,
   CardControlTypes,
@@ -25,6 +28,8 @@ import {
 } from '../../../constants/enum';
 import { GlobalContext, GlobalContextDef } from '../../../core/globalContext';
 import useAxios from '../../../core/HttpRequest';
+import { Card } from '../../../models/card.model';
+import { ICountry } from '../../../models/cardApplication.model';
 import {
   CyDFastImage,
   CyDImage,
@@ -33,17 +38,10 @@ import {
   CyDView,
 } from '../../../styles/tailwindStyles';
 import { showToast } from '../../utilities/toastUtility';
-import Loading from '../../../components/v2/loading';
-import { Card } from '../../../models/card.model';
-import AsyncStorage from '@react-native-async-storage/async-storage'; // Add this import
-import { CYPHER_PLAN_ID_NAME_MAPPING } from '../../../constants/data';
-import { useSafeAreaInsets } from 'react-native-safe-area-context';
-import { ICountry } from '../../../models/cardApplication.model';
-import { t } from 'i18next';
-import CyDPicker from '../../../components/picker';
+import ZeroRestrictionModeConfirmationModal from './zeroRestrictionMode/zeroRestrictionModeConfirmationModal';
 
 interface RouteParams {
-  card: Card;
+  cardId: string;
   currentCardProvider: string;
 }
 
@@ -56,8 +54,12 @@ export default function CardControlsMenu() {
   const { showModal, hideModal } = useGlobalModalContext();
   const insets = useSafeAreaInsets();
 
-  const { card, currentCardProvider } = route.params ?? {};
+  const { cardId, currentCardProvider } = route.params ?? {};
   const planInfo = globalState?.cardProfile?.planInfo;
+  const activeCards =
+    get(globalState?.cardProfile, currentCardProvider)?.cards ?? [];
+
+  const card: Card | undefined = find(activeCards, { cardId });
 
   const [limits, setLimits] = useState();
   const [limitApplicable, setLimitApplicable] = useState('planLimit');
@@ -247,7 +249,7 @@ export default function CardControlsMenu() {
       });
     } else {
       const response = await patchWithAuth(
-        `/v1/cards/${currentCardProvider}/card/${card.cardId}/god-mode`,
+        `/v1/cards/${currentCardProvider}/card/${card?.cardId ?? ''}/god-mode`,
         payload,
       );
       if (!response.isError) {
@@ -315,7 +317,7 @@ export default function CardControlsMenu() {
             source={AppImages.LEFT_ARROW_LONG}
             className='w-[20px] h-[16px]'
           />
-          <CyDText className='font-bold text-[16px] ml-[8px]'>{`Card Controls ** ${card.last4}`}</CyDText>
+          <CyDText className='font-bold text-[16px] ml-[8px]'>{`Card Controls ** ${card?.last4 ?? ''}`}</CyDText>
         </CyDTouchView>
         {loading ? (
           <Loading />
