@@ -12,14 +12,10 @@ const extraNodeModules = {
   '@walletconnect/web3wallet': require.resolve('@walletconnect/web3wallet'),
 };
 
-const defaultConfig = await getDefaultConfig(__dirname);
-const { resolver } = defaultConfig;
-
 const config = {
-  ...defaultConfig,
+  ...getDefaultConfig(__dirname),
   resolver: {
     extraNodeModules,
-    sourceExts: [...resolver.sourceExts, 'mjs'],
     // Preserve any existing resolver options from your config
   },
   transformer: {
