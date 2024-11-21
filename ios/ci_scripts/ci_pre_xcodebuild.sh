@@ -37,6 +37,3 @@ if [ ! -f "$SENTRY_PATH" ]; then
 fi 
 
 echo "Successfully created sentry.properties file"
-
-echo "Clearing React Native Metro cache..."
-npx react-native start --reset-cache
