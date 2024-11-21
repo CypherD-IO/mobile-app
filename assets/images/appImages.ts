@@ -683,8 +683,28 @@ const CONNENCT_DISCORD_HERO = {
 const RED_CROSS_IMG = {
   uri: `${S3_BUCKET_URL_ICONS}/RedCrossImg.png`,
 };
+const CARD_SECURE = {
+  uri: `${S3_BUCKET_URL_ICONS}/cardPin.png`,
+};
+const SHIELD_FILLED = {
+  uri: `${S3_BUCKET_URL_ICONS}/shieldFilled.png`,
+};
+const ERROR_EXCLAMATION_RED_BG_ROUNDED = {
+  uri: `${S3_BUCKET_URL_ICONS}/errorExclamationRedBgRounded.png`,
+};
+const SUCCESS_TICK_GREEN_BG_ROUNDED = {
+  uri: `${S3_BUCKET_URL_ICONS}/successTickGreenBgRounded.png`,
+};
+const SUCCESS_TICK_GRAY_BG_ROUNDED = {
+  uri: `${S3_BUCKET_URL_ICONS}/successTickGrayBgRounded.png`,
+};
 
 const AppImages = {
+  CARD_SECURE,
+  SHIELD_FILLED,
+  SUCCESS_TICK_GREEN_BG_ROUNDED,
+  SUCCESS_TICK_GRAY_BG_ROUNDED,
+  ERROR_EXCLAMATION_RED_BG_ROUNDED,
   ZRM_INTRO_1,
   ZRM_INTRO_2,
   SLIDER_KNOB,

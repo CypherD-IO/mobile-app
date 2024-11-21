@@ -1,4 +1,3 @@
-import React, { useContext, useEffect, useRef, useState } from 'react';
 import {
   NavigationProp,
   ParamListBase,
@@ -7,16 +6,20 @@ import {
   useNavigation,
   useRoute,
 } from '@react-navigation/native';
+import { t } from 'i18next';
 import { find, get } from 'lodash';
 import LottieView from 'lottie-react-native';
+import React, { useContext, useEffect, useState } from 'react';
 import { ScrollView } from 'react-native-gesture-handler';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { ProgressCircle } from 'react-native-svg-charts';
 import countryMaster from '../../../../assets/datasets/countryMaster';
 import AppImages from '../../../../assets/images/appImages';
 import { useGlobalModalContext } from '../../../components/v2/GlobalModal';
+import Loading from '../../../components/v2/loading';
 import ThreeDSecureOptionModal from '../../../components/v2/threeDSecureOptionModal';
-import ZeroRestrictionModeConfirmationModal from './zeroRestrictionMode/zeroRestrictionModeConfirmationModal';
 import { screenTitle } from '../../../constants';
+import { CYPHER_PLAN_ID_NAME_MAPPING } from '../../../constants/data';
 import {
   CARD_LIMIT_TYPE,
   CardControlTypes,
@@ -25,6 +28,8 @@ import {
 } from '../../../constants/enum';
 import { GlobalContext, GlobalContextDef } from '../../../core/globalContext';
 import useAxios from '../../../core/HttpRequest';
+import { Card } from '../../../models/card.model';
+import { ICountry } from '../../../models/cardApplication.model';
 import {
   CyDFastImage,
   CyDImage,
@@ -33,16 +38,10 @@ import {
   CyDView,
 } from '../../../styles/tailwindStyles';
 import { showToast } from '../../utilities/toastUtility';
-import Loading from '../../../components/v2/loading';
-import { Card } from '../../../models/card.model';
-import AsyncStorage from '@react-native-async-storage/async-storage'; // Add this import
-import { CYPHER_PLAN_ID_NAME_MAPPING } from '../../../constants/data';
-import { useSafeAreaInsets } from 'react-native-safe-area-context';
-import { ICountry } from '../../../models/cardApplication.model';
-import { t } from 'i18next';
+import ZeroRestrictionModeConfirmationModal from './zeroRestrictionMode/zeroRestrictionModeConfirmationModal';
 
 interface RouteParams {
-  card: Card;
+  cardId: string;
   currentCardProvider: string;
 }
 
@@ -55,8 +54,12 @@ export default function CardControlsMenu() {
   const { showModal, hideModal } = useGlobalModalContext();
   const insets = useSafeAreaInsets();
 
-  const { card, currentCardProvider } = route.params ?? {};
+  const { cardId, currentCardProvider } = route.params ?? {};
   const planInfo = globalState?.cardProfile?.planInfo;
+  const activeCards =
+    get(globalState?.cardProfile, currentCardProvider)?.cards ?? [];
+
+  const card: Card | undefined = find(activeCards, { cardId });
 
   const [limits, setLimits] = useState();
   const [limitApplicable, setLimitApplicable] = useState('planLimit');
@@ -183,14 +186,28 @@ export default function CardControlsMenu() {
   }, [timer, timerEnd]);
 
   const formatTime = (milliseconds: number) => {
-    const hours = Math.floor(milliseconds / 3600000);
+    const weeks = Math.floor(milliseconds / (7 * 24 * 3600000));
+    const days = Math.floor(
+      (milliseconds % (7 * 24 * 3600000)) / (24 * 3600000),
+    );
+    const hours = Math.floor((milliseconds % (24 * 3600000)) / 3600000);
     const minutes = Math.floor((milliseconds % 3600000) / 60000);
     const seconds = Math.floor((milliseconds % 60000) / 1000);
 
-    if (hours > 0 || minutes > 59) {
-      return `${hours.toString().padStart(2, '0')}:${minutes.toString().padStart(2, '0')}`;
+    // 1 week
+    if (weeks > 0) {
+      return `${weeks}w ${days}d`;
     }
-    return `${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}`;
+    // 1 day
+    if (days > 0) {
+      return `${days}d ${hours}h`;
+    }
+    // 12 hours or 1 hour
+    if (hours > 0) {
+      return `${hours}h ${minutes}m`;
+    }
+    // 30 mins or less
+    return `${minutes}:${seconds.toString().padStart(2, '0')}`;
   };
 
   const getMonthlyLimitPercentage = () => {
@@ -232,7 +249,7 @@ export default function CardControlsMenu() {
       });
     } else {
       const response = await patchWithAuth(
-        `/v1/cards/${currentCardProvider}/card/${card.cardId}/god-mode`,
+        `/v1/cards/${currentCardProvider}/card/${card?.cardId ?? ''}/god-mode`,
         payload,
       );
       if (!response.isError) {
@@ -300,7 +317,7 @@ export default function CardControlsMenu() {
             source={AppImages.LEFT_ARROW_LONG}
             className='w-[20px] h-[16px]'
           />
-          <CyDText className='font-bold text-[16px] ml-[8px]'>{`Card Controls ** ${card.last4}`}</CyDText>
+          <CyDText className='font-bold text-[16px] ml-[8px]'>{`Card Controls ** ${card?.last4 ?? ''}`}</CyDText>
         </CyDTouchView>
         {loading ? (
           <Loading />
@@ -463,7 +480,7 @@ export default function CardControlsMenu() {
                         {isZeroRestrictionModeEnabled && (
                           <CyDView className='flex flex-row items-center'>
                             <CyDView
-                              className='bg-n0 rounded-full px-[6px] py-[12px] w-[50px] h-[50px] flex flex-col items-center justify-center border border-p200 mr-[12px]'
+                              className='bg-n0 px-[6px] rounded-[10px] w-[70px] h-[30px] flex flex-col items-center justify-center border border-p200 mr-[12px]'
                               // eslint-disable-next-line react-native/no-inline-styles
                               style={{
                                 shadowColor: '#000',
@@ -472,7 +489,7 @@ export default function CardControlsMenu() {
                                 shadowRadius: 8,
                                 elevation: 4, // for Android
                               }}>
-                              <CyDText className='font-extrabold text-[12px] text-base400 '>
+                              <CyDText className='font-extrabold text-[12px] text-base400 text-center'>
                                 {formatTime(timer ?? 0)}
                               </CyDText>
                             </CyDView>

@@ -14,7 +14,7 @@ import * as Sentry from '@sentry/react-native';
 import clsx from 'clsx';
 import Fuse from 'fuse.js';
 import { get, random } from 'lodash';
-import { useContext, useEffect, useRef, useState } from 'react';
+import React, { useContext, useEffect, useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { BackHandler } from 'react-native';
 import { BarCodeReadEvent } from 'react-native-camera';

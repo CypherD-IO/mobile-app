@@ -10,7 +10,9 @@ import {
   Web3Origin,
 } from '../../../constants/enum';
 import {
+  CHAIN_OPTIMISM,
   Chain,
+  OP_ETH_ADDRESS,
   SUPPORTED_EVM_CHAINS,
   chainIdNumberMapping,
 } from '../../../constants/server';
@@ -44,7 +46,10 @@ import {
   RenderTypedTransactionSignModal,
 } from './SigningModals/TxnModals';
 import { getGasPriceFor } from '../../../containers/Browser/gasHelper';
-import { decideGasLimitBasedOnTypeOfToAddress } from '../../../core/NativeTransactionHandler';
+
+const BASE_GAS_LIMIT = 21000;
+const CONTRACT_MULTIPLIER = 2;
+const OPTIMISM_MULTIPLIER = 1.3;
 
 export default function SigningModal({
   payloadFrom,
@@ -195,6 +200,28 @@ export default function SigningModal({
         setDataIsReady(true);
       }
     };
+
+    const decideGasLimitBasedOnTypeOfToAddress = (
+      code: string,
+      gasLimit: number,
+      chainId: number,
+      contractAddress: string,
+    ): number => {
+      if (gasLimit > BASE_GAS_LIMIT) {
+        if (code !== '0x') {
+          return CONTRACT_MULTIPLIER * gasLimit;
+        }
+        return gasLimit;
+      } else if (
+        contractAddress.toLowerCase() === OP_ETH_ADDRESS &&
+        chainId === CHAIN_OPTIMISM.chainIdNumber
+      ) {
+        return BASE_GAS_LIMIT * OPTIMISM_MULTIPLIER;
+      } else {
+        return BASE_GAS_LIMIT;
+      }
+    };
+
     const getDataForNativeTxn = async () => {
       let paramsForDecoding: DecodeTxnRequestBody;
       if (
@@ -220,6 +247,8 @@ export default function SigningModal({
         const finalEstimatedGas = decideGasLimitBasedOnTypeOfToAddress(
           code,
           estimatedGas,
+          paramsForDecoding.chainId,
+          paramsForDecoding.to,
         );
         const adjustedTokenBalance =
           parseFloat(walletTokenBalance) * 10 ** -tokenDecimals;

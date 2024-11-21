@@ -405,77 +405,77 @@ const NFTScene = ({ navigation, selectedChain }: NFTSceneProps) => {
   };
 
   return (
-    <CyDView className='flex-1 mx-[10px]'>
-      <ScrollView
-        scrollEnabled={false}
-        refreshControl={
-          <RefreshControl refreshing={refreshing} onRefresh={onRefresh} />
-        }>
-        {loading ? (
-          <CyDView className='w-full absolute top-[50px]'>
-            <Loading />
-          </CyDView>
-        ) : (
-          <CyDView className='border border-sepratorColor rounded-t-[24px]'>
-            {isEmpty(NFTHoldings) && (
-              <CyDView className={'mt-[50%] flex items-center'}>
-                <CyDImage
-                  className={'h-[120px] w-[240px]'}
-                  source={AppImages.NFT_EMPTY_ILLUSTATION}
-                />
-                <CyDText className={'text-center text-[24px] mt-[20px]'}>
-                  {t<string>('NO_NFTS_YET')}
-                </CyDText>
-                <CyDText className={'text-center'}>
-                  {t<string>('PULL_DOWN_TO_REFRESH_PASCAL_CASE')}
-                </CyDText>
-              </CyDView>
-            )}
-            {!isEmpty(NFTHoldings) && (
-              <CyDView>
-                <CyDView
-                  className={
-                    'flex flex-row my-[12px] justify-between items-center mx-[20px] w-[90%]'
-                  }>
-                  <CyDView>
-                    <CyDText className={'text-[24px] font-extrabold'}>
-                      {t('MY_COLLECTIONS')}
-                    </CyDText>
-                  </CyDView>
-                  <CyDView className={'flex flex-row'}>
-                    <CyDTouchView
-                      className={clsx('p-[10px]', {
-                        'border-[1px] border-gray-500 rounded-[6px]':
-                          viewType === RenderViewType.GRID_VIEW,
-                      })}
-                      onPress={() => setViewType(RenderViewType.GRID_VIEW)}>
-                      <CyDFastImage
-                        className={'h-[15px] w-[15px]'}
-                        source={AppImages.GRID_ICON}
-                      />
-                    </CyDTouchView>
-                    <CyDTouchView
-                      className={clsx('p-[10px]', {
-                        'border-[1px] border-gray-500 rounded-[6px]':
-                          viewType === RenderViewType.LIST_VIEW,
-                      })}
-                      onPress={() => setViewType(RenderViewType.LIST_VIEW)}>
-                      <CyDFastImage
-                        className={'h-[15px] w-[15px]'}
-                        source={AppImages.LIST_ICON}
-                      />
-                    </CyDTouchView>
-                  </CyDView>
+    <>
+      {loading ? (
+        <Loading />
+      ) : (
+        <CyDView className='mx-[10px]'>
+          <ScrollView
+            scrollEnabled={false}
+            refreshControl={
+              <RefreshControl refreshing={refreshing} onRefresh={onRefresh} />
+            }>
+            <CyDView className='border border-sepratorColor rounded-t-[24px]'>
+              {isEmpty(NFTHoldings) && (
+                <CyDView className={'mt-[50%] flex items-center'}>
+                  <CyDImage
+                    className={'h-[120px] w-[240px]'}
+                    source={AppImages.NFT_EMPTY_ILLUSTATION}
+                  />
+                  <CyDText className={'text-center text-[24px] mt-[20px]'}>
+                    {t<string>('NO_NFTS_YET')}
+                  </CyDText>
+                  <CyDText className={'text-center'}>
+                    {t<string>('PULL_DOWN_TO_REFRESH_PASCAL_CASE')}
+                  </CyDText>
                 </CyDView>
+              )}
+              {!isEmpty(NFTHoldings) && (
                 <CyDView>
-                  <RenderNFTHoldings />
+                  <CyDView
+                    className={
+                      'flex flex-row my-[12px] justify-between items-center mx-[20px] w-[90%]'
+                    }>
+                    <CyDView>
+                      <CyDText className={'text-[24px] font-extrabold'}>
+                        {t('MY_COLLECTIONS')}
+                      </CyDText>
+                    </CyDView>
+                    <CyDView className={'flex flex-row'}>
+                      <CyDTouchView
+                        className={clsx('p-[10px]', {
+                          'border-[1px] border-gray-500 rounded-[6px]':
+                            viewType === RenderViewType.GRID_VIEW,
+                        })}
+                        onPress={() => setViewType(RenderViewType.GRID_VIEW)}>
+                        <CyDFastImage
+                          className={'h-[15px] w-[15px]'}
+                          source={AppImages.GRID_ICON}
+                        />
+                      </CyDTouchView>
+                      <CyDTouchView
+                        className={clsx('p-[10px]', {
+                          'border-[1px] border-gray-500 rounded-[6px]':
+                            viewType === RenderViewType.LIST_VIEW,
+                        })}
+                        onPress={() => setViewType(RenderViewType.LIST_VIEW)}>
+                        <CyDFastImage
+                          className={'h-[15px] w-[15px]'}
+                          source={AppImages.LIST_ICON}
+                        />
+                      </CyDTouchView>
+                    </CyDView>
+                  </CyDView>
+                  <CyDView>
+                    <RenderNFTHoldings />
+                  </CyDView>
                 </CyDView>
-              </CyDView>
-            )}
-          </CyDView>
-        )}
-      </ScrollView>
-    </CyDView>
+              )}
+            </CyDView>
+          </ScrollView>
+        </CyDView>
+      )}
+    </>
   );
 };
 

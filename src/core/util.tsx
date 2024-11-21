@@ -201,6 +201,8 @@ export function getExplorerUrlFromChainId(chainId: string, hash: string) {
       return `https://www.mintscan.io/injective/txs/${hash}`;
     case CHAIN_KUJIRA.chain_id:
       return `https://atomscan.com/kujira/transactions/${hash}`;
+    case CHAIN_SOLANA.chain_id:
+      return `https://solscan.io/tx/${hash}`;
     default:
       return '';
   }
@@ -258,6 +260,8 @@ export function getExplorerUrl(
       return `https://explorer-dapps.shardeum.org/transaction/${hash}`;
     case CHAIN_SHARDEUM_SPHINX.symbol:
       return `https://explorer-sphinx.shardeum.org/transaction/${hash}`;
+    case CHAIN_SOLANA.symbol:
+      return `https://solscan.io/tx/${hash}`;
   }
 }
 export function getNftExplorerUrl(

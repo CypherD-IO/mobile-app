@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useContext } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Linking } from 'react-native';
 
 export default function useInitialIntentURL() {
@@ -25,5 +25,9 @@ export default function useInitialIntentURL() {
     };
   }, []);
 
-  return { url, processing };
+  const updateUrl = (newUrl: string) => {
+    setUrl(newUrl);
+  };
+
+  return { url, processing, updateUrl };
 }

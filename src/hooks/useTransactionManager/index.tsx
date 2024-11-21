@@ -1,9 +1,5 @@
 import { OfflineDirectSigner } from '@cosmjs/proto-signing';
-import {
-  Coin,
-  MsgTransferEncodeObject,
-  SigningStargateClient,
-} from '@cosmjs/stargate';
+import { Coin, MsgTransferEncodeObject } from '@cosmjs/stargate';
 import { InjectiveStargate } from '@injectivelabs/sdk-ts';
 import * as Sentry from '@sentry/react-native';
 import { MsgTransfer } from 'cosmjs-types/ibc/applications/transfer/v1/tx';
@@ -23,7 +19,6 @@ import {
   ChainNameMapping,
   EVM_CHAINS,
 } from '../../constants/server';
-import { decideGasLimitBasedOnTypeOfToAddress } from '../../core/NativeTransactionHandler';
 import { GlobalContext } from '../../core/globalContext';
 import {
   HdWalletContext,
@@ -64,6 +59,7 @@ import {
   createTransferInstruction,
 } from '@solana/spl-token';
 import { SigningCosmWasmClient } from '@cosmjs/cosmwasm-stargate';
+import { HdWalletContextDef } from '../../reducers/hdwallet_reducer';
 
 export interface TransactionServiceResult {
   isError: boolean;
@@ -76,6 +72,9 @@ export default function useTransactionManager() {
   const globalContext = useContext<any>(GlobalContext);
   const hdWalletContext = useContext<any>(HdWalletContext);
   const OP_ETH_ADDRESS = '0xdeaddeaddeaddeaddeaddeaddeaddeaddead0000';
+  const BASE_GAS_LIMIT = 21000;
+  const OPTIMISM_GAS_MULTIPLIER = 1.3;
+  const CONTRACT_GAS_MULTIPLIER = 2;
   const {
     estimateGasForEvm,
     estimateGasForCosmos,
@@ -88,7 +87,28 @@ export default function useTransactionManager() {
   const { signEthTransaction, signApprovalEthereum } = useEthSigner();
   const { getCosmosSignerClient, getCosmosRpc } = useCosmosSigner();
   const { getSolanWallet, getSolanaRpc } = useSolanaSigner();
-  const hdWallet = useContext<any>(HdWalletContext);
+  const hdWallet = useContext(HdWalletContext) as HdWalletContextDef;
+
+  const decideGasLimitBasedOnTypeOfToAddress = (
+    code: string,
+    gasLimit: number,
+    chain: string,
+    contractAddress: string,
+  ): number => {
+    if (gasLimit > BASE_GAS_LIMIT) {
+      if (code !== '0x') {
+        return CONTRACT_GAS_MULTIPLIER * gasLimit;
+      }
+      return gasLimit;
+    } else if (
+      contractAddress.toLowerCase() === OP_ETH_ADDRESS &&
+      chain === CHAIN_OPTIMISM.backendName
+    ) {
+      return BASE_GAS_LIMIT * OPTIMISM_GAS_MULTIPLIER;
+    } else {
+      return BASE_GAS_LIMIT;
+    }
+  };
 
   async function getCosmosSigningClient(
     chain: Chain,
@@ -1343,9 +1363,15 @@ export default function useTransactionManager() {
         }),
       );
 
-      const resp = await sendAndConfirmTransaction(connection, transaction, [
-        fromKeypair,
-      ]);
+      const resp = await sendAndConfirmTransaction(
+        connection,
+        transaction,
+        [fromKeypair],
+        {
+          commitment: 'finalized',
+          maxRetries: 15,
+        },
+      );
 
       return { hash: String(resp), isError: false };
     } else {
@@ -1430,9 +1456,15 @@ export default function useTransactionManager() {
         ),
       );
 
-      const resp = await sendAndConfirmTransaction(connection, transaction, [
-        fromKeypair,
-      ]);
+      const resp = await sendAndConfirmTransaction(
+        connection,
+        transaction,
+        [fromKeypair],
+        {
+          commitment: 'finalized',
+          maxRetries: 15,
+        },
+      );
       return {
         isError: false,
         hash: resp,
