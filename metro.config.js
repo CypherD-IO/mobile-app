@@ -1,32 +1,21 @@
-const { getDefaultConfig } = require('@react-native/metro-config');
-const nodeLibs = require('node-libs-browser');
+const {getDefaultConfig, mergeConfig} = require('@react-native/metro-config');
 
-// Enhance node-libs-browser with specific overrides 
-const extraNodeModules = {
-  ...nodeLibs,
-  // Override path with path-browserify
-  path: require.resolve('path-browserify'),
-  // Add react-native-level-fs for fs operations
-  fs: require.resolve('react-native-level-fs'),
-  '@walletconnect/react-native-compat': require.resolve('@walletconnect/react-native-compat'),
-  '@walletconnect/web3wallet': require.resolve('@walletconnect/web3wallet'),
-};
-
+/**
+ * Metro configuration
+ * https://reactnative.dev/docs/metro
+ *
+ * @type {import('metro-config').MetroConfig}
+ */
 const config = {
-  ...getDefaultConfig(__dirname),
   resolver: {
-    extraNodeModules,
-    // Preserve any existing resolver options from your config
-  },
-  transformer: {
-    getTransformOptions: async () => ({
-      transform: {
-        experimentalImportSupport: true,
-        inlineRequires: true,
-      },
-    }),
+    extraNodeModules: {
+      path: require.resolve('path-browserify'),
+      fs: require.resolve('react-native-level-fs'),
+      '@walletconnect/react-native-compat': require.resolve('@walletconnect/react-native-compat'),
+        '@walletconnect/web3wallet': require.resolve('@walletconnect/web3wallet'),
+    },
   },
 };
 
-module.exports = config;
+module.exports = mergeConfig(getDefaultConfig(__dirname), config);
 

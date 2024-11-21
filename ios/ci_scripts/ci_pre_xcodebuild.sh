@@ -37,3 +37,4 @@ if [ ! -f "$SENTRY_PATH" ]; then
 fi 
 
 echo "Successfully created sentry.properties file"
+
