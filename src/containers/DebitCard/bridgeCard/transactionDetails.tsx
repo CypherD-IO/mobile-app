@@ -450,7 +450,17 @@ export default function TransactionDetails() {
   };
 
   const addIntlCountry = async (iso2: string, cardId?: string) => {
-    if (iso2 && cardId) {
+    if (!iso2 || !cardId) {
+      showModal('state', {
+        type: 'error',
+        title: t('INVALID_PARAMETERS'),
+        description: 'Missing ISO2 code or cardId',
+        onSuccess: hideModal,
+        onFailure: hideModal,
+      });
+      return;
+    }
+    try {
       const payload = {
         cusL: {
           ...get(limits, 'cusL'),
@@ -496,6 +506,15 @@ export default function TransactionDetails() {
           onFailure: hideModal,
         });
       }
+    } catch (error) {
+      Sentry.captureException(error);
+      showModal('state', {
+        type: 'error',
+        title: t('UNEXCPECTED_ERROR'),
+        description: parseErrorMessage(error),
+        onSuccess: hideModal,
+        onFailure: hideModal,
+      });
     }
   };
 
