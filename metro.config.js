@@ -1,9 +1,20 @@
 const { getDefaultConfig } = require('@react-native/metro-config');
+const nodeLibs = require('node-libs-browser');
 
-module.exports = {
+// Enhance node-libs-browser with specific overrides 
+const extraNodeModules = {
+  ...nodeLibs,
+  // Override path with path-browserify
+  path: require.resolve('path-browserify'),
+  // Add react-native-level-fs for fs operations
+  fs: require.resolve('react-native-level-fs'),
+};
+
+const config = {
+  ...getDefaultConfig(__dirname),
   resolver: {
-    extraNodeModules: require('node-libs-browser'),
-    // Add any additional resolver options here
+    extraNodeModules,
+    // Preserve any existing resolver options from your config
   },
   transformer: {
     getTransformOptions: async () => ({
@@ -13,6 +24,7 @@ module.exports = {
       },
     }),
   },
-  ...getDefaultConfig(__dirname), // Extend the default Metro config
 };
+
+module.exports = config;
 
