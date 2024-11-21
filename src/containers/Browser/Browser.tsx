@@ -549,7 +549,6 @@ export default function Browser({ route, navigation }: any) {
           setMoreview(false);
         }}
         onHome={() => {
-          onHome();
           setInbuiltPage('home');
         }}
         onHistory={() => {

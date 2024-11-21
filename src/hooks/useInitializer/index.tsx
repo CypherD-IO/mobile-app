@@ -360,7 +360,7 @@ export default function useInitializer() {
       } else {
         void getReadOnlyWalletData().then(data => {
           if (data) {
-            const ethereum = JSON.parse(data);
+            const _ethereum = JSON.parse(data);
             dispatch({
               type: 'SET_READ_ONLY_WALLET',
               value: {
@@ -371,7 +371,7 @@ export default function useInitializer() {
               type: 'ADD_ADDRESS',
               value: {
                 chain: 'ethereum',
-                address: ethereum.address,
+                address: _ethereum.address,
                 // privateKey: _NO_CYPHERD_CREDENTIAL_AVAILABLE_,
                 publicKey: '',
                 algo: '',
@@ -379,7 +379,7 @@ export default function useInitializer() {
               },
             });
             Intercom.loginUserWithUserAttributes({
-              userId: ethereum.observerId,
+              userId: _ethereum.observerId,
             }).catch(() => {
               // throws error if user is already registered
             });
