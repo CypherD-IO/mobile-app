@@ -91,7 +91,6 @@ import ThreeDSecure from '../containers/DebitCard/bridgeCard/threeDSecure';
 import LockdownMode from '../containers/DebitCard/bridgeCard/lockdownMode';
 import LockdownModeAuth from '../containers/DebitCard/bridgeCard/lockdownModeAuth';
 import CardUnlockAuth from '../containers/DebitCard/bridgeCard/cardUnlockAuth';
-import SelectPlan from '../containers/DebitCard/CardV2/signup/selectPlan';
 import { NavigationProp, ParamListBase } from '@react-navigation/native';
 import GetYourCardInfo from '../containers/DebitCard/CardV2/signup/getYourCardInfo';
 import CardApplicationV2 from '../containers/DebitCard/CardV2/signup/application';
@@ -118,6 +117,7 @@ import CardActivationConsent from '../containers/DebitCard/bridgeCard/cardActiva
 import GlobalOptions from '../containers/DebitCard/CardV2/globalOptions';
 import SetTelegramPin from '../containers/DebitCard/bridgeCard/setTelegramPin';
 import EditLimits from '../containers/DebitCard/bridgeCard/editlimits';
+import ManageSubscription from '../containers/DebitCard/CardV2/manageSubscription';
 
 const PortfolioStack = createNativeStackNavigator();
 const BrowserStack = createNativeStackNavigator();
@@ -1220,14 +1220,6 @@ export function DebitCardStackScreen({ route }) {
       />
 
       <FundCardStack.Screen
-        name={screenTitle.SELECT_PLAN}
-        component={SelectPlan}
-        options={({ navigation }): NativeStackNavigationOptions => ({
-          headerShown: false,
-        })}
-      />
-
-      <FundCardStack.Screen
         name={screenTitle.I_HAVE_REFERRAL_CODE_SCREEN}
         component={IHaveReferralCodeScreen}
         options={{
@@ -1282,6 +1274,13 @@ export function DebitCardStackScreen({ route }) {
       <FundCardStack.Screen
         name={screenTitle.GLOBAL_CARD_OPTIONS}
         component={GlobalOptions}
+        options={({ navigation }): NativeStackNavigationOptions => ({
+          headerShown: false,
+        })}
+      />
+      <FundCardStack.Screen
+        name={screenTitle.MANAGE_SUBSCRIPTION}
+        component={ManageSubscription}
         options={({ navigation }): NativeStackNavigationOptions => ({
           headerShown: false,
         })}

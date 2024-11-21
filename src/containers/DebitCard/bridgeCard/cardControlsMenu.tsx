@@ -15,6 +15,7 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { ProgressCircle } from 'react-native-svg-charts';
 import countryMaster from '../../../../assets/datasets/countryMaster';
 import AppImages from '../../../../assets/images/appImages';
+import SelectPlanModal from '../../../components/selectPlanModal';
 import { useGlobalModalContext } from '../../../components/v2/GlobalModal';
 import Loading from '../../../components/v2/loading';
 import ThreeDSecureOptionModal from '../../../components/v2/threeDSecureOptionModal';
@@ -82,8 +83,8 @@ export default function CardControlsMenu() {
   const [disableOptions, setDisableOptions] = useState(true);
   const [timer, setTimer] = useState<number | null>(null);
   const [timerEnd, setTimerEnd] = useState<number | null>(null);
-  const [cardBalance, setCardBalance] = useState('');
-  // const [godmExpiryInMinutes, setGodmExpiryInMinutes] = useState(0);
+  const [planChangeModalVisible, setPlanChangeModalVisible] = useState(false);
+  const [openComparePlans, setOpenComparePlans] = useState(false);
 
   useEffect(() => {
     if (isZeroRestrictionModeEnabled) {
@@ -122,21 +123,9 @@ export default function CardControlsMenu() {
     }
   };
 
-  const fetchCardBalance = async () => {
-    const response = await getWithAuth(
-      `/v1/cards/${currentCardProvider}/card/${card.cardId}/balance`,
-    );
-    if (!response.isError && response?.data && response.data.balance) {
-      setCardBalance(String(response.data.balance));
-    } else {
-      setCardBalance('');
-    }
-  };
-
   const fetchData = async () => {
     setLoading(true);
     await getCardLimits();
-    await fetchCardBalance();
     setLoading(false);
   };
 
@@ -276,15 +265,6 @@ export default function CardControlsMenu() {
     }
   };
 
-  const onPressPlanChange = (openComparePlans: boolean) => {
-    navigation.navigate(screenTitle.SELECT_PLAN, {
-      toPage: screenTitle.DEBIT_CARD_SCREEN,
-      deductAmountNow: true,
-      cardBalance,
-      openComparePlans,
-    });
-  };
-
   return (
     <>
       <ThreeDSecureOptionModal
@@ -304,6 +284,17 @@ export default function CardControlsMenu() {
           void toggleZeroRestrictionMode(true, godmExpiryInMinutes);
         }}
         setLoader={setIsZeroRestrictionModeLoading}
+      />
+      <SelectPlanModal
+        isModalVisible={planChangeModalVisible}
+        setIsModalVisible={setPlanChangeModalVisible}
+        openComparePlans={openComparePlans}
+        deductAmountNow={true}
+        cardProvider={currentCardProvider}
+        cardId={card.cardId}
+        onPlanChangeSuccess={() => {
+          navigation.navigate(screenTitle.DEBIT_CARD_SCREEN);
+        }}
       />
       <CyDView
         className={'h-full bg-n0 pt-[10px]'}
@@ -405,7 +396,7 @@ export default function CardControlsMenu() {
                     <CyDView className='mt-[12px] flex flex-row justify-center items-center'>
                       <CyDTouchView
                         className='flex flex-row items-center bg-n0 px-[10px] py-[6px] rounded-full w-[105px] mr-[12px]'
-                        onPress={() => onPressPlanChange(false)}>
+                        onPress={() => setPlanChangeModalVisible(true)}>
                         <CyDText className='text-[14px] font-extrabold mr-[2px]'>
                           {'Go'}
                         </CyDText>
@@ -416,7 +407,10 @@ export default function CardControlsMenu() {
                       </CyDTouchView>
                       <CyDTouchView
                         className=' bg-n0 px-[10px] py-[6px] rounded-full'
-                        onPress={() => onPressPlanChange(true)}>
+                        onPress={() => {
+                          setOpenComparePlans(true);
+                          setPlanChangeModalVisible(true);
+                        }}>
                         <CyDText className=' text-center text-[14px] font-semibold text-n700 mr-[2px]'>
                           {'Compare plans'}
                         </CyDText>

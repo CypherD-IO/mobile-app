@@ -40,7 +40,7 @@ const screensToHaveNavBar = [
   screenTitle.BRIDGE_SKIP_API_SCREEN,
   screenTitle.DEBIT_CARD_SCREEN,
   screenTitle.BRIDGE_CARD_SCREEN,
-  screenTitle.SELECT_PLAN,
+
   screenTitle.ON_META,
   screenTitle.SEND_INVITE_CODE_SCREEN,
 ];

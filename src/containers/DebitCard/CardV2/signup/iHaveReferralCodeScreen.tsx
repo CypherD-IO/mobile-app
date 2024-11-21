@@ -8,7 +8,7 @@ import {
 } from '@react-navigation/native';
 import { t } from 'i18next';
 import { isEmpty } from 'lodash';
-import { useEffect, useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { SafeAreaView, StatusBar, StyleSheet } from 'react-native';
 import AppImages from '../../../../../assets/images/appImages';
 import Button from '../../../../components/v2/button';
@@ -28,10 +28,11 @@ import {
   CyDTouchView,
   CyDView,
 } from '../../../../styles/tailwindStyles';
+import SelectPlanModal from '../../../../components/selectPlanModal';
 interface RouteParams {
   deductAmountNow?: boolean;
   toPage?: string;
-  cardBalance?: number;
+  referralCodeFromLink?: string;
 }
 
 const IHaveReferralCodeScreen = () => {
@@ -41,15 +42,17 @@ const IHaveReferralCodeScreen = () => {
   const {
     deductAmountNow = false,
     toPage = '',
-    cardBalance = 0,
+    referralCodeFromLink = '',
   } = route.params ?? {};
 
-  const [referralCode, setReferralCode] = useState('');
+  const [referralCode, setReferralCode] =
+    useState<string>(referralCodeFromLink);
   const [isModalVisible, setIsModalVisible] = useState(false);
   const [loading, setLoading] = useState(false);
   const { postWithAuth } = useAxios();
   const { showModal, hideModal } = useGlobalModalContext();
   const isFocused = useIsFocused();
+  const [planChangeModalVisible, setPlanChangeModalVisible] = useState(false);
 
   useEffect(() => {
     const setReferralCodeFromAsync = async () => {
@@ -74,12 +77,10 @@ const IHaveReferralCodeScreen = () => {
           title: t('REFERRAL_CODE_APPLIED_SUCCESSFULLY'),
           description: t('REFERRAL_CODE_APPLIED_SUCCESSFULLY_DESCRIPTION'),
           onSuccess: () => {
-            navigation.navigate(screenTitle.SELECT_PLAN, {
-              deductAmountNow,
-              toPage,
-              cardBalance,
-            });
             hideModal();
+            setTimeout(() => {
+              setPlanChangeModalVisible(true);
+            }, 500);
           },
           onFailure: hideModal,
         });
@@ -104,13 +105,25 @@ const IHaveReferralCodeScreen = () => {
     setLoading(false);
   };
 
+  const handleNavigation = () => {
+    if (toPage) {
+      navigation.navigate(toPage);
+    }
+  };
+
   return (
     <SafeAreaView className='flex bg-cardBg h-full'>
       <StatusBar barStyle='dark-content' backgroundColor={'#EBEDF0'} />
-      {/* <ScrollView className='mt-[16px]'> */}
       <HowReferralWorksModal
         isModalVisible={isModalVisible}
         setIsModalVisible={setIsModalVisible}
+      />
+      <SelectPlanModal
+        isModalVisible={planChangeModalVisible}
+        setIsModalVisible={setPlanChangeModalVisible}
+        deductAmountNow={deductAmountNow}
+        onPlanChangeSuccess={handleNavigation}
+        onClose={handleNavigation}
       />
       <CyDView className='flex flex-col justify-between h-full mb-[24px] '>
         <CyDView className='px-[16px]'>
@@ -120,7 +133,6 @@ const IHaveReferralCodeScreen = () => {
                 navigation.navigate(screenTitle.GET_YOUR_CARD, {
                   deductAmountNow,
                   toPage,
-                  cardBalance,
                 });
               }}
               className='w-[36px] h-[36px]'>

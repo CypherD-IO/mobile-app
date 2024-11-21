@@ -128,7 +128,6 @@ export const screenTitle = {
   LOCKDOWN_MODE: 'LockdownMode',
   LOCKDOWN_MODE_AUTH: 'LockdownModeAuth',
   CARD_UNLOCK_AUTH: 'CardUnlockAuth',
-  SELECT_PLAN: 'SelectPlan',
   GET_YOUR_CARD: 'GetYourCard',
   CARD_WELCOME_SCREEN: 'welcomeScreen',
   CARD_APPLICATION: 'cardApplication',
@@ -145,6 +144,7 @@ export const screenTitle = {
   TELEGRAM_SETUP: 'telegramSetup',
   KYC_VERIFICATION: 'kycVerification',
   TELEGRAM_PIN_SETUP: 'telegramPinSetup',
+  MANAGE_SUBSCRIPTION: 'manageSubscription',
 };
 
 export const fontsName = {

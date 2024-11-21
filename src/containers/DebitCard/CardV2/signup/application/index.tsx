@@ -37,7 +37,6 @@ import { useGlobalModalContext } from '../../../../../components/v2/GlobalModal'
 import { CardProfile } from '../../../../../models/cardProfile.model';
 import { StyleSheet } from 'react-native';
 import { isEqual, isUndefined, omitBy, set } from 'lodash';
-import CardProviderSwitch from '../../../../../components/cardProviderSwitch';
 
 // Add this type definition
 interface SupportedCountry {

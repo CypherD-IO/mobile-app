@@ -796,7 +796,7 @@ const resources = {
       SAVE_AS_A_CONTACT_PROMPT:
         "Would you like to add this recipient's address to your contacts ?",
       UNABLE_TO_CREATE_WALLET: 'Unable to create wallet',
-      SUPPORTED_TOKENS_TEXT: 'The minimum amount to load card is $10',
+      SUPPORTED_TOKENS_TEXT: 'The minimum amount to load card is ',
       AUTHENTICATION_CANCELLED: 'Authentication Cancelled',
       AUTHENTICATE_TO_CONTINUE:
         'Please authenticate to continue using the app.',
@@ -1418,6 +1418,7 @@ const resources = {
       DISCORD_JOINING: 'Joining Discord ...',
       SET_CARD_PIN: 'Set Card PIN',
       INVALID_PARAMETERS: 'Invalid Parameters',
+      MANAGE_PREMIUM: 'Manage Premium',
     },
   },
 };

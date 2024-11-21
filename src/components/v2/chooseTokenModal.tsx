@@ -43,13 +43,14 @@ export default function ChooseTokenModal(props: TokenModal) {
   const {
     isChooseTokenModalVisible,
     tokenList,
-    minTokenValueLimit = 0,
+    minTokenValueLimit = 10,
     onSelectingToken,
     onCancel,
     noTokensAvailableMessage = t<string>('FUND_TRANSFER'),
     type = TokenModalType.PORTFOLIO,
     renderPage = '',
   } = props;
+
   const { getLocalPortfolio } = usePortfolio();
   const [searchText, setSearchText] = useState<string>('');
   const [totalHoldings, setTotalHoldings] = useState<Record<string, Holding[]>>(
@@ -217,7 +218,7 @@ export default function ChooseTokenModal(props: TokenModal) {
           <CyDView className={'mt-[10px]'}>
             <CyDText className='text-center  text-[12px] font-semibold text-redColor'>
               {renderPage === 'fundCardPage' &&
-                t<string>('SUPPORTED_TOKENS_TEXT')}
+                t<string>('SUPPORTED_TOKENS_TEXT') + `$${minTokenValueLimit}`}
               {renderPage === 'autoLoad' &&
                 `Only ${AUTO_LOAD_SUPPORTED_CHAINS.join(', ')} chains are supported for auto load`}
             </CyDText>

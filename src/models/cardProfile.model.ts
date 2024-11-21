@@ -58,6 +58,7 @@ export interface CardProfile {
     optedPlanId: CypherPlanId;
     updatedOn: number;
     expiresOn: number;
+    metalCardEligible: boolean;
   };
   telegramId: string | null;
 }
