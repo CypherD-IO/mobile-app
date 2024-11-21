@@ -8,6 +8,8 @@ const extraNodeModules = {
   path: require.resolve('path-browserify'),
   // Add react-native-level-fs for fs operations
   fs: require.resolve('react-native-level-fs'),
+  '@walletconnect/react-native-compat': require.resolve('@walletconnect/react-native-compat'),
+  '@walletconnect/web3wallet': require.resolve('@walletconnect/web3wallet'),
 };
 
 const config = {
