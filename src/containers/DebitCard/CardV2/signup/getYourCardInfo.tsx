@@ -27,11 +27,11 @@ import {
   GlobalContext,
   GlobalContextDef,
 } from '../../../../core/globalContext';
+import SelectPlanModal from '../../../../components/selectPlanModal';
 
 interface RouteParams {
   deductAmountNow: boolean;
   toPage: string;
-  cardBalance: number;
 }
 
 export default function GetYourCardInfo() {
@@ -41,12 +41,9 @@ export default function GetYourCardInfo() {
   const route = useRoute<RouteProp<{ params: RouteParams }, 'params'>>();
   const [loading, setLoading] = useState(false);
   const [showOnboarding, setShowOnboarding] = useState(false);
+  const [planChangeModalVisible, setPlanChangeModalVisible] = useState(false);
 
-  const {
-    deductAmountNow = false,
-    toPage = '',
-    cardBalance = 0,
-  } = route.params ?? {};
+  const { deductAmountNow = false, toPage = '' } = route.params ?? {};
   const insets = useSafeAreaInsets();
 
   const handleLinkPress = async () => {
@@ -75,10 +72,28 @@ export default function GetYourCardInfo() {
     setLoading(false);
   }, []);
 
+  const handleNavigation = () => {
+    if (toPage) {
+      navigation.navigate(toPage);
+    }
+  };
+
+  const onPressContinue = async () => {
+    await removeReferralCode();
+    setPlanChangeModalVisible(true);
+  };
+
   if (loading) return <Loading />;
 
   return (
     <CyDView style={{ paddingTop: insets.top }}>
+      <SelectPlanModal
+        isModalVisible={planChangeModalVisible}
+        setIsModalVisible={setPlanChangeModalVisible}
+        deductAmountNow={deductAmountNow}
+        onPlanChangeSuccess={handleNavigation}
+        onClose={handleNavigation}
+      />
       {!showOnboarding && (
         <CyDView className='bg-[#F1F0F5] flex flex-col justify-between h-full'>
           <CyDKeyboardAwareScrollView>
@@ -197,7 +212,6 @@ export default function GetYourCardInfo() {
                 navigation.navigate(screenTitle.I_HAVE_REFERRAL_CODE_SCREEN, {
                   deductAmountNow,
                   toPage,
-                  cardBalance,
                   referralCodeFromLink: '',
                 })
               }
@@ -206,12 +220,7 @@ export default function GetYourCardInfo() {
             <Button
               title={t('CONTINUE')}
               onPress={() => {
-                void removeReferralCode();
-                navigation.navigate(screenTitle.SELECT_PLAN, {
-                  deductAmountNow,
-                  toPage,
-                  cardBalance,
-                });
+                void onPressContinue();
               }}
             />
           </CyDView>

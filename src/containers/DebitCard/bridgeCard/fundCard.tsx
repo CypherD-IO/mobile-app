@@ -1,6 +1,6 @@
 import React, { useCallback, useContext, useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import { Keyboard, useWindowDimensions } from 'react-native';
+import { Keyboard, useWindowDimensions, StyleSheet } from 'react-native';
 import AppImages from '../../../../assets/images/appImages';
 import Button from '../../../components/v2/button';
 import {
@@ -50,6 +50,7 @@ import {
   ButtonType,
   CardProviders,
   CypherPlanId,
+  GlobalContextType,
 } from '../../../constants/enum';
 import clsx from 'clsx';
 import { CardQuoteResponse } from '../../../models/card.model';
@@ -59,6 +60,9 @@ import CyDNumberPad from '../../../components/v2/numberpad';
 import CyDTokenValue from '../../../components/v2/tokenValue';
 import Loading from '../../../components/v2/loading';
 import usePortfolio from '../../../hooks/usePortfolio';
+import CyDModalLayout from '../../../components/v2/modal';
+import SelectPlanModal from '../../../components/selectPlanModal';
+import useCardUtilities from '../../../hooks/useCardUtilities';
 
 export default function BridgeFundCardScreen({ route }: { route: any }) {
   const {
@@ -72,6 +76,7 @@ export default function BridgeFundCardScreen({ route }: { route: any }) {
   } = route.params;
   const hdWallet = useContext<any>(HdWalletContext);
   const globalContext = useContext(GlobalContext) as GlobalContextDef;
+  const globalDispatch = globalContext.globalDispatch;
   const ethereum = hdWallet.state.wallet.ethereum;
   const wallet = hdWallet.state.wallet;
   const cardProfile = globalContext.globalState.cardProfile;
@@ -110,12 +115,16 @@ export default function BridgeFundCardScreen({ route }: { route: any }) {
   const { getNativeToken } = usePortfolio();
   const { t } = useTranslation();
   const { showModal, hideModal } = useGlobalModalContext();
-  const { postWithAuth } = useAxios();
+  const { postWithAuth, patchWithAuth } = useAxios();
   const isFocused = useIsFocused();
   const { estimateGasForEvm, estimateGasForSolana } = useGasService();
   const [suggestedAmounts, setSuggestedAmounts] = useState<
     Record<string, string>
   >({ low: '', med: '', high: '' });
+  const [planChangeModalVisible, setPlanChangeModalVisible] = useState(false);
+  const [planChangePageVisible, setPlanChangePageVisible] = useState(false);
+  const { getWalletProfile } = useCardUtilities();
+
   const { height } = useWindowDimensions();
   const isSmallScreenMobile = height <= 750;
 
@@ -974,6 +983,38 @@ export default function BridgeFundCardScreen({ route }: { route: any }) {
     }
   };
 
+  const onOptedPlanChange = async (optedPlan: CypherPlanId) => {
+    const { isError, error } = await patchWithAuth(`/v1/cards/rc/plan`, {
+      optedPlanId: optedPlan,
+    });
+    if (!isError) {
+      const resp = await getWalletProfile(globalContext.globalState.token);
+      globalDispatch({
+        type: GlobalContextType.CARD_PROFILE,
+        cardProfile: resp,
+      });
+      setPlanChangeModalVisible(false);
+      setTimeout(() => {
+        showModal('state', {
+          type: 'success',
+          title: 'Plan changed successfully',
+          onSuccess: hideModal,
+          onFailure: hideModal,
+        });
+      }, 500);
+    } else {
+      setPlanChangeModalVisible(false);
+      setTimeout(() => {
+        showModal('state', {
+          type: 'error',
+          title: error.message,
+          onSuccess: hideModal,
+          onFailure: hideModal,
+        });
+      }, 500);
+    }
+  };
+
   return (
     <CyDView
       className={clsx('bg-n20 flex flex-1 flex-col justify-between h-full', {
@@ -996,6 +1037,80 @@ export default function BridgeFundCardScreen({ route }: { route: any }) {
         noTokensAvailableMessage={t<string>('CARD_INSUFFICIENT_FUNDS')}
         renderPage={'fundCardPage'}
       />
+
+      <CyDModalLayout
+        isModalVisible={planChangeModalVisible}
+        setModalVisible={setPlanChangeModalVisible}
+        style={styles.modalLayout}>
+        <CyDView className='bg-n20 rounded-t-[16px] px-[16px] pt-[16px] pb-[20px]'>
+          <CyDView className='flex-row justify-between items-center'>
+            <CyDFastImage
+              source={AppImages.CYPHER_WARNING_RED}
+              className='h-[32px] w-[32px]'
+              resizeMode='contain'
+            />
+            <CyDTouchView onPress={() => setPlanChangeModalVisible(false)}>
+              <CyDFastImage
+                source={AppImages.CLOSE_CIRCLE}
+                className='h-[24px] w-[24px]'
+                resizeMode='contain'
+              />
+            </CyDTouchView>
+          </CyDView>
+
+          <CyDText className='mt-[4px] text-[20px] font-bold'>
+            Change Plan
+          </CyDText>
+          <CyDText className='mt-[16px] text-[14px] font-medium'>
+            {CypherPlanId.BASIC_PLAN === cardProfile?.planInfo?.optedPlanId
+              ? t('UPGRADE_PLAN_CONSENT')
+              : t('DOWNGRADE_PLAN_CONSENT')}
+            <CyDText
+              onPress={() => {
+                navigation.navigate(screenTitle.LEGAL_SCREEN);
+              }}
+              className='text-[12px] font-bold underline text-center'>
+              {'terms and conditions.'}
+            </CyDText>
+          </CyDText>
+
+          <Button
+            onPress={() => {
+              setPlanChangeModalVisible(false);
+              setTimeout(() => {
+                setPlanChangePageVisible(true);
+              }, 500);
+            }}
+            title='Compare plans'
+            type={ButtonType.GREY}
+            style='p-[3%] mt-[22px]'
+          />
+          <Button
+            onPress={() => {
+              const tempOptedPlan =
+                CypherPlanId.BASIC_PLAN === cardProfile?.planInfo?.optedPlanId
+                  ? CypherPlanId.PRO_PLAN
+                  : CypherPlanId.BASIC_PLAN;
+              void onOptedPlanChange(tempOptedPlan);
+            }}
+            title={
+              CypherPlanId.BASIC_PLAN === cardProfile?.planInfo?.optedPlanId
+                ? 'Switch to Pro'
+                : 'Switch to Basic'
+            }
+            type={ButtonType.PRIMARY}
+            style='p-[3%] mt-[12px] mb-[20px]'
+          />
+        </CyDView>
+      </CyDModalLayout>
+
+      <SelectPlanModal
+        isModalVisible={planChangePageVisible}
+        setIsModalVisible={setPlanChangePageVisible}
+        openComparePlans={true}
+        deductAmountNow={false}
+      />
+
       <CyDView>
         <RenderSelectedToken />
         <CyDView className='flex flex-row rounded-[8px] px-[20px] justify-between items-center'>
@@ -1177,15 +1292,12 @@ export default function BridgeFundCardScreen({ route }: { route: any }) {
       </CyDView>
       <CyDView>
         <CyDView className=' pt-[16px] bg-white px-[16px] pb-[24px] rounded-t-[16px]'>
-          {shouldUpgradePlan && (
+          {cardId === 'hidden' && (
             <CyDView className='flex flex-row justify-between items-center mb-[16px]'>
               <CyDTouchView
                 className='flex flex-row items-center '
                 onPress={() => {
-                  navigation.navigate(screenTitle.SELECT_PLAN, {
-                    toPage: screenTitle.DEBIT_CARD_SCREEN,
-                    deductAmountNow: false,
-                  });
+                  setPlanChangeModalVisible(true);
                 }}>
                 <CyDText className='font-bold text-[14px]'>
                   {get(
@@ -1236,3 +1348,10 @@ export default function BridgeFundCardScreen({ route }: { route: any }) {
     </CyDView>
   );
 }
+
+const styles = StyleSheet.create({
+  modalLayout: {
+    margin: 0,
+    justifyContent: 'flex-end',
+  },
+});
