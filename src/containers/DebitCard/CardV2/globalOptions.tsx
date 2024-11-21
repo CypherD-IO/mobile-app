@@ -173,7 +173,7 @@ export default function GlobalOptions() {
     planInfo?.planId === CypherPlanId.PRO_PLAN
       ? [
           {
-            title: 'Manage subscription',
+            title: 'Manage Premium',
             description: '',
             image: AppImages.BOOKMARK,
             action: () => {

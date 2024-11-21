@@ -56,7 +56,7 @@ export default function ManageSubscription() {
           />
         </CyDTouchView>
         <CyDText className='text-[16px] font-bold text-base400'>
-          {t('MANAGE_SUBSCRIPTION')}
+          {t('MANAGE_PREMIUM')}
         </CyDText>
       </CyDView>
 
