@@ -14,7 +14,8 @@
     "lint:fix": "eslint . --ext .js,.jsx,.ts,.tsx --fix",
     "postinstall": "./node_modules/.bin/rn-nodeify --install 'crypto,buffer,react-native-randombytes,vm,stream,http,https,os,url,fs' --hack&&patch-package",
     "react-devtools": "react-devtools",
-    "postversion": "react-native-version"
+    "postversion": "react-native-version",
+    "build:ios": "react-native bundle --entry-file='index.js' --bundle-output='./ios/main.jsbundle' --dev=false --platform='ios'"
   },
   "dependencies": {
     "@cosmjs-rn/amino": "^0.27.1",
