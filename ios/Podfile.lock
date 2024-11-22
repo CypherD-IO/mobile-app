@@ -152,8 +152,6 @@ PODS:
     - nanopb/encode (= 3.30910.0)
   - nanopb/decode (3.30910.0)
   - nanopb/encode (3.30910.0)
-  - Permission-Camera (3.6.0):
-    - RNPermissions
   - PromisesObjC (2.4.0)
   - PromisesSwift (2.4.0):
     - PromisesObjC (= 2.4.0)
@@ -627,7 +625,7 @@ PODS:
     - React-Core
   - RNOS (1.2.6):
     - React
-  - RNPermissions (3.6.0):
+  - RNPermissions (5.2.0):
     - React-Core
   - RNReanimated (3.4.2):
     - DoubleConversion
@@ -693,7 +691,6 @@ DEPENDENCIES:
   - jail-monkey (from `../node_modules/jail-monkey`)
   - lottie-ios (~> 3.4.0)
   - lottie-react-native (from `../node_modules/lottie-react-native`)
-  - Permission-Camera (from `../node_modules/react-native-permissions/ios/Camera`)
   - RCT-Folly (from `../node_modules/react-native/third-party-podspecs/RCT-Folly.podspec`)
   - RCTRequired (from `../node_modules/react-native/Libraries/RCTRequired`)
   - RCTTypeSafety (from `../node_modules/react-native/Libraries/TypeSafety`)
@@ -822,8 +819,6 @@ EXTERNAL SOURCES:
     :path: "../node_modules/jail-monkey"
   lottie-react-native:
     :path: "../node_modules/lottie-react-native"
-  Permission-Camera:
-    :path: "../node_modules/react-native-permissions/ios/Camera"
   RCT-Folly:
     :podspec: "../node_modules/react-native/third-party-podspecs/RCT-Folly.podspec"
   RCTRequired:
@@ -1008,7 +1003,6 @@ SPEC CHECKSUMS:
   MMKV: f7d1d5945c8765f97f39c3d121f353d46735d801
   MMKVCore: c04b296010fcb1d1638f2c69405096aac12f6390
   nanopb: fad817b59e0457d11a5dfbde799381cd727c1275
-  Permission-Camera: 0a0fb4341f50ab242f496fb2f73380e0ec454fe7
   PromisesObjC: f5707f49cb48b9636751c5b2e7d227e43fba9f47
   PromisesSwift: 9d77319bbe72ebf6d872900551f7eeba9bce2851
   RCT-Folly: 424b8c9a7a0b9ab2886ffe9c3b041ef628fd4fb1
@@ -1077,7 +1071,7 @@ SPEC CHECKSUMS:
   RNLocalize: d4b8af4e442d4bcca54e68fc687a2129b4d71a81
   RNNotifee: bc20a5e3d581f629db988075944fdd944d363dfe
   RNOS: 6f2f9a70895bbbfbdad7196abd952e7b01d45027
-  RNPermissions: de7b7c3fe1680d974ac7a85e3e97aa539c0e68ea
+  RNPermissions: ab1e3d80445508dc51aa78ee3c264524341af2d3
   RNReanimated: f8379347f71248607d530a21e31e4140c5910c25
   RNScreens: bde591bf18051634c41712bcc99dcb9de1d9de3c
   RNSentry: a262ca5ed1aa92e65ed17098b275caa88909220b
@@ -1091,6 +1085,6 @@ SPEC CHECKSUMS:
   transfi-ramp-react-native-sdk: 75063c233fff9f9eb04da96058103acb2c7262d4
   Yoga: ef534101bb891fb09bae657417f34d399c1efe38
 
-PODFILE CHECKSUM: a4c36715c2ae28297859b1d22cfa6a676c877696
+PODFILE CHECKSUM: 846bdbf09c31dd033762c5d7785c9de08fd32a9b
 
 COCOAPODS: 1.16.2
