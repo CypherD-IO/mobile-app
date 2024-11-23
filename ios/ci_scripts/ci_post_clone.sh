@@ -59,21 +59,35 @@ PROJECT_DIR="$(pwd)/.."  # Goes up one level from ci_scripts to ios directory
 echo "PROJECT_DIR: $PROJECT_DIR"
 echo "Info.plist path: $PROJECT_DIR/Cypherd/Info.plist"
 
-# Update Info.plist values with correct path
-if ! /usr/libexec/PlistBuddy -c "Set :CFBundleShortVersionString $MARKETING_VERSION" "$PROJECT_DIR/Cypherd/Info.plist"; then
+# Get current version from Info.plist
+CURRENT_VERSION=$(/usr/libexec/PlistBuddy -c "Print :CFBundleShortVersionString" "$PROJECT_DIR/Cypherd/Info.plist")
+CURRENT_BUILD=$(/usr/libexec/PlistBuddy -c "Print :CFBundleVersion" "$PROJECT_DIR/Cypherd/Info.plist")
+
+# Increment version if target branch is main
+if [ "$CI_TARGET_BRANCH" = "main" ]; then
+    IFS='.' read -ra VERSION_PARTS <<< "$CURRENT_VERSION"
+    MAJOR=${VERSION_PARTS[0]}
+    MINOR=$((VERSION_PARTS[1] + 1))
+    if [ $MINOR -gt 99 ]; then
+        MAJOR=$((MAJOR + 1))
+        MINOR=0
+    fi
+    NEW_VERSION="$MAJOR.$MINOR"
+    CURRENT_VERSION=$NEW_VERSION
+fi
+
+# Update Info.plist values
+if ! /usr/libexec/PlistBuddy -c "Set :CFBundleShortVersionString $CURRENT_VERSION" "$PROJECT_DIR/Cypherd/Info.plist"; then
     echo "Error: Failed to update CFBundleShortVersionString in Info.plist"
     exit 1
 fi
 
-if ! /usr/libexec/PlistBuddy -c "Set :CFBundleVersion $CURRENT_PROJECT_VERSION" "$PROJECT_DIR/Cypherd/Info.plist"; then
+if ! /usr/libexec/PlistBuddy -c "Set :CFBundleVersion $CURRENT_BUILD" "$PROJECT_DIR/Cypherd/Info.plist"; then
     echo "Error: Failed to update CFBundleVersion in Info.plist"
     exit 1
 fi
 
 # Verify the changes
-CURRENT_VERSION=$(/usr/libexec/PlistBuddy -c "Print :CFBundleShortVersionString" "$PROJECT_DIR/Cypherd/Info.plist")
-CURRENT_BUILD=$(/usr/libexec/PlistBuddy -c "Print :CFBundleVersion" "$PROJECT_DIR/Cypherd/Info.plist")
-
 echo "Verified Info.plist changes:"
 echo "Marketing Version: $CURRENT_VERSION"
 echo "Build Number: $CURRENT_BUILD"
