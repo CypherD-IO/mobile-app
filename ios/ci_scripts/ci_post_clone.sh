@@ -50,20 +50,29 @@ pod install --repo-update
 # The sed command from React Native that needs to be run manually (uncomment if needed)
 # sed -i -e $'s/ && (__IPHONE_OS_VERSION_MIN_REQUIRED < __IPHONE_10_0)//' /Volumes/workspace/repository/ios/Pods/RCT-Folly/folly/portability/Time.h
 
-# Update Info.plist values
-if ! /usr/libexec/PlistBuddy -c "Set :CFBundleShortVersionString $MARKETING_VERSION" "$PROJECT_DIR/Info.plist"; then
+# Add these debug lines to verify paths
+echo "Current directory: $(pwd)"
+
+# Define PROJECT_DIR relative to script location
+PROJECT_DIR="$(pwd)/../"  # Goes up one level from ci_scripts to ios directory
+
+echo "PROJECT_DIR: $PROJECT_DIR"
+echo "Info.plist path: $PROJECT_DIR/Cypherd/Info.plist"
+
+# Update Info.plist values with correct path
+if ! /usr/libexec/PlistBuddy -c "Set :CFBundleShortVersionString $MARKETING_VERSION" "$PROJECT_DIR/Cypherd/Info.plist"; then
     echo "Error: Failed to update CFBundleShortVersionString in Info.plist"
     exit 1
 fi
 
-if ! /usr/libexec/PlistBuddy -c "Set :CFBundleVersion $CURRENT_PROJECT_VERSION" "$PROJECT_DIR/Info.plist"; then
+if ! /usr/libexec/PlistBuddy -c "Set :CFBundleVersion $CURRENT_PROJECT_VERSION" "$PROJECT_DIR/Cypherd/Info.plist"; then
     echo "Error: Failed to update CFBundleVersion in Info.plist"
     exit 1
 fi
 
 # Verify the changes
-CURRENT_VERSION=$(/usr/libexec/PlistBuddy -c "Print :CFBundleShortVersionString" "$PROJECT_DIR/Info.plist")
-CURRENT_BUILD=$(/usr/libexec/PlistBuddy -c "Print :CFBundleVersion" "$PROJECT_DIR/Info.plist")
+CURRENT_VERSION=$(/usr/libexec/PlistBuddy -c "Print :CFBundleShortVersionString" "$PROJECT_DIR/Cypherd/Info.plist")
+CURRENT_BUILD=$(/usr/libexec/PlistBuddy -c "Print :CFBundleVersion" "$PROJECT_DIR/Cypherd/Info.plist")
 
 echo "Verified Info.plist changes:"
 echo "Marketing Version: $CURRENT_VERSION"
