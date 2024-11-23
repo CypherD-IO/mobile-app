@@ -5,7 +5,7 @@ if [ -z "$GOOGLE_SERVICE_INFO_PLIST" ]; then
     exit 1 
 fi 
 
-PLIST_PATH="../GoogleService-Info.plist"
+PLIST_PATH="./GoogleService-Info.plist"
 if ! echo "$GOOGLE_SERVICE_INFO_PLIST" | base64 --decode > "$PLIST_PATH"; then 
     echo "Error: Failed to decode GoogleService-Info.plist" 
     exit 1 

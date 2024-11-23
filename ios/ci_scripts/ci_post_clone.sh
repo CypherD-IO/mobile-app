@@ -54,7 +54,7 @@ pod install --repo-update
 echo "Current directory: $(pwd)"
 
 # Define PROJECT_DIR relative to script location
-PROJECT_DIR="$(pwd)/../"  # Goes up one level from ci_scripts to ios directory
+PROJECT_DIR="$(pwd)/.."  # Goes up one level from ci_scripts to ios directory
 
 echo "PROJECT_DIR: $PROJECT_DIR"
 echo "Info.plist path: $PROJECT_DIR/Cypherd/Info.plist"
