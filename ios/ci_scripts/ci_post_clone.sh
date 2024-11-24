@@ -91,3 +91,14 @@ fi
 echo "Verified Info.plist changes:"
 echo "Marketing Version: $CURRENT_VERSION"
 echo "Build Number: $CURRENT_BUILD"
+
+# Create .env file in project root
+cat > "$PROJECT_DIR/../.env" << EOL
+SENTRY_DSN=${SENTRY_DSN}
+ENVIRONMENT=${ENVIRONMENT}
+INTERCOM_APP_KEY=${INTERCOM_APP_KEY}
+WALLET_CONNECT_PROJECTID=${WALLET_CONNECT_PROJECTID}
+EOL
+
+echo "Created .env file with required variables"
+cat "$PROJECT_DIR/../.env"
