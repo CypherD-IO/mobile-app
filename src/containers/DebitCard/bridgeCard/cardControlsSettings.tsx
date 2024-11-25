@@ -145,7 +145,7 @@ export default function CardControlsSettings() {
       let countryList: string[] = [];
       if (allCountriesSelected) {
         countryList = ['ALL'];
-      } else if (selectedAllowedCountries.length > 0) {
+      } else if (selectedAllowedCountries?.length > 0) {
         countryList = selectedAllowedCountries?.map((country, index) => {
           return country.Iso2;
         });
