@@ -104,5 +104,6 @@ const styles = StyleSheet.create({
   modalLayout: {
     margin: 0,
     justifyContent: 'flex-end',
+    zIndex: 1000,
   },
 });

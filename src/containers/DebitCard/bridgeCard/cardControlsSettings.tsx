@@ -44,6 +44,7 @@ export default function CardControlsSettings() {
   const [selectedAllowedCountries, setSelectedAllowedCountries] = useState<
     ICountry[]
   >([]);
+  const [allCountriesSelected, setAllCountriesSelected] = useState(false);
   const { getWithAuth, patchWithAuth } = useAxios();
   const [limits, setLimits] = useState({});
   const [editedLimits, setEditedLimits] = useState({});
@@ -141,9 +142,14 @@ export default function CardControlsSettings() {
       (selectedAllowedCountries.length < 1 ||
         !isEqual(selectedAllowedCountries, allowedCountries))
     ) {
-      const countryList = selectedAllowedCountries?.map((country, index) => {
-        return country.Iso2;
-      });
+      let countryList: string[] = [];
+      if (allCountriesSelected) {
+        countryList = ['ALL'];
+      } else if (selectedAllowedCountries?.length > 0) {
+        countryList = selectedAllowedCountries?.map((country, index) => {
+          return country.Iso2;
+        });
+      }
 
       payload = {
         ...payload,
@@ -156,6 +162,7 @@ export default function CardControlsSettings() {
         },
       };
     }
+
     const response = await patchWithAuth(
       `/v1/cards/${currentCardProvider}/card/${card.cardId}/limits`,
       pick(payload, ['cusL', 'cCode']),
@@ -239,7 +246,9 @@ export default function CardControlsSettings() {
   };
 
   const getAllowedCountiesText = () => {
-    if (selectedAllowedCountries.length > 2) {
+    if (allCountriesSelected) {
+      return 'All Countries';
+    } else if (selectedAllowedCountries.length > 2) {
       return `${selectedAllowedCountries[0].name}, ${selectedAllowedCountries[1].name} + ${selectedAllowedCountries.length - 2}`;
     } else if (selectedAllowedCountries.length === 2) {
       return `${selectedAllowedCountries[0].name}, ${selectedAllowedCountries[1].name}`;
@@ -262,11 +271,17 @@ export default function CardControlsSettings() {
     const tempCountryList = get(limits, ['cusL', cardControlType, 'cLs'], []);
 
     if (tempCountryList.length) {
-      const tempAllowedCountries = countries.filter(country => {
-        return tempCountryList.includes(country.Iso2);
-      });
-      setAllowedCountries(tempAllowedCountries);
-      setSelectedAllowedCountries(tempAllowedCountries);
+      if (tempCountryList.includes('ALL')) {
+        setAllCountriesSelected(true);
+        setAllowedCountries(countries);
+        setSelectedAllowedCountries(countries);
+      } else {
+        const tempAllowedCountries = countries.filter(country => {
+          return tempCountryList.includes(country.Iso2);
+        });
+        setAllowedCountries(tempAllowedCountries);
+        setSelectedAllowedCountries(tempAllowedCountries);
+      }
     }
   }, [limits]);
 
@@ -324,6 +339,10 @@ export default function CardControlsSettings() {
           selectedCountryState={[
             selectedAllowedCountries,
             setSelectedAllowedCountries,
+          ]}
+          allCountriesSelectedState={[
+            allCountriesSelected,
+            setAllCountriesSelected,
           ]}
         />
         <ChooseCountryModal

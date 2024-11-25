@@ -698,13 +698,41 @@ const SUCCESS_TICK_GREEN_BG_ROUNDED = {
 const SUCCESS_TICK_GRAY_BG_ROUNDED = {
   uri: `${S3_BUCKET_URL_ICONS}/successTickGrayBgRounded.png`,
 };
+const SHIELD_3D = {
+  uri: `${S3_BUCKET_URL_ICONS}/3DShield.png`,
+};
+const CARDS_FRONT_AND_BACK_3D = {
+  uri: `${S3_BUCKET_URL_ICONS}/cardsFrontAndBack3D.png`,
+};
+const CASH_FLOW = {
+  uri: `${S3_BUCKET_URL_ICONS}/cashFllow.png`,
+};
+const MOBILE_AND_COINS_3D = {
+  uri: `${S3_BUCKET_URL_ICONS}/mobileAndCoins3D.png`,
+};
+const POST_CARD = {
+  uri: `${S3_BUCKET_URL_ICONS}/postCard.png`,
+};
+const SHOPPING_WOMEN = {
+  uri: `${S3_BUCKET_URL_ICONS}/shoppingWome.png`,
+};
+const BOOKMARK = {
+  uri: `${S3_BUCKET_URL_ICONS}/bookmark.png`,
+};
 
 const AppImages = {
+  BOOKMARK,
   CARD_SECURE,
   SHIELD_FILLED,
   SUCCESS_TICK_GREEN_BG_ROUNDED,
   SUCCESS_TICK_GRAY_BG_ROUNDED,
   ERROR_EXCLAMATION_RED_BG_ROUNDED,
+  SHIELD_3D,
+  CARDS_FRONT_AND_BACK_3D,
+  CASH_FLOW,
+  MOBILE_AND_COINS_3D,
+  POST_CARD,
+  SHOPPING_WOMEN,
   ZRM_INTRO_1,
   ZRM_INTRO_2,
   SLIDER_KNOB,

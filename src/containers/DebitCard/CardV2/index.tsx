@@ -242,15 +242,6 @@ export default function CypherCardScreen() {
     return false;
   };
 
-  const onPressPlanChange = (openComparePlans: boolean) => {
-    navigation.navigate(screenTitle.SELECT_PLAN, {
-      toPage: screenTitle.DEBIT_CARD_SCREEN,
-      deductAmountNow: true,
-      cardBalance,
-      openComparePlans,
-    });
-  };
-
   return isLayoutRendered ? (
     <CyDSafeAreaView className='flex-1 bg-gradient-to-b from-cardBgFrom to-cardBgTo'>
       <CyDView className='flex flex-row justify-between items-center mx-[16px] mt-[4px]'>
@@ -262,7 +253,6 @@ export default function CypherCardScreen() {
           onPress={() => {
             navigation.navigate(screenTitle.GLOBAL_CARD_OPTIONS, {
               cardProvider,
-              onPressPlanChange,
               card: get(cardProfile, [cardProvider, 'cards', 0]),
             });
           }}>
