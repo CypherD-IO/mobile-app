@@ -959,15 +959,15 @@ export default function useTransactionManager() {
           const response = await contract.methods
             .allowance(ethereum.address, routerAddress)
             .call();
-          const tokenAmount = String(Number(ceil(amount)));
+          const tokenAmount = Number(ceil(amount));
           const allowance = response;
           if (
             overrideAllowanceCheck ||
             Number(tokenAmount) > Number(allowance)
           ) {
-            const tokens = Number(ceil(amount)).toString();
+            const tokens = Number(ceil(amount));
             const resp = contract.methods
-              .approve(routerAddress, tokens)
+              .approve(routerAddress, BigInt(tokens))
               .encodeABI();
             const gasLimit = await web3?.eth.estimateGas({
               from: ethereum.address,
