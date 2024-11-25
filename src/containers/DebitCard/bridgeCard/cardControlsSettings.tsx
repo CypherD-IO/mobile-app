@@ -42,7 +42,7 @@ export default function CardControlsSettings() {
   const [countries, setCountries] = useState<ICountry[]>([]);
   const [allowedCountries, setAllowedCountries] = useState<ICountry[]>([]);
   const [selectedAllowedCountries, setSelectedAllowedCountries] = useState<
-    ICountry[] | ['ALL']
+    ICountry[]
   >([]);
   const [allCountriesSelected, setAllCountriesSelected] = useState(false);
   const { getWithAuth, patchWithAuth } = useAxios();

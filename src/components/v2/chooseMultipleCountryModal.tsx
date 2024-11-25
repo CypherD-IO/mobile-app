@@ -27,7 +27,7 @@ interface Props {
   setModalVisible: React.Dispatch<React.SetStateAction<boolean>>;
   selectedCountryState: [
     ICountry[],
-    React.Dispatch<React.SetStateAction<ICountry[] | ['ALL']>>,
+    React.Dispatch<React.SetStateAction<ICountry[]>>,
   ];
   allCountriesSelectedState: [
     boolean,
