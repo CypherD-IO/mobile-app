@@ -341,7 +341,7 @@ export default function GlobalOptions() {
                       resizeMode={'contain'}
                     />
                     <CyDView className='flex flex-row items-center justify-between flex-1 border-b-[0.5px] border-n30 pb-[16px]'>
-                      <CyDText className='text-[16px] font-regular text-base400 border'>
+                      <CyDText className='text-[16px] font-regular text-base400'>
                         {title}
                       </CyDText>
                       {!isAutoloadConfigured && title === 'Auto Load' ? (
@@ -386,7 +386,7 @@ export default function GlobalOptions() {
                           resizeMode={'contain'}
                         />
                         <CyDView className='flex flex-row items-center justify-between flex-1 border-b-[0.5px] border-n30 pb-[16px]'>
-                          <CyDText className='text-[16px] font-regular text-base400 border'>
+                          <CyDText className='text-[16px] font-regular text-base400'>
                             {title}
                           </CyDText>
                           {!isTelegramLinked && (
@@ -409,7 +409,7 @@ export default function GlobalOptions() {
                               className={'h-[24px] w-[24px] mr-[8px] pb-[16px]'}
                             />
                             <CyDView className='flex flex-row items-center justify-between flex-1 border-b-[0.5px] border-n30 pb-[16px]'>
-                              <CyDText className='text-[16px] font-regular text-base400 border'>
+                              <CyDText className='text-[16px] font-regular text-base400'>
                                 {'Reset Telegram Pin'}
                               </CyDText>
                               <CyDFastImage
@@ -428,7 +428,7 @@ export default function GlobalOptions() {
                               className={'h-[24px] w-[24px] mr-[8px] pb-[16px]'}
                             />
                             <CyDView className='flex flex-row items-center justify-between flex-1 border-b-[0.5px] border-n30 pb-[16px]'>
-                              <CyDText className='text-[16px] font-regular text-red400 border'>
+                              <CyDText className='text-[16px] font-regular text-red400'>
                                 {'Disconnect Telegram'}
                               </CyDText>
                             </CyDView>
@@ -449,7 +449,7 @@ export default function GlobalOptions() {
                       resizeMode={'contain'}
                     />
                     <CyDView className='flex flex-row items-center justify-between flex-1 border-b-[0.5px] border-n30 pb-[16px]'>
-                      <CyDText className='text-[16px] font-regular text-base400 border'>
+                      <CyDText className='text-[16px] font-regular text-base400'>
                         {title}
                       </CyDText>
                       {!isAutoloadConfigured && title === 'Auto Load' ? (
@@ -488,7 +488,7 @@ export default function GlobalOptions() {
                       resizeMode={'contain'}
                     />
                     <CyDView className='flex flex-row items-center justify-between flex-1 border-b-[0.5px] border-n30 pb-[16px]'>
-                      <CyDText className='text-[16px] font-regular text-base400 border'>
+                      <CyDText className='text-[16px] font-regular text-base400'>
                         {title}
                       </CyDText>
                       <CyDFastImage

@@ -173,9 +173,9 @@ const ChooseMultipleCountryModal = ({
                         handleAllCountriesSelected(!isAllCountriesSelected);
                       }}
                       className={clsx(
-                        'flex flex-row items-center justify-between px-[16px] py-[4px] my-[6px] mx-[12px] rounded-[8px] bg-n10',
+                        'flex flex-row items-center justify-between px-[16px] py-[4px] my-[6px] mx-[12px] rounded-[8px] bg-n10/80',
                         {
-                          'bg-p10': allCountriesSelected,
+                          'bg-paleBlue': allCountriesSelected,
                         },
                       )}>
                       <CyDView className={'flex flex-row items-center'}>
@@ -229,9 +229,9 @@ const ChooseMultipleCountryModal = ({
                           }
                         }}
                         className={clsx(
-                          'flex flex-row items-center justify-between px-[16px] my-[6px] mx-[12px] rounded-[8px] bg-n10',
+                          'flex flex-row items-center justify-between px-[16px] my-[6px] mx-[12px] rounded-[8px] bg-n10/80',
                           {
-                            'bg-p10': some(selectedCountry, {
+                            'bg-paleBlue': some(selectedCountry, {
                               name: country.name,
                             }),
                           },
