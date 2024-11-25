@@ -29,12 +29,17 @@ interface Props {
     ICountry[],
     React.Dispatch<React.SetStateAction<ICountry[]>>,
   ];
+  allCountriesSelectedState: [
+    boolean,
+    React.Dispatch<React.SetStateAction<boolean>>,
+  ];
 }
 
 const ChooseMultipleCountryModal = ({
   isModalVisible,
   setModalVisible,
   selectedCountryState,
+  allCountriesSelectedState,
 }: Props) => {
   const [selectedCountry, setSelectedCountry] = selectedCountryState;
   const [
@@ -46,6 +51,8 @@ const ChooseMultipleCountryModal = ({
   const [origCountriesWithFlagAndDialcodes, setOrigCountryList] = useState<
     ICountry[]
   >([]);
+  const [allCountriesSelected, setAllCountriesSelected] =
+    allCountriesSelectedState;
 
   const getCountryData = async () => {
     try {
@@ -103,6 +110,15 @@ const ChooseMultipleCountryModal = ({
     }
   }, [copyCountriesWithFlagAndDialcodes, countryFilterText]);
 
+  const handleAllCountriesSelected = (isAllCountriesSelected: boolean) => {
+    if (!isAllCountriesSelected) {
+      setSelectedCountry([]);
+    } else {
+      setSelectedCountry(origCountriesWithFlagAndDialcodes);
+    }
+    setAllCountriesSelected(isAllCountriesSelected);
+  };
+
   return (
     <CyDModalLayout
       setModalVisible={setModalVisible}
@@ -149,25 +165,75 @@ const ChooseMultipleCountryModal = ({
             <CyDView className='h-[1px] bg-[#DFE2E6] mt-[8px]' />
             <CyDScrollView>
               <CyDView className='mb-[100px]'>
+                {countryFilterText === '' && (
+                  <CyDView>
+                    <CyDTouchView
+                      onPress={() => {
+                        const isAllCountriesSelected = allCountriesSelected;
+                        handleAllCountriesSelected(!isAllCountriesSelected);
+                      }}
+                      className={clsx(
+                        'flex flex-row items-center justify-between px-[16px] py-[4px] my-[6px] mx-[12px] rounded-[8px] bg-n10',
+                        {
+                          'bg-p10': allCountriesSelected,
+                        },
+                      )}>
+                      <CyDView className={'flex flex-row items-center'}>
+                        <CyDText className={'text-[30px]'}>{'🌎'}</CyDText>
+                        <CyDText
+                          className={'ml-[10px] font-semibold text-[16px]'}>
+                          {'All countries'}
+                        </CyDText>
+                      </CyDView>
+                      <CyDView className={'flex flex-row justify-end'}>
+                        <CyDView
+                          className={clsx(
+                            'h-[21px] w-[21px] rounded-[4px] border-[1.5px] border-borderColor flex flex-row justify-center items-center',
+                            {
+                              'bg-appColor': allCountriesSelected,
+                            },
+                          )}>
+                          <CyDImage
+                            source={AppImages.WHITE_CHECK_MARK}
+                            className='h-[18px] w-[18px]'
+                          />
+                        </CyDView>
+                      </CyDView>
+                    </CyDTouchView>
+                  </CyDView>
+                )}
                 {origCountriesWithFlagAndDialcodes.map(country => {
                   return (
                     <React.Fragment key={country.Iso2}>
                       <CyDTouchView
                         onPress={() => {
                           if (some(selectedCountry, { name: country.name })) {
-                            setSelectedCountry(
+                            const updatedSelection =
                               reject(selectedCountry, { name: country.name }) ??
-                                [],
+                              [];
+                            setSelectedCountry(updatedSelection);
+                            setAllCountriesSelected(
+                              updatedSelection.length ===
+                                origCountriesWithFlagAndDialcodes.length,
                             );
                           } else {
-                            setSelectedCountry([...selectedCountry, country]);
+                            const updatedSelection = [
+                              ...selectedCountry,
+                              country,
+                            ];
+                            setSelectedCountry(updatedSelection);
+                            setAllCountriesSelected(
+                              updatedSelection.length ===
+                                origCountriesWithFlagAndDialcodes.length,
+                            );
                           }
                         }}
                         className={clsx(
-                          'flex flex-row items-center justify-between px-[16px] py-[6px] mx-[12px] rounded-[8px]',
+                          'flex flex-row items-center justify-between px-[16px] my-[6px] mx-[12px] rounded-[8px] bg-n10',
                           {
-                            'bg-paleBlue':
-                              country.name === selectedCountry?.name,
+                            'bg-p10': some(selectedCountry, {
+                              name: country.name,
+                            }),
                           },
                         )}
                         key={country.Iso2 + country.name}>
@@ -181,38 +247,19 @@ const ChooseMultipleCountryModal = ({
                           </CyDText>
                         </CyDView>
                         <CyDView className={'flex flex-row justify-end'}>
-                          <CyDTouchView
-                            onPress={() => {
-                              if (
-                                some(selectedCountry, { name: country.name })
-                              ) {
-                                setSelectedCountry(
-                                  reject(selectedCountry, {
-                                    name: country.name,
-                                  }) ?? [],
-                                );
-                              } else {
-                                setSelectedCountry([
-                                  ...selectedCountry,
-                                  country,
-                                ]);
-                              }
-                            }}
-                            className='flex flex-row my-[8px]'>
-                            <CyDView
-                              className={`h-[21px] w-[21px] ${some(selectedCountry, { name: country.name }) ? 'bg-appColor' : ''} rounded-[4px] border-[1.5px] border-borderColor flex flex-row justify-center items-center`}>
-                              <CyDImage
-                                source={AppImages.WHITE_CHECK_MARK}
-                                className='h-[18px] w-[18px]'
-                              />
-                            </CyDView>
-                          </CyDTouchView>
+                          <CyDView
+                            className={`h-[21px] w-[21px] ${some(selectedCountry, { name: country.name }) ? 'bg-appColor' : ''} rounded-[4px] border-[1.5px] border-borderColor flex flex-row justify-center items-center`}>
+                            <CyDImage
+                              source={AppImages.WHITE_CHECK_MARK}
+                              className='h-[18px] w-[18px]'
+                            />
+                          </CyDView>
                         </CyDView>
                       </CyDTouchView>
-                      <CyDView
+                      {/* <CyDView
                         key={`${country.Iso2}-divider`}
                         className='h-[1px] bg-[#DFE2E6]'
-                      />
+                      /> */}
                     </React.Fragment>
                   );
                 })}
