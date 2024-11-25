@@ -1,21 +1,21 @@
-/**
- * Metro configuration for React Native
- * https://github.com/facebook/react-native
- *
- * @format
- */
+const {getDefaultConfig, mergeConfig} = require('@react-native/metro-config');
 
-const extraNodeModules = require('node-libs-browser');
-module.exports = {
+/**
+ * Metro configuration
+ * https://reactnative.dev/docs/metro
+ *
+ * @type {import('metro-config').MetroConfig}
+ */
+const config = {
   resolver: {
-    extraNodeModules
+    extraNodeModules: {
+      path: require.resolve('path-browserify'),
+      fs: require.resolve('react-native-level-fs'),
+      '@walletconnect/react-native-compat': require.resolve('@walletconnect/react-native-compat'),
+        '@walletconnect/web3wallet': require.resolve('@walletconnect/web3wallet'),
+    },
   },
-  transformer: {
-    getTransformOptions: async () => ({
-      transform: {
-        experimentalImportSupport: true,
-        inlineRequires: true
-      }
-    })
-  }
 };
+
+module.exports = mergeConfig(getDefaultConfig(__dirname), config);
+
