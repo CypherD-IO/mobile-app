@@ -21,7 +21,6 @@ target 'Cypherd' do
   $RNFirebaseAsStaticFramework = true
   
   # Move permissions setup before use_react_native
-  permissions_path = '../node_modules/react-native-permissions/ios'
   pod 'RNPermissions', :path => '../node_modules/react-native-permissions'
   permission_pods
   
@@ -30,10 +29,7 @@ target 'Cypherd' do
     # to enable hermes on iOS, change `false` to `true` and then install pods
     :hermes_enabled => false
   )
-
-  # Remove the duplicate permission pod
-  # pod 'Permission-Camera', :path => "#{permissions_path}/Camera"  # Remove this line
-  
+ 
   pod 'RNVectorIcons', :path => '../node_modules/react-native-vector-icons'
 
   pod 'react-native-webview', :path => '../node_modules/react-native-webview'
