@@ -75,7 +75,7 @@ if [ -z "$CURRENT_BUILD" ]; then
 fi
 
 # Increment version if target branch is main
-if [ "$CI_TARGET_BRANCH" = "main" ]; then
+if [ "$CI_BRANCH" = "main" ]; then
     IFS='.' read -ra VERSION_PARTS <<< "$CURRENT_VERSION"
     MAJOR=${VERSION_PARTS[0]}
     MINOR=$((VERSION_PARTS[1] + 1))
