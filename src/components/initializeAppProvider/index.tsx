@@ -81,7 +81,8 @@ export const InitializeAppProvider = ({
         void checkForUpdatesAndShowModal(setUpdateModal);
         void loadActivitiesFromAsyncStorage();
 
-        void requestUserPermission();
+        await requestUserPermission();
+
         firebase.messaging().onMessage(response => {
           if (
             response.data?.actionKey === NotificationEvents.THREE_DS_APPROVE
@@ -93,7 +94,7 @@ export const InitializeAppProvider = ({
               });
             }, 1000);
           } else {
-            void showNotification(response.notification);
+            void showNotification(response.notification, response.data);
           }
         });
 

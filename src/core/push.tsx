@@ -1,4 +1,8 @@
-import notifee, { AndroidImportance } from '@notifee/react-native';
+import notifee, {
+  AndroidImportance,
+  AndroidStyle,
+  EventType,
+} from '@notifee/react-native';
 import firebase from '@react-native-firebase/app';
 import { FirebaseMessagingTypes } from '@react-native-firebase/messaging';
 import * as Sentry from '@sentry/react-native';
@@ -62,9 +66,25 @@ async function createNotificationChannel() {
   return channelId;
 }
 
+const getAndroidActions = (categoryId?: string) => {
+  switch (categoryId) {
+    case 'CARD_TXN_DECLINE':
+      return [
+        {
+          title: 'Add Country',
+          pressAction: {
+            id: 'add-country',
+          },
+        },
+      ];
+  }
+};
+
 export const showNotification = async (
   notification: FirebaseMessagingTypes.Notification | undefined,
+  data?: any,
 ) => {
+  console.log('🚀 ~ data:', data);
   const channelId = await createNotificationChannel();
   if (notification?.body) {
     await notifee.displayNotification({
@@ -72,11 +92,99 @@ export const showNotification = async (
       body: notification.body,
       android: {
         channelId,
+        actions: getAndroidActions(data?.categoryId),
+        style: {
+          type: AndroidStyle.BIGTEXT,
+          text: notification.body,
+        },
+      },
+      ios: {
+        categoryId: 'CARD_TXN_DECLINE',
       },
     });
   }
 };
 
+async function setCategories() {
+  await notifee.setNotificationCategories([
+    {
+      id: 'CARD_TXN_DECLINE',
+      actions: [
+        {
+          id: 'add-country',
+          title: 'Add Country',
+          // foreground: true,
+          // authenticationRequired: false,
+        },
+      ],
+    },
+  ]);
+}
+
+async function initializeForegroundEvent() {
+  notifee.onForegroundEvent(({ type, detail }) => {
+    if (type === EventType.ACTION_PRESS) {
+      const { notification, pressAction } = detail;
+
+      switch (pressAction?.id) {
+        case 'add-country':
+          // Handle enable international action
+          // Make API calls or perform background tasks
+          console.log('🚀 ~ notifee.onForegroundEvent ~ CARD_TXN_DECLINE:');
+          break;
+        case 'zero_restriction':
+          // Handle zero restriction action
+          break;
+      }
+    }
+  });
+}
+
+async function initializeBackgroundEvent() {
+  notifee.onBackgroundEvent(async ({ type, detail }) => {
+    console.log('🚀 ~ notifee.onBackgroundEvent ~ detail:', detail);
+    if (type === EventType.ACTION_PRESS) {
+      const { notification, pressAction } = detail;
+      // console.log('🚀 ~ notifee.onBackgroundEvent ~ detail:', detail);
+
+      switch (pressAction?.id) {
+        case 'add-country':
+          // Handle enable international action
+          // Make API calls or perform background tasks
+          console.log('🚀 ~ notifee.onBackgroundEvent ~ CARD_TXN_DECLINE:');
+          break;
+        case 'zero_restriction':
+          // Handle zero restriction action
+          break;
+      }
+
+      // Optionally cancel the notification after handling
+      if (notification?.id) {
+        await notifee.cancelNotification(notification.id);
+      }
+    }
+  });
+}
+
+export const setBackgroundMessageHandler = () => {
+  firebase.messaging().setBackgroundMessageHandler(async remoteMessage => {
+    console.log('Background message handler:', remoteMessage);
+    await showNotification(remoteMessage.notification, remoteMessage.data);
+    return await Promise.resolve();
+  });
+};
+
 export async function requestUserPermission() {
-  await notifee.requestPermission();
+  const authStatus = await firebase.messaging().requestPermission();
+  const enabled =
+    authStatus === firebase.messaging.AuthorizationStatus.AUTHORIZED ||
+    authStatus === firebase.messaging.AuthorizationStatus.PROVISIONAL;
+
+  if (enabled) {
+    await notifee.requestPermission();
+    await initializeBackgroundEvent();
+    await initializeForegroundEvent();
+    await setCategories();
+    setBackgroundMessageHandler();
+  }
 }

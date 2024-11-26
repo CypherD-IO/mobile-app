@@ -10,7 +10,8 @@ import { name as appName } from './app.json';
 import { showNotification } from './src/core/push';
 
 messaging().setBackgroundMessageHandler(async remoteMessage => {
-  showNotification(remoteMessage.data.notification);
+  await showNotification(remoteMessage.notification, remoteMessage.data);
+  return Promise.resolve();
 });
 
 AppRegistry.registerComponent(appName, () => App);
