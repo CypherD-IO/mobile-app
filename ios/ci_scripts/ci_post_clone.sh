@@ -59,9 +59,20 @@ PROJECT_DIR="$(pwd)/.."  # Goes up one level from ci_scripts to ios directory
 echo "PROJECT_DIR: $PROJECT_DIR"
 echo "Info.plist path: $PROJECT_DIR/Cypherd/Info.plist"
 
-# Get current version from Info.plist
-CURRENT_VERSION=$(/usr/libexec/PlistBuddy -c "Print :CFBundleShortVersionString" "$PROJECT_DIR/Cypherd/Info.plist")
-CURRENT_BUILD=$(/usr/libexec/PlistBuddy -c "Print :CFBundleVersion" "$PROJECT_DIR/Cypherd/Info.plist")
+# Get version from environment variables
+CURRENT_VERSION="${MARKETING_VERSION}"
+CURRENT_BUILD="${CURRENT_PROJECT_VERSION}"
+
+# Fallback to Info.plist values if env variables are not set
+if [ -z "$CURRENT_VERSION" ]; then
+    CURRENT_VERSION=$(/usr/libexec/PlistBuddy -c "Print :CFBundleShortVersionString" "$PROJECT_DIR/Cypherd/Info.plist")
+    echo "Warning: VERSION_NUMBER not set in environment, using Info.plist value: $CURRENT_VERSION"
+fi
+
+if [ -z "$CURRENT_BUILD" ]; then
+    CURRENT_BUILD=$(/usr/libexec/PlistBuddy -c "Print :CFBundleVersion" "$PROJECT_DIR/Cypherd/Info.plist")
+    echo "Warning: BUILD_NUMBER not set in environment, using Info.plist value: $CURRENT_BUILD"
+fi
 
 # Increment version if target branch is main
 if [ "$CI_TARGET_BRANCH" = "main" ]; then
