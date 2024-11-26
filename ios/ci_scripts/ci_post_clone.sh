@@ -75,7 +75,7 @@ if [ -z "$CURRENT_BUILD" ]; then
 fi
 
 # Increment version if target branch is main
-if [ "$CI_TARGET_BRANCH" = "main" ]; then
+if [ "$CI_BRANCH" = "main" ]; then
     IFS='.' read -ra VERSION_PARTS <<< "$CURRENT_VERSION"
     MAJOR=${VERSION_PARTS[0]}
     MINOR=$((VERSION_PARTS[1] + 1))
@@ -113,3 +113,56 @@ EOL
 
 echo "Created .env file with required variables"
 cat "$PROJECT_DIR/../.env"
+
+echo "Current working directory: $(pwd)"
+
+# Use absolute paths with $CI_PRIMARY_REPOSITORY_PATH
+GOOGLE_PLIST_PATH="${CI_PRIMARY_REPOSITORY_PATH}/ios/GoogleService-Info.plist"
+SENTRY_PROPS_PATH="${CI_PRIMARY_REPOSITORY_PATH}/ios/sentry.properties"
+
+if [ -z "$GOOGLE_SERVICE_INFO_PLIST" ]; then 
+    echo "Error: GOOGLE_SERVICE_INFO_PLIST environment variable is not set" 
+    exit 1 
+fi 
+
+# Create a temporary file first
+TEMP_PLIST="/tmp/GoogleService-Info.plist"
+if ! echo "$GOOGLE_SERVICE_INFO_PLIST" | base64 --decode > "$TEMP_PLIST"; then 
+    echo "Error: Failed to decode GoogleService-Info.plist" 
+    exit 1 
+fi 
+
+# Verify the plist is valid
+if ! plutil -lint "$TEMP_PLIST"; then
+    echo "Error: Invalid plist file created"
+    cat "$TEMP_PLIST"  # This will show the content for debugging
+    exit 1
+fi
+
+# If valid, move to final location
+mv "$TEMP_PLIST" "$GOOGLE_PLIST_PATH"
+chmod 644 "$GOOGLE_PLIST_PATH"  # Changed to 644 for read permissions
+
+echo "Successfully created GoogleService-Info.plist at: $GOOGLE_PLIST_PATH"
+
+# Similar changes for sentry.properties
+if [ -z "$SENTRY_PROPERTIES" ]; then 
+    echo "Error: SENTRY_PROPERTIES environment variable is not set" 
+    exit 1 
+fi 
+
+if ! echo "$SENTRY_PROPERTIES" | base64 --decode > "$SENTRY_PROPS_PATH"; then 
+    echo "Error: Failed to decode sentry.properties" 
+    exit 1 
+fi 
+
+chmod 600 "$SENTRY_PROPS_PATH"
+if [ ! -f "$SENTRY_PROPS_PATH" ]; then 
+    echo "Error: Failed to create sentry.properties" 
+    exit 1 
+fi 
+
+echo "Successfully created sentry.properties at: $SENTRY_PROPS_PATH"
+
+# Verify files exist in the correct location
+ls -la "${CI_PRIMARY_REPOSITORY_PATH}/ios/"
