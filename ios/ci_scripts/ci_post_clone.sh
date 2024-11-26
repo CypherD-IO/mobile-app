@@ -66,12 +66,12 @@ CURRENT_BUILD="${CURRENT_PROJECT_VERSION}"
 # Fallback to Info.plist values if env variables are not set
 if [ -z "$CURRENT_VERSION" ]; then
     CURRENT_VERSION=$(/usr/libexec/PlistBuddy -c "Print :CFBundleShortVersionString" "$PROJECT_DIR/Cypherd/Info.plist")
-    echo "Warning: VERSION_NUMBER not set in environment, using Info.plist value: $CURRENT_VERSION"
+    echo "Warning: MARKETING_VERSION not set in environment, using Info.plist value: $CURRENT_VERSION"
 fi
 
 if [ -z "$CURRENT_BUILD" ]; then
     CURRENT_BUILD=$(/usr/libexec/PlistBuddy -c "Print :CFBundleVersion" "$PROJECT_DIR/Cypherd/Info.plist")
-    echo "Warning: BUILD_NUMBER not set in environment, using Info.plist value: $CURRENT_BUILD"
+    echo "Warning: CURRENT_PROJECT_VERSION not set in environment, using Info.plist value: $CURRENT_BUILD"
 fi
 
 # Increment version if target branch is main
