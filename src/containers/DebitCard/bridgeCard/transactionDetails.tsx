@@ -7,6 +7,7 @@ import {
   HdWalletContext,
   copyToClipboard,
   formatAmount,
+  getCountryNameById,
   getExplorerUrlFromBackendNames,
   limitDecimalPlaces,
   parseErrorMessage,
@@ -77,6 +78,28 @@ const getTransactionSign = (type: string) => {
   }
 };
 
+const CopyButton = ({ label, value }: { label: string; value: string }) => {
+  const { t } = useTranslation();
+
+  const handleCopy = () => {
+    copyToClipboard(value);
+    Toast.show({
+      type: 'success',
+      text1: `${label} Copied`,
+    });
+  };
+
+  return (
+    <CyDTouchView onPress={handleCopy}>
+      <CyDImage
+        source={AppImages.COPY}
+        className='h-[16px] w-[16px] ml-[8px]'
+        resizeMode='contain'
+      />
+    </CyDTouchView>
+  );
+};
+
 const DetailItem = ({
   item,
 }: {
@@ -120,22 +143,9 @@ const DetailItem = ({
             ? `${value.slice(0, 10)}....${value.slice(-4)}`
             : value}
         </CyDText>
-        {item.label === t('TRANSACTION_ID') && (
-          <CyDTouchView
-            onPress={() => {
-              copyToClipboard(value);
-              Toast.show({
-                type: 'success',
-                text1: t('TRANSACTION_ID_COPIED'),
-              });
-            }}>
-            <CyDImage
-              source={AppImages.COPY}
-              className='h-[16px] w-[16px] ml-[8px]'
-              resizeMode='contain'
-            />
-          </CyDTouchView>
-        )}
+        {[t('TRANSACTION_ID'), t('MERCHANT_ID'), t('MCC_CODE')].includes(
+          item.label,
+        ) && <CopyButton label={item.label} value={value} />}
       </CyDTouchView>
     </CyDView>
   );
@@ -349,7 +359,34 @@ export default function TransactionDetails() {
         title: t('MERCHANT_DETAILS'),
         data: [
           { label: t('NAME'), value: merchantName },
+          ...(transaction.metadata?.merchant?.merchantCategoryCode
+            ? [
+                {
+                  label: t('MCC_CODE'),
+                  value: transaction.metadata?.merchant?.merchantCategoryCode,
+                },
+              ]
+            : []),
+          ...(transaction.metadata?.merchant?.merchantId
+            ? [
+                {
+                  label: t('MERCHANT_ID'),
+                  value: transaction.metadata?.merchant?.merchantId,
+                },
+              ]
+            : []),
           { label: t('CATEGORY'), value: capitalize(transaction.category) },
+          ...(transaction.metadata?.merchant?.merchantCountry
+            ? [
+                {
+                  label: t('COUNTRY'),
+                  value:
+                    getCountryNameById(
+                      transaction.metadata?.merchant?.merchantCountry,
+                    ) ?? transaction.metadata?.merchant?.merchantCountry,
+                },
+              ]
+            : []),
         ],
       },
     ];

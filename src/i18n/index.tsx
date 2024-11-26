@@ -1419,6 +1419,11 @@ const resources = {
       SET_CARD_PIN: 'Set Card PIN',
       INVALID_PARAMETERS: 'Invalid Parameters',
       MANAGE_PREMIUM: 'Manage Premium',
+      MCC_CODE: 'MCC Code',
+      MERCHANT_ID: 'ID',
+      COUNTRY: 'Country',
+      MCC_CODE_COPIED: 'MCC Code copied',
+      MERCHANT_ID_COPIED: 'Merchant ID copied',
     },
   },
 };
