@@ -576,7 +576,7 @@ export default function CardControlsMenu() {
                       {
                         cardControlType: CardControlTypes.INTERNATIONAL,
                         currentCardProvider,
-                        card,
+                        cardId: card?.cardId,
                       },
                     );
                   } else {

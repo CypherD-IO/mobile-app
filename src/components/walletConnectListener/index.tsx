@@ -25,7 +25,7 @@ import useConnectionManager from '../../hooks/useConnectionManager';
 import Intercom from '@intercom/intercom-react-native';
 import * as Sentry from '@sentry/react-native';
 import DeviceInfo from 'react-native-device-info';
-import { getToken } from '../../core/push';
+import { getToken } from '../../hooks/usePushNotification';
 import analytics from '@react-native-firebase/analytics';
 
 export const WalletConnectListener: React.FC = ({ children }) => {

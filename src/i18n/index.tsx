@@ -1423,6 +1423,7 @@ const resources = {
       COUNTRY: 'Country',
       MCC_CODE_COPIED: 'MCC Code copied',
       MERCHANT_ID_COPIED: 'Merchant ID copied',
+      TRANSACTION_DECLINE: 'Transaction Declined',
     },
   },
 };

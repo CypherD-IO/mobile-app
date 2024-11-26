@@ -236,6 +236,7 @@ export enum GlobalModalType {
   WALLET_CONNECT_V2_COSMOS_SIGNING = 'walletConnectV2CosmosSigning',
   CUSTOM_LAYOUT = 'customLayout',
   THREE_D_SECURE_APPROVAL = 'threeDSecureApproval',
+  ADD_COUNTRY_FROM_NOTIFICATION = 'addCountryFromNotification',
 }
 
 export enum TokenModalType {

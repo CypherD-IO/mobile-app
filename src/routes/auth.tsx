@@ -685,6 +685,20 @@ export function PortfolioStackScreen() {
           headerLeft: () => defaultHeaderLeft(navigation, keyboardHeight),
         })}
       />
+      <PortfolioStack.Screen
+        name={screenTitle.INTERNATIONAL_CARD_CONTROLS}
+        component={CardControlsSettings}
+        options={({ navigation }) => ({
+          headerTransparent: false,
+          headerShadowVisible: false,
+          title: 'International Transactions',
+          headerTitleAlign: 'left',
+          headerTitleStyle: portfolioStackScreenHeaderTitleStyles,
+          headerTintColor: Colors.primaryTextColor,
+          headerBackTitleVisible: false,
+          headerLeft: () => defaultHeaderLeft(navigation, keyboardHeight),
+        })}
+      />
     </PortfolioStack.Navigator>
   );
 }
