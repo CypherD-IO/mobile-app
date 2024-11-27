@@ -87,6 +87,7 @@ import BannerCarousel from './components/BannerCarousel';
 import FilterBar from './components/FilterBar';
 import { DeFiScene, NFTScene, TXNScene } from './scenes';
 import { useGlobalModalContext } from '../../components/v2/GlobalModal';
+import notifee, { EventType } from '@notifee/react-native';
 
 export interface PortfolioProps {
   navigation: any;
@@ -269,8 +270,7 @@ export default function Portfolio({ navigation }: PortfolioProps) {
 
   useEffect(() => {
     void messaging().getInitialNotification().then(handlePushNotification);
-
-    messaging().onNotificationOpenedApp(handlePushNotification);
+    void messaging().onNotificationOpenedApp(handlePushNotification);
 
     const getIBCStatus = async () => {
       const data = await getIBC();
@@ -522,6 +522,7 @@ export default function Portfolio({ navigation }: PortfolioProps) {
           }
           case NotificationEvents.CARD_TXN_UPDATE: {
             const { categoryId, cardId, url, provider } = remoteMessage.data;
+            console.log('🚀 ~ Portfolio ~ remoteMessage:', remoteMessage.data);
 
             if (categoryId) {
               void analytics().logEvent('card_decline_add_txn_cta', {

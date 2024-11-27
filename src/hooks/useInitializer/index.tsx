@@ -54,7 +54,7 @@ import SpInAppUpdates from 'sp-react-native-in-app-updates';
 import useValidSessionToken from '../useValidSessionToken';
 import { IPlanDetails } from '../../models/planDetails.interface';
 import { CardProfile } from '../../models/cardProfile.model';
-import usePushNotification from '../usePushNotification';
+import { getToken } from '../usePushNotification';
 
 export default function useInitializer() {
   const SENSITIVE_DATA_KEYS = ['password', 'seed', 'creditCardNumber'];
@@ -69,7 +69,6 @@ export default function useInitializer() {
   );
   const { verifySessionToken } = useValidSessionToken();
   const { getWalletProfile, getPlanData } = useCardUtilities();
-  const { getToken } = usePushNotification();
 
   const scrubData = (key: string, value: any): any => {
     if (SENSITIVE_DATA_KEYS.includes(key)) {

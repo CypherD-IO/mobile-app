@@ -3,7 +3,11 @@ import useInitializer from '../../hooks/useInitializer';
 import { GlobalContext, GlobalContextDef } from '../../core/globalContext';
 import { Linking, Platform } from 'react-native';
 
-import { GlobalModalType, PinPresentStates } from '../../constants/enum';
+import {
+  CardControlTypes,
+  GlobalModalType,
+  PinPresentStates,
+} from '../../constants/enum';
 import PinAuthRoute from '../../routes/pinAuthRoute';
 import * as C from '../../../src/constants/index';
 import OnBoardingStack from '../../routes/onBoarding';
@@ -35,12 +39,15 @@ import { NotificationEvents } from '../../constants/server';
 import JoinDiscordModal from '../v2/joinDiscordModal';
 import useInitialIntentURL from '../../hooks/useInitialIntentURL';
 import notifee, { EventType } from '@notifee/react-native';
-import usePushNotification from '../../hooks/usePushNotification';
 import {
   ParamListBase,
   useNavigation,
   NavigationProp,
 } from '@react-navigation/native';
+import {
+  requestUserPermission,
+  showNotification,
+} from '../../hooks/usePushNotification';
 
 export const InitializeAppProvider = ({
   children,
@@ -65,7 +72,6 @@ export const InitializeAppProvider = ({
   const [showDefaultAuthRemoveModal, setShowDefaultAuthRemoveModal] =
     useState<boolean>(false);
   const hdWallet = useContext(HdWalletContext) as HdWalletContextDef;
-  const { showNotification, requestUserPermission } = usePushNotification();
 
   const [updateModal, setUpdateModal] = useState<boolean>(false);
   const [forcedUpdate, setForcedUpdate] = useState<boolean>(false);
@@ -92,6 +98,32 @@ export const InitializeAppProvider = ({
 
         await requestUserPermission();
 
+        notifee.onBackgroundEvent(async remoteMessage => {
+          const { type, detail } = remoteMessage;
+          if (type === EventType.ACTION_PRESS) {
+            const { notification, pressAction } = detail;
+
+            switch (pressAction?.id) {
+              case 'add-country':
+                console.log(
+                  '🚀 ~ notifee.onBackgroundEvent ~ notification: add-country',
+                );
+                showModal(GlobalModalType.ADD_COUNTRY_FROM_NOTIFICATION, {
+                  closeModal: () => {
+                    hideModal();
+                  },
+                  data: {
+                    ...notification?.data,
+                  },
+                });
+                if (notification?.id) {
+                  await notifee.cancelNotification(notification?.id);
+                }
+                break;
+            }
+          }
+        });
+
         firebase.messaging().onMessage(response => {
           if (
             response.data?.actionKey === NotificationEvents.THREE_DS_APPROVE
@@ -107,38 +139,6 @@ export const InitializeAppProvider = ({
           }
         });
 
-        firebase
-          .messaging()
-          .setBackgroundMessageHandler(async remoteMessage => {
-            console.log('Background message handler:', remoteMessage);
-            await showNotification(
-              remoteMessage.notification,
-              remoteMessage.data,
-            );
-            return await Promise.resolve();
-          });
-
-        notifee.onBackgroundEvent(async ({ type, detail }) => {
-          console.log('🚀 ~ notifee.onBackgroundEvent ~ detail:', detail);
-          if (type === EventType.ACTION_PRESS) {
-            const { pressAction } = detail;
-
-            // Handle action based on the action ID
-            switch (pressAction?.id) {
-              case 'accept':
-                console.log('User accepted the action.');
-                // Perform your custom logic
-                break;
-              case 'decline':
-                console.log('User declined the action.');
-                // Perform your custom logic
-                break;
-              default:
-                console.log('Unhandled action:', pressAction?.id);
-            }
-          }
-        });
-
         setTimeout(() => {
           SplashScreen.hide();
         }, SPLASH_SCREEN_TIMEOUT);
@@ -148,7 +148,32 @@ export const InitializeAppProvider = ({
       }
     };
 
+    const unsubscribe = notifee.onForegroundEvent(({ type, detail }) => {
+      if (type === EventType.ACTION_PRESS) {
+        const { notification, pressAction } = detail;
+
+        switch (pressAction?.id) {
+          case 'add-country':
+            console.log(
+              '🚀 ~ notifee.onForegroundEvent ~ pressAction: add-country',
+            );
+            showModal(GlobalModalType.ADD_COUNTRY_FROM_NOTIFICATION, {
+              closeModal: () => {
+                hideModal();
+              },
+              data: {
+                ...notification?.data,
+              },
+            });
+
+            break;
+        }
+      }
+    });
+
     void initializeApp();
+
+    return () => unsubscribe();
   }, []);
 
   useEffect(() => {

@@ -10,25 +10,41 @@ import { name as appName } from './app.json';
 import { showNotification } from './src/hooks/usePushNotification';
 import notifee, { EventType } from '@notifee/react-native';
 
-// Add background event handler for notifee
-notifee.onBackgroundEvent(async ({ type, detail }) => {
-  if (type === EventType.ACTION_PRESS) {
-    const { pressAction } = detail;
 
-    switch (pressAction?.id) {
-      case 'add-country':
-        // Handle add-country action
-        console.log('Background: Add country action pressed');
-        // Add your logic here
-        break;
-      // Add other cases as needed
+notifee.onBackgroundEvent(async remoteMessage => {
+  console.log('🚀 ~ notifee.onBackgroundEventr:', remoteMessage);
+
+  const { type, detail } = remoteMessage;
+  console.log("🚀 ~ type:", type);
+  if (type === EventType.DELIVERED) {
+    const { notification } = detail;
+    console.log("🚀 ~ notification ~ data:", notification.data);
+
+    if (notification?.id) {
+      await notifee.cancelNotification(notification?.id);
     }
+
+    // switch (notification?.data?.action ) {
+    //   case 'add-country':
+    //     console.log(
+    //       '🚀 ~ notifee.onBackgroundEvent ~ notification: add-country',
+    //     );
+    //     // showModal(GlobalModalType.ADD_COUNTRY_FROM_NOTIFICATION, {
+    //     //   closeModal: () => {
+    //     //     hideModal();
+    //     //   },
+    //     //   data: {
+    //     //     ...notification?.data,
+    //     //   },
+    //     // });
+    //     
+    //     break;
+    // }
   }
 });
 
-// Existing firebase background message handler
 messaging().setBackgroundMessageHandler(async remoteMessage => {
-  console.log("🚀 ~ messaging ~ remoteMessage:", remoteMessage);
+  console.log("🚀 ~ setBackgroundMessageHandler ~ remoteMessage:", remoteMessage);
   await showNotification(remoteMessage.notification, remoteMessage.data);
   return Promise.resolve();
 });

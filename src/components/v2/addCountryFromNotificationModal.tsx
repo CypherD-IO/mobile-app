@@ -54,6 +54,7 @@ export default function AddCountryFromNotificationModal({
 
   const onPressAddCountry = async () => {
     if (data?.provider && data?.cardId && data?.merchantCountry) {
+      console.log('🚀 ~ onPressAddCountry ~ data:', data);
       setLoading(true);
       const {
         data: limits,
@@ -62,6 +63,8 @@ export default function AddCountryFromNotificationModal({
       } = await getWithAuth(
         `/v1/cards/${data?.provider}/card/${data?.cardId}/limits`,
       );
+      console.log('🚀 ~ onPressAddCountry ~ limitError:', limitError);
+
       if (!isLimitError) {
         const payload = {
           cusL: {
@@ -72,6 +75,7 @@ export default function AddCountryFromNotificationModal({
             },
           },
         };
+        console.log('🚀 ~ onPressAddCountry ~ payload:', payload.cusL.intl.cLs);
         const { error: _updateError, isError: isUpdateError } =
           await patchWithAuth(
             `/v1/cards/${data?.provider}/card/${data?.cardId}/limits`,
