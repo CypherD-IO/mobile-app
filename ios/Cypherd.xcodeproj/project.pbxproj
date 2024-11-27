@@ -415,7 +415,7 @@
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 			shellPath = /bin/zsh;
-			shellScript = "export SENTRY_PROPERTIES=sentry.properties\nexport EXTRA_PACKAGER_ARGS=\"--sourcemap-output $DERIVED_FILE_DIR/main.jsbundle.map\"\nset -e\n\nif [ \"$CI_XCODE_CLOUD\" = \"true\" ]; then\n    export NODE_BINARY=\"/Users/local/.nvm/versions/node/v18.17.1/bin/node\"\nelse\n    export NODE_BINARY=$(which node)\nfi\nexport USE_HERMES=false\n../node_modules/react-native/scripts/react-native-xcode.sh\n\n\n";
+			shellScript = "export SENTRY_PROPERTIES=sentry.properties\nexport EXTRA_PACKAGER_ARGS=\"--sourcemap-output $DERIVED_FILE_DIR/main.jsbundle.map\"\nset -e\n\nexport NODE_BINARY=\"/Users/local/.nvm/versions/node/v18.17.1/bin/node\"\nexport USE_HERMES=false\n../node_modules/react-native/scripts/react-native-xcode.sh\n\n\n";
 		};
 		1360CFA87600DFAE3524B39B /* [CP] Embed Pods Frameworks */ = {
 			isa = PBXShellScriptBuildPhase;
