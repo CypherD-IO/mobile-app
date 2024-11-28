@@ -65,7 +65,7 @@ import axios from 'axios';
 import { Mnemonic, sha256 } from 'ethers';
 import { cosmosConfig } from '../constants/cosmosConfig';
 import { Slip10RawIndex } from '@cosmjs-rn/crypto';
-import { InjectiveDirectEthSecp256k1Wallet } from '@injectivelabs/sdk-ts';
+import { InjectiveDirectEthSecp256k1Wallet } from '@injectivelabs/sdk-ts/dist/cjs/exports';
 import * as bip39 from 'bip39';
 import { derivePath } from 'ed25519-hd-key';
 import { Keypair } from '@solana/web3.js';
