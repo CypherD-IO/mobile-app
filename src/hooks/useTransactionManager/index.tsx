@@ -1,6 +1,6 @@
 import { OfflineDirectSigner } from '@cosmjs/proto-signing';
 import { Coin, MsgTransferEncodeObject } from '@cosmjs/stargate';
-import { InjectiveStargate } from '@injectivelabs/sdk-ts';
+import { InjectiveSigningStargateClient } from '@injectivelabs/sdk-ts/dist/cjs/exports';
 import * as Sentry from '@sentry/react-native';
 import { MsgTransfer } from 'cosmjs-types/ibc/applications/transfer/v1/tx';
 import { ceil, get, map, set } from 'lodash';
@@ -119,7 +119,7 @@ export default function useTransactionManager() {
     signer: OfflineDirectSigner,
   ) {
     if (chain.backendName === ChainBackendNames.INJECTIVE) {
-      return await InjectiveStargate.InjectiveSigningStargateClient.connectWithSigner(
+      return await InjectiveSigningStargateClient.connectWithSigner(
         rpc,
         signer,
       );
@@ -386,7 +386,7 @@ export default function useTransactionManager() {
           signer,
         })) as any;
 
-        const rpc = getCosmosRpc(backendName);
+        const rpc = getCosmosRpc(backendName as ChainBackendNames);
 
         const signingClient = await getCosmosSigningClient(
           fromChain,

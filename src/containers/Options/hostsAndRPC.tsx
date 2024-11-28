@@ -51,7 +51,6 @@ export default function HostsAndRPCScreen({ navigation }) {
   const [hosts, setHosts] = useState({
     archHost: getHost('ARCH_HOST'),
     portfolioHost: getHost('PORTFOLIO_HOST'),
-    owlracleHost: getHost('OWLRACLE_HOST'),
   });
 
   const [rpcEndpoints, setRPCEndpoints] = useState({
@@ -158,7 +157,6 @@ export default function HostsAndRPCScreen({ navigation }) {
     await clearRpcEndpoints();
     await clearHost('ARCH_HOST');
     await clearHost('PORTFOLIO_HOST');
-    await clearHost('OWLRACLE_HOST');
     setTimeout(() => {
       setLoading(false);
       RNExitApp.exitApp();
@@ -201,7 +199,6 @@ export default function HostsAndRPCScreen({ navigation }) {
     await setRpcEndpoints(JSON.stringify(tempRPCEndpoints));
     setHost('ARCH_HOST', hosts.archHost);
     setHost('PORTFOLIO_HOST', hosts.portfolioHost);
-    setHost('OWLRACLE_HOST', hosts.owlracleHost);
     setTimeout(() => {
       setLoading(false);
       RNExitApp.exitApp();
@@ -286,41 +283,6 @@ export default function HostsAndRPCScreen({ navigation }) {
           <CyDText className={'text-[16px] font-black'}>
             {t<string>('PORTFOLIO_ALL_CAPS')}
           </CyDText>
-          <CyDTextInput
-            className={clsx(
-              'mt-[10px] border-[1px] border-inputBorderColor rounded-[5px] p-[12px] text-[18px]  ',
-            )}
-            value={maskString(hosts.portfolioHost)}
-            editable={devMode}
-            autoCapitalize='none'
-            key='portfolio'
-            onChangeText={value => {
-              setHosts({ ...hosts, portfolioHost: value });
-            }}
-            autoCorrect={false}
-            placeholderTextColor={'#C5C5C5'}
-            placeholder=''
-          />
-        </CyDView>
-        <CyDView className={'mt-[25px]'}>
-          <CyDText className={'text-[16px] font-black'}>
-            {t<string>('OWLRACLE_ALL_CAPS')}
-          </CyDText>
-          <CyDTextInput
-            className={clsx(
-              'mt-[10px] border-[1px] border-inputBorderColor rounded-[5px] p-[12px] text-[18px]  ',
-            )}
-            value={maskString(hosts.owlracleHost)}
-            editable={devMode}
-            autoCapitalize='none'
-            key='owlracle'
-            onChangeText={value => {
-              setHosts({ ...hosts, owlracleHost: value });
-            }}
-            autoCorrect={false}
-            placeholderTextColor={'#C5C5C5'}
-            placeholder=''
-          />
         </CyDView>
         <CyDView
           className={'mt-[25px] flex flex-row items-center justify-between'}>
@@ -747,7 +709,7 @@ export default function HostsAndRPCScreen({ navigation }) {
               className={clsx(
                 'mt-[10px] border-[1px] border-inputBorderColor rounded-[5px] p-[12px] text-[18px]  ',
               )}
-              value={maskString(rpcEndpoints.moonriver)}
+              value={maskString(rpcEndpoints.coreum)}
               editable={devMode}
               autoCapitalize='none'
               key='coreum'
