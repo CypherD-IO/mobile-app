@@ -52,11 +52,14 @@ import {
   Transaction,
   TransactionMessage,
   VersionedTransaction,
+  ComputeBudgetProgram,
+  Keypair,
 } from '@solana/web3.js';
 import useSolanaSigner from '../useSolana';
 import {
   getOrCreateAssociatedTokenAccount,
   createTransferInstruction,
+  TOKEN_PROGRAM_ID,
 } from '@solana/spl-token';
 import { SigningCosmWasmClient } from '@cosmjs/cosmwasm-stargate';
 import { HdWalletContextDef } from '../../reducers/hdwallet_reducer';
@@ -1273,41 +1276,100 @@ export default function useTransactionManager() {
 
   const simulateSolanaTxn = async ({
     connection,
-    fromPublickey,
+    fromKeypair,
     toPublicKey,
     amountToSend,
+    isSPL = false,
+    mintAddress = '',
   }: {
     connection: Connection;
-    fromPublickey: PublicKey;
+    fromKeypair: Keypair;
     toPublicKey: PublicKey;
-    amountToSend: number;
+    amountToSend: bigint;
+    mintAddress?: string;
+    isSPL?: boolean;
   }) => {
-    const { blockhash } = await connection.getLatestBlockhash();
-    const transactionMessage = new TransactionMessage({
-      payerKey: fromPublickey,
-      instructions: [
-        SystemProgram.transfer({
-          fromPubkey: fromPublickey,
-          toPubkey: toPublicKey,
-          lamports: amountToSend,
-        }),
-      ],
-      recentBlockhash: blockhash,
-    }).compileToV0Message();
+    try {
+      const { blockhash } = await connection.getLatestBlockhash();
 
-    const transferTransaction = new VersionedTransaction(transactionMessage);
+      const instructions = [];
 
-    const { value: simulationResult } = await connection.simulateTransaction(
-      transferTransaction,
-      {
-        replaceRecentBlockhash: true,
-      },
-    );
-    if (simulationResult.err) {
-      throw new Error(String(simulationResult.err));
-    } else {
-      return simulationResult.unitsConsumed;
+      if (isSPL) {
+        // Get or create associated token accounts for sender and receiver
+        const mintPublicKey = new PublicKey(mintAddress);
+        const fromTokenAccount = await getOrCreateAssociatedTokenAccount(
+          connection,
+          fromKeypair,
+          mintPublicKey,
+          fromKeypair.publicKey,
+        );
+
+        const toTokenAccount = await getOrCreateAssociatedTokenAccount(
+          connection,
+          fromKeypair,
+          mintPublicKey,
+          toPublicKey,
+        );
+
+        // Add SPL transfer instruction
+        instructions.push(
+          createTransferInstruction(
+            fromTokenAccount.address,
+            toTokenAccount.address,
+            fromKeypair.publicKey,
+            amountToSend,
+          ),
+        );
+      } else {
+        // Regular SOL transfer
+        instructions.push(
+          SystemProgram.transfer({
+            fromPubkey: fromKeypair.publicKey,
+            toPubkey: toPublicKey,
+            lamports: amountToSend,
+          }),
+        );
+      }
+
+      const transactionMessage = new TransactionMessage({
+        payerKey: fromKeypair.publicKey,
+        instructions,
+        recentBlockhash: blockhash,
+      }).compileToV0Message();
+
+      const transferTransaction = new VersionedTransaction(transactionMessage);
+
+      const { value: simulationResult } = await connection.simulateTransaction(
+        transferTransaction,
+        {
+          replaceRecentBlockhash: true,
+          sigVerify: false,
+          commitment: 'confirmed',
+        },
+      );
+
+      // Check for simulation errors
+      if (simulationResult.err) {
+        throw new Error(
+          `Simulation failed: ${JSON.stringify(simulationResult.err)}`,
+        );
+      }
+      const baseUnits = simulationResult.unitsConsumed ?? 0;
+      const unitsWithBuffer = Math.ceil(baseUnits * 1.1);
+
+      return unitsWithBuffer;
+    } catch (e: unknown) {
+      throw new Error(`Simulation failed: ${JSON.stringify(e)}`);
     }
+  };
+
+  const calculatePriorityFee = async (connection: Connection) => {
+    const fees = await connection.getRecentPrioritizationFees();
+    if (fees.length === 0) {
+      return 0;
+    }
+    const totalFees = fees.reduce((sum, fee) => sum + fee.prioritizationFee, 0);
+    return Math.ceil((totalFees / fees.length) * 1.5);
   };
 
   const sendSOLTokens = async ({
@@ -1323,37 +1385,30 @@ export default function useTransactionManager() {
     if (fromKeypair) {
       const connection = new Connection(solanRpc, 'confirmed');
 
-      const lamportsToSend = parseFloat(amountToSend) * LAMPORTS_PER_SOL;
+      const lamportsToSend = ethers.parseUnits(amountToSend, 9);
 
-      const fees = await connection.getRecentPrioritizationFees();
+      const avgPriorityFee = await calculatePriorityFee(connection);
 
-      // 1 prioritizationFee = 0.000001 lamport, add 100000000 = 0.00001sol in case wanted
-      const totalFees = fees.reduce(
-        (sum, fee) => sum + fee.prioritizationFee,
-        0,
-      );
-      const avgPriorityFee = ceil(totalFees / fees.length);
-
-      // const simulation = await simulateSolanaTxn({
-      //   connection,
-      //   fromPublickey: fromKeypair.publicKey,
-      //   toPublicKey,
-      //   amountToSend: lamportsToSend,
-      // });
+      const simulation = await simulateSolanaTxn({
+        connection,
+        fromKeypair,
+        toPublicKey,
+        amountToSend: lamportsToSend,
+      });
 
       const transaction = new Transaction();
 
-      // transaction.add(
-      //   ComputeBudgetProgram.setComputeUnitLimit({
-      //     units: simulation ?? 0,
-      //   }),
-      // );
+      transaction.add(
+        ComputeBudgetProgram.setComputeUnitLimit({
+          units: (simulation ?? 0) + 1000,
+        }),
+      );
 
-      // transaction.add(
-      //   ComputeBudgetProgram.setComputeUnitPrice({
-      //     microLamports: avgPriorityFee,
-      //   }),
-      // );
+      transaction.add(
+        ComputeBudgetProgram.setComputeUnitPrice({
+          microLamports: avgPriorityFee,
+        }),
+      );
 
       transaction.add(
         SystemProgram.transfer({
@@ -1375,7 +1430,6 @@ export default function useTransactionManager() {
 
       return { hash: String(resp), isError: false };
     } else {
-      // throw new Error('Unable to create user wallet');
       return {
         isError: true,
         error: 'Unable to create user wallet',
@@ -1402,9 +1456,7 @@ export default function useTransactionManager() {
     if (fromKeypair) {
       const connection = new Connection(solanRpc, 'confirmed');
 
-      const lamportsToSend = ethers
-        .parseUnits(amountToSend, contractDecimals)
-        .toString();
+      const lamportsToSend = ethers.parseUnits(amountToSend, contractDecimals);
 
       const fromTokenAccount = await getOrCreateAssociatedTokenAccount(
         connection,
@@ -1420,39 +1472,43 @@ export default function useTransactionManager() {
         toPublicKey,
       );
 
-      const fees = await connection.getRecentPrioritizationFees();
+      const avgPriorityFee = await calculatePriorityFee(connection);
 
-      const totalFees =
-        fees.reduce((sum, fee) => sum + fee.prioritizationFee, 0) + 100000000; // 1 prioritizationFee = 0.000001 lamport, add 100000000 = 0.00001sol in case wanted
-      const avgPriorityFee = totalFees / fees.length;
-
-      // const simulation = await simulateSolanaTxn({
-      //   connection,
-      //   fromPublickey: fromKeypair.publicKey,
-      //   toPublicKey,
-      //   amountToSend: parseInt(lamportsToSend, 10),
-      // });
+      const simulation = await simulateSolanaTxn({
+        connection,
+        fromKeypair,
+        toPublicKey,
+        amountToSend: lamportsToSend,
+        isSPL: true,
+        mintAddress,
+      });
 
       const transaction = new Transaction();
 
-      // transaction.add(
-      //   ComputeBudgetProgram.setComputeUnitPrice({
-      //     microLamports: avgPriorityFee,
-      //   }),
-      // );
+      if (avgPriorityFee) {
+        transaction.add(
+          ComputeBudgetProgram.setComputeUnitPrice({
+            microLamports: avgPriorityFee,
+          }),
+        );
+      }
 
-      // transaction.add(
-      //   ComputeBudgetProgram.setComputeUnitLimit({
-      //     units: simulation ?? 0 + 10000,
-      //   }),
-      // );
+      if (simulation) {
+        transaction.add(
+          ComputeBudgetProgram.setComputeUnitLimit({
+            units: (simulation ?? 0) + 1000,
+          }),
+        );
+      }
 
       transaction.add(
         createTransferInstruction(
           fromTokenAccount.address,
           toTokenAccount.address,
           fromKeypair.publicKey,
-          parseInt(lamportsToSend, 10),
+          lamportsToSend,
+          [],
+          TOKEN_PROGRAM_ID,
         ),
       );
 
@@ -1465,6 +1521,7 @@ export default function useTransactionManager() {
           maxRetries: 15,
         },
       );
+
       return {
         isError: false,
         hash: resp,

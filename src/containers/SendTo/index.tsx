@@ -815,7 +815,7 @@ export default function SendTo(props: { navigation?: any; route?: any }) {
       showModal('state', {
         type: 'error',
         title: t('TRANSACTION_FAILED'),
-        description: response.error,
+        description: parseErrorMessage(response.error),
         onSuccess: hideModal,
         onFailure: hideModal,
       });
