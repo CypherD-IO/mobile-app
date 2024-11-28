@@ -1285,7 +1285,7 @@ export default function useTransactionManager() {
     connection: Connection;
     fromKeypair: Keypair;
     toPublicKey: PublicKey;
-    amountToSend: number;
+    amountToSend: bigint;
     mintAddress?: string;
     isSPL?: boolean;
   }) => {
@@ -1385,7 +1385,7 @@ export default function useTransactionManager() {
     if (fromKeypair) {
       const connection = new Connection(solanRpc, 'confirmed');
 
-      const lamportsToSend = parseFloat(amountToSend) * LAMPORTS_PER_SOL;
+      const lamportsToSend = ethers.parseUnits(amountToSend, 9);
 
       const avgPriorityFee = await calculatePriorityFee(connection);
 
@@ -1456,9 +1456,7 @@ export default function useTransactionManager() {
     if (fromKeypair) {
       const connection = new Connection(solanRpc, 'confirmed');
 
-      const lamportsToSend = ethers
-        .parseUnits(amountToSend, contractDecimals)
-        .toString();
+      const lamportsToSend = ethers.parseUnits(amountToSend, contractDecimals);
 
       const fromTokenAccount = await getOrCreateAssociatedTokenAccount(
         connection,
@@ -1480,7 +1478,7 @@ export default function useTransactionManager() {
         connection,
         fromKeypair,
         toPublicKey,
-        amountToSend: parseInt(lamportsToSend, 10),
+        amountToSend: lamportsToSend,
         isSPL: true,
         mintAddress,
       });
@@ -1508,7 +1506,7 @@ export default function useTransactionManager() {
           fromTokenAccount.address,
           toTokenAccount.address,
           fromKeypair.publicKey,
-          BigInt(lamportsToSend),
+          lamportsToSend,
           [],
           TOKEN_PROGRAM_ID,
         ),
