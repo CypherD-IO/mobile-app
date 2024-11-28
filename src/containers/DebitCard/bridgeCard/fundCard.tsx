@@ -853,12 +853,12 @@ export default function BridgeFundCardScreen({ route }: { route: any }) {
           backendName === CHAIN_ETH.backendName &&
           Number(usdAmount) < MINIMUM_TRANSFER_AMOUNT_ETH
         ) {
-          errorMessage = `${t<string>('MINIMUM_AMOUNT_ETH')} $${MINIMUM_TRANSFER_AMOUNT_ETH}}`;
+          errorMessage = `${t<string>('MINIMUM_AMOUNT_ETH')} $${MINIMUM_TRANSFER_AMOUNT_ETH}`;
         } else if (!usdAmount || Number(usdAmount) < minTokenValueLimit) {
           if (backendName === CHAIN_ETH.backendName) {
             errorMessage = t('MINIMUM_AMOUNT_ETH');
           } else {
-            errorMessage = `${t<string>('CARD_LOAD_MIN_AMOUNT')} $${String(minTokenValueLimit)}}`;
+            errorMessage = `${t<string>('CARD_LOAD_MIN_AMOUNT')} $${String(minTokenValueLimit)}`;
           }
         }
 
@@ -901,7 +901,7 @@ export default function BridgeFundCardScreen({ route }: { route: any }) {
           : Number(selectedToken?.price));
       setCryptoAmount(amount);
       setUsdAmount(
-        (isNaN(usdAmt)
+        (Number.isNaN(usdAmt)
           ? '0.00'
           : selectedToken?.isZeroFeeCardFunding
             ? usdAmt
@@ -919,7 +919,9 @@ export default function BridgeFundCardScreen({ route }: { route: any }) {
         (selectedToken?.isZeroFeeCardFunding
           ? 1
           : Number(selectedToken?.price));
-      setCryptoAmount((isNaN(cryptoAmt) ? '0.00' : cryptoAmt).toString());
+      setCryptoAmount(
+        (Number.isNaN(cryptoAmt) ? '0.00' : cryptoAmt).toString(),
+      );
       setUsdAmount(amount);
     }
   };
@@ -934,7 +936,7 @@ export default function BridgeFundCardScreen({ route }: { route: any }) {
           : Number(selectedToken?.price));
       setCryptoAmount(amt);
       setUsdAmount(
-        (isNaN(usdText)
+        (Number.isNaN(usdText)
           ? '0.00'
           : selectedToken?.isZeroFeeCardFunding
             ? usdText
@@ -948,7 +950,7 @@ export default function BridgeFundCardScreen({ route }: { route: any }) {
           ? 1
           : Number(selectedToken?.price));
       setCryptoAmount(
-        (isNaN(cryptoText)
+        (Number.isNaN(cryptoText)
           ? '0.00'
           : selectedToken?.isZeroFeeCardFunding
             ? cryptoText

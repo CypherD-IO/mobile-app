@@ -141,7 +141,7 @@ export default function FirstLoadCard() {
           : Number(selectedToken?.price));
       setCryptoAmount(amt);
       setUsdAmount(
-        (isNaN(usdText)
+        (Number.isNaN(usdText)
           ? '0.00'
           : selectedToken?.isZeroFeeCardFunding
             ? usdText
@@ -155,7 +155,7 @@ export default function FirstLoadCard() {
           ? 1
           : Number(selectedToken?.price));
       setCryptoAmount(
-        (isNaN(cryptoText)
+        (Number.isNaN(cryptoText)
           ? '0.00'
           : selectedToken?.isZeroFeeCardFunding
             ? cryptoText
@@ -219,7 +219,7 @@ export default function FirstLoadCard() {
   const getRoundedValue = (value: number) => {
     if (value <= 10) return 10;
     if (value >= 1000) {
-      return Math.floor(value / 100) * 100;
+      return Math.floor(value / 1000) * 1000;
     } else if (value >= 100) {
       return Math.floor(value / 100) * 100;
     } else {
@@ -266,7 +266,7 @@ export default function FirstLoadCard() {
           : Number(selectedToken?.price));
       setCryptoAmount(amount);
       setUsdAmount(
-        (isNaN(usdAmt)
+        (Number.isNaN(usdAmt)
           ? '0.00'
           : selectedToken?.isZeroFeeCardFunding
             ? usdAmt
@@ -284,7 +284,9 @@ export default function FirstLoadCard() {
         (selectedToken?.isZeroFeeCardFunding
           ? 1
           : Number(selectedToken?.price));
-      setCryptoAmount((isNaN(cryptoAmt) ? '0.00' : cryptoAmt).toString());
+      setCryptoAmount(
+        (Number.isNaN(cryptoAmt) ? '0.00' : cryptoAmt).toString(),
+      );
       setUsdAmount(amount);
     }
   };
