@@ -145,6 +145,7 @@ export const screenTitle = {
   KYC_VERIFICATION: 'kycVerification',
   TELEGRAM_PIN_SETUP: 'telegramPinSetup',
   MANAGE_SUBSCRIPTION: 'manageSubscription',
+  FIRST_LOAD_CARD: 'firstLoadCard',
 };
 
 export const fontsName = {

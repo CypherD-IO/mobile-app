@@ -83,7 +83,13 @@ export default function usePortfolio() {
       get(ChainNameMapping, chainName, ''),
     ).totalHoldings;
     const nativeTokenSymbol = get(NativeTokenMapping, chainName);
-    const nativeToken = find(chainHoldings, { symbol: nativeTokenSymbol });
+
+    const nativeToken = find(
+      chainHoldings,
+      holding =>
+        holding.symbol.toLowerCase() ===
+        (nativeTokenSymbol ?? '').toLowerCase(),
+    );
     return nativeToken;
   }
 

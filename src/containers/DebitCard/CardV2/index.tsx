@@ -166,11 +166,16 @@ export default function CypherCardScreen() {
     }
   };
   const onPressFundCard = () => {
-    navigation.navigate(screenTitle.BRIDGE_FUND_CARD_SCREEN, {
-      navigation,
-      currentCardProvider: cardProvider,
-      currentCardIndex,
-    });
+    navigation.navigate(
+      cardId === HIDDEN_CARD_ID
+        ? screenTitle.FIRST_LOAD_CARD
+        : screenTitle.BRIDGE_FUND_CARD_SCREEN,
+      {
+        navigation,
+        currentCardProvider: cardProvider,
+        currentCardIndex,
+      },
+    );
   };
   function onModalHide() {
     hideModal();
