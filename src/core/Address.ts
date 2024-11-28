@@ -21,8 +21,6 @@ import {
 import { IIBCData } from '../constants/cosmosConfig';
 import { AddressDerivationPath, Bech32Prefixes } from '../constants/data';
 import { ConnectionTypes } from '../constants/enum';
-import { onMessage, registerForRemoteMessages } from '../core/push';
-import { isIOS } from '../misc/checkers';
 import { setConnectionType } from './asyncStorage';
 import { addHexPrefix } from './util';
 

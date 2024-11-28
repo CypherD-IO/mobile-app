@@ -118,6 +118,7 @@ import GlobalOptions from '../containers/DebitCard/CardV2/globalOptions';
 import SetTelegramPin from '../containers/DebitCard/bridgeCard/setTelegramPin';
 import EditLimits from '../containers/DebitCard/bridgeCard/editlimits';
 import ManageSubscription from '../containers/DebitCard/CardV2/manageSubscription';
+import FirstLoadCard from '../containers/DebitCard/CardV2/firstLoadCard';
 
 const PortfolioStack = createNativeStackNavigator();
 const BrowserStack = createNativeStackNavigator();
@@ -1281,6 +1282,13 @@ export function DebitCardStackScreen({ route }) {
       <FundCardStack.Screen
         name={screenTitle.MANAGE_SUBSCRIPTION}
         component={ManageSubscription}
+        options={({ navigation }): NativeStackNavigationOptions => ({
+          headerShown: false,
+        })}
+      />
+      <FundCardStack.Screen
+        name={screenTitle.FIRST_LOAD_CARD}
+        component={FirstLoadCard}
         options={({ navigation }): NativeStackNavigationOptions => ({
           headerShown: false,
         })}
