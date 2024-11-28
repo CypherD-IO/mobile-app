@@ -1,6 +1,6 @@
 import React, { useCallback, useContext, useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import { Keyboard, useWindowDimensions, StyleSheet } from 'react-native';
+import { Keyboard, useWindowDimensions } from 'react-native';
 import AppImages from '../../../../assets/images/appImages';
 import Button from '../../../components/v2/button';
 import {
@@ -35,7 +35,6 @@ import { CHOOSE_TOKEN_MODAL_TIMEOUT } from '../../../constants/timeOuts';
 import { screenTitle } from '../../../constants';
 import { useIsFocused } from '@react-navigation/native';
 import {
-  CYPHER_PLAN_ID_NAME_MAPPING,
   CardFeePercentage,
   GAS_BUFFER_FACTOR_FOR_LOAD_MAX,
   MINIMUM_TRANSFER_AMOUNT_ETH,
@@ -49,7 +48,6 @@ import { divide, floor, get, random } from 'lodash';
 import {
   ButtonType,
   CardProviders,
-  CypherPlanId,
   GlobalContextType,
 } from '../../../constants/enum';
 import clsx from 'clsx';
@@ -61,7 +59,6 @@ import CyDTokenValue from '../../../components/v2/tokenValue';
 import Loading from '../../../components/v2/loading';
 import usePortfolio from '../../../hooks/usePortfolio';
 import CyDModalLayout from '../../../components/v2/modal';
-import SelectPlanModal from '../../../components/selectPlanModal';
 import useCardUtilities from '../../../hooks/useCardUtilities';
 
 export default function BridgeFundCardScreen({ route }: { route: any }) {
@@ -76,27 +73,11 @@ export default function BridgeFundCardScreen({ route }: { route: any }) {
   } = route.params;
   const hdWallet = useContext<any>(HdWalletContext);
   const globalContext = useContext(GlobalContext) as GlobalContextDef;
-  const globalDispatch = globalContext.globalDispatch;
   const ethereum = hdWallet.state.wallet.ethereum;
   const wallet = hdWallet.state.wallet;
   const cardProfile = globalContext.globalState.cardProfile;
-  const planData = globalContext.globalState.planInfo;
-  let planCost = get(
-    planData,
-    [
-      'default',
-      cardProfile?.planInfo?.optedPlanId ?? CypherPlanId.BASIC_PLAN,
-      'cost',
-    ],
-    0,
-  );
   const cards = get(cardProfile, currentCardProvider)?.cards;
   const cardId: string = get(cards, currentCardIndex, { cardId: '' })?.cardId;
-  const shouldUpgradePlan =
-    get(cardProfile, ['planInfo', 'planId']) !==
-    get(cardProfile, ['planInfo', 'optedPlanId']);
-  planCost = shouldUpgradePlan ? planCost : 0;
-  planCost = currentCardProvider === CardProviders.PAYCADDY ? 0 : planCost;
 
   const solana = hdWallet.state.wallet.solana;
 
@@ -108,22 +89,19 @@ export default function BridgeFundCardScreen({ route }: { route: any }) {
   const [cryptoAmount, setCryptoAmount] = useState('');
   const [loading, setLoading] = useState<boolean>(false);
   const [isMaxLoading, setIsMaxLoading] = useState<boolean>(false);
-  const minTokenValueLimit = Math.max(10, Number(planCost));
-  const minTokenValueEth = Math.max(50, Number(planCost));
+  const minTokenValueLimit = 10;
+  const minTokenValueEth = 50;
   const [selectedToken, setSelectedToken] = useState<Holding>();
   const [nativeTokenBalance, setNativeTokenBalance] = useState<number>(0);
   const { getNativeToken } = usePortfolio();
   const { t } = useTranslation();
   const { showModal, hideModal } = useGlobalModalContext();
-  const { postWithAuth, patchWithAuth } = useAxios();
+  const { postWithAuth } = useAxios();
   const isFocused = useIsFocused();
   const { estimateGasForEvm, estimateGasForSolana } = useGasService();
   const [suggestedAmounts, setSuggestedAmounts] = useState<
     Record<string, string>
   >({ low: '', med: '', high: '' });
-  const [planChangeModalVisible, setPlanChangeModalVisible] = useState(false);
-  const [planChangePageVisible, setPlanChangePageVisible] = useState(false);
-  const { getWalletProfile } = useCardUtilities();
 
   const { height } = useWindowDimensions();
   const isSmallScreenMobile = height <= 750;
@@ -185,11 +163,9 @@ export default function BridgeFundCardScreen({ route }: { route: any }) {
             hasSufficientBalanceAndGasFee: false,
             cardProvider: currentCardProvider,
             cardId,
-            planCost,
             tokenSendParams: {
               chain: chainDetails.backendName,
               amountInCrypto: String(actualTokensRequired),
-              amountInFiat: String(quote.amount - Number(planCost)),
               symbol: selectedTokenSymbol,
               toAddress: targetWalletAddress,
               gasFeeInCrypto: '0',
@@ -877,12 +853,12 @@ export default function BridgeFundCardScreen({ route }: { route: any }) {
           backendName === CHAIN_ETH.backendName &&
           Number(usdAmount) < MINIMUM_TRANSFER_AMOUNT_ETH
         ) {
-          errorMessage = `${t<string>('MINIMUM_AMOUNT_ETH')} $${MINIMUM_TRANSFER_AMOUNT_ETH} ${planCost > 0 ? '(including plan cost)' : ''}`;
+          errorMessage = `${t<string>('MINIMUM_AMOUNT_ETH')} $${MINIMUM_TRANSFER_AMOUNT_ETH}}`;
         } else if (!usdAmount || Number(usdAmount) < minTokenValueLimit) {
           if (backendName === CHAIN_ETH.backendName) {
             errorMessage = t('MINIMUM_AMOUNT_ETH');
           } else {
-            errorMessage = `${t<string>('CARD_LOAD_MIN_AMOUNT')} $${String(minTokenValueLimit)} ${planCost > 0 ? '(including plan cost)' : ''}`;
+            errorMessage = `${t<string>('CARD_LOAD_MIN_AMOUNT')} $${String(minTokenValueLimit)}}`;
           }
         }
 
@@ -983,38 +959,6 @@ export default function BridgeFundCardScreen({ route }: { route: any }) {
     }
   };
 
-  const onOptedPlanChange = async (optedPlan: CypherPlanId) => {
-    const { isError, error } = await patchWithAuth(`/v1/cards/rc/plan`, {
-      optedPlanId: optedPlan,
-    });
-    if (!isError) {
-      const resp = await getWalletProfile(globalContext.globalState.token);
-      globalDispatch({
-        type: GlobalContextType.CARD_PROFILE,
-        cardProfile: resp,
-      });
-      setPlanChangeModalVisible(false);
-      setTimeout(() => {
-        showModal('state', {
-          type: 'success',
-          title: 'Plan changed successfully',
-          onSuccess: hideModal,
-          onFailure: hideModal,
-        });
-      }, 500);
-    } else {
-      setPlanChangeModalVisible(false);
-      setTimeout(() => {
-        showModal('state', {
-          type: 'error',
-          title: error.message,
-          onSuccess: hideModal,
-          onFailure: hideModal,
-        });
-      }, 500);
-    }
-  };
-
   return (
     <CyDView
       className={clsx('bg-n20 flex flex-1 flex-col justify-between h-full', {
@@ -1036,79 +980,6 @@ export default function BridgeFundCardScreen({ route }: { route: any }) {
         }}
         noTokensAvailableMessage={t<string>('CARD_INSUFFICIENT_FUNDS')}
         renderPage={'fundCardPage'}
-      />
-
-      <CyDModalLayout
-        isModalVisible={planChangeModalVisible}
-        setModalVisible={setPlanChangeModalVisible}
-        style={styles.modalLayout}>
-        <CyDView className='bg-n20 rounded-t-[16px] px-[16px] pt-[16px] pb-[20px]'>
-          <CyDView className='flex-row justify-between items-center'>
-            <CyDFastImage
-              source={AppImages.CYPHER_WARNING_RED}
-              className='h-[32px] w-[32px]'
-              resizeMode='contain'
-            />
-            <CyDTouchView onPress={() => setPlanChangeModalVisible(false)}>
-              <CyDFastImage
-                source={AppImages.CLOSE_CIRCLE}
-                className='h-[24px] w-[24px]'
-                resizeMode='contain'
-              />
-            </CyDTouchView>
-          </CyDView>
-
-          <CyDText className='mt-[4px] text-[20px] font-bold'>
-            Change Plan
-          </CyDText>
-          <CyDText className='mt-[16px] text-[14px] font-medium'>
-            {CypherPlanId.BASIC_PLAN === cardProfile?.planInfo?.optedPlanId
-              ? t('UPGRADE_PLAN_CONSENT')
-              : t('DOWNGRADE_PLAN_CONSENT')}
-            <CyDText
-              onPress={() => {
-                navigation.navigate(screenTitle.LEGAL_SCREEN);
-              }}
-              className='text-[12px] font-bold underline text-center'>
-              {'terms and conditions.'}
-            </CyDText>
-          </CyDText>
-
-          <Button
-            onPress={() => {
-              setPlanChangeModalVisible(false);
-              setTimeout(() => {
-                setPlanChangePageVisible(true);
-              }, 500);
-            }}
-            title='Compare plans'
-            type={ButtonType.GREY}
-            style='p-[3%] mt-[22px]'
-          />
-          <Button
-            onPress={() => {
-              const tempOptedPlan =
-                CypherPlanId.BASIC_PLAN === cardProfile?.planInfo?.optedPlanId
-                  ? CypherPlanId.PRO_PLAN
-                  : CypherPlanId.BASIC_PLAN;
-              void onOptedPlanChange(tempOptedPlan);
-            }}
-            title={
-              CypherPlanId.BASIC_PLAN === cardProfile?.planInfo?.optedPlanId
-                ? 'Switch to Pro'
-                : 'Switch to Basic'
-            }
-            type={ButtonType.PRIMARY}
-            style='p-[3%] mt-[12px] mb-[20px]'
-          />
-        </CyDView>
-      </CyDModalLayout>
-
-      <SelectPlanModal
-        isModalVisible={planChangePageVisible}
-        setIsModalVisible={setPlanChangePageVisible}
-        openComparePlans={true}
-        deductAmountNow={false}
       />
 
       <CyDView>
@@ -1292,33 +1163,6 @@ export default function BridgeFundCardScreen({ route }: { route: any }) {
       </CyDView>
       <CyDView>
         <CyDView className=' pt-[16px] bg-white px-[16px] pb-[24px] rounded-t-[16px]'>
-          {cardId === 'hidden' && (
-            <CyDView className='flex flex-row justify-between items-center mb-[16px]'>
-              <CyDTouchView
-                className='flex flex-row items-center '
-                onPress={() => {
-                  setPlanChangeModalVisible(true);
-                }}>
-                <CyDText className='font-bold text-[14px]'>
-                  {get(
-                    CYPHER_PLAN_ID_NAME_MAPPING,
-                    cardProfile?.planInfo?.optedPlanId ??
-                      CypherPlanId.BASIC_PLAN,
-                  )}
-                </CyDText>
-
-                <CyDImage
-                  source={AppImages.EDIT}
-                  className='w-[20px] h-[20px]'
-                />
-              </CyDTouchView>
-              <CyDView>
-                <CyDText className='font-bold text-[14px]'>
-                  {`$${planCost}`}
-                </CyDText>
-              </CyDView>
-            </CyDView>
-          )}
           <CyDView className='flex flex-row justify-between items-center'>
             <Button
               onPress={() => {
@@ -1348,10 +1192,3 @@ export default function BridgeFundCardScreen({ route }: { route: any }) {
     </CyDView>
   );
 }
-
-const styles = StyleSheet.create({
-  modalLayout: {
-    margin: 0,
-    justifyContent: 'flex-end',
-  },
-});
