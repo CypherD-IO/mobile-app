@@ -166,22 +166,26 @@ export default function ChooseTokenModal(props: TokenModal) {
       <CyDView
         className={'bg-white pt-[10px] mt-[50px] w-[100%] rounded-t-[20px]'}
         style={{ height: height - 50 }}>
-        <CyDTouchView
-          className={'flex flex-row justify-end z-10'}
-          onPress={() => {
-            Keyboard.dismiss();
-            clearSearch();
-            onCancel();
-          }}>
-          <CyDImage
-            source={AppImages.CLOSE}
-            className={'w-[16px] h-[16px] top-[20px] right-[20px] '}
-          />
-        </CyDTouchView>
-        <CyDView>
-          <CyDText className='text-center  text-[22px] font-extrabold  '>
-            {t<string>('CHOOSE_TOKEN')}
-          </CyDText>
+        <CyDView className='flex-row justify-between items-center mt-[20px]'>
+          <CyDView />
+
+          <CyDView>
+            <CyDText className='text-center  text-[22px] font-extrabold  '>
+              {t<string>('CHOOSE_TOKEN')}
+            </CyDText>
+          </CyDView>
+          <CyDTouchView
+            className={'z-10'}
+            onPress={() => {
+              Keyboard.dismiss();
+              clearSearch();
+              onCancel();
+            }}>
+            <CyDImage
+              source={AppImages.CLOSE_CIRCLE}
+              className={'w-[32px] h-[32px] right-[20px] '}
+            />
+          </CyDTouchView>
         </CyDView>
         <CyDView className={'mt-[20px] mb-[100px]'}>
           <CyDView
@@ -232,7 +236,6 @@ export default function ChooseTokenModal(props: TokenModal) {
                 TokenItem({
                   item: item.item,
                   type,
-                  renderPage,
                   isTokenDisabled,
                   onSelectingToken,
                 })
@@ -268,13 +271,11 @@ const styles = StyleSheet.create({
 const TokenItem = ({
   item,
   type,
-  renderPage,
   isTokenDisabled,
   onSelectingToken,
 }: {
   item: Holding | SwapToken;
   type: TokenModalType;
-  renderPage: string;
   isTokenDisabled: (arg1: number, arg2: boolean, arg3: boolean) => boolean;
   onSelectingToken: (arg: Holding | SwapToken) => void;
 }) => {
@@ -296,10 +297,9 @@ const TokenItem = ({
       symbol,
       isFundable,
       isSwapable,
-      isZeroFeeCardFunding,
       contractAddress,
     } = item as Holding;
-    const { logo_url, backendName } = chainDetails;
+    const { logo_url: chainLogoUrl } = chainDetails;
     return (
       <CyDTouchView
         disabled={isTokenDisabled(totalValue, isFundable, isSwapable)}
@@ -323,7 +323,7 @@ const TokenItem = ({
                   'h-[20px] w-[20px] rounded-[50px] border-[1px] border-white bg-white'
                 }
                 source={
-                  chainDetails.logo_url ??
+                  chainLogoUrl ??
                   'https://raw.githubusercontent.com/cosmostation/cosmostation_token_resource/master/assets/images/common/unknown.png'
                 }
                 resizeMode={FastImage.resizeMode.contain}

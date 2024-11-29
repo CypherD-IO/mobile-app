@@ -20,7 +20,6 @@ import { formatJsonRpcError, formatJsonRpcResult } from '@json-rpc-tools/utils';
 import { CyDScrollView, CyDView } from '../../../styles/tailwindStyles';
 import { t } from 'i18next';
 import Web3 from 'web3';
-import Button from '../button';
 import { EIP155_SIGNING_METHODS } from '../../../constants/EIP155Data';
 import { useGlobalModalContext } from '../GlobalModal';
 import useAxios from '../../../core/HttpRequest';
@@ -46,6 +45,7 @@ import {
   RenderTypedTransactionSignModal,
 } from './SigningModals/TxnModals';
 import { getGasPriceFor } from '../../../containers/Browser/gasHelper';
+import Button from '../button';
 
 const BASE_GAS_LIMIT = 21000;
 const CONTRACT_MULTIPLIER = 2;
@@ -497,14 +497,9 @@ export default function SigningModal({
                   />
                 ))}
             </CyDScrollView>
-            <CyDView className={'w-full px-[25px]'}>
+            <CyDView className={'w-full px-[25px] mt-[12px] mb-[24px]'}>
               <Button
                 loading={acceptingRequest}
-                style={
-                  acceptingRequest
-                    ? 'mb-[10px] py-[7px]'
-                    : 'mb-[10px] py-[15px]'
-                }
                 title={renderAcceptTitle(method)}
                 onPress={() => {
                   void handleAccept();
@@ -513,11 +508,7 @@ export default function SigningModal({
               />
               <Button
                 loading={rejectingRequest}
-                style={
-                  rejectingRequest
-                    ? 'mb-[10px] py-[7px]'
-                    : 'mb-[10px] py-[15px]'
-                }
+                style='p-[3%] mt-[12px]'
                 type={ButtonType.TERNARY}
                 title='Reject'
                 onPress={() => {

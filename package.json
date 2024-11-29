@@ -26,7 +26,7 @@
     "@cypherd-io/animated-charts": "^2.1.5",
     "@cypherd-io/osmojs": "^0.10.19",
     "@ensdomains/ensjs": "^4.0.0",
-    "@injectivelabs/sdk-ts": "^1.14.7",
+    "@injectivelabs/sdk-ts": "^1.14.19",
     "@intercom/intercom-react-native": "^6.8.1",
     "@json-rpc-tools/utils": "^1.7.6",
     "@keplr-wallet/crypto": "^0.10.24",
@@ -136,7 +136,7 @@
     "react-native-modal-datetime-picker": "^13.1.2",
     "react-native-os": "^1.2.6",
     "react-native-pager-view": "7.0.0-rc.0",
-    "react-native-permissions": "^5.2.0",
+    "react-native-permissions": "3.6.0",
     "react-native-popup-dialog": "^0.18.3",
     "react-native-progress": "^5.0.1",
     "react-native-push-notification": "^8.1.1",
@@ -151,7 +151,7 @@
     "react-native-screens": "^3.34.0",
     "react-native-share": "^7.9.1",
     "react-native-size-matters": "^0.4.0",
-    "react-native-svg": "13.4.0",
+    "react-native-svg": "15.3.0",
     "react-native-svg-charts": "^5.4.0",
     "react-native-tab-view": "^3.3.0",
     "react-native-toast-message": "^2.1.1",
@@ -219,6 +219,9 @@
     "tailwindcss": "3.1.8",
     "typescript": "^5.0.4"
   },
+  "reactNativePermissionsIOS": [
+    "Camera"
+  ],
   "engines": {
     "node": ">=18"
   },
@@ -276,6 +279,6 @@
   },
   "overrides": {
     "secp256k1": "5.0.1",
-    "react-native-svg": "13.4.0"
+    "react-native-svg": "15.3.0"
   }
 }
