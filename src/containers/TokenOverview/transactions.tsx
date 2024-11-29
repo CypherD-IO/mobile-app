@@ -1,5 +1,3 @@
-/* eslint-disable react-native/no-raw-text */
-/* eslint-disable @typescript-eslint/restrict-template-expressions */
 import React, { useContext, useEffect, useState } from 'react';
 import { t } from 'i18next';
 import WebView from 'react-native-webview';
@@ -44,7 +42,7 @@ export function TokenTransactions({
   const [loading, setLoading] = useState<boolean>(false);
   const ARCH_HOST: string = hostWorker.getHost('ARCH_HOST');
   const hdWallet = useContext<any>(HdWalletContext);
-  const { ethereum } = hdWallet.state.wallet;
+  const { ethereum, solana } = hdWallet.state.wallet;
   const [transactionList, setTransactionList] = useState<any[]>([]);
   const [lastPage, setLastPage] = useState<boolean>(false);
   const [noTransaction, setNoTransaction] = useState<boolean>(false);
@@ -72,7 +70,7 @@ export function TokenTransactions({
       .post(
         getTransactionUrl,
         {
-          address: hdWallet.state.wallet.ethereum.address,
+          address: ethereum.address,
           chain: tokenData.chainDetails.backendName,
           tokenAddress: tokenData.contractAddress,
           pageNumber: inputPageNumber,
@@ -153,6 +151,9 @@ export function TokenTransactions({
         break;
       case ChainBackendNames.SHARDEUM_SPHINX:
         uri = `https://explorer-sphinx.shardeum.org/account/${ethereum.address}`;
+        break;
+      case ChainBackendNames.SOLANA:
+        uri = `https://solscan.io/account/${solana.address}`;
         break;
     }
     return (
@@ -295,10 +296,11 @@ export function TokenTransactions({
         {isCosmosChain(tokenData.chainDetails.backendName) ||
         (tokenData.chainDetails.backendName === ChainBackendNames.OPTIMISM &&
           tokenData.name.includes('IBC')) ||
-        tokenData.chainDetails.backendName === ChainBackendNames.SHARDEUM ? (
+        tokenData.chainDetails.backendName === ChainBackendNames.SHARDEUM ||
+        tokenData.chainDetails.backendName === ChainBackendNames.SOLANA ? (
           <BrowserView chain={tokenData.chainDetails.backendName} />
         ) : loading ? (
-          <Loading></Loading>
+          <Loading />
         ) : !noTransaction ? (
           <CyDView
             className={'mt-[10px] mb-[60px]'}
