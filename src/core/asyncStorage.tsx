@@ -200,40 +200,6 @@ export const getArchHost = async () => {
   }
 };
 
-export const setPortfolioHost = async (PORTFOLIO_HOST: string) => {
-  try {
-    await AsyncStorage.setItem('PORTFOLIO_HOST', PORTFOLIO_HOST);
-  } catch (error) {
-    Sentry.captureException(error);
-  }
-};
-
-export const getPortfolioHost = async () => {
-  try {
-    const portfolioHost = await AsyncStorage.getItem('PORTFOLIO_HOST');
-    return portfolioHost;
-  } catch (error) {
-    Sentry.captureException(error);
-  }
-};
-
-export const setOwlracleHost = async (OWLRACLE_HOST: string) => {
-  try {
-    await AsyncStorage.setItem('OWLRACLE_HOST', OWLRACLE_HOST);
-  } catch (error) {
-    Sentry.captureException(error);
-  }
-};
-
-export const getOwlracleHost = async () => {
-  try {
-    const owlracleHost = await AsyncStorage.getItem('OWLRACLE_HOST');
-    return owlracleHost;
-  } catch (error) {
-    Sentry.captureException(error);
-  }
-};
-
 export const getAdvancedSettings = async (): Promise<IAdvancedSettingsData> => {
   let enabled;
   try {
