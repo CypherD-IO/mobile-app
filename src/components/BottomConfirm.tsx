@@ -245,7 +245,6 @@ export default function BottomConfirm(props: {
               onPress={() => {
                 onCancelPress();
               }}
-              style='h-[55px] px-[45px]'
               type={ButtonType.SECONDARY}
             />
 
@@ -254,16 +253,11 @@ export default function BottomConfirm(props: {
               onPress={() => {
                 onPayPress();
               }}
-              style='h-[55px] px-[55px]'
               isPrivateKeyDependent={true}
             />
           </CyDView>
 
-          <DynamicView
-            dynamic
-            bGC={Colors.switchColor}
-            mT={10}
-            bR={10}></DynamicView>
+          <DynamicView dynamic bGC={Colors.switchColor} mT={10} bR={10} />
         </DynamicView>
       </DynamicView>
     </Modal>
