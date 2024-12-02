@@ -45,6 +45,7 @@ export const WalletConnectV2Provider: React.FC<any> = ({ children }) => {
     //   const { data } = resp;
     //   projectId = data.projectId;
     // }
+    console.log('onInitialize wallet connect : ');
     try {
       if (projectId) {
         await createWeb3Wallet(projectId);
@@ -72,6 +73,7 @@ export const WalletConnectV2Provider: React.FC<any> = ({ children }) => {
   const initiateWalletConnection = async () => {
     if (initialUrl) {
       let uri = initialUrl?.url ?? initialUrl;
+      console.log('((((((((( initiateWalletConnection : ', uri, '))))))))');
       if (uri?.includes('cypherwallet://')) {
         uri = uri?.replace('cypherwallet://', '');
       }

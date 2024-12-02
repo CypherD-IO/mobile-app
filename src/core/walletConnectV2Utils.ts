@@ -8,10 +8,12 @@ export let web3wallet: IWeb3Wallet;
 export let core: ICore;
 
 export async function createWeb3Wallet(projectId: string) {
+  console.log('createWeb3Wallet : ', projectId);
   try {
     core = new Core({
       // logger: 'debug',
       projectId,
+      relayUrl: 'wss://relay.walletconnect.com', // Note the .com instead of .org
       // relayUrl: relayerRegionURL ?? process.env.NEXT_PUBLIC_RELAY_URL
     });
 

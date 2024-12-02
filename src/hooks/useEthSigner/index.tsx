@@ -4,15 +4,30 @@ import {
   getChainId,
   switchChain,
   waitForTransactionReceipt,
+  estimateGas,
+  getGasPrice,
+  getWalletClient,
+  getBlockNumber,
+  getBlock,
+  getPublicClient,
+  watchPendingTransactions,
+  getTransaction,
+  watchBlocks,
 } from '@wagmi/core';
-import { useWalletInfo } from '@web3modal/wagmi-react-native';
+import { useWalletInfo } from '@reown/appkit-wagmi-react-native';
 import { get } from 'lodash';
 import { useContext } from 'react';
 import { Linking, Platform } from 'react-native';
 import Toast from 'react-native-toast-message';
-import { useSendTransaction, useSwitchChain, useWriteContract } from 'wagmi';
+import {
+  useSendTransaction,
+  useSwitchChain,
+  useWriteContract,
+  useWalletClient,
+  useEstimateGas,
+} from 'wagmi';
+import { wagmiConfig, walletClient } from '../../components/wagmiConfigBuilder';
 import { useGlobalModalContext } from '../../components/v2/GlobalModal';
-import { wagmiConfig } from '../../components/wagmiConfigBuilder';
 import { ConnectionTypes } from '../../constants/enum';
 import { walletConnectChainData } from '../../constants/server';
 import { getConnectionType } from '../../core/asyncStorage';
@@ -28,15 +43,20 @@ import {
   EthTransaction,
   RawTransaction,
 } from '../../models/ethSigner.interface';
+import { TransactionResponse } from 'ethers';
+import { Hash } from 'viem';
+import { ChainIdToBackendNameMapping } from '../../constants/data';
+import useAxios from '../../core/HttpRequest';
 
 export default function useEthSigner() {
   const hdWalletContext = useContext<any>(HdWalletContext);
   const { switchChainAsync } = useSwitchChain();
-  const { sendTransactionAsync } = useSendTransaction();
+  const { sendTransactionAsync, sendTransaction } = useSendTransaction();
   const { writeContractAsync } = useWriteContract();
   const { walletInfo } = useWalletInfo();
   const { showModal, hideModal } = useGlobalModalContext();
   const navigation = useNavigation();
+  const { getWithAuth } = useAxios();
 
   const getTransactionReceipt = async (
     hash: `0x${string}`,
@@ -64,6 +84,49 @@ export default function useEthSigner() {
     );
   };
 
+  const findTransaction = (
+    fromAddress: string, 
+    toAddress: string, 
+    value: bigint,
+    chainId: number,
+    startBlockNumber: bigint,
+    contractAddress?: string
+  ): Promise<Hash | null> => {
+    return new Promise((resolve, reject) => {
+        console.log('Starting transaction search with params:', {
+            fromAddress,
+            toAddress,
+            value: value.toString()
+        });
+
+        // Make API call to get transactions
+        const getTransactions = async () => {
+            try {
+                console.log('url : ', `/v1/txn/transactions/${fromAddress}?isUnmarshalQuery=true&blockchain=${get(ChainIdToBackendNameMapping, [String(chainId)])}&toAddress=${toAddress}&fromBlock=${startBlockNumber}${contractAddress ? `&contractAddress=${contractAddress}` : ''}`);
+                const response = await getWithAuth(`/v1/txn/transactions/${fromAddress}?isUnmarshalQuery=true&blockchain=${get(ChainIdToBackendNameMapping, [String(chainId)])}&toAddress=${toAddress}&fromBlock=${startBlockNumber}${contractAddress ? `&contractAddress=${contractAddress}` : ''}`);
+                const data = response.data;
+                console.log('data : ', data);
+                if (data.transactions && data.transactions.length === 1) {
+                    const matchingTx = data.transactions[0];
+                    console.log('Found matching transaction:', matchingTx.hash);
+                    resolve(matchingTx.hash as `0x${string}`);
+                    return;
+                }
+
+                // No match found
+                resolve(null);
+
+            } catch (error) {
+                console.error('Error fetching transactions:', error);
+                reject(error);
+            }
+        };
+
+        // Start transaction search
+        void getTransactions();
+    });
+  };
+
   // used To Send NativeCoins and to make any contact execution with contract data
   async function sendNativeCoin({
     transactionToBeSigned,
@@ -72,16 +135,68 @@ export default function useEthSigner() {
     transactionToBeSigned: EthTransaction;
     chainId: number;
   }) {
-    const response = await sendTransactionAsync({
-      account: transactionToBeSigned.from as `0x${string}`,
-      to: transactionToBeSigned.to as `0x${string}`,
-      chainId,
-      value: BigInt(transactionToBeSigned.value),
-      ...(transactionToBeSigned?.data
-        ? { data: transactionToBeSigned?.data }
-        : {}),
-    });
-    return response;
+    try {
+      // Get the current block number before starting
+      const startBlockNumber = await getBlockNumber(wagmiConfig);
+      console.log('Starting to watch from block:', startBlockNumber);
+
+      // First attempt: Direct transaction
+      try {
+        // Create a timeout promise
+        const timeoutPromise = new Promise((_, reject) => {
+          const id = setTimeout(() => {
+            clearTimeout(id);
+            reject(new Error('Transaction timeout after 15 seconds'));
+          }, 120000);
+        });
+
+        // Wrap sendTransactionAsync in a proper promise
+        const txPromise = async () => {
+          const result = await sendTransactionAsync({
+            account: transactionToBeSigned.from as `0x${string}`,
+            to: transactionToBeSigned.to as `0x${string}`,
+            chainId: chainId,
+            value: BigInt(transactionToBeSigned.value),
+            data: transactionToBeSigned?.data ?? '0x',
+          });
+          return result;
+        };
+
+        const hash = await Promise.race([
+          txPromise(),
+          timeoutPromise
+        ]);
+        
+        console.log('Direct transaction successful:', hash);
+        return hash;
+      } catch (directError) {
+        console.log('Direct transaction failed or timed out, trying findTransaction:', directError);
+        
+        // Second attempt: Find transaction
+        try {
+          const hash = await findTransaction(
+            transactionToBeSigned.from,
+            transactionToBeSigned.to,
+            BigInt(transactionToBeSigned.value),
+            chainId,
+            startBlockNumber
+          );
+          
+          if (hash) {
+            console.log('Found transaction through search:', hash);
+            return hash;
+          }
+        } catch (findError) {
+          console.log('Find transaction failed:', findError);
+        }
+        
+        
+        throw new Error('Your transaction has been submitted but is yet to be confirmed. Please check your transaction history after some time.');
+      }
+    } catch (error) {
+      console.error('Transaction error:', error);
+      throw error;
+    }
   }
 
   async function sendToken({
@@ -110,17 +225,60 @@ export default function useEthSigner() {
         payable: false,
       },
     ];
-    const response = await writeContractAsync({
-      abi: contractAbiFragment,
-      address: transactionToBeSigned.to as `0x${string}`,
-      functionName: 'transfer',
-      args: [
-        transactionToBeSigned.contractParams?.toAddress,
-        BigInt(transactionToBeSigned.contractParams?.numberOfTokens as string),
-      ],
-      chainId,
-    });
-    return response;
+
+    try {
+      // Get the current block number before starting
+      const startBlockNumber = await getBlockNumber(wagmiConfig);
+      console.log('Starting to watch from block:', startBlockNumber);
+
+      // First attempt: Direct transaction
+      try {
+        const hash = await Promise.race([
+          writeContractAsync({
+            abi: contractAbiFragment,
+            address: transactionToBeSigned.to as `0x${string}`,
+            functionName: 'transfer',
+            args: [
+              transactionToBeSigned.contractParams?.toAddress,
+              BigInt(transactionToBeSigned.contractParams?.numberOfTokens as string),
+            ],
+            chainId,
+          }),
+          new Promise((_, reject) => 
+            setTimeout(() => reject(new Error('Transaction timeout')), 120000)
+          )
+        ]);
+        
+        console.log('Direct token transfer successful:', hash);
+        return hash;
+      } catch (directError) {
+        console.log('Direct token transfer failed or timed out, trying findTransaction:', directError);
+        
+        // Second attempt: Find transaction
+        try {
+          const hash = await findTransaction(
+            transactionToBeSigned.from,
+            transactionToBeSigned.contractParams?.toAddress,
+            BigInt(transactionToBeSigned.contractParams?.numberOfTokens as string),
+            chainId,
+            startBlockNumber,
+            transactionToBeSigned.to
+          );
+          
+          if (hash) {
+            console.log('Found token transaction through search:', hash);
+            return hash;
+          }
+        } catch (findError) {
+          console.log('Find token transaction failed:', findError);
+        }
+        
+        throw new Error('Your token transfer has been submitted but is yet to be confirmed. Please check your transaction history after some time.');
+      }
+    } catch (error) {
+      console.error('Token transfer error:', error);
+      throw error;
+    }
   }
 
   const signApprovalEthereum = async ({ web3, sendChain, dataToSign }) => {
@@ -271,6 +429,7 @@ export default function useEthSigner() {
             const response = await switchChainAsync({
               chainId: chainConfig.id,
             });
+            console.log('response in switch chain  : ', response);
             await sleepFor(1000);
           } catch (e) {
             Sentry.captureException(e);
@@ -290,35 +449,43 @@ export default function useEthSigner() {
           }
         }
         let hash;
-        if (
-          Platform.OS === 'android' &&
-          walletInfo?.name === 'MetaMask Wallet'
-        ) {
-          setTimeout(() => {
-            showModal('state', {
-              type: 'warning',
-              title: `Approve transaction`,
-              description: `Incase you don't see a redirection to ${walletInfo?.name}, please open ${walletInfo?.name}`,
-              onSuccess: () => {
-                hideModal();
-                redirectToMetaMask();
-              },
-              onFailure: hideModal(),
-            });
-          }, 2000);
-        }
         if (transactionToBeSigned.contractParams) {
           hash = await sendToken({
             transactionToBeSigned,
             chainId: chainConfig.id,
           });
         } else {
-          hash = await sendNativeCoin({
-            transactionToBeSigned,
-            chainId: chainConfig.id,
-          });
+          try {
+            hash = await sendNativeCoin({
+              transactionToBeSigned,
+              chainId: chainConfig.id,
+            });
+            
+            if (!hash) {
+              throw new Error('No transaction hash received');
+            }
+            
+            hideModal();
+            return hash;
+            
+          } catch (error) {
+            Sentry.captureException(error);
+            showModal('state', {
+              type: 'error',
+              title: 'Transaction Failed',
+              description: error.message,
+              onSuccess: () => {
+                hideModal();
+                navigation.goBack();
+              },
+              onFailure: () => {
+                hideModal();
+                navigation.goBack();
+              },
+            });
+            throw error;
+          }
         }
-        hideModal();
         return hash;
       } else {
         const privateKey = await loadPrivateKeyFromKeyChain(
