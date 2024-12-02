@@ -60,14 +60,12 @@ export const WalletConnectListener: React.FC = ({ children }) => {
   const { signMessageAsync } = useSignMessage({
     mutation: {
       async onSuccess(data) {
-        console.log('use sign message success : ', data);
         const verifyMessageResponse = await axios.post(
           `${ARCH_HOST}/v1/authentication/verify-message/${address?.toLowerCase()}?format=ERC-4361`,
           {
             signature: data,
           },
         );
-        console.log('verifyMessageResponse : ', verifyMessageResponse);
         if (verifyMessageResponse?.data.token) {
           const { token, refreshToken } = verifyMessageResponse.data;
           globalContext.globalDispatch({
@@ -97,11 +95,6 @@ export const WalletConnectListener: React.FC = ({ children }) => {
   }, []);
 
   useEffect(() => {
-    console.log('isConnected : ', isConnected);
-    console.log('address : ', address);
-    console.log('ethereum.address : ', ethereum.address);
-    console.log('connectionType : ', connectionType);
-    console.log('isInitializing : ', isInitializing);
     if (isInitializing) {
       return; // Don't perform any checks while initializing
     }
@@ -146,7 +139,6 @@ export const WalletConnectListener: React.FC = ({ children }) => {
   };
 
   const loadHdWallet = async () => {
-    console.log('loadHdWallet in wallet connect listener : ', address);
     void setConnectionType(ConnectionTypes.WALLET_CONNECT);
     hdWalletContext.dispatch({
       type: 'LOAD_WALLET',
@@ -163,7 +155,6 @@ export const WalletConnectListener: React.FC = ({ children }) => {
   };
 
   const handleDisconnect = async () => {
-    console.log('handleDisconnect in wallet connect listener : ', address);
     void deleteWalletConfig();
     await removeConnectionType();
     setLoading(false);

@@ -8,7 +8,6 @@ export let web3wallet: IWeb3Wallet;
 export let core: ICore;
 
 export async function createWeb3Wallet(projectId: string) {
-  console.log('createWeb3Wallet : ', projectId);
   try {
     core = new Core({
       // logger: 'debug',

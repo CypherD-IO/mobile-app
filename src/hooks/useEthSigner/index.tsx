@@ -93,22 +93,14 @@ export default function useEthSigner() {
     contractAddress?: string
   ): Promise<Hash | null> => {
     return new Promise((resolve, reject) => {
-        console.log('Starting transaction search with params:', {
-            fromAddress,
-            toAddress,
-            value: value.toString()
-        });
 
         // Make API call to get transactions
         const getTransactions = async () => {
             try {
-                console.log('url : ', `/v1/txn/transactions/${fromAddress}?isUnmarshalQuery=true&blockchain=${get(ChainIdToBackendNameMapping, [String(chainId)])}&toAddress=${toAddress}&fromBlock=${startBlockNumber}${contractAddress ? `&contractAddress=${contractAddress}` : ''}`);
                 const response = await getWithAuth(`/v1/txn/transactions/${fromAddress}?isUnmarshalQuery=true&blockchain=${get(ChainIdToBackendNameMapping, [String(chainId)])}&toAddress=${toAddress}&fromBlock=${startBlockNumber}${contractAddress ? `&contractAddress=${contractAddress}` : ''}`);
                 const data = response.data;
-                console.log('data : ', data);
                 if (data.transactions && data.transactions.length === 1) {
                     const matchingTx = data.transactions[0];
-                    console.log('Found matching transaction:', matchingTx.hash);
                     resolve(matchingTx.hash as `0x${string}`);
                     return;
                 }
@@ -117,7 +109,6 @@ export default function useEthSigner() {
                 resolve(null);
 
             } catch (error) {
-                console.error('Error fetching transactions:', error);
                 reject(error);
             }
         };
@@ -138,7 +129,6 @@ export default function useEthSigner() {
     try {
       // Get the current block number before starting
       const startBlockNumber = await getBlockNumber(wagmiConfig);
-      console.log('Starting to watch from block:', startBlockNumber);
 
       // First attempt: Direct transaction
       try {
@@ -167,10 +157,8 @@ export default function useEthSigner() {
           timeoutPromise
         ]);
         
-        console.log('Direct transaction successful:', hash);
         return hash;
       } catch (directError) {
-        console.log('Direct transaction failed or timed out, trying findTransaction:', directError);
         
         // Second attempt: Find transaction
         try {
@@ -183,11 +171,9 @@ export default function useEthSigner() {
           );
           
           if (hash) {
-            console.log('Found transaction through search:', hash);
             return hash;
           }
         } catch (findError) {
-          console.log('Find transaction failed:', findError);
         }
         
         
@@ -229,7 +215,6 @@ export default function useEthSigner() {
     try {
       // Get the current block number before starting
       const startBlockNumber = await getBlockNumber(wagmiConfig);
-      console.log('Starting to watch from block:', startBlockNumber);
 
       // First attempt: Direct transaction
       try {
@@ -249,10 +234,8 @@ export default function useEthSigner() {
           )
         ]);
         
-        console.log('Direct token transfer successful:', hash);
         return hash;
       } catch (directError) {
-        console.log('Direct token transfer failed or timed out, trying findTransaction:', directError);
         
         // Second attempt: Find transaction
         try {
@@ -266,11 +249,9 @@ export default function useEthSigner() {
           );
           
           if (hash) {
-            console.log('Found token transaction through search:', hash);
             return hash;
           }
         } catch (findError) {
-          console.log('Find token transaction failed:', findError);
         }
         
         throw new Error('Your token transfer has been submitted but is yet to be confirmed. Please check your transaction history after some time.');
@@ -429,7 +410,6 @@ export default function useEthSigner() {
             const response = await switchChainAsync({
               chainId: chainConfig.id,
             });
-            console.log('response in switch chain  : ', response);
             await sleepFor(1000);
           } catch (e) {
             Sentry.captureException(e);
