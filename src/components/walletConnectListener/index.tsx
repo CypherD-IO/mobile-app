@@ -25,13 +25,13 @@ import useConnectionManager from '../../hooks/useConnectionManager';
 import Intercom from '@intercom/intercom-react-native';
 import DeviceInfo from 'react-native-device-info';
 import analytics from '@react-native-firebase/analytics';
-import { getToken } from '../../hooks/usePushNotification';
+import { getToken } from '../../notification/pushNotification';
 
 export const WalletConnectListener: React.FC = ({ children }) => {
   const hdWalletContext = useContext<any>(HdWalletContext);
   const globalContext = useContext<any>(GlobalContext);
   const ethereum = hdWalletContext.state.wallet.ethereum;
-  const { isConnected, address, connector, isConnecting } = useAccount();
+  const { isConnected, address, connector } = useAccount();
   const { disconnectAsync } = useDisconnect();
   const ARCH_HOST: string = hostWorker.getHost('ARCH_HOST');
   const { verifySessionToken } = useValidSessionToken();

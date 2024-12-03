@@ -81,7 +81,7 @@ export const GlobalModal: React.FC<any> = ({ children }) => {
       {store?.modalType === GlobalModalType.THREE_D_SECURE_APPROVAL && (
         <ThreeDSecureApprovalModal {...store} />
       )}
-      {store?.modalType === GlobalModalType.ADD_COUNTRY_FROM_NOTIFICATION && (
+      {store?.modalType === GlobalModalType.CARD_ACTIONS_FROM_NOTIFICATION && (
         <AddCountryFromNotificationModal {...store} />
       )}
       {children}

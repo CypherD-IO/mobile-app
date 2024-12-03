@@ -686,6 +686,27 @@ export function PortfolioStackScreen() {
         })}
       />
       <PortfolioStack.Screen
+        name={screenTitle.LOCKDOWN_MODE}
+        component={LockdownMode}
+        options={({ navigation, route }) => ({
+          headerShown: false,
+        })}
+      />
+      <PortfolioStack.Screen
+        name={screenTitle.LOCKDOWN_MODE_AUTH}
+        component={LockdownModeAuth}
+        options={({ navigation }) => ({
+          headerTransparent: false,
+          headerShadowVisible: false,
+          title: '',
+          headerTitleAlign: 'center',
+          headerTitleStyle: portfolioStackScreenHeaderTitleStyles,
+          headerTintColor: Colors.primaryTextColor,
+          headerBackTitleVisible: false,
+          headerLeft: () => defaultHeaderLeft(navigation, keyboardHeight),
+        })}
+      />
+      <PortfolioStack.Screen
         name={screenTitle.INTERNATIONAL_CARD_CONTROLS}
         component={CardControlsSettings}
         options={({ navigation }) => ({
@@ -697,6 +718,34 @@ export function PortfolioStackScreen() {
           headerTintColor: Colors.primaryTextColor,
           headerBackTitleVisible: false,
           headerLeft: () => defaultHeaderLeft(navigation, keyboardHeight),
+        })}
+      />
+      <PortfolioStack.Screen
+        name={screenTitle.CARD_CONTROLS_MENU}
+        component={CardControlsMenu}
+        options={({ navigation, route }) => ({
+          headerShown: false,
+        })}
+      />
+      <PortfolioStack.Screen
+        name={screenTitle.DOMESTIC_CARD_CONTROLS}
+        component={CardControlsSettings}
+        options={({ navigation, route }) => ({
+          headerTransparent: false,
+          headerShadowVisible: false,
+          title: 'Domestic Transactions',
+          headerTitleAlign: 'left',
+          headerTitleStyle: portfolioStackScreenHeaderTitleStyles,
+          headerTintColor: Colors.primaryTextColor,
+          headerBackTitleVisible: false,
+          headerLeft: () => defaultHeaderLeft(navigation, keyboardHeight),
+        })}
+      />
+      <PortfolioStack.Screen
+        name={screenTitle.EDIT_USAGE_LIMITS}
+        component={EditLimits}
+        options={() => ({
+          headerShown: false,
         })}
       />
     </PortfolioStack.Navigator>

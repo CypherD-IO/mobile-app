@@ -41,8 +41,10 @@ import { use3DSecure } from '../../components/v2/threeDSecureApprovalModalContex
 import CyDTokenValue from '../../components/v2/tokenValue';
 import {
   CardControlTypes,
+  CypherDeclineCodes,
   GlobalContextType,
   GlobalModalType,
+  NOTIFE_ACTIONS,
   TokenOverviewTabIndices,
 } from '../../constants/enum';
 import * as C from '../../constants/index';
@@ -88,6 +90,10 @@ import FilterBar from './components/FilterBar';
 import { DeFiScene, NFTScene, TXNScene } from './scenes';
 import { useGlobalModalContext } from '../../components/v2/GlobalModal';
 import notifee, { EventType } from '@notifee/react-native';
+import {
+  RouteNotificationAction,
+  showNotification,
+} from '../../notification/pushNotification';
 
 export interface PortfolioProps {
   navigation: any;
@@ -269,8 +275,64 @@ export default function Portfolio({ navigation }: PortfolioProps) {
   };
 
   useEffect(() => {
-    void messaging().getInitialNotification().then(handlePushNotification);
-    void messaging().onNotificationOpenedApp(handlePushNotification);
+    void messaging()
+      .getInitialNotification()
+      .then(async response => {
+        await handlePushNotification(response);
+      });
+
+    void messaging().onNotificationOpenedApp(async response => {
+      await handlePushNotification(response);
+    });
+
+    notifee
+      .getInitialNotification()
+      .then(async response => {
+        if (response?.notification) {
+          await handlePushNotification(response?.notification as any);
+        }
+      })
+      .catch(error => {
+        Sentry.captureException(error);
+      });
+
+    notifee.onBackgroundEvent(async remoteMessage => {
+      const { type, detail } = remoteMessage;
+
+      if (type === EventType.ACTION_PRESS) {
+        const { notification, pressAction } = detail;
+
+        if (notification?.id && pressAction?.id) {
+          await RouteNotificationAction({
+            notificationId: notification?.id,
+            actionId: pressAction?.id,
+            data: notification?.data,
+            navigation,
+            showModal,
+            hideModal,
+          });
+        }
+      }
+    });
+
+    const unsubscribe = notifee.onForegroundEvent(remoteMessage => {
+      const { type, detail } = remoteMessage;
+      if (type === EventType.ACTION_PRESS) {
+        const { notification, pressAction } = detail;
+        if (notification?.id && pressAction?.id) {
+          RouteNotificationAction({
+            notificationId: notification?.id,
+            actionId: pressAction?.id,
+            data: notification?.data,
+            navigation,
+            showModal,
+            hideModal,
+          }).catch(error => {
+            Sentry.captureException(error);
+          });
+        }
+      }
+    });
 
     const getIBCStatus = async () => {
       const data = await getIBC();
@@ -288,6 +350,7 @@ export default function Portfolio({ navigation }: PortfolioProps) {
     });
 
     void getBridgeData().catch;
+    return () => unsubscribe();
   }, []);
 
   useEffect(() => {
@@ -522,7 +585,6 @@ export default function Portfolio({ navigation }: PortfolioProps) {
           }
           case NotificationEvents.CARD_TXN_UPDATE: {
             const { categoryId, cardId, url, provider } = remoteMessage.data;
-            console.log('🚀 ~ Portfolio ~ remoteMessage:', remoteMessage.data);
 
             if (categoryId) {
               void analytics().logEvent('card_decline_add_txn_cta', {
@@ -530,15 +592,26 @@ export default function Portfolio({ navigation }: PortfolioProps) {
               });
 
               if (cardId && provider) {
-                showModal(GlobalModalType.ADD_COUNTRY_FROM_NOTIFICATION, {
-                  closeModal: () => {
-                    hideModal();
-                  },
-                  data: {
-                    ...remoteMessage.data,
-                  },
-                });
+                if (
+                  remoteMessage.data.declineCode ===
+                  CypherDeclineCodes.INT_COUNTRY
+                ) {
+                  showModal(GlobalModalType.CARD_ACTIONS_FROM_NOTIFICATION, {
+                    closeModal: () => {
+                      hideModal();
+                    },
+                    data: {
+                      ...remoteMessage.data,
+                    },
+                  });
+                } else {
+                  navigation.navigate(C.screenTitle.CARD_CONTROLS_MENU, {
+                    cardId,
+                    currentCardProvider: provider,
+                  });
+                }
               }
+
               break;
             } else {
               void analytics().logEvent('card_txn_cta', {

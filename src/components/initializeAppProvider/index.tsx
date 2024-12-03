@@ -3,11 +3,7 @@ import useInitializer from '../../hooks/useInitializer';
 import { GlobalContext, GlobalContextDef } from '../../core/globalContext';
 import { Linking, Platform } from 'react-native';
 
-import {
-  CardControlTypes,
-  GlobalModalType,
-  PinPresentStates,
-} from '../../constants/enum';
+import { GlobalModalType, PinPresentStates } from '../../constants/enum';
 import PinAuthRoute from '../../routes/pinAuthRoute';
 import * as C from '../../../src/constants/index';
 import OnBoardingStack from '../../routes/onBoarding';
@@ -33,25 +29,21 @@ import Intercom from '@intercom/intercom-react-native';
 import RNExitApp from 'react-native-exit-app';
 import { HdWalletContextDef } from '../../reducers/hdwallet_reducer';
 import Loading from '../../containers/Loading';
-import firebase from '@react-native-firebase/app';
+import messaging from '@react-native-firebase/messaging';
 import { useGlobalModalContext } from '../v2/GlobalModal';
 import { NotificationEvents } from '../../constants/server';
 import JoinDiscordModal from '../v2/joinDiscordModal';
 import useInitialIntentURL from '../../hooks/useInitialIntentURL';
-import notifee, { EventType } from '@notifee/react-native';
-import {
-  ParamListBase,
-  useNavigation,
-  NavigationProp,
-} from '@react-navigation/native';
+
 import {
   requestUserPermission,
   showNotification,
-} from '../../hooks/usePushNotification';
+} from '../../notification/pushNotification';
 
 export const InitializeAppProvider = ({
   children,
 }: {
+  navigationRef: any;
   children: React.ReactNode;
 }) => {
   const {
@@ -89,6 +81,20 @@ export const InitializeAppProvider = ({
   useEffect(() => {
     const initializeApp = async () => {
       initializeSentry();
+
+      messaging().onMessage(response => {
+        if (response.data?.actionKey === NotificationEvents.THREE_DS_APPROVE) {
+          setTimeout(() => {
+            showModal(GlobalModalType.THREE_D_SECURE_APPROVAL, {
+              data: response.data,
+              closeModal: hideModal,
+            });
+          }, 1000);
+        } else {
+          void showNotification(response.notification, response.data);
+        }
+      });
+
       const isAPIAccessible = await checkAPIAccessibility();
       if (isAPIAccessible) {
         await exitIfJailBroken();
@@ -97,47 +103,6 @@ export const InitializeAppProvider = ({
         void loadActivitiesFromAsyncStorage();
 
         await requestUserPermission();
-
-        notifee.onBackgroundEvent(async remoteMessage => {
-          const { type, detail } = remoteMessage;
-          if (type === EventType.ACTION_PRESS) {
-            const { notification, pressAction } = detail;
-
-            switch (pressAction?.id) {
-              case 'add-country':
-                console.log(
-                  '🚀 ~ notifee.onBackgroundEvent ~ notification: add-country',
-                );
-                showModal(GlobalModalType.ADD_COUNTRY_FROM_NOTIFICATION, {
-                  closeModal: () => {
-                    hideModal();
-                  },
-                  data: {
-                    ...notification?.data,
-                  },
-                });
-                if (notification?.id) {
-                  await notifee.cancelNotification(notification?.id);
-                }
-                break;
-            }
-          }
-        });
-
-        firebase.messaging().onMessage(response => {
-          if (
-            response.data?.actionKey === NotificationEvents.THREE_DS_APPROVE
-          ) {
-            setTimeout(() => {
-              showModal(GlobalModalType.THREE_D_SECURE_APPROVAL, {
-                data: response.data,
-                closeModal: hideModal,
-              });
-            }, 1000);
-          } else {
-            void showNotification(response.notification, response.data);
-          }
-        });
 
         setTimeout(() => {
           SplashScreen.hide();
@@ -148,32 +113,7 @@ export const InitializeAppProvider = ({
       }
     };
 
-    const unsubscribe = notifee.onForegroundEvent(({ type, detail }) => {
-      if (type === EventType.ACTION_PRESS) {
-        const { notification, pressAction } = detail;
-
-        switch (pressAction?.id) {
-          case 'add-country':
-            console.log(
-              '🚀 ~ notifee.onForegroundEvent ~ pressAction: add-country',
-            );
-            showModal(GlobalModalType.ADD_COUNTRY_FROM_NOTIFICATION, {
-              closeModal: () => {
-                hideModal();
-              },
-              data: {
-                ...notification?.data,
-              },
-            });
-
-            break;
-        }
-      }
-    });
-
     void initializeApp();
-
-    return () => unsubscribe();
   }, []);
 
   useEffect(() => {

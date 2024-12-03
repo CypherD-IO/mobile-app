@@ -462,7 +462,7 @@ export default function TransactionDetails() {
   };
 
   const addIntlCountry = async (iso2: string, cardId?: string) => {
-    showModal(GlobalModalType.ADD_COUNTRY_FROM_NOTIFICATION, {
+    showModal(GlobalModalType.CARD_ACTIONS_FROM_NOTIFICATION, {
       closeModal: () => {
         hideModal();
       },
