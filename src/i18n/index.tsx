@@ -1415,6 +1415,7 @@ const resources = {
       COUNTRY: 'Country',
       MCC_CODE_COPIED: 'MCC Code copied',
       MERCHANT_ID_COPIED: 'Merchant ID copied',
+      RETRY_KYC: 'Retry KYC',
       TRANSACTION_DECLINE: 'Transaction Declined',
       REVIEW_SETTINGS: 'Review Settings',
       GET_PREMIUM: 'Get Premium',
