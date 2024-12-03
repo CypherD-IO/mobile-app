@@ -132,33 +132,21 @@ export default function useEthSigner() {
 
       // First attempt: Direct transaction
       try {
-        // Create a timeout promise
-        const timeoutPromise = new Promise((_, reject) => {
-          const id = setTimeout(() => {
-            clearTimeout(id);
-            reject(new Error('Transaction timeout after 15 seconds'));
-          }, 120000);
+        const hash = await sendTransactionAsync({
+          account: transactionToBeSigned.from as `0x${string}`,
+          to: transactionToBeSigned.to as `0x${string}`,
+          chainId: chainId,
+          value: BigInt(transactionToBeSigned.value),
+          data: transactionToBeSigned?.data ?? '0x',
         });
-
-        // Wrap sendTransactionAsync in a proper promise
-        const txPromise = async () => {
-          const result = await sendTransactionAsync({
-            account: transactionToBeSigned.from as `0x${string}`,
-            to: transactionToBeSigned.to as `0x${string}`,
-            chainId: chainId,
-            value: BigInt(transactionToBeSigned.value),
-            data: transactionToBeSigned?.data ?? '0x',
-          });
-          return result;
-        };
-
-        const hash = await Promise.race([
-          txPromise(),
-          timeoutPromise
-        ]);
         
         return hash;
-      } catch (directError) {
+      } catch (directError) {        
+        // Check if error is user cancellation
+        if (directError instanceof Error && 
+          directError.message.includes('User cancelled the request')) {
+            throw new Error('User cancelled the request');
+          }
         
         // Second attempt: Find transaction
         try {
@@ -175,8 +163,6 @@ export default function useEthSigner() {
           }
         } catch (findError) {
         }
-        
-        
         throw new Error('Your transaction has been submitted but is yet to be confirmed. Please check your transaction history after some time.');
       }
     } catch (error) {
