@@ -238,9 +238,10 @@ const TransactionDetail = ({
               <CyDTouchView
                 className='border border-[#DFE2E6] rounded-[4px] bg-[#FAFBFB] px-[8px] py-[6px] flex-1'
                 onPress={() => {
-                  navigation.navigate(screenTitle.CARD_CONTROLS_MENU, {
+                  navigation.navigate(screenTitle.INTERNATIONAL_CARD_CONTROLS, {
                     cardId: cardId ?? '',
                     currentCardProvider: provider,
+                    cardControlType: CardControlTypes.INTERNATIONAL,
                   });
                 }}>
                 <CyDText className='text-center text-[14px] font-semibold'>
@@ -475,6 +476,7 @@ export default function TransactionDetails() {
         provider,
         transactionCurrency: transaction?.fxCurrencySymbol ?? '',
         amount: transaction?.amount ?? 0,
+        navigation,
       },
     });
   };

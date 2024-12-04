@@ -321,6 +321,7 @@ export async function RouteNotificationAction({
         },
         data: {
           ...data,
+          navigation,
         },
       });
 

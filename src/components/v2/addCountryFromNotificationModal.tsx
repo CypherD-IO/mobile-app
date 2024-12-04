@@ -8,6 +8,9 @@ import { parseErrorMessage } from '../../core/util';
 import { CyDImage, CyDText, CyDView } from '../../styles/tailwindStyles';
 import Button from './button';
 import CyDModalLayout from './modal';
+import { NavigationProp, ParamListBase } from '@react-navigation/native';
+import { screenTitle } from '../../constants';
+import { CardControlTypes } from '../../constants/enum';
 
 const styles = StyleSheet.create({
   modalLayout: {
@@ -31,6 +34,7 @@ export default function AddCountryFromNotificationModal({
     provider?: string;
     transactionCurrency?: string;
     amount?: string;
+    navigation?: NavigationProp<ParamListBase>;
   };
 }) {
   const { getWithAuth, patchWithAuth } = useAxios();
@@ -149,9 +153,20 @@ export default function AddCountryFromNotificationModal({
                   loading={loading}
                 />
                 <Button
-                  title={t('CANCEL')}
+                  title={t('REVIEW_SETTINGS')}
                   type='secondary'
-                  onPress={closeModal}
+                  onPress={() => {
+                    closeModal();
+                    if (data?.navigation)
+                      data?.navigation?.navigate(
+                        screenTitle.INTERNATIONAL_CARD_CONTROLS,
+                        {
+                          cardId: data?.cardId,
+                          currentCardProvider: data?.provider,
+                          cardControlType: CardControlTypes.INTERNATIONAL,
+                        },
+                      );
+                  }}
                   style={'p-[3%] mt-[10px]'}
                 />
               </CyDView>
@@ -210,11 +225,15 @@ export default function AddCountryFromNotificationModal({
                 onPress={() => {
                   setUpdateError(false);
                   closeModal();
-                  //   navigation.navigate(screenTitle.INTERNATIONAL_CARD_CONTROLS, {
-                  //     cardId: data?.cardId,
-                  //     currentCardProvider: data?.provider,
-                  //     cardControlType: CardControlTypes.INTERNATIONAL,
-                  //   });
+                  if (data?.navigation)
+                    data?.navigation?.navigate(
+                      screenTitle.INTERNATIONAL_CARD_CONTROLS,
+                      {
+                        cardId: data?.cardId,
+                        currentCardProvider: data?.provider,
+                        cardControlType: CardControlTypes.INTERNATIONAL,
+                      },
+                    );
                 }}
                 style={'p-[3%] mt-[20px]'}
               />

@@ -90,10 +90,7 @@ import FilterBar from './components/FilterBar';
 import { DeFiScene, NFTScene, TXNScene } from './scenes';
 import { useGlobalModalContext } from '../../components/v2/GlobalModal';
 import notifee, { EventType } from '@notifee/react-native';
-import {
-  RouteNotificationAction,
-  showNotification,
-} from '../../notification/pushNotification';
+import { RouteNotificationAction } from '../../notification/pushNotification';
 
 export interface PortfolioProps {
   navigation: any;
@@ -600,6 +597,7 @@ export default function Portfolio({ navigation }: PortfolioProps) {
                     },
                     data: {
                       ...remoteMessage.data,
+                      navigation,
                     },
                   });
                 } else {
