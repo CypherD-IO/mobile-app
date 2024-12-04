@@ -453,7 +453,7 @@ export default function TransactionDetails() {
         Sentry.captureException(error);
         showModal('state', {
           type: 'error',
-          title: t('UNEXCPECTED_ERROR'),
+          title: t('UNEXPECTED_ERROR'),
           description: parseErrorMessage(error),
           onSuccess: hideModal,
           onFailure: hideModal,

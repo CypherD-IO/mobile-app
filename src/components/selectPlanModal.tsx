@@ -264,7 +264,7 @@ export default function SelectPlanModal({
         showModal('state', {
           type: 'error',
           title: t('CONTACT_CYPHER_SUPPORT'),
-          description: t('UNEXCPECTED_ERROR'),
+          description: t('UNEXPECTED_ERROR'),
           onSuccess: hideModal,
           onFailure: hideModal,
         });

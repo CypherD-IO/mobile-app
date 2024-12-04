@@ -655,7 +655,7 @@ const resources = {
       UNABLE_TO_TRACK: 'Unable to track this address. Please try again later.',
       ENTER_OR_SCAN_ETHEREUM_ADDRESS: 'Enter ethereum address or ens domain',
       ONLY_ETHEREUM_SUPPORTED: 'Only ethereum address is supported',
-      UNEXCPECTED_ERROR: 'Unexpected error occured. Please try again later.',
+      UNEXPECTED_ERROR: 'Unexpected error occured. Please try again later.',
       WALLET: 'Wallet',
       MY_WALLET: 'My Wallet',
       LINKED_WALLET: 'Linked Wallet',
