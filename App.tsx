@@ -9,7 +9,7 @@ import { useEffect, useReducer, useState } from 'react';
 import Toast from 'react-native-toast-message';
 import { NavigationContainer, LinkingOptions } from '@react-navigation/native';
 import './src/i18n';
-import { BackHandler, Keyboard, Linking, Platform } from 'react-native';
+import { BackHandler, Keyboard, Linking } from 'react-native';
 import {
   HdWalletContext,
   ActivityContext,
@@ -17,7 +17,7 @@ import {
 } from './src/core/util';
 import { hdWalletStateReducer, initialHdWalletState } from './src/reducers';
 import analytics from '@react-native-firebase/analytics';
-import '@react-native-firebase/messaging';
+import firebase from '@react-native-firebase/messaging';
 import * as Sentry from '@sentry/react-native';
 import {
   gloabalContextReducer,
@@ -69,7 +69,6 @@ import {
 } from './src/reducers/bridge.reducer';
 import { screenTitle } from './src/constants';
 import { ThreeDSecureProvider } from './src/components/v2/threeDSecureApprovalModalContext';
-
 const routingInstrumentation = new Sentry.ReactNavigationInstrumentation();
 
 function App() {
@@ -260,7 +259,7 @@ function App() {
                 navigationRef.current?.getCurrentRoute()?.name;
               if (previousRouteName !== currentRouteName) {
                 // Keyboard.dismiss();
-                // eslint-disable-next-line @typescript-eslint/no-unused-expressions
+
                 void analytics().logScreenView({
                   screen_name: currentRouteName,
                   screen_class: currentRouteName,

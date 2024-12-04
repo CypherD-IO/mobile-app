@@ -3,21 +3,21 @@
 <plist version="1.0">
 <dict>
 	<key>CLIENT_ID</key>
-	<string></string>
+	<string>1020039291424-7u0bf2kqd63f8hjf6ttfabt7lm3dfcsf.apps.googleusercontent.com</string>
 	<key>REVERSED_CLIENT_ID</key>
-	<string></string>
+	<string>com.googleusercontent.apps.1020039291424-7u0bf2kqd63f8hjf6ttfabt7lm3dfcsf</string>
 	<key>API_KEY</key>
-	<string></string>
+	<string>AIzaSyC7vMelEwmpTbiu6lRyRWUzrI8REWbFtjM</string>
 	<key>GCM_SENDER_ID</key>
-	<string></string>
+	<string>1020039291424</string>
 	<key>PLIST_VERSION</key>
 	<string>1</string>
 	<key>BUNDLE_ID</key>
-	<string></string>
+	<string>com.cypherd.ioswalletv1</string>
 	<key>PROJECT_ID</key>
-	<string></string>
+	<string>cypoherd-ios-app</string>
 	<key>STORAGE_BUCKET</key>
-	<string></string>
+	<string>cypoherd-ios-app.appspot.com</string>
 	<key>IS_ADS_ENABLED</key>
 	<false></false>
 	<key>IS_ANALYTICS_ENABLED</key>
@@ -29,6 +29,6 @@
 	<key>IS_SIGNIN_ENABLED</key>
 	<true></true>
 	<key>GOOGLE_APP_ID</key>
-	<string></string>
+	<string>1:1020039291424:ios:31644664e64f0d8c4c9245</string>
 </dict>
 </plist>

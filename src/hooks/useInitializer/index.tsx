@@ -46,7 +46,6 @@ import {
   getPlatform,
   getPlatformVersion,
 } from '../../core/util';
-import { getToken } from '../../core/push';
 import Intercom from '@intercom/intercom-react-native';
 import analytics from '@react-native-firebase/analytics';
 import DeviceInfo, { getVersion } from 'react-native-device-info';
@@ -55,6 +54,7 @@ import SpInAppUpdates from 'sp-react-native-in-app-updates';
 import useValidSessionToken from '../useValidSessionToken';
 import { IPlanDetails } from '../../models/planDetails.interface';
 import { CardProfile } from '../../models/cardProfile.model';
+import { getToken } from '../../notification/pushNotification';
 
 export default function useInitializer() {
   const SENSITIVE_DATA_KEYS = ['password', 'seed', 'creditCardNumber'];

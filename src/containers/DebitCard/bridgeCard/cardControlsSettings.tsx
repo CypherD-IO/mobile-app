@@ -26,18 +26,17 @@ import {
   CyDView,
 } from '../../../styles/tailwindStyles';
 import EditLimitModal from './editLimitModal';
-import { Card } from '../../../models/card.model';
 import { ICountry } from '../../../models/cardApplication.model';
 
 interface RouteParams {
   cardControlType: string;
   currentCardProvider: string;
-  card: Card;
+  cardId: string;
 }
 
 export default function CardControlsSettings() {
   const route = useRoute<RouteProp<{ params: RouteParams }, 'params'>>();
-  const { cardControlType, currentCardProvider, card } = route.params;
+  const { cardControlType, currentCardProvider, cardId } = route.params;
   const [countryModalVisible, setCountryModalVisible] = useState(false);
   const [countries, setCountries] = useState<ICountry[]>([]);
   const [allowedCountries, setAllowedCountries] = useState<ICountry[]>([]);
@@ -164,7 +163,7 @@ export default function CardControlsSettings() {
     }
 
     const response = await patchWithAuth(
-      `/v1/cards/${currentCardProvider}/card/${card.cardId}/limits`,
+      `/v1/cards/${currentCardProvider}/card/${cardId}/limits`,
       pick(payload, ['cusL', 'cCode']),
     );
 
@@ -206,7 +205,7 @@ export default function CardControlsSettings() {
   const getCardLimits = async () => {
     setLoading(true);
     const response = await getWithAuth(
-      `/v1/cards/${currentCardProvider}/card/${card.cardId}/limits`,
+      `/v1/cards/${currentCardProvider}/card/${cardId}/limits`,
     );
     if (!response.isError) {
       const limitValue = response.data;

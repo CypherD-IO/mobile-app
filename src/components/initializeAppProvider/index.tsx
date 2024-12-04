@@ -2,7 +2,7 @@ import React, { useCallback, useContext, useEffect, useState } from 'react';
 import useInitializer from '../../hooks/useInitializer';
 import { GlobalContext, GlobalContextDef } from '../../core/globalContext';
 import { Linking, Platform } from 'react-native';
-import { requestUserPermission, showNotification } from '../../core/push';
+
 import { GlobalModalType, PinPresentStates } from '../../constants/enum';
 import PinAuthRoute from '../../routes/pinAuthRoute';
 import * as C from '../../../src/constants/index';
@@ -29,15 +29,21 @@ import Intercom from '@intercom/intercom-react-native';
 import RNExitApp from 'react-native-exit-app';
 import { HdWalletContextDef } from '../../reducers/hdwallet_reducer';
 import Loading from '../../containers/Loading';
-import firebase from '@react-native-firebase/app';
+import messaging from '@react-native-firebase/messaging';
 import { useGlobalModalContext } from '../v2/GlobalModal';
 import { NotificationEvents } from '../../constants/server';
 import JoinDiscordModal from '../v2/joinDiscordModal';
 import useInitialIntentURL from '../../hooks/useInitialIntentURL';
 
+import {
+  requestUserPermission,
+  showNotification,
+} from '../../notification/pushNotification';
+
 export const InitializeAppProvider = ({
   children,
 }: {
+  navigationRef: any;
   children: React.ReactNode;
 }) => {
   const {
@@ -71,9 +77,24 @@ export const InitializeAppProvider = ({
     useState<boolean>(false);
   const { url: initialUrl, updateUrl } = useInitialIntentURL();
   const [discordToken, setDiscordToken] = useState<string>('');
+
   useEffect(() => {
     const initializeApp = async () => {
       initializeSentry();
+
+      messaging().onMessage(response => {
+        if (response.data?.actionKey === NotificationEvents.THREE_DS_APPROVE) {
+          setTimeout(() => {
+            showModal(GlobalModalType.THREE_D_SECURE_APPROVAL, {
+              data: response.data,
+              closeModal: hideModal,
+            });
+          }, 1000);
+        } else {
+          void showNotification(response.notification, response.data);
+        }
+      });
+
       const isAPIAccessible = await checkAPIAccessibility();
       if (isAPIAccessible) {
         await exitIfJailBroken();
@@ -81,21 +102,7 @@ export const InitializeAppProvider = ({
         void checkForUpdatesAndShowModal(setUpdateModal);
         void loadActivitiesFromAsyncStorage();
 
-        void requestUserPermission();
-        firebase.messaging().onMessage(response => {
-          if (
-            response.data?.actionKey === NotificationEvents.THREE_DS_APPROVE
-          ) {
-            setTimeout(() => {
-              showModal(GlobalModalType.THREE_D_SECURE_APPROVAL, {
-                data: response.data,
-                closeModal: hideModal,
-              });
-            }, 1000);
-          } else {
-            void showNotification(response.notification);
-          }
-        });
+        await requestUserPermission();
 
         setTimeout(() => {
           SplashScreen.hide();

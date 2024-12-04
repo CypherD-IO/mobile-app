@@ -23,17 +23,25 @@ import useCardUtilities from '../../../hooks/useCardUtilities';
 import {
   NavigationProp,
   ParamListBase,
+  RouteProp,
   useIsFocused,
   useNavigation,
+  useRoute,
 } from '@react-navigation/native';
 import { screenTitle } from '../../../constants';
 
-export default function LockdownMode(props) {
+interface RouteParams {
+  currentCardProvider: string;
+}
+
+export default function LockdownMode() {
   const navigation = useNavigation<NavigationProp<ParamListBase>>();
+  const route = useRoute<RouteProp<{ params: RouteParams }, 'params'>>();
+
   const { showModal, hideModal } = useGlobalModalContext();
   const { postWithAuth } = useAxios();
   const [loading, setLoading] = useState(false);
-  const { currentCardProvider } = props.route.params;
+  const { currentCardProvider } = route.params;
   const globalContext = useContext(GlobalContext) as GlobalContextDef;
   const cardProfile: CardProfile | undefined =
     globalContext?.globalState?.cardProfile;
@@ -78,7 +86,7 @@ export default function LockdownMode(props) {
         title: t('Lockdown mode enabled'),
         onSuccess: () => {
           hideModal();
-          props.navigation.goBack();
+          navigation.goBack();
         },
         onFailure: hideModal,
       });
@@ -106,7 +114,7 @@ export default function LockdownMode(props) {
           onFailure: hideModal,
         });
       },
-      currentCardProvider: currentCardProvider,
+      currentCardProvider,
       accountStatus: ACCOUNT_STATUS.ACTIVE,
     });
   };
@@ -119,7 +127,7 @@ export default function LockdownMode(props) {
             <CyDView className='flex flex-row mx-[20px]'>
               <CyDTouchView
                 onPress={() => {
-                  props.navigation.goBack();
+                  navigation.goBack();
                 }}>
                 <CyDImage
                   source={AppImages.BACK_ARROW_GRAY}
