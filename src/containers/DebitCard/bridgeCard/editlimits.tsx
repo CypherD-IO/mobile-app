@@ -42,9 +42,6 @@ const styles = StyleSheet.create({
     height: 22,
     width: 22,
   },
-  sliderContainer: {
-    borderRadius: 4,
-  },
 });
 
 const ImpactModal = ({

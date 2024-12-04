@@ -31,6 +31,12 @@ import { CYPHER_PLAN_ID_NAME_MAPPING } from '../constants/data';
 import useAxios from '../core/HttpRequest';
 import * as Sentry from '@sentry/react-native';
 import { useGlobalModalContext } from './v2/GlobalModal';
+import { screenTitle } from '../constants';
+import {
+  ParamListBase,
+  NavigationProp,
+  useNavigation,
+} from '@react-navigation/native';
 
 const styles = StyleSheet.create({
   modalLayout: {
@@ -66,6 +72,7 @@ export default function SelectPlanModal({
   onClose?: () => void;
 }) {
   const insets = useSafeAreaInsets();
+  const navigation = useNavigation<NavigationProp<ParamListBase>>();
 
   const { globalState, globalDispatch } = useContext<any>(
     GlobalContext,
@@ -96,6 +103,8 @@ export default function SelectPlanModal({
   );
   const [totalSavings, setTotalSavings] = useState(0);
   const [showComparision, setShowComparision] = useState(false);
+  const [consentModalVisible, setConsentModalVisible] = useState(false);
+  const [consent, setConsent] = useState(false);
 
   const planData = globalState.planInfo;
   const freePlanData = get(planData, ['default', CypherPlanId.BASIC_PLAN]);
@@ -161,7 +170,6 @@ export default function SelectPlanModal({
         setRecommendedPlan(CypherPlanId.BASIC_PLAN);
       }
     } catch (error) {
-      console.error('Error in calculation:', error);
       setRecommendedPlan(CypherPlanId.BASIC_PLAN);
     }
   };
@@ -184,6 +192,83 @@ export default function SelectPlanModal({
         Sentry.captureException(error);
         return 0;
       }
+    }
+  };
+
+  const onPlanUpgrade = async (
+    optedPlan: CypherPlanId = CypherPlanId.BASIC_PLAN,
+  ) => {
+    setLoading(true);
+    const planCost = get(planData, ['default', optedPlan ?? '', 'cost'], '');
+
+    if (planCost !== '' && cardProvider && cardId) {
+      const cardBalance = await fetchCardBalance();
+      if (Number(cardBalance) < Number(planCost)) {
+        setLoading(false);
+        setIsModalVisible(false);
+        setTimeout(() => {
+          showModal('state', {
+            type: 'error',
+            title: t('INSUFFICIENT_FUNDS'),
+            description: `You do not have $${Number(planCost)} balance to change your plan. Please load now to upgrade`,
+            onSuccess: hideModal,
+            onFailure: hideModal,
+          });
+        }, 500);
+      } else {
+        const { isError, error } = await patchWithAuth(
+          '/v1/cards/rc/plan/deduct',
+          {
+            planId: optedPlan,
+          },
+        );
+        const resp = await getWalletProfile(globalState.token);
+        globalDispatch({
+          type: GlobalContextType.CARD_PROFILE,
+          cardProfile: resp,
+        });
+
+        setLoading(false);
+        if (!isError) {
+          setIsModalVisible(false);
+          setTimeout(() => {
+            showModal('state', {
+              type: 'success',
+              title: `Your plan has been changed to ${get(CYPHER_PLAN_ID_NAME_MAPPING, optedPlan)} successfully`,
+              description: 'You can change your plan anytime in the future',
+              onSuccess: () => {
+                hideModal();
+                onPlanChangeSuccess?.();
+              },
+              onFailure: hideModal,
+            });
+          }, 500);
+        } else {
+          setIsModalVisible(false);
+          setTimeout(() => {
+            showModal('state', {
+              type: 'error',
+              title: t('PLAN_UPDATE_FAILED'),
+              description: error?.message ?? error,
+              onSuccess: hideModal,
+              onFailure: hideModal,
+            });
+          }, 500);
+          Sentry.captureException(error);
+        }
+      }
+    } else {
+      setLoading(false);
+      setIsModalVisible(false);
+      setTimeout(() => {
+        showModal('state', {
+          type: 'error',
+          title: t('CONTACT_CYPHER_SUPPORT'),
+          description: t('UNEXCPECTED_ERROR'),
+          onSuccess: hideModal,
+          onFailure: hideModal,
+        });
+      }, 500);
     }
   };
 
@@ -249,74 +334,7 @@ export default function SelectPlanModal({
         Sentry.captureException(err);
       }
     } else {
-      const planCost = get(planData, ['default', optedPlan ?? '', 'cost'], '');
-
-      if (planCost !== '' && cardProvider && cardId) {
-        const cardBalance = await fetchCardBalance();
-        if (Number(cardBalance) < Number(planCost)) {
-          setIsModalVisible(false);
-          setTimeout(() => {
-            showModal('state', {
-              type: 'error',
-              title: t('INSUFFICIENT_FUNDS'),
-              description: `You do not have $${Number(planCost)} balance to change your plan. Please load now to upgrade`,
-              onSuccess: hideModal,
-              onFailure: hideModal,
-            });
-          }, 500);
-        } else {
-          const { isError, error } = await patchWithAuth(
-            '/v1/cards/rc/plan/deduct',
-            {
-              planId: optedPlan,
-            },
-          );
-          const resp = await getWalletProfile(globalState.token);
-          globalDispatch({
-            type: GlobalContextType.CARD_PROFILE,
-            cardProfile: resp,
-          });
-
-          if (!isError) {
-            setIsModalVisible(false);
-            setTimeout(() => {
-              showModal('state', {
-                type: 'success',
-                title: `Your plan has been changed to ${get(CYPHER_PLAN_ID_NAME_MAPPING, optedPlan)} successfully`,
-                description: 'You can change your plan anytime in the future',
-                onSuccess: () => {
-                  hideModal();
-                  onPlanChangeSuccess?.();
-                },
-                onFailure: hideModal,
-              });
-            }, 500);
-          } else {
-            setIsModalVisible(false);
-            setTimeout(() => {
-              showModal('state', {
-                type: 'error',
-                title: t('PLAN_UPDATE_FAILED'),
-                description: error?.message ?? error,
-                onSuccess: hideModal,
-                onFailure: hideModal,
-              });
-            }, 500);
-            Sentry.captureException(error);
-          }
-        }
-      } else {
-        setIsModalVisible(false);
-        setTimeout(() => {
-          showModal('state', {
-            type: 'error',
-            title: t('CONTACT_CYPHER_SUPPORT'),
-            description: t('UNEXCPECTED_ERROR'),
-            onSuccess: hideModal,
-            onFailure: hideModal,
-          });
-        }, 500);
-      }
+      setConsentModalVisible(true);
     }
     setLoading(false);
   };
@@ -739,6 +757,88 @@ export default function SelectPlanModal({
                 {t('COMPARISION_NOTE_3')}
               </CyDText>
             </CyDScrollView>
+          </CyDView>
+        </CyDModalLayout>
+
+        <CyDModalLayout
+          setModalVisible={setConsentModalVisible}
+          isModalVisible={consentModalVisible}
+          style={styles.modalLayout}
+          animationIn={'slideInUp'}
+          animationOut={'slideOutDown'}>
+          <CyDView className={'bg-n30 rounded-t-[20px] p-[16px]'}>
+            <CyDView className='flex-row justify-between items-center'>
+              <CyDView className='flex-row gap-x-[4px] items-center'>
+                <CyDText className='text-[20px] font-bold'>
+                  {'Upgrading to'}
+                </CyDText>
+                <CyDFastImage
+                  source={AppImages.PREMIUM_LABEL}
+                  className='h-[30px] w-[100px]'
+                  resizeMode='contain'
+                />
+              </CyDView>
+              <CyDTouchView
+                onPress={() => {
+                  setConsentModalVisible(false);
+                }}>
+                <CyDImage
+                  source={AppImages.CLOSE_CIRCLE}
+                  className='w-[24px] h-[24px]'
+                />
+              </CyDTouchView>
+            </CyDView>
+
+            <CyDText className='text-[14px] font-normal mt-[12px]'>
+              {`Upgrading to premium will cost you $${proPlanData?.cost}, which is will be deducted from your Cypher card balance immediately after the upgrade. Make sure you have enough balance in your card to cover the cost.`}
+            </CyDText>
+
+            <CyDTouchView
+              className='flex flex-row items-center mt-[16px]'
+              onPress={() => {
+                setConsent(!consent);
+              }}>
+              <CyDView
+                className={clsx(
+                  'h-[20px] w-[20px] border-[1px] rounded-[4px]',
+                  {
+                    'bg-black': consent,
+                  },
+                )}>
+                {consent && (
+                  <CyDImage
+                    source={AppImages.CORRECT}
+                    className='h-[15px] w-[15px] ml-[2px]'
+                    resizeMode='contain'
+                  />
+                )}
+              </CyDView>
+              <CyDText className='px-[12px] text-[10px]'>
+                {t('UPGRADE_PLAN_CONSENT')}
+                <CyDText
+                  className='font-bold text-[10px] underline'
+                  onPress={() => {
+                    setConsentModalVisible(false);
+                    setIsModalVisible(false);
+                    navigation.navigate(screenTitle.LEGAL_SCREEN);
+                  }}>
+                  {'terms and conditions'}
+                </CyDText>
+              </CyDText>
+            </CyDTouchView>
+
+            <Button
+              title={t('GET_PREMIUM')}
+              onPress={() => {
+                setConsentModalVisible(false);
+                void onPlanUpgrade(CypherPlanId.PRO_PLAN);
+              }}
+              disabled={!consent}
+              loading={loading}
+              loaderStyle={styles.loaderStyle}
+              titleStyle='text-[14px] font-bold'
+              style='p-[3%] my-[12px]'
+            />
           </CyDView>
         </CyDModalLayout>
 
