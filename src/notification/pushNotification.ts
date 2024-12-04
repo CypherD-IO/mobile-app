@@ -30,7 +30,6 @@ export const getToken = async (
   const ARCH_HOST: string = hostWorker.getHost('ARCH_HOST');
   try {
     const fcmToken = await firebase.messaging().getToken();
-    console.log('🚀 ~ fcmToken:', fcmToken);
     if (isAddressSet(walletAddress)) {
       const registerURL = `${ARCH_HOST}/v1/configuration/device/register`;
       const payload = {
