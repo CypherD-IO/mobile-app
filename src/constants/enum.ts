@@ -236,6 +236,7 @@ export enum GlobalModalType {
   WALLET_CONNECT_V2_COSMOS_SIGNING = 'walletConnectV2CosmosSigning',
   CUSTOM_LAYOUT = 'customLayout',
   THREE_D_SECURE_APPROVAL = 'threeDSecureApproval',
+  CARD_ACTIONS_FROM_NOTIFICATION = 'cardActionsFromNotification',
 }
 
 export enum TokenModalType {
@@ -392,4 +393,44 @@ export enum CardOperationsAuthType {
 export enum JoinDiscordStatus {
   SUCCESS = 'success',
   ERROR = 'error',
+}
+
+export enum RPCODES {
+  InsufficientFunds = '51',
+  NotPermitted = '57',
+  SUCCESS = '00',
+}
+
+// I - international
+// D - domestic
+// R - Reap Specific Codes
+export enum CypherDeclineCodes {
+  OTHERS = 'C0',
+  BALANCE = 'C1',
+  ACC_LOCKED = 'C2',
+  ACC_INACTIVE = 'C3',
+  INT_COUNTRY = 'I4G',
+  INT_CHANNEL_LIMIT = 'I5G',
+  DOM_CHANNEL_LIMIT = 'D5G',
+  DAILY_LIMIT = 'C6',
+  MONTHLY_LIMIT = 'C7',
+  RATE_CHECK_USER = 'U8G',
+  LOCATION_CHECK_USER = 'L8G',
+  RATE_CHECK_MERCHANT = 'M8G',
+  HIGH_RISK = 'C9',
+  CATERGORY = 'A1G',
+  CATERGORY_LIMIT = 'A2G',
+  CATERGORY_DENIED = 'A3G',
+  MERCHANT_GLOBAL = 'B2G', // cypher global settings
+  MERCHANT_DENIED = 'B3G', // user settings
+  MERCHANT_LIMIT = 'B4G', // user settings
+}
+
+export enum NOTIFE_ACTIONS {
+  ADD_COUNTRY = 'add-country',
+  INCREASE_DOMESTIC_LIMIT = 'increase-domestic-limit',
+  INCREASE_INTERNATIONAL_LIMIT = 'increase-international-limit',
+  INCREASE_DAILY_LIMIT = 'increase-daily-limit',
+  INCREASE_MONTHLY_LIMIT = 'increase-monthly-limit',
+  ENABLE_ZERO_RESTRICTION_MODE = 'enable-zero-restriction-mode',
 }

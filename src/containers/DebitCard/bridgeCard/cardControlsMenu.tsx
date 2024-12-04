@@ -96,7 +96,7 @@ export default function CardControlsMenu() {
 
   const getCardLimits = async () => {
     const response = await getWithAuth(
-      `/v1/cards/${currentCardProvider}/card/${card.cardId}/limits`,
+      `/v1/cards/${currentCardProvider}/card/${cardId}/limits`,
     );
 
     if (!response.isError) {
@@ -291,7 +291,7 @@ export default function CardControlsMenu() {
         openComparePlans={openComparePlans}
         deductAmountNow={true}
         cardProvider={currentCardProvider}
-        cardId={card.cardId}
+        cardId={cardId}
         onPlanChangeSuccess={() => {
           navigation.navigate(screenTitle.DEBIT_CARD_SCREEN);
         }}
@@ -576,7 +576,7 @@ export default function CardControlsMenu() {
                       {
                         cardControlType: CardControlTypes.INTERNATIONAL,
                         currentCardProvider,
-                        card,
+                        cardId: card?.cardId,
                       },
                     );
                   } else {
