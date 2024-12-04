@@ -1150,7 +1150,7 @@ const Bridge: React.FC = () => {
     } catch (e: any) {
       showModal('state', {
         type: 'error',
-        title: t('UNEXCPECTED_ERROR'),
+        title: t('UNEXPECTED_ERROR'),
         description: e?.message ?? JSON.stringify(e),
         onSuccess: navigateToPortfolio,
         onFailure: navigateToPortfolio,
@@ -1183,7 +1183,7 @@ const Bridge: React.FC = () => {
     } catch (e: any) {
       showModal('state', {
         type: 'error',
-        title: t('UNEXCPECTED_ERROR'),
+        title: t('UNEXPECTED_ERROR'),
         description: e?.message ?? JSON.stringify(e),
         onSuccess: navigateToPortfolio,
         onFailure: navigateToPortfolio,
@@ -1257,7 +1257,7 @@ const Bridge: React.FC = () => {
       if (err.name !== 'AbortError') {
         showModal('state', {
           type: 'error',
-          title: t('UNEXCPECTED_ERROR'),
+          title: t('UNEXPECTED_ERROR'),
           description: err?.message ?? JSON.stringify(err),
           onSuccess: navigateToPortfolio,
           onFailure: navigateToPortfolio,
@@ -1481,7 +1481,7 @@ const Bridge: React.FC = () => {
         setLoading({ ...loading, acceptSwapLoading: false });
         showModal('state', {
           type: 'error',
-          title: t('UNEXCPECTED_ERROR'),
+          title: t('UNEXPECTED_ERROR'),
           description: parseErrorMessage(err) ?? JSON.stringify(err),
           onSuccess: navigateToPortfolio,
           onFailure: navigateToPortfolio,

@@ -89,7 +89,7 @@ const StateModal: React.FC<State> = (store: State) => {
       } else if (store.type === modalType.error) {
         return (
           <CyDText className={'mt-[15px] mb-[15px] text-center'}>
-            {t<string>('UNEXCPECTED_ERROR')}
+            {t<string>('UNEXPECTED_ERROR')}
           </CyDText>
         );
       }
