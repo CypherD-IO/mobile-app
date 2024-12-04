@@ -27,41 +27,37 @@ export const getToken = async (
   coreumAddress?: string,
   kujiraAddress?: string,
 ) => {
-  return await new Promise((resolve, reject) => {
-    const ARCH_HOST: string = hostWorker.getHost('ARCH_HOST');
-    firebase
-      .messaging()
-      .getToken()
-      .then(fcmToken => {
-        if (isAddressSet(walletAddress)) {
-          const registerURL = `${ARCH_HOST}/v1/configuration/device/register`;
-          const payload = {
-            address: walletAddress,
-            cosmosAddress,
-            osmosisAddress,
-            junoAddress,
-            stargazeAddress,
-            nobleAddress,
-            coreumAddress,
-            kujiraAddress,
-            fcmToken,
-          };
-          axios
-            .put(registerURL, payload)
-            .then(resp => {
-              resolve({ fcmToken });
-            })
-            .catch(error => {
-              Sentry.captureException(error);
-              resolve({ error });
-            });
-        }
-      })
-      .catch(e => {
-        Sentry.captureException(e);
-        resolve({ error: e });
-      });
-  });
+  const ARCH_HOST: string = hostWorker.getHost('ARCH_HOST');
+  try {
+    const fcmToken = await firebase.messaging().getToken();
+    console.log('🚀 ~ fcmToken:', fcmToken);
+    if (isAddressSet(walletAddress)) {
+      const registerURL = `${ARCH_HOST}/v1/configuration/device/register`;
+      const payload = {
+        address: walletAddress,
+        cosmosAddress,
+        osmosisAddress,
+        junoAddress,
+        stargazeAddress,
+        nobleAddress,
+        coreumAddress,
+        kujiraAddress,
+        fcmToken,
+      };
+      try {
+        await axios.put(registerURL, payload);
+        return { fcmToken };
+      } catch (error) {
+        Sentry.captureException(error);
+        return { error };
+      }
+    } else {
+      return { error: 'Wallet address is not set' };
+    }
+  } catch (e) {
+    Sentry.captureException(e);
+    return { error: e };
+  }
 };
 
 async function createNotificationChannel() {

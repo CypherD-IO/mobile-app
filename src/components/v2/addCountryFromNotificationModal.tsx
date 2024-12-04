@@ -1,20 +1,13 @@
+import { t } from 'i18next';
+import { capitalize, get } from 'lodash';
 import React, { useState } from 'react';
 import { StyleSheet } from 'react-native';
-import { CyDImage, CyDText, CyDView } from '../../styles/tailwindStyles';
 import AppImages from '../../../assets/images/appImages';
-import { t } from 'i18next';
-import Button from './button';
-import CyDModalLayout from './modal';
-import { capitalize, get } from 'lodash';
 import useAxios from '../../core/HttpRequest';
 import { parseErrorMessage } from '../../core/util';
-import {
-  ParamListBase,
-  useNavigation,
-  NavigationProp,
-} from '@react-navigation/native';
-import { screenTitle } from '../../constants';
-import { CardControlTypes } from '../../constants/enum';
+import { CyDImage, CyDText, CyDView } from '../../styles/tailwindStyles';
+import Button from './button';
+import CyDModalLayout from './modal';
 
 const styles = StyleSheet.create({
   modalLayout: {
@@ -53,8 +46,13 @@ export default function AddCountryFromNotificationModal({
   };
 
   const onPressAddCountry = async () => {
-    if (data?.provider && data?.cardId && data?.merchantCountry) {
-      setLoading(true);
+    if (!data?.provider || !data?.cardId || !data?.merchantCountry) {
+      setErrorMessage('Missing required data');
+      setUpdateError(true);
+      return;
+    }
+    setLoading(true);
+    try {
       const {
         data: limits,
         error: limitError,
@@ -62,35 +60,34 @@ export default function AddCountryFromNotificationModal({
       } = await getWithAuth(
         `/v1/cards/${data?.provider}/card/${data?.cardId}/limits`,
       );
-
-      if (!isLimitError) {
-        const payload = {
-          cusL: {
-            intl: {
-              ...get(limits, 'cusL.intl'),
-              cLs: [...get(limits, 'cusL.intl.cLs'), data?.merchantCountry],
-              dis: false,
-            },
-          },
-        };
-        const { error: _updateError, isError: isUpdateError } =
-          await patchWithAuth(
-            `/v1/cards/${data?.provider}/card/${data?.cardId}/limits`,
-            payload,
-          );
-        if (!isUpdateError) {
-          setLoading(false);
-          setUpdateSuccess(true);
-        } else {
-          setLoading(false);
-          setUpdateError(true);
-          setErrorMessage(parseErrorMessage(_updateError));
-        }
-      } else {
-        setUpdateError(true);
-        setErrorMessage(parseErrorMessage(limitError));
-        setLoading(false);
+      if (isLimitError) {
+        throw new Error(parseErrorMessage(limitError));
       }
+      const payload = {
+        cusL: {
+          intl: {
+            ...get(limits, 'cusL.intl'),
+            cLs: [...get(limits, 'cusL.intl.cLs'), data?.merchantCountry],
+            dis: false,
+          },
+        },
+      };
+      const { error: _updateError, isError: isUpdateError } =
+        await patchWithAuth(
+          `/v1/cards/${data?.provider}/card/${data?.cardId}/limits`,
+          payload,
+        );
+      if (isUpdateError) {
+        throw new Error(parseErrorMessage(_updateError));
+      }
+      setUpdateSuccess(true);
+    } catch (error) {
+      setUpdateError(true);
+      setErrorMessage(
+        error instanceof Error ? error.message : 'Unknown error occurred',
+      );
+    } finally {
+      setLoading(false);
     }
   };
 

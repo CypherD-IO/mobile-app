@@ -584,18 +584,16 @@ export default function Portfolio({ navigation }: PortfolioProps) {
             break;
           }
           case NotificationEvents.CARD_TXN_UPDATE: {
-            const { categoryId, cardId, url, provider } = remoteMessage.data;
+            const { categoryId, cardId, url, provider, declineCode } =
+              remoteMessage.data;
 
-            if (categoryId) {
+            if (categoryId && declineCode) {
               void analytics().logEvent('card_decline_add_txn_cta', {
                 from: ethereum.address,
               });
 
               if (cardId && provider) {
-                if (
-                  remoteMessage.data.declineCode ===
-                  CypherDeclineCodes.INT_COUNTRY
-                ) {
+                if (declineCode === CypherDeclineCodes.INT_COUNTRY) {
                   showModal(GlobalModalType.CARD_ACTIONS_FROM_NOTIFICATION, {
                     closeModal: () => {
                       hideModal();
