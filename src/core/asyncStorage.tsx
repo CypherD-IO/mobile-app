@@ -489,6 +489,14 @@ export const setConnectionType = async (token: string) => {
   }
 };
 
+export const removeConnectionType = async () => {
+  try {
+    await AsyncStorage.removeItem('CONNECTION_TYPE');
+  } catch (error) {
+    Sentry.captureException(error);
+  }
+};
+
 export const getConnectionType = async () => {
   try {
     const connectionType = await AsyncStorage.getItem('CONNECTION_TYPE');
