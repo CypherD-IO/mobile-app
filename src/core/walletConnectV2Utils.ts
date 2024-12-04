@@ -12,6 +12,7 @@ export async function createWeb3Wallet(projectId: string) {
     core = new Core({
       // logger: 'debug',
       projectId,
+      relayUrl: 'wss://relay.walletconnect.com', // Note the .com instead of .org
       // relayUrl: relayerRegionURL ?? process.env.NEXT_PUBLIC_RELAY_URL
     });
 

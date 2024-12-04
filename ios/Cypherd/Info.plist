@@ -53,7 +53,11 @@
 	<false/>
 	<key>LSApplicationQueriesSchemes</key>
 	<array>
-		<string>itms-apps</string>
+		<string>metamask</string>
+		<string>trust</string>
+		<string>safe</string>
+		<string>rainbow</string>
+		<string>uniswap</string>
 		<string>cbwallet</string>
 		<string>whatsapp</string>
 		<string>tg</string>
