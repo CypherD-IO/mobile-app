@@ -29,7 +29,7 @@ import {
 import { wagmiConfig, walletClient } from '../../components/wagmiConfigBuilder';
 import { useGlobalModalContext } from '../../components/v2/GlobalModal';
 import { ConnectionTypes } from '../../constants/enum';
-import { walletConnectChainData } from '../../constants/server';
+import { Chain, walletConnectChainData } from '../../constants/server';
 import { getConnectionType } from '../../core/asyncStorage';
 import { MODAL_HIDE_TIMEOUT_250 } from '../../core/Http';
 import { loadPrivateKeyFromKeyChain } from '../../core/Keychain';
@@ -85,36 +85,36 @@ export default function useEthSigner() {
   };
 
   const findTransaction = (
-    fromAddress: string, 
-    toAddress: string, 
+    fromAddress: string,
+    toAddress: string,
     value: bigint,
     chainId: number,
     startBlockNumber: bigint,
-    contractAddress?: string
+    contractAddress?: string,
   ): Promise<Hash | null> => {
     return new Promise((resolve, reject) => {
+      // Make API call to get transactions
+      const getTransactions = async () => {
+        try {
+          const response = await getWithAuth(
+            `/v1/txn/transactions/${fromAddress}?isUnmarshalQuery=true&blockchain=${get(ChainIdToBackendNameMapping, [String(chainId)])}&toAddress=${toAddress}&fromBlock=${startBlockNumber}${contractAddress ? `&contractAddress=${contractAddress}` : ''}`,
+          );
+          const data = response.data;
+          if (data.transactions && data.transactions.length === 1) {
+            const matchingTx = data.transactions[0];
+            resolve(matchingTx.hash as `0x${string}`);
+            return;
+          }
 
-        // Make API call to get transactions
-        const getTransactions = async () => {
-            try {
-                const response = await getWithAuth(`/v1/txn/transactions/${fromAddress}?isUnmarshalQuery=true&blockchain=${get(ChainIdToBackendNameMapping, [String(chainId)])}&toAddress=${toAddress}&fromBlock=${startBlockNumber}${contractAddress ? `&contractAddress=${contractAddress}` : ''}`);
-                const data = response.data;
-                if (data.transactions && data.transactions.length === 1) {
-                    const matchingTx = data.transactions[0];
-                    resolve(matchingTx.hash as `0x${string}`);
-                    return;
-                }
+          // No match found
+          resolve(null);
+        } catch (error) {
+          reject(error);
+        }
+      };
 
-                // No match found
-                resolve(null);
-
-            } catch (error) {
-                reject(error);
-            }
-        };
-
-        // Start transaction search
-        void getTransactions();
+      // Start transaction search
+      void getTransactions();
     });
   };
 
@@ -126,49 +126,15 @@ export default function useEthSigner() {
     transactionToBeSigned: EthTransaction;
     chainId: number;
   }) {
-    try {
-      // Get the current block number before starting
-      const startBlockNumber = await getBlockNumber(wagmiConfig);
+    const hash = await sendTransactionAsync({
+      account: transactionToBeSigned.from as `0x${string}`,
+      to: transactionToBeSigned.to as `0x${string}`,
+      chainId: chainId,
+      value: BigInt(transactionToBeSigned.value),
+      data: transactionToBeSigned?.data ?? '0x',
+    });
 
-      // First attempt: Direct transaction
-      try {
-        const hash = await sendTransactionAsync({
-          account: transactionToBeSigned.from as `0x${string}`,
-          to: transactionToBeSigned.to as `0x${string}`,
-          chainId: chainId,
-          value: BigInt(transactionToBeSigned.value),
-          data: transactionToBeSigned?.data ?? '0x',
-        });
-        
-        return hash;
-      } catch (directError) {        
-        // Check if error is user cancellation
-        if (directError instanceof Error && 
-          directError.message.includes('User cancelled the request')) {
-            throw new Error('User cancelled the request');
-          }
-        
-        // Second attempt: Find transaction
-        try {
-          const hash = await findTransaction(
-            transactionToBeSigned.from,
-            transactionToBeSigned.to,
-            BigInt(transactionToBeSigned.value),
-            chainId,
-            startBlockNumber
-          );
-          
-          if (hash) {
-            return hash;
-          }
-        } catch (findError) {
-        }
-        throw new Error('Your transaction has been submitted but is yet to be confirmed. Please check your transaction history after some time.');
-      }
-    } catch (error) {
-      console.error('Transaction error:', error);
-      throw error;
-    }
+    return hash;
   }
 
   async function sendToken({
@@ -198,54 +164,18 @@ export default function useEthSigner() {
       },
     ];
 
-    try {
-      // Get the current block number before starting
-      const startBlockNumber = await getBlockNumber(wagmiConfig);
+    const hash = await writeContractAsync({
+      abi: contractAbiFragment,
+      address: transactionToBeSigned.to as `0x${string}`,
+      functionName: 'transfer',
+      args: [
+        transactionToBeSigned.contractParams?.toAddress,
+        BigInt(transactionToBeSigned.contractParams?.numberOfTokens as string),
+      ],
+      chainId,
+    });
 
-      // First attempt: Direct transaction
-      try {
-        const hash = await Promise.race([
-          writeContractAsync({
-            abi: contractAbiFragment,
-            address: transactionToBeSigned.to as `0x${string}`,
-            functionName: 'transfer',
-            args: [
-              transactionToBeSigned.contractParams?.toAddress,
-              BigInt(transactionToBeSigned.contractParams?.numberOfTokens as string),
-            ],
-            chainId,
-          }),
-          new Promise((_, reject) => 
-            setTimeout(() => reject(new Error('Transaction timeout')), 120000)
-          )
-        ]);
-        
-        return hash;
-      } catch (directError) {
-        
-        // Second attempt: Find transaction
-        try {
-          const hash = await findTransaction(
-            transactionToBeSigned.from,
-            transactionToBeSigned.contractParams?.toAddress,
-            BigInt(transactionToBeSigned.contractParams?.numberOfTokens as string),
-            chainId,
-            startBlockNumber,
-            transactionToBeSigned.to
-          );
-          
-          if (hash) {
-            return hash;
-          }
-        } catch (findError) {
-        }
-        
-        throw new Error('Your token transfer has been submitted but is yet to be confirmed. Please check your transaction history after some time.');
-      }
-    } catch (error) {
-      console.error('Token transfer error:', error);
-      throw error;
-    }
+    return hash;
   }
 
   const signApprovalEthereum = async ({ web3, sendChain, dataToSign }) => {
@@ -356,6 +286,57 @@ export default function useEthSigner() {
     }
   };
 
+  async function handleTransaction(
+    transactionToBeSigned: EthTransaction,
+    chainConfig: Chain,
+  ) {
+    // Get the current block number before starting
+    const startBlockNumber = await getBlockNumber(wagmiConfig);
+
+    // First attempt: Direct transaction
+    try {
+      let hash;
+      if (transactionToBeSigned.contractParams) {
+        hash = await sendToken({
+          transactionToBeSigned,
+          chainId: chainConfig.id,
+        });
+      } else {
+        hash = await sendNativeCoin({
+          transactionToBeSigned,
+          chainId: chainConfig.id,
+        });
+      }
+      return hash;
+    } catch (directError) {
+      // Check if error is user cancellation
+      if (
+        directError instanceof Error &&
+        directError.message.includes('User cancelled the request')
+      ) {
+        throw new Error('User cancelled the request');
+      }
+
+      // Second attempt: Find transaction
+      try {
+        const hash = await findTransaction(
+          transactionToBeSigned.from,
+          transactionToBeSigned.to,
+          BigInt(transactionToBeSigned.value),
+          chainConfig.id,
+          startBlockNumber,
+        );
+
+        if (hash) {
+          return hash;
+        }
+      } catch (findError) {}
+      throw new Error(
+        'Your transaction has been submitted but is yet to be confirmed. Please check your transaction history after some time.',
+      );
+    }
+  }
+
   const signEthTransaction = async ({
     web3,
     sendChain,
@@ -415,42 +396,24 @@ export default function useEthSigner() {
           }
         }
         let hash;
-        if (transactionToBeSigned.contractParams) {
-          hash = await sendToken({
-            transactionToBeSigned,
-            chainId: chainConfig.id,
+        try {
+          hash = await handleTransaction(transactionToBeSigned, chainConfig);
+        } catch (error) {
+          Sentry.captureException(error);
+          showModal('state', {
+            type: 'error',
+            title: 'Transaction Failed',
+            description: error.message,
+            onSuccess: () => {
+              hideModal();
+              navigation.goBack();
+            },
+            onFailure: () => {
+              hideModal();
+              navigation.goBack();
+            },
           });
-        } else {
-          try {
-            hash = await sendNativeCoin({
-              transactionToBeSigned,
-              chainId: chainConfig.id,
-            });
-            
-            if (!hash) {
-              throw new Error('No transaction hash received');
-            }
-            
-            hideModal();
-            return hash;
-            
-          } catch (error) {
-            Sentry.captureException(error);
-            showModal('state', {
-              type: 'error',
-              title: 'Transaction Failed',
-              description: error.message,
-              onSuccess: () => {
-                hideModal();
-                navigation.goBack();
-              },
-              onFailure: () => {
-                hideModal();
-                navigation.goBack();
-              },
-            });
-            throw error;
-          }
+          throw error;
         }
         return hash;
       } else {

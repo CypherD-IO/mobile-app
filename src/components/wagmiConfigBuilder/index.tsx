@@ -42,7 +42,7 @@ const projectId = String(Config.WALLET_CONNECT_PROJECTID);
 const metadata = {
   name: 'Cypher Wallet',
   description: 'Cypher Wallet',
-  url: 'https://cypherwallet.io',
+  url: 'https://cypherhq.io',
   icons: ['https://avatars.githubusercontent.com/u/37784886'],
   redirect: {
     native: 'cypherwallet://',
