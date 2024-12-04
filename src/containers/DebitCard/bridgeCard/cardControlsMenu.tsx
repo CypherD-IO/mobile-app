@@ -102,9 +102,7 @@ export default function CardControlsMenu() {
     if (!response.isError) {
       const limitValue = response.data;
       setLimits(limitValue);
-      if (get(limitValue, 'cydL')) {
-        setLimitApplicable('cydL');
-      } else if (get(limitValue, 'advL')) {
+      if (get(limitValue, 'advL')) {
         setLimitApplicable('advL');
       } else {
         setLimitApplicable('planLimit');

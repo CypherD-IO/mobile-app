@@ -26,8 +26,8 @@ import { useGlobalModalContext } from '../../../components/v2/GlobalModal';
 import CyDModalLayout from '../../../components/v2/modal';
 import { StyleSheet } from 'react-native';
 import Loading from '../../../components/v2/loading';
-
 import Slider from '../../../components/v2/slider';
+
 interface RouteParams {
   currentCardProvider: CardProviders;
   card: Card;
@@ -41,6 +41,9 @@ const styles = StyleSheet.create({
   loader: {
     height: 22,
     width: 22,
+  },
+  sliderContainer: {
+    borderRadius: 4,
   },
 });
 
@@ -125,10 +128,7 @@ export default function EditLimits() {
     setPageLoading(false);
     if (!isError) {
       setLimitsData(data);
-      if (get(data, 'cydL')) {
-        setDailyUsageLimit(get(data, ['cydL', 'd']));
-        setMonthlyUsageLimit(get(data, ['cydL', 'm']));
-      } else if (get(data, 'advL')) {
+      if (get(data, 'advL')) {
         setDailyUsageLimit(get(data, ['advL', 'd']));
         setMonthlyUsageLimit(get(data, ['advL', 'm']));
       } else {
@@ -247,7 +247,11 @@ export default function EditLimits() {
             <CyDView className='mt-[4px] mb-[8px]'>
               <Slider
                 minValue={0}
-                maxValue={limitsData?.maxLimit?.d ?? 1000}
+                maxValue={
+                  get(limitsData, ['cydL', 'd']) ??
+                  limitsData?.maxLimit?.d ??
+                  1000
+                }
                 steps={4}
                 onSlidingComplete={value => {
                   setDailyUsageLimit(value);
@@ -294,7 +298,11 @@ export default function EditLimits() {
             <CyDView className='mt-[4px] mb-[8px]'>
               <Slider
                 minValue={0}
-                maxValue={limitsData?.maxLimit?.m ?? 1000}
+                maxValue={
+                  get(limitsData, ['cydL', 'm']) ??
+                  limitsData?.maxLimit?.m ??
+                  1000
+                }
                 steps={4}
                 onValueChange={value => {
                   setMonthlyUsageLimit(value);
