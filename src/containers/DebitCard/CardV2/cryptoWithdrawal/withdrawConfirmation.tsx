@@ -19,7 +19,7 @@ import AppImages from '../../../../../assets/images/appImages';
 import { t } from 'i18next';
 import Button from '../../../../components/v2/button';
 import { screenTitle } from '../../../../constants';
-import { capitalize, ceil } from 'lodash';
+import { capitalize, ceil, round } from 'lodash';
 import { toWords } from 'number-to-words';
 import { HdWalletContext, parseErrorMessage } from '../../../../core/util';
 import { HdWalletContextDef } from '../../../../reducers/hdwallet_reducer';
@@ -133,7 +133,7 @@ export default function WithdrawConfirmation() {
           </CyDView>
           <CyDView className='mt-[24px]'>
             <CyDText className='font-medium text-[12px] text-n100'>
-              {'Conversion Rate'}
+              {'Conversion Fee'}
             </CyDText>
             <CyDView className='bg-n10 rounded-[8px] mt-[4px] p-[12px]'>
               <CyDText className='font-bold text-[17px] text-n200'>
@@ -153,11 +153,11 @@ export default function WithdrawConfirmation() {
           </CyDView>
           <CyDView className='mt-[24px]'>
             <CyDText className='font-medium text-[12px] text-n100'>
-              {'Asset value'}
+              {'Crypto value you will receive'}
             </CyDText>
             <CyDView className='bg-n10 rounded-[8px] mt-[4px] p-[12px] flex flex-row justify-between'>
               <CyDText className='font-bold text-[16px] text-base400'>
-                {`$ ${finalAmount}`}
+                {`$ ${round(finalAmount, 2)}`}
               </CyDText>
               <CyDView className='flex flex-row items-center'>
                 <CyDView className='relative mr-[2px]'>
