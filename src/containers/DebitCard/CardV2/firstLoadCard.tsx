@@ -62,6 +62,7 @@ import { HdWalletContextDef } from '../../../reducers/hdwallet_reducer';
 import {
   CyDFastImage,
   CyDImage,
+  CyDKeyboardAwareScrollView,
   CyDScrollView,
   CyDText,
   CyDTextInput,
@@ -948,7 +949,7 @@ export default function FirstLoadCard() {
   };
 
   return (
-    <CyDView className='' style={{ paddingTop: insect.top }}>
+    <CyDKeyboardAwareScrollView className='' style={{ paddingTop: insect.top }}>
       <ChooseTokenModal
         isChooseTokenModalVisible={isChooseTokenVisible}
         minTokenValueLimit={minTokenValueLimit}
@@ -1343,7 +1344,7 @@ export default function FirstLoadCard() {
           />
         </CyDView>
       </CyDView>
-    </CyDView>
+    </CyDKeyboardAwareScrollView>
   );
 }
 
