@@ -18,14 +18,23 @@ fi
 export NVM_DIR="$HOME/.nvm"
 [ -s "$NVM_DIR/nvm.sh" ] && \. "$NVM_DIR/nvm.sh"  # This loads nvm
 
-nvm install 18.17.1
-nvm use 18.17.1
-nvm alias default 18.17.1
+# Try to get Node.js version from .nvmrc, fallback to default if not found
+if [ -f "../.nvmrc" ]; then
+    NODE_VERSION=$(cat "../.nvmrc")
+    echo "Found .nvmrc file, using Node.js version: $NODE_VERSION"
+else
+    NODE_VERSION="18.17.1"
+    echo "No .nvmrc file found, using default Node.js version: $NODE_VERSION"
+fi
+
+nvm install $NODE_VERSION
+nvm use $NODE_VERSION
+nvm alias default $NODE_VERSION
 
 # Verify Node.js version
 node -v
 
-sudo ln -sf $(which node) /Users/local/.nvm/versions/node/v18.17.0/bin/node
+sudo ln -sf $(which node) /Users/local/.nvm/versions/node/$NODE_VERSION/bin/node
 
 NODE_PATH=$(which node)
 
@@ -34,8 +43,6 @@ echo "Node.js binary is located at: $NODE_PATH"
 
 # Export NODE_BINARY for Xcode to use
 export NODE_BINARY=$NODE_PATH
-
-
 
 # Install dependencies with npm, using legacy-peer-deps if needed
 npm install --legacy-peer-deps
@@ -47,72 +54,9 @@ rm -rf /Volumes/workspace/DerivedData
 pod deintegrate
 pod install --repo-update
 
-# The sed command from React Native that needs to be run manually (uncomment if needed)
-# sed -i -e $'s/ && (__IPHONE_OS_VERSION_MIN_REQUIRED < __IPHONE_10_0)//' /Volumes/workspace/repository/ios/Pods/RCT-Folly/folly/portability/Time.h
-
-# Add these debug lines to verify paths
-echo "Current directory: $(pwd)"
 
 # Define PROJECT_DIR relative to script location
 PROJECT_DIR="$(pwd)/.."  # Goes up one level from ci_scripts to ios directory
-
-echo "PROJECT_DIR: $PROJECT_DIR"
-echo "Info.plist path: $PROJECT_DIR/Cypherd/Info.plist"
-
-# Get version from environment variables
-CURRENT_VERSION="${MARKETING_VERSION}"
-CURRENT_BUILD="${CURRENT_PROJECT_VERSION}"
-
-# Fallback to Info.plist values if env variables are not set
-if [ -z "$CURRENT_VERSION" ]; then
-    CURRENT_VERSION=$(/usr/libexec/PlistBuddy -c "Print :CFBundleShortVersionString" "$PROJECT_DIR/Cypherd/Info.plist")
-    echo "Warning: MARKETING_VERSION not set in environment, using Info.plist value: $CURRENT_VERSION"
-fi
-
-if [ -z "$CURRENT_BUILD" ]; then
-    CURRENT_BUILD=$(/usr/libexec/PlistBuddy -c "Print :CFBundleVersion" "$PROJECT_DIR/Cypherd/Info.plist")
-    echo "Warning: CURRENT_PROJECT_VERSION not set in environment, using Info.plist value: $CURRENT_BUILD"
-fi
-
-# Increment version if target branch is main
-if [ "$CI_BRANCH" = "main" ]; then
-    # Extract all three parts
-    MAJOR=$(echo "$CURRENT_VERSION" | cut -d. -f1)
-    MINOR=$(echo "$CURRENT_VERSION" | cut -d. -f2)
-    PATCH=$(echo "$CURRENT_VERSION" | cut -d. -f3)
-    
-    echo "Debug: MAJOR=$MAJOR MINOR=$MINOR PATCH=$PATCH"
-    
-    MINOR=$((MINOR + 1))
-    if [ $MINOR -gt 99 ]; then
-        MAJOR=$((MAJOR + 1))
-        MINOR=0
-    fi
-    
-    # If PATCH was empty (2-part version), don't include it in NEW_VERSION
-    if [ -z "$PATCH" ]; then
-        NEW_VERSION="$MAJOR.$MINOR"
-    else
-        NEW_VERSION="$MAJOR.$MINOR.$PATCH"
-    fi
-    CURRENT_VERSION=$NEW_VERSION
-fi
-
-# Update Info.plist values
-if ! /usr/libexec/PlistBuddy -c "Set :CFBundleShortVersionString $CURRENT_VERSION" "$PROJECT_DIR/Cypherd/Info.plist"; then
-    echo "Error: Failed to update CFBundleShortVersionString in Info.plist"
-    exit 1
-fi
-
-if ! /usr/libexec/PlistBuddy -c "Set :CFBundleVersion $CURRENT_BUILD" "$PROJECT_DIR/Cypherd/Info.plist"; then
-    echo "Error: Failed to update CFBundleVersion in Info.plist"
-    exit 1
-fi
-
-# Verify the changes
-echo "Verified Info.plist changes:"
-echo "Marketing Version: $CURRENT_VERSION"
-echo "Build Number: $CURRENT_BUILD"
 
 # Create .env file in project root
 cat > "$PROJECT_DIR/../.env" << EOL
@@ -121,11 +65,6 @@ ENVIRONMENT=${ENVIRONMENT}
 INTERCOM_APP_KEY=${INTERCOM_APP_KEY}
 WALLET_CONNECT_PROJECTID=${WALLET_CONNECT_PROJECTID}
 EOL
-
-echo "Created .env file with required variables"
-cat "$PROJECT_DIR/../.env"
-
-echo "Current working directory: $(pwd)"
 
 # Use absolute paths with $CI_PRIMARY_REPOSITORY_PATH
 GOOGLE_PLIST_PATH="${CI_PRIMARY_REPOSITORY_PATH}/ios/GoogleService-Info.plist"
@@ -156,7 +95,6 @@ chmod 644 "$GOOGLE_PLIST_PATH"  # Changed to 644 for read permissions
 
 echo "Successfully created GoogleService-Info.plist at: $GOOGLE_PLIST_PATH"
 
-# Similar changes for sentry.properties
 if [ -z "$SENTRY_PROPERTIES" ]; then 
     echo "Error: SENTRY_PROPERTIES environment variable is not set" 
     exit 1 
