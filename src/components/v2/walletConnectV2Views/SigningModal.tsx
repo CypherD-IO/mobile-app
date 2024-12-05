@@ -378,8 +378,10 @@ export default function SigningModal({
             response: formattedRPCResponse,
           });
         }
+        setAcceptingRequest(false);
         hideModal();
       } catch (e) {
+        setAcceptingRequest(false);
         hideModal();
       }
     } else {
@@ -405,8 +407,10 @@ export default function SigningModal({
               response: rejectionResponse,
             });
           }
+          setRejectingRequest(false);
           (hideModal as () => void)(); // Type asserting that hideModal cannot be undefined here.
         } catch (e) {
+          setRejectingRequest(false);
           (hideModal as () => void)(); // Type asserting that hideModal cannot be undefined here.
         }
       } else {
@@ -500,6 +504,7 @@ export default function SigningModal({
             <CyDView className={'w-full px-[25px] mt-[12px] mb-[24px]'}>
               <Button
                 loading={acceptingRequest}
+                style='p-[3%] mt-[12px]'
                 title={renderAcceptTitle(method)}
                 onPress={() => {
                   void handleAccept();

@@ -473,7 +473,6 @@ export default function useWeb3(origin: Web3Origin) {
       } = hdWalletContext.state;
 
       const { params, method, id: payloadId } = payload;
-
       const selectedChain = chain ?? sChain;
       web3RPCEndpoint.current = new Web3(
         getWeb3Endpoint(selectedChain, globalContext),
@@ -631,7 +630,7 @@ export default function useWeb3(origin: Web3Origin) {
           };
         }
         case Web3Method.GET_BALANCE: {
-          const addressToFetch = params ? params[0] ?? address : address;
+          const addressToFetch = params ? (params[0] ?? address) : address;
           const balanceInHex = bigNumberToHex(
             await web3RPCEndpoint.current.eth.getBalance(addressToFetch),
           );
