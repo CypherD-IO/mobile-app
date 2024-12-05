@@ -288,17 +288,13 @@ export default function PairingModal({
         <CyDView className={'w-full flex justify-end'}>
           <Button
             loading={acceptingRequest}
-            style={
-              acceptingRequest ? 'mb-[10px] py-[7px]' : 'mb-[10px] py-[15px]'
-            }
+            style={'mb-[10px]'}
             title='Accept'
             onPress={() => void handleAccept()}
           />
           <Button
             loading={rejectingRequest}
-            style={
-              rejectingRequest ? 'mb-[10px] py-[7px]' : 'mb-[10px] py-[15px]'
-            }
+            style={'mb-[10px]'}
             type={ButtonType.TERNARY}
             title='Reject'
             onPress={() => void handleReject()}
