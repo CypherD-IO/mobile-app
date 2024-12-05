@@ -76,14 +76,25 @@ fi
 
 # Increment version if target branch is main
 if [ "$CI_BRANCH" = "main" ]; then
-    IFS='.' read -ra VERSION_PARTS <<< "$CURRENT_VERSION"
-    MAJOR=${VERSION_PARTS[0]}
-    MINOR=$((VERSION_PARTS[1] + 1))
+    # Extract all three parts
+    MAJOR=$(echo "$CURRENT_VERSION" | cut -d. -f1)
+    MINOR=$(echo "$CURRENT_VERSION" | cut -d. -f2)
+    PATCH=$(echo "$CURRENT_VERSION" | cut -d. -f3)
+    
+    echo "Debug: MAJOR=$MAJOR MINOR=$MINOR PATCH=$PATCH"
+    
+    MINOR=$((MINOR + 1))
     if [ $MINOR -gt 99 ]; then
         MAJOR=$((MAJOR + 1))
         MINOR=0
     fi
-    NEW_VERSION="$MAJOR.$MINOR"
+    
+    # If PATCH was empty (2-part version), don't include it in NEW_VERSION
+    if [ -z "$PATCH" ]; then
+        NEW_VERSION="$MAJOR.$MINOR"
+    else
+        NEW_VERSION="$MAJOR.$MINOR.$PATCH"
+    fi
     CURRENT_VERSION=$NEW_VERSION
 fi
 
