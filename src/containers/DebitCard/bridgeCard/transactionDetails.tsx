@@ -28,6 +28,7 @@ import {
   CardProviders,
   ReapTxnStatus,
   CardControlTypes,
+  GlobalModalType,
 } from '../../../constants/enum';
 import clsx from 'clsx';
 import { screenTitle } from '../../../constants';
@@ -157,12 +158,10 @@ const TransactionDetail = ({
   isDeclined = false,
   reason = '',
   metadata,
-  getRequiredData,
-  cardId,
-  limits,
-  provider,
   addIntlCountry,
+  cardId,
   navigation,
+  provider,
 }: {
   item: {
     icon: any;
@@ -176,9 +175,7 @@ const TransactionDetail = ({
   isDeclined?: boolean;
   reason?: string;
   metadata?: ICardSubObjectMerchant;
-  getRequiredData: (cardId: string) => Promise<void>;
   cardId: string;
-  limits: any;
   provider: CardProviders;
   addIntlCountry: (iso2: string, cardId: string) => Promise<void>;
   navigation: NavigationProp<ParamListBase>;
@@ -186,21 +183,6 @@ const TransactionDetail = ({
   const isCountryDisabled =
     reason?.includes('International transactions are disabled') ||
     reason?.includes('is not in the allow list');
-  useEffect(() => {
-    if (
-      isDeclined &&
-      item.title === TRANSACTION_DETAILS_TITLE &&
-      metadata?.merchantCountry &&
-      cardId
-    ) {
-      void getRequiredData(cardId);
-    }
-  }, [isDeclined, item.title, metadata?.merchantCountry, cardId]);
-
-  const countryList = get(limits, 'cusL.intl.cLs', []) as string[];
-  const countryAlreadyAllowed = countryList.includes(
-    metadata?.merchantCountry ?? '',
-  );
 
   return (
     <CyDView>
@@ -237,8 +219,7 @@ const TransactionDetail = ({
         </CyDView>
       </CyDView>
 
-      {!isEmpty(limits) &&
-        metadata?.merchantCountry &&
+      {metadata?.merchantCountry &&
         isCountryDisabled &&
         isDeclined &&
         item.title === TRANSACTION_DETAILS_TITLE && (
@@ -250,18 +231,17 @@ const TransactionDetail = ({
               />
 
               <CyDText className='text-[12px] font-medium ml-[8px] flex-1'>
-                {!countryAlreadyAllowed
-                  ? `Add ${metadata?.merchantCountry} to your allowed countries or update card settings to match your requirements.`
-                  : `International transactions are already enabled for ${metadata?.merchantCountry}. Retry your transaction.`}
+                {`Add ${metadata?.merchantCountry} to your allowed countries or update card settings to match your requirements.`}
               </CyDText>
             </CyDView>
             <CyDView className='mt-[10px] flex-row items-center flex-1'>
               <CyDTouchView
                 className='border border-[#DFE2E6] rounded-[4px] bg-[#FAFBFB] px-[8px] py-[6px] flex-1'
                 onPress={() => {
-                  navigation.navigate(screenTitle.CARD_CONTROLS_MENU, {
+                  navigation.navigate(screenTitle.INTERNATIONAL_CARD_CONTROLS, {
                     cardId: cardId ?? '',
                     currentCardProvider: provider,
+                    cardControlType: CardControlTypes.INTERNATIONAL,
                   });
                 }}>
                 <CyDText className='text-center text-[14px] font-semibold'>
@@ -271,11 +251,7 @@ const TransactionDetail = ({
               <CyDTouchView
                 className={clsx(
                   'border border-p40 rounded-[4px] bg-p40 px-[8px] py-[6px] flex-1 ml-[10px]',
-                  {
-                    'opacity-50': countryAlreadyAllowed,
-                  },
                 )}
-                disabled={countryAlreadyAllowed}
                 onPress={() => {
                   void addIntlCountry(metadata?.merchantCountry, cardId ?? '');
                 }}>
@@ -477,7 +453,7 @@ export default function TransactionDetails() {
         Sentry.captureException(error);
         showModal('state', {
           type: 'error',
-          title: t('UNEXCPECTED_ERROR'),
+          title: t('UNEXPECTED_ERROR'),
           description: parseErrorMessage(error),
           onSuccess: hideModal,
           onFailure: hideModal,
@@ -487,72 +463,22 @@ export default function TransactionDetails() {
   };
 
   const addIntlCountry = async (iso2: string, cardId?: string) => {
-    if (!iso2 || !cardId) {
-      showModal('state', {
-        type: 'error',
-        title: t('INVALID_PARAMETERS'),
-        description: 'Missing ISO2 code or cardId',
-        onSuccess: hideModal,
-        onFailure: hideModal,
-      });
-      return;
-    }
-    try {
-      const payload = {
-        cusL: {
-          ...get(limits, 'cusL'),
-          intl: {
-            ...get(limits, ['cusL', CardControlTypes.INTERNATIONAL]),
-            dis: false,
-            cLs: [
-              ...get(
-                limits,
-                ['cusL', CardControlTypes.INTERNATIONAL, 'cLs'],
-                [],
-              ),
-              iso2,
-            ],
-          },
-        },
-      };
-      const response = await patchWithAuth(
-        `/v1/cards/${provider}/card/${cardId}/limits`,
-        payload,
-      );
-
-      if (!response.isError) {
-        showModal('state', {
-          type: 'success',
-          title: `Added ${iso2} to your allowed countries`,
-          description: 'Please retry your transaction again.',
-          onSuccess: () => {
-            hideModal();
-            navigation.navigate(screenTitle.CARD_CONTROLS_MENU, {
-              cardId: cardId ?? '',
-              currentCardProvider: provider,
-            });
-          },
-          onFailure: hideModal,
-        });
-      } else {
-        showModal('state', {
-          type: 'error',
-          title: t('UNABLE_TO_UPDATE_DETAILS'),
-          description: response.error?.message ?? t('PLEASE_CONTACT_SUPPORT'),
-          onSuccess: hideModal,
-          onFailure: hideModal,
-        });
-      }
-    } catch (error) {
-      Sentry.captureException(error);
-      showModal('state', {
-        type: 'error',
-        title: t('UNEXCPECTED_ERROR'),
-        description: parseErrorMessage(error),
-        onSuccess: hideModal,
-        onFailure: hideModal,
-      });
-    }
+    showModal(GlobalModalType.CARD_ACTIONS_FROM_NOTIFICATION, {
+      closeModal: () => {
+        hideModal();
+      },
+      data: {
+        reason: transaction?.cDReason ?? transaction?.dReason ?? '',
+        merchant: transaction?.metadata?.merchant?.merchantName ?? '',
+        merchantCountry: transaction?.metadata?.merchant?.merchantCountry ?? '',
+        merchantCity: transaction?.metadata?.merchant?.merchantCity ?? '',
+        cardId,
+        provider,
+        transactionCurrency: transaction?.fxCurrencySymbol ?? '',
+        amount: transaction?.amount ?? 0,
+        navigation,
+      },
+    });
   };
 
   return (
@@ -588,11 +514,9 @@ export default function TransactionDetails() {
                 isDeclined={transaction.tStatus === ReapTxnStatus.DECLINED}
                 reason={transaction?.cDReason ?? transaction?.dReason ?? ''}
                 metadata={transaction?.metadata?.merchant}
-                getRequiredData={getRequiredData}
                 cardId={transaction?.cardId ?? ''}
-                limits={limits}
-                provider={provider}
                 addIntlCountry={addIntlCountry}
+                provider={provider}
                 navigation={navigation}
               />
             );

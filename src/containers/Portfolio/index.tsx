@@ -40,7 +40,11 @@ import PortfolioTokenItem from '../../components/v2/portfolioTokenItem';
 import { use3DSecure } from '../../components/v2/threeDSecureApprovalModalContext';
 import CyDTokenValue from '../../components/v2/tokenValue';
 import {
+  CardControlTypes,
+  CypherDeclineCodes,
   GlobalContextType,
+  GlobalModalType,
+  NOTIFE_ACTIONS,
   TokenOverviewTabIndices,
 } from '../../constants/enum';
 import * as C from '../../constants/index';
@@ -84,6 +88,9 @@ import { Banner, HeaderBar, RefreshTimerBar } from './components';
 import BannerCarousel from './components/BannerCarousel';
 import FilterBar from './components/FilterBar';
 import { DeFiScene, NFTScene, TXNScene } from './scenes';
+import { useGlobalModalContext } from '../../components/v2/GlobalModal';
+import notifee, { EventType } from '@notifee/react-native';
+import { RouteNotificationAction } from '../../notification/pushNotification';
 
 export interface PortfolioProps {
   navigation: any;
@@ -110,6 +117,7 @@ export default function Portfolio({ navigation }: PortfolioProps) {
   const [copyToClipBoard, setCopyToClipBoard] = useState<boolean>(false);
   const [appState, setAppState] = useState<string>('');
   const [filterModalVisible, setFilterModalVisible] = useState(false);
+  const { showModal, hideModal } = useGlobalModalContext();
 
   const [deFiFilters, setDeFiFilters] = useState<DeFiFilter>({
     chain: ChainBackendNames.ALL,
@@ -264,9 +272,65 @@ export default function Portfolio({ navigation }: PortfolioProps) {
   };
 
   useEffect(() => {
-    messaging().onNotificationOpenedApp(handlePushNotification);
+    void messaging()
+      .getInitialNotification()
+      .then(async response => {
+        await handlePushNotification(response);
+      });
 
-    void messaging().getInitialNotification().then(handlePushNotification);
+    void messaging().onNotificationOpenedApp(async response => {
+      await handlePushNotification(response);
+    });
+
+    notifee
+      .getInitialNotification()
+      .then(async response => {
+        if (response?.notification) {
+          await handlePushNotification(response?.notification as any);
+        }
+      })
+      .catch(error => {
+        Sentry.captureException(error);
+      });
+
+    notifee.onBackgroundEvent(async remoteMessage => {
+      const { type, detail } = remoteMessage;
+
+      if (type === EventType.ACTION_PRESS) {
+        const { notification, pressAction } = detail;
+
+        if (notification?.id && pressAction?.id) {
+          await RouteNotificationAction({
+            notificationId: notification?.id,
+            actionId: pressAction?.id,
+            data: notification?.data,
+            navigation,
+            showModal,
+            hideModal,
+          });
+        }
+      }
+    });
+
+    const unsubscribe = notifee.onForegroundEvent(remoteMessage => {
+      const { type, detail } = remoteMessage;
+      if (type === EventType.ACTION_PRESS) {
+        const { notification, pressAction } = detail;
+        if (notification?.id && pressAction?.id) {
+          RouteNotificationAction({
+            notificationId: notification?.id,
+            actionId: pressAction?.id,
+            data: notification?.data,
+            navigation,
+            showModal,
+            hideModal,
+          }).catch(error => {
+            Sentry.captureException(error);
+          });
+        }
+      }
+    });
+
     const getIBCStatus = async () => {
       const data = await getIBC();
       let IBCStatus = false;
@@ -283,6 +347,7 @@ export default function Portfolio({ navigation }: PortfolioProps) {
     });
 
     void getBridgeData().catch;
+    return () => unsubscribe();
   }, []);
 
   useEffect(() => {
@@ -374,7 +439,6 @@ export default function Portfolio({ navigation }: PortfolioProps) {
   async function handlePushNotification(
     remoteMessage: FirebaseMessagingTypes.RemoteMessage | null,
   ) {
-    //   'Notification caused app to open from background state:',
     if (ethereum) {
       const localPortfolio = await getPortfolioData(ethereum);
       if (remoteMessage?.data) {
@@ -507,7 +571,7 @@ export default function Portfolio({ navigation }: PortfolioProps) {
             break;
           }
           case NotificationEvents.CARD_APPLICATION_UPDATE: {
-            void analytics().logEvent('address_activity_cta', {
+            void analytics().logEvent('card_application_cta', {
               from: ethereum.address,
             });
             const url = remoteMessage.data.url;
@@ -517,14 +581,43 @@ export default function Portfolio({ navigation }: PortfolioProps) {
             break;
           }
           case NotificationEvents.CARD_TXN_UPDATE: {
-            void analytics().logEvent('address_activity_cta', {
-              from: ethereum.address,
-            });
-            const url = remoteMessage.data.url;
-            if (url) {
-              navigation.navigate(C.screenTitle.DEBIT_CARD_SCREEN, { url });
+            const { categoryId, cardId, url, provider, declineCode } =
+              remoteMessage.data;
+
+            if (categoryId && declineCode) {
+              void analytics().logEvent('card_decline_add_txn_cta', {
+                from: ethereum.address,
+              });
+
+              if (cardId && provider) {
+                if (declineCode === CypherDeclineCodes.INT_COUNTRY) {
+                  showModal(GlobalModalType.CARD_ACTIONS_FROM_NOTIFICATION, {
+                    closeModal: () => {
+                      hideModal();
+                    },
+                    data: {
+                      ...remoteMessage.data,
+                      navigation,
+                    },
+                  });
+                } else {
+                  navigation.navigate(C.screenTitle.CARD_CONTROLS_MENU, {
+                    cardId,
+                    currentCardProvider: provider,
+                  });
+                }
+              }
+
+              break;
+            } else {
+              void analytics().logEvent('card_txn_cta', {
+                from: ethereum.address,
+              });
+              if (url) {
+                navigation.navigate(C.screenTitle.DEBIT_CARD_SCREEN, { url });
+              }
+              break;
             }
-            break;
           }
           case NotificationEvents.THREE_DS_APPROVE: {
             show3DSecureModal({

@@ -34,6 +34,7 @@ export default function useWalletConnectEventsManager(initialized: boolean) {
 
   const onSessionRequest = useCallback(
     async (requestEvent: SignClientTypes.EventArguments['session_request']) => {
+            
       const { params } = requestEvent;
       const { request } = params;
 

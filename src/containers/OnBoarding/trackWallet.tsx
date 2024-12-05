@@ -15,7 +15,6 @@ import {
   CyDView,
 } from '../../styles/tailwindStyles';
 import { v4 as uuidv4 } from 'uuid';
-import { getToken } from '../../core/push';
 import { hostWorker } from '../../global';
 import axios from '../../core/Http';
 import * as Sentry from '@sentry/react-native';
