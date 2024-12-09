@@ -529,7 +529,7 @@ export default function CardControlsMenu() {
                     navigation.navigate(screenTitle.DOMESTIC_CARD_CONTROLS, {
                       cardControlType: CardControlTypes.DOMESTIC,
                       currentCardProvider,
-                      card,
+                      cardId: card?.cardId,
                     });
                   } else {
                     showToast(
