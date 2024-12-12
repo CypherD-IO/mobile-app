@@ -141,7 +141,9 @@ export default function GlobalOptions() {
       description: 'Manage auto load',
       image: AppImages.AUTOLOAD,
       action: () => {
-        setIsAutoLoadOptionsVisible(true);
+        isAutoloadConfigured
+          ? setIsAutoLoadOptionsVisible(true)
+          : navigation.navigate(screenTitle.AUTO_LOAD_SCREEN);
       },
     },
     ...(cardProvider === CardProviders.REAP_CARD
