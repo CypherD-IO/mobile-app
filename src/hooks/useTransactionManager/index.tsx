@@ -1000,11 +1000,13 @@ export default function useTransactionManager() {
   };
 
   function getMsgValueForIbcTransfer({
+    chain,
     allowList,
     denom,
     amount,
     contractDecimals = 6,
   }: {
+    chain: Chain;
     allowList: string[];
     denom: string;
     amount: string;
@@ -1017,7 +1019,11 @@ export default function useTransactionManager() {
           allocations: [
             {
               sourcePort: 'transfer',
-              sourceChannel: 'channel-1',
+              sourceChannel: get(cosmosConfig, [
+                chain.chainName,
+                'channel',
+                'osmosis',
+              ]),
               spendLimit: [
                 {
                   denom,
@@ -1127,6 +1133,7 @@ export default function useTransactionManager() {
         const isIbcAuthz = backendName !== ChainBackendNames.OSMOSIS;
         const authorizationMsg = isIbcAuthz
           ? getMsgValueForIbcTransfer({
+              chain,
               allowList,
               denom,
               amount,
