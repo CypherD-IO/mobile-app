@@ -781,7 +781,6 @@ export const NativeTokenMapping: Record<AllChainsEnum, string> = {
   ARBITRUM: 'ETH',
   OPTIMISM: 'ETH',
   BSC: 'BNB',
-  EVMOS: 'EVMOS',
   COSMOS: 'ATOM',
   OSMOSIS: 'OSMO',
   JUNO: 'JUNO',

@@ -5,7 +5,6 @@ export enum AllChainsEnum {
   ARBITRUM = 'ARBITRUM',
   OPTIMISM = 'OPTIMISM',
   BSC = 'BSC',
-  EVMOS = 'EVMOS',
   COSMOS = 'COSMOS',
   OSMOSIS = 'OSMOSIS',
   JUNO = 'JUNO',
