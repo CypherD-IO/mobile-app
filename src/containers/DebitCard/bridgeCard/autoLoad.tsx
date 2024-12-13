@@ -28,7 +28,7 @@ import { screenTitle } from '../../../constants';
 import { GlobalContext } from '../../../core/globalContext';
 import { CardProfile } from '../../../models/cardProfile.model';
 import { EVM_CHAINS_TYPE } from '../../../constants/type';
-import { get, map } from 'lodash';
+import { capitalize, get, map } from 'lodash';
 import usePortfolio from '../../../hooks/usePortfolio';
 
 export default function AutoLoad({ navigation }: { navigation: any }) {
@@ -234,7 +234,10 @@ export default function AutoLoad({ navigation }: { navigation: any }) {
                   onPress={() => {
                     setIsChooseTokenVisible(true);
                   }}>
-                  <CyDText className='font-bold'>Change</CyDText>
+                  <CyDText className='font-bold'>
+                    {capitalize(selectedToken?.chainDetails?.chainName) ??
+                      'Change'}
+                  </CyDText>
                   <CyDImage
                     source={AppImages.DOWN_ARROW}
                     className='h-[15px] w-[12px] ml-[4px]'

@@ -110,7 +110,6 @@ export default function AutoLoadOptionsModal({
             text2: 'Auto load has been cancelled successfully',
             position: 'bottom',
           });
-          void refreshProfile();
         } else {
           setIsCancelling(false);
           Toast.show({

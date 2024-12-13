@@ -172,7 +172,6 @@ const resources = {
       BEEFY_FINANCE: 'Beefy Finance',
       KOGE_FINANCE: 'Koge Finance',
       ORBITAL_APES: 'Orbital Apes',
-      EVMOS_STAKING: 'Evmos Staking',
       TRANSFER_ACTIVITY: 'Transfer Activity',
       IBC_ERROR:
         "Transaction Error !\n Don't worry your funds are safe, it has been transferred to your osmosis chain via IBC, you can transfer it back via IBC. Sorry for the inconvenience",
@@ -272,8 +271,6 @@ const resources = {
       AVAILABLE_TO_STAKE: 'Available to stake',
       VALIDATOR_REDELEGATE: 'Validator to redelegate',
       MY_DELEGATION: 'My delegation',
-      UNDELEGATE_WAIT_DAYS:
-        'Once you undelegate your staked EVMOS, you will need to wait 14 days for your tokens to be liquid',
       CURRENTLY_STAKED: 'Currently staked',
       TOTAL_UNBOUNDINGS: 'Total Unboundings',
       HAVE_OPTION_TO_STAKE_REWARDS:
@@ -342,7 +339,6 @@ const resources = {
       NEVER_STORE_ON_INTERNET_DEVICES:
         'Never store your seed phrase on any device that is connected to the internet',
       NOT_VALID_ADDRESS: 'Not a valid address format',
-      NOT_VALID_EVMOS_ADDRESS: 'Not a valid Evmos address',
       NOT_VALID_COSMOS_ADDRESS: 'Not a valid Cosmos address',
       NOT_VALID_OSMOSIS_ADDRESS: 'Not a valid Osmosis address',
       NOT_VALID_JUNO_ADDRESS: 'Not a valid Juno address',
@@ -703,10 +699,6 @@ const resources = {
         'Enter contact name / ethereum address (0x...)',
       SEND_ETHEREUM_PLACEHOLDER_WITH_ENS:
         'Enter contact name / ethereum address (0x...) / ens domain',
-      SEND_EVMOS_PLACEHOLDER:
-        'Enter contact name / evmos address (evmos...) / ethereum address (0x...)',
-      SEND_EVMOS_PLACEHOLDER_WITH_ENS:
-        'Enter contact name / evmos address (evmos...) / ethereum address (0x...) / ens domain',
       ENTER_CONTACT_NAME: 'Enter contact name',
       ADDRESS_ALL_SMALL: 'address',
       ADDRESS_BOOK: 'Address Book',
