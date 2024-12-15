@@ -427,8 +427,6 @@ const TransactionDetail = ({
   }, [isDeclined, metadata?.merchantCountry, cardId]);
   const isCredit = transaction.type === CardTransactionTypes.CREDIT;
   const countryList = get(limits, 'cusL.intl.cLs', []) as string[];
-  console.log('limits', limits);
-  console.log('countryList', countryList);
   const countryAlreadyAllowed = countryList.includes(
     metadata?.merchantCountry ?? '',
   );
