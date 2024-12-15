@@ -13,6 +13,7 @@ import {
   CyDImage,
   CyDTextInput,
   CyDScrollView,
+  CyDKeyboardAvoidingView,
 } from '../../../../styles/tailwindStyles';
 import AppImages from '../../../../../assets/images/appImages';
 import OTPInput from '../../../../components/v2/otpBox';
@@ -28,7 +29,7 @@ import { useGlobalModalContext } from '../../../../components/v2/GlobalModal';
 import * as Sentry from '@sentry/react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import CyDModalLayout from '../../../../components/v2/modal';
-import { Keyboard, StyleSheet } from 'react-native';
+import { Keyboard, Platform, StyleSheet } from 'react-native';
 import { showToast } from '../../../utilities/toastUtility';
 import LottieView from 'lottie-react-native';
 import { screenTitle } from '../../../../constants';
@@ -193,48 +194,52 @@ export default function OTPVerification(): JSX.Element {
         style={styles.modalLayout}
         animationIn={'slideInUp'}
         animationOut={'slideOutDown'}>
-        <CyDView
-          className={'bg-white p-[25px] pb-[30px] rounded-t-[20px] relative'}>
-          <CyDTouchView
-            onPress={() => {
-              setIsEditEmailModalVisible(false);
-            }}
-            className={'z-[50]'}>
-            <CyDImage
-              source={AppImages.CLOSE}
-              className={'w-[22px] h-[22px] z-[50] absolute right-[0px]'}
-            />
-          </CyDTouchView>
-          <CyDText
-            className={
-              'mt-[10px] font-bold text-center text-[22px] font-manrope'
-            }>
-            {t('CHANGE_EMAIL')}
-          </CyDText>
-          <CyDView className={'mt-[20px]'}>
-            <CyDTextInput
-              className={
-                'border-[1px] border-inputBorderColor rounded-[5px] p-[12px] text-[16px] w-full font-manrope'
-              }
-              value={newEmail}
-              onChangeText={setNewEmail}
-              placeholder={t('ENTER_NEW_EMAIL')}
-              keyboardType='email-address'
-              autoCapitalize='none'
-            />
-          </CyDView>
-          <CyDView className={'mt-[20px]'}>
-            <Button
-              title={t('UPDATE_EMAIL')}
+        <CyDKeyboardAvoidingView
+          behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
+          style={styles.keyboardAvoidingView}>
+          <CyDView
+            className={'bg-white p-[25px] pb-[30px] rounded-t-[20px] relative'}>
+            <CyDTouchView
               onPress={() => {
-                void handleChangeEmail();
+                setIsEditEmailModalVisible(false);
               }}
-              disabled={!newEmail || loading.emailLoading}
-              loading={loading.emailLoading}
-              loaderStyle={styles.loaderStyle}
-            />
+              className={'z-[50]'}>
+              <CyDImage
+                source={AppImages.CLOSE}
+                className={'w-[22px] h-[22px] z-[50] absolute right-[0px]'}
+              />
+            </CyDTouchView>
+            <CyDText
+              className={
+                'mt-[10px] font-bold text-center text-[22px] font-manrope'
+              }>
+              {t('CHANGE_EMAIL')}
+            </CyDText>
+            <CyDView className={'mt-[20px]'}>
+              <CyDTextInput
+                className={
+                  'border-[1px] border-inputBorderColor rounded-[5px] p-[12px] text-[16px] w-full font-manrope'
+                }
+                value={newEmail}
+                onChangeText={setNewEmail}
+                placeholder={t('ENTER_NEW_EMAIL')}
+                keyboardType='email-address'
+                autoCapitalize='none'
+              />
+            </CyDView>
+            <CyDView className={'mt-[20px]'}>
+              <Button
+                title={t('UPDATE_EMAIL')}
+                onPress={() => {
+                  void handleChangeEmail();
+                }}
+                disabled={!newEmail || loading.emailLoading}
+                loading={loading.emailLoading}
+                loaderStyle={styles.loaderStyle}
+              />
+            </CyDView>
           </CyDView>
-        </CyDView>
+        </CyDKeyboardAvoidingView>
       </CyDModalLayout>
       <CyDView className='p-[16px]'>
         {/* remove the CardProviderSwitch after sunsetting PC */}
@@ -338,5 +343,9 @@ const styles = StyleSheet.create({
   lottie: {
     height: 20,
     // width: 12,
+  },
+  keyboardAvoidingView: {
+    flex: 1,
+    justifyContent: 'flex-end',
   },
 });

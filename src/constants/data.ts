@@ -1,3 +1,4 @@
+import AppImages from '../../assets/images/appImages';
 import { ApplicationName, CypherPlanId } from './enum';
 import { ChainBackendNames } from './server';
 
@@ -903,4 +904,31 @@ export const ChainIdToBackendNameMapping = {
   'injective-1': ChainBackendNames.INJECTIVE,
   'kaiyo-1': ChainBackendNames.KUJIRA,
   solana: ChainBackendNames.SOLANA,
+};
+
+export const ChainNameToIconMapping: Record<ChainBackendNames, string> = {
+  [ChainBackendNames.ETH]: AppImages.ETHEREUM_NEW,
+  [ChainBackendNames.POLYGON]: AppImages.POLYGON,
+  [ChainBackendNames.BSC]: AppImages.BINANCE_NEW,
+  [ChainBackendNames.AVALANCHE]: AppImages.AVALANCHE,
+  [ChainBackendNames.ARBITRUM]: AppImages.ARBITRUM,
+  [ChainBackendNames.OPTIMISM]: AppImages.OPTIMISM,
+  [ChainBackendNames.ZKSYNC_ERA]: AppImages.ZKSYNC_ERA_LOGO,
+  [ChainBackendNames.BASE]: AppImages.BASE_LOGO,
+  [ChainBackendNames.POLYGON_ZKEVM]: AppImages.POLYGON_ZKEVM_LOGO,
+  [ChainBackendNames.AURORA]: AppImages.AURORA_LOGO,
+  [ChainBackendNames.MOONBEAM]: AppImages.MOONBEAM_LOGO,
+  [ChainBackendNames.MOONRIVER]: AppImages.MOONRIVER_LOGO,
+  [ChainBackendNames.COSMOS]: AppImages.COSMOS_LOGO,
+  [ChainBackendNames.OSMOSIS]: AppImages.OSMOSIS_LOGO,
+  [ChainBackendNames.JUNO]: AppImages.JUNO_LOGO,
+  [ChainBackendNames.STARGAZE]: AppImages.STARGAZE_LOGO,
+  [ChainBackendNames.NOBLE]: AppImages.NOBLE_LOGO,
+  [ChainBackendNames.COREUM]: AppImages.COREUM_LOGO,
+  [ChainBackendNames.INJECTIVE]: AppImages.INJECTIVE_LOGO,
+  [ChainBackendNames.KUJIRA]: AppImages.KUJIRA_LOGO,
+  [ChainBackendNames.SOLANA]: AppImages.SOLANA_LOGO,
+  [ChainBackendNames.ALL]: '',
+  [ChainBackendNames.SHARDEUM]: AppImages.SHARDEUM,
+  [ChainBackendNames.SHARDEUM_SPHINX]: AppImages.SHARDEUM,
 };

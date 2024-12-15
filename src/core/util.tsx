@@ -59,7 +59,11 @@ import {
   ErrorAnalytics,
   SuccessAnalytics,
 } from '../models/analytics.interface';
-import { ANALYTICS_ERROR_URL, ANALYTICS_SUCCESS_URL } from '../constants/data';
+import {
+  ANALYTICS_ERROR_URL,
+  ANALYTICS_SUCCESS_URL,
+  ChainNameToIconMapping,
+} from '../constants/data';
 import DeviceInfo from 'react-native-device-info';
 import axios from './Http';
 import { Holding } from './portfolio';
@@ -75,6 +79,7 @@ import { RSA } from 'react-native-rsa-native';
 import { hostWorker } from '../global';
 import { v4 as uuidv4 } from 'uuid';
 import { ICountry } from '../models/cardApplication.model';
+import { currencySymbolMap } from '../../assets/datasets/currencySymbolMap';
 
 const ARCH_HOST: string = hostWorker.getHost('ARCH_HOST');
 export const HdWalletContext = React.createContext<HdWalletContextDef | null>(
@@ -1134,4 +1139,22 @@ export function getCountryObjectById(countryId: string): ICountry | undefined {
 export function getCountryNameById(countryId: string): string | undefined {
   const country = getCountryObjectById(countryId);
   return country?.name ?? '';
+}
+
+export function getSymbolFromCurrency(currencyCode: string) {
+  if (typeof currencyCode !== 'string') {
+    return undefined;
+  }
+
+  const code = currencyCode.toUpperCase();
+
+  if (!Object.prototype.hasOwnProperty.call(currencySymbolMap, code)) {
+    return undefined;
+  }
+
+  return currencySymbolMap[code];
+}
+
+export function getChainIconFromChainName(chainName: ChainBackendNames) {
+  return ChainNameToIconMapping[chainName];
 }

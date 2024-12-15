@@ -269,8 +269,10 @@ export default function CardTransactions() {
       lastDate.current = parsedDate;
       return (
         <CyDView>
-          <CyDView className='bg-cardBgTo py-[10px] ml-[12px]'>
-            <CyDText className='text-[14px] font-bold'>{parsedDate}</CyDText>
+          <CyDView className='bg-n20 py-[10px] ml-[12px]'>
+            <CyDText className='text-[14px] font-semibold'>
+              {parsedDate}
+            </CyDText>
           </CyDView>
           <CardTransactionItem item={item} />
         </CyDView>
@@ -324,7 +326,7 @@ export default function CardTransactions() {
         modalVisibilityState={[filterModalVisible, setFilterModalVisible]}
         filterState={[filter, setFilter]}
       />
-      <CyDView className='h-[50px] flex flex-row justify-between items-center py-[10px] px-[10px] bg-white border border-sepratorColor'>
+      <CyDView className='h-[50px] flex flex-row justify-between items-center py-[10px] px-[10px] bg-white border border-n30'>
         <CyDView className='flex flex-1 justify-center items-center'>
           <CyDText className='text-[18px] font-bold text-center ml-[45px]'>
             {viewableTransactionsDate}

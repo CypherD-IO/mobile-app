@@ -17,6 +17,7 @@ import AppImages from '../../../assets/images/appImages';
 import { t } from 'i18next';
 import { useGlobalModalContext } from './GlobalModal';
 import useAxios from '../../core/HttpRequest';
+import axios from 'axios';
 
 const SlideToConfirmV2 = ({
   approveUrl,
@@ -41,7 +42,7 @@ const SlideToConfirmV2 = ({
   const handleAccept = async () => {
     setAcceptLoading(true);
     setSwipeStatus('swiping');
-    const response = await getWithAuth(approveUrl);
+    const response = await axios.get(approveUrl);
     setAcceptLoading(false);
     if (!response?.isError) {
       setIsError(false);
