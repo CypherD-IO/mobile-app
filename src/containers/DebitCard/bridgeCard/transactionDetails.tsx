@@ -93,37 +93,21 @@ const getTransactionSign = (type: string) => {
   }
 };
 
-const getChannelIcon = (channel: string) => {
-  let categoryIcon;
-  let paymentChannel;
-  if (channel === 'APPLE') {
-    categoryIcon = AppImages.APPLE_LOGO_BLACK;
-  } else if (channel === 'ANDROID') {
-    categoryIcon = AppImages.GOOGLE_LOGO_BLACK;
-  } else if (channel === 'POS') {
-    categoryIcon = AppImages.POS_ICON_BLACK;
-  } else if (channel === 'Visa Direct') {
-    categoryIcon = AppImages.WIRELESS_ICON_BLACK;
-  } else if (channel === 'ECOMMERCE') {
-    categoryIcon = AppImages.ECOMMERCE_ICON_BLACK;
-  } else if (channel === 'ATM') {
-    categoryIcon = AppImages.ATM_ICON_BLACK;
-  }
-  if (channel === 'APPLE') {
-    paymentChannel = 'Pay';
-  } else if (channel === 'ANDROID') {
-    paymentChannel = 'Pay';
-  } else if (channel === 'POS') {
-    paymentChannel = 'P.O.S';
-  } else if (channel === 'Visa Direct') {
-    paymentChannel = 'Visa Direct';
-  } else if (channel === 'ECOMMERCE') {
-    paymentChannel = 'Ecommerce';
-  } else if (channel === 'ATM') {
-    paymentChannel = 'ATM';
-  }
-  return { categoryIcon, paymentChannel };
+const CHANNEL_MAP = {
+  APPLE: { categoryIcon: AppImages.APPLE_LOGO_GRAY, paymentChannel: 'Pay' },
+  ANDROID: { categoryIcon: AppImages.GOOGLE_LOGO_GRAY, paymentChannel: 'Pay' },
+  POS: { categoryIcon: AppImages.POS_ICON_GRAY, paymentChannel: 'P.O.S' },
+  'Visa Direct': {
+    categoryIcon: AppImages.WIRELESS_ICON_GRAY,
+    paymentChannel: 'Visa Direct',
+  },
+  ECOMMERCE: {
+    categoryIcon: AppImages.ECOMMERCE_ICON_GRAY,
+    paymentChannel: 'Ecommerce',
+  },
+  ATM: { categoryIcon: AppImages.ATM_ICON_GRAY, paymentChannel: 'ATM' },
 };
+const getChannelIcon = (channel: string) => CHANNEL_MAP[channel] || {};
 
 const CopyButton = ({
   label,
@@ -171,7 +155,7 @@ const openMapsWithLocation = (location: {
 
   // Different URL schemes for iOS and Android
   const url = Platform.select({
-    ios: `maps://maps.apple.com/?q=${encodedAddress}`,
+    ios: `maps://?q=${encodedAddress}`,
     android: `https://www.google.com/maps/search/?api=1&query=${encodedAddress}`,
   });
 
@@ -512,13 +496,13 @@ const TransactionDetail = ({
               </CyDText>
               <CyDView className='flex flex-row items-center'>
                 {getChannelIcon(transaction?.wallet ?? transaction?.channel)
-                  .categoryIcon && (
+                  ?.categoryIcon && (
                   <>
                     <CyDFastImage
                       source={
                         getChannelIcon(
                           transaction?.wallet ?? transaction?.channel,
-                        ).categoryIcon
+                        )?.categoryIcon
                       }
                       className='h-[16px] w-[16px]'
                       resizeMode='contain'
@@ -527,7 +511,7 @@ const TransactionDetail = ({
                       {
                         getChannelIcon(
                           transaction?.wallet ?? transaction?.channel,
-                        ).paymentChannel
+                        )?.paymentChannel
                       }
                     </CyDText>
                     <CyDView className='w-[6px] h-[6px] bg-black rounded-full mx-[4px]' />
@@ -930,7 +914,7 @@ export default function TransactionDetails() {
     };
 
     if (!isAndroid()) {
-      delete shareImage.message;
+      shareImage.message = undefined;
     }
 
     await Share.open(shareImage)

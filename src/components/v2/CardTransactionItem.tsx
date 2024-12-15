@@ -61,37 +61,21 @@ const getTransactionSign = (type: string) => {
   }
 };
 
-const getChannelIcon = (channel: string) => {
-  let categoryIcon;
-  let paymentChannel;
-  if (channel === 'APPLE') {
-    categoryIcon = AppImages.APPLE_LOGO_GRAY;
-  } else if (channel === 'ANDROID') {
-    categoryIcon = AppImages.GOOGLE_LOGO_GRAY;
-  } else if (channel === 'POS') {
-    categoryIcon = AppImages.POS_ICON_GRAY;
-  } else if (channel === 'Visa Direct') {
-    categoryIcon = AppImages.WIRELESS_ICON_GRAY;
-  } else if (channel === 'ECOMMERCE') {
-    categoryIcon = AppImages.ECOMMERCE_ICON_GRAY;
-  } else if (channel === 'ATM') {
-    categoryIcon = AppImages.ATM_ICON_GRAY;
-  }
-  if (channel === 'APPLE') {
-    paymentChannel = 'Pay';
-  } else if (channel === 'ANDROID') {
-    paymentChannel = 'Pay';
-  } else if (channel === 'POS') {
-    paymentChannel = 'P.O.S';
-  } else if (channel === 'Visa Direct') {
-    paymentChannel = 'Visa Direct';
-  } else if (channel === 'ECOMMERCE') {
-    paymentChannel = 'Ecommerce';
-  } else if (channel === 'ATM') {
-    paymentChannel = 'ATM';
-  }
-  return { categoryIcon, paymentChannel };
+const CHANNEL_MAP = {
+  APPLE: { categoryIcon: AppImages.APPLE_LOGO_GRAY, paymentChannel: 'Pay' },
+  ANDROID: { categoryIcon: AppImages.GOOGLE_LOGO_GRAY, paymentChannel: 'Pay' },
+  POS: { categoryIcon: AppImages.POS_ICON_GRAY, paymentChannel: 'P.O.S' },
+  'Visa Direct': {
+    categoryIcon: AppImages.WIRELESS_ICON_GRAY,
+    paymentChannel: 'Visa Direct',
+  },
+  ECOMMERCE: {
+    categoryIcon: AppImages.ECOMMERCE_ICON_GRAY,
+    paymentChannel: 'Ecommerce',
+  },
+  ATM: { categoryIcon: AppImages.ATM_ICON_GRAY, paymentChannel: 'ATM' },
 };
+const getChannelIcon = (channel: string) => CHANNEL_MAP[channel] || {};
 
 const CardTransactionItem = ({ item }: CardTransactionItemProps) => {
   const { t } = useTranslation();
