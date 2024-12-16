@@ -12,6 +12,7 @@ import SlideToConfirmV2 from './slideToConfirmModalV2';
 import useAxios from '../../core/HttpRequest';
 import LottieView from 'lottie-react-native';
 import { useGlobalModalContext } from './GlobalModal';
+import { capitalize } from 'lodash';
 
 const styles = StyleSheet.create({
   modalLayout: {
@@ -189,15 +190,15 @@ export default function ThreeDSecureApprovalModal({
                 </CyDText>
               </CyDView>
               <CyDText className='text-[28px] mt-[2px] text-white text-center font-semibold'>
-                {data?.transactionAmount?.toLocaleString() + ' USD'}
+                {`${data?.transactionAmount?.toLocaleString()} ${data?.currency}`}
               </CyDText>
               <CyDText className='text-[10px] mt-[14px] text-white text-center'>
                 {'Paying to'}
               </CyDText>
               <CyDText className='text-[14px] mt-[2px] mb-[56px] text-white font-bold text-center'>
                 {data?.merchantName?.length > 24
-                  ? data?.merchantName?.substring(0, 24) + '...'
-                  : data?.merchantName}
+                  ? capitalize(data?.merchantName?.substring(0, 24)) + '...'
+                  : capitalize(data?.merchantName)}
               </CyDText>
               <SlideToConfirmV2
                 approveUrl={data?.approveUrl}

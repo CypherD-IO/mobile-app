@@ -35,12 +35,20 @@ export default function Rewards() {
     const response = await getWithAuth('/v1/cards/rewardPoints');
     if (!response.isError) {
       const tempRewardPoints = response.data;
+      const spendRewards = Number(tempRewardPoints.userSpendRewards) || 0;
+      const referralsSpendRewards =
+        Number(tempRewardPoints.referralsSpendRewards) || 0;
+      const otherRewards =
+        Object.entries(tempRewardPoints.otherRewards ?? {}).reduce(
+          (sum, [_, value]) => {
+            return sum + Number(value ?? 0);
+          },
+          0,
+        ) || 0;
       setRewardPoints({
-        total:
-          Number(tempRewardPoints.userSpendRewards) +
-          Number(tempRewardPoints.referralsSpendRewards),
-        spend: Number(tempRewardPoints.userSpendRewards),
-        invites: Number(tempRewardPoints.referralsSpendRewards),
+        total: spendRewards + referralsSpendRewards + otherRewards,
+        spend: spendRewards,
+        invites: referralsSpendRewards + otherRewards,
       });
     }
     setLoading(false);

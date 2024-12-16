@@ -13,6 +13,7 @@ import { t } from 'i18next';
 import { signIn } from './Keychain';
 import { useGlobalModalContext } from '../components/v2/GlobalModal';
 import { AxiosRequestConfig } from 'axios';
+import RNExitApp from 'react-native-exit-app';
 type RequestMethod =
   | 'GET'
   | 'GET_WITHOUT_AUTH'
@@ -180,8 +181,14 @@ export default function useAxios() {
             title: '',
             description:
               'Unable to access cypher services. Contact support at support@cypherhq.io',
-            onSuccess: hideModal,
-            onFailure: hideModal,
+            onSuccess: () => {
+              hideModal();
+              RNExitApp.exitApp();
+            },
+            onFailure: () => {
+              hideModal();
+              RNExitApp.exitApp();
+            },
           });
         } else {
           shouldRetry = 2;

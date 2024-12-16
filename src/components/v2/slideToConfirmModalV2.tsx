@@ -16,7 +16,7 @@ import { CyDImage, CyDView } from '../../styles/tailwindStyles';
 import AppImages from '../../../assets/images/appImages';
 import { t } from 'i18next';
 import { useGlobalModalContext } from './GlobalModal';
-import useAxios from '../../core/HttpRequest';
+import axios from 'axios';
 
 const SlideToConfirmV2 = ({
   approveUrl,
@@ -29,7 +29,6 @@ const SlideToConfirmV2 = ({
   const [acceptLoading, setAcceptLoading] = useState(false);
   const [isError, setIsError] = useState<boolean | null>(null);
   const { showModal, hideModal } = useGlobalModalContext();
-  const { getWithAuth } = useAxios();
 
   const windowWidth = Dimensions.get('window').width;
   const SLIDER_WIDTH = windowWidth - 100;
@@ -41,14 +40,13 @@ const SlideToConfirmV2 = ({
   const handleAccept = async () => {
     setAcceptLoading(true);
     setSwipeStatus('swiping');
-    const response = await getWithAuth(approveUrl);
-    setAcceptLoading(false);
-    if (!response?.isError) {
+    try {
+      await axios.get(approveUrl);
       setIsError(false);
       setConfirmed(true);
       setSwipeStatus('approved');
       closeModal();
-    } else {
+    } catch (error) {
       setIsError(true);
       setConfirmed(true);
       setSwipeStatus('failed');
@@ -60,12 +58,13 @@ const SlideToConfirmV2 = ({
           type: 'error',
           title: t('TRANSACTION_APPROVAL_FAILED'),
           description:
-            response?.error?.message ??
-            t('TRANSACTION_APPROVAL_FAILED_REASON_NA'),
+            error?.message ?? t('TRANSACTION_APPROVAL_FAILED_REASON_NA'),
           onSuccess: hideModal,
           onFailure: hideModal,
         });
       }, 500);
+    } finally {
+      setAcceptLoading(false);
     }
   };
 

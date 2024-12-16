@@ -424,6 +424,17 @@ export default function KYCVerficicationV2() {
       </CyDView>
       <CyDView className='px-[16px] pb-[48px] bg-white rounded-t-[16px]'>
         <CyDView className='pt-[14px]'>
+          {kycStatus === CardApplicationStatus.KYC_PENDING && (
+            <CyDView className='mb-[8px]'>
+              <Button
+                type='secondary'
+              title={t('RETRY_KYC')}
+            onPress={() => {
+              void getKyc();
+            }}
+              />
+            </CyDView>
+          )}
           <Button
             title={t('CONTINUE')}
             onPress={() => {
