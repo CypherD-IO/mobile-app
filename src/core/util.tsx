@@ -62,7 +62,7 @@ import {
 import {
   ANALYTICS_ERROR_URL,
   ANALYTICS_SUCCESS_URL,
-  ChainNameToIconMapping,
+  ChainNameToChainMapping,
 } from '../constants/data';
 import DeviceInfo from 'react-native-device-info';
 import axios from './Http';
@@ -1156,5 +1156,5 @@ export function getSymbolFromCurrency(currencyCode: string) {
 }
 
 export function getChainIconFromChainName(chainName: ChainBackendNames) {
-  return ChainNameToIconMapping[chainName];
+  return ChainNameToChainMapping[chainName].logo_url;
 }
