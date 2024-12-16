@@ -1,5 +1,32 @@
+import AppImages from '../../assets/images/appImages';
 import { ApplicationName, CypherPlanId } from './enum';
-import { ChainBackendNames } from './server';
+import {
+  CHAIN_SHARDEUM,
+  CHAIN_SOLANA,
+  CHAIN_ARBITRUM,
+  CHAIN_AURORA,
+  CHAIN_AVALANCHE,
+  CHAIN_BASE,
+  CHAIN_BSC,
+  CHAIN_COREUM,
+  CHAIN_COSMOS,
+  CHAIN_ETH,
+  CHAIN_INJECTIVE,
+  CHAIN_JUNO,
+  CHAIN_KUJIRA,
+  CHAIN_MOONBEAM,
+  CHAIN_MOONRIVER,
+  CHAIN_NOBLE,
+  CHAIN_OPTIMISM,
+  CHAIN_OSMOSIS,
+  CHAIN_POLYGON,
+  CHAIN_POLYGON_ZKEVM,
+  CHAIN_STARGAZE,
+  ChainBackendNames,
+  CHAIN_SHARDEUM_SPHINX,
+  CHAIN_ZKSYNC_ERA,
+  Chain,
+} from './server';
 
 export const INJECTED_WEB3_CDN =
   'https://public.cypherd.io/js/injected.web3.js';
@@ -903,4 +930,42 @@ export const ChainIdToBackendNameMapping = {
   'injective-1': ChainBackendNames.INJECTIVE,
   'kaiyo-1': ChainBackendNames.KUJIRA,
   solana: ChainBackendNames.SOLANA,
+};
+
+export const ChainNameToChainMapping: Record<ChainBackendNames, Chain> = {
+  [ChainBackendNames.ALL]: {
+    chainName: 'all',
+    name: 'All',
+    symbol: 'ALL',
+    id: 0,
+    logo_url: '',
+    backendName: ChainBackendNames.ALL,
+    chain_id: '',
+    native_token_address: '',
+    nativeTokenLogoUrl: '',
+    chainIdNumber: 0,
+  },
+  [ChainBackendNames.ETH]: CHAIN_ETH,
+  [ChainBackendNames.POLYGON]: CHAIN_POLYGON,
+  [ChainBackendNames.BSC]: CHAIN_BSC,
+  [ChainBackendNames.AVALANCHE]: CHAIN_AVALANCHE,
+  [ChainBackendNames.ARBITRUM]: CHAIN_ARBITRUM,
+  [ChainBackendNames.OPTIMISM]: CHAIN_OPTIMISM,
+  [ChainBackendNames.ZKSYNC_ERA]: CHAIN_ZKSYNC_ERA,
+  [ChainBackendNames.BASE]: CHAIN_BASE,
+  [ChainBackendNames.POLYGON_ZKEVM]: CHAIN_POLYGON_ZKEVM,
+  [ChainBackendNames.AURORA]: CHAIN_AURORA,
+  [ChainBackendNames.MOONBEAM]: CHAIN_MOONBEAM,
+  [ChainBackendNames.MOONRIVER]: CHAIN_MOONRIVER,
+  [ChainBackendNames.COSMOS]: CHAIN_COSMOS,
+  [ChainBackendNames.OSMOSIS]: CHAIN_OSMOSIS,
+  [ChainBackendNames.JUNO]: CHAIN_JUNO,
+  [ChainBackendNames.STARGAZE]: CHAIN_STARGAZE,
+  [ChainBackendNames.NOBLE]: CHAIN_NOBLE,
+  [ChainBackendNames.COREUM]: CHAIN_COREUM,
+  [ChainBackendNames.INJECTIVE]: CHAIN_INJECTIVE,
+  [ChainBackendNames.KUJIRA]: CHAIN_KUJIRA,
+  [ChainBackendNames.SOLANA]: CHAIN_SOLANA,
+  [ChainBackendNames.SHARDEUM]: CHAIN_SHARDEUM,
+  [ChainBackendNames.SHARDEUM_SPHINX]: CHAIN_SHARDEUM_SPHINX,
 };

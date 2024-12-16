@@ -71,6 +71,8 @@ export interface ICardTransaction {
   cDReason?: string;
   dReason?: string;
   tStatus?: ReapTxnStatus;
+  channel?: 'ATM' | 'POS' | 'ECOMMERCE' | 'Visa Direct';
+  wallet?: string;
 }
 
 export interface CardQuoteResponse {

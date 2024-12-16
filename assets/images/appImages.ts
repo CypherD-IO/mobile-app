@@ -719,6 +719,60 @@ const SHOPPING_WOMEN = {
 const BOOKMARK = {
   uri: `${S3_BUCKET_URL_ICONS}/bookmark.png`,
 };
+const GREY_EXCLAMATION_ICON = {
+  uri: `${S3_BUCKET_URL_ICONS}/greyExclamationIcon.png`,
+};
+const DEBIT_TRANSACTION_ICON = {
+  uri: `${S3_BUCKET_URL_ICONS}/creditTransactionIcon.png`,
+};
+const CREDIT_TRANSACTION_ICON = {
+  uri: `${S3_BUCKET_URL_ICONS}/debitTransactionIcon.png`,
+};
+const GRAY_CIRCULAR_CROSS = {
+  uri: `${S3_BUCKET_URL_ICONS}/grayCircularCross.png`,
+};
+const PENDING_GRAY = {
+  uri: `${S3_BUCKET_URL_ICONS}/pendingGray.png`,
+};
+const LOCATION_PIN_BLACK = {
+  uri: `${S3_BUCKET_URL_ICONS}/locationPinBlack.png`,
+};
+const APPLE_LOGO_BLACK = {
+  uri: `${S3_BUCKET_URL_ICONS}/appleLogoBlack.png`,
+};
+const GOOGLE_LOGO_BLACK = {
+  uri: `${S3_BUCKET_URL_ICONS}/googleLogoBlack.png`,
+};
+const POS_ICON_BLACK = {
+  uri: `${S3_BUCKET_URL_ICONS}/posIconBlack.png`,
+};
+const WIRELESS_ICON_BLACK = {
+  uri: `${S3_BUCKET_URL_ICONS}/wirelessIconBlack.png`,
+};
+const ECOMMERCE_ICON_BLACK = {
+  uri: `${S3_BUCKET_URL_ICONS}/ecommerceIconBlack.png`,
+};
+const ATM_ICON_BLACK = {
+  uri: `${S3_BUCKET_URL_ICONS}/atmIconBlack.png`,
+};
+const APPLE_LOGO_GRAY = {
+  uri: `${S3_BUCKET_URL_ICONS}/appleLogoGray.png`,
+};
+const GOOGLE_LOGO_GRAY = {
+  uri: `${S3_BUCKET_URL_ICONS}/googleLogoGray.png`,
+};
+const POS_ICON_GRAY = {
+  uri: `${S3_BUCKET_URL_ICONS}/posIconGray.png`,
+};
+const WIRELESS_ICON_GRAY = {
+  uri: `${S3_BUCKET_URL_ICONS}/wirelessIconGray.png`,
+};
+const ECOMMERCE_ICON_GRAY = {
+  uri: `${S3_BUCKET_URL_ICONS}/ecommerceIconGray.png`,
+};
+const ATM_ICON_GRAY = {
+  uri: `${S3_BUCKET_URL_ICONS}/atmIconGray.png`,
+};
 
 const AppImages = {
   BOOKMARK,
@@ -1191,5 +1245,23 @@ const AppImages = {
   WHITE_CLOSE_ICON,
   CONNENCT_DISCORD_HERO,
   RED_CROSS_IMG,
+  GREY_EXCLAMATION_ICON,
+  DEBIT_TRANSACTION_ICON,
+  CREDIT_TRANSACTION_ICON,
+  GRAY_CIRCULAR_CROSS,
+  PENDING_GRAY,
+  LOCATION_PIN_BLACK,
+  APPLE_LOGO_BLACK,
+  GOOGLE_LOGO_BLACK,
+  POS_ICON_BLACK,
+  WIRELESS_ICON_BLACK,
+  ECOMMERCE_ICON_BLACK,
+  ATM_ICON_BLACK,
+  APPLE_LOGO_GRAY,
+  GOOGLE_LOGO_GRAY,
+  POS_ICON_GRAY,
+  WIRELESS_ICON_GRAY,
+  ECOMMERCE_ICON_GRAY,
+  ATM_ICON_GRAY,
 };
 export default AppImages;

@@ -179,7 +179,7 @@ module.exports = {
       green80: '#B2CEBF',
       green100: '#8CB59F',
       green200: '#8CF2CD',
-      green300: '#659D7F',
+      green300: '#3F845F',
       green350: '#20804C',
       green400: '#006A31',
       blue20: '#F1FDF7',
