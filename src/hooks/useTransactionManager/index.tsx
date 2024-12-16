@@ -45,7 +45,6 @@ import { getGasPriceFor } from '../../containers/Browser/gasHelper';
 import { SwapMetaData } from '../../models/swapMetaData';
 import {
   Connection,
-  LAMPORTS_PER_SOL,
   PublicKey,
   sendAndConfirmTransaction,
   SystemProgram,
@@ -63,6 +62,8 @@ import {
 } from '@solana/spl-token';
 import { SigningCosmWasmClient } from '@cosmjs/cosmwasm-stargate';
 import { HdWalletContextDef } from '../../reducers/hdwallet_reducer';
+import { TransferAuthorization } from 'cosmjs-types/ibc/applications/transfer/v1/authz';
+import { AllChainsEnum } from '../../constants/enum';
 
 export interface TransactionServiceResult {
   isError: boolean;
@@ -998,6 +999,74 @@ export default function useTransactionManager() {
     });
   };
 
+  function getMsgValueForIbcTransfer({
+    chain,
+    allowList,
+    denom,
+    amount,
+    contractDecimals = 6,
+  }: {
+    chain: Chain;
+    allowList: string[];
+    denom: string;
+    amount: string;
+    contractDecimals: number;
+  }) {
+    return {
+      typeUrl: '/ibc.applications.transfer.v1.TransferAuthorization',
+      value: TransferAuthorization.encode(
+        TransferAuthorization.fromPartial({
+          allocations: [
+            {
+              sourcePort: 'transfer',
+              sourceChannel: get(cosmosConfig, [
+                chain.chainName,
+                'channel',
+                'osmosis',
+              ]),
+              spendLimit: [
+                {
+                  denom,
+                  amount: ethers
+                    .parseUnits(amount, contractDecimals)
+                    .toString(),
+                },
+              ],
+              allowList,
+            },
+          ],
+        }),
+      ).finish(),
+    };
+  }
+
+  function getAuthorizationMsgForSend({
+    allowList,
+    denom,
+    amount,
+    contractDecimals = 6,
+  }: {
+    allowList: string[];
+    denom: string;
+    amount: string;
+    contractDecimals: number;
+  }) {
+    return {
+      typeUrl: '/cosmos.bank.v1beta1.SendAuthorization',
+      value: SendAuthorization.encode(
+        SendAuthorization.fromPartial({
+          spendLimit: [
+            {
+              denom,
+              amount: ethers.parseUnits(amount, contractDecimals).toString(),
+            },
+          ],
+          allowList,
+        }),
+      ).finish(),
+    };
+  }
+
   async function grantAutoLoad({
     chain,
     granter,
@@ -1061,31 +1130,28 @@ export default function useTransactionManager() {
         }
       } else if (map(COSMOS_CHAINS_LIST, 'backendName').includes(backendName)) {
         const { gasPrice, contractDecimal } = get(cosmosConfig, chainName);
+        const isIbcAuthz = backendName !== ChainBackendNames.OSMOSIS;
+        const authorizationMsg = isIbcAuthz
+          ? getMsgValueForIbcTransfer({
+              chain,
+              allowList,
+              denom,
+              amount,
+              contractDecimals: contractDecimal,
+            })
+          : getAuthorizationMsgForSend({
+              allowList,
+              denom,
+              amount,
+              contractDecimals: contractDecimal,
+            });
         const grantMsg = {
           typeUrl: '/cosmos.authz.v1beta1.MsgGrant',
           value: {
             granter,
             grantee,
             grant: {
-              authorization: {
-                typeUrl: '/cosmos.bank.v1beta1.SendAuthorization',
-                value: SendAuthorization.encode(
-                  SendAuthorization.fromPartial({
-                    spendLimit: [
-                      {
-                        denom,
-                        amount: ethers
-                          .parseUnits(
-                            limitDecimalPlaces(amount, contractDecimal),
-                            contractDecimal,
-                          )
-                          .toString(),
-                      },
-                    ],
-                    allowList,
-                  }),
-                ).finish(),
-              },
+              authorization: authorizationMsg,
               expiration: null,
             },
           },
@@ -1185,12 +1251,17 @@ export default function useTransactionManager() {
         }
       } else if (map(COSMOS_CHAINS_LIST, 'backendName').includes(backendName)) {
         const { gasPrice, denom } = get(cosmosConfig, chainName);
+
+        const isIbcAuthz = backendName !== ChainBackendNames.OSMOSIS;
+        const msgTypeUrl = isIbcAuthz
+          ? '/ibc.applications.transfer.v1.MsgTransfer'
+          : '/cosmos.bank.v1beta1.MsgSend';
         const revokeMsg = {
           typeUrl: '/cosmos.authz.v1beta1.MsgRevoke',
           value: MsgRevoke.fromPartial({
             granter,
             grantee,
-            msgTypeUrl: '/cosmos.bank.v1beta1.MsgSend',
+            msgTypeUrl,
           }),
         };
         const signer = await getCosmosSignerClient(chainName);
