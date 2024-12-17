@@ -1432,6 +1432,8 @@ const resources = {
       REVIEW_SETTINGS: 'Review Settings',
       TRANSACTION_DECLINE: 'Transaction Declined',
       GET_PREMIUM: 'Get Premium',
+      REFUND_IN_PROGRESS_MESSAGE:
+        'Your refund will be processed in 3 - 5 business days',
     },
   },
 };

@@ -528,7 +528,12 @@ module.exports = {
         '"Liberation Mono"',
         '"Courier New"',
         'monospace'
-      ]
+      ],
+      'manrope-light': ['Manrope-Light'],
+      'manrope-medium': ['Manrope-Medium'],
+      'manrope-semibold': ['Manrope-SemiBold'],
+      'manrope-bold': ['Manrope-Bold'],
+      'manrope-extrabold': ['Manrope-ExtraBold']
     },
     fontSize: {
       xs: ['0.75rem', { lineHeight: '1rem' }],

@@ -37,6 +37,7 @@ import { useGlobalModalContext } from '../../../../../components/v2/GlobalModal'
 import { CardProfile } from '../../../../../models/cardProfile.model';
 import { StyleSheet } from 'react-native';
 import { isEqual, isUndefined, omitBy, set } from 'lodash';
+import { getReferralCode } from '../../../../../core/asyncStorage';
 
 // Add this type definition
 interface SupportedCountry {
@@ -124,6 +125,7 @@ export default function CardApplicationV2() {
 
   const cardProfile = globalState.cardProfile as CardProfile;
   const provider = cardProfile.provider ?? CardProviders.REAP_CARD;
+  const [referralCode, setReferralCode] = useState<string | null>(null);
 
   useFocusEffect(
     useCallback(() => {
@@ -132,6 +134,16 @@ export default function CardApplicationV2() {
       setLoading(false);
     }, []),
   );
+
+  useEffect(() => {
+    const fetchReferralCodeFromAsync = async () => {
+      const referralCodeFromAsync = await getReferralCode();
+      if (referralCodeFromAsync) {
+        setReferralCode(referralCodeFromAsync);
+      }
+    };
+    void fetchReferralCodeFromAsync();
+  }, []);
 
   useEffect(() => {
     setLoading(true);
@@ -213,6 +225,7 @@ export default function CardApplicationV2() {
             ? changedFields.dialCode + changedFields.phone
             : undefined,
         dateOfBirth: changedFields.dateOfBirth ?? undefined,
+        ...(referralCode && { referralCodeV2: referralCode }),
       };
       // Remove undefined fields and dialCode
       const cleanPayload = omitBy(
