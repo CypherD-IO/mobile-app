@@ -85,7 +85,6 @@ export default function CardScreen({
 }) {
   const globalContext = useContext<any>(GlobalContext);
   const cardProfile: CardProfile = globalContext.globalState.cardProfile;
-  console.log('cards : ', cardProfile.rc?.cards);
   const {
     rc: { isPhysicalCardEligible: upgradeToPhysicalAvailable = false } = {},
   } = cardProfile;
