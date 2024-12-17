@@ -85,6 +85,7 @@ export default function CardScreen({
 }) {
   const globalContext = useContext<any>(GlobalContext);
   const cardProfile: CardProfile = globalContext.globalState.cardProfile;
+  console.log('cards : ', cardProfile.rc?.cards);
   const {
     rc: { isPhysicalCardEligible: upgradeToPhysicalAvailable = false } = {},
   } = cardProfile;
@@ -916,6 +917,11 @@ const RenderCardActions = ({
         <CyDText className='text-[12px] font-bold text-center mt-[8px] mb-[12px]'>
           {'Stay tuned for your Premium Metal Card'}
         </CyDText>
+        <Button
+          title='Get Physical Card'
+          style='px-[28px] w-[300px]'
+          onPress={onPressUpgradeNow}
+        />
       </CyDView>
     );
   }

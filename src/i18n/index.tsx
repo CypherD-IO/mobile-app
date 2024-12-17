@@ -1149,6 +1149,7 @@ const resources = {
       ENTER_OFFER_CODE: 'Enter offer codes',
       PLAN_COMAPRISION: 'Plan comparision',
       METAL_CARD: 'Metal card',
+      ORDER_YOUR_METAL_CARD: 'Order your Metal Card',
       USDC_TOKEN: 'USDC token',
       OTHER_TOKENS: 'Other tokens',
       CRYPTO_LOAD_FEE: 'Crypto load fee',

@@ -17,6 +17,7 @@ import {
   CardTransactionStatuses,
   CardTransactionTypes,
   GlobalContextType,
+  PhysicalCardType,
 } from '../../../constants/enum';
 import CardScreen from '../bridgeCard/card';
 import {
@@ -183,17 +184,23 @@ export default function CypherCardScreen() {
       onPressFundCard();
     }, MODAL_HIDE_TIMEOUT);
   }
-  const onShippingConfirmation = () => {
+  const onShippingConfirmation = ({
+    physicalCardType,
+  }: {
+    physicalCardType?: PhysicalCardType;
+  }) => {
     if (isShippingFeeConsentModalVisible) {
       setIsShippingFeeConsentModalVisible(false);
       setTimeout(() => {
         navigation.navigate(screenTitle.ORDER_STEPS_SCREEN, {
           currentCardProvider: cardProvider,
+          ...(physicalCardType && { physicalCardType }),
         });
       }, MODAL_HIDE_TIMEOUT);
     } else {
       navigation.navigate(screenTitle.ORDER_STEPS_SCREEN, {
         currentCardProvider: cardProvider,
+        ...(physicalCardType && { physicalCardType }),
       });
     }
   };
@@ -203,21 +210,17 @@ export default function CypherCardScreen() {
       card,
     });
   };
-  const onPressUpgradeNow = () => {
+  const onPressUpgradeNow = (physicalCardType?: PhysicalCardType) => {
     if (Number(cardBalance) < Number(physicalCardUpgradationFee)) {
       showModal('state', {
         type: 'error',
         title: t('INSUFFICIENT_FUNDS'),
-        description: `You do not have $${String(physicalCardUpgradationFee)} balance to upgrade to physical card. Please load now to upgrade`,
+        description: `You do not have $${String(physicalCardUpgradationFee)} balance to upgrade to ${physicalCardType ?? 'physical'} card. Please load now to upgrade`,
         onSuccess: onModalHide,
         onFailure: hideModal,
       });
     } else {
-      if (Number(physicalCardUpgradationFee) > 0) {
-        setIsShippingFeeConsentModalVisible(true);
-      } else {
-        onShippingConfirmation();
-      }
+      onShippingConfirmation(physicalCardType ? { physicalCardType } : {});
     }
   };
   const onPressActivateCard = (card: any) => {

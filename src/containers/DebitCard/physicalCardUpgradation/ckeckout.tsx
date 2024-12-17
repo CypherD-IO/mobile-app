@@ -18,7 +18,11 @@ import {
 } from '@react-navigation/native';
 import { useTranslation } from 'react-i18next';
 import Button from '../../../components/v2/button';
-import { ButtonType, CardProviders } from '../../../constants/enum';
+import {
+  ButtonType,
+  CardProviders,
+  PhysicalCardType,
+} from '../../../constants/enum';
 import { IShippingAddress } from '../../../models/shippingAddress.interface';
 import { IKycPersonDetail } from '../../../models/kycPersonal.interface';
 import useAxios from '../../../core/HttpRequest';
@@ -39,12 +43,18 @@ interface RouteParams {
   shippingAddress: IShippingAddress;
   currentCardProvider: CardProviders;
   preferredName: string;
+  physicalCardType?: PhysicalCardType;
 }
 export default function ShippingCheckout() {
   const navigation = useNavigation<NavigationProp<ParamListBase>>();
   const route = useRoute<RouteProp<Record<string, RouteParams>, string>>();
-  const { userData, shippingAddress, currentCardProvider, preferredName } =
-    route.params;
+  const {
+    userData,
+    shippingAddress,
+    currentCardProvider,
+    preferredName,
+    physicalCardType,
+  } = route.params;
   const { t } = useTranslation();
   const { getWithAuth, postWithAuth } = useAxios();
   const [balance, setBalance] = useState<number>(0);
@@ -100,6 +110,7 @@ export default function ShippingCheckout() {
         shippingAddress,
         currentCardProvider,
         preferredName,
+        ...(physicalCardType && { physicalCardType }),
       });
     } else {
       showModal('state', {
@@ -170,7 +181,11 @@ export default function ShippingCheckout() {
               className='w-[24px] h-[24px]'
               resizeMode='contain'
             />
-            <CyDText>{t('PHYSICAL_CARD')}</CyDText>
+            <CyDText>
+              {physicalCardType === PhysicalCardType.METAL
+                ? t('METAL_CARD')
+                : t('PHYSICAL_CARD')}
+            </CyDText>
           </CyDView>
           <CyDView className='flex flex-row items-center'>
             <CyDText>{'$0'}</CyDText>
@@ -303,10 +318,14 @@ export default function ShippingCheckout() {
             showsVerticalScrollIndicator={false}>
             <CyDView className='my-[12px]'>
               <CyDText className='text-[26px] font-bold'>
-                {t('PHYSICAL_CARD_CONFIRMATION')}
+                {physicalCardType === PhysicalCardType.METAL
+                  ? t('METAL_CARD_CONFIRMATION')
+                  : t('PHYSICAL_CARD_CONFIRMATION')}
               </CyDText>
               <CyDText className='text-[14px] '>
-                {t('PHYSICAL_CARD_CONFIRMATION_SUB')}
+                {physicalCardType === PhysicalCardType.METAL
+                  ? t('METAL_CARD_CONFIRMATION_SUB')
+                  : t('PHYSICAL_CARD_CONFIRMATION_SUB')}
               </CyDText>
             </CyDView>
             <RenderShippingCharges />

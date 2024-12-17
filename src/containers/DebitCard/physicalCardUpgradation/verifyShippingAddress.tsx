@@ -17,7 +17,11 @@ import {
 } from '@react-navigation/native';
 import { useTranslation } from 'react-i18next';
 import Button from '../../../components/v2/button';
-import { ButtonType, CardProviders } from '../../../constants/enum';
+import {
+  ButtonType,
+  CardProviders,
+  PhysicalCardType,
+} from '../../../constants/enum';
 import { screenTitle } from '../../../constants';
 import { IShippingAddress } from '../../../models/shippingAddress.interface';
 import { IKycPersonDetail } from '../../../models/kycPersonal.interface';
@@ -31,6 +35,7 @@ import { isIOS } from '../../../misc/checkers';
 
 interface RouteParams {
   currentCardProvider: CardProviders;
+  physicalCardType?: PhysicalCardType;
 }
 
 export default function VerifyShippingAddress() {
@@ -48,7 +53,7 @@ export default function VerifyShippingAddress() {
   const [userData, setUserData] = useState<IKycPersonDetail>();
   const navigation = useNavigation<NavigationProp<ParamListBase>>();
   const route = useRoute<RouteProp<Record<string, RouteParams>, string>>();
-  const { currentCardProvider } = route.params;
+  const { currentCardProvider, physicalCardType } = route.params;
   const { getWithAuth } = useAxios();
   const { t } = useTranslation();
 
@@ -185,6 +190,7 @@ export default function VerifyShippingAddress() {
                 navigation.navigate(screenTitle.ADD_DELIVERY_ADDRESS_SCREEN, {
                   currentCardProvider,
                   userData,
+                  ...(physicalCardType && { physicalCardType }),
                 });
               }}>
               <CyDText className='text-[16px]'>
@@ -211,6 +217,7 @@ export default function VerifyShippingAddress() {
                 userData,
                 shippingAddress,
                 currentCardProvider,
+                ...(physicalCardType && { physicalCardType }),
               });
             }}
             disabled={shippingAddressLoading}

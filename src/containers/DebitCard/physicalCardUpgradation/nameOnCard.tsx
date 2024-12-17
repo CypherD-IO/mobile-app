@@ -31,12 +31,14 @@ interface RouteParams {
   userData: IKycPersonDetail;
   shippingAddress: IShippingAddress;
   currentCardProvider: CardProviders;
+  physicalCardType?: PhysicalCardType;
 }
 export default function NameOnCard() {
   const navigation = useNavigation<NavigationProp<ParamListBase>>();
   const route = useRoute<RouteProp<Record<string, RouteParams>, string>>();
   const MAX_NAME_LENGTH = 27;
-  const { userData, shippingAddress, currentCardProvider } = route.params;
+  const { userData, shippingAddress, currentCardProvider, physicalCardType } =
+    route.params;
   const [selectedName, setSelectedName] = useState<string>('');
   const [isPreferredNameModalVisible, setIsPreferredNameModalVisible] =
     useState<boolean>(false);
@@ -65,6 +67,7 @@ export default function NameOnCard() {
             shippingAddress,
             preferredName: name,
             currentCardProvider,
+            ...(physicalCardType && { physicalCardType }),
           });
         }}
       />
@@ -139,6 +142,7 @@ export default function NameOnCard() {
                 shippingAddress,
                 preferredName: selectedName,
                 currentCardProvider,
+                ...(physicalCardType && { physicalCardType }),
               });
             }}
             disabled={selectedName === ''}
