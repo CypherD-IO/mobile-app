@@ -239,7 +239,9 @@ export default function ShippingCheckout() {
             </CyDText>
           </CyDView>
           <CyDView className='flex flex-row items-center'>
-            <CyDText>{'$0'}</CyDText>
+            <CyDText className='font-bold text-successTextGreen'>
+              {'🎉' + t('FREE')}
+            </CyDText>
           </CyDView>
         </CyDView>
         <CyDView className='flex flex-row justify-between items-center px-[16px] py-[12px] border-b-[0.5px] border-inputBorderColor'>

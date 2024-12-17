@@ -194,22 +194,22 @@ export default function CypherCardScreen() {
       onPressFundCard();
     }, MODAL_HIDE_TIMEOUT);
   }
-  const onShippingConfirmation = () => {
+  const onShippingConfirmation = (physicalCardType?: PhysicalCardType) => {
     if (isShippingFeeConsentModalVisible) {
       setIsShippingFeeConsentModalVisible(false);
       setTimeout(() => {
         navigation.navigate(screenTitle.ORDER_STEPS_SCREEN, {
           currentCardProvider: cardProvider,
-          ...(choosenPhysicalCardType && {
-            physicalCardType: choosenPhysicalCardType,
+          ...(physicalCardType && {
+            physicalCardType,
           }),
         });
       }, MODAL_HIDE_TIMEOUT);
     } else {
       navigation.navigate(screenTitle.ORDER_STEPS_SCREEN, {
         currentCardProvider: cardProvider,
-        ...(choosenPhysicalCardType && {
-          physicalCardType: choosenPhysicalCardType,
+        ...(physicalCardType && {
+          physicalCardType,
         }),
       });
     }
@@ -248,7 +248,7 @@ export default function CypherCardScreen() {
       if (Number(fee) > 0) {
         setIsShippingFeeConsentModalVisible(true);
       } else {
-        onShippingConfirmation();
+        onShippingConfirmation(physicalCardType);
       }
     }
   };
@@ -309,7 +309,7 @@ export default function CypherCardScreen() {
         isModalVisible={isShippingFeeConsentModalVisible}
         feeAmount={String(cardFee)}
         onSuccess={() => {
-          onShippingConfirmation();
+          onShippingConfirmation(choosenPhysicalCardType);
         }}
         onFailure={() => {
           setIsShippingFeeConsentModalVisible(false);
