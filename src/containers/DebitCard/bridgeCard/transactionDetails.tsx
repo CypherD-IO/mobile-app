@@ -351,7 +351,7 @@ const DeclinedTransactionActionItem = ({
   } else if (isInsufficientFunds || isLimitExceeded) {
     return (
       <CyDView className='bg-n0 rounded-[12px] border border-[#E9EBF8] p-[12px] mt-[24px]'>
-        <CyDView className='flex-row items-start'>
+        <CyDView className='flex-row items-center'>
           <CyDImage
             source={AppImages.INFO_CIRCLE}
             className='w-[24px] h-[24px]'
@@ -474,35 +474,51 @@ const TransactionDetail = ({
             <CyDView
               className={clsx(
                 'flex flex-row items-center bg-n30 rounded-[20px] px-[8px] py-[4px]',
-                transaction.tStatus === ReapTxnStatus.CLEARED ||
-                  (transaction.isSettled && 'bg-green20'),
+                ((transaction.type === CardTransactionTypes.REFUND &&
+                  transaction.isSettled) ||
+                  (transaction.type !== CardTransactionTypes.REFUND &&
+                    (transaction.tStatus === ReapTxnStatus.CLEARED ||
+                      transaction.isSettled))) &&
+                  'bg-green20',
               )}>
               <CyDImage
                 source={
-                  transaction.tStatus === ReapTxnStatus.DECLINED ||
-                  transaction.tStatus === ReapTxnStatus.VOID
-                    ? AppImages.GRAY_CIRCULAR_CROSS
-                    : transaction.tStatus === ReapTxnStatus.PENDING ||
-                        !transaction.isSettled
+                  transaction.type === CardTransactionTypes.REFUND
+                    ? !transaction.isSettled
                       ? AppImages.PENDING_GRAY
                       : AppImages.SUCCESS_TICK_GREEN_BG_ROUNDED
+                    : transaction.tStatus === ReapTxnStatus.DECLINED ||
+                        transaction.tStatus === ReapTxnStatus.VOID
+                      ? AppImages.GRAY_CIRCULAR_CROSS
+                      : transaction.tStatus === ReapTxnStatus.PENDING ||
+                          !transaction.isSettled
+                        ? AppImages.PENDING_GRAY
+                        : AppImages.SUCCESS_TICK_GREEN_BG_ROUNDED
                 }
                 className='h-[16px] w-[16px] mr-[4px]'
               />
               <CyDText
                 className={clsx(
                   'text-[12px] text-n200',
-                  transaction.tStatus === ReapTxnStatus.CLEARED ||
-                    (transaction.isSettled && 'text-green350'),
+                  ((transaction.type === CardTransactionTypes.REFUND &&
+                    transaction.isSettled) ||
+                    (transaction.type !== CardTransactionTypes.REFUND &&
+                      (transaction.tStatus === ReapTxnStatus.CLEARED ||
+                        transaction.isSettled))) &&
+                    'text-green350',
                 )}>
-                {transaction.tStatus === ReapTxnStatus.DECLINED
-                  ? t('DECLINED')
-                  : transaction.tStatus === ReapTxnStatus.VOID
-                    ? t('CANCELLED')
-                    : transaction.tStatus === ReapTxnStatus.PENDING ||
-                        !transaction.isSettled
-                      ? t('IN_PROGRESS')
-                      : t('SETTLED')}
+                {transaction.type === CardTransactionTypes.REFUND
+                  ? !transaction.isSettled
+                    ? t('IN_PROGRESS')
+                    : t('SETTLED')
+                  : transaction.tStatus === ReapTxnStatus.DECLINED
+                    ? t('DECLINED')
+                    : transaction.tStatus === ReapTxnStatus.VOID
+                      ? t('CANCELLED')
+                      : transaction.tStatus === ReapTxnStatus.PENDING ||
+                          !transaction.isSettled
+                        ? t('IN_PROGRESS')
+                        : t('SETTLED')}
               </CyDText>
             </CyDView>
           </CyDView>
