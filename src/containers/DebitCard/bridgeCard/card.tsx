@@ -29,6 +29,7 @@ import {
   CardStatus,
   CardType,
   GlobalContextType,
+  PhysicalCardType,
 } from '../../../constants/enum';
 import {
   getCardRevealReuseToken,
@@ -164,7 +165,7 @@ export default function CardScreen({
   const getCardImage = (card: Card) => {
     if (currentCardProvider === CardProviders.REAP_CARD) {
       if (card.type === CardType.PHYSICAL) {
-        if (card.cardId === 'metal-card') {
+        if (card.physicalCardType === PhysicalCardType.METAL) {
           return AppImages.RC_PHYSICAL_METAL;
         }
         return AppImages.RC_PHYSICAL;

@@ -13,6 +13,7 @@ import {
   ACCOUNT_STATUS,
   ButtonType,
   CardApplicationStatus,
+  CardDesignType,
   CardProviders,
   CardTransactionStatuses,
   CardTransactionTypes,
@@ -79,6 +80,10 @@ export default function CypherCardScreen() {
     isShippingFeeConsentModalVisible,
     setIsShippingFeeConsentModalVisible,
   ] = useState(false);
+  const [cardFee, setCardFee] = useState(0);
+  const [choosenPhysicalCardType, setChoosenPhysicalCardType] = useState<
+    PhysicalCardType | undefined
+  >(undefined);
   const [recentTransactions, setRecentTransactions] = useState<
     ICardTransaction[]
   >([]);
@@ -97,9 +102,6 @@ export default function CypherCardScreen() {
     currentCardIndex,
     'cardId',
   ]);
-  const {
-    rc: { physicalCardUpgradationFee } = { physicalCardUpgradationFee: 50 },
-  } = cardProfile;
   const isMetalCardEligible = get(
     cardProfile,
     [cardProvider, 'cards'],
@@ -192,23 +194,23 @@ export default function CypherCardScreen() {
       onPressFundCard();
     }, MODAL_HIDE_TIMEOUT);
   }
-  const onShippingConfirmation = ({
-    physicalCardType,
-  }: {
-    physicalCardType?: PhysicalCardType;
-  }) => {
+  const onShippingConfirmation = () => {
     if (isShippingFeeConsentModalVisible) {
       setIsShippingFeeConsentModalVisible(false);
       setTimeout(() => {
         navigation.navigate(screenTitle.ORDER_STEPS_SCREEN, {
           currentCardProvider: cardProvider,
-          ...(physicalCardType && { physicalCardType }),
+          ...(choosenPhysicalCardType && {
+            physicalCardType: choosenPhysicalCardType,
+          }),
         });
       }, MODAL_HIDE_TIMEOUT);
     } else {
       navigation.navigate(screenTitle.ORDER_STEPS_SCREEN, {
         currentCardProvider: cardProvider,
-        ...(physicalCardType && { physicalCardType }),
+        ...(choosenPhysicalCardType && {
+          physicalCardType: choosenPhysicalCardType,
+        }),
       });
     }
   };
@@ -218,22 +220,43 @@ export default function CypherCardScreen() {
       card,
     });
   };
-  const onPressUpgradeNow = (physicalCardType?: PhysicalCardType) => {
-    if (Number(cardBalance) < Number(physicalCardUpgradationFee)) {
+
+  const getCardFee = async (physicalCardType?: PhysicalCardType) => {
+    const response = await getWithAuth('/v1/cards/designs');
+    if (!response.isError) {
+      if (physicalCardType === PhysicalCardType.METAL) {
+        return get(response.data, ['feeDetails', CardDesignType.METAL], 0);
+      } else {
+        return get(response.data, ['feeDetails', CardDesignType.PHYSICAL], 0);
+      }
+    }
+  };
+
+  const onPressUpgradeNow = async (physicalCardType?: PhysicalCardType) => {
+    setChoosenPhysicalCardType(physicalCardType);
+    const fee = await getCardFee(physicalCardType);
+    setCardFee(fee);
+    if (Number(cardBalance) < Number(fee)) {
       showModal('state', {
         type: 'error',
         title: t('INSUFFICIENT_FUNDS'),
-        description: `You do not have $${String(physicalCardUpgradationFee)} balance to upgrade to ${physicalCardType ?? 'physical'} card. Please load now to upgrade`,
+        description: `You do not have $${String(fee)} balance to upgrade to ${physicalCardType ?? 'physical'} card. Please load now to upgrade`,
         onSuccess: onModalHide,
         onFailure: hideModal,
       });
     } else {
-      onShippingConfirmation(physicalCardType ? { physicalCardType } : {});
+      if (Number(fee) > 0) {
+        setIsShippingFeeConsentModalVisible(true);
+      } else {
+        onShippingConfirmation();
+      }
     }
   };
+
   const onPressActivateCard = (card: any) => {
     onCardActivationConfirmation(card);
   };
+
   const verifyWithOTP = () => {
     navigation.navigate(screenTitle.LOCKDOWN_MODE_AUTH, {
       onSuccess: () => {
@@ -284,7 +307,7 @@ export default function CypherCardScreen() {
       <CardProviderSwitch />
       <ShippingFeeConsentModal
         isModalVisible={isShippingFeeConsentModalVisible}
-        feeAmount={String(physicalCardUpgradationFee)}
+        feeAmount={String(cardFee)}
         onSuccess={() => {
           onShippingConfirmation();
         }}

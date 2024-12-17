@@ -1,4 +1,4 @@
-import React, { useCallback, useEffect, useState } from 'react';
+import React, { useCallback, useContext, useEffect, useState } from 'react';
 import { StatusBar } from 'react-native';
 import {
   CyDView,
@@ -22,6 +22,7 @@ import {
   ButtonType,
   CardDesignType,
   CardProviders,
+  CypherPlanId,
   PhysicalCardType,
 } from '../../../constants/enum';
 import { IShippingAddress } from '../../../models/shippingAddress.interface';
@@ -38,6 +39,7 @@ import { screenTitle } from '../../../constants';
 import { isAndroid, isIOS } from '../../../misc/checkers';
 import clsx from 'clsx';
 import { getCountryNameById } from '../../../core/util';
+import { GlobalContext, GlobalContextDef } from '../../../core/globalContext';
 
 interface RouteParams {
   userData: IKycPersonDetail;
@@ -56,6 +58,9 @@ export default function ShippingCheckout() {
     preferredName,
     physicalCardType,
   } = route.params;
+  const { globalState, globalDispatch } = useContext<any>(
+    GlobalContext,
+  ) as GlobalContextDef;
   const { t } = useTranslation();
   const { getWithAuth, postWithAuth } = useAxios();
   const [balance, setBalance] = useState<number>(0);
@@ -66,6 +71,7 @@ export default function ShippingCheckout() {
   const [preferredDesignId, setPreferredDesignId] = useState<string>('');
   const [cardDesignDetails, setCardDesignDetails] = useState<any>();
   const [cardFee, setCardFee] = useState<number>(0);
+  const planData = globalState.planInfo;
 
   useEffect(() => {
     void fetchProfileAndBalance();
@@ -80,14 +86,32 @@ export default function ShippingCheckout() {
           get(response.data, [CardDesignType.METAL, 0, 'id'], {}),
         );
         setCardDesignDetails(get(response.data, CardDesignType.METAL, {}));
-        setCardFee(get(response.data, ['feeDetails', CardDesignType.METAL], 0));
+        setCardFee(
+          get(
+            response.data,
+            ['feeDetails', CardDesignType.METAL],
+            get(
+              planData,
+              ['default', CypherPlanId.PRO_PLAN, 'metalCardFee'],
+              0,
+            ),
+          ),
+        );
       } else {
         setPreferredDesignId(
           get(response.data, [CardDesignType.PHYSICAL, 0, 'id'], {}),
         );
         setCardDesignDetails(get(response.data, CardDesignType.PHYSICAL, {}));
         setCardFee(
-          get(response.data, ['feeDetails', CardDesignType.PHYSICAL], 0),
+          get(
+            response.data,
+            ['feeDetails', CardDesignType.PHYSICAL],
+            get(
+              planData,
+              ['default', CypherPlanId.PRO_PLAN, 'physicalCardFee'],
+              0,
+            ),
+          ),
         );
       }
     }
