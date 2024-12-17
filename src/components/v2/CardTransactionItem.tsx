@@ -125,7 +125,7 @@ const CardTransactionItem = ({ item }: CardTransactionItemProps) => {
           </CyDView>
           <CyDView className={'ml-[12px]'}>
             <CyDText
-              className='font-medium font-[13px] flex-wrap w-[200px]'
+              className='font-[600] text-[13px] flex-wrap w-[200px]'
               ellipsizeMode='tail'
               numberOfLines={1}>
               {title.replace(/\s+/g, ' ')}
