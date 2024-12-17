@@ -773,6 +773,9 @@ const ECOMMERCE_ICON_GRAY = {
 const ATM_ICON_GRAY = {
   uri: `${S3_BUCKET_URL_ICONS}/atmIconGray.png`,
 };
+const METAL_CARDS_STACK = {
+  uri: `${S3_BUCKET_URL_ICONS}/metalCardStack.png`,
+};
 
 const AppImages = {
   BOOKMARK,
@@ -1263,5 +1266,6 @@ const AppImages = {
   WIRELESS_ICON_GRAY,
   ECOMMERCE_ICON_GRAY,
   ATM_ICON_GRAY,
+  METAL_CARDS_STACK,
 };
 export default AppImages;

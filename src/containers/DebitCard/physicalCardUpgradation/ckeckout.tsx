@@ -20,6 +20,7 @@ import { useTranslation } from 'react-i18next';
 import Button from '../../../components/v2/button';
 import {
   ButtonType,
+  CardDesignType,
   CardProviders,
   PhysicalCardType,
 } from '../../../constants/enum';
@@ -62,10 +63,35 @@ export default function ShippingCheckout() {
   const [isOTPModalVisible, setIsOTPModalVisible] = useState<boolean>(false);
   const [isVerifyingOTP, setIsVerifyingOTP] = useState<boolean>(false);
   const { showModal, hideModal } = useGlobalModalContext();
+  const [preferredDesignId, setPreferredDesignId] = useState<string>('');
+  const [cardDesignDetails, setCardDesignDetails] = useState<any>();
+  const [cardFee, setCardFee] = useState<number>(0);
 
   useEffect(() => {
     void fetchProfileAndBalance();
+    void fetchCardDesignDetails();
   }, []);
+
+  const fetchCardDesignDetails = async () => {
+    const response = await getWithAuth('/v1/cards/designs');
+    if (!response.isError) {
+      if (physicalCardType === PhysicalCardType.METAL) {
+        setPreferredDesignId(
+          get(response.data, [CardDesignType.METAL, 0, 'id'], {}),
+        );
+        setCardDesignDetails(get(response.data, CardDesignType.METAL, {}));
+        setCardFee(get(response.data, ['feeDetails', CardDesignType.METAL], 0));
+      } else {
+        setPreferredDesignId(
+          get(response.data, [CardDesignType.PHYSICAL, 0, 'id'], {}),
+        );
+        setCardDesignDetails(get(response.data, CardDesignType.PHYSICAL, {}));
+        setCardFee(
+          get(response.data, ['feeDetails', CardDesignType.PHYSICAL], 0),
+        );
+      }
+    }
+  };
 
   const fetchProfileAndBalance = async () => {
     const response = await getWithAuth('/v1/authentication/profile');
@@ -97,6 +123,7 @@ export default function ShippingCheckout() {
       ...(line2 ? { line2 } : {}),
       preferredCardName: preferredName,
       otp: Number(otp),
+      ...(preferredDesignId ? { preferredDesignId } : {}),
     };
     setIsOTPModalVisible(false);
     const response = await postWithAuth(
@@ -202,10 +229,7 @@ export default function ShippingCheckout() {
           </CyDView>
           <CyDView className='flex flex-row items-center'>
             <CyDSkeleton height={24} width={54} rounded={4} value={balance}>
-              {get(profile, [
-                currentCardProvider,
-                'physicalCardUpgradationFee',
-              ]) === 0 ? (
+              {cardFee === 0 ? (
                 <CyDView className='flex flex-row items-center gap-x-[4px]'>
                   <CyDText className='line-through font-bold'>{'$50'}</CyDText>
                   <CyDText className='font-bold text-successTextGreen'>
@@ -213,14 +237,7 @@ export default function ShippingCheckout() {
                   </CyDText>
                 </CyDView>
               ) : (
-                <CyDText>
-                  $
-                  {get(
-                    profile,
-                    [currentCardProvider, 'physicalCardUpgradationFee'],
-                    '50',
-                  )}
-                </CyDText>
+                <CyDText>${cardFee}</CyDText>
               )}
             </CyDSkeleton>
           </CyDView>
@@ -231,14 +248,7 @@ export default function ShippingCheckout() {
           </CyDView>
           <CyDView className='flex flex-row items-center'>
             <CyDSkeleton height={24} width={54} rounded={4} value={balance}>
-              <CyDText className='font-bold'>
-                $
-                {get(
-                  profile,
-                  [currentCardProvider, 'physicalCardUpgradationFee'],
-                  '50',
-                )}
-              </CyDText>
+              <CyDText className='font-bold'>${cardFee}</CyDText>
             </CyDSkeleton>
           </CyDView>
         </CyDView>
@@ -316,16 +326,14 @@ export default function ShippingCheckout() {
           <CyDScrollView
             className={clsx('flex-1', { 'mb-[22px]': isAndroid() })}
             showsVerticalScrollIndicator={false}>
-            <CyDView className='my-[12px]'>
+            <CyDView className='my-[16px]'>
               <CyDText className='text-[26px] font-bold'>
                 {physicalCardType === PhysicalCardType.METAL
                   ? t('METAL_CARD_CONFIRMATION')
                   : t('PHYSICAL_CARD_CONFIRMATION')}
               </CyDText>
-              <CyDText className='text-[14px] '>
-                {physicalCardType === PhysicalCardType.METAL
-                  ? t('METAL_CARD_CONFIRMATION_SUB')
-                  : t('PHYSICAL_CARD_CONFIRMATION_SUB')}
+              <CyDText className='text-[14px] mt-[8px]'>
+                {t('PHYSICAL_CARD_CONFIRMATION_SUB')}
               </CyDText>
             </CyDView>
             <RenderShippingCharges />

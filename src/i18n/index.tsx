@@ -1269,8 +1269,10 @@ const resources = {
       ORDER_YOUR_PHYSICAL_CARD: 'Order your Physical Card',
       HERE_IS_WHAT_YOU_NEED_TO_DO_NEXT: 'Here is what you need to do next',
       VERIFY_SHIPPING_ADDRESS: 'Verify shipping address',
-      VERIFY_SHIPPING_ADDRESS_SUB:
+      VERIFY_SHIPPING_ADDRESS_SUB_PHYSICAL:
         'Your new physical card will be shipped to the below address',
+      VERIFY_SHIPPING_ADDRESS_SUB_METAL:
+        'Your new metal card will be shipped to the below address',
       SHIP_TO_DIFFERENT_ADDRESS: 'Ship to a different address ?',
       SHIPPING_ADDRESS: 'Shipping Address',
       ENTER_NEW_DELIVERY_ADDRESS: 'Enter new delivery address',
@@ -1435,6 +1437,11 @@ const resources = {
       GET_PREMIUM: 'Get Premium',
       REFUND_IN_PROGRESS_MESSAGE:
         'Your refund will be processed in 3 - 5 business days',
+      METAL_CARD_TITLE_TEXT: 'Claim your Cypher Metal Card now!',
+      METAL_CARD_SUB_TEXT:
+        'Why settle for ordinary when you can experience the extraordinary?',
+      CLAIM_NOW: 'Claim Now',
+      METAL_CARD_CONFIRMATION: 'Metal Card Confirmation',
     },
   },
 };

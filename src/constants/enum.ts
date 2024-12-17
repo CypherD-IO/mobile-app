@@ -140,6 +140,12 @@ export enum PhysicalCardType {
   METAL = 'metal',
 }
 
+export enum CardDesignType {
+  METAL = 'metal',
+  PHYSICAL = 'physical',
+  VIRTUAL = 'virtual',
+}
+
 export enum CardTransactionStatuses {
   SETTLED = 'Settled',
   PENDING = 'Pending',

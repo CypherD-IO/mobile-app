@@ -194,14 +194,12 @@ export default function CardScreen({
             CardStatus.HIDDEN,
             CardStatus.BLOCKED,
             CardStatus.RC_UPGRADABLE,
-            CardStatus.COMING_SOON,
           ].includes(card.status),
           'justify-end': ![
             CardStatus.IN_ACTIVE,
             CardStatus.HIDDEN,
             CardStatus.BLOCKED,
             CardStatus.RC_UPGRADABLE,
-            CardStatus.COMING_SOON,
           ].includes(card.status),
         })}
         resizeMode='contain'
@@ -243,21 +241,8 @@ export default function CardScreen({
             </CyDText>
           </CyDView>
         )}
-        {card.status === CardStatus.COMING_SOON && (
-          <CyDView className='flex flex-row items-center bg-cardBg px-[12px] py-[6px] rounded-[6px]'>
-            <CyDImage
-              source={AppImages.UPGRADE_TO_PHYSICAL_CARD_ARROW}
-              className='h-[24px] w-[24px]'
-              resizeMode='contain'
-            />
-            <CyDText className='font-extrabold mt-[1px] ml-[2px]'>
-              {'Coming Soon'}
-            </CyDText>
-          </CyDView>
-        )}
         {card.status !== CardStatus.HIDDEN &&
           card.status !== CardStatus.RC_UPGRADABLE &&
-          card.status !== CardStatus.COMING_SOON &&
           cardProfile.provider === CardProviders.REAP_CARD && (
             <CyDView className='absolute bottom-[14px] left-[14px]'>
               <CyDText className='font-semibold text-[14px]'>
@@ -270,7 +255,11 @@ export default function CardScreen({
   };
 
   const cardsWithUpgrade = useMemo(() => {
-    const actualCards = userCardDetails.cards.map(card => card);
+    // dont show metal card in teh stack if it is not issued yet
+    const actualCards = userCardDetails.cards
+      .filter(card => card.cardId !== 'metal-card')
+      .map(card => card);
+
     if (
       upgradeToPhysicalAvailable &&
       !isHiddenCard() &&
@@ -905,22 +894,6 @@ const RenderCardActions = ({
               toPage: screenTitle.CARD_APPLICATION,
             });
           }}
-        />
-      </CyDView>
-    );
-  } else if (card.status === CardStatus.COMING_SOON) {
-    return (
-      <CyDView className='flex flex-col justify-center items-center mx-[20px] mt-[-32px]'>
-        <CyDText className='text-[18px] font-bold text-center mt-[24px]'>
-          {'Metal Card'}
-        </CyDText>
-        <CyDText className='text-[12px] font-bold text-center mt-[8px] mb-[12px]'>
-          {'Stay tuned for your Premium Metal Card'}
-        </CyDText>
-        <Button
-          title='Get Physical Card'
-          style='px-[28px] w-[300px]'
-          onPress={onPressUpgradeNow}
         />
       </CyDView>
     );

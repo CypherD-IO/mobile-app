@@ -108,7 +108,9 @@ export default function VerifyShippingAddress() {
             </CyDText>
           </CyDView>
           <CyDText className='text-[16px]'>
-            {t('VERIFY_SHIPPING_ADDRESS_SUB')}
+            {physicalCardType === PhysicalCardType.METAL
+              ? t('VERIFY_SHIPPING_ADDRESS_SUB_METAL')
+              : t('VERIFY_SHIPPING_ADDRESS_SUB_PHYSICAL')}
           </CyDText>
           <CyDView className='flex flex-col gap-y-[16px] bg-white rounded-[12px] px-[16px] pb-[16px] mt-[12px]'>
             <CyDView className='flex flex-row items-center justify-between'>

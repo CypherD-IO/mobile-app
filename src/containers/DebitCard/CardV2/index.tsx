@@ -55,6 +55,7 @@ import { StyleSheet } from 'react-native';
 import CardProviderSwitch from '../../../components/cardProviderSwitch';
 import useCardUtilities from '../../../hooks/useCardUtilities';
 import clsx from 'clsx';
+import { GetMetalCardModal } from '../../../components/GetMetalCardModal';
 
 interface RouteParams {
   cardProvider: CardProviders;
@@ -99,6 +100,11 @@ export default function CypherCardScreen() {
   const {
     rc: { physicalCardUpgradationFee } = { physicalCardUpgradationFee: 50 },
   } = cardProfile;
+  const isMetalCardEligible = get(
+    cardProfile,
+    [cardProvider, 'cards'],
+    [],
+  ).some((card: Card) => card.cardId === 'metal-card');
   const isLockdownModeEnabled = get(
     cardProfile,
     ['accountStatus'],
@@ -126,9 +132,11 @@ export default function CypherCardScreen() {
       void onRefresh();
     }
   }, [isFocused]);
+
   useEffect(() => {
     void onRefresh();
   }, [cardProvider]);
+
   const refreshProfile = async () => {
     const data = await getWalletProfile(globalContext.globalState.token);
     globalContext.globalDispatch({
@@ -448,6 +456,9 @@ export default function CypherCardScreen() {
           />
         </CyDView>
         <CyDView className='w-full bg-white mt-[26px] pb-[120px]'>
+          {isMetalCardEligible && (
+            <GetMetalCardModal onPressUpgradeNow={onPressUpgradeNow} />
+          )}
           <CyDView className='mx-[12px] my-[12px]'>
             <CyDText className='text-[14px] font-bold ml-[4px] mb-[8px]'>
               {t<string>('RECENT_TRANSACTIONS')}
@@ -458,7 +469,7 @@ export default function CypherCardScreen() {
                   return <CardTransactionItem item={transaction} key={index} />;
                 })}
                 <CyDTouchView
-                  className='bg-cardBgTo flex flex-row justify-center items-center py-[22px] rounded-b-[22px]'
+                  className='bg-cardBgTo flex flex-row justify-center items-center py-[16px] rounded-b-[22px]'
                   onPress={() =>
                     navigation.navigate(screenTitle.CARD_TRANSACTIONS_SCREEN, {
                       navigation,
@@ -466,7 +477,7 @@ export default function CypherCardScreen() {
                       currentCardIndex,
                     })
                   }>
-                  <CyDText className='text-[16px] font-bold'>
+                  <CyDText className='text-[14px] font-bold'>
                     {t<string>('VIEW_ALL_TRANSACTIONS')}
                   </CyDText>
                   <CyDImage
