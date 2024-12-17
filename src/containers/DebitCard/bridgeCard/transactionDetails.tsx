@@ -8,7 +8,6 @@ import {
   copyToClipboard,
   formatAmount,
   getCountryNameById,
-  getExplorerUrlFromBackendNames,
   limitDecimalPlaces,
   parseErrorMessage,
   getSymbolFromCurrency,
@@ -49,7 +48,7 @@ import {
   ICardSubObjectMerchant,
   ICardTransaction,
 } from '../../../models/card.model';
-import { capitalize, get, isEmpty, split, startCase, truncate } from 'lodash';
+import { capitalize, get, startCase, truncate } from 'lodash';
 import { t } from 'i18next';
 import { CardProfile } from '../../../models/cardProfile.model';
 import Toast from 'react-native-toast-message';
@@ -63,7 +62,7 @@ import {
 import { Dimensions, StyleSheet, Linking, Platform } from 'react-native';
 import CyDModalLayout from '../../../components/v2/modal';
 import Button from '../../../components/v2/button';
-import { captureRef } from 'react-native-view-shot';
+import ViewShot, { captureRef } from 'react-native-view-shot';
 import { SHARE_TRANSACTION_TIMEOUT } from '../../../core/Http';
 import { isAndroid } from '../../../misc/checkers';
 import Share from 'react-native-share';
@@ -275,7 +274,7 @@ const MerchantDetailsModal = ({
   );
 };
 
-const InternationalTransactionAlert = ({
+const DeclinedTransactionActionItem = ({
   metadata,
   countryAlreadyAllowed,
   cardId,
@@ -328,17 +327,23 @@ const InternationalTransactionAlert = ({
           <CyDTouchView
             className={clsx(
               'border border-p40 rounded-[4px] bg-p40 px-[8px] py-[6px] flex-1 ml-[10px]',
-              {
-                'opacity-50': countryAlreadyAllowed,
-              },
+              countryAlreadyAllowed && 'bg-white border-n40',
             )}
             disabled={countryAlreadyAllowed}
             onPress={() => {
               void addIntlCountry(metadata?.merchantCountry, cardId ?? '');
             }}>
-            <CyDText className='text-center text-[14px] font-semibold'>
-              {`Add ${metadata?.merchantCountry}`}
-            </CyDText>
+            <CyDView className='flex flex-row items-center justify-center'>
+              <CyDFastImage
+                source={AppImages.SUCCESS_TICK_GREEN_BG_ROUNDED}
+                className='w-[16px] h-[16px] mr-[4px]'
+              />
+              <CyDText className='text-center text-[14px] font-semibold'>
+                {countryAlreadyAllowed
+                  ? `Added ${metadata?.merchantCountry}`
+                  : `Add ${metadata?.merchantCountry}`}
+              </CyDText>
+            </CyDView>
           </CyDTouchView>
         </CyDView>
       </CyDView>
@@ -435,7 +440,7 @@ const TransactionDetail = ({
     <>
       <CyDView>
         {isDeclined && (
-          <InternationalTransactionAlert
+          <DeclinedTransactionActionItem
             metadata={metadata}
             countryAlreadyAllowed={countryAlreadyAllowed}
             cardId={cardId}
@@ -447,6 +452,20 @@ const TransactionDetail = ({
             isCountryDisabled={isCountryDisabled}
           />
         )}
+        {transaction.type === CardTransactionTypes.REFUND &&
+          !transaction.isSettled && (
+            <CyDView className='bg-n0 rounded-[12px] border border-[#E9EBF8] p-[12px] mt-[24px]'>
+              <CyDView className='flex-row items-start'>
+                <CyDImage
+                  source={AppImages.INFO_CIRCLE}
+                  className='w-[24px] h-[24px]'
+                />
+                <CyDText className='text-[12px] font-medium ml-[8px] flex-1'>
+                  {t('REFUND_IN_PROGRESS_MESSAGE')}
+                </CyDText>
+              </CyDView>
+            </CyDView>
+          )}
         <CyDView className='mt-[24px]'>
           <CyDView className='flex flex-row justify-between items-center'>
             <CyDText className='text-[14px] text-n200 font-semibold'>
@@ -463,7 +482,8 @@ const TransactionDetail = ({
                   transaction.tStatus === ReapTxnStatus.DECLINED ||
                   transaction.tStatus === ReapTxnStatus.VOID
                     ? AppImages.GRAY_CIRCULAR_CROSS
-                    : transaction.tStatus === ReapTxnStatus.PENDING
+                    : transaction.tStatus === ReapTxnStatus.PENDING ||
+                        !transaction.isSettled
                       ? AppImages.PENDING_GRAY
                       : AppImages.SUCCESS_TICK_GREEN_BG_ROUNDED
                 }
@@ -479,7 +499,8 @@ const TransactionDetail = ({
                   ? t('DECLINED')
                   : transaction.tStatus === ReapTxnStatus.VOID
                     ? t('CANCELLED')
-                    : transaction.tStatus === ReapTxnStatus.PENDING
+                    : transaction.tStatus === ReapTxnStatus.PENDING ||
+                        !transaction.isSettled
                       ? t('IN_PROGRESS')
                       : t('SETTLED')}
               </CyDText>
@@ -898,36 +919,47 @@ export default function TransactionDetails() {
   );
 
   async function shareTransactionImage() {
-    const url = await captureRef(viewRef, {
-      format: 'png',
-      quality: 0.7,
-      result: 'base64',
-    });
+    try {
+      await new Promise(resolve => setTimeout(resolve, 100));
 
-    const shareImage = {
-      title: t('SHARE_TITLE'),
-      message: `Hey! I just spent ${transaction.amount} at ${transaction.metadata?.merchant} using my Cypher Card! 🚀 Living the crypto life!`,
-      subject: t('SHARE_TITLE'),
-      url: `data:image/jpeg;base64,${url}`,
-    };
-
-    if (!isAndroid()) {
-      shareImage.message = undefined;
-    }
-
-    await Share.open(shareImage)
-      .then(res => {
-        return res;
-      })
-      .catch(err => {
-        return err;
+      const url = await captureRef(viewRef, {
+        format: 'jpg',
+        quality: 0.8,
+        result: 'base64',
+        snapshotContentContainer: true,
       });
+      console.log('url', url);
+      const shareImage = {
+        title: t('SHARE_TITLE'),
+        message: isAndroid()
+          ? `Hey! I just spent ${transaction.amount} at ${transaction.metadata?.merchant} using my Cypher Card! 🚀 Living the crypto life!`
+          : undefined,
+        subject: t('SHARE_TITLE'),
+        url: `data:image/jpeg;base64,${url}`,
+      };
+
+      await Share.open(shareImage);
+    } catch (error) {
+      console.error('Share error:', error);
+      Toast.show({
+        type: 'error',
+        text1: 'Share failed',
+        text2: 'Unable to share transaction details',
+      });
+    }
   }
 
   async function shareTransaction() {
-    setTimeout(() => {
-      void shareTransactionImage();
-    }, SHARE_TRANSACTION_TIMEOUT);
+    try {
+      await shareTransactionImage();
+    } catch (error) {
+      console.error('Share error:', error);
+      Toast.show({
+        type: 'error',
+        text1: 'Share failed',
+        text2: 'Please try again',
+      });
+    }
   }
 
   return (
@@ -951,7 +983,8 @@ export default function TransactionDetails() {
             source={AppImages.BACK_ARROW_GRAY}
           />
         </CyDTouchView>
-        <CyDView ref={viewRef}>
+        {/* <CyDView ref={viewRef} collapsable={false} className='bg-white w-full'> */}
+        <ViewShot ref={viewRef}>
           <CyDScrollView className='h-full bg-cardBg'>
             <CyDView className='min-h-full'>
               <CyDView
@@ -964,7 +997,7 @@ export default function TransactionDetails() {
                     className='h-[20px] w-[20px]'
                   />
                 </CyDView>
-                <CyDText className='text-[10px] font-[500] mt-[4px] text-n600'>
+                <CyDText className='text-[10px] font-semibold mt-[4px] text-n600'>
                   {displayProps.imageText}
                 </CyDText>
                 <CyDView className='flex-row items-end'>
@@ -1104,7 +1137,8 @@ export default function TransactionDetails() {
               </CyDView>
             </CyDView>
           </CyDScrollView>
-        </CyDView>
+        </ViewShot>
+        {/* </CyDView> */}
       </CyDSafeAreaView>
       <SafeAreaView edges={['bottom']} style={{ backgroundColor: 'white' }} />
     </>
