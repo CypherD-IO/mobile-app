@@ -351,7 +351,7 @@ const DeclinedTransactionActionItem = ({
   } else if (isInsufficientFunds || isLimitExceeded) {
     return (
       <CyDView className='bg-n0 rounded-[12px] border border-[#E9EBF8] p-[12px] mt-[24px]'>
-        <CyDView className='flex-row items-start'>
+        <CyDView className='flex-row items-center'>
           <CyDImage
             source={AppImages.INFO_CIRCLE}
             className='w-[24px] h-[24px]'
