@@ -44,8 +44,6 @@ const IHaveReferralCodeScreen = () => {
     toPage = '',
     referralCodeFromLink = '',
   } = route.params ?? {};
-  console.log('referralCodeFromLink', referralCodeFromLink);
-  console.log('toPage', toPage);
   const [referralCode, setReferralCode] =
     useState<string>(referralCodeFromLink);
   const [isModalVisible, setIsModalVisible] = useState(false);

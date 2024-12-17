@@ -928,7 +928,6 @@ export default function TransactionDetails() {
         result: 'base64',
         snapshotContentContainer: true,
       });
-      console.log('url', url);
       const shareImage = {
         title: t('SHARE_TITLE'),
         message: isAndroid()

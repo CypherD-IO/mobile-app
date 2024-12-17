@@ -138,7 +138,6 @@ export default function CardApplicationV2() {
   useEffect(() => {
     const fetchReferralCodeFromAsync = async () => {
       const referralCodeFromAsync = await getReferralCode();
-      console.log('referralCodeFromAsync', referralCodeFromAsync);
       if (referralCodeFromAsync) {
         setReferralCode(referralCodeFromAsync);
       }
