@@ -136,6 +136,16 @@ export enum CardType {
   VIRTUAL = 'virtual',
 }
 
+export enum PhysicalCardType {
+  METAL = 'metal',
+}
+
+export enum CardDesignType {
+  METAL = 'metal',
+  PHYSICAL = 'physical',
+  VIRTUAL = 'virtual',
+}
+
 export enum CardTransactionStatuses {
   SETTLED = 'Settled',
   PENDING = 'Pending',
@@ -433,3 +443,8 @@ export enum NOTIFE_ACTIONS {
   INCREASE_MONTHLY_LIMIT = 'increase-monthly-limit',
   ENABLE_ZERO_RESTRICTION_MODE = 'enable-zero-restriction-mode',
 }
+
+export const CARD_IDS = {
+  METAL_CARD: 'metal-card',
+  HIDDEN_CARD: 'hidden',
+};

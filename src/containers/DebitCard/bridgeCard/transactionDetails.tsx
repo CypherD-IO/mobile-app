@@ -307,8 +307,8 @@ const DeclinedTransactionActionItem = ({
           />
           <CyDText className='text-[12px] font-medium ml-[8px] flex-1'>
             {!countryAlreadyAllowed
-              ? `Add ${metadata?.merchantCountry} to your allowed countries or update card settings to match your requirements.`
-              : `International transactions are already enabled for ${metadata?.merchantCountry}. Retry your transaction.`}
+              ? `Add ${getCountryNameById(metadata?.merchantCountry) ?? metadata?.merchantCountry} to your allowed countries or update card settings to match your requirements.`
+              : `International transactions are already enabled for ${getCountryNameById(metadata?.merchantCountry) ?? metadata?.merchantCountry}. Retry your transaction.`}
           </CyDText>
         </CyDView>
         <CyDView className='mt-[10px] flex-row items-center flex-1'>
@@ -333,15 +333,27 @@ const DeclinedTransactionActionItem = ({
             onPress={() => {
               void addIntlCountry(metadata?.merchantCountry, cardId ?? '');
             }}>
-            <CyDView className='flex flex-row items-center justify-center'>
-              <CyDFastImage
-                source={AppImages.SUCCESS_TICK_GREEN_BG_ROUNDED}
-                className='w-[16px] h-[16px] mr-[4px]'
-              />
-              <CyDText className='text-center text-[14px] font-semibold'>
+            <CyDView className='flex flex-row items-center justify-center px-[4px]'>
+              {countryAlreadyAllowed && (
+                <CyDFastImage
+                  source={AppImages.SUCCESS_TICK_GREEN_BG_ROUNDED}
+                  className='w-[16px] h-[16px] mr-[4px]'
+                />
+              )}
+              <CyDText className='text-center text-[14px] font-semibold text-wrap'>
                 {countryAlreadyAllowed
-                  ? `Added ${metadata?.merchantCountry}`
-                  : `Add ${metadata?.merchantCountry}`}
+                  ? `Added ${
+                      (getCountryNameById(metadata?.merchantCountry)?.length ??
+                        0) < 10
+                        ? getCountryNameById(metadata?.merchantCountry)
+                        : metadata?.merchantCountry
+                    }`
+                  : `Add ${
+                      (getCountryNameById(metadata?.merchantCountry)?.length ??
+                        0) < 10
+                        ? getCountryNameById(metadata?.merchantCountry)
+                        : metadata?.merchantCountry
+                    }`}
               </CyDText>
             </CyDView>
           </CyDTouchView>
@@ -389,6 +401,48 @@ const DeclinedTransactionActionItem = ({
   }
 };
 
+const getStatusBackgroundClass = (transaction: ICardTransaction) => {
+  const isSettledRefund =
+    transaction.type === CardTransactionTypes.REFUND && transaction.isSettled;
+  const isSettledNonRefund =
+    transaction.type !== CardTransactionTypes.REFUND &&
+    (transaction.tStatus === ReapTxnStatus.CLEARED || transaction.isSettled);
+
+  return isSettledRefund || isSettledNonRefund ? 'bg-green20' : 'bg-n30';
+};
+
+const getStatusIcon = (transaction: ICardTransaction) => {
+  if (transaction.type === CardTransactionTypes.REFUND) {
+    return !transaction.isSettled
+      ? AppImages.PENDING_GRAY
+      : AppImages.SUCCESS_TICK_GREEN_BG_ROUNDED;
+  }
+
+  if (
+    transaction.tStatus === ReapTxnStatus.DECLINED ||
+    transaction.tStatus === ReapTxnStatus.VOID
+  ) {
+    return AppImages.GRAY_CIRCULAR_CROSS;
+  }
+
+  return transaction.tStatus === ReapTxnStatus.PENDING || !transaction.isSettled
+    ? AppImages.PENDING_GRAY
+    : AppImages.SUCCESS_TICK_GREEN_BG_ROUNDED;
+};
+
+const getStatusText = (transaction: ICardTransaction) => {
+  if (transaction.type === CardTransactionTypes.REFUND) {
+    return !transaction.isSettled ? t('IN_PROGRESS') : t('SETTLED');
+  }
+
+  if (transaction.tStatus === ReapTxnStatus.DECLINED) return t('DECLINED');
+  if (transaction.tStatus === ReapTxnStatus.VOID) return t('CANCELLED');
+
+  return transaction.tStatus === ReapTxnStatus.PENDING || !transaction.isSettled
+    ? t('IN_PROGRESS')
+    : t('SETTLED');
+};
+
 const TransactionDetail = ({
   isSettled = false,
   isDeclined = false,
@@ -399,10 +453,10 @@ const TransactionDetail = ({
   navigation,
   provider,
   transaction,
-  cardDetails,
   setIsMerchantDetailsModalVisible,
   getRequiredData,
   limits,
+  cardProfile,
 }: {
   isSettled: boolean;
   isDeclined?: boolean;
@@ -413,10 +467,10 @@ const TransactionDetail = ({
   addIntlCountry: (iso2: string, cardId: string) => Promise<void>;
   navigation: NavigationProp<ParamListBase>;
   transaction: ICardTransaction;
-  cardDetails: Card;
   getRequiredData: (cardId: string) => Promise<void>;
   setIsMerchantDetailsModalVisible: (visible: boolean) => void;
   limits: any;
+  cardProfile: CardProfile;
 }) => {
   const isCountryDisabled =
     reason?.includes('International transactions are disabled') ||
@@ -435,6 +489,17 @@ const TransactionDetail = ({
   const countryAlreadyAllowed = countryList.includes(
     metadata?.merchantCountry ?? '',
   );
+
+  const cardDetails: Card = get(cardProfile, [provider, 'cards'])?.find(
+    card => card?.cardId === transaction?.cardId,
+  ) ?? {
+    bin: '',
+    cardId: '',
+    last4: 'XXXX',
+    network: '',
+    status: '',
+    type: '',
+  };
 
   return (
     <>
@@ -474,51 +539,19 @@ const TransactionDetail = ({
             <CyDView
               className={clsx(
                 'flex flex-row items-center bg-n30 rounded-[20px] px-[8px] py-[4px]',
-                ((transaction.type === CardTransactionTypes.REFUND &&
-                  transaction.isSettled) ||
-                  (transaction.type !== CardTransactionTypes.REFUND &&
-                    (transaction.tStatus === ReapTxnStatus.CLEARED ||
-                      transaction.isSettled))) &&
-                  'bg-green20',
+                getStatusBackgroundClass(transaction),
               )}>
               <CyDImage
-                source={
-                  transaction.type === CardTransactionTypes.REFUND
-                    ? !transaction.isSettled
-                      ? AppImages.PENDING_GRAY
-                      : AppImages.SUCCESS_TICK_GREEN_BG_ROUNDED
-                    : transaction.tStatus === ReapTxnStatus.DECLINED ||
-                        transaction.tStatus === ReapTxnStatus.VOID
-                      ? AppImages.GRAY_CIRCULAR_CROSS
-                      : transaction.tStatus === ReapTxnStatus.PENDING ||
-                          !transaction.isSettled
-                        ? AppImages.PENDING_GRAY
-                        : AppImages.SUCCESS_TICK_GREEN_BG_ROUNDED
-                }
+                source={getStatusIcon(transaction)}
                 className='h-[16px] w-[16px] mr-[4px]'
               />
               <CyDText
                 className={clsx(
                   'text-[12px] text-n200',
-                  ((transaction.type === CardTransactionTypes.REFUND &&
-                    transaction.isSettled) ||
-                    (transaction.type !== CardTransactionTypes.REFUND &&
-                      (transaction.tStatus === ReapTxnStatus.CLEARED ||
-                        transaction.isSettled))) &&
+                  getStatusBackgroundClass(transaction) === 'bg-green20' &&
                     'text-green350',
                 )}>
-                {transaction.type === CardTransactionTypes.REFUND
-                  ? !transaction.isSettled
-                    ? t('IN_PROGRESS')
-                    : t('SETTLED')
-                  : transaction.tStatus === ReapTxnStatus.DECLINED
-                    ? t('DECLINED')
-                    : transaction.tStatus === ReapTxnStatus.VOID
-                      ? t('CANCELLED')
-                      : transaction.tStatus === ReapTxnStatus.PENDING ||
-                          !transaction.isSettled
-                        ? t('IN_PROGRESS')
-                        : t('SETTLED')}
+                {getStatusText(transaction)}
               </CyDText>
             </CyDView>
           </CyDView>
@@ -564,17 +597,21 @@ const TransactionDetail = ({
                   </CyDText>
                 </CyDTouchView>
                 <CyDText className='text-[12px] font-semibold text-n200'>
-                  {startCase(
-                    (
-                      transaction.metadata?.merchant?.merchantCity ?? ''
-                    ).toLowerCase(),
-                  )}
-                  , {transaction.metadata?.merchant?.merchantState ?? ''},{' '}
-                  {startCase(
-                    getCountryNameById(
-                      transaction.metadata?.merchant?.merchantCountry,
-                    ),
-                  )}
+                  {[
+                    transaction.metadata?.merchant?.merchantCity &&
+                      startCase(
+                        (transaction.metadata?.merchant?.merchantCity).toLowerCase(),
+                      ),
+                    transaction.metadata?.merchant?.merchantState,
+                    transaction.metadata?.merchant?.merchantCountry &&
+                      startCase(
+                        getCountryNameById(
+                          transaction.metadata?.merchant?.merchantCountry,
+                        ),
+                      ),
+                  ]
+                    .filter(Boolean)
+                    .join(', ')}
                 </CyDText>
               </CyDView>
             </>
@@ -768,18 +805,6 @@ export default function TransactionDetails() {
   const [isMerchantDetailsModalVisible, setIsMerchantDetailsModalVisible] =
     useState(false);
   const viewRef = useRef<any>(null);
-
-  const cardDetails: Card =
-    globalContext?.globalState.cardProfile?.pc?.cards?.find(
-      card => card?.cardId === transaction?.cardId,
-    ) ?? {
-      bin: '',
-      cardId: '',
-      last4: 'XXXX',
-      network: '',
-      status: '',
-      type: '',
-    };
 
   const getRequiredData = async (cardId: string) => {
     if (provider && cardId) {
@@ -1097,10 +1122,10 @@ export default function TransactionDetails() {
                   addIntlCountry={addIntlCountry}
                   navigation={navigation}
                   transaction={transaction}
-                  cardDetails={cardDetails}
                   setIsMerchantDetailsModalVisible={
                     setIsMerchantDetailsModalVisible
                   }
+                  cardProfile={cardProfile}
                 />
 
                 {!transaction.isSettled &&

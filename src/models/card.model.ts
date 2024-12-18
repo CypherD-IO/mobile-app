@@ -1,6 +1,7 @@
 import {
   CardProviders,
   CardTransactionTypes,
+  PhysicalCardType,
   ReapTxnStatus,
 } from '../constants/enum';
 import { ChainBackendNames } from '../constants/server';
@@ -13,6 +14,7 @@ export interface Card {
   network: string;
   status: string;
   type: string;
+  physicalCardType?: PhysicalCardType;
 }
 
 export interface ICardSubObjectMerchant {

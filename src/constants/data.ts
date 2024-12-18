@@ -840,8 +840,6 @@ export const SlippageFactor = {
   SOLANA: 0.003,
 };
 
-export const HIDDEN_CARD_ID = 'hidden';
-
 export const ChainIdNameMapping = {
   '1': 'ethereum',
   '137': 'ethereum',

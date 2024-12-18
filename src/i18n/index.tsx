@@ -995,8 +995,8 @@ const resources = {
         'Unable to change Push Notification status. Please try again later!',
       FCM_NOTIFICATION: 'Push',
       WARNING: 'WARNING',
-      LOCK_CARD: 'Lock Card',
-      UNLOCK_CARD: 'Unlock Card',
+      FREEZE_CARD: 'Freeze Card',
+      UNFREEZE_CARD: 'Unfreeze Card',
       FUNDING_IN_PROGRESS: 'Funding in progress',
       PRIVATE_KEY_IMPORT_SUB_MSG:
         'Enter your Ethereum private key to import your wallet into Cypher.',
@@ -1149,6 +1149,7 @@ const resources = {
       ENTER_OFFER_CODE: 'Enter offer codes',
       PLAN_COMAPRISION: 'Plan comparision',
       METAL_CARD: 'Metal card',
+      ORDER_YOUR_METAL_CARD: 'Order your Metal Card',
       USDC_TOKEN: 'USDC token',
       OTHER_TOKENS: 'Other tokens',
       CRYPTO_LOAD_FEE: 'Crypto load fee',
@@ -1189,7 +1190,8 @@ const resources = {
       UNABLE_TO_UPDATE_CARD_LIMIT: 'Unable to update card limit',
       PLEASE_CONTACT_SUPPORT: 'Please contact support.',
       UNABLE_TO_UPDATE_ALLOWED_COUNTRIES: 'Unable to update allowed countries',
-      UNLOCK_CARD_TO_REVEAL_CARD_DETAILS: 'Unlock Card to reveal Card Details',
+      UNLOCK_CARD_TO_REVEAL_CARD_DETAILS:
+        'Unfreeze Card to reveal Card Details',
       UNABLE_TO_UPDATE_DOMESTIC_COUNTRIES:
         'Unable to update domestic countries',
       PLAN_COST: 'Premium Fee',
@@ -1268,8 +1270,10 @@ const resources = {
       ORDER_YOUR_PHYSICAL_CARD: 'Order your Physical Card',
       HERE_IS_WHAT_YOU_NEED_TO_DO_NEXT: 'Here is what you need to do next',
       VERIFY_SHIPPING_ADDRESS: 'Verify shipping address',
-      VERIFY_SHIPPING_ADDRESS_SUB:
+      VERIFY_SHIPPING_ADDRESS_SUB_PHYSICAL:
         'Your new physical card will be shipped to the below address',
+      VERIFY_SHIPPING_ADDRESS_SUB_METAL:
+        'Your new metal card will be shipped to the below address',
       SHIP_TO_DIFFERENT_ADDRESS: 'Ship to a different address ?',
       SHIPPING_ADDRESS: 'Shipping Address',
       ENTER_NEW_DELIVERY_ADDRESS: 'Enter new delivery address',
@@ -1434,6 +1438,11 @@ const resources = {
       GET_PREMIUM: 'Get Premium',
       REFUND_IN_PROGRESS_MESSAGE:
         'Your refund will be processed in 3 - 5 business days',
+      METAL_CARD_TITLE_TEXT: 'Claim your Cypher Metal Card now!',
+      METAL_CARD_SUB_TEXT:
+        'Why settle for ordinary when you can experience the extraordinary?',
+      CLAIM_NOW: 'Claim Now',
+      METAL_CARD_CONFIRMATION: 'Metal Card Confirmation',
     },
   },
 };
