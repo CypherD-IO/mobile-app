@@ -15,6 +15,7 @@ export interface Card {
   status: string;
   type: string;
   physicalCardType?: PhysicalCardType;
+  designId?: string;
 }
 
 export interface ICardSubObjectMerchant {
