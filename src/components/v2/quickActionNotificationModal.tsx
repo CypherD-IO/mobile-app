@@ -52,21 +52,20 @@ const getCountryFromReason = (reason = '', merchantCountry = '') => {
   return match ? capitalize(match[1]) : merchantCountry;
 };
 
-function RenderHeader({ closeModal }: { closeModal: () => void }) {
+function RenderHeader({
+  closeModal,
+  title = 'Transaction Decline',
+}: {
+  closeModal: () => void;
+  title?: string;
+}) {
   return (
-    <CyDView className='flex-row items-center justify-between'>
-      <CyDView />
+    <CyDView className='flex-row items-center justify-between px-[20px]'>
       <CyDView className='flex-row items-center justify-center'>
-        <CyDImage source={AppImages.DECLINE} className='w-[32px] h-[32px]' />
-        <CyDText className='font-semibold text-[20px] ml-[8px]'>
-          {t('TRANSACTION_DECLINE')}
-        </CyDText>
+        <CyDText className='font-bold text-[20px]'>{title}</CyDText>
       </CyDView>
       <CyDTouchView onPress={closeModal}>
-        <CyDImage
-          source={AppImages.CLOSE_CIRCLE}
-          className='w-[24px] h-[24px]'
-        />
+        <CyDImage source={AppImages.CLOSE} className='w-[24px] h-[24px]' />
       </CyDTouchView>
     </CyDView>
   );
@@ -94,13 +93,23 @@ function RenderCountryDecline({
   setUpdateError: Dispatch<SetStateAction<boolean>>;
 }) {
   return (
-    <CyDView className='bg-n10 px-[20px] pt-[24px] pb-[36px] rounded-t-[16px] h-[300px]'>
+    <CyDView className='bg-n10 pt-[24px] rounded-t-[16px]'>
       {!updateSuccess && !updateError && (
         <>
           <RenderHeader closeModal={closeModal} />
 
-          <CyDView className='mt-[20px]'>
-            <CyDText className='text-[16px] text-center'>
+          <CyDView className='mt-[40px]'>
+            <CyDImage
+              source={AppImages.INTERNATIONAL_COUNTRIES_QUICK_ACTION}
+              className='w-[220px] h-[180px] self-center'
+            />
+          </CyDView>
+
+          <CyDView className='mt-[24px] bg-n30 py-[24px] px-[30px]'>
+            <CyDText className='text-[22px] font-bold text-center w-[200px] self-center'>
+              {'Transaction declined'}
+            </CyDText>
+            <CyDText className='text-[14px] text-center mt-[12px] text-n300'>
               {`Your transaction with `}
               <CyDText className='font-semibold'>
                 {capitalize(data?.merchant) ?? ''}
@@ -110,12 +119,11 @@ function RenderCountryDecline({
                 {capitalize(data?.merchantCity) ?? ''}
                 {`, ${getCountryFromReason(data?.reason, data?.merchantCountry)}`}
               </CyDText>
-              {` for `}
+              {`\n for `}
               <CyDText className='font-semibold'>{`${data?.amount ?? ''} ${data?.transactionCurrency ?? ''}`}</CyDText>
               {` got declined.`}
             </CyDText>
-
-            <CyDText className='text-center mt-[10px] text-[16px]'>
+            <CyDText className='text-[14px] text-center mt-[12px] text-n300'>
               <CyDText className='font-semibold'>
                 {`${getCountryFromReason(data?.reason, data?.merchantCountry)}`}
               </CyDText>
@@ -125,33 +133,34 @@ function RenderCountryDecline({
               </CyDText>
               {`.`}
             </CyDText>
-          </CyDView>
 
-          <CyDView className='mt-[20px]'>
-            <Button
-              title={`Add ${getCountryFromReason(data?.reason, data?.merchantCountry)}`}
-              onPress={() => {
-                void onPressAddCountry();
-              }}
-              loading={loading}
-            />
-            <Button
-              title={t('REVIEW_SETTINGS')}
-              type='secondary'
-              onPress={() => {
-                closeModal();
-                if (data?.navigation)
-                  data?.navigation?.navigate(
-                    screenTitle.INTERNATIONAL_CARD_CONTROLS,
-                    {
-                      cardId: data?.cardId,
-                      currentCardProvider: data?.provider,
-                      cardControlType: CardControlTypes.INTERNATIONAL,
-                    },
-                  );
-              }}
-              style={'p-[3%] mt-[10px]'}
-            />
+            <CyDView className='mt-[28px] mb-[24px] flex-row justify-between'>
+              <Button
+                title={t('REVIEW_SETTINGS')}
+                type='secondary'
+                onPress={() => {
+                  closeModal();
+                  if (data?.navigation)
+                    data?.navigation?.navigate(
+                      screenTitle.INTERNATIONAL_CARD_CONTROLS,
+                      {
+                        cardId: data?.cardId,
+                        currentCardProvider: data?.provider,
+                        cardControlType: CardControlTypes.INTERNATIONAL,
+                      },
+                    );
+                }}
+                style={'p-[15px] w-[48%]'}
+              />
+              <Button
+                title={`Add ${getCountryFromReason(data?.reason, data?.merchantCountry)}`}
+                onPress={() => {
+                  void onPressAddCountry();
+                }}
+                loading={loading}
+                style={'p-[15px] w-[48%]'}
+              />
+            </CyDView>
           </CyDView>
         </>
       )}
@@ -241,12 +250,53 @@ function RenderCardNotActivatedOrBlocked({
   hideModal: () => void;
   showModal: (modalType: string, params: any) => void;
 }) {
+  const pressButton = () => {
+    closeModal();
+    if (data?.navigation && !isBlocked)
+      data?.navigation?.navigate(screenTitle.CARD_ACTIAVTION_SCREEN, {
+        currentCardProvider: data?.provider,
+        card: { cardId: data?.cardId },
+      });
+    if (data?.navigation && isBlocked)
+      data?.navigation.navigate(screenTitle.CARD_UNLOCK_AUTH, {
+        onSuccess: () => {
+          showModal('state', {
+            type: 'success',
+            title: t('CHANGE_CARD_STATUS_SUCCESS'),
+            description: `Successfully unlocked your card!`,
+            onSuccess: hideModal,
+            onFailure: hideModal,
+          });
+        },
+        currentCardProvider: data?.provider,
+        card: { cardId: data?.cardId },
+        authType: CardOperationsAuthType.UNBLOCK,
+      });
+  };
   return (
-    <CyDView className='bg-n10 px-[20px] pt-[24px] pb-[36px] rounded-t-[16px]'>
-      <RenderHeader closeModal={closeModal} />
+    <CyDView className='bg-n10 pt-[24px] rounded-t-[16px]'>
+      <RenderHeader
+        closeModal={closeModal}
+        title={isBlocked ? 'Unblock Card' : 'Activate Card'}
+      />
 
-      <CyDView className='mt-[20px]'>
-        <CyDText className='text-[16px] text-center'>
+      <CyDView className='mt-[40px]'>
+        <CyDImage
+          source={
+            isBlocked
+              ? AppImages.UNBLOCK_CARD_QUICK_ACTION
+              : AppImages.ACTIVATE_CARD_QUICK_ACTION
+          }
+          className='w-[190px] h-[180px] self-center'
+        />
+      </CyDView>
+
+      <CyDView className='mt-[24px] bg-n30 py-[24px] px-[30px]'>
+        <CyDText className='text-[22px] font-bold text-center w-[200px] self-center'>
+          {'Transaction declined'}
+        </CyDText>
+
+        <CyDText className='text-[14px] text-center mt-[12px] text-n300'>
           {`Your transaction with `}
           <CyDText className='font-semibold'>
             {capitalize(data?.merchant) ?? ''}
@@ -256,48 +306,23 @@ function RenderCardNotActivatedOrBlocked({
             {capitalize(data?.merchantCity) ?? ''}
             {`, ${getCountryFromReason(data?.reason, data?.merchantCountry)}`}
           </CyDText>
-          {` for `}
+          {` \nfor `}
           <CyDText className='font-semibold'>{`${data?.amount ?? ''} ${data?.transactionCurrency ?? ''}`}</CyDText>
           {` got declined.`}
         </CyDText>
 
-        <CyDText className='text-center mt-[10px] text-[16px]'>
-          {'Your card is '}
-          <CyDText className='font-semibold'>
-            {isBlocked ? 'blocked' : 'not activated'}
-          </CyDText>
-          {' yet.'}
+        <CyDText className='text-[14px] text-center mt-[12px] text-n300'>
+          {`Please ${isBlocked ? 'unblock' : 'activate'} your card to continue with the transaction.`}
         </CyDText>
-      </CyDView>
 
-      <CyDView className='mt-[20px]'>
-        <Button
-          title={isBlocked ? 'Unblock your card' : 'Activate your card'}
-          onPress={() => {
-            closeModal();
-            if (data?.navigation && !isBlocked)
-              data?.navigation?.navigate(screenTitle.CARD_ACTIAVTION_SCREEN, {
-                currentCardProvider: data?.provider,
-                card: { cardId: data?.cardId },
-              });
-            if (data?.navigation && isBlocked)
-              data?.navigation.navigate(screenTitle.CARD_UNLOCK_AUTH, {
-                onSuccess: () => {
-                  showModal('state', {
-                    type: 'success',
-                    title: t('CHANGE_CARD_STATUS_SUCCESS'),
-                    description: `Successfully unlocked your card!`,
-                    onSuccess: hideModal,
-                    onFailure: hideModal,
-                  });
-                },
-                currentCardProvider: data?.provider,
-                card: { cardId: data?.cardId },
-                authType: CardOperationsAuthType.UNBLOCK,
-              });
-          }}
-          loading={loading}
-        />
+        <CyDView className='mt-[28px] mb-[24px]'>
+          <Button
+            title={isBlocked ? 'Unblock your card' : 'Activate your card'}
+            onPress={pressButton}
+            loading={loading}
+            style={'p-[15px] '}
+          />
+        </CyDView>
       </CyDView>
     </CyDView>
   );
@@ -368,6 +393,7 @@ export default function QuickActionNotificationModal({
 
   return (
     <CyDModalLayout
+      // eslint-disable-next-line @typescript-eslint/no-empty-function
       setModalVisible={() => {}}
       isModalVisible={isModalVisible}
       style={styles.modalLayout}
