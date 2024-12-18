@@ -143,9 +143,6 @@ const CardTransactionItem = ({ item }: CardTransactionItemProps) => {
                     className='h-[16px] w-[16px]'
                     resizeMode='contain'
                   />
-                  <CyDText className='text-[10px] font-semibold ml-[2px] text-base150'>
-                    {getChannelIcon(wallet ?? channel).paymentChannel}
-                  </CyDText>
                 </>
               )}
             </CyDView>
