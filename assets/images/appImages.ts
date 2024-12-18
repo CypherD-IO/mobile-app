@@ -1,5 +1,7 @@
 /* eslint-disable @typescript-eslint/no-var-requires */
 const S3_BUCKET_URL_ICONS = 'https://public.cypherd.io/icons';
+export const CYPHER_CARD_IMAGES =
+  'https://public.cypherd.io/assets/programs/common/cypher-card';
 
 const PLUS = require('./plus.png');
 const ARROW = require('./arrow.png');

@@ -15,7 +15,9 @@ import { useTranslation } from 'react-i18next';
 import { PixelRatio, StyleSheet, useWindowDimensions } from 'react-native';
 import Carousel from 'react-native-reanimated-carousel';
 import WebView from 'react-native-webview';
-import AppImages from '../../../../assets/images/appImages';
+import AppImages, {
+  CYPHER_CARD_IMAGES,
+} from '../../../../assets/images/appImages';
 import Button from '../../../components/v2/button';
 import CardDetailsModal from '../../../components/v2/card/cardDetailsModal';
 import { useGlobalModalContext } from '../../../components/v2/GlobalModal';
@@ -165,14 +167,10 @@ export default function CardScreen({
 
   const getCardImage = (card: Card) => {
     if (currentCardProvider === CardProviders.REAP_CARD) {
-      if (card.type === CardType.PHYSICAL) {
-        if (card.physicalCardType === PhysicalCardType.METAL) {
-          return AppImages.RC_PHYSICAL_METAL;
-        }
-        return AppImages.RC_PHYSICAL;
-      } else {
-        return AppImages.RC_VIRTUAL;
-      }
+      const cardImage = `${CYPHER_CARD_IMAGES}/${card.type}-${card.designId}.png`;
+      return {
+        uri: cardImage,
+      };
     } else {
       if (card.status === CardStatus.RC_UPGRADABLE) {
         return AppImages.RC_VIRTUAL;
@@ -246,7 +244,11 @@ export default function CardScreen({
           card.status !== CardStatus.RC_UPGRADABLE &&
           cardProfile.provider === CardProviders.REAP_CARD && (
             <CyDView className='absolute bottom-[14px] left-[14px]'>
-              <CyDText className='font-semibold text-[14px]'>
+              <CyDText
+                className={clsx('font-semibold text-[14px]', {
+                  'text-n0':
+                    card.designId === 'dd6a68ce-bfc2-45b0-8ae8-06cc5220d5a1',
+                })}>
                 {' xxxx ' + card.last4}
               </CyDText>
             </CyDView>
@@ -273,6 +275,7 @@ export default function CardScreen({
         network: 'rc',
         status: 'upgradeAvailable',
         type: CardType.PHYSICAL,
+        designId: 'a8b91672-ba1d-4e70-8f19-eaf50797eb22',
       });
     }
     if (isRcUpgradableCardShown) {
@@ -283,6 +286,7 @@ export default function CardScreen({
         network: 'pc',
         status: CardStatus.RC_UPGRADABLE,
         type: CardType.VIRTUAL,
+        designId: 'a8b91672-ba1d-4e70-8f19-eaf50797eb22',
       });
     }
     return actualCards;
