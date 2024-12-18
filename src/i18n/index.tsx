@@ -995,8 +995,8 @@ const resources = {
         'Unable to change Push Notification status. Please try again later!',
       FCM_NOTIFICATION: 'Push',
       WARNING: 'WARNING',
-      LOCK_CARD: 'Lock Card',
-      UNLOCK_CARD: 'Unlock Card',
+      FREEZE_CARD: 'Freeze Card',
+      UNFREEZE_CARD: 'Unfreeze Card',
       FUNDING_IN_PROGRESS: 'Funding in progress',
       PRIVATE_KEY_IMPORT_SUB_MSG:
         'Enter your Ethereum private key to import your wallet into Cypher.',
@@ -1190,7 +1190,8 @@ const resources = {
       UNABLE_TO_UPDATE_CARD_LIMIT: 'Unable to update card limit',
       PLEASE_CONTACT_SUPPORT: 'Please contact support.',
       UNABLE_TO_UPDATE_ALLOWED_COUNTRIES: 'Unable to update allowed countries',
-      UNLOCK_CARD_TO_REVEAL_CARD_DETAILS: 'Unlock Card to reveal Card Details',
+      UNLOCK_CARD_TO_REVEAL_CARD_DETAILS:
+        'Unfreeze Card to reveal Card Details',
       UNABLE_TO_UPDATE_DOMESTIC_COUNTRIES:
         'Unable to update domestic countries',
       PLAN_COST: 'Premium Fee',

@@ -254,6 +254,7 @@ export default function CypherCardScreen() {
     setChoosenPhysicalCardType(physicalCardType);
     const fee = await getCardFee(physicalCardType);
     setCardFee(fee);
+
     if (Number(cardBalance) < Number(fee)) {
       showModal('state', {
         type: 'error',
@@ -323,16 +324,18 @@ export default function CypherCardScreen() {
         </CyDTouchView>
       </CyDView>
       <CardProviderSwitch />
-      <ShippingFeeConsentModal
-        isModalVisible={isShippingFeeConsentModalVisible}
-        feeAmount={String(cardFee)}
-        onSuccess={() => {
-          onShippingConfirmation(choosenPhysicalCardType);
-        }}
-        onFailure={() => {
-          setIsShippingFeeConsentModalVisible(false);
-        }}
-      />
+      {isShippingFeeConsentModalVisible && (
+        <ShippingFeeConsentModal
+          isModalVisible={isShippingFeeConsentModalVisible}
+          feeAmount={String(cardFee)}
+          onSuccess={() => {
+            onShippingConfirmation(choosenPhysicalCardType);
+          }}
+          onFailure={() => {
+            setIsShippingFeeConsentModalVisible(false);
+          }}
+        />
+      )}
 
       {/* TXN FILTER MODAL */}
       <CardTxnFilterModal
@@ -379,9 +382,9 @@ export default function CypherCardScreen() {
                   onPressFundCard();
                 }}
                 style='h-[42px] py-[8px] px-[12px] rounded-[6px]'
-                imageStyle={'mr-[3px] h-[12px] w-[12px]'}
+                imageStyle={'mr-[4px] h-[12px] w-[12px]'}
                 title={t('ADD_FUNDS')}
-                titleStyle='text-[14px] font-extrabold'
+                titleStyle='text-[14px] text-black font-extrabold'
               />
             </CyDView>
           </CyDView>
@@ -404,9 +407,9 @@ export default function CypherCardScreen() {
                   onPressFundCard();
                 }}
                 style='h-[42px] py-[8px] px-[12px] rounded-[6px]'
-                imageStyle={'mr-[3px] h-[12px] w-[12px]'}
+                imageStyle={'mr-[4px] h-[12px] w-[12px]'}
                 title={t('ADD_FUNDS')}
-                titleStyle='text-[14px] font-extrabold'
+                titleStyle='text-[14px] text-black font-extrabold'
               />
             </CyDView>
           </CyDView>

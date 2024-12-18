@@ -776,6 +776,12 @@ const ATM_ICON_GRAY = {
 const METAL_CARDS_STACK = {
   uri: `${S3_BUCKET_URL_ICONS}/metalCardStack.png`,
 };
+const FREEZE_ICON_BLACK = {
+  uri: `${S3_BUCKET_URL_ICONS}/freezeIconBlack.png`,
+};
+const UNFREEZE_ICON_BLACK = {
+  uri: `${S3_BUCKET_URL_ICONS}/unfreezeIconBlack.png`,
+};
 
 const AppImages = {
   BOOKMARK,
@@ -1267,5 +1273,7 @@ const AppImages = {
   ECOMMERCE_ICON_GRAY,
   ATM_ICON_GRAY,
   METAL_CARDS_STACK,
+  FREEZE_ICON_BLACK,
+  UNFREEZE_ICON_BLACK,
 };
 export default AppImages;

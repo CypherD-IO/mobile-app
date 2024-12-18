@@ -207,14 +207,14 @@ export default function CardScreen({
         source={getCardImage(card)}>
         {(card.status === CardStatus.IN_ACTIVE ||
           card.status === CardStatus.BLOCKED) && (
-          <CyDView className='flex flex-row items-center bg-cardBg px-[12px] py-[6px] rounded-[6px]'>
+          <CyDView className='flex items-center bg-cardBg p-[6px] rounded-[6px]'>
             <CyDImage
-              source={AppImages.CYPHER_LOCKED}
-              className='h-[18px] w-[18px]'
+              source={AppImages.FREEZE_ICON_BLACK}
+              className='h-[20px] w-[18px]'
               resizeMode='contain'
             />
-            <CyDText className='font-extrabold mt-[1px] ml-[2px]'>
-              Locked
+            <CyDText className='font-extrabold text-[12px] mt-[4px]'>
+              Frozen
             </CyDText>
           </CyDView>
         )}
@@ -693,7 +693,7 @@ const RenderCardActions = ({
         showModal('state', {
           type: 'success',
           title: t('CHANGE_CARD_STATUS_SUCCESS'),
-          description: `Successfully unlocked your card!`,
+          description: `Your card is active now!`,
           onSuccess: hideModal,
           onFailure: hideModal,
         });
@@ -724,9 +724,11 @@ const RenderCardActions = ({
         showModal('state', {
           type: 'success',
           title: t('CHANGE_CARD_STATUS_SUCCESS'),
-          description: `Successfully ${
-            status === CardStatus.ACTIVE ? 'locked' : 'unlocked'
-          } your card!`,
+          description: `${
+            status === CardStatus.ACTIVE
+              ? 'Your card is successfully frozen'
+              : 'Your card is active now'
+          }`,
           onSuccess: hideModal,
           onFailure: hideModal,
         });
@@ -759,10 +761,10 @@ const RenderCardActions = ({
     showModal('state', {
       type: 'warning',
       title: `Are you sure you want to ${
-        status === CardStatus.ACTIVE ? 'lock' : 'unlock'
+        status === CardStatus.ACTIVE ? 'freeze' : 'unfreeze'
       } your card?`,
       description: CardStatus.ACTIVE
-        ? 'This is just a temporary lock. You can unlock it anytime'
+        ? 'This is just a temporary freeze. You can unfreeze it anytime'
         : '',
       onSuccess: onCardStatusChange,
       onFailure: hideModal,
@@ -1061,15 +1063,22 @@ const RenderCardActions = ({
             }
           }}>
           <CyDView
-            className={`${shouldBlockAction() ? 'bg-n40' : 'bg-appColor'} h-[54px] w-[54px] items-center justify-center rounded-[50px]`}>
+            className={clsx(
+              'h-[54px] w-[54px] items-center justify-center rounded-[50px]',
+              shouldBlockAction()
+                ? 'bg-n40'
+                : status !== CardStatus.ACTIVE
+                  ? 'bg-white'
+                  : 'bg-appColor',
+            )}>
             {isStatusLoading ? (
               <LottieView source={AppImages.LOADER_TRANSPARENT} autoPlay loop />
             ) : (
               <CyDImage
                 source={
                   status === CardStatus.ACTIVE
-                    ? AppImages.CYPHER_LOCKED
-                    : AppImages.UNLOCK
+                    ? AppImages.FREEZE_ICON_BLACK
+                    : AppImages.UNFREEZE_ICON_BLACK
                 }
                 className='h-[24px] w-[24px]'
                 resizeMode='contain'
@@ -1078,7 +1087,7 @@ const RenderCardActions = ({
           </CyDView>
           <CyDView className='mt-[6px]'>
             <CyDText className='font-semibold text-[12px]'>
-              {status === CardStatus.ACTIVE ? 'Lock Card' : 'Unlock Card'}
+              {status === CardStatus.ACTIVE ? 'Freeze' : 'Unfreeze'}
             </CyDText>
           </CyDView>
         </CyDTouchView>
