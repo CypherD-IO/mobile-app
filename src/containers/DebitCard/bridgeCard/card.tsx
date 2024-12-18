@@ -24,6 +24,7 @@ import { screenTitle } from '../../../constants';
 import {
   ACCOUNT_STATUS,
   ButtonType,
+  CARD_IDS,
   CardOperationsAuthType,
   CardProviders,
   CardStatus,
@@ -257,7 +258,7 @@ export default function CardScreen({
   const cardsWithUpgrade = useMemo(() => {
     // dont show metal card in teh stack if it is not issued yet
     const actualCards = userCardDetails.cards
-      .filter(card => card.cardId !== 'metal-card')
+      .filter(card => card.cardId !== CARD_IDS.METAL_CARD)
       .map(card => card);
 
     if (

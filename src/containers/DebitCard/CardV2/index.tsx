@@ -12,11 +12,13 @@ import AppImages from '../../../../assets/images/appImages';
 import {
   ACCOUNT_STATUS,
   ButtonType,
+  CARD_IDS,
   CardApplicationStatus,
   CardDesignType,
   CardProviders,
   CardTransactionStatuses,
   CardTransactionTypes,
+  CypherPlanId,
   GlobalContextType,
   PhysicalCardType,
 } from '../../../constants/enum';
@@ -50,7 +52,6 @@ import {
 import { MODAL_HIDE_TIMEOUT } from '../../../core/Http';
 import ShippingFeeConsentModal from '../../../components/v2/shippingFeeConsentModal';
 import Loading from '../../../components/v2/loading';
-import { HIDDEN_CARD_ID } from '../../../constants/data';
 import LottieView from 'lottie-react-native';
 import { StyleSheet } from 'react-native';
 import CardProviderSwitch from '../../../components/cardProviderSwitch';
@@ -106,7 +107,7 @@ export default function CypherCardScreen() {
     cardProfile,
     [cardProvider, 'cards'],
     [],
-  ).some((card: Card) => card.cardId === 'metal-card');
+  ).some((card: Card) => card.cardId === CARD_IDS.METAL_CARD);
   const isLockdownModeEnabled = get(
     cardProfile,
     ['accountStatus'],
@@ -120,7 +121,7 @@ export default function CypherCardScreen() {
   const onRefresh = async () => {
     void refreshProfile();
     setCardBalance('');
-    if (cardId !== HIDDEN_CARD_ID) {
+    if (cardId !== CARD_IDS.HIDDEN_CARD) {
       await fetchCardBalance();
       void fetchRecentTransactions();
     }
@@ -178,7 +179,7 @@ export default function CypherCardScreen() {
   };
   const onPressFundCard = () => {
     navigation.navigate(
-      cardId === HIDDEN_CARD_ID
+      cardId === CARD_IDS.HIDDEN_CARD
         ? screenTitle.FIRST_LOAD_CARD
         : screenTitle.BRIDGE_FUND_CARD_SCREEN,
       {
@@ -222,13 +223,30 @@ export default function CypherCardScreen() {
   };
 
   const getCardFee = async (physicalCardType?: PhysicalCardType) => {
-    const response = await getWithAuth('/v1/cards/designs');
-    if (!response.isError) {
-      if (physicalCardType === PhysicalCardType.METAL) {
-        return get(response.data, ['feeDetails', CardDesignType.METAL], 0);
-      } else {
-        return get(response.data, ['feeDetails', CardDesignType.PHYSICAL], 0);
+    try {
+      const planData = globalContext.globalState.planInfo;
+      const response = await getWithAuth('/v1/cards/designs');
+      if (!response.isError) {
+        const cardType =
+          physicalCardType === PhysicalCardType.METAL
+            ? CardDesignType.METAL
+            : CardDesignType.PHYSICAL;
+
+        const defaultFeeKey =
+          physicalCardType === PhysicalCardType.METAL
+            ? 'metalCardFee'
+            : 'physicalCardFee';
+
+        return get(
+          response.data,
+          ['feeDetails', cardType],
+          get(planData, ['default', CypherPlanId.PRO_PLAN, defaultFeeKey], 0),
+        );
       }
+      return 0;
+    } catch (error) {
+      Sentry.captureException(error);
+      return 0;
     }
   };
 
@@ -324,7 +342,7 @@ export default function CypherCardScreen() {
       />
       {/* TXN FILTER MODAL */}
       <CyDView className={'h-[60px] px-[10px] mx-[12px] mt-[24px]'}>
-        {cardId !== HIDDEN_CARD_ID ? (
+        {cardId !== CARD_IDS.HIDDEN_CARD ? (
           <CyDView className='flex flex-row justify-between items-center'>
             <CyDView>
               <CyDText className={'font-semibold text-[10px]'}>
@@ -396,7 +414,7 @@ export default function CypherCardScreen() {
       </CyDView>
 
       <CyDScrollView showsVerticalScrollIndicator={false}>
-        {cardId !== HIDDEN_CARD_ID &&
+        {cardId !== CARD_IDS.HIDDEN_CARD &&
           cardProvider === CardProviders.PAYCADDY && (
             <CyDView className='mx-[16px] my-[12px] bg-white rounded-[16px] p-[8px]'>
               {rcApplicationStatus !== CardApplicationStatus.COMPLETED ? (
@@ -417,10 +435,10 @@ export default function CypherCardScreen() {
 
         <CyDView
           className={clsx('flex flex-row  items-center mx-[16px] mt-[12px]', {
-            'justify-between': cardId !== HIDDEN_CARD_ID,
-            'justify-end': cardId === HIDDEN_CARD_ID,
+            'justify-between': cardId !== CARD_IDS.HIDDEN_CARD,
+            'justify-end': cardId === CARD_IDS.HIDDEN_CARD,
           })}>
-          {cardId !== HIDDEN_CARD_ID &&
+          {cardId !== CARD_IDS.HIDDEN_CARD &&
             cardProvider === CardProviders.PAYCADDY && (
               <CyDView className='flex flex-row justify-center items-center w-full'>
                 <Button

@@ -79,41 +79,38 @@ export default function ShippingCheckout() {
   }, []);
 
   const fetchCardDesignDetails = async () => {
-    const response = await getWithAuth('/v1/cards/designs');
-    if (!response.isError) {
-      if (physicalCardType === PhysicalCardType.METAL) {
-        setPreferredDesignId(
-          get(response.data, [CardDesignType.METAL, 0, 'id'], {}),
-        );
-        setCardDesignDetails(get(response.data, CardDesignType.METAL, {}));
+    try {
+      const response = await getWithAuth('/v1/cards/designs');
+      if (!response.isError) {
+        const cardType =
+          physicalCardType === PhysicalCardType.METAL
+            ? CardDesignType.METAL
+            : CardDesignType.PHYSICAL;
+
+        // Set card design ID and details
+        setPreferredDesignId(get(response.data, [cardType, 0, 'id'], ''));
+        setCardDesignDetails(get(response.data, cardType, {}));
+
+        // Set card fee
+        const defaultFeeKey =
+          physicalCardType === PhysicalCardType.METAL
+            ? 'metalCardFee'
+            : 'physicalCardFee';
+
         setCardFee(
           get(
             response.data,
-            ['feeDetails', CardDesignType.METAL],
-            get(
-              planData,
-              ['default', CypherPlanId.PRO_PLAN, 'metalCardFee'],
-              0,
-            ),
-          ),
-        );
-      } else {
-        setPreferredDesignId(
-          get(response.data, [CardDesignType.PHYSICAL, 0, 'id'], {}),
-        );
-        setCardDesignDetails(get(response.data, CardDesignType.PHYSICAL, {}));
-        setCardFee(
-          get(
-            response.data,
-            ['feeDetails', CardDesignType.PHYSICAL],
-            get(
-              planData,
-              ['default', CypherPlanId.PRO_PLAN, 'physicalCardFee'],
-              0,
-            ),
+            ['feeDetails', cardType],
+            get(planData, ['default', CypherPlanId.PRO_PLAN, defaultFeeKey], 0),
           ),
         );
       }
+    } catch (error) {
+      Sentry.captureException(error);
+      // Set default values in case of error
+      setPreferredDesignId('');
+      setCardDesignDetails({});
+      setCardFee(0);
     }
   };
 

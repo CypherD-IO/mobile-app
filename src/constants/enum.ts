@@ -443,3 +443,8 @@ export enum NOTIFE_ACTIONS {
   INCREASE_MONTHLY_LIMIT = 'increase-monthly-limit',
   ENABLE_ZERO_RESTRICTION_MODE = 'enable-zero-restriction-mode',
 }
+
+export const CARD_IDS = {
+  METAL_CARD: 'metal-card',
+  HIDDEN_CARD: 'hidden',
+};
