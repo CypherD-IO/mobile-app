@@ -149,7 +149,7 @@
     "react-native-rsa-native": "^2.0.5",
     "react-native-safe-area-context": "^3.3.2",
     "react-native-screens": "^3.34.0",
-    "react-native-share": "^7.9.1",
+    "react-native-share": "^10.0.0",
     "react-native-size-matters": "^0.4.0",
     "react-native-svg": "15.3.0",
     "react-native-svg-charts": "^5.4.0",

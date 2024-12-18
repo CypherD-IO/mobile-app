@@ -524,40 +524,24 @@ const TransactionDetail = ({
           </CyDView>
 
           {/* Card Row */}
-          {transaction.type !== CardTransactionTypes.CREDIT && (
-            <CyDView className='flex flex-row justify-between items-center mt-[24px]'>
-              <CyDText className='text-[14px] text-n200 font-semibold'>
-                {t('CARD')}
-              </CyDText>
-              <CyDView className='flex flex-row items-center'>
-                {getChannelIcon(transaction?.wallet ?? transaction?.channel)
-                  ?.categoryIcon && (
-                  <>
-                    <CyDFastImage
-                      source={
-                        getChannelIcon(
-                          transaction?.wallet ?? transaction?.channel,
-                        )?.categoryIcon
-                      }
-                      className='h-[16px] w-[16px]'
-                      resizeMode='contain'
-                    />
-                    <CyDText className='text-[12px] font-semibold ml-[2px]'>
-                      {
-                        getChannelIcon(
-                          transaction?.wallet ?? transaction?.channel,
-                        )?.paymentChannel
-                      }
-                    </CyDText>
-                    <CyDView className='w-[6px] h-[6px] bg-black rounded-full mx-[4px]' />
-                  </>
-                )}
-                <CyDText className='text-[14px] font-semibold'>
-                  {`${capitalize(cardDetails?.type)} Card(${cardDetails?.last4})`}
+          {transaction.type !== CardTransactionTypes.CREDIT &&
+            cardDetails.cardId && (
+              <CyDView className='flex flex-row justify-between items-center mt-[24px]'>
+                <CyDText className='text-[14px] text-n200 font-semibold'>
+                  {t('CARD')}
                 </CyDText>
+                <CyDView className='flex flex-row items-center'>
+                  <CyDView className='flex items-center'>
+                    <CyDText className='text-[14px] font-semibold'>
+                      {`** ${cardDetails?.last4}`}
+                    </CyDText>
+                    <CyDText className='text-[10px] text-n200 font-semibold ml-[2px]'>
+                      {cardDetails?.type.toUpperCase()}
+                    </CyDText>
+                  </CyDView>
+                </CyDView>
               </CyDView>
-            </CyDView>
-          )}
+            )}
 
           {/* Merchant Name Row */}
           {transaction.metadata?.merchant?.merchantName && (
@@ -579,7 +563,7 @@ const TransactionDetail = ({
                     {t('ADDITIONAL_INFO')}
                   </CyDText>
                 </CyDTouchView>
-                <CyDText className='text-[14px] font-semibold'>
+                <CyDText className='text-[12px] font-semibold text-n200'>
                   {startCase(
                     (
                       transaction.metadata?.merchant?.merchantCity ?? ''
@@ -685,19 +669,15 @@ const TransactionDetail = ({
                   {t('BILLED_AMOUNT')}
                 </CyDText>
                 <CyDText className='text-[14px] font-semibold'>
-                  {`${getSymbolFromCurrency(transaction.fxCurrencySymbol ?? 'USD') ?? transaction.fxCurrencySymbol} ${limitDecimalPlaces(
-                    transaction.fxCurrencyValue ?? transaction.amount,
-                    2,
-                  )}`}
+                  {`$ ${limitDecimalPlaces(transaction.amount, 2)}`}
                 </CyDText>
               </CyDView>
               {transaction.fxConversionPrice && (
                 <CyDView className='flex flex-row justify-between items-center'>
                   <CyDText className='text-[12px] text-n200'>
-                    USD to ${transaction.fxCurrencySymbol} -
-                    {formatAmount(
+                    {`$ 1 -> ${getSymbolFromCurrency(transaction.fxCurrencySymbol)} ${formatAmount(
                       limitDecimalPlaces(transaction.fxConversionPrice, 2),
-                    )}
+                    )}`}
                   </CyDText>
                 </CyDView>
               )}
@@ -790,32 +770,11 @@ export default function TransactionDetails() {
   const viewRef = useRef<any>(null);
 
   const cardDetails: Card =
-    globalContext?.globalState.cardProfile?.pc?.cards?.reduce(
-      (_, curVal) => {
-        if (curVal?.cardId === transaction.cardId) {
-          return curVal;
-        } else {
-          return {
-            bin: '',
-            cardId: 'XXXX',
-            last4: 'XXXX',
-            network: '',
-            status: '',
-            type: '',
-          };
-        }
-      },
-      {
-        bin: '',
-        cardId: 'XXXX',
-        last4: 'XXXX',
-        network: '',
-        status: '',
-        type: '',
-      },
+    globalContext?.globalState.cardProfile?.pc?.cards?.find(
+      card => card?.cardId === transaction?.cardId,
     ) ?? {
       bin: '',
-      cardId: 'XXXX',
+      cardId: '',
       last4: 'XXXX',
       network: '',
       status: '',
@@ -940,15 +899,16 @@ export default function TransactionDetails() {
 
       const url = await captureRef(viewRef, {
         format: 'jpg',
-        quality: 0.8,
+        quality: 0.9,
         result: 'base64',
-        snapshotContentContainer: true,
       });
       const shareImage = {
         title: t('SHARE_TITLE'),
-        message: isAndroid()
-          ? `Hey! I just spent ${transaction.amount} at ${transaction.metadata?.merchant} using my Cypher Card! 🚀 Living the crypto life!`
-          : undefined,
+        ...(isAndroid() && {
+          message: transaction.metadata?.merchant?.merchantName
+            ? `Hey! I just spent ${transaction.amount} at ${transaction.metadata.merchant.merchantName} using my Cypher Card! 🚀 Living the crypto life!`
+            : `Hey I just made this transaction using my Cypher Card! 🚀 Living the crypto life!`,
+        }),
         subject: t('SHARE_TITLE'),
         url: `data:image/jpeg;base64,${url}`,
       };
@@ -956,11 +916,13 @@ export default function TransactionDetails() {
       await Share.open(shareImage);
     } catch (error) {
       console.error('Share error:', error);
-      Toast.show({
-        type: 'error',
-        text1: 'Share failed',
-        text2: 'Unable to share transaction details',
-      });
+      if (error.message !== 'User did not share') {
+        Toast.show({
+          type: 'error',
+          text1: 'Share failed',
+          text2: 'Unable to share transaction details',
+        });
+      }
     }
   }
 
@@ -998,7 +960,6 @@ export default function TransactionDetails() {
             source={AppImages.BACK_ARROW_GRAY}
           />
         </CyDTouchView>
-        {/* <CyDView ref={viewRef} collapsable={false} className='bg-white w-full'> */}
         <ViewShot ref={viewRef}>
           <CyDScrollView className='h-full bg-cardBg'>
             <CyDView className='min-h-full'>
@@ -1055,15 +1016,40 @@ export default function TransactionDetails() {
                     })()}
                   </CyDText>
                 </CyDView>
-                <CyDText className='mt-[4px] text-[12px]'>
-                  {formatDate(transaction.date)}
-                </CyDText>
+                <CyDView className='flex flex-row items-center mt-[4px]'>
+                  {getChannelIcon(transaction?.wallet ?? transaction?.channel)
+                    ?.categoryIcon && (
+                    <>
+                      <CyDFastImage
+                        source={
+                          getChannelIcon(
+                            transaction?.wallet ?? transaction?.channel,
+                          )?.categoryIcon
+                        }
+                        className='h-[16px] w-[16px]'
+                        resizeMode='contain'
+                      />
+                      <CyDText className='text-[12px] text-n200 ml-[2px] font-semibold'>
+                        {
+                          getChannelIcon(
+                            transaction?.wallet ?? transaction?.channel,
+                          )?.paymentChannel
+                        }
+                      </CyDText>
+                      <CyDView className='w-[6px] h-[6px] bg-n200 rounded-full mx-[6px]' />
+                    </>
+                  )}
+                  <CyDText className='text-[12px] text-n200 font-semibold'>
+                    {formatDate(transaction.date)}
+                  </CyDText>
+                </CyDView>
+
                 {(transaction?.cDReason ?? transaction?.dReason) && (
                   <CyDView className='mt-[8px] px-[24px]'>
                     <CyDTouchView>
                       <CyDText
                         className={clsx(
-                          'text-center text-red400 tracking-[-0.8px] leading-[22.4px] font-[500] mx-[24px]',
+                          'text-center text-red400 tracking-[-0.5px] leading-[22.4px] font-[500] mx-[24px]',
                           'text-[14px]',
                         )}>
                         Declined due to{' '}
@@ -1153,7 +1139,6 @@ export default function TransactionDetails() {
             </CyDView>
           </CyDScrollView>
         </ViewShot>
-        {/* </CyDView> */}
       </CyDSafeAreaView>
       <SafeAreaView edges={['bottom']} style={{ backgroundColor: 'white' }} />
     </>
