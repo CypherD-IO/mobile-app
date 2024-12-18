@@ -915,14 +915,7 @@ export function DebitCardStackScreen({ route }) {
         name={screenTitle.BRIDGE_CARD_TRANSACTION_DETAILS_SCREEN}
         component={TransactionDetails}
         options={({ navigation }) => ({
-          headerTransparent: false,
-          headerShadowVisible: false,
-          title: '',
-          headerTitleAlign: 'center',
-          headerTitleStyle: portfolioStackScreenHeaderTitleStyles,
-          headerTintColor: Colors.primaryTextColor,
-          headerBackTitleVisible: false,
-          headerLeft: () => defaultHeaderLeft(navigation, keyboardHeight),
+          headerShown: false,
         })}
       />
 
