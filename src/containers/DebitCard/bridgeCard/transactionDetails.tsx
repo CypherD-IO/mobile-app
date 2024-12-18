@@ -929,11 +929,9 @@ export default function TransactionDetails() {
       });
       const shareImage = {
         title: t('SHARE_TITLE'),
-        ...(isAndroid() && {
-          message: transaction.metadata?.merchant?.merchantName
-            ? `Hey! I just spent ${transaction.amount} at ${transaction.metadata.merchant.merchantName} using my Cypher Card! 🚀 Living the crypto life!`
-            : `Hey I just made this transaction using my Cypher Card! 🚀 Living the crypto life!`,
-        }),
+        message: transaction.metadata?.merchant?.merchantName
+          ? `Hey! I just spent ${getSymbolFromCurrency(transaction.fxCurrencySymbol)} ${transaction.amount} at ${transaction.metadata.merchant.merchantName} using my Cypher Card! 🚀 Living the crypto life!`
+          : `Hey I just made this transaction using my Cypher Card! 🚀 Living the crypto life!`,
         subject: t('SHARE_TITLE'),
         url: `data:image/jpeg;base64,${url}`,
       };
