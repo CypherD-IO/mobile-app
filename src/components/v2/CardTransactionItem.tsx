@@ -99,7 +99,7 @@ const CardTransactionItem = ({ item }: CardTransactionItemProps) => {
       <CyDTouchView
         key={item.id}
         className={clsx(
-          'h-[70px] flex flex-row justify-between items-center bg-white p-[16px] border-b border-x border-sepratorColor',
+          'h-[70px] flex flex-row justify-between items-center bg-white p-[16px] border-b border-sepratorColor',
         )}
         onPress={() => {
           void intercomAnalyticsLog('card_transaction_info_clicked');

@@ -19,7 +19,11 @@ import {
 } from '@react-navigation/native';
 import { IKycPersonDetail } from '../../../models/kycPersonal.interface';
 import { IShippingAddress } from '../../../models/shippingAddress.interface';
-import { ButtonType, CardProviders } from '../../../constants/enum';
+import {
+  ButtonType,
+  CardProviders,
+  PhysicalCardType,
+} from '../../../constants/enum';
 import { useTranslation } from 'react-i18next';
 import { capitalize } from 'lodash';
 import { getCountryNameFromISO2 } from '../../../core/locale';
@@ -34,14 +38,20 @@ interface RouteParams {
   shippingAddress: IShippingAddress;
   currentCardProvider: CardProviders;
   preferredName: string;
+  physicalCardType?: PhysicalCardType;
 }
 
 export default function ShippingConfirmation() {
   const navigation = useNavigation<NavigationProp<ParamListBase>>();
   const route = useRoute<RouteProp<Record<string, RouteParams>, string>>();
   const { t } = useTranslation();
-  const { userData, shippingAddress, currentCardProvider, preferredName } =
-    route.params;
+  const {
+    userData,
+    shippingAddress,
+    currentCardProvider,
+    preferredName,
+    physicalCardType,
+  } = route.params;
 
   const RenderShippingAddress = useCallback(() => {
     return (
@@ -51,7 +61,11 @@ export default function ShippingConfirmation() {
           <CyDView className='flex flex-row items-center justify-between'>
             <CyDView className='gap-x-[12px]'>
               <CyDText className='text-[16px] font-semibold'>
-                {'Physical Card ** 45**'}
+                {`${
+                  physicalCardType === PhysicalCardType.METAL
+                    ? t('METAL_CARD')
+                    : t('PHYSICAL_CARD')
+                } ****`}
               </CyDText>
               {/* <CyDText className='text-[16px] font-semibold mt-[12px]'>
                 {t('SHIPPING_ADDRESS')}

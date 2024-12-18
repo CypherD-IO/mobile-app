@@ -17,7 +17,11 @@ import {
 } from '@react-navigation/native';
 import { useTranslation } from 'react-i18next';
 import Button from '../../../components/v2/button';
-import { ButtonType, CardProviders } from '../../../constants/enum';
+import {
+  ButtonType,
+  CardProviders,
+  PhysicalCardType,
+} from '../../../constants/enum';
 import { screenTitle } from '../../../constants';
 import { IShippingAddress } from '../../../models/shippingAddress.interface';
 import { IKycPersonDetail } from '../../../models/kycPersonal.interface';
@@ -31,22 +35,24 @@ interface RouteParams {
   userData: IKycPersonDetail;
   shippingAddress: IShippingAddress;
   currentCardProvider: CardProviders;
+  physicalCardType?: PhysicalCardType;
 }
 export default function NameOnCard() {
   const navigation = useNavigation<NavigationProp<ParamListBase>>();
   const route = useRoute<RouteProp<Record<string, RouteParams>, string>>();
   const MAX_NAME_LENGTH = 27;
-  const { userData, shippingAddress, currentCardProvider } = route.params;
+  const { userData, shippingAddress, currentCardProvider, physicalCardType } =
+    route.params;
   const [selectedName, setSelectedName] = useState<string>('');
   const [isPreferredNameModalVisible, setIsPreferredNameModalVisible] =
     useState<boolean>(false);
-  const firstName = userData.firstName;
-  const lastName = userData.lastName;
+  const firstName = userData.firstName ?? '';
+  const lastName = userData.lastName ?? '';
 
   const possibleNameCombinations = [
     `${firstName} ${lastName}`.slice(0, MAX_NAME_LENGTH),
-    firstName.slice(0, MAX_NAME_LENGTH),
-    lastName.slice(0, MAX_NAME_LENGTH),
+    firstName?.slice(0, MAX_NAME_LENGTH),
+    lastName?.slice(0, MAX_NAME_LENGTH),
     `${lastName} ${firstName}`.slice(0, MAX_NAME_LENGTH),
   ].filter(name => name.trim() !== '');
 
@@ -65,6 +71,7 @@ export default function NameOnCard() {
             shippingAddress,
             preferredName: name,
             currentCardProvider,
+            ...(physicalCardType && { physicalCardType }),
           });
         }}
       />
@@ -139,6 +146,7 @@ export default function NameOnCard() {
                 shippingAddress,
                 preferredName: selectedName,
                 currentCardProvider,
+                ...(physicalCardType && { physicalCardType }),
               });
             }}
             disabled={selectedName === ''}

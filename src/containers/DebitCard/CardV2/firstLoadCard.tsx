@@ -25,12 +25,12 @@ import {
   CYPHER_PLAN_ID_NAME_MAPPING,
   GAS_BUFFER_FACTOR_FOR_LOAD_MAX,
   gasFeeReservation,
-  HIDDEN_CARD_ID,
   MINIMUM_TRANSFER_AMOUNT_ETH,
   SlippageFactor,
 } from '../../../constants/data';
 import {
   ButtonType,
+  CARD_IDS,
   CardProviders,
   CypherPlanId,
   GlobalContextType,
@@ -76,7 +76,7 @@ interface RouteParams {
   currentCardIndex: number;
 }
 
-const cardId = HIDDEN_CARD_ID;
+const cardId = CARD_IDS.HIDDEN_CARD;
 
 export default function FirstLoadCard() {
   const hdWallet = useContext(HdWalletContext) as HdWalletContextDef;

@@ -1,4 +1,4 @@
-import React, { useCallback, useEffect, useState } from 'react';
+import React, { useCallback, useContext, useEffect, useState } from 'react';
 import { StatusBar } from 'react-native';
 import {
   CyDView,
@@ -18,7 +18,13 @@ import {
 } from '@react-navigation/native';
 import { useTranslation } from 'react-i18next';
 import Button from '../../../components/v2/button';
-import { ButtonType, CardProviders } from '../../../constants/enum';
+import {
+  ButtonType,
+  CardDesignType,
+  CardProviders,
+  CypherPlanId,
+  PhysicalCardType,
+} from '../../../constants/enum';
 import { IShippingAddress } from '../../../models/shippingAddress.interface';
 import { IKycPersonDetail } from '../../../models/kycPersonal.interface';
 import useAxios from '../../../core/HttpRequest';
@@ -33,18 +39,28 @@ import { screenTitle } from '../../../constants';
 import { isAndroid, isIOS } from '../../../misc/checkers';
 import clsx from 'clsx';
 import { getCountryNameById } from '../../../core/util';
+import { GlobalContext, GlobalContextDef } from '../../../core/globalContext';
 
 interface RouteParams {
   userData: IKycPersonDetail;
   shippingAddress: IShippingAddress;
   currentCardProvider: CardProviders;
   preferredName: string;
+  physicalCardType?: PhysicalCardType;
 }
 export default function ShippingCheckout() {
   const navigation = useNavigation<NavigationProp<ParamListBase>>();
   const route = useRoute<RouteProp<Record<string, RouteParams>, string>>();
-  const { userData, shippingAddress, currentCardProvider, preferredName } =
-    route.params;
+  const {
+    userData,
+    shippingAddress,
+    currentCardProvider,
+    preferredName,
+    physicalCardType,
+  } = route.params;
+  const { globalState, globalDispatch } = useContext<any>(
+    GlobalContext,
+  ) as GlobalContextDef;
   const { t } = useTranslation();
   const { getWithAuth, postWithAuth } = useAxios();
   const [balance, setBalance] = useState<number>(0);
@@ -52,10 +68,51 @@ export default function ShippingCheckout() {
   const [isOTPModalVisible, setIsOTPModalVisible] = useState<boolean>(false);
   const [isVerifyingOTP, setIsVerifyingOTP] = useState<boolean>(false);
   const { showModal, hideModal } = useGlobalModalContext();
+  const [preferredDesignId, setPreferredDesignId] = useState<string>('');
+  const [cardDesignDetails, setCardDesignDetails] = useState<any>();
+  const [cardFee, setCardFee] = useState<number>(0);
+  const planData = globalState.planInfo;
 
   useEffect(() => {
     void fetchProfileAndBalance();
+    void fetchCardDesignDetails();
   }, []);
+
+  const fetchCardDesignDetails = async () => {
+    try {
+      const response = await getWithAuth('/v1/cards/designs');
+      if (!response.isError) {
+        const cardType =
+          physicalCardType === PhysicalCardType.METAL
+            ? CardDesignType.METAL
+            : CardDesignType.PHYSICAL;
+
+        // Set card design ID and details
+        setPreferredDesignId(get(response.data, [cardType, 0, 'id'], ''));
+        setCardDesignDetails(get(response.data, cardType, {}));
+
+        // Set card fee
+        const defaultFeeKey =
+          physicalCardType === PhysicalCardType.METAL
+            ? 'metalCardFee'
+            : 'physicalCardFee';
+
+        setCardFee(
+          get(
+            response.data,
+            ['feeDetails', cardType],
+            get(planData, ['default', CypherPlanId.PRO_PLAN, defaultFeeKey], 0),
+          ),
+        );
+      }
+    } catch (error) {
+      Sentry.captureException(error);
+      // Set default values in case of error
+      setPreferredDesignId('');
+      setCardDesignDetails({});
+      setCardFee(0);
+    }
+  };
 
   const fetchProfileAndBalance = async () => {
     const response = await getWithAuth('/v1/authentication/profile');
@@ -87,6 +144,7 @@ export default function ShippingCheckout() {
       ...(line2 ? { line2 } : {}),
       preferredCardName: preferredName,
       otp: Number(otp),
+      ...(preferredDesignId ? { preferredDesignId } : {}),
     };
     setIsOTPModalVisible(false);
     const response = await postWithAuth(
@@ -100,6 +158,7 @@ export default function ShippingCheckout() {
         shippingAddress,
         currentCardProvider,
         preferredName,
+        ...(physicalCardType && { physicalCardType }),
       });
     } else {
       showModal('state', {
@@ -170,10 +229,16 @@ export default function ShippingCheckout() {
               className='w-[24px] h-[24px]'
               resizeMode='contain'
             />
-            <CyDText>{t('PHYSICAL_CARD')}</CyDText>
+            <CyDText>
+              {physicalCardType === PhysicalCardType.METAL
+                ? t('METAL_CARD')
+                : t('PHYSICAL_CARD')}
+            </CyDText>
           </CyDView>
           <CyDView className='flex flex-row items-center'>
-            <CyDText>{'$0'}</CyDText>
+            <CyDText className='font-bold text-successTextGreen'>
+              {'🎉' + t('FREE')}
+            </CyDText>
           </CyDView>
         </CyDView>
         <CyDView className='flex flex-row justify-between items-center px-[16px] py-[12px] border-b-[0.5px] border-inputBorderColor'>
@@ -187,10 +252,7 @@ export default function ShippingCheckout() {
           </CyDView>
           <CyDView className='flex flex-row items-center'>
             <CyDSkeleton height={24} width={54} rounded={4} value={balance}>
-              {get(profile, [
-                currentCardProvider,
-                'physicalCardUpgradationFee',
-              ]) === 0 ? (
+              {cardFee === 0 ? (
                 <CyDView className='flex flex-row items-center gap-x-[4px]'>
                   <CyDText className='line-through font-bold'>{'$50'}</CyDText>
                   <CyDText className='font-bold text-successTextGreen'>
@@ -198,14 +260,7 @@ export default function ShippingCheckout() {
                   </CyDText>
                 </CyDView>
               ) : (
-                <CyDText>
-                  $
-                  {get(
-                    profile,
-                    [currentCardProvider, 'physicalCardUpgradationFee'],
-                    '50',
-                  )}
-                </CyDText>
+                <CyDText>${cardFee}</CyDText>
               )}
             </CyDSkeleton>
           </CyDView>
@@ -216,14 +271,7 @@ export default function ShippingCheckout() {
           </CyDView>
           <CyDView className='flex flex-row items-center'>
             <CyDSkeleton height={24} width={54} rounded={4} value={balance}>
-              <CyDText className='font-bold'>
-                $
-                {get(
-                  profile,
-                  [currentCardProvider, 'physicalCardUpgradationFee'],
-                  '50',
-                )}
-              </CyDText>
+              <CyDText className='font-bold'>${cardFee}</CyDText>
             </CyDSkeleton>
           </CyDView>
         </CyDView>
@@ -301,11 +349,13 @@ export default function ShippingCheckout() {
           <CyDScrollView
             className={clsx('flex-1', { 'mb-[22px]': isAndroid() })}
             showsVerticalScrollIndicator={false}>
-            <CyDView className='my-[12px]'>
+            <CyDView className='my-[16px]'>
               <CyDText className='text-[26px] font-bold'>
-                {t('PHYSICAL_CARD_CONFIRMATION')}
+                {physicalCardType === PhysicalCardType.METAL
+                  ? t('METAL_CARD_CONFIRMATION')
+                  : t('PHYSICAL_CARD_CONFIRMATION')}
               </CyDText>
-              <CyDText className='text-[14px] '>
+              <CyDText className='text-[14px] mt-[8px]'>
                 {t('PHYSICAL_CARD_CONFIRMATION_SUB')}
               </CyDText>
             </CyDView>
