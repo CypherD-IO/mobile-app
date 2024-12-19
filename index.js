@@ -10,7 +10,6 @@ import { name as appName } from './app.json';
 import { showNotification } from './src/notification/pushNotification';
 import Sentry from '@sentry/react-native';
 
-
 messaging().setBackgroundMessageHandler(async remoteMessage => {
   try {
     await showNotification(remoteMessage.notification, remoteMessage.data);
@@ -19,7 +18,5 @@ messaging().setBackgroundMessageHandler(async remoteMessage => {
   }
   return Promise.resolve();
 });
-
-
 
 AppRegistry.registerComponent(appName, () => App);
