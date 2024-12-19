@@ -159,12 +159,12 @@ const openMapsWithLocation = (location: {
   });
 
   Linking.canOpenURL(url!)
-    .then(supported => {
+    .then(async supported => {
       if (supported) {
-        return Linking.openURL(url!);
+        return await Linking.openURL(url!);
       } else {
         // Fallback to browser if native maps app cannot be opened
-        return Linking.openURL(
+        return await Linking.openURL(
           `https://www.google.com/maps/search/?api=1&query=${encodedAddress}`,
         );
       }

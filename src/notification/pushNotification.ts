@@ -13,6 +13,7 @@ import {
   CypherDeclineCodes,
   GlobalModalType,
   NOTIFE_ACTIONS,
+  RPCODES,
 } from '../constants/enum';
 import { screenTitle } from '../constants';
 import { NavigationProp, ParamListBase } from '@react-navigation/native';
@@ -68,7 +69,7 @@ async function createNotificationChannel() {
   return channelId;
 }
 
-const getAndroidActions = (categoryId?: CypherDeclineCodes) => {
+const getAndroidActions = (categoryId?: CypherDeclineCodes | RPCODES) => {
   switch (categoryId) {
     case CypherDeclineCodes.INT_COUNTRY:
       return [
@@ -163,6 +164,26 @@ const getAndroidActions = (categoryId?: CypherDeclineCodes) => {
           title: 'Enable Zero Restriction Mode',
           pressAction: {
             id: NOTIFE_ACTIONS.ENABLE_ZERO_RESTRICTION_MODE,
+            launchActivity: 'default',
+          },
+        },
+      ];
+    case RPCODES.CardIsNotActivated:
+      return [
+        {
+          title: 'Activate Card',
+          pressAction: {
+            id: NOTIFE_ACTIONS.ACTIVATE_CARD,
+            launchActivity: 'default',
+          },
+        },
+      ];
+    case RPCODES.CardIsBlocked:
+      return [
+        {
+          title: 'Unblock Card',
+          pressAction: {
+            id: NOTIFE_ACTIONS.UNBLOCK_CARD,
             launchActivity: 'default',
           },
         },
@@ -294,6 +315,26 @@ async function setCategories() {
         },
       ],
     },
+    {
+      id: RPCODES.CardIsNotActivated,
+      actions: [
+        {
+          id: NOTIFE_ACTIONS.ACTIVATE_CARD,
+          title: 'Activate Card',
+          foreground: true,
+        },
+      ],
+    },
+    {
+      id: RPCODES.CardIsBlocked,
+      actions: [
+        {
+          id: NOTIFE_ACTIONS.UNBLOCK_CARD,
+          title: 'Unblock Card',
+          foreground: true,
+        },
+      ],
+    },
   ]);
 }
 
@@ -313,7 +354,9 @@ export async function RouteNotificationAction({
   hideModal: () => void;
 }) {
   switch (actionId) {
+    case NOTIFE_ACTIONS.ACTIVATE_CARD:
     case NOTIFE_ACTIONS.ADD_COUNTRY:
+    case NOTIFE_ACTIONS.UNBLOCK_CARD:
       showModal(GlobalModalType.CARD_ACTIONS_FROM_NOTIFICATION, {
         closeModal: () => {
           hideModal();

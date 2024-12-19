@@ -748,6 +748,34 @@ export function PortfolioStackScreen() {
           headerShown: false,
         })}
       />
+      <PortfolioStack.Screen
+        name={screenTitle.CARD_UNLOCK_AUTH}
+        component={CardUnlockAuth}
+        options={({ navigation }) => ({
+          headerTransparent: false,
+          headerShadowVisible: false,
+          title: '',
+          headerTitleAlign: 'center',
+          headerTitleStyle: portfolioStackScreenHeaderTitleStyles,
+          headerTintColor: Colors.primaryTextColor,
+          headerBackTitleVisible: false,
+          headerLeft: () => defaultHeaderLeft(navigation, keyboardHeight),
+        })}
+      />
+      <PortfolioStack.Screen
+        name={screenTitle.CARD_ACTIAVTION_SCREEN}
+        component={ActivateCardScreen}
+        options={({ navigation }) => ({
+          headerTransparent: false,
+          headerShadowVisible: false,
+          title: '',
+          headerTitleAlign: 'center',
+          headerTitleStyle: portfolioStackScreenHeaderTitleStyles,
+          headerTintColor: Colors.primaryTextColor,
+          headerBackTitleVisible: false,
+          headerLeft: () => defaultHeaderLeft(navigation, keyboardHeight),
+        })}
+      />
     </PortfolioStack.Navigator>
   );
 }
