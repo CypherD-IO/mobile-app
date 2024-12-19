@@ -1,8 +1,10 @@
+import notifee, { EventType } from '@notifee/react-native';
 import analytics from '@react-native-firebase/analytics';
 import messaging, {
   FirebaseMessagingTypes,
 } from '@react-native-firebase/messaging';
-import { useIsFocused } from '@react-navigation/native';
+import { ParamListBase, useIsFocused } from '@react-navigation/native';
+import { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import * as Sentry from '@sentry/react-native';
 import clsx from 'clsx';
 import { isEmpty } from 'lodash';
@@ -36,15 +38,16 @@ import {
 import EmptyView from '../../components/EmptyView';
 import CopytoKeyModal from '../../components/ShowPharseModal';
 import Button from '../../components/v2/button';
+import { useGlobalModalContext } from '../../components/v2/GlobalModal';
 import PortfolioTokenItem from '../../components/v2/portfolioTokenItem';
 import { use3DSecure } from '../../components/v2/threeDSecureApprovalModalContext';
 import CyDTokenValue from '../../components/v2/tokenValue';
+import { QUICK_ACTION_NOTIFICATION_CATEGORY_IDS } from '../../constants/data';
 import {
-  CardControlTypes,
   CypherDeclineCodes,
   GlobalContextType,
   GlobalModalType,
-  NOTIFE_ACTIONS,
+  RPCODES,
   TokenOverviewTabIndices,
 } from '../../constants/enum';
 import * as C from '../../constants/index';
@@ -70,6 +73,7 @@ import { HdWalletContext } from '../../core/util';
 import usePortfolio from '../../hooks/usePortfolio';
 import { DeFiFilter } from '../../models/defi.interface';
 import { IPortfolioData } from '../../models/portfolioData.interface';
+import { RouteNotificationAction } from '../../notification/pushNotification';
 import {
   BridgeContext,
   BridgeContextDef,
@@ -88,12 +92,9 @@ import { Banner, HeaderBar, RefreshTimerBar } from './components';
 import BannerCarousel from './components/BannerCarousel';
 import FilterBar from './components/FilterBar';
 import { DeFiScene, NFTScene, TXNScene } from './scenes';
-import { useGlobalModalContext } from '../../components/v2/GlobalModal';
-import notifee, { EventType } from '@notifee/react-native';
-import { RouteNotificationAction } from '../../notification/pushNotification';
 
 export interface PortfolioProps {
-  navigation: any;
+  navigation: NativeStackNavigationProp<ParamListBase>;
 }
 
 export default function Portfolio({ navigation }: PortfolioProps) {
@@ -590,7 +591,11 @@ export default function Portfolio({ navigation }: PortfolioProps) {
               });
 
               if (cardId && provider) {
-                if (declineCode === CypherDeclineCodes.INT_COUNTRY) {
+                if (
+                  QUICK_ACTION_NOTIFICATION_CATEGORY_IDS.includes(
+                    declineCode as CypherDeclineCodes | RPCODES,
+                  )
+                ) {
                   showModal(GlobalModalType.CARD_ACTIONS_FROM_NOTIFICATION, {
                     closeModal: () => {
                       hideModal();

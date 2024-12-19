@@ -77,7 +77,7 @@ export default function Button({
       }}
       disabled={disabled || loading}
       className={clsx(
-        `rounded-[8px] py-[${paddingY ?? 15}px] flex flex-row items-center justify-center ${style}`,
+        `rounded-[12px] py-[${paddingY ?? 15}px] flex flex-row items-center justify-center ${style}`,
         {
           'bg-buttonColor': ButtonType.PRIMARY === type,
           'bg-white border-[1px]  border-greyButtonBackgroundColor':

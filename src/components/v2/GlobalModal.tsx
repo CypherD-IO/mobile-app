@@ -11,7 +11,7 @@ import { CyDView } from '../../styles/tailwindStyles';
 import { CustomModalLayoutDef } from '../../models/globalModal.interface';
 import RemoveWalletModal from './removeWalletModal';
 import ThreeDSecureApprovalModal from './threeDSecureApprovalModal';
-import AddCountryFromNotificationModal from './addCountryFromNotificationModal';
+import QuickActionNotificationModal from './quickActionNotificationModal';
 
 interface GlobalModalContextInterface {
   showModal: (modalType: string, params: any) => void;
@@ -82,7 +82,7 @@ export const GlobalModal: React.FC<any> = ({ children }) => {
         <ThreeDSecureApprovalModal {...store} />
       )}
       {store?.modalType === GlobalModalType.CARD_ACTIONS_FROM_NOTIFICATION && (
-        <AddCountryFromNotificationModal {...store} />
+        <QuickActionNotificationModal {...store} />
       )}
       {children}
     </GlobalModalContext.Provider>
