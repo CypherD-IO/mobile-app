@@ -38,10 +38,6 @@ export default function OrderSteps() {
   const { t } = useTranslation();
   const steps = [
     {
-      icon: AppImages.BASIC_DETAILS,
-      title: 'Basic Deails',
-    },
-    {
       icon: AppImages.HOMEICON,
       title: 'Verify your delivery address',
     },
