@@ -55,7 +55,7 @@ const ShareVia = ({ referralLink }: { referralLink: string }) => {
     {
       name: 'Telegram',
       icon: AppImages.TELEGRAM_BLUE_ICON,
-      url: `tg://msg?text=${encodeURIComponent(shareUrlText)}`,
+      url: `https://t.me/share/url?url=${encodeURIComponent(referralLink)}&text=${encodeURIComponent(shareUrlText)}`,
     },
     {
       name: 'X',
