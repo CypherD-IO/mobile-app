@@ -91,7 +91,7 @@ export default function TelegramSetup() {
     try {
       const botCommand = `/link ${telegramConnectionId}`;
       await Linking.openURL(
-        `tg://openmessage?user_id=CypherHQBot&text=${encodeURIComponent(botCommand)}`,
+        `https://t.me/CypherHQBot?text=${encodeURIComponent(botCommand)}`,
       );
     } catch (err) {
       showToast('Failed to open telegram', 'error');
