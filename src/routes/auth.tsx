@@ -41,7 +41,6 @@ import PrivateKey from '../containers/Options/PrivateKey';
 import Onmeta from '../containers/FundCardScreen/onmeta';
 import LegalScreen from '../containers/legalDocs/legal';
 import { t } from 'i18next';
-import OTPVerificationScreen from '../containers/DebitCard/OTPVerification';
 import CypherCardScreen from '../containers/DebitCard/CardV2';
 import CardRevealAuthScreen from '../containers/DebitCard/bridgeCard/cardRevealAuth';
 import BridgeFundCardScreen from '../containers/DebitCard/bridgeCard/fundCard';
@@ -81,7 +80,6 @@ import CardNotificationSettings from '../containers/DebitCard/bridgeCard/cardNot
 import EnterPrivateKey from '../containers/Auth/EnterPrivateKey';
 import { ChooseWalletIndex } from '../containers/Auth/ChooseWalletIndex';
 import CardTransactions from '../containers/DebitCard/bridgeCard/transactions';
-import TelegramSetupSettings from '../containers/DebitCard/bridgeCard/cardTelegramSetup';
 import CardQuote from '../containers/DebitCard/bridgeCard/quote';
 import AutoLoad from '../containers/DebitCard/bridgeCard/autoLoad';
 import PreviewAutoLoad from '../containers/DebitCard/bridgeCard/previewAutoLoad';
@@ -1103,21 +1101,6 @@ export function DebitCardStackScreen({ route }) {
           headerTransparent: false,
           headerShadowVisible: false,
           title: 'Notification Settings',
-          headerTitleAlign: 'center',
-          headerTitleStyle: portfolioStackScreenHeaderTitleStyles,
-          headerTintColor: Colors.primaryTextColor,
-          headerBackTitleVisible: false,
-          headerLeft: () => defaultHeaderLeft(navigation, keyboardHeight),
-        })}
-      />
-
-      <FundCardStack.Screen
-        name={screenTitle.TELEGRAM_SETUP_SETTINGS}
-        component={TelegramSetupSettings}
-        options={({ navigation, route }) => ({
-          headerTransparent: false,
-          headerShadowVisible: false,
-          title: 'Connect Telegram',
           headerTitleAlign: 'center',
           headerTitleStyle: portfolioStackScreenHeaderTitleStyles,
           headerTintColor: Colors.primaryTextColor,
