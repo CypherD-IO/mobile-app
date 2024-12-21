@@ -1,6 +1,12 @@
 import Intercom from '@intercom/intercom-react-native';
 import moment from 'moment';
-import React, { useContext, useEffect, useRef, useState } from 'react';
+import React, {
+  useCallback,
+  useContext,
+  useEffect,
+  useRef,
+  useState,
+} from 'react';
 import { useTranslation } from 'react-i18next';
 import AppImages from '../../../../assets/images/appImages';
 import {
@@ -32,6 +38,9 @@ import {
   CardControlTypes,
   ButtonType,
   GlobalModalType,
+  CardStatus,
+  GlobalContextType,
+  CardOperationsAuthType,
 } from '../../../constants/enum';
 import clsx from 'clsx';
 import { screenTitle } from '../../../constants';
@@ -66,6 +75,7 @@ import ViewShot, { captureRef } from 'react-native-view-shot';
 import { SHARE_TRANSACTION_TIMEOUT } from '../../../core/Http';
 import { isAndroid } from '../../../misc/checkers';
 import Share from 'react-native-share';
+import useCardUtilities from '../../../hooks/useCardUtilities';
 
 const formatDate = (date: Date) => {
   return moment(date).format('MMM DD YYYY, h:mm a');
@@ -284,6 +294,11 @@ const DeclinedTransactionActionItem = ({
   isInsufficientFunds,
   isLimitExceeded,
   isCountryDisabled,
+  isCardInactive,
+  activateCard,
+  isCardActivated,
+  fetchCardBalance,
+  fundsAvailable,
 }: {
   metadata: ICardSubObjectMerchant;
   countryAlreadyAllowed: boolean;
@@ -294,8 +309,14 @@ const DeclinedTransactionActionItem = ({
   isInsufficientFunds: boolean;
   isLimitExceeded: boolean;
   isCountryDisabled: boolean;
+  isCardInactive: boolean;
+  isCardActivated: boolean;
+  activateCard: () => Promise<void>;
+  fetchCardBalance: () => Promise<number>;
+  fundsAvailable: boolean;
 }) => {
   const { t } = useTranslation();
+
   if (isCountryDisabled && metadata?.merchantCountry && isCountryDisabled) {
     // Show existing UI for country disabled scenario
     return (
@@ -327,7 +348,7 @@ const DeclinedTransactionActionItem = ({
           <CyDTouchView
             className={clsx(
               'border border-p40 rounded-[4px] bg-p40 px-[8px] py-[6px] flex-1 ml-[10px]',
-              countryAlreadyAllowed && 'bg-white border-n40',
+              countryAlreadyAllowed && 'bg-green20 border-green350',
             )}
             disabled={countryAlreadyAllowed}
             onPress={() => {
@@ -360,7 +381,46 @@ const DeclinedTransactionActionItem = ({
         </CyDView>
       </CyDView>
     );
-  } else if (isInsufficientFunds || isLimitExceeded) {
+  } else if (isInsufficientFunds) {
+    return (
+      <CyDView className='bg-n0 rounded-[12px] border border-[#E9EBF8] p-[12px] mt-[24px]'>
+        <CyDView className='flex-row items-center'>
+          <CyDFastImage
+            source={
+              fundsAvailable
+                ? AppImages.SUCCESS_TICK_GREEN_BG_ROUNDED
+                : AppImages.INFO_CIRCLE
+            }
+            className='w-[24px] h-[24px]'
+          />
+          <CyDText className='text-[12px] font-medium ml-[8px] flex-1'>
+            {fundsAvailable
+              ? t('FUNDS_AVAILABLE_MESSAGE')
+              : t('INSUFFICIENT_FUNDS_MESSAGE')}
+          </CyDText>
+        </CyDView>
+        {!fundsAvailable && (
+          <CyDView className='mt-[10px] flex-row items-center flex-1'>
+            <CyDTouchView
+              className={
+                'rounded-[4px] bg-p40 px-[8px] py-[6px] flex-row items-center justify-center flex-1'
+              }
+              onPress={() => {
+                navigation.navigate(screenTitle.BRIDGE_FUND_CARD_SCREEN, {
+                  navigation,
+                  cardId: cardId ?? '',
+                  currentCardProvider: provider,
+                });
+              }}>
+              <CyDText className='text-center text-[14px] font-semibold'>
+                {t('ADD_FUNDS')}
+              </CyDText>
+            </CyDTouchView>
+          </CyDView>
+        )}
+      </CyDView>
+    );
+  } else if (isLimitExceeded) {
     return (
       <CyDView className='bg-n0 rounded-[12px] border border-[#E9EBF8] p-[12px] mt-[24px]'>
         <CyDView className='flex-row items-center'>
@@ -369,32 +429,61 @@ const DeclinedTransactionActionItem = ({
             className='w-[24px] h-[24px]'
           />
           <CyDText className='text-[12px] font-medium ml-[8px] flex-1'>
-            {isInsufficientFunds
-              ? t('INSUFFICIENT_FUNDS_MESSAGE')
-              : t('REVIEW_SETTINGS_MESSAGE')}
+            {t('REVIEW_SETTINGS_MESSAGE')}
           </CyDText>
         </CyDView>
         <CyDView className='mt-[10px] flex-row items-center flex-1'>
           <CyDTouchView
             className='rounded-[4px] bg-p40 px-[8px] py-[6px] flex-1'
             onPress={() => {
-              navigation.navigate(
-                isInsufficientFunds
-                  ? screenTitle.BRIDGE_FUND_CARD_SCREEN
-                  : screenTitle.CARD_CONTROLS_MENU,
-                {
-                  ...(isInsufficientFunds && { navigation }),
-                  cardId: cardId ?? '',
-                  currentCardProvider: provider,
-                },
-              );
+              navigation.navigate(screenTitle.CARD_CONTROLS_MENU, {
+                cardId: cardId ?? '',
+                currentCardProvider: provider,
+              });
             }}>
             <CyDText className='text-center text-[14px] font-semibold'>
-              {isInsufficientFunds ? t('ADD_FUNDS') : t('REVIEW_SETTINGS')}
+              {t('REVIEW_SETTINGS')}
             </CyDText>
           </CyDTouchView>
         </CyDView>
       </CyDView>
+    );
+  } else if (isCardInactive) {
+    return (
+      <>
+        <CyDView className='bg-n0 rounded-[12px] border border-[#E9EBF8] p-[12px] mt-[24px]'>
+          <CyDView className='flex-row items-center'>
+            <CyDFastImage
+              source={
+                isCardActivated
+                  ? AppImages.SUCCESS_TICK_GREEN_BG_ROUNDED
+                  : AppImages.INFO_CIRCLE
+              }
+              className='w-[24px] h-[24px]'
+            />
+            <CyDText className='text-[12px] font-medium ml-[8px] flex-1'>
+              {isCardActivated
+                ? t('CARD_ACTIVATED_MESSAGE')
+                : t('CARD_INACTIVE_MESSAGE')}
+            </CyDText>
+          </CyDView>
+          {!isCardActivated && (
+            <CyDView className='mt-[10px] flex-row items-center flex-1'>
+              <CyDTouchView
+                className={
+                  'rounded-[4px] bg-p40 px-[8px] py-[6px] flex-row items-center justify-center flex-1'
+                }
+                onPress={() => {
+                  void activateCard();
+                }}>
+                <CyDText className='text-center text-[14px] font-semibold'>
+                  {t('ACTIVATE_CARD')}
+                </CyDText>
+              </CyDTouchView>
+            </CyDView>
+          )}
+        </CyDView>
+      </>
     );
   } else {
     return <></>;
@@ -406,7 +495,7 @@ const getStatusBackgroundClass = (transaction: ICardTransaction) => {
     transaction.type === CardTransactionTypes.REFUND && transaction.isSettled;
   const isSettledNonRefund =
     transaction.type !== CardTransactionTypes.REFUND &&
-    (transaction.tStatus === ReapTxnStatus.CLEARED || transaction.isSettled);
+    transaction.tStatus === ReapTxnStatus.CLEARED;
 
   return isSettledRefund || isSettledNonRefund ? 'bg-green20' : 'bg-n30';
 };
@@ -449,18 +538,20 @@ const TransactionDetail = ({
   reason = '',
   metadata,
   addIntlCountry,
-  cardId,
+  cardDetails,
   navigation,
   provider,
   transaction,
   setIsMerchantDetailsModalVisible,
   getRequiredData,
   limits,
-  cardProfile,
+  activateCard,
+  fetchCardBalance,
 }: {
   isSettled: boolean;
   isDeclined?: boolean;
   reason?: string;
+  cardDetails: Card;
   metadata?: ICardSubObjectMerchant;
   cardId: string;
   provider: CardProviders;
@@ -470,7 +561,8 @@ const TransactionDetail = ({
   getRequiredData: (cardId: string) => Promise<void>;
   setIsMerchantDetailsModalVisible: (visible: boolean) => void;
   limits: any;
-  cardProfile: CardProfile;
+  activateCard: () => Promise<void>;
+  fetchCardBalance: () => Promise<number>;
 }) => {
   const isCountryDisabled =
     reason?.includes('International transactions are disabled') ||
@@ -479,27 +571,32 @@ const TransactionDetail = ({
     ?.toLowerCase()
     .includes('insufficient funds');
   const isLimitExceeded = reason?.toLowerCase().includes('limit');
+  const isCardInactive = /frozen|active/i.test(reason ?? '');
+  const isCardActivated = cardDetails.status === CardStatus.ACTIVE;
+  const [fundsAvailable, setFundsAvailable] = useState(false);
+
   useEffect(() => {
-    if (isDeclined && metadata?.merchantCountry && cardId) {
-      void getRequiredData(cardId);
+    if (isDeclined && metadata?.merchantCountry && cardDetails.cardId) {
+      void getRequiredData(cardDetails.cardId);
     }
-  }, [isDeclined, metadata?.merchantCountry, cardId]);
+  }, [isDeclined, metadata?.merchantCountry, cardDetails.cardId]);
+
+  useEffect(() => {
+    const checkBalance = async () => {
+      const balance = await fetchCardBalance();
+      setFundsAvailable(balance > transaction.amount);
+    };
+
+    if (isInsufficientFunds) {
+      void checkBalance();
+    }
+  }, []);
+
   const isCredit = transaction.type === CardTransactionTypes.CREDIT;
   const countryList = get(limits, 'cusL.intl.cLs', []) as string[];
   const countryAlreadyAllowed = countryList.includes(
     metadata?.merchantCountry ?? '',
   );
-
-  const cardDetails: Card = get(cardProfile, [provider, 'cards'])?.find(
-    card => card?.cardId === transaction?.cardId,
-  ) ?? {
-    bin: '',
-    cardId: '',
-    last4: 'XXXX',
-    network: '',
-    status: '',
-    type: '',
-  };
 
   return (
     <>
@@ -508,13 +605,18 @@ const TransactionDetail = ({
           <DeclinedTransactionActionItem
             metadata={metadata}
             countryAlreadyAllowed={countryAlreadyAllowed}
-            cardId={cardId}
+            cardId={cardDetails.cardId}
             provider={provider}
             addIntlCountry={addIntlCountry}
             navigation={navigation}
             isInsufficientFunds={isInsufficientFunds}
             isLimitExceeded={isLimitExceeded}
             isCountryDisabled={isCountryDisabled}
+            activateCard={activateCard}
+            isCardInactive={isCardInactive}
+            isCardActivated={isCardActivated}
+            fetchCardBalance={fetchCardBalance}
+            fundsAvailable={fundsAvailable}
           />
         )}
         {transaction.type === CardTransactionTypes.REFUND &&
@@ -584,36 +686,39 @@ const TransactionDetail = ({
                   {t('MERCHANT_FIRST_LETTER_CAPS')}
                 </CyDText>
                 <CyDText className='text-[14px] font-semibold'>
-                  {capitalize(transaction.metadata?.merchant?.merchantName)}
+                  {capitalize(transaction.metadata.merchant.merchantName)}
                 </CyDText>
               </CyDView>
-              <CyDView className='flex flex-row justify-between items-center'>
-                <CyDTouchView
-                  onPress={() => {
-                    setIsMerchantDetailsModalVisible(true);
-                  }}>
-                  <CyDText className='text-blue300 text-[12px] font-bold'>
-                    {t('ADDITIONAL_INFO')}
-                  </CyDText>
-                </CyDTouchView>
-                <CyDText className='text-[12px] font-semibold text-n200'>
-                  {[
-                    transaction.metadata?.merchant?.merchantCity &&
-                      startCase(
-                        (transaction.metadata?.merchant?.merchantCity).toLowerCase(),
-                      ),
-                    transaction.metadata?.merchant?.merchantState,
-                    transaction.metadata?.merchant?.merchantCountry &&
-                      startCase(
-                        getCountryNameById(
-                          transaction.metadata?.merchant?.merchantCountry,
+              {/* Only show additional info section if there is location data */}
+              {
+                <CyDView className='flex flex-row justify-between items-center'>
+                  <CyDTouchView
+                    onPress={() => {
+                      setIsMerchantDetailsModalVisible(true);
+                    }}>
+                    <CyDText className='text-blue300 text-[12px] font-bold'>
+                      {t('ADDITIONAL_INFO')}
+                    </CyDText>
+                  </CyDTouchView>
+                  <CyDText className='text-[12px] font-semibold text-n200'>
+                    {[
+                      transaction.metadata.merchant.merchantCity &&
+                        startCase(
+                          transaction.metadata.merchant.merchantCity.toLowerCase(),
                         ),
-                      ),
-                  ]
-                    .filter(Boolean)
-                    .join(', ')}
-                </CyDText>
-              </CyDView>
+                      transaction.metadata.merchant.merchantState,
+                      transaction.metadata.merchant.merchantCountry &&
+                        startCase(
+                          getCountryNameById(
+                            transaction.metadata.merchant.merchantCountry,
+                          ),
+                        ),
+                    ]
+                      .filter(Boolean)
+                      .join(', ')}
+                  </CyDText>
+                </CyDView>
+              }
             </>
           )}
 
@@ -793,7 +898,7 @@ export default function TransactionDetails() {
   const { fxCurrencySymbol } = transaction;
   const hdWalletContext = useContext<any>(HdWalletContext);
   const globalContext = useContext(GlobalContext) as GlobalContextDef;
-  const { getWithAuth, patchWithAuth } = useAxios();
+  const { getWithAuth, patchWithAuth, postWithAuth } = useAxios();
   const cardProfile: CardProfile | undefined =
     globalContext.globalState.cardProfile;
   const provider = cardProfile?.provider ?? CardProviders.REAP_CARD;
@@ -805,6 +910,41 @@ export default function TransactionDetails() {
   const [isMerchantDetailsModalVisible, setIsMerchantDetailsModalVisible] =
     useState(false);
   const viewRef = useRef<any>(null);
+  const { getWalletProfile } = useCardUtilities();
+
+  const cardDetails: Card = get(cardProfile, [provider, 'cards'])?.find(
+    card => card?.cardId === transaction?.cardId,
+  ) ?? {
+    bin: '',
+    cardId: '',
+    last4: 'XXXX',
+    network: '',
+    status: '',
+    type: '',
+  };
+
+  const refreshProfile = async () => {
+    const data = await getWalletProfile(globalContext.globalState.token);
+    globalContext.globalDispatch({
+      type: GlobalContextType.CARD_PROFILE,
+      cardProfile: data,
+    });
+  };
+
+  const fetchCardBalance = async () => {
+    const url = `/v1/cards/${provider}/card/${String(cardDetails.cardId)}/balance`;
+    try {
+      const response = await getWithAuth(url);
+      if (!response.isError && response?.data && response.data.balance) {
+        return Number(response.data.balance);
+      } else {
+        return 0;
+      }
+    } catch (error) {
+      Sentry.captureException(error);
+      return 0;
+    }
+  };
 
   const getRequiredData = async (cardId: string) => {
     if (provider && cardId) {
@@ -892,6 +1032,7 @@ export default function TransactionDetails() {
           },
           onFailure: hideModal,
         });
+        void getRequiredData(cardId);
       } else {
         showModal('state', {
           type: 'error',
@@ -913,6 +1054,28 @@ export default function TransactionDetails() {
     }
   };
 
+  const activateCard = () => {
+    hideModal();
+    navigation.navigate(screenTitle.CARD_UNLOCK_AUTH, {
+      onSuccess: () => {
+        showModal('state', {
+          type: 'success',
+          title: t('Card Successfully Activated'),
+          description: `Your card is active now!`,
+          onSuccess: hideModal,
+          onFailure: hideModal,
+        });
+        void refreshProfile();
+      },
+      currentCardProvider: provider,
+      card: cardDetails,
+      authType:
+        cardDetails.status === CardStatus.BLOCKED
+          ? CardOperationsAuthType.UNBLOCK
+          : CardOperationsAuthType.UNLOCK,
+    });
+  };
+
   const displayProps = getTransactionDisplayProps(
     transaction.type,
     transaction.tStatus,
@@ -929,11 +1092,9 @@ export default function TransactionDetails() {
       });
       const shareImage = {
         title: t('SHARE_TITLE'),
-        ...(isAndroid() && {
-          message: transaction.metadata?.merchant?.merchantName
-            ? `Hey! I just spent ${transaction.amount} at ${transaction.metadata.merchant.merchantName} using my Cypher Card! 🚀 Living the crypto life!`
-            : `Hey I just made this transaction using my Cypher Card! 🚀 Living the crypto life!`,
-        }),
+        message: transaction.metadata?.merchant?.merchantName
+          ? `Hey! I just spent ${getSymbolFromCurrency(transaction.fxCurrencySymbol)} ${transaction.amount} at ${transaction.metadata.merchant.merchantName} using my Cypher Card! 🚀 Living the crypto life!`
+          : `Hey I just made this transaction using my Cypher Card! 🚀 Living the crypto life!`,
         subject: t('SHARE_TITLE'),
         url: `data:image/jpeg;base64,${url}`,
       };
@@ -1009,20 +1170,21 @@ export default function TransactionDetails() {
                       (transaction?.cDReason ?? transaction?.dReason) &&
                         'text-[24px]',
                     )}>
-                    {getTransactionSign(transaction.type) +
-                      (() => {
-                        const currencyCode =
-                          transaction.fxCurrencySymbol ?? 'USD';
-                        const value = limitDecimalPlaces(
-                          transaction.fxCurrencyValue ?? transaction.amount,
-                          2,
-                        );
-                        const [whole] = value.split('.');
-                        return (
-                          (getSymbolFromCurrency(currencyCode) ??
-                            currencyCode) + String(whole)
-                        );
-                      })()}
+                    {(() => {
+                      const currencyCode =
+                        transaction.fxCurrencySymbol ?? 'USD';
+                      const value = limitDecimalPlaces(
+                        transaction.fxCurrencyValue ?? transaction.amount,
+                        2,
+                      );
+                      const [whole] = value.split('.');
+                      const symbol =
+                        getSymbolFromCurrency(currencyCode) ?? currencyCode;
+
+                      return symbol.length > 2
+                        ? `${getTransactionSign(transaction.type)}${whole}`
+                        : `${getTransactionSign(transaction.type)}${symbol}${whole}`;
+                    })()}
                   </CyDText>
                   <CyDText
                     className={clsx(
@@ -1032,12 +1194,19 @@ export default function TransactionDetails() {
                         'mb-[0px]',
                     )}>
                     {(() => {
+                      const currencyCode =
+                        transaction.fxCurrencySymbol ?? 'USD';
                       const value = limitDecimalPlaces(
                         transaction.fxCurrencyValue ?? transaction.amount,
                         2,
                       );
                       const [, decimal] = value.split('.');
-                      return '.' + (decimal ? String(decimal) : '00');
+                      const symbol =
+                        getSymbolFromCurrency(currencyCode) ?? currencyCode;
+
+                      return symbol.length > 2
+                        ? `.${decimal ? String(decimal) : '00'} ${symbol}`
+                        : `.${decimal ? String(decimal) : '00'}`;
                     })()}
                   </CyDText>
                 </CyDView>
@@ -1116,7 +1285,7 @@ export default function TransactionDetails() {
                   reason={transaction?.cDReason ?? transaction?.dReason ?? ''}
                   metadata={transaction?.metadata?.merchant}
                   getRequiredData={getRequiredData}
-                  cardId={transaction?.cardId ?? ''}
+                  cardDetails={cardDetails}
                   limits={limits}
                   provider={provider}
                   addIntlCountry={addIntlCountry}
@@ -1125,7 +1294,8 @@ export default function TransactionDetails() {
                   setIsMerchantDetailsModalVisible={
                     setIsMerchantDetailsModalVisible
                   }
-                  cardProfile={cardProfile}
+                  activateCard={activateCard}
+                  fetchCardBalance={fetchCardBalance}
                 />
 
                 {!transaction.isSettled &&
