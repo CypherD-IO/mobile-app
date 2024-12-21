@@ -4,6 +4,7 @@ import {
   CyDText,
   CyDTouchView,
   CyDView,
+  CyDImage,
 } from '../../../styles/tailwindStyles';
 import OtpInput from '../../../components/v2/OTPInput';
 import AppImages from '../../../../assets/images/appImages';
@@ -28,6 +29,8 @@ import {
 } from '../../../constants/enum';
 import { Card } from '../../../models/card.model';
 import { t } from 'i18next';
+import { capitalize } from 'lodash';
+import { PinInput } from '../../../components/v2/pinInput';
 
 interface RouteParams {
   onSuccess: () => void;
@@ -37,16 +40,40 @@ interface RouteParams {
   godmExpiryInMinutes?: number;
 }
 
-const OTPHeader = () => {
+const OTPHeader = ({
+  navigation,
+  card,
+}: {
+  navigation: NavigationProp<ParamListBase>;
+  card: Card;
+}) => {
   return (
     <CyDView>
-      <CyDText className={'text-[25px] font-extrabold'}>
-        {t<string>('ENTER_AUTHENTICATION_CODE')}
+      <CyDTouchView
+        className='flex-row items-center'
+        onPress={() => {
+          navigation.goBack();
+        }}>
+        <CyDImage
+          source={AppImages.BACK_ARROW_GRAY}
+          className='w-[32px] h-[32px]'
+        />
+      </CyDTouchView>
+
+      <CyDImage
+        source={AppImages.SHIELD_FILLED}
+        className='mt-[24px] w-[32px] h-[32px]'
+      />
+
+      <CyDText className='mt-[6px] text-[28px] font-bold'>
+        {t<string>('OTP_VERIFICATION')}
       </CyDText>
-      <CyDText className={'text-[15px] font-bold'}>
+
+      <CyDText className='mt-[6px] text-[14px] text-n200'>
         {t<string>('CARD_SENT_OTP_EMAIL_AND_TELEGRAM')}
       </CyDText>
-      <CyDText className='text-[12px] mt-[12px]'>
+
+      <CyDText className='text-[10px] mt-[6px] text-n200'>
         {t<string>('CHECK_SPAM_FOLDER')}
       </CyDText>
     </CyDView>
@@ -67,6 +94,8 @@ export default function CardUnlockAuth() {
   const [timer, setTimer] = useState<NodeJS.Timer>();
   const { postWithAuth, patchWithAuth } = useAxios();
   const isFocused = useIsFocused();
+  const [otpValue, setOtpValue] = useState<string[]>(Array(4).fill(''));
+  const [otpError, setOtpError] = useState<boolean>(false);
 
   useEffect(() => {
     void triggerOTP();
@@ -155,51 +184,60 @@ export default function CardUnlockAuth() {
     }
   };
 
+  const handleOtpChange = (value: string[]) => {
+    setOtpValue(value);
+    setOtpError(false);
+    if (value.length === 4 && value.every(digit => digit !== '')) {
+      void verifyOTP(parseInt(value.join(''), 10));
+    }
+  };
+
+  const handleOtpBlur = () => {
+    // You can add any additional logic here if needed when the OTP input loses focus
+  };
+
+  if (verifyingOTP) {
+    return <Loading />;
+  }
+
   return (
     <CyDSafeAreaView>
-      <CyDView className={'h-full bg-white px-[20px] pt-[10px]'}>
-        <OTPHeader />
+      <CyDView className={'h-full bg-[#F1F0F5] px-[20px] pt-[10px]'}>
+        <OTPHeader navigation={navigation} card={card} />
         <CyDView>
-          {!verifyingOTP && (
-            <CyDView className={'mt-[15%]'}>
-              <OtpInput
-                pinCount={4}
-                getOtp={otp => {
-                  void verifyOTP(Number(otp));
-                }}
-                placeholder={t('ENTER_OTP')}
-              />
-              <CyDTouchView
-                className={'flex flex-row items-center mt-[15%]'}
-                disabled={sendingOTP || resendInterval !== 0}
-                onPress={() => {
-                  void resendOTP();
-                }}>
-                <CyDText
-                  className={
-                    'font-bold underline decoration-solid underline-offset-4'
-                  }>
-                  {t<string>('RESEND_CODE_INIT_CAPS')}
+          <CyDView className={'mt-[24px]'}>
+            <PinInput
+              value={otpValue}
+              onChange={handleOtpChange}
+              error={otpError}
+              onBlur={handleOtpBlur}
+              length={4}
+            />
+            <CyDTouchView
+              className={'flex flex-row items-center mt-[8px]'}
+              disabled={sendingOTP || resendInterval !== 0}
+              onPress={() => {
+                void resendOTP();
+              }}>
+              <CyDText className={'font-normal text-[12px] text-n200'}>
+                {"Didn't received the OTP? Try "}
+                <CyDText className='underline text-blue300 font-bold'>
+                  {t<string>('RESEND_OTP')}
                 </CyDText>
-                {sendingOTP && (
-                  <LottieView
-                    source={AppImages.LOADER_TRANSPARENT}
-                    autoPlay
-                    loop
-                    style={styles.lottie}
-                  />
-                )}
-                {resendInterval !== 0 && (
-                  <CyDText>{String(` in ${resendInterval} sec`)}</CyDText>
-                )}
-              </CyDTouchView>
-            </CyDView>
-          )}
-          {verifyingOTP && (
-            <CyDView className='mt-[-200px]'>
-              <Loading />
-            </CyDView>
-          )}
+              </CyDText>
+              {sendingOTP && (
+                <LottieView
+                  source={AppImages.LOADER_TRANSPARENT}
+                  autoPlay
+                  loop
+                  style={styles.lottie}
+                />
+              )}
+              {resendInterval !== 0 && (
+                <CyDText>{String(` in ${resendInterval} sec`)}</CyDText>
+              )}
+            </CyDTouchView>
+          </CyDView>
         </CyDView>
       </CyDView>
     </CyDSafeAreaView>

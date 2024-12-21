@@ -7,7 +7,6 @@ import {
   CyDTouchView,
   CyDView,
 } from '../../../styles/tailwindStyles';
-import OtpInput from '../OTPInput';
 import AppImages from '../../../../assets/images/appImages';
 import Loading from '../loading';
 import { useTranslation } from 'react-i18next';
@@ -16,6 +15,7 @@ import * as Sentry from '@sentry/react-native';
 import LottieView from 'lottie-react-native';
 import CyDModalLayout from '../modal';
 import StateModal from '../StateModal';
+import { PinInput } from '../pinInput';
 
 export default function OtpVerificationModal({
   isModalVisible,
@@ -37,6 +37,8 @@ export default function OtpVerificationModal({
   const [timer, setTimer] = useState<NodeJS.Timer>();
   const [sendingOTP, setSendingOTP] = useState<boolean>(false);
   const [error, setError] = useState<string>('');
+  const [otpValue, setOtpValue] = useState<string[]>(Array(4).fill(''));
+  const [otpError, setOtpError] = useState<boolean>(false);
 
   useEffect(() => {
     if (isModalVisible) {
@@ -79,6 +81,18 @@ export default function OtpVerificationModal({
         }, 1000),
       );
     }
+  };
+
+  const handleOtpChange = (value: string[]) => {
+    setOtpValue(value);
+    setOtpError(false);
+    if (value.every(digit => digit !== '')) {
+      void verifyOTP(value.join(''));
+    }
+  };
+
+  const handleOtpBlur = () => {
+    // Add any blur logic if needed
   };
 
   const OTPHeader = useCallback(() => {
@@ -130,12 +144,12 @@ export default function OtpVerificationModal({
         <CyDView className={'flex-1 mx-[20px]'}>
           {!isVerifyingOTP && (
             <CyDView className={'mt-[15%]'}>
-              <OtpInput
-                pinCount={4}
-                getOtp={otp => {
-                  void verifyOTP(otp);
-                }}
-                placeholder={t('ENTER_OTP')}
+              <PinInput
+                value={otpValue}
+                onChange={handleOtpChange}
+                error={otpError}
+                onBlur={handleOtpBlur}
+                length={4}
               />
               <CyDTouchView
                 className={'flex flex-row items-center mt-[15%]'}

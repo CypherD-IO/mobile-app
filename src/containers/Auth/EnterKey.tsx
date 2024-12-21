@@ -24,6 +24,7 @@ import {
   SafeAreaView,
   StatusBar,
   StyleSheet,
+  Keyboard,
 } from 'react-native';
 import AppImages from '../../../assets/images/appImages';
 import ChooseWalletIndexComponent from '../../components/ChooseWalletIndexComponent';
@@ -65,6 +66,7 @@ export default function Login(props) {
   const [loading, setLoading] = useState<boolean>(false);
   const [createWalletLoading, setCreateWalletLoading] =
     useState<boolean>(false);
+  const [isKeyboardVisible, setKeyboardVisible] = useState(false);
 
   // NOTE: DEFINE HOOKS 🍎🍎🍎🍎🍎🍎
   const hdWalletContext = useContext(HdWalletContext) as HdWalletContextDef;
@@ -219,6 +221,26 @@ export default function Login(props) {
     });
   }, [seedPhraseTextValue]);
 
+  useEffect(() => {
+    const keyboardDidShowListener = Keyboard.addListener(
+      'keyboardDidShow',
+      () => {
+        setKeyboardVisible(true);
+      },
+    );
+    const keyboardDidHideListener = Keyboard.addListener(
+      'keyboardDidHide',
+      () => {
+        setKeyboardVisible(false);
+      },
+    );
+
+    return () => {
+      keyboardDidShowListener.remove();
+      keyboardDidHideListener.remove();
+    };
+  }, []);
+
   return (
     <>
       <SafeAreaView style={styles.topSafeArea} />
@@ -340,11 +362,10 @@ export default function Login(props) {
                       {t('CYPHER_AUDIT_TEXT')}
                     </CyDText>
                   </CyDView>
-                  {filteredSuggestions.length > 0 && (
+                  {filteredSuggestions.length > 0 && isKeyboardVisible && (
                     <CyDView className='h-[56px] mt-[10px]'>
                       <FlatList
                         data={filteredSuggestions}
-                        // keyExtractor={item => item}
                         keyboardShouldPersistTaps='handled'
                         horizontal={true}
                         renderItem={({ item }) => (

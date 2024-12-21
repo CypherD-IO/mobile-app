@@ -401,8 +401,8 @@ export default function SelectPlanModal({
                   <CyDText className='text-[12px] font-medium mt-[10px] text-black pl-[12px] h-[18px]'>
                     {t('PHYSICAL_CARD')}
                   </CyDText>
-                  <CyDText className='text-[12px] font-medium mt-[10px] text-black pl-[12px] h-[18px]'>
-                    {t('METAL_CARD')}
+                  <CyDText className='text-[12px] font-medium mt-[28px] text-black pl-[12px] h-[18px]'>
+                    {t('ADD_ON_CARDS')}
                   </CyDText>
                   <CyDView className='w-full h-[1px] bg-n30 mt-[16px]' />
                   <CyDView className='flex flex-row items-center mt-[16px] pl-[12px] h-[32px]'>
@@ -489,10 +489,15 @@ export default function SelectPlanModal({
                     {'✅ Free'}
                   </CyDText>
                   {/* physical card */}
-                  <CyDText className='text-[12px] font-medium mt-[10px] text-black pl-[12px] h-[18px]'>
-                    {`${freePlanData?.physicalCardFee === 0 ? 'FREE' : `$${freePlanData?.physicalCardFee}`} `}
-                  </CyDText>
-                  {/* metal card */}
+                  <CyDView className='flex'>
+                    <CyDText className='text-[12px] font-medium mt-[10px] text-black pl-[12px] h-[18px]'>
+                      {'✅ Plastic'}
+                    </CyDText>
+                    <CyDText className='text-[10px] font-medium text-black pl-[12px] h-[18px]'>
+                      {`${freePlanData?.physicalCardFee === 0 ? 'FREE' : `($${freePlanData?.physicalCardFee}`} fee)`}
+                    </CyDText>
+                  </CyDView>
+                  {/* add on cards */}
                   <CyDText className='text-[12px] font-medium mt-[10px] text-black pl-[12px] h-[18px]'>
                     {'🚫'}
                   </CyDText>
@@ -511,7 +516,7 @@ export default function SelectPlanModal({
                   </CyDText>
                   {/* crypto load fee none usdc */}
                   <CyDText className='text-[12px] font-medium mt-[10px] text-black pl-[12px] h-[18px]'>
-                    {`${freePlanData?.nonUsdcFee === 0 ? 'FREE' : `${freePlanData?.nonUsdcFee}%`} `}
+                    {`${freePlanData?.nonUsdcFee === 0 ? 'FREE' : `${freePlanData?.nonUsdcFee}%*`} `}
                   </CyDText>
                   <CyDView className='w-full h-[1px] bg-n30 mt-[16px]' />
                   <CyDView className='mt-[16px] h-[32px]' />
@@ -551,12 +556,17 @@ export default function SelectPlanModal({
                     {'✅ Free'}
                   </CyDText>
                   {/* physical card */}
-                  <CyDText className='text-[12px] font-medium mt-[10px] text-black pl-[12px] h-[18px]'>
-                    {`${proPlanData?.physicalCardFee === 0 ? '✅ Free' : `$${proPlanData?.physicalCardFee}`} `}
-                  </CyDText>
+                  <CyDView className='flex'>
+                    <CyDText className='text-[12px] font-medium mt-[10px] text-black pl-[12px] h-[18px]'>
+                      {`✅ Metal`}
+                    </CyDText>
+                    <CyDText className='text-[10px] font-medium text-black pl-[12px] h-[18px]'>
+                      {`(🎉 Free)`}
+                    </CyDText>
+                  </CyDView>
                   {/* metal card */}
                   <CyDText className='text-[12px] font-medium mt-[10px] text-black pl-[12px] h-[18px]'>
-                    {'✅ Free *'}
+                    {'✅ 3 Cards'}
                   </CyDText>
                   <CyDView className='w-full h-[1px] bg-n30 mt-[16px]' />
                   {/* gpay and apple pay */}
@@ -658,17 +668,6 @@ export default function SelectPlanModal({
                     </CyDText>
                   </CyDView>
                   <CyDView className='w-full h-[1px] bg-n30 mt-[16px]' />
-                  <CyDView className='flex flex-row items-center my-[16px] pl-[12px] h-[32px]'>
-                    <CyDView className='p-[4px] bg-n30 rounded-full w-[32px] h-[32px] mr-[11px]'>
-                      <CyDImage
-                        source={AppImages.MANAGE_CARD}
-                        className='w-[24px] h-[24px]'
-                      />
-                    </CyDView>
-                    <CyDText className='font-bold text-[12px] h-[18px]'>
-                      {t('ADD_ON_CARDS')}
-                    </CyDText>
-                  </CyDView>
                 </CyDView>
 
                 <CyDView className='w-[21%] flex flex-col bg-white'>
@@ -700,12 +699,6 @@ export default function SelectPlanModal({
                     </CyDText>
                   </CyDView>
                   <CyDView className='w-full h-[1px] bg-n30 mt-[16px]' />
-                  {/* add ons */}
-                  <CyDView className='mt-[16px] h-[32px] flex flex-col justify-center pl-[12px]'>
-                    <CyDText className='text-[12px] font-medium text-black text-center pl-[12px]'>
-                      {'🚫'}
-                    </CyDText>
-                  </CyDView>
                 </CyDView>
 
                 <CyDView className='w-[21%] flex flex-col bg-white  rounded-tr-[16px] rounded-br-[16px]'>
@@ -737,12 +730,6 @@ export default function SelectPlanModal({
                     </CyDText>
                   </CyDView>
                   <CyDView className='w-full h-[1px] bg-n30 mt-[16px]' />
-                  {/* add ons */}
-                  <CyDView className='my-[16px] h-[42px] flex flex-col justify-center items-start pl-[12px]'>
-                    <CyDText className='text-[12px] font-medium text-black text-center pl-[12px] text-wrap '>
-                      {'Upto 3 cards *'}
-                    </CyDText>
-                  </CyDView>
                 </CyDView>
               </CyDView>
 
@@ -755,6 +742,9 @@ export default function SelectPlanModal({
               </CyDText>
               <CyDText className='text-n200 text-[12px] font-normal mt-[10px]'>
                 {t('COMPARISION_NOTE_3')}
+              </CyDText>
+              <CyDText className='text-n200 text-[12px] font-normal mt-[10px]'>
+                {t('COMPARISION_NOTE_4')}
               </CyDText>
             </CyDScrollView>
           </CyDView>

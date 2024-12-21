@@ -1167,6 +1167,8 @@ const resources = {
       COMPARISION_NOTE_2:
         '(2) Users can request a higher spending limit. If you have specific requirements, reach out to support increasing your limit.',
       COMPARISION_NOTE_3: '(3) Shipping Charges Apply for add on cards',
+      COMPARISION_NOTE_4:
+        '(4) Lower liquidity tokens may incur crypto load fees of up to 3%.',
       GET_YOUR_CARD: 'Get your Card',
       GET_YOUR_CARD_SUB: 'Here is  what you need to do next',
       ENTER_BASIC_DETAILS: 'Enter your Basic Details',
@@ -1182,7 +1184,7 @@ const resources = {
       DELIVERY_ADDRESS: 'Your Delivery Address',
       SELECT_COUNTRY: 'Select Country',
       PLAN_UPDATE_FAILED: 'Plan update failed',
-      ADD_ON_CARDS: 'Add on Cards',
+      ADD_ON_CARDS: 'Addon Cards',
       NON_USDC_TXN: 'Non USD Transactions',
       USDC_TXN: 'USD Transaction',
       CHANGE_PLAN: 'Change plan ',
@@ -1443,6 +1445,22 @@ const resources = {
         'Why settle for ordinary when you can experience the extraordinary?',
       CLAIM_NOW: 'Claim Now',
       METAL_CARD_CONFIRMATION: 'Metal Card Confirmation',
+      CARD_ACTIVATION_SUCCESS: 'Card Activation Success',
+      CARD_ACTIVATION_FAIL: 'Card Activation Failed',
+      UNABLE_TO_ACTIVATE_CARD: 'Unable to activate card',
+      CARD_ACTIVATION_SUCCESS_DESCRIPTION:
+        'Your card is successfully activated. You can now use your card for transactions.',
+      CARD_ACTIVATION_FAIL_DESCRIPTION:
+        'Unable to activate card. Please contact support.',
+      CARD_INACTIVE_MESSAGE:
+        'Your card is inactive. Please activate it and retry.',
+      ACTIVATED: 'Activated',
+      CARD_ACTIVATED_MESSAGE:
+        'Your card is active now. Please retry the transaction.',
+      FUNDS_AVAILABLE_MESSAGE:
+        'You have enough funds to complete the transaction, please retry.',
+      FUNDS_AVAILABLE: 'Funds Added',
+      CANCELLED: 'Cancelled',
     },
   },
 };

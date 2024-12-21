@@ -58,6 +58,7 @@ import CardProviderSwitch from '../../../components/cardProviderSwitch';
 import useCardUtilities from '../../../hooks/useCardUtilities';
 import clsx from 'clsx';
 import { GetMetalCardModal } from '../../../components/GetMetalCardModal';
+import { cardDesign } from '../../../models/cardDesign.interface';
 
 interface RouteParams {
   cardProvider: CardProviders;
@@ -81,6 +82,9 @@ export default function CypherCardScreen() {
     isShippingFeeConsentModalVisible,
     setIsShippingFeeConsentModalVisible,
   ] = useState(false);
+  const [cardDesignData, setCardDesignData] = useState<cardDesign | undefined>(
+    undefined,
+  );
   const [cardFee, setCardFee] = useState(0);
   const [choosenPhysicalCardType, setChoosenPhysicalCardType] = useState<
     PhysicalCardType | undefined
@@ -103,11 +107,6 @@ export default function CypherCardScreen() {
     currentCardIndex,
     'cardId',
   ]);
-  const isMetalCardEligible = get(
-    cardProfile,
-    [cardProvider, 'cards'],
-    [],
-  ).some((card: Card) => card.cardId === CARD_IDS.METAL_CARD);
   const isLockdownModeEnabled = get(
     cardProfile,
     ['accountStatus'],
@@ -124,6 +123,7 @@ export default function CypherCardScreen() {
     if (cardId !== CARD_IDS.HIDDEN_CARD) {
       await fetchCardBalance();
       void fetchRecentTransactions();
+      void getCardDesignValues();
     }
     if (!isLayoutRendered) {
       setIsLayoutRendered(true);
@@ -222,32 +222,31 @@ export default function CypherCardScreen() {
     });
   };
 
-  const getCardFee = async (physicalCardType?: PhysicalCardType) => {
-    try {
-      const planData = globalContext.globalState.planInfo;
-      const response = await getWithAuth('/v1/cards/designs');
-      if (!response.isError) {
-        const cardType =
-          physicalCardType === PhysicalCardType.METAL
-            ? CardDesignType.METAL
-            : CardDesignType.PHYSICAL;
-
-        const defaultFeeKey =
-          physicalCardType === PhysicalCardType.METAL
-            ? 'metalCardFee'
-            : 'physicalCardFee';
-
-        return get(
-          response.data,
-          ['feeDetails', cardType],
-          get(planData, ['default', CypherPlanId.PRO_PLAN, defaultFeeKey], 0),
-        );
-      }
-      return 0;
-    } catch (error) {
-      Sentry.captureException(error);
-      return 0;
+  const getCardDesignValues = async () => {
+    const response = await getWithAuth('/v1/cards/designs');
+    if (!response.isError) {
+      const cardDesignValues: cardDesign = response.data;
+      setCardDesignData(cardDesignValues);
     }
+  };
+
+  const getCardFee = async (physicalCardType?: PhysicalCardType) => {
+    const planData = globalContext.globalState.planInfo;
+    const cardType =
+      physicalCardType === PhysicalCardType.METAL
+        ? CardDesignType.METAL
+        : CardDesignType.PHYSICAL;
+
+    const defaultFeeKey =
+      physicalCardType === PhysicalCardType.METAL
+        ? 'metalCardFee'
+        : 'physicalCardFee';
+
+    return get(
+      cardDesignData,
+      ['feeDetails', cardType],
+      get(planData, ['default', CypherPlanId.PRO_PLAN, defaultFeeKey], 0),
+    );
   };
 
   const onPressUpgradeNow = async (physicalCardType?: PhysicalCardType) => {
@@ -497,12 +496,14 @@ export default function CypherCardScreen() {
             refreshProfile={() => {
               void refreshProfile();
             }}
+            cardDesignData={cardDesignData}
           />
         </CyDView>
         <CyDView className='w-full bg-white mt-[26px] pb-[120px]'>
-          {isMetalCardEligible && (
-            <GetMetalCardModal onPressUpgradeNow={onPressUpgradeNow} />
-          )}
+          {get(cardDesignData, ['allowedCount', 'metal'], 0) > 0 &&
+            get(cardDesignData, ['feeDetails', 'metal'], 100) === 0 && (
+              <GetMetalCardModal onPressUpgradeNow={onPressUpgradeNow} />
+            )}
           <CyDView className='mx-[12px] my-[12px]'>
             <CyDText className='text-[14px] font-bold ml-[4px] mb-[8px]'>
               {t<string>('RECENT_TRANSACTIONS')}

@@ -23,6 +23,8 @@ import { screenTitle } from '../constants';
 import { useIsFocused, useNavigation } from '@react-navigation/native';
 import LottieView from 'lottie-react-native';
 import { title } from 'process';
+import clsx from 'clsx';
+import { isIOS } from '../misc/checkers';
 
 const RadioButton = (props: { selected: boolean }) => {
   const { selected } = props;
@@ -143,7 +145,13 @@ export default function ChooseWalletIndexComponent({
           </CyDView>
         )}
       </CyDView>
-      <CyDView className='absolute bottom-0 left-0 right-0 bg-white pt-[10px]'>
+      <CyDView
+        className={clsx(
+          'absolute w-full bottom-[0px] bg-white pt-[10px] pb-[32px] px-[16px]',
+          {
+            'bottom-[-32px]': isIOS(),
+          },
+        )}>
         <Button
           type={ButtonType.PRIMARY}
           title={t('SUBMIT_FIRST_LETTER_CAPS')}
