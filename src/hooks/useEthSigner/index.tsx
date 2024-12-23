@@ -279,6 +279,8 @@ export default function useEthSigner() {
               });
           });
           return hash;
+        } else {
+          throw new Error('Authentication failed');
         }
       }
     } catch (e: any) {
@@ -487,6 +489,8 @@ export default function useEthSigner() {
               });
           });
           return hash;
+        } else {
+          throw new Error('Authentication failed');
         }
       }
     } catch (e: any) {
