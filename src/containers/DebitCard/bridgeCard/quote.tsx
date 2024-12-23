@@ -158,6 +158,18 @@ export default function CardQuote({
     quoteId: string,
     txnHash: string,
   ) => {
+    if (txnHash === null || txnHash === undefined) {
+      Sentry.captureException(
+        `Trying to call Deposit call with txnHash value null or undefined. Details: ${JSON.stringify(
+          {
+            txnHash,
+            address,
+            quoteId,
+          },
+        )}`,
+      );
+      return;
+    }
     const transferSentUrl = `/v1/cards/${cardProvider}/card/${cardId}/deposit`;
     const body = {
       address,
