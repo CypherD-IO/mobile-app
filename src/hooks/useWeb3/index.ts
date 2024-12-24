@@ -817,7 +817,7 @@ export default function useWeb3(origin: Web3Origin) {
             await web3RPCEndpoint.current.eth.estimateGas(transactionConfig);
 
           return {
-            result: gas,
+            result: Number(gas),
           };
         }
         case Web3Method.FEE_HISTORY: {
