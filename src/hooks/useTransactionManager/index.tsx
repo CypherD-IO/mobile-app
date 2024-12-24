@@ -986,7 +986,7 @@ export default function useTransactionManager() {
               contract,
               contractData: resp,
               tokens,
-              gasLimit,
+              gasLimit: Number(gasLimit),
               gasFeeResponse,
             });
           } else {

@@ -192,7 +192,7 @@ export default function useSkipApiBridge() {
                 contract,
                 contractData: resp,
                 tokens,
-                gasLimit,
+                gasLimit: Number(gasLimit),
                 gasFeeResponse,
               });
             } else {

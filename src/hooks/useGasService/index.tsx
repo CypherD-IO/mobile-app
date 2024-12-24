@@ -214,7 +214,7 @@ export default function useGasService() {
         value: '0x0',
         data: contractDataUser ?? contractData,
       });
-      gasLimit = ceil(gasLimit * 1.3);
+      gasLimit = ceil(Number(gasLimit) * 1.3);
       if (gasLimit) {
         let finalGasPrice;
         if (gasPriceDetail.gasPrice > 0) {

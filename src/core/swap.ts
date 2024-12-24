@@ -163,7 +163,7 @@ export const checkAllowance = async ({
             contract,
             contractData: resp,
             tokens,
-            gasLimit,
+            gasLimit: Number(gasLimit),
             gasFeeResponse,
           });
         } else {
