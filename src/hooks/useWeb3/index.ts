@@ -531,7 +531,7 @@ export default function useWeb3(origin: Web3Origin) {
               value,
               from: address,
             });
-            gas = gas ?? estimated;
+            gas = gas ?? Number(estimated);
           } catch (e) {
             const estimatedGasException = {
               e,

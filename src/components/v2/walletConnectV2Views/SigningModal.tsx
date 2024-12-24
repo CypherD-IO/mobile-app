@@ -246,7 +246,7 @@ export default function SigningModal({
         const code = await web3RPCEndpoint.eth.getCode(paramsForDecoding.to);
         const finalEstimatedGas = decideGasLimitBasedOnTypeOfToAddress(
           code,
-          estimatedGas,
+          Number(estimatedGas),
           paramsForDecoding.chainId,
           paramsForDecoding.to,
         );
