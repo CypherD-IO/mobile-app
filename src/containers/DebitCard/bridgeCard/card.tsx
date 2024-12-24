@@ -220,7 +220,7 @@ export default function CardScreen({
                     onFailure: hideModal,
                   });
                 },
-                currentCardProvider: currentCardProvider,
+                currentCardProvider,
                 card,
                 authType:
                   card.status === CardStatus.BLOCKED
