@@ -26,7 +26,6 @@ import {
   useWalletClient,
   useEstimateGas,
 } from 'wagmi';
-import { wagmiConfig, walletClient } from '../../components/wagmiConfigBuilder';
 import { useGlobalModalContext } from '../../components/v2/GlobalModal';
 import { ConnectionTypes } from '../../constants/enum';
 import { Chain, walletConnectChainData } from '../../constants/server';
@@ -47,8 +46,10 @@ import { TransactionResponse } from 'ethers';
 import { Hash } from 'viem';
 import { ChainIdToBackendNameMapping } from '../../constants/data';
 import useAxios from '../../core/HttpRequest';
+import { WagmiConfigContext } from '../../components/wagmiConfigBuilder';
 
 export default function useEthSigner() {
+  const wagmiConfig = useContext(WagmiConfigContext);
   const hdWalletContext = useContext<any>(HdWalletContext);
   const { switchChainAsync } = useSwitchChain();
   const { sendTransactionAsync, sendTransaction } = useSendTransaction();
