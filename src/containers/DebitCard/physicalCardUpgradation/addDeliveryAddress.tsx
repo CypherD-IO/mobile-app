@@ -21,7 +21,11 @@ import {
 } from '@react-navigation/native';
 import { useTranslation } from 'react-i18next';
 import Button from '../../../components/v2/button';
-import { ButtonType, CardProviders } from '../../../constants/enum';
+import {
+  ButtonType,
+  CardProviders,
+  PhysicalCardType,
+} from '../../../constants/enum';
 import { screenTitle } from '../../../constants';
 import ChooseCountryModal from '../../../components/v2/ChooseCountryModal';
 import { ICountry } from '../../../models/cardApplication.model';
@@ -33,6 +37,7 @@ import { IKycPersonDetail } from '../../../models/kycPersonal.interface';
 interface RouteParams {
   currentCardProvider: CardProviders;
   userData: IKycPersonDetail;
+  physicalCardType?: PhysicalCardType;
 }
 
 export default function AddDeliveryAddress() {
@@ -55,7 +60,7 @@ export default function AddDeliveryAddress() {
       currency: 'USD',
     });
   const { t } = useTranslation();
-  const { currentCardProvider, userData } = route.params;
+  const { currentCardProvider, userData, physicalCardType } = route.params;
 
   useEffect(() => {
     if (selectedCountry) {
@@ -120,6 +125,7 @@ export default function AddDeliveryAddress() {
       userData,
       shippingAddress: formattedValues,
       currentCardProvider,
+      ...(physicalCardType && { physicalCardType }),
     });
   };
 

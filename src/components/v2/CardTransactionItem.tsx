@@ -99,7 +99,7 @@ const CardTransactionItem = ({ item }: CardTransactionItemProps) => {
       <CyDTouchView
         key={item.id}
         className={clsx(
-          'h-[70px] flex flex-row justify-between items-center bg-white p-[16px] border-b border-x border-sepratorColor',
+          'h-[70px] flex flex-row justify-between items-center bg-white p-[16px] border-b border-sepratorColor',
         )}
         onPress={() => {
           void intercomAnalyticsLog('card_transaction_info_clicked');
@@ -143,9 +143,6 @@ const CardTransactionItem = ({ item }: CardTransactionItemProps) => {
                     className='h-[16px] w-[16px]'
                     resizeMode='contain'
                   />
-                  <CyDText className='text-[10px] font-semibold ml-[2px] text-base150'>
-                    {getChannelIcon(wallet ?? channel).paymentChannel}
-                  </CyDText>
                 </>
               )}
             </CyDView>

@@ -1,5 +1,8 @@
 /* eslint-disable @typescript-eslint/no-var-requires */
 const S3_BUCKET_URL_ICONS = 'https://public.cypherd.io/icons';
+export const CYPHER_CARD_IMAGES =
+  'https://public.cypherd.io/assets/programs/common/cypher-card';
+const S3_BUCKET_URL_DAPPS = 'https://public.cypherd.io/assets/dapps';
 
 const PLUS = require('./plus.png');
 const ARROW = require('./arrow.png');
@@ -773,8 +776,29 @@ const ECOMMERCE_ICON_GRAY = {
 const ATM_ICON_GRAY = {
   uri: `${S3_BUCKET_URL_ICONS}/atmIconGray.png`,
 };
+const UNBLOCK_CARD_QUICK_ACTION = {
+  uri: `${S3_BUCKET_URL_DAPPS}/unblockCardQuickAction.png`,
+};
+const ACTIVATE_CARD_QUICK_ACTION = {
+  uri: `${S3_BUCKET_URL_DAPPS}/activateCardQuickAction.png`,
+};
+const INTERNATIONAL_COUNTRIES_QUICK_ACTION = {
+  uri: `${S3_BUCKET_URL_DAPPS}/intCountriesQuickAction.png`,
+};
+const METAL_CARDS_STACK = {
+  uri: `${S3_BUCKET_URL_ICONS}/metalCardStack.png`,
+};
+const FREEZE_ICON_BLACK = {
+  uri: `${S3_BUCKET_URL_ICONS}/freezeIconBlack.png`,
+};
+const UNFREEZE_ICON_BLACK = {
+  uri: `${S3_BUCKET_URL_ICONS}/unfreezeIconBlack.png`,
+};
 
 const AppImages = {
+  INTERNATIONAL_COUNTRIES_QUICK_ACTION,
+  UNBLOCK_CARD_QUICK_ACTION,
+  ACTIVATE_CARD_QUICK_ACTION,
   BOOKMARK,
   CARD_SECURE,
   SHIELD_FILLED,
@@ -1263,5 +1287,8 @@ const AppImages = {
   WIRELESS_ICON_GRAY,
   ECOMMERCE_ICON_GRAY,
   ATM_ICON_GRAY,
+  METAL_CARDS_STACK,
+  FREEZE_ICON_BLACK,
+  UNFREEZE_ICON_BLACK,
 };
 export default AppImages;

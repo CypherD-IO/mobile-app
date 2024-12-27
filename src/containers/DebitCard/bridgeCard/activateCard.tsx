@@ -9,7 +9,6 @@ import {
   CyDView,
 } from '../../../styles/tailwindStyles';
 import { useTranslation } from 'react-i18next';
-import OtpInput from '../../../components/v2/OTPInput';
 import AppImages from '../../../../assets/images/appImages';
 import { useGlobalModalContext } from '../../../components/v2/GlobalModal';
 import * as Sentry from '@sentry/react-native';
@@ -36,6 +35,7 @@ import {
   useNavigation,
   useRoute,
 } from '@react-navigation/native';
+import { PinInput } from '../../../components/v2/pinInput';
 
 interface RouteParams {
   currentCardProvider: CardProviders;
@@ -58,6 +58,10 @@ export default function ActivateCard() {
   const globalContext = useContext<any>(GlobalContext);
   const { keyboardHeight } = useKeyboard();
   const { getWalletProfile } = useCardUtilities();
+  const [otpValue, setOtpValue] = useState<string[]>(Array(4).fill(''));
+  const [otpError, setOtpError] = useState<boolean>(false);
+  const [last4Value, setLast4Value] = useState<string[]>(Array(4).fill(''));
+  const [last4Error, setLast4Error] = useState<boolean>(false);
 
   useEffect(() => {
     void triggerOTP();
@@ -176,6 +180,26 @@ export default function ActivateCard() {
     }
   };
 
+  const handleOtpChange = (value: string[]) => {
+    setOtpValue(value);
+    setOtpError(false);
+    setOtp(value.join(''));
+  };
+
+  const handleOtpBlur = () => {
+    // Add any blur logic if needed
+  };
+
+  const handleLast4Change = (value: string[]) => {
+    setLast4Value(value);
+    setLast4Error(false);
+    setLast4(value.join(''));
+  };
+
+  const handleLast4Blur = () => {
+    // Add any blur logic if needed
+  };
+
   return (
     <CyDSafeAreaView style={{ height: keyboardHeight || '100%' }}>
       <CyDScrollView
@@ -200,22 +224,12 @@ export default function ActivateCard() {
               </CyDText>
               <CyDView>
                 <CyDView className={'mt-[5px]'}>
-                  {/* <OtpInput pinCount={4} getOtp={(otp) => { void verifyOTP(Number(otp)); }}></OtpInput> */}
-                  <CyDTextInput
-                    className={clsx(
-                      'h-[55px] text-center w-[100%] tracking-[2px] rounded-[5px] border-[1px] border-inputBorderColor',
-                      {
-                        'pl-[1px] pt-[2px]': isAndroid(),
-                        'tracking-[15px]': last4 !== '',
-                        'border-redCyD': last4 !== '' && last4.length !== 4,
-                      },
-                    )}
-                    keyboardType='numeric'
-                    placeholder='Enter last4 digits of card number'
-                    placeholderTextColor={'#C5C5C5'}
-                    onChangeText={(num: string) => setLast4(num)}
-                    value={last4}
-                    maxLength={4}
+                  <PinInput
+                    value={last4Value}
+                    onChange={handleLast4Change}
+                    error={last4Error}
+                    onBlur={handleLast4Blur}
+                    length={4}
                   />
                 </CyDView>
               </CyDView>
@@ -226,12 +240,12 @@ export default function ActivateCard() {
               </CyDText>
               <CyDView>
                 <CyDView className={'mt-[5px]'}>
-                  <OtpInput
-                    pinCount={4}
-                    getOtp={otp => {
-                      setOtp(otp);
-                    }}
-                    placeholder={t('ENTER_OTP')}
+                  <PinInput
+                    value={otpValue}
+                    onChange={handleOtpChange}
+                    error={otpError}
+                    onBlur={handleOtpBlur}
+                    length={4}
                   />
                   <CyDTouchView
                     className={

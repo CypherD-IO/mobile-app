@@ -136,6 +136,16 @@ export enum CardType {
   VIRTUAL = 'virtual',
 }
 
+export enum PhysicalCardType {
+  METAL = 'metal',
+}
+
+export enum CardDesignType {
+  METAL = 'metal',
+  PHYSICAL = 'physical',
+  VIRTUAL = 'virtual',
+}
+
 export enum CardTransactionStatuses {
   SETTLED = 'Settled',
   PENDING = 'Pending',
@@ -398,6 +408,19 @@ export enum RPCODES {
   InsufficientFunds = '51',
   NotPermitted = '57',
   SUCCESS = '00',
+  NetworkTimedOut = '05',
+  InvalidCardStatusLost = '41',
+  InvalidCardStatusDestroyed = '46',
+  AtmWithdrawalAmountLimitExceeded = '61',
+  AtmWithdrawalNotPermittedInMerchantCountry = '62',
+  AtmWithdrawalFrequencyExceeded = '65',
+  InvalidCardStatusUnknown = '70',
+  CardBlockedDueToExceedingMaximumNumberOfIncorrectAtmPinAttempts = '75',
+  CardBlockedDueToExceedingMaximumNumberOfIncorrectCvvTransactionAttempts = 'R2',
+  CardHasBeenBlockedDueToExceedingTheMaximumNumberOfIncorrectCvvTransactionAttempts = 'R2',
+  CardHasBeenBlockedDueToExceedingTheMaximumNumberOfIncorrectExpiryDateTransactionAttempts = 'R3',
+  CardIsNotActivated = 'R4',
+  CardIsBlocked = 'R8',
 }
 
 // I - international
@@ -432,4 +455,11 @@ export enum NOTIFE_ACTIONS {
   INCREASE_DAILY_LIMIT = 'increase-daily-limit',
   INCREASE_MONTHLY_LIMIT = 'increase-monthly-limit',
   ENABLE_ZERO_RESTRICTION_MODE = 'enable-zero-restriction-mode',
+  ACTIVATE_CARD = 'activate-card',
+  UNBLOCK_CARD = 'unblock-card',
 }
+
+export const CARD_IDS = {
+  METAL_CARD: 'metal-card',
+  HIDDEN_CARD: 'hidden',
+};

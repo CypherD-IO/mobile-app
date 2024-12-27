@@ -1,5 +1,10 @@
 import AppImages from '../../assets/images/appImages';
-import { ApplicationName, CypherPlanId } from './enum';
+import {
+  ApplicationName,
+  CypherDeclineCodes,
+  CypherPlanId,
+  RPCODES,
+} from './enum';
 import {
   CHAIN_SHARDEUM,
   CHAIN_SOLANA,
@@ -840,8 +845,6 @@ export const SlippageFactor = {
   SOLANA: 0.003,
 };
 
-export const HIDDEN_CARD_ID = 'hidden';
-
 export const ChainIdNameMapping = {
   '1': 'ethereum',
   '137': 'ethereum',
@@ -969,3 +972,11 @@ export const ChainNameToChainMapping: Record<ChainBackendNames, Chain> = {
   [ChainBackendNames.SHARDEUM]: CHAIN_SHARDEUM,
   [ChainBackendNames.SHARDEUM_SPHINX]: CHAIN_SHARDEUM_SPHINX,
 };
+
+export const QUICK_ACTION_NOTIFICATION_CATEGORY_IDS: Array<
+  CypherDeclineCodes | RPCODES
+> = [
+  CypherDeclineCodes.INT_COUNTRY,
+  RPCODES.CardIsNotActivated,
+  RPCODES.CardIsBlocked,
+];

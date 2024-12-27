@@ -12,11 +12,15 @@ import AppImages from '../../../../assets/images/appImages';
 import {
   ACCOUNT_STATUS,
   ButtonType,
+  CARD_IDS,
   CardApplicationStatus,
+  CardDesignType,
   CardProviders,
   CardTransactionStatuses,
   CardTransactionTypes,
+  CypherPlanId,
   GlobalContextType,
+  PhysicalCardType,
 } from '../../../constants/enum';
 import CardScreen from '../bridgeCard/card';
 import {
@@ -48,12 +52,13 @@ import {
 import { MODAL_HIDE_TIMEOUT } from '../../../core/Http';
 import ShippingFeeConsentModal from '../../../components/v2/shippingFeeConsentModal';
 import Loading from '../../../components/v2/loading';
-import { HIDDEN_CARD_ID } from '../../../constants/data';
 import LottieView from 'lottie-react-native';
 import { StyleSheet } from 'react-native';
 import CardProviderSwitch from '../../../components/cardProviderSwitch';
 import useCardUtilities from '../../../hooks/useCardUtilities';
 import clsx from 'clsx';
+import { GetMetalCardModal } from '../../../components/GetMetalCardModal';
+import { cardDesign } from '../../../models/cardDesign.interface';
 
 interface RouteParams {
   cardProvider: CardProviders;
@@ -77,6 +82,13 @@ export default function CypherCardScreen() {
     isShippingFeeConsentModalVisible,
     setIsShippingFeeConsentModalVisible,
   ] = useState(false);
+  const [cardDesignData, setCardDesignData] = useState<cardDesign | undefined>(
+    undefined,
+  );
+  const [cardFee, setCardFee] = useState(0);
+  const [choosenPhysicalCardType, setChoosenPhysicalCardType] = useState<
+    PhysicalCardType | undefined
+  >(undefined);
   const [recentTransactions, setRecentTransactions] = useState<
     ICardTransaction[]
   >([]);
@@ -95,9 +107,6 @@ export default function CypherCardScreen() {
     currentCardIndex,
     'cardId',
   ]);
-  const {
-    rc: { physicalCardUpgradationFee } = { physicalCardUpgradationFee: 50 },
-  } = cardProfile;
   const isLockdownModeEnabled = get(
     cardProfile,
     ['accountStatus'],
@@ -111,9 +120,10 @@ export default function CypherCardScreen() {
   const onRefresh = async () => {
     void refreshProfile();
     setCardBalance('');
-    if (cardId !== HIDDEN_CARD_ID) {
+    if (cardId !== CARD_IDS.HIDDEN_CARD) {
       await fetchCardBalance();
       void fetchRecentTransactions();
+      void getCardDesignValues();
     }
     if (!isLayoutRendered) {
       setIsLayoutRendered(true);
@@ -125,9 +135,11 @@ export default function CypherCardScreen() {
       void onRefresh();
     }
   }, [isFocused]);
+
   useEffect(() => {
     void onRefresh();
   }, [cardProvider]);
+
   const refreshProfile = async () => {
     const data = await getWalletProfile(globalContext.globalState.token);
     globalContext.globalDispatch({
@@ -167,7 +179,7 @@ export default function CypherCardScreen() {
   };
   const onPressFundCard = () => {
     navigation.navigate(
-      cardId === HIDDEN_CARD_ID
+      cardId === CARD_IDS.HIDDEN_CARD
         ? screenTitle.FIRST_LOAD_CARD
         : screenTitle.BRIDGE_FUND_CARD_SCREEN,
       {
@@ -183,17 +195,23 @@ export default function CypherCardScreen() {
       onPressFundCard();
     }, MODAL_HIDE_TIMEOUT);
   }
-  const onShippingConfirmation = () => {
+  const onShippingConfirmation = (physicalCardType?: PhysicalCardType) => {
     if (isShippingFeeConsentModalVisible) {
       setIsShippingFeeConsentModalVisible(false);
       setTimeout(() => {
         navigation.navigate(screenTitle.ORDER_STEPS_SCREEN, {
           currentCardProvider: cardProvider,
+          ...(physicalCardType && {
+            physicalCardType,
+          }),
         });
       }, MODAL_HIDE_TIMEOUT);
     } else {
       navigation.navigate(screenTitle.ORDER_STEPS_SCREEN, {
         currentCardProvider: cardProvider,
+        ...(physicalCardType && {
+          physicalCardType,
+        }),
       });
     }
   };
@@ -203,26 +221,60 @@ export default function CypherCardScreen() {
       card,
     });
   };
-  const onPressUpgradeNow = () => {
-    if (Number(cardBalance) < Number(physicalCardUpgradationFee)) {
+
+  const getCardDesignValues = async () => {
+    const response = await getWithAuth('/v1/cards/designs');
+    if (!response.isError) {
+      const cardDesignValues: cardDesign = response.data;
+      setCardDesignData(cardDesignValues);
+    }
+  };
+
+  const getCardFee = async (physicalCardType?: PhysicalCardType) => {
+    const planData = globalContext.globalState.planInfo;
+    const cardType =
+      physicalCardType === PhysicalCardType.METAL
+        ? CardDesignType.METAL
+        : CardDesignType.PHYSICAL;
+
+    const defaultFeeKey =
+      physicalCardType === PhysicalCardType.METAL
+        ? 'metalCardFee'
+        : 'physicalCardFee';
+
+    return get(
+      cardDesignData,
+      ['feeDetails', cardType],
+      get(planData, ['default', CypherPlanId.PRO_PLAN, defaultFeeKey], 0),
+    );
+  };
+
+  const onPressUpgradeNow = async (physicalCardType?: PhysicalCardType) => {
+    setChoosenPhysicalCardType(physicalCardType);
+    const fee = await getCardFee(physicalCardType);
+    setCardFee(fee);
+
+    if (Number(cardBalance) < Number(fee)) {
       showModal('state', {
         type: 'error',
         title: t('INSUFFICIENT_FUNDS'),
-        description: `You do not have $${String(physicalCardUpgradationFee)} balance to upgrade to physical card. Please load now to upgrade`,
+        description: `You do not have $${String(fee)} balance to upgrade to ${physicalCardType ?? 'physical'} card. Please load now to upgrade`,
         onSuccess: onModalHide,
         onFailure: hideModal,
       });
     } else {
-      if (Number(physicalCardUpgradationFee) > 0) {
+      if (Number(fee) > 0) {
         setIsShippingFeeConsentModalVisible(true);
       } else {
-        onShippingConfirmation();
+        onShippingConfirmation(physicalCardType);
       }
     }
   };
+
   const onPressActivateCard = (card: any) => {
     onCardActivationConfirmation(card);
   };
+
   const verifyWithOTP = () => {
     navigation.navigate(screenTitle.LOCKDOWN_MODE_AUTH, {
       onSuccess: () => {
@@ -271,16 +323,18 @@ export default function CypherCardScreen() {
         </CyDTouchView>
       </CyDView>
       <CardProviderSwitch />
-      <ShippingFeeConsentModal
-        isModalVisible={isShippingFeeConsentModalVisible}
-        feeAmount={String(physicalCardUpgradationFee)}
-        onSuccess={() => {
-          onShippingConfirmation();
-        }}
-        onFailure={() => {
-          setIsShippingFeeConsentModalVisible(false);
-        }}
-      />
+      {isShippingFeeConsentModalVisible && (
+        <ShippingFeeConsentModal
+          isModalVisible={isShippingFeeConsentModalVisible}
+          feeAmount={String(cardFee)}
+          onSuccess={() => {
+            onShippingConfirmation(choosenPhysicalCardType);
+          }}
+          onFailure={() => {
+            setIsShippingFeeConsentModalVisible(false);
+          }}
+        />
+      )}
 
       {/* TXN FILTER MODAL */}
       <CardTxnFilterModal
@@ -290,7 +344,7 @@ export default function CypherCardScreen() {
       />
       {/* TXN FILTER MODAL */}
       <CyDView className={'h-[60px] px-[10px] mx-[12px] mt-[24px]'}>
-        {cardId !== HIDDEN_CARD_ID ? (
+        {cardId !== CARD_IDS.HIDDEN_CARD ? (
           <CyDView className='flex flex-row justify-between items-center'>
             <CyDView>
               <CyDText className={'font-semibold text-[10px]'}>
@@ -327,9 +381,9 @@ export default function CypherCardScreen() {
                   onPressFundCard();
                 }}
                 style='h-[42px] py-[8px] px-[12px] rounded-[6px]'
-                imageStyle={'mr-[3px] h-[12px] w-[12px]'}
+                imageStyle={'mr-[4px] h-[12px] w-[12px]'}
                 title={t('ADD_FUNDS')}
-                titleStyle='text-[14px] font-extrabold'
+                titleStyle='text-[14px] text-black font-extrabold'
               />
             </CyDView>
           </CyDView>
@@ -352,9 +406,9 @@ export default function CypherCardScreen() {
                   onPressFundCard();
                 }}
                 style='h-[42px] py-[8px] px-[12px] rounded-[6px]'
-                imageStyle={'mr-[3px] h-[12px] w-[12px]'}
+                imageStyle={'mr-[4px] h-[12px] w-[12px]'}
                 title={t('ADD_FUNDS')}
-                titleStyle='text-[14px] font-extrabold'
+                titleStyle='text-[14px] text-black font-extrabold'
               />
             </CyDView>
           </CyDView>
@@ -362,7 +416,7 @@ export default function CypherCardScreen() {
       </CyDView>
 
       <CyDScrollView showsVerticalScrollIndicator={false}>
-        {cardId !== HIDDEN_CARD_ID &&
+        {cardId !== CARD_IDS.HIDDEN_CARD &&
           cardProvider === CardProviders.PAYCADDY && (
             <CyDView className='mx-[16px] my-[12px] bg-white rounded-[16px] p-[8px]'>
               {rcApplicationStatus !== CardApplicationStatus.COMPLETED ? (
@@ -383,10 +437,10 @@ export default function CypherCardScreen() {
 
         <CyDView
           className={clsx('flex flex-row  items-center mx-[16px] mt-[12px]', {
-            'justify-between': cardId !== HIDDEN_CARD_ID,
-            'justify-end': cardId === HIDDEN_CARD_ID,
+            'justify-between': cardId !== CARD_IDS.HIDDEN_CARD,
+            'justify-end': cardId === CARD_IDS.HIDDEN_CARD,
           })}>
-          {cardId !== HIDDEN_CARD_ID &&
+          {cardId !== CARD_IDS.HIDDEN_CARD &&
             cardProvider === CardProviders.PAYCADDY && (
               <CyDView className='flex flex-row justify-center items-center w-full'>
                 <Button
@@ -442,9 +496,14 @@ export default function CypherCardScreen() {
             refreshProfile={() => {
               void refreshProfile();
             }}
+            cardDesignData={cardDesignData}
           />
         </CyDView>
         <CyDView className='w-full bg-white mt-[26px] pb-[120px]'>
+          {get(cardDesignData, ['allowedCount', 'metal'], 0) > 0 &&
+            get(cardDesignData, ['feeDetails', 'metal'], 100) === 0 && (
+              <GetMetalCardModal onPressUpgradeNow={onPressUpgradeNow} />
+            )}
           <CyDView className='mx-[12px] my-[12px]'>
             <CyDText className='text-[14px] font-bold ml-[4px] mb-[8px]'>
               {t<string>('RECENT_TRANSACTIONS')}
@@ -455,7 +514,7 @@ export default function CypherCardScreen() {
                   return <CardTransactionItem item={transaction} key={index} />;
                 })}
                 <CyDTouchView
-                  className='bg-cardBgTo flex flex-row justify-center items-center py-[22px] rounded-b-[22px]'
+                  className='bg-cardBgTo flex flex-row justify-center items-center py-[16px] rounded-b-[22px]'
                   onPress={() =>
                     navigation.navigate(screenTitle.CARD_TRANSACTIONS_SCREEN, {
                       navigation,
@@ -463,7 +522,7 @@ export default function CypherCardScreen() {
                       currentCardIndex,
                     })
                   }>
-                  <CyDText className='text-[16px] font-bold'>
+                  <CyDText className='text-[14px] font-bold'>
                     {t<string>('VIEW_ALL_TRANSACTIONS')}
                   </CyDText>
                   <CyDImage

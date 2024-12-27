@@ -17,24 +17,26 @@ import {
 } from '@react-navigation/native';
 import { useTranslation } from 'react-i18next';
 import Button from '../../../components/v2/button';
-import { ButtonType, CardProviders } from '../../../constants/enum';
+import {
+  ButtonType,
+  CardProviders,
+  PhysicalCardType,
+} from '../../../constants/enum';
 import { screenTitle } from '../../../constants';
 import { isIOS } from '../../../misc/checkers';
 import clsx from 'clsx';
 
 interface RouteParams {
   currentCardProvider: CardProviders;
+  physicalCardType?: PhysicalCardType;
 }
 
 export default function OrderSteps() {
   const navigation = useNavigation<NavigationProp<ParamListBase>>();
   const route = useRoute<RouteProp<Record<string, RouteParams>, string>>();
+  const { physicalCardType, currentCardProvider } = route.params;
   const { t } = useTranslation();
   const steps = [
-    {
-      icon: AppImages.BASIC_DETAILS,
-      title: 'Basic Deails',
-    },
     {
       icon: AppImages.HOMEICON,
       title: 'Verify your delivery address',
@@ -67,7 +69,9 @@ export default function OrderSteps() {
           </CyDView>
           <CyDView className='my-[12px]'>
             <CyDText className='text-[26px] font-bold'>
-              {t('ORDER_YOUR_PHYSICAL_CARD')}
+              {physicalCardType === PhysicalCardType.METAL
+                ? t('ORDER_YOUR_METAL_CARD')
+                : t('ORDER_YOUR_PHYSICAL_CARD')}
             </CyDText>
             <CyDText className='text-[18px] text-subTextColor'>
               {t('HERE_IS_WHAT_YOU_NEED_TO_DO_NEXT')}
@@ -100,7 +104,8 @@ export default function OrderSteps() {
           <Button
             onPress={() => {
               navigation.navigate(screenTitle.VERIFY_SHIPPING_ADDRESS_SCREEN, {
-                currentCardProvider: route.params.currentCardProvider,
+                currentCardProvider,
+                ...(physicalCardType && { physicalCardType }),
               });
             }}
             type={ButtonType.PRIMARY}
