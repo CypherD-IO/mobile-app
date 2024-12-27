@@ -1,11 +1,10 @@
 /* eslint-disable no-useless-catch */
 import { Core } from '@walletconnect/core';
-import { ICore } from '@walletconnect/types';
 import { getSdkError } from '@walletconnect/utils';
-import { Web3Wallet, IWeb3Wallet } from '@walletconnect/web3wallet';
+import { WalletKit, IWalletKit } from '@reown/walletkit';
 import * as Sentry from '@sentry/react-native';
-export let web3wallet: IWeb3Wallet;
-export let core: ICore;
+export let web3wallet: IWalletKit;
+export let core: any;
 
 export async function createWeb3Wallet(projectId: string) {
   try {
@@ -16,7 +15,7 @@ export async function createWeb3Wallet(projectId: string) {
       // relayUrl: relayerRegionURL ?? process.env.NEXT_PUBLIC_RELAY_URL
     });
 
-    web3wallet = await Web3Wallet.init({
+    web3wallet = await WalletKit.init({
       core,
       metadata: {
         name: 'Cypher Wallet',

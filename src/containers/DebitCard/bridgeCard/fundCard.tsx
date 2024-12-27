@@ -512,6 +512,7 @@ export default function BridgeFundCardScreen({ route }: { route: any }) {
     const {
       contractAddress,
       coinGeckoId,
+      denom,
       contractDecimals,
       chainDetails,
       actualBalance,
@@ -694,6 +695,7 @@ export default function BridgeFundCardScreen({ route }: { route: any }) {
           amount: amountInCrypto,
           coinId: coinGeckoId,
           amountInCrypto: true,
+          tokenAddress: denom,
         };
         const response = await postWithAuth(
           `/v1/cards/${currentCardProvider}/card/${cardId}/quote`,
