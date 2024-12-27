@@ -1,6 +1,5 @@
-/* eslint-disable array-callback-return */
 /* eslint-disable no-void */
-/* eslint-disable react-native/no-color-literals */
+
 import React, { useState } from 'react';
 import { StyleSheet } from 'react-native';
 import { SignClientTypes } from '@walletconnect/types';
@@ -11,7 +10,12 @@ import useWeb3 from '../../../hooks/useWeb3';
 import { ButtonType, Web3Origin } from '../../../constants/enum';
 import { Chain, chainIdNumberMapping } from '../../../constants/server';
 import { formatJsonRpcError, formatJsonRpcResult } from '@json-rpc-tools/utils';
-import { CyDFastImage, CyDScrollView, CyDText, CyDView } from '../../../styles/tailwindStyles';
+import {
+  CyDFastImage,
+  CyDScrollView,
+  CyDText,
+  CyDView,
+} from '../../../styles/tailwindStyles';
 import { t } from 'i18next';
 import Button from '../button';
 import { Colors } from 'react-native/Libraries/NewAppScreen';
@@ -20,19 +24,17 @@ import { DynamicView } from '../../../styles/viewStyle';
 import * as C from '../../../constants/index';
 
 interface CosmosSigningModalProps {
-  requestEvent:
-  | SignClientTypes.EventArguments['session_request']
-  | undefined
-  isModalVisible: boolean
-  hideModal: () => void
+  requestEvent: SignClientTypes.EventArguments['session_request'] | undefined;
+  isModalVisible: boolean;
+  hideModal: () => void;
 }
 
-export default function CosmosSigningModal ({
+export default function CosmosSigningModal({
   requestEvent,
   isModalVisible,
-  hideModal
+  hideModal,
 }: CosmosSigningModalProps) {
-  const [,handleWeb3Cosmos] = useWeb3(Web3Origin.WALLETCONNECT);
+  const [, handleWeb3Cosmos] = useWeb3(Web3Origin.WALLETCONNECT);
   const [acceptingRequest, setAcceptingRequest] = useState<boolean>(false);
   const [rejectingRequest, setRejectingRequest] = useState<boolean>(false);
   const { id, topic, params } = requestEvent;
@@ -52,14 +54,19 @@ export default function CosmosSigningModal ({
         id,
         method,
         type: 'proxy-request',
-        args: [chainId, signerAddress, signDoc]
+        args: [chainId, signerAddress, signDoc],
       };
       if (payload.method === 'signAmino') payload.args.push({});
-      const response = await handleWeb3Cosmos(payload, { title: '', host: '', origin: '', url: '' });
+      const response = await handleWeb3Cosmos(payload, {
+        title: '',
+        host: '',
+        origin: '',
+        url: '',
+      });
       const formattedRPCResponse = formatJsonRpcResult(id, response.signature);
       await web3wallet.respondSessionRequest({
         topic,
-        response: formattedRPCResponse
+        response: formattedRPCResponse,
       });
       hideModal();
     } catch (e) {
@@ -72,10 +79,13 @@ export default function CosmosSigningModal ({
 
     try {
       setRejectingRequest(true);
-      const rejectionResponse = formatJsonRpcError(id, getSdkError('USER_REJECTED_METHODS').message);
+      const rejectionResponse = formatJsonRpcError(
+        id,
+        getSdkError('USER_REJECTED_METHODS').message,
+      );
       await web3wallet.respondSessionRequest({
         topic,
-        response: rejectionResponse
+        response: rejectionResponse,
       });
       hideModal();
     } catch (e) {
@@ -97,7 +107,9 @@ export default function CosmosSigningModal ({
           <CyDView className='flex flex-row w-full justify-between items-center rounded-r-[20px] py-[15px] pr-[20px]'>
             <CyDView className='ml-[10px]'>
               <CyDView className={'flex flex-row items-center align-center'}>
-                <CyDText className={'font-extrabold text-[16px]'}>{name}</CyDText>
+                <CyDText className={'font-extrabold text-[16px]'}>
+                  {name}
+                </CyDText>
               </CyDView>
               <CyDView className={'flex flex-row items-center align-center'}>
                 <CyDText className={'text-[14px]'}>{url}</CyDText>
@@ -113,7 +125,9 @@ export default function CosmosSigningModal ({
     return (
       <CyDView>
         <CyDView>
-          <CyDText className={'text-[18px] font-bold mb-[6px] ml-[4px]'}>{'Method'}</CyDText>
+          <CyDText className={'text-[18px] font-bold mb-[6px] ml-[4px]'}>
+            {'Method'}
+          </CyDText>
         </CyDView>
         <CyDView>
           <CyDView>
@@ -125,21 +139,26 @@ export default function CosmosSigningModal ({
   };
 
   const Divider = () => {
-    return (
-      <CyDView className={'h-[1px] bg-sepratorColor mt-[14px] mb-[8px]'}></CyDView>
-    );
+    return <CyDView className={'h-[1px] bg-n40 mt-[14px] mb-[8px]'} />;
   };
 
   const RenderTitle = () => {
     return (
       <CyDView className={'flex flex-row justify-center'}>
-          <CyDText className={'text-[22px] font-extrabold mt-[14px] mb-[10px]'}>{t<string>('APPROVE_REQUEST')}</CyDText>
+        <CyDText className={'text-[22px] font-extrabold mt-[14px] mb-[10px]'}>
+          {t<string>('APPROVE_REQUEST')}
+        </CyDText>
       </CyDView>
     );
   };
 
   return (
-    <CyDModalLayout setModalVisible={() => {}} isModalVisible={isModalVisible} style={styles.modalLayout} animationIn={'slideInUp'} animationOut={'slideOutDown'}>
+    <CyDModalLayout
+      setModalVisible={() => {}}
+      isModalVisible={isModalVisible}
+      style={styles.modalLayout}
+      animationIn={'slideInUp'}
+      animationOut={'slideOutDown'}>
       <CyDView style={styles.modalContentContainer}>
         <RenderTitle />
         <RenderDAPPInfo />
@@ -147,8 +166,19 @@ export default function CosmosSigningModal ({
         <RenderMethod />
         <Divider />
         <CyDView className={'w-full'}>
-          <Button loading={acceptingRequest} style={'mb-[10px]'} title='Review Request' onPress={() => void handleAccept()}></Button>
-          <Button loading={rejectingRequest} style={'mb-[10px]'} type={ButtonType.TERNARY} title='Reject' onPress={() => void handleReject()}></Button>
+          <Button
+            loading={acceptingRequest}
+            style={'mb-[10px]'}
+            title='Review Request'
+            onPress={() => void handleAccept()}
+          />
+          <Button
+            loading={rejectingRequest}
+            style={'mb-[10px]'}
+            type={ButtonType.TERNARY}
+            title='Reject'
+            onPress={() => void handleReject()}
+          />
         </CyDView>
       </CyDView>
     </CyDModalLayout>
@@ -158,7 +188,7 @@ export default function CosmosSigningModal ({
 const styles = StyleSheet.create({
   modalLayout: {
     margin: 0,
-    justifyContent: 'flex-end'
+    justifyContent: 'flex-end',
   },
   modalContentContainer: {
     display: 'flex',
@@ -170,6 +200,6 @@ const styles = StyleSheet.create({
     color: 'red',
     backgroundColor: 'white',
     bottom: 0,
-    paddingHorizontal: 45
-  }
+    paddingHorizontal: 45,
+  },
 });

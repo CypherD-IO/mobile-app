@@ -481,7 +481,7 @@ export default function CardQuote({
         'flex-1 w-full bg-white pb-[30px] flex flex-col justify-between'
       }>
       <CyDView className={'mx-[22px]'}>
-        <CyDView className='flex flex-col justify-center items-center pb-[45px] border-b-[2px] border-sepratorColor'>
+        <CyDView className='flex flex-col justify-center items-center pb-[45px] border-b-[2px] border-n40'>
           <CyDText className='text-[52px] text-mandarin font-bold'>
             {'$' + limitDecimalPlaces(amountInFiat, 4)}
           </CyDText>

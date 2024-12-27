@@ -67,8 +67,8 @@ const DeFiTotal = ({
   if (supply > 0 || debt > 0 || value > 0 || claimable > 0)
     return (
       <CyDView className='pt-[10px]'>
-        <CyDView className='bg-white flex flex-row justify-evenly items-center'>
-          <CyDView className='w-[48%] h-[85px] rounded-[10px] border border-sepratorColor mr-[3px] mb-[2px] p-[2%]'>
+        <CyDView className='bg-n0 flex flex-row justify-evenly items-center'>
+          <CyDView className='w-[48%] h-[85px] rounded-[10px] border border-n40 mr-[3px] mb-[2px] p-[2%]'>
             <CyDView className='w-full h-full  flex-1 flex-col justify-center items-start'>
               <CyDTokenValue
                 className={'text-center font-extrabold text-[18px]'}>
@@ -87,7 +87,7 @@ const DeFiTotal = ({
               </CyDView>
             </CyDView>
           </CyDView>
-          <CyDView className='w-[48%] h-[85px] rounded-[10px] border border-sepratorColor ml-[3px] mb-[2px] p-[2%]'>
+          <CyDView className='w-[48%] h-[85px] rounded-[10px] border border-n40 ml-[3px] mb-[2px] p-[2%]'>
             <CyDView className='w-full h-full  flex-1 flex-col justify-center items-start'>
               <CyDTokenValue
                 className={'text-center font-extrabold text-[18px]'}>
@@ -107,8 +107,8 @@ const DeFiTotal = ({
             </CyDView>
           </CyDView>
         </CyDView>
-        <CyDView className='bg-white flex flex-row justify-evenly items-center'>
-          <CyDView className='w-[48%] h-[85px] rounded-[10px] border border-sepratorColor mt-[6px] mr-[2px] p-[2%]'>
+        <CyDView className='bg-n0 flex flex-row justify-evenly items-center'>
+          <CyDView className='w-[48%] h-[85px] rounded-[10px] border border-n40 mt-[6px] mr-[2px] p-[2%]'>
             <CyDView className='w-full h-full  flex-1 flex-col justify-center items-start'>
               <CyDTokenValue
                 className={'text-center font-extrabold text-[18px]'}>
@@ -127,7 +127,7 @@ const DeFiTotal = ({
               </CyDView>
             </CyDView>
           </CyDView>
-          <CyDView className='w-[48%] h-[85px] rounded-[10px] border border-sepratorColor mt-[6px] ml-[2px] p-[2%]'>
+          <CyDView className='w-[48%] h-[85px] rounded-[10px] border border-n40 mt-[6px] ml-[2px] p-[2%]'>
             <CyDView className='w-full h-full  flex-1 flex-col justify-center items-start'>
               <CyDTokenValue
                 className={'text-center font-extrabold text-[18px]'}>
@@ -265,7 +265,7 @@ const DeFiScene = ({
       return (
         <CyDTouchView
           key={`${protocol.protocolName}`}
-          className='relative px-[14px] py-[20px] border border-sepratorColor rounded-[10px] flex  mt-[40px]'
+          className='relative px-[14px] py-[20px] border border-n40 rounded-[10px] flex mt-[40px]'
           onPress={() => {
             navigation.navigate(screenTitle.DEFI_PROTOCOL_OVERVIEW_SCREEN, {
               protocol,
@@ -273,7 +273,7 @@ const DeFiScene = ({
           }}>
           <CyDFastImage
             source={protocol.protocolLogo}
-            className='absolute -top-[21px] right-[50%] h-[42px] w-[42px] rounded-full bg-white border border-sepratorColor'
+            className='absolute -top-[21px] right-[50%] h-[42px] w-[42px] rounded-full bg-n0 border border-n40'
             resizeMode='contain'
           />
           <CyDView className='flex flex-row'>
@@ -329,14 +329,14 @@ const DeFiScene = ({
               {protocol.total.debt > 0 && (
                 <CyDTokenValue
                   className={
-                    'text-center font-semibold text-[14px] text-warningTextYellow'
+                    'text-center font-semibold text-[14px] text-red40'
                   }>
                   {protocol.total.debt}
                 </CyDTokenValue>
               )}
             </CyDView>
           </CyDView>
-          <CyDView className='relative border border-sepratorColor rounded-[10px]  p-[8px] mt-[15px] flex'>
+          <CyDView className='relative border border-n40 rounded-[10px] p-[8px] mt-[15px] flex'>
             {Object.values(protocol.types)
               .slice(0, 3)
               .map(type => {
@@ -363,7 +363,7 @@ const DeFiScene = ({
                   </CyDView>
                 );
               })}
-            <CyDView className=' bg-white border border-sepratorColor rounded-[10px] absolute -bottom-[11px] right-[42%]'>
+            <CyDView className=' bg-n0 border border-n40 rounded-[10px] absolute -bottom-[11px] right-[42%]'>
               <CyDText className='text-[12px] font-medium px-[4px] py-[2px]'>
                 {t('VIEW_MORE')}
               </CyDText>

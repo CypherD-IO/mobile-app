@@ -48,7 +48,7 @@ const RenderWalletAddresses = (
   return (
     <CyDTouchView
       className={
-        'flex flex-row justify-evenly bg-white items-center self-center border-[1px] border-sepratorColor w-[353px] h-[60px] rounded-[10px] px-[20px] mb-[10px]'
+        'flex flex-row justify-evenly bg-white items-center self-center border-[1px] border-n40 w-[353px] h-[60px] rounded-[10px] px-[20px] mb-[10px]'
       }
       onPress={() => {
         setSelectedIndex(item.index);

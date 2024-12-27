@@ -42,7 +42,7 @@ export const Banner = ({ portfolioBalance }: BannerProps) => {
     <CyDView className={'h-[160px] px-[10px]'}>
       <CyDImageBackground
         className={
-          'w-full border mt-[4px] pt-[46px] rounded-[24px] border-sepratorColor overflow-hidden'
+          'w-full border mt-[4px] pt-[46px] rounded-[24px] border-n40 overflow-hidden'
         }
         source={AppImages.PORTFOLIO_BG_S3}
         resizeMode='cover'

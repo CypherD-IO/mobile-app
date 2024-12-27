@@ -391,7 +391,7 @@ export default function TransactionInfoModal({
               </CyDView>
             </CyDView>
             <CyDView className='flex flex-col bg-secondaryBackgroundColor rounded-[8px] mt-[5px]'>
-              <CyDView className='flex flex-row h-[60px] justify-start items-center border-b-[1px] border-sepratorColor ml-[20px]'>
+              <CyDView className='flex flex-row h-[60px] justify-start items-center border-b-[1px] border-n40 ml-[20px]'>
                 <CyDText className='text-[16px] w-[40%] text-activityFontColor'>
                   {destination}
                 </CyDText>
@@ -401,7 +401,7 @@ export default function TransactionInfoModal({
               </CyDView>
               <CyDView>
                 {type === 'swap' && (
-                  <CyDView className='flex flex-row h-[60px] justify-start items-center border-b-[1px] border-sepratorColor ml-[20px]'>
+                  <CyDView className='flex flex-row h-[60px] justify-start items-center border-b-[1px] border-n40 ml-[20px]'>
                     <CyDText className='text-[16px] w-[40%] text-activityFontColor'>
                       {t('VALUE')}
                     </CyDText>
@@ -414,7 +414,7 @@ export default function TransactionInfoModal({
                   </CyDView>
                 )}
               </CyDView>
-              <CyDView className='flex flex-row h-[60px] justify-start items-center border-b-[1px] border-sepratorColor ml-[20px]'>
+              <CyDView className='flex flex-row h-[60px] justify-start items-center border-b-[1px] n40 ml-[20px]'>
                 <CyDText className='text-[16px] w-[40%] text-activityFontColor'>
                   {t<string>('GAS')}
                 </CyDText>
@@ -423,7 +423,7 @@ export default function TransactionInfoModal({
                 </CyDText>
               </CyDView>
 
-              <CyDView className='flex flex-row h-[60px] justify-start items-center border-b-[1px] border-sepratorColor ml-[20px]'>
+              <CyDView className='flex flex-row h-[60px] justify-start items-center border-b-[1px] n40 ml-[20px]'>
                 <CyDText className='text-[16px] w-[40%] text-activityFontColor'>
                   {t<string>('HASH')}
                 </CyDText>
@@ -449,7 +449,7 @@ export default function TransactionInfoModal({
                 </CyDView>
               </CyDView>
 
-              <CyDView className='flex flex-row h-[60px] justify-start items-center border-b-[1px] border-sepratorColor ml-[20px]'>
+              <CyDView className='flex flex-row h-[60px] justify-start items-center border-b-[1px] n40 ml-[20px]'>
                 <CyDText className='text-[16px] w-[40%] text-activityFontColor'>
                   {t<string>('STATUS')}
                 </CyDText>

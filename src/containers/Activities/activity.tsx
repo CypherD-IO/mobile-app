@@ -303,7 +303,7 @@ function BridgeItem(props: any) {
           <CyDText className='flex self-end items-end'>{formatDate}</CyDText>
         </CyDView>
       </CyDView>
-      <CyDView className='py-[20px] px-[10px] mt-[10px] flex flex-row justify-between bg-ternaryBackgroundColor border-[1px] rounded-[15px] border-sepratorColor'>
+      <CyDView className='py-[20px] px-[10px] mt-[10px] flex flex-row justify-between bg-ternaryBackgroundColor border-[1px] rounded-[15px] border-n40'>
         <CyDView className='flex flex-column justify-center items-center px-[10px]'>
           <CyDView>
             <CyDText className='text-red-500 font-extrabold'>
@@ -459,7 +459,7 @@ function IBCItem(props: any) {
           <CyDText className='flex self-end items-end'>{formatDate}</CyDText>
         </CyDView>
       </CyDView>
-      <CyDView className='py-[20px] px-[10px] mt-[10px] flex flex-row justify-between bg-ternaryBackgroundColor border-[1px] rounded-[15px] border-sepratorColor'>
+      <CyDView className='py-[20px] px-[10px] mt-[10px] flex flex-row justify-between bg-ternaryBackgroundColor border-[1px] rounded-[15px] n40'>
         <CyDView className='flex flex-column justify-center items-center px-[10px]'>
           <CyDView>
             <CyDText className='text-red-500 font-extrabold'>

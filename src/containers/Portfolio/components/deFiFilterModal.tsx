@@ -63,7 +63,7 @@ const DeFiFilterModal = (props: DeFiFilterModalInterface) => {
       animationIn='slideInUp'
       animationOut='slideOutDown'>
       <CyDSafeAreaView className='bg-white flex-1'>
-        <CyDView className='flex flex-row justify-between items-center px-[20px] py-[10px] border-b border-sepratorColor'>
+        <CyDView className='flex flex-row justify-between items-center px-[20px] py-[10px] border-b border-n40'>
           <CyDTouchView
             onPress={() => {
               props.setVisible(false);

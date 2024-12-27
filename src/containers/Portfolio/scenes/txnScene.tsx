@@ -425,7 +425,7 @@ const TxnScene = ({
         {shouldRenderDate && (
           <CyDView
             className={clsx(
-              ' border-sepratorColor pl-[10px] pr-[30px] py-[10px] justify-center',
+              ' border-n40 pl-[10px] pr-[30px] py-[10px] justify-center',
               { 'mt-[28px]': index !== 0 },
             )}>
             <CyDText className='font-bold text-[16px]'>{formatedDay}</CyDText>
@@ -433,7 +433,7 @@ const TxnScene = ({
         )}
         <CyDTouchView
           className={clsx(
-            'flex flex-row items-center py-[10px] border-b-[0.5px] border-x border-sepratorColor pl-[10px] pr-[30px]',
+            'flex flex-row items-center py-[10px] border-b-[0.5px] border-x border-n40 pl-[10px] pr-[30px]',
             {
               'rounded-t-[24px] border-t-[0.5px]': shouldRenderDate,
               'rounded-b-[24px]': nextTransactionFormatedDay !== formatedDay,

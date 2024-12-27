@@ -65,14 +65,14 @@ export function LinkedWallets({
                     return (
                       <CyDView
                         key={childWallet.address}
-                        className='flex flex-row justify-between h-[65px] my-[5px] mx-[20px] px-[10px] border-[1px] rounded-[15px] border-sepratorColor'>
+                        className='flex flex-row justify-between h-[65px] my-[5px] mx-[20px] px-[10px] border-[1px] rounded-[15px] border-n40'>
                         <CyDView className='flex flex-row w-[80%] items-center'>
                           <CyDText className='w-[90px]'>
                             {childWallet.label.length > 12
                               ? childWallet.label.substring(0, 12) + '...'
                               : childWallet.label}
                           </CyDText>
-                          <CyDView className='h-[30px] w-[1px] bg-gray-300 mx-[10px]'></CyDView>
+                          <CyDView className='h-[30px] w-[1px] bg-gray-300 mx-[10px]' />
                           <CyDText>
                             {childWallet.address.substring(0, 6) +
                               '...' +

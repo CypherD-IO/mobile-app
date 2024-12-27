@@ -106,7 +106,7 @@ const RenderType = ({ type }: { type: PositionTypeData }) => {
         />
         <CyDText className='font-bold text-[18px]'>{type.type}</CyDText>
       </CyDView>
-      <CyDView className='w-full border border-sepratorColor rounded-[10px] flex pb-[12px]'>
+      <CyDView className='w-full border border-n40 rounded-[10px] flex pb-[12px]'>
         {holdings.sort(sortDefiPositionDesc).map((holding, index) => {
           const pool: string[] = [];
           const details = [];
@@ -139,7 +139,7 @@ const RenderType = ({ type }: { type: PositionTypeData }) => {
                   </CyDView>
                 )}
               </CyDView>
-              <CyDView className='p-[10px] rounded-[10px] border border-sepratorColor'>
+              <CyDView className='p-[10px] rounded-[10px] border n40'>
                 <CyDView className='flex flex-row justify-between items-start mb-[8px]'>
                   <CyDText className='font-bold text-[14px] max-w-[50%]'>
                     {pool.join(' + ')}
@@ -159,7 +159,7 @@ const RenderType = ({ type }: { type: PositionTypeData }) => {
                 {holding.details.borrow &&
                   holding.details.borrow.length > 0 && (
                     <>
-                      <CyDView className='w-full my-[10px] h-[1px] border-t border-sepratorColor rounded-[10px]' />
+                      <CyDView className='w-full my-[10px] h-[1px] border-t n40 rounded-[10px]' />
                       <RenderDetail
                         detail={holding.details.borrow}
                         type={t('DEFI_BORROW')}
@@ -169,7 +169,7 @@ const RenderType = ({ type }: { type: PositionTypeData }) => {
                 {holding.details.rewards &&
                   holding.details.rewards.length > 0 && (
                     <>
-                      <CyDView className='w-full my-[10px] h-[1px] border-t border-sepratorColor rounded-[10px]' />
+                      <CyDView className='w-full my-[10px] h-[1px] border-t n40 rounded-[10px]' />
                       <RenderDetail
                         detail={holding.details.rewards}
                         type={t('DEFI_REWARD')}

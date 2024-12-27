@@ -319,7 +319,7 @@ export default function CardNotificationSettings() {
         <>
           <CyDView
             className={clsx(
-              'flex flex-row justify-between align-center mx-[20px] pb-[15px] border-b-[1px] border-sepratorColor',
+              'flex flex-row justify-between align-center mx-[20px] pb-[15px] border-b-[1px] border-n40',
               !isTelegramSetup && 'opacity-50',
             )}>
             <CyDView>
@@ -350,7 +350,7 @@ export default function CardNotificationSettings() {
           </CyDView>
           {/* )} */}
 
-          <CyDView className='flex flex-row justify-between align-center mt-[20px] mx-[20px] pb-[15px] border-b-[1px] border-sepratorColor'>
+          <CyDView className='flex flex-row justify-between align-center mt-[20px] mx-[20px] pb-[15px] border-b-[1px] border-n40'>
             <CyDView>
               <CyDText className='text-[16px] font-bold'>
                 {t<string>('EMAIL_NOTIFICATION')}
@@ -373,7 +373,7 @@ export default function CardNotificationSettings() {
             )}
           </CyDView>
           {currentCardProvider === CardProviders.PAYCADDY && (
-            <CyDView className='flex flex-row justify-between align-center mt-[20px] mx-[20px] pb-[15px] border-b-[1px] border-sepratorColor'>
+            <CyDView className='flex flex-row justify-between align-center mt-[20px] mx-[20px] pb-[15px] border-b-[1px] border-n40'>
               <CyDView>
                 <CyDText className='text-[16px] font-bold'>
                   {t<string>('SMS_NOTIFICATION')}
@@ -396,7 +396,7 @@ export default function CardNotificationSettings() {
               )}
             </CyDView>
           )}
-          <CyDView className='flex flex-row justify-between align-center mt-[20px] mx-[20px] pb-[15px] border-b-[1px] border-sepratorColor'>
+          <CyDView className='flex flex-row justify-between align-center mt-[20px] mx-[20px] pb-[15px] border-b-[1px] border-n40'>
             <CyDView>
               <CyDText className='text-[16px] font-bold'>
                 {t<string>('FCM_NOTIFICATION')}

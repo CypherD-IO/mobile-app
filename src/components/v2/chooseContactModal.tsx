@@ -137,7 +137,7 @@ export default function ChooseContactModal(props: ContactModalProps) {
           onSelectingContact({ name, addresses, imageProfile });
         }}
         className={clsx(
-          'flex flex-row justify-between border-b-[1px] border-b-sepratorColor mx-[15px]',
+          'flex flex-row justify-between border-b-[1px] border-b-n40 mx-[15px]',
           { 'opacity-25': Object.values(filteredContactBook).length === 0 },
         )}>
         <CyDView
@@ -205,7 +205,7 @@ export default function ChooseContactModal(props: ContactModalProps) {
         <CyDView className={'mt-[20px] mb-[100px]'}>
           <CyDView
             className={
-              'flex flex-row justify-between items-center self-center border-[1px] border-sepratorColor w-[353px] h-[60px] rounded-[30px] px-[20px]'
+              'flex flex-row justify-between items-center self-center border-[1px] border-n40 w-[353px] h-[60px] rounded-[30px] px-[20px]'
             }>
             <CyDTextInput
               className={'self-center py-[15px] w-[95%]'}
@@ -248,7 +248,8 @@ export default function ChooseContactModal(props: ContactModalProps) {
                   addresses={item.addresses}
                 />
               )}
-              showsVerticalScrollIndicator={true}></CyDFlatList>
+              showsVerticalScrollIndicator={true}
+            />
           ) : (
             <CyDView className='flex h-full justify-center items-center mt-[-40px]'>
               <CyDText className='px-[25px] text-[18px] text-center font-bold'>

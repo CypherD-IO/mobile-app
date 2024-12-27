@@ -338,7 +338,7 @@ export default function ShortcutsModal() {
                 </CyDView>
               ))}
             </CyDView>
-            <CyDView className={'w-full h-[1px] bg-sepratorColor my-[16px]'} />
+            <CyDView className={'w-full h-[1px] bg-n40 my-[16px]'} />
             {item.title !== BuyOptions.COINBASE &&
               item.title !== BuyOptions.TRANSFI && (
                 <CyDView className='pl-[2px]'>
@@ -398,7 +398,7 @@ export default function ShortcutsModal() {
                 </CyDView>
               ))}
             </CyDView>
-            <CyDView className={'w-full h-[1px] bg-sepratorColor my-[16px]'} />
+            <CyDView className={'w-full h-[1px] bg-base20 my-[16px]'} />
             {item.title !== SellOptions.COINBASE && (
               <CyDView className='pl-[2px]'>
                 <CyDText className={'text-subTextColor'}>

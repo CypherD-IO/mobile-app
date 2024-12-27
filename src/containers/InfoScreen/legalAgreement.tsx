@@ -1,5 +1,5 @@
 /* eslint-disable @typescript-eslint/restrict-template-expressions */
-/* eslint-disable @typescript-eslint/no-misused-promises */
+
 /**
  * @format
  * @flow
@@ -227,7 +227,8 @@ export default function LegalAgreementScreen(props) {
           width={95}
           mT={12}
           height={1}
-          bGC={Colors.sepratorColor}></DynamicView>
+          bGC={Colors.n40}
+        />
       </DynamicTouchView>
     );
   };
@@ -358,7 +359,8 @@ export default function LegalAgreementScreen(props) {
               autoPlay
               loop
               source={require('./animation.json')}
-              style={{ height: 200 }}></LottieView>
+              style={{ height: 200 }}
+            />
             <ButtonWithOutImage
               sentry-label='card-confirm-legal'
               wT={100}

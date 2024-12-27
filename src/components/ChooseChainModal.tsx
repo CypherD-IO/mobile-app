@@ -6,6 +6,7 @@ import { HdWalletContext, getAvailableChains } from '../core/util';
 import { ALL_CHAINS, Chain, ChainBackendNames } from '../constants/server';
 import { Colors } from '../constants/theme';
 import {
+  CyDFastImage,
   CyDImage,
   CyDText,
   CyDTouchView,
@@ -48,25 +49,25 @@ export function ChooseChainModal(props: {
     const isSelected = item.id === selectedChainId;
     return (
       <CyDTouchView
-        className={clsx('px-[12px] rounded-[8px] w-full', {
-          'bg-selectedOption': isSelected,
+        className={clsx('px-[12px] rounded-[8px] w-full bg-n0', {
+          'bg-p10': isSelected,
         })}
         onPress={() => {
           onChainSelection(item);
         }}>
-        <CyDView className='flex flex-row justify-between w-full items-center my-[8px]'>
-          <CyDView className='flex flex-row items-center w-full'>
+        <CyDView className='flex flex-row justify-between items-center my-[8px]'>
+          <CyDView className='flex flex-row items-center flex-1'>
             <CyDImage
               source={logoUrl}
-              className='h-[28px] w-[28px]'
+              className='h-[28px] w-[28px] flex-shrink-0'
               resizeMode='contain'
             />
-            <CyDView className='flex flex-row w-full justify-between'>
+            <CyDView className='flex flex-row flex-1 justify-between'>
               <CyDView>
-                <CyDText className='ml-[8px] font-bold text-[16px] text-secondaryTextColor'>
+                <CyDText className='ml-[8px] font-bold text-[16px] text-base400'>
                   {name}
                 </CyDText>
-                <CyDText className='ml-[8px] mt-[2px] font-bold text-[12px] text-subTextColor'>
+                <CyDText className='ml-[8px] mt-[2px] font-bold text-[12px] text-n90'>
                   {symbol}
                 </CyDText>
               </CyDView>
@@ -81,10 +82,10 @@ export function ChooseChainModal(props: {
             </CyDView>
           </CyDView>
           {isSelected && (
-            <CyDImage
-              style={styles.imageTint}
+            <CyDFastImage
               source={AppImages.CORRECT}
-              className='h-[16px] w-[16px]'
+              tintColor={Colors.black}
+              className='h-[16px] w-[16px] flex-shrink-0'
               resizeMode='contain'
             />
           )}
@@ -102,7 +103,7 @@ export function ChooseChainModal(props: {
       animationOut={'slideOutDown'}>
       <CyDView
         className={
-          'bg-white pt-[12px] px-[12px] pb-[30px] rounded-t-[24px] relative'
+          'bg-n0 pt-[12px] px-[12px] pb-[30px] rounded-t-[24px] relative'
         }>
         <CyDTouchView
           onPress={() => {
@@ -143,9 +144,6 @@ const styles = StyleSheet.create({
   chainList: {
     height: '50%',
     marginTop: '10%',
-  },
-  imageTint: {
-    tintColor: Colors.black,
   },
   lottieViewWidth: {
     width: 34,

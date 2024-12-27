@@ -368,7 +368,7 @@ export default function QRCodeGenerator() {
             )}
             <CyDView
               className={
-                'my-[10px] mx-[20px] px-[20px] py-[5px] border border-sepratorColor bg-privacyMessageBackgroundColor rounded-[8px]'
+                'my-[10px] mx-[20px] px-[20px] py-[5px] border border-n40 bg-privacyMessageBackgroundColor rounded-[8px]'
               }>
               <CyDText className={'text-[14px] text-center'}>
                 {t('QRCODE_SUBTITLE')}

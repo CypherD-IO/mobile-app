@@ -190,7 +190,7 @@ export default function ChooseTokenModal(props: TokenModal) {
         <CyDView className={'mt-[20px] mb-[100px]'}>
           <CyDView
             className={clsx(
-              'flex flex-row justify-between items-center self-center border-[0.5px] w-[353px] h-[60px] rounded-[8px] px-[20px] border-sepratorColor',
+              'flex flex-row justify-between items-center self-center border-[0.5px] w-[353px] h-[60px] rounded-[8px] px-[20px] border-n40',
               {
                 'border-[#434343]': hasText,
               },
@@ -307,7 +307,7 @@ const TokenItem = ({
           onSelectingToken(item);
         }}
         className={clsx(
-          'flex flex-row justify-between py-[20px] border-b-[1px] border-b-sepratorColor mx-[15px]',
+          'flex flex-row justify-between py-[20px] border-b-[1px] border-b-n40 mx-[15px]',
           { 'opacity-25': isTokenDisabled(totalValue, isFundable, isSwapable) },
         )}>
         <CyDView className={'flex flex-row w-full justify-start items-center'}>
@@ -399,7 +399,7 @@ const SwapTokenItem = ({
         onSelectingToken(item);
       }}
       className={
-        'flex flex-row justify-between py-[20px] border-b-[1px] border-b-sepratorColor mx-[30px]'
+        'flex flex-row justify-between py-[20px] border-b-[1px] border-b-n40 mx-[30px]'
       }>
       <CyDView className={'flex flex-row justify-start items-center'}>
         <CyDView>

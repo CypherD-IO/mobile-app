@@ -261,7 +261,8 @@ export default function CardApplicationV2() {
           showModal('state', {
             type: 'error',
             title: t('INVALID_USER_DETAILS'),
-            description: error ?? 'Error in submitting your application',
+            description:
+              error?.message ?? 'Error in submitting your application',
             onSuccess: hideModal,
             onFailure: hideModal,
           });

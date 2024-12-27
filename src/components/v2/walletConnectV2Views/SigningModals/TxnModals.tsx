@@ -309,7 +309,7 @@ const RenderDefaultSignModal = ({
         <CyDView>
           <CyDView
             className={
-              'my-[5px] border-[1px] border-sepratorColor bg-infoTextBackground rounded-[8px]'
+              'my-[5px] border-[1px] border-n40 bg-infoTextBackground rounded-[8px]'
             }>
             <CyDView className='p-[10px]'>
               <CyDText className={'text-[16px] ml-[6px]'}>
@@ -383,8 +383,7 @@ const RenderSendTransactionSignModal = ({
             </CyDView>
           </CyDView>
           <CyDView className='my-[10px]'>
-            <CyDView
-              className={'bg-sepratorColor rounded-[8px] py-[20px] px-[10px]'}>
+            <CyDView className={'bg-n40 rounded-[8px] py-[20px] px-[10px]'}>
               <CyDView className='flex flex-row justify-between'>
                 <CyDText className={'text-[16px] ml-[6px] font-bold'}>
                   {t('TO')}
@@ -600,7 +599,7 @@ const RenderApproveTokenModal = ({
         </>
       ) : null}
       <CyDView className='my-[10px]'>
-        <CyDView className='flex flex-col items-center rounded-[8px] bg-sepratorColor'>
+        <CyDView className='flex flex-col items-center rounded-[8px] bg-n40'>
           <CyDView className='px-[10px] my-[10px]'>
             <CyDText className='font-bold text-[16px]'>
               {t('APPROVAL_TOKEN')}
@@ -627,8 +626,7 @@ const RenderApproveTokenModal = ({
           </CyDView>
         </CyDView>
         <CyDView className='my-[10px]'>
-          <CyDView
-            className={'bg-sepratorColor rounded-[8px] py-[20px] px-[10px]'}>
+          <CyDView className={'bg-n40 rounded-[8px] py-[20px] px-[10px]'}>
             <CyDView className='flex flex-row justify-between'>
               <CyDText className={'text-[14px] ml-[6px] font-bold'}>
                 {t('SPENDER')}

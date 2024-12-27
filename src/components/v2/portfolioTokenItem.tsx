@@ -11,6 +11,7 @@ import {
 import {
   CyDFastImage,
   CyDImage,
+  CyDSwipeable,
   CyDText,
   CyDTouchView,
   CyDView,
@@ -41,10 +42,7 @@ interface PortfolioTokenItemProps {
 const RenderRightActions = (navigation: any, tokenData: any) => {
   const { isBridgeable, isSwapable } = tokenData;
   return (
-    <CyDView
-      className={
-        'flex flex-row justify-evenly items-center bg-secondaryBackgroundColor'
-      }>
+    <CyDView className={'flex flex-row justify-evenly items-center bg-n40'}>
       <CyDView>
         <CyDTouchView
           className={'flex items-center justify-center mx-[15px]'}
@@ -264,7 +262,7 @@ const PortfolioTokenItem = ({
   if ((isVerifyCoinChecked && item?.isVerified) || !isVerifyCoinChecked) {
     return (
       <CyDTouchView
-        className='flex flex-row items-center border-b-[0.5px] border-x border-sepratorColor'
+        className='flex flex-row items-center border-b-[0.5px] border-x border-n40 bg-n0'
         onPress={() => {
           navigation.navigate(screenTitle.TOKEN_OVERVIEW, {
             tokenData: item,
@@ -285,7 +283,7 @@ const PortfolioTokenItem = ({
           <CyDView className='absolute top-[54%] right-[5px]'>
             <CyDFastImage
               className={
-                'h-[20px] w-[20px] rounded-[50px] border-[1px] border-white bg-white'
+                'h-[20px] w-[20px] rounded-[50px] border-[1px] border-n40 bg-n0'
               }
               source={
                 item?.chainDetails?.logo_url ??
@@ -295,7 +293,7 @@ const PortfolioTokenItem = ({
             />
           </CyDView>
         </CyDView>
-        <Swipeable
+        <CyDSwipeable
           key={index}
           friction={1}
           rightThreshold={0}
@@ -304,10 +302,11 @@ const PortfolioTokenItem = ({
             onSwipe(index);
           }}
           containerStyle={styles.swipeable}
+          className='bg-n0'
           ref={ref => {
             setSwipeableRefs(index, ref);
           }}>
-          <CyDView className='flex flex-row w-full justify-between rounded-r-[20px] py-[17px] pr-[12px] bg-white'>
+          <CyDView className='flex flex-row w-full justify-between rounded-r-[20px] py-[17px] pr-[12px] bg-n0'>
             <CyDView className='ml-[10px] max-w-[65%]'>
               <CyDView className={'flex flex-row items-center align-center'}>
                 <CyDText className={'font-extrabold text-[16px]'}>
@@ -316,7 +315,7 @@ const PortfolioTokenItem = ({
                 {item.isStakeable && (
                   <CyDView
                     className={
-                      ' bg-appColor px-[5px] ml-[10px] text-[12px] rounded-[4px]'
+                      ' bg-p100 px-[5px] ml-[10px] text-[12px] rounded-[4px]'
                     }>
                     <CyDText className='font-bold'>{t('STAKE')}</CyDText>
                   </CyDView>
@@ -349,7 +348,7 @@ const PortfolioTokenItem = ({
               </CyDView>
             </CyDView>
           </CyDView>
-        </Swipeable>
+        </CyDSwipeable>
       </CyDTouchView>
     );
   }

@@ -131,7 +131,7 @@ const defaultHeaderLeft = (
 ) => {
   return (
     <CyDTouchView
-      className='w-[60px] py-[10px] pl-[5px] pr-[20px]'
+      className='w-[60px] py-[10px] pl-[5px] pr-[20px] bg-n0'
       onPress={() => {
         if (keyboardHeight) {
           Keyboard.dismiss();

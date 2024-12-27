@@ -106,7 +106,7 @@ const RenderMessage = ({
       </CyDView>
       <CyDScrollView
         className={
-          'my-[5px] border-[1px] border-sepratorColor bg-infoTextBackground rounded-[6px]'
+          'my-[5px] border-[1px] border-n40 bg-infoTextBackground rounded-[6px]'
         }>
         <CyDView className={'p-[10px]'}>
           <CyDText className={'text-[14px] ml-[6px]'}>{message}</CyDText>
@@ -117,7 +117,7 @@ const RenderMessage = ({
 };
 
 const Divider = () => {
-  return <CyDView className={'h-[1px] bg-sepratorColor mt-[14px] mb-[8px]'} />;
+  return <CyDView className={'h-[1px] bg-n40 mt-[14px] mb-[8px]'} />;
 };
 
 const Loader = () => {

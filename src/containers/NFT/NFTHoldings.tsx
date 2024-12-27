@@ -72,7 +72,7 @@ export function NFTHoldingsScreen() {
                 defaultSource={AppImages.DEFAULT_NFT}
                 source={{ uri: holding.imageUrl }}
                 className={
-                  'h-[150px] w-[150px] rounded-[12px] border-[1px] border-sepratorColor'
+                  'h-[150px] w-[150px] rounded-[12px] border-[1px] border-n40'
                 }
               />
               <CyDFastImage

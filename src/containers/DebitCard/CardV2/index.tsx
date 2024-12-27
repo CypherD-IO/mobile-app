@@ -300,7 +300,7 @@ export default function CypherCardScreen() {
   };
 
   return isLayoutRendered ? (
-    <CyDSafeAreaView className='flex-1 bg-gradient-to-b from-cardBgFrom to-cardBgTo'>
+    <CyDSafeAreaView className='flex-1'>
       <CyDView className='flex flex-row justify-between items-center mx-[16px] mt-[4px]'>
         <CyDView>
           <CyDText className='font-extrabold text-[26px]'>Cards</CyDText>
@@ -509,7 +509,7 @@ export default function CypherCardScreen() {
               {t<string>('RECENT_TRANSACTIONS')}
             </CyDText>
             {recentTransactions.length ? (
-              <CyDView className='border-[1px] border-sepratorColor rounded-[22px] pt-[12px]'>
+              <CyDView className='border-[1px] border-n40 rounded-[22px] pt-[12px]'>
                 {recentTransactions.map((transaction, index) => {
                   return <CardTransactionItem item={transaction} key={index} />;
                 })}
@@ -533,7 +533,7 @@ export default function CypherCardScreen() {
                 </CyDTouchView>
               </CyDView>
             ) : (
-              <CyDView className='h-full bg-white border-x border-sepratorColor w-full justify-start items-center py-[10%]'>
+              <CyDView className='h-full bg-white border-x border-n40 w-full justify-start items-center py-[10%]'>
                 <CyDFastImage
                   source={AppImages.NO_TRANSACTIONS_YET}
                   className='h-[150px] w-[150px]'

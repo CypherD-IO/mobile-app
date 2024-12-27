@@ -25,25 +25,25 @@ const {
   DynamicView,
   DynamicImage,
   CText,
-  WebsiteInput
+  WebsiteInput,
 } = require('../../styles');
 
-export default function personalDetailScreen (props) {
+export default function personalDetailScreen(props) {
   // NOTE: DEFINE VARIABLE 🍎🍎🍎🍎🍎🍎
   const { t } = useTranslation();
   const PORTFOLIO_HOST: string = hostWorker.getHost('PORTFOLIO_HOST');
-  const [firstName, setFirstName] = useState<String>('');
-  const [lastName, setLastName] = useState<String>('');
-  const [email, setEmail] = useState<String>('');
-  const [line1, setLine1] = useState<String>('');
-  const [line2, setLine2] = useState<String>('');
-  const [zipCode, setZipCode] = useState<String>('');
-  const [city, setCity] = useState<String>('');
-  const [state, setState] = useState<String>('');
-  const [birthDate, setBirthDate] = useState<String>('');
-  const [ssn, setSSN] = useState<String>('');
-  const [errorMessage, setErrorMessage] = useState<String>('');
-  const [error, setError] = useState<Boolean>(false);
+  const [firstName, setFirstName] = useState<string>('');
+  const [lastName, setLastName] = useState<string>('');
+  const [email, setEmail] = useState<string>('');
+  const [line1, setLine1] = useState<string>('');
+  const [line2, setLine2] = useState<string>('');
+  const [zipCode, setZipCode] = useState<string>('');
+  const [city, setCity] = useState<string>('');
+  const [state, setState] = useState<string>('');
+  const [birthDate, setBirthDate] = useState<string>('');
+  const [ssn, setSSN] = useState<string>('');
+  const [errorMessage, setErrorMessage] = useState<string>('');
+  const [error, setError] = useState<boolean>(false);
   const [isDatePickerVisible, setDatePickerVisibility] = useState(false);
   const [isFocus, setIsFocus] = useState(false);
   const [value, setValue] = useState(null);
@@ -56,34 +56,37 @@ export default function personalDetailScreen (props) {
 
   const submitUserDetails = () => {
     setErrorMessage('');
-    axios.post(
-            `${PORTFOLIO_HOST}/v1/card/mobile/submit_user_details`,
-            {
-              address: ethereum.address,
-              email,
-              dob: birthDate,
-              fname: firstName,
-              lname: lastName,
-              street_one: line1,
-              street_two: line2,
-              city,
-              state,
-              postal_code: zipCode,
-              ssn_id: ssn
-            },
-            { headers: { uuid: hdWallet.state.pre_card_token }, timeout: 30000 }
-    ).then(function (response) {
-      if (response.status === 200) {
-        analytics().logEvent('user_success', { from: ethereum.address });
-        props.navigation.navigate(C.screenTitle.LEGAL_AGREEMENT_SCREEN);
-      }
-    }).catch(function (error) {
-      // handle error
-      Sentry.captureException(error);
-      const message = error.response.data?.message;
-      setError(true);
-      setErrorMessage(message);
-    });
+    axios
+      .post(
+        `${PORTFOLIO_HOST}/v1/card/mobile/submit_user_details`,
+        {
+          address: ethereum.address,
+          email,
+          dob: birthDate,
+          fname: firstName,
+          lname: lastName,
+          street_one: line1,
+          street_two: line2,
+          city,
+          state,
+          postal_code: zipCode,
+          ssn_id: ssn,
+        },
+        { headers: { uuid: hdWallet.state.pre_card_token }, timeout: 30000 },
+      )
+      .then(function (response) {
+        if (response.status === 200) {
+          analytics().logEvent('user_success', { from: ethereum.address });
+          props.navigation.navigate(C.screenTitle.LEGAL_AGREEMENT_SCREEN);
+        }
+      })
+      .catch(function (error) {
+        // handle error
+        Sentry.captureException(error);
+        const message = error.response.data?.message;
+        setError(true);
+        setErrorMessage(message);
+      });
   };
 
   // NOTE: HELPER METHOD 🍎🍎🍎🍎
@@ -139,7 +142,7 @@ export default function personalDetailScreen (props) {
     { label: 'Washington', value: 'WA' },
     { label: 'West Virginia', value: 'WV' },
     { label: 'Wisconsin', value: 'WI' },
-    { label: 'Wyoming', value: 'WY' }
+    { label: 'Wyoming', value: 'WY' },
   ];
 
   const checkError = () => {
@@ -215,7 +218,7 @@ export default function personalDetailScreen (props) {
     setDatePickerVisibility(false);
   };
 
-  const handleConfirm = (date) => {
+  const handleConfirm = date => {
     setError(false);
     const birthDate = moment(date).format('YYYY-MM-DD');
     setBirthDate(birthDate);
@@ -224,166 +227,392 @@ export default function personalDetailScreen (props) {
 
   // NOTE: LIFE CYCLE METHOD 🍎🍎🍎🍎
   return (
-        <SafeAreaView dynamic>
-            <KeyboardAwareScrollView extraScrollHeight={100}>
-                <DateTimePickerModal
-                    isVisible={isDatePickerVisible}
-                    mode="date"
-                    onConfirm={handleConfirm}
-                    onCancel={hideDatePicker}
-                    maximumDate={new Date()}
-                    display={Platform.OS == 'android' ? 'default' : 'inline'}
-                />
-                <DynamicView dynamic dynamicWidth dynamicHeight height={100} width={100} jC='flex-start' aLIT={'flex-start'}>
-                    <DynamicView dynamic dynamicWidth dynamicHeight height={100} width={100} pH={30} jC='flex-start' aLIT={'flex-start'}>
-                        <CText dynamic fF={C.fontsName.FONT_BOLD} fS={22} mT={10} color={Colors.primaryTextColor}>{t('PERSONAL_DETAIL')}</CText>
-                        <DynamicView dynamic fD={'row'} bO={0.5} bR={5} bC={Colors.sepratorColor} mT={15} dynamicHeightFix dynamicWidth height={40} width={100} aLIT={'flex-start'} >
-                            <WebsiteInput
-                                onChangeText={(text) => {
-                                  setFirstName(text);
-                                  setError(false);
-                                }}
-                                value={firstName}
-                                placeholderTextColor={Colors.subTextColor}
-                                placeholder="First Name"
-                                style={{ width: '75%', height: 35, color: 'black' }}
-                            ></WebsiteInput>
-                        </DynamicView>
-                        <DynamicView dynamic fD={'row'} bO={0.5} bR={5} bC={Colors.sepratorColor} mT={20} dynamicHeightFix dynamicWidth height={40} width={100} aLIT={'flex-start'} >
-                            <WebsiteInput
-                                onChangeText={(text) => {
-                                  setLastName(text);
-                                  setError(false);
-                                }}
-                                value={lastName}
-                                placeholderTextColor={Colors.subTextColor}
-                                placeholder="Last Name"
-                                style={{ width: '75%', height: 35, color: 'black' }}
-                            ></WebsiteInput>
-                        </DynamicView>
-                        <DynamicView dynamic fD={'row'} bO={0.5} bR={5} bC={Colors.sepratorColor} mT={20} dynamicHeightFix dynamicWidth height={40} width={100} aLIT={'flex-start'} >
-                            <WebsiteInput
-                                onChangeText={(text) => {
-                                  setEmail(text);
-                                  setError(false);
-                                }}
-                                value={email}
-                                placeholderTextColor={Colors.subTextColor}
-                                placeholder="Email"
-                                keyboardType="email-address"
-                                style={{ width: '75%', height: 35, color: 'black' }}
-                            ></WebsiteInput>
-                        </DynamicView>
-                        <CText dynamic fF={C.fontsName.FONT_BOLD} fS={22} mT={20} color={Colors.primaryTextColor}>{t('PERSONAL_INFO')}</CText>
-                        <DynamicView dynamic fD={'row'} bO={0.5} bR={5} bC={Colors.sepratorColor} mT={20} dynamicHeightFix dynamicWidth height={40} width={100} aLIT={'flex-start'} >
-                            <WebsiteInput
-                                onChangeText={(text) => {
-                                  setSSN(text);
-                                  setError(false);
-                                }}
-                                value={ssn}
-                                keyboardType="number-pad"
-                                placeholderTextColor={Colors.subTextColor}
-                                placeholder="SSN"
-                                style={{ width: '75%', height: 35, color: 'black' }}
-                            ></WebsiteInput>
-                        </DynamicView>
-                        <DynamicTouchView sentry-label='card-date-picker' dynamic fD={'row'} bO={0.5} bR={5} bC={Colors.sepratorColor} mT={20} dynamicHeightFix dynamicWidth height={40} width={100} aLIT={'flex-start'}
-                            onPress={() => showDatePicker()} >
-                            <CText dynamic fF={birthDate == '' ? C.fontsName.FONT_BOLD : C.fontsName.FONT_REGULAR} mL={10} fS={13} mT={10}
-                                color={birthDate == '' ? Colors.sepratorColor : 'black'}>{birthDate == '' ? t('Birth date') : birthDate}</CText>
-                            <DynamicImage dynamic dynamicWidthFix mT={Platform.OS == 'android' ? 12 : 6} mR={8} height={20} width={20} resizemode='contain'
-                                source={AppImages.BIRTHDATE} />
-                        </DynamicTouchView>
-                        <CText dynamic fF={C.fontsName.FONT_BOLD} fS={22} mT={20} color={Colors.primaryTextColor}>{t('HOME_ADDRESS')}</CText>
-                        <DynamicView dynamic fD={'row'} bO={0.5} bR={5} bC={Colors.sepratorColor} mT={20} dynamicHeightFix dynamicWidth height={40} width={100} aLIT={'flex-start'} >
-                            <WebsiteInput
-                                onChangeText={(text) => {
-                                  setLine1(text);
-                                  setError(false);
-                                }}
-                                value={line1}
-                                placeholderTextColor={Colors.subTextColor}
-                                placeholder="Street Address Line 1"
-                                style={{ width: '75%', height: 35, color: 'black' }}
-                            ></WebsiteInput>
-                        </DynamicView>
-                        <DynamicView dynamic fD={'row'} bO={0.5} bR={5} bC={Colors.sepratorColor} mT={20} dynamicHeightFix dynamicWidth height={40} width={100} aLIT={'flex-start'} >
-                            <WebsiteInput
-                                onChangeText={(text) => {
-                                  setLine2(text);
-                                  setError(false);
-                                }}
-                                value={line2}
-                                placeholderTextColor={Colors.subTextColor}
-                                placeholder="Street Address Line 2"
-                                style={{ width: '75%', height: 35, color: 'black' }}
-                            ></WebsiteInput>
-                        </DynamicView>
-                        <DynamicView dynamic fD={'row'} bO={0.5} bR={5} bC={Colors.sepratorColor} mT={20} dynamicHeightFix dynamicWidth height={40} width={100} aLIT={'flex-start'} >
-                            <WebsiteInput
-                                onChangeText={(text) => {
-                                  setCity(text);
-                                  setError(false);
-                                }}
-                                value={city}
-                                placeholderTextColor={Colors.subTextColor}
-                                placeholder="City"
-                                style={{ width: '75%', height: 35, color: 'black' }}
-                            ></WebsiteInput>
-                        </DynamicView>
-                        <Dropdown
-                            style={[styles.dropdown, isFocus && { borderColor: Colors.primaryTextColor }]}
-                            placeholderStyle={styles.placeholderStyle}
-                            selectedTextStyle={styles.selectedTextStyle}
-                            inputSearchStyle={styles.inputSearchStyle}
-                            iconStyle={styles.iconStyle}
-                            data={stateName}
-                            search
-                            maxHeight={300}
-                            labelField="label"
-                            valueField="value"
-                            placeholder={!isFocus ? 'Select State' : ''}
-                            searchPlaceholder="Search..."
-                            value={value}
-                            onFocus={() => setIsFocus(true)}
-                            onBlur={() => setIsFocus(false)}
-                            onChange={item => {
-                              setValue(item.value);
-                              setState(item.value);
-                              setError(false);
-                              setIsFocus(false);
-                            }}
-                        />
-                        <DynamicView dynamic fD={'row'} bO={0.5} bR={5} bC={Colors.sepratorColor} mT={20} dynamicHeightFix dynamicWidth height={40} width={100} aLIT={'flex-start'} >
-                            <WebsiteInput
-                                onChangeText={(text) => {
-                                  setZipCode(text);
-                                  setError(false);
-                                }}
-                                value={zipCode}
-                                keyboardType="number-pad"
-                                placeholderTextColor={Colors.subTextColor}
-                                placeholder="Postal Code"
-                                style={{ width: '75%', height: 35, color: 'black' }}
-                            ></WebsiteInput>
-                        </DynamicView>
-                        {error && <CText dynamic fF={C.fontsName.FONT_REGULAR} fS={14} mT={20} color={Colors.red}>{errorMessage}</CText>}
-                        <DynamicView dynamic dynamicWidth dynamicHeight height={10} width={100} jC='center' aLIT={'center'} >
-                            <ButtonWithOutImage sentry-label='card-enter-personal-details' wT={100} bR={10} fE={C.fontsName.FONT_BOLD} hE={45} mT={25} bG={Colors.appColor}
-                                vC={Colors.appColor} text={t('NEXT')}
-                                onPress={() => { onContinue(); }
-                                } />
-                        </DynamicView>
-                        <DynamicView dynamic fD={'row'} bR={5} bC={Colors.sepratorColor} mT={50} dynamicHeightFix dynamicWidth height={40} width={100} aLIT={'flex-start'} >
-                        </DynamicView>
-                    </DynamicView>
-                </DynamicView>
-            </KeyboardAwareScrollView>
-            <DynamicView dynamic style={{ position: 'absolute', bottom: 0 }}>
-                <BottomTracker index={3} />
+    <SafeAreaView dynamic>
+      <KeyboardAwareScrollView extraScrollHeight={100}>
+        <DateTimePickerModal
+          isVisible={isDatePickerVisible}
+          mode='date'
+          onConfirm={handleConfirm}
+          onCancel={hideDatePicker}
+          maximumDate={new Date()}
+          display={Platform.OS == 'android' ? 'default' : 'inline'}
+        />
+        <DynamicView
+          dynamic
+          dynamicWidth
+          dynamicHeight
+          height={100}
+          width={100}
+          jC='flex-start'
+          aLIT={'flex-start'}>
+          <DynamicView
+            dynamic
+            dynamicWidth
+            dynamicHeight
+            height={100}
+            width={100}
+            pH={30}
+            jC='flex-start'
+            aLIT={'flex-start'}>
+            <CText
+              dynamic
+              fF={C.fontsName.FONT_BOLD}
+              fS={22}
+              mT={10}
+              color={Colors.primaryTextColor}>
+              {t('PERSONAL_DETAIL')}
+            </CText>
+            <DynamicView
+              dynamic
+              fD={'row'}
+              bO={0.5}
+              bR={5}
+              bC={Colors.base20}
+              mT={15}
+              dynamicHeightFix
+              dynamicWidth
+              height={40}
+              width={100}
+              aLIT={'flex-start'}>
+              <WebsiteInput
+                onChangeText={text => {
+                  setFirstName(text);
+                  setError(false);
+                }}
+                value={firstName}
+                placeholderTextColor={Colors.subTextColor}
+                placeholder='First Name'
+                style={{
+                  width: '75%',
+                  height: 35,
+                  color: 'black',
+                }}
+              />
             </DynamicView>
-        </SafeAreaView>
+            <DynamicView
+              dynamic
+              fD={'row'}
+              bO={0.5}
+              bR={5}
+              bC={Colors.base20}
+              mT={20}
+              dynamicHeightFix
+              dynamicWidth
+              height={40}
+              width={100}
+              aLIT={'flex-start'}>
+              <WebsiteInput
+                onChangeText={text => {
+                  setLastName(text);
+                  setError(false);
+                }}
+                value={lastName}
+                placeholderTextColor={Colors.subTextColor}
+                placeholder='Last Name'
+                style={{
+                  width: '75%',
+                  height: 35,
+                  color: 'black',
+                }}
+              />
+            </DynamicView>
+            <DynamicView
+              dynamic
+              fD={'row'}
+              bO={0.5}
+              bR={5}
+              bC={Colors.base20}
+              mT={20}
+              dynamicHeightFix
+              dynamicWidth
+              height={40}
+              width={100}
+              aLIT={'flex-start'}>
+              <WebsiteInput
+                onChangeText={text => {
+                  setEmail(text);
+                  setError(false);
+                }}
+                value={email}
+                placeholderTextColor={Colors.subTextColor}
+                placeholder='Email'
+                keyboardType='email-address'
+                style={{
+                  width: '75%',
+                  height: 35,
+                  color: 'black',
+                }}
+              />
+            </DynamicView>
+            <CText
+              dynamic
+              fF={C.fontsName.FONT_BOLD}
+              fS={22}
+              mT={20}
+              color={Colors.primaryTextColor}>
+              {t('PERSONAL_INFO')}
+            </CText>
+            <DynamicView
+              dynamic
+              fD={'row'}
+              bO={0.5}
+              bR={5}
+              bC={Colors.base20}
+              mT={20}
+              dynamicHeightFix
+              dynamicWidth
+              height={40}
+              width={100}
+              aLIT={'flex-start'}>
+              <WebsiteInput
+                onChangeText={text => {
+                  setSSN(text);
+                  setError(false);
+                }}
+                value={ssn}
+                keyboardType='number-pad'
+                placeholderTextColor={Colors.subTextColor}
+                placeholder='SSN'
+                style={{
+                  width: '75%',
+                  height: 35,
+                  color: 'black',
+                }}
+              />
+            </DynamicView>
+            <DynamicTouchView
+              sentry-label='card-date-picker'
+              dynamic
+              fD={'row'}
+              bO={0.5}
+              bR={5}
+              bC={Colors.base20}
+              mT={20}
+              dynamicHeightFix
+              dynamicWidth
+              height={40}
+              width={100}
+              aLIT={'flex-start'}
+              onPress={() => showDatePicker()}>
+              <CText
+                dynamic
+                fF={
+                  birthDate == ''
+                    ? C.fontsName.FONT_BOLD
+                    : C.fontsName.FONT_REGULAR
+                }
+                mL={10}
+                fS={13}
+                mT={10}
+                color={birthDate == '' ? Colors.base20 : 'black'}>
+                {birthDate == '' ? t('Birth date') : birthDate}
+              </CText>
+              <DynamicImage
+                dynamic
+                dynamicWidthFix
+                mT={Platform.OS == 'android' ? 12 : 6}
+                mR={8}
+                height={20}
+                width={20}
+                resizemode='contain'
+                source={AppImages.BIRTHDATE}
+              />
+            </DynamicTouchView>
+            <CText
+              dynamic
+              fF={C.fontsName.FONT_BOLD}
+              fS={22}
+              mT={20}
+              color={Colors.primaryTextColor}>
+              {t('HOME_ADDRESS')}
+            </CText>
+            <DynamicView
+              dynamic
+              fD={'row'}
+              bO={0.5}
+              bR={5}
+              bC={Colors.base20}
+              mT={20}
+              dynamicHeightFix
+              dynamicWidth
+              height={40}
+              width={100}
+              aLIT={'flex-start'}>
+              <WebsiteInput
+                onChangeText={text => {
+                  setLine1(text);
+                  setError(false);
+                }}
+                value={line1}
+                placeholderTextColor={Colors.subTextColor}
+                placeholder='Street Address Line 1'
+                style={{
+                  width: '75%',
+                  height: 35,
+                  color: 'black',
+                }}
+              />
+            </DynamicView>
+            <DynamicView
+              dynamic
+              fD={'row'}
+              bO={0.5}
+              bR={5}
+              bC={Colors.base20}
+              mT={20}
+              dynamicHeightFix
+              dynamicWidth
+              height={40}
+              width={100}
+              aLIT={'flex-start'}>
+              <WebsiteInput
+                onChangeText={text => {
+                  setLine2(text);
+                  setError(false);
+                }}
+                value={line2}
+                placeholderTextColor={Colors.subTextColor}
+                placeholder='Street Address Line 2'
+                style={{
+                  width: '75%',
+                  height: 35,
+                  color: 'black',
+                }}
+              />
+            </DynamicView>
+            <DynamicView
+              dynamic
+              fD={'row'}
+              bO={0.5}
+              bR={5}
+              bC={Colors.base20}
+              mT={20}
+              dynamicHeightFix
+              dynamicWidth
+              height={40}
+              width={100}
+              aLIT={'flex-start'}>
+              <WebsiteInput
+                onChangeText={text => {
+                  setCity(text);
+                  setError(false);
+                }}
+                value={city}
+                placeholderTextColor={Colors.subTextColor}
+                placeholder='City'
+                style={{
+                  width: '75%',
+                  height: 35,
+                  color: 'black',
+                }}
+              />
+            </DynamicView>
+            <Dropdown
+              style={[
+                styles.dropdown,
+                isFocus && { borderColor: Colors.primaryTextColor },
+              ]}
+              placeholderStyle={styles.placeholderStyle}
+              selectedTextStyle={styles.selectedTextStyle}
+              inputSearchStyle={styles.inputSearchStyle}
+              iconStyle={styles.iconStyle}
+              data={stateName}
+              search
+              maxHeight={300}
+              labelField='label'
+              valueField='value'
+              placeholder={!isFocus ? 'Select State' : ''}
+              searchPlaceholder='Search...'
+              value={value}
+              onFocus={() => setIsFocus(true)}
+              onBlur={() => setIsFocus(false)}
+              onChange={item => {
+                setValue(item.value);
+                setState(item.value);
+                setError(false);
+                setIsFocus(false);
+              }}
+            />
+            <DynamicView
+              dynamic
+              fD={'row'}
+              bO={0.5}
+              bR={5}
+              bC={Colors.base20}
+              mT={20}
+              dynamicHeightFix
+              dynamicWidth
+              height={40}
+              width={100}
+              aLIT={'flex-start'}>
+              <WebsiteInput
+                onChangeText={text => {
+                  setZipCode(text);
+                  setError(false);
+                }}
+                value={zipCode}
+                keyboardType='number-pad'
+                placeholderTextColor={Colors.subTextColor}
+                placeholder='Postal Code'
+                style={{
+                  width: '75%',
+                  height: 35,
+                  color: 'black',
+                }}
+              />
+            </DynamicView>
+            {error && (
+              <CText
+                dynamic
+                fF={C.fontsName.FONT_REGULAR}
+                fS={14}
+                mT={20}
+                color={Colors.red}>
+                {errorMessage}
+              </CText>
+            )}
+            <DynamicView
+              dynamic
+              dynamicWidth
+              dynamicHeight
+              height={10}
+              width={100}
+              jC='center'
+              aLIT={'center'}>
+              <ButtonWithOutImage
+                sentry-label='card-enter-personal-details'
+                wT={100}
+                bR={10}
+                fE={C.fontsName.FONT_BOLD}
+                hE={45}
+                mT={25}
+                bG={Colors.appColor}
+                vC={Colors.appColor}
+                text={t('NEXT')}
+                onPress={() => {
+                  onContinue();
+                }}
+              />
+            </DynamicView>
+            <DynamicView
+              dynamic
+              fD={'row'}
+              bR={5}
+              bC={Colors.base20}
+              mT={50}
+              dynamicHeightFix
+              dynamicWidth
+              height={40}
+              width={100}
+              aLIT={'flex-start'}
+            />
+          </DynamicView>
+        </DynamicView>
+      </KeyboardAwareScrollView>
+      <DynamicView dynamic style={{ position: 'absolute', bottom: 0 }}>
+        <BottomTracker index={3} />
+      </DynamicView>
+    </SafeAreaView>
   );
 }
 
@@ -395,21 +624,21 @@ const styles = StyleSheet.create({
     borderWidth: 0.5,
     borderRadius: 8,
     paddingHorizontal: 8,
-    width: '100%'
+    width: '100%',
   },
   placeholderStyle: {
     fontSize: 16,
-    color: 'gray'
+    color: 'gray',
   },
   selectedTextStyle: {
-    fontSize: 16
+    fontSize: 16,
   },
   iconStyle: {
     width: 20,
-    height: 20
+    height: 20,
   },
   inputSearchStyle: {
     height: 40,
-    fontSize: 16
-  }
+    fontSize: 16,
+  },
 });

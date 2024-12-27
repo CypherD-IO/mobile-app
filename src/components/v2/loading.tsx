@@ -16,7 +16,7 @@ export default function Loading({
   return (
     <CyDView
       className={clsx(
-        'flex justify-center bg-white items-center h-full w-full z-10',
+        'flex justify-center bg-n0 items-center h-full w-full z-10',
         {
           'absolute bg-transparent': isTransparent || blurBg,
         },
@@ -37,7 +37,7 @@ export default function Loading({
       />
       <CyDText
         className={clsx('text-[16px] font-semibold z-50', {
-          'text-white': blurBg,
+          'text-base400': blurBg,
         })}>
         {'Loading . . .'}
       </CyDText>

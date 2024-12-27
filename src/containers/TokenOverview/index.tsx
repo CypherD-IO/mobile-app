@@ -103,7 +103,7 @@ function TokenOverviewV2() {
   return loading ? (
     <Loading />
   ) : (
-    <CyDView className={'bg-white flex-1 flex-col justify-between'}>
+    <CyDView className={'bg-n0 flex-1 flex-col justify-between'}>
       <CyDView className={'flex flex-row justify-center'}>
         <SwitchView
           titles={tokenTabs}
@@ -144,7 +144,7 @@ function TokenOverviewV2() {
       <CyDAnimatedView
         layout={Layout.springify()}
         className={clsx(
-          'h-[110px] self-end bg-white pb-[20px] bottom-[-30px] pt-[2px] rounded-t-[24px] shadow shadow-gray-400',
+          'h-[110px] self-end bg-n0 pb-[20px] bottom-[-30px] pt-[2px] rounded-t-[24px] shadow shadow-gray-400',
           { 'pt-[16px]': isAndroid() },
         )}
         style={styles.elevatedBackground}>

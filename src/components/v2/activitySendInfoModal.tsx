@@ -200,7 +200,7 @@ export default function ActivitySendInfoModal({
             </CyDView>
             <CyDView
               className={
-                'flex flex-row mt-[10%] justify-start items-center pb-[12px] border-b-[1px] border-sepratorColor'
+                'flex flex-row mt-[10%] justify-start items-center pb-[12px] border-b-[1px] border-n40'
               }>
               <CyDText className=' text-[16px] mt-[1px] w-[30%] text-activityFontColor'>
                 {t<string>('DATE')}
@@ -209,7 +209,7 @@ export default function ActivitySendInfoModal({
                 {moment(datetime).format('MMM DD, h:mm a')}
               </CyDText>
             </CyDView>
-            <CyDView className='flex flex-row h-[60px] justify-start items-center border-b-[1px] border-sepratorColor'>
+            <CyDView className='flex flex-row h-[60px] justify-start items-center border-b-[1px] border-n40'>
               <CyDText className=' text-[16px] w-[30%] text-activityFontColor'>
                 {t<string>('VALUE')}
               </CyDText>
@@ -217,7 +217,7 @@ export default function ActivitySendInfoModal({
                 numberOfLines={1}
                 className='w-[70%]  text-[14px] font-bold text-activityFontColor'>{`${amount} ${tokenName}`}</CyDText>
             </CyDView>
-            <CyDView className='flex flex-row h-[60px] justify-start items-center border-b-[1px] border-sepratorColor'>
+            <CyDView className='flex flex-row h-[60px] justify-start items-center border-b-[1px] border-n40'>
               <CyDText className=' text-[16px] w-[30%] text-activityFontColor'>
                 {t<string>('HASH')}
               </CyDText>
@@ -240,7 +240,7 @@ export default function ActivitySendInfoModal({
                 <CyDImage source={AppImages.COPY} />
               </CyDTouchView>
             </CyDView>
-            <CyDView className='flex flex-row h-[60px] justify-start items-center border-b-[1px] border-sepratorColor'>
+            <CyDView className='flex flex-row h-[60px] justify-start items-center border-b-[1px] border-n40'>
               <CyDText className=' text-[16px] w-[30%] text-activityFontColor'>
                 {t<string>('SENDER')}
               </CyDText>
@@ -248,7 +248,7 @@ export default function ActivitySendInfoModal({
                 {getMaskedAddress(fromAddress)}
               </CyDText>
             </CyDView>
-            <CyDView className='flex flex-row h-[60px] justify-start items-center border-b-[1px] border-sepratorColor'>
+            <CyDView className='flex flex-row h-[60px] justify-start items-center border-b-[1px] border-n40'>
               <CyDText className=' text-[16px] w-[30%] text-activityFontColor'>
                 {t<string>('RECEIVER')}
               </CyDText>

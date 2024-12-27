@@ -166,7 +166,7 @@ export const AddressBookContainer = ({
   const hdWalletContext = useContext<any>(HdWalletContext);
 
   return (
-    <CyDView className='flex flex-row justify-between h-[65px] mx-[20px] border-b-[0.5px] border-sepratorColor'>
+    <CyDView className='flex flex-row justify-between h-[65px] mx-[20px] border-b-[0.5px] border-n40'>
       <CyDView className='flex flex-row w-[80%] items-center'>
         <CyDView
           className={'flex p-[5px] rounded-[50px] mr-[10px]'}

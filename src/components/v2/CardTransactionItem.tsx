@@ -95,11 +95,11 @@ const CardTransactionItem = ({ item }: CardTransactionItemProps) => {
   } = item;
   return (
     <>
-      {/* <CyDView className='absolute bottom-[-930px] h-[1000px] w-full bg-white border-x border-sepratorColor' /> */}
+      {/* <CyDView className='absolute bottom-[-930px] h-[1000px] w-full bg-white border-x n40' /> */}
       <CyDTouchView
         key={item.id}
         className={clsx(
-          'h-[70px] flex flex-row justify-between items-center bg-white p-[16px] border-b border-sepratorColor',
+          'h-[70px] flex flex-row justify-between items-center bg-white p-[16px] border-b border-n40',
         )}
         onPress={() => {
           void intercomAnalyticsLog('card_transaction_info_clicked');

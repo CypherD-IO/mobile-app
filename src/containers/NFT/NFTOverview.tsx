@@ -93,7 +93,7 @@ export function NFTOverviewScreen() {
         source={{ uri: nftHolding.imageUrl }}
       />
       <CyDScrollView
-        className={'bg-white rounded-t-[32px] mt-[-32px] p-[20px] z-10'}>
+        className={'bg-n0 rounded-t-[32px] mt-[-32px] p-[20px] z-10'}>
         <CyDText className={'text-[22px] font-extrabold'}>
           {nftHolding.name}
         </CyDText>
@@ -112,7 +112,7 @@ export function NFTOverviewScreen() {
         </CyDView>
         <CyDView
           className={
-            'flex flex-row justify-between py-[18px] border-b-[1px] border-sepratorColor px-[4px]'
+            'flex flex-row justify-between py-[18px] border-b-[1px] border-n40 px-[4px]'
           }>
           <CyDText className={'text-[18px]'}>
             {t<string>('COLLECTION_NAME_PASCAL_CASE')}
@@ -123,7 +123,7 @@ export function NFTOverviewScreen() {
         </CyDView>
         <CyDView
           className={
-            'flex flex-row justify-between py-[18px] border-b-[1px] border-sepratorColor px-[4px]'
+            'flex flex-row justify-between py-[18px] border-b-[1px] border-n40 px-[4px]'
           }>
           <CyDText className={'text-[18px]'}>{t<string>('TOKEN_ID')}</CyDText>
           <CyDText className={'text-[16px] font-bold w-[50%] text-right'}>
@@ -133,7 +133,7 @@ export function NFTOverviewScreen() {
         {holdingChain && (
           <CyDView
             className={
-              'flex flex-row justify-between py-[18px] border-b-[1px] border-sepratorColor px-[4px]'
+              'flex flex-row justify-between py-[18px] border-b-[1px] border-n40 px-[4px]'
             }>
             <CyDText className={'text-[18px]'}>
               {t<string>('NETWORK_INIT_CAPS')}
@@ -152,7 +152,7 @@ export function NFTOverviewScreen() {
         )}
         <CyDView
           className={clsx(
-            'flex flex-row justify-between py-[18px] border-b-[1px] border-sepratorColor px-[4px]',
+            'flex flex-row justify-between py-[18px] border-b-[1px] border-n40 px-[4px]',
             {
               'mb-[50px]': !(
                 nftHolding.description && nftHolding.description !== ''

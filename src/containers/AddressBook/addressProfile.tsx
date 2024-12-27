@@ -229,7 +229,7 @@ const AddressProfile = props => {
       <CyDView
         className={clsx(
           'flex flex-row justify-between items-center w-[100%] py-[12px]',
-          { 'border-b-[1px] border-sepratorColor': isActive },
+          { 'border-b-[1px] border-n40': isActive },
         )}
         key={index}>
         <CyDView className='flex flex-row justify-between items-center'>
@@ -497,7 +497,7 @@ const styles = StyleSheet.create({
   sectionContainerSendTo: {
     borderWidth: 1,
     borderStyle: 'solid',
-    borderColor: Colors.sepratorColor,
+    borderColor: Colors.n40,
     borderRadius: 16,
     paddingHorizontal: 10,
     marginVertical: 10,
@@ -507,7 +507,7 @@ const styles = StyleSheet.create({
   sectionContainer: {
     borderWidth: 1,
     borderStyle: 'solid',
-    borderColor: Colors.sepratorColor,
+    borderColor: Colors.n40,
     borderRadius: 16,
     paddingHorizontal: 10,
     marginVertical: 10,

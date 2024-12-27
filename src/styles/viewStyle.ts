@@ -5,15 +5,15 @@ import { Colors } from '../constants/theme';
 
 export const SafeAreaView = styled.SafeAreaView`
   flex: 1;
-  ${(props) =>
+  ${props =>
     props.dynamic &&
     css`
-       background: ${props.bC ? props.bC : Colors.whiteColor};;
+      background: ${props.bC ? props.bC : Colors.whiteColor};
     `}
 `;
 
 export const DynamicView = styled.View`
-  ${(props) =>
+  ${props =>
     props.dynamic &&
     css`
       justify-content: ${props.jC ? props.jC : 'space-between'};
@@ -34,30 +34,30 @@ export const DynamicView = styled.View`
       padding-top: ${scale(props.pT ? props.pT : 0)}px;
       border: ${scale(props.bO ? props.bO : 0)}px;
     `}
-    ${(props) =>
+  ${props =>
     props.dynamicWidthFix &&
     css`
-        width: ${scale(props.width ? props.width : 0)}px;
-        `}
-        ${(props) =>
+      width: ${scale(props.width ? props.width : 0)}px;
+    `}
+        ${props =>
     props.dynamicHeightFix &&
     css`
-            height: ${scale(props.height ? props.height : 0)}px;
-            `}
-        ${(props) =>
+      height: ${scale(props.height ? props.height : 0)}px;
+    `}
+        ${props =>
     props.dynamicHeight &&
     css`
-              height: ${props.height ? props.height : 0}%;
-            `}
-          ${(props) =>
+      height: ${props.height ? props.height : 0}%;
+    `}
+          ${props =>
     props.dynamicWidth &&
     css`
-              width: ${props.width ? props.width : 0}%;
-            `}
-    `;
+      width: ${props.width ? props.width : 0}%;
+    `}
+`;
 
 export const DynamicScrollView = styled.ScrollView`
-  ${(props) =>
+  ${props =>
     props.dynamic &&
     css`
       margin-vertical: ${scale(props.mV ? props.mV : 0)}px;
@@ -71,30 +71,30 @@ export const DynamicScrollView = styled.ScrollView`
       margin-top: ${scale(props.mT ? props.mT : 0)}px;
       border: ${scale(props.bO ? props.bO : 0)}px;
     `}
-    ${(props) =>
+  ${props =>
     props.dynamicWidthFix &&
     css`
-        width: ${scale(props.width ? props.width : 0)}px;
-        `}
-        ${(props) =>
+      width: ${scale(props.width ? props.width : 0)}px;
+    `}
+        ${props =>
     props.dynamicHeightFix &&
     css`
-            height: ${scale(props.height ? props.height : 0)}px;
-            `}
-        ${(props) =>
+      height: ${scale(props.height ? props.height : 0)}px;
+    `}
+        ${props =>
     props.dynamicHeight &&
     css`
-              height: ${props.height ? props.height : 0}%;
-            `}
-          ${(props) =>
+      height: ${props.height ? props.height : 0}%;
+    `}
+          ${props =>
     props.dynamicWidth &&
     css`
-              width: ${props.width ? props.width : 0}%;
-            `}
-    `;
+      width: ${props.width ? props.width : 0}%;
+    `}
+`;
 
 export const DynamicTouchView = styled.TouchableOpacity`
-  ${(props) =>
+  ${props =>
     props.dynamic &&
     css`
       justify-content: ${props.jC ? props.jC : 'space-between'};
@@ -108,53 +108,53 @@ export const DynamicTouchView = styled.TouchableOpacity`
       border-radius: ${scale(props.bR ? props.bR : 0)}px;
       background-color: ${props.bGC ? props.bGC : 'transparent'};
       margin-top: ${scale(props.mT ? props.mT : 0)}px;
-      margin-Bottom: ${scale(props.mB ? props.mB : 0)}px;
+      margin-bottom: ${scale(props.mB ? props.mB : 0)}px;
       border-width: ${scale(props.bO ? props.bO : 0)}px;
       border-color: ${props.bC ? props.bC : 'black'};
     `}
-    ${(props) =>
+  ${props =>
     props.dynamicWidthFix &&
     css`
-        width: ${scale(props.width ? props.width : 0)}px;
-        `}
-        ${(props) =>
+      width: ${scale(props.width ? props.width : 0)}px;
+    `}
+        ${props =>
     props.dynamicHeightFix &&
     css`
-            height: ${scale(props.height ? props.height : 0)}px;
-            `}
-        ${(props) =>
+      height: ${scale(props.height ? props.height : 0)}px;
+    `}
+        ${props =>
     props.dynamicHeight &&
     css`
-              height: ${props.height ? props.height : 0}%;
-            `}
-          ${(props) =>
+      height: ${props.height ? props.height : 0}%;
+    `}
+          ${props =>
     props.dynamicWidth &&
     css`
-              width: ${props.width ? props.width : 0}%;
-            `}
-    `;
+      width: ${props.width ? props.width : 0}%;
+    `}
+`;
 
 export const SepraterView = styled.View`
-    ${(props) =>
+  ${props =>
     props.dynamic &&
     css`
-        margin-vertical: ${scale(props.mV ? props.mV : 0)}px;
-        margin-horizontal: ${scale(props.mH ? props.mH : 0)}px;
-        margin-bottom: ${scale(props.mT ? props.mT : 0)}px;
-        padding-horizontal: ${scale(props.pH ? props.pH : 0)}px;
-        padding-vertical: ${scale(props.pV ? props.pV : 0)}px;
-        flex-direction: ${props.fD ? props.fD : 'column'};
-        align-items: ${props.aLIT ? props.aLIT : 'center'};
-        border-radius: ${scale(props.bR ? props.bR : 0)}px;
-        background-color: ${props.bGC ? props.bGC : Colors.sepratorColor};
-        border-color: ${props.bC ? props.bC : 'transparent'};
-        height: ${props.hE ? props.hE : 1}px;
-        width: ${props.width ? props.width : 85}%;
-      `}
-      `;
+      margin-vertical: ${scale(props.mV ? props.mV : 0)}px;
+      margin-horizontal: ${scale(props.mH ? props.mH : 0)}px;
+      margin-bottom: ${scale(props.mT ? props.mT : 0)}px;
+      padding-horizontal: ${scale(props.pH ? props.pH : 0)}px;
+      padding-vertical: ${scale(props.pV ? props.pV : 0)}px;
+      flex-direction: ${props.fD ? props.fD : 'column'};
+      align-items: ${props.aLIT ? props.aLIT : 'center'};
+      border-radius: ${scale(props.bR ? props.bR : 0)}px;
+      background-color: ${props.bGC ? props.bGC : Colors.sepratorColor};
+      border-color: ${props.bC ? props.bC : 'transparent'};
+      height: ${props.hE ? props.hE : 1}px;
+      width: ${props.width ? props.width : 85}%;
+    `}
+`;
 
 export const ModalView = styled.View`
-  ${(props) =>
+  ${props =>
     props.dynamic &&
     css`
       justify-content: ${props.jC ? props.jC : 'space-between'};
@@ -168,24 +168,24 @@ export const ModalView = styled.View`
       background-color: ${props.bGC ? props.bGC : 'transparent'};
       border-color: ${props.bC ? props.bC : 'transparent'};
     `}
-    ${(props) =>
+  ${props =>
     props.dynamicWidthFix &&
     css`
-        width: ${scale(props.width ? props.width : 0)}px;
-        `}
-        ${(props) =>
+      width: ${scale(props.width ? props.width : 0)}px;
+    `}
+        ${props =>
     props.dynamicHeightFix &&
     css`
-            height: ${scale(props.height ? props.height : 0)}px;
-            `}
-        ${(props) =>
+      height: ${scale(props.height ? props.height : 0)}px;
+    `}
+        ${props =>
     props.dynamicHeight &&
     css`
-              height: ${props.height ? props.height : 0}%;
-            `}
-          ${(props) =>
+      height: ${props.height ? props.height : 0}%;
+    `}
+          ${props =>
     props.dynamicWidth &&
     css`
-              width: ${props.width ? props.width : 0}%;
-            `}
-    `;
+      width: ${props.width ? props.width : 0}%;
+    `}
+`;

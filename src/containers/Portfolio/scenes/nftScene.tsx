@@ -142,7 +142,7 @@ const NFTScene = ({ navigation, selectedChain }: NFTSceneProps) => {
     return (
       <CyDView
         className={clsx('py-[15px]', {
-          'border-b-[1px] border-sepratorColor': !isActive,
+          'border-b-[1px] border-n40': !isActive,
         })}>
         <CyDView
           className={'flex flex-row justify-between items-center w-full'}>
@@ -152,7 +152,7 @@ const NFTScene = ({ navigation, selectedChain }: NFTSceneProps) => {
                 defaultSource={AppImages.DEFAULT_NFT}
                 source={{ uri: firstNFTInCollection.imageUrl }}
                 className={
-                  'h-[50px] w-[50px] rounded-[50px] border-[1px] border-sepratorColor'
+                  'h-[50px] w-[50px] rounded-[50px] border-[1px] border-n40'
                 }
                 resizeMode='contain'
               />
@@ -202,7 +202,7 @@ const NFTScene = ({ navigation, selectedChain }: NFTSceneProps) => {
     return (
       <CyDView
         className={clsx('flex flex-row flex-wrap py-[25px] w-full', {
-          'border-b-[1px] border-sepratorColor': isActive,
+          'border-b-[1px] border-n40': isActive,
           'justify-around': section.content.length > 1,
         })}>
         {section.content.map((holding: NFTHolding, index) => {
@@ -219,7 +219,7 @@ const NFTScene = ({ navigation, selectedChain }: NFTSceneProps) => {
                 defaultSource={AppImages.DEFAULT_NFT}
                 source={{ uri: holding.imageUrl }}
                 className={
-                  'h-[150px] w-[150px] border-[1px] border-sepratorColor rounded-[12px]'
+                  'h-[150px] w-[150px] border-[1px] border-n40 rounded-[12px]'
                 }
               />
               <CyDFastImage
@@ -379,7 +379,7 @@ const NFTScene = ({ navigation, selectedChain }: NFTSceneProps) => {
                         defaultSource={AppImages.DEFAULT_NFT}
                         source={{ uri: firstNFTInSection?.imageUrl }}
                         className={
-                          'h-[140px] w-[140px] rounded-[8px] border-[1px] border-sepratorColor'
+                          'h-[140px] w-[140px] rounded-[8px] border-[1px] border-n40'
                         }
                       />
                       <CyDFastImage
@@ -415,7 +415,7 @@ const NFTScene = ({ navigation, selectedChain }: NFTSceneProps) => {
             refreshControl={
               <RefreshControl refreshing={refreshing} onRefresh={onRefresh} />
             }>
-            <CyDView className='border border-sepratorColor rounded-t-[24px]'>
+            <CyDView className='border border-n40 rounded-t-[24px]'>
               {isEmpty(NFTHoldings) && (
                 <CyDView className={'mt-[50%] flex items-center'}>
                   <CyDImage

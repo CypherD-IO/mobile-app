@@ -60,7 +60,7 @@ export const RefreshTimerBar = (props: {
   }, [isRefreshing, lastUpdatedAt]);
 
   return (
-    <CyDView className='bg-white flex flex-row justify-between rounded-t-[24px] border border-sepratorColor py-[10px] px-[10px] mx-[10px]'>
+    <CyDView className='bg-n0 flex flex-row justify-between rounded-t-[24px] border border-n40 py-[10px] px-[10px] mx-[10px]'>
       <CyDView className='flex flex-row items-center'>
         <CyDFastImage
           source={AppImages.CLOCK}
@@ -81,9 +81,9 @@ export const RefreshTimerBar = (props: {
         }}>
         <CyDView
           className={clsx(
-            'h-[15px] w-[15px] justify-center items-center rounded-[4px] border-[1px] border-black',
+            'h-[15px] w-[15px] justify-center items-center rounded-[4px] border-[1px] border-base400',
             {
-              'bg-black': isVerifyCoinChecked,
+              'bg-base400': isVerifyCoinChecked,
               'bg-transparent': !isVerifyCoinChecked,
             },
           )}>

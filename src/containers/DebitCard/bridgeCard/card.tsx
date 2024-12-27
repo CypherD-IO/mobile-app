@@ -1146,7 +1146,7 @@ const RenderCardActions = ({
           </CyDView>
         </CyDTouchView>
         <CyDTouchView
-          className='flex flex-col justify-center items-center'
+          className='flex flex-col justify-center items-center ml-[24px]'
           disabled={shouldBlockAction()}
           onPress={() => {
             cardProvider === CardProviders.REAP_CARD

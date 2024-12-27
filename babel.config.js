@@ -9,10 +9,9 @@ module.exports = (api) => {
   return {
     comments: false,
     compact: true,
-    presets: [['module:metro-react-native-babel-preset', { useTransformReactJSXExperimental: true }],],
+    presets: [['module:metro-react-native-babel-preset', { useTransformReactJSXExperimental: true }], 'nativewind/babel'],
     plugins: [
       'react-native-reanimated/plugin',
-      'nativewind/babel',
       '@babel/plugin-transform-flow-strip-types',
       '@babel/plugin-proposal-optional-catch-binding',
       ['@babel/plugin-transform-private-methods', { loose: true }],
@@ -35,6 +34,7 @@ module.exports = (api) => {
             '@babel/plugin-transform-react-jsx',
             {
                 runtime: 'automatic',
+                importSource: "nativewind",
             },
         ],
       // SUPPORTED BY DEFAULT: '@babel/plugin-transform-regenerator',

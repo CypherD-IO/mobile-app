@@ -45,6 +45,7 @@ import {
   ParamListBase,
   useNavigation,
 } from '@react-navigation/native';
+import { useTheme } from '../../reducers/themeReducer';
 
 const { DynamicView, CText, DynamicImage } = require('../../styles');
 
@@ -85,6 +86,8 @@ const SocialMedia = ({
 export default function Options() {
   const navigation = useNavigation<NavigationProp<ParamListBase>>();
   const { t } = useTranslation();
+
+  const { changeTheme } = useTheme();
 
   const [clickCount, setClickCount] = useState(0);
   const [title, setTitle] = useState('');
@@ -232,6 +235,20 @@ export default function Options() {
                 width={88}
                 bGC={Colors.portfolioBorderColor}
               />
+
+              <CyDTouchView
+                onPress={() => {
+                  changeTheme('light');
+                }}>
+                <CyDText className='text-rixhy10'>{'light'}</CyDText>
+              </CyDTouchView>
+
+              <CyDTouchView
+                onPress={() => {
+                  changeTheme('dark');
+                }}>
+                <CyDText className='text-rixhy10'>{'dark'}</CyDText>
+              </CyDTouchView>
 
               <OptionsContainer
                 sentryLabel={'activities'}

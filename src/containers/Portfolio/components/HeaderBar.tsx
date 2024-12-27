@@ -50,7 +50,7 @@ export const HeaderBar = ({
           setChooseChain(true);
         }}
         className={
-          'h-[40px] w-[54px] bg-chainColor px-[8px] py-[4px] rounded-[18px] flex flex-row items-center justify-between border border-sepratorColor'
+          'h-[40px] w-[54px] bg-chainColor px-[8px] py-[4px] rounded-[18px] flex flex-row items-center justify-between border border-n40'
         }>
         <CyDFastImage
           className={'h-[22px] w-[22px]'}

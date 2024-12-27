@@ -141,7 +141,7 @@ export default function AutoLoad({ navigation }: { navigation: any }) {
           onCancel={() => setIsDatePickerVisible(false)}
         />
         <CyDView className='bg-white py-[22px] px-[16px]'>
-          <CyDView className='flex flex-row justify-start border-[1px] border-sepratorColor rounded-[12px] py-[12px] px-[12px]'>
+          <CyDView className='flex flex-row justify-start border-[1px] border-n40 rounded-[12px] py-[12px] px-[12px]'>
             <CyDView className='self-end'>
               <CyDImage
                 source={AppImages.CARD_SEL}
@@ -167,7 +167,7 @@ export default function AutoLoad({ navigation }: { navigation: any }) {
             <CyDText>When the balance falls below:</CyDText>
             <CyDView className='flex flex-row justify-start items-center mt-[8px]'>
               <CyDView
-                className='flex flex-row justify-start items-center border-b-[2px] border-sepratorColor py-[6px]'
+                className='flex flex-row justify-start items-center border-b-[2px] border-n40 py-[6px]'
                 style={{ width: 65 + String(threshold).length * 18 }}>
                 <CyDText className='text-[26px] font-bold'>{'$'}</CyDText>
                 <CyDTextInput
@@ -189,11 +189,11 @@ export default function AutoLoad({ navigation }: { navigation: any }) {
             </CyDView>
           </CyDView>
           <CyDView className='flex flex-col p-[16px]'>
-            <CyDView className='flex flex-col pb-[32px] border-b-[1px] border-sepratorColor'>
+            <CyDView className='flex flex-col pb-[32px] border-b-[1px] border-n40'>
               <CyDText>Automatically top up:</CyDText>
               <CyDView className='flex flex-row justify-start items-center mt-[8px]'>
                 <CyDView
-                  className='flex flex-row justify-start items-center border-b-[2px] border-sepratorColor py-[6px]'
+                  className='flex flex-row justify-start items-center border-b-[2px] border-n40 py-[6px]'
                   style={{ width: 65 + String(amountToLoad).length * 18 }}>
                   <CyDText className='text-[36px] text-mandarin font-bold'>
                     {'$'}
@@ -260,7 +260,7 @@ export default function AutoLoad({ navigation }: { navigation: any }) {
             </CyDView>
           </CyDView>
           {autoLoadExpiry && (
-            <CyDView className='flex flex-col pt-[12px] border-t-[1.5px] border-sepratorColor mt-[18px]'>
+            <CyDView className='flex flex-col pt-[12px] border-t-[1.5px] border-n40 mt-[18px]'>
               <CyDView>
                 <CyDText>Auto load until:</CyDText>
                 <CyDTouchView
@@ -268,7 +268,7 @@ export default function AutoLoad({ navigation }: { navigation: any }) {
                   onPress={() => {
                     setIsDatePickerVisible(true);
                   }}>
-                  <CyDView className='flex flex-row justify-start items-center border-b-[2px] border-sepratorColor py-[6px]'>
+                  <CyDView className='flex flex-row justify-start items-center border-b-[2px] border-n40 py-[6px]'>
                     <CyDText className='text-[18px] font-bold'>
                       {moment.utc(expiryDate).local().format('MMMM DD, YYYY')}
                     </CyDText>
@@ -286,7 +286,7 @@ export default function AutoLoad({ navigation }: { navigation: any }) {
                 <CyDText>No.of times to auto load:</CyDText>
                 <CyDView className='flex flex-row justify-start items-center mt-[2px]'>
                   <CyDView
-                    className='flex flex-row justify-start items-center border-b-[2px] border-sepratorColor py-[6px]'
+                    className='flex flex-row justify-start items-center border-b-[2px] border-n40 py-[6px]'
                     style={{ width: 65 + String(repeatFor).length * 18 }}>
                     <CyDTextInput
                       className='text-[18px] font-bold w-[90%]'

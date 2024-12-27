@@ -339,7 +339,7 @@ const BannerCarouselItem = ({
       style={[animatedStyle, { width: boxWidth }]}>
       <CyDView className='flex flex-row h-[120px] w-full'>
         <CyDTouchView
-          className='h-full border border-sepratorColor overflow-hidden rounded-[16px]'
+          className='h-full border border-n40 overflow-hidden rounded-[16px]'
           disabled={
             !isActivity &&
             item.redirectURI === undefined &&
@@ -387,7 +387,7 @@ const BannerCarouselItem = ({
                 void onStaticCardDismissal();
               }
             }}
-            className='absolute top-[-4px] right-[-4px] h-[20px] w-[20px] justify-center items-center bg-white border border-sepratorColor rounded-full overflow-hidden p-[3px]'>
+            className='absolute top-[-4px] right-[-4px] h-[20px] w-[20px] justify-center items-center bg-n0 border border-n40 rounded-full overflow-hidden p-[3px]'>
             <CyDFastImage
               source={AppImages.CLOSE}
               className='h-[8px] w-[8px]'
