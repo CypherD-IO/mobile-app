@@ -1461,6 +1461,8 @@ const resources = {
         'You have enough funds to complete the transaction, please retry.',
       FUNDS_AVAILABLE: 'Funds Added',
       CANCELLED: 'Cancelled',
+      CRYPTO_WITHDRAWAL_INFO_MESSAGE:
+        'Crypto withdrawals are processed in 3-5 business days. Note that you will receive the funds in USDC on BASE chain.',
     },
   },
 };

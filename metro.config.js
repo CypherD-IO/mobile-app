@@ -12,7 +12,6 @@ const config = {
       path: require.resolve('path-browserify'),
       fs: require.resolve('react-native-level-fs'),
       '@walletconnect/react-native-compat': require.resolve('@walletconnect/react-native-compat'),
-        '@walletconnect/web3wallet': require.resolve('@walletconnect/web3wallet'),
     },
   },
 };
