@@ -35,9 +35,6 @@ import {
 import { getConnectionType } from '../../core/asyncStorage';
 import { ConnectionTypes } from '../../constants/enum';
 
-// Create a context for wagmiConfig
-export const WagmiConfigContext = createContext<any>(null);
-
 export const WagmiConfigBuilder: React.FC = ({ children }) => {
   const [wagmiConfig, setWagmiConfig] = useState<any>();
   const hdWalletContext = useContext<any>(HdWalletContext);
@@ -95,7 +92,7 @@ export const WagmiConfigBuilder: React.FC = ({ children }) => {
 
   const queryClient = new QueryClient();
   return (
-    <WagmiConfigContext.Provider value={wagmiConfig}>
+    <>
       {wagmiConfig ? (
         <WagmiProvider config={wagmiConfig}>
           <QueryClientProvider client={queryClient}>
@@ -105,6 +102,6 @@ export const WagmiConfigBuilder: React.FC = ({ children }) => {
       ) : (
         <Loading />
       )}
-    </WagmiConfigContext.Provider>
+    </>
   );
 };

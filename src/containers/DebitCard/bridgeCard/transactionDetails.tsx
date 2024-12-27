@@ -182,6 +182,29 @@ const openMapsWithLocation = (location: {
     .catch(err => console.error('An error occurred', err));
 };
 
+interface InfoMessageProps {
+  message: string;
+  condition: boolean;
+}
+
+const InfoMessage: React.FC<InfoMessageProps> = ({ message, condition }) => {
+  if (!condition) return null;
+
+  return (
+    <CyDView className='bg-n0 rounded-[12px] border border-[#E9EBF8] p-[12px] mt-[24px]'>
+      <CyDView className='flex-row items-center'>
+        <CyDImage
+          source={AppImages.INFO_CIRCLE}
+          className='w-[24px] h-[24px]'
+        />
+        <CyDText className='text-[12px] font-medium ml-[8px] flex-1'>
+          {t(message)}
+        </CyDText>
+      </CyDView>
+    </CyDView>
+  );
+};
+
 const MerchantDetailsModal = ({
   showModal,
   setShowModal,
@@ -619,20 +642,19 @@ const TransactionDetail = ({
             fundsAvailable={fundsAvailable}
           />
         )}
-        {transaction.type === CardTransactionTypes.REFUND &&
-          !transaction.isSettled && (
-            <CyDView className='bg-n0 rounded-[12px] border border-[#E9EBF8] p-[12px] mt-[24px]'>
-              <CyDView className='flex-row items-start'>
-                <CyDImage
-                  source={AppImages.INFO_CIRCLE}
-                  className='w-[24px] h-[24px]'
-                />
-                <CyDText className='text-[12px] font-medium ml-[8px] flex-1'>
-                  {t('REFUND_IN_PROGRESS_MESSAGE')}
-                </CyDText>
-              </CyDView>
-            </CyDView>
-          )}
+        <InfoMessage
+          message='REFUND_IN_PROGRESS_MESSAGE'
+          condition={
+            transaction.type === CardTransactionTypes.REFUND &&
+            !transaction.isSettled
+          }
+        />
+        <InfoMessage
+          message='CRYPTO_WITHDRAWAL_INFO_MESSAGE'
+          condition={transaction.title
+            .toLowerCase()
+            .includes('crypto withdrawal')}
+        />
         <CyDView className='mt-[24px]'>
           <CyDView className='flex flex-row justify-between items-center'>
             <CyDText className='text-[14px] text-n200 font-semibold'>
