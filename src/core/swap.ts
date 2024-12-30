@@ -139,11 +139,15 @@ export const checkAllowance = async ({
           .call();
         const tokenAmount = web3?.utils.toWei(
           String(Number(amount).toFixed(9)),
+          'ether',
         );
         const allowance = response;
         if (Number(tokenAmount) > Number(allowance)) {
           if (Number(amount) < 1000) amount = 1000;
-          const tokens = Web3.utils.toWei((Number(amount) * 10).toString());
+          const tokens = web3?.utils.toWei(
+            (Number(amount) * 10).toString(),
+            'ether',
+          );
           const resp = contract.methods
             .approve(routerAddress, tokens)
             .encodeABI();

@@ -29,6 +29,7 @@ import { StyleSheet } from 'react-native';
 import { getChainNameFromAddress, trimWhitespace } from '../../../core/util';
 import { CardProfile } from '../../../models/cardProfile.model';
 import useCardUtilities from '../../../hooks/useCardUtilities';
+import { isAddress } from 'web3-validator';
 
 export default function LinkAnotherWallet({ navigation }) {
   const [formValues, setFormValues] = useState({
@@ -53,7 +54,7 @@ export default function LinkAnotherWallet({ navigation }) {
       .string()
       .required('Address Required')
       .test('Enter valid ETH Address', 'Enter valid ETH Address', address => {
-        return Web3.utils.isAddress(trimWhitespace(address ?? ''));
+        return isAddress(trimWhitespace(address ?? ''));
       }),
     walletName: yup.string().required('Wallet Name Required'),
   });

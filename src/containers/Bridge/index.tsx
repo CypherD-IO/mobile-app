@@ -1459,6 +1459,7 @@ const Bridge: React.FC = () => {
             if (finalGasPrice) {
               gasFeeETH = web3.utils.fromWei(
                 web3.utils.toWei((finalGasPrice * gasLimit).toFixed(9), 'gwei'),
+                'ether',
               );
             }
 

@@ -89,6 +89,7 @@ import { isNobleAddress } from '../utilities/nobleSendUtility';
 import { isOsmosisAddress } from '../utilities/osmosisSendUtility';
 import { isSolanaAddress } from '../utilities/solanaUtilities';
 import { isStargazeAddress } from '../utilities/stargazeSendUtility';
+import { isAddress } from 'web3-validator';
 
 export default function SendTo(props: { navigation?: any; route?: any }) {
   const { t } = useTranslation();
@@ -553,7 +554,7 @@ export default function SendTo(props: { navigation?: any; route?: any }) {
         ens,
         tokenData.chainDetails.backendName,
       );
-      if (addr && Web3.utils.isAddress(addr)) {
+      if (addr && isAddress(addr)) {
         addressRef.current = addr;
         ensRef.current = ens;
       } else {
@@ -837,7 +838,7 @@ export default function SendTo(props: { navigation?: any; route?: any }) {
           ens,
           tokenData.chainDetails.backendName,
         );
-        if (addr && Web3.utils.isAddress(addr)) {
+        if (addr && isAddress(addr)) {
           addressRef.current = addr;
           ensRef.current = ens;
         } else {
@@ -1039,7 +1040,7 @@ export default function SendTo(props: { navigation?: any; route?: any }) {
           }
           break;
         case ChainNames.ETH:
-          if (!web3.utils.isAddress(address)) {
+          if (!isAddress(address)) {
             error = true;
             showModal('state', {
               type: 'error',

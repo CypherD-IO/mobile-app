@@ -152,7 +152,7 @@ export default function useTransactionManager() {
     const fromAddress = ethereum.address;
     try {
       const code = await web3.eth.getCode(toAddress);
-      let { gasLimit, gasPrice, priorityFee, isEIP1599Supported } =
+      let { gasLimit, gasPrice, priorityFee, isEIP1599Supported, maxFee } =
         await estimateGasForEvm({
           web3,
           chain,
@@ -183,6 +183,7 @@ export default function useTransactionManager() {
           'maxPriorityFeePerGas',
           web3.utils.toWei(priorityFee.toFixed(9), 'gwei'),
         );
+        set(tx, 'maxFeePerGas', web3.utils.toWei(maxFee.toFixed(9), 'gwei'));
       }
 
       const hash = await signEthTransaction({
@@ -194,7 +195,6 @@ export default function useTransactionManager() {
     } catch (err: any) {
       throw new Error(err);
     }
-    // }
   };
 
   const sendERC20Token = async ({
@@ -244,7 +244,7 @@ export default function useTransactionManager() {
 
       const code = await web3.eth.getCode(toAddress);
 
-      let { gasLimit, gasPrice, priorityFee, isEIP1599Supported } =
+      let { gasLimit, gasPrice, priorityFee, isEIP1599Supported, maxFee } =
         await estimateGasForEvm({
           web3,
           chain,
@@ -278,9 +278,11 @@ export default function useTransactionManager() {
         set(
           tx,
           'maxPriorityFeePerGas',
-          web3.utils.toWei(priorityFee.toFixed(9), 'gwei'),
+          priorityFee ? web3.utils.toWei(priorityFee.toFixed(9), 'gwei') : '0',
         );
+        set(tx, 'maxFeePerGas', web3.utils.toWei(maxFee.toFixed(9), 'gwei'));
       }
+
       const hash = await signEthTransaction({
         web3,
         sendChain: chain,
@@ -931,7 +933,7 @@ export default function useTransactionManager() {
           const hash = await signApprovalEthereum({
             web3,
             sendChain: chainDetails?.backendName,
-            dataToSign: tx,
+            transactionToBeSigned: tx,
           });
 
           if (hash) {
