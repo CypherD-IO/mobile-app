@@ -218,7 +218,7 @@ export default function useGasService() {
       if (gasLimit) {
         let finalGasPrice;
         if (gasPriceDetail.gasPrice > 0) {
-          finalGasPrice = 0.074;
+          finalGasPrice = gasPriceDetail.gasPrice;
         }
 
         let gasFeeInCrypto = '0';
