@@ -764,6 +764,9 @@ export const getChain = (chain: string): Chain => {
     case 'polygon':
       blockchain = CHAIN_POLYGON;
       break;
+    case 'base':
+      blockchain = CHAIN_BASE;
+      break;
     case 'avalanche':
       blockchain = CHAIN_AVALANCHE;
       break;

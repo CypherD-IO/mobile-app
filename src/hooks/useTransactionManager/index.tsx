@@ -913,22 +913,41 @@ export default function useTransactionManager() {
     hash?: string;
   }> => {
     const { ethereum } = hdWallet.state.wallet;
+
     return await new Promise((resolve, reject) => {
       void (async () => {
         try {
-          let gasPrice = gasFeeResponse.gasPrice;
+          let { priorityFee, isEIP1599Supported, maxFee, gasPrice } =
+            gasFeeResponse;
+
           if (gasPrice > 1) {
             gasPrice = Math.floor(gasPrice);
+          } else {
+            gasPrice = web3.utils.toWei(String(gasPrice.toFixed(9)), 'gwei');
           }
           const tx = {
             from: ethereum.address,
             to: fromTokenContractAddress,
-            gasPrice: web3.utils.toWei(String(gasPrice.toFixed(9)), 'gwei'),
             value: '0x0',
-            gas: web3.utils.toHex(String(gasLimit)),
+            gas: web3.utils.toHex(gasLimit),
             data: contractData,
             contractParams,
           };
+
+          if (!isEIP1599Supported) {
+            set(tx, 'gasPrice', gasPrice);
+          } else {
+            set(
+              tx,
+              'maxPriorityFeePerGas',
+              web3.utils.toWei(priorityFee.toFixed(9), 'gwei'),
+            );
+            set(
+              tx,
+              'maxFeePerGas',
+              web3.utils.toWei(maxFee.toFixed(9), 'gwei'),
+            );
+          }
 
           const hash = await signApprovalEthereum({
             web3,
@@ -967,6 +986,7 @@ export default function useTransactionManager() {
             .call();
           const tokenAmount = Number(ceil(amount));
           const allowance = response;
+
           if (
             overrideAllowanceCheck ||
             Number(tokenAmount) > Number(allowance)
