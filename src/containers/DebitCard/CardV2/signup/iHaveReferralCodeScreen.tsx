@@ -154,7 +154,7 @@ const IHaveReferralCodeScreen = () => {
             </CyDText>
             <CyDView className='flex-row items-center'>
               <CyDTextInput
-                className='bg-white rounded-[8px] px-[12.5px] py-[14px] flex-1 mr-[12px]'
+                className='bg-n0 rounded-[8px] px-[12.5px] py-[14px] flex-1 mr-[12px]'
                 placeholder={t('ENTER_REFERRAL_CODE')}
                 value={referralCode}
                 onChangeText={setReferralCode}
@@ -176,7 +176,7 @@ const IHaveReferralCodeScreen = () => {
         </CyDView>
 
         <CyDView>
-          <CyDView className='mt-[24px] relative bg-white rounded-[8px] mx-[16px] p-[16px]'>
+          <CyDView className='mt-[24px] relative bg-n0 rounded-[8px] mx-[16px] p-[16px]'>
             <CyDView className='flex-row items-center'>
               <CyDImage
                 source={AppImages.GIFT_IN_HANDS}
@@ -195,7 +195,7 @@ const IHaveReferralCodeScreen = () => {
             </CyDView>
           </CyDView>
 
-          <CyDView className='mt-[24px] bg-white px-[16px] w-full items-center'>
+          <CyDView className='mt-[24px] bg-n0 px-[16px] w-full items-center'>
             <CyDTouchView
               className='mt-[24px]'
               onPress={() => {

@@ -293,7 +293,7 @@ export default function ShortcutsModal() {
             </CyDText>
           </CyDView>
         </CyDView>
-        <CyDView className={'h-[1px] w-full bg-[#F5F5F5]'} />
+        <CyDView className={'h-[0.5px] w-full bg-n40'} />
       </CyDTouchView>
     );
   };
@@ -309,7 +309,7 @@ export default function ShortcutsModal() {
             setBuyModalVisible(false);
             setTimeout(() => setBuyChooseChainModalVisible(true), 250);
           }}>
-          <CyDView className={'bg-[#FAFAFA] p-[16px] rounded-[18px]'}>
+          <CyDView className={'bg-n0 p-[16px] rounded-[18px]'}>
             <CyDView className={'flex flex-row justify-between'}>
               <CyDView className={'flex flex-row items-center'}>
                 <CyDImage
@@ -367,7 +367,7 @@ export default function ShortcutsModal() {
             setSellModalVisible(false);
             setTimeout(() => setSellChooseChainModalVisible(true), 250);
           }}>
-          <CyDView className={'bg-[#FAFAFA] p-[16px] rounded-[18px]'}>
+          <CyDView className={'bg-n0 p-[16px] rounded-[18px]'}>
             <CyDView className={'flex flex-row justify-between'}>
               <CyDView className={'flex flex-row items-center'}>
                 <CyDImage
@@ -418,7 +418,7 @@ export default function ShortcutsModal() {
   const renderChainItem = (item: Chain, navigation: any) => {
     return (
       <CyDTouchView
-        className={'p-[20px] bg-[#FAFAFA] rounded-[18px] mb-[10px]'}
+        className={'p-[20px] bg-n0 rounded-[18px] mb-[10px]'}
         onPress={() => {
           setBuyChooseChainModalVisible(false);
           navigation.navigate(buyType.screenTitle, {
@@ -448,7 +448,7 @@ export default function ShortcutsModal() {
   const renderSellChainItem = (item: Chain, navigation: any) => {
     return (
       <CyDTouchView
-        className={'p-[20px] bg-[#FAFAFA] rounded-[18px] mb-[10px]'}
+        className={'p-[20px] bg-n0 rounded-[18px] mb-[10px]'}
         onPress={() => {
           setSellChooseChainModalVisible(false);
           navigation.navigate(sellType.screenTitle, {
@@ -572,6 +572,7 @@ export default function ShortcutsModal() {
 
   return (
     <CyDTouchView
+      className={'bg-transparent'}
       onPress={async () => {
         setShortcutsModalVisible(true);
         await analytics().logEvent('shortcuts_button_click');
@@ -584,7 +585,7 @@ export default function ShortcutsModal() {
         animationOut={'slideOutDown'}
         style={{ justifyContent: 'flex-end', margin: 0, padding: 0 }}>
         <CyDView
-          className={'relative bg-white p-[32px] rounded-t-[36px] pb-[40px]'}>
+          className={'relative bg-n0 p-[32px] rounded-t-[36px] pb-[40px]'}>
           <CyDTouchView
             onPress={() => setShortcutsModalVisible(false)}
             className={'z-50 absolute top-[24px] right-[24px]'}>
@@ -612,7 +613,7 @@ export default function ShortcutsModal() {
         style={{ justifyContent: 'flex-end', margin: 0, padding: 0 }}>
         <CyDView
           className={
-            'relative bg-white p-[40px] rounded-t-[36px] pb-[40px] max-h-[90%]'
+            'relative bg-n0 p-[40px] rounded-t-[36px] pb-[40px] max-h-[90%]'
           }>
           <CyDTouchView
             onPress={() => setBuyModalVisible(false)}
@@ -642,7 +643,7 @@ export default function ShortcutsModal() {
         animationOut={'slideOutDown'}
         style={{ justifyContent: 'flex-end', margin: 0, padding: 0 }}>
         <CyDView
-          className={'relative bg-white p-[40px] rounded-t-[36px] pb-[40px]'}>
+          className={'relative bg-n0 p-[40px] rounded-t-[36px] pb-[40px]'}>
           <CyDTouchView
             onPress={() => setSellModalVisible(false)}
             className={'z-50 absolute top-[24px] right-[24px]'}>
@@ -671,7 +672,7 @@ export default function ShortcutsModal() {
         animationOut={'slideOutDown'}
         style={{ justifyContent: 'flex-end', margin: 0, padding: 0 }}>
         <CyDView
-          className={'relative bg-white p-[40px] rounded-t-[36px] pb-[40px]'}>
+          className={'relative bg-n0 p-[40px] rounded-t-[36px] pb-[40px]'}>
           <CyDView className={'flex flex-row justify-between items-center '}>
             <CyDTouchView
               onPress={() => {
@@ -720,7 +721,7 @@ export default function ShortcutsModal() {
         animationOut={'slideOutDown'}
         style={{ justifyContent: 'flex-end', margin: 0, padding: 0 }}>
         <CyDView
-          className={'relative bg-white p-[40px] rounded-t-[36px] pb-[40px]'}>
+          className={'relative bg-n0 p-[40px] rounded-t-[36px] pb-[40px]'}>
           <CyDView className={'flex flex-row justify-between items-center '}>
             <CyDTouchView
               onPress={() => {
@@ -779,7 +780,12 @@ export default function ShortcutsModal() {
         animationIn={'slideInUp'}
       />
 
-      <CyDView className={isIOS() ? 'mx-[12px]' : 'mx-[12px] mt-[4px]'}>
+      <CyDView
+        className={
+          isIOS()
+            ? 'mx-[12px] bg-transparent'
+            : 'mx-[12px] mt-[4px] bg-transparent'
+        }>
         <LottieView
           source={AppImages.SHORTCUTS}
           ref={ref => setAnimation(ref)}

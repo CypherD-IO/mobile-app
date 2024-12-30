@@ -266,7 +266,7 @@ export default function WalletConnectModal(props) {
           animationIn={'slideInUp'}
           animationOut={'slideOutDown'}>
           <CyDView
-            className={'bg-white p-[25px] pb-[30px] rounded-t-[20px] relative'}>
+            className={'bg-n0 p-[25px] pb-[30px] rounded-t-[20px] relative'}>
             <CyDTouchView
               onPress={() => {
                 setChooseChain(false);

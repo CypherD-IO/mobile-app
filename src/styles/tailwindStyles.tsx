@@ -49,7 +49,9 @@ export const CyDFlatList = cssInterop(FlatList, {
 });
 export const CyDSafeAreaView = SafeAreaView;
 export const CyDImage = Image;
-export const CyDImageBackground = ImageBackground;
+export const CyDImageBackground = cssInterop(ImageBackground, {
+  className: 'style',
+});
 export const CyDModal = Modal;
 export const CyDRefreshControl = RefreshControl;
 export const CyDScrollView = ScrollView;

@@ -158,7 +158,7 @@ const NFTScene = ({ navigation, selectedChain }: NFTSceneProps) => {
               />
               <CyDFastImage
                 className={
-                  'absolute w-[18px] h-[18px] right-0 bottom-0 bg-white rounded-[50px]'
+                  'absolute w-[18px] h-[18px] right-0 bottom-0 bg-n0 rounded-[50px]'
                 }
                 source={renderChainImage(firstNFTInCollection.blockchain)}
               />
@@ -224,7 +224,7 @@ const NFTScene = ({ navigation, selectedChain }: NFTSceneProps) => {
               />
               <CyDFastImage
                 className={
-                  'absolute w-[30px] h-[30px] right-[8px] bottom-[30px] bg-white rounded-[50px]'
+                  'absolute w-[30px] h-[30px] right-[8px] bottom-[30px] bg-n0 rounded-[50px]'
                 }
                 source={renderChainImage(holding.blockchain)}
               />
@@ -365,9 +365,7 @@ const NFTScene = ({ navigation, selectedChain }: NFTSceneProps) => {
                 const [firstNFTInSection] = section.content;
                 return (
                   <CyDView
-                    className={
-                      'my-[8px] bg-privacyMessageBackgroundColor rounded-[8px] p-[8px]'
-                    }
+                    className={'my-[8px] bg-blue20 rounded-[8px] p-[8px]'}
                     key={index}>
                     <CyDTouchView
                       onPress={() =>
@@ -384,13 +382,13 @@ const NFTScene = ({ navigation, selectedChain }: NFTSceneProps) => {
                       />
                       <CyDFastImage
                         className={
-                          'absolute w-[30px] h-[30px] right-[8px] bottom-[8px] bg-white rounded-[50px]'
+                          'absolute w-[30px] h-[30px] right-[8px] bottom-[8px] bg-n0 rounded-[50px]'
                         }
                         source={renderChainImage(firstNFTInSection?.blockchain)}
                       />
                     </CyDTouchView>
                     <CyDView>
-                      <CyDText className={'font-bold text-center mt-[6px]'}>
+                      <CyDText className={'font-bold text-center mt-[6px] '}>
                         {renderCollectionName(firstNFTInSection)}
                       </CyDText>
                     </CyDView>

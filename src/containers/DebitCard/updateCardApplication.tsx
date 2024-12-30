@@ -347,7 +347,7 @@ export default function UpdateCardApplicationScreen({ navigation }) {
             selectedCountryStates={selectedCountryStates}
             selectedStateState={[selectedState, setSelectedState]}
           />
-          <CyDView className={'h-full bg-white'}>
+          <CyDView className={'h-full bg-n0'}>
             <CyDView className={'h-full flex grow-1'}>
               <CyDScrollView className='my-[24px]'>
                 <CyDKeyboardAwareScrollView>
@@ -415,7 +415,7 @@ export default function UpdateCardApplicationScreen({ navigation }) {
                           )}>
                           <CyDView
                             className={
-                              'w-4/12 border-r-[1px] border-[#EBEBEB] bg-white py-[13px] rounded-l-[16px] flex items-center'
+                              'w-4/12 border-r-[1px] border-[#EBEBEB] bg-n0 py-[13px] rounded-l-[16px] flex items-center'
                             }>
                             <CyDView className={'mt-[-4px] ml-[-55px]'}>
                               <CyDText className={'text-[33px] mt-[-6px]'}>

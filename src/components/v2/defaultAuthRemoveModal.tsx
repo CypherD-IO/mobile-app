@@ -49,7 +49,7 @@ export default function DefaultAuthRemoveModal(props: {
       }}>
       <CyDView
         className={
-          'bg-white flex flex-col items-center rounded-t-[20px] pt-[15px] pb-[30px]'
+          'bg-n0 flex flex-col items-center rounded-t-[20px] pt-[15px] pb-[30px]'
         }>
         <CyDText className='text-center  text-[19px] font-bold  '>
           {t('DEFAULT_AUTH_REMOVE_TITLE')}

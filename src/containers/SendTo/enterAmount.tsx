@@ -174,7 +174,7 @@ export default function EnterAmount(props: any) {
 
   // NOTE: LIFE CYCLE METHOD 🍎🍎🍎🍎
   return (
-    <CyDSafeAreaView className='flex-1 bg-white'>
+    <CyDSafeAreaView className='flex-1 bg-n0'>
       <ChooseTokenModal
         isChooseTokenModalVisible={isChooseTokenVisible}
         onSelectingToken={token => {
@@ -186,7 +186,7 @@ export default function EnterAmount(props: any) {
           navigation.goBack();
         }}
       />
-      <CyDView className={'bg-white w-full'}>
+      <CyDView className={'bg-n0 w-full'}>
         <CyDView>
           <CyDView
             className={
@@ -224,7 +224,7 @@ export default function EnterAmount(props: any) {
                     }
                   }}
                   className={clsx(
-                    'absolute left-[10%] bottom-[60%] bg-white rounded-full h-[40px] w-[40px] flex justify-center items-center p-[4px]',
+                    'absolute left-[10%] bottom-[60%] bg-n0 rounded-full h-[40px] w-[40px] flex justify-center items-center p-[4px]',
                   )}
                   style={styles.roundButtonContainer}>
                   <CyDText className={' text-black '}>
@@ -246,7 +246,7 @@ export default function EnterAmount(props: any) {
                     // }
                   }}
                   className={clsx(
-                    'absolute right-[10%] bottom-[60%] bg-white rounded-full h-[40px] w-[40px] flex justify-center items-center p-[4px]',
+                    'absolute right-[10%] bottom-[60%] bg-n0 rounded-full h-[40px] w-[40px] flex justify-center items-center p-[4px]',
                   )}
                   style={styles.roundButtonContainer}>
                   <CyDImage
@@ -306,7 +306,7 @@ export default function EnterAmount(props: any) {
 
                 <CyDView
                   style={styles.tokenContainer}
-                  className='flex flex-row mt-[12px] mb-[6px] items-center rounded-[10px] self-center px-[10px] bg-white'>
+                  className='flex flex-row mt-[12px] mb-[6px] items-center rounded-[10px] self-center px-[10px] bg-n0'>
                   <CyDView>
                     <CyDFastImage
                       className={'h-[35px] w-[35px] rounded-[50px]'}

@@ -140,10 +140,10 @@ export default function CardWailtList({ navigation }: Props) {
 
   return (
     <CyDView
-      className={clsx('flex-1 bg-white mt-[32px]', {
+      className={clsx('flex-1 bg-n0 mt-[32px]', {
         'pb-[75px]': isAndroid(),
       })}>
-      <CyDScrollView className='bg-white py-[12px]'>
+      <CyDScrollView className='bg-n0 py-[12px]'>
         <ChooseCountryModal
           isModalVisible={isModalVisible}
           setModalVisible={setModalVisible}
@@ -165,7 +165,7 @@ export default function CardWailtList({ navigation }: Props) {
               }>
               <CyDView
                 className={
-                  'w-[85%] bg-white px-[50px] pt-[100px] pb-[30px] rounded-[18px] shadow-lg'
+                  'w-[85%] bg-n0 px-[50px] pt-[100px] pb-[30px] rounded-[18px] shadow-lg'
                 }>
                 <CyDView>
                   {provider === CardProviders.PAYCADDY && (

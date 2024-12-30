@@ -98,7 +98,7 @@ const CustomModalLayout = (store: CustomModalLayoutDef) => {
       setModalVisible={() => {
         store.onSuccess();
       }}>
-      <CyDView className={'bg-white rounded-t-[24px] min-h-[30%] pb-[15px]'}>
+      <CyDView className={'bg-n0 rounded-t-[24px] min-h-[30%] pb-[15px]'}>
         {store.customComponent}
       </CyDView>
     </CyDModalLayout>

@@ -172,8 +172,8 @@ export default function Options() {
 
   // NOTE: LIFE CYCLE METHOD 🍎🍎🍎🍎
   return (
-    <CyDView className='flex-1 bg-white'>
-      <CyDScrollView className={'bg-white w-full relative mb-[100px]'}>
+    <CyDView className='flex-1 bg-n0'>
+      <CyDScrollView className={'bg-n0 w-full relative mb-[100px]'}>
         <ImageBackground
           source={AppImages.BG_SETTINGS}
           resizeMode='cover'

@@ -151,7 +151,7 @@ export default function MigratePCFunds() {
         isModalVisible={showConsentModal}
         style={styles.modalLayout}
         setModalVisible={setShowConsentModal}>
-        <CyDView className={'bg-white rounded-t-[20px] p-[16px] pb-[40px]'}>
+        <CyDView className={'bg-n0 rounded-t-[20px] p-[16px] pb-[40px]'}>
           <CyDView className={'flex flex-row items-center'}>
             <CyDView className='flex-1'>
               <CyDText className='text-[24px] pl-[16px] font-bold text-center'>
@@ -236,7 +236,7 @@ export default function MigratePCFunds() {
               {'Choose your preferred option'}
             </CyDText>
             <CyDTouchView
-              className={clsx('bg-white rounded-[16px] p-[16px] mt-[16px]', {
+              className={clsx('bg-n0 rounded-[16px] p-[16px] mt-[16px]', {
                 'border-[1px] border-[#FFBF15]': !moveCustomAmount,
                 'border-[1px] border-white': moveCustomAmount,
               })}
@@ -287,7 +287,7 @@ export default function MigratePCFunds() {
               </CyDView>
             </CyDTouchView>
             <CyDTouchView
-              className={clsx('bg-white rounded-[16px] p-[16px] mt-[16px]', {
+              className={clsx('bg-n0 rounded-[16px] p-[16px] mt-[16px]', {
                 'border-[1px] border-[#FFBF15]': moveCustomAmount,
                 'border-[1px] border-white': !moveCustomAmount,
               })}
@@ -374,7 +374,7 @@ export default function MigratePCFunds() {
               )}
               {migrationData.map(item => (
                 <CyDView
-                  className='mt-[12px] flex flex-row justify-between items-center bg-white rounded-[8px] p-[12px]'
+                  className='mt-[12px] flex flex-row justify-between items-center bg-n0 rounded-[8px] p-[12px]'
                   key={item.requestId}>
                   <CyDText className='text-black font-semibold text-[14px]'>
                     {`$${item.amount.toLocaleString()}`}
@@ -414,7 +414,7 @@ export default function MigratePCFunds() {
         </CyDView>
       )}
       {!showSuccess && (
-        <CyDView className='flex flex-row justify-between items-center bg-white rounded-t-[16px] px-[16px] py-[32px] w-full'>
+        <CyDView className='flex flex-row justify-between items-center bg-n0 rounded-t-[16px] px-[16px] py-[32px] w-full'>
           <Button
             title={t('CONTINUE')}
             onPress={() => {

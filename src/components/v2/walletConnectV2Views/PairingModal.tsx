@@ -271,7 +271,7 @@ export default function PairingModal({
       style={styles.modalLayout}
       animationIn={'slideInUp'}
       animationOut={'slideOutDown'}>
-      <CyDView className='flex flex-col max-h-[70%] bg-white rounded-t-[24px] px-[20px] '>
+      <CyDView className='flex flex-col max-h-[70%] bg-n0 rounded-t-[24px] px-[20px] '>
         <CyDView className={'flex flex-row justify-center'}>
           <CyDText className={'text-[24px] font-extrabold mt-[14px] mb-[4px]'}>
             {t<string>('WALLET_PERMISSIONS')}

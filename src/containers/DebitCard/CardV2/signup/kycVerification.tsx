@@ -302,7 +302,7 @@ export default function KYCVerficicationV2() {
             {t('IDENTITY_VERIFICATION')}
           </CyDText>
 
-          <CyDView className='mt-[16px] rounded-[16px] bg-white px-[16px] py-[24px] flex flex-col items-center'>
+          <CyDView className='mt-[16px] rounded-[16px] bg-n0 px-[16px] py-[24px] flex flex-col items-center'>
             {renderKYCStatus()}
             <CyDImage
               source={renderKYCStatusImage()}
@@ -313,7 +313,7 @@ export default function KYCVerficicationV2() {
             </CyDView>
           </CyDView>
           {kycStatus === CardApplicationStatus.KYC_FAILED && kyc?.message && (
-            <CyDView className='bg-white p-[12px] rounded-[16px] mt-[24px] '>
+            <CyDView className='bg-n0 p-[12px] rounded-[16px] mt-[24px] '>
               <CyDText className=' text-black text-[18px] font-bold font-manrope '>
                 {t('REASON')}
               </CyDText>
@@ -328,7 +328,7 @@ export default function KYCVerficicationV2() {
             (kycStatus === CardApplicationStatus.KYC_FAILED &&
               kyc?.isRetryable)) && (
             <CyDTouchView
-              className='bg-white p-[12px] rounded-[16px] mt-[24px] '
+              className='bg-n0 p-[12px] rounded-[16px] mt-[24px] '
               onPress={() => {
                 navigation.navigate(screenTitle.CARD_APPLICATION);
               }}>
@@ -357,7 +357,7 @@ export default function KYCVerficicationV2() {
           {(kycStatus === CardApplicationStatus.KYC_PENDING ||
             kycStatus === CardApplicationStatus.COMPLETION_PENDING ||
             kycStatus === CardApplicationStatus.COMPLETED) && (
-            <CyDView className='bg-white p-[12px] rounded-[16px] flex-row items-center justify-between mt-[24px] '>
+            <CyDView className='bg-n0 p-[12px] rounded-[16px] flex-row items-center justify-between mt-[24px] '>
               <CyDView>
                 <CyDText className=' text-black text-[18px] font-bold font-manrope '>
                   {t('VERIFICATION_STATUS')}
@@ -422,16 +422,16 @@ export default function KYCVerficicationV2() {
           )}
         </CyDScrollView>
       </CyDView>
-      <CyDView className='px-[16px] pb-[48px] bg-white rounded-t-[16px]'>
+      <CyDView className='px-[16px] pb-[48px] bg-n0 rounded-t-[16px]'>
         <CyDView className='pt-[14px]'>
           {kycStatus === CardApplicationStatus.KYC_PENDING && (
             <CyDView className='mb-[8px]'>
               <Button
                 type='secondary'
-              title={t('RETRY_KYC')}
-            onPress={() => {
-              void getKyc();
-            }}
+                title={t('RETRY_KYC')}
+                onPress={() => {
+                  void getKyc();
+                }}
               />
             </CyDView>
           )}

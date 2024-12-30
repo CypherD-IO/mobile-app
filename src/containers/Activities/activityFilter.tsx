@@ -98,7 +98,7 @@ export default function ActivitesFilter() {
 
   return (
     <>
-      <CyDSafeAreaView className='flex-1 bg-white'>
+      <CyDSafeAreaView className='flex-1 bg-n0'>
         <CyDView className='h-full'>
           <CyDView className={'h-full flex flex-row'}>
             <CyDView
@@ -119,7 +119,7 @@ export default function ActivitesFilter() {
                 </CyDTouchView>
               ))}
             </CyDView>
-            <CyDView className={'bg-white w-[70%]'}>
+            <CyDView className={'bg-n0 w-[70%]'}>
               {index === 0 && (
                 <CheckBoxes
                   radioButtonsData={ACTIVITY_TYPES}

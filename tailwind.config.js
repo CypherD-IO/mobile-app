@@ -1,8 +1,7 @@
 /** @type {import('tailwindcss').Config} */
-const plugin = require('tailwindcss');
-const colors = require('tailwindcss/colors');
+import colors from 'tailwindcss/colors';
+
 module.exports = {
-  // NOTE: Update this to include the paths to all of your component files.
   content: ['./src/**/*.{js,jsx,ts,tsx}', './App.tsx'],
   presets: [require('nativewind/preset')],
   darkMode: 'class',
@@ -200,9 +199,8 @@ module.exports = {
         bold: '700',
         extrabold: '800',
         black: '900',
-      }
+      },
     },
   },
-  plugins: [
-  ],
-}
+  plugins: [],
+};

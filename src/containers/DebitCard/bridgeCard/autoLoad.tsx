@@ -140,7 +140,7 @@ export default function AutoLoad({ navigation }: { navigation: any }) {
           onConfirm={(date: Date) => onConfirmDate(date)}
           onCancel={() => setIsDatePickerVisible(false)}
         />
-        <CyDView className='bg-white py-[22px] px-[16px]'>
+        <CyDView className='bg-n0 py-[22px] px-[16px]'>
           <CyDView className='flex flex-row justify-start border-[1px] border-n40 rounded-[12px] py-[12px] px-[12px]'>
             <CyDView className='self-end'>
               <CyDImage
@@ -162,7 +162,7 @@ export default function AutoLoad({ navigation }: { navigation: any }) {
             </CyDView>
           </CyDView>
         </CyDView>
-        <CyDView className='flex flex-col bg-white my-[14px] mx-[16px] rounded-[12px]'>
+        <CyDView className='flex flex-col bg-n0 my-[14px] mx-[16px] rounded-[12px]'>
           <CyDView className='flex flex-col p-[16px]'>
             <CyDText>When the balance falls below:</CyDText>
             <CyDView className='flex flex-row justify-start items-center mt-[8px]'>
@@ -247,7 +247,7 @@ export default function AutoLoad({ navigation }: { navigation: any }) {
             </CyDView>
           </CyDView>
         </CyDView>
-        <CyDView className='bg-white py-[22px] px-[16px] rounded-[12px] mx-[16px]'>
+        <CyDView className='bg-n0 py-[22px] px-[16px] rounded-[12px] mx-[16px]'>
           <CyDView className='flex flex-row justify-between items-center'>
             <CyDText className='font-bold text-[16px]'>Set Expiry</CyDText>
             <CyDView>

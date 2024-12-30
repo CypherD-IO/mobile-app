@@ -30,7 +30,7 @@ const FormikTextInput: React.FC<FormikTextInputProps> = ({
   value,
   containerClassName = '',
   labelClassName = 'text-[12px] font-bold text-black',
-  inputClassName = 'p-[16px] rounded-[8px] bg-white font-semibold border-[1px] border-white mt-[2px]',
+  inputClassName = 'p-[16px] rounded-[8px] bg-n0 font-semibold border-[1px] border-white mt-[2px]',
   errorClassName = 'text-red-500 text-[12px] mt-[2px] text-end w-full',
   pointerEvents,
   ...props

@@ -129,7 +129,7 @@ const ReferralInfo = ({
   referralLink: string;
   referralCode: string;
 }) => (
-  <CyDView className='flex flex-col text-black bg-white rounded-[8px] mt-[12px]'>
+  <CyDView className='flex flex-col text-black bg-n0 rounded-[8px] mt-[12px]'>
     <CyDView className='flex flex-row items-center justify-between p-[16px]'>
       <CyDText className='font-[500]'>{t('LINK')}</CyDText>
       <CyDView className='flex flex-row items-center'>
@@ -264,7 +264,7 @@ const HowItWorks = () => {
       <CyDText className='text-[16px] font-[500] text-black'>
         {t('HOW_IT_WORKS')}
       </CyDText>
-      <CyDView className='flex flex-col text-black bg-white rounded-[8px] mt-[6px] p-[24px]'>
+      <CyDView className='flex flex-col text-black bg-n0 rounded-[8px] mt-[6px] p-[24px]'>
         <CyDView className='flex flex-row items-center justify-between'>
           <CyDImage
             className='h-[78px] w-[70px] mr-[20px]'
@@ -466,7 +466,7 @@ export default function Referrals() {
                 />
               ))}
             {referralDataLoading && (
-              <CyDView className='flex flex-col text-black bg-white rounded-[8px] mt-[6px] p-[8px] items-center justify-center'>
+              <CyDView className='flex flex-col text-black bg-n0 rounded-[8px] mt-[6px] p-[8px] items-center justify-center'>
                 <LottieView
                   source={AppImages.LOADER_TRANSPARENT}
                   autoPlay
@@ -484,7 +484,7 @@ export default function Referrals() {
                   {t('POINTS_EARNED')}
                 </CyDText>
 
-                <CyDView className='flex flex-col text-black bg-white rounded-[8px] mt-[6px]'>
+                <CyDView className='flex flex-col text-black bg-n0 rounded-[8px] mt-[6px]'>
                   {referralData?.referrals.length > 0 ? (
                     referralData?.referrals.map((referral, key) => (
                       <PointsInfo key={key} referral={referral} />

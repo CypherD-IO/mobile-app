@@ -56,7 +56,7 @@ export const TabBar = ({ navigationState, setIndex }: TabBarProps) => {
     <CyDView className='w-full bg-n0'>
       <CyDView className='flex flex-row mx-[20px] pb-[8px] pt-[12px]'>
         <CyDAnimatedView
-          className={'absolute top-[12px] bg-blue20 h-full rounded-[8px]'}
+          className={'absolute top-[12px] bg-n40 h-full rounded-[8px]'}
           style={[animatedStyle, { width: tabWidth }]}
         />
         {tabs}

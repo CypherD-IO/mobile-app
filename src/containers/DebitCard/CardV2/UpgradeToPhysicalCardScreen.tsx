@@ -171,7 +171,7 @@ const UpgradeToPhysicalCardScreen = () => {
   };
 
   return (
-    <CyDSafeAreaView className='bg-white flex-1'>
+    <CyDSafeAreaView className='bg-n0 flex-1'>
       <ChooseCountryModal
         isModalVisible={selectCountryModalVisible}
         setModalVisible={setSelectCountryModalVisible}
@@ -214,7 +214,7 @@ const UpgradeToPhysicalCardScreen = () => {
                 </CyDText>
                 <CyDTouchView
                   className={
-                    'bg-white h-[50px] border border-inputBorderColor py-[5px] px-[10px] mx-[20px] rounded-[8px] flex flex-row justify-between items-center'
+                    'bg-n0 h-[50px] border border-inputBorderColor py-[5px] px-[10px] mx-[20px] rounded-[8px] flex flex-row justify-between items-center'
                   }
                   onPress={() => setSelectCountryModalVisible(true)}>
                   <CyDView
@@ -247,7 +247,7 @@ const UpgradeToPhysicalCardScreen = () => {
                 </CyDView>
                 <CyDView
                   className={
-                    'bg-white h-[50px] border border-inputBorderColor py-[5px] px-[10px] mx-[20px] rounded-[8px] flex flex-row justify-between items-center'
+                    'bg-n0 h-[50px] border border-inputBorderColor py-[5px] px-[10px] mx-[20px] rounded-[8px] flex flex-row justify-between items-center'
                   }>
                   <CyDView
                     className={clsx(
@@ -288,7 +288,7 @@ const UpgradeToPhysicalCardScreen = () => {
                 </CyDView>
                 <CyDView
                   className={
-                    'bg-white h-[50px] border border-inputBorderColor py-[5px] px-[10px] mx-[20px] rounded-[8px] flex flex-row justify-between items-center'
+                    'bg-n0 h-[50px] border border-inputBorderColor py-[5px] px-[10px] mx-[20px] rounded-[8px] flex flex-row justify-between items-center'
                   }>
                   <CyDView className='flex flex-row justify-between items-center'>
                     <CyDTextInput
@@ -312,7 +312,7 @@ const UpgradeToPhysicalCardScreen = () => {
                 </CyDView>
                 <CyDView
                   className={
-                    'bg-white h-[50px] border border-inputBorderColor py-[5px] px-[10px] mx-[20px] rounded-[8px] flex flex-row justify-between items-center'
+                    'bg-n0 h-[50px] border border-inputBorderColor py-[5px] px-[10px] mx-[20px] rounded-[8px] flex flex-row justify-between items-center'
                   }>
                   <CyDView className='flex flex-row justify-between items-center'>
                     <CyDTextInput
@@ -336,7 +336,7 @@ const UpgradeToPhysicalCardScreen = () => {
                 </CyDView>
                 <CyDView
                   className={
-                    'bg-white h-[50px] border border-inputBorderColor py-[5px] px-[10px] mx-[20px] rounded-[8px] flex flex-row justify-between items-center'
+                    'bg-n0 h-[50px] border border-inputBorderColor py-[5px] px-[10px] mx-[20px] rounded-[8px] flex flex-row justify-between items-center'
                   }>
                   <CyDView className='flex flex-row justify-between items-center'>
                     <CyDTextInput
@@ -355,7 +355,7 @@ const UpgradeToPhysicalCardScreen = () => {
                 </CyDText>
                 <CyDTouchView
                   className={
-                    'bg-white h-[50px] border border-inputBorderColor py-[5px] px-[10px] mx-[20px] rounded-[8px] flex flex-row justify-between items-center'
+                    'bg-n0 h-[50px] border border-inputBorderColor py-[5px] px-[10px] mx-[20px] rounded-[8px] flex flex-row justify-between items-center'
                   }
                   onPress={() => setSelectStateModalVisible(true)}>
                   <CyDView
@@ -388,7 +388,7 @@ const UpgradeToPhysicalCardScreen = () => {
                 </CyDView>
                 <CyDView
                   className={
-                    'bg-white h-[50px] border border-inputBorderColor py-[5px] px-[10px] mx-[20px] rounded-[8px] flex flex-row justify-between items-center'
+                    'bg-n0 h-[50px] border border-inputBorderColor py-[5px] px-[10px] mx-[20px] rounded-[8px] flex flex-row justify-between items-center'
                   }>
                   <CyDView className='flex flex-row justify-between items-center'>
                     <CyDTextInput

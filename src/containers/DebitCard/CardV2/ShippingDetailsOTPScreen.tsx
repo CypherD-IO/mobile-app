@@ -216,11 +216,11 @@ const ShippingDetailsOTPScreen = () => {
   };
 
   return (
-    <CyDSafeAreaView className='flex-1 bg-white'>
+    <CyDSafeAreaView className='flex-1 bg-n0'>
       <CyDImageBackground
         source={AppImages.CARD_KYC_BACKGROUND}
         imageStyle={styles.imageBackground}
-        className={'h-full bg-white px-[20px] pt-[10px]'}>
+        className={'h-full bg-n0 px-[20px] pt-[10px]'}>
         <CyDText className={'text-[25px] font-extrabold'}>
           {t<string>('ENTER_AUTHENTICATION_CODE')}
         </CyDText>

@@ -193,7 +193,7 @@ export default function LinkAnotherWallet({ navigation }) {
   };
 
   return (
-    <CyDView className={'bg-white w-full h-full'}>
+    <CyDView className={'bg-n0 w-full h-full'}>
       <Formik
         enableReinitialize={true}
         initialValues={formValues}
@@ -261,7 +261,7 @@ export default function LinkAnotherWallet({ navigation }) {
                   );
                 })}
               </CyDView>
-              <CyDView className={'bg-white pt-[10px] self-center w-[87%]'}>
+              <CyDView className={'bg-n0 pt-[10px] self-center w-[87%]'}>
                 <CyDView>
                   {isOTPTriggered && (
                     <CyDView className={'mt-[20px]'}>

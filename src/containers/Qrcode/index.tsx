@@ -286,9 +286,9 @@ export default function QRCodeGenerator() {
 
   // NOTE: LIFE CYCLE METHOD 🍎🍎🍎🍎
   return (
-    <CyDView className='bg-white h-full w-full'>
+    <CyDView className='bg-n0 h-full w-full'>
       <CyDScrollView className='flex flex-start h-full w-full'>
-        <CyDView className={'bg-white'} ref={viewRef}>
+        <CyDView className={'bg-n0'} ref={viewRef}>
           <CyDView
             className={
               isCapturingDetails
@@ -368,7 +368,7 @@ export default function QRCodeGenerator() {
             )}
             <CyDView
               className={
-                'my-[10px] mx-[20px] px-[20px] py-[5px] border border-n40 bg-privacyMessageBackgroundColor rounded-[8px]'
+                'my-[10px] mx-[20px] px-[20px] py-[5px] border border-n40 bg-blue20 rounded-[8px]'
               }>
               <CyDText className={'text-[14px] text-center'}>
                 {t('QRCODE_SUBTITLE')}

@@ -241,7 +241,7 @@ export function DEFIOverviewScreen() {
         <CyDView className={'rounded-t-[20px] relative'}>
           <CyDTouchView
             onPress={() => setImageZoomIn(false)}
-            className={'z-[50] bg-white'}>
+            className={'z-[50] bg-n0'}>
             <CyDImage
               source={AppImages.CLOSE}
               className={

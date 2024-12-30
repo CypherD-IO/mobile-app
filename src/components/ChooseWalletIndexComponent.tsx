@@ -48,9 +48,10 @@ const RenderWalletAddresses = (
   return (
     <CyDTouchView
       className={
-        'flex flex-row justify-evenly bg-white items-center self-center border-[1px] border-n40 w-[353px] h-[60px] rounded-[10px] px-[20px] mb-[10px]'
+        'flex flex-row justify-evenly bg-n0 items-center self-center border-[1px] border-n40 w-[353px] h-[60px] rounded-[10px] px-[20px] mb-[10px]'
       }
       onPress={() => {
+        n40;
         setSelectedIndex(item.index);
       }}>
       <CyDText className='ml-[10px] mr-[20px]'>{item.index}</CyDText>
@@ -124,7 +125,7 @@ export default function ChooseWalletIndexComponent({
               {t('SHOW_MORE_WALLET_ADDRESS_TEXT')}
             </CyDText>
             <CyDTouchView
-              className='rounded-[6px] w-[100px] bg-white py-[6px] px-[12px] border-[1px] border-[#D0D5DD] mt-[8px] items-center'
+              className='rounded-[6px] w-[100px] bg-n0 py-[6px] px-[12px] border-[1px] border-[#D0D5DD] mt-[8px] items-center'
               onPress={() => {
                 setShowMoreLoading(true);
                 setTimeout(() => {
@@ -147,7 +148,7 @@ export default function ChooseWalletIndexComponent({
       </CyDView>
       <CyDView
         className={clsx(
-          'absolute w-full bottom-[0px] bg-white pt-[10px] pb-[32px] px-[16px]',
+          'absolute w-full bottom-[0px] bg-n0 pt-[10px] pb-[32px] px-[16px]',
           {
             'bottom-[-32px]': isIOS(),
           },

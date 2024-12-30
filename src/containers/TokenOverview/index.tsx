@@ -3,7 +3,10 @@ import { StyleSheet, BackHandler } from 'react-native';
 import { TokenMeta } from '../../models/tokenMetaData.model';
 import {
   CyDAnimatedView,
+  CyDFastImage,
   CyDScrollView,
+  CyDText,
+  CyDTouchView,
   CyDView,
 } from '../../styles/tailwindStyles';
 import SwitchView from '../../components/v2/switchView';
@@ -27,9 +30,8 @@ import TokenOverviewToolBar from './toolbar';
 import TokenStaking from './staking';
 import analytics from '@react-native-firebase/analytics';
 import clsx from 'clsx';
-import { isAndroid, isIOS } from '../../misc/checkers';
+import { isAndroid } from '../../misc/checkers';
 import { Layout } from 'react-native-reanimated';
-import { Colors } from '../../constants/theme';
 import usePortfolio from '../../hooks/usePortfolio';
 import { Holding } from '../../core/portfolio';
 import { get, groupBy } from 'lodash';
@@ -157,7 +159,7 @@ function TokenOverviewV2() {
 const styles = StyleSheet.create({
   elevatedBackground: {
     elevation: 3,
-    backgroundColor: isIOS() ? Colors.white : Colors.transparent,
+    // backgroundColor: isIOS() ? Colors.white : Colors.transparent,
   },
 });
 

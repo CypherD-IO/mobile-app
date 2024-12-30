@@ -198,7 +198,7 @@ export default function OTPVerification(): JSX.Element {
           behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
           style={styles.keyboardAvoidingView}>
           <CyDView
-            className={'bg-white p-[25px] pb-[30px] rounded-t-[20px] relative'}>
+            className={'bg-n0 p-[25px] pb-[30px] rounded-t-[20px] relative'}>
             <CyDTouchView
               onPress={() => {
                 setIsEditEmailModalVisible(false);
@@ -311,7 +311,7 @@ export default function OTPVerification(): JSX.Element {
         </CyDScrollView>
       </CyDView>
 
-      <CyDView className='px-[16px] pb-[48px] bg-white rounded-t-[16px]'>
+      <CyDView className='px-[16px] pb-[48px] bg-n0 rounded-t-[16px]'>
         {/* <CyDText className='mt-[14px] text-[12px] font-bold font-manrope'>
           {'Verify Email'}
         </CyDText> */}

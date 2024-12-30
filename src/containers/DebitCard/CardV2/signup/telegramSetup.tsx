@@ -266,7 +266,7 @@ export default function TelegramSetup() {
         </CyDView>
       </CyDView>
 
-      <CyDView className='px-[16px] pb-[40px] bg-white rounded-t-[16px]'>
+      <CyDView className='px-[16px] pb-[40px] bg-n0 rounded-t-[16px]'>
         <CyDView className='pt-[14px] flex flex-row w-full justify-between'>
           {showSetupLaterOption && (
             <Button

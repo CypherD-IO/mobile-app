@@ -203,7 +203,7 @@ export default function ActivateCard() {
   return (
     <CyDSafeAreaView style={{ height: keyboardHeight || '100%' }}>
       <CyDScrollView
-        className=' bg-white pb-[12px]'
+        className=' bg-n0 pb-[12px]'
         contentContainerStyle={{
           ...styles.contentContainerStyle,
           ...(!keyboardHeight && { flex: 1 }),

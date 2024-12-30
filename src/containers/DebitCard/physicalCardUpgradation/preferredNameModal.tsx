@@ -69,7 +69,7 @@ export default function PreferredNameModal({
             </CyDView>
             <CyDView
               className={
-                'bg-white h-[60px]  py-[4px] px-[10px] mt-[2px] rounded-[8px] flex flex-row justify-between items-center'
+                'bg-n0 h-[60px]  py-[4px] px-[10px] mt-[2px] rounded-[8px] flex flex-row justify-between items-center'
               }>
               <CyDView className='flex flex-row justify-between items-center'>
                 <CyDTextInput

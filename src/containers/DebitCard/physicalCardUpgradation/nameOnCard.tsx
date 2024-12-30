@@ -104,7 +104,7 @@ export default function NameOnCard() {
                 onPress={() => {
                   setSelectedName(name);
                 }}
-                className='flex flex-row items-center justify-between bg-white rounded-[12px] p-[16px] mb-[12px]'>
+                className='flex flex-row items-center justify-between bg-n0 rounded-[12px] p-[16px] mb-[12px]'>
                 <CyDText className='text-[16px] font-semibold'>{name}</CyDText>
                 <CyDView className='w-[20px] h-[20px] border-[2px] border-inputBorderColor rounded-full flex items-center justify-center'>
                   {selectedName === name && (
@@ -119,7 +119,7 @@ export default function NameOnCard() {
               {t('WANT_DIFFERENT_NAME_ON_CARD')}
             </CyDText>
             <CyDTouchView
-              className='flex flex-row justify-between bg-white rounded-[12px] p-[16px] mt-[4px]'
+              className='flex flex-row justify-between bg-n0 rounded-[12px] p-[16px] mt-[4px]'
               onPress={() => {
                 setIsPreferredNameModalVisible(true);
               }}>
@@ -134,7 +134,7 @@ export default function NameOnCard() {
         </CyDView>
         <CyDView
           className={clsx(
-            'absolute w-full bottom-[0px] bg-white py-[32px] px-[16px]',
+            'absolute w-full bottom-[0px] bg-n0 py-[32px] px-[16px]',
             {
               'bottom-[-32px]': isIOS(),
             },

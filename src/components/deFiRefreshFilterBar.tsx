@@ -69,7 +69,7 @@ export const DeFiFilterRefreshBar = (props: DeFiFilterRefreshBarInterface) => {
   }, [lastRefreshed, isRefreshing]);
 
   return (
-    <CyDView className='flex flex-row justify-between mx-[12px] py-[10px] border-t-[0.5px] border-n30'>
+    <CyDView className='flex flex-row justify-between mx-[12px] py-[10px] border-t-[0.5px] border-n40'>
       <CyDView className='flex flex-row items-center'>
         <CyDFastImage
           source={AppImages.CLOCK}

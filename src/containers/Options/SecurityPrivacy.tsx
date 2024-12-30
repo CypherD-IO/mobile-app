@@ -123,7 +123,7 @@ export default function SecurityPrivacy(props) {
   };
 
   return (
-    <CyDView className={'bg-white h-full'}>
+    <CyDView className={'bg-n0 h-full'}>
       <CyDImageBackground
         className={'h-[50%] pt-[30px]'}
         source={AppImages.BG_SETTINGS}

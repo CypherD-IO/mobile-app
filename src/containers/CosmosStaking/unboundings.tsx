@@ -113,7 +113,7 @@ export default function CosmosUnboundings({ route, navigation }) {
   const renderItem = ({ item, index }) => <Item item={item} />;
 
   return (
-    <CyDView className={'bg-white h-full w-full'}>
+    <CyDView className={'bg-n0 h-full w-full'}>
       <CyDFlatList
         data={unboundings}
         renderItem={renderItem}

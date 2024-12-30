@@ -325,7 +325,7 @@ export default function IBC({
   };
 
   return (
-    <CyDScrollView className={'w-full h-full bg-white'}>
+    <CyDScrollView className={'w-full h-full bg-n0'}>
       <CyDKeyboardAwareScrollView>
         <ChooseChainModal
           setModalVisible={setShowChain}
@@ -367,7 +367,7 @@ export default function IBC({
                 </CyDText>
                 <CyDView
                   className={
-                    'bg-white rounded-[20px] flex flex-row items-center p-[4px]'
+                    'bg-n0 rounded-[20px] flex flex-row items-center p-[4px]'
                   }>
                   <CyDImage
                     source={tokenData.chainDetails.logo_url}
@@ -397,7 +397,7 @@ export default function IBC({
                 </CyDText>
                 <CyDView
                   className={
-                    'bg-white rounded-[20px] flex flex-row items-center p-[4px]'
+                    'bg-n0 rounded-[20px] flex flex-row items-center p-[4px]'
                   }>
                   <CyDImage
                     source={chain.logo_url}
@@ -494,7 +494,7 @@ export default function IBC({
               <CyDView className={'h-[60px] flex flex-row w-full'}>
                 <CyDView
                   className={
-                    'w-3/12 border-r-[1px] border-[#EBEBEB] bg-white px-[18px] rounded-l-[16px] flex items-center justify-center'
+                    'w-3/12 border-r-[1px] border-[#EBEBEB] bg-n0 px-[18px] rounded-l-[16px] flex items-center justify-center'
                   }>
                   <CyDText
                     className={'text-[#434343] text-[16px] font-extrabold'}>
@@ -533,7 +533,7 @@ export default function IBC({
               <CyDView className={'h-[60px] flex flex-row w-full'}>
                 <CyDView
                   className={
-                    'w-3/12 border-r-[1px] border-[#EBEBEB] bg-white px-[18px] rounded-l-[16px] flex items-center justify-center'
+                    'w-3/12 border-r-[1px] border-[#EBEBEB] bg-n0 px-[18px] rounded-l-[16px] flex items-center justify-center'
                   }>
                   <CyDText
                     className={'text-[#434343] text-[16px] font-extrabold'}>
@@ -573,7 +573,7 @@ export default function IBC({
               <CyDView className={'h-[60px] flex flex-row w-full'}>
                 <CyDView
                   className={
-                    'w-3/12 border-r-[1px] border-[#EBEBEB] bg-white px-[18px] rounded-l-[16px] flex items-center justify-center'
+                    'w-3/12 border-r-[1px] border-[#EBEBEB] bg-n0 px-[18px] rounded-l-[16px] flex items-center justify-center'
                   }>
                   <CyDText
                     className={'text-[#434343] text-[16px] font-extrabold'}>
@@ -693,7 +693,7 @@ export default function IBC({
               </CyDText>
               <CyDView
                 className={
-                  'bg-white rounded-[20px] flex flex-row items-center p-[4px]'
+                  'bg-n0 rounded-[20px] flex flex-row items-center p-[4px]'
                 }>
                 <CyDImage
                   source={tokenData.chainDetails.logo_url}
@@ -727,7 +727,7 @@ export default function IBC({
               </CyDText>
               <CyDView
                 className={
-                  'bg-white rounded-[20px] flex flex-row items-center p-[4px]'
+                  'bg-n0 rounded-[20px] flex flex-row items-center p-[4px]'
                 }>
                 <CyDImage
                   source={chain.logo_url}
@@ -794,7 +794,7 @@ export default function IBC({
                     setAmount(textAmount);
                   }}
                   className={clsx(
-                    'absolute bg-white rounded-full h-[40px] w-[40px] flex justify-center items-center ' +
+                    'absolute bg-n0 rounded-full h-[40px] w-[40px] flex justify-center items-center ' +
                       'p-[4px] left-[-14%]',
                   )}>
                   <CyDText className={' text-black '}>{'MAX'}</CyDText>

@@ -141,7 +141,7 @@ export default function LockdownMode() {
               </CyDView>
             </CyDView>
 
-            <CyDView className='mt-[28px] rounded-[16px] bg-white items-center mx-[16px] py-[24px] px-[24px]'>
+            <CyDView className='mt-[28px] rounded-[16px] bg-n0 items-center mx-[16px] py-[24px] px-[24px]'>
               <CyDImage
                 source={AppImages.LOCKDOWN_MODE_IMAGE}
                 className='h-[112px] w-[112px] my-[24px]'

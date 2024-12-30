@@ -138,7 +138,7 @@ export default function OnBoarding({ navigation }) {
                 navigation.navigate(screenTitle.ENTER_KEY);
               }}
               className={
-                'bg-white border-[0.3px] border-[#525252] py-[14px] mt-[20px] items-center rounded-[8px] flex-row justify-around w-[98%]'
+                'bg-n0 border-[0.3px] border-[#525252] py-[14px] mt-[20px] items-center rounded-[8px] flex-row justify-around w-[98%]'
               }>
               <CyDText className={'text-[16px] font-extrabold w-[80%]'}>
                 {t('IMPORT_WALLET').toString()}
@@ -155,7 +155,7 @@ export default function OnBoarding({ navigation }) {
                 navigation.navigate(screenTitle.ENTER_PRIVATE_KEY);
               }}
               className={
-                'bg-white border-[0.3px] border-[#525252] py-[14px] mt-[20px] items-center rounded-[8px] flex-row justify-around w-[98%]'
+                'bg-n0 border-[0.3px] border-[#525252] py-[14px] mt-[20px] items-center rounded-[8px] flex-row justify-around w-[98%]'
               }>
               <CyDText className={'text-[16px] font-extrabold w-[80%]'}>
                 {t('IMPORT_WALLET_USING_PRIVATE_KEY').toString()}
@@ -173,7 +173,7 @@ export default function OnBoarding({ navigation }) {
                 void analytics().logEvent('connect_using_wallet_connect', {});
               }}
               className={
-                'bg-white border-[0.3px] border-[#525252] mt-[20px] px-[12px] items-center rounded-[8px] flex flex-row justify-between w-[98%]'
+                'bg-n0 border-[0.3px] border-[#525252] mt-[20px] px-[12px] items-center rounded-[8px] flex flex-row justify-between w-[98%]'
               }>
               <CyDView>
                 <CyDText className={'text-[16px] font-extrabold'}>
@@ -192,7 +192,7 @@ export default function OnBoarding({ navigation }) {
               navigation.navigate(screenTitle.TRACK_WALLET_SCREEN);
             }}
             className={
-              'bg-white border-[0.3px] border-[#525252] py-[14px] mt-[20px] items-center rounded-[8px] flex-row justify-around w-[98%]'
+              'bg-n0 border-[0.3px] border-[#525252] py-[14px] mt-[20px] items-center rounded-[8px] flex-row justify-around w-[98%]'
             }>
             <CyDText className={'text-[16px] font-extrabold w-[80%]'}>
               {t('TRACK_ANY_WALLET')}
@@ -304,7 +304,7 @@ export default function OnBoarding({ navigation }) {
         animationOut={'slideOutDown'}
         setModalVisible={setIsModalVisible}>
         <CyDView
-          className={'bg-white p-[25px] pb-[30px] rounded-t-[20px] relative'}>
+          className={'bg-n0 p-[25px] pb-[30px] rounded-t-[20px] relative'}>
           <CyDText className={'my-[14px] font-black text-center text-[22px]'}>
             {t<string>('CREATE_SEED_PHRASE_TYPE_TITLE')}
           </CyDText>

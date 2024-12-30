@@ -484,7 +484,7 @@ const TxnScene = ({
       {isLoading ? (
         <Loading />
       ) : (
-        <CyDView className='bg-white flex-1'>
+        <CyDView className='bg-n0 flex-1'>
           <TransactionInfoModal
             setModalVisible={setShowTransactionInfo}
             isModalVisible={showTransactionInfo}

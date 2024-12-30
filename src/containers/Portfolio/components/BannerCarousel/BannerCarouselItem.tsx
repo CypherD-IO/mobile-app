@@ -294,7 +294,7 @@ const BannerCarouselItem = ({
         );
       } else {
         return (
-          <CyDView className='h-full w-full flex flex-col justify-center items-center bg-privacyMessageBackgroundColor px-[2px]'>
+          <CyDView className='h-full w-full flex flex-col justify-center items-center bg-blue20 px-[2px]'>
             <CyDText className='text-[14px] font-bold'>{title}</CyDText>
             <CyDText className='text-[14px] text-subTextColor font-medium text-center'>
               {description}
@@ -358,7 +358,7 @@ const BannerCarouselItem = ({
           {isActivity ? (
             <CyDView
               className={clsx(
-                'h-[25%] flex flex-row w-full bg-privacyMessageBackgroundColor justify-start items-center px-[30px]',
+                'h-[25%] flex flex-row w-full bg-blue20 justify-start items-center px-[30px]',
                 {
                   'bg-toastColor': item.status === ActivityStatus.SUCCESS,
                   'bg-redColor': item.status === ActivityStatus.FAILED,

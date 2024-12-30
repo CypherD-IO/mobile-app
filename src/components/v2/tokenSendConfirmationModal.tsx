@@ -47,8 +47,7 @@ export default function TokenSendConfirmationModal(
       style={styles.modalLayout}
       animationIn={'slideInUp'}
       animationOut={'slideOutDown'}>
-      <CyDView
-        className={'bg-white p-[25px] pb-[30px] rounded-t-[20px] relative'}>
+      <CyDView className={'bg-n0 p-[25px] pb-[30px] rounded-t-[20px] relative'}>
         <CyDTouchView onPress={() => onCancel()} className={'z-[50]'}>
           <CyDImage
             source={AppImages.CLOSE}

@@ -557,7 +557,7 @@ export default function WalletConnectCamera(props: {
   };
 
   return (
-    <CyDSafeAreaView className={'bg-white h-full w-full'}>
+    <CyDSafeAreaView className={'bg-n0 h-full w-full'}>
       <FlatList
         className='mb-[20px]'
         data={walletConnectState.dAppInfo}

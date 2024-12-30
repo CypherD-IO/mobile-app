@@ -533,7 +533,7 @@ export default function Browser({ route, navigation }: any) {
   if (fetchingInjection) return <Loading />;
 
   return (
-    <CyDSafeAreaView className='bg-white flex-1'>
+    <CyDSafeAreaView className='bg-n0 flex-1'>
       <ChooseChainModal
         isModalVisible={chooseChain}
         onPress={() => {

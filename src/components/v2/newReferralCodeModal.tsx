@@ -87,7 +87,7 @@ export default function NewReferralCodeModal({
           </CyDText>
           <CyDView className='flex flex-row items-center justify-between'>
             <CyDTextInput
-              className='bg-white rounded-[8px] px-[12px] py-[15px] mt-[4px] flex-1 mr-[12px]'
+              className='bg-n0 rounded-[8px] px-[12px] py-[15px] mt-[4px] flex-1 mr-[12px]'
               placeholder={t('NEWCODE10')}
               value={code}
               onChangeText={handleCodeChange}

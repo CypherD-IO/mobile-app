@@ -77,7 +77,7 @@ export function NFTHoldingsScreen() {
               />
               <CyDFastImage
                 className={
-                  'absolute w-[30px] h-[30px] right-[16px] bottom-[40px] bg-white rounded-[50px]'
+                  'absolute w-[30px] h-[30px] right-[16px] bottom-[40px] bg-n0 rounded-[50px]'
                 }
                 source={renderChainImage(holding.blockchain)}
               />

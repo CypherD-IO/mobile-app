@@ -184,7 +184,7 @@ export default function ChooseContactModal(props: ContactModalProps) {
       isModalVisible={isChooseContactModalVisible}
       style={styles.modalContainer}>
       <CyDView
-        className={'bg-white pt-[10px] mt-[50px] w-[100%] rounded-t-[20px]'}
+        className={'bg-n0 pt-[10px] mt-[50px] w-[100%] rounded-t-[20px]'}
         style={{ height: height - 50 }}>
         <CyDTouchView
           className={'flex flex-row justify-end z-10'}

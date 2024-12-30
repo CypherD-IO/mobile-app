@@ -168,7 +168,7 @@ export default function AutoLoadOptionsModal({
       animationOutTiming={300}
       style={styles.modalLayout}>
       <CyDView className='bg-cardBgTo mb-[6px] rounded-[16px] max-h-[80%] pb-[32px]'>
-        <CyDView className='flex flex-row justify-between items-center rounded-t-[16px] bg-white px-[16px] pb-[16px] pt-[32px]'>
+        <CyDView className='flex flex-row justify-between items-center rounded-t-[16px] bg-n0 px-[16px] pb-[16px] pt-[32px]'>
           <CyDText className='text-[16px] font-semibold font-manrope'>
             Auto Load
           </CyDText>
@@ -186,7 +186,7 @@ export default function AutoLoadOptionsModal({
             <CyDTouchView
               key={index}
               onPress={action}
-              className='flex flex-row justify-start items-center mt-[12px] py-[15px] bg-white rounded-[6px] mx-[12px]'>
+              className='flex flex-row justify-start items-center mt-[12px] py-[15px] bg-n0 rounded-[6px] mx-[12px]'>
               {(index === 1 && isToggling) || (index === 2 && isCancelling) ? (
                 <CyDView className='relative w-[48px]'>
                   <LottieView

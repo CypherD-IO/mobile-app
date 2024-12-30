@@ -268,9 +268,9 @@ const PortfolioTokenItem = ({
             tokenData: item,
           });
         }}>
-        <CyDView className='flex flex-row h-full mb-[10px] items-center rounded-r-[20px] self-center pl-[10px] pr-[10px]'>
+        <CyDView className='flex flex-row h-full items-center rounded-r-[20px] self-center pl-[10px] pr-[10px] bg-transparent'>
           <CyDFastImage
-            className={'h-[36px] w-[36px] rounded-[50px]'}
+            className={'h-[32px] w-[32px] rounded-full'}
             source={
               item?.logoUrl
                 ? {
@@ -280,10 +280,10 @@ const PortfolioTokenItem = ({
             }
             resizeMode='contain'
           />
-          <CyDView className='absolute top-[54%] right-[5px]'>
+          <CyDView className='absolute top-[54%] right-[5px] bg-transparent'>
             <CyDFastImage
               className={
-                'h-[20px] w-[20px] rounded-[50px] border-[1px] border-n40 bg-n0'
+                'h-[20px] w-[20px] rounded-full border-[1px] border-n40 bg-n0'
               }
               source={
                 item?.chainDetails?.logo_url ??
@@ -309,7 +309,7 @@ const PortfolioTokenItem = ({
           <CyDView className='flex flex-row w-full justify-between rounded-r-[20px] py-[17px] pr-[12px] bg-n0'>
             <CyDView className='ml-[10px] max-w-[65%]'>
               <CyDView className={'flex flex-row items-center align-center'}>
-                <CyDText className={'font-extrabold text-[16px]'}>
+                <CyDText className={'font-bold text-[16px]'}>
                   {item.name}
                 </CyDText>
                 {item.isStakeable && (

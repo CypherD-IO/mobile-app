@@ -48,7 +48,7 @@ export function LinkedWallets({
 
   return (
     <>
-      <CyDSafeAreaView className={'h-full bg-white pt-[10px]'}>
+      <CyDSafeAreaView className={'h-full bg-n0 pt-[10px]'}>
         <CyDView className={'flex flex-col items-end w-full h-full'}>
           <CyDText
             className='text-blue-700 font-bold mt-[10px] mb-[5px] mr-[25px]'

@@ -154,7 +154,7 @@ function CreateSeedPhrase({ route, navigation }) {
 
   const RenderCreateSeedphrase = () => {
     return (
-      <CyDSafeAreaView className={'bg-white h-full flex-col justify-between'}>
+      <CyDSafeAreaView className={'bg-n0 h-full flex-col justify-between'}>
         <CyDScrollView>
           <CyDView>
             <CyDView
@@ -361,7 +361,7 @@ function CreateSeedPhrase({ route, navigation }) {
 
   const RenderConfirmSeedphrase = () => {
     return (
-      <CyDSafeAreaView className={'bg-white h-full flex-col justify-between'}>
+      <CyDSafeAreaView className={'bg-n0 h-full flex-col justify-between'}>
         <CyDScrollView>
           <CyDView
             className={'flex items-center justify-center py-[20px] px-[30px]'}>
@@ -392,7 +392,7 @@ function CreateSeedPhrase({ route, navigation }) {
             {maximumRetryCount < 3 && (
               <CyDView
                 className={
-                  'mb-[-12px] z-10 shadow-lg absolute bottom-[-8px] left-[31%] py-[7px] rounded-full bg-white text-center'
+                  'mb-[-12px] z-10 shadow-lg absolute bottom-[-8px] left-[31%] py-[7px] rounded-full bg-n0 text-center'
                 }>
                 <CyDText
                   className={'font-semibold text-center text-[15px] px-[20px]'}>
@@ -442,7 +442,7 @@ function CreateSeedPhrase({ route, navigation }) {
         animationIn={'slideInUp'}
         animationOut={'slideOutDown'}>
         <CyDView
-          className={'bg-white p-[25px] pb-[30px] rounded-t-[20px] relative'}>
+          className={'bg-n0 p-[25px] pb-[30px] rounded-t-[20px] relative'}>
           <CyDTouchView
             onPress={() => {
               setTipsVisible(false);

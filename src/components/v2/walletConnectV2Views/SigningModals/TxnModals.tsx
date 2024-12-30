@@ -358,7 +358,7 @@ const RenderSendTransactionSignModal = ({
                 <CyDView className='absolute top-[60%] right-[3px]'>
                   <CyDFastImage
                     className={
-                      'h-[18px] w-[18px] rounded-[50px] border-[1px] border-white bg-white'
+                      'h-[18px] w-[18px] rounded-[50px] border-[1px] border-white bg-n0'
                     }
                     source={chainLogo}
                     resizeMode='contain'
@@ -472,7 +472,7 @@ const RenderSwapTransactionSignModal = ({
                   </CyDText>
                   <CyDView
                     className={
-                      'bg-white rounded-[8px] flex flex-row items-center p-[4px]'
+                      'bg-n0 rounded-[8px] flex flex-row items-center p-[4px]'
                     }>
                     <CyDFastImage
                       source={chain.logo}
@@ -511,7 +511,7 @@ const RenderSwapTransactionSignModal = ({
                   </CyDText>
                   <CyDView
                     className={
-                      'bg-white rounded-[8px] flex flex-row items-center p-[4px]'
+                      'bg-n0 rounded-[8px] flex flex-row items-center p-[4px]'
                     }>
                     <CyDFastImage
                       source={chain.logo}
@@ -616,7 +616,7 @@ const RenderApproveTokenModal = ({
               <CyDView className='absolute top-[60%] right-[3px]'>
                 <CyDFastImage
                   className={
-                    'h-[26px] w-[26px] rounded-[50px] border-[1px] border-white bg-white'
+                    'h-[26px] w-[26px] rounded-[50px] border-[1px] border-white bg-n0'
                   }
                   source={chainLogo}
                   resizeMode='contain'

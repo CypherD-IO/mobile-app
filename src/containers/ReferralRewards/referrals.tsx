@@ -169,13 +169,13 @@ export default function ReferralRewards() {
       return <DashboardTabContent />;
     }
     return (
-      <CyDView className={'w-full h-full bg-white relative'}>
+      <CyDView className={'w-full h-full bg-n0 relative'}>
         <Loading />
       </CyDView>
     );
   };
   return (
-    <CyDView className={'w-full h-full bg-white relative'}>
+    <CyDView className={'w-full h-full bg-n0 relative'}>
       <CyDView className={'bg-infoTextBackground h-[260px] mt-[-10px]'}>
         <CyDTouchView
           onPress={() => {

@@ -521,7 +521,7 @@ export default function CardControlsMenu() {
                 Spend Category
               </CyDText>
               <CyDTouchView
-                className={`flex flex-row mt-[8px] bg-white rounded-[10px] px-[12px] py-[16px] justify-between items-center ${
+                className={`flex flex-row mt-[8px] bg-n0 rounded-[10px] px-[12px] py-[16px] justify-between items-center ${
                   disableOptions ? 'opacity-50' : ''
                 }`}
                 onPress={() => {
@@ -564,7 +564,7 @@ export default function CardControlsMenu() {
                 </CyDView>
               </CyDTouchView>
               <CyDTouchView
-                className={`flex flex-row mt-[12px] bg-white rounded-[10px] px-[12px] py-[16px] items-center ${
+                className={`flex flex-row mt-[12px] bg-n0 rounded-[10px] px-[12px] py-[16px] items-center ${
                   disableOptions ? 'opacity-50' : ''
                 }`}
                 onPress={() => {
@@ -617,7 +617,7 @@ export default function CardControlsMenu() {
                   });
                 }}
                 className={
-                  'flex flex-row items-center justify-between m-[2px] py-[15px] px-[12px] bg-white rounded-[6px] mt-[8px]'
+                  'flex flex-row items-center justify-between m-[2px] py-[15px] px-[12px] bg-n0 rounded-[6px] mt-[8px]'
                 }>
                 <CyDView className='flex flex-row flex-1 items-center'>
                   <CyDImage
@@ -643,7 +643,7 @@ export default function CardControlsMenu() {
                   setShow3DsModal(true);
                 }}
                 className={
-                  'flex flex-row items-center justify-between m-[2px] py-[15px] px-[12px] bg-white rounded-[6px] mt-[8px]'
+                  'flex flex-row items-center justify-between m-[2px] py-[15px] px-[12px] bg-n0 rounded-[6px] mt-[8px]'
                 }>
                 <CyDView className='flex flex-row flex-1 items-center'>
                   <CyDImage

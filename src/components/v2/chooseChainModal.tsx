@@ -105,7 +105,7 @@ export default function ChooseChainModal({
       style={styles.modalLayout}>
       <CyDView
         className={
-          'bg-white border-1 rounded-t-[36px] border-[#E6E6E6] p-[12px] pb-[22px] h-[60%] relative'
+          'bg-n0 border-1 rounded-t-[36px] border-[#E6E6E6] p-[12px] pb-[22px] h-[60%] relative'
         }>
         <CyDTouchView
           onPress={() => {

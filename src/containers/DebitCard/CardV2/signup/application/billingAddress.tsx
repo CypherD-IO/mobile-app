@@ -73,7 +73,7 @@ export default function BillingAddress({
         style={styles.modalLayout}
         isModalVisible={showCountries}
         setModalVisible={setShowCountries}>
-        <CyDView className={'bg-white h-[70%] rounded-t-[20px] p-[16px]'}>
+        <CyDView className={'bg-n0 h-[70%] rounded-t-[20px] p-[16px]'}>
           <CyDView className={'flex flex-row justify-between items-center'}>
             <CyDText className='text-[18px] font-bold'>
               {t('SELECT_COUNTRY')}
@@ -141,7 +141,7 @@ export default function BillingAddress({
         style={styles.modalLayout}
         isModalVisible={showDialCodeCountry}
         setModalVisible={setShowDialCodeCountry}>
-        <CyDView className={'bg-white h-[70%] rounded-t-[20px] p-[16px]'}>
+        <CyDView className={'bg-n0 h-[70%] rounded-t-[20px] p-[16px]'}>
           <CyDView className={'flex flex-row justify-between items-center'}>
             <CyDText className='text-[18px] font-bold'>
               {t('SELECT_COUNTRY')}

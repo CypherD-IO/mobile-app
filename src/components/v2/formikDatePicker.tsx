@@ -22,7 +22,7 @@ const FormikDateInput: React.FC<FormikDateInputProps> = ({
   placeholder,
   containerClassName = '',
   labelClassName = 'text-[12px] font-bold text-black',
-  inputClassName = 'p-[16px] rounded-[8px] bg-white font-semibold border-[1px] border-white',
+  inputClassName = 'p-[16px] rounded-[8px] bg-n0 font-semibold border-[1px] border-white',
   errorClassName = 'text-red-500 text-[12px] mt-[2px] text-end w-full',
 }) => {
   const [field, meta, helpers] = useField(name);

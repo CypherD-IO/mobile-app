@@ -103,7 +103,7 @@ export default function Rewards() {
               <CyDText className='text-[28px] font-bold'>
                 Cypher Rewards
               </CyDText>
-              <CyDView className='flex flex-col mt-[12px] rounded-[16px] bg-white p-[16px]'>
+              <CyDView className='flex flex-col mt-[12px] rounded-[16px] bg-n0 p-[16px]'>
                 <CyDImage
                   source={AppImages.REWARDS_YELLOW_STAR}
                   className='w-[60px] h-[60px]'
@@ -192,7 +192,7 @@ export default function Rewards() {
               <CyDText className='text-[14px] font-bold'>
                 {'What can you do with your rewards'}
               </CyDText>
-              <CyDView className='bg-white flex flex-row relative rounded-[16px] p-[24px] mt-[28px]'>
+              <CyDView className='bg-n0 flex flex-row relative rounded-[16px] p-[24px] mt-[28px]'>
                 <CyDImage
                   source={AppImages.COMING_SOON}
                   className='absolute bottom-[20px] left-[20px] h-[88px] w-[52px]'

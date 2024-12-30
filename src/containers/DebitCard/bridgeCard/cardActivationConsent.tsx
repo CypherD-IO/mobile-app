@@ -53,7 +53,7 @@ export default function CardActivationConsent() {
 
   const RenderContent = useCallback(() => {
     return (
-      <CyDView className='flex flex-col bg-white px-[16px] pb-[16px] pt-[2px] gap-y-[14px] rounded-[12px]'>
+      <CyDView className='flex flex-col bg-n0 px-[16px] pb-[16px] pt-[2px] gap-y-[14px] rounded-[12px]'>
         {virtualCardReplacementInfo.map((item, index) => (
           <CyDView key={index} className='flex flex-col'>
             <CyDText className='text-[14px] font-bold'>{item.title}</CyDText>
@@ -68,7 +68,7 @@ export default function CardActivationConsent() {
 
   const RenderPremiumPrompt = useCallback(() => {
     return (
-      <CyDView className='flex flex-col bg-white px-[16px] pb-[22px] pt-[2px] gap-y-[14px] rounded-[12px]'>
+      <CyDView className='flex flex-col bg-n0 px-[16px] pb-[22px] pt-[2px] gap-y-[14px] rounded-[12px]'>
         <CyDView className='flex flex-row justify-center items-center '>
           <CyDImage
             source={AppImages.MULTIPLE_CARDS}
@@ -101,7 +101,7 @@ export default function CardActivationConsent() {
   const RenderConsent = useCallback(() => {
     return (
       <CyDTouchView
-        className='flex flex-row items-start bg-white rounded-[12px] p-[16px]'
+        className='flex flex-row items-start bg-n0 rounded-[12px] p-[16px]'
         onPress={() => {
           setHasConsent(!hasConsent);
         }}>
@@ -180,7 +180,7 @@ export default function CardActivationConsent() {
         </CyDView>
         <CyDView
           className={clsx(
-            'absolute w-full bottom-[0px] bg-white py-[32px] px-[16px]',
+            'absolute w-full bottom-[0px] bg-n0 py-[32px] px-[16px]',
             {
               'bottom-[-32px]': isIOS(),
             },

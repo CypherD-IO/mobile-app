@@ -112,7 +112,7 @@ const CardTxnFilterModal = ({
       style={styles.modalLayout}
       animationIn='slideInUp'
       animationOut='slideOutDown'>
-      <CyDSafeAreaView className='bg-white flex-1'>
+      <CyDSafeAreaView className='bg-n0 flex-1'>
         <CyDView className='flex flex-row justify-between items-center px-[20px] py-[10px] border-b border-n40'>
           <CyDTouchView
             onPress={() => {
@@ -168,7 +168,7 @@ const CardTxnFilterModal = ({
               </CyDTouchView>
             ))}
           </CyDView>
-          <CyDView className={'bg-white w-[70%]'}>
+          <CyDView className={'bg-n0 w-[70%]'}>
             {index === 0 && (
               <CheckBoxes
                 radioButtonsData={TYPES}

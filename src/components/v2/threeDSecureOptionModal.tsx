@@ -83,7 +83,7 @@ export default function ThreeDSecureOptionModal({
           </CyDTouchView>
         </CyDView>
         <CyDTouchView
-          className='bg-white px-[12px] py-[14px] mb-[8px] rounded-[10px] flex flex-row justify-between items-center'
+          className='bg-n0 px-[12px] py-[14px] mb-[8px] rounded-[10px] flex flex-row justify-between items-center'
           onPress={() => {
             setIsTelegramSelected(false);
           }}>
@@ -100,7 +100,7 @@ export default function ThreeDSecureOptionModal({
           </CyDView>
         </CyDTouchView>
         <CyDTouchView
-          className='bg-white px-[12px] py-[14px] mb-[16px] rounded-[10px] flex flex-row justify-between items-center'
+          className='bg-n0 px-[12px] py-[14px] mb-[16px] rounded-[10px] flex flex-row justify-between items-center'
           onPress={() => {
             setIsTelegramSelected(true);
           }}>

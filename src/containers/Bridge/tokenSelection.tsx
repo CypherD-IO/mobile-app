@@ -463,12 +463,12 @@ export default function TokenSelectionV2({
       />
 
       <CyDView className='mt-[24px]'>
-        <CyDView className='mx-[16px] bg-white rounded-[8px] p-[12px]'>
+        <CyDView className='mx-[16px] bg-n0 rounded-[8px] p-[12px]'>
           <CyDText className='text-center font-medium'>
             {t('BIRDGE_SWAP_AVAILABLE')}{' '}
           </CyDText>
         </CyDView>
-        <CyDView className='mx-[16px] mt-[16px] bg-white rounded-[8px] p-[12px]'>
+        <CyDView className='mx-[16px] mt-[16px] bg-n0 rounded-[8px] p-[12px]'>
           <CyDView className='flex flex-row justify-between items-center mb-[12px]'>
             <CyDText className='text-[14px] font-medium'>{t('FROM')}</CyDText>
             <CyDTouchView

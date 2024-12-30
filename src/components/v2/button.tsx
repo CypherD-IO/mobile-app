@@ -80,17 +80,16 @@ export default function Button({
         `rounded-[12px] py-[${paddingY ?? 15}px] flex flex-row items-center justify-center ${style}`,
         {
           'bg-buttonColor': ButtonType.PRIMARY === type,
-          'bg-white border-[1px]  border-greyButtonBackgroundColor':
+          'bg-n0 border-[1px]  border-greyButtonBackgroundColor':
             ButtonType.SECONDARY === type,
-          'bg-white border-[1px] border-buttonColor':
-            ButtonType.TERNARY === type,
-          'bg-white border-[1px] border-greyButtonBackgroundColor':
+          'bg-n0 border-[1px] border-buttonColor': ButtonType.TERNARY === type,
+          'bg-n0 border-[1px] border-greyButtonBackgroundColor':
             ButtonType.GREY === type,
           'bg-n20': ButtonType.GREY_FILL === type,
           'bg-red300': ButtonType.RED === type,
           'bg-black': ButtonType.DARK === type,
           'bg-n40': disabled,
-          'bg-white': ButtonType.WHITE_FILL === type,
+          'bg-n0': ButtonType.WHITE_FILL === type,
         },
       )}>
       {loading && (

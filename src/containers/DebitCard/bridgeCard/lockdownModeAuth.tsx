@@ -136,7 +136,7 @@ export default function LockdownModeAuth() {
 
   return (
     <CyDSafeAreaView>
-      <CyDView className={'h-full bg-white px-[20px] pt-[10px]'}>
+      <CyDView className={'h-full bg-n0 px-[20px] pt-[10px]'}>
         <OTPHeader />
         <CyDView>
           {!verifyingOTP && (

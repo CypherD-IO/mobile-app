@@ -62,7 +62,7 @@ const DeFiFilterModal = (props: DeFiFilterModalInterface) => {
       style={styles.modalLayout}
       animationIn='slideInUp'
       animationOut='slideOutDown'>
-      <CyDSafeAreaView className='bg-white flex-1'>
+      <CyDSafeAreaView className='bg-n0 flex-1'>
         <CyDView className='flex flex-row justify-between items-center px-[20px] py-[10px] border-b border-n40'>
           <CyDTouchView
             onPress={() => {
@@ -85,14 +85,13 @@ const DeFiFilterModal = (props: DeFiFilterModalInterface) => {
           </CyDTouchView>
         </CyDView>
         <CyDView className='h-full flex flex-row'>
-          <CyDView
-            className={'border-r border-activityFilterBorderLine w-[30%]'}>
+          <CyDView className={'border-r border-n40 w-[30%]'}>
             {FILTERS.map((filter, idx) => (
               <CyDTouchView
                 key={idx}
                 onPress={() => setIndex(idx)}
                 className={`${
-                  index === idx ? 'bg-appColor' : 'bg-whiteflex'
+                  index === idx ? 'bg-p100' : 'bg-whiteflex'
                 } justify-center py-[20px]`}>
                 <CyDText
                   className={'text-left pl-[12px] text-[16px] font-bold'}>
@@ -105,7 +104,7 @@ const DeFiFilterModal = (props: DeFiFilterModalInterface) => {
               </CyDTouchView>
             ))}
           </CyDView>
-          <CyDView className='bg-white w-[70%]'>
+          <CyDView className='bg-n0 w-[70%]'>
             {index === 0 && (
               <DeFiCheckBox
                 radioButtonsData={props.protocols}

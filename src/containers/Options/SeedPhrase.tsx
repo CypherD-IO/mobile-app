@@ -105,7 +105,7 @@ export default function SeedPhrase() {
   // NOTE: LIFE CYCLE METHOD 🍎🍎🍎🍎
   return (
     !isFetchingSeedPhrase && (
-      <CyDScrollView className={'bg-white h-full w-full relative '}>
+      <CyDScrollView className={'bg-n0 h-full w-full relative '}>
         <CyDView className={'flex justify-center items-center'}>
           <CyDView
             className={

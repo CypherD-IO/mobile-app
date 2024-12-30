@@ -378,7 +378,7 @@ export default function SelectPlanModal({
               <CyDView />
 
               <CyDView className='flex flex-row w-[100%] '>
-                <CyDView className='flex flex-col w-[58%] bg-white rounded-tl-[16px] rounded-bl-[16px]'>
+                <CyDView className='flex flex-col w-[58%] bg-n0 rounded-tl-[16px] rounded-bl-[16px]'>
                   <CyDView className=' bg-n20 py-[16px] px-[12px] rounded-tl-[16px] h-[46px]'>
                     <CyDText className='text-[12px] font-medium text-black'>
                       {t('PLAN_COMAPRISION')}
@@ -477,7 +477,7 @@ export default function SelectPlanModal({
                     </CyDText>
                   </CyDView>
                 </CyDView>
-                <CyDView className='flex flex-col w-[21%] bg-white'>
+                <CyDView className='flex flex-col w-[21%] bg-n0'>
                   <CyDView className='bg-n20 py-[16px] px-[12px] h-[46px]'>
                     <CyDText className='text-[12px] text-right font-bold text-black'>
                       {t('STANDARD')}
@@ -622,7 +622,7 @@ export default function SelectPlanModal({
                 {t('USAGE_DETAILS')}
               </CyDText>
               <CyDView className='flex flex-row w-full'>
-                <CyDView className='w-[58%] flex flex-col bg-white rounded-tl-[16px] rounded-bl-[16px]'>
+                <CyDView className='w-[58%] flex flex-col bg-n0 rounded-tl-[16px] rounded-bl-[16px]'>
                   <CyDView className='flex flex-row items-center mt-[16px] pl-[12px] h-[32px]'>
                     <CyDView className='p-[4px] bg-n30 rounded-full w-[32px] h-[32px] mr-[11px]'>
                       <CyDImage
@@ -670,7 +670,7 @@ export default function SelectPlanModal({
                   <CyDView className='w-full h-[1px] bg-n30 mt-[16px]' />
                 </CyDView>
 
-                <CyDView className='w-[21%] flex flex-col bg-white'>
+                <CyDView className='w-[21%] flex flex-col bg-n0'>
                   <CyDView className='mt-[16px] pl-[12px] h-[32px]' />
                   {/* daily limit */}
                   <CyDText className='text-[12px] font-medium text-black text-center mt-[10px] h-[18px]'>
@@ -701,7 +701,7 @@ export default function SelectPlanModal({
                   <CyDView className='w-full h-[1px] bg-n30 mt-[16px]' />
                 </CyDView>
 
-                <CyDView className='w-[21%] flex flex-col bg-white  rounded-tr-[16px] rounded-br-[16px]'>
+                <CyDView className='w-[21%] flex flex-col bg-n0  rounded-tr-[16px] rounded-br-[16px]'>
                   <CyDView className='mt-[16px] pl-[12px] h-[32px]' />
                   {/* daily limit */}
                   <CyDText className='text-[12px] font-medium text-black pl-[12px] text-center mt-[10px] h-[18px]'>

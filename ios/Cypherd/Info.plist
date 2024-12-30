@@ -32,20 +32,20 @@
 				<string>cypherwallet</string>
 			</array>
 		</dict>
-			<dict>
-				<key>CFBundleTypeRole</key>
-				<string>Editor</string>
-				<key>CFBundleURLName</key>
-				<string>com.cypherd.ioswalletv1.walletconnect</string>
-				<key>CFBundleURLSchemes</key>
-				<array>
-					<string>wc</string>
-				</array>
-			</dict>
+		<dict>
+			<key>CFBundleTypeRole</key>
+			<string>Editor</string>
+			<key>CFBundleURLName</key>
+			<string>com.cypherd.ioswalletv1.walletconnect</string>
+			<key>CFBundleURLSchemes</key>
+			<array>
+				<string>wc</string>
+			</array>
+		</dict>
 	</array>
 	<key>com.apple.developer.associated-domains</key>
 	<array>
-    <string>applinks:app.cypherhq.io</string>
+		<string>applinks:app.cypherhq.io</string>
 	</array>
 	<key>CFBundleVersion</key>
 	<string>1</string>

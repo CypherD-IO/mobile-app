@@ -300,13 +300,13 @@ export default function CypherCardScreen() {
   };
 
   return isLayoutRendered ? (
-    <CyDSafeAreaView className='flex-1'>
+    <CyDSafeAreaView className='flex-1 bg-n0'>
       <CyDView className='flex flex-row justify-between items-center mx-[16px] mt-[4px]'>
         <CyDView>
           <CyDText className='font-extrabold text-[26px]'>Cards</CyDText>
         </CyDView>
         <CyDTouchView
-          className='bg-white rounded-full p-[8px] flex flex-row items-center'
+          className='bg-n40 rounded-full p-[8px] flex flex-row items-center'
           onPress={() => {
             navigation.navigate(screenTitle.GLOBAL_CARD_OPTIONS, {
               cardProvider,
@@ -418,7 +418,7 @@ export default function CypherCardScreen() {
       <CyDScrollView showsVerticalScrollIndicator={false}>
         {cardId !== CARD_IDS.HIDDEN_CARD &&
           cardProvider === CardProviders.PAYCADDY && (
-            <CyDView className='mx-[16px] my-[12px] bg-white rounded-[16px] p-[8px]'>
+            <CyDView className='mx-[16px] my-[12px] bg-n0 rounded-[16px] p-[8px]'>
               {rcApplicationStatus !== CardApplicationStatus.COMPLETED ? (
                 <CyDText className='text-[12px] font-medium'>
                   {
@@ -514,7 +514,7 @@ export default function CypherCardScreen() {
                   return <CardTransactionItem item={transaction} key={index} />;
                 })}
                 <CyDTouchView
-                  className='bg-cardBgTo flex flex-row justify-center items-center py-[16px] rounded-b-[22px]'
+                  className='bg-n20 flex flex-row justify-center items-center py-[16px] rounded-b-[22px]'
                   onPress={() =>
                     navigation.navigate(screenTitle.CARD_TRANSACTIONS_SCREEN, {
                       navigation,
@@ -533,7 +533,7 @@ export default function CypherCardScreen() {
                 </CyDTouchView>
               </CyDView>
             ) : (
-              <CyDView className='h-full bg-white border-x border-n40 w-full justify-start items-center py-[10%]'>
+              <CyDView className='h-full bg-n0 border-x border-n40 w-full justify-start items-center py-[10%]'>
                 <CyDFastImage
                   source={AppImages.NO_TRANSACTIONS_YET}
                   className='h-[150px] w-[150px]'

@@ -73,6 +73,7 @@ import { getDateFormatBasedOnLocaleForTimestamp } from '../../core/locale';
 import { getCosmosStakingData } from '../../core/cosmosStaking';
 import { GlobalContext } from '../../core/globalContext';
 import { showToast } from '../utilities/toastUtility';
+import { cssInterop } from 'nativewind';
 
 const { width } = Dimensions.get('window');
 
@@ -173,6 +174,19 @@ export default function Overview({
     }`,
   );
   const [chartVisible, setChartVisible] = useState(false);
+
+  const CyDChartYLabel = cssInterop(ChartYLabel, {
+    className: 'style',
+  });
+
+  const CyDChartXLabel = cssInterop(ChartXLabel, {
+    className: 'style',
+  });
+
+  const CyDChartDot = cssInterop(ChartDot, {
+    className: 'style',
+  });
+
   useEffect(() => {
     setChartVisible(true);
   }, [data, chartData]);
@@ -401,7 +415,7 @@ export default function Overview({
 
   const TokenSummary = () => {
     return (
-      <CyDView className='flex flex-row items-center mt-[12px] mx-[12px] border-[1px] rounded-[8px] border-fadedGrey'>
+      <CyDView className='flex flex-row items-center mt-[12px] mx-[12px] border-[1px] rounded-[8px] border-n40'>
         <CyDView className='flex flex-row h-full mb-[10px] items-center rounded-r-[20px] self-center px-[10px]'>
           <CyDFastImage
             className={'h-[35px] w-[35px] rounded-[50px]'}
@@ -411,7 +425,7 @@ export default function Overview({
           <CyDView className='absolute top-[54%] right-[5px]'>
             <CyDFastImage
               className={
-                'h-[20px] w-[20px] rounded-[50px] border-[1px] border-white bg-white'
+                'h-[20px] w-[20px] rounded-[50px] border-[1px] border-n40 bg-n0'
               }
               source={
                 tokenData.chainDetails.logo_url ??
@@ -428,20 +442,18 @@ export default function Overview({
                 <CyDText className={'font-extrabold text-[16px]'}>
                   {tokenData.name}{' '}
                 </CyDText>
-                <CyDView className='bg-gray-200 rounded-[5px] px-[4px]'>
+                <CyDView className='bg-n40 rounded-[5px] px-[4px]'>
                   <CyDText className={'text-[12px]'}>
                     {tokenData.symbol}
                   </CyDText>
                 </CyDView>
-                <CyDText>
-                  {' '}
-                  {tokenData?.isVerified && (
-                    <CyDImage
-                      source={AppImages.VERIFIED_ICON}
-                      className={'w-[16px] h-[16px] mt-[-1px]'}
-                    />
-                  )}
-                </CyDText>
+
+                {tokenData?.isVerified && (
+                  <CyDImage
+                    source={AppImages.VERIFIED_ICON}
+                    className={'w-[16px] h-[16px] mt-[-1px] ml-[4px]'}
+                  />
+                )}
               </CyDView>
               {tokenData.contractAddress && !isNativeToken(tokenData) && (
                 <CyDView className='flex flex-row items-center'>
@@ -465,12 +477,14 @@ export default function Overview({
             <CyDView className='flex self-center items-end'>
               <CyDView>
                 {tokenData?.isVerified && tokenData.price ? (
-                  <ChartYLabel
-                    style={styles.chartYLabel}
+                  <CyDChartYLabel
+                    className='text-base400 text-[20px] font-semibold text-right'
                     format={formatPriceValue}
                   />
                 ) : (
-                  <CyDText style={styles.chartYLabel}>$0.00</CyDText>
+                  <CyDText className='text-base400 text-[20px] font-semibold text-right'>
+                    $0.00
+                  </CyDText>
                 )}
               </CyDView>
               {selectedTrend !== 0 && (
@@ -505,7 +519,7 @@ export default function Overview({
 
   const UserBalance = useMemo(() => {
     return (
-      <CyDView className={'m-[12px] border rounded-[8px] border-fadedGrey'}>
+      <CyDView className={'m-[12px] border rounded-[8px] border-n40'}>
         {/* {balanceloading && <CyDView style={styles.balanceLoadingContainer}>
           <ActivityIndicator size="small" color={Colors.appColor} />
         </CyDView>} */}
@@ -624,7 +638,7 @@ export default function Overview({
                     });
                     scrollViewRef.current?.scrollTo({ y: 0, animated: true });
                   }}
-                  className='rounded-[8px] flex flex-row justify-center items-center bg-privacyMessageBackgroundColor mr-[10px] p-[5px]'>
+                  className='rounded-[8px] flex flex-row justify-center items-center bg-blue20 mr-[10px] p-[5px]'>
                   <CyDFastImage
                     className='h-[30px] w-[30px] mx-[10px]'
                     source={item.chainDetails.logo_url}
@@ -886,7 +900,7 @@ export default function Overview({
           }}>
           <CyDText
             className={
-              'text-blue-700 font-bold underline underline-offset-2 text-center'
+              'text-blue300 font-bold underline underline-offset-2 text-center'
             }>
             {t<string>(
               tokenData?.isVerified
@@ -904,22 +918,22 @@ export default function Overview({
   ) : (
     <CyDScrollView
       ref={scrollViewRef}
-      className={'bg-white'}
+      className={'bg-n0'}
       refreshControl={
         <RefreshControl refreshing={refreshing} onRefresh={onRefresh} />
       }>
       <ChartPathProvider data={data}>
         <TokenSummary />
         {chartloading && (
-          <CyDView style={styles.chartLoadingContainer}>
+          <CyDView className='flex flex-1 justify-center items-center h-[100px]'>
             <ActivityIndicator size='small' color={Colors.appColor} />
           </CyDView>
         )}
         {!chartloading && chartData && chartVisible && (
           <CyDView>
             <CyDView className={'flex flex-row justify-center'}>
-              <ChartXLabel
-                style={styles.chartXLabel}
+              <CyDChartXLabel
+                className='text-base400 text-[10px] font-normal text-right mt-[15px] mb-[5px] ml-[5px]'
                 format={formatTimestamp}
               />
             </CyDView>
@@ -936,14 +950,20 @@ export default function Overview({
                 backgroundGradientTo={Colors.white}
                 fill='none'
               />
-              <ChartDot size={12} style={styles.chartDot} />
+              <CyDChartDot
+                size={12}
+                className='bg-n0 border-[2px] border-p100 h-[14px] w-[14px] rounded-[14px] mb-[1px]'
+              />
             </CyDView>
-            <CyDView style={styles.selection}>
+            <CyDView
+              className={`flex flex-row mt-[20px] justify-center items-center`}>
               <CyDView style={StyleSheet.absoluteFill}>
                 <Animated.View style={[styles.backgroundSelection, style]} />
               </CyDView>
-              <CyDView className={'flex flex-row'}>
+              <CyDView className={'flex flex-row flex-1 justify-around'}>
                 {graphs.map((graph, index) => {
+                  // const isSelected = index === current.value;
+
                   return (
                     <TouchableWithoutFeedback
                       key={graph.label}
@@ -954,8 +974,14 @@ export default function Overview({
                         current.value = index as GraphIndex;
                         transition.value = withTiming(1);
                       }}>
-                      <Animated.View style={styles.labelContainer}>
-                        <CyDText style={styles.label}>{graph.label}</CyDText>
+                      <Animated.View
+                        className={clsx(
+                          'p-[10px] rounded-[8px]',
+                          // isSelected ? 'bg-blue20' : 'bg-transparent',
+                        )}>
+                        <CyDText className='text-[14px] font-bold text-center'>
+                          {graph.label}
+                        </CyDText>
                       </Animated.View>
                     </TouchableWithoutFeedback>
                   );
@@ -971,7 +997,7 @@ export default function Overview({
           <MarketDistribution />
         )}
         {marketDistributionLoading && (
-          <CyDView style={styles.chartLoadingContainer}>
+          <CyDView className='font-bold text-center text-base400 text-[14px]'>
             <ActivityIndicator size='small' color={Colors.appColor} />
           </CyDView>
         )}
@@ -984,56 +1010,10 @@ export default function Overview({
 }
 
 const styles = StyleSheet.create({
-  chartDot: {
-    backgroundColor: Colors.white,
-    borderWidth: 2,
-    height: 14,
-    width: 14,
-    borderRadius: 14,
-    marginBottom: 1,
-    borderColor: Colors.buttonColor,
-  },
   backgroundSelection: {
     backgroundColor: Colors.buttonColor,
     ...StyleSheet.absoluteFillObject,
     width: BUTTON_WIDTH,
     borderRadius: 8,
-  },
-  selection: {
-    marginTop: 20,
-    flexDirection: 'row',
-    width: SELECTION_WIDTH,
-    alignSelf: 'center',
-  },
-  labelContainer: {
-    padding: 10,
-    width: BUTTON_WIDTH,
-  },
-  label: {
-    fontSize: 14,
-    color: Colors.secondaryTextColor,
-    fontWeight: 'bold',
-    textAlign: 'center',
-  },
-  chartYLabel: {
-    fontSize: 20,
-    fontWeight: '600',
-    color: Colors.secondaryTextColor,
-    textAlign: 'right',
-  },
-  chartXLabel: {
-    fontSize: 10,
-    fontWeight: '400',
-    color: Colors.secondaryTextColor,
-    textAlign: 'right',
-    marginTop: 15,
-    marginBottom: 5,
-    marginLeft: 5,
-  },
-  chartLoadingContainer: {
-    flex: 1,
-    alignItems: 'center',
-    justifyContent: 'center',
-    height: 100,
   },
 });

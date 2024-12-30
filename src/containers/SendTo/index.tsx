@@ -1087,7 +1087,7 @@ export default function SendTo(props: { navigation?: any; route?: any }) {
 
   // NOTE: LIFE CYCLE METHOD 🍎🍎🍎🍎
   return (
-    <CyDSafeAreaView className='flex-1 bg-white'>
+    <CyDSafeAreaView className='flex-1 bg-n0'>
       <CyDView>
         <TokenSendConfirmationModal
           isModalVisible={tokenSendConfirmationParams.isModalVisible}
@@ -1225,7 +1225,7 @@ export default function SendTo(props: { navigation?: any; route?: any }) {
             </CyDView>
           )}
           <CyDView
-            className='h-[80px] pb-[10px] w-full absolute justify-center items-center bg-white'
+            className='h-[80px] pb-[10px] w-full absolute justify-center items-center bg-n0'
             style={
               keyboardHeight ? { top: keyboardHeight - 60 } : { bottom: 8 }
             }>

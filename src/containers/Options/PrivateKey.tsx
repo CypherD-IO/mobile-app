@@ -230,7 +230,7 @@ export default function PrivateKey(props) {
 
   // NOTE: LIFE CYCLE METHOD 🍎🍎🍎🍎
   return (
-    <CyDScrollView className={'bg-white h-full w-full relative'}>
+    <CyDScrollView className={'bg-n0 h-full w-full relative'}>
       <ChooseChainModal
         isModalVisible={showChainModal}
         data={data}

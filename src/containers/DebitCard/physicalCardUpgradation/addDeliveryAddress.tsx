@@ -177,7 +177,7 @@ export default function AddDeliveryAddress() {
                   </CyDText>
                   <CyDTouchView
                     className={
-                      'bg-white h-[60px] py-[4px] px-[10px] mt-[2px]  rounded-[8px] flex flex-row justify-between items-center'
+                      'bg-n0 h-[60px] py-[4px] px-[10px] mt-[2px]  rounded-[8px] flex flex-row justify-between items-center'
                     }
                     onPress={() => setSelectCountryModalVisible(true)}>
                     <CyDView
@@ -216,7 +216,7 @@ export default function AddDeliveryAddress() {
                   </CyDView>
                   <CyDView
                     className={
-                      'bg-white h-[60px]  py-[4px] px-[10px] mt-[2px] rounded-[8px] flex flex-row justify-between items-center'
+                      'bg-n0 h-[60px]  py-[4px] px-[10px] mt-[2px] rounded-[8px] flex flex-row justify-between items-center'
                     }>
                     <CyDView
                       className={clsx(
@@ -257,7 +257,7 @@ export default function AddDeliveryAddress() {
                   </CyDView>
                   <CyDView
                     className={
-                      'bg-white h-[60px]  py-[4px] px-[10px] mt-[2px] rounded-[8px] flex flex-row justify-between items-center'
+                      'bg-n0 h-[60px]  py-[4px] px-[10px] mt-[2px] rounded-[8px] flex flex-row justify-between items-center'
                     }>
                     <CyDView className='flex flex-row justify-between items-center'>
                       <CyDTextInput
@@ -281,7 +281,7 @@ export default function AddDeliveryAddress() {
                   </CyDView>
                   <CyDView
                     className={
-                      'bg-white h-[60px]  py-[4px] px-[10px] mt-[2px] rounded-[8px] flex flex-row justify-between items-center'
+                      'bg-n0 h-[60px]  py-[4px] px-[10px] mt-[2px] rounded-[8px] flex flex-row justify-between items-center'
                     }>
                     <CyDView className='flex flex-row justify-between items-center'>
                       <CyDTextInput
@@ -305,7 +305,7 @@ export default function AddDeliveryAddress() {
                   </CyDView>
                   <CyDView
                     className={
-                      'bg-white h-[60px]  py-[4px] px-[10px] mt-[2px] rounded-[8px] flex flex-row justify-between items-center'
+                      'bg-n0 h-[60px]  py-[4px] px-[10px] mt-[2px] rounded-[8px] flex flex-row justify-between items-center'
                     }>
                     <CyDView className='flex flex-row justify-between items-center'>
                       <CyDTextInput
@@ -329,7 +329,7 @@ export default function AddDeliveryAddress() {
                   </CyDView>
                   <CyDView
                     className={
-                      'bg-white h-[60px]  py-[4px] px-[10px] mt-[2px] rounded-[8px] flex flex-row justify-between items-center'
+                      'bg-n0 h-[60px]  py-[4px] px-[10px] mt-[2px] rounded-[8px] flex flex-row justify-between items-center'
                     }>
                     <CyDView className='flex flex-row justify-between items-center'>
                       <CyDTextInput
@@ -353,7 +353,7 @@ export default function AddDeliveryAddress() {
                   </CyDView>
                   <CyDView
                     className={
-                      'bg-white h-[60px]  py-[4px] px-[10px] mt-[2px] rounded-[8px] flex flex-row justify-between items-center'
+                      'bg-n0 h-[60px]  py-[4px] px-[10px] mt-[2px] rounded-[8px] flex flex-row justify-between items-center'
                     }>
                     <CyDView className='flex flex-row justify-between items-center'>
                       <CyDTextInput

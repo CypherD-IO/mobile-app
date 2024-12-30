@@ -308,7 +308,7 @@ export default function Login(props) {
                       textAlignVertical={'top'}
                       secureTextEntry={true}
                       className={clsx(
-                        'border-[1px] border-inputBorderColor bg-white rounded-[8px] p-[10px] mt-[12px] h-[160px] text-[16px] w-[100%]',
+                        'border-[1px] border-inputBorderColor bg-n0 rounded-[8px] p-[10px] mt-[12px] h-[160px] text-[16px] w-[100%]',
                         { 'border-errorRed': badKeyError },
                         { 'h-[110px]': height < 700 },
                       )}

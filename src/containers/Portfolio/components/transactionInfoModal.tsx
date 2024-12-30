@@ -368,9 +368,7 @@ export default function TransactionInfoModal({
         style={styles.modalLayout}
         animationIn={'slideInUp'}
         animationOut={'slideOutDown'}>
-        <CyDView
-          className={'bg-white pb-[30px] rounded-t-[20px]'}
-          ref={viewRef}>
+        <CyDView className={'bg-n0 pb-[30px] rounded-t-[20px]'} ref={viewRef}>
           <CyDTouchView
             className={'flex flex-row justify-end z-10'}
             onPress={() => {
@@ -386,11 +384,11 @@ export default function TransactionInfoModal({
           </CyDView>
           <CyDView className='flex flex-col px-[20px]'>
             <CyDView className='flex flex-row justify-start align-center'>
-              <CyDView className='w-[100%] justify-between items-center bg-secondaryBackgroundColor rounded-[8px] my-[8px] py-[8px]'>
+              <CyDView className='w-[100%] justify-between items-center bg-blue20 rounded-[8px] my-[8px] py-[8px]'>
                 <RenderTransactionInfo />
               </CyDView>
             </CyDView>
-            <CyDView className='flex flex-col bg-secondaryBackgroundColor rounded-[8px] mt-[5px]'>
+            <CyDView className='flex flex-col bg-blue20 rounded-[8px] mt-[5px]'>
               <CyDView className='flex flex-row h-[60px] justify-start items-center border-b-[1px] border-n40 ml-[20px]'>
                 <CyDText className='text-[16px] w-[40%] text-activityFontColor'>
                   {destination}

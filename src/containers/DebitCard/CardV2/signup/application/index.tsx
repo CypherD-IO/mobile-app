@@ -344,7 +344,7 @@ export default function CardApplicationV2() {
               />
             )}
             {index === 0 && (
-              <CyDView className='bg-white px-[16px] w-full pt-[16px] pb-[60px] '>
+              <CyDView className='bg-n0 px-[16px] w-full pt-[16px] pb-[60px] '>
                 <Button
                   title={t('NEXT')}
                   onPress={() => {
@@ -368,7 +368,7 @@ export default function CardApplicationV2() {
               </CyDView>
             )}
             {index === 1 && (
-              <CyDView className='bg-white px-[16px] w-full pt-[16px] pb-[60px]'>
+              <CyDView className='bg-n0 px-[16px] w-full pt-[16px] pb-[60px]'>
                 <Button
                   title={t('CONTINUE')}
                   onPress={handleSubmit}

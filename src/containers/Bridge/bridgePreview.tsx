@@ -110,7 +110,7 @@ export default function BridgeRoutePreview({
   return (
     <CyDView className={'px-[20px] font-nunito mb-[55px]'}>
       {isNumber(routeResponse?.estimated_route_duration_seconds) && (
-        <CyDView className='bg-white p-[12px] rounded-[8px] flex flex-row justify-between items-center mb-[12px]'>
+        <CyDView className='bg-n0 p-[12px] rounded-[8px] flex flex-row justify-between items-center mb-[12px]'>
           <CyDText>{t('ESTIMATED_TIME')}</CyDText>
           <CyDText>
             {countdown !== null && countdown > 0
@@ -144,7 +144,7 @@ export default function BridgeRoutePreview({
       )}
       <CyDView
         className={
-          'bg-white py-[40px] rounded-[8px] flex flex-col items-center justify-center relative'
+          'bg-n0 py-[40px] rounded-[8px] flex flex-col items-center justify-center relative'
         }>
         <CyDView className=''>
           {routeResponse?.chain_ids.map((item: any, index: number) => {

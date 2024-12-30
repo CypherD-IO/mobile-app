@@ -32,7 +32,7 @@ export default function ThreeDSecure({ route, navigation }) {
             3D Secure Notification
           </CyDText>
           <CyDTouchView
-            className='flex flex-row mt-[8px] bg-white rounded-[10px] px-[12px] py-[16px] justify-between items-center'
+            className='flex flex-row mt-[8px] bg-n0 rounded-[10px] px-[12px] py-[16px] justify-between items-center'
             onPress={() => {
               setShowModal(true);
             }}>

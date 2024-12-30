@@ -179,7 +179,7 @@ export default function ShippingCheckout() {
     return (
       <CyDView>
         <CyDText className='text-subTextColor'>{t('DELIVERING_TO')}</CyDText>
-        <CyDView className='flex flex-col gap-y-[16px] bg-white rounded-[12px] px-[16px] pb-[16px] mt-[4px]'>
+        <CyDView className='flex flex-col gap-y-[16px] bg-n0 rounded-[12px] px-[16px] pb-[16px] mt-[4px]'>
           <CyDView className='flex flex-row items-center justify-between'>
             <CyDView className='flex flex-row items-center gap-x-[12px]'>
               <CyDImage
@@ -221,7 +221,7 @@ export default function ShippingCheckout() {
 
   const RenderShippingCharges = useCallback(() => {
     return (
-      <CyDView className='flex flex-col bg-white rounded-[12px]'>
+      <CyDView className='flex flex-col bg-n0 rounded-[12px]'>
         <CyDView className='flex flex-row justify-between items-center px-[16px] py-[12px] border-b-[0.5px] border-inputBorderColor'>
           <CyDView className='flex flex-row gap-x-[12px] items-center'>
             <CyDImage
@@ -283,7 +283,7 @@ export default function ShippingCheckout() {
     return (
       <CyDView>
         <CyDText className='text-subTextColor'>{t('NAME_ON_CARD')}</CyDText>
-        <CyDView className='flex flex-row justify-between bg-white rounded-[12px] p-[16px] mt-[4px]'>
+        <CyDView className='flex flex-row justify-between bg-n0 rounded-[12px] p-[16px] mt-[4px]'>
           <CyDText className='text-[16px]'>{preferredName}</CyDText>
         </CyDView>
       </CyDView>
@@ -294,7 +294,7 @@ export default function ShippingCheckout() {
     return (
       <CyDView>
         <CyDText className='text-subTextColor'>{t('PAYING_FROM')}</CyDText>
-        <CyDView className='bg-white rounded-[12px] p-[4px] mt-[4px]'>
+        <CyDView className='bg-n0 rounded-[12px] p-[4px] mt-[4px]'>
           <CyDView className='flex flex-row justify-between items-center px-[16px] py-[4px]'>
             <CyDView className='flex flex-row gap-x-[12px] items-center'>
               <CyDView className='p-[6px] bg-n20 rounded-[12px]'>
@@ -374,7 +374,7 @@ export default function ShippingCheckout() {
 
         <CyDView
           className={clsx(
-            'absolute w-full bottom-[0px] bg-white py-[32px] px-[16px]',
+            'absolute w-full bottom-[0px] bg-n0 py-[32px] px-[16px]',
             {
               'bottom-[-32px]': isIOS(),
             },

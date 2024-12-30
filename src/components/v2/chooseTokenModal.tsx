@@ -164,7 +164,7 @@ export default function ChooseTokenModal(props: TokenModal) {
       isModalVisible={isChooseTokenModalVisible}
       style={styles.modalContainer}>
       <CyDView
-        className={'bg-white pt-[10px] mt-[50px] w-[100%] rounded-t-[20px]'}
+        className={'bg-n0 pt-[10px] mt-[50px] w-[100%] rounded-t-[20px]'}
         style={{ height: height - 50 }}>
         <CyDView className='flex-row justify-between items-center mt-[20px]'>
           <CyDView />
@@ -320,7 +320,7 @@ const TokenItem = ({
             <CyDView className='absolute top-[54%] right-[5px]'>
               <CyDFastImage
                 className={
-                  'h-[20px] w-[20px] rounded-[50px] border-[1px] border-white bg-white'
+                  'h-[20px] w-[20px] rounded-[50px] border-[1px] border-white bg-n0'
                 }
                 source={
                   chainLogoUrl ??

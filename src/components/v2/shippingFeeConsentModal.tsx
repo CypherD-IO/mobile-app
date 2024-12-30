@@ -79,8 +79,7 @@ export default function ShippingFeeConsentModal({
       animationOutTiming={300}
       style={styles.modalLayout}
       isModalVisible={isModalVisible}>
-      <CyDView
-        className={'bg-white p-[25px] pb-[30px] rounded-t-[20px] relative'}>
+      <CyDView className={'bg-n0 p-[25px] pb-[30px] rounded-t-[20px] relative'}>
         <CyDTouchView onPress={() => onFailure()} className={'z-[50]'}>
           <CyDImage
             source={AppImages.CLOSE}

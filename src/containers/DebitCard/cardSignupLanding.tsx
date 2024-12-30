@@ -118,7 +118,7 @@ export default function CardSignupLandingScreen(props: {
                 {t<string>('CARD_SIGNUP_WELCOME_TEXT')}
               </CyDText>
             </CyDView>
-            <CyDView className='bg-white w-[75%] mt-[16px] self-center border rounded-[6px] h-[55px] justify-center items-center'>
+            <CyDView className='bg-n0 w-[75%] mt-[16px] self-center border rounded-[6px] h-[55px] justify-center items-center'>
               {!loadersAndValidators.isInviteCodeVerifying &&
                 !loadersAndValidators.inviteCodeVerified && (
                   <CyDTextInput

@@ -6,7 +6,7 @@ import { screenTitle } from '../../constants';
 import { validatePin } from '../../core/Keychain';
 import { BackHandler } from 'react-native';
 
-export default function ChangePin ({ route, navigation }) {
+export default function ChangePin({ route, navigation }) {
   const [wrongPin, setWrongPin] = useState(false);
 
   const handleBackButton = () => {
@@ -34,7 +34,10 @@ export default function ChangePin ({ route, navigation }) {
     return (
       <>
         <CyDView>
-          <CyDText className={'text-[30px] font-extrabold text-center pt-[60px]'}>{t<string>('CHANGE_PIN_TITLE')}</CyDText>
+          <CyDText
+            className={'text-[30px] font-extrabold text-center pt-[60px]'}>
+            {t<string>('CHANGE_PIN_TITLE')}
+          </CyDText>
         </CyDView>
       </>
     );
@@ -52,22 +55,23 @@ export default function ChangePin ({ route, navigation }) {
             showSecuredEntryToggle={true}
           />
 
-          {wrongPin &&
-            <CyDText className={'text-[15px] mt-[25px] text-center text-red-500'}>
+          {wrongPin && (
+            <CyDText
+              className={'text-[15px] mt-[25px] text-center text-red-500'}>
               {t<string>('WRONG_PIN')}
             </CyDText>
-          }
+          )}
         </CyDView>
       </CyDView>
     );
   };
 
   return (
-      <CyDSafeAreaView>
-        <CyDView className={'h-full bg-white px-[20px] pt-[10px]'}>
-          <PINHeader/>
-          <PIN/>
-        </CyDView>
-      </CyDSafeAreaView>
+    <CyDSafeAreaView>
+      <CyDView className={'h-full bg-n0 px-[20px] pt-[10px]'}>
+        <PINHeader />
+        <PIN />
+      </CyDView>
+    </CyDSafeAreaView>
   );
 }

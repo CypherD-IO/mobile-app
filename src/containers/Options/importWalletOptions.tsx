@@ -21,7 +21,7 @@ export default function ImportWalletOptions({
     <CyDImageBackground
       source={AppImages.BG_SETTINGS}
       resizeMode='cover'
-      className='flex-1 bg-white'>
+      className='flex-1 bg-n0'>
       <CyDScrollView className='px-[12px] py-[20px]'>
         <CyDTouchView
           onPress={() => {

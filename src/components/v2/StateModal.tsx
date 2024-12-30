@@ -170,7 +170,7 @@ const StateModal: React.FC<State> = (store: State) => {
       style={styles.modalContainer}>
       <CyDView
         className={
-          'bg-white w-[100%] px-[40px] flex items-center rounded-t-[24px]'
+          'bg-n0 w-[100%] px-[40px] flex items-center rounded-t-[24px]'
         }>
         <RenderImage />
         <CyDText className={'mt-[10px] font-bold text-[20px] text-center'}>

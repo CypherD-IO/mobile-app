@@ -778,7 +778,7 @@ export default function BridgeFundCardScreen({ route }: { route: any }) {
                   {selectedToken.name}
                 </CyDText>
                 {/* {selectedToken.isZeroFeeCardFunding ? (
-                  <CyDView className='h-[20px] bg-white rounded-[8px] mx-[4px] px-[8px] flex justify-center items-center'>
+                  <CyDView className='h-[20px] bg-n0 rounded-[8px] mx-[4px] px-[8px] flex justify-center items-center'>
                     <CyDText className={'font-black text-[10px]'}>
                       {'ZERO FEE ✨'}
                     </CyDText>
@@ -1153,7 +1153,7 @@ export default function BridgeFundCardScreen({ route }: { route: any }) {
             }}
             disabled={loading}
             className={clsx(
-              'bg-white border border-appColor rounded-[4px] h-[40px] w-[50px] flex justify-center items-center',
+              'bg-n0 border border-appColor rounded-[4px] h-[40px] w-[50px] flex justify-center items-center',
             )}>
             <CyDText className='font-extrabold'>{t('MAX')}</CyDText>
           </CyDTouchView>
@@ -1166,7 +1166,7 @@ export default function BridgeFundCardScreen({ route }: { route: any }) {
         )}
       </CyDView>
       <CyDView>
-        <CyDView className=' pt-[16px] bg-white px-[16px] pb-[24px] rounded-t-[16px]'>
+        <CyDView className=' pt-[16px] bg-n0 px-[16px] pb-[24px] rounded-t-[16px]'>
           <CyDView className='flex flex-row justify-between items-center'>
             <Button
               onPress={() => {

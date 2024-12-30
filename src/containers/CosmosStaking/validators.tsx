@@ -205,7 +205,7 @@ export default function CosmosValidators({ route, navigation }) {
   }, [index, navigation]);
 
   return (
-    <CyDView className={'bg-white h-full w-full'}>
+    <CyDView className={'bg-n0 h-full w-full'}>
       <CyDModalLayout
         setModalVisible={setShowManage}
         isModalVisible={showManage}
@@ -213,7 +213,7 @@ export default function CosmosValidators({ route, navigation }) {
         animationIn={'slideInUp'}
         animationOut={'slideOutDown'}>
         <CyDView
-          className={'bg-white p-[25px] pb-[30px] rounded-t-[20px] relative'}>
+          className={'bg-n0 p-[25px] pb-[30px] rounded-t-[20px] relative'}>
           <CyDTouchView
             onPress={() => setShowManage(false)}
             className={'z-[50]'}>

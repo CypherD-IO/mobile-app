@@ -378,7 +378,7 @@ export default function CardControlsSettings() {
           <CyDView className='mx-[16px] mt-[16px]'>
             {cardControlType === CardControlTypes.DOMESTIC && (
               <CyDView
-                className={`bg-white flex-1 flex-col px-[12px] py-[12px] mb-[12px] rounded-[8px] ${disableOptions ? 'opacity-50' : ''}`}>
+                className={`bg-n0 flex-1 flex-col px-[12px] py-[12px] mb-[12px] rounded-[8px] ${disableOptions ? 'opacity-50' : ''}`}>
                 <CyDText className='text-[16px] font-semibold mt-[4px]'>
                   {'Country'}
                 </CyDText>
@@ -414,7 +414,7 @@ export default function CardControlsSettings() {
             )}
             {cardControlType === CardControlTypes.INTERNATIONAL && (
               <>
-                <CyDView className='bg-white flex flex-col px-[12px] py-[12px] mb-[12px] rounded-[8px]'>
+                <CyDView className='bg-n0 flex flex-col px-[12px] py-[12px] mb-[12px] rounded-[8px]'>
                   <CyDView className='flex flex-row justify-between items-center'>
                     <CyDImage
                       source={AppImages.INTERNATIONAL_ICON}
@@ -451,7 +451,7 @@ export default function CardControlsSettings() {
               <>
                 {cardControlType === CardControlTypes.INTERNATIONAL && (
                   <CyDView
-                    className={`bg-white flex flex-col px-[12px] py-[12px] mb-[12px] rounded-[8px] ${disableOptions ? 'opacity-50' : ''}`}>
+                    className={`bg-n0 flex flex-col px-[12px] py-[12px] mb-[12px] rounded-[8px] ${disableOptions ? 'opacity-50' : ''}`}>
                     <CyDView className='flex flex-row items-center'>
                       <CyDImage
                         source={AppImages.COUNTRIES}
@@ -484,7 +484,7 @@ export default function CardControlsSettings() {
                   </CyDView>
                 )}
                 <CyDTouchView
-                  className={`bg-white flex flex-col px-[12px] py-[12px] rounded-[8px] ${
+                  className={`bg-n0 flex flex-col px-[12px] py-[12px] rounded-[8px] ${
                     disableOptions ? 'opacity-50' : ''
                   }`}
                   disabled={disableOptions}>
@@ -510,7 +510,7 @@ export default function CardControlsSettings() {
                   </CyDText>
                 </CyDTouchView>
                 <CyDTouchView
-                  className={`bg-white flex flex-col px-[12px] py-[12px] mt-[12px] rounded-[8px] ${
+                  className={`bg-n0 flex flex-col px-[12px] py-[12px] mt-[12px] rounded-[8px] ${
                     disableOptions ? 'opacity-50' : ''
                   }`}
                   disabled={disableOptions}>
@@ -561,7 +561,7 @@ export default function CardControlsSettings() {
                   )}
                 </CyDTouchView>
                 <CyDTouchView
-                  className={`bg-white flex flex-col px-[12px] py-[12px] mt-[12px] rounded-[8px] ${
+                  className={`bg-n0 flex flex-col px-[12px] py-[12px] mt-[12px] rounded-[8px] ${
                     disableOptions ? 'opacity-50' : ''
                   }`}
                   disabled={disableOptions}>
@@ -619,7 +619,7 @@ export default function CardControlsSettings() {
                   )}
                 </CyDTouchView>
                 <CyDTouchView
-                  className={`bg-white flex flex-col px-[12px] py-[12px] mt-[12px] rounded-[8px] ${
+                  className={`bg-n0 flex flex-col px-[12px] py-[12px] mt-[12px] rounded-[8px] ${
                     disableOptions ? 'opacity-50' : ''
                   }`}
                   disabled={disableOptions}>
@@ -673,7 +673,7 @@ export default function CardControlsSettings() {
                 </CyDTouchView>
 
                 <CyDTouchView
-                  className={`bg-white flex flex-col px-[12px] py-[12px] mt-[12px] rounded-[8px] ${
+                  className={`bg-n0 flex flex-col px-[12px] py-[12px] mt-[12px] rounded-[8px] ${
                     disableOptions ? 'opacity-50' : ''
                   }`}
                   disabled={disableOptions}>

@@ -1979,7 +1979,7 @@ const Bridge: React.FC = () => {
                       </CyDText>
                       <CyDView
                         className={
-                          'bg-white rounded-[20px] flex flex-row items-center p-[4px]'
+                          'bg-n0 rounded-[20px] flex flex-row items-center p-[4px]'
                         }>
                         {endsWith(selectedFromChain?.logoUrl, '.svg') ? (
                           <SvgUri
@@ -2038,7 +2038,7 @@ const Bridge: React.FC = () => {
                       </CyDText>
                       <CyDView
                         className={
-                          'bg-white rounded-[20px] flex flex-row items-center p-[4px]'
+                          'bg-n0 rounded-[20px] flex flex-row items-center p-[4px]'
                         }>
                         {endsWith(selectedToChain?.logoUrl, '.svg') ? (
                           <SvgUri
@@ -2248,7 +2248,7 @@ const Bridge: React.FC = () => {
             </CyDView>
           )}
         {index === 0 && (
-          <CyDView className='mx-[16px] mt-[16px] bg-white rounded-[8px] p-[12px] flex flex-row items-start '>
+          <CyDView className='mx-[16px] mt-[16px] bg-n0 rounded-[8px] p-[12px] flex flex-row items-start '>
             <CyDImage
               className='w-[20px] h-[20px] mr-[4px]'
               source={AppImages.CURRENCY_DETAILS}

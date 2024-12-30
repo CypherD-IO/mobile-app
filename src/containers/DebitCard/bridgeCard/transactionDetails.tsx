@@ -223,7 +223,7 @@ const MerchantDetailsModal = ({
       animationInTiming={300}
       animationOutTiming={300}
       style={styles.modalLayout}>
-      <CyDView className='bg-white px-[16px] pt-[24px] pb-[50px] rounded-[16px]'>
+      <CyDView className='bg-n0 px-[16px] pt-[24px] pb-[50px] rounded-[16px]'>
         <CyDView className='flex flex-row justify-between items-center'>
           <CyDText className='text-[20px] font-medium'>
             {t('MERCHANT_DETAILS')}
@@ -343,7 +343,7 @@ const DeclinedTransactionActionItem = ({
   if (isCountryDisabled && metadata?.merchantCountry && isCountryDisabled) {
     // Show existing UI for country disabled scenario
     return (
-      <CyDView className='bg-n0 rounded-[12px] border border-[#E9EBF8] p-[12px] mt-[24px]'>
+      <CyDView className='bg-n0 rounded-[12px] border border-n40 p-[12px] mt-[24px]'>
         <CyDView className='flex-row items-start'>
           <CyDImage
             source={AppImages.INFO_CIRCLE}
@@ -1175,13 +1175,13 @@ export default function TransactionDetails() {
           />
         </CyDTouchView>
         <ViewShot ref={viewRef}>
-          <CyDScrollView className='h-full bg-cardBg'>
+          <CyDScrollView className='h-full bg-n30'>
             <CyDView className='min-h-full'>
               <CyDView
                 className={
                   'flex flex-col justify-center items-center mt-[24px]'
                 }>
-                <CyDView className='h-[36px] w-[36px] rounded-full bg-[#DFE2E6] flex items-center justify-center'>
+                <CyDView className='h-[36px] w-[36px] rounded-full bg-n40 flex items-center justify-center'>
                   <CyDFastImage
                     source={displayProps.image}
                     className='h-[20px] w-[20px]'
@@ -1281,7 +1281,7 @@ export default function TransactionDetails() {
                   </CyDView>
                 )}
                 {transaction.type !== CardTransactionTypes.CREDIT && (
-                  <CyDView className='flex flex-row justify-center items-center p-[5px] bg-white rounded-tl-[12px] rounded-br-[12px] mt-[24px]'>
+                  <CyDView className='flex flex-row justify-center items-center p-[5px] bg-n0 rounded-tl-[12px] rounded-br-[12px] mt-[24px]'>
                     <CyDView className='bg-n20 rounded-tl-[4px] rounded-br-[4px] h-[20px] w-[20px] p-[4px]'>
                       <CyDFastImage
                         source={{ uri: transaction.iconUrl }}

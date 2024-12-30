@@ -314,7 +314,7 @@ export default function CardNotificationSettings() {
   };
 
   return (
-    <CyDView className='h-full bg-white pt-[30px]'>
+    <CyDView className='h-full bg-n0 pt-[30px]'>
       {!isOTPTriggered && (
         <>
           <CyDView

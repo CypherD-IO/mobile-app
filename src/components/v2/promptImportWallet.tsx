@@ -109,7 +109,7 @@ const PromptImportWallet: React.FC<PromptImportWalletDef> = (
         <Loading />
       ) : (
         <CyDSafeAreaView
-          className={'flex-1 bg-white w-[100%] px-[40px] flex items-center'}>
+          className={'flex-1 bg-n0 w-[100%] px-[40px] flex items-center'}>
           <CyDView className='flex-row justify-center items-center w-[100%] px-[10px]'>
             <CyDTouchView
               onPress={() => {

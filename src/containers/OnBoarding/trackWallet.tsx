@@ -143,7 +143,7 @@ export default function TrackWallet({
   };
 
   return (
-    <CyDView className='flex-1 h-[100%] flex-col justify-between bg-white'>
+    <CyDView className='flex-1 h-[100%] flex-col justify-between bg-n0'>
       <CyDView className='px-[20px] flex flex-col items-center'>
         <CyDView
           className={

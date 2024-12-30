@@ -198,7 +198,7 @@ export default function CosmosAction({
     }
   };
   return (
-    <CyDScrollView className={'bg-white h-full w-full px-[20px]'}>
+    <CyDScrollView className={'bg-n0 h-full w-full px-[20px]'}>
       <CyDKeyboardAwareScrollView>
         <CyDModalLayout
           setModalVisible={setSignModalVisible}
@@ -207,9 +207,7 @@ export default function CosmosAction({
           animationIn={'slideInUp'}
           animationOut={'slideOutDown'}>
           <CyDView
-            className={
-              'bg-white  px-[25px] pb-[30px] rounded-t-[20px] relative'
-            }>
+            className={'bg-n0  px-[25px] pb-[30px] rounded-t-[20px] relative'}>
             <CyDTouchView
               onPress={() => setSignModalVisible(false)}
               className={'w-full flex-1 flex-row py-[20px] justify-end z-[50]'}>

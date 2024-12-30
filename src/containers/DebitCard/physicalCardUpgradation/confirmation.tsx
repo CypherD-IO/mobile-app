@@ -57,7 +57,7 @@ export default function ShippingConfirmation() {
     return (
       <CyDView>
         <CyDText className='text-subTextColor'>{t('DELIVERING_TO')}</CyDText>
-        <CyDView className='flex flex-col gap-y-[6px] bg-white rounded-[12px] px-[16px] pb-[16px] pt-[6px] mt-[4px]'>
+        <CyDView className='flex flex-col gap-y-[6px] bg-n0 rounded-[12px] px-[16px] pb-[16px] pt-[6px] mt-[4px]'>
           <CyDView className='flex flex-row items-center justify-between'>
             <CyDView className='gap-x-[12px]'>
               <CyDText className='text-[16px] font-semibold'>
@@ -123,7 +123,7 @@ export default function ShippingConfirmation() {
               <RenderShippingAddress />
             </CyDView>
             <CyDView className='mt-[24px] mb-[22px]'>
-              <CyDView className='flex flex-col gap-y-[6px] bg-white rounded-[12px] px-[16px] pb-[16px] pt-[6px] mt-[4px]'>
+              <CyDView className='flex flex-col gap-y-[6px] bg-n0 rounded-[12px] px-[16px] pb-[16px] pt-[6px] mt-[4px]'>
                 <CyDText className='font-semibold'>
                   {t('DELIVERING_IN')}
                 </CyDText>
@@ -135,7 +135,7 @@ export default function ShippingConfirmation() {
         </CyDView>
         <CyDView
           className={clsx(
-            'absolute w-full bottom-[0px] bg-white py-[32px] px-[16px]',
+            'absolute w-full bottom-[0px] bg-n0 py-[32px] px-[16px]',
             {
               'bottom-[-32px]': isIOS(),
             },

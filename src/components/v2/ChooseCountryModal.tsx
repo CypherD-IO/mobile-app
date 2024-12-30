@@ -184,7 +184,7 @@ const ChooseCountryModal = ({
       <CyDKeyboardAvoidingView
         behavior={isAndroid() ? 'height' : 'padding'}
         className='flex flex-col justify-end h-full'>
-        <CyDView className={'bg-white h-[70%] rounded-t-[24px]'}>
+        <CyDView className={'bg-n0 h-[70%] rounded-t-[24px]'}>
           <CyDView
             className={'flex flex-row mt-[20px] justify-center items-center'}>
             <CyDTextInput

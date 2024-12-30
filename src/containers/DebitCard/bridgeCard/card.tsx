@@ -58,6 +58,7 @@ import {
   CyDView,
 } from '../../../styles/tailwindStyles';
 import { showToast } from '../../utilities/toastUtility';
+import { cssInterop } from 'nativewind';
 import { isAndroid } from '../../../misc/checkers';
 import { cardDesign } from '../../../models/cardDesign.interface';
 
@@ -74,6 +75,10 @@ const initialCardDetails: CardSecrets = {
   expiryYear: 'xxxx',
   cardNumber: 'xxxx xxxx xxxx xxxx',
 };
+
+const CyDCarousel = cssInterop(Carousel, {
+  className: 'style',
+});
 
 export default function CardScreen({
   navigation,
@@ -188,27 +193,29 @@ export default function CardScreen({
     const card = item;
     return (
       <CyDImageBackground
-        style={{ width: 300, height: 190 }}
-        className={clsx('flex flex-col self-center shadow-md', {
-          'justify-center items-center': [
-            CardStatus.IN_ACTIVE,
-            CardStatus.HIDDEN,
-            CardStatus.BLOCKED,
-            CardStatus.RC_UPGRADABLE,
-          ].includes(card.status),
-          'justify-end': ![
-            CardStatus.IN_ACTIVE,
-            CardStatus.HIDDEN,
-            CardStatus.BLOCKED,
-            CardStatus.RC_UPGRADABLE,
-          ].includes(card.status),
-        })}
+        className={clsx(
+          'w-[300px] h-[190px] flex flex-col self-center shadow-md',
+          {
+            'justify-center items-center': [
+              CardStatus.IN_ACTIVE,
+              CardStatus.HIDDEN,
+              CardStatus.BLOCKED,
+              CardStatus.RC_UPGRADABLE,
+            ].includes(card?.status),
+            'justify-end': ![
+              CardStatus.IN_ACTIVE,
+              CardStatus.HIDDEN,
+              CardStatus.BLOCKED,
+              CardStatus.RC_UPGRADABLE,
+            ].includes(card?.status),
+          },
+        )}
         resizeMode='contain'
         source={getCardImage(card)}>
         {(card.status === CardStatus.IN_ACTIVE ||
           card.status === CardStatus.BLOCKED) && (
           <CyDTouchView
-            className='flex items-center bg-cardBg p-[6px] rounded-[6px]'
+            className='flex items-center bg-n30 p-[6px] rounded-[6px]'
             onPress={() => {
               navigation.navigate(screenTitle.CARD_UNLOCK_AUTH, {
                 onSuccess: () => {
@@ -239,7 +246,7 @@ export default function CardScreen({
           </CyDTouchView>
         )}
         {card.status === CardStatus.HIDDEN && (
-          <CyDView className='flex flex-row items-center bg-cardBg px-[12px] py-[6px] rounded-[6px]'>
+          <CyDView className='flex flex-row items-center bg-n30 px-[12px] py-[6px] rounded-[6px]'>
             <CyDImage
               source={AppImages.CYPHER_LOCKED}
               className='h-[18px] w-[18px]'
@@ -251,7 +258,7 @@ export default function CardScreen({
           </CyDView>
         )}
         {card.status === CardStatus.RC_UPGRADABLE && (
-          <CyDView className='flex flex-row items-center bg-cardBg px-[12px] py-[6px] rounded-[6px]'>
+          <CyDView className='flex flex-row items-center bg-n30 px-[12px] py-[6px] rounded-[6px]'>
             <CyDImage
               source={AppImages.UPGRADE_TO_PHYSICAL_CARD_ARROW}
               className='h-[24px] w-[24px]'
@@ -331,15 +338,14 @@ export default function CardScreen({
   };
 
   return (
-    <CyDView>
-      <Carousel
+    <CyDView className=''>
+      <CyDCarousel
         loop={false}
         width={width}
         height={cardProfile.provider === CardProviders.REAP_CARD ? 210 : 250}
         autoPlay={false}
         data={cardsWithUpgrade}
         snapEnabled={true}
-        pagingEnabled={true}
         mode='parallax'
         modeConfig={{
           parallaxScrollingScale: 0.92,
@@ -499,7 +505,7 @@ const RenderCardActions = ({
     const physicalCard = get(trackingDetails, cardId);
     const trackingNumber = get(trackingDetails, cardId)?.trackingId;
     return (
-      <CyDView className='flex flex-row bg-white self-center items-center w-[300px] mx-[20px] my-[12px] pt-[12px] pr-[12px] rounded-[12px]'>
+      <CyDView className='flex flex-row bg-n0 self-center items-center w-[300px] mx-[20px] my-[12px] pt-[12px] pr-[12px] rounded-[12px]'>
         <CyDFastImage
           source={AppImages.CARD_SHIPMENT_ENVELOPE}
           className='h-[64px] w-[64px] rounded-bl-[12px]'
@@ -850,8 +856,8 @@ const RenderCardActions = ({
               {t('UPGRADE_TO_PHYSICAL_CARD')}
             </CyDText>
           </CyDView>
-          <CyDView className='flex flex-col w-[90%] justify-center items-center bg-white pt-[12px] rounded-[12px]'>
-            <CyDView className='flex flex-row h-[8px] w-[90%] items-center border border-inputBorderColor bg-white mx-[4px] rounded-[8px]'>
+          <CyDView className='flex flex-col w-[90%] justify-center items-center bg-n0 pt-[12px] rounded-[12px]'>
+            <CyDView className='flex flex-row h-[8px] w-[90%] items-center border border-n40 bg-n0 mx-[4px] rounded-[8px]'>
               <CyDView
                 className={clsx(
                   'absolute bg-toastColor h-full rounded-[8px] my-[5px]',
@@ -973,7 +979,7 @@ const RenderCardActions = ({
           animationInTiming={300}
           animationOutTiming={300}
           style={styles.modalLayout}>
-          <CyDView className='bg-cardBgTo py-[8px] mb-[12px] h-[412px] w-[90%] rounded-[16px]'>
+          <CyDView className='bg-n30 py-[8px] mb-[12px] h-[412px] w-[90%] rounded-[16px]'>
             <CyDTouchView onPress={() => setShowRCCardDetailsModal(false)}>
               <CyDImage
                 source={AppImages.CLOSE_CIRCLE}
@@ -1122,7 +1128,7 @@ const RenderCardActions = ({
               shouldBlockAction()
                 ? 'bg-n40'
                 : status !== CardStatus.ACTIVE
-                  ? 'bg-white'
+                  ? 'bg-n0'
                   : 'bg-appColor',
             )}>
             {isStatusLoading ? (

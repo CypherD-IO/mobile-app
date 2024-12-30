@@ -200,7 +200,7 @@ export function TokenTransactions({
       <>
         <CyDTouchView
           sentry-label='txn-detail-explorer'
-          className={'flex flex-row py-[8px] justify-between'}
+          className={'flex flex-row py-[8px] justify-between bg-n0'}
           onPress={() => {
             navigation.navigate(screenTitle.TRANS_DETAIL, {
               url: getExplorerUrl(
@@ -273,7 +273,7 @@ export function TokenTransactions({
             </CyDView>
           </CyDView>
         </CyDTouchView>
-        <CyDView className={'h-[1px] w-100 bg-portfolioBorderColor my-[5px]'} />
+        <CyDView className={'h-[0.5px] w-100 bg-n40 my-[5px]'} />
       </>
     );
   };
@@ -291,7 +291,7 @@ export function TokenTransactions({
   };
 
   return (
-    <CyDView className={'bg-whiteColor h-full'}>
+    <CyDView className={'h-full'}>
       <CyDView className={'flex-1 px-[15px] mt-[6px]'}>
         {isCosmosChain(tokenData.chainDetails.backendName) ||
         (tokenData.chainDetails.backendName === ChainBackendNames.OPTIMISM &&

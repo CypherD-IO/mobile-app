@@ -204,7 +204,7 @@ export default function GetYourCardInfo() {
             </CyDView>
           </CyDKeyboardAwareScrollView>
 
-          <CyDView className='bg-white px-[16px] w-full pt-[16px] pb-[40px] '>
+          <CyDView className='bg-n0 px-[16px] w-full pt-[16px] pb-[40px] '>
             <Button
               type={ButtonType.GREY_FILL}
               title={'I have referral code'}

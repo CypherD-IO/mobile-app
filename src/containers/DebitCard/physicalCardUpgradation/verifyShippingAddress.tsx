@@ -112,7 +112,7 @@ export default function VerifyShippingAddress() {
               ? t('VERIFY_SHIPPING_ADDRESS_SUB_METAL')
               : t('VERIFY_SHIPPING_ADDRESS_SUB_PHYSICAL')}
           </CyDText>
-          <CyDView className='flex flex-col gap-y-[16px] bg-white rounded-[12px] px-[16px] pb-[16px] mt-[12px]'>
+          <CyDView className='flex flex-col gap-y-[16px] bg-n0 rounded-[12px] px-[16px] pb-[16px] mt-[12px]'>
             <CyDView className='flex flex-row items-center justify-between'>
               <CyDView className='flex flex-row items-center gap-x-[12px]'>
                 <CyDImage
@@ -187,7 +187,7 @@ export default function VerifyShippingAddress() {
               {t('SHIP_TO_DIFFERENT_ADDRESS')}
             </CyDText>
             <CyDTouchView
-              className='flex flex-row justify-between bg-white rounded-[12px] p-[16px] mt-[4px]'
+              className='flex flex-row justify-between bg-n0 rounded-[12px] p-[16px] mt-[4px]'
               onPress={() => {
                 navigation.navigate(screenTitle.ADD_DELIVERY_ADDRESS_SCREEN, {
                   currentCardProvider,
@@ -208,7 +208,7 @@ export default function VerifyShippingAddress() {
         </CyDView>
         <CyDView
           className={clsx(
-            'absolute w-full bottom-[0px] bg-white py-[32px] px-[16px]',
+            'absolute w-full bottom-[0px] bg-n0 py-[32px] px-[16px]',
             {
               'bottom-[-32px]': isIOS(),
             },

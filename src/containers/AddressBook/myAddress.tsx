@@ -83,7 +83,7 @@ export function AddressBook() {
 
   return (
     <>
-      <CyDSafeAreaView className={'h-full bg-white pt-[10px]'}>
+      <CyDSafeAreaView className={'h-full bg-n0 pt-[10px]'}>
         <CyDView
           className={'flex flex-row w-full pl-[10px] items-center mb-[8%]'}>
           <CyDTouchView

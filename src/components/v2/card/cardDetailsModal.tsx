@@ -139,7 +139,7 @@ export default function CardDetailsModal({
             Details will be hidden in {hideTimer} sec
           </CyDText>
         </CyDView>
-        <CyDView className='bg-white rounded-[12px] p-[8px] mt-[8px]'>
+        <CyDView className='bg-n0 rounded-[12px] p-[8px] mt-[8px]'>
           <CyDText className='text-[18px] font-semibold'>Card Number</CyDText>
           <CyDView className='flex flex-row justify-between items-center'>
             <CyDText
@@ -172,7 +172,7 @@ export default function CardDetailsModal({
             </CyDView>
           </CyDView>
         </CyDView>
-        <CyDView className='bg-white rounded-[12px] p-[8px] mt-[18px]'>
+        <CyDView className='bg-n0 rounded-[12px] p-[8px] mt-[18px]'>
           <CyDText className='text-[18px] font-semibold'>Expiry Date</CyDText>
           <CyDView className='flex flex-row justify-between items-center'>
             <CyDText
@@ -205,7 +205,7 @@ export default function CardDetailsModal({
             </CyDView>
           </CyDView>
         </CyDView>
-        <CyDView className='bg-white rounded-[12px] px-[8px] py-[10px] mt-[18px]'>
+        <CyDView className='bg-n0 rounded-[12px] px-[8px] py-[10px] mt-[18px]'>
           <CyDText className='text-[18px] ont-bold'>CVV</CyDText>
           <CyDView className='flex flex-row justify-between items-center'>
             <CyDText
