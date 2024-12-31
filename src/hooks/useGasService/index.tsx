@@ -24,7 +24,7 @@ import {
   MsgTransferEncodeObject,
   SigningStargateClient,
 } from '@cosmjs/stargate';
-import { ceil, get } from 'lodash';
+import { ceil, get, max } from 'lodash';
 import { MsgTransfer } from 'cosmjs-types/ibc/applications/transfer/v1/tx';
 import Long from 'long';
 import { InjectiveSigningStargateClient } from '@injectivelabs/sdk-ts/dist/cjs/exports';
@@ -204,7 +204,7 @@ export default function useGasService() {
       .encodeABI();
     try {
       const gasPriceDetail = await getGasPrice(chain, web3);
-      let gasLimit = await web3.eth.estimateGas({
+      let gasLimit: bigint | number = await web3.eth.estimateGas({
         from: fromAddress,
         // For Optimism the ETH token has different contract address
         to:
@@ -225,11 +225,15 @@ export default function useGasService() {
         if (finalGasPrice) {
           gasFeeInCrypto = web3.utils.fromWei(
             web3.utils.toWei((finalGasPrice * gasLimit).toFixed(9), 'gwei'),
+            'ether',
           );
           finalGasPrice = web3.utils.toHex(
-            web3.utils.toWei(finalGasPrice.toFixed(9), 'gwei'),
+            web3.utils.toBigInt(
+              web3.utils.toWei(finalGasPrice.toFixed(9), 'gwei'),
+            ),
           );
         }
+
         return {
           gasFeeInCrypto,
           gasLimit,

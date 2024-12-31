@@ -165,7 +165,6 @@ export const subscribeToEvents = async (
       }
     });
 
-    // eslint-disable-next-line @typescript-eslint/no-misused-promises
     connector.on(EVENTS.CALL_REQUEST, async (error, payload) => {
       const {
         id,
@@ -433,6 +432,7 @@ export const walletConnectApproveRequest = async (
             amount: parseFloat(
               Web3.utils.fromWei(
                 Web3.utils.hexToNumberString(transactionValue),
+                'ether',
               ),
             ).toString(),
           };
@@ -596,6 +596,7 @@ export const getRenderContent = (request, address, walletConnectState) => {
               key: t('VALUE'),
               value: `${Web3.utils.fromWei(
                 Web3.utils.hexToNumberString(value),
+                'ether',
               )}  ${symbol}`,
             });
           } else {
@@ -609,6 +610,7 @@ export const getRenderContent = (request, address, walletConnectState) => {
               key: t('NETWORK_FEE'),
               value: `${Web3.utils.fromWei(
                 Web3.utils.hexToNumberString(gas),
+                'ether',
               )}  ${symbol}`,
             });
           } else {

@@ -80,6 +80,7 @@ import { hostWorker } from '../global';
 import { v4 as uuidv4 } from 'uuid';
 import { ICountry } from '../models/cardApplication.model';
 import { currencySymbolMap } from '../../assets/datasets/currencySymbolMap';
+import { isAddress } from 'web3-validator';
 
 const ARCH_HOST: string = hostWorker.getHost('ARCH_HOST');
 export const HdWalletContext = React.createContext<HdWalletContextDef | null>(
@@ -590,7 +591,7 @@ export function isValidEns(domain: string) {
 export function getMaskedAddress(address: string, maskLength = 6) {
   let prefixLength = 2;
   const len = address?.length;
-  if (Web3.utils.isAddress(address)) {
+  if (isAddress(address)) {
     prefixLength = 2; // length of 0x
   } else if (isCosmosAddress(address)) {
     prefixLength = 6;
@@ -616,8 +617,8 @@ export function SendToAddressValidator(
     switch (chainName) {
       case CHAIN_ETH.chainName:
         return Object.keys(EnsCoinTypes).includes(backendName)
-          ? Web3.utils.isAddress(address) || isValidEns(address)
-          : Web3.utils.isAddress(address);
+          ? isAddress(address) || isValidEns(address)
+          : isAddress(address);
       case CHAIN_COSMOS.chainName:
         return isCosmosAddress(address);
       case CHAIN_OSMOSIS.chainName:
@@ -655,8 +656,8 @@ export function findChainOfAddress(address: string) {
     if (isKujiraAddress(address)) return 'kujira';
     if (
       Object.keys(EnsCoinTypes).includes(ChainBackendNames.ETH)
-        ? Web3.utils.isAddress(address) || isValidEns(address)
-        : Web3.utils.isAddress(address)
+        ? isAddress(address) || isValidEns(address)
+        : isAddress(address)
     )
       return 'ethereum';
   }
@@ -665,8 +666,8 @@ export function findChainOfAddress(address: string) {
 
 export function isEthereumAddress(address: string) {
   return Object.keys(EnsCoinTypes).includes(ChainBackendNames.ETH)
-    ? Web3.utils.isAddress(address) || isValidEns(address)
-    : Web3.utils.isAddress(address);
+    ? isAddress(address) || isValidEns(address)
+    : isAddress(address);
 }
 
 export function limitDecimalPlaces(num: string | number, decimalPlaces = 18) {
@@ -762,6 +763,9 @@ export const getChain = (chain: string): Chain => {
       break;
     case 'polygon':
       blockchain = CHAIN_POLYGON;
+      break;
+    case 'base':
+      blockchain = CHAIN_BASE;
       break;
     case 'avalanche':
       blockchain = CHAIN_AVALANCHE;
@@ -889,7 +893,7 @@ export const isEnglish = (value: string) => {
 };
 
 export function getChainNameFromAddress(address: string) {
-  if (Web3.utils.isAddress(address)) {
+  if (isAddress(address)) {
     return ChainBackendNames.ETH;
   } else if (isCosmosAddress(address)) {
     return ChainBackendNames.COSMOS;

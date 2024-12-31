@@ -126,6 +126,7 @@ export async function getPayloadParams(
         (parseFloat(gasDetail.gasPrice.toString()) * gasLimit).toFixed(9),
         'gwei',
       ),
+      'ether',
     ),
   );
 
@@ -134,7 +135,9 @@ export async function getPayloadParams(
   );
 
   const valueETH = value
-    ? parseFloat(Web3.utils.fromWei(Web3.utils.hexToNumberString(value)))
+    ? parseFloat(
+        Web3.utils.fromWei(Web3.utils.hexToNumberString(value), 'ether'),
+      )
     : 0;
 
   let gasFeeDollar;
@@ -186,6 +189,7 @@ export function estimateGas(
   if (value) {
     const valueFormatted = Web3.utils.fromWei(
       Web3.utils.hexToNumberString(value),
+      'ether',
     );
     strPaymentPrompt = `${strPaymentPrompt}\nValue: ${valueFormatted} ${
       selectedChain.symbol ?? 'ETH'
@@ -221,9 +225,10 @@ export function estimateGas(
         totalGasFeeInGwei = parseFloat(
           Web3.utils.fromWei(
             Web3.utils.toWei(
-              (parseFloat(String(finalGasPrice)) * gasLimit).toFixed(9),
+              (parseFloat(String(finalGasPrice)) * Number(gasLimit)).toFixed(9),
               'gwei',
             ),
+            'ether',
           ),
         );
         finalGasPriceInHex = Web3.utils.toHex(
@@ -237,7 +242,7 @@ export function estimateGas(
       let valueETH = 0;
       if (value !== undefined) {
         valueETH = parseFloat(
-          Web3.utils.fromWei(Web3.utils.hexToNumberString(value)),
+          Web3.utils.fromWei(Web3.utils.hexToNumberString(value), 'ether'),
         );
       }
 

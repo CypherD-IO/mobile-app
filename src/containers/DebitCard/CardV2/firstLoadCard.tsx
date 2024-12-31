@@ -108,7 +108,7 @@ export default function FirstLoadCard() {
   );
   const optedPlanId =
     cardProfile?.planInfo?.optedPlanId ?? CypherPlanId.BASIC_PLAN;
-  const minTokenValueLimit = Math.max(1, Number(planCost));
+  const minTokenValueLimit = Math.max(10, Number(planCost));
 
   const insect = useSafeAreaInsets();
 

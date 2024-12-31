@@ -158,7 +158,7 @@ export const generateWalletFromMnemonic = async (
     getBytes(coreumRipemd160Hash),
   );
 
-  const solanaPath = AddressDerivationPath.SOLANA;
+  const solanaPath = `${AddressDerivationPath.SOLANA}${String(addressIndex)}'/0'`;
   const solanaPrivateKey = derivePath(solanaPath, seed.toString('hex')).key;
   const solanaKeypair = Keypair.fromSeed(Uint8Array.from(solanaPrivateKey));
   const solanaAddress = solanaKeypair.publicKey.toBase58();

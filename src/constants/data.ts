@@ -886,7 +886,7 @@ export const ChainBackendNameMapping = {
 export const AddressDerivationPath = {
   ETH: "m/44'/60'/0'/0/",
   COSMOS: "m/44'/118'/0'/0/",
-  SOLANA: "m/44'/501'/0'/0'",
+  SOLANA: "m/44'/501'/",
   COREUM: "m/44'/990'/0'/0/",
 };
 

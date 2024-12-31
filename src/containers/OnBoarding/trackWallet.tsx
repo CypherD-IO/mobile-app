@@ -32,6 +32,7 @@ import { useGlobalModalContext } from '../../components/v2/GlobalModal';
 import useEns from '../../hooks/useEns';
 import firebase from '@react-native-firebase/app';
 import { intercomAnalyticsLog } from '../utilities/analyticsUtility';
+import { isAddress } from 'web3-validator';
 
 export default function TrackWallet({
   navigation,
@@ -49,7 +50,7 @@ export default function TrackWallet({
     if (isValidEns(ethAddress)) {
       ethAddress = await resolveAddress(ethAddress, ChainBackendNames.ETH);
     }
-    if (ethAddress && Web3.utils.isAddress(ethAddress)) {
+    if (ethAddress && isAddress(ethAddress)) {
       setLoading(true);
       const fcmToken: any = await firebase.messaging().getToken();
       if (fcmToken) {

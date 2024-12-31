@@ -18,6 +18,7 @@ import {
 import { hostWorker } from '../../global';
 import { loadPrivateKeyFromKeyChain } from '../../core/Keychain';
 import { _NO_CYPHERD_CREDENTIAL_AVAILABLE_ } from '../../core/util';
+import { isHex } from 'web3-validator';
 
 const chainIdToChain = chainId =>
   ALL_CHAINS.find(chain => chain.chainIdNumber == chainId) ?? CHAIN_ETH;
@@ -489,9 +490,9 @@ export function parseWebviewPayload(
         // TODO (user feedback): Give feedback to user.
         Sentry.captureException(err);
       });
-  } else if (payload.method == 'personal_sign') {
+  } else if (payload.method === 'personal_sign') {
     let signMsg = payload.params[0];
-    if (Web3.utils.isHex(payload.params[0])) {
+    if (isHex(payload.params[0])) {
       try {
         signMsg = Web3.utils.hexToUtf8(payload.params[0]);
       } catch (err) {
@@ -503,7 +504,7 @@ export function parseWebviewPayload(
       payload,
       'Message',
     );
-  } else if (payload.method == 'eth_sign') {
+  } else if (payload.method === 'eth_sign') {
     signModal(
       'Sign to prove that you own this wallet\n' + payload.params[1],
       payload,
