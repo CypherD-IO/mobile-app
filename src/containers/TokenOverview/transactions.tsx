@@ -173,7 +173,7 @@ export function TokenTransactions({
     return (
       <CyDView
         className={
-          'h-[140px] bg-whiteColor flex flex-row items-center justify-center mt-[100px]'
+          'h-[140px] flex flex-row items-center justify-center mt-[100px]'
         }>
         <EmptyView
           text={t('EMPTY_TRANSCATION_DETAIL_MSG')}
@@ -200,7 +200,7 @@ export function TokenTransactions({
       <>
         <CyDTouchView
           sentry-label='txn-detail-explorer'
-          className={'flex flex-row py-[8px] justify-between bg-n0'}
+          className={'flex flex-row py-[8px] justify-between bg-n20'}
           onPress={() => {
             navigation.navigate(screenTitle.TRANS_DETAIL, {
               url: getExplorerUrl(

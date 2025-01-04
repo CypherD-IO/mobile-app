@@ -1,16 +1,14 @@
 import React from 'react';
-import {
-  CyDView,
-  CyDTouchView,
-  CyDText,
-  CyDImage,
-  CyDFlatList,
-  CyDImageBackground,
-} from '../../styles/tailwindStyles';
-import { useTranslation } from 'react-i18next';
+import { BackHandler } from 'react-native';
 import AppImages from '../../../assets/images/appImages';
 import { screenTitle } from '../../constants';
-import { BackHandler } from 'react-native';
+import {
+  CyDFlatList,
+  CyDImage,
+  CyDText,
+  CyDTouchView,
+  CyDView,
+} from '../../styles/tailwindStyles';
 
 interface IAppSettingsData {
   index: number;
@@ -30,6 +28,12 @@ const appSettingsData: IAppSettingsData[] = [
     title: 'Advanced Settings',
     logo: AppImages.ADVANCED_SETTINGS,
     navigateTo: screenTitle.ADVANCED_SETTINGS,
+  },
+  {
+    index: 2,
+    title: 'Theme',
+    logo: AppImages.SETTINGS_TOOLS_ICON,
+    navigateTo: screenTitle.THEME,
   },
 ];
 
@@ -52,7 +56,7 @@ const renderSettingsData = (item: IAppSettingsData, navigation: any) => {
               resizeMode={'contain'}
             />
           </CyDView>
-          <CyDText className={'font-semibold text-[16px] text-[#434343]'}>
+          <CyDText className={'font-semibold text-[16px]'}>
             {item.title}
           </CyDText>
         </CyDView>
@@ -63,7 +67,7 @@ const renderSettingsData = (item: IAppSettingsData, navigation: any) => {
             resizeMode={'contain'}
           />
         ) : (
-          <CyDView></CyDView>
+          <CyDView />
         )}
       </CyDTouchView>
       <CyDView className={'h-[01px] bg-portfolioBorderColor'} />
@@ -85,17 +89,14 @@ export default function AppSettings({ navigation }) {
   }, []);
 
   return (
-    <CyDView className={'bg-n0 h-full '}>
-      <CyDImageBackground
-        className={'h-[50%] pt-[30px]'}
-        source={AppImages.BG_SETTINGS}
-        resizeMode={'cover'}>
+    <CyDView className={'bg-n20 h-full '}>
+      <CyDView className={'h-[50%] pt-[30px]'}>
         <CyDFlatList
           data={appSettingsData}
           renderItem={({ item }) => renderSettingsData(item, navigation)}
           keyExtractor={item => item.index}
         />
-      </CyDImageBackground>
+      </CyDView>
     </CyDView>
   );
 }

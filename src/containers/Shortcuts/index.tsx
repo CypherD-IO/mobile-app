@@ -316,11 +316,11 @@ export default function ShortcutsModal() {
                   source={item.logo}
                   className={'w-[22px] h-[22px] mr-[6px]'}
                 />
-                <CyDText className={'font-bold text-[18px] text-versionColor'}>
+                <CyDText className={'font-bold text-[18px]'}>
                   {item.displayTitle}
                 </CyDText>
               </CyDView>
-              {/* <CyDText className={'font-bold text-[18px] text-versionColor'}>{item.currencyType}</CyDText> */}
+              {/* <CyDText className={'font-bold text-[18px] '}>{item.currencyType}</CyDText> */}
             </CyDView>
             <CyDView className={'flex flex-row flex-wrap mt-[16px] pl-[2px]'}>
               {item.supportedChains.map(chain => (
@@ -374,11 +374,11 @@ export default function ShortcutsModal() {
                   source={item.logo}
                   className={'w-[22px] h-[22px] mr-[6px]'}
                 />
-                <CyDText className={'font-bold text-[18px] text-versionColor'}>
+                <CyDText className={'font-bold text-[18px] '}>
                   {item.displayTitle}
                 </CyDText>
               </CyDView>
-              {/* <CyDText className={'font-bold text-[18px] text-versionColor'}>{item.currencyType}</CyDText> */}
+              {/* <CyDText className={'font-bold text-[18px] '}>{item.currencyType}</CyDText> */}
             </CyDView>
             <CyDView className={'flex flex-row flex-wrap mt-[16px]'}>
               {item.supportedChains.map(chain => (
@@ -432,7 +432,7 @@ export default function ShortcutsModal() {
               source={item.logo_url}
               className={'w-[18px] h-[18px] mr-[10px]'}
             />
-            <CyDText className={'font-medium text-[17px] text-versionColor'}>
+            <CyDText className={'font-medium text-[17px] '}>
               {item.name.toUpperCase()}
             </CyDText>
           </CyDView>
@@ -462,7 +462,7 @@ export default function ShortcutsModal() {
               source={item.logo_url}
               className={'w-[18px] h-[18px] mr-[10px]'}
             />
-            <CyDText className={'font-medium text-[17px] text-versionColor'}>
+            <CyDText className={'font-medium text-[17px] '}>
               {item.name.toUpperCase()}
             </CyDText>
           </CyDView>
@@ -613,7 +613,7 @@ export default function ShortcutsModal() {
         style={{ justifyContent: 'flex-end', margin: 0, padding: 0 }}>
         <CyDView
           className={
-            'relative bg-n0 p-[40px] rounded-t-[36px] pb-[40px] max-h-[90%]'
+            'relative bg-n20 p-[40px] rounded-t-[36px] pb-[40px] max-h-[90%]'
           }>
           <CyDTouchView
             onPress={() => setBuyModalVisible(false)}
@@ -643,7 +643,7 @@ export default function ShortcutsModal() {
         animationOut={'slideOutDown'}
         style={{ justifyContent: 'flex-end', margin: 0, padding: 0 }}>
         <CyDView
-          className={'relative bg-n0 p-[40px] rounded-t-[36px] pb-[40px]'}>
+          className={'relative bg-n20 p-[40px] rounded-t-[36px] pb-[40px]'}>
           <CyDTouchView
             onPress={() => setSellModalVisible(false)}
             className={'z-50 absolute top-[24px] right-[24px]'}>
@@ -672,7 +672,7 @@ export default function ShortcutsModal() {
         animationOut={'slideOutDown'}
         style={{ justifyContent: 'flex-end', margin: 0, padding: 0 }}>
         <CyDView
-          className={'relative bg-n0 p-[40px] rounded-t-[36px] pb-[40px]'}>
+          className={'relative bg-n20 p-[40px] rounded-t-[36px] pb-[40px]'}>
           <CyDView className={'flex flex-row justify-between items-center '}>
             <CyDTouchView
               onPress={() => {
@@ -721,7 +721,7 @@ export default function ShortcutsModal() {
         animationOut={'slideOutDown'}
         style={{ justifyContent: 'flex-end', margin: 0, padding: 0 }}>
         <CyDView
-          className={'relative bg-n0 p-[40px] rounded-t-[36px] pb-[40px]'}>
+          className={'relative bg-n20 p-[40px] rounded-t-[36px] pb-[40px]'}>
           <CyDView className={'flex flex-row justify-between items-center '}>
             <CyDTouchView
               onPress={() => {

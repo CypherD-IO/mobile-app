@@ -331,7 +331,7 @@ export default function CardControlsSettings() {
     <Loader />
   ) : (
     <>
-      <CyDSafeAreaView className={'h-full bg-cardBgFrom pt-[10px]'}>
+      <CyDSafeAreaView className={'h-full bg-n20 pt-[10px]'}>
         <ChooseMultipleCountryModal
           isModalVisible={countryModalVisible}
           setModalVisible={setCountryModalVisible}
@@ -374,7 +374,7 @@ export default function CardControlsSettings() {
           }}
         />
 
-        <CyDScrollView className='flex-1'>
+        <CyDScrollView className='flex-1 bg-n20'>
           <CyDView className='mx-[16px] mt-[16px]'>
             {cardControlType === CardControlTypes.DOMESTIC && (
               <CyDView

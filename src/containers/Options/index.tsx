@@ -1,5 +1,3 @@
-/* eslint-disable react-native/no-inline-styles */
-/* eslint-disable react-native/no-raw-text */
 /* eslint-disable @typescript-eslint/no-misused-promises */
 /**
  * @format
@@ -10,13 +8,12 @@ import analytics from '@react-native-firebase/analytics';
 import * as Sentry from '@sentry/react-native';
 import React, { useContext, useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import { BackHandler, ImageBackground, Linking } from 'react-native';
+import { BackHandler, Linking } from 'react-native';
 import DeviceInfo from 'react-native-device-info';
 import SpInAppUpdates from 'sp-react-native-in-app-updates';
 import AppImages from '../../../assets/images/appImages';
 import { ConnectionTypes } from '../../constants/enum';
 import * as C from '../../constants/index';
-import { Colors } from '../../constants/theme';
 import { sendFirebaseEvent } from '../../containers/utilities/analyticsUtility';
 import { showToast } from '../../containers/utilities/toastUtility';
 import { getDeveloperMode, setDeveloperMode } from '../../core/asyncStorage';
@@ -45,9 +42,7 @@ import {
   ParamListBase,
   useNavigation,
 } from '@react-navigation/native';
-import { useTheme } from '../../reducers/themeReducer';
-
-const { DynamicView, CText, DynamicImage } = require('../../styles');
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 export interface Section {
   sentryLabel: string;
@@ -87,7 +82,7 @@ export default function Options() {
   const navigation = useNavigation<NavigationProp<ParamListBase>>();
   const { t } = useTranslation();
 
-  const { changeTheme } = useTheme();
+  const insets = useSafeAreaInsets();
 
   const [clickCount, setClickCount] = useState(0);
   const [title, setTitle] = useState('');
@@ -172,412 +167,253 @@ export default function Options() {
 
   // NOTE: LIFE CYCLE METHOD 🍎🍎🍎🍎
   return (
-    <CyDView className='flex-1 bg-n0'>
-      <CyDScrollView className={'bg-n0 w-full relative mb-[100px]'}>
-        <ImageBackground
-          source={AppImages.BG_SETTINGS}
-          resizeMode='cover'
-          imageStyle={{ height: 450, width: '100%' }}>
-          <DynamicView
-            dynamic
-            dynamicWidth
-            dynamicHeight
-            height={100}
-            width={100}
-            jC={'space-between'}
-            mT={25}>
-            <DynamicView
-              dynamic
-              dynamicWidth
-              dynamicHeight
-              height={100}
-              width={100}
-              jC={'flex-start'}>
+    <CyDView className={'flex-1 bg-n20'} style={{ paddingTop: insets.top }}>
+      <CyDScrollView className='flex-1'>
+        <CyDView className='flex-1 mb-[120px]'>
+          <CyDFastImage
+            className='h-[100px] w-[100px] m-[15px] self-center'
+            source={AppImages.CYPHERD_WALLET}
+            resizeMode='cover'
+          />
+
+          <CyDView className='flex flex-row justify-center items-center pb-[25px]'>
+            {isReadOnlyWallet && (
               <CyDFastImage
-                className='h-[100px] w-[100px] m-[15px]'
-                source={AppImages.CYPHERD_WALLET}
-                resizeMode='cover'
+                source={AppImages.CYPHER_LOCK}
+                className='h-[18px] w-[18px] mr-[5px] self-center'
+                resizeMode='contain'
               />
+            )}
+            <CyDText className='text-[18px] text-center font-bold'>
+              {title}
+            </CyDText>
+            {ens && (
+              <CyDText className='text-[10px] secondaryTextColor font-semibold  bg-appColor px-[2px] mt-[3px] ml-[4px]'>
+                ens
+              </CyDText>
+            )}
+          </CyDView>
 
-              <CyDView className='flex flex-row justify-center w-[80%] items-center pb-[25px]'>
-                {isReadOnlyWallet && (
-                  <CyDImage
-                    source={AppImages.CYPHER_LOCK}
-                    className='h-[18px] w-[18px] mr-[5px]'
-                    resizeMode='contain'
-                  />
-                )}
-                <CyDText className='text-[18px] font-bold'>{title}</CyDText>
-                {ens && (
-                  <CyDText className='text-[10px] secondaryTextColor font-semibold  bg-appColor px-[2px] mt-[3px] ml-[4px]'>
-                    ens
-                  </CyDText>
-                )}
-              </CyDView>
+          <CyDView className='px-[32px]'>
+            <OptionsContainer
+              sentryLabel={'address-book'}
+              onPress={() => {
+                navigation.navigate(C.screenTitle.MY_ADDRESS, {
+                  indexValue: 0,
+                });
+              }}
+              title={t('ADDRESS_BOOK')}
+              logo={'contact-book'}
+            />
 
+            <OptionsContainer
+              sentryLabel={'activities'}
+              onPress={() => {
+                navigation.navigate(C.screenTitle.ACTIVITIES);
+                activityContext.dispatch({
+                  type: ActivityReducerAction.UPDATEVISITED,
+                  value: { lastVisited: new Date() },
+                });
+              }}
+              shouldDot={latestDate(
+                activityContext.state.activityObjects,
+                activityContext.state.lastVisited,
+              )}
+              title={'Activities'}
+              logo={'activities'}
+            />
+
+            {!isReadOnlyWallet && (
               <OptionsContainer
-                sentryLabel={'address-book'}
+                sentryLabel={'referrals'}
                 onPress={() => {
-                  navigation.navigate(C.screenTitle.MY_ADDRESS, {
-                    indexValue: 0,
+                  navigation.navigate(C.screenTitle.REFERRALS, {
+                    fromOptionsStack: true,
                   });
                 }}
-                title={t('ADDRESS_BOOK')}
-                iW={75}
-                logo={AppImages.ADDRESS_BOOK_ICON}
+                title={t('CYPHER_CARD_REFERRALS')}
+                logo={'share-profile'}
               />
+            )}
 
-              <DynamicView
-                dynamic
-                dynamicWidth
-                dynamicHeightFix
-                height={1}
-                width={88}
-                bGC={Colors.portfolioBorderColor}
-              />
-
-              <CyDTouchView
-                onPress={() => {
-                  changeTheme('light');
-                }}>
-                <CyDText className='text-rixhy10'>{'light'}</CyDText>
-              </CyDTouchView>
-
-              <CyDTouchView
-                onPress={() => {
-                  changeTheme('dark');
-                }}>
-                <CyDText className='text-rixhy10'>{'dark'}</CyDText>
-              </CyDTouchView>
-
+            {!isReadOnlyWallet && (
               <OptionsContainer
-                sentryLabel={'activities'}
+                sentryLabel={'referrals'}
                 onPress={() => {
-                  navigation.navigate(C.screenTitle.ACTIVITIES);
-                  activityContext.dispatch({
-                    type: ActivityReducerAction.UPDATEVISITED,
-                    value: { lastVisited: new Date() },
+                  navigation.navigate(C.screenTitle.REWARDS, {
+                    fromOptionsStack: true,
                   });
                 }}
-                shouldDot={latestDate(
-                  activityContext.state.activityObjects,
-                  activityContext.state.lastVisited,
-                )}
-                title={'Activities'}
-                logo={AppImages.ACTIVITIES}
+                title={t('CYPHER_CARD_REWARDS')}
+                logo={''}
               />
+            )}
 
-              {!isReadOnlyWallet && (
-                <DynamicView
-                  dynamic
-                  dynamicWidth
-                  dynamicHeightFix
-                  height={1}
-                  width={88}
-                  bGC={Colors.portfolioBorderColor}
-                />
-              )}
-
-              {!isReadOnlyWallet && (
-                <>
-                  <OptionsContainer
-                    sentryLabel={'referrals'}
-                    onPress={() => {
-                      navigation.navigate(C.screenTitle.REFERRALS, {
-                        fromOptionsStack: true,
-                      });
-                    }}
-                    title={t('CYPHER_CARD_REFERRALS')}
-                    logo={AppImages.REFER_OUTLINE}
-                  />
-                  <DynamicView
-                    dynamic
-                    dynamicWidth
-                    dynamicHeightFix
-                    height={1}
-                    width={88}
-                    bGC={Colors.portfolioBorderColor}
-                  />
-                </>
-              )}
-
-              {!isReadOnlyWallet && (
-                <>
-                  <OptionsContainer
-                    sentryLabel={'referrals'}
-                    onPress={() => {
-                      navigation.navigate(C.screenTitle.REWARDS, {
-                        fromOptionsStack: true,
-                      });
-                    }}
-                    title={t('CYPHER_CARD_REWARDS')}
-                    logo={AppImages.REWARDS_ICON}
-                    iW={150}
-                    imageStyle={'-ml-[4px]'}
-                  />
-                  <DynamicView
-                    dynamic
-                    dynamicWidth
-                    dynamicHeightFix
-                    height={1}
-                    width={88}
-                    bGC={Colors.portfolioBorderColor}
-                  />
-                </>
-              )}
-
-              {!isReadOnlyWallet &&
-                connectionTypeValue !== ConnectionTypes.WALLET_CONNECT && (
-                  <OptionsContainer
-                    sentryLabel={'wallet-connect'}
-                    onPress={() => {
-                      navigation.navigate(C.screenTitle.WALLET_CONNECT);
-                    }}
-                    title={'Wallet Connect'}
-                    logo={AppImages.WALLET_CONNECT_LOGO}
-                  />
-                )}
-
-              {!isReadOnlyWallet &&
-                connectionTypeValue !== ConnectionTypes.WALLET_CONNECT && (
-                  <DynamicView
-                    dynamic
-                    dynamicWidth
-                    dynamicHeightFix
-                    height={1}
-                    width={88}
-                    bGC={Colors.portfolioBorderColor}
-                  />
-                )}
-
-              <OptionsContainer
-                sentryLabel={'security-privacy'}
-                onPress={() => {
-                  navigation.navigate(C.screenTitle.SECURITY_PRIVACY);
-                }}
-                title={'Security & Privacy'}
-                logo={AppImages.CYPHER_LOCKED}
-              />
-
-              <DynamicView
-                dynamic
-                dynamicWidth
-                dynamicHeightFix
-                height={1}
-                width={88}
-                bGC={Colors.portfolioBorderColor}
-              />
-
-              <OptionsContainer
-                sentryLabel={'manage-wallet'}
-                onPress={() => {
-                  navigation.navigate(C.screenTitle.MANAGE_WALLET);
-                }}
-                title={'Manage Wallet'}
-                logo={AppImages.WALLET}
-              />
-
-              <DynamicView
-                dynamic
-                dynamicWidth
-                dynamicHeightFix
-                height={1}
-                width={88}
-                bGC={Colors.portfolioBorderColor}
-              />
-
-              <OptionsContainer
-                sentryLabel={'app-settings'}
-                onPress={() => {
-                  navigation.navigate(C.screenTitle.APP_SETTINGS);
-                }}
-                title={'App Settings'}
-                logo={AppImages.SETTINGS}
-              />
-
-              <DynamicView
-                dynamic
-                dynamicWidth
-                dynamicHeightFix
-                height={1}
-                width={88}
-                bGC={Colors.portfolioBorderColor}
-              />
-
-              <OptionsContainer
-                sentryLabel={'support-button'}
-                onPress={async () => {
-                  void Intercom.present();
-                  sendFirebaseEvent(hdWalletContext, 'support');
-                }}
-                title={'Support'}
-                logo={AppImages.SUPPORT}
-              />
-
-              <DynamicView
-                dynamic
-                dynamicWidth
-                dynamicHeightFix
-                height={1}
-                width={88}
-                bGC={Colors.portfolioBorderColor}
-              />
-
-              {/* {!isReadOnlyWallet && (
+            {!isReadOnlyWallet &&
+              connectionTypeValue !== ConnectionTypes.WALLET_CONNECT && (
                 <OptionsContainer
-                  sentryLabel={'referrals'}
+                  sentryLabel={'wallet-connect'}
                   onPress={() => {
-                    referToFriend();
+                    navigation.navigate(C.screenTitle.WALLET_CONNECT);
                   }}
-                  title={t('MENU_RECOMMEND_FRIEND')}
-                  logo={AppImages.REFER_OUTLINE}
+                  title={'Wallet Connect'}
+                  logo={'wallet-connect'}
                 />
-              )} */}
-
-              <OptionsContainer
-                sentryLabel={'browser'}
-                onPress={() => {
-                  logAnalytics('broswerClick', {});
-                  navigation.navigate(C.screenTitle.BROWSER);
-                }}
-                title={t('BROWSER')}
-                logo={AppImages.BROWSER_UNSEL}
-              />
-
-              <DynamicView
-                dynamic
-                dynamicWidth
-                dynamicHeightFix
-                height={1}
-                width={88}
-                bGC={Colors.portfolioBorderColor}
-              />
-
-              <OptionsContainer
-                sentryLabel={'terms-and-conditions-button'}
-                onPress={() => {
-                  navigation.navigate(C.screenTitle.LEGAL_SCREEN);
-                }}
-                title={t('LEGAL')}
-                logo={AppImages.TERMS_AND_CONDITIONS}
-              />
-
-              {/* <DynamicView dynamic dynamicWidth dynamicHeightFix height={1} width={88} bGC={Colors.portfolioBorderColor} /> */}
-
-              {/* <OptionsContainer */}
-              {/*     sentryLabel={'whats-new'} */}
-              {/*     onPress={() => { */}
-              {/*       Intercom.displayMessenger(); */}
-              {/*       sendFirebaseEvent(hdWalletContext, 'support'); */}
-              {/*     }} */}
-              {/*     title={'Whats new in the app?'} */}
-              {/*     logo={AppImages.WHATS_NEW} */}
-              {/* ></OptionsContainer> */}
-
-              {updateModal && (
-                <CyDView className='flex-row justify-between py-[8px] w-[80%] items-center border-[1px] border-[#EFEFEF] px-[18px] rounded-[8px] mb-[12px] bg-[#EFEFEF]'>
-                  <CyDText className='text-[14px] font-bold '>
-                    {t<string>('NEW_VERSION_AVAILABLE')}
-                  </CyDText>
-
-                  <CyDTouchView
-                    className='py-[4px] px-[6px] bg-appColor/[0.6] border-[1px] border-appColor rounded-[4px] '
-                    onPress={() => {
-                      if (isAndroid()) {
-                        void Linking.openURL(
-                          'market://details?id=com.cypherd.androidwallet',
-                        );
-                      } else {
-                        const link =
-                          'itms-apps://apps.apple.com/app/cypherd-wallet/id1604120414';
-                        Linking.canOpenURL(link).then(
-                          supported => {
-                            supported && Linking.openURL(link);
-                          },
-                          err => Sentry.captureException(err),
-                        );
-                      }
-                    }}>
-                    <CyDText className='text-[16px] font-semibold '>
-                      {t<string>('UPDATE')}
-                    </CyDText>
-                  </CyDTouchView>
-                </CyDView>
               )}
 
-              <CyDTouchView
-                className={'flex items-center justify-center h-[50px] w-full'}
-                onPress={async () => {
-                  setClickCount(clickCount + 1);
-                  if (clickCount === 4) {
-                    devMode
-                      ? showToast('Developer Mode OFF')
-                      : showToast('Developer Mode ON');
-                    await setDeveloperMode(!devMode);
-                    setDevMode(!devMode);
-                    setClickCount(0);
-                    await analytics().setAnalyticsCollectionEnabled(!devMode);
-                  }
-                }}>
-                <DynamicImage
-                  dynamic
-                  dynamicWidth
-                  height={25}
-                  width={25}
-                  resizemode='contain'
-                  source={AppImages.CYPHER_TEXT}
-                />
-                <CText
-                  dynamic
-                  fF={C.fontsName.FONT_REGULAR}
-                  fS={10}
-                  color={Colors.versionColor}>
-                  {t<string>('VERSION')} {DeviceInfo.getVersion()}
-                </CText>
-              </CyDTouchView>
-              <CyDView
-                className={
-                  'flex flex-row items-center justify-between mt-[10px]'
-                }>
-                <SocialMedia
-                  title={t('DISCORD')}
-                  uri={'https://cypherhq.io/discord'}
-                  screenTitle={C.screenTitle.SOCIAL_MEDIA_SCREEN}
-                  imageUri={'https://public.cypherd.io/icons/discord.png'}
-                  navigationRef={navigation}
-                />
-                <SocialMedia
-                  title={t('TWITTER')}
-                  uri={'https://cypherhq.io/twitter'}
-                  screenTitle={C.screenTitle.SOCIAL_MEDIA_SCREEN}
-                  imageUri={'https://public.cypherd.io/icons/twitter.png'}
-                  navigationRef={navigation}
-                />
-                <SocialMedia
-                  title={t('REDDIT')}
-                  uri={'https://cypherhq.io/reddit'}
-                  screenTitle={C.screenTitle.SOCIAL_MEDIA_SCREEN}
-                  imageUri={'https://public.cypherd.io/icons/reddit.png'}
-                  navigationRef={navigation}
-                />
-                <SocialMedia
-                  title={t('MEDIUM')}
-                  uri={'https://cypherhq.io/medium'}
-                  screenTitle={C.screenTitle.SOCIAL_MEDIA_SCREEN}
-                  imageUri={'https://public.cypherd.io/icons/medium.png'}
-                  navigationRef={navigation}
-                />
-                <SocialMedia
-                  title={t('YOUTUBE')}
-                  uri={'https://cypherhq.io/youtube'}
-                  screenTitle={C.screenTitle.SOCIAL_MEDIA_SCREEN}
-                  imageUri={'https://public.cypherd.io/icons/youtube.png'}
-                  navigationRef={navigation}
-                />
+            <OptionsContainer
+              sentryLabel={'security-privacy'}
+              onPress={() => {
+                navigation.navigate(C.screenTitle.SECURITY_PRIVACY);
+              }}
+              title={'Security & Privacy'}
+              logo={'lock'}
+            />
+
+            <OptionsContainer
+              sentryLabel={'manage-wallet'}
+              onPress={() => {
+                navigation.navigate(C.screenTitle.MANAGE_WALLET);
+              }}
+              title={'Manage Wallet'}
+              logo={'wallet'}
+            />
+
+            <OptionsContainer
+              sentryLabel={'app-settings'}
+              onPress={() => {
+                navigation.navigate(C.screenTitle.APP_SETTINGS);
+              }}
+              title={'App Settings'}
+              logo={''}
+            />
+
+            <OptionsContainer
+              sentryLabel={'support-button'}
+              onPress={async () => {
+                void Intercom.present();
+                sendFirebaseEvent(hdWalletContext, 'support');
+              }}
+              title={'Support'}
+              logo={'headphone'}
+            />
+
+            <OptionsContainer
+              sentryLabel={'browser'}
+              onPress={() => {
+                logAnalytics('broswerClick', {});
+                navigation.navigate(C.screenTitle.BROWSER);
+              }}
+              title={t('BROWSER')}
+              logo={''}
+            />
+
+            <OptionsContainer
+              sentryLabel={'terms-and-conditions-button'}
+              onPress={() => {
+                navigation.navigate(C.screenTitle.LEGAL_SCREEN);
+              }}
+              title={t('LEGAL')}
+              logo={'task'}
+            />
+
+            {updateModal && (
+              <CyDView className='flex-row justify-between py-[8px] w-[80%] items-center border-[1px] border-[#EFEFEF] px-[18px] rounded-[8px] mb-[12px] bg-[#EFEFEF]'>
+                <CyDText className='text-[14px] font-bold '>
+                  {t<string>('NEW_VERSION_AVAILABLE')}
+                </CyDText>
+
+                <CyDTouchView
+                  className='py-[4px] px-[6px] bg-appColor/[0.6] border-[1px] border-p150 rounded-[4px] '
+                  onPress={() => {
+                    if (isAndroid()) {
+                      void Linking.openURL(
+                        'market://details?id=com.cypherd.androidwallet',
+                      );
+                    } else {
+                      const link =
+                        'itms-apps://apps.apple.com/app/cypherd-wallet/id1604120414';
+                      Linking.canOpenURL(link).then(
+                        supported => {
+                          supported && Linking.openURL(link);
+                        },
+                        err => Sentry.captureException(err),
+                      );
+                    }
+                  }}>
+                  <CyDText className='text-[16px] font-semibold '>
+                    {t<string>('UPDATE')}
+                  </CyDText>
+                </CyDTouchView>
               </CyDView>
-            </DynamicView>
-          </DynamicView>
-        </ImageBackground>
+            )}
+
+            <CyDTouchView
+              className={'flex items-center justify-center w-full'}
+              onPress={async () => {
+                setClickCount(clickCount + 1);
+                if (clickCount === 4) {
+                  devMode
+                    ? showToast('Developer Mode OFF')
+                    : showToast('Developer Mode ON');
+                  await setDeveloperMode(!devMode);
+                  setDevMode(!devMode);
+                  setClickCount(0);
+                  await analytics().setAnalyticsCollectionEnabled(!devMode);
+                }
+              }}>
+              <CyDFastImage
+                source={AppImages.CYPHER_TEXT}
+                className='h-[50px] w-[100px] mt-8'
+                resizeMode='contain'
+              />
+              <CyDText className='text-[10px] font-regular text-base300'>
+                {t<string>('VERSION')} {DeviceInfo.getVersion()}
+              </CyDText>
+            </CyDTouchView>
+
+            <CyDView
+              className={
+                'flex flex-row items-center w-full justify-center gap-x-4 mt-4'
+              }>
+              <SocialMedia
+                title={t('DISCORD')}
+                uri={'https://cypherhq.io/discord'}
+                screenTitle={C.screenTitle.SOCIAL_MEDIA_SCREEN}
+                imageUri={'https://public.cypherd.io/icons/discord.png'}
+                navigationRef={navigation}
+              />
+              <SocialMedia
+                title={t('TWITTER')}
+                uri={'https://cypherhq.io/twitter'}
+                screenTitle={C.screenTitle.SOCIAL_MEDIA_SCREEN}
+                imageUri={'https://public.cypherd.io/icons/twitter.png'}
+                navigationRef={navigation}
+              />
+              <SocialMedia
+                title={t('REDDIT')}
+                uri={'https://cypherhq.io/reddit'}
+                screenTitle={C.screenTitle.SOCIAL_MEDIA_SCREEN}
+                imageUri={'https://public.cypherd.io/icons/reddit.png'}
+                navigationRef={navigation}
+              />
+              <SocialMedia
+                title={t('MEDIUM')}
+                uri={'https://cypherhq.io/medium'}
+                screenTitle={C.screenTitle.SOCIAL_MEDIA_SCREEN}
+                imageUri={'https://public.cypherd.io/icons/medium.png'}
+                navigationRef={navigation}
+              />
+              <SocialMedia
+                title={t('YOUTUBE')}
+                uri={'https://cypherhq.io/youtube'}
+                screenTitle={C.screenTitle.SOCIAL_MEDIA_SCREEN}
+                imageUri={'https://public.cypherd.io/icons/youtube.png'}
+                navigationRef={navigation}
+              />
+            </CyDView>
+          </CyDView>
+        </CyDView>
       </CyDScrollView>
     </CyDView>
   );

@@ -131,7 +131,7 @@ export default function Login(props) {
   }, []);
 
   return (
-    <CyDSafeAreaView className='flex-1 bg-n0'>
+    <CyDSafeAreaView className='flex-1 bg-n20'>
       <CyDScrollView className='flex-1 px-[20px]'>
         {createWalletLoading && <Loading />}
         <CyDTouchableWithoutFeedback onPress={Keyboard.dismiss}>

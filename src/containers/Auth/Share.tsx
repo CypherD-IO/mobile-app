@@ -1,21 +1,27 @@
-import React, { useContext } from 'react';
-import { ActivityIndicator, StyleSheet } from 'react-native';
-import * as C from '../../constants/index';
-import { Colors } from '../../constants/theme';
 import Clipboard from '@react-native-clipboard/clipboard';
-import { useTranslation } from 'react-i18next';
-import AppImages from '../../../assets/images/appImages';
-import { HdWalletContext } from '../../core/util';
-import { showToast } from '../../containers/utilities/toastUtility';
-import { sendFirebaseEvent } from '../../containers/utilities/analyticsUtility';
 import LottieView from 'lottie-react-native';
+import React, { useContext } from 'react';
+import { useTranslation } from 'react-i18next';
+import { ActivityIndicator, StyleSheet } from 'react-native';
+import AppImages from '../../../assets/images/appImages';
+import * as C from '../../constants/index';
+import { ChainBackendNames } from '../../constants/server';
+import { Colors } from '../../constants/theme';
+import { sendFirebaseEvent } from '../../containers/utilities/analyticsUtility';
+import { showToast } from '../../containers/utilities/toastUtility';
+import { HdWalletContext } from '../../core/util';
 import {
   CyDImage,
   CyDText,
   CyDTouchView,
+  CydMaterialDesignIcons,
   CyDView,
+  CyDFastImage,
+  CydIcons,
 } from '../../styles/tailwindStyles';
-import { ChainBackendNames } from '../../constants/server';
+import { IconProps } from '@react-native-vector-icons/common';
+import CydIconsPack from '../../customFonts/generator';
+
 const {
   CText,
   DynamicView,
@@ -244,136 +250,40 @@ export const OptionsContainer = ({
   onPress,
   title,
   logo,
+  image,
   shouldDot = false,
-  mT = 0,
-  bH = 60,
-  iW = 100,
-  imageHeight = 20,
-  imageStyle = '',
+}: {
+  sentryLabel: string;
+  onPress: () => void;
+  title: string;
+  logo?: any;
+  image?: any;
+  shouldDot?: boolean;
 }) => {
   return (
-    <DynamicTouchView
+    <CyDTouchView
       sentry-label={sentryLabel}
-      dynamic
-      dynamicWidth
-      width={88}
-      fD={'row'}
-      mT={mT}
-      onPress={() => {
-        onPress();
-      }}>
-      <DynamicView dynamic dynamicHeightFix height={bH} fD={'row'} pH={15}>
-        <DynamicView
-          dynamic
-          dynamicWidthFix
-          height={bH}
-          width={30}
-          dynamicHeightFix
-          aLIT='flex-start'
-          fD={'column'}
-          jC='center'>
-          <DynamicView
-            dynamic
-            dynamicWidthFix
-            width={17}
-            fD={'row'}
-            jC={'flex-start'}>
-            <DynamicImage
-              dynamic
-              dynamicWidth
-              height={imageHeight}
-              width={iW}
-              source={logo}
-              className={imageStyle}
-            />
-          </DynamicView>
-        </DynamicView>
-        <DynamicView
-          dynamic
-          dynamicWidthFix
-          width={200}
-          dynamicHeightFix
-          height={bH}
-          aLIT='flex-start'
-          fD={'column'}
-          jC='center'>
-          <DynamicView
-            dynamic
-            dynamicWidthFix
-            width={200}
-            fD={'row'}
-            jC={'flex-start'}>
-            <CText
-              dynamic
-              fF={C.fontsName.FONT_REGULAR}
-              fS={14}
-              color={Colors.primaryTextColor}>
-              {title}
-            </CText>
-            {sentryLabel === 'activities' && shouldDot && (
-              <CText
-                dynamic
-                fF={C.fontsName.FONT_REGULAR}
-                fS={42}
-                mT={-16}
-                color={Colors.activityFailed}>
-                {'·'}
-              </CText>
-            )}
-          </DynamicView>
-        </DynamicView>
-      </DynamicView>
-      <DynamicImage
-        dynamic
-        dynamicWidth
-        height={11}
-        width={11}
-        resizemode='contain'
-        source={AppImages.OPTIONS_ARROW}
-      />
-    </DynamicTouchView>
-  );
-};
-
-export const AppButton = ({
-  mT,
-  mB,
-  bGC,
-  text,
-  onPress,
-  indicator,
-  disable = false,
-}) => {
-  return (
-    <DynamicButton
-      dynamic
-      dynamicWidth
-      bw={1}
-      bR={12}
-      width={100}
-      height={50}
-      bGC={bGC || Colors.appColor}
-      disabled={disable}
-      mT={mT}
-      mB={mB}
-      onPress={() => {
-        onPress();
-      }}>
-      {indicator && (
-        <ActivityIndicator
-          size='large'
-          color={Colors.toastColor}
-          style={{ flex: 1, position: 'absolute', alignItems: 'center' }}
-        />
-      )}
-      <CText
-        dynamic
-        fF={C.fontsName.FONT_EXTRA_BOLD}
-        fS={13}
-        color={Colors.primaryTextColor}>
-        {text}
-      </CText>
-    </DynamicButton>
+      className='flex flex-row justify-between items-center border-b border-n40 py-[24px] px-[12px]'
+      onPress={onPress}>
+      <CyDView className='flex flex-row items-center'>
+        {image ? (
+          <CyDFastImage source={image} className='h-[24px] w-[24px]' />
+        ) : (
+          <CydIcons name={logo} size={32} className='text-base400' />
+        )}
+        <CyDText className='font-normal text-[14px] ml-1'>{title}</CyDText>
+        {shouldDot && (
+          <CyDView className='bg-red300 w-1.5 h-1.5 rounded-full' />
+        )}
+      </CyDView>
+      <CyDView>
+        {/* <CyDFontAwesomeIcons
+          name={'chevron-right'}
+          size={14}
+          className='text-base400'
+        /> */}
+      </CyDView>
+    </CyDTouchView>
   );
 };
 

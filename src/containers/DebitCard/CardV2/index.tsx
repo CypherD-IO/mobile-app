@@ -300,7 +300,7 @@ export default function CypherCardScreen() {
   };
 
   return isLayoutRendered ? (
-    <CyDSafeAreaView className='flex-1 bg-n0'>
+    <CyDSafeAreaView className='flex-1 bg-n20'>
       <CyDView className='flex flex-row justify-between items-center mx-[16px] mt-[4px]'>
         <CyDView>
           <CyDText className='font-extrabold text-[26px]'>Cards</CyDText>
@@ -436,7 +436,7 @@ export default function CypherCardScreen() {
           )}
 
         <CyDView
-          className={clsx('flex flex-row  items-center mx-[16px] mt-[12px]', {
+          className={clsx('flex flex-row items-center mx-[16px] mt-[12px]', {
             'justify-between': cardId !== CARD_IDS.HIDDEN_CARD,
             'justify-end': cardId === CARD_IDS.HIDDEN_CARD,
           })}>
@@ -499,7 +499,8 @@ export default function CypherCardScreen() {
             cardDesignData={cardDesignData}
           />
         </CyDView>
-        <CyDView className='w-full bg-white mt-[26px] pb-[120px]'>
+
+        <CyDView className='w-full bg-n0 mt-[26px] pb-[120px]'>
           {get(cardDesignData, ['allowedCount', 'metal'], 0) > 0 &&
             get(cardDesignData, ['feeDetails', 'metal'], 100) === 0 && (
               <GetMetalCardModal onPressUpgradeNow={onPressUpgradeNow} />
@@ -514,7 +515,7 @@ export default function CypherCardScreen() {
                   return <CardTransactionItem item={transaction} key={index} />;
                 })}
                 <CyDTouchView
-                  className='bg-n20 flex flex-row justify-center items-center py-[16px] rounded-b-[22px]'
+                  className='bg-n40 flex flex-row justify-center items-center py-[16px] rounded-b-[22px]'
                   onPress={() =>
                     navigation.navigate(screenTitle.CARD_TRANSACTIONS_SCREEN, {
                       navigation,

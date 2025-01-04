@@ -61,7 +61,7 @@ export default function QRScanner() {
   }, []);
 
   return (
-    <CyDScrollView>
+    <CyDScrollView className='bg-n20'>
       <QRCodeScanner
         showMarker
         fadeIn={false}
@@ -91,13 +91,13 @@ export default function QRScanner() {
                 {fromPage === QRScannerScreens.WALLET_CONNECT && (
                   <CyDTouchView
                     className={
-                      'flex items-center justify-center mt-[40px] h-[60px] w-2/3 border-[1px] border-[#8E8E8E] rounded-[12px]'
+                      'flex items-center justify-center mt-[40px] h-[60px] w-2/3 border-[1px] border-n40 rounded-[12px]'
                     }
                     onPress={() =>
                       navigation.navigate(C.screenTitle.WALLET_CONNECT)
                     }>
                     <CyDText
-                      className={'text-white text-[15px] font-extrabold'}>
+                      className={'text-base400 text-[15px] font-extrabold'}>
                       {t('Manage Connections')}
                     </CyDText>
                   </CyDTouchView>

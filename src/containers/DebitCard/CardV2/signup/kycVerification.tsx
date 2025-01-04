@@ -150,25 +150,25 @@ export default function KYCVerficicationV2() {
         );
       case CardApplicationStatus.KYC_SUCCESSFUL:
         return (
-          <CyDText className='text-emerald-700 text-[20px] font-bold'>
+          <CyDText className='text-green350 text-[20px] font-bold'>
             {t('KYC_COMPLETED')}
           </CyDText>
         );
       case CardApplicationStatus.KYC_FAILED:
         return (
-          <CyDText className='text-red-500 text-[20px] font-bold text-center'>
+          <CyDText className='text-red200 text-[20px] font-bold text-center'>
             {t('KYC_FAILED')}
           </CyDText>
         );
       case CardApplicationStatus.COMPLETION_PENDING:
         return (
-          <CyDText className='text-red-500 text-[20px] font-bold'>
+          <CyDText className='text-red200 text-[20px] font-bold'>
             {t('COMPLETION_PENDING')}
           </CyDText>
         );
       case CardApplicationStatus.COMPLETED:
         return (
-          <CyDText className='text-emerald-700 text-[20px] font-bold'>
+          <CyDText className='text-green350 text-[20px] font-bold'>
             {t('KYC_SUCCESSFUL')}
           </CyDText>
         );
@@ -274,7 +274,7 @@ export default function KYCVerficicationV2() {
 
   return (
     <CyDView
-      className='flex-1 flex flex-col justify-between bg-[#F1F0F5]'
+      className='flex-1 flex flex-col justify-between bg-n20'
       style={{ paddingTop: insets.top }}>
       <CyDView className='p-[16px]'>
         {/* remove the CardProviderSwitch after sunsetting PC */}
@@ -294,7 +294,7 @@ export default function KYCVerficicationV2() {
             />
           </CyDTouchView>
           <CardProviderSwitch />
-          <CyDView className='bg-[#F1F0F5] w-[32px] h-[32px]' />
+          <CyDView className='bg-n20 w-[32px] h-[32px]' />
         </CyDView>
 
         <CyDScrollView>
@@ -314,7 +314,7 @@ export default function KYCVerficicationV2() {
           </CyDView>
           {kycStatus === CardApplicationStatus.KYC_FAILED && kyc?.message && (
             <CyDView className='bg-n0 p-[12px] rounded-[16px] mt-[24px] '>
-              <CyDText className=' text-black text-[18px] font-bold font-manrope '>
+              <CyDText className=' text-[18px] font-bold font-manrope '>
                 {t('REASON')}
               </CyDText>
               {kycStatus === CardApplicationStatus.KYC_FAILED && (
@@ -333,7 +333,7 @@ export default function KYCVerficicationV2() {
                 navigation.navigate(screenTitle.CARD_APPLICATION);
               }}>
               <CyDView className='flex-row items-center'>
-                <CyDText className=' text-black text-[18px] font-bold font-manrope '>
+                <CyDText className=' text-[18px] font-bold font-manrope '>
                   {t('EDIT_APPLICATION')}
                 </CyDText>
                 <CyDImage
@@ -359,7 +359,7 @@ export default function KYCVerficicationV2() {
             kycStatus === CardApplicationStatus.COMPLETED) && (
             <CyDView className='bg-n0 p-[12px] rounded-[16px] flex-row items-center justify-between mt-[24px] '>
               <CyDView>
-                <CyDText className=' text-black text-[18px] font-bold font-manrope '>
+                <CyDText className=' text-[18px] font-bold font-manrope '>
                   {t('VERIFICATION_STATUS')}
                 </CyDText>
                 {kycStatus === CardApplicationStatus.KYC_PENDING && (
@@ -372,16 +372,16 @@ export default function KYCVerficicationV2() {
                 )}
                 {kycStatus === CardApplicationStatus.COMPLETION_PENDING && (
                   <CyDView className='flex-row items-center'>
-                    <CyDView className='w-[12px] h-[12px] rounded-full bg-red-500 mr-[4px]' />
-                    <CyDText className='text-[14px] font-medium text-red-500 font-manrope'>
+                    <CyDView className='w-[12px] h-[12px] rounded-full bg-red200 mr-[4px]' />
+                    <CyDText className='text-[14px] font-medium text-red200 font-manrope'>
                       {t('ACTION_REQUIRED')}
                     </CyDText>
                   </CyDView>
                 )}
                 {kycStatus === CardApplicationStatus.COMPLETED && (
                   <CyDView className='flex-row items-center'>
-                    <CyDView className='w-[12px] h-[12px] rounded-full bg-emerald-700 mr-[4px]' />
-                    <CyDText className='text-[14px] font-medium text-emerald-700 font-manrope'>
+                    <CyDView className='w-[12px] h-[12px] rounded-full bg-green350 mr-[4px]' />
+                    <CyDText className='text-[14px] font-medium text-green350 font-manrope'>
                       {t('SUCCESS_TITLE')}
                     </CyDText>
                   </CyDView>
@@ -409,7 +409,7 @@ export default function KYCVerficicationV2() {
                       style={styles.loader}
                     />
                   )}
-                  <CyDText className='font-manrope text-black ml-[4px] text-bold font-black text-[12px]'>
+                  <CyDText className='font-manrope ml-[4px] text-bold text-[12px]'>
                     {t('REFRESH')}
                   </CyDText>
                 </CyDTouchView>

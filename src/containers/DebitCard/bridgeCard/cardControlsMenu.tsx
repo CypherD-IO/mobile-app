@@ -295,10 +295,10 @@ export default function CardControlsMenu() {
         }}
       />
       <CyDView
-        className={'h-full bg-n0 pt-[10px]'}
+        className={'h-full bg-n20 pt-[10px]'}
         style={{ paddingTop: insets.top }}>
         <CyDTouchView
-          className='bg-n0 flex flex-row px-[16px] py-[13px] items-center'
+          className='flex flex-row px-[16px] py-[13px] items-center'
           onPress={() => {
             navigation.goBack();
           }}>
@@ -410,7 +410,7 @@ export default function CardControlsMenu() {
                           setPlanChangeModalVisible(true);
                         }}>
                         <CyDText className=' text-center text-[14px] font-semibold text-n700 mr-[2px]'>
-                          {'Compare plans'}
+                          {t('COMPARE_PLANS')}
                         </CyDText>
                       </CyDTouchView>
                     </CyDView>

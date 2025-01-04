@@ -7,7 +7,6 @@ import { StyleSheet } from 'react-native';
 import AppImages from '../../../../assets/images/appImages';
 import { useGlobalModalContext } from '../../../components/v2/GlobalModal';
 import OtpInput from '../../../components/v2/OTPInput';
-import { screenTitle } from '../../../constants';
 import {
   CARD_ALERT_TYPES,
   CARD_NOTIFICATION_TYPES,
@@ -23,13 +22,7 @@ import {
   CyDTouchView,
   CyDView,
 } from '../../../styles/tailwindStyles';
-import {
-  NavigationProp,
-  ParamListBase,
-  RouteProp,
-  useNavigation,
-  useRoute,
-} from '@react-navigation/native';
+import { RouteProp, useRoute } from '@react-navigation/native';
 import clsx from 'clsx';
 
 interface RouteParams {
@@ -38,7 +31,6 @@ interface RouteParams {
 }
 
 export default function CardNotificationSettings() {
-  const navigation = useNavigation<NavigationProp<ParamListBase>>();
   const route = useRoute<RouteProp<{ params: RouteParams }, 'params'>>();
 
   const RESENT_OTP_TIME = 30;
@@ -314,7 +306,7 @@ export default function CardNotificationSettings() {
   };
 
   return (
-    <CyDView className='h-full bg-n0 pt-[30px]'>
+    <CyDView className='h-full bg-n20 pt-[30px]'>
       {!isOTPTriggered && (
         <>
           <CyDView

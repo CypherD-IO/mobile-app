@@ -98,7 +98,7 @@ export default function ActivitesFilter() {
 
   return (
     <>
-      <CyDSafeAreaView className='flex-1 bg-n0'>
+      <CyDSafeAreaView className='flex-1 bg-n20'>
         <CyDView className='h-full'>
           <CyDView className={'h-full flex flex-row'}>
             <CyDView
@@ -110,7 +110,7 @@ export default function ActivitesFilter() {
                   key={idx}
                   onPress={() => setIndex(idx)}
                   className={`${
-                    index === idx ? 'bg-appColor' : 'bg-whiteflex'
+                    index === idx ? 'bg-p150' : 'bg-n0 flex'
                   } justify-center py-[20px]`}>
                   <CyDText
                     className={'text-left pl-[12px] text-[16px] font-bold'}>

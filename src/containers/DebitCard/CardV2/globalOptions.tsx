@@ -317,7 +317,7 @@ export default function GlobalOptions() {
                       setPlanChangeModalVisible(true);
                     }}>
                     <CyDText className=' text-center text-[14px] font-semibold text-n700 mr-[2px]'>
-                      {'Compare plans'}
+                      {t('COMPARE_PLANS')}
                     </CyDText>
                   </CyDTouchView>
                 </CyDView>

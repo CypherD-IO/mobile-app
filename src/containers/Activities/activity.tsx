@@ -1142,7 +1142,7 @@ export default function Activites() {
     activities.length === 0
   ) {
     return (
-      <CyDView className='h-full w-full bg-n0 justify-center items-center'>
+      <CyDView className='h-full w-full bg-n20 justify-center items-center'>
         <CyDFastImage
           className='h-[150px] w-[150px]'
           resizeMode='contain'
@@ -1214,7 +1214,7 @@ export default function Activites() {
   };
 
   return (
-    <CyDScrollView className='bg-n0'>
+    <CyDScrollView className='bg-n20'>
       <CyDView>
         <ActivityInfoModal
           setModalVisible={setShowCardInfo}

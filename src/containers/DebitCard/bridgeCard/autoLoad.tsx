@@ -117,7 +117,7 @@ export default function AutoLoad({ navigation }: { navigation: any }) {
     setIsDatePickerVisible(false);
   };
   return (
-    <CyDScrollView className='flex-1'>
+    <CyDScrollView className='flex-1 bg-n20'>
       <CyDKeyboardAwareScrollView>
         <ChooseTokenModal
           isChooseTokenModalVisible={isChooseTokenVisible}
@@ -140,9 +140,9 @@ export default function AutoLoad({ navigation }: { navigation: any }) {
           onConfirm={(date: Date) => onConfirmDate(date)}
           onCancel={() => setIsDatePickerVisible(false)}
         />
-        <CyDView className='bg-n0 py-[22px] px-[16px]'>
-          <CyDView className='flex flex-row justify-start border-[1px] border-n40 rounded-[12px] py-[12px] px-[12px]'>
-            <CyDView className='self-end'>
+        <CyDView className='bg-n0 mx-[16px] rounded-2xl'>
+          <CyDView className='flex flex-row justify-start rounded-[12px] py-[12px] px-[12px]'>
+            <CyDView className='self-center'>
               <CyDImage
                 source={AppImages.CARD_SEL}
                 className='h-[45px] w-[45px]'
@@ -179,7 +179,7 @@ export default function AutoLoad({ navigation }: { navigation: any }) {
                   }}
                 />
               </CyDView>
-              <CyDView className='bg-cardBg p-[4px] rounded-[25px]'>
+              <CyDView className='bg-base300 p-[4px] rounded-[25px]'>
                 <CyDImage
                   source={AppImages.EDIT}
                   className='h-[18px] w-[18px]'
@@ -207,7 +207,7 @@ export default function AutoLoad({ navigation }: { navigation: any }) {
                     }}
                   />
                 </CyDView>
-                <CyDView className='bg-cardBg p-[4px] rounded-[25px]'>
+                <CyDView className='bg-base300 p-[4px] rounded-[25px]'>
                   <CyDImage
                     source={AppImages.EDIT}
                     className='h-[18px] w-[18px]'
@@ -230,7 +230,7 @@ export default function AutoLoad({ navigation }: { navigation: any }) {
                   </CyDText>
                 </CyDView>
                 <CyDTouchView
-                  className='flex flex-row items-center ml-[2px] bg-cardBg py-[6px] px-[16px] rounded-[14px]'
+                  className='flex flex-row items-center ml-[2px] bg-base40 py-[6px] px-[16px] rounded-[14px]'
                   onPress={() => {
                     setIsChooseTokenVisible(true);
                   }}>

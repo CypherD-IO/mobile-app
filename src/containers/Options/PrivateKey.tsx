@@ -230,7 +230,7 @@ export default function PrivateKey(props) {
 
   // NOTE: LIFE CYCLE METHOD 🍎🍎🍎🍎
   return (
-    <CyDScrollView className={'bg-n0 h-full w-full relative'}>
+    <CyDScrollView className={'bg-n20 h-full w-full relative'}>
       <ChooseChainModal
         isModalVisible={showChainModal}
         data={data}
@@ -248,15 +248,15 @@ export default function PrivateKey(props) {
       <CyDView className={'flex justify-center items-center w-full'}>
         <CyDView
           className={
-            'mt-[10px] bg-[#F8F8F8] rounded-[18px] mx-[20px] px-[20px] py-[15px]'
+            'mt-[10px] bg-n0 rounded-[18px] mx-[20px] px-[20px] py-[15px]'
           }>
-          <CyDText className={'text-[15px] text-center text-[#434343]'}>
+          <CyDText className={'text-[15px] text-center text-base200'}>
             {t('PRIVATE_KEY_SUBTITLE')}
           </CyDText>
         </CyDView>
         <CyDTouchView
           className={
-            'bg-[#E5FCFB] rounded-[36px] py-[8px] px-[20px] flex flex-row justify-between items-center w-10/12 mt-[20px] mb-[20px]'
+            'bg-blue20 rounded-[36px] py-[8px] px-[20px] flex flex-row justify-between items-center w-10/12 mt-[20px] mb-[20px]'
           }
           onPress={() => {
             setShowChainModal(true);

@@ -201,8 +201,8 @@ export default function CardUnlockAuth() {
   }
 
   return (
-    <CyDSafeAreaView>
-      <CyDView className={'h-full bg-n0 px-[20px] pt-[10px]'}>
+    <CyDSafeAreaView className=' bg-n20'>
+      <CyDView className={'h-full px-[20px] pt-[10px]'}>
         <OTPHeader navigation={navigation} card={card} />
         <CyDView>
           <CyDView className={'mt-[24px]'}>

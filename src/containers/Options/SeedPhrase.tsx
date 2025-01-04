@@ -105,11 +105,11 @@ export default function SeedPhrase() {
   // NOTE: LIFE CYCLE METHOD 🍎🍎🍎🍎
   return (
     !isFetchingSeedPhrase && (
-      <CyDScrollView className={'bg-n0 h-full w-full relative '}>
+      <CyDScrollView className={'bg-n20 h-full w-full relative '}>
         <CyDView className={'flex justify-center items-center'}>
           <CyDView
             className={
-              'bg-[#F8F8F8] rounded-[18px] mt-[20px] mx-[20px] px-[20px] py-[15px]'
+              'bg-n0 rounded-[18px] mt-[20px] mx-[20px] px-[20px] py-[15px]'
             }>
             <CyDText className={'text-[15px] text-center text-[#434343] '}>
               {t('SEED_PHRASE_SUBTITLE')}

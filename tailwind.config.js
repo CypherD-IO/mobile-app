@@ -202,5 +202,8 @@ module.exports = {
       },
     },
   },
+  transform: {
+    Icon: 'Icon',
+  },
   plugins: [],
 };

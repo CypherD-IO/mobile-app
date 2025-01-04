@@ -82,7 +82,7 @@ export default function BillingAddress({
               onPress={() => {
                 setShowCountries(false);
               }}
-              className={'text-black'}>
+              className={''}>
               <CyDView className='w-[24px] h-[24px] z-[50]'>
                 <CyDImage
                   source={AppImages.CLOSE}
@@ -95,7 +95,7 @@ export default function BillingAddress({
             className={'flex flex-row mt-[20px] justify-center items-center'}>
             <CyDTextInput
               className={
-                'border-[1px] border-inputBorderColor rounded-[8px] p-[10px] text-[14px] w-[95%] font-nunito text-primaryTextColor'
+                'border-[1px] border-n40 rounded-[8px] p-[10px] text-[14px] w-[95%] font-nunito'
               }
               value={countryFilterText}
               autoCapitalize='none'
@@ -150,7 +150,7 @@ export default function BillingAddress({
               onPress={() => {
                 setShowDialCodeCountry(false);
               }}
-              className={'text-black'}>
+              className={''}>
               <CyDView className='w-[24px] h-[24px] z-[50]'>
                 <CyDImage
                   source={AppImages.CLOSE}

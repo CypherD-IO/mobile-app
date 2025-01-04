@@ -109,7 +109,7 @@ const TxnFilterModal = ({
       style={styles.modalLayout}
       animationIn='slideInUp'
       animationOut='slideOutDown'>
-      <CyDSafeAreaView className='bg-n0 flex-1'>
+      <CyDSafeAreaView className='bg-n20 flex-1'>
         <CyDView className='flex flex-row justify-between items-center px-[20px] py-[10px] border-b border-n40'>
           <CyDTouchView
             onPress={() => {
@@ -139,7 +139,7 @@ const TxnFilterModal = ({
                 key={idx}
                 onPress={() => setIndex(idx)}
                 className={`${
-                  index === idx ? 'bg-appColor' : 'bg-whiteflex'
+                  index === idx ? 'bg-appColor' : 'bg-n20 flex'
                 } justify-center py-[20px]`}>
                 <CyDText
                   className={'text-left pl-[12px] text-[16px] font-bold'}>
@@ -148,7 +148,7 @@ const TxnFilterModal = ({
               </CyDTouchView>
             ))}
           </CyDView>
-          <CyDView className={'bg-n0 w-[70%]'}>
+          <CyDView className={'w-[70%]'}>
             {index === 0 && (
               <CheckBoxes
                 radioButtonsData={TRANSACTION_TYPES}

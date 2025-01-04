@@ -103,7 +103,7 @@ export default function ChooseWalletIndexComponent({
             </CyDTouchView>
           )}
           <CyDView className='w-[calc(100% - 40px)] mx-auto'>
-            <CyDText className='font-semibold text-black text-center -ml-[24px] text-[20px]'>
+            <CyDText className='font-semibold text-center -ml-[24px] text-[20px]'>
               {t('WALLETS')}
             </CyDText>
           </CyDView>

@@ -1680,7 +1680,7 @@ const Bridge: React.FC = () => {
   }
 
   return (
-    <CyDSafeAreaView className='mb-[45px]'>
+    <CyDSafeAreaView className='mb-[45px] bg-n20 flex-1'>
       <CyDKeyboardAwareScrollView>
         <CyDView
           className={clsx(
@@ -1703,7 +1703,7 @@ const Bridge: React.FC = () => {
               />
             </CyDTouchView>
           )}
-          <CyDText className='text-black font-extrabold text-[28px] font-manrope'>
+          <CyDText className='text-base400 font-extrabold text-[28px] font-manrope'>
             {index === 1 ? 'Preview' : 'Bridge'}
           </CyDText>
           <CyDView />
@@ -1952,7 +1952,7 @@ const Bridge: React.FC = () => {
                 </CyDText>
                 <CyDView
                   className={
-                    'flex flex-row justify-between items-center w-[100%] my-[20px] bg-[#F7F8FE] rounded-[20px] px-[15px] py-[20px] '
+                    'flex flex-row justify-between items-center w-[100%] my-[20px] rounded-[20px] px-[15px] py-[20px] '
                   }>
                   <CyDView
                     className={'flex w-[40%] items-center justify-center'}>
@@ -1973,7 +1973,7 @@ const Bridge: React.FC = () => {
 
                       <CyDText
                         className={
-                          'my-[6px] mx-[2px] text-black text-[14px] text-center font-semibold flex flex-row justify-center font-nunito'
+                          'my-[6px] mx-[2px] text-base400 text-[14px] text-center font-semibold flex flex-row justify-center font-nunito'
                         }>
                         {selectedFromToken?.name}
                       </CyDText>
@@ -1996,7 +1996,7 @@ const Bridge: React.FC = () => {
                         )}
                         <CyDText
                           className={
-                            'ml-[6px] font-nunito font-normal text-black  text-[12px]'
+                            'ml-[6px] font-nunito font-normal text-base400  text-[12px]'
                           }>
                           {selectedFromChain?.chainName}
                         </CyDText>
@@ -2032,7 +2032,7 @@ const Bridge: React.FC = () => {
                       )}
                       <CyDText
                         className={
-                          'my-[6px] mx-[2px] text-black text-[14px] text-center font-semibold flex flex-row justify-center font-nunito'
+                          'my-[6px] mx-[2px] text-base400 text-[14px] text-center font-semibold flex flex-row justify-center font-nunito'
                         }>
                         {selectedToToken?.name}
                       </CyDText>
@@ -2055,7 +2055,7 @@ const Bridge: React.FC = () => {
                         )}
                         <CyDText
                           className={
-                            'ml-[6px] font-nunito text-black font-normal text-[12px]'
+                            'ml-[6px] font-nunito text-base400 font-normal text-[12px]'
                           }>
                           {selectedToChain?.chainName}
                         </CyDText>
@@ -2073,7 +2073,7 @@ const Bridge: React.FC = () => {
                   <CyDView className={'mr-[10px] flex flex-col items-end'}>
                     <CyDText
                       className={
-                        'font-nunito font-[16px] text-black font-bold max-w-[150px]'
+                        'font-nunito text-[16px] text-base400 font-bold max-w-[150px]'
                       }
                       numberOfLines={1}>
                       {formatAmount(
@@ -2085,7 +2085,7 @@ const Bridge: React.FC = () => {
                     </CyDText>
                     <CyDText
                       className={
-                        'font-nunito font-[12px] text-[#929292] font-bold'
+                        'font-nunito text-[12px] text-base100 font-bold'
                       }>
                       {(
                         Number(
@@ -2110,7 +2110,7 @@ const Bridge: React.FC = () => {
                   <CyDView className={'flex flex-col items-end'}>
                     <CyDText
                       className={
-                        'font-nunito font-[16px] text-black font-bold max-w-[150px]'
+                        'font-nunito text-[16px] text-base400 font-bold max-w-[150px]'
                       }
                       numberOfLines={1}>
                       {formatAmount(
@@ -2121,7 +2121,7 @@ const Bridge: React.FC = () => {
                     </CyDText>
                     <CyDText
                       className={
-                        'font-nunito font-[12px] text-[#929292] font-bold'
+                        'font-nunito text-[12px] text-base100 font-bold'
                       }>
                       {(
                         Number(
@@ -2274,7 +2274,7 @@ const Bridge: React.FC = () => {
                   )}
                 </CyDView>
                 <CyDTouchView
-                  className='flex flex-row items-center bg-[#EBEDF0] rounded-[4px] py-[4px] px-[4px]'
+                  className='flex flex-row items-center bg-n40 rounded-[4px] py-[4px] px-[4px]'
                   onPress={() => {
                     void manualRefreshQuote();
                   }}

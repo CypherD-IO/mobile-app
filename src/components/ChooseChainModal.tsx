@@ -49,7 +49,7 @@ export function ChooseChainModal(props: {
     const isSelected = item.id === selectedChainId;
     return (
       <CyDTouchView
-        className={clsx('px-[12px] rounded-[8px] w-full bg-n0', {
+        className={clsx('px-[12px] rounded-[8px] w-full bg-n20', {
           'bg-p10': isSelected,
         })}
         onPress={() => {
@@ -103,7 +103,7 @@ export function ChooseChainModal(props: {
       animationOut={'slideOutDown'}>
       <CyDView
         className={
-          'bg-n0 pt-[12px] px-[12px] pb-[30px] rounded-t-[24px] relative'
+          'bg-n20 pt-[12px] px-[12px] pb-[30px] rounded-t-[24px] relative'
         }>
         <CyDTouchView
           onPress={() => {

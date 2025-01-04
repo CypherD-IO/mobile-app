@@ -1,4 +1,3 @@
-/* eslint-disable react-native/no-raw-text */
 import React, { useContext } from 'react';
 import { StyleSheet } from 'react-native';
 import CyDModalLayout from './modal';
@@ -69,7 +68,7 @@ export default function ActivityInfoModal({
         style={styles.modalLayout}
         animationIn={'slideInUp'}
         animationOut={'slideOutDown'}>
-        <CyDView className={'bg-n0 pb-[30px] rounded-[20px] max-h-[90%]'}>
+        <CyDView className={'bg-n20 pb-[30px] rounded-[20px] max-h-[90%]'}>
           <CyDTouchView
             className={'flex flex-row justify-end z-10'}
             onPress={() => {

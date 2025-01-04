@@ -35,6 +35,8 @@ import { Layout } from 'react-native-reanimated';
 import usePortfolio from '../../hooks/usePortfolio';
 import { Holding } from '../../core/portfolio';
 import { get, groupBy } from 'lodash';
+import AppImages from '../../../assets/images/appImages';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 interface RouteParams {
   tokenData: TokenMeta;
@@ -42,6 +44,7 @@ interface RouteParams {
 }
 
 function TokenOverviewV2() {
+  const insets = useSafeAreaInsets();
   const navigation = useNavigation<NavigationProp<ParamListBase>>();
   const { getLocalPortfolio } = usePortfolio();
 
@@ -105,7 +108,26 @@ function TokenOverviewV2() {
   return loading ? (
     <Loading />
   ) : (
-    <CyDView className={'bg-n0 flex-1 flex-col justify-between'}>
+    <CyDView className={'bg-n20 flex-1 flex-col justify-between'}>
+      <CyDView
+        className='flex-row justify-between'
+        style={{ paddingTop: insets.top }}>
+        <CyDTouchView
+          className='px-[12px]'
+          onPress={() => {
+            navigation.goBack();
+          }}>
+          <CyDFastImage
+            className={'w-[32px] h-[32px]'}
+            resizeMode='cover'
+            source={AppImages.BACK_ARROW_GRAY}
+          />
+        </CyDTouchView>
+        <CyDText className='text-base400 text-[20px] font-extrabold mr-[44px]'>
+          {tokenData.name}
+        </CyDText>
+        <CyDView className='' />
+      </CyDView>
       <CyDView className={'flex flex-row justify-center'}>
         <SwitchView
           titles={tokenTabs}
@@ -146,7 +168,7 @@ function TokenOverviewV2() {
       <CyDAnimatedView
         layout={Layout.springify()}
         className={clsx(
-          'h-[110px] self-end bg-n0 pb-[20px] bottom-[-30px] pt-[2px] rounded-t-[24px] shadow shadow-gray-400',
+          'h-[110px] self-end bg-n20 pb-[20px] bottom-[-30px] pt-[2px] rounded-t-[24px] shadow shadow-gray-400',
           { 'pt-[16px]': isAndroid() },
         )}
         style={styles.elevatedBackground}>

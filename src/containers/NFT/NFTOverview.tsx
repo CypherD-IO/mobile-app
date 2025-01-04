@@ -23,12 +23,14 @@ import {
   useNavigation,
   useRoute,
 } from '@react-navigation/native';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 interface RouteParams {
   nftHolding: NFTHolding;
 }
 
 export function NFTOverviewScreen() {
+  const insets = useSafeAreaInsets();
   const navigation = useNavigation<NavigationProp<ParamListBase>>();
   const route = useRoute<RouteProp<{ params: RouteParams }, 'params'>>();
 
@@ -39,15 +41,31 @@ export function NFTOverviewScreen() {
 
   useEffect(() => {
     void analytics().logEvent('visited_nft_overview_screen');
-    navigation.setOptions({
-      title: nftHolding.name,
-    });
   }, []);
 
   const holdingChain = getChain(nftHolding.blockchain);
 
   return (
-    <CyDView className={'h-full bg-whiteColor'}>
+    <CyDView className={'h-full bg-n20'}>
+      <CyDView
+        className='flex-row justify-between'
+        style={{ paddingTop: insets.top }}>
+        <CyDTouchView
+          className='px-[12px]'
+          onPress={() => {
+            navigation.goBack();
+          }}>
+          <CyDFastImage
+            className={'w-[32px] h-[32px]'}
+            resizeMode='cover'
+            source={AppImages.BACK_ARROW_GRAY}
+          />
+        </CyDTouchView>
+        <CyDText className='text-base400 text-[20px] font-extrabold mr-[44px]'>
+          {nftHolding.name}
+        </CyDText>
+        <CyDView className='' />
+      </CyDView>
       <CyDModalLayout
         setModalVisible={setImageZoomIn}
         isModalVisible={imageZoomIn}
@@ -59,7 +77,7 @@ export function NFTOverviewScreen() {
         <CyDView className={'rounded-t-[20px] relative'}>
           <CyDTouchView
             onPress={() => setImageZoomIn(false)}
-            className={'z-[50] bg-n0'}>
+            className={'z-[50]'}>
             <CyDImage
               source={AppImages.CLOSE}
               className={
@@ -82,7 +100,7 @@ export function NFTOverviewScreen() {
         className={'z-10'}>
         <CyDImage
           className={
-            'absolute w-[36px] h-[36px] right-[10px] top-[10px] bg-black rounded-[40px]'
+            'absolute w-[36px] h-[36px] right-[10px] top-[10px] rounded-[40px]'
           }
           source={AppImages.EXPAND_ICON}
         />
@@ -92,14 +110,13 @@ export function NFTOverviewScreen() {
         className={'h-[50%] w-[100%]'}
         source={{ uri: nftHolding.imageUrl }}
       />
-      <CyDScrollView
-        className={'bg-n0 rounded-t-[32px] mt-[-32px] p-[20px] z-10'}>
+      <CyDScrollView className={'rounded-t-[32px] mt-[-32px] p-[20px] z-10'}>
         <CyDText className={'text-[22px] font-extrabold'}>
           {nftHolding.name}
         </CyDText>
         <CyDView
           className={
-            'flex flex-row items-center mt-[10px] rounded-[10px] py-[16px] px-[10px] bg-lightGrey'
+            'flex flex-row items-center mt-[10px] rounded-[10px] py-[16px] px-[10px] bg-n20'
           }>
           <CyDImage
             resizeMode={'contain'}
@@ -190,7 +207,7 @@ export function NFTOverviewScreen() {
           <CyDView>
             <CyDView
               className={
-                'flex flex-row items-center mt-[10px] rounded-[10px] py-[16px] px-[10px] bg-lightGrey'
+                'flex flex-row items-center mt-[10px] rounded-[10px] py-[16px] px-[10px] bg-n20'
               }>
               <CyDImage
                 resizeMode={'contain'}

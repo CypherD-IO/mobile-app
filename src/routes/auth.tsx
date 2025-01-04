@@ -116,7 +116,14 @@ import TokenOverviewV2 from '../containers/TokenOverview';
 import LegalScreen from '../containers/legalDocs/legal';
 import TransFiScreen from '../containers/ramp/transFi';
 import { useKeyboard } from '../hooks/useKeyboard';
-import { CyDFastImage, CyDTouchView } from '../styles/tailwindStyles';
+import {
+  CyDFastImage,
+  CyDText,
+  CyDTouchView,
+  CyDView,
+} from '../styles/tailwindStyles';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
+import ThemeSelector from '../containers/Options/theme';
 
 const PortfolioStack = createNativeStackNavigator();
 const BrowserStack = createNativeStackNavigator();
@@ -131,7 +138,7 @@ const defaultHeaderLeft = (
 ) => {
   return (
     <CyDTouchView
-      className=' px-[12px] bg-n0'
+      className=' px-[12px] bg-n20'
       onPress={() => {
         if (keyboardHeight) {
           Keyboard.dismiss();
@@ -151,6 +158,45 @@ const defaultHeaderLeft = (
   );
 };
 
+const CustomHeader = ({
+  title,
+  navigation,
+  keyboardHeight,
+}: {
+  title: string;
+  navigation: NavigationProp<ParamListBase>;
+  keyboardHeight: number;
+}) => {
+  const insets = useSafeAreaInsets();
+  return (
+    <CyDView
+      className='bg-n20 flex-row justify-between pb-[10px]'
+      style={{ paddingTop: insets.top }}>
+      <CyDTouchView
+        className='px-[12px]'
+        onPress={() => {
+          if (keyboardHeight) {
+            Keyboard.dismiss();
+            setTimeout(() => {
+              navigation.goBack();
+            }, 100);
+          } else {
+            navigation.goBack();
+          }
+        }}>
+        <CyDFastImage
+          className={'w-[32px] h-[32px]'}
+          resizeMode='cover'
+          source={AppImages.BACK_ARROW_GRAY}
+        />
+      </CyDTouchView>
+      <CyDText className='text-base400 text-[20px] font-extrabold mr-[44px]'>
+        {title}
+      </CyDText>
+      <CyDView className='' />
+    </CyDView>
+  );
+};
 export function PortfolioStackScreen() {
   const { keyboardHeight } = useKeyboard();
 
@@ -188,120 +234,70 @@ export function PortfolioStackScreen() {
 
   return (
     <PortfolioStack.Navigator initialRouteName={screenTitle.PORTFOLIO_SCREEN}>
+      {/* darkmode done */}
       <PortfolioStack.Screen
         name={screenTitle.PORTFOLIO_SCREEN}
         component={PortfolioScreen}
         options={{ headerShown: false }}
       />
+
+      {/* darkmode done */}
       <PortfolioStack.Screen
         name={screenTitle.DEFI_PROTOCOL_OVERVIEW_SCREEN}
         component={DEFIOverviewScreen}
         options={({ navigation, route }) => ({
-          headerTransparent: false,
-          headerShadowVisible: false,
-          title: '',
-          headerTitleAlign: 'center',
-          headerTitleStyle: portfolioStackScreenHeaderTitleStyles,
-          navigationOptions: {
-            tabBarVisible: false,
-          },
-
-          headerTintColor: Colors.primaryTextColor,
-          headerBackTitleVisible: false,
-          headerLeft: () => defaultHeaderLeft(navigation, keyboardHeight),
+          headerShown: false,
         })}
       />
 
+      {/* darkmode done */}
       <PortfolioStack.Screen
         name={screenTitle.NFT_OVERVIEW_SCREEN}
         component={NFTOverviewScreen}
         options={({ navigation }) => ({
-          headerTransparent: false,
-          headerShadowVisible: false,
-          title: '',
-          headerTitleAlign: 'center',
-          headerTitleStyle: portfolioStackScreenHeaderTitleStyles,
-          navigationOptions: {
-            tabBarVisible: false,
-          },
-
-          headerTintColor: Colors.primaryTextColor,
-          headerBackTitleVisible: false,
-          headerLeft: () => defaultHeaderLeft(navigation, keyboardHeight),
+          headerShown: false,
         })}
       />
 
+      {/* darkmode done */}
       <PortfolioStack.Screen
         name={screenTitle.NFT_HOLDINGS_SCREEN}
         component={NFTHoldingsScreen}
         options={({ navigation, route }) => ({
-          headerTransparent: false,
-          headerShadowVisible: false,
-          title: '',
-          headerTitleAlign: 'center',
-          headerTitleStyle: portfolioStackScreenHeaderTitleStyles,
-          navigationOptions: {
-            tabBarVisible: false,
-          },
-
-          headerTintColor: Colors.primaryTextColor,
-          headerBackTitleVisible: false,
-          headerLeft: () => defaultHeaderLeft(navigation, keyboardHeight),
+          headerShown: false,
         })}
       />
+
+      {/* darkmode done */}
       <PortfolioStack.Screen
         name={screenTitle.TRANSFI_SCREEN}
         component={TransFiScreen}
         options={({ navigation, route }) => ({
-          headerTransparent: false,
-          headerShadowVisible: false,
-          title: t('TRANSFI'),
-          headerTitleAlign: 'center',
-          headerTitleStyle: portfolioStackScreenHeaderTitleStyles,
-          navigationOptions: {
-            tabBarVisible: false,
-          },
-
-          headerTintColor: Colors.primaryTextColor,
-          headerBackTitleVisible: false,
-          headerLeft: () => defaultHeaderLeft(navigation, keyboardHeight),
+          header: () => (
+            <CustomHeader
+              title={t('TRANSFI')}
+              navigation={navigation}
+              keyboardHeight={keyboardHeight}
+            />
+          ),
         })}
       />
 
+      {/* darkmode done */}
       <PortfolioStack.Screen
         name={screenTitle.TOKEN_OVERVIEW}
         component={TokenOverviewV2}
         options={({ navigation, route }) => ({
-          headerTransparent: false,
-          headerShadowVisible: false,
-          title: '',
-          headerTitleAlign: 'center',
-          headerTitleStyle: portfolioStackScreenHeaderTitleStyles,
-          navigationOptions: {
-            tabBarVisible: false,
-          },
-          headerTintColor: Colors.primaryTextColor,
-          headerBackTitleVisible: false,
-          headerLeft: () => defaultHeaderLeft(navigation, keyboardHeight),
+          headerShown: false,
         })}
       />
 
+      {/* darkmode done */}
       <PortfolioStack.Screen
         name={screenTitle.COSMOS_VALIDATORS}
         component={CosmosValidators}
         options={({ navigation, route }) => ({
-          headerTransparent: false,
-          headerShadowVisible: false,
-          headerTitleAlign: 'center',
-          title: '',
-          headerTitleStyle: portfolioStackScreenHeaderTitleStyles,
-          navigationOptions: {
-            tabBarVisible: false,
-          },
-
-          headerTintColor: Colors.primaryTextColor,
-          headerBackTitleVisible: false,
-          headerLeft: () => defaultHeaderLeft(navigation, keyboardHeight),
+          headerShown: false,
         })}
       />
 
@@ -343,43 +339,37 @@ export function PortfolioStackScreen() {
         })}
       />
 
+      {/* darkmode done */}
       <PortfolioStack.Screen
         name={screenTitle.COSMOS_REVALIDATOR}
         component={CosmosSelectReValidator}
         options={({ navigation, route }) => ({
-          headerTransparent: false,
-          headerShadowVisible: false,
-          headerTitleAlign: 'center',
-          title: 'Re-Validate to',
-          headerTitleStyle: portfolioStackScreenHeaderTitleStyles,
-          navigationOptions: {
-            tabBarVisible: false,
-          },
-
-          headerTintColor: Colors.primaryTextColor,
-          headerBackTitleVisible: false,
-          headerLeft: () => defaultHeaderLeft(navigation, keyboardHeight),
+          header: () => (
+            <CustomHeader
+              title={t('RE_VALIDATE_TO')}
+              navigation={navigation}
+              keyboardHeight={keyboardHeight}
+            />
+          ),
         })}
       />
 
+      {/* darkmode done */}
       <PortfolioStack.Screen
         name={screenTitle.TRANS_DETAIL}
         component={TransDetail}
         options={({ navigation, route }) => ({
-          headerTransparent: false,
-          headerShadowVisible: false,
-          title: t('TRAN_DETAIL'),
-          navigationOptions: {
-            tabBarVisible: false,
-          },
-          headerTitleAlign: 'center',
-          headerTitleStyle: portfolioStackScreenHeaderTitleStyles,
-
-          headerTintColor: Colors.primaryTextColor,
-          headerBackTitleVisible: false,
-          headerLeft: () => defaultHeaderLeft(navigation, keyboardHeight),
+          header: () => (
+            <CustomHeader
+              title={t('TRAN_DETAIL')}
+              navigation={navigation}
+              keyboardHeight={keyboardHeight}
+            />
+          ),
         })}
       />
+
+      {/* darkmode done */}
       <PortfolioStack.Screen
         name={screenTitle.NFTS_DETAIL}
         component={TransDetail}
@@ -398,6 +388,8 @@ export function PortfolioStackScreen() {
           headerLeft: () => defaultHeaderLeft(navigation, keyboardHeight),
         })}
       />
+
+      {/* darkmode done */}
       <PortfolioStack.Screen
         name={screenTitle.GEN_WEBVIEW}
         component={TransDetail}
@@ -416,103 +408,81 @@ export function PortfolioStackScreen() {
           headerLeft: () => defaultHeaderLeft(navigation, keyboardHeight),
         })}
       />
+
+      {/* darkmode done */}
       <PortfolioStack.Screen
         name={screenTitle.CB_PAY}
         component={CoinbasePay}
         options={({ navigation, route }) => ({
-          headerTransparent: false,
-          headerShadowVisible: false,
-          title: t('CB_PAY'),
-          navigationOptions: {
-            tabBarVisible: false,
-          },
-          headerTitleAlign: 'center',
-          headerTitleStyle: portfolioStackScreenHeaderTitleStyles,
-          headerLeft: () => defaultHeaderLeft(navigation, keyboardHeight),
+          header: () => (
+            <CustomHeader
+              title={t('CB_PAY')}
+              navigation={navigation}
+              keyboardHeight={keyboardHeight}
+            />
+          ),
         })}
       />
+
+      {/* darkmode done */}
       <PortfolioStack.Screen
         name={screenTitle.ON_META}
         component={Onmeta}
         options={({ navigation, route }) => ({
-          headerTransparent: false,
-          headerShadowVisible: true,
-          title: t('ON_META'),
-          navigationOptions: {
-            tabBarVisible: false,
-          },
-          headerTitleAlign: 'center',
-          headerTitleStyle: {
-            fontFamily: C.fontsName.FONT_BLACK,
-            fontSize: 20,
-            fontWeight: '800',
-          },
-          headerLeft: () => defaultHeaderLeft(navigation, keyboardHeight),
+          header: () => (
+            <CustomHeader
+              title={t('ON_META')}
+              navigation={navigation}
+              keyboardHeight={keyboardHeight}
+            />
+          ),
         })}
       />
+
+      {/* darkmode done */}
       <PortfolioStack.Screen
         name={screenTitle.ENTER_AMOUNT}
         component={EnterAmount}
         options={({ navigation, route }) => ({
-          headerTransparent: false,
-          headerShadowVisible: false,
-          title: t('ENTER_AMOUNT'),
-          navigationOptions: {
-            tabBarVisible: false,
-          },
-          headerStyle: {
-            backgroundColor: Colors.secondaryBackgroundColor,
-          },
-          headerTitleAlign: 'center',
-          headerTitleStyle: portfolioStackScreenHeaderTitleStyles,
-
-          headerTintColor: Colors.primaryTextColor,
-          headerBackTitleVisible: false,
-          headerLeft: () => defaultHeaderLeft(navigation, keyboardHeight),
+          header: () => (
+            <CustomHeader
+              title={t('ENTER_AMOUNT')}
+              navigation={navigation}
+              keyboardHeight={keyboardHeight}
+            />
+          ),
         })}
       />
+
+      {/* darkmode done */}
       <PortfolioStack.Screen
         name={screenTitle.SEND_TO}
         component={SendTo}
         options={({ navigation, route }) => ({
-          headerTransparent: false,
-          headerShadowVisible: false,
-          title: t('SEND_TO'),
-          navigationOptions: {
-            tabBarVisible: false,
-          },
-          headerTitleAlign: 'center',
-          headerTitleStyle: {
-            fontFamily: C.fontsName.FONT_BLACK,
-            fontSize: 20,
-            fontWeight: '700',
-            color: Colors.primaryTextColor,
-          },
-          headerLeft: () => defaultHeaderLeft(navigation, keyboardHeight),
+          header: () => (
+            <CustomHeader
+              title={t('SEND_TO')}
+              navigation={navigation}
+              keyboardHeight={keyboardHeight}
+            />
+          ),
         })}
       />
+
       <PortfolioStack.Screen
         name={screenTitle.QR_CODE_SCANNER}
         component={QRScanner}
         options={({ navigation, route }) => ({
-          headerTransparent: true,
-          headerShadowVisible: false,
-          title: 'SCAN QR CODE',
-          headerTitleAlign: 'center',
-          headerTitleStyle: {
-            fontFamily: C.fontsName.FONT_BLACK,
-            fontWeight: '800',
-            fontSize: 22,
-            color: Colors.whiteColor,
-          },
-          navigationOptions: {
-            tabBarVisible: false,
-          },
-
-          headerTintColor: Colors.primaryTextColor,
-          headerBackTitleVisible: false,
+          header: () => (
+            <CustomHeader
+              title={t('SCAN QR CODE')}
+              navigation={navigation}
+              keyboardHeight={keyboardHeight}
+            />
+          ),
         })}
       />
+
       <PortfolioStack.Screen
         name={screenTitle.IBC_SCREEN}
         component={IBC}
@@ -533,15 +503,13 @@ export function PortfolioStackScreen() {
         name={screenTitle.IMPORT_WALLET}
         component={ImportWallet}
         options={({ navigation, route }) => ({
-          headerTransparent: false,
-          headerShadowVisible: false,
-          title: t('IMPORT_WALLET'),
-          navigationOptions: {
-            tabBarVisible: false,
-          },
-          headerTitleAlign: 'center',
-          headerTitleStyle: portfolioStackScreenHeaderTitleStyles,
-          headerLeft: () => defaultHeaderLeft(navigation, keyboardHeight),
+          header: () => (
+            <CustomHeader
+              title={t('IMPORT_WALLET')}
+              navigation={navigation}
+              keyboardHeight={keyboardHeight}
+            />
+          ),
         })}
       />
       <PortfolioStack.Screen
@@ -559,26 +527,23 @@ export function PortfolioStackScreen() {
           headerLeft: () => defaultHeaderLeft(navigation, keyboardHeight),
         })}
       />
+
+      {/* darkmode done */}
       <PortfolioStack.Screen
         name={screenTitle.QRCODE}
         component={QRCode}
         options={({ navigation }) => ({
-          headerTransparent: false,
-          headerShadowVisible: false,
-          title: t('RECEIVE'),
-          headerTitleAlign: 'center',
-          headerTitleStyle: portfolioStackScreenHeaderTitleStyles,
-          headerStyle: {
-            backgroundColor: 'white',
-            elevation: 0,
-          },
-
-          headerTintColor: Colors.primaryTextColor,
-          headerBackTitleVisible: false,
-          headerLeft: () => defaultHeaderLeft(navigation, keyboardHeight),
+          header: () => (
+            <CustomHeader
+              title={t('RECEIVE')}
+              navigation={navigation}
+              keyboardHeight={keyboardHeight}
+            />
+          ),
         })}
       />
 
+      {/* darkmode done */}
       <PortfolioStack.Screen
         name={screenTitle.BRIDGE_SKIP_API_SCREEN}
         component={Bridge}
@@ -623,6 +588,7 @@ export function PortfolioStackScreen() {
           headerLeft: () => defaultHeaderLeft(navigation, keyboardHeight),
         })}
       />
+
       <PortfolioStack.Screen
         name={screenTitle.PIN}
         component={PinValidation}
@@ -683,6 +649,8 @@ export function PortfolioStackScreen() {
           headerLeft: () => defaultHeaderLeft(navigation, keyboardHeight),
         })}
       />
+
+      {/* darkmode done */}
       <PortfolioStack.Screen
         name={screenTitle.LOCKDOWN_MODE}
         component={LockdownMode}
@@ -690,6 +658,8 @@ export function PortfolioStackScreen() {
           headerShown: false,
         })}
       />
+
+      {/* darkmode done */}
       <PortfolioStack.Screen
         name={screenTitle.LOCKDOWN_MODE_AUTH}
         component={LockdownModeAuth}
@@ -704,20 +674,23 @@ export function PortfolioStackScreen() {
           headerLeft: () => defaultHeaderLeft(navigation, keyboardHeight),
         })}
       />
+
+      {/* darkmode done */}
       <PortfolioStack.Screen
         name={screenTitle.INTERNATIONAL_CARD_CONTROLS}
         component={CardControlsSettings}
         options={({ navigation }) => ({
-          headerTransparent: false,
-          headerShadowVisible: false,
-          title: 'International Transactions',
-          headerTitleAlign: 'left',
-          headerTitleStyle: portfolioStackScreenHeaderTitleStyles,
-          headerTintColor: Colors.primaryTextColor,
-          headerBackTitleVisible: false,
-          headerLeft: () => defaultHeaderLeft(navigation, keyboardHeight),
+          header: () => (
+            <CustomHeader
+              title='International Transactions'
+              navigation={navigation}
+              keyboardHeight={keyboardHeight}
+            />
+          ),
         })}
       />
+
+      {/* darkmode done */}
       <PortfolioStack.Screen
         name={screenTitle.CARD_CONTROLS_MENU}
         component={CardControlsMenu}
@@ -725,20 +698,23 @@ export function PortfolioStackScreen() {
           headerShown: false,
         })}
       />
+
+      {/* darkmode done */}
       <PortfolioStack.Screen
         name={screenTitle.DOMESTIC_CARD_CONTROLS}
         component={CardControlsSettings}
         options={({ navigation, route }) => ({
-          headerTransparent: false,
-          headerShadowVisible: false,
-          title: 'Domestic Transactions',
-          headerTitleAlign: 'left',
-          headerTitleStyle: portfolioStackScreenHeaderTitleStyles,
-          headerTintColor: Colors.primaryTextColor,
-          headerBackTitleVisible: false,
-          headerLeft: () => defaultHeaderLeft(navigation, keyboardHeight),
+          header: () => (
+            <CustomHeader
+              title='Domestic Transactions'
+              navigation={navigation}
+              keyboardHeight={keyboardHeight}
+            />
+          ),
         })}
       />
+
+      {/* darkmode done */}
       <PortfolioStack.Screen
         name={screenTitle.EDIT_USAGE_LIMITS}
         component={EditLimits}
@@ -746,6 +722,8 @@ export function PortfolioStackScreen() {
           headerShown: false,
         })}
       />
+
+      {/* darkmode done */}
       <PortfolioStack.Screen
         name={screenTitle.CARD_UNLOCK_AUTH}
         component={CardUnlockAuth}
@@ -760,6 +738,8 @@ export function PortfolioStackScreen() {
           headerLeft: () => defaultHeaderLeft(navigation, keyboardHeight),
         })}
       />
+
+      {/* darkmode done */}
       <PortfolioStack.Screen
         name={screenTitle.CARD_ACTIAVTION_SCREEN}
         component={ActivateCardScreen}
@@ -795,12 +775,14 @@ export function DebitCardStackScreen({ route }) {
 
   return (
     <FundCardStack.Navigator initialRouteName={initialRouteName}>
+      {/* darkmode done */}
       <FundCardStack.Screen
         name={screenTitle.DEBIT_CARD_SCREEN}
         component={DebitCardScreen}
         options={{ headerShown: false }}
       />
 
+      {/* darkmode done */}
       <FundCardStack.Screen
         name={screenTitle.CARD_CONTROLS_MENU}
         component={CardControlsMenu}
@@ -809,6 +791,7 @@ export function DebitCardStackScreen({ route }) {
         })}
       />
 
+      {/* darkmode done */}
       <FundCardStack.Screen
         name={screenTitle.LOCKDOWN_MODE}
         component={LockdownMode}
@@ -817,6 +800,7 @@ export function DebitCardStackScreen({ route }) {
         })}
       />
 
+      {/* darkmode done */}
       <FundCardStack.Screen
         name={screenTitle.TELEGRAM_PIN_SETUP}
         component={SetTelegramPin}
@@ -825,21 +809,22 @@ export function DebitCardStackScreen({ route }) {
         })}
       />
 
+      {/* darkmode done */}
       <FundCardStack.Screen
         name={screenTitle.LOCKDOWN_MODE_AUTH}
         component={LockdownModeAuth}
         options={({ navigation }) => ({
-          headerTransparent: false,
-          headerShadowVisible: false,
-          title: '',
-          headerTitleAlign: 'center',
-          headerTitleStyle: portfolioStackScreenHeaderTitleStyles,
-          headerTintColor: Colors.primaryTextColor,
-          headerBackTitleVisible: false,
-          headerLeft: () => defaultHeaderLeft(navigation, keyboardHeight),
+          header: () => (
+            <CustomHeader
+              title='Lockdown Mode'
+              navigation={navigation}
+              keyboardHeight={keyboardHeight}
+            />
+          ),
         })}
       />
 
+      {/* darkmode done */}
       <FundCardStack.Screen
         name={screenTitle.CARD_UNLOCK_AUTH}
         component={CardUnlockAuth}
@@ -848,51 +833,52 @@ export function DebitCardStackScreen({ route }) {
         })}
       />
 
+      {/* darkmode done */}
       <FundCardStack.Screen
         name={screenTitle.THREE_D_SECURE}
         component={ThreeDSecure}
         options={({ navigation, route }) => ({
-          headerTransparent: false,
-          headerShadowVisible: false,
-          title: '3D Secure',
-          headerTitleAlign: 'left',
-          headerTitleStyle: portfolioStackScreenHeaderTitleStyles,
-          headerTintColor: Colors.primaryTextColor,
-          headerBackTitleVisible: false,
-          headerLeft: () => defaultHeaderLeft(navigation, keyboardHeight),
+          header: () => (
+            <CustomHeader
+              title='3D Secure'
+              navigation={navigation}
+              keyboardHeight={keyboardHeight}
+            />
+          ),
         })}
       />
 
+      {/* darkmode done */}
       <FundCardStack.Screen
         name={screenTitle.DOMESTIC_CARD_CONTROLS}
         component={CardControlsSettings}
         options={({ navigation, route }) => ({
-          headerTransparent: false,
-          headerShadowVisible: false,
-          title: 'Domestic Transactions',
-          headerTitleAlign: 'left',
-          headerTitleStyle: portfolioStackScreenHeaderTitleStyles,
-          headerTintColor: Colors.primaryTextColor,
-          headerBackTitleVisible: false,
-          headerLeft: () => defaultHeaderLeft(navigation, keyboardHeight),
+          header: () => (
+            <CustomHeader
+              title='Domestic Transactions'
+              navigation={navigation}
+              keyboardHeight={keyboardHeight}
+            />
+          ),
         })}
       />
 
+      {/* darkmode done */}
       <FundCardStack.Screen
         name={screenTitle.INTERNATIONAL_CARD_CONTROLS}
         component={CardControlsSettings}
         options={({ navigation }) => ({
-          headerTransparent: false,
-          headerShadowVisible: false,
-          title: 'International Transactions',
-          headerTitleAlign: 'left',
-          headerTitleStyle: portfolioStackScreenHeaderTitleStyles,
-          headerTintColor: Colors.primaryTextColor,
-          headerBackTitleVisible: false,
-          headerLeft: () => defaultHeaderLeft(navigation, keyboardHeight),
+          header: () => (
+            <CustomHeader
+              title='International Transactions'
+              navigation={navigation}
+              keyboardHeight={keyboardHeight}
+            />
+          ),
         })}
       />
 
+      {/* darkmode done */}
       <FundCardStack.Screen
         name={screenTitle.EDIT_USAGE_LIMITS}
         component={EditLimits}
@@ -907,6 +893,7 @@ export function DebitCardStackScreen({ route }) {
         options={() => ({ headerShown: false })}
       />
 
+      {/* darkmode done */}
       <FundCardStack.Screen
         name={screenTitle.BRIDGE_CARD_SCREEN}
         component={CypherCardScreen}
@@ -915,21 +902,22 @@ export function DebitCardStackScreen({ route }) {
         }}
       />
 
+      {/* darkmode done */}
       <FundCardStack.Screen
         name={screenTitle.CARD_TRANSACTIONS_SCREEN}
         component={CardTransactions}
         options={({ navigation }) => ({
-          headerTransparent: false,
-          headerShadowVisible: false,
-          title: 'Card Transactions',
-          headerTitleAlign: 'center',
-          headerTitleStyle: portfolioStackScreenHeaderTitleStyles,
-          headerTintColor: Colors.primaryTextColor,
-          headerBackTitleVisible: false,
-          headerLeft: () => defaultHeaderLeft(navigation, keyboardHeight),
+          header: () => (
+            <CustomHeader
+              title='Card Transactions'
+              navigation={navigation}
+              keyboardHeight={keyboardHeight}
+            />
+          ),
         })}
       />
 
+      {/* darkmode done */}
       <FundCardStack.Screen
         name={screenTitle.BRIDGE_CARD_TRANSACTION_DETAILS_SCREEN}
         component={TransactionDetails}
@@ -938,71 +926,67 @@ export function DebitCardStackScreen({ route }) {
         })}
       />
 
+      {/* darkmode done */}
       <FundCardStack.Screen
         name={screenTitle.BRIDGE_FUND_CARD_SCREEN}
         component={BridgeFundCardScreen}
         options={({ navigation }) => ({
-          headerTransparent: false,
-          headerShadowVisible: false,
-          title: 'Load card',
-          headerTitleAlign: 'center',
-          headerTitleStyle: {
-            ...portfolioStackScreenHeaderTitleStyles,
-          },
-          headerStyle: {
-            backgroundColor: '#F5F6F7',
-          },
-          headerTintColor: Colors.primaryTextColor,
-          headerBackTitleVisible: false,
-          headerLeft: () => defaultHeaderLeft(navigation, keyboardHeight),
+          header: () => (
+            <CustomHeader
+              title='Load card'
+              navigation={navigation}
+              keyboardHeight={keyboardHeight}
+            />
+          ),
         })}
       />
 
+      {/* darkmode done */}
       <FundCardStack.Screen
         name={screenTitle.CARD_QUOTE_SCREEN}
         component={CardQuote}
         options={({ navigation }) => ({
-          headerTransparent: false,
-          headerShadowVisible: false,
-          title: 'Load card',
-          headerTitleAlign: 'center',
-          headerTitleStyle: portfolioStackScreenHeaderTitleStyles,
-          headerTintColor: Colors.primaryTextColor,
-          headerBackTitleVisible: false,
-          headerLeft: () => defaultHeaderLeft(navigation, keyboardHeight),
+          header: () => (
+            <CustomHeader
+              title='Load card'
+              navigation={navigation}
+              keyboardHeight={keyboardHeight}
+            />
+          ),
         })}
       />
 
+      {/* darkmode done */}
       <FundCardStack.Screen
         name={screenTitle.AUTO_LOAD_SCREEN}
         component={AutoLoad}
         options={({ navigation }) => ({
-          headerTransparent: false,
-          headerShadowVisible: false,
-          title: 'Auto Load',
-          headerTitleAlign: 'center',
-          headerTitleStyle: portfolioStackScreenHeaderTitleStyles,
-          headerTintColor: Colors.primaryTextColor,
-          headerBackTitleVisible: false,
-          headerLeft: () => defaultHeaderLeft(navigation, keyboardHeight),
+          header: () => (
+            <CustomHeader
+              title='Auto Load'
+              navigation={navigation}
+              keyboardHeight={keyboardHeight}
+            />
+          ),
         })}
       />
 
+      {/* darkmode done */}
       <FundCardStack.Screen
         name={screenTitle.PREVIEW_AUTO_LOAD_SCREEN}
         component={PreviewAutoLoad}
         options={({ navigation }) => ({
-          headerTransparent: false,
-          headerShadowVisible: false,
-          title: 'Auto Load',
-          headerTitleAlign: 'center',
-          headerTitleStyle: portfolioStackScreenHeaderTitleStyles,
-          headerTintColor: Colors.primaryTextColor,
-          headerBackTitleVisible: false,
-          headerLeft: () => defaultHeaderLeft(navigation, keyboardHeight),
+          header: () => (
+            <CustomHeader
+              title='Auto Load'
+              navigation={navigation}
+              keyboardHeight={keyboardHeight}
+            />
+          ),
         })}
       />
 
+      {/* darkmode done */}
       <FundCardStack.Screen
         name={screenTitle.BRIDGE_CARD_REVEAL_AUTH_SCREEN}
         component={CardRevealAuthScreen}
@@ -1011,6 +995,7 @@ export function DebitCardStackScreen({ route }) {
         })}
       />
 
+      {/* not uses anywhere checka nd confirm */}
       <FundCardStack.Screen
         name={screenTitle.CARD_ACTIVATION_CONSENT_SCREEN}
         component={CardActivationConsent}
@@ -1019,21 +1004,22 @@ export function DebitCardStackScreen({ route }) {
         })}
       />
 
+      {/* darkmode done */}
       <FundCardStack.Screen
         name={screenTitle.CARD_ACTIAVTION_SCREEN}
         component={ActivateCardScreen}
         options={({ navigation }) => ({
-          headerTransparent: false,
-          headerShadowVisible: false,
-          title: '',
-          headerTitleAlign: 'center',
-          headerTitleStyle: portfolioStackScreenHeaderTitleStyles,
-          headerTintColor: Colors.primaryTextColor,
-          headerBackTitleVisible: false,
-          headerLeft: () => defaultHeaderLeft(navigation, keyboardHeight),
+          header: () => (
+            <CustomHeader
+              title='Activate Card'
+              navigation={navigation}
+              keyboardHeight={keyboardHeight}
+            />
+          ),
         })}
       />
 
+      {/* darkmode done */}
       <FundCardStack.Screen
         name={screenTitle.CARD_SET_PIN_SCREEN}
         component={SetPinScreen}
@@ -1042,97 +1028,93 @@ export function DebitCardStackScreen({ route }) {
         })}
       />
 
+      {/* darkmode done */}
       <FundCardStack.Screen
         name={screenTitle.LINK_ANOTHER_WALLET}
         component={LinkAnotherWallet}
         options={({ navigation }) => ({
-          headerTransparent: false,
-          headerShadowVisible: false,
-          title: 'Link Another Wallet',
-          headerTitleAlign: 'center',
-          headerTitleStyle: portfolioStackScreenHeaderTitleStyles,
-          headerTintColor: Colors.primaryTextColor,
-          headerBackTitleVisible: false,
-          headerLeft: () => defaultHeaderLeft(navigation, keyboardHeight),
+          header: () => (
+            <CustomHeader
+              title='Link Another Wallet'
+              navigation={navigation}
+              keyboardHeight={keyboardHeight}
+            />
+          ),
         })}
       />
 
+      {/* darkmode done */}
       <FundCardStack.Screen
         name={screenTitle.LINKED_WALLETS}
         component={LinkedWallets}
         options={({ navigation }) => ({
-          headerTransparent: false,
-          headerShadowVisible: false,
-          title: 'Linked Wallets',
-          headerTitleAlign: 'center',
-          headerTitleStyle: portfolioStackScreenHeaderTitleStyles,
-          headerTintColor: Colors.primaryTextColor,
-          headerBackTitleVisible: false,
-          headerLeft: () => defaultHeaderLeft(navigation, keyboardHeight),
+          header: () => (
+            <CustomHeader
+              title='Linked Wallets'
+              navigation={navigation}
+              keyboardHeight={keyboardHeight}
+            />
+          ),
         })}
       />
 
+      {/* darkmode done */}
       <FundCardStack.Screen
         name={screenTitle.LINK_WALLET_AUTH}
         component={LinkWalletAuth}
         options={({ navigation, route }) => ({
-          headerTransparent: false,
-          headerShadowVisible: false,
-          title: '',
-          headerTitleAlign: 'center',
-          headerTitleStyle: portfolioStackScreenHeaderTitleStyles,
-          headerTintColor: Colors.primaryTextColor,
-          headerBackTitleVisible: false,
-          headerLeft: () => defaultHeaderLeft(navigation, keyboardHeight),
+          header: () => (
+            <CustomHeader
+              title='Link Wallet'
+              navigation={navigation}
+              keyboardHeight={keyboardHeight}
+            />
+          ),
         })}
       />
 
+      {/* darkmode done */}
       <FundCardStack.Screen
         name={screenTitle.CARD_NOTIFICATION_SETTINGS}
         component={CardNotificationSettings}
         options={({ navigation, route }) => ({
-          headerTransparent: false,
-          headerShadowVisible: false,
-          title: 'Notification Settings',
-          headerTitleAlign: 'center',
-          headerTitleStyle: portfolioStackScreenHeaderTitleStyles,
-          headerTintColor: Colors.primaryTextColor,
-          headerBackTitleVisible: false,
-          headerLeft: () => defaultHeaderLeft(navigation, keyboardHeight),
+          header: () => (
+            <CustomHeader
+              title='Notification Settings'
+              navigation={navigation}
+              keyboardHeight={keyboardHeight}
+            />
+          ),
         })}
       />
 
+      {/* darkmode done */}
       <FundCardStack.Screen
         name={screenTitle.CARD_UPDATE_CONTACT_DETAILS_SCREEN}
         component={UpdateCardContactDetails}
         options={({ navigation }) => ({
-          headerShown: true,
-          headerTransparent: false,
-          headerShadowVisible: false,
-          title: 'Update Contact Details',
-          navigationOptions: {
-            tabBarVisible: false,
-          },
-          headerTitleAlign: 'center',
-          headerTitleStyle: portfolioStackScreenHeaderTitleStyles,
-          headerBackVisible: false,
-          headerLeft: () => defaultHeaderLeft(navigation, keyboardHeight),
+          header: () => (
+            <CustomHeader
+              title='Update Contact Details'
+              navigation={navigation}
+              keyboardHeight={keyboardHeight}
+            />
+          ),
         })}
       />
 
+      {/* darkmode done */}
       <FundCardStack.Screen
         name={screenTitle.LEGAL_SCREEN}
         component={LegalScreen}
         options={({ navigation }) => ({
-          headerTransparent: false,
-          headerShadowVisible: false,
-          title: t('TERMS_AND_CONDITIONS'),
-          headerTitleAlign: 'center',
-          headerTitleStyle: portfolioStackScreenHeaderTitleStyles,
-
-          headerTintColor: Colors.primaryTextColor,
-          headerBackTitleVisible: false,
-          headerLeft: () => defaultHeaderLeft(navigation, keyboardHeight),
+          header: () => (
+            <CustomHeader
+              title='Terms and Conditions'
+              navigation={navigation}
+              keyboardHeight={keyboardHeight}
+            />
+          ),
         })}
       />
 
@@ -1142,20 +1124,22 @@ export function DebitCardStackScreen({ route }) {
         options={{ headerShown: false }}
       />
 
+      {/* darkmode done */}
       <FundCardStack.Screen
         name={screenTitle.TRANS_DETAIL}
         component={TransDetail}
         options={({ navigation, route }) => ({
-          headerTransparent: false,
-          headerShadowVisible: false,
-          headerTitle: 'Explorer',
-          headerTitleAlign: 'center',
-          headerTitleStyle: portfolioStackScreenHeaderTitleStyles,
-          headerTintColor: Colors.primaryTextColor,
-          headerBackTitleVisible: false,
-          headerLeft: () => defaultHeaderLeft(navigation, keyboardHeight),
+          header: () => (
+            <CustomHeader
+              title='Explorer'
+              navigation={navigation}
+              keyboardHeight={keyboardHeight}
+            />
+          ),
         })}
       />
+
+      {/* darkmode done */}
       <FundCardStack.Screen
         name={screenTitle.ORDER_STEPS_SCREEN}
         component={OrderSteps}
@@ -1163,6 +1147,8 @@ export function DebitCardStackScreen({ route }) {
           headerShown: false,
         })}
       />
+
+      {/* darkmode done */}
       <FundCardStack.Screen
         name={screenTitle.VERIFY_SHIPPING_ADDRESS_SCREEN}
         component={VerifyShippingAddress}
@@ -1177,6 +1163,8 @@ export function DebitCardStackScreen({ route }) {
           headerShown: false,
         })}
       />
+
+      {/* darkmode done */}
       <FundCardStack.Screen
         name={screenTitle.ADD_DELIVERY_ADDRESS_SCREEN}
         component={AddDeliveryAddress}
@@ -1184,6 +1172,8 @@ export function DebitCardStackScreen({ route }) {
           headerShown: false,
         })}
       />
+
+      {/* darkmode done */}
       <FundCardStack.Screen
         name={screenTitle.SHIPPING_CHECKOUT_SCREEN}
         component={ShippingCheckout}
@@ -1191,6 +1181,8 @@ export function DebitCardStackScreen({ route }) {
           headerShown: false,
         })}
       />
+
+      {/* darkmode done */}
       <FundCardStack.Screen
         name={screenTitle.SHIPPING_CONFIRMATION_SCREEN}
         component={ShippingConfirmation}
@@ -1198,6 +1190,8 @@ export function DebitCardStackScreen({ route }) {
           headerShown: false,
         })}
       />
+
+      {/* not routed any where check once if it's actually used */}
       <FundCardStack.Screen
         name={screenTitle.UPGRADE_TO_PHYSICAL_CARD_SCREEN}
         component={UpgradeToPhysicalCardScreen}
@@ -1212,20 +1206,22 @@ export function DebitCardStackScreen({ route }) {
           headerLeft: () => defaultHeaderLeft(navigation, keyboardHeight),
         })}
       />
+
+      {/* not routed any where check once if it's actually used */}
       <FundCardStack.Screen
         name={screenTitle.SHIPPING_DETAILS_OTP_SCREEN}
         component={ShippingDetailsOTPScreen}
         options={({ navigation }) => ({
-          headerTransparent: false,
-          headerShadowVisible: false,
-          headerTitleShown: false,
-          title: '',
-          headerTitleStyle: portfolioStackScreenHeaderTitleStyles,
-          headerTintColor: Colors.primaryTextColor,
-          headerBackTitleVisible: false,
-          headerLeft: () => defaultHeaderLeft(navigation, keyboardHeight),
+          header: () => (
+            <CustomHeader
+              title='Move funds'
+              navigation={navigation}
+              keyboardHeight={keyboardHeight}
+            />
+          ),
         })}
       />
+
       <FundCardStack.Screen
         name={screenTitle.SOCIAL_MEDIA_SCREEN}
         component={SocialMediaScreen}
@@ -1240,6 +1236,7 @@ export function DebitCardStackScreen({ route }) {
         })}
       />
 
+      {/* darkmode done */}
       <FundCardStack.Screen
         name={screenTitle.CARD_WELCOME_SCREEN}
         component={WelcomeSceens}
@@ -1248,6 +1245,7 @@ export function DebitCardStackScreen({ route }) {
         }}
       />
 
+      {/* darkmode done */}
       <FundCardStack.Screen
         name={screenTitle.CARD_SIGNUP_OTP_VERIFICATION}
         component={OTPVerification}
@@ -1256,6 +1254,7 @@ export function DebitCardStackScreen({ route }) {
         })}
       />
 
+      {/* darkmode done */}
       <FundCardStack.Screen
         name={screenTitle.TELEGRAM_SETUP}
         component={TelegramSetup}
@@ -1264,6 +1263,7 @@ export function DebitCardStackScreen({ route }) {
         })}
       />
 
+      {/* darkmode done */}
       <FundCardStack.Screen
         name={screenTitle.GET_YOUR_CARD}
         component={GetYourCardInfo}
@@ -1272,6 +1272,7 @@ export function DebitCardStackScreen({ route }) {
         })}
       />
 
+      {/* darkmode done */}
       <FundCardStack.Screen
         name={screenTitle.CARD_APPLICATION}
         component={CardApplicationV2}
@@ -1280,6 +1281,7 @@ export function DebitCardStackScreen({ route }) {
         })}
       />
 
+      {/* darkmode done */}
       <FundCardStack.Screen
         name={screenTitle.I_HAVE_REFERRAL_CODE_SCREEN}
         component={IHaveReferralCodeScreen}
@@ -1288,22 +1290,22 @@ export function DebitCardStackScreen({ route }) {
         }}
       />
 
+      {/* darkmode done */}
       <FundCardStack.Screen
         name={screenTitle.MIGRATE_FUNDS}
         component={MigratePCFunds}
         options={({ navigation }): NativeStackNavigationOptions => ({
-          headerTransparent: true,
-          headerShadowVisible: false,
-          headerTitle: 'Move funds',
-          headerTintColor: '#000000',
-          headerTitleStyle: {
-            fontSize: 28,
-            fontWeight: 'bold',
-          },
-          headerLeft: () => defaultHeaderLeft(navigation, keyboardHeight),
+          header: () => (
+            <CustomHeader
+              title='Move funds'
+              navigation={navigation}
+              keyboardHeight={keyboardHeight}
+            />
+          ),
         })}
       />
 
+      {/* darkmode done */}
       <FundCardStack.Screen
         name={screenTitle.CRYPTO_WITHDRAWAL}
         component={CryptoWithdrawal}
@@ -1311,6 +1313,7 @@ export function DebitCardStackScreen({ route }) {
           headerShown: false,
         })}
       />
+      {/* darkmode done */}
       <FundCardStack.Screen
         name={screenTitle.WITHDRAW_CONFIRMATION}
         component={WithdrawConfirmation}
@@ -1318,6 +1321,7 @@ export function DebitCardStackScreen({ route }) {
           headerShown: false,
         })}
       />
+      {/* darkmode done */}
       <FundCardStack.Screen
         name={screenTitle.WITHDRAW_SUCCESS}
         component={WithDrawSuccess}
@@ -1332,6 +1336,7 @@ export function DebitCardStackScreen({ route }) {
           headerShown: false,
         })}
       />
+      {/* darkmode done */}
       <FundCardStack.Screen
         name={screenTitle.GLOBAL_CARD_OPTIONS}
         component={GlobalOptions}
@@ -1339,6 +1344,7 @@ export function DebitCardStackScreen({ route }) {
           headerShown: false,
         })}
       />
+      {/* darkmode done */}
       <FundCardStack.Screen
         name={screenTitle.MANAGE_SUBSCRIPTION}
         component={ManageSubscription}
@@ -1346,6 +1352,7 @@ export function DebitCardStackScreen({ route }) {
           headerShown: false,
         })}
       />
+      {/* darkmode done */}
       <FundCardStack.Screen
         name={screenTitle.FIRST_LOAD_CARD}
         component={FirstLoadCard}
@@ -1446,6 +1453,7 @@ export function SwapStackScreen({
   }, []);
   return (
     <SwapStack.Navigator initialRouteName={screenTitle.BRIDGE_SKIP_API_SCREEN}>
+      {/* darkmode done */}
       <SwapStack.Screen
         name={screenTitle.BRIDGE_SKIP_API_SCREEN}
         component={Bridge}
@@ -1479,16 +1487,6 @@ export function OptionsStackScreen({
     return true;
   };
 
-  const optionsStackScreenHeaderTitleStyles: StyleProp<
-    Pick<TextStyle, 'fontFamily' | 'fontSize' | 'fontWeight'> & {
-      color?: string | undefined;
-    }
-  > = {
-    fontFamily: C.fontsName.FONT_BLACK,
-    fontSize: 22,
-    fontWeight: '800',
-  };
-
   useEffect(() => {
     BackHandler.addEventListener('hardwareBackPress', handleBackButton);
     return () => {
@@ -1498,28 +1496,29 @@ export function OptionsStackScreen({
 
   return (
     <OptionsStack.Navigator initialRouteName={screenTitle.OPTIONS_SCREEN}>
+      {/* darkmode done */}
       <OptionsStack.Screen
         name={screenTitle.OPTIONS_SCREEN}
         component={OptionsScreen}
         options={{ headerShown: false }}
       />
+
+      {/* darkmode done */}
       <OptionsStack.Screen
         name={screenTitle.ACTIVITIES}
         component={ActivityScreen}
         options={({ navigation }) => ({
-          headerTransparent: false,
-          headerShadowVisible: false,
-          headerTitleAlign: 'center',
-          headerTitleStyle: optionsStackScreenHeaderTitleStyles,
-          navigationOptions: {
-            tabBarVisible: false,
-          },
-          headerTintColor: Colors.primaryTextColor,
-          headerBackTitleVisible: false,
-          headerLeft: () => defaultHeaderLeft(navigation, keyboardHeight),
+          header: () => (
+            <CustomHeader
+              title='Activities'
+              navigation={navigation}
+              keyboardHeight={keyboardHeight}
+            />
+          ),
         })}
       />
 
+      {/* darkmode done */}
       <OptionsStack.Screen
         name={screenTitle.REWARDS}
         component={Rewards}
@@ -1528,6 +1527,7 @@ export function OptionsStackScreen({
         })}
       />
 
+      {/* darkmode done */}
       <OptionsStack.Screen
         name={screenTitle.REFERRALS}
         component={Referrals}
@@ -1536,6 +1536,7 @@ export function OptionsStackScreen({
         })}
       />
 
+      {/* darkmode done */}
       <OptionsStack.Screen
         name={screenTitle.REFERRAL_REWARDS}
         component={ReferralRewards}
@@ -1543,6 +1544,8 @@ export function OptionsStackScreen({
           headerShown: false,
         })}
       />
+
+      {/* darkmode done */}
       <OptionsStack.Screen
         name={screenTitle.PIN}
         component={PinValidation}
@@ -1550,352 +1553,316 @@ export function OptionsStackScreen({
           headerShown: false,
         })}
       />
-      <PortfolioStack.Screen
+
+      {/* darkmode done */}
+      <OptionsStack.Screen
         name={screenTitle.SET_PIN}
         component={SetPin}
         options={() => ({
           headerShown: false,
         })}
       />
-      <PortfolioStack.Screen
+
+      {/* darkmode done */}
+      <OptionsStack.Screen
         name={screenTitle.CONFIRM_PIN}
         component={ConfirmPin}
         options={({ navigation }) => ({
-          headerTransparent: false,
-          headerShadowVisible: false,
-          title: t('CONFIRM_PIN'),
-          headerTitleAlign: 'center',
-          headerTitleStyle: optionsStackScreenHeaderTitleStyles,
-          navigationOptions: {
-            tabBarVisible: false,
-          },
-
-          headerTintColor: Colors.primaryTextColor,
-          headerBackTitleVisible: false,
-          headerLeft: () => defaultHeaderLeft(navigation, keyboardHeight),
+          header: () => (
+            <CustomHeader
+              title={t('CONFIRM_PIN')}
+              navigation={navigation}
+              keyboardHeight={keyboardHeight}
+            />
+          ),
         })}
       />
+
+      {/* darkmode done */}
       <OptionsStack.Screen
         name={screenTitle.ACTIVITYFILTER}
         component={ActivityFilter}
         options={({ navigation }) => ({
-          headerTransparent: false,
-          headerShadowVisible: false,
-          headerTitleAlign: 'center',
-          title: 'Activity Filter',
-          headerTitleStyle: optionsStackScreenHeaderTitleStyles,
-          navigationOptions: {
-            tabBarVisible: false,
-          },
-          headerTintColor: Colors.primaryTextColor,
-          headerBackTitleVisible: false,
-          headerLeft: () => defaultHeaderLeft(navigation, keyboardHeight),
+          header: () => (
+            <CustomHeader
+              title='Activity Filter'
+              navigation={navigation}
+              keyboardHeight={keyboardHeight}
+            />
+          ),
         })}
       />
 
+      {/* darkmode done */}
       <OptionsStack.Screen
         name={screenTitle.MANAGE_WALLET}
         component={ManageWallet}
         options={({ navigation, route }) => ({
-          headerTransparent: false,
-          headerShadowVisible: false,
-          title: t('MANAGE_WALLET'),
-          headerTitleAlign: 'center',
-          headerTitleStyle: optionsStackScreenHeaderTitleStyles,
-          navigationOptions: {
-            tabBarVisible: false,
-          },
-
-          headerTintColor: Colors.primaryTextColor,
-          headerBackTitleVisible: false,
-          headerLeft: () => defaultHeaderLeft(navigation, keyboardHeight),
+          header: () => (
+            <CustomHeader
+              title={t('MANAGE_WALLET')}
+              navigation={navigation}
+              keyboardHeight={keyboardHeight}
+            />
+          ),
         })}
       />
 
+      {/* darkmode done */}
       <OptionsStack.Screen
         name={screenTitle.SECURITY_PRIVACY}
         component={SecurityPrivacy}
-        options={({ navigation, route }) => ({
-          headerTransparent: false,
-          headerShadowVisible: false,
-          title: t('SECURITY_PRIVACY'),
-          headerTitleAlign: 'center',
-          headerTitleStyle: optionsStackScreenHeaderTitleStyles,
-          navigationOptions: {
-            tabBarVisible: false,
-          },
-
-          headerTintColor: Colors.primaryTextColor,
-          headerBackTitleVisible: false,
-          headerLeft: () => defaultHeaderLeft(navigation, keyboardHeight),
+        options={({ navigation }) => ({
+          header: () => (
+            <CustomHeader
+              title={t('SECURITY_PRIVACY')}
+              navigation={navigation}
+              keyboardHeight={keyboardHeight}
+            />
+          ),
         })}
       />
+
+      {/* darkmode done */}
       <OptionsStack.Screen
         name={screenTitle.SEED_PHRASE}
         component={SeedPhrase}
         options={({ navigation }) => ({
-          headerTransparent: false,
-          headerShadowVisible: false,
-          title: t('SEED_PHRASE'),
-          headerTitleAlign: 'center',
-          headerTitleStyle: optionsStackScreenHeaderTitleStyles,
-          navigationOptions: {
-            tabBarVisible: false,
-          },
-          headerLeft: () => defaultHeaderLeft(navigation, keyboardHeight),
+          header: () => (
+            <CustomHeader
+              title={t('SEED_PHRASE')}
+              navigation={navigation}
+              keyboardHeight={keyboardHeight}
+            />
+          ),
         })}
       />
+
+      {/* darkmode done */}
       <OptionsStack.Screen
         name={screenTitle.PRIVATE_KEY}
         component={PrivateKey}
         options={({ navigation, route }) => ({
-          headerTransparent: false,
-          headerShadowVisible: false,
-          title: t('PRIVATE_KEY'),
-          headerTitleAlign: 'center',
-          headerTitleStyle: optionsStackScreenHeaderTitleStyles,
-          navigationOptions: {
-            tabBarVisible: false,
-          },
-          headerLeft: () => defaultHeaderLeft(navigation, keyboardHeight),
+          header: () => (
+            <CustomHeader
+              title={t('PRIVATE_KEY')}
+              navigation={navigation}
+              keyboardHeight={keyboardHeight}
+            />
+          ),
         })}
       />
+
+      {/* darkmode done */}
       <OptionsStack.Screen
         name={screenTitle.NOTIFICATION_SETTINGS}
         component={NotificationSettings}
         options={({ navigation, route }) => ({
-          headerTransparent: false,
-          headerShadowVisible: false,
-          title: t('NOTIFICATION_PREFERENCES'),
-          headerTitleAlign: 'center',
-          headerTitleStyle: optionsStackScreenHeaderTitleStyles,
-          navigationOptions: {
-            tabBarVisible: false,
-          },
-
-          headerTintColor: Colors.primaryTextColor,
-          headerBackTitleVisible: false,
-          headerLeft: () => defaultHeaderLeft(navigation, keyboardHeight),
+          header: () => (
+            <CustomHeader
+              title={t('NOTIFICATION_PREFERENCES')}
+              navigation={navigation}
+              keyboardHeight={keyboardHeight}
+            />
+          ),
         })}
       />
+
+      {/* darkmode done */}
       <OptionsStack.Screen
         name={screenTitle.ADVANCED_SETTINGS}
         component={AdvancedSettings}
         options={({ navigation }) => ({
-          headerTransparent: false,
-          headerShadowVisible: false,
-          title: t('ADVANCED_SETTINGS'),
-          headerTitleAlign: 'center',
-          headerTitleStyle: optionsStackScreenHeaderTitleStyles,
-          navigationOptions: {
-            tabBarVisible: false,
-          },
-          headerTintColor: Colors.primaryTextColor,
-          headerBackTitleVisible: false,
-          headerLeft: () => defaultHeaderLeft(navigation, keyboardHeight),
+          header: () => (
+            <CustomHeader
+              title={t('ADVANCED_SETTINGS')}
+              navigation={navigation}
+              keyboardHeight={keyboardHeight}
+            />
+          ),
         })}
       />
+
+      {/* darkmode done */}
       <OptionsStack.Screen
         name={screenTitle.CHANGE_PIN}
         component={ChangePin}
         options={({ navigation, route }) => ({
-          headerTransparent: false,
-          headerShadowVisible: false,
-          title: t('CHANGE_PIN'),
-          headerTitleAlign: 'center',
-          headerTitleStyle: optionsStackScreenHeaderTitleStyles,
-          navigationOptions: {
-            tabBarVisible: false,
-          },
-          headerTintColor: Colors.primaryTextColor,
-          headerBackTitleVisible: false,
-          headerLeft: () => defaultHeaderLeft(navigation, keyboardHeight),
+          header: () => (
+            <CustomHeader
+              title={t('CHANGE_PIN')}
+              navigation={navigation}
+              keyboardHeight={keyboardHeight}
+            />
+          ),
         })}
       />
+
+      {/* darkmode done */}
       <OptionsStack.Screen
         name={screenTitle.CONFIRM_CHANGE_PIN}
         component={ConfirmPin}
         options={({ navigation, route }) => ({
-          headerTransparent: false,
-          headerShadowVisible: false,
-          title: t('CONFIRM_PIN'),
-          headerTitleAlign: 'center',
-          headerTitleStyle: optionsStackScreenHeaderTitleStyles,
-          navigationOptions: {
-            tabBarVisible: false,
-          },
-          headerTintColor: Colors.primaryTextColor,
-          headerBackTitleVisible: false,
-          headerLeft: () => defaultHeaderLeft(navigation, keyboardHeight),
+          header: () => (
+            <CustomHeader
+              title={t('CONFIRM_PIN')}
+              navigation={navigation}
+              keyboardHeight={keyboardHeight}
+            />
+          ),
         })}
       />
+
+      {/* darkmode done */}
       <OptionsStack.Screen
         name={screenTitle.SET_CHANGE_PIN}
         component={SetPin}
         options={({ navigation, route }) => ({
-          headerTransparent: false,
-          headerShadowVisible: false,
-          title: t('SET_PIN'),
-          headerTitleAlign: 'center',
-          headerTitleStyle: optionsStackScreenHeaderTitleStyles,
-          navigationOptions: {
-            tabBarVisible: false,
-          },
-          headerTintColor: Colors.primaryTextColor,
-          headerBackTitleVisible: false,
-          headerLeft: () => defaultHeaderLeft(navigation, keyboardHeight),
+          header: () => (
+            <CustomHeader
+              title={t('SET_PIN')}
+              navigation={navigation}
+              keyboardHeight={keyboardHeight}
+            />
+          ),
         })}
       />
+
+      {/* darkmode done */}
       <OptionsStack.Screen
         name={screenTitle.MY_ADDRESS}
         component={AddressBook}
         options={{ headerShown: false }}
       />
+
+      {/* darkmode done */}
       <OptionsStack.Screen
         name={screenTitle.CREATE_CONTACT}
         component={CreateContact}
         options={({ navigation, route }) => ({
-          headerTransparent: false,
-          headerShadowVisible: false,
-          title: t('CREATE_NEW_CONTACT'),
-          headerTitleAlign: 'center',
-          headerTitleStyle: optionsStackScreenHeaderTitleStyles,
-          navigationOptions: {
-            tabBarVisible: false,
-          },
-
-          headerTintColor: Colors.primaryTextColor,
-          headerBackTitleVisible: false,
-          headerLeft: () => defaultHeaderLeft(navigation, keyboardHeight),
+          header: () => (
+            <CustomHeader
+              title={t('CREATE_NEW_CONTACT')}
+              navigation={navigation}
+              keyboardHeight={keyboardHeight}
+            />
+          ),
         })}
       />
+
+      {/* darkmode done */}
       <OptionsStack.Screen
         name={screenTitle.HOSTS_AND_RPC_SCREEN}
         component={HostsAndRPCScreen}
         options={({ navigation, route }) => ({
-          headerTransparent: false,
-          headerShadowVisible: false,
-          title: t('HOSTS_AND_RPC_INIT_CAPS'),
-          headerTitleAlign: 'center',
-          headerTitleStyle: optionsStackScreenHeaderTitleStyles,
-          navigationOptions: {
-            tabBarVisible: false,
-          },
-
-          headerTintColor: Colors.primaryTextColor,
-          headerBackTitleVisible: false,
-          headerLeft: () => defaultHeaderLeft(navigation, keyboardHeight),
+          header: () => (
+            <CustomHeader
+              title={t('HOSTS_AND_RPC_INIT_CAPS')}
+              navigation={navigation}
+              keyboardHeight={keyboardHeight}
+            />
+          ),
         })}
       />
+
+      {/* darkmode done */}
       <OptionsStack.Screen
         name={screenTitle.QRCODE}
         component={QRCode}
         options={({ navigation }) => ({
-          headerTransparent: false,
-          headerShadowVisible: false,
-          title: t('RECEIVE'),
-          headerTitleAlign: 'center',
-          headerTitleStyle: optionsStackScreenHeaderTitleStyles,
-          headerStyle: {
-            backgroundColor: 'white',
-            elevation: 0,
-          },
-
-          headerTintColor: Colors.primaryTextColor,
-          headerBackTitleVisible: false,
-          headerLeft: () => defaultHeaderLeft(navigation, keyboardHeight),
+          header: () => (
+            <CustomHeader
+              title={t('RECEIVE')}
+              navigation={navigation}
+              keyboardHeight={keyboardHeight}
+            />
+          ),
         })}
       />
+
+      {/* darkmode done */}
       <OptionsStack.Screen
         name={screenTitle.APP_SETTINGS}
         component={AppSettings}
         options={({ navigation }) => ({
-          headerTransparent: false,
-          headerShadowVisible: false,
-          title: t('APP_SETTINGS'),
-          headerTitleAlign: 'center',
-          headerTitleStyle: optionsStackScreenHeaderTitleStyles,
-          navigationOptions: {
-            tabBarVisible: false,
-          },
-
-          headerTintColor: Colors.primaryTextColor,
-          headerBackTitleVisible: false,
-          headerLeft: () => defaultHeaderLeft(navigation, keyboardHeight),
+          header: () => (
+            <CustomHeader
+              title={t('APP_SETTINGS')}
+              navigation={navigation}
+              keyboardHeight={keyboardHeight}
+            />
+          ),
         })}
       />
+
+      {/* darkmode done */}
       <OptionsStack.Screen
         name={screenTitle.IMPORT_ANOTHER_WALLET}
         component={ImportAnotherWallet}
         options={{ headerShown: false }}
       />
+
+      {/* darkmode done */}
       <OptionsStack.Screen
         name={screenTitle.LEGAL_SCREEN}
         component={LegalScreen}
         options={({ navigation }) => ({
-          headerTransparent: false,
-          headerShadowVisible: false,
-          title: t('TERMS_AND_CONDITIONS'),
-          headerTitleAlign: 'center',
-          headerTitleStyle: optionsStackScreenHeaderTitleStyles,
-
-          headerTintColor: Colors.primaryTextColor,
-          headerBackTitleVisible: false,
-          headerLeft: () => defaultHeaderLeft(navigation, keyboardHeight),
+          header: () => (
+            <CustomHeader
+              title={t('TERMS_AND_CONDITIONS')}
+              navigation={navigation}
+              keyboardHeight={keyboardHeight}
+            />
+          ),
         })}
       />
+
+      {/* darkmode done */}
       <OptionsStack.Screen
         name={screenTitle.QR_CODE_SCANNER}
         component={QRScanner}
         options={({ navigation }) => ({
-          headerTransparent: true,
-          headerShadowVisible: false,
-          title: 'SCAN QR CODE',
-          headerTitleAlign: 'center',
-          headerTitleStyle: {
-            ...optionsStackScreenHeaderTitleStyles,
-            color: Colors.whiteColor,
-          },
-          navigationOptions: {
-            tabBarVisible: false,
-          },
-
-          headerTintColor: Colors.primaryTextColor,
-          headerBackTitleVisible: false,
-          headerLeft: () => defaultHeaderLeft(navigation, keyboardHeight),
+          header: () => (
+            <CustomHeader
+              title={'SCAN QR CODE'}
+              navigation={navigation}
+              keyboardHeight={keyboardHeight}
+            />
+          ),
         })}
       />
+
+      {/* darkmode done */}
       <OptionsStack.Screen
         name={screenTitle.IMPORT_WALLET_OPTIONS}
         component={ImportWalletOptions}
         options={({ navigation }) => ({
-          headerTransparent: false,
-          headerShadowVisible: false,
-          title: t('IMPORT_WALLET'),
-          headerTitleAlign: 'center',
-          headerTitleStyle: optionsStackScreenHeaderTitleStyles,
-          headerTintColor: Colors.primaryTextColor,
-          headerBackTitleVisible: false,
-          headerLeft: () => defaultHeaderLeft(navigation, keyboardHeight),
+          header: () => (
+            <CustomHeader
+              title={t('IMPORT_WALLET')}
+              navigation={navigation}
+              keyboardHeight={keyboardHeight}
+            />
+          ),
         })}
       />
+
+      {/* darkmode done */}
       <OptionsStack.Screen
         name={screenTitle.ENTER_KEY}
         component={EnterKeyScreen}
         options={({ navigation }) => ({
-          headerTransparent: false,
-          headerShadowVisible: false,
-          title: t('ENTER_SEED_PHRASE'),
-          headerTitleAlign: 'center',
-          headerTitleStyle: optionsStackScreenHeaderTitleStyles,
-          headerStyle: {
-            elevation: 0,
-          },
-          headerTintColor: Colors.primaryTextColor,
-          headerBackTitleVisible: false,
-          headerLeft: () => defaultHeaderLeft(navigation, keyboardHeight),
+          header: () => (
+            <CustomHeader
+              title={t('ENTER_SEED_PHRASE')}
+              navigation={navigation}
+              keyboardHeight={keyboardHeight}
+            />
+          ),
         })}
       />
+
+      {/* darkmode done */}
       <OptionsStack.Screen
         name={screenTitle.CHOOSE_WALLET_INDEX}
         component={ChooseWalletIndex}
@@ -1903,90 +1870,96 @@ export function OptionsStackScreen({
           headerShown: false,
         })}
       />
+
+      {/* darkmode done */}
       <OptionsStack.Screen
         name={screenTitle.ENTER_PRIVATE_KEY}
         component={EnterPrivateKey}
         options={({ navigation }) => ({
-          headerTransparent: false,
-          headerShadowVisible: false,
-          title: t('ENTER_PRIVATE_KEY'),
-          headerTitleAlign: 'center',
-          headerTitleStyle: optionsStackScreenHeaderTitleStyles,
-          headerStyle: {
-            backgroundColor: 'white',
-            elevation: 0,
-          },
-          headerTintColor: Colors.primaryTextColor,
-          headerBackTitleVisible: false,
-          headerLeft: () => defaultHeaderLeft(navigation, keyboardHeight),
+          header: () => (
+            <CustomHeader
+              title={t('ENTER_PRIVATE_KEY')}
+              navigation={navigation}
+              keyboardHeight={keyboardHeight}
+            />
+          ),
         })}
       />
       <OptionsStack.Screen
         name={screenTitle.WALLET_CONNECT}
         component={WalletConnectCamera}
         options={({ navigation }) => ({
-          headerTransparent: false,
-          headerShadowVisible: false,
-          title: 'Wallet Connect',
-          headerTitleAlign: 'center',
-          headerTitleStyle: optionsStackScreenHeaderTitleStyles,
-          navigationOptions: {
-            tabBarVisible: false,
-          },
-          headerTintColor: Colors.primaryTextColor,
-          headerBackTitleVisible: false,
-          headerLeft: () => defaultHeaderLeft(navigation, keyboardHeight),
+          header: () => (
+            <CustomHeader
+              title={'Wallet Connect'}
+              navigation={navigation}
+              keyboardHeight={keyboardHeight}
+            />
+          ),
         })}
       />
       <OptionsStack.Screen
         name={screenTitle.DEBIT_CARD_SCREEN}
         component={DebitCardScreen}
         options={({ navigation }) => ({
-          headerTransparent: false,
-          headerShadowVisible: false,
-          title: 'Cypher Card',
-          navigationOptions: {
-            tabBarVisible: false,
-          },
-          headerTitleAlign: 'center',
-          headerTitleStyle: optionsStackScreenHeaderTitleStyles,
-
-          headerTintColor: Colors.primaryTextColor,
-          headerBackTitleVisible: false,
-          headerLeft: () => defaultHeaderLeft(navigation, keyboardHeight),
+          header: () => (
+            <CustomHeader
+              title={'Cypher Card'}
+              navigation={navigation}
+              keyboardHeight={keyboardHeight}
+            />
+          ),
         })}
       />
+
+      {/* darkmode done */}
       <OptionsStack.Screen
         name={screenTitle.OPEN_LEGAL_SCREEN}
         component={OpenLegalScreen}
         options={{ headerShown: false }}
       />
+
+      {/* darkmode done */}
       <OptionsStack.Screen
         name={screenTitle.SOCIAL_MEDIA_SCREEN}
         component={SocialMediaScreen}
         options={({ navigation }) => ({
-          headerTransparent: false,
-          headerShadowVisible: false,
-          headerTitleAlign: 'center',
-          headerTitleStyle: optionsStackScreenHeaderTitleStyles,
-
-          headerTintColor: Colors.primaryTextColor,
-          headerBackTitleVisible: false,
-          headerLeft: () => defaultHeaderLeft(navigation, keyboardHeight),
+          header: () => (
+            <CustomHeader
+              title={'Social Media'}
+              navigation={navigation}
+              keyboardHeight={keyboardHeight}
+            />
+          ),
         })}
       />
+
+      {/* darkmode done */}
       <OptionsStack.Screen
         name={screenTitle.BROWSER}
         component={BrowserStackScreen}
         options={({ navigation }) => ({
-          headerTransparent: false,
-          headerShadowVisible: false,
-          title: 'Browser',
-          headerTitleAlign: 'center',
-          headerTitleStyle: optionsStackScreenHeaderTitleStyles,
-          headerTintColor: Colors.primaryTextColor,
-          headerBackTitleVisible: false,
-          headerLeft: () => defaultHeaderLeft(navigation, keyboardHeight),
+          header: () => (
+            <CustomHeader
+              title={'Browser'}
+              navigation={navigation}
+              keyboardHeight={keyboardHeight}
+            />
+          ),
+        })}
+      />
+
+      <OptionsStack.Screen
+        name={screenTitle.THEME}
+        component={ThemeSelector}
+        options={({ navigation }) => ({
+          header: () => (
+            <CustomHeader
+              title={'Theme'}
+              navigation={navigation}
+              keyboardHeight={keyboardHeight}
+            />
+          ),
         })}
       />
     </OptionsStack.Navigator>

@@ -101,7 +101,7 @@ export default function TelegramSetup() {
 
   return (
     <CyDView
-      className='flex-1 flex flex-col justify-between bg-[#F1F0F5]'
+      className='flex-1 flex flex-col justify-between bg-n20'
       style={{ paddingTop: insets.top }}>
       <CyDView className='p-[16px] flex-1'>
         {/* remove the CardProviderSwitch after sunsetting PC */}
@@ -122,29 +122,29 @@ export default function TelegramSetup() {
               />
             </CyDTouchView>
           )}
-          <CyDText className='text-[14px] font-normal font-manrope'>
-            {t('SETUP_TELEGRAM_BOT')}
+          <CyDText className='text-[28px] font-bold'>
+            {t('CONNECT_TO_TELEGRAM')}
           </CyDText>
         </CyDView>
-        <CyDText className='text-[28px] font-bold mb-[16px]'>
+        {/* <CyDText className='text-[28px] font-bold mb-[16px]'>
           {t('CONNECT_TO_TELEGRAM')}
-        </CyDText>
+        </CyDText> */}
 
         <CyDScrollView
           showsVerticalScrollIndicator={false}
           className='rounded-[6px]'>
-          <CyDView className='flex-row bg-n0 border border-n30 rounded-[6px] p-[14px]'>
+          <CyDView className='flex-row bg-n0 border border-n40 rounded-[6px] p-[14px]'>
             <CyDView className='w-[10px] mx-[16px] flex-col items-center'>
-              <CyDView className='bg-[#D9D9D9] h-[10px] w-[10px] rounded-full mt-[70px]' />
-              <CyDView className='h-[100px] border border-[#B3B9C4] border-dashed' />
-              <CyDView className='bg-[#D9D9D9] h-[10px] w-[10px] rounded-full' />
-              <CyDView className='h-[160px] border border-[#B3B9C4] border-dashed' />
-              <CyDView className='bg-[#D9D9D9] h-[10px] w-[10px] rounded-full' />
-              <CyDView className='h-[100px] border border-[#B3B9C4] border-dashed' />
-              <CyDView className='bg-[#D9D9D9] h-[10px] w-[10px] rounded-full' />
+              <CyDView className='bg-n100 h-[10px] w-[10px] rounded-full mt-[70px]' />
+              <CyDView className='h-[100px] border border-n200 border-dashed' />
+              <CyDView className='bg-n100 h-[10px] w-[10px] rounded-full' />
+              <CyDView className='h-[160px] border border-n200 border-dashed' />
+              <CyDView className='bg-n100 h-[10px] w-[10px] rounded-full' />
+              <CyDView className='h-[100px] border border-n200 border-dashed' />
+              <CyDView className='bg-n100 h-[10px] w-[10px] rounded-full' />
             </CyDView>
             <CyDView className=' w-[270px]'>
-              <CyDView className='border border-[#F0EFF4] p-[12px] rounded-[8px]'>
+              <CyDView className='border border-n40 p-[12px] rounded-[8px]'>
                 <CyDView className='flex-row items-center justify-center mb-[12px]'>
                   <CyDText className='text-center '>
                     Click the below button to connect
@@ -173,7 +173,7 @@ export default function TelegramSetup() {
                 </CyDTouchView>
               </CyDView>
 
-              <CyDView className='border border-n30 rounded-[8px] p-[14px] bg-n0 mt-[16px]'>
+              <CyDView className='border border-n40 rounded-[8px] p-[14px] bg-n0 mt-[16px]'>
                 <CyDText className='flex-row items-center'>
                   <CyDText>Once you find the</CyDText>
                   <CyDImage
@@ -188,7 +188,7 @@ export default function TelegramSetup() {
                 </CyDText>
                 <CyDView className='flex-row items-center mt-[12px]'>
                   <CyDText>{'Just press the button'}</CyDText>
-                  <CyDView className='mx-[4px] bg-[#54A9EB] rounded-[6px] px-[8px] py-[2px] text-white'>
+                  <CyDView className='mx-[4px] bg-[#54A9EB] rounded-[6px] px-[8px] py-[2px] text-base400'>
                     <CyDText className=' text-white text-[10px]'>
                       {'Send'}
                     </CyDText>
@@ -196,13 +196,13 @@ export default function TelegramSetup() {
                 </CyDView>
               </CyDView>
 
-              <CyDView className='border border-n30 rounded-[8px] p-[14px] bg-n0 mt-[16px]'>
+              <CyDView className='border border-n40 rounded-[8px] p-[14px] bg-n0 mt-[16px]'>
                 <CyDText className='flex-row items-center'>
                   After seeing the welcome message, your message box will be
                   automatically pre-filled with the link code
                 </CyDText>
                 <CyDTouchView
-                  className='mx-[4px] bg-n30 border border-n50 rounded-[6px] px-[8px] py-[2px] text-white w-[120px] flex-row items-center mt-[12px]'
+                  className='mx-[4px] bg-n30 border border-n50 rounded-[6px] px-[8px] py-[2px] text-base400 w-[120px] flex-row items-center mt-[12px]'
                   onPress={() => {
                     copyToClipboard(`/link ${telegramConnectionId}`);
                     showToast(t('Bot Command Copied'));
@@ -236,7 +236,7 @@ export default function TelegramSetup() {
             <CyDText className='text-[14px] font-medium text-base100 font-manrope'>
               {t('CONNECTION_STATUS')}
             </CyDText>
-            <CyDText className='text-black text-[18px] font-bold font-manrope'>
+            <CyDText className='text-base400 text-[18px] font-bold font-manrope'>
               {isTelegramConnected ? t('CONNECTED') : t('NOT_CONNECTED')}
             </CyDText>
           </CyDView>
@@ -259,7 +259,7 @@ export default function TelegramSetup() {
                 style={styles.lottie}
               />
             )}
-            <CyDText className='font-manrope text-black ml-[4px] text-bold font-black text-[12px]'>
+            <CyDText className='font-manrope text-base400 ml-[4px] text-bold font-black text-[12px]'>
               {t('REFRESH')}
             </CyDText>
           </CyDTouchView>

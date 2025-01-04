@@ -40,7 +40,8 @@ export default function BottomConfirmCosmos(props: {
       setModalVisible={(_val: any) => {
         onCancelPress();
       }}>
-      <CyDView className={'bg-n0 pb-[30px] flex items-center rounded-t-[20px]'}>
+      <CyDView
+        className={'bg-n20 pb-[30px] flex items-center rounded-t-[20px]'}>
         <CyDTouchView
           className={'flex flex-row pl-[95%] justify-end z-10'}
           onPress={onCancelPress}>

@@ -43,7 +43,7 @@ function OtpInput({
         getOtp(otp);
       }, OTP_CALLBACK_TIMEOUT);
     }
-  }, [otp, pinCount, showButton, getOtp]);
+  }, [otp, pinCount, showButton]);
 
   const toggleSecuredEntry = () => {
     setSecuredEntry(!securedEntry);
@@ -57,15 +57,18 @@ function OtpInput({
     <CyDView>
       <CyDView
         className={
-          'flex flex-row justify-between items-center rounded-[5px] border-[1px] border-inputBorderColor'
+          'flex flex-row justify-between items-center rounded-[5px] border-[1px] border-inputBorderColor bg-n0'
         }>
         <CyDTextInput
           ref={inputRef}
-          className={clsx('h-[55px] text-center w-[100%] tracking-[5px]', {
-            'pl-[1px] pt-[2px]': isAndroid(),
-            'tracking-[15px]': otp !== '',
-            'w-[90%] pl-[35px]': showSecuredEntryToggle,
-          })}
+          className={clsx(
+            'h-[55px] text-center w-[100%] tracking-[5px] rounded-[5px]',
+            {
+              'pl-[1px] pt-[2px]': isAndroid(),
+              'tracking-[15px]': otp !== '',
+              'w-[90%] pl-[35px]': showSecuredEntryToggle,
+            },
+          )}
           keyboardType='numeric'
           placeholder={placeholder}
           placeholderTextColor={'#C5C5C5'}

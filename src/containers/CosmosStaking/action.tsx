@@ -198,7 +198,7 @@ export default function CosmosAction({
     }
   };
   return (
-    <CyDScrollView className={'bg-n0 h-full w-full px-[20px]'}>
+    <CyDScrollView className={'bg-n20 h-full w-full px-[20px]'}>
       <CyDKeyboardAwareScrollView>
         <CyDModalLayout
           setModalVisible={setSignModalVisible}

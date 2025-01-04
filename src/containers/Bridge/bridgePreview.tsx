@@ -122,8 +122,8 @@ export default function BridgeRoutePreview({
         </CyDView>
       )}
 
-      {(loading || !isEmpty(statusResponse)) && signaturesRequired > 0 && (
-        <CyDView className='flex flex-row items-center bg-orange-100 rounded-[8px] p-[8px] mb-[12px]'>
+      {true && (
+        <CyDView className='flex flex-row items-center bg-red20 rounded-[8px] p-[8px] mb-[12px]'>
           <CyDFastImage
             source={AppImages.WARNING}
             className='w-[20px] h-[20px] mr-[10px]'

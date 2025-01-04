@@ -686,7 +686,7 @@ export const CreateContact = () => {
   };
 
   return (
-    <CyDView className={'bg-n0 w-full h-full'}>
+    <CyDView className={'bg-n20 w-full h-full'}>
       <ChooseChainModal
         setModalVisible={setChooseChainModalVisible}
         isModalVisible={chooseChainModalVisible}

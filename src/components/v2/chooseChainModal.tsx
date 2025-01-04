@@ -44,7 +44,7 @@ export default function ChooseChainModal({
           className={clsx(
             'flex flex-row py-[12px] px-[24px] items-center justify-between',
             {
-              'bg-[#58ADAB17] rounded-[18px]': item.item.name === selectedItem,
+              'bg-n0 rounded-[18px]': item.item.name === selectedItem,
             },
           )}
           onPress={() => {
@@ -60,7 +60,7 @@ export default function ChooseChainModal({
               }
               className={'w-[28px] h-[28px] mr-[18px]'}
             />
-            <CyDText className={'text-black text-[18px]  font-regular'}>
+            <CyDText className={' text-[18px]  font-regular'}>
               {item.item.name}
             </CyDText>
           </CyDView>
@@ -105,7 +105,7 @@ export default function ChooseChainModal({
       style={styles.modalLayout}>
       <CyDView
         className={
-          'bg-n0 border-1 rounded-t-[36px] border-[#E6E6E6] p-[12px] pb-[22px] h-[60%] relative'
+          'bg-n20 border-1 rounded-t-[36px] border-n40 p-[12px] pb-[22px] h-[60%] relative'
         }>
         <CyDTouchView
           onPress={() => {

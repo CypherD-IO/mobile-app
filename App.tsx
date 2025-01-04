@@ -244,9 +244,9 @@ function App() {
   }, []);
 
   return (
-    <CyDView style={{ flex: 1, backgroundColor: 'white' }} className=''>
-      <GestureHandlerRootView style={{ flex: 1 }}>
-        <ThemeProvider>
+    <ThemeProvider>
+      <CyDView style={{ flex: 1, backgroundColor: 'white' }} className=''>
+        <GestureHandlerRootView style={{ flex: 1 }}>
           <Sentry.TouchEventBoundary>
             <NavigationContainer /* theme={scheme === 'dark' ? darkTheme : lightTheme} */
               ref={navigationRef}
@@ -341,9 +341,9 @@ function App() {
               </WalletConnectContext.Provider>
             </NavigationContainer>
           </Sentry.TouchEventBoundary>
-        </ThemeProvider>
-      </GestureHandlerRootView>
-    </CyDView>
+        </GestureHandlerRootView>
+      </CyDView>
+    </ThemeProvider>
   );
 }
 

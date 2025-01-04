@@ -146,6 +146,7 @@ export const screenTitle = {
   TELEGRAM_PIN_SETUP: 'telegramPinSetup',
   MANAGE_SUBSCRIPTION: 'manageSubscription',
   FIRST_LOAD_CARD: 'firstLoadCard',
+  THEME: 'theme',
 };
 
 export const fontsName = {

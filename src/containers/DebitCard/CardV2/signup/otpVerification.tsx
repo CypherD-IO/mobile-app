@@ -184,7 +184,7 @@ export default function OTPVerification(): JSX.Element {
 
   return (
     <CyDView
-      className='flex-1 flex flex-col justify-between bg-[#F1F0F5]'
+      className='flex-1 flex flex-col justify-between bg-n20'
       style={{ paddingTop: insets.top }}>
       <CyDModalLayout
         setModalVisible={() => {
@@ -197,8 +197,7 @@ export default function OTPVerification(): JSX.Element {
         <CyDKeyboardAvoidingView
           behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
           style={styles.keyboardAvoidingView}>
-          <CyDView
-            className={'bg-n0 p-[25px] pb-[30px] rounded-t-[20px] relative'}>
+          <CyDView className={'p-[25px] pb-[30px] rounded-t-[20px] relative'}>
             <CyDTouchView
               onPress={() => {
                 setIsEditEmailModalVisible(false);

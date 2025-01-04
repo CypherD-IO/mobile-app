@@ -51,6 +51,7 @@ import { CardProfile } from '../../../models/cardProfile.model';
 import { UserCardDetails } from '../../../models/userCardDetails.interface';
 import {
   CyDFastImage,
+  CyDFlatList,
   CyDImage,
   CyDImageBackground,
   CyDText,
@@ -61,7 +62,10 @@ import { showToast } from '../../utilities/toastUtility';
 import { cssInterop } from 'nativewind';
 import { isAndroid } from '../../../misc/checkers';
 import { cardDesign } from '../../../models/cardDesign.interface';
-
+import Animated, {
+  interpolate,
+  useAnimatedStyle,
+} from 'react-native-reanimated';
 interface CardSecrets {
   cvv: string;
   expiryMonth: string;
@@ -339,7 +343,7 @@ export default function CardScreen({
 
   return (
     <CyDView className=''>
-      <CyDCarousel
+      {/* <CyDCarousel
         loop={false}
         width={width}
         height={cardProfile.provider === CardProviders.REAP_CARD ? 210 : 250}
@@ -348,16 +352,71 @@ export default function CardScreen({
         snapEnabled={true}
         mode='parallax'
         modeConfig={{
-          parallaxScrollingScale: 0.92,
-          parallaxScrollingOffset: isAndroid()
-            ? width / (pixelDensity * fontScaleFactor)
-            : width * 0.31,
-          parallaxAdjacentItemScale: 0.74,
+          parallaxScrollingScale: 0.9,
+          // parallaxScrollingOffset: 1,
+          // parallaxAdjacentItemScale: 0.74,
         }}
         scrollAnimationDuration={0}
         onSnapToItem={setUpgradeCorrectedCardIndex}
         renderItem={renderItem as any}
+      /> */}
+      {/* <CyDFlatList
+        className='py-[24px] flex-1'
+        horizontal
+        data={cardsWithUpgrade}
+        showsHorizontalScrollIndicator={false}
+        snapToAlignment='center'
+        decelerationRate='fast'
+        snapToInterval={width * 0.85} // This ensures proper snapping
+        contentContainerStyle={{
+          paddingHorizontal: width * 0.05, // Increased padding to show cards on edges
+        }}
+        renderItem={({ item, index }) => (
+          <CyDView
+            style={{
+              height: 190,
+              width: width * 0.75,
+              marginHorizontal: 10,
+              opacity: currentCardIndex === index ? 1 : 0.6, // Optional: dim non-active cards
+              transform: [{ scale: currentCardIndex === index ? 1 : 0.95 }], // Optional: scale down non-active cards
+            }}>
+            {renderItem({ item })}
+          </CyDView>
+        )}
+        onMomentumScrollEnd={event => {
+          const contentOffset = event.nativeEvent.contentOffset.x;
+          const index = Math.round(contentOffset / (width * 0.8));
+          setUpgradeCorrectedCardIndex(index);
+        }}
+      /> */}
+      <CyDFlatList
+        className='py-[24px] flex-1'
+        horizontal
+        data={cardsWithUpgrade}
+        showsHorizontalScrollIndicator={false}
+        snapToAlignment='center'
+        decelerationRate='fast'
+        snapToInterval={320}
+        contentContainerStyle={{
+          paddingHorizontal: 20,
+        }}
+        renderItem={({ item, index }) => (
+          <CyDView
+            className='w-[270px] mx-[20px] h-[190px]'
+            style={{
+              opacity: currentCardIndex === index ? 1 : 0.4,
+              transform: [{ scale: currentCardIndex === index ? 1 : 0.9 }],
+            }}>
+            {renderItem({ item })}
+          </CyDView>
+        )}
+        onMomentumScrollEnd={event => {
+          const contentOffset = event.nativeEvent.contentOffset.x;
+          const index = Math.round(contentOffset / 320);
+          setUpgradeCorrectedCardIndex(index);
+        }}
       />
+
       {cardsWithUpgrade && get(cardsWithUpgrade, currentCardIndex) && (
         <RenderCardActions
           card={get(cardsWithUpgrade, currentCardIndex)}
@@ -856,8 +915,8 @@ const RenderCardActions = ({
               {t('UPGRADE_TO_PHYSICAL_CARD')}
             </CyDText>
           </CyDView>
-          <CyDView className='flex flex-col w-[90%] justify-center items-center bg-n0 pt-[12px] rounded-[12px]'>
-            <CyDView className='flex flex-row h-[8px] w-[90%] items-center border border-n40 bg-n0 mx-[4px] rounded-[8px]'>
+          <CyDView className='flex flex-col w-[90%] justify-center items-center pt-[12px] rounded-[12px]'>
+            <CyDView className='flex flex-row h-[8px] w-[90%] items-center border border-n40 mx-[4px] rounded-[8px]'>
               <CyDView
                 className={clsx(
                   'absolute bg-toastColor h-full rounded-[8px] my-[5px]',

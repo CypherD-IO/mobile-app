@@ -167,7 +167,7 @@ export default function AutoLoadOptionsModal({
       animationInTiming={300}
       animationOutTiming={300}
       style={styles.modalLayout}>
-      <CyDView className='bg-cardBgTo mb-[6px] rounded-[16px] max-h-[80%] pb-[32px]'>
+      <CyDView className='bg-n20 mb-[6px] rounded-[16px] max-h-[80%] pb-[32px]'>
         <CyDView className='flex flex-row justify-between items-center rounded-t-[16px] bg-n0 px-[16px] pb-[16px] pt-[32px]'>
           <CyDText className='text-[16px] font-semibold font-manrope'>
             Auto Load

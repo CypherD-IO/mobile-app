@@ -1087,7 +1087,7 @@ export default function SendTo(props: { navigation?: any; route?: any }) {
 
   // NOTE: LIFE CYCLE METHOD 🍎🍎🍎🍎
   return (
-    <CyDSafeAreaView className='flex-1 bg-n0'>
+    <CyDSafeAreaView className='flex-1 bg-n20'>
       <CyDView>
         <TokenSendConfirmationModal
           isModalVisible={tokenSendConfirmationParams.isModalVisible}
@@ -1099,10 +1099,10 @@ export default function SendTo(props: { navigation?: any; route?: any }) {
           </CyDText>
           <CyDView
             className={clsx(
-              'flex flex-row justify-between items-center mt-[7px] border-[0.5px] border-greyButtonBackgroundColor rounded-[5px] pl-[15px] pr-[10px] py-[5px]',
+              'flex flex-row justify-between items-center mt-[7px] border-[0.5px] border-n40 rounded-[5px] pl-[15px] pr-[10px] py-[5px]',
               {
-                'border-errorTextRed': !isAddressValid,
-                'border-greyButtonBackgroundColor': addressText === '',
+                'border-red80': !isAddressValid,
+                'border-n40': addressText === '',
               },
             )}>
             <CyDTextInput
@@ -1171,7 +1171,7 @@ export default function SendTo(props: { navigation?: any; route?: any }) {
                   </CyDText>
                   <CyDView
                     className={
-                      'flex flex-row justify-between items-center mt-[7px] bg-secondaryBackgroundColor border-[0.5px] border-black rounded-[9px] pl-[15px] pr-[10px] py-[1px]'
+                      'flex flex-row justify-between items-center mt-[7px] bg-n10 border-[0.5px] border-n40 rounded-[9px] pl-[15px] pr-[10px] py-[1px]'
                     }>
                     <CyDTextInput
                       className={'self-center py-[12px] w-[90%] pr-[10px]'}

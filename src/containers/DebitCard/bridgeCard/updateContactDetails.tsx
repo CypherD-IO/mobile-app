@@ -248,7 +248,7 @@ export default function UpdateCardContactDetails({
   };
 
   return (
-    <CyDSafeAreaView className={'h-full bg-n0'}>
+    <CyDSafeAreaView className={'h-full bg-n20'}>
       <CyDScrollView>
         <CyDKeyboardAwareScrollView>
           <ChooseCountryModal
@@ -300,7 +300,7 @@ export default function UpdateCardContactDetails({
                       <CyDView className={'flex flex-row items-center'}>
                         <CyDTextInput
                           className={clsx(
-                            'text-black  text-[16px] ml-[8px] w-[100%]',
+                            'text-base400  text-[16px] ml-[8px] w-[90%]',
                             { 'mt-[-8px]': isAndroid() },
                           )}
                           value={formProps.values.phoneNumber}

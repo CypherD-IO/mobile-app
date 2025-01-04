@@ -16,6 +16,7 @@ import {
   PortfolioStackScreen,
   SwapStackScreen,
 } from './auth';
+import { themes, useTheme } from '../reducers/themeReducer';
 
 const Tab = createBottomTabNavigator();
 
@@ -46,6 +47,8 @@ const screensToHaveNavBar = [
 ];
 
 function TabStack(props: TabStackProps) {
+  const { theme } = useTheme();
+
   const { deepLinkData, setDeepLinkData } = props;
   const [showTabBar, setShowTabBar] = useState(true);
   const tabBarAnimation = useState(new Animated.Value(1))[0];
@@ -136,7 +139,7 @@ function TabStack(props: TabStackProps) {
         },
       ],
       opacity: tabBarAnimation,
-      backgroundColor: 'white',
+      backgroundColor: '#161616',
       position: 'absolute',
       bottom: 0,
       left: 0,
@@ -212,9 +215,9 @@ function TabStack(props: TabStackProps) {
             fontFamily: 'Manrope',
           },
           tabBarStyle,
-          tabBarBackground: () => (
-            <CyDView className='absolute inset-0 bg-n0 rounded-t-[22px] shadow-xl shadow-gray-400' />
-          ),
+          // tabBarBackground: () => (
+          //   <CyDView className='absolute inset-0 bg-n0 rounded-t-[22px] shadow-xl shadow-n20' />
+          // ),
         })}
         initialRouteName={screenTitle.PORTFOLIO}>
         <Tab.Screen
@@ -272,10 +275,10 @@ const styles = StyleSheet.create({
     paddingBottom: isIOS() ? 26 : 14,
     paddingTop: 10,
     paddingHorizontal: 21,
-    borderWidth: 1,
-    borderColor: '#EBEDF0',
+    // borderWidth: 1,
+    // borderColor: '#EBEDF0',
     borderTopLeftRadius: 26,
-    borderTopRightRadius: 26,
+    borderTopRightRadius: 12,
     elevation: 24, // For Android
   },
 });

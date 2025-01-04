@@ -87,7 +87,7 @@ export default function VerifyShippingAddress() {
 
   return (
     <CyDSafeAreaView className='flex flex-1 bg-n20 h-full'>
-      <StatusBar barStyle='dark-content' backgroundColor={'#EBEDF0'} />
+      {/* <StatusBar barStyle='dark-content' backgroundColor={'#EBEDF0'} /> */}
       <CyDView className='flex flex-col justify-between h-full bg-transparent'>
         <CyDView className='mx-[16px]'>
           <CyDView className='flex-row items-center justify-between'>
@@ -112,7 +112,7 @@ export default function VerifyShippingAddress() {
               ? t('VERIFY_SHIPPING_ADDRESS_SUB_METAL')
               : t('VERIFY_SHIPPING_ADDRESS_SUB_PHYSICAL')}
           </CyDText>
-          <CyDView className='flex flex-col gap-y-[16px] bg-n0 rounded-[12px] px-[16px] pb-[16px] mt-[12px]'>
+          <CyDView className='flex flex-col gap-y-[16px] bg-n0 rounded-[12px] px-[16px] py-[16px] mt-[12px]'>
             <CyDView className='flex flex-row items-center justify-between'>
               <CyDView className='flex flex-row items-center gap-x-[12px]'>
                 <CyDImage

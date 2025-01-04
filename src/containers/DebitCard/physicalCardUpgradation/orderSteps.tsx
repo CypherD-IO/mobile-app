@@ -77,7 +77,7 @@ export default function OrderSteps() {
               {t('HERE_IS_WHAT_YOU_NEED_TO_DO_NEXT')}
             </CyDText>
           </CyDView>
-          <CyDView className='flex flex-col gap-y-[16px] bg-n0 rounded-[12px] px-[16px] pb-[16px] mt-[12px]'>
+          <CyDView className='flex flex-col gap-y-[16px] bg-n0 rounded-[12px] px-[16px] py-[16px] mt-[12px]'>
             {steps.map((step, index) => (
               <CyDView
                 key={index}

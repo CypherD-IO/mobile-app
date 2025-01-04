@@ -213,7 +213,7 @@ export default function HostsAndRPCScreen({ navigation }) {
   return loading ? (
     <Loading />
   ) : (
-    <CyDScrollView className={'bg-n0 h-full px-[24px] pt-[20px]'}>
+    <CyDScrollView className={'bg-n20 h-full px-[24px] pt-[20px]'}>
       <CyDKeyboardAwareScrollView>
         {devMode && (
           <CyDView>

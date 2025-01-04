@@ -91,7 +91,7 @@ const DeFiFilterModal = (props: DeFiFilterModalInterface) => {
                 key={idx}
                 onPress={() => setIndex(idx)}
                 className={`${
-                  index === idx ? 'bg-p100' : 'bg-whiteflex'
+                  index === idx ? 'bg-p100' : 'bg-n0flex'
                 } justify-center py-[20px]`}>
                 <CyDText
                   className={'text-left pl-[12px] text-[16px] font-bold'}>

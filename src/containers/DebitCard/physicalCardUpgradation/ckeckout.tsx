@@ -31,7 +31,6 @@ import useAxios from '../../../core/HttpRequest';
 import { capitalize, get } from 'lodash';
 import { CardProfile } from '../../../models/cardProfile.model';
 import CyDSkeleton from '../../../components/v2/skeleton';
-import { getCountryNameFromISO2 } from '../../../core/locale';
 import OtpVerificationModal from '../../../components/v2/card/otpVerification';
 import { useGlobalModalContext } from '../../../components/v2/GlobalModal';
 import * as Sentry from '@sentry/react-native';
@@ -179,7 +178,7 @@ export default function ShippingCheckout() {
     return (
       <CyDView>
         <CyDText className='text-subTextColor'>{t('DELIVERING_TO')}</CyDText>
-        <CyDView className='flex flex-col gap-y-[16px] bg-n0 rounded-[12px] px-[16px] pb-[16px] mt-[4px]'>
+        <CyDView className='flex flex-col gap-y-[16px] bg-n0 rounded-[12px] px-[16px] py-[16px] mt-[4px]'>
           <CyDView className='flex flex-row items-center justify-between'>
             <CyDView className='flex flex-row items-center gap-x-[12px]'>
               <CyDImage

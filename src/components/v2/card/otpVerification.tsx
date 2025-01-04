@@ -115,7 +115,7 @@ export default function OtpVerificationModal({
       style={styles.modalLayout}
       animationIn={'slideInUp'}
       animationOut={'slideOutDown'}>
-      <CyDSafeAreaView className={'h-full bg-n0 p-[12px] pt-[10px]'}>
+      <CyDView className={'h-full bg-n0 p-[12px] pt-[10px]'}>
         <StateModal
           isModalVisible={error !== ''}
           type={'error'}
@@ -186,7 +186,7 @@ export default function OtpVerificationModal({
             </CyDView>
           )}
         </CyDView>
-      </CyDSafeAreaView>
+      </CyDView>
     </CyDModalLayout>
   );
 }

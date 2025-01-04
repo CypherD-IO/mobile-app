@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useState } from 'react';
 import {
   CyDImage,
   CyDSafeAreaView,
@@ -6,12 +6,21 @@ import {
   CyDTouchView,
   CyDView,
 } from '../../../styles/tailwindStyles';
-import { screenTitle } from '../../../constants';
-import { get } from 'lodash';
 import AppImages from '../../../../assets/images/appImages';
 import ThreeDSecureOptionModal from '../../../components/v2/threeDSecureOptionModal';
+import { RouteProp, useRoute } from '@react-navigation/native';
+import { CardProviders } from '../../../constants/enum';
+import { Card } from '../../../models/card.model';
 
-export default function ThreeDSecure({ route, navigation }) {
+interface RouteParams {
+  currentCardProvider: CardProviders;
+  card: Card;
+  isTelegramEnabled: boolean;
+  setIsTelegramEnabled: (value: boolean) => void;
+}
+
+export default function ThreeDSecure() {
+  const route = useRoute<RouteProp<{ params: RouteParams }, 'params'>>();
   const { currentCardProvider, card, isTelegramEnabled, setIsTelegramEnabled } =
     route.params;
   const [showModal, setShowModal] = useState(false);
@@ -26,7 +35,7 @@ export default function ThreeDSecure({ route, navigation }) {
         isTelegramEnabled={isTelegramEnabled}
         setIsTelegramEnabled={setIsTelegramEnabled}
       />
-      <CyDSafeAreaView className={'h-full bg-cardBgFrom pt-[10px]'}>
+      <CyDSafeAreaView className={'h-full bg-n20 pt-[10px]'}>
         <CyDView className='mx-[16px] mt-[16px]'>
           <CyDText className='text-[14px] text-n200 mt-[16px] font-[600]'>
             3D Secure Notification

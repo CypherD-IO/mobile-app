@@ -68,7 +68,7 @@ export default function CardActivationConsent() {
 
   const RenderPremiumPrompt = useCallback(() => {
     return (
-      <CyDView className='flex flex-col bg-n0 px-[16px] pb-[22px] pt-[2px] gap-y-[14px] rounded-[12px]'>
+      <CyDView className='flex flex-col bg-n20 px-[16px] pb-[22px] pt-[2px] gap-y-[14px] rounded-[12px]'>
         <CyDView className='flex flex-row justify-center items-center '>
           <CyDImage
             source={AppImages.MULTIPLE_CARDS}
@@ -101,13 +101,13 @@ export default function CardActivationConsent() {
   const RenderConsent = useCallback(() => {
     return (
       <CyDTouchView
-        className='flex flex-row items-start bg-n0 rounded-[12px] p-[16px]'
+        className='flex flex-row items-start bg-n20 rounded-[12px] p-[16px]'
         onPress={() => {
           setHasConsent(!hasConsent);
         }}>
         <CyDView
           className={clsx('h-[20px] w-[20px] border-[1px] rounded-[4px]', {
-            'bg-black': hasConsent,
+            'bg-n0': hasConsent,
           })}>
           {hasConsent && (
             <CyDImage
@@ -130,7 +130,7 @@ export default function CardActivationConsent() {
   }, [hasConsent]);
 
   return (
-    <CyDSafeAreaView className='flex flex-1 bg-n20 h-full'>
+    <CyDSafeAreaView className='flex flex-1 bg-n20 h-full bg-n20'>
       <StatusBar barStyle='dark-content' backgroundColor={'#EBEDF0'} />
       <CyDView className='flex flex-1 flex-col justify-between h-full bg-transparent'>
         <CyDView className='flex-1 mx-[16px] pb-[92px]'>

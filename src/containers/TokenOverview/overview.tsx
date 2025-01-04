@@ -1,14 +1,51 @@
 /* eslint-disable react-native/no-inline-styles */
-import { t } from 'i18next';
 import {
-  CyDFastImage,
-  CyDImage,
-  CyDScrollView,
-  CyDText,
-  CyDTouchView,
-  CyDView,
-} from '../../styles/tailwindStyles';
-import { TokenMeta } from '../../models/tokenMetaData.model';
+  ChartDot,
+  ChartPath,
+  ChartPathProvider,
+  ChartXLabel,
+  ChartYLabel,
+  monotoneCubicInterpolation,
+  simplifyData,
+} from '@cypherd-io/animated-charts';
+import Intercom from '@intercom/intercom-react-native';
+import {
+  NavigationProp,
+  ParamListBase,
+  useIsFocused,
+} from '@react-navigation/native';
+import clsx from 'clsx';
+import { t } from 'i18next';
+import { has } from 'lodash';
+import { cssInterop } from 'nativewind';
+import React, { useContext, useEffect, useMemo, useRef, useState } from 'react';
+import {
+  ActivityIndicator,
+  Dimensions,
+  FlatList,
+  RefreshControl,
+  ScrollView,
+  StyleSheet,
+} from 'react-native';
+import FastImage from 'react-native-fast-image';
+import {
+  runOnJS,
+  useAnimatedStyle,
+  useSharedValue,
+  withTiming,
+} from 'react-native-reanimated';
+import HTML from 'react-native-render-html';
+import Tooltip from 'react-native-walkthrough-tooltip';
+import AppImages from '../../../assets/images/appImages';
+import Loading from '../../components/v2/loading';
+import CyDTokenAmount from '../../components/v2/tokenAmount';
+import CyDTokenValue from '../../components/v2/tokenValue';
+import { screenTitle } from '../../constants';
+import { Colors } from '../../constants/theme';
+import { getCosmosStakingData } from '../../core/cosmosStaking';
+import { GlobalContext } from '../../core/globalContext';
+import useAxios from '../../core/HttpRequest';
+import { getDateFormatBasedOnLocaleForTimestamp } from '../../core/locale';
 import {
   beautifyPriceWithUSDDenom,
   convertFromUnitAmount,
@@ -17,63 +54,23 @@ import {
   isABasicCosmosStakingToken,
   isNativeToken,
 } from '../../core/util';
+import { isAndroid } from '../../misc/checkers';
+import { TokenMeta } from '../../models/tokenMetaData.model';
 import {
   COSMOS_STAKING_LOADING,
   CosmosStakingContext,
 } from '../../reducers/cosmosStakingReducer';
-import React, { useContext, useEffect, useState, useRef, useMemo } from 'react';
 import {
-  useIsFocused,
-  NavigationProp,
-  ParamListBase,
-  RouteProp,
-  useNavigation,
-  useRoute,
-} from '@react-navigation/native';
-import {
-  Dimensions,
-  RefreshControl,
-  StyleSheet,
-  TouchableWithoutFeedback,
-  ActivityIndicator,
-  FlatList,
-  ScrollView,
-} from 'react-native';
-import {
-  ChartDot,
-  ChartPath,
-  ChartPathProvider,
-  monotoneCubicInterpolation,
-  simplifyData,
-  ChartYLabel,
-  ChartXLabel,
-} from '@cypherd-io/animated-charts';
-import AppImages from '../../../assets/images/appImages';
-import FastImage from 'react-native-fast-image';
-import { Colors } from '../../constants/theme';
-import HTML from 'react-native-render-html';
-import { screenTitle } from '../../constants';
-import Animated, {
-  runOnJS,
-  useAnimatedStyle,
-  useSharedValue,
-  withTiming,
-} from 'react-native-reanimated';
-import clsx from 'clsx';
-import { isAndroid } from '../../misc/checkers';
-import CyDTokenAmount from '../../components/v2/tokenAmount';
-import CyDTokenValue from '../../components/v2/tokenValue';
-import useAxios from '../../core/HttpRequest';
-import Intercom from '@intercom/intercom-react-native';
+  CyDAnimatedView,
+  CyDFastImage,
+  CyDImage,
+  CyDScrollView,
+  CyDText,
+  CyDTouchView,
+  CyDView,
+} from '../../styles/tailwindStyles';
 import { sendFirebaseEvent } from '../utilities/analyticsUtility';
-import Loading from '../../components/v2/loading';
-import { has } from 'lodash';
-import Tooltip from 'react-native-walkthrough-tooltip';
-import { getDateFormatBasedOnLocaleForTimestamp } from '../../core/locale';
-import { getCosmosStakingData } from '../../core/cosmosStaking';
-import { GlobalContext } from '../../core/globalContext';
 import { showToast } from '../utilities/toastUtility';
-import { cssInterop } from 'nativewind';
 
 const { width } = Dimensions.get('window');
 
@@ -105,7 +102,6 @@ export const graphs = [
   },
 ] as const;
 
-const SELECTION_WIDTH = width - 32;
 const BUTTON_WIDTH = (width - 32) / graphs.length;
 
 export default function Overview({
@@ -425,7 +421,7 @@ export default function Overview({
           <CyDView className='absolute top-[54%] right-[5px]'>
             <CyDFastImage
               className={
-                'h-[20px] w-[20px] rounded-[50px] border-[1px] border-n40 bg-n0'
+                'h-[20px] w-[20px] rounded-[50px] border-[1px] border-n40'
               }
               source={
                 tokenData.chainDetails.logo_url ??
@@ -918,7 +914,6 @@ export default function Overview({
   ) : (
     <CyDScrollView
       ref={scrollViewRef}
-      className={'bg-n0'}
       refreshControl={
         <RefreshControl refreshing={refreshing} onRefresh={onRefresh} />
       }>
@@ -952,20 +947,17 @@ export default function Overview({
               />
               <CyDChartDot
                 size={12}
-                className='bg-n0 border-[2px] border-p100 h-[14px] w-[14px] rounded-[14px] mb-[1px]'
+                className='bg-n20 border-[2px] border-p100 h-[14px] w-[14px] rounded-[14px] mb-[1px]'
               />
             </CyDView>
             <CyDView
               className={`flex flex-row mt-[20px] justify-center items-center`}>
-              <CyDView style={StyleSheet.absoluteFill}>
-                <Animated.View style={[styles.backgroundSelection, style]} />
-              </CyDView>
               <CyDView className={'flex flex-row flex-1 justify-around'}>
                 {graphs.map((graph, index) => {
-                  // const isSelected = index === current.value;
+                  const isSelected = graph.dataSource === dataSource;
 
                   return (
-                    <TouchableWithoutFeedback
+                    <CyDTouchView
                       key={graph.label}
                       onPress={() => {
                         setDataSource(graph.dataSource);
@@ -974,16 +966,16 @@ export default function Overview({
                         current.value = index as GraphIndex;
                         transition.value = withTiming(1);
                       }}>
-                      <Animated.View
+                      <CyDAnimatedView
                         className={clsx(
                           'p-[10px] rounded-[8px]',
-                          // isSelected ? 'bg-blue20' : 'bg-transparent',
+                          isSelected ? 'bg-blue20' : 'bg-transparent',
                         )}>
                         <CyDText className='text-[14px] font-bold text-center'>
                           {graph.label}
                         </CyDText>
-                      </Animated.View>
-                    </TouchableWithoutFeedback>
+                      </CyDAnimatedView>
+                    </CyDTouchView>
                   );
                 })}
               </CyDView>

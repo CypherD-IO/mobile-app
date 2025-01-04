@@ -122,7 +122,7 @@ const Divider = () => {
 
 const Loader = () => {
   return (
-    <CyDView className='flex justify-center items-center'>
+    <CyDView className='flex justify-center items-center bg-n20'>
       <EmptyView
         text={`${t('LOADING_DATA')}...`}
         image={AppImages.LOADING_IMAGE}

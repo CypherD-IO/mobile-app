@@ -190,7 +190,7 @@ export default function EnterAmount(props: any) {
         <CyDView>
           <CyDView
             className={
-              'flex items-center justify-center pb-[35px] pt-[15px] w-full bg-secondaryBackgroundColor rounded-b-[25px]'
+              'flex items-center justify-center pb-[35px] pt-[15px] w-full bg-n20 rounded-b-[25px]'
             }>
             {tokenData && (
               <CyDView
@@ -227,7 +227,7 @@ export default function EnterAmount(props: any) {
                     'absolute left-[10%] bottom-[60%] bg-n0 rounded-full h-[40px] w-[40px] flex justify-center items-center p-[4px]',
                   )}
                   style={styles.roundButtonContainer}>
-                  <CyDText className={' text-black '}>
+                  <CyDText className={' text-base400 '}>
                     {t<string>('MAX')}
                   </CyDText>
                 </CyDTouchView>
@@ -260,7 +260,7 @@ export default function EnterAmount(props: any) {
                 <CyDView className={'flex-col w-8/12 mx-[6px] items-center'}>
                   <CyDTextInput
                     className={clsx(
-                      'font-bold text-center text-black h-[85px] ',
+                      'font-bold text-center text-base400 h-[85px] bg-n20',
                       {
                         'text-[70px]': valueForUsd.length <= 5,
                         'text-[40px]': valueForUsd.length > 5,
@@ -290,11 +290,7 @@ export default function EnterAmount(props: any) {
                     }}
                   />
                 </CyDView>
-                <CText
-                  dynamic
-                  fF={C.fontsName.FONT_BOLD}
-                  fS={15}
-                  color={Colors.subTextColor}>
+                <CyDText className='text-[15px] font-bold text-base400'>
                   {enterCryptoAmount
                     ? (!isNaN(parseFloat(usdValue))
                         ? formatAmount(usdValue)
@@ -302,7 +298,7 @@ export default function EnterAmount(props: any) {
                     : (!isNaN(parseFloat(cryptoValue))
                         ? formatAmount(cryptoValue)
                         : '0.00') + ` ${tokenData.name}`}
-                </CText>
+                </CyDText>
 
                 <CyDView
                   style={styles.tokenContainer}

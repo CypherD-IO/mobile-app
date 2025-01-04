@@ -252,8 +252,8 @@ export default function CardRevealAuthScreen() {
   }
 
   return (
-    <CyDSafeAreaView>
-      <CyDView className={'h-full bg-[#F1F0F5] px-[20px] pt-[10px]'}>
+    <CyDSafeAreaView className='bg-n20'>
+      <CyDView className={'h-full px-[20px] pt-[10px]'}>
         <CyDTouchView
           className='flex-row items-center'
           onPress={() => {

@@ -286,7 +286,7 @@ export default function CardApplicationV2() {
   if (loading) return <Loading />;
 
   return (
-    <CyDSafeAreaView className='my-[40px] '>
+    <CyDSafeAreaView className='flex-1 bg-n20'>
       {/* remove the CardProviderSwitch after sunsetting PC */}
       <CyDTouchView
         className='w-[60px] ml-[16px] mb-[10px]'
@@ -334,7 +334,7 @@ export default function CardApplicationV2() {
           values,
           isSubmitting,
         }) => (
-          <CyDView className='bg-[#F1F0F5] flex flex-col justify-between h-full'>
+          <CyDView className='bg-n20 flex flex-col justify-between h-full'>
             {index === 0 && <BasicDetails setIndex={setIndex} />}
             {index === 1 && (
               <BillingAddress

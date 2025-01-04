@@ -28,7 +28,6 @@ export function LinkedWallets({
 }) {
   const globalContext = useContext<any>(GlobalContext);
   const cardProfile: CardProfile = globalContext.globalState.cardProfile;
-  const provider = cardProfile.provider;
   const hdWalletContext = useContext<any>(HdWalletContext);
   const { getWithAuth } = useAxios();
   const { showModal, hideModal } = useGlobalModalContext();
@@ -48,10 +47,10 @@ export function LinkedWallets({
 
   return (
     <>
-      <CyDSafeAreaView className={'h-full bg-n0 pt-[10px]'}>
+      <CyDSafeAreaView className={'h-full bg-n20 pt-[10px]'}>
         <CyDView className={'flex flex-col items-end w-full h-full'}>
           <CyDText
-            className='text-blue-700 font-bold mt-[10px] mb-[5px] mr-[25px]'
+            className='text-blue200 font-bold mt-[10px] mb-[5px] mr-[25px]'
             onPress={() => {
               navigation.push(screenTitle.LINK_ANOTHER_WALLET);
             }}>
@@ -65,7 +64,7 @@ export function LinkedWallets({
                     return (
                       <CyDView
                         key={childWallet.address}
-                        className='flex flex-row justify-between h-[65px] my-[5px] mx-[20px] px-[10px] border-[1px] rounded-[15px] border-n40'>
+                        className='bg-n0 flex flex-row justify-between h-[65px] my-[5px] mx-[20px] px-[10px] border-[1px] rounded-[15px] border-n40'>
                         <CyDView className='flex flex-row w-[80%] items-center'>
                           <CyDText className='w-[90px]'>
                             {childWallet.label.length > 12

@@ -3,8 +3,6 @@ import {
   CyDView,
   CyDText,
   CyDSafeAreaView,
-  CyDTouchView,
-  CyDImage,
   CyDFastImage,
   CyDScrollView,
 } from '../../../styles/tailwindStyles';
@@ -26,7 +24,6 @@ import {
 } from '../../../constants/enum';
 import { useTranslation } from 'react-i18next';
 import { capitalize } from 'lodash';
-import { getCountryNameFromISO2 } from '../../../core/locale';
 import { screenTitle } from '../../../constants';
 import Button from '../../../components/v2/button';
 import { isIOS } from '../../../misc/checkers';
@@ -45,13 +42,7 @@ export default function ShippingConfirmation() {
   const navigation = useNavigation<NavigationProp<ParamListBase>>();
   const route = useRoute<RouteProp<Record<string, RouteParams>, string>>();
   const { t } = useTranslation();
-  const {
-    userData,
-    shippingAddress,
-    currentCardProvider,
-    preferredName,
-    physicalCardType,
-  } = route.params;
+  const { userData, shippingAddress, physicalCardType } = route.params;
 
   const RenderShippingAddress = useCallback(() => {
     return (

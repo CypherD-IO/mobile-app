@@ -130,7 +130,8 @@ export default function RemoveWalletModal(props) {
       setModalVisible={() => {
         onPress();
       }}>
-      <CyDView className={'bg-n0 p-[25px] pb-[30px] rounded-t-[20px] relative'}>
+      <CyDView
+        className={'bg-n20 p-[25px] pb-[30px] rounded-t-[20px] relative'}>
         <CyDTouchView onPress={() => onPress()} className={'z-[50]'}>
           <CyDImage
             source={AppImages.CLOSE}

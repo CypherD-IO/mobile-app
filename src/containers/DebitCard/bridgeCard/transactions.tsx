@@ -266,7 +266,7 @@ export default function CardTransactions() {
       lastDate.current = parsedDate;
       return (
         <CyDView>
-          <CyDView className='bg-n20 py-[10px] px-[12px]'>
+          <CyDView className='bg-n0 py-[10px] px-[12px]'>
             <CyDText className='text-[14px] font-semibold'>
               {parsedDate}
             </CyDText>
@@ -279,13 +279,15 @@ export default function CardTransactions() {
   };
 
   return (
-    <CyDView className='h-full bg-n0'>
+    <CyDView className='h-full bg-n20'>
       <CyDModalLayout
         isModalVisible={exportOptionOpen}
         setModalVisible={setExportOptionOpen}
         style={styles.modalLayout}>
         <CyDView
-          className={'bg-n0 p-[25px] pb-[30px] rounded-t-[20px] relative'}>
+          className={
+            'bg-n20 p-[25px] pb-[30px] rounded-t-[20px] relative border border-n30'
+          }>
           <CyDTouchView
             onPress={() => setExportOptionOpen(false)}
             className={'z-[50]'}>
@@ -323,7 +325,7 @@ export default function CardTransactions() {
         modalVisibilityState={[filterModalVisible, setFilterModalVisible]}
         filterState={[filter, setFilter]}
       />
-      <CyDView className='h-[50px] flex flex-row justify-between items-center py-[10px] px-[10px] bg-n0 border border-n30'>
+      <CyDView className='h-[50px] flex flex-row justify-between items-center py-[10px] px-[10px] bg-n0 border border-n40'>
         <CyDView className='flex flex-1 justify-center items-center'>
           <CyDText className='text-[18px] font-bold text-center ml-[45px]'>
             {viewableTransactionsDate}

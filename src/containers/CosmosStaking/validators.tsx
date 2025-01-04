@@ -12,6 +12,7 @@ import {
   CyDFlatList,
   CyDTouchView,
   CyDTextInput,
+  CyDFastImage,
 } from '../../styles/tailwindStyles';
 import SwitchView from '../../components/v2/switchView';
 import { useTranslation } from 'react-i18next';
@@ -28,8 +29,10 @@ import Empty from '../../components/v2/empty';
 import CyDModalLayout from '../../components/v2/modal';
 import { screenTitle } from '../../constants';
 import { BackHandler, StyleSheet } from 'react-native';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 export default function CosmosValidators({ route, navigation }) {
+  const insets = useSafeAreaInsets();
   const { t } = useTranslation();
   const { tokenData, from } = route.params;
   const cosmosStaking =
@@ -156,7 +159,7 @@ export default function CosmosValidators({ route, navigation }) {
             style={'max-h-[60px] px-[4%] py-[10px]'}
           />
         </CyDView>
-        <CyDView className={'w-[90%] h-[1px] bg-[#F4F4F4] '}></CyDView>
+        <CyDView className={'w-[90%] h-[1px] bg-[#F4F4F4] '} />
       </CyDView>
     );
   };
@@ -185,11 +188,23 @@ export default function CosmosValidators({ route, navigation }) {
 
   const memoizedValue = useMemo(() => renderItem, [filterList, index]);
 
-  useEffect(() => {
-    navigation.setOptions({
-      headerLeft: () => {},
-      headerTitle: () => (
-        <CyDView className={'-mt-[10px]'}>
+  return (
+    <CyDView className={'bg-n0 h-full w-full'}>
+      <CyDView
+        className='bg-n0 flex-row justify-between'
+        style={{ paddingTop: insets.top }}>
+        <CyDTouchView
+          className='px-[12px] bg-n0'
+          onPress={() => {
+            navigation.goBack();
+          }}>
+          <CyDFastImage
+            className={'w-[32px] h-[32px]'}
+            resizeMode='cover'
+            source={AppImages.BACK_ARROW_GRAY}
+          />
+        </CyDTouchView>
+        <CyDView className={'-mt-[10px] bg-n0'}>
           {from === CosmosActionType.STAKE && (
             <SwitchView
               titles={[t('Staked'), t('All Validators')]} // Pass the titles as an array
@@ -200,12 +215,8 @@ export default function CosmosValidators({ route, navigation }) {
             />
           )}
         </CyDView>
-      ),
-    });
-  }, [index, navigation]);
-
-  return (
-    <CyDView className={'bg-n0 h-full w-full'}>
+        <CyDView className='' />
+      </CyDView>
       <CyDModalLayout
         setModalVisible={setShowManage}
         isModalVisible={showManage}
@@ -307,12 +318,10 @@ export default function CosmosValidators({ route, navigation }) {
         </CyDView>
       </CyDModalLayout>
 
-      <CyDView style={styles.SectionStyle} className='drop-shadow-md'>
-        <CyDImage
-          source={AppImages.SEARCH_BROWSER}
-          style={styles.ImageStyle}></CyDImage>
+      <CyDView className='drop-shadow-md flex-row items-center border border-n40 rounded-[20px] m-[10px]'>
+        <CyDImage source={AppImages.SEARCH_BROWSER} style={styles.ImageStyle} />
         <CyDTextInput
-          style={styles.input}
+          className='flex-1 rounded-[20px] py-[10px] px-[10px]'
           value={filterText}
           onChangeText={text => setFilterText(text)}
           placeholder={t('SEARCH_VALIDATOR')}
@@ -336,17 +345,6 @@ const styles = StyleSheet.create({
     margin: 0,
     justifyContent: 'flex-end',
   },
-  SectionStyle: {
-    flexDirection: 'row',
-    justifyContent: 'space-evenly',
-    alignItems: 'center',
-    backgroundColor: '#fff',
-    borderWidth: 0.5,
-    borderColor: '#7D7F7C',
-    height: 40,
-    borderRadius: 20,
-    margin: 10,
-  },
   ImageStyle: {
     padding: 10,
     margin: 5,
@@ -354,12 +352,5 @@ const styles = StyleSheet.create({
     width: 25,
     resizeMode: 'stretch',
     alignItems: 'center',
-  },
-  input: {
-    flex: 1,
-    paddingTop: 10,
-    paddingRight: 10,
-    paddingBottom: 10,
-    paddingLeft: 0,
   },
 });

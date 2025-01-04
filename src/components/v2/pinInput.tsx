@@ -33,13 +33,13 @@ export const PinInput = ({
       if (newValue[index] !== '' && index < length - 1) {
         newValue[index + 1] = key;
         onChange(newValue);
-        inputRefs.current[index + 1].focus();
+        inputRefs?.current[index + 1]?.focus();
       } else {
         newValue[index] = key;
         onChange(newValue);
         // Move to the next box if not the last one
         if (index < length - 1) {
-          inputRefs.current[index + 1].focus();
+          inputRefs?.current[index + 1]?.focus();
         }
       }
     } else if (key === 'Backspace') {
@@ -49,7 +49,7 @@ export const PinInput = ({
 
       // Move to the previous box if not the first one
       if (index > 0) {
-        inputRefs.current[index - 1].focus();
+        inputRefs?.current[index - 1]?.focus();
       }
     }
   };
@@ -61,7 +61,7 @@ export const PinInput = ({
           key={index}
           ref={el => (inputRefs.current[index] = el)}
           className={clsx(
-            'h-[64px] w-[50px] text-[22px] font-bold text-center rounded-[8px] border-[1px] border-[#C2C7D0] bg-n0',
+            'h-[64px] w-[50px] text-[22px] font-bold text-center rounded-[8px] border-[1px] border-n40 bg-n0 font-manrope text-base400',
             'mx-[4px]',
             {
               'border-redCyD': error,

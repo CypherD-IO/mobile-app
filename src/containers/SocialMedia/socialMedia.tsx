@@ -38,7 +38,7 @@ export default function SocialMediaScreen() {
   }, []);
 
   return (
-    <CyDView className={'h-full w-full'}>
+    <CyDView className={'h-full w-full bg-n20'}>
       <WebView source={{ uri }} />
     </CyDView>
   );

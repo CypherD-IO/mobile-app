@@ -949,7 +949,9 @@ export default function FirstLoadCard() {
   };
 
   return (
-    <CyDKeyboardAwareScrollView className='' style={{ paddingTop: insect.top }}>
+    <CyDKeyboardAwareScrollView
+      className='bg-n20'
+      style={{ paddingTop: insect.top }}>
       <ChooseTokenModal
         isChooseTokenModalVisible={isChooseTokenVisible}
         minTokenValueLimit={minTokenValueLimit}
@@ -1055,7 +1057,7 @@ export default function FirstLoadCard() {
                 </CyDText>
               </CyDView>
               <CyDTouchView
-                className='bg-n30 rounded-[6px] p-[6px]'
+                className=' rounded-[6px] p-[6px]'
                 onPress={() => {
                   if (optedPlanId === CypherPlanId.BASIC_PLAN) {
                     setPlanPageVisible(true);

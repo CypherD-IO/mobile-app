@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useState } from 'react';
 import CyDModalLayout from './modal';
 import {
   CyDImage,
@@ -7,15 +7,12 @@ import {
   CyDView,
 } from '../../styles/tailwindStyles';
 import { StyleSheet } from 'react-native';
-import { get } from 'lodash';
 import Button from './button';
-import { ButtonType } from '../../constants/enum';
+import { ButtonType, CardProviders } from '../../constants/enum';
 import useAxios from '../../core/HttpRequest';
-import { t } from 'i18next';
-import { useGlobalModalContext } from './GlobalModal';
 import AppImages from '../../../assets/images/appImages';
-import { useIsFocused } from '@react-navigation/native';
 import { showToast } from '../../containers/utilities/toastUtility';
+import { Card } from '../../models/card.model';
 
 export default function ThreeDSecureOptionModal({
   isModalVisible,
@@ -24,6 +21,13 @@ export default function ThreeDSecureOptionModal({
   currentCardProvider,
   isTelegramEnabled,
   setIsTelegramEnabled,
+}: {
+  isModalVisible: boolean;
+  setModalVisible: (value: boolean) => void;
+  card: Card;
+  currentCardProvider: CardProviders;
+  isTelegramEnabled: boolean;
+  setIsTelegramEnabled: (value: boolean) => void;
 }) {
   const [isTelegramSelected, setIsTelegramSelected] =
     useState<boolean>(isTelegramEnabled);
@@ -62,7 +66,7 @@ export default function ThreeDSecureOptionModal({
       disableBackDropPress={true}>
       <CyDView
         className={
-          'bg-cardBgTo px-[16px] py-[24px] m-[2px] mb-[6px] rounded-[16px]'
+          'bg-n20 px-[16px] py-[24px] m-[2px] mb-[6px] rounded-[16px]'
         }>
         <CyDView className='flex flex-row justify-between items-center mb-[24px]'>
           <CyDView className='flex-1 justify-center items-center'>

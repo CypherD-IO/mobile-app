@@ -17,6 +17,11 @@
     "postversion": "react-native-version",
     "build:ios": "react-native bundle --entry-file='index.js' --bundle-output='./ios/main.jsbundle' --dev=false --platform='ios'"
   },
+  "rnpm": {
+    "assets": [
+      "./assets/fonts/"
+    ]
+  },
   "dependencies": {
     "@cosmjs-rn/amino": "^0.27.1",
     "@cosmjs/cosmwasm-stargate": "^0.32.4",
@@ -46,6 +51,9 @@
     "@react-native-firebase/app": "^21.5.0",
     "@react-native-firebase/messaging": "^21.5.0",
     "@react-native-firebase/perf": "^21.5.0",
+    "@react-native-vector-icons/ant-design": "^4.4.2",
+    "@react-native-vector-icons/common": "^11.0.0",
+    "@react-native-vector-icons/material-design-icons": "^7.4.47",
     "@react-navigation/bottom-tabs": "^6.0.9",
     "@react-navigation/drawer": "^6.1.8",
     "@react-navigation/native": "^6.0.6",
@@ -156,7 +164,7 @@
     "react-native-tab-view": "^3.3.0",
     "react-native-toast-message": "^2.1.1",
     "react-native-url-polyfill": "^1.3.0",
-    "react-native-vector-icons": "^9.0.0",
+    "react-native-vector-icons": "^9.2.0",
     "react-native-view-shot": "^3.5.0",
     "react-native-walkthrough-tooltip": "^1.5.0",
     "react-native-webview": "^13.12.3",
@@ -197,6 +205,7 @@
     "@types/react-native": "^0.66.11",
     "@types/react-native-background-timer": "^2.0.2",
     "@types/react-native-popup-dialog": "^0.16.4",
+    "@types/react-native-vector-icons": "^6.4.18",
     "@types/react-test-renderer": "^18.0.0",
     "@types/uuid": "^8.3.4",
     "@typescript-eslint/eslint-plugin": "^5.33.1",

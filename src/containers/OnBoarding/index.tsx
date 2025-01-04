@@ -49,9 +49,7 @@ export default function OnBoarding({ navigation }) {
     return (
       <CyDScrollView className={''} style={{ width }}>
         <CyDText
-          className={
-            'text-versionColor font-bold mt-[12px] text-left mx-[44px]'
-          }
+          className={'font-bold mt-[12px] text-left mx-[44px]'}
           numberOfLines={4}
           style={{ fontSize: height * 0.03 }}>
           {t('ON_BOARDING_PAGE_1_CONTENT').toString()}
@@ -70,9 +68,7 @@ export default function OnBoarding({ navigation }) {
     return (
       <CyDScrollView className={''} style={{ width }}>
         <CyDText
-          className={
-            'text-versionColor text-[30px] font-bold mt-[12px] text-left mx-[44px]'
-          }
+          className={' text-[30px] font-bold mt-[12px] text-left mx-[44px]'}
           numberOfLines={4}
           style={{ fontSize: height * 0.03 }}>
           {t('ON_BOARDING_PAGE_2_CONTENT').toString()}
@@ -90,7 +86,7 @@ export default function OnBoarding({ navigation }) {
   const Screen3 = useCallback((): JSX.Element => {
     return (
       <CyDScrollView className={''} style={{ width }}>
-        <CyDView className='bg-secondaryBackgroundColor py-[20px] rounded-[25px] m-[12px] px-[20px]'>
+        <CyDView className=' py-[20px] rounded-[25px] m-[12px] px-[20px]'>
           {/* <CyDImage
             source={AppImages.ON_BOARDING_3}
             className={clsx('mt-[20px] w-screen ')}

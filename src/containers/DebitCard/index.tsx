@@ -113,7 +113,6 @@ export default function DebitCardScreen(props: RouteProps) {
             if (!currentCardProfile) {
               currentCardProfile = await refreshProfile();
             }
-
             if (
               currentCardProfile &&
               has(currentCardProfile, provider as string)

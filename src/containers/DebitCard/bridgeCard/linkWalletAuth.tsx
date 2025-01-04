@@ -129,8 +129,8 @@ export default function LinkWalletAuth() {
   };
 
   return (
-    <CyDSafeAreaView>
-      <CyDView className={'h-full bg-n0 px-[20px] pt-[10px]'}>
+    <CyDSafeAreaView className={'bg-n20'}>
+      <CyDView className={'h-full px-[20px] pt-[10px]'}>
         <OTPHeader />
         <CyDView>
           {!verifyingOTP && (

@@ -132,7 +132,7 @@ const ChooseMultipleCountryModal = ({
         <CyDKeyboardAvoidingView
           behavior={isAndroid() ? 'height' : 'padding'}
           className='flex flex-col justify-end h-full'>
-          <CyDView className={'bg-n0 h-[70%] rounded-t-[24px] '}>
+          <CyDView className={'bg-n20 h-[70%] rounded-t-[24px] '}>
             <CyDView
               className={
                 'flex flex-row justify-between mt-[24px] mx-[5%] items-center'
@@ -153,7 +153,7 @@ const ChooseMultipleCountryModal = ({
             </CyDView>
             <CyDTextInput
               className={
-                'border-[1px] border-inputBorderColor rounded-[8px] p-[10px] mt-[10px] text-[14px] ml-[5%] w-[90%]'
+                'border-[1px] border-n40 rounded-[8px] p-[10px] mt-[10px] text-[14px] ml-[5%] w-[90%]'
               }
               value={countryFilterText}
               autoCapitalize='none'
@@ -162,7 +162,7 @@ const ChooseMultipleCountryModal = ({
               placeholder='Search Country'
               placeholderTextColor={Colors.subTextColor}
             />
-            <CyDView className='h-[1px] bg-[#DFE2E6] mt-[8px]' />
+            <CyDView className='h-[1px] bg-n40 mt-[8px]' />
             <CyDScrollView>
               <CyDView className='mb-[100px]'>
                 {countryFilterText === '' && (
@@ -188,7 +188,7 @@ const ChooseMultipleCountryModal = ({
                       <CyDView className={'flex flex-row justify-end'}>
                         <CyDView
                           className={clsx(
-                            'h-[21px] w-[21px] rounded-[4px] border-[1.5px] border-borderColor flex flex-row justify-center items-center',
+                            'h-[21px] w-[21px] rounded-[4px] border-[1.5px] border-n40 flex flex-row justify-center items-center',
                             {
                               'bg-appColor': allCountriesSelected,
                             },
@@ -248,7 +248,7 @@ const ChooseMultipleCountryModal = ({
                         </CyDView>
                         <CyDView className={'flex flex-row justify-end'}>
                           <CyDView
-                            className={`h-[21px] w-[21px] ${some(selectedCountry, { name: country.name }) ? 'bg-appColor' : ''} rounded-[4px] border-[1.5px] border-borderColor flex flex-row justify-center items-center`}>
+                            className={`h-[21px] w-[21px] ${some(selectedCountry, { name: country.name }) ? 'bg-appColor' : ''} rounded-[4px] border-[1.5px] border-n40 flex flex-row justify-center items-center`}>
                             <CyDImage
                               source={AppImages.WHITE_CHECK_MARK}
                               className='h-[18px] w-[18px]'

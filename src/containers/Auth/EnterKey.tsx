@@ -50,6 +50,8 @@ import { HdWalletContextDef } from '../../reducers/hdwallet_reducer';
 import {
   CyDImage,
   CyDKeyboardAvoidingView,
+  CyDKeyboardAwareScrollView,
+  CyDSafeAreaView,
   CyDText,
   CyDTextInput,
   CyDTouchView,
@@ -242,163 +244,152 @@ export default function Login(props) {
   }, []);
 
   return (
-    <>
-      <SafeAreaView style={styles.topSafeArea} />
+    <CyDSafeAreaView className='flex-1 bg-n20'>
       <StatusBar barStyle='dark-content' backgroundColor={'#EBEDF0'} />
       {firstIndexAddress ? (
-        <SafeAreaView className='flex-1 bg-cardBg h-full'>
-          <ChooseWalletIndexComponent
-            walletAddresses={[{ address: firstIndexAddress, index: 0 }]}
-            handleShowMoreWalletAddressPress={handleShowMoreWalletAddressPress}
-          />
-        </SafeAreaView>
+        <ChooseWalletIndexComponent
+          walletAddresses={[{ address: firstIndexAddress, index: 0 }]}
+          handleShowMoreWalletAddressPress={handleShowMoreWalletAddressPress}
+        />
       ) : (
-        <SafeAreaView className='flex-1 bg-cardBg h-full'>
-          <CyDView
-            className='flex-1 h-full'
-            keyboardShouldPersistTaps='handled'>
-            {createWalletLoading && <Loading />}
-            <CyDKeyboardAvoidingView
-              keyboardVerticalOffset={56}
-              behavior={isAndroid() ? 'height' : 'padding'}>
-              <CyDView className='flex flex-col h-full justify-between'>
-                <CyDView className='bg-cardBg pb-[16px]'>
-                  <CyDView className='flex flex-row justify-around -mx-[20px]'>
-                    <CyDTouchView
-                      onPress={() => {
-                        props.navigation.goBack();
-                      }}>
-                      <CyDImage
-                        source={AppImages.BACK_ARROW_GRAY}
-                        className='w-[32px] h-[32px]'
-                      />
-                    </CyDTouchView>
-                    <CyDText className='font-semibold text-black text-[20px]'>
-                      {t('IMPORT_WALLET_MSG')}
-                    </CyDText>
-                    <CyDTouchView
-                      onPress={() => {
-                        props.navigation.navigate(
-                          C.screenTitle.QR_CODE_SCANNER,
-                          {
-                            fromPage: QRScannerScreens.IMPORT,
-                            onSuccess,
-                          },
-                        );
-                      }}>
-                      <CyDImage
-                        source={AppImages.QR_CODE_V2}
-                        className='w-[24px] h-[24px]'
-                      />
-                    </CyDTouchView>
-                  </CyDView>
-                  <CyDView className='mt-[24px] px-[26px]'>
-                    <CyDText className='font-semibold text-[20px]'>
-                      {t('ENTER_RECOVERY_PHRASE')}
-                    </CyDText>
-                    <CyDTextInput
-                      placeholder={t('ENTER_KEY_PLACEHOLDER')}
-                      placeholderTextColor={Colors.placeHolderColor}
-                      value={seedPhraseTextValue}
-                      ref={inputRef}
-                      onChangeText={text => {
-                        handleTextChange(text);
-                      }}
-                      multiline={true}
-                      textAlignVertical={'top'}
-                      secureTextEntry={true}
-                      className={clsx(
-                        'border-[1px] border-inputBorderColor bg-n0 rounded-[8px] p-[10px] mt-[12px] h-[160px] text-[16px] w-[100%]',
-                        { 'border-errorRed': badKeyError },
-                        { 'h-[110px]': height < 700 },
-                      )}
-                    />
-                    {badKeyError && (
-                      <CyDView className='flex flex-row items-center justify-center mt-[12px]'>
-                        <CyDImage
-                          source={AppImages.CANCEL_ICON}
-                          className='h-[16px] w-[16px]'
-                        />
-                        <CyDText className='text-[12px] ml-[4px] text-errorTextRed text-center'>
-                          {t('BAD_KEY_PHARSE')}
-                        </CyDText>
-                      </CyDView>
-                    )}
-                  </CyDView>
-                  <Button
-                    type={ButtonType.GREY}
-                    title={t('PASTE_CLIPBOARD')}
+        <CyDKeyboardAwareScrollView
+          // lunar fun ghost able dawn memory brain room enrich buyer worry young
+          className='flex-1 h-full'
+          keyboardShouldPersistTaps='handled'>
+          {createWalletLoading && <Loading />}
+          <CyDKeyboardAvoidingView
+            keyboardVerticalOffset={56}
+            behavior={isAndroid() ? 'height' : 'padding'}>
+            <CyDView className='flex flex-col h-full justify-between'>
+              <CyDView className=' pb-[16px]'>
+                <CyDView className='flex flex-row justify-around -mx-[20px]'>
+                  <CyDTouchView
                     onPress={() => {
-                      void fetchCopiedText();
-                    }}
-                    titleStyle={'text-[14px] ml-[4px] font-medium text-n900'}
-                    paddingY={6}
-                    image={AppImages.PASTE_FILL}
-                    imageStyle={'h-[14px] w-[14px]'}
-                    imagePosition={ImagePosition.LEFT}
-                    style='px-[6px] py-[6px] w-[174px] mt-[12px] ml-[26px]'
-                  />
-                </CyDView>
-                <CyDView>
-                  <Button
-                    type={ButtonType.PRIMARY}
-                    title={t('SUBMIT_FIRST_LETTER_CAPS')}
-                    onPress={() => {
-                      void submitImportWallet();
-                    }}
-                    paddingY={12}
-                    style='mx-[26px] rounded-[12px]'
-                    titleStyle='text-[18px]'
-                    disabled={disableSubmit}
-                    loading={loading}
-                    loaderStyle={{ height: 25, width: 25 }}
-                  />
-                  <CyDView className='flex flex-row mt-[8px] justify-center'>
+                      props.navigation.goBack();
+                    }}>
                     <CyDImage
-                      className='h-[16px] w-[16px]'
-                      source={AppImages.AUDIT_ICON}
+                      source={AppImages.BACK_ARROW_GRAY}
+                      className='w-[32px] h-[32px]'
                     />
-                    <CyDText className='text-[10px] font-medium ml-[6px]'>
-                      {t('CYPHER_AUDIT_TEXT')}
-                    </CyDText>
-                  </CyDView>
-                  {filteredSuggestions.length > 0 && isKeyboardVisible && (
-                    <CyDView className='h-[56px] mt-[10px]'>
-                      <FlatList
-                        data={filteredSuggestions}
-                        keyboardShouldPersistTaps='handled'
-                        horizontal={true}
-                        renderItem={({ item }) => (
-                          <CyDTouchView
-                            className='p-[6px] bg-[#D4E7F4] ml-[8px] rounded-[4px]'
-                            onPressIn={() => handleSuggestionPress(item)}>
-                            <CyDText className='font-bold text-[12px] text-[#0061A7]'>
-                              {item}
-                            </CyDText>
-                          </CyDTouchView>
-                        )}
-                        style={styles.suggestionList}
-                        showsHorizontalScrollIndicator={false}
+                  </CyDTouchView>
+                  <CyDText className='font-semibold text-[20px]'>
+                    {t('IMPORT_WALLET_MSG')}
+                  </CyDText>
+                  <CyDTouchView
+                    onPress={() => {
+                      props.navigation.navigate(C.screenTitle.QR_CODE_SCANNER, {
+                        fromPage: QRScannerScreens.IMPORT,
+                        onSuccess,
+                      });
+                    }}>
+                    <CyDImage
+                      source={AppImages.QR_CODE_V2}
+                      className='w-[24px] h-[24px]'
+                    />
+                  </CyDTouchView>
+                </CyDView>
+                <CyDView className='mt-[24px] px-[26px]'>
+                  <CyDText className='font-semibold text-[20px]'>
+                    {t('ENTER_RECOVERY_PHRASE')}
+                  </CyDText>
+                  <CyDTextInput
+                    placeholder={t('ENTER_KEY_PLACEHOLDER')}
+                    placeholderTextColor={Colors.placeHolderColor}
+                    value={seedPhraseTextValue}
+                    ref={inputRef}
+                    onChangeText={text => {
+                      handleTextChange(text);
+                    }}
+                    multiline={true}
+                    textAlignVertical={'top'}
+                    secureTextEntry={true}
+                    className={clsx(
+                      'border-[1px] border-inputBorderColor bg-n0 rounded-[8px] p-[10px] mt-[12px] h-[160px] text-[16px] w-[100%]',
+                      { 'border-errorRed': badKeyError },
+                      { 'h-[110px]': height < 700 },
+                    )}
+                  />
+                  {badKeyError && (
+                    <CyDView className='flex flex-row items-center justify-center mt-[12px]'>
+                      <CyDImage
+                        source={AppImages.CANCEL_ICON}
+                        className='h-[16px] w-[16px]'
                       />
+                      <CyDText className='text-[12px] ml-[4px] text-errorTextRed text-center'>
+                        {t('BAD_KEY_PHARSE')}
+                      </CyDText>
                     </CyDView>
                   )}
                 </CyDView>
+                <Button
+                  type={ButtonType.GREY}
+                  title={t('PASTE_CLIPBOARD')}
+                  onPress={() => {
+                    void fetchCopiedText();
+                  }}
+                  titleStyle={'text-[14px] ml-[4px] font-medium text-n900'}
+                  paddingY={6}
+                  image={AppImages.PASTE_FILL}
+                  imageStyle={'h-[14px] w-[14px]'}
+                  imagePosition={ImagePosition.LEFT}
+                  style='px-[6px] py-[6px] w-[174px] mt-[12px] ml-[26px]'
+                />
               </CyDView>
-            </CyDKeyboardAvoidingView>
-          </CyDView>
-        </SafeAreaView>
+              <CyDView>
+                <Button
+                  type={ButtonType.PRIMARY}
+                  title={t('SUBMIT_FIRST_LETTER_CAPS')}
+                  onPress={() => {
+                    void submitImportWallet();
+                  }}
+                  paddingY={12}
+                  style='mx-[26px] rounded-[12px]'
+                  titleStyle='text-[18px]'
+                  disabled={disableSubmit}
+                  loading={loading}
+                  loaderStyle={{ height: 25, width: 25 }}
+                />
+                <CyDView className='flex flex-row mt-[8px] justify-center'>
+                  <CyDImage
+                    className='h-[16px] w-[16px]'
+                    source={AppImages.AUDIT_ICON}
+                  />
+                  <CyDText className='text-[10px] font-medium ml-[6px]'>
+                    {t('CYPHER_AUDIT_TEXT')}
+                  </CyDText>
+                </CyDView>
+                {filteredSuggestions.length > 0 && isKeyboardVisible && (
+                  <CyDView className='h-[56px] mt-[10px]'>
+                    <FlatList
+                      data={filteredSuggestions}
+                      keyboardShouldPersistTaps='handled'
+                      horizontal={true}
+                      renderItem={({ item }) => (
+                        <CyDTouchView
+                          className='p-[6px] bg-n20 ml-[8px] rounded-[4px]'
+                          onPressIn={() => handleSuggestionPress(item)}>
+                          <CyDText className='font-bold text-[12px] text-[#0061A7]'>
+                            {item}
+                          </CyDText>
+                        </CyDTouchView>
+                      )}
+                      style={styles.suggestionList}
+                      showsHorizontalScrollIndicator={false}
+                    />
+                  </CyDView>
+                )}
+              </CyDView>
+            </CyDView>
+          </CyDKeyboardAvoidingView>
+        </CyDKeyboardAwareScrollView>
       )}
-    </>
+    </CyDSafeAreaView>
   );
 }
 
 const { height } = Dimensions.get('window');
 
 const styles = StyleSheet.create({
-  topSafeArea: {
-    flex: 0,
-    backgroundColor: '#EBEDF0',
-  },
   suggestionList: {
     backgroundColor: '#EBEDF0',
     paddingVertical: 12,

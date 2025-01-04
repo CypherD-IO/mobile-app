@@ -67,6 +67,7 @@ import * as Sentry from '@sentry/react-native';
 import {
   SafeAreaView,
   useSafeAreaInsets,
+  Edge,
 } from 'react-native-safe-area-context';
 import { Dimensions, StyleSheet, Linking, Platform } from 'react-native';
 import CyDModalLayout from '../../../components/v2/modal';
@@ -191,7 +192,7 @@ const InfoMessage: React.FC<InfoMessageProps> = ({ message, condition }) => {
   if (!condition) return null;
 
   return (
-    <CyDView className='bg-n0 rounded-[12px] border border-[#E9EBF8] p-[12px] mt-[24px]'>
+    <CyDView className='bg-n0 rounded-[12px] border border-n40 p-[12px] mt-[24px]'>
       <CyDView className='flex-row items-center'>
         <CyDImage
           source={AppImages.INFO_CIRCLE}
@@ -406,7 +407,7 @@ const DeclinedTransactionActionItem = ({
     );
   } else if (isInsufficientFunds) {
     return (
-      <CyDView className='bg-n0 rounded-[12px] border border-[#E9EBF8] p-[12px] mt-[24px]'>
+      <CyDView className='bg-n0 rounded-[12px] border border-n40 p-[12px] mt-[24px]'>
         <CyDView className='flex-row items-center'>
           <CyDFastImage
             source={
@@ -445,7 +446,7 @@ const DeclinedTransactionActionItem = ({
     );
   } else if (isLimitExceeded) {
     return (
-      <CyDView className='bg-n0 rounded-[12px] border border-[#E9EBF8] p-[12px] mt-[24px]'>
+      <CyDView className='rounded-[12px] border border-n40 p-[12px] mt-[24px]'>
         <CyDView className='flex-row items-center'>
           <CyDImage
             source={AppImages.INFO_CIRCLE}
@@ -474,7 +475,7 @@ const DeclinedTransactionActionItem = ({
   } else if (isCardInactive) {
     return (
       <>
-        <CyDView className='bg-n0 rounded-[12px] border border-[#E9EBF8] p-[12px] mt-[24px]'>
+        <CyDView className='bg-n0 rounded-[12px] border border-n40 p-[12px] mt-[24px]'>
           <CyDView className='flex-row items-center'>
             <CyDFastImage
               source={
@@ -881,7 +882,7 @@ const getTransactionDisplayProps = (
   ) {
     return {
       image: AppImages.GREY_EXCLAMATION_ICON,
-      textColor: 'text-n600',
+      textColor: 'text-base400',
       imageText: 'Declined',
     };
   } else if (
@@ -1162,7 +1163,7 @@ export default function TransactionDetails() {
           metadata={transaction?.metadata?.merchant}
         />
       )}
-      <CyDSafeAreaView className='flex-1 bg-cardBg' edges={['top']}>
+      <CyDView className='flex-1 bg-n20' style={{ paddingTop: insets.top }}>
         <CyDTouchView
           className='w-full'
           onPress={() => {
@@ -1175,7 +1176,7 @@ export default function TransactionDetails() {
           />
         </CyDTouchView>
         <ViewShot ref={viewRef}>
-          <CyDScrollView className='h-full bg-n30'>
+          <CyDScrollView className='h-full bg-n20'>
             <CyDView className='min-h-full'>
               <CyDView
                 className={
@@ -1306,7 +1307,7 @@ export default function TransactionDetails() {
                 style={{
                   minHeight: screenHeight - insets.top - 250, // 200 is approximate header height
                 }}
-                className='w-full bg-n0 px-[25px] mt-[24px]'>
+                className='w-full flex-1 bg-n0 px-[25px] mt-[24px]'>
                 <TransactionDetail
                   isSettled={transaction?.isSettled ?? false}
                   isDeclined={transaction.tStatus === ReapTxnStatus.DECLINED}
@@ -1362,8 +1363,7 @@ export default function TransactionDetails() {
             </CyDView>
           </CyDScrollView>
         </ViewShot>
-      </CyDSafeAreaView>
-      <SafeAreaView edges={['bottom']} style={{ backgroundColor: 'white' }} />
+      </CyDView>
     </>
   );
 }

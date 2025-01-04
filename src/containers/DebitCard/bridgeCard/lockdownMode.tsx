@@ -69,6 +69,7 @@ export default function LockdownMode() {
   useEffect(() => {
     if (isFocused) {
       void onRefresh();
+      setLoading(false);
     }
   }, [isFocused]);
 
@@ -111,7 +112,10 @@ export default function LockdownMode() {
             setLoading(false);
             void onRefresh();
           },
-          onFailure: hideModal,
+          onFailure: () => {
+            hideModal();
+            setLoading(false);
+          },
         });
       },
       currentCardProvider,
@@ -121,10 +125,10 @@ export default function LockdownMode() {
 
   return (
     <>
-      <SafeAreaView style={styles.topSafeArea}>
+      <SafeAreaView className='bg-n20 flex-1'>
         <CyDView className='flex flex-col h-full justify-between'>
-          <CyDView className='bg-cardBg pb-[16px]'>
-            <CyDView className='flex flex-row mx-[20px]'>
+          <CyDView className='pb-[16px]'>
+            <CyDView className='flex flex-row mx-[20px] bg-n20'>
               <CyDTouchView
                 onPress={() => {
                   navigation.goBack();
@@ -135,7 +139,7 @@ export default function LockdownMode() {
                 />
               </CyDTouchView>
               <CyDView className='w-[calc(100% - 40px)] mx-auto'>
-                <CyDText className='font-semibold text-black text-center -ml-[24px] text-[20px]'>
+                <CyDText className='font-semibold text-base400 text-center -ml-[24px] text-[20px]'>
                   {t('LOCKDOWN_MODE')}
                 </CyDText>
               </CyDView>
@@ -200,10 +204,3 @@ export default function LockdownMode() {
     </>
   );
 }
-
-const styles = StyleSheet.create({
-  topSafeArea: {
-    flex: 0,
-    backgroundColor: '#EBEDF0',
-  },
-});

@@ -86,7 +86,7 @@ export default function GetYourCardInfo() {
   if (loading) return <Loading />;
 
   return (
-    <CyDView style={{ paddingTop: insets.top }}>
+    <CyDView style={{ paddingTop: insets.top }} className='bg-n20'>
       <SelectPlanModal
         isModalVisible={planChangeModalVisible}
         setIsModalVisible={setPlanChangeModalVisible}
@@ -95,7 +95,7 @@ export default function GetYourCardInfo() {
         onClose={handleNavigation}
       />
       {!showOnboarding && (
-        <CyDView className='bg-[#F1F0F5] flex flex-col justify-between h-full'>
+        <CyDView className='bg-n20 flex flex-col justify-between h-full'>
           <CyDKeyboardAwareScrollView>
             <CyDView className='px-[16px]'>
               <CyDTouchView
@@ -125,7 +125,7 @@ export default function GetYourCardInfo() {
                     className='w-[24px] h-[24px] mr-[8px]'
                   />
                   <CyDView>
-                    <CyDText className='font-semibold text-[16px] text-black'>
+                    <CyDText className='font-semibold text-[16px]'>
                       {t('CHECK_COUNTRY_SUPPORTED')}
                     </CyDText>
                     <CyDText className='font-medium text-[14px] text-base100 w-[75%]'>
@@ -146,7 +146,7 @@ export default function GetYourCardInfo() {
                     source={AppImages.USER_OUTLINE_ICON}
                     className='w-[24px] h-[24px] mr-[8px]'
                   />
-                  <CyDText className='font-semibold text-[16px] text-black'>
+                  <CyDText className='font-semibold text-[16px]'>
                     {t('ENTER_BASIC_DETAILS')}
                   </CyDText>
                 </CyDView>
@@ -155,7 +155,7 @@ export default function GetYourCardInfo() {
                     source={AppImages.HOUSE_OUTLINE_ICON}
                     className='w-[24px] h-[24px] mr-[8px]'
                   />
-                  <CyDText className='font-semibold text-[16px] text-black'>
+                  <CyDText className='font-semibold text-[16px]'>
                     {t('ENTER_BILLING_ADDRESS')}
                   </CyDText>
                 </CyDView>
@@ -164,7 +164,7 @@ export default function GetYourCardInfo() {
                     source={AppImages.EMAIL_OUTLINE_ICON}
                     className='w-[24px] h-[24px] mr-[8px]'
                   />
-                  <CyDText className='font-semibold text-[16px] text-black'>
+                  <CyDText className='font-semibold text-[16px]'>
                     {t('EMAIL_VERIFICATION')}
                   </CyDText>
                 </CyDView>
@@ -173,7 +173,7 @@ export default function GetYourCardInfo() {
                     source={AppImages.TELEGRAM_ICON_BLACK}
                     className='w-[24px] h-[24px] mr-[8px]'
                   />
-                  <CyDText className='font-semibold text-[16px] text-black'>
+                  <CyDText className='font-semibold text-[16px]'>
                     {t('TELEGRAM_SETUP')}
                   </CyDText>
                 </CyDView>
@@ -183,7 +183,7 @@ export default function GetYourCardInfo() {
                     className='w-[24px] h-[24px] mr-[8px]'
                   />
                   <CyDView>
-                    <CyDText className='font-semibold text-[16px] text-black'>
+                    <CyDText className='font-semibold text-[16px]'>
                       {t('UPDATE_INDENTITY')}
                     </CyDText>
                     <CyDText className='font-medium text-[12px] text-base150'>
@@ -196,7 +196,7 @@ export default function GetYourCardInfo() {
                     source={AppImages.CASH_OUTLINE_ICON}
                     className='w-[24px] h-[24px] mr-[8px]'
                   />
-                  <CyDText className='font-semibold text-[16px] text-black'>
+                  <CyDText className='font-semibold text-[16px]'>
                     {t('FIRST_CARD_LOAD')}
                   </CyDText>
                 </CyDView>

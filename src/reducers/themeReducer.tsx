@@ -1,8 +1,16 @@
-import React, { createContext, useState, useContext, ReactNode } from 'react';
+import React, {
+  createContext,
+  useState,
+  useContext,
+  ReactNode,
+  useEffect,
+} from 'react';
 import { View } from 'react-native';
 import { vars } from 'nativewind';
+import AsyncStorage from '@react-native-async-storage/async-storage';
+import * as Sentry from '@sentry/react-native';
 
-type ThemeType = 'light' | 'dark';
+export type ThemeType = 'light' | 'dark';
 
 interface ThemeContextType {
   theme: ThemeType;
@@ -146,17 +154,51 @@ interface ThemeProviderProps {
   children: ReactNode;
 }
 
+const THEME_STORAGE_KEY = '@app_theme';
+
+const isValidTheme = (theme: unknown): theme is ThemeType => {
+  return theme === 'light' || theme === 'dark';
+};
+
 export function ThemeProvider({ children }: ThemeProviderProps) {
   const [theme, setTheme] = useState<ThemeType>('light');
 
-  const changeTheme = (newTheme: ThemeType) => {
-    if (themes[newTheme]) {
+  useEffect(() => {
+    void loadSavedTheme();
+  }, []);
+
+  const loadSavedTheme = async (): Promise<void> => {
+    try {
+      const savedTheme = await AsyncStorage.getItem(THEME_STORAGE_KEY);
+      if (savedTheme && isValidTheme(savedTheme)) {
+        setTheme(savedTheme);
+      }
+    } catch (error) {
+      Sentry.captureException(error);
+    }
+  };
+
+  const changeTheme = async (newTheme: ThemeType): Promise<void> => {
+    if (!isValidTheme(newTheme)) {
+      throw new Error(`Invalid theme: ${String(newTheme)}`);
+    }
+
+    try {
       setTheme(newTheme);
+      await AsyncStorage.setItem(THEME_STORAGE_KEY, newTheme);
+    } catch (error) {
+      Sentry.captureException(error);
     }
   };
 
   return (
-    <ThemeContext.Provider value={{ theme, changeTheme }}>
+    <ThemeContext.Provider
+      value={{
+        theme,
+        changeTheme: (newTheme: ThemeType) => {
+          void changeTheme(newTheme);
+        },
+      }}>
       <View style={themes[theme]} className='flex-1'>
         {children}
       </View>

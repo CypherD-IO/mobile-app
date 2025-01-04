@@ -41,6 +41,7 @@ import {
   useRoute,
 } from '@react-navigation/native';
 import { HdWalletContextDef } from '../../reducers/hdwallet_reducer';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 interface RouteParams {
   protocol: defiProtocolData;
@@ -139,7 +140,7 @@ const RenderType = ({ type }: { type: PositionTypeData }) => {
                   </CyDView>
                 )}
               </CyDView>
-              <CyDView className='p-[10px] rounded-[10px] border n40'>
+              <CyDView className='p-[10px] rounded-[10px] border border-n40 bg-n0'>
                 <CyDView className='flex flex-row justify-between items-start mb-[8px]'>
                   <CyDText className='font-bold text-[14px] max-w-[50%]'>
                     {pool.join(' + ')}
@@ -159,7 +160,7 @@ const RenderType = ({ type }: { type: PositionTypeData }) => {
                 {holding.details.borrow &&
                   holding.details.borrow.length > 0 && (
                     <>
-                      <CyDView className='w-full my-[10px] h-[1px] border-t n40 rounded-[10px]' />
+                      <CyDView className='w-full my-[10px] h-[1px] border-t border-n40 rounded-[10px]' />
                       <RenderDetail
                         detail={holding.details.borrow}
                         type={t('DEFI_BORROW')}
@@ -169,7 +170,7 @@ const RenderType = ({ type }: { type: PositionTypeData }) => {
                 {holding.details.rewards &&
                   holding.details.rewards.length > 0 && (
                     <>
-                      <CyDView className='w-full my-[10px] h-[1px] border-t n40 rounded-[10px]' />
+                      <CyDView className='w-full my-[10px] h-[1px] border-t border-n40 rounded-[10px]' />
                       <RenderDetail
                         detail={holding.details.rewards}
                         type={t('DEFI_REWARD')}
@@ -199,9 +200,9 @@ export function DEFIOverviewScreen() {
   const moreChainsCount = protocol.chains.length - MAX_CHAIN_COUNT;
   useEffect(() => {
     void analytics().logEvent('visited_defi_overview_screen');
-    navigation.setOptions({
-      title: protocol.protocolName,
-    });
+    // navigation.setOptions({
+    //   title: protocol.protocolName,
+    // });
   }, [navigation, protocol.protocolName]);
 
   const handleScroll = useAnimatedScrollHandler({
@@ -229,7 +230,7 @@ export function DEFIOverviewScreen() {
   });
 
   return (
-    <CyDSafeAreaView className='h-full bg-whiteColor'>
+    <CyDSafeAreaView className='h-full bg-n20'>
       <CyDModalLayout
         setModalVisible={setImageZoomIn}
         isModalVisible={imageZoomIn}
@@ -257,6 +258,25 @@ export function DEFIOverviewScreen() {
           </CyDTouchView>
         </CyDView>
       </CyDModalLayout>
+
+      <CyDView className='flex-row justify-between'>
+        <CyDTouchView
+          className='px-[12px]'
+          onPress={() => {
+            navigation.goBack();
+          }}>
+          <CyDFastImage
+            className={'w-[32px] h-[32px]'}
+            resizeMode='cover'
+            source={AppImages.BACK_ARROW_GRAY}
+          />
+        </CyDTouchView>
+        <CyDText className='text-base400 text-[20px] font-extrabold mr-[44px]'>
+          {protocol.protocolName}
+        </CyDText>
+        <CyDView className='' />
+      </CyDView>
+
       <Animated.ScrollView
         bounces={false}
         scrollEventThrottle={16}
@@ -350,7 +370,7 @@ export function DEFIOverviewScreen() {
         className={'absolute w-full bottom-[10px]'}
         style={animatedStyles}>
         <CyDTouchView
-          className='w-[70%] h-[55px] flex flex-row my-[10px] mx-[60px] bg-black justify-center items-center rounded-[8px] border border-borderColor px-[20px] py-[10px]'
+          className='w-[70%] h-[55px] flex flex-row my-[10px] mx-[60px] bg-n0 justify-center items-center rounded-[8px] border border-n40 px-[20px] py-[10px]'
           onPress={() => {
             if (!isReadOnlyWallet) {
               navigation.navigate(screenTitle.BROWSER, {
@@ -380,7 +400,7 @@ export function DEFIOverviewScreen() {
             }
           }}>
           <CyDView className='flex flex-col justify-center items-center'>
-            <CyDText className='font-bold text-[16px] pr-[4px] text-white'>
+            <CyDText className='font-bold text-[16px] pr-[4px] text-base400'>
               {t('MANAGE_POSITIONS')}
             </CyDText>
             <CyDView className='flex flex-row justify-center items-center'>

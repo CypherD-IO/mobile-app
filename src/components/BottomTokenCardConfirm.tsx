@@ -106,7 +106,8 @@ export default function BottomCardConfirm({
         clearInterval(expiryTimer);
         onCancel();
       }}>
-      <CyDView className={'bg-n0 pb-[30px] flex items-center rounded-t-[24px]'}>
+      <CyDView
+        className={'bg-n20 pb-[30px] flex items-center rounded-t-[24px]'}>
         <CyDTouchView
           className={'flex flex-row pl-[95%] justify-end z-10'}
           onPress={hideModal}>

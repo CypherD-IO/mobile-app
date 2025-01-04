@@ -50,9 +50,12 @@ export default function ShippingFeeConsentModal({
             setHasConsent(!hasConsent);
           }}>
           <CyDView
-            className={clsx('h-[20px] w-[20px] border-[1px] rounded-[4px]', {
-              'bg-black': hasConsent,
-            })}>
+            className={clsx(
+              'h-[20px] w-[20px] border-[1px] border-base400 rounded-[4px]',
+              {
+                'bg-black': hasConsent,
+              },
+            )}>
             {hasConsent && (
               <CyDImage
                 source={AppImages.CORRECT}
@@ -79,7 +82,8 @@ export default function ShippingFeeConsentModal({
       animationOutTiming={300}
       style={styles.modalLayout}
       isModalVisible={isModalVisible}>
-      <CyDView className={'bg-n0 p-[25px] pb-[30px] rounded-t-[20px] relative'}>
+      <CyDView
+        className={'bg-n20 p-[25px] pb-[30px] rounded-t-[20px] relative'}>
         <CyDTouchView onPress={() => onFailure()} className={'z-[50]'}>
           <CyDImage
             source={AppImages.CLOSE}

@@ -149,7 +149,7 @@ export default function SetPin() {
   });
 
   return (
-    <CyDView className='bg-n30 flex-1' style={{ paddingTop: insets.top + 16 }}>
+    <CyDView className='bg-n20 flex-1' style={{ paddingTop: insets.top + 16 }}>
       <CyDView>
         <CyDTouchView
           className='flex-row items-center px-[16px]'

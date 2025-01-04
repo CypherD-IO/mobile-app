@@ -67,7 +67,7 @@ export default function NewReferralCodeModal({
       <CyDKeyboardAvoidingView
         behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
         style={styles.keyboardAvoidingView}>
-        <CyDView className='bg-cardBg px-[16px] py-[24px] rounded-t-[16px]'>
+        <CyDView className='bg-n20 px-[16px] py-[24px] rounded-t-[16px]'>
           <CyDView className='flex flex-row items-center justify-between'>
             <CyDText className='font-semibold text-[18px]'>
               {t('CREATE_REFERRAL_CODE')}

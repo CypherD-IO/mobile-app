@@ -83,7 +83,7 @@ export default function SetPin() {
 
   return (
     <CyDSafeAreaView>
-      <CyDView className={'h-full bg-n0 px-[20px] pt-[10px]'}>
+      <CyDView className={'h-full bg-n20 px-[20px] pt-[10px]'}>
         <PINHeader />
         <PIN />
       </CyDView>

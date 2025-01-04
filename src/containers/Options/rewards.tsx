@@ -84,7 +84,7 @@ export default function Rewards() {
 
   return (
     <>
-      <SafeAreaView className='flex bg-cardBg h-full'>
+      <SafeAreaView className='flex bg-n20 h-full'>
         <StatusBar barStyle='dark-content' backgroundColor={'#EBEDF0'} />
         <CyDView>
           <CyDTouchView

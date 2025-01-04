@@ -883,7 +883,7 @@ export default function TokenStaking({
             stakingVariables.totalUnboundings !== '0') && (
             <CyDView
               className={
-                'bg-[#F6F7FF] rounded-[8px] px-[46px] py-[16px] mx-[16px] my-[18px] flex flex-col items-center'
+                'bg-n30 rounded-[8px] px-[46px] py-[16px] mx-[16px] my-[18px] flex flex-col items-center'
               }>
               <CyDView className={'flex flex-row items-center justify-center'}>
                 <CyDImage
@@ -892,7 +892,7 @@ export default function TokenStaking({
                 />
                 <CyDText
                   className={
-                    'text-center w-3/4  text-[14px] font-bold text-secondaryTextColor'
+                    'text-center w-3/4 text-[14px] font-bold text-base400'
                   }>{`${t<string>(
                   'STAKE_YOUR_TEXT',
                 )} ${tokenData.name.toLowerCase()} ${t<string>(
@@ -906,12 +906,10 @@ export default function TokenStaking({
 
               <CyDView className={'flex flex-row mt-[12px] '}>
                 <CyDText
-                  className={
-                    'mr-[6px] font-[14px] text-subTextColor font-semibold '
-                  }>
+                  className={'mr-[6px] text-[14px] text-n100 font-semibold '}>
                   {t<string>('UNBOUNDING_PERIOD_IS')}
                 </CyDText>
-                <CyDText className={'font-[16px]  font-bold '}>
+                <CyDText className={'text-[16px]  font-bold '}>
                   {unboundingPeriodInDays} {t('DAYS')}
                 </CyDText>
               </CyDView>

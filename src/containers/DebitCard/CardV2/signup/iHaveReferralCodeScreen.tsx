@@ -111,7 +111,7 @@ const IHaveReferralCodeScreen = () => {
   };
 
   return (
-    <SafeAreaView className='flex bg-cardBg h-full'>
+    <SafeAreaView className='flex bg-n20 h-full'>
       <StatusBar barStyle='dark-content' backgroundColor={'#EBEDF0'} />
       <HowReferralWorksModal
         isModalVisible={isModalVisible}
@@ -149,7 +149,7 @@ const IHaveReferralCodeScreen = () => {
           </CyDText>
 
           <CyDView className='mt-[24px]'>
-            <CyDText className='text-[12px] font-[500] text-black mb-[8px]'>
+            <CyDText className='text-[12px] font-[500] mb-[8px]'>
               {t('REFERRAL_CODE')}
             </CyDText>
             <CyDView className='flex-row items-center'>
@@ -158,6 +158,7 @@ const IHaveReferralCodeScreen = () => {
                 placeholder={t('ENTER_REFERRAL_CODE')}
                 value={referralCode}
                 onChangeText={setReferralCode}
+                placeholderTextColor={'text-base400'}
               />
               <Button
                 title={t('APPLY')}

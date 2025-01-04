@@ -206,7 +206,7 @@ export const SuccessTransaction = ({
     copyToClipboard(url);
   };
   return (
-    <CyDView className='px-[12px] my-[15px]'>
+    <CyDView className='bg-n20 px-[12px] my-[15px]'>
       <CyDView className='flex flex-row items-center justify-evenly'>
         <CyDView className='flex flex-row justify-center items-center mt-[5px]'>
           <CyDText className={'text-center text-[14px] font-extrabold'}>

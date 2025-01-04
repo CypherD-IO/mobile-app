@@ -1,37 +1,39 @@
-import * as React from 'react';
+import * as Sentry from '@sentry/react-native';
+import clsx from 'clsx';
 import { Formik } from 'formik';
+import { t } from 'i18next';
+import LottieView from 'lottie-react-native';
+import React, { useContext, useEffect, useState } from 'react';
+import { StyleSheet } from 'react-native';
+import { isAddress } from 'web3-validator';
+import * as yup from 'yup';
+import AppImages from '../../../../assets/images/appImages';
+import { useGlobalModalContext } from '../../../components/v2/GlobalModal';
+import OtpInput from '../../../components/v2/OTPInput';
+import Button from '../../../components/v2/button';
+import { GlobalContextType } from '../../../constants/enum';
+import { MODAL_HIDE_TIMEOUT } from '../../../core/Http';
+import useAxios from '../../../core/HttpRequest';
+import { GlobalContext } from '../../../core/globalContext';
+import { getChainNameFromAddress, trimWhitespace } from '../../../core/util';
+import useCardUtilities from '../../../hooks/useCardUtilities';
 import {
   CyDImage,
   CyDKeyboardAwareScrollView,
-  CyDScrollView,
   CyDText,
   CyDTextInput,
   CyDTouchView,
   CyDView,
 } from '../../../styles/tailwindStyles';
-import { useContext, useEffect, useState } from 'react';
-import * as yup from 'yup';
-import Web3 from 'web3';
-import { t } from 'i18next';
-import clsx from 'clsx';
-import AppImages from '../../../../assets/images/appImages';
-import Button from '../../../components/v2/button';
 import { intercomAnalyticsLog } from '../../utilities/analyticsUtility';
-import { useGlobalModalContext } from '../../../components/v2/GlobalModal';
-import useAxios from '../../../core/HttpRequest';
-import { MODAL_HIDE_TIMEOUT } from '../../../core/Http';
-import { GlobalContext } from '../../../core/globalContext';
-import { CardProviders, GlobalContextType } from '../../../constants/enum';
-import OtpInput from '../../../components/v2/OTPInput';
-import LottieView from 'lottie-react-native';
-import * as Sentry from '@sentry/react-native';
-import { StyleSheet } from 'react-native';
-import { getChainNameFromAddress, trimWhitespace } from '../../../core/util';
-import { CardProfile } from '../../../models/cardProfile.model';
-import useCardUtilities from '../../../hooks/useCardUtilities';
-import { isAddress } from 'web3-validator';
+import {
+  NavigationProp,
+  ParamListBase,
+  useNavigation,
+} from '@react-navigation/native';
 
-export default function LinkAnotherWallet({ navigation }) {
+export default function LinkAnotherWallet() {
+  const navigation = useNavigation<NavigationProp<ParamListBase>>();
   const [formValues, setFormValues] = useState({
     address: '',
     walletName: '',
@@ -44,7 +46,6 @@ export default function LinkAnotherWallet({ navigation }) {
   const { postWithAuth, getWithAuth } = useAxios();
   const { showModal, hideModal } = useGlobalModalContext();
   const globalContext = useContext<any>(GlobalContext);
-  const cardProfile: CardProfile = globalContext.globalState.cardProfile;
   const { cardProfileModal } = useCardUtilities();
 
   const RESENT_OTP_TIME = 30;
@@ -77,8 +78,7 @@ export default function LinkAnotherWallet({ navigation }) {
     } else {
       const errorObject = {
         response,
-        message:
-          'isError=true when trying to sendOtp in link another wallet screen.',
+        message: 'Error when trying to sendOtp in link another wallet screen.',
       };
       Sentry.captureException(errorObject);
       showModal('state', {
@@ -193,7 +193,7 @@ export default function LinkAnotherWallet({ navigation }) {
   };
 
   return (
-    <CyDView className={'bg-n0 w-full h-full'}>
+    <CyDView className={'bg-n20 w-full h-full'}>
       <Formik
         enableReinitialize={true}
         initialValues={formValues}
@@ -216,7 +216,7 @@ export default function LinkAnotherWallet({ navigation }) {
                       <CyDView className='flex flex-row justify-between items-center w-[100%]'>
                         <CyDTextInput
                           className={clsx(
-                            'mt-[5px] w-[100%] border-[1px] border-inputBorderColor rounded-[10px] p-[12px] pr-[38px] text-[16px]  ',
+                            'bg-n0 mt-[5px] w-[100%] border-[1px] border-n40 rounded-[10px] p-[12px] pr-[38px] text-[16px]  ',
                             {
                               'border-redOffColor':
                                 formProps.touched[field] &&
@@ -261,7 +261,7 @@ export default function LinkAnotherWallet({ navigation }) {
                   );
                 })}
               </CyDView>
-              <CyDView className={'bg-n0 pt-[10px] self-center w-[87%]'}>
+              <CyDView className={'pt-[10px] self-center w-[87%]'}>
                 <CyDView>
                   {isOTPTriggered && (
                     <CyDView className={'mt-[20px]'}>

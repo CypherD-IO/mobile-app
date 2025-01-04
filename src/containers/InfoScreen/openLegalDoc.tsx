@@ -40,7 +40,7 @@ export default function OpenLegalScreen() {
   }, []);
   // set a cookie
   return (
-    <CyDSafeAreaView>
+    <CyDSafeAreaView className='bg-n20'>
       <WebView
         source={{
           uri: route.params.url,

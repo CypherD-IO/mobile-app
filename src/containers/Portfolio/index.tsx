@@ -784,7 +784,7 @@ export default function Portfolio({ navigation }: PortfolioProps) {
   ];
 
   return (
-    <CyDSafeAreaView className='flex-1 bg-n0'>
+    <CyDSafeAreaView className='flex-1 bg-n20'>
       {isPortfolioLoading && (
         <CyDView className='justify-center items-center'>
           <EmptyView
@@ -856,14 +856,14 @@ export default function Portfolio({ navigation }: PortfolioProps) {
             stickySectionHeadersEnabled={true}
             renderSectionHeader={({ section: { title } }) =>
               title === 'scenes' ? (
-                <CyDView className='flex flex-row justify-start items-center py-[12px] pl-[20px] bg-n0'>
+                <CyDView className='flex flex-row justify-start items-center py-[12px] pl-[20px] bg-n20'>
                   {tabs.map((tab, index) => {
                     return (
                       <CyDTouchView
                         className={clsx(
                           'mr-[16px] px-[12px] py-[2px] rounded-[6px]',
                           {
-                            'bg-blue20': index === tabIndex,
+                            'bg-p40': index === tabIndex,
                           },
                         )}
                         key={index}
@@ -876,7 +876,7 @@ export default function Portfolio({ navigation }: PortfolioProps) {
                         }}>
                         <CyDText
                           className={clsx('', {
-                            'font-semibold': index === tabIndex,
+                            'font-semibold text-black': index === tabIndex,
                           })}>
                           {tab.title}
                         </CyDText>

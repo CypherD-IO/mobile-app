@@ -49,7 +49,7 @@ export default function AdvancedSettings({ navigation }) {
   }, []);
 
   return (
-    <CyDScrollView className={'bg-n0 h-full px-[24px] pt-[40px]'}>
+    <CyDScrollView className={'bg-n20 h-full px-[24px] pt-[40px]'}>
       <CyDView className={'flex flex-row justify-between items-center'}>
         <CyDView>
           <CyDText className={'font-bold text-[18px]'}>

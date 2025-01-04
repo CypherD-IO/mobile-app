@@ -24,7 +24,12 @@ import { Dropdown } from 'react-native-element-dropdown';
 import Animated from 'react-native-reanimated';
 import { KeyboardAwareScrollView } from 'react-native-keyboard-aware-scroll-view';
 import { cssInterop } from 'nativewind';
-import { Swipeable } from 'react-native-gesture-handler';
+import {
+  GestureHandlerRootView,
+  Swipeable,
+} from 'react-native-gesture-handler';
+import MaterialDesignIcons from '@react-native-vector-icons/material-design-icons';
+import CydIconsPack from '../customFonts/generator';
 
 export const CyDText = (props: TextProps) => {
   return (
@@ -34,14 +39,18 @@ export const CyDText = (props: TextProps) => {
     />
   );
 };
-export const CyDTextInput = (props: TextInputProps) => {
-  return (
-    <TextInput
-      {...props}
-      className={`text-base400 font-manrope ${props?.className ?? ''}`}
-    />
-  );
-};
+export const CyDTextInput = React.forwardRef<TextInput, TextInputProps>(
+  (props, ref) => {
+    return (
+      <TextInput
+        {...props}
+        ref={ref}
+        className={`text-base400 font-manrope ${props?.className ?? ''}`}
+      />
+    );
+  },
+);
+CyDTextInput.displayName = 'CyDTextInput';
 export const CyDView = View;
 export const CyDTouchView = TouchableOpacity;
 export const CyDFlatList = cssInterop(FlatList, {
@@ -62,7 +71,10 @@ export const CyDKeyboardAvoidingView = cssInterop(KeyboardAvoidingView, {
   className: 'style',
 });
 export const CyDDropDown = cssInterop(Dropdown, { className: 'style' });
-export const CyDAnimatedView = cssInterop(Animated.View, {
+export const CyDAnimatedView = (props: any) => {
+  return <Animated.View {...props} className={`${props?.className ?? ''}`} />;
+};
+export const CyDGestureHandlerRootView = cssInterop(GestureHandlerRootView, {
   className: 'style',
 });
 export const CyDKeyboardAwareScrollView = cssInterop(KeyboardAwareScrollView, {
@@ -74,4 +86,23 @@ export const CyDInputAccessoryView = cssInterop(InputAccessoryView, {
 export const CyDFastImage = cssInterop(FastImage, { className: 'style' });
 export const CyDSwipeable = cssInterop(Swipeable, {
   className: 'containerStyle',
+});
+export const CydMaterialDesignIcons = cssInterop(MaterialDesignIcons, {
+  className: {
+    target: 'style',
+    nativeStyleToProp: {
+      color: true,
+      fontSize: 'size',
+    },
+  },
+});
+
+export const CydIcons = cssInterop(CydIconsPack, {
+  className: {
+    target: 'style',
+    nativeStyleToProp: {
+      color: true,
+      fontSize: 'size',
+    },
+  },
 });

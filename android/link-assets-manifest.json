@@ -2,6 +2,10 @@
   "migIndex": 1,
   "data": [
     {
+      "path": "assets/fonts/CydFont.ttf",
+      "sha1": "77135af71136dd950d4d2e305725054f8fa797a6"
+    },
+    {
       "path": "assets/fonts/Manrope-Bold.ttf",
       "sha1": "a6b63c832d12337efb3123f47863f54472c81bf5"
     },
