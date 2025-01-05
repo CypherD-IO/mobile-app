@@ -30,6 +30,7 @@ import {
 } from 'react-native-gesture-handler';
 import MaterialDesignIcons from '@react-native-vector-icons/material-design-icons';
 import CydIconsPack from '../customFonts/generator';
+import LottieView from 'lottie-react-native';
 
 export const CyDText = (props: TextProps) => {
   return (
@@ -45,7 +46,8 @@ export const CyDTextInput = React.forwardRef<TextInput, TextInputProps>(
       <TextInput
         {...props}
         ref={ref}
-        className={`text-base400 font-manrope ${props?.className ?? ''}`}
+        contextMenuHidden={false}
+        className={`text-base400 bg-n0 font-manrope ${props?.className ?? ''}`}
       />
     );
   },

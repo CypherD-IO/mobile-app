@@ -2,6 +2,8 @@ import React, { useContext, useEffect, useState } from 'react';
 import {
   CyDFastImage,
   CyDImage,
+  CydLottieView,
+  CydMaterialDesignIcons,
   CyDSafeAreaView,
   CyDScrollView,
   CyDText,
@@ -313,9 +315,10 @@ export default function CypherCardScreen() {
               card: get(cardProfile, [cardProvider, 'cards', 0]),
             });
           }}>
-          <CyDImage
-            source={AppImages.SETTINGS_TOOLS_ICON}
-            className='w-[14px] h-[14px]'
+          <CydMaterialDesignIcons
+            name={'hammer-screwdriver'}
+            size={16}
+            className='text-base400'
           />
           <CyDText className='font-bold text-[12px] text-base400 ml-[7px]'>
             {t('OPTIONS')}
@@ -357,9 +360,10 @@ export default function CypherCardScreen() {
                       <CyDText className={'font-bold text-[28px]'}>
                         {(cardBalance !== 'NA' ? '$ ' : '') + cardBalance}
                       </CyDText>
-                      <CyDImage
-                        source={AppImages.REFRESH_BROWSER}
-                        className='w-[24px] h-[24px]'
+                      <CydMaterialDesignIcons
+                        name='refresh'
+                        size={20}
+                        className='text-base400'
                       />
                     </CyDView>
                   </CyDTouchView>
@@ -369,6 +373,7 @@ export default function CypherCardScreen() {
                     autoPlay
                     loop
                     style={style.loaderStyle}
+                    // className='w-[24px] h-[24px] bg-base400'
                   />
                 )}
               </CyDView>
@@ -526,10 +531,10 @@ export default function CypherCardScreen() {
                   <CyDText className='text-[14px] font-bold'>
                     {t<string>('VIEW_ALL_TRANSACTIONS')}
                   </CyDText>
-                  <CyDImage
-                    source={AppImages.RIGHT_ARROW_LONG}
-                    className='h-[14px] w-[14px] ml-[4px] mt-[4px] accent-black'
-                    resizeMode='contain'
+                  <CydMaterialDesignIcons
+                    name='arrow-right-thin'
+                    size={24}
+                    className='text-base400'
                   />
                 </CyDTouchView>
               </CyDView>

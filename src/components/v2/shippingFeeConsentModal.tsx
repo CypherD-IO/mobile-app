@@ -3,6 +3,7 @@ import { StyleSheet } from 'react-native';
 import CyDModalLayout from './modal';
 import {
   CyDImage,
+  CydMaterialDesignIcons,
   CyDText,
   CyDTouchView,
   CyDView,
@@ -85,11 +86,10 @@ export default function ShippingFeeConsentModal({
       <CyDView
         className={'bg-n20 p-[25px] pb-[30px] rounded-t-[20px] relative'}>
         <CyDTouchView onPress={() => onFailure()} className={'z-[50]'}>
-          <CyDImage
-            source={AppImages.CLOSE}
-            className={
-              ' w-[22px] h-[22px] z-[50] absolute right-[-5px] top-[-5px]'
-            }
+          <CydMaterialDesignIcons
+            name={'close'}
+            size={24}
+            className='text-base400'
           />
         </CyDTouchView>
         {

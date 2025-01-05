@@ -1,6 +1,11 @@
 import React from 'react';
 import CyDModalLayout from './modal';
-import { CyDImage, CyDTouchView, CyDView } from '../../styles/tailwindStyles';
+import {
+  CyDImage,
+  CydMaterialDesignIcons,
+  CyDTouchView,
+  CyDView,
+} from '../../styles/tailwindStyles';
 import AppImages from './../../../assets/images/appImages';
 
 export default function SignatureModal({
@@ -32,9 +37,10 @@ export default function SignatureModal({
             }
           }}
           className={'flex flex-row justify-end z-10'}>
-          <CyDImage
-            source={AppImages.CLOSE}
-            className={'w-[20px] h-[20px] top-[20px] right-[20px]'}
+          <CydMaterialDesignIcons
+            name={'close'}
+            size={24}
+            className='text-base400 top-[20px] right-[20px]'
           />
         </CyDTouchView>
         {children}

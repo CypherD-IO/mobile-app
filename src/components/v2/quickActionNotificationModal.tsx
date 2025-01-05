@@ -7,6 +7,7 @@ import useAxios from '../../core/HttpRequest';
 import { parseErrorMessage } from '../../core/util';
 import {
   CyDImage,
+  CydMaterialDesignIcons,
   CyDText,
   CyDTouchView,
   CyDView,
@@ -65,7 +66,11 @@ function RenderHeader({
         <CyDText className='font-bold text-[20px]'>{title}</CyDText>
       </CyDView>
       <CyDTouchView onPress={closeModal}>
-        <CyDImage source={AppImages.CLOSE} className='w-[24px] h-[24px]' />
+        <CydMaterialDesignIcons
+          name={'close'}
+          size={24}
+          className='text-base400'
+        />
       </CyDTouchView>
     </CyDView>
   );

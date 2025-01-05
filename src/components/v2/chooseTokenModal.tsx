@@ -9,6 +9,7 @@ import {
   CyDFastImage,
   CyDFlatList,
   CyDImage,
+  CydMaterialDesignIcons,
   CyDText,
   CyDTextInput,
   CyDTouchView,
@@ -175,15 +176,16 @@ export default function ChooseTokenModal(props: TokenModal) {
             </CyDText>
           </CyDView>
           <CyDTouchView
-            className={'z-10'}
+            className={'self-end mr-4'}
             onPress={() => {
               Keyboard.dismiss();
               clearSearch();
               onCancel();
             }}>
-            <CyDImage
-              source={AppImages.CLOSE_CIRCLE}
-              className={'w-[32px] h-[32px] right-[20px] '}
+            <CydMaterialDesignIcons
+              name={'close'}
+              size={24}
+              className='text-base400'
             />
           </CyDTouchView>
         </CyDView>
@@ -213,7 +215,11 @@ export default function ChooseTokenModal(props: TokenModal) {
             />
             {hasText ? (
               <CyDTouchView onPress={handleClearSearch}>
-                <CyDImage className={''} source={AppImages.CLOSE_CIRCLE} />
+                <CydMaterialDesignIcons
+                  name={'close'}
+                  size={24}
+                  className='text-base400'
+                />
               </CyDTouchView>
             ) : (
               <></>
@@ -349,10 +355,10 @@ const TokenItem = ({
                       onPress={() => {
                         copyContractAddress(contractAddress);
                       }}>
-                      <CyDImage
-                        source={AppImages.COPY}
-                        className='h-[10px] w-[10px] ml-[3px]'
-                        resizeMode='contain'
+                      <CydMaterialDesignIcons
+                        name={'content-copy'}
+                        size={10}
+                        className='text-base400'
                       />
                     </CyDTouchView>
                   </>

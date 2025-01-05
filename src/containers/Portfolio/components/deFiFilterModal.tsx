@@ -15,6 +15,7 @@ import {
 } from '../../../models/defi.interface';
 import {
   CyDFastImage,
+  CydMaterialDesignIcons,
   CyDSafeAreaView,
   CyDText,
   CyDTouchView,
@@ -69,10 +70,10 @@ const DeFiFilterModal = (props: DeFiFilterModalInterface) => {
               props.setVisible(false);
             }}
             className='p-[5px]'>
-            <CyDFastImage
-              className='h-[16px] w-[16px]'
-              source={AppImages.CLOSE}
-              resizeMode='cover'
+            <CydMaterialDesignIcons
+              name={'close'}
+              size={24}
+              className='text-base400'
             />
           </CyDTouchView>
           <CyDText className='text-[20px] font-bold'>

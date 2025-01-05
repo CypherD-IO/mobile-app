@@ -67,6 +67,7 @@ import {
 import {
   CyDFlatList,
   CyDImage,
+  CydMaterialDesignIcons,
   CyDSafeAreaView,
   CyDText,
   CyDTextInput,
@@ -1136,13 +1137,10 @@ export default function SendTo(props: { navigation?: any; route?: any }) {
                     })
                   : setAddressText('');
               }}>
-              <CyDImage
-                className={'h-[22px] w-[22px]'}
-                source={
-                  addressText === ''
-                    ? AppImages.QR_CODE_SCANNER
-                    : AppImages.CLOSE_CIRCLE
-                }
+              <CydMaterialDesignIcons
+                name={addressText === '' ? 'qrcode-scan' : 'close'}
+                size={24}
+                className='text-base400'
               />
             </CyDTouchView>
           </CyDView>
@@ -1155,9 +1153,10 @@ export default function SendTo(props: { navigation?: any; route?: any }) {
                   onPress={() => {
                     void (async () => await fetchCopiedText())();
                   }}>
-                  <CyDImage
-                    source={AppImages.COPY}
-                    className={'w-[14px] h-[16px] mr-[7px]'}
+                  <CydMaterialDesignIcons
+                    name={'content-copy'}
+                    size={14}
+                    className='text-base400 mr-[8px]'
                   />
                   <CyDText className={'text-[#434343] text-[12px] font-bold'}>
                     {t<string>('PASTE_CLIPBOARD')}
@@ -1190,10 +1189,10 @@ export default function SendTo(props: { navigation?: any; route?: any }) {
                         onPress={() => {
                           setMemo('');
                         }}>
-                        <CyDImage
-                          className={'h-[22px] w-[22px]'}
-                          source={AppImages.CLOSE_CIRCLE}
-                          resizeMode='contain'
+                        <CydMaterialDesignIcons
+                          name={'close'}
+                          size={24}
+                          className='text-base400'
                         />
                       </CyDTouchView>
                     )}

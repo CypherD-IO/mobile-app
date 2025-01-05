@@ -1,6 +1,7 @@
 import {
   CyDFlatList,
   CyDImage,
+  CydMaterialDesignIcons,
   CyDText,
   CyDTouchView,
   CyDView,
@@ -111,10 +112,11 @@ export default function ChooseChainModal({
           onPress={() => {
             setModalVisible(false);
           }}
-          className={'absolute z-[50] top-[20px] right-[24px]'}>
-          <CyDImage
-            source={AppImages.CLOSE}
-            className={' w-[20px] h-[20px] '}
+          className={''}>
+          <CydMaterialDesignIcons
+            name={'close'}
+            size={24}
+            className='text-base400'
           />
         </CyDTouchView>
         <CyDText

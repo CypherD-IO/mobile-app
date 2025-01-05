@@ -1,7 +1,9 @@
 import React, { ReactNode, useContext, useEffect, useState } from 'react';
 import {
   CyDFastImage,
+  CydIcons,
   CyDImage,
+  CydMaterialDesignIcons,
   CyDText,
   CyDTouchView,
   CyDView,
@@ -56,7 +58,11 @@ export const HeaderBar = ({
           className={'h-[22px] w-[22px]'}
           source={selectedChain.logo_url}
         />
-        <CyDFastImage className={'h-[8px] w-[8px]'} source={AppImages.DOWN} />
+        <CydMaterialDesignIcons
+          name='menu-down'
+          size={26}
+          className='text-base400 mr-2'
+        />
       </CyDTouchView>
       {isReadOnlyWallet && (
         <CyDView className='flex flex-row items-center p-[6px] bg-p20 rounded-[8px]'>
@@ -80,10 +86,10 @@ export const HeaderBar = ({
               onSuccess,
             });
           }}>
-          <CyDFastImage
-            source={AppImages.QR_CODE_SCANNER_BLACK}
-            className={'h-[23px] w-[23px] mt-[5px]'}
-            resizeMode='contain'
+          <CydMaterialDesignIcons
+            name='qrcode-scan'
+            size={24}
+            className='text-base400'
           />
         </CyDTouchView>
       )}

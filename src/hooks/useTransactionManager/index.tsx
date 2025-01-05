@@ -24,7 +24,6 @@ import {
   HdWalletContext,
   getTimeOutTime,
   getWeb3Endpoint,
-  limitDecimalPlaces,
   parseErrorMessage,
 } from '../../core/util';
 import {
@@ -63,7 +62,6 @@ import {
 import { SigningCosmWasmClient } from '@cosmjs/cosmwasm-stargate';
 import { HdWalletContextDef } from '../../reducers/hdwallet_reducer';
 import { TransferAuthorization } from 'cosmjs-types/ibc/applications/transfer/v1/authz';
-import { AllChainsEnum } from '../../constants/enum';
 
 export interface TransactionServiceResult {
   isError: boolean;
@@ -282,6 +280,7 @@ export default function useTransactionManager() {
         );
         set(tx, 'maxFeePerGas', web3.utils.toWei(maxFee.toFixed(9), 'gwei'));
       }
+      console.log('🚀 ~ useTransactionManager ~ tx:', tx);
 
       const hash = await signEthTransaction({
         web3,

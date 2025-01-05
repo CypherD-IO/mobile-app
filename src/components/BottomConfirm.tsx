@@ -7,7 +7,7 @@ import { Colors } from '../constants/theme';
 import { ButtonWithOutImage } from '../containers/Auth/Share';
 import { DynamicTouchView } from '../styles/viewStyle';
 import { PayModalParams } from '../types/Browser';
-import { CyDView } from '../styles/tailwindStyles';
+import { CydMaterialDesignIcons, CyDView } from '../styles/tailwindStyles';
 import Button from './v2/button';
 import { ButtonType } from '../constants/enum';
 const {
@@ -65,16 +65,10 @@ export default function BottomConfirm(props: {
             onPress={() => {
               onCancelPress();
             }}>
-            <DynamicImage
-              dynamic
-              dynamicWidthFix
-              aLIT={'flex-end'}
-              mT={10}
-              marginHorizontal={6}
-              height={20}
-              width={20}
-              resizemode='contain'
-              source={AppImages.CLOSE}
+            <CydMaterialDesignIcons
+              name={'close'}
+              size={24}
+              className='text-base400'
             />
           </DynamicTouchView>
           <DynamicView dynamic dynamicWidth width={95} fD={'row'} jC={'center'}>

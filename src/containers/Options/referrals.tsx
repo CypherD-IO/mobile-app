@@ -9,6 +9,7 @@ import {
 } from 'react-native';
 import {
   CyDImage,
+  CydMaterialDesignIcons,
   CyDText,
   CyDTouchView,
   CyDView,
@@ -135,22 +136,25 @@ const ReferralInfo = ({
       <CyDView className='flex flex-row items-center'>
         <CyDText className='text-[12px]'>{referralLink}</CyDText>
         <CyDTouchView onPress={() => copyToClipboard(referralLink)}>
-          <CyDImage
-            source={AppImages.COPY_DARK}
-            className='w-[24px] h-[24px] ml-[8px]'
+          <CydMaterialDesignIcons
+            name={'content-copy'}
+            size={16}
+            className='text-base400'
           />
         </CyDTouchView>
       </CyDView>
     </CyDView>
+
     <CyDView className='h-[1px] bg-cardBg' />
     <CyDView className='flex flex-row items-center justify-between p-[16px]'>
       <CyDText className='font-[500]'>{t('CODE')}</CyDText>
       <CyDView className='flex flex-row items-center'>
         <CyDText className='font-bold'>{referralCode}</CyDText>
         <CyDTouchView onPress={() => copyToClipboard(referralCode)}>
-          <CyDImage
-            source={AppImages.COPY_DARK}
-            className='w-[24px] h-[24px] ml-[8px]'
+          <CydMaterialDesignIcons
+            name={'content-copy'}
+            size={20}
+            className='text-base400 ml-[8px]'
           />
         </CyDTouchView>
       </CyDView>
@@ -197,9 +201,10 @@ const PointsInfo = ({
             <CyDTouchView
               onPress={() => copyToClipboard(masterAddress)}
               className='ml-[8px]'>
-              <CyDImage
-                source={AppImages.COPY_DARK}
-                className='w-[16px] h-[16px]'
+              <CydMaterialDesignIcons
+                name={'content-copy'}
+                size={20}
+                className='text-base400'
               />
             </CyDTouchView>
           </CyDView>

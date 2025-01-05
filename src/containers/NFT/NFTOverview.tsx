@@ -8,6 +8,7 @@ import { StyleSheet } from 'react-native';
 import {
   CyDFastImage,
   CyDImage,
+  CydMaterialDesignIcons,
   CyDScrollView,
   CyDText,
   CyDTouchView,
@@ -77,12 +78,11 @@ export function NFTOverviewScreen() {
         <CyDView className={'rounded-t-[20px] relative'}>
           <CyDTouchView
             onPress={() => setImageZoomIn(false)}
-            className={'z-[50]'}>
-            <CyDImage
-              source={AppImages.CLOSE}
-              className={
-                ' w-[22px] h-[22px] z-[50] absolute mt-[10px] right-[10px] '
-              }
+            className={'z-[50] self-end'}>
+            <CydMaterialDesignIcons
+              name={'close'}
+              size={24}
+              className='text-base400'
             />
           </CyDTouchView>
           <CyDTouchView onPress={() => setImageZoomIn(false)}>

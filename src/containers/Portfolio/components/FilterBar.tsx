@@ -1,6 +1,7 @@
 import React, { memo } from 'react';
 import {
   CyDFastImage,
+  CydMaterialDesignIcons,
   CyDTouchView,
   CyDView,
 } from '../../../styles/tailwindStyles';
@@ -17,10 +18,10 @@ const FilterBar = ({ setFilterModalVisible }: FilterBarProps) => {
         onPress={() => {
           setFilterModalVisible(true);
         }}>
-        <CyDFastImage
-          className='w-[48px] h-[26px]'
-          source={AppImages.FILTER}
-          resizeMode='contain'
+        <CydMaterialDesignIcons
+          name='filter-variant'
+          size={24}
+          className='text-base400'
         />
       </CyDTouchView>
     </CyDView>

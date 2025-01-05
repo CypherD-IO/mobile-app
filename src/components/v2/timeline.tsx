@@ -1,6 +1,7 @@
 import {
   CyDFlatList,
   CyDImage,
+  CydMaterialDesignIcons,
   CyDText,
   CyDView,
 } from '../../styles/tailwindStyles';
@@ -59,10 +60,10 @@ export default function Timeline({
               </CyDView>
             )}
             {error && index > fillIndex && (
-              <CyDImage
-                className={'w-[10px] h-[10px]'}
-                source={AppImages.CLOSE}
-                style={{ tintColor: 'red' }}
+              <CydMaterialDesignIcons
+                name={'close'}
+                size={24}
+                className='text-base400'
               />
             )}
           </CyDView>
@@ -84,7 +85,8 @@ export default function Timeline({
             className={clsx('w-[3px] h-[35px]  rounded-full ml-[12px]', {
               'bg-[#F3F3F3]': index >= fillIndex,
               'bg-[#808080]': index < fillIndex,
-            })}></CyDView>
+            })}
+          />
         )}
       </CyDView>
     );

@@ -24,6 +24,7 @@ import {
   CyDFastImage,
   CyDFlatList,
   CyDImage,
+  CydMaterialDesignIcons,
   CyDText,
   CyDTouchView,
   CyDView,
@@ -290,10 +291,11 @@ export default function CardTransactions() {
           }>
           <CyDTouchView
             onPress={() => setExportOptionOpen(false)}
-            className={'z-[50]'}>
-            <CyDImage
-              source={AppImages.CLOSE}
-              className={' w-[22px] h-[22px] z-[50] absolute right-[0px] '}
+            className={'z-[50] self-end'}>
+            <CydMaterialDesignIcons
+              name={'close'}
+              size={24}
+              className='text-base400'
             />
           </CyDTouchView>
           <CyDText className={'mt-[10px] font-black text-center text-[22px]'}>
@@ -331,15 +333,15 @@ export default function CardTransactions() {
             {viewableTransactionsDate}
           </CyDText>
         </CyDView>
-        <CyDView className='flex flex-row justify-end items-center px-[5px]'>
+        <CyDView className='flex flex-row justify-end items-center px-1 gap-x-2'>
           <CyDTouchView
             onPress={() => {
               setFilterModalVisible(true);
             }}>
-            <CyDFastImage
-              className='w-[48px] h-[26px]'
-              source={AppImages.FILTER}
-              resizeMode='contain'
+            <CydMaterialDesignIcons
+              name='filter-variant'
+              size={24}
+              className='text-base400'
             />
           </CyDTouchView>
           <CyDTouchView
@@ -349,10 +351,10 @@ export default function CardTransactions() {
               setExportOptionOpen(true);
               // void exportCardTransactions();
             }}>
-            <CyDFastImage
-              className='w-[48px] h-[26px]'
-              source={AppImages.EXPORT}
-              resizeMode='contain'
+            <CydMaterialDesignIcons
+              name='export-variant'
+              size={20}
+              className='text-base400'
             />
           </CyDTouchView>
         </CyDView>

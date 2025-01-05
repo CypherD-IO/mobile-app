@@ -978,10 +978,10 @@ export default function FirstLoadCard() {
               resizeMode='contain'
             />
             <CyDTouchView onPress={() => setPlanChangeModalVisible(false)}>
-              <CyDFastImage
-                source={AppImages.CLOSE_CIRCLE}
-                className='h-[24px] w-[24px]'
-                resizeMode='contain'
+              <CydMaterialDesignIcons
+                name={'close'}
+                size={24}
+                className='text-base400'
               />
             </CyDTouchView>
           </CyDView>

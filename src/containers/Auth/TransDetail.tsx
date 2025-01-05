@@ -86,8 +86,8 @@ export default function TransDetail({
   }, []);
 
   return (
-    <CyDSafeAreaView className='bg-n20'>
-      <CyDView className='flex-row items-center justify-center h-[100px] m-[10px]'>
+    <CyDSafeAreaView className='bg-n20 flex-1'>
+      <CyDView className='flex-row items-center justify-center m-[10px] flex-1'>
         <WebView
           injectedJavaScriptBeforeContentLoaded={injectedCode}
           ref={webviewRef}

@@ -27,6 +27,7 @@ import { copyToClipboard } from '../../../../core/util';
 import useCardUtilities from '../../../../hooks/useCardUtilities';
 import {
   CyDImage,
+  CydMaterialDesignIcons,
   CyDScrollView,
   CyDText,
   CyDTouchView,
@@ -210,9 +211,10 @@ export default function TelegramSetup() {
                   <CyDText className=' text-base400 text-[14px] font-bold'>
                     {'/link ' + telegramConnectionId}
                   </CyDText>
-                  <CyDImage
-                    source={AppImages.COPY_DARK}
-                    className='w-[16px] h-[16px] ml-[6px]'
+                  <CydMaterialDesignIcons
+                    name={'content-copy'}
+                    size={16}
+                    className='text-base400 ml-1.5'
                   />
                 </CyDTouchView>
                 <CyDView className='flex-row items-center mt-[8px]'>

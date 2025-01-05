@@ -2,6 +2,7 @@ import React, { useContext, useEffect, useRef, useState } from 'react';
 import {
   CyDImage,
   CyDKeyboardAwareScrollView,
+  CydMaterialDesignIcons,
   CyDScrollView,
   CyDText,
   CyDTextInput,
@@ -627,7 +628,11 @@ export default function IBC({
                 onPress={() => {
                   setReceiverAddress('');
                 }}>
-                <CyDImage source={AppImages.CLOSE_CIRCLE} />
+                <CydMaterialDesignIcons
+                  name={'close'}
+                  size={24}
+                  className='text-base400'
+                />{' '}
               </CyDTouchView>
             </CyDView>
 
@@ -666,7 +671,11 @@ export default function IBC({
                 onPress={() => {
                   setMemo('');
                 }}>
-                <CyDImage source={AppImages.CLOSE_CIRCLE} />
+                <CydMaterialDesignIcons
+                  name={'close'}
+                  size={24}
+                  className='text-base400'
+                />
               </CyDTouchView>
             </CyDView>
           </CyDView>

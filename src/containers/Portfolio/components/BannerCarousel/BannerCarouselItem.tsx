@@ -9,6 +9,7 @@ import {
   CyDFastImage,
   CyDImage,
   CyDImageBackground,
+  CydMaterialDesignIcons,
   CyDText,
   CyDTouchView,
   CyDView,
@@ -388,10 +389,10 @@ const BannerCarouselItem = ({
               }
             }}
             className='absolute top-[-4px] right-[-4px] h-[20px] w-[20px] justify-center items-center bg-n0 border border-n40 rounded-full overflow-hidden p-[3px]'>
-            <CyDFastImage
-              source={AppImages.CLOSE}
-              className='h-[8px] w-[8px]'
-              resizeMode='contain'
+            <CydMaterialDesignIcons
+              name={'close'}
+              size={12}
+              className='text-base400'
             />
           </CyDTouchView>
         ) : null}

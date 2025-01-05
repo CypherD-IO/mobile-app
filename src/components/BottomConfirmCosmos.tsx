@@ -1,4 +1,3 @@
-/* eslint-disable react-native/no-raw-text */
 import React from 'react';
 import { useTranslation } from 'react-i18next';
 import { StyleSheet } from 'react-native';
@@ -7,6 +6,7 @@ import { Colors } from '../constants/theme';
 import { ButtonWithOutImage } from '../containers/Auth/Share';
 import {
   CyDImage,
+  CydMaterialDesignIcons,
   CyDScrollView,
   CyDText,
   CyDTouchView,
@@ -45,9 +45,10 @@ export default function BottomConfirmCosmos(props: {
         <CyDTouchView
           className={'flex flex-row pl-[95%] justify-end z-10'}
           onPress={onCancelPress}>
-          <CyDImage
-            source={AppImages.CLOSE}
-            className={'w-[16px] h-[16px] top-[20px] right-[20px] '}
+          <CydMaterialDesignIcons
+            name={'close'}
+            size={24}
+            className='text-base400 top-[20px] right-[20px] '
           />
         </CyDTouchView>
 

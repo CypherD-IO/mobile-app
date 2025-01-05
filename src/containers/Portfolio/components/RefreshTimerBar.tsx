@@ -2,6 +2,7 @@ import React, { useEffect, useState } from 'react';
 import moment from 'moment';
 import {
   CyDFastImage,
+  CydMaterialDesignIcons,
   CyDText,
   CyDTouchView,
   CyDView,
@@ -62,10 +63,10 @@ export const RefreshTimerBar = (props: {
   return (
     <CyDView className='bg-n0 flex flex-row justify-between rounded-t-[24px] border border-n40 py-[10px] px-[10px] mx-[10px]'>
       <CyDView className='flex flex-row items-center'>
-        <CyDFastImage
-          source={AppImages.CLOCK}
-          className='h-[16px] w-[16px]'
-          resizeMode='contain'
+        <CydMaterialDesignIcons
+          name='clock-time-four'
+          size={20}
+          className='text-base400'
         />
         <CyDText className='ml-[10px]'>
           {isRefreshing ? t('REFRESHING') : time}

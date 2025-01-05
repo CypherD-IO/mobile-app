@@ -14,6 +14,7 @@ import {
   CyDTextInput,
   CyDScrollView,
   CyDKeyboardAvoidingView,
+  CydMaterialDesignIcons,
 } from '../../../../styles/tailwindStyles';
 import AppImages from '../../../../../assets/images/appImages';
 import OTPInput from '../../../../components/v2/otpBox';
@@ -202,10 +203,11 @@ export default function OTPVerification(): JSX.Element {
               onPress={() => {
                 setIsEditEmailModalVisible(false);
               }}
-              className={'z-[50]'}>
-              <CyDImage
-                source={AppImages.CLOSE}
-                className={'w-[22px] h-[22px] z-[50] absolute right-[0px]'}
+              className={'z-[50] self-end'}>
+              <CydMaterialDesignIcons
+                name={'close'}
+                size={24}
+                className='text-base400'
               />
             </CyDTouchView>
             <CyDText

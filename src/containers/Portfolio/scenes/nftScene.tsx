@@ -10,7 +10,7 @@ import {
 import {
   CyDAnimatedView,
   CyDFastImage,
-  CyDImage,
+  CydMaterialDesignIcons,
   CyDText,
   CyDTouchView,
   CyDView,
@@ -175,17 +175,18 @@ const NFTScene = ({ navigation, selectedChain }: NFTSceneProps) => {
           <CyDView className='flex items-end w-[10%]'>
             {isActive && (
               <CyDAnimatedView style={animatedStyle}>
-                <CyDFastImage
-                  className='h-[12px] w-[12px]'
-                  source={AppImages.OPTIONS_ARROW}
-                  resizeMode='contain'
+                <CydMaterialDesignIcons
+                  name='chevron-right'
+                  size={20}
+                  className='text-base400'
                 />
               </CyDAnimatedView>
             )}
             {!isActive && (
-              <CyDFastImage
-                className={'h-[12px] w-[12px] opacity-70'}
-                source={AppImages.OPTIONS_ARROW}
+              <CydMaterialDesignIcons
+                name='chevron-right'
+                size={20}
+                className='text-base400 opacity-70'
               />
             )}
           </CyDView>
@@ -416,7 +417,7 @@ const NFTScene = ({ navigation, selectedChain }: NFTSceneProps) => {
             <CyDView className='border border-n40 rounded-t-[24px]'>
               {isEmpty(NFTHoldings) && (
                 <CyDView className={'mt-[50%] flex items-center'}>
-                  <CyDImage
+                  <CyDFastImage
                     className={'h-[120px] w-[240px]'}
                     source={AppImages.NFT_EMPTY_ILLUSTATION}
                   />
@@ -446,20 +447,22 @@ const NFTScene = ({ navigation, selectedChain }: NFTSceneProps) => {
                             viewType === RenderViewType.GRID_VIEW,
                         })}
                         onPress={() => setViewType(RenderViewType.GRID_VIEW)}>
-                        <CyDFastImage
-                          className={'h-[15px] w-[15px]'}
-                          source={AppImages.GRID_ICON}
+                        <CydMaterialDesignIcons
+                          name='view-grid-outline'
+                          size={20}
+                          className='text-base400'
                         />
                       </CyDTouchView>
                       <CyDTouchView
                         className={clsx('p-[10px]', {
-                          'border-[1px] border-gray-500 rounded-[6px]':
+                          'border-[1px] border-n40 rounded-[6px]':
                             viewType === RenderViewType.LIST_VIEW,
                         })}
                         onPress={() => setViewType(RenderViewType.LIST_VIEW)}>
-                        <CyDFastImage
-                          className={'h-[15px] w-[15px]'}
-                          source={AppImages.LIST_ICON}
+                        <CydMaterialDesignIcons
+                          name='format-list-bulleted'
+                          size={20}
+                          className='text-base400'
                         />
                       </CyDTouchView>
                     </CyDView>

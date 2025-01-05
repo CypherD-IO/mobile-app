@@ -2,7 +2,7 @@ import React, { memo, useLayoutEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { BackHandler, StyleSheet } from 'react-native';
 import {
-  CyDFastImage,
+  CydMaterialDesignIcons,
   CyDSafeAreaView,
   CyDText,
   CyDTouchView,
@@ -13,7 +13,6 @@ import RadioButtons from '../../../components/radioButtons';
 import Button from '../../../components/v2/button';
 import CyDModalLayout from '../../../components/v2/modal';
 import { ButtonType } from '../../../constants/enum';
-import AppImages from '../../../../assets/images/appImages';
 import { TXN_FILTER_STATUSES } from '../../../constants/data';
 
 export const FILTERS = ['Type', 'Status'];
@@ -116,10 +115,10 @@ const TxnFilterModal = ({
               setModalVisible(false);
             }}
             className='p-[5px]'>
-            <CyDFastImage
-              className='h-[16px] w-[16px]'
-              source={AppImages.CLOSE}
-              resizeMode='cover'
+            <CydMaterialDesignIcons
+              name={'close'}
+              size={24}
+              className='text-base400'
             />
           </CyDTouchView>
           <CyDText className='text-[20px] font-bold'>

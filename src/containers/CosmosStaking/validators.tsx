@@ -13,6 +13,7 @@ import {
   CyDTouchView,
   CyDTextInput,
   CyDFastImage,
+  CydMaterialDesignIcons,
 } from '../../styles/tailwindStyles';
 import SwitchView from '../../components/v2/switchView';
 import { useTranslation } from 'react-i18next';
@@ -228,9 +229,10 @@ export default function CosmosValidators({ route, navigation }) {
           <CyDTouchView
             onPress={() => setShowManage(false)}
             className={'z-[50]'}>
-            <CyDImage
-              source={AppImages.CLOSE}
-              className={' w-[22px] h-[22px] z-[50] absolute right-[0px] '}
+            <CydMaterialDesignIcons
+              name={'close'}
+              size={24}
+              className='text-base400 z-[50] absolute right-[0px] '
             />
           </CyDTouchView>
           <CyDText

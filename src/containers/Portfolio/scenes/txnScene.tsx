@@ -482,7 +482,9 @@ const TxnScene = ({
   return (
     <>
       {isLoading ? (
-        <Loading />
+        <CyDView className='flex-1'>
+          <Loading />
+        </CyDView>
       ) : (
         <CyDView className='bg-n20 flex-1'>
           <TransactionInfoModal

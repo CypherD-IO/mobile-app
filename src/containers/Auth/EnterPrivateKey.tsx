@@ -9,6 +9,7 @@ import {
   CyDSafeAreaView,
   CyDTextInput,
   CyDScrollView,
+  CydMaterialDesignIcons,
 } from '../../styles/tailwindStyles';
 import { BackHandler, Keyboard, NativeModules } from 'react-native';
 import * as C from '../../constants/index';
@@ -169,9 +170,10 @@ export default function Login(props) {
                 onPress={() => {
                   void fetchCopiedText();
                 }}>
-                <CyDImage
-                  source={AppImages.COPY}
-                  className={'w-[16px] h-[18px] mr-[10px]'}
+                <CydMaterialDesignIcons
+                  name={'content-copy'}
+                  size={16}
+                  className='text-base400'
                 />
                 <CyDText
                   className={'text-[#434343] text-[14px] font-extrabold'}>

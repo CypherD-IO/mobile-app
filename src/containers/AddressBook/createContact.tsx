@@ -18,6 +18,8 @@ import {
   CyDTouchView,
   CyDImage,
   CyDFastImage,
+  CydIcons,
+  CydMaterialDesignIcons,
 } from '../../styles/tailwindStyles';
 import AppImages from '../../../assets/images/appImages';
 import { Formik } from 'formik';
@@ -775,7 +777,11 @@ export const CreateContact = () => {
                               onPress={() => {
                                 formProps.setFieldValue(`${detail}`, '');
                               }}>
-                              <CyDImage source={AppImages.CLOSE_CIRCLE} />
+                              <CydMaterialDesignIcons
+                                name={'close'}
+                                size={24}
+                                className='text-base400'
+                              />
                             </CyDTouchView>
                           ) : (
                             <></>
@@ -816,7 +822,7 @@ export const CreateContact = () => {
                           <CyDView className='flex flex-row justify-between items-center w-[100%]'>
                             <CyDTextInput
                               className={clsx(
-                                'mt-[5px] w-[100%] border-[1px] border-inputBorderColor rounded-[10px] p-[12px] pr-[38px] text-[16px]  ',
+                                'mt-[5px] w-[100%] border-[1px] border-inputBorderColor rounded-[10px] p-[12px] pr-[38px] text-[16px]',
                                 {
                                   'border-redOffColor':
                                     formProps.touched[
@@ -875,9 +881,10 @@ export const CreateContact = () => {
                                     },
                                   );
                                 }}>
-                                <CyDImage
-                                  source={AppImages.QR_CODE_SCANNER}
-                                  className={'h-[20px] w-[20px] mt-[5px]'}
+                                <CydIcons
+                                  name={'qr-scanner'}
+                                  size={32}
+                                  className='text-base400'
                                 />
                               </CyDTouchView>
                             ) : (
@@ -899,7 +906,11 @@ export const CreateContact = () => {
                                     addressIndex
                                   ] = '';
                                 }}>
-                                <CyDImage source={AppImages.CLOSE_CIRCLE} />
+                                <CydMaterialDesignIcons
+                                  name={'close'}
+                                  size={24}
+                                  className='text-base400'
+                                />
                               </CyDTouchView>
                             )}
                           </CyDView>

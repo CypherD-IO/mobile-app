@@ -5,6 +5,7 @@ import {
   CyDTouchView,
   CyDImage,
   CyDScrollView,
+  CydMaterialDesignIcons,
 } from '../../styles/tailwindStyles';
 import { BackHandler, NativeModules } from 'react-native';
 import { useTranslation } from 'react-i18next';
@@ -175,9 +176,10 @@ export default function SeedPhrase() {
               'flex flex-row items-center justify-center mt-[40px] h-[60px] w-3/4 border-[1px] border-[#8E8E8E] rounded-[12px] mb-[50px]'
             }
             onPress={() => onPressSeedPharse()}>
-            <CyDImage
-              source={AppImages.COPY}
-              className={'absolute left-[20] w-[16px] h-[18px]'}
+            <CydMaterialDesignIcons
+              name={'content-copy'}
+              size={20}
+              className='text-base400 absolute left-[20]'
             />
             <CyDText className={'text-[#434343] text-[16px] font-extrabold'}>
               {t('COPY_TO_CLIPBOARD')}

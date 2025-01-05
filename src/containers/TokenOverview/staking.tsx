@@ -43,6 +43,7 @@ import {
 } from '../../reducers/cosmosStakingReducer';
 import {
   CyDImage,
+  CydMaterialDesignIcons,
   CyDSafeAreaView,
   CyDScrollView,
   CyDText,
@@ -464,9 +465,10 @@ export default function TokenStaking({
           <CyDTouchView
             onPress={() => setClaimModal(false)}
             className={'z-[50]'}>
-            <CyDImage
-              source={AppImages.CLOSE}
-              className={' w-[22px] h-[22px] z-[50] absolute right-[0px] '}
+            <CydMaterialDesignIcons
+              name={'close'}
+              size={24}
+              className='text-base400'
             />
           </CyDTouchView>
           <CyDView>
@@ -534,9 +536,10 @@ export default function TokenStaking({
               setSignModalVisible(false);
             }}
             className={'z-[50]'}>
-            <CyDImage
-              source={AppImages.CLOSE}
-              className={' w-[22px] h-[22px] z-[50] absolute right-[0px] '}
+            <CydMaterialDesignIcons
+              name={'close'}
+              size={24}
+              className='text-base400'
             />
           </CyDTouchView>
           <CyDText className={' mt-[10px] font-bold text-[22px] text-center '}>
@@ -609,11 +612,10 @@ export default function TokenStaking({
               setReStakeModalVisible(false);
             }}
             className={'z-[50]'}>
-            <CyDImage
-              source={AppImages.CLOSE}
-              className={
-                ' w-[22px] h-[22px] z-[50] absolute right-[0px] top-[-10px] '
-              }
+            <CydMaterialDesignIcons
+              name={'close'}
+              size={24}
+              className='text-base400'
             />
           </CyDTouchView>
           <CyDText className={' mt-[10px] font-bold text-[22px] text-center '}>

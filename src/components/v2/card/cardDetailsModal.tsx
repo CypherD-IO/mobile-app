@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import {
   CyDImage,
+  CydMaterialDesignIcons,
   CyDText,
   CyDTouchView,
   CyDView,
@@ -127,10 +128,10 @@ export default function CardDetailsModal({
             </CyDText>
           </CyDView>
           <CyDTouchView onPress={() => setShowModal(false)}>
-            <CyDImage
-              source={AppImages.CLOSE_CIRCLE}
-              className='h-[28px] w-[28px]'
-              resizeMode='contain'
+            <CydMaterialDesignIcons
+              name={'close'}
+              size={24}
+              className='text-base400'
             />
           </CyDTouchView>
         </CyDView>
@@ -163,10 +164,10 @@ export default function CardDetailsModal({
                 />
               </CyDTouchView>
               <CyDTouchView onPress={() => copyToClipboard('cardNumber')}>
-                <CyDImage
-                  source={AppImages.COPY}
-                  className='h-[18px] w-[18px]'
-                  resizeMode='contain'
+                <CydMaterialDesignIcons
+                  name={'content-copy'}
+                  size={18}
+                  className='text-base400'
                 />
               </CyDTouchView>
             </CyDView>
@@ -196,10 +197,10 @@ export default function CardDetailsModal({
                 />
               </CyDTouchView>
               <CyDTouchView onPress={() => copyToClipboard('expiry')}>
-                <CyDImage
-                  source={AppImages.COPY}
-                  className='h-[18px] w-[18px]'
-                  resizeMode='contain'
+                <CydMaterialDesignIcons
+                  name={'content-copy'}
+                  size={18}
+                  className='text-base400'
                 />
               </CyDTouchView>
             </CyDView>
@@ -225,10 +226,10 @@ export default function CardDetailsModal({
                 />
               </CyDTouchView>
               <CyDTouchView onPress={() => copyToClipboard('cvv')}>
-                <CyDImage
-                  source={AppImages.COPY}
-                  className='h-[18px] w-[18px]'
-                  resizeMode='contain'
+                <CydMaterialDesignIcons
+                  name={'content-copy'}
+                  size={18}
+                  className='text-base400'
                 />
               </CyDTouchView>
             </CyDView>

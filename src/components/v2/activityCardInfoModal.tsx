@@ -3,6 +3,7 @@ import { StyleSheet } from 'react-native';
 import CyDModalLayout from './modal';
 import {
   CyDImage,
+  CydMaterialDesignIcons,
   CyDScrollView,
   CyDText,
   CyDTouchView,
@@ -74,9 +75,10 @@ export default function ActivityInfoModal({
             onPress={() => {
               setModalVisible(false);
             }}>
-            <CyDImage
-              source={AppImages.CLOSE}
-              className={'w-[16px] h-[16px] top-[20px] right-[20px] '}
+            <CydMaterialDesignIcons
+              name={'close'}
+              size={24}
+              className='text-base400 top-[20px] right-[20px]'
             />
           </CyDTouchView>
           <CyDView className='flex mt-[5%] flex-row justify-center items-center '>
@@ -133,9 +135,10 @@ export default function ActivityInfoModal({
                 {txnHash
                   ? `${txnHash.substring(0, 8)}...${txnHash.substring(txnHash.length - 6, txnHash.length)}\t`
                   : 'TBD\t'}
-                <CyDImage
-                  source={AppImages.COPY}
-                  className={'relative left-[20px] w-[16px] h-[18px]'}
+                <CydMaterialDesignIcons
+                  name={'content-copy'}
+                  size={16}
+                  className='text-base400'
                 />
               </CyDText>
             </CyDTouchView>
@@ -151,9 +154,10 @@ export default function ActivityInfoModal({
                 </CyDText>
                 <CyDText className='text-center  text-[14px] mt-[5px] font-bold mt-[3px]  '>
                   {`${quoteId.substring(0, 8)}...${quoteId.substring(quoteId.length - 6, quoteId.length)}      `}
-                  <CyDImage
-                    source={AppImages.COPY}
-                    className={'relative left-[20px] w-[16px] h-[18px]'}
+                  <CydMaterialDesignIcons
+                    name={'content-copy'}
+                    size={16}
+                    className='text-base400'
                   />
                 </CyDText>
               </CyDTouchView>

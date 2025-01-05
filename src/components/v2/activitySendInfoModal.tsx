@@ -2,7 +2,9 @@ import React, { useRef, useState } from 'react';
 import { StyleSheet } from 'react-native';
 import CyDModalLayout from './modal';
 import {
+  CydIcons,
   CyDImage,
+  CydMaterialDesignIcons,
   CyDText,
   CyDTouchView,
   CyDView,
@@ -122,9 +124,10 @@ export default function ActivitySendInfoModal({
               setModalVisible(false);
             }}>
             {!isCapturingDetails && (
-              <CyDImage
-                source={AppImages.CLOSE}
-                className={'w-[16px] h-[16px] top-[20px] right-[20px] '}
+              <CydMaterialDesignIcons
+                name={'close'}
+                size={24}
+                className='text-base400 top-[20px] right-[20px] '
               />
             )}
           </CyDTouchView>
@@ -235,7 +238,7 @@ export default function ActivitySendInfoModal({
                     String(getExplorerUrl(symbol, chainName, transactionHash)),
                   )
                 }>
-                <CyDImage source={AppImages.COPY} />
+                <CydIcons name={'copy'} size={32} className='text-base400' />
               </CyDTouchView>
             </CyDView>
             <CyDView className='flex flex-row h-[60px] justify-start items-center border-b-[1px] border-n40'>

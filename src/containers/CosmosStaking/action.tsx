@@ -7,6 +7,7 @@ import {
   CyDView,
   CyDTouchView,
   CyDKeyboardAwareScrollView,
+  CydMaterialDesignIcons,
 } from '../../styles/tailwindStyles';
 import AppImages from '../../../assets/images/appImages';
 import { BackHandler, StyleSheet } from 'react-native';
@@ -211,9 +212,10 @@ export default function CosmosAction({
             <CyDTouchView
               onPress={() => setSignModalVisible(false)}
               className={'w-full flex-1 flex-row py-[20px] justify-end z-[50]'}>
-              <CyDImage
-                source={AppImages.CLOSE}
-                className={' w-[18px] h-[18px]'}
+              <CydMaterialDesignIcons
+                name={'close'}
+                size={24}
+                className='text-base400'
               />
             </CyDTouchView>
             <CyDText className={'mt-[10px] font-bold text-center text-[22px]'}>

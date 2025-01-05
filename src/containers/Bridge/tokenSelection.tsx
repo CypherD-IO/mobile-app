@@ -14,6 +14,7 @@ import {
   CyDFastImage,
   CyDFlatList,
   CyDImage,
+  CydMaterialDesignIcons,
   CyDScrollView,
   CyDText,
   CyDTextInput,
@@ -186,9 +187,10 @@ function ChooseTokenModal({
                 setModalVisible(false);
               }}
               className={'absolute z-[50] top-[20px] right-[24px]'}>
-              <CyDImage
-                source={AppImages.CLOSE}
-                className={' w-[20px] h-[20px] '}
+              <CydMaterialDesignIcons
+                name={'close'}
+                size={24}
+                className='text-base400'
               />
             </CyDTouchView>
             <CyDText
@@ -321,7 +323,11 @@ function ChainSelectionModal({
         <CyDTouchView
           onPress={() => setModalVisible(false)}
           className='absolute z-[50] top-[20px] right-[24px]'>
-          <CyDImage source={AppImages.CLOSE} className='w-[20px] h-[20px]' />
+          <CydMaterialDesignIcons
+            name={'close'}
+            size={24}
+            className='text-base400'
+          />
         </CyDTouchView>
 
         <CyDText className='text-center pt-[24px] pb-[14px] text-[22px] font-nunito font-bold'>

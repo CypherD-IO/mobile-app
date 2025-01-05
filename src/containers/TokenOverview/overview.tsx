@@ -64,6 +64,7 @@ import {
   CyDAnimatedView,
   CyDFastImage,
   CyDImage,
+  CydMaterialDesignIcons,
   CyDScrollView,
   CyDText,
   CyDTouchView,
@@ -461,10 +462,10 @@ export default function Overview({
                       copyToClipboard(tokenData.contractAddress);
                       showToast(`${t('CONTRACT_ADDRESS_COPY_ALL_SMALL')}`);
                     }}>
-                    <CyDImage
-                      source={AppImages.COPY}
-                      className='h-[10px] w-[10px] ml-[3px]'
-                      resizeMode='contain'
+                    <CydMaterialDesignIcons
+                      name={'content-copy'}
+                      size={10}
+                      className='text-base400 ml-[3px]'
                     />
                   </CyDTouchView>
                 </CyDView>

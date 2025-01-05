@@ -4,6 +4,7 @@ import analytics from '@react-native-firebase/analytics';
 import {
   CyDFastImage,
   CyDImage,
+  CydMaterialDesignIcons,
   CyDScrollView,
   CyDText,
   CyDTouchView,
@@ -151,7 +152,11 @@ export default function ReferralRewards() {
               copyToClipboard(referralInviteLink);
               showToast(t('REFERRAL_CODE_COPY'));
             }}>
-            <CyDImage source={AppImages.COPY} />
+            <CydMaterialDesignIcons
+              name={'content-copy'}
+              size={20}
+              className='text-base400 ml-[8px]'
+            />
             <CyDText className={'ml-[10px] text-[16px] font-bold'}>
               COPY
             </CyDText>

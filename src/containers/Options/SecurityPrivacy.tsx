@@ -17,6 +17,7 @@ import {
   CyDImage,
   CyDImageBackground,
   CyDFlatList,
+  CydMaterialDesignIcons,
 } from '../../styles/tailwindStyles';
 import useConnectionManager from '../../hooks/useConnectionManager';
 import { ConnectionTypes } from '../../constants/enum';
@@ -46,7 +47,7 @@ export default function SecurityPrivacy(props) {
     {
       index: 0,
       title: t('REVEAL_PRIVATE_KEY'),
-      logo: AppImages.PRIVATE_KEY,
+      logo: 'key-variant',
     },
   ];
   if (connectionTypeValue === ConnectionTypes.SEED_PHRASE) {
@@ -55,7 +56,7 @@ export default function SecurityPrivacy(props) {
       {
         index: 1,
         title: t('REVEAL_SEED_PHARSE'),
-        logo: AppImages.EYE_OPEN,
+        logo: 'eye',
       },
     ];
   }
@@ -65,7 +66,7 @@ export default function SecurityPrivacy(props) {
       {
         index: 2,
         title: 'Change Pin',
-        logo: AppImages.CHANGE_PIN,
+        logo: 'key-change',
       },
     ];
   }
@@ -104,12 +105,17 @@ export default function SecurityPrivacy(props) {
               className={
                 'flex items-center justify-center h-[27px] w-[27px] rounded-[7px] mr-[14px]'
               }>
-              <CyDImage
+              {/* <CyDImage
                 source={
                   isSecurityOptionDisabled ? AppImages.CYPHER_LOCK : item.logo
                 }
                 className={'w-[17px] h-[17px]'}
                 resizeMode={'contain'}
+              /> */}
+              <CydMaterialDesignIcons
+                name={isSecurityOptionDisabled ? 'shield-lock' : item.logo}
+                size={24}
+                className='text-base400'
               />
             </CyDView>
             <CyDText className={'font-semibold text-[16px] text-[#434343]'}>

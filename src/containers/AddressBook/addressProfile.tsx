@@ -7,6 +7,7 @@ import Accordion from 'react-native-collapsible/Accordion';
 import { verticalScale } from 'react-native-size-matters';
 import {
   CyDImage,
+  CydMaterialDesignIcons,
   CyDScrollView,
   CyDText,
   CyDTouchView,
@@ -401,10 +402,10 @@ const AddressProfile = props => {
                               `${chain} ${t('ADDRESS_COPY_ALL_SMALL')}`,
                             );
                           }}>
-                          <CyDImage
-                            source={AppImages.COPY}
-                            className='h-[15px] w-[15px] mr-[10px]'
-                            resizeMode='contain'
+                          <CydMaterialDesignIcons
+                            name={'content-copy'}
+                            size={14}
+                            className='text-base400'
                           />
                         </CyDTouchView>
                       </CyDView>

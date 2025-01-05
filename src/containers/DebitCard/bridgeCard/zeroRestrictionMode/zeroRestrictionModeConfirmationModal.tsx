@@ -7,6 +7,7 @@ import ZrmIntro from './zrmIntro';
 import Loading from '../../../Loading';
 import {
   CyDImage,
+  CydMaterialDesignIcons,
   CyDText,
   CyDTouchView,
   CyDView,
@@ -92,9 +93,10 @@ export default function ZeroRestrictionModeConfirmationModal(props: {
                     setLoader(false);
                     setIsModalVisible(false);
                   }}>
-                  <CyDImage
-                    source={AppImages.CLOSE}
-                    className='w-[24px] h-[24px]'
+                  <CydMaterialDesignIcons
+                    name={'close'}
+                    size={24}
+                    className='text-base400'
                   />
                 </CyDTouchView>
               </CyDView>

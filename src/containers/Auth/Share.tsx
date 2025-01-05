@@ -218,11 +218,7 @@ export const AddressBookContainer = ({
                 addressType: addressTypeQRCode,
               });
             }}>
-            <CyDImage
-              source={AppImages.QR_CODE}
-              className='h-[20px] w-[20px]'
-              resizeMode='contain'
-            />
+            <CydIcons name={'qr-code-1'} size={32} className='text-base400' />
           </CyDTouchView>
         )}
 
@@ -233,10 +229,10 @@ export const AddressBookContainer = ({
               showToast(`${chain} ${t('ADDRESS_COPY_ALL_SMALL')}`);
               sendFirebaseEvent(hdWalletContext, 'copy_address');
             }}>
-            <CyDImage
-              source={AppImages.COPY}
-              className='h-[18px] w-[18px]'
-              resizeMode='contain'
+            <CydMaterialDesignIcons
+              name={'content-copy'}
+              size={20}
+              className='text-base400'
             />
           </CyDTouchView>
         )}
@@ -277,11 +273,11 @@ export const OptionsContainer = ({
         )}
       </CyDView>
       <CyDView>
-        {/* <CyDFontAwesomeIcons
+        <CydMaterialDesignIcons
           name={'chevron-right'}
-          size={14}
+          size={24}
           className='text-base400'
-        /> */}
+        />
       </CyDView>
     </CyDTouchView>
   );

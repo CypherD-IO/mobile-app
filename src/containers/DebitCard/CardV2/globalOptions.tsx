@@ -2,6 +2,8 @@ import React, { useContext, useEffect, useState } from 'react';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import {
   CyDFastImage,
+  CydIcons,
+  CydMaterialDesignIcons,
   CyDScrollView,
   CyDText,
   CyDTouchView,
@@ -127,7 +129,7 @@ export default function GlobalOptions() {
           {
             title: 'Lockdown Mode',
             description: 'Secure account by blocking all Card Functionalities',
-            image: AppImages.LOCKDOWN_MODE_ICON,
+            image: 'hand-back-left-outline',
             action: () => {
               navigation.navigate(screenTitle.LOCKDOWN_MODE, {
                 currentCardProvider: cardProvider,
@@ -139,7 +141,7 @@ export default function GlobalOptions() {
     {
       title: 'Auto Load',
       description: 'Manage auto load',
-      image: AppImages.AUTOLOAD,
+      image: 'credit-card-sync-outline',
       action: () => {
         isAutoloadConfigured
           ? setIsAutoLoadOptionsVisible(true)
@@ -270,9 +272,10 @@ export default function GlobalOptions() {
             onPress={() => {
               navigation.goBack();
             }}>
-            <CyDFastImage
-              source={AppImages.LEFT_ARROW_LONG}
-              className='w-[20px] h-[16px]'
+            <CydMaterialDesignIcons
+              name={'arrow-left'}
+              size={24}
+              className='text-base400'
             />
           </CyDTouchView>
           <CyDText className='text-[16px] font-bold text-base400'>
@@ -337,11 +340,16 @@ export default function GlobalOptions() {
                     key={index}
                     onPress={action}
                     className='flex flex-row bg-n0 rounded-[8px] px-[16px] pt-[16px]'>
-                    <CyDFastImage
+                    <CydIcons
+                      name={image}
+                      size={20}
+                      className='text-base400 mr-[8px] pb-[16px]'
+                    />
+                    {/* <CyDFastImage
                       source={image}
                       className={'h-[24px] w-[24px] mr-[8px] pb-[16px]'}
                       resizeMode={'contain'}
-                    />
+                    /> */}
                     <CyDView className='flex flex-row items-center justify-between flex-1 border-b-[0.5px] border-n30 pb-[16px]'>
                       <CyDText className='text-[16px] font-regular text-base400'>
                         {title}

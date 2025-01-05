@@ -6,6 +6,7 @@ import {
   CyDFastImage,
   CyDImage,
   CyDKeyboardAvoidingView,
+  CydMaterialDesignIcons,
   CyDScrollView,
   CyDText,
   CyDTextInput,
@@ -145,9 +146,10 @@ const ChooseMultipleCountryModal = ({
                   setModalVisible(false);
                 }}
                 className={'ml-[18px]'}>
-                <CyDFastImage
-                  source={AppImages.CLOSE_CIRCLE}
-                  className={' w-[22px] h-[22px] z-[50] right-[0px] '}
+                <CydMaterialDesignIcons
+                  name={'close'}
+                  size={24}
+                  className='text-base400 '
                 />
               </CyDTouchView>
             </CyDView>

@@ -2,6 +2,7 @@ import React, { useCallback, useEffect, useState } from 'react';
 import {
   CyDImage,
   CyDKeyboardAwareScrollView,
+  CydMaterialDesignIcons,
   CyDText,
   CyDTextInput,
   CyDTouchView,
@@ -163,9 +164,10 @@ export default function MigratePCFunds() {
                 setShowConsentModal(false);
               }}>
               <CyDView className='w-[24px] h-[24px] z-[50]'>
-                <CyDImage
-                  source={AppImages.CLOSE}
-                  className={'w-[16px] h-[16px]'}
+                <CydMaterialDesignIcons
+                  name={'close'}
+                  size={24}
+                  className='text-base400'
                 />
               </CyDView>
             </CyDTouchView>

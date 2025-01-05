@@ -401,9 +401,7 @@ export default function WalletConnectCamera(props: {
             {t<string>('MANAGE_CONNECTION')}
           </CyDText>
         </CyDView>
-        {/* <CyDTouchView onPress={() => { setPairingSessionsModalVisible(false); }} className={'z-[50]'}>
-          <CyDImage source={AppImages.CLOSE} className={' w-[18px] h-[18px] z-[50] absolute right-[20px] top-[-30px]'} />
-         </CyDTouchView> */}
+
         {sessionsForAPairing.length === 0 && (
           <CyDView>
             <CyDView className={'flex flex-row justify-center'}>

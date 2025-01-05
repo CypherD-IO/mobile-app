@@ -8,6 +8,7 @@ import {
   CyDFlatList,
   CyDImage,
   CyDImageBackground,
+  CydMaterialDesignIcons,
   CyDScrollView,
   CyDText,
   CyDTextInput,
@@ -169,13 +170,10 @@ export default function TrackWallet({
                   })
                 : setAddress('');
             }}>
-            <CyDImage
-              className={'h-[25px] w-[25px]'}
-              source={
-                address === ''
-                  ? AppImages.QR_CODE_SCANNER
-                  : AppImages.CLOSE_CIRCLE
-              }
+            <CydMaterialDesignIcons
+              name={address === '' ? 'qrcode-scan' : 'close'}
+              size={24}
+              className='text-base400'
             />
           </CyDTouchView>
         </CyDView>

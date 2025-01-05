@@ -3,6 +3,7 @@ import SignatureModal from '../components/v2/signatureModal';
 import {
   CyDFastImage,
   CyDImage,
+  CydMaterialDesignIcons,
   CyDScrollView,
   CyDText,
   CyDTouchView,
@@ -272,9 +273,10 @@ export default function WalletConnectModal(props) {
                 setChooseChain(false);
               }}
               className={'z-[50]'}>
-              <CyDImage
-                source={AppImages.CLOSE}
-                className={' w-[22px] h-[22px] z-[50] absolute right-[0px] '}
+              <CydMaterialDesignIcons
+                name={'close'}
+                size={24}
+                className='text-base400 z-[50] absolute right-[0px'
               />
             </CyDTouchView>
             <CyDText

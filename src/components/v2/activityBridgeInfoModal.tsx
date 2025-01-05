@@ -19,6 +19,7 @@ import { ActivityStatus, ActivityType } from '../../reducers/activity_reducer';
 import {
   CyDFastImage,
   CyDImage,
+  CydMaterialDesignIcons,
   CyDText,
   CyDTouchView,
   CyDView,
@@ -129,9 +130,10 @@ export default function ActivityBridgeInfoModal({
               setModalVisible(false);
             }}>
             {!isCapturingDetails && (
-              <CyDImage
-                source={AppImages.CLOSE}
-                className={'w-[16px] h-[16px] top-[20px] right-[20px] '}
+              <CydMaterialDesignIcons
+                name={'close'}
+                size={24}
+                className='text-base400 top-[20px] right-[20px]'
               />
             )}
           </CyDTouchView>
@@ -255,7 +257,11 @@ export default function ActivityBridgeInfoModal({
                       ),
                     )
                   }>
-                  <CyDImage source={AppImages.COPY} />
+                  <CydMaterialDesignIcons
+                    name={'content-copy'}
+                    size={16}
+                    className='text-base400'
+                  />
                 </CyDTouchView>
               </CyDView>
             )}

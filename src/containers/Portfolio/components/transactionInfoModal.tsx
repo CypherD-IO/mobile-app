@@ -4,6 +4,7 @@ import CyDModalLayout from '../../../components/v2/modal';
 import {
   CyDFastImage,
   CyDImage,
+  CydMaterialDesignIcons,
   CyDText,
   CyDTouchView,
   CyDView,
@@ -370,13 +371,14 @@ export default function TransactionInfoModal({
         animationOut={'slideOutDown'}>
         <CyDView className={'bg-n20 pb-[30px] rounded-t-[20px]'} ref={viewRef}>
           <CyDTouchView
-            className={'flex flex-row justify-end z-10'}
+            className={'flex flex-row justify-end z-10 self-end'}
             onPress={() => {
               setModalVisible(false);
             }}>
-            <CyDImage
-              source={AppImages.CLOSE}
-              className={'w-[16px] h-[16px] top-[20px] right-[20px] '}
+            <CydMaterialDesignIcons
+              name={'close'}
+              size={24}
+              className='text-base400'
             />
           </CyDTouchView>
           <CyDView className='flex mt-[5%] justify-center items-center '>
@@ -442,7 +444,11 @@ export default function TransactionInfoModal({
                         String(`${chainExplorerMapping[blockchain]}${hash}`),
                       )
                     }>
-                    <CyDImage source={AppImages.COPY} />
+                    <CydMaterialDesignIcons
+                      name={'content-copy'}
+                      size={20}
+                      className='text-base400'
+                    />
                   </CyDTouchView>
                 </CyDView>
               </CyDView>

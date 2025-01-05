@@ -6,6 +6,7 @@ import {
   CyDTouchView,
   CyDView,
   CyDFlatList,
+  CydMaterialDesignIcons,
 } from '../../styles/tailwindStyles';
 import CyDModalLayout from '../../components/v2/modal';
 import * as React from 'react';
@@ -589,9 +590,10 @@ export default function ShortcutsModal() {
           <CyDTouchView
             onPress={() => setShortcutsModalVisible(false)}
             className={'z-50 absolute top-[24px] right-[24px]'}>
-            <CyDImage
-              source={AppImages.CLOSE}
-              className={'w-[16px] h-[16px]'}
+            <CydMaterialDesignIcons
+              name={'close'}
+              size={24}
+              className='text-base400'
             />
           </CyDTouchView>
           <CyDFlatList
@@ -618,9 +620,10 @@ export default function ShortcutsModal() {
           <CyDTouchView
             onPress={() => setBuyModalVisible(false)}
             className={'z-50 absolute top-[24px] right-[24px]'}>
-            <CyDImage
-              source={AppImages.CLOSE}
-              className={'w-[16px] h-[16px]'}
+            <CydMaterialDesignIcons
+              name={'close'}
+              size={24}
+              className='text-base400'
             />
           </CyDTouchView>
           <CyDText className={'text-center font-bold text-[22px] mb-[14px]'}>
@@ -647,9 +650,10 @@ export default function ShortcutsModal() {
           <CyDTouchView
             onPress={() => setSellModalVisible(false)}
             className={'z-50 absolute top-[24px] right-[24px]'}>
-            <CyDImage
-              source={AppImages.CLOSE}
-              className={'w-[16px] h-[16px]'}
+            <CydMaterialDesignIcons
+              name={'close'}
+              size={24}
+              className='text-base400'
             />
           </CyDTouchView>
           <CyDText className={'text-center font-bold text-[22px] mb-[14px]'}>
@@ -694,9 +698,10 @@ export default function ShortcutsModal() {
             <CyDTouchView
               onPress={() => setBuyChooseChainModalVisible(false)}
               className={''}>
-              <CyDImage
-                source={AppImages.CLOSE}
-                className={'w-[16px] h-[16px]'}
+              <CydMaterialDesignIcons
+                name={'close'}
+                size={24}
+                className='text-base400'
               />
             </CyDTouchView>
           </CyDView>
@@ -746,9 +751,10 @@ export default function ShortcutsModal() {
             <CyDTouchView
               onPress={() => setSellChooseChainModalVisible(false)}
               className={''}>
-              <CyDImage
-                source={AppImages.CLOSE}
-                className={'w-[16px] h-[16px]'}
+              <CydMaterialDesignIcons
+                name={'close'}
+                size={24}
+                className='text-base400'
               />
             </CyDTouchView>
           </CyDView>

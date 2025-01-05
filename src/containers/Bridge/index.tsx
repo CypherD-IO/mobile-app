@@ -1479,6 +1479,7 @@ const Bridge: React.FC = () => {
           throw new Error('Invalid chain');
         }
       } catch (err: unknown) {
+        console.log('🚀 ~ onAcceptSwap ~ err:', err);
         setLoading({ ...loading, acceptSwapLoading: false });
         showModal('state', {
           type: 'error',
@@ -2066,7 +2067,7 @@ const Bridge: React.FC = () => {
                 <CyDView className={'flex flex-row justify-between'}>
                   <CyDText
                     className={
-                      'text-[#434343] font-nunito text-[16px] font-medium'
+                      'text-base200 font-nunito text-[16px] font-medium'
                     }>
                     {t<string>('SENT_AMOUNT')}
                   </CyDText>
@@ -2103,7 +2104,7 @@ const Bridge: React.FC = () => {
                   }>
                   <CyDText
                     className={
-                      'text-[#434343] font-nunito text-[16px] font-medium'
+                      'text-base200 font-nunito text-[16px] font-medium'
                     }>
                     {t<string>('TOTAL_RECEIVED')}
                   </CyDText>

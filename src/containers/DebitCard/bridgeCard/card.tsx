@@ -54,6 +54,7 @@ import {
   CyDFlatList,
   CyDImage,
   CyDImageBackground,
+  CydMaterialDesignIcons,
   CyDText,
   CyDTouchView,
   CyDView,
@@ -104,9 +105,6 @@ export default function CardScreen({
   const upgradeToPhysicalAvailable =
     get(cardDesignData, ['allowedCount', 'physical'], 0) > 0;
   const { showModal, hideModal } = useGlobalModalContext();
-  const { width } = useWindowDimensions();
-  const pixelDensity = PixelRatio.get();
-  const fontScaleFactor = PixelRatio.getFontScale();
   const { t } = useTranslation();
   const isFocused = useIsFocused();
   const { getWithAuth } = useAxios();
@@ -342,7 +340,7 @@ export default function CardScreen({
   };
 
   return (
-    <CyDView className=''>
+    <CyDView className='h-[350px]'>
       {/* <CyDCarousel
         loop={false}
         width={width}
@@ -360,37 +358,8 @@ export default function CardScreen({
         onSnapToItem={setUpgradeCorrectedCardIndex}
         renderItem={renderItem as any}
       /> */}
-      {/* <CyDFlatList
-        className='py-[24px] flex-1'
-        horizontal
-        data={cardsWithUpgrade}
-        showsHorizontalScrollIndicator={false}
-        snapToAlignment='center'
-        decelerationRate='fast'
-        snapToInterval={width * 0.85} // This ensures proper snapping
-        contentContainerStyle={{
-          paddingHorizontal: width * 0.05, // Increased padding to show cards on edges
-        }}
-        renderItem={({ item, index }) => (
-          <CyDView
-            style={{
-              height: 190,
-              width: width * 0.75,
-              marginHorizontal: 10,
-              opacity: currentCardIndex === index ? 1 : 0.6, // Optional: dim non-active cards
-              transform: [{ scale: currentCardIndex === index ? 1 : 0.95 }], // Optional: scale down non-active cards
-            }}>
-            {renderItem({ item })}
-          </CyDView>
-        )}
-        onMomentumScrollEnd={event => {
-          const contentOffset = event.nativeEvent.contentOffset.x;
-          const index = Math.round(contentOffset / (width * 0.8));
-          setUpgradeCorrectedCardIndex(index);
-        }}
-      /> */}
       <CyDFlatList
-        className='py-[24px] flex-1'
+        className='py-[24px] flex-1 '
         horizontal
         data={cardsWithUpgrade}
         showsHorizontalScrollIndicator={false}
@@ -591,10 +560,10 @@ const RenderCardActions = ({
                 </CyDText>
                 <CyDTouchView
                   onPress={() => copyTrackingNumber(trackingNumber)}>
-                  <CyDImage
-                    source={AppImages.COPY}
-                    className='h-[14px] w-[14px] ml-[12px]'
-                    resizeMode='contain'
+                  <CydMaterialDesignIcons
+                    name={'content-copy'}
+                    size={14}
+                    className='text-base400'
                   />
                 </CyDTouchView>
               </CyDView>
@@ -602,47 +571,6 @@ const RenderCardActions = ({
           )}
         </CyDView>
       </CyDView>
-      // <CyDView className='flex flex-row items-start w-[350px] mx-[20px] px-[10px] mb-[12px] bg-highlightBg rounded-[12px] self-center'>
-      //   <CyDView className='py-[10px]'>
-      //     <CyDImage source={AppImages.MAIL} className='h-[32px] w-[32px]' />
-      //   </CyDView>
-      //   <CyDView className='py-[10px] flex justify-center ml-[12px] w-[90%]'>
-      //     <CyDView className='flex flex-row items-center'>
-      // <CyDText className='font-bold text-[16px]'>
-      //   {t('CARD_ON_WAY')}
-      // </CyDText>
-      //       <CyDImage
-      //         source={AppImages.CELEBRATE}
-      //         className='h-[24px] w-[24px] ml-[8px]'
-      //       />
-      //     </CyDView>
-      // <CyDText className='mt-[6px]'>
-      //   {trackingDetails &&
-      //   isUndefined(get(trackingDetails, physicalCard.cardId)?.trackingId)
-      //     ? t('CARD_PRINTING_DESCRIPTION_SUB1') +
-      //       String(physicalCard.last4) +
-      //       t('CARD_PRINTING_DESCRIPTION_SUB2')
-      //     : t('CARD_SHIP_DESCRIPTION_SUB1') +
-      //       String(physicalCard.last4) +
-      //       t('CARD_SHIP_DESCRIPTION_SUB2')}
-      // </CyDText>
-      //     {trackingNumber && (
-      // <CyDView className='flex flex-row items-center mt-[6px]'>
-      //   <CyDText className=''>{t('FEDEX_TRACKING_NO')}</CyDText>
-      //   <CyDText className='max-w-[50%] text-highlightText ml-[8px]'>
-      //     {trackingNumber}
-      //   </CyDText>
-      //   <CyDTouchView onPress={() => copyTrackingNumber(trackingNumber)}>
-      //     <CyDImage
-      //       source={AppImages.COPY}
-      //       className='h-[14px] w-[14px] ml-[12px]'
-      //       resizeMode='contain'
-      //     />
-      //   </CyDTouchView>
-      // </CyDView>
-      //     )}
-      //   </CyDView>
-      // </CyDView>
     );
   }, [trackingDetails, cardId]);
 
@@ -1040,10 +968,10 @@ const RenderCardActions = ({
           style={styles.modalLayout}>
           <CyDView className='bg-n30 py-[8px] mb-[12px] h-[412px] w-[90%] rounded-[16px]'>
             <CyDTouchView onPress={() => setShowRCCardDetailsModal(false)}>
-              <CyDImage
-                source={AppImages.CLOSE_CIRCLE}
-                className='h-[22px] w-[22px] ml-[90%] mb-[5px]'
-                resizeMode='contain'
+              <CydMaterialDesignIcons
+                name={'close'}
+                size={24}
+                className='text-base400 ml-[90%] mb-[5px]'
               />
             </CyDTouchView>
             <CyDView className='flex flex-row justify-between items-center w-full mb-[12px]'>

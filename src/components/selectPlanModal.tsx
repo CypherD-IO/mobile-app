@@ -8,6 +8,7 @@ import React, {
 import {
   CyDFastImage,
   CyDImage,
+  CydMaterialDesignIcons,
   CyDScrollView,
   CyDText,
   CyDTouchView,
@@ -365,9 +366,10 @@ export default function SelectPlanModal({
                 }}
                 className={''}>
                 <CyDView className='w-[24px] h-[24px] z-[50]'>
-                  <CyDImage
-                    source={AppImages.CLOSE}
-                    className={'w-[16px] h-[16px]'}
+                  <CydMaterialDesignIcons
+                    name={'close'}
+                    size={24}
+                    className='text-base400'
                   />
                 </CyDView>
               </CyDTouchView>
@@ -772,9 +774,10 @@ export default function SelectPlanModal({
                 onPress={() => {
                   setConsentModalVisible(false);
                 }}>
-                <CyDImage
-                  source={AppImages.CLOSE_CIRCLE}
-                  className='w-[24px] h-[24px]'
+                <CydMaterialDesignIcons
+                  name={'close'}
+                  size={24}
+                  className='text-base400'
                 />
               </CyDTouchView>
             </CyDView>
@@ -850,9 +853,10 @@ export default function SelectPlanModal({
                   setIsModalVisible(false);
                   onClose?.();
                 }}>
-                <CyDImage
-                  source={AppImages.CLOSE}
-                  className='w-[24px] h-[24px]'
+                <CydMaterialDesignIcons
+                  name={'close'}
+                  size={24}
+                  className='text-base400'
                 />
               </CyDTouchView>
             </CyDView>

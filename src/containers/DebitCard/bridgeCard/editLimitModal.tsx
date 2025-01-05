@@ -2,6 +2,7 @@ import React, { useEffect, useState } from 'react';
 import CyDModalLayout from '../../../components/v2/modal';
 import {
   CyDImage,
+  CydMaterialDesignIcons,
   CyDText,
   CyDTextInput,
   CyDTouchView,
@@ -53,10 +54,10 @@ export default function EditLimitModal({
               </CyDText>
             </CyDView>
             <CyDTouchView onPress={() => setShowModal(false)}>
-              <CyDImage
-                source={AppImages.CLOSE_CIRCLE}
-                className='h-[28px] w-[28px]'
-                resizeMode='contain'
+              <CydMaterialDesignIcons
+                name={'close'}
+                size={24}
+                className='text-base400'
               />
             </CyDTouchView>
           </CyDView>

@@ -7,7 +7,7 @@ import { ALL_CHAINS, Chain, ChainBackendNames } from '../constants/server';
 import { Colors } from '../constants/theme';
 import {
   CyDFastImage,
-  CyDImage,
+  CydMaterialDesignIcons,
   CyDText,
   CyDTouchView,
   CyDView,
@@ -57,7 +57,7 @@ export function ChooseChainModal(props: {
         }}>
         <CyDView className='flex flex-row justify-between items-center my-[8px]'>
           <CyDView className='flex flex-row items-center flex-1'>
-            <CyDImage
+            <CyDFastImage
               source={logoUrl}
               className='h-[28px] w-[28px] flex-shrink-0'
               resizeMode='contain'
@@ -82,11 +82,10 @@ export function ChooseChainModal(props: {
             </CyDView>
           </CyDView>
           {isSelected && (
-            <CyDFastImage
-              source={AppImages.CORRECT}
-              tintColor={Colors.black}
-              className='h-[16px] w-[16px] flex-shrink-0'
-              resizeMode='contain'
+            <CydMaterialDesignIcons
+              name='check-outline'
+              size={16}
+              className='text-base400'
             />
           )}
         </CyDView>
@@ -109,12 +108,11 @@ export function ChooseChainModal(props: {
           onPress={() => {
             onPress();
           }}
-          className={'z-[50]'}>
-          <CyDImage
-            source={AppImages.CLOSE}
-            className={
-              ' w-[22px] h-[22px] z-[50] absolute right-[4px] top-[4px] '
-            }
+          className={'z-[50] self-end'}>
+          <CydMaterialDesignIcons
+            name={'close'}
+            size={24}
+            className='text-base400 '
           />
         </CyDTouchView>
         <CyDText className={' mt-[10px] font-bold text-[22px] text-center '}>

@@ -2,6 +2,7 @@ import React, { Dispatch, SetStateAction, useEffect, useState } from 'react';
 import {
   CyDImage,
   CyDKeyboardAwareScrollView,
+  CydMaterialDesignIcons,
   CyDText,
   CyDTextInput,
   CyDTouchView,
@@ -74,7 +75,11 @@ const ImpactModal = ({
             onPress={() => {
               setIsModalVisible(false);
             }}>
-            <CyDImage source={AppImages.CLOSE} className='w-[28px] h-[28px]' />
+            <CydMaterialDesignIcons
+              name={'close'}
+              size={24}
+              className='text-base400'
+            />
           </CyDTouchView>
         </CyDView>
         <CyDText className='mt-[4px] font-bold text-[20px]'>

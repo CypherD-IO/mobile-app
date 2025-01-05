@@ -31,6 +31,7 @@ import {
 import { HdWalletContext } from '../../core/util';
 import {
   CyDImage,
+  CydMaterialDesignIcons,
   CyDSafeAreaView,
   CyDScrollView,
   CyDTouchView,
@@ -90,9 +91,10 @@ export function AddressBook() {
             onPress={() => {
               navigation.goBack();
             }}>
-            <CyDImage
-              source={AppImages.BACK_ARROW_GRAY}
-              className={'w-[32px] h-[32px] mt-[10px]'}
+            <CydMaterialDesignIcons
+              name={'arrow-left-circle'}
+              size={32}
+              className='text-base400'
             />
           </CyDTouchView>
           <CyDView className='flex-1 items-center mr-[20px]'>
@@ -309,7 +311,7 @@ export function AddressBook() {
             </CyDView>
           </CyDScrollView>
         )}
-        {index === 1 && <Contacts route={route} navigation={navigation} />}
+        {index === 1 && <Contacts />}
       </CyDSafeAreaView>
     </>
   );

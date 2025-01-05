@@ -23,6 +23,7 @@ import {
 import {
   CyDFastImage,
   CyDImage,
+  CydMaterialDesignIcons,
   CyDSafeAreaView,
   CyDScrollView,
   CyDText,
@@ -143,10 +144,10 @@ const CopyButton = ({
 
   return (
     <CyDTouchView onPress={handleCopy}>
-      <CyDImage
-        source={AppImages.COPY}
-        className='h-[16px] w-[16px] ml-[8px]'
-        resizeMode='contain'
+      <CydMaterialDesignIcons
+        name={'content-copy'}
+        size={16}
+        className='text-base400'
       />
     </CyDTouchView>
   );
@@ -230,7 +231,11 @@ const MerchantDetailsModal = ({
             {t('MERCHANT_DETAILS')}
           </CyDText>
           <CyDTouchView onPress={() => setShowModal(false)}>
-            <CyDImage source={AppImages.CLOSE} className='h-[24px] w-[24px]' />
+            <CydMaterialDesignIcons
+              name={'close'}
+              size={24}
+              className='text-base400'
+            />
           </CyDTouchView>
         </CyDView>
         <CyDView className='bg-n20 p-[16px] rounded-[12px] mt-[24px]'>

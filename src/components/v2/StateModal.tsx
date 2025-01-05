@@ -8,6 +8,7 @@ import {
   CyDView,
   CyDTouchView,
   CyDScrollView,
+  CydMaterialDesignIcons,
 } from '../../styles/tailwindStyles';
 import CyDModalLayout from './modal';
 import { MODAL_HIDE_TIMEOUT } from '../../core/Http';
@@ -215,10 +216,10 @@ export const SuccessTransaction = ({
         </CyDView>
         <CyDTouchView
           onPress={() => copyHash(String(getExplorerUrl(symbol, name, hash)))}>
-          <CyDImage
-            source={AppImages.COPY}
-            className='h-[20px] w-[20px]'
-            resizeMode='contain'
+          <CydMaterialDesignIcons
+            name={'content-copy'}
+            size={20}
+            className='text-base400'
           />
         </CyDTouchView>
       </CyDView>

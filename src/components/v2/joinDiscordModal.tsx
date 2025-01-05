@@ -1,9 +1,9 @@
-/* eslint-disable react-native/no-raw-text */
 import React, { useCallback, useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Linking, StyleSheet } from 'react-native';
 import {
   CyDImage,
+  CydMaterialDesignIcons,
   CyDText,
   CyDTouchView,
   CyDView,
@@ -97,9 +97,10 @@ export default function JoinDiscordModal(props: {
                 onPress={() => {
                   setIsModalVisible(false);
                 }}>
-                <CyDImage
-                  source={AppImages.CLOSE}
-                  className='w-[24px] h-[24px]'
+                <CydMaterialDesignIcons
+                  name={'close'}
+                  size={24}
+                  className='text-base400'
                 />
               </CyDTouchView>
             </CyDView>

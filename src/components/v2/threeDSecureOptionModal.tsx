@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import CyDModalLayout from './modal';
 import {
   CyDImage,
+  CydMaterialDesignIcons,
   CyDText,
   CyDTouchView,
   CyDView,
@@ -79,10 +80,10 @@ export default function ThreeDSecureOptionModal({
               setIsTelegramSelected(isTelegramEnabled);
               setModalVisible(false);
             }}>
-            <CyDImage
-              source={AppImages.CLOSE_CIRCLE}
-              className='h-[28px] w-[28px]'
-              resizeMode='contain'
+            <CydMaterialDesignIcons
+              name={'close'}
+              size={24}
+              className='text-base400'
             />
           </CyDTouchView>
         </CyDView>

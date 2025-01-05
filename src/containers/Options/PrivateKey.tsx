@@ -9,6 +9,7 @@ import {
   CyDTouchView,
   CyDImage,
   CyDScrollView,
+  CydMaterialDesignIcons,
 } from '../../styles/tailwindStyles';
 import { useTranslation } from 'react-i18next';
 import AppImages from '../../../assets/images/appImages';
@@ -342,9 +343,10 @@ export default function PrivateKey(props) {
             copyToClipboard(privateKey);
             showToast(t('PRIVATE_KEY_COPY'));
           }}>
-          <CyDImage
-            source={AppImages.COPY}
-            className={'absolute left-[20] w-[16px] h-[18px]'}
+          <CydMaterialDesignIcons
+            name={'content-copy'}
+            size={16}
+            className='text-base400 absolute left-[20]'
           />
           <CyDText className={'text-[#434343] text-[16px] font-extrabold'}>
             {t('COPY_TO_CLIPBOARD')}

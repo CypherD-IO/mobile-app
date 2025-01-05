@@ -3,6 +3,7 @@ import { useContext } from 'react';
 import { GlobalContext } from '../../../core/globalContext';
 import {
   CyDImage,
+  CydMaterialDesignIcons,
   CyDSafeAreaView,
   CyDScrollView,
   CyDText,
@@ -90,10 +91,10 @@ export function LinkedWallets({
                                 'copy_address',
                               );
                             }}>
-                            <CyDImage
-                              source={AppImages.COPY}
-                              className='h-[18px] w-[18px]'
-                              resizeMode='contain'
+                            <CydMaterialDesignIcons
+                              name={'content-copy'}
+                              size={18}
+                              className='text-base400'
                             />
                           </CyDTouchView>
                           <CyDTouchView
