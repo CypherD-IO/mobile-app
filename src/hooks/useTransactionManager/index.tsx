@@ -181,7 +181,7 @@ export default function useTransactionManager() {
         set(
           tx,
           'maxPriorityFeePerGas',
-          web3.utils.toWei(priorityFee.toFixed(9), 'gwei'),
+          priorityFee ? web3.utils.toWei(priorityFee.toFixed(9), 'gwei') : '0',
         );
         set(tx, 'maxFeePerGas', web3.utils.toWei(maxFee.toFixed(9), 'gwei'));
       }
@@ -1344,6 +1344,7 @@ export default function useTransactionManager() {
           const isNative = fromToken?.isNative;
 
           const tx = {
+            from: hdWallet.state.wallet.ethereum.address,
             chainId: fromToken?.chainId,
             value: isNative ? contractData?.value : '0x0',
             to: routerAddress,
