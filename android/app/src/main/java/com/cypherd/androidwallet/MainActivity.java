@@ -36,6 +36,6 @@ public class MainActivity extends ReactActivity {
     // Fix: https://github.com/invertase/react-native-firebase/issues/3469#issuecomment-614990736
       SplashScreen.show(this, R.id.lottie);
       SplashScreen.setAnimationFinished(true);
-      super.onCreate(savedInstanceState);
+      super.onCreate(null);
  }
 }

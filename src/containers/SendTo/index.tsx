@@ -633,7 +633,7 @@ export default function SendTo(props: { navigation?: any; route?: any }) {
       // monitoring api
       void logAnalytics({
         type: AnalyticsType.ERROR,
-        chain: chainDetails?.chainName ?? '',
+        chain: chainDetails?.backendName ?? '',
         message: parseErrorMessage(e),
         screen: route.name,
       });
@@ -766,8 +766,7 @@ export default function SendTo(props: { navigation?: any; route?: any }) {
       void logAnalytics({
         type: AnalyticsType.SUCCESS,
         txnHash: response?.hash,
-        chain: chainDetails?.chainName ?? '',
-        address: fromAddress,
+        chain: chainDetails?.backendName ?? '',
         ...(response?.contractData
           ? { contractData: response?.contractData }
           : ''),
@@ -798,13 +797,12 @@ export default function SendTo(props: { navigation?: any; route?: any }) {
     } else {
       setLoading(false);
       // monitoring api
-      // void logAnalytics({
-      //   type: AnalyticsType.ERROR,
-      //   chain: chainDetails?.chainName ?? '',
-      //   message: parseErrorMessage(response.error),
-      //   screen: route.name,
-      //   address: fromAddress,
-      // });
+      void logAnalytics({
+        type: AnalyticsType.ERROR,
+        chain: chainDetails?.backendName ?? '',
+        message: parseErrorMessage(response.error),
+        screen: route.name,
+      });
       activityContext.dispatch({
         type: ActivityReducerAction.POST,
         value: {

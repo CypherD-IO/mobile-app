@@ -366,7 +366,7 @@ export default function CardQuote({
               void logAnalytics({
                 type: AnalyticsType.SUCCESS,
                 txnHash: hash,
-                chain: selectedToken?.chainDetails?.chainName ?? '',
+                chain: selectedToken?.chainDetails?.backendName ?? '',
                 ...(response?.contractData
                   ? { contractData: response?.contractData }
                   : ''),
@@ -388,7 +388,7 @@ export default function CardQuote({
             } else {
               void logAnalytics({
                 type: AnalyticsType.ERROR,
-                chain: selectedToken?.chainDetails?.chainName ?? '',
+                chain: selectedToken?.chainDetails?.backendName ?? '',
                 message: parseErrorMessage(error),
                 screen: route.name,
                 address: PURE_COSMOS_CHAINS.includes(

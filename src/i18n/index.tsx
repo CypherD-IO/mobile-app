@@ -1463,6 +1463,8 @@ const resources = {
       CANCELLED: 'Cancelled',
       CRYPTO_WITHDRAWAL_INFO_MESSAGE:
         'Crypto withdrawals are processed in 3-5 business days. Note that you will receive the funds in USDC on BASE chain.',
+      LEGACY_CARD_TRANSACTIONS: 'Legacy Card Transactions',
+      OTHERS: 'Others',
     },
   },
 };

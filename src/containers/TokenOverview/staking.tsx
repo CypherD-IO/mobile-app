@@ -293,7 +293,7 @@ export default function TokenStaking({
             void logAnalytics({
               type: AnalyticsType.SUCCESS,
               txnHash: resp?.hash,
-              chain: tokenData?.chainDetails?.chainName ?? '',
+              chain: tokenData?.chainDetails?.backendName ?? '',
             });
             Toast.show({
               type: t('TOAST_TYPE_SUCCESS'),
@@ -334,7 +334,7 @@ export default function TokenStaking({
         // monitoring api
         void logAnalytics({
           type: AnalyticsType.ERROR,
-          chain: tokenData?.chainDetails?.chainName ?? '',
+          chain: tokenData?.chainDetails?.backendName ?? '',
           message: parseErrorMessage(error),
           screen: route.name,
         });
@@ -384,7 +384,7 @@ export default function TokenStaking({
             void logAnalytics({
               type: AnalyticsType.SUCCESS,
               txnHash: resp?.hash,
-              chain: tokenData?.chainDetails?.chainName ?? '',
+              chain: tokenData?.chainDetails?.backendName ?? '',
             });
             Toast.show({
               type: t('TOAST_TYPE_SUCCESS'),
@@ -415,7 +415,7 @@ export default function TokenStaking({
         // monitoring api
         void logAnalytics({
           type: AnalyticsType.ERROR,
-          chain: tokenData?.chainDetails?.chainName ?? '',
+          chain: tokenData?.chainDetails?.backendName ?? '',
           message: parseErrorMessage(error),
           screen: route.name,
         });
