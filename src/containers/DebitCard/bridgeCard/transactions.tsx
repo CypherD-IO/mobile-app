@@ -55,16 +55,10 @@ export default function CardTransactions() {
   const navigation = useNavigation<NavigationProp<ParamListBase>>();
   const route = useRoute<RouteProp<{ params: RouteParams }, 'params'>>();
 
-  const { cardProvider, currentCardIndex } = route.params;
+  const { cardProvider } = route.params;
   const { getWithAuth, postWithAuth } = useAxios();
   const globalContext = useContext<any>(GlobalContext);
   const cardProfile: CardProfile = globalContext.globalState.cardProfile;
-  const cardId = get(cardProfile, [
-    cardProvider,
-    'cards',
-    currentCardIndex,
-    'cardId',
-  ]);
   const [transactions, setTransactions] = useState<ICardTransaction[]>([]);
   const [filteredTransactions, setFilteredTransactions] = useState<
     ICardTransaction[]
@@ -89,6 +83,7 @@ export default function CardTransactions() {
     useState<string>('');
   const lastViewableTransactionDate = useRef<string>('');
   const [exportOptionOpen, setExportOptionOpen] = useState(false);
+  const [isEndReached, setIsEndReached] = useState(false);
 
   useEffect(() => {
     void fetchTransactions(true);
@@ -124,9 +119,7 @@ export default function CardTransactions() {
   };
 
   const exportCardTransactions = async (type: 'pdf' | 'csv') => {
-    const exportEndpoint = `/v1/cards/${cardProvider}/card/${String(
-      cardId,
-    )}/transactions/export/${type}`;
+    const exportEndpoint = `/v1/cards/${cardProvider}/card/transactions/export/${type}`;
     try {
       setIsExporting(true);
       const res = await postWithAuth(exportEndpoint, {});
@@ -173,12 +166,13 @@ export default function CardTransactions() {
   };
 
   const fetchTransactions = async (pullToRefresh = false) => {
+    if (isEndReached) {
+      return;
+    }
     if (pullToRefresh) {
       txnRetrievalOffset.current = undefined;
     }
-    let txnURL = `/v1/cards/${cardProvider}/card/${String(
-      cardId,
-    )}/transactions?newRoute=true&limit=15`;
+    let txnURL = `/v1/cards/${cardProvider}/card/transactions?newRoute=true&limit=15`;
     if (txnRetrievalOffset.current) {
       txnURL += `&offset=${txnRetrievalOffset.current}`;
     }
@@ -191,14 +185,17 @@ export default function CardTransactions() {
         txnsToSet.sort((a: ICardTransaction, b: ICardTransaction) => {
           return a.date < b.date ? 1 : -1;
         });
-
-        txnRetrievalOffset.current = offset;
+        if (txnRetrievalOffset.current !== offset) {
+          txnRetrievalOffset.current = offset;
+        } else {
+          setIsEndReached(true);
+        }
 
         if (pullToRefresh) {
           setTransactions(txnsToSet);
           spliceTransactions(txnsToSet);
         } else {
-          setTransactions([...txnsToSet]);
+          setTransactions([...transactions, ...txnsToSet]);
           spliceTransactions([...transactions, ...txnsToSet]);
         }
 
@@ -367,7 +364,7 @@ export default function CardTransactions() {
           refreshControl={
             <RefreshControl
               className={clsx({ 'bg-white': isIOS() })}
-              refreshing={refreshing}
+              refreshing={refreshing && !txnRetrievalOffset.current}
               onRefresh={() => {
                 void fetchTransactions(true);
               }}
@@ -379,6 +376,7 @@ export default function CardTransactions() {
               void fetchTransactions();
             }
           }}
+          onEndReachedThreshold={0}
           ListFooterComponent={
             <InfiniteScrollFooterLoader
               refreshing={refreshing}
@@ -395,6 +393,8 @@ export default function CardTransactions() {
 const styles = StyleSheet.create({
   infiniteScrollFooterLoaderStyle: {
     height: 40,
+    marginBottom: 60,
+    marginTop: 20,
   },
   modalLayout: {
     margin: 0,

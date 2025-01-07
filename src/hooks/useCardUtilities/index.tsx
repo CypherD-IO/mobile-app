@@ -29,6 +29,7 @@ export default function useCardUtilities() {
   const hasBothProviders = (profile: CardProfile) => {
     return (
       has(profile, CardProviders.PAYCADDY) &&
+      !has(profile, [CardProviders.PAYCADDY, 'lastStatementLink']) &&
       has(profile, CardProviders.REAP_CARD)
     );
   };

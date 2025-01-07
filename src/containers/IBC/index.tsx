@@ -268,7 +268,7 @@ export default function IBC({
           void logAnalytics({
             type: AnalyticsType.SUCCESS,
             txnHash: transaction.hash,
-            chain: tokenData.chainDetails?.chainName ?? '',
+            chain: tokenData.chainDetails?.backendName ?? '',
           });
         } else {
           activityRef.current &&

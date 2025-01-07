@@ -161,7 +161,7 @@ export default function CosmosAction({
           void logAnalytics({
             type: AnalyticsType.SUCCESS,
             txnHash: resp.hash,
-            chain: tokenData?.chainDetails?.chainName ?? '',
+            chain: tokenData?.chainDetails?.backendName ?? '',
           });
           void analytics().logEvent(`${from as string}_transaction_success`);
         } else {
@@ -182,7 +182,7 @@ export default function CosmosAction({
       // monitoring api
       void logAnalytics({
         type: AnalyticsType.ERROR,
-        chain: tokenData?.chainDetails?.chainName ?? '',
+        chain: tokenData?.chainDetails?.backendName ?? '',
         message: parseErrorMessage(error),
         screen: useroute.name,
       });
